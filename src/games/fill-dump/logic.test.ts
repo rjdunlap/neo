@@ -1,5 +1,15 @@
 import { SCRIPT } from '../../content/voice-script';
-import { checkPour, emptyCup, pour, pourAmount, pourHint, POUR_DISTANCE, POUR_TOLERANCE, recoverTray, startPour } from './logic';
+import {
+  checkPour,
+  emptyCup,
+  pour,
+  pourAmount,
+  pourHint,
+  POUR_DISTANCE,
+  POUR_TOLERANCE,
+  recoverTray,
+  startPour,
+} from './logic';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { DESIGN_H, DESIGN_W } from '../../engine/view';
@@ -88,7 +98,9 @@ describe('Fill and Dump tip-out levels', () => {
         const bound = s.plan.dumps * (1 + s.plan.pieces) + 1;
         while (!s.done && taps < bound * 4) {
           const spots = Array.from({ length: s.plan.pieces }, (_, x) => ({ x: x * 128, y: 500 }));
-          const action = rng.chance(0.5) ? groundTap(s, spots, { x: rng.range(0, 1024), y: rng.range(384, 768) })! : rng.pick(liveTaps(s));
+          const action = rng.chance(0.5)
+            ? groundTap(s, spots, { x: rng.range(0, 1024), y: rng.range(384, 768) })!
+            : rng.pick(liveTaps(s));
           tap(s, action);
           taps++;
         }
@@ -102,7 +114,11 @@ describe('Fill and Dump tip-out levels', () => {
   });
 
   it('ground tips a full basket, scoops the nearest outside fruit, and ignores counting and done states', () => {
-    const spots = [{ x: 200, y: 500 }, { x: 400, y: 600 }, { x: 600, y: 500 }];
+    const spots = [
+      { x: 200, y: 500 },
+      { x: 400, y: 600 },
+      { x: 600, y: 500 },
+    ];
     const s = fresh(1);
     expect(tap(s, groundTap(s, spots, spots[2])!)).toEqual({ kind: 'dump' });
     expect(tap(s, groundTap(s, spots, spots[2])!)).toMatchObject({ kind: 'in', i: 2 });
@@ -247,7 +263,12 @@ describe('Fill and Dump counting levels', () => {
 
 describe('Fill and Dump placement', () => {
   /** The ground a round lands fruit on in a view of this size: below the basket, clear of the pet and the edges. */
-  const ground = (w: number, h: number): Rect => ({ x: 170, y: h * 0.52, w: w - 170 - 50, h: h * 0.48 - 100 });
+  const ground = (w: number, h: number): Rect => ({
+    x: 170,
+    y: h * 0.52,
+    w: w - 170 - 50,
+    h: h * 0.48 - 100,
+  });
   const views: [number, number][] = [
     [DESIGN_W, DESIGN_H],
     [DESIGN_W + 340, DESIGN_H], // a wide laptop
@@ -271,7 +292,9 @@ describe('Fill and Dump placement', () => {
         }
         for (let i = 0; i < spots!.length; i++) {
           for (let j = i + 1; j < spots!.length; j++) {
-            expect(Math.hypot(spots![i].x - spots![j].x, spots![i].y - spots![j].y)).toBeGreaterThanOrEqual(SPOT_GAP - 1e-6);
+            expect(Math.hypot(spots![i].x - spots![j].x, spots![i].y - spots![j].y)).toBeGreaterThanOrEqual(
+              SPOT_GAP - 1e-6,
+            );
           }
         }
       }
@@ -288,7 +311,8 @@ describe('Fill and Dump placement', () => {
   it('sits seven pieces in the basket without two on the same spot', () => {
     const slots = Array.from({ length: MAX_PIECES }, (_, i) => basketSlot(i));
     for (let i = 0; i < slots.length; i++) {
-      for (let j = i + 1; j < slots.length; j++) expect(Math.hypot(slots[i].x - slots[j].x, slots[i].y - slots[j].y)).toBeGreaterThan(30);
+      for (let j = i + 1; j < slots.length; j++)
+        expect(Math.hypot(slots[i].x - slots[j].x, slots[i].y - slots[j].y)).toBeGreaterThan(30);
     }
     for (const s of slots) expect(Math.abs(s.x)).toBeLessThanOrEqual(110);
   });
@@ -322,7 +346,8 @@ describe('Pouring to a line', () => {
         if (rng.chance(0.5)) recoverTray(s);
         expect(Math.min(s.cup, s.jug, s.tray)).toBeGreaterThanOrEqual(-1e-9);
       }
-      emptyCup(s); recoverTray(s);
+      emptyCup(s);
+      recoverTray(s);
       pour(s, s.targets[0]);
       expect(checkPour(s)).toBe('next');
       expect([s.misses, s.hints]).toEqual([0, 0]);
@@ -336,16 +361,19 @@ describe('Pouring to a line', () => {
     expect(s.hints).toBe(0);
     expect(checkPour(s)).toBe('wrong');
     expect(s.hints).toBe(1);
-    checkPour(s); checkPour(s);
+    checkPour(s);
+    checkPour(s);
     expect(s.hints).toBe(1);
     expect(pourHint(s)).toBe('empty');
-    emptyCup(s); recoverTray(s);
+    emptyCup(s);
+    recoverTray(s);
     pour(s, s.targets[0] - POUR_TOLERANCE);
     expect(checkPour(s)).toBe('next');
     expect(s.helped).toBe(false);
     pour(s, s.targets[1] - POUR_TOLERANCE - 0.001);
     expect(pourHint(s)).toBe('more');
-    checkPour(s); checkPour(s);
+    checkPour(s);
+    checkPour(s);
     expect(s.hints).toBe(2);
   });
   it('measures displacement, handles bad amounts, and freezes a completed round', () => {
@@ -353,11 +381,18 @@ describe('Pouring to a line', () => {
     expect(pourAmount(POUR_DISTANCE / 2)).toBe(0.5);
     expect(pourAmount(POUR_DISTANCE * 8)).toBe(3);
     const s = startPour(new Rng(1));
-    pour(s, NaN); pour(s, Infinity); pour(s, -1);
+    pour(s, NaN);
+    pour(s, Infinity);
+    pour(s, -1);
     expect(s.jug).toBe(3);
-    for (const target of s.targets) { pour(s, target); checkPour(s); }
+    for (const target of s.targets) {
+      pour(s, target);
+      checkPour(s);
+    }
     const before = structuredClone(s);
-    pour(s, 1); emptyCup(s); recoverTray(s);
+    pour(s, 1);
+    emptyCup(s);
+    recoverTray(s);
     expect(checkPour(s)).toBe('ignored');
     expect(s).toEqual(before);
   });
@@ -433,13 +468,18 @@ describe('Full and empty (level 6)', () => {
       expect(left - half, `${w}x${h} left edge`).toBeGreaterThanOrEqual(40);
       expect(right + half, `${w}x${h} right edge`).toBeLessThanOrEqual(w - 40);
       expect(right - left - 2 * half, 'a gap between the baskets').toBeGreaterThanOrEqual(80);
-      expect(l.feetY - BASKET_HIT.top * PAIR_SCALE - 130 * PAIR_SCALE, 'the handle under the corner buttons').toBeGreaterThan(130);
+      expect(
+        l.feetY - BASKET_HIT.top * PAIR_SCALE - 130 * PAIR_SCALE,
+        'the handle under the corner buttons',
+      ).toBeGreaterThan(130);
       for (const p of l.pile) {
         expect(p.x).toBeGreaterThan(left + half - 60);
         expect(p.x).toBeLessThan(right - half + 60);
       }
       // The pile and a tipped basket's fruit stay a fruit's width apart.
-      for (const p of l.pile) for (const q of [...l.landing[0], ...l.landing[1]]) expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(90);
+      for (const p of l.pile)
+        for (const q of [...l.landing[0], ...l.landing[1]])
+          expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(90);
       // Everything sits above the bottom band where the pet stands, and on screen.
       for (const p of [...l.pile, ...l.landing[0], ...l.landing[1]]) {
         expect(p.x).toBeGreaterThan(50);
@@ -449,7 +489,6 @@ describe('Full and empty (level 6)', () => {
     }
   });
 });
-
 
 describe('things to put away', () => {
   it('draws every set reproducibly with matching nouns and playable pieces at levels 1–4', () => {
@@ -468,7 +507,7 @@ describe('things to put away', () => {
         expect([state.done, state.misses, state.hints]).toEqual([true, 0, 0]);
       }
     }
-    expect([...seen].sort()).toEqual(FILL_SETS.map(s => s.id).sort());
+    expect([...seen].sort()).toEqual(FILL_SETS.map((s) => s.id).sort());
   });
 
   it('offers at least four distinct tip-out designs per set and truthful speech for each', () => {
@@ -476,12 +515,23 @@ describe('things to put away', () => {
       const designs = new Set<number>();
       for (let seed = 1; seed <= 200; seed++) {
         const content = contentFor(planFor(2), new Rng(seed));
-        if (content.set.id === set.id) content.variants.forEach(v => designs.add(v));
+        if (content.set.id === set.id) content.variants.forEach((v) => designs.add(v));
       }
       expect(designs.size).toBeGreaterThanOrEqual(4);
-      for (const id of ['fill.tip', 'fill.scoop', 'fill.again', 'fill.put', 'fill.wrong', 'fill.hintremove'] as const) {
-        const spoken = SCRIPT[id].map(line => line.replaceAll('{container}', set.container).replaceAll('{things}', set.things));
-        expect(spoken.every(line => !line.includes('{container}') && !line.includes('{things}'))).toBe(true);
+      for (const id of [
+        'fill.tip',
+        'fill.scoop',
+        'fill.again',
+        'fill.put',
+        'fill.wrong',
+        'fill.hintremove',
+      ] as const) {
+        const spoken = SCRIPT[id].map((line) =>
+          line.replaceAll('{container}', set.container).replaceAll('{things}', set.things),
+        );
+        expect(spoken.every((line) => !line.includes('{container}') && !line.includes('{things}'))).toBe(
+          true,
+        );
         expect(spoken.join(' ')).toContain(id === 'fill.scoop' ? set.things : set.container);
         if (set.id !== 'fruit') expect(spoken.join(' ')).not.toMatch(/fruit|basket/);
       }

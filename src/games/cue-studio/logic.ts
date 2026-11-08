@@ -21,7 +21,12 @@ export interface CuePlan {
 export const PLANS: readonly CuePlan[] = [
   { level: 1, slots: 1, name: 'Make a move: choose one action, wave or turn, and play it' },
   { level: 2, slots: 2, name: 'My little show: make any two-action show and play it' },
-  { level: 3, slots: 2, name: 'Fix the cue: repair the pictured order, then check the show', request: ['W', 'T'] },
+  {
+    level: 3,
+    slots: 2,
+    name: 'Fix the cue: repair the pictured order, then check the show',
+    request: ['W', 'T'],
+  },
 ];
 
 // The 2026-10-23 decision separates pre-K creation from school requested repair.
@@ -52,7 +57,19 @@ export interface Studio {
 }
 
 export function newStudio(slots: number, request?: readonly Cue[]): Studio {
-  return { slots, request: request ?? null, checked: false, misses: 0, program: request ? [...request].reverse() : Array<Slot>(slots).fill(null), selected: null, undo: null, played: false, stepAt: 0, helped: new Set(), hints: 0 };
+  return {
+    slots,
+    request: request ?? null,
+    checked: false,
+    misses: 0,
+    program: request ? [...request].reverse() : Array<Slot>(slots).fill(null),
+    selected: null,
+    undo: null,
+    played: false,
+    stepAt: 0,
+    helped: new Set(),
+    hints: 0,
+  };
 }
 
 /** The commands in the order they run: the filled slots, left to right. */
@@ -154,11 +171,17 @@ export function step(s: Studio): { at: number; cue: Cue } | null {
 export const canFinish = (s: Studio) => isComplete(s.program) && (s.request ? s.checked : s.played);
 
 /** Help offers a creative move, or a clue/repair for the requested trace. */
-export type HelpResult = { kind: 'insert'; at: number } | { kind: 'clue' | 'repair'; at: number; cue: Cue } | { kind: 'check' } | { kind: 'play' } | { kind: 'finish' };
+export type HelpResult =
+  | { kind: 'insert'; at: number }
+  | { kind: 'clue' | 'repair'; at: number; cue: Cue }
+  | { kind: 'check' }
+  | { kind: 'play' }
+  | { kind: 'finish' };
 
-const hasClue = (s: Studio) => [...s.helped].some(id => id.startsWith('clue:'));
+const hasClue = (s: Studio) => [...s.helped].some((id) => id.startsWith('clue:'));
 
-export const mismatch = (s: Studio) => s.request ? s.program.findIndex((cue, i) => cue !== s.request![i]) : -1;
+export const mismatch = (s: Studio) =>
+  s.request ? s.program.findIndex((cue, i) => cue !== s.request![i]) : -1;
 
 /** Only a completed deliberate Check counts a miss; ordinary playback never does. */
 export function checkRun(s: Studio): number | null {

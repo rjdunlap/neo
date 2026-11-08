@@ -20,8 +20,29 @@ import { coinArt } from '../market-stall';
 import { boardArt, boatArt, bulbArt, cupArt, eventIcon, forecastIcon, miniStand, pitcherArt } from './art';
 import {
   LEVELS,
-  affordable, BATCHES, batchCost, boatTalk, cheaperBoat, dayPerTwo, forecastChoice, helps, insight, makeWeek, planFor, priceChoice, rating, sellDay, settle,
-  START_PURSE, WEATHER_WORD, type Day, type Help, type Insight, type Offer, type Row, type StandPlan,
+  affordable,
+  BATCHES,
+  batchCost,
+  boatTalk,
+  cheaperBoat,
+  dayPerTwo,
+  forecastChoice,
+  helps,
+  insight,
+  makeWeek,
+  planFor,
+  priceChoice,
+  rating,
+  sellDay,
+  settle,
+  START_PURSE,
+  WEATHER_WORD,
+  type Day,
+  type Help,
+  type Insight,
+  type Offer,
+  type Row,
+  type StandPlan,
 } from './logic';
 
 const ROW_H = 100;
@@ -126,7 +147,17 @@ class LemonadeStand implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.week = makeWeek(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: false, seed: 91 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.5,
+        clouds: 2,
+        sun: false,
+        seed: 91,
+      },
+      ctx.view,
+    );
     this.wash.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.crowd.eventMode = 'none';
@@ -179,7 +210,10 @@ class LemonadeStand implements Game {
     if (this.plan.purse) {
       const pouch = new Graphics();
       pouch.ellipse(0, 6, 24, 22).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 4));
-      pouch.poly([-10, -12, 10, -12, 6, -22, -6, -22]).fill(swatch.brown.light).stroke(line(swatch.brown.line, 3));
+      pouch
+        .poly([-10, -12, 10, -12, 6, -22, -6, -22])
+        .fill(swatch.brown.light)
+        .stroke(line(swatch.brown.line, 3));
       const shell = coinArt(1);
       shell.scale.set(0.42);
       shell.position.set(0, 8);
@@ -194,9 +228,26 @@ class LemonadeStand implements Game {
     // The friends having a picnic share what is left.
     const rug = new Graphics();
     rug.poly([-70, -6, 70, -6, 92, 30, -92, 30]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
-    for (let i = 0; i < 5; i++) for (let j = 0; j < 2; j++) if ((i + j) % 2 === 0) rug.poly([-60 + i * 24 - j * 4, -2 + j * 16, -38 + i * 24 - j * 4, -2 + j * 16, -38 + i * 24 - j * 8, 14 + j * 16, -60 + i * 24 - j * 8, 14 + j * 16]).fill({ color: 0xffffff, alpha: 0.8 });
+    for (let i = 0; i < 5; i++)
+      for (let j = 0; j < 2; j++)
+        if ((i + j) % 2 === 0)
+          rug
+            .poly([
+              -60 + i * 24 - j * 4,
+              -2 + j * 16,
+              -38 + i * 24 - j * 4,
+              -2 + j * 16,
+              -38 + i * 24 - j * 8,
+              14 + j * 16,
+              -60 + i * 24 - j * 8,
+              14 + j * 16,
+            ])
+            .fill({ color: 0xffffff, alpha: 0.8 });
     this.blanket.addChild(rug);
-    for (const [name, x] of [['bear', -34], ['bunny', 34]] as [CritterName, number][]) {
+    for (const [name, x] of [
+      ['bear', -34],
+      ['bunny', 34],
+    ] as [CritterName, number][]) {
       const c = new Critter(CRITTERS[name]);
       c.scale.set(0.3);
       c.position.set(x * 0.9, 8);
@@ -214,7 +265,10 @@ class LemonadeStand implements Game {
       const cup = (i: number) => {
         const c = cupArt();
         c.scale.set(0.5);
-        c.position.set(((i % 4) - 1.5) * 25, (this.plan.purse ? -22 : -14) + (Math.floor(i / 4) - (rows - 1) / 2) * 25);
+        c.position.set(
+          ((i % 4) - 1.5) * 25,
+          (this.plan.purse ? -22 : -14) + (Math.floor(i / 4) - (rows - 1) / 2) * 25,
+        );
         return c;
       };
       for (let i = 0; i < n; i++) node.addChild(cup(i));
@@ -256,8 +310,23 @@ class LemonadeStand implements Game {
     this.help = new RoundButton(bulbArt(), swatch.yellow, 56, () => void this.askHelp());
 
     ctx.stage.addChild(
-      this.backdrop, this.wash, this.blanket, this.standArt, this.signText, this.tray, this.soldOut, this.crowd, this.tally, this.banner, this.table, this.jetty, this.glow,
-      ...this.coins.map((c) => c.node), ...this.cards.map((c) => c.node), this.open, this.help,
+      this.backdrop,
+      this.wash,
+      this.blanket,
+      this.standArt,
+      this.signText,
+      this.tray,
+      this.soldOut,
+      this.crowd,
+      this.tally,
+      this.banner,
+      this.table,
+      this.jetty,
+      this.glow,
+      ...this.coins.map((c) => c.node),
+      ...this.cards.map((c) => c.node),
+      this.open,
+      this.help,
     );
     this.m = this.metrics();
     this.resize(ctx.view);
@@ -278,7 +347,16 @@ class LemonadeStand implements Game {
     const extra = Math.max(0, v.h - 768);
     const top = 138 + extra * 0.5;
     const counterY = top + 150;
-    return { panelX, panelW, cx, top, counterY, ground: counterY + 108, cardsY: v.h - 150, priceY: v.h - 300 };
+    return {
+      panelX,
+      panelW,
+      cx,
+      top,
+      counterY,
+      ground: counterY + 108,
+      cardsY: v.h - 150,
+      priceY: v.h - 300,
+    };
   }
 
   // ---------------------------------------------------------------- layout and drawing
@@ -299,7 +377,13 @@ class LemonadeStand implements Game {
     const right = m.panelX - 14;
     const bw = right - 150;
     this.banner.position.set(150 + bw / 2, 24 + 48);
-    this.bannerBox.clear().roundRect(-bw / 2, -48 + 5, bw, 96, 22).fill(wood.line).roundRect(-bw / 2, -48, bw, 96, 22).fill(0xfffaf0).stroke(line(wood.line, 5));
+    this.bannerBox
+      .clear()
+      .roundRect(-bw / 2, -48 + 5, bw, 96, 22)
+      .fill(wood.line)
+      .roundRect(-bw / 2, -48, bw, 96, 22)
+      .fill(0xfffaf0)
+      .stroke(line(wood.line, 5));
     this.dayText.position.set(-bw / 2 + 70, 0);
     this.weatherSlot.position.set(-bw / 2 + 170, 0);
     this.eventSlot.position.set(-bw / 2 + 262, 0);
@@ -308,7 +392,13 @@ class LemonadeStand implements Game {
     // The table
     this.table.position.set(m.panelX, 40);
     const rows = Math.max(this.plan.days, 1);
-    this.tableBox.clear().roundRect(0, 5, m.panelW, HEAD_H + rows * ROW_H + 8, 24).fill(wood.line).roundRect(0, 0, m.panelW, HEAD_H + rows * ROW_H + 8, 24).fill(0xfff1d6).stroke(line(wood.line, 5));
+    this.tableBox
+      .clear()
+      .roundRect(0, 5, m.panelW, HEAD_H + rows * ROW_H + 8, 24)
+      .fill(wood.line)
+      .roundRect(0, 0, m.panelW, HEAD_H + rows * ROW_H + 8, 24)
+      .fill(0xfff1d6)
+      .stroke(line(wood.line, 5));
     this.tableBody.position.set(0, HEAD_H);
     // Controls
     const cards = this.cards.length;
@@ -319,7 +409,11 @@ class LemonadeStand implements Game {
     this.help.position.set(190, m.top + 84);
     // The jetty: a strip of water under the two boats, in the controls' place while the boats wait.
     const wy = v.h - BOAT_UP;
-    this.water.clear().roundRect(BOAT_X[0] - 130, wy + 8, BOAT_X[1] - BOAT_X[0] + 260, 56, 26).fill({ color: swatch.blue.light, alpha: 0.85 }).stroke(line(swatch.blue.fill, 4));
+    this.water
+      .clear()
+      .roundRect(BOAT_X[0] - 130, wy + 8, BOAT_X[1] - BOAT_X[0] + 260, 56, 26)
+      .fill({ color: swatch.blue.light, alpha: 0.85 })
+      .stroke(line(swatch.blue.fill, 4));
     this.boats.forEach((b, i) => b.node.position.set(BOAT_X[i], wy));
   }
 
@@ -328,22 +422,34 @@ class LemonadeStand implements Game {
     const v = this.view;
     const w = this.wash.clear();
     if (!day || day.weather === 'sunny') return;
-    w.rect(0, 0, v.w, v.h).fill({ color: day.weather === 'rainy' ? 0x5c6f8f : 0x9aa6b8, alpha: day.weather === 'rainy' ? 0.3 : 0.16 });
+    w.rect(0, 0, v.w, v.h).fill({
+      color: day.weather === 'rainy' ? 0x5c6f8f : 0x9aa6b8,
+      alpha: day.weather === 'rainy' ? 0.3 : 0.16,
+    });
   }
 
   private drawStand() {
     const m = this.m;
     const s = this.standArt.clear();
     const cx = m.cx;
-    s.rect(cx - 142, m.top + 30, 14, m.counterY - m.top - 30).rect(cx + 128, m.top + 30, 14, m.counterY - m.top - 30).fill(wood.fill);
+    s.rect(cx - 142, m.top + 30, 14, m.counterY - m.top - 30)
+      .rect(cx + 128, m.top + 30, 14, m.counterY - m.top - 30)
+      .fill(wood.fill);
     const stripe = 280 / 6;
-    for (let i = 0; i < 6; i++) s.rect(cx - 140 + i * stripe, m.top, stripe, 30).fill(i % 2 ? 0xffffff : swatch.yellow.fill);
+    for (let i = 0; i < 6; i++)
+      s.rect(cx - 140 + i * stripe, m.top, stripe, 30).fill(i % 2 ? 0xffffff : swatch.yellow.fill);
     s.rect(cx - 140, m.top, 280, 30).stroke(line(swatch.yellow.line, 5));
     for (let i = 0; i < 6; i++) {
-      s.moveTo(cx - 140 + i * stripe, m.top + 30).arc(cx - 140 + i * stripe + stripe / 2, m.top + 30, stripe / 2, Math.PI, 0, true).fill(i % 2 ? 0xffffff : swatch.yellow.fill);
+      s.moveTo(cx - 140 + i * stripe, m.top + 30)
+        .arc(cx - 140 + i * stripe + stripe / 2, m.top + 30, stripe / 2, Math.PI, 0, true)
+        .fill(i % 2 ? 0xffffff : swatch.yellow.fill);
     }
-    s.roundRect(cx - 160, m.counterY, 320, 34, 12).fill(wood.fill).stroke(line(wood.line, 6));
-    s.rect(cx - 145, m.counterY + 34, 290, 74).fill(wood.light).stroke(line(wood.line, 5));
+    s.roundRect(cx - 160, m.counterY, 320, 34, 12)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 6));
+    s.rect(cx - 145, m.counterY + 34, 290, 74)
+      .fill(wood.light)
+      .stroke(line(wood.line, 5));
   }
 
   private drawHeader() {
@@ -355,7 +461,11 @@ class LemonadeStand implements Game {
       icon.scale.set(col === 'shells' ? 0.55 : 0.62);
       icon.position.set(x, 28);
       if (col === 'sold') {
-        const tick = new Graphics().moveTo(-9, 2).lineTo(-2, 10).lineTo(11, -8).stroke(line(swatch.green.line, 5));
+        const tick = new Graphics()
+          .moveTo(-9, 2)
+          .lineTo(-2, 10)
+          .lineTo(11, -8)
+          .stroke(line(swatch.green.line, 5));
         tick.position.set(x + 12, 40);
         h.addChild(icon, tick);
       } else h.addChild(icon);
@@ -380,12 +490,19 @@ class LemonadeStand implements Game {
   private paintCard(box: Graphics, selected: boolean, ok: boolean, h = this.cardH()) {
     box.clear();
     box.roundRect(-CARD_W / 2, -h / 2 + 5, CARD_W, h, 18).fill(swatch.white.line);
-    box.roundRect(-CARD_W / 2, -h / 2, CARD_W, h, 18).fill(ok ? 0xffffff : 0xe4e4ea).stroke(selected ? { width: 8, color: swatch.green.fill } : { width: 4, color: swatch.white.line });
+    box
+      .roundRect(-CARD_W / 2, -h / 2, CARD_W, h, 18)
+      .fill(ok ? 0xffffff : 0xe4e4ea)
+      .stroke(selected ? { width: 8, color: swatch.green.fill } : { width: 4, color: swatch.white.line });
   }
 
   private paintCoin(c: { value: number; ring: Graphics }, selected: boolean) {
     c.ring.clear();
-    if (selected) c.ring.circle(0, 0, 64).fill({ color: swatch.green.light, alpha: 0.9 }).stroke({ width: 8, color: swatch.green.fill });
+    if (selected)
+      c.ring
+        .circle(0, 0, 64)
+        .fill({ color: swatch.green.light, alpha: 0.9 })
+        .stroke({ width: 8, color: swatch.green.fill });
   }
 
   // ---------------------------------------------------------------- the round
@@ -400,7 +517,10 @@ class LemonadeStand implements Game {
     if (this.clock < this.litUntil) {
       const pulse = 6 + 2 * Math.sin(this.clock * 6);
       for (const i of this.lit) {
-        g.roundRect(this.m.panelX - 2, 40 + HEAD_H + i * ROW_H - 2, this.m.panelW + 4, ROW_H + 4, 20).stroke({ width: pulse, color: swatch.yellow.fill });
+        g.roundRect(this.m.panelX - 2, 40 + HEAD_H + i * ROW_H - 2, this.m.panelW + 4, ROW_H + 4, 20).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
       }
     }
     if (this.boatPhase) {
@@ -408,7 +528,10 @@ class LemonadeStand implements Game {
       this.boats.forEach((b, i) => (b.node.y = wy + 3 * Math.sin(this.clock * 2 + i * 1.7)));
       if (this.boatMisses >= 2) {
         const b = this.boats[cheaperBoat(this.week[this.index].boats!)].node;
-        g.roundRect(b.x - 116, b.y - 158, 232, 214, 28).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+        g.roundRect(b.x - 116, b.y - 158, 232, 214, 28).stroke({
+          width: 6 + 2 * Math.sin(this.clock * 6),
+          color: swatch.yellow.fill,
+        });
       }
     }
   }
@@ -422,7 +545,8 @@ class LemonadeStand implements Game {
     if (this.boatPhase) return { tap: { on: this.boats[cheaperBoat(this.week[this.index].boats!)].node } };
     const want = forecastChoice(this.plan, this.week[this.index], this.purse);
     if (this.made !== want.made) return { tap: { on: this.cards.find((c) => c.n === want.made)!.node } };
-    if (this.price !== want.price) return { tap: { on: this.coins.find((c) => c.value === want.price)!.node } };
+    if (this.price !== want.price)
+      return { tap: { on: this.coins.find((c) => c.value === want.price)!.node } };
     return { tap: { on: this.open } };
   }
 
@@ -438,11 +562,21 @@ class LemonadeStand implements Game {
   }
 
   private forecastLine(day: Day): LineId {
-    return day.event === 'ferry' ? 'lemon.forecast.ferry' : day.event === 'quiet' ? 'lemon.forecast.quiet' : 'lemon.forecast';
+    return day.event === 'ferry'
+      ? 'lemon.forecast.ferry'
+      : day.event === 'quiet'
+        ? 'lemon.forecast.quiet'
+        : 'lemon.forecast';
   }
 
   private chooseLine(): LineId {
-    return this.plan.boats ? 'lemon.choose.boat' : this.plan.purse ? 'lemon.choose.purse' : priceChoice(this.plan) ? 'lemon.choose.price' : 'lemon.choose';
+    return this.plan.boats
+      ? 'lemon.choose.boat'
+      : this.plan.purse
+        ? 'lemon.choose.purse'
+        : priceChoice(this.plan)
+          ? 'lemon.choose.price'
+          : 'lemon.choose';
   }
 
   private async nextDay() {
@@ -471,7 +605,11 @@ class LemonadeStand implements Game {
     }
     this.busy = false;
     await this.ctx.say(this.forecastLine(day), { day: this.index + 1, weather: WEATHER_WORD[day.weather] });
-    if (this.boatPhase && day.boats) void this.ctx.instruct('lemon.boat.choose', { left: offerWords(day.boats[0]), right: offerWords(day.boats[1]) });
+    if (this.boatPhase && day.boats)
+      void this.ctx.instruct('lemon.boat.choose', {
+        left: offerWords(day.boats[0]),
+        right: offerWords(day.boats[1]),
+      });
     // A boat already chosen during the forecast has given the batch instruction itself.
     else if (!day.boats) void this.ctx.instruct(this.chooseLine());
   }
@@ -480,7 +618,8 @@ class LemonadeStand implements Game {
 
   /** The batch cards, prices and open sign make way for the boats while she chooses one. */
   private setControls(on: boolean) {
-    for (const node of [...this.cards.map((c) => c.node), ...this.coins.map((c) => c.node), this.open]) node.visible = on;
+    for (const node of [...this.cards.map((c) => c.node), ...this.coins.map((c) => c.node), this.open])
+      node.visible = on;
   }
 
   private showBoats(offers: readonly [Offer, Offer]) {
@@ -498,7 +637,11 @@ class LemonadeStand implements Game {
       onTap(node, () => void this.pickBoat(i), { cooldown: 200 });
       this.jetty.addChild(node);
       this.boats.push({ node, offer });
-      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.4, delay: 0.25 + i * 0.15, ease: ease.outBack });
+      void this.ctx.tw.to(
+        node.scale,
+        { x: 1, y: 1 },
+        { duration: 0.4, delay: 0.25 + i * 0.15, ease: ease.outBack },
+      );
     });
   }
 
@@ -542,7 +685,8 @@ class LemonadeStand implements Game {
 
   private showForecast(day: Day) {
     this.dayText.text = `DAY ${this.index + 1}\nof ${this.week.length}`;
-    for (const slot of [this.weatherSlot, this.eventSlot]) slot.removeChildren().forEach((c) => c.destroy({ children: true }));
+    for (const slot of [this.weatherSlot, this.eventSlot])
+      slot.removeChildren().forEach((c) => c.destroy({ children: true }));
     const place = (slot: Container, icon: Container, word: string, delay: number) => {
       icon.y = -10;
       const cap = label(word, 20, ink);
@@ -552,10 +696,17 @@ class LemonadeStand implements Game {
       void this.ctx.tw.to(slot.scale, { x: 1, y: 1 }, { duration: 0.35, delay, ease: ease.outBack });
     };
     place(this.weatherSlot, forecastIcon(day.weather, 62), WEATHER_WORD[day.weather], 0);
-    if (day.event) place(this.eventSlot, eventIcon(day.event, 62), day.event === 'ferry' ? 'ferry visit' : 'quiet day', 0.15);
+    if (day.event)
+      place(
+        this.eventSlot,
+        eventIcon(day.event, 62),
+        day.event === 'ferry' ? 'ferry visit' : 'quiet day',
+        0.15,
+      );
     this.drawWash();
     if (day.weather === 'rainy') sfx.splash();
-    else if (day.weather === 'sunny') [5, 7, 9].forEach((s, i) => void this.ctx.tw.wait(i * 0.1).then(() => sfx.bell(s, 0.18)));
+    else if (day.weather === 'sunny')
+      [5, 7, 9].forEach((s, i) => void this.ctx.tw.wait(i * 0.1).then(() => sfx.bell(s, 0.18)));
   }
 
   /** Cards the purse cannot pay for are dimmed, and the open sign shows whether the stand is ready. */
@@ -618,7 +769,11 @@ class LemonadeStand implements Game {
       cup.scale.set(0.01);
       this.tray.addChild(cup);
       this.trayCups.push(cup);
-      void this.ctx.tw.to(cup.scale, { x: CUP_SCALE, y: CUP_SCALE }, { duration: 0.2, delay: i * 0.025, ease: ease.outBack });
+      void this.ctx.tw.to(
+        cup.scale,
+        { x: CUP_SCALE, y: CUP_SCALE },
+        { duration: 0.2, delay: i * 0.025, ease: ease.outBack },
+      );
     }
   }
 
@@ -684,7 +839,10 @@ class LemonadeStand implements Game {
     t.position.set(x, y);
     t.eventMode = 'none';
     this.ctx.stage.addChild(t);
-    void Promise.all([this.ctx.tw.to(t, { y: y - 70 }, { duration: 0.9 }), this.ctx.tw.to(t, { alpha: 0 }, { duration: 0.5, delay: 0.5 })]).then(() => t.destroy());
+    void Promise.all([
+      this.ctx.tw.to(t, { y: y - 70 }, { duration: 0.9 }),
+      this.ctx.tw.to(t, { alpha: 0 }, { duration: 0.5, delay: 0.5 }),
+    ]).then(() => t.destroy());
   }
 
   private friend(): Critter {
@@ -714,7 +872,11 @@ class LemonadeStand implements Game {
       const f = this.friend();
       f.position.set(serveX + 150, m.ground + 6);
       const served = k < row.sold;
-      await this.ctx.tw.to(f, { x: serveX, alpha: 1 }, { duration: step * (served ? 0.4 : 0.3), ease: ease.outQuad });
+      await this.ctx.tw.to(
+        f,
+        { x: serveX, alpha: 1 },
+        { duration: step * (served ? 0.4 : 0.3), ease: ease.outQuad },
+      );
       if (served) {
         const cup = this.trayCups.pop()!;
         const to = { x: serveX - m.cx - 38, y: m.ground - 86 - m.counterY + 4 };
@@ -727,7 +889,15 @@ class LemonadeStand implements Game {
         this.dayCoins += row.price;
         this.setTally(sold, this.dayCoins);
         if (this.plan.purse) this.setPurse(this.purse + row.price);
-        if (priceChoice(this.plan)) this.ctx.particles.burst(serveX - 20, m.counterY - 60, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 4, speed: [80, 200], gravity: 0, life: [0.3, 0.6] });
+        if (priceChoice(this.plan))
+          this.ctx.particles.burst(serveX - 20, m.counterY - 60, {
+            kind: 'star',
+            colors: [swatch.yellow.fill, 0xffffff],
+            count: 4,
+            speed: [80, 200],
+            gravity: 0,
+            life: [0.3, 0.6],
+          });
         await this.ctx.tw.wait(step * 0.3);
       } else {
         if (k === row.sold) this.showSoldOut();
@@ -735,7 +905,10 @@ class LemonadeStand implements Game {
         await this.ctx.tw.wait(step * 0.25);
       }
       leaving.push(
-        Promise.all([this.ctx.tw.to(f, { alpha: 0 }, { duration: step * 0.35 }), this.ctx.tw.to(f.scale, { x: 0.5, y: 0.5 }, { duration: step * 0.35 })]).then(() => this.gone(f)),
+        Promise.all([
+          this.ctx.tw.to(f, { alpha: 0 }, { duration: step * 0.35 }),
+          this.ctx.tw.to(f.scale, { x: 0.5, y: 0.5 }, { duration: step * 0.35 }),
+        ]).then(() => this.gone(f)),
       );
     }
     await Promise.all(leaving);
@@ -752,12 +925,19 @@ class LemonadeStand implements Game {
 
   private async picnicRun() {
     const m = this.m;
-    const to = { x: this.blanket.x - m.cx + (this.ctx.rng.chance(0.5) ? -22 : 22), y: this.blanket.y - 52 - m.counterY };
+    const to = {
+      x: this.blanket.x - m.cx + (this.ctx.rng.chance(0.5) ? -22 : 22),
+      y: this.blanket.y - 52 - m.counterY,
+    };
     const cups = this.trayCups.splice(0);
     await Promise.all(
       cups.map((cup, i) =>
         this.ctx.tw
-          .to(cup, { x: to.x + (i % 3) * 16 - 16, y: to.y - Math.floor(i / 3) * 10 }, { duration: 0.5, delay: i * 0.07, ease: ease.outQuad })
+          .to(
+            cup,
+            { x: to.x + (i % 3) * 16 - 16, y: to.y - Math.floor(i / 3) * 10 },
+            { duration: 0.5, delay: i * 0.07, ease: ease.outQuad },
+          )
           .then(() => this.ctx.tw.to(cup, { alpha: 0 }, { duration: 0.25 }))
           .then(() => cup.destroy({ children: true })),
       ),
@@ -771,7 +951,12 @@ class LemonadeStand implements Game {
   private makeRow(row: Row): Container {
     const c = new Container();
     const w = this.m.panelW;
-    c.addChild(new Graphics().roundRect(5, 4, w - 10, ROW_H - 8, 16).fill(row.day % 2 ? 0xfff7e6 : 0xffffff).stroke(line(wood.line, 3)));
+    c.addChild(
+      new Graphics()
+        .roundRect(5, 4, w - 10, ROW_H - 8, 16)
+        .fill(row.day % 2 ? 0xfff7e6 : 0xffffff)
+        .stroke(line(wood.line, 3)),
+    );
     const wi = forecastIcon(row.weather, 44);
     wi.position.set(DAY_W / 2, 32);
     c.addChild(wi);
@@ -786,7 +971,12 @@ class LemonadeStand implements Game {
       coin.position.set(DAY_W / 2 + (row.event ? 22 : 0), 78);
       c.addChild(coin);
     }
-    const values: Record<Cell, number> = { made: row.made, sold: row.sold, left: row.left, shells: row.shells };
+    const values: Record<Cell, number> = {
+      made: row.made,
+      sold: row.sold,
+      left: row.left,
+      shells: row.shells,
+    };
     this.columns().forEach((col, i) => {
       const t = label(String(values[col]), 40, ink);
       t.position.set(DAY_W + i * COL_W + COL_W / 2, ROW_H / 2);
@@ -814,8 +1004,20 @@ class LemonadeStand implements Game {
     if (this.finished || this.index >= this.week.length) return;
     const token = ++this.reading;
     this.highlight([row.day], 3);
-    const vars: LineVars = { day: row.day + 1, weather: WEATHER_WORD[row.weather], made: row.made, sold: row.sold, left: row.left, shells: row.shells, cost: row.cost, purse: this.purse };
-    await this.ctx.say(row.unserved > 0 ? 'lemon.row.out' : row.left > 0 ? 'lemon.row.left' : 'lemon.row.good', vars);
+    const vars: LineVars = {
+      day: row.day + 1,
+      weather: WEATHER_WORD[row.weather],
+      made: row.made,
+      sold: row.sold,
+      left: row.left,
+      shells: row.shells,
+      cost: row.cost,
+      purse: this.purse,
+    };
+    await this.ctx.say(
+      row.unserved > 0 ? 'lemon.row.out' : row.left > 0 ? 'lemon.row.left' : 'lemon.row.good',
+      vars,
+    );
     if (token !== this.reading) return;
     if (this.plan.purse) await this.ctx.say('lemon.row.cost', vars);
     else if (priceChoice(this.plan)) await this.ctx.say('lemon.row.shells', vars);
@@ -829,7 +1031,10 @@ class LemonadeStand implements Game {
       [6, 8, 10].forEach((step, i) => void this.ctx.tw.wait(i * 0.1).then(() => sfx.bell(step, 0.22)));
     } else sfx.bell(8, 0.2);
     const vars: LineVars = { n: r === 'out' ? row.unserved : row.left };
-    await this.ctx.say(r === 'out' ? 'lemon.out' : r === 'left' ? 'lemon.left' : r === 'loss' ? 'lemon.loss' : 'lemon.good', vars);
+    await this.ctx.say(
+      r === 'out' ? 'lemon.out' : r === 'left' ? 'lemon.left' : r === 'loss' ? 'lemon.loss' : 'lemon.good',
+      vars,
+    );
   }
 
   // ---------------------------------------------------------------- help and the end
@@ -837,14 +1042,22 @@ class LemonadeStand implements Game {
   private helpLine(h: Help): LineId {
     const price = priceChoice(this.plan) ? '.price' : '';
     switch (h.kind) {
-      case 'boat': return 'lemon.help.boat';
-      case 'out': return `lemon.help.out${price}` as LineId;
-      case 'left': return `lemon.help.left${price}` as LineId;
-      case 'good': return `lemon.help.good${price}` as LineId;
-      case 'other': return 'lemon.help.other';
-      case 'event': return h.vars.event === 'ferry' ? 'lemon.help.event.ferry' : 'lemon.help.event.quiet';
-      case 'weather': return 'lemon.help.weather';
-      default: return 'lemon.help.price';
+      case 'boat':
+        return 'lemon.help.boat';
+      case 'out':
+        return `lemon.help.out${price}` as LineId;
+      case 'left':
+        return `lemon.help.left${price}` as LineId;
+      case 'good':
+        return `lemon.help.good${price}` as LineId;
+      case 'other':
+        return 'lemon.help.other';
+      case 'event':
+        return h.vars.event === 'ferry' ? 'lemon.help.event.ferry' : 'lemon.help.event.quiet';
+      case 'weather':
+        return 'lemon.help.weather';
+      default:
+        return 'lemon.help.price';
     }
   }
 
@@ -861,24 +1074,39 @@ class LemonadeStand implements Game {
     }
     this.highlight(h.rows);
     this.ctx.pet.cheer();
-    const vars = h.kind === 'boat' ? { ...h.vars, cheap: shellWords(Number(h.vars.cheap)), dear: shellWords(Number(h.vars.dear)) } : h.vars;
+    const vars =
+      h.kind === 'boat'
+        ? { ...h.vars, cheap: shellWords(Number(h.vars.cheap)), dear: shellWords(Number(h.vars.dear)) }
+        : h.vars;
     await this.ctx.say(this.helpLine(h), vars);
   }
 
   private insightLine(i: Insight): LineId {
     switch (i.kind) {
-      case 'boats': return 'lemon.sum.boats';
-      case 'price': return 'lemon.sum.price';
-      case 'weather': return 'lemon.sum.weather';
-      case 'best': return 'lemon.sum.best';
-      case 'right': return 'lemon.sum.right';
-      default: return 'lemon.sum.plain';
+      case 'boats':
+        return 'lemon.sum.boats';
+      case 'price':
+        return 'lemon.sum.price';
+      case 'weather':
+        return 'lemon.sum.weather';
+      case 'best':
+        return 'lemon.sum.best';
+      case 'right':
+        return 'lemon.sum.right';
+      default:
+        return 'lemon.sum.plain';
     }
   }
 
   /** At the end of the round the table is the thing to look at: the choices fade away. */
   private hideControls() {
-    for (const node of [...this.cards.map((c) => c.node), ...this.coins.map((c) => c.node), this.open, this.help]) void this.ctx.tw.to(node, { alpha: 0 }, { duration: 0.4 });
+    for (const node of [
+      ...this.cards.map((c) => c.node),
+      ...this.coins.map((c) => c.node),
+      this.open,
+      this.help,
+    ])
+      void this.ctx.tw.to(node, { alpha: 0 }, { duration: 0.4 });
   }
 
   private async wrapUp() {
@@ -938,8 +1166,10 @@ export const lemonadeStand: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
-  coplayHint: 'A grown-up reads the forecast aloud like a weather reporter and plays the first friend in line; she decides the cups.',
-  offScreen: 'Run a real juice stand at a picnic: guess how many cups to pour from the weather, then count what is left and write it in a table.',
+  coplayHint:
+    'A grown-up reads the forecast aloud like a weather reporter and plays the first friend in line; she decides the cups.',
+  offScreen:
+    'Run a real juice stand at a picnic: guess how many cups to pour from the weather, then count what is left and write it in a table.',
   hubIcon: () => new StandIcon(),
   sticker,
   create: (ctx) => new LemonadeStand(ctx),

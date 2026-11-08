@@ -174,19 +174,28 @@ export function place(round: Round, line: readonly number[], stage: number, gap:
   if (round.level === 1) {
     // The only wrong answer: the newer picture called "long ago" (or the older one hung at "now").
     const other = round.cards.find((c) => c !== stage)!;
-    const reason = stage > other
-      ? `This picture already has the ${stages[stage].changes}, so it comes after the ${stages[other].caption}.`
-      : `This picture has no ${stages[other].changes} yet, so it comes before the ${stages[other].caption}.`;
+    const reason =
+      stage > other
+        ? `This picture already has the ${stages[stage].changes}, so it comes after the ${stages[other].caption}.`
+        : `This picture has no ${stages[other].changes} yet, so it comes before the ${stages[other].caption}.`;
     return { ok: false, reason, line };
   }
   if (gap < valid) {
     // Too early: the hung card just after the gap is older than this one.
     const after = line[gap];
-    return { ok: false, line, reason: `This picture already has the ${stages[stage].changes}, so it comes after the ${stages[after].caption}.` };
+    return {
+      ok: false,
+      line,
+      reason: `This picture already has the ${stages[stage].changes}, so it comes after the ${stages[after].caption}.`,
+    };
   }
   // Too late: the hung card just before the gap is newer than this one.
   const before = line[gap - 1];
-  return { ok: false, line, reason: `This picture has no ${stages[before].changes} yet, so it comes before the ${stages[before].caption}.` };
+  return {
+    ok: false,
+    line,
+    reason: `This picture has no ${stages[before].changes} yet, so it comes before the ${stages[before].caption}.`,
+  };
 }
 
 /** The loose card the ghost finger takes next: the oldest, so any line it builds is legal. */
@@ -214,7 +223,8 @@ export class Tally {
 
   /** A wrong drop of `stage` in `gap`: whether it counted, and whether the glow just lit. */
   missed(stage: number, gap: number): { counted: boolean; lit: boolean } {
-    if (this.last && this.last.stage === stage && this.last.gap === gap) return { counted: false, lit: false };
+    if (this.last && this.last.stage === stage && this.last.gap === gap)
+      return { counted: false, lit: false };
     this.last = { stage, gap };
     this.misses++;
     const n = (this.wrong.get(stage) ?? 0) + 1;
@@ -225,7 +235,10 @@ export class Tally {
 
   /** Light the card's valid gap, once per card; true when it lit now. */
   help(stage: number): boolean {
-    if (this.hinted.has(stage)) { this.glowing = stage; return false; }
+    if (this.hinted.has(stage)) {
+      this.glowing = stage;
+      return false;
+    }
     this.hinted.add(stage);
     this.hints++;
     this.glowing = stage;
@@ -241,8 +254,16 @@ export class Tally {
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
 
 export const CARD = 150;
@@ -277,7 +298,12 @@ export interface LineLayout {
  * Posts at the edges, the line between them (wrapping into two rows when its cards and gaps do not fit one), the tray
  * below and the flipbook frame in the middle. Every target keeps full size; null when the view cannot hold them.
  */
-export function lineLayout(round: Round, line: readonly number[], looseCount: number, v: View): LineLayout | null {
+export function lineLayout(
+  round: Round,
+  line: readonly number[],
+  looseCount: number,
+  v: View,
+): LineLayout | null {
   const wide = v.w >= v.h;
   // Landscape: tall posts at the sides with the line between them. Portrait: shorter posts in the top corners, the line
   // below them across the width (two rows when it does not fit one), the tray at the bottom.
@@ -295,18 +321,35 @@ export function lineLayout(round: Round, line: readonly number[], looseCount: nu
   const trayN = Math.max(1, looseCount);
   const trayStep = Math.min(CARD + SPACE, (trayRight - trayLeft - CARD) / Math.max(1, trayN - 1) || 0);
   const trayStart = (trayLeft + trayRight) / 2 - (trayStep * (trayN - 1)) / 2 - CARD / 2;
-  const tray = Array.from({ length: looseCount }, (_, i) => ({ x: trayStart + i * trayStep, y: trayY, w: CARD, h: CARD }));
+  const tray = Array.from({ length: looseCount }, (_, i) => ({
+    x: trayStart + i * trayStep,
+    y: trayY,
+    w: CARD,
+    h: CARD,
+  }));
   if (tray.length && (tray[0].x < trayLeft || tray[tray.length - 1].x + CARD > trayRight)) return null;
 
   const frameSize = wide ? 360 : 420;
-  const frame = { x: (v.w - frameSize) / 2, y: (wide ? 100 : 180), w: frameSize, h: frameSize };
+  const frame = { x: (v.w - frameSize) / 2, y: wide ? 100 : 180, w: frameSize, h: frameSize };
 
   const gapsN = gapCount(round, line);
   if (round.level === 1) {
     // The posts are the two gaps, and a hung card sits on its post.
-    const pic = (p: Rect): Rect => ({ x: p.x + p.w / 2 - CARD / 2, y: p.y + p.h - GAP_H - 20, w: CARD, h: GAP_H });
+    const pic = (p: Rect): Rect => ({
+      x: p.x + p.w / 2 - CARD / 2,
+      y: p.y + p.h - GAP_H - 20,
+      w: CARD,
+      h: GAP_H,
+    });
     const gaps = [pic(posts.left), pic(posts.right)];
-    return { posts, cards: line.map((_s, i) => gaps[i]), gaps, rows: [posts.left.y + posts.left.h - GAP_H / 2 - 20], tray, frame };
+    return {
+      posts,
+      cards: line.map((_s, i) => gaps[i]),
+      gaps,
+      rows: [posts.left.y + posts.left.h - GAP_H / 2 - 20],
+      tray,
+      frame,
+    };
   }
   // Items in line order: gap, card, gap, card, …, gap.
   type Item = { kind: 'gap' | 'card'; index: number; w: number };
@@ -333,9 +376,10 @@ export function lineLayout(round: Round, line: readonly number[], looseCount: nu
   const lineBottom = trayY - 30;
   const rowH = Math.max(CARD, GAP_H);
   const mid = (lineTop + lineBottom) / 2;
-  const rows = rowsOf.length === 1
-    ? [wide ? posts.left.y + posts.left.h - GAP_H / 2 - 20 : mid]
-    : [mid - rowH / 2 - ROW_SPACE / 2, mid + rowH / 2 + ROW_SPACE / 2];
+  const rows =
+    rowsOf.length === 1
+      ? [wide ? posts.left.y + posts.left.h - GAP_H / 2 - 20 : mid]
+      : [mid - rowH / 2 - ROW_SPACE / 2, mid + rowH / 2 + ROW_SPACE / 2];
   if (rows[rows.length - 1] + rowH / 2 > lineBottom) return null;
   const cards: Rect[] = [];
   const gaps: Rect[] = [];
@@ -351,4 +395,5 @@ export function lineLayout(round: Round, line: readonly number[], looseCount: nu
   return { posts, cards, gaps, rows, tray, frame };
 }
 
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;

@@ -16,21 +16,53 @@ const RADIAL: readonly Badge[] = ['star', 'sun'];
 export type Place = 'garden' | 'pond' | 'beach' | 'orchard' | 'meadow' | 'square';
 export const PLACES: readonly Place[] = ['garden', 'pond', 'beach', 'orchard', 'meadow', 'square'];
 /** Places a small picture could be mistaken for: water with water, green ground with green ground. */
-export const LOOKALIKE: Record<Place, Place | null> = { pond: 'beach', beach: 'pond', garden: 'meadow', meadow: 'garden', orchard: null, square: null };
+export const LOOKALIKE: Record<Place, Place | null> = {
+  pond: 'beach',
+  beach: 'pond',
+  garden: 'meadow',
+  meadow: 'garden',
+  orchard: null,
+  square: null,
+};
 
 export type Friend = Exclude<CritterName, 'pip'>;
 export const FRIENDS: readonly Friend[] = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 
 /** What a friend remembers at level 2: a place, or only hearing about it. */
 export type Memory = Place | 'heard';
-export interface BenchFriend { name: Friend; badge: Badge; memory?: Memory }
+export interface BenchFriend {
+  name: Friend;
+  badge: Badge;
+  memory?: Memory;
+}
 
 export type Purpose = 'tell' | 'sell';
 /** The picture on a poster (and, at level 2, in the witness's photo). */
 export type Thing =
-  | 'garden' | 'kite' | 'sandcastle' | 'painting' | 'tower' | 'song' | 'pie' | 'ball' | 'ribbon' | 'party' | 'jump'
-  | 'carrot' | 'ducklings' | 'frog' | 'whale' | 'apples' | 'butterfly' | 'crowd'
-  | 'lemonade' | 'icecream' | 'hats' | 'flowers' | 'rainbow' | 'appletree';
+  | 'garden'
+  | 'kite'
+  | 'sandcastle'
+  | 'painting'
+  | 'tower'
+  | 'song'
+  | 'pie'
+  | 'ball'
+  | 'ribbon'
+  | 'party'
+  | 'jump'
+  | 'carrot'
+  | 'ducklings'
+  | 'frog'
+  | 'whale'
+  | 'apples'
+  | 'butterfly'
+  | 'crowd'
+  | 'lemonade'
+  | 'icecream'
+  | 'hats'
+  | 'flowers'
+  | 'rainbow'
+  | 'appletree';
 
 export interface Poster {
   id: string;
@@ -48,35 +80,80 @@ export interface Poster {
   topic?: string;
 }
 
-const own = (id: string, place: Place, thing: Thing): Poster => ({ id: `l1-${id}`, level: 1, place, thing, purpose: 'tell' });
+const own = (id: string, place: Place, thing: Thing): Poster => ({
+  id: `l1-${id}`,
+  level: 1,
+  place,
+  thing,
+  purpose: 'tell',
+});
 const about = (id: string, place: Place, thing: Thing): Poster => ({ ...own(id, place, thing), about: true });
 
 /** Level 1, *Who made it?*: eight of the maker's own things and three about a friend. */
 export const POOL_1: readonly Poster[] = [
-  own('garden', 'garden', 'garden'), own('kite', 'meadow', 'kite'), own('sandcastle', 'beach', 'sandcastle'),
-  own('painting', 'beach', 'painting'), own('tower', 'square', 'tower'), own('song', 'square', 'song'),
-  own('pie', 'square', 'pie'), own('ball', 'meadow', 'ball'),
-  about('race', 'meadow', 'ribbon'), about('birthday', 'square', 'party'), about('jump', 'meadow', 'jump'),
+  own('garden', 'garden', 'garden'),
+  own('kite', 'meadow', 'kite'),
+  own('sandcastle', 'beach', 'sandcastle'),
+  own('painting', 'beach', 'painting'),
+  own('tower', 'square', 'tower'),
+  own('song', 'square', 'song'),
+  own('pie', 'square', 'pie'),
+  own('ball', 'meadow', 'ball'),
+  about('race', 'meadow', 'ribbon'),
+  about('birthday', 'square', 'party'),
+  about('jump', 'meadow', 'jump'),
 ];
 
-const topic = (t: string, place: Place, thing: Thing): Poster => ({ id: `l2-${t}`, level: 2, place, thing, purpose: 'tell', topic: t });
+const topic = (t: string, place: Place, thing: Thing): Poster => ({
+  id: `l2-${t}`,
+  level: 2,
+  place,
+  thing,
+  purpose: 'tell',
+  topic: t,
+});
 /** Level 2, *Who saw it?*: seven topics, each told true or stretched. */
 export const POOL_2: readonly Poster[] = [
-  topic('carrot', 'garden', 'carrot'), topic('ducklings', 'pond', 'ducklings'), topic('frog', 'pond', 'frog'),
-  topic('whale', 'beach', 'whale'), topic('apples', 'orchard', 'appletree'), topic('butterfly', 'meadow', 'butterfly'),
+  topic('carrot', 'garden', 'carrot'),
+  topic('ducklings', 'pond', 'ducklings'),
+  topic('frog', 'pond', 'frog'),
+  topic('whale', 'beach', 'whale'),
+  topic('apples', 'orchard', 'appletree'),
+  topic('butterfly', 'meadow', 'butterfly'),
   topic('show', 'square', 'crowd'),
 ];
 
-const sell = (id: string, place: Place, thing: Thing, price: 1 | 2 | 3, item: string): Poster => ({ id: `sell-${id}`, level: 3, place, thing, purpose: 'sell', price, item });
-const tell = (id: string, place: Place, thing: Thing, item: string): Poster => ({ id: `tell-${id}`, level: 3, place, thing, purpose: 'tell', item });
+const sell = (id: string, place: Place, thing: Thing, price: 1 | 2 | 3, item: string): Poster => ({
+  id: `sell-${id}`,
+  level: 3,
+  place,
+  thing,
+  purpose: 'sell',
+  price,
+  item,
+});
+const tell = (id: string, place: Place, thing: Thing, item: string): Poster => ({
+  id: `tell-${id}`,
+  level: 3,
+  place,
+  thing,
+  purpose: 'tell',
+  item,
+});
 /** Level 3, *To tell or to sell?*: six sell posters (a stall and a price) and six tell posters (neither). */
 export const POOL_3: readonly Poster[] = [
-  sell('lemonade', 'square', 'lemonade', 2, 'lemonade'), sell('icecream', 'beach', 'icecream', 3, 'icecream'),
-  sell('apples', 'orchard', 'apples', 1, 'apples'), sell('hats', 'square', 'hats', 2, 'hats'),
-  sell('pies', 'square', 'pie', 3, 'pie'), sell('flowers', 'garden', 'flowers', 1, 'flowers'),
-  tell('ducklings', 'pond', 'ducklings', 'ducklings'), tell('rainbow', 'meadow', 'rainbow', 'rainbow'),
-  tell('tree', 'orchard', 'appletree', 'apples'), tell('garden', 'garden', 'garden', 'flowers'),
-  tell('pie', 'square', 'pie', 'pie'), tell('ball', 'meadow', 'ball', 'ball'),
+  sell('lemonade', 'square', 'lemonade', 2, 'lemonade'),
+  sell('icecream', 'beach', 'icecream', 3, 'icecream'),
+  sell('apples', 'orchard', 'apples', 1, 'apples'),
+  sell('hats', 'square', 'hats', 2, 'hats'),
+  sell('pies', 'square', 'pie', 3, 'pie'),
+  sell('flowers', 'garden', 'flowers', 1, 'flowers'),
+  tell('ducklings', 'pond', 'ducklings', 'ducklings'),
+  tell('rainbow', 'meadow', 'rainbow', 'rainbow'),
+  tell('tree', 'orchard', 'appletree', 'apples'),
+  tell('garden', 'garden', 'garden', 'flowers'),
+  tell('pie', 'square', 'pie', 'pie'),
+  tell('ball', 'meadow', 'ball', 'ball'),
 ];
 
 const SOLD = new Set(POOL_3.filter((p) => p.purpose === 'sell').map((p) => p.item));
@@ -92,11 +169,26 @@ export const posterById = (id: string): Poster => {
 // Plans --------------------------------------------------------------------------------------------------------------
 
 export type Mode = 'maker' | 'witness' | 'purpose';
-export interface Plan { level: number; name: string; mode: Mode; posters: number }
+export interface Plan {
+  level: number;
+  name: string;
+  mode: Mode;
+  posters: number;
+}
 export const PLANS: readonly Plan[] = [
   { level: 1, name: "Who made it? Match the poster's stamp to a friend's badge", mode: 'maker', posters: 3 },
-  { level: 2, name: 'Who saw it? Tap the friend who was there; their photo settles the poster', mode: 'witness', posters: 3 },
-  { level: 3, name: 'To tell or to sell? Sort each poster into the news or the come-and-buy basket', mode: 'purpose', posters: 4 },
+  {
+    level: 2,
+    name: 'Who saw it? Tap the friend who was there; their photo settles the poster',
+    mode: 'witness',
+    posters: 3,
+  },
+  {
+    level: 3,
+    name: 'To tell or to sell? Sort each poster into the news or the come-and-buy basket',
+    mode: 'purpose',
+    posters: 4,
+  },
 ];
 export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 1, max: 3 } };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -118,7 +210,10 @@ export interface Item {
   /** Level 2: the bench index of the friend who was there. */
   witness?: number;
 }
-export interface Round { level: number; items: Item[] }
+export interface Round {
+  level: number;
+  items: Item[];
+}
 
 export type Target = { kind: 'friend'; i: number } | { kind: 'basket'; purpose: Purpose };
 
@@ -159,7 +254,10 @@ function witnessItem(poster: Poster, truth: 'true' | 'stretched', slot: number, 
   return { poster, bench, maker: names[0], stamp: badges[0], truth, witness: slot };
 }
 
-const TRUTHS = [['true', 'stretched'], ['stretched', 'true']] as const;
+const TRUTHS = [
+  ['true', 'stretched'],
+  ['stretched', 'true'],
+] as const;
 
 /** Each level's authored first round: about-a-friend second at level 1, a stretched poster first at level 2, the apple-tree decoy at level 3. */
 export const AUTHORED: Record<number, readonly string[]> = {
@@ -184,11 +282,16 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
   if (plan.mode === 'witness') {
     const posters = authored ? AUTHORED[2].map(posterById) : rng.shuffle([...POOL_2]).slice(0, 3);
     // At least one true and one stretched; the witness's slots are a permutation, so it moves every poster.
-    const truths = authored ? AUTHORED_TRUTH : [...rng.pick(TRUTHS), rng.pick(['true', 'stretched'] as const)];
+    const truths = authored
+      ? AUTHORED_TRUTH
+      : [...rng.pick(TRUTHS), rng.pick(['true', 'stretched'] as const)];
     const order = authored ? [0, 1, 2] : rng.shuffle([0, 1, 2]);
     const shuffledTruths = authored ? truths : rng.shuffle([...truths]);
     const slots = rng.shuffle([0, 1, 2]);
-    return { level: 2, items: order.map((k, i) => witnessItem(posters[k], shuffledTruths[i], slots[i], rng)) };
+    return {
+      level: 2,
+      items: order.map((k, i) => witnessItem(posters[k], shuffledTruths[i], slots[i], rng)),
+    };
   }
   let posters: Poster[];
   if (authored) posters = AUTHORED[3].map(posterById);
@@ -196,7 +299,9 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
     // One to three of each purpose, and at least one tell poster about something also sold.
     const sells = rng.int(1, 3);
     const decoy = rng.pick(POOL_3.filter(isItemDecoy));
-    const tells = rng.shuffle(POOL_3.filter((p) => p.purpose === 'tell' && p !== decoy)).slice(0, 4 - sells - 1);
+    const tells = rng
+      .shuffle(POOL_3.filter((p) => p.purpose === 'tell' && p !== decoy))
+      .slice(0, 4 - sells - 1);
     const sold = rng.shuffle(POOL_3.filter((p) => p.purpose === 'sell')).slice(0, sells);
     posters = rng.shuffle([decoy, ...tells, ...sold]);
   }
@@ -226,10 +331,16 @@ export class Play {
 
   constructor(readonly round: Round) {}
 
-  get done() { return this.index >= this.round.items.length; }
-  get item(): Item { return this.round.items[Math.min(this.index, this.round.items.length - 1)]; }
+  get done() {
+    return this.index >= this.round.items.length;
+  }
+  get item(): Item {
+    return this.round.items[Math.min(this.index, this.round.items.length - 1)];
+  }
 
-  target(): Target | null { return this.done ? null : glowFor(this.item); }
+  target(): Target | null {
+    return this.done ? null : glowFor(this.item);
+  }
 
   tapFriend(i: number): Outcome {
     if (this.done || this.round.level === 3) return { kind: 'free' };
@@ -251,7 +362,10 @@ export class Play {
 
   private light() {
     this.glowing = true;
-    if (!this.helped) { this.helped = true; this.hints++; }
+    if (!this.helped) {
+      this.helped = true;
+      this.hints++;
+    }
   }
 
   private right(): Outcome {
@@ -274,17 +388,30 @@ export class Play {
 
 // Layout -------------------------------------------------------------------------------------------------------------
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export const FRIEND_W = 190, FRIEND_GAP = 32;
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export const FRIEND_W = 190,
+  FRIEND_GAP = 32;
 /** The bench friend's target with its memory bubble (levels 1–2), and without (level 3). */
-export const FRIEND_H = 240, FRIEND_H_3 = 200;
-export const BUBBLE_W = 130, BUBBLE_H = 100;
-export const PHOTO_W = 200, PHOTO_H = 170, PHOTO_GAP = 24;
-export const BASKET_W = 220, BASKET_H = 170, BASKET_GAP = 80;
+export const FRIEND_H = 240,
+  FRIEND_H_3 = 200;
+export const BUBBLE_W = 130,
+  BUBBLE_H = 100;
+export const PHOTO_W = 200,
+  PHOTO_H = 170,
+  PHOTO_GAP = 24;
+export const BASKET_W = 220,
+  BASKET_H = 170,
+  BASKET_GAP = 80;
 export const BOARD_PAD = 20;
 export const STAMP_D = 56;
 /** The pet's bottom-left corner and the Home button's top-left corner, kept clear. */
-export const PET_CORNER = 150, HOME_CORNER = 120;
+export const PET_CORNER = 150,
+  HOME_CORNER = 120;
 
 export const posterSize = (portrait: boolean) => (portrait ? { w: 300, h: 240 } : { w: 360, h: 280 });
 
@@ -307,7 +434,10 @@ export function noticeBoardLayout(view: { w: number; h: number }, level: number)
   const boardH = ph + 2 * BOARD_PAD;
   const stack = boardH + friendH + (level === 3 ? BASKET_H : 0);
   const gaps = level === 3 ? 2 : 1;
-  const gap = Math.max(16, Math.min(portrait ? (level === 3 ? 80 : 140) : 60, (view.h - 40 - stack) / (gaps + 1)));
+  const gap = Math.max(
+    16,
+    Math.min(portrait ? (level === 3 ? 80 : 140) : 60, (view.h - 40 - stack) / (gaps + 1)),
+  );
   const top = 20;
 
   // In portrait the poster moves left so the photo fits beside it; in landscape the photo hangs off the board's right.
@@ -315,17 +445,25 @@ export function noticeBoardLayout(view: { w: number; h: number }, level: number)
   if (withPhoto && portrait) px = Math.max(HOME_CORNER + BOARD_PAD, cx - (pw + PHOTO_GAP + PHOTO_W) / 2);
   const poster: Rect = { x: px, y: top + BOARD_PAD, w: pw, h: ph };
   const board: Rect = { x: px - BOARD_PAD, y: top, w: pw + 2 * BOARD_PAD, h: boardH };
-  const photo = withPhoto ? { x: px + pw + PHOTO_GAP, y: poster.y + (ph - PHOTO_H) / 2, w: PHOTO_W, h: PHOTO_H } : null;
+  const photo = withPhoto
+    ? { x: px + pw + PHOTO_GAP, y: poster.y + (ph - PHOTO_H) / 2, w: PHOTO_W, h: PHOTO_H }
+    : null;
 
   const benchY = top + boardH + gap;
   const rowW = 3 * FRIEND_W + 2 * FRIEND_GAP;
-  const friends = [0, 1, 2].map((k) => ({ x: cx - rowW / 2 + k * (FRIEND_W + FRIEND_GAP), y: benchY, w: FRIEND_W, h: friendH }));
+  const friends = [0, 1, 2].map((k) => ({
+    x: cx - rowW / 2 + k * (FRIEND_W + FRIEND_GAP),
+    y: benchY,
+    w: FRIEND_W,
+    h: friendH,
+  }));
 
   const baskets: Rect[] = [];
   if (level === 3) {
     const by = benchY + friendH + gap;
     const bw = 2 * BASKET_W + BASKET_GAP;
-    for (let k = 0; k < 2; k++) baskets.push({ x: cx - bw / 2 + k * (BASKET_W + BASKET_GAP), y: by, w: BASKET_W, h: BASKET_H });
+    for (let k = 0; k < 2; k++)
+      baskets.push({ x: cx - bw / 2 + k * (BASKET_W + BASKET_GAP), y: by, w: BASKET_W, h: BASKET_H });
   }
   return { board, poster, photo, friends, baskets };
 }

@@ -27,19 +27,32 @@ import { magnifierIcon } from './icons';
 /** The picture for a journal entry, drawn from the game that shows it, centered on (0, 0)-ish; fit it with `fit`. */
 export function entryPicture(entry: JournalEntry): Container {
   switch (entry.game) {
-    case 'sink-float': return thingArt(entry.key as Thing);
-    case 'animal-snack': return snackPicture(entry.key as CritterName);
-    case 'photo-safari': return safariJournalPicture(entry.key as Action);
-    case 'seesaw-balance': return seesawJournalPicture(entry.key as BalanceObservation);
-    case 'bouncy-launch': return launchJournalPicture();
-    case 'habitat-helpers': return habitatJournalPicture(entry.key as 'bunny' | 'duck');
-    case 'letter-trails': return letterPicture(entry.key);
-    case 'rhythm-neighbors': return neighborsJournalPicture();
-    case 'mail-carrier': return mailJournalPicture(entry.key as HelperId);
-    case 'melt-freeze': return meltJournalPicture(entry.key as Substance | 'stays');
-    case 'pet-kitchen': return kitchenJournalPicture(entry.key as KitchenDiscovery);
-    case 'paint-mixer': return paintJournalPicture(entry.key as ShelfColour);
-    case 'far-lights': return farJournalPicture();
+    case 'sink-float':
+      return thingArt(entry.key as Thing);
+    case 'animal-snack':
+      return snackPicture(entry.key as CritterName);
+    case 'photo-safari':
+      return safariJournalPicture(entry.key as Action);
+    case 'seesaw-balance':
+      return seesawJournalPicture(entry.key as BalanceObservation);
+    case 'bouncy-launch':
+      return launchJournalPicture();
+    case 'habitat-helpers':
+      return habitatJournalPicture(entry.key as 'bunny' | 'duck');
+    case 'letter-trails':
+      return letterPicture(entry.key);
+    case 'rhythm-neighbors':
+      return neighborsJournalPicture();
+    case 'mail-carrier':
+      return mailJournalPicture(entry.key as HelperId);
+    case 'melt-freeze':
+      return meltJournalPicture(entry.key as Substance | 'stays');
+    case 'pet-kitchen':
+      return kitchenJournalPicture(entry.key as KitchenDiscovery);
+    case 'paint-mixer':
+      return paintJournalPicture(entry.key as ShelfColour);
+    case 'far-lights':
+      return farJournalPicture();
   }
 }
 
@@ -59,7 +72,12 @@ export function discoveryPill(entries: JournalEntry[]): Container {
   const shown = entries.slice(0, 3);
   const w = 96 + shown.length * 92;
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-w / 2, -58, w, 116, 30).fill({ color: 0xffffff, alpha: 0.95 }).stroke({ width: 5, color: swatch.yellow.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -58, w, 116, 30)
+      .fill({ color: 0xffffff, alpha: 0.95 })
+      .stroke({ width: 5, color: swatch.yellow.line }),
+  );
   const glass = magnifierIcon();
   glass.scale.set(0.9);
   glass.position.set(-w / 2 + 46, 0);

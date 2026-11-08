@@ -5,7 +5,9 @@ export const VOICE = {
   'wr.instruct.2': ['Pull a frame and see which ring stands.'],
   'wr.instruct.3': ['Put the block where the arch has nothing to push on, then pull the frame.'],
   'wr.rule': ['A ring that is closed and pushed back at both ends stands.'],
-  'wr.history': ['Long ago, by the middle sea, people built rings of stone like this one. Some of them are still standing.'],
+  'wr.history': [
+    'Long ago, by the middle sea, people built rings of stone like this one. Some of them are still standing.',
+  ],
   'wr.count.1': ['One.'],
   'wr.count.2': ['Two.'],
   'wr.count.3': ['Three.'],
@@ -42,7 +44,9 @@ export const VOICE = {
   'wr.instruct.5': ['Put the arches across and hold the ends, then open the spring.'],
   'wr.rule.fall': ['Water runs only where every stretch goes down.'],
   'wr.rule.arcade': ['Each arch is pushed back on both sides, by its neighbour or by the end.'],
-  'wr.history.water': ['Long ago, by the middle sea, people carried water to their towns in channels that went down a little all the way, and across valleys on rows of arches.'],
+  'wr.history.water': [
+    'Long ago, by the middle sea, people carried water to their towns in channels that went down a little all the way, and across valleys on rows of arches.',
+  ],
   'wr.open': ['Open the spring and watch the water.'],
   'wr.pick': ['Pick a channel first, then open the spring.'],
   'wr.downhill': ['Downhill all the way!'],

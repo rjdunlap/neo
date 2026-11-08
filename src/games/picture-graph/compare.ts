@@ -7,7 +7,20 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { makePairRound, MEADOWS, pairLayout, pairMove, pairWhy, PAIR_ROWS, planFor, sameHint, sameTap, type GraphPlan, type PairRound, type SmallGraph } from './logic';
+import {
+  makePairRound,
+  MEADOWS,
+  pairLayout,
+  pairMove,
+  pairWhy,
+  PAIR_ROWS,
+  planFor,
+  sameHint,
+  sameTap,
+  type GraphPlan,
+  type PairRound,
+  type SmallGraph,
+} from './logic';
 
 const COLORS: ColorName[] = ['orange', 'teal', 'pink', 'purple'];
 /** How far a graph lifts when it is the first pick. */
@@ -21,7 +34,9 @@ function marks(g: Graphics, x: number, y: number, n: number, color: number) {
   for (let f = 0; f < fives; f++) {
     for (let k = 0; k < 4; k++) g.moveTo(at + 6 + k * 10, y - half).lineTo(at + 6 + k * 10, y + half);
     g.stroke({ width: 5, color, cap: 'round' });
-    g.moveTo(at, y + half - 4).lineTo(at + 42, y - half + 4).stroke({ width: 6, color, cap: 'round' });
+    g.moveTo(at, y + half - 4)
+      .lineTo(at + 42, y - half + 4)
+      .stroke({ width: 6, color, cap: 'round' });
     at += 56;
   }
   for (let k = 0; k < n % 5; k++) g.moveTo(at + 6 + k * 14, y - half).lineTo(at + 6 + k * 14, y + half);
@@ -61,7 +76,17 @@ export class TwoPictures implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.3, clouds: 2, sun: true, seed: ctx.rng.pick(MEADOWS) }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.3,
+        clouds: 2,
+        sun: true,
+        seed: ctx.rng.pick(MEADOWS),
+      },
+      ctx.view,
+    );
     this.card.eventMode = 'none';
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.card, this.layer, this.glow);
@@ -92,28 +117,47 @@ export class TwoPictures implements Game {
     // The first pick has an outline, so she sees which one she chose.
     if (this.first !== null) {
       const x = t.graphX(this.first);
-      g.roundRect(x - t.gw / 2 - 6, t.top - LIFT - 6, t.gw + 12, t.gh + 12, 22).stroke({ width: 5, color: ink });
+      g.roundRect(x - t.gw / 2 - 6, t.top - LIFT - 6, t.gw + 12, t.gh + 12, 22).stroke({
+        width: 5,
+        color: ink,
+      });
     }
     if (!this.hint) return;
     for (const i of sameHint(this.first, this.round.answer)) {
       const x = t.graphX(i);
-      g.roundRect(x - t.gw / 2 - 10, t.top - (this.first === i ? LIFT : 0) - 10, t.gw + 20, t.gh + 20, 24).stroke({ width: pulse, color: swatch.yellow.fill });
+      g.roundRect(
+        x - t.gw / 2 - 10,
+        t.top - (this.first === i ? LIFT : 0) - 10,
+        t.gw + 20,
+        t.gh + 20,
+        24,
+      ).stroke({ width: pulse, color: swatch.yellow.fill });
     }
     if (!this.counting) return;
     // The keyed graph's first bar and the card's first row, counted together.
     const k = this.round.keyed;
     const lift = this.first === k ? LIFT : 0;
     const bx = t.graphX(k) + this.barX(0);
-    for (let b = 0; b < this.round.graphs[k].bars[0]; b++) g.roundRect(bx - 24, t.base - (b + 1) * t.blockH - lift - 2, 48, t.blockH + 4, 8).stroke({ width: pulse * 0.6, color: swatch.yellow.fill });
+    for (let b = 0; b < this.round.graphs[k].bars[0]; b++)
+      g.roundRect(bx - 24, t.base - (b + 1) * t.blockH - lift - 2, 48, t.blockH + 4, 8).stroke({
+        width: pulse * 0.6,
+        color: swatch.yellow.fill,
+      });
     const y = t.card.rowY(0);
-    g.roundRect(t.card.left + 4, y - 26, t.card.right - t.card.left - 8, 52, 12).stroke({ width: pulse * 0.6, color: swatch.yellow.fill });
+    g.roundRect(t.card.left + 4, y - 26, t.card.right - t.card.left - 8, 52, 12).stroke({
+      width: pulse * 0.6,
+      color: swatch.yellow.fill,
+    });
   }
 
   /** The ghost finger: one right graph, then the other. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     const i = pairMove(this.round, this.first);
-    return { tap: { on: this.graphs[i], x: 0, y: this.layout().gh / 2 }, pause: this.first === null ? 0.4 : undefined };
+    return {
+      tap: { on: this.graphs[i], x: 0, y: this.layout().gh / 2 },
+      pause: this.first === null ? 0.4 : undefined,
+    };
   }
 
   destroy() {}
@@ -155,7 +199,9 @@ export class TwoPictures implements Game {
     for (const c of this.card.removeChildren()) c.destroy({ children: true });
     const t = this.layout().card;
     const g = new Graphics();
-    g.roundRect(t.left, t.top, t.right - t.left, t.bottom - t.top, 16).fill({ color: 0xffffff, alpha: 0.92 }).stroke({ width: 4, color: wood.line });
+    g.roundRect(t.left, t.top, t.right - t.left, t.bottom - t.top, 16)
+      .fill({ color: 0xffffff, alpha: 0.92 })
+      .stroke({ width: 4, color: wood.line });
     this.card.addChild(g);
     this.round.card.kinds.forEach((kind, r) => {
       const y = t.rowY(r);
@@ -185,7 +231,9 @@ export class TwoPictures implements Game {
     const base = t.base - t.top;
     const left = -t.gw / 2;
     const g = new Graphics();
-    g.roundRect(left, 0, t.gw, t.gh, 18).fill({ color: 0xffffff, alpha: 0.88 }).stroke({ width: 4, color: wood.line });
+    g.roundRect(left, 0, t.gw, t.gh, 18)
+      .fill({ color: 0xffffff, alpha: 0.88 })
+      .stroke({ width: 4, color: wood.line });
     // The key: a block = one dot, or two.
     g.roundRect(-58, 14, 46, 26, 6).fill(0xdde3ea).stroke({ width: 3, color: 0x8a97a6 });
     for (let k = 0; k < sg.per; k++) g.circle(28 + k * 28, 27, 10).fill(ink);
@@ -193,8 +241,13 @@ export class TwoPictures implements Game {
     const eq = label('=', 28, ink);
     eq.position.set(2, 27);
     c.addChild(eq);
-    for (let n = 1; n <= PAIR_ROWS; n++) g.moveTo(left + 36, base - n * t.blockH).lineTo(-left - 10, base - n * t.blockH).stroke({ width: 2, color: ink, alpha: 0.12 });
-    g.moveTo(left + 36, base).lineTo(-left - 10, base).stroke({ width: 4, color: ink, alpha: 0.6 });
+    for (let n = 1; n <= PAIR_ROWS; n++)
+      g.moveTo(left + 36, base - n * t.blockH)
+        .lineTo(-left - 10, base - n * t.blockH)
+        .stroke({ width: 2, color: ink, alpha: 0.12 });
+    g.moveTo(left + 36, base)
+      .lineTo(-left - 10, base)
+      .stroke({ width: 4, color: ink, alpha: 0.6 });
     // Down the side, how many critters the bars stand for up to there: 2, 4, 6, 8 on a plain graph; 2, 4, 6... every row with the key.
     for (let n = sg.per > 1 ? 1 : 2; n <= PAIR_ROWS; n += sg.per > 1 ? 1 : 2) {
       const num = label(String(n * sg.per), 18, ink);
@@ -205,7 +258,10 @@ export class TwoPictures implements Game {
     sg.bars.forEach((n, k) => {
       const x = this.barX(k);
       const sw = swatch[COLORS[k % COLORS.length]];
-      for (let b = 0; b < n; b++) g.roundRect(x - bw / 2, base - (b + 1) * t.blockH + 2, bw, t.blockH - 4, 6).fill(sw.fill).stroke({ width: 3, color: sw.line });
+      for (let b = 0; b < n; b++)
+        g.roundRect(x - bw / 2, base - (b + 1) * t.blockH + 2, bw, t.blockH - 4, 6)
+          .fill(sw.fill)
+          .stroke({ width: 3, color: sw.line });
       const face = new Critter(CRITTERS[this.round.card.kinds[k]]);
       face.alive = false;
       face.scale.set(0.13);

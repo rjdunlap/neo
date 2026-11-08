@@ -42,7 +42,8 @@ describe('keys', () => {
     const ids = new Set(Array.from({ length: 50 }, newProfileId));
     expect(ids.size).toBe(50);
     for (const id of ids) expect(isProfileId(id)).toBe(true);
-    for (const bad of ['', 'ab', 'A'.repeat(8), 'has space', '../x', 'x'.repeat(33), 12345678, null]) expect(isProfileId(bad)).toBe(false);
+    for (const bad of ['', 'ab', 'A'.repeat(8), 'has space', '../x', 'x'.repeat(33), 12345678, null])
+      expect(isProfileId(bad)).toBe(false);
   });
 });
 
@@ -54,7 +55,19 @@ describe('birth month and year', () => {
   });
 
   it('drops a stored birth that is not a month and a year', () => {
-    for (const bad of [null, 'Oct 2025', [10, 2025], {}, { month: 0, year: 2025 }, { month: 13, year: 2025 }, { month: 10.5, year: 2025 }, { month: '10', year: 2025 }, { month: 10, year: 1899 }, { month: 10, year: 2101 }, { month: 10, year: NaN }]) {
+    for (const bad of [
+      null,
+      'Oct 2025',
+      [10, 2025],
+      {},
+      { month: 0, year: 2025 },
+      { month: 13, year: 2025 },
+      { month: 10.5, year: 2025 },
+      { month: '10', year: 2025 },
+      { month: 10, year: 1899 },
+      { month: 10, year: 2101 },
+      { month: 10, year: NaN },
+    ]) {
       expect(cleanBirth(bad)).toBeNull();
     }
   });
@@ -126,7 +139,17 @@ describe('age to band', () => {
 
 describe('repairIndex', () => {
   it('turns nothing into the one legacy profile, so today’s app plays as it did', () => {
-    for (const raw of [undefined, null, 'x', 7, [], {}, { profiles: 'no' }, { profiles: [] }, { profiles: [null, 3, {}] }]) {
+    for (const raw of [
+      undefined,
+      null,
+      'x',
+      7,
+      [],
+      {},
+      { profiles: 'no' },
+      { profiles: [] },
+      { profiles: [null, 3, {}] },
+    ]) {
       const i = repairIndex(raw, counter(), 5);
       expect(i.profiles).toEqual([{ id: 'id0001', legacy: true, birth: null, startBand: null, addedAt: 5 }]);
       expect(i.active).toBe('id0001');
@@ -161,18 +184,38 @@ describe('repairIndex', () => {
       counter(),
       0,
     );
-    expect(i.profiles.map((p) => [p.id, p.legacy])).toEqual([['aaaa1111', true], ['bbbb2222', false]]);
+    expect(i.profiles.map((p) => [p.id, p.legacy])).toEqual([
+      ['aaaa1111', true],
+      ['bbbb2222', false],
+    ]);
     // The active id named nobody who is left, so the first profile is active.
     expect(i.active).toBe('aaaa1111');
   });
 
   it('repairs each field of an entry', () => {
-    const [p] = repairIndex({ profiles: [{ id: 'aaaa1111', legacy: 'yes', birth: { month: 99, year: 2020 }, startBand: 'dinosaur', addedAt: -4 }] }, counter(), 0).profiles;
+    const [p] = repairIndex(
+      {
+        profiles: [
+          {
+            id: 'aaaa1111',
+            legacy: 'yes',
+            birth: { month: 99, year: 2020 },
+            startBand: 'dinosaur',
+            addedAt: -4,
+          },
+        ],
+      },
+      counter(),
+      0,
+    ).profiles;
     expect(p).toEqual({ id: 'aaaa1111', legacy: false, birth: null, startBand: null, addedAt: 0 });
   });
 
   it('holds a household of at most eight', () => {
-    const profiles = Array.from({ length: 12 }, (_, i) => ({ id: `pro${String(i).padStart(4, '0')}`, legacy: i === 0 }));
+    const profiles = Array.from({ length: 12 }, (_, i) => ({
+      id: `pro${String(i).padStart(4, '0')}`,
+      legacy: i === 0,
+    }));
     const i = repairIndex({ profiles }, counter(), 0);
     expect(i.profiles).toHaveLength(MAX_PROFILES);
     expect(i.profiles[0].legacy).toBe(true);
@@ -180,13 +223,22 @@ describe('repairIndex', () => {
 });
 
 describe('adding and removing', () => {
-  const two: ProfileIndex = repairIndex({ active: 'aaaa1111', profiles: [{ id: 'aaaa1111', legacy: true }, { id: 'bbbb2222' }] }, counter(), 0);
+  const two: ProfileIndex = repairIndex(
+    { active: 'aaaa1111', profiles: [{ id: 'aaaa1111', legacy: true }, { id: 'bbbb2222' }] },
+    counter(),
+    0,
+  );
 
   it('adds a profile until the household is full, and never twice', () => {
-    expect(addEntry(two, newEntry('cccc3333', 7))?.profiles.map((p) => p.id)).toEqual(['aaaa1111', 'bbbb2222', 'cccc3333']);
+    expect(addEntry(two, newEntry('cccc3333', 7))?.profiles.map((p) => p.id)).toEqual([
+      'aaaa1111',
+      'bbbb2222',
+      'cccc3333',
+    ]);
     expect(addEntry(two, newEntry('aaaa1111', 7))).toBeNull();
     let full: ProfileIndex | null = two;
-    for (let i = 0; i < MAX_PROFILES; i++) full = full && addEntry(full, newEntry(`fill${String(i).padStart(4, '0')}`, 0));
+    for (let i = 0; i < MAX_PROFILES; i++)
+      full = full && addEntry(full, newEntry(`fill${String(i).padStart(4, '0')}`, 0));
     expect(full).toBeNull();
   });
 
@@ -205,7 +257,9 @@ describe('adding and removing', () => {
   it('never leaves the index empty', () => {
     const one = removeEntry(two, 'bbbb2222', counter(), 0);
     const after = removeEntry(one, 'aaaa1111', counter(), 42);
-    expect(after.profiles).toEqual([{ id: 'id0001', legacy: false, birth: null, startBand: null, addedAt: 42 }]);
+    expect(after.profiles).toEqual([
+      { id: 'id0001', legacy: false, birth: null, startBand: null, addedAt: 42 },
+    ]);
     expect(after.active).toBe('id0001');
   });
 
@@ -221,7 +275,11 @@ describe('adding and removing', () => {
 });
 
 describe('backup', () => {
-  const index = repairIndex({ active: 'aaaa1111', profiles: [{ id: 'aaaa1111', legacy: true }, { id: 'bbbb2222' }] }, counter(), 0);
+  const index = repairIndex(
+    { active: 'aaaa1111', profiles: [{ id: 'aaaa1111', legacy: true }, { id: 'bbbb2222' }] },
+    counter(),
+    0,
+  );
   const mia = defaults();
   mia.profile.name = 'Mia';
   mia.stickers.push({ game: 'bubble-pop', seed: 3, at: 1 });
@@ -248,8 +306,28 @@ describe('backup', () => {
   });
 
   it('refuses what is not ours instead of restoring a blank', () => {
-    const couch = { version: 3, party: {}, trips: [], stickers: [], seen: [], names: ['A', 'B'], settings: { place: 'auto' } };
-    for (const bad of ['', 'nope', '[]', '{}', '7', 'null', '{"stickers":[]}', JSON.stringify(couch), JSON.stringify({ kind: BACKUP_KIND }), JSON.stringify({ kind: BACKUP_KIND, profiles: [] }), JSON.stringify({ kind: BACKUP_KIND, profiles: [{ id: '../x', save: {} }] })]) {
+    const couch = {
+      version: 3,
+      party: {},
+      trips: [],
+      stickers: [],
+      seen: [],
+      names: ['A', 'B'],
+      settings: { place: 'auto' },
+    };
+    for (const bad of [
+      '',
+      'nope',
+      '[]',
+      '{}',
+      '7',
+      'null',
+      '{"stickers":[]}',
+      JSON.stringify(couch),
+      JSON.stringify({ kind: BACKUP_KIND }),
+      JSON.stringify({ kind: BACKUP_KIND, profiles: [] }),
+      JSON.stringify({ kind: BACKUP_KIND, profiles: [{ id: '../x', save: {} }] }),
+    ]) {
       expect(parseBackup(bad), bad).toBeNull();
     }
   });
@@ -258,7 +336,16 @@ describe('backup', () => {
     const parsed = parseBackup(
       JSON.stringify({
         kind: BACKUP_KIND,
-        profiles: [{ id: 'aaaa1111', birth: { month: 40, year: 1 }, startBand: 'nope', save: { profile: { name: 'Mia', band: 'dinosaur' } } }, { id: 'aaaa1111', save: {} }, { id: 'bbbb2222', save: 'x' }],
+        profiles: [
+          {
+            id: 'aaaa1111',
+            birth: { month: 40, year: 1 },
+            startBand: 'nope',
+            save: { profile: { name: 'Mia', band: 'dinosaur' } },
+          },
+          { id: 'aaaa1111', save: {} },
+          { id: 'bbbb2222', save: 'x' },
+        ],
       }),
     );
     expect(parsed?.kind).toBe('many');
@@ -291,9 +378,23 @@ describe('backup', () => {
   });
 
   it('adds people only while there is room', () => {
-    const profiles = Array.from({ length: 4 }, (_, i) => ({ id: `new${String(i).padStart(4, '0')}`, birth: null, startBand: null, save: robert }));
+    const profiles = Array.from({ length: 4 }, (_, i) => ({
+      id: `new${String(i).padStart(4, '0')}`,
+      birth: null,
+      startBand: null,
+      save: robert,
+    }));
     const parsed = parseBackup(JSON.stringify(buildBackup(profiles, 'new0000', 1)))!;
-    const nearlyFull = repairIndex({ profiles: Array.from({ length: MAX_PROFILES - 2 }, (_, i) => ({ id: `old${String(i).padStart(4, '0')}`, legacy: i === 0 })) }, counter(), 0);
+    const nearlyFull = repairIndex(
+      {
+        profiles: Array.from({ length: MAX_PROFILES - 2 }, (_, i) => ({
+          id: `old${String(i).padStart(4, '0')}`,
+          legacy: i === 0,
+        })),
+      },
+      counter(),
+      0,
+    );
     const plan = planRestore(nearlyFull, parsed);
     expect(plan.add).toHaveLength(2);
     expect(plan.skipped).toBe(2);

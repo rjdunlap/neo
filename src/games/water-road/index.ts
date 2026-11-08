@@ -21,12 +21,63 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import type { CompanionRig } from '../../creatures/companion';
 import { WaterFlow } from './flow';
-import { arrowArt, blockArt, frameArt, groundArt, iconArt, SKY, slotArt, stickerArt, stoneArt, wallArt } from './art';
+import {
+  arrowArt,
+  blockArt,
+  frameArt,
+  groundArt,
+  iconArt,
+  SKY,
+  slotArt,
+  stickerArt,
+  stoneArt,
+  wallArt,
+} from './art';
 import {
   LEVELS,
-  BLOCK, botMove, buttressPlan, buttressStart, centre, explain, hintFor, inner, isAsked, keystone, keystoneArch, keystonePlan, keystoneStart, nextArch, nextPair, outer, pairsPlan,
-  pairsStart, place, placeOrder, planFor, predict, pull, pullFree, pullKeystone, SLOT, stoneAngles, stoneCentre, Tally, tapPile, waterRoadLayout, withBlock,
-  type Arch, type Block, type ButtressPlan, type ButtressState, type KeystonePlan, type KeystoneState, type PairsPlan, type PairsState, type Pt, type Side, type WrLayout,
+  BLOCK,
+  botMove,
+  buttressPlan,
+  buttressStart,
+  centre,
+  explain,
+  hintFor,
+  inner,
+  isAsked,
+  keystone,
+  keystoneArch,
+  keystonePlan,
+  keystoneStart,
+  nextArch,
+  nextPair,
+  outer,
+  pairsPlan,
+  pairsStart,
+  place,
+  placeOrder,
+  planFor,
+  predict,
+  pull,
+  pullFree,
+  pullKeystone,
+  SLOT,
+  stoneAngles,
+  stoneCentre,
+  Tally,
+  tapPile,
+  waterRoadLayout,
+  withBlock,
+  type Arch,
+  type Block,
+  type ButtressPlan,
+  type ButtressState,
+  type KeystonePlan,
+  type KeystoneState,
+  type PairsPlan,
+  type PairsState,
+  type Pt,
+  type Side,
+  type WrLayout,
 } from './logic';
 
 /** The handle glows brighter when nothing has been tapped for this long after the ring closes (level 1, uncounted). */
@@ -88,13 +139,28 @@ class WaterRoad implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.level = planFor(ctx.level).level as 1 | 2 | 3;
-    this.plan = this.level === 1 ? keystonePlan(ctx.band, ctx.rng) : this.level === 2 ? pairsPlan(ctx.band, ctx.rng) : buttressPlan(ctx.band, ctx.rng);
+    this.plan =
+      this.level === 1
+        ? keystonePlan(ctx.band, ctx.rng)
+        : this.level === 2
+          ? pairsPlan(ctx.band, ctx.rng)
+          : buttressPlan(ctx.band, ctx.rng);
     if (this.plan.level === 1) this.ks = keystoneStart();
     else if (this.plan.level === 2) this.ps = pairsStart();
     else this.bs = buttressStart();
     this.reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.stepSeconds = ctx.demo || this.reduce ? 0.2 : 0.6;
-    this.backdrop = new Backdrop({ sky: [SKY.top, SKY.bottom], hills: [0xe9d3b0, 0xdcc097, 0xcfae84], horizon: 0.5, clouds: 2, sun: false, seed: 311 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [SKY.top, SKY.bottom],
+        hills: [0xe9d3b0, 0xdcc097, 0xcfae84],
+        horizon: 0.5,
+        clouds: 2,
+        sun: false,
+        seed: 311,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.arrows.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
@@ -114,7 +180,12 @@ class WaterRoad implements Game {
   start() {
     this.build();
     const ask = this.ctx.instruct(`wr.instruct.${this.level}` as LineId);
-    if (this.level >= 2) void ask.then(() => this.ctx.say('wr.history')).then(() => { if (this.alive && !this.finished) void this.ctx.say('wr.rule'); });
+    if (this.level >= 2)
+      void ask
+        .then(() => this.ctx.say('wr.history'))
+        .then(() => {
+          if (this.alive && !this.finished) void this.ctx.say('wr.rule');
+        });
   }
 
   destroy() {
@@ -128,7 +199,10 @@ class WaterRoad implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow) return;
-    if (this.busy || this.finished) { this.relayout = true; return; }
+    if (this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -152,7 +226,11 @@ class WaterRoad implements Game {
     this.tapLayer = null;
     this.blockHandle?.destroy();
     this.blockHandle = null;
-    if (this.walker) { this.ctx.untrack(this.walker); this.walker.removeFromParent(); this.walker = null; }
+    if (this.walker) {
+      this.ctx.untrack(this.walker);
+      this.walker.removeFromParent();
+      this.walker = null;
+    }
     this.glow.removeFromParent();
     this.arrows.removeFromParent();
     for (const c of this.arrows.removeChildren()) c.destroy({ children: true });
@@ -179,7 +257,15 @@ class WaterRoad implements Game {
   }
 
   /** A frame with its walls and the stones that are on it; `on` lists which stones sit on the ring. */
-  private placeFrame(l: WrLayout, index: number, arch: Arch, tints: number[], on: (i: number) => boolean, handle: boolean, framed = true): FrameView {
+  private placeFrame(
+    l: WrLayout,
+    index: number,
+    arch: Arch,
+    tints: number[],
+    on: (i: number) => boolean,
+    handle: boolean,
+    framed = true,
+  ): FrameView {
     const f = l.frames[index];
     const ring = l.ring;
     for (const side of ['left', 'right'] as const) {
@@ -194,7 +280,10 @@ class WaterRoad implements Game {
     if (framed) this.board.addChild(frame);
     const stones: (Container | null)[] = [];
     for (let i = 0; i < arch.stones; i++) {
-      if (arch.gap === i || !on(i)) { stones.push(null); continue; }
+      if (arch.gap === i || !on(i)) {
+        stones.push(null);
+        continue;
+      }
       const s = this.stoneNode(ring, arch.stones, i, tints[i] ?? 0);
       s.position.copyFrom(stoneCentre(f.centre, ring, arch.stones, i));
       this.board.addChild(s);
@@ -260,12 +349,20 @@ class WaterRoad implements Game {
       const view = this.placeFrame(l, side, arch, plan.tints[s.pair][side], () => !fell, false, !pulled);
       if (fell) {
         // A rebuild mid-pair: the fallen stones lie on the ground.
-        view.stones.forEach((st, i) => { if (st) { st.position.set(view.centre.x + (i - arch.stones / 2) * 44, l.ground - 20); st.rotation = (i % 2 ? 1 : -1) * 0.6; } });
+        view.stones.forEach((st, i) => {
+          if (st) {
+            st.position.set(view.centre.x + (i - arch.stones / 2) * 44, l.ground - 20);
+            st.rotation = (i % 2 ? 1 : -1) * 0.6;
+          }
+        });
       }
       onTap(view.box, () => this.tapFrame(side), { cooldown: 250 });
       if (pulled) view.box.eventMode = 'none';
     }
-    if (isAsked(plan, s) && !s.done && !this.asked) { this.asked = true; void this.ctx.say('wr.ask'); }
+    if (isAsked(plan, s) && !s.done && !this.asked) {
+      this.asked = true;
+      void this.ctx.say('wr.ask');
+    }
   }
 
   private standsIf(arch: Arch) {
@@ -301,7 +398,10 @@ class WaterRoad implements Game {
     this.board.addChild(block);
     this.blockNode = block;
     this.blockHandle = draggable(block, this.ctx.tw, {
-      onPick: () => { this.idle = 0; sfx.pop(4); },
+      onPick: () => {
+        this.idle = 0;
+        sfx.pop(4);
+      },
       onMove: (x, y) => this.redrawSlots(this.slotAt(x, y)),
       onDrop: (x, y) => this.dropBlock(x, y),
     });
@@ -322,7 +422,10 @@ class WaterRoad implements Game {
     for (const side of ['left', 'right'] as const) {
       const c = centre(l.slots[side]);
       const dd = Math.hypot(c.x - x, c.y - y);
-      if (dd < d) { d = dd; best = side; }
+      if (dd < d) {
+        d = dd;
+        best = side;
+      }
     }
     return best;
   }
@@ -346,20 +449,32 @@ class WaterRoad implements Game {
     for (const node of [view.frame, ...view.stones]) {
       if (!node || this.ctx.tw.busy(node.position)) continue;
       const y = node.y;
-      void this.ctx.tw.to(node.position, { y: y + 6 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node.position, { y }, { duration: 0.16, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(node.position, { y: y + 6 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(node.position, { y }, { duration: 0.16, ease: ease.outBack }));
     }
   }
 
   private wobble(node: Container) {
     const x = node.x;
-    void this.ctx.tw.to(node.position, { x: x + 8 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node.position, { x: x - 8 }, { duration: 0.08 })).then(() => this.ctx.tw.to(node.position, { x }, { duration: 0.08 }));
+    void this.ctx.tw
+      .to(node.position, { x: x + 8 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(node.position, { x: x - 8 }, { duration: 0.08 }))
+      .then(() => this.ctx.tw.to(node.position, { x }, { duration: 0.08 }));
   }
 
   /** The frame slides out from under the arch with a creak and fades; the arch is on its own. */
   private async pullAway(view: FrameView) {
     sfx.ratchet(2);
-    if (this.reduce) { view.frame.alpha = 0; return; }
-    await this.ctx.tw.to(view.frame.position, { y: view.frame.y + 260 }, { duration: this.stepSeconds * 1.4, ease: ease.inQuad });
+    if (this.reduce) {
+      view.frame.alpha = 0;
+      return;
+    }
+    await this.ctx.tw.to(
+      view.frame.position,
+      { y: view.frame.y + 260 },
+      { duration: this.stepSeconds * 1.4, ease: ease.inQuad },
+    );
     view.frame.alpha = 0;
   }
 
@@ -367,7 +482,11 @@ class WaterRoad implements Game {
   private hold(view: FrameView) {
     sfx.marimba(-5, 0.35);
     sfx.marimba(-3, 0.25);
-    this.ctx.particles.burst(view.centre.x, view.centre.y - this.layoutNow!.ring.r, { colors: [0xffffff, swatch.yellow.light], count: 8, speed: [20, 60] });
+    this.ctx.particles.burst(view.centre.x, view.centre.y - this.layoutNow!.ring.r, {
+      colors: [0xffffff, swatch.yellow.light],
+      count: 8,
+      speed: [20, 60],
+    });
   }
 
   /**
@@ -385,9 +504,29 @@ class WaterRoad implements Game {
       const outward = spread ? (spread === 'left' ? -1 : 1) : i < k ? -1 : i > k ? 1 : 0;
       const far = spread ? (spread === 'left' ? n - i : i + 1) : Math.abs(i - k) + 1;
       const to = { x: st.x + outward * (40 + far * 26), y: l.ground - 18 - (i % 2) * 8 };
-      if (this.reduce) { st.position.copyFrom(to); st.rotation = outward * 0.7; return; }
-      moves.push(this.ctx.tw.to(st.position, { x: to.x, y: to.y }, { duration: this.stepSeconds * 1.2, ease: ease.inQuad, delay: (spread ? far : Math.abs(i - k)) * 0.05 }));
-      moves.push(this.ctx.tw.to(st, { rotation: outward * (0.5 + far * 0.15) }, { duration: this.stepSeconds * 1.2, delay: (spread ? far : Math.abs(i - k)) * 0.05 }));
+      if (this.reduce) {
+        st.position.copyFrom(to);
+        st.rotation = outward * 0.7;
+        return;
+      }
+      moves.push(
+        this.ctx.tw.to(
+          st.position,
+          { x: to.x, y: to.y },
+          {
+            duration: this.stepSeconds * 1.2,
+            ease: ease.inQuad,
+            delay: (spread ? far : Math.abs(i - k)) * 0.05,
+          },
+        ),
+      );
+      moves.push(
+        this.ctx.tw.to(
+          st,
+          { rotation: outward * (0.5 + far * 0.15) },
+          { duration: this.stepSeconds * 1.2, delay: (spread ? far : Math.abs(i - k)) * 0.05 },
+        ),
+      );
     });
     await Promise.all(moves);
   }
@@ -406,7 +545,11 @@ class WaterRoad implements Game {
     this.walker = rig;
     this.walking = true;
     void this.ctx.say('wr.through');
-    await this.ctx.tw.to(rig.position, { x: view.centre.x + outer(l.ring) + 110 }, { duration: this.reduce ? 0.3 : this.stepSeconds * 3.2, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      rig.position,
+      { x: view.centre.x + outer(l.ring) + 110 },
+      { duration: this.reduce ? 0.3 : this.stepSeconds * 3.2, ease: ease.inOutSine },
+    );
     this.walking = false;
     if (!this.live(epoch)) return;
     rig.scale.x = Math.abs(rig.scale.x);
@@ -440,13 +583,23 @@ class WaterRoad implements Game {
     void this.ctx.say(countLine(placed));
     const to = stoneCentre(view.centre, l.ring, view.arch.stones, index);
     this.flying++;
-    if (this.reduce) { st.position.copyFrom(to); st.rotation = 0; }
-    else {
+    if (this.reduce) {
+      st.position.copyFrom(to);
+      st.rotation = 0;
+    } else {
       const up = { x: (st.x + to.x) / 2, y: Math.min(st.y, to.y) - 90 };
-      await this.ctx.tw.to(st.position, { x: up.x, y: up.y }, { duration: this.stepSeconds * 0.5, ease: ease.outQuad });
+      await this.ctx.tw.to(
+        st.position,
+        { x: up.x, y: up.y },
+        { duration: this.stepSeconds * 0.5, ease: ease.outQuad },
+      );
       if (!this.live(epoch)) return;
       await Promise.all([
-        this.ctx.tw.to(st.position, { x: to.x, y: to.y }, { duration: this.stepSeconds * 0.5, ease: ease.inQuad }),
+        this.ctx.tw.to(
+          st.position,
+          { x: to.x, y: to.y },
+          { duration: this.stepSeconds * 0.5, ease: ease.inQuad },
+        ),
         this.ctx.tw.to(st, { rotation: 0 }, { duration: this.stepSeconds, ease: ease.outQuad }),
       ]);
       if (!this.live(epoch)) return;
@@ -457,7 +610,9 @@ class WaterRoad implements Game {
       sfx.bell(9, 0.3);
       sfx.bell(12, 0.25);
       this.ctx.particles.burst(to.x, to.y, { colors: [swatch.yellow.fill, 0xffffff], count: 10 });
-      void this.ctx.say('wr.keystone').then(() => { if (this.live(epoch)) void this.ctx.say('wr.pull-now'); });
+      void this.ctx.say('wr.keystone').then(() => {
+        if (this.live(epoch)) void this.ctx.say('wr.pull-now');
+      });
     }
   }
 
@@ -469,7 +624,10 @@ class WaterRoad implements Game {
     if (this.busy) return;
     const { state, event } = pullKeystone(this.plan, s);
     this.ks = state;
-    if (event === 'wobble') { this.wobble(view.frame); return; }
+    if (event === 'wobble') {
+      this.wobble(view.frame);
+      return;
+    }
     if (event === 'pulled') void this.finishKeystone();
   }
 
@@ -524,8 +682,10 @@ class WaterRoad implements Game {
     view.box.eventMode = 'none';
     await this.pullAway(view);
     if (!this.live(epoch)) return;
-    if (holds) { this.hold(view); void this.ctx.say('wr.held'); }
-    else {
+    if (holds) {
+      this.hold(view);
+      void this.ctx.say('wr.held');
+    } else {
       void this.ctx.say(`wr.fell.${explain(view.arch)}` as LineId);
       await this.tumble(view, null);
       if (!this.live(epoch)) return;
@@ -585,7 +745,8 @@ class WaterRoad implements Game {
     if (!s || !block || !handle || !l || this.busy || this.finished) return false;
     const slot = this.slotAt(x, y);
     const tray = l.tray!;
-    const inTray = x >= tray.x - 40 && x <= tray.x + tray.w + 40 && y >= tray.y - 40 && y <= tray.y + tray.h + 40;
+    const inTray =
+      x >= tray.x - 40 && x <= tray.x + tray.w + 40 && y >= tray.y - 40 && y <= tray.y + tray.h + 40;
     const to: Block | null = slot ?? (inTray ? 'tray' : null);
     this.redrawSlots();
     if (!to) return false;
@@ -620,7 +781,10 @@ class WaterRoad implements Game {
     const sides: Side[] = this.arrowSide === 'both' ? ['left', 'right'] : [this.arrowSide];
     for (const side of sides) {
       const a = arrowArt(side);
-      a.position.set(view.centre.x + (side === 'left' ? -1 : 1) * (l.ring.r - 10), view.centre.y - l.ring.post * 0.2);
+      a.position.set(
+        view.centre.x + (side === 'left' ? -1 : 1) * (l.ring.r - 10),
+        view.centre.y - l.ring.post * 0.2,
+      );
       this.arrows.addChild(a);
     }
   }
@@ -679,7 +843,10 @@ class WaterRoad implements Game {
     if (!this.live(epoch)) return;
     this.tallies.miss();
     const home = this.blockHome('tray');
-    if (this.blockHandle && this.blockNode) { this.blockHandle.home = home; void this.blockHandle.floatHome(); }
+    if (this.blockHandle && this.blockNode) {
+      this.blockHandle.home = home;
+      void this.blockHandle.floatHome();
+    }
     await this.ctx.tw.wait(this.stepSeconds * 1.5);
     if (!this.live(epoch)) return;
     // The stones climb back onto a fresh frame.
@@ -689,8 +856,18 @@ class WaterRoad implements Game {
     view.stones.forEach((st, i) => {
       if (!st) return;
       const to = stoneCentre(view.centre, l.ring, view.arch.stones, i);
-      if (this.reduce) { st.position.copyFrom(to); st.rotation = 0; return; }
-      climbs.push(this.ctx.tw.to(st.position, { x: to.x, y: to.y }, { duration: this.stepSeconds, ease: ease.outQuad, delay: i * 0.04 }));
+      if (this.reduce) {
+        st.position.copyFrom(to);
+        st.rotation = 0;
+        return;
+      }
+      climbs.push(
+        this.ctx.tw.to(
+          st.position,
+          { x: to.x, y: to.y },
+          { duration: this.stepSeconds, ease: ease.outQuad, delay: i * 0.04 },
+        ),
+      );
       climbs.push(this.ctx.tw.to(st, { rotation: 0 }, { duration: this.stepSeconds, delay: i * 0.04 }));
     });
     await Promise.all(climbs);
@@ -710,7 +887,11 @@ class WaterRoad implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     const view = this.frames[0];
-    if (view) this.ctx.particles.burst(view.centre.x, view.centre.y - 60, { colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff], count: 14 });
+    if (view)
+      this.ctx.particles.burst(view.centre.x, view.centre.y - 60, {
+        colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff],
+        count: 14,
+      });
     const result = this.tally;
     void this.ctx.say('wr.done').then(() => {
       if (!this.alive || this.finished) return;
@@ -724,21 +905,40 @@ class WaterRoad implements Game {
   /** The pet's Help: at level 1 the ask again (free); in a free pair the gap blinks (free); in the asked pair or at level 3 the glow, counted once per part. */
   askForHint() {
     if (this.finished) return;
-    if (this.plan.level === 1) { void this.ctx.instruct('wr.instruct.1'); return; }
+    if (this.plan.level === 1) {
+      void this.ctx.instruct('wr.instruct.1');
+      return;
+    }
     if (this.plan.level === 2) {
       const s = this.ps!;
       const pair = this.plan.pairs[s.pair];
       const open = this.frames[1 - pair.closed];
-      if (open && this.layoutNow && !s.pulled[1 - pair.closed]) this.blink = { at: stoneCentre(open.centre, this.layoutNow.ring, open.arch.stones, open.arch.gap!), until: this.clock + 1.6 };
-      if (!isAsked(this.plan, s)) { void this.ctx.instruct('wr.instruct.2'); return; }
-      if (this.busy) { void this.ctx.say('wr.help'); return; }
+      if (open && this.layoutNow && !s.pulled[1 - pair.closed])
+        this.blink = {
+          at: stoneCentre(open.centre, this.layoutNow.ring, open.arch.stones, open.arch.gap!),
+          until: this.clock + 1.6,
+        };
+      if (!isAsked(this.plan, s)) {
+        void this.ctx.instruct('wr.instruct.2');
+        return;
+      }
+      if (this.busy) {
+        void this.ctx.say('wr.help');
+        return;
+      }
       this.tallies.help();
       void this.ctx.say('wr.help');
       return;
     }
     const need = this.bs ? hintFor(this.plan.arches[this.bs.arch]) : null;
-    if (!need) { void this.ctx.say('wr.needs-nothing-help'); return; }
-    if (this.busy) { void this.ctx.say('wr.help-side'); return; }
+    if (!need) {
+      void this.ctx.say('wr.needs-nothing-help');
+      return;
+    }
+    if (this.busy) {
+      void this.ctx.say('wr.help-side');
+      return;
+    }
     this.tallies.help();
     this.redrawSlots();
     void this.ctx.say('wr.help-side');
@@ -747,29 +947,48 @@ class WaterRoad implements Game {
   update(dt: number) {
     this.clock += dt;
     if (this.relayout && !this.busy && !this.finished) this.build();
-    if (this.walker && this.walking) this.walker.y = this.layoutNow!.ground - Math.abs(Math.sin(this.clock * 12)) * 8;
+    if (this.walker && this.walking)
+      this.walker.y = this.layoutNow!.ground - Math.abs(Math.sin(this.clock * 12)) * 8;
     if (!this.busy && !this.finished) this.idle += dt;
-    if (this.arrowSide && this.clock > this.arrowsUntil) { this.arrowSide = null; this.redrawArrows(); }
+    if (this.arrowSide && this.clock > this.arrowsUntil) {
+      this.arrowSide = null;
+      this.redrawArrows();
+    }
     this.glow.clear();
     if (this.finished || !this.layoutNow) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
     const ring = (p: Pt, w: number, h: number, color = swatch.yellow.fill) => {
-      this.glow.roundRect(p.x - w / 2 - 10 * r, p.y - h / 2 - 10 * r, w + 20 * r, h + 20 * r, 30).stroke({ width: 8, color });
+      this.glow
+        .roundRect(p.x - w / 2 - 10 * r, p.y - h / 2 - 10 * r, w + 20 * r, h + 20 * r, 30)
+        .stroke({ width: 8, color });
     };
     if (this.blink && this.blink.until > this.clock && Math.floor(this.clock * 6) % 2 === 0) {
-      this.glow.circle(this.blink.at.x, this.blink.at.y, this.layoutNow.ring.t * 0.7).stroke({ width: 8, color: swatch.red.fill });
+      this.glow
+        .circle(this.blink.at.x, this.blink.at.y, this.layoutNow.ring.t * 0.7)
+        .stroke({ width: 8, color: swatch.red.fill });
     }
     if (this.busy) return;
     if (this.plan.level === 1 && this.ks && this.ks.placed >= this.plan.stones && !this.ks.pulled) {
       const h = this.layoutNow.handles[0];
       const strong = this.idle >= IDLE_GLOW;
-      this.glow.roundRect(h.x - 8 * r, h.y - 8 * r, h.w + 16 * r, h.h + 16 * r, 26).stroke({ width: strong ? 10 : 5, color: swatch.yellow.fill, alpha: strong ? 1 : 0.55 });
-    } else if (this.plan.level === 2 && this.ps && this.tallies.glowing && isAsked(this.plan, this.ps) && !this.ps.done) {
+      this.glow
+        .roundRect(h.x - 8 * r, h.y - 8 * r, h.w + 16 * r, h.h + 16 * r, 26)
+        .stroke({ width: strong ? 10 : 5, color: swatch.yellow.fill, alpha: strong ? 1 : 0.55 });
+    } else if (
+      this.plan.level === 2 &&
+      this.ps &&
+      this.tallies.glowing &&
+      isAsked(this.plan, this.ps) &&
+      !this.ps.done
+    ) {
       const f = this.layoutNow.frames[this.plan.pairs[this.ps.pair].closed];
       ring(centre(f.box), f.box.w, f.box.h);
     } else if (this.plan.level === 3 && this.bs && this.tallies.glowing && !this.bs.standing) {
       const need = hintFor(this.plan.arches[this.bs.arch]);
-      if (need && this.bs.block === need) { const h = this.layoutNow.handles[0]; ring(centre(h), h.w, h.h); }
+      if (need && this.bs.block === need) {
+        const h = this.layoutNow.handles[0];
+        ring(centre(h), h.w, h.h);
+      }
     }
   }
 
@@ -781,13 +1000,18 @@ class WaterRoad implements Game {
     if (!move) return null;
     if ('drag' in move) {
       const to = centre(this.layoutNow.slots![move.to]);
-      return this.blockNode ? { drag: { on: this.blockNode }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.4 } : null;
+      return this.blockNode
+        ? { drag: { on: this.blockNode }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.4 }
+        : null;
     }
     if (move.tap === 'pile') {
       const l = this.layoutNow;
-      return this.tapLayer ? { tap: { on: this.tapLayer, x: l.pile[0].x, y: l.pile[0].y + 70 }, pause: 0.5 } : null;
+      return this.tapLayer
+        ? { tap: { on: this.tapLayer, x: l.pile[0].x, y: l.pile[0].y + 70 }, pause: 0.5 }
+        : null;
     }
-    if (move.tap === 'handle') return this.handleNodes[0] ? { tap: { on: this.handleNodes[0] }, pause: 0.8 } : null;
+    if (move.tap === 'handle')
+      return this.handleNodes[0] ? { tap: { on: this.handleNodes[0] }, pause: 0.8 } : null;
     const f = this.frames[move.side];
     return f ? { tap: { on: f.box }, pause: 0.8 } : null;
   }
@@ -803,7 +1027,10 @@ class ArchIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const count = rng.pick([5, 7]);
-  return stickerArt(count, Array.from({ length: count }, () => rng.int(0, 2)));
+  return stickerArt(
+    count,
+    Array.from({ length: count }, () => rng.int(0, 2)),
+  );
 }
 
 export const waterRoad: GameModule = {
@@ -817,10 +1044,10 @@ export const waterRoad: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
-  coplayHint: 'Frame-puller and stone counter: one of you counts the stones aloud (or says which ring has the gap), the other taps and pulls; swap after each arch. On the water roads, a spring-keeper says "open!" only when both agree every stretch goes down.',
+  coplayHint:
+    'Frame-puller and stone counter: one of you counts the stones aloud (or says which ring has the gap), the other taps and pulls; swap after each arch. On the water roads, a spring-keeper says "open!" only when both agree every stretch goes down.',
   hubIcon: () => new ArchIcon(),
   touchDemo: true,
   sticker,
   create: (ctx) => (planFor(ctx.level).level >= 4 ? new WaterFlow(ctx) : new WaterRoad(ctx)),
 };
-

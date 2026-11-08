@@ -12,7 +12,12 @@ import { FACE_PARTS, faceFrame, FEELINGS, type Feeling, type Helper, type Wish }
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 /** Each feeling's bubble color in free play. */
-export const FEELING_COLOR: Record<Feeling, ColorName> = { happy: 'yellow', sad: 'blue', sleepy: 'purple', surprised: 'orange' };
+export const FEELING_COLOR: Record<Feeling, ColorName> = {
+  happy: 'yellow',
+  sad: 'blue',
+  sleepy: 'purple',
+  surprised: 'orange',
+};
 
 /** Friends for the friends level, the whole cast; every face (the duck's brows over its bill too) shows each feeling. */
 export const FRIENDS: CritterName[] = ['cat', 'bunny', 'bear', 'pig', 'dog', 'cow', 'pip', 'duck'];
@@ -31,7 +36,10 @@ export function feelingCritter(spec: CritterSpec, feeling: Feeling | 'calm', sca
  */
 function framedFace(star: CompanionRig, feeling: Feeling, size: number, window: Graphics): Container {
   const holder = new Container();
-  const frame = faceFrame(FACE_PARTS.flatMap((p) => star.partPoints(p)), size);
+  const frame = faceFrame(
+    FACE_PARTS.flatMap((p) => star.partPoints(p)),
+    size,
+  );
   star.setMood(feeling);
   star.scale.set(frame.scale);
   star.position.set(frame.x, frame.y);
@@ -43,13 +51,21 @@ function framedFace(star: CompanionRig, feeling: Feeling, size: number, window: 
 /** A face card on a white tile, 170 by 190 units: the companion's face wearing a feeling. */
 export function faceCard(star: CompanionRig, feeling: Feeling): { node: Container; critter: CompanionRig } {
   const node = new Container();
-  const face = framedFace(star, feeling, 150, new Graphics().roundRect(-79, -89, 158, 178, 14).fill(0xffffff));
+  const face = framedFace(
+    star,
+    feeling,
+    150,
+    new Graphics().roundRect(-79, -89, 158, 178, 14).fill(0xffffff),
+  );
   node.addChild(tile(170, 190), face);
   return { node, critter: star };
 }
 
 /** A round feeling bubble for free play, holding the companion's face. */
-export function feelingBubble(star: CompanionRig, feeling: Feeling): { node: Container; critter: CompanionRig } {
+export function feelingBubble(
+  star: CompanionRig,
+  feeling: Feeling,
+): { node: Container; critter: CompanionRig } {
   const sw = swatch[FEELING_COLOR[feeling]];
   const node = new Container();
   const face = framedFace(star, feeling, 128, new Graphics().circle(0, 0, 74).fill(0xffffff));
@@ -79,14 +95,24 @@ export function helperArt(helper: Helper): Container {
         .closePath()
         .fill(swatch.blue.light)
         .stroke(line(swatch.blue.line, 6));
-      for (const [x, y] of [[-24, -8], [20, 10], [-4, 14], [28, -14]]) g.circle(x, y, 5).fill(swatch.white.fill);
+      for (const [x, y] of [
+        [-24, -8],
+        [20, 10],
+        [-4, 14],
+        [28, -14],
+      ])
+        g.circle(x, y, 5).fill(swatch.white.fill);
       break;
     case 'apple':
       c.addChild(prop('apple', 'red'));
       return c;
     case 'scarf':
       // A knitted scarf: a loop with one striped tail and a fringe.
-      g.ellipse(0, -18, 56, 24).fill(swatch.red.fill).stroke(line(swatch.red.line)).ellipse(0, -24, 34, 10).fill(swatch.white.light);
+      g.ellipse(0, -18, 56, 24)
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line))
+        .ellipse(0, -24, 34, 10)
+        .fill(swatch.white.light);
       g.roundRect(10, -10, 32, 56, 10).fill(swatch.red.fill).stroke(line(swatch.red.line));
       g.moveTo(14, 8).lineTo(38, 8).moveTo(14, 26).lineTo(38, 26).stroke(line(swatch.white.fill, 6));
       for (const x of [16, 26, 36]) g.moveTo(x, 48).lineTo(x, 60).stroke(line(swatch.red.line, 4));
@@ -111,11 +137,16 @@ export function wishArt(wish: Wish): Container {
   if (wish === 'game') return bouncyBall();
   const node = new Container();
   if (wish === 'quiet') {
-    const g = new Graphics().roundRect(-65, -38, 130, 76, 12).fill(swatch.purple.light).stroke(line(swatch.purple.line));
+    const g = new Graphics()
+      .roundRect(-65, -38, 130, 76, 12)
+      .fill(swatch.purple.light)
+      .stroke(line(swatch.purple.line));
     for (const y of [-18, 4, 26]) g.moveTo(-58, y).lineTo(58, y).stroke(line(swatch.white.fill, 4));
     node.addChild(g);
   } else {
-    node.addChild(new Graphics().roundRect(-65, -78, 130, 152, 10).fill(wood.light).stroke(line(wood.line, 7)));
+    node.addChild(
+      new Graphics().roundRect(-65, -78, 130, 152, 10).fill(wood.light).stroke(line(wood.line, 7)),
+    );
     const hazel = makeHazel();
     hazel.critter.alive = false;
     hazel.critter.setMood('calm');
@@ -135,7 +166,17 @@ export function wishCard(wish: Wish): Container {
 
 export function wishBubble(wish: Wish): Container {
   const node = new Container();
-  const cloud = puffs(new Graphics(), [[-52, 0, 54], [0, -14, 65], [52, 0, 54]], swatch.white.light, swatch.blue.line, 5);
+  const cloud = puffs(
+    new Graphics(),
+    [
+      [-52, 0, 54],
+      [0, -14, 65],
+      [52, 0, 54],
+    ],
+    swatch.white.light,
+    swatch.blue.line,
+    5,
+  );
   cloud.circle(-60, 74, 13).fill(swatch.white.light).circle(-78, 96, 7).fill(swatch.white.light);
   const art = wishArt(wish);
   art.scale.set(0.7);
@@ -192,7 +233,10 @@ export function jackBox(): { node: Container; head: Container; spring: Graphics 
   );
   head.y = -40;
   head.visible = false;
-  const box = new Graphics().roundRect(-55, -80, 110, 80, 10).fill(swatch.blue.fill).stroke(line(swatch.blue.line, 6));
+  const box = new Graphics()
+    .roundRect(-55, -80, 110, 80, 10)
+    .fill(swatch.blue.fill)
+    .stroke(line(swatch.blue.line, 6));
   box.poly(starPoints(18, 8)).fill(swatch.yellow.fill);
   node.addChild(spring, head, box);
   return { node, head, spring };
@@ -216,7 +260,12 @@ export function moonAndStars(): Container {
     .closePath()
     .fill(swatch.yellow.light)
     .stroke(line(swatch.yellow.line, 5));
-  for (const [x, y, r] of [[-120, 40, 14], [90, 70, 10], [-60, -60, 9], [140, -30, 12]]) {
+  for (const [x, y, r] of [
+    [-120, 40, 14],
+    [90, 70, 10],
+    [-60, -60, 9],
+    [140, -30, 12],
+  ]) {
     g.poly(starPoints(r, r * 0.45).map((v, i) => v + (i % 2 ? y : x))).fill(swatch.yellow.fill);
   }
   c.addChild(g);
@@ -279,9 +328,22 @@ export function iceCream(): { node: Container; scoop: Graphics } {
     .ellipse(0, -112, 54, 12)
     .fill(wood.light)
     .stroke(line(wood.fill, 5));
-  const cone = new Graphics().poly([-28, -190, 28, -190, 0, -120]).fill(wood.light).stroke(line(wood.fill, 5));
+  const cone = new Graphics()
+    .poly([-28, -190, 28, -190, 0, -120])
+    .fill(wood.light)
+    .stroke(line(wood.fill, 5));
   cone.moveTo(-16, -180).lineTo(6, -144).moveTo(16, -180).lineTo(-6, -144).stroke(line(wood.fill, 3));
-  const scoop = puffs(new Graphics(), [[-16, -202, 20], [16, -202, 20], [0, -218, 24]], swatch.pink.light, swatch.pink.line, 5);
+  const scoop = puffs(
+    new Graphics(),
+    [
+      [-16, -202, 20],
+      [16, -202, 20],
+      [0, -218, 24],
+    ],
+    swatch.pink.light,
+    swatch.pink.line,
+    5,
+  );
   node.addChild(table, cone, scoop);
   return { node, scoop };
 }
@@ -315,7 +377,17 @@ export function musicNote(color: number): Graphics {
 
 /** A grey rain cloud for the window. */
 export function windowCloud(): Graphics {
-  return puffs(new Graphics(), [[-46, 8, 34], [0, -14, 44], [46, 8, 34]], swatch.white.light, swatch.blue.line, 5);
+  return puffs(
+    new Graphics(),
+    [
+      [-46, 8, 34],
+      [0, -14, 44],
+      [46, 8, 34],
+    ],
+    swatch.white.light,
+    swatch.blue.line,
+    5,
+  );
 }
 
 /** A sticker: a friend wearing a feeling, with a heart. Rebuilt from its seed. */
@@ -335,17 +407,49 @@ export function feelingsSticker(seed = 1): Container {
 export function eventPicture(event: import('./logic').ClueEvent | 'drum'): Container {
   const node = new Container();
   if (event === 'balloon') {
-    node.addChild(new Graphics().moveTo(0, 20).quadraticCurveTo(-20, 65, 0, 90).stroke(line(wood.line, 3)), prop('balloon', 'red'));
+    node.addChild(
+      new Graphics().moveTo(0, 20).quadraticCurveTo(-20, 65, 0, 90).stroke(line(wood.line, 3)),
+      prop('balloon', 'red'),
+    );
   } else if (event === 'present') {
     const gift = present().node;
-    gift.scale.set(0.8); gift.y = 55; node.addChild(gift);
+    gift.scale.set(0.8);
+    gift.y = 55;
+    node.addChild(gift);
   } else if (event === 'moon') {
-    const moon = moonAndStars(); moon.scale.set(0.45); node.addChild(moon);
+    const moon = moonAndStars();
+    moon.scale.set(0.45);
+    node.addChild(moon);
   } else if (event === 'rain') {
-    const cloud = windowCloud(); cloud.scale.set(0.6); cloud.y = -30;
-    node.addChild(cloud, new Graphics().moveTo(-35, 15).lineTo(-45, 45).moveTo(0, 20).lineTo(-10, 50).moveTo(35, 15).lineTo(25, 45).stroke(line(swatch.blue.fill, 7)));
+    const cloud = windowCloud();
+    cloud.scale.set(0.6);
+    cloud.y = -30;
+    node.addChild(
+      cloud,
+      new Graphics()
+        .moveTo(-35, 15)
+        .lineTo(-45, 45)
+        .moveTo(0, 20)
+        .lineTo(-10, 50)
+        .moveTo(35, 15)
+        .lineTo(25, 45)
+        .stroke(line(swatch.blue.fill, 7)),
+    );
   } else {
-    node.addChild(new Graphics().roundRect(-55, -25, 110, 80, 15).fill(swatch.red.fill).stroke(line(swatch.red.line)).ellipse(0, -25, 55, 18).fill(swatch.yellow.light).stroke(line(wood.line)).moveTo(-65, -65).lineTo(0, -25).moveTo(65, -65).lineTo(15, -25).stroke(line(wood.line, 9)));
+    node.addChild(
+      new Graphics()
+        .roundRect(-55, -25, 110, 80, 15)
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line))
+        .ellipse(0, -25, 55, 18)
+        .fill(swatch.yellow.light)
+        .stroke(line(wood.line))
+        .moveTo(-65, -65)
+        .lineTo(0, -25)
+        .moveTo(65, -65)
+        .lineTo(15, -25)
+        .stroke(line(wood.line, 9)),
+    );
   }
   node.eventMode = 'none';
   return node;
@@ -355,10 +459,32 @@ export function eventPicture(event: import('./logic').ClueEvent | 'drum'): Conta
 export function leftoverClue(event: import('./logic').ClueEvent): Container {
   const node = new Container();
   const g = new Graphics();
-  if (event === 'balloon') g.moveTo(-25, -90).bezierCurveTo(45, -60, -50, -20, 25, 0).stroke(line(wood.line, 6));
-  if (event === 'present') g.moveTo(-65, 0).lineTo(-35, -60).lineTo(0, -30).lineTo(30, -65).lineTo(65, 0).closePath().fill(swatch.pink.light).stroke(line(swatch.red.line)).moveTo(-30, -45).lineTo(15, -15).stroke(line(swatch.yellow.fill, 7));
-  if (event === 'moon') { const moon = moonAndStars(); moon.scale.set(0.65); moon.y = -50; node.addChild(moon); }
-  if (event === 'rain') g.ellipse(0, -10, 85, 23).fill(swatch.blue.light).stroke(line(swatch.blue.fill)).ellipse(10, -12, 35, 10).stroke(line(swatch.white.fill, 3));
+  if (event === 'balloon')
+    g.moveTo(-25, -90).bezierCurveTo(45, -60, -50, -20, 25, 0).stroke(line(wood.line, 6));
+  if (event === 'present')
+    g.moveTo(-65, 0)
+      .lineTo(-35, -60)
+      .lineTo(0, -30)
+      .lineTo(30, -65)
+      .lineTo(65, 0)
+      .closePath()
+      .fill(swatch.pink.light)
+      .stroke(line(swatch.red.line))
+      .moveTo(-30, -45)
+      .lineTo(15, -15)
+      .stroke(line(swatch.yellow.fill, 7));
+  if (event === 'moon') {
+    const moon = moonAndStars();
+    moon.scale.set(0.65);
+    moon.y = -50;
+    node.addChild(moon);
+  }
+  if (event === 'rain')
+    g.ellipse(0, -10, 85, 23)
+      .fill(swatch.blue.light)
+      .stroke(line(swatch.blue.fill))
+      .ellipse(10, -12, 35, 10)
+      .stroke(line(swatch.white.fill, 3));
   node.addChild(g);
   node.eventMode = 'none';
   return node;

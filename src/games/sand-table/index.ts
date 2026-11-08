@@ -10,11 +10,34 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { SAND, SAND_LINE, drawBucket, drawPail, flagArt, grainDot, invitationCard, paddleArt, sandPicture } from './art';
+import {
+  SAND,
+  SAND_LINE,
+  drawBucket,
+  drawPail,
+  flagArt,
+  grainDot,
+  invitationCard,
+  paddleArt,
+  sandPicture,
+} from './art';
 import {
   LEVELS,
-  COLS, GRAINS, apply, botStep, describeLandscape, describeSand, hintAction, restart, sandLayout, startState,
-  type SandAction, type SandEvent, type SandLayout, type SandResult, type SandState,
+  COLS,
+  GRAINS,
+  apply,
+  botStep,
+  describeLandscape,
+  describeSand,
+  hintAction,
+  restart,
+  sandLayout,
+  startState,
+  type SandAction,
+  type SandEvent,
+  type SandLayout,
+  type SandResult,
+  type SandState,
 } from './logic';
 
 const IDLE_SECONDS = 6;
@@ -87,7 +110,11 @@ class SandTable implements Game {
 
   start() {
     void this.ctx.instruct(`sand.instruct.${this.state.plan.level}` as 'sand.instruct.1');
-    if (this.state.invite) void this.ctx.tw.wait(3.2).then(() => { if (!this.gone && !this.finished) void this.ctx.say(`sand.invite.${this.state.invite}` as 'sand.invite.tall'); });
+    if (this.state.invite)
+      void this.ctx.tw.wait(3.2).then(() => {
+        if (!this.gone && !this.finished)
+          void this.ctx.say(`sand.invite.${this.state.invite}` as 'sand.invite.tall');
+      });
   }
 
   resize(v: View) {
@@ -162,9 +189,16 @@ class SandTable implements Game {
       if (this.disp[col] * l.rowH > 8) g.circle(x, y, 2.2).fill({ color: SAND_LINE, alpha: 0.55 });
     }
     // The tray's front lip, so the sand sits inside it.
-    this.rim.clear().roundRect(t.x - 4, t.y + t.h - 10, t.w + 8, 16, 6).fill(wood.light).stroke({ width: 4, color: wood.line });
+    this.rim
+      .clear()
+      .roundRect(t.x - 4, t.y + t.h - 10, t.w + 8, 16, 6)
+      .fill(wood.light)
+      .stroke({ width: 4, color: wood.line });
     // Rim marks at the top of the tray: the line a column cannot pass.
-    this.rim.moveTo(t.x, t.y).lineTo(t.x + t.w, t.y).stroke({ width: 3, color: SAND_LINE, alpha: 0.35 });
+    this.rim
+      .moveTo(t.x, t.y)
+      .lineTo(t.x + t.w, t.y)
+      .stroke({ width: 3, color: SAND_LINE, alpha: 0.35 });
   }
 
   update(dt: number) {
@@ -172,7 +206,10 @@ class SandTable implements Game {
     const k = Math.min(1, dt * 9);
     for (let c = 0; c < COLS; c++) {
       const d = this.state.h[c] - this.disp[c];
-      if (Math.abs(d) > 0.004) { this.disp[c] += d * k; moving = true; } else this.disp[c] = this.state.h[c];
+      if (Math.abs(d) > 0.004) {
+        this.disp[c] += d * k;
+        moving = true;
+      } else this.disp[c] = this.state.h[c];
     }
     if (moving) this.drawSurface();
     if (this.lastDrawnBucket !== this.state.bucket) {
@@ -189,7 +226,14 @@ class SandTable implements Game {
       if (this.idle >= IDLE_SECONDS && this.state.bucket > 0) {
         this.idle = 0;
         const bay = this.lay.bays[Math.floor(this.lay.bays.length / 2)];
-        this.ctx.particles.burst(bay.x + bay.w / 2, this.lay.tray.y + this.lay.tray.h * 0.4, { kind: 'dot', colors: [0xfff3a0, 0xffffff], count: 8, speed: [40, 100], gravity: 0, life: [0.5, 0.8] });
+        this.ctx.particles.burst(bay.x + bay.w / 2, this.lay.tray.y + this.lay.tray.h * 0.4, {
+          kind: 'dot',
+          colors: [0xfff3a0, 0xffffff],
+          count: 8,
+          speed: [40, 100],
+          gravity: 0,
+          life: [0.5, 0.8],
+        });
       }
     }
   }
@@ -232,7 +276,9 @@ class SandTable implements Game {
     const { tw } = this.ctx;
     tw.kill(this.bucket);
     const dir = Math.sign(towardX - this.lay.bucket.x) || 1;
-    void tw.to(this.bucket, { rotation: dir * 0.45 }, { duration: 0.1, ease: ease.outQuad }).then(() => { if (!this.gone) void tw.to(this.bucket, { rotation: 0 }, { duration: 0.22, ease: ease.outBack }); });
+    void tw.to(this.bucket, { rotation: dir * 0.45 }, { duration: 0.1, ease: ease.outQuad }).then(() => {
+      if (!this.gone) void tw.to(this.bucket, { rotation: 0 }, { duration: 0.22, ease: ease.outBack });
+    });
   }
 
   private showPour(b: number, r: SandResult) {
@@ -243,7 +289,16 @@ class SandTable implements Game {
     if (r.kind === 'empty') {
       sfx.knock();
       this.wiggle(this.paddleNodes);
-      for (let i = 0; i < 4; i++) void this.grain(this.lay.bucket.x + (i - 1.5) * 12, this.lay.bucket.y + 50, this.lay.bucket.x + (i - 1.5) * 20, this.lay.bucket.y + 110, i * 0.08, 0.3, true);
+      for (let i = 0; i < 4; i++)
+        void this.grain(
+          this.lay.bucket.x + (i - 1.5) * 12,
+          this.lay.bucket.y + 50,
+          this.lay.bucket.x + (i - 1.5) * 20,
+          this.lay.bucket.y + 110,
+          i * 0.08,
+          0.3,
+          true,
+        );
       void this.ctx.say('sand.empty');
       return;
     }
@@ -269,7 +324,16 @@ class SandTable implements Game {
     this.ctx.tw.kill(this.pailNode.scale);
     this.pailNode.scale.set(0.9);
     void this.ctx.tw.to(this.pailNode.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
-    for (let i = 0; i < Math.min(8, r.moved); i++) void this.grain(this.pailNode.x, this.pailNode.y - 20, this.lay.bucket.x, this.lay.bucket.y + 30, i * 0.06, 0.55, false);
+    for (let i = 0; i < Math.min(8, r.moved); i++)
+      void this.grain(
+        this.pailNode.x,
+        this.pailNode.y - 20,
+        this.lay.bucket.x,
+        this.lay.bucket.y + 30,
+        i * 0.06,
+        0.55,
+        false,
+      );
     void this.ctx.say('sand.pail');
   }
 
@@ -283,12 +347,22 @@ class SandTable implements Game {
         const x = this.colX(e.col);
         const delay = drop++ * 0.13;
         const y = this.topY(this.state.h[e.col]) - 4;
-        void this.grain(this.lay.bucket.x, this.lay.bucket.y + 55, x, y, delay, 0.32, false).then(() => !this.gone && sfx.pluck(2 + e.height * 1, 0.22));
+        void this.grain(this.lay.bucket.x, this.lay.bucket.y + 55, x, y, delay, 0.32, false).then(
+          () => !this.gone && sfx.pluck(2 + e.height * 1, 0.22),
+        );
       } else if (e.kind === 'slide') {
         if (slides++ < 2) void this.ctx.tw.wait(0.25 + slides * 0.08).then(() => !this.gone && sfx.tick());
       } else if (e.kind === 'lift') {
         const delay = lift++ * 0.13;
-        void this.grain(this.colX(e.col), this.topY(this.disp[e.col]), this.lay.bucket.x, this.lay.bucket.y + 40, delay, 0.4, false);
+        void this.grain(
+          this.colX(e.col),
+          this.topY(this.disp[e.col]),
+          this.lay.bucket.x,
+          this.lay.bucket.y + 40,
+          delay,
+          0.4,
+          false,
+        );
       } else if (e.kind === 'spill') {
         void this.spill(e);
       }
@@ -308,7 +382,15 @@ class SandTable implements Game {
   }
 
   /** One grain tweened from one place to another. */
-  private async grain(x0: number, y0: number, x1: number, y1: number, delay: number, seconds: number, fadeOut: boolean) {
+  private async grain(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    delay: number,
+    seconds: number,
+    fadeOut: boolean,
+  ) {
     const { tw } = this.ctx;
     if (delay > 0) await tw.wait(delay);
     if (this.gone) return;
@@ -353,7 +435,14 @@ class SandTable implements Game {
     if (this.state.plan.show) await this.walk();
     else {
       [4, 5, 6, 8, 9].forEach((s, i) => void tw.wait(i * 0.12).then(() => !this.gone && sfx.pluck(s, 0.25)));
-      this.ctx.particles.burst(this.lay.tray.x + this.lay.tray.w / 2, this.lay.tray.y + this.lay.tray.h / 2, { kind: 'dot', colors: [0xfff3a0, 0xffffff, SAND], count: 30, speed: [120, 320], gravity: 200, life: [0.6, 1] });
+      this.ctx.particles.burst(this.lay.tray.x + this.lay.tray.w / 2, this.lay.tray.y + this.lay.tray.h / 2, {
+        kind: 'dot',
+        colors: [0xfff3a0, 0xffffff, SAND],
+        count: 30,
+        speed: [120, 320],
+        gravity: 200,
+        life: [0.6, 1],
+      });
       await this.ctx.say('sand.done');
     }
     if (this.gone) return;
@@ -390,8 +479,16 @@ class SandTable implements Game {
   askForHint() {
     if (this.finished) return;
     const a = hintAction(this.state);
-    const target = 'pour' in a ? this.lay.bays[a.pour] : 'scoop' in a ? this.lay.paddles[a.scoop] : this.lay.pail;
-    this.ctx.particles.burst(target.x + target.w / 2, target.y + target.h / 2, { kind: 'dot', colors: [0xfff3a0, 0xffffff], count: 14, speed: [60, 160], gravity: 0, life: [0.5, 0.9] });
+    const target =
+      'pour' in a ? this.lay.bays[a.pour] : 'scoop' in a ? this.lay.paddles[a.scoop] : this.lay.pail;
+    this.ctx.particles.burst(target.x + target.w / 2, target.y + target.h / 2, {
+      kind: 'dot',
+      colors: [0xfff3a0, 0xffffff],
+      count: 14,
+      speed: [60, 160],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.run(a);
   }
 
@@ -433,7 +530,9 @@ class SandIcon extends WigglyIcon {
 /** A seeded little sand landscape with a shell on top. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  const hs = Array.from({ length: 9 }, (_, i) => Math.max(0, 1 + Math.round(rng.next() * 2) + (i > 2 && i < 6 ? 1 : 0)));
+  const hs = Array.from({ length: 9 }, (_, i) =>
+    Math.max(0, 1 + Math.round(rng.next() * 2) + (i > 2 && i < 6 ? 1 : 0)),
+  );
   const c = sandPicture(hs, true);
   c.scale.set(0.6);
   c.position.y = 30;
@@ -452,7 +551,8 @@ export const sandTable: GameModule = {
   describeLevel: describeSand,
   music: STYLES.paint,
   coplayHint: 'One taps a change in the sand; the other says (or points to) what changed. Then swap.',
-  offScreen: 'A tray of dry sand, rice or oats and a scoop: pour a heap, scoop some away, and watch the sides slide.',
+  offScreen:
+    'A tray of dry sand, rice or oats and a scoop: pour a heap, scoop some away, and watch the sides slide.',
   hubIcon: () => new SandIcon(),
   touchDemo: true,
   sticker,

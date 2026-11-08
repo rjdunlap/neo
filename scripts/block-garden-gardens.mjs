@@ -25,8 +25,12 @@ for (const level of [5, 6, 7, 8]) {
   console.log(`level ${level}: ${list.length}`);
 }
 
-const body = Object.entries(out).map(([level, list]) => `  ${level}: [\n${list.map((t) => `    '${t}',`).join('\n')}\n  ],`).join('\n');
-writeFileSync(new URL('../src/games/block-garden/puzzles.ts', import.meta.url), `/**
+const body = Object.entries(out)
+  .map(([level, list]) => `  ${level}: [\n${list.map((t) => `    '${t}',`).join('\n')}\n  ],`)
+  .join('\n');
+writeFileSync(
+  new URL('../src/games/block-garden/puzzles.ts', import.meta.url),
+  `/**
  * Block Garden's frozen gardens for levels 5–8, written by \`node scripts/block-garden-gardens.mjs\`: each a seeded candidate built
  * from its level's template and kept only when the solver finds its par inside the level's range and the level's filter passes.
  * Format: \`encode()\` in \`logic.ts\` (bed rows, pieces in arrival order, the solver's shortest solution). \`logic.test.ts\` checks
@@ -35,4 +39,5 @@ writeFileSync(new URL('../src/games/block-garden/puzzles.ts', import.meta.url), 
 export const GARDENS: Record<number, readonly string[]> = {
 ${body}
 };
-`);
+`,
+);

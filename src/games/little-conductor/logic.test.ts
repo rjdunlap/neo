@@ -2,7 +2,34 @@ import { describe, expect, it } from 'vitest';
 import { PENTATONIC } from '../../audio/notes';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { advance, BEATS, botMove, canFinish, check, choose, conductorLayout, earlyDone, glowTarget, hint, listenAgain, makeRound, marksLit, MOTIFS, newRequests, newScore, PACES, PAD, select, signBot, submit, type BeatEvent, type PaceId, type Requests, type Round, type Score } from './logic';
+import {
+  advance,
+  BEATS,
+  botMove,
+  canFinish,
+  check,
+  choose,
+  conductorLayout,
+  earlyDone,
+  glowTarget,
+  hint,
+  listenAgain,
+  makeRound,
+  marksLit,
+  MOTIFS,
+  newRequests,
+  newScore,
+  PACES,
+  PAD,
+  select,
+  signBot,
+  submit,
+  type BeatEvent,
+  type PaceId,
+  type Requests,
+  type Round,
+  type Score,
+} from './logic';
 
 const hop = MOTIFS[0];
 /** Runs the clock in small frames until `n` more beats have sounded. */
@@ -42,13 +69,16 @@ describe('Little Conductor score clock', () => {
   it('plays the same notes in the same order at either pace; only the timing differs by 90/60', () => {
     const at = (pace: PaceId) => {
       let s = advance(select(newScore(), pace), 0, hop).score;
-      const r = advance(s, 60 / PACES[pace] * 3 + 1e-6, hop);
+      const r = advance(s, (60 / PACES[pace]) * 3 + 1e-6, hop);
       s = r.score;
       return r.events;
     };
-    const slow = at('turtle'), fast = at('rabbit');
-    expect(slow.map((e) => [e.step, e.melody, e.bass, e.drum])).toEqual(fast.map((e) => [e.step, e.melody, e.bass, e.drum]));
-    slow.forEach((e, i) => expect(e.at).toBeCloseTo(fast[i].at * 90 / 60, 6));
+    const slow = at('turtle'),
+      fast = at('rabbit');
+    expect(slow.map((e) => [e.step, e.melody, e.bass, e.drum])).toEqual(
+      fast.map((e) => [e.step, e.melody, e.bass, e.drum]),
+    );
+    slow.forEach((e, i) => expect(e.at).toBeCloseTo((fast[i].at * 90) / 60, 6));
   });
 
   it('never skips or repeats a beat, over 500 seeded runs of random taps and frame lengths', () => {
@@ -169,7 +199,7 @@ describe('Little Conductor rounds and the bot', () => {
       const taps: string[] = [];
       for (let i = 0; i < 2000 && !taps.includes('done'); i++) {
         const move = botMove(s, level);
-        if (move && (taps.at(-1) !== move)) {
+        if (move && taps.at(-1) !== move) {
           taps.push(move);
           if (move !== 'done') s = select(s, move);
         }
@@ -181,10 +211,22 @@ describe('Little Conductor rounds and the bot', () => {
 });
 
 describe('Little Conductor layout', () => {
-  const VIEWS: [number, number][] = [[1024, 768], [768, 1024], [1366, 768], [1194, 834]];
-  const overlap = (a: { x: number; y: number; w: number; h: number }, b: { x: number; y: number; w: number; h: number }) =>
-    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const box = (d: { x: number; y: number; r: number }) => ({ x: d.x - d.r, y: d.y - d.r, w: 2 * d.r, h: 2 * d.r });
+  const VIEWS: [number, number][] = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
+  const overlap = (
+    a: { x: number; y: number; w: number; h: number },
+    b: { x: number; y: number; w: number; h: number },
+  ) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const box = (d: { x: number; y: number; r: number }) => ({
+    x: d.x - d.r,
+    y: d.y - d.r,
+    w: 2 * d.r,
+    h: 2 * d.r,
+  });
   for (const [pw, ph] of VIEWS)
     for (const level of [1, 2, 3])
       it(`keeps every target large, apart, on screen and clear of the pet at ${pw}×${ph}, level ${level}`, () => {
@@ -204,7 +246,8 @@ describe('Little Conductor layout', () => {
         // The pads' marks sit 40 units below them; keep that clear of the stand and the buttons too.
         const withMarks = (r: typeof l.pads.turtle) => ({ ...r, h: r.h + 50 });
         for (let i = 0; i < targets.length; i++)
-          for (let j = i + 1; j < targets.length; j++) expect(overlap(i < 2 ? withMarks(targets[i]) : targets[i], targets[j])).toBe(false);
+          for (let j = i + 1; j < targets.length; j++)
+            expect(overlap(i < 2 ? withMarks(targets[i]) : targets[i], targets[j])).toBe(false);
         expect(overlap(l.stand, l.pads.turtle)).toBe(false);
         if (level < 3) {
           expect(l.sign).toBeUndefined();
@@ -216,7 +259,14 @@ describe('Little Conductor layout', () => {
         expect(sign.x).toBeGreaterThanOrEqual(0);
         expect(sign.x + sign.w).toBeLessThanOrEqual(view.w);
         expect(sign.y + sign.h).toBeLessThanOrEqual(view.h);
-        for (const t of [l.stand, withMarks(l.pads.turtle), withMarks(l.pads.rabbit), box(l.listen), box(l.done), { x: 0, y: view.h - 220, w: 220, h: 220 }])
+        for (const t of [
+          l.stand,
+          withMarks(l.pads.turtle),
+          withMarks(l.pads.rabbit),
+          box(l.listen),
+          box(l.done),
+          { x: 0, y: view.h - 220, w: 220, h: 220 },
+        ])
           expect(overlap(sign, t)).toBe(false);
         // The listener stands under the sign, above the buttons.
         expect(l.listener!.y).toBeLessThan(l.listen.y - l.listen.r);

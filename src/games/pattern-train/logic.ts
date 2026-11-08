@@ -38,13 +38,25 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [], kind: 'number', numberSteps: [2, 5, 10], name: 'Count numbered cars by 2, 5, or 10' },
   { pattern: [0, 1], kind: 'shape', odd: 'extra', name: 'Find the car that does not belong' },
   { pattern: [0, 1, 2], kind: 'shape', odd: 'swap', name: 'Find the wrong car and fix the train' },
-  { pattern: [0, 0, 1], kind: 'shape', match: 'row', name: 'Find the row with the same pattern in new pieces' },
+  {
+    pattern: [0, 0, 1],
+    kind: 'shape',
+    match: 'row',
+    name: 'Find the row with the same pattern in new pieces',
+  },
   { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
 ];
 
-export const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: PATTERN_PLANS.length } };
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 6 },
+  prek: { min: 3, max: 9 },
+  school: { min: 8, max: PATTERN_PLANS.length },
+};
 
-export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, level - 1))];
+export const patternPlan = (level: number) =>
+  PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, level - 1))];
 
 /** Choices under the train: one of each symbol, so every answer is on offer. */
 export const CHOICES = 3;
@@ -74,7 +86,10 @@ const PAIR_SHAPES: readonly ShapeKind[] = ['circle', 'triangle', 'square'];
 export const pieceColor = (piece: number) => piece % 2;
 export const pieceShape = (piece: number) => Math.floor(piece / 2);
 /** What a color-and-shape train looks like this round. */
-export interface PairLook { colors: [ColorName, ColorName]; shapes: [ShapeKind, ShapeKind] }
+export interface PairLook {
+  colors: [ColorName, ColorName];
+  shapes: [ShapeKind, ShapeKind];
+}
 
 /** The highest number a numbered train shows, so every car reads as a number she counts with. */
 export const NUMBER_TOP = 100;
@@ -86,7 +101,10 @@ export const NUMBER_CARS = 7;
  * can sit anywhere after the first two, and the two wrong numbers are drawn from the near misses (one step back, one step
  * on, one off), so the answer is not always the smallest choice and is found by counting.
  */
-function numberTrain(steps: readonly number[], rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+function numberTrain(
+  steps: readonly number[],
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][] } {
   const step = rng.pick(steps);
   const highest = Math.floor((NUMBER_TOP - step * (NUMBER_CARS - 1)) / step);
   const start = step * rng.int(2, highest);
@@ -108,7 +126,10 @@ function numberTrain(steps: readonly number[], rng: Rng): { sequence: number[]; 
 function pairTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look: PairLook } {
   const start = rng.int(0, 3);
   const sequence = Array.from({ length: PAIR_CARS }, (_, i) => (start + i) % 4);
-  const look: PairLook = { colors: rng.shuffle([...PAIR_COLORS]).slice(0, 2) as [ColorName, ColorName], shapes: rng.shuffle([...PAIR_SHAPES]).slice(0, 2) as [ShapeKind, ShapeKind] };
+  const look: PairLook = {
+    colors: rng.shuffle([...PAIR_COLORS]).slice(0, 2) as [ColorName, ColorName],
+    shapes: rng.shuffle([...PAIR_SHAPES]).slice(0, 2) as [ShapeKind, ShapeKind],
+  };
   return { sequence, targets: [rng.int(1, PAIR_CARS - 1)], choices: [rng.shuffle([0, 1, 2, 3])], look };
 }
 
@@ -117,11 +138,17 @@ function pairTrain(rng: Rng): { sequence: number[]; targets: number[]; choices: 
  * repeat's place `(6 + hidden) mod unit`, so she counts the hidden cars and jumps whole units; it is the car just before
  * the tunnel in only one round of four. The cars shown are the first six; the tunnel is not a car in `sequence`.
  */
-function tunnelTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; hidden: number } {
+function tunnelTrain(
+  plan: PatternPlan,
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][]; hidden: number } {
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
   const hidden = rng.int(TUNNEL_HIDDEN.min, TUNNEL_HIDDEN.max);
-  const sequence = Array.from({ length: unit * 2 + 1 }, (_, i) => tokens[plan.pattern[(i < unit * 2 ? i : unit * 2 + hidden) % unit]]);
+  const sequence = Array.from(
+    { length: unit * 2 + 1 },
+    (_, i) => tokens[plan.pattern[(i < unit * 2 ? i : unit * 2 + hidden) % unit]],
+  );
   return { sequence, targets: [sequence.length - 1], choices: [[0, 1, 2]], hidden };
 }
 
@@ -132,12 +159,28 @@ function tunnelTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets
  * repeat. The tunnel level (10) shows six cars, then the tunnel, then the empty car. Choices are the three pieces in a fixed order (the bells sound by their place), so every
  * piece on the train is on offer, the near misses included.
  */
-export function buildTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; look?: PairLook; hidden?: number; family?: number; shown?: number[] } {
+export function buildTrain(
+  plan: PatternPlan,
+  rng: Rng,
+): {
+  sequence: number[];
+  targets: number[];
+  choices: number[][];
+  look?: PairLook;
+  hidden?: number;
+  family?: number;
+  shown?: number[];
+} {
   if (plan.numberSteps) return numberTrain(plan.numberSteps, rng);
   if (plan.kind === 'pair') return pairTrain(rng);
   const train = plan.odd ? oddTrain(plan, rng) : plan.tunnel ? tunnelTrain(plan, rng) : plainTrain(plan, rng);
   // Drawn last, so the cars and gaps of a seed do not depend on what they are made of.
-  const family = plan.kind === 'shape' ? rng.int(0, SHAPE_FAMILIES.length - 1) : plan.kind === 'animal' ? rng.int(0, ANIMAL_TRIOS.length - 1) : undefined;
+  const family =
+    plan.kind === 'shape'
+      ? rng.int(0, SHAPE_FAMILIES.length - 1)
+      : plan.kind === 'animal'
+        ? rng.int(0, ANIMAL_TRIOS.length - 1)
+        : undefined;
   return { ...train, family };
 }
 
@@ -150,7 +193,10 @@ export const ODD_CARS = { extra: 7, swap: 9 } as const;
  * cars of ABC with one car showing a wrong piece (`shown`), while `sequence` keeps the car that belongs there; the other
  * eight cars show each place of the unit at least twice, so the fix is certain. `targets` is the car to find.
  */
-function oddTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][]; shown?: number[] } {
+function oddTrain(
+  plan: PatternPlan,
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][]; shown?: number[] } {
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
   if (plan.odd === 'extra') {
@@ -166,7 +212,10 @@ function oddTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: n
   return { sequence, targets: [at], choices: [[0, 1, 2]], shown };
 }
 
-function plainTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets: number[]; choices: number[][] } {
+function plainTrain(
+  plan: PatternPlan,
+  rng: Rng,
+): { sequence: number[]; targets: number[]; choices: number[][] } {
   const tokens = rng.shuffle([0, 1, 2]);
   const unit = plan.pattern.length;
   // Two empty cars may start at slot 0 or 1 (nine cars at most); a missing-middle train shows no extra cars.
@@ -184,17 +233,32 @@ function plainTrain(plan: PatternPlan, rng: Rng): { sequence: number[]; targets:
  * The choice that fills the car being asked for (the couch bot and the how-to card's ghost finger): the symbol the pattern
  * puts there. Always one of the `CHOICES` on offer.
  */
-export const wantedChoice = (sequence: readonly number[], targets: readonly number[], choices: readonly (readonly number[])[], target: number): number => choices[target].indexOf(sequence[targets[target]]);
+export const wantedChoice = (
+  sequence: readonly number[],
+  targets: readonly number[],
+  choices: readonly (readonly number[])[],
+  target: number,
+): number => choices[target].indexOf(sequence[targets[target]]);
 
 /** The model's cars and every row's cars in the same-pattern levels. */
 export const MATCH_CARS = 6;
 /** The units a model can repeat (each divides six cars); a row shares its model's unit only when it is the answer. */
-export const MATCH_UNITS: readonly (readonly number[])[] = [[0, 1], [0, 0, 1], [0, 1, 1], [0, 1, 2]];
+export const MATCH_UNITS: readonly (readonly number[])[] = [
+  [0, 1],
+  [0, 0, 1],
+  [0, 1, 1],
+  [0, 1, 2],
+];
 
 /** A train's structure with the pieces forgotten: each piece renamed by when it first shows (so cat, cat, cow and A, A, B agree). */
 export function structure(cars: readonly number[]): string {
   const seen: number[] = [];
-  return cars.map((c) => { if (!seen.includes(c)) seen.push(c); return seen.indexOf(c); }).join('');
+  return cars
+    .map((c) => {
+      if (!seen.includes(c)) seen.push(c);
+      return seen.indexOf(c);
+    })
+    .join('');
 }
 
 /**
@@ -231,5 +295,10 @@ export function buildMatch(rng: Rng): MatchRound {
   const unit = rng.pick(MATCH_UNITS);
   const others = rng.shuffle(MATCH_UNITS.filter((u) => u !== unit)).slice(0, 2);
   const options = rng.shuffle([unit, ...others]);
-  return { model: cars(unit, rng), rows: options.map((u) => cars(u, rng)), answer: options.indexOf(unit), trio: rng.int(0, ANIMAL_TRIOS.length - 1) };
+  return {
+    model: cars(unit, rng),
+    rows: options.map((u) => cars(u, rng)),
+    answer: options.indexOf(unit),
+    trio: rng.int(0, ANIMAL_TRIOS.length - 1),
+  };
 }

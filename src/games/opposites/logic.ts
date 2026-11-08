@@ -16,7 +16,12 @@ export interface OppPlan {
 }
 
 export const PLANS: OppPlan[] = [
-  { level: 1, mode: 'switch', rounds: 8, name: 'Tap the picture: it flips to its opposite (big, small; open, closed)' },
+  {
+    level: 1,
+    mode: 'switch',
+    rounds: 8,
+    name: 'Tap the picture: it flips to its opposite (big, small; open, closed)',
+  },
   { level: 2, mode: 'find', rounds: 5, name: 'Find the one named: "find the big one"' },
   { level: 3, mode: 'opposite', rounds: 4, name: 'This one is hot: find its opposite among three' },
   { level: 4, mode: 'pairs', rounds: 2, name: 'Match three pairs of opposites' },
@@ -77,7 +82,16 @@ export interface OppRound {
 export const poolFor = (level: number): Concept[] => CONCEPT_IDS.filter((c) => CONCEPTS[c].from <= level);
 
 /** Keep stickers independent of future playable-pool edits. */
-export const STICKER_CONCEPTS = ['sky', 'temp', 'cup', 'lid', 'stature', 'lamp', 'wake', 'basket'] as const satisfies readonly Concept[];
+export const STICKER_CONCEPTS = [
+  'sky',
+  'temp',
+  'cup',
+  'lid',
+  'stature',
+  'lamp',
+  'wake',
+  'basket',
+] as const satisfies readonly Concept[];
 
 /** Choose different families so incidental size, mood or container clues cannot supply a second reasonable answer. */
 function differentFamilies(pool: readonly Concept[], rng: Rng, count: number, exclude?: Concept): Concept[] {
@@ -107,11 +121,15 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
       return { concept: c, side, who: subjects.get(c)! };
     };
     if (plan.mode === 'switch') out.push({ cards: [card(concept, side)] });
-    else if (plan.mode === 'find') out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, side) });
+    else if (plan.mode === 'find')
+      out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, side) });
     else if (plan.mode === 'opposite') {
       // The opposite, plus two pictures from other concepts.
       const others = differentFamilies(pool, rng, 2, concept).map((c) => card(c, rng.int(0, 1) as 0 | 1));
-      out.push({ ask: card(concept, side), cards: rng.shuffle([card(concept, (1 - side) as 0 | 1), ...others]) });
+      out.push({
+        ask: card(concept, side),
+        cards: rng.shuffle([card(concept, (1 - side) as 0 | 1), ...others]),
+      });
     } else if (plan.mode === 'spot') {
       // One opposite pair, plus three single pictures from other families, so no decoy pair or arguable answer exists.
       const decoys = differentFamilies(pool, rng, 3, concept).map((c) => card(c, rng.int(0, 1) as 0 | 1));
@@ -131,7 +149,12 @@ export const opposites = (a: Card, b: Card) => a.concept === b.concept && a.side
  * one card. Find: the card named. Opposite: the card that is the opposite of the one shown. Pairs: the first card not yet
  * matched and then its opposite (`picked` is the one already chosen). Always a right one.
  */
-export function cardToTap(plan: OppPlan, round: OppRound, done: readonly boolean[], picked: number | null): number | null {
+export function cardToTap(
+  plan: OppPlan,
+  round: OppRound,
+  done: readonly boolean[],
+  picked: number | null,
+): number | null {
   const find = (ok: (c: Card, i: number) => boolean) => {
     const i = round.cards.findIndex((c, k) => !done[k] && ok(c, k));
     return i < 0 ? null : i;
@@ -148,6 +171,8 @@ export function cardToTap(plan: OppPlan, round: OppRound, done: readonly boolean
         ? find((c, k) => round.cards.some((o, j) => j !== k && opposites(o, c)))
         : find((c, k) => k !== picked && opposites(c, round.cards[picked]));
     case 'pairs':
-      return picked === null ? find(() => true) : find((c, k) => k !== picked && opposites(c, round.cards[picked]));
+      return picked === null
+        ? find(() => true)
+        : find((c, k) => k !== picked && opposites(c, round.cards[picked]));
   }
 }

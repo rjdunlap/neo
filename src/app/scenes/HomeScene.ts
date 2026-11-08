@@ -38,20 +38,40 @@ export class HomeScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly young = youngHome();
   readonly pet: Companion = this.track(makeCompanion());
-  readonly who = new RoundButton(peopleIcon(), swatch.white, CORNER_RADIUS, () => this.leave('home.who', () => this.app.go.start()));
+  readonly who = new RoundButton(peopleIcon(), swatch.white, CORNER_RADIUS, () =>
+    this.leave('home.who', () => this.app.go.start()),
+  );
   /** Welcome a New Friend (RW07): drawn while the project is open and hers, never empty. */
-  readonly cont: RoundButton | null = !this.young && showsContinue(store.welcome, store.data.profile.band) ? new RoundButton(basketIcon(), swatch.orange, ACTION_RADIUS, () => this.leave('home.continue', () => this.app.go.project())) : null;
-  readonly play: RoundButton | null = this.young ? null : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () => this.leave('home.play', () => this.app.go.room()));
-  readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () => this.leave('home.explore', () => this.app.go.explore()));
+  readonly cont: RoundButton | null =
+    !this.young && showsContinue(store.welcome, store.data.profile.band)
+      ? new RoundButton(basketIcon(), swatch.orange, ACTION_RADIUS, () =>
+          this.leave('home.continue', () => this.app.go.project()),
+        )
+      : null;
+  readonly play: RoundButton | null = this.young
+    ? null
+    : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () =>
+        this.leave('home.play', () => this.app.go.room()),
+      );
+  readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () =>
+    this.leave('home.explore', () => this.app.go.explore()),
+  );
   /** Today's six (D10): six games for the day at preset levels, for every band; its Back comes Home. */
-  readonly daily = new RoundButton(sixIcon(), swatch.white, ACTION_RADIUS, () => this.leave('daily.go', () => this.app.go.daily()));
-  readonly toy: BallPlay | null = this.young ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch'))) : null;
+  readonly daily = new RoundButton(sixIcon(), swatch.white, ACTION_RADIUS, () =>
+    this.leave('daily.go', () => this.app.go.daily()),
+  );
+  readonly toy: BallPlay | null = this.young
+    ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')))
+    : null;
   /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
   private readonly gear = gearButton({
     onOpen: () => {
       if (this.leaving) return;
       voice.stop();
-      openParentPanel(() => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()), () => this.app.go.start());
+      openParentPanel(
+        () => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()),
+        () => this.app.go.start(),
+      );
     },
     onShort: () => void voice.say('parent.ask'),
   });
@@ -125,7 +145,13 @@ export class HomeScene extends Scene {
     void voice.say('map.birthday');
     sfx.tada();
     this.pet.cheer();
-    this.particles.burst(this.view.w / 2, this.view.h * 0.5, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 70, speed: [200, 500], gravity: 160 });
+    this.particles.burst(this.view.w / 2, this.view.h * 0.5, {
+      kind: 'confetti',
+      colors: RAINBOW.map((c) => swatch[c].fill),
+      count: 70,
+      speed: [200, 500],
+      gravity: 160,
+    });
   }
 
   destroy() {

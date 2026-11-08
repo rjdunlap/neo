@@ -73,7 +73,10 @@ export class GhostFinger {
     private readonly kind: PointerKind = 'touch',
   ) {
     this.art = kind === 'mouse' ? drawCursor() : drawHand();
-    this.dot.circle(0, 0, 30).fill({ color: 0x3f8cff, alpha: 0.38 }).stroke({ width: 4, color: 0x3f8cff, alpha: 0.7 });
+    this.dot
+      .circle(0, 0, 30)
+      .fill({ color: 0x3f8cff, alpha: 0.38 })
+      .stroke({ width: 4, color: 0x3f8cff, alpha: 0.7 });
     this.hand.addChild(this.ring, this.dot, this.art);
     this.hand.visible = false;
     this.hand.eventMode = 'none';
@@ -91,9 +94,33 @@ export class GhostFinger {
     if (this.phase !== 'idle') return;
     let plan: Plan;
     const rest = Math.max(0.05, intent.pause ?? REST);
-    if ('tap' in intent) plan = { stops: [intent.tap], target: intent.receiver ?? intent.tap.on, lift: 0, tap: true, rest, when: intent.when };
-    else if ('drag' in intent) plan = { stops: [intent.drag, intent.to], target: intent.receiver ?? intent.drag.on, lift: intent.lift ?? RIDE, tap: false, rest, when: intent.when };
-    else plan = { stops: [intent.trace, ...intent.via], target: intent.receiver ?? intent.trace.on, lift: 0, tap: false, rest, when: intent.when };
+    if ('tap' in intent)
+      plan = {
+        stops: [intent.tap],
+        target: intent.receiver ?? intent.tap.on,
+        lift: 0,
+        tap: true,
+        rest,
+        when: intent.when,
+      };
+    else if ('drag' in intent)
+      plan = {
+        stops: [intent.drag, intent.to],
+        target: intent.receiver ?? intent.drag.on,
+        lift: intent.lift ?? RIDE,
+        tap: false,
+        rest,
+        when: intent.when,
+      };
+    else
+      plan = {
+        stops: [intent.trace, ...intent.via],
+        target: intent.receiver ?? intent.trace.on,
+        lift: 0,
+        tap: false,
+        rest,
+        when: intent.when,
+      };
     if (plan.target.destroyed) return;
     this.plan = plan;
     this.leg = 0;
@@ -291,7 +318,10 @@ export class GhostFinger {
     if (this.ripple < 1) {
       this.ripple = Math.min(1, this.ripple + dt / 0.45);
       const r = 30 + 60 * this.ripple;
-      this.ring.clear().circle(0, 0, r).stroke({ width: 5, color: 0x3f8cff, alpha: 0.6 * (1 - this.ripple) });
+      this.ring
+        .clear()
+        .circle(0, 0, r)
+        .stroke({ width: 5, color: 0x3f8cff, alpha: 0.6 * (1 - this.ripple) });
     } else {
       this.ring.clear();
     }
@@ -303,11 +333,24 @@ function drawHand(): Container {
   const skin = 0xffd9b8;
   const shade = 0xf1b98f;
   const g = new Container();
-  const finger = new Graphics().roundRect(-13, -2, 26, 74, 13).fill(skin).stroke({ width: 3, color: ink, alpha: 0.85 });
-  const palm = new Graphics().roundRect(-36, 54, 78, 66, 26).fill(skin).stroke({ width: 3, color: ink, alpha: 0.85 });
+  const finger = new Graphics()
+    .roundRect(-13, -2, 26, 74, 13)
+    .fill(skin)
+    .stroke({ width: 3, color: ink, alpha: 0.85 });
+  const palm = new Graphics()
+    .roundRect(-36, 54, 78, 66, 26)
+    .fill(skin)
+    .stroke({ width: 3, color: ink, alpha: 0.85 });
   const knuckles = new Graphics();
-  for (let i = 0; i < 3; i++) knuckles.roundRect(14 + i * 9, 44 + i * 4, 24, 34, 11).fill(shade).stroke({ width: 2.5, color: ink, alpha: 0.7 });
-  const thumb = new Graphics().roundRect(-14, 0, 34, 24, 12).fill(skin).stroke({ width: 3, color: ink, alpha: 0.85 });
+  for (let i = 0; i < 3; i++)
+    knuckles
+      .roundRect(14 + i * 9, 44 + i * 4, 24, 34, 11)
+      .fill(shade)
+      .stroke({ width: 2.5, color: ink, alpha: 0.7 });
+  const thumb = new Graphics()
+    .roundRect(-14, 0, 34, 24, 12)
+    .fill(skin)
+    .stroke({ width: 3, color: ink, alpha: 0.85 });
   thumb.position.set(-36, 76);
   thumb.rotation = 0.6;
   // The finger sits over the palm's top edge, and the palm's outline is hidden where they join.

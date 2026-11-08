@@ -2,10 +2,47 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  acceptedStops, ANSWER_SIZE, ART_R, canBeTooClose, clampGlass, corners, DECIDING, dropScale, dropsFor, FEATURES, helpFor, judgeSwimmers, judgeView,
-  lensLayout, LensTally, LOOK_NEAR, LOOK_TIME, LookTracker, MAX_ART_SCALE, MAX_SPEED, MIN_LENS, MIN_LENS_1, nearestSwimmer, QUESTIONS, questionsFor,
-  ringBox, ringHits, STOPS, STOP_SIZE, swimmerAt, swimmerSpeed, SWIMMER_FIELD, SWIMMER_LENGTH, SWIMMER_REACH, THING_GAP, THING_SIZE, visibleAt, windowOf,
-  type Drop, type SampleId, type Stop,
+  acceptedStops,
+  ANSWER_SIZE,
+  ART_R,
+  canBeTooClose,
+  clampGlass,
+  corners,
+  DECIDING,
+  dropScale,
+  dropsFor,
+  FEATURES,
+  helpFor,
+  judgeSwimmers,
+  judgeView,
+  lensLayout,
+  LensTally,
+  LOOK_NEAR,
+  LOOK_TIME,
+  LookTracker,
+  MAX_ART_SCALE,
+  MAX_SPEED,
+  MIN_LENS,
+  MIN_LENS_1,
+  nearestSwimmer,
+  QUESTIONS,
+  questionsFor,
+  ringBox,
+  ringHits,
+  STOPS,
+  STOP_SIZE,
+  swimmerAt,
+  swimmerSpeed,
+  SWIMMER_FIELD,
+  SWIMMER_LENGTH,
+  SWIMMER_REACH,
+  THING_GAP,
+  THING_SIZE,
+  visibleAt,
+  windowOf,
+  type Drop,
+  type SampleId,
+  type Stop,
 } from './logic';
 
 const SAMPLES = Object.keys(FEATURES) as SampleId[];
@@ -19,17 +56,20 @@ const views = {
 
 describe('feature tables', () => {
   it('windows lie in 1-4 with first <= last', () => {
-    for (const s of SAMPLES) for (const f of FEATURES[s]) {
-      expect(f.window[0]).toBeGreaterThanOrEqual(1);
-      expect(f.window[1]).toBeLessThanOrEqual(4);
-      expect(f.window[0]).toBeLessThanOrEqual(f.window[1]);
-    }
+    for (const s of SAMPLES)
+      for (const f of FEATURES[s]) {
+        expect(f.window[0]).toBeGreaterThanOrEqual(1);
+        expect(f.window[1]).toBeLessThanOrEqual(4);
+        expect(f.window[0]).toBeLessThanOrEqual(f.window[1]);
+      }
   });
   it('visibleAt is total and non-empty at every stop', () => {
     for (const s of SAMPLES) for (const st of STOPS) expect(visibleAt(s, st).length).toBeGreaterThan(0);
   });
   it('drop-empty is the drop minus swimmers plus a close speck', () => {
-    const expected = FEATURES.drop.filter((f) => f.id !== 'swimmers' && f.id !== 'swimmer-hairs').map((f) => f.id);
+    const expected = FEATURES.drop
+      .filter((f) => f.id !== 'swimmers' && f.id !== 'swimmer-hairs')
+      .map((f) => f.id);
     expect(FEATURES['drop-empty'].map((f) => f.id)).toEqual([...expected, 'speck-close']);
     expect(FEATURES['drop-empty'].find((f) => f.id === 'speck-close')!.window).toEqual([4, 4]);
   });
@@ -96,7 +136,8 @@ describe('level 4 questions', () => {
     }
   });
   it('the same seed gives the same round', () => {
-    for (const seed of seeds(20)) expect(questionsFor(new Rng(seed), false)).toEqual(questionsFor(new Rng(seed), false));
+    for (const seed of seeds(20))
+      expect(questionsFor(new Rng(seed), false)).toEqual(questionsFor(new Rng(seed), false));
   });
 });
 
@@ -105,11 +146,12 @@ describe('level 3 judging', () => {
   const empty: Drop = { swimmers: [] };
   it('is free below the deciding stop', () => {
     expect(DECIDING).toBe(3);
-    for (const d of [populated, empty]) for (const st of [1, 2] as Stop[]) {
-      expect(judgeSwimmers(d, st, { kind: 'none' }).result).toBe('free');
-      expect(judgeSwimmers(d, st, { kind: 'tap', swimmer: 0 }).result).toBe('free');
-      expect(judgeSwimmers(d, st, { kind: 'tap', swimmer: null }).result).toBe('free');
-    }
+    for (const d of [populated, empty])
+      for (const st of [1, 2] as Stop[]) {
+        expect(judgeSwimmers(d, st, { kind: 'none' }).result).toBe('free');
+        expect(judgeSwimmers(d, st, { kind: 'tap', swimmer: 0 }).result).toBe('free');
+        expect(judgeSwimmers(d, st, { kind: 'tap', swimmer: null }).result).toBe('free');
+      }
   });
   it('misses only for none on a populated drop at 3-4', () => {
     for (const st of [3, 4] as Stop[]) {
@@ -141,21 +183,27 @@ describe('level 3 judging', () => {
 describe('swimmers', () => {
   const swimmers = seeds(100).flatMap((s) => dropsFor(new Rng(s), false).flatMap((d) => d.swimmers));
   it('stay inside the drop for ten minutes', () => {
-    for (const s of swimmers) for (let t = 0; t <= 600; t += 0.25) {
-      const p = swimmerAt(s, t);
-      const d = Math.hypot(p.x, p.y);
-      expect(d + SWIMMER_LENGTH / 2).toBeLessThanOrEqual(1);
-      expect(d).toBeLessThanOrEqual(SWIMMER_FIELD);
-    }
+    for (const s of swimmers)
+      for (let t = 0; t <= 600; t += 0.25) {
+        const p = swimmerAt(s, t);
+        const d = Math.hypot(p.x, p.y);
+        expect(d + SWIMMER_LENGTH / 2).toBeLessThanOrEqual(1);
+        expect(d).toBeLessThanOrEqual(SWIMMER_FIELD);
+      }
   });
   it('never drift faster than the limit at the closest stop and largest lens', () => {
-    for (const s of swimmers) expect(swimmerSpeed(s) * dropScale(4) * MAX_ART_SCALE).toBeLessThanOrEqual(MAX_SPEED + 1e-9);
+    for (const s of swimmers)
+      expect(swimmerSpeed(s) * dropScale(4) * MAX_ART_SCALE).toBeLessThanOrEqual(MAX_SPEED + 1e-9);
   });
   it('are at least 100 units long on the smallest lens at stop 3', () => {
     expect(SWIMMER_LENGTH * dropScale(3) * (MIN_LENS / 2 / ART_R)).toBeGreaterThanOrEqual(100);
   });
   it('nearestSwimmer picks the closest in reach and ignores out-of-view ones', () => {
-    const sw = [{ x: 0, y: 0 }, { x: 60, y: 0 }, { x: 500, y: 0 }];
+    const sw = [
+      { x: 0, y: 0 },
+      { x: 60, y: 0 },
+      { x: 500, y: 0 },
+    ];
     expect(nearestSwimmer({ x: 40, y: 0 }, sw, 300)).toBe(1);
     expect(nearestSwimmer({ x: 10, y: 0 }, sw, 300)).toBe(0);
     expect(nearestSwimmer({ x: 0, y: SWIMMER_REACH + 40 }, sw, 300)).toBeNull();
@@ -174,9 +222,19 @@ describe('help', () => {
     }
   });
   it('level 2 glides to the nearest thing not yet looked at, null when all looked', () => {
-    const things = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 200, y: 0 }];
-    expect(helpFor(2, { glass: { x: 190, y: 0 }, things, looked: new Set() })).toEqual({ do: 'glide', to: 2 });
-    expect(helpFor(2, { glass: { x: 190, y: 0 }, things, looked: new Set([2]) })).toEqual({ do: 'glide', to: 1 });
+    const things = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 200, y: 0 },
+    ];
+    expect(helpFor(2, { glass: { x: 190, y: 0 }, things, looked: new Set() })).toEqual({
+      do: 'glide',
+      to: 2,
+    });
+    expect(helpFor(2, { glass: { x: 190, y: 0 }, things, looked: new Set([2]) })).toEqual({
+      do: 'glide',
+      to: 1,
+    });
     expect(helpFor(2, { glass: { x: 190, y: 0 }, things, looked: new Set([0, 1, 2]) })).toBeNull();
   });
   it('level 1 says tap the lens', () => expect(helpFor(1, {})).toEqual({ do: 'tap-lens' }));
@@ -199,12 +257,17 @@ describe('LensTally', () => {
 });
 
 describe('LookTracker', () => {
-  const things = [{ x: 0, y: 0 }, { x: 300, y: 0 }, { x: 600, y: 0 }];
+  const things = [
+    { x: 0, y: 0 },
+    { x: 300, y: 0 },
+    { x: 600, y: 0 },
+  ];
   it('counts after the dwell, once each, done at three', () => {
     const lt = new LookTracker();
     const dwell = (i: number) => {
       let got: number | null = null;
-      for (let k = 0; k < 20; k++) got = lt.update(LOOK_TIME / 10, { x: things[i].x + LOOK_NEAR - 1, y: 0 }, things) ?? got;
+      for (let k = 0; k < 20; k++)
+        got = lt.update(LOOK_TIME / 10, { x: things[i].x + LOOK_NEAR - 1, y: 0 }, things) ?? got;
       return got;
     };
     expect(lt.update(LOOK_TIME - 0.05, things[0], things)).toBeNull();
@@ -228,52 +291,74 @@ describe('LookTracker', () => {
 });
 
 describe('layout', () => {
-  for (const [name, v] of Object.entries(views)) for (const level of [1, 2, 3, 4]) {
-    it(`${name} level ${level}`, () => {
-      const l = lensLayout(v, level);
-      expect(l).not.toBeNull();
-      if (!l) return;
-      const rects = [...l.stops, ...(l.answer ? [l.answer] : []), ...l.things.map(ringBox), ...(l.paw ? [ringBox(l.paw)] : [])];
-      if (level >= 3) {
-        expect(l.stops.length).toBe(4);
-        for (const s of l.stops) expect(Math.min(s.w, s.h)).toBeGreaterThanOrEqual(STOP_SIZE);
-        expect(Math.min(l.answer!.w, l.answer!.h)).toBeGreaterThanOrEqual(ANSWER_SIZE);
-      }
-      if (level !== 2) expect(l.lens.r * 2).toBeGreaterThanOrEqual(level === 1 ? MIN_LENS_1 : MIN_LENS);
-      if (level === 2) {
-        expect(l.things.length).toBe(3);
-        for (const t of l.things) expect(t.r * 2).toBeGreaterThanOrEqual(THING_SIZE);
-        for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) {
-          expect(Math.hypot(l.things[i].x - l.things[j].x, l.things[i].y - l.things[j].y) - l.things[i].r - l.things[j].r).toBeGreaterThanOrEqual(THING_GAP);
+  for (const [name, v] of Object.entries(views))
+    for (const level of [1, 2, 3, 4]) {
+      it(`${name} level ${level}`, () => {
+        const l = lensLayout(v, level);
+        expect(l).not.toBeNull();
+        if (!l) return;
+        const rects = [
+          ...l.stops,
+          ...(l.answer ? [l.answer] : []),
+          ...l.things.map(ringBox),
+          ...(l.paw ? [ringBox(l.paw)] : []),
+        ];
+        if (level >= 3) {
+          expect(l.stops.length).toBe(4);
+          for (const s of l.stops) expect(Math.min(s.w, s.h)).toBeGreaterThanOrEqual(STOP_SIZE);
+          expect(Math.min(l.answer!.w, l.answer!.h)).toBeGreaterThanOrEqual(ANSWER_SIZE);
         }
-      }
-      const all = level === 2 ? rects : [...rects, ringBox(l.lens)];
-      for (const r of all) {
-        expect(r.x).toBeGreaterThanOrEqual(0);
-        expect(r.y).toBeGreaterThanOrEqual(0);
-        expect(r.x + r.w).toBeLessThanOrEqual(v.w);
-        expect(r.y + r.h).toBeLessThanOrEqual(v.h);
-      }
-      for (const r of rects) for (const k of corners(v)) {
-        expect(r.x < k.x + k.w && k.x < r.x + r.w && r.y < k.y + k.h && k.y < r.y + r.h).toBe(false);
-      }
-      if (level !== 2) for (const k of corners(v)) expect(ringHits(l.lens, k)).toBe(false);
-      rects.forEach((a, i) => rects.forEach((b, j) => {
-        if (i < j) expect(a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h).toBe(false);
-      }));
-      if (level !== 2) for (const r of rects) expect(ringHits(l.lens, r)).toBe(false);
-    });
-  }
+        if (level !== 2) expect(l.lens.r * 2).toBeGreaterThanOrEqual(level === 1 ? MIN_LENS_1 : MIN_LENS);
+        if (level === 2) {
+          expect(l.things.length).toBe(3);
+          for (const t of l.things) expect(t.r * 2).toBeGreaterThanOrEqual(THING_SIZE);
+          for (let i = 0; i < 3; i++)
+            for (let j = i + 1; j < 3; j++) {
+              expect(
+                Math.hypot(l.things[i].x - l.things[j].x, l.things[i].y - l.things[j].y) -
+                  l.things[i].r -
+                  l.things[j].r,
+              ).toBeGreaterThanOrEqual(THING_GAP);
+            }
+        }
+        const all = level === 2 ? rects : [...rects, ringBox(l.lens)];
+        for (const r of all) {
+          expect(r.x).toBeGreaterThanOrEqual(0);
+          expect(r.y).toBeGreaterThanOrEqual(0);
+          expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+          expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+        }
+        for (const r of rects)
+          for (const k of corners(v)) {
+            expect(r.x < k.x + k.w && k.x < r.x + r.w && r.y < k.y + k.h && k.y < r.y + r.h).toBe(false);
+          }
+        if (level !== 2) for (const k of corners(v)) expect(ringHits(l.lens, k)).toBe(false);
+        rects.forEach((a, i) =>
+          rects.forEach((b, j) => {
+            if (i < j)
+              expect(a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h).toBe(false);
+          }),
+        );
+        if (level !== 2) for (const r of rects) expect(ringHits(l.lens, r)).toBe(false);
+      });
+    }
   it('clampGlass keeps the glass inside the table', () => {
     const l = lensLayout(views.landscape, 2)!;
     const t = l.table!;
-    for (const p of [{ x: -999, y: -999 }, { x: 9999, y: 9999 }, { x: t.x + t.w / 2, y: t.y + t.h / 2 }]) {
+    for (const p of [
+      { x: -999, y: -999 },
+      { x: 9999, y: 9999 },
+      { x: t.x + t.w / 2, y: t.y + t.h / 2 },
+    ]) {
       const c = clampGlass(p, t);
       expect(c.x).toBeGreaterThanOrEqual(t.x + 125);
       expect(c.x).toBeLessThanOrEqual(t.x + t.w - 125);
       expect(c.y).toBeGreaterThanOrEqual(t.y + 125);
       expect(c.y).toBeLessThanOrEqual(t.y + t.h - 125);
     }
-    expect(clampGlass({ x: t.x + t.w / 2, y: t.y + t.h / 2 }, t)).toEqual({ x: t.x + t.w / 2, y: t.y + t.h / 2 });
+    expect(clampGlass({ x: t.x + t.w / 2, y: t.y + t.h / 2 }, t)).toEqual({
+      x: t.x + t.w / 2,
+      y: t.y + t.h / 2,
+    });
   });
 });

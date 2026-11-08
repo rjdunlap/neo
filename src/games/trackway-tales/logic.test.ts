@@ -2,9 +2,45 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  accepted, answer, caseById, CASES, check, CHECK_H, CHECK_W, colX, contacts, CARD_H, CARD_W, COLS, firstMismatch, fits, glowing, help,
-  informativeColumn, inPuddle, LENS_R, makeRound, MARK, MOVE_IDS, MOVEMENTS, nearestCol, observed, petCorner, PLAY_R, remaining, roundState,
-  rowY, shellButtons, SLOT_H, SLOT_W, stamp, trackLayout, type CardId, type Case, type Rect, type Round,
+  accepted,
+  answer,
+  caseById,
+  CASES,
+  check,
+  CHECK_H,
+  CHECK_W,
+  colX,
+  contacts,
+  CARD_H,
+  CARD_W,
+  COLS,
+  firstMismatch,
+  fits,
+  glowing,
+  help,
+  informativeColumn,
+  inPuddle,
+  LENS_R,
+  makeRound,
+  MARK,
+  MOVE_IDS,
+  MOVEMENTS,
+  nearestCol,
+  observed,
+  petCorner,
+  PLAY_R,
+  remaining,
+  roundState,
+  rowY,
+  shellButtons,
+  SLOT_H,
+  SLOT_W,
+  stamp,
+  trackLayout,
+  type CardId,
+  type Case,
+  type Rect,
+  type Round,
 } from './logic';
 
 const VIEWS = {
@@ -14,12 +50,17 @@ const VIEWS = {
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
 
-const sig = (marks: { col: number; row: number; heading: number }[]) => marks.map((m) => `${m.col}${m.row ? 'b' : 't'}${m.heading > 0 ? '>' : '<'}`).join(' ');
-const roundOf = (c: Case, cards: CardId[] = [...c.cards, ...(c.level >= 3 ? ['cant-tell' as const] : [])]): Round => ({ c, cards, magnified: null });
+const sig = (marks: { col: number; row: number; heading: number }[]) =>
+  marks.map((m) => `${m.col}${m.row ? 'b' : 't'}${m.heading > 0 ? '>' : '<'}`).join(' ');
+const roundOf = (
+  c: Case,
+  cards: CardId[] = [...c.cards, ...(c.level >= 3 ? ['cant-tell' as const] : [])],
+): Round => ({ c, cards, magnified: null });
 
 describe('the toy model', () => {
   it('stamps deterministically on 4, 6 and 8 columns', () => {
-    for (const id of MOVE_IDS) for (const cols of [4, 6, 8]) expect(stamp(MOVEMENTS[id], cols)).toEqual(stamp(MOVEMENTS[id], cols));
+    for (const id of MOVE_IDS)
+      for (const cols of [4, 6, 8]) expect(stamp(MOVEMENTS[id], cols)).toEqual(stamp(MOVEMENTS[id], cols));
   });
 
   it('walks one foot then the other, never two in a row on one half', () => {
@@ -35,7 +76,10 @@ describe('the toy model', () => {
     for (const cols of [4, 6, 8]) {
       const m = stamp(MOVEMENTS.hop, cols);
       for (let c = 0; c < cols; c++) {
-        const here = m.filter((x) => x.col === c).map((x) => x.row).sort();
+        const here = m
+          .filter((x) => x.col === c)
+          .map((x) => x.row)
+          .sort();
         expect(here).toEqual(c % 2 === 0 ? [0, 1] : []);
       }
     }
@@ -43,7 +87,8 @@ describe('the toy model', () => {
 
   it('leaves the same number of marks walking or hopping, over the same span', () => {
     for (const cols of [4, 6, 8]) {
-      const w = stamp(MOVEMENTS.walk, cols), h = stamp(MOVEMENTS.hop, cols);
+      const w = stamp(MOVEMENTS.walk, cols),
+        h = stamp(MOVEMENTS.hop, cols);
       expect(w.length).toBe(h.length);
       expect(Math.min(...w.map((x) => x.col))).toBe(Math.min(...h.map((x) => x.col)));
     }
@@ -58,7 +103,8 @@ describe('the toy model', () => {
 
   it('walking the other way presses the same pads in reverse order, every toe flipped', () => {
     for (const cols of [4, 6, 8]) {
-      const fw = stamp(MOVEMENTS.walk, cols), bk = stamp(MOVEMENTS['walk-back'], cols);
+      const fw = stamp(MOVEMENTS.walk, cols),
+        bk = stamp(MOVEMENTS['walk-back'], cols);
       expect(bk.map((m) => m.col)).toEqual(fw.map((m) => m.col).reverse());
       for (const m of bk) {
         expect(m.heading).toBe(-1);
@@ -75,15 +121,19 @@ describe('the toy model', () => {
 
 describe('the cases', () => {
   const intended: Record<string, string[]> = {
-    'L1-walk': ['walk'], 'L1-hop': ['hop'], 'L2-left': ['walk-back'], 'L2-right': ['walk'],
-    'L3-pause': ['walk', 'walk-stand-walk'], 'L3-switch': ['walk-then-hop'],
+    'L1-walk': ['walk'],
+    'L1-hop': ['hop'],
+    'L2-left': ['walk-back'],
+    'L2-right': ['walk'],
+    'L3-pause': ['walk', 'walk-stand-walk'],
+    'L3-switch': ['walk-then-hop'],
   };
 
   it('accepts exactly the intended cards', () => {
     for (const c of CASES) expect(accepted(c).sort(), c.id).toEqual([...intended[c.id]].sort());
   });
 
-  it('the maker always fits its own marks, and every case has the level\'s column count', () => {
+  it("the maker always fits its own marks, and every case has the level's column count", () => {
     for (const c of CASES) {
       expect(fits(MOVEMENTS[c.observedFrom], observed(c))).toBe(true);
       expect(c.cols).toBe(COLS[c.level]);
@@ -93,7 +143,8 @@ describe('the cases', () => {
   it('names a first mismatch inside the visible span for every card that does not fit', () => {
     for (const c of CASES) {
       const o = observed(c);
-      const lo = Math.min(...o.marks.map((m) => m.col)), hi = Math.max(...o.marks.map((m) => m.col));
+      const lo = Math.min(...o.marks.map((m) => m.col)),
+        hi = Math.max(...o.marks.map((m) => m.col));
       for (const id of c.cards) {
         const mm = firstMismatch(MOVEMENTS[id], o);
         if (accepted(c).includes(id)) expect(mm).toBeNull();
@@ -108,7 +159,8 @@ describe('the cases', () => {
   });
 
   it('gives the clue the walkthrough names', () => {
-    const at = (cid: string, id: keyof typeof MOVEMENTS) => firstMismatch(MOVEMENTS[id], observed(caseById(cid as Case['id'])));
+    const at = (cid: string, id: keyof typeof MOVEMENTS) =>
+      firstMismatch(MOVEMENTS[id], observed(caseById(cid as Case['id'])));
     expect(at('L1-walk', 'hop')).toEqual({ col: 0, kind: 'extra' });
     expect(at('L1-hop', 'walk')).toEqual({ col: 0, kind: 'missing' });
     expect(at('L2-left', 'walk')).toEqual({ col: 0, kind: 'toe' });
@@ -137,9 +189,10 @@ describe('the cases', () => {
 });
 
 describe('rounds', () => {
-  it('draws the level\'s cases with every card order, a seeded magnifier and Can\'t tell last at level 3', () => {
+  it("draws the level's cases with every card order, a seeded magnifier and Can't tell last at level 3", () => {
     for (const level of [1, 2, 3]) {
-      const ids = new Set<string>(), orders = new Set<string>();
+      const ids = new Set<string>(),
+        orders = new Set<string>();
       for (let i = 1; i <= 500; i++) {
         const r = makeRound(level, new Rng(i));
         expect(r.c.level).toBe(level);
@@ -226,8 +279,16 @@ describe('hints', () => {
       expect(col, c.id).not.toBeNull();
       expect(inPuddle(col!, c.puddle)).toBe(false);
       const ruled = c.cards.filter((id) => {
-        const s = stamp(MOVEMENTS[id], c.cols).filter((m) => m.col === col).map((m) => `${m.row}${m.heading}`).sort().join();
-        const ob = o.marks.filter((m) => m.col === col).map((m) => `${m.row}${m.heading}`).sort().join();
+        const s = stamp(MOVEMENTS[id], c.cols)
+          .filter((m) => m.col === col)
+          .map((m) => `${m.row}${m.heading}`)
+          .sort()
+          .join();
+        const ob = o.marks
+          .filter((m) => m.col === col)
+          .map((m) => `${m.row}${m.heading}`)
+          .sort()
+          .join();
         return s !== ob;
       });
       expect(ruled.length).toBeGreaterThanOrEqual(1);
@@ -251,18 +312,27 @@ describe('hints', () => {
 });
 
 describe('layout', () => {
-  const box = (p: { x: number; y: number }, w: number, h: number): Rect => ({ x: p.x - w / 2, y: p.y - h / 2, w, h });
-  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const inside = (a: Rect, v: { w: number; h: number }) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+  const box = (p: { x: number; y: number }, w: number, h: number): Rect => ({
+    x: p.x - w / 2,
+    y: p.y - h / 2,
+    w,
+    h,
+  });
+  const overlap = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const inside = (a: Rect, v: { w: number; h: number }) =>
+    a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
   for (const [name, v] of Object.entries(VIEWS)) {
     for (const level of [1, 2, 3]) {
       it(`fits ${name} at level ${level}`, () => {
         const L = trackLayout(v, level);
         const cols = COLS[level];
         const targets: [string, Rect][] = [
-          ['practice', L.practice], ['mud', L.mud],
+          ['practice', L.practice],
+          ['mud', L.mud],
           ...L.cards.map((c, i): [string, Rect] => [`card${i}`, box(c, CARD_W, CARD_H)]),
-          ['slot', box(L.slot, SLOT_W, SLOT_H)], ['check', box(L.check, CHECK_W, CHECK_H)],
+          ['slot', box(L.slot, SLOT_W, SLOT_H)],
+          ['check', box(L.check, CHECK_W, CHECK_H)],
         ];
         expect(L.cards).toHaveLength(level === 3 ? 4 : level === 2 ? 3 : 2);
         const fixed = [petCorner(v), ...shellButtons(v)];
@@ -271,9 +341,10 @@ describe('layout', () => {
           for (const f of fixed) expect(overlap(r, f), `${n} vs shell`).toBe(false);
           expect(Math.min(r.w, r.h), n).toBeGreaterThanOrEqual(100);
         }
-        for (let i = 0; i < targets.length; i++) for (let j = i + 1; j < targets.length; j++) {
-          expect(overlap(targets[i][1], targets[j][1]), `${targets[i][0]} vs ${targets[j][0]}`).toBe(false);
-        }
+        for (let i = 0; i < targets.length; i++)
+          for (let j = i + 1; j < targets.length; j++) {
+            expect(overlap(targets[i][1], targets[j][1]), `${targets[i][0]} vs ${targets[j][0]}`).toBe(false);
+          }
         // The card above its Play button is a target of its own, and the Play button is round and full size.
         expect(CARD_H - 2 * PLAY_R - 10).toBeGreaterThanOrEqual(100);
         expect(2 * PLAY_R).toBeGreaterThanOrEqual(100);

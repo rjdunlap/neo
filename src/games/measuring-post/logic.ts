@@ -37,7 +37,11 @@ export function count(attribute: Attribute, quantity: number, unit: Unit): numbe
 }
 
 /** The objects friends bring, one per attribute: a ribbon, a parcel, a jug. Quantities are in little units. */
-export const OBJECT: Record<Attribute, 'ribbon' | 'parcel' | 'jug'> = { length: 'ribbon', mass: 'parcel', capacity: 'jug' };
+export const OBJECT: Record<Attribute, 'ribbon' | 'parcel' | 'jug'> = {
+  length: 'ribbon',
+  mass: 'parcel',
+  capacity: 'jug',
+};
 
 /** Level 1 measures every object in little units: four of them each time. */
 export const LEVEL1_QUANTITY: Record<Attribute, number> = { length: 4, mass: 4, capacity: 4 };
@@ -59,7 +63,11 @@ export interface LevelPlan {
 export const PLANS: readonly LevelPlan[] = [
   { level: 1, name: 'Which tool? Pick the tool for how long, how heavy or how much', mode: 'tool' },
   { level: 2, name: 'Whose unit was smaller? The same thing measured in big and little units', mode: 'rows' },
-  { level: 3, name: 'Measure them the same way: remeasure two things in one unit, then compare', mode: 'common' },
+  {
+    level: 3,
+    name: 'Measure them the same way: remeasure two things in one unit, then compare',
+    mode: 'common',
+  },
   { level: 4, name: 'How many little ones? One kilogram balances 1000 grams; fill the table', mode: 'table' },
 ];
 
@@ -110,13 +118,21 @@ export function tasksFor(plan: LevelPlan, rng: Rng): Task[] {
   if (plan.mode === 'tool') {
     const rest = rng.shuffle(['mass', 'capacity'] as Attribute[]);
     return (['length', ...rest] as Attribute[]).map((a) => ({
-      attribute: a, quantity: LEVEL1_QUANTITY[a], records: [recordFor(a, LEVEL1_QUANTITY[a], 'little')], ask: null,
+      attribute: a,
+      quantity: LEVEL1_QUANTITY[a],
+      records: [recordFor(a, LEVEL1_QUANTITY[a], 'little')],
+      ask: null,
     }));
   }
   return rng.shuffle([...ATTRIBUTES]).map((a, i) => {
     const q = LEVEL2_QUANTITY[a];
     const sizes: UnitSize[] = rng.chance(0.5) ? ['big', 'little'] : ['little', 'big'];
-    return { attribute: a, quantity: q, records: sizes.map((s) => recordFor(a, q, s)), ask: i === 2 ? 'big' : 'little' };
+    return {
+      attribute: a,
+      quantity: q,
+      records: sizes.map((s) => recordFor(a, q, s)),
+      ask: i === 2 ? 'big' : 'little',
+    };
   });
 }
 
@@ -134,7 +150,9 @@ export const toolAnswers = (task: Task, tool: Tool) => attributeOf(tool) === tas
  * cups) and B = 6 (six little), the same.
  */
 export const LEVEL3_QUANTITY: Record<Attribute, Record<ObjectId, number>> = {
-  length: { A: 6, B: 5 }, mass: { A: 4, B: 5 }, capacity: { A: 6, B: 6 },
+  length: { A: 6, B: 5 },
+  mass: { A: 4, B: 5 },
+  capacity: { A: 6, B: 6 },
 };
 const FIRST_SIZE: Record<ObjectId, UnitSize> = { A: 'big', B: 'little' };
 
@@ -143,7 +161,10 @@ function commonTasks(rng: Rng): Task[] {
     const ids: ObjectId[] = rng.chance(0.5) ? ['A', 'B'] : ['B', 'A'];
     const objects = ids.map((id) => ({ id, quantity: LEVEL3_QUANTITY[a][id] }));
     return {
-      attribute: a, quantity: LEVEL3_QUANTITY[a].A, ask: null, objects,
+      attribute: a,
+      quantity: LEVEL3_QUANTITY[a].A,
+      ask: null,
+      objects,
       records: objects.map((o) => recordFor(a, o.quantity, FIRST_SIZE[o.id])),
     };
   });
@@ -207,7 +228,10 @@ export const LEVEL4_ROWS: readonly { kg: number; known: number[]; options: numbe
 
 function tableTasks(rng: Rng): Task[] {
   return LEVEL4_ROWS.map((row) => ({
-    attribute: 'mass' as Attribute, quantity: row.kg, records: [], ask: null,
+    attribute: 'mass' as Attribute,
+    quantity: row.kg,
+    records: [],
+    ask: null,
     table: { kg: row.kg, known: [...row.known], options: rng.shuffle([...row.options]) },
   }));
 }
@@ -229,9 +253,15 @@ export const helpId = (task: number, step: Step): HelpId => `${task}:${step}`;
  */
 export class HelpTally {
   private readonly given = new Set<HelpId>();
-  get count() { return this.given.size; }
-  give(id: HelpId) { this.given.add(id); }
-  has(id: HelpId) { return this.given.has(id); }
+  get count() {
+    return this.given.size;
+  }
+  give(id: HelpId) {
+    this.given.add(id);
+  }
+  has(id: HelpId) {
+    return this.given.has(id);
+  }
 }
 
 /** After this many misses on one task, the useful next control glows (and that counts as the step's hint). */

@@ -18,11 +18,17 @@ describe('pitch drawing and copying', () => {
       expect(new Set(shapes.slice(2).map((s) => directions(s).join(','))).size).toBe(4);
       for (const shape of shapes) {
         // Exhaustively cover every alternative melody, not just the author's example.
-        for (let a = 2; a <= 7; a++) for (let b = 2; b <= 7; b++) for (let c = 2; c <= 7; c++) {
-          const notes = shape.length === 2 ? [a, b] : [a, b, c];
-          expect(matchesShape(shape, notes)).toBe(directions(shape).join(',') === directions(notes).join(','));
-          if (matchesShape(shape, notes)) for (let i = 0; i < notes.length; i++) expect(shapeHint(shape, notes.slice(0, i))).toContain(notes[i]);
-        }
+        for (let a = 2; a <= 7; a++)
+          for (let b = 2; b <= 7; b++)
+            for (let c = 2; c <= 7; c++) {
+              const notes = shape.length === 2 ? [a, b] : [a, b, c];
+              expect(matchesShape(shape, notes)).toBe(
+                directions(shape).join(',') === directions(notes).join(','),
+              );
+              if (matchesShape(shape, notes))
+                for (let i = 0; i < notes.length; i++)
+                  expect(shapeHint(shape, notes.slice(0, i))).toContain(notes[i]);
+            }
         expect(matchesShape(shape, shape.slice(1))).toBe(false);
         expect(matchesShape(shape, [...shape, 2])).toBe(false);
       }

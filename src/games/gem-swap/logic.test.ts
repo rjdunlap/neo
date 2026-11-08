@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { POOLS } from './boards';
-import { botTarget, clear, drops, fall, hintFor, makePuzzle, matches, moves, neighbors, PLANS, solve, swap, type Board, type Swap } from './logic';
+import {
+  botTarget,
+  clear,
+  drops,
+  fall,
+  hintFor,
+  makePuzzle,
+  matches,
+  moves,
+  neighbors,
+  PLANS,
+  solve,
+  swap,
+  type Board,
+  type Swap,
+} from './logic';
 
 /** Independent breadth-first oracle, as a check on the game's shortest-route DFS. */
 function breadthFirst(board: Board, size: number): number | null {
@@ -12,8 +27,12 @@ function breadthFirst(board: Board, size: number): number | null {
     for (const b of frontier) {
       if (clear(b)) return depth;
       for (const pair of moves(b, size)) {
-        const out = swap(b, size, pair)!.board, key = out.join(',');
-        if (!seen.has(key)) { seen.add(key); next.push(out); }
+        const out = swap(b, size, pair)!.board,
+          key = out.join(',');
+        if (!seen.has(key)) {
+          seen.add(key);
+          next.push(out);
+        }
       }
     }
     frontier = next;
@@ -32,9 +51,17 @@ describe('Gem Swap', () => {
     expect(fall([1, -1, 2, -1, -1, -1, 3, 4, -1], 3)).toEqual([-1, -1, -1, 1, -1, -1, 3, 4, 2]);
   });
   it('rejects non-neighbours, holes, equal gems and swaps that make no line without changing the board', () => {
-    const b = [-1, -1, -1, 0, 1, 2, 1, 2, 0], saved = [...b];
-    for (const pair of [[2, 3], [3, 8], [0, 3], [3, 4]] as Swap[]) expect(swap(b, 3, pair)).toBeNull();
-    expect(neighbors(2, 3, 3)).toBe(false); expect(neighbors(-1, 0, 3)).toBe(false);
+    const b = [-1, -1, -1, 0, 1, 2, 1, 2, 0],
+      saved = [...b];
+    for (const pair of [
+      [2, 3],
+      [3, 8],
+      [0, 3],
+      [3, 4],
+    ] as Swap[])
+      expect(swap(b, 3, pair)).toBeNull();
+    expect(neighbors(2, 3, 3)).toBe(false);
+    expect(neighbors(-1, 0, 3)).toBe(false);
     expect(b).toEqual(saved);
     expect(swap([0, 0, 1, 1], 2, [0, 1])).toBeNull();
   });
@@ -45,7 +72,7 @@ describe('Gem Swap', () => {
         const size = PLANS[p].size;
         expect(matches(puzzle.board, size)).toEqual([]);
         expect(fall(puzzle.board, size)).toEqual(puzzle.board);
-        expect(puzzle.board.filter(k => k >= 0)).toHaveLength(PLANS[p].gems);
+        expect(puzzle.board.filter((k) => k >= 0)).toHaveLength(PLANS[p].gems);
         expect(breadthFirst(puzzle.board, size)).toBe(puzzle.par);
         expect(solve(puzzle.board, size)).toHaveLength(puzzle.par);
       }
@@ -61,7 +88,8 @@ describe('Gem Swap', () => {
         let b: Board = puzzle.board;
         let remaining = puzzle.par;
         while (!clear(b)) {
-          const route = solve(b, puzzle.size)!, pair = hintFor(b, puzzle.size)!;
+          const route = solve(b, puzzle.size)!,
+            pair = hintFor(b, puzzle.size)!;
           expect(route).toHaveLength(remaining);
           expect(botTarget(route, null)).toBe(pair[0]);
           expect(botTarget(route, pair[0])).toBe(pair[1]);
@@ -69,8 +97,9 @@ describe('Gem Swap', () => {
           const step = swap(b, puzzle.size, pair)!;
           expect(step.waves.length).toBeGreaterThan(0);
           expect(matches(step.board, puzzle.size)).toEqual([]);
-          expect(step.board.filter(k => k >= 0).length).toBeLessThan(b.filter(k => k >= 0).length);
-          b = step.board; remaining--;
+          expect(step.board.filter((k) => k >= 0).length).toBeLessThan(b.filter((k) => k >= 0).length);
+          b = step.board;
+          remaining--;
         }
         expect(remaining).toBe(0);
       }
@@ -79,16 +108,22 @@ describe('Gem Swap', () => {
   });
   it('gives every generated tray above level 1 a dead-end first swap and a falling line on some shortest route', () => {
     // The first three trays of each level are the hand-made originals; the script's trays follow.
-    POOLS.slice(1).forEach(pool => pool.slice(3).forEach(puzzle => {
-      const size = Math.sqrt(puzzle.board.length);
-      const left = (b: Board) => solve(b, size)?.length ?? null;
-      const cascades = (b: Board, n: number): boolean => n > 0 && moves(b, size).some(pair => {
-        const step = swap(b, size, pair)!;
-        return left(step.board) === n - 1 && (step.waves.length > 1 || cascades(step.board, n - 1));
-      });
-      expect(moves(puzzle.board, size).some(pair => left(swap(puzzle.board, size, pair)!.board) === null)).toBe(true);
-      expect(cascades(puzzle.board, puzzle.par)).toBe(true);
-    }));
+    POOLS.slice(1).forEach((pool) =>
+      pool.slice(3).forEach((puzzle) => {
+        const size = Math.sqrt(puzzle.board.length);
+        const left = (b: Board) => solve(b, size)?.length ?? null;
+        const cascades = (b: Board, n: number): boolean =>
+          n > 0 &&
+          moves(b, size).some((pair) => {
+            const step = swap(b, size, pair)!;
+            return left(step.board) === n - 1 && (step.waves.length > 1 || cascades(step.board, n - 1));
+          });
+        expect(
+          moves(puzzle.board, size).some((pair) => left(swap(puzzle.board, size, pair)!.board) === null),
+        ).toBe(true);
+        expect(cascades(puzzle.board, puzzle.par)).toBe(true);
+      }),
+    );
   });
   it('keeps the hint search on the six-by-six trays across all six columns and under a node budget from every state on the stored route', () => {
     // A tray's search memoises every tray reachable from it, so the opening count also bounds every later revision.
@@ -98,37 +133,53 @@ describe('Gem Swap', () => {
       for (let x = 0; x < 6; x++) expect(puzzle.board.some((k, i) => i % 6 === x && k >= 0)).toBe(true);
       let b: Board = puzzle.board;
       while (!clear(b)) {
-        const stats = { nodes: 0 }, route = solve(b, 6, stats)!;
+        const stats = { nodes: 0 },
+          route = solve(b, 6, stats)!;
         expect(stats.nodes).toBeLessThan(2000);
         b = swap(b, 6, route[0])!.board;
       }
     }
   });
   it('tells the drawing which row each surviving gem fell from', () => {
-    for (const pool of POOLS) for (const puzzle of pool) {
-      const size = Math.sqrt(puzzle.board.length);
-      for (const pair of moves(puzzle.board, size)) for (const wave of swap(puzzle.board, size, pair)!.waves) {
-        const after = fall(wave.board.map((k, i) => wave.removed.includes(i) ? -1 : k), size);
-        drops(wave.board, wave.removed, size).forEach((from, i) => {
-          if (from < 0) { expect(after[i]).toBe(-1); return; }
-          expect(after[i]).toBe(wave.board[from * size + i % size]);
-          expect(from).toBeLessThanOrEqual(Math.floor(i / size));
-        });
+    for (const pool of POOLS)
+      for (const puzzle of pool) {
+        const size = Math.sqrt(puzzle.board.length);
+        for (const pair of moves(puzzle.board, size))
+          for (const wave of swap(puzzle.board, size, pair)!.waves) {
+            const after = fall(
+              wave.board.map((k, i) => (wave.removed.includes(i) ? -1 : k)),
+              size,
+            );
+            drops(wave.board, wave.removed, size).forEach((from, i) => {
+              if (from < 0) {
+                expect(after[i]).toBe(-1);
+                return;
+              }
+              expect(after[i]).toBe(wave.board[from * size + (i % size)]);
+              expect(from).toBeLessThanOrEqual(Math.floor(i / size));
+            });
+          }
       }
-    }
   });
   it('supports alternatives and identifies dead ends rather than recommending an arbitrary match', () => {
-    let deadEnds = 0, alternatives = 0, cascades = 0;
-    for (const pool of POOLS) for (const puzzle of pool) {
-      const size = Math.sqrt(puzzle.board.length);
-      for (const pair of moves(puzzle.board, size)) {
-        const step = swap(puzzle.board, size, pair)!;
-        if (solve(step.board, size) === null) { deadEnds++; expect(hintFor(step.board, size)).toBeNull(); }
-        else alternatives++;
-        if (step.waves.length > 1) cascades++;
+    let deadEnds = 0,
+      alternatives = 0,
+      cascades = 0;
+    for (const pool of POOLS)
+      for (const puzzle of pool) {
+        const size = Math.sqrt(puzzle.board.length);
+        for (const pair of moves(puzzle.board, size)) {
+          const step = swap(puzzle.board, size, pair)!;
+          if (solve(step.board, size) === null) {
+            deadEnds++;
+            expect(hintFor(step.board, size)).toBeNull();
+          } else alternatives++;
+          if (step.waves.length > 1) cascades++;
+        }
       }
-    }
-    expect(deadEnds).toBeGreaterThan(0); expect(alternatives).toBeGreaterThan(12); expect(cascades).toBeGreaterThan(0);
+    expect(deadEnds).toBeGreaterThan(0);
+    expect(alternatives).toBeGreaterThan(12);
+    expect(cascades).toBeGreaterThan(0);
     expect(botTarget([[1, 2]], 3)).toBe(3);
   });
 });

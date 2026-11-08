@@ -11,13 +11,33 @@ import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { miniBoard, pebblePiece, pile, sandBoard, shellPiece } from './art';
 import {
-  BORDER, GROOVE, LEVELS, SHELL_COLORS, Score, decidingLine, layout, makeRound, petReply, place, planFor, replyKind, stickerBoard, wonLine,
-  type Board, type Layout, type Plan, type Round,
+  BORDER,
+  GROOVE,
+  LEVELS,
+  SHELL_COLORS,
+  Score,
+  decidingLine,
+  layout,
+  makeRound,
+  petReply,
+  place,
+  planFor,
+  replyKind,
+  stickerBoard,
+  wonLine,
+  type Board,
+  type Layout,
+  type Plan,
+  type Round,
 } from './logic';
 
 type Phase = 'turn' | 'replay' | 'between' | 'done';
 
-const REASON = { 'took-spot': 'sr.took-spot', 'got-three': 'sr.got-three', 'could-have': 'sr.could-have' } as const;
+const REASON = {
+  'took-spot': 'sr.took-spot',
+  'got-three': 'sr.got-three',
+  'could-have': 'sr.could-have',
+} as const;
 
 class ShellRows implements Game {
   readonly plan: Plan;
@@ -33,7 +53,8 @@ class ShellRows implements Game {
   private saidFull = false;
   /** Bumped on every rewind or new position, so an awaited line from an older one stops short. */
   private gen = 0;
-  private readonly reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private readonly reduce =
+    typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   private L: Layout;
   private clock = 0;
   private readonly backdrop: Backdrop;
@@ -52,7 +73,17 @@ class ShellRows implements Game {
     this.plan = planFor(ctx.level);
     this.round = makeRound(ctx.level, ctx.rng);
     this.board = this.position.board;
-    this.backdrop = new Backdrop({ sky: [0xc4ecff, 0xfff6e0], hills: [0xbfe6ef, 0xf6e2b3, 0xeed39a], horizon: 0.32, clouds: 2, sun: true, seed: 251 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xc4ecff, 0xfff6e0],
+        hills: [0xbfe6ef, 0xf6e2b3, 0xeed39a],
+        horizon: 0.32,
+        clouds: 2,
+        sun: true,
+        seed: 251,
+      },
+      ctx.view,
+    );
     this.L = layout(ctx.view) ?? layout({ w: 1024, h: 768 })!;
     this.glow.eventMode = 'none';
     this.pieceLayer.eventMode = 'none';
@@ -68,31 +99,60 @@ class ShellRows implements Game {
       this.squares.push(sq);
       this.squareLayer.addChild(sq);
     }
-    ctx.stage.addChild(this.backdrop, this.boardLayer, this.squareLayer, this.glow, this.pieceLayer, this.shellPile, this.pebblePile);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.boardLayer,
+      this.squareLayer,
+      this.glow,
+      this.pieceLayer,
+      this.shellPile,
+      this.pebblePile,
+    );
     this.resize(ctx.view);
   }
 
-  get position() { return this.round.positions[this.index]; }
-  get right(): number { return this.position.right; }
+  get position() {
+    return this.round.positions[this.index];
+  }
+  get right(): number {
+    return this.position.right;
+  }
 
   /** What a scripted play reads. */
   get state() {
     return {
-      level: this.plan.level, index: this.index, phase: this.phase, board: this.board.slice(), right: this.right,
-      reply: this.reply, misses: this.score.misses, hints: this.score.hints, glowing: this.score.glowing, finished: this.finished,
+      level: this.plan.level,
+      index: this.index,
+      phase: this.phase,
+      board: this.board.slice(),
+      right: this.right,
+      reply: this.reply,
+      misses: this.score.misses,
+      hints: this.score.hints,
+      glowing: this.score.glowing,
+      finished: this.finished,
     };
   }
 
-  start() { void this.ctx.say('sr.intro').then(() => { if (!this.finished) void this.instruct(); }); }
+  start() {
+    void this.ctx.say('sr.intro').then(() => {
+      if (!this.finished) void this.instruct();
+    });
+  }
 
   destroy() {
     this.finished = true;
     this.gen++;
-    for (const p of this.pieceLayer.children) { this.ctx.tw.kill(p); this.ctx.tw.kill(p.scale); }
+    for (const p of this.pieceLayer.children) {
+      this.ctx.tw.kill(p);
+      this.ctx.tw.kill(p.scale);
+    }
     for (const s of this.squares) this.ctx.tw.kill(s.children[0]);
   }
 
-  private instruct() { return this.ctx.instruct(`sr.instruct.${this.plan.level}` as 'sr.instruct.1'); }
+  private instruct() {
+    return this.ctx.instruct(`sr.instruct.${this.plan.level}` as 'sr.instruct.1');
+  }
 
   // ---- pieces ----
 
@@ -102,7 +162,11 @@ class ShellRows implements Game {
 
   /** Redraw every piece of `board` in its square. */
   private drawPieces() {
-    for (const p of this.pieceLayer.removeChildren()) { this.ctx.tw.kill(p); this.ctx.tw.kill(p.scale); p.destroy({ children: true }); }
+    for (const p of this.pieceLayer.removeChildren()) {
+      this.ctx.tw.kill(p);
+      this.ctx.tw.kill(p.scale);
+      p.destroy({ children: true });
+    }
     this.pieces = this.board.map((v, i) => {
       if (!v) return null;
       const p = this.pieceFor(v);
@@ -132,7 +196,8 @@ class ShellRows implements Game {
   private async slidePebble(i: number) {
     this.board = place(this.board, i, 'pebble');
     const p = this.pieceFor('pebble');
-    const from = this.L.pebblePile, b = this.L.squares[i];
+    const from = this.L.pebblePile,
+      b = this.L.squares[i];
     p.position.set(from.x, from.y);
     this.pieceLayer.addChild(p);
     this.pieces[i] = p;
@@ -157,13 +222,23 @@ class ShellRows implements Game {
     if (this.board[i]) {
       // A full square wobbles; nothing is set and nothing counts.
       const p = this.pieces[i];
-      if (p) { this.ctx.tw.kill(p); p.rotation = 0.15; void this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.3, ease: ease.outBack }); }
+      if (p) {
+        this.ctx.tw.kill(p);
+        p.rotation = 0.15;
+        void this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.3, ease: ease.outBack });
+      }
       sfx.tick();
-      if (!this.saidFull) { this.saidFull = true; void this.ctx.say('sr.full'); }
+      if (!this.saidFull) {
+        this.saidFull = true;
+        void this.ctx.say('sr.full');
+      }
       return;
     }
     const outcome = this.score.answer(i === this.right);
-    if (outcome === 'right') { void this.solve(i); return; }
+    if (outcome === 'right') {
+      void this.solve(i);
+      return;
+    }
     void this.replay(i, outcome === 'glow');
   }
 
@@ -172,7 +247,10 @@ class ShellRows implements Game {
   /** *Show me*: the right square glows (one hint per position); asked again, the ghost sets the shell there. */
   askForHint() {
     if (this.finished || this.phase !== 'turn') return;
-    if (this.score.showMe()) { void this.ctx.say('sr.look-again'); return; }
+    if (this.score.showMe()) {
+      void this.ctx.say('sr.look-again');
+      return;
+    }
     this.tapSquare(this.right);
   }
 
@@ -191,15 +269,30 @@ class ShellRows implements Game {
     await this.slidePebble(pebble);
     if (g !== this.gen) return;
     const kind = replyKind(this.plan.level, before, wrong);
-    this.lit = { line: decidingLine(before, wrong, pebble), color: kind === 'got-three' ? swatch.purple.light : swatch.yellow.light };
-    if (kind === 'could-have') this.ctx.particles.burst(this.L.squares[this.right].x, this.L.squares[this.right].y, { kind: 'dot', colors: [swatch.yellow.fill, 0xffffff], count: 10, speed: [40, 120], gravity: 0, life: [0.3, 0.6] });
+    this.lit = {
+      line: decidingLine(before, wrong, pebble),
+      color: kind === 'got-three' ? swatch.purple.light : swatch.yellow.light,
+    };
+    if (kind === 'could-have')
+      this.ctx.particles.burst(this.L.squares[this.right].x, this.L.squares[this.right].y, {
+        kind: 'dot',
+        colors: [swatch.yellow.fill, 0xffffff],
+        count: 10,
+        speed: [40, 120],
+        gravity: 0,
+        life: [0.3, 0.6],
+      });
     sfx.boing();
     await Promise.all([this.ctx.say(REASON[kind]), this.ctx.tw.wait(0.8)]);
     if (g !== this.gen) return;
     // Both lift away and the board goes back to her turn.
     this.lit = null;
     const lifting = [this.pieces[wrong], this.pieces[pebble]].filter((p): p is Container => !!p);
-    await Promise.all(lifting.map((p) => this.ctx.tw.to(p, { y: p.y - 40, alpha: 0 }, { duration: this.reduce ? 0.25 : 0.5 })));
+    await Promise.all(
+      lifting.map((p) =>
+        this.ctx.tw.to(p, { y: p.y - 40, alpha: 0 }, { duration: this.reduce ? 0.25 : 0.5 }),
+      ),
+    );
     if (g !== this.gen) return;
     this.board = before;
     this.reply = null;
@@ -275,14 +368,20 @@ class ShellRows implements Game {
       const b = L.squares[i];
       sq.position.set(b.x, b.y);
       sq.hitArea = new Rectangle(-b.w / 2, -b.h / 2, b.w, b.h);
-      (sq.children[0] as Graphics).clear().roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 18).fill({ color: ink, alpha: 0.14 });
+      (sq.children[0] as Graphics)
+        .clear()
+        .roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 18)
+        .fill({ color: ink, alpha: 0.14 });
     });
     this.shellPile.position.set(L.shellPile.x, L.shellPile.y);
     this.pebblePile.position.set(L.pebblePile.x, L.pebblePile.y);
     // On her turn nothing is awaited on the pieces, so they are redrawn; mid-replay or mid-settle a piece's tween is
     // awaited (a killed tween never resolves), so the pieces only move to their new squares.
     if (this.phase === 'turn') this.drawPieces();
-    else this.pieces.forEach((p, i) => { if (p && !p.destroyed) p.position.set(L.squares[i].x, L.squares[i].y); });
+    else
+      this.pieces.forEach((p, i) => {
+        if (p && !p.destroyed) p.position.set(L.squares[i].x, L.squares[i].y);
+      });
   }
 
   update(dt: number) {
@@ -291,13 +390,23 @@ class ShellRows implements Game {
     if (this.lit) {
       for (const i of this.lit.line) {
         const b = this.L.squares[i];
-        this.glow.roundRect(b.x - b.w / 2 + 6, b.y - b.h / 2 + 6, b.w - 12, b.h - 12, 18).fill({ color: this.lit.color, alpha: 0.85 });
+        this.glow
+          .roundRect(b.x - b.w / 2 + 6, b.y - b.h / 2 + 6, b.w - 12, b.h - 12, 18)
+          .fill({ color: this.lit.color, alpha: 0.85 });
       }
     }
     if (!this.score.glowing || this.phase !== 'turn') return;
     const b = this.L.squares[this.right];
     const pulse = 4 + 3 * Math.sin(this.clock * 5);
-    this.glow.roundRect(b.x - b.w / 2 + 8 - pulse, b.y - b.h / 2 + 8 - pulse, b.w - 16 + 2 * pulse, b.h - 16 + 2 * pulse, 20).stroke({ width: 7, color: swatch.yellow.fill });
+    this.glow
+      .roundRect(
+        b.x - b.w / 2 + 8 - pulse,
+        b.y - b.h / 2 + 8 - pulse,
+        b.w - 16 + 2 * pulse,
+        b.h - 16 + 2 * pulse,
+        20,
+      )
+      .stroke({ width: 7, color: swatch.yellow.fill });
   }
 
   autotouch(): TouchIntent | null {
@@ -324,12 +433,21 @@ function sticker(seed: number): Container {
 }
 
 export const shellRows: GameModule = {
-  id: 'shell-rows', name: 'Shell Rows', titleLine: 'game.shell-rows', region: 'puzzle-peaks', challenge: 'logic',
-  skills: ['planning', 'prediction', 'logic'], bands: ['prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
+  id: 'shell-rows',
+  name: 'Shell Rows',
+  titleLine: 'game.shell-rows',
+  region: 'puzzle-peaks',
+  challenge: 'logic',
+  skills: ['planning', 'prediction', 'logic'],
+  bands: ['prek', 'school'],
+  levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,
   coplayHint: 'Before she taps, ask "What will the pet do if you go there?" and let the replay answer.',
-  offScreen: 'Noughts and crosses on paper or a steamy window; each of you says out loud which square you are watching.',
-  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => new ShellRows(ctx),
+  offScreen:
+    'Noughts and crosses on paper or a steamy window; each of you says out loud which square you are watching.',
+  hubIcon: () => new WigglyIcon(icon()),
+  sticker,
+  create: (ctx) => new ShellRows(ctx),
   touchDemo: true,
 };

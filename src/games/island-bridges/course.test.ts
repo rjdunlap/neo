@@ -17,7 +17,10 @@ describe('the Island Hopping course', () => {
       const label = `sea ${i + 1}`;
       expect(solve(p.layout, undefined, 3).found, label).toEqual([p.solution]);
       expect(isSolved(p.layout, p.solution), label).toBe(true);
-      expect(p.layout.islands.every((il) => il.n >= 1 && il.n <= 8), label).toBe(true);
+      expect(
+        p.layout.islands.every((il) => il.n >= 1 && il.n <= 8),
+        label,
+      ).toBe(true);
     });
     expect(seas.map((p) => p.size)).toEqual([7, 9, 9, 11, 11]);
     expect(seas.map((p) => p.layout.islands.length)).toEqual([8, 13, 18, 20, 22]);
@@ -60,7 +63,9 @@ describe('the Joined Seas course', () => {
 
   it('can be played on the stick: every island can be reached from the first', () => {
     courseSeas('joined').forEach((p, i) => {
-      p.layout.islands.forEach((_, k) => expect(focusPath(p.layout, 0, k), `sea ${i + 1}, island ${k}`).not.toBeNull());
+      p.layout.islands.forEach((_, k) =>
+        expect(focusPath(p.layout, 0, k), `sea ${i + 1}, island ${k}`).not.toBeNull(),
+      );
     });
   });
 

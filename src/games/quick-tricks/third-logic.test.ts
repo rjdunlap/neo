@@ -6,8 +6,27 @@ import { emptyCup, pour, recoverTray } from '../fill-dump/logic';
 import { demoLoop, type Point } from '../lasso-loops/logic';
 import { quickTricks } from './index';
 import {
-  AMOUNTS, atLine, clusters, crankCircle, crankLift, crankStep, cupTarget, FLY_GAP, halfTurns, judgeLoop, LOOP_MIN, meadow, MEADOW, pourNeeded,
-  releaseCup, showFor, startCups, startCrank, thirdAmounts, wholeTurns, type CrankState,
+  AMOUNTS,
+  atLine,
+  clusters,
+  crankCircle,
+  crankLift,
+  crankStep,
+  cupTarget,
+  FLY_GAP,
+  halfTurns,
+  judgeLoop,
+  LOOP_MIN,
+  meadow,
+  MEADOW,
+  pourNeeded,
+  releaseCup,
+  showFor,
+  startCups,
+  startCrank,
+  thirdAmounts,
+  wholeTurns,
+  type CrankState,
 } from './third-logic';
 
 const BANDS: Band[] = ['toddler', 'preschool', 'prek', 'school'];
@@ -91,28 +110,30 @@ describe('Quick Tricks, the third show', () => {
     });
 
     it('the bot circle is one whole turn when fed through crankStep as angles', () => {
-      for (const from of [0, 1, 2.5, -2, 3.1]) for (const dir of [1, -1] as const) {
-        let s = crankStep(startCrank(), from);
-        for (const p of crankCircle(from, dir)) s = crankStep(s, Math.atan2(p.y, p.x));
-        expect(wholeTurns(s)).toBe(1);
-      }
+      for (const from of [0, 1, 2.5, -2, 3.1])
+        for (const dir of [1, -1] as const) {
+          let s = crankStep(startCrank(), from);
+          for (const p of crankCircle(from, dir)) s = crankStep(s, Math.atan2(p.y, p.x));
+          expect(wholeTurns(s)).toBe(1);
+        }
     });
   });
 
   describe('the cups', () => {
     it('serves every cup at its line and finishes after three, at every band', () => {
-      for (const band of BANDS) for (const seed of SEEDS.slice(0, 30)) {
-        const s = startCups(band, new Rng(seed));
-        const score = { hints: 0 };
-        const results: string[] = [];
-        while (!s.done && results.length < 3) {
-          pour(s, pourNeeded(s));
-          results.push(releaseCup(s, band, true, score));
+      for (const band of BANDS)
+        for (const seed of SEEDS.slice(0, 30)) {
+          const s = startCups(band, new Rng(seed));
+          const score = { hints: 0 };
+          const results: string[] = [];
+          while (!s.done && results.length < 3) {
+            pour(s, pourNeeded(s));
+            results.push(releaseCup(s, band, true, score));
+          }
+          expect(results).toEqual(['served', 'served', 'done']);
+          expect(s.done).toBe(true);
+          expect(score.hints).toBe(0);
         }
-        expect(results).toEqual(['served', 'served', 'done']);
-        expect(s.done).toBe(true);
-        expect(score.hints).toBe(0);
-      }
     });
 
     it('targets: toddler/preschool 0.5 x3; prek and school 0.5 then 0.25/0.75 shuffled', () => {
@@ -131,24 +152,25 @@ describe('Quick Tricks, the third show', () => {
     });
 
     it('overfill then emptyCup and recoverTray conserves the water, and never a miss', () => {
-      for (const band of ['preschool', 'prek', 'school'] as const) for (const seed of SEEDS.slice(0, 20)) {
-        const s = startCups(band, new Rng(seed));
-        const score = { hints: 0, misses: 0 };
-        const total = () => s.jug + s.cup + s.tray;
-        pour(s, 0.95);
-        expect(total()).toBeCloseTo(3);
-        expect(releaseCup(s, band, true, score)).toBe(cupTarget(s) < 0.95 ? 'over' : 'served');
-        if (s.round > 0) continue;
-        pour(s, 1); // spills to the tray
-        expect(total()).toBeCloseTo(3);
-        emptyCup(s);
-        expect(total()).toBeCloseTo(3);
-        recoverTray(s);
-        expect(s.tray).toBe(0);
-        expect(s.cup).toBe(0);
-        expect(s.jug).toBeCloseTo(3);
-        expect(score.misses).toBe(0);
-      }
+      for (const band of ['preschool', 'prek', 'school'] as const)
+        for (const seed of SEEDS.slice(0, 20)) {
+          const s = startCups(band, new Rng(seed));
+          const score = { hints: 0, misses: 0 };
+          const total = () => s.jug + s.cup + s.tray;
+          pour(s, 0.95);
+          expect(total()).toBeCloseTo(3);
+          expect(releaseCup(s, band, true, score)).toBe(cupTarget(s) < 0.95 ? 'over' : 'served');
+          if (s.round > 0) continue;
+          pour(s, 1); // spills to the tray
+          expect(total()).toBeCloseTo(3);
+          emptyCup(s);
+          expect(total()).toBeCloseTo(3);
+          recoverTray(s);
+          expect(s.tray).toBe(0);
+          expect(s.cup).toBe(0);
+          expect(s.jug).toBeCloseTo(3);
+          expect(score.misses).toBe(0);
+        }
     });
 
     it('a second overfill on one cup helps once (hints +1) and a third does not add more', () => {
@@ -232,7 +254,9 @@ describe('Quick Tricks, the third show', () => {
             expect(p.y).toBeGreaterThanOrEqual(0);
             expect(p.y).toBeLessThanOrEqual(MEADOW.h);
           }
-          for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < i + pts.length && j < pts.length; j++) expect(close(pts[i], pts[j])).toBeGreaterThanOrEqual(FLY_GAP - 1e-6);
+          for (let i = 0; i < pts.length; i++)
+            for (let j = i + 1; j < i + pts.length && j < pts.length; j++)
+              expect(close(pts[i], pts[j])).toBeGreaterThanOrEqual(FLY_GAP - 1e-6);
           expect(demoLoop(pts, a.want, 34)).not.toBeNull();
         }
       }
@@ -242,18 +266,28 @@ describe('Quick Tricks, the third show', () => {
       for (const seed of SEEDS) {
         const pts = clusters(new Rng(seed));
         expect(pts).toHaveLength(5);
-        const cx = (ps: Point[]) => ({ x: ps.reduce((s, p) => s + p.x, 0) / ps.length, y: ps.reduce((s, p) => s + p.y, 0) / ps.length });
+        const cx = (ps: Point[]) => ({
+          x: ps.reduce((s, p) => s + p.x, 0) / ps.length,
+          y: ps.reduce((s, p) => s + p.y, 0) / ps.length,
+        });
         const a = cx(pts.slice(0, 3));
         const b = cx(pts.slice(3));
         expect(close(a, b)).toBeGreaterThan(FLY_GAP);
         for (const p of pts.slice(0, 3)) expect(close(p, a)).toBeCloseTo(80);
         expect(close(pts[3], pts[4])).toBeCloseTo(130);
-        for (let i = 0; i < 5; i++) for (let j = i + 1; j < 5; j++) expect(close(pts[i], pts[j])).toBeGreaterThanOrEqual(FLY_GAP - 1e-6);
+        for (let i = 0; i < 5; i++)
+          for (let j = i + 1; j < 5; j++)
+            expect(close(pts[i], pts[j])).toBeGreaterThanOrEqual(FLY_GAP - 1e-6);
         expect(demoLoop(pts, 3, 34)).not.toBeNull();
       }
     });
 
-    const ring = (c: Point, r: number): Point[] => [{ x: c.x - r, y: c.y - r }, { x: c.x + r, y: c.y - r }, { x: c.x + r, y: c.y + r }, { x: c.x - r, y: c.y + r }];
+    const ring = (c: Point, r: number): Point[] => [
+      { x: c.x - r, y: c.y - r },
+      { x: c.x + r, y: c.y - r },
+      { x: c.x + r, y: c.y + r },
+      { x: c.x - r, y: c.y + r },
+    ];
 
     it('a short trail is small, a loop around none is free, with no miss', () => {
       const flies = meadow('prek', new Rng(5));
@@ -283,7 +317,11 @@ describe('Quick Tricks, the third show', () => {
           expect(r.verdict).toBe('miss');
           results.push([score.misses, score.hints]);
         }
-        expect(results).toEqual([[1, 0], [2, 1], [3, 1]]);
+        expect(results).toEqual([
+          [1, 0],
+          [2, 1],
+          [3, 1],
+        ]);
       }
     });
 
@@ -304,33 +342,34 @@ describe('Quick Tricks, the third show', () => {
 
   describe('the bot', () => {
     it('finishes every trick with no misses and no hints', () => {
-      for (const band of BANDS) for (const seed of SEEDS.slice(0, 40)) {
-        const a = thirdAmounts(band);
-        const score = { misses: 0, hints: 0 };
+      for (const band of BANDS)
+        for (const seed of SEEDS.slice(0, 40)) {
+          const a = thirdAmounts(band);
+          const score = { misses: 0, hints: 0 };
 
-        let crank = crankStep(startCrank(), 0.4);
-        let guard = 0;
-        while (halfTurns(crank) < a.halves && guard++ < 10) {
-          const from = crank.anchor ?? 0.4;
-          crank = crankLift(crank);
-          crank = crankStep(crank, from);
-          for (const p of crankCircle(from)) crank = crankStep(crank, Math.atan2(p.y, p.x));
+          let crank = crankStep(startCrank(), 0.4);
+          let guard = 0;
+          while (halfTurns(crank) < a.halves && guard++ < 10) {
+            const from = crank.anchor ?? 0.4;
+            crank = crankLift(crank);
+            crank = crankStep(crank, from);
+            for (const p of crankCircle(from)) crank = crankStep(crank, Math.atan2(p.y, p.x));
+          }
+          expect(halfTurns(crank)).toBeGreaterThanOrEqual(a.halves);
+
+          const cups = startCups(band, new Rng(seed));
+          let last = '';
+          for (let i = 0; i < 3; i++) {
+            pour(cups, pourNeeded(cups));
+            last = releaseCup(cups, band, true, score);
+          }
+          expect(last).toBe('done');
+
+          const flies = meadow(band, new Rng(seed));
+          const d = demoLoop(flies, a.want, 34)!;
+          expect(judgeLoop(band, d.loop, flies, score, { wrong: 0 }).verdict).toBe('catch');
+          expect(score).toEqual({ misses: 0, hints: 0 });
         }
-        expect(halfTurns(crank)).toBeGreaterThanOrEqual(a.halves);
-
-        const cups = startCups(band, new Rng(seed));
-        let last = '';
-        for (let i = 0; i < 3; i++) {
-          pour(cups, pourNeeded(cups));
-          last = releaseCup(cups, band, true, score);
-        }
-        expect(last).toBe('done');
-
-        const flies = meadow(band, new Rng(seed));
-        const d = demoLoop(flies, a.want, 34)!;
-        expect(judgeLoop(band, d.loop, flies, score, { wrong: 0 }).verdict).toBe('catch');
-        expect(score).toEqual({ misses: 0, hints: 0 });
-      }
     });
   });
 });

@@ -13,9 +13,14 @@ export function frogArt(): Container {
   const g = new Graphics();
   g.ellipse(-26, 4, 16, 9).ellipse(26, 4, 16, 9).fill(swatch.green.line);
   g.ellipse(0, -22, 38, 28).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line });
-  g.circle(-18, -50, 13).circle(18, -50, 13).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+  g.circle(-18, -50, 13)
+    .circle(18, -50, 13)
+    .fill(swatch.green.fill)
+    .stroke({ width: 4, color: swatch.green.line });
   g.circle(-18, -50, 7).circle(18, -50, 7).fill(0xffffff).circle(-17, -49, 4).circle(19, -49, 4).fill(ink);
-  g.moveTo(-14, -18).quadraticCurveTo(0, -8, 14, -18).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+  g.moveTo(-14, -18)
+    .quadraticCurveTo(0, -8, 14, -18)
+    .stroke({ width: 4, color: swatch.green.line, cap: 'round' });
   g.circle(-24, -26, 5).circle(24, -26, 5).fill({ color: swatch.pink.fill, alpha: 0.6 });
   c.addChild(g);
   return c;
@@ -29,7 +34,9 @@ export function penguinArt(): Container {
   g.ellipse(0, 8, 22, 28).fill(0xffffff);
   g.ellipse(-30, 6, 8, 20).ellipse(30, 6, 8, 20).fill(ink);
   g.circle(-10, -14, 6).circle(10, -14, 6).fill(0xffffff).circle(-9, -13, 3).circle(11, -13, 3).fill(ink);
-  g.poly([-8, -4, 8, -4, 0, 6]).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line, join: 'round' });
+  g.poly([-8, -4, 8, -4, 0, 6])
+    .fill(swatch.orange.fill)
+    .stroke({ width: 2, color: swatch.orange.line, join: 'round' });
   g.circle(-18, 2, 5).circle(18, 2, 5).fill({ color: swatch.pink.fill, alpha: 0.6 });
   c.addChild(g);
   return c;
@@ -37,13 +44,25 @@ export function penguinArt(): Container {
 
 /** Mossy Path's turtle; Species Comeback passes other shell colors. */
 export function turtleArt(size: number, shell: Swatch = swatch.teal): Graphics {
-  const u = size / 100, g = new Graphics();
-  for (const x of [-22, 22]) for (const y of [-24, 24]) g.ellipse(x * u, y * u, 12 * u, 9 * u).fill(swatch.green.fill);
-  g.circle(0, -36 * u, 15 * u).fill(swatch.green.light).stroke({ width: 2 * u, color: swatch.green.line });
-  g.ellipse(0, 0, 30 * u, 34 * u).fill(shell.fill).stroke({ width: 3 * u, color: shell.line });
-  g.poly([-15 * u, -9 * u, 0, -20 * u, 15 * u, -9 * u, 15 * u, 9 * u, 0, 20 * u, -15 * u, 9 * u]).stroke({ width: 2 * u, color: shell.line });
-  g.circle(-5 * u, -39 * u, 2.5 * u).circle(5 * u, -39 * u, 2.5 * u).fill(ink);
-  g.eventMode = 'none'; return g;
+  const u = size / 100,
+    g = new Graphics();
+  for (const x of [-22, 22])
+    for (const y of [-24, 24]) g.ellipse(x * u, y * u, 12 * u, 9 * u).fill(swatch.green.fill);
+  g.circle(0, -36 * u, 15 * u)
+    .fill(swatch.green.light)
+    .stroke({ width: 2 * u, color: swatch.green.line });
+  g.ellipse(0, 0, 30 * u, 34 * u)
+    .fill(shell.fill)
+    .stroke({ width: 3 * u, color: shell.line });
+  g.poly([-15 * u, -9 * u, 0, -20 * u, 15 * u, -9 * u, 15 * u, 9 * u, 0, 20 * u, -15 * u, 9 * u]).stroke({
+    width: 2 * u,
+    color: shell.line,
+  });
+  g.circle(-5 * u, -39 * u, 2.5 * u)
+    .circle(5 * u, -39 * u, 2.5 * u)
+    .fill(ink);
+  g.eventMode = 'none';
+  return g;
 }
 
 /** A small cartoon fish facing right, drawn around its middle. */
@@ -63,19 +82,34 @@ export function fishArt(color: Swatch): Container {
   return c;
 }
 
-const owlSpec = (color: ColorName): CritterSpec => ({ color, ears: 'pointy', snout: 'none', wings: true, belly: true });
+const owlSpec = (color: ColorName): CritterSpec => ({
+  color,
+  ears: 'pointy',
+  snout: 'none',
+  wings: true,
+  belly: true,
+});
 
 /** Owl Walk's baby owl: a critter with eye rings, a little beak and ear tufts. */
 export function owlArt(color: ColorName): Critter {
   const c = new Critter(owlSpec(color));
   const face = new Graphics()
-    .circle(-40, -142, 36).circle(40, -142, 36).stroke({ width: 7, color: swatch.yellow.light, alpha: 0.9 })
-    .poly([-12, -112, 12, -112, 0, -92]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round', cap: 'round' });
+    .circle(-40, -142, 36)
+    .circle(40, -142, 36)
+    .stroke({ width: 7, color: swatch.yellow.light, alpha: 0.9 })
+    .poly([-12, -112, 12, -112, 0, -92])
+    .fill(swatch.orange.fill)
+    .stroke({ width: 3, color: swatch.orange.line, join: 'round', cap: 'round' });
   c.attach(face);
   return c;
 }
 
-const henLine = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+const henLine = (color: number, width = 5) => ({
+  width,
+  color,
+  join: 'round' as const,
+  cap: 'round' as const,
+});
 
 /** A sheep standing on (0, 0), about `size` tall: a fleece puff with a dark face and legs. */
 export function sheepArt(color: ColorName = 'white', size = 110): Container {
@@ -85,9 +119,16 @@ export function sheepArt(color: ColorName = 'white', size = 110): Container {
   const w = size * 0.95;
   const h = size * 0.6;
   // Legs.
-  for (const x of [-w * 0.3, -w * 0.12, w * 0.12, w * 0.3]) g.roundRect(x - size * 0.045, -h * 0.5, size * 0.09, h * 0.55, 6).fill(0x4a4454);
+  for (const x of [-w * 0.3, -w * 0.12, w * 0.12, w * 0.3])
+    g.roundRect(x - size * 0.045, -h * 0.5, size * 0.09, h * 0.55, 6).fill(0x4a4454);
   // Fleece: a cloud of circles.
-  const puffs: [number, number, number][] = [[-w * 0.3, -h * 0.75, h * 0.42], [0, -h * 0.9, h * 0.5], [w * 0.3, -h * 0.75, h * 0.42], [-w * 0.15, -h * 0.5, h * 0.4], [w * 0.15, -h * 0.5, h * 0.4]];
+  const puffs: [number, number, number][] = [
+    [-w * 0.3, -h * 0.75, h * 0.42],
+    [0, -h * 0.9, h * 0.5],
+    [w * 0.3, -h * 0.75, h * 0.42],
+    [-w * 0.15, -h * 0.5, h * 0.4],
+    [w * 0.15, -h * 0.5, h * 0.4],
+  ];
   for (const [x, y, r] of puffs) g.circle(x, y, r + 3).fill(sw.line);
   for (const [x, y, r] of puffs) g.circle(x, y, r).fill(sw.fill);
   // Head.
@@ -106,10 +147,20 @@ export function sheepArt(color: ColorName = 'white', size = 110): Container {
 
 /** A hen drawn into `g`, standing on (x, y), facing right (or left with `flip` -1). */
 export function henArt(g: Graphics, x: number, y: number, color: number, flip = 1) {
-  g.ellipse(x, y - 18, 22, 16).fill(color).stroke(henLine(ink, 3));
-  g.circle(x + flip * 16, y - 34, 11).fill(color).stroke(henLine(ink, 3));
-  g.moveTo(x + flip * 26, y - 34).lineTo(x + flip * 36, y - 30).lineTo(x + flip * 26, y - 28).fill(swatch.orange.fill);
+  g.ellipse(x, y - 18, 22, 16)
+    .fill(color)
+    .stroke(henLine(ink, 3));
+  g.circle(x + flip * 16, y - 34, 11)
+    .fill(color)
+    .stroke(henLine(ink, 3));
+  g.moveTo(x + flip * 26, y - 34)
+    .lineTo(x + flip * 36, y - 30)
+    .lineTo(x + flip * 26, y - 28)
+    .fill(swatch.orange.fill);
   g.circle(x + flip * 19, y - 37, 2).fill(ink);
   for (const d of [-1, 1]) g.circle(x + flip * 16 + d * 3, y - 46, 4).fill(swatch.red.fill);
-  for (const d of [-6, 6]) g.moveTo(x + d, y - 4).lineTo(x + d, y).stroke(henLine(swatch.orange.fill, 3));
+  for (const d of [-6, 6])
+    g.moveTo(x + d, y - 4)
+      .lineTo(x + d, y)
+      .stroke(henLine(swatch.orange.fill, 3));
 }

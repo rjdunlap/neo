@@ -10,11 +10,47 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawBowl, drawWorkshop, panel, picture, plus, potArt, serveArt, spoonArt, topperArt, undoArt } from './art';
 import {
-  askHint, bowlAt, centre, doAction, emptyBowl, grow, isFull, LEVELS, makeRound, planFor, restartState, roundState, serve, stepFor,
-  undo, within, workshopLayout, type Action, type Bowl, type Box, type Hint, type Ingredient, type LevelId, type Round, type RoundState,
-  type Topper, type Verdict, type WorkshopLayout,
+  drawBowl,
+  drawWorkshop,
+  panel,
+  picture,
+  plus,
+  potArt,
+  serveArt,
+  spoonArt,
+  topperArt,
+  undoArt,
+} from './art';
+import {
+  askHint,
+  bowlAt,
+  centre,
+  doAction,
+  emptyBowl,
+  grow,
+  isFull,
+  LEVELS,
+  makeRound,
+  planFor,
+  restartState,
+  roundState,
+  serve,
+  stepFor,
+  undo,
+  within,
+  workshopLayout,
+  type Action,
+  type Bowl,
+  type Box,
+  type Hint,
+  type Ingredient,
+  type LevelId,
+  type Round,
+  type RoundState,
+  type Topper,
+  type Verdict,
+  type WorkshopLayout,
 } from './logic';
 
 /** Levels whose authored first round has been played this session; the demonstration always opens on it. */
@@ -23,10 +59,22 @@ const authoredShown = new Set<LevelId>();
 const PLIP: Record<Ingredient, number> = { berries: 5, apple: 7, orange: 9, base: 11 };
 
 type Target =
-  | { kind: 'pot'; i: number } | { kind: 'topper'; i: number } | { kind: 'spoon' } | { kind: 'undo' }
-  | { kind: 'serve'; i: number } | { kind: 'bowl'; i: number } | { kind: 'card' } | { kind: 'bubble'; i: number };
+  | { kind: 'pot'; i: number }
+  | { kind: 'topper'; i: number }
+  | { kind: 'spoon' }
+  | { kind: 'undo' }
+  | { kind: 'serve'; i: number }
+  | { kind: 'bowl'; i: number }
+  | { kind: 'card' }
+  | { kind: 'bubble'; i: number };
 
-interface Press { id: number; target: Target; x: number; y: number; dragging: boolean }
+interface Press {
+  id: number;
+  target: Target;
+  x: number;
+  y: number;
+  dragging: boolean;
+}
 
 class RecipeWorkshop implements Game {
   readonly hintLabel = 'Show a hint';
@@ -61,7 +109,9 @@ class RecipeWorkshop implements Game {
   private lastDown = -Infinity;
   /** The bot shows the free order and the card at the first request. */
   private demoStep = 0;
-  private readonly cancel = (e: PointerEvent) => { if (this.press && e.pointerId === this.press.id) this.drop(null); };
+  private readonly cancel = (e: PointerEvent) => {
+    if (this.press && e.pointerId === this.press.id) this.drop(null);
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.level = planFor(ctx.level).id;
@@ -70,22 +120,53 @@ class RecipeWorkshop implements Game {
     const made = makeRound(this.level, ctx.rng, authored);
     this.round = made.round;
     this.state = roundState(this.level, made.requests);
-    this.L = workshopLayout(ctx.view, this.level) ?? workshopLayout({ w: Math.max(ctx.view.w, 1024), h: Math.max(ctx.view.h, 768) }, this.level)!;
+    this.L =
+      workshopLayout(ctx.view, this.level) ??
+      workshopLayout({ w: Math.max(ctx.view.w, 1024), h: Math.max(ctx.view.h, 768) }, this.level)!;
 
     ctx.stage.addChild(this.bg, this.cardLayer);
-    this.round.pots.forEach((ing) => { const p = potArt(ing); this.pots.push(p); ctx.stage.addChild(p); });
-    this.round.toppers.forEach((t) => { const c = new Container(); c.addChild(topperArt(t, 44)); this.toppers.push(c); ctx.stage.addChild(c); });
+    this.round.pots.forEach((ing) => {
+      const p = potArt(ing);
+      this.pots.push(p);
+      ctx.stage.addChild(p);
+    });
+    this.round.toppers.forEach((t) => {
+      const c = new Container();
+      c.addChild(topperArt(t, 44));
+      this.toppers.push(c);
+      ctx.stage.addChild(c);
+    });
     this.buildCard();
     this.buildFriends();
     for (let i = 0; i < this.state.slots.length; i++) {
-      const c = new Container(), g = new Graphics();
-      c.addChild(g); this.bowls.push(c); this.bowlArt.push(g); ctx.stage.addChild(c);
-      const s = new Container(); s.addChild(serveArt()); this.serves.push(s); ctx.stage.addChild(s);
+      const c = new Container(),
+        g = new Graphics();
+      c.addChild(g);
+      this.bowls.push(c);
+      this.bowlArt.push(g);
+      ctx.stage.addChild(c);
+      const s = new Container();
+      s.addChild(serveArt());
+      this.serves.push(s);
+      ctx.stage.addChild(s);
     }
     this.spoon.addChild(spoonArt());
     this.undoBtn.addChild(undoArt());
     ctx.stage.addChild(this.rings, this.spoon, this.undoBtn, this.glow, this.fx, this.tapLayer);
-    for (const o of [this.bg, this.cardLayer, ...this.pots, ...this.toppers, ...this.bowls, ...this.serves, this.rings, this.spoon, this.undoBtn, this.glow, this.fx]) o.eventMode = 'none';
+    for (const o of [
+      this.bg,
+      this.cardLayer,
+      ...this.pots,
+      ...this.toppers,
+      ...this.bowls,
+      ...this.serves,
+      this.rings,
+      this.spoon,
+      this.undoBtn,
+      this.glow,
+      this.fx,
+    ])
+      o.eventMode = 'none';
     this.undoBtn.visible = !!this.L.undo;
     this.tapLayer.eventMode = 'static';
     this.tapLayer.on('pointerdown', (e) => this.down(e));
@@ -98,7 +179,10 @@ class RecipeWorkshop implements Game {
 
   start() {
     const r = this.state.slots[0].request;
-    if (this.level === 1) { void this.ctx.instruct('recipe.instruct.1'); return; }
+    if (this.level === 1) {
+      void this.ctx.instruct('recipe.instruct.1');
+      return;
+    }
     void this.ctx.say(this.level === 2 ? 'recipe.instruct.2' : 'recipe.instruct.3').then(() => {
       if (!this.destroyed && r) void this.ctx.instruct(`recipe.request.${r.fruit}` as LineId);
     });
@@ -109,14 +193,21 @@ class RecipeWorkshop implements Game {
   private buildCard() {
     const r = this.state.slots[0].request;
     if (!r) return;
-    for (const ing of [r.fruit, 'base'] as const) { const p = picture(ing, ing === 'base' ? 0.75 : 0.62); this.cardBits.push(p); }
-    const sp = spoonArt(); sp.scale.set(0.6); this.cardBits.push(sp);
+    for (const ing of [r.fruit, 'base'] as const) {
+      const p = picture(ing, ing === 'base' ? 0.75 : 0.62);
+      this.cardBits.push(p);
+    }
+    const sp = spoonArt();
+    sp.scale.set(0.6);
+    this.cardBits.push(sp);
     for (const b of this.cardBits) this.cardLayer.addChild(b);
     if (this.level === 3) {
       this.state.slots.forEach((s) => {
-        const c = new Container(), g = new Graphics();
+        const c = new Container(),
+          g = new Graphics();
         c.addChild(g, topperArt(s.request!.topper!, 32));
-        this.bubbles.push(c); this.cardLayer.addChild(c);
+        this.bubbles.push(c);
+        this.cardLayer.addChild(c);
       });
     }
   }
@@ -165,24 +256,41 @@ class RecipeWorkshop implements Game {
     const c = this.L.card;
     this.cardLayer.visible = !!c && !this.state.done;
     if (!c) return;
-    const g = (this.cardLayer.children[0] instanceof Graphics && this.cardLayer.children[0].label === 'card')
-      ? this.cardLayer.children[0] as Graphics : (() => { const n = new Graphics(); n.label = 'card'; this.cardLayer.addChildAt(n, 0); return n; })();
+    const g =
+      this.cardLayer.children[0] instanceof Graphics && this.cardLayer.children[0].label === 'card'
+        ? (this.cardLayer.children[0] as Graphics)
+        : (() => {
+            const n = new Graphics();
+            n.label = 'card';
+            this.cardLayer.addChildAt(n, 0);
+            return n;
+          })();
     g.clear();
     panel(g, c.x, c.y, c.w, c.h);
-    const xs = [0.2, 0.5, 0.8].map((f) => c.x + c.w * f), y = c.y + c.h / 2;
+    const xs = [0.2, 0.5, 0.8].map((f) => c.x + c.w * f),
+      y = c.y + c.h / 2;
     this.cardBits.forEach((b, i) => b.position.set(xs[i], y + (i === 2 ? -4 : 6)));
     plus(g, (xs[0] + xs[1]) / 2, y);
     const ax = (xs[1] + xs[2]) / 2;
     // An arrow, not a minus: then mix.
-    g.moveTo(ax - 14, y).lineTo(ax + 10, y).stroke({ width: 5, color: 0x2b2b3a, cap: 'round' });
+    g.moveTo(ax - 14, y)
+      .lineTo(ax + 10, y)
+      .stroke({ width: 5, color: 0x2b2b3a, cap: 'round' });
     g.poly([ax + 4, y - 10, ax + 16, y, ax + 4, y + 10]).fill(0x2b2b3a);
     this.bubbles.forEach((bub, i) => {
-      const b = this.L.bubbles[i], bg = bub.children[0] as Graphics, f = this.L.friends[i];
+      const b = this.L.bubbles[i],
+        bg = bub.children[0] as Graphics,
+        f = this.L.friends[i];
       bub.position.set(b.x + b.w / 2, b.y + b.h / 2);
-      bg.clear().roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 30).fill(0xffffff).stroke({ width: 5, color: swatch.teal.line });
+      bg.clear()
+        .roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 30)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch.teal.line });
       // A tail toward the friend who wants it.
       const dx = f.x - bub.x;
-      bg.poly([-14, b.h / 2 - 3, 14, b.h / 2 - 3, Math.max(-60, Math.min(60, dx * 0.25)), b.h / 2 + 30]).fill(0xffffff).stroke({ width: 4, color: swatch.teal.line });
+      bg.poly([-14, b.h / 2 - 3, 14, b.h / 2 - 3, Math.max(-60, Math.min(60, dx * 0.25)), b.h / 2 + 30])
+        .fill(0xffffff)
+        .stroke({ width: 4, color: swatch.teal.line });
       bg.rect(-12, b.h / 2 - 6, 24, 6).fill(0xffffff);
     });
   }
@@ -197,13 +305,18 @@ class RecipeWorkshop implements Game {
     const g = this.rings.clear();
     if (this.level !== 3 || this.state.done) return;
     const b = this.L.bowls[this.state.active];
-    g.roundRect(b.x - 14, b.y - 14, b.w + 28, b.h + 28, 30).stroke({ width: 7, color: swatch.orange.fill, alpha: 0.85 });
+    g.roundRect(b.x - 14, b.y - 14, b.w + 28, b.h + 28, 30).stroke({
+      width: 7,
+      color: swatch.orange.fill,
+      alpha: 0.85,
+    });
   }
 
   /** Where the glow goes: the bowl's next step, or the bowl itself at level 3 when another bowl is being worked on. */
   private glowBox(): Box | null {
     if (this.state.done) return null;
-    const s = this.state, act = s.slots[s.active];
+    const s = this.state,
+      act = s.slots[s.active];
     const i = act && !act.served && act.glow ? s.active : s.slots.findIndex((x) => x.glow && !x.served);
     if (i < 0) return null;
     if (i !== s.active) return this.L.bowls[i];
@@ -222,7 +335,8 @@ class RecipeWorkshop implements Game {
   /* Input -------------------------------------------------------------------------------------------- */
 
   private targetAt(x: number, y: number): Target | null {
-    const L = this.L, m = 15;
+    const L = this.L,
+      m = 15;
     const hit = (b: Box) => within(grow(b, m), x, y);
     for (let i = 0; i < L.pots.length; i++) if (hit(L.pots[i])) return { kind: 'pot', i };
     for (let i = 0; i < L.toppers.length; i++) if (hit(L.toppers[i])) return { kind: 'topper', i };
@@ -237,14 +351,22 @@ class RecipeWorkshop implements Game {
 
   private nodeFor(t: Target): Container | null {
     switch (t.kind) {
-      case 'pot': return this.pots[t.i];
-      case 'topper': return this.toppers[t.i];
-      case 'spoon': return this.spoon;
-      case 'undo': return this.undoBtn;
-      case 'serve': return this.serves[t.i];
-      case 'bowl': return this.bowls[t.i];
-      case 'card': return this.cardLayer;
-      case 'bubble': return this.bubbles[t.i];
+      case 'pot':
+        return this.pots[t.i];
+      case 'topper':
+        return this.toppers[t.i];
+      case 'spoon':
+        return this.spoon;
+      case 'undo':
+        return this.undoBtn;
+      case 'serve':
+        return this.serves[t.i];
+      case 'bowl':
+        return this.bowls[t.i];
+      case 'card':
+        return this.cardLayer;
+      case 'bubble':
+        return this.bubbles[t.i];
     }
   }
 
@@ -259,7 +381,10 @@ class RecipeWorkshop implements Game {
     this.squash(this.nodeFor(t));
     const carry = t.kind === 'pot' || t.kind === 'topper' || t.kind === 'spoon';
     // A carryable thing waits to see whether the finger lifts (a tap) or travels (a drag); everything else acts at once.
-    if (carry) { this.press = { id: e.pointerId, target: t, x: p.x, y: p.y, dragging: false }; return; }
+    if (carry) {
+      this.press = { id: e.pointerId, target: t, x: p.x, y: p.y, dragging: false };
+      return;
+    }
     this.tapTarget(t);
   }
 
@@ -279,7 +404,11 @@ class RecipeWorkshop implements Game {
   private up(e: FederatedPointerEvent) {
     const pr = this.press;
     if (!pr || e.pointerId !== pr.id) return;
-    if (!pr.dragging) { this.press = null; this.tapTarget(pr.target); return; }
+    if (!pr.dragging) {
+      this.press = null;
+      this.tapTarget(pr.target);
+      return;
+    }
     const p = this.ctx.stage.toLocal(e.global);
     this.drop({ x: p.x, y: p.y - 40 });
   }
@@ -300,11 +429,18 @@ class RecipeWorkshop implements Game {
     }
     if (!c) return;
     const home = this.nodeFor(pr.target)!;
-    void this.ctx.tw.to(c, { x: home.x, y: home.y, alpha: 0 }, { duration: 0.35 }).then(() => c.destroy({ children: true }));
+    void this.ctx.tw
+      .to(c, { x: home.x, y: home.y, alpha: 0 }, { duration: 0.35 })
+      .then(() => c.destroy({ children: true }));
   }
 
   private carryArt(t: Target): Container {
-    if (t.kind === 'pot') { const g = new Graphics(), ing = this.round.pots[t.i]; g.circle(0, 0, 30).fill(dollop(ing)).stroke({ width: 3, color: 0x8c8c9c }); return g; }
+    if (t.kind === 'pot') {
+      const g = new Graphics(),
+        ing = this.round.pots[t.i];
+      g.circle(0, 0, 30).fill(dollop(ing)).stroke({ width: 3, color: 0x8c8c9c });
+      return g;
+    }
     if (t.kind === 'topper') return topperArt(this.round.toppers[t.i], 36);
     return spoonArt();
   }
@@ -312,14 +448,31 @@ class RecipeWorkshop implements Game {
   private tapTarget(t: Target, bowl = this.state.active) {
     if (this.finished) return;
     switch (t.kind) {
-      case 'pot': this.add(bowl, this.round.pots[t.i], this.L.pots[t.i]); break;
-      case 'topper': this.act(bowl, { kind: 'topper', topper: this.round.toppers[t.i] }); break;
-      case 'spoon': this.mix(bowl); break;
-      case 'undo': this.undo(bowl); break;
-      case 'serve': this.serve(t.i); break;
-      case 'bowl': this.select(t.i); break;
-      case 'card': this.replay(); break;
-      case 'bubble': sfx.pop(9); void this.ctx.say(`recipe.notopper.${this.state.slots[t.i].request!.topper}` as LineId); break;
+      case 'pot':
+        this.add(bowl, this.round.pots[t.i], this.L.pots[t.i]);
+        break;
+      case 'topper':
+        this.act(bowl, { kind: 'topper', topper: this.round.toppers[t.i] });
+        break;
+      case 'spoon':
+        this.mix(bowl);
+        break;
+      case 'undo':
+        this.undo(bowl);
+        break;
+      case 'serve':
+        this.serve(t.i);
+        break;
+      case 'bowl':
+        this.select(t.i);
+        break;
+      case 'card':
+        this.replay();
+        break;
+      case 'bubble':
+        sfx.pop(9);
+        void this.ctx.say(`recipe.notopper.${this.state.slots[t.i].request!.topper}` as LineId);
+        break;
     }
   }
 
@@ -337,7 +490,10 @@ class RecipeWorkshop implements Game {
     if (slot.served) return false;
     const changed = doAction(slot, a);
     if (changed) this.drawBowl(i);
-    if (a.kind === 'topper') { sfx.tick(); if (changed) this.wobble(this.bowls[i]); }
+    if (a.kind === 'topper') {
+      sfx.tick();
+      if (changed) this.wobble(this.bowls[i]);
+    }
     return changed;
   }
 
@@ -354,12 +510,22 @@ class RecipeWorkshop implements Game {
     this.act(i, { kind: 'add', ing });
     sfx.marimba(PLIP[ing], 0.4);
     const blob = new Graphics().circle(0, 0, 22).fill(dollop(ing)).stroke({ width: 3, color: 0x8c8c9c });
-    const a = centre(from), b = centre(this.L.bowls[i]);
+    const a = centre(from),
+      b = centre(this.L.bowls[i]);
     blob.position.set(a.x, a.y - 30);
     blob.eventMode = 'none';
     this.fx.addChild(blob);
-    void this.ctx.tw.to(blob, { x: b.x, y: b.y - 30, alpha: 0.2 }, { duration: 0.3 }).then(() => blob.destroy());
-    this.ctx.particles.burst(b.x, b.y - 20, { kind: 'ring', colors: [dollop(ing)], count: 6, speed: [40, 120], gravity: 200, life: [0.3, 0.5] });
+    void this.ctx.tw
+      .to(blob, { x: b.x, y: b.y - 30, alpha: 0.2 }, { duration: 0.3 })
+      .then(() => blob.destroy());
+    this.ctx.particles.burst(b.x, b.y - 20, {
+      kind: 'ring',
+      colors: [dollop(ing)],
+      count: 6,
+      speed: [40, 120],
+      gravity: 200,
+      life: [0.3, 0.5],
+    });
   }
 
   private mix(i: number) {
@@ -368,16 +534,28 @@ class RecipeWorkshop implements Game {
     // The spoon swirls whether or not there was anything to stir: an empty stir is harmless.
     this.ctx.tw.kill(this.spoon);
     this.spoon.rotation = 0;
-    void this.ctx.tw.to(this.spoon, { rotation: Math.PI * 2 }, { duration: 0.45 }).then(() => { if (!this.destroyed) this.spoon.rotation = 0; });
+    void this.ctx.tw.to(this.spoon, { rotation: Math.PI * 2 }, { duration: 0.45 }).then(() => {
+      if (!this.destroyed) this.spoon.rotation = 0;
+    });
     if (changed) {
       const b = centre(this.L.bowls[i]);
-      this.ctx.particles.burst(b.x, b.y - 30, { kind: 'star', colors: [0xffffff, swatch.pink.light], count: 8, speed: [60, 160], gravity: 100, life: [0.3, 0.6] });
+      this.ctx.particles.burst(b.x, b.y - 30, {
+        kind: 'star',
+        colors: [0xffffff, swatch.pink.light],
+        count: 8,
+        speed: [60, 160],
+        gravity: 100,
+        life: [0.3, 0.6],
+      });
     }
   }
 
   private undo(i: number) {
     const slot = this.state.slots[i];
-    if (slot.served || !undo(slot)) { sfx.tick(); return; }
+    if (slot.served || !undo(slot)) {
+      sfx.tick();
+      return;
+    }
     sfx.pop(4);
     this.drawBowl(i);
   }
@@ -393,22 +571,33 @@ class RecipeWorkshop implements Game {
     if (this.state.slots[i].served) return;
     this.select(i);
     const r = serve(this.state, i);
-    if (r.kind === 'empty') { void this.ctx.say('recipe.empty'); this.wiggle(this.bowls[i]); return; }
+    if (r.kind === 'empty') {
+      void this.ctx.say('recipe.empty');
+      this.wiggle(this.bowls[i]);
+      return;
+    }
     if (r.kind === 'miss') {
       sfx.boing();
       this.wiggle(this.bowls[i]);
       this.companion?.wiggle();
       this.pulse(r.verdict, i);
-      void this.ctx.say(missLine(r.verdict)).then(() => { if (!this.destroyed && r.newHint) void this.ctx.say(hintLine(stepFor(this.state.slots[i], this.round.pots))); });
+      void this.ctx.say(missLine(r.verdict)).then(() => {
+        if (!this.destroyed && r.newHint)
+          void this.ctx.say(hintLine(stepFor(this.state.slots[i], this.round.pots)));
+      });
       return;
     }
     sfx.bell(9);
     this.serves[i].alpha = 0.35;
     const friend = this.friends[i];
-    if (friend === this.companion) this.companion?.cheer(); else this.critter?.cheer();
+    if (friend === this.companion) this.companion?.cheer();
+    else this.critter?.cheer();
     this.hop(this.bowls[i]);
     this.drawRings();
-    if (this.state.done) { this.finish(); return; }
+    if (this.state.done) {
+      this.finish();
+      return;
+    }
     void this.ctx.say('recipe.served');
   }
 
@@ -416,8 +605,12 @@ class RecipeWorkshop implements Game {
   private pulse(v: Verdict, i: number) {
     const r = this.state.slots[i].request;
     if (!r) return;
-    const node = v.kind === 'extra' || v.kind === 'missing' ? this.cardBits[v.ing === 'base' ? 1 : 0]
-      : v.kind === 'notMixed' ? this.cardBits[2] : this.bubbles[i];
+    const node =
+      v.kind === 'extra' || v.kind === 'missing'
+        ? this.cardBits[v.ing === 'base' ? 1 : 0]
+        : v.kind === 'notMixed'
+          ? this.cardBits[2]
+          : this.bubbles[i];
     if (!node) return;
     this.ctx.tw.kill(node.scale);
     const s = node.scale.x;
@@ -432,9 +625,14 @@ class RecipeWorkshop implements Game {
     this.companion?.cheer();
     this.critter?.cheer();
     sfx.tada();
-    for (const b of this.bowls) { this.ctx.tw.kill(b); void this.ctx.tw.to(b, { y: b.y - 24 }, { duration: 0.4 }); }
+    for (const b of this.bowls) {
+      this.ctx.tw.kill(b);
+      void this.ctx.tw.to(b, { y: b.y - 24 }, { duration: 0.4 });
+    }
     void this.ctx.say(this.level === 3 ? 'recipe.all' : 'recipe.served');
-    void this.ctx.tw.wait(2.4).then(() => { if (!this.destroyed) this.ctx.finish({ misses: this.state.misses, hints: this.state.hints }); });
+    void this.ctx.tw.wait(2.4).then(() => {
+      if (!this.destroyed) this.ctx.finish({ misses: this.state.misses, hints: this.state.hints });
+    });
   }
 
   /* Motion ------------------------------------------------------------------------------------------- */
@@ -448,17 +646,22 @@ class RecipeWorkshop implements Game {
 
   private wiggle(n: Container) {
     if (this.ctx.tw.busy(n)) return;
-    void this.ctx.tw.to(n, { rotation: 0.12 }, { duration: 0.08 })
+    void this.ctx.tw
+      .to(n, { rotation: 0.12 }, { duration: 0.08 })
       .then(() => this.ctx.tw.to(n, { rotation: -0.12 }, { duration: 0.12 }))
       .then(() => this.ctx.tw.to(n, { rotation: 0 }, { duration: 0.08 }));
   }
 
-  private wobble(n: Container) { this.squash(n); }
+  private wobble(n: Container) {
+    this.squash(n);
+  }
 
   private hop(n: Container) {
     if (this.ctx.tw.busy(n)) return;
     const y = n.y;
-    void this.ctx.tw.to(n, { y: y - 20 }, { duration: 0.12 }).then(() => this.ctx.tw.to(n, { y }, { duration: 0.16 }));
+    void this.ctx.tw
+      .to(n, { y: y - 20 }, { duration: 0.12 })
+      .then(() => this.ctx.tw.to(n, { y }, { duration: 0.16 }));
   }
 
   /* Help --------------------------------------------------------------------------------------------- */
@@ -467,7 +670,10 @@ class RecipeWorkshop implements Game {
     if (this.state.done) return;
     const i = askHint(this.state);
     if (i < 0) return;
-    if (i !== this.state.active && this.level === 3) { void this.ctx.say('recipe.hint.bowl'); return; }
+    if (i !== this.state.active && this.level === 3) {
+      void this.ctx.say('recipe.hint.bowl');
+      return;
+    }
     void this.ctx.say(hintLine(stepFor(this.state.slots[i], this.round.pots)));
   }
 
@@ -484,7 +690,8 @@ class RecipeWorkshop implements Game {
 
   update(dt: number) {
     this.t += dt;
-    const g = this.glow.clear(), b = this.finished ? null : this.glowBox();
+    const g = this.glow.clear(),
+      b = this.finished ? null : this.glowBox();
     if (!b) return;
     g.roundRect(b.x - 10, b.y - 10, b.w + 20, b.h + 20, 26).stroke({ width: 8, color: swatch.yellow.line });
     g.alpha = 0.65 + 0.35 * Math.sin(this.t * 4);
@@ -493,9 +700,14 @@ class RecipeWorkshop implements Game {
   /** The ghost finger: level 1 both pots, the spoon and Serve; level 2 the base first (the order is free); level 3 each bowl in turn. */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
-    const s = this.state, tap = (b: Box, pause = 0.7): TouchIntent => ({ tap: { on: this.tapLayer, x: b.x + b.w / 2, y: b.y + b.h / 2 }, pause });
+    const s = this.state,
+      tap = (b: Box, pause = 0.7): TouchIntent => ({
+        tap: { on: this.tapLayer, x: b.x + b.w / 2, y: b.y + b.h / 2 },
+        pause,
+      });
     if (this.level === 1) {
-      const slot = s.slots[0], n = slot.bowl.loose.length + Object.keys(slot.bowl.mixed).length;
+      const slot = s.slots[0],
+        n = slot.bowl.loose.length + Object.keys(slot.bowl.mixed).length;
       if (n < 2) return tap(this.L.pots[Math.min(1, slot.bowl.loose.length)]);
       if (slot.bowl.loose.length) return tap(this.L.spoon, 1);
       return tap(this.L.serves[0]);
@@ -504,8 +716,12 @@ class RecipeWorkshop implements Game {
     if (s.slots[i].served) i = s.slots.findIndex((x) => !x.served);
     if (i < 0) return null;
     if (i !== s.active) return tap(this.L.bowls[i]);
-    const slot = s.slots[i], r = slot.request!;
-    if (this.level === 2 && this.demoStep === 0 && isEmptyBowl(slot.bowl)) { this.demoStep = 1; return tap(this.L.pots[1]); }
+    const slot = s.slots[i],
+      r = slot.request!;
+    if (this.level === 2 && this.demoStep === 0 && isEmptyBowl(slot.bowl)) {
+      this.demoStep = 1;
+      return tap(this.L.pots[1]);
+    }
     return tap(this.boxFor(stepHint(slot.bowl, r), i), 0.7);
   }
 
@@ -518,8 +734,17 @@ class RecipeWorkshop implements Game {
 }
 
 const isEmptyBowl = (b: Bowl) => b.loose.length === 0 && Object.keys(b.mixed).length === 0;
-const stepHint = (b: Bowl, r: NonNullable<RoundState['slots'][number]['request']>): Hint => stepFor({ ...emptySlotLike(), bowl: b, request: r }, []);
-const emptySlotLike = () => ({ bowl: emptyBowl(), stack: [], request: null, misses: 0, glow: false, hintCounted: false, served: false });
+const stepHint = (b: Bowl, r: NonNullable<RoundState['slots'][number]['request']>): Hint =>
+  stepFor({ ...emptySlotLike(), bowl: b, request: r }, []);
+const emptySlotLike = () => ({
+  bowl: emptyBowl(),
+  stack: [],
+  request: null,
+  misses: 0,
+  glow: false,
+  hintCounted: false,
+  served: false,
+});
 
 /** A dollop's colour; the white base gets a faint grey so it reads on the white card. */
 function dollop(ing: Ingredient): number {
@@ -528,35 +753,53 @@ function dollop(ing: Ingredient): number {
 
 function missLine(v: Verdict): LineId {
   switch (v.kind) {
-    case 'extra': return `recipe.extra.${v.ing}` as LineId;
-    case 'missing': return `recipe.missing.${v.ing}` as LineId;
-    case 'notMixed': return 'recipe.notmixed';
-    case 'noTopper': case 'wrongTopper': return `recipe.notopper.${v.topper}` as LineId;
-    default: return 'recipe.empty';
+    case 'extra':
+      return `recipe.extra.${v.ing}` as LineId;
+    case 'missing':
+      return `recipe.missing.${v.ing}` as LineId;
+    case 'notMixed':
+      return 'recipe.notmixed';
+    case 'noTopper':
+    case 'wrongTopper':
+      return `recipe.notopper.${v.topper}` as LineId;
+    default:
+      return 'recipe.empty';
   }
 }
 
 function hintLine(h: Hint): LineId {
   switch (h.kind) {
-    case 'add': return `recipe.hint.${h.ing}` as LineId;
-    case 'topper': return `recipe.hint.${h.topper}` as LineId;
-    default: return `recipe.hint.${h.kind}` as LineId;
+    case 'add':
+      return `recipe.hint.${h.ing}` as LineId;
+    case 'topper':
+      return `recipe.hint.${h.topper}` as LineId;
+    default:
+      return `recipe.hint.${h.kind}` as LineId;
   }
 }
 
 function bowlIcon(seed: number): Container {
-  const c = new Container(), g = new Graphics();
-  const bowl: Bowl = { mixed: { [(['berries', 'apple', 'orange'] as const)[Math.abs(seed) % 3]]: 1, base: 1 }, loose: [], top: Math.abs(seed >> 2) % 2 ? 'leaf' : 'star', folded: [] };
+  const c = new Container(),
+    g = new Graphics();
+  const bowl: Bowl = {
+    mixed: { [(['berries', 'apple', 'orange'] as const)[Math.abs(seed) % 3]]: 1, base: 1 },
+    loose: [],
+    top: Math.abs(seed >> 2) % 2 ? 'leaf' : 'star',
+    folded: [],
+  };
   drawBowl(g, bowl, 180, 130);
   c.addChild(g);
   return c;
 }
 
 function hubArt(): Container {
-  const c = new Container(), g = new Graphics();
+  const c = new Container(),
+    g = new Graphics();
   drawBowl(g, { mixed: { berries: 1, base: 1 }, loose: [], top: null, folded: [] }, 150, 110);
   g.y = -60;
-  const sp = spoonArt(); sp.scale.set(0.7); sp.position.set(56, -96);
+  const sp = spoonArt();
+  sp.scale.set(0.7);
+  sp.position.set(56, -96);
   c.addChild(g, sp);
   return c;
 }
@@ -564,7 +807,8 @@ function hubArt(): Container {
 function sticker(seed: number): Container {
   const c = bowlIcon(seed);
   c.y = -70;
-  const wrap = new Container(); wrap.addChild(c);
+  const wrap = new Container();
+  wrap.addChild(c);
   return wrap;
 }
 

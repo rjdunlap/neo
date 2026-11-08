@@ -13,10 +13,41 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { GARDENS } from './puzzles';
 import {
-  ENTRY_LEVELS, LEVELS,
-  apply, decode, FIRST_GARDEN, fits, flowerAt, gardenLayout, goalMet, has, hintPlacement, makeGarden, nearestAnchor, place, placements,
-  kindOf, lookFor, planFor, RIDE, search, SHAPES, startState, transformGarden, trayIndex, trayNow, TRAY_CELL, type Anchor, type Family, type Garden,
-  type FlowerKind, type GardenLayout, type GardenLook, type GardenPlan, type Placement, type State,
+  ENTRY_LEVELS,
+  LEVELS,
+  apply,
+  decode,
+  FIRST_GARDEN,
+  fits,
+  flowerAt,
+  gardenLayout,
+  goalMet,
+  has,
+  hintPlacement,
+  makeGarden,
+  nearestAnchor,
+  place,
+  placements,
+  kindOf,
+  lookFor,
+  planFor,
+  RIDE,
+  search,
+  SHAPES,
+  startState,
+  transformGarden,
+  trayIndex,
+  trayNow,
+  TRAY_CELL,
+  type Anchor,
+  type Family,
+  type Garden,
+  type FlowerKind,
+  type GardenLayout,
+  type GardenLook,
+  type GardenPlan,
+  type Placement,
+  type State,
 } from './logic';
 
 /** The bloom: taps are ignored while the flowers open. */
@@ -27,7 +58,10 @@ const DEAD_END_CAP = 4_000;
 const RUN = [5, 7, 8, 9, 11, 12, 14, 15];
 
 /** Each family's colour and pattern, so pieces in a tray differ by shape and pattern, never by colour alone. */
-const LOOK: Record<Family, { sw: Swatch; pattern: 'dots' | 'stripes' | 'rings' | 'plain' | 'cross' | 'leaf' }> = {
+const LOOK: Record<
+  Family,
+  { sw: Swatch; pattern: 'dots' | 'stripes' | 'rings' | 'plain' | 'cross' | 'leaf' }
+> = {
   mono: { sw: swatch.pink, pattern: 'dots' },
   domino: { sw: swatch.blue, pattern: 'stripes' },
   I3: { sw: swatch.orange, pattern: 'rings' },
@@ -48,11 +82,29 @@ const SOIL = { fill: 0x9a6b47, line: 0x6e4a30, light: 0xb8865e };
 const STONE = { fill: 0xb9b6ad, line: 0x7d7a72 };
 
 /** Each look's bed: rim, soil, the sleeping bud's colour, and how a picked line bursts. None changes the garden. */
-const LOOK_ART: Record<GardenLook, { rim: number; soil: { fill: number; light: number }; bud: Swatch; burst: 'petals' | 'leaves' | 'drops' | 'lanterns' }> = {
+const LOOK_ART: Record<
+  GardenLook,
+  {
+    rim: number;
+    soil: { fill: number; light: number };
+    bud: Swatch;
+    burst: 'petals' | 'leaves' | 'drops' | 'lanterns';
+  }
+> = {
   morning: { rim: SOIL.line, soil: SOIL, bud: swatch.pink, burst: 'petals' },
   autumn: { rim: SOIL.line, soil: SOIL, bud: swatch.orange, burst: 'leaves' },
-  rain: { rim: swatch.blue.line, soil: { fill: SOIL.line, light: SOIL.fill }, bud: swatch.blue, burst: 'drops' },
-  evening: { rim: swatch.purple.line, soil: { fill: SOIL.line, light: SOIL.fill }, bud: swatch.purple, burst: 'lanterns' },
+  rain: {
+    rim: swatch.blue.line,
+    soil: { fill: SOIL.line, light: SOIL.fill },
+    bud: swatch.blue,
+    burst: 'drops',
+  },
+  evening: {
+    rim: swatch.purple.line,
+    soil: { fill: SOIL.line, light: SOIL.fill },
+    bud: swatch.purple,
+    burst: 'lanterns',
+  },
 };
 
 const LEAVES = [swatch.orange.fill, swatch.red.fill, swatch.yellow.fill];
@@ -61,20 +113,34 @@ const LEAVES = [swatch.orange.fill, swatch.red.fill, swatch.yellow.fill];
 function seedSquare(g: Graphics, x: number, y: number, s: number, family: Family) {
   const { sw, pattern } = LOOK[family];
   const pad = s * 0.05;
-  g.roundRect(x + pad, y + pad, s - 2 * pad, s - 2 * pad, s * 0.16).fill(sw.fill).stroke({ width: Math.max(2, s * 0.05), color: sw.line });
-  const cx = x + s / 2, cy = y + s / 2, k = s / 100;
+  g.roundRect(x + pad, y + pad, s - 2 * pad, s - 2 * pad, s * 0.16)
+    .fill(sw.fill)
+    .stroke({ width: Math.max(2, s * 0.05), color: sw.line });
+  const cx = x + s / 2,
+    cy = y + s / 2,
+    k = s / 100;
   switch (pattern) {
     case 'dots':
-      for (const [dx, dy] of [[-18, -18], [18, -18], [-18, 18], [18, 18]]) g.circle(cx + dx * k, cy + dy * k, 7 * k).fill(sw.light);
+      for (const [dx, dy] of [
+        [-18, -18],
+        [18, -18],
+        [-18, 18],
+        [18, 18],
+      ])
+        g.circle(cx + dx * k, cy + dy * k, 7 * k).fill(sw.light);
       break;
     case 'stripes':
-      for (const d of [-20, 0, 20]) g.roundRect(cx - 28 * k, cy + d * k - 4 * k, 56 * k, 8 * k, 4 * k).fill(sw.light);
+      for (const d of [-20, 0, 20])
+        g.roundRect(cx - 28 * k, cy + d * k - 4 * k, 56 * k, 8 * k, 4 * k).fill(sw.light);
       break;
     case 'rings':
       g.circle(cx, cy, 22 * k).stroke({ width: 7 * k, color: sw.light });
       break;
     case 'cross':
-      g.roundRect(cx - 5 * k, cy - 26 * k, 10 * k, 52 * k, 5 * k).fill(sw.light).roundRect(cx - 26 * k, cy - 5 * k, 52 * k, 10 * k, 5 * k).fill(sw.light);
+      g.roundRect(cx - 5 * k, cy - 26 * k, 10 * k, 52 * k, 5 * k)
+        .fill(sw.light)
+        .roundRect(cx - 26 * k, cy - 5 * k, 52 * k, 10 * k, 5 * k)
+        .fill(sw.light);
       break;
     case 'leaf':
       g.ellipse(cx, cy, 12 * k, 24 * k).fill(sw.light);
@@ -88,47 +154,71 @@ function seedSquare(g: Graphics, x: number, y: number, s: number, family: Family
 function pieceArt(shapeId: string, cell: number): Graphics {
   const s = SHAPES[shapeId];
   const g = new Graphics();
-  for (const [r, c] of s.cells) seedSquare(g, c * cell - (s.w * cell) / 2, r * cell - (s.h * cell) / 2, cell, s.family);
+  for (const [r, c] of s.cells)
+    seedSquare(g, c * cell - (s.w * cell) / 2, r * cell - (s.h * cell) / 2, cell, s.family);
   return g;
 }
 
-function flowerArt(g: Graphics, x: number, y: number, size: number, color: number, kind: FlowerKind = 'poppy') {
+function flowerArt(
+  g: Graphics,
+  x: number,
+  y: number,
+  size: number,
+  color: number,
+  kind: FlowerKind = 'poppy',
+) {
   switch (kind) {
     case 'tulip':
       // A tulip cup: two side petals and a taller middle one.
       g.ellipse(x - size * 0.26, y + size * 0.05, size * 0.28, size * 0.46).fill(color);
       g.ellipse(x + size * 0.26, y + size * 0.05, size * 0.28, size * 0.46).fill(color);
-      g.ellipse(x, y - size * 0.08, size * 0.28, size * 0.52).fill(color).stroke({ width: 2, color: ink, alpha: 0.2 });
+      g.ellipse(x, y - size * 0.08, size * 0.28, size * 0.52)
+        .fill(color)
+        .stroke({ width: 2, color: ink, alpha: 0.2 });
       return;
     case 'daisy':
       // A daisy ring: eight white petals round a yellow middle.
       for (let i = 0; i < 8; i++) {
         const a = (i / 8) * Math.PI * 2;
-        g.circle(x + Math.cos(a) * size * 0.5, y + Math.sin(a) * size * 0.5, size * 0.2).fill(swatch.white.fill).stroke({ width: 1.5, color: swatch.white.line });
+        g.circle(x + Math.cos(a) * size * 0.5, y + Math.sin(a) * size * 0.5, size * 0.2)
+          .fill(swatch.white.fill)
+          .stroke({ width: 1.5, color: swatch.white.line });
       }
-      g.circle(x, y, size * 0.3).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+      g.circle(x, y, size * 0.3)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 2, color: swatch.yellow.line });
       return;
     case 'sunflower':
       // A sunflower disc: a ring of yellow petals round a brown middle.
       for (let i = 0; i < 10; i++) {
         const a = (i / 10) * Math.PI * 2;
-        g.circle(x + Math.cos(a) * size * 0.52, y + Math.sin(a) * size * 0.52, size * 0.2).fill(swatch.yellow.fill);
+        g.circle(x + Math.cos(a) * size * 0.52, y + Math.sin(a) * size * 0.52, size * 0.2).fill(
+          swatch.yellow.fill,
+        );
       }
-      g.circle(x, y, size * 0.36).fill(swatch.brown.line).stroke({ width: 2, color: swatch.brown.fill });
+      g.circle(x, y, size * 0.36)
+        .fill(swatch.brown.line)
+        .stroke({ width: 2, color: swatch.brown.fill });
       return;
     default:
       for (let i = 0; i < 5; i++) {
         const a = (i / 5) * Math.PI * 2;
         g.circle(x + Math.cos(a) * size * 0.45, y + Math.sin(a) * size * 0.45, size * 0.32).fill(color);
       }
-      g.circle(x, y, size * 0.28).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+      g.circle(x, y, size * 0.28)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 2, color: swatch.yellow.line });
   }
 }
 
 /** A five-point maple leaf on a short stem (the autumn look's picked flowers). */
 function leafArt(g: Graphics, x: number, y: number, size: number, color: number) {
-  g.moveTo(x, y + size * 0.2).lineTo(x, y + size * 0.7).stroke({ width: 2.5, color: swatch.brown.line, cap: 'round' });
-  g.star(x, y, 5, size * 0.6, size * 0.3).fill(color).stroke({ width: 2, color: ink, alpha: 0.2 });
+  g.moveTo(x, y + size * 0.2)
+    .lineTo(x, y + size * 0.7)
+    .stroke({ width: 2.5, color: swatch.brown.line, cap: 'round' });
+  g.star(x, y, 5, size * 0.6, size * 0.3)
+    .fill(color)
+    .stroke({ width: 2, color: ink, alpha: 0.2 });
 }
 
 const PETALS = [swatch.pink.fill, swatch.red.fill, swatch.purple.fill, swatch.orange.fill, swatch.blue.fill];
@@ -178,7 +268,9 @@ class BlockGarden implements Game {
   private carrying: number | null = null;
   /** The system took the touch away, or the screen changed size mid-carry: the drag that ends puts the piece back. */
   private cancelled = false;
-  private readonly onCancel = () => { this.cancelled = true; };
+  private readonly onCancel = () => {
+    this.cancelled = true;
+  };
   private botPlan: { key: string; path: Placement[] | null } | null = null;
 
   constructor(private readonly ctx: GameContext) {
@@ -195,7 +287,15 @@ class BlockGarden implements Game {
     this.bedArt.eventMode = 'none';
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
     this.undoButton.alpha = 0.35;
-    this.root.addChild(this.bedArt, this.shadowArt, this.packets, this.basketPile, this.basket, this.glow, this.undoButton);
+    this.root.addChild(
+      this.bedArt,
+      this.shadowArt,
+      this.packets,
+      this.basketPile,
+      this.basket,
+      this.glow,
+      this.undoButton,
+    );
     ctx.stage.addChild(this.root);
     for (let i = 0; i < 3; i++) this.slots.push(this.makeSlot(i));
     this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
@@ -228,7 +328,10 @@ class BlockGarden implements Game {
     this.undoButton.scale.set(this.undoPulse > 0 ? 1 + 0.08 * Math.sin(this.clock * 8) : 1);
     if (this.undoPulse > 0) {
       this.undoPulse -= dt;
-      g.circle(this.undoButton.x, this.undoButton.y, 62 + 3 * Math.sin(this.clock * 6)).stroke({ width: 6, color: swatch.yellow.fill });
+      g.circle(this.undoButton.x, this.undoButton.y, 62 + 3 * Math.sin(this.clock * 6)).stroke({
+        width: 6,
+        color: swatch.yellow.fill,
+      });
     }
     this.drawShadow();
     if (this.busy || this.finished || !this.hinted) return;
@@ -236,7 +339,10 @@ class BlockGarden implements Game {
     const slot = this.slots.find((s) => s.piece === this.hinted!.piece);
     if (slot) {
       const r = this.lay.slots[this.slots.indexOf(slot)];
-      g.roundRect(r.x + 6, r.y + 6, r.w - 12, r.h - 12, 26).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+      g.roundRect(r.x + 6, r.y + 6, r.w - 12, r.h - 12, 26).stroke({
+        width: 6 + 2 * Math.sin(this.clock * 6),
+        color: swatch.yellow.fill,
+      });
     }
   }
 
@@ -299,7 +405,9 @@ class BlockGarden implements Game {
     this.busy = false;
     if (this.told) return;
     this.told = true;
-    await this.ctx.instruct(this.plan.goal === 'clear' ? 'block-garden.instruct-clear' : 'block-garden.instruct');
+    await this.ctx.instruct(
+      this.plan.goal === 'clear' ? 'block-garden.instruct-clear' : 'block-garden.instruct',
+    );
     if (kindOf(this.plan) === 3) await this.ctx.say('block-garden.two-lines');
   }
 
@@ -375,7 +483,8 @@ class BlockGarden implements Game {
   private grab(slot: Slot, lift: number) {
     const c = slot.carrier;
     const onMove = (e: { global: { x: number; y: number } }) => {
-      if (this.carrying === null || this.slots[this.carrying] !== slot) return void c.off('globalpointermove', onMove);
+      if (this.carrying === null || this.slots[this.carrying] !== slot)
+        return void c.off('globalpointermove', onMove);
       const p = this.root.toLocal(e.global);
       c.position.set(p.x, p.y - lift);
       this.carry(this.slots.indexOf(slot));
@@ -403,7 +512,7 @@ class BlockGarden implements Game {
     const slot = this.slots[i];
     const cancelled = this.cancelled;
     this.cancelled = false;
-    if (this.carrying !== i || slot.piece === null) return this.home(slot), true;
+    if (this.carrying !== i || slot.piece === null) return (this.home(slot), true);
     this.carry(i);
     this.carrying = null;
     const shadow = this.shadow;
@@ -411,9 +520,10 @@ class BlockGarden implements Game {
     const over = this.overBed(slot.carrier.x, slot.carrier.y);
     // The finger rides `lift` below the piece: let go inside its own slot and the piece just goes back, free.
     const r = this.lay.slots[i];
-    const fx = slot.carrier.x, fy = slot.carrier.y + this.liftFor(slot.piece);
+    const fx = slot.carrier.x,
+      fy = slot.carrier.y + this.liftFor(slot.piece);
     const inSlot = fx >= r.x && fx <= r.x + r.w && fy >= r.y && fy <= r.y + r.h;
-    if (cancelled || inSlot || this.busy || this.finished) return this.home(slot), true;
+    if (cancelled || inSlot || this.busy || this.finished) return (this.home(slot), true);
     if (shadow) {
       void this.plant({ piece: shadow.piece, ...shadow.at });
       return true;
@@ -430,8 +540,16 @@ class BlockGarden implements Game {
     const r = this.lay.slots[i];
     this.ctx.tw.kill(slot.carrier);
     this.ctx.tw.kill(slot.art.scale);
-    void this.ctx.tw.to(slot.carrier, { x: r.x + r.w / 2, y: r.y + r.h / 2 }, { duration: 0.3, ease: ease.outBack });
-    void this.ctx.tw.to(slot.art.scale, { x: TRAY_CELL / this.lay.cell, y: TRAY_CELL / this.lay.cell }, { duration: 0.2 });
+    void this.ctx.tw.to(
+      slot.carrier,
+      { x: r.x + r.w / 2, y: r.y + r.h / 2 },
+      { duration: 0.3, ease: ease.outBack },
+    );
+    void this.ctx.tw.to(
+      slot.art.scale,
+      { x: TRAY_CELL / this.lay.cell, y: TRAY_CELL / this.lay.cell },
+      { duration: 0.2 },
+    );
   }
 
   private overBed(x: number, y: number) {
@@ -461,7 +579,10 @@ class BlockGarden implements Game {
     this.state = apply(this.garden, this.state, p);
     this.undoButton.alpha = 1;
     // The piece goes into the soil: show the bed with it planted, then bloom.
-    const planted = { ...before.bed, filled: before.bed.filled.map((m, r) => m | (SHAPES[shape].rows[r - p.r] ?? 0) << p.c) };
+    const planted = {
+      ...before.bed,
+      filled: before.bed.filled.map((m, r) => m | ((SHAPES[shape].rows[r - p.r] ?? 0) << p.c)),
+    };
     this.drawBed(planted);
     this.hideCarried(p.piece);
     sfx.pop(9);
@@ -475,13 +596,17 @@ class BlockGarden implements Game {
       let k = 0;
       const ring = (cells: [number, number][]) => {
         sfx.marimba(RUN[Math.min(RUN.length - 1, k++)] - drop, 0.4);
-        for (const [r, c] of cells) this.burstAt(x + (c + 0.5) * cell, y + (r + 0.5) * cell, has(before.bed.buds, r, c), r + c, burst);
+        for (const [r, c] of cells)
+          this.burstAt(x + (c + 0.5) * cell, y + (r + 0.5) * cell, has(before.bed.buds, r, c), r + c, burst);
       };
       for (const r of out.rows) ring(Array.from({ length: n }, (_, c) => [r, c] as [number, number]));
       for (const c of out.cols) ring(Array.from({ length: n }, (_, r) => [r, c] as [number, number]));
       if (burst === 'lanterns') this.lanterns(out.bloomed);
       if (out.bloomed.length) void this.ctx.say('block-garden.bloom');
-      this.flyToBasket(lines, out.bloomed.map(([r, c]) => flowerAt(this.index, r, c)));
+      this.flyToBasket(
+        lines,
+        out.bloomed.map(([r, c]) => flowerAt(this.index, r, c)),
+      );
       await this.ctx.tw.wait(BLOOM);
     } else await this.ctx.tw.wait(0.15);
     this.sinceHint++;
@@ -489,7 +614,10 @@ class BlockGarden implements Game {
     this.refresh();
     this.busy = false;
     if (goalMet(this.state.bed, this.garden.goal)) return void this.gardenDone();
-    if (trayIndex(this.garden, this.state.used) !== trayBefore && trayNow(this.garden, this.state.used).length) {
+    if (
+      trayIndex(this.garden, this.state.used) !== trayBefore &&
+      trayNow(this.garden, this.state.used).length
+    ) {
       sfx.whoosh();
       void this.ctx.say('block-garden.next-tray');
     }
@@ -507,12 +635,51 @@ class BlockGarden implements Game {
   }
 
   /** One picked square's burst, in the round's look. */
-  private burstAt(px: number, py: number, bud: boolean, i: number, burst: (typeof LOOK_ART)[GardenLook]['burst']) {
+  private burstAt(
+    px: number,
+    py: number,
+    bud: boolean,
+    i: number,
+    burst: (typeof LOOK_ART)[GardenLook]['burst'],
+  ) {
     const p = this.ctx.particles;
-    if (burst === 'leaves') p.burst(px, py, { kind: 'confetti', colors: LEAVES, count: bud ? 8 : 3, speed: [30, 110], gravity: 120, spin: 2, life: [0.5, 0.9] });
-    else if (burst === 'drops') p.burst(px, py, { kind: 'dot', colors: [swatch.blue.light, swatch.white.fill], count: bud ? 10 : 3, speed: [60, 160], gravity: 500, life: [0.3, 0.6] });
-    else if (burst === 'lanterns') p.burst(px, py, { kind: 'dot', colors: [bud ? swatch.yellow.fill : swatch.purple.light, swatch.yellow.light], count: bud ? 6 : 2, speed: [20, 80], gravity: 0, life: [0.3, 0.6] });
-    else p.burst(px, py, { kind: 'dot', colors: [bud ? swatch.yellow.fill : PETALS[i % PETALS.length], 0xffffff], count: bud ? 10 : 3, speed: [40, 140], gravity: 0, life: [0.3, 0.7] });
+    if (burst === 'leaves')
+      p.burst(px, py, {
+        kind: 'confetti',
+        colors: LEAVES,
+        count: bud ? 8 : 3,
+        speed: [30, 110],
+        gravity: 120,
+        spin: 2,
+        life: [0.5, 0.9],
+      });
+    else if (burst === 'drops')
+      p.burst(px, py, {
+        kind: 'dot',
+        colors: [swatch.blue.light, swatch.white.fill],
+        count: bud ? 10 : 3,
+        speed: [60, 160],
+        gravity: 500,
+        life: [0.3, 0.6],
+      });
+    else if (burst === 'lanterns')
+      p.burst(px, py, {
+        kind: 'dot',
+        colors: [bud ? swatch.yellow.fill : swatch.purple.light, swatch.yellow.light],
+        count: bud ? 6 : 2,
+        speed: [20, 80],
+        gravity: 0,
+        life: [0.3, 0.6],
+      });
+    else
+      p.burst(px, py, {
+        kind: 'dot',
+        colors: [bud ? swatch.yellow.fill : PETALS[i % PETALS.length], 0xffffff],
+        count: bud ? 10 : 3,
+        speed: [40, 140],
+        gravity: 0,
+        life: [0.3, 0.7],
+      });
   }
 
   /** Evening: each bud that wakes glows like a little lantern on the bed, fading inside the bloom. */
@@ -522,8 +689,12 @@ class BlockGarden implements Game {
     const g = new Graphics();
     g.eventMode = 'none';
     for (const [r, c] of cells) {
-      const px = x + (c + 0.5) * cell, py = y + (r + 0.5) * cell;
-      g.circle(px, py, cell * 0.42).fill({ color: swatch.yellow.light, alpha: 0.45 }).circle(px, py, cell * 0.22).fill({ color: swatch.yellow.fill, alpha: 0.8 });
+      const px = x + (c + 0.5) * cell,
+        py = y + (r + 0.5) * cell;
+      g.circle(px, py, cell * 0.42)
+        .fill({ color: swatch.yellow.light, alpha: 0.45 })
+        .circle(px, py, cell * 0.22)
+        .fill({ color: swatch.yellow.fill, alpha: 0.8 });
     }
     this.root.addChildAt(g, this.root.getChildIndex(this.shadowArt) + 1);
     void this.ctx.tw.to(g, { alpha: 0 }, { duration: BLOOM, ease: ease.inOutSine }).then(() => g.destroy());
@@ -543,10 +714,12 @@ class BlockGarden implements Game {
       f.eventMode = 'none';
       f.position.set(x + size * (0.2 + 0.6 * Math.random()), y + size * (0.2 + 0.6 * Math.random()));
       this.root.addChild(f);
-      void this.ctx.tw.to(f, { x: b.x, y: b.y, alpha: 0.2 }, { duration: 0.7 + i * 0.08, ease: ease.inOutSine }).then(() => {
-        f.destroy();
-        if (kind) this.addToBasket(kind, i);
-      });
+      void this.ctx.tw
+        .to(f, { x: b.x, y: b.y, alpha: 0.2 }, { duration: 0.7 + i * 0.08, ease: ease.inOutSine })
+        .then(() => {
+          f.destroy();
+          if (kind) this.addToBasket(kind, i);
+        });
     }
   }
 
@@ -574,7 +747,8 @@ class BlockGarden implements Game {
 
   /** Stuck: no tray piece fits, the pieces are used up, or a small search proves there is no way left. Never a miss or a hint. */
   private checkStuck(): boolean {
-    const none = !placements(this.garden, this.state).length || search(this.garden, this.state, DEAD_END_CAP) === 'none';
+    const none =
+      !placements(this.garden, this.state).length || search(this.garden, this.state, DEAD_END_CAP) === 'none';
     if (!none) return false;
     this.undoPulse = 5;
     void this.ctx.say('block-garden.stuck');
@@ -622,52 +796,92 @@ class BlockGarden implements Game {
 
   private drawBed(bed = this.state.bed) {
     const { x, y, cell, n } = this.lay;
-    const look = this.look, art = LOOK_ART[look];
+    const look = this.look,
+      art = LOOK_ART[look];
     const g = this.bedArt.clear();
     const size = n * cell;
     g.roundRect(x - 14, y - 14, size + 28, size + 28, 24).fill(art.rim);
     this.drawRim(g, x, y, size);
     // Striped lines that still hold a sleeping bud (levels 1–2).
-    const budRows = new Set<number>(), budCols = new Set<number>();
-    if (this.plan.tinted) for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (has(bed.buds, r, c)) { budRows.add(r); budCols.add(c); }
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
-      const px = x + c * cell, py = y + r * cell;
-      g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill(art.soil.fill);
-      if (budRows.has(r) || budCols.has(c)) g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill({ color: swatch.yellow.light, alpha: 0.45 });
-      else g.circle(px + cell / 2, py + cell / 2, cell * 0.06).fill(art.soil.light);
-      if (!has(bed.filled, r, c)) continue;
-      if (has(bed.stones, r, c)) {
-        g.roundRect(px + cell * 0.1, py + cell * 0.12, cell * 0.8, cell * 0.76, cell * 0.3).fill(STONE.fill).stroke({ width: 3, color: STONE.line });
-        // Autumn stones wear a moss cap; rain leaves them shining.
-        if (look === 'autumn') g.ellipse(px + cell / 2, py + cell * 0.2, cell * 0.3, cell * 0.08).fill(swatch.green.light);
-        else if (look === 'rain') g.ellipse(px + cell * 0.3, py + cell * 0.26, cell * 0.1, cell * 0.05).fill({ color: swatch.white.fill, alpha: 0.8 });
-        if (has(bed.buds, r, c)) {
-          // A sleeping bud: a closed green bud on a stem.
-          g.moveTo(px + cell / 2, py + cell * 0.72).lineTo(px + cell / 2, py + cell * 0.46).stroke({ width: cell * 0.06, color: swatch.green.line, cap: 'round' });
-          g.ellipse(px + cell / 2, py + cell * 0.38, cell * 0.14, cell * 0.2).fill(art.bud.fill).stroke({ width: 3, color: art.bud.line });
-          g.ellipse(px + cell * 0.4, py + cell * 0.52, cell * 0.1, cell * 0.05).fill(swatch.green.fill);
+    const budRows = new Set<number>(),
+      budCols = new Set<number>();
+    if (this.plan.tinted)
+      for (let r = 0; r < n; r++)
+        for (let c = 0; c < n; c++)
+          if (has(bed.buds, r, c)) {
+            budRows.add(r);
+            budCols.add(c);
+          }
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++) {
+        const px = x + c * cell,
+          py = y + r * cell;
+        g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill(art.soil.fill);
+        if (budRows.has(r) || budCols.has(c))
+          g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill({
+            color: swatch.yellow.light,
+            alpha: 0.45,
+          });
+        else g.circle(px + cell / 2, py + cell / 2, cell * 0.06).fill(art.soil.light);
+        if (!has(bed.filled, r, c)) continue;
+        if (has(bed.stones, r, c)) {
+          g.roundRect(px + cell * 0.1, py + cell * 0.12, cell * 0.8, cell * 0.76, cell * 0.3)
+            .fill(STONE.fill)
+            .stroke({ width: 3, color: STONE.line });
+          // Autumn stones wear a moss cap; rain leaves them shining.
+          if (look === 'autumn')
+            g.ellipse(px + cell / 2, py + cell * 0.2, cell * 0.3, cell * 0.08).fill(swatch.green.light);
+          else if (look === 'rain')
+            g.ellipse(px + cell * 0.3, py + cell * 0.26, cell * 0.1, cell * 0.05).fill({
+              color: swatch.white.fill,
+              alpha: 0.8,
+            });
+          if (has(bed.buds, r, c)) {
+            // A sleeping bud: a closed green bud on a stem.
+            g.moveTo(px + cell / 2, py + cell * 0.72)
+              .lineTo(px + cell / 2, py + cell * 0.46)
+              .stroke({ width: cell * 0.06, color: swatch.green.line, cap: 'round' });
+            g.ellipse(px + cell / 2, py + cell * 0.38, cell * 0.14, cell * 0.2)
+              .fill(art.bud.fill)
+              .stroke({ width: 3, color: art.bud.line });
+            g.ellipse(px + cell * 0.4, py + cell * 0.52, cell * 0.1, cell * 0.05).fill(swatch.green.fill);
+          }
+        } else {
+          // Planted: a seedling in turned soil.
+          g.roundRect(px + cell * 0.08, py + cell * 0.08, cell * 0.84, cell * 0.84, cell * 0.2)
+            .fill(swatch.green.light)
+            .stroke({ width: 3, color: swatch.green.line });
+          g.moveTo(px + cell / 2, py + cell * 0.72)
+            .lineTo(px + cell / 2, py + cell * 0.42)
+            .stroke({ width: cell * 0.05, color: swatch.green.line, cap: 'round' });
+          g.ellipse(px + cell * 0.38, py + cell * 0.42, cell * 0.12, cell * 0.06).fill(swatch.green.fill);
+          g.ellipse(px + cell * 0.62, py + cell * 0.36, cell * 0.12, cell * 0.06).fill(swatch.green.fill);
         }
-      } else {
-        // Planted: a seedling in turned soil.
-        g.roundRect(px + cell * 0.08, py + cell * 0.08, cell * 0.84, cell * 0.84, cell * 0.2).fill(swatch.green.light).stroke({ width: 3, color: swatch.green.line });
-        g.moveTo(px + cell / 2, py + cell * 0.72).lineTo(px + cell / 2, py + cell * 0.42).stroke({ width: cell * 0.05, color: swatch.green.line, cap: 'round' });
-        g.ellipse(px + cell * 0.38, py + cell * 0.42, cell * 0.12, cell * 0.06).fill(swatch.green.fill);
-        g.ellipse(px + cell * 0.62, py + cell * 0.36, cell * 0.12, cell * 0.06).fill(swatch.green.fill);
       }
-    }
   }
 
   /** Each look's touch on the rim: a woven fence in autumn, raindrops in rain, fireflies in the evening. */
   private drawRim(g: Graphics, x: number, y: number, size: number) {
-    const o = 7, w = size + 14;
+    const o = 7,
+      w = size + 14;
     if (this.look === 'autumn') {
       // Two strands woven in and out along each side of the rim.
-      const corners = [[x - o, y - o], [x - o + w, y - o], [x - o + w, y - o + w], [x - o, y - o + w]];
-      for (const [strand, color] of [[1, swatch.brown.light], [-1, swatch.brown.fill]] as const) {
+      const corners = [
+        [x - o, y - o],
+        [x - o + w, y - o],
+        [x - o + w, y - o + w],
+        [x - o, y - o + w],
+      ];
+      for (const [strand, color] of [
+        [1, swatch.brown.light],
+        [-1, swatch.brown.fill],
+      ] as const) {
         g.moveTo(corners[0][0], corners[0][1]);
         for (let side = 0; side < 4; side++) {
-          const [ax, ay] = corners[side], [bx, by] = corners[(side + 1) % 4];
-          const nx = (ay - by) / w, ny = (bx - ax) / w;
+          const [ax, ay] = corners[side],
+            [bx, by] = corners[(side + 1) % 4];
+          const nx = (ay - by) / w,
+            ny = (bx - ax) / w;
           for (let i = 1; i <= 12; i++) {
             const d = i === 12 ? 0 : strand * (i % 2 ? 4 : -4);
             g.lineTo(ax + ((bx - ax) * i) / 12 + nx * d, ay + ((by - ay) * i) / 12 + ny * d);
@@ -676,9 +890,11 @@ class BlockGarden implements Game {
         g.stroke({ width: 4, color, cap: 'round', join: 'round' });
       }
     } else if (this.look === 'rain') {
-      for (let i = 0; i < 8; i++) g.ellipse(x - o + (w * (i + 0.5)) / 8, i % 2 ? y - o : y + size + o, 3, 5).fill(swatch.blue.light);
+      for (let i = 0; i < 8; i++)
+        g.ellipse(x - o + (w * (i + 0.5)) / 8, i % 2 ? y - o : y + size + o, 3, 5).fill(swatch.blue.light);
     } else if (this.look === 'evening') {
-      for (let i = 0; i < 6; i++) g.circle(i % 2 ? x - o : x + size + o, y + (size * (i + 0.5)) / 6, 3.5).fill(swatch.yellow.light);
+      for (let i = 0; i < 6; i++)
+        g.circle(i % 2 ? x - o : x + size + o, y + (size * (i + 0.5)) / 6, 3.5).fill(swatch.yellow.light);
     }
   }
 
@@ -686,17 +902,26 @@ class BlockGarden implements Game {
   private drawShadow() {
     const g = this.shadowArt.clear();
     if (!this.garden || this.finished) return;
-    const show = this.shadow ?? (this.hinted && !this.busy ? { piece: this.hinted.piece, at: this.hinted } : null);
+    const show =
+      this.shadow ?? (this.hinted && !this.busy ? { piece: this.hinted.piece, at: this.hinted } : null);
     if (!show) return;
     const shape = this.garden.pieces[show.piece];
     if (!fits(this.state.bed, shape, show.at)) return;
     const { x, y, cell, n } = this.lay;
     const out = place(this.state.bed, shape, show.at);
     const a = 0.25 + 0.15 * Math.sin(this.clock * 7);
-    for (const r of out.rows) g.roundRect(x, y + r * cell, n * cell, cell, 12).fill({ color: swatch.yellow.light, alpha: a });
-    for (const c of out.cols) g.roundRect(x + c * cell, y, cell, n * cell, 12).fill({ color: swatch.yellow.light, alpha: a });
+    for (const r of out.rows)
+      g.roundRect(x, y + r * cell, n * cell, cell, 12).fill({ color: swatch.yellow.light, alpha: a });
+    for (const c of out.cols)
+      g.roundRect(x + c * cell, y, cell, n * cell, 12).fill({ color: swatch.yellow.light, alpha: a });
     for (const [r, c] of SHAPES[shape].cells) {
-      g.roundRect(x + (show.at.c + c) * cell + 6, y + (show.at.r + r) * cell + 6, cell - 12, cell - 12, cell * 0.16).fill({ color: ink, alpha: 0.22 });
+      g.roundRect(
+        x + (show.at.c + c) * cell + 6,
+        y + (show.at.r + r) * cell + 6,
+        cell - 12,
+        cell - 12,
+        cell * 0.16,
+      ).fill({ color: ink, alpha: 0.22 });
     }
   }
 
@@ -707,15 +932,21 @@ class BlockGarden implements Game {
     // The seed-tray cards: each whole slot is the touch target.
     this.slots.forEach((slot, i) => {
       const r = this.lay.slots[i];
-      g.roundRect(r.x + 8, r.y + 8, r.w - 16, r.h - 16, 22).fill({ color: swatch.brown.light, alpha: slot.piece === null ? 0.25 : 0.6 }).stroke({ width: 3, color: swatch.brown.line, alpha: 0.4 });
+      g.roundRect(r.x + 8, r.y + 8, r.w - 16, r.h - 16, 22)
+        .fill({ color: swatch.brown.light, alpha: slot.piece === null ? 0.25 : 0.6 })
+        .stroke({ width: 3, color: swatch.brown.line, alpha: 0.4 });
     });
-    const later = this.garden.pieces.length - (trayIndex(this.garden, this.state.used) + 1) * this.garden.traySize;
+    const later =
+      this.garden.pieces.length - (trayIndex(this.garden, this.state.used) + 1) * this.garden.traySize;
     if (later <= 0) return;
     const last = this.lay.slots[2];
     const first = this.lay.slots[0];
     const px = this.lay.portrait ? first.x : last.x + last.w / 2 - (later * 26) / 2;
     const py = this.lay.portrait ? last.y + last.h + 4 : last.y + last.h + 6;
-    for (let i = 0; i < later; i++) g.roundRect(px + i * 26, py, 20, 28, 4).fill(swatch.brown.light).stroke({ width: 2, color: swatch.brown.line });
+    for (let i = 0; i < later; i++)
+      g.roundRect(px + i * 26, py, 20, 28, 4)
+        .fill(swatch.brown.light)
+        .stroke({ width: 2, color: swatch.brown.line });
   }
 
   private basketAt() {
@@ -726,9 +957,14 @@ class BlockGarden implements Game {
   private drawBasket(_v: View) {
     const b = this.basketAt();
     this.basketPile.position.set(b.x, b.y);
-    this.basket.clear()
-      .roundRect(b.x - 30, b.y - 6, 60, 34, 10).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line })
-      .moveTo(b.x - 24, b.y - 4).arc(b.x, b.y - 4, 24, Math.PI, 0).stroke({ width: 4, color: swatch.brown.line });
+    this.basket
+      .clear()
+      .roundRect(b.x - 30, b.y - 6, 60, 34, 10)
+      .fill(swatch.brown.fill)
+      .stroke({ width: 3, color: swatch.brown.line })
+      .moveTo(b.x - 24, b.y - 4)
+      .arc(b.x, b.y - 4, 24, Math.PI, 0)
+      .stroke({ width: 4, color: swatch.brown.line });
   }
 }
 
@@ -737,7 +973,12 @@ class GardenIcon extends WigglyIcon {
     const c = new Container();
     const g = new Graphics();
     g.roundRect(-58, -126, 116, 116, 18).fill(SOIL.line);
-    for (const [r, cc] of [[0, 0], [0, 1], [1, 0], [1, 1]]) {
+    for (const [r, cc] of [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+    ]) {
       g.roundRect(-52 + cc * 54, -120 + r * 54, 50, 50, 8).fill(SOIL.fill);
     }
     seedSquare(g, -52, -66, 50, 'domino');
@@ -757,7 +998,8 @@ function sticker(seed: number): Container {
   g.roundRect(-46, 4, 92, 46, 14).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
   g.moveTo(-38, 8).arc(0, 8, 38, Math.PI, 0).stroke({ width: 6, color: swatch.brown.line });
   const n = rng.int(3, 5);
-  for (let i = 0; i < n; i++) flowerArt(g, -30 + (60 * i) / (n - 1), -2 - rng.int(0, 16), rng.int(16, 22), rng.pick(PETALS));
+  for (let i = 0; i < n; i++)
+    flowerArt(g, -30 + (60 * i) / (n - 1), -2 - rng.int(0, 16), rng.int(16, 22), rng.pick(PETALS));
   c.addChild(g);
   return c;
 }
@@ -774,7 +1016,8 @@ export const blockGarden: GameModule = {
   entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'One of you points at a gap, and the other finds the shape that fills it. Say "row" and "column" out loud.',
+  coplayHint:
+    'One of you points at a gap, and the other finds the shape that fills it. Say "row" and "column" out loud.',
   offScreen: 'Cut shapes from squared paper and fill a 5 × 5 grid drawn on paper, without turning them.',
   hubIcon: () => new GardenIcon(),
   touchDemo: true,

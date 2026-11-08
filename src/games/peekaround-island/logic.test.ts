@@ -1,24 +1,64 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { canSee, fits, islandArrangement, lookalike, makeSkyScene, mapPoint, skyArrangement, skyFacing, type SkyKind, frontAfterHalfTurn, hasChoice, makeScene, makeSeeScene, makeViewScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, seeFacings, spotFacing, turnToFront, viewFacings, viewFrom, whereIs, type PeekTouchFriend, type Where } from './logic';
+import {
+  canSee,
+  fits,
+  islandArrangement,
+  lookalike,
+  makeSkyScene,
+  mapPoint,
+  skyArrangement,
+  skyFacing,
+  type SkyKind,
+  frontAfterHalfTurn,
+  hasChoice,
+  makeScene,
+  makeSeeScene,
+  makeViewScene,
+  namedHintTarget,
+  nextPair,
+  nextRequest,
+  pairPlacements,
+  peekTouch,
+  planFor,
+  PLANS,
+  seeFacings,
+  spotFacing,
+  turnToFront,
+  viewFacings,
+  viewFrom,
+  whereIs,
+  type PeekTouchFriend,
+  type Where,
+} from './logic';
 
 describe('Peekaround Island', () => {
   it('demonstrates turning, choosing, and every requested placement without a wrong touch', () => {
-    for (const mode of ['find', 'named', 'who'] as const) for (let seed = 1; seed <= 50; seed++) {
-      const scene = makeScene(PLANS.find((p) => p.mode === mode)!, new Rng(seed));
-      const hider = scene.friends[scene.hider];
-      const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], 0) }));
-      if (mode === 'who') expect(peekTouch(mode, 0, hider, friends)).toEqual({ kind: 'tile', name: hider });
-      else {
-        expect(peekTouch(mode, 0, hider, friends)).toEqual({ kind: 'turn', dir: 1 });
-        expect(peekTouch(mode, 1, hider, friends)).toEqual({ kind: 'friend', name: hider });
+    for (const mode of ['find', 'named', 'who'] as const)
+      for (let seed = 1; seed <= 50; seed++) {
+        const scene = makeScene(
+          PLANS.find((p) => p.mode === mode)!,
+          new Rng(seed),
+        );
+        const hider = scene.friends[scene.hider];
+        const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({
+          name,
+          spot: spotFacing(scene.facing[i], 0),
+        }));
+        if (mode === 'who') expect(peekTouch(mode, 0, hider, friends)).toEqual({ kind: 'tile', name: hider });
+        else {
+          expect(peekTouch(mode, 0, hider, friends)).toEqual({ kind: 'turn', dir: 1 });
+          expect(peekTouch(mode, 1, hider, friends)).toEqual({ kind: 'friend', name: hider });
+        }
       }
-    }
 
     for (let seed = 1; seed <= 100; seed++) {
       const rng = new Rng(seed);
       let turns = 0;
-      const friends: PeekTouchFriend[] = ['duck', 'pig', 'cat', 'bunny'].map((name) => ({ name: name as PeekTouchFriend['name'], spot: -1 }));
+      const friends: PeekTouchFriend[] = ['duck', 'pig', 'cat', 'bunny'].map((name) => ({
+        name: name as PeekTouchFriend['name'],
+        spot: -1,
+      }));
       for (let pair = 0; pair < 2; pair++) {
         const free = [0, 1, 2, 3].filter((spot) => !friends.some((f) => f.spot === spot));
         const [first, second] = nextPair(free, turns, rng);
@@ -56,7 +96,9 @@ describe('Peekaround Island', () => {
       const after = whereIs(s, 2);
       expect(after).toBe(before === 'front' ? 'behind' : before === 'behind' ? 'front' : 'next');
     }
-    for (let turns = -5; turns <= 5; turns++) for (let f = 0; f < 4; f++) expect(whereIs(spotFacing(f, turns), turns)).toBe(f === 0 ? 'front' : f === 2 ? 'behind' : 'next');
+    for (let turns = -5; turns <= 5; turns++)
+      for (let f = 0; f < 4; f++)
+        expect(whereIs(spotFacing(f, turns), turns)).toBe(f === 0 ? 'front' : f === 2 ? 'behind' : 'next');
   });
 
   it('hides exactly one friend, the one asked about, and never the same one twice in a row', () => {
@@ -91,8 +133,16 @@ describe('Peekaround Island', () => {
       }
       const req = nextRequest(free, 0, asked, new Rng(seed * 31 + asked.length));
       expect(fits(req.where, req.spot, 0)).toBe(true);
-      expect(hasChoice(free, 0, req.where), `${asked.join(',')} then ${req.where} from ${free.join(',')}`).toBe(true);
-      for (const s of free.filter((x) => fits(req.where, x, 0))) walk(seed, free.filter((x) => x !== s), [...asked, req.where]);
+      expect(
+        hasChoice(free, 0, req.where),
+        `${asked.join(',')} then ${req.where} from ${free.join(',')}`,
+      ).toBe(true);
+      for (const s of free.filter((x) => fits(req.where, x, 0)))
+        walk(
+          seed,
+          free.filter((x) => x !== s),
+          [...asked, req.where],
+        );
     };
     for (let seed = 1; seed <= 300; seed++) walk(seed, [0, 1, 2, 3], []);
     expect(paths).toBeGreaterThan(300);
@@ -109,7 +159,12 @@ describe('Peekaround Island', () => {
         expect([a.where, b.where]).toContain('behind');
         expect(hasChoice(free, turns, a.where) && hasChoice(free, turns, b.where)).toBe(true);
         // Placing either friend first, at any fitting spot, still leaves a spot for the other.
-        for (const [x, y] of [[a, b], [b, a]]) for (const s of free.filter((f) => fits(x.where, f, turns))) expect(free.some((f) => f !== s && fits(y.where, f, turns))).toBe(true);
+        for (const [x, y] of [
+          [a, b],
+          [b, a],
+        ])
+          for (const s of free.filter((f) => fits(x.where, f, turns)))
+            expect(free.some((f) => f !== s && fits(y.where, f, turns))).toBe(true);
         const ways = pairPlacements(free, turns, a.where, b.where);
         expect(ways.length).toBeGreaterThan(0);
         for (const way of ways) {
@@ -137,9 +192,10 @@ describe('Peekaround Island', () => {
   });
 
   it('level 2 hint: the arrows while the friend asked for is hidden, the friend once it is in view', () => {
-    for (let turns = -4; turns <= 4; turns++) for (let spot = 0; spot < 4; spot++) {
-      expect(namedHintTarget(spot, turns)).toBe(whereIs(spot, turns) === 'behind' ? 'arrows' : 'hider');
-    }
+    for (let turns = -4; turns <= 4; turns++)
+      for (let spot = 0; spot < 4; spot++) {
+        expect(namedHintTarget(spot, turns)).toBe(whereIs(spot, turns) === 'behind' ? 'arrows' : 'hider');
+      }
     // The scene starts with the friend hidden, so a first hint points at the arrows; one turn brings it into view.
     const scene = makeScene(planFor(2), new Rng(7));
     const spot = spotFacing(scene.facing[scene.hider], 0);
@@ -148,12 +204,13 @@ describe('Peekaround Island', () => {
   });
 
   it('turns any spot to the front the short way', () => {
-    for (let turns = -6; turns <= 6; turns++) for (let spot = 0; spot < 4; spot++) {
-      const d = turnToFront(spot, turns);
-      expect(whereIs(spot, turns + d)).toBe('front');
-      expect(Math.abs(d)).toBeLessThanOrEqual(2);
-      if (whereIs(spot, turns) === 'next') expect(Math.abs(d)).toBe(1);
-    }
+    for (let turns = -6; turns <= 6; turns++)
+      for (let spot = 0; spot < 4; spot++) {
+        const d = turnToFront(spot, turns);
+        expect(whereIs(spot, turns + d)).toBe('front');
+        expect(Math.abs(d)).toBeLessThanOrEqual(2);
+        if (whereIs(spot, turns) === 'next') expect(Math.abs(d)).toBe(1);
+      }
   });
 
   it("level 6: exactly one friend can't see the picture, she can always tap them, and turning shows why", () => {
@@ -169,7 +226,10 @@ describe('Peekaround Island', () => {
         const scene = makeSeeScene(facing, rng, last);
         const picture = spotFacing(scene.picture, turns);
         pictureSpots.add(picture);
-        const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) }));
+        const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({
+          name,
+          spot: spotFacing(scene.facing[i], turns),
+        }));
         const blocked = friends[scene.blocked];
         expect(blocked.name).not.toBe(last);
         expect(new Set(friends.map((f) => f.spot)).size).toBe(friends.length);
@@ -179,13 +239,19 @@ describe('Peekaround Island', () => {
         const wrong = friends.filter((f) => f !== blocked);
         expect(wrong.length).toBeGreaterThan(0);
         for (const f of friends) expect(whereIs(f.spot, turns)).not.toBe('behind');
-        expect(peekTouch('see', turns, blocked.name, friends)).toEqual({ kind: 'friend', name: blocked.name });
+        expect(peekTouch('see', turns, blocked.name, friends)).toEqual({
+          kind: 'friend',
+          name: blocked.name,
+        });
         // A wrong friend turned to the front sees the picture plainly, and the blocked friend stays tappable.
         for (const f of wrong) {
           const after = turns + turnToFront(f.spot, turns);
           expect(whereIs(picture, after)).not.toBe('behind');
           expect(whereIs(blocked.spot, after)).not.toBe('behind');
-          expect(peekTouch('see', after, blocked.name, friends)).toEqual({ kind: 'friend', name: blocked.name });
+          expect(peekTouch('see', after, blocked.name, friends)).toEqual({
+            kind: 'friend',
+            name: blocked.name,
+          });
         }
         // From the blocked friend's side, the picture is behind the tree.
         turns += turnToFront(blocked.spot, turns);
@@ -237,7 +303,11 @@ describe('Peekaround Island', () => {
     });
 
     it('matches the island: a picture from a side is what she sees once that side turns to the front', () => {
-      const friends = [{ name: 'duck' as const, spot: 1 }, { name: 'cow' as const, spot: 2 }, { name: 'pig' as const, spot: 3 }];
+      const friends = [
+        { name: 'duck' as const, spot: 1 },
+        { name: 'cow' as const, spot: 2 },
+        { name: 'pig' as const, spot: 3 },
+      ];
       for (const f of friends) {
         const turns = turnToFront(f.spot, 0);
         expect(whereIs(f.spot, turns)).toBe('front');
@@ -247,13 +317,26 @@ describe('Peekaround Island', () => {
         }
       }
       // The duck on spot 1 sees the cow on its right, and the pig across the tree is hidden.
-      expect(viewFrom(1, friends)).toEqual({ left: 0, right: 1, friends: [{ name: 'cow', facing: 1 }, { name: 'pig', facing: 2 }] });
+      expect(viewFrom(1, friends)).toEqual({
+        left: 0,
+        right: 1,
+        friends: [
+          { name: 'cow', facing: 1 },
+          { name: 'pig', facing: 2 },
+        ],
+      });
     });
 
-    it('demonstrates by tapping the named friend\'s picture', () => {
+    it("demonstrates by tapping the named friend's picture", () => {
       const scene = makeViewScene(1, new Rng(7));
-      const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], 0) }));
-      expect(peekTouch('view', 0, scene.friends[scene.viewer], friends)).toEqual({ kind: 'tile', name: scene.friends[scene.viewer] });
+      const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({
+        name,
+        spot: spotFacing(scene.facing[i], 0),
+      }));
+      expect(peekTouch('view', 0, scene.friends[scene.viewer], friends)).toEqual({
+        kind: 'tile',
+        name: scene.friends[scene.viewer],
+      });
     });
   });
 
@@ -271,41 +354,49 @@ describe('Peekaround Island', () => {
         }
       }
     };
-    const placed = (s: ReturnType<typeof makeSkyScene>) => s.friends.map((name, i) => ({ name, facing: s.facing[i] }));
+    const placed = (s: ReturnType<typeof makeSkyScene>) =>
+      s.friends.map((name, i) => ({ name, facing: s.facing[i] }));
 
     it('shows three different maps and exactly one is the island itself, at any turns', () => {
       for (const { scene } of rounds()) {
         expect([...scene.maps].sort()).toEqual([...KINDS].sort());
         for (const turns of [0, 1, 3]) {
-          const arr = Object.fromEntries(KINDS.map((k) => [k, skyArrangement(k, scene.k, placed(scene), turns)]));
+          const arr = Object.fromEntries(
+            KINDS.map((k) => [k, skyArrangement(k, scene.k, placed(scene), turns)]),
+          );
           expect(arr.true).not.toEqual(arr.mirror);
           expect(arr.true).not.toEqual(arr.turned);
           expect(arr.mirror).not.toEqual(arr.turned);
-          const island = islandArrangement(scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) })), turns);
+          const island = islandArrangement(
+            scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) })),
+            turns,
+          );
           expect(KINDS.filter((k) => JSON.stringify(arr[k]) === JSON.stringify(island))).toEqual(['true']);
         }
       }
     });
 
     it('puts front at the bottom, behind at the top, right and left on their sides', () => {
-      for (const { scene } of rounds()) for (const f of placed(scene)) {
-        const p = mapPoint(skyFacing('true', f.facing, scene.k), 100);
-        if (f.facing === 0) expect(p.y).toBeGreaterThan(0);
-        if (f.facing === 2) expect(p.y).toBeLessThan(0);
-        if (f.facing === 1) expect(p.x).toBeGreaterThan(0);
-        if (f.facing === 3) expect(p.x).toBeLessThan(0);
-      }
+      for (const { scene } of rounds())
+        for (const f of placed(scene)) {
+          const p = mapPoint(skyFacing('true', f.facing, scene.k), 100);
+          if (f.facing === 0) expect(p.y).toBeGreaterThan(0);
+          if (f.facing === 2) expect(p.y).toBeLessThan(0);
+          if (f.facing === 1) expect(p.x).toBeGreaterThan(0);
+          if (f.facing === 3) expect(p.x).toBeLessThan(0);
+        }
       const p = mapPoint(1.5, 10);
-      expect(p.x).toBeCloseTo(Math.sin(1.5 * Math.PI / 2) * 10);
-      expect(p.y).toBeCloseTo(Math.cos(1.5 * Math.PI / 2) * 10);
+      expect(p.x).toBeCloseTo(Math.sin((1.5 * Math.PI) / 2) * 10);
+      expect(p.y).toBeCloseTo(Math.cos((1.5 * Math.PI) / 2) * 10);
     });
 
     it('mirrors only left and right, and turns every facing by k', () => {
-      for (const k of [1, 3]) for (const f of [0, 1, 2, 3]) {
-        expect(skyFacing('mirror', f, k)).toBe(f === 1 ? 3 : f === 3 ? 1 : f);
-        expect(skyFacing('turned', f, k)).toBe((f + k) % 4);
-        expect(skyFacing('turned', f + 0.5, k)).toBeCloseTo((f + 0.5 + k) % 4);
-      }
+      for (const k of [1, 3])
+        for (const f of [0, 1, 2, 3]) {
+          expect(skyFacing('mirror', f, k)).toBe(f === 1 ? 3 : f === 3 ? 1 : f);
+          expect(skyFacing('turned', f, k)).toBe((f + k) % 4);
+          expect(skyFacing('turned', f + 0.5, k)).toBeCloseTo((f + 0.5 + k) % 4);
+        }
       for (const { scene } of rounds()) {
         expect([1, 3]).toContain(scene.k);
         const t = skyArrangement('turned', scene.k, placed(scene));
@@ -330,7 +421,8 @@ describe('Peekaround Island', () => {
           if (prev) expect(scene.friends[scene.hidden!]).not.toBe(prev);
         }
         if (index === 2) expect(scene.friends).toHaveLength(4);
-        for (const a of scene.friends) for (const b of scene.friends) expect(a !== b && lookalike(a, b)).toBe(false);
+        for (const a of scene.friends)
+          for (const b of scene.friends) expect(a !== b && lookalike(a, b)).toBe(false);
         expect(scene.friends).not.toEqual(expect.arrayContaining(['cow', 'bunny']));
         expect(scene.friends).not.toEqual(expect.arrayContaining(['dog', 'bear']));
       }
@@ -341,14 +433,21 @@ describe('Peekaround Island', () => {
     });
 
     it('turning the island k quarter turns gives the turned map', () => {
-      for (const { scene } of rounds()) for (const turns of [0, 2]) {
-        const spots = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) }));
-        expect(islandArrangement(spots, turns + scene.k)).toEqual(skyArrangement('turned', scene.k, placed(scene), turns));
-      }
+      for (const { scene } of rounds())
+        for (const turns of [0, 2]) {
+          const spots = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) }));
+          expect(islandArrangement(spots, turns + scene.k)).toEqual(
+            skyArrangement('turned', scene.k, placed(scene), turns),
+          );
+        }
     });
 
     it('leads to the true map and is level 8', () => {
-      for (const { scene } of rounds()) expect(peekTouch('sky', 0, null, [], false, scene.maps)).toEqual({ kind: 'map', index: scene.maps.indexOf('true') });
+      for (const { scene } of rounds())
+        expect(peekTouch('sky', 0, null, [], false, scene.maps)).toEqual({
+          kind: 'map',
+          index: scene.maps.indexOf('true'),
+        });
       expect(planFor(8).mode).toBe('sky');
     });
   });

@@ -5,7 +5,9 @@ export const VOICE = {
   'kh.instruct.2': ['Take each one to where its work is.'],
   'kh.instruct.3': ['Put the kitchen where the soup stays hot.'],
   'kh.instruct.4': ['Fit the rooms so every need is met, then ring the bell.'],
-  'kh.history': ["This is the island's castle, like the castles people built long ago: a home, and a workplace for everyone in it."],
+  'kh.history': [
+    "This is the island's castle, like the castles people built long ago: a home, and a workplace for everyone in it.",
+  ],
   'kh.door.cook': ['The cook! She makes the soup.'],
   'kh.door.groom': ['The groom! He looks after the horses.'],
   'kh.door.ringer': ['The ringer! She rings the bell.'],

@@ -26,14 +26,91 @@ const vi = [57, 60, 64];
 
 /** Every region's loop is in C major pentatonic, so tap sounds always fit the music. */
 export const STYLES = {
-  hub: { bpm: 96, chords: [I, vi, IV, V], lead: 'bell', density: 0.32, range: [3, 10], bass: true, pad: true, shaker: false, volume: 0.5, seed: 11 },
-  bubbles: { bpm: 104, chords: [I, IV, I, V], lead: 'pluck', density: 0.3, range: [4, 11], bass: true, pad: true, shaker: true, volume: 0.45, seed: 23 },
-  jelly: { bpm: 92, chords: [I, IV, vi, V], lead: 'none', density: 0, range: [0, 0], bass: true, pad: true, shaker: true, volume: 0.4, seed: 5 },
-  paint: { bpm: 76, chords: [I, IV, vi, IV], lead: 'bell', density: 0.14, range: [6, 12], bass: false, pad: true, shaker: false, volume: 0.38, seed: 41 },
-  stickers: { bpm: 100, chords: [I, IV, V, I], lead: 'marimba', density: 0.3, range: [3, 9], bass: true, pad: false, shaker: true, volume: 0.42, seed: 8 },
-  lullaby: { bpm: 66, chords: [I, IV, I, V], lead: 'bell', density: 0.6, range: [5, 12], bass: false, pad: true, shaker: false, volume: 0.42, seed: 3 },
+  hub: {
+    bpm: 96,
+    chords: [I, vi, IV, V],
+    lead: 'bell',
+    density: 0.32,
+    range: [3, 10],
+    bass: true,
+    pad: true,
+    shaker: false,
+    volume: 0.5,
+    seed: 11,
+  },
+  bubbles: {
+    bpm: 104,
+    chords: [I, IV, I, V],
+    lead: 'pluck',
+    density: 0.3,
+    range: [4, 11],
+    bass: true,
+    pad: true,
+    shaker: true,
+    volume: 0.45,
+    seed: 23,
+  },
+  jelly: {
+    bpm: 92,
+    chords: [I, IV, vi, V],
+    lead: 'none',
+    density: 0,
+    range: [0, 0],
+    bass: true,
+    pad: true,
+    shaker: true,
+    volume: 0.4,
+    seed: 5,
+  },
+  paint: {
+    bpm: 76,
+    chords: [I, IV, vi, IV],
+    lead: 'bell',
+    density: 0.14,
+    range: [6, 12],
+    bass: false,
+    pad: true,
+    shaker: false,
+    volume: 0.38,
+    seed: 41,
+  },
+  stickers: {
+    bpm: 100,
+    chords: [I, IV, V, I],
+    lead: 'marimba',
+    density: 0.3,
+    range: [3, 9],
+    bass: true,
+    pad: false,
+    shaker: true,
+    volume: 0.42,
+    seed: 8,
+  },
+  lullaby: {
+    bpm: 66,
+    chords: [I, IV, I, V],
+    lead: 'bell',
+    density: 0.6,
+    range: [5, 12],
+    bass: false,
+    pad: true,
+    shaker: false,
+    volume: 0.42,
+    seed: 3,
+  },
   /** Near silence, for games whose play is the music (a beat the child builds). */
-  quiet: { bpm: 100, chords: [I], lead: 'none', density: 0, range: [0, 0], bass: false, pad: false, shaker: false, volume: 0.0001, seed: 1 },
+  quiet: {
+    bpm: 100,
+    chords: [I],
+    lead: 'none',
+    density: 0,
+    range: [0, 0],
+    bass: false,
+    pad: false,
+    shaker: false,
+    volume: 0.0001,
+    seed: 1,
+  },
 } satisfies Record<string, MusicStyle>;
 
 /** At or below this the loop is as good as off (`quiet` sits at 0.0001). */
@@ -45,8 +122,15 @@ export const isSilent = (style: MusicStyle) => style.volume <= SILENT_VOLUME;
  * music, so the island's loop never competes with it. Not `music.stop()`: a playhead or a bobbing jelly that
  * reads `music.beats()`, `beat()` or `bpm()` needs a style playing, and this keeps the game's own tempo.
  */
-export const silenced = (style: MusicStyle): MusicStyle =>
-  ({ ...style, lead: 'none', density: 0, bass: false, pad: false, shaker: false, volume: 0.0001 });
+export const silenced = (style: MusicStyle): MusicStyle => ({
+  ...style,
+  lead: 'none',
+  density: 0,
+  bass: false,
+  pad: false,
+  shaker: false,
+  volume: 0.0001,
+});
 
 /** Generative background music: a short seeded melody over a chord loop, slowly mutating. */
 class Music {
@@ -147,7 +231,8 @@ class Music {
     if (s.pad && inBar === 0) {
       for (const m of chord) tone(ctx, out, 'triangle', midiToHz(m), t, 0.035, 0.3, eighth * 8 - 0.2);
     }
-    if (s.bass && (inBar === 0 || inBar === 4)) tone(ctx, out, 'sine', midiToHz(chord[0] - 12), t, 0.22, 0.01, 0.45);
+    if (s.bass && (inBar === 0 || inBar === 4))
+      tone(ctx, out, 'sine', midiToHz(chord[0] - 12), t, 0.22, 0.01, 0.45);
     if (s.shaker && inBar % 2 === 1) noise(ctx, out, t, 0.05, 0.03, { type: 'highpass', hz: 7000 });
     if (s.lead === 'none') return;
     if (i > 0 && i % 32 === 0) this.mutate(s);

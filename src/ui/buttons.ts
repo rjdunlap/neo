@@ -6,7 +6,8 @@ import type { Meaning } from './origin-art';
 
 /** `a` moved toward `b` by `t` (0–1), channel by channel. */
 function blend(a: number, b: number, t: number): number {
-  const ch = (shift: number) => Math.round(((a >> shift) & 0xff) * (1 - t) + ((b >> shift) & 0xff) * t) << shift;
+  const ch = (shift: number) =>
+    Math.round(((a >> shift) & 0xff) * (1 - t) + ((b >> shift) & 0xff) * t) << shift;
   return ch(16) | ch(8) | ch(0);
 }
 
@@ -46,7 +47,9 @@ export function finish(shape: FinishShape, sw: Swatch, face = sw.fill): Graphics
 export const SQUASH = { x: 1.07, y: 0.86 };
 const springs = new WeakMap<Container, number>();
 const frame = (fn: (now: number) => void) =>
-  typeof requestAnimationFrame === 'function' ? requestAnimationFrame(fn) : setTimeout(() => fn(performance.now()), 16);
+  typeof requestAnimationFrame === 'function'
+    ? requestAnimationFrame(fn)
+    : setTimeout(() => fn(performance.now()), 16);
 
 /** Squashes `node` at once; a new press cancels any spring still running on it. */
 export function squash(node: Container) {
@@ -77,7 +80,12 @@ export function spring(node: Container, delay = 0) {
 
 /** A big round button in the shared finish that squashes when pressed and springs back. */
 export class RoundButton extends Container {
-  constructor(icon: Container, sw: Swatch, radius: number, private readonly onPress: () => void) {
+  constructor(
+    icon: Container,
+    sw: Swatch,
+    radius: number,
+    private readonly onPress: () => void,
+  ) {
     super();
     this.radius = radius;
     this.addChild(finish({ radius }, sw), icon);
@@ -178,7 +186,8 @@ export class HoldButton extends Container {
 
   update(dt: number) {
     const was = this.progress;
-    this.progress = this.holding >= 0 ? this.progress + dt / this.seconds : Math.max(0, this.progress - dt * 3);
+    this.progress =
+      this.holding >= 0 ? this.progress + dt / this.seconds : Math.max(0, this.progress - dt * 3);
     if (this.progress >= 1) {
       this.progress = 0;
       this.letGo();

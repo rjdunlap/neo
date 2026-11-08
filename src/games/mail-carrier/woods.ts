@@ -12,7 +12,33 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { keyMatches, COMPARE_EDGES, comparisonRoute, compareCounts, clueNode, makeClues, type MapClue, checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, mapNode, mapX, planFor, POST_OFFICE, route, routeLength, SHORTER_EDGES, shorterRoutes, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
+import {
+  keyMatches,
+  COMPARE_EDGES,
+  comparisonRoute,
+  compareCounts,
+  clueNode,
+  makeClues,
+  type MapClue,
+  checkStop,
+  HOUSE_NODES,
+  makeTrips,
+  makeWoods,
+  MAP_EDGES,
+  mapNode,
+  mapX,
+  planFor,
+  POST_OFFICE,
+  route,
+  routeLength,
+  SHORTER_EDGES,
+  shorterRoutes,
+  walk,
+  woodsTouch,
+  type MailPlan,
+  type Sign,
+  type WoodsHouse,
+} from './logic';
 
 /**
  * Mail Carrier in Wonder Woods: Hazel the squirrel postkeeper hands over letters for the woods. The houses
@@ -29,24 +55,51 @@ export function signArt(sign: Sign, r = 22): Graphics {
   const g = new Graphics();
   switch (sign) {
     case 'acorn':
-      g.ellipse(0, r * 0.25, r * 0.62, r * 0.72).fill(wood.fill).stroke(line(wood.line, 3));
-      g.moveTo(-r * 0.78, -r * 0.18).bezierCurveTo(-r * 0.7, -r * 0.85, r * 0.7, -r * 0.85, r * 0.78, -r * 0.18).closePath().fill(swatch.brown.line).stroke(line(swatch.brown.line, 3));
-      g.moveTo(0, -r * 0.62).lineTo(r * 0.12, -r * 0.95).stroke(line(swatch.brown.line, 4));
+      g.ellipse(0, r * 0.25, r * 0.62, r * 0.72)
+        .fill(wood.fill)
+        .stroke(line(wood.line, 3));
+      g.moveTo(-r * 0.78, -r * 0.18)
+        .bezierCurveTo(-r * 0.7, -r * 0.85, r * 0.7, -r * 0.85, r * 0.78, -r * 0.18)
+        .closePath()
+        .fill(swatch.brown.line)
+        .stroke(line(swatch.brown.line, 3));
+      g.moveTo(0, -r * 0.62)
+        .lineTo(r * 0.12, -r * 0.95)
+        .stroke(line(swatch.brown.line, 4));
       break;
     case 'mushroom':
-      g.roundRect(-r * 0.28, -r * 0.1, r * 0.56, r * 0.95, r * 0.2).fill(cream).stroke(line(wood.line, 3));
-      g.moveTo(-r * 0.95, 0).bezierCurveTo(-r * 0.9, -r * 1.05, r * 0.9, -r * 1.05, r * 0.95, 0).closePath().fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
-      for (const [x, y] of [[-0.45, -0.35], [0.1, -0.6], [0.5, -0.25]]) g.circle(x * r, y * r, r * 0.14).fill(0xffffff);
+      g.roundRect(-r * 0.28, -r * 0.1, r * 0.56, r * 0.95, r * 0.2)
+        .fill(cream)
+        .stroke(line(wood.line, 3));
+      g.moveTo(-r * 0.95, 0)
+        .bezierCurveTo(-r * 0.9, -r * 1.05, r * 0.9, -r * 1.05, r * 0.95, 0)
+        .closePath()
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line, 3));
+      for (const [x, y] of [
+        [-0.45, -0.35],
+        [0.1, -0.6],
+        [0.5, -0.25],
+      ])
+        g.circle(x * r, y * r, r * 0.14).fill(0xffffff);
       break;
     case 'leaf':
-      g.moveTo(0, -r).bezierCurveTo(r * 0.95, -r * 0.5, r * 0.7, r * 0.7, 0, r).bezierCurveTo(-r * 0.7, r * 0.7, -r * 0.95, -r * 0.5, 0, -r).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
-      g.moveTo(0, -r * 0.7).lineTo(0, r * 0.95).stroke(line(swatch.green.line, 3));
+      g.moveTo(0, -r)
+        .bezierCurveTo(r * 0.95, -r * 0.5, r * 0.7, r * 0.7, 0, r)
+        .bezierCurveTo(-r * 0.7, r * 0.7, -r * 0.95, -r * 0.5, 0, -r)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line, 3));
+      g.moveTo(0, -r * 0.7)
+        .lineTo(0, r * 0.95)
+        .stroke(line(swatch.green.line, 3));
       break;
     case 'flower':
       flower(g, r, swatch.pink.fill, swatch.pink.line);
       break;
     case 'star':
-      g.poly(starPoints(r, r * 0.45)).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+      g.poly(starPoints(r, r * 0.45))
+        .fill(swatch.yellow.fill)
+        .stroke(line(swatch.yellow.line, 3));
       break;
   }
   return g;
@@ -55,17 +108,22 @@ export function signArt(sign: Sign, r = 22): Graphics {
 /** A sign on a round white plate, as it hangs on a house and stands in the key. */
 function signBadge(sign: Sign, r = 30): Container {
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, r).fill(0xffffff).stroke(line(wood.line, 4)), signArt(sign, r * 0.68));
+  c.addChild(
+    new Graphics().circle(0, 0, r).fill(0xffffff).stroke(line(wood.line, 4)),
+    signArt(sign, r * 0.68),
+  );
   return c;
 }
-
 
 export class WoodsHouseView extends Container {
   readonly glow = new Graphics().circle(0, -30, 78).fill({ color: 0xfff3a0, alpha: 0.9 });
   readonly flag = new Container();
   readonly resident: Critter;
 
-  constructor(readonly house: WoodsHouse, readonly index: number) {
+  constructor(
+    readonly house: WoodsHouse,
+    readonly index: number,
+  ) {
     super();
     this.glow.visible = false;
     const g = new Graphics();
@@ -87,7 +145,13 @@ export class WoodsHouseView extends Container {
   setFlag(n: number | null) {
     this.flag.removeChildren().forEach((c) => c.destroy());
     if (n === null) return;
-    const g = new Graphics().moveTo(0, 0).lineTo(0, -46).stroke(line(wood.line, 4)).roundRect(0, -46, 36, 26, 5).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 3));
+    const g = new Graphics()
+      .moveTo(0, 0)
+      .lineTo(0, -46)
+      .stroke(line(wood.line, 4))
+      .roundRect(0, -46, 36, 26, 5)
+      .fill(swatch.purple.fill)
+      .stroke(line(swatch.purple.line, 3));
     const t = label(String(n), 20, 0xffffff);
     t.position.set(18, -33);
     this.flag.addChild(g, t);
@@ -171,8 +235,15 @@ export class WoodsMail implements Game {
     this.paths.eventMode = 'none';
     this.preview.eventMode = 'none';
     const tree = new Graphics()
-      .roundRect(-34, -90, 68, 96, 18).fill(wood.fill).stroke(line(wood.line, 5)).ellipse(0, -36, 16, 24).fill(wood.line)
-      .circle(-34, -100, 34).circle(0, -126, 40).circle(34, -100, 34).fill(swatch.green.fill);
+      .roundRect(-34, -90, 68, 96, 18)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 5))
+      .ellipse(0, -36, 16, 24)
+      .fill(wood.line)
+      .circle(-34, -100, 34)
+      .circle(0, -126, 40)
+      .circle(34, -100, 34)
+      .fill(swatch.green.fill);
     this.hazel.node.scale.set(0.24);
     this.hazel.node.position.set(-62, 8);
     ctx.track(this.hazel.critter);
@@ -188,8 +259,13 @@ export class WoodsMail implements Game {
       const h = new WoodsHouseView(house, i);
       if (this.plan.mode === 'key') h.resident.visible = true;
       if (this.plan.mode === 'clue' || this.plan.mode === 'key') h.hitArea = new Circle(0, -50, 50);
-      h.on('pointerdown', () => { h.alpha = 0.7; });
-      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel']) h.on(up, () => { h.alpha = 1; });
+      h.on('pointerdown', () => {
+        h.alpha = 0.7;
+      });
+      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'])
+        h.on(up, () => {
+          h.alpha = 1;
+        });
       onTap(h, () => this.tapHouse(i), { cooldown: 350 });
       ctx.track(h.resident);
       this.houses.push(h);
@@ -198,7 +274,13 @@ export class WoodsMail implements Game {
     this.board.addChild(this.walker);
     ctx.stage.addChild(this.board, this.keyCard, this.routeChoicesLayer, this.letters, this.go);
     // The picture key: who lives behind each sign. Tapping a row says it.
-    const rows = this.woods.map((house, i) => ({ house, i })).sort((a, b) => this.plan.mode === 'key' ? a.house.sign.localeCompare(b.house.sign) : a.house.resident.localeCompare(b.house.resident));
+    const rows = this.woods
+      .map((house, i) => ({ house, i }))
+      .sort((a, b) =>
+        this.plan.mode === 'key'
+          ? a.house.sign.localeCompare(b.house.sign)
+          : a.house.resident.localeCompare(b.house.resident),
+      );
     for (const { house, i } of rows) {
       const node = new Container();
       const glow = new Graphics().roundRect(-118, -42, 236, 84, 18).fill({ color: 0xfff3a0, alpha: 0.95 });
@@ -207,7 +289,12 @@ export class WoodsMail implements Game {
       who.alive = false;
       who.scale.set(0.27);
       who.position.set(-62, 30);
-      const arrow = new Graphics().moveTo(-12, 0).lineTo(14, 0).stroke(line(wood.line, 5)).poly([10, -9, 22, 0, 10, 9]).fill(wood.line);
+      const arrow = new Graphics()
+        .moveTo(-12, 0)
+        .lineTo(14, 0)
+        .stroke(line(wood.line, 5))
+        .poly([10, -9, 22, 0, 10, 9])
+        .fill(wood.line);
       const badge = signBadge(house.sign, 30);
       badge.position.set(62, 0);
       const wet = new Graphics().ellipse(-62, 0, 38, 22).fill({ color: swatch.blue.light, alpha: 0.8 });
@@ -216,10 +303,20 @@ export class WoodsMail implements Game {
       who.visible = !this.buildingKey;
       node.addChild(glow, wet, who, arrow, badge);
       if (this.buildingKey) {
-        node.on('pointerdown', () => { node.alpha = 0.7; });
-        for (const up of ['pointerup', 'pointerupoutside', 'pointercancel']) node.on(up, () => { node.alpha = 1; });
+        node.on('pointerdown', () => {
+          node.alpha = 0.7;
+        });
+        for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'])
+          node.on(up, () => {
+            node.alpha = 1;
+          });
       }
-      node.hitArea = new Rectangle(-118, this.plan.mode === 'key' ? -50 : -45, 236, this.plan.mode === 'key' ? 100 : 90);
+      node.hitArea = new Rectangle(
+        -118,
+        this.plan.mode === 'key' ? -50 : -45,
+        236,
+        this.plan.mode === 'key' ? 100 : 90,
+      );
       onTap(node, () => this.tapKey(i), { cooldown: 500 });
       this.key.push({ house: i, node, glow, who, wet, filled: !this.buildingKey });
       ctx.stage.addChild(node);
@@ -258,12 +355,14 @@ export class WoodsMail implements Game {
     }
     if (this.plan.mode === 'shorter') {
       const [a, b] = SHORTER_EDGES.at(-1)!;
-      const p = this.at(a), q = this.at(b);
+      const p = this.at(a),
+        q = this.at(b);
       this.paths.moveTo(p.x, p.y).lineTo(q.x, q.y);
     }
     if (this.plan.mode === 'shorter') {
       for (const [a, b, stones] of SHORTER_EDGES) {
-        const p = this.at(a), q = this.at(b);
+        const p = this.at(a),
+          q = this.at(b);
         for (let k = 1; k <= stones; k++) {
           const t = k / (stones + 1);
           this.paths.circle(p.x + (q.x - p.x) * t, p.y + (q.y - p.y) * t, 5).fill(wood.line);
@@ -274,8 +373,10 @@ export class WoodsMail implements Game {
     for (const [a, b] of this.plan.mode === 'compare' ? COMPARE_EDGES : MAP_EDGES) {
       const p = this.at(a);
       const q = this.at(b);
-      const n = this.plan.mode === 'compare' ? 2 : Math.max(1, Math.round(Math.hypot(q.x - p.x, q.y - p.y) / 34));
-      for (let k = 1; k < n; k++) this.paths.circle(p.x + ((q.x - p.x) * k) / n, p.y + ((q.y - p.y) * k) / n, 3).fill(wood.line);
+      const n =
+        this.plan.mode === 'compare' ? 2 : Math.max(1, Math.round(Math.hypot(q.x - p.x, q.y - p.y) / 34));
+      for (let k = 1; k < n; k++)
+        this.paths.circle(p.x + ((q.x - p.x) * k) / n, p.y + ((q.y - p.y) * k) / n, 3).fill(wood.line);
     }
     this.office.position.copyFrom(this.at(POST_OFFICE));
     this.office.y += 40;
@@ -288,7 +389,11 @@ export class WoodsMail implements Game {
     const kx = v.w - keyW / 2 - 20;
     const top = this.plan.mode === 'key' ? 220 : 250;
     const rowH = Math.min(100, (v.h - 30 - top) / this.key.length);
-    this.keyCard.clear().roundRect(kx - keyW / 2, top - 30, keyW, rowH * this.key.length + 40, 22).fill(0xfffdf6).stroke(line(wood.line, 5));
+    this.keyCard
+      .clear()
+      .roundRect(kx - keyW / 2, top - 30, keyW, rowH * this.key.length + 40, 22)
+      .fill(0xfffdf6)
+      .stroke(line(wood.line, 5));
     this.key.forEach((r, i) => r.node.position.set(kx, top + rowH * (i + 0.5) - 10));
     this.routeChoiceButtons.forEach((b, i) => b.node.position.set(kx, v.h * (i === 0 ? 0.62 : 0.81)));
     this.letters.position.set(kx, this.plan.mode === 'compare' ? 108 : 118);
@@ -303,9 +408,14 @@ export class WoodsMail implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (this.buildingKey) {
-      const row = this.selectedKey === null ? this.key.find((r) => !r.filled) : this.key.find((r) => r.house === this.selectedKey);
+      const row =
+        this.selectedKey === null
+          ? this.key.find((r) => !r.filled)
+          : this.key.find((r) => r.house === this.selectedKey);
       if (!row) return null;
-      return this.selectedKey === null ? { tap: { on: row.node } } : { tap: { on: this.houses[row.house], y: -50 } };
+      return this.selectedKey === null
+        ? { tap: { on: row.node } }
+        : { tap: { on: this.houses[row.house], y: -50 } };
     }
     const trip = this.trip;
     if (!trip) return null;
@@ -347,14 +457,32 @@ export class WoodsMail implements Game {
     // Reflected with the nodes when the map is mirrored, so the decor stays clear of the paths.
     const X = (f: number) => mapX(f, this.mirrored) * w;
     // A stream across the bottom corner and some pines and flowers between the paths.
-    g.moveTo(X(0.62), h).bezierCurveTo(X(0.7), h * 0.86, X(0.92), h * 0.9, X(1), h * 0.78).stroke({ width: 26, color: swatch.blue.light, cap: 'round' });
-    for (const [fx, fy] of [[0.3, 0.06], [0.6, 0.3], [0.95, 0.3], [0.05, 0.45], [0.36, 0.72], [0.75, 0.7], [0.62, 0.05]]) {
+    g.moveTo(X(0.62), h)
+      .bezierCurveTo(X(0.7), h * 0.86, X(0.92), h * 0.9, X(1), h * 0.78)
+      .stroke({ width: 26, color: swatch.blue.light, cap: 'round' });
+    for (const [fx, fy] of [
+      [0.3, 0.06],
+      [0.6, 0.3],
+      [0.95, 0.3],
+      [0.05, 0.45],
+      [0.36, 0.72],
+      [0.75, 0.7],
+      [0.62, 0.05],
+    ]) {
       const x = X(fx);
       const y = fy * h + 30;
-      g.poly([x - 18, y, x, y - 40, x + 18, y]).fill(swatch.teal.fill).stroke(line(swatch.teal.line, 3));
+      g.poly([x - 18, y, x, y - 40, x + 18, y])
+        .fill(swatch.teal.fill)
+        .stroke(line(swatch.teal.line, 3));
       g.rect(x - 3, y, 6, 8).fill(wood.line);
     }
-    for (const [fx, fy] of [[0.22, 0.88], [0.8, 0.86], [0.55, 0.42], [0.03, 0.92]]) g.ellipse(X(fx), fy * h, 30, 12).fill(grass);
+    for (const [fx, fy] of [
+      [0.22, 0.88],
+      [0.8, 0.86],
+      [0.55, 0.42],
+      [0.03, 0.92],
+    ])
+      g.ellipse(X(fx), fy * h, 30, 12).fill(grass);
     this.decor.addChild(g);
   }
 
@@ -373,7 +501,10 @@ export class WoodsMail implements Game {
       const p = this.at(r[i - 1]);
       const q = this.at(r[i]);
       const n = Math.max(1, Math.round(Math.hypot(q.x - p.x, q.y - p.y) / 22));
-      for (let k = 0; k < n; k++) this.preview.circle(p.x + ((q.x - p.x) * k) / n, p.y + ((q.y - p.y) * k) / n, 6).fill(swatch.purple.fill);
+      for (let k = 0; k < n; k++)
+        this.preview
+          .circle(p.x + ((q.x - p.x) * k) / n, p.y + ((q.y - p.y) * k) / n, 6)
+          .fill(swatch.purple.fill);
     }
   }
 
@@ -388,9 +519,13 @@ export class WoodsMail implements Game {
     this.firstCount = null;
     this.choosingComparison = false;
     this.stoneCount.text = '';
-    this.compareButtons.forEach((b) => { b.visible = false; });
+    this.compareButtons.forEach((b) => {
+      b.visible = false;
+    });
     this.keyCard.visible = true;
-    this.key.forEach((r) => { r.node.visible = true; });
+    this.key.forEach((r) => {
+      r.node.visible = true;
+    });
     this.wrongs = 0;
     this.planned = [];
     this.go.visible = false;
@@ -411,7 +546,11 @@ export class WoodsMail implements Game {
     if (this.plan.mode === 'clue') {
       await this.speakClue();
     } else if (this.plan.mode === 'compare') {
-      await this.ctx.instruct('mail.any-order', { first: who(trip[0]), second: who(trip[1]), third: who(trip[2]) });
+      await this.ctx.instruct('mail.any-order', {
+        first: who(trip[0]),
+        second: who(trip[1]),
+        third: who(trip[2]),
+      });
     } else if (this.plan.mode === 'map' || this.plan.mode === 'key') {
       if (this.index === 0) await this.ctx.instruct('mail.map', { animal: who(trip[0]) });
       else await this.ctx.instruct('mail.map-for', { animal: who(trip[0]) });
@@ -435,8 +574,14 @@ export class WoodsMail implements Game {
     trip.forEach((h, i) => {
       const env = new Container();
       const w = trip.length === 3 ? 72 : two ? 118 : 200;
-      const g = new Graphics().roundRect(-w / 2, -54, w, 108, 12).fill(0xffffff).stroke(line(0xb9c6d1, 5));
-      g.moveTo(-w / 2, -54).lineTo(0, 4).lineTo(w / 2, -54).stroke(line(0xd6dde4, 4));
+      const g = new Graphics()
+        .roundRect(-w / 2, -54, w, 108, 12)
+        .fill(0xffffff)
+        .stroke(line(0xb9c6d1, 5));
+      g.moveTo(-w / 2, -54)
+        .lineTo(0, 4)
+        .lineTo(w / 2, -54)
+        .stroke(line(0xd6dde4, 4));
       const who = new Critter(CRITTERS[this.woods[h].resident]);
       who.alive = false;
       who.scale.set(trip.length === 3 ? 0.21 : 0.26);
@@ -448,7 +593,10 @@ export class WoodsMail implements Game {
         env.addChild(g, question);
       } else env.addChild(g, who);
       if (two && this.plan.mode !== 'compare') {
-        const n = new Graphics().circle(-w / 2 + 6, -50, 18).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 3));
+        const n = new Graphics()
+          .circle(-w / 2 + 6, -50, 18)
+          .fill(swatch.purple.fill)
+          .stroke(line(swatch.purple.line, 3));
         const t = label(String(i + 1), 22, 0xffffff);
         t.position.set(-w / 2 + 6, -50);
         env.addChild(n, t);
@@ -464,7 +612,8 @@ export class WoodsMail implements Game {
     const trip = this.trip;
     if (!trip || this.choosingComparison) return;
     if (this.plan.mode === 'shorter') return void this.chooseShorterHouse(i, trip[0]);
-    if (this.plan.mode === 'map' || this.plan.mode === 'clue' || this.plan.mode === 'key') return void this.deliverOne(i, trip[0]);
+    if (this.plan.mode === 'map' || this.plan.mode === 'clue' || this.plan.mode === 'key')
+      return void this.deliverOne(i, trip[0]);
     this.planStop(i, trip);
   }
 
@@ -478,10 +627,14 @@ export class WoodsMail implements Game {
     }
     if (this.selectedKey !== house) {
       this.wrongs = 0;
-      this.houses.forEach((h) => { h.glow.visible = false; });
+      this.houses.forEach((h) => {
+        h.glow.visible = false;
+      });
     }
     this.selectedKey = house;
-    this.key.forEach((r) => { r.glow.visible = r === row; });
+    this.key.forEach((r) => {
+      r.glow.visible = r === row;
+    });
     void this.ctx.instruct('mail.key-make-row', { sign: pair.sign });
   }
 
@@ -507,14 +660,18 @@ export class WoodsMail implements Game {
     row.who.visible = true;
     row.wet.visible = false;
     row.glow.visible = false;
-    this.houses.forEach((h) => { h.glow.visible = false; });
+    this.houses.forEach((h) => {
+      h.glow.visible = false;
+    });
     this.selectedKey = null;
     this.wrongs = 0;
     sfx.pop(8);
     await this.ctx.say('mail.key-make-filled', { animal: this.woods[house].resident, sign });
     if (this.key.every((r) => r.filled)) {
       this.buildingKey = false;
-      this.houses.forEach((h) => { h.resident.visible = false; });
+      this.houses.forEach((h) => {
+        h.resident.visible = false;
+      });
       await this.ctx.say('mail.key-make-ready');
       return this.next();
     }
@@ -528,18 +685,29 @@ export class WoodsMail implements Game {
     if (index !== target) {
       this.miss();
       await h.peek(this.ctx.tw, false);
-      await this.ctx.say('mail.map-wrong', { sign: h.house.sign, resident: h.house.resident, animal: this.woods[target].resident });
+      await this.ctx.say('mail.map-wrong', {
+        sign: h.house.sign,
+        resident: h.house.resident,
+        animal: this.woods[target].resident,
+      });
       h.resident.visible = false;
       if (this.wrongs >= 2) this.hint(target);
       return;
     }
     this.shorterHouse = index;
     this.keyCard.visible = false;
-    this.key.forEach((r) => { r.node.visible = false; r.glow.visible = false; });
-    this.routeChoiceButtons.forEach((b) => { b.node.visible = true; b.glow.visible = false; });
+    this.key.forEach((r) => {
+      r.node.visible = false;
+      r.glow.visible = false;
+    });
+    this.routeChoiceButtons.forEach((b) => {
+      b.node.visible = true;
+      b.glow.visible = false;
+    });
     const [short, long] = shorterRoutes(index);
     this.drawPreview();
-    const shortStones = routeLength(short), longStones = routeLength(long);
+    const shortStones = routeLength(short),
+      longStones = routeLength(long);
     for (let i = 0; i < 2; i++) {
       const node = this.routeChoiceButtons[i].node;
       const title = node.children[2] as ReturnType<typeof label>;
@@ -547,7 +715,8 @@ export class WoodsMail implements Game {
       const g = new Graphics();
       const count = i === 0 ? shortStones : longStones;
       const gap = Math.min(22, 160 / count);
-      for (let j = 0; j < count; j++) g.circle((j - (count - 1) / 2) * gap, 20, 5).fill(i === 0 ? 0x36a76c : 0xd29a32);
+      for (let j = 0; j < count; j++)
+        g.circle((j - (count - 1) / 2) * gap, 20, 5).fill(i === 0 ? 0x36a76c : 0xd29a32);
       node.addChild(g);
     }
     await this.ctx.instruct('mail.shorter', { animal: this.woods[target].resident });
@@ -555,7 +724,8 @@ export class WoodsMail implements Game {
 
   private drawPath(path: number[], color: number, width: number) {
     for (let i = 1; i < path.length; i++) {
-      const p = this.at(path[i - 1]), q = this.at(path[i]);
+      const p = this.at(path[i - 1]),
+        q = this.at(path[i]);
       this.preview.moveTo(p.x, p.y).lineTo(q.x, q.y).stroke({ color, width, cap: 'round' });
     }
   }
@@ -576,9 +746,13 @@ export class WoodsMail implements Game {
     }
     this.busy = true;
     this.routeChoiceButtons[0].glow.visible = true;
-    this.routeChoiceButtons.forEach((b) => { b.node.eventMode = 'none'; });
+    this.routeChoiceButtons.forEach((b) => {
+      b.node.eventMode = 'none';
+    });
     for (let i = 1; i < short.length; i++) {
-      const edge = SHORTER_EDGES.find(([a, b]) => (a === short[i - 1] && b === short[i]) || (b === short[i - 1] && a === short[i]));
+      const edge = SHORTER_EDGES.find(
+        ([a, b]) => (a === short[i - 1] && b === short[i]) || (b === short[i - 1] && a === short[i]),
+      );
       await this.walkTo(short.slice(i - 1, i + 1), 0.32 * (edge?.[2] ?? 1));
     }
     await this.welcome(this.shorterHouse);
@@ -588,7 +762,9 @@ export class WoodsMail implements Game {
     this.createRouteChoiceButtons();
     this.shorterHouse = null;
     this.keyCard.visible = true;
-    this.key.forEach((r) => { r.node.visible = true; });
+    this.key.forEach((r) => {
+      r.node.visible = true;
+    });
     this.preview.clear();
     this.busy = false;
     await this.next();
@@ -599,7 +775,10 @@ export class WoodsMail implements Game {
       const node = new Container();
       const glow = new Graphics().roundRect(-118, -54, 236, 108, 22).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
-      const plate = new Graphics().roundRect(-112, -50, 224, 100, 20).fill(0xfffdf6).stroke(line(wood.line, 5));
+      const plate = new Graphics()
+        .roundRect(-112, -50, 224, 100, 20)
+        .fill(0xfffdf6)
+        .stroke(line(wood.line, 5));
       const title = label(i === 0 ? 'Short path' : 'Long path', 23, wood.line);
       title.y = -23;
       node.addChild(glow, plate, title);
@@ -609,14 +788,19 @@ export class WoodsMail implements Game {
       return { node, glow };
     });
     this.routeChoiceButtons.push(...options);
-    this.routeChoiceButtons.forEach((b) => { b.node.visible = false; b.node.eventMode = 'static'; });
+    this.routeChoiceButtons.forEach((b) => {
+      b.node.visible = false;
+      b.node.eventMode = 'static';
+    });
     this.layoutRouteChoices();
   }
 
   private layoutRouteChoices() {
     const keyW = 260;
     const kx = this.ctx.view.w - keyW / 2 - 20;
-    this.routeChoiceButtons.forEach((b, i) => b.node.position.set(kx, this.ctx.view.h * (i === 0 ? 0.62 : 0.81)));
+    this.routeChoiceButtons.forEach((b, i) =>
+      b.node.position.set(kx, this.ctx.view.h * (i === 0 ? 0.62 : 0.81)),
+    );
   }
 
   /** Map level: the right house gets a walk and a happy neighbor; a wrong one says who lives there. */
@@ -629,7 +813,12 @@ export class WoodsMail implements Game {
       if (this.plan.mode === 'clue') {
         await this.ctx.say('mail.clue-wrong', { sign: h.house.sign });
         await this.speakClue();
-      } else await this.ctx.say('mail.map-wrong', { sign: h.house.sign, resident: h.house.resident, animal: t.resident });
+      } else
+        await this.ctx.say('mail.map-wrong', {
+          sign: h.house.sign,
+          resident: h.house.resident,
+          animal: t.resident,
+        });
       h.resident.visible = false;
       if (this.wrongs >= 2) this.hint(target);
       return;
@@ -665,10 +854,16 @@ export class WoodsMail implements Game {
         return;
       }
       this.miss();
-      if (check === 'later') void this.ctx.say('mail.route-later', { animal: h.house.resident, n: trip.indexOf(i) + 1 });
+      if (check === 'later')
+        void this.ctx.say('mail.route-later', { animal: h.house.resident, n: trip.indexOf(i) + 1 });
       else {
-        void h.peek(this.ctx.tw, false).then(() => this.ctx.tw.wait(1.2)).then(() => (h.resident.visible = false));
-        void this.ctx.say(this.plan.mode === 'compare' ? 'mail.any-order-nobody' : 'mail.route-nobody', { resident: h.house.resident });
+        void h
+          .peek(this.ctx.tw, false)
+          .then(() => this.ctx.tw.wait(1.2))
+          .then(() => (h.resident.visible = false));
+        void this.ctx.say(this.plan.mode === 'compare' ? 'mail.any-order-nobody' : 'mail.route-nobody', {
+          resident: h.house.resident,
+        });
       }
       if (this.wrongs >= 2) this.hint(trip.find((h) => !this.planned.includes(h))!);
     }
@@ -699,7 +894,11 @@ export class WoodsMail implements Game {
       void this.ctx.say('mail.any-order-hint', { animal: t.resident, sign: t.sign });
       return;
     }
-    void this.ctx.say(this.plan.mode === 'route' ? 'mail.route-hint' : 'mail.map-hint', { animal: t.resident, sign: t.sign, n: this.planned.length + 1 });
+    void this.ctx.say(this.plan.mode === 'route' ? 'mail.route-hint' : 'mail.map-hint', {
+      animal: t.resident,
+      sign: t.sign,
+      n: this.planned.length + 1,
+    });
   }
 
   /** Walks the plan along the paths, delivering at each stop in turn. */
@@ -723,17 +922,36 @@ export class WoodsMail implements Game {
   private createCompareButtons() {
     for (let i = 0; i < 2; i++) {
       const b = new Container();
-      const plate = new Graphics().roundRect(-118, -60, 236, 120, 20).fill(i === 0 ? swatch.blue.light : swatch.green.light).stroke(line(wood.line, 4));
+      const plate = new Graphics()
+        .roundRect(-118, -60, 236, 120, 20)
+        .fill(i === 0 ? swatch.blue.light : swatch.green.light)
+        .stroke(line(wood.line, 4));
       // Picture cues plus spoken instruction: circular arrow to repeat, green forward arrow to continue.
       const icon = new Graphics();
-      if (i === 0) icon.arc(0, -12, 24, 0.4, Math.PI * 1.95).stroke(line(wood.line, 6)).poly([24, -35, 35, -10, 10, -10]).fill(wood.line);
-      else icon.moveTo(-28, -12).lineTo(28, -12).stroke(line(wood.line, 7)).poly([10, -32, 36, -12, 10, 8]).fill(wood.line);
+      if (i === 0)
+        icon
+          .arc(0, -12, 24, 0.4, Math.PI * 1.95)
+          .stroke(line(wood.line, 6))
+          .poly([24, -35, 35, -10, 10, -10])
+          .fill(wood.line);
+      else
+        icon
+          .moveTo(-28, -12)
+          .lineTo(28, -12)
+          .stroke(line(wood.line, 7))
+          .poly([10, -32, 36, -12, 10, 8])
+          .fill(wood.line);
       const text = label(i === 0 ? 'Try another way' : 'Next bag', 22, wood.line);
       text.y = 35;
       b.addChild(plate, icon, text);
       b.hitArea = new Rectangle(-118, -60, 236, 120);
-      b.on('pointerdown', () => { b.alpha = 0.7; });
-      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel']) b.on(up, () => { b.alpha = 1; });
+      b.on('pointerdown', () => {
+        b.alpha = 0.7;
+      });
+      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'])
+        b.on(up, () => {
+          b.alpha = 1;
+        });
       onTap(b, () => void this.chooseComparison(i === 0), { cooldown: 400 });
       b.visible = false;
       this.compareButtons.push(b);
@@ -744,13 +962,17 @@ export class WoodsMail implements Game {
   private async chooseComparison(again: boolean) {
     if (!this.choosingComparison || this.busy || this.finished) return;
     this.choosingComparison = false;
-    this.compareButtons.forEach((b) => { b.visible = false; });
+    this.compareButtons.forEach((b) => {
+      b.visible = false;
+    });
     if (!again) return this.next();
     this.comparing = true;
     this.planned = [];
     this.drawPreview();
     this.keyCard.visible = true;
-    this.key.forEach((r) => { r.node.visible = true; });
+    this.key.forEach((r) => {
+      r.node.visible = true;
+    });
     await this.ctx.instruct('mail.any-order-again');
   }
 
@@ -761,7 +983,9 @@ export class WoodsMail implements Game {
     for (let j = 1; j < path.length; j++) {
       await this.walkTo(path.slice(j - 1, j + 1), 0.32);
       stones++;
-      this.stoneCount.text = this.comparing ? `First: ${this.firstCount} · Now: ${stones}` : `${stones} stones`;
+      this.stoneCount.text = this.comparing
+        ? `First: ${this.firstCount} · Now: ${stones}`
+        : `${stones} stones`;
       const house = HOUSE_NODES.indexOf(path[j]);
       if (house >= 0) {
         if (!this.comparing) await this.welcome(house);
@@ -779,8 +1003,13 @@ export class WoodsMail implements Game {
     this.firstCount = count;
     await this.ctx.say('mail.any-order-count', { n: count });
     this.keyCard.visible = false;
-    this.key.forEach((r) => { r.node.visible = false; r.glow.visible = false; });
-    this.compareButtons.forEach((b) => { b.visible = true; });
+    this.key.forEach((r) => {
+      r.node.visible = false;
+      r.glow.visible = false;
+    });
+    this.compareButtons.forEach((b) => {
+      b.visible = true;
+    });
     this.choosingComparison = true;
     await this.ctx.instruct('mail.any-order-choice');
     this.busy = false;
@@ -803,7 +1032,14 @@ export class WoodsMail implements Game {
     await h.peek(this.ctx.tw, true);
     const p = h.getGlobalPosition();
     const local = this.ctx.stage.toLocal(p);
-    this.ctx.particles.burst(local.x, local.y - 100, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 6, speed: [60, 140], gravity: -40, size: [0.3, 0.45] });
+    this.ctx.particles.burst(local.x, local.y - 100, {
+      kind: 'heart',
+      colors: [swatch.pink.fill, swatch.red.fill],
+      count: 6,
+      speed: [60, 140],
+      gravity: -40,
+      size: [0.3, 0.45],
+    });
     await this.ctx.say('mail.thanks');
     h.resident.visible = false;
     h.glow.visible = false;

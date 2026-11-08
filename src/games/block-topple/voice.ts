@@ -3,7 +3,9 @@ export const VOICE = {
   'game.block-topple': ['Block topple!'],
   'block-topple.instruct-pull': ['Pull back the ball and let go to tip the tower!'],
   'block-topple.instruct-far': ['The tower is farther away. Pull back and let go to tip it!'],
-  'block-topple.instruct-high': ['Knock your friend down to the cushion. Where on the stack should the ball hit?'],
+  'block-topple.instruct-high': [
+    'Knock your friend down to the cushion. Where on the stack should the ball hit?',
+  ],
   'block-topple.instruct-hill': ['Send the ball over the hill to tip the tower!'],
   'block-topple.short': ['Short! Pull a bit harder or aim higher.'],
   'block-topple.over': ['Over! A gentler pull.'],

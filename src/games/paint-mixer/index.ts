@@ -9,18 +9,60 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bucket as bucketArt, button, drop as dropArt, fillInside, fillLine, jar as jarArt, pot as potArt, ratioTable } from './art';
+import {
+  bucket as bucketArt,
+  button,
+  drop as dropArt,
+  fillInside,
+  fillLine,
+  jar as jarArt,
+  pot as potArt,
+  ratioTable,
+} from './art';
 import { entryId } from '../../content/journal';
 import {
-  BUTTON_H, BUTTON_W, CAP, JAR_H, JAR_W, LEVELS, POT_H, POT_W, check, completeBatches, countsOf, glowFor, layout, makeRound, mix,
-  mixName, multipleOf, picture, SOLVE_STEPS, planFor, potsFor, ratioTable as tableFor, recipeOf, rowOf, sizeFor, solveFrom, stickerSample,
-  type Glow, type Layout, type Plan, type Pot, type Sample,
+  BUTTON_H,
+  BUTTON_W,
+  CAP,
+  JAR_H,
+  JAR_W,
+  LEVELS,
+  POT_H,
+  POT_W,
+  check,
+  completeBatches,
+  countsOf,
+  glowFor,
+  layout,
+  makeRound,
+  mix,
+  mixName,
+  multipleOf,
+  picture,
+  SOLVE_STEPS,
+  planFor,
+  potsFor,
+  ratioTable as tableFor,
+  recipeOf,
+  rowOf,
+  sizeFor,
+  solveFrom,
+  stickerSample,
+  type Glow,
+  type Layout,
+  type Plan,
+  type Pot,
+  type Sample,
 } from './logic';
 import { JarShelf } from './shelf';
 
 /** A sample's recipe as speech slots: two pots, or three at level 5. */
 export const recipeWords = (s: Sample): Record<string, string | number> => ({
-  a: s.counts[0], potA: s.pots[0], b: s.counts[1], potB: s.pots[1], ...(s.pots.length > 2 ? { c: s.counts[2], potC: s.pots[2] } : {}),
+  a: s.counts[0],
+  potA: s.pots[0],
+  b: s.counts[1],
+  potB: s.pots[1],
+  ...(s.pots.length > 2 ? { c: s.counts[2], potC: s.pots[2] } : {}),
 });
 
 type Button = 'undo' | 'tip' | 'check';
@@ -68,11 +110,27 @@ class PaintMixer implements Game {
     this.plan = planFor(ctx.level);
     this.samples = makeRound(ctx.level, ctx.rng);
     this.pots = potsFor(this.sample);
-    this.backdrop = new Backdrop({ sky: [cream, swatch.blue.light], hills: [grass, swatch.green.light], horizon: 0.34, clouds: 1, sun: false, seed: 67 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [cream, swatch.blue.light],
+        hills: [grass, swatch.green.light],
+        horizon: 0.34,
+        clouds: 1,
+        sun: false,
+        seed: 67,
+      },
+      ctx.view,
+    );
     const b = bucketArt();
-    this.bucketNode = b.node; this.inside = b.inside; this.rowsNode = b.rows;
+    this.bucketNode = b.node;
+    this.inside = b.inside;
+    this.rowsNode = b.rows;
     this.bucketNode.eventMode = 'none';
-    this.recipeNode.eventMode = this.tableNode.eventMode = this.flights.eventMode = this.glowRing.eventMode = 'none';
+    this.recipeNode.eventMode =
+      this.tableNode.eventMode =
+      this.flights.eventMode =
+      this.glowRing.eventMode =
+        'none';
     this.jarNode.hitArea = new Rectangle(-JAR_W / 2, -JAR_H / 2, JAR_W, JAR_H);
     onTap(this.jarNode, () => this.tapJar());
     for (const kind of ['undo', 'tip', 'check'] as const) {
@@ -82,22 +140,45 @@ class PaintMixer implements Game {
       this.buttons.set(kind, n);
     }
     this.layoutNow = layout(ctx.view, this.pots.length, this.sample.pots.length);
-    ctx.stage.addChild(this.backdrop, this.jarNode, this.recipeNode, this.tableNode, this.bucketNode, ...this.buttons.values(), this.flights, this.glowRing);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.jarNode,
+      this.recipeNode,
+      this.tableNode,
+      this.bucketNode,
+      ...this.buttons.values(),
+      this.flights,
+      this.glowRing,
+    );
     this.buildPots();
     this.dressBucket();
     this.resize(ctx.view);
   }
 
-  get sample(): Sample { return this.samples[this.bucketIndex]; }
-  get counts() { return countsOf(this.drops); }
+  get sample(): Sample {
+    return this.samples[this.bucketIndex];
+  }
+  get counts() {
+    return countsOf(this.drops);
+  }
   /** What a scripted play reads. */
   get state() {
     const size = sizeFor(this.plan, this.sample);
     const table = this.plan.level >= 3 ? tableFor(this.plan, this.sample, this.counts) : null;
     return {
-      level: this.plan.level, bucket: this.bucketIndex, sample: this.sample, pots: this.pots.slice(), drops: this.drops.slice(),
-      misses: this.misses, hints: this.hints, glow: this.glow, size: Number.isFinite(size) ? size : null, done: this.done,
-      table: table && { columns: table.columns, filled: table.filled }, busy: this.busy, finished: this.finished,
+      level: this.plan.level,
+      bucket: this.bucketIndex,
+      sample: this.sample,
+      pots: this.pots.slice(),
+      drops: this.drops.slice(),
+      misses: this.misses,
+      hints: this.hints,
+      glow: this.glow,
+      size: Number.isFinite(size) ? size : null,
+      done: this.done,
+      table: table && { columns: table.columns, filled: table.filled },
+      busy: this.busy,
+      finished: this.finished,
     };
   }
 
@@ -168,7 +249,10 @@ class PaintMixer implements Game {
       this.rowsNode.addChild(d);
     }
     this.tableNode.removeChildren().forEach((c) => c.destroy({ children: true }));
-    if (this.plan.level >= 3) this.tableNode.addChild(ratioTable(tableFor(this.plan, this.sample, counts), this.sample.pots, this.done));
+    if (this.plan.level >= 3)
+      this.tableNode.addChild(
+        ratioTable(tableFor(this.plan, this.sample, counts), this.sample.pots, this.done),
+      );
     if (this.glow) this.glow = glowFor(this.plan, this.sample, this.drops, this.done);
   }
 
@@ -199,11 +283,20 @@ class PaintMixer implements Game {
     d.position.set(from.x, from.y - POT_H * 0.8);
     this.flights.addChild(d);
     const l = this.layoutNow;
-    void this.ctx.tw.to(d.position, { x: l.bucket.x, y: l.bucket.y - 90 }, { duration: 0.28, ease: ease.outQuad }).then(() => {
-      if (this.finished || d.destroyed) return;
-      this.ctx.particles.burst(l.bucket.x, l.bucket.y - 90, { kind: 'dot', colors: [mix(this.counts) ?? 0xffffff], count: 5, speed: [40, 110], gravity: 260, life: [0.2, 0.4] });
-      d.destroy();
-    });
+    void this.ctx.tw
+      .to(d.position, { x: l.bucket.x, y: l.bucket.y - 90 }, { duration: 0.28, ease: ease.outQuad })
+      .then(() => {
+        if (this.finished || d.destroyed) return;
+        this.ctx.particles.burst(l.bucket.x, l.bucket.y - 90, {
+          kind: 'dot',
+          colors: [mix(this.counts) ?? 0xffffff],
+          count: 5,
+          speed: [40, 110],
+          gravity: 260,
+          life: [0.2, 0.4],
+        });
+        d.destroy();
+      });
   }
 
   private slosh() {
@@ -225,19 +318,35 @@ class PaintMixer implements Game {
 
   undo(ghost = false) {
     if (this.pouring && !ghost) return;
-    if (this.drops.length === 0) { sfx.pop(3); return; }
+    if (this.drops.length === 0) {
+      sfx.pop(3);
+      return;
+    }
     const pot = this.drops.pop()!;
     sfx.pop(5);
     this.refresh();
-    const d = dropArt(pot), l = this.layoutNow, to = this.potNodes.get(pot) ?? null;
+    const d = dropArt(pot),
+      l = this.layoutNow,
+      to = this.potNodes.get(pot) ?? null;
     d.position.set(l.bucket.x, l.bucket.y - 90);
     this.flights.addChild(d);
-    void this.ctx.tw.to(d.position, { x: to?.x ?? l.bucket.x, y: (to?.y ?? l.bucket.y) - POT_H * 0.8 }, { duration: 0.28, ease: ease.inQuad }).then(() => { if (!d.destroyed) d.destroy(); });
+    void this.ctx.tw
+      .to(
+        d.position,
+        { x: to?.x ?? l.bucket.x, y: (to?.y ?? l.bucket.y) - POT_H * 0.8 },
+        { duration: 0.28, ease: ease.inQuad },
+      )
+      .then(() => {
+        if (!d.destroyed) d.destroy();
+      });
   }
 
   tipOut(ghost = false) {
     if (this.pouring && !ghost) return;
-    if (this.drops.length === 0) { sfx.pop(3); return; }
+    if (this.drops.length === 0) {
+      sfx.pop(3);
+      return;
+    }
     this.drops = [];
     sfx.splash();
     this.ctx.tw.kill(this.bucketNode);
@@ -249,7 +358,10 @@ class PaintMixer implements Game {
   private checkBucket() {
     const verdict = check(this.plan, this.sample, this.counts, this.done);
     const s = this.sample;
-    if (verdict.kind === 'match') { void this.celebrate(); return; }
+    if (verdict.kind === 'match') {
+      void this.celebrate();
+      return;
+    }
     if (verdict.kind === 'moreSameWay') {
       sfx.pop(6);
       void this.ctx.say(this.plan.kind === 'line' ? 'pm.more-line' : 'pm.more-same-way');
@@ -262,15 +374,25 @@ class PaintMixer implements Game {
       return;
     }
     const words = { pot: verdict.pot, ...recipeWords(s) };
-    this.misses++; this.bucketMisses++;
+    this.misses++;
+    this.bucketMisses++;
     sfx.boing();
     this.slosh();
-    const line = verdict.direction === 'stray' ? 'pm.stray' : verdict.direction === 'too-many' ? 'pm.too-many'
-      : this.drops.length === 0 ? 'pm.start' : 'pm.short';
+    const line =
+      verdict.direction === 'stray'
+        ? 'pm.stray'
+        : verdict.direction === 'too-many'
+          ? 'pm.too-many'
+          : this.drops.length === 0
+            ? 'pm.start'
+            : 'pm.short';
     void this.hearWrong(line, words);
   }
 
-  private async hearWrong(line: 'pm.stray' | 'pm.too-many' | 'pm.start' | 'pm.short', words: Record<string, string | number>) {
+  private async hearWrong(
+    line: 'pm.stray' | 'pm.too-many' | 'pm.start' | 'pm.short',
+    words: Record<string, string | number>,
+  ) {
     const turn = this.turn;
     await this.ctx.say(line, words);
     // She may have fixed the bucket and matched while the line played: no hint for a bucket she solved unaided.
@@ -283,7 +405,10 @@ class PaintMixer implements Game {
   private lightHint(): boolean {
     if (this.finished) return false;
     this.glow = glowFor(this.plan, this.sample, this.drops, this.done);
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
     return true;
   }
 
@@ -303,7 +428,8 @@ class PaintMixer implements Game {
   private async ghostPour() {
     this.pouring = true;
     const turn = this.turn;
-    if (solveFrom(this.plan, this.sample, this.drops, this.done).some((g) => g.at === 'tip')) void this.ctx.say(this.sample.pots.length > 2 ? 'pm.plan-3' : 'pm.plan', recipeWords(this.sample));
+    if (solveFrom(this.plan, this.sample, this.drops, this.done).some((g) => g.at === 'tip'))
+      void this.ctx.say(this.sample.pots.length > 2 ? 'pm.plan-3' : 'pm.plan', recipeWords(this.sample));
     // One tap a second, each read from the bucket as it is now, until Check is the glowing one.
     for (let i = 0; i < SOLVE_STEPS; i++) {
       if (this.finished || this.busy || turn !== this.turn) break;
@@ -332,10 +458,24 @@ class PaintMixer implements Game {
     const l = this.layoutNow;
     sfx.bell(7, 0.35);
     sfx.bell(11, 0.3);
-    this.ctx.particles.burst(l.bucket.x, l.bucket.y - 60, { kind: 'star', colors: [mix(this.counts)!, swatch.yellow.fill, 0xffffff], count: 20, speed: [120, 280], gravity: 320, life: [0.5, 0.9] });
+    this.ctx.particles.burst(l.bucket.x, l.bucket.y - 60, {
+      kind: 'star',
+      colors: [mix(this.counts)!, swatch.yellow.fill, 0xffffff],
+      count: 20,
+      speed: [120, 280],
+      gravity: 320,
+      life: [0.5, 0.9],
+    });
     // The bucket lifts toward the jar and settles: the two swatches are one colour.
-    void this.ctx.tw.to(this.bucketNode, { y: l.bucket.y - 30 }, { duration: 0.25, ease: ease.outQuad })
-      .then(() => this.ctx.tw.to(this.bucketNode, { y: this.layoutNow.bucket.y }, { duration: 0.35, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(this.bucketNode, { y: l.bucket.y - 30 }, { duration: 0.25, ease: ease.outQuad })
+      .then(() =>
+        this.ctx.tw.to(
+          this.bucketNode,
+          { y: this.layoutNow.bucket.y },
+          { duration: 0.35, ease: ease.outBack },
+        ),
+      );
     const firstWay = this.plan.kind === 'any' && this.done === null;
     // Level 5: a matched bucket (her pour or the ghost's) files its recipe on the journal's paint shelf at round end.
     const recipe = recipeOf(this.sample);
@@ -358,7 +498,11 @@ class PaintMixer implements Game {
       this.finished = true;
       await this.ctx.say(this.plan.kind === 'any' ? 'pm.two-ways' : 'pm.done');
       await this.ctx.tw.wait(0.5);
-      this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: this.matched.map((n) => entryId('paint-mixer', n)) });
+      this.ctx.finish({
+        misses: this.misses,
+        hints: this.hints,
+        discoveries: this.matched.map((n) => entryId('paint-mixer', n)),
+      });
       return;
     }
     await this.ctx.tw.wait(0.4);
@@ -389,7 +533,7 @@ class PaintMixer implements Game {
   // ---- shell hooks ----
 
   resize(view: View) {
-    const l = this.layoutNow = layout(view, this.pots.length, this.sample.pots.length);
+    const l = (this.layoutNow = layout(view, this.pots.length, this.sample.pots.length));
     this.backdrop.resize(view);
     this.jarNode.position.set(l.jar.x, l.jar.y);
     this.recipeNode.position.set(l.recipe.x, l.recipe.y);
@@ -408,7 +552,15 @@ class PaintMixer implements Game {
     const target = this.glowTarget(this.glow);
     const pulse = 6 + 4 * Math.sin(this.clock * 5);
     const b = target.hitArea as Rectangle;
-    this.glowRing.roundRect(target.x + b.x - pulse, target.y + b.y - pulse, b.width + 2 * pulse, b.height + 2 * pulse, 30).stroke({ width: 7, color: swatch.yellow.fill });
+    this.glowRing
+      .roundRect(
+        target.x + b.x - pulse,
+        target.y + b.y - pulse,
+        b.width + 2 * pulse,
+        b.height + 2 * pulse,
+        30,
+      )
+      .stroke({ width: 7, color: swatch.yellow.fill });
   }
 
   private glowTarget(g: Glow): Container {
@@ -419,7 +571,10 @@ class PaintMixer implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.pouring) return null;
     if (this.flights.children.length > 0) return null;
-    return { tap: { on: this.glowTarget(glowFor(this.plan, this.sample, this.drops, this.done)) }, pause: 0.45 };
+    return {
+      tap: { on: this.glowTarget(glowFor(this.plan, this.sample, this.drops, this.done)) },
+      pause: 0.45,
+    };
   }
 }
 
@@ -429,9 +584,12 @@ function icon(): Container {
   fillInside(b.inside, mix({ red: 1, yellow: 2, blue: 0, white: 0 }));
   b.node.scale.set(0.5);
   b.node.position.set(0, -110);
-  const r = potArt('red'), y = potArt('yellow');
-  r.scale.set(0.5); y.scale.set(0.5);
-  r.position.set(-92, 0); y.position.set(92, 0);
+  const r = potArt('red'),
+    y = potArt('yellow');
+  r.scale.set(0.5);
+  y.scale.set(0.5);
+  r.position.set(-92, 0);
+  y.position.set(92, 0);
   c.addChild(b.node, r, y);
   return c;
 }
@@ -461,12 +619,22 @@ function sticker(seed: number): Container {
 }
 
 export const paintMixer: GameModule = {
-  id: 'paint-mixer', name: 'Paint Mixer', titleLine: 'game.paint-mixer', region: 'counting-cove', challenge: 'numbers',
-  skills: ['counting', 'comparing', 'number-sense', 'operations'], bands: ['school'], levels: (b) => rangeFor(LEVELS, b),
+  id: 'paint-mixer',
+  name: 'Paint Mixer',
+  titleLine: 'game.paint-mixer',
+  region: 'counting-cove',
+  challenge: 'numbers',
+  skills: ['counting', 'comparing', 'number-sense', 'operations'],
+  bands: ['school'],
+  levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
-  coplayHint: 'Take turns: one of you reads the sample\'s row aloud ("one red, two yellow") while the other pours; swap after each bucket.',
-  offScreen: 'Mix a drink or a paint colour together, then ask: if we made twice as much, what would we need of each?',
-  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => (planFor(ctx.level).kind === 'jars' ? new JarShelf(ctx) : new PaintMixer(ctx)),
+  coplayHint:
+    'Take turns: one of you reads the sample\'s row aloud ("one red, two yellow") while the other pours; swap after each bucket.',
+  offScreen:
+    'Mix a drink or a paint colour together, then ask: if we made twice as much, what would we need of each?',
+  hubIcon: () => new WigglyIcon(icon()),
+  sticker,
+  create: (ctx) => (planFor(ctx.level).kind === 'jars' ? new JarShelf(ctx) : new PaintMixer(ctx)),
   touchDemo: true,
 };

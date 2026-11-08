@@ -41,7 +41,8 @@ export const LEVELS: BandLevels = {
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
 
-export const planFor = (level: number) => (level === ONE_DOOR_LEVEL ? ONE_DOOR : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
+export const planFor = (level: number) =>
+  level === ONE_DOOR_LEVEL ? ONE_DOOR : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** A different animal behind each hiding place. */
 export const deal = (rng: Rng, spots: number): Animal[] => rng.shuffle([...ANIMALS]).slice(0, spots);
@@ -58,7 +59,11 @@ export function pickTarget(rng: Rng, present: readonly Animal[], last: Animal | 
  */
 export const FEELINGS = ['sleepy', 'surprised', 'sing'] as const;
 export type Feeling = (typeof FEELINGS)[number];
-export const FEELING_WORDS: Record<Feeling, string> = { sleepy: 'sleepy', surprised: 'surprised', sing: 'singing' };
+export const FEELING_WORDS: Record<Feeling, string> = {
+  sleepy: 'sleepy',
+  surprised: 'surprised',
+  sing: 'singing',
+};
 /** About one reveal in three carries a feeling; the rest are simply happy. */
 export const FEELING_CHANCE = 1 / 3;
 
@@ -73,14 +78,21 @@ export function pickFeeling(rng: Rng, plan: PeekPlan, last: Feeling | null): Fee
 }
 
 /** Free play: someone new sneaks in, never the same as anyone already out. */
-export const newcomer = (rng: Rng, taken: readonly Animal[]): Animal => rng.pick(ANIMALS.filter((a) => !taken.includes(a)));
+export const newcomer = (rng: Rng, taken: readonly Animal[]): Animal =>
+  rng.pick(ANIMALS.filter((a) => !taken.includes(a)));
 
 /**
  * Which hiding place a capable child taps next, or null while she waits. Asked for someone (find, remember): the place that
  * hides them. Free play: the next place after the one she tapped last (so she visits them all) that has nobody out already.
  * `poses` are the places' poses left to right ('hidden', 'peek' or 'out'), `animals` who is behind each.
  */
-export function spotToTap(plan: PeekPlan, poses: readonly string[], animals: readonly Animal[], target: Animal | null, last: number): number | null {
+export function spotToTap(
+  plan: PeekPlan,
+  poses: readonly string[],
+  animals: readonly Animal[],
+  target: Animal | null,
+  last: number,
+): number | null {
   if (plan.mode !== 'free') {
     const i = animals.indexOf(target as Animal);
     return target && i >= 0 ? i : null;
@@ -92,11 +104,32 @@ export function spotToTap(plan: PeekPlan, poses: readonly string[], animals: rea
   return null;
 }
 
-export const COVER_NAMES = { hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate', flowerpot: 'flowerpot', sunflower: 'sunflower', wheelbarrow: 'wheelbarrow', rock: 'rock', blanket: 'blanket', toybox: 'toy box', curtain: 'curtain', bed: 'bed', umbrella: 'umbrella', sandcastle: 'sandcastle', bucket: 'bucket', towel: 'towel' } as const;
+export const COVER_NAMES = {
+  hay: 'haystack',
+  bush: 'bush',
+  door: 'door',
+  crate: 'crate',
+  flowerpot: 'flowerpot',
+  sunflower: 'sunflower',
+  wheelbarrow: 'wheelbarrow',
+  rock: 'rock',
+  blanket: 'blanket',
+  toybox: 'toy box',
+  curtain: 'curtain',
+  bed: 'bed',
+  umbrella: 'umbrella',
+  sandcastle: 'sandcastle',
+  bucket: 'bucket',
+  towel: 'towel',
+} as const;
 export type CoverKind = keyof typeof COVER_NAMES;
 
 /** Among overlapping hit boxes, choose the closest center; equal distances keep the left place. */
-export function nearestSpot(x: number, y: number, spots: readonly { x: number; y: number; scale: number }[]): number | null {
+export function nearestSpot(
+  x: number,
+  y: number,
+  spots: readonly { x: number; y: number; scale: number }[],
+): number | null {
   let best: number | null = null;
   let distance = Infinity;
   spots.forEach((s, i) => {
@@ -104,14 +137,21 @@ export function nearestSpot(x: number, y: number, spots: readonly { x: number; y
     const dy = (y - s.y) / s.scale;
     if (Math.abs(dx) > 130 || dy < -340 || dy > 10) return;
     const d = Math.abs(x - s.x);
-    if (d < distance) { best = i; distance = d; }
+    if (d < distance) {
+      best = i;
+      distance = d;
+    }
   });
   return best;
 }
 
 /** A nudge invites a touch, never awards a reveal or interrupts an animal already showing. */
 export const shouldNudge = (plan: PeekPlan, idle: number, poses: readonly string[], busy: boolean) =>
-  plan.mode === 'free' && !plan.door && idle >= SELF_OPEN_SECONDS && !busy && poses.every((pose) => pose === 'hidden');
+  plan.mode === 'free' &&
+  !plan.door &&
+  idle >= SELF_OPEN_SECONDS &&
+  !busy &&
+  poses.every((pose) => pose === 'hidden');
 
 /** One door opens by itself when she has not touched for a while; that reveal never counts toward the round. */
 export const shouldSelfOpen = (plan: PeekPlan, idle: number, poses: readonly string[], busy: boolean) =>

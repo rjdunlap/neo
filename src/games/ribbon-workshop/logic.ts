@@ -15,10 +15,20 @@ export const HALF = 2;
 export const QUARTER = 1;
 
 export type Size = typeof HALF | typeof QUARTER;
-export interface Piece { id: number; size: Size }
+export interface Piece {
+  id: number;
+  size: Size;
+}
 /** A gift: its target length and the tray of pieces it starts with, both in ticks. */
-export interface GiftCase { target: number; tray: readonly Size[] }
-export interface RibbonState { tray: readonly Piece[]; bench: readonly Piece[]; nextId: number }
+export interface GiftCase {
+  target: number;
+  tray: readonly Size[];
+}
+export interface RibbonState {
+  tray: readonly Piece[];
+  bench: readonly Piece[];
+  nextId: number;
+}
 export type Action = { kind: 'place' | 'return' | 'snip'; id: number };
 /** What the ghost finger or the hint glow points at next: an action, or the bow when the bench is already right. */
 export type Hint = Action | { kind: 'check' };
@@ -33,26 +43,50 @@ export interface RibbonPlan {
   second: GiftCase | null;
 }
 
-const H = HALF, Q = QUARTER;
+const H = HALF,
+  Q = QUARTER;
 export const PLANS: Record<number, RibbonPlan> = {
   1: {
-    name: 'A whole ribbon', snip: false, second: null,
-    first: [{ target: 4, tray: [H, H, Q, Q, Q, Q] }, { target: 4, tray: [H, Q, Q, Q, Q] }, { target: 4, tray: [H, H, Q, Q] }],
+    name: 'A whole ribbon',
+    snip: false,
+    second: null,
+    first: [
+      { target: 4, tray: [H, H, Q, Q, Q, Q] },
+      { target: 4, tray: [H, Q, Q, Q, Q] },
+      { target: 4, tray: [H, H, Q, Q] },
+    ],
   },
   2: {
-    name: 'Snip a half', snip: true, second: { target: 1, tray: [H, H] },
-    first: [{ target: 2, tray: [H, Q, Q] }, { target: 2, tray: [Q, Q, Q] }, { target: 2, tray: [H, Q, Q, Q] }],
+    name: 'Snip a half',
+    snip: true,
+    second: { target: 1, tray: [H, H] },
+    first: [
+      { target: 2, tray: [H, Q, Q] },
+      { target: 2, tray: [Q, Q, Q] },
+      { target: 2, tray: [H, Q, Q, Q] },
+    ],
   },
   3: {
-    name: 'Three quarters', snip: true, second: { target: 3, tray: [H, H] },
-    first: [{ target: 3, tray: [H, Q, Q, Q] }, { target: 3, tray: [H, H, Q] }, { target: 3, tray: [Q, Q, Q, Q] }],
+    name: 'Three quarters',
+    snip: true,
+    second: { target: 3, tray: [H, H] },
+    first: [
+      { target: 3, tray: [H, Q, Q, Q] },
+      { target: 3, tray: [H, H, Q] },
+      { target: 3, tray: [Q, Q, Q, Q] },
+    ],
   },
 };
 export const LEVEL_IDS = [1, 2, 3] as const;
 export const planFor = (level: number): RibbonPlan => PLANS[level] ?? PLANS[1];
 
 /** The tag's name for a target, also the instruction's line: `ribbon.ask.<amount>`. */
-export const AMOUNTS: Record<number, 'quarter' | 'half' | 'threeQuarters' | 'whole'> = { 1: 'quarter', 2: 'half', 3: 'threeQuarters', 4: 'whole' };
+export const AMOUNTS: Record<number, 'quarter' | 'half' | 'threeQuarters' | 'whole'> = {
+  1: 'quarter',
+  2: 'half',
+  3: 'threeQuarters',
+  4: 'whole',
+};
 /** The written fraction on the tag and the cards. */
 export const WRITTEN: Record<number, string> = { 1: '¼', 2: '½', 3: '¾', 4: '1' };
 
@@ -64,18 +98,21 @@ export const total = (pieces: readonly Piece[]) => pieces.reduce((s, p) => s + p
 /** Apply an action, or return null when it cannot be done (a missing piece, a full bench, a quarter or a bench piece snipped). */
 export function apply(s: RibbonState, a: Action): RibbonState | null {
   if (a.kind === 'place') {
-    const p = s.tray.find(p => p.id === a.id);
+    const p = s.tray.find((p) => p.id === a.id);
     if (!p || total(s.bench) + p.size > CAPACITY) return null;
-    return { ...s, tray: s.tray.filter(q => q !== p), bench: [...s.bench, p] };
+    return { ...s, tray: s.tray.filter((q) => q !== p), bench: [...s.bench, p] };
   }
   if (a.kind === 'return') {
-    const p = s.bench.find(p => p.id === a.id);
+    const p = s.bench.find((p) => p.id === a.id);
     if (!p) return null;
-    return { ...s, bench: s.bench.filter(q => q !== p), tray: [...s.tray, p] };
+    return { ...s, bench: s.bench.filter((q) => q !== p), tray: [...s.tray, p] };
   }
-  const i = s.tray.findIndex(p => p.id === a.id);
+  const i = s.tray.findIndex((p) => p.id === a.id);
   if (i < 0 || s.tray[i].size !== HALF) return null;
-  const quarters: Piece[] = [{ id: s.nextId, size: QUARTER }, { id: s.nextId + 1, size: QUARTER }];
+  const quarters: Piece[] = [
+    { id: s.nextId, size: QUARTER },
+    { id: s.nextId + 1, size: QUARTER },
+  ];
   return { ...s, tray: [...s.tray.slice(0, i), ...quarters, ...s.tray.slice(i + 1)], nextId: s.nextId + 2 };
 }
 
@@ -88,7 +125,11 @@ export function judge(s: RibbonState, target: number): Verdict {
 }
 
 /** The bench's pieces as a multiset, longest first: 'hq' is a half and a quarter. Names the composition line `ribbon.made.<key>`. */
-export const compositionKey = (pieces: readonly Piece[]) => pieces.map(p => p.size === HALF ? 'h' : 'q').sort().join('');
+export const compositionKey = (pieces: readonly Piece[]) =>
+  pieces
+    .map((p) => (p.size === HALF ? 'h' : 'q'))
+    .sort()
+    .join('');
 
 /** Every action from a state, in the solver's preference order: places in tray order, snips in tray order, returns from the end. An overfull bench offers only returns, since nothing added can help. */
 export function actions(s: RibbonState, target: number, canSnip: boolean): Action[] {
@@ -101,7 +142,8 @@ export function actions(s: RibbonState, target: number, canSnip: boolean): Actio
   return out;
 }
 
-const keyOf = (s: RibbonState) => `${s.tray.map(p => p.size).join('')}|${s.bench.map(p => p.size).join('')}`;
+const keyOf = (s: RibbonState) =>
+  `${s.tray.map((p) => p.size).join('')}|${s.bench.map((p) => p.size).join('')}`;
 
 /**
  * The best action list to a bench of exactly the target: fewest returns, then fewest actions, then tray order. A
@@ -114,7 +156,12 @@ export function solve(s: RibbonState, target: number, canSnip: boolean): Action[
   while (frontier.length) {
     // Stable: the earliest-made entry wins a tie, so tray order breaks it.
     let best = 0;
-    for (let i = 1; i < frontier.length; i++) if (cost(frontier[i].returns, frontier[i].path.length) < cost(frontier[best].returns, frontier[best].path.length)) best = i;
+    for (let i = 1; i < frontier.length; i++)
+      if (
+        cost(frontier[i].returns, frontier[i].path.length) <
+        cost(frontier[best].returns, frontier[best].path.length)
+      )
+        best = i;
     const node = frontier.splice(best, 1)[0];
     const key = keyOf(node.s);
     if (seen.has(key)) continue;
@@ -122,7 +169,12 @@ export function solve(s: RibbonState, target: number, canSnip: boolean): Action[
     if (total(node.s.bench) === target && node.s.bench.length) return node.path;
     for (const a of actions(node.s, target, canSnip)) {
       const next = apply(node.s, a);
-      if (next && !seen.has(keyOf(next))) frontier.push({ s: next, path: [...node.path, a], returns: node.returns + (a.kind === 'return' ? 1 : 0) });
+      if (next && !seen.has(keyOf(next)))
+        frontier.push({
+          s: next,
+          path: [...node.path, a],
+          returns: node.returns + (a.kind === 'return' ? 1 : 0),
+        });
     }
   }
   return null;
@@ -141,7 +193,7 @@ export function roundFor(level: number, rng: Rng): GiftCase[] {
   const pool = [...plan.first];
   const first = pool.splice(rng.int(0, pool.length - 1), 1)[0];
   const second = plan.second ?? pool[rng.int(0, pool.length - 1)];
-  return [first, second].map(c => ({ target: c.target, tray: rng.shuffle([...c.tray]) }));
+  return [first, second].map((c) => ({ target: c.target, tray: rng.shuffle([...c.tray]) }));
 }
 
 /**
@@ -157,7 +209,10 @@ export class GiftTally {
   check(v: Verdict): Verdict {
     if (v === 'short' || v === 'long') {
       this.misses++;
-      if (++this.wrong === 2 && !this.glow) { this.glow = true; this.hints++; }
+      if (++this.wrong === 2 && !this.glow) {
+        this.glow = true;
+        this.hints++;
+      }
     }
     return v;
   }
@@ -169,14 +224,19 @@ export class GiftTally {
     return true;
   }
   /** The next gift starts without a glow or wrong checks; counted totals stay. */
-  nextGift() { this.glow = false; this.wrong = 0; }
+  nextGift() {
+    this.glow = false;
+    this.wrong = 0;
+  }
 }
 
 /** One gift on the bench: its state, with an undo stack of the exact earlier states (tray order, bench order, piece IDs). */
 export class Workbench {
   state: RibbonState;
   private readonly history: RibbonState[] = [];
-  constructor(readonly gift: GiftCase) { this.state = startState(gift); }
+  constructor(readonly gift: GiftCase) {
+    this.state = startState(gift);
+  }
   /** Do an action; false (and nothing changes) when it cannot be done. */
   act(a: Action): boolean {
     const next = apply(this.state, a);
@@ -191,9 +251,14 @@ export class Workbench {
     this.state = prev;
     return true;
   }
-  get canUndo() { return this.history.length > 0; }
+  get canUndo() {
+    return this.history.length > 0;
+  }
   /** The gift's tray and bench as they started. */
-  restart() { this.history.length = 0; this.state = startState(this.gift); }
+  restart() {
+    this.history.length = 0;
+    this.state = startState(this.gift);
+  }
 }
 
 /** Logical units per tick: one whole is 560 at every view size, a half 280 and a quarter 140. */
@@ -208,10 +273,15 @@ export const ROW_TICKS = 4;
  * worth eight ticks or fewer always take two rows. `x` is the card's centre; row 0 is the bottom row.
  */
 export function trayLayout(tray: readonly Piece[]): { id: number; row: number; x: number }[] {
-  const used: number[] = [], ends: number[] = [];
-  return tray.map(p => {
-    let row = used.findIndex(t => t + p.size <= ROW_TICKS);
-    if (row < 0) { row = used.length; used.push(0); ends.push(TRAY_LEFT); }
+  const used: number[] = [],
+    ends: number[] = [];
+  return tray.map((p) => {
+    let row = used.findIndex((t) => t + p.size <= ROW_TICKS);
+    if (row < 0) {
+      row = used.length;
+      used.push(0);
+      ends.push(TRAY_LEFT);
+    }
     const x = ends[row] + (p.size * UNIT) / 2;
     used[row] += p.size;
     ends[row] += p.size * UNIT + TRAY_GAP;

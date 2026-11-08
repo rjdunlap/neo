@@ -1,4 +1,11 @@
-import { fits, type Rule, type PlantRule, type SortCritter, type Leaves, type Petals } from '../../learning/sorting/rules';
+import {
+  fits,
+  type Rule,
+  type PlantRule,
+  type SortCritter,
+  type Leaves,
+  type Petals,
+} from '../../learning/sorting/rules';
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -28,15 +35,62 @@ export interface SortPlan {
 }
 
 export const PLANS: SortPlan[] = [
-  { mode: 'one', critters: 5, rounds: 2, example: true, name: 'One hoop, one critter already in: put in every critter that fits the rule (like "wearing a hat")' },
-  { mode: 'two', critters: 6, rounds: 2, example: true, name: 'Two hoops with different rules, one critter already in each; some critters fit neither' },
-  { mode: 'venn', critters: 6, rounds: 2, example: true, name: 'Overlapping hoops, one critter already in the middle: the middle is for critters that fit both rules' },
+  {
+    mode: 'one',
+    critters: 5,
+    rounds: 2,
+    example: true,
+    name: 'One hoop, one critter already in: put in every critter that fits the rule (like "wearing a hat")',
+  },
+  {
+    mode: 'two',
+    critters: 6,
+    rounds: 2,
+    example: true,
+    name: 'Two hoops with different rules, one critter already in each; some critters fit neither',
+  },
+  {
+    mode: 'venn',
+    critters: 6,
+    rounds: 2,
+    example: true,
+    name: 'Overlapping hoops, one critter already in the middle: the middle is for critters that fit both rules',
+  },
   { mode: 'guess', critters: 6, rounds: 3, name: 'Already sorted: what is the rule? Pick the right picture' },
-  { mode: 'not', critters: 6, rounds: 3, example: true, name: 'A not hoop, one critter already in: put in every critter that does not fit the picture rule' },
-  { mode: 'one', critters: 3, rounds: 2, example: true, fitting: 2, name: 'Just a few: three critters, one already in the hoop; which of the other two fits?' },
-  { mode: 'venn', critters: 6, rounds: 3, newcomer: true, name: 'Where does the new one go? Place one newcomer in a sorted diagram: left, right, both, or neither' },
-  { mode: 'resort', critters: 6, rounds: 1, name: 'A new sign: sort six critters into a hoop or onto the leaf mat, then sort the same six again by a new rule' },
-  { mode: 'butnot', critters: 6, rounds: 2, name: 'This but not that: one hoop for critters that fit the first sign but not the crossed-out sign; all others go on the leaf mat' },
+  {
+    mode: 'not',
+    critters: 6,
+    rounds: 3,
+    example: true,
+    name: 'A not hoop, one critter already in: put in every critter that does not fit the picture rule',
+  },
+  {
+    mode: 'one',
+    critters: 3,
+    rounds: 2,
+    example: true,
+    fitting: 2,
+    name: 'Just a few: three critters, one already in the hoop; which of the other two fits?',
+  },
+  {
+    mode: 'venn',
+    critters: 6,
+    rounds: 3,
+    newcomer: true,
+    name: 'Where does the new one go? Place one newcomer in a sorted diagram: left, right, both, or neither',
+  },
+  {
+    mode: 'resort',
+    critters: 6,
+    rounds: 1,
+    name: 'A new sign: sort six critters into a hoop or onto the leaf mat, then sort the same six again by a new rule',
+  },
+  {
+    mode: 'butnot',
+    critters: 6,
+    rounds: 2,
+    name: 'This but not that: one hoop for critters that fit the first sign but not the crossed-out sign; all others go on the leaf mat',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -45,13 +99,38 @@ export const LEVELS: BandLevels = {
 };
 
 // ID 10 remains reserved for Pick the signs; existing plan IDs never move.
-export const COUNT_PLAN: SortPlan = { mode: 'two', critters: 6, rounds: 2, count: true, name: 'How many? Sort six critters, tap to count each hoop and the leaf mat aloud, then choose the part with more' };
+export const COUNT_PLAN: SortPlan = {
+  mode: 'two',
+  critters: 6,
+  rounds: 2,
+  count: true,
+  name: 'How many? Sort six critters, tap to count each hoop and the leaf mat aloud, then choose the part with more',
+};
 // Same Kind, Different Sprouts: every plant belongs to the family; only the hoop changes.
 export const SPROUT_PLANS: Record<12 | 13, SortPlan> = {
-  12: { mode: 'one', critters: 4, rounds: 2, example: true, cast: 'plants', name: 'Like the big plant: one hoop, one little plant already in; put in every little plant that shares the big plant\u2019s pictured feature' },
-  13: { mode: 'venn', critters: 6, rounds: 2, example: true, cast: 'plants', name: 'Same and different: overlapping hoops for the big plant\u2019s leaves and petal marks; the middle is both, the leaf mat is different both ways' },
+  12: {
+    mode: 'one',
+    critters: 4,
+    rounds: 2,
+    example: true,
+    cast: 'plants',
+    name: 'Like the big plant: one hoop, one little plant already in; put in every little plant that shares the big plant\u2019s pictured feature',
+  },
+  13: {
+    mode: 'venn',
+    critters: 6,
+    rounds: 2,
+    example: true,
+    cast: 'plants',
+    name: 'Same and different: overlapping hoops for the big plant\u2019s leaves and petal marks; the middle is both, the leaf mat is different both ways',
+  },
 };
-export const planFor = (level: number) => level === 11 ? COUNT_PLAN : level === 12 || level === 13 ? SPROUT_PLANS[level] : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  level === 11
+    ? COUNT_PLAN
+    : level === 12 || level === 13
+      ? SPROUT_PLANS[level]
+      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 const KINDS: CritterName[] = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 
@@ -101,7 +180,10 @@ export interface SortRound {
  */
 export function makePlantRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
   for (;;) {
-    const parent = { leaves: rng.pick(['round', 'pointy'] as Leaves[]), petals: rng.pick(['spotted', 'plain'] as Petals[]) };
+    const parent = {
+      leaves: rng.pick(['round', 'pointy'] as Leaves[]),
+      petals: rng.pick(['spotted', 'plain'] as Petals[]),
+    };
     const leafRule: PlantRule = parent.leaves === 'round' ? 'round' : 'pointyleaf';
     let rules: Rule[];
     if (plan.mode === 'venn') {
@@ -115,7 +197,15 @@ export function makePlantRound(plan: SortPlan, rng: Rng, avoid?: string): SortRo
     if (rules.join() === avoid) continue;
     const plants: SortCritter[] = [];
     for (let i = 0; i < plan.critters; i++) {
-      plants.push({ kind: 'cow', hat: false, plant: { leaves: rng.pick(['round', 'pointy'] as Leaves[]), petals: rng.pick(['spotted', 'plain'] as Petals[]), pot: rng.int(0, 5) } });
+      plants.push({
+        kind: 'cow',
+        hat: false,
+        plant: {
+          leaves: rng.pick(['round', 'pointy'] as Leaves[]),
+          petals: rng.pick(['spotted', 'plain'] as Petals[]),
+          pot: rng.int(0, 5),
+        },
+      });
     }
     const key = (c: SortCritter) => `${c.plant!.leaves}${c.plant!.petals}${c.plant!.pot}`;
     if (new Set(plants.map(key)).size < plants.length) continue;
@@ -145,34 +235,51 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
     if (new Set(critters.map(key)).size < critters.length) continue;
     const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
     const places = new Set(critters.map((c) => placeOf(c, rules, not)));
-    const needed: Place[] = plan.mode === 'two' ? ['left', 'right', 'out'] : plan.mode === 'venn' ? ['left', 'right', 'both', 'out'] : ['left', 'out'];
+    const needed: Place[] =
+      plan.mode === 'two'
+        ? ['left', 'right', 'out']
+        : plan.mode === 'venn'
+          ? ['left', 'right', 'both', 'out']
+          : ['left', 'out'];
     if (!needed.every((p) => places.has(p))) continue;
     // Both tempting A-and-B exclusions and critters matching neither must be visible.
-    if (plan.mode === 'butnot' && (!critters.some(c => fits(c, rules[0]) && fits(c, rules[1])) ||
-      !critters.some(c => !fits(c, rules[0]) && !fits(c, rules[1])))) continue;
+    if (
+      plan.mode === 'butnot' &&
+      (!critters.some((c) => fits(c, rules[0]) && fits(c, rules[1])) ||
+        !critters.some((c) => !fits(c, rules[0]) && !fits(c, rules[1])))
+    )
+      continue;
     // Three distinct, small quantities (1, 2, 3) keep counting targets roomy and "more" clear.
-    if (plan.count && new Set(COUNT_PARTS.map(p => countParts(critters, rules)[p])).size !== 3) continue;
+    if (plan.count && new Set(COUNT_PARTS.map((p) => countParts(critters, rules)[p])).size !== 3) continue;
     const bound = critters.filter((c) => placeOf(c, rules, not) !== 'out').length;
     // Just a few: two to sort after the example, one of which fits.
     if (plan.fitting && bound !== plan.fitting) continue;
     // Otherwise the examples still leave at least two critters for her to carry into a hoop.
     if (plan.example && !plan.fitting && bound - examplePlaces(plan.mode).length < 2) continue;
     if (plan.mode === 'resort') {
-      const choices = (['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter((rule) =>
-        critters.some(c => fits(c, rule)) && critters.some(c => !fits(c, rule)) &&
-        critters.some(c => fits(c, rule) !== fits(c, rules[0])));
+      const choices = (['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter(
+        (rule) =>
+          critters.some((c) => fits(c, rule)) &&
+          critters.some((c) => !fits(c, rule)) &&
+          critters.some((c) => fits(c, rule) !== fits(c, rules[0])),
+      );
       if (!choices.length) continue;
       return { rules, critters, nextRule: rng.pick(choices) };
     }
     if (plan.mode === 'guess') {
       // Two other rules that would sort these critters differently, so only one rule fits.
-      const others = rng.shuffle((['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter((r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0]))));
+      const others = rng.shuffle(
+        (['hat', 'brown', 'white', 'floppy', 'pointy', 'whiskers'] as Rule[]).filter(
+          (r) => r !== rules[0] && critters.some((c) => fits(c, r) !== fits(c, rules[0])),
+        ),
+      );
       if (others.length < 2) continue;
       return { rules, critters, options: rng.shuffle([rules[0], ...others.slice(0, 2)]) };
     }
     if (plan.newcomer) {
       // Removing it must leave a visible example in every region, including neither.
-      const candidates = critters.map((c, i) => ({ i, place: placeOf(c, rules) }))
+      const candidates = critters
+        .map((c, i) => ({ i, place: placeOf(c, rules) }))
         .filter(({ place }) => critters.filter((c) => placeOf(c, rules) === place).length > 1);
       return { rules, critters, newcomer: rng.pick(candidates).i };
     }
@@ -181,21 +288,31 @@ export function makeRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
 }
 
 /** Where a worked example's critters start: one in each hoop, but only the middle when the hoops overlap. */
-export const examplePlaces = (mode: SortMode): Place[] => (mode === 'two' ? ['left', 'right'] : mode === 'venn' ? ['both'] : mode === 'guess' ? [] : ['left']);
+export const examplePlaces = (mode: SortMode): Place[] =>
+  mode === 'two' ? ['left', 'right'] : mode === 'venn' ? ['both'] : mode === 'guess' ? [] : ['left'];
 
 /** The critters that start already sorted in a worked-example round: the first one belonging in each example place. */
 export function exampleIndices(plan: SortPlan, round: SortRound): number[] {
   if (!plan.example) return [];
   const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
-  return examplePlaces(plan.mode).map((place) => round.critters.findIndex((c) => placeOf(c, round.rules, not) === place));
+  return examplePlaces(plan.mode).map((place) =>
+    round.critters.findIndex((c) => placeOf(c, round.rules, not) === place),
+  );
 }
 
 /** The younger one-hoop entries keep their free leave-it-out choice. */
-export const hasNeitherMat = (mode: SortMode): boolean => mode === 'two' || mode === 'venn' || mode === 'not' || mode === 'resort' || mode === 'butnot';
+export const hasNeitherMat = (mode: SortMode): boolean =>
+  mode === 'two' || mode === 'venn' || mode === 'not' || mode === 'resort' || mode === 'butnot';
 
 /** The critter the hint points at: the one she just missed, including the mat when it is in play. */
-export function hintFor<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], missed: S, rules: readonly Rule[], not: boolean | 'butnot' = false, mat = false): S | null {
-  if (mat) return missed.placed ? sorters.find((s) => !s.placed) ?? null : missed;
+export function hintFor<S extends { c: SortCritter; placed: Place | null }>(
+  sorters: readonly S[],
+  missed: S,
+  rules: readonly Rule[],
+  not: boolean | 'butnot' = false,
+  mat = false,
+): S | null {
+  if (mat) return missed.placed ? (sorters.find((s) => !s.placed) ?? null) : missed;
   if (placeOf(missed.c, [...rules], not) !== 'out') return missed;
   return sorters.find((x) => !x.placed && placeOf(x.c, [...rules], not) !== 'out') ?? null;
 }
@@ -213,7 +330,10 @@ export function hoopCenters(mode: SortMode, hoops: number, v: { w: number; h: nu
   const y = v.h * 0.42;
   if (hoops === 1) return [{ x: v.w / 2, y }];
   const gap = mode === 'venn' ? 210 : 360;
-  return [{ x: v.w / 2 - gap / 2, y }, { x: v.w / 2 + gap / 2, y }];
+  return [
+    { x: v.w / 2 - gap / 2, y },
+    { x: v.w / 2 + gap / 2, y },
+  ];
 }
 
 /**
@@ -259,7 +379,12 @@ export function spotFor(centers: readonly Point[], mode: SortMode, place: Place,
  * What a capable child does next: carry the first critter still on the grass that belongs in a hoop to the middle of
  * its part of the diagram, including the leaf mat where present. The ghost finger follows this.
  */
-export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(sorters: readonly S[], rules: readonly Rule[], not: boolean | 'butnot' = false, mat = false): { who: S; place: Place } | undefined {
+export function nextToSort<S extends { c: SortCritter; placed: Place | null }>(
+  sorters: readonly S[],
+  rules: readonly Rule[],
+  not: boolean | 'butnot' = false,
+  mat = false,
+): { who: S; place: Place } | undefined {
   for (const who of sorters) {
     const place = placeOf(who.c, [...rules], not);
     if (!who.placed && (mat || place !== 'out')) return { who, place };
@@ -272,7 +397,7 @@ export const ruleToTap = (round: SortRound): Rule => round.rules[0];
 
 /** Disjoint parts of How many?: the outside mat counts too. */
 export const COUNT_PARTS = ['left', 'right', 'out'] as const;
-export type CountPart = typeof COUNT_PARTS[number];
+export type CountPart = (typeof COUNT_PARTS)[number];
 export function countParts(critters: readonly SortCritter[], rules: Rule[]): Record<CountPart, number> {
   const counts = { left: 0, right: 0, out: 0 };
   for (const c of critters) {
@@ -293,6 +418,7 @@ export function countSpot(centers: readonly Point[], place: CountPart, k: number
     return { x: mat.x + (k - (total - 1) / 2) * 112, y: mat.y + 50 };
   }
   const c = centers[place === 'left' ? 0 : 1];
-  return total === 3 && k === 2 ? { x: c.x, y: c.y - 50 } :
-    { x: c.x + (k - (Math.min(total, 2) - 1) / 2) * 112, y: c.y + 70 };
+  return total === 3 && k === 2
+    ? { x: c.x, y: c.y - 50 }
+    : { x: c.x + (k - (Math.min(total, 2) - 1) / 2) * 112, y: c.y + 70 };
 }

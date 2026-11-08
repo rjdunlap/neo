@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { chosenFor, insertRows, manifestRow, nextCandidate, parseName, plan, setChosen, sizeProblem } from './inbox-core.mjs';
+import {
+  chosenFor,
+  insertRows,
+  manifestRow,
+  nextCandidate,
+  parseName,
+  plan,
+  setChosen,
+  sizeProblem,
+} from './inbox-core.mjs';
 
 const MANIFEST = [
   '# Generated creature art',
@@ -12,28 +21,54 @@ const MANIFEST = [
   '## Notes',
 ].join('\n');
 
-const opts = { existing: ['sprout-base-1.png', 'sprout-base-2.png', 'land-meadow-1.png'], manifest: MANIFEST, date: '2026-10-23', tool: 'ChatGPT' };
+const opts = {
+  existing: ['sprout-base-1.png', 'sprout-base-2.png', 'land-meadow-1.png'],
+  manifest: MANIFEST,
+  date: '2026-10-23',
+  tool: 'ChatGPT',
+};
 
 describe('parseName', () => {
   it('routes a backdrop to its land and request', () => {
-    expect(parseName('land-meadow.png')).toMatchObject({ stem: 'land-meadow', kind: 'backdrop', landId: 'rainbow-meadow', request: 'R23' });
+    expect(parseName('land-meadow.png')).toMatchObject({
+      stem: 'land-meadow',
+      kind: 'backdrop',
+      landId: 'rainbow-meadow',
+      request: 'R23',
+    });
     expect(parseName('land-canyon-2.png')).toMatchObject({ landId: 'treehouse', request: 'R26' });
     expect(parseName('land-grove-b.png')).toMatchObject({ stem: 'land-grove' });
     expect(parseName('land-cove (1).png')).toMatchObject({ stem: 'land-cove' });
   });
   it('routes species and friends to their prepared folders', () => {
-    expect(parseName('tote-happy-1.png')).toMatchObject({ kind: 'creature', group: 'tote', outDir: 'src/art/creatures/cast' });
-    expect(parseName('river-nohead.png')).toMatchObject({ kind: 'creature', outDir: 'src/art/creatures/illustrated' });
+    expect(parseName('tote-happy-1.png')).toMatchObject({
+      kind: 'creature',
+      group: 'tote',
+      outDir: 'src/art/creatures/cast',
+    });
+    expect(parseName('river-nohead.png')).toMatchObject({
+      kind: 'creature',
+      outDir: 'src/art/creatures/illustrated',
+    });
     expect(parseName('duck-base.png')).toMatchObject({ kind: 'friend', group: 'duck', request: 'R22' });
     expect(parseName('Duck-Portrait-a.png')).toMatchObject({ stem: 'duck-portrait' });
   });
   it('refuses names the queue does not list', () => {
-    for (const f of ['ChatGPT Image Oct 23, 2026.png', 'land-moon.png', 'duck-happy.png', 'sprout-base.jpg', 'button-play.png']) expect(parseName(f), f).toBeNull();
+    for (const f of [
+      'ChatGPT Image Oct 23, 2026.png',
+      'land-moon.png',
+      'duck-happy.png',
+      'sprout-base.jpg',
+      'button-play.png',
+    ])
+      expect(parseName(f), f).toBeNull();
   });
 });
 
 describe('sizeProblem', () => {
-  const bg = parseName('land-meadow.png'), base = parseName('duck-base.png'), portrait = parseName('duck-portrait.png');
+  const bg = parseName('land-meadow.png'),
+    base = parseName('duck-base.png'),
+    portrait = parseName('duck-portrait.png');
   it('keeps the art bible minimums', () => {
     expect(sizeProblem(bg, { w: 1536, h: 1024 })).toBeNull();
     expect(sizeProblem(bg, { w: 1024, h: 1024 })).toMatch(/1536/);
@@ -52,7 +87,16 @@ describe('candidates and the manifest', () => {
     expect(nextCandidate(['land-meadow-9.png', 'land-meadow-10.png'], 'land-meadow')).toBe(11);
   });
   it('inserts rows at the end of the first table only', () => {
-    const out = insertRows(MANIFEST, [manifestRow({ file: 'duck-base-1.png', request: 'R22', date: 'd', tool: 't', prompt: 'p', chosen: true })]);
+    const out = insertRows(MANIFEST, [
+      manifestRow({
+        file: 'duck-base-1.png',
+        request: 'R22',
+        date: 'd',
+        tool: 't',
+        prompt: 'p',
+        chosen: true,
+      }),
+    ]);
     const lines = out.split('\n');
     expect(lines[6]).toBe('| duck-base-1.png | R22 | d | t | p | yes |');
     expect(lines[7]).toBe('');

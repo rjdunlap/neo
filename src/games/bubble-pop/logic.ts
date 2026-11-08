@@ -19,7 +19,15 @@ export const staysPut = (mode: BubbleMode) => mode === 'count' || mode === 'bond
  * or reordering it would change the picture on every sticker she already owns: a test pins it. New pictures in
  * bubbles belong in their own pool.
  */
-export const FRIENDS = ['duck', 'pig', 'cat', 'bunny', 'cow', 'bear', 'dog'] as const satisfies readonly CritterName[];
+export const FRIENDS = [
+  'duck',
+  'pig',
+  'cat',
+  'bunny',
+  'cow',
+  'bear',
+  'dog',
+] as const satisfies readonly CritterName[];
 export type Friend = (typeof FRIENDS)[number];
 
 /** The voice each friend has when it is let out of its bubble. */
@@ -118,13 +126,15 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 export const TAP_REACH = 1.2;
 
 /** Color mode: the colors in play, the one to pop first. */
-export const choosePalette = (rng: Rng, colors: number): ColorName[] => rng.shuffle([...RAINBOW]).slice(0, colors);
+export const choosePalette = (rng: Rng, colors: number): ColorName[] =>
+  rng.shuffle([...RAINBOW]).slice(0, colors);
 
 /**
  * Color mode: should the next bubble be the color to pop? The first two always are (an errorless start),
  * and so is any bubble that arrives while none of that color is showing, so there is always one to pop.
  */
-export const spawnTarget = (spawned: number, targetShowing: boolean, rng: Rng) => spawned < 2 || !targetShowing || rng.chance(0.55);
+export const spawnTarget = (spawned: number, targetShowing: boolean, rng: Rng) =>
+  spawned < 2 || !targetShowing || rng.chance(0.55);
 
 export interface BubbleFace {
   color: ColorName | null;
@@ -147,9 +157,17 @@ export interface Reachable extends BubbleFace {
  * Bubbles overlap as they drift. When a finger lands on a wrong bubble that also covers a right one,
  * the right one is what she meant: pick it instead of counting a miss.
  */
-export function meant<T extends Reachable>(tapped: T, all: readonly T[], at: { x: number; y: number }, right: (b: T) => boolean): T {
+export function meant<T extends Reachable>(
+  tapped: T,
+  all: readonly T[],
+  at: { x: number; y: number },
+  right: (b: T) => boolean,
+): T {
   if (right(tapped)) return tapped;
-  return all.find((b) => b !== tapped && right(b) && Math.hypot(b.x - at.x, b.y - at.y) <= b.r * TAP_REACH) ?? tapped;
+  return (
+    all.find((b) => b !== tapped && right(b) && Math.hypot(b.x - at.x, b.y - at.y) <= b.r * TAP_REACH) ??
+    tapped
+  );
 }
 
 export interface DemoBubble extends Reachable {
@@ -157,7 +175,8 @@ export interface DemoBubble extends Reachable {
 }
 
 /** Whether a bubble's middle is comfortably on the screen (half its radius in), so a finger can reach it. A bubble rising in from below counts as soon as it shows. */
-export const inReach = (b: Reachable, w: number, h: number) => b.x >= b.r / 2 && b.x <= w - b.r / 2 && b.y >= b.r / 2 && b.y <= h - b.r / 2;
+export const inReach = (b: Reachable, w: number, h: number) =>
+  b.x >= b.r / 2 && b.x <= w - b.r / 2 && b.y >= b.r / 2 && b.y <= h - b.r / 2;
 
 /**
  * The bubble a capable player taps next, for the how-to card's ghost finger: anything in free play, one of the
@@ -176,7 +195,10 @@ export function bubbleToPop<T extends DemoBubble>(
   const live = shown.filter((b) => !b.rainbow);
   const highest = (list: readonly T[]) => {
     const settled = list.filter((b) => b.y >= b.r + 30);
-    return (settled.length ? settled : list).reduce<T | null>((best, b) => (!best || b.y < best.y ? b : best), null);
+    return (settled.length ? settled : list).reduce<T | null>(
+      (best, b) => (!best || b.y < best.y ? b : best),
+      null,
+    );
   };
   if (mode === 'free') return highest(live);
   if (mode === 'color') return highest(live.filter((b) => isRight(mode, b, target, next)));
@@ -189,8 +211,15 @@ export function bubbleToPop<T extends DemoBubble>(
  * Pop anywhere: the bubble a touch at `at` pops, the nearest middle of those showing, however far; null when none is showing
  * (the touch then does nothing). Nothing here is a miss.
  */
-export function nearestShown<T extends Reachable>(shown: readonly T[], at: { x: number; y: number }): T | null {
-  return shown.reduce<T | null>((best, b) => (!best || Math.hypot(b.x - at.x, b.y - at.y) < Math.hypot(best.x - at.x, best.y - at.y) ? b : best), null);
+export function nearestShown<T extends Reachable>(
+  shown: readonly T[],
+  at: { x: number; y: number },
+): T | null {
+  return shown.reduce<T | null>(
+    (best, b) =>
+      !best || Math.hypot(b.x - at.x, b.y - at.y) < Math.hypot(best.x - at.x, best.y - at.y) ? b : best,
+    null,
+  );
 }
 
 /** Quantity support fades once the numerals or bonds to ten are being practised. */
@@ -201,17 +230,43 @@ export function numberDots(n: number): { x: number; y: number }[] {
   if (!Number.isInteger(n) || n < 1 || n > 10) return [];
   const dice = [
     [[0, 0.59]],
-    [[-0.24, 0.44], [0.24, 0.74]],
-    [[-0.24, 0.44], [0, 0.59], [0.24, 0.74]],
-    [[-0.24, 0.44], [0.24, 0.44], [-0.24, 0.74], [0.24, 0.74]],
-    [[-0.24, 0.44], [0.24, 0.44], [0, 0.59], [-0.24, 0.74], [0.24, 0.74]],
-    [[-0.24, 0.44], [0.24, 0.44], [-0.24, 0.59], [0.24, 0.59], [-0.24, 0.74], [0.24, 0.74]],
+    [
+      [-0.24, 0.44],
+      [0.24, 0.74],
+    ],
+    [
+      [-0.24, 0.44],
+      [0, 0.59],
+      [0.24, 0.74],
+    ],
+    [
+      [-0.24, 0.44],
+      [0.24, 0.44],
+      [-0.24, 0.74],
+      [0.24, 0.74],
+    ],
+    [
+      [-0.24, 0.44],
+      [0.24, 0.44],
+      [0, 0.59],
+      [-0.24, 0.74],
+      [0.24, 0.74],
+    ],
+    [
+      [-0.24, 0.44],
+      [0.24, 0.44],
+      [-0.24, 0.59],
+      [0.24, 0.59],
+      [-0.24, 0.74],
+      [0.24, 0.74],
+    ],
   ];
-  return n <= 6 ? dice[n - 1].map(([x, y]) => ({ x, y }))
-    : Array.from({ length: n }, (_, i) => ({ x: (i % 5 - 2) * 0.2, y: i < 5 ? 0.49 : 0.72 }));
+  return n <= 6
+    ? dice[n - 1].map(([x, y]) => ({ x, y }))
+    : Array.from({ length: n }, (_, i) => ({ x: ((i % 5) - 2) * 0.2, y: i < 5 ? 0.49 : 0.72 }));
 }
 export const DOT_RADIUS = 0.06;
-export const DOT_NUMERAL_Y = -0.30;
+export const DOT_NUMERAL_Y = -0.3;
 
 export type SignKind = 'bond' | 'start' | 'back' | 'by';
 
@@ -260,15 +315,32 @@ export const MODE_CARDS: Record<number, BubbleModeCard> = {
   4: { name: 'Two colors', line: 'bubble.mode.4', picture: { kind: 'colors', colors: 2 } },
   5: { name: 'Three colors', line: 'bubble.mode.5', picture: { kind: 'colors', colors: 3 } },
   6: { name: 'Five colors', line: 'bubble.mode.6', picture: { kind: 'colors', colors: 5 } },
-  7: { name: 'Count to 5', line: 'bubble.mode.7', picture: { kind: 'count', numbers: [1, 2, 3], dots: true } },
-  8: { name: 'Count to 7', line: 'bubble.mode.8', picture: { kind: 'count', numbers: [1, 2, 3], upTo: 7, dots: true } },
+  7: {
+    name: 'Count to 5',
+    line: 'bubble.mode.7',
+    picture: { kind: 'count', numbers: [1, 2, 3], dots: true },
+  },
+  8: {
+    name: 'Count to 7',
+    line: 'bubble.mode.8',
+    picture: { kind: 'count', numbers: [1, 2, 3], upTo: 7, dots: true },
+  },
   9: { name: 'Count to 10', line: 'bubble.mode.9', picture: { kind: 'count', numbers: [1, 2, 3], upTo: 10 } },
   10: { name: 'Make 5', line: 'bubble.mode.10', picture: { kind: 'bond', numbers: [2, 3], sum: 5 } },
   11: { name: 'Make 10', line: 'bubble.mode.11', picture: { kind: 'bond', numbers: [4, 6], sum: 10 } },
-  12: { name: 'Start at a number', line: 'bubble.mode.12', picture: { kind: 'sign', sign: 4, numbers: [4, 5, 6], arrow: 1 } },
-  13: { name: 'Count back', line: 'bubble.mode.13', picture: { kind: 'sign', sign: 5, numbers: [5, 4, 3], arrow: -1 } },
+  12: {
+    name: 'Start at a number',
+    line: 'bubble.mode.12',
+    picture: { kind: 'sign', sign: 4, numbers: [4, 5, 6], arrow: 1 },
+  },
+  13: {
+    name: 'Count back',
+    line: 'bubble.mode.13',
+    picture: { kind: 'sign', sign: 5, numbers: [5, 4, 3], arrow: -1 },
+  },
   14: { name: 'Tens and fives', line: 'bubble.mode.14', picture: { kind: 'count', numbers: [10, 20, 30] } },
 };
 
 /** The card for a level, clamped like `planFor`. */
-export const modeCardFor = (level: number): BubbleModeCard => MODE_CARDS[Math.min(PLANS.length, Math.max(1, level))];
+export const modeCardFor = (level: number): BubbleModeCard =>
+  MODE_CARDS[Math.min(PLANS.length, Math.max(1, level))];

@@ -41,9 +41,11 @@ const TILE_FILL = 0xe3f3ff;
 const STOP = 100;
 const STOP_GAP = 12;
 /** Back's x when the stop row sits inline, left of Back and Play in the button row. */
-const inlineBackX = (width: number, count: number) => Math.max(width / 2 - 94, 32 + count * STOP + (count - 1) * STOP_GAP + 24 + 52);
+const inlineBackX = (width: number, count: number) =>
+  Math.max(width / 2 - 94, 32 + count * STOP + (count - 1) * STOP_GAP + 24 + 52);
 /** The inline row is taken only when Play still clears Skip by 24: at five stops it does not, so the stops keep their own row. */
-export const inlineFits = (width: number, count: number, play: number) => inlineBackX(width, count) + 156 + play + 24 <= width - 32 - SKIP;
+export const inlineFits = (width: number, count: number, play: number) =>
+  inlineBackX(width, count) + 156 + play + 24 <= width - 32 - SKIP;
 const SKIP = 112;
 const STOP_ROW = 18 + SKIP;
 
@@ -62,7 +64,12 @@ export interface HowToIntro {
    * new set of 100-unit tiles, centred on their middles, each time the card is laid out; `shown` leaves the row off for a key or
    * pad (the mix's controls are touch-only), and the scene lays the card out again when that changes.
    */
-  stops?: { count: number; tiles: () => Array<Container & { update?(dt: number): void }>; skip: () => void; shown: () => boolean };
+  stops?: {
+    count: number;
+    tiles: () => Array<Container & { update?(dt: number): void }>;
+    skip: () => void;
+    shown: () => boolean;
+  };
   /** A bot playing a real round in a window on the card, for a game that has one. The card runs, places and destroys it. */
   demo?: Demo;
   /**
@@ -184,25 +191,54 @@ export class HowToPanel extends Container {
       }
     }
     this.body.addChild(built.card);
-    if (built.window) this.demo!.layout(built.card.x + built.window.x, built.card.y + built.window.y, built.window.w);
+    if (built.window)
+      this.demo!.layout(built.card.x + built.window.x, built.card.y + built.window.y, built.window.w);
   }
 
-  private build(view: View, scale: number, withLadder: boolean, inline: boolean): { card: Container; window: { x: number; y: number; w: number } | null; ladder: boolean; canInline: boolean } {
+  private build(
+    view: View,
+    scale: number,
+    withLadder: boolean,
+    inline: boolean,
+  ): {
+    card: Container;
+    window: { x: number; y: number; w: number } | null;
+    ladder: boolean;
+    canInline: boolean;
+  } {
     const demo = this.demo;
     this.holds = [];
     this.stopTiles = [];
     this.skipButton = null;
     const stops = this.intro?.stops?.shown() ? this.intro.stops : null;
-    const range = this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min ? this.intro.pick.range : null;
+    const range =
+      this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min
+        ? this.intro.pick.range
+        : null;
     // Beside the text when the screen is wider than tall; above it when it is tall. The window shrinks a little with the text.
     const wide = !!demo && view.w >= view.h * 1.1;
     const width = Math.min(view.w - 60, wide ? 1000 : 760);
-    const dw = !demo ? 0 : wide ? Math.round(DEMO_WIDE * Math.max(scale, DEMO_MIN_SCALE)) : Math.min(width - 64, DEMO_TALL);
+    const dw = !demo
+      ? 0
+      : wide
+        ? Math.round(DEMO_WIDE * Math.max(scale, DEMO_MIN_SCALE))
+        : Math.min(width - 64, DEMO_TALL);
     const dh = Math.round(dw * 0.75);
     const noteH = demo ? 40 : 0;
     const inner = wide ? width - 64 - dw - 28 : width - 64;
     const text = (value: string, size: number, fill: number, weight: '500' | '600' = '500', wrap = inner) =>
-      new Text({ text: value, style: { fontFamily: FONT, fontSize: size, fill, fontWeight: weight, wordWrap: true, wordWrapWidth: wrap, lineHeight: size * 1.25 } });
+      new Text({
+        text: value,
+        style: {
+          fontFamily: FONT,
+          fontSize: size,
+          fill,
+          fontWeight: weight,
+          wordWrap: true,
+          wordWrapWidth: wrap,
+          lineHeight: size * 1.25,
+        },
+      });
     const BODY = Math.round(22 * scale);
 
     const rows: Container[] = [];
@@ -220,7 +256,16 @@ export class HowToPanel extends Container {
     }
     const mode = this.info.mode;
     // A named level keeps its number small after the name: the grown-ups' page and pins still speak in numbers.
-    rows.push(text(mode ? `THIS LEVEL  ·  ${mode.name.toUpperCase()}  ·  level ${this.info.levelNumber}` : `THIS LEVEL  ·  ${this.info.levelNumber}`, 13, MUTED, '600'));
+    rows.push(
+      text(
+        mode
+          ? `THIS LEVEL  ·  ${mode.name.toUpperCase()}  ·  level ${this.info.levelNumber}`
+          : `THIS LEVEL  ·  ${this.info.levelNumber}`,
+        13,
+        MUTED,
+        '600',
+      ),
+    );
     // With arrows the pair sits to the left of the description (or of the level's picture), and is the tallest part of the row.
     const side = range ? STEP_RADIUS * 4 + STEP_GAP + 22 : 0;
     // With a picture, the arrows and the picture make a row of their own, and the description runs the full width under it.
@@ -235,7 +280,8 @@ export class HowToPanel extends Container {
     // Beside a demonstration the ladder goes under its window, where the narrow text column leaves room, packed closer since the
     // window narrows with the text; otherwise it follows the description.
     const underWindow = wide && !!demo;
-    const ladder = withLadder && mode ? this.ladder(underWindow ? dw : inner, underWindow ? 4 : LADDER_GAP) : null;
+    const ladder =
+      withLadder && mode ? this.ladder(underWindow ? dw : inner, underWindow ? 4 : LADDER_GAP) : null;
     const ladderLabel = ladder ? text('LEVELS, EASIEST FIRST', 13, MUTED, '600') : null;
     if (ladder && !underWindow) {
       rows.push(ladderLabel!);
@@ -286,7 +332,18 @@ export class HowToPanel extends Container {
     if (slot) {
       // A frame for the window, and a line saying what it shows; the demo itself is drawn over it.
       const frame = new Graphics().roundRect(slot.x - 5, slot.y - 5, dw + 10, dh + 10, 22).fill(0xeadfcd);
-      const note = new Text({ text: { finger: NOTE_FINGER, mouse: NOTE_MOUSE, none: NOTE_CONTROLLER }[demo!.pointer ?? 'none'], style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '500', wordWrap: true, wordWrapWidth: dw, lineHeight: 16 } });
+      const note = new Text({
+        text: { finger: NOTE_FINGER, mouse: NOTE_MOUSE, none: NOTE_CONTROLLER }[demo!.pointer ?? 'none'],
+        style: {
+          fontFamily: FONT,
+          fontSize: 13,
+          fill: MUTED,
+          fontWeight: '500',
+          wordWrap: true,
+          wordWrapWidth: dw,
+          lineHeight: 16,
+        },
+      });
       note.position.set(slot.x, slot.y + dh + 12);
       card.addChild(frame, note);
       if (ladder && underWindow) {
@@ -302,7 +359,12 @@ export class HowToPanel extends Container {
     if (range) card.addChild(...this.arrows(range, 32 + STEP_RADIUS, stepY));
     if (this.intro) {
       const go = new RoundButton(playIcon(), swatch.green, play, this.intro.play);
-      const back = new RoundButton(this.intro.backIcon?.() ?? houseIcon(0xffffff), swatch.blue, 52, this.intro.back);
+      const back = new RoundButton(
+        this.intro.backIcon?.() ?? houseIcon(0xffffff),
+        swatch.blue,
+        52,
+        this.intro.back,
+      );
       back.meaning = this.intro.backIcon ? 'back' : null;
       this.backButton = back;
       const backX = inRow ? inlineBackX(width, stops!.count) : width / 2 - 94;
@@ -329,13 +391,23 @@ export class HowToPanel extends Container {
     card.position.set((view.w - width) / 2, Math.max(12, (view.h - cardH) / 2));
     // A tap on the card itself must not fall through to the veil and close it.
     card.eventMode = 'static';
-    return { card, window: slot, ladder: !!ladder, canInline: !!stops && wide && inlineFits(width, stops.count, play) };
+    return {
+      card,
+      window: slot,
+      ladder: !!ladder,
+      canInline: !!stops && wide && inlineFits(width, stops.count, play),
+    };
   }
 
   /** The level's picture on a pale tile, beside the arrows: a tap says what the level asks, and does nothing else. */
   private tile(mode: NonNullable<HowToCard['mode']>, side: number): Container {
     const tile = new Container();
-    tile.addChild(new Graphics().roundRect(0, 0, TILE, TILE, 22).fill(TILE_FILL).stroke({ width: 3, color: swatch.blue.line, alpha: 0.35 }));
+    tile.addChild(
+      new Graphics()
+        .roundRect(0, 0, TILE, TILE, 22)
+        .fill(TILE_FILL)
+        .stroke({ width: 3, color: swatch.blue.line, alpha: 0.35 }),
+    );
     const picture = mode.picture();
     picture.eventMode = 'none';
     picture.position.set(TILE / 2, TILE / 2);
@@ -369,10 +441,25 @@ export class HowToPanel extends Container {
       picture.position.set(size / 2, size / 2);
       cell.addChild(picture);
       // The level on the card: a heavy outline, told apart from the dot and the pin by its shape.
-      if (here) cell.addChild(new Graphics().roundRect(-3, -3, size + 6, size + 6, 16).stroke({ width: 5, color: ink }));
-      if (level === pick.suggested) cell.addChild(new Graphics().circle(size - 4, 4, 8).fill(swatch.green.fill).stroke({ width: 3, color: 0xffffff }));
+      if (here)
+        cell.addChild(
+          new Graphics().roundRect(-3, -3, size + 6, size + 6, 16).stroke({ width: 5, color: ink }),
+        );
+      if (level === pick.suggested)
+        cell.addChild(
+          new Graphics()
+            .circle(size - 4, 4, 8)
+            .fill(swatch.green.fill)
+            .stroke({ width: 3, color: 0xffffff }),
+        );
       if (level === pick.pinned) {
-        const pin = new Graphics().moveTo(6, 6).lineTo(12, 18).stroke({ width: 3, color: ink, cap: 'round' }).circle(5, 4, 7).fill(swatch.red.fill).stroke({ width: 2, color: 0xffffff });
+        const pin = new Graphics()
+          .moveTo(6, 6)
+          .lineTo(12, 18)
+          .stroke({ width: 3, color: ink, cap: 'round' })
+          .circle(5, 4, 7)
+          .fill(swatch.red.fill)
+          .stroke({ width: 2, color: 0xffffff });
         cell.addChild(pin);
       }
       row.addChild(cell);
@@ -384,7 +471,14 @@ export class HowToPanel extends Container {
   private arrows(range: LevelRange, x: number, y: number): HoldButton[] {
     const make = (dir: 1 | -1, at: number) => {
       const atEnd = stepLevel(this.info.levelNumber, dir, range) === this.info.levelNumber;
-      const button = new HoldButton(arrowIcon(dir), swatch.white, STEP_RADIUS, STEP_HOLD, () => (this.pending = dir), swatch.blue.fill);
+      const button = new HoldButton(
+        arrowIcon(dir),
+        swatch.white,
+        STEP_RADIUS,
+        STEP_HOLD,
+        () => (this.pending = dir),
+        swatch.blue.fill,
+      );
       button.position.set(at, y);
       if (atEnd) {
         button.alpha = 0.3;
@@ -401,19 +495,45 @@ export class HowToPanel extends Container {
     const box = icon.getLocalBounds();
     const fit = ICON_BOX / Math.max(box.width, box.height, 1);
     icon.scale.set(fit);
-    icon.position.set(32 + ICON_BOX / 2 - (box.x + box.width / 2) * fit, 20 + ICON_BOX / 2 - (box.y + box.height / 2) * fit);
+    icon.position.set(
+      32 + ICON_BOX / 2 - (box.x + box.width / 2) * fit,
+      20 + ICON_BOX / 2 - (box.y + box.height / 2) * fit,
+    );
     const hear = this.intro!.hear;
     const nodes: Container[] = [icon];
     if (hear) {
       // The picture's box takes the tap, so a small or oddly shaped icon is still a 100-unit target.
       const spot = new Container();
       spot.hitArea = new Rectangle(32, 20, ICON_BOX, ICON_BOX);
-      onTap(spot, () => { icon.scale.set(fit * 1.06); window.setTimeout(() => { if (!icon.destroyed) icon.scale.set(fit); }, 160); hear(); }, { cooldown: 400 });
+      onTap(
+        spot,
+        () => {
+          icon.scale.set(fit * 1.06);
+          window.setTimeout(() => {
+            if (!icon.destroyed) icon.scale.set(fit);
+          }, 160);
+          hear();
+        },
+        { cooldown: 400 },
+      );
       nodes.push(spot);
       this.titleSpot = spot;
     }
-    const label = new Text({ text: 'HOW TO PLAY', style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '600' } });
-    const title = new Text({ text: this.info.title, style: { fontFamily: FONT, fontSize: Math.round(34 * scale), fill: ink, fontWeight: '600', wordWrap: true, wordWrapWidth: width - 32 - ICON_BOX - 16 - 16 } });
+    const label = new Text({
+      text: 'HOW TO PLAY',
+      style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '600' },
+    });
+    const title = new Text({
+      text: this.info.title,
+      style: {
+        fontFamily: FONT,
+        fontSize: Math.round(34 * scale),
+        fill: ink,
+        fontWeight: '600',
+        wordWrap: true,
+        wordWrapWidth: width - 32 - ICON_BOX - 16 - 16,
+      },
+    });
     const x = 32 + ICON_BOX + 20;
     label.position.set(x, 20 + ICON_BOX / 2 - title.height / 2 - 20);
     title.position.set(x, 20 + ICON_BOX / 2 - title.height / 2);

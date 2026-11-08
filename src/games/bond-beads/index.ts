@@ -18,8 +18,32 @@ import type { LineId } from '../../content/voice-script';
 import { beadBody, beadTrio, cardArt, drawHands, drawLinks, LINK_COLOR, shapePicture, tableArt } from './art';
 import {
   LEVELS,
-  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linkCount, linkState, namesOf, nextMove, planFor, roundFor, shapeKey, tally,
-  type BeadLayout, type Help, type Kind, type Link, type Plan, type Pt, type Shape, type Step,
+  allHeld,
+  BEAD_R,
+  beadAt,
+  beadLayout,
+  Bench,
+  canLink,
+  centre,
+  CheckTally,
+  helpFor,
+  linkAt,
+  linkCount,
+  linkState,
+  namesOf,
+  nextMove,
+  planFor,
+  roundFor,
+  shapeKey,
+  tally,
+  type BeadLayout,
+  type Help,
+  type Kind,
+  type Link,
+  type Plan,
+  type Pt,
+  type Shape,
+  type Step,
 } from './logic';
 
 /** The shapes a step's card pictures: one (level 2), the pieces to build (levels 3 and 7), or the two ways (level 4). */
@@ -74,7 +98,17 @@ class BondBeads implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.steps = roundFor(this.plan.level, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8], horizon: 0.5, clouds: 2, sun: true, seed: 173 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xc8f0ec, 0xfff6e0],
+        hills: [0xa9e0d6, 0xc5e7a8],
+        horizon: 0.5,
+        clouds: 2,
+        sun: true,
+        seed: 173,
+      },
+      ctx.view,
+    );
     for (const n of [this.linkGfx, this.pull, this.glow]) n.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
   }
@@ -86,13 +120,20 @@ class BondBeads implements Game {
 
   private instruction(): LineId {
     switch (this.plan.level) {
-      case 2: return 'bondbeads.instruct.copy';
-      case 3: return 'bondbeads.instruct.rebuild';
-      case 4: return 'bondbeads.instruct.twoways';
-      case 5: return 'bondbeads.named.instruct.name';
-      case 6: return 'bondbeads.named.instruct.double';
-      case 7: return 'bondbeads.named.instruct.rearrange';
-      default: return 'bondbeads.instruct.hold';
+      case 2:
+        return 'bondbeads.instruct.copy';
+      case 3:
+        return 'bondbeads.instruct.rebuild';
+      case 4:
+        return 'bondbeads.instruct.twoways';
+      case 5:
+        return 'bondbeads.named.instruct.name';
+      case 6:
+        return 'bondbeads.named.instruct.double';
+      case 7:
+        return 'bondbeads.named.instruct.rearrange';
+      default:
+        return 'bondbeads.instruct.hold';
     }
   }
 
@@ -130,7 +171,10 @@ class BondBeads implements Game {
     this.backdrop.resize(v);
     // The shell can resize before start() opens the first tray.
     if (!this.bench) return;
-    if (this.busy || this.finished || this.drags.some((d) => d.dragging)) { this.relayout = true; return; }
+    if (this.busy || this.finished || this.drags.some((d) => d.dragging)) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -172,7 +216,9 @@ class BondBeads implements Game {
     // Taps between the beads break the nearest link; the beads, drawn above, take their own touches.
     const layer = new Container();
     layer.hitArea = new Rectangle(l.table.x, l.table.y, l.table.w, l.table.h);
-    onTap(layer, (e: FederatedPointerEvent) => this.tapLinks(this.board.toLocal(e.global)), { cooldown: 150 });
+    onTap(layer, (e: FederatedPointerEvent) => this.tapLinks(this.board.toLocal(e.global)), {
+      cooldown: 150,
+    });
     layer.addChild(this.linkGfx, this.pull);
     this.board.addChild(layer);
     this.linkLayer = layer;
@@ -224,13 +270,22 @@ class BondBeads implements Game {
     });
     const gap = 24;
     const stacked = pics.length > 1 && h > w * 0.9;
-    const totalW = stacked ? Math.max(...pics.map((p) => p.w)) : pics.reduce((a, p) => a + p.w, 0) + gap * (pics.length - 1);
-    const totalH = stacked ? pics.reduce((a, p) => a + p.h, 0) + gap * (pics.length - 1) : Math.max(...pics.map((p) => p.h));
+    const totalW = stacked
+      ? Math.max(...pics.map((p) => p.w))
+      : pics.reduce((a, p) => a + p.w, 0) + gap * (pics.length - 1);
+    const totalH = stacked
+      ? pics.reduce((a, p) => a + p.h, 0) + gap * (pics.length - 1)
+      : Math.max(...pics.map((p) => p.h));
     const fit = Math.min(1.6, w / Math.max(1, totalW), h / Math.max(1, totalH));
     let along = stacked ? -totalH / 2 : -totalW / 2;
     for (const p of pics) {
-      if (stacked) { p.wrap.position.set(0, along + p.h / 2); along += p.h + gap; }
-      else { p.wrap.position.set(along + p.w / 2, 0); along += p.w + gap; }
+      if (stacked) {
+        p.wrap.position.set(0, along + p.h / 2);
+        along += p.h + gap;
+      } else {
+        p.wrap.position.set(along + p.w / 2, 0);
+        along += p.w + gap;
+      }
       c.addChild(p.wrap);
     }
     c.scale.set(fit);
@@ -251,7 +306,11 @@ class BondBeads implements Game {
       this.press = { bead: i, x: e.global.x, y: e.global.y, travel: 0 };
     });
     node.on('globalpointermove', (e: FederatedPointerEvent) => {
-      if (this.press.bead === i) this.press.travel = Math.max(this.press.travel, Math.hypot(e.global.x - this.press.x, e.global.y - this.press.y) / Math.max(0.01, this.view.scale));
+      if (this.press.bead === i)
+        this.press.travel = Math.max(
+          this.press.travel,
+          Math.hypot(e.global.x - this.press.x, e.global.y - this.press.y) / Math.max(0.01, this.view.scale),
+        );
     });
     const drag = draggable(node, this.ctx.tw, {
       onPick: () => sfx.tick(),
@@ -326,7 +385,8 @@ class BondBeads implements Game {
         else held.push(a);
       }
       drawHands(this.hands[i], kind, BEAD_R, held);
-      if (this.selected === i) this.hands[i].circle(0, 0, BEAD_R + 20).stroke({ width: 7, color: swatch.yellow.fill });
+      if (this.selected === i)
+        this.hands[i].circle(0, 0, BEAD_R + 20).stroke({ width: 7, color: swatch.yellow.fill });
     });
     this.help = helpFor(this.bench);
   }
@@ -335,7 +395,10 @@ class BondBeads implements Game {
     const l = this.layoutNow;
     if (!l) return;
     this.pull.clear();
-    this.pull.moveTo(l.beads[i].x, l.beads[i].y).lineTo(at.x, at.y).stroke({ width: 10, color: LINK_COLOR, alpha: 0.6, cap: 'round' });
+    this.pull
+      .moveTo(l.beads[i].x, l.beads[i].y)
+      .lineTo(at.x, at.y)
+      .stroke({ width: 10, color: LINK_COLOR, alpha: 0.6, cap: 'round' });
   }
 
   private dropBead(i: number, at: Pt): boolean {
@@ -373,7 +436,8 @@ class BondBeads implements Game {
     this.selected = null;
     if (!canLink(this.bench.kinds, this.bench.links, a, b, this.bench.doubles)) {
       // A pair already holding all the links it can (one, or two from level 6) just wiggles; otherwise a hand is full.
-      if (linkCount(this.bench.links, a, b) < (this.bench.doubles ? 2 : 1)) void this.ctx.say('bondbeads.full');
+      if (linkCount(this.bench.links, a, b) < (this.bench.doubles ? 2 : 1))
+        void this.ctx.say('bondbeads.full');
       void this.wiggle(this.beadNodes[b]);
       return;
     }
@@ -401,7 +465,10 @@ class BondBeads implements Game {
 
   private undo() {
     if (this.busy || this.finished) return;
-    if (this.bench.undo()) { this.selected = null; this.changed(); }
+    if (this.bench.undo()) {
+      this.selected = null;
+      this.changed();
+    }
   }
 
   /** Start again (on screen and on the pause sheet): the opening beads with no links; Undo can bring the build back. */
@@ -416,7 +483,10 @@ class BondBeads implements Game {
   private changed() {
     this.redraw();
     if (this.checks) return;
-    if (this.bench.done) { void this.stepDone(); return; }
+    if (this.bench.done) {
+      void this.stepDone();
+      return;
+    }
     // Every hand that is free is on a bead that cannot reach another: show a link to break, never counted.
     const stuck = this.bench.stuck;
     if (stuck && this.help) {
@@ -431,10 +501,19 @@ class BondBeads implements Game {
   check() {
     if (this.busy || this.finished || !this.checks) return;
     const v = this.tally.check(this.bench);
-    if (v === 'match') { void this.stepDone(); return; }
-    if (v === 'assist') { void this.assist(); return; }
+    if (v === 'match') {
+      void this.stepDone();
+      return;
+    }
+    if (v === 'assist') {
+      void this.assist();
+      return;
+    }
     const h = this.help;
-    if (v === 'glow') { void this.ctx.say('bondbeads.hint'); return; }
+    if (v === 'glow') {
+      void this.ctx.say('bondbeads.hint');
+      return;
+    }
     void this.ctx.say(this.factLine(h));
     if (h) void this.pulse(h);
   }
@@ -445,7 +524,8 @@ class BondBeads implements Game {
    */
   private factLine(h: Help | null): LineId {
     if (!h) return this.first ? 'bondbeads.other' : this.instruction();
-    if (this.plan.level >= 7 && h.kind === 'break' && this.bench.state === linkState(this.bench.opening)) return 'bondbeads.named.breakfirst';
+    if (this.plan.level >= 7 && h.kind === 'break' && this.bench.state === linkState(this.bench.opening))
+      return 'bondbeads.named.breakfirst';
     if (h.kind === 'free') return 'bondbeads.free';
     if (h.kind === 'left') return 'bondbeads.left';
     if (h.kind === 'double') return 'bondbeads.named.double';
@@ -455,14 +535,17 @@ class BondBeads implements Game {
   /** Where a help points, on the board. */
   private helpAt(h: Help): Pt {
     const b = this.layoutNow!.beads;
-    if (h.kind === 'break' || h.kind === 'double') return { x: (b[h.link[0]].x + b[h.link[1]].x) / 2, y: (b[h.link[0]].y + b[h.link[1]].y) / 2 };
+    if (h.kind === 'break' || h.kind === 'double')
+      return { x: (b[h.link[0]].x + b[h.link[1]].x) / 2, y: (b[h.link[0]].y + b[h.link[1]].y) / 2 };
     return b[h.bead];
   }
 
   private async pulse(h: Help) {
     if (!this.layoutNow) return;
     const at = this.helpAt(h);
-    const ring = new Graphics().circle(0, 0, h.kind === 'break' || h.kind === 'double' ? 34 : BEAD_R + 16).stroke({ width: 8, color: swatch.yellow.fill });
+    const ring = new Graphics()
+      .circle(0, 0, h.kind === 'break' || h.kind === 'double' ? 34 : BEAD_R + 16)
+      .stroke({ width: 8, color: swatch.yellow.fill });
     ring.eventMode = 'none';
     ring.position.set(at.x, at.y);
     this.board.addChild(ring);
@@ -511,7 +594,11 @@ class BondBeads implements Game {
     const epoch = this.epoch;
     const l = this.layoutNow!;
     sfx.tada();
-    for (const b of l.beads) this.ctx.particles.burst(b.x, b.y, { colors: [swatch.yellow.fill, swatch.red.fill, 0xffffff], count: 6 });
+    for (const b of l.beads)
+      this.ctx.particles.burst(b.x, b.y, {
+        colors: [swatch.yellow.fill, swatch.red.fill, 0xffffff],
+        count: 6,
+      });
     this.ctx.pet.cheer();
     for (const n of this.beadNodes) void this.hop(n);
     const s = this.steps[this.index];
@@ -522,7 +609,12 @@ class BondBeads implements Game {
       if (!this.alive || epoch !== this.epoch) return;
       this.first = made ? made[0] : null;
       const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
-      this.bench = new Bench(s.kinds, other.length ? other : s.requests, this.bench.links, s.doubles ?? false);
+      this.bench = new Bench(
+        s.kinds,
+        other.length ? other : s.requests,
+        this.bench.links,
+        s.doubles ?? false,
+      );
       // The shape she just made is the last Check: pressing Check again before changing anything is not a miss.
       this.tally.next(this.bench.state);
       this.selected = null;
@@ -542,11 +634,18 @@ class BondBeads implements Game {
   /** What the pet says when a tray, card, puzzle or set is finished. */
   private stepLine(): LineId {
     switch (this.plan.level) {
-      case 2: case 5: case 6: return 'bondbeads.match';
-      case 7: return 'bondbeads.named.rearranged';
-      case 3: return 'bondbeads.rebuilt';
-      case 4: return 'bondbeads.twoways';
-      default: return 'bondbeads.held';
+      case 2:
+      case 5:
+      case 6:
+        return 'bondbeads.match';
+      case 7:
+        return 'bondbeads.named.rearranged';
+      case 3:
+        return 'bondbeads.rebuilt';
+      case 4:
+        return 'bondbeads.twoways';
+      default:
+        return 'bondbeads.held';
     }
   }
 
@@ -570,7 +669,9 @@ class BondBeads implements Game {
     this.glow.clear();
     if (!this.tally.glowing || !this.help || !this.layoutNow || this.busy) return;
     const at = this.helpAt(this.help);
-    const r = (this.help.kind === 'break' || this.help.kind === 'double' ? 34 : BEAD_R + 16) * (1 + 0.06 * Math.sin(this.clock * 5));
+    const r =
+      (this.help.kind === 'break' || this.help.kind === 'double' ? 34 : BEAD_R + 16) *
+      (1 + 0.06 * Math.sin(this.clock * 5));
     this.glow.circle(at.x, at.y, r).stroke({ width: 8, color: swatch.yellow.fill });
   }
 
@@ -582,7 +683,9 @@ class BondBeads implements Game {
       void this.ctx.say('bondbeads.hint');
       return;
     }
-    void this.ctx.say(this.factLine(this.help) === 'bondbeads.notcard' ? 'bondbeads.stuck' : this.factLine(this.help));
+    void this.ctx.say(
+      this.factLine(this.help) === 'bondbeads.notcard' ? 'bondbeads.stuck' : this.factLine(this.help),
+    );
     void this.pulse(this.help);
   }
 
@@ -617,7 +720,12 @@ class BeadIcon extends WigglyIcon {
 /** A seeded little shape of linked beads. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  const kinds = rng.pick<Kind[]>([['H', 'O', 'H'], ['O', 'O', 'O'], ['H', 'C', 'H'], ['O', 'C', 'O']]);
+  const kinds = rng.pick<Kind[]>([
+    ['H', 'O', 'H'],
+    ['O', 'O', 'O'],
+    ['H', 'C', 'H'],
+    ['O', 'C', 'O'],
+  ]);
   const c = beadTrio(34, kinds, rng.range(0.2, 0.5));
   return c;
 }
@@ -633,8 +741,10 @@ export const bondBeads: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
-  coplayHint: "What's the same? Look at a shape together, break it, build another and say what stayed the same.",
-  offScreen: 'Take a set of snap-together blocks, build something, take it apart and build something different. Count the blocks each time.',
+  coplayHint:
+    "What's the same? Look at a shape together, break it, build another and say what stayed the same.",
+  offScreen:
+    'Take a set of snap-together blocks, build something, take it apart and build something different. Count the blocks each time.',
   hubIcon: () => new BeadIcon(),
   touchDemo: true,
   sticker,

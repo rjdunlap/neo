@@ -21,21 +21,44 @@ export interface TreePlan {
 }
 
 export const PLANS: readonly TreePlan[] = [
-  { ops: ['plus'], target: [4, 10], tiles: 5, maxTile: 9, name: 'Make a number up to 10 by adding two fruit, two different ways' },
-  { ops: ['plus'], target: [11, 20], tiles: 5, maxTile: 19, name: 'Make a number up to 20 by adding two fruit, two different ways' },
-  { ops: ['plus', 'minus'], target: [5, 15], tiles: 6, maxTile: 20, name: 'Make a number up to 15 by adding or taking away, two different ways' },
+  {
+    ops: ['plus'],
+    target: [4, 10],
+    tiles: 5,
+    maxTile: 9,
+    name: 'Make a number up to 10 by adding two fruit, two different ways',
+  },
+  {
+    ops: ['plus'],
+    target: [11, 20],
+    tiles: 5,
+    maxTile: 19,
+    name: 'Make a number up to 20 by adding two fruit, two different ways',
+  },
+  {
+    ops: ['plus', 'minus'],
+    target: [5, 15],
+    tiles: 6,
+    maxTile: 20,
+    name: 'Make a number up to 15 by adding or taking away, two different ways',
+  },
 ];
 
 export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 
-export const planFor = (level: number): TreePlan => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
+export const planFor = (level: number): TreePlan =>
+  PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 export const choosesSign = (level: number) => planFor(level).ops.length > 1;
 
 /** Every round asks for this many different ways to make the number. */
 export const WAYS_PER_ROUND = 2;
 
 /** One way to make the number: tile indices into the tray, the first being the number you start from. */
-export interface Way { a: number; op: Op; b: number }
+export interface Way {
+  a: number;
+  op: Op;
+  b: number;
+}
 
 export const made = (a: number, op: Op, b: number) => (op === 'plus' ? a + b : a - b);
 export const opWord = (op: Op) => (op === 'plus' ? 'plus' : 'take away');
@@ -48,7 +71,8 @@ export function wayKey(a: number, op: Op, b: number): string {
 
 /** Every distinct way (by number, not by which fruit) to make `target` from the tray; the first fruit of each is the earliest in the tray. */
 export function solutions(tray: readonly number[], ops: readonly Op[], target: number): Way[] {
-  const seen = new Set<string>(), out: Way[] = [];
+  const seen = new Set<string>(),
+    out: Way[] = [];
   for (let a = 0; a < tray.length; a++) {
     for (let b = 0; b < tray.length; b++) {
       if (a === b) continue;
@@ -56,7 +80,10 @@ export function solutions(tray: readonly number[], ops: readonly Op[], target: n
         if (op === 'plus' && b < a) continue;
         if (made(tray[a], op, tray[b]) !== target) continue;
         const key = wayKey(tray[a], op, tray[b]);
-        if (!seen.has(key)) { seen.add(key); out.push({ a, op, b }); }
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push({ a, op, b });
+        }
       }
     }
   }
@@ -85,8 +112,16 @@ export function judge(av: number, op: Op, bv: number, target: number, found: rea
  * The way the hint leads to: one she has not found. Given the fruit already in the first box, it is a way that starts from that
  * fruit if one exists (a sum may be turned round so it does), so the hint follows through from where she is rather than restarting.
  */
-export function hintWay(tray: readonly number[], ops: readonly Op[], target: number, found: readonly string[], first: number | null = null): Way | null {
-  const open = solutions(tray, ops, target).filter((w) => !found.includes(wayKey(tray[w.a], w.op, tray[w.b])));
+export function hintWay(
+  tray: readonly number[],
+  ops: readonly Op[],
+  target: number,
+  found: readonly string[],
+  first: number | null = null,
+): Way | null {
+  const open = solutions(tray, ops, target).filter(
+    (w) => !found.includes(wayKey(tray[w.a], w.op, tray[w.b])),
+  );
   if (first !== null) {
     for (const w of open) {
       if (w.a === first) return w;
@@ -95,7 +130,8 @@ export function hintWay(tray: readonly number[], ops: readonly Op[], target: num
     // Another fruit with the same number starts the same way just as well.
     for (const w of open) {
       if (tray[w.a] === tray[first] && w.b !== first) return { ...w, a: first };
-      if (w.op === 'plus' && tray[w.b] === tray[first] && w.a !== first) return { a: first, op: 'plus', b: w.a };
+      if (w.op === 'plus' && tray[w.b] === tray[first] && w.a !== first)
+        return { a: first, op: 'plus', b: w.a };
     }
   }
   return open[0] ?? null;
@@ -108,8 +144,15 @@ export type HintGlow = { tile: number } | { leaf: Op } | { check: true };
  * The next step of the hinted way from what is in the boxes: the start fruit, then its partner, then (at level 3) the needed leaf,
  * then the check. A first box holding a fruit that starts no way left glows itself, so tapping it sends it home.
  */
-export function hintGlow(tray: readonly number[], ops: readonly Op[], target: number, found: readonly string[],
-  slotA: number | null, slotB: number | null, op: Op | null): HintGlow | null {
+export function hintGlow(
+  tray: readonly number[],
+  ops: readonly Op[],
+  target: number,
+  found: readonly string[],
+  slotA: number | null,
+  slotB: number | null,
+  op: Op | null,
+): HintGlow | null {
   const way = hintWay(tray, ops, target, found, slotA);
   if (!way) return null;
   // The start fruit sits in the second box: a sum just needs its partner; a take-away goes home to start again in the first box.
@@ -120,14 +163,18 @@ export function hintGlow(tray: readonly number[], ops: readonly Op[], target: nu
   return { check: true };
 }
 
-export interface TreeRound { target: number; tray: number[] }
+export interface TreeRound {
+  target: number;
+  tray: number[];
+}
 
 /**
  * A tray built around two different ways so the round can always be finished (and by a plain sum or a take-away at level 3),
  * plus fruit that make nothing in particular. Whatever else the extra fruit happen to make is accepted too.
  */
 export function makeRound(level: number, rng: Rng): TreeRound {
-  const plan = planFor(level), [lo, hi] = plan.target;
+  const plan = planFor(level),
+    [lo, hi] = plan.target;
   for (let attempt = 0; attempt < 200; attempt++) {
     const target = rng.int(lo, hi);
     const tray: number[] = [];
@@ -178,18 +225,27 @@ export const TILE = 110;
 export const SLOT = 120;
 const GAP = 18;
 
-export interface Pt { x: number; y: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
 export interface TreeLayout {
   sign: Pt;
   found: Pt;
-  a: Pt; op: Pt; b: Pt; equals: Pt; check: Pt;
+  a: Pt;
+  op: Pt;
+  b: Pt;
+  equals: Pt;
+  check: Pt;
   leaves: Pt[];
   tiles: Pt[];
 }
 
 export function layoutFor(w: number, h: number, count: number, signs: boolean): TreeLayout {
   // A tall window (portrait) puts the working rows lower rather than leaving the bottom empty.
-  const cx = w / 2, drop = Math.max(0, Math.min(200, (h - 768) * 0.35)), row = 300 + drop;
+  const cx = w / 2,
+    drop = Math.max(0, Math.min(200, (h - 768) * 0.35)),
+    row = 300 + drop;
   const x0 = cx - 293;
   const at = (dx: number, y = row): Pt => ({ x: x0 + dx, y });
   const cols = Math.max(1, Math.min(count, Math.floor((w - 190 + GAP) / (TILE + GAP))));
@@ -199,15 +255,26 @@ export function layoutFor(w: number, h: number, count: number, signs: boolean): 
   const top = Math.min(trayTop, h - 60 - TILE / 2 - (rows - 1) * (TILE + GAP));
   const tiles: Pt[] = [];
   for (let i = 0; i < count; i++) {
-    const r = Math.floor(i / cols), inRow = Math.min(cols, count - r * cols);
+    const r = Math.floor(i / cols),
+      inRow = Math.min(cols, count - r * cols);
     const rowW = inRow * TILE + (inRow - 1) * GAP;
     const left = 170 + (w - 210 - rowW) / 2;
     tiles.push({ x: left + (i - r * cols) * (TILE + GAP) + TILE / 2, y: top + r * (TILE + GAP) });
   }
   return {
-    sign: { x: cx, y: 110 }, found: { x: cx, y: 196 },
-    a: at(60), op: at(194), b: at(328), equals: at(417), check: at(526),
-    leaves: signs ? [{ x: cx - 85, y: top - 150 }, { x: cx + 85, y: top - 150 }] : [],
+    sign: { x: cx, y: 110 },
+    found: { x: cx, y: 196 },
+    a: at(60),
+    op: at(194),
+    b: at(328),
+    equals: at(417),
+    check: at(526),
+    leaves: signs
+      ? [
+          { x: cx - 85, y: top - 150 },
+          { x: cx + 85, y: top - 150 },
+        ]
+      : [],
     tiles,
   };
 }

@@ -80,8 +80,12 @@ export const VOICE = {
   'lg.event.basket': ['The basket was found by the {place}.'],
   'lg.event.basket.item': ['There was a bit of {item} on the basket.'],
   'lg.who.basket': ['Who has the basket?'],
-  'lg.reveal.basket': ['{friend} had the basket, at the {place} with the {item}. It was for the surprise picnic!'],
-  'lg.eight': ['Some clues say who came first. Mark the grid until one answer is left, then name who has the basket.'],
+  'lg.reveal.basket': [
+    '{friend} had the basket, at the {place} with the {item}. It was for the surprise picnic!',
+  ],
+  'lg.eight': [
+    'Some clues say who came first. Mark the grid until one answer is left, then name who has the basket.',
+  ],
   'lg.slide': ['The grid is big. Drag the names along the top or the side to slide it.'],
   'lg.case.came': ['{friend} came {when}.'],
   'lg.case.camenot': ['{friend} did not come {when}.'],
@@ -102,5 +106,7 @@ export const VOICE = {
   'lg.last.when': ['{friend} has only one time left.'],
   'lg.last.whenfriend': ['Only one friend can have come {when}.'],
   'lg.event.basket.time': ['The basket was taken {when}.'],
-  'lg.reveal.basket.time': ['{friend} had the basket! They came to the {place} {when}. It was for the surprise picnic!'],
+  'lg.reveal.basket.time': [
+    '{friend} had the basket! They came to the {place} {when}. It was for the surprise picnic!',
+  ],
 } satisfies Record<string, string[]>;

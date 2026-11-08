@@ -2,16 +2,42 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  PAIRS, PROPS, TUPLES, Tally, briefFor, candidateGraphs, check, complete, corners, evaluate, has, helpFor, machineLayout,
-  nextMove, overlaps, setSlot, slots, solutions, type Bit, type Brief, type Fixture, type Node, type Prop,
+  PAIRS,
+  PROPS,
+  TUPLES,
+  Tally,
+  briefFor,
+  candidateGraphs,
+  check,
+  complete,
+  corners,
+  evaluate,
+  has,
+  helpFor,
+  machineLayout,
+  nextMove,
+  overlaps,
+  setSlot,
+  slots,
+  solutions,
+  type Bit,
+  type Brief,
+  type Fixture,
+  type Node,
+  type Prop,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i);
 const fx = (p: Bit, q: Bit): Fixture => ({ p, q, species: 'pip', color: 'teal' });
-const sensor = (prop: Prop | null, fixed = false): Node => (fixed ? { kind: 'sensor', prop, fixed: true } : { kind: 'sensor', prop });
+const sensor = (prop: Prop | null, fixed = false): Node =>
+  fixed ? { kind: 'sensor', prop, fixed: true } : { kind: 'sensor', prop };
 const brief2 = (target: Prop = 'hat'): Brief => ({
-  level: 2, props: ['hat', 'whiskers'], fixtures: TUPLES.map(([p, q]) => fx(p, q)),
-  target: sensor(target, true), graph: sensor(null), candidates: ['hat', 'whiskers'],
+  level: 2,
+  props: ['hat', 'whiskers'],
+  fixtures: TUPLES.map(([p, q]) => fx(p, q)),
+  target: sensor(target, true),
+  graph: sensor(null),
+  candidates: ['hat', 'whiskers'],
 });
 const level2 = SEEDS.map((s) => briefFor(2, new Rng(s)));
 
@@ -91,7 +117,8 @@ describe('solvability', () => {
       const all = candidateGraphs(b);
       const sols = solutions(b);
       expect(all).toHaveLength(2);
-      for (const g of all) expect(check(g, b).status === 'pass').toBe(sols.some((s) => JSON.stringify(s) === JSON.stringify(g)));
+      for (const g of all)
+        expect(check(g, b).status === 'pass').toBe(sols.some((s) => JSON.stringify(s) === JSON.stringify(g)));
     }
   });
   it('level 1 starting graph passes check', () => {
@@ -127,7 +154,8 @@ describe('Tally', () => {
     expect([t.misses, t.hints, t.glowing]).toEqual([1, 0, false]);
     expect(t.miss()).toBe(true);
     expect([t.misses, t.hints, t.glowing]).toEqual([2, 1, true]);
-    t.miss(); t.miss();
+    t.miss();
+    t.miss();
     expect([t.misses, t.hints]).toEqual([4, 1]);
   });
   it('counts one hint per help press', () => {
@@ -170,7 +198,8 @@ describe('helpFor', () => {
 
 describe('seeds', () => {
   it('the same seed gives the same brief', () => {
-    for (const level of [1, 2]) for (const s of SEEDS) expect(briefFor(level, new Rng(s))).toEqual(briefFor(level, new Rng(s)));
+    for (const level of [1, 2])
+      for (const s of SEEDS) expect(briefFor(level, new Rng(s))).toEqual(briefFor(level, new Rng(s)));
   });
   it('covers every prop at level 1 and all six pair/target briefs at level 2', () => {
     const firsts = new Set(SEEDS.map((s) => briefFor(1, new Rng(s)).props[0]));
@@ -224,21 +253,37 @@ describe('layout', () => {
         const l = machineLayout(level, v);
         expect(l).not.toBeNull();
         if (!l) return;
-        for (const f of l.fixtures) { expect(f.w).toBeGreaterThanOrEqual(120); expect(f.h).toBeGreaterThanOrEqual(140); }
+        for (const f of l.fixtures) {
+          expect(f.w).toBeGreaterThanOrEqual(120);
+          expect(f.h).toBeGreaterThanOrEqual(140);
+        }
         expect(l.fixtures).toHaveLength(level === 1 ? 2 : 4);
         if (level === 2) {
           expect(l.slot!.w).toBeGreaterThanOrEqual(110);
           expect(l.slot!.h).toBeGreaterThanOrEqual(110);
           expect(l.picks).toHaveLength(2);
         }
-        for (const p of l.picks) { expect(p.w).toBeGreaterThanOrEqual(110); expect(p.h).toBeGreaterThanOrEqual(110); }
+        for (const p of l.picks) {
+          expect(p.w).toBeGreaterThanOrEqual(110);
+          expect(p.h).toBeGreaterThanOrEqual(110);
+        }
         expect(l.send.w).toBeGreaterThanOrEqual(120);
         expect(l.send.h).toBeGreaterThanOrEqual(100);
         expect(l.slow.w).toBeGreaterThanOrEqual(100);
         expect(l.slow.h).toBeGreaterThanOrEqual(100);
-        for (const b of [l.check, l.done, l.undo]) if (b) { expect(b.w).toBeGreaterThanOrEqual(100); expect(b.h).toBeGreaterThanOrEqual(100); }
+        for (const b of [l.check, l.done, l.undo])
+          if (b) {
+            expect(b.w).toBeGreaterThanOrEqual(100);
+            expect(b.h).toBeGreaterThanOrEqual(100);
+          }
         expect(level === 1 ? l.done : l.check).not.toBeNull();
-        const parts = [...l.fixtures, l.machine, l.send, l.slow, ...[l.sign, l.check, l.done, l.undo].filter((r) => r !== null)];
+        const parts = [
+          ...l.fixtures,
+          l.machine,
+          l.send,
+          l.slow,
+          ...[l.sign, l.check, l.done, l.undo].filter((r) => r !== null),
+        ];
         for (const p of parts) {
           expect(p.x).toBeGreaterThanOrEqual(0);
           expect(p.y).toBeGreaterThanOrEqual(0);
@@ -246,14 +291,21 @@ describe('layout', () => {
           expect(p.y + p.h).toBeLessThanOrEqual(v.h);
           for (const c of corners(v)) expect(overlaps(p, c)).toBe(false);
         }
-        parts.forEach((a, i) => parts.forEach((b, j) => { if (i < j) expect(overlaps(a, b)).toBe(false); }));
+        parts.forEach((a, i) =>
+          parts.forEach((b, j) => {
+            if (i < j) expect(overlaps(a, b)).toBe(false);
+          }),
+        );
       });
     }
     it(`level ${level} on a short phone view is null or valid`, () => {
       const v = computeView(844, 390);
       const l = machineLayout(level, v);
       if (l) {
-        for (const f of l.fixtures) { expect(f.w).toBeGreaterThanOrEqual(120); expect(f.h).toBeGreaterThanOrEqual(140); }
+        for (const f of l.fixtures) {
+          expect(f.w).toBeGreaterThanOrEqual(120);
+          expect(f.h).toBeGreaterThanOrEqual(140);
+        }
         expect(l.machine.y + l.machine.h).toBeLessThanOrEqual(v.h);
       } else expect(l).toBeNull();
     });

@@ -12,137 +12,330 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, canPour, CUP, CUP_CAP, cupFix, cupFull, cupTrouble, cupWay, cupWords, SCOOP_QUARTERS, SCOOPS, wayStep, type Scoop, compareCut, compareFriends, comparePair, firstUnmet, kitchenDiscoveries, morePlate, needs, servesBoth, type ComparePair, countAloud, CUT_WAYS, SHAPES_LEVEL, cutShares, dealCut, dealFriends, dealTo, DEAL_LEVEL, doubled, fair, fairAreas, fairCut, fractionCut, fractionRequest, fruitPair, halfIngredientHint, halved, ingredientHint, isPizzaLevel, nextPlate, nextWay, overlayPair, pieceAreas, pieceShape, PIZZAS_LEVEL, planFor, plateAt, recipe, SAME_LEVEL, servesFraction, serveTrouble, shapesLine, wholeFor, type CutWay, type FractionRequest, type PieceShape, type Whole } from './logic';
+import {
+  LEVELS,
+  canPour,
+  CUP,
+  CUP_CAP,
+  cupFix,
+  cupFull,
+  cupTrouble,
+  cupWay,
+  cupWords,
+  SCOOP_QUARTERS,
+  SCOOPS,
+  wayStep,
+  type Scoop,
+  compareCut,
+  compareFriends,
+  comparePair,
+  firstUnmet,
+  kitchenDiscoveries,
+  morePlate,
+  needs,
+  servesBoth,
+  type ComparePair,
+  countAloud,
+  CUT_WAYS,
+  SHAPES_LEVEL,
+  cutShares,
+  dealCut,
+  dealFriends,
+  dealTo,
+  DEAL_LEVEL,
+  doubled,
+  fair,
+  fairAreas,
+  fairCut,
+  fractionCut,
+  fractionRequest,
+  fruitPair,
+  halfIngredientHint,
+  halved,
+  ingredientHint,
+  isPizzaLevel,
+  nextPlate,
+  nextWay,
+  overlayPair,
+  pieceAreas,
+  pieceShape,
+  PIZZAS_LEVEL,
+  planFor,
+  plateAt,
+  recipe,
+  SAME_LEVEL,
+  servesFraction,
+  serveTrouble,
+  shapesLine,
+  wholeFor,
+  type CutWay,
+  type FractionRequest,
+  type PieceShape,
+  type Whole,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 import { entryId } from '../../content/journal';
 
 function sandwich(parts = 1) {
   if (parts === 3) {
     const g = new Graphics();
-    g.moveTo(0, 0).arc(0, 0, 43, -Math.PI / 3, Math.PI / 3).closePath().fill(cream).stroke({width:5,color:swatch.brown.line});
-    for (const [x,y] of [[18,-13],[29,0],[18,13]]) g.circle(x,y,4).fill(swatch.red.fill).stroke({width:1,color:swatch.red.line});
+    g.moveTo(0, 0)
+      .arc(0, 0, 43, -Math.PI / 3, Math.PI / 3)
+      .closePath()
+      .fill(cream)
+      .stroke({ width: 5, color: swatch.brown.line });
+    for (const [x, y] of [
+      [18, -13],
+      [29, 0],
+      [18, 13],
+    ])
+      g.circle(x, y, 4).fill(swatch.red.fill).stroke({ width: 1, color: swatch.red.line });
     return g;
   }
-  const g = new Graphics(), w=parts===2?90:parts===4?62:135, h=parts===2?48:parts===4?62:110;
-  g.roundRect(-w/2,-h/2,w,h,10).fill(swatch.brown.fill).stroke({width:5,color:swatch.brown.line});
-  g.roundRect(-w/2+7,-h/2+7,w-14,h-14,7).fill(cream);
-  g.moveTo(-w/2+10,0).lineTo(w/2-10,0).stroke({width:6,color:swatch.green.fill});
+  const g = new Graphics(),
+    w = parts === 2 ? 90 : parts === 4 ? 62 : 135,
+    h = parts === 2 ? 48 : parts === 4 ? 62 : 110;
+  g.roundRect(-w / 2, -h / 2, w, h, 10)
+    .fill(swatch.brown.fill)
+    .stroke({ width: 5, color: swatch.brown.line });
+  g.roundRect(-w / 2 + 7, -h / 2 + 7, w - 14, h - 14, 7).fill(cream);
+  g.moveTo(-w / 2 + 10, 0)
+    .lineTo(w / 2 - 10, 0)
+    .stroke({ width: 6, color: swatch.green.fill });
   return g;
 }
 function pizza() {
-  const g=new Graphics();
-  g.circle(0,0,82).fill(swatch.brown.fill).stroke({width:7,color:swatch.brown.line});
-  g.circle(0,0,70).fill(swatch.yellow.light).stroke({width:3,color:swatch.yellow.line});
-  for(const a of [-Math.PI/2,Math.PI/6,5*Math.PI/6]) g.moveTo(0,0).lineTo(Math.cos(a)*70,Math.sin(a)*70).stroke({width:5,color:swatch.brown.line});
-  for(const [x,y] of [[0,-34],[30,17],[-30,17]]) g.circle(x,y,6).fill(swatch.red.fill).stroke({width:2,color:swatch.red.line});
+  const g = new Graphics();
+  g.circle(0, 0, 82).fill(swatch.brown.fill).stroke({ width: 7, color: swatch.brown.line });
+  g.circle(0, 0, 70).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+  for (const a of [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6])
+    g.moveTo(0, 0)
+      .lineTo(Math.cos(a) * 70, Math.sin(a) * 70)
+      .stroke({ width: 5, color: swatch.brown.line });
+  for (const [x, y] of [
+    [0, -34],
+    [30, 17],
+    [-30, 17],
+  ])
+    g.circle(x, y, 6).fill(swatch.red.fill).stroke({ width: 2, color: swatch.red.line });
   return g;
 }
 /** A round pie: a crimped rim and a lattice of two crossing strokes. */
 function pie() {
-  const g=new Graphics();
-  g.circle(0,0,82).fill(swatch.brown.fill).stroke({width:7,color:swatch.brown.line});
-  for(let i=0;i<12;i++){const a=i*Math.PI/6;g.circle(Math.cos(a)*78,Math.sin(a)*78,5).fill(swatch.brown.light).stroke({width:2,color:swatch.brown.line});}
-  g.circle(0,0,66).fill(swatch.yellow.light).stroke({width:3,color:swatch.yellow.line});
-  g.moveTo(-46,-46).lineTo(46,46).moveTo(46,-46).lineTo(-46,46).stroke({width:6,color:swatch.brown.line});
+  const g = new Graphics();
+  g.circle(0, 0, 82).fill(swatch.brown.fill).stroke({ width: 7, color: swatch.brown.line });
+  for (let i = 0; i < 12; i++) {
+    const a = (i * Math.PI) / 6;
+    g.circle(Math.cos(a) * 78, Math.sin(a) * 78, 5)
+      .fill(swatch.brown.light)
+      .stroke({ width: 2, color: swatch.brown.line });
+  }
+  g.circle(0, 0, 66).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+  g.moveTo(-46, -46)
+    .lineTo(46, 46)
+    .moveTo(46, -46)
+    .lineTo(-46, 46)
+    .stroke({ width: 6, color: swatch.brown.line });
   return g;
 }
 /** One cut piece of a pie (half or quarter), drawn with its middle at the origin so a drag holds it by the body. */
 function pieSlice(parts: number) {
-  const r=50, a=Math.PI*2/parts, g=new Graphics();
-  g.moveTo(0,0).arc(0,0,r,-a/2,a/2).closePath().fill(swatch.yellow.light).stroke({width:5,color:swatch.brown.line});
-  g.moveTo(0,0).arc(0,0,r,-a/2,a/2).stroke({width:8,color:swatch.brown.fill});
-  g.position.x=-(4*r*Math.sin(a/2))/(3*a);
-  const c=new Container();c.addChild(g);return c;
+  const r = 50,
+    a = (Math.PI * 2) / parts,
+    g = new Graphics();
+  g.moveTo(0, 0)
+    .arc(0, 0, r, -a / 2, a / 2)
+    .closePath()
+    .fill(swatch.yellow.light)
+    .stroke({ width: 5, color: swatch.brown.line });
+  g.moveTo(0, 0)
+    .arc(0, 0, r, -a / 2, a / 2)
+    .stroke({ width: 8, color: swatch.brown.fill });
+  g.position.x = -(4 * r * Math.sin(a / 2)) / (3 * a);
+  const c = new Container();
+  c.addChild(g);
+  return c;
 }
 /** One piece of a lopsided sandwich cut: its width follows its share of the whole, so the big piece looks big. */
 function slab(area: number) {
-  const w=Math.round(area*180), h=56, g=new Graphics();
-  g.roundRect(-w/2,-h/2,w,h,10).fill(swatch.brown.fill).stroke({width:5,color:swatch.brown.line});
-  g.roundRect(-w/2+7,-h/2+7,w-14,h-14,7).fill(cream);
-  g.moveTo(-w/2+10,0).lineTo(w/2-10,0).stroke({width:6,color:swatch.green.fill});
+  const w = Math.round(area * 180),
+    h = 56,
+    g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 10)
+    .fill(swatch.brown.fill)
+    .stroke({ width: 5, color: swatch.brown.line });
+  g.roundRect(-w / 2 + 7, -h / 2 + 7, w - 14, h - 14, 7).fill(cream);
+  g.moveTo(-w / 2 + 10, 0)
+    .lineTo(w / 2 - 10, 0)
+    .stroke({ width: 6, color: swatch.green.fill });
   return g;
 }
 /** Level 14's halves: a sandwich cut down makes a tall half, cut across a wide one; the same area either way. */
 function halfPiece(shape: PieceShape) {
-  const w=shape==='tall'?48:96, h=shape==='tall'?96:48, g=new Graphics();
-  g.roundRect(-w/2,-h/2,w,h,10).fill(swatch.brown.fill).stroke({width:5,color:swatch.brown.line});
-  g.roundRect(-w/2+7,-h/2+7,w-14,h-14,7).fill(cream);
-  if(shape==='tall') g.moveTo(0,-h/2+10).lineTo(0,h/2-10).stroke({width:6,color:swatch.green.fill});
-  else g.moveTo(-w/2+10,0).lineTo(w/2-10,0).stroke({width:6,color:swatch.green.fill});
+  const w = shape === 'tall' ? 48 : 96,
+    h = shape === 'tall' ? 96 : 48,
+    g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 10)
+    .fill(swatch.brown.fill)
+    .stroke({ width: 5, color: swatch.brown.line });
+  g.roundRect(-w / 2 + 7, -h / 2 + 7, w - 14, h - 14, 7).fill(cream);
+  if (shape === 'tall')
+    g.moveTo(0, -h / 2 + 10)
+      .lineTo(0, h / 2 - 10)
+      .stroke({ width: 6, color: swatch.green.fill });
+  else
+    g.moveTo(-w / 2 + 10, 0)
+      .lineTo(w / 2 - 10, 0)
+      .stroke({ width: 6, color: swatch.green.fill });
   return g;
 }
-function wholeOf(kind: Whole, level: number) { return isPizzaLevel(level)?pizza():kind==='pie'?pie():sandwich(); }
-function pieceOf(kind: Whole, parts: number) { return kind==='pie'&&parts!==3?pieSlice(parts):sandwich(parts); }
+function wholeOf(kind: Whole, level: number) {
+  return isPizzaLevel(level) ? pizza() : kind === 'pie' ? pie() : sandwich();
+}
+function pieceOf(kind: Whole, parts: number) {
+  return kind === 'pie' && parts !== 3 ? pieSlice(parts) : sandwich(parts);
+}
 /** 0 berry, 1 apple, 2 banana. */
 function fruit(which: number, size = 24) {
-  const g=new Graphics();
-  if (which===2) {
-    g.moveTo(-size,-size*0.2).quadraticCurveTo(0,size*1.2,size,-size*0.6).quadraticCurveTo(size*0.1,size*0.5,-size,-size*0.2).closePath().fill(swatch.yellow.fill).stroke({width:3,color:swatch.yellow.line});
-    g.rect(size-3,-size*0.8,6,8).fill(swatch.brown.line);
+  const g = new Graphics();
+  if (which === 2) {
+    g.moveTo(-size, -size * 0.2)
+      .quadraticCurveTo(0, size * 1.2, size, -size * 0.6)
+      .quadraticCurveTo(size * 0.1, size * 0.5, -size, -size * 0.2)
+      .closePath()
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 3, color: swatch.yellow.line });
+    g.rect(size - 3, -size * 0.8, 6, 8).fill(swatch.brown.line);
     return g;
   }
-  const s=which?swatch.green:swatch.red;
-  g.circle(0,0,size).fill(s.fill).stroke({width:3,color:s.line});
-  g.ellipse(9,-size,11,5).fill(swatch.green.line);
-  if (!which) for(const [x,y] of [[-7,-4],[7,-4],[0,8]]) g.circle(x,y,2).fill(swatch.yellow.fill);
+  const s = which ? swatch.green : swatch.red;
+  g.circle(0, 0, size).fill(s.fill).stroke({ width: 3, color: s.line });
+  g.ellipse(9, -size, 11, 5).fill(swatch.green.line);
+  if (!which)
+    for (const [x, y] of [
+      [-7, -4],
+      [7, -4],
+      [0, 8],
+    ])
+      g.circle(x, y, 2).fill(swatch.yellow.fill);
   return g;
 }
 /** The asked amount as a picture: a sandwich with the asked part shaded, in a speech bubble. */
 function askBubble(request: FractionRequest) {
-  const c=new Container(), w=64, h=50;
-  c.addChild(new Graphics().circle(0,0,56).fill(swatch.white.fill).stroke({width:5,color:swatch.blue.line}));
-  const g=new Graphics();
-  g.roundRect(-w/2,-h/2,w,h,6).fill(cream);
-  const shade=(x:number,y:number,ww:number,hh:number)=>g.rect(x,y,ww,hh).fill(swatch.yellow.fill);
-  if (request.id==='half') shade(-w/2,-h/2,w/2,h);
-  else { shade(-w/2,-h/2,w/2,h/2); if (request.id==='three-quarters') { shade(w/2-w/2,-h/2,w/2,h/2); shade(-w/2,0,w/2,h/2); } }
-  g.moveTo(0,-h/2).lineTo(0,h/2);
-  if (request.denominator===4) g.moveTo(-w/2,0).lineTo(w/2,0);
-  g.stroke({width:3,color:swatch.brown.line}).roundRect(-w/2,-h/2,w,h,6).stroke({width:4,color:swatch.brown.line});
-  c.addChild(g);return c;
+  const c = new Container(),
+    w = 64,
+    h = 50;
+  c.addChild(
+    new Graphics().circle(0, 0, 56).fill(swatch.white.fill).stroke({ width: 5, color: swatch.blue.line }),
+  );
+  const g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 6).fill(cream);
+  const shade = (x: number, y: number, ww: number, hh: number) =>
+    g.rect(x, y, ww, hh).fill(swatch.yellow.fill);
+  if (request.id === 'half') shade(-w / 2, -h / 2, w / 2, h);
+  else {
+    shade(-w / 2, -h / 2, w / 2, h / 2);
+    if (request.id === 'three-quarters') {
+      shade(w / 2 - w / 2, -h / 2, w / 2, h / 2);
+      shade(-w / 2, 0, w / 2, h / 2);
+    }
+  }
+  g.moveTo(0, -h / 2).lineTo(0, h / 2);
+  if (request.denominator === 4) g.moveTo(-w / 2, 0).lineTo(w / 2, 0);
+  g.stroke({ width: 3, color: swatch.brown.line })
+    .roundRect(-w / 2, -h / 2, w, h, 6)
+    .stroke({ width: 4, color: swatch.brown.line });
+  c.addChild(g);
+  return c;
 }
 /** Level 15's tool label: a strip of `parts` equal cells with one shaded, the scoop's share of one cup. */
 function scoopStrip(parts: number, w = 84, h = 28) {
-  const g=new Graphics(), c=w/parts;
-  g.roundRect(-w/2,-h/2,w,h,6).fill(swatch.white.fill);
-  g.rect(-w/2,-h/2,c,h).fill(swatch.orange.fill);
-  for(let i=1;i<parts;i++)g.moveTo(-w/2+i*c,-h/2).lineTo(-w/2+i*c,h/2);
-  g.stroke({width:3,color:swatch.brown.line}).roundRect(-w/2,-h/2,w,h,6).stroke({width:4,color:swatch.brown.line});
+  const g = new Graphics(),
+    c = w / parts;
+  g.roundRect(-w / 2, -h / 2, w, h, 6).fill(swatch.white.fill);
+  g.rect(-w / 2, -h / 2, c, h).fill(swatch.orange.fill);
+  for (let i = 1; i < parts; i++) g.moveTo(-w / 2 + i * c, -h / 2).lineTo(-w / 2 + i * c, h / 2);
+  g.stroke({ width: 3, color: swatch.brown.line })
+    .roundRect(-w / 2, -h / 2, w, h, 6)
+    .stroke({ width: 4, color: swatch.brown.line });
   return g;
 }
 /** Level 15's recipe card: a cup and its strip of four quarters, all shaded (one whole cup). */
 function cupCard() {
-  const c=new Container();
-  c.addChild(new Graphics().roundRect(-150,-58,300,116,20).fill(cream).stroke({width:5,color:swatch.brown.line}));
-  const cup=new Graphics().roundRect(-34,-30,56,62,8).fill(swatch.orange.fill).stroke({width:5,color:swatch.brown.line});
-  cup.moveTo(22,-16).arc(22,0,16,-Math.PI/2,Math.PI/2).stroke({width:6,color:swatch.brown.line});
-  cup.position.set(-90,0);c.addChild(cup);
-  const strip=new Graphics(), w=140, h=34;
-  strip.roundRect(-w/2,-h/2,w,h,6).fill(swatch.orange.fill);
-  for(let i=1;i<4;i++)strip.moveTo(-w/2+i*w/4,-h/2).lineTo(-w/2+i*w/4,h/2);
-  strip.stroke({width:3,color:swatch.brown.line}).roundRect(-w/2,-h/2,w,h,6).stroke({width:4,color:swatch.brown.line});
-  strip.position.set(50,0);c.addChild(strip);
+  const c = new Container();
+  c.addChild(
+    new Graphics()
+      .roundRect(-150, -58, 300, 116, 20)
+      .fill(cream)
+      .stroke({ width: 5, color: swatch.brown.line }),
+  );
+  const cup = new Graphics()
+    .roundRect(-34, -30, 56, 62, 8)
+    .fill(swatch.orange.fill)
+    .stroke({ width: 5, color: swatch.brown.line });
+  cup
+    .moveTo(22, -16)
+    .arc(22, 0, 16, -Math.PI / 2, Math.PI / 2)
+    .stroke({ width: 6, color: swatch.brown.line });
+  cup.position.set(-90, 0);
+  c.addChild(cup);
+  const strip = new Graphics(),
+    w = 140,
+    h = 34;
+  strip.roundRect(-w / 2, -h / 2, w, h, 6).fill(swatch.orange.fill);
+  for (let i = 1; i < 4; i++) strip.moveTo(-w / 2 + (i * w) / 4, -h / 2).lineTo(-w / 2 + (i * w) / 4, h / 2);
+  strip
+    .stroke({ width: 3, color: swatch.brown.line })
+    .roundRect(-w / 2, -h / 2, w, h, 6)
+    .stroke({ width: 4, color: swatch.brown.line });
+  strip.position.set(50, 0);
+  c.addChild(strip);
   return c;
 }
 /** Level 15's jug: quarter marks, a bold one-cup line, and each scoop poured so far as its own band. */
-const JUG_W=170, QUARTER_H=40;
+const JUG_W = 170,
+  QUARTER_H = 40;
 function jug(pours: readonly Scoop[]) {
-  const g=new Graphics(), h=CUP_CAP*QUARTER_H, bottom=h/2;
-  g.roundRect(-JUG_W/2,-h/2,JUG_W,h,14).fill(swatch.white.light);
-  let y=bottom;
-  pours.forEach((s,i)=>{const hh=SCOOP_QUARTERS[s]*QUARTER_H;g.rect(-JUG_W/2+4,y-hh,JUG_W-8,hh).fill(i%2?swatch.orange.light:swatch.orange.fill).stroke({width:2,color:swatch.orange.line});y-=hh;});
-  for(let q=1;q<CUP_CAP;q++)if(q!==CUP)g.moveTo(-JUG_W/2,bottom-q*QUARTER_H).lineTo(-JUG_W/2+28,bottom-q*QUARTER_H);
-  g.stroke({width:3,color:swatch.blue.line});
-  g.moveTo(-JUG_W/2-14,bottom-CUP*QUARTER_H).lineTo(JUG_W/2+14,bottom-CUP*QUARTER_H).stroke({width:7,color:swatch.blue.line});
-  g.roundRect(-JUG_W/2,-h/2,JUG_W,h,14).stroke({width:6,color:swatch.blue.line});
-  g.moveTo(JUG_W/2,-h/2+30).bezierCurveTo(JUG_W/2+50,-h/2+30,JUG_W/2+50,-h/2+120,JUG_W/2,-h/2+120).stroke({width:9,color:swatch.blue.line});
+  const g = new Graphics(),
+    h = CUP_CAP * QUARTER_H,
+    bottom = h / 2;
+  g.roundRect(-JUG_W / 2, -h / 2, JUG_W, h, 14).fill(swatch.white.light);
+  let y = bottom;
+  pours.forEach((s, i) => {
+    const hh = SCOOP_QUARTERS[s] * QUARTER_H;
+    g.rect(-JUG_W / 2 + 4, y - hh, JUG_W - 8, hh)
+      .fill(i % 2 ? swatch.orange.light : swatch.orange.fill)
+      .stroke({ width: 2, color: swatch.orange.line });
+    y -= hh;
+  });
+  for (let q = 1; q < CUP_CAP; q++)
+    if (q !== CUP)
+      g.moveTo(-JUG_W / 2, bottom - q * QUARTER_H).lineTo(-JUG_W / 2 + 28, bottom - q * QUARTER_H);
+  g.stroke({ width: 3, color: swatch.blue.line });
+  g.moveTo(-JUG_W / 2 - 14, bottom - CUP * QUARTER_H)
+    .lineTo(JUG_W / 2 + 14, bottom - CUP * QUARTER_H)
+    .stroke({ width: 7, color: swatch.blue.line });
+  g.roundRect(-JUG_W / 2, -h / 2, JUG_W, h, 14).stroke({ width: 6, color: swatch.blue.line });
+  g.moveTo(JUG_W / 2, -h / 2 + 30)
+    .bezierCurveTo(JUG_W / 2 + 50, -h / 2 + 30, JUG_W / 2 + 50, -h / 2 + 120, JUG_W / 2, -h / 2 + 120)
+    .stroke({ width: 9, color: swatch.blue.line });
   return g;
 }
-interface Piece { node: Container; drag: DragHandle | null; plate: number; area: number; shape?: PieceShape }
+interface Piece {
+  node: Container;
+  drag: DragHandle | null;
+  plate: number;
+  area: number;
+  shape?: PieceShape;
+}
 /** A cutting picture: `parts` equal pieces, (level 11) two pieces of one third and two thirds, or (level 14) a half cut one way. */
-interface CutKind { parts: number; lopsided: boolean; way?: CutWay }
+interface CutKind {
+  parts: number;
+  lopsided: boolean;
+  way?: CutWay;
+}
 class PetKitchen implements Game {
- private view: View;
+  private view: View;
   readonly plan;
   readonly base;
   readonly pieces: Piece[] = [];
@@ -152,7 +345,7 @@ class PetKitchen implements Game {
   readonly serve: RoundButton;
   readonly undo: RoundButton;
   readonly recut: RoundButton;
-  readonly made = [0,0];
+  readonly made = [0, 0];
   private readonly additions: number[] = [];
   private readonly background = new Graphics();
   private readonly food = new Container();
@@ -192,7 +385,9 @@ class PetKitchen implements Game {
   readonly pours: Scoop[] = [];
   /** Level 15: the seeded way the ghost finger fills the cup. */
   private readonly way: Scoop[];
-  misses = 0; hints = 0; done = false;
+  misses = 0;
+  hints = 0;
+  done = false;
   private wrong = 0;
   private assisted = false;
   private clock = 0;
@@ -201,184 +396,394 @@ class PetKitchen implements Game {
   private lastPoke = -Infinity;
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.plan=planFor(ctx.level); this.base=recipe(ctx.level,ctx.rng); this.request=fractionRequest(ctx.rng);
-    this.whole=wholeFor(ctx.level,ctx.rng); this.kinds=fruitPair(ctx.rng); this.dealCut=dealCut(ctx.rng);
-    this.tapDeal=this.plan.mode==='deal';
-    const lopsided='lopsided' in this.plan&&this.plan.lopsided===true;
-    this.smallFirst=lopsided?ctx.rng.chance(0.5):true;
-    this.shapes='shapes' in this.plan&&this.plan.shapes===true;
-    this.compare=this.plan.mode==='compare';this.pair=this.compare?comparePair(ctx.rng):null;
-    if(this.shapes)for(const way of CUT_WAYS)this.cutKinds.push({parts:2,lopsided:false,way});
-    else for(const parts of this.plan.cuts)this.cutKinds.push({parts,lopsided:false});
-    if(lopsided){this.cutKinds.push({parts:2,lopsided:true});if(ctx.rng.chance(0.5))this.cutKinds.reverse();}
-    this.way=this.plan.mode==='cup'?cupWay(ctx.rng):[];
-    ctx.stage.addChild(this.background,this.food,this.recipeCard,this.meal,this.glow,this.pieceLayer,this.bubble); this.glow.eventMode='none';
+    this.plan = planFor(ctx.level);
+    this.base = recipe(ctx.level, ctx.rng);
+    this.request = fractionRequest(ctx.rng);
+    this.whole = wholeFor(ctx.level, ctx.rng);
+    this.kinds = fruitPair(ctx.rng);
+    this.dealCut = dealCut(ctx.rng);
+    this.tapDeal = this.plan.mode === 'deal';
+    const lopsided = 'lopsided' in this.plan && this.plan.lopsided === true;
+    this.smallFirst = lopsided ? ctx.rng.chance(0.5) : true;
+    this.shapes = 'shapes' in this.plan && this.plan.shapes === true;
+    this.compare = this.plan.mode === 'compare';
+    this.pair = this.compare ? comparePair(ctx.rng) : null;
+    if (this.shapes) for (const way of CUT_WAYS) this.cutKinds.push({ parts: 2, lopsided: false, way });
+    else for (const parts of this.plan.cuts) this.cutKinds.push({ parts, lopsided: false });
+    if (lopsided) {
+      this.cutKinds.push({ parts: 2, lopsided: true });
+      if (ctx.rng.chance(0.5)) this.cutKinds.reverse();
+    }
+    this.way = this.plan.mode === 'cup' ? cupWay(ctx.rng) : [];
+    ctx.stage.addChild(
+      this.background,
+      this.food,
+      this.recipeCard,
+      this.meal,
+      this.glow,
+      this.pieceLayer,
+      this.bubble,
+    );
+    this.glow.eventMode = 'none';
     // Any touch on the counter counts as someone playing, so the cut buttons only bounce after real quiet.
-    this.background.eventMode='static';this.background.on('pointerdown',(e)=>{this.idle=0;if(this.tapDeal&&!this.done){const at=ctx.stage.toLocal(e.global);this.wiggleNearest(at.x,at.y);}});
-    this.serve=new RoundButton(arrowIcon(1),swatch.green,48,()=>this.check());
-    this.undo=new RoundButton(arrowIcon(-1),swatch.white,48,()=>{
-      if(this.done)return;
-      if(this.plan.mode==='cup'){this.idle=0;if(this.pours.pop()){sfx.tick();this.drawMeal();this.drawHint();}return;}
-      const last=this.additions.pop(); if(last!==undefined) {this.made[last]--;this.drawMeal();this.drawHint();}
+    this.background.eventMode = 'static';
+    this.background.on('pointerdown', (e) => {
+      this.idle = 0;
+      if (this.tapDeal && !this.done) {
+        const at = ctx.stage.toLocal(e.global);
+        this.wiggleNearest(at.x, at.y);
+      }
     });
-    this.recut=new RoundButton(againIcon(),swatch.white,48,()=>{if(this.done||this.asking||this.overlaying)return;this.clearPieces();this.split=0;this.splitLopsided=false;this.cutWays.length=0;this.idle=0;this.resize(this.view);this.instruction();});
-    ctx.stage.addChild(this.serve,this.undo,this.recut);
-    if(this.plan.mode==='share'||this.plan.mode==='fraction'||this.compare||this.tapDeal) {
-      const names=this.compare?compareFriends(ctx.rng):dealFriends(ctx.rng,this.plan.friends);this.names.push(...names);
-      for(let i=0;i<this.plan.friends;i++) {
-        const p=new Container();
-        p.addChild(new Graphics().circle(0,0,76).fill(swatch.white.fill).stroke({width:6,color:swatch.blue.line}));
-        // A friend above each plate makes the recipient visible without reading; calm until fed, then happy.
-        const friend=new Critter(CRITTERS[names[i]]);friend.scale.set(0.45);friend.position.set(0,-62);friend.setMood('calm');
-        friend.eventMode='none';p.addChild(friend);ctx.track(friend);this.friends.push(friend);
-        ctx.stage.addChildAt(p,1);this.plates.push(p);
-        // Level 13: after the serve, a tap on a plate answers "who has more?".
-        if(this.compare)onTap(p,()=>this.pickMore(i),{radius:76});
-      }
-      if(this.pair)this.pair.forEach((r,i)=>{
-        // Each friend's ask as a shaded picture in a bubble beside that friend; a tap says it again.
-        const b=askBubble(r);onTap(b,()=>{this.idle=0;void ctx.say('kitchen.compare-ask',{friend:names[i],amount:r.name});},{radius:60});
-        ctx.stage.addChild(b);this.bubbles.push(b);
-      });
-      if(this.plan.mode==='fraction') {
-        this.bubble.addChild(askBubble(this.request));
-        onTap(this.bubble,()=>{this.idle=0;void ctx.say('kitchen.fraction-ask',{amount:this.request.name});},{radius:60});
-      }
-      if(!this.tapDeal) for(const kind of this.cutKinds) {
-        const {parts}=kind;
-        const round=this.whole==='pie'||isPizzaLevel(ctx.level);
-        const icon=new Graphics();
-        if(round) {
-          icon.circle(0,0,26).fill(cream).stroke({width:3,color:swatch.brown.line});
-          const lines=parts===3?[-Math.PI/2,Math.PI/6,5*Math.PI/6]:parts===4?[0,Math.PI/2]:[Math.PI/2];
-          for(const a of lines) { icon.moveTo(0,0).lineTo(Math.cos(a)*26,Math.sin(a)*26); if(parts!==3) icon.lineTo(-Math.cos(a)*26,-Math.sin(a)*26); }
-          icon.stroke({width:4,color:swatch.brown.line});
-        } else {
-          icon.roundRect(-28,-25,56,50,7).fill(cream).stroke({width:3,color:swatch.brown.line});
-          // The lopsided cut falls a third of the way across, on the side the small piece is on.
-          const x=kind.lopsided?(this.smallFirst?-28/3:28/3):0;
-          if(kind.way==='across') icon.moveTo(-28,0).lineTo(28,0).stroke({width:4,color:swatch.brown.line});
-          else icon.moveTo(x,-25).lineTo(x,25).stroke({width:4,color:swatch.brown.line});
-          if(parts===4) icon.moveTo(-28,0).lineTo(28,0).stroke({width:4,color:swatch.brown.line});
+    this.serve = new RoundButton(arrowIcon(1), swatch.green, 48, () => this.check());
+    this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => {
+      if (this.done) return;
+      if (this.plan.mode === 'cup') {
+        this.idle = 0;
+        if (this.pours.pop()) {
+          sfx.tick();
+          this.drawMeal();
+          this.drawHint();
         }
-        const b=new RoundButton(icon,swatch.yellow,52,()=>this.cut(parts,false,kind.lopsided,kind.way));ctx.stage.addChild(b);this.cuts.push(b);
+        return;
       }
-      if(this.tapDeal) this.cut(this.dealCut,true);
-    } else if(this.plan.mode==='cup') {
+      const last = this.additions.pop();
+      if (last !== undefined) {
+        this.made[last]--;
+        this.drawMeal();
+        this.drawHint();
+      }
+    });
+    this.recut = new RoundButton(againIcon(), swatch.white, 48, () => {
+      if (this.done || this.asking || this.overlaying) return;
+      this.clearPieces();
+      this.split = 0;
+      this.splitLopsided = false;
+      this.cutWays.length = 0;
+      this.idle = 0;
+      this.resize(this.view);
+      this.instruction();
+    });
+    ctx.stage.addChild(this.serve, this.undo, this.recut);
+    if (this.plan.mode === 'share' || this.plan.mode === 'fraction' || this.compare || this.tapDeal) {
+      const names = this.compare ? compareFriends(ctx.rng) : dealFriends(ctx.rng, this.plan.friends);
+      this.names.push(...names);
+      for (let i = 0; i < this.plan.friends; i++) {
+        const p = new Container();
+        p.addChild(
+          new Graphics()
+            .circle(0, 0, 76)
+            .fill(swatch.white.fill)
+            .stroke({ width: 6, color: swatch.blue.line }),
+        );
+        // A friend above each plate makes the recipient visible without reading; calm until fed, then happy.
+        const friend = new Critter(CRITTERS[names[i]]);
+        friend.scale.set(0.45);
+        friend.position.set(0, -62);
+        friend.setMood('calm');
+        friend.eventMode = 'none';
+        p.addChild(friend);
+        ctx.track(friend);
+        this.friends.push(friend);
+        ctx.stage.addChildAt(p, 1);
+        this.plates.push(p);
+        // Level 13: after the serve, a tap on a plate answers "who has more?".
+        if (this.compare) onTap(p, () => this.pickMore(i), { radius: 76 });
+      }
+      if (this.pair)
+        this.pair.forEach((r, i) => {
+          // Each friend's ask as a shaded picture in a bubble beside that friend; a tap says it again.
+          const b = askBubble(r);
+          onTap(
+            b,
+            () => {
+              this.idle = 0;
+              void ctx.say('kitchen.compare-ask', { friend: names[i], amount: r.name });
+            },
+            { radius: 60 },
+          );
+          ctx.stage.addChild(b);
+          this.bubbles.push(b);
+        });
+      if (this.plan.mode === 'fraction') {
+        this.bubble.addChild(askBubble(this.request));
+        onTap(
+          this.bubble,
+          () => {
+            this.idle = 0;
+            void ctx.say('kitchen.fraction-ask', { amount: this.request.name });
+          },
+          { radius: 60 },
+        );
+      }
+      if (!this.tapDeal)
+        for (const kind of this.cutKinds) {
+          const { parts } = kind;
+          const round = this.whole === 'pie' || isPizzaLevel(ctx.level);
+          const icon = new Graphics();
+          if (round) {
+            icon.circle(0, 0, 26).fill(cream).stroke({ width: 3, color: swatch.brown.line });
+            const lines =
+              parts === 3
+                ? [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6]
+                : parts === 4
+                  ? [0, Math.PI / 2]
+                  : [Math.PI / 2];
+            for (const a of lines) {
+              icon.moveTo(0, 0).lineTo(Math.cos(a) * 26, Math.sin(a) * 26);
+              if (parts !== 3) icon.lineTo(-Math.cos(a) * 26, -Math.sin(a) * 26);
+            }
+            icon.stroke({ width: 4, color: swatch.brown.line });
+          } else {
+            icon.roundRect(-28, -25, 56, 50, 7).fill(cream).stroke({ width: 3, color: swatch.brown.line });
+            // The lopsided cut falls a third of the way across, on the side the small piece is on.
+            const x = kind.lopsided ? (this.smallFirst ? -28 / 3 : 28 / 3) : 0;
+            if (kind.way === 'across')
+              icon.moveTo(-28, 0).lineTo(28, 0).stroke({ width: 4, color: swatch.brown.line });
+            else icon.moveTo(x, -25).lineTo(x, 25).stroke({ width: 4, color: swatch.brown.line });
+            if (parts === 4) icon.moveTo(-28, 0).lineTo(28, 0).stroke({ width: 4, color: swatch.brown.line });
+          }
+          const b = new RoundButton(icon, swatch.yellow, 52, () =>
+            this.cut(parts, false, kind.lopsided, kind.way),
+          );
+          ctx.stage.addChild(b);
+          this.cuts.push(b);
+        }
+      if (this.tapDeal) this.cut(this.dealCut, true);
+    } else if (this.plan.mode === 'cup') {
       // Level 15: two scoops, each a strip showing its share of one cup; a tap pours it and says its name.
-      SCOOPS.forEach((s,i)=>{const b=new RoundButton(scoopStrip(SCOOP_QUARTERS[s]===2?2:4),swatch.white,55,()=>this.pour(i));ctx.stage.addChild(b);this.ingredients.push(b);});
-      const card=cupCard();this.recipeCard.addChild(card);onTap(card,()=>{this.idle=0;void ctx.say('kitchen.cup-card');},{radius:70});
+      SCOOPS.forEach((s, i) => {
+        const b = new RoundButton(scoopStrip(SCOOP_QUARTERS[s] === 2 ? 2 : 4), swatch.white, 55, () =>
+          this.pour(i),
+        );
+        ctx.stage.addChild(b);
+        this.ingredients.push(b);
+      });
+      const card = cupCard();
+      this.recipeCard.addChild(card);
+      onTap(
+        card,
+        () => {
+          this.idle = 0;
+          void ctx.say('kitchen.cup-card');
+        },
+        { radius: 70 },
+      );
       this.drawMeal();
     } else {
-      for(let i=0;i<2;i++) {
-        const b=new RoundButton(fruit(this.kinds[i],30),swatch.white,55,()=>{
-          if(this.done)return;
-          if(this.made[i]>=6){void ctx.say('kitchen.undo');return;}
-          this.made[i]++;this.additions.push(i);sfx.pop(5+i*2);this.drawMeal();this.drawHint();
-        });ctx.stage.addChild(b);this.ingredients.push(b);
+      for (let i = 0; i < 2; i++) {
+        const b = new RoundButton(fruit(this.kinds[i], 30), swatch.white, 55, () => {
+          if (this.done) return;
+          if (this.made[i] >= 6) {
+            void ctx.say('kitchen.undo');
+            return;
+          }
+          this.made[i]++;
+          this.additions.push(i);
+          sfx.pop(5 + i * 2);
+          this.drawMeal();
+          this.drawHint();
+        });
+        ctx.stage.addChild(b);
+        this.ingredients.push(b);
       }
-      this.recipeCard.addChild(new Graphics().roundRect(-235,-60,470,120,20).fill(cream).stroke({width:5,color:swatch.brown.line}));
-      this.base.forEach((n,i)=>{ for(let j=0;j<n;j++){const f=fruit(this.kinds[i]);f.position.set(-150+i*170+j*52,0);this.recipeCard.addChild(f);} });
-      const times=label(this.plan.mode==='half-recipe'?'÷ 2':'× 2',36);times.position.set(175,0);this.recipeCard.addChild(times);
+      this.recipeCard.addChild(
+        new Graphics()
+          .roundRect(-235, -60, 470, 120, 20)
+          .fill(cream)
+          .stroke({ width: 5, color: swatch.brown.line }),
+      );
+      this.base.forEach((n, i) => {
+        for (let j = 0; j < n; j++) {
+          const f = fruit(this.kinds[i]);
+          f.position.set(-150 + i * 170 + j * 52, 0);
+          this.recipeCard.addChild(f);
+        }
+      });
+      const times = label(this.plan.mode === 'half-recipe' ? '÷ 2' : '× 2', 36);
+      times.position.set(175, 0);
+      this.recipeCard.addChild(times);
     }
   }
   /** Level 15: pour a scoop into the jug. Past the brim it is not poured (the back arrow is the way on); never a miss. */
-  private pour(i:number){
-    if(this.done)return;
-    this.idle=0;
-    const s=SCOOPS[i];
-    if(!canPour(this.pours,s)){void this.ctx.say('kitchen.cup-brim');return;}
-    this.pours.push(s);sfx.pop(5+i*2);this.drawMeal();this.drawHint();
-    void this.ctx.say(s==='half'?'kitchen.cup-half':'kitchen.cup-quarter');
-  }
-  /** Level 15's serve: exactly one cup, whatever the scoops; too little or too much is a miss with a spoken reason. */
-  private checkCup(){
-    if(cupFull(this.pours)){
-      this.done=true;this.glow.clear();sfx.sparkle();
-      void this.ctx.say('kitchen.cup-done',{scoops:cupWords(this.pours)}).then(()=>this.ctx.tw.wait(0.4)).then(()=>this.ctx.finish({misses:this.misses,hints:this.hints}));
+  private pour(i: number) {
+    if (this.done) return;
+    this.idle = 0;
+    const s = SCOOPS[i];
+    if (!canPour(this.pours, s)) {
+      void this.ctx.say('kitchen.cup-brim');
       return;
     }
-    this.misses++;this.wrong++;sfx.boing();
-    if(this.wrong===2){this.assisted=true;this.hints++;}
-    const trouble=cupTrouble(this.pours);
-    if(trouble==='empty')this.instruction();
-    else void this.ctx.say(trouble==='over'?'kitchen.cup-over':'kitchen.cup-short');
+    this.pours.push(s);
+    sfx.pop(5 + i * 2);
+    this.drawMeal();
+    this.drawHint();
+    void this.ctx.say(s === 'half' ? 'kitchen.cup-half' : 'kitchen.cup-quarter');
+  }
+  /** Level 15's serve: exactly one cup, whatever the scoops; too little or too much is a miss with a spoken reason. */
+  private checkCup() {
+    if (cupFull(this.pours)) {
+      this.done = true;
+      this.glow.clear();
+      sfx.sparkle();
+      void this.ctx
+        .say('kitchen.cup-done', { scoops: cupWords(this.pours) })
+        .then(() => this.ctx.tw.wait(0.4))
+        .then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
+      return;
+    }
+    this.misses++;
+    this.wrong++;
+    sfx.boing();
+    if (this.wrong === 2) {
+      this.assisted = true;
+      this.hints++;
+    }
+    const trouble = cupTrouble(this.pours);
+    if (trouble === 'empty') this.instruction();
+    else void this.ctx.say(trouble === 'over' ? 'kitchen.cup-over' : 'kitchen.cup-short');
     this.drawHint();
   }
-  private areaSums(){return this.plates.map((_,i)=>this.pieces.filter(p=>p.plate===i).reduce((a,p)=>a+p.area,0));}
-  private counts(){return this.plates.map((_,i)=>this.pieces.filter(p=>p.plate===i).length);}
-  private clearPieces(){for(const p of this.pieces){p.drag?.destroy();p.node.destroy({children:true});}this.pieces.length=0;}
+  private areaSums() {
+    return this.plates.map((_, i) =>
+      this.pieces.filter((p) => p.plate === i).reduce((a, p) => a + p.area, 0),
+    );
+  }
+  private counts() {
+    return this.plates.map((_, i) => this.pieces.filter((p) => p.plate === i).length);
+  }
+  private clearPieces() {
+    for (const p of this.pieces) {
+      p.drag?.destroy();
+      p.node.destroy({ children: true });
+    }
+    this.pieces.length = 0;
+  }
   /** Every whole is still on the counter (nothing cut), or at 14 the sandwiches not cut yet. */
-  private uncutWholes(){return this.shapes?this.plan.wholes-this.cutWays.length:this.split?0:this.plan.wholes;}
-  private cut(parts:number,quiet=false,lopsided=false,way?:CutWay){
-    if(this.done||!this.uncutWholes())return;
+  private uncutWholes() {
+    return this.shapes ? this.plan.wholes - this.cutWays.length : this.split ? 0 : this.plan.wholes;
+  }
+  private cut(parts: number, quiet = false, lopsided = false, way?: CutWay) {
+    if (this.done || !this.uncutWholes()) return;
     // Level 14 cuts one sandwich per tap, its own way; every other level cuts every whole at once.
-    const wholes=this.shapes?1:this.plan.wholes, shape=this.shapes&&way?pieceShape(way):undefined;
-    if(way)this.cutWays.push(way);
-    this.split=parts;this.splitLopsided=lopsided;sfx.squish();
-    const areas=pieceAreas(parts,wholes,lopsided,this.smallFirst);
-    for(const b of this.cuts){this.ctx.tw.kill(b.scale);b.scale.set(1);}
-    for(let i=0;i<parts*wholes;i++) {
-      const node=new Container();node.addChild(shape?halfPiece(shape):lopsided?slab(areas[i]):pieceOf(this.whole,parts));this.pieceLayer.addChild(node);
-      const piece:Piece={node,plate:-1,drag:null,area:areas[i],shape};
-      if(this.tapDeal){
+    const wholes = this.shapes ? 1 : this.plan.wholes,
+      shape = this.shapes && way ? pieceShape(way) : undefined;
+    if (way) this.cutWays.push(way);
+    this.split = parts;
+    this.splitLopsided = lopsided;
+    sfx.squish();
+    const areas = pieceAreas(parts, wholes, lopsided, this.smallFirst);
+    for (const b of this.cuts) {
+      this.ctx.tw.kill(b.scale);
+      b.scale.set(1);
+    }
+    for (let i = 0; i < parts * wholes; i++) {
+      const node = new Container();
+      node.addChild(shape ? halfPiece(shape) : lopsided ? slab(areas[i]) : pieceOf(this.whole, parts));
+      this.pieceLayer.addChild(node);
+      const piece: Piece = { node, plate: -1, drag: null, area: areas[i], shape };
+      if (this.tapDeal) {
         // The lap rung: no cut, no drag. Any touch on a piece deals it to the friend with fewer.
-        onTap(node,()=>this.deal(piece),{radius:75});this.pieces.push(piece);continue;
+        onTap(node, () => this.deal(piece), { radius: 75 });
+        this.pieces.push(piece);
+        continue;
       }
-      node.hitArea=new Circle(0,0,55);
-      piece.drag=draggable(node,this.ctx.tw,{
-        onPick:()=>sfx.tick(),
-        onDrop:(x,y)=>{
-          if(this.done)return false;
-          const nearest=plateAt(this.plates,x,y);
+      node.hitArea = new Circle(0, 0, 55);
+      piece.drag = draggable(node, this.ctx.tw, {
+        onPick: () => sfx.tick(),
+        onDrop: (x, y) => {
+          if (this.done) return false;
+          const nearest = plateAt(this.plates, x, y);
           // Moving food back to the tray is also an undo. No exploratory move counts as wrong.
-          if(nearest<0 && y<this.view.h-260)return false;
-          piece.plate=nearest;this.layoutPieces();this.drawHint();sfx.bell(5,0.2);return true;
+          if (nearest < 0 && y < this.view.h - 260) return false;
+          piece.plate = nearest;
+          this.layoutPieces();
+          this.drawHint();
+          sfx.bell(5, 0.2);
+          return true;
         },
-      });this.pieces.push(piece);
+      });
+      this.pieces.push(piece);
     }
     this.resize(this.view);
-    if(quiet)return;
-    if(this.shapes){this.instruction();return;}
-    if(this.ctx.level===9) void this.ctx.instruct('kitchen.thirds-share');
-    else if(this.ctx.level===PIZZAS_LEVEL) void this.ctx.instruct('kitchen.pizzas-share');
-    else if(this.compare) void this.ctx.instruct('kitchen.compare-share');
-    else void this.ctx.instruct(this.plan.mode==='fraction'?'kitchen.fraction-share':'kitchen.share',this.plan.mode==='fraction'?{amount:this.request.name}:{n:this.plan.friends});
+    if (quiet) return;
+    if (this.shapes) {
+      this.instruction();
+      return;
+    }
+    if (this.ctx.level === 9) void this.ctx.instruct('kitchen.thirds-share');
+    else if (this.ctx.level === PIZZAS_LEVEL) void this.ctx.instruct('kitchen.pizzas-share');
+    else if (this.compare) void this.ctx.instruct('kitchen.compare-share');
+    else
+      void this.ctx.instruct(
+        this.plan.mode === 'fraction' ? 'kitchen.fraction-share' : 'kitchen.share',
+        this.plan.mode === 'fraction' ? { amount: this.request.name } : { n: this.plan.friends },
+      );
   }
   /** A tap on a tray piece sends it to the plate with the fewest; nothing a touch can do here is wrong. */
-  private deal(piece:Piece){
-    if(this.done)return;
-    this.idle=0;
-    if(piece.plate>=0){this.wiggle(piece.node);return;}
-    piece.plate=dealTo(this.counts());sfx.bell(5+piece.plate*2,0.3);
+  private deal(piece: Piece) {
+    if (this.done) return;
+    this.idle = 0;
+    if (piece.plate >= 0) {
+      this.wiggle(piece.node);
+      return;
+    }
+    piece.plate = dealTo(this.counts());
+    sfx.bell(5 + piece.plate * 2, 0.3);
     this.layoutPieces(true);
-    if(this.pieces.every(p=>p.plate>=0)){
-      this.done=true;
-      void this.eat().then(()=>this.ctx.say('kitchen.done')).then(()=>this.ctx.tw.wait(0.4)).then(()=>this.ctx.finish({misses:0,hints:0,discoveries:this.discoveries()}));
+    if (this.pieces.every((p) => p.plate >= 0)) {
+      this.done = true;
+      void this.eat()
+        .then(() => this.ctx.say('kitchen.done'))
+        .then(() => this.ctx.tw.wait(0.4))
+        .then(() => this.ctx.finish({ misses: 0, hints: 0, discoveries: this.discoveries() }));
     }
   }
-  private wiggle(f:Container){
-    this.ctx.tw.kill(f);f.rotation=0;
-    void this.ctx.tw.to(f,{rotation:0.14},{duration:0.08}).then(()=>this.ctx.tw.to(f,{rotation:-0.14},{duration:0.12})).then(()=>this.ctx.tw.to(f,{rotation:0},{duration:0.1}));
+  private wiggle(f: Container) {
+    this.ctx.tw.kill(f);
+    f.rotation = 0;
+    void this.ctx.tw
+      .to(f, { rotation: 0.14 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(f, { rotation: -0.14 }, { duration: 0.12 }))
+      .then(() => this.ctx.tw.to(f, { rotation: 0 }, { duration: 0.1 }));
   }
   /** The nearest tray piece to a touch anywhere else wiggles, so an empty-handed touch still answers. */
-  private wiggleNearest(x:number,y:number){
-    let best:Piece|undefined,d=Infinity;
-    for(const p of this.pieces)if(p.plate<0){const e=Math.hypot(p.node.x-x,p.node.y-y);if(e<d){d=e;best=p;}}
-    if(best)this.wiggle(best.node);
+  private wiggleNearest(x: number, y: number) {
+    let best: Piece | undefined,
+      d = Infinity;
+    for (const p of this.pieces)
+      if (p.plate < 0) {
+        const e = Math.hypot(p.node.x - x, p.node.y - y);
+        if (e < d) {
+          d = e;
+          best = p;
+        }
+      }
+    if (best) this.wiggle(best.node);
   }
   /** The served pieces slide to the friends' mouths and the friends chew (three munches), then are glad. */
-  private async eat(){
-    const tw=this.ctx.tw;
-    for(const p of this.pieces){
-      const plate=this.plates[p.plate];if(!plate)continue;
-      void tw.to(p.node,{x:plate.x,y:plate.y-100},{duration:0.5}).then(()=>tw.to(p.node.scale,{x:0.1,y:0.1},{duration:0.15})).then(()=>{p.node.visible=false;});
+  private async eat() {
+    const tw = this.ctx.tw;
+    for (const p of this.pieces) {
+      const plate = this.plates[p.plate];
+      if (!plate) continue;
+      void tw
+        .to(p.node, { x: plate.x, y: plate.y - 100 }, { duration: 0.5 })
+        .then(() => tw.to(p.node.scale, { x: 0.1, y: 0.1 }, { duration: 0.15 }))
+        .then(() => {
+          p.node.visible = false;
+        });
     }
     await tw.wait(0.75);
-    for(const f of this.friends){f.setMood('happy');f.hop(1);}
-    for(let i=0;i<3;i++){
+    for (const f of this.friends) {
+      f.setMood('happy');
+      f.hop(1);
+    }
+    for (let i = 0; i < 3; i++) {
       sfx.munch();
-      for(const f of this.friends)void tw.to(f.scale,{y:0.38},{duration:0.1}).then(()=>tw.to(f.scale,{y:0.45},{duration:0.1}));
+      for (const f of this.friends)
+        void tw
+          .to(f.scale, { y: 0.38 }, { duration: 0.1 })
+          .then(() => tw.to(f.scale, { y: 0.45 }, { duration: 0.1 }));
       await tw.wait(0.3);
     }
   }
@@ -386,70 +791,124 @@ class PetKitchen implements Game {
    * Level 11's miss: the two pieces lift off the plates and lie one over the other on the counter, left edges
    * together, so the big one is seen sticking out; then they go back. Seen, never scolded.
    */
-  private async showUnequal(speak:boolean){
-    if(this.overlaying||this.done)return;
-    this.overlaying=true;
-    const tw=this.ctx.tw, v=this.view, ps=this.pieces.filter(p=>p.plate>=0).sort((a,b)=>b.area-a.area);
-    if(ps.length<2){this.overlaying=false;return;}
-    const cx=v.w/2, cy=(this.plates[0].y+76+v.h-260)/2, big=ps[0].area*180;
-    ps.forEach(p=>{if(p.drag)p.drag.enabled=false;this.pieceLayer.addChild(p.node);});
-    const moves=ps.map((p,i)=>tw.to(p.node,{x:cx+(i?-(big-p.area*180)/2:0),y:cy},{duration:0.45}));
+  private async showUnequal(speak: boolean) {
+    if (this.overlaying || this.done) return;
+    this.overlaying = true;
+    const tw = this.ctx.tw,
+      v = this.view,
+      ps = this.pieces.filter((p) => p.plate >= 0).sort((a, b) => b.area - a.area);
+    if (ps.length < 2) {
+      this.overlaying = false;
+      return;
+    }
+    const cx = v.w / 2,
+      cy = (this.plates[0].y + 76 + v.h - 260) / 2,
+      big = ps[0].area * 180;
+    ps.forEach((p) => {
+      if (p.drag) p.drag.enabled = false;
+      this.pieceLayer.addChild(p.node);
+    });
+    const moves = ps.map((p, i) =>
+      tw.to(p.node, { x: cx + (i ? -(big - p.area * 180) / 2 : 0), y: cy }, { duration: 0.45 }),
+    );
     await Promise.all(moves);
-    if(speak)void this.ctx.say('kitchen.unequal');
+    if (speak) void this.ctx.say('kitchen.unequal');
     await tw.wait(1.6);
     this.layoutPieces(true);
-    for(const p of ps)if(p.drag)p.drag.enabled=true;
-    this.overlaying=false;
+    for (const p of ps) if (p.drag) p.drag.enabled = true;
+    this.overlaying = false;
   }
   /**
    * Level 14's fair serve: one tall half and one wide half (or two of the one shape when both sandwiches were cut the
    * same way) lift off the plates and lie one over the other in the middle, and the kitchen says they are the same
    * amount; then they go back to the plates for the meal.
    */
-  private async showSame(){
-    const pair=overlayPair(this.pieces.filter(p=>p.plate>=0));
-    if(!pair)return;
-    this.overlaying=true;
-    const tw=this.ctx.tw, v=this.view, cx=v.w/2, cy=this.wholesY(v);
-    for(const p of pair)this.pieceLayer.addChild(p.node);
-    await Promise.all(pair.map((p,i)=>tw.to(p.node,{x:cx,y:cy},{duration:0.45,delay:i*0.2})));
-    const {line,shape}=shapesLine(pair.map(p=>p.shape).filter((s):s is PieceShape=>s!==undefined));
-    await this.ctx.say(line,{shape});
+  private async showSame() {
+    const pair = overlayPair(this.pieces.filter((p) => p.plate >= 0));
+    if (!pair) return;
+    this.overlaying = true;
+    const tw = this.ctx.tw,
+      v = this.view,
+      cx = v.w / 2,
+      cy = this.wholesY(v);
+    for (const p of pair) this.pieceLayer.addChild(p.node);
+    await Promise.all(
+      pair.map((p, i) => tw.to(p.node, { x: cx, y: cy }, { duration: 0.45, delay: i * 0.2 })),
+    );
+    const { line, shape } = shapesLine(
+      pair.map((p) => p.shape).filter((s): s is PieceShape => s !== undefined),
+    );
+    await this.ctx.say(line, { shape });
     await tw.wait(0.5);
     this.layoutPieces(true);
     await tw.wait(0.4);
-    this.overlaying=false;
+    this.overlaying = false;
   }
   /** The journal entries this round showed, filed by the shell when it ends. */
-  private discoveries(){return kitchenDiscoveries(this.plan.mode,this.split,this.splitLopsided,this.counts(),this.pieces.length).map(k=>entryId('pet-kitchen',k));}
+  private discoveries() {
+    return kitchenDiscoveries(
+      this.plan.mode,
+      this.split,
+      this.splitLopsided,
+      this.counts(),
+      this.pieces.length,
+    ).map((k) => entryId('pet-kitchen', k));
+  }
   /** Level 13's serve: both friends must have what their bubble shows; then the question. */
-  private checkCompare(){
-    const pair=this.pair!;
-    if(this.split&&servesBoth(pair,this.split,this.counts())){
-      this.asking=true;this.glow.clear();sfx.sparkle();
-      for(const p of this.pieces){if(p.drag)p.drag.enabled=false;p.node.eventMode='none';}
-      this.resize(this.view);this.instruction();return;
+  private checkCompare() {
+    const pair = this.pair!;
+    if (this.split && servesBoth(pair, this.split, this.counts())) {
+      this.asking = true;
+      this.glow.clear();
+      sfx.sparkle();
+      for (const p of this.pieces) {
+        if (p.drag) p.drag.enabled = false;
+        p.node.eventMode = 'none';
+      }
+      this.resize(this.view);
+      this.instruction();
+      return;
     }
-    this.misses++;this.wrong++;sfx.boing();
-    if(this.wrong===2){this.assisted=true;this.hints++;}
-    if(!this.split)this.instruction();
+    this.misses++;
+    this.wrong++;
+    sfx.boing();
+    if (this.wrong === 2) {
+      this.assisted = true;
+      this.hints++;
+    }
+    if (!this.split) this.instruction();
     // Halves cannot make a quarter: the round arrow (glowing from the second miss) and quarters fix it.
-    else if(compareCut(pair,[this.split])!==this.split)void this.ctx.say('kitchen.recut');
-    else{const i=firstUnmet(pair,this.split,this.counts());void this.ctx.say('kitchen.compare-unmet',{friend:this.names[i],amount:pair[i].name});}
+    else if (compareCut(pair, [this.split]) !== this.split) void this.ctx.say('kitchen.recut');
+    else {
+      const i = firstUnmet(pair, this.split, this.counts());
+      void this.ctx.say('kitchen.compare-unmet', { friend: this.names[i], amount: pair[i].name });
+    }
     this.drawHint();
   }
   /** Level 13's question: a tap on the plate with more finishes; the other plate lays both servings one over the other. */
-  private pickMore(i:number){
-    if(!this.asking||this.done||this.overlaying)return;
-    this.idle=0;
-    const pair=this.pair!, more=morePlate(pair), words={more:pair[more].name,less:pair[1-more].name};
-    if(i===more){
-      this.done=true;this.glow.clear();sfx.sparkle();
-      void this.ctx.say('kitchen.compare-right',words).then(()=>this.eat()).then(()=>this.ctx.tw.wait(0.4)).then(()=>this.ctx.finish({misses:this.misses,hints:this.hints,discoveries:this.discoveries()}));
+  private pickMore(i: number) {
+    if (!this.asking || this.done || this.overlaying) return;
+    this.idle = 0;
+    const pair = this.pair!,
+      more = morePlate(pair),
+      words = { more: pair[more].name, less: pair[1 - more].name };
+    if (i === more) {
+      this.done = true;
+      this.glow.clear();
+      sfx.sparkle();
+      void this.ctx
+        .say('kitchen.compare-right', words)
+        .then(() => this.eat())
+        .then(() => this.ctx.tw.wait(0.4))
+        .then(() =>
+          this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: this.discoveries() }),
+        );
       return;
     }
-    this.misses++;this.askWrong++;sfx.boing();
-    if(this.askWrong===2)this.hints++;
+    this.misses++;
+    this.askWrong++;
+    sfx.boing();
+    if (this.askWrong === 2) this.hints++;
     void this.showServings(words);
     this.drawHint();
   }
@@ -457,235 +916,522 @@ class PetKitchen implements Game {
    * Level 13's wrong "more": each friend's serving slides to the middle of the counter, keeping its shape, the two
    * lying one over the other at 0.7 so the bigger one is seen sticking out; then they go back to the plates.
    */
-  private async showServings(words:{more:string;less:string}){
-    this.overlaying=true;
-    const tw=this.ctx.tw, v=this.view, cx=v.w/2, cy=this.wholesY(v);
-    const served=this.pieces.filter(p=>p.plate>=0), homes=served.map(p=>({x:p.node.x,y:p.node.y}));
-    await Promise.all(served.map(p=>{const plate=this.plates[p.plate];p.node.alpha=0.7;return tw.to(p.node,{x:cx+p.node.x-plate.x,y:cy+p.node.y-plate.y},{duration:0.45});}));
-    void this.ctx.say('kitchen.compare-wrong',words);
+  private async showServings(words: { more: string; less: string }) {
+    this.overlaying = true;
+    const tw = this.ctx.tw,
+      v = this.view,
+      cx = v.w / 2,
+      cy = this.wholesY(v);
+    const served = this.pieces.filter((p) => p.plate >= 0),
+      homes = served.map((p) => ({ x: p.node.x, y: p.node.y }));
+    await Promise.all(
+      served.map((p) => {
+        const plate = this.plates[p.plate];
+        p.node.alpha = 0.7;
+        return tw.to(p.node, { x: cx + p.node.x - plate.x, y: cy + p.node.y - plate.y }, { duration: 0.45 });
+      }),
+    );
+    void this.ctx.say('kitchen.compare-wrong', words);
     await tw.wait(1.2);
-    for(const p of served)p.node.alpha=1;
+    for (const p of served) p.node.alpha = 1;
     // Back to the plates they came from (the pieces no longer drag, so they slide rather than snap).
-    await Promise.all(served.map((p,i)=>tw.to(p.node,{x:homes[i].x,y:homes[i].y},{duration:0.3})));
+    await Promise.all(
+      served.map((p, i) => tw.to(p.node, { x: homes[i].x, y: homes[i].y }, { duration: 0.3 })),
+    );
     this.layoutPieces();
-    this.overlaying=false;
+    this.overlaying = false;
   }
-  private check(){
-    if(this.done||this.overlaying||this.asking)return;
-    if(this.compare){this.checkCompare();return;}
-    if(this.plan.mode==='cup'){this.checkCup();return;}
-    const ok=this.plan.mode==='share'?fair(this.counts(),this.pieces.length)&&fairAreas(this.areaSums())&&!this.uncutWholes():this.plan.mode==='fraction'?servesFraction(this.request,this.split,this.counts()[0]):this.plan.mode==='half-recipe'?halved(this.base,this.made):doubled(this.base,this.made);
-    if(ok){
-      this.done=true;this.pieces.forEach(p=>{if(p.drag)p.drag.enabled=false;});this.glow.clear();sfx.sparkle();
-      const finish=()=>this.ctx.finish({misses:this.misses,hints:this.hints,discoveries:this.discoveries()});
-      if(this.plan.mode==='fraction'){
-        // Count the served pieces aloud, each one hopping as it is named: "one quarter, two quarters: one half".
-        const served=this.pieces.filter(p=>p.plate===0);
-        served.forEach((p,i)=>void this.ctx.tw.wait(0.15+i*0.55).then(()=>{sfx.pop(4+i);return this.ctx.tw.to(p.node.scale,{x:1.2,y:1.2},{duration:0.15});}).then(()=>this.ctx.tw.to(p.node.scale,{x:1,y:1},{duration:0.2})));
-        void this.ctx.say('kitchen.fraction-count',{count:countAloud(this.split,served.length),amount:this.request.name}).then(()=>this.eat()).then(()=>this.ctx.tw.wait(0.3)).then(finish);
-      } else if(this.plan.mode==='share'){
-        // Level 14: before the meal, a tall half and a wide half lie one over the other, seen to be the same amount.
-        void (this.shapes?this.showSame():Promise.resolve()).then(()=>this.eat()).then(()=>this.ctx.say(this.ctx.level===PIZZAS_LEVEL?'kitchen.pizzas-done':'kitchen.done')).then(()=>this.ctx.tw.wait(0.4)).then(finish);
-      } else {void this.ctx.say('kitchen.done');void this.ctx.tw.wait(1.1).then(finish);}
+  private check() {
+    if (this.done || this.overlaying || this.asking) return;
+    if (this.compare) {
+      this.checkCompare();
       return;
     }
-    this.misses++;this.wrong++;sfx.boing();
-    if(this.wrong===2){this.assisted=true;this.hints++;}
-    if(this.plan.mode==='share'||this.plan.mode==='fraction'){
-      const trouble=this.pieces.length&&this.uncutWholes()?'whole':serveTrouble(this.counts(),this.pieces.length,this.areaSums());
-      if(trouble==='uncut')this.instruction();
+    if (this.plan.mode === 'cup') {
+      this.checkCup();
+      return;
+    }
+    const ok =
+      this.plan.mode === 'share'
+        ? fair(this.counts(), this.pieces.length) && fairAreas(this.areaSums()) && !this.uncutWholes()
+        : this.plan.mode === 'fraction'
+          ? servesFraction(this.request, this.split, this.counts()[0])
+          : this.plan.mode === 'half-recipe'
+            ? halved(this.base, this.made)
+            : doubled(this.base, this.made);
+    if (ok) {
+      this.done = true;
+      this.pieces.forEach((p) => {
+        if (p.drag) p.drag.enabled = false;
+      });
+      this.glow.clear();
+      sfx.sparkle();
+      const finish = () =>
+        this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: this.discoveries() });
+      if (this.plan.mode === 'fraction') {
+        // Count the served pieces aloud, each one hopping as it is named: "one quarter, two quarters: one half".
+        const served = this.pieces.filter((p) => p.plate === 0);
+        served.forEach(
+          (p, i) =>
+            void this.ctx.tw
+              .wait(0.15 + i * 0.55)
+              .then(() => {
+                sfx.pop(4 + i);
+                return this.ctx.tw.to(p.node.scale, { x: 1.2, y: 1.2 }, { duration: 0.15 });
+              })
+              .then(() => this.ctx.tw.to(p.node.scale, { x: 1, y: 1 }, { duration: 0.2 })),
+        );
+        void this.ctx
+          .say('kitchen.fraction-count', {
+            count: countAloud(this.split, served.length),
+            amount: this.request.name,
+          })
+          .then(() => this.eat())
+          .then(() => this.ctx.tw.wait(0.3))
+          .then(finish);
+      } else if (this.plan.mode === 'share') {
+        // Level 14: before the meal, a tall half and a wide half lie one over the other, seen to be the same amount.
+        void (this.shapes ? this.showSame() : Promise.resolve())
+          .then(() => this.eat())
+          .then(() => this.ctx.say(this.ctx.level === PIZZAS_LEVEL ? 'kitchen.pizzas-done' : 'kitchen.done'))
+          .then(() => this.ctx.tw.wait(0.4))
+          .then(finish);
+      } else {
+        void this.ctx.say('kitchen.done');
+        void this.ctx.tw.wait(1.1).then(finish);
+      }
+      return;
+    }
+    this.misses++;
+    this.wrong++;
+    sfx.boing();
+    if (this.wrong === 2) {
+      this.assisted = true;
+      this.hints++;
+    }
+    if (this.plan.mode === 'share' || this.plan.mode === 'fraction') {
+      const trouble =
+        this.pieces.length && this.uncutWholes()
+          ? 'whole'
+          : serveTrouble(this.counts(), this.pieces.length, this.areaSums());
+      if (trouble === 'uncut') this.instruction();
       // Level 14 with one sandwich still whole: the other cutting picture is the fix (the second miss glows it).
-      else if(trouble==='whole')void this.ctx.say('kitchen.shapes-whole');
-      else if(trouble==='lopsided')void this.showUnequal(!(this.assisted&&this.wrong===2));
-      else if(trouble==='leftover'){if(!this.assisted||this.wrong!==2)void this.ctx.say('kitchen.leftover');}
-      else if(trouble==='empty')void this.ctx.say('kitchen.empty');
+      else if (trouble === 'whole') void this.ctx.say('kitchen.shapes-whole');
+      else if (trouble === 'lopsided') void this.showUnequal(!(this.assisted && this.wrong === 2));
+      else if (trouble === 'leftover') {
+        if (!this.assisted || this.wrong !== 2) void this.ctx.say('kitchen.leftover');
+      } else if (trouble === 'empty') void this.ctx.say('kitchen.empty');
       // The glow that comes with a second miss says the recut line itself.
-      else if(trouble==='short'){if(!this.assisted||this.wrong!==2)void this.ctx.say('kitchen.short');}
-      else void this.ctx.say(this.plan.mode==='share'?'kitchen.fair':'kitchen.fraction-hint');
-    } else void this.ctx.say(this.plan.mode==='half-recipe'?'kitchen.half-hint':'kitchen.double-hint');
+      else if (trouble === 'short') {
+        if (!this.assisted || this.wrong !== 2) void this.ctx.say('kitchen.short');
+      } else void this.ctx.say(this.plan.mode === 'share' ? 'kitchen.fair' : 'kitchen.fraction-hint');
+    } else void this.ctx.say(this.plan.mode === 'half-recipe' ? 'kitchen.half-hint' : 'kitchen.double-hint');
     this.drawHint();
   }
-  private drawHint(){
+  private drawHint() {
     this.glow.clear();
-    if(this.compare){if(!this.done)this.drawCompareHint();return;}
-    if(!this.assisted||this.done)return;
-    if(this.plan.mode==='cup'){
-      // The useful step: the back arrow when there is too much, else the scoop that gets nearest the line, else serve.
-      const fix=cupFix(this.pours), b=fix==='undo'?this.undo:fix?this.ingredients[SCOOPS.indexOf(fix)]:this.serve;
-      this.glow.circle(b.x,b.y,65).stroke({width:8,color:swatch.yellow.line});return;
+    if (this.compare) {
+      if (!this.done) this.drawCompareHint();
+      return;
     }
-    if(this.plan.mode==='share'||this.plan.mode==='fraction') {
-      if(this.shapes&&this.uncutWholes()){
+    if (!this.assisted || this.done) return;
+    if (this.plan.mode === 'cup') {
+      // The useful step: the back arrow when there is too much, else the scoop that gets nearest the line, else serve.
+      const fix = cupFix(this.pours),
+        b = fix === 'undo' ? this.undo : fix ? this.ingredients[SCOOPS.indexOf(fix)] : this.serve;
+      this.glow.circle(b.x, b.y, 65).stroke({ width: 8, color: swatch.yellow.line });
+      return;
+    }
+    if (this.plan.mode === 'share' || this.plan.mode === 'fraction') {
+      if (this.shapes && this.uncutWholes()) {
         // A sandwich still whole: glow the cutting picture not used yet (or the first, after the round arrow).
-        const way=nextWay(this.cutWays), b=this.cuts[Math.max(0,this.cutKinds.findIndex(k=>k.way===way))];
-        this.glow.circle(b.x,b.y,62).stroke({width:8,color:swatch.yellow.line});return;
+        const way = nextWay(this.cutWays),
+          b =
+            this.cuts[
+              Math.max(
+                0,
+                this.cutKinds.findIndex((k) => k.way === way),
+              )
+            ];
+        this.glow.circle(b.x, b.y, 62).stroke({ width: 8, color: swatch.yellow.line });
+        return;
       }
-      if(!this.split){
+      if (!this.split) {
         // Nothing cut yet: glow the cut that works, not the hidden round arrow.
-        const wanted=this.plan.mode==='fraction'?fractionCut(this.request,this.plan.cuts):fairCut(this.plan);
-        const b=this.cuts[Math.max(0,this.cutKinds.findIndex(k=>k.parts===wanted&&!k.lopsided))];
-        this.glow.circle(b.x,b.y,62).stroke({width:8,color:swatch.yellow.line});return;
+        const wanted =
+          this.plan.mode === 'fraction' ? fractionCut(this.request, this.plan.cuts) : fairCut(this.plan);
+        const b =
+          this.cuts[
+            Math.max(
+              0,
+              this.cutKinds.findIndex((k) => k.parts === wanted && !k.lopsided),
+            )
+          ];
+        this.glow.circle(b.x, b.y, 62).stroke({ width: 8, color: swatch.yellow.line });
+        return;
       }
-      if(this.plan.mode==='fraction'&&!fractionCut(this.request,[this.split])){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut');return;}
+      if (this.plan.mode === 'fraction' && !fractionCut(this.request, [this.split])) {
+        this.glow.circle(this.recut.x, this.recut.y, 62).stroke({ width: 8, color: swatch.yellow.line });
+        void this.ctx.say('kitchen.recut');
+        return;
+      }
       // A cut that leaves a piece over or makes unequal pieces: the round arrow, then a different cut.
-      if(this.plan.mode==='share'&&this.ctx.level>=SAME_LEVEL&&(this.splitLopsided||!cutShares(this.plan,this.split))){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut-other');return;}
-      if(this.pieces.length<this.plates.length){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut');return;}
-      const p=this.plates[nextPlate(this.counts())];this.glow.circle(p.x,p.y,84).stroke({width:8,color:swatch.yellow.line});
+      if (
+        this.plan.mode === 'share' &&
+        this.ctx.level >= SAME_LEVEL &&
+        (this.splitLopsided || !cutShares(this.plan, this.split))
+      ) {
+        this.glow.circle(this.recut.x, this.recut.y, 62).stroke({ width: 8, color: swatch.yellow.line });
+        void this.ctx.say('kitchen.recut-other');
+        return;
+      }
+      if (this.pieces.length < this.plates.length) {
+        this.glow.circle(this.recut.x, this.recut.y, 62).stroke({ width: 8, color: swatch.yellow.line });
+        void this.ctx.say('kitchen.recut');
+        return;
+      }
+      const p = this.plates[nextPlate(this.counts())];
+      this.glow.circle(p.x, p.y, 84).stroke({ width: 8, color: swatch.yellow.line });
     } else {
-      const i=this.plan.mode==='half-recipe'?halfIngredientHint(this.base,this.made):ingredientHint(this.base,this.made);if(i<0)return;
-      const wanted=this.plan.mode==='half-recipe'?this.base[i]/2:this.base[i]*2;
-      const b=this.made[i]>wanted?this.undo:this.ingredients[i];this.glow.circle(b.x,b.y,65).stroke({width:8,color:swatch.yellow.line});
+      const i =
+        this.plan.mode === 'half-recipe'
+          ? halfIngredientHint(this.base, this.made)
+          : ingredientHint(this.base, this.made);
+      if (i < 0) return;
+      const wanted = this.plan.mode === 'half-recipe' ? this.base[i] / 2 : this.base[i] * 2;
+      const b = this.made[i] > wanted ? this.undo : this.ingredients[i];
+      this.glow.circle(b.x, b.y, 65).stroke({ width: 8, color: swatch.yellow.line });
     }
   }
   /** Level 13's glow: the plate with more after the second wrong tap; while serving, the next useful control. */
-  private drawCompareHint(){
-    const pair=this.pair!, ring=(b:{x:number;y:number},r=62)=>this.glow.circle(b.x,b.y,r).stroke({width:8,color:swatch.yellow.line});
-    if(this.asking){if(this.askWrong>=2)ring(this.plates[morePlate(pair)],84);return;}
-    if(!this.assisted)return;
-    const wanted=compareCut(pair,this.plan.cuts);
-    if(!this.split){ring(this.cuts[Math.max(0,this.cutKinds.findIndex(k=>k.parts===wanted))]);return;}
-    if(this.split!==wanted){ring(this.recut);return;}
-    const i=firstUnmet(pair,this.split,this.counts());
-    if(i<0)ring(this.serve);else ring(this.plates[i],84);
+  private drawCompareHint() {
+    const pair = this.pair!,
+      ring = (b: { x: number; y: number }, r = 62) =>
+        this.glow.circle(b.x, b.y, r).stroke({ width: 8, color: swatch.yellow.line });
+    if (this.asking) {
+      if (this.askWrong >= 2) ring(this.plates[morePlate(pair)], 84);
+      return;
+    }
+    if (!this.assisted) return;
+    const wanted = compareCut(pair, this.plan.cuts);
+    if (!this.split) {
+      ring(
+        this.cuts[
+          Math.max(
+            0,
+            this.cutKinds.findIndex((k) => k.parts === wanted),
+          )
+        ],
+      );
+      return;
+    }
+    if (this.split !== wanted) {
+      ring(this.recut);
+      return;
+    }
+    const i = firstUnmet(pair, this.split, this.counts());
+    if (i < 0) ring(this.serve);
+    else ring(this.plates[i], 84);
   }
-  private layoutPieces(animate=false){
-    const v=this.view, offsets=this.plates.map(()=>0);
-    const xs=spread(4,200,v.w-80,145), dx=this.shapes?36:32;
-    this.pieces.forEach((p,i)=>{
-      const slot=p.plate<0?i:offsets[p.plate]++, plate=this.plates[p.plate];
-      const home=p.plate<0?{x:xs[i%4],y:v.h-90-Math.floor(i/4)*125}:{x:plate.x+(slot%2?dx:-dx),y:plate.y+(Math.floor(slot/2)%2?30:-24)};
-      if(!p.drag){
-        if(animate&&p.node.x+p.node.y!==0&&(p.node.x!==home.x||p.node.y!==home.y))void this.ctx.tw.to(p.node,{x:home.x,y:home.y},{duration:0.28});
-        else{this.ctx.tw.kill(p.node);p.node.position.set(home.x,home.y);}
+  private layoutPieces(animate = false) {
+    const v = this.view,
+      offsets = this.plates.map(() => 0);
+    const xs = spread(4, 200, v.w - 80, 145),
+      dx = this.shapes ? 36 : 32;
+    this.pieces.forEach((p, i) => {
+      const slot = p.plate < 0 ? i : offsets[p.plate]++,
+        plate = this.plates[p.plate];
+      const home =
+        p.plate < 0
+          ? { x: xs[i % 4], y: v.h - 90 - Math.floor(i / 4) * 125 }
+          : { x: plate.x + (slot % 2 ? dx : -dx), y: plate.y + (Math.floor(slot / 2) % 2 ? 30 : -24) };
+      if (!p.drag) {
+        if (animate && p.node.x + p.node.y !== 0 && (p.node.x !== home.x || p.node.y !== home.y))
+          void this.ctx.tw.to(p.node, { x: home.x, y: home.y }, { duration: 0.28 });
+        else {
+          this.ctx.tw.kill(p.node);
+          p.node.position.set(home.x, home.y);
+        }
         return;
       }
-      p.drag.home=home;if(!p.drag.dragging){this.ctx.tw.kill(p.node);p.node.position.set(home.x,home.y);}
+      p.drag.home = home;
+      if (!p.drag.dragging) {
+        this.ctx.tw.kill(p.node);
+        p.node.position.set(home.x, home.y);
+      }
     });
   }
-  private drawMeal(){
-    for(const c of this.meal.removeChildren())c.destroy({children:true});
-    if(this.plan.mode==='cup'){this.meal.addChild(jug(this.pours));return;}
-    this.made.forEach((n,i)=>{for(let j=0;j<n;j++){const f=fruit(this.kinds[i]);f.position.set(-140+i*170+(j%3)*45,Math.floor(j/3)*55);this.meal.addChild(f);}});
+  private drawMeal() {
+    for (const c of this.meal.removeChildren()) c.destroy({ children: true });
+    if (this.plan.mode === 'cup') {
+      this.meal.addChild(jug(this.pours));
+      return;
+    }
+    this.made.forEach((n, i) => {
+      for (let j = 0; j < n; j++) {
+        const f = fruit(this.kinds[i]);
+        f.position.set(-140 + i * 170 + (j % 3) * 45, Math.floor(j / 3) * 55);
+        this.meal.addChild(f);
+      }
+    });
   }
-  private instruction(){
-    if(this.tapDeal){void this.ctx.instruct('kitchen.deal');return;}
-    if(this.plan.mode==='cup'){void this.ctx.instruct('kitchen.cup');return;}
-    if(this.compare){void this.ctx.instruct(this.asking?'kitchen.compare-which':this.split?'kitchen.compare-share':'kitchen.compare');return;}
-    if(this.shapes){void this.ctx.instruct(!this.cutWays.length?'kitchen.shapes-cut':this.uncutWholes()?'kitchen.shapes-other':'kitchen.shapes-share');return;}
-    if(this.ctx.level===9) { void this.ctx.instruct(this.split?'kitchen.thirds-share':'kitchen.thirds-cut'); return; }
-    if(this.ctx.level===SAME_LEVEL&&!this.split) { void this.ctx.instruct('kitchen.same'); return; }
-    if(this.ctx.level===PIZZAS_LEVEL) { void this.ctx.instruct(this.split?'kitchen.pizzas-share':'kitchen.pizzas-cut'); return; }
-    if(this.plan.mode==='half-recipe')void this.ctx.instruct('kitchen.half');
-    else if(this.plan.mode==='recipe')void this.ctx.instruct('kitchen.double');
-    else if(this.plan.mode==='fraction')void this.ctx.instruct(this.split?'kitchen.fraction-share':'kitchen.fraction',{amount:this.request.name});
-    else void this.ctx.instruct(this.split?'kitchen.share':'kitchen.cut',{n:this.plan.friends});
+  private instruction() {
+    if (this.tapDeal) {
+      void this.ctx.instruct('kitchen.deal');
+      return;
+    }
+    if (this.plan.mode === 'cup') {
+      void this.ctx.instruct('kitchen.cup');
+      return;
+    }
+    if (this.compare) {
+      void this.ctx.instruct(
+        this.asking ? 'kitchen.compare-which' : this.split ? 'kitchen.compare-share' : 'kitchen.compare',
+      );
+      return;
+    }
+    if (this.shapes) {
+      void this.ctx.instruct(
+        !this.cutWays.length
+          ? 'kitchen.shapes-cut'
+          : this.uncutWholes()
+            ? 'kitchen.shapes-other'
+            : 'kitchen.shapes-share',
+      );
+      return;
+    }
+    if (this.ctx.level === 9) {
+      void this.ctx.instruct(this.split ? 'kitchen.thirds-share' : 'kitchen.thirds-cut');
+      return;
+    }
+    if (this.ctx.level === SAME_LEVEL && !this.split) {
+      void this.ctx.instruct('kitchen.same');
+      return;
+    }
+    if (this.ctx.level === PIZZAS_LEVEL) {
+      void this.ctx.instruct(this.split ? 'kitchen.pizzas-share' : 'kitchen.pizzas-cut');
+      return;
+    }
+    if (this.plan.mode === 'half-recipe') void this.ctx.instruct('kitchen.half');
+    else if (this.plan.mode === 'recipe') void this.ctx.instruct('kitchen.double');
+    else if (this.plan.mode === 'fraction')
+      void this.ctx.instruct(this.split ? 'kitchen.fraction-share' : 'kitchen.fraction', {
+        amount: this.request.name,
+      });
+    else void this.ctx.instruct(this.split ? 'kitchen.share' : 'kitchen.cut', { n: this.plan.friends });
   }
   /** A touch on the uncut food: it wiggles and the cut instruction comes again. Free, never a miss. */
-  private poke(f:Container){
-    if(this.done||!this.uncutWholes())return;
-    this.idle=0;sfx.squish();this.ctx.tw.kill(f);f.rotation=0;
-    void this.ctx.tw.to(f,{rotation:0.12},{duration:0.08}).then(()=>this.ctx.tw.to(f,{rotation:-0.12},{duration:0.12})).then(()=>this.ctx.tw.to(f,{rotation:0},{duration:0.1}));
-    if(this.clock-this.lastPoke>3){this.lastPoke=this.clock;this.instruction();}
+  private poke(f: Container) {
+    if (this.done || !this.uncutWholes()) return;
+    this.idle = 0;
+    sfx.squish();
+    this.ctx.tw.kill(f);
+    f.rotation = 0;
+    void this.ctx.tw
+      .to(f, { rotation: 0.12 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(f, { rotation: -0.12 }, { duration: 0.12 }))
+      .then(() => this.ctx.tw.to(f, { rotation: 0 }, { duration: 0.1 }));
+    if (this.clock - this.lastPoke > 3) {
+      this.lastPoke = this.clock;
+      this.instruction();
+    }
   }
   /** Level 14's sandwich row, just under the plates and above the counter (also where the overlay lies). */
-  private wholesY(v:View){return Math.min(v.h-260-72,Math.max(310,v.h*0.36)+190);}
-  start(){this.instruction();}
-  resize(v:View){
-  this.view=v;
-    this.background.clear().rect(0,0,v.w,v.h).fill(swatch.orange.light).roundRect(165,v.h-260,v.w-190,245,30).fill(cream);
-    this.serve.position.set(v.w-75,65);this.undo.position.set(v.w-75,v.h-80);this.recut.position.set(205,65);
-    this.serve.visible=!this.tapDeal&&!this.asking;this.undo.visible=this.plan.mode==='recipe'||this.plan.mode==='half-recipe'||this.plan.mode==='cup';this.recut.visible=(this.plan.mode==='share'||this.plan.mode==='fraction'||this.compare)&&this.split>0&&!this.asking;
-    const px=spread(this.plates.length,180,v.w-50,185);
-    this.plates.forEach((p,i)=>{p.position.set(px[i],Math.max(310,v.h*0.36));p.visible=this.split>0||this.shapes||this.compare;});
-    // Level 13's bubbles stand on the outer side of their own friends, clear of the other plate.
-    this.bubbles.forEach((b,i)=>b.position.set(px[i]+(i?110:-110),Math.max(310,v.h*0.36)-150));
-    this.bubble.position.set(px[0]+125,Math.max(310,v.h*0.36)-150);
-    for(const c of this.food.removeChildren()){this.ctx.tw.kill(c);c.destroy({children:true});}
-    const uncut=this.uncutWholes();
-    if(uncut&&(this.plan.mode==='share'||this.plan.mode==='fraction'||this.compare))for(let i=this.plan.wholes-uncut;i<this.plan.wholes;i++){
-      const f=wholeOf(this.whole,this.ctx.level);onTap(f,()=>this.poke(f),{radius:90});this.food.addChild(f);
-      // Level 14 keeps the plates in view, so its sandwiches sit between the plates and the counter, each at its own place.
-      if(this.shapes||this.compare){f.scale.set(0.9);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,this.wholesY(v));}
-      else{f.scale.set(1.2);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,v.h*0.4);}
-    }
-    const xs=spread(this.cuts.length,250,v.w-180,200);
-    // Level 14's cutting pictures stand under the green arrow, clear of the pieces in the counter.
-    this.cuts.forEach((b,i)=>{if(this.shapes)b.position.set(v.w-75,200+i*120);else b.position.set(xs[i],v.h-110);b.visible=uncut>0;});
-    if(this.plan.mode==='cup'){
-      // The card under the top buttons, the jug filling the space between it and the counter with the scoops.
-      const top=230, bottom=v.h-290, fit=Math.max(0.8,Math.min(1.7,(bottom-top)/(CUP_CAP*QUARTER_H+20)));
-      this.recipeCard.position.set(v.w/2,150);this.meal.scale.set(fit);this.meal.position.set(v.w/2,(top+bottom)/2);
-      this.ingredients.forEach((b,i)=>b.position.set(v.w/2+(i?130:-130),v.h-95));
-    } else {
-      this.recipeCard.position.set(v.w/2,215);this.meal.position.set(v.w/2,v.h*0.5);
-      this.ingredients.forEach((b,i)=>b.position.set(v.w/2+(i?110:-110),v.h-95));
-    }
-    if(this.plan.mode==='recipe'||this.plan.mode==='half-recipe')this.background.ellipse(v.w/2,v.h*0.5+30,245,110).fill(swatch.white.fill).stroke({width:7,color:swatch.blue.line});
-    this.layoutPieces();this.drawHint();
+  private wholesY(v: View) {
+    return Math.min(v.h - 260 - 72, Math.max(310, v.h * 0.36) + 190);
   }
-  update(dt:number){
-    this.clock+=dt;
-    if(this.tapDeal&&!this.done&&(this.idle+=dt)>=6){
-      this.idle=0;this.instruction();
-      const loose=this.pieces.find(p=>p.plate<0);if(loose)this.wiggle(loose.node);
+  start() {
+    this.instruction();
+  }
+  resize(v: View) {
+    this.view = v;
+    this.background
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(swatch.orange.light)
+      .roundRect(165, v.h - 260, v.w - 190, 245, 30)
+      .fill(cream);
+    this.serve.position.set(v.w - 75, 65);
+    this.undo.position.set(v.w - 75, v.h - 80);
+    this.recut.position.set(205, 65);
+    this.serve.visible = !this.tapDeal && !this.asking;
+    this.undo.visible =
+      this.plan.mode === 'recipe' || this.plan.mode === 'half-recipe' || this.plan.mode === 'cup';
+    this.recut.visible =
+      (this.plan.mode === 'share' || this.plan.mode === 'fraction' || this.compare) &&
+      this.split > 0 &&
+      !this.asking;
+    const px = spread(this.plates.length, 180, v.w - 50, 185);
+    this.plates.forEach((p, i) => {
+      p.position.set(px[i], Math.max(310, v.h * 0.36));
+      p.visible = this.split > 0 || this.shapes || this.compare;
+    });
+    // Level 13's bubbles stand on the outer side of their own friends, clear of the other plate.
+    this.bubbles.forEach((b, i) => b.position.set(px[i] + (i ? 110 : -110), Math.max(310, v.h * 0.36) - 150));
+    this.bubble.position.set(px[0] + 125, Math.max(310, v.h * 0.36) - 150);
+    for (const c of this.food.removeChildren()) {
+      this.ctx.tw.kill(c);
+      c.destroy({ children: true });
     }
-    if(!this.done&&this.uncutWholes()&&this.cuts.length&&(this.idle+=dt)>=6){
-      this.idle=0;
-      this.cuts.forEach((b,i)=>void this.ctx.tw.to(b.scale,{x:1.18,y:1.18},{duration:0.18,delay:i*0.12}).then(()=>this.ctx.tw.to(b.scale,{x:1,y:1},{duration:0.25})));
+    const uncut = this.uncutWholes();
+    if (uncut && (this.plan.mode === 'share' || this.plan.mode === 'fraction' || this.compare))
+      for (let i = this.plan.wholes - uncut; i < this.plan.wholes; i++) {
+        const f = wholeOf(this.whole, this.ctx.level);
+        onTap(f, () => this.poke(f), { radius: 90 });
+        this.food.addChild(f);
+        // Level 14 keeps the plates in view, so its sandwiches sit between the plates and the counter, each at its own place.
+        if (this.shapes || this.compare) {
+          f.scale.set(0.9);
+          f.position.set(v.w / 2 + (i - (this.plan.wholes - 1) / 2) * 240, this.wholesY(v));
+        } else {
+          f.scale.set(1.2);
+          f.position.set(v.w / 2 + (i - (this.plan.wholes - 1) / 2) * 240, v.h * 0.4);
+        }
+      }
+    const xs = spread(this.cuts.length, 250, v.w - 180, 200);
+    // Level 14's cutting pictures stand under the green arrow, clear of the pieces in the counter.
+    this.cuts.forEach((b, i) => {
+      if (this.shapes) b.position.set(v.w - 75, 200 + i * 120);
+      else b.position.set(xs[i], v.h - 110);
+      b.visible = uncut > 0;
+    });
+    if (this.plan.mode === 'cup') {
+      // The card under the top buttons, the jug filling the space between it and the counter with the scoops.
+      const top = 230,
+        bottom = v.h - 290,
+        fit = Math.max(0.8, Math.min(1.7, (bottom - top) / (CUP_CAP * QUARTER_H + 20)));
+      this.recipeCard.position.set(v.w / 2, 150);
+      this.meal.scale.set(fit);
+      this.meal.position.set(v.w / 2, (top + bottom) / 2);
+      this.ingredients.forEach((b, i) => b.position.set(v.w / 2 + (i ? 130 : -130), v.h - 95));
+    } else {
+      this.recipeCard.position.set(v.w / 2, 215);
+      this.meal.position.set(v.w / 2, v.h * 0.5);
+      this.ingredients.forEach((b, i) => b.position.set(v.w / 2 + (i ? 110 : -110), v.h - 95));
     }
-    this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)this.meal.rotation=Math.sin(this.clock*7)*0.04;}
+    if (this.plan.mode === 'recipe' || this.plan.mode === 'half-recipe')
+      this.background
+        .ellipse(v.w / 2, v.h * 0.5 + 30, 245, 110)
+        .fill(swatch.white.fill)
+        .stroke({ width: 7, color: swatch.blue.line });
+    this.layoutPieces();
+    this.drawHint();
+  }
+  update(dt: number) {
+    this.clock += dt;
+    if (this.tapDeal && !this.done && (this.idle += dt) >= 6) {
+      this.idle = 0;
+      this.instruction();
+      const loose = this.pieces.find((p) => p.plate < 0);
+      if (loose) this.wiggle(loose.node);
+    }
+    if (!this.done && this.uncutWholes() && this.cuts.length && (this.idle += dt) >= 6) {
+      this.idle = 0;
+      this.cuts.forEach(
+        (b, i) =>
+          void this.ctx.tw
+            .to(b.scale, { x: 1.18, y: 1.18 }, { duration: 0.18, delay: i * 0.12 })
+            .then(() => this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25 })),
+      );
+    }
+    this.glow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 3);
+    if (this.done) this.meal.rotation = Math.sin(this.clock * 7) * 0.04;
+  }
   /** The ghost finger on the how-to card: cut fairly, give each plate a piece in turn, serve; or add fruit until the recipe is doubled, serve. */
-  autotouch():TouchIntent|null{
-    if(this.done)return null;
-    if(this.tapDeal){const loose=this.pieces.find(p=>p.plate<0);return loose?{tap:{on:loose.node}}:null;}
-    if(this.plan.mode==='recipe'||this.plan.mode==='half-recipe'){
-      const i=this.plan.mode==='half-recipe'?halfIngredientHint(this.base,this.made):ingredientHint(this.base,this.made);
-      return i>=0?{tap:{on:this.ingredients[i]}}:{tap:{on:this.serve}};
+  autotouch(): TouchIntent | null {
+    if (this.done) return null;
+    if (this.tapDeal) {
+      const loose = this.pieces.find((p) => p.plate < 0);
+      return loose ? { tap: { on: loose.node } } : null;
     }
-    if(this.compare)return this.compareTouch();
-    if(this.plan.mode==='cup'){
+    if (this.plan.mode === 'recipe' || this.plan.mode === 'half-recipe') {
+      const i =
+        this.plan.mode === 'half-recipe'
+          ? halfIngredientHint(this.base, this.made)
+          : ingredientHint(this.base, this.made);
+      return i >= 0 ? { tap: { on: this.ingredients[i] } } : { tap: { on: this.serve } };
+    }
+    if (this.compare) return this.compareTouch();
+    if (this.plan.mode === 'cup') {
       // Its seeded way: two halves, a half and two quarters, or four quarters.
-      const step=wayStep(this.way,this.pours);
-      return {tap:{on:step==='undo'?this.undo:step?this.ingredients[SCOOPS.indexOf(step)]:this.serve}};
+      const step = wayStep(this.way, this.pours);
+      return {
+        tap: { on: step === 'undo' ? this.undo : step ? this.ingredients[SCOOPS.indexOf(step)] : this.serve },
+      };
     }
-    if(this.shapes&&this.uncutWholes()){
+    if (this.shapes && this.uncutWholes()) {
       // One sandwich each way: down first, then across.
-      const way=nextWay(this.cutWays);const cut=this.cuts[this.cutKinds.findIndex(k=>k.way===way)];
-      return cut?{tap:{on:cut}}:null;
+      const way = nextWay(this.cutWays);
+      const cut = this.cuts[this.cutKinds.findIndex((k) => k.way === way)];
+      return cut ? { tap: { on: cut } } : null;
     }
-    if(!this.split){
-      const wanted=this.plan.mode==='fraction'?fractionCut(this.request,this.plan.cuts):fairCut(this.plan);
-      const cut=this.cuts[this.cutKinds.findIndex(k=>k.parts===wanted&&!k.lopsided)];
-      return cut?{tap:{on:cut}}:null;
+    if (!this.split) {
+      const wanted =
+        this.plan.mode === 'fraction' ? fractionCut(this.request, this.plan.cuts) : fairCut(this.plan);
+      const cut = this.cuts[this.cutKinds.findIndex((k) => k.parts === wanted && !k.lopsided)];
+      return cut ? { tap: { on: cut } } : null;
     }
-    if(this.pieces.some(p=>p.drag?.dragging))return null;
-    const needed=this.plan.mode==='fraction'?this.split*this.request.numerator/this.request.denominator:Infinity;
-    const loose=this.pieces.find(p=>p.plate<0&&this.counts()[0]<needed);
-    if(loose)return {drag:{on:loose.node},to:{on:this.plates[nextPlate(this.counts())]}};
-    return {tap:{on:this.serve}};
+    if (this.pieces.some((p) => p.drag?.dragging)) return null;
+    const needed =
+      this.plan.mode === 'fraction'
+        ? (this.split * this.request.numerator) / this.request.denominator
+        : Infinity;
+    const loose = this.pieces.find((p) => p.plate < 0 && this.counts()[0] < needed);
+    if (loose) return { drag: { on: loose.node }, to: { on: this.plates[nextPlate(this.counts())] } };
+    return { tap: { on: this.serve } };
   }
   /** Level 13's ghost finger: cut quarters, fill each plate to its ask, serve, then tap the plate with more. */
-  private compareTouch():TouchIntent|null{
-    const pair=this.pair!;
-    if(this.overlaying||this.pieces.some(p=>p.drag?.dragging))return null;
-    if(this.asking)return {tap:{on:this.plates[morePlate(pair)]}};
-    const wanted=compareCut(pair,this.plan.cuts);
-    if(!this.split){const cut=this.cuts[this.cutKinds.findIndex(k=>k.parts===wanted)];return cut?{tap:{on:cut}}:null;}
-    if(this.split!==wanted)return {tap:{on:this.recut}};
-    const counts=this.counts(), need=needs(pair,this.split), i=need.findIndex((n,j)=>counts[j]<n), loose=this.pieces.find(p=>p.plate<0);
-    if(i>=0&&loose)return {drag:{on:loose.node},to:{on:this.plates[i]}};
-    return {tap:{on:this.serve}};
+  private compareTouch(): TouchIntent | null {
+    const pair = this.pair!;
+    if (this.overlaying || this.pieces.some((p) => p.drag?.dragging)) return null;
+    if (this.asking) return { tap: { on: this.plates[morePlate(pair)] } };
+    const wanted = compareCut(pair, this.plan.cuts);
+    if (!this.split) {
+      const cut = this.cuts[this.cutKinds.findIndex((k) => k.parts === wanted)];
+      return cut ? { tap: { on: cut } } : null;
+    }
+    if (this.split !== wanted) return { tap: { on: this.recut } };
+    const counts = this.counts(),
+      need = needs(pair, this.split),
+      i = need.findIndex((n, j) => counts[j] < n),
+      loose = this.pieces.find((p) => p.plate < 0);
+    if (i >= 0 && loose) return { drag: { on: loose.node }, to: { on: this.plates[i] } };
+    return { tap: { on: this.serve } };
   }
-  destroy(){this.clearPieces();}
+  destroy() {
+    this.clearPieces();
+  }
 }
-export const petKitchen:GameModule={
-  id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',challenge:'numbers',
-  skills:['equal-shares','fractions','doubling','measuring'],bands:['lap','toddler','preschool','prek','school'],
-  levels:b=>rangeFor(LEVELS,b),entryLevels:[DEAL_LEVEL,SAME_LEVEL,SHAPES_LEVEL],
-  describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
-  coplayHint:'Share the food together. Help {name} give a piece to each friend, then serve it.',
-  offScreen:'Share a sandwich or paper circle in equal parts. Put every piece back together to see the whole.',
-  hubIcon:()=>{const c=new Container();const f=sandwich();f.y=-75;c.addChild(f);return new WigglyIcon(c);},
-  sticker:seed=>{const c=new Container();c.addChild(sandwich());const f=fruit(new Rng(seed).int(0,1));f.position.set(50,-60);c.addChild(f);return c;},
-  create:ctx=>new PetKitchen(ctx),
+export const petKitchen: GameModule = {
+  id: 'pet-kitchen',
+  name: 'Pet Kitchen',
+  titleLine: 'game.pet-kitchen',
+  region: 'counting-cove',
+  challenge: 'numbers',
+  skills: ['equal-shares', 'fractions', 'doubling', 'measuring'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  levels: (b) => rangeFor(LEVELS, b),
+  entryLevels: [DEAL_LEVEL, SAME_LEVEL, SHAPES_LEVEL],
+  describeLevel: (l) => planFor(l).name,
+  music: STYLES.paint,
+  touchDemo: true,
+  coplayHint: 'Share the food together. Help {name} give a piece to each friend, then serve it.',
+  offScreen:
+    'Share a sandwich or paper circle in equal parts. Put every piece back together to see the whole.',
+  hubIcon: () => {
+    const c = new Container();
+    const f = sandwich();
+    f.y = -75;
+    c.addChild(f);
+    return new WigglyIcon(c);
+  },
+  sticker: (seed) => {
+    const c = new Container();
+    c.addChild(sandwich());
+    const f = fruit(new Rng(seed).int(0, 1));
+    f.position.set(50, -60);
+    c.addChild(f);
+    return c;
+  },
+  create: (ctx) => new PetKitchen(ctx),
 };

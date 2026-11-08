@@ -3,8 +3,23 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
 import {
-  CARD, GAP_H, GAP_W, gapCount, lineLayout, nextCard, overlaps, PLACE_IDS, PLACES, PlaceBag, place, planFor, roundFor, Tally, validGaps,
-  type Rect, type Round,
+  CARD,
+  GAP_H,
+  GAP_W,
+  gapCount,
+  lineLayout,
+  nextCard,
+  overlaps,
+  PLACE_IDS,
+  PLACES,
+  PlaceBag,
+  place,
+  planFor,
+  roundFor,
+  Tally,
+  validGaps,
+  type Rect,
+  type Round,
 } from './logic';
 
 const VIEWS = {
@@ -80,7 +95,8 @@ describe('rounds', () => {
   });
 
   it('is the same round for the same seed', () => {
-    for (const level of [1, 2, 3]) expect(roundFor(level, new Rng(42), 'tree')).toEqual(roundFor(level, new Rng(42), 'tree'));
+    for (const level of [1, 2, 3])
+      expect(roundFor(level, new Rng(42), 'tree')).toEqual(roundFor(level, new Rng(42), 'tree'));
   });
 
   it('clamps levels to the plans', () => {
@@ -155,7 +171,8 @@ describe('valid gaps and placement', () => {
       expect(validGaps(r, [], newer)).toEqual([1]);
       const wrong = place(r, [], newer, 0);
       expect(wrong.ok).toBe(false);
-      if (!wrong.ok) expect(wrong.reason).toContain(`already has the ${PLACES[r.place].stages[newer].changes}`);
+      if (!wrong.ok)
+        expect(wrong.reason).toContain(`already has the ${PLACES[r.place].stages[newer].changes}`);
       const right = place(r, [], older, 0);
       expect(right.ok && right.line).toEqual([older]);
       // The other card then belongs on the other post.
@@ -233,22 +250,34 @@ describe('layout', () => {
             expect(l.gaps.length, where).toBe(gapCount(r, line));
             expect(l.cards.length, where).toBe(line.length);
             expect(l.tray.length, where).toBe(loose.length);
-            for (const g of l.gaps) { expect(g.w, where).toBeGreaterThanOrEqual(GAP_W); expect(g.h, where).toBeGreaterThanOrEqual(GAP_H); }
+            for (const g of l.gaps) {
+              expect(g.w, where).toBeGreaterThanOrEqual(GAP_W);
+              expect(g.h, where).toBeGreaterThanOrEqual(GAP_H);
+            }
             for (const c of [...l.cards, ...l.tray]) expect([c.w, c.h], where).toEqual([CARD, CARD]);
-            const all: Rect[] = level === 1 ? [...l.tray, ...l.gaps] : [...l.cards, ...l.gaps, ...l.tray, l.posts.left, l.posts.right];
+            const all: Rect[] =
+              level === 1
+                ? [...l.tray, ...l.gaps]
+                : [...l.cards, ...l.gaps, ...l.tray, l.posts.left, l.posts.right];
             for (const a of all) expect(inside(a, v.w, v.h), where).toBe(true);
             for (const a of all) for (const b of all) if (a !== b) expect(overlaps(a, b), where).toBe(false);
             // The pet's corner (bottom-left 150 square) and the home button (top-left 120 square) stay clear of touch targets.
             const pet = { x: 0, y: v.h - 150, w: 150, h: 150 };
             const home = { x: 0, y: 0, w: 120, h: 120 };
-            for (const a of [...l.gaps, ...l.tray]) { expect(overlaps(a, pet), where).toBe(false); expect(overlaps(a, home), where).toBe(false); }
+            for (const a of [...l.gaps, ...l.tray]) {
+              expect(overlaps(a, pet), where).toBe(false);
+              expect(overlaps(a, home), where).toBe(false);
+            }
             expect(l.rows.length, where).toBeLessThanOrEqual(2);
           }
           if (!loose.length) break;
           const stage = nextCard(r, loose)!;
           line = (place(r, line, stage, validGaps(r, line, stage)[0]) as { line: number[] }).line;
           loose = loose.filter((s) => s !== stage);
-          if (level === 1) { line = [...r.cards]; loose = []; }
+          if (level === 1) {
+            line = [...r.cards];
+            loose = [];
+          }
         }
       }
     }

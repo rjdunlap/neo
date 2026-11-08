@@ -4,9 +4,14 @@ export const VOICE = {
   'bondbeads.instruct.hold': ['Hold every hand! Drag a bead to another bead to link their hands.'],
   'bondbeads.instruct.copy': ['Make this shape! Then tap Check.'],
   'bondbeads.instruct.rebuild': ['Take them apart and build these two! Use every bead, then tap Check.'],
-  'bondbeads.instruct.twoways': ['Make one of these shapes and tap Check. Then make the other one with the same beads!'],
+  'bondbeads.instruct.twoways': [
+    'Make one of these shapes and tap Check. Then make the other one with the same beads!',
+  ],
   'bondbeads.other': ['Now make the other shape with the same beads!'],
-  'bondbeads.rebuilt': ['Two new shapes from the same beads!', 'The same beads, two new shapes. Nothing added, nothing lost!'],
+  'bondbeads.rebuilt': [
+    'Two new shapes from the same beads!',
+    'The same beads, two new shapes. Nothing added, nothing lost!',
+  ],
   'bondbeads.twoways': ['The same beads, two ways! Nothing added, nothing lost.'],
   'bondbeads.held': ['Every hand is held!', 'All the hands are held, all in one piece!'],
   'bondbeads.match': ["That's the shape on the card!", 'You made the same shape!'],
@@ -21,15 +26,21 @@ export const VOICE = {
   // Levels 5 and up: the only bondbeads lines that may say "atom" or a name (the six checked in the definition's source check).
   'bondbeads.named.atoms': ['Each bead stands for an atom, a piece too tiny to see.'],
   'bondbeads.named.instruct.name': ['Build the one on the card! Then tap Check.'],
-  'bondbeads.named.instruct.double': ['Some beads hold two hands together! Build the one on the card, then tap Check.'],
+  'bondbeads.named.instruct.double': [
+    'Some beads hold two hands together! Build the one on the card, then tap Check.',
+  ],
   'bondbeads.named.double': ['These two need another link.'],
   'bondbeads.named.water': ['Water! One O and two H.'],
   'bondbeads.named.ammonia': ['Ammonia! One N and three H.'],
   'bondbeads.named.methane': ['Methane! One C and four H.'],
   'bondbeads.named.hydrogen': ['Hydrogen! Two H, holding hands.'],
   'bondbeads.named.oxygen': ['Oxygen! Two O, holding two hands together.'],
-  'bondbeads.named.carbon-dioxide': ['Carbon dioxide! One C and two O, holding two hands together on each side.'],
-  'bondbeads.named.instruct.rearrange': ['Rearrange these into the ones on the card! Use every bead, then tap Check.'],
+  'bondbeads.named.carbon-dioxide': [
+    'Carbon dioxide! One C and two O, holding two hands together on each side.',
+  ],
+  'bondbeads.named.instruct.rearrange': [
+    'Rearrange these into the ones on the card! Use every bead, then tap Check.',
+  ],
   'bondbeads.named.breakfirst': ['Every hand is held. Break a link to free some hands.'],
   'bondbeads.named.rearranged': ['The atoms rearranged. Nothing added, nothing lost!'],
 } satisfies Record<string, string[]>;

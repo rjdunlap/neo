@@ -16,13 +16,17 @@ export const LEVELS: BandLevels = {
 };
 
 export type LevelId = 1 | 2 | 3;
-export interface Plan { id: LevelId; name: string }
+export interface Plan {
+  id: LevelId;
+  name: string;
+}
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'My bowl: any bowl is right' },
   { id: 2, name: 'Follow the picture: one of each, then mix' },
-  { id: 3, name: 'Bowls for two: mix, then each friend\'s topping' },
+  { id: 3, name: "Bowls for two: mix, then each friend's topping" },
 ];
-export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.round(level) - 1))];
+export const planFor = (level: number): Plan =>
+  PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.round(level) - 1))];
 
 export type Fruit = 'berries' | 'apple' | 'orange';
 export type Ingredient = Fruit | 'base';
@@ -36,7 +40,12 @@ export const MAX_PORTIONS = 4;
 export const MAX_ONE = 3;
 
 /** The mash colours: a blend is a weighted mix of these, so the drawing, the test and the bot agree. */
-export const MASH: Record<Ingredient, number> = { berries: 0x7a5cc8, apple: 0xff8fb4, orange: 0xff9a3c, base: 0xffffff };
+export const MASH: Record<Ingredient, number> = {
+  berries: 0x7a5cc8,
+  apple: 0xff8fb4,
+  orange: 0xff9a3c,
+  base: 0xffffff,
+};
 
 /* The bowl --------------------------------------------------------------------------------------------- */
 
@@ -51,7 +60,12 @@ export interface Bowl {
 }
 
 export const emptyBowl = (): Bowl => ({ mixed: {}, loose: [], top: null, folded: [] });
-const copy = (b: Bowl): Bowl => ({ mixed: { ...b.mixed }, loose: [...b.loose], top: b.top, folded: [...b.folded] });
+const copy = (b: Bowl): Bowl => ({
+  mixed: { ...b.mixed },
+  loose: [...b.loose],
+  top: b.top,
+  folded: [...b.folded],
+});
 
 export function countOf(b: Bowl, i: Ingredient): number {
   return (b.mixed[i] ?? 0) + b.loose.filter((x) => x === i).length;
@@ -70,18 +84,25 @@ export type Action = { kind: 'add'; ing: Ingredient } | { kind: 'mix' } | { kind
 export function act(b: Bowl, a: Action): Bowl | null {
   if (a.kind === 'add') {
     if (portions(b) >= MAX_PORTIONS || countOf(b, a.ing) >= MAX_ONE) return null;
-    const n = copy(b); n.loose.push(a.ing); return n;
+    const n = copy(b);
+    n.loose.push(a.ing);
+    return n;
   }
   if (a.kind === 'mix') {
     if (b.loose.length === 0 && b.top === null) return null;
     const n = copy(b);
     for (const i of n.loose) n.mixed[i] = (n.mixed[i] ?? 0) + 1;
     n.loose = [];
-    if (n.top) { if (!n.folded.includes(n.top)) n.folded = [...n.folded, n.top].sort(); n.top = null; }
+    if (n.top) {
+      if (!n.folded.includes(n.top)) n.folded = [...n.folded, n.top].sort();
+      n.top = null;
+    }
     return n;
   }
   if (b.top === a.topper) return null;
-  const n = copy(b); n.top = a.topper; return n;
+  const n = copy(b);
+  n.top = a.topper;
+  return n;
 }
 
 /** Whether an add was refused because the bowl is full. */
@@ -89,11 +110,17 @@ export const isFull = (b: Bowl, i: Ingredient) => portions(b) >= MAX_PORTIONS ||
 
 /** The blend's colour from the mixed counts alone, or null when nothing is mixed yet. */
 export function blendColor(b: Bowl): number | null {
-  let n = 0, r = 0, g = 0, bl = 0;
+  let n = 0,
+    r = 0,
+    g = 0,
+    bl = 0;
   for (const i of INGREDIENTS) {
     const c = b.mixed[i] ?? 0;
     if (!c) continue;
-    n += c; r += ((MASH[i] >> 16) & 255) * c; g += ((MASH[i] >> 8) & 255) * c; bl += (MASH[i] & 255) * c;
+    n += c;
+    r += ((MASH[i] >> 16) & 255) * c;
+    g += ((MASH[i] >> 8) & 255) * c;
+    bl += (MASH[i] & 255) * c;
   }
   if (!n) return null;
   return (Math.round(r / n) << 16) | (Math.round(g / n) << 8) | Math.round(bl / n);
@@ -101,7 +128,10 @@ export function blendColor(b: Bowl): number | null {
 
 /* A bowl in play: its state, its undo stack and its own accounting -------------------------------------- */
 
-export interface Request { fruit: Fruit; topper?: Topper }
+export interface Request {
+  fruit: Fruit;
+  topper?: Topper;
+}
 
 export interface Slot {
   bowl: Bowl;
@@ -124,7 +154,8 @@ export function newSlot(request: Request | null): Slot {
 export function doAction(s: Slot, a: Action): boolean {
   const next = act(s.bowl, a);
   if (!next) return false;
-  const k = keyOf(next), at = s.stack.findIndex((x) => keyOf(x) === k);
+  const k = keyOf(next),
+    at = s.stack.findIndex((x) => keyOf(x) === k);
   // Coming back to a state already on the stack cuts the loop out, so the stack never holds a repeat or the bowl itself.
   if (at >= 0) s.stack = s.stack.slice(0, at);
   else s.stack.push(s.bowl);
@@ -165,7 +196,12 @@ export function check(b: Bowl, r: Request): Verdict {
   return { kind: 'ok' };
 }
 
-export type Hint = { kind: 'undo' } | { kind: 'add'; ing: Ingredient } | { kind: 'mix' } | { kind: 'topper'; topper: Topper } | { kind: 'serve' };
+export type Hint =
+  | { kind: 'undo' }
+  | { kind: 'add'; ing: Ingredient }
+  | { kind: 'mix' }
+  | { kind: 'topper'; topper: Topper }
+  | { kind: 'serve' };
 
 /** One next step from the bowl's current state; following it always reaches a bowl that passes. */
 export function hintFor(b: Bowl, r: Request): Hint {
@@ -201,11 +237,19 @@ export interface RoundState {
 export const FRIENDS: readonly CritterName[] = ['duck', 'bunny', 'cat', 'pig', 'bear', 'dog'];
 
 /** The authored first round opens on berries and the base; later rounds are seeded within the level's variation. */
-export function makeRound(level: LevelId, rng: Rng, authored: boolean): { round: Round; requests: (Request | null)[] } {
+export function makeRound(
+  level: LevelId,
+  rng: Rng,
+  authored: boolean,
+): { round: Round; requests: (Request | null)[] } {
   if (level === 1) {
-    const pots: Ingredient[] = authored ? ['berries', 'base'] : (() => {
-      const a = rng.pick(INGREDIENTS); const b = rng.pick(INGREDIENTS.filter((i) => i !== a)); return [a, b];
-    })();
+    const pots: Ingredient[] = authored
+      ? ['berries', 'base']
+      : (() => {
+          const a = rng.pick(INGREDIENTS);
+          const b = rng.pick(INGREDIENTS.filter((i) => i !== a));
+          return [a, b];
+        })();
     return { round: { level, pots, toppers: [], friend: null }, requests: [null] };
   }
   const fruit: Fruit = authored ? 'berries' : rng.pick(FRUITS);
@@ -214,7 +258,13 @@ export function makeRound(level: LevelId, rng: Rng, authored: boolean): { round:
   const friend: CritterName = authored ? 'duck' : rng.pick(FRIENDS);
   const starLeft = authored ? true : rng.next() < 0.5;
   const [a, b]: Topper[] = starLeft ? ['star', 'leaf'] : ['leaf', 'star'];
-  return { round: { level, pots, toppers: ['star', 'leaf'], friend }, requests: [{ fruit, topper: a }, { fruit, topper: b }] };
+  return {
+    round: { level, pots, toppers: ['star', 'leaf'], friend },
+    requests: [
+      { fruit, topper: a },
+      { fruit, topper: b },
+    ],
+  };
 }
 
 export function roundState(level: LevelId, requests: (Request | null)[]): RoundState {
@@ -223,11 +273,16 @@ export function roundState(level: LevelId, requests: (Request | null)[]): RoundS
 
 /** Start again: empty bowls, the same requests, keeping the round's misses and hints. */
 export function restartState(s: RoundState) {
-  for (const slot of s.slots) { slot.bowl = emptyBowl(); slot.stack = []; slot.served = false; }
+  for (const slot of s.slots) {
+    slot.bowl = emptyBowl();
+    slot.stack = [];
+    slot.served = false;
+  }
   s.active = 0;
 }
 
-export type ServeResult = { kind: 'empty' } | { kind: 'served' } | { kind: 'miss'; verdict: Verdict; newHint: boolean };
+export type ServeResult =
+  { kind: 'empty' } | { kind: 'served' } | { kind: 'miss'; verdict: Verdict; newHint: boolean };
 
 /** Serve a bowl: only a non-empty bowl that fails its card counts a miss, and two on one bowl light its next step as a hint. */
 export function serve(s: RoundState, i: number): ServeResult {
@@ -236,27 +291,38 @@ export function serve(s: RoundState, i: number): ServeResult {
   if (portions(slot.bowl) === 0) return { kind: 'empty' };
   const v = slot.request ? check(slot.bowl, slot.request) : { kind: 'ok' as const };
   if (v.kind === 'ok') {
-    slot.served = true; slot.glow = false;
+    slot.served = true;
+    slot.glow = false;
     s.done = s.slots.every((x) => x.served);
-    if (!s.done) { const next = s.slots.findIndex((x) => !x.served); if (next >= 0) s.active = next; }
+    if (!s.done) {
+      const next = s.slots.findIndex((x) => !x.served);
+      if (next >= 0) s.active = next;
+    }
     return { kind: 'served' };
   }
-  slot.misses++; s.misses++;
+  slot.misses++;
+  s.misses++;
   let newHint = false;
-  if (slot.misses >= 2 && !slot.glow) { slot.glow = true; newHint = countHint(s, slot); }
+  if (slot.misses >= 2 && !slot.glow) {
+    slot.glow = true;
+    newHint = countHint(s, slot);
+  }
   return { kind: 'miss', verdict: v, newHint };
 }
 
 function countHint(s: RoundState, slot: Slot): boolean {
   if (slot.hintCounted || s.level === 1) return false;
-  slot.hintCounted = true; s.hints++;
+  slot.hintCounted = true;
+  s.hints++;
   return true;
 }
 
 /** Show a hint: the unserved bowl with the most misses (else the active one) glows; each bowl counts at most one hint. Returns that bowl. */
 export function askHint(s: RoundState): number {
   let best = -1;
-  s.slots.forEach((x, i) => { if (!x.served && x.misses > 0 && (best < 0 || x.misses > s.slots[best].misses)) best = i; });
+  s.slots.forEach((x, i) => {
+    if (!x.served && x.misses > 0 && (best < 0 || x.misses > s.slots[best].misses)) best = i;
+  });
   if (best < 0) best = s.slots[s.active]?.served ? s.slots.findIndex((x) => !x.served) : s.active;
   if (best < 0) return -1;
   const slot = s.slots[best];
@@ -273,7 +339,12 @@ export function stepFor(slot: Slot, pots: readonly Ingredient[]): Hint {
 
 /* Layout ----------------------------------------------------------------------------------------------- */
 
-export interface Box { x: number; y: number; w: number; h: number }
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface WorkshopLayout {
   card: Box | null;
   bubbles: Box[];
@@ -294,11 +365,17 @@ const GAP = 40;
 
 /** Every target for the level, centred in the view; null rather than shrink a target. */
 export function workshopLayout(v: { w: number; h: number }, level: number): WorkshopLayout | null {
-  const lv = planFor(level).id, cx = v.w / 2, oy = Math.max(0, Math.min(300, (v.h - 768) / 2));
+  const lv = planFor(level).id,
+    cx = v.w / 2,
+    oy = Math.max(0, Math.min(300, (v.h - 768) / 2));
   const row = (sizes: number[], y: number): Box[] => {
     const total = sizes.reduce((a, b) => a + b, 0) + GAP * (sizes.length - 1);
     let x = cx - total / 2;
-    return sizes.map((s) => { const b = { x, y: y + (130 - s) / 2, w: s, h: s }; x += s + GAP; return b; });
+    return sizes.map((s) => {
+      const b = { x, y: y + (130 - s) / 2, w: s, h: s };
+      x += s + GAP;
+      return b;
+    });
   };
   let L: WorkshopLayout;
   if (lv < 3) {
@@ -308,18 +385,50 @@ export function workshopLayout(v: { w: number; h: number }, level: number): Work
     const undo = lv === 2 ? { x: bowl.x - GAP - 110, y: bowl.y, w: 110, h: 110 } : null;
     const spoon = { x: bowl.x + bowl.w + GAP, y: bowl.y, w: 140, h: 140 };
     const serve = { x: spoon.x + spoon.w + GAP - 10, y: bowl.y + 10, w: 130, h: 130 };
-    L = { card, bubbles: [], pots, toppers: [], bowls: [bowl], spoon, undo, serves: [serve], friends: [{ x: bowl.x + 70, y: bowl.y + bowl.h * 0.42 + 10 }] };
+    L = {
+      card,
+      bubbles: [],
+      pots,
+      toppers: [],
+      bowls: [bowl],
+      spoon,
+      undo,
+      serves: [serve],
+      friends: [{ x: bowl.x + 70, y: bowl.y + bowl.h * 0.42 + 10 }],
+    };
   } else {
     const card = { x: cx - 140, y: oy + 20, w: 280, h: 140 };
     const items = row([130, 130, 110, 110], oy + 190);
     const spoon = { x: cx - 65, y: oy + 375, w: 130, h: 130 };
-    const bowlW = 230, bowlH = 160, apart = 65 + GAP + bowlW / 2;
+    const bowlW = 230,
+      bowlH = 160,
+      apart = 65 + GAP + bowlW / 2;
     const bowls = [-1, 1].map((d) => ({ x: cx + d * apart - bowlW / 2, y: oy + 360, w: bowlW, h: bowlH }));
-    const bubbles = bowls.map((_, i) => ({ x: i === 0 ? card.x - GAP - 110 : card.x + card.w + GAP, y: oy + 40, w: 110, h: 110 }));
+    const bubbles = bowls.map((_, i) => ({
+      x: i === 0 ? card.x - GAP - 110 : card.x + card.w + GAP,
+      y: oy + 40,
+      w: 110,
+      h: 110,
+    }));
     const undo = { x: cx - 55, y: spoon.y + spoon.h + 30, w: 110, h: 110 };
     // Each Serve sits under its bowl's inner half, clear of the guide's corner.
-    const serves = bowls.map((b, i) => ({ x: i === 0 ? b.x + b.w - 120 : b.x, y: b.y + b.h + 30, w: 120, h: 120 }));
-    L = { card, bubbles, pots: items.slice(0, 2), toppers: items.slice(2), bowls, spoon, undo, serves, friends: bowls.map((b) => ({ x: b.x + b.w / 2, y: b.y + b.h * 0.42 + 10 })) };
+    const serves = bowls.map((b, i) => ({
+      x: i === 0 ? b.x + b.w - 120 : b.x,
+      y: b.y + b.h + 30,
+      w: 120,
+      h: 120,
+    }));
+    L = {
+      card,
+      bubbles,
+      pots: items.slice(0, 2),
+      toppers: items.slice(2),
+      bowls,
+      spoon,
+      undo,
+      serves,
+      friends: bowls.map((b) => ({ x: b.x + b.w / 2, y: b.y + b.h * 0.42 + 10 })),
+    };
   }
   for (const b of targets(L)) {
     const inside = b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h;
@@ -332,21 +441,36 @@ export function workshopLayout(v: { w: number; h: number }, level: number): Work
 
 /** Every touch target in a layout. */
 export function targets(L: WorkshopLayout): Box[] {
-  return [...(L.card ? [L.card] : []), ...L.bubbles, ...L.pots, ...L.toppers, ...L.bowls, L.spoon, ...(L.undo ? [L.undo] : []), ...L.serves];
+  return [
+    ...(L.card ? [L.card] : []),
+    ...L.bubbles,
+    ...L.pots,
+    ...L.toppers,
+    ...L.bowls,
+    L.spoon,
+    ...(L.undo ? [L.undo] : []),
+    ...L.serves,
+  ];
 }
 
 /** Grows a box by `m` each way. */
 export const grow = (b: Box, m: number): Box => ({ x: b.x - m, y: b.y - m, w: b.w + 2 * m, h: b.h + 2 * m });
-export const within = (b: Box, x: number, y: number) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+export const within = (b: Box, x: number, y: number) =>
+  x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
 export const centre = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
 
 /** The bowl a drop at (x, y) lands in: the nearest one within reach, or null. */
 export function bowlAt(L: WorkshopLayout, x: number, y: number): number | null {
-  let best: number | null = null, bd = Infinity;
+  let best: number | null = null,
+    bd = Infinity;
   L.bowls.forEach((b, i) => {
     if (!within(grow(b, 50), x, y)) return;
-    const c = centre(b), d = Math.hypot(c.x - x, c.y - y);
-    if (d < bd) { bd = d; best = i; }
+    const c = centre(b),
+      d = Math.hypot(c.x - x, c.y - y);
+    if (d < bd) {
+      bd = d;
+      best = i;
+    }
   });
   return best;
 }

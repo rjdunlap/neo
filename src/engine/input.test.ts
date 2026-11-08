@@ -9,12 +9,17 @@ const pointer = (type: string, pointerId: number, pointerType = 'touch', x = 20,
 
 beforeEach(async () => {
   vi.resetModules();
-  win = new EventTarget(); doc = new EventTarget();
-  vi.stubGlobal('window', win); vi.stubGlobal('document', doc);
+  win = new EventTarget();
+  doc = new EventTarget();
+  vi.stubGlobal('window', win);
+  vi.stubGlobal('document', doc);
   input = await import('./input');
   input.trackPointers();
 });
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('shared pointer input', () => {
   it('rejects four resting fingers and recovers after native cancellation or visibility change', () => {
@@ -52,9 +57,11 @@ describe('shared pointer input', () => {
     input.onTap(node, tapped);
     node.emit('pointerdown', {} as never);
     expect(tapped).toHaveBeenCalledTimes(1);
-    now += 119; node.emit('pointerdown', {} as never);
+    now += 119;
+    node.emit('pointerdown', {} as never);
     expect(tapped).toHaveBeenCalledTimes(1);
-    now++; node.emit('pointerdown', {} as never);
+    now++;
+    node.emit('pointerdown', {} as never);
     expect(tapped).toHaveBeenCalledTimes(2);
     node.destroy();
   });

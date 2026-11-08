@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { HIDING_SLOTS, hidingRevealSlots, numberSentence, stickerDucks, bankSize, duckMove, hidingPuzzle, padValues, PLANS, SLOTS, story } from './logic';
+import {
+  HIDING_SLOTS,
+  hidingRevealSlots,
+  numberSentence,
+  stickerDucks,
+  bankSize,
+  duckMove,
+  hidingPuzzle,
+  padValues,
+  PLANS,
+  SLOTS,
+  story,
+} from './logic';
 import { tenStarts } from './logic';
 
 describe('Duck Pond', () => {
@@ -18,7 +30,8 @@ describe('Duck Pond', () => {
         expect(new Set(all.map(([x, y]) => `${x},${y}`)).size).toBe(total);
         for (const [i, [x, y]] of all.entries()) {
           expect((x / 390) ** 2 + (y / 128) ** 2).toBeLessThan(1);
-          for (const [xx, yy] of all.slice(i + 1)) expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(100);
+          for (const [xx, yy] of all.slice(i + 1))
+            expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(100);
         }
       }
     }
@@ -80,7 +93,9 @@ describe('Duck Pond', () => {
     expect(plan.max).toBeLessThanOrEqual(SLOTS.length);
     // Seats for five are at least 106 apart, so each duck's 106-unit target stays its own.
     const seats = SLOTS.slice(0, plan.max);
-    for (const [i, a] of seats.entries()) for (const b of seats.slice(i + 1)) expect(Math.hypot(a[0] - b[0], a[1] - b[1])).toBeGreaterThanOrEqual(106);
+    for (const [i, a] of seats.entries())
+      for (const b of seats.slice(i + 1))
+        expect(Math.hypot(a[0] - b[0], a[1] - b[1])).toBeGreaterThanOrEqual(106);
   });
 
   it('has room for every duck asked about, and a spare on the bank so stopping is a choice', () => {
@@ -90,7 +105,7 @@ describe('Duck Pond', () => {
     }
   });
 
-  it('make-ten rounds start with 3 to 9 ducks, so 1 to 7 more always fit the pond\'s ten places', () => {
+  it("make-ten rounds start with 3 to 9 ducks, so 1 to 7 more always fit the pond's ten places", () => {
     const plan = PLANS.find((p) => p.mode === 'ten')!;
     for (let seed = 1; seed <= 200; seed++) {
       const starts = tenStarts(new Rng(seed), plan);
@@ -115,7 +130,9 @@ describe('Duck Pond', () => {
       expect(puzzle.visible).toBeGreaterThanOrEqual(1);
       expect(puzzle.visible + puzzle.hidden).toBe(puzzle.total);
       const pads = padValues(new Rng(seed + 9000), puzzle.hidden);
-      expect(duckMove(plan, 0, puzzle.total, 0, pads, puzzle.hidden)).toEqual({ pad: pads.indexOf(puzzle.hidden) });
+      expect(duckMove(plan, 0, puzzle.total, 0, pads, puzzle.hidden)).toEqual({
+        pad: pads.indexOf(puzzle.hidden),
+      });
     }
   });
 

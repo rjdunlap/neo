@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { clampInsets, computeView, needsTurn, NO_INSETS, safeArea, spread, textBoost, UPRIGHT_H, UPRIGHT_W } from './view';
+import {
+  clampInsets,
+  computeView,
+  needsTurn,
+  NO_INSETS,
+  safeArea,
+  spread,
+  textBoost,
+  UPRIGHT_H,
+  UPRIGHT_W,
+} from './view';
 
 describe('computeView', () => {
   it('fits the 4:3 design area and grows the spare side', () => {
@@ -23,7 +33,13 @@ describe('computeView', () => {
   });
 
   it('never hands a scene less than the design area', () => {
-    for (const [w, h] of [[844, 390], [667, 375], [1024, 768], [1180, 820], [768, 1024]] as const) {
+    for (const [w, h] of [
+      [844, 390],
+      [667, 375],
+      [1024, 768],
+      [1180, 820],
+      [768, 1024],
+    ] as const) {
       const v = computeView(w, h, { top: 24, right: 59, bottom: 21, left: 59 });
       expect(v.w).toBeGreaterThanOrEqual(1024 - 1e-9);
       expect(v.h).toBeGreaterThanOrEqual(768 - 1e-9);
@@ -33,7 +49,12 @@ describe('computeView', () => {
 
 describe('clampInsets', () => {
   it('drops nonsense and caps each edge at a quarter of its side', () => {
-    expect(clampInsets({ top: -5, right: NaN, bottom: 9999, left: 12 }, 800, 400)).toEqual({ top: 0, right: 0, bottom: 100, left: 12 });
+    expect(clampInsets({ top: -5, right: NaN, bottom: 9999, left: 12 }, 800, 400)).toEqual({
+      top: 0,
+      right: 0,
+      bottom: 100,
+      left: 12,
+    });
   });
 });
 
@@ -101,7 +122,7 @@ describe('the upright design area (chunk 31)', () => {
     expect(safeArea(computeView(1024, 768))).toEqual({ x: 0, y: 0, w: 1024, h: 768 });
   });
 
-  it('keeps the upright area inside an upright phone\'s notch and home bar', () => {
+  it("keeps the upright area inside an upright phone's notch and home bar", () => {
     const v = computeView(390, 844, { top: 47, right: 0, bottom: 34, left: 0 }, true);
     expect(v.w).toBeGreaterThanOrEqual(UPRIGHT_W - 1e-9);
     expect(v.h).toBeGreaterThanOrEqual(UPRIGHT_H - 1e-9);

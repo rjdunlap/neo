@@ -10,7 +10,11 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bugBody, bugSticker, bugToken, bugWing } from './art';
 import { LEVELS, BUG_PLANS, BUG_TOKENS, bugPuzzle, nextStamp, slotAt, type BugSpot } from './logic';
 
-interface Spot extends BugSpot { node: Container; filled: boolean; wrong: number }
+interface Spot extends BugSpot {
+  node: Container;
+  filled: boolean;
+  wrong: number;
+}
 class BugBuilder implements Game {
   readonly plan;
   readonly targets: Spot[] = [];
@@ -37,27 +41,42 @@ class BugBuilder implements Game {
     if (mirror) {
       this.foldReference.addChild(bugWing(this.plan.rows, this.plan.columns, -1));
       for (const s of puzzle.model) {
-        const shape = bugToken(s.token); shape.position.set(s.x, s.y); this.foldReference.addChild(shape);
+        const shape = bugToken(s.token);
+        shape.position.set(s.x, s.y);
+        this.foldReference.addChild(shape);
       }
-      this.foldReference.alpha = 0.22; this.foldReference.visible = false;
+      this.foldReference.alpha = 0.22;
+      this.foldReference.visible = false;
       this.foldReference.eventMode = 'none';
       this.board.addChild(this.foldReference);
     }
     this.board.addChild(bugBody(this.plan.rows, this.plan.columns, mirror ? this.wings : undefined));
     if (this.plan.mode === 'copy') this.model.addChild(bugBody(this.plan.rows, this.plan.columns));
-    if (this.plan.mode !== 'guided') for (const s of puzzle.model) {
-      const shape = bugToken(s.token); shape.position.set(s.x, s.y);
-      (mirror ? this.wings[0] : this.model).addChild(shape);
-    }
+    if (this.plan.mode !== 'guided')
+      for (const s of puzzle.model) {
+        const shape = bugToken(s.token);
+        shape.position.set(s.x, s.y);
+        (mirror ? this.wings[0] : this.model).addChild(shape);
+      }
     for (const s of puzzle.targets) {
-      const node = new Container(); node.position.set(s.x, s.y);
-      node.addChild(new Graphics().circle(0, 0, 50).fill(cream).stroke({ width: 3, color: swatch.orange.line }));
-      if (this.plan.mode === 'guided') { const ghost = bugToken(s.token); ghost.alpha = 0.32; node.addChild(ghost); }
-      (mirror ? this.wings[1] : this.board).addChild(node); this.targets.push({ ...s, node, filled: false, wrong: 0 });
+      const node = new Container();
+      node.position.set(s.x, s.y);
+      node.addChild(
+        new Graphics().circle(0, 0, 50).fill(cream).stroke({ width: 3, color: swatch.orange.line }),
+      );
+      if (this.plan.mode === 'guided') {
+        const ghost = bugToken(s.token);
+        ghost.alpha = 0.32;
+        node.addChild(ghost);
+      }
+      (mirror ? this.wings[1] : this.board).addChild(node);
+      this.targets.push({ ...s, node, filled: false, wrong: 0 });
     }
     this.board.addChild(this.glow);
     for (const token of puzzle.tokens) {
-      const node = new Container(); node.addChild(tile(102, 102), bugToken(token)); node.hitArea = new Circle(0, 0, 55);
+      const node = new Container();
+      node.addChild(tile(102, 102), bugToken(token));
+      node.hitArea = new Circle(0, 0, 55);
       ctx.stage.addChild(node);
       const drag = draggable(node, ctx.tw, {
         onPick: () => sfx.tick(),
@@ -67,10 +86,13 @@ class BugBuilder implements Game {
           const slot = slotAt(this.targets, x - this.board.x, y - this.board.y);
           if (!slot) return false;
           if (slot.token !== token) {
-            this.misses++; slot.wrong++; sfx.boing();
+            this.misses++;
+            slot.wrong++;
+            sfx.boing();
             void ctx.say('bug.wrong');
             if (slot.wrong === 2) {
-              this.hints++; this.activeHint = slot;
+              this.hints++;
+              this.activeHint = slot;
               const hint = ctx.say('bug.hint', { ...BUG_TOKENS[slot.token] });
               if (this.plan.mode === 'mirror') void hint.then(() => ctx.say('bug.hintMirror'));
             }
@@ -79,9 +101,12 @@ class BugBuilder implements Game {
             slot.node.removeChildren().forEach((c) => c.destroy({ children: true }));
             slot.node.addChild(bugToken(token, 38));
             if (this.activeHint === slot) this.activeHint = null;
-            sfx.bell(5 + token, 0.3); ctx.pet.cheer();
+            sfx.bell(5 + token, 0.3);
+            ctx.pet.cheer();
             if (this.targets.every((s) => s.filled)) {
-              this.done = true; this.foldReference.visible = mirror; this.choices.forEach((c) => c.drag.enabled = false);
+              this.done = true;
+              this.foldReference.visible = mirror;
+              this.choices.forEach((c) => (c.drag.enabled = false));
               void ctx.say('bug.done');
               void ctx.tw.wait(1.2).then(() => ctx.finish({ misses: this.misses, hints: this.hints }));
             }
@@ -93,45 +118,83 @@ class BugBuilder implements Game {
       this.choices.push({ token, node, drag });
     }
   }
-  start() { void this.ctx.instruct(this.plan.mode === 'guided' ? 'bug.guided' : this.plan.mode === 'copy' ? 'bug.copy' : 'bug.mirror'); }
+  start() {
+    void this.ctx.instruct(
+      this.plan.mode === 'guided' ? 'bug.guided' : this.plan.mode === 'copy' ? 'bug.copy' : 'bug.mirror',
+    );
+  }
   resize(v: View) {
-    this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.green.light).roundRect(165, v.h - 155, v.w - 200, 135, 32).fill(cream);
+    this.background
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(swatch.green.light)
+      .roundRect(165, v.h - 155, v.w - 200, 135, 32)
+      .fill(cream);
     const cy = Math.max(365, (v.h - 160) / 2);
     this.board.position.set(this.plan.mode === 'copy' ? v.w * 0.68 : v.w / 2, cy);
-    this.model.position.set(v.w * 0.24, cy); this.model.scale.set(0.62);
+    this.model.position.set(v.w * 0.24, cy);
+    this.model.scale.set(0.62);
     const d = this.decorations.clear();
     if (this.plan.mode === 'copy') {
       d.roundRect(this.model.x - 155, cy - 200, 310, 395, 32).fill(cream);
       const x = v.w * 0.43;
-      d.moveTo(x - 12, cy - 20).lineTo(x + 12, cy).lineTo(x - 12, cy + 20).stroke({ width: 7, color: swatch.teal.line });
+      d.moveTo(x - 12, cy - 20)
+        .lineTo(x + 12, cy)
+        .lineTo(x - 12, cy + 20)
+        .stroke({ width: 7, color: swatch.teal.line });
     }
-    if (this.plan.mode === 'mirror') for (let y = cy - 140; y < cy + 185; y += 28) d.moveTo(this.board.x, y).lineTo(this.board.x, y + 13).stroke({ width: 4, color: swatch.white.fill });
+    if (this.plan.mode === 'mirror')
+      for (let y = cy - 140; y < cy + 185; y += 28)
+        d.moveTo(this.board.x, y)
+          .lineTo(this.board.x, y + 13)
+          .stroke({ width: 4, color: swatch.white.fill });
     const xs = spread(this.choices.length, 175, v.w - 45, 130);
     this.choices.forEach((c, i) => {
       c.drag.home = { x: xs[i], y: v.h - 87 };
-      if (!c.drag.dragging) { this.ctx.tw.kill(c.node); c.node.position.set(c.drag.home.x, c.drag.home.y); }
+      if (!c.drag.dragging) {
+        this.ctx.tw.kill(c.node);
+        c.node.position.set(c.drag.home.x, c.drag.home.y);
+      }
     });
     this.drawHint();
   }
-  private tray(token: number) { return this.choices.find((c) => c.token === token)!; }
+  private tray(token: number) {
+    return this.choices.find((c) => c.token === token)!;
+  }
   private drawHint() {
-    this.glow.clear(); this.paletteGlow.clear();
+    this.glow.clear();
+    this.paletteGlow.clear();
     if (!this.activeHint || this.done) return;
-    const s = this.activeHint, choice = this.tray(s.token);
+    const s = this.activeHint,
+      choice = this.tray(s.token);
     this.glow.circle(s.x, s.y, 56).stroke({ width: 7, color: swatch.yellow.line });
     // Point at the answer's source too: the twin across the line, or the same place on the little model bug.
-    if (this.plan.mode === 'mirror') this.glow.circle(-s.x, s.y, 56).stroke({ width: 7, color: swatch.yellow.line });
-    if (this.plan.mode === 'copy') this.paletteGlow.circle(this.model.x + s.x * this.model.scale.x, this.model.y + s.y * this.model.scale.y, 56 * this.model.scale.x).stroke({ width: 5, color: swatch.yellow.line });
-    this.paletteGlow.roundRect(choice.drag.home.x - 59, choice.drag.home.y - 59, 118, 118, 24).stroke({ width: 7, color: swatch.yellow.line });
+    if (this.plan.mode === 'mirror')
+      this.glow.circle(-s.x, s.y, 56).stroke({ width: 7, color: swatch.yellow.line });
+    if (this.plan.mode === 'copy')
+      this.paletteGlow
+        .circle(
+          this.model.x + s.x * this.model.scale.x,
+          this.model.y + s.y * this.model.scale.y,
+          56 * this.model.scale.x,
+        )
+        .stroke({ width: 5, color: swatch.yellow.line });
+    this.paletteGlow
+      .roundRect(choice.drag.home.x - 59, choice.drag.home.y - 59, 118, 118, 24)
+      .stroke({ width: 7, color: swatch.yellow.line });
   }
   update(dt: number) {
-    this.clock += dt; this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3);
+    this.clock += dt;
+    this.glow.alpha = this.paletteGlow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 3);
     if (!this.done) return;
-    if (this.plan.mode !== 'mirror') { this.board.rotation = Math.sin(this.clock * 8) * 0.035; return; }
+    if (this.plan.mode !== 'mirror') {
+      this.board.rotation = Math.sin(this.clock * 8) * 0.035;
+      return;
+    }
     // Fold both wings across the same hinge, meet their twins, then open together.
     // Scene time keeps the finish still when paused; leave the existing 1.2 s finish wait alone.
     this.finishTime = Math.min(1.1, this.finishTime + dt);
-    const scale = Math.cos(this.finishTime / 1.1 * Math.PI * 2);
+    const scale = Math.cos((this.finishTime / 1.1) * Math.PI * 2);
     for (const wing of this.wings) wing.scale.x = Math.abs(scale) < 0.001 ? 0.001 : scale;
   }
   /** The ghost finger on the how-to card: carry the color the next empty spot needs from the tray to it. */
@@ -142,14 +205,26 @@ class BugBuilder implements Game {
     if (!next || !choice || choice.drag.dragging) return null;
     return { drag: { on: choice.node }, to: { on: this.board, x: next.x, y: next.y } };
   }
-  destroy() { this.choices.forEach((c) => c.drag.destroy()); }
+  destroy() {
+    this.choices.forEach((c) => c.drag.destroy());
+  }
 }
 export const bugBuilder: GameModule = {
-  id: 'bug-builder', name: 'Bug Builder', titleLine: 'game.bug-builder', region: 'tinker-lab', challenge: 'space',
-  skills: ['spatial-reasoning', 'symmetry', 'visual-matching'], bands: ['toddler', 'preschool', 'prek', 'school'],
+  id: 'bug-builder',
+  name: 'Bug Builder',
+  titleLine: 'game.bug-builder',
+  region: 'tinker-lab',
+  challenge: 'space',
+  skills: ['spatial-reasoning', 'symmetry', 'visual-matching'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, l - 1))].name,
-  music: STYLES.paint, touchDemo: true, coplayHint: 'Help {name} move a shape to a matching spot on the bug.',
-  offScreen: 'Fold paper in half, dab paint on one side, and press it closed to make matching butterfly wings.',
-  hubIcon: () => new WigglyIcon(bugSticker()), sticker: (seed) => bugSticker(seed), create: (ctx) => new BugBuilder(ctx),
+  music: STYLES.paint,
+  touchDemo: true,
+  coplayHint: 'Help {name} move a shape to a matching spot on the bug.',
+  offScreen:
+    'Fold paper in half, dab paint on one side, and press it closed to make matching butterfly wings.',
+  hubIcon: () => new WigglyIcon(bugSticker()),
+  sticker: (seed) => bugSticker(seed),
+  create: (ctx) => new BugBuilder(ctx),
 };

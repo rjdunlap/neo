@@ -44,34 +44,62 @@ const STICK: PadPart[] = ['stick', 'dpad'];
 /** Everything the couch screens need to explain a game. Games themselves stay unaware of it. */
 export const COUCH_INFO: Record<CouchId, CouchInfo> = {
   'gem-swap': {
-    goal: 'couch.how.gem-swap', tagline: 'Swap neighbours, clear matching lines, and plan the falling gems.',
+    goal: 'couch.how.gem-swap',
+    tagline: 'Swap neighbours, clear matching lines, and plan the falling gems.',
     controls: [
       { parts: STICK, text: 'Move across the tray.', keys: 'Arrow keys' },
-      { parts: ['bottom'], text: 'Choose a gem, then an occupied neighbour to swap. Choose it again to cancel.', keys: 'Enter' },
+      {
+        parts: ['bottom'],
+        text: 'Choose a gem, then an occupied neighbour to swap. Choose it again to cancel.',
+        keys: 'Enter',
+      },
       { parts: ['left'], text: 'Undo a swap. Swaps already made still count.', keys: 'Backspace' },
-      { parts: ['start'], text: 'Pause menu: show a clearing swap or restart this tray. Restart counts as help.', keys: 'Esc' },
+      {
+        parts: ['start'],
+        text: 'Pause menu: show a clearing swap or restart this tray. Restart counts as help.',
+        keys: 'Esc',
+      },
     ],
-    restart: 'Restart this tray', hint: 'Show a clearing swap',
-    play: 'turns', faceoff: 'twin', score: { better: 'lower', unit: 'swaps over the best route' },
-    band: 'grownup', demoLevel: 2, level: stop => stop < 2 ? 2 : stop < 4 ? 3 : 4,
+    restart: 'Restart this tray',
+    hint: 'Show a clearing swap',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'swaps over the best route' },
+    band: 'grownup',
+    demoLevel: 2,
+    level: (stop) => (stop < 2 ? 2 : stop < 4 ? 3 : 4),
   },
   'tile-pairs': {
-    goal: 'couch.how.tile-pairs', tagline: 'Remove matching free tiles from a layered stack.',
+    goal: 'couch.how.tile-pairs',
+    tagline: 'Remove matching free tiles from a layered stack.',
     controls: [
       { parts: STICK, text: 'Move between free tiles.', keys: 'Arrow keys' },
       { parts: ['bottom'], text: 'Choose a tile, then its match. Choose it again to cancel.', keys: 'Enter' },
       { parts: ['left'], text: 'Undo the last pair or shuffle. Each undo counts.', keys: 'Backspace' },
-      { parts: ['start'], text: 'Pause menu: show a hint or shuffle the remaining pictures into open rows. Shuffle counts as help.', keys: 'Esc' },
+      {
+        parts: ['start'],
+        text: 'Pause menu: show a hint or shuffle the remaining pictures into open rows. Shuffle counts as help.',
+        keys: 'Esc',
+      },
     ],
-    restart: 'Shuffle remaining tiles', hint: 'Show a clearing pair',
-    play: 'turns', faceoff: 'twin', score: { better: 'lower', unit: 'undos and shuffles' },
-    band: 'grownup', demoLevel: 2, level: stop => stop < 2 ? 1 : stop < 4 ? 2 : 3,
+    restart: 'Shuffle remaining tiles',
+    hint: 'Show a clearing pair',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'lower', unit: 'undos and shuffles' },
+    band: 'grownup',
+    demoLevel: 2,
+    level: (stop) => (stop < 2 ? 1 : stop < 4 ? 2 : 3),
   },
   'penguin-slide': {
     goal: 'couch.how.penguin-slide',
     tagline: 'Plan your slides. Collect both fish on each of two ice puzzles.',
     controls: [
-      { parts: STICK, text: 'Slide the penguin. It keeps going until it bumps into something.', keys: 'Arrow keys' },
+      {
+        parts: STICK,
+        text: 'Slide the penguin. It keeps going until it bumps into something.',
+        keys: 'Arrow keys',
+      },
       { parts: ['left'], text: 'Undo the last slide.', keys: 'Backspace' },
       { parts: ['start'], text: 'Pause menu: start the pond again. Slides so far still count.', keys: 'Esc' },
     ],
@@ -88,7 +116,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.bouncy-launch',
     tagline: 'Aim the spring. Land on three star clouds.',
     controls: [
-      { parts: STICK, text: 'Push down (or right) to squash the spring for more power; up (or left) for less.', keys: 'Down / right arrows: more · up / left: less' },
+      {
+        parts: STICK,
+        text: 'Push down (or right) to squash the spring for more power; up (or left) for less.',
+        keys: 'Down / right arrows: more · up / left: less',
+      },
       { parts: ['bottom'], text: 'Press to launch.', keys: 'Enter' },
     ],
     play: 'turns',
@@ -103,7 +135,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.bounce-back',
     tagline: 'Keep the ball going together, or race to five goals.',
     controls: [
-      { parts: STICK, text: 'Move your paddle up and down. Player 2 uses the second controller.', keys: '↑ ↓ (Player 2: W / S)' },
+      {
+        parts: STICK,
+        text: 'Move your paddle up and down. Player 2 uses the second controller.',
+        keys: '↑ ↓ (Player 2: W / S)',
+      },
     ],
     play: 'together',
     faceoff: 'shared',
@@ -163,7 +199,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     tagline: 'Crack the hidden row of stones from the green, yellow and gray clues.',
     controls: [
       { parts: STICK, text: 'Choose a stone.', keys: 'Left / right arrows' },
-      { parts: ['bottom'], text: 'Place it. When every slot is full, press again to turn the key.', keys: 'Enter' },
+      {
+        parts: ['bottom'],
+        text: 'Place it. When every slot is full, press again to turn the key.',
+        keys: 'Enter',
+      },
       { parts: ['left'], text: 'Take the last stone back.', keys: 'Backspace' },
     ],
     play: 'turns',
@@ -192,7 +232,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.bumper-garden',
     tagline: 'Flip the ladybug back up together, one flipper each.',
     controls: [
-      { parts: STICK, text: 'Flip the left or right flipper. With two controllers, Player 1 has the left one and Player 2 the right.', keys: 'Left / right arrows' },
+      {
+        parts: STICK,
+        text: 'Flip the left or right flipper. With two controllers, Player 1 has the left one and Player 2 the right.',
+        keys: 'Left / right arrows',
+      },
     ],
     play: 'together',
     faceoff: 'team',
@@ -204,7 +248,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.pattern-train',
     tagline: 'Look at the train, then choose what comes next.',
     controls: [
-      { parts: STICK, text: 'Move the highlight to the picture that fits the glowing car.', keys: 'Left / right arrows' },
+      {
+        parts: STICK,
+        text: 'Move the highlight to the picture that fits the glowing car.',
+        keys: 'Left / right arrows',
+      },
       { parts: ['bottom'], text: 'Choose it.', keys: 'Enter' },
     ],
     play: 'together',
@@ -218,7 +266,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.egg-catch',
     tagline: 'Slide the basket under the falling eggs.',
     controls: [
-      { parts: STICK, text: 'Slide the basket left and right. With two controllers, you both steer the same basket.', keys: 'Left / right arrows' },
+      {
+        parts: STICK,
+        text: 'Slide the basket left and right. With two controllers, you both steer the same basket.',
+        keys: 'Left / right arrows',
+      },
     ],
     // With two controllers both steer one basket. A face-off on separate boards would mostly tie, so this is a team game.
     play: 'together',
@@ -249,7 +301,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.frog-hop',
     tagline: 'Hop along the lily pads to where the frog will land.',
     controls: [
-      { parts: STICK, text: 'Move the highlight along the lily pads, or the number cards.', keys: 'Left / right arrows' },
+      {
+        parts: STICK,
+        text: 'Move the highlight along the lily pads, or the number cards.',
+        keys: 'Left / right arrows',
+      },
       { parts: ['bottom'], text: 'Choose it.', keys: 'Enter' },
     ],
     play: 'together',
@@ -264,7 +320,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     tagline: 'Plant one of each flower in every row and column.',
     controls: [
       { parts: STICK, text: 'Move the ring over the bed, or along the seed packets.', keys: 'Arrow keys' },
-      { parts: ['bottom'], text: 'On an empty spot, open the packets; then plant the flower in the ring. On a flower you planted, take it out.', keys: 'Enter' },
+      {
+        parts: ['bottom'],
+        text: 'On an empty spot, open the packets; then plant the flower in the ring. On a flower you planted, take it out.',
+        keys: 'Enter',
+      },
       { parts: ['left'], text: 'Close the packets without planting.', keys: 'Backspace' },
     ],
     // The beds come from the seed, so both players fill the same beds: fewer wrong plantings wins.
@@ -275,7 +335,12 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     band: 'school',
     demoLevel: 3,
     level: (stop) => [3, 3, 4, 4, 5, 6][stop] ?? 6,
-    lines: { 'rows.rows': 'couch.rows.rows', 'rows.both': 'couch.rows.both', 'rows.stuck': 'couch.rows.stuck', 'rows.hint-fix': 'couch.rows.hint-fix' },
+    lines: {
+      'rows.rows': 'couch.rows.rows',
+      'rows.both': 'couch.rows.both',
+      'rows.stuck': 'couch.rows.stuck',
+      'rows.hint-fix': 'couch.rows.hint-fix',
+    },
   },
   'treasure-map': {
     goal: 'couch.how.treasure-map',
@@ -315,9 +380,21 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     tagline: 'Fill the bed so every row, column and box holds each number once.',
     controls: [
       { parts: STICK, text: 'Move around the bed. In the number tray, choose a number.', keys: 'Arrow keys' },
-      { parts: ['bottom'], text: 'On a square, open the number tray. In the tray, place the number or switch pencil marks on and off.', keys: 'Enter' },
-      { parts: ['left'], text: 'Close the tray, or take a number (or its pencil marks) back out. Free.', keys: 'Backspace' },
-      { parts: ['start'], text: 'Pause menu: show a hint, or start the bed again. A hint marks the run as helped.', keys: 'Esc' },
+      {
+        parts: ['bottom'],
+        text: 'On a square, open the number tray. In the tray, place the number or switch pencil marks on and off.',
+        keys: 'Enter',
+      },
+      {
+        parts: ['left'],
+        text: 'Close the tray, or take a number (or its pencil marks) back out. Free.',
+        keys: 'Backspace',
+      },
+      {
+        parts: ['start'],
+        text: 'Pause menu: show a hint, or start the bed again. A hint marks the run as helped.',
+        keys: 'Esc',
+      },
     ],
     restart: 'Start this bed again',
     hint: 'Show a hint',
@@ -333,10 +410,18 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.lantern-lights',
     tagline: 'Press a lantern to flip it and its neighbours. Light every lantern on the pond.',
     controls: [
-      { parts: STICK, text: 'Move from lantern to lantern. The glow shows what a press would flip.', keys: 'Arrow keys' },
+      {
+        parts: STICK,
+        text: 'Move from lantern to lantern. The glow shows what a press would flip.',
+        keys: 'Arrow keys',
+      },
       { parts: ['bottom'], text: 'Press the lantern: it and the four beside it flip.', keys: 'Enter' },
       { parts: ['left'], text: 'Take the last press back. It still counts.', keys: 'Backspace' },
-      { parts: ['start'], text: 'Pause menu: show a hint, or put the pond back as it began. A hint marks the run as helped.', keys: 'Esc' },
+      {
+        parts: ['start'],
+        text: 'Pause menu: show a hint, or put the pond back as it began. A hint marks the run as helped.',
+        keys: 'Esc',
+      },
     ],
     restart: 'Start this pond again',
     hint: 'Show a hint',
@@ -354,13 +439,29 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     controls: [
       { parts: [], text: 'Type the letter on the bubble.', keys: 'Letter keys' },
       { parts: [], text: 'The space bar, between two words.', keys: 'Space' },
-      { parts: [], text: 'Tap Shift, then a letter, for a capital. Finish a line with a full stop.', keys: 'Shift / .' },
-      { parts: ['dpad', 'left'], text: 'Move the caret and remove the letter before it.', keys: '← → / Backspace' },
-      { parts: ['start'], text: 'Pause: Show the key, glow a hint, or start this bubble again.', keys: 'Esc' },
+      {
+        parts: [],
+        text: 'Tap Shift, then a letter, for a capital. Finish a line with a full stop.',
+        keys: 'Shift / .',
+      },
+      {
+        parts: ['dpad', 'left'],
+        text: 'Move the caret and remove the letter before it.',
+        keys: '← → / Backspace',
+      },
+      {
+        parts: ['start'],
+        text: 'Pause: Show the key, glow a hint, or start this bubble again.',
+        keys: 'Esc',
+      },
     ],
-    restart: 'Start this bubble again', hint: 'Glow the key',
-    play: 'turns', faceoff: 'twin', score: { better: 'higher', unit: 'letters first try' },
-    band: 'school', demoLevel: 2,
+    restart: 'Start this bubble again',
+    hint: 'Glow the key',
+    play: 'turns',
+    faceoff: 'twin',
+    score: { better: 'higher', unit: 'letters first try' },
+    band: 'school',
+    demoLevel: 2,
     // A trip introduces lines; caret repair is on the island course.
     level: (stop) => [1, 1, 2, 3, 4, 5][stop] ?? 5,
   },
@@ -369,7 +470,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     tagline: 'Find the hidden words in a grid of letters.',
     controls: [
       { parts: STICK, text: 'Move around the grid.', keys: 'Arrow keys' },
-      { parts: ['bottom'], text: 'Mark a word\'s first letter; move to its last letter and press again to check it.', keys: 'Enter' },
+      {
+        parts: ['bottom'],
+        text: "Mark a word's first letter; move to its last letter and press again to check it.",
+        keys: 'Enter',
+      },
       { parts: ['left'], text: 'Let go of the line you are marking.', keys: 'Backspace' },
       { parts: ['start'], text: 'Pause menu: a hint, or search the grid again.', keys: 'Esc' },
     ],
@@ -387,7 +492,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.island-bridges',
     tagline: 'Join the islands with bridges: each needs as many planks as its number.',
     controls: [
-      { parts: STICK, text: 'Move between islands. With one armed, push toward a neighbor.', keys: 'Arrow keys' },
+      {
+        parts: STICK,
+        text: 'Move between islands. With one armed, push toward a neighbor.',
+        keys: 'Arrow keys',
+      },
       { parts: ['bottom'], text: 'Arm an island to lay a plank toward a neighbor.', keys: 'Enter' },
       { parts: ['left'], text: 'Arm it to take planks off instead. Free.', keys: 'Backspace' },
       { parts: ['start'], text: 'Pause menu: a hint, or clear the sea.', keys: 'Esc' },
@@ -406,9 +515,17 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.pond-conga',
     tagline: 'Steer a line of ducklings to each bit of duck food, in order.',
     controls: [
-      { parts: STICK, text: 'Turn the conga. It paddles on by itself, and a bump turns the whole line about.', keys: 'Arrow keys' },
+      {
+        parts: STICK,
+        text: 'Turn the conga. It paddles on by itself, and a bump turns the whole line about.',
+        keys: 'Arrow keys',
+      },
       { parts: ['bottom'], text: 'Set off straight ahead (any turn does too).', keys: 'Enter' },
-      { parts: ['start'], text: 'Pause menu: show a hint, or put the line back at the start. A hint marks the run as helped.', keys: 'Esc' },
+      {
+        parts: ['start'],
+        text: 'Pause menu: show a hint, or put the line back at the start. A hint marks the run as helped.',
+        keys: 'Esc',
+      },
     ],
     restart: 'Start this pond again',
     hint: 'Show a hint',
@@ -424,9 +541,17 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     goal: 'couch.how.ferry-jam',
     tagline: 'Slide the boats aside so the red ferry can sail out to the dock.',
     controls: [
-      { parts: STICK, text: 'Move between boats. With one picked up, slide it along its lane.', keys: 'Arrow keys' },
+      {
+        parts: STICK,
+        text: 'Move between boats. With one picked up, slide it along its lane.',
+        keys: 'Arrow keys',
+      },
       { parts: ['bottom'], text: 'Pick up the highlighted boat; press again to set it down.', keys: 'Enter' },
-      { parts: ['left'], text: 'Put a held boat back, or take the last slide back. It still counts.', keys: 'Backspace' },
+      {
+        parts: ['left'],
+        text: 'Put a held boat back, or take the last slide back. It still counts.',
+        keys: 'Backspace',
+      },
       { parts: ['start'], text: 'Pause menu: a hint, or the harbor again.', keys: 'Esc' },
     ],
     restart: 'Start this harbor again',
@@ -446,7 +571,11 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     controls: [
       { parts: STICK, text: 'Move around the grid.', keys: 'Arrow keys' },
       { parts: ['bottom'], text: 'Fill a square. Hold it and move to paint a run.', keys: 'Enter (hold)' },
-      { parts: ['left'], text: 'Cross a square out. Hold it to cross a run. Free.', keys: 'Backspace (hold)' },
+      {
+        parts: ['left'],
+        text: 'Cross a square out. Hold it to cross a run. Free.',
+        keys: 'Backspace (hold)',
+      },
       { parts: ['start'], text: 'Pause menu: a hint, or empty the picture.', keys: 'Esc' },
     ],
     restart: 'Empty this picture',

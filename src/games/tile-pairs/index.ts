@@ -12,19 +12,42 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, free, freeTiles, fullMask, makeBoard, planFor, present, removePair, reshuffle, solve, type Pair, type Tile } from './logic';
+import {
+  LEVELS,
+  free,
+  freeTiles,
+  fullMask,
+  makeBoard,
+  planFor,
+  present,
+  removePair,
+  reshuffle,
+  solve,
+  type Pair,
+  type Tile,
+} from './logic';
 
 /** Pictures differ by shape as well as color. The raised edge makes a covered tile read as a stack. */
 function tileArt(kind: number): Container {
   const c = new Container();
   c.addChild(new Graphics().roundRect(-50, -48, 108, 108, 14).fill(swatch.brown.line));
-  c.addChild(new Graphics().roundRect(-54, -54, 108, 108, 14).fill(cream).stroke({ width: 3, color: swatch.brown.fill }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-54, -54, 108, 108, 14)
+      .fill(cream)
+      .stroke({ width: 3, color: swatch.brown.fill }),
+  );
   const picture = new Graphics();
-  shapePath(picture, SHAPES[kind], 30).fill(swatch[RAINBOW[kind]].fill).stroke({ width: 4, color: swatch[RAINBOW[kind]].line });
+  shapePath(picture, SHAPES[kind], 30)
+    .fill(swatch[RAINBOW[kind]].fill)
+    .stroke({ width: 4, color: swatch[RAINBOW[kind]].line });
   c.addChild(picture);
   return c;
 }
-interface Snapshot { tiles: Tile[]; mask: number }
+interface Snapshot {
+  tiles: Tile[];
+  mask: number;
+}
 
 class TilePairs implements Game {
   tiles: Tile[];
@@ -75,15 +98,25 @@ class TilePairs implements Game {
     }
     this.rebuild();
   }
-  start() { void this.ctx.instruct(this.touch ? 'tile-pairs.go' : 'couch.how.tile-pairs'); }
+  start() {
+    void this.ctx.instruct(this.touch ? 'tile-pairs.go' : 'couch.how.tile-pairs');
+  }
 
-  private snapshot(): Snapshot { return { tiles: this.tiles.map(t => ({ ...t })), mask: this.mask }; }
+  private snapshot(): Snapshot {
+    return { tiles: this.tiles.map((t) => ({ ...t })), mask: this.mask };
+  }
   private rebuild() {
     for (const node of this.nodes) node.destroy({ children: true });
     this.nodes = this.tiles.map((t, i) => {
       const c = tileArt(t.kind);
       c.hitArea = new Rectangle(-54, -54, 108, 108);
-      onTap(c, () => { if (this.touch) this.choose(i); }, { cooldown: 80 });
+      onTap(
+        c,
+        () => {
+          if (this.touch) this.choose(i);
+        },
+        { cooldown: 80 },
+      );
       if (!this.touch) c.eventMode = 'none';
       this.board.addChild(c);
       return c;
@@ -95,13 +128,20 @@ class TilePairs implements Game {
   }
   resize(v: View) {
     this.view = v;
-    const cols = Math.max(...this.tiles.map(t => t.x)) + 1;
-    const rows = Math.max(...this.tiles.map(t => t.y)) + 1;
+    const cols = Math.max(...this.tiles.map((t) => t.x)) + 1;
+    const rows = Math.max(...this.tiles.map((t) => t.y)) + 1;
     this.board.position.set(v.w / 2 - (cols - 1) * 60, (v.h - 110) / 2 - (rows - 1) * 58);
-    this.nodes.forEach((n, i) => n.position.set(this.tiles[i].x * 120 + this.tiles[i].z * 6, this.tiles[i].y * 116 - this.tiles[i].z * 6));
+    this.nodes.forEach((n, i) =>
+      n.position.set(
+        this.tiles[i].x * 120 + this.tiles[i].z * 6,
+        this.tiles[i].y * 116 - this.tiles[i].z * 6,
+      ),
+    );
     this.tally.position.set(v.w / 2, 66);
     this.help.position.set(v.w / 2, 104);
-    [this.undoButton, this.hintButton, this.shuffleButton].forEach((n, i) => n.position.set(v.w / 2 + (i - 1) * 180, v.h - 70));
+    [this.undoButton, this.hintButton, this.shuffleButton].forEach((n, i) =>
+      n.position.set(v.w / 2 + (i - 1) * 180, v.h - 70),
+    );
     this.draw();
   }
   private draw() {
@@ -111,7 +151,10 @@ class TilePairs implements Game {
     });
     const remaining = this.tiles.filter((_, i) => present(this.mask, i)).length;
     this.tally.text = `${remaining} tiles · ${this.undos} undos · ${this.shuffles} shuffles`;
-    this.help.text = this.route === null ? 'No clearing route · Undo or Shuffle keeps you playing' : 'Clear the top · open a left or right side';
+    this.help.text =
+      this.route === null
+        ? 'No clearing route · Undo or Shuffle keeps you playing'
+        : 'Clear the top · open a left or right side';
     const g = this.ring.clear();
     const outline = (i: number, color: number, width: number) => {
       if (!present(this.mask, i)) return;
@@ -130,8 +173,17 @@ class TilePairs implements Game {
       return;
     }
     this.cursor = i;
-    if (this.selected === i) { this.selected = null; this.draw(); return; }
-    if (this.selected === null) { this.selected = i; sfx.tick(); this.draw(); return; }
+    if (this.selected === i) {
+      this.selected = null;
+      this.draw();
+      return;
+    }
+    if (this.selected === null) {
+      this.selected = i;
+      sfx.tick();
+      this.draw();
+      return;
+    }
     const a = this.selected;
     this.selected = null;
     if (this.tiles[a].kind !== this.tiles[i].kind) {
@@ -157,7 +209,12 @@ class TilePairs implements Game {
   private undo() {
     if (this.busy || this.finished || !this.ctx.alive) return;
     const last = this.history.pop();
-    if (!last) { this.selected = null; this.hinted = null; this.draw(); return; }
+    if (!last) {
+      this.selected = null;
+      this.hinted = null;
+      this.draw();
+      return;
+    }
     this.undos++;
     this.tiles = last.tiles;
     this.mask = last.mask;
@@ -196,7 +253,11 @@ class TilePairs implements Game {
     this.ring.clear();
     this.ctx.pet.cheer();
     sfx.tada();
-    this.ctx.particles.burst(this.view.w / 2, this.view.h / 2, { kind: 'star', colors: [swatch.yellow.fill, swatch.teal.fill], count: 20 });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h / 2, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.teal.fill],
+      count: 20,
+    });
     await this.ctx.say('tile-pairs.done');
     if (!this.ctx.alive) return;
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.undos + this.shuffles });
@@ -225,13 +286,14 @@ class TilePairs implements Game {
   control(input: CouchControls, dt: number) {
     this.useController();
     if (this.busy || this.finished || !this.ctx.alive) return;
-    const open = freeTiles(this.tiles, this.mask), spots = open.map(i => this.nodes[i].position);
+    const open = freeTiles(this.tiles, this.mask),
+      spots = open.map((i) => this.nodes[i].position);
     for (const dir of this.held.poll(input, dt)) {
       this.cursor = open[nextSpot(spots, Math.max(0, open.indexOf(this.cursor)), dir)] ?? this.cursor;
       this.draw();
     }
-    if (input.players.some(p => p.action)) this.choose(this.cursor);
-    else if (input.players.some(p => p.undo)) this.undo();
+    if (input.players.some((p) => p.action)) this.choose(this.cursor);
+    else if (input.players.some((p) => p.undo)) this.undo();
   }
   private botTarget(): number | null {
     const pair = this.route?.[0];
@@ -255,9 +317,17 @@ class TilePairs implements Game {
     if (to === null) return out;
     const p = out.players[0];
     p.active = true;
-    if (to === this.cursor) { p.action = true; this.botWait = 0.3; return out; }
+    if (to === this.cursor) {
+      p.action = true;
+      this.botWait = 0.3;
+      return out;
+    }
     const open = freeTiles(this.tiles, this.mask);
-    const dir = routeStep(open.map(i => this.nodes[i].position), open.indexOf(this.cursor), open.indexOf(to));
+    const dir = routeStep(
+      open.map((i) => this.nodes[i].position),
+      open.indexOf(this.cursor),
+      open.indexOf(to),
+    );
     p.direction = dir;
     this.botWait = 0.12;
     return out;
@@ -265,17 +335,41 @@ class TilePairs implements Game {
 }
 
 function sticker(seed: number) {
-  const rng = new Rng(seed), c = new Container(), kind = rng.int(0, 5);
-  for (const x of [-40, 40]) { const t = tileArt(kind); t.scale.set(0.75); t.position.set(x, x / 5); t.rotation = x / 400; c.addChild(t); }
+  const rng = new Rng(seed),
+    c = new Container(),
+    kind = rng.int(0, 5);
+  for (const x of [-40, 40]) {
+    const t = tileArt(kind);
+    t.scale.set(0.75);
+    t.position.set(x, x / 5);
+    t.rotation = x / 400;
+    c.addChild(t);
+  }
   return c;
 }
 export const tilePairs: GameModule = {
-  id: 'tile-pairs', liveController: true, name: 'Tile Pairs', titleLine: 'game.tile-pairs', region: 'puzzle-peaks', challenge: 'noticing',
-  skills: ['spatial-planning', 'matching'], bands: ['grownup'], inputs: ['touch', 'controller'], touchDemo: true,
-  levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
+  id: 'tile-pairs',
+  liveController: true,
+  name: 'Tile Pairs',
+  titleLine: 'game.tile-pairs',
+  region: 'puzzle-peaks',
+  challenge: 'noticing',
+  skills: ['spatial-planning', 'matching'],
+  bands: ['grownup'],
+  inputs: ['touch', 'controller'],
+  touchDemo: true,
+  levels: (band) => rangeFor(LEVELS, band),
+  describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
-  coplayHint: 'Look together for a matching pair whose tops and one side are open. Notice what removing it uncovers.',
-  offScreen: 'Lay matching playing cards face up in short rows. Remove matching end cards and notice which choices open the middle.',
-  hubIcon: () => { const c = sticker(5); c.position.y = -100; return new WigglyIcon(c); },
-  sticker, create: ctx => new TilePairs(ctx),
+  coplayHint:
+    'Look together for a matching pair whose tops and one side are open. Notice what removing it uncovers.',
+  offScreen:
+    'Lay matching playing cards face up in short rows. Remove matching end cards and notice which choices open the middle.',
+  hubIcon: () => {
+    const c = sticker(5);
+    c.position.y = -100;
+    return new WigglyIcon(c);
+  },
+  sticker,
+  create: (ctx) => new TilePairs(ctx),
 };

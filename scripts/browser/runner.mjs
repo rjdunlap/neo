@@ -14,8 +14,20 @@ export async function runBrowserSuites(browser, suites) {
     } catch (error) {
       await fixture.screenshot('failure').catch(() => {});
       console.error('BROWSER FAILURE', suite, error);
-      console.error('State:', await fixture.page.evaluate(() => ({ scene: window.neo?.scene?.constructor.name, switching: window.neo?.switching, game: window.neo?.scene?.mod?.id, level: window.neo?.scene?.level })).catch(() => null));
+      console.error(
+        'State:',
+        await fixture.page
+          .evaluate(() => ({
+            scene: window.neo?.scene?.constructor.name,
+            switching: window.neo?.switching,
+            game: window.neo?.scene?.mod?.id,
+            level: window.neo?.scene?.level,
+          }))
+          .catch(() => null),
+      );
       throw error;
-    } finally { await fixture.context.close(); }
+    } finally {
+      await fixture.context.close();
+    }
   }
 }

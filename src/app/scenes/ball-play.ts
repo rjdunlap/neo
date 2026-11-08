@@ -28,7 +28,9 @@ const REACH = 135;
  */
 export class BallPlay implements Updatable {
   readonly ball = new Container();
-  readonly shadow = new Graphics().ellipse(0, 0, BALL_RADIUS * 0.8, BALL_RADIUS * 0.22).fill({ color: 0x000000, alpha: 0.16 });
+  readonly shadow = new Graphics()
+    .ellipse(0, 0, BALL_RADIUS * 0.8, BALL_RADIUS * 0.22)
+    .fill({ color: 0x000000, alpha: 0.16 });
   /** The ball's centre when it rests on the grass; `z` is its height above that. */
   x = 0;
   y = 0;
@@ -72,7 +74,11 @@ export class BallPlay implements Updatable {
       const p = this.pet;
       p.x = Math.max(floor.x0 - 40, Math.min(floor.x1 + 40, p.x));
       p.y = Math.max(floor.y0 + BALL_RADIUS - 10, Math.min(floor.y1 + BALL_RADIUS - 10, p.y));
-      if (this.flight) this.flight.to = { x: Math.max(floor.x0, Math.min(floor.x1, this.flight.to.x)), y: Math.max(floor.y0, Math.min(floor.y1, this.flight.to.y)) };
+      if (this.flight)
+        this.flight.to = {
+          x: Math.max(floor.x0, Math.min(floor.x1, this.flight.to.x)),
+          y: Math.max(floor.y0, Math.min(floor.y1, this.flight.to.y)),
+        };
     }
     this.draw();
   }
@@ -85,7 +91,10 @@ export class BallPlay implements Updatable {
     let best = -1;
     for (let i = 0; i < 12; i++) {
       const p = { x: f.x0 + this.rng.next() * (f.x1 - f.x0), y: f.y0 + this.rng.next() * (f.y1 - f.y0) };
-      const d = Math.min(Math.hypot(p.x - this.x, p.y - this.y), Math.hypot(p.x - this.pet.x, p.y - this.pet.y) + 60);
+      const d = Math.min(
+        Math.hypot(p.x - this.x, p.y - this.y),
+        Math.hypot(p.x - this.pet.x, p.y - this.pet.y) + 60,
+      );
       if (d > best) {
         best = d;
         to = p;
@@ -131,7 +140,10 @@ export class BallPlay implements Updatable {
       return;
     }
     const side = p.x <= this.x ? -1 : 1;
-    const goal = { x: Math.max(this.floor.x0 - 40, Math.min(this.floor.x1 + 40, this.x + side * (REACH - 20))), y: this.y + BALL_RADIUS - 10 };
+    const goal = {
+      x: Math.max(this.floor.x0 - 40, Math.min(this.floor.x1 + 40, this.x + side * (REACH - 20))),
+      y: this.y + BALL_RADIUS - 10,
+    };
     const dx = goal.x - p.x;
     const dy = goal.y - p.y;
     const d = Math.hypot(dx, dy);

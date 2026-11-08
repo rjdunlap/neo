@@ -12,8 +12,23 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cardCritter, claimSign, crateArt, everyMark, postArt, stampArt, type SignMark } from './art';
 import {
-  CARD_H, CARD_W, LEVELS, makeRound, MEND_H, MEND_W, notAlwaysLayout, Play, planFor, SIGN_H, SIGN_W, STAMP,
-  type Claim, type Outcome, type Phase, type Plan, type Rect,
+  CARD_H,
+  CARD_W,
+  LEVELS,
+  makeRound,
+  MEND_H,
+  MEND_W,
+  notAlwaysLayout,
+  Play,
+  planFor,
+  SIGN_H,
+  SIGN_W,
+  STAMP,
+  type Claim,
+  type Outcome,
+  type Phase,
+  type Plan,
+  type Rect,
 } from './logic';
 
 const FRIENDS = ['cat', 'bear', 'dog', 'bunny', 'pig'] as const;
@@ -23,7 +38,12 @@ const authoredShown = new Set<number>();
 
 const claimLine = (c: Claim) => `notalways.${c.q}.${c.attr}` as LineId;
 
-interface CardNode { node: Container; critter: Critter; ring: Graphics; base: number }
+interface CardNode {
+  node: Container;
+  critter: Critter;
+  ring: Graphics;
+  base: number;
+}
 
 class NotAlways implements Game {
   readonly plan: Plan;
@@ -72,7 +92,12 @@ class NotAlways implements Game {
       critter.y = 76;
       const ring = new Graphics().circle(0, 0, 84).stroke({ width: 8, color: swatch.red.fill });
       ring.visible = false;
-      node.addChild(tile(CARD_W, CARD_H, 'white'), new Graphics().ellipse(0, 76, 52, 10).fill(grass), critter, ring);
+      node.addChild(
+        tile(CARD_W, CARD_H, 'white'),
+        new Graphics().ellipse(0, 76, 52, 10).fill(grass),
+        critter,
+        ring,
+      );
       node.eventMode = 'static';
       node.hitArea = new Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
       onTap(node, () => void this.tapCard(i), { cooldown: 250 });
@@ -130,7 +155,10 @@ class NotAlways implements Game {
   private async tapCard(i: number) {
     const card = this.cards[i];
     if (this.busy || this.finished) return;
-    if (this.play.phase === 'mend') { sfx.tick(); return void this.nod(card); }
+    if (this.play.phase === 'mend') {
+      sfx.tick();
+      return void this.nod(card);
+    }
     // Touch-down: the card lifts and the friend leans to look.
     void this.lift(card);
     this.friend.rotation = (card.node.x < this.friendNode.x ? -1 : 1) * 0.08;
@@ -229,7 +257,10 @@ class NotAlways implements Game {
     }
     this.showSign(this.play.current);
     sfx.pop(7);
-    if (this.sign) { this.sign.rotation = -0.25; void this.ctx.tw.to(this.sign, { rotation: 0 }, { duration: 0.4 }); }
+    if (this.sign) {
+      this.sign.rotation = -0.25;
+      void this.ctx.tw.to(this.sign, { rotation: 0 }, { duration: 0.4 });
+    }
     this.busy = false;
     void this.ctx.instruct(claimLine(this.play.current));
   }
@@ -257,14 +288,18 @@ class NotAlways implements Game {
 
   /** The friend reads each mended sign as it lifts; stops when she has chosen. */
   private async readMends() {
-    const claim = this.play.claim, reading = ++this.reading;
+    const claim = this.play.claim,
+      reading = ++this.reading;
     // A newer reading (the friend tapped again) or her choice stops this one.
-    const still = () => this.alive && this.reading === reading && this.play.phase === 'mend' && this.play.claim === claim;
+    const still = () =>
+      this.alive && this.reading === reading && this.play.phase === 'mend' && this.play.claim === claim;
     await this.ctx.say('notalways.mends');
     for (let j = 0; j < this.mendNodes.length; j++) {
       if (!still()) return;
       const n = this.mendNodes[j];
-      void this.ctx.tw.to(n, { y: n.y - 10 }, { duration: 0.15 }).then(() => { if (!n.destroyed) void this.ctx.tw.to(n, { y: n.y + 10 }, { duration: 0.2 }); });
+      void this.ctx.tw.to(n, { y: n.y - 10 }, { duration: 0.15 }).then(() => {
+        if (!n.destroyed) void this.ctx.tw.to(n, { y: n.y + 10 }, { duration: 0.2 });
+      });
       await this.ctx.say(claimLine(this.play.options[j]));
     }
   }
@@ -292,7 +327,8 @@ class NotAlways implements Game {
     const n = card.node;
     if (this.ctx.tw.busy(n.scale)) return;
     await this.ctx.tw.to(n.scale, { x: card.base * 1.06, y: card.base * 1.06 }, { duration: 0.08 });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n.scale, { x: card.base, y: card.base }, { duration: 0.16 });
+    if (this.alive && !n.destroyed)
+      await this.ctx.tw.to(n.scale, { x: card.base, y: card.base }, { duration: 0.16 });
   }
 
   /** The card nods: it fits the claim, so it shows its part. */
@@ -308,10 +344,20 @@ class NotAlways implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
-    sfx.marimba(7); void this.ctx.tw.wait(0.18).then(() => { if (this.alive) sfx.marimba(9); });
+    sfx.marimba(7);
+    void this.ctx.tw.wait(0.18).then(() => {
+      if (this.alive) sfx.marimba(9);
+    });
     this.friend.cheer();
     for (const c of this.cards) c.critter.hop(0.6);
-    this.ctx.particles.burst(this.friendNode.x, this.friendNode.y - 80, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(this.friendNode.x, this.friendNode.y - 80, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.ctx.say('notalways.done');
     if (!this.alive) return;
     this.ctx.finish({ misses: this.play.misses, hints: this.play.hints });
@@ -338,7 +384,10 @@ class NotAlways implements Game {
       c.node.position.set(r.x + r.w / 2, r.y + r.h / 2);
     });
     if (this.stamp && L.stamp) this.stamp.position.set(L.stamp.x + L.stamp.w / 2, L.stamp.y + L.stamp.h / 2);
-    this.mendNodes.forEach((n, j) => { const r = L.mends[j]; n.position.set(r.x + r.w / 2, r.y + r.h / 2); });
+    this.mendNodes.forEach((n, j) => {
+      const r = L.mends[j];
+      n.position.set(r.x + r.w / 2, r.y + r.h / 2);
+    });
   }
 
   update(dt: number) {
@@ -349,9 +398,15 @@ class NotAlways implements Game {
     if (!n) return;
     const b = n.getLocalBounds();
     const pulse = 0.6 + 0.4 * Math.sin(this.clock * 4);
-    const w = b.width * n.scale.x + 18, h = b.height * n.scale.y + 18;
-    const cx = n.x + (b.x + b.width / 2) * n.scale.x, cy = n.y + (b.y + b.height / 2) * n.scale.y;
-    g.roundRect(cx - w / 2, cy - h / 2, w, h, 22).stroke({ width: 8, color: swatch.yellow.fill, alpha: pulse });
+    const w = b.width * n.scale.x + 18,
+      h = b.height * n.scale.y + 18;
+    const cx = n.x + (b.x + b.width / 2) * n.scale.x,
+      cy = n.y + (b.y + b.height / 2) * n.scale.y;
+    g.roundRect(cx - w / 2, cy - h / 2, w, h, 22).stroke({
+      width: 8,
+      color: swatch.yellow.fill,
+      alpha: pulse,
+    });
   }
 
   /** The ghost finger: tap what answers the claim (the first breaker or the stamp), then at level 3 the true mended sign. */
@@ -361,7 +416,9 @@ class NotAlways implements Game {
     return n ? { tap: { on: n }, pause: 1.2 } : null;
   }
 
-  destroy() { this.alive = false; }
+  destroy() {
+    this.alive = false;
+  }
 }
 
 /** The friend on its crate holding up a flipped card with a ring round its creature. */
@@ -375,9 +432,21 @@ function friendPicture(seed: number, withCard: boolean): Container {
   c.addChild(crate, k);
   if (withCard) {
     const card = new Container();
-    const sub = cardCritter({ color: rng.pick(['red', 'blue', 'yellow'] as const), hat: false, wings: rng.chance(0.5), spots: rng.chance(0.5) }, 0.3);
+    const sub = cardCritter(
+      {
+        color: rng.pick(['red', 'blue', 'yellow'] as const),
+        hat: false,
+        wings: rng.chance(0.5),
+        spots: rng.chance(0.5),
+      },
+      0.3,
+    );
     sub.y = 40;
-    card.addChild(tile(90, 110, 'white'), sub, new Graphics().circle(0, 0, 48).stroke({ width: 6, color: swatch.red.fill }));
+    card.addChild(
+      tile(90, 110, 'white'),
+      sub,
+      new Graphics().circle(0, 0, 48).stroke({ width: 6, color: swatch.red.fill }),
+    );
     card.position.set(70, -110);
     card.rotation = 0.12;
     c.addChild(card);
@@ -394,7 +463,11 @@ function hubPicture(): Container {
   crate.y = 30;
   const sign = claimSign({ q: 'every', attr: 'hat' }, 150, 80);
   sign.y = -40;
-  c.addChild(new Graphics().rect(-5, -10, 10, 42).fill(wood.fill).stroke({ width: 3, color: wood.line }), crate, sign);
+  c.addChild(
+    new Graphics().rect(-5, -10, 10, 42).fill(wood.fill).stroke({ width: 3, color: wood.line }),
+    crate,
+    sign,
+  );
   return c;
 }
 
@@ -410,8 +483,10 @@ export const notAlways: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
-  coplayHint: "Take turns being the friend: one of you says something about all the cards, like 'all of these have hats', and the other finds the one that isn't.",
-  offScreen: "Line up some toys and say something about all of them, like 'all of these are soft'. Can she find one that isn't?",
+  coplayHint:
+    "Take turns being the friend: one of you says something about all the cards, like 'all of these have hats', and the other finds the one that isn't.",
+  offScreen:
+    "Line up some toys and say something about all of them, like 'all of these are soft'. Can she find one that isn't?",
   hubIcon: () => new WigglyIcon(hubPicture()),
   sticker: (seed) => friendPicture(seed, true),
   create: (ctx) => new NotAlways(ctx),

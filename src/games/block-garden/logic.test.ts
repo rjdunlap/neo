@@ -2,9 +2,48 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  allShortest, anchors, apply, cloneBed, decode, emptyBed, encode, ENTRY_LEVELS, FIRST_GARDEN, fits, FLOWER_KINDS, flowerAt, fullLines, gardenLayout, goalMet, has,
-  hintPlacement, kindOf, LEVELS, LOOKS, lookFor, makeGarden, mirrorShape, nearestAnchor, noRoom, passesFilter, place, placements, PLANS, planFor, popcount,
-  RIDE, search, SEARCH_CAP, SHAPES, solve, startState, transformGarden, trayIndex, trayNow, type Garden, type State,
+  allShortest,
+  anchors,
+  apply,
+  cloneBed,
+  decode,
+  emptyBed,
+  encode,
+  ENTRY_LEVELS,
+  FIRST_GARDEN,
+  fits,
+  FLOWER_KINDS,
+  flowerAt,
+  fullLines,
+  gardenLayout,
+  goalMet,
+  has,
+  hintPlacement,
+  kindOf,
+  LEVELS,
+  LOOKS,
+  lookFor,
+  makeGarden,
+  mirrorShape,
+  nearestAnchor,
+  noRoom,
+  passesFilter,
+  place,
+  placements,
+  PLANS,
+  planFor,
+  popcount,
+  RIDE,
+  search,
+  SEARCH_CAP,
+  SHAPES,
+  solve,
+  startState,
+  transformGarden,
+  trayIndex,
+  trayNow,
+  type Garden,
+  type State,
 } from './logic';
 import { GARDENS } from './puzzles';
 import { landing, stepLevel } from '../../progress/difficulty';
@@ -60,7 +99,13 @@ describe('fits and place', () => {
         const out = place(bed, id, a);
         let emptied = 0;
         const planted = SHAPES[id].cells.length;
-        for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) if ((out.rows.includes(r) || out.cols.includes(c)) && (has(bed.filled, r, c) || SHAPES[id].cells.some(([pr, pc]) => pr + a.r === r && pc + a.c === c))) emptied++;
+        for (let r = 0; r < 6; r++)
+          for (let c = 0; c < 6; c++)
+            if (
+              (out.rows.includes(r) || out.cols.includes(c)) &&
+              (has(bed.filled, r, c) || SHAPES[id].cells.some(([pr, pc]) => pr + a.r === r && pc + a.c === c))
+            )
+              emptied++;
         expect(count(out.bed.filled) - count(bed.filled)).toBe(planted - emptied);
         expect(fullLines(out.bed)).toBe(0);
       }
@@ -112,7 +157,8 @@ describe('rounds, looks and flowers', () => {
     const looks = new Set(Array.from({ length: 200 }, (_, seed) => lookFor(new Rng(seed + 1))));
     expect([...looks].sort()).toEqual([...LOOKS].sort());
     const kinds = new Set<string>();
-    for (let g = 0; g < 3; g++) for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) kinds.add(flowerAt(g, r, c));
+    for (let g = 0; g < 3; g++)
+      for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) kinds.add(flowerAt(g, r, c));
     expect([...kinds].sort()).toEqual([...FLOWER_KINDS].sort());
   });
 
@@ -122,25 +168,28 @@ describe('rounds, looks and flowers', () => {
   });
 });
 
-describe.each(PLANS.filter((p) => kindOf(p) <= 4).map((p) => [p.id, p] as const))('generated gardens, level %i', (_, plan) => {
-  it('over 500 seeds: well formed, solvable at par inside the range, passing the filter, never the fallback, the same for a seed', () => {
-    for (let seed = 1; seed <= 500; seed++) {
-      const made = makeGarden(plan, new Rng(seed));
-      expect(made.fallback).toBe(false);
-      const g = made.garden;
-      expect(g.n).toBe(plan.n);
-      expect(g.pieces.length).toBe(plan.pieces);
-      expect(goalMet(g.bed, g.goal)).toBe(false);
-      expect(fullLines(g.bed)).toBe(0);
-      const par = shortest(g, startState(g));
-      expect(par).toBe(g.solution.length);
-      expect(par).toBeGreaterThanOrEqual(plan.par[0]);
-      expect(par).toBeLessThanOrEqual(plan.par[1]);
-      expect(passesFilter(plan, g, par)).toBe(true);
-      if (seed <= 20) expect(encode(makeGarden(plan, new Rng(seed)).garden)).toBe(encode(g));
-    }
-  });
-});
+describe.each(PLANS.filter((p) => kindOf(p) <= 4).map((p) => [p.id, p] as const))(
+  'generated gardens, level %i',
+  (_, plan) => {
+    it('over 500 seeds: well formed, solvable at par inside the range, passing the filter, never the fallback, the same for a seed', () => {
+      for (let seed = 1; seed <= 500; seed++) {
+        const made = makeGarden(plan, new Rng(seed));
+        expect(made.fallback).toBe(false);
+        const g = made.garden;
+        expect(g.n).toBe(plan.n);
+        expect(g.pieces.length).toBe(plan.pieces);
+        expect(goalMet(g.bed, g.goal)).toBe(false);
+        expect(fullLines(g.bed)).toBe(0);
+        const par = shortest(g, startState(g));
+        expect(par).toBe(g.solution.length);
+        expect(par).toBeGreaterThanOrEqual(plan.par[0]);
+        expect(par).toBeLessThanOrEqual(plan.par[1]);
+        expect(passesFilter(plan, g, par)).toBe(true);
+        if (seed <= 20) expect(encode(makeGarden(plan, new Rng(seed)).garden)).toBe(encode(g));
+      }
+    });
+  },
+);
 
 describe('level 9, Corner with stripes', () => {
   const plan = planFor(9);
@@ -150,7 +199,17 @@ describe('level 9, Corner with stripes', () => {
     expect(kindOf(plan)).toBe(3);
     expect(plan.tinted).toBe(true);
     expect(plan.refusalCounts).toBe(false);
-    const same = (p: typeof plan) => [p.n, p.cell, p.goal, p.pieces, p.traySize, p.buds, p.par, p.gardens, p.families];
+    const same = (p: typeof plan) => [
+      p.n,
+      p.cell,
+      p.goal,
+      p.pieces,
+      p.traySize,
+      p.buds,
+      p.par,
+      p.gardens,
+      p.families,
+    ];
     expect(same(plan)).toEqual(same(three));
   });
 
@@ -176,46 +235,49 @@ describe('level 9, Corner with stripes', () => {
   });
 });
 
-describe.each([5, 6, 7, 8].map((id) => [id, planFor(id)] as const))('frozen gardens, level %i', (id, plan) => {
-  const list = GARDENS[id];
-  it('has at least 24 different gardens', () => {
-    expect(list.length).toBeGreaterThanOrEqual(24);
-    expect(new Set(list.map((t) => t.split(':')[0])).size).toBe(list.length);
-  });
+describe.each([5, 6, 7, 8].map((id) => [id, planFor(id)] as const))(
+  'frozen gardens, level %i',
+  (id, plan) => {
+    const list = GARDENS[id];
+    it('has at least 24 different gardens', () => {
+      expect(list.length).toBeGreaterThanOrEqual(24);
+      expect(new Set(list.map((t) => t.split(':')[0])).size).toBe(list.length);
+    });
 
-  it('each is well formed, its stored solution replays to the goal at par, and it passes the filter', () => {
-    for (const text of list) {
-      const g = decode(text, plan);
-      expect(g.n).toBe(plan.n);
-      expect(fullLines(g.bed)).toBe(0);
-      if (plan.goal === 'clear') expect(count(g.bed.buds)).toBe(0);
-      let s = startState(g);
-      for (const p of g.solution) {
-        expect(trayNow(g, s.used)).toContain(p.piece);
-        expect(fits(s.bed, g.pieces[p.piece], p)).toBe(true);
-        s = apply(g, s, p);
+    it('each is well formed, its stored solution replays to the goal at par, and it passes the filter', () => {
+      for (const text of list) {
+        const g = decode(text, plan);
+        expect(g.n).toBe(plan.n);
+        expect(fullLines(g.bed)).toBe(0);
+        if (plan.goal === 'clear') expect(count(g.bed.buds)).toBe(0);
+        let s = startState(g);
+        for (const p of g.solution) {
+          expect(trayNow(g, s.used)).toContain(p.piece);
+          expect(fits(s.bed, g.pieces[p.piece], p)).toBe(true);
+          s = apply(g, s, p);
+        }
+        expect(goalMet(s.bed, g.goal)).toBe(true);
+        expect(passesFilter(plan, g, g.solution.length)).toBe(true);
       }
-      expect(goalMet(s.bed, g.goal)).toBe(true);
-      expect(passesFilter(plan, g, g.solution.length)).toBe(true);
-    }
-  });
+    });
 
-  it('par is the fewest placements, and every symmetry of the garden keeps it', () => {
-    // Levels 7–8 were checked by the generator with a two-million-state search; two each are checked again here.
-    for (const text of list.slice(0, id >= 7 ? 2 : list.length)) {
-      const g = decode(text, plan);
-      const par = g.solution.length;
-      expect(shortest(g, startState(g))).toBe(par);
-      for (const t of [1, 6]) {
-        const m = transformGarden(g, t);
-        let s = startState(m);
-        for (const p of m.solution) s = apply(m, s, p);
-        expect(goalMet(s.bed, m.goal)).toBe(true);
-        if (id < 7) expect(shortest(m, startState(m))).toBe(par);
+    it('par is the fewest placements, and every symmetry of the garden keeps it', () => {
+      // Levels 7–8 were checked by the generator with a two-million-state search; two each are checked again here.
+      for (const text of list.slice(0, id >= 7 ? 2 : list.length)) {
+        const g = decode(text, plan);
+        const par = g.solution.length;
+        expect(shortest(g, startState(g))).toBe(par);
+        for (const t of [1, 6]) {
+          const m = transformGarden(g, t);
+          let s = startState(m);
+          for (const p of m.solution) s = apply(m, s, p);
+          expect(goalMet(s.bed, m.goal)).toBe(true);
+          if (id < 7) expect(shortest(m, startState(m))).toBe(par);
+        }
       }
-    }
-  }, 60_000);
-});
+    }, 60_000);
+  },
+);
 
 /** States she might reach: random legal placements from the start of a garden. */
 function wander(g: Garden, rng: Rng, steps: number): State[] {
@@ -234,7 +296,10 @@ describe('hintPlacement', () => {
     const rng = new Rng(11);
     for (const plan of PLANS.filter((p) => p.id <= 6)) {
       for (let k = 0; k < 12; k++) {
-        const g = plan.id <= 4 ? makeGarden(plan, new Rng(1000 + k)).garden : decode(GARDENS[plan.id][k % GARDENS[plan.id].length], plan);
+        const g =
+          plan.id <= 4
+            ? makeGarden(plan, new Rng(1000 + k)).garden
+            : decode(GARDENS[plan.id][k % GARDENS[plan.id].length], plan);
         const states = wander(g, rng, rng.int(0, 2));
         const s = states[states.length - 1];
         if (goalMet(s.bed, g.goal)) continue;
@@ -273,7 +338,9 @@ describe('hintPlacement', () => {
     for (const text of GARDENS[8]) {
       const g = decode(text, plan);
       const s0 = startState(g);
-      const first = placements(g, s0).find((p) => p.piece !== g.solution[0].piece || p.r !== g.solution[0].r || p.c !== g.solution[0].c)!;
+      const first = placements(g, s0).find(
+        (p) => p.piece !== g.solution[0].piece || p.r !== g.solution[0].r || p.c !== g.solution[0].c,
+      )!;
       const s1 = apply(g, s0, first);
       const t0 = performance.now();
       const r = search(g, s1, SEARCH_CAP);
@@ -295,7 +362,8 @@ describe('hintPlacement', () => {
     expect(hintPlacement(g, s, [])).toEqual({ kind: 'stuck' });
     const made = makeGarden(planFor(2), new Rng(5)).garden;
     const states = wander(made, new Rng(9), 2);
-    if (search(made, states[states.length - 1]) === 'none') expect(Array.isArray(search(made, states[0]))).toBe(true);
+    if (search(made, states[states.length - 1]) === 'none')
+      expect(Array.isArray(search(made, states[0]))).toBe(true);
   });
 });
 
@@ -316,7 +384,8 @@ describe('nearestAnchor', () => {
       const bed = emptyBed(6);
       for (let r = 0; r < 6; r++) bed.filled[r] = rng.int(0, 63) & 0b101101;
       const id = rng.pick(['domino-0', 'corner3-1', 'T4-0', 'square2-0']);
-      const px = lay.x + rng.range(-80, 600), py = lay.y + rng.range(-80, 600);
+      const px = lay.x + rng.range(-80, 600),
+        py = lay.y + rng.range(-80, 600);
       const a = nearestAnchor(bed, id, px, py, lay);
       if (!a) continue;
       expect(fits(bed, id, a)).toBe(true);
@@ -326,7 +395,8 @@ describe('nearestAnchor', () => {
 });
 
 describe('gardenLayout', () => {
-  const overlap = (a: { x: number; y: number; w: number; h: number }, b: typeof a) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const overlap = (a: { x: number; y: number; w: number; h: number }, b: typeof a) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   it.each(VIEWS)('fits %s at every plan', (_, v) => {
     for (const plan of PLANS) {
       const lay = gardenLayout(plan, v);
@@ -338,7 +408,8 @@ describe('gardenLayout', () => {
       expect(bed.y).toBeGreaterThanOrEqual(0);
       expect(bed.y + bed.h + RIDE).toBeLessThanOrEqual(v.h - 40);
       // Clear of the shell's Home and ? (top-left, about 124 square) and the pet's corner (bottom-left 150 × 170).
-      const shell = { x: 0, y: 0, w: 124, h: 124 }, pet = { x: 0, y: v.h - 170, w: 150, h: 170 };
+      const shell = { x: 0, y: 0, w: 124, h: 124 },
+        pet = { x: 0, y: v.h - 170, w: 150, h: 170 };
       const undo = { x: lay.undo.x - 54, y: lay.undo.y - 54, w: 108, h: 108 };
       for (const r of [bed, ...lay.slots, undo]) {
         expect(overlap(r, shell)).toBe(false);
@@ -349,7 +420,8 @@ describe('gardenLayout', () => {
         expect(r.y + r.h).toBeLessThanOrEqual(v.h);
       }
       const hits = [bed, ...lay.slots, undo];
-      for (let i = 0; i < hits.length; i++) for (let j = i + 1; j < hits.length; j++) expect(overlap(hits[i], hits[j])).toBe(false);
+      for (let i = 0; i < hits.length; i++)
+        for (let j = i + 1; j < hits.length; j++) expect(overlap(hits[i], hits[j])).toBe(false);
       for (const s of lay.slots) expect(Math.min(s.w, s.h)).toBeGreaterThanOrEqual(120);
     }
   });

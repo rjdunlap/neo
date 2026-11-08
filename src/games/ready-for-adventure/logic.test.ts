@@ -2,8 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  PART_OF, apply, askHint, botAction, done, hintFor, judge, nextActions, readyLayout, restart, startState, stateFor, makeRound,
-  type Action, type ReadyState,
+  PART_OF,
+  apply,
+  askHint,
+  botAction,
+  done,
+  hintFor,
+  judge,
+  nextActions,
+  readyLayout,
+  restart,
+  startState,
+  stateFor,
+  makeRound,
+  type Action,
+  type ReadyState,
 } from './logic';
 
 const seeds = Array.from({ length: 60 }, (_, i) => i + 1);
@@ -11,7 +24,9 @@ const run = (s: ReadyState, a: Action) => {
   if ('attach' in a) return apply(s, judge(s, { part: a.attach }, { prop: a.to }));
   return apply(s, judge(s, { prop: a.pack }, { bag: true }));
 };
-const finish = (s: ReadyState) => { for (let i = 0; i < 20 && !done(s); i++) run(s, botAction(s)!); };
+const finish = (s: ReadyState) => {
+  for (let i = 0; i < 20 && !done(s); i++) run(s, botAction(s)!);
+};
 
 describe('Ready for Adventure rules', () => {
   it('level 1: the request is present once, the other choice differs, one pack finishes', () => {
@@ -40,10 +55,26 @@ describe('Ready for Adventure rules', () => {
   it('prerequisites: a bare prop or loose part cannot be packed, a part on the wrong prop is refused, refusals change nothing', () => {
     const s = startState(3, new Rng(1));
     const snap = JSON.stringify([s.props, [...s.loose]]);
-    expect(judge(s, { prop: 'flag' }, { bag: true })).toMatchObject({ kind: 'refuse', reason: 'notReady', job: 'flag' });
-    expect(judge(s, { part: 'ribbon' }, { bag: true })).toMatchObject({ kind: 'refuse', reason: 'looseToBag', job: 'flag' });
-    expect(judge(s, { part: 'ribbon' }, { prop: 'drum' })).toMatchObject({ kind: 'refuse', reason: 'wrongPart', job: 'flag' });
-    expect(judge(s, { part: 'beater' }, { prop: 'flag' })).toMatchObject({ kind: 'refuse', reason: 'wrongPart', job: 'drum' });
+    expect(judge(s, { prop: 'flag' }, { bag: true })).toMatchObject({
+      kind: 'refuse',
+      reason: 'notReady',
+      job: 'flag',
+    });
+    expect(judge(s, { part: 'ribbon' }, { bag: true })).toMatchObject({
+      kind: 'refuse',
+      reason: 'looseToBag',
+      job: 'flag',
+    });
+    expect(judge(s, { part: 'ribbon' }, { prop: 'drum' })).toMatchObject({
+      kind: 'refuse',
+      reason: 'wrongPart',
+      job: 'flag',
+    });
+    expect(judge(s, { part: 'beater' }, { prop: 'flag' })).toMatchObject({
+      kind: 'refuse',
+      reason: 'wrongPart',
+      job: 'drum',
+    });
     expect(JSON.stringify([s.props, [...s.loose]])).toBe(snap);
   });
 
@@ -64,16 +95,27 @@ describe('Ready for Adventure rules', () => {
 
   it('level 3: exactly six of the 24 orders of A1, A2, B1, B2 finish, the rest refuse a step', () => {
     const steps = ['A1', 'A2', 'B1', 'B2'];
-    const perms = (a: string[]): string[][] => (a.length < 2 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map((p) => [x, ...p])));
+    const perms = (a: string[]): string[][] =>
+      a.length < 2
+        ? [a]
+        : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map((p) => [x, ...p]));
     let ok = 0;
     for (const order of perms(steps)) {
       const s = startState(3, new Rng(5));
       let allLegal = true;
       for (const st of order) {
-        const v = st === 'A1' ? judge(s, { part: 'ribbon' }, { prop: 'flag' })
-          : st === 'B1' ? judge(s, { part: 'beater' }, { prop: 'drum' })
-          : st === 'A2' ? judge(s, { prop: 'flag' }, { bag: true }) : judge(s, { prop: 'drum' }, { bag: true });
-        if (v.kind === 'refuse' || v.kind === 'free') { allLegal = false; break; }
+        const v =
+          st === 'A1'
+            ? judge(s, { part: 'ribbon' }, { prop: 'flag' })
+            : st === 'B1'
+              ? judge(s, { part: 'beater' }, { prop: 'drum' })
+              : st === 'A2'
+                ? judge(s, { prop: 'flag' }, { bag: true })
+                : judge(s, { prop: 'drum' }, { bag: true });
+        if (v.kind === 'refuse' || v.kind === 'free') {
+          allLegal = false;
+          break;
+        }
         apply(s, v);
       }
       if (allLegal && done(s)) ok++;
@@ -86,13 +128,22 @@ describe('Ready for Adventure rules', () => {
       for (const seed of seeds) {
         const rng = new Rng(seed);
         const s = startState(level, rng);
-        const parts = (s.round.bare ? s.round.request.length : 0);
+        const parts = s.round.bare ? s.round.request.length : 0;
         for (let i = 0; i < 12 && !done(s); i++) {
           // random gesture, possibly illegal
-          const things = [...s.round.props.map((p) => ({ prop: p })), ...(['ribbon', 'beater'] as const).map((p) => ({ part: p }))];
-          const targets = [{ bag: true as const }, ...s.round.props.map((p) => ({ prop: p })), ...(['ribbon', 'beater'] as const).map((p) => ({ part: p }))];
+          const things = [
+            ...s.round.props.map((p) => ({ prop: p })),
+            ...(['ribbon', 'beater'] as const).map((p) => ({ part: p })),
+          ];
+          const targets = [
+            { bag: true as const },
+            ...s.round.props.map((p) => ({ prop: p })),
+            ...(['ribbon', 'beater'] as const).map((p) => ({ part: p })),
+          ];
           apply(s, judge(s, rng.pick(things), rng.pick(targets)));
-          const attached = Object.entries(s.props).filter(([p, st]) => PART_OF[p as keyof typeof PART_OF] && st !== 'bare').length;
+          const attached = Object.entries(s.props).filter(
+            ([p, st]) => PART_OF[p as keyof typeof PART_OF] && st !== 'bare',
+          ).length;
           expect(s.loose.size + attached).toBeGreaterThanOrEqual(0);
           expect(nextActions(s).length > 0 || done(s)).toBe(true);
         }
@@ -170,7 +221,12 @@ describe('Ready for Adventure rules', () => {
   });
 
   it('the layout fits at four views without shrinking, targets apart', () => {
-    const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })];
+    const views = [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(844, 390),
+      computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    ];
     for (const level of [1, 2, 3]) {
       for (const seed of seeds.slice(0, 8)) {
         const round = makeRound(level, new Rng(seed));
@@ -181,7 +237,9 @@ describe('Ready for Adventure rules', () => {
             expect(r.w).toBeGreaterThanOrEqual(100);
             expect(r.h).toBeGreaterThanOrEqual(100);
           }
-          const props = round.order.map((k, i) => (k.startsWith('prop:') ? l!.slots[i] : null)).filter(Boolean);
+          const props = round.order
+            .map((k, i) => (k.startsWith('prop:') ? l!.slots[i] : null))
+            .filter(Boolean);
           for (const r of props) expect(r!.w).toBeGreaterThanOrEqual(140);
         }
       }

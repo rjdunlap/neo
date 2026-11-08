@@ -1,9 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { cleanWelcome, emptyWelcome, finishWelcomeStep, MAX_STEP_ROUNDS, openWelcomeStep, WELCOME_BANDS, WELCOME_PLAN, WELCOME_STEPS, type StepEvidence } from '../content/welcome';
+import {
+  cleanWelcome,
+  emptyWelcome,
+  finishWelcomeStep,
+  MAX_STEP_ROUNDS,
+  openWelcomeStep,
+  WELCOME_BANDS,
+  WELCOME_PLAN,
+  WELCOME_STEPS,
+  type StepEvidence,
+} from '../content/welcome';
 import { classify } from './evidence';
 import { WELCOME_INTENTIONS } from './intentions';
 
-const rec = (over: Partial<StepEvidence> = {}): StepEvidence => ({ finished: true, misses: 0, hints: 0, level: 2, rounds: 1, at: 5, ...over });
+const rec = (over: Partial<StepEvidence> = {}): StepEvidence => ({
+  finished: true,
+  misses: 0,
+  hints: 0,
+  level: 2,
+  rounds: 1,
+  at: 5,
+  ...over,
+});
 
 describe('the learning table (RW09)', () => {
   it('pins every step and band to the welcome plan, with number apart from art and music', () => {
@@ -99,8 +117,19 @@ describe('the evidence record', () => {
       song: { finished: false, misses: 0, hints: 0, level: 2, rounds: 2, at: 0 },
     });
     // The wrong level for the band, and no band at all.
-    expect(cleanWelcome({ band: 'prek', steps: ['yummy'], evidence: { yummy: { finished: true, misses: 0, hints: 0, level: 2, rounds: 1, at: 1 } } }).evidence).toEqual({});
-    expect(cleanWelcome({ steps: ['yummy'], evidence: { yummy: { finished: true, misses: 0, hints: 0, level: 2, rounds: 1, at: 1 } } }).evidence).toEqual({});
+    expect(
+      cleanWelcome({
+        band: 'prek',
+        steps: ['yummy'],
+        evidence: { yummy: { finished: true, misses: 0, hints: 0, level: 2, rounds: 1, at: 1 } },
+      }).evidence,
+    ).toEqual({});
+    expect(
+      cleanWelcome({
+        steps: ['yummy'],
+        evidence: { yummy: { finished: true, misses: 0, hints: 0, level: 2, rounds: 1, at: 1 } },
+      }).evidence,
+    ).toEqual({});
     expect(cleanWelcome({ band: 'preschool', steps: [] }).evidence).toEqual({});
     expect(cleanWelcome({ band: 'preschool', evidence: 'x' }).evidence).toEqual({});
   });

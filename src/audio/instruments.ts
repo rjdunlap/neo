@@ -107,7 +107,9 @@ export function voiced(
   const o = ctx.createOscillator();
   o.type = 'sawtooth';
   o.frequency.setValueAtTime(pitch[0], t);
-  pitch.slice(1).forEach((p, i) => o.frequency.linearRampToValueAtTime(p, t + (duration * (i + 1)) / (pitch.length - 1)));
+  pitch
+    .slice(1)
+    .forEach((p, i) => o.frequency.linearRampToValueAtTime(p, t + (duration * (i + 1)) / (pitch.length - 1)));
   if (opts.vibrato) {
     const lfo = ctx.createOscillator();
     const depth = ctx.createGain();

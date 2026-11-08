@@ -15,17 +15,49 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBeds, courseMinimum, isBedCourse } from './course';
 import {
   LEVELS,
-  cageLabelCell, conflicts, deadEnds, fillMarksRow, geo, hintFor, patchTints, shapeOf, offersFillMarks, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, wrongSums, type Hint, type Puzzle, type SudokuPlan,
+  cageLabelCell,
+  conflicts,
+  deadEnds,
+  fillMarksRow,
+  geo,
+  hintFor,
+  patchTints,
+  shapeOf,
+  offersFillMarks,
+  houseName,
+  isSolved,
+  makeBeds,
+  placements,
+  planFor,
+  remaining,
+  shortBed,
+  wrongSums,
+  type Hint,
+  type Puzzle,
+  type SudokuPlan,
 } from './logic';
 import { COLS, touchLayout, type Slot } from './layout';
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
-const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];
+const DIGIT_COLORS: ColorName[] = [
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'teal',
+  'blue',
+  'purple',
+  'pink',
+  'white',
+];
 /** A patchwork bed's soil tints, laid at a little under half strength over the squares (a quarter did not read on the brown soil). */
 const PATCH_TINTS = [swatch.green.fill, swatch.yellow.fill, swatch.brown.fill];
 const ENTERED = 0x2f78c9;
 const CLASH = 0xc23a40;
-const NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: 0.2 + 0.3 * Math.floor((d - 1) / 3) });
+const NOTE_POSITIONS = (d: number) => ({
+  x: 0.2 + 0.3 * ((d - 1) % 3),
+  y: 0.2 + 0.3 * Math.floor((d - 1) / 3),
+});
 /** On a cage bed the sum label takes the top third of a square, so the six marks sit in two lower rows. */
 const CAGE_NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: d <= 3 ? 0.52 : 0.8 });
 /** A cage bed's numbers and blossoms sit this far (of a square) below the middle, clear of the sum label. */
@@ -128,10 +160,34 @@ class SudokuGarden implements Game {
       if (ctx.demo) this.beds = this.beds.map((b) => shortBed(b));
       this.course = null;
     }
-    for (const part of [this.board, this.cellsG, this.sumsLayer, this.digits, this.notesLayer, this.glow, this.tray, this.trayG, this.trayText, this.trayRing]) part.eventMode = 'none';
+    for (const part of [
+      this.board,
+      this.cellsG,
+      this.sumsLayer,
+      this.digits,
+      this.notesLayer,
+      this.glow,
+      this.tray,
+      this.trayG,
+      this.trayText,
+      this.trayRing,
+    ])
+      part.eventMode = 'none';
     this.board.addChild(this.cellsG, this.sumsLayer, this.notesLayer, this.digits, this.glow);
     this.tray.addChild(this.trayG, this.trayText, this.trayRing);
-    this.banner = new Text({ text: '', style: { fontFamily: FONT, fontSize: 22, fill: ink, fontWeight: '500', align: 'left', wordWrap: true, wordWrapWidth: 260, lineHeight: 28 } });
+    this.banner = new Text({
+      text: '',
+      style: {
+        fontFamily: FONT,
+        fontSize: 22,
+        fill: ink,
+        fontWeight: '500',
+        align: 'left',
+        wordWrap: true,
+        wordWrapWidth: 260,
+        lineHeight: 28,
+      },
+    });
     this.banner.position.set(12, 8);
     this.bannerBox.eventMode = 'none';
     this.bannerBox.visible = false;
@@ -150,12 +206,20 @@ class SudokuGarden implements Game {
     }
   }
 
-  get n() { return this.puzzle.size; }
+  get n() {
+    return this.puzzle.size;
+  }
   /** What the rules read the bed with: a patchwork bed's own geometry, or its size. */
-  get shape() { return shapeOf(this.puzzle); }
-  get geo() { return geo(this.shape); }
+  get shape() {
+    return shapeOf(this.puzzle);
+  }
+  get geo() {
+    return geo(this.shape);
+  }
 
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Layout and drawing                                                                            */
@@ -169,7 +233,8 @@ class SudokuGarden implements Game {
     // The controller reminder covers the bottom of the screen for the first ten seconds, so the bed stays above it.
     this.cell = Math.max(52, Math.min(96, Math.floor((v.h - 262) / n)));
     this.trayTile = Math.min(76, Math.max(54, Math.floor(this.cell * 0.78)));
-    const w = n * this.cell, trayW = COLS * this.trayTile + (COLS - 1) * 10;
+    const w = n * this.cell,
+      trayW = COLS * this.trayTile + (COLS - 1) * 10;
     const total = w + 44 + trayW;
     // Clear of the pet in the bottom-left corner.
     const x = Math.max(172, (v.w - total) / 2);
@@ -191,7 +256,8 @@ class SudokuGarden implements Game {
    * so every square and every button is at least 64 across at 6 by 6 and 9 by 9, upright or sideways.
    */
   private resizeTouch(v: View) {
-    const n = this.n, fit = touchLayout(n, v.w, v.h, offersFillMarks(this.puzzle.size));
+    const n = this.n,
+      fit = touchLayout(n, v.w, v.h, offersFillMarks(this.puzzle.size));
     this.tray.position.set(0, 0);
     this.tray.alpha = 1;
     this.cell = fit.cell;
@@ -224,7 +290,10 @@ class SudokuGarden implements Game {
     this.banner.text = text;
     this.bannerBox.visible = text !== '';
     const g = this.bannerBg.clear();
-    if (text) g.roundRect(0, 0, this.banner.width + 24, this.banner.height + 16, 14).fill({ color: swatch.yellow.light, alpha: 0.95 }).stroke({ width: 3, color: swatch.yellow.line });
+    if (text)
+      g.roundRect(0, 0, this.banner.width + 24, this.banner.height + 16, 14)
+        .fill({ color: swatch.yellow.light, alpha: 0.95 })
+        .stroke({ width: 3, color: swatch.yellow.line });
   }
 
   private center(i: number) {
@@ -238,41 +307,74 @@ class SudokuGarden implements Game {
     return this.geo.cages.length ? { x: mid.x, y: mid.y + this.cell * CAGE_DROP } : mid;
   }
 
-  private color(d: number) { return swatch[DIGIT_COLORS[(d - 1) % DIGIT_COLORS.length]]; }
+  private color(d: number) {
+    return swatch[DIGIT_COLORS[(d - 1) % DIGIT_COLORS.length]];
+  }
 
   /** The bed: soil, the numbers' blossoms and the box lines. Drawn again whenever something in it changes. */
   private paint() {
     this.dirty = false;
-    const g = this.cellsG.clear(), geo = this.geo, n = this.n, cell = this.cell, w = n * cell;
-    const bad = new Set(conflicts(this.grid, this.shape)), stuck = new Set(deadEnds(this.grid, this.shape));
-    const here = this.grid[this.cursor], tints = geo.patches ? patchTints(geo) : null;
-    g.roundRect(-16, -16, w + 32, w + 32, 26).fill(wood.light).stroke({ width: 7, color: wood.line });
+    const g = this.cellsG.clear(),
+      geo = this.geo,
+      n = this.n,
+      cell = this.cell,
+      w = n * cell;
+    const bad = new Set(conflicts(this.grid, this.shape)),
+      stuck = new Set(deadEnds(this.grid, this.shape));
+    const here = this.grid[this.cursor],
+      tints = geo.patches ? patchTints(geo) : null;
+    g.roundRect(-16, -16, w + 32, w + 32, 26)
+      .fill(wood.light)
+      .stroke({ width: 7, color: wood.line });
     for (let i = 0; i < this.grid.length; i++) {
-      const x = geo.colOf[i] * cell + 3, y = geo.rowOf[i] * cell + 3, s = cell - 6;
+      const x = geo.colOf[i] * cell + 3,
+        y = geo.rowOf[i] * cell + 3,
+        s = cell - 6;
       // On a cage bed each square's own edge is faint, so the dashed cage outlines are the lines that read.
-      g.roundRect(x, y, s, s, 12).fill(this.given[i] ? cream : swatch.brown.light).stroke({ width: 2, color: swatch.brown.line, alpha: geo.cages.length ? 0.3 : 1 });
+      g.roundRect(x, y, s, s, 12)
+        .fill(this.given[i] ? cream : swatch.brown.light)
+        .stroke({ width: 2, color: swatch.brown.line, alpha: geo.cages.length ? 0.3 : 1 });
       // Each patch's soil is faintly tinted so the patches read without counting borders.
       if (tints) g.roundRect(x, y, s, s, 12).fill({ color: PATCH_TINTS[tints[geo.boxOf[i]]], alpha: 0.45 });
       if (bad.has(i)) g.roundRect(x, y, s, s, 12).fill({ color: swatch.red.light, alpha: 0.75 });
-      else if (geo.peers[this.cursor].includes(i) || i === this.cursor) g.roundRect(x, y, s, s, 12).fill({ color: 0xffffff, alpha: 0.3 });
-      if (stuck.has(i)) g.roundRect(x + 2, y + 2, s - 4, s - 4, 11).stroke({ width: 5, color: swatch.orange.fill });
+      else if (geo.peers[this.cursor].includes(i) || i === this.cursor)
+        g.roundRect(x, y, s, s, 12).fill({ color: 0xffffff, alpha: 0.3 });
+      if (stuck.has(i))
+        g.roundRect(x + 2, y + 2, s - 4, s - 4, 11).stroke({ width: 5, color: swatch.orange.fill });
       const d = this.grid[i];
       if (d) {
-        const c = this.color(d), mid = this.bloomAt(i);
-        g.circle(mid.x, mid.y, cell * (geo.cages.length ? 0.34 : 0.38)).fill(c.light).stroke({ width: 3, color: this.given[i] ? ink : c.line });
-        if (here && d === here && i !== this.cursor) g.circle(mid.x, mid.y, cell * 0.44).stroke({ width: 4, color: swatch.yellow.fill });
+        const c = this.color(d),
+          mid = this.bloomAt(i);
+        g.circle(mid.x, mid.y, cell * (geo.cages.length ? 0.34 : 0.38))
+          .fill(c.light)
+          .stroke({ width: 3, color: this.given[i] ? ink : c.line });
+        if (here && d === here && i !== this.cursor)
+          g.circle(mid.x, mid.y, cell * 0.44).stroke({ width: 4, color: swatch.yellow.fill });
       }
     }
     if (geo.patches) {
       // A patchwork bed: one stroke along each edge between squares of different patches.
       for (let i = 0; i < this.grid.length; i++) {
-        const x = geo.colOf[i] * cell, y = geo.rowOf[i] * cell;
-        if (geo.colOf[i] < n - 1 && geo.boxOf[i] !== geo.boxOf[i + 1]) g.moveTo(x + cell, y + 2).lineTo(x + cell, y + cell - 2).stroke({ width: 6, color: wood.line, cap: 'round' });
-        if (geo.rowOf[i] < n - 1 && geo.boxOf[i] !== geo.boxOf[i + n]) g.moveTo(x + 2, y + cell).lineTo(x + cell - 2, y + cell).stroke({ width: 6, color: wood.line, cap: 'round' });
+        const x = geo.colOf[i] * cell,
+          y = geo.rowOf[i] * cell;
+        if (geo.colOf[i] < n - 1 && geo.boxOf[i] !== geo.boxOf[i + 1])
+          g.moveTo(x + cell, y + 2)
+            .lineTo(x + cell, y + cell - 2)
+            .stroke({ width: 6, color: wood.line, cap: 'round' });
+        if (geo.rowOf[i] < n - 1 && geo.boxOf[i] !== geo.boxOf[i + n])
+          g.moveTo(x + 2, y + cell)
+            .lineTo(x + cell - 2, y + cell)
+            .stroke({ width: 6, color: wood.line, cap: 'round' });
       }
     } else {
-      for (let k = 1; k < n / geo.bc; k++) g.moveTo(k * geo.bc * cell, 2).lineTo(k * geo.bc * cell, w - 2).stroke({ width: 6, color: wood.line, cap: 'round' });
-      for (let k = 1; k < n / geo.br; k++) g.moveTo(2, k * geo.br * cell).lineTo(w - 2, k * geo.br * cell).stroke({ width: 6, color: wood.line, cap: 'round' });
+      for (let k = 1; k < n / geo.bc; k++)
+        g.moveTo(k * geo.bc * cell, 2)
+          .lineTo(k * geo.bc * cell, w - 2)
+          .stroke({ width: 6, color: wood.line, cap: 'round' });
+      for (let k = 1; k < n / geo.br; k++)
+        g.moveTo(2, k * geo.br * cell)
+          .lineTo(w - 2, k * geo.br * cell)
+          .stroke({ width: 6, color: wood.line, cap: 'round' });
     }
     if (geo.cages.length) this.paintCages(g);
     this.syncTexts(bad);
@@ -285,35 +387,57 @@ class SudokuGarden implements Game {
    * its sum on a small paper patch in its first square.
    */
   private paintCages(g: Graphics) {
-    const geo = this.geo, cell = this.cell, n = this.n, inset = 6;
+    const geo = this.geo,
+      cell = this.cell,
+      n = this.n,
+      inset = 6;
     const off = new Set(wrongSums(this.grid, this.shape).map((c) => c.index));
     const font = Math.max(13, Math.round(cell * 0.2));
     for (const c of geo.cages) {
-      const color = off.has(c.index) ? CLASH : ink, alpha = off.has(c.index) ? 0.95 : 0.75;
-      const at = (r: number, k: number) => r >= 0 && r < n && k >= 0 && k < n && geo.cageOf[r * n + k] === c.index;
+      const color = off.has(c.index) ? CLASH : ink,
+        alpha = off.has(c.index) ? 0.95 : 0.75;
+      const at = (r: number, k: number) =>
+        r >= 0 && r < n && k >= 0 && k < n && geo.cageOf[r * n + k] === c.index;
       for (const i of c.cells) {
-        const r = geo.rowOf[i], k = geo.colOf[i], x = k * cell, y = r * cell;
-        const up = at(r - 1, k), down = at(r + 1, k), left = at(r, k - 1), right = at(r, k + 1);
+        const r = geo.rowOf[i],
+          k = geo.colOf[i],
+          x = k * cell,
+          y = r * cell;
+        const up = at(r - 1, k),
+          down = at(r + 1, k),
+          left = at(r, k - 1),
+          right = at(r, k + 1);
         // Each outer side runs along the inset outline, reaching to the square's edge where the cage goes on beside it.
-        const x0 = left ? x : x + inset, x1 = right ? x + cell : x + cell - inset, y0 = up ? y : y + inset, y1 = down ? y + cell : y + cell - inset;
+        const x0 = left ? x : x + inset,
+          x1 = right ? x + cell : x + cell - inset,
+          y0 = up ? y : y + inset,
+          y1 = down ? y + cell : y + cell - inset;
         if (!up) dashedEdge(g, x0, y + inset, x1, y + inset);
         if (!down) dashedEdge(g, x0, y + cell - inset, x1, y + cell - inset);
         if (!left) dashedEdge(g, x + inset, y0, x + inset, y1);
         if (!right) dashedEdge(g, x + cell - inset, y0, x + cell - inset, y1);
         // Where the outline turns back inside the cage, close the little corner between this square's two neighbours.
-        for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+        for (const [dx, dy] of [
+          [-1, -1],
+          [1, -1],
+          [-1, 1],
+          [1, 1],
+        ] as const) {
           if (!at(r, k + dx) || !at(r + dy, k) || at(r + dy, k + dx)) continue;
-          const cx = dx < 0 ? x + inset : x + cell - inset, cy = dy < 0 ? y + inset : y + cell - inset;
+          const cx = dx < 0 ? x + inset : x + cell - inset,
+            cy = dy < 0 ? y + inset : y + cell - inset;
           dashedEdge(g, cx, cy, dx < 0 ? x : x + cell, cy);
           dashedEdge(g, cx, cy, cx, dy < 0 ? y : y + cell);
         }
       }
       g.stroke({ width: 2, color, alpha });
-      const first = cageLabelCell(c), t = this.sumTexts[c.index];
+      const first = cageLabelCell(c),
+        t = this.sumTexts[c.index];
       if (!t) continue;
       t.style.fontSize = font;
       t.style.fill = color === CLASH ? CLASH : ink;
-      const lx = geo.colOf[first] * cell + 9, ly = geo.rowOf[first] * cell + 9;
+      const lx = geo.colOf[first] * cell + 9,
+        ly = geo.rowOf[first] * cell + 9;
       t.position.set(lx, ly);
       g.roundRect(lx - 2, ly - 1, t.width + 4, t.height + 2, 4).fill({ color: cream, alpha: 0.85 });
     }
@@ -321,9 +445,12 @@ class SudokuGarden implements Game {
 
   /** Numbers and pencil marks, laid over the blossoms. */
   private syncTexts(bad: Set<number>) {
-    const cell = this.cell, caged = this.geo.cages.length > 0;
+    const cell = this.cell,
+      caged = this.geo.cages.length > 0;
     for (let i = 0; i < this.texts.length; i++) {
-      const t = this.texts[i], d = this.grid[i], mid = this.bloomAt(i);
+      const t = this.texts[i],
+        d = this.grid[i],
+        mid = this.bloomAt(i);
       t.text = d ? String(d) : '';
       t.style.fill = bad.has(i) ? CLASH : this.given[i] ? ink : ENTERED;
       t.style.fontSize = Math.round(cell * (caged ? 0.46 : 0.5));
@@ -332,14 +459,18 @@ class SudokuGarden implements Game {
       for (let k = 1; k <= this.n; k++) {
         const on = !d && (this.notes[i] & (1 << (k - 1))) !== 0;
         let note = marks[k - 1];
-        if (!on) { if (note) note.visible = false; continue; }
+        if (!on) {
+          if (note) note.visible = false;
+          continue;
+        }
         if (!note) {
           note = label(String(k), 14, ink, '500');
           note.eventMode = 'none';
           this.notesLayer.addChild(note);
           marks[k - 1] = note;
         }
-        const at = (caged ? CAGE_NOTE_POSITIONS : NOTE_POSITIONS)(k), geo = this.geo;
+        const at = (caged ? CAGE_NOTE_POSITIONS : NOTE_POSITIONS)(k),
+          geo = this.geo;
         note.visible = true;
         note.style.fontSize = Math.max(13, Math.round(cell * 0.22));
         note.position.set(geo.colOf[i] * cell + at.x * cell, geo.rowOf[i] * cell + at.y * cell);
@@ -351,28 +482,53 @@ class SudokuGarden implements Game {
   private paintTray() {
     if (!this.puzzle) return;
     if (this.touch) return this.paintTouchTray();
-    const n = this.n, tile = this.trayTile, g = this.trayG.clear(), left = remaining(this.grid, n);
+    const n = this.n,
+      tile = this.trayTile,
+      g = this.trayG.clear(),
+      left = remaining(this.grid, n);
     this.trayText.removeChildren().forEach((c) => c.destroy());
     const open = this.mode === 'tray';
     for (let d = 1; d <= n; d++) {
-      const col = (d - 1) % COLS, row = Math.floor((d - 1) / COLS);
-      const x = col * (tile + 10), y = row * (tile + 10), c = this.color(d), done = left[d - 1] <= 0;
+      const col = (d - 1) % COLS,
+        row = Math.floor((d - 1) / COLS);
+      const x = col * (tile + 10),
+        y = row * (tile + 10),
+        c = this.color(d),
+        done = left[d - 1] <= 0;
       g.roundRect(x, y + 4, tile, tile, 14).fill(c.line);
-      g.roundRect(x, y, tile, tile, 14).fill(done ? swatch.white.light : c.light).stroke({ width: 3, color: c.line });
+      g.roundRect(x, y, tile, tile, 14)
+        .fill(done ? swatch.white.light : c.light)
+        .stroke({ width: 3, color: c.line });
       const t = label(String(d), Math.round(tile * 0.5), done ? swatch.white.line : ink);
       t.position.set(x + tile / 2, y + tile / 2 - 3);
-      const rest = label(done ? '✓' : String(left[d - 1]), 15, done ? swatch.green.line : swatch.white.line, '500');
+      const rest = label(
+        done ? '✓' : String(left[d - 1]),
+        15,
+        done ? swatch.green.line : swatch.white.line,
+        '500',
+      );
       rest.position.set(x + tile - 13, y + tile - 12);
       this.trayText.addChild(t, rest);
     }
-    const rows = Math.ceil(n / COLS), py = rows * (tile + 10), pw = COLS * tile + (COLS - 1) * 10;
+    const rows = Math.ceil(n / COLS),
+      py = rows * (tile + 10),
+      pw = COLS * tile + (COLS - 1) * 10;
     g.roundRect(0, py + 4, pw, tile * 0.8, 14).fill(swatch.yellow.line);
-    g.roundRect(0, py, pw, tile * 0.8, 14).fill(this.noting ? swatch.yellow.fill : swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+    g.roundRect(0, py, pw, tile * 0.8, 14)
+      .fill(this.noting ? swatch.yellow.fill : swatch.yellow.light)
+      .stroke({ width: 3, color: swatch.yellow.line });
     // A pencil: a slanted body, a point and a pink eraser.
-    const mx = pw / 2 - 52, my = py + tile * 0.4;
-    g.poly([mx - 14, my + 12, mx + 18, my - 20, mx + 26, my - 12, mx - 6, my + 20]).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line });
-    g.poly([mx - 14, my + 12, mx - 6, my + 20, mx - 20, my + 24]).fill(cream).stroke({ width: 2, color: swatch.orange.line });
-    g.poly([mx + 18, my - 20, mx + 26, my - 12, mx + 32, my - 18, mx + 24, my - 26]).fill(swatch.pink.fill).stroke({ width: 2, color: swatch.pink.line });
+    const mx = pw / 2 - 52,
+      my = py + tile * 0.4;
+    g.poly([mx - 14, my + 12, mx + 18, my - 20, mx + 26, my - 12, mx - 6, my + 20])
+      .fill(swatch.orange.fill)
+      .stroke({ width: 2, color: swatch.orange.line });
+    g.poly([mx - 14, my + 12, mx - 6, my + 20, mx - 20, my + 24])
+      .fill(cream)
+      .stroke({ width: 2, color: swatch.orange.line });
+    g.poly([mx + 18, my - 20, mx + 26, my - 12, mx + 32, my - 18, mx + 24, my - 26])
+      .fill(swatch.pink.fill)
+      .stroke({ width: 2, color: swatch.pink.line });
     const word = label(this.noting ? 'Marks: on' : 'Marks', Math.round(tile * 0.3), ink);
     word.position.set(pw / 2 + 12, py + tile * 0.4 - 2);
     this.trayText.addChild(word);
@@ -381,28 +537,61 @@ class SudokuGarden implements Game {
 
   /** The touch tray: a tile for each number (with how many are still to place), and Marks, Erase, Hint and Start over. A tile sinks while it is pressed. */
   private paintTouchTray() {
-    const g = this.trayG.clear(), left = remaining(this.grid, this.n);
+    const g = this.trayG.clear(),
+      left = remaining(this.grid, this.n);
     this.trayText.removeChildren().forEach((c) => c.destroy());
     this.slots.forEach((s, k) => {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
-      let sw = swatch.purple, face = swatch.purple.light, text = '', sub = '', ink2 = ink, size = 22;
+      let sw = swatch.purple,
+        face = swatch.purple.light,
+        text = '',
+        sub = '',
+        ink2 = ink,
+        size = 22;
       if (s.kind === 'digit') {
         const done = left[s.d - 1] <= 0;
-        sw = this.color(s.d); face = done ? swatch.white.light : sw.light; text = String(s.d); size = Math.round(s.h * 0.5);
-        sub = done ? '✓' : String(left[s.d - 1]); ink2 = done ? swatch.white.line : ink;
-      } else if (s.kind === 'marks') { sw = swatch.yellow; face = this.noting ? sw.fill : sw.light; text = this.noting ? 'Marks: on' : 'Marks'; }
-      else if (s.kind === 'erase') { sw = swatch.pink; face = sw.light; text = 'Erase'; }
-      else if (s.kind === 'hint') { sw = swatch.blue; face = sw.light; text = 'Hint ◇'; }
-      else if (s.kind === 'fill') { sw = swatch.green; face = this.sweep ? sw.fill : sw.light; text = 'Fill marks ✎'; }
-      else { sw = swatch.teal; face = sw.light; text = 'Start over ↺'; }
+        sw = this.color(s.d);
+        face = done ? swatch.white.light : sw.light;
+        text = String(s.d);
+        size = Math.round(s.h * 0.5);
+        sub = done ? '✓' : String(left[s.d - 1]);
+        ink2 = done ? swatch.white.line : ink;
+      } else if (s.kind === 'marks') {
+        sw = swatch.yellow;
+        face = this.noting ? sw.fill : sw.light;
+        text = this.noting ? 'Marks: on' : 'Marks';
+      } else if (s.kind === 'erase') {
+        sw = swatch.pink;
+        face = sw.light;
+        text = 'Erase';
+      } else if (s.kind === 'hint') {
+        sw = swatch.blue;
+        face = sw.light;
+        text = 'Hint ◇';
+      } else if (s.kind === 'fill') {
+        sw = swatch.green;
+        face = this.sweep ? sw.fill : sw.light;
+        text = 'Fill marks ✎';
+      } else {
+        sw = swatch.teal;
+        face = sw.light;
+        text = 'Start over ↺';
+      }
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
-      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(face).stroke({ width: 3, color: sw.line });
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14)
+        .fill(face)
+        .stroke({ width: 3, color: sw.line });
       const t = label(text, size, ink2);
       if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
       t.position.set(s.x + s.w / 2, s.y + s.h / 2 - (sub ? 3 : 0) + down);
       this.trayText.addChild(t);
       if (sub) {
-        const rest = label(sub, 15, s.kind === 'digit' && left[s.d - 1] <= 0 ? swatch.green.line : swatch.white.line, '500');
+        const rest = label(
+          sub,
+          15,
+          s.kind === 'digit' && left[s.d - 1] <= 0 ? swatch.green.line : swatch.white.line,
+          '500',
+        );
         rest.position.set(s.x + s.w - 13, s.y + s.h - 12 + down);
         this.trayText.addChild(rest);
       }
@@ -411,8 +600,10 @@ class SudokuGarden implements Game {
   }
 
   private trayCell(at: number) {
-    const tile = this.trayTile, n = this.n;
-    if (at >= n) return { x: 0, y: Math.ceil(n / COLS) * (tile + 10), w: COLS * tile + (COLS - 1) * 10, h: tile * 0.8 };
+    const tile = this.trayTile,
+      n = this.n;
+    if (at >= n)
+      return { x: 0, y: Math.ceil(n / COLS) * (tile + 10), w: COLS * tile + (COLS - 1) * 10, h: tile * 0.8 };
     return { x: (at % COLS) * (tile + 10), y: Math.floor(at / COLS) * (tile + 10), w: tile, h: tile };
   }
 
@@ -420,29 +611,72 @@ class SudokuGarden implements Game {
     this.clock += dt;
     if (!this.puzzle) return;
     if (this.dirty) this.paint();
-    if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintTray(); }
+    if (this.pressed && this.clock >= this.pressed.until) {
+      this.pressed = null;
+      this.paintTray();
+    }
     if (this.sweep && this.clock >= this.sweep.at) this.sweepRow();
-    const g = this.glow.clear(), ring = this.trayRing.clear();
+    const g = this.glow.clear(),
+      ring = this.trayRing.clear();
     if (this.finished || this.busy) return;
     const cell = this.cell;
-    if (this.flash && this.clock < this.flash.until) for (const i of this.flash.cells) {
-      const mid = this.center(i);
-      g.roundRect(mid.x - cell / 2 + 3, mid.y - cell / 2 + 3, cell - 6, cell - 6, 12).stroke({ width: 6, color: this.flash.color });
-    } else this.flash = null;
+    if (this.flash && this.clock < this.flash.until)
+      for (const i of this.flash.cells) {
+        const mid = this.center(i);
+        g.roundRect(mid.x - cell / 2 + 3, mid.y - cell / 2 + 3, cell - 6, cell - 6, 12).stroke({
+          width: 6,
+          color: this.flash.color,
+        });
+      }
+    else this.flash = null;
     if (this.hinted) {
-      const h = this.hinted, pulse = 6 + 2 * Math.sin(this.clock * 6);
-      if (h.kind === 'place') for (const c of h.house.cells) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.9 }); }
-      if (h.kind === 'rules-out') for (const line of h.via.lines ?? []) for (const c of line.cells) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.9 }); }
-      if (h.kind === 'rules-out' || h.kind === 'cage-last') for (const c of h.kind === 'cage-last' ? h.cage.cells : h.via.pattern ?? []) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 4, m.y - cell / 2 + 4, cell - 8, cell - 8, 12).stroke({ width: 6, color: swatch.blue.fill }); }
+      const h = this.hinted,
+        pulse = 6 + 2 * Math.sin(this.clock * 6);
+      if (h.kind === 'place')
+        for (const c of h.house.cells) {
+          const m = this.center(c);
+          g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({
+            width: 3,
+            color: swatch.yellow.line,
+            alpha: 0.9,
+          });
+        }
+      if (h.kind === 'rules-out')
+        for (const line of h.via.lines ?? [])
+          for (const c of line.cells) {
+            const m = this.center(c);
+            g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({
+              width: 3,
+              color: swatch.yellow.line,
+              alpha: 0.9,
+            });
+          }
+      if (h.kind === 'rules-out' || h.kind === 'cage-last')
+        for (const c of h.kind === 'cage-last' ? h.cage.cells : (h.via.pattern ?? [])) {
+          const m = this.center(c);
+          g.roundRect(m.x - cell / 2 + 4, m.y - cell / 2 + 4, cell - 8, cell - 8, 12).stroke({
+            width: 6,
+            color: swatch.blue.fill,
+          });
+        }
       const m = this.center(h.cell);
-      g.roundRect(m.x - cell / 2 - 3, m.y - cell / 2 - 3, cell + 6, cell + 6, 16).stroke({ width: pulse, color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill });
+      g.roundRect(m.x - cell / 2 - 3, m.y - cell / 2 - 3, cell + 6, cell + 6, 16).stroke({
+        width: pulse,
+        color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill,
+      });
     }
     const mid = this.center(this.cursor);
-    g.roundRect(mid.x - cell / 2 + 1, mid.y - cell / 2 + 1, cell - 2, cell - 2, 14).stroke({ width: this.mode === 'board' ? 7 : 4, color: ink, alpha: this.mode === 'board' ? 1 : 0.55 });
+    g.roundRect(mid.x - cell / 2 + 1, mid.y - cell / 2 + 1, cell - 2, cell - 2, 14).stroke({
+      width: this.mode === 'board' ? 7 : 4,
+      color: ink,
+      alpha: this.mode === 'board' ? 1 : 0.55,
+    });
     // The tray's highlight.
     if (this.mode === 'tray') {
       const t = this.trayCell(this.trayAt);
-      ring.roundRect(t.x - 5, t.y - 5, t.w + 10, t.h + 10, 18).stroke({ width: 7 + Math.sin(this.clock * 8), color: ink });
+      ring
+        .roundRect(t.x - 5, t.y - 5, t.w + 10, t.h + 10, 18)
+        .stroke({ width: 7 + Math.sin(this.clock * 8), color: ink });
     }
   }
 
@@ -470,13 +704,27 @@ class SudokuGarden implements Game {
     this.sweep = null;
     this.told = { clash: false, stuck: false, sum: false };
     this.wrongQuietUntil = 0;
-    this.cursor = Math.max(0, this.grid.findIndex((d) => !d));
+    this.cursor = Math.max(
+      0,
+      this.grid.findIndex((d) => !d),
+    );
     this.showBanner('');
     this.digits.removeChildren().forEach((c) => c.destroy());
     this.notesLayer.removeChildren().forEach((c) => c.destroy());
     this.sumsLayer.removeChildren().forEach((c) => c.destroy());
-    this.sumTexts = this.geo.cages.map((c) => { const t = label(String(c.sum), 18, ink, '600'); t.eventMode = 'none'; t.anchor.set(0, 0); this.sumsLayer.addChild(t); return t; });
-    this.texts = this.grid.map(() => { const t = label('', 40, ink); t.eventMode = 'none'; this.digits.addChild(t); return t; });
+    this.sumTexts = this.geo.cages.map((c) => {
+      const t = label(String(c.sum), 18, ink, '600');
+      t.eventMode = 'none';
+      t.anchor.set(0, 0);
+      this.sumsLayer.addChild(t);
+      return t;
+    });
+    this.texts = this.grid.map(() => {
+      const t = label('', 40, ink);
+      t.eventMode = 'none';
+      this.digits.addChild(t);
+      return t;
+    });
     this.noteTexts = this.grid.map(() => Array<Text | null>(this.n).fill(null));
     this.resize(this.view);
     this.paint();
@@ -488,9 +736,18 @@ class SudokuGarden implements Game {
     this.report();
     if (this.spoken) return;
     this.spoken = true;
-    const patch = this.geo.patches !== null, caged = this.geo.cages.length > 0;
+    const patch = this.geo.patches !== null,
+      caged = this.geo.cages.length > 0;
     if (caged) return this.ctx.instruct(this.touch ? 'sudoku.go-cages-touch' : 'sudoku.go-cages');
-    return this.ctx.instruct(this.touch ? (patch ? 'sudoku.go-patch-touch' : 'sudoku.go-touch') : patch ? 'sudoku.go-patch' : 'sudoku.go');
+    return this.ctx.instruct(
+      this.touch
+        ? patch
+          ? 'sudoku.go-patch-touch'
+          : 'sudoku.go-touch'
+        : patch
+          ? 'sudoku.go-patch'
+          : 'sudoku.go',
+    );
   }
 
   /** Hand a course's numbers to the shell. `finished` means the bed just ended, so none of its entries are "in progress". */
@@ -510,8 +767,12 @@ class SudokuGarden implements Game {
 
   /** The score for the bed just finished, over the board for a moment. */
   private async bedScore() {
-    const best = this.puzzle.blanks, total = this.beds.length;
-    const text = this.entries === best ? `Bed ${this.index + 1} of ${total}: ${this.entries} entries, a perfect bed!` : `Bed ${this.index + 1} of ${total}: ${this.entries} entries (fewest ${best})`;
+    const best = this.puzzle.blanks,
+      total = this.beds.length;
+    const text =
+      this.entries === best
+        ? `Bed ${this.index + 1} of ${total}: ${this.entries} entries, a perfect bed!`
+        : `Bed ${this.index + 1} of ${total}: ${this.entries} entries (fewest ${best})`;
     const note = label(text, 34, ink);
     note.position.set(this.board.x + (this.n * this.cell) / 2, Math.max(48, this.board.y - 56));
     note.alpha = 0;
@@ -538,13 +799,24 @@ class SudokuGarden implements Game {
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
         const t = this.texts[r * n + c];
-        void this.ctx.tw.to(t.scale, { x: 1.35, y: 1.35 }, { duration: 0.12 }).then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.14 }));
+        void this.ctx.tw
+          .to(t.scale, { x: 1.35, y: 1.35 }, { duration: 0.12 })
+          .then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.14 }));
       }
       sfx.bell(3 + (r % 7), 0.25);
       await this.ctx.tw.wait(0.11);
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 28, speed: [160, 400], gravity: 0, life: [0.6, 1.1] });
+    const mid = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }),
+    );
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 28,
+      speed: [160, 400],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     this.ctx.pet.cheer();
     sfx.sparkle();
     // A course moves straight on after a short score; ordinary play praises.
@@ -577,10 +849,14 @@ class SudokuGarden implements Game {
     if (this.busy || this.finished || !this.puzzle) return;
     const p = this.board.toLocal({ x: gx, y: gy });
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
-    const c = Math.floor(p.x / this.cell), r = Math.floor(p.y / this.cell);
+    const c = Math.floor(p.x / this.cell),
+      r = Math.floor(p.y / this.cell);
     if (c < 0 || r < 0 || c >= this.n || r >= this.n) return;
     const to = r * this.n + c;
-    if (to !== this.cursor) { this.cursor = to; this.dirty = true; }
+    if (to !== this.cursor) {
+      this.cursor = to;
+      this.dirty = true;
+    }
     sfx.tick();
   }
 
@@ -589,13 +865,19 @@ class SudokuGarden implements Game {
     if (this.busy || this.finished || !this.puzzle) return;
     const s = this.slots[k];
     this.pressed = { slot: k, until: this.clock + 0.15 };
-    if (s.kind === 'marks') { this.noting = !this.noting; sfx.pop(this.noting ? 8 : 4); }
-    else if (s.kind === 'erase') this.back();
+    if (s.kind === 'marks') {
+      this.noting = !this.noting;
+      sfx.pop(this.noting ? 8 : 4);
+    } else if (s.kind === 'erase') this.back();
     else if (s.kind === 'hint') this.askForHint();
     else if (s.kind === 'again') this.restart();
     else if (s.kind === 'fill') this.fillMarks();
     else if (this.given[this.cursor]) sfx.squeak();
-    else { this.lastDigit = s.d; if (this.noting) this.mark(s.d); else this.enter(s.d); }
+    else {
+      this.lastDigit = s.d;
+      if (this.noting) this.mark(s.d);
+      else this.enter(s.d);
+    }
     this.paintTray();
   }
 
@@ -628,8 +910,10 @@ class SudokuGarden implements Game {
   private move(dir: number) {
     const n = this.n;
     if (this.mode === 'board') {
-      const r = Math.floor(this.cursor / n), c = this.cursor % n;
-      const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])), nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
+      const r = Math.floor(this.cursor / n),
+        c = this.cursor % n;
+      const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])),
+        nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
       const to = nr * n + nc;
       if (to === this.cursor) return;
       this.cursor = to;
@@ -639,8 +923,9 @@ class SudokuGarden implements Game {
     }
     const at = this.trayAt;
     let to = at;
-    if (at === n) { if (dir === 3) to = n - COLS; }
-    else if (dir === 0 && at % COLS < COLS - 1) to = at + 1;
+    if (at === n) {
+      if (dir === 3) to = n - COLS;
+    } else if (dir === 0 && at % COLS < COLS - 1) to = at + 1;
     else if (dir === 2 && at % COLS > 0) to = at - 1;
     else if (dir === 1) to = at + COLS < n ? at + COLS : n;
     else if (dir === 3 && at - COLS >= 0) to = at - COLS;
@@ -685,7 +970,11 @@ class SudokuGarden implements Game {
     const i = this.cursor;
     if (this.given[i]) return;
     if (this.grid[i]) this.clear(i);
-    else if (this.notes[i]) { this.notes[i] = 0; this.dirty = true; sfx.pop(2); }
+    else if (this.notes[i]) {
+      this.notes[i] = 0;
+      this.dirty = true;
+      sfx.pop(2);
+    }
   }
 
   /**
@@ -696,15 +985,24 @@ class SudokuGarden implements Game {
     if (this.sweep) return;
     if (!this.grid.some((d, i) => !d && !this.notes[i])) return void sfx.tick();
     this.sweep = { row: 0, at: this.clock };
-    if (!this.toldFill) { this.toldFill = true; void this.ctx.say('sudoku.fill-marks'); }
+    if (!this.toldFill) {
+      this.toldFill = true;
+      void this.ctx.say('sudoku.fill-marks');
+    }
   }
 
   private sweepRow() {
     const sweep = this.sweep!;
-    if (fillMarksRow(this.grid, this.shape, this.notes, sweep.row).length) { sfx.pop(3 + (sweep.row % 6)); this.dirty = true; }
+    if (fillMarksRow(this.grid, this.shape, this.notes, sweep.row).length) {
+      sfx.pop(3 + (sweep.row % 6));
+      this.dirty = true;
+    }
     sweep.row++;
     sweep.at = this.clock + SWEEP_ROW;
-    if (sweep.row >= this.n) { this.sweep = null; this.paintTray(); }
+    if (sweep.row >= this.n) {
+      this.sweep = null;
+      this.paintTray();
+    }
   }
 
   private mark(digit: number) {
@@ -725,7 +1023,8 @@ class SudokuGarden implements Game {
 
   /** Put a number in the cursor's square. Placing counts one entry; what it clashes with is shown, and never forbidden. */
   private enter(digit: number) {
-    const i = this.cursor, geo = this.geo;
+    const i = this.cursor,
+      geo = this.geo;
     if (this.given[i] || this.grid[i] === digit) return void sfx.tick();
     this.grid[i] = digit;
     this.notes[i] = 0;
@@ -739,7 +1038,9 @@ class SudokuGarden implements Game {
     const wrong = digit !== this.puzzle.solution[i];
     if (wrong) this.misses++;
     const cage = geo.cageOf[i] >= 0 ? [geo.cages[geo.cageOf[i]]] : [];
-    const mine = [...geo.housesOf[i], ...cage].find((h) => h.cells.some((c) => c !== i && this.grid[c] === digit));
+    const mine = [...geo.housesOf[i], ...cage].find((h) =>
+      h.cells.some((c) => c !== i && this.grid[c] === digit),
+    );
     if (mine) {
       const twin = mine.cells.filter((c) => this.grid[c] === digit);
       this.flash = { cells: twin, color: swatch.red.fill, until: this.clock + 1.4 };
@@ -751,11 +1052,16 @@ class SudokuGarden implements Game {
       return;
     }
     // A cage whose numbers do not add up rings red until fixed; it is never a miss of its own (a number in it is already wrong).
-    const off = cage.length ? wrongSums(this.grid, this.shape).find((c) => c.index === cage[0].index) : undefined;
+    const off = cage.length
+      ? wrongSums(this.grid, this.shape).find((c) => c.index === cage[0].index)
+      : undefined;
     if (off && !this.told.sum && this.clock >= this.wrongQuietUntil) {
       this.told.sum = true;
       this.wrongQuietUntil = this.clock + 4;
-      void this.ctx.say('sudoku.cage-sum', { have: off.cells.reduce((t, c) => t + this.grid[c], 0), sum: off.sum });
+      void this.ctx.say('sudoku.cage-sum', {
+        have: off.cells.reduce((t, c) => t + this.grid[c], 0),
+        sum: off.sum,
+      });
       // A right number in a cage some other number has put off its sum still pops below; only a wrong one boings.
       if (wrong) {
         sfx.boing();
@@ -770,11 +1076,22 @@ class SudokuGarden implements Game {
       return;
     }
     sfx.pop(4 + (i % 6));
-    this.ctx.particles.burst(...this.stagePoint(i), { kind: 'dot', colors: [this.color(digit).fill, 0xffffff], count: 5, speed: [40, 110], gravity: 0, life: [0.25, 0.45] });
+    this.ctx.particles.burst(...this.stagePoint(i), {
+      kind: 'dot',
+      colors: [this.color(digit).fill, 0xffffff],
+      count: 5,
+      speed: [40, 110],
+      gravity: 0,
+      life: [0.25, 0.45],
+    });
     if (isSolved(this.grid, this.shape)) return void this.bloom();
     if (deadEnds(this.grid, this.shape).length && !this.told.stuck) {
       this.told.stuck = true;
-      this.flash = { cells: deadEnds(this.grid, this.shape), color: swatch.orange.fill, until: this.clock + 2.2 };
+      this.flash = {
+        cells: deadEnds(this.grid, this.shape),
+        color: swatch.orange.fill,
+        until: this.clock + 2.2,
+      };
       void this.ctx.say('sudoku.stuck');
     }
   }
@@ -786,7 +1103,8 @@ class SudokuGarden implements Game {
   }
 
   private stagePoint(i: number): [number, number] {
-    const mid = this.center(i), at = this.ctx.stage.toLocal(this.board.toGlobal(mid));
+    const mid = this.center(i),
+      at = this.ctx.stage.toLocal(this.board.toGlobal(mid));
     return [at.x, at.y];
   }
 
@@ -814,19 +1132,36 @@ class SudokuGarden implements Game {
 
   private hintLine(h: Hint): [LineId, Record<string, string | number>] {
     switch (h.kind) {
-      case 'fix': return ['sudoku.hint-fix', {}];
-      case 'lone': return ['sudoku.hint-lone', { n: h.digit }];
-      case 'place': return ['sudoku.hint-place', { n: h.digit, house: houseName(h.house) }];
-      case 'few': return ['sudoku.hint-few', {}];
-      case 'cage-last': return ['sudoku.hint-cage-last', { sum: h.cage.sum, have: h.have, n: h.digit }];
+      case 'fix':
+        return ['sudoku.hint-fix', {}];
+      case 'lone':
+        return ['sudoku.hint-lone', { n: h.digit }];
+      case 'place':
+        return ['sudoku.hint-place', { n: h.digit, house: houseName(h.house) }];
+      case 'few':
+        return ['sudoku.hint-few', {}];
+      case 'cage-last':
+        return ['sudoku.hint-cage-last', { sum: h.cage.sum, have: h.have, n: h.digit }];
       default: {
         const via = h.via;
         if (via.tech === 'cage-sets') {
-          const sets = via.sets!.map(spokenSet), vars = { k: via.cage!.cells.length, sum: via.cage!.sum, m: h.digit };
-          return sets.length === 1 ? ['sudoku.hint-cage-sets', { ...vars, set: sets[0] }] : ['sudoku.hint-cage-sets-or', { ...vars, sets: sets.join(', or ') }];
+          const sets = via.sets!.map(spokenSet),
+            vars = { k: via.cage!.cells.length, sum: via.cage!.sum, m: h.digit };
+          return sets.length === 1
+            ? ['sudoku.hint-cage-sets', { ...vars, set: sets[0] }]
+            : ['sudoku.hint-cage-sets-or', { ...vars, sets: sets.join(', or ') }];
         }
         const house = houseName(via.house!);
-        if (via.tech === 'xwing') return ['sudoku.hint-xwing', { lines: `${house}s`, n: via.digits![0], across: house === 'row' ? 'columns' : 'rows', m: h.digit }];
+        if (via.tech === 'xwing')
+          return [
+            'sudoku.hint-xwing',
+            {
+              lines: `${house}s`,
+              n: via.digits![0],
+              across: house === 'row' ? 'columns' : 'rows',
+              m: h.digit,
+            },
+          ];
         return via.tech === 'pair'
           ? ['sudoku.hint-pair', { a: via.digits![0], b: via.digits![1], house, n: h.digit }]
           : ['sudoku.hint-locked', { n: via.digits![0], house, m: h.digit }];
@@ -847,7 +1182,10 @@ class SudokuGarden implements Game {
     if (this.finished || !this.puzzle || this.busy) return;
     this.grid = this.puzzle.start.slice();
     this.notes = this.grid.map(() => 0);
-    this.cursor = Math.max(0, this.grid.findIndex((d) => !d));
+    this.cursor = Math.max(
+      0,
+      this.grid.findIndex((d) => !d),
+    );
     this.mode = 'board';
     this.noting = false;
     this.botPick = null;
@@ -875,7 +1213,11 @@ class SudokuGarden implements Game {
     const k = this.slots.findIndex((s) => s.kind === 'digit' && s.d === pick.digit);
     if (k < 0) return null;
     const s = this.slots[k];
-    return { tap: { on: this.touchLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 }, receiver: this.slotNodes[k], pause: 0.3 };
+    return {
+      tap: { on: this.touchLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 },
+      receiver: this.slotNodes[k],
+      pause: 0.3,
+    };
   }
 
   /** A bot that solves the way the techniques do: the nearest number the easy steps can place, walked to and chosen from the tray. */
@@ -889,29 +1231,50 @@ class SudokuGarden implements Game {
     const pick = this.botPick;
     if (!pick) return out;
     if (this.mode === 'board') {
-      if (this.cursor !== pick.cell) { p.direction = this.towards(this.cursor, pick.cell); this.botWait = 0.12; }
-      else { p.action = true; this.botWait = 0.18; }
+      if (this.cursor !== pick.cell) {
+        p.direction = this.towards(this.cursor, pick.cell);
+        this.botWait = 0.12;
+      } else {
+        p.action = true;
+        this.botWait = 0.18;
+      }
       return out;
     }
     const want = pick.digit - 1;
-    if (this.trayAt === want) { p.action = true; this.botWait = 0.3; return out; }
-    const r = Math.floor(this.trayAt / COLS), c = this.trayAt % COLS, wr = Math.floor(want / COLS), wc = want % COLS;
+    if (this.trayAt === want) {
+      p.action = true;
+      this.botWait = 0.3;
+      return out;
+    }
+    const r = Math.floor(this.trayAt / COLS),
+      c = this.trayAt % COLS,
+      wr = Math.floor(want / COLS),
+      wc = want % COLS;
     p.direction = r !== wr ? (wr > r ? 1 : 3) : wc > c ? 0 : 2;
     this.botWait = 0.12;
     return out;
   }
 
   private pickNext() {
-    const n = this.n, from = this.cursor;
-    const dist = (c: number) => Math.abs(Math.floor(c / n) - Math.floor(from / n)) + Math.abs((c % n) - (from % n));
+    const n = this.n,
+      from = this.cursor;
+    const dist = (c: number) =>
+      Math.abs(Math.floor(c / n) - Math.floor(from / n)) + Math.abs((c % n) - (from % n));
     const options = placements(this.grid, this.shape);
     if (options.length) return options.sort((a, b) => dist(a.cell) - dist(b.cell))[0];
-    const cell = this.grid.map((d, i) => (d ? -1 : i)).filter((i) => i >= 0).sort((a, b) => dist(a) - dist(b))[0];
+    const cell = this.grid
+      .map((d, i) => (d ? -1 : i))
+      .filter((i) => i >= 0)
+      .sort((a, b) => dist(a) - dist(b))[0];
     return cell === undefined ? null : { cell, digit: this.puzzle.solution[cell] };
   }
 
   private towards(from: number, to: number) {
-    const n = this.n, fr = Math.floor(from / n), fc = from % n, tr = Math.floor(to / n), tc = to % n;
+    const n = this.n,
+      fr = Math.floor(from / n),
+      fc = from % n,
+      tr = Math.floor(to / n),
+      tc = to % n;
     return fc !== tc ? (tc > fc ? 0 : 2) : tr > fr ? 1 : 3;
   }
 }
@@ -922,13 +1285,15 @@ class SudokuGarden implements Game {
 
 /** A little bed of nine numbered blossoms, no number repeated in any row or column. */
 /** A set of numbers as the pet says it: "1 and 2", or "1, 2 and 3". */
-const spokenSet = (set: readonly number[]) => (set.length < 2 ? String(set[0]) : `${set.slice(0, -1).join(', ')} and ${set[set.length - 1]}`);
+const spokenSet = (set: readonly number[]) =>
+  set.length < 2 ? String(set[0]) : `${set.slice(0, -1).join(', ')} and ${set[set.length - 1]}`;
 
 /** A dashed straight line (Pixi has no dashed stroke): dashes 7 long with gaps of 5, added to the path for one stroke. */
 function dashedEdge(g: Graphics, x0: number, y0: number, x1: number, y1: number) {
   const len = Math.hypot(x1 - x0, y1 - y0);
   if (len < 0.5) return;
-  const ux = (x1 - x0) / len, uy = (y1 - y0) / len;
+  const ux = (x1 - x0) / len,
+    uy = (y1 - y0) / len;
   for (let t = 0; t < len; t += 12) {
     const e = Math.min(len, t + 7);
     g.moveTo(x0 + ux * t, y0 + uy * t).lineTo(x0 + ux * e, y0 + uy * e);
@@ -937,13 +1302,28 @@ function dashedEdge(g: Graphics, x0: number, y0: number, x1: number, y1: number)
 
 function miniBed(cell: number): Container {
   const c = new Container();
-  const n = 3, w = n * cell;
-  c.addChild(new Graphics().roundRect(-w / 2 - 10, -w / 2 - 10, w + 20, w + 20, 18).fill(wood.light).stroke({ width: 6, color: wood.line }));
+  const n = 3,
+    w = n * cell;
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2 - 10, -w / 2 - 10, w + 20, w + 20, 18)
+      .fill(wood.light)
+      .stroke({ width: 6, color: wood.line }),
+  );
   for (let r = 0; r < n; r++)
     for (let col = 0; col < n; col++) {
-      const d = ((r + col) % n) + 1, sw = swatch[DIGIT_COLORS[d - 1]];
-      const x = -w / 2 + col * cell + cell / 2, y = -w / 2 + r * cell + cell / 2;
-      c.addChild(new Graphics().roundRect(x - cell / 2 + 3, y - cell / 2 + 3, cell - 6, cell - 6, 10).fill(swatch.brown.light).circle(x, y, cell * 0.36).fill(sw.light).stroke({ width: 3, color: sw.line }));
+      const d = ((r + col) % n) + 1,
+        sw = swatch[DIGIT_COLORS[d - 1]];
+      const x = -w / 2 + col * cell + cell / 2,
+        y = -w / 2 + r * cell + cell / 2;
+      c.addChild(
+        new Graphics()
+          .roundRect(x - cell / 2 + 3, y - cell / 2 + 3, cell - 6, cell - 6, 10)
+          .fill(swatch.brown.light)
+          .circle(x, y, cell * 0.36)
+          .fill(sw.light)
+          .stroke({ width: 3, color: sw.line }),
+      );
       const t = label(String(d), Math.round(cell * 0.5), ink);
       t.position.set(x, y + 1);
       c.addChild(t);
@@ -964,11 +1344,19 @@ class SudokuIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const d = rng.int(1, 9), sw = swatch[DIGIT_COLORS[d - 1]];
-  c.addChild(new Graphics().circle(0, 0, 78).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line }));
+  const d = rng.int(1, 9),
+    sw = swatch[DIGIT_COLORS[d - 1]];
+  c.addChild(
+    new Graphics().circle(0, 0, 78).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line }),
+  );
   for (let i = 0; i < 8; i++) {
     const a = (i * Math.PI) / 4;
-    c.addChild(new Graphics().circle(Math.cos(a) * 46, Math.sin(a) * 46, 22).fill(sw.fill).stroke({ width: 3, color: sw.line }));
+    c.addChild(
+      new Graphics()
+        .circle(Math.cos(a) * 46, Math.sin(a) * 46, 22)
+        .fill(sw.fill)
+        .stroke({ width: 3, color: sw.line }),
+    );
   }
   c.addChild(new Graphics().circle(0, 0, 38).fill(sw.light).stroke({ width: 4, color: sw.line }));
   c.addChild(label(String(d), 52, ink));
@@ -986,7 +1374,8 @@ export const sudokuGarden: GameModule = {
   bands: ['grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
-  coplayHint: 'Tap a square, then a number. Ask which number can only go in one place in a row, a column, a box or a patch, or which numbers can make a cage\'s sum.',
+  coplayHint:
+    "Tap a square, then a number. Ask which number can only go in one place in a row, a column, a box or a patch, or which numbers can make a cage's sum.",
   offScreen: 'Draw a small grid on paper and fill it so no row or column repeats a shape or a number.',
   entryLevels: [7],
   levels: (band) => rangeFor(LEVELS, band),
@@ -997,4 +1386,3 @@ export const sudokuGarden: GameModule = {
   sticker,
   create: (ctx) => new SudokuGarden(ctx),
 };
-

@@ -1,8 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DROP_GAP, DROP_TIME, LEVELS, LOOKS, PLANS, SLOT, TILE, WAYS_PER_ROUND, choosesSign, dropStep, hintGlow, hintWay, judge, layoutFor,
-  makeRound, made, planFor, shapeFor, solutions, stickerNumber, wayKey, type HintGlow, type Op,
+  DROP_GAP,
+  DROP_TIME,
+  LEVELS,
+  LOOKS,
+  PLANS,
+  SLOT,
+  TILE,
+  WAYS_PER_ROUND,
+  choosesSign,
+  dropStep,
+  hintGlow,
+  hintWay,
+  judge,
+  layoutFor,
+  makeRound,
+  made,
+  planFor,
+  shapeFor,
+  solutions,
+  stickerNumber,
+  wayKey,
+  type HintGlow,
+  type Op,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
@@ -16,7 +37,10 @@ describe('Fruit Sums rounds', () => {
         expect(target).toBeGreaterThanOrEqual(plan.target[0]);
         expect(target).toBeLessThanOrEqual(plan.target[1]);
         expect(tray).toHaveLength(plan.tiles);
-        for (const v of tray) { expect(v).toBeGreaterThanOrEqual(1); expect(v).toBeLessThanOrEqual(plan.maxTile); }
+        for (const v of tray) {
+          expect(v).toBeGreaterThanOrEqual(1);
+          expect(v).toBeLessThanOrEqual(plan.maxTile);
+        }
         const ways = solutions(tray, plan.ops, target);
         expect(ways.length).toBeGreaterThanOrEqual(WAYS_PER_ROUND);
         expect(new Set(ways.map((w) => wayKey(tray[w.a], w.op, tray[w.b]))).size).toBe(ways.length);
@@ -81,7 +105,8 @@ describe('Fruit Sums answers', () => {
 
   it('lights a fruit that starts a way she has not found, and nothing once all are found', () => {
     for (const seed of SEEDS.slice(0, 100)) {
-      const level = 1 + (seed % 3), plan = planFor(level);
+      const level = 1 + (seed % 3),
+        plan = planFor(level);
       const { target, tray } = makeRound(level, new Rng(seed));
       const ways = solutions(tray, plan.ops, target);
       const firstKey = wayKey(tray[ways[0].a], ways[0].op, tray[ways[0].b]);
@@ -96,11 +121,18 @@ describe('Fruit Sums answers', () => {
 });
 
 describe('Fruit Sums layout', () => {
-  const views: [number, number][] = [[1024, 768], [768, 1024], [1366, 1024], [1180, 820], [1024, 1366]];
+  const views: [number, number][] = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 1024],
+    [1180, 820],
+    [1024, 1366],
+  ];
   for (const [w, h] of views) {
     for (const level of [1, 2, 3]) {
       it(`${w}x${h} level ${level}: every touch target is at least 100 units, on screen, apart, and clear of the pet corner`, () => {
-        const plan = planFor(level), signs = choosesSign(level);
+        const plan = planFor(level),
+          signs = choosesSign(level);
         const l = layoutFor(w, h, plan.tiles, signs);
         const boxes = [
           ...l.tiles.map((p) => ({ ...p, s: TILE })),
@@ -119,7 +151,9 @@ describe('Fruit Sums layout', () => {
         }
         for (let i = 0; i < boxes.length; i++) {
           for (let j = i + 1; j < boxes.length; j++) {
-            const p = boxes[i], q = boxes[j], reach = (p.s + q.s) / 2;
+            const p = boxes[i],
+              q = boxes[j],
+              reach = (p.s + q.s) / 2;
             expect(Math.abs(p.x - q.x) >= reach || Math.abs(p.y - q.y) >= reach).toBe(true);
           }
         }
@@ -133,7 +167,11 @@ describe('Fruit Sums layout', () => {
 
 describe('Fruit Sums sticker', () => {
   it('shows a numeral from 2 to 9', () => {
-    for (const seed of SEEDS) { const n = stickerNumber(seed); expect(n).toBeGreaterThanOrEqual(2); expect(n).toBeLessThanOrEqual(9); }
+    for (const seed of SEEDS) {
+      const n = stickerNumber(seed);
+      expect(n).toBeGreaterThanOrEqual(2);
+      expect(n).toBeLessThanOrEqual(9);
+    }
   });
 });
 
@@ -144,7 +182,9 @@ describe('Fruit Sums hint that follows through', () => {
       for (const seed of SEEDS) {
         const { target, tray } = makeRound(level, new Rng(seed));
         for (let first = 0; first < tray.length; first++) {
-          const starts = solutions(tray, ops, target).some((w) => tray[w.a] === tray[first] || (w.op === 'plus' && tray[w.b] === tray[first]));
+          const starts = solutions(tray, ops, target).some(
+            (w) => tray[w.a] === tray[first] || (w.op === 'plus' && tray[w.b] === tray[first]),
+          );
           const way = hintWay(tray, ops, target, [], first)!;
           expect(way).not.toBeNull();
           expect(made(tray[way.a], way.op, tray[way.b])).toBe(target);
@@ -163,31 +203,36 @@ describe('Fruit Sums hint that follows through', () => {
 
   /** Taps the way the game does: a fruit in a box goes home, else it fills the first empty box, else it swaps the second. */
   const tapTile = (s: { a: number | null; b: number | null }, i: number) => {
-    if (s.a === i) s.a = null; else if (s.b === i) s.b = null; else if (s.a === null) s.a = i; else s.b = i;
+    if (s.a === i) s.a = null;
+    else if (s.b === i) s.b = null;
+    else if (s.a === null) s.a = i;
+    else s.b = i;
   };
 
   it('following the glow from any boxes and sign builds an unfound way and lights the check', () => {
     for (const level of [1, 3]) {
-      const ops = planFor(level).ops, signs = choosesSign(level);
+      const ops = planFor(level).ops,
+        signs = choosesSign(level);
       for (const seed of SEEDS.slice(0, 80)) {
         const { target, tray } = makeRound(level, new Rng(seed));
         const firstWay = solutions(tray, ops, target)[0];
         for (const found of [[], [wayKey(tray[firstWay.a], firstWay.op, tray[firstWay.b])]]) {
-          for (let a = -1; a < tray.length; a++) for (let b = -1; b < tray.length; b++) {
-            if (a === b && a >= 0) continue;
-            const s = { a: a < 0 ? null : a, b: b < 0 ? null : b };
-            let op: Op | null = signs ? 'minus' : 'plus';
-            let done = false;
-            for (let step = 0; step < 8 && !done; step++) {
-              const glow: HintGlow = hintGlow(tray, ops, target, found, s.a, s.b, op)!;
-              expect(glow).not.toBeNull();
-              if ('check' in glow) done = true;
-              else if ('leaf' in glow) op = glow.leaf;
-              else tapTile(s, glow.tile);
+          for (let a = -1; a < tray.length; a++)
+            for (let b = -1; b < tray.length; b++) {
+              if (a === b && a >= 0) continue;
+              const s = { a: a < 0 ? null : a, b: b < 0 ? null : b };
+              let op: Op | null = signs ? 'minus' : 'plus';
+              let done = false;
+              for (let step = 0; step < 8 && !done; step++) {
+                const glow: HintGlow = hintGlow(tray, ops, target, found, s.a, s.b, op)!;
+                expect(glow).not.toBeNull();
+                if ('check' in glow) done = true;
+                else if ('leaf' in glow) op = glow.leaf;
+                else tapTile(s, glow.tile);
+              }
+              expect(done).toBe(true);
+              expect(judge(tray[s.a!], op!, tray[s.b!], target, found).kind).toBe('right');
             }
-            expect(done).toBe(true);
-            expect(judge(tray[s.a!], op!, tray[s.b!], target, found).kind).toBe('right');
-          }
         }
       }
     }

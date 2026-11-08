@@ -45,9 +45,36 @@ export interface ComebackPlan {
 }
 
 export const PLANS: readonly ComebackPlan[] = [
-  { level: 1, name: 'Not brothers and sisters', founders: 2, young: [3, 2], third: [0, 0], depth: 1, target: 2, site: false },
-  { level: 2, name: 'Not cousins either', founders: 3, young: [3, 2, 2], third: [2, 3], depth: 2, target: 3, site: false },
-  { level: 3, name: 'Where will they live?', founders: 3, young: [3, 2, 2], third: [2, 3], depth: 2, target: 3, site: true },
+  {
+    level: 1,
+    name: 'Not brothers and sisters',
+    founders: 2,
+    young: [3, 2],
+    third: [0, 0],
+    depth: 1,
+    target: 2,
+    site: false,
+  },
+  {
+    level: 2,
+    name: 'Not cousins either',
+    founders: 3,
+    young: [3, 2, 2],
+    third: [2, 3],
+    depth: 2,
+    target: 3,
+    site: false,
+  },
+  {
+    level: 3,
+    name: 'Where will they live?',
+    founders: 3,
+    young: [3, 2, 2],
+    third: [2, 3],
+    depth: 2,
+    target: 3,
+    site: true,
+  },
 ];
 
 /** Lantern Lake: levels 1–3 in this slice; level 4 (the keeper's two plans) is the next. */
@@ -56,9 +83,35 @@ export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 export const planFor = (level: number): ComebackPlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 
 /** Names for the tree; never the island's named friends. */
-export const NAMES = ['Pebble', 'Moss', 'Fern', 'Reed', 'Willow', 'Brook', 'Sorrel', 'Thistle', 'Bramble', 'Dune', 'Lichen', 'Marsh', 'Pine', 'Ash', 'Sage', 'Flint'] as const;
+export const NAMES = [
+  'Pebble',
+  'Moss',
+  'Fern',
+  'Reed',
+  'Willow',
+  'Brook',
+  'Sorrel',
+  'Thistle',
+  'Bramble',
+  'Dune',
+  'Lichen',
+  'Marsh',
+  'Pine',
+  'Ash',
+  'Sage',
+  'Flint',
+] as const;
 /** Hatchlings' names, so a spring never runs out. */
-export const HATCHLING_NAMES = ['Rush', 'Sedge', 'Briar', 'Tansy', 'Rowan', 'Heath', 'Cress', 'Juniper'] as const;
+export const HATCHLING_NAMES = [
+  'Rush',
+  'Sedge',
+  'Briar',
+  'Tansy',
+  'Rowan',
+  'Heath',
+  'Cress',
+  'Juniper',
+] as const;
 export const TINTS = 6;
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -77,7 +130,11 @@ export function ancestors(tree: Tree, id: number, depth: number): Set<number> {
   let layer = [id];
   for (let d = 0; d < depth; d++) {
     const next: number[] = [];
-    for (const t of layer) for (const p of byId(tree, t).parents ?? []) { out.add(p); next.push(p); }
+    for (const t of layer)
+      for (const p of byId(tree, t).parents ?? []) {
+        out.add(p);
+        next.push(p);
+      }
     layer = next;
   }
   return out;
@@ -85,14 +142,19 @@ export function ancestors(tree: Tree, id: number, depth: number): Set<number> {
 
 /** Close family: they share a parent (depth 1) or a parent or grandparent (depth 2), or one is the other's. */
 export function kin(tree: Tree, a: number, b: number, depth: number): boolean {
-  const aa = ancestors(tree, a, depth), bb = ancestors(tree, b, depth);
+  const aa = ancestors(tree, a, depth),
+    bb = ancestors(tree, b, depth);
   if (aa.has(b) || bb.has(a)) return true;
   for (const x of aa) if (bb.has(x)) return true;
   return false;
 }
 
 /** The nearest relative two kin share, and what that relative is to each: 'mother', 'grandfather' and so on. */
-export function sharedRelative(tree: Tree, a: number, b: number): { id: number; toA: string; toB: string } | null {
+export function sharedRelative(
+  tree: Tree,
+  a: number,
+  b: number,
+): { id: number; toA: string; toB: string } | null {
   const steps = (from: number) => {
     const m = new Map<number, number>();
     for (const p of byId(tree, from).parents ?? []) {
@@ -101,17 +163,24 @@ export function sharedRelative(tree: Tree, a: number, b: number): { id: number; 
     }
     return m;
   };
-  const sa = steps(a), sb = steps(b);
+  const sa = steps(a),
+    sb = steps(b);
   let best: { id: number; d: number } | null = null;
   for (const [id, da] of sa) {
     const db = sb.get(id);
     if (db === undefined) continue;
     const d = da + db;
     // Prefer the mother over the father when both are shared, so a sibling's explanation is the same every time.
-    if (!best || d < best.d || (d === best.d && byId(tree, id).sex === 'f' && byId(tree, best.id).sex === 'm')) best = { id, d };
+    if (
+      !best ||
+      d < best.d ||
+      (d === best.d && byId(tree, id).sex === 'f' && byId(tree, best.id).sex === 'm')
+    )
+      best = { id, d };
   }
   if (!best) return null;
-  const word = (d: number) => `${d === 2 ? 'grand' : ''}${byId(tree, best!.id).sex === 'f' ? 'mother' : 'father'}`;
+  const word = (d: number) =>
+    `${d === 2 ? 'grand' : ''}${byId(tree, best!.id).sex === 'f' ? 'mother' : 'father'}`;
   return { id: best.id, toA: word(sa.get(best.id)!), toB: word(sb.get(best.id)!) };
 }
 
@@ -130,12 +199,18 @@ export function judge(tree: Tree, plan: Plan, a: number, b: number, depth: numbe
   return 'ok';
 }
 
-export const allowed = (tree: Tree, plan: Plan, a: number, b: number, depth: number) => judge(tree, plan, a, b, depth) === 'ok';
+export const allowed = (tree: Tree, plan: Plan, a: number, b: number, depth: number) =>
+  judge(tree, plan, a, b, depth) === 'ok';
 
 /** A pair written mother first, so two plans compare equal. */
-export const ordered = (tree: Tree, a: number, b: number): Pair => (byId(tree, a).sex === 'f' ? [a, b] : [b, a]);
+export const ordered = (tree: Tree, a: number, b: number): Pair =>
+  byId(tree, a).sex === 'f' ? [a, b] : [b, a];
 
-const key = (plan: Plan) => plan.map((p) => `${p[0]}-${p[1]}`).sort().join(',');
+const key = (plan: Plan) =>
+  plan
+    .map((p) => `${p[0]}-${p[1]}`)
+    .sort()
+    .join(',');
 
 /* ---------------------------------------------------------------------------------------------- */
 /* The solver                                                                                      */
@@ -149,9 +224,13 @@ export function plans(tree: Tree, depth: number): Pair[][] {
   const walk = (i: number, used: Set<number>, plan: Pair[]) => {
     if (i === ids.length) {
       const free = ids.filter((x) => !used.has(x));
-      for (let x = 0; x < free.length; x++) for (let y = x + 1; y < free.length; y++) if (allowed(tree, [], free[x], free[y], depth)) return;
+      for (let x = 0; x < free.length; x++)
+        for (let y = x + 1; y < free.length; y++) if (allowed(tree, [], free[x], free[y], depth)) return;
       const k = key(plan);
-      if (!seen.has(k)) { seen.add(k); out.push(plan.slice()); }
+      if (!seen.has(k)) {
+        seen.add(k);
+        out.push(plan.slice());
+      }
       return;
     }
     const a = ids[i];
@@ -160,9 +239,13 @@ export function plans(tree: Tree, depth: number): Pair[][] {
     for (let j = i + 1; j < ids.length; j++) {
       const b = ids[j];
       if (used.has(b) || !allowed(tree, [], a, b, depth)) continue;
-      used.add(a); used.add(b); plan.push(ordered(tree, a, b));
+      used.add(a);
+      used.add(b);
+      plan.push(ordered(tree, a, b));
       walk(i + 1, used, plan);
-      plan.pop(); used.delete(a); used.delete(b);
+      plan.pop();
+      used.delete(a);
+      used.delete(b);
     }
   };
   walk(0, new Set(), []);
@@ -184,7 +267,10 @@ export function extend(tree: Tree, plan: Plan, depth: number, target: number): P
     for (let j = 0; j < others.length; j++) {
       const b = others[j];
       if (!allowed(tree, [], a, b, depth)) continue;
-      const found = go(others.filter((_, k) => k !== j), [...acc, ordered(tree, a, b)]);
+      const found = go(
+        others.filter((_, k) => k !== j),
+        [...acc, ordered(tree, a, b)],
+      );
       if (found) return found;
     }
     return go(others, acc);
@@ -197,7 +283,16 @@ export function extend(tree: Tree, plan: Plan, depth: number, target: number): P
  * (undoing nests one by one always reaches a plan that extends, since the empty plan does).
  */
 export function blocking(tree: Tree, plan: Plan, depth: number, target: number): number {
-  for (let i = 0; i < plan.length; i++) if (extend(tree, plan.filter((_, k) => k !== i), depth, target)) return i;
+  for (let i = 0; i < plan.length; i++)
+    if (
+      extend(
+        tree,
+        plan.filter((_, k) => k !== i),
+        depth,
+        target,
+      )
+    )
+      return i;
   return plan.length - 1;
 }
 
@@ -213,10 +308,13 @@ export function helpFor(tree: Tree, plan: Plan, depth: number, target: number): 
 
 /** Opposite-sex candidate pairs the rule forbids: the tree tests the rule at least once. */
 export function tempting(tree: Tree, depth: number): Pair[] {
-  const ids = candidates(tree), out: Pair[] = [];
-  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
-    if (byId(tree, ids[i]).sex !== byId(tree, ids[j]).sex && kin(tree, ids[i], ids[j], depth)) out.push(ordered(tree, ids[i], ids[j]));
-  }
+  const ids = candidates(tree),
+    out: Pair[] = [];
+  for (let i = 0; i < ids.length; i++)
+    for (let j = i + 1; j < ids.length; j++) {
+      if (byId(tree, ids[i]).sex !== byId(tree, ids[j]).sex && kin(tree, ids[i], ids[j], depth))
+        out.push(ordered(tree, ids[i], ids[j]));
+    }
   return out;
 }
 
@@ -227,7 +325,11 @@ export function tempting(tree: Tree, depth: number): Pair[] {
 export type Feature = 'water' | 'logs' | 'sand' | 'plants' | 'quiet';
 export const NEEDS: readonly Feature[] = ['water', 'logs', 'sand', 'plants'];
 
-export interface Site { id: string; name: string; features: readonly Feature[] }
+export interface Site {
+  id: string;
+  name: string;
+  features: readonly Feature[];
+}
 
 /** Authored release sites (decision 1: the developer reviews them). Two suit; each other lacks one need, each need once. */
 export const SITES: readonly Site[] = [
@@ -244,7 +346,8 @@ export const suits = (site: Site) => missing(site).length === 0;
 
 /** Three sites: two that suit and one missing exactly one need, in a seeded order. */
 export function pickSites(rng: Rng): Site[] {
-  const good = SITES.filter(suits), bad = SITES.filter((s) => missing(s).length === 1);
+  const good = SITES.filter(suits),
+    bad = SITES.filter((s) => missing(s).length === 1);
   return rng.shuffle([...rng.shuffle(good.slice()).slice(0, 2), rng.pick(bad)]);
 }
 
@@ -274,7 +377,8 @@ function drawTree(p: ComebackPlan, rng: Rng): Tree | null {
   const families: Turtle[][] = [];
   const sizes = rng.shuffle(p.young.slice());
   for (let f = 0; f < p.founders; f++) {
-    const mum = add('f', null, 0), dad = add('m', null, 0);
+    const mum = add('f', null, 0),
+      dad = add('m', null, 0);
     const kids: Turtle[] = [];
     for (let k = 0; k < sizes[f]; k++) kids.push(add(rng.chance(0.5) ? 'f' : 'm', [mum.id, dad.id], 1));
     families.push(kids);
@@ -284,10 +388,12 @@ function drawTree(p: ComebackPlan, rng: Rng): Tree | null {
   if (thirdCount > 0) {
     // One young mother and father from two different families nested last spring.
     const options: Pair[] = [];
-    for (let i = 0; i < families.length; i++) for (let j = 0; j < families.length; j++) {
-      if (i === j) continue;
-      for (const a of families[i]) for (const b of families[j]) if (a.sex === 'f' && b.sex === 'm') options.push([a.id, b.id]);
-    }
+    for (let i = 0; i < families.length; i++)
+      for (let j = 0; j < families.length; j++) {
+        if (i === j) continue;
+        for (const a of families[i])
+          for (const b of families[j]) if (a.sex === 'f' && b.sex === 'm') options.push([a.id, b.id]);
+      }
     if (!options.length) return null;
     const pair = rng.pick(options);
     nested.push(pair);
@@ -313,7 +419,8 @@ export function makeRound(level: number, rng: Rng): Round {
   const p = planFor(level);
   for (let i = 0; i < MAX_DRAWS; i++) {
     const tree = drawTree(p, rng);
-    if (tree && fits(tree, p)) return { plan: p, tree, target: p.target, sites: p.site ? pickSites(rng) : [] };
+    if (tree && fits(tree, p))
+      return { plan: p, tree, target: p.target, sites: p.site ? pickSites(rng) : [] };
   }
   throw new Error(`species-comeback: no tree for level ${level}`);
 }
@@ -324,9 +431,17 @@ export function hatch(tree: Tree, plan: Plan, rng: Rng): Turtle[] {
   const pool = rng.shuffle([...HATCHLING_NAMES, ...NAMES].filter((n) => !used.has(n)));
   let id = Math.max(...tree.turtles.map((t) => t.id)) + 1;
   const out: Turtle[] = [];
-  for (const [a, b] of plan) for (let k = 0; k < 2; k++) {
-    out.push({ id: id++, name: pool[out.length], sex: rng.chance(0.5) ? 'f' : 'm', parents: [a, b], gen: 3, tint: byId(tree, rng.chance(0.5) ? a : b).tint });
-  }
+  for (const [a, b] of plan)
+    for (let k = 0; k < 2; k++) {
+      out.push({
+        id: id++,
+        name: pool[out.length],
+        sex: rng.chance(0.5) ? 'f' : 'm',
+        parents: [a, b],
+        gen: 3,
+        tint: byId(tree, rng.chance(0.5) ? a : b).tint,
+      });
+    }
   tree.turtles.push(...out);
   return out;
 }

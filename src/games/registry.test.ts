@@ -15,9 +15,13 @@ import { LANDS } from '../content/lands';
 describe('game registry', () => {
   it('finds every game folder, one game each, named by its id, in island order', () => {
     // Every game folder has rules in logic.ts; the lazy glob reads only paths.
-    const folders = Object.keys(import.meta.glob('./*/logic.ts')).map((p) => p.split('/')[1]).sort();
+    const folders = Object.keys(import.meta.glob('./*/logic.ts'))
+      .map((p) => p.split('/')[1])
+      .sort();
     expect(GAMES.map((g) => g.id).sort()).toEqual(folders);
-    expect(GAMES.map((g) => g.id)).toEqual(LANDS.flatMap((l) => l.games).filter((id) => folders.includes(id)));
+    expect(GAMES.map((g) => g.id)).toEqual(
+      LANDS.flatMap((l) => l.games).filter((id) => folders.includes(id)),
+    );
   });
 
   it('places Penguin Slide 11 after 2 for preschool and pre-K only, and lands school at its easiest', () => {
@@ -41,7 +45,8 @@ describe('game registry', () => {
     expect(stepLevel(7, 1, g.levels('prek'))).toBe(8);
     expect(stepLevel(8, 1, g.levels('prek'))).toBe(9);
     expect(stepLevel(9, 1, g.levels('prek'))).toBe(12);
-    for (const level of [3, 4, 5, 6, 7, 8, 9, 12]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
+    for (const level of [3, 4, 5, 6, 7, 8, 9, 12])
+      expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
     expect(g.levels('preschool')).toEqual({ min: 2, max: 5 });
     expect(levelsInOrder(g.levels('lap'))).toEqual([1, 11]);
     expect(levelsInOrder(g.levels('toddler'))).toEqual([1, 11, 10, 2, 3]);
@@ -73,7 +78,11 @@ describe('game registry', () => {
     expect(landing(7, g.levels('school'), g.entryLevels)).toBe(1);
     for (const level of [1, 2, 3, 4, 5]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
     // Your friend, my friend (8) plays level 3's spoon, so both bands reach it right after 3; it is not an entry.
-    for (const band of ['prek', 'school'] as const) { expect(stepLevel(3, 1, g.levels(band))).toBe(8); expect(stepLevel(8, 1, g.levels(band))).toBe(4); expect(landing(8, g.levels(band), g.entryLevels)).toBe(8); }
+    for (const band of ['prek', 'school'] as const) {
+      expect(stepLevel(3, 1, g.levels(band))).toBe(8);
+      expect(stepLevel(8, 1, g.levels(band))).toBe(4);
+      expect(landing(8, g.levels(band), g.entryLevels)).toBe(8);
+    }
   });
 
   it('opens Picture Graph at pre-K with Line them up (8), an entry school plays after level 2, then A key of five (9), Two pictures, one meadow (10) and What the graph can say (11) at the top of school, without moving levels 1–7', () => {
@@ -87,7 +96,9 @@ describe('game registry', () => {
     expect(stepLevel(8, 1, g.levels('school'))).toBe(3);
     expect(stepLevel(7, 1, g.levels('school'))).toBe(9);
     expect(stepLevel(10, 1, g.levels('school'))).toBe(11);
-    for (const band of g.bands) for (const level of levelsInOrder(g.levels(band))) expect(landing(level, g.levels(band), g.entryLevels)).toBe(level);
+    for (const band of g.bands)
+      for (const level of levelsInOrder(g.levels(band)))
+        expect(landing(level, g.levels(band), g.entryLevels)).toBe(level);
   });
 
   it('keeps Photo Safari 8–11 school only and the toddler entry 12 in the toddler order only', () => {
@@ -103,7 +114,9 @@ describe('game registry', () => {
     expect(stepLevel(2, 1, g.levels('toddler'))).toBe(12);
     expect(landing(12, g.levels('preschool'), g.entryLevels)).toBe(2);
     expect(landing(12, g.levels('school'), g.entryLevels)).toBe(4);
-    for (const band of g.bands) for (const level of levelsInOrder(g.levels(band)).filter((l) => l <= 6)) expect(landing(level, g.levels(band))).toBe(level);
+    for (const band of g.bands)
+      for (const level of levelsInOrder(g.levels(band)).filter((l) => l <= 6))
+        expect(landing(level, g.levels(band))).toBe(level);
     expect(stepLevel(7, 1, g.levels('school'))).toBe(8);
     expect(stepLevel(9, 1, g.levels('school'))).toBe(10);
     expect(stepLevel(10, -1, g.levels('school'))).toBe(9);
@@ -118,7 +131,8 @@ describe('game registry', () => {
     expect(g.levels('lap')).toEqual({ min: 1, max: 1 });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
-    for (const level of [4, 5, 7, 6, 9]) expect(landing(level, g.levels('school'), g.entryLevels)).toBe(level);
+    for (const level of [4, 5, 7, 6, 9])
+      expect(landing(level, g.levels('school'), g.entryLevels)).toBe(level);
     expect(stepLevel(6, 1, g.levels('school'))).toBe(9);
     expect(stepLevel(9, 1, g.levels('school'))).toBe(12);
     expect(stepLevel(12, 1, g.levels('school'))).toBe(12);
@@ -144,11 +158,21 @@ describe('game registry', () => {
     const g = GAMES.find((g) => g.id === 'chain-reaction')!;
     expect(g.bands).toEqual(['prek', 'school']);
     expect(g.entryLevels).toEqual([7, 8]);
-    const prek = g.levels('prek'), school = g.levels('school');
+    const prek = g.levels('prek'),
+      school = g.levels('school');
     expect(prek.order).toEqual([7, 8, 1, 2, 3]);
     // Level 9 Two marbles tops the school ladder through `order`, so school never steps into the pre-K entries 7 and 8.
     expect(school).toEqual({ min: 3, max: 9, order: [3, 4, 5, 6, 9] });
-    expect(nextLevel(6, [{ level: 6, misses: 0, hints: 0 }, { level: 6, misses: 0, hints: 0 }] as never, school)).toBe(9);
+    expect(
+      nextLevel(
+        6,
+        [
+          { level: 6, misses: 0, hints: 0 },
+          { level: 6, misses: 0, hints: 0 },
+        ] as never,
+        school,
+      ),
+    ).toBe(9);
     expect(nextLevel(0, [], prek)).toBe(7);
     expect(landing(7, school, g.entryLevels)).toBe(3);
     expect(landing(8, school, g.entryLevels)).toBe(3);
@@ -159,14 +183,21 @@ describe('game registry', () => {
   });
 
   it('places Color Garden tap entry first without renumbering existing levels or pins', () => {
-    const g = GAMES.find(g => g.id === 'color-garden')!;
+    const g = GAMES.find((g) => g.id === 'color-garden')!;
     expect(g.bands).toContain('lap');
     expect(g.entryLevels).toEqual([9]);
     expect(g.levels('lap').order).toEqual([9]);
     const toddler = g.levels('toddler');
     expect(toddler.order).toEqual([9, 1, 2, 3, 4, 5]);
-    expect(nextLevel(9, [0, 1].map(() => ({ at: 0, level: 9, misses: 0, hints: 0, seconds: 1 })), toddler)).toBe(1);
-    for (const level of [1, 2, 3, 4, 5]) expect(nextLevel(landing(level, toddler, g.entryLevels), [], toddler)).toBe(level);
+    expect(
+      nextLevel(
+        9,
+        [0, 1].map(() => ({ at: 0, level: 9, misses: 0, hints: 0, seconds: 1 })),
+        toddler,
+      ),
+    ).toBe(1);
+    for (const level of [1, 2, 3, 4, 5])
+      expect(nextLevel(landing(level, toddler, g.entryLevels), [], toddler)).toBe(level);
     expect(landing(9, g.levels('preschool'), g.entryLevels)).toBe(3);
     expect(g.levels('preschool')).toEqual({ min: 3, max: 8 });
     expect(g.levels('prek')).toEqual({ min: 4, max: 8 });
@@ -174,7 +205,8 @@ describe('game registry', () => {
 
   it('places Critter Crossing visible not between 1 and 2 while preserving school and saved IDs', () => {
     const g = gameById('critter-crossing')!;
-    const prek = g.levels('prek'), school = g.levels('school');
+    const prek = g.levels('prek'),
+      school = g.levels('school');
     expect(g.bands).toEqual(['prek', 'school']);
     expect(levelsInOrder(prek)).toEqual([1, 8, 2, 3]);
     expect(levelsInOrder(school)).toEqual([2, 3, 4, 5, 6, 7]);
@@ -189,7 +221,8 @@ describe('game registry', () => {
 
   it('places Weather Wardrobe Try it on between levels 1 and 2 for lap only', () => {
     const g = gameById('weather-wardrobe')!;
-    const lap = g.levels('lap'), toddler = g.levels('toddler');
+    const lap = g.levels('lap'),
+      toddler = g.levels('toddler');
     expect(levelsInOrder(lap)).toEqual([1, 8, 2]);
     expect(g.entryLevels).toEqual([8, 9]);
     expect(stepLevel(1, 1, lap)).toBe(8);
@@ -222,7 +255,8 @@ describe('game registry', () => {
           expect(Math.min(...order), `${g.id} ${band} order starts at min`).toBe(min);
           expect(Math.max(...order), `${g.id} ${band} order ends at max`).toBe(max);
         }
-        for (const l of levelsInOrder(g.levels(band))) expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
+        for (const l of levelsInOrder(g.levels(band)))
+          expect(g.describeLevel(l).length, `${g.id} level ${l}`).toBeGreaterThan(3);
       }
     }
   });
@@ -233,15 +267,22 @@ describe('game registry', () => {
       for (const band of g.bands) {
         const range = g.levels(band);
         const first = levelsInOrder(range)[0];
-        if (first !== range.min) expect(entries, `${g.id} ${band}: ${first} is placed first but is not an entry level`).toContain(first);
+        if (first !== range.min)
+          expect(entries, `${g.id} ${band}: ${first} is placed first but is not an entry level`).toContain(
+            first,
+          );
       }
       for (const entry of entries) {
-        expect(g.bands.some((band) => levelsInOrder(g.levels(band)).includes(entry)), `${g.id}: some band includes entry ${entry}`).toBe(true);
+        expect(
+          g.bands.some((band) => levelsInOrder(g.levels(band)).includes(entry)),
+          `${g.id}: some band includes entry ${entry}`,
+        ).toBe(true);
         for (const band of g.bands) {
           const range = g.levels(band);
           const lands = landing(entry, range, entries);
           expect(levelsInOrder(range), `${g.id} ${band}`).toContain(lands);
-          if (!levelsInOrder(range).includes(entry)) expect(lands, `${g.id} ${band} starts at its easiest`).toBe(levelsInOrder(range)[0]);
+          if (!levelsInOrder(range).includes(entry))
+            expect(lands, `${g.id} ${band} starts at its easiest`).toBe(levelsInOrder(range)[0]);
         }
       }
     }
@@ -249,7 +290,8 @@ describe('game registry', () => {
 
   it('places Day by Day’s supplied-record bridge before 3, preserving IDs and birthday/pin landing', () => {
     const g = gameById('day-by-day')!;
-    const school = g.levels('school'), prek = g.levels('prek');
+    const school = g.levels('school'),
+      prek = g.levels('prek');
     expect(levelsInOrder(school)).toEqual([2, 4, 10, 3, 5, 6]);
     expect(levelsInOrder(prek)).toEqual([1, 2, 4]);
     expect(g.entryLevels).toEqual([10]);
@@ -260,7 +302,8 @@ describe('game registry', () => {
     expect(stepLevel(5, -1, school)).toBe(3);
     expect(stepLevel(5, 1, school)).toBe(6);
     expect(stepLevel(6, -1, school)).toBe(5);
-    for (const level of [2, 3, 4, 5, 6, 10]) expect(nextLevel(landing(level, school, g.entryLevels), [], school)).toBe(level);
+    for (const level of [2, 3, 4, 5, 6, 10])
+      expect(nextLevel(landing(level, school, g.entryLevels), [], school)).toBe(level);
     expect(landing(10, prek, g.entryLevels)).toBe(1);
     expect(landing(4, school, g.entryLevels)).toBe(4); // birthday from pre-K
   });
@@ -280,8 +323,20 @@ describe('game registry', () => {
 
   it('keeps two unjudged creative modes available for lap co-play', () => {
     for (const id of ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'rhythm-neighbors']) {
-      const lap = GAMES.find(g => g.id === id)!.levels('lap');
-      expect(id === 'stamp-studio' || id === 'rhythm-neighbors' || id === 'fluffy-salon' ? levelsInOrder(lap) : lap).toEqual(id === 'stamp-studio' ? [7, 8, 1, 2] : id === 'rhythm-neighbors' ? [7, 1, 2] : id === 'fluffy-salon' ? [6, 1, 7, 2] : { min: 1, max: 2 });
+      const lap = GAMES.find((g) => g.id === id)!.levels('lap');
+      expect(
+        id === 'stamp-studio' || id === 'rhythm-neighbors' || id === 'fluffy-salon'
+          ? levelsInOrder(lap)
+          : lap,
+      ).toEqual(
+        id === 'stamp-studio'
+          ? [7, 8, 1, 2]
+          : id === 'rhythm-neighbors'
+            ? [7, 1, 2]
+            : id === 'fluffy-salon'
+              ? [6, 1, 7, 2]
+              : { min: 1, max: 2 },
+      );
     }
   });
 
@@ -302,10 +357,16 @@ describe('game registry', () => {
     expect(game.levels('school')).toEqual({ min: 4, max: 14 });
     expect(playBand(game.bands, 'preschool')).toBe('preschool');
     expect(stepLevel(2, 1, range)).toBe(2);
-    expect(nextLevel(2, [
-      { level: 2, misses: 0, hints: 0, seconds: 10, at: 1 },
-      { level: 2, misses: 0, hints: 0, seconds: 10, at: 2 },
-    ], range)).toBe(2);
+    expect(
+      nextLevel(
+        2,
+        [
+          { level: 2, misses: 0, hints: 0, seconds: 10, at: 1 },
+          { level: 2, misses: 0, hints: 0, seconds: 10, at: 2 },
+        ],
+        range,
+      ),
+    ).toBe(2);
   });
 
   it("names every touch game's kind of challenge, for Today's six's mix", () => {
@@ -319,21 +380,37 @@ describe('game registry', () => {
   });
 
   it('has something for every age band', () => {
-    for (const b of BANDS) expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
+    for (const b of BANDS)
+      expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
   });
 
-  it('gives every age place (each band\'s home spot on the map) a spoken name', () => {
+  it("gives every age place (each band's home spot on the map) a spoken name", () => {
     expect(PLACES.map((p) => p.band)).toEqual(BANDS.map((b) => b.id));
     for (const place of PLACES) expect(SCRIPT[place.line], place.band).toBeDefined();
   });
 
   it('files every game under a known subject, and every subject has a game by pre-K', () => {
     for (const game of GAMES) expect(REGION_IDS).toContain(game.region);
-    for (const id of REGION_IDS) expect(GAMES.some((g) => g.region === id && g.bands.includes('prek')), id).toBe(true);
+    for (const id of REGION_IDS)
+      expect(
+        GAMES.some((g) => g.region === id && g.bands.includes('prek')),
+        id,
+      ).toBe(true);
   });
 
   it('lists the grown-up games as island games for the grown-up band only, and opens any controller-only one through the couch', () => {
-    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'sudoku-garden', 'picture-logic'];
+    const ids = [
+      'marble-jump',
+      'log-roll',
+      'snowball-merge',
+      'brain-break',
+      'pyramid-solitaire',
+      'number-nook',
+      'gem-swap',
+      'tile-pairs',
+      'sudoku-garden',
+      'picture-logic',
+    ];
     for (const id of ids) {
       const g = gameById(id)!;
       expect(g, id).toBeDefined();
@@ -341,7 +418,8 @@ describe('game registry', () => {
       expect(SCRIPT[g.titleLine], id).toBeDefined();
       expect(REGION_IDS).toContain(g.region);
       const { min, max } = g.levels('grownup');
-      for (let l = min; l <= max; l++) expect(g.describeLevel(l).length, `${id} level ${l}`).toBeGreaterThan(3);
+      for (let l = min; l <= max; l++)
+        expect(g.describeLevel(l).length, `${id} level ${l}`).toBeGreaterThan(3);
       // Couch play finds them in the same list.
       expect(couchGameById(id), id).toBe(g);
       // A game that takes only a controller has a couch course for the island to open; one that takes touch plays in the island's scene.
@@ -355,14 +433,14 @@ describe('game registry', () => {
     for (const g of GAMES) if (!playsByTouch(g)) expect(courseInfo(FIRST_COURSE[g.id]).game, g.id).toBe(g.id);
   });
 
-  it('opens Island Bridges\' two small seas to the top of school, 5 by 5 then 7 by 7, and every sea to grown-ups', () => {
+  it("opens Island Bridges' two small seas to the top of school, 5 by 5 then 7 by 7, and every sea to grown-ups", () => {
     const g = gameById('island-bridges')!;
     expect(g.bands).toEqual(['school', 'grownup']);
     expect(g.levels('school')).toEqual({ min: 1, max: 5, order: [5, 1] });
     expect(couchGameById('island-bridges')).toBe(g);
   });
 
-  it('opens Lantern Lights\' two 3 by 3 ponds to school and every pond to grown-ups', () => {
+  it("opens Lantern Lights' two 3 by 3 ponds to school and every pond to grown-ups", () => {
     const g = gameById('lantern-lights')!;
     expect(g.bands).toEqual(['school', 'grownup']);
     expect(g.levels('school')).toEqual({ min: 1, max: 2 });
@@ -370,7 +448,7 @@ describe('game registry', () => {
     expect(couchGameById('lantern-lights')).toBe(g);
   });
 
-  it('opens Pond Conga\'s two small step-by-step ponds to school and every pond to grown-ups', () => {
+  it("opens Pond Conga's two small step-by-step ponds to school and every pond to grown-ups", () => {
     const g = gameById('pond-conga')!;
     expect(g.bands).toEqual(['school', 'grownup']);
     expect(g.levels('school')).toEqual({ min: 10, max: 11 });
@@ -378,7 +456,7 @@ describe('game registry', () => {
     expect(couchGameById('pond-conga')).toBe(g);
   });
 
-  it('opens Word Search\'s one picture-word grid to school and every grid to grown-ups', () => {
+  it("opens Word Search's one picture-word grid to school and every grid to grown-ups", () => {
     const g = gameById('word-search')!;
     expect(g.bands).toEqual(['school', 'grownup']);
     expect(g.levels('school')).toEqual({ min: 8, max: 8 });
@@ -390,24 +468,50 @@ describe('game registry', () => {
 
   it('plays no background music in a game where she makes the music', () => {
     // Her own sounds are the music; the island's loop would compete with them.
-    const makingMusic = ['movie-night', 'beat-builder', 'clap-syllables', 'hat-band', 'jelly-drums', 'little-conductor', 'pet-says', 'puppet-stage', 'rhythm-neighbors', 'sense-detective', 'sing-along-barn', 'song-maker', 'sound-garden'];
+    const makingMusic = [
+      'movie-night',
+      'beat-builder',
+      'clap-syllables',
+      'hat-band',
+      'jelly-drums',
+      'little-conductor',
+      'pet-says',
+      'puppet-stage',
+      'rhythm-neighbors',
+      'sense-detective',
+      'sing-along-barn',
+      'song-maker',
+      'sound-garden',
+    ];
     for (const id of makingMusic) {
       const game = gameById(id)!;
       expect(game, id).toBeDefined();
       expect(isSilent(game.music), id).toBe(true);
     }
     // Not stopped: Song Maker's playhead and Jelly Drums' jellies keep time from the playing style.
-    for (const id of ['jelly-drums', 'song-maker']) expect(gameById(id)!.music.bpm, id).toBe(STYLES.jelly.bpm);
+    for (const id of ['jelly-drums', 'song-maker'])
+      expect(gameById(id)!.music.bpm, id).toBe(STYLES.jelly.bpm);
   });
 
   it('lists the upright-ready games (chunk 31), so the converted set is inspectable', () => {
     // Batch 1: the grown-up six, one game of each kind. Add a batch here as it lands (docs/definitions/phone-portrait.md).
-    const upright = ['brain-break', 'island-bridges', 'number-nook', 'pond-conga', 'sudoku-garden', 'word-search'];
-    expect(GAMES.filter((g) => g.upright).map((g) => g.id).sort()).toEqual(upright);
+    const upright = [
+      'brain-break',
+      'island-bridges',
+      'number-nook',
+      'pond-conga',
+      'sudoku-garden',
+      'word-search',
+    ];
+    expect(
+      GAMES.filter((g) => g.upright)
+        .map((g) => g.id)
+        .sort(),
+    ).toEqual(upright);
     expect(new Set(upright.map((id) => gameById(id)!.challenge)).size).toBe(6);
   });
 
-  it('keeps the island\'s music for the games where the music is only a setting', () => {
+  it("keeps the island's music for the games where the music is only a setting", () => {
     expect(GAMES.filter((g) => !isSilent(g.music)).length).toBeGreaterThan(GAMES.length / 2);
     expect(isSilent(STYLES.hub)).toBe(false);
   });

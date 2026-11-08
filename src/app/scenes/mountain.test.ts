@@ -21,7 +21,10 @@ describe('Music Mountain as a location', () => {
       const keepOut = meadowKeepOut(layout, view);
       const plan = mountainPlan(layout, view, ground);
       // A cloud forest, not a bare slope: big trees or tree ferns, orchids, and a hummingbird.
-      expect(plan.filter((p) => p.kind === 'trunk' || p.kind === 'fern').length, where0).toBeGreaterThanOrEqual(2);
+      expect(
+        plan.filter((p) => p.kind === 'trunk' || p.kind === 'fern').length,
+        where0,
+      ).toBeGreaterThanOrEqual(2);
       expect(plan.filter((p) => p.kind === 'orchid').length, where0).toBeGreaterThanOrEqual(1);
       expect(plan.filter((p) => p.kind === 'hummingbird').length, where0).toBeGreaterThanOrEqual(1);
       for (const { kind, y, rect: r } of plan) {
@@ -30,7 +33,9 @@ describe('Music Mountain as a location', () => {
         for (const k of keepOut) expect(overlaps(r, k), where).toBe(false);
         expect(y, where).toBeGreaterThan(ground);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(mountainPlan(layout, view, ground)).toEqual(plan);
     }
   });

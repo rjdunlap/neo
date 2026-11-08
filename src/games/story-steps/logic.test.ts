@@ -1,6 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { canPairStories, untanglePuzzle, untangleTarget, nextUntangle, repairPuzzle, repairMove, swapPictures, CAUSES, CAUSE_IDS, causePuzzle, LEVEL_PLANS, isCause, pictureText, nextPicture, nextSlot, sameCard, STORIES, STORY_FAMILY, STORY_IDS, STORY_PLANS, storyPuzzle, type StoryCard } from './logic';
+import {
+  canPairStories,
+  untanglePuzzle,
+  untangleTarget,
+  nextUntangle,
+  repairPuzzle,
+  repairMove,
+  swapPictures,
+  CAUSES,
+  CAUSE_IDS,
+  causePuzzle,
+  LEVEL_PLANS,
+  isCause,
+  pictureText,
+  nextPicture,
+  nextSlot,
+  sameCard,
+  STORIES,
+  STORY_FAMILY,
+  STORY_IDS,
+  STORY_PLANS,
+  storyPuzzle,
+  type StoryCard,
+} from './logic';
 
 describe('Story Steps', () => {
   it('lays out a story in order, with every picture it needs among the choices and any extras from another story', () => {
@@ -27,10 +50,17 @@ describe('Story Steps', () => {
         const placed = new Set<number>(puzzle.fixed);
         const choices = puzzle.choices.map((card) => ({ card, placed: false }));
         let moves = 0;
-        for (let next = nextPicture(puzzle.sequence, placed, choices); next; next = nextPicture(puzzle.sequence, placed, choices)) {
+        for (
+          let next = nextPicture(puzzle.sequence, placed, choices);
+          next;
+          next = nextPicture(puzzle.sequence, placed, choices)
+        ) {
           // The game accepts a picture only for the first empty slot, and only if it is that slot's own picture.
           expect(next.slot).toBe(nextSlot(puzzle.sequence, placed));
-          expect(sameCard(next.choice.card, puzzle.sequence[next.slot] as StoryCard), `${plan.name} seed ${seed}`).toBe(true);
+          expect(
+            sameCard(next.choice.card, puzzle.sequence[next.slot] as StoryCard),
+            `${plan.name} seed ${seed}`,
+          ).toBe(true);
           placed.add(next.slot);
           next.choice.placed = true;
           moves++;
@@ -51,7 +81,10 @@ describe('Story Steps', () => {
       expect(causePuzzle(new Rng(seed))).toEqual(p);
       seen.add(p.cause);
       expect(p.fixed).toEqual([1]);
-      expect(p.sequence).toEqual([{ story: p.cause, stage: 0 }, { story: p.cause, stage: 1 }]);
+      expect(p.sequence).toEqual([
+        { story: p.cause, stage: 0 },
+        { story: p.cause, stage: 1 },
+      ]);
       expect(p.choices).toHaveLength(3);
       expect(new Set(p.choices.map((c) => c.story)).size).toBe(3);
       const plausible = CAUSES[p.cause].plausible as readonly string[];
@@ -59,7 +92,11 @@ describe('Story Steps', () => {
       expect(p.choices.every((c) => c.stage === 0)).toBe(true);
       const answers = p.choices.filter((c) => plausible.includes(c.story));
       expect(answers).toEqual([{ story: p.cause, stage: 0 }]);
-      const hint = nextPicture(p.sequence, new Set(p.fixed), p.choices.map((card) => ({ card, placed: false })));
+      const hint = nextPicture(
+        p.sequence,
+        new Set(p.fixed),
+        p.choices.map((card) => ({ card, placed: false })),
+      );
       expect(hint?.choice.card).toEqual(answers[0]);
       expect(hint?.slot).toBe(0);
       for (const card of [...p.sequence, ...p.choices]) {
@@ -93,9 +130,11 @@ describe('Story Steps', () => {
     for (const plan of STORY_PLANS.slice(0, 2)) {
       for (const id of plan.stories) expect(['stack', 'seed']).toContain(STORY_FAMILY[id]);
     }
-    for (const id of STORY_PLANS[0].stories) expect(STORY_FAMILY[id], 'level 1 is enabling orders only').toBe('stack');
+    for (const id of STORY_PLANS[0].stories)
+      expect(STORY_FAMILY[id], 'level 1 is enabling orders only').toBe('stack');
     // Every story is told somewhere below the last levels, and each of the ten shows up in the full-pool levels.
-    for (const id of STORY_IDS) expect(STORY_PLANS.some((plan) => (plan.stories as readonly string[]).includes(id))).toBe(true);
+    for (const id of STORY_IDS)
+      expect(STORY_PLANS.some((plan) => (plan.stories as readonly string[]).includes(id))).toBe(true);
   });
 
   it('never fills a round with a lookalike: extra pictures are from other families, and a mixed round takes its two from two families', () => {
@@ -106,7 +145,8 @@ describe('Story Steps', () => {
         seen.add(puzzle.story);
         expect(plan.stories, `${plan.name} seed ${seed}`).toContain(puzzle.story);
         const extras = puzzle.choices.filter((c) => !puzzle.sequence.some((s) => sameCard(s, c)));
-        for (const e of extras) expect(STORY_FAMILY[e.story], `${plan.name} seed ${seed}`).not.toBe(STORY_FAMILY[puzzle.story]);
+        for (const e of extras)
+          expect(STORY_FAMILY[e.story], `${plan.name} seed ${seed}`).not.toBe(STORY_FAMILY[puzzle.story]);
         if (plan.mixed) {
           expect(extras).toHaveLength(2);
           expect(STORY_FAMILY[extras[0].story]).not.toBe(STORY_FAMILY[extras[1].story]);
@@ -139,7 +179,10 @@ describe('Story Steps repair', () => {
     expect([...pairs].sort()).toEqual([0, 1, 2]);
   });
   it('gives useful hints and a bot solution within three swaps from every possible four-picture order', () => {
-    const permutations = (values: number[]): number[][] => values.length === 0 ? [[]] : values.flatMap((v) => permutations(values.filter((x) => x !== v)).map((tail) => [v, ...tail]));
+    const permutations = (values: number[]): number[][] =>
+      values.length === 0
+        ? [[]]
+        : values.flatMap((v) => permutations(values.filter((x) => x !== v)).map((tail) => [v, ...tail]));
     for (const story of STORY_IDS) {
       const sequence = [0, 1, 2, 3].map((stage) => ({ story, stage }));
       for (const order of permutations([0, 1, 2, 3])) {
@@ -161,13 +204,13 @@ describe('Story Steps repair', () => {
   });
 });
 
-
 describe('Story Steps untangle', () => {
   it('excludes every same-family pair and both soap-bath orders', () => {
-    for (const a of STORY_IDS) for (const b of STORY_IDS) {
-      expect(canPairStories(a, b)).toBe(canPairStories(b, a));
-      if (STORY_FAMILY[a] === STORY_FAMILY[b]) expect(canPairStories(a, b)).toBe(false);
-    }
+    for (const a of STORY_IDS)
+      for (const b of STORY_IDS) {
+        expect(canPairStories(a, b)).toBe(canPairStories(b, a));
+        if (STORY_FAMILY[a] === STORY_FAMILY[b]) expect(canPairStories(a, b)).toBe(false);
+      }
     expect(canPairStories('dog', 'bedtime')).toBe(false);
     expect(canPairStories('bedtime', 'dog')).toBe(false);
   });
@@ -182,22 +225,31 @@ describe('Story Steps untangle', () => {
       expect(new Set(p.choices.map((c) => `${c.story}:${c.stage}`)).size).toBe(6);
       const placed = [new Set<number>(), new Set<number>()];
       const choices = p.choices.map((card) => ({ card, placed: false }));
-      for (let r = 1; r >= 0; r--) for (let i = 0; i < 3; i++) {
-        expect(p.rows[r].map((c) => c.stage)).toEqual([0, 1, 3]);
-        const card = p.rows[r][i];
-        expect(choices.some((c) => sameCard(c.card, card))).toBe(true);
-        expect(untangleTarget(p.rows, placed, r, card)).toBe(i);
-        expect(untangleTarget(p.rows, placed, 1-r, card)).toBe(-1);
-        for (const later of p.rows[r].slice(i+1)) expect(untangleTarget(p.rows, placed, r, later)).toBe(-1);
-        placed[r].add(i);
-      }
+      for (let r = 1; r >= 0; r--)
+        for (let i = 0; i < 3; i++) {
+          expect(p.rows[r].map((c) => c.stage)).toEqual([0, 1, 3]);
+          const card = p.rows[r][i];
+          expect(choices.some((c) => sameCard(c.card, card))).toBe(true);
+          expect(untangleTarget(p.rows, placed, r, card)).toBe(i);
+          expect(untangleTarget(p.rows, placed, 1 - r, card)).toBe(-1);
+          for (const later of p.rows[r].slice(i + 1))
+            expect(untangleTarget(p.rows, placed, r, later)).toBe(-1);
+          placed[r].add(i);
+        }
       const botPlaced = [new Set<number>(), new Set<number>()];
       let moves = 0;
-      for (let move = nextUntangle(p.rows, botPlaced, choices); move; move = nextUntangle(p.rows, botPlaced, choices)) {
+      for (
+        let move = nextUntangle(p.rows, botPlaced, choices);
+        move;
+        move = nextUntangle(p.rows, botPlaced, choices)
+      ) {
         expect(untangleTarget(p.rows, botPlaced, move.row, move.choice.card)).toBe(move.slot);
-        botPlaced[move.row].add(move.slot); move.choice.placed = true; moves++;
+        botPlaced[move.row].add(move.slot);
+        move.choice.placed = true;
+        moves++;
       }
-      expect(moves).toBe(6); expect(botPlaced.map((s) => s.size)).toEqual([3, 3]);
+      expect(moves).toBe(6);
+      expect(botPlaced.map((s) => s.size)).toEqual([3, 3]);
     }
     expect(seen.size).toBe(10);
   });

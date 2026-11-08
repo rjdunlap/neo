@@ -36,7 +36,11 @@ export function cleanFavorites(raw: unknown): string[] {
 }
 
 /** The shelf for a place: its hearted games (in the order they were hearted), at most `slots`, newest kept. */
-export function shelfFor(favorites: readonly string[], available: readonly string[], slots = SHELF_SLOTS): string[] {
+export function shelfFor(
+  favorites: readonly string[],
+  available: readonly string[],
+  slots = SHELF_SLOTS,
+): string[] {
   const here = new Set(available);
   return favorites.filter((f) => here.has(f)).slice(-slots);
 }

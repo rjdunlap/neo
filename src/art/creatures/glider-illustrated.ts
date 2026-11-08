@@ -1,4 +1,13 @@
-import { type Point, bend, clamp01, IllustratedCreature, inside, reach, smooth, type ArtSet } from './illustrated';
+import {
+  type Point,
+  bend,
+  clamp01,
+  IllustratedCreature,
+  inside,
+  reach,
+  smooth,
+  type ArtSet,
+} from './illustrated';
 import type { WearTable } from './wearables';
 
 /**
@@ -27,8 +36,18 @@ export const GLIDER_ART = {
   ears: [{ x: 685, y: 100 }],
   /** The head and body, pinned: the wing joins along its left side. */
   body: [
-    { x: 560, y: 100 }, { x: 640, y: 108 }, { x: 670, y: 88 }, { x: 700, y: 90 }, { x: 705, y: 125 }, { x: 745, y: 140 },
-    { x: 752, y: 175 }, { x: 735, y: 200 }, { x: 700, y: 235 }, { x: 640, y: 268 }, { x: 560, y: 270 }, { x: 505, y: 245 },
+    { x: 560, y: 100 },
+    { x: 640, y: 108 },
+    { x: 670, y: 88 },
+    { x: 700, y: 90 },
+    { x: 705, y: 125 },
+    { x: 745, y: 140 },
+    { x: 752, y: 175 },
+    { x: 735, y: 200 },
+    { x: 700, y: 235 },
+    { x: 640, y: 268 },
+    { x: 560, y: 270 },
+    { x: 505, y: 245 },
     { x: 500, y: 170 },
   ],
   /** The wing bends about its root along the root → tip line; `lowerTip` is the other end of the trailing edge. */
@@ -100,9 +119,17 @@ export function weights(x: number, y: number): W {
   const wing = (1 - behind) * smooth(0.2, 1, reach(A.wing, x, y));
   const fin = [
     smooth(440, 470, x) * smooth(520, 495, x) * smooth(80, 50, y) * smooth(0.1, 0.8, reach(A.fins[0], x, y)),
-    smooth(455, 480, x) * smooth(525, 500, x) * smooth(278, 292, y) * smooth(0.1, 0.8, reach(A.fins[1], x, y)),
+    smooth(455, 480, x) *
+      smooth(525, 500, x) *
+      smooth(278, 292, y) *
+      smooth(0.1, 0.8, reach(A.fins[1], x, y)),
   ];
-  return { wing: wing * (1 - fin[0] - fin[1]), fin, ribbon: [upper, lower], ribbonReach: clamp01((370 - x) / 340) };
+  return {
+    wing: wing * (1 - fin[0] - fin[1]),
+    fin,
+    ribbon: [upper, lower],
+    ribbonReach: clamp01((370 - x) / 340),
+  };
 }
 
 export class IllustratedGlider extends IllustratedCreature {

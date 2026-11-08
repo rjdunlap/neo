@@ -2,17 +2,59 @@ import { describe, it, expect } from 'vitest';
 import { Rng } from '../../engine/random';
 import { CRITTERS } from '../../art/critter';
 import {
-  KINDS, COLOR_OF, WEDGES, WEDGE_DEG, EDGE_DEG, LEVELS, PICK_PAIRS, planFor, makeRound, countOf, sections, kindsOf,
-  contiguous, betterOf, spin, stopRotation, wedgeAt, tally, tallest, layout, BIG, SMALL, CARDS, cardFor, fits, homeOf,
-  isFair, give, nextGive, raceWheel, racePositions, TRACK, sureLayout, raceLayout, MID, CARD_W, CARD_H, RACER,
-  type Kind, type Circle, type Box, type Wheel,
+  KINDS,
+  COLOR_OF,
+  WEDGES,
+  WEDGE_DEG,
+  EDGE_DEG,
+  LEVELS,
+  PICK_PAIRS,
+  planFor,
+  makeRound,
+  countOf,
+  sections,
+  kindsOf,
+  contiguous,
+  betterOf,
+  spin,
+  stopRotation,
+  wedgeAt,
+  tally,
+  tallest,
+  layout,
+  BIG,
+  SMALL,
+  CARDS,
+  cardFor,
+  fits,
+  homeOf,
+  isFair,
+  give,
+  nextGive,
+  raceWheel,
+  racePositions,
+  TRACK,
+  sureLayout,
+  raceLayout,
+  MID,
+  CARD_W,
+  CARD_H,
+  RACER,
+  type Kind,
+  type Circle,
+  type Box,
+  type Wheel,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i * 7919 + 1);
 
 describe('plans', () => {
   it('level ranges', () => {
-    expect(LEVELS).toEqual({ preschool: { min: 1, max: 2 }, prek: { min: 2, max: 3 }, school: { min: 3, max: 5 } });
+    expect(LEVELS).toEqual({
+      preschool: { min: 1, max: 2 },
+      prek: { min: 2, max: 3 },
+      school: { min: 3, max: 5 },
+    });
   });
   it('plans ask see / most / pick / sure / fair', () => {
     expect([1, 2, 3, 4, 5].map((l) => planFor(l).ask)).toEqual(['see', 'most', 'pick', 'sure', 'fair']);
@@ -59,7 +101,10 @@ describe('wheels', () => {
         const [a, b] = set.wheels.map((w) => countOf(w, fav));
         expect(PICK_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a))).toBe(true);
         expect(Math.abs(a - b)).toBeGreaterThanOrEqual(2);
-        for (const c of [a, b]) { expect(c).toBeGreaterThanOrEqual(1); expect(c).toBeLessThanOrEqual(5); }
+        for (const c of [a, b]) {
+          expect(c).toBeGreaterThanOrEqual(1);
+          expect(c).toBeLessThanOrEqual(5);
+        }
         expect(set.better).toBe(betterOf(set));
         expect(set.better).toBe(a > b ? 0 : 1);
         seen.add(`${Math.min(a, b)}-${Math.max(a, b)}`);
@@ -129,7 +174,11 @@ describe('tally', () => {
   });
   it('sections and kindsOf', () => {
     const w: Kind[] = ['duck', 'duck', 'pig', 'cat', 'cat', 'cat'];
-    expect(sections(w)).toEqual([{ kind: 'duck', start: 0, count: 2 }, { kind: 'pig', start: 2, count: 1 }, { kind: 'cat', start: 3, count: 3 }]);
+    expect(sections(w)).toEqual([
+      { kind: 'duck', start: 0, count: 2 },
+      { kind: 'pig', start: 2, count: 1 },
+      { kind: 'cat', start: 3, count: 3 },
+    ]);
     expect(kindsOf(w)).toEqual(['duck', 'pig', 'cat']);
     expect(contiguous(['duck', 'pig', 'duck', 'cat', 'cat', 'cat'])).toBe(false);
   });
@@ -143,7 +192,8 @@ describe('layout', () => {
   };
   const rectOf = (b: Box) => ({ x0: b.x - b.w / 2, y0: b.y - b.h / 2, x1: b.x + b.w / 2, y1: b.y + b.h / 2 });
   const boxesHit = (a: Box, b: Box) => {
-    const p = rectOf(a), q = rectOf(b);
+    const p = rectOf(a),
+      q = rectOf(b);
     return p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
   };
   const circlesHit = (a: Circle, b: Circle) => Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r;
@@ -151,7 +201,12 @@ describe('layout', () => {
     r.x0 >= 0 && r.y0 >= 0 && r.x1 <= v.w && r.y1 <= v.h;
   const circleRect = (c: Circle) => ({ x0: c.x - c.r, y0: c.y - c.r, x1: c.x + c.r, y1: c.y + c.r });
 
-  for (const [w, h] of [[1024, 768], [768, 1024], [1024, 700], [700, 1024]]) {
+  for (const [w, h] of [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+  ]) {
     for (const bars of [2, 3]) {
       it(`${w}x${h}, ${bars} bars`, () => {
         const view = { w, h };
@@ -179,10 +234,13 @@ describe('layout', () => {
           expect(c.h).toBeGreaterThanOrEqual(100);
           expect(circleHitsRect(L.spinner, rectOf(c))).toBe(false);
         }
-        L.columns.forEach((a, i) => L.columns.slice(i + 1).forEach((b) => expect(boxesHit(a, b)).toBe(false)));
+        L.columns.forEach((a, i) =>
+          L.columns.slice(i + 1).forEach((b) => expect(boxesHit(a, b)).toBe(false)),
+        );
         expect(circlesHit(L.pair[0], L.pair[1])).toBe(false);
         for (const c of L.pair) expect(circleHitsRect(c, rectOf(L.favourite))).toBe(false);
-        if (L.portrait) for (const c of L.columns) expect(c.y - c.h / 2).toBeGreaterThanOrEqual(L.spinner.y + L.spinner.r);
+        if (L.portrait)
+          for (const c of L.columns) expect(c.y - c.h / 2).toBeGreaterThanOrEqual(L.spinner.y + L.spinner.r);
       });
     }
   }
@@ -228,7 +286,8 @@ describe('level 4: sure, maybe, no way', () => {
 describe('level 5: fair or unfair', () => {
   const racers: [Kind, Kind] = ['duck', 'pig'];
   it('race 1 starts uneven; race 2 is fair or uneven; both kinds appear', () => {
-    let fair2 = 0, uneven2 = 0;
+    let fair2 = 0,
+      uneven2 = 0;
     const starts = new Set<string>();
     for (const seed of SEEDS) {
       const [r1, r2] = makeRound(5, new Rng(seed));
@@ -238,10 +297,16 @@ describe('level 5: fair or unfair', () => {
         expect(r.wheels[0]).toEqual(raceWheel(r.racers!, countOf(r.wheels[0], r.racers![0])));
       }
       const [a, b] = r1.racers!.map((k) => countOf(r1.wheels[0], k));
-      expect([[4, 2], [2, 4], [5, 1], [1, 5]]).toContainEqual([a, b]);
+      expect([
+        [4, 2],
+        [2, 4],
+        [5, 1],
+        [1, 5],
+      ]).toContainEqual([a, b]);
       starts.add(`${a}-${b}`);
       expect(isFair(r1.wheels[0], r1.racers!)).toBe(false);
-      if (isFair(r2.wheels[0], r2.racers!)) fair2++; else uneven2++;
+      if (isFair(r2.wheels[0], r2.racers!)) fair2++;
+      else uneven2++;
     }
     expect(starts.size).toBe(4);
     expect(fair2).toBeGreaterThan(50);
@@ -250,13 +315,16 @@ describe('level 5: fair or unfair', () => {
   it('isFair only at three and three', () => {
     for (let a = 1; a <= 5; a++) expect(isFair(raceWheel(racers, a), racers)).toBe(a === 3);
   });
-  it('give keeps six wedges, contiguous owners, and never takes a racer\'s last wedge', () => {
+  it("give keeps six wedges, contiguous owners, and never takes a racer's last wedge", () => {
     for (let a = 1; a <= 5; a++) {
       const w = raceWheel(racers, a);
       for (const to of racers) {
         const next = give(w, racers, to);
         const from = to === 'duck' ? 'pig' : 'duck';
-        if (countOf(w, from) <= 1) { expect(next).toBeNull(); continue; }
+        if (countOf(w, from) <= 1) {
+          expect(next).toBeNull();
+          continue;
+        }
         expect(next).toHaveLength(6);
         expect(contiguous(next!)).toBe(true);
         expect(countOf(next!, to)).toBe(countOf(w, to) + 1);
@@ -269,7 +337,10 @@ describe('level 5: fair or unfair', () => {
     for (let a = 1; a <= 5; a++) {
       let w: Wheel = raceWheel(racers, a);
       let moves = 0;
-      for (let to = nextGive(w, racers); to; to = nextGive(w, racers)) { w = give(w, racers, to)!; moves++; }
+      for (let to = nextGive(w, racers); to; to = nextGive(w, racers)) {
+        w = give(w, racers, to)!;
+        moves++;
+      }
       expect(isFair(w, racers)).toBe(true);
       expect(moves).toBe(Math.abs(a - 3));
     }
@@ -287,18 +358,30 @@ describe('level 5: fair or unfair', () => {
 });
 
 describe('levels 4–5 layout', () => {
-  const VIEWS = [[1024, 768], [768, 1024], [1024, 700], [700, 1024], [1366, 768], [1194, 834]];
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [1024, 700],
+    [700, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
   const rect = (b: Box) => ({ x0: b.x - b.w / 2, y0: b.y - b.h / 2, x1: b.x + b.w / 2, y1: b.y + b.h / 2 });
-  const hit = (p: ReturnType<typeof rect>, q: ReturnType<typeof rect>) => p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
+  const hit = (p: ReturnType<typeof rect>, q: ReturnType<typeof rect>) =>
+    p.x0 < q.x1 && q.x0 < p.x1 && p.y0 < q.y1 && q.y0 < p.y1;
   const circleHits = (c: Circle, r: ReturnType<typeof rect>, extra = 8) => {
     const dx = c.x - Math.max(r.x0, Math.min(c.x, r.x1));
     const dy = c.y - Math.max(r.y0, Math.min(c.y, r.y1));
     return dx * dx + dy * dy < (c.r + extra) ** 2;
   };
-  const inside = (r: ReturnType<typeof rect>, w: number, h: number) => r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h;
+  const inside = (r: ReturnType<typeof rect>, w: number, h: number) =>
+    r.x0 >= 0 && r.y0 >= 0 && r.x1 <= w && r.y1 <= h;
   for (const [w, h] of VIEWS) {
     const pet = { x0: 0, y0: h - 170, x1: 170, y1: h };
-    const corners = [{ x0: 0, y0: 0, x1: 120, y1: 120 }, { x0: w - 120, y0: 0, x1: w, y1: 120 }];
+    const corners = [
+      { x0: 0, y0: 0, x1: 120, y1: 120 },
+      { x0: w - 120, y0: 0, x1: w, y1: 120 },
+    ];
     it(`level 4 at ${w}x${h}`, () => {
       const L = sureLayout({ w, h });
       expect(L.portrait).toBe(h > w);
@@ -310,7 +393,10 @@ describe('levels 4–5 layout', () => {
         for (const c of corners) expect(hit(r, c)).toBe(false);
         for (const s of L.spinners) expect(circleHits(s, r)).toBe(false);
       }
-      for (const b of [...L.slots, ...L.tray]) { expect(b.w).toBe(CARD_W); expect(b.h).toBe(CARD_H); }
+      for (const b of [...L.slots, ...L.tray]) {
+        expect(b.w).toBe(CARD_W);
+        expect(b.h).toBe(CARD_H);
+      }
       boxes.forEach((a, i) => boxes.slice(i + 1).forEach((b) => expect(hit(rect(a), rect(b))).toBe(false)));
       for (const s of L.spinners) {
         expect(s.r).toBe(MID);
@@ -318,7 +404,11 @@ describe('levels 4–5 layout', () => {
         expect(circleHits(s, pet)).toBe(false);
         for (const c of corners) expect(circleHits(s, c)).toBe(false);
       }
-      L.spinners.forEach((a, i) => L.spinners.slice(i + 1).forEach((b) => expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(2 * (MID + 8))));
+      L.spinners.forEach((a, i) =>
+        L.spinners
+          .slice(i + 1)
+          .forEach((b) => expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(2 * (MID + 8))),
+      );
     });
     it(`level 5 at ${w}x${h}`, () => {
       const L = raceLayout({ w, h });
@@ -337,11 +427,24 @@ describe('levels 4–5 layout', () => {
         expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(100);
       }
       for (const r of racers) expect(r.w).toBe(RACER);
-      buttons.forEach((a, i) => buttons.slice(i + 1).forEach((b) => expect(hit(rect(a), rect(b))).toBe(false)));
+      buttons.forEach((a, i) =>
+        buttons.slice(i + 1).forEach((b) => expect(hit(rect(a), rect(b))).toBe(false)),
+      );
       for (const b of buttons) for (const t of L.tracks) expect(hit(rect(b), rect(t))).toBe(false);
       expect(hit(rect(L.tracks[0]), rect(L.tracks[1]))).toBe(false);
       // The whole wheel and its pointer (30 above the rim) are on screen.
-      expect(inside({ x0: L.spinner.x - BIG - 8, y0: L.spinner.y - BIG - 30, x1: L.spinner.x + BIG + 8, y1: L.spinner.y + BIG + 8 }, w, h)).toBe(true);
+      expect(
+        inside(
+          {
+            x0: L.spinner.x - BIG - 8,
+            y0: L.spinner.y - BIG - 30,
+            x1: L.spinner.x + BIG + 8,
+            y1: L.spinner.y + BIG + 8,
+          },
+          w,
+          h,
+        ),
+      ).toBe(true);
       for (const c of corners) expect(circleHits(L.spinner, c)).toBe(false);
       expect(circleHits(L.spinner, pet)).toBe(false);
     });

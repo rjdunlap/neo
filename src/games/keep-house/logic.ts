@@ -22,12 +22,36 @@ export interface Plan {
 export const MAX_LEVEL = 6;
 
 const PLANS: readonly Plan[] = [
-  { level: 1, id: 'doors', name: "Who's at the door: tap each castle door and a worker comes out with their tool (2 doors under 3, else 3; nothing counted)" },
-  { level: 2, id: 'workplaces', name: 'Who works where: drag each of three figures to the room its tool belongs in (two yards; a first wrong room per figure is free)' },
-  { level: 3, id: 'walk', name: "The cook's walk: put the kitchen, then the stable, on a near or far spot and watch whether the soup arrives hot (never a miss)" },
-  { level: 4, id: 'plan', name: 'Fit the household: five rooms on a 3 × 3 plan to five needs, then ring the bell to check (two plans; a miss per unmet need)' },
-  { level: 5, id: 'ruin', name: 'Read the ruin: drag a picture label onto each roofless room its remains say it was (two ruins; a miss per wrong label)' },
-  { level: 6, id: 'build', name: "Stone or timber: build the hall for a lord's purse and stay, then watch the years (never a miss)" },
+  {
+    level: 1,
+    id: 'doors',
+    name: "Who's at the door: tap each castle door and a worker comes out with their tool (2 doors under 3, else 3; nothing counted)",
+  },
+  {
+    level: 2,
+    id: 'workplaces',
+    name: 'Who works where: drag each of three figures to the room its tool belongs in (two yards; a first wrong room per figure is free)',
+  },
+  {
+    level: 3,
+    id: 'walk',
+    name: "The cook's walk: put the kitchen, then the stable, on a near or far spot and watch whether the soup arrives hot (never a miss)",
+  },
+  {
+    level: 4,
+    id: 'plan',
+    name: 'Fit the household: five rooms on a 3 × 3 plan to five needs, then ring the bell to check (two plans; a miss per unmet need)',
+  },
+  {
+    level: 5,
+    id: 'ruin',
+    name: 'Read the ruin: drag a picture label onto each roofless room its remains say it was (two ruins; a miss per wrong label)',
+  },
+  {
+    level: 6,
+    id: 'build',
+    name: "Stone or timber: build the hall for a lord's purse and stay, then watch the years (never a miss)",
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -53,7 +77,14 @@ export const FIGURES: readonly Figure[] = ['cook', 'groom', 'ringer', 'steward',
 export const PEOPLE: readonly Person[] = ['cook', 'groom', 'ringer', 'steward'];
 export const ROOMS: readonly Room[] = ['kitchen', 'stable', 'loft', 'storeroom', 'henyard'];
 
-const WORKPLACE: Record<Figure, Room> = { cook: 'kitchen', groom: 'stable', ringer: 'loft', steward: 'storeroom', horse: 'stable', hens: 'henyard' };
+const WORKPLACE: Record<Figure, Room> = {
+  cook: 'kitchen',
+  groom: 'stable',
+  ringer: 'loft',
+  steward: 'storeroom',
+  horse: 'stable',
+  hens: 'henyard',
+};
 
 /** The one room where a figure's work is. */
 export function workplaceOf(figure: Figure): Room {
@@ -144,7 +175,11 @@ export function briefFor(level: number, band: Band, rng: Rng): Brief {
   }
   if (plan.id === 'workplaces') return { level: 2, id: 'workplaces', yards: [drawYard(rng), drawYard(rng)] };
   if (plan.id === 'walk') {
-    return { level: 3, id: 'walk', placements: [drawPlacement('kitchen', rng), drawPlacement('stable', rng)] };
+    return {
+      level: 3,
+      id: 'walk',
+      placements: [drawPlacement('kitchen', rng), drawPlacement('stable', rng)],
+    };
   }
   if (plan.id === 'plan') return { level: 4, id: 'plan', boards: [drawBoard(rng), drawBoard(rng)] };
   if (plan.id === 'ruin') return { level: 5, id: 'ruin', ruins: [drawRuin(rng), drawRuin(rng)] };
@@ -166,7 +201,13 @@ export function drawYard(rng: Rng): Yard {
 export const HOT_STEPS = 3;
 
 export function drawPlacement(room: 'kitchen' | 'stable', rng: Rng): Placement {
-  return { room, fixed: room === 'kitchen' ? 'hall' : 'gate', side: rng.chance(0.5) ? 'left' : 'right', near: rng.int(1, 2), far: rng.int(4, 6) };
+  return {
+    room,
+    fixed: room === 'kitchen' ? 'hall' : 'gate',
+    side: rng.chance(0.5) ? 'left' : 'right',
+    near: rng.int(1, 2),
+    far: rng.int(4, 6),
+  };
 }
 
 // ——— Level 1: who's at the door ———
@@ -226,16 +267,27 @@ export interface DropResult {
 
 /** Let a figure go on a room. A figure already at work changes nothing. */
 export function drop(yard: Yard, s: YardState, figure: Figure, room: Room): DropResult {
-  if (s.placed[figure] || !yard.figures.includes(figure)) return { state: s, taken: false, miss: false, glowed: false };
+  if (s.placed[figure] || !yard.figures.includes(figure))
+    return { state: s, taken: false, miss: false, glowed: false };
   if (room === WORKPLACE[figure]) {
-    return { state: { ...s, placed: { ...s.placed, [figure]: room } }, taken: true, miss: false, glowed: false };
+    return {
+      state: { ...s, placed: { ...s.placed, [figure]: room } },
+      taken: true,
+      miss: false,
+      glowed: false,
+    };
   }
   const before = s.wrongDrops[figure] ?? 0;
   const miss = before >= 1;
   const misses = s.misses + (miss ? 1 : 0);
   const glowed = !s.hinted && misses >= 2;
   return {
-    state: { ...s, wrongDrops: { ...s.wrongDrops, [figure]: before + 1 }, misses, hinted: s.hinted || glowed },
+    state: {
+      ...s,
+      wrongDrops: { ...s.wrongDrops, [figure]: before + 1 },
+      misses,
+      hinted: s.hinted || glowed,
+    },
     taken: false,
     miss,
     glowed,
@@ -250,7 +302,11 @@ export function askYard(s: YardState): YardState {
 export const yardDone = (yard: Yard, s: YardState) => yard.figures.every((f) => s.placed[f] !== undefined);
 
 /** The figure the glow follows: the one she holds, else the next unplaced figure in yard order. */
-export function glowTarget(yard: Yard, s: YardState, held: Figure | null = null): { figure: Figure; room: Room } | null {
+export function glowTarget(
+  yard: Yard,
+  s: YardState,
+  held: Figure | null = null,
+): { figure: Figure; room: Room } | null {
   if (!s.hinted) return null;
   const figure = held && !s.placed[held] ? held : yard.figures.find((f) => !s.placed[f]);
   return figure ? { figure, room: WORKPLACE[figure] } : null;
@@ -322,13 +378,19 @@ const col = (c: number) => c % GRID;
 /** Share an edge. */
 export const touches = (a: number, b: number) => Math.abs(row(a) - row(b)) + Math.abs(col(a) - col(b)) === 1;
 /** Share an edge or a corner. */
-export const near = (a: number, b: number) => a !== b && Math.max(Math.abs(row(a) - row(b)), Math.abs(col(a) - col(b))) === 1;
+export const near = (a: number, b: number) =>
+  a !== b && Math.max(Math.abs(row(a) - row(b)), Math.abs(col(a) - col(b))) === 1;
 
 export const CORNERS = [0, 2, 6, 8];
 /** The middle cell of each side, where a gate can stand. */
 export const SIDE_MIDDLES = [1, 3, 5, 7];
 /** The four edges, each its three cells. */
-export const EDGES: readonly number[][] = [[0, 1, 2], [2, 5, 8], [6, 7, 8], [0, 3, 6]];
+export const EDGES: readonly number[][] = [
+  [0, 1, 2],
+  [2, 5, 8],
+  [6, 7, 8],
+  [0, 3, 6],
+];
 
 export interface Need {
   index: 1 | 2 | 3 | 4 | 5;
@@ -338,7 +400,11 @@ export interface Need {
 
 /** The five needs, in the order the bell names them. A need with a room still in the tray is unmet. */
 export const NEEDS: readonly Need[] = [
-  { index: 1, rooms: ['kitchen', 'hall'], met: (_b, l) => l.kitchen !== undefined && l.hall !== undefined && touches(l.kitchen, l.hall) },
+  {
+    index: 1,
+    rooms: ['kitchen', 'hall'],
+    met: (_b, l) => l.kitchen !== undefined && l.hall !== undefined && touches(l.kitchen, l.hall),
+  },
   { index: 2, rooms: ['kitchen'], met: (b, l) => l.kitchen !== undefined && near(l.kitchen, b.well) },
   { index: 3, rooms: ['stable'], met: (b, l) => l.stable !== undefined && touches(l.stable, b.gate) },
   { index: 4, rooms: ['storeroom'], met: (b, l) => l.storeroom === b.cool },
@@ -350,7 +416,8 @@ export function check(board: Board, l: Layout): Need[] {
   return NEEDS.filter((n) => !n.met(board, l));
 }
 
-export const freeCells = (board: Board) => Array.from({ length: CELLS }, (_, c) => c).filter((c) => c !== board.well && c !== board.gate);
+export const freeCells = (board: Board) =>
+  Array.from({ length: CELLS }, (_, c) => c).filter((c) => c !== board.well && c !== board.gate);
 
 export const allPlaced = (l: Layout) => PLAN_ROOMS.every((r) => l[r] !== undefined);
 
@@ -383,7 +450,9 @@ export function drawBoard(rng: Rng): Board {
     const gateEdge = EDGES.find((e) => e.includes(gate))!;
     const sunny = rng.pick(EDGES.filter((e) => e !== gateEdge));
     const cool = rng.pick(CORNERS.filter((c) => !sunny.includes(c)));
-    const wells = Array.from({ length: CELLS }, (_, c) => c).filter((c) => c !== gate && c !== cool && !gateEdge.includes(c));
+    const wells = Array.from({ length: CELLS }, (_, c) => c).filter(
+      (c) => c !== gate && c !== cool && !gateEdge.includes(c),
+    );
     const well = rng.pick(wells);
     const board = { well, gate, cool, sunny };
     if (solutions(board).length >= 2) return board;
@@ -405,7 +474,10 @@ const roomAt = (l: Layout, c: number): PlanRoom | undefined => PLAN_ROOMS.find((
 /** Apply a move: to the tray, to an empty cell, or onto another room (they swap; a tray room sends the other to the tray). */
 export function applyMove(board: Board, l: Layout, m: Move): Layout {
   const next: Layout = { ...l };
-  if (m.to === 'tray') { delete next[m.room]; return next; }
+  if (m.to === 'tray') {
+    delete next[m.room];
+    return next;
+  }
   if (!freeCells(board).includes(m.to)) return l;
   const other = roomAt(l, m.to);
   const from = l[m.room];
@@ -446,7 +518,10 @@ function distanceMap(board: Board): Map<string, number> {
       for (const m of moves(board, l)) {
         const n = applyMove(board, l, m);
         const k = key(n);
-        if (!dist.has(k)) { dist.set(k, d); next.push(n); }
+        if (!dist.has(k)) {
+          dist.set(k, d);
+          next.push(n);
+        }
       }
     }
     frontier = next;
@@ -519,8 +594,18 @@ export function planTally(states: PlanState[]) {
 // ——— Level 5: read the ruin ———
 
 /** The remains a roofless room can show, in table order (the order `decidingClue` reads). */
-export type Clue = 'hearth' | 'oven' | 'dais' | 'drain' | 'mangers' | 'wide-door' | 'window-seat' | 'cellar-steps';
-export const CLUES: readonly Clue[] = ['hearth', 'oven', 'dais', 'drain', 'mangers', 'wide-door', 'window-seat', 'cellar-steps'];
+export type Clue =
+  'hearth' | 'oven' | 'dais' | 'drain' | 'mangers' | 'wide-door' | 'window-seat' | 'cellar-steps';
+export const CLUES: readonly Clue[] = [
+  'hearth',
+  'oven',
+  'dais',
+  'drain',
+  'mangers',
+  'wide-door',
+  'window-seat',
+  'cellar-steps',
+];
 
 const ROOM_CLUES: Record<PlanRoom, readonly Clue[]> = {
   hall: ['hearth', 'dais'],
@@ -574,15 +659,17 @@ export function drawRuin(rng: Rng): Ruin {
   for (let tries = 0; tries < 200; tries++) {
     const rooms = rng.shuffle([...PLAN_ROOMS]).slice(0, RUIN_ROOMS);
     const cells = rng.shuffle(freeCells(board)).slice(0, RUIN_ROOMS);
-    const placed: RuinRoom[] = rooms.map((room, i) => {
-      const own = ROOM_CLUES[room];
-      const deciding = own.filter((c) => !isShared(c));
-      const keep = new Set<Clue>([rng.pick(deciding)]);
-      for (const c of own) if (isShared(c) && keep.size < 3 && rng.chance(0.6)) keep.add(c);
-      // A second deciding clue sometimes, room permitting.
-      for (const c of deciding) if (keep.size < 3 && rng.chance(0.3)) keep.add(c);
-      return { room, cell: cells[i], shown: CLUES.filter((c) => keep.has(c)) };
-    }).sort((a, b) => a.cell - b.cell);
+    const placed: RuinRoom[] = rooms
+      .map((room, i) => {
+        const own = ROOM_CLUES[room];
+        const deciding = own.filter((c) => !isShared(c));
+        const keep = new Set<Clue>([rng.pick(deciding)]);
+        for (const c of own) if (isShared(c) && keep.size < 3 && rng.chance(0.6)) keep.add(c);
+        // A second deciding clue sometimes, room permitting.
+        for (const c of deciding) if (keep.size < 3 && rng.chance(0.3)) keep.add(c);
+        return { room, cell: cells[i], shown: CLUES.filter((c) => keep.has(c)) };
+      })
+      .sort((a, b) => a.cell - b.cell);
     const ruin = { board, rooms: placed };
     if (sharedShownTwice(ruin)) return ruin;
   }
@@ -628,10 +715,17 @@ export function label(ruin: Ruin, s: RuinState, labelId: PlanRoom, cell: number)
   const none = { state: s, settled: false, missed: false, glowed: false };
   const at = roomInCell(ruin, cell);
   if (!at || s.settled.includes(at.room) || s.settled.includes(labelId)) return none;
-  if (at.room === labelId) return { state: { ...s, settled: [...s.settled, labelId] }, settled: true, missed: false, glowed: false };
+  if (at.room === labelId)
+    return { state: { ...s, settled: [...s.settled, labelId] }, settled: true, missed: false, glowed: false };
   const misses = s.misses + 1;
   const glowed = !s.hinted && misses >= 2;
-  return { state: { ...s, misses, hinted: s.hinted || glowed }, settled: false, missed: true, clue: decidingClue(ruin, at.room), glowed };
+  return {
+    state: { ...s, misses, hinted: s.hinted || glowed },
+    settled: false,
+    missed: true,
+    clue: decidingClue(ruin, at.room),
+    glowed,
+  };
 }
 
 /** Asked-for help: the glow, the ruin's one hint if not yet spent. */
@@ -650,7 +744,9 @@ export type RuinHint = { spare: true } | { spare?: false; cell: number; clue: Cl
 export function ruinHint(ruin: Ruin, s: RuinState, held: PlanRoom | null = null): RuinHint | null {
   if (!s.hinted || ruinDone(ruin, s)) return null;
   if (held && held === spareLabel(ruin)) return { spare: true };
-  const target = (held && !s.settled.includes(held) && ruin.rooms.find((r) => r.room === held)) || ruin.rooms.find((r) => !s.settled.includes(r.room))!;
+  const target =
+    (held && !s.settled.includes(held) && ruin.rooms.find((r) => r.room === held)) ||
+    ruin.rooms.find((r) => !s.settled.includes(r.room))!;
   return { cell: target.cell, clue: decidingClue(ruin, target.room), label: target.room };
 }
 
@@ -756,7 +852,12 @@ export function account(s: Situation, b: Build): Account {
   if (purse < BUILDS.stone.bags) {
     // The masons work while the bags last; the walls stop half up.
     for (let year = 0; year <= s.years; year += YEAR_STEP) {
-      steps.push({ year, purse: 0, hall: year === 0 ? 'scaffold' : 'half-up', event: year === 0 ? 'building' : year === YEAR_STEP ? 'ran-out' : null });
+      steps.push({
+        year,
+        purse: 0,
+        hall: year === 0 ? 'scaffold' : 'half-up',
+        event: year === 0 ? 'building' : year === YEAR_STEP ? 'ran-out' : null,
+      });
     }
     return { spent: s.bags, end: 'half-up', steps };
   }
@@ -764,7 +865,12 @@ export function account(s: Situation, b: Build): Account {
   for (let year = 0; year <= s.years; year += YEAR_STEP) {
     const up = year >= BUILDS.stone.building;
     const first = up && year - YEAR_STEP < BUILDS.stone.building;
-    steps.push({ year, purse, hall: up ? 'stone' : 'scaffold', event: year === 0 ? 'building' : first ? 'finished' : null });
+    steps.push({
+      year,
+      purse,
+      hall: up ? 'stone' : 'scaffold',
+      event: year === 0 ? 'building' : first ? 'finished' : null,
+    });
   }
   return { spent: BUILDS.stone.bags, end: 'standing', steps };
 }
@@ -807,17 +913,29 @@ export function buildTally(states: BuildState[]) {
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (r: Rect, v: View) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
 
 /** The home button (top-left) and the pet (bottom-left) keep these corners. */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export const DOOR = { w: 150, h: 200 };
@@ -892,14 +1010,34 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     const span = n * DOOR.w + (n - 1) * GAP;
     const wellSide = WELL.w + GAP * 2;
     const start = cx - (span + wellSide) / 2 + (brief.well === 'left' ? wellSide : 0);
-    const doors = Array.from({ length: n }, (_, i) => ({ x: start + i * (DOOR.w + GAP), y: top, w: DOOR.w, h: DOOR.h }));
-    const well: Rect = { x: brief.well === 'left' ? start - wellSide : start + span + GAP * 2, y: top + DOOR.h - WELL.h, w: WELL.w, h: WELL.h };
+    const doors = Array.from({ length: n }, (_, i) => ({
+      x: start + i * (DOOR.w + GAP),
+      y: top,
+      w: DOOR.w,
+      h: DOOR.h,
+    }));
+    const well: Rect = {
+      x: brief.well === 'left' ? start - wellSide : start + span + GAP * 2,
+      y: top + DOOR.h - WELL.h,
+      w: WELL.w,
+      h: WELL.h,
+    };
     l = { doors, well, ground: top + DOOR.h, inputs: [...doors, well] };
   } else if (brief.id === 'workplaces') {
     const slotsY = wide ? 40 : 120;
-    const slots = [0, 1, 2].map((i) => ({ x: cx - (3 * FIGURE.w + 2 * 40) / 2 + i * (FIGURE.w + 40), y: slotsY, w: FIGURE.w, h: FIGURE.h }));
+    const slots = [0, 1, 2].map((i) => ({
+      x: cx - (3 * FIGURE.w + 2 * 40) / 2 + i * (FIGURE.w + 40),
+      y: slotsY,
+      w: FIGURE.w,
+      h: FIGURE.h,
+    }));
     const roomsY = slotsY + FIGURE.h + (wide ? 60 : 140);
-    const rooms = [0, 1, 2].map((i) => ({ x: cx - (3 * YARD_ROOM.w + 2 * GAP) / 2 + i * (YARD_ROOM.w + GAP), y: roomsY, w: YARD_ROOM.w, h: YARD_ROOM.h }));
+    const rooms = [0, 1, 2].map((i) => ({
+      x: cx - (3 * YARD_ROOM.w + 2 * GAP) / 2 + i * (YARD_ROOM.w + GAP),
+      y: roomsY,
+      w: YARD_ROOM.w,
+      h: YARD_ROOM.h,
+    }));
     l = { slots, rooms, ground: roomsY + YARD_ROOM.h, inputs: [...slots, ...rooms] };
   } else if (brief.id === 'walk') {
     const total = FIXED.w + 60 + 6 * STEP + SPOT.w / 2;
@@ -912,11 +1050,21 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     for (const q of brief.placements) {
       const fixed = fixedRect(q, yard);
       const s = spotRects(q, yard);
-      if (!inside(fixed, v) || !inside(s.near, v) || !inside(s.far, v) || overlaps(s.near, s.far) || overlaps(s.near, fixed) || overlaps(s.far, fixed)) return null;
+      if (
+        !inside(fixed, v) ||
+        !inside(s.near, v) ||
+        !inside(s.far, v) ||
+        overlaps(s.near, s.far) ||
+        overlaps(s.near, fixed) ||
+        overlaps(s.far, fixed)
+      )
+        return null;
       if (corners(v).some((c) => overlaps(s.near, c) || overlaps(s.far, c))) return null;
     }
   } else if (brief.id === 'build') {
-    const lord: Rect = wide ? { x: left, y: 30, w: Math.min(v.w - M - left, 760), h: 130 } : { x: left, y: 110, w: Math.min(v.w - M - left, 760), h: 130 };
+    const lord: Rect = wide
+      ? { x: left, y: 30, w: Math.min(v.w - M - left, 760), h: 130 }
+      : { x: left, y: 110, w: Math.min(v.w - M - left, 760), h: 130 };
     let rows: Rect[], build: Rect, keep: Rect, site: Rect;
     if (wide) {
       const top = lord.y + lord.h + 30;
@@ -945,7 +1093,12 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     const gridY = trayY + TILE.h + (wide ? 40 : 120);
     const trayX = wide ? left : cx - trayW / 2;
     const tray = PLAN_ROOMS.map((_, i) => ({ x: trayX + i * (TILE.w + 14), y: trayY, w: TILE.w, h: TILE.h }));
-    const cells = Array.from({ length: CELLS }, (_, c) => ({ x: gridX + col(c) * (CELL + CELL_GAP), y: gridY + row(c) * (CELL + CELL_GAP), w: CELL, h: CELL }));
+    const cells = Array.from({ length: CELLS }, (_, c) => ({
+      x: gridX + col(c) * (CELL + CELL_GAP),
+      y: gridY + row(c) * (CELL + CELL_GAP),
+      w: CELL,
+      h: CELL,
+    }));
     const bell: Rect = wide
       ? { x: gridX + gridW + 50, y: gridY + gridW - BELL.h, w: BELL.w, h: BELL.h }
       : { x: cx - BELL.w / 2, y: gridY + gridW + 40, w: BELL.w, h: BELL.h };
@@ -953,15 +1106,21 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
     const cards: Rect[] = wide
       ? NEEDS.map((_, i) => ({ x: v.w - M - CARD.w, y: trayY + i * (CARD.h + 8), w: CARD.w, h: CARD.h }))
       : NEEDS.map((_, i) => {
-        const r = i < 3 ? 0 : 1;
-        const n = r === 0 ? 3 : 2;
-        const k = r === 0 ? i : i - 3;
-        return { x: cx - (n * CARD.w + (n - 1) * GAP) / 2 + k * (CARD.w + GAP), y: bell.y + BELL.h + 30 + r * (CARD.h + 8), w: CARD.w, h: CARD.h };
-      });
+          const r = i < 3 ? 0 : 1;
+          const n = r === 0 ? 3 : 2;
+          const k = r === 0 ? i : i - 3;
+          return {
+            x: cx - (n * CARD.w + (n - 1) * GAP) / 2 + k * (CARD.w + GAP),
+            y: bell.y + BELL.h + 30 + r * (CARD.h + 8),
+            w: CARD.w,
+            h: CARD.h,
+          };
+        });
     // The ruin (level 5) is the same tray and plan with no bell or need cards: a label's drop is the commit.
-    l = brief.id === 'ruin'
-      ? { tray, cells, ground: gridY + gridW, inputs: [...tray, ...cells] }
-      : { tray, cells, cards, bell, ground: gridY + gridW, inputs: [...tray, ...cells, ...cards, bell] };
+    l =
+      brief.id === 'ruin'
+        ? { tray, cells, ground: gridY + gridW, inputs: [...tray, ...cells] }
+        : { tray, cells, cards, bell, ground: gridY + gridW, inputs: [...tray, ...cells, ...cards, bell] };
   }
   if (!l.inputs.every((p) => inside(p, v))) return null;
   if (l.inputs.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;

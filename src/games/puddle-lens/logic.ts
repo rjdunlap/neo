@@ -12,7 +12,19 @@ export type Stop = 1 | 2 | 3 | 4;
 export const STOPS: readonly Stop[] = [1, 2, 3, 4];
 
 export type SampleId = 'leaf' | 'drop' | 'sand' | 'drop-empty';
-export type FeatureId = 'leaf' | 'leaf-hairs' | 'boxes' | 'beads' | 'drop' | 'specks' | 'swimmers' | 'swimmer-hairs' | 'pinch' | 'grains' | 'grain-bumps' | 'speck-close';
+export type FeatureId =
+  | 'leaf'
+  | 'leaf-hairs'
+  | 'boxes'
+  | 'beads'
+  | 'drop'
+  | 'specks'
+  | 'swimmers'
+  | 'swimmer-hairs'
+  | 'pinch'
+  | 'grains'
+  | 'grain-bumps'
+  | 'speck-close';
 
 export interface Feature {
   id: FeatureId;
@@ -42,7 +54,10 @@ export const FEATURES: Record<SampleId, readonly Feature[]> = {
     { id: 'grain-bumps', window: [3, 4] },
   ],
   // The same drop with its specks but no swimmers, and one speck up close so the closest stop still shows something.
-  'drop-empty': [...DROP.filter((f) => f.id !== 'swimmers' && f.id !== 'swimmer-hairs'), { id: 'speck-close', window: [4, 4] }],
+  'drop-empty': [
+    ...DROP.filter((f) => f.id !== 'swimmers' && f.id !== 'swimmer-hairs'),
+    { id: 'speck-close', window: [4, 4] },
+  ],
 };
 
 export const featureOf = (sample: SampleId, id: FeatureId): Feature => {
@@ -59,7 +74,8 @@ export function fitAt(f: Feature, stop: Stop): Fit {
 }
 
 /** The features drawn whole at a stop. */
-export const visibleAt = (sample: SampleId, stop: Stop): FeatureId[] => FEATURES[sample].filter((f) => fitAt(f, stop) === 'fits').map((f) => f.id);
+export const visibleAt = (sample: SampleId, stop: Stop): FeatureId[] =>
+  FEATURES[sample].filter((f) => fitAt(f, stop) === 'fits').map((f) => f.id);
 
 // ----- level 4: the questions -----
 
@@ -80,7 +96,7 @@ export const QUESTIONS: readonly Question[] = [
   { sample: 'drop', feature: 'drop', thing: 'drop', what: 'is the whole drop' },
   { sample: 'drop', feature: 'specks', thing: 'speck', what: 'are the specks' },
   { sample: 'drop', feature: 'swimmers', thing: 'swimmer', what: 'are the swimmers' },
-  { sample: 'drop', feature: 'swimmer-hairs', thing: 'swimmer', what: 'are the swimmer\'s tiny hairs' },
+  { sample: 'drop', feature: 'swimmer-hairs', thing: 'swimmer', what: "are the swimmer's tiny hairs" },
   { sample: 'sand', feature: 'pinch', thing: 'pinch of sand', what: 'is the whole pinch of sand' },
   { sample: 'sand', feature: 'grains', thing: 'grain', what: 'are the separate grains' },
   { sample: 'sand', feature: 'grain-bumps', thing: 'grain', what: 'are the bumps on the grain' },
@@ -88,7 +104,8 @@ export const QUESTIONS: readonly Question[] = [
 
 export const windowOf = (q: Question) => featureOf(q.sample, q.feature).window;
 /** The stops that show what a question asks for. */
-export const acceptedStops = (q: Question): Stop[] => STOPS.filter((s) => fitAt(featureOf(q.sample, q.feature), s) === 'fits');
+export const acceptedStops = (q: Question): Stop[] =>
+  STOPS.filter((s) => fitAt(featureOf(q.sample, q.feature), s) === 'fits');
 export const canBeTooClose = (q: Question) => windowOf(q)[1] < 4;
 
 export type ViewVerdict = 'ok' | 'too-small' | 'too-close';
@@ -163,7 +180,17 @@ function makeSwimmer(rng: Rng, shape: SwimmerShape, i: number, n: number, r = 0.
   const ay = ry * shrink;
   // Speed is at most hypot(ax·wx, ay·wy): keep it under the limit.
   const w = MAX_DROP_SPEED / Math.hypot(ax, ay);
-  return { shape, cx: Math.cos(a) * r, cy: Math.sin(a) * r, ax, ay, wx: w * rng.range(0.6, 1), wy: w * rng.range(0.6, 1), px: rng.range(0, Math.PI * 2), py: rng.range(0, Math.PI * 2) };
+  return {
+    shape,
+    cx: Math.cos(a) * r,
+    cy: Math.sin(a) * r,
+    ax,
+    ay,
+    wx: w * rng.range(0.6, 1),
+    wy: w * rng.range(0.6, 1),
+    px: rng.range(0, Math.PI * 2),
+    py: rng.range(0, Math.PI * 2),
+  };
 }
 
 /** Where a swimmer is at time `t` (drop units) and which way it heads. */
@@ -206,14 +233,22 @@ export const DECIDING: Stop = featureOf('drop', 'swimmers').window[0];
 
 export function judgeSwimmers(drop: Drop, stop: Stop, answer: SwimmerAnswer): SwimmerVerdict {
   const populated = drop.swimmers.length > 0;
-  if (stop < DECIDING) return { result: 'free', line: answer.kind === 'none' ? 'lens.cant-tell' : 'lens.not-yet' };
-  if (answer.kind === 'none') return populated ? { result: 'miss', line: 'lens.look-again' } : { result: 'right', line: 'lens.none' };
+  if (stop < DECIDING)
+    return { result: 'free', line: answer.kind === 'none' ? 'lens.cant-tell' : 'lens.not-yet' };
+  if (answer.kind === 'none')
+    return populated ? { result: 'miss', line: 'lens.look-again' } : { result: 'right', line: 'lens.none' };
   if (!populated) return { result: 'free', line: 'lens.only-specks' };
-  return answer.swimmer === null ? { result: 'free', line: 'lens.find-one' } : { result: 'right', line: 'lens.found' };
+  return answer.swimmer === null
+    ? { result: 'free', line: 'lens.find-one' }
+    : { result: 'right', line: 'lens.found' };
 }
 
 /** The swimmer a tap at (x, y) means: the nearest within reach whose centre is in view, or null. Positions in screen units from the lens centre. */
-export function nearestSwimmer(at: { x: number; y: number }, swimmers: readonly { x: number; y: number }[], viewR: number): number | null {
+export function nearestSwimmer(
+  at: { x: number; y: number },
+  swimmers: readonly { x: number; y: number }[],
+  viewR: number,
+): number | null {
   let best: number | null = null;
   let bestD = SWIMMER_REACH;
   swimmers.forEach((s, i) => {
@@ -241,7 +276,11 @@ export class LookTracker {
   private at = -1;
   private held = 0;
   /** The glass is at `glass`; returns a thing just looked at, or null. */
-  update(dt: number, glass: { x: number; y: number }, things: readonly { x: number; y: number }[]): number | null {
+  update(
+    dt: number,
+    glass: { x: number; y: number },
+    things: readonly { x: number; y: number }[],
+  ): number | null {
     const near = things.findIndex((t) => Math.hypot(t.x - glass.x, t.y - glass.y) <= LOOK_NEAR);
     if (near !== this.at) {
       this.at = near;
@@ -264,7 +303,8 @@ export class LookTracker {
  * What a candidate shows at a stop that can decide something. Moving and colour are drawn but are never evidence: a drifting bubble
  * and a swimmer both move, and a green ball and a brown speck differ only in colour until the closest stop.
  */
-export type Evidence = 'edge' | 'inside' | 'hairs' | 'empty' | 'ragged' | 'boxes' | 'cracks' | 'wall' | 'soft-edge' | 'even';
+export type Evidence =
+  'edge' | 'inside' | 'hairs' | 'empty' | 'ragged' | 'boxes' | 'cracks' | 'wall' | 'soft-edge' | 'even';
 export type CandidateId = 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble';
 export type Motion = 'swims' | 'drifts' | 'still';
 
@@ -278,15 +318,37 @@ export interface Candidate {
 
 /** The level-5 candidates (the definition's table, row for row). Nothing separate shows at stops 1–2. */
 export const CANDIDATES: Record<CandidateId, Candidate> = {
-  swimmer: { id: 'swimmer', alive: true, evidence: [[], [], ['edge', 'inside'], ['edge', 'inside', 'hairs']], motion: 'swims' },
-  'green-ball': { id: 'green-ball', alive: true, evidence: [[], [], [], ['edge', 'inside']], motion: 'still' },
-  'mud-speck': { id: 'mud-speck', alive: false, evidence: [[], [], ['ragged'], ['ragged']], motion: 'drifts' },
+  swimmer: {
+    id: 'swimmer',
+    alive: true,
+    evidence: [[], [], ['edge', 'inside'], ['edge', 'inside', 'hairs']],
+    motion: 'swims',
+  },
+  'green-ball': {
+    id: 'green-ball',
+    alive: true,
+    evidence: [[], [], [], ['edge', 'inside']],
+    motion: 'still',
+  },
+  'mud-speck': {
+    id: 'mud-speck',
+    alive: false,
+    evidence: [[], [], ['ragged'], ['ragged']],
+    motion: 'drifts',
+  },
   silt: { id: 'silt', alive: false, evidence: [[], [], [], ['ragged']], motion: 'still' },
-  bubble: { id: 'bubble', alive: false, evidence: [[], [], ['edge', 'empty'], ['edge', 'empty']], motion: 'drifts' },
+  bubble: {
+    id: 'bubble',
+    alive: false,
+    evidence: [[], [], ['edge', 'empty'], ['edge', 'empty']],
+    motion: 'drifts',
+  },
 };
 
-export const evidenceAt = (c: CandidateId, stop: Stop): readonly Evidence[] => CANDIDATES[c].evidence[stop - 1];
-const sameSet = (a: readonly Evidence[], b: readonly Evidence[]) => a.length === b.length && a.every((e) => b.includes(e));
+export const evidenceAt = (c: CandidateId, stop: Stop): readonly Evidence[] =>
+  CANDIDATES[c].evidence[stop - 1];
+const sameSet = (a: readonly Evidence[], b: readonly Evidence[]) =>
+  a.length === b.length && a.every((e) => b.includes(e));
 /** Alive exactly when an edge all round and parts inside show. */
 export const looksAlive = (ev: readonly Evidence[]) => ev.includes('edge') && ev.includes('inside');
 
@@ -315,22 +377,34 @@ export type LookLine = 'lens.look.inside' | 'lens.look.empty' | 'lens.look.ragge
 /** What the companion says to point at the ringed thing's evidence, never the verdict. */
 export function lookLine(c: CandidateId, stop: Stop): LookLine {
   const ev = evidenceAt(c, stop);
-  return ev.includes('inside') ? 'lens.look.inside' : ev.includes('empty') ? 'lens.look.empty' : 'lens.look.ragged';
+  return ev.includes('inside')
+    ? 'lens.look.inside'
+    : ev.includes('empty')
+      ? 'lens.look.empty'
+      : 'lens.look.ragged';
 }
 
 /** Judge an answer about the ringed candidate (0 or 1 of the pair) at a stop. Below the deciding stop nothing counts, either way. */
 export function judgeLife(pair: PairId, ringed: 0 | 1, stop: Stop, answer: LifeAnswer): LifeVerdict {
   const c = PAIRS[pair][ringed];
-  if (stop < decidingStop(pair)) return answer === 'cant-tell' ? { result: 'free', line: 'lens.right-for-now' } : { result: 'free', line: 'lens.could-be' };
+  if (stop < decidingStop(pair))
+    return answer === 'cant-tell'
+      ? { result: 'free', line: 'lens.right-for-now' }
+      : { result: 'free', line: 'lens.could-be' };
   if (answer === 'cant-tell') return { result: 'miss', line: 'lens.can-tell-now' };
   const alive = looksAlive(evidenceAt(c, stop));
-  if ((answer === 'alive') === alive) return { result: 'right', line: alive ? 'lens.alive.yes' : 'lens.alive.no' };
+  if ((answer === 'alive') === alive)
+    return { result: 'right', line: alive ? 'lens.alive.yes' : 'lens.alive.no' };
   return { result: 'miss', line: lookLine(c, stop) };
 }
 
 /** The answer that is right at a stop, for the glow and the ghost finger. */
 export const rightLife = (pair: PairId, ringed: 0 | 1, stop: Stop): LifeAnswer =>
-  stop < decidingStop(pair) ? 'cant-tell' : looksAlive(evidenceAt(PAIRS[pair][ringed], stop)) ? 'alive' : 'not-alive';
+  stop < decidingStop(pair)
+    ? 'cant-tell'
+    : looksAlive(evidenceAt(PAIRS[pair][ringed], stop))
+      ? 'alive'
+      : 'not-alive';
 
 /** How far each level-5 speck's spot is from the middle of the drop. */
 export const LIFE_SPOT = 0.4;
@@ -348,7 +422,17 @@ function makePath(rng: Rng, id: CandidateId, i: number): Swimmer {
   const r = LIFE_SPOT;
   if (motion === 'swims') return makeSwimmer(rng, rng.pick(['round', 'long', 'bean'] as const), i, 2, r);
   const a = Math.PI * i + rng.range(-0.4, 0.4);
-  const base: Swimmer = { shape: 'round', cx: Math.cos(a) * r, cy: Math.sin(a) * r, ax: 0, ay: 0, wx: 0, wy: 0, px: 0, py: 0 };
+  const base: Swimmer = {
+    shape: 'round',
+    cx: Math.cos(a) * r,
+    cy: Math.sin(a) * r,
+    ax: 0,
+    ay: 0,
+    wx: 0,
+    wy: 0,
+    px: 0,
+    py: 0,
+  };
   if (motion === 'still') return base;
   // A slow straight drift with the water, back and forth along one line.
   const d = rng.range(0, Math.PI * 2);
@@ -384,7 +468,8 @@ export function lifeDropsFor(rng: Rng, authored: boolean): LifeDrop[] {
 }
 
 export type CellClass = 'one' | 'many' | 'not';
-export type SortSampleId = 'leaf' | 'onion-skin' | 'green-thread' | 'swimmer' | 'green-ball' | 'sand' | 'bubble' | 'mud-speck';
+export type SortSampleId =
+  'leaf' | 'onion-skin' | 'green-thread' | 'swimmer' | 'green-ball' | 'sand' | 'bubble' | 'mud-speck';
 
 export interface SortSample {
   id: SortSampleId;
@@ -409,13 +494,23 @@ export const SORT_IDS = Object.keys(SORT_SAMPLES) as SortSampleId[];
 export const CLASSES: readonly CellClass[] = ['one', 'many', 'not'];
 
 /** The evidence a sample shows at a stop: its class evidence from the deciding stop on, nothing that decides below it. */
-export const sortEvidenceAt = (s: SortSampleId, stop: Stop): readonly Evidence[] => (stop >= SORT_SAMPLES[s].deciding ? SORT_SAMPLES[s].evidence : []);
+export const sortEvidenceAt = (s: SortSampleId, stop: Stop): readonly Evidence[] =>
+  stop >= SORT_SAMPLES[s].deciding ? SORT_SAMPLES[s].evidence : [];
 
-export type SeeLine = 'lens.see.boxes' | 'lens.see.one' | 'lens.see.empty' | 'lens.see.ragged' | 'lens.see.cracks';
+export type SeeLine =
+  'lens.see.boxes' | 'lens.see.one' | 'lens.see.empty' | 'lens.see.ragged' | 'lens.see.cracks';
 /** What the view shows, said on a wrong tray and by Show a hint. */
 export function seeLine(s: SortSampleId): SeeLine {
   const ev = SORT_SAMPLES[s].evidence;
-  return ev.includes('boxes') ? 'lens.see.boxes' : ev.includes('inside') ? 'lens.see.one' : ev.includes('empty') ? 'lens.see.empty' : ev.includes('ragged') ? 'lens.see.ragged' : 'lens.see.cracks';
+  return ev.includes('boxes')
+    ? 'lens.see.boxes'
+    : ev.includes('inside')
+      ? 'lens.see.one'
+      : ev.includes('empty')
+        ? 'lens.see.empty'
+        : ev.includes('ragged')
+          ? 'lens.see.ragged'
+          : 'lens.see.cracks';
 }
 
 export type SortVerdict =
@@ -433,7 +528,8 @@ export function judgeSort(s: SortSampleId, stop: Stop, tray: CellClass): SortVer
 /** Four slides, no sample twice, every class at least once, and the green ball (decided only at the closest stop). Authored: thread, swimmer, sand, green ball. */
 export function sortRoundFor(rng: Rng, authored: boolean): SortSampleId[] {
   if (authored) return ['green-thread', 'swimmer', 'sand', 'green-ball'];
-  const pick = (cls: CellClass, not: SortSampleId[] = []) => rng.pick(SORT_IDS.filter((id) => SORT_SAMPLES[id].cls === cls && !not.includes(id)));
+  const pick = (cls: CellClass, not: SortSampleId[] = []) =>
+    rng.pick(SORT_IDS.filter((id) => SORT_SAMPLES[id].cls === cls && !not.includes(id)));
   const chosen: SortSampleId[] = ['green-ball', pick('many'), pick('not')];
   chosen.push(rng.pick(SORT_IDS.filter((id) => !chosen.includes(id))));
   return rng.shuffle(chosen);
@@ -456,22 +552,39 @@ export interface WallSlide {
 
 /** The level-7 slides (the definition's table, row for row). `wall` and `soft-edge` decide; `inside` shows on both and decides nothing. */
 export const WALL_SLIDES: Record<WallSlideId, WallSlide> = {
-  'onion-skin': { id: 'onion-skin', kind: 'plant', evidence: [[], [], ['wall'], ['wall', 'inside']], colour: 'none' },
+  'onion-skin': {
+    id: 'onion-skin',
+    kind: 'plant',
+    evidence: [[], [], ['wall'], ['wall', 'inside']],
+    colour: 'none',
+  },
   leaf: { id: 'leaf', kind: 'plant', evidence: [[], [], ['wall'], ['wall']], colour: 'green' },
-  'cheek-cells': { id: 'cheek-cells', kind: 'animal', evidence: [[], [], ['soft-edge', 'inside'], ['soft-edge', 'inside']], colour: 'pale' },
+  'cheek-cells': {
+    id: 'cheek-cells',
+    kind: 'animal',
+    evidence: [[], [], ['soft-edge', 'inside'], ['soft-edge', 'inside']],
+    colour: 'pale',
+  },
 };
 export const WALL_IDS = Object.keys(WALL_SLIDES) as WallSlideId[];
 
 /** Plant exactly when a wall shows, animal exactly when soft edges show, otherwise not yet. */
-export const wallKindOf = (ev: readonly Evidence[]): WallKind | null => (ev.includes('wall') ? 'plant' : ev.includes('soft-edge') ? 'animal' : null);
-export const wallEvidenceAt = (s: WallSlideId, stop: Stop): readonly Evidence[] => WALL_SLIDES[s].evidence[stop - 1];
+export const wallKindOf = (ev: readonly Evidence[]): WallKind | null =>
+  ev.includes('wall') ? 'plant' : ev.includes('soft-edge') ? 'animal' : null;
+export const wallEvidenceAt = (s: WallSlideId, stop: Stop): readonly Evidence[] =>
+  WALL_SLIDES[s].evidence[stop - 1];
 /** The lowest stop where the truth rule can tell. */
-export const wallDeciding = (s: WallSlideId): Stop => STOPS.find((stop) => wallKindOf(wallEvidenceAt(s, stop)) !== null) ?? 4;
+export const wallDeciding = (s: WallSlideId): Stop =>
+  STOPS.find((stop) => wallKindOf(wallEvidenceAt(s, stop)) !== null) ?? 4;
 
 export type WallSeeLine = 'lens.wall.see.wall' | 'lens.wall.see.no-green' | 'lens.wall.see.soft';
 /** What the view shows (a wrong kind, and Show a hint), never the verdict. */
 export const wallSeeLine = (s: WallSlideId): WallSeeLine =>
-  WALL_SLIDES[s].kind === 'animal' ? 'lens.wall.see.soft' : WALL_SLIDES[s].colour === 'none' ? 'lens.wall.see.no-green' : 'lens.wall.see.wall';
+  WALL_SLIDES[s].kind === 'animal'
+    ? 'lens.wall.see.soft'
+    : WALL_SLIDES[s].colour === 'none'
+      ? 'lens.wall.see.no-green'
+      : 'lens.wall.see.wall';
 
 export type WallVerdict =
   | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
@@ -480,7 +593,10 @@ export type WallVerdict =
 
 /** Below the deciding stop both kinds get the same free line (never an answer key); at or above it the true kind finishes the slide. */
 export function judgeWall(s: WallSlideId, stop: Stop, answer: WallAnswer): WallVerdict {
-  if (stop < wallDeciding(s)) return answer === 'cant-tell' ? { result: 'free', line: 'lens.right-for-now' } : { result: 'free', line: 'lens.could-be' };
+  if (stop < wallDeciding(s))
+    return answer === 'cant-tell'
+      ? { result: 'free', line: 'lens.right-for-now' }
+      : { result: 'free', line: 'lens.could-be' };
   if (answer === 'cant-tell') return { result: 'miss', line: 'lens.wall.can-tell-now' };
   const kind = wallKindOf(wallEvidenceAt(s, stop))!;
   if (answer === kind) return { result: 'right', line: `lens.wall.yes.${kind}` };
@@ -509,12 +625,18 @@ export const GREEN_IDS = Object.keys(GREEN_DROPS) as GreenDropId[];
 /** Living exactly when cells show (boxes, or an edge with parts inside); all through exactly when the colour is even with no edges. */
 export const greenKindOf = (ev: readonly Evidence[]): GreenKind | null =>
   ev.includes('boxes') || looksAlive(ev) ? 'living' : ev.includes('even') ? 'all-through' : null;
-export const greenEvidenceAt = (d: GreenDropId, stop: Stop): readonly Evidence[] => GREEN_DROPS[d].evidence[stop - 1];
-export const greenDeciding = (d: GreenDropId): Stop => STOPS.find((stop) => greenKindOf(greenEvidenceAt(d, stop)) !== null) ?? 4;
+export const greenEvidenceAt = (d: GreenDropId, stop: Stop): readonly Evidence[] =>
+  GREEN_DROPS[d].evidence[stop - 1];
+export const greenDeciding = (d: GreenDropId): Stop =>
+  STOPS.find((stop) => greenKindOf(greenEvidenceAt(d, stop)) !== null) ?? 4;
 
 export type GreenSeeLine = 'lens.green.see.threads' | 'lens.green.see.balls' | 'lens.green.see.even';
 export const greenSeeLine = (d: GreenDropId): GreenSeeLine =>
-  d === 'green-threads' ? 'lens.green.see.threads' : d === 'green-balls' ? 'lens.green.see.balls' : 'lens.green.see.even';
+  d === 'green-threads'
+    ? 'lens.green.see.threads'
+    : d === 'green-balls'
+      ? 'lens.green.see.balls'
+      : 'lens.green.see.even';
 
 export type GreenVerdict =
   | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
@@ -522,10 +644,14 @@ export type GreenVerdict =
   | { result: 'miss'; line: 'lens.green.can-tell-now' | GreenSeeLine };
 
 export function judgeGreen(d: GreenDropId, stop: Stop, answer: GreenAnswer): GreenVerdict {
-  if (stop < greenDeciding(d)) return answer === 'cant-tell' ? { result: 'free', line: 'lens.right-for-now' } : { result: 'free', line: 'lens.could-be' };
+  if (stop < greenDeciding(d))
+    return answer === 'cant-tell'
+      ? { result: 'free', line: 'lens.right-for-now' }
+      : { result: 'free', line: 'lens.could-be' };
   if (answer === 'cant-tell') return { result: 'miss', line: 'lens.green.can-tell-now' };
   const kind = greenKindOf(greenEvidenceAt(d, stop))!;
-  if (answer === kind) return { result: 'right', line: kind === 'living' ? 'lens.green.yes.living' : 'lens.green.yes.through' };
+  if (answer === kind)
+    return { result: 'right', line: kind === 'living' ? 'lens.green.yes.living' : 'lens.green.yes.through' };
   return { result: 'miss', line: greenSeeLine(d) };
 }
 
@@ -548,7 +674,11 @@ export interface Looks78 {
   seed: number;
   phase: number;
 }
-export const looks78For = (rng: Rng): Looks78 => ({ wallAngle: rng.range(-0.5, 0.5), seed: rng.int(1, 9999), phase: rng.range(0, Math.PI * 2) });
+export const looks78For = (rng: Rng): Looks78 => ({
+  wallAngle: rng.range(-0.5, 0.5),
+  seed: rng.int(1, 9999),
+  phase: rng.range(0, Math.PI * 2),
+});
 
 /** Where the drifting level-8 contents sit at time `t`, in art units. */
 export const greenDriftAt = (phase: number, t: number) => ({
@@ -564,7 +694,19 @@ export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'tur
  * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3 and 5–8)
  * or the lowest that shows the asked thing (4).
  */
-export function helpFor(level: number, s: { glass?: { x: number; y: number }; things?: readonly { x: number; y: number }[]; looked?: ReadonlySet<number>; question?: Question; pair?: PairId; sample?: SortSampleId; wall?: WallSlideId; green?: GreenDropId }): Help | null {
+export function helpFor(
+  level: number,
+  s: {
+    glass?: { x: number; y: number };
+    things?: readonly { x: number; y: number }[];
+    looked?: ReadonlySet<number>;
+    question?: Question;
+    pair?: PairId;
+    sample?: SortSampleId;
+    wall?: WallSlideId;
+    green?: GreenDropId;
+  },
+): Help | null {
   if (level === 1) return { do: 'tap-lens' };
   if (level === 7) return s.wall ? { do: 'turn', stop: wallDeciding(s.wall) } : null;
   if (level === 8) return s.green ? { do: 'turn', stop: greenDeciding(s.green) } : null;
@@ -645,7 +787,8 @@ export const corners = (v: View): Rect[] => [
   { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
 ];
 
-const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 export const ringBox = (c: Ring): Rect => ({ x: c.x - c.r, y: c.y - c.r, w: c.r * 2, h: c.r * 2 });
 /** A ring overlaps a rectangle (exactly, not by its box). */
@@ -660,7 +803,13 @@ export function lensLayout(v: View, level: number): LensLayout | null {
   const wide = v.w >= v.h;
   const none = { stops: [], answer: null, choices: [], things: [], rest: null, table: null, paw: null };
   const ok = (l: LensLayout) => {
-    const rects = [...l.stops, ...(l.answer ? [l.answer] : []), ...l.choices, ...l.things.map(ringBox), ...(l.paw ? [ringBox(l.paw)] : [])];
+    const rects = [
+      ...l.stops,
+      ...(l.answer ? [l.answer] : []),
+      ...l.choices,
+      ...l.things.map(ringBox),
+      ...(l.paw ? [ringBox(l.paw)] : []),
+    ];
     if (!rects.every((r) => inside(r, v))) return null;
     if (rects.some((r) => corners(v).some((k) => overlaps(r, k)))) return null;
     if (rects.some((a, i) => rects.some((b, j) => i < j && overlaps(a, b)))) return null;
@@ -670,7 +819,7 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     }
     return l;
   };
-  const maxR = (ART_R * MAX_ART_SCALE);
+  const maxR = ART_R * MAX_ART_SCALE;
   if (level === 1) {
     const area = { x: PET_CORNER.w + 10, y: M, w: v.w - 2 * (PET_CORNER.w + 10), h: v.h - 2 * M };
     const r = Math.min(maxR, (Math.min(area.w, area.h) - 40) / 2);
@@ -699,14 +848,29 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     const cx = v.w - M - ANSWER_SIZE / 2;
     const sx = cx - ANSWER_SIZE / 2 - GAP - STOP_SIZE;
     const stopsH = 4 * STOP_SIZE + 3 * GAP;
-    stops = STOPS.map((_, i) => ({ x: sx, y: (v.h - stopsH) / 2 + i * (STOP_SIZE + GAP), w: STOP_SIZE, h: STOP_SIZE }));
-    choices = [0, 1, 2].map((i) => ({ x: cx - ANSWER_SIZE / 2, y: (v.h - row) / 2 + i * (ANSWER_SIZE + GAP), w: ANSWER_SIZE, h: ANSWER_SIZE }));
+    stops = STOPS.map((_, i) => ({
+      x: sx,
+      y: (v.h - stopsH) / 2 + i * (STOP_SIZE + GAP),
+      w: STOP_SIZE,
+      h: STOP_SIZE,
+    }));
+    choices = [0, 1, 2].map((i) => ({
+      x: cx - ANSWER_SIZE / 2,
+      y: (v.h - row) / 2 + i * (ANSWER_SIZE + GAP),
+      w: ANSWER_SIZE,
+      h: ANSWER_SIZE,
+    }));
     area = { x: PET_CORNER.w + 10, y: M, w: sx - 2 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
   } else if (three) {
     // The answers along the bottom edge right of the guide's corner, the stops above them.
     const ax = Math.max(PET_CORNER.w + 10, (v.w - row) / 2);
     const ay = v.h - M - ANSWER_SIZE;
-    choices = [0, 1, 2].map((i) => ({ x: ax + i * (ANSWER_SIZE + GAP), y: ay, w: ANSWER_SIZE, h: ANSWER_SIZE }));
+    choices = [0, 1, 2].map((i) => ({
+      x: ax + i * (ANSWER_SIZE + GAP),
+      y: ay,
+      w: ANSWER_SIZE,
+      h: ANSWER_SIZE,
+    }));
     const stopsW = 4 * STOP_SIZE + 3 * GAP;
     const sx = Math.max(PET_CORNER.w + 10, (v.w - stopsW) / 2);
     const sy = ay - GAP - STOP_SIZE;
@@ -717,14 +881,24 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     const total = 4 * STOP_SIZE + 3 * GAP + 20 + ANSWER_SIZE;
     const top = (v.h - total) / 2;
     const cx = v.w - M - ANSWER_SIZE / 2;
-    stops = STOPS.map((_, i) => ({ x: cx - STOP_SIZE / 2, y: top + i * (STOP_SIZE + GAP), w: STOP_SIZE, h: STOP_SIZE }));
+    stops = STOPS.map((_, i) => ({
+      x: cx - STOP_SIZE / 2,
+      y: top + i * (STOP_SIZE + GAP),
+      w: STOP_SIZE,
+      h: STOP_SIZE,
+    }));
     answer = { x: cx - ANSWER_SIZE / 2, y: top + total - ANSWER_SIZE, w: ANSWER_SIZE, h: ANSWER_SIZE };
     area = { x: PET_CORNER.w + 10, y: M, w: v.w - ANSWER_SIZE - 3 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
   } else {
     const total = 4 * STOP_SIZE + 4 * GAP + ANSWER_SIZE;
     const x0 = (v.w - total) / 2;
     const bottom = v.h - PET_CORNER.h - 10;
-    stops = STOPS.map((_, i) => ({ x: x0 + i * (STOP_SIZE + GAP), y: bottom - STOP_SIZE - (ANSWER_SIZE - STOP_SIZE) / 2, w: STOP_SIZE, h: STOP_SIZE }));
+    stops = STOPS.map((_, i) => ({
+      x: x0 + i * (STOP_SIZE + GAP),
+      y: bottom - STOP_SIZE - (ANSWER_SIZE - STOP_SIZE) / 2,
+      w: STOP_SIZE,
+      h: STOP_SIZE,
+    }));
     answer = { x: x0 + total - ANSWER_SIZE, y: bottom - ANSWER_SIZE, w: ANSWER_SIZE, h: ANSWER_SIZE };
     const top = HOME_CORNER.h + 10;
     area = { x: M, y: top, w: v.w - 2 * M, h: bottom - ANSWER_SIZE - M - top };
@@ -741,7 +915,10 @@ export function lensLayout(v: View, level: number): LensLayout | null {
 
 /** The glass stays on the table. */
 export function clampGlass(p: { x: number; y: number }, table: Rect): { x: number; y: number } {
-  return { x: Math.min(table.x + table.w - GLASS_R, Math.max(table.x + GLASS_R, p.x)), y: Math.min(table.y + table.h - GLASS_R, Math.max(table.y + GLASS_R, p.y)) };
+  return {
+    x: Math.min(table.x + table.w - GLASS_R, Math.max(table.x + GLASS_R, p.x)),
+    y: Math.min(table.y + table.h - GLASS_R, Math.max(table.y + GLASS_R, p.y)),
+  };
 }
 
 // ----- the round's tally -----
@@ -783,9 +960,18 @@ export const PLANS: readonly PlanInfo[] = [
   { level: 3, name: 'Anyone there? Turn the dial to find swimmers in a drop' },
   { level: 4, name: 'Just enough: set the dial to just the view asked for' },
   { level: 5, name: "Alive or can't tell yet: look closer, then say if the ringed speck is alive" },
-  { level: 6, name: 'One cell or many: look closer, then sort each slide into one cell, many cells or not cells' },
-  { level: 7, name: "Wall clue: look closer, then say plant cells, animal cells or can't tell yet; the wall is the clue, not the colour" },
-  { level: 8, name: "Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet" },
+  {
+    level: 6,
+    name: 'One cell or many: look closer, then sort each slide into one cell, many cells or not cells',
+  },
+  {
+    level: 7,
+    name: "Wall clue: look closer, then say plant cells, animal cells or can't tell yet; the wall is the clue, not the colour",
+  },
+  {
+    level: 8,
+    name: "Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet",
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -795,4 +981,5 @@ export const LEVELS: BandLevels = {
   prek: { min: 3, max: 4 },
   school: { min: 4, max: 8 },
 };
-export const planFor = (level: number): PlanInfo => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+export const planFor = (level: number): PlanInfo =>
+  PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

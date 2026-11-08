@@ -1,7 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { CONE_HIT, coneAfterServe, FRIEND_HIT, FRIEND_SCALE, freshSupport, supportMiss, supportPeek, TWO_CONE_ORDERS, twoConeLayout, twoConeRoute, CHANGED_ORDERS, DISTINCT_TRIPLES, FLAVORS, spokenTopFirst, type Order, countSlots, scoopCounts, complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
+import {
+  CONE_HIT,
+  coneAfterServe,
+  FRIEND_HIT,
+  FRIEND_SCALE,
+  freshSupport,
+  supportMiss,
+  supportPeek,
+  TWO_CONE_ORDERS,
+  twoConeLayout,
+  twoConeRoute,
+  CHANGED_ORDERS,
+  DISTINCT_TRIPLES,
+  FLAVORS,
+  spokenTopFirst,
+  type Order,
+  countSlots,
+  scoopCounts,
+  complete,
+  customerToServe,
+  makeCustomerChoices,
+  CONE_KINDS,
+  dressShop,
+  makeOrders,
+  nextNeeded,
+  PLANS,
+  planFor,
+  scoopToTake,
+  tryScoop,
+  WINDOW_SCENES,
+} from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -16,7 +46,8 @@ describe('Scoop Shop', () => {
           expect(o.scoops.length).toBeLessThanOrEqual(plan.max);
           if (o.ordered) expect(new Set(o.scoops).size).toBe(o.scoops.length);
         }
-        if (plan.mode === 'count') orders.slice(1).forEach((o, i) => expect(o.scoops.length).not.toBe(orders[i].scoops.length));
+        if (plan.mode === 'count')
+          orders.slice(1).forEach((o, i) => expect(o.scoops.length).not.toBe(orders[i].scoops.length));
       }
     }
   });
@@ -70,7 +101,11 @@ describe('Scoop Shop', () => {
         const { flavors, orders } = makeOrders(plan, new Rng(seed));
         for (const order of orders) {
           const cone: ColorName[] = [];
-          for (let next = scoopToTake(plan, order, cone, flavors); next; next = scoopToTake(plan, order, cone, flavors)) {
+          for (
+            let next = scoopToTake(plan, order, cone, flavors);
+            next;
+            next = scoopToTake(plan, order, cone, flavors)
+          ) {
             expect(flavors).toContain(next);
             expect(tryScoop(plan, order, cone, next), `${plan.name} seed ${seed}`).toBe('add');
             cone.push(next);
@@ -110,10 +145,10 @@ describe('Scoop Shop', () => {
       firstSides.add(choices[0].match);
       choices.forEach((choice, i) => {
         expect(new Set(choice.pictures).size).toBe(2);
-        expect(choice.pictures.filter(c => c === choice.scoop)).toHaveLength(1);
+        expect(choice.pictures.filter((c) => c === choice.scoop)).toHaveLength(1);
         expect(customerToServe(choice, choice.match)).toBe(true);
         expect(customerToServe(choice, 1 - choice.match)).toBe(false);
-        choice.pictures.forEach(c => expect(flavors).toContain(c));
+        choice.pictures.forEach((c) => expect(flavors).toContain(c));
         if (i) {
           const previous = choices[i - 1];
           expect(choice.match).not.toBe(previous.match);
@@ -145,8 +180,8 @@ describe('Scoop Shop', () => {
         previous = needed;
         seen.add(start);
         const cone = order.scoops.slice(0, start);
-        expect(countSlots(order, cone.length).filter(filled => !filled)).toHaveLength(needed);
-        const wrong = flavors.find(c => c !== cone[0])!;
+        expect(countSlots(order, cone.length).filter((filled) => !filled)).toHaveLength(needed);
+        const wrong = flavors.find((c) => c !== cone[0])!;
         expect(tryScoop(plan, order, cone, wrong)).toBe('wrong');
         while (!complete(plan, order, cone)) {
           const next = scoopToTake(plan, order, cone, flavors)!;
@@ -178,7 +213,7 @@ describe('Scoop Shop', () => {
           expect(count).toBeLessThanOrEqual(4);
         });
         if (rows[0].count !== rows[1].count) unequal++;
-        const outsider = flavors.find(c => !order.scoops.includes(c))!;
+        const outsider = flavors.find((c) => !order.scoops.includes(c))!;
         expect(tryScoop(plan, order, [], outsider)).toBe('wrong');
         for (const first of [0, 1]) {
           const cone: ColorName[] = [];
@@ -224,27 +259,33 @@ describe('Scoop Shop', () => {
 describe('Scoop Shop change and reverse', () => {
   // A separate product enumeration proves completeness, including every position/replacement.
   const triples: ColorName[][] = [];
-  for (const a of FLAVORS) for (const b of FLAVORS) for (const c of FLAVORS) {
-    if (new Set([a, b, c]).size === 3) triples.push([a, b, c]);
-  }
+  for (const a of FLAVORS)
+    for (const b of FLAVORS)
+      for (const c of FLAVORS) {
+        if (new Set([a, b, c]).size === 3) triples.push([a, b, c]);
+      }
   const key = (o: Order) => `${o.original?.join(',')}:${o.changeIndex}:${o.scoops.join(',')}`;
 
   it('contains exactly the 120 distinct triples and all 1080 one-position changes', () => {
     expect(DISTINCT_TRIPLES).toHaveLength(120);
-    expect(new Set(DISTINCT_TRIPLES.map(s => s.join(',')))).toEqual(new Set(triples.map(s => s.join(','))));
+    expect(new Set(DISTINCT_TRIPLES.map((s) => s.join(',')))).toEqual(
+      new Set(triples.map((s) => s.join(','))),
+    );
     const expected = new Set<string>();
-    for (const original of triples) for (let at = 0; at < 3; at++) for (const color of FLAVORS) {
-      if (original.includes(color)) continue;
-      const scoops = original.map((c, i) => i === at ? color : c);
-      expected.add(key({ original, changeIndex: at, scoops, ordered: true }));
-    }
+    for (const original of triples)
+      for (let at = 0; at < 3; at++)
+        for (const color of FLAVORS) {
+          if (original.includes(color)) continue;
+          const scoops = original.map((c, i) => (i === at ? color : c));
+          expected.add(key({ original, changeIndex: at, scoops, ordered: true }));
+        }
     expect(CHANGED_ORDERS).toHaveLength(1080);
     expect(new Set(CHANGED_ORDERS.map(key))).toEqual(expected);
     for (const order of CHANGED_ORDERS) {
       expect(order.ordered).toBe(true);
       expect(order.original).not.toBe(order.scoops);
       expect(new Set(order.scoops).size).toBe(3);
-      const differences = order.scoops.flatMap((c, i) => c !== order.original![i] ? [i] : []);
+      const differences = order.scoops.flatMap((c, i) => (c !== order.original![i] ? [i] : []));
       expect(differences).toEqual([order.changeIndex]);
       expect(order.original).not.toContain(order.scoops[order.changeIndex!]);
     }
@@ -265,18 +306,20 @@ describe('Scoop Shop change and reverse', () => {
   it('rejects each wrong scoop without mutation and finishes every finite request through useful next-needed hints', () => {
     for (const level of [8, 9]) {
       const plan = planFor(level);
-      const family: Order[] = level === 8 ? CHANGED_ORDERS : triples.map(scoops => ({ scoops, ordered: true }));
+      const family: Order[] =
+        level === 8 ? CHANGED_ORDERS : triples.map((scoops) => ({ scoops, ordered: true }));
       for (const order of family) {
         const beforeOrder = JSON.stringify(order);
         const cone: ColorName[] = [];
         for (let i = 0; i < 3; i++) {
           expect(complete(plan, order, cone)).toBe(false);
           const beforeCone = [...cone];
-          for (const wrong of FLAVORS.filter(c => c !== order.scoops[i])) {
+          for (const wrong of FLAVORS.filter((c) => c !== order.scoops[i])) {
             expect(tryScoop(plan, order, cone, wrong)).toBe('wrong');
             expect(cone).toEqual(beforeCone);
           }
-          if (level === 8 && i === order.changeIndex) expect(tryScoop(plan, order, cone, order.original![i])).toBe('wrong');
+          if (level === 8 && i === order.changeIndex)
+            expect(tryScoop(plan, order, cone, order.original![i])).toBe('wrong');
           const hint = nextNeeded(order, cone)!;
           expect(hint).toBe(order.scoops[i]);
           expect(scoopToTake(plan, order, cone, FLAVORS)).toBe(hint);
@@ -296,58 +339,91 @@ describe('Scoop Shop change and reverse', () => {
   it('generates deterministic independent orders with all six tubs, leaving prior level IDs unchanged', () => {
     expect(planFor(8)).toMatchObject({ mode: 'change', customers: 3, min: 3, max: 3, flavors: 6 });
     expect(planFor(9)).toMatchObject({ mode: 'topfirst', customers: 3, min: 3, max: 3, flavors: 6 });
-    expect([1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13].map(level => planFor(level).mode))
-      .toEqual(['free', 'one', 'pair', 'count', 'stack', 'memory', 'two', 'free', 'customer', 'count', 'mixed']);
-    for (const level of [8, 9]) for (let seed = 1; seed <= 300; seed++) {
-      const a = makeOrders(planFor(level), new Rng(seed));
-      expect(a).toEqual(makeOrders(planFor(level), new Rng(seed)));
-      expect(a.orders).toHaveLength(3);
-      expect(new Set(a.flavors)).toEqual(new Set(FLAVORS));
-      a.orders.forEach(order => {
-        expect(order.ordered).toBe(true);
-        expect(order.scoops).toHaveLength(3);
-        order.scoops.forEach(c => expect(a.flavors).toContain(c));
-      });
-      const saved = JSON.stringify(a.orders.slice(1));
-      const registry = JSON.stringify(level === 8 ? CHANGED_ORDERS : DISTINCT_TRIPLES);
-      a.orders[0].scoops[0] = 'red';
-      if (a.orders[0].original) a.orders[0].original![0] = 'red';
-      expect(JSON.stringify(a.orders.slice(1))).toBe(saved);
-      expect(JSON.stringify(level === 8 ? CHANGED_ORDERS : DISTINCT_TRIPLES)).toBe(registry);
-    }
+    expect([1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13].map((level) => planFor(level).mode)).toEqual([
+      'free',
+      'one',
+      'pair',
+      'count',
+      'stack',
+      'memory',
+      'two',
+      'free',
+      'customer',
+      'count',
+      'mixed',
+    ]);
+    for (const level of [8, 9])
+      for (let seed = 1; seed <= 300; seed++) {
+        const a = makeOrders(planFor(level), new Rng(seed));
+        expect(a).toEqual(makeOrders(planFor(level), new Rng(seed)));
+        expect(a.orders).toHaveLength(3);
+        expect(new Set(a.flavors)).toEqual(new Set(FLAVORS));
+        a.orders.forEach((order) => {
+          expect(order.ordered).toBe(true);
+          expect(order.scoops).toHaveLength(3);
+          order.scoops.forEach((c) => expect(a.flavors).toContain(c));
+        });
+        const saved = JSON.stringify(a.orders.slice(1));
+        const registry = JSON.stringify(level === 8 ? CHANGED_ORDERS : DISTINCT_TRIPLES);
+        a.orders[0].scoops[0] = 'red';
+        if (a.orders[0].original) a.orders[0].original![0] = 'red';
+        expect(JSON.stringify(a.orders.slice(1))).toBe(saved);
+        expect(JSON.stringify(level === 8 ? CHANGED_ORDERS : DISTINCT_TRIPLES)).toBe(registry);
+      }
   });
 
   it('keeps named numeric seeds for bottom/middle/top changes and two reverse requests reproducible', () => {
     const cases = [
-      { seed: 1, original: ['yellow', 'brown', 'purple'], changeIndex: 0, scoops: ['blue', 'brown', 'purple'] },
-      { seed: 3, original: ['brown', 'green', 'yellow'], changeIndex: 1, scoops: ['brown', 'pink', 'yellow'] },
-      { seed: 4, original: ['purple', 'blue', 'yellow'], changeIndex: 2, scoops: ['purple', 'blue', 'green'] },
+      {
+        seed: 1,
+        original: ['yellow', 'brown', 'purple'],
+        changeIndex: 0,
+        scoops: ['blue', 'brown', 'purple'],
+      },
+      {
+        seed: 3,
+        original: ['brown', 'green', 'yellow'],
+        changeIndex: 1,
+        scoops: ['brown', 'pink', 'yellow'],
+      },
+      {
+        seed: 4,
+        original: ['purple', 'blue', 'yellow'],
+        changeIndex: 2,
+        scoops: ['purple', 'blue', 'green'],
+      },
     ];
     for (const { seed, ...expected } of cases) {
       expect(makeOrders(planFor(8), new Rng(seed)).orders[0]).toEqual({ ...expected, ordered: true });
     }
-    expect(spokenTopFirst(makeOrders(planFor(9), new Rng(1)).orders[0])).toEqual(['purple', 'brown', 'yellow']);
+    expect(spokenTopFirst(makeOrders(planFor(9), new Rng(1)).orders[0])).toEqual([
+      'purple',
+      'brown',
+      'yellow',
+    ]);
     expect(spokenTopFirst(makeOrders(planFor(9), new Rng(2)).orders[0])).toEqual(['pink', 'blue', 'brown']);
   });
 });
 
 describe('Scoop Shop two cones (level 7)', () => {
   const plan = planFor(7);
-  const key = (p: Order[]) => p.map(o => o.scoops.join('+')).join('|');
+  const key = (p: Order[]) => p.map((o) => o.scoops.join('+')).join('|');
 
   it('holds exactly the 360 pairs: a single and an ordered distinct pair, on either side, three scoops altogether', () => {
     const expected = new Set<string>();
-    for (const single of FLAVORS) for (const a of FLAVORS) for (const b of FLAVORS) {
-      if (a === b) continue;
-      expected.add(`${single}|${a}+${b}`);
-      expected.add(`${a}+${b}|${single}`);
-    }
+    for (const single of FLAVORS)
+      for (const a of FLAVORS)
+        for (const b of FLAVORS) {
+          if (a === b) continue;
+          expected.add(`${single}|${a}+${b}`);
+          expected.add(`${a}+${b}|${single}`);
+        }
     expect(TWO_CONE_ORDERS).toHaveLength(360);
     expect(new Set(TWO_CONE_ORDERS.map(key))).toEqual(expected);
     for (const p of TWO_CONE_ORDERS) {
       expect(p[0].scoops.length + p[1].scoops.length).toBe(3);
       expect(p[0].scoops.join()).not.toBe(p[1].scoops.join());
-      expect(p.every(o => o.ordered)).toBe(true);
+      expect(p.every((o) => o.ordered)).toBe(true);
     }
   });
 
@@ -364,7 +440,7 @@ describe('Scoop Shop two cones (level 7)', () => {
       seen.add(`${single}:${two.scoops.includes(one.scoops[0]) ? 'shared' : 'disjoint'}`);
       // The draw copies its arrays, so changing a round never changes the family.
       a.orders[0].scoops[0] = 'red';
-      expect(TWO_CONE_ORDERS.some(p => p[0].scoops[0] === 'red')).toBe(false);
+      expect(TWO_CONE_ORDERS.some((p) => p[0].scoops[0] === 'red')).toBe(false);
     }
     expect(seen).toEqual(new Set(['left:shared', 'left:disjoint', 'right:shared', 'right:disjoint']));
   });
@@ -373,21 +449,21 @@ describe('Scoop Shop two cones (level 7)', () => {
     // two-overlap-left: the single's flavour is also in the pair; two-disjoint-right: no flavour shared.
     const overlap = makeOrders(plan, new Rng(7)).orders;
     const disjoint = makeOrders(plan, new Rng(1)).orders;
-    expect(overlap.map(o => o.scoops)).toEqual([['pink'], ['pink', 'yellow']]);
-    expect(disjoint.map(o => o.scoops)).toEqual([['brown', 'blue'], ['yellow']]);
+    expect(overlap.map((o) => o.scoops)).toEqual([['pink'], ['pink', 'yellow']]);
+    expect(disjoint.map((o) => o.scoops)).toEqual([['brown', 'blue'], ['yellow']]);
   });
 
   it('lets each cone reject wrong scoops untouched and finish in any service order, the switch included', () => {
     for (const orders of TWO_CONE_ORDERS) {
       for (let variant = 0; variant < 3; variant++) {
         const route = twoConeRoute(orders, variant);
-        expect(route.filter(i => i === 0)).toHaveLength(orders[0].scoops.length);
+        expect(route.filter((i) => i === 0)).toHaveLength(orders[0].scoops.length);
         const cones: ColorName[][] = [[], []];
         for (const i of route) {
-          const wrong = FLAVORS.find(c => c !== nextNeeded(orders[i], cones[i]))!;
-          const before = cones.map(c => c.join());
+          const wrong = FLAVORS.find((c) => c !== nextNeeded(orders[i], cones[i]))!;
+          const before = cones.map((c) => c.join());
           expect(tryScoop(plan, orders[i], cones[i], wrong)).not.toBe('add');
-          expect(cones.map(c => c.join())).toEqual(before);
+          expect(cones.map((c) => c.join())).toEqual(before);
           const next = scoopToTake(plan, orders[i], cones[i], FLAVORS)!;
           expect(tryScoop(plan, orders[i], cones[i], next)).toBe('add');
           cones[i].push(next);
@@ -424,11 +500,22 @@ describe('Scoop Shop two cones (level 7)', () => {
   });
 
   it('lays out two friends and two cones as separate targets at least 100 wide, clear of the tubs', () => {
-    const rect = (x: number, y: number, h: { x: number; y: number; w: number; h: number }, k = 1) =>
-      ({ l: x + h.x * k, r: x + (h.x + h.w) * k, t: y + h.y * k, b: y + (h.y + h.h) * k });
-    for (const [w, h] of [[1024, 768], [1024, 1365], [1366, 768]]) {
+    const rect = (x: number, y: number, h: { x: number; y: number; w: number; h: number }, k = 1) => ({
+      l: x + h.x * k,
+      r: x + (h.x + h.w) * k,
+      t: y + h.y * k,
+      b: y + (h.y + h.h) * k,
+    });
+    for (const [w, h] of [
+      [1024, 768],
+      [1024, 1365],
+      [1366, 768],
+    ]) {
       const top = h * 0.6;
-      const rects = twoConeLayout(w, top).flatMap(s => [rect(s.friend.x, s.friend.y, FRIEND_HIT, FRIEND_SCALE), rect(s.cone.x, s.cone.y, CONE_HIT)]);
+      const rects = twoConeLayout(w, top).flatMap((s) => [
+        rect(s.friend.x, s.friend.y, FRIEND_HIT, FRIEND_SCALE),
+        rect(s.cone.x, s.cone.y, CONE_HIT),
+      ]);
       for (const a of rects) {
         expect(a.r - a.l).toBeGreaterThanOrEqual(100);
         expect(a.b - a.t).toBeGreaterThanOrEqual(100);
@@ -437,7 +524,13 @@ describe('Scoop Shop two cones (level 7)', () => {
         expect(a.l).toBeGreaterThan(0);
         expect(a.r).toBeLessThan(w);
       }
-      rects.forEach((a, i) => rects.slice(i + 1).forEach(b => expect(a.r <= b.l || b.r <= a.l || a.b <= b.t || b.b <= a.t, `${w}x${h}`).toBe(true)));
+      rects.forEach((a, i) =>
+        rects
+          .slice(i + 1)
+          .forEach((b) =>
+            expect(a.r <= b.l || b.r <= a.l || a.b <= b.t || b.b <= a.t, `${w}x${h}`).toBe(true),
+          ),
+      );
     }
   });
 });

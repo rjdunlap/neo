@@ -5,9 +5,20 @@ export const HOW_TO: GameHowTo = {
   goal: 'Run a lemonade stand for a few days and learn from who comes.',
   steps: [
     { to: 1, text: 'Look at the weather sign, then tap how many cups to make.' },
-    { from: 2, to: 2, text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups to make.' },
-    { from: 3, to: 4, text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups and a price in shells.' },
-    { from: 5, text: 'Each morning two boats sell lemons: count the lemons and shells on their signs and tap the cheaper boat. Then tap how many cups and a price in shells.' },
+    {
+      from: 2,
+      to: 2,
+      text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups to make.',
+    },
+    {
+      from: 3,
+      to: 4,
+      text: 'Look at the weather sign (a ferry or a quiet day can join it), then tap how many cups and a price in shells.',
+    },
+    {
+      from: 5,
+      text: 'Each morning two boats sell lemons: count the lemons and shells on their signs and tap the cheaper boat. Then tap how many cups and a price in shells.',
+    },
     'Tap OPEN and watch the friends buy, then look at the new row of the table. Tap a row to hear it.',
     'The lightbulb asks the pet for help, based on the table so far.',
   ],

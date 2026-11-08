@@ -8,7 +8,14 @@ import { overlaps, type Rect } from '../../content/lands';
  * Callers pass the smallest size the scene tries, plus some margin, so a seeded search that just misses a tight gap
  * does not turn into a flaky test.
  */
-export function hasRoom(keepOut: readonly Rect[], view: { w: number; h: number }, ground: number, size: { w: number; h: number }, top: number, bottom: number): boolean {
+export function hasRoom(
+  keepOut: readonly Rect[],
+  view: { w: number; h: number },
+  ground: number,
+  size: { w: number; h: number },
+  top: number,
+  bottom: number,
+): boolean {
   const step = 4;
   for (let y = top; y <= bottom; y += step) {
     for (let x = 0; x + size.w <= view.w; x += step) {

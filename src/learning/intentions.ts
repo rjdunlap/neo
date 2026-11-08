@@ -22,15 +22,57 @@ export interface StepIntention {
 
 export const WELCOME_INTENTIONS: Record<WelcomeStep, Record<WelcomeBand, StepIntention>> = {
   pretty: {
-    preschool: { game: 'stamp-studio', level: 3, subject: 'art', kind: 'free', intention: 'Makes and arranges a picture by choice.', did: 'made a picture' },
-    prek: { game: 'stamp-studio', level: 4, subject: 'art', kind: 'free', intention: 'Makes and arranges a picture by choice.', did: 'made a picture' },
+    preschool: {
+      game: 'stamp-studio',
+      level: 3,
+      subject: 'art',
+      kind: 'free',
+      intention: 'Makes and arranges a picture by choice.',
+      did: 'made a picture',
+    },
+    prek: {
+      game: 'stamp-studio',
+      level: 4,
+      subject: 'art',
+      kind: 'free',
+      intention: 'Makes and arranges a picture by choice.',
+      did: 'made a picture',
+    },
   },
   yummy: {
-    preschool: { game: 'pet-kitchen', level: 2, subject: 'number', kind: 'checked', intention: 'Shares one whole into four equal parts.', did: 'made four equal plates' },
-    prek: { game: 'pet-kitchen', level: 5, subject: 'number', kind: 'checked', intention: 'Doubles each part of a pictured recipe.', did: 'made the recipe twice over' },
+    preschool: {
+      game: 'pet-kitchen',
+      level: 2,
+      subject: 'number',
+      kind: 'checked',
+      intention: 'Shares one whole into four equal parts.',
+      did: 'made four equal plates',
+    },
+    prek: {
+      game: 'pet-kitchen',
+      level: 5,
+      subject: 'number',
+      kind: 'checked',
+      intention: 'Doubles each part of a pictured recipe.',
+      did: 'made the recipe twice over',
+    },
   },
   song: {
-    preschool: { game: 'song-maker', level: 2, subject: 'music', kind: 'free', intention: 'Explores high and low notes in a repeating loop.', did: 'played a tune' },
-    prek: { game: 'song-maker', level: 2, subject: 'music', kind: 'free', intention: 'Explores high and low notes in a repeating loop.', did: 'played a tune' },
+    preschool: {
+      game: 'song-maker',
+      level: 2,
+      subject: 'music',
+      kind: 'free',
+      intention: 'Explores high and low notes in a repeating loop.',
+      did: 'played a tune',
+    },
+    prek: {
+      game: 'song-maker',
+      level: 2,
+      subject: 'music',
+      kind: 'free',
+      intention: 'Explores high and low notes in a repeating loop.',
+      did: 'played a tune',
+    },
   },
 };

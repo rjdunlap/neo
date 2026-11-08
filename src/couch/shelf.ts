@@ -24,21 +24,39 @@ export interface ShelfEntry {
 
 /** Where one player stands on one course. Player 1 is the one who plays alone. */
 export function shelfEntry(save: CouchSave, id: CourseId, player: 0 | 1 = 0): ShelfEntry {
-  const spec = courseSpec(id), saved = save.courses[id], rec = saved?.players[player];
-  const clean = rec?.clean ?? null, assisted = rec?.assisted ?? null;
+  const spec = courseSpec(id),
+    saved = save.courses[id],
+    rec = saved?.players[player];
+  const clean = rec?.clean ?? null,
+    assisted = rec?.assisted ?? null;
   const best = clean ?? assisted;
-  return { id, best, helped: clean === null && assisted !== null, minimum: spec.minimum, over: best === null ? null : Math.max(0, best - spec.minimum), runs: rec?.runs ?? 0, inProgress: !!saved?.run };
+  return {
+    id,
+    best,
+    helped: clean === null && assisted !== null,
+    minimum: spec.minimum,
+    over: best === null ? null : Math.max(0, best - spec.minimum),
+    runs: rec?.runs ?? 0,
+    inProgress: !!saved?.run,
+  };
 }
 
 /** Every puzzle, gentle ones first, as the shelf shows them. */
-export const shelf = (save: CouchSave, player: 0 | 1 = 0): ShelfEntry[] => COURSE_IDS.map(id => shelfEntry(save, id, player));
+export const shelf = (save: CouchSave, player: 0 | 1 = 0): ShelfEntry[] =>
+  COURSE_IDS.map((id) => shelfEntry(save, id, player));
 
 /** "14 slides · 3 above par (11)", the line under a puzzle on the shelf. */
 export function standing(entry: ShelfEntry, info: CourseInfo = courseInfo(entry.id)): string {
   if (entry.best === null || entry.over === null) return `Not finished yet · par ${entry.minimum}`;
   const under = entry.minimum - entry.best;
-  const gap = info.reference && under > 0 ? `${under} under par (${entry.minimum})` : info.reference && under === 0 ? `right on par (${entry.minimum})`
-    : entry.over === 0 ? 'par: the fewest possible' : `${entry.over} above par (${entry.minimum})`;
+  const gap =
+    info.reference && under > 0
+      ? `${under} under par (${entry.minimum})`
+      : info.reference && under === 0
+        ? `right on par (${entry.minimum})`
+        : entry.over === 0
+          ? 'par: the fewest possible'
+          : `${entry.over} above par (${entry.minimum})`;
   return `${countOf(info, entry.best)} · ${gap}${entry.helped ? ' · with help' : ''}`;
 }
 
@@ -51,5 +69,5 @@ export function canWatchRoute(save: CouchSave, id: CourseId, justFinished = fals
   if (!courseInfo(id).routes) return false;
   const saved = save.courses[id];
   if (saved?.run) return false;
-  return justFinished || !!saved?.players.some(p => p.runs > 0);
+  return justFinished || !!saved?.players.some((p) => p.runs > 0);
 }

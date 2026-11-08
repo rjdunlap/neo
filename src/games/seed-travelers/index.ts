@@ -10,11 +10,42 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { basketArt, BellowsArt, boardFrame, boardMark, burrArt, hillArt, iconArt, plumeArt, ringArt, sceneArt, trayArt } from './art';
+import {
+  basketArt,
+  BellowsArt,
+  boardFrame,
+  boardMark,
+  burrArt,
+  hillArt,
+  iconArt,
+  plumeArt,
+  ringArt,
+  sceneArt,
+  trayArt,
+} from './art';
 import {
   LEVELS,
-  BASKET, BELLOWS, CARRIERS, CRITTER_R, CRITTER_SCALE, FURRY, planFor, roundFor, SEED_HIT, SeedState, tripPoint, UNITS,
-  type Carrier, type Furry, type Pt, type Round, type SeedLayout, seedLayout, type Target, type Trip, type Unit,
+  BASKET,
+  BELLOWS,
+  CARRIERS,
+  CRITTER_R,
+  CRITTER_SCALE,
+  FURRY,
+  planFor,
+  roundFor,
+  SEED_HIT,
+  SeedState,
+  tripPoint,
+  UNITS,
+  type Carrier,
+  type Furry,
+  type Pt,
+  type Round,
+  type SeedLayout,
+  seedLayout,
+  type Target,
+  type Trip,
+  type Unit,
 } from './logic';
 
 const ASK: Record<number, LineId> = { 1: 'seeds.ask.breeze', 2: 'seeds.ask.fur', 3: 'seeds.ask.both' };
@@ -148,7 +179,10 @@ class SeedTravelers implements Game {
     const head = l.cell * 0.8;
     for (const t of this.state.trials) {
       const m = boardMark(t.arrived, l.cell);
-      m.position.set(head + CARRIERS.indexOf(t.carrier) * l.cell + l.cell / 2, head + UNITS.indexOf(t.unit) * l.cell + l.cell / 2);
+      m.position.set(
+        head + CARRIERS.indexOf(t.carrier) * l.cell + l.cell / 2,
+        head + UNITS.indexOf(t.unit) * l.cell + l.cell / 2,
+      );
       b.addChild(m);
     }
     b.position.set(l.board.x, l.board.y);
@@ -211,13 +245,17 @@ class SeedTravelers implements Game {
   private seedAt(u: Unit, l: SeedLayout): Pt {
     const trip = this.shown;
     const c = this.critter;
-    const onBack = (): Pt => (c ? { x: c.x + BACK.x * CRITTER_SCALE, y: c.y + BACK.y * CRITTER_SCALE } : l.patch[u]);
+    const onBack = (): Pt =>
+      c ? { x: c.x + BACK.x * CRITTER_SCALE, y: c.y + BACK.y * CRITTER_SCALE } : l.patch[u];
     if (trip && trip.unit === u) {
       const t = this.anim.t;
       if (trip.carrier === 'breeze') {
         if (trip.replay && this.anim.back < 1) {
           const b = ease.inOutSine(this.anim.back);
-          return { x: lerp(l.inTray[u].x, l.patch[u].x, b), y: lerp(l.inTray[u].y, l.patch[u].y, b) - Math.sin(b * Math.PI) * 120 };
+          return {
+            x: lerp(l.inTray[u].x, l.patch[u].x, b),
+            y: lerp(l.inTray[u].y, l.patch[u].y, b) - Math.sin(b * Math.PI) * 120,
+          };
         }
         return tripPoint(l, trip, ease.inOutSine(t));
       }
@@ -310,7 +348,9 @@ class SeedTravelers implements Game {
     g.circle(0, 0, 70).fill(0xffffff).stroke({ width: 5, color: 0x2b2b3a, alpha: 0.5 });
     for (let i = 0; i < 12; i++) {
       const x = -55 + i * 10;
-      g.moveTo(x, 60).quadraticCurveTo(x + 14, 10, x + 4, -40).stroke({ width: 5, color: c.sw.fill, cap: 'round' });
+      g.moveTo(x, 60)
+        .quadraticCurveTo(x + 14, 10, x + 4, -40)
+        .stroke({ width: 5, color: c.sw.fill, cap: 'round' });
     }
     bubble.addChild(g);
     const burr = burrArt();
@@ -321,13 +361,15 @@ class SeedTravelers implements Game {
     bubble.scale.set(0.2);
     this.world.addChild(bubble);
     const e = this.epoch;
-    void this.ctx.tw.to(bubble.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }).then(async () => {
-      if (bubble.destroyed) return;
-      await this.ctx.tw.wait(1.4);
-      if (!this.alive || e !== this.epoch || bubble.destroyed) return;
-      await this.ctx.tw.to(bubble, { alpha: 0 }, { duration: 0.4 });
-      if (!bubble.destroyed) bubble.destroy({ children: true });
-    });
+    void this.ctx.tw
+      .to(bubble.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack })
+      .then(async () => {
+        if (bubble.destroyed) return;
+        await this.ctx.tw.wait(1.4);
+        if (!this.alive || e !== this.epoch || bubble.destroyed) return;
+        await this.ctx.tw.to(bubble, { alpha: 0 }, { duration: 0.4 });
+        if (!bubble.destroyed) bubble.destroy({ children: true });
+      });
   }
 
   // ----- a trip -----
@@ -383,12 +425,17 @@ class SeedTravelers implements Game {
     if (this.level === 3) this.refreshBoard();
     if (t.arrived) void this.rise();
     const line: LineId = t.arrived
-      ? t.carrier === 'breeze' ? 'seeds.arrived.breeze' : 'seeds.arrived.fur'
-      : t.carrier === 'breeze' ? 'seeds.stayed.breeze' : 'seeds.stayed.fur';
+      ? t.carrier === 'breeze'
+        ? 'seeds.arrived.breeze'
+        : 'seeds.arrived.fur'
+      : t.carrier === 'breeze'
+        ? 'seeds.stayed.breeze'
+        : 'seeds.stayed.fur';
     if (!t.arrived) sfx.squish();
     const e = this.epoch;
     const said = this.say(line).then(() => {
-      if (this.alive && e === this.epoch && this.level === 1 && first && t.arrived) void this.ctx.instruct('seeds.finish');
+      if (this.alive && e === this.epoch && this.level === 1 && first && t.arrived)
+        void this.ctx.instruct('seeds.finish');
     });
     if (wait) await said;
     return said;
@@ -514,7 +561,8 @@ export const seedTravelers: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
-  coplayHint: 'Point to where you think the seed will end up, the hill or the tray, and let {name} tap the helper; then swap.',
+  coplayHint:
+    'Point to where you think the seed will end up, the hill or the tray, and let {name} tap the helper; then swap.',
   offScreen: {
     all: 'Draw a seed together and talk about how it might travel: on the wind, or caught in fur?',
     // Under 3: no small loose object; blowing like the bellows carries the same idea.

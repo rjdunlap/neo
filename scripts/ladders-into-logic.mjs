@@ -23,7 +23,10 @@ function commentStart(src, start) {
     if (at === 0) return at;
     const prevStart = src.lastIndexOf('\n', at - 2) + 1;
     const line = src.slice(prevStart, at - 1).trim();
-    if (line.startsWith('//')) { at = prevStart; continue; }
+    if (line.startsWith('//')) {
+      at = prevStart;
+      continue;
+    }
     if (line.endsWith('*/')) {
       const open = src.lastIndexOf('/**', at - 1);
       if (open < 0) return at;
@@ -37,11 +40,26 @@ function commentStart(src, start) {
 /** Every identifier the expression reads (not property keys, not `.member` names). */
 function namesIn(node, out = new Set()) {
   if (!node || typeof node !== 'object') return out;
-  if (Array.isArray(node)) { for (const n of node) namesIn(n, out); return out; }
-  if (node.type === 'Identifier') { out.add(node.name); return out; }
-  if (node.type === 'Property') { if (node.computed) namesIn(node.key, out); namesIn(node.value, out); return out; }
-  if (node.type === 'MemberExpression') { namesIn(node.object, out); if (node.computed) namesIn(node.property, out); return out; }
-  for (const [k, v] of Object.entries(node)) if (k !== 'typeAnnotation' && v && typeof v === 'object') namesIn(v, out);
+  if (Array.isArray(node)) {
+    for (const n of node) namesIn(n, out);
+    return out;
+  }
+  if (node.type === 'Identifier') {
+    out.add(node.name);
+    return out;
+  }
+  if (node.type === 'Property') {
+    if (node.computed) namesIn(node.key, out);
+    namesIn(node.value, out);
+    return out;
+  }
+  if (node.type === 'MemberExpression') {
+    namesIn(node.object, out);
+    if (node.computed) namesIn(node.property, out);
+    return out;
+  }
+  for (const [k, v] of Object.entries(node))
+    if (k !== 'typeAnnotation' && v && typeof v === 'object') namesIn(v, out);
   return out;
 }
 
@@ -55,12 +73,14 @@ const declaredName = (stmt) => {
 const declares = (stmt, name) => {
   const d = stmt.type === 'ExportNamedDeclaration' ? stmt.declaration : stmt;
   if (!d) return false;
-  if (d.type === 'VariableDeclaration') return d.declarations.some((v) => v.id.type === 'Identifier' && v.id.name === name);
+  if (d.type === 'VariableDeclaration')
+    return d.declarations.some((v) => v.id.type === 'Identifier' && v.id.name === name);
   return (d.type === 'FunctionDeclaration' || d.type === 'ClassDeclaration') && d.id?.name === name;
 };
 
 /** Splice edits ({ at, end, text }) into src, last first. */
-const apply = (src, edits) => edits.sort((a, b) => b.at - a.at).reduce((s, e) => s.slice(0, e.at) + e.text + s.slice(e.end), src);
+const apply = (src, edits) =>
+  edits.sort((a, b) => b.at - a.at).reduce((s, e) => s.slice(0, e.at) + e.text + s.slice(e.end), src);
 
 /** Moves one game's table; returns null on success or the reason it was skipped. */
 export function moveLadder(id, { write = true } = {}) {
@@ -77,8 +97,12 @@ export function moveLadder(id, { write = true } = {}) {
   if (lAst.body.some((s) => declares(s, 'LEVELS'))) return 'logic.ts already declares LEVELS';
   const decl = (stmt.type === 'ExportNamedDeclaration' ? stmt.declaration : stmt).declarations[0];
 
-  const fromLogic = iAst.body.find((s) => s.type === 'ImportDeclaration' && s.source.value === './logic' && s.importKind !== 'type');
-  const logicNames = new Set(fromLogic?.specifiers.filter((s) => s.importKind !== 'type').map((s) => s.local.name) ?? []);
+  const fromLogic = iAst.body.find(
+    (s) => s.type === 'ImportDeclaration' && s.source.value === './logic' && s.importKind !== 'type',
+  );
+  const logicNames = new Set(
+    fromLogic?.specifiers.filter((s) => s.importKind !== 'type').map((s) => s.local.name) ?? [],
+  );
   const foreign = [...namesIn(decl.init)].filter((n) => !logicNames.has(n));
   if (foreign.length) return `uses ${foreign.join(', ')}, not imported from ./logic`;
 
@@ -94,7 +118,11 @@ export function moveLadder(id, { write = true } = {}) {
   if (fromLogic) {
     const brace = index.indexOf('{', fromLogic.start) + 1;
     const pad = index[brace] === ' ' ? ' ' : '';
-    iEdits.push({ at: brace, end: brace + pad.length, text: index[brace] === '\n' ? '\n  LEVELS,' : `${pad}LEVELS, ` });
+    iEdits.push({
+      at: brace,
+      end: brace + pad.length,
+      text: index[brace] === '\n' ? '\n  LEVELS,' : `${pad}LEVELS, `,
+    });
   } else {
     const last = iAst.body.filter((s) => s.type === 'ImportDeclaration').at(-1);
     iEdits.push({ at: last.end, end: last.end, text: `\nimport { LEVELS } from './logic';` });
@@ -105,8 +133,14 @@ export function moveLadder(id, { write = true } = {}) {
       .replace(/^import type \{ BandLevels \} from '\.\.\/\.\.\/progress\/difficulty';\n/m, '')
       .replace(/(import \{[^}]*?),\s*type BandLevels(\s*\} from '\.\.\/\.\.\/progress\/difficulty')/, '$1$2')
       .replace(/(import \{\s*)type BandLevels,\s*([^}]*\} from '\.\.\/\.\.\/progress\/difficulty')/, '$1$2')
-      .replace(/import type \{([^}]*?),\s*BandLevels(\s*\} from '\.\.\/\.\.\/progress\/difficulty')/, 'import type {$1$2')
-      .replace(/import type \{\s*BandLevels,\s*([^}]*\} from '\.\.\/\.\.\/progress\/difficulty')/, 'import type { $1');
+      .replace(
+        /import type \{([^}]*?),\s*BandLevels(\s*\} from '\.\.\/\.\.\/progress\/difficulty')/,
+        'import type {$1$2',
+      )
+      .replace(
+        /import type \{\s*BandLevels,\s*([^}]*\} from '\.\.\/\.\.\/progress\/difficulty')/,
+        'import type { $1',
+      );
   }
 
   // logic.ts: the table goes after the last statement declaring a name it uses (so it never reads one before it
@@ -114,8 +148,13 @@ export function moveLadder(id, { write = true } = {}) {
   // joins an existing difficulty import or gets its own.
   const used = namesIn(decl.init);
   const imports = lAst.body.filter((s) => s.type === 'ImportDeclaration');
-  const plans = (s) => ['PLANS', 'planFor', 'LEVEL_COUNT'].some((n) => declares(s, n)) || /^describe/.test(declaredName(s) ?? '');
-  const anchor = lAst.body.filter((s) => [...used].some((n) => declares(s, n))).at(-1) ?? lAst.body.find(plans) ?? lAst.body.at(-1);
+  const plans = (s) =>
+    ['PLANS', 'planFor', 'LEVEL_COUNT'].some((n) => declares(s, n)) ||
+    /^describe/.test(declaredName(s) ?? '');
+  const anchor =
+    lAst.body.filter((s) => [...used].some((n) => declares(s, n))).at(-1) ??
+    lAst.body.find(plans) ??
+    lAst.body.at(-1);
   const lEdits = [{ at: anchor.end, end: anchor.end, text: `\n\n${table.replace(/\n$/, '')}` }];
   const difficulty = imports.find((s) => s.source.value === '../../progress/difficulty');
   const hasType = difficulty?.specifiers.some((s) => s.local.name === 'BandLevels');
@@ -129,7 +168,9 @@ export function moveLadder(id, { write = true } = {}) {
     } else {
       const line = `import type { BandLevels } from '../../progress/difficulty';`;
       const last = imports.at(-1);
-      lEdits.push(last ? { at: last.end, end: last.end, text: `\n${line}` } : { at: 0, end: 0, text: `${line}\n` });
+      lEdits.push(
+        last ? { at: last.end, end: last.end, text: `\n${line}` } : { at: 0, end: 0, text: `${line}\n` },
+      );
     }
   }
   const nextLogic = apply(logic, lEdits);
@@ -145,14 +186,24 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const args = process.argv.slice(2);
   const ids = args.includes('--all')
-    ? readdirSync(gamesDir).filter((id) => existsSync(join(gamesDir, id, 'index.ts')) && /\bconst LEVELS\b/.test(readFileSync(join(gamesDir, id, 'index.ts'), 'utf8')))
+    ? readdirSync(gamesDir).filter(
+        (id) =>
+          existsSync(join(gamesDir, id, 'index.ts')) &&
+          /\bconst LEVELS\b/.test(readFileSync(join(gamesDir, id, 'index.ts'), 'utf8')),
+      )
     : args;
-  if (!ids.length) { console.error('usage: ladders-into-logic.mjs <id>… | --all'); process.exit(2); }
+  if (!ids.length) {
+    console.error('usage: ladders-into-logic.mjs <id>… | --all');
+    process.exit(2);
+  }
   let moved = 0;
   for (const id of ids) {
     const why = moveLadder(id);
     if (why) console.log(`skip ${id}: ${why}`);
-    else { moved++; console.log(`moved ${id}`); }
+    else {
+      moved++;
+      console.log(`moved ${id}`);
+    }
   }
   console.log(`${moved} moved, ${ids.length - moved} skipped`);
 }

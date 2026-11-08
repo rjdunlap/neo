@@ -21,7 +21,11 @@ export const PLANS: LassoPlan[] = [
   { mode: 'fives', name: 'Jars of 5: loop fives, then count by fives and the ones left over' },
   { mode: 'tens', name: 'Jars of 10: loop tens, then say the number (14, 30 or 34: tens and ones)' },
   { mode: 'groups', name: 'Equal groups: make 3 groups of 4, then say how many in all' },
-  { mode: 'tens', guess: true, name: 'About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number' },
+  {
+    mode: 'tens',
+    guess: true,
+    name: 'About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -76,7 +80,13 @@ export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
         const count = rng.int(2, 4);
         const size = rng.int(2, 5);
         if (count * size > 16 || count * size < 6) continue;
-        return { fireflies: count * size + rng.int(2, 3), jars: Array(count).fill(size), answer: count * size, ones: 0, group: { count, size } };
+        return {
+          fireflies: count * size + rng.int(2, 3),
+          jars: Array(count).fill(size),
+          answer: count * size,
+          ones: 0,
+          group: { count, size },
+        };
       }
     }
   }
@@ -155,7 +165,13 @@ export function inside(loop: readonly Point[], p: Point): boolean {
 export function nearestGroup(points: readonly Point[], free: readonly number[], n: number): number[] {
   if (free.length < n) return [];
   const seed = [...free].sort((a, b) => points[a].x - points[b].x || points[a].y - points[b].y)[0];
-  return [...free].sort((a, b) => Math.hypot(points[a].x - points[seed].x, points[a].y - points[seed].y) - Math.hypot(points[b].x - points[seed].x, points[b].y - points[seed].y)).slice(0, n);
+  return [...free]
+    .sort(
+      (a, b) =>
+        Math.hypot(points[a].x - points[seed].x, points[a].y - points[seed].y) -
+        Math.hypot(points[b].x - points[seed].x, points[b].y - points[seed].y),
+    )
+    .slice(0, n);
 }
 
 export interface DemoLoop {
@@ -177,18 +193,32 @@ export function demoLoop(points: readonly Point[], n: number, padding = 0.02): D
   addWindows([...all].sort((a, b) => points[a].x - points[b].x || points[a].y - points[b].y));
   addWindows([...all].sort((a, b) => points[a].y - points[b].y || points[a].x - points[b].x));
   for (const seed of all) {
-    candidates.push([...all].sort((a, b) => Math.hypot(points[a].x - points[seed].x, points[a].y - points[seed].y) - Math.hypot(points[b].x - points[seed].x, points[b].y - points[seed].y)).slice(0, n));
+    candidates.push(
+      [...all]
+        .sort(
+          (a, b) =>
+            Math.hypot(points[a].x - points[seed].x, points[a].y - points[seed].y) -
+            Math.hypot(points[b].x - points[seed].x, points[b].y - points[seed].y),
+        )
+        .slice(0, n),
+    );
   }
-  for (const scale of [1, 0.75, 0.5, 0.25, 0.1]) for (const indices of candidates) {
-    const chosen = indices.map((i) => points[i]);
-    const pad = padding * scale;
-    const x0 = Math.min(...chosen.map((p) => p.x)) - pad;
-    const x1 = Math.max(...chosen.map((p) => p.x)) + pad;
-    const y0 = Math.min(...chosen.map((p) => p.y)) - pad;
-    const y1 = Math.max(...chosen.map((p) => p.y)) + pad;
-    const loop = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
-    const got = all.filter((i) => inside(loop, points[i]));
-    if (got.length === n && indices.every((i) => got.includes(i))) return { indices: got, loop };
-  }
+  for (const scale of [1, 0.75, 0.5, 0.25, 0.1])
+    for (const indices of candidates) {
+      const chosen = indices.map((i) => points[i]);
+      const pad = padding * scale;
+      const x0 = Math.min(...chosen.map((p) => p.x)) - pad;
+      const x1 = Math.max(...chosen.map((p) => p.x)) + pad;
+      const y0 = Math.min(...chosen.map((p) => p.y)) - pad;
+      const y1 = Math.max(...chosen.map((p) => p.y)) + pad;
+      const loop = [
+        { x: x0, y: y0 },
+        { x: x1, y: y0 },
+        { x: x1, y: y1 },
+        { x: x0, y: y1 },
+      ];
+      const got = all.filter((i) => inside(loop, points[i]));
+      if (got.length === n && indices.every((i) => got.includes(i))) return { indices: got, loop };
+    }
   return null;
 }

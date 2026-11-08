@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { blankToFill, cardName, isBlankProfile, newEntry } from '../progress/profiles';
 import { defaults } from '../progress/save';
-import { cleanPlayerName, couchNameFor, modeFor, NAME_LIMIT, readNewPlayer, skipsEgg, sourceOfClick } from './chooser';
+import {
+  cleanPlayerName,
+  couchNameFor,
+  modeFor,
+  NAME_LIMIT,
+  readNewPlayer,
+  skipsEgg,
+  sourceOfClick,
+} from './chooser';
 
 const now = new Date(2026, 9, 15);
 
@@ -56,14 +64,29 @@ describe('a name typed in the form', () => {
 
 describe('add a player', () => {
   it('needs a name and a birth the clock allows', () => {
-    expect(readNewPlayer('Mia', '10', '2025', now)).toEqual({ ok: true, name: 'Mia', birth: { month: 10, year: 2025 } });
+    expect(readNewPlayer('Mia', '10', '2025', now)).toEqual({
+      ok: true,
+      name: 'Mia',
+      birth: { month: 10, year: 2025 },
+    });
     expect(readNewPlayer('Mia', 10, 2025, now)).toMatchObject({ ok: true });
     expect(readNewPlayer('', '10', '2025', now)).toEqual({ ok: false, problem: 'name' });
     expect(readNewPlayer('   ', '10', '2025', now)).toEqual({ ok: false, problem: 'name' });
   });
 
   it('refuses a birth that is blank, not a number, or has not happened', () => {
-    for (const [m, y] of [['', '2025'], ['10', ''], ['x', '2025'], ['10', '20x5'], ['13', '2025'], ['0', '2025'], ['11', '2026'], ['1', '2027'], ['1', '1800'], ['10', '2025.5']]) {
+    for (const [m, y] of [
+      ['', '2025'],
+      ['10', ''],
+      ['x', '2025'],
+      ['10', '20x5'],
+      ['13', '2025'],
+      ['0', '2025'],
+      ['11', '2026'],
+      ['1', '2027'],
+      ['1', '1800'],
+      ['10', '2025.5'],
+    ]) {
       expect(readNewPlayer('Mia', m, y, now), `${m}/${y}`).toEqual({ ok: false, problem: 'birth' });
     }
   });
@@ -90,7 +113,12 @@ describe('the profile nobody has used', () => {
     named.profile.name = 'Mia';
     expect(isBlankProfile(named, entry)).toBe(false);
     const hatched = defaults();
-    hatched.creatures = { owned: [{ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal', worn: [] }, metAt: 'start' }], companion: 'abcd' };
+    hatched.creatures = {
+      owned: [
+        { id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal', worn: [] }, metAt: 'start' },
+      ],
+      companion: 'abcd',
+    };
     expect(isBlankProfile(hatched, entry)).toBe(false);
     const stickered = defaults();
     stickered.stickers.push({ game: 'bubble-pop', seed: 1, at: 1 });
@@ -127,7 +155,12 @@ describe('the name on a card', () => {
   it('is the person’s, else their companion’s, else the first friend’s name to come', () => {
     const save = defaults();
     expect(cardName(save)).toBe('Pip');
-    save.creatures = { owned: [{ id: 'abcd', species: 'river', name: 'Clover', look: { color: 'teal', worn: [] }, metAt: 'start' }], companion: 'abcd' };
+    save.creatures = {
+      owned: [
+        { id: 'abcd', species: 'river', name: 'Clover', look: { color: 'teal', worn: [] }, metAt: 'start' },
+      ],
+      companion: 'abcd',
+    };
     expect(cardName(save)).toBe('Clover');
     save.profile.name = '  Mia ';
     expect(cardName(save)).toBe('Mia');

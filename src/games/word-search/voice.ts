@@ -1,9 +1,13 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.word-search': ['Word search!'],
-  'wordsearch.go': ['Find the words in the list. Press the bottom button on a word\'s first letter, move to its last letter, and press again.'],
-  'wordsearch.go-touch': ['Find the words in the list. Tap a word\'s first letter, then its last letter.'],
-  'wordsearch.go-slide': ['Find the words in the list. Tap a word\'s first letter, then its last letter. Drag the grid to see the rest of it.'],
+  'wordsearch.go': [
+    "Find the words in the list. Press the bottom button on a word's first letter, move to its last letter, and press again.",
+  ],
+  'wordsearch.go-touch': ["Find the words in the list. Tap a word's first letter, then its last letter."],
+  'wordsearch.go-slide': [
+    "Find the words in the list. Tap a word's first letter, then its last letter. Drag the grid to see the rest of it.",
+  ],
   'wordsearch.found': ['{word}!', 'You found {word}!'],
   'wordsearch.miss': ['That line is not one of the words. Try another.'],
   'wordsearch.hint': ['Look at the ringed letter. The word {word} starts there.'],
@@ -11,15 +15,28 @@ export const VOICE = {
   'wordsearch.done': ['A pocketful of words.'],
   'wordsearch.root-port': ['Every word here has port in it. Port means carry.'],
   'wordsearch.root-spect': ['Every word here has spect in it. Spect means look.'],
-  'wordsearch.go-message': ['Find the words in the list. Tap a word\'s first letter, then its last letter. The letters no word uses spell a message.'],
-  'wordsearch.go-message-keys': ['Find the words in the list. Press the bottom button on a word\'s first letter, move to its last letter, and press again. The letters no word uses spell a message.'],
+  'wordsearch.go-message': [
+    "Find the words in the list. Tap a word's first letter, then its last letter. The letters no word uses spell a message.",
+  ],
+  'wordsearch.go-message-keys': [
+    "Find the words in the list. Press the bottom button on a word's first letter, move to its last letter, and press again. The letters no word uses spell a message.",
+  ],
   'wordsearch.message': ['The letters left over say: {message}.'],
-  'wordsearch.go-hidden': ['Find the hidden words. The list shows only the theme and how long each word is. Tap a word\'s first letter, then its last letter.'],
-  'wordsearch.go-hidden-keys': ['Find the hidden words. The list shows only the theme and how long each word is. Press the bottom button on a word\'s first letter, move to its last letter, and press again.'],
+  'wordsearch.go-hidden': [
+    "Find the hidden words. The list shows only the theme and how long each word is. Tap a word's first letter, then its last letter.",
+  ],
+  'wordsearch.go-hidden-keys': [
+    "Find the hidden words. The list shows only the theme and how long each word is. Press the bottom button on a word's first letter, move to its last letter, and press again.",
+  ],
   'wordsearch.free': ['Not one of the hidden words. Try another!'],
-  'wordsearch.hidden-letter': ['Here is the first letter of the shortest word.', 'The shortest word starts with this letter.'],
+  'wordsearch.hidden-letter': [
+    'Here is the first letter of the shortest word.',
+    'The shortest word starts with this letter.',
+  ],
   'wordsearch.hidden-ring': ['Look at the ringed letter. The shortest word starts there.'],
-  'wordsearch.go-school': ['Find the picture words! Tap a word\'s first letter, then its last letter. Tap a picture to hear its word.'],
+  'wordsearch.go-school': [
+    "Find the picture words! Tap a word's first letter, then its last letter. Tap a picture to hear its word.",
+  ],
   'wordsearch.miss-school': ['That is not one of the picture words. Try another line.'],
   'wordsearch.word': ['{word}'],
 } satisfies Record<string, string[]>;

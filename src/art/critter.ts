@@ -44,7 +44,12 @@ const MUZZLE = { fill: 0xf7b6c2, line: 0xd98597, dark: 0xc06c80 };
 const HORN = { fill: 0xf4d9a6, line: 0xc9a86a };
 const HOOF = { fill: 0x8c7b6b, line: 0x5e5248 };
 
-const stroke = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+const stroke = (color: number, width = 6) => ({
+  width,
+  color,
+  join: 'round' as const,
+  cap: 'round' as const,
+});
 
 /**
  * A living soft-toy creature, standing with its feet on (0, 0), about 250 units tall at scale 1.
@@ -229,7 +234,10 @@ export class Critter extends Container {
 
     if (s.sprout) {
       back.moveTo(0, -248).quadraticCurveTo(-8, -278, 10, -296).stroke(stroke(this.sw.line, 5));
-      const leaf = new Graphics().ellipse(0, 0, 15, 8).fill(swatch.green.fill).stroke(stroke(swatch.green.line, 4));
+      const leaf = new Graphics()
+        .ellipse(0, 0, 15, 8)
+        .fill(swatch.green.fill)
+        .stroke(stroke(swatch.green.line, 4));
       leaf.position.set(20, -300);
       leaf.rotation = -0.52;
       this.body.addChild(leaf);
@@ -263,11 +271,17 @@ export class Critter extends Container {
     for (const side of [-1, 1]) {
       switch (s.ears) {
         case 'round':
-          back.circle(side * 72, -222, 34).fill(ear.fill).stroke(stroke(ear.line));
+          back
+            .circle(side * 72, -222, 34)
+            .fill(ear.fill)
+            .stroke(stroke(ear.line));
           back.circle(side * 72, -222, 16).fill({ color: cheek, alpha: 0.7 });
           break;
         case 'pointy':
-          back.poly([side * 30, -236, side * 88, -292, side * 112, -196]).fill(ear.fill).stroke(stroke(ear.line));
+          back
+            .poly([side * 30, -236, side * 88, -292, side * 112, -196])
+            .fill(ear.fill)
+            .stroke(stroke(ear.line));
           back.poly([side * 52, -232, side * 86, -268, side * 98, -214]).fill({ color: cheek, alpha: 0.7 });
           break;
         case 'floppy': {
@@ -328,7 +342,10 @@ export class Critter extends Container {
 
     const feet = s.feet === 'hoof' ? HOOF : s.feet ? swatch[s.feet] : this.sw;
     const f = new Graphics();
-    for (const side of [-1, 1]) f.ellipse(side * 40, 0, 30, 14).fill(feet.fill).stroke(stroke(feet.line, 6));
+    for (const side of [-1, 1])
+      f.ellipse(side * 40, 0, 30, 14)
+        .fill(feet.fill)
+        .stroke(stroke(feet.line, 6));
     this.body.addChild(f);
   }
 
@@ -343,7 +360,10 @@ export class Critter extends Container {
       eye.position.set(side * eyeX, this.eyeY);
       eye.addChild(new Graphics().ellipse(0, 0, 25, 29).fill(0xffffff).stroke(stroke(sw.line, 4)));
       const pupil = new Container();
-      pupil.addChild(new Graphics().circle(0, 0, 15).fill(ink), new Graphics().circle(5, -7, 5).fill(0xffffff));
+      pupil.addChild(
+        new Graphics().circle(0, 0, 15).fill(ink),
+        new Graphics().circle(5, -7, 5).fill(0xffffff),
+      );
       pupil.y = 4;
       eye.addChild(pupil);
       this.eyes.push(eye);
@@ -362,8 +382,12 @@ export class Critter extends Container {
     }
     if (s.whiskers) {
       for (const side of [-1, 1]) {
-        g.moveTo(side * 58, -100).lineTo(side * 106, -110).stroke(stroke(sw.line, 3));
-        g.moveTo(side * 58, -90).lineTo(side * 106, -86).stroke(stroke(sw.line, 3));
+        g.moveTo(side * 58, -100)
+          .lineTo(side * 106, -110)
+          .stroke(stroke(sw.line, 3));
+        g.moveTo(side * 58, -90)
+          .lineTo(side * 106, -86)
+          .stroke(stroke(sw.line, 3));
       }
     }
     switch (s.snout) {
@@ -407,13 +431,17 @@ export class Critter extends Container {
     for (const side of [-1, 1]) {
       const x = side * this.eyeX;
       if (this.mood === 'sad') b.moveTo(x - side * 20, browY - 8).lineTo(x + side * 18, browY + 4);
-      if (this.mood === 'surprised') b.moveTo(x - 18, browY + 2).quadraticCurveTo(x, browY - 14, x + 18, browY + 2);
+      if (this.mood === 'surprised')
+        b.moveTo(x - 18, browY + 2).quadraticCurveTo(x, browY - 14, x + 18, browY + 2);
     }
     if (this.mood === 'sad' || this.mood === 'surprised') b.stroke(stroke(this.sw.line, 5));
     if (this.mood === 'sad') {
       const x = this.eyeX + 14;
       const y = this.eyeY + 34;
-      b.moveTo(x, y - 14).quadraticCurveTo(x + 9, y, x, y + 6).quadraticCurveTo(x - 9, y, x, y - 14).fill(swatch.blue.fill);
+      b.moveTo(x, y - 14)
+        .quadraticCurveTo(x + 9, y, x, y + 6)
+        .quadraticCurveTo(x - 9, y, x, y - 14)
+        .fill(swatch.blue.fill);
     }
 
     const m = this.mouth.clear();
@@ -436,7 +464,9 @@ export class Critter extends Container {
         m.ellipse(at.x, at.y, 5, 6).fill(MOUTH_DARK);
         break;
       case 'calm':
-        m.moveTo(at.x - 11, at.y).lineTo(at.x + 11, at.y).stroke(stroke(at.color, 5));
+        m.moveTo(at.x - 11, at.y)
+          .lineTo(at.x + 11, at.y)
+          .stroke(stroke(at.color, 5));
         break;
       case 'sad':
         m.moveTo(at.x - 15, at.y + 6)

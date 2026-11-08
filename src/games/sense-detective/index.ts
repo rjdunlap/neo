@@ -10,11 +10,55 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { cantTellArt, cardBack, checkButtonArt, listenButtonArt, lookButtonArt, outlineArt, parcelArt, quiltArt, senseChoiceArt, soundArt, toyArt } from './art';
+import {
+  cantTellArt,
+  cardBack,
+  checkButtonArt,
+  listenButtonArt,
+  lookButtonArt,
+  outlineArt,
+  parcelArt,
+  quiltArt,
+  senseChoiceArt,
+  soundArt,
+  toyArt,
+} from './art';
 import {
   LEVELS,
-  check, checkSense, checkSet, checkTell, countsAsMiss, deciding, exhibitLayout, GLOW_AFTER, HEARD, hintEdit, ITS, makeRound, narrowingFor, observe, planFor, possible, SEEN, senseTouch, setKey,
-  setTouch, Tally, tellTarget, tellTouch, TOY_IDS, TOY_NAMES, TOYS, type Channel, type Mode, type TellAnswer, type Observation, type Rect, type Round, type SoundValue, type ToyId,
+  check,
+  checkSense,
+  checkSet,
+  checkTell,
+  countsAsMiss,
+  deciding,
+  exhibitLayout,
+  GLOW_AFTER,
+  HEARD,
+  hintEdit,
+  ITS,
+  makeRound,
+  narrowingFor,
+  observe,
+  planFor,
+  possible,
+  SEEN,
+  senseTouch,
+  setKey,
+  setTouch,
+  Tally,
+  tellTarget,
+  tellTouch,
+  TOY_IDS,
+  TOY_NAMES,
+  TOYS,
+  type Channel,
+  type Mode,
+  type TellAnswer,
+  type Observation,
+  type Rect,
+  type Round,
+  type SoundValue,
+  type ToyId,
 } from './logic';
 import type { LineId } from '../../content/voice-script';
 
@@ -27,8 +71,16 @@ function playSound(s: SoundValue) {
   else sfx.shake();
 }
 
-interface ToyCard { id: ToyId; node: Container; ring: Graphics; badge: Container }
-interface Evidence { obs: Observation; node: Container }
+interface ToyCard {
+  id: ToyId;
+  node: Container;
+  ring: Graphics;
+  badge: Container;
+}
+interface Evidence {
+  obs: Observation;
+  node: Container;
+}
 
 class SenseDetective implements Game {
   readonly round: Round;
@@ -52,8 +104,12 @@ class SenseDetective implements Game {
   private readonly quilt = quiltArt();
   readonly tally = new Tally();
   private readonly mode: Mode;
-  private get setLevel() { return this.mode === 'set'; }
-  private get tellLevel() { return this.mode === 'tell'; }
+  private get setLevel() {
+    return this.mode === 'set';
+  }
+  private get tellLevel() {
+    return this.mode === 'tell';
+  }
   private instructId: LineId;
   private oneMores = 0;
   misses = 0;
@@ -82,11 +138,27 @@ class SenseDetective implements Game {
     this.round = makeRound(ctx.level, ctx.rng, first);
     if (!ctx.demo) authoredShown.add(ctx.level);
     this.mode = planFor(this.round.level).mode;
-    this.instructId = this.round.level === 1 ? 'sense.instruct-look'
-      : this.round.level === 2 ? 'sense.instruct-choose'
-        : this.tellLevel ? 'sense.instruct-tell'
-          : this.round.parcels.length > 1 ? 'sense.two-parcels' : 'sense.instruct-all';
-    this.backdrop = new Backdrop({ sky: [swatch.teal.light, cream], hills: [swatch.green.fill, swatch.teal.light], horizon: 0.74, clouds: 2, sun: false, seed: 83 }, ctx.view);
+    this.instructId =
+      this.round.level === 1
+        ? 'sense.instruct-look'
+        : this.round.level === 2
+          ? 'sense.instruct-choose'
+          : this.tellLevel
+            ? 'sense.instruct-tell'
+            : this.round.parcels.length > 1
+              ? 'sense.two-parcels'
+              : 'sense.instruct-all';
+    this.backdrop = new Backdrop(
+      {
+        sky: [swatch.teal.light, cream],
+        hills: [swatch.green.fill, swatch.teal.light],
+        horizon: 0.74,
+        clouds: 2,
+        sun: false,
+        seed: 83,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.shelfBoard.eventMode = 'none';
     this.parcel.eventMode = 'none';
@@ -95,7 +167,8 @@ class SenseDetective implements Game {
     this.checkBtn.addChild(checkButtonArt());
     ctx.stage.addChild(this.backdrop, this.shelfBoard, this.parcel, this.stripLayer);
     this.makeButton(this.lookBtn, 150, () => void this.investigate('view'));
-    if (this.round.channels.includes('sound')) this.makeButton(this.listenBtn, 150, () => void this.investigate('sound'));
+    if (this.round.channels.includes('sound'))
+      this.makeButton(this.listenBtn, 150, () => void this.investigate('sound'));
     this.makeButton(this.checkBtn, 170, () => void this.press());
     for (const id of this.round.shelf) this.cards.push(this.makeCard(id));
     // Level 4's ear waits for the look's set to be right.
@@ -106,17 +179,23 @@ class SenseDetective implements Game {
 
   private makeButton(node: Container, size: number, fn: () => void) {
     node.hitArea = new Rectangle(-size / 2, -size / 2, size, size);
-    onTap(node, () => {
-      if (this.finished) return;
-      void this.squish(node);
-      fn();
-    }, { cooldown: 250 });
+    onTap(
+      node,
+      () => {
+        if (this.finished) return;
+        void this.squish(node);
+        fn();
+      },
+      { cooldown: 250 },
+    );
     this.ctx.stage.addChild(node);
   }
 
   private makeCard(id: ToyId): ToyCard {
     const node = new Container();
-    const ring = new Graphics().roundRect(-108, -118, 216, 236, 28).stroke({ width: 8, color: swatch.yellow.fill });
+    const ring = new Graphics()
+      .roundRect(-108, -118, 216, 236, 28)
+      .stroke({ width: 8, color: swatch.yellow.fill });
     ring.visible = false;
     ring.eventMode = 'none';
     node.addChild(cardBack(200, 220), ring);
@@ -129,12 +208,21 @@ class SenseDetective implements Game {
     const badge = new Container();
     badge.addChild(outline);
     badge.position.set(-62, 78);
-    const plate = new Graphics().circle(-62, 78, 30).fill(swatch.white.light).stroke({ width: 3, color: wood.light });
+    const plate = new Graphics()
+      .circle(-62, 78, 30)
+      .fill(swatch.white.light)
+      .stroke({ width: 3, color: wood.light });
     plate.eventMode = 'none';
     badge.eventMode = 'none';
     node.addChild(art, plate, badge);
     node.hitArea = new Rectangle(-100, -110, 200, 220);
-    onTap(node, () => { if (!this.finished) void this.pick(id); }, { cooldown: 200 });
+    onTap(
+      node,
+      () => {
+        if (!this.finished) void this.pick(id);
+      },
+      { cooldown: 200 },
+    );
     this.ctx.stage.addChild(node);
     return { id, node, ring, badge };
   }
@@ -148,18 +236,32 @@ class SenseDetective implements Game {
     this.cantTellRing.eventMode = 'none';
     this.cantTellCard.addChild(cantTellArt(170), this.cantTellRing);
     this.cantTellCard.hitArea = new Rectangle(-85, -85, 170, 170);
-    onTap(this.cantTellCard, () => { if (!this.finished) void this.choose('cant-tell'); }, { cooldown: 200 });
+    onTap(
+      this.cantTellCard,
+      () => {
+        if (!this.finished) void this.choose('cant-tell');
+      },
+      { cooldown: 200 },
+    );
     this.ctx.stage.addChild(this.cantTellCard);
     for (const ch of ['view', 'sound'] as const) {
       const node = senseChoiceArt(ch);
-      const ring = new Graphics().roundRect(-108, -118, 216, 236, 28).stroke({ width: 8, color: swatch.yellow.fill });
+      const ring = new Graphics()
+        .roundRect(-108, -118, 216, 236, 28)
+        .stroke({ width: 8, color: swatch.yellow.fill });
       ring.visible = false;
       ring.eventMode = 'none';
       node.addChild(ring);
       node.hitArea = new Rectangle(-100, -110, 200, 220);
       node.visible = false;
       node.eventMode = 'none';
-      onTap(node, () => { if (!this.finished) void this.choose(ch); }, { cooldown: 200 });
+      onTap(
+        node,
+        () => {
+          if (!this.finished) void this.choose(ch);
+        },
+        { cooldown: 200 },
+      );
       this.ctx.stage.addChild(node);
       this.choiceCards.push({ ch, node, ring });
     }
@@ -167,7 +269,8 @@ class SenseDetective implements Game {
 
   private async squish(n: Container) {
     await this.ctx.tw.to(n.scale, { x: 0.9, y: 0.9 }, { duration: 0.06 });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack });
+    if (this.alive && !n.destroyed)
+      await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack });
   }
 
   private async bob(n: Container) {
@@ -194,7 +297,13 @@ class SenseDetective implements Game {
 
   private exhibit() {
     // Level 5 has one button but two clues: the look, then the reveal's sound.
-    return exhibitLayout(this.view, this.cards.length, this.round.channels.length, this.tellLevel, this.tellLevel ? 2 : this.round.channels.length);
+    return exhibitLayout(
+      this.view,
+      this.cards.length,
+      this.round.channels.length,
+      this.tellLevel,
+      this.tellLevel ? 2 : this.round.channels.length,
+    );
   }
 
   private layout() {
@@ -210,11 +319,17 @@ class SenseDetective implements Game {
     this.choiceCards.forEach((c, i) => at(c.node, l.shelf[i]));
     const s = l.shelf[0];
     const last = l.shelf[l.shelf.length - 1];
-    this.shelfBoard.clear().roundRect(s.x - 24, s.y - 14, last.x + last.w - s.x + 48, s.h + 28, 26).fill({ color: wood.light, alpha: 0.85 }).stroke({ width: 5, color: wood.line });
+    this.shelfBoard
+      .clear()
+      .roundRect(s.x - 24, s.y - 14, last.x + last.w - s.x + 48, s.h + 28, 26)
+      .fill({ color: wood.light, alpha: 0.85 })
+      .stroke({ width: 5, color: wood.line });
   }
 
   /** The parcel on the counter. */
-  get hidden(): ToyId { return this.round.parcels[this.parcelIndex]; }
+  get hidden(): ToyId {
+    return this.round.parcels[this.parcelIndex];
+  }
 
   update(dt: number) {
     this.clock += dt;
@@ -222,32 +337,56 @@ class SenseDetective implements Game {
     if (!this.glowOn || this.finished) return;
     if (this.tellLevel) {
       if (this.busy) return;
-      const t = this.answer === tellTarget(this.round.shelf, this.record, this.stage) ? null : tellTarget(this.round.shelf, this.record, this.stage);
+      const t =
+        this.answer === tellTarget(this.round.shelf, this.record, this.stage)
+          ? null
+          : tellTarget(this.round.shelf, this.record, this.stage);
       const w = 7 + Math.sin(this.clock * 5);
-      const node = t === null ? this.checkBtn : t === 'cant-tell' ? this.cantTellCard
-        : t === 'view' || t === 'sound' ? this.choiceCards.find((c) => c.ch === t)!.node : this.cards.find((c) => c.id === t)!.node;
-      if (node === this.checkBtn) this.glow.circle(node.x, node.y, 98).stroke({ width: w, color: swatch.yellow.fill });
-      else if (node === this.cantTellCard) this.glow.roundRect(node.x - 98, node.y - 98, 196, 196, 30).stroke({ width: w, color: swatch.yellow.fill });
-      else this.glow.roundRect(node.x - 112, node.y - 122, 224, 244, 30).stroke({ width: w, color: swatch.yellow.fill });
+      const node =
+        t === null
+          ? this.checkBtn
+          : t === 'cant-tell'
+            ? this.cantTellCard
+            : t === 'view' || t === 'sound'
+              ? this.choiceCards.find((c) => c.ch === t)!.node
+              : this.cards.find((c) => c.id === t)!.node;
+      if (node === this.checkBtn)
+        this.glow.circle(node.x, node.y, 98).stroke({ width: w, color: swatch.yellow.fill });
+      else if (node === this.cantTellCard)
+        this.glow
+          .roundRect(node.x - 98, node.y - 98, 196, 196, 30)
+          .stroke({ width: w, color: swatch.yellow.fill });
+      else
+        this.glow
+          .roundRect(node.x - 112, node.y - 122, 224, 244, 30)
+          .stroke({ width: w, color: swatch.yellow.fill });
       return;
     }
     if (this.setLevel) {
       if (this.busy) return;
       const e = hintEdit(this.round.shelf, this.record, this.chosen);
       const w = 7 + Math.sin(this.clock * 5);
-      if ('check' in e) this.glow.circle(this.checkBtn.x, this.checkBtn.y, 98).stroke({ width: w, color: swatch.yellow.fill });
+      if ('check' in e)
+        this.glow
+          .circle(this.checkBtn.x, this.checkBtn.y, 98)
+          .stroke({ width: w, color: swatch.yellow.fill });
       else {
         const c = this.cards.find((x) => x.id === ('remove' in e ? e.remove : e.add))!;
         // Taking a toy out glows with a small shake; putting one in glows still.
         const dx = 'remove' in e ? Math.sin(this.clock * 18) * 4 : 0;
-        this.glow.roundRect(c.node.x - 112 + dx, c.node.y - 122, 224, 244, 30).stroke({ width: w, color: swatch.yellow.fill });
+        this.glow
+          .roundRect(c.node.x - 112 + dx, c.node.y - 122, 224, 244, 30)
+          .stroke({ width: w, color: swatch.yellow.fill });
       }
       return;
     }
     const left = possible(this.round.shelf, this.record);
     if (left.length !== 1) return;
     const c = this.cards.find((x) => x.id === left[0]);
-    if (c) this.glow.roundRect(c.node.x - 112, c.node.y - 122, 224, 244, 30).stroke({ width: 7 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    if (c)
+      this.glow
+        .roundRect(c.node.x - 112, c.node.y - 122, 224, 244, 30)
+        .stroke({ width: 7 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
 
   private async begin() {
@@ -268,7 +407,15 @@ class SenseDetective implements Game {
       n.addChild(art, spk);
     }
     n.hitArea = new Rectangle(-70, -70, 140, 140);
-    onTap(n, () => { if (obs.channel === 'sound') playSound(obs.value as SoundValue); else sfx.pop(2); void this.squish(n); }, { cooldown: 250 });
+    onTap(
+      n,
+      () => {
+        if (obs.channel === 'sound') playSound(obs.value as SoundValue);
+        else sfx.pop(2);
+        void this.squish(n);
+      },
+      { cooldown: 250 },
+    );
     return n;
   }
 
@@ -288,7 +435,10 @@ class SenseDetective implements Game {
       void this.ctx.tw.to(peep, { alpha: 0 }, { duration: 0.5 }).then(() => peep.destroy());
     }
     const have = this.record.findIndex((o) => o.channel === channel);
-    if (have >= 0) { void this.squish(this.evidence[have].node); return; }
+    if (have >= 0) {
+      void this.squish(this.evidence[have].node);
+      return;
+    }
     await this.addClue(obs);
   }
 
@@ -307,7 +457,8 @@ class SenseDetective implements Game {
   }
 
   private async shakeParcel() {
-    for (const r of [0.06, -0.06, 0.04, -0.04, 0]) await this.ctx.tw.to(this.parcel, { rotation: r }, { duration: 0.07 });
+    for (const r of [0.06, -0.06, 0.04, -0.04, 0])
+      await this.ctx.tw.to(this.parcel, { rotation: r }, { duration: 0.07 });
   }
 
   /** Selecting is free: the card rings and the toy plays its own sound with its picture. */
@@ -362,7 +513,9 @@ class SenseDetective implements Game {
     for (const c of this.choiceCards) c.ring.visible = c.ch === a;
     sfx.pop(3);
     void this.squish(a === 'cant-tell' ? this.cantTellCard : this.choiceCards.find((c) => c.ch === a)!.node);
-    await this.ctx.say(a === 'cant-tell' ? 'sense.card.cant-tell' : a === 'view' ? 'sense.card.look' : 'sense.card.listen');
+    await this.ctx.say(
+      a === 'cant-tell' ? 'sense.card.cant-tell' : a === 'view' ? 'sense.card.look' : 'sense.card.listen',
+    );
   }
 
   private clearAnswer() {
@@ -374,8 +527,14 @@ class SenseDetective implements Game {
 
   /** Level 5: stage B's cards replace the toy cards on the shelf, or the toy cards come back. */
   private showChoices(on: boolean) {
-    for (const c of this.cards) { c.node.visible = !on; c.node.eventMode = on ? 'none' : 'static'; }
-    for (const c of this.choiceCards) { c.node.visible = on; c.node.eventMode = on ? 'static' : 'none'; }
+    for (const c of this.cards) {
+      c.node.visible = !on;
+      c.node.eventMode = on ? 'none' : 'static';
+    }
+    for (const c of this.choiceCards) {
+      c.node.visible = on;
+      c.node.eventMode = on ? 'static' : 'none';
+    }
     this.cantTellCard.visible = !on;
     this.cantTellCard.eventMode = on ? 'none' : 'static';
   }
@@ -384,7 +543,10 @@ class SenseDetective implements Game {
   private async pressTell() {
     if (this.stage === 'sense') return this.pressSense();
     const v = checkTell(this.round.shelf, this.record, this.answer as TellAnswer | null);
-    if (v.kind === 'empty') { void this.ctx.instruct(this.instructId); return; }
+    if (v.kind === 'empty') {
+      void this.ctx.instruct(this.instructId);
+      return;
+    }
     if (v.kind === 'right') return void this.parcelFound([v.toy]);
     this.busy = true;
     if (v.kind === 'look-first') {
@@ -395,7 +557,10 @@ class SenseDetective implements Game {
       // Free: the other fitting toy's badge pulses.
       sfx.pop(2);
       void this.bob(this.cards.find((c) => c.id === v.other)!.badge);
-      await this.ctx.say('sense.both-fit', { name: TOY_NAMES[this.answer as ToyId], other: TOY_NAMES[v.other] });
+      await this.ctx.say('sense.both-fit', {
+        name: TOY_NAMES[this.answer as ToyId],
+        other: TOY_NAMES[v.other],
+      });
     } else if (v.kind === 'cant-tell') {
       sfx.pop(4);
       await this.ctx.say('sense.cant-tell-right');
@@ -405,7 +570,10 @@ class SenseDetective implements Game {
       this.glowOn = false;
       this.clearAnswer();
       this.showChoices(true);
-      for (const c of this.choiceCards) { c.node.scale.set(0.2); void this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack }); }
+      for (const c of this.choiceCards) {
+        c.node.scale.set(0.2);
+        void this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+      }
       this.instructId = 'sense.what-would';
       await this.ctx.instruct(this.instructId, this.pair(v.left));
     } else {
@@ -420,7 +588,11 @@ class SenseDetective implements Game {
       if (!this.alive) return;
       const text = v.kind === 'miss' ? this.reason(v.card, v.obs) : null;
       if (text) await this.ctx.say('sense.say', { text });
-      else if (v.kind === 'can-tell') await this.ctx.say('sense.can-tell', { seen: SEEN[v.obs.value as 'round' | 'handled'], name: TOY_NAMES[v.only] });
+      else if (v.kind === 'can-tell')
+        await this.ctx.say('sense.can-tell', {
+          seen: SEEN[v.obs.value as 'round' | 'handled'],
+          name: TOY_NAMES[v.only],
+        });
       if (glow) this.glowOn = true;
     }
     if (this.alive) this.busy = false;
@@ -430,7 +602,10 @@ class SenseDetective implements Game {
   private async pressSense() {
     const choice = this.answer as Channel | null;
     const v = checkSense(this.round.shelf, this.record, choice);
-    if (v === 'empty') { void this.ctx.instruct(this.instructId, this.pair(possible(this.round.shelf, this.record))); return; }
+    if (v === 'empty') {
+      void this.ctx.instruct(this.instructId, this.pair(possible(this.round.shelf, this.record)));
+      return;
+    }
     this.busy = true;
     if (v === 'miss') {
       const glow = this.tally.miss(setKey(this.parcelIndex, 1, [choice!], this.record));
@@ -482,7 +657,10 @@ class SenseDetective implements Game {
     const narrowing = narrowingFor(this.round, this.record);
     const v = checkSet(this.round.shelf, this.record, this.chosen, narrowing);
     if (v.kind === 'right') return void this.parcelFound(v.left);
-    if (v.kind === 'empty') { void this.ctx.instruct(this.instructId); return; }
+    if (v.kind === 'empty') {
+      void this.ctx.instruct(this.instructId);
+      return;
+    }
     this.busy = true;
     if (v.kind === 'look-first') {
       sfx.pop(2);
@@ -493,7 +671,8 @@ class SenseDetective implements Game {
       this.oneMores++;
       for (const e of this.evidence) void this.bob(e.node);
       // The second one more also pulses the badges that match the clue; it never names the missing toy.
-      if (this.oneMores >= 2) for (const c of this.cards) if (possible([c.id], this.record).length) void this.bob(c.badge);
+      if (this.oneMores >= 2)
+        for (const c of this.cards) if (possible([c.id], this.record).length) void this.bob(c.badge);
       await this.ctx.say('sense.one-more');
     } else if (v.kind === 'so-far' && this.listenOpen) {
       // Still right so far, but the ear has not been tapped yet.
@@ -505,7 +684,9 @@ class SenseDetective implements Game {
       this.listenOpen = true;
       this.listenBtn.visible = true;
       this.listenBtn.scale.set(0.2);
-      void this.ctx.tw.to(this.listenBtn.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack }).then(() => this.bob(this.listenBtn));
+      void this.ctx.tw
+        .to(this.listenBtn.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack })
+        .then(() => this.bob(this.listenBtn));
       await this.ctx.say('sense.so-far', this.pair(v.left));
       if (!this.alive) return;
       this.instructId = 'sense.instruct-narrow';
@@ -519,7 +700,11 @@ class SenseDetective implements Game {
       const wrong = this.cards.filter((c) => v.ruledOut.includes(c.id));
       this.chosen = this.chosen.filter((t) => !v.ruledOut.includes(t));
       for (const c of wrong) c.ring.visible = false;
-      await Promise.all(wrong.map(async (c) => { for (const r of [0.25, -0.15, 0]) await this.ctx.tw.to(c.node, { rotation: r }, { duration: 0.1 }); }));
+      await Promise.all(
+        wrong.map(async (c) => {
+          for (const r of [0.25, -0.15, 0]) await this.ctx.tw.to(c.node, { rotation: r }, { duration: 0.1 });
+        }),
+      );
       if (!this.alive) return;
       await this.ctx.say('sense.say', { text: this.reason(v.first, v.obs) });
       if (glow) this.glowOn = true;
@@ -549,13 +734,26 @@ class SenseDetective implements Game {
     await this.ctx.tw.to(toy.scale, { x: 1.07, y: 1.07 }, { duration: 0.3, ease: ease.outBack });
     if (!this.alive) return;
     playSound(TOYS[id].sound);
-    this.ctx.particles.burst(toy.x, toy.y, { colors: [swatch.yellow.fill, swatch.white.fill, swatch.pink.fill], count: 12, speed: [80, 180], gravity: 200, size: [0.2, 0.4] });
-    await this.ctx.tw.to(toy, { x: card.node.x, y: card.node.y - 20 }, { duration: 0.5, ease: ease.inOutSine });
+    this.ctx.particles.burst(toy.x, toy.y, {
+      colors: [swatch.yellow.fill, swatch.white.fill, swatch.pink.fill],
+      count: 12,
+      speed: [80, 180],
+      gravity: 200,
+      size: [0.2, 0.4],
+    });
+    await this.ctx.tw.to(
+      toy,
+      { x: card.node.x, y: card.node.y - 20 },
+      { duration: 0.5, ease: ease.inOutSine },
+    );
     if (!this.alive) return;
     sfx.tada();
     await this.ctx.say('sense.it-was', { name: TOY_NAMES[id] });
     if (!this.alive) return;
-    if (last) { this.ctx.finish({ misses: this.misses, hints: this.hints }); return; }
+    if (last) {
+      this.ctx.finish({ misses: this.misses, hints: this.hints });
+      return;
+    }
     // The next parcel: the clues and the selection clear, the shelf stays.
     await this.ctx.tw.to(toy, { alpha: 0 }, { duration: 0.3 });
     if (!this.alive) return;
@@ -609,7 +807,10 @@ class SenseDetective implements Game {
     if (this.busy || this.finished) return;
     if (this.setLevel) return this.pressSet();
     if (this.tellLevel) return this.pressTell();
-    if (!this.selected) { void this.ctx.say('sense.say', { text: 'Tap a toy on the shelf, then press the green tick.' }); return; }
+    if (!this.selected) {
+      void this.ctx.say('sense.say', { text: 'Tap a toy on the shelf, then press the green tick.' });
+      return;
+    }
     const card = this.selected;
     const verdict = check(this.round.shelf, this.record, card);
     if (verdict.kind === 'found') return void this.found();
@@ -618,7 +819,10 @@ class SenseDetective implements Game {
     if (verdict.kind === 'notyet') {
       sfx.pop(2);
       this.notYets++;
-      const text = this.record.length === 0 ? "Let's look first." : `That one might be it, but so might the ${TOY_NAMES[verdict.other!]}. How else could we find out?`;
+      const text =
+        this.record.length === 0
+          ? "Let's look first."
+          : `That one might be it, but so might the ${TOY_NAMES[verdict.other!]}. How else could we find out?`;
       const unused = this.round.channels.find((c) => !this.record.some((o) => o.channel === c)) ?? 'view';
       void this.bob(unused === 'view' ? this.lookBtn : this.listenBtn);
       await this.ctx.say('sense.say', { text });
@@ -639,7 +843,10 @@ class SenseDetective implements Game {
   }
 
   private addHint() {
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
     this.glowOn = true;
   }
 
@@ -648,7 +855,13 @@ class SenseDetective implements Game {
     if (this.busy || this.finished) return;
     if (this.tellLevel) {
       // Look first if she has not, then glow the answer this stage needs; once per parcel, then the instruction again.
-      if (this.tally.hinted) { void this.ctx.instruct(this.instructId, this.stage === 'sense' ? this.pair(possible(this.round.shelf, this.record)) : undefined); return; }
+      if (this.tally.hinted) {
+        void this.ctx.instruct(
+          this.instructId,
+          this.stage === 'sense' ? this.pair(possible(this.round.shelf, this.record)) : undefined,
+        );
+        return;
+      }
       this.tally.hint();
       this.sync();
       this.glowOn = true;
@@ -657,15 +870,22 @@ class SenseDetective implements Game {
     }
     if (this.setLevel) {
       // Run the investigation this stage needs, then glow the useful edit; once per parcel, then the instruction again.
-      if (this.tally.hinted) { void this.ctx.instruct(this.instructId); return; }
+      if (this.tally.hinted) {
+        void this.ctx.instruct(this.instructId);
+        return;
+      }
       this.tally.hint();
       this.sync();
       this.glowOn = true;
       if (!this.record.some((o) => o.channel === 'view')) void this.investigate('view');
-      else if (this.listenOpen && !this.record.some((o) => o.channel === 'sound')) void this.investigate('sound');
+      else if (this.listenOpen && !this.record.some((o) => o.channel === 'sound'))
+        void this.investigate('sound');
       return;
     }
-    if (this.hinted) { void this.ctx.instruct(this.round.level === 1 ? 'sense.instruct-look' : 'sense.instruct-choose'); return; }
+    if (this.hinted) {
+      void this.ctx.instruct(this.round.level === 1 ? 'sense.instruct-look' : 'sense.instruct-choose');
+      return;
+    }
     const ch = deciding(this.round, this.record);
     this.addHint();
     if (ch) void this.investigate(ch);
@@ -683,7 +903,8 @@ class SenseDetective implements Game {
       this.oneMores = 0;
       this.listenOpen = false;
       if (this.round.channels.includes('sound')) this.listenBtn.visible = false;
-      if (this.setLevel) this.instructId = this.round.parcels.length > 1 ? 'sense.two-parcels' : 'sense.instruct-all';
+      if (this.setLevel)
+        this.instructId = this.round.parcels.length > 1 ? 'sense.two-parcels' : 'sense.instruct-all';
       return;
     }
     this.record.length = 0;
@@ -711,8 +932,18 @@ class SenseDetective implements Game {
     await this.ctx.tw.to(toy.scale, { x: 1.07, y: 1.07 }, { duration: 0.3, ease: ease.outBack });
     if (!this.alive) return;
     playSound(TOYS[id].sound);
-    this.ctx.particles.burst(toy.x, toy.y, { colors: [swatch.yellow.fill, swatch.white.fill, swatch.pink.fill], count: 12, speed: [80, 180], gravity: 200, size: [0.2, 0.4] });
-    await this.ctx.tw.to(toy, { x: card.node.x, y: card.node.y - 20 }, { duration: 0.5, ease: ease.inOutSine });
+    this.ctx.particles.burst(toy.x, toy.y, {
+      colors: [swatch.yellow.fill, swatch.white.fill, swatch.pink.fill],
+      count: 12,
+      speed: [80, 180],
+      gravity: 200,
+      size: [0.2, 0.4],
+    });
+    await this.ctx.tw.to(
+      toy,
+      { x: card.node.x, y: card.node.y - 20 },
+      { duration: 0.5, ease: ease.inOutSine },
+    );
     if (!this.alive) return;
     sfx.tada();
     await this.ctx.say('sense.say', { text: `It's the ${TOY_NAMES[id]}!` });
@@ -728,12 +959,18 @@ class SenseDetective implements Game {
       if ('investigate' in m) return { tap: { on: this.lookBtn } };
       if ('check' in m) return { tap: { on: this.checkBtn } };
       const t = m.choose;
-      const on = t === 'cant-tell' ? this.cantTellCard : t === 'view' || t === 'sound' ? this.choiceCards.find((c) => c.ch === t)!.node : this.cards.find((c) => c.id === t)!.node;
+      const on =
+        t === 'cant-tell'
+          ? this.cantTellCard
+          : t === 'view' || t === 'sound'
+            ? this.choiceCards.find((c) => c.ch === t)!.node
+            : this.cards.find((c) => c.id === t)!.node;
       return { tap: { on } };
     }
     if (this.setLevel) {
       const m = setTouch(this.round, this.record, this.chosen, this.listenOpen);
-      if ('investigate' in m) return { tap: { on: m.investigate === 'view' ? this.lookBtn : this.listenBtn } };
+      if ('investigate' in m)
+        return { tap: { on: m.investigate === 'view' ? this.lookBtn : this.listenBtn } };
       if ('toggle' in m) return { tap: { on: this.cards.find((c) => c.id === m.toggle)!.node } };
       return { tap: { on: this.checkBtn } };
     }
@@ -764,7 +1001,10 @@ class SenseIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const id = new Rng(seed).shuffle([...TOY_IDS])[0];
   const c = new Container();
-  const label2 = new Graphics().roundRect(-90, 20, 180, 56, 14).fill(cream).stroke({ width: 4, color: wood.line });
+  const label2 = new Graphics()
+    .roundRect(-90, 20, 180, 56, 14)
+    .fill(cream)
+    .stroke({ width: 4, color: wood.line });
   const toy = toyArt(id, 150);
   toy.y = -20;
   c.addChild(label2, toy);
@@ -782,8 +1022,9 @@ export const senseDetective: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: silenced(STYLES.quiet),
-  coplayHint: 'Ask what could it be so far? before she presses the tick, or take the Look button while she takes Listen. With three toys, ask which toys could it still be, or hold up fingers for how many still fit.',
-  offScreen: "Put a toy in a bag and let her guess it by shaking, then by peeking.",
+  coplayHint:
+    'Ask what could it be so far? before she presses the tick, or take the Look button while she takes Listen. With three toys, ask which toys could it still be, or hold up fingers for how many still fit.',
+  offScreen: 'Put a toy in a bag and let her guess it by shaking, then by peeking.',
   hubIcon: () => new SenseIcon(),
   touchDemo: true,
   sticker,

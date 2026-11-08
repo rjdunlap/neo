@@ -2,9 +2,13 @@
 export const VOICE = {
   'game.sound-garden': ['Sound garden!'],
   'sg.sing': ['Drag the bird up to sing higher, and down to sing lower. Lift your finger to make a note!'],
-  'sg.copy': ['Listen to the bird. Drag your singer and lift to make each note go the same way. Tap the other bird to listen again.'],
+  'sg.copy': [
+    'Listen to the bird. Drag your singer and lift to make each note go the same way. Tap the other bird to listen again.',
+  ],
   'sg.copyagain': ['Let us try that shape again. Watch the bird sing the way.'],
-  'sg.restartshape': ['Let us start a little farther from the end of the stem, so there is room for the next note.'],
+  'sg.restartshape': [
+    'Let us start a little farther from the end of the stem, so there is room for the next note.',
+  ],
   'sg.big': ['Tap anywhere to hear your big friend sing!'],
   'sg.play': ['Tap the garden friends to hear them sing!'],
   'sg.highlow': ['Listen! Is it high like the bird, or low like the frog?'],

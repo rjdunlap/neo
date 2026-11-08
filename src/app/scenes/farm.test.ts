@@ -30,7 +30,9 @@ describe('Barnyard as a location', () => {
         expect(r.y, where).toBeGreaterThan(fence);
         for (const k of keepOut) expect(overlaps(r, k), where).toBe(false);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(farmPlan(layout, view, ground)).toEqual(plan);
     }
   });
@@ -42,7 +44,9 @@ describe('Lantern Lake as a location', () => {
       const keepOut = meadowKeepOut(layout, view);
       const plan = lakePlan(layout, view, ground);
       // Lanterns in every layout: on the water and the bank where there is room, and strung across the sky.
-      const lit = plan.filter((p) => p.kind === 'float' || p.kind === 'post').length + lakeGarlands(view).flatMap((g) => g.hang).length;
+      const lit =
+        plan.filter((p) => p.kind === 'float' || p.kind === 'post').length +
+        lakeGarlands(view).flatMap((g) => g.hang).length;
       expect(lit, where0).toBeGreaterThanOrEqual(3);
       expect(plan.filter((p) => p.kind === 'boat').length, where0).toBeLessThanOrEqual(1);
       for (const { kind, rect: r } of plan) {
@@ -50,10 +54,13 @@ describe('Lantern Lake as a location', () => {
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
         for (const k of keepOut) expect(overlaps(r, k), where).toBe(false);
         // On the water or on the bank below it.
-        if (kind === 'float' || kind === 'boat') expect(r.y + r.h, where).toBeLessThanOrEqual(ground + WATER_BELOW);
+        if (kind === 'float' || kind === 'boat')
+          expect(r.y + r.h, where).toBeLessThanOrEqual(ground + WATER_BELOW);
         else expect(r.y, where).toBeGreaterThan(ground + WATER_BELOW);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(lakePlan(layout, view, ground)).toEqual(plan);
     }
   });
@@ -76,13 +83,14 @@ describe('Lantern Lake as a location', () => {
       const ground = view.h * landFor('lantern-lake').backdrop.horizon;
       const water = { x: 0, y: ground - WATER_ABOVE, w: view.w, h: WATER_ABOVE + WATER_BELOW };
       expect(water.y, name).toBeGreaterThanOrEqual(130);
-      for (const k of [...landButtons(view.w), { x: view.w / 2 - 190, y: 20, w: 380, h: 90 }]) expect(overlaps(water, k), name).toBe(false);
+      for (const k of [...landButtons(view.w), { x: view.w / 2 - 190, y: 20, w: 380, h: 90 }])
+        expect(overlaps(water, k), name).toBe(false);
     }
   });
 });
 
 describe('the last two locations', () => {
-  it('keep their lands\' hosts and skies, and Explore lists every land', () => {
+  it("keep their lands' hosts and skies, and Explore lists every land", () => {
     for (const id of ['barnyard', 'lantern-lake'] as const) {
       const place = LOCATIONS[id];
       expect(place, id).toBeDefined();

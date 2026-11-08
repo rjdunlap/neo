@@ -1,26 +1,55 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.sudoku-garden': ['Sudoku garden!'],
-  'sudoku.go': ['Every row, column and box needs each number once. Press the bottom button on a square to choose one.'],
+  'sudoku.go': [
+    'Every row, column and box needs each number once. Press the bottom button on a square to choose one.',
+  ],
   'sudoku.go-touch': ['Every row, column and box needs each number once. Tap a square, then tap a number.'],
-  'sudoku.go-patch': ['Every row, column and patch needs each number once. The patches are the outlined shapes. Press the bottom button on a square to choose one.'],
-  'sudoku.go-patch-touch': ['Every row, column and patch needs each number once. The patches are the outlined shapes. Tap a square, then tap a number.'],
-  'sudoku.go-cages': ['Every row, column and box needs each number once, and the numbers in each dashed cage add up to its small number. Press the bottom button on a square to choose one.'],
-  'sudoku.go-cages-touch': ['Every row, column and box needs each number once, and the numbers in each dashed cage add up to its small number. Tap a square, then tap a number.'],
+  'sudoku.go-patch': [
+    'Every row, column and patch needs each number once. The patches are the outlined shapes. Press the bottom button on a square to choose one.',
+  ],
+  'sudoku.go-patch-touch': [
+    'Every row, column and patch needs each number once. The patches are the outlined shapes. Tap a square, then tap a number.',
+  ],
+  'sudoku.go-cages': [
+    'Every row, column and box needs each number once, and the numbers in each dashed cage add up to its small number. Press the bottom button on a square to choose one.',
+  ],
+  'sudoku.go-cages-touch': [
+    'Every row, column and box needs each number once, and the numbers in each dashed cage add up to its small number. Tap a square, then tap a number.',
+  ],
   'sudoku.cage-sum': ['These numbers add up to {have}, and the cage needs {sum}.'],
-  'sudoku.hint-cage-last': ['The numbers in this cage add up to {sum}. The ones already in make {have}, so the ringed square needs the {n}.'],
-  'sudoku.hint-cage-sets': ['{k} different numbers that add up to {sum} can only be {set}. That leaves just the {m} for the ringed square.'],
-  'sudoku.hint-cage-sets-or': ['{k} different numbers that add up to {sum} can only be {sets}. That leaves just the {m} for the ringed square.'],
+  'sudoku.hint-cage-last': [
+    'The numbers in this cage add up to {sum}. The ones already in make {have}, so the ringed square needs the {n}.',
+  ],
+  'sudoku.hint-cage-sets': [
+    '{k} different numbers that add up to {sum} can only be {set}. That leaves just the {m} for the ringed square.',
+  ],
+  'sudoku.hint-cage-sets-or': [
+    '{k} different numbers that add up to {sum} can only be {sets}. That leaves just the {m} for the ringed square.',
+  ],
   'sudoku.clash': ['That number is already in the same {house}.'],
-  'sudoku.wrong': ['The {n} does not belong in that square. Take it out and try another number.', 'That square needs a different number than the {n}.'],
-  'sudoku.stuck': ['Some square has no number left that fits, so one of the numbers you placed has to come out.'],
+  'sudoku.wrong': [
+    'The {n} does not belong in that square. Take it out and try another number.',
+    'That square needs a different number than the {n}.',
+  ],
+  'sudoku.stuck': [
+    'Some square has no number left that fits, so one of the numbers you placed has to come out.',
+  ],
   'sudoku.hint-lone': ['Look at the ringed square. Only the {n} fits there.'],
   'sudoku.hint-place': ['In this {house}, the {n} has only one square left. It is the ringed one.'],
-  'sudoku.hint-pair': ['Two squares in this {house} can only hold a {a} and a {b} between them, so no other square there can. That leaves just the {n} for the ringed square.'],
-  'sudoku.hint-locked': ['The {n} in this {house} has to go in the marked squares, which rules it out of the rest of their line. That leaves just the {m} for the ringed square.'],
-  'sudoku.hint-xwing': ['In these two {lines}, the {n} can only go in the ringed corners, so it sits in two opposite ones. That rules it out of the rest of those {across}. That leaves just the {m} for the ringed square.'],
+  'sudoku.hint-pair': [
+    'Two squares in this {house} can only hold a {a} and a {b} between them, so no other square there can. That leaves just the {n} for the ringed square.',
+  ],
+  'sudoku.hint-locked': [
+    'The {n} in this {house} has to go in the marked squares, which rules it out of the rest of their line. That leaves just the {m} for the ringed square.',
+  ],
+  'sudoku.hint-xwing': [
+    'In these two {lines}, the {n} can only go in the ringed corners, so it sits in two opposite ones. That rules it out of the rest of those {across}. That leaves just the {m} for the ringed square.',
+  ],
   'sudoku.hint-few': ['Try the ringed square. It has the fewest numbers that could go there.'],
-  'sudoku.fill-marks': ['Every number that still fits is pencilled into the empty squares. The marks are yours to change.'],
+  'sudoku.fill-marks': [
+    'Every number that still fits is pencilled into the empty squares. The marks are yours to change.',
+  ],
   'sudoku.hint-fix': ['One number you placed cannot be right. Take out the ringed one.'],
   'sudoku.bloom': ['The bed is in bloom!', 'Every number is in its place!'],
   'sudoku.done': ['A whole garden of numbers.'],

@@ -28,7 +28,8 @@ export const isLantern = (cell: number, mask?: Mask) => !mask || mask[cell];
 /** The lantern and its neighbours, as cell numbers: none on a pad, and a pad beside it is left out. */
 export function footprint(size: number, cell: number, mask?: Mask): number[] {
   if (!isLantern(cell, mask)) return [];
-  const r = Math.floor(cell / size), c = cell % size;
+  const r = Math.floor(cell / size),
+    c = cell % size;
   const out = [cell];
   if (r > 0) out.push(cell - size);
   if (r < size - 1) out.push(cell + size);
@@ -45,11 +46,13 @@ export function press(board: Board, size: number, cell: number, mask?: Mask): bo
 }
 
 /** The board after pressing each of these lanterns once. */
-export const pressAll = (board: Board, size: number, cells: readonly number[], mask?: Mask): boolean[] => cells.reduce<boolean[]>((b, c) => press(b, size, c, mask), board.slice());
+export const pressAll = (board: Board, size: number, cells: readonly number[], mask?: Mask): boolean[] =>
+  cells.reduce<boolean[]>((b, c) => press(b, size, c, mask), board.slice());
 
 export const allLit = (board: Board) => board.every(Boolean);
 /** Lit lanterns; a pad is not one. */
-export const litCount = (board: Board, mask?: Mask) => board.filter((on, i) => on && isLantern(i, mask)).length;
+export const litCount = (board: Board, mask?: Mask) =>
+  board.filter((on, i) => on && isLantern(i, mask)).length;
 /** How many lanterns the pond holds. */
 export const lanternCount = (size: number, mask?: Mask) => (mask ? mask.filter(Boolean).length : size * size);
 export const fullBoard = (size: number): boolean[] => Array<boolean>(size * size).fill(true);
@@ -75,7 +78,10 @@ export function solve(board: Board, size: number, mask?: Mask): Solution | null 
   // Footprints are symmetric, so lantern i's own footprint lists the lanterns whose press reaches it.
   const rows: bigint[] = [];
   for (let i = 0; i < n; i++) {
-    if (!isLantern(i, mask)) { rows.push(1n << BigInt(i)); continue; }
+    if (!isLantern(i, mask)) {
+      rows.push(1n << BigInt(i));
+      continue;
+    }
     let row = board[i] ? 0n : 1n << BigInt(n);
     for (const j of footprint(size, i, mask)) row |= 1n << BigInt(j);
     rows.push(row);
@@ -85,7 +91,11 @@ export function solve(board: Board, size: number, mask?: Mask): Solution | null 
   let next = 0;
   for (let col = 0; col < n; col++) {
     let p = -1;
-    for (let r = next; r < n; r++) if (bit(rows[r], col)) { p = r; break; }
+    for (let r = next; r < n; r++)
+      if (bit(rows[r], col)) {
+        p = r;
+        break;
+      }
     if (p < 0) continue;
     [rows[next], rows[p]] = [rows[p], rows[next]];
     for (let r = 0; r < n; r++) if (r !== next && bit(rows[r], col)) rows[r] ^= rows[next];
@@ -104,19 +114,25 @@ export function solve(board: Board, size: number, mask?: Mask): Solution | null 
     return v;
   });
   const ways = 2 ** free.length;
-  let weight = Infinity, best: number[][] = [];
+  let weight = Infinity,
+    best: number[][] = [];
   for (let mask = 0; mask < ways; mask++) {
     const set = base.slice();
-    nulls.forEach((v, k) => { if (mask & (1 << k)) for (let c = 0; c < n; c++) set[c] = set[c] !== v[c]; });
+    nulls.forEach((v, k) => {
+      if (mask & (1 << k)) for (let c = 0; c < n; c++) set[c] = set[c] !== v[c];
+    });
     const cells = set.map((on, c) => (on ? c : -1)).filter((c) => c >= 0);
-    if (cells.length < weight) { weight = cells.length; best = [cells]; }
-    else if (cells.length === weight) best.push(cells);
+    if (cells.length < weight) {
+      weight = cells.length;
+      best = [cells];
+    } else if (cells.length === weight) best.push(cells);
   }
   return { best, weight, ways };
 }
 
 /** The fewest presses that light the board, or null when none can. */
-export const fewestPresses = (board: Board, size: number, mask?: Mask): number | null => solve(board, size, mask)?.weight ?? null;
+export const fewestPresses = (board: Board, size: number, mask?: Mask): number | null =>
+  solve(board, size, mask)?.weight ?? null;
 
 export interface LanternPlan {
   /** For grown-ups. */
@@ -144,22 +160,57 @@ export const SHAPES: Record<string, readonly string[]> = {
 };
 
 /** A shape's mask: `true` where a lantern hangs. */
-export const shapeMask = (shape: readonly string[]): boolean[] => shape.join('').split('').map((ch) => ch !== ' ');
+export const shapeMask = (shape: readonly string[]): boolean[] =>
+  shape
+    .join('')
+    .split('')
+    .map((ch) => ch !== ' ');
 
 /**
  * The ladder: small boards with a few presses to find, then 4 by 4, then 5 by 5 and 6 by 6 boards that need real
  * planning. A 6 by 6 pond has exactly one winning set, so its fewest is exactly the scramble.
  */
 export const PLANS: LanternPlan[] = [
-  { name: 'A 3 by 3 pond: find the one or two lanterns to press', size: 3, scramble: 2, atLeast: 2, boards: 3 },
+  {
+    name: 'A 3 by 3 pond: find the one or two lanterns to press',
+    size: 3,
+    scramble: 2,
+    atLeast: 2,
+    boards: 3,
+  },
   { name: 'A 3 by 3 pond with a few more presses to find', size: 3, scramble: 4, atLeast: 3, boards: 3 },
-  { name: 'A 4 by 4 pond with a short way to light every lantern', size: 4, scramble: 4, atLeast: 3, boards: 2 },
+  {
+    name: 'A 4 by 4 pond with a short way to light every lantern',
+    size: 4,
+    scramble: 4,
+    atLeast: 3,
+    boards: 2,
+  },
   { name: 'A 4 by 4 pond that takes planning', size: 4, scramble: 7, atLeast: 5, boards: 2 },
-  { name: 'A 5 by 5 pond with a short way to light every lantern', size: 5, scramble: 5, atLeast: 4, boards: 2 },
+  {
+    name: 'A 5 by 5 pond with a short way to light every lantern',
+    size: 5,
+    scramble: 5,
+    atLeast: 4,
+    boards: 2,
+  },
   { name: 'A 5 by 5 pond that takes planning', size: 5, scramble: 10, atLeast: 8, boards: 2 },
-  { name: 'A 6 by 6 pond with a short way to light every lantern', size: 6, scramble: 7, atLeast: 7, boards: 2 },
+  {
+    name: 'A 6 by 6 pond with a short way to light every lantern',
+    size: 6,
+    scramble: 7,
+    atLeast: 7,
+    boards: 2,
+  },
   { name: 'A 6 by 6 pond that takes planning', size: 6, scramble: 12, atLeast: 12, boards: 2 },
-  { name: 'Lily-pad ponds: a shaped pond where the pads stop the flips', size: 5, scramble: 6, atLeast: 5, boards: 2, shapes: Object.values(SHAPES) },
+  {
+    name: 'Lily-pad ponds: a shaped pond where the pads stop the flips',
+    size: 5,
+    scramble: 6,
+    atLeast: 5,
+    boards: 2,
+    shapes: Object.values(SHAPES),
+  },
 ];
 
 /**
@@ -190,14 +241,16 @@ export interface Pond {
  * lily-pad pond takes the given shape, or the plan's first.
  */
 export function makePond(plan: LanternPlan, rng: Rng, shape = plan.shapes?.[0]): Pond {
-  const n = plan.size * plan.size, mask = shape ? shapeMask(shape) : undefined;
+  const n = plan.size * plan.size,
+    mask = shape ? shapeMask(shape) : undefined;
   const lanterns = Array.from({ length: n }, (_, i) => i).filter((i) => isLantern(i, mask));
   for (let attempt = 0; attempt < 300; attempt++) {
     const cells = rng.shuffle(lanterns.slice()).slice(0, plan.scramble);
     const board = pressAll(fullBoard(plan.size), plan.size, cells, mask);
     if (allLit(board)) continue;
     const par = fewestPresses(board, plan.size, mask);
-    if (par !== null && par >= plan.atLeast) return mask ? { board, size: plan.size, par, mask } : { board, size: plan.size, par };
+    if (par !== null && par >= plan.atLeast)
+      return mask ? { board, size: plan.size, par, mask } : { board, size: plan.size, par };
   }
   throw new Error(`could not make a pond for ${plan.name}`);
 }
@@ -205,13 +258,16 @@ export function makePond(plan: LanternPlan, rng: Rng, shape = plan.shapes?.[0]):
 /** A round's ponds; on a lily-pad level each takes a different shape. */
 export function makePonds(plan: LanternPlan, rng: Rng): Pond[] {
   const shapes = plan.shapes ? rng.shuffle(plan.shapes.slice()) : [];
-  return Array.from({ length: plan.boards }, (_, k) => makePond(plan, rng, shapes[k % Math.max(1, shapes.length)]));
+  return Array.from({ length: plan.boards }, (_, k) =>
+    makePond(plan, rng, shapes[k % Math.max(1, shapes.length)]),
+  );
 }
 
 /** A board from its picture: `*` for a lit lantern, `.` for a dark one, ` ` for a lily pad. */
 export function parsePond(rows: readonly string[]): Pond {
   const size = rows.length as Size;
-  if (![3, 4, 5, 6].includes(size) || rows.some((r) => r.length !== size)) throw new Error('a pond is a square, 3 to 6 lanterns across');
+  if (![3, 4, 5, 6].includes(size) || rows.some((r) => r.length !== size))
+    throw new Error('a pond is a square, 3 to 6 lanterns across');
   const cells = rows.join('').split('');
   const mask = cells.includes(' ') ? cells.map((ch) => ch !== ' ') : undefined;
   // A pad is stored lit, so it never stands between her and a lit pond.
@@ -222,7 +278,12 @@ export function parsePond(rows: readonly string[]): Pond {
 }
 
 export const formatPond = (board: Board, size: number, mask?: Mask): string[] =>
-  Array.from({ length: size }, (_, r) => board.slice(r * size, r * size + size).map((on, c) => (!isLantern(r * size + c, mask) ? ' ' : on ? '*' : '.')).join(''));
+  Array.from({ length: size }, (_, r) =>
+    board
+      .slice(r * size, r * size + size)
+      .map((on, c) => (!isLantern(r * size + c, mask) ? ' ' : on ? '*' : '.'))
+      .join(''),
+  );
 
 /** Whether the pond has exactly one fewest-press way to light it from here, or several: the hint line names which. */
 export type HintKind = 'one' | 'many';
@@ -243,12 +304,17 @@ export function namedHint(board: Board, size: number, near = 0, mask?: Mask): Hi
   if (!s || !s.weight) return null;
   const options = s.best.flat();
   // With several ways to win, the lantern closest to where she is looking.
-  const dist = (c: number) => Math.abs(Math.floor(c / size) - Math.floor(near / size)) + Math.abs((c % size) - (near % size));
-  return { cell: options.sort((a, b) => dist(a) - dist(b) || a - b)[0], kind: s.best.length === 1 ? 'one' : 'many' };
+  const dist = (c: number) =>
+    Math.abs(Math.floor(c / size) - Math.floor(near / size)) + Math.abs((c % size) - (near % size));
+  return {
+    cell: options.sort((a, b) => dist(a) - dist(b) || a - b)[0],
+    kind: s.best.length === 1 ? 'one' : 'many',
+  };
 }
 
 /** The lantern a hint points at (the bot and the demo read only this). */
-export const hintFor = (board: Board, size: number, near = 0, mask?: Mask): number | null => namedHint(board, size, near, mask)?.cell ?? null;
+export const hintFor = (board: Board, size: number, near = 0, mask?: Mask): number | null =>
+  namedHint(board, size, near, mask)?.cell ?? null;
 
 /**
  * "Show me a short way": the lanterns the replay presses, in order, from the pond as it began. Always the first of the

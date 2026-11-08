@@ -2,10 +2,29 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch } from '../../art/palette';
 import { label } from '../../ui/text';
-import { BUCKET, DROP, JAR_H, JAR_W, POT_COLOR, POT_H, POT_W, RECIPES, TABLE_CELL, TABLE_LABEL, TABLE_ROW, mix, tableH, type Pot, type ShelfColour, type Table } from './logic';
+import {
+  BUCKET,
+  DROP,
+  JAR_H,
+  JAR_W,
+  POT_COLOR,
+  POT_H,
+  POT_W,
+  RECIPES,
+  TABLE_CELL,
+  TABLE_LABEL,
+  TABLE_ROW,
+  mix,
+  tableH,
+  type Pot,
+  type ShelfColour,
+  type Table,
+} from './logic';
 
 const line = (pot: Pot) => swatch[pot].line;
-const TIN = 0xbfc6d2, TIN_LINE = 0x6f7a8c, TIN_LIGHT = 0xe3e8f0;
+const TIN = 0xbfc6d2,
+  TIN_LINE = 0x6f7a8c,
+  TIN_LIGHT = 0xe3e8f0;
 
 /** The pot's mark: a red dot, a yellow stripe, a blue star, a white ring. Drawn into `g` centred on (0, 0) at `size`. */
 export function mark(g: Graphics, pot: Pot, size: number, color = line(pot), alpha = 1): Graphics {
@@ -14,9 +33,11 @@ export function mark(g: Graphics, pot: Pot, size: number, color = line(pot), alp
   else if (pot === 'yellow') g.roundRect(-s, -s * 0.22, size, s * 0.44, s * 0.2).fill({ color, alpha });
   else if (pot === 'blue') {
     for (let i = 0; i < 5; i++) {
-      const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5, b = a + Math.PI / 5;
+      const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5,
+        b = a + Math.PI / 5;
       const p = [Math.cos(a) * s, Math.sin(a) * s, Math.cos(b) * s * 0.45, Math.sin(b) * s * 0.45];
-      if (i === 0) g.moveTo(p[0], p[1]); else g.lineTo(p[0], p[1]);
+      if (i === 0) g.moveTo(p[0], p[1]);
+      else g.lineTo(p[0], p[1]);
       g.lineTo(p[2], p[3]);
     }
     g.closePath().fill({ color, alpha });
@@ -32,20 +53,32 @@ export function drop(pot: Pot, outline = false): Graphics {
     g.circle(0, 0, r - 2).stroke({ width: 3, color: ink, alpha: 0.35 });
     return mark(g, pot, DROP * 0.5, ink, 0.3);
   }
-  g.circle(0, 0, r).fill(POT_COLOR[pot]).stroke({ width: 3, color: line(pot) });
+  g.circle(0, 0, r)
+    .fill(POT_COLOR[pot])
+    .stroke({ width: 3, color: line(pot) });
   return mark(g, pot, DROP * 0.5);
 }
 
 /** A fat pot with its word and mark on the belly, 120 × 130, standing on (0, 0) with its centre at (0, -65). */
 export function pot(kind: Pot): Container {
   const c = new Container();
-  const w = POT_W, h = POT_H;
+  const w = POT_W,
+    h = POT_H;
   const g = new Graphics()
-    .ellipse(0, 2, w * 0.46, 9).fill({ color: ink, alpha: 0.12 })
-    .moveTo(-w * 0.42, -h * 0.82).lineTo(w * 0.42, -h * 0.82).lineTo(w * 0.36, -4).quadraticCurveTo(0, 6, -w * 0.36, -4).closePath()
-    .fill(POT_COLOR[kind]).stroke({ width: 5, color: line(kind) })
-    .roundRect(-w * 0.48, -h * 0.98, w * 0.96, h * 0.2, 10).fill(POT_COLOR[kind]).stroke({ width: 5, color: line(kind) })
-    .ellipse(0, -h * 0.88, w * 0.32, 7).fill({ color: 0xffffff, alpha: 0.35 });
+    .ellipse(0, 2, w * 0.46, 9)
+    .fill({ color: ink, alpha: 0.12 })
+    .moveTo(-w * 0.42, -h * 0.82)
+    .lineTo(w * 0.42, -h * 0.82)
+    .lineTo(w * 0.36, -4)
+    .quadraticCurveTo(0, 6, -w * 0.36, -4)
+    .closePath()
+    .fill(POT_COLOR[kind])
+    .stroke({ width: 5, color: line(kind) })
+    .roundRect(-w * 0.48, -h * 0.98, w * 0.96, h * 0.2, 10)
+    .fill(POT_COLOR[kind])
+    .stroke({ width: 5, color: line(kind) })
+    .ellipse(0, -h * 0.88, w * 0.32, 7)
+    .fill({ color: 0xffffff, alpha: 0.35 });
   c.addChild(g);
   const badge = new Graphics().roundRect(-40, -h * 0.68, 80, 34, 12).fill({ color: 0xffffff, alpha: 0.85 });
   c.addChild(badge);
@@ -63,11 +96,21 @@ export function bucket(): { node: Container; inside: Graphics; rows: Container; 
   const node = new Container();
   const s = BUCKET;
   const body = new Graphics()
-    .ellipse(0, s * 0.47, s * 0.42, 12).fill({ color: ink, alpha: 0.14 })
-    .moveTo(-s * 0.44, -s * 0.3).lineTo(s * 0.44, -s * 0.3).lineTo(s * 0.36, s * 0.44).quadraticCurveTo(0, s * 0.5, -s * 0.36, s * 0.44).closePath()
-    .fill(TIN).stroke({ width: 6, color: TIN_LINE })
-    .roundRect(-s * 0.46, -s * 0.36, s * 0.92, s * 0.1, 8).fill(TIN_LIGHT).stroke({ width: 5, color: TIN_LINE })
-    .moveTo(-s * 0.44, -s * 0.32).quadraticCurveTo(0, -s * 0.62, s * 0.44, -s * 0.32).stroke({ width: 8, color: TIN_LINE, cap: 'round' });
+    .ellipse(0, s * 0.47, s * 0.42, 12)
+    .fill({ color: ink, alpha: 0.14 })
+    .moveTo(-s * 0.44, -s * 0.3)
+    .lineTo(s * 0.44, -s * 0.3)
+    .lineTo(s * 0.36, s * 0.44)
+    .quadraticCurveTo(0, s * 0.5, -s * 0.36, s * 0.44)
+    .closePath()
+    .fill(TIN)
+    .stroke({ width: 6, color: TIN_LINE })
+    .roundRect(-s * 0.46, -s * 0.36, s * 0.92, s * 0.1, 8)
+    .fill(TIN_LIGHT)
+    .stroke({ width: 5, color: TIN_LINE })
+    .moveTo(-s * 0.44, -s * 0.32)
+    .quadraticCurveTo(0, -s * 0.62, s * 0.44, -s * 0.32)
+    .stroke({ width: 8, color: TIN_LINE, cap: 'round' });
   const inside = new Graphics();
   const rim = new Graphics();
   const rows = new Container();
@@ -78,21 +121,37 @@ export function bucket(): { node: Container; inside: Graphics; rows: Container; 
 /** Paint the bucket's inside: the opening as an ellipse in `color`, or bare tin when empty. */
 export function fillInside(inside: Graphics, color: number | undefined) {
   const s = BUCKET;
-  inside.clear().ellipse(0, -s * 0.31, s * 0.4, s * 0.11).fill(color ?? TIN_LIGHT).stroke({ width: 4, color: TIN_LINE, alpha: 0.5 });
+  inside
+    .clear()
+    .ellipse(0, -s * 0.31, s * 0.4, s * 0.11)
+    .fill(color ?? TIN_LIGHT)
+    .stroke({ width: 4, color: TIN_LINE, alpha: 0.5 });
   // The paint shown as a wide pool down the front, so the drops sit on colour.
-  inside.roundRect(-s * 0.34, -s * 0.2, s * 0.68, s * 0.56, 40).fill({ color: color ?? TIN_LIGHT, alpha: color === undefined ? 0.5 : 0.95 });
+  inside
+    .roundRect(-s * 0.34, -s * 0.2, s * 0.68, s * 0.56, 40)
+    .fill({ color: color ?? TIN_LIGHT, alpha: color === undefined ? 0.5 : 0.95 });
 }
 
 /** A glass sample jar, 150 × 190, centred on (0, 0), holding `color` with a lid. */
 export function jar(color: number): Container {
   const c = new Container();
-  const w = JAR_W, h = JAR_H;
-  c.addChild(new Graphics()
-    .ellipse(0, h * 0.48, w * 0.4, 8).fill({ color: ink, alpha: 0.12 })
-    .roundRect(-w * 0.42, -h * 0.3, w * 0.84, h * 0.76, 26).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 5, color: TIN_LINE })
-    .roundRect(-w * 0.36, -h * 0.08, w * 0.72, h * 0.48, 20).fill(color)
-    .roundRect(-w * 0.3, -h * 0.46, w * 0.6, h * 0.2, 10).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line })
-    .roundRect(-w * 0.32, -h * 0.22, 14, h * 0.5, 6).fill({ color: 0xffffff, alpha: 0.45 }));
+  const w = JAR_W,
+    h = JAR_H;
+  c.addChild(
+    new Graphics()
+      .ellipse(0, h * 0.48, w * 0.4, 8)
+      .fill({ color: ink, alpha: 0.12 })
+      .roundRect(-w * 0.42, -h * 0.3, w * 0.84, h * 0.76, 26)
+      .fill({ color: 0xffffff, alpha: 0.5 })
+      .stroke({ width: 5, color: TIN_LINE })
+      .roundRect(-w * 0.36, -h * 0.08, w * 0.72, h * 0.48, 20)
+      .fill(color)
+      .roundRect(-w * 0.3, -h * 0.46, w * 0.6, h * 0.2, 10)
+      .fill(swatch.brown.fill)
+      .stroke({ width: 5, color: swatch.brown.line })
+      .roundRect(-w * 0.32, -h * 0.22, 14, h * 0.5, 6)
+      .fill({ color: 0xffffff, alpha: 0.45 }),
+  );
   return c;
 }
 
@@ -100,13 +159,29 @@ export function jar(color: number): Container {
 export function button(kind: 'undo' | 'tip' | 'check', w: number, h: number): Container {
   const c = new Container();
   const color = kind === 'check' ? swatch.green : kind === 'undo' ? swatch.blue : swatch.orange;
-  c.addChild(new Graphics().roundRect(-w / 2, -h / 2 + 6, w, h, 24).fill({ color: ink, alpha: 0.12 })
-    .roundRect(-w / 2, -h / 2, w, h, 24).fill(color.fill).stroke({ width: 5, color: color.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2 + 6, w, h, 24)
+      .fill({ color: ink, alpha: 0.12 })
+      .roundRect(-w / 2, -h / 2, w, h, 24)
+      .fill(color.fill)
+      .stroke({ width: 5, color: color.line }),
+  );
   const g = new Graphics();
-  if (kind === 'check') g.moveTo(-26, 2).lineTo(-8, 22).lineTo(28, -22).stroke({ width: 13, color: 0xffffff, cap: 'round', join: 'round' });
+  if (kind === 'check')
+    g.moveTo(-26, 2)
+      .lineTo(-8, 22)
+      .lineTo(28, -22)
+      .stroke({ width: 13, color: 0xffffff, cap: 'round', join: 'round' });
   else if (kind === 'undo') {
-    g.moveTo(22, 14).quadraticCurveTo(22, -16, -8, -16).stroke({ width: 11, color: 0xffffff, cap: 'round' })
-      .moveTo(-26, -16).lineTo(-6, -32).lineTo(-6, 0).closePath().fill(0xffffff);
+    g.moveTo(22, 14)
+      .quadraticCurveTo(22, -16, -8, -16)
+      .stroke({ width: 11, color: 0xffffff, cap: 'round' })
+      .moveTo(-26, -16)
+      .lineTo(-6, -32)
+      .lineTo(-6, 0)
+      .closePath()
+      .fill(0xffffff);
   } else {
     g.roundRect(-20, -18, 40, 44, 8).fill(0xffffff);
     g.rotation = -0.6;
@@ -123,17 +198,34 @@ export function button(kind: 'undo' | 'tip' | 'check', w: number, h: number): Co
  * `k × sample` once batch `k` is complete and an empty cell before it. `star` marks level 4's first way; `glow` rings a column
  * (level 6's reveal).
  */
-export function ratioTable(t: Table, pots: readonly Pot[], star: number | null, glow: number | null = null): Container {
+export function ratioTable(
+  t: Table,
+  pots: readonly Pot[],
+  star: number | null,
+  glow: number | null = null,
+): Container {
   const c = new Container();
-  const w = TABLE_LABEL + t.columns * TABLE_CELL, h = tableH(pots.length);
-  const left = -w / 2, top = -h / 2;
-  c.addChild(new Graphics().roundRect(left - 8, top - 8, w + 16, h + 16, 16).fill({ color: 0xffffff, alpha: 0.88 }).stroke({ width: 3, color: TIN_LINE, alpha: 0.6 }));
+  const w = TABLE_LABEL + t.columns * TABLE_CELL,
+    h = tableH(pots.length);
+  const left = -w / 2,
+    top = -h / 2;
+  c.addChild(
+    new Graphics()
+      .roundRect(left - 8, top - 8, w + 16, h + 16, 16)
+      .fill({ color: 0xffffff, alpha: 0.88 })
+      .stroke({ width: 3, color: TIN_LINE, alpha: 0.6 }),
+  );
   const g = new Graphics();
   c.addChild(g);
   for (let k = 0; k < t.columns; k++) {
     const x = left + TABLE_LABEL + k * TABLE_CELL + TABLE_CELL / 2;
     if (star === k + 1) c.addChild(starAt(x, top + TABLE_ROW / 2));
-    if (glow === k + 1) c.addChild(new Graphics().roundRect(x - TABLE_CELL / 2 - 2, top + 2, TABLE_CELL + 4, h - 4, 10).stroke({ width: 5, color: swatch.yellow.fill }));
+    if (glow === k + 1)
+      c.addChild(
+        new Graphics()
+          .roundRect(x - TABLE_CELL / 2 - 2, top + 2, TABLE_CELL + 4, h - 4, 10)
+          .stroke({ width: 5, color: swatch.yellow.fill }),
+      );
     const head = label(String(k + 1), 20, ink);
     head.alpha = 0.55;
     head.position.set(x, top + TABLE_ROW / 2);
@@ -164,8 +256,10 @@ export function ratioTable(t: Table, pots: readonly Pot[], star: number | null, 
 function starAt(x: number, y: number): Graphics {
   const s = new Graphics();
   for (let i = 0; i < 5; i++) {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5, b = a + Math.PI / 5;
-    if (i === 0) s.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); else s.lineTo(Math.cos(a) * 18, Math.sin(a) * 18);
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5,
+      b = a + Math.PI / 5;
+    if (i === 0) s.moveTo(Math.cos(a) * 18, Math.sin(a) * 18);
+    else s.lineTo(Math.cos(a) * 18, Math.sin(a) * 18);
     s.lineTo(Math.cos(b) * 8, Math.sin(b) * 8);
   }
   s.closePath().fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
@@ -200,21 +294,41 @@ export interface LabelJarLook {
  */
 export function labelJar(look: LabelJarLook): Container {
   const c = new Container();
-  const w = JAR_W, h = JAR_H;
+  const w = JAR_W,
+    h = JAR_H;
   const g = new Graphics()
-    .ellipse(0, h * 0.48, w * 0.4, 8).fill({ color: ink, alpha: 0.12 })
-    .roundRect(-w * 0.42, -h * 0.3, w * 0.84, h * 0.76, 26).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 5, color: look.chosen ? swatch.green.line : TIN_LINE })
-    .roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20).fill(look.open ? look.color : 0xe6e1d8);
-  if (!look.open) g.roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20).fill({ color: 0xffffff, alpha: 0.35 });
+    .ellipse(0, h * 0.48, w * 0.4, 8)
+    .fill({ color: ink, alpha: 0.12 })
+    .roundRect(-w * 0.42, -h * 0.3, w * 0.84, h * 0.76, 26)
+    .fill({ color: 0xffffff, alpha: 0.5 })
+    .stroke({ width: 5, color: look.chosen ? swatch.green.line : TIN_LINE })
+    .roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20)
+    .fill(look.open ? look.color : 0xe6e1d8);
+  if (!look.open)
+    g.roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20).fill({ color: 0xffffff, alpha: 0.35 });
   c.addChild(g);
-  if (look.chosen) c.addChild(new Graphics().roundRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, 30).stroke({ width: 7, color: swatch.green.fill }));
+  if (look.chosen)
+    c.addChild(
+      new Graphics()
+        .roundRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, 30)
+        .stroke({ width: 7, color: swatch.green.fill }),
+    );
   // The closed lid fills the lid knob's tap zone (the top 100 × 60, jars.ts LID), so a tap on the glass chooses, never opens.
   const lid = new Graphics()
-    .roundRect(-w * 0.33, -h * 0.13, w * 0.66, h * 0.26, 12).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line })
-    .roundRect(-18, -h * 0.13 - 10, 36, 14, 6).fill(swatch.brown.line);
-  if (look.open) { lid.position.set(w * 0.34, -h * 0.5); lid.rotation = 0.55; } else lid.position.set(0, -h / 2 + 30);
+    .roundRect(-w * 0.33, -h * 0.13, w * 0.66, h * 0.26, 12)
+    .fill(swatch.brown.fill)
+    .stroke({ width: 5, color: swatch.brown.line })
+    .roundRect(-18, -h * 0.13 - 10, 36, 14, 6)
+    .fill(swatch.brown.line);
+  if (look.open) {
+    lid.position.set(w * 0.34, -h * 0.5);
+    lid.rotation = 0.55;
+  } else lid.position.set(0, -h / 2 + 30);
   c.addChild(lid);
-  const tag = new Graphics().roundRect(-50, -12, 100, 96, 14).fill(0xffffff).stroke({ width: 3, color: look.fits ? swatch.yellow.line : TIN_LINE, alpha: look.fits ? 1 : 0.6 });
+  const tag = new Graphics()
+    .roundRect(-50, -12, 100, 96, 14)
+    .fill(0xffffff)
+    .stroke({ width: 3, color: look.fits ? swatch.yellow.line : TIN_LINE, alpha: look.fits ? 1 : 0.6 });
   if (look.fits) tag.roundRect(-55, -17, 110, 106, 18).stroke({ width: 6, color: swatch.yellow.fill });
   c.addChild(tag);
   look.pots.slice(0, 2).forEach((pot, i) => {
@@ -225,7 +339,8 @@ export function labelJar(look: LabelJarLook): Container {
     const n = label(String(look.label[i]), 36, ink);
     n.position.set(20, y);
     c.addChild(n);
-    if (look.circle === i) c.addChild(new Graphics().circle(20, y, 24).stroke({ width: 5, color: swatch.orange.line }));
+    if (look.circle === i)
+      c.addChild(new Graphics().circle(20, y, 24).stroke({ width: 5, color: swatch.orange.line }));
   });
   return c;
 }
@@ -235,7 +350,9 @@ export function paintJournalPicture(name: ShelfColour): Container {
   const c = new Container();
   const r = RECIPES.find((x) => x.name === name)!;
   const counts = { red: 0, yellow: 0, blue: 0, white: 0 };
-  r.pots.forEach((pot, i) => { counts[pot] = r.counts[i]; });
+  r.pots.forEach((pot, i) => {
+    counts[pot] = r.counts[i];
+  });
   const j = jar(mix(counts)!);
   j.position.set(0, -40);
   c.addChild(j);

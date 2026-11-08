@@ -4,7 +4,11 @@ import { judge, padAt, padHit, PADS, planFor, pullFor, reach } from './logic';
 
 describe('the Cloud Hopper course', () => {
   it('pins the version-one course and shared island mapping', () => {
-    expect(CLOUDS).toMatchObject({ version: 1, padWidth: 0.5, targets: [2, 4, 0, 3, 1, 4, 2, 0, 3, 1, 4, 2] });
+    expect(CLOUDS).toMatchObject({
+      version: 1,
+      padWidth: 0.5,
+      targets: [2, 4, 0, 3, 1, 4, 2, 0, 3, 1, 4, 2],
+    });
     expect(PADS).toBe(5);
     expect([padAt(0), padAt(2), padAt(4)]).toEqual([0.1, 0.5, 0.9]);
     expect([reach(30), reach(100), reach(170)]).toEqual([0, 0.5, 1]);
@@ -19,8 +23,9 @@ describe('the Cloud Hopper course', () => {
 
   it('never repeats a cloud twice running, and asks for every cloud at least twice', () => {
     CLOUDS.targets.slice(1).forEach((t, i) => expect(t).not.toBe(CLOUDS.targets[i]));
-    for (let pad = 0; pad < PADS; pad++) expect(CLOUDS.targets.filter(t => t === pad).length).toBeGreaterThanOrEqual(2);
-    expect(CLOUDS.targets.every(t => Number.isInteger(t) && t >= 0 && t < PADS)).toBe(true);
+    for (let pad = 0; pad < PADS; pad++)
+      expect(CLOUDS.targets.filter((t) => t === pad).length).toBeGreaterThanOrEqual(2);
+    expect(CLOUDS.targets.every((t) => Number.isInteger(t) && t >= 0 && t < PADS)).toBe(true);
   });
 
   it('keeps the clouds small but fair: the exact pull lands, and so does a little error either way', () => {

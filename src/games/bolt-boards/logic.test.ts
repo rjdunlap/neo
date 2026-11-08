@@ -2,9 +2,44 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  apply, boardLayout, boltAt, corners, covered, done, freeBolts, FRIEND, HEAD, HIT, hintMove, holeAt, holeCount, HOLE, MIN_ARM, mirror, moves,
-  mustGo, openHoles, PET_H, PET_W, planFor, PLANS, pose, poses, remove, removed, SEARCH_CAP, solve, startState, stuck, toView, WALL_H, WALL_W,
-  type Pose, type Pt, type Puzzle, type State,
+  apply,
+  boardLayout,
+  boltAt,
+  corners,
+  covered,
+  done,
+  freeBolts,
+  FRIEND,
+  HEAD,
+  HIT,
+  hintMove,
+  holeAt,
+  holeCount,
+  HOLE,
+  MIN_ARM,
+  mirror,
+  moves,
+  mustGo,
+  openHoles,
+  PET_H,
+  PET_W,
+  planFor,
+  PLANS,
+  pose,
+  poses,
+  remove,
+  removed,
+  SEARCH_CAP,
+  solve,
+  startState,
+  stuck,
+  toView,
+  WALL_H,
+  WALL_W,
+  type Pose,
+  type Pt,
+  type Puzzle,
+  type State,
 } from './logic';
 import { PUZZLES } from './puzzles';
 
@@ -34,8 +69,21 @@ function reachable(p: Puzzle, holes: boolean, cap = 20000): State[] {
 /** Every pose a board can take: pinned (two or more bolts) and hanging from each of its bolts. */
 function everyPose(p: Puzzle, i: number): Pose[] {
   const mine = p.bolts.map((_, b) => b).filter((b) => p.bolts[b].board === i);
-  const out = mine.map((b) => pose(p, p.bolts.map((_, x) => (x === b ? b : -1)), i));
-  if (mine.length >= 2) out.push(pose(p, p.bolts.map((_, x) => x), i));
+  const out = mine.map((b) =>
+    pose(
+      p,
+      p.bolts.map((_, x) => (x === b ? b : -1)),
+      i,
+    ),
+  );
+  if (mine.length >= 2)
+    out.push(
+      pose(
+        p,
+        p.bolts.map((_, x) => x),
+        i,
+      ),
+    );
   return out;
 }
 
@@ -45,13 +93,21 @@ function polyOverlaps(p: Puzzle, i: number, q: Pose, c: Pt, r: number): boolean 
   if (!cs.length) return false;
   let inside = true;
   for (let k = 0; k < 4; k++) {
-    const a = cs[k], b = cs[(k + 1) % 4];
+    const a = cs[k],
+      b = cs[(k + 1) % 4];
     if ((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) < 0) inside = false;
   }
   if (inside) return true;
   for (let k = 0; k < 4; k++) {
-    const a = cs[k], b = cs[(k + 1) % 4];
-    const t = Math.max(0, Math.min(1, ((c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y)) / ((b.x - a.x) ** 2 + (b.y - a.y) ** 2)));
+    const a = cs[k],
+      b = cs[(k + 1) % 4];
+    const t = Math.max(
+      0,
+      Math.min(
+        1,
+        ((c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y)) / ((b.x - a.x) ** 2 + (b.y - a.y) ** 2),
+      ),
+    );
     if (Math.hypot(a.x + t * (b.x - a.x) - c.x, a.y + t * (b.y - a.y) - c.y) < r) return true;
   }
   return false;
@@ -62,19 +118,31 @@ describe('Bolt Boards poses', () => {
     for (const { p } of all()) {
       p.boards.forEach((d, i) => {
         const mine = p.bolts.map((_, b) => b).filter((b) => p.bolts[b].board === i);
-        for (const b of mine) expect(Math.hypot(p.bolts[b].x - d.x, p.bolts[b].y - d.y)).toBeGreaterThanOrEqual(MIN_ARM);
+        for (const b of mine)
+          expect(Math.hypot(p.bolts[b].x - d.x, p.bolts[b].y - d.y)).toBeGreaterThanOrEqual(MIN_ARM);
         for (const q of everyPose(p, i)) {
-          if (q.kind !== 'hanging') { expect(q).toMatchObject({ x: d.x, y: d.y, rot: 0 }); continue; }
+          if (q.kind !== 'hanging') {
+            expect(q).toMatchObject({ x: d.x, y: d.y, rot: 0 });
+            continue;
+          }
           const bolt = p.bolts[q.bolt];
           expect(Math.abs(q.x - bolt.x)).toBeLessThan(0.01);
           expect(q.y).toBeGreaterThan(bolt.y);
           expect(Math.abs(q.rot)).toBeLessThanOrEqual(Math.PI);
           // The hanging bolt stays on its own spot of the board.
-          const local = { x: bolt.x - d.x, y: bolt.y - d.y }, c = Math.cos(q.rot), s = Math.sin(q.rot);
+          const local = { x: bolt.x - d.x, y: bolt.y - d.y },
+            c = Math.cos(q.rot),
+            s = Math.sin(q.rot);
           expect(q.x + local.x * c - local.y * s).toBeCloseTo(bolt.x, 6);
           expect(q.y + local.x * s + local.y * c).toBeCloseTo(bolt.y, 6);
         }
-        expect(pose(p, p.bolts.map(() => -1), i).kind).toBe('down');
+        expect(
+          pose(
+            p,
+            p.bolts.map(() => -1),
+            i,
+          ).kind,
+        ).toBe('down');
         if (mine.length === 1) expect(pose(p, startState(p), i).kind).toBe('hanging');
       });
     }
@@ -99,8 +167,11 @@ describe('Bolt Boards poses', () => {
         }
         // Taking a bolt out moves only its own board.
         for (const m of moves(p, s, plan.holes).slice(0, 3)) {
-          const n = apply(s, m), qn = poses(p, n);
-          p.boards.forEach((_, i) => { if (i !== p.bolts[m.bolt].board) expect(qn[i]).toEqual(qs[i]); });
+          const n = apply(s, m),
+            qn = poses(p, n);
+          p.boards.forEach((_, i) => {
+            if (i !== p.bolts[m.bolt].board) expect(qn[i]).toEqual(qs[i]);
+          });
         }
       }
     }
@@ -128,24 +199,42 @@ describe('Bolt Boards levels 1–5 never dead-end', () => {
 
 describe('Bolt Boards frozen list', () => {
   it('has twenty boards a level (level 6 has its authored first board too)', () => {
-    for (const plan of PLANS.filter((x) => !x.build)) expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 21 : 20);
+    for (const plan of PLANS.filter((x) => !x.build))
+      expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 21 : 20);
   });
 
   it('keeps the authored first boards of levels 1 and 6 where they were when the list grew', () => {
     expect(PUZZLES[1][0]).toEqual({
-      boards: [{ x: 130, y: 260, w: 180, h: 200, z: 1 }, { x: 350, y: 260, w: 180, h: 200, z: 2 }, { x: 570, y: 260, w: 180, h: 200, z: 3 }],
-      bolts: [{ x: 130, y: 200, board: 0 }, { x: 350, y: 200, board: 1 }, { x: 570, y: 200, board: 2 }],
+      boards: [
+        { x: 130, y: 260, w: 180, h: 200, z: 1 },
+        { x: 350, y: 260, w: 180, h: 200, z: 2 },
+        { x: 570, y: 260, w: 180, h: 200, z: 3 },
+      ],
+      bolts: [
+        { x: 130, y: 200, board: 0 },
+        { x: 350, y: 200, board: 1 },
+        { x: 570, y: 200, board: 2 },
+      ],
       holes: [],
     });
     expect(PUZZLES[6][0]).toEqual({
-      boards: [{ x: 450, y: 140, w: 280, h: 100, z: 1 }, { x: 380, y: 250, w: 260, h: 180, z: 2 }],
-      bolts: [{ x: 350, y: 156, board: 0 }, { x: 504, y: 131, board: 0 }, { x: 305, y: 285, board: 1 }, { x: 433, y: 256, board: 1 }],
+      boards: [
+        { x: 450, y: 140, w: 280, h: 100, z: 1 },
+        { x: 380, y: 250, w: 260, h: 180, z: 2 },
+      ],
+      bolts: [
+        { x: 350, y: 156, board: 0 },
+        { x: 504, y: 131, board: 0 },
+        { x: 305, y: 285, board: 1 },
+        { x: 433, y: 256, board: 1 },
+      ],
       holes: [{ x: 390, y: 480 }],
     });
   });
 
   it('holds no board twice in a level', () => {
-    for (const plan of PLANS) expect(new Set(PUZZLES[plan.id].map((p) => JSON.stringify(p))).size).toBe(PUZZLES[plan.id].length);
+    for (const plan of PLANS)
+      expect(new Set(PUZZLES[plan.id].map((p) => JSON.stringify(p))).size).toBe(PUZZLES[plan.id].length);
   });
 
   it('is well formed: distinct layers, bolts inside their boards and apart, holes apart, at most six boards', () => {
@@ -158,9 +247,10 @@ describe('Bolt Boards frozen list', () => {
         expect(Math.abs(b.y - d.y)).toBeLessThanOrEqual(d.h / 2 - HEAD);
       }
       const pts: Pt[] = [...p.bolts, ...p.holes];
-      for (let a = 0; a < pts.length; a++) for (let b = a + 1; b < pts.length; b++) {
-        expect(Math.hypot(pts[a].x - pts[b].x, pts[a].y - pts[b].y)).toBeGreaterThanOrEqual(120);
-      }
+      for (let a = 0; a < pts.length; a++)
+        for (let b = a + 1; b < pts.length; b++) {
+          expect(Math.hypot(pts[a].x - pts[b].x, pts[a].y - pts[b].y)).toBeGreaterThanOrEqual(120);
+        }
     }
   });
 
@@ -177,7 +267,10 @@ describe('Bolt Boards frozen list', () => {
 
   it('keeps levels 1–2 side by side: no bolt is ever covered', () => {
     for (const { plan, p } of all().filter((x) => x.plan.id <= 2)) {
-      for (const s of reachable(p, plan.holes)) p.bolts.forEach((_, b) => { if (s[b] === b) expect(covered(p, s, b)).toBe(false); });
+      for (const s of reachable(p, plan.holes))
+        p.bolts.forEach((_, b) => {
+          if (s[b] === b) expect(covered(p, s, b)).toBe(false);
+        });
     }
   });
 
@@ -189,10 +282,12 @@ describe('Bolt Boards frozen list', () => {
 
   it('gives every level-4 board a swing that covers a bolt that was free', () => {
     for (const { p } of all().filter((x) => x.plan.id === 4)) {
-      const found = reachable(p, false).some((s) => moves(p, s, false).some((m) => {
-        const n = apply(s, m);
-        return p.bolts.some((_, b) => s[b] === b && n[b] === b && !covered(p, s, b) && covered(p, n, b));
-      }));
+      const found = reachable(p, false).some((s) =>
+        moves(p, s, false).some((m) => {
+          const n = apply(s, m);
+          return p.bolts.some((_, b) => s[b] === b && n[b] === b && !covered(p, s, b) && covered(p, n, b));
+        }),
+      );
       expect(found).toBe(true);
     }
   });
@@ -216,14 +311,20 @@ describe('Bolt Boards frozen list', () => {
   it('opens one or two holes at the start of level 6, one at level 7 and three or four at level 8', () => {
     for (const { plan, p } of all().filter((x) => x.plan.holes)) {
       const n = openHoles(p, startState(p)).length;
-      if (plan.id === 6) { expect(n).toBeGreaterThanOrEqual(1); expect(n).toBeLessThanOrEqual(2); }
-      else if (plan.id === 8) { expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(4); }
-      else expect(n).toBe(1);
+      if (plan.id === 6) {
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(2);
+      } else if (plan.id === 8) {
+        expect(n).toBeGreaterThanOrEqual(3);
+        expect(n).toBeLessThanOrEqual(4);
+      } else expect(n).toBe(1);
     }
   });
 
   it('authors level 6’s first board so one order of the top board’s bolts works and the other gets stuck', () => {
-    const p = PUZZLES[6][0], plan = planFor(6), s = startState(p);
+    const p = PUZZLES[6][0],
+      plan = planFor(6),
+      s = startState(p);
     expect(p.boards.length).toBe(2);
     expect(openHoles(p, s).length).toBe(1);
     const first = moves(p, s, true);
@@ -236,17 +337,26 @@ describe('Bolt Boards frozen list', () => {
   });
 
   it('starts level 1 with three boards hanging straight from one bolt each', () => {
-    const p = PUZZLES[1][0], qs = poses(p, startState(p));
+    const p = PUZZLES[1][0],
+      qs = poses(p, startState(p));
     expect(p.boards.length).toBe(3);
     for (const q of qs) expect(q.kind === 'hanging' && Math.abs(q.rot) < 1e-9).toBe(true);
   });
 });
 
 describe('Bolt Boards level 8, Plenty of holes', () => {
-  const eight = PUZZLES[8], plan = planFor(8);
+  const eight = PUZZLES[8],
+    plan = planFor(8);
 
   it('is a hole level with lit holes, a covered-bolt miss and no par, so no wander hint', () => {
-    expect(plan).toMatchObject({ id: 8, goal: 'all', holes: true, litHoles: true, coveredMiss: true, scenes: 2 });
+    expect(plan).toMatchObject({
+      id: 8,
+      goal: 'all',
+      holes: true,
+      litHoles: true,
+      coveredMiss: true,
+      scenes: 2,
+    });
     expect(plan.par).toBeUndefined();
     expect(eight.length).toBeGreaterThanOrEqual(10);
   });
@@ -261,16 +371,19 @@ describe('Bolt Boards level 8, Plenty of holes', () => {
 
   it('has a move on every board that swings a board over a hole that was open', () => {
     for (const p of eight) {
-      const found = reachable(p, true, 100_000).some((s) => moves(p, s, true).some((m) => {
-        const now = openHoles(p, apply(s, m));
-        return openHoles(p, s).some((h) => h !== m.hole && !now.includes(h));
-      }));
+      const found = reachable(p, true, 100_000).some((s) =>
+        moves(p, s, true).some((m) => {
+          const now = openHoles(p, apply(s, m));
+          return openHoles(p, s).some((h) => h !== m.hole && !now.includes(h));
+        }),
+      );
       expect(found).toBe(true);
     }
   });
 
   it('authors its first board: two boards side by side, three open holes; the left board’s first bolt swings over exactly one', () => {
-    const p = eight[0], s = startState(p);
+    const p = eight[0],
+      s = startState(p);
     expect(p.boards.length).toBe(2);
     expect(p.bolts.every((b) => p.bolts.filter((c) => c.board === b.board).length === 2)).toBe(true);
     expect(openHoles(p, s).length).toBe(3);
@@ -278,12 +391,16 @@ describe('Bolt Boards level 8, Plenty of holes', () => {
     const first = moves(p, s, true);
     expect(first.length).toBe(4 * 3);
     for (const m of first) {
-      const n = apply(s, m), extra = p.holes.map((_, k) => p.bolts.length + k);
-      const closed = extra.filter((h) => p.boards.some((_, j) => polyOverlaps(p, j, pose(p, n, j), holeAt(p, h), HOLE)));
+      const n = apply(s, m),
+        extra = p.holes.map((_, k) => p.bolts.length + k);
+      const closed = extra.filter((h) =>
+        p.boards.some((_, j) => polyOverlaps(p, j, pose(p, n, j), holeAt(p, h), HOLE)),
+      );
       if (p.bolts[m.bolt].board === 0) {
         expect(closed.length).toBe(1);
         // Right over it: the hole's whole circle lies inside the hanging board, so it reads as covered.
-        const h = holeAt(p, closed[0]), q = pose(p, n, 0);
+        const h = holeAt(p, closed[0]),
+          q = pose(p, n, 0);
         expect(q.kind).toBe('hanging');
         if (q.kind === 'hanging') expect(Math.abs(h.x - q.x)).toBeLessThanOrEqual(p.boards[0].h / 2 - HOLE);
       } else expect(closed.length).toBeLessThanOrEqual(1);
@@ -294,7 +411,10 @@ describe('Bolt Boards level 8, Plenty of holes', () => {
     let worst = 0;
     for (const p of eight) {
       for (const s of reachable(p, true, 100_000)) {
-        if (done(p, s, 'all')) { expect(hintMove(p, s, plan)).toBeNull(); continue; }
+        if (done(p, s, 'all')) {
+          expect(hintMove(p, s, plan)).toBeNull();
+          continue;
+        }
         const t0 = performance.now();
         const h = hintMove(p, s, plan);
         worst = Math.max(worst, performance.now() - t0);
@@ -315,8 +435,10 @@ describe('Bolt Boards level 8, Plenty of holes', () => {
 describe('Bolt Boards mirror', () => {
   it('keeps every pose, cover, mustGo set and solution length', () => {
     for (const { plan, p } of all()) {
-      const m = mirror(p), s = startState(p);
-      const a = poses(p, s), b = poses(m, s);
+      const m = mirror(p),
+        s = startState(p);
+      const a = poses(p, s),
+        b = poses(m, s);
       a.forEach((q, i) => {
         const r = b[i];
         expect(r.kind).toBe(q.kind);
@@ -338,7 +460,10 @@ describe('Bolt Boards hints', () => {
     for (const { plan, p } of all().filter((x) => !x.plan.holes)) {
       for (const s of reachable(p, false, 300)) {
         const h = hintMove(p, s, plan);
-        if (done(p, s, plan.goal)) { expect(h).toBeNull(); continue; }
+        if (done(p, s, plan.goal)) {
+          expect(h).toBeNull();
+          continue;
+        }
         expect(h && 'move' in h).toBe(true);
         if (!h || !('move' in h)) continue;
         expect(freeBolts(p, s)).toContain(h.move.bolt);
@@ -357,7 +482,10 @@ describe('Bolt Boards hints', () => {
         worst = Math.max(worst, performance.now() - t0);
         const len = solve(p, s, plan);
         expect(len).not.toBeUndefined();
-        if (len === null) { expect(h).toEqual({ undo: true }); continue; }
+        if (len === null) {
+          expect(h).toEqual({ undo: true });
+          continue;
+        }
         expect(h && 'move' in h).toBe(true);
         if (!h || !('move' in h)) continue;
         const r = remove(p, s, h.move.bolt, true, h.move.hole);
@@ -410,15 +538,30 @@ describe('Bolt Boards layout', () => {
 });
 
 import {
-  blockingBoard, boardBuilt, buildMoves, canFinish, cardLayout, CARD_H, CARD_W, built, emptyState, hintBuild, inRect, place, solveBuild, woodpileLayout,
+  blockingBoard,
+  boardBuilt,
+  buildMoves,
+  canFinish,
+  cardLayout,
+  CARD_H,
+  CARD_W,
+  built,
+  emptyState,
+  hintBuild,
+  inRect,
+  place,
+  solveBuild,
+  woodpileLayout,
   type Rect,
 } from './logic';
 
 describe('Bolt Boards level 9, Put it back', () => {
-  const lists = [3, 4, 9].flatMap((id) => PUZZLES[id].flatMap((p, k) => [
-    { name: `L${id}#${k}`, p },
-    { name: `L${id}#${k} mirrored`, p: mirror(p) },
-  ]));
+  const lists = [3, 4, 9].flatMap((id) =>
+    PUZZLES[id].flatMap((p, k) => [
+      { name: `L${id}#${k}`, p },
+      { name: `L${id}#${k} mirrored`, p: mirror(p) },
+    ]),
+  );
 
   /** Every state reachable by placements from the empty wall. */
   function buildStates(p: Puzzle): State[] {
@@ -502,7 +645,10 @@ describe('Bolt Boards level 9, Put it back', () => {
             if (!removed(r)) return;
             d = r.state;
           }
-          expect(d.every((x) => x === -1), name).toBe(true);
+          expect(
+            d.every((x) => x === -1),
+            name,
+          ).toBe(true);
         }
       }
     }
@@ -514,7 +660,10 @@ describe('Bolt Boards level 9, Put it back', () => {
       const path = solveBuild(p, emptyState(p))!;
       expect(path.length, name).toBe(p.bolts.length);
       const states = buildStates(p);
-      expect(states.some((s) => !canFinish(p, s)), `${name} has a dead end`).toBe(true);
+      expect(
+        states.some((s) => !canFinish(p, s)),
+        `${name} has a dead end`,
+      ).toBe(true);
     }
   });
 
@@ -566,9 +715,12 @@ describe('Bolt Boards level 9, Put it back', () => {
       { x: 350, y: 200, w: 420, h: 160, z: 3 },
     ]);
     expect(p.bolts).toEqual([
-      { x: 180, y: 254, board: 0 }, { x: 260, y: 345, board: 0 },
-      { x: 520, y: 254, board: 1 }, { x: 440, y: 345, board: 1 },
-      { x: 280, y: 155, board: 2 }, { x: 420, y: 155, board: 2 },
+      { x: 180, y: 254, board: 0 },
+      { x: 260, y: 345, board: 0 },
+      { x: 520, y: 254, board: 1 },
+      { x: 440, y: 345, board: 1 },
+      { x: 280, y: 155, board: 2 },
+      { x: 420, y: 155, board: 2 },
     ]);
     expect(p.holes).toEqual([]);
     const states = buildStates(p);
@@ -584,7 +736,8 @@ describe('Bolt Boards level 9, Put it back', () => {
       const dy = Math.max(r.y - c.y, 0, c.y - (r.y + r.h));
       return Math.hypot(dx, dy) < rad;
     };
-    const rectsOverlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const rectsOverlap = (a: Rect, b: Rect) =>
+      a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
     const counts = [...new Set(lists.map(({ p }) => p.boards.length))];
 
     for (const [vn, v] of Object.entries(VIEWS)) {

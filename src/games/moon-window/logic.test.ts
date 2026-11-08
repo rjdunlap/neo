@@ -2,7 +2,38 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
-import { AMOUNT_WORDS, amountOf, AUTHORED_COMPARE, AUTHORED_LOOK, AUTHORED_SAME, CardRound, compareAnswer, compareBoards, CORNER, differsEnough, inside, later, lit, LOOK_PRESSES, lookStart, lookViews, MIN_DIFFERENCE, missSpot, moonPlan, moonShape, overlaps, petCorner, PLANS, polygonArea, sameBoards, shownBoxes, STOPS, viewLine, windowLayout, type Board } from './logic';
+import {
+  AMOUNT_WORDS,
+  amountOf,
+  AUTHORED_COMPARE,
+  AUTHORED_LOOK,
+  AUTHORED_SAME,
+  CardRound,
+  compareAnswer,
+  compareBoards,
+  CORNER,
+  differsEnough,
+  inside,
+  later,
+  lit,
+  LOOK_PRESSES,
+  lookStart,
+  lookViews,
+  MIN_DIFFERENCE,
+  missSpot,
+  moonPlan,
+  moonShape,
+  overlaps,
+  petCorner,
+  PLANS,
+  polygonArea,
+  sameBoards,
+  shownBoxes,
+  STOPS,
+  viewLine,
+  windowLayout,
+  type Board,
+} from './logic';
 
 const seeds = Array.from({ length: 500 }, (_, i) => new Rng(i + 1));
 const VIEWS = {
@@ -32,11 +63,25 @@ describe('the model', () => {
   });
 
   it('names five fixed amounts and never a phase, night or reason', () => {
-    expect([0, 1, 2, 3, 4, 5, 6, 7].map(amountOf)).toEqual(['none', 'slice', 'half', 'most', 'full', 'most', 'half', 'slice']);
+    expect([0, 1, 2, 3, 4, 5, 6, 7].map(amountOf)).toEqual([
+      'none',
+      'slice',
+      'half',
+      'most',
+      'full',
+      'most',
+      'half',
+      'slice',
+    ]);
     expect(Object.values(AMOUNT_WORDS)).toEqual(['no light', 'a little light', 'half', 'most', 'all']);
-    const lines = Object.entries(SCRIPT).filter(([id]) => id.startsWith('moonwindow.') || id === 'game.moon-window').flatMap(([, v]) => v as string[]);
+    const lines = Object.entries(SCRIPT)
+      .filter(([id]) => id.startsWith('moonwindow.') || id === 'game.moon-window')
+      .flatMap(([, v]) => v as string[]);
     expect(lines.length).toBeGreaterThan(10);
-    for (const line of lines) expect(line, line).not.toMatch(/phase|waxing|waning|crescent|gibbous|night|tonight|tomorrow|because|monday|tuesday|wednesday|thursday|friday|saturday|sunday/i);
+    for (const line of lines)
+      expect(line, line).not.toMatch(
+        /phase|waxing|waning|crescent|gibbous|night|tonight|tomorrow|because|monday|tuesday|wednesday|thursday|friday|saturday|sunday/i,
+      );
     for (let k = 0; k < STOPS; k++) expect(SCRIPT[viewLine(k)]).toBeDefined();
   });
 });
@@ -128,7 +173,10 @@ describe('level 2, Same view', () => {
 
   it('opens its authored round on a half Moon against a thin slice, then a full Moon against a slice', () => {
     expect(sameBoards(new Rng(5), true)).toEqual(AUTHORED_SAME);
-    expect(AUTHORED_SAME).toEqual([{ cards: [1, 2], answer: 1, target: 2 }, { cards: [4, 1], answer: 0, target: 4 }]);
+    expect(AUTHORED_SAME).toEqual([
+      { cards: [1, 2], answer: 1, target: 2 },
+      { cards: [4, 1], answer: 0, target: 4 },
+    ]);
     for (const b of AUTHORED_SAME) checkPair(b.cards);
   });
 });
@@ -143,7 +191,10 @@ describe('level 3, More light', () => {
       for (const b of boards) {
         checkPair(b.cards);
         expect(b.answer).toBe(compareAnswer(b.cards, b.ask!));
-        const want = b.ask === 'more' ? Math.max(lit(b.cards[0]), lit(b.cards[1])) : Math.min(lit(b.cards[0]), lit(b.cards[1]));
+        const want =
+          b.ask === 'more'
+            ? Math.max(lit(b.cards[0]), lit(b.cards[1]))
+            : Math.min(lit(b.cards[0]), lit(b.cards[1]));
         expect(lit(b.cards[b.answer])).toBe(want);
         // Mirroring either Moon never changes the answer: the lit amount alone decides.
         const mirrored: [number, number] = [mirror(b.cards[0]), b.cards[1]];
@@ -156,13 +207,19 @@ describe('level 3, More light', () => {
   it('opens its authored round on full against a slice (more), then most against half (less)', () => {
     const boards = compareBoards(new Rng(7), true);
     expect(boards.slice(0, 2)).toEqual(AUTHORED_COMPARE);
-    expect(AUTHORED_COMPARE).toEqual([{ cards: [4, 1], answer: 0, ask: 'more' }, { cards: [3, 2], answer: 1, ask: 'less' }]);
+    expect(AUTHORED_COMPARE).toEqual([
+      { cards: [4, 1], answer: 0, ask: 'more' },
+      { cards: [3, 2], answer: 1, ask: 'less' },
+    ]);
     checkPair(boards[2].cards);
   });
 });
 
 describe('accounting', () => {
-  const boards = (): Board[] => [{ cards: [1, 2], answer: 1, target: 2 }, { cards: [4, 1], answer: 0, target: 4 }];
+  const boards = (): Board[] => [
+    { cards: [1, 2], answer: 1, target: 2 },
+    { cards: [4, 1], answer: 0, target: 4 },
+  ];
 
   it('counts one miss per board and no hint when the glow follows a miss', () => {
     const r = new CardRound(boards());
@@ -220,9 +277,13 @@ describe('the layout', () => {
           expect(inside(b, view), `${name} level ${level} ${JSON.stringify(b)}`).toBe(true);
           expect(overlaps(b, petCorner(view)), `${name} level ${level} pet`).toBe(false);
           expect(overlaps(b, { x: 0, y: 0, w: CORNER, h: CORNER }), 'top-left buttons').toBe(false);
-          expect(overlaps(b, { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER }), 'top-right button').toBe(false);
+          expect(overlaps(b, { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER }), 'top-right button').toBe(
+            false,
+          );
         }
-        for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(overlaps(boxes[i], boxes[j]), `${name} level ${level} boxes ${i},${j}`).toBe(false);
+        for (let i = 0; i < boxes.length; i++)
+          for (let j = i + 1; j < boxes.length; j++)
+            expect(overlaps(boxes[i], boxes[j]), `${name} level ${level} boxes ${i},${j}`).toBe(false);
         // Both Moons at level 3 are drawn at one radius, the window's; level 2's cards are a little smaller.
         if (level === 3) expect(L.cardMoonR).toBe(L.moonR);
         else expect(L.cardMoonR).toBeLessThan(L.moonR);

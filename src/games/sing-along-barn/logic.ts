@@ -27,7 +27,8 @@ export interface Phrase {
 }
 
 /** The note a phrase sounds at `at`, as MIDI: a pentatonic step, or a semitone for the allow-listed tunes. */
-export const phraseMidi = (p: Phrase, at: number): number => (p.semitones ? MIDDLE_C + p.steps[at] : stepToMidi(p.steps[at]));
+export const phraseMidi = (p: Phrase, at: number): number =>
+  p.semitones ? MIDDLE_C + p.steps[at] : stepToMidi(p.steps[at]);
 
 /**
  * "Old MacDonald Had a Farm" is traditional. The tune is written by scale degree (do do do sol la la sol, mi mi re re do) in
@@ -36,10 +37,16 @@ export const phraseMidi = (p: Phrase, at: number): number => (p.semitones ? MIDD
  * ("Old MacDonald had a farm, E-I-E-I-O") once, then "And on that farm he had a ..., E-I-E-I-O" for each friend. The
  * moo-moo lines and the repeated first line of a full verse are left out, so a round stays short for a small child.
  */
-export const HAD_A_FARM: Phrase = { syllables: ['Old', 'Mac', 'Don', 'ald', 'had', 'a', 'farm'], steps: [0, 0, 0, 3, 4, 4, 3] };
+export const HAD_A_FARM: Phrase = {
+  syllables: ['Old', 'Mac', 'Don', 'ald', 'had', 'a', 'farm'],
+  steps: [0, 0, 0, 3, 4, 4, 3],
+};
 export const E_I_E_I_O: Phrase = { syllables: ['E', 'I', 'E', 'I', 'O'], steps: [2, 2, 1, 1, 0] };
 /** "And on that farm he had a ...": a pickup on the G below, then the first phrase's notes. The last syllable is the animal. */
-export const HAD_A: Phrase = { syllables: ['And', 'on', 'that', 'farm', 'he', 'had', 'a', ''], steps: [-2, 0, 0, 0, 3, 4, 4, 3] };
+export const HAD_A: Phrase = {
+  syllables: ['And', 'on', 'that', 'farm', 'he', 'had', 'a', ''],
+  steps: [-2, 0, 0, 0, 3, 4, 4, 3],
+};
 
 /**
  * "Hot Cross Buns" is a traditional English street cry. Its tune is three notes in C, E D C (mi re do), and the penny
@@ -49,7 +56,10 @@ export const HAD_A: Phrase = { syllables: ['And', 'on', 'that', 'farm', 'he', 'h
  * text, so a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
  */
 export const HOT_CROSS_BUNS: Phrase = { syllables: ['Hot', 'cross', 'buns'], steps: [2, 1, 0] };
-export const ONE_A_PENNY: Phrase = { syllables: ['One', 'a', 'pen', 'ny', 'two', 'a', 'pen', 'ny'], steps: [0, 0, 0, 0, 1, 1, 1, 1] };
+export const ONE_A_PENNY: Phrase = {
+  syllables: ['One', 'a', 'pen', 'ny', 'two', 'a', 'pen', 'ny'],
+  steps: [0, 0, 0, 0, 1, 1, 1, 1],
+};
 
 /**
  * The rest of a full Old MacDonald verse: "With a moo-moo here and a moo-moo there, here a moo, there a moo, everywhere a
@@ -61,26 +71,47 @@ export const WITH_A: Phrase = { syllables: ['With', 'a', '~', '~', 'here'], step
 export const AND_A: Phrase = { syllables: ['and', 'a', '~', '~', 'there'], steps: [3, 3, 0, 0, 0] };
 export const HERE_A: Phrase = { syllables: ['Here', 'a', '~'], steps: [3, 3, 0] };
 export const THERE_A: Phrase = { syllables: ['there', 'a', '~'], steps: [3, 3, 0] };
-export const EVERYWHERE: Phrase = { syllables: ['ev', 'ry', 'where', 'a', '~', '~'], steps: [0, 0, 0, 3, 4, 3] };
+export const EVERYWHERE: Phrase = {
+  syllables: ['ev', 'ry', 'where', 'a', '~', '~'],
+  steps: [0, 0, 0, 3, 4, 3],
+};
 
 /**
  * "Mary Had a Little Lamb" is a traditional nursery song. Its tune is mi re do re mi mi mi, re re re, mi sol sol: E D C D E E E,
  * D D D, E G G in C, all inside the island's pentatonic set (C D E G A), so no exception is needed. Written from the tune's
  * standard form, not a printed score: a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
  */
-export const MARY_HAD_A: Phrase = { syllables: ['Ma', 'ry', 'had', 'a', 'lit', 'tle', 'lamb'], steps: [2, 1, 0, 1, 2, 2, 2] };
-export const LITTLE_LAMB: Phrase = { syllables: ['lit', 'tle', 'lamb', 'lit', 'tle', 'lamb'], steps: [1, 1, 1, 2, 3, 3] };
-export const FLEECE: Phrase = { syllables: ['its', 'fleece', 'was', 'white', 'as', 'snow'], steps: [2, 1, 1, 2, 1, 0] };
+export const MARY_HAD_A: Phrase = {
+  syllables: ['Ma', 'ry', 'had', 'a', 'lit', 'tle', 'lamb'],
+  steps: [2, 1, 0, 1, 2, 2, 2],
+};
+export const LITTLE_LAMB: Phrase = {
+  syllables: ['lit', 'tle', 'lamb', 'lit', 'tle', 'lamb'],
+  steps: [1, 1, 1, 2, 3, 3],
+};
+export const FLEECE: Phrase = {
+  syllables: ['its', 'fleece', 'was', 'white', 'as', 'snow'],
+  steps: [2, 1, 1, 2, 1, 0],
+};
 
 /**
  * "Au Clair de la Lune" is a traditional French song. Its tune is C C C D E D / C E D D C (do do do re mi re, do mi re re do),
  * all inside C D E, so no exception is needed. Written from the tune's standard form, not a printed score: a grown-up
  * singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
  */
-export const AU_CLAIR: Phrase = { syllables: ['Au', 'clair', 'de', 'la', 'lu', 'ne'], steps: [0, 0, 0, 1, 2, 1] };
+export const AU_CLAIR: Phrase = {
+  syllables: ['Au', 'clair', 'de', 'la', 'lu', 'ne'],
+  steps: [0, 0, 0, 1, 2, 1],
+};
 export const MON_AMI: Phrase = { syllables: ['mon', 'a', 'mi', 'Pier', 'rot'], steps: [0, 2, 1, 1, 0] };
-export const PRETE_MOI: Phrase = { syllables: ['Prê', 'te', 'moi', 'ta', 'plu', 'me'], steps: [0, 0, 0, 1, 2, 1] };
-export const POUR_ECRIRE: Phrase = { syllables: ['pour', 'é', 'cri', 're', 'un', 'mot'], steps: [0, 2, 1, 1, 1, 0] };
+export const PRETE_MOI: Phrase = {
+  syllables: ['Prê', 'te', 'moi', 'ta', 'plu', 'me'],
+  steps: [0, 0, 0, 1, 2, 1],
+};
+export const POUR_ECRIRE: Phrase = {
+  syllables: ['pour', 'é', 'cri', 're', 'un', 'mot'],
+  steps: [0, 2, 1, 1, 1, 0],
+};
 
 /**
  * "Rain, Rain, Go Away" is a traditional nursery rhyme sung on a falling third, G E (sol mi), inside the pentatonic set.
@@ -88,7 +119,10 @@ export const POUR_ECRIRE: Phrase = { syllables: ['pour', 'é', 'cri', 're', 'un'
  * One note per sung syllable.
  */
 export const RAIN_AWAY: Phrase = { syllables: ['Rain', 'rain', 'go', 'a', 'way'], steps: [3, 2, 3, 3, 2] };
-export const COME_AGAIN: Phrase = { syllables: ['come', 'a', 'gain', 'an', 'oth', 'er', 'day'], steps: [3, 3, 2, 3, 3, 3, 2] };
+export const COME_AGAIN: Phrase = {
+  syllables: ['come', 'a', 'gain', 'an', 'oth', 'er', 'day'],
+  steps: [3, 3, 2, 3, 3, 3, 2],
+};
 export const WE_WANT_TO_PLAY: Phrase = { syllables: ['we', 'want', 'to', 'play'], steps: [3, 3, 3, 2] };
 
 /**
@@ -97,8 +131,14 @@ export const WE_WANT_TO_PLAY: Phrase = { syllables: ['we', 'want', 'to', 'play']
  * score: a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable; the second line
  * ("Down came the rain") is left out until its notes are checked.
  */
-export const ITSY_BITSY: Phrase = { syllables: ['The', 'it', 'sy', 'bit', 'sy', 'spi', 'der'], steps: [3, 0, 0, 0, 1, 2, 2] };
-export const WATER_SPOUT: Phrase = { syllables: ['climbed', 'up', 'the', 'wa', 'ter', 'spout'], steps: [2, 1, 0, 1, 2, 0] };
+export const ITSY_BITSY: Phrase = {
+  syllables: ['The', 'it', 'sy', 'bit', 'sy', 'spi', 'der'],
+  steps: [3, 0, 0, 0, 1, 2, 2],
+};
+export const WATER_SPOUT: Phrase = {
+  syllables: ['climbed', 'up', 'the', 'wa', 'ter', 'spout'],
+  steps: [2, 1, 0, 1, 2, 0],
+};
 
 /**
  * "Bounce High, Bounce Low" is a traditional American ball-passing song, sung on three notes, mi sol la (E G A in C),
@@ -108,9 +148,15 @@ export const WATER_SPOUT: Phrase = { syllables: ['climbed', 'up', 'the', 'wa', '
  * to each friend by name ("bounce the ball to the cow"), the way the playground game sings a child's name.
  */
 export const BOUNCE_HIGH: Phrase = { syllables: ['Bounce', 'high', 'bounce', 'low'], steps: [3, 4, 3, 2] };
-export const TO_SHILOH: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'Shi', 'loh'], steps: [3, 3, 4, 4, 3, 2] };
+export const TO_SHILOH: Phrase = {
+  syllables: ['bounce', 'the', 'ball', 'to', 'Shi', 'loh'],
+  steps: [3, 3, 4, 4, 3, 2],
+};
 /** The verse's line: the last syllable is the friend's name. */
-export const TO_THE: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'the', ''], steps: [3, 3, 4, 4, 3, 2] };
+export const TO_THE: Phrase = {
+  syllables: ['bounce', 'the', 'ball', 'to', 'the', ''],
+  steps: [3, 3, 4, 4, 3, 2],
+};
 
 /**
  * "Ring Around the Rosie" is a traditional ring game. Its tune uses do, mi, sol and la (C E G A in C), all inside the
@@ -118,8 +164,14 @@ export const TO_THE: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'the'
  * The sources found give only that set of notes, not their order, so this is written from the tune's standard form and
  * a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
  */
-export const RING_AROUND: Phrase = { syllables: ['Ring', 'a', 'round', 'the', 'ro', 'sie'], steps: [3, 3, 2, 4, 3, 2] };
-export const POCKET: Phrase = { syllables: ['a', 'pock', 'et', 'full', 'of', 'po', 'sies'], steps: [3, 3, 3, 2, 4, 3, 2] };
+export const RING_AROUND: Phrase = {
+  syllables: ['Ring', 'a', 'round', 'the', 'ro', 'sie'],
+  steps: [3, 3, 2, 4, 3, 2],
+};
+export const POCKET: Phrase = {
+  syllables: ['a', 'pock', 'et', 'full', 'of', 'po', 'sies'],
+  steps: [3, 3, 3, 2, 4, 3, 2],
+};
 export const ASHES: Phrase = { syllables: ['Ash', 'es', 'ash', 'es'], steps: [3, 2, 3, 2] };
 export const FALL_DOWN: Phrase = { syllables: ['we', 'all', 'fall', 'down'], steps: [3, 3, 3, 0] };
 
@@ -130,10 +182,26 @@ export const FALL_DOWN: Phrase = { syllables: ['we', 'all', 'fall', 'down'], ste
  * against the score in Wikipedia's article (C major). Semitones from middle C, one note per sung syllable; a grown-up
  * singing it is the final check (DEVICE-CHECKS).
  */
-export const TWINKLE_STAR: Phrase = { syllables: ['Twin', 'kle', 'twin', 'kle', 'lit', 'tle', 'star'], steps: [0, 0, 7, 7, 9, 9, 7], semitones: true };
-export const HOW_I_WONDER: Phrase = { syllables: ['how', 'I', 'won', 'der', 'what', 'you', 'are'], steps: [5, 5, 4, 4, 2, 2, 0], semitones: true };
-export const UP_ABOVE: Phrase = { syllables: ['Up', 'a', 'bove', 'the', 'world', 'so', 'high'], steps: [7, 7, 5, 5, 4, 4, 2], semitones: true };
-export const LIKE_A_DIAMOND: Phrase = { syllables: ['like', 'a', 'dia', 'mond', 'in', 'the', 'sky'], steps: [7, 7, 5, 5, 4, 4, 2], semitones: true };
+export const TWINKLE_STAR: Phrase = {
+  syllables: ['Twin', 'kle', 'twin', 'kle', 'lit', 'tle', 'star'],
+  steps: [0, 0, 7, 7, 9, 9, 7],
+  semitones: true,
+};
+export const HOW_I_WONDER: Phrase = {
+  syllables: ['how', 'I', 'won', 'der', 'what', 'you', 'are'],
+  steps: [5, 5, 4, 4, 2, 2, 0],
+  semitones: true,
+};
+export const UP_ABOVE: Phrase = {
+  syllables: ['Up', 'a', 'bove', 'the', 'world', 'so', 'high'],
+  steps: [7, 7, 5, 5, 4, 4, 2],
+  semitones: true,
+};
+export const LIKE_A_DIAMOND: Phrase = {
+  syllables: ['like', 'a', 'dia', 'mond', 'in', 'the', 'sky'],
+  steps: [7, 7, 5, 5, 4, 4, 2],
+  semitones: true,
+};
 
 /**
  * "The Wheels on the Bus" is traditional (American, after "Here We Go Round the Mulberry Bush"). Transposed to C from
@@ -144,13 +212,23 @@ export const LIKE_A_DIAMOND: Phrase = { syllables: ['like', 'a', 'dia', 'mond', 
  * the bus says moo, moo, moo, all through the town" for each friend, who sounds on each moo. `@` is the friend's
  * name, mid-line. The line is split after "bus" so a row holds at most eight beads.
  */
-export const WHEELS_ON_THE_BUS: Phrase = { syllables: ['The', 'wheels', 'on', 'the', 'bus'], steps: [-2, 0, 0, 0, 0] };
+export const WHEELS_ON_THE_BUS: Phrase = {
+  syllables: ['The', 'wheels', 'on', 'the', 'bus'],
+  steps: [-2, 0, 0, 0, 0],
+};
 export const ROUND_AND_ROUND: Phrase = { syllables: ['go', 'round', 'and', 'round'], steps: [2, 3, 2, 0] };
-export const ALL_THROUGH_THE_TOWN: Phrase = { syllables: ['all', 'through', 'the', 'town'], steps: [1, -2, -2, 0] };
-export const FRIEND_ON_THE_BUS: Phrase = { syllables: ['The', '@', 'on', 'the', 'bus'], steps: [-2, 0, 0, 0, 0] };
+export const ALL_THROUGH_THE_TOWN: Phrase = {
+  syllables: ['all', 'through', 'the', 'town'],
+  steps: [1, -2, -2, 0],
+};
+export const FRIEND_ON_THE_BUS: Phrase = {
+  syllables: ['The', '@', 'on', 'the', 'bus'],
+  steps: [-2, 0, 0, 0, 0],
+};
 export const SAYS_MOO: Phrase = { syllables: ['says', '~', '~', '~'], steps: [2, 3, 2, 0] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce' | 'ring' | 'twinkle' | 'wheels';
+export type TuneId =
+  'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce' | 'ring' | 'twinkle' | 'wheels';
 
 /** The only tunes that may sound a note outside the pentatonic set (decided 2026-10-23; a test guards it). */
 export const OWN_NOTES: readonly TuneId[] = ['twinkle'];
@@ -256,7 +334,18 @@ export const WHEELS: Tune = {
   namesAnimal: false,
   sounds: [SAYS_MOO],
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING, TWINKLE, WHEELS];
+export const TUNES: readonly Tune[] = [
+  OLD_MACDONALD,
+  BUNS,
+  MARY,
+  CLAIR,
+  RAIN,
+  ITSY,
+  BOUNCE,
+  RING,
+  TWINKLE,
+  WHEELS,
+];
 
 export interface Note {
   step: number;
@@ -286,7 +375,11 @@ export interface Note {
  * The whole song as a flat list of notes: the opening, then a verse for each animal. With `gaps` true, each verse's last
  * note is a gap (*Finish the line*); with `'rhyme'`, the first note of the tune's rhyming word is (*Which one finishes it?*).
  */
-export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD, gaps: boolean | 'rhyme' = false): Note[] {
+export function makeSong(
+  animals: readonly Animal[],
+  tune: Tune = OLD_MACDONALD,
+  gaps: boolean | 'rhyme' = false,
+): Note[] {
   const notes: Note[] = [];
   const rhyme = gaps === 'rhyme' ? RHYMES[tune.id] : undefined;
   let phrase = 0;
@@ -300,7 +393,11 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD,
       notes.push({
         step,
         midi: phraseMidi(p, at),
-        syllable: sound ? VOICES[animal!].sound : name || (names && tune.namesAnimal) ? VOICES[animal!].word : p.syllables[at],
+        syllable: sound
+          ? VOICES[animal!].sound
+          : name || (names && tune.namesAnimal)
+            ? VOICES[animal!].word
+            : p.syllables[at],
         phrase,
         at,
         of: p.steps.length,
@@ -310,7 +407,10 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD,
         gap:
           gaps === true
             ? animal !== null && closes && last
-            : rhyme !== undefined && closes && (rhyme.where === 'verse') === (animal !== null) && at === p.steps.length - rhyme.syllables.length,
+            : rhyme !== undefined &&
+              closes &&
+              (rhyme.where === 'verse') === (animal !== null) &&
+              at === p.steps.length - rhyme.syllables.length,
       });
     });
     phrase++;
@@ -370,9 +470,30 @@ export interface Rhyme {
 }
 
 export const RHYMES: Partial<Record<TuneId, Rhyme>> = {
-  rain: { where: 'verse', earlier: { word: 'away', syllables: ['a', 'way'] }, word: 'play', syllables: ['play'], picture: 'ball', decoy: { word: 'apple', picture: 'apple' } },
-  twinkle: { where: 'verse', earlier: { word: 'high', syllables: ['high'] }, word: 'sky', syllables: ['sky'], picture: 'sky', decoy: { word: 'moon', picture: 'moon' } },
-  ring: { where: 'opening', earlier: { word: 'rosie', syllables: ['ro', 'sie'] }, word: 'posies', syllables: ['po', 'sies'], picture: 'posies', decoy: { word: 'bun', picture: 'bun' } },
+  rain: {
+    where: 'verse',
+    earlier: { word: 'away', syllables: ['a', 'way'] },
+    word: 'play',
+    syllables: ['play'],
+    picture: 'ball',
+    decoy: { word: 'apple', picture: 'apple' },
+  },
+  twinkle: {
+    where: 'verse',
+    earlier: { word: 'high', syllables: ['high'] },
+    word: 'sky',
+    syllables: ['sky'],
+    picture: 'sky',
+    decoy: { word: 'moon', picture: 'moon' },
+  },
+  ring: {
+    where: 'opening',
+    earlier: { word: 'rosie', syllables: ['ro', 'sie'] },
+    word: 'posies',
+    syllables: ['po', 'sies'],
+    picture: 'posies',
+    decoy: { word: 'bun', picture: 'bun' },
+  },
 };
 
 /**
@@ -406,7 +527,8 @@ export const RHYME_TUNES: readonly Tune[] = TUNES.filter((t) => RHYMES[t.id]);
 export const pickRhymeTune = (rng: Rng): Tune => rng.pick([...RHYME_TUNES]);
 
 /** Which side the rhyming picture stands on at each of a round's gaps (0 left, 1 right): drawn from the seed after the tune and friends. */
-export const rhymeSides = (rng: Rng, gaps: number): (0 | 1)[] => Array.from({ length: gaps }, () => (rng.chance(0.5) ? 1 : 0));
+export const rhymeSides = (rng: Rng, gaps: number): (0 | 1)[] =>
+  Array.from({ length: gaps }, () => (rng.chance(0.5) ? 1 : 0));
 
 export interface SingPlan {
   /** How many animals come to the farm. */
@@ -448,7 +570,8 @@ export const LEVELS: BandLevels = {
 };
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, ...TUNES.slice(1)] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] =>
+  plan.full ? [OLD_MACDONALD_FULL, ...TUNES.slice(1)] : TUNES;
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

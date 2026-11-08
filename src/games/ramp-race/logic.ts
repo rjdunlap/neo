@@ -25,9 +25,21 @@ export const PLANS: RampPlan[] = [
   { mode: 'height', rounds: 3, name: 'Pick the ramp height that stops the car on the star' },
   { mode: 'both', rounds: 3, name: 'Ramp height and floor (carpet, wood, ice) together reach the star' },
   { mode: 'fair', rounds: 3, name: 'Fair tests: compare two lanes, changing only one thing' },
-  { mode: 'shelf', rounds: 2, name: 'Trial Shelf: roll two ramps, keep both cards, tap the one that went farther' },
-  { mode: 'change', rounds: 2, name: 'One Change: fix the orange lane so only one thing differs, then read the cards' },
-  { mode: 'tell', rounds: 2, name: 'What can we tell? Read two cards: did one thing change, or both? Then make it fair' },
+  {
+    mode: 'shelf',
+    rounds: 2,
+    name: 'Trial Shelf: roll two ramps, keep both cards, tap the one that went farther',
+  },
+  {
+    mode: 'change',
+    rounds: 2,
+    name: 'One Change: fix the orange lane so only one thing differs, then read the cards',
+  },
+  {
+    mode: 'tell',
+    rounds: 2,
+    name: 'What can we tell? Read two cards: did one thing change, or both? Then make it fair',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -58,14 +70,21 @@ export const CONTROL: Readonly<Setup> = { height: 3, floor: 'wood' };
 
 /** One floor and one height question, with distinct confounded orange starts. */
 export function makeChange(rng: Rng): { question: FairQuestion; start: Setup }[] {
-  const starts = rng.shuffle<Setup>([2, 4].flatMap((height) => (['carpet', 'ice'] as const).map((floor) => ({ height, floor }))));
-  return rng.shuffle<FairQuestion['compare']>(['floor', 'height']).map((compare, i) => ({ question: { compare }, start: starts[i] }));
+  const starts = rng.shuffle<Setup>(
+    [2, 4].flatMap((height) => (['carpet', 'ice'] as const).map((floor) => ({ height, floor }))),
+  );
+  return rng
+    .shuffle<FairQuestion['compare']>(['floor', 'height'])
+    .map((compare, i) => ({ question: { compare }, start: starts[i] }));
 }
 
 /** Stars: on the 'height' level the floor is wood; on 'both' any combination may reach it. */
 export function makeStars(plan: RampPlan, rng: Rng): number[] {
   const out: number[] = [];
-  const options = plan.mode === 'height' ? HEIGHTS.map((h) => distance(h, 'wood')) : [...new Set(HEIGHTS.flatMap((h) => FLOORS.map((f) => distance(h, f))))];
+  const options =
+    plan.mode === 'height'
+      ? HEIGHTS.map((h) => distance(h, 'wood'))
+      : [...new Set(HEIGHTS.flatMap((h) => FLOORS.map((f) => distance(h, f))))];
   while (out.length < plan.rounds) {
     const d = rng.pick(options);
     if (!out.includes(d)) out.push(d);
@@ -78,7 +97,9 @@ export const onStar = (d: number, star: number) => Math.abs(d - star) < 0.3;
 
 /** Every setup that reaches a star, so a hint can suggest one. */
 export const waysTo = (star: number, floors: Floor[] = FLOORS): Setup[] =>
-  HEIGHTS.flatMap((height) => floors.map((floor) => ({ height, floor }))).filter((s) => onStar(distance(s.height, s.floor), star));
+  HEIGHTS.flatMap((height) => floors.map((floor) => ({ height, floor }))).filter((s) =>
+    onStar(distance(s.height, s.floor), star),
+  );
 
 /** A fair-test question: which thing to compare. */
 export interface FairQuestion {
@@ -86,7 +107,11 @@ export interface FairQuestion {
 }
 
 export function makeQuestions(rng: Rng, n: number): FairQuestion[] {
-  const order = rng.shuffle<FairQuestion['compare']>(['floor', 'height', rng.pick(['floor', 'height'] as const)]);
+  const order = rng.shuffle<FairQuestion['compare']>([
+    'floor',
+    'height',
+    rng.pick(['floor', 'height'] as const),
+  ]);
   return order.slice(0, n).map((compare) => ({ compare }));
 }
 
@@ -113,9 +138,12 @@ export function classifyFair(q: FairQuestion, a: Setup, b: Setup): FairKind {
 }
 
 /** The control that changes the thing a question names, and the one that changes the other thing. */
-const control = (compare: FairQuestion['compare']): 'ramp' | 'floor' => (compare === 'floor' ? 'floor' : 'ramp');
-const other = (compare: FairQuestion['compare']): FairQuestion['compare'] => (compare === 'floor' ? 'height' : 'floor');
-const same = (what: FairQuestion['compare'], a: Setup, b: Setup) => (what === 'floor' ? a.floor === b.floor : a.height === b.height);
+const control = (compare: FairQuestion['compare']): 'ramp' | 'floor' =>
+  compare === 'floor' ? 'floor' : 'ramp';
+const other = (compare: FairQuestion['compare']): FairQuestion['compare'] =>
+  compare === 'floor' ? 'height' : 'floor';
+const same = (what: FairQuestion['compare'], a: Setup, b: Setup) =>
+  what === 'floor' ? a.floor === b.floor : a.height === b.height;
 
 /**
  * The next touch on the orange lane B that makes the pair fair, holding blue lane A: first make B's other control
@@ -147,7 +175,11 @@ export interface TrialRecord {
   guess?: 'before' | 'past';
 }
 
-export const recordOf = (s: Setup, guess?: TrialRecord['guess']): TrialRecord => ({ setup: { ...s }, stop: distance(s.height, s.floor), ...(guess ? { guess } : {}) });
+export const recordOf = (s: Setup, guess?: TrialRecord['guess']): TrialRecord => ({
+  setup: { ...s },
+  stop: distance(s.height, s.floor),
+  ...(guess ? { guess } : {}),
+});
 
 /** Which side of a flag a stop (or a paw) lands on; stops never tie on the shelf, so the flag itself counts as past. */
 export const sideOf = (stop: number, flag: number): 'before' | 'past' => (stop < flag ? 'before' : 'past');
@@ -177,7 +209,10 @@ const COUNTED: RampEvent[] = ['unfair-check', 'wrong-card', 'wrong-claim', 'tell
 export function tally(events: RampEvent[]): { misses: number; hints: number } {
   const n = (k: RampEvent) => events.filter((e) => e === k).length;
   const help = (k: number) => Math.min(1, Math.max(0, k - 1));
-  return { misses: COUNTED.reduce((m, k) => m + n(k), 0), hints: COUNTED.reduce((h, k) => h + help(n(k)), 0) };
+  return {
+    misses: COUNTED.reduce((m, k) => m + n(k), 0),
+    hints: COUNTED.reduce((h, k) => h + help(n(k)), 0),
+  };
 }
 
 /** What differs between two setups. A shown pair is never 'none'. */
@@ -211,28 +246,41 @@ export interface TellCase {
 const ALL_SETUPS: Setup[] = HEIGHTS.flatMap((height) => FLOORS.map((floor) => ({ height, floor })));
 const stopOf = (s: Setup) => distance(s.height, s.floor);
 const unorderedPairs = (keep: (a: Setup, b: Setup) => boolean): TellCase[] =>
-  ALL_SETUPS.flatMap((a, i) => ALL_SETUPS.slice(i + 1).filter((b) => keep(a, b)).map((b) => ({ a, b })));
+  ALL_SETUPS.flatMap((a, i) =>
+    ALL_SETUPS.slice(i + 1)
+      .filter((b) => keep(a, b))
+      .map((b) => ({ a, b })),
+  );
 
 /** Height and floor both differ, with different stops: 18 such pairs less the one tie ({3, carpet} and {2, wood}). */
-export const CONFOUNDED: TellCase[] = unorderedPairs((a, b) => changed(a, b) === 'both' && stopOf(a) !== stopOf(b));
+export const CONFOUNDED: TellCase[] = unorderedPairs(
+  (a, b) => changed(a, b) === 'both' && stopOf(a) !== stopOf(b),
+);
 /** Exactly one thing differs: 9 height-only and 9 floor-only pairs. */
-export const CONTROLLED: TellCase[] = unorderedPairs((a, b) => changed(a, b) === 'floor' || changed(a, b) === 'height');
+export const CONTROLLED: TellCase[] = unorderedPairs(
+  (a, b) => changed(a, b) === 'floor' || changed(a, b) === 'height',
+);
 
 /**
  * The conclusion a controlled pair supports, under the toy model: the farther card's floor, or whether the farther card's
  * ramp was the taller or the shorter. Null for a pair that does not isolate one thing.
  */
-export function tellConclusion(a: Setup, b: Setup): { line: 'floor'; floor: Floor } | { line: 'height'; what: 'taller' | 'shorter' } | null {
+export function tellConclusion(
+  a: Setup,
+  b: Setup,
+): { line: 'floor'; floor: Floor } | { line: 'height'; what: 'taller' | 'shorter' } | null {
   const c = changed(a, b);
   const win = stopOf(b) > stopOf(a) ? b : a;
   if (c === 'floor') return { line: 'floor', floor: win.floor };
-  if (c === 'height') return { line: 'height', what: win.height === Math.max(a.height, b.height) ? 'taller' : 'shorter' };
+  if (c === 'height')
+    return { line: 'height', what: win.height === Math.max(a.height, b.height) ? 'taller' : 'shorter' };
   return null;
 }
 
 /** A round: one confounded and one controlled case, in seeded order, each with a seeded card order. */
 export function makeTell(rng: Rng): [TellCase, TellCase] {
-  const flip = (c: TellCase): TellCase => (rng.next() < 0.5 ? { a: { ...c.a }, b: { ...c.b } } : { a: { ...c.b }, b: { ...c.a } });
+  const flip = (c: TellCase): TellCase =>
+    rng.next() < 0.5 ? { a: { ...c.a }, b: { ...c.b } } : { a: { ...c.b }, b: { ...c.a } };
   const pair = [flip(rng.pick(CONFOUNDED)), flip(rng.pick(CONTROLLED))];
   return (rng.next() < 0.5 ? pair : pair.reverse()) as [TellCase, TellCase];
 }
@@ -261,7 +309,10 @@ export function laneOf(view: { w: number; h: number }): { rampEnd: number; unit:
  * The Trial Shelf's pieces: two stacked record cards right-aligned at the top, the decorative ask badge left of them,
  * and the guess zone on the floor split at the first card's flag (`flag` in marks). Pure, so a rule test checks it.
  */
-export function shelfLayout(view: { w: number; h: number }, flag: number): { cards: [Box, Box]; badge: Box; guess: { before: Box; past: Box } } {
+export function shelfLayout(
+  view: { w: number; h: number },
+  flag: number,
+): { cards: [Box, Box]; badge: Box; guess: { before: Box; past: Box } } {
   const x = view.w - 40 - CARD_W;
   const cards: [Box, Box] = [
     { x, y: 36, w: CARD_W, h: CARD_H },
@@ -276,15 +327,24 @@ export function shelfLayout(view: { w: number; h: number }, flag: number): { car
   return {
     cards,
     badge: { x: view.w - 630, y: 96, w: 100, h: 100 },
-    guess: { before: { x: left, y: top, w: split - left, h }, past: { x: split, y: top, w: view.w - 150 - split, h } },
+    guess: {
+      before: { x: left, y: top, w: split - left, h },
+      past: { x: split, y: top, w: view.w - 150 - split, h },
+    },
   };
 }
 
 /** One touch of the ghost finger: change a lane's ramp or its floor (each tap moves to the next), press go, guess a side of the flag, tap a card, or pick a claim tile. */
-export type RampTouch = { lane: number; change: 'ramp' | 'floor' } | 'go' | { guess: 'before' | 'past' } | { card: 0 | 1 } | { claim: Claim };
+export type RampTouch =
+  | { lane: number; change: 'ramp' | 'floor' }
+  | 'go'
+  | { guess: 'before' | 'past' }
+  | { card: 0 | 1 }
+  | { claim: Claim };
 
 /** How many taps turn a value that cycles through `list` into `to`. */
-const turns = <T>(list: readonly T[], from: T, to: T) => (list.indexOf(to) - list.indexOf(from) + list.length) % list.length;
+const turns = <T>(list: readonly T[], from: T, to: T) =>
+  (list.indexOf(to) - list.indexOf(from) + list.length) % list.length;
 
 /**
  * The next lane-B control toward exactly one difference from A (lane A is locked), or null when already so. When both
@@ -324,7 +384,15 @@ export function tellLayout(view: { w: number; h: number }): { cards: [Box, Box];
 export function rampTouch(
   plan: RampPlan,
   lanes: Setup[],
-  goal: { star?: number; question?: FairQuestion; rolls: number; records?: TrialRecord[]; guess?: 'before' | 'past'; step?: 'claim' | 'repair'; claim?: Claim | null },
+  goal: {
+    star?: number;
+    question?: FairQuestion;
+    rolls: number;
+    records?: TrialRecord[];
+    guess?: 'before' | 'past';
+    step?: 'claim' | 'repair';
+    claim?: Claim | null;
+  },
 ): RampTouch | null {
   const [a, b] = lanes;
   if (plan.mode === 'tell') {
@@ -349,17 +417,22 @@ export function rampTouch(
     return goal.guess ? 'go' : { guess: a.height > first ? 'past' : 'before' };
   }
   if (plan.mode === 'explore') {
-    return a.height === EXPLORE_HEIGHTS[Math.min(goal.rolls, EXPLORE_HEIGHTS.length - 1)] ? 'go' : { lane: 0, change: 'ramp' };
+    return a.height === EXPLORE_HEIGHTS[Math.min(goal.rolls, EXPLORE_HEIGHTS.length - 1)]
+      ? 'go'
+      : { lane: 0, change: 'ramp' };
   }
   if (plan.mode === 'fair' || plan.mode === 'change') {
-    if (plan.mode === 'change' && (goal.records?.length ?? 0) >= 2) return { card: farther(goal.records![0], goal.records![1]) };
+    if (plan.mode === 'change' && (goal.records?.length ?? 0) >= 2)
+      return { card: farther(goal.records![0], goal.records![1]) };
     if (!goal.question || !b) return null;
     const fix = fairRepair(goal.question, a, b);
     return fix ? { lane: 1, change: fix } : 'go';
   }
   if (goal.star === undefined) return null;
   const ways = waysTo(goal.star, plan.mode === 'height' ? ['wood'] : FLOORS);
-  const cost = (s: Setup) => turns(HEIGHTS, a.height as (typeof HEIGHTS)[number], s.height as (typeof HEIGHTS)[number]) + turns(FLOORS, a.floor, s.floor);
+  const cost = (s: Setup) =>
+    turns(HEIGHTS, a.height as (typeof HEIGHTS)[number], s.height as (typeof HEIGHTS)[number]) +
+    turns(FLOORS, a.floor, s.floor);
   const way = [...ways].sort((x, y) => cost(x) - cost(y))[0];
   if (!way) return null;
   if (a.height !== way.height) return { lane: 0, change: 'ramp' };

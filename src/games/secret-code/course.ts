@@ -31,7 +31,8 @@ export const COURSES: Record<CodeCourseId, Course> = {
     id: 'codedoors',
     version: 1,
     name: 'The Code Doors',
-    blurb: 'Five locked doors in a row: three slots and five colors, then four slots, then a door whose code uses a color twice. Open every door in the fewest tries.',
+    blurb:
+      'Five locked doors in a row: three slots and five colors, then four slots, then a door whose code uses a color twice. Open every door in the fewest tries.',
     doors: [
       { level: 4, code: [3, 0, 4] },
       { level: 4, code: [4, 2, 1] },
@@ -49,6 +50,7 @@ export const courseDoors = (id: CodeCourseId): { plan: CodePlan; code: number[] 
   COURSES[id].doors.map((d) => ({ plan: planFor(d.level), code: [...d.code] }));
 
 /** The reference solver's tries on each door of a course: its par. */
-export const courseBest = (id: CodeCourseId): number[] => courseDoors(id).map((d) => solverTries(d.plan, d.code));
+export const courseBest = (id: CodeCourseId): number[] =>
+  courseDoors(id).map((d) => solverTries(d.plan, d.code));
 /** Par for a whole course. */
 export const courseMinimum = (id: CodeCourseId) => courseBest(id).reduce((n, b) => n + b, 0);

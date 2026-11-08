@@ -1,9 +1,15 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.picture-graph': ['Picture graph!'],
-  'graph.build': ['Count the critters in the meadow. Tap above a bar to add a block for each one. Then tap the green check!'],
-  'graph.tally': ['First, count each kind and make tally marks. Four lines, then one across makes a group of five. Tap the green check when each kind is counted.'],
-  'graph.tally.recount': ['Count the {kind} again. There are {count}. Make that many tally marks, grouping by five.'],
+  'graph.build': [
+    'Count the critters in the meadow. Tap above a bar to add a block for each one. Then tap the green check!',
+  ],
+  'graph.tally': [
+    'First, count each kind and make tally marks. Four lines, then one across makes a group of five. Tap the green check when each kind is counted.',
+  ],
+  'graph.tally.recount': [
+    'Count the {kind} again. There are {count}. Make that many tally marks, grouping by five.',
+  ],
   'graph.tally.done': ['Those tallies show the counts. Now use the critters to build the graph.'],
   'graph.recount': ['Count the {kind} again.'],
   'graph.built': ['What a graph!', 'The graph matches the meadow!'],
@@ -14,26 +20,38 @@ export const VOICE = {
   'graph.same': ['Which two bars are the same? Tap them both.'],
   'graph.look': ['Look at the bars again.'],
   'graph.taller': ['That is how many {a}. How many more {a} than {b}? Look above the {b} bar.'],
-  'graph.buildpairs': ['Look at the key: each block is two critters. Count the pairs, and tap above a bar to add a block for each pair. Then tap the green check!'],
+  'graph.buildpairs': [
+    'Look at the key: each block is two critters. Count the pairs, and tap above a bar to add a block for each pair. Then tap the green check!',
+  ],
   'graph.recountpairs': ['Each block is two {kind}. Count the pairs of {kind} again.'],
   'graph.totalpairs': ['Remember, each block is two critters. How many critters in all?'],
   'graph.morepairs': ['Remember, each block is two critters. How many more {a} than {b}?'],
   'graph.blocks': ['That is how many blocks. Each block is two critters!'],
-  'graph.buildfives': ['Look at the key: each block is five. Count the groups of five on each card, and tap above a bar to add a block for each group. Then tap the green check!'],
+  'graph.buildfives': [
+    'Look at the key: each block is five. Count the groups of five on each card, and tap above a bar to add a block for each group. Then tap the green check!',
+  ],
   'graph.recountfives': ['Each block is five {kind}. Count the groups of five on the {kind} card again.'],
   'graph.morefives': ['Remember, each block is five critters. How many more {a} than {b}?'],
   'graph.fives': ['That is how many blocks. Each block is five critters!'],
   'graph.yay': ['Right!', 'You read the graph!'],
   'graph.done': ['Super graphing!'],
-  'graph.pair': ['Here is a tally card from the meadow. Which two graphs show these critters? Look at each key, and tap the two graphs.'],
-  'graph.pair.key': ['Those bars are just as tall, but look at the keys! On one graph, each block is two. Count with the key: 2, 4, 6.'],
-  'graph.pair.look': ['Look at the tally card again. On the graph with the key, each block is two: count 2, 4, 6.'],
-  'graph.claim': ['Here is a graph of the meadow. A friend will say something about the critters. Stamp it: yes, no, or the graph can\'t say.'],
-  'graph.claim.more': ['A friend says: there are more {a} than {b}. Yes, no, or the graph can\'t say?'],
-  'graph.claim.most': ['A friend says: there are the most {a}. Yes, no, or the graph can\'t say?'],
-  'graph.claim.first': ['A friend says: the {a} came to the meadow first. Yes, no, or the graph can\'t say?'],
-  'graph.claim.hungriest': ['A friend says: the {a} are the hungriest. Yes, no, or the graph can\'t say?'],
-  'graph.claim.sleepiest': ['A friend says: the {a} are the sleepiest. Yes, no, or the graph can\'t say?'],
+  'graph.pair': [
+    'Here is a tally card from the meadow. Which two graphs show these critters? Look at each key, and tap the two graphs.',
+  ],
+  'graph.pair.key': [
+    'Those bars are just as tall, but look at the keys! On one graph, each block is two. Count with the key: 2, 4, 6.',
+  ],
+  'graph.pair.look': [
+    'Look at the tally card again. On the graph with the key, each block is two: count 2, 4, 6.',
+  ],
+  'graph.claim': [
+    "Here is a graph of the meadow. A friend will say something about the critters. Stamp it: yes, no, or the graph can't say.",
+  ],
+  'graph.claim.more': ["A friend says: there are more {a} than {b}. Yes, no, or the graph can't say?"],
+  'graph.claim.most': ["A friend says: there are the most {a}. Yes, no, or the graph can't say?"],
+  'graph.claim.first': ["A friend says: the {a} came to the meadow first. Yes, no, or the graph can't say?"],
+  'graph.claim.hungriest': ["A friend says: the {a} are the hungriest. Yes, no, or the graph can't say?"],
+  'graph.claim.sleepiest': ["A friend says: the {a} are the sleepiest. Yes, no, or the graph can't say?"],
   'graph.claim.look': ['Look at those bars again. Which one is taller?'],
   'graph.claim.can': ['The graph can tell us this one! Look at those bars.'],
   'graph.claim.cant.first': ['The graph shows how many critters, not who came first.'],
@@ -41,11 +59,16 @@ export const VOICE = {
   'graph.claim.cant.sleepiest': ['The graph shows how many critters, not who is sleepiest.'],
   'graph.claim.yesyay': ['Yes! The graph shows that.', 'That is what the graph says!'],
   'graph.claim.noyay': ['Right! The graph shows that is not so.', 'Right, the bars say no!'],
-  'graph.claim.cantyay': ['Right! The graph can\'t say that. It only shows how many.'],
-  'graph.pair.yay': ['Yes! One graph counts by ones, one counts by twos, and both show the same critters.', 'Two pictures, one meadow!'],
+  'graph.claim.cantyay': ["Right! The graph can't say that. It only shows how many."],
+  'graph.pair.yay': [
+    'Yes! One graph counts by ones, one counts by twos, and both show the same critters.',
+    'Two pictures, one meadow!',
+  ],
   'graph.line': ['Look what washed up on the sand! Tap each thing to line it up in its row.'],
   'graph.line.lined': ['All lined up!', 'Every row is lined up!'],
   'graph.line.most': ['Which row has the most? Tap that row.'],
   'graph.line.look': ['Look at the rows again.'],
-  'graph.line.taller': ['That is how many {a}. How many more {a} than {b}? Look past the end of the {b} row.'],
+  'graph.line.taller': [
+    'That is how many {a}. How many more {a} than {b}? Look past the end of the {b} row.',
+  ],
 } satisfies Record<string, string[]>;

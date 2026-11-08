@@ -1,6 +1,14 @@
 import type { CritterName } from '../../art/critter';
 
-export const KIND_WORDS: Record<string, string> = { cow: 'cow', duck: 'duck', pig: 'pig', cat: 'cat', bear: 'bear', dog: 'dog', bunny: 'bunny' };
+export const KIND_WORDS: Record<string, string> = {
+  cow: 'cow',
+  duck: 'duck',
+  pig: 'pig',
+  cat: 'cat',
+  bear: 'bear',
+  dog: 'dog',
+  bunny: 'bunny',
+};
 
 export type Rule = 'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers' | PlantRule;
 export type PlantRule = 'round' | 'pointyleaf' | 'spotted' | 'plain';
@@ -21,7 +29,12 @@ export const RULE_WORDS: Record<Rule, string> = {
 };
 
 /** What a plant has, said after "has": the miss and middle lines name the feature itself. */
-export const HAVE_WORDS: Record<PlantRule, string> = { round: 'round leaves', pointyleaf: 'pointy leaves', spotted: 'spotted petals', plain: 'plain petals' };
+export const HAVE_WORDS: Record<PlantRule, string> = {
+  round: 'round leaves',
+  pointyleaf: 'pointy leaves',
+  spotted: 'spotted petals',
+  plain: 'plain petals',
+};
 const PLANT_RULES: Rule[] = ['round', 'pointyleaf', 'spotted', 'plain'];
 export const isPlantRule = (r: Rule): r is PlantRule => PLANT_RULES.includes(r);
 
@@ -42,7 +55,14 @@ export interface SortCritter {
 export function fits(c: SortCritter, rule: Rule): boolean {
   if (isPlantRule(rule)) {
     const p = c.plant;
-    return !!p && (rule === 'round' ? p.leaves === 'round' : rule === 'pointyleaf' ? p.leaves === 'pointy' : p.petals === rule);
+    return (
+      !!p &&
+      (rule === 'round'
+        ? p.leaves === 'round'
+        : rule === 'pointyleaf'
+          ? p.leaves === 'pointy'
+          : p.petals === rule)
+    );
   }
   switch (rule) {
     case 'hat':
@@ -61,4 +81,3 @@ export function fits(c: SortCritter, rule: Rule): boolean {
       return false;
   }
 }
-

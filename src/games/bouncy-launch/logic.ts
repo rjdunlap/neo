@@ -6,7 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * pet back on a big spring and let go. Farther pull, farther flight. Every landing is soft;
  * the ladder asks for a particular landing spot.
  */
-export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict' | 'friend' | 'planet' | 'between' | 'nearfar';
+export type LaunchMode =
+  'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict' | 'friend' | 'planet' | 'between' | 'nearfar';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -37,36 +38,65 @@ export const LEVELS: BandLevels = {
 
 /** Level 7, Feed the friend: the next free ID after the six first levels. */
 export const FRIEND_LEVEL = 7;
-export const FRIEND_PLAN: LaunchPlan = { mode: 'friend', shots: 3, name: 'Bring a friend a snack, learning from the last flight' };
+export const FRIEND_PLAN: LaunchPlan = {
+  mode: 'friend',
+  shots: 3,
+  name: 'Bring a friend a snack, learning from the last flight',
+};
 
 export const PLANET_LEVEL = 12;
-export const PLANET_PLAN: LaunchPlan = { mode: 'planet', shots: 3, name: 'The same pull on a light or a heavy planet: past the flag or before it?' };
+export const PLANET_PLAN: LaunchPlan = {
+  mode: 'planet',
+  shots: 3,
+  name: 'The same pull on a light or a heavy planet: past the flag or before it?',
+};
 /** Level 9, Between two flights: two shown pulls leave flags, then a pull between them is predicted. */
 export const BETWEEN_LEVEL = 9;
-export const BETWEEN_PLAN: LaunchPlan = { mode: 'between', shots: 3, name: 'Two shown pulls fly; predict where a pull between them lands' };
+export const BETWEEN_PLAN: LaunchPlan = {
+  mode: 'between',
+  shots: 3,
+  name: 'Two shown pulls fly; predict where a pull between them lands',
+};
 /** Level 8, Near or far: an easy entry for toddler and preschool, placed before the star level by `order`. */
 export const NEAR_FAR_LEVEL = 8;
-export const NEAR_FAR_PLAN: LaunchPlan = { mode: 'nearfar', shots: 5, name: 'Two big clouds: land on the near one or the far one' };
-const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([...PLANS.map((p, i) => [i + 1, p]), [FRIEND_LEVEL, FRIEND_PLAN], [NEAR_FAR_LEVEL, NEAR_FAR_PLAN], [BETWEEN_LEVEL, BETWEEN_PLAN], [PLANET_LEVEL, PLANET_PLAN]]);
+export const NEAR_FAR_PLAN: LaunchPlan = {
+  mode: 'nearfar',
+  shots: 5,
+  name: 'Two big clouds: land on the near one or the far one',
+};
+const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([
+  ...PLANS.map((p, i) => [i + 1, p]),
+  [FRIEND_LEVEL, FRIEND_PLAN],
+  [NEAR_FAR_LEVEL, NEAR_FAR_PLAN],
+  [BETWEEN_LEVEL, BETWEEN_PLAN],
+  [PLANET_LEVEL, PLANET_PLAN],
+]);
 export const planFor = (level: number) => PLANS_BY_ID[level] ?? PLANS[0];
 
 export const LIGHT = 0.5;
 export const HEAVY = 2;
 export type Planet = 'light' | 'heavy';
-export interface PlanetPair { base: number; planet: Planet }
-export const gravityFor = (planet: Planet) => planet === 'light' ? LIGHT : HEAVY;
-export const airtimeFor = (planet: Planet) => planet === 'light' ? 1.5 : 0.8;
+export interface PlanetPair {
+  base: number;
+  planet: Planet;
+}
+export const gravityFor = (planet: Planet) => (planet === 'light' ? LIGHT : HEAVY);
+export const airtimeFor = (planet: Planet) => (planet === 'light' ? 1.5 : 0.8);
 /** Three distinct home flags and both toy worlds, in seeded order. */
 export function planetPairs(rng: Rng): PlanetPair[] {
   const planets = rng.shuffle<Planet>(['light', 'heavy', rng.pick<Planet>(['light', 'heavy'])]);
   return rng.shuffle([0.2, 0.3, 0.4]).map((base, i) => ({ base, planet: planets[i] }));
 }
 /** Full-height regions split at the home flag, including the spring area. */
-export const planetSide = (x: number, flagX: number): 'before' | 'past' => x < flagX ? 'before' : 'past';
+export const planetSide = (x: number, flagX: number): 'before' | 'past' => (x < flagX ? 'before' : 'past');
 export const planetBotLanding = (pair: PlanetPair) => reach(pullFor(pair.base), gravityFor(pair.planet));
 
 /** A short pull, a long pull and the pull between them, as pad indices (`low < mid < high`). */
-export interface BetweenTriple { low: number; mid: number; high: number }
+export interface BetweenTriple {
+  low: number;
+  mid: number;
+  high: number;
+}
 
 /**
  * Every (low, mid, high) on the five clouds with at least one cloud strictly between the flags. The middle pull is
@@ -74,7 +104,9 @@ export interface BetweenTriple { low: number; mid: number; high: number }
  * true, and on a wide gap the cloud it reaches is the one halfway along, not merely one of several in between.
  */
 export const BETWEEN_TRIPLES: BetweenTriple[] = [
-  { low: 0, mid: 1, high: 2 }, { low: 1, mid: 2, high: 3 }, { low: 2, mid: 3, high: 4 },
+  { low: 0, mid: 1, high: 2 },
+  { low: 1, mid: 2, high: 3 },
+  { low: 2, mid: 3, high: 4 },
   { low: 0, mid: 2, high: 4 },
 ];
 
@@ -105,7 +137,12 @@ export function pullFor(f: number): number {
 }
 
 /** Two plainly different pulls reveal the game's stated rule: the bigger pull lands farther away. */
-export function revealsPullRule(landings: readonly number[], gap = 0.15, couch = false, course = false): boolean {
+export function revealsPullRule(
+  landings: readonly number[],
+  gap = 0.15,
+  couch = false,
+  course = false,
+): boolean {
   return !couch && !course && landings.length >= 2 && Math.max(...landings) - Math.min(...landings) >= gap;
 }
 
@@ -116,7 +153,7 @@ export const padAt = (i: number) => (i + 0.5) / PADS;
 export function padHit(f: number, width = 0.85): number {
   const i = Math.round(f * PADS - 0.5);
   if (i < 0 || i >= PADS) return -1;
-  return Math.abs(f - padAt(i)) <= (width / PADS) / 2 ? i : -1;
+  return Math.abs(f - padAt(i)) <= width / PADS / 2 ? i : -1;
 }
 
 /**
@@ -129,9 +166,9 @@ export const NEAR_FAR = [0.2, 0.8] as const;
 export const NEAR_FAR_WINDOW = 0.2;
 
 /** How many landing clouds a plan draws. */
-export const cloudCount = (plan: LaunchPlan) => plan.mode === 'nearfar' ? NEAR_FAR.length : PADS;
+export const cloudCount = (plan: LaunchPlan) => (plan.mode === 'nearfar' ? NEAR_FAR.length : PADS);
 /** Where cloud `i` of a plan sits along the strip: the two big clouds at Near or far, the five numbered clouds otherwise. */
-export const cloudAt = (plan: LaunchPlan, i: number) => plan.mode === 'nearfar' ? NEAR_FAR[i] : padAt(i);
+export const cloudAt = (plan: LaunchPlan, i: number) => (plan.mode === 'nearfar' ? NEAR_FAR[i] : padAt(i));
 
 /** The pads to aim for, one per shot, never the same twice running (at Near or far, the two clouds take turns from a seeded start). */
 export function targets(plan: LaunchPlan, rng: Rng): number[] {
@@ -159,7 +196,7 @@ export function friendSpots(plan: LaunchPlan, rng: Rng): number[] {
   const out: number[] = [];
   while (out.length < plan.shots) {
     const f = Math.round(rng.range(FRIEND_RANGE.min, FRIEND_RANGE.max) * 100) / 100;
-    if (out.every(o => Math.abs(o - f) >= FRIEND_GAP)) out.push(f);
+    if (out.every((o) => Math.abs(o - f) >= FRIEND_GAP)) out.push(f);
   }
   return out;
 }
@@ -173,9 +210,23 @@ export function judgeFriend(f: number, spot: number): Verdict {
 export type Verdict = 'yes' | 'short' | 'long';
 
 /** Did a landing meet the ask? `last` is the previous landing for compare levels; `width` is how forgiving the clouds are. */
-export function judge(plan: LaunchPlan, f: number, target: number, ask?: 'farther' | 'nearer', last?: number, width = 0.85): Verdict {
+export function judge(
+  plan: LaunchPlan,
+  f: number,
+  target: number,
+  ask?: 'farther' | 'nearer',
+  last?: number,
+  width = 0.85,
+): Verdict {
   // A prediction is an observation, rather than an accuracy test: every chosen answer gets to see its result.
-  if (plan.mode === 'tap' || plan.mode === 'free' || plan.mode === 'predict' || plan.mode === 'planet' || plan.mode === 'between') return 'yes';
+  if (
+    plan.mode === 'tap' ||
+    plan.mode === 'free' ||
+    plan.mode === 'predict' ||
+    plan.mode === 'planet' ||
+    plan.mode === 'between'
+  )
+    return 'yes';
   if (plan.mode === 'compare') {
     if (last === undefined) return 'yes';
     if (ask === 'farther') return f > last + 0.04 ? 'yes' : 'short';
@@ -197,7 +248,13 @@ export function nextAsk(last: number): 'farther' | 'nearer' {
 }
 
 /** How far back a capable child pulls the spring for launch number `shot` (from 0): the pull that lands on the target cloud, a different one each time on free levels, and a clear step farther or nearer than last time when asked. */
-export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly number[], last?: number, spots: readonly number[] = []): number {
+export function pullToTake(
+  plan: LaunchPlan,
+  shot: number,
+  targets: readonly number[],
+  last?: number,
+  spots: readonly number[] = [],
+): number {
   switch (plan.mode) {
     case 'tap':
       return 0;

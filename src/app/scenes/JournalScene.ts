@@ -42,7 +42,12 @@ export class JournalScene extends Scene {
   page = lastPage;
   selected: JournalEntry = JOURNAL[0];
   /** Back to the treehouse on the island; at the root, an arrow back to the library (RW08 slice 2). */
-  private readonly back = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(), swatch.white, 50, () => this.leave());
+  private readonly back = new RoundButton(
+    this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(),
+    swatch.white,
+    50,
+    () => this.leave(),
+  );
   private readonly previous = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.turn(-1));
   private readonly next = new RoundButton(arrowIcon(1), swatch.white, 50, () => this.turn(1));
   private readonly play = new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 56, () => this.openGame());
@@ -96,7 +101,17 @@ export class JournalScene extends Scene {
     this.dots.eventMode = 'none';
     this.detail.eventMode = 'passive';
     this.content.addChild(this.paper);
-    this.ui.addChild(this.cardLayer, this.detail, this.dots, this.heading, this.count, this.back, this.previous, this.next, this.play);
+    this.ui.addChild(
+      this.cardLayer,
+      this.detail,
+      this.dots,
+      this.heading,
+      this.count,
+      this.back,
+      this.previous,
+      this.next,
+      this.play,
+    );
     // Start on the first new thing if there is one, so the strip tells about what she just found.
     this.selected = (firstNew >= 0 ? JOURNAL[firstNew] : JOURNAL[this.page * PER_PAGE]) ?? JOURNAL[0];
   }
@@ -106,7 +121,13 @@ export class JournalScene extends Scene {
   }
 
   resize(v: View) {
-    this.paper.clear().rect(0, 0, v.w, v.h).fill(0xfff4e3).roundRect(50, 120, v.w - 100, v.h - 150, 36).fill({ color: swatch.yellow.light, alpha: 0.5 }).stroke({ width: 5, color: swatch.yellow.line, alpha: 0.6 });
+    this.paper
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(0xfff4e3)
+      .roundRect(50, 120, v.w - 100, v.h - 150, 36)
+      .fill({ color: swatch.yellow.light, alpha: 0.5 })
+      .stroke({ width: 5, color: swatch.yellow.line, alpha: 0.6 });
     this.back.position.set(65, 65);
     this.heading.position.set(v.w / 2, 58);
     this.count.position.set(v.w / 2, 98);
@@ -123,7 +144,10 @@ export class JournalScene extends Scene {
       c.node.position.set(v.w / 2 + ((slot % 4) - 1.5) * (CARD.w + CARD.gap), cy + (slot < 4 ? -dy : dy));
     });
     this.dots.clear();
-    for (let i = 0; i < this.pages; i++) this.dots.circle(v.w / 2 + (i - (this.pages - 1) / 2) * 28, v.h - 215, i === this.page ? 8 : 5).fill(swatch.teal.line);
+    for (let i = 0; i < this.pages; i++)
+      this.dots
+        .circle(v.w / 2 + (i - (this.pages - 1) / 2) * 28, v.h - 215, i === this.page ? 8 : 5)
+        .fill(swatch.teal.line);
     this.previous.visible = this.page > 0;
     this.next.visible = this.page < this.pages - 1;
     this.drawDetail(v);
@@ -138,15 +162,37 @@ export class JournalScene extends Scene {
     const w = Math.min(v.w - 220, 760);
     const x = v.w / 2;
     const y = v.h - 105;
-    const strip = new Graphics().roundRect(x - w / 2, y - 62, w, 124, 30).fill({ color: 0xffffff, alpha: 0.96 }).stroke({ width: 5, color: swatch.teal.line });
+    const strip = new Graphics()
+      .roundRect(x - w / 2, y - 62, w, 124, 30)
+      .fill({ color: 0xffffff, alpha: 0.96 })
+      .stroke({ width: 5, color: swatch.teal.line });
     strip.eventMode = 'none';
     const said = found ? SCRIPT[entry.line][0] : 'Not found yet.';
-    const text = new Text({ text: said, style: { fontFamily: FONT, fontSize: 24, fill: ink, fontWeight: '500', wordWrap: true, wordWrapWidth: w - 220, lineHeight: 30 } });
+    const text = new Text({
+      text: said,
+      style: {
+        fontFamily: FONT,
+        fontSize: 24,
+        fill: ink,
+        fontWeight: '500',
+        wordWrap: true,
+        wordWrapWidth: w - 220,
+        lineHeight: 30,
+      },
+    });
     text.anchor.set(0, 0.5);
     text.position.set(x - w / 2 + 28, y - 8);
     const where = new Text({
       text: sourceText(entry, mod?.name ?? 'its game', found),
-      style: { fontFamily: FONT, fontSize: 17, fill: 0x6b6b7b, fontWeight: '600', wordWrap: true, wordWrapWidth: w - 220, lineHeight: 21 },
+      style: {
+        fontFamily: FONT,
+        fontSize: 17,
+        fill: 0x6b6b7b,
+        fontWeight: '600',
+        wordWrap: true,
+        wordWrapWidth: w - 220,
+        lineHeight: 21,
+      },
     });
     where.anchor.set(0, 0.5);
     where.position.set(x - w / 2 + 28, y + 40);
@@ -184,7 +230,13 @@ export class JournalScene extends Scene {
     voice.stop();
     void voice.say(mod.titleLine);
     // At the band nearest hers that the game has, and back here afterwards.
-    this.app.go.game(mod.id, undefined, undefined, false, this.app.creatureWorld ? { library: true } : { journal: true });
+    this.app.go.game(
+      mod.id,
+      undefined,
+      undefined,
+      false,
+      this.app.creatureWorld ? { library: true } : { journal: true },
+    );
   }
 
   private leave() {

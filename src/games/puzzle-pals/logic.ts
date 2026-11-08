@@ -19,7 +19,8 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
   { cols: 4, rows: 3, ghost: false, preplaced: 0, name: 'Twelve pieces with only an empty frame' },
 ];
 
-export const puzzlePlan = (level: number) => PUZZLE_PLANS[Math.max(0, Math.min(PUZZLE_PLANS.length - 1, level - 1))];
+export const puzzlePlan = (level: number) =>
+  PUZZLE_PLANS[Math.max(0, Math.min(PUZZLE_PLANS.length - 1, level - 1))];
 
 /** The picture is drawn at this size, then cut into a grid. */
 export const PICTURE_W = 600;

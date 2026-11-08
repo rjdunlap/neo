@@ -57,8 +57,10 @@ export const VOICE = {
   'rt.check.help': ['Look at the glowing ones. They show what does not match.'],
   'rt.instruct.6': ['Which tablet matches the cart? Or can we tell?'],
   'rt.disagree.farm': ["The farm's tablet says {n}. The cart has {n}. The farm's tablet is right!"],
-  'rt.disagree.store': ["The storehouse tablet says {n}. The cart has {n}. The storehouse tablet is right!"],
-  'rt.disagree.neither': ["The farm's tablet says {f}. The storehouse tablet says {s}. The cart has {c}. Neither one is right!"],
+  'rt.disagree.store': ['The storehouse tablet says {n}. The cart has {n}. The storehouse tablet is right!'],
+  'rt.disagree.neither': [
+    "The farm's tablet says {f}. The storehouse tablet says {s}. The cart has {c}. Neither one is right!",
+  ],
   'rt.disagree.wrong-tablet': ['That tablet says {says}. The cart has {c}.'],
   'rt.disagree.wrong-neither': ['Look again. One tablet says {c}.'],
   'rt.disagree.wrong-cant': ['The cart is here, so we can count it and tell.'],

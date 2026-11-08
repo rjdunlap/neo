@@ -2,7 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { WISHES, wishEnding, bubbleToTap, CLUES, REACTIONS, feelingPlan, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, LEVELS, NEEDS, playDone, pokeAfter, pokeDone, POKE_TAPS, type Feeling, type PokeStep } from './logic';
+import {
+  WISHES,
+  wishEnding,
+  bubbleToTap,
+  CLUES,
+  REACTIONS,
+  feelingPlan,
+  CARE_ONLY,
+  CARE_SCENARIOS,
+  choiceToTap,
+  EVENTS,
+  FACE_MAX_GROW,
+  FACE_PARTS,
+  faceFrame,
+  FEELING_PLANS,
+  FEELINGS,
+  feelingRound,
+  HELPERS,
+  LEVELS,
+  NEEDS,
+  playDone,
+  pokeAfter,
+  pokeDone,
+  POKE_TAPS,
+  type Feeling,
+  type PokeStep,
+} from './logic';
 import { landing, levelsInOrder, nextLevel } from '../../progress/difficulty';
 
 describe('Feelings Faces questions', () => {
@@ -27,7 +53,10 @@ describe('Feelings Faces questions', () => {
     for (const feeling of Object.values(EVENTS)) expect(FEELINGS).toContain(feeling);
     // Every feeling has a happening that causes it, so a round can ask for each.
     for (const feeling of FEELINGS) expect(Object.values(EVENTS)).toContain(feeling);
-    const help = feelingRound(FEELING_PLANS.find((p) => p.mode === 'help')!, new Rng(3));
+    const help = feelingRound(
+      FEELING_PLANS.find((p) => p.mode === 'help')!,
+      new Rng(3),
+    );
     for (const q of help) expect(q.answer).toBe(HELPERS[q.prompt as keyof typeof HELPERS]);
   });
 
@@ -44,9 +73,12 @@ describe('Feelings Faces questions', () => {
   });
 
   it('pairs each level-8 happening with a need and its helper, four different happenings a round', () => {
-    for (const scenario of Object.values(CARE_SCENARIOS)) expect(HELPERS[scenario.need]).toBe(scenario.helper);
+    for (const scenario of Object.values(CARE_SCENARIOS))
+      expect(HELPERS[scenario.need]).toBe(scenario.helper);
     // Between them the happenings ask for every helper, and the care-only ones never reach level 6.
-    expect(new Set(Object.values(CARE_SCENARIOS).map((c) => c.helper))).toEqual(new Set(Object.values(HELPERS)));
+    expect(new Set(Object.values(CARE_SCENARIOS).map((c) => c.helper))).toEqual(
+      new Set(Object.values(HELPERS)),
+    );
     for (const e of CARE_ONLY) expect(Object.keys(EVENTS)).not.toContain(e);
     const plan = FEELING_PLANS.find((p) => p.mode === 'care')!;
     for (let seed = 1; seed <= 200; seed++) {
@@ -67,7 +99,8 @@ describe('Feelings Faces questions', () => {
 
   it('shows every friend a different feeling on the friends level', () => {
     const plan = FEELING_PLANS.find((p) => p.mode === 'friends')!;
-    for (const q of feelingRound(plan, new Rng(9))) expect([...q.options].sort()).toEqual([...FEELINGS].sort());
+    for (const q of feelingRound(plan, new Rng(9)))
+      expect([...q.options].sort()).toEqual([...FEELINGS].sort());
   });
 
   it("touches the one choice that answers every question, on every level and seed (the demonstration's finger)", () => {
@@ -123,7 +156,10 @@ describe('Feelings Faces cards frame the companion’s face (RW05 slice 2)', () 
         // Every part sits well inside the window (the bubble's is a circle of 74).
         for (const p of on) expect(Math.hypot(p.x, p.y), `${s} ${size}`).toBeLessThan(size / 2);
         // The face is at least a third of the card across: the pip's whole-body card gave the river's about 18 units.
-        const span = Math.max(Math.max(...on.map((p) => p.x)) - Math.min(...on.map((p) => p.x)), Math.max(...on.map((p) => p.y)) - Math.min(...on.map((p) => p.y)));
+        const span = Math.max(
+          Math.max(...on.map((p) => p.x)) - Math.min(...on.map((p) => p.x)),
+          Math.max(...on.map((p) => p.y)) - Math.min(...on.map((p) => p.y)),
+        );
         expect(span, `${s} ${size}`).toBeGreaterThan(size / 3);
       }
     }
@@ -143,7 +179,9 @@ describe('Feelings Faces level 9 Poke a feeling', () => {
     const long = cycle(40);
     long.forEach((s, i) => expect(s === 'hug').toBe(i > 0 && long[i - 1] === 'sad'));
     // After the hug leaves the pet happy, the next poke changes its face rather than repeating happy.
-    long.forEach((s, i) => { if (s === 'hug') expect(long[i + 1] ?? 'surprised').toBe('surprised'); });
+    long.forEach((s, i) => {
+      if (s === 'hug') expect(long[i + 1] ?? 'surprised').toBe('surprised');
+    });
   });
 
   it('ends after six taps with a whole cycle and its hug shown', () => {
@@ -158,7 +196,8 @@ describe('Feelings Faces level 9 Poke a feeling', () => {
     expect(LEVELS.lap!.order).toEqual([9, 1, 2]);
     expect(levelsInOrder(LEVELS.lap!)).toEqual([9, 1, 2]);
     expect(nextLevel(0, [], LEVELS.lap!)).toBe(9);
-    for (const band of ['toddler', 'preschool', 'prek'] as const) expect(landing(9, LEVELS[band]!, [9])).toBe(LEVELS[band]!.min);
+    for (const band of ['toddler', 'preschool', 'prek'] as const)
+      expect(landing(9, LEVELS[band]!, [9])).toBe(LEVELS[band]!.min);
     for (const level of [1, 2]) expect(landing(level, LEVELS.lap!, [9])).toBe(level);
   });
 });
@@ -223,7 +262,6 @@ describe('Helping and explaining happenings batch', () => {
     expect(feelingPlan(12).mode).toBe('ask');
   });
 });
-
 
 describe('Ask first', () => {
   it('offers every stated wish once in four questions, including quiet space, for every seeded round', () => {

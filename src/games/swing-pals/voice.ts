@@ -5,8 +5,12 @@ export const VOICE = {
   'swing-pals.instruct-push': ['Tap to push! Push {friend} up to the {goal}.'],
   'swing-pals.instruct-back': ['Push when {friend} comes back to you. Tap, and the push waits for them.'],
   'swing-pals.instruct-two': ['Push both friends up to their {goals}.'],
-  'swing-pals.instruct-together': ['Make your swing go just like mine. Tap a hook to move your rope. A long rope swings slower.'],
-  'swing-pals.instruct-heavy': ['Which rope makes your friend swing like mine? Heavy or light, look at the rope.'],
+  'swing-pals.instruct-together': [
+    'Make your swing go just like mine. Tap a hook to move your rope. A long rope swings slower.',
+  ],
+  'swing-pals.instruct-heavy': [
+    'Which rope makes your friend swing like mine? Heavy or light, look at the rope.',
+  ],
   'swing-pals.instruct-big': ['A big push and a small push. Which rope swings together?'],
   'swing-pals.ring': ['Ding! {friend} reached the bell!', 'Ding ding! All the way up!'],
   'swing-pals.ring-chimes': ['Ting-a-ling! {friend} rang the chimes!'],

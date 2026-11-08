@@ -54,7 +54,7 @@ export function canyonRim(view: View, ground: number): { far: Mesa[]; near: Mesa
   };
   // The far wall runs edge to edge in flat steps, high enough to hide the backdrop's far hills (up to 168 above ground).
   const far: Mesa[] = [];
-  for (let x = -40; x < view.w + 40; ) {
+  for (let x = -40; x < view.w + 40;) {
     const w = rng.range(120, 220);
     far.push({ left: x, right: x + w, top: top(x, x + w, ground - rng.range(172, 190)), spread: 0 });
     x += w;
@@ -63,7 +63,12 @@ export function canyonRim(view: View, ground: number): { far: Mesa[]; near: Mesa
   const near: Mesa[] = [];
   for (let x = rng.range(-60, 40); x < view.w + 40; x += rng.range(200, 320)) {
     const w = rng.chance(0.4) ? rng.range(36, 60) : rng.range(90, 170);
-    near.push({ left: x, right: x + w, top: top(x - 30, x + w + 30, ground - rng.range(90, 140)), spread: rng.range(18, 30) });
+    near.push({
+      left: x,
+      right: x + w,
+      top: top(x - 30, x + w + 30, ground - rng.range(90, 140)),
+      spread: rng.range(18, 30),
+    });
   }
   return { far, near };
 }
@@ -72,11 +77,21 @@ export function canyonRim(view: View, ground: number): { far: Mesa[]; near: Mesa
 export function canyonPlan(layout: LandLayout, view: View, ground: number): CanyonItem[] {
   const { w, h } = view;
   const keepOut = meadowKeepOut(layout, view);
-  const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
+  const clear = (r: Rect) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
   const rng = new Rng(163);
   const items: CanyonItem[] = [];
   /** Up to `n` of a thing `size` wide and `tall` high whose feet are between `top` and `bottom`, in up to `tries` tries. */
-  const place = (kind: CanyonThing, n: number, size: number, tall: number, top: number, bottom: number, tries = n * 14, k?: number) => {
+  const place = (
+    kind: CanyonThing,
+    n: number,
+    size: number,
+    tall: number,
+    top: number,
+    bottom: number,
+    tries = n * 14,
+    k?: number,
+  ) => {
     for (let i = 0, placed = 0; i < tries && placed < n; i++) {
       const x = rng.range(size / 2, w - size / 2);
       const y = rng.range(top, bottom);
@@ -135,7 +150,9 @@ export function drawCanyon(g: Graphics, layout: LandLayout, view: View, ground: 
   for (const m of near) mesa(g, m, ground + 12, STRATA, ROCK_LINE, 2.5);
   for (const { kind, x, y, k } of canyonPlan(layout, view, ground)) {
     // A thing planned smaller (a full land's gap) is drawn at that size round its feet.
-    g.save().translateTransform(x, y).scaleTransform(k ?? 1, k ?? 1);
+    g.save()
+      .translateTransform(x, y)
+      .scaleTransform(k ?? 1, k ?? 1);
     const face = x > view.w / 2 ? -1 : 1;
     if (kind === 'spring') spring(g, 0, 0);
     else if (kind === 'pear') pear(g, 0, 0);
@@ -162,21 +179,49 @@ function mesa(g: Graphics, m: Mesa, base: number, strata: number[], line?: numbe
   }
   if (line === undefined) return;
   const [l, r] = edge(base);
-  g.moveTo(l, base).lineTo(m.left, m.top).lineTo(m.right, m.top).lineTo(r, base).stroke({ color: line, width, join: 'round' });
+  g.moveTo(l, base)
+    .lineTo(m.left, m.top)
+    .lineTo(m.right, m.top)
+    .lineTo(r, base)
+    .stroke({ color: line, width, join: 'round' });
 }
 
 /** A spring: a blue pool edged with stones and reeds, under a cottonwood. */
 function spring(g: Graphics, x: number, y: number) {
   // The cottonwood behind the pool: a pale trunk and a broad, bright crown.
   const tx = x - 22;
-  g.moveTo(tx - 9, y - 22).lineTo(tx - 6, y - 92).lineTo(tx + 6, y - 92).lineTo(tx + 9, y - 22).closePath().fill(0xb9a58c).stroke({ color: 0x7d6a54, width: 2 });
-  g.moveTo(tx + 3, y - 80).lineTo(tx + 22, y - 98).stroke({ color: 0x7d6a54, width: 4, cap: 'round' });
-  for (const [dx, dy, r] of [[-24, -104, 20], [20, -110, 20], [-2, -124, 22], [-4, -100, 20]]) g.circle(tx + dx, y + dy, r).fill(0x9ad15a).stroke({ color: swatch.green.line, width: 2 });
+  g.moveTo(tx - 9, y - 22)
+    .lineTo(tx - 6, y - 92)
+    .lineTo(tx + 6, y - 92)
+    .lineTo(tx + 9, y - 22)
+    .closePath()
+    .fill(0xb9a58c)
+    .stroke({ color: 0x7d6a54, width: 2 });
+  g.moveTo(tx + 3, y - 80)
+    .lineTo(tx + 22, y - 98)
+    .stroke({ color: 0x7d6a54, width: 4, cap: 'round' });
+  for (const [dx, dy, r] of [
+    [-24, -104, 20],
+    [20, -110, 20],
+    [-2, -124, 22],
+    [-4, -100, 20],
+  ])
+    g.circle(tx + dx, y + dy, r)
+      .fill(0x9ad15a)
+      .stroke({ color: swatch.green.line, width: 2 });
   // The pool, with the sky in it.
-  g.ellipse(x, y - 12, 56, 13).fill(swatch.blue.light).stroke({ color: swatch.blue.line, width: 2.5 });
+  g.ellipse(x, y - 12, 56, 13)
+    .fill(swatch.blue.light)
+    .stroke({ color: swatch.blue.line, width: 2.5 });
   g.ellipse(x + 10, y - 14, 24, 4).fill({ color: 0xffffff, alpha: 0.7 });
-  for (const dx of [-54, -34, 38, 56]) g.ellipse(x + dx, y - 6, 9, 6).fill(0xc9b79c).stroke({ color: 0x8c7a62, width: 1.5 });
-  for (const dx of [42, 48, 54]) g.moveTo(x + dx, y - 10).lineTo(x + dx + (dx - 48) * 0.4, y - 34).stroke({ color: swatch.green.line, width: 2.5, cap: 'round' });
+  for (const dx of [-54, -34, 38, 56])
+    g.ellipse(x + dx, y - 6, 9, 6)
+      .fill(0xc9b79c)
+      .stroke({ color: 0x8c7a62, width: 1.5 });
+  for (const dx of [42, 48, 54])
+    g.moveTo(x + dx, y - 10)
+      .lineTo(x + dx + (dx - 48) * 0.4, y - 34)
+      .stroke({ color: swatch.green.line, width: 2.5, cap: 'round' });
 }
 
 const CACTUS = 0x6fb36a;
@@ -184,30 +229,73 @@ const CACTUS_LINE = 0x3f7f45;
 
 /** A prickly pear: round pads on pads, with spines and a pink fruit. */
 function pear(g: Graphics, x: number, y: number) {
-  const pads: [number, number, number, number][] = [[0, -16, 15, 18], [-14, -40, 12, 14], [12, -42, 12, 14], [2, -58, 10, 11]];
-  for (const [dx, dy, rx, ry] of pads) g.ellipse(x + dx, y + dy, rx, ry).fill(CACTUS).stroke({ color: CACTUS_LINE, width: 2 });
-  for (const [dx, dy] of [[-4, -18], [5, -12], [-14, -42], [12, -44], [2, -58]]) g.circle(x + dx, y + dy, 1.2).fill(0xf6efd8);
-  g.ellipse(x + 10, y - 66, 4, 5).fill(swatch.pink.fill).stroke({ color: swatch.pink.line, width: 1.2 });
-  g.ellipse(x - 20, y - 52, 4, 5).fill(swatch.pink.fill).stroke({ color: swatch.pink.line, width: 1.2 });
+  const pads: [number, number, number, number][] = [
+    [0, -16, 15, 18],
+    [-14, -40, 12, 14],
+    [12, -42, 12, 14],
+    [2, -58, 10, 11],
+  ];
+  for (const [dx, dy, rx, ry] of pads)
+    g.ellipse(x + dx, y + dy, rx, ry)
+      .fill(CACTUS)
+      .stroke({ color: CACTUS_LINE, width: 2 });
+  for (const [dx, dy] of [
+    [-4, -18],
+    [5, -12],
+    [-14, -42],
+    [12, -44],
+    [2, -58],
+  ])
+    g.circle(x + dx, y + dy, 1.2).fill(0xf6efd8);
+  g.ellipse(x + 10, y - 66, 4, 5)
+    .fill(swatch.pink.fill)
+    .stroke({ color: swatch.pink.line, width: 1.2 });
+  g.ellipse(x - 20, y - 52, 4, 5)
+    .fill(swatch.pink.fill)
+    .stroke({ color: swatch.pink.line, width: 1.2 });
 }
 
 /** A yucca: a fan of stiff, pointed leaves and a tall stalk of cream bells. */
 function yucca(g: Graphics, x: number, y: number) {
-  g.moveTo(x, y - 18).lineTo(x + 2, y - 70).stroke({ color: 0x8c7a4e, width: 3, cap: 'round' });
-  for (let k = 0; k < 6; k++) g.circle(x + 2 + (k % 2 ? 4 : -4), y - 46 - k * 4.5, 3.6).fill(0xfff6dc).stroke({ color: 0xc9b78c, width: 1 });
-  for (const a of [-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2]) g.moveTo(x, y - 2).lineTo(x + Math.sin(a) * 24, y - 2 - Math.cos(a) * 28).stroke({ color: 0x5f9a62, width: 4, cap: 'round' });
+  g.moveTo(x, y - 18)
+    .lineTo(x + 2, y - 70)
+    .stroke({ color: 0x8c7a4e, width: 3, cap: 'round' });
+  for (let k = 0; k < 6; k++)
+    g.circle(x + 2 + (k % 2 ? 4 : -4), y - 46 - k * 4.5, 3.6)
+      .fill(0xfff6dc)
+      .stroke({ color: 0xc9b78c, width: 1 });
+  for (const a of [-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2])
+    g.moveTo(x, y - 2)
+      .lineTo(x + Math.sin(a) * 24, y - 2 - Math.cos(a) * 28)
+      .stroke({ color: 0x5f9a62, width: 4, cap: 'round' });
 }
 
 /** A lizard sunning itself on a flat red rock, its long tail curled. */
 function lizard(g: Graphics, x: number, y: number, face: 1 | -1) {
-  g.moveTo(x - 30, y).quadraticCurveTo(x - 26, y - 18, x, y - 18).quadraticCurveTo(x + 26, y - 18, x + 30, y).closePath().fill(STRATA[3]).stroke({ color: ROCK_LINE, width: 2 });
+  g.moveTo(x - 30, y)
+    .quadraticCurveTo(x - 26, y - 18, x, y - 18)
+    .quadraticCurveTo(x + 26, y - 18, x + 30, y)
+    .closePath()
+    .fill(STRATA[3])
+    .stroke({ color: ROCK_LINE, width: 2 });
   const body = 0x8fcf6a;
   const line = swatch.green.line;
-  g.moveTo(x - face * 8, y - 20).quadraticCurveTo(x - face * 22, y - 18, x - face * 26, y - 26).stroke({ color: line, width: 5, cap: 'round' });
-  g.moveTo(x - face * 8, y - 20).quadraticCurveTo(x - face * 22, y - 18, x - face * 26, y - 26).stroke({ color: body, width: 3, cap: 'round' });
-  for (const d of [-6, 6]) g.moveTo(x + d, y - 20).lineTo(x + d + 3 * Math.sign(d), y - 16).stroke({ color: line, width: 2.5, cap: 'round' });
-  g.ellipse(x, y - 22, 12, 5).fill(body).stroke({ color: line, width: 1.5 });
-  g.ellipse(x + face * 14, y - 24, 6, 4.5).fill(body).stroke({ color: line, width: 1.5 });
+  g.moveTo(x - face * 8, y - 20)
+    .quadraticCurveTo(x - face * 22, y - 18, x - face * 26, y - 26)
+    .stroke({ color: line, width: 5, cap: 'round' });
+  g.moveTo(x - face * 8, y - 20)
+    .quadraticCurveTo(x - face * 22, y - 18, x - face * 26, y - 26)
+    .stroke({ color: body, width: 3, cap: 'round' });
+  for (const d of [-6, 6])
+    g.moveTo(x + d, y - 20)
+      .lineTo(x + d + 3 * Math.sign(d), y - 16)
+      .stroke({ color: line, width: 2.5, cap: 'round' });
+  g.ellipse(x, y - 22, 12, 5)
+    .fill(body)
+    .stroke({ color: line, width: 1.5 });
+  g.ellipse(x + face * 14, y - 24, 6, 4.5)
+    .fill(body)
+    .stroke({ color: line, width: 1.5 });
   g.circle(x + face * 16, y - 25.5, 1.5).fill(ink);
 }
 
@@ -215,28 +303,60 @@ function lizard(g: Graphics, x: number, y: number, face: 1 | -1) {
 function roadrunner(g: Graphics, x: number, y: number, face: 1 | -1) {
   const body = 0xb8a68a;
   const line = 0x6a5a44;
-  for (const d of [-4, 4]) g.moveTo(x + d, y - 18).lineTo(x + d + face * 2, y).stroke({ color: 0x8a7a5e, width: 2.5, cap: 'round' });
-  g.moveTo(x - face * 10, y - 26).lineTo(x - face * 34, y - 44).stroke({ color: line, width: 6, cap: 'round' });
-  g.moveTo(x - face * 10, y - 26).lineTo(x - face * 33, y - 43).stroke({ color: body, width: 3.5, cap: 'round' });
-  g.ellipse(x, y - 24, 16, 9).fill(body).stroke({ color: line, width: 2 });
-  for (const [dx, dy] of [[-6, -26], [2, -22], [7, -27], [-2, -29]]) g.circle(x + face * dx, y + dy, 1.4).fill(line);
-  g.circle(x + face * 16, y - 36, 7).fill(body).stroke({ color: line, width: 2 });
-  for (const k of [0, 1, 2]) g.moveTo(x + face * (13 + k * 2), y - 41).lineTo(x + face * (10 + k * 3), y - 50).stroke({ color: line, width: 2, cap: 'round' });
-  g.moveTo(x + face * 22, y - 37).lineTo(x + face * 33, y - 35).stroke({ color: ink, width: 2.5, cap: 'round' });
+  for (const d of [-4, 4])
+    g.moveTo(x + d, y - 18)
+      .lineTo(x + d + face * 2, y)
+      .stroke({ color: 0x8a7a5e, width: 2.5, cap: 'round' });
+  g.moveTo(x - face * 10, y - 26)
+    .lineTo(x - face * 34, y - 44)
+    .stroke({ color: line, width: 6, cap: 'round' });
+  g.moveTo(x - face * 10, y - 26)
+    .lineTo(x - face * 33, y - 43)
+    .stroke({ color: body, width: 3.5, cap: 'round' });
+  g.ellipse(x, y - 24, 16, 9)
+    .fill(body)
+    .stroke({ color: line, width: 2 });
+  for (const [dx, dy] of [
+    [-6, -26],
+    [2, -22],
+    [7, -27],
+    [-2, -29],
+  ])
+    g.circle(x + face * dx, y + dy, 1.4).fill(line);
+  g.circle(x + face * 16, y - 36, 7)
+    .fill(body)
+    .stroke({ color: line, width: 2 });
+  for (const k of [0, 1, 2])
+    g.moveTo(x + face * (13 + k * 2), y - 41)
+      .lineTo(x + face * (10 + k * 3), y - 50)
+      .stroke({ color: line, width: 2, cap: 'round' });
+  g.moveTo(x + face * 22, y - 37)
+    .lineTo(x + face * 33, y - 35)
+    .stroke({ color: ink, width: 2.5, cap: 'round' });
   g.circle(x + face * 18, y - 38, 1.6).fill(ink);
-  g.moveTo(x + face * 20, y - 36).lineTo(x + face * 24, y - 35).stroke({ color: swatch.orange.fill, width: 1.5 });
+  g.moveTo(x + face * 20, y - 36)
+    .lineTo(x + face * 24, y - 35)
+    .stroke({ color: swatch.orange.fill, width: 1.5 });
 }
 
 /** A jackrabbit sitting up: very long ears, long feet and a soft tan coat. */
 function jackrabbit(g: Graphics, x: number, y: number, face: 1 | -1) {
   const coat = 0xd2b48c;
   const line = 0x8f6f4a;
-  g.ellipse(x, y - 14, 15, 13).fill(coat).stroke({ color: line, width: 2 });
-  g.ellipse(x + face * 8, y - 2, 11, 3.5).fill(coat).stroke({ color: line, width: 1.5 });
+  g.ellipse(x, y - 14, 15, 13)
+    .fill(coat)
+    .stroke({ color: line, width: 2 });
+  g.ellipse(x + face * 8, y - 2, 11, 3.5)
+    .fill(coat)
+    .stroke({ color: line, width: 1.5 });
   g.circle(x - face * 14, y - 12, 4).fill(0xfaf4ea);
-  g.circle(x + face * 8, y - 32, 9).fill(coat).stroke({ color: line, width: 2 });
+  g.circle(x + face * 8, y - 32, 9)
+    .fill(coat)
+    .stroke({ color: line, width: 2 });
   for (const d of [-3, 4]) {
-    g.ellipse(x + face * (6 + d), y - 52, 3.6, 13).fill(coat).stroke({ color: line, width: 1.5 });
+    g.ellipse(x + face * (6 + d), y - 52, 3.6, 13)
+      .fill(coat)
+      .stroke({ color: line, width: 1.5 });
     g.ellipse(x + face * (6 + d), y - 52, 1.6, 9).fill(swatch.pink.light);
   }
   g.circle(x + face * 12, y - 33, 1.6).fill(ink);

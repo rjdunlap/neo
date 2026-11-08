@@ -1,7 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { DOT_NUMERAL_Y, DOT_RADIUS, numberDots, showsDots, bondNumbers, bubbleToPop, choosePalette, countRun, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, PLANS, planFor, spawnTarget, staysPut, TAP_REACH, type DemoBubble } from './logic';
+import {
+  DOT_NUMERAL_Y,
+  DOT_RADIUS,
+  numberDots,
+  showsDots,
+  bondNumbers,
+  bubbleToPop,
+  choosePalette,
+  countRun,
+  signFor,
+  FRIEND_SOUND,
+  FRIENDS,
+  inReach,
+  isRight,
+  meant,
+  nearestShown,
+  PLANS,
+  planFor,
+  spawnTarget,
+  staysPut,
+  TAP_REACH,
+  type DemoBubble,
+} from './logic';
 
 describe('Bubble Pop', () => {
   it('keeps every bubble a big target, and number rounds within what fits on screen', () => {
@@ -66,7 +88,7 @@ describe('Bubble Pop', () => {
           expect(i, `${nums}`).toBeGreaterThanOrEqual(0);
           left.splice(i, 1);
         }
-        for (const n of nums) expect(n).toBeGreaterThanOrEqual(1), expect(n).toBeLessThan(plan.sum!);
+        for (const n of nums) (expect(n).toBeGreaterThanOrEqual(1), expect(n).toBeLessThan(plan.sum!));
       }
     }
   });
@@ -99,7 +121,13 @@ describe('the friends in the bubbles', () => {
 });
 
 describe('the bubble the ghost finger pops', () => {
-  const at = (x: number, y: number, extra: Partial<DemoBubble> = {}): DemoBubble => ({ x, y, r: 60, color: null, ...extra });
+  const at = (x: number, y: number, extra: Partial<DemoBubble> = {}): DemoBubble => ({
+    x,
+    y,
+    r: 60,
+    color: null,
+    ...extra,
+  });
 
   it('only counts a bubble whose middle is on the screen, and leaves one still below it or about to float off', () => {
     expect(inReach(at(500, 400), 1024, 768)).toBe(true);
@@ -118,10 +146,16 @@ describe('the bubble the ghost finger pops', () => {
         let shown: DemoBubble[] = [];
         let next = 1;
         // The real game keeps sending bubbles; here there are enough on the screen to finish the round.
-        if (plan.mode === 'color') shown = Array.from({ length: plan.goal * plan.colors }, (_, i) => at(120 + (i % 6) * 140, 200 + i * 5, { color: palette[i % palette.length] }));
-        if (plan.mode === 'free') shown = Array.from({ length: plan.goal + 2 }, (_, i) => at(120 + (i % 6) * 140, 200 + i * 6));
-        if (plan.mode === 'count') shown = Array.from({ length: plan.goal }, (_, i) => at(100 + i * 80, 300, { number: i + 1 }));
-        if (plan.mode === 'bonds') shown = bondNumbers(plan.sum!, plan.goal, rng).map((n, i) => at(100 + i * 90, 300, { number: n }));
+        if (plan.mode === 'color')
+          shown = Array.from({ length: plan.goal * plan.colors }, (_, i) =>
+            at(120 + (i % 6) * 140, 200 + i * 5, { color: palette[i % palette.length] }),
+          );
+        if (plan.mode === 'free')
+          shown = Array.from({ length: plan.goal + 2 }, (_, i) => at(120 + (i % 6) * 140, 200 + i * 6));
+        if (plan.mode === 'count')
+          shown = Array.from({ length: plan.goal }, (_, i) => at(100 + i * 80, 300, { number: i + 1 }));
+        if (plan.mode === 'bonds')
+          shown = bondNumbers(plan.sum!, plan.goal, rng).map((n, i) => at(100 + i * 90, 300, { number: n }));
         shown.push(at(500, 300, { rainbow: true, number: 99 }));
         // Pop a whole round the way the bot would, and the round must finish with no wrong tap.
         let held: DemoBubble | null = null;
@@ -151,7 +185,9 @@ describe('the bubble the ghost finger pops', () => {
   });
 
   it('takes the highest settled bubble in free play, and waits when nothing right is showing', () => {
-    expect(bubbleToPop('free', [at(100, 300), at(300, 600), at(500, 200)], null, 1, undefined, null)?.y).toBe(200);
+    expect(bubbleToPop('free', [at(100, 300), at(300, 600), at(500, 200)], null, 1, undefined, null)?.y).toBe(
+      200,
+    );
     expect(bubbleToPop('free', [at(100, 300), at(500, 60)], null, 1, undefined, null)?.y).toBe(300); // one by the top edge is about to leave
     expect(bubbleToPop('color', [at(100, 300, { color: 'blue' })], 'red', 1, undefined, null)).toBeNull();
     expect(bubbleToPop('count', [at(100, 300, { number: 3 })], null, 2, undefined, null)).toBeNull();
@@ -168,7 +204,9 @@ describe('quantity support', () => {
         expect(Math.hypot(dot.x, dot.y) + DOT_RADIUS).toBeLessThan(0.9);
         // The unchanged 1.05-radius numeral reserves a 1.3-radius-high box.
         expect(dot.y - DOT_RADIUS).toBeGreaterThan(DOT_NUMERAL_Y + 0.65);
-        for (const other of dots) if (other !== dot) expect(Math.hypot(dot.x - other.x, dot.y - other.y)).toBeGreaterThan(DOT_RADIUS * 2);
+        for (const other of dots)
+          if (other !== dot)
+            expect(Math.hypot(dot.x - other.x, dot.y - other.y)).toBeGreaterThan(DOT_RADIUS * 2);
       }
       expect(numberDots(n)).toEqual(dots);
       if (n > 6) expect(dots.filter((d) => d.y === 0.49)).toHaveLength(5);
@@ -180,7 +218,10 @@ describe('quantity support', () => {
     expect(PLANS.map((_, i) => i + 1).filter(showsDots)).toEqual([7, 8, 10]);
     for (const level of [7, 8, 10]) {
       const plan = planFor(level);
-      const numbers = plan.mode === 'count' ? Array.from({ length: plan.goal }, (_, i) => i + 1) : bondNumbers(plan.sum!, plan.goal, new Rng(4));
+      const numbers =
+        plan.mode === 'count'
+          ? Array.from({ length: plan.goal }, (_, i) => i + 1)
+          : bondNumbers(plan.sum!, plan.goal, new Rng(4));
       for (const n of numbers) expect(numberDots(n)).toHaveLength(n);
     }
   });
@@ -189,7 +230,7 @@ describe('quantity support', () => {
 describe('counting runs', () => {
   const counts = PLANS.map((plan, i) => ({ plan, level: i + 1 })).filter(({ plan }) => plan.mode === 'count');
 
-  it('count levels 7 to 9 are still 1, 2, 3 … with no draw from the round\'s random numbers', () => {
+  it("count levels 7 to 9 are still 1, 2, 3 … with no draw from the round's random numbers", () => {
     for (const { plan, level } of counts.filter((c) => c.level <= 9)) {
       const rng = new Rng(5);
       expect(countRun(plan, rng)).toEqual(Array.from({ length: plan.goal }, (_, i) => i + 1));
@@ -262,9 +303,15 @@ describe('the sign at the top', () => {
   });
 });
 
-describe('pop anywhere (level 15, lap\'s first level)', () => {
+describe("pop anywhere (level 15, lap's first level)", () => {
   const plan = planFor(15);
-  const at = (x: number, y: number, extra: Partial<DemoBubble> = {}): DemoBubble => ({ x, y, r: 100, color: null, ...extra });
+  const at = (x: number, y: number, extra: Partial<DemoBubble> = {}): DemoBubble => ({
+    x,
+    y,
+    r: 100,
+    color: null,
+    ...extra,
+  });
 
   it('is a free-popping round that takes a touch anywhere, with only big, slow, few bubbles', () => {
     expect(plan.mode).toBe('free');

@@ -10,7 +10,9 @@ export function requireConceptArt(root) {
     return; // Not a git checkout: nothing was skipped.
   }
   if (out.split('\n').some((l) => l.startsWith('S '))) {
-    console.error('The concept-art PNGs are skipped in this checkout. Run scripts/concept-art.sh restore first.');
+    console.error(
+      'The concept-art PNGs are skipped in this checkout. Run scripts/concept-art.sh restore first.',
+    );
     process.exit(1);
   }
 }

@@ -3,7 +3,42 @@ import { Rng } from '../../engine/random';
 import { HARBORS } from './harbors';
 import { landing } from '../../progress/difficulty';
 import { ferryJam } from './index';
-import { after, atDock, blockers, boatToward, clearsInOne, distance, distanceTable, docked, FERRY, ferries, firstToSail, focusPath, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, ROCK, rocksMatter, sailed, settle, slides, solve, solved, start, stuck, wellFormed, YELLOW, type Harbor, type Layout } from './logic';
+import {
+  after,
+  atDock,
+  blockers,
+  boatToward,
+  clearsInOne,
+  distance,
+  distanceTable,
+  docked,
+  FERRY,
+  ferries,
+  firstToSail,
+  focusPath,
+  grid,
+  hintSlide,
+  makeHarbor,
+  parse,
+  patience,
+  PLANS,
+  planFor,
+  reach,
+  render,
+  ROCK,
+  rocksMatter,
+  sailed,
+  settle,
+  slides,
+  solve,
+  solved,
+  start,
+  stuck,
+  wellFormed,
+  YELLOW,
+  type Harbor,
+  type Layout,
+} from './logic';
 
 const harborsFor = (level: number) => HARBORS[level].map((rows) => parse(rows));
 
@@ -89,30 +124,35 @@ describe('Ferry Jam', () => {
     });
   });
 
-  it('fills each plan: every pool has a harbor at its plan\'s most slides, and at least a third above its fewest', () => {
+  it("fills each plan: every pool has a harbor at its plan's most slides, and at least a third above its fewest", () => {
     PLANS.forEach((plan, i) => {
       const moves = harborsFor(i + 1).map((h) => solve(h)!.length);
       expect(moves, plan.name).toContain(plan.moves.max);
       // A plan with one number of slides (level 9) has nothing above its fewest to fill.
-      if (plan.moves.max > plan.moves.min) expect(moves.filter((m) => m > plan.moves.min).length * 3, plan.name).toBeGreaterThanOrEqual(moves.length);
+      if (plan.moves.max > plan.moves.min)
+        expect(moves.filter((m) => m > plan.moves.min).length * 3, plan.name).toBeGreaterThanOrEqual(
+          moves.length,
+        );
     });
   });
 
   it('knows how far every layout is from the dock, the same as the solver', () => {
-    for (const level of [1, 3, 5, 7]) for (const h of harborsFor(level).slice(0, 4)) {
-      const table = distanceTable(h);
-      expect(distance(h, start(h))).toBe(solve(h)!.length);
-      // Each slide changes the distance by at most one, and the hint's slide brings it exactly one closer.
-      let layout = start(h);
-      while (!atDock(h, layout)) {
-        for (const s of slides(h, layout)) expect(Math.abs(distance(h, apply(layout, s)) - distance(h, layout))).toBeLessThanOrEqual(1);
-        const next = apply(layout, hintSlide(h, layout)!);
-        expect(distance(h, next)).toBe(distance(h, layout) - 1);
-        layout = next;
+    for (const level of [1, 3, 5, 7])
+      for (const h of harborsFor(level).slice(0, 4)) {
+        const table = distanceTable(h);
+        expect(distance(h, start(h))).toBe(solve(h)!.length);
+        // Each slide changes the distance by at most one, and the hint's slide brings it exactly one closer.
+        let layout = start(h);
+        while (!atDock(h, layout)) {
+          for (const s of slides(h, layout))
+            expect(Math.abs(distance(h, apply(layout, s)) - distance(h, layout))).toBeLessThanOrEqual(1);
+          const next = apply(layout, hintSlide(h, layout)!);
+          expect(distance(h, next)).toBe(distance(h, layout) - 1);
+          layout = next;
+        }
+        expect(distance(h, layout)).toBe(0);
+        expect(table.size).toBeGreaterThan(0);
       }
-      expect(distance(h, layout)).toBe(0);
-      expect(table.size).toBeGreaterThan(0);
-    }
   });
 
   it('builds the distance table quickly even for the biggest harbors', () => {
@@ -136,11 +176,13 @@ describe('Ferry Jam', () => {
     const fewest = solve(h)!.length;
     /** A slide of a boat other than the ferry that does not bring the boats closer, and the slide back. */
     function wander(layout: Layout) {
-      const s = slides(h, layout).find((s) => s.boat !== FERRY && distance(h, apply(layout, s)) >= distance(h, layout))!;
+      const s = slides(h, layout).find(
+        (s) => s.boat !== FERRY && distance(h, apply(layout, s)) >= distance(h, layout),
+      )!;
       return [s, { boat: s.boat, to: layout[s.boat] }];
     }
 
-    it('waits at least six slides, and at least the harbor\'s fewest', () => {
+    it("waits at least six slides, and at least the harbor's fewest", () => {
       expect(patience(2)).toBe(6);
       expect(patience(13)).toBe(13);
       expect(stuck([], 13)).toBe(false);
@@ -168,11 +210,12 @@ describe('Ferry Jam', () => {
       let slid = 0;
       while (!atDock(h, layout)) {
         // Every third slide wanders off and back before the next good one.
-        if (slid % 3 === 2) for (const s of wander(layout)) {
-          layout = apply(layout, s);
-          trail.push(distance(h, layout));
-          expect(stuck(trail, fewest)).toBe(false);
-        }
+        if (slid % 3 === 2)
+          for (const s of wander(layout)) {
+            layout = apply(layout, s);
+            trail.push(distance(h, layout));
+            expect(stuck(trail, fewest)).toBe(false);
+          }
         layout = apply(layout, hintSlide(h, layout)!);
         trail.push(distance(h, layout));
         expect(stuck(trail, fewest)).toBe(false);
@@ -267,7 +310,7 @@ describe('Ferry Jam', () => {
       }
     });
 
-    it('every level-7 harbor has its rock beside the ferry\'s row, and every rock matters', () => {
+    it("every level-7 harbor has its rock beside the ferry's row, and every rock matters", () => {
       for (const h of harborsFor(7)) {
         const name = render(h).join('/');
         expect(h.rocks, name).toHaveLength(1);
@@ -285,7 +328,8 @@ describe('Ferry Jam', () => {
 
     it('the couch highlight still reaches every boat (rocks are never boats to land on)', () => {
       for (const h of harborsFor(7))
-        for (let to = 0; to < h.boats.length; to++) expect(focusPath(h, start(h), FERRY, to), render(h).join('/')).not.toBeNull();
+        for (let to = 0; to < h.boats.length; to++)
+          expect(focusPath(h, start(h), FERRY, to), render(h).join('/')).not.toBeNull();
     });
   });
 
@@ -331,12 +375,15 @@ describe('Ferry Jam', () => {
       expect(settle(one, docked1)).toBe(docked1);
     });
 
-    it('every level-8 harbor starts with the ferries in each other\'s way, and in at least half the first to sail frees the other', () => {
+    it("every level-8 harbor starts with the ferries in each other's way, and in at least half the first to sail frees the other", () => {
       const all = harborsFor(8);
       const firsts = all.map((h) => firstToSail(h)!);
       for (const [k, h] of all.entries()) {
-        const red = h.boats[FERRY], yellow = h.boats[YELLOW];
-        const crossing = (yellow.col >= red.col + 2 && yellow.row <= red.row && yellow.row + 1 >= red.row) || ((yellow.col === red.col || yellow.col === red.col + 1) && yellow.row + 1 < red.row);
+        const red = h.boats[FERRY],
+          yellow = h.boats[YELLOW];
+        const crossing =
+          (yellow.col >= red.col + 2 && yellow.row <= red.row && yellow.row + 1 >= red.row) ||
+          ((yellow.col === red.col || yellow.col === red.col + 1) && yellow.row + 1 < red.row);
         expect(crossing, at(h, start(h))).toBe(true);
         expect(firsts[k], at(h, start(h))).not.toBeNull();
       }
@@ -354,7 +401,10 @@ describe('Ferry Jam', () => {
         for (const d of table.values()) expect(Number.isFinite(d)).toBe(true);
         let layout = start(h);
         while (!solved(h, layout)) {
-          for (const s of slides(h, layout)) expect(distance(h, after(h, layout, s)), at(h, layout)).toBeGreaterThanOrEqual(distance(h, layout) - 1);
+          for (const s of slides(h, layout))
+            expect(distance(h, after(h, layout, s)), at(h, layout)).toBeGreaterThanOrEqual(
+              distance(h, layout) - 1,
+            );
           const next = after(h, layout, hintSlide(h, layout)!);
           expect(distance(h, next)).toBe(distance(h, layout) - 1);
           layout = next;
@@ -406,13 +456,14 @@ describe('Ferry Jam', () => {
           expect(focusPath(h, layout, other, to), at(h, layout)).not.toBeNull();
         }
         for (let from = 0; from < h.boats.length; from++)
-          if (from !== first) for (const dir of [0, 1, 2, 3]) expect(boatToward(h, layout, from, dir)).not.toBe(first);
+          if (from !== first)
+            for (const dir of [0, 1, 2, 3]) expect(boatToward(h, layout, from, dir)).not.toBe(first);
       }
     });
   });
 
-  describe('pre-K entries: one boat in the way (9) and who\'s in the way (10)', () => {
-    it('finds the boats in the ferry\'s way: only those with a cell in its row ahead of it', () => {
+  describe("pre-K entries: one boat in the way (9) and who's in the way (10)", () => {
+    it("finds the boats in the ferry's way: only those with a cell in its row ahead of it", () => {
       const h = parse(['..a.', 'ffa.', '..bb', '....']);
       expect(blockers(h)).toEqual([1]);
       expect(blockers(h, [2, 0, 2])).toEqual([]);
@@ -420,7 +471,7 @@ describe('Ferry Jam', () => {
       expect(blockers(parse(['a...', 'aff.', '....', '....']))).toEqual([]);
     });
 
-    it('level 9: every harbor has exactly one boat in the ferry\'s way, and one slide of it lets the ferry out', () => {
+    it("level 9: every harbor has exactly one boat in the ferry's way, and one slide of it lets the ferry out", () => {
       // `solve` counts the ferry's own slide to the dock too, so "one boat slide" is 2 here.
       for (const h of harborsFor(9)) {
         const at = render(h).join('/');
@@ -433,7 +484,7 @@ describe('Ferry Jam', () => {
       }
     });
 
-    it('level 10: every harbor has exactly one boat in the way, which cannot leave the ferry\'s row in one slide', () => {
+    it("level 10: every harbor has exactly one boat in the way, which cannot leave the ferry's row in one slide", () => {
       for (const h of harborsFor(10)) {
         const at = render(h).join('/');
         expect(blockers(h), at).toHaveLength(1);

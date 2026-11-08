@@ -8,20 +8,37 @@ export async function rootOffline(browser) {
   const context = await createTestContext(browser, { viewport: { width: 1024, height: 768 } });
   const page = await context.newPage();
   const errors = [];
-  page.on('pageerror', e => errors.push(e.message));
+  page.on('pageerror', (e) => errors.push(e.message));
   const output = 'test-results/offline/root';
   await mkdir(output, { recursive: true });
   const { read, write } = publicSave(page);
   try {
     await page.goto(new URL('/', process.env.GAME_URL || 'http://localhost:4173').href);
     await page.locator('.chooser__add').waitFor();
-    await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     await write({
-      version: 3, profile: { name: 'Offline Mia', band: 'toddler' }, world: { band: 'toddler' },
-      creatures: { owned: [{ id: 'clvr', species: 'sprout', name: 'Clover', look: { color: 'pink', worn: [] }, metAt: 'start' }], companion: 'clvr' },
-      settings: { speech: false, music: false }, explore: { last: null },
-      games: {}, stickers: [{ game: 'bubble-pop', seed: 7, at: 1 }],
+      version: 3,
+      profile: { name: 'Offline Mia', band: 'toddler' },
+      world: { band: 'toddler' },
+      creatures: {
+        owned: [
+          {
+            id: 'clvr',
+            species: 'sprout',
+            name: 'Clover',
+            look: { color: 'pink', worn: [] },
+            metAt: 'start',
+          },
+        ],
+        companion: 'clvr',
+      },
+      settings: { speech: false, music: false },
+      explore: { last: null },
+      games: {},
+      stickers: [{ game: 'bubble-pop', seed: 7, at: 1 }],
     });
     await context.setOffline(true);
     const visit = async () => {
@@ -33,12 +50,18 @@ export async function rootOffline(browser) {
       await page.waitForTimeout(600);
       await page.screenshot({ path: `${output}/home.png` });
       // At 1024×768: toddler Home Explore, Explore Places, then Counting Cove's place card.
-      await page.mouse.click(914, 403); await page.waitForTimeout(1400);
+      await page.mouse.click(914, 403);
+      await page.waitForTimeout(1400);
       await page.locator('.classic-link').waitFor({ state: 'hidden' });
-      await page.mouse.click(282, 197); await page.waitForTimeout(2200);
+      await page.mouse.click(282, 197);
+      await page.waitForTimeout(2200);
       await page.screenshot({ path: `${output}/places.png` });
       await page.mouse.click(397, 200);
-      await waitForSave(read, save => save?.explore?.last === 'counting-cove', 'Root navigation did not persist Counting Cove while offline');
+      await waitForSave(
+        read,
+        (save) => save?.explore?.last === 'counting-cove',
+        'Root navigation did not persist Counting Cove while offline',
+      );
     };
     await visit();
     const first = await read();
@@ -60,9 +83,13 @@ export async function rootOffline(browser) {
     assert.equal(await page.evaluate(() => typeof window.kit), 'undefined');
     assert.equal(await page.evaluate(() => typeof window.neo), 'undefined');
     assert.deepEqual(errors, []);
-    console.log('PASS: production root Home → Explore → Counting Cove offline twice; location and owned progress survive reload.');
+    console.log(
+      'PASS: production root Home → Explore → Counting Cove offline twice; location and owned progress survive reload.',
+    );
   } catch (error) {
     await page.screenshot({ path: `${output}/failure.png` }).catch(() => {});
     throw error;
-  } finally { await context.close(); }
+  } finally {
+    await context.close();
+  }
 }

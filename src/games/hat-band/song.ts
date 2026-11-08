@@ -10,11 +10,44 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { barsArt, checkArt, drumArt, HEAD, hatArt, line, lowArt, lowBadge, tuneBadge, WORN_SCALE } from './art';
 import {
-  advanceSong, check, CLAUSES, friendFor, has, HATS, makeSongRound, newArrange, PARTS, playSong, repair, ROLE_ORDER, select,
-  songBotMove, songLayout, toggleRole, undoStep, PER_BEAT,
-  type Arrange, type Clause, type Part, type Role, type SongEvent, type SongLayout, type SongRound,
+  barsArt,
+  checkArt,
+  drumArt,
+  HEAD,
+  hatArt,
+  line,
+  lowArt,
+  lowBadge,
+  tuneBadge,
+  WORN_SCALE,
+} from './art';
+import {
+  advanceSong,
+  check,
+  CLAUSES,
+  friendFor,
+  has,
+  HATS,
+  makeSongRound,
+  newArrange,
+  PARTS,
+  playSong,
+  repair,
+  ROLE_ORDER,
+  select,
+  songBotMove,
+  songLayout,
+  toggleRole,
+  undoStep,
+  PER_BEAT,
+  type Arrange,
+  type Clause,
+  type Part,
+  type Role,
+  type SongEvent,
+  type SongLayout,
+  type SongRound,
 } from './logic';
 
 /** A role's small badge for the cards: a drum, a note, or the bigger low note under a staff line. */
@@ -31,7 +64,11 @@ class PartCard extends Container {
   readonly back = new Graphics();
   readonly badges: Container[];
   private readonly dots = new Graphics();
-  constructor(readonly w: number, readonly h: number, number: number) {
+  constructor(
+    readonly w: number,
+    readonly h: number,
+    number: number,
+  ) {
     super();
     this.badges = ROLE_ORDER.map((r, i) => {
       const b = badge(r);
@@ -46,8 +83,12 @@ class PartCard extends Container {
   paint(fill: number, edge: number, width: number, glow: boolean) {
     const { w, h } = this;
     this.back.clear();
-    if (glow) this.back.roundRect(-w / 2 - 12, -h / 2 - 12, w + 24, h + 24, 28).fill({ color: 0xffe066, alpha: 0.9 });
-    this.back.roundRect(-w / 2, -h / 2, w, h, 20).fill(fill).stroke({ width, color: edge });
+    if (glow)
+      this.back.roundRect(-w / 2 - 12, -h / 2 - 12, w + 24, h + 24, 28).fill({ color: 0xffe066, alpha: 0.9 });
+    this.back
+      .roundRect(-w / 2, -h / 2, w, h, 20)
+      .fill(fill)
+      .stroke({ width, color: edge });
     // An empty slot under each badge, so a missing part reads as a gap rather than nothing.
     for (const x of BADGE_X) this.back.circle(x, h * 0.18, 18).stroke({ width: 3, color: 0xd6cbb8 });
   }
@@ -60,7 +101,11 @@ class Singer extends Container {
   readonly hintGlow = new Graphics();
   readonly hat: Container;
   glow = 0;
-  constructor(name: keyof typeof CRITTERS, readonly role: Role, hatId: SongRound['hats'][number]) {
+  constructor(
+    name: keyof typeof CRITTERS,
+    readonly role: Role,
+    hatId: SongRound['hats'][number],
+  ) {
     super();
     this.critter = new Critter(CRITTERS[name]);
     this.critter.scale.set(0.6);
@@ -77,13 +122,31 @@ class Singer extends Container {
   }
 }
 
-const sparkleArt = (): Graphics => new Graphics().poly(starPoints(26, 11)).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
-const undoArt = (): Graphics => new Graphics()
-  .moveTo(-14, -6).lineTo(-26, 6).lineTo(-8, 14).stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' })
-  .moveTo(-24, 6).quadraticCurveTo(12, -26, 24, 6).stroke({ width: 8, color: 0xffffff, cap: 'round' });
-const playArt = (): Graphics => new Graphics().poly([-14, -22, 24, 0, -14, 22]).fill(0xffffff).stroke({ width: 4, color: 0xffffff, join: 'round' });
+const sparkleArt = (): Graphics =>
+  new Graphics()
+    .poly(starPoints(26, 11))
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+const undoArt = (): Graphics =>
+  new Graphics()
+    .moveTo(-14, -6)
+    .lineTo(-26, 6)
+    .lineTo(-8, 14)
+    .stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' })
+    .moveTo(-24, 6)
+    .quadraticCurveTo(12, -26, 24, 6)
+    .stroke({ width: 8, color: 0xffffff, cap: 'round' });
+const playArt = (): Graphics =>
+  new Graphics()
+    .poly([-14, -22, 24, 0, -14, 22])
+    .fill(0xffffff)
+    .stroke({ width: 4, color: 0xffffff, join: 'round' });
 
-const ROLE_LINE: Record<Role, LineId> = { drum: 'hat-band.drum', tune: 'hat-band.tune', bass: 'hat-band.low' };
+const ROLE_LINE: Record<Role, LineId> = {
+  drum: 'hat-band.drum',
+  tune: 'hat-band.tune',
+  bass: 'hat-band.low',
+};
 const CLAUSE_LINE: Record<Clause, LineId> = { first: 'hat-band.clause-first', last: 'hat-band.clause-last' };
 
 /**
@@ -121,9 +184,20 @@ export class SongBand implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.round = makeSongRound(ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xd9c8f2, 0xfff6e0], hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f], horizon: 0.64, clouds: 2, seed: 157 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd9c8f2, 0xfff6e0],
+        hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f],
+        horizon: 0.64,
+        clouds: 2,
+        seed: 157,
+      },
+      ctx.view,
+    );
     this.stage.eventMode = 'none';
-    this.singers = this.round.cast.map((name, i) => new Singer(name, HATS[this.round.hats[i]].role, this.round.hats[i]));
+    this.singers = this.round.cast.map(
+      (name, i) => new Singer(name, HATS[this.round.hats[i]].role, this.round.hats[i]),
+    );
     for (const s of this.singers) ctx.track(s.critter);
     this.spots = this.singers.map((_, i) => {
       const spot = new Container();
@@ -150,12 +224,24 @@ export class SongBand implements Game {
     this.undo = new RoundButton(undoArt(), swatch.teal, 50, () => this.tapUndo());
     this.play = new RoundButton(playArt(), swatch.blue, 60, () => this.tapPlay());
     this.checkBtn = new RoundButton(checkArt(), swatch.green, 60, () => this.tapCheck());
-    ctx.stage.addChild(this.backdrop, this.stage, ...this.brief, ...this.singers, ...this.spots, ...this.parts, this.undo, this.play, this.checkBtn);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.stage,
+      ...this.brief,
+      ...this.singers,
+      ...this.spots,
+      ...this.parts,
+      this.undo,
+      this.play,
+      this.checkBtn,
+    );
     this.resize(ctx.view);
     this.draw();
   }
 
-  start() { void this.begin(); }
+  start() {
+    void this.begin();
+  }
 
   private async begin() {
     await this.ctx.instruct('hat-band.instruct-4');
@@ -165,20 +251,37 @@ export class SongBand implements Game {
 
   private async speak(id: LineId, vars?: LineVars) {
     this.talking++;
-    try { await this.ctx.say(id, vars); } finally { this.talking--; }
+    try {
+      await this.ctx.say(id, vars);
+    } finally {
+      this.talking--;
+    }
   }
 
   resize(v: View) {
     this.backdrop.resize(v);
     const l = (this.layout = songLayout(v));
     const s = l.stage;
-    this.stage.clear()
-      .rect(s.x + 20, s.y + 30, 16, s.h - 50).fill(wood.fill).stroke(line(wood.line, 4))
-      .rect(s.x + s.w - 36, s.y + 30, 16, s.h - 50).fill(wood.fill).stroke(line(wood.line, 4))
-      .roundRect(s.x, s.y, s.w, 34, 14).fill(swatch.purple.fill).stroke(line(swatch.purple.line))
-      .roundRect(s.x + 10, s.y + s.h - 40, s.w - 20, 40, 14).fill(wood.light).stroke(line(wood.line));
-    this.brief.forEach((c, i) => c.position.set(l.brief[i].x + l.brief[i].w / 2, l.brief[i].y + l.brief[i].h / 2));
-    this.parts.forEach((c, i) => c.position.set(l.parts[i].x + l.parts[i].w / 2, l.parts[i].y + l.parts[i].h / 2));
+    this.stage
+      .clear()
+      .rect(s.x + 20, s.y + 30, 16, s.h - 50)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4))
+      .rect(s.x + s.w - 36, s.y + 30, 16, s.h - 50)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4))
+      .roundRect(s.x, s.y, s.w, 34, 14)
+      .fill(swatch.purple.fill)
+      .stroke(line(swatch.purple.line))
+      .roundRect(s.x + 10, s.y + s.h - 40, s.w - 20, 40, 14)
+      .fill(wood.light)
+      .stroke(line(wood.line));
+    this.brief.forEach((c, i) =>
+      c.position.set(l.brief[i].x + l.brief[i].w / 2, l.brief[i].y + l.brief[i].h / 2),
+    );
+    this.parts.forEach((c, i) =>
+      c.position.set(l.parts[i].x + l.parts[i].w / 2, l.parts[i].y + l.parts[i].h / 2),
+    );
     this.singers.forEach((f, i) => f.position.set(l.friends[i].x, l.friends[i].y));
     this.spots.forEach((spot, i) => {
       const r = l.spots[i];
@@ -190,13 +293,19 @@ export class SongBand implements Game {
     this.checkBtn.position.set(l.check.x, l.check.y);
   }
 
-  private get open() { return this.ready && !this.performing && !this.finished; }
-  private get editing() { return this.open && this.arrange.playing !== 'check'; }
+  private get open() {
+    return this.ready && !this.performing && !this.finished;
+  }
+  private get editing() {
+    return this.open && this.arrange.playing !== 'check';
+  }
 
   tapFriend(i: number) {
     if (!this.editing) return;
     const s = this.singers[i];
-    void this.ctx.tw.to(s.critter, { y: -14 }, { duration: 0.08 }).then(() => this.ctx.tw.to(s.critter, { y: 0 }, { duration: 0.16 }));
+    void this.ctx.tw
+      .to(s.critter, { y: -14 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(s.critter, { y: 0 }, { duration: 0.16 }));
     this.arrange = toggleRole(this.arrange, s.role);
     this.changed();
     if (!this.named.has(s.role)) {
@@ -300,7 +409,9 @@ export class SongBand implements Game {
   }
 
   private bounce(c: Container) {
-    void this.ctx.tw.to(c.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 }).then(() => this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.2 }));
+    void this.ctx.tw
+      .to(c.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 })
+      .then(() => this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.2 }));
   }
 
   update(dt: number) {
@@ -371,10 +482,19 @@ export class SongBand implements Game {
     this.ctx.pet.cheer();
     for (const s of this.singers) {
       s.critter.cheer();
-      void this.ctx.tw.to(s.critter, { rotation: 0.25 }, { duration: 0.3 }).then(() => this.ctx.tw.to(s.critter, { rotation: 0 }, { duration: 0.3 }));
+      void this.ctx.tw
+        .to(s.critter, { rotation: 0.25 }, { duration: 0.3 })
+        .then(() => this.ctx.tw.to(s.critter, { rotation: 0 }, { duration: 0.3 }));
     }
     const st = this.layout.stage;
-    this.ctx.particles.burst(st.x + st.w / 2, st.y + 60, { kind: 'confetti', colors: [swatch.red.fill, swatch.yellow.fill, swatch.green.fill, swatch.blue.fill], count: 40, speed: [200, 520], gravity: 600, life: [1, 1.6] });
+    this.ctx.particles.burst(st.x + st.w / 2, st.y + 60, {
+      kind: 'confetti',
+      colors: [swatch.red.fill, swatch.yellow.fill, swatch.green.fill, swatch.blue.fill],
+      count: 40,
+      speed: [200, 520],
+      gravity: 600,
+      life: [1, 1.6],
+    });
     await this.speak('hat-band.bow');
     await this.ctx.tw.wait(0.3);
     this.ctx.finish({ misses: this.misses, hints: this.hints });

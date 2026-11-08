@@ -6,10 +6,29 @@ import { locationCard } from '../../art/locations';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { ageOf, allGames, clampPage, EXPLORE_ENTRIES, exploreMemory, favoriteGames, hasOthers, pageCount, pageOf, type ExploreEntry } from '../../content/explore';
+import {
+  ageOf,
+  allGames,
+  clampPage,
+  EXPLORE_ENTRIES,
+  exploreMemory,
+  favoriteGames,
+  hasOthers,
+  pageCount,
+  pageOf,
+  type ExploreEntry,
+} from '../../content/explore';
 import { landFor, LANDS, type LandId } from '../../content/lands';
 import type { LineId } from '../../content/voice-script';
-import { CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
+import {
+  CORNER_RADIUS,
+  EXPLORE_CARD,
+  EXPLORE_MAX,
+  EXPLORE_POSTCARD,
+  exploreGridLayout,
+  exploreLayout,
+  PAGE_ARROW_RADIUS,
+} from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
@@ -36,8 +55,12 @@ export function placeArt(id: LandId): Container {
   const art = new Container();
   const pic = new Sprite(tex);
   pic.anchor.set(0.5);
-  const rim = new Graphics().roundRect(-tex.width / 2 - 12, -tex.height / 2 - 12, tex.width + 24, tex.height + 24, 36).fill(swatch.green.line);
-  const mask = new Graphics().roundRect(-tex.width / 2, -tex.height / 2, tex.width, tex.height, 28).fill(0xffffff);
+  const rim = new Graphics()
+    .roundRect(-tex.width / 2 - 12, -tex.height / 2 - 12, tex.width + 24, tex.height + 24, 36)
+    .fill(swatch.green.line);
+  const mask = new Graphics()
+    .roundRect(-tex.width / 2, -tex.height / 2, tex.width, tex.height, 28)
+    .fill(0xffffff);
   pic.mask = mask;
   art.addChild(rim, pic, mask);
   return art;
@@ -65,8 +88,12 @@ export type ExploreCard =
 export class ExploreScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly ids = exploreIds();
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => (this.entry ? this.app.go.explore() : this.app.go.hub()), 'nav.back')).means('back');
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), 'nav.home')).means('home');
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => (this.entry ? this.app.go.explore() : this.app.go.hub()), 'nav.back'),
+  ).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.hub(), 'nav.home'),
+  ).means('home');
   readonly prev = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
   /** The cards on screen, in reading order. */
@@ -86,12 +113,32 @@ export class ExploreScene extends Scene {
   private icons: HubIcon[] = [];
   private leaving = false;
 
-  constructor(app: App, readonly entry: ExploreEntry | null = null, page = 0, readonly others = false) {
+  constructor(
+    app: App,
+    readonly entry: ExploreEntry | null = null,
+    page = 0,
+    readonly others = false,
+  ) {
     super(app);
     const band = store.data.profile.band;
-    this.list = entry === 'favorites' ? favoriteGames(store.favorites, GAMES) : entry === 'all' ? allGames(band, GAMES, LANDS, others) : [];
+    this.list =
+      entry === 'favorites'
+        ? favoriteGames(store.favorites, GAMES)
+        : entry === 'all'
+          ? allGames(band, GAMES, LANDS, others)
+          : [];
     this.signpost = entry === 'all' && hasOthers(band, GAMES, LANDS);
-    this.mix = entry === 'all' && !others ? new MixHost(app, band, this.ui, () => this.view, this.tw, this.list.map((g) => g.id)) : null;
+    this.mix =
+      entry === 'all' && !others
+        ? new MixHost(
+            app,
+            band,
+            this.ui,
+            () => this.view,
+            this.tw,
+            this.list.map((g) => g.id),
+          )
+        : null;
     this.lead = !!this.mix?.mods;
     this.page = clampPage(page, this.list.length, this.signpost, this.lead);
     if (entry) exploreMemory.pages[entry] = this.page;
@@ -129,28 +176,72 @@ export class ExploreScene extends Scene {
     const visited = store.data.explore.last;
     if (!e && visited && this.ids.includes(visited)) {
       const name = landFor(visited).name;
-      const node = this.card(placeArt(visited), name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(visited)), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
+      const node = this.card(
+        placeArt(visited),
+        name,
+        (n) =>
+          this.leave(
+            () => this.app.growFrom(n, () => this.app.go.land(visited)),
+            voice.say('result.back', { place: name }),
+          ),
+        EXPLORE_POSTCARD,
+      );
       this.last = { id: visited, node };
       this.ui.addChild(node);
     }
-    if (!e) this.cards = EXPLORE_ENTRIES.map((entry) => ({ kind: 'entry', entry, node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)) }));
-    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(placeArt(id), landFor(id).name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(id)))) }));
-    else if (e === 'family') this.cards = [{ kind: 'family', node: this.card(entryArt('family'), ENTRY_NAMES.family, () => this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }))) }];
-    else if (e === 'favorites' && !this.list.length) this.cards = [{ kind: 'entry', entry: 'all', node: this.card(entryArt('all'), ENTRY_NAMES.all, () => this.open('all')) }];
+    if (!e)
+      this.cards = EXPLORE_ENTRIES.map((entry) => ({
+        kind: 'entry',
+        entry,
+        node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)),
+      }));
+    else if (e === 'places')
+      this.cards = this.ids.map((id) => ({
+        kind: 'place',
+        id,
+        node: this.card(placeArt(id), landFor(id).name, (n) =>
+          this.leave(() => this.app.growFrom(n, () => this.app.go.land(id))),
+        ),
+      }));
+    else if (e === 'family')
+      this.cards = [
+        {
+          kind: 'family',
+          node: this.card(entryArt('family'), ENTRY_NAMES.family, () =>
+            this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 })),
+          ),
+        },
+      ];
+    else if (e === 'favorites' && !this.list.length)
+      this.cards = [
+        {
+          kind: 'entry',
+          entry: 'all',
+          node: this.card(entryArt('all'), ENTRY_NAMES.all, () => this.open('all')),
+        },
+      ];
     else {
       this.cards = pageOf(this.list, this.page, this.signpost, this.lead).map((c) => {
         if ('mix' in c) return { kind: 'mix', node: this.mixCard() };
         if ('signpost' in c) {
           const sign = new Signpost();
           sign.point(this.others);
-          return { kind: 'signpost', node: this.card(sign, this.others ? 'Your games' : 'Other ages', () => this.turnSign()) };
+          return {
+            kind: 'signpost',
+            node: this.card(sign, this.others ? 'Your games' : 'Other ages', () => this.turnSign()),
+          };
         }
         const icon = this.track(c.game.hubIcon());
         this.icons.push(icon);
-        return { kind: 'game', mod: c.game, node: this.card(icon, c.game.name, (n) => this.launch(c.game, n)) };
+        return {
+          kind: 'game',
+          mod: c.game,
+          node: this.card(icon, c.game.name, (n) => this.launch(c.game, n)),
+        };
       });
     }
-    const pages = e === 'favorites' || e === 'all' ? pageCount(this.list.length, this.signpost, this.lead) : 1;
+    const pages =
+      e === 'favorites' || e === 'all' ? pageCount(this.list.length, this.signpost, this.lead) : 1;
     this.prev.visible = this.page > 0;
     this.next.visible = this.page < pages - 1;
     this.ui.addChild(...this.cards.map((c) => c.node));
@@ -193,51 +284,82 @@ export class ExploreScene extends Scene {
    * A 150-unit cream card (or the larger postcard, `size`) in the shared finish (RW14 slice 7) with its picture and its
    * name on a pill under it; it squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
    */
-  private card(art: Container, name: string, act: ((node: Container) => void) | null, size = { w: EXPLORE_CARD, h: EXPLORE_CARD }): Container {
+  private card(
+    art: Container,
+    name: string,
+    act: ((node: Container) => void) | null,
+    size = { w: EXPLORE_CARD, h: EXPLORE_CARD },
+  ): Container {
     const node = new Container();
     const { w, h } = size;
     fitArt(art, Math.min(w, h) - 30);
     const text = label(name, 22, ink);
     text.y = h / 2 + 26;
     // The name sits on its own cream pill so it reads over the busy backdrop.
-    const pill = new Graphics().roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17).fill(cream);
+    const pill = new Graphics()
+      .roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17)
+      .fill(cream);
     node.addChild(finish({ w, h, corner: 28 }, swatch.green, cream), art, pill, text);
     node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
-    if (act) onTap(node, () => {
-      if (this.leaving || this.covered) return;
-      sfx.tick();
-      squash(node);
-      spring(node, 110);
-      act(node);
-    }, { cooldown: 400 });
+    if (act)
+      onTap(
+        node,
+        () => {
+          if (this.leaving || this.covered) return;
+          sfx.tick();
+          squash(node);
+          spring(node, 110);
+          act(node);
+        },
+        { cooldown: 400 },
+      );
     return node;
   }
 
   /** An entry says its name, then opens where she last was in it this visit. */
   private open(entry: ExploreEntry) {
     const page = exploreMemory.pages[entry] ?? 0;
-    this.leave(() => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined), entry === 'arcade' ? 'arcade.open' : `explore.${entry}`);
+    this.leave(
+      () => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined),
+      entry === 'arcade' ? 'arcade.open' : `explore.${entry}`,
+    );
   }
 
   /** A game says its title (or, outside her band, who it is for), then plays at the band nearest hers it has. */
   private launch(mod: GameModule, node: Container) {
     const age = ageOf(mod, store.data.profile.band);
-    const say = age === 'hers' ? voice.say(mod.titleLine) : voice.say('explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' });
+    const say =
+      age === 'hers'
+        ? voice.say(mod.titleLine)
+        : voice.say('explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' });
     const entry = this.entry as 'favorites' | 'all';
-    const origin = { explore: entry, page: this.page, ...(entry === 'all' && this.others ? { others: true } : {}) };
-    this.leave(() => this.app.growFrom(node, () => this.app.go.game(mod.id, undefined, undefined, false, origin)), say);
+    const origin = {
+      explore: entry,
+      page: this.page,
+      ...(entry === 'all' && this.others ? { others: true } : {}),
+    };
+    this.leave(
+      () => this.app.growFrom(node, () => this.app.go.game(mod.id, undefined, undefined, false, origin)),
+      say,
+    );
   }
 
   /** Back from a location or a round shrinks it into the card that opened it, when that card is on this page (RW14 slice 9). */
   override returnBox(key: string): Box | null {
-    const card = this.cards.find((c) => (c.kind === 'place' && key === `land:${c.id}`) || (c.kind === 'game' && key === `game:${c.mod.id}`));
+    const card = this.cards.find(
+      (c) =>
+        (c.kind === 'place' && key === `land:${c.id}`) || (c.kind === 'game' && key === `game:${c.mod.id}`),
+    );
     return card ? this.app.boxOf(card.node) : null;
   }
 
   /** The signpost turns All games between hers and the other ages, from the first page. */
   private turnSign() {
     sfx.whoosh();
-    this.leave(() => this.app.go.explore('all', 0, !this.others), this.others ? 'explore.mine' : 'explore.others');
+    this.leave(
+      () => this.app.go.explore('all', 0, !this.others),
+      this.others ? 'explore.mine' : 'explore.others',
+    );
   }
 
   /** The arrows: a page back or on, here, saying how many pictures the new page has. */
@@ -306,7 +428,15 @@ export class ExploreScene extends Scene {
     if (link) link.hidden = true;
     music.play(STYLES.hub);
     const e = this.entry;
-    const line: LineId | null = !e ? 'explore.pick' : e === 'places' ? 'explore.where' : e === 'family' ? 'explore.family-pads' : e === 'favorites' && !this.list.length ? 'explore.no-favorites' : null;
+    const line: LineId | null = !e
+      ? 'explore.pick'
+      : e === 'places'
+        ? 'explore.where'
+        : e === 'family'
+          ? 'explore.family-pads'
+          : e === 'favorites' && !this.list.length
+            ? 'explore.no-favorites'
+            : null;
     if (line && !this.covered) void voice.say(line);
   }
 }

@@ -12,7 +12,23 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePonds, isLanternCourse } from './course';
-import { LEVELS, allLit, footprint, hintFor, isLantern, lanternCount, litCount, makePonds, namedHint, planFor, press, shortWay, stuckAt, type LanternPlan, type Pond } from './logic';
+import {
+  LEVELS,
+  allLit,
+  footprint,
+  hintFor,
+  isLantern,
+  lanternCount,
+  litCount,
+  makePonds,
+  namedHint,
+  planFor,
+  press,
+  shortWay,
+  stuckAt,
+  type LanternPlan,
+  type Pond,
+} from './logic';
 
 /** The room beside the pond the two counts need; under it they move above the pond. */
 const SIDE_ROOM = 240;
@@ -24,14 +40,25 @@ const RIPPLE = 0x3a4a82;
 /** One paper lantern, lit or dark, with its string above and its tassel below; it fills about `size` units around (0, 0). */
 function lanternArt(lit: boolean, size: number): Container {
   const c = new Container();
-  const g = new Graphics(), w = size * 0.6, h = size * 0.66;
-  const body = lit ? swatch.orange.fill : 0x56648c, line = lit ? swatch.orange.line : 0x39456b, cap = lit ? 0xb4561c : 0x2c3556;
-  g.moveTo(0, -h / 2 - size * 0.18).lineTo(0, -h / 2).stroke({ width: 3, color: line });
-  g.ellipse(0, 0, w / 2, h / 2).fill(body).stroke({ width: 4, color: line });
-  for (const k of [0.62, 0.3]) g.ellipse(0, 0, (w / 2) * k, h / 2).stroke({ width: 2, color: line, alpha: 0.55 });
+  const g = new Graphics(),
+    w = size * 0.6,
+    h = size * 0.66;
+  const body = lit ? swatch.orange.fill : 0x56648c,
+    line = lit ? swatch.orange.line : 0x39456b,
+    cap = lit ? 0xb4561c : 0x2c3556;
+  g.moveTo(0, -h / 2 - size * 0.18)
+    .lineTo(0, -h / 2)
+    .stroke({ width: 3, color: line });
+  g.ellipse(0, 0, w / 2, h / 2)
+    .fill(body)
+    .stroke({ width: 4, color: line });
+  for (const k of [0.62, 0.3])
+    g.ellipse(0, 0, (w / 2) * k, h / 2).stroke({ width: 2, color: line, alpha: 0.55 });
   g.roundRect(-w * 0.3, -h / 2 - 4, w * 0.6, 12, 5).fill(cap);
   g.roundRect(-w * 0.3, h / 2 - 8, w * 0.6, 12, 5).fill(cap);
-  g.moveTo(0, h / 2 + 4).lineTo(0, h / 2 + size * 0.15).stroke({ width: 3, color: line });
+  g.moveTo(0, h / 2 + 4)
+    .lineTo(0, h / 2 + size * 0.15)
+    .stroke({ width: 3, color: line });
   g.circle(0, h / 2 + size * 0.17, 5).fill(lit ? swatch.yellow.fill : 0x6d7bab);
   if (lit) {
     g.ellipse(0, 0, w * 0.3, h * 0.34).fill({ color: 0xfff6c8, alpha: 0.95 });
@@ -44,12 +71,20 @@ function lanternArt(lit: boolean, size: number): Container {
 /** A lily pad floating where no lantern hangs: a green leaf with a notch, about `size` units across. */
 function padArt(size: number): Container {
   const c = new Container();
-  const g = new Graphics(), r = size * 0.38;
+  const g = new Graphics(),
+    r = size * 0.38;
   g.ellipse(0, 4, r + 2, r * 0.82 + 2).fill(0x1d5a3a);
   g.ellipse(0, 2, r, r * 0.82).fill(swatch.green.fill);
   // The notch: a wedge of water cut into the leaf.
-  g.moveTo(0, 2).lineTo(r * 0.95, -r * 0.35).lineTo(r * 0.95, r * 0.2).closePath().fill(WATER);
-  for (const a of [-2.4, -1.6, -0.8, 1.2, 2.2]) g.moveTo(0, 2).lineTo(Math.cos(a) * r * 0.7, 2 + Math.sin(a) * r * 0.58).stroke({ width: 2, color: swatch.green.line, alpha: 0.5 });
+  g.moveTo(0, 2)
+    .lineTo(r * 0.95, -r * 0.35)
+    .lineTo(r * 0.95, r * 0.2)
+    .closePath()
+    .fill(WATER);
+  for (const a of [-2.4, -1.6, -0.8, 1.2, 2.2])
+    g.moveTo(0, 2)
+      .lineTo(Math.cos(a) * r * 0.7, 2 + Math.sin(a) * r * 0.58)
+      .stroke({ width: 2, color: swatch.green.line, alpha: 0.5 });
   c.addChild(g);
   return c;
 }
@@ -139,7 +174,8 @@ class LanternLights implements Game {
       this.course = null;
     }
     this.touch = !ctx.couch;
-    for (const part of [this.board, this.water, this.halos, this.lanterns, this.glow, this.score, this.sub]) part.eventMode = 'none';
+    for (const part of [this.board, this.water, this.halos, this.lanterns, this.glow, this.score, this.sub])
+      part.eventMode = 'none';
     this.board.addChild(this.water, this.halos, this.lanterns, this.glow);
     ctx.stage.addChild(this.board, this.score, this.sub);
     // A layer over the pond works out which lantern a finger touched, so a press never depends on a drawing's own hit area.
@@ -158,22 +194,36 @@ class LanternLights implements Game {
     onTap(this.shortButton, () => void this.showShortWay(), { cooldown: 300 });
     this.nextButton.addChild(tile(220, 100, 'green'), this.nextLabel);
     onTap(this.nextButton, () => this.carryOn(), { cooldown: 300 });
-    ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton, this.shortButton, this.nextButton);
+    ctx.stage.addChild(
+      this.tapLayer,
+      this.undoButton,
+      this.hintButton,
+      this.againButton,
+      this.shortButton,
+      this.nextButton,
+    );
     this.showTouchParts(this.touch);
   }
 
-  get n() { return this.pond.size; }
+  get n() {
+    return this.pond.size;
+  }
   /** The pond's lily pads (`false` on a pad), or undefined when every cell holds a lantern. */
-  get mask() { return this.pond.mask; }
+  get mask() {
+    return this.pond.mask;
+  }
 
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
 
   /** A finger on the pond: the lantern under it takes the press. */
   private tapPond(gx: number, gy: number) {
     if (this.busy || this.finished || !this.pond) return;
     const p = this.board.toLocal({ x: gx, y: gy });
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
-    const c = Math.floor(p.x / this.cell), r = Math.floor(p.y / this.cell);
+    const c = Math.floor(p.x / this.cell),
+      r = Math.floor(p.y / this.cell);
     if (c < 0 || r < 0 || c >= this.n || r >= this.n) return;
     const at = r * this.n + c;
     // A lily pad has no lantern: it bobs with a soft tick, nothing counts, and the cursor stays on the last lantern.
@@ -185,7 +235,9 @@ class LanternLights implements Game {
   private bobPad(i: number) {
     sfx.tick();
     const node = this.nodes[i];
-    void this.ctx.tw.to(node.scale, { x: 1.12, y: 0.9 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(node.scale, { x: 1.12, y: 0.9 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outBack }));
   }
 
   /* -------------------------------------------------------------------------------------------- */
@@ -216,23 +268,38 @@ class LanternLights implements Game {
     this.tapLayer.position.copyFrom(this.board.position);
     // The buttons sit in a row under the pond, clear of the pet's corner.
     const y = this.board.y + bw + 78;
-    [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.set(v.w / 2 + (i - 1) * 180, y));
+    [this.undoButton, this.hintButton, this.againButton].forEach((b, i) =>
+      b.position.set(v.w / 2 + (i - 1) * 180, y),
+    );
     this.shortButton.position.set(v.w / 2 - 120, y);
     this.nextButton.position.set(v.w / 2 + 170, y);
     this.layout();
   }
 
   private center(i: number) {
-    return { x: (i % this.n) * this.cell + this.cell / 2, y: Math.floor(i / this.n) * this.cell + this.cell / 2 };
+    return {
+      x: (i % this.n) * this.cell + this.cell / 2,
+      y: Math.floor(i / this.n) * this.cell + this.cell / 2,
+    };
   }
 
   /** The pond's water, and every lantern where it hangs. */
   private layout() {
-    const n = this.n, cell = this.cell, w = n * cell;
-    this.water.clear().roundRect(-18, -18, w + 36, w + 36, 30).fill(WATER).stroke({ width: 7, color: WATER_LINE });
+    const n = this.n,
+      cell = this.cell,
+      w = n * cell;
+    this.water
+      .clear()
+      .roundRect(-18, -18, w + 36, w + 36, 30)
+      .fill(WATER)
+      .stroke({ width: 7, color: WATER_LINE });
     for (let k = 0; k < n * 2; k++) {
-      const x = ((k * 97) % w), y = ((k * 53 + 17) % w);
-      this.water.moveTo(x, y).lineTo(x + 26, y).stroke({ width: 3, color: RIPPLE, cap: 'round' });
+      const x = (k * 97) % w,
+        y = (k * 53 + 17) % w;
+      this.water
+        .moveTo(x, y)
+        .lineTo(x + 26, y)
+        .stroke({ width: 3, color: RIPPLE, cap: 'round' });
     }
     this.nodes.forEach((node, i) => {
       const at = this.center(i);
@@ -245,7 +312,8 @@ class LanternLights implements Game {
 
   /** A warm glow under every lit lantern, which spills a little across its neighbours. */
   private drawHalos() {
-    const g = this.halos.clear(), cell = this.cell;
+    const g = this.halos.clear(),
+      cell = this.cell;
     this.lit.forEach((on, i) => {
       if (!on || !isLantern(i, this.mask)) return;
       const at = this.center(i);
@@ -261,7 +329,9 @@ class LanternLights implements Game {
 
   /** Flip a lantern's picture to match the board, with a quick turn. A later flip takes over from an earlier one. */
   private flip(i: number) {
-    const node = this.nodes[i], to = this.lit[i], token = ++this.tokens[i];
+    const node = this.nodes[i],
+      to = this.lit[i],
+      token = ++this.tokens[i];
     void this.ctx.tw.to(node.scale, { x: 0.12 }, { duration: 0.07 }).then(() => {
       if (this.tokens[i] !== token) return;
       this.setArt(i, to);
@@ -273,10 +343,14 @@ class LanternLights implements Game {
   update(dt: number) {
     this.clock += dt;
     if (!this.pond) return;
-    const g = this.glow.clear(), cell = this.cell;
+    const g = this.glow.clear(),
+      cell = this.cell;
     if (this.ring !== null) {
       const m = this.center(this.ring);
-      g.roundRect(m.x - cell / 2 + 2, m.y - cell / 2 + 2, cell - 4, cell - 4, 18).stroke({ width: 7, color: 0xffffff });
+      g.roundRect(m.x - cell / 2 + 2, m.y - cell / 2 + 2, cell - 4, cell - 4, 18).stroke({
+        width: 7,
+        color: 0xffffff,
+      });
     }
     if (this.finished || this.busy) return;
     // A finger needs no cursor: the lantern pressed turns at once, and a hint rings the lantern to try.
@@ -285,16 +359,26 @@ class LanternLights implements Game {
     // The cursor shows what a press would flip: the lantern and the four beside it.
     for (const c of footprint(this.n, this.cursor, this.mask)) {
       const m = this.center(c);
-      g.roundRect(m.x - cell / 2 + 5, m.y - cell / 2 + 5, cell - 10, cell - 10, 14).fill({ color: 0xffffff, alpha: c === this.cursor ? 0.2 : 0.1 });
+      g.roundRect(m.x - cell / 2 + 5, m.y - cell / 2 + 5, cell - 10, cell - 10, 14).fill({
+        color: 0xffffff,
+        alpha: c === this.cursor ? 0.2 : 0.1,
+      });
     }
-    g.roundRect(at.x - cell / 2 + 3, at.y - cell / 2 + 3, cell - 6, cell - 6, 16).stroke({ width: 6, color: 0xffffff });
+    g.roundRect(at.x - cell / 2 + 3, at.y - cell / 2 + 3, cell - 6, cell - 6, 16).stroke({
+      width: 6,
+      color: 0xffffff,
+    });
     this.drawHint(g);
   }
 
   private drawHint(g: Graphics) {
     if (this.hinted === null) return;
-    const m = this.center(this.hinted), cell = this.cell;
-    g.roundRect(m.x - cell / 2 - 2, m.y - cell / 2 - 2, cell + 4, cell + 4, 18).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+    const m = this.center(this.hinted),
+      cell = this.cell;
+    g.roundRect(m.x - cell / 2 - 2, m.y - cell / 2 - 2, cell + 4, cell + 4, 18).stroke({
+      width: 6 + 2 * Math.sin(this.clock * 6),
+      color: swatch.yellow.fill,
+    });
   }
 
   destroy() {}
@@ -316,7 +400,10 @@ class LanternLights implements Game {
     this.nudged = false;
     // The middle, or the lantern nearest it when a pad floats there.
     const mid = Math.floor((this.n * this.n) / 2);
-    this.cursor = this.lit.map((_, i) => i).filter((i) => isLantern(i, this.mask)).sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0];
+    this.cursor = this.lit
+      .map((_, i) => i)
+      .filter((i) => isLantern(i, this.mask))
+      .sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0];
     this.nodes.forEach((n) => n.destroy({ children: true }));
     this.lanterns.removeChildren();
     this.nodes = [];
@@ -326,7 +413,9 @@ class LanternLights implements Game {
     for (let i = 0; i < this.lit.length; i++) {
       // A pad is stored lit, so its leaf is the "on" picture and it never turns.
       const pad = !isLantern(i, this.mask);
-      const node = new Container(), on = pad ? padArt(100) : lanternArt(true, 100), off = pad ? new Container() : lanternArt(false, 100);
+      const node = new Container(),
+        on = pad ? padArt(100) : lanternArt(true, 100),
+        off = pad ? new Container() : lanternArt(false, 100);
       node.addChild(off, on);
       node.eventMode = 'none';
       this.lanterns.addChild(node);
@@ -343,7 +432,9 @@ class LanternLights implements Game {
     this.report();
     if (this.told) return;
     this.told = true;
-    await this.ctx.instruct(!this.touch ? 'lantern.go' : this.ctx.band === 'school' ? 'lantern.go-school' : 'lantern.go-touch');
+    await this.ctx.instruct(
+      !this.touch ? 'lantern.go' : this.ctx.band === 'school' ? 'lantern.go-school' : 'lantern.go-touch',
+    );
     if (this.mask && !this.toldPads) {
       this.toldPads = true;
       await this.ctx.say('lantern.pads');
@@ -352,7 +443,8 @@ class LanternLights implements Game {
 
   private tally() {
     if (!this.pond) return;
-    const presses = `${this.presses} ${this.presses === 1 ? 'press' : 'presses'}`, lit = `${litCount(this.lit, this.mask)} of ${lanternCount(this.n, this.mask)} lit`;
+    const presses = `${this.presses} ${this.presses === 1 ? 'press' : 'presses'}`,
+      lit = `${litCount(this.lit, this.mask)} of ${lanternCount(this.n, this.mask)} lit`;
     this.score.text = this.stacked ? `${presses} · ${lit}` : presses;
     this.sub.text = lit;
   }
@@ -374,8 +466,12 @@ class LanternLights implements Game {
 
   /** The score for the pond just lit, over the board for a moment. */
   private async pondScore() {
-    const best = this.pond.par, total = this.ponds.length;
-    const text = this.presses === best ? `Pond ${this.index + 1} of ${total}: ${this.presses} presses, the fewest possible!` : `Pond ${this.index + 1} of ${total}: ${this.presses} presses (fewest ${best})`;
+    const best = this.pond.par,
+      total = this.ponds.length;
+    const text =
+      this.presses === best
+        ? `Pond ${this.index + 1} of ${total}: ${this.presses} presses, the fewest possible!`
+        : `Pond ${this.index + 1} of ${total}: ${this.presses} presses (fewest ${best})`;
     const note = label(text, 34, ink);
     note.position.set(this.view.w / 2, Math.max(48, this.board.y - 56));
     note.alpha = 0;
@@ -396,8 +492,17 @@ class LanternLights implements Game {
     }
     await this.rowBells();
     const n = this.n;
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 30, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
+    const mid = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }),
+    );
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.orange.light],
+      count: 30,
+      speed: [160, 420],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     this.ctx.pet.cheer();
     sfx.sparkle();
     // A course moves straight on after a short score; ordinary play praises.
@@ -416,7 +521,9 @@ class LanternLights implements Game {
       for (let c = 0; c < n; c++) {
         if (!isLantern(r * n + c, this.mask)) continue;
         const node = this.nodes[r * n + c];
-        void this.ctx.tw.to(node.scale, { y: 1.28 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.scale, { y: 1 }, { duration: 0.16 }));
+        void this.ctx.tw
+          .to(node.scale, { y: 1.28 }, { duration: 0.12 })
+          .then(() => this.ctx.tw.to(node.scale, { y: 1 }, { duration: 0.16 }));
       }
       sfx.bell(3 + (r % 7), 0.25);
       await this.ctx.tw.wait(0.11);
@@ -461,7 +568,9 @@ class LanternLights implements Game {
     this.showTouchParts(this.touch);
     const was = this.lit;
     this.lit = this.pond.board.slice();
-    this.lit.forEach((on, i) => { if (on !== was[i]) this.flip(i); });
+    this.lit.forEach((on, i) => {
+      if (on !== was[i]) this.flip(i);
+    });
     this.tally();
     await this.ctx.tw.wait(0.6);
     for (const cell of way) {
@@ -500,8 +609,10 @@ class LanternLights implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   private showTouchParts(on: boolean) {
-    for (const part of [this.tapLayer, this.undoButton, this.hintButton, this.againButton]) part.visible = on && !this.waiting;
-    for (const part of [this.shortButton, this.nextButton]) part.visible = on && this.waiting && !this.replaying;
+    for (const part of [this.tapLayer, this.undoButton, this.hintButton, this.againButton])
+      part.visible = on && !this.waiting;
+    for (const part of [this.shortButton, this.nextButton])
+      part.visible = on && this.waiting && !this.replaying;
   }
 
   /** The first key or pad press on the island: the pond's tap layer and buttons go and the cursor shows. Couch play is already here. */
@@ -528,8 +639,11 @@ class LanternLights implements Game {
   }
 
   private move(dir: number) {
-    const n = this.n, r = Math.floor(this.cursor / n), c = this.cursor % n;
-    const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])), nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
+    const n = this.n,
+      r = Math.floor(this.cursor / n),
+      c = this.cursor % n;
+    const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])),
+      nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
     const to = nr * n + nc;
     if (to === this.cursor) return;
     this.cursor = to;
@@ -594,7 +708,9 @@ class LanternLights implements Game {
     this.lit = this.pond.board.slice();
     this.history = [];
     this.hinted = null;
-    this.lit.forEach((_, i) => { if (isLantern(i, this.mask)) this.flip(i); });
+    this.lit.forEach((_, i) => {
+      if (isLantern(i, this.mask)) this.flip(i);
+    });
     this.tally();
   }
 
@@ -622,8 +738,16 @@ class LanternLights implements Game {
     if (next === null) return out;
     const p = out.players[0];
     p.active = true;
-    if (next === this.cursor) { p.action = true; this.botWait = 0.45; return out; }
-    const n = this.n, fr = Math.floor(this.cursor / n), fc = this.cursor % n, tr = Math.floor(next / n), tc = next % n;
+    if (next === this.cursor) {
+      p.action = true;
+      this.botWait = 0.45;
+      return out;
+    }
+    const n = this.n,
+      fr = Math.floor(this.cursor / n),
+      fc = this.cursor % n,
+      tr = Math.floor(next / n),
+      tc = next % n;
     p.direction = fc !== tc ? (tc > fc ? 0 : 2) : tr > fr ? 1 : 3;
     this.botWait = 0.16;
     return out;
@@ -637,8 +761,14 @@ class LanternLights implements Game {
 class LanternIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics().roundRect(-130, -190, 260, 170, 26).fill(WATER).stroke({ width: 6, color: WATER_LINE }));
-    [[-80, true], [0, false], [80, true]].forEach(([x, on], k) => {
+    c.addChild(
+      new Graphics().roundRect(-130, -190, 260, 170, 26).fill(WATER).stroke({ width: 6, color: WATER_LINE }),
+    );
+    [
+      [-80, true],
+      [0, false],
+      [80, true],
+    ].forEach(([x, on], k) => {
       const l = lanternArt(on as boolean, 96);
       l.position.set(x as number, -108 + (k === 1 ? 6 : 0));
       c.addChild(l);
@@ -670,7 +800,8 @@ export const lanternLights: GameModule = {
   inputs: ['touch', 'controller'],
   touchDemo: true,
   coplayHint: 'Tap a lantern to flip it and the ones beside it. Talk about which press would light the most.',
-  offScreen: 'Lay out coins or buttons in a grid, all heads up, and flip a coin with its four neighbors to turn them all over.',
+  offScreen:
+    'Lay out coins or buttons in a grid, all heads up, and flip a coin with its four neighbors to turn them all over.',
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

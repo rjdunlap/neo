@@ -8,8 +8,23 @@ import { isParentPanelOpen } from '../../parent/panel';
 import { FONT, label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
 import {
-  activeWord, allFilled, backspace, check, clueName, cursorFor, grownHelp, grownSolved, makeGrown, numbers, readyToCheck, stillCircled, tapSquare, typeLetter,
-  wrongKeys, type Cursor, type GrownPuzzle,
+  activeWord,
+  allFilled,
+  backspace,
+  check,
+  clueName,
+  cursorFor,
+  grownHelp,
+  grownSolved,
+  makeGrown,
+  numbers,
+  readyToCheck,
+  stillCircled,
+  tapSquare,
+  typeLetter,
+  wrongKeys,
+  type Cursor,
+  type GrownPuzzle,
 } from './grown';
 import { lettersOf, planFor, squaresOf, type Plan } from './logic';
 
@@ -62,14 +77,34 @@ export class GrownCrossword implements Game {
     this.puzzle = makeGrown(this.plan, ctx.rng);
     this.letters = lettersOf(this.puzzle.words);
     this.cursor = cursorFor(this.puzzle, this.fills, 0);
-    this.backdrop = new Backdrop({ sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x8fcf73], horizon: 0.7, clouds: 2, seed: 211 }, ctx.view);
+    this.backdrop = new Backdrop(
+      { sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x8fcf73], horizon: 0.7, clouds: 2, seed: 211 },
+      ctx.view,
+    );
     this.title = label(this.puzzle.title, 30, ink);
-    this.clueText = new Text({ text: '', style: { fontFamily: FONT, fontSize: 26, fill: ink, fontWeight: '500', wordWrap: true, wordWrapWidth: 600, lineHeight: 30 } });
+    this.clueText = new Text({
+      text: '',
+      style: {
+        fontFamily: FONT,
+        fontSize: 26,
+        fill: ink,
+        fontWeight: '500',
+        wordWrap: true,
+        wordWrapWidth: 600,
+        lineHeight: 30,
+      },
+    });
     this.clueText.anchor.set(0, 0.5);
     this.clueText.eventMode = 'none';
-    const sp = new Graphics().roundRect(-32, -32, 64, 64, 16).fill(swatch.green.light).stroke({ width: 4, color: swatch.green.line })
-      .poly([-18, -7, -9, -7, 2, -17, 2, 17, -9, 7, -18, 7]).fill(ink)
-      .moveTo(8, -11).quadraticCurveTo(19, 0, 8, 11).stroke({ width: 4, color: ink, cap: 'round' });
+    const sp = new Graphics()
+      .roundRect(-32, -32, 64, 64, 16)
+      .fill(swatch.green.light)
+      .stroke({ width: 4, color: swatch.green.line })
+      .poly([-18, -7, -9, -7, 2, -17, 2, 17, -9, 7, -18, 7])
+      .fill(ink)
+      .moveTo(8, -11)
+      .quadraticCurveTo(19, 0, 8, 11)
+      .stroke({ width: 4, color: ink, cap: 'round' });
     this.speaker.addChild(sp);
     this.speaker.hitArea = new Rectangle(-32, -32, 64, 64);
     onTap(this.speaker, () => this.readClue(), { cooldown: 400 });
@@ -100,8 +135,7 @@ export class GrownCrossword implements Game {
     this.lastFrame = performance.now();
   }
 
-  destroy() {
-  }
+  destroy() {}
 
   // Building -----------------------------------------------------------------------------
 
@@ -110,8 +144,13 @@ export class GrownCrossword implements Game {
     // A mini's blocks are dark squares, so it reads as the 5 by 5 it is.
     if (this.plan.grown === 'mini') {
       const blocks = new Graphics();
-      for (let r = 0; r < this.puzzle.h; r++) for (let c = 0; c < this.puzzle.w; c++)
-        if (!this.letters.has(`${r},${c}`)) blocks.rect(c * SQ, r * SQ, SQ, SQ).fill(swatch.purple.line).stroke({ width: 2, color: swatch.purple.line });
+      for (let r = 0; r < this.puzzle.h; r++)
+        for (let c = 0; c < this.puzzle.w; c++)
+          if (!this.letters.has(`${r},${c}`))
+            blocks
+              .rect(c * SQ, r * SQ, SQ, SQ)
+              .fill(swatch.purple.line)
+              .stroke({ width: 2, color: swatch.purple.line });
       blocks.eventMode = 'none';
       this.board.addChild(blocks);
     }
@@ -141,19 +180,24 @@ export class GrownCrossword implements Game {
     for (const k of KEYS) {
       const c = new Container();
       const help = k === '?';
-      const g = new Graphics().roundRect(-KEY / 2, -KEY / 2, KEY, KEY, 14)
+      const g = new Graphics()
+        .roundRect(-KEY / 2, -KEY / 2, KEY, KEY, 14)
         .fill(help ? swatch.yellow.fill : k === '⌫' ? swatch.orange.light : cream)
         .stroke({ width: 4, color: help ? swatch.yellow.line : swatch.purple.line });
       const t = label(k, k === '⌫' ? 32 : 34, ink);
       t.eventMode = 'none';
       c.addChild(g, t);
       c.hitArea = new Rectangle(-KEY / 2, -KEY / 2, KEY, KEY);
-      onTap(c, () => {
-        this.press(c);
-        if (help) this.useHelp();
-        else if (k === '⌫') this.erase();
-        else this.type(k.toLowerCase());
-      }, { cooldown: 60 });
+      onTap(
+        c,
+        () => {
+          this.press(c);
+          if (help) this.useHelp();
+          else if (k === '⌫') this.erase();
+          else this.type(k.toLowerCase());
+        },
+        { cooldown: 60 },
+      );
       this.keys.addChild(c);
       this.keyMap.set(k, c);
     }
@@ -176,7 +220,8 @@ export class GrownCrossword implements Game {
     this.view = v;
     this.backdrop.resize(v);
     const p = this.puzzle;
-    const gw = p.w * SQ, gh = p.h * SQ;
+    const gw = p.w * SQ,
+      gh = p.h * SQ;
     const safe = safeArea(v);
     if (this.upright) {
       // Clue bar under the top buttons, keys along the bottom right of the pet, the grid centred between them.
@@ -184,10 +229,13 @@ export class GrownCrossword implements Game {
       const top = 170;
       // The bar starts right of the corner buttons (Home and the how-to "?").
       this.layoutBar(150, top, v.w - 174);
-      const cols = 7, rows = 4;
-      const kx = v.w - 24 - (cols * KEY_PITCH - (KEY_PITCH - KEY)), ky = v.h - 16 - (rows * KEY_PITCH - (KEY_PITCH - KEY));
+      const cols = 7,
+        rows = 4;
+      const kx = v.w - 24 - (cols * KEY_PITCH - (KEY_PITCH - KEY)),
+        ky = v.h - 16 - (rows * KEY_PITCH - (KEY_PITCH - KEY));
       this.layoutKeys(kx, ky, cols);
-      const gy0 = top + 96, gy1 = ky - 16;
+      const gy0 = top + 96,
+        gy1 = ky - 16;
       this.board.position.set((v.w - gw) / 2, gy0 + Math.max(0, (gy1 - gy0 - gh) / 2));
       this.title.position.set(v.w / 2, top - 30);
     } else {
@@ -198,14 +246,21 @@ export class GrownCrossword implements Game {
       const ky = top + 96;
       this.layoutKeys(kx, ky, 4);
       const right = kx - 20;
-      this.board.position.set(left + Math.max(0, (right - left - gw) / 2), ky + Math.max(0, (7 * KEY_PITCH - 8 - gh) / 2));
+      this.board.position.set(
+        left + Math.max(0, (right - left - gw) / 2),
+        ky + Math.max(0, (7 * KEY_PITCH - 8 - gh) / 2),
+      );
       this.title.position.set((left + right) / 2, top - 26);
     }
   }
 
   private layoutBar(x: number, y: number, w: number) {
     this.clueBar.position.set(x, y);
-    this.clueBg.clear().roundRect(0, 0, w, 84, 18).fill({ color: 0xffffff, alpha: 0.95 }).stroke({ width: 4, color: swatch.blue.line });
+    this.clueBg
+      .clear()
+      .roundRect(0, 0, w, 84, 18)
+      .fill({ color: 0xffffff, alpha: 0.95 })
+      .stroke({ width: 4, color: swatch.blue.line });
     this.speaker.position.set(w - 42, 42);
     this.clueText.position.set(18, 42);
     this.clueText.style.wordWrapWidth = w - 100;
@@ -213,7 +268,11 @@ export class GrownCrossword implements Game {
 
   /** Keys from the top-left corner (x, y), `cols` to a row. */
   private layoutKeys(x: number, y: number, cols: number) {
-    KEYS.forEach((k, i) => this.keyMap.get(k)!.position.set(x + KEY / 2 + (i % cols) * KEY_PITCH, y + KEY / 2 + Math.floor(i / cols) * KEY_PITCH));
+    KEYS.forEach((k, i) =>
+      this.keyMap
+        .get(k)!
+        .position.set(x + KEY / 2 + (i % cols) * KEY_PITCH, y + KEY / 2 + Math.floor(i / cols) * KEY_PITCH),
+    );
   }
 
   // Drawing ------------------------------------------------------------------------------
@@ -224,7 +283,13 @@ export class GrownCrossword implements Game {
     const inWord = new Set(word >= 0 ? squaresOf(p.words[word]).map((s) => s.key) : []);
     const circled = new Set(stillCircled(this.fills, this.circled));
     for (const [k, sq] of this.squares) {
-      const fill = this.finished ? 0xe4f6d8 : k === this.cursor.key ? 0xfff0a0 : inWord.has(k) ? 0xd8ecff : 0xffffff;
+      const fill = this.finished
+        ? 0xe4f6d8
+        : k === this.cursor.key
+          ? 0xfff0a0
+          : inWord.has(k)
+            ? 0xd8ecff
+            : 0xffffff;
       sq.bg.clear().rect(0, 0, SQ, SQ).fill(fill).stroke({ width: 2, color: swatch.purple.line });
       sq.letter.text = (this.fills.get(k) ?? '').toUpperCase();
       sq.letter.style.fill = this.revealed.has(k) ? swatch.blue.line : ink;
@@ -233,7 +298,11 @@ export class GrownCrossword implements Game {
     // Soft circles on the squares the last check found wrong, until each changes.
     for (const k of circled) {
       const [r, c] = k.split(',').map(Number);
-      m.circle(c * SQ + SQ / 2, r * SQ + SQ / 2, SQ / 2 - 5).stroke({ width: 3, color: swatch.orange.line, alpha: 0.85 });
+      m.circle(c * SQ + SQ / 2, r * SQ + SQ / 2, SQ / 2 - 5).stroke({
+        width: 3,
+        color: swatch.orange.line,
+        alpha: 0.85,
+      });
     }
     this.clueText.text = word >= 0 ? `${clueName(p, word)}:  ${p.clues[word]}` : '';
   }
@@ -307,7 +376,8 @@ export class GrownCrossword implements Game {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
     // Keys belong to something else while the game is paused, under the how-to card, or behind the grown-ups' page.
     if (performance.now() - this.lastFrame > 250 || isParentPanelOpen()) return;
-    if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable]')) return;
+    if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable]'))
+      return;
     if (/^[a-zA-Z]$/.test(e.key)) {
       e.preventDefault();
       this.type(e.key.toLowerCase());
@@ -325,7 +395,14 @@ export class GrownCrossword implements Game {
     sfx.tada();
     const p = this.puzzle;
     const mid = { x: this.board.x + (p.w * SQ) / 2, y: this.board.y + (p.h * SQ) / 2 };
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 24, speed: [120, 320], gravity: 0, life: [0.6, 1.1] });
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.orange.light],
+      count: 24,
+      speed: [120, 320],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('cw.solved');
     this.ctx.finish({ misses: this.misses, hints: this.hints });

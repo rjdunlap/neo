@@ -3,7 +3,17 @@ import { frogArt } from '../../art/animals';
 import { frogHop } from './index';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
-import { answerOf, answerSlot, GAP_CARDS, makeQuestions, PLANS, WINDOW, missKind, hintCharge, stickerNumber } from './logic';
+import {
+  answerOf,
+  answerSlot,
+  GAP_CARDS,
+  makeQuestions,
+  PLANS,
+  WINDOW,
+  missKind,
+  hintCharge,
+  stickerNumber,
+} from './logic';
 
 describe('Frog Hop', () => {
   it('asks questions whose start and answer are both on the pads in view', () => {
@@ -31,10 +41,14 @@ describe('Frog Hop', () => {
     const at = (mode: string) => PLANS.find((p) => p.mode === mode)!;
     for (let seed = 1; seed <= 200; seed++) {
       for (const q of makeQuestions(at('next'), new Rng(seed))) expect(Math.abs(q.hops)).toBe(1);
-      for (const q of makeQuestions(at('add'), new Rng(seed))) expect(q.hops).toBeGreaterThanOrEqual(1), expect(q.hops).toBeLessThanOrEqual(4);
-      for (const q of makeQuestions(at('back'), new Rng(seed))) expect(q.hops).toBeLessThanOrEqual(-1), expect(q.hops).toBeGreaterThanOrEqual(-4);
-      for (const q of makeQuestions(at('gap'), new Rng(seed))) expect(GAP_CARDS).toContain(answerOf('gap', q));
-      for (const q of makeQuestions(at('big'), new Rng(seed))) expect(Math.abs(q.hops)).toBeGreaterThanOrEqual(2);
+      for (const q of makeQuestions(at('add'), new Rng(seed)))
+        (expect(q.hops).toBeGreaterThanOrEqual(1), expect(q.hops).toBeLessThanOrEqual(4));
+      for (const q of makeQuestions(at('back'), new Rng(seed)))
+        (expect(q.hops).toBeLessThanOrEqual(-1), expect(q.hops).toBeGreaterThanOrEqual(-4));
+      for (const q of makeQuestions(at('gap'), new Rng(seed)))
+        expect(GAP_CARDS).toContain(answerOf('gap', q));
+      for (const q of makeQuestions(at('big'), new Rng(seed)))
+        expect(Math.abs(q.hops)).toBeGreaterThanOrEqual(2);
       for (const q of makeQuestions(at('make-ten'), new Rng(seed))) {
         expect(q.start).toBeGreaterThanOrEqual(6);
         expect(q.start).toBeLessThanOrEqual(9);
@@ -85,23 +99,24 @@ describe('Frog Hop', () => {
   });
 });
 
-
 describe('Frog Hop support', () => {
   it('recognizes every wrong pad/card, with direction taking priority over one-off counting', () => {
-    for (const plan of PLANS) for (let seed = 1; seed <= 100; seed++) for (const q of makeQuestions(plan, new Rng(seed))) {
-      const card = plan.mode === 'gap';
-      const answer = answerOf(plan.mode, q);
-      for (const chosen of card ? GAP_CARDS : Array.from({ length: WINDOW }, (_, i) => q.lo + i)) {
-        const kind = missKind(q.start, answer, chosen, card);
-        expect(kind === 'correct').toBe(chosen === answer);
-        if (kind === 'one-more') expect(chosen).toBe(answer + (card ? 1 : Math.sign(answer - q.start)));
-        if (kind === 'one-less') expect(chosen).toBe(answer - (card ? 1 : Math.sign(answer - q.start)));
-        if (kind === 'forward' || kind === 'backward') {
-          expect(card).toBe(false);
-          expect((chosen - q.start) * (answer - q.start)).toBeLessThanOrEqual(0);
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 100; seed++)
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          const card = plan.mode === 'gap';
+          const answer = answerOf(plan.mode, q);
+          for (const chosen of card ? GAP_CARDS : Array.from({ length: WINDOW }, (_, i) => q.lo + i)) {
+            const kind = missKind(q.start, answer, chosen, card);
+            expect(kind === 'correct').toBe(chosen === answer);
+            if (kind === 'one-more') expect(chosen).toBe(answer + (card ? 1 : Math.sign(answer - q.start)));
+            if (kind === 'one-less') expect(chosen).toBe(answer - (card ? 1 : Math.sign(answer - q.start)));
+            if (kind === 'forward' || kind === 'backward') {
+              expect(card).toBe(false);
+              expect((chosen - q.start) * (answer - q.start)).toBeLessThanOrEqual(0);
+            }
+          }
         }
-      }
-    }
     expect(missKind(4, 7, 3, false)).toBe('forward');
     expect(missKind(7, 4, 8, false)).toBe('backward');
     expect(missKind(4, 7, 8, false)).toBe('one-more');
@@ -135,12 +150,15 @@ describe('Frog Hop support', () => {
     expect(numbers).toMatchSnapshot();
     const frog = frogArt();
     const g = frog.children[0] as import('pixi.js').Graphics;
-    const drawing = g.context.instructions.map(i => {
+    const drawing = g.context.instructions.map((i) => {
       if (i.action === 'texture') throw new Error('Frog art must remain code-drawn');
       const { texture: _texture, ...style } = i.data.style;
       return { action: i.action, path: i.data.path.instructions, style };
     });
-    const fingerprint = [...JSON.stringify(drawing)].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+    const fingerprint = [...JSON.stringify(drawing)].reduce(
+      (h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0,
+      2166136261,
+    );
     expect(fingerprint).toMatchSnapshot();
     frog.destroy({ children: true });
   });

@@ -41,7 +41,9 @@ describe('Tinker Lab as a location', () => {
         for (const k of keepOut) expect(overlaps(r, k), where).toBe(false);
         expect(r.y, where).toBeGreaterThan(ground);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(labPlan(layout, view, ground)).toEqual(plan);
     }
     // The room check must not quietly excuse the lab: most layouts are furnished, and only a crowded floor is bare.
@@ -57,7 +59,11 @@ describe('Tinker Lab as a location', () => {
       expect(stalactites.length, name).toBeGreaterThanOrEqual(3);
       expect(bats.length, name).toBeGreaterThanOrEqual(1);
       expect(glowworms.length, name).toBeGreaterThanOrEqual(8);
-      const boxes = [...stalactites.map((s) => s.rect), ...bats.map((b) => b.rect), ...glowworms.map((w) => ({ x: w.x - 5, y: w.y - w.thread, w: 10, h: w.thread + 5 }))];
+      const boxes = [
+        ...stalactites.map((s) => s.rect),
+        ...bats.map((b) => b.rect),
+        ...glowworms.map((w) => ({ x: w.x - 5, y: w.y - w.thread, w: 10, h: w.thread + 5 })),
+      ];
       for (const b of boxes) {
         expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= ground - 168, name).toBe(true);
         for (const k of off) expect(overlaps(b, k), name).toBe(false);
@@ -76,7 +82,8 @@ describe('Tinker Lab as a location', () => {
       expect(m.h, name).toBeGreaterThanOrEqual(80);
       expect(arch.x >= 0 && arch.x + arch.w <= view.w, name).toBe(true);
       expect(arch.y, name).toBeGreaterThanOrEqual(130);
-      for (const k of [...landButtons(view.w), { x: view.w / 2 - 190, y: 20, w: 380, h: 90 }]) expect(overlaps(arch, k), name).toBe(false);
+      for (const k of [...landButtons(view.w), { x: view.w / 2 - 190, y: 20, w: 380, h: 90 }])
+        expect(overlaps(arch, k), name).toBe(false);
       expect(m.y + m.h, name).toBeGreaterThan(ground);
     }
   });

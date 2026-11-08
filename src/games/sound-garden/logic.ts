@@ -6,7 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * ladder turns play into listening: high or low, fast or slow, going up or down, and
  * echoing a woodpecker's rhythm on a drum.
  */
-export type GardenMode = 'play' | 'highlow' | 'fastslow' | 'updown' | 'updownsame' | 'echo' | 'mix' | 'sing' | 'copy';
+export type GardenMode =
+  'play' | 'highlow' | 'fastslow' | 'updown' | 'updownsame' | 'echo' | 'mix' | 'sing' | 'copy';
 export type Ask = 'highlow' | 'fastslow' | 'updown' | 'updownsame';
 export type Answer = 'high' | 'low' | 'fast' | 'slow' | 'up' | 'down' | 'same';
 
@@ -23,7 +24,7 @@ export const PLANS: Record<number, GardenPlan> = {
   2: { mode: 'highlow', rounds: 5, name: 'High or low? Bird or frog' },
   3: { mode: 'fastslow', rounds: 5, name: 'Fast or slow? Bunny or turtle' },
   4: { mode: 'updown', rounds: 5, name: 'Does the tune go up or down?' },
-  5: { mode: 'echo', rounds: 4, name: 'Echo the woodpecker\'s rhythm on the drum' },
+  5: { mode: 'echo', rounds: 4, name: "Echo the woodpecker's rhythm on the drum" },
   6: { mode: 'mix', rounds: 6, name: 'Mixed listening: high or low, fast or slow, up or down' },
   8: { mode: 'play', big: true, rounds: 12, name: 'One big friend: tap anywhere to hear a singer' },
   9: { mode: 'sing', rounds: 12, name: 'Sing Higher: drag a singer up and down to make twelve notes' },
@@ -40,7 +41,8 @@ export const LEVELS: BandLevels = {
 
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);
 
-export const planFor = (level: number) => PLANS[level] ?? PLANS[Math.min(Math.max(...LEVEL_IDS), Math.max(1, Math.round(level)))];
+export const planFor = (level: number) =>
+  PLANS[level] ?? PLANS[Math.min(Math.max(...LEVEL_IDS), Math.max(1, Math.round(level)))];
 
 export const CHOICES: Record<Ask, Answer[]> = {
   highlow: ['high', 'low'],
@@ -120,7 +122,10 @@ export function makeSounds(ask: Ask, rng: Rng): Record<Answer, Sound> {
     const at = (i: number) => i * TUNE_GAP;
     out.up = { notes: steps.map((s, i) => ({ at: at(i), step: s, voice })), span: length * TUNE_GAP };
     if (ask === 'updownsame') out.same = repeat(steps[0], voice, length, TUNE_GAP);
-    out.down = { notes: [...steps].reverse().map((s, i) => ({ at: at(i), step: s, voice })), span: length * TUNE_GAP };
+    out.down = {
+      notes: [...steps].reverse().map((s, i) => ({ at: at(i), step: s, voice })),
+      span: length * TUNE_GAP,
+    };
   }
   return out;
 }
@@ -128,7 +133,12 @@ export function makeSounds(ask: Ask, rng: Rng): Record<Answer, Sound> {
 /** Listening questions: balanced answers, never the same answer three times running. */
 export function makeQuestions(plan: GardenPlan, rng: Rng): Question[] {
   if (plan.mode === 'play' || plan.mode === 'echo' || plan.mode === 'sing' || plan.mode === 'copy') return [];
-  const asks: Ask[] = plan.mode === 'mix' ? rng.shuffle(['highlow', 'fastslow', 'updown', 'highlow', 'fastslow', 'updown'] as Ask[]).slice(0, plan.rounds) : Array(plan.rounds).fill(plan.mode);
+  const asks: Ask[] =
+    plan.mode === 'mix'
+      ? rng
+          .shuffle(['highlow', 'fastslow', 'updown', 'highlow', 'fastslow', 'updown'] as Ask[])
+          .slice(0, plan.rounds)
+      : Array(plan.rounds).fill(plan.mode);
   const out: Question[] = [];
   for (const ask of asks) {
     const choices = CHOICES[ask];
@@ -149,9 +159,24 @@ export type Gap = 'S' | 'L';
 export const GAP_SECONDS: Record<Gap, number> = { S: 0.32, L: 0.72 };
 
 /** Original shared pool: Rhythm Neighbors builds its own twelve replies from these eight. */
-export const RHYTHMS: Gap[][] = [['S'], ['L'], ['S', 'S'], ['L', 'S'], ['S', 'L'], ['S', 'S', 'S'], ['L', 'S', 'S'], ['S', 'S', 'L']];
+export const RHYTHMS: Gap[][] = [
+  ['S'],
+  ['L'],
+  ['S', 'S'],
+  ['L', 'S'],
+  ['S', 'L'],
+  ['S', 'S', 'S'],
+  ['L', 'S', 'S'],
+  ['S', 'S', 'L'],
+];
 /** Sound Garden's twelve rhythms, from two taps up to five. */
-export const ECHO_RHYTHMS: Gap[][] = [...RHYTHMS, ['L', 'S', 'L'], ['S', 'L', 'S'], ['S', 'L', 'S', 'L'], ['L', 'S', 'L', 'S']];
+export const ECHO_RHYTHMS: Gap[][] = [
+  ...RHYTHMS,
+  ['L', 'S', 'L'],
+  ['S', 'L', 'S'],
+  ['S', 'L', 'S', 'L'],
+  ['L', 'S', 'L', 'S'],
+];
 
 export function makeRhythms(rounds: number, rng: Rng): Gap[][] {
   // Two/three taps first, then four, then five. Draw without replacement.
@@ -214,7 +239,8 @@ export const FROG_STEPS = [-3, -4];
 export const PATTER_BEATS = 4;
 export const PLOD_BEATS = 2;
 
-const beats = (count: number, gap: number, step = 0) => Array.from({ length: count }, (_, i) => ({ at: i * gap, step }));
+const beats = (count: number, gap: number, step = 0) =>
+  Array.from({ length: count }, (_, i) => ({ at: i * gap, step }));
 
 /**
  * Each singer sings its listening role, so the answer pictures of levels 2 and 3 are heard before they are asked about: the bird high,
@@ -256,6 +282,12 @@ export const bigSingerIndex = (played: number, castSize: number) => Math.floor(p
 
 /** Broad lap touch field, leaving the shell's corner controls and companion clear. */
 export function bigTouch(x: number, y: number, w: number, h: number): boolean {
-  return x >= 0 && y >= 0 && x <= w && y <= h &&
-    !(y < 160 && (x < 180 || x > w - 180)) && !(x < 300 && y > h - 300);
+  return (
+    x >= 0 &&
+    y >= 0 &&
+    x <= w &&
+    y <= h &&
+    !(y < 160 && (x < 180 || x > w - 180)) &&
+    !(x < 300 && y > h - 300)
+  );
 }

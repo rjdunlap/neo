@@ -13,16 +13,29 @@ export interface SongPlan {
 }
 
 export const SONG_PLANS: SongPlan[] = [
-  { mode: 'free', cols: 4, rows: 3, notes: 12, name: 'Tap jellies on a 4-beat loop and hear the song go round' },
+  {
+    mode: 'free',
+    cols: 4,
+    rows: 3,
+    notes: 12,
+    name: 'Tap jellies on a 4-beat loop and hear the song go round',
+  },
   { mode: 'free', cols: 6, rows: 4, notes: 14, name: 'Make any song on a bigger 6-beat loop' },
   { mode: 'ghost', cols: 4, rows: 3, notes: 3, name: 'Copy a 3-note song by tapping its shadows' },
   { mode: 'ghost', cols: 6, rows: 4, notes: 5, name: 'Copy a 5-note song by tapping its shadows' },
   { mode: 'card', cols: 6, rows: 4, notes: 5, name: 'Copy a 5-note song from a little card' },
-  { mode: 'pattern', cols: 8, rows: 5, notes: 4, name: 'Continue a named song pattern: stairs, hops, zigzags, arches and leaps' },
+  {
+    mode: 'pattern',
+    cols: 8,
+    rows: 5,
+    notes: 4,
+    name: 'Continue a named song pattern: stairs, hops, zigzags, arches and leaps',
+  },
   { mode: 'listen', cols: 4, rows: 3, notes: 4, name: 'Listen, then find each note of a 4-note tune by ear' },
 ];
 
-export const songPlan = (level: number) => SONG_PLANS[Math.max(0, Math.min(SONG_PLANS.length - 1, level - 1))];
+export const songPlan = (level: number) =>
+  SONG_PLANS[Math.max(0, Math.min(SONG_PLANS.length - 1, level - 1))];
 
 /** Scale steps for each row, top row highest, so higher on screen always sounds higher. */
 export const ROW_STEPS: Record<number, number[]> = {
@@ -59,15 +72,32 @@ export type PatternId = (typeof PATTERNS)[number]['id'];
  */
 export const MOTIFS = {
   3: [
-    [2, 1, 2, null], [2, null, 1, 2], [null, 0, 1, 2], [0, 1, null, 2],
-    [1, 1, 2, null], [1, null, 2, 2], [null, 1, 0, 2], [2, 1, null, 2],
-    [2, 1, 0, null], [2, null, 2, 1], [null, 0, 0, 1], [0, 1, null, 1],
+    [2, 1, 2, null],
+    [2, null, 1, 2],
+    [null, 0, 1, 2],
+    [0, 1, null, 2],
+    [1, 1, 2, null],
+    [1, null, 2, 2],
+    [null, 1, 0, 2],
+    [2, 1, null, 2],
+    [2, 1, 0, null],
+    [2, null, 2, 1],
+    [null, 0, 0, 1],
+    [0, 1, null, 1],
   ],
   4: [
-    [3, 2, 1, 2, 3, null], [3, 2, null, 2, 3, 3], [null, 1, 2, 2, 3, 3],
-    [1, 2, 3, null, 2, 3], [3, 3, 2, 2, null, 3], [2, null, 1, 2, 3, 3],
-    [null, 3, 1, 2, 2, 3], [3, 1, 1, null, 2, 3], [3, 2, 1, 0, 1, null],
-    [3, null, 3, 2, 1, 1], [null, 0, 1, 1, 2, 2], [1, 2, null, 3, 2, 1],
+    [3, 2, 1, 2, 3, null],
+    [3, 2, null, 2, 3, 3],
+    [null, 1, 2, 2, 3, 3],
+    [1, 2, 3, null, 2, 3],
+    [3, 3, 2, 2, null, 3],
+    [2, null, 1, 2, 3, 3],
+    [null, 3, 1, 2, 2, 3],
+    [3, 1, 1, null, 2, 3],
+    [3, 2, 1, 0, 1, null],
+    [3, null, 3, 2, 1, 1],
+    [null, 0, 1, 1, 2, 2],
+    [1, 2, null, 3, 2, 1],
   ],
 } as const;
 
@@ -95,17 +125,22 @@ export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = [
   }
   if (plan.mode === 'ghost' || plan.mode === 'card') {
     const pool = MOTIFS[plan.rows as keyof typeof MOTIFS];
-    const choices = pool.map((beats, index) => ({ beats, id: `${plan.rows}:${index}` }))
+    const choices = pool
+      .map((beats, index) => ({ beats, id: `${plan.rows}:${index}` }))
       .filter(({ id }) => !recent.slice(-MOTIF_WINDOW).includes(id));
     const motif = rng.pick(choices);
     return {
-      notes: motif.beats.flatMap((row, col) => row === null ? [] : [{ col, row }]),
-      given: [], motif: motif.id,
+      notes: motif.beats.flatMap((row, col) => (row === null ? [] : [{ col, row }])),
+      given: [],
+      motif: motif.id,
     };
   }
   const count = plan.mode === 'listen' ? plan.cols : plan.notes;
   for (;;) {
-    const cols = rng.shuffle(Array.from({ length: plan.cols }, (_, i) => i)).slice(0, count).sort((a, b) => a - b);
+    const cols = rng
+      .shuffle(Array.from({ length: plan.cols }, (_, i) => i))
+      .slice(0, count)
+      .sort((a, b) => a - b);
     const notes = cols.map((col) => ({ col, row: rng.int(0, plan.rows - 1) }));
     if (new Set(notes.map((n) => n.row)).size > 1) return { notes, given: [] };
   }
@@ -121,7 +156,8 @@ export const noteAt = (song: Song, col: number) => song.notes.find((n) => n.col 
 export function freeSong(plan: SongPlan): Note[] {
   const out: Note[] = [];
   for (let layer = 0; layer < plan.rows; layer++)
-    for (let col = 0; col < plan.cols; col++) out.push({ col, row: (plan.rows - 1 - (col % plan.rows) + layer) % plan.rows });
+    for (let col = 0; col < plan.cols; col++)
+      out.push({ col, row: (plan.rows - 1 - (col % plan.rows) + layer) % plan.rows });
   return out.slice(0, plan.notes);
 }
 
@@ -152,7 +188,11 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number }): SongLay
   const top = 130;
   const bottom = v.h - 40;
   const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 150);
-  return { cell, x0: left + (right - left - cell * plan.cols) / 2, y0: top + (bottom - top - cell * plan.rows) / 2 };
+  return {
+    cell,
+    x0: left + (right - left - cell * plan.cols) / 2,
+    y0: top + (bottom - top - cell * plan.rows) / 2,
+  };
 }
 
 export const LEVELS: BandLevels = {

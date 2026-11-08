@@ -28,7 +28,12 @@ export function createRoutes(app: App): Routes {
     hub: () => void app.show(new MapScene(app)),
     // Explore is the root's (src/rework.ts); the island never makes an Explore origin, so it falls back to the map.
     explore: () => void app.show(new MapScene(app)),
-    place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),
+    place: (band) =>
+      void app.show(
+        store.data.settings.placeLayout === 'subjects'
+          ? new SubjectPlaceScene(app, band)
+          : new PlaceScene(app, band),
+      ),
     hatch: (quick) => void app.show(new HatchScene(app, quick)),
     land: (id, page) => void app.show(new LandScene(app, id, { page })),
     game: (id, band = store.data.profile.band, story, again = false, origin, level) => {

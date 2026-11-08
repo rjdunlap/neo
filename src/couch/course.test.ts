@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
-  BADGES, completeCourse, courseDefaults, courseOf, courseSpec, finishRun, noteProgress, repairCourse, startRun,
-  type CourseSave, type CourseSpec,
+  BADGES,
+  completeCourse,
+  courseDefaults,
+  courseOf,
+  courseSpec,
+  finishRun,
+  noteProgress,
+  repairCourse,
+  startRun,
+  type CourseSave,
+  type CourseSpec,
 } from './course';
 import { couchDefaults, repairCouch, type CouchSave } from './party';
 
@@ -10,9 +19,21 @@ const spec: CourseSpec = { id: 'ponds', game: 'penguin-slide', version: 1, board
 const reload = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 
 /** Play a whole run: each pond takes the given number of slides. */
-function play(course: CourseSave, player: 0 | 1, slides: number[], token: number, opts: { assisted?: boolean; now?: number } = {}) {
+function play(
+  course: CourseSave,
+  player: 0 | 1,
+  slides: number[],
+  token: number,
+  opts: { assisted?: boolean; now?: number } = {},
+) {
   startRun(course, player, token);
-  slides.forEach((_, i) => noteProgress(course, spec, token, { slides: slides.slice(0, i + 1), attempts: 0, assisted: !!opts.assisted && i === 1 }));
+  slides.forEach((_, i) =>
+    noteProgress(course, spec, token, {
+      slides: slides.slice(0, i + 1),
+      attempts: 0,
+      assisted: !!opts.assisted && i === 1,
+    }),
+  );
   return finishRun(course, spec, token, opts.now ?? 1000);
 }
 
@@ -20,7 +41,16 @@ describe('course runs and records', () => {
   it('settles a finished run once: total, best, badge and a cleared run', () => {
     const course = courseDefaults(spec);
     const out = play(course, 0, [4, 5, 6], 7)!;
-    expect(out).toMatchObject({ player: 0, total: 15, minimum: 12, assisted: false, boards: [4, 5, 6], previous: null, improved: false, earned: ['finish'] });
+    expect(out).toMatchObject({
+      player: 0,
+      total: 15,
+      minimum: 12,
+      assisted: false,
+      boards: [4, 5, 6],
+      previous: null,
+      improved: false,
+      earned: ['finish'],
+    });
     expect(course.run).toBe(null);
     expect(course.players[0]).toMatchObject({ runs: 1, clean: 15, assisted: null, badges: ['finish'] });
     expect(course.players[0].recent).toEqual([{ slides: 15, assisted: false, at: 1000 }]);
@@ -43,7 +73,11 @@ describe('course runs and records', () => {
 
   it('keeps helped and unhelped bests apart, and calls only a beaten best an improvement', () => {
     const course = courseDefaults(spec);
-    expect(play(course, 1, [8, 8, 8], 1, { assisted: true })).toMatchObject({ assisted: true, previous: null, improved: false });
+    expect(play(course, 1, [8, 8, 8], 1, { assisted: true })).toMatchObject({
+      assisted: true,
+      previous: null,
+      improved: false,
+    });
     expect(course.players[1]).toMatchObject({ clean: null, assisted: 24 });
     expect(play(course, 1, [5, 5, 5], 2)).toMatchObject({ assisted: false, previous: null, improved: false });
     expect(course.players[1]).toMatchObject({ clean: 15, assisted: 24 });
@@ -97,14 +131,32 @@ describe('course saves', () => {
   });
 
   it('repairs damaged data inside its limits', () => {
-    const out = repairCourse({
-      version: 1,
-      run: { player: 1, token: 'x', slides: [3, -4, 'q', 5, 6, 7, 8], attempts: -3, assisted: 'yes' },
-      players: [{ runs: -1, clean: 0, assisted: 'fast', recent: Array(30).fill({ slides: 9, assisted: 1, at: -5 }), badges: ['finish', 'nonsense', 'finish'] }, 'junk'],
-      retired: 'no',
-    }, spec);
+    const out = repairCourse(
+      {
+        version: 1,
+        run: { player: 1, token: 'x', slides: [3, -4, 'q', 5, 6, 7, 8], attempts: -3, assisted: 'yes' },
+        players: [
+          {
+            runs: -1,
+            clean: 0,
+            assisted: 'fast',
+            recent: Array(30).fill({ slides: 9, assisted: 1, at: -5 }),
+            badges: ['finish', 'nonsense', 'finish'],
+          },
+          'junk',
+        ],
+        retired: 'no',
+      },
+      spec,
+    );
     expect(out.run).toEqual({ player: 1, token: 1, slides: [3], attempts: 0, assisted: false });
-    expect(out.players[0]).toEqual({ runs: 0, clean: null, assisted: null, recent: Array(10).fill({ slides: 9, assisted: false, at: 0 }), badges: ['finish'] });
+    expect(out.players[0]).toEqual({
+      runs: 0,
+      clean: null,
+      assisted: null,
+      recent: Array(10).fill({ slides: 9, assisted: false, at: 0 }),
+      badges: ['finish'],
+    });
     expect(out.players[1]).toEqual({ runs: 0, clean: null, assisted: null, recent: [], badges: [] });
     expect(out.retired).toEqual([]);
     expect(repairCourse({ run: { player: 2 } }, spec).run).toBe(null);
@@ -124,7 +176,10 @@ describe('course saves', () => {
     expect(now.retired[0].players[0]).toMatchObject({ clean: 15, runs: 1 });
     // A third and a fourth version keep at most three old records, newest first.
     let c = now;
-    for (const version of [3, 4, 5]) { play(c, 0, [4, 4, 4], version, {}); c = repairCourse(reload(c), { ...spec, version }); }
+    for (const version of [3, 4, 5]) {
+      play(c, 0, [4, 4, 4], version, {});
+      c = repairCourse(reload(c), { ...spec, version });
+    }
     expect(c.retired.length).toBeLessThanOrEqual(3);
     expect(c.retired[0].version).toBe(4);
     // Unused versions with no finished run leave nothing behind.
@@ -160,6 +215,8 @@ describe('courses in the couch save', () => {
     expect(repairCouch(reload(save))).toEqual(save);
     expect(JSON.stringify(repairCouch(reload(save)))).toBe(JSON.stringify(save));
     expect(repairCouch({ version: 2, trips: 0, stickers: {}, party: null, seen: [] }).courses).toEqual({});
-    expect(repairCouch({ ...reload(save), courses: { ...save.courses, mystery: { version: 1 } } }).courses).toEqual(save.courses);
+    expect(
+      repairCouch({ ...reload(save), courses: { ...save.courses, mystery: { version: 1 } } }).courses,
+    ).toEqual(save.courses);
   });
 });

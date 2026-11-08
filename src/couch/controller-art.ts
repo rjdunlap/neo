@@ -2,7 +2,11 @@ import type { PadPart } from './catalog';
 
 const NS = 'http://www.w3.org/2000/svg';
 
-function svg<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number> = {}, ...kids: SVGElement[]): SVGElementTagNameMap[K] {
+function svg<K extends keyof SVGElementTagNameMap>(
+  tag: K,
+  attrs: Record<string, string | number> = {},
+  ...kids: SVGElement[]
+): SVGElementTagNameMap[K] {
   const el = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
   el.append(...kids);
@@ -11,13 +15,31 @@ function svg<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string,
 
 const ring = (cx: number, cy: number, r: number, cls: string) => svg('circle', { cx, cy, r, class: cls });
 const plus = (cx: number, cy: number, arm: number, thick: number, cls: string) =>
-  svg('g', { class: cls }, svg('rect', { x: cx - arm, y: cy - thick / 2, width: arm * 2, height: thick, rx: thick / 3 }), svg('rect', { x: cx - thick / 2, y: cy - arm, width: thick, height: arm * 2, rx: thick / 3 }));
+  svg(
+    'g',
+    { class: cls },
+    svg('rect', { x: cx - arm, y: cy - thick / 2, width: arm * 2, height: thick, rx: thick / 3 }),
+    svg('rect', { x: cx - thick / 2, y: cy - arm, width: thick, height: arm * 2, rx: thick / 3 }),
+  );
 
 /** The four face buttons of a diamond, with one of them marked (or none). */
-function diamond(cx: number, cy: number, gap: number, r: number, which: 'bottom' | 'left' | null, cls: string): SVGGElement {
-  const spots = { top: [cx, cy - gap], bottom: [cx, cy + gap], left: [cx - gap, cy], right: [cx + gap, cy] } as const;
+function diamond(
+  cx: number,
+  cy: number,
+  gap: number,
+  r: number,
+  which: 'bottom' | 'left' | null,
+  cls: string,
+): SVGGElement {
+  const spots = {
+    top: [cx, cy - gap],
+    bottom: [cx, cy + gap],
+    left: [cx - gap, cy],
+    right: [cx + gap, cy],
+  } as const;
   const g = svg('g', { class: cls });
-  for (const [name, [x, y]] of Object.entries(spots)) g.append(ring(x, y, r, name === which ? 'part on-able' : 'part dim'));
+  for (const [name, [x, y]] of Object.entries(spots))
+    g.append(ring(x, y, r, name === which ? 'part on-able' : 'part dim'));
   return g;
 }
 
@@ -86,34 +108,78 @@ export function glyphs(parts: PadPart[]): HTMLElement {
 }
 
 /** The keyboard key that does what each controller part does (the stick and the d-pad are both the arrow keys). */
-const KEY_NAMES: Record<PadPart, string> = { stick: '← ↑ ↓ →', dpad: '← ↑ ↓ →', bottom: 'Enter', left: 'Backspace', start: 'Esc' };
+const KEY_NAMES: Record<PadPart, string> = {
+  stick: '← ↑ ↓ →',
+  dpad: '← ↑ ↓ →',
+  bottom: 'Enter',
+  left: 'Backspace',
+  start: 'Esc',
+};
 /** The name on the key cap that stands for a controller part. */
 export const keyName = (part: PadPart): string => KEY_NAMES[part];
 const isArrows = (part: PadPart) => part === 'stick' || part === 'dpad';
 
 /** A keyboard drawn in code, with the same lighting as the controller diagram: the arrow keys, Enter, Backspace and Esc. */
 export function keyboardArt(): ControllerArt {
-  const key = (x: number, y: number, w: number, h: number, label: string, size = 22) => svg('g', { class: 'key' }, svg('rect', { x, y, width: w, height: h, rx: 9, class: 'part' }), Object.assign(svg('text', { x: x + w / 2, y: y + h / 2 + size * 0.35, 'text-anchor': 'middle', 'font-size': size, class: 'key-label' }), { textContent: label }));
-  const arrows = svg('g', { class: 'arrows' }, key(160, 112, 56, 50, '↑'), key(98, 168, 56, 50, '←'), key(160, 168, 56, 50, '↓'), key(222, 168, 56, 50, '→'));
+  const key = (x: number, y: number, w: number, h: number, label: string, size = 22) =>
+    svg(
+      'g',
+      { class: 'key' },
+      svg('rect', { x, y, width: w, height: h, rx: 9, class: 'part' }),
+      Object.assign(
+        svg('text', {
+          x: x + w / 2,
+          y: y + h / 2 + size * 0.35,
+          'text-anchor': 'middle',
+          'font-size': size,
+          class: 'key-label',
+        }),
+        { textContent: label },
+      ),
+    );
+  const arrows = svg(
+    'g',
+    { class: 'arrows' },
+    key(160, 112, 56, 50, '↑'),
+    key(98, 168, 56, 50, '←'),
+    key(160, 168, 56, 50, '↓'),
+    key(222, 168, 56, 50, '→'),
+  );
   const enter = svg('g', {}, key(250, 108, 128, 50, 'Enter', 20));
   const back = svg('g', {}, key(250, 28, 128, 50, 'Backspace', 18));
   const esc = svg('g', {}, key(22, 28, 74, 50, 'Esc', 20));
-  const el = svg('svg', { viewBox: '0 0 400 240', class: 'pad keyboard', role: 'img', 'aria-label': 'Keyboard diagram' },
-    svg('rect', { x: 4, y: 4, width: 392, height: 232, rx: 26, class: 'pad-body' }), arrows, enter, back, esc);
+  const el = svg(
+    'svg',
+    { viewBox: '0 0 400 240', class: 'pad keyboard', role: 'img', 'aria-label': 'Keyboard diagram' },
+    svg('rect', { x: 4, y: 4, width: 392, height: 232, rx: 26, class: 'pad-body' }),
+    arrows,
+    enter,
+    back,
+    esc,
+  );
   const lit = new Map<SVGElement, (on: ReadonlySet<PadPart>) => boolean>([
-    [arrows, on => on.has('stick') || on.has('dpad')], [enter, on => on.has('bottom')], [back, on => on.has('left')], [esc, on => on.has('start')],
+    [arrows, (on) => on.has('stick') || on.has('dpad')],
+    [enter, (on) => on.has('bottom')],
+    [back, (on) => on.has('left')],
+    [esc, (on) => on.has('start')],
   ]);
-  return { el, light(on) { for (const [node, test] of lit) node.classList.toggle('on', test(on)); } };
+  return {
+    el,
+    light(on) {
+      for (const [node, test] of lit) node.classList.toggle('on', test(on));
+    },
+  };
 }
 
 /** The diagram for what she is playing with: a controller, or a keyboard. */
-export const padArt = (place: 'tv' | 'laptop'): ControllerArt => place === 'tv' ? controllerArt() : keyboardArt();
+export const padArt = (place: 'tv' | 'laptop'): ControllerArt =>
+  place === 'tv' ? controllerArt() : keyboardArt();
 
 /** Key caps for a row: the stick and the d-pad are one set of keys, so they show once. */
 export function keycaps(parts: PadPart[]): HTMLElement {
   const span = document.createElement('span');
   span.className = 'glyphs keycaps';
-  const names = [...new Set(parts.map(p => KEY_NAMES[p]))];
+  const names = [...new Set(parts.map((p) => KEY_NAMES[p]))];
   names.forEach((name, i) => {
     if (i) span.append(Object.assign(document.createElement('i'), { textContent: 'or' }));
     const cap = Object.assign(document.createElement('kbd'), { textContent: name });
@@ -124,16 +190,28 @@ export function keycaps(parts: PadPart[]): HTMLElement {
 }
 
 /** What names the controls in a row of instructions: pictures of controller parts, or the keys. */
-export const prompts = (parts: PadPart[], place: 'tv' | 'laptop'): HTMLElement => place === 'tv' ? glyphs(parts) : keycaps(parts);
+export const prompts = (parts: PadPart[], place: 'tv' | 'laptop'): HTMLElement =>
+  place === 'tv' ? glyphs(parts) : keycaps(parts);
 
 /** Only the current typed key is printed, never an on-screen alphabet or a typing input. */
 export function typingKeyboardArt(): ControllerArt {
   const art = keyboardArt();
-  const typed = svg('g', { class: 'typing-key' }, svg('rect', { x: 105, y: 28, width: 130, height: 50, rx: 9, class: 'part' }), Object.assign(svg('text', { x: 170, y: 61, 'text-anchor': 'middle', 'font-size': 20, class: 'key-label' }), { textContent: 'Letter' }));
+  const typed = svg(
+    'g',
+    { class: 'typing-key' },
+    svg('rect', { x: 105, y: 28, width: 130, height: 50, rx: 9, class: 'part' }),
+    Object.assign(
+      svg('text', { x: 170, y: 61, 'text-anchor': 'middle', 'font-size': 20, class: 'key-label' }),
+      { textContent: 'Letter' },
+    ),
+  );
   art.el.append(typed);
-  return { ...art, lightTyped(keys) {
-    const key = keys[0];
-    typed.classList.toggle('on', !!key);
-    typed.querySelector('text')!.textContent = key === ' ' ? 'Space' : key || 'Letter';
-  } };
+  return {
+    ...art,
+    lightTyped(keys) {
+      const key = keys[0];
+      typed.classList.toggle('on', !!key);
+      typed.querySelector('text')!.textContent = key === ' ' ? 'Space' : key || 'Letter';
+    },
+  };
 }

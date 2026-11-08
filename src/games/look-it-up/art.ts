@@ -7,7 +7,13 @@ import type { AnimalId, Picture, Row } from './logic';
 
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
-const CRITTER_OF: Partial<Record<AnimalId, CritterName>> = { cow: 'cow', pig: 'pig', duck: 'duck', rabbit: 'bunny', bear: 'bear' };
+const CRITTER_OF: Partial<Record<AnimalId, CritterName>> = {
+  cow: 'cow',
+  pig: 'pig',
+  duck: 'duck',
+  rabbit: 'bunny',
+  bear: 'bear',
+};
 
 /** An adult standing with its feet on (0, 0) about `height` units tall. */
 export function animalArt(id: AnimalId, height = 200): Container {
@@ -37,13 +43,27 @@ export function pictureArt(pic: Picture): Container {
   switch (pic) {
     case 'grass':
       g.ellipse(0, 30, 34, 11).fill(wood.fill).stroke(line(wood.line, 3));
-      for (const [x, tip, lean] of [[-22, -20, -10], [-11, -34, -4], [0, -40, 2], [11, -34, 6], [22, -20, 12]]) {
-        g.poly([x - 6, 28, x + 6, 28, x + lean, tip]).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+      for (const [x, tip, lean] of [
+        [-22, -20, -10],
+        [-11, -34, -4],
+        [0, -40, 2],
+        [11, -34, 6],
+        [22, -20, 12],
+      ]) {
+        g.poly([x - 6, 28, x + 6, 28, x + lean, tip])
+          .fill(swatch.green.fill)
+          .stroke(line(swatch.green.line, 3));
       }
       break;
     case 'rootPlant':
-      for (const [x, lean] of [[-14, -20], [0, 0], [14, 20]]) {
-        g.ellipse(x + lean * 0.6, -22, 13, 22).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+      for (const [x, lean] of [
+        [-14, -20],
+        [0, 0],
+        [14, 20],
+      ]) {
+        g.ellipse(x + lean * 0.6, -22, 13, 22)
+          .fill(swatch.green.fill)
+          .stroke(line(swatch.green.line, 3));
       }
       g.moveTo(0, 0).lineTo(0, 22).stroke(line(swatch.green.line, 5));
       g.poly([-12, 18, 12, 18, 3, 44, -3, 44]).fill(swatch.orange.light).stroke(line(wood.line, 3));
@@ -51,10 +71,26 @@ export function pictureArt(pic: Picture): Container {
       break;
     case 'seeds':
       g.ellipse(0, 18, 38, 14).fill(wood.light);
-      for (const [x, y] of [[-20, 8], [-6, 0], [12, 8], [24, 16], [-12, 20], [4, 16], [0, -8], [-24, 18]]) g.ellipse(x, y, 6, 3.5).fill(wood.line);
+      for (const [x, y] of [
+        [-20, 8],
+        [-6, 0],
+        [12, 8],
+        [24, 16],
+        [-12, 20],
+        [4, 16],
+        [0, -8],
+        [-24, 18],
+      ])
+        g.ellipse(x, y, 6, 3.5).fill(wood.line);
       break;
     case 'berries':
-      for (const [x, y] of [[-16, 8], [14, 6], [0, 24], [-2, -10]]) g.circle(x, y, 15).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 3));
+      for (const [x, y] of [
+        [-16, 8],
+        [14, 6],
+        [0, 24],
+        [-2, -10],
+      ])
+        g.circle(x, y, 15).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 3));
       g.moveTo(0, -30).lineTo(0, -12).stroke(line(swatch.green.line, 4));
       g.ellipse(14, -28, 14, 7).fill(swatch.green.fill);
       break;
@@ -69,8 +105,16 @@ export function pictureArt(pic: Picture): Container {
       return fishPicture();
     case 'field':
       g.roundRect(-45, -30, 90, 70, 12).fill(swatch.green.light).stroke(line(swatch.green.line, 3));
-      for (const [x, y] of [[-25, 0], [0, -14], [24, 10], [-6, 20]]) {
-        g.moveTo(x - 5, y + 8).lineTo(x, y - 6).lineTo(x + 5, y + 8).stroke(line(swatch.green.line, 3));
+      for (const [x, y] of [
+        [-25, 0],
+        [0, -14],
+        [24, 10],
+        [-6, 20],
+      ]) {
+        g.moveTo(x - 5, y + 8)
+          .lineTo(x, y - 6)
+          .lineTo(x + 5, y + 8)
+          .stroke(line(swatch.green.line, 3));
       }
       g.moveTo(-45, -12).lineTo(45, -12).stroke(line(wood.line, 4));
       break;
@@ -83,28 +127,50 @@ export function pictureArt(pic: Picture): Container {
       g.ellipse(0, 10, 44, 28).fill(swatch.blue.light).stroke(line(swatch.blue.line, 4));
       g.ellipse(-8, 8, 18, 8).stroke(line(swatch.blue.line, 2));
       g.ellipse(18, -22, 10, 5).fill(swatch.green.fill);
-      g.moveTo(-34, -14).lineTo(-34, -34).moveTo(-28, -14).lineTo(-26, -30).stroke(line(swatch.green.line, 3));
+      g.moveTo(-34, -14)
+        .lineTo(-34, -34)
+        .moveTo(-28, -14)
+        .lineTo(-26, -30)
+        .stroke(line(swatch.green.line, 3));
       break;
     case 'burrow':
       g.roundRect(-45, -10, 90, 52, 14).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
       g.ellipse(0, 24, 20, 17).fill(ink);
-      for (const x of [-30, 30]) g.moveTo(x - 4, -10).lineTo(x, -24).lineTo(x + 4, -10).stroke(line(swatch.green.line, 3));
+      for (const x of [-30, 30])
+        g.moveTo(x - 4, -10)
+          .lineTo(x, -24)
+          .lineTo(x + 4, -10)
+          .stroke(line(swatch.green.line, 3));
       break;
     case 'den':
-      g.poly([-46, 42, -30, -20, 0, -40, 30, -20, 46, 42]).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 4));
+      g.poly([-46, 42, -30, -20, 0, -40, 30, -20, 46, 42])
+        .fill(swatch.brown.fill)
+        .stroke(line(swatch.brown.line, 4));
       g.poly([-24, 42, -18, -2, 0, -14, 18, -2, 24, 42]).fill(ink);
       break;
     case 'rockyBeach':
       g.rect(-46, 12, 92, 30).fill(swatch.yellow.light);
       g.rect(-46, -34, 92, 46).fill(swatch.blue.light);
-      for (const [x, y, r] of [[-26, 14, 16], [0, 22, 20], [26, 12, 14]]) g.ellipse(x, y, r, r * 0.7).fill(0x9a9aa8).stroke(line(0x6c6c7c, 3));
+      for (const [x, y, r] of [
+        [-26, 14, 16],
+        [0, 22, 20],
+        [26, 12, 14],
+      ])
+        g.ellipse(x, y, r, r * 0.7)
+          .fill(0x9a9aa8)
+          .stroke(line(0x6c6c7c, 3));
       g.moveTo(-40, -14).quadraticCurveTo(-24, -24, -8, -14).stroke(line(swatch.blue.line, 3));
       break;
-    case 'calf': return baby('cow', 'cow');
-    case 'piglet': return baby('pig', 'pig');
-    case 'duckling': return baby('duck', 'duck');
-    case 'kit': return baby('bunny', 'bunny');
-    case 'cub': return baby('bear', 'bear');
+    case 'calf':
+      return baby('cow', 'cow');
+    case 'piglet':
+      return baby('pig', 'pig');
+    case 'duckling':
+      return baby('duck', 'duck');
+    case 'kit':
+      return baby('bunny', 'bunny');
+    case 'cub':
+      return baby('bear', 'bear');
     case 'tadpole':
       g.circle(-8, 0, 17).fill(0x4a5a3a).stroke(line(ink, 3));
       g.moveTo(8, 0).quadraticCurveTo(24, 14, 42, 0).stroke(line(0x4a5a3a, 8));
@@ -165,8 +231,12 @@ export function rowIcon(row: Row): Container {
 /** The open book on a stand, drawn into a rect (the page area is cream, the cover wood). */
 export function bookArt(w: number, h: number): Graphics {
   return new Graphics()
-    .roundRect(0, 0, w, h, 22).fill(wood.fill).stroke(line(wood.line, 5))
-    .roundRect(10, 10, w - 20, h - 20, 16).fill(cream).stroke(line(wood.light, 3));
+    .roundRect(0, 0, w, h, 22)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 5))
+    .roundRect(10, 10, w - 20, h - 20, 16)
+    .fill(cream)
+    .stroke(line(wood.light, 3));
 }
 
 export const tabFace = (id: AnimalId): Container => {

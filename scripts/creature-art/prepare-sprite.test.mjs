@@ -5,7 +5,15 @@
 // Chromium, so it is skipped where none is installed (CI runs `npm test` without one).
 import { chromium } from 'playwright';
 import { deflateSync } from 'node:zlib';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -26,7 +34,8 @@ const put = (img, x, y, rgb, a = 255) => img.data.set([...rgb, a], (y * img.w + 
 const px = (img, x, y) => [...img.data.subarray((y * img.w + x) * 4, (y * img.w + x) * 4 + 4)];
 /** A creature: an ink-outlined box of fur from (x0, y0) to (x1, y1) inclusive. */
 function creature(img, x0, y0, x1, y1) {
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) put(img, x, y, x === x0 || x === x1 || y === y0 || y === y1 ? INK : FUR);
+  for (let y = y0; y <= y1; y++)
+    for (let x = x0; x <= x1; x++) put(img, x, y, x === x0 || x === x1 || y === y0 || y === y1 ? INK : FUR);
 }
 const mix = (a, b, t) => a.map((v, k) => Math.round(v * (1 - t) + b[k] * t));
 
@@ -76,7 +85,9 @@ describe('keying a creature off flat paper', () => {
     /** A ring: an ink-outlined band of fur round an enclosed patch of paper. */
     const ring = () => {
       const img = sheet();
-      for (let y = 12; y <= 17; y++) for (let x = 16; x <= 23; x++) put(img, x, y, x === 16 || x === 23 || y === 12 || y === 17 ? INK : PAPER);
+      for (let y = 12; y <= 17; y++)
+        for (let x = 16; x <= 23; x++)
+          put(img, x, y, x === 16 || x === 23 || y === 12 || y === 17 ? INK : PAPER);
       return img;
     };
     const kept = ring();
@@ -109,7 +120,9 @@ describe('passing a transparent cut-out through', () => {
     const r = keyOut(img.data, img.w, img.h, {});
     expect(r.mode).toBe('transparent');
     expect(r.paper).toBeNull();
-    for (let y = 8; y <= 21; y++) for (let x = 10; x <= 29; x++) expect(px(img, x, y)).toEqual([...before.subarray((y * 40 + x) * 4, (y * 40 + x) * 4 + 4)]);
+    for (let y = 8; y <= 21; y++)
+      for (let x = 10; x <= 29; x++)
+        expect(px(img, x, y)).toEqual([...before.subarray((y * 40 + x) * 4, (y * 40 + x) * 4 + 4)]);
     expect(r.bounds).toEqual({ minX: 9, minY: 8, maxX: 29, maxY: 21 });
   });
 
@@ -123,7 +136,12 @@ describe('passing a transparent cut-out through', () => {
   it('can be forced on a flat image and paper forced on a clear one', () => {
     const flat = image(12, 12, PAPER);
     creature(flat, 3, 3, 8, 8);
-    expect(keyOut(flat.data, 12, 12, { mode: 'transparent' }).bounds).toEqual({ minX: 0, minY: 0, maxX: 11, maxY: 11 });
+    expect(keyOut(flat.data, 12, 12, { mode: 'transparent' }).bounds).toEqual({
+      minX: 0,
+      minY: 0,
+      maxX: 11,
+      maxY: 11,
+    });
     const clear = cutout();
     expect(keyOut(clear.data, clear.w, clear.h, { mode: 'paper' }).mode).toBe('paper');
   });
@@ -142,8 +160,8 @@ describe('cutting, aligning and the manifest', () => {
   it('shrinks by a whole factor, averaging in premultiplied alpha so a soft edge keeps the ink’s colour', () => {
     // A 4 × 2 image: two opaque ink pixels, one half-alpha ink pixel, one clear pixel with a stray colour.
     const data = new Uint8ClampedArray([
-      10, 20, 30, 255, 10, 20, 30, 255, 10, 20, 30, 128, 200, 200, 200, 0,
-      10, 20, 30, 255, 10, 20, 30, 255, 10, 20, 30, 128, 200, 200, 200, 0,
+      10, 20, 30, 255, 10, 20, 30, 255, 10, 20, 30, 128, 200, 200, 200, 0, 10, 20, 30, 255, 10, 20, 30, 255,
+      10, 20, 30, 128, 200, 200, 200, 0,
     ]);
     const s = shrink({ data, w: 4, h: 2 }, 2);
     expect([s.w, s.h]).toEqual([2, 1]);
@@ -162,7 +180,12 @@ describe('cutting, aligning and the manifest', () => {
     expect(bad.ok).toBe(false);
     expect(bad.offsets).toEqual({ left: 6, top: 0, right: 6, bottom: -1 });
     expect(alignment(base, { minX: 106, minY: 50, maxX: 406, maxY: 299 }, 6).ok).toBe(true);
-    expect(union([base, { minX: 98, minY: 52, maxX: 401, maxY: 304 }])).toEqual({ minX: 98, minY: 50, maxX: 401, maxY: 304 });
+    expect(union([base, { minX: 98, minY: 52, maxX: 401, maxY: 304 }])).toEqual({
+      minX: 98,
+      minY: 50,
+      maxX: 401,
+      maxY: 304,
+    });
   });
 
   const manifest = `# Generated creature art
@@ -182,13 +205,46 @@ describe('cutting, aligning and the manifest', () => {
       { file: 'glider-blink-1.png', asset: 'blink' },
     ]);
     expect(parseManifest(manifest, 'river')).toEqual([]);
-    expect(() => parseManifest(manifest + '| glider-base-3.png | R01 | d | t | p | yes |\n', 'glider')).toThrow(/two chosen/);
+    expect(() =>
+      parseManifest(manifest + '| glider-base-3.png | R01 | d | t | p | yes |\n', 'glider'),
+    ).toThrow(/two chosen/);
     expect(() => parseManifest('no table', 'glider')).toThrow(/File column/);
   });
 
   it('parses the arguments the README documents', () => {
-    const o = parseArgs(['--in', 'a.png', '--out', 'b.png', '--box', '1,2,30,40', '--seed', '5,6', '--hole', '7,8', '--hole', '9,10', '--pad', '4', '--scale', '0.5', '--check']);
-    expect(o).toMatchObject({ in: 'a.png', out: 'b.png', box: { x: 1, y: 2, w: 30, h: 40 }, seed: { x: 5, y: 6 }, holes: [{ x: 7, y: 8 }, { x: 9, y: 10 }], pad: 4, scale: 0.5, check: true, bg: 'auto' });
+    const o = parseArgs([
+      '--in',
+      'a.png',
+      '--out',
+      'b.png',
+      '--box',
+      '1,2,30,40',
+      '--seed',
+      '5,6',
+      '--hole',
+      '7,8',
+      '--hole',
+      '9,10',
+      '--pad',
+      '4',
+      '--scale',
+      '0.5',
+      '--check',
+    ]);
+    expect(o).toMatchObject({
+      in: 'a.png',
+      out: 'b.png',
+      box: { x: 1, y: 2, w: 30, h: 40 },
+      seed: { x: 5, y: 6 },
+      holes: [
+        { x: 7, y: 8 },
+        { x: 9, y: 10 },
+      ],
+      pad: 4,
+      scale: 0.5,
+      check: true,
+      bg: 'auto',
+    });
     expect(parseArgs(['--set', 'glider']).set).toBe('glider');
     expect(parseArgs(['--set', 'glider', '--shrink', '2']).shrink).toBe(2);
     expect(() => parseArgs(['--set', 'glider', '--shrink', '1.5'])).toThrow(/whole/);
@@ -201,7 +257,10 @@ describe('cutting, aligning and the manifest', () => {
 
 // ---- End to end, through real PNGs, where a browser is installed. ----
 
-const browser = await chromium.launch().then(async (b) => (await b.close(), true)).catch(() => false);
+const browser = await chromium
+  .launch()
+  .then(async (b) => (await b.close(), true))
+  .catch(() => false);
 
 /** Encodes RGBA as an 8-bit, non-interlaced PNG (filter 0, deflate), enough for the tool to read. */
 function encodePng({ w, h, data }) {
@@ -230,7 +289,12 @@ function encodePng({ w, h, data }) {
   ihdr.set([8, 6, 0, 0, 0], 8);
   const raw = Buffer.alloc((w * 4 + 1) * h);
   for (let y = 0; y < h; y++) raw.set(data.subarray(y * w * 4, (y + 1) * w * 4), y * (w * 4 + 1) + 1);
-  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw)),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
 }
 /** Reads a PNG's size from its header. */
 const sizeOf = (file) => {
@@ -251,22 +315,54 @@ describe.skipIf(!browser)('preparing a set from PNGs on disk', () => {
     creature(img, x0, y0, x0 + 23, y0 + 15);
     return encodePng(img);
   }
-  const rows = (files) => `| File | Request | Date | Tool and model | Prompt | Chosen |\n| --- | --- | --- | --- | --- | --- |\n` + files.map(([f, c]) => `| ${f} | R01 | d | t | p | ${c} |`).join('\n') + '\n';
+  const rows = (files) =>
+    `| File | Request | Date | Tool and model | Prompt | Chosen |\n| --- | --- | --- | --- | --- | --- |\n` +
+    files.map(([f, c]) => `| ${f} | R01 | d | t | p | ${c} |`).join('\n') +
+    '\n';
 
   it('refuses a drifted variant with its offsets and writes nothing', async () => {
     mkdirSync(gen, { recursive: true });
-    writeFileSync(join(gen, 'README.md'), rows([['testling-base-1.png', 'yes'], ['testling-blink-1.png', 'yes'], ['testling-sad-1.png', 'yes']]));
+    writeFileSync(
+      join(gen, 'README.md'),
+      rows([
+        ['testling-base-1.png', 'yes'],
+        ['testling-blink-1.png', 'yes'],
+        ['testling-sad-1.png', 'yes'],
+      ]),
+    );
     writeFileSync(join(gen, 'testling-base-1.png'), picture(20, 16, false));
     writeFileSync(join(gen, 'testling-blink-1.png'), picture(22, 16, false)); // 2 px over: within tolerance
     writeFileSync(join(gen, 'testling-sad-1.png'), picture(26, 17, true)); // 6 px over, and transparent: drifted
-    await expect(run(['--set', 'testling', '--generated', gen, '--out-dir', out])).rejects.toThrow(/testling-sad-1\.png: left 6, top 1, right 6, bottom 1/);
+    await expect(run(['--set', 'testling', '--generated', gen, '--out-dir', out])).rejects.toThrow(
+      /testling-sad-1\.png: left 6, top 1, right 6, bottom 1/,
+    );
     expect(existsSync(out)).toBe(false);
   });
 
   it('prepares the chosen variants into one shared box, a portrait alone, and previews on request', async () => {
-    writeFileSync(join(gen, 'README.md'), rows([['testling-base-1.png', 'yes'], ['testling-blink-1.png', 'yes'], ['testling-sad-1.png', ''], ['testling-portrait-1.png', 'x']]));
+    writeFileSync(
+      join(gen, 'README.md'),
+      rows([
+        ['testling-base-1.png', 'yes'],
+        ['testling-blink-1.png', 'yes'],
+        ['testling-sad-1.png', ''],
+        ['testling-portrait-1.png', 'x'],
+      ]),
+    );
     writeFileSync(join(gen, 'testling-portrait-1.png'), picture(4, 4, true));
-    const lines = await run(['--set', 'testling', '--generated', gen, '--out-dir', out, '--pad', '2', '--check', '--previews', previews]);
+    const lines = await run([
+      '--set',
+      'testling',
+      '--generated',
+      gen,
+      '--out-dir',
+      out,
+      '--pad',
+      '2',
+      '--check',
+      '--previews',
+      previews,
+    ]);
     expect(lines.map((l) => l.asset)).toEqual(['base', 'blink', 'portrait']);
     // Base spans x 20–43, blink 22–45: the shared box is 20–45 (26 px) plus 2 px of padding each side.
     expect(sizeOf(join(out, 'testling-base.png'))).toEqual([30, 20]);
@@ -279,7 +375,14 @@ describe.skipIf(!browser)('preparing a set from PNGs on disk', () => {
   });
 
   it('cuts a plate in the shared box, however far it drifted', async () => {
-    writeFileSync(join(gen, 'README.md'), rows([['testling-base-1.png', 'yes'], ['testling-blink-1.png', 'yes'], ['testling-nohead-1.png', 'yes']]));
+    writeFileSync(
+      join(gen, 'README.md'),
+      rows([
+        ['testling-base-1.png', 'yes'],
+        ['testling-blink-1.png', 'yes'],
+        ['testling-nohead-1.png', 'yes'],
+      ]),
+    );
     // Its "head" painted out: smaller and 8 px off the base, which would refuse an expression.
     const img = image(64, 48, PAPER);
     creature(img, 28, 20, 43, 31);
@@ -296,7 +399,20 @@ describe.skipIf(!browser)('preparing a set from PNGs on disk', () => {
     creature(img, 8, 8, 31, 23);
     creature(img, 40, 30, 55, 45); // a second creature the box must not include
     writeFileSync(join(dir, 'sheet.png'), encodePng(img));
-    const [line] = await run(['--in', join(dir, 'sheet.png'), '--out', join(dir, 'one.png'), '--box', '0,0,36,28', '--seed', '20,16', '--pad', '1', '--scale', '2']);
+    const [line] = await run([
+      '--in',
+      join(dir, 'sheet.png'),
+      '--out',
+      join(dir, 'one.png'),
+      '--box',
+      '0,0,36,28',
+      '--seed',
+      '20,16',
+      '--pad',
+      '1',
+      '--scale',
+      '2',
+    ]);
     expect(line.size).toEqual([26, 18]);
     expect(line.origin).toEqual([7, 7]);
     expect(line.units).toEqual([52, 36]);

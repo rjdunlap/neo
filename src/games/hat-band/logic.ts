@@ -43,12 +43,32 @@ export const LOW_IDS: HatId[] = ['thump', 'walk'];
 /** A pentatonic note (semitones above C) as a scale step in the octave above middle C, for `sfx.marimba`. */
 export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(semitones);
 
-export interface Plan { level: number; name: string; mode: 'put' | 'swap' | 'alone' | 'arrange' }
+export interface Plan {
+  level: number;
+  name: string;
+  mode: 'put' | 'swap' | 'alone' | 'arrange';
+}
 const PLANS: Plan[] = [
-  { level: 1, name: 'Put on a hat: a drum hat and a tune hat; put one on a friend to hear their part, then make a band', mode: 'put' },
-  { level: 2, name: 'Swap a hat: four hats; swap, spotlight one friend, hear two different bands, then finish with the one she likes', mode: 'swap' },
-  { level: 3, name: 'Alone, then together: both friends play; hear each one alone with the spotlight, then the two together', mode: 'alone' },
-  { level: 4, name: 'Build a song: three friends (drum, tune and a low part) and a three-part song; start with the tune alone, end with everybody, the middle is hers; Check plays it through', mode: 'arrange' },
+  {
+    level: 1,
+    name: 'Put on a hat: a drum hat and a tune hat; put one on a friend to hear their part, then make a band',
+    mode: 'put',
+  },
+  {
+    level: 2,
+    name: 'Swap a hat: four hats; swap, spotlight one friend, hear two different bands, then finish with the one she likes',
+    mode: 'swap',
+  },
+  {
+    level: 3,
+    name: 'Alone, then together: both friends play; hear each one alone with the spotlight, then the two together',
+    mode: 'alone',
+  },
+  {
+    level: 4,
+    name: 'Build a song: three friends (drum, tune and a low part) and a three-part song; start with the tune alone, end with everybody, the middle is hers; Check plays it through',
+    mode: 'arrange',
+  },
 ];
 
 // Lap and toddler stay with Jelly Drums and Little Conductor; school starts at swapping (decision 2's default). Building a
@@ -67,12 +87,17 @@ export interface Round {
   rack: HatId[];
 }
 /** The band's friends: anyone except the mountain's host bear and the pip (the companion's look). */
-const FRIENDS: CritterName[] = (Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'bear' && n !== 'pip');
+const FRIENDS: CritterName[] = (Object.keys(CRITTERS) as CritterName[]).filter(
+  (n) => n !== 'bear' && n !== 'pip',
+);
 
 /** A seeded round: who stands on stage and which hats hang where. Level 1 has one hat of each role, levels 2–3 all four. */
 export function makeRound(rng: Rng, level: number): Round {
   const friends = rng.shuffle([...FRIENDS]);
-  const hats = level <= 1 ? [rng.pick(['steady', 'skippy'] as HatId[]), rng.pick(['cuckoo', 'rain'] as HatId[])] : [...HAT_IDS];
+  const hats =
+    level <= 1
+      ? [rng.pick(['steady', 'skippy'] as HatId[]), rng.pick(['cuckoo', 'rain'] as HatId[])]
+      : [...HAT_IDS];
   return { cast: [friends[0], friends[1]], rack: rng.shuffle(hats) };
 }
 
@@ -80,7 +105,10 @@ export type Worn = [HatId | null, HatId | null];
 export type Friend = 0 | 1;
 
 /** What is sounding: the hats on the friends and the spotlight, as one snapshot. */
-export interface Mix { worn: Worn; solo: Friend | null }
+export interface Mix {
+  worn: Worn;
+  solo: Friend | null;
+}
 
 export interface Band {
   /** The clock, in beats; beat k sounds when it reaches k. Global: a loop's place is `index mod 4`. */
@@ -101,8 +129,14 @@ export interface Band {
 }
 
 export const newBand = (): Band => ({
-  beat: 0, played: 0, worn: [null, null], solo: null,
-  sounding: { worn: [null, null], solo: null }, heardMix: 0, mixes: [], heardAlone: [],
+  beat: 0,
+  played: 0,
+  worn: [null, null],
+  solo: null,
+  sounding: { worn: [null, null], solo: null },
+  heardMix: 0,
+  mixes: [],
+  heardAlone: [],
 });
 
 /** The hats still on the rack, in rack order: every hat is on the rack or on exactly one friend. */
@@ -110,7 +144,9 @@ export const onRack = (round: Round, band: Band): HatId[] => round.rack.filter((
 
 /** True while what she sees has not reached the band yet: it joins at the next beat. */
 export const pending = (band: Band): boolean =>
-  band.worn[0] !== band.sounding.worn[0] || band.worn[1] !== band.sounding.worn[1] || band.solo !== band.sounding.solo;
+  band.worn[0] !== band.sounding.worn[0] ||
+  band.worn[1] !== band.sounding.worn[1] ||
+  band.solo !== band.sounding.solo;
 
 /** How much of a beat is left before a pending change joins (0–1). */
 export const waitLeft = (band: Band): number => (pending(band) ? Math.max(0, band.played - band.beat) : 0);
@@ -142,10 +178,15 @@ export function spotlight(band: Band, friend: Friend): Band {
 }
 
 /** The friends whose parts are heard in a mix. */
-export const voices = (mix: Mix): Friend[] => ([0, 1] as Friend[]).filter((f) => mix.worn[f] !== null && (mix.solo === null || mix.solo === f));
+export const voices = (mix: Mix): Friend[] =>
+  ([0, 1] as Friend[]).filter((f) => mix.worn[f] !== null && (mix.solo === null || mix.solo === f));
 
 /** A mix's identity is the set of hats heard, not who wears them: the voice is the hat's. Empty for silence. */
-export const mixKey = (mix: Mix): string => voices(mix).map((f) => mix.worn[f]!).sort().join('+');
+export const mixKey = (mix: Mix): string =>
+  voices(mix)
+    .map((f) => mix.worn[f]!)
+    .sort()
+    .join('+');
 
 export interface BeatEvent {
   /** Which beat of the round this is (0, 1, 2…). */
@@ -200,7 +241,8 @@ export function advance(band: Band, dt: number): { band: Band; events: BeatEvent
     for (const f of voices(b.sounding)) {
       const hat = b.sounding.worn[f]!;
       const part = partOn(hat, step);
-      if (part) events.push({ index: b.played, step, friend: f, hat, role: HATS[hat].role, pitch: part.pitch, at });
+      if (part)
+        events.push({ index: b.played, step, friend: f, hat, role: HATS[hat].role, pitch: part.pitch, at });
     }
     b.heardMix++;
     if (b.heardMix >= BEATS) {
@@ -230,7 +272,12 @@ export function canFinish(band: Band, level: number): boolean {
   if (mode === 'arrange') return false;
   if (mode === 'put') return true;
   if (mode === 'swap') return band.mixes.length >= 2;
-  return band.worn[0] !== null && band.worn[1] !== null && band.solo === null && band.worn.every((h) => band.heardAlone.includes(h!));
+  return (
+    band.worn[0] !== null &&
+    band.worn[1] !== null &&
+    band.solo === null &&
+    band.worn.every((h) => band.heardAlone.includes(h!))
+  );
 }
 
 export type Early = 'empty' | 'hear-whole' | 'hear-other' | 'hear-alone' | 'both' | 'together';
@@ -254,7 +301,8 @@ export function nextStep(round: Round, band: Band, level: number): { hat?: HatId
   const why = earlyDone(band, level);
   if (why === 'empty' || why === 'both' || why === 'hear-other') return { hat: onRack(round, band)[0] };
   if (why === 'together') return { star: band.solo! };
-  if (why === 'hear-alone') return { star: ([0, 1] as Friend[]).find((f) => !band.heardAlone.includes(band.worn[f]!)) };
+  if (why === 'hear-alone')
+    return { star: ([0, 1] as Friend[]).find((f) => !band.heardAlone.includes(band.worn[f]!)) };
   return {};
 }
 
@@ -285,8 +333,17 @@ export function botMove(round: Round, band: Band, level: number, selected: HatId
   return canFinish(band, level) ? 'done' : null;
 }
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Disc { x: number; y: number; r: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Disc {
+  x: number;
+  y: number;
+  r: number;
+}
 export interface HatBandLayout {
   stage: Rect;
   /** Where each friend's feet stand, and the spot she taps or drops a hat on. */
@@ -314,7 +371,10 @@ export function hatBandLayout(view: { w: number; h: number }, level: number, hat
   const stage: Rect = { x: cx - stageW / 2, y: portrait ? 100 : 60, w: stageW, h: stageH };
   const apart = 220;
   const feet = stage.y + stage.h - 30;
-  const friends = [{ x: cx - apart, y: feet }, { x: cx + apart, y: feet }];
+  const friends = [
+    { x: cx - apart, y: feet },
+    { x: cx + apart, y: feet },
+  ];
   const spotH = 280;
   const spots = friends.map((f) => ({ x: f.x - SPOT / 2, y: f.y - spotH + 20, w: SPOT, h: spotH }));
   const showStars = planFor(level).mode !== 'put';
@@ -324,11 +384,21 @@ export function hatBandLayout(view: { w: number; h: number }, level: number, hat
   let rack: Rect[];
   if (portrait && hats > 2) {
     const top = Math.max(below, view.h * 0.62 - HAT - HAT_GAP / 2);
-    rack = [0, 1, 2, 3].slice(0, hats).map((i) => ({ x: cx + (i % 2 === 0 ? -HAT - HAT_GAP / 2 : HAT_GAP / 2), y: top + Math.floor(i / 2) * (HAT + HAT_GAP), w: HAT, h: HAT }));
+    rack = [0, 1, 2, 3].slice(0, hats).map((i) => ({
+      x: cx + (i % 2 === 0 ? -HAT - HAT_GAP / 2 : HAT_GAP / 2),
+      y: top + Math.floor(i / 2) * (HAT + HAT_GAP),
+      w: HAT,
+      h: HAT,
+    }));
   } else {
     const width = hats * HAT + (hats - 1) * HAT_GAP;
     const left = cx - width / 2;
-    rack = Array.from({ length: hats }, (_, i) => ({ x: left + i * (HAT + HAT_GAP), y: below, w: HAT, h: HAT }));
+    rack = Array.from({ length: hats }, (_, i) => ({
+      x: left + i * (HAT + HAT_GAP),
+      y: below,
+      w: HAT,
+      h: HAT,
+    }));
   }
   const done: Disc = { x: view.w - DONE - 40, y: view.h - DONE - 50, r: DONE };
   return { stage, friends, spots, rack, stars, done };
@@ -371,9 +441,14 @@ export function check(song: Song): Verdict {
 
 const bits = (m: number) => (m & 1) + ((m >> 1) & 1) + ((m >> 2) & 1);
 /** How many hat toggles the song is from the nearest accepted one (any nonempty middle is accepted). */
-export const distance = (song: Song): number => bits(song[0] ^ ROLE_BIT.tune) + (song[1] === 0 ? 1 : 0) + bits(song[2] ^ EVERYBODY);
+export const distance = (song: Song): number =>
+  bits(song[0] ^ ROLE_BIT.tune) + (song[1] === 0 ? 1 : 0) + bits(song[2] ^ EVERYBODY);
 
-export interface Repair { clause: 'empty' | Clause; part: Part; role: Role }
+export interface Repair {
+  clause: 'empty' | Clause;
+  part: Part;
+  role: Role;
+}
 /**
  * One toggle toward an accepted song, inside the part that is wrong: the first empty part (an empty middle gets the
  * tune), else the first broken clause's part, the first role (drum, tune, low) that differs from its target. Never
@@ -389,7 +464,11 @@ export function repair(song: Song): Repair | null {
     return { clause: v, part, role: ROLE_ORDER.find((r) => has(target, r))! };
   }
   const c = CLAUSES.find((x) => x.clause === v)!;
-  return { clause: v, part: c.part, role: ROLE_ORDER.find((r) => has(song[c.part], r) !== has(c.target, r))! };
+  return {
+    clause: v,
+    part: c.part,
+    role: ROLE_ORDER.find((r) => has(song[c.part], r) !== has(c.target, r))!,
+  };
 }
 
 export const toggle = (song: Song, part: Part, role: Role): Song =>
@@ -404,12 +483,17 @@ export interface SongRound {
 /** A seeded level 4 round: three friends, one drum, one tune and one low hat, in a seeded order on the stage. */
 export function makeSongRound(rng: Rng): SongRound {
   const friends = rng.shuffle([...FRIENDS]);
-  const hats = rng.shuffle([rng.pick(['steady', 'skippy'] as HatId[]), rng.pick(['cuckoo', 'rain'] as HatId[]), rng.pick(LOW_IDS)]);
+  const hats = rng.shuffle([
+    rng.pick(['steady', 'skippy'] as HatId[]),
+    rng.pick(['cuckoo', 'rain'] as HatId[]),
+    rng.pick(LOW_IDS),
+  ]);
   return { cast: [friends[0], friends[1], friends[2]], hats: [hats[0], hats[1], hats[2]] };
 }
 
 /** Which friend wears a role's hat. */
-export const friendFor = (round: SongRound, role: Role): number => round.hats.findIndex((h) => HATS[h].role === role);
+export const friendFor = (round: SongRound, role: Role): number =>
+  round.hats.findIndex((h) => HATS[h].role === role);
 
 export type Playing = 'loop' | 'song' | 'check';
 export interface Arrange {
@@ -428,7 +512,17 @@ export interface Arrange {
   mask: number;
 }
 
-export const newArrange = (): Arrange => ({ beat: 0, played: 0, song: START_SONG, selected: 0, playing: 'loop', origin: 0, undo: [], now: null, mask: 0 });
+export const newArrange = (): Arrange => ({
+  beat: 0,
+  played: 0,
+  song: START_SONG,
+  selected: 0,
+  playing: 'loop',
+  origin: 0,
+  undo: [],
+  now: null,
+  mask: 0,
+});
 
 /** Tap a part card: free, not undone. During Play it stops the song so she hears the part she picked; during Check, ignored. */
 export function select(a: Arrange, part: Part): Arrange {
@@ -450,7 +544,11 @@ export function undoStep(a: Arrange): Arrange {
 }
 
 /** Play (or Check) the whole song from the next beat. */
-export const playSong = (a: Arrange, how: 'song' | 'check'): Arrange => ({ ...a, playing: how, origin: a.played });
+export const playSong = (a: Arrange, how: 'song' | 'check'): Arrange => ({
+  ...a,
+  playing: how,
+  origin: a.played,
+});
 
 export interface SongEvent {
   index: number;
@@ -468,7 +566,11 @@ export interface SongEvent {
  * Moves the song's clock on by `dt` seconds, returning every whole beat crossed, each once and in order, and `ended`
  * when a played or checked song finished its third part (then it loops the selected part again).
  */
-export function advanceSong(round: SongRound, arrange: Arrange, dt: number): { arrange: Arrange; events: SongEvent[]; ended: 'song' | 'check' | null } {
+export function advanceSong(
+  round: SongRound,
+  arrange: Arrange,
+  dt: number,
+): { arrange: Arrange; events: SongEvent[]; ended: 'song' | 'check' | null } {
   const a: Arrange = { ...arrange };
   const events: SongEvent[] = [];
   let ended: 'song' | 'check' | null = null;
@@ -541,7 +643,12 @@ export function songLayout(view: { w: number; h: number }): SongLayout {
   const portrait = view.h > view.w;
   const cx = view.w / 2;
   const top = portrait ? Math.max(110, view.h * 0.1) : 14;
-  const brief = [-1, 0, 1].map((i) => ({ x: cx + i * (BRIEF_W + 40) - BRIEF_W / 2, y: top, w: BRIEF_W, h: BRIEF_H }));
+  const brief = [-1, 0, 1].map((i) => ({
+    x: cx + i * (BRIEF_W + 40) - BRIEF_W / 2,
+    y: top,
+    w: BRIEF_W,
+    h: BRIEF_H,
+  }));
   const stageW = Math.min(view.w - 120, 700);
   const stage: Rect = { x: cx - stageW / 2, y: top + BRIEF_H + 14, w: stageW, h: portrait ? 300 : 250 };
   const feet = stage.y + stage.h - 30;
@@ -549,7 +656,12 @@ export function songLayout(view: { w: number; h: number }): SongLayout {
   const spotH = 210;
   const spots = friends.map((f) => ({ x: f.x - SONG_SPOT / 2, y: f.y - spotH + 20, w: SONG_SPOT, h: spotH }));
   const partsY = stage.y + stage.h + (portrait ? 40 : 18);
-  const parts = [-1, 0, 1].map((i) => ({ x: cx + i * (PART_W + 30) - PART_W / 2, y: partsY, w: PART_W, h: PART_H }));
+  const parts = [-1, 0, 1].map((i) => ({
+    x: cx + i * (PART_W + 30) - PART_W / 2,
+    y: partsY,
+    w: PART_W,
+    h: PART_H,
+  }));
   const rowY = portrait ? partsY + PART_H + 120 : Math.min(view.h - 70, partsY + PART_H + 74);
   const undo: Disc = { x: cx - 200, y: rowY, r: 50 };
   const play: Disc = { x: cx, y: rowY, r: 60 };

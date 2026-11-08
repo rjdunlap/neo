@@ -11,7 +11,24 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
 import { SCENES, type SceneDef } from './scenes';
-import { LEVELS, dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, TAP_HOP, tapHops, trayRows, whereWords, type Piece, type PuzzlePlan } from './logic';
+import {
+  LEVELS,
+  dropSlot,
+  hintPiece,
+  nextToPlace,
+  outerSides,
+  PICTURE_H,
+  PICTURE_W,
+  piecesFor,
+  puzzlePlan,
+  slotCenter,
+  TAP_HOP,
+  tapHops,
+  trayRows,
+  whereWords,
+  type Piece,
+  type PuzzlePlan,
+} from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -64,7 +81,10 @@ class PuzzlePals implements Game {
     const all = piecesFor(this.plan);
     const order = [...all.slice(0, this.plan.preplaced), ...ctx.rng.shuffle(all.slice(this.plan.preplaced))];
     for (const piece of order) {
-      const texture = new Texture({ source: this.texture.source, frame: new Rectangle(piece.col * pw, piece.row * ph, pw, ph) });
+      const texture = new Texture({
+        source: this.texture.source,
+        frame: new Rectangle(piece.col * pw, piece.row * ph, pw, ph),
+      });
       this.textures.push(texture);
       const sprite = new Sprite(texture);
       sprite.anchor.set(0.5);
@@ -132,7 +152,10 @@ class PuzzlePals implements Game {
     this.wrong++;
     sfx.boing();
     if (this.wrong === 2) {
-      const piece = hintPiece(this.plan, this.pieces.filter((p) => p.placed).map((p) => p.piece));
+      const piece = hintPiece(
+        this.plan,
+        this.pieces.filter((p) => p.placed).map((p) => p.piece),
+      );
       this.hinted = this.pieces.find((p) => p.piece.col === piece?.col && p.piece.row === piece?.row);
       if (this.hinted) {
         this.hints++;
@@ -162,7 +185,12 @@ class PuzzlePals implements Game {
     void this.ctx.tw.to(view.node.scale, { x: this.scale, y: this.scale }, { duration: 0.18 });
     sfx.clunk();
     sfx.bell(5 + (this.pieces.filter((p) => p.placed).length % 6), 0.25);
-    this.ctx.particles.burst(x, y, { kind: 'star', colors: [swatch.yellow.fill], count: 8, speed: [80, 200] });
+    this.ctx.particles.burst(x, y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill],
+      count: 8,
+      speed: [80, 200],
+    });
     this.wrong = 0;
     this.hinted = undefined;
     this.drawGlow();
@@ -182,7 +210,13 @@ class PuzzlePals implements Game {
     this.ctx.track(friend);
     friend.cheer();
     sfx.animal(this.scene.sound);
-    this.ctx.particles.burst(this.board.x + (PICTURE_W * this.scale) / 2, this.board.y + 60, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 40, speed: [200, 450], gravity: 300 });
+    this.ctx.particles.burst(this.board.x + (PICTURE_W * this.scale) / 2, this.board.y + 60, {
+      kind: 'confetti',
+      colors: RAINBOW.map((c) => swatch[c].fill),
+      count: 40,
+      speed: [200, 450],
+      gravity: 300,
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('puzzle.done', { what: this.scene.what });
     await this.ctx.tw.wait(0.4);
@@ -200,9 +234,16 @@ class PuzzlePals implements Game {
     this.scale = boardW / PICTURE_W;
     this.board.position.set(v.w / 2 + 50 - boardW / 2, top);
     this.board.scale.set(this.scale);
-    this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light).roundRect(160, v.h - trayH - 6, v.w - 185, trayH - 8, 30).fill(cream);
+    this.background
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(swatch.teal.light)
+      .roundRect(160, v.h - trayH - 6, v.w - 185, trayH - 8, 30)
+      .fill(cream);
     const f = this.frame.clear();
-    f.roundRect(-18, -18, PICTURE_W + 36, PICTURE_H + 36, 22).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    f.roundRect(-18, -18, PICTURE_W + 36, PICTURE_H + 36, 22)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
     f.rect(0, 0, PICTURE_W, PICTURE_H).fill(cream);
     const pw = PICTURE_W / this.plan.cols;
     const ph = PICTURE_H / this.plan.rows;
@@ -250,10 +291,19 @@ class PuzzlePals implements Game {
     const pw = (PICTURE_W / this.plan.cols) * this.scale;
     const ph = (PICTURE_H / this.plan.rows) * this.scale;
     const c = slotCenter(this.plan, next.piece);
-    g.roundRect(this.board.x + c.x * this.scale - pw / 2, this.board.y + c.y * this.scale - ph / 2, pw, ph, 10).stroke({ width: 7, color: swatch.yellow.line });
+    g.roundRect(
+      this.board.x + c.x * this.scale - pw / 2,
+      this.board.y + c.y * this.scale - ph / 2,
+      pw,
+      ph,
+      10,
+    ).stroke({ width: 7, color: swatch.yellow.line });
     const tw = (PICTURE_W / this.plan.cols) * this.trayScale;
     const th = (PICTURE_H / this.plan.rows) * this.trayScale;
-    g.roundRect(next.drag.home.x - tw / 2 - 8, next.drag.home.y - th / 2 - 8, tw + 16, th + 16, 12).stroke({ width: 7, color: swatch.yellow.line });
+    g.roundRect(next.drag.home.x - tw / 2 - 8, next.drag.home.y - th / 2 - 8, tw + 16, th + 16, 12).stroke({
+      width: 7,
+      color: swatch.yellow.line,
+    });
   }
 
   update(dt: number) {
@@ -290,11 +340,13 @@ export const puzzlePals: GameModule = {
   describeLevel: (l) => puzzlePlan(l).name,
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: 'Ask {name} what is in each piece: an ear, a sun, a flower? Say where it goes: top, bottom, corner, next to.',
+  coplayHint:
+    'Ask {name} what is in each piece: an ear, a sun, a flower? Say where it goes: top, bottom, corner, next to.',
   offScreen: {
     all: 'Cut an old card or a cereal box picture into two or three pieces and put it back together.',
     // School: a build or test with a result, predicting first.
-    school: 'Cut an old card into six pieces yourself, mix them up, then swap puzzles with someone and put theirs together.',
+    school:
+      'Cut an old card into six pieces yourself, mix them up, then swap puzzles with someone and put theirs together.',
   },
   hubIcon: () => new WigglyIcon(puzzleIcon()),
   sticker: (seed) => pictureThumb(seed, 170),

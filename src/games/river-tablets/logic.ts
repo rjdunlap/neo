@@ -23,11 +23,31 @@ export interface Plan {
 
 export const PLANS: readonly Plan[] = [
   { level: 1, id: 'tokens', name: 'One token each: tap the jar for each sheep, then tip it (3–5 sheep)' },
-  { level: 2, id: 'envelope', name: 'Marks on the envelope: one pressed mark per token, crack it open (two balls of 3–6)' },
-  { level: 3, id: 'rows', name: 'Which row? each mark in the row with its picture (two tablets of 4–6 mixed goods)' },
-  { level: 4, id: 'tens', name: 'A ten is a different mark: press big marks for tens and small marks for ones (two carts of 12–29)' },
-  { level: 5, id: 'check', name: 'Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29)' },
-  { level: 6, id: 'disagree', name: "Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29)" },
+  {
+    level: 2,
+    id: 'envelope',
+    name: 'Marks on the envelope: one pressed mark per token, crack it open (two balls of 3–6)',
+  },
+  {
+    level: 3,
+    id: 'rows',
+    name: 'Which row? each mark in the row with its picture (two tablets of 4–6 mixed goods)',
+  },
+  {
+    level: 4,
+    id: 'tens',
+    name: 'A ten is a different mark: press big marks for tens and small marks for ones (two carts of 12–29)',
+  },
+  {
+    level: 5,
+    id: 'check',
+    name: 'Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29)',
+  },
+  {
+    level: 6,
+    id: 'disagree',
+    name: 'Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -133,7 +153,15 @@ export function kindChanges(goods: readonly Kind[]): number {
 export function isMixed(goods: readonly Kind[]): boolean {
   const sheep = goods.filter((k) => k === 'sheep').length;
   const jars = goods.length - sheep;
-  return goods.length >= 4 && goods.length <= 6 && sheep >= 1 && jars >= 1 && sheep <= 4 && jars <= 4 && kindChanges(goods) >= 2;
+  return (
+    goods.length >= 4 &&
+    goods.length <= 6 &&
+    sheep >= 1 &&
+    jars >= 1 &&
+    sheep <= 4 &&
+    jars <= 4 &&
+    kindChanges(goods) >= 2
+  );
 }
 
 /** A delivery of `sheep` sheep and `jars` jars in a mixed order: seeded shuffles, with a built order if the draws never mix. */
@@ -164,13 +192,27 @@ export function briefFor(level: number, rng: Rng): Brief {
   const plan = planFor(level);
   if (plan.id === 'tens') {
     // Tablet 1 packed: a count whose ones are 2–9. Tablet 2 spilled: 12–19 (no crate) or 21–29 (one crate burst).
-    const first = (): number => { const n = rng.int(12, 29); return n % 10 >= 2 ? n : first(); };
+    const first = (): number => {
+      const n = rng.int(12, 29);
+      return n % 10 >= 2 ? n : first();
+    };
     const a = first();
-    const spilled = (): number => { const n = rng.int(12, 28); return n >= 20 ? n + 1 : n; };
+    const spilled = (): number => {
+      const n = rng.int(12, 28);
+      return n >= 20 ? n + 1 : n;
+    };
     let b = spilled();
     while (b === a) b = spilled();
-    const carts: [Cart, Cart] = [{ crates: Math.floor(a / 10), loose: a % 10 }, b >= 20 ? { crates: 1, loose: b - 10 } : { crates: 0, loose: b }];
-    return { level: 4, id: 'tens', carts, scatter: [scatterFor(carts[0].loose, rng), scatterFor(carts[1].loose, rng)] };
+    const carts: [Cart, Cart] = [
+      { crates: Math.floor(a / 10), loose: a % 10 },
+      b >= 20 ? { crates: 1, loose: b - 10 } : { crates: 0, loose: b },
+    ];
+    return {
+      level: 4,
+      id: 'tens',
+      carts,
+      scatter: [scatterFor(carts[0].loose, rng), scatterFor(carts[1].loose, rng)],
+    };
   }
   if (plan.id === 'check') {
     const t1 = rng.int(12, 29);
@@ -179,7 +221,15 @@ export function briefFor(level: number, rng: Rng): Brief {
     const d1 = rng.int(-3, 3);
     // At least one cart is off.
     const d2 = d1 === 0 ? rng.pick([-3, -2, -1, 1, 2, 3]) : rng.int(-3, 3);
-    const deliveries: [Delivery, Delivery] = rng.chance(0.5) ? [{ t: t1, c: t1 + d1 }, { t: t2, c: t2 + d2 }] : [{ t: t2, c: t2 + d2 }, { t: t1, c: t1 + d1 }];
+    const deliveries: [Delivery, Delivery] = rng.chance(0.5)
+      ? [
+          { t: t1, c: t1 + d1 },
+          { t: t2, c: t2 + d2 },
+        ]
+      : [
+          { t: t2, c: t2 + d2 },
+          { t: t1, c: t1 + d1 },
+        ];
     return { level: 5, id: 'check', deliveries };
   }
   if (plan.id === 'disagree') {
@@ -197,7 +247,9 @@ export function briefFor(level: number, rng: Rng): Brief {
       other = { kind: 'gone', farm: f2, store: s2, cart: null };
     } else {
       // Every cart 12–29 within three of both tablets and equal to neither; never empty, since the tablets are 1–3 apart.
-      const fits = Array.from({ length: 18 }, (_, i) => 12 + i).filter((c) => c !== f2 && c !== s2 && Math.abs(c - f2) <= 3 && Math.abs(c - s2) <= 3);
+      const fits = Array.from({ length: 18 }, (_, i) => 12 + i).filter(
+        (c) => c !== f2 && c !== s2 && Math.abs(c - f2) <= 3 && Math.abs(c - s2) <= 3,
+      );
       other = { kind: 'neither', farm: f2, store: s2, cart: rng.pick(fits) };
     }
     return { level: 6, id: 'disagree', cases: rng.chance(0.5) ? [one, other] : [other, one] };
@@ -263,7 +315,9 @@ export function readyToTip(s: PenState): boolean {
 }
 
 export function penInvariant(s: PenState): boolean {
-  return s.tokens <= s.arrived && s.arrived <= s.sheep && s.tokens >= 0 && (!s.walking || s.arrived < s.sheep);
+  return (
+    s.tokens <= s.arrived && s.arrived <= s.sheep && s.tokens >= 0 && (!s.walking || s.arrived < s.sheep)
+  );
 }
 
 // ——— Level 2: marks on the envelope ———
@@ -281,7 +335,14 @@ export interface EnvelopeState {
 }
 
 export function startEnvelope(tokens: number): EnvelopeState {
-  return { tokens, marks: Array<boolean>(CELLS).fill(false), misses: 0, hinted: false, glowing: false, matched: false };
+  return {
+    tokens,
+    marks: Array<boolean>(CELLS).fill(false),
+    misses: 0,
+    hinted: false,
+    glowing: false,
+    matched: false,
+  };
 }
 
 export function markCount(s: EnvelopeState): number {
@@ -310,7 +371,13 @@ export interface Crack {
 
 export function crack(marks: number, tokens: number): Crack {
   const diff = Math.abs(marks - tokens);
-  return { verdict: marks === tokens ? 'match' : marks < tokens ? 'fewer' : 'more', marks, tokens, diff, paired: Math.min(marks, tokens) };
+  return {
+    verdict: marks === tokens ? 'match' : marks < tokens ? 'fewer' : 'more',
+    marks,
+    tokens,
+    diff,
+    paired: Math.min(marks, tokens),
+  };
 }
 
 /** Crack the envelope: a match finishes it; otherwise one miss, and the glow after the second miss. */
@@ -361,7 +428,15 @@ export interface TabletState {
 }
 
 export function startTablet(delivery: Kind[]): TabletState {
-  return { delivery, placed: 0, rows: { sheep: 0, jar: 0 }, misses: 0, wrongOnCurrent: 0, hinted: false, glowing: null };
+  return {
+    delivery,
+    placed: 0,
+    rows: { sheep: 0, jar: 0 },
+    misses: 0,
+    wrongOnCurrent: 0,
+    hinted: false,
+    glowing: null,
+  };
 }
 
 export function waiting(s: TabletState): Kind | null {
@@ -372,7 +447,9 @@ export function tabletDone(s: TabletState): boolean {
   return s.placed >= s.delivery.length;
 }
 
-export type Press = { accepted: true; state: TabletState; moved: false } | { accepted: false; state: TabletState; moved: boolean };
+export type Press =
+  | { accepted: true; state: TabletState; moved: false }
+  | { accepted: false; state: TabletState; moved: boolean };
 
 /** Press a row for the waiting good: the right row takes the mark; a wrong row is one miss, and the second wrong press moves it for her. */
 export function pressRow(s: TabletState, row: Kind): Press {
@@ -401,7 +478,10 @@ export function askTablet(s: TabletState): TabletState {
 
 /** The read-back: how many of each kind the delivery held, which the rows always equal once it is done. */
 export function readBack(delivery: readonly Kind[]): Record<Kind, number> {
-  return { sheep: delivery.filter((k) => k === 'sheep').length, jar: delivery.filter((k) => k === 'jar').length };
+  return {
+    sheep: delivery.filter((k) => k === 'sheep').length,
+    jar: delivery.filter((k) => k === 'jar').length,
+  };
 }
 
 // ——— Levels 4–5: a ten is a different mark ———
@@ -438,8 +518,13 @@ export type Mark = 'ten' | 'one';
 /** A stamp adds its mark; at its strip's cap it changes nothing (`capped`). Free. */
 export function stamp(s: TensState, mark: Mark): { state: TensState; capped: boolean } {
   if (s.done) return { state: s, capped: false };
-  if (mark === 'ten') return s.tens >= TEN_CAP ? { state: s, capped: true } : { state: { ...s, tens: s.tens + 1 }, capped: false };
-  return s.ones >= ONE_CAP ? { state: s, capped: true } : { state: { ...s, ones: s.ones + 1 }, capped: false };
+  if (mark === 'ten')
+    return s.tens >= TEN_CAP
+      ? { state: s, capped: true }
+      : { state: { ...s, tens: s.tens + 1 }, capped: false };
+  return s.ones >= ONE_CAP
+    ? { state: s, capped: true }
+    : { state: { ...s, ones: s.ones + 1 }, capped: false };
 }
 
 /** Tapping a strip lifts its last mark. Free. */
@@ -509,14 +594,18 @@ export type CheckCommit = 'none' | 'right' | 'wrong';
 
 function commit(s: CheckState, verdict: CartVerdict, by: number): { state: CheckState; result: CheckCommit } {
   const want = verdictFor(s.t, s.c);
-  if (verdict === want.verdict && (verdict === 'right' || by === want.by)) return { state: { ...s, open: null, done: true }, result: 'right' };
+  if (verdict === want.verdict && (verdict === 'right' || by === want.by))
+    return { state: { ...s, open: null, done: true }, result: 'right' };
   const misses = s.misses + 1;
   const lined = s.lined || misses >= 2;
   return { state: { ...s, open: null, misses, lined, hinted: s.hinted || lined }, result: 'wrong' };
 }
 
 /** A verdict button: Right commits by itself; short and extra open their numbers and commit nothing. */
-export function chooseVerdict(s: CheckState, verdict: CartVerdict): { state: CheckState; result: CheckCommit } {
+export function chooseVerdict(
+  s: CheckState,
+  verdict: CartVerdict,
+): { state: CheckState; result: CheckCommit } {
   if (s.done) return { state: s, result: 'none' };
   if (verdict === 'right') return commit(s, 'right', 0);
   return { state: { ...s, open: verdict }, result: 'none' };
@@ -579,7 +668,10 @@ export function startDisagree(c: DisagreeCase): DisagreeState {
 }
 
 /** Picking is the commit: the accepted answer finishes the case; anything else is one miss, the help after the second. */
-export function pickAnswer(s: DisagreeState, a: Answer): { state: DisagreeState; result: 'none' | 'right' | 'wrong'; reason: DisagreeMiss | null } {
+export function pickAnswer(
+  s: DisagreeState,
+  a: Answer,
+): { state: DisagreeState; result: 'none' | 'right' | 'wrong'; reason: DisagreeMiss | null } {
   if (s.done) return { state: s, result: 'none', reason: null };
   const reason = missReason(s, a);
   if (reason === null) return { state: { ...s, done: true }, result: 'right', reason };
@@ -645,7 +737,10 @@ export interface RoundTally {
 }
 
 export function envelopeTally(envelopes: readonly EnvelopeState[]): RoundTally {
-  return { misses: envelopes.reduce((n, e) => n + e.misses, 0), hints: envelopes.filter((e) => e.hinted).length };
+  return {
+    misses: envelopes.reduce((n, e) => n + e.misses, 0),
+    hints: envelopes.filter((e) => e.hinted).length,
+  };
 }
 
 export function tabletTally(tablets: readonly TabletState[]): RoundTally {
@@ -654,17 +749,30 @@ export function tabletTally(tablets: readonly TabletState[]): RoundTally {
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, v: { x?: number; y?: number; w: number; h: number }) => a.x >= (v.x ?? 0) && a.y >= (v.y ?? 0) && a.x + a.w <= (v.x ?? 0) + v.w && a.y + a.h <= (v.y ?? 0) + v.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Rect, v: { x?: number; y?: number; w: number; h: number }) =>
+  a.x >= (v.x ?? 0) && a.y >= (v.y ?? 0) && a.x + a.w <= (v.x ?? 0) + v.w && a.y + a.h <= (v.y ?? 0) + v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export const CELL = 110;
@@ -734,7 +842,12 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   const left = HOME_CORNER.w + M;
   const yardLevel = plan.id === 'tens' || plan.id === 'check' || plan.id === 'disagree';
   const lane: Rect = { x: left, y: M, w: v.w - left - M, h: yardLevel ? YARD_H : 200 };
-  const free: Rect = { x: PET_CORNER.w + M, y: lane.y + lane.h + M, w: v.w - PET_CORNER.w - 2 * M, h: v.h - lane.y - lane.h - 2 * M };
+  const free: Rect = {
+    x: PET_CORNER.w + M,
+    y: lane.y + lane.h + M,
+    w: v.w - PET_CORNER.w - 2 * M,
+    h: v.h - lane.y - lane.h - 2 * M,
+  };
   const cx = free.x + free.w / 2;
   let l: TabletLayout;
   if (plan.id === 'tokens') {
@@ -751,14 +864,29 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     const ball: Rect = { x: Math.round(ballX), y: free.y + 10, w: ballW, h: gridH + 150 };
     const gx = ball.x + rim;
     const gy = ball.y + 75;
-    const cells = Array.from({ length: CELLS }, (_, i) => ({ x: gx + (i % CELL_COLUMNS) * (CELL + CELL_GAP), y: gy + Math.floor(i / CELL_COLUMNS) * (CELL + CELL_GAP), w: CELL, h: CELL }));
+    const cells = Array.from({ length: CELLS }, (_, i) => ({
+      x: gx + (i % CELL_COLUMNS) * (CELL + CELL_GAP),
+      y: gy + Math.floor(i / CELL_COLUMNS) * (CELL + CELL_GAP),
+      w: CELL,
+      h: CELL,
+    }));
     const crack: Rect = wide
       ? { x: ball.x + ball.w + GAP, y: ball.y + ball.h / 2 - CRACK.h / 2, w: CRACK.w, h: CRACK.h }
       : { x: cx - CRACK.w / 2, y: ball.y + ball.h + GAP, w: CRACK.w, h: CRACK.h };
-    const lineup: Rect = { x: free.x, y: (wide ? ball.y + ball.h : crack.y + crack.h) + GAP, w: free.w, h: 110 };
+    const lineup: Rect = {
+      x: free.x,
+      y: (wide ? ball.y + ball.h : crack.y + crack.h) + GAP,
+      w: free.w,
+      h: 110,
+    };
     l = { lane, ball, cells, crack, lineup, inputs: [ball, crack] };
   } else if (plan.id === 'disagree') {
-    const crates = [0, 1, 2].map((i) => ({ x: lane.x + 16 + i * (CRATE.w + 8), y: lane.y + lane.h - CRATE.h - 8, w: CRATE.w, h: CRATE.h }));
+    const crates = [0, 1, 2].map((i) => ({
+      x: lane.x + 16 + i * (CRATE.w + 8),
+      y: lane.y + lane.h - CRATE.h - 8,
+      w: CRATE.w,
+      h: CRATE.h,
+    }));
     const bx = crates[2].x + CRATE.w + 12;
     const baskets: Rect = { x: bx, y: lane.y + 16, w: lane.x + lane.w - 16 - bx, h: lane.h - 26 };
     // Farm | neither, can't tell | storehouse; each tablet's button below it, then each tablet's lineup.
@@ -767,7 +895,12 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     const x0 = Math.round(free.x + (free.w - groupW) / 2);
     const spare = wide ? 0 : Math.max(0, free.h - groupH - 6) / 3;
     const y0 = free.y + 6 + Math.round(spare);
-    const pair = [0, 1].map((i) => ({ x: x0 + i * (PAIR_TABLET.w + 2 * GAP + ANSWER), y: y0, w: PAIR_TABLET.w, h: PAIR_TABLET.h }));
+    const pair = [0, 1].map((i) => ({
+      x: x0 + i * (PAIR_TABLET.w + 2 * GAP + ANSWER),
+      y: y0,
+      w: PAIR_TABLET.w,
+      h: PAIR_TABLET.h,
+    }));
     const picks = pair.map((t) => ({ x: t.x + (t.w - PICK) / 2, y: t.y + t.h + 12, w: PICK, h: PICK }));
     const mid = x0 + PAIR_TABLET.w + GAP;
     const neither: Rect = { x: mid, y: y0, w: ANSWER, h: ANSWER };
@@ -776,42 +909,124 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     const half = (groupW - GAP) / 2;
     const lineups = [0, 1].map((i) => ({ x: x0 + i * (half + GAP), y: ly, w: half, h: 110 }));
     const lineup: Rect = { x: x0, y: ly, w: groupW, h: 110 };
-    l = { lane, crates, baskets, pair, picks, neither, cantTell, lineups, lineup, inputs: [...pair, ...picks, neither, cantTell] };
+    l = {
+      lane,
+      crates,
+      baskets,
+      pair,
+      picks,
+      neither,
+      cantTell,
+      lineups,
+      lineup,
+      inputs: [...pair, ...picks, neither, cantTell],
+    };
   } else if (yardLevel) {
-    const crates = [0, 1, 2].map((i) => ({ x: lane.x + 16 + i * (CRATE.w + 8), y: lane.y + lane.h - CRATE.h - 8, w: CRATE.w, h: CRATE.h }));
+    const crates = [0, 1, 2].map((i) => ({
+      x: lane.x + 16 + i * (CRATE.w + 8),
+      y: lane.y + lane.h - CRATE.h - 8,
+      w: CRATE.w,
+      h: CRATE.h,
+    }));
     const bx = crates[2].x + CRATE.w + 12;
     const baskets: Rect = { x: bx, y: lane.y + 16, w: lane.x + lane.w - 16 - bx, h: lane.h - 26 };
     const tabletH = READ_H + 2 * STRIP.h + 2 * 12 + 20;
     // Portrait has room to spare below: the tablet and its lineup sit a third of the way down it rather than at the top.
     const spare = wide ? 0 : Math.max(0, free.h - tabletH - 12 - 110 - 6) / 3;
     const tablet: Rect = { x: free.x, y: free.y + 6 + Math.round(spare), w: STRIP.w + 40, h: tabletH };
-    const strips = [0, 1].map((i) => ({ x: tablet.x + 20, y: tablet.y + READ_H + 8 + i * (STRIP.h + 12), w: STRIP.w, h: STRIP.h }));
+    const strips = [0, 1].map((i) => ({
+      x: tablet.x + 20,
+      y: tablet.y + READ_H + 8 + i * (STRIP.h + 12),
+      w: STRIP.w,
+      h: STRIP.h,
+    }));
     const col = tablet.x + tablet.w + GAP;
-    const lineup: Rect = { x: free.x, y: tablet.y + tablet.h + 12, w: plan.id === 'tens' ? free.w : tablet.w, h: 110 };
+    const lineup: Rect = {
+      x: free.x,
+      y: tablet.y + tablet.h + 12,
+      w: plan.id === 'tens' ? free.w : tablet.w,
+      h: 110,
+    };
     if (plan.id === 'tens') {
       const stamps = strips.map((r) => ({ x: col, y: r.y, w: STAMP.w, h: STAMP.h }));
-      const handIn: Rect = { x: col + STAMP.w + GAP, y: (strips[0].y + strips[1].y + STRIP.h) / 2 - CRACK.h / 2, w: CRACK.w, h: CRACK.h };
-      l = { lane, crates, baskets, tablet, strips, stamps, handIn, lineup, inputs: [tablet, ...strips, ...stamps, handIn] };
+      const handIn: Rect = {
+        x: col + STAMP.w + GAP,
+        y: (strips[0].y + strips[1].y + STRIP.h) / 2 - CRACK.h / 2,
+        w: CRACK.w,
+        h: CRACK.h,
+      };
+      l = {
+        lane,
+        crates,
+        baskets,
+        tablet,
+        strips,
+        stamps,
+        handIn,
+        lineup,
+        inputs: [tablet, ...strips, ...stamps, handIn],
+      };
     } else {
-      const verdicts = [0, 1, 2].map((i) => ({ x: col, y: tablet.y + i * (VERDICT + GAP), w: VERDICT, h: VERDICT }));
-      const numbers = verdicts.map((r) => ({ x: col + VERDICT + GAP, y: r.y + (VERDICT - NUMBER) / 2, w: NUMBER, h: NUMBER }));
-      l = { lane, crates, baskets, tablet, strips, verdicts, numbers, lineup, inputs: [tablet, ...verdicts, ...numbers] };
+      const verdicts = [0, 1, 2].map((i) => ({
+        x: col,
+        y: tablet.y + i * (VERDICT + GAP),
+        w: VERDICT,
+        h: VERDICT,
+      }));
+      const numbers = verdicts.map((r) => ({
+        x: col + VERDICT + GAP,
+        y: r.y + (VERDICT - NUMBER) / 2,
+        w: NUMBER,
+        h: NUMBER,
+      }));
+      l = {
+        lane,
+        crates,
+        baskets,
+        tablet,
+        strips,
+        verdicts,
+        numbers,
+        lineup,
+        inputs: [tablet, ...verdicts, ...numbers],
+      };
     }
   } else {
     const rowsX = wide ? free.x + 10 : cx - ROW.w / 2;
     const rows = [0, 1].map((i) => ({ x: rowsX, y: free.y + 10 + i * (ROW.h + GAP), w: ROW.w, h: ROW.h }));
     const store: Rect = wide
-      ? { x: rows[0].x + ROW.w + GAP, y: rows[0].y, w: Math.max(100, v.w - M - rows[0].x - ROW.w - GAP), h: 2 * ROW.h + GAP }
+      ? {
+          x: rows[0].x + ROW.w + GAP,
+          y: rows[0].y,
+          w: Math.max(100, v.w - M - rows[0].x - ROW.w - GAP),
+          h: 2 * ROW.h + GAP,
+        }
       : { x: cx - 160, y: rows[1].y + ROW.h + GAP, w: 320, h: 150 };
-    const lineup: Rect = { x: free.x, y: (wide ? rows[1].y + ROW.h : store.y + store.h) + GAP, w: free.w, h: 110 };
+    const lineup: Rect = {
+      x: free.x,
+      y: (wide ? rows[1].y + ROW.h : store.y + store.h) + GAP,
+      w: free.w,
+      h: 110,
+    };
     l = { lane, rows, store, lineup, inputs: rows.slice() };
   }
-  const parts = [l.lane, ...(l.cells ?? []), ...l.inputs, ...(l.store ? [l.store] : []), l.lineup, ...(l.crates ?? [])];
+  const parts = [
+    l.lane,
+    ...(l.cells ?? []),
+    ...l.inputs,
+    ...(l.store ? [l.store] : []),
+    l.lineup,
+    ...(l.crates ?? []),
+  ];
   if (!parts.every((p) => inside(p, v))) return null;
   if (l.inputs.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (l.cells?.some((c) => !inside(c, v))) return null;
   // Targets never cover one another (the cells sit on the ball and the strips on the tablet on purpose).
-  const targets = [...l.inputs.filter((p) => p !== l.ball && p !== l.tablet), ...(l.cells ?? []), ...(l.crates ?? [])];
+  const targets = [
+    ...l.inputs.filter((p) => p !== l.ball && p !== l.tablet),
+    ...(l.cells ?? []),
+    ...(l.crates ?? []),
+  ];
   if (l.crates?.some((c) => !inside(c, l.lane) || overlaps(c, l.baskets!))) return null;
   if (l.inputs.some((p) => overlaps(p, l.lineup)) && (l.verdicts || l.pair)) return null;
   if (targets.some((p, i) => targets.some((q, j) => i < j && overlaps(p, q)))) return null;

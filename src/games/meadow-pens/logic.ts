@@ -23,7 +23,12 @@ export const xOf = (c: Cell) => c % COLS;
 export const yOf = (c: Cell) => Math.floor(c / COLS);
 export const inGrid = (x: number, y: number) => x >= 0 && x < COLS && y >= 0 && y < ROWS;
 
-const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
+const STEPS = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
+] as const;
 
 /** The side neighbours of a cell inside the grid, in a fixed order. */
 export function neighbours(c: Cell): Cell[] {
@@ -76,10 +81,14 @@ export function penOf(painted: readonly Cell[]): Set<Cell> {
   return new Set(best);
 }
 
-export const flowersOf = (painted: readonly Cell[], pen: ReadonlySet<Cell>) => painted.filter((c) => !pen.has(c));
+export const flowersOf = (painted: readonly Cell[], pen: ReadonlySet<Cell>) =>
+  painted.filter((c) => !pen.has(c));
 
 /** One fence piece: the edge of pen cell `cell` on side `side` (its neighbour there is not in the pen). */
-export interface Edge { cell: Cell; side: 'right' | 'left' | 'down' | 'up' }
+export interface Edge {
+  cell: Cell;
+  side: 'right' | 'left' | 'down' | 'up';
+}
 const SIDES = ['right', 'left', 'down', 'up'] as const;
 
 /** Every fence piece around a pen, in a fixed order (cells ascending, then right, left, down, up). */
@@ -113,11 +122,18 @@ export function holes(pen: ReadonlySet<Cell>): Cell[] {
   const queue: Cell[] = [];
   for (let c = 0; c < CELLS; c++) {
     const edge = xOf(c) === 0 || yOf(c) === 0 || xOf(c) === COLS - 1 || yOf(c) === ROWS - 1;
-    if (edge && !pen.has(c)) { outside.add(c); queue.push(c); }
+    if (edge && !pen.has(c)) {
+      outside.add(c);
+      queue.push(c);
+    }
   }
   while (queue.length) {
     const c = queue.shift()!;
-    for (const n of neighbours(c)) if (!pen.has(n) && !outside.has(n)) { outside.add(n); queue.push(n); }
+    for (const n of neighbours(c))
+      if (!pen.has(n) && !outside.has(n)) {
+        outside.add(n);
+        queue.push(n);
+      }
   }
   const out: Cell[] = [];
   for (let c = 0; c < CELLS; c++) if (!pen.has(c) && !outside.has(c)) out.push(c);
@@ -125,7 +141,10 @@ export function holes(pen: ReadonlySet<Cell>): Cell[] {
 }
 
 /** Swap the model's x and y: what portrait draws. Only meaningful for tests (the grid itself is 6 by 4). */
-export const transpose = (c: Cell, cols = COLS): { x: number; y: number } => ({ x: Math.floor(c / cols), y: c % cols });
+export const transpose = (c: Cell, cols = COLS): { x: number; y: number } => ({
+  x: Math.floor(c / cols),
+  y: c % cols,
+});
 
 // ----- requests and checking -----
 
@@ -153,7 +172,11 @@ export function check(pen: ReadonlySet<Cell>, request: Request): Verdict {
   return { kind: 'ok' };
 }
 
-export const cellsOfMask = (m: number): Cell[] => { const out: Cell[] = []; for (let c = 0; c < CELLS; c++) if (m & (1 << c)) out.push(c); return out; };
+export const cellsOfMask = (m: number): Cell[] => {
+  const out: Cell[] = [];
+  for (let c = 0; c < CELLS; c++) if (m & (1 << c)) out.push(c);
+  return out;
+};
 
 const setsCache = new Map<number, number[]>();
 /** Every side-connected set of `n` cells in the grid, as bit masks in ascending order. */
@@ -163,7 +186,9 @@ export function connectedSets(n: number): number[] {
   let level = new Set<number>(Array.from({ length: CELLS }, (_, c) => 1 << c));
   for (let k = 1; k < n; k++) {
     const next = new Set<number>();
-    for (const m of level) for (const c of cellsOfMask(m)) for (const nb of neighbours(c)) if (!(m & (1 << nb))) next.add(m | (1 << nb));
+    for (const m of level)
+      for (const c of cellsOfMask(m))
+        for (const nb of neighbours(c)) if (!(m & (1 << nb))) next.add(m | (1 << nb));
     level = next;
   }
   const out = [...level].sort((a, b) => a - b);
@@ -171,7 +196,11 @@ export function connectedSets(n: number): number[] {
   return out;
 }
 
-const overlap = (m: number, pen: ReadonlySet<Cell>) => { let n = 0; for (const c of pen) if (m & (1 << c)) n++; return n; };
+const overlap = (m: number, pen: ReadonlySet<Cell>) => {
+  let n = 0;
+  for (const c of pen) if (m & (1 << c)) n++;
+  return n;
+};
 
 /** A cell of a connected set whose removal leaves it connected (the highest such cell). */
 function nonCut(cells: Cell[]): Cell {
@@ -192,7 +221,10 @@ export function targetFor(pen: ReadonlySet<Cell>, request: Request): Set<Cell> {
       const cells = new Set(cellsOfMask(m));
       if (fenceCount(cells) !== request.fence) continue;
       const o = overlap(m, pen);
-      if (o > bestOverlap) { best = m; bestOverlap = o; }
+      if (o > bestOverlap) {
+        best = m;
+        bestOverlap = o;
+      }
     }
     return new Set(cellsOfMask(best));
   }
@@ -201,7 +233,10 @@ export function targetFor(pen: ReadonlySet<Cell>, request: Request): Set<Cell> {
   while (cells.length > request.squares) cells = cells.filter((c) => c !== nonCut(cells));
   while (cells.length < request.squares) {
     const have = new Set(cells);
-    const grow = cells.flatMap(neighbours).filter((c) => !have.has(c)).sort((a, b) => a - b)[0];
+    const grow = cells
+      .flatMap(neighbours)
+      .filter((c) => !have.has(c))
+      .sort((a, b) => a - b)[0];
     cells.push(grow);
   }
   return new Set(cells);
@@ -211,7 +246,8 @@ export function targetFor(pen: ReadonlySet<Cell>, request: Request): Set<Cell> {
 export function nextCell(painted: readonly Cell[], target: ReadonlySet<Cell>): Cell | null {
   const on = new Set(painted);
   const missing = [...target].filter((c) => !on.has(c)).sort((a, b) => a - b);
-  if (missing.length) return missing.find((c) => neighbours(c).some((n) => on.has(n) && target.has(n))) ?? missing[0];
+  if (missing.length)
+    return missing.find((c) => neighbours(c).some((n) => on.has(n) && target.has(n))) ?? missing[0];
   const extra = painted.filter((c) => !target.has(c));
   return extra.length ? extra[extra.length - 1] : null;
 }
@@ -219,7 +255,14 @@ export function nextCell(painted: readonly Cell[], target: ReadonlySet<Cell>): C
 // ----- level 2's fields and cards -----
 
 /** A field as drawn in landscape: rows by columns, its right total, its fence count and the third card. */
-export interface Field { rows: number; cols: number; right: number; fence: number; third: number; why: 'row-more' | 'row-less' | 'rows-plus-cols' }
+export interface Field {
+  rows: number;
+  cols: number;
+  right: number;
+  fence: number;
+  third: number;
+  why: 'row-more' | 'row-less' | 'rows-plus-cols';
+}
 
 /** The level-2 card table (docs/definitions/meadow-pens.md#level-2-card-table). 4 by 4 is left out: its fence equals its area. */
 export const FIELDS: readonly Field[] = [
@@ -246,17 +289,35 @@ export function drawnRows(f: Field, tall: boolean): Cell[][] {
   const cells = fieldCells(f);
   const key = (c: Cell) => (tall ? xOf(c) : yOf(c));
   const keys = [...new Set(cells.map(key))].sort((a, b) => a - b);
-  return keys.map((k) => cells.filter((c) => key(c) === k).sort((a, b) => (tall ? yOf(a) - yOf(b) : xOf(a) - xOf(b))));
+  return keys.map((k) =>
+    cells.filter((c) => key(c) === k).sort((a, b) => (tall ? yOf(a) - yOf(b) : xOf(a) - xOf(b))),
+  );
 }
 
 // ----- plans and rounds -----
 
-export interface Plan { level: 1 | 2 | 3 | 4 | 5; name: string; count: number }
+export interface Plan {
+  level: 1 | 2 | 3 | 4 | 5;
+  name: string;
+  count: number;
+}
 
 export const PLANS: readonly Plan[] = [
-  { level: 1, name: 'Enough grass: paint a pen with as many squares as a friend asks (3 to 8), any shape', count: 3 },
-  { level: 2, name: 'Rows of grass: count a fenced field by its rows and tap the card for the whole field', count: 5 },
-  { level: 3, name: 'Same grass, new fence: six squares whose fence uses every piece on the stack (10, 12 or 14)', count: 3 },
+  {
+    level: 1,
+    name: 'Enough grass: paint a pen with as many squares as a friend asks (3 to 8), any shape',
+    count: 3,
+  },
+  {
+    level: 2,
+    name: 'Rows of grass: count a fenced field by its rows and tap the card for the whole field',
+    count: 5,
+  },
+  {
+    level: 3,
+    name: 'Same grass, new fence: six squares whose fence uses every piece on the stack (10, 12 or 14)',
+    count: 3,
+  },
   { level: 4, name: 'More grass, or more fence? Compare two pens, including equal counts', count: 5 },
   { level: 5, name: 'Two parts: count all the grass in a bent field made of two rectangles', count: 5 },
 ];
@@ -265,10 +326,18 @@ export const LEVELS: BandLevels = {
   school: { min: 1, max: 5 },
 };
 
-export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+export const planFor = (level: number): Plan =>
+  PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 
-export interface PenTask { kind: 'pen'; request: Request }
-export interface FieldTask { kind: 'field'; field: Field; cards: number[] }
+export interface PenTask {
+  kind: 'pen';
+  request: Request;
+}
+export interface FieldTask {
+  kind: 'field';
+  field: Field;
+  cards: number[];
+}
 export type Task = PenTask | FieldTask;
 
 /** A field's three cards in a seeded order. */
@@ -279,7 +348,9 @@ export function makeTasks(plan: Plan, rng: Rng, count = plan.count): Task[] {
   if (plan.level >= 4) throw new Error('Fixed fields use fixedTasks');
   if (plan.level === 2) {
     const rest = rng.shuffle(FIELDS.slice(1));
-    return [FIELDS[0], ...rest].slice(0, count).map((field) => ({ kind: 'field', field, cards: cardsFor(field, rng) }));
+    return [FIELDS[0], ...rest]
+      .slice(0, count)
+      .map((field) => ({ kind: 'field', field, cards: cardsFor(field, rng) }));
   }
   if (plan.level === 3) {
     const fences = [10, ...rng.shuffle([12, 14])];
@@ -309,56 +380,91 @@ export const BENT_FIELDS = [
   { id: 'L5', w: 5, h: 3, cutW: 2, cutH: 1, split: 'horizontal', third: 15 },
   { id: 'L6', w: 6, h: 4, cutW: 3, cutH: 2, split: 'horizontal', third: 24 },
 ] as const;
-export type BentField = typeof BENT_FIELDS[number];
+export type BentField = (typeof BENT_FIELDS)[number];
 export function rectangleCells(w: number, h: number, x0 = 0, y0 = 0): Cell[] {
-  return Array.from({ length: w * h }, (_, i) => cellOf(x0 + i % w, y0 + Math.floor(i / w)));
+  return Array.from({ length: w * h }, (_, i) => cellOf(x0 + (i % w), y0 + Math.floor(i / w)));
 }
 /** Only the authored split is played; the alternate split is inspectable for rule verification. */
-export function bentParts(f: BentField, mirror = false, split: 'vertical' | 'horizontal' = f.split): [Cell[], Cell[]] {
-  const parts: [Cell[], Cell[]] = split === 'vertical'
-    ? [rectangleCells(f.w - f.cutW, f.h), rectangleCells(f.cutW, f.h - f.cutH, f.w - f.cutW, f.cutH)]
-    : [rectangleCells(f.w, f.h - f.cutH, 0, f.cutH), rectangleCells(f.w - f.cutW, f.cutH)];
-  const ox = Math.floor((COLS - f.w) / 2), oy = Math.floor((ROWS - f.h) / 2);
-  return parts.map((part) => part.map((c) => cellOf(ox + (mirror ? f.w - 1 - xOf(c) : xOf(c)), oy + yOf(c)))) as [Cell[], Cell[]];
+export function bentParts(
+  f: BentField,
+  mirror = false,
+  split: 'vertical' | 'horizontal' = f.split,
+): [Cell[], Cell[]] {
+  const parts: [Cell[], Cell[]] =
+    split === 'vertical'
+      ? [rectangleCells(f.w - f.cutW, f.h), rectangleCells(f.cutW, f.h - f.cutH, f.w - f.cutW, f.cutH)]
+      : [rectangleCells(f.w, f.h - f.cutH, 0, f.cutH), rectangleCells(f.w - f.cutW, f.cutH)];
+  const ox = Math.floor((COLS - f.w) / 2),
+    oy = Math.floor((ROWS - f.h) / 2);
+  return parts.map((part) =>
+    part.map((c) => cellOf(ox + (mirror ? f.w - 1 - xOf(c) : xOf(c)), oy + yOf(c))),
+  ) as [Cell[], Cell[]];
 }
 export interface CompareTask {
-  kind: 'compare'; id: string; parts: [Cell[], Cell[]]; material: Material;
-  badges: [Badge, Badge]; cards: Choice[];
+  kind: 'compare';
+  id: string;
+  parts: [Cell[], Cell[]];
+  material: Material;
+  badges: [Badge, Badge];
+  cards: Choice[];
 }
 export interface PartsTask {
-  kind: 'parts'; id: string; parts: [Cell[], Cell[]]; cards: number[];
+  kind: 'parts';
+  id: string;
+  parts: [Cell[], Cell[]];
+  cards: number[];
 }
 export type FixedTask = CompareTask | PartsTask;
-export const materialCount = (cells: readonly Cell[], material: Material) => material === 'grass' ? cells.length : fenceEdges(new Set(cells)).length;
+export const materialCount = (cells: readonly Cell[], material: Material) =>
+  material === 'grass' ? cells.length : fenceEdges(new Set(cells)).length;
 export function correctChoice(t: FixedTask): Choice | number {
   if (t.kind === 'parts') return t.parts[0].length + t.parts[1].length;
-  const a = materialCount(t.parts[0], t.material), b = materialCount(t.parts[1], t.material);
+  const a = materialCount(t.parts[0], t.material),
+    b = materialCount(t.parts[1], t.material);
   return a === b ? 'same' : a > b ? 'a' : 'b';
 }
 export function fixedTasks(level: number, rng: Rng, authored = true): FixedTask[] {
   if (level === 5) {
-    const fields = authored ? [BENT_FIELDS[0], ...rng.shuffle(BENT_FIELDS.slice(1)).slice(0, 4)] : rng.shuffle([...BENT_FIELDS]).slice(0, 5);
+    const fields = authored
+      ? [BENT_FIELDS[0], ...rng.shuffle(BENT_FIELDS.slice(1)).slice(0, 4)]
+      : rng.shuffle([...BENT_FIELDS]).slice(0, 5);
     return fields.map((f, i) => {
       const parts = bentParts(f, !(authored && i === 0) && rng.chance(0.5));
       const cards = [parts.flat().length, fenceEdges(new Set(parts.flat())).length, f.third];
       return { kind: 'parts', id: f.id, parts, cards: authored && i === 0 ? cards : rng.shuffle(cards) };
     });
   }
-  const families = authored ? [COMPARISONS[0], COMPARISONS[2], COMPARISONS[1]] : [rng.pick([COMPARISONS[0], COMPARISONS[3]]), COMPARISONS[2], rng.pick([COMPARISONS[1], COMPARISONS[4]])];
+  const families = authored
+    ? [COMPARISONS[0], COMPARISONS[2], COMPARISONS[1]]
+    : [
+        rng.pick([COMPARISONS[0], COMPARISONS[3]]),
+        COMPARISONS[2],
+        rng.pick([COMPARISONS[1], COMPARISONS[4]]),
+      ];
   const startGrass = authored || rng.chance(0.5);
   const out: CompareTask[] = [];
   families.forEach((f, i) => {
     const parts: [Cell[], Cell[]] = [rectangleCells(f.a[0], f.a[1]), rectangleCells(f.b[0], f.b[1], 0, 2)];
     const badges: [Badge, Badge] = rng.chance(0.5) ? ['daisy', 'tulip'] : ['tulip', 'daisy'];
     const cards = rng.shuffle<Choice>(['a', 'b', 'same']);
-    for (let j = 0; j < (i < 2 ? 2 : 1); j++) out.push({ kind: 'compare', id: f.id, parts, badges, cards, material: (out.length % 2 === 0) === startGrass ? 'grass' : 'fence' });
+    for (let j = 0; j < (i < 2 ? 2 : 1); j++)
+      out.push({
+        kind: 'compare',
+        id: f.id,
+        parts,
+        badges,
+        cards,
+        material: (out.length % 2 === 0) === startGrass ? 'grass' : 'fence',
+      });
   });
   return out;
 }
 /** Rows follow the current logical orientation, preserving membership after resize. */
 export function rowsOf(cells: readonly Cell[], tall: boolean): Cell[][] {
-  const key = (c: Cell) => tall ? xOf(c) : yOf(c);
-  return [...new Set(cells.map(key))].sort((a, b) => a - b).map((k) => cells.filter((c) => key(c) === k).sort((a, b) => tall ? yOf(a) - yOf(b) : xOf(a) - xOf(b)));
+  const key = (c: Cell) => (tall ? xOf(c) : yOf(c));
+  return [...new Set(cells.map(key))]
+    .sort((a, b) => a - b)
+    .map((k) => cells.filter((c) => key(c) === k).sort((a, b) => (tall ? yOf(a) - yOf(b) : xOf(a) - xOf(b))));
 }
 
 // ----- accounting -----
@@ -421,15 +527,25 @@ export class FenceHeap {
   /** Pieces left on the heap for a fence of `used`; tops up first when it would fall below six. Returns whether the cart came. */
   use(used: number): boolean {
     let came = false;
-    while (this.total - used < 6) { this.total += 10; came = true; }
+    while (this.total - used < 6) {
+      this.total += 10;
+      came = true;
+    }
     return came;
   }
-  left(used: number) { return Math.max(0, this.total - used); }
+  left(used: number) {
+    return Math.max(0, this.total - used);
+  }
 }
 
 // ----- layout -----
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface MeadowLayout {
   /** Portrait draws the model grid transposed (4 columns by 6 rows). */
   tall: boolean;
@@ -463,7 +579,8 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
   const rows = tall ? COLS : ROWS;
   const gw = cols * PITCH - GAP;
   const gh = rows * PITCH - GAP;
-  const cardsRow = (x: number, y: number) => [0, 1, 2].map((i) => ({ x: x + i * (CARD + CARD_GAP), y, w: CARD, h: CARD }));
+  const cardsRow = (x: number, y: number) =>
+    [0, 1, 2].map((i) => ({ x: x + i * (CARD + CARD_GAP), y, w: CARD, h: CARD }));
   let out: MeadowLayout;
   if (!tall) {
     const ox = Math.max(0, (w - 1024) / 2);
@@ -477,8 +594,11 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
       friend: { x: col, y: gy, w: 130, h: 140 },
       bubble: { x: gx + gw / 2 - 140, y: 18, w: 280, h: 124 },
       bell: { x: col + 5, y: gy + 172, w: 120, h: 120 },
-      stack: (level === 2 || level >= 4) ? null : { x: gx + 40, y: gy + gh + 32, w: gw - 80, h: 130 },
-      cards: (level === 2 || level >= 4) ? cardsRow(gx + gw / 2 - (3 * CARD + 2 * CARD_GAP) / 2, gy + gh + 32) : null,
+      stack: level === 2 || level >= 4 ? null : { x: gx + 40, y: gy + gh + 32, w: gw - 80, h: 130 },
+      cards:
+        level === 2 || level >= 4
+          ? cardsRow(gx + gw / 2 - (3 * CARD + 2 * CARD_GAP) / 2, gy + gh + 32)
+          : null,
       companion: { x: col + 65, y: gy + gh + 10 },
     };
   } else {
@@ -494,8 +614,8 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
       friend: { x: left + cardsW + 60, y: rowY, w: 130, h: 140 },
       bubble: { x: w / 2 - 140, y: 40, w: 280, h: 124 },
       bell: { x: left + cardsW + 60 + 130 + 30, y: rowY + 10, w: 120, h: 120 },
-      stack: (level === 2 || level >= 4) ? null : { x: left, y: rowY + 5, w: cardsW, h: 130 },
-      cards: (level === 2 || level >= 4) ? cardsRow(left, rowY + 5) : null,
+      stack: level === 2 || level >= 4 ? null : { x: left, y: rowY + 5, w: cardsW, h: 130 },
+      cards: level === 2 || level >= 4 ? cardsRow(left, rowY + 5) : null,
       companion: { x: gx + gw + 90, y: gy + gh },
     };
   }
@@ -503,14 +623,20 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
   return fits(out, view) ? out : null;
 }
 
-const gridRect = (l: MeadowLayout): Rect => ({ x: l.grid.x, y: l.grid.y, w: l.grid.cols * l.grid.pitch - GAP, h: l.grid.rows * l.grid.pitch - GAP });
+const gridRect = (l: MeadowLayout): Rect => ({
+  x: l.grid.x,
+  y: l.grid.y,
+  w: l.grid.cols * l.grid.pitch - GAP,
+  h: l.grid.rows * l.grid.pitch - GAP,
+});
 
 /** The touch targets of a layout: grid, bubble, friend, bell and cards (the stack and gate take no touch). */
 export function targets(l: MeadowLayout): Rect[] {
   return [gridRect(l), l.bubble, l.friend, ...(l.fixed ? [] : [l.bell]), ...(l.cards ?? [])];
 }
 
-const apart = (a: Rect, b: Rect, d: number) => a.x + a.w + d <= b.x || b.x + b.w + d <= a.x || a.y + a.h + d <= b.y || b.y + b.h + d <= a.y;
+const apart = (a: Rect, b: Rect, d: number) =>
+  a.x + a.w + d <= b.x || b.x + b.w + d <= a.x || a.y + a.h + d <= b.y || b.y + b.h + d <= a.y;
 const inside = (r: Rect, v: View) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
 
 function fits(l: MeadowLayout, v: View): boolean {
@@ -518,7 +644,8 @@ function fits(l: MeadowLayout, v: View): boolean {
   const pet: Rect = { x: 0, y: v.h - PET_CORNER.h, w: PET_CORNER.w, h: PET_CORNER.h };
   const home: Rect = { x: 0, y: 0, w: HOME_CORNER.w, h: HOME_CORNER.h };
   for (const r of all) if (!inside(r, v) || !apart(r, pet, 0) || !apart(r, home, 0)) return false;
-  for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) if (!apart(all[i], all[j], 30)) return false;
+  for (let i = 0; i < all.length; i++)
+    for (let j = i + 1; j < all.length; j++) if (!apart(all[i], all[j], 30)) return false;
   return true;
 }
 
@@ -526,7 +653,12 @@ function fits(l: MeadowLayout, v: View): boolean {
 export function cellRect(l: MeadowLayout, c: Cell): Rect {
   const col = l.tall ? yOf(c) : xOf(c);
   const row = l.tall ? xOf(c) : yOf(c);
-  return { x: l.grid.x + col * l.grid.pitch, y: l.grid.y + row * l.grid.pitch, w: l.grid.cell, h: l.grid.cell };
+  return {
+    x: l.grid.x + col * l.grid.pitch,
+    y: l.grid.y + row * l.grid.pitch,
+    w: l.grid.cell,
+    h: l.grid.cell,
+  };
 }
 
 /** The side of a cell an edge is drawn on: portrait's transpose swaps right with down and left with up. */
@@ -544,4 +676,5 @@ export function cellAt(l: MeadowLayout, px: number, py: number): Cell | null {
 }
 
 export const centre = (r: Rect) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const holds = (r: Rect, x: number, y: number, pad = 0) => x >= r.x - pad && x <= r.x + r.w + pad && y >= r.y - pad && y <= r.y + r.h + pad;
+export const holds = (r: Rect, x: number, y: number, pad = 0) =>
+  x >= r.x - pad && x <= r.x + r.w + pad && y >= r.y - pad && y <= r.y + r.h + pad;

@@ -18,7 +18,9 @@ describe('The Woodland Picnic', () => {
       expect(step.level, step.id).toBeLessThanOrEqual(range.max);
     }
     // The levels mean what the story says: the woods map, two identical boxes, a beat copied by ear.
-    const names = Object.fromEntries(WOODLAND_GAME_STEPS.map((s) => [s.id, gameById(s.game)!.describeLevel(s.level)]));
+    const names = Object.fromEntries(
+      WOODLAND_GAME_STEPS.map((s) => [s.id, gameById(s.game)!.describeLevel(s.level)]),
+    );
     expect(names.invitations).toMatch(/map of Wonder Woods/);
     expect(names.baskets).toMatch(/Two identical boxes/);
     expect(names.beat).toMatch(/by ear/);
@@ -26,8 +28,20 @@ describe('The Woodland Picnic', () => {
 
   it('has a game for every step, and speaks every request, its change and its recap', () => {
     expect(WOODLAND_GAME_STEPS.map((s) => s.id)).toEqual([...WOODLAND_STEPS]);
-    for (const id of WOODLAND_STEPS) for (const line of Object.values(woodlandLine[id])) expect(SCRIPT[line], line).toBeDefined();
-    for (const line of ['woodland.spot', 'woodland.hello', 'woodland.back', 'woodland.next', 'woodland.ready', 'woodland.keepsake', 'woodland.thanks', 'woodland.photo', 'woodland.again'] as const) expect(SCRIPT[line], line).toBeDefined();
+    for (const id of WOODLAND_STEPS)
+      for (const line of Object.values(woodlandLine[id])) expect(SCRIPT[line], line).toBeDefined();
+    for (const line of [
+      'woodland.spot',
+      'woodland.hello',
+      'woodland.back',
+      'woodland.next',
+      'woodland.ready',
+      'woodland.keepsake',
+      'woodland.thanks',
+      'woodland.photo',
+      'woodland.again',
+    ] as const)
+      expect(SCRIPT[line], line).toBeDefined();
   });
 
   it('plays a stated picnic beat of drums and pentatonic bells', () => {

@@ -36,7 +36,13 @@ export type StoryRound =
  * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
  * A `land` origin keeps the page of a full land she opened it from (clamped on arrival); `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
  */
-export type Origin = { land: LandId; page?: number } | { place: Band } | { journal: true } | { library: true } | { explore: ExploreEntry; page: number; others?: boolean } | { daily: true };
+export type Origin =
+  | { land: LandId; page?: number }
+  | { place: Band }
+  | { journal: true }
+  | { library: true }
+  | { explore: ExploreEntry; page: number; others?: boolean }
+  | { daily: true };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -109,7 +115,13 @@ export class App {
   /** The box of the card or spot just tapped, read once by the `show` its route calls (`growFrom`). */
   private growBox: Box | null = null;
   /** The change on screen: its kind, its progress, the old screen's picture and what it finishes. */
-  private moving: { how: Transition; t: number; layer: Container; picture: Sprite | null; done: () => void } | null = null;
+  private moving: {
+    how: Transition;
+    t: number;
+    layer: Container;
+    picture: Sprite | null;
+    done: () => void;
+  } | null = null;
   /** An invisible element whose padding is the safe area (see `#safe-area` in style.css). */
   private readonly probe = document.createElement('div');
   /** Cream over the strips the insets leave, so scenery the root draws past its edge never shows in them. */
@@ -195,10 +207,17 @@ export class App {
     next.resize(this.view);
     this.root.addChild(next.root);
     this.refreshTurn();
-    const how = picture && !reshaped ? chooseTransition(from, key ? next.returnBox(key) : null, this.view) : ({ kind: 'fade' } as const);
+    const how =
+      picture && !reshaped
+        ? chooseTransition(from, key ? next.returnBox(key) : null, this.view)
+        : ({ kind: 'fade' } as const);
     // A grow draws the new screen over the old picture; a shrink or fade draws the old picture over the new screen.
-    if (picture) this.root.addChildAt(picture, how.kind === 'grow' ? this.root.getChildIndex(next.root) : this.root.children.length);
-    const layer = how.kind === 'grow' ? next.root : picture ?? next.root;
+    if (picture)
+      this.root.addChildAt(
+        picture,
+        how.kind === 'grow' ? this.root.getChildIndex(next.root) : this.root.children.length,
+      );
+    const layer = how.kind === 'grow' ? next.root : (picture ?? next.root);
     next.enter();
     await new Promise<void>((done) => {
       this.moving = { how, t: 0, layer, picture, done };
@@ -285,7 +304,8 @@ export class App {
   }
 
   private applyView() {
-    const w = window.innerWidth, h = window.innerHeight;
+    const w = window.innerWidth,
+      h = window.innerHeight;
     const insets = clampInsets(this.readInsets(), w, h);
     // A window resize and the probe's observer both land here; lay out once per change.
     const upright = this.uprightPhone() && !!this.scene?.uprightArea;
@@ -316,13 +336,23 @@ export class App {
     this.frame.eventMode = any ? 'static' : 'none';
     if (!any) return;
     const mid = h - top - bottom;
-    this.frame.rect(0, 0, w, top).rect(0, h - bottom, w, bottom).rect(0, top, left, mid).rect(w - right, top, right, mid).fill(cream);
+    this.frame
+      .rect(0, 0, w, top)
+      .rect(0, h - bottom, w, bottom)
+      .rect(0, top, left, mid)
+      .rect(w - right, top, right, mid)
+      .fill(cream);
   }
 
   private readInsets(): Insets {
     const style = getComputedStyle(this.probe);
     const px = (v: string) => parseFloat(v) || 0;
-    return { top: px(style.paddingTop), right: px(style.paddingRight), bottom: px(style.paddingBottom), left: px(style.paddingLeft) };
+    return {
+      top: px(style.paddingTop),
+      right: px(style.paddingRight),
+      bottom: px(style.paddingBottom),
+      left: px(style.paddingLeft),
+    };
   }
 
   /** A touch screen held upright (a phone): the turn prompt's condition, and the upright design area's for a ready scene. */
@@ -379,7 +409,10 @@ export class App {
         // The scene stays frozen behind the page; closing it goes to the island map, which shows any change at once.
         this.closeSheet();
         voice.stop();
-        openParentPanel(() => (store.data.creatures.owned.length > 0 ? this.go.hub() : this.go.hatch()), () => this.go.start());
+        openParentPanel(
+          () => (store.data.creatures.owned.length > 0 ? this.go.hub() : this.go.hatch()),
+          () => this.go.start(),
+        );
       },
     });
   }

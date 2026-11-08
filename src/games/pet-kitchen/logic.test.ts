@@ -1,229 +1,458 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { COMPARE_PAIRS, comparePair, compareCut, needs, servesBoth, firstUnmet, morePlate, compareFriends, kitchenDiscoveries, COMPARE_LEVEL , CUP_LEVEL, CUP_PLAN, CUP, CUP_CAP, CUP_WAYS, SCOOPS, canPour, cupFix, cupFull, cupTotal, cupTrouble, cupWay, cupWords, wayStep, type Scoop } from './logic';
-import { allCut, CUT_WAYS, nextWay, overlayPair, pieceShape, SHAPES_LEVEL, SHAPES_PLAN, shapesLine, type CutWay, type PieceShape, dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud, cutShares, fairAreas, pieceAreas, LOPSIDED_AREAS, isPizzaLevel } from './logic';
-it('can share every meal fairly and accepts alternative equal cuts',()=>{
- for(const p of PLANS.filter(p=>p.mode==='share')) {
-   expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
-   for(const c of p.cuts){const pieces=p.wholes*c;if(pieces%p.friends)continue;
-     const plates=Array(p.friends).fill(0);for(let i=0;i<pieces;i++)plates[nextPlate(plates)]++;
-     expect(fair(plates,pieces)).toBe(true);plates[0]++;expect(fair(plates,pieces)).toBe(false);
-   }
- }
- expect(fair([0,0],0)).toBe(false);expect(fair([2,0],2)).toBe(false);
+import {
+  COMPARE_PAIRS,
+  comparePair,
+  compareCut,
+  needs,
+  servesBoth,
+  firstUnmet,
+  morePlate,
+  compareFriends,
+  kitchenDiscoveries,
+  COMPARE_LEVEL,
+  CUP_LEVEL,
+  CUP_PLAN,
+  CUP,
+  CUP_CAP,
+  CUP_WAYS,
+  SCOOPS,
+  canPour,
+  cupFix,
+  cupFull,
+  cupTotal,
+  cupTrouble,
+  cupWay,
+  cupWords,
+  wayStep,
+  type Scoop,
+} from './logic';
+import {
+  allCut,
+  CUT_WAYS,
+  nextWay,
+  overlayPair,
+  pieceShape,
+  SHAPES_LEVEL,
+  SHAPES_PLAN,
+  shapesLine,
+  type CutWay,
+  type PieceShape,
+  dealCut,
+  dealFriends,
+  dealTo,
+  DEAL_LEVEL,
+  fruitPair,
+  FRUITS,
+  pieceCount,
+  wholeFor,
+  WHOLES,
+  doubled,
+  fair,
+  fairCut,
+  fractionCut,
+  FRACTIONS,
+  halfIngredientHint,
+  halved,
+  ingredientHint,
+  nextPlate,
+  planFor,
+  PLANS,
+  plateAt,
+  PLATE_REACH,
+  recipe,
+  servesFraction,
+  serveTrouble,
+  countAloud,
+  cutShares,
+  fairAreas,
+  pieceAreas,
+  LOPSIDED_AREAS,
+  isPizzaLevel,
+} from './logic';
+it('can share every meal fairly and accepts alternative equal cuts', () => {
+  for (const p of PLANS.filter((p) => p.mode === 'share')) {
+    expect(p.cuts.some((c) => (p.wholes * c) % p.friends === 0)).toBe(true);
+    for (const c of p.cuts) {
+      const pieces = p.wholes * c;
+      if (pieces % p.friends) continue;
+      const plates = Array(p.friends).fill(0);
+      for (let i = 0; i < pieces; i++) plates[nextPlate(plates)]++;
+      expect(fair(plates, pieces)).toBe(true);
+      plates[0]++;
+      expect(fair(plates, pieces)).toBe(false);
+    }
+  }
+  expect(fair([0, 0], 0)).toBe(false);
+  expect(fair([2, 0], 2)).toBe(false);
 });
-it('doubling is exact and hints lead to a repair for missing or extra fruit',()=>{
- for(let seed=1;seed<=50;seed++){const base=recipe(6,new Rng(seed)),made=[0,0];
- for(let steps=0;steps<8&&!doubled(base,made);steps++){const i=ingredientHint(base,made);made[i]+=made[i]<2*base[i]?1:-1;}
- expect(doubled(base,made)).toBe(true);made[0]++;expect(ingredientHint(base,made)).toBe(0);expect(doubled(base,made)).toBe(false);
- }
-});
-it('the ghost finger makes a cut that shares out evenly, the fewest pieces that do, and serving it is never a miss',()=>{
- for(const p of PLANS.filter(p=>p.mode==='share')) {
-   const cut=fairCut(p);expect(cut).toBeDefined();expect(p.cuts as readonly number[]).toContain(cut);
-   for(const c of p.cuts)if(c<cut!)expect(p.wholes*c%p.friends).not.toBe(0);
-   // Hand the pieces round the plates the way the bot does, and the plates come out equal.
-   const plates=Array(p.friends).fill(0);for(let i=0;i<p.wholes*cut!;i++)plates[nextPlate(plates)]++;
-   expect(fair(plates,p.wholes*cut!)).toBe(true);
- }
- // One sandwich for four friends: halves would leave two friends with nothing, so only quarters are fair.
- const level2=PLANS[1];expect(fairCut(level2)).toBe(4);
- expect(fair([1,1,0,0],level2.wholes*2)).toBe(false);
- // Two sandwiches for four friends: halves already share out evenly, which keeps the demonstration short.
- expect(fairCut(PLANS[3])).toBe(2);
-});
-it('a piece let go on a plate lands on that plate, the nearest wins, and far from every plate it returns to the tray',()=>{
- const plates=[{x:300,y:310},{x:485,y:310},{x:670,y:310}];
- plates.forEach((p,i)=>expect(plateAt(plates,p.x,p.y)).toBe(i));
- expect(plateAt(plates,380,310)).toBe(0);expect(plateAt(plates,405,310)).toBe(1);
- // Plates close together: the nearer one wins, not the first.
- expect(plateAt([{x:300,y:310},{x:380,y:310}],345,310)).toBe(1);expect(plateAt([{x:300,y:310},{x:380,y:310}],330,310)).toBe(0);
- expect(plateAt(plates,300+PLATE_REACH+1,310+PLATE_REACH+1)).toBe(-1);expect(plateAt(plates,485,700)).toBe(-1);
-});
-it('the ghost finger doubles every recipe with exactly the fruit that is missing and never a spare',()=>{
- for(const level of [5,6])for(let seed=1;seed<=50;seed++){
-   const base=recipe(level,new Rng(seed)),made=[0,0];let taps=0;
-   for(let i=ingredientHint(base,made);i>=0;i=ingredientHint(base,made)){made[i]++;taps++;expect(made[i]).toBeLessThanOrEqual(base[i]*2);}
-   expect(doubled(base,made)).toBe(true);expect(taps).toBe(2*(base[0]+base[1]));
- }
-});
-it('every named fraction can be served with an offered equal cut, including two quarters for a half',()=>{
- const level7=PLANS[6];
- for(const request of FRACTIONS){
-   const cut=fractionCut(request,level7.cuts);expect(cut).toBeDefined();
-   const served=cut!*request.numerator/request.denominator;
-   expect(servesFraction(request,cut!,served)).toBe(true);
-   expect(servesFraction(request,cut!,Math.max(0,served-1))).toBe(false);
- }
- expect(servesFraction(FRACTIONS[0],4,2)).toBe(true);
- expect(servesFraction(FRACTIONS[2],4,3)).toBe(true);
- expect(fractionCut(FRACTIONS[2],[2])).toBeUndefined();
-});
-it('the halving recipe is always whole-fruit exact and its hint repairs either direction',()=>{
- for(let seed=1;seed<=50;seed++){
-   const base=recipe(8,new Rng(seed)),made=[0,0];
-   expect(base.every(n=>n%2===0)).toBe(true);
-   for(let i=halfIngredientHint(base,made);i>=0;i=halfIngredientHint(base,made))made[i]++;
-   expect(halved(base,made)).toBe(true);
-   made[0]++;expect(halfIngredientHint(base,made)).toBe(0);expect(halved(base,made)).toBe(false);
- }
-});
-it('level 9 cuts one pizza into exactly three equal shares for three friends',()=>{
- const plan=PLANS[8]; expect(plan.mode).toBe('share'); expect(plan.wholes).toBe(1); expect(plan.friends).toBe(3); expect(plan.cuts).toEqual([3]);
- const cut=fairCut(plan); expect(cut).toBe(3);
- const plates=Array(plan.friends).fill(0); for(let i=0;i<plan.wholes*cut!;i++) plates[nextPlate(plates)]++;
- expect(plates).toEqual([1,1,1]); expect(fair(plates,3)).toBe(true);
- expect(planFor(9)).toBe(plan);
-});
-it('names the real trouble with a serve: nothing cut, too few pieces, nothing served, or plates that differ',()=>{
- expect(serveTrouble([0,0],0)).toBe('uncut');
- expect(serveTrouble([0,0,0,0],2)).toBe('short');
- expect(serveTrouble([0,0,0,0],8)).toBe('empty');
- // Level 2 cut in halves: two friends could have a piece, two never can.
- expect(serveTrouble([1,1,0,0],2)).toBe('short');
- expect(serveTrouble([1,0,0,0],2)).toBe('short');
- expect(serveTrouble([2,0],4)).toBe('unequal');
- expect(serveTrouble([0],4)).toBe('empty');
- // Every fair share is a pieces count at least the friends, so 'short' never names a cut that could share out.
- for(const p of PLANS.filter(p=>p.mode==='share')) for(const c of p.cuts) if((p.wholes*c)%p.friends===0) expect(p.wholes*c).toBeGreaterThanOrEqual(p.friends);
-});
-it('counts served pieces aloud in their own fraction words',()=>{
- expect(countAloud(4,2)).toBe('one quarter, two quarters');
- expect(countAloud(4,3)).toBe('one quarter, two quarters, three quarters');
- expect(countAloud(2,1)).toBe('one half');
- for(const r of FRACTIONS){const cut=fractionCut(r,[2,4])!;const n=cut*r.numerator/r.denominator;expect(countAloud(cut,n).split(', ')).toHaveLength(n);}
-});
-
-it('deals every tap to a plate with the fewest, so the plates end equal',()=>{
-  const p=planFor(DEAL_LEVEL);expect(p.mode).toBe('deal');
-  for(let seed=1;seed<=50;seed++){
-    const cut=dealCut(new Rng(seed));const pieces=pieceCount(p,cut);
-    expect(pieces%p.friends).toBe(0);
-    const plates=Array(p.friends).fill(0);
-    for(let i=0;i<pieces;i++){const to=dealTo(plates);expect(plates[to]).toBe(Math.min(...plates));plates[to]++;}
-    expect(fair(plates,pieces)).toBe(true);
+it('doubling is exact and hints lead to a repair for missing or extra fruit', () => {
+  for (let seed = 1; seed <= 50; seed++) {
+    const base = recipe(6, new Rng(seed)),
+      made = [0, 0];
+    for (let steps = 0; steps < 8 && !doubled(base, made); steps++) {
+      const i = ingredientHint(base, made);
+      made[i] += made[i] < 2 * base[i] ? 1 : -1;
+    }
+    expect(doubled(base, made)).toBe(true);
+    made[0]++;
+    expect(ingredientHint(base, made)).toBe(0);
+    expect(doubled(base, made)).toBe(false);
   }
 });
-it('gives every seeded whole the same piece count and only varies levels 1-4',()=>{
-  const seen=new Set<string>();
-  for(let seed=1;seed<=40;seed++){for(let l=1;l<=4;l++){const w=wholeFor(l,new Rng(seed));expect(WHOLES).toContain(w);seen.add(w);}}
+it('the ghost finger makes a cut that shares out evenly, the fewest pieces that do, and serving it is never a miss', () => {
+  for (const p of PLANS.filter((p) => p.mode === 'share')) {
+    const cut = fairCut(p);
+    expect(cut).toBeDefined();
+    expect(p.cuts as readonly number[]).toContain(cut);
+    for (const c of p.cuts) if (c < cut!) expect((p.wholes * c) % p.friends).not.toBe(0);
+    // Hand the pieces round the plates the way the bot does, and the plates come out equal.
+    const plates = Array(p.friends).fill(0);
+    for (let i = 0; i < p.wholes * cut!; i++) plates[nextPlate(plates)]++;
+    expect(fair(plates, p.wholes * cut!)).toBe(true);
+  }
+  // One sandwich for four friends: halves would leave two friends with nothing, so only quarters are fair.
+  const level2 = PLANS[1];
+  expect(fairCut(level2)).toBe(4);
+  expect(fair([1, 1, 0, 0], level2.wholes * 2)).toBe(false);
+  // Two sandwiches for four friends: halves already share out evenly, which keeps the demonstration short.
+  expect(fairCut(PLANS[3])).toBe(2);
+});
+it('a piece let go on a plate lands on that plate, the nearest wins, and far from every plate it returns to the tray', () => {
+  const plates = [
+    { x: 300, y: 310 },
+    { x: 485, y: 310 },
+    { x: 670, y: 310 },
+  ];
+  plates.forEach((p, i) => expect(plateAt(plates, p.x, p.y)).toBe(i));
+  expect(plateAt(plates, 380, 310)).toBe(0);
+  expect(plateAt(plates, 405, 310)).toBe(1);
+  // Plates close together: the nearer one wins, not the first.
+  expect(
+    plateAt(
+      [
+        { x: 300, y: 310 },
+        { x: 380, y: 310 },
+      ],
+      345,
+      310,
+    ),
+  ).toBe(1);
+  expect(
+    plateAt(
+      [
+        { x: 300, y: 310 },
+        { x: 380, y: 310 },
+      ],
+      330,
+      310,
+    ),
+  ).toBe(0);
+  expect(plateAt(plates, 300 + PLATE_REACH + 1, 310 + PLATE_REACH + 1)).toBe(-1);
+  expect(plateAt(plates, 485, 700)).toBe(-1);
+});
+it('the ghost finger doubles every recipe with exactly the fruit that is missing and never a spare', () => {
+  for (const level of [5, 6])
+    for (let seed = 1; seed <= 50; seed++) {
+      const base = recipe(level, new Rng(seed)),
+        made = [0, 0];
+      let taps = 0;
+      for (let i = ingredientHint(base, made); i >= 0; i = ingredientHint(base, made)) {
+        made[i]++;
+        taps++;
+        expect(made[i]).toBeLessThanOrEqual(base[i] * 2);
+      }
+      expect(doubled(base, made)).toBe(true);
+      expect(taps).toBe(2 * (base[0] + base[1]));
+    }
+});
+it('every named fraction can be served with an offered equal cut, including two quarters for a half', () => {
+  const level7 = PLANS[6];
+  for (const request of FRACTIONS) {
+    const cut = fractionCut(request, level7.cuts);
+    expect(cut).toBeDefined();
+    const served = (cut! * request.numerator) / request.denominator;
+    expect(servesFraction(request, cut!, served)).toBe(true);
+    expect(servesFraction(request, cut!, Math.max(0, served - 1))).toBe(false);
+  }
+  expect(servesFraction(FRACTIONS[0], 4, 2)).toBe(true);
+  expect(servesFraction(FRACTIONS[2], 4, 3)).toBe(true);
+  expect(fractionCut(FRACTIONS[2], [2])).toBeUndefined();
+});
+it('the halving recipe is always whole-fruit exact and its hint repairs either direction', () => {
+  for (let seed = 1; seed <= 50; seed++) {
+    const base = recipe(8, new Rng(seed)),
+      made = [0, 0];
+    expect(base.every((n) => n % 2 === 0)).toBe(true);
+    for (let i = halfIngredientHint(base, made); i >= 0; i = halfIngredientHint(base, made)) made[i]++;
+    expect(halved(base, made)).toBe(true);
+    made[0]++;
+    expect(halfIngredientHint(base, made)).toBe(0);
+    expect(halved(base, made)).toBe(false);
+  }
+});
+it('level 9 cuts one pizza into exactly three equal shares for three friends', () => {
+  const plan = PLANS[8];
+  expect(plan.mode).toBe('share');
+  expect(plan.wholes).toBe(1);
+  expect(plan.friends).toBe(3);
+  expect(plan.cuts).toEqual([3]);
+  const cut = fairCut(plan);
+  expect(cut).toBe(3);
+  const plates = Array(plan.friends).fill(0);
+  for (let i = 0; i < plan.wholes * cut!; i++) plates[nextPlate(plates)]++;
+  expect(plates).toEqual([1, 1, 1]);
+  expect(fair(plates, 3)).toBe(true);
+  expect(planFor(9)).toBe(plan);
+});
+it('names the real trouble with a serve: nothing cut, too few pieces, nothing served, or plates that differ', () => {
+  expect(serveTrouble([0, 0], 0)).toBe('uncut');
+  expect(serveTrouble([0, 0, 0, 0], 2)).toBe('short');
+  expect(serveTrouble([0, 0, 0, 0], 8)).toBe('empty');
+  // Level 2 cut in halves: two friends could have a piece, two never can.
+  expect(serveTrouble([1, 1, 0, 0], 2)).toBe('short');
+  expect(serveTrouble([1, 0, 0, 0], 2)).toBe('short');
+  expect(serveTrouble([2, 0], 4)).toBe('unequal');
+  expect(serveTrouble([0], 4)).toBe('empty');
+  // Every fair share is a pieces count at least the friends, so 'short' never names a cut that could share out.
+  for (const p of PLANS.filter((p) => p.mode === 'share'))
+    for (const c of p.cuts)
+      if ((p.wholes * c) % p.friends === 0) expect(p.wholes * c).toBeGreaterThanOrEqual(p.friends);
+});
+it('counts served pieces aloud in their own fraction words', () => {
+  expect(countAloud(4, 2)).toBe('one quarter, two quarters');
+  expect(countAloud(4, 3)).toBe('one quarter, two quarters, three quarters');
+  expect(countAloud(2, 1)).toBe('one half');
+  for (const r of FRACTIONS) {
+    const cut = fractionCut(r, [2, 4])!;
+    const n = (cut * r.numerator) / r.denominator;
+    expect(countAloud(cut, n).split(', ')).toHaveLength(n);
+  }
+});
+
+it('deals every tap to a plate with the fewest, so the plates end equal', () => {
+  const p = planFor(DEAL_LEVEL);
+  expect(p.mode).toBe('deal');
+  for (let seed = 1; seed <= 50; seed++) {
+    const cut = dealCut(new Rng(seed));
+    const pieces = pieceCount(p, cut);
+    expect(pieces % p.friends).toBe(0);
+    const plates = Array(p.friends).fill(0);
+    for (let i = 0; i < pieces; i++) {
+      const to = dealTo(plates);
+      expect(plates[to]).toBe(Math.min(...plates));
+      plates[to]++;
+    }
+    expect(fair(plates, pieces)).toBe(true);
+  }
+});
+it('gives every seeded whole the same piece count and only varies levels 1-4', () => {
+  const seen = new Set<string>();
+  for (let seed = 1; seed <= 40; seed++) {
+    for (let l = 1; l <= 4; l++) {
+      const w = wholeFor(l, new Rng(seed));
+      expect(WHOLES).toContain(w);
+      seen.add(w);
+    }
+  }
   expect(seen.size).toBe(2);
-  for(const l of [5,6,7,8,9,10])expect(wholeFor(l,new Rng(3))).toBe('sandwich');
-  for(const p of PLANS)for(const c of p.cuts)expect(pieceCount(p,c)).toBe(p.wholes*c);
+  for (const l of [5, 6, 7, 8, 9, 10]) expect(wholeFor(l, new Rng(3))).toBe('sandwich');
+  for (const p of PLANS) for (const c of p.cuts) expect(pieceCount(p, c)).toBe(p.wholes * c);
 });
-it('picks two different fruits from three and distinct friends from the seed',()=>{
-  const used=new Set<number>();
-  for(let seed=1;seed<=60;seed++){const [a,b]=fruitPair(new Rng(seed));expect(a).not.toBe(b);expect(a).toBeLessThan(FRUITS.length);expect(b).toBeLessThan(FRUITS.length);used.add(a);used.add(b);}
+it('picks two different fruits from three and distinct friends from the seed', () => {
+  const used = new Set<number>();
+  for (let seed = 1; seed <= 60; seed++) {
+    const [a, b] = fruitPair(new Rng(seed));
+    expect(a).not.toBe(b);
+    expect(a).toBeLessThan(FRUITS.length);
+    expect(b).toBeLessThan(FRUITS.length);
+    used.add(a);
+    used.add(b);
+  }
   expect(used.size).toBe(3);
-  for(let seed=1;seed<=30;seed++){const f=dealFriends(new Rng(seed),3);expect(new Set(f).size).toBe(3);}
+  for (let seed = 1; seed <= 30; seed++) {
+    const f = dealFriends(new Rng(seed), 3);
+    expect(new Set(f).size).toBe(3);
+  }
 });
 
-it('level 11 offers a lopsided cut whose pieces are a third and two thirds, and only the middle cut shares fairly',()=>{
- const p=PLANS[10] as typeof PLANS[10]&{lopsided?:boolean};
- expect(p.lopsided).toBe(true);expect(p.friends).toBe(2);expect(fairCut(p)).toBe(2);
- for(const small of [true,false]){
-   const a=pieceAreas(2,1,true,small);expect(a.reduce((x,y)=>x+y,0)).toBeCloseTo(1);
-   expect(a[small?0:1]).toBeCloseTo(1/3);expect(a[small?1:0]).toBeCloseTo(2/3);
-   // One piece each by count, but not by area.
-   expect(fair([1,1],2)).toBe(true);expect(fairAreas(a)).toBe(false);expect(serveTrouble([1,1],2,a)).toBe('lopsided');
- }
- const mid=pieceAreas(2,1);expect(fairAreas(mid)).toBe(true);expect(serveTrouble([1,1],2,mid)).toBe('unequal');
- expect(LOPSIDED_AREAS[0]+LOPSIDED_AREAS[1]).toBeCloseTo(1);
- // Both lopsided pieces on one plate is the usual unfair serve, named as it was before.
- expect(serveTrouble([2,0],2,pieceAreas(2,1,true))).toBe('unequal');
-});
-it('level 12 shares two pizzas among three only as thirds; halves and quarters leave a piece over',()=>{
- const p=PLANS[11];expect(p.wholes).toBe(2);expect(p.friends).toBe(3);expect(fairCut(p)).toBe(3);
- expect(cutShares(p,3)).toBe(true);expect(cutShares(p,2)).toBe(false);expect(cutShares(p,4)).toBe(false);
- expect(fair([2,2,2],6)).toBe(true);expect(fair([1,1,1],4)).toBe(false);
- expect(serveTrouble([1,1,1],4,pieceAreas(2,2))).toBe('leftover');
- expect(serveTrouble([2,2,2],6,pieceAreas(3,2))).toBe('unequal');
- expect(wholeFor(12,new Rng(1))).toBe('pie');expect(isPizzaLevel(12)).toBe(true);expect(isPizzaLevel(9)).toBe(true);
- // The ghost finger hands out the six slices and they come out two each.
- const plates=[0,0,0];for(let i=0;i<6;i++)plates[nextPlate(plates)]++;expect(plates).toEqual([2,2,2]);
-});
-it('level 14 cuts one sandwich down and one across: both ways make two halves, one of each or two alike on a plate is fair, and the bot cuts one each way',()=>{
- expect(planFor(SHAPES_LEVEL)).toBe(SHAPES_PLAN);expect(planFor(CUP_LEVEL+1)).toBe(CUP_PLAN);expect(planFor(12)).toBe(PLANS[11]);
- expect(SHAPES_PLAN.wholes).toBe(2);expect(SHAPES_PLAN.friends).toBe(2);
- // Each way halves one sandwich: two pieces of half the area, a tall half from the down cut and a wide one from across.
- for(const way of CUT_WAYS){expect(pieceAreas(2,1)).toEqual([0.5,0.5]);expect(pieceShape(way)).toBe(way==='down'?'tall':'wide');}
- expect(new Set(CUT_WAYS.map(pieceShape)).size).toBe(2);
- // A plate with a tall half and a wide half holds the same as the other; so does a plate with two of one shape.
- expect(fair([2,2],4)).toBe(true);expect(fairAreas([0.5+0.5,0.5+0.5])).toBe(true);
- expect(fair([3,1],4)).toBe(false);expect(serveTrouble([3,1],4,[1.5,0.5])).toBe('unequal');
- // The bot's cuts: down first, then across, then nothing is left to cut.
- const done:CutWay[]=[];expect(allCut(SHAPES_PLAN,done)).toBe(false);
- done.push(nextWay(done));expect(done).toEqual(['down']);expect(allCut(SHAPES_PLAN,done)).toBe(false);
- done.push(nextWay(done));expect(done).toEqual(['down','across']);expect(allCut(SHAPES_PLAN,done)).toBe(true);
- expect(nextWay(['across'])).toBe('down');
- // Dealt the bot's way, each friend gets one tall half and one wide half.
- const shapes=done.flatMap(w=>[pieceShape(w),pieceShape(w)]),plates:PieceShape[][]=[[],[]];
- for(const s of shapes)plates[nextPlate(plates.map(p=>p.length))].push(s);
- for(const p of plates)expect([...p].sort()).toEqual(['tall','wide']);
- // What the overlay shows and says: a tall over a wide half when both shapes were served, else two of the one shape.
- const served=[{shape:'tall' as const,id:0},{shape:'tall' as const,id:1},{shape:'wide' as const,id:2},{shape:'wide' as const,id:3}];
- expect(overlayPair(served)?.map(p=>p.shape)).toEqual(['tall','wide']);
- expect(shapesLine(['tall','wide'])).toEqual({line:'kitchen.same-share',shape:'tall'});
- const alike=[{shape:'wide' as const,id:0},{shape:'wide' as const,id:1}];
- expect(overlayPair(alike)?.map(p=>p.id)).toEqual([0,1]);expect(shapesLine(['wide','wide'])).toEqual({line:'kitchen.same-shape',shape:'wide'});
- expect(shapesLine(['tall','tall'])).toEqual({line:'kitchen.same-shape',shape:'tall'});
- expect(overlayPair([{shape:'tall' as const}])).toBeNull();
-});
-const ids = (p: readonly { id: string }[]) => p.map(r => r.id).sort();
-it('level 13 asks are exactly half+quarter and three-quarters+quarter, distinct and within one sandwich',()=>{
- expect(COMPARE_PAIRS.map(p=>ids(p)).sort()).toEqual([['half','quarter'],['quarter','three-quarters']]);
- for(const [a,b] of COMPARE_PAIRS){expect(a.id).not.toBe(b.id);expect(a.numerator/a.denominator+b.numerator/b.denominator).toBeLessThanOrEqual(1);}
- const seen=new Set<string>(),orders=new Set<string>();
- for(let seed=1;seed<=200;seed++){const pair=comparePair(new Rng(seed));
-  expect(COMPARE_PAIRS.some(p=>ids(p).join()===ids(pair).join())).toBe(true);
-  seen.add(ids(pair).join());orders.add(pair.map(r=>r.id).join());
-  expect(comparePair(new Rng(seed)).map(r=>r.id)).toEqual(pair.map(r=>r.id));}
- expect(seen.size).toBe(2);expect(orders.size).toBe(4);
-});
-it('level 13 cut, needs, serving checks, and the larger ask',()=>{
- for(const pair of COMPARE_PAIRS){
-  expect(compareCut(pair,[2,4])).toBe(4);expect(compareCut(pair,[2])).toBeUndefined();
-  expect(needs(pair,2).some(n=>!Number.isInteger(n))).toBe(true);
- }
- for(let seed=1;seed<=100;seed++){
-  const pair=comparePair(new Rng(seed)),cut=4,want=needs(pair,cut);
-  expect(want.every(Number.isInteger)).toBe(true);
-  expect(servesBoth(pair,cut,want)).toBe(true);expect(firstUnmet(pair,cut,want)).toBe(-1);
-  if(pair.some(r=>r.id==='half'))expect(want.reduce((a,b)=>a+b,0)).toBe(3); // one tray piece left over is fine
-  for(let a=0;a<=cut;a++)for(let b=0;b<=cut;b++){
-   const counts=[a,b],i=firstUnmet(pair,cut,counts);
-   if(a===want[0]&&b===want[1]){expect(i).toBe(-1);continue;}
-   expect(i).toBeGreaterThanOrEqual(0);expect(counts[i]).not.toBe(want[i]);
-   expect(servesBoth(pair,cut,counts)).toBe(false);
+it('level 11 offers a lopsided cut whose pieces are a third and two thirds, and only the middle cut shares fairly', () => {
+  const p = PLANS[10] as (typeof PLANS)[10] & { lopsided?: boolean };
+  expect(p.lopsided).toBe(true);
+  expect(p.friends).toBe(2);
+  expect(fairCut(p)).toBe(2);
+  for (const small of [true, false]) {
+    const a = pieceAreas(2, 1, true, small);
+    expect(a.reduce((x, y) => x + y, 0)).toBeCloseTo(1);
+    expect(a[small ? 0 : 1]).toBeCloseTo(1 / 3);
+    expect(a[small ? 1 : 0]).toBeCloseTo(2 / 3);
+    // One piece each by count, but not by area.
+    expect(fair([1, 1], 2)).toBe(true);
+    expect(fairAreas(a)).toBe(false);
+    expect(serveTrouble([1, 1], 2, a)).toBe('lopsided');
   }
-  expect(servesBoth(pair,0,[0,0])).toBe(false);
-  const m=morePlate(pair),frac=(r:typeof pair[0])=>r.numerator/r.denominator;
-  expect(frac(pair[m])).toBeGreaterThan(frac(pair[1-m]));
- }
- // Halves cannot serve a quarter.
- const q=COMPARE_PAIRS[0].find(r=>r.id==='quarter')!;
- for(let n=0;n<=2;n++)expect(servesFraction(q,2,n)).toBe(false);
+  const mid = pieceAreas(2, 1);
+  expect(fairAreas(mid)).toBe(true);
+  expect(serveTrouble([1, 1], 2, mid)).toBe('unequal');
+  expect(LOPSIDED_AREAS[0] + LOPSIDED_AREAS[1]).toBeCloseTo(1);
+  // Both lopsided pieces on one plate is the usual unfair serve, named as it was before.
+  expect(serveTrouble([2, 0], 2, pieceAreas(2, 1, true))).toBe('unequal');
 });
-it('plan table: level 13 is compare, neighbours unchanged',()=>{
- expect(COMPARE_LEVEL).toBe(13);expect(planFor(13).mode).toBe('compare');
- expect(planFor(12)).toBe(PLANS[11]);expect(planFor(12).mode).toBe('share');expect((planFor(12) as {wholes:number}).wholes).toBe(2);
- expect(planFor(14)).toBe(SHAPES_PLAN);
+it('level 12 shares two pizzas among three only as thirds; halves and quarters leave a piece over', () => {
+  const p = PLANS[11];
+  expect(p.wholes).toBe(2);
+  expect(p.friends).toBe(3);
+  expect(fairCut(p)).toBe(3);
+  expect(cutShares(p, 3)).toBe(true);
+  expect(cutShares(p, 2)).toBe(false);
+  expect(cutShares(p, 4)).toBe(false);
+  expect(fair([2, 2, 2], 6)).toBe(true);
+  expect(fair([1, 1, 1], 4)).toBe(false);
+  expect(serveTrouble([1, 1, 1], 4, pieceAreas(2, 2))).toBe('leftover');
+  expect(serveTrouble([2, 2, 2], 6, pieceAreas(3, 2))).toBe('unequal');
+  expect(wholeFor(12, new Rng(1))).toBe('pie');
+  expect(isPizzaLevel(12)).toBe(true);
+  expect(isPizzaLevel(9)).toBe(true);
+  // The ghost finger hands out the six slices and they come out two each.
+  const plates = [0, 0, 0];
+  for (let i = 0; i < 6; i++) plates[nextPlate(plates)]++;
+  expect(plates).toEqual([2, 2, 2]);
 });
-it('compare friends are two distinct critters and never pip',()=>{
- for(let seed=1;seed<=100;seed++){const f=compareFriends(new Rng(seed));
-  expect(f).toHaveLength(2);expect(f[0]).not.toBe(f[1]);expect(f).not.toContain('pip');}
+it('level 14 cuts one sandwich down and one across: both ways make two halves, one of each or two alike on a plate is fair, and the bot cuts one each way', () => {
+  expect(planFor(SHAPES_LEVEL)).toBe(SHAPES_PLAN);
+  expect(planFor(CUP_LEVEL + 1)).toBe(CUP_PLAN);
+  expect(planFor(12)).toBe(PLANS[11]);
+  expect(SHAPES_PLAN.wholes).toBe(2);
+  expect(SHAPES_PLAN.friends).toBe(2);
+  // Each way halves one sandwich: two pieces of half the area, a tall half from the down cut and a wide one from across.
+  for (const way of CUT_WAYS) {
+    expect(pieceAreas(2, 1)).toEqual([0.5, 0.5]);
+    expect(pieceShape(way)).toBe(way === 'down' ? 'tall' : 'wide');
+  }
+  expect(new Set(CUT_WAYS.map(pieceShape)).size).toBe(2);
+  // A plate with a tall half and a wide half holds the same as the other; so does a plate with two of one shape.
+  expect(fair([2, 2], 4)).toBe(true);
+  expect(fairAreas([0.5 + 0.5, 0.5 + 0.5])).toBe(true);
+  expect(fair([3, 1], 4)).toBe(false);
+  expect(serveTrouble([3, 1], 4, [1.5, 0.5])).toBe('unequal');
+  // The bot's cuts: down first, then across, then nothing is left to cut.
+  const done: CutWay[] = [];
+  expect(allCut(SHAPES_PLAN, done)).toBe(false);
+  done.push(nextWay(done));
+  expect(done).toEqual(['down']);
+  expect(allCut(SHAPES_PLAN, done)).toBe(false);
+  done.push(nextWay(done));
+  expect(done).toEqual(['down', 'across']);
+  expect(allCut(SHAPES_PLAN, done)).toBe(true);
+  expect(nextWay(['across'])).toBe('down');
+  // Dealt the bot's way, each friend gets one tall half and one wide half.
+  const shapes = done.flatMap((w) => [pieceShape(w), pieceShape(w)]),
+    plates: PieceShape[][] = [[], []];
+  for (const s of shapes) plates[nextPlate(plates.map((p) => p.length))].push(s);
+  for (const p of plates) expect([...p].sort()).toEqual(['tall', 'wide']);
+  // What the overlay shows and says: a tall over a wide half when both shapes were served, else two of the one shape.
+  const served = [
+    { shape: 'tall' as const, id: 0 },
+    { shape: 'tall' as const, id: 1 },
+    { shape: 'wide' as const, id: 2 },
+    { shape: 'wide' as const, id: 3 },
+  ];
+  expect(overlayPair(served)?.map((p) => p.shape)).toEqual(['tall', 'wide']);
+  expect(shapesLine(['tall', 'wide'])).toEqual({ line: 'kitchen.same-share', shape: 'tall' });
+  const alike = [
+    { shape: 'wide' as const, id: 0 },
+    { shape: 'wide' as const, id: 1 },
+  ];
+  expect(overlayPair(alike)?.map((p) => p.id)).toEqual([0, 1]);
+  expect(shapesLine(['wide', 'wide'])).toEqual({ line: 'kitchen.same-shape', shape: 'wide' });
+  expect(shapesLine(['tall', 'tall'])).toEqual({ line: 'kitchen.same-shape', shape: 'tall' });
+  expect(overlayPair([{ shape: 'tall' as const }])).toBeNull();
 });
-it('journal discoveries only record what the round really showed',()=>{
- expect(kitchenDiscoveries('share',2,false,[1,1],2)).toEqual(['half']);
- expect(kitchenDiscoveries('share',2,true,[1,1],2)).toEqual([]);
- expect(kitchenDiscoveries('share',4,false,[2,2],4)).toContain('quarter');
- expect(kitchenDiscoveries('compare',4,false,[2,1],3)).toContain('quarter');
- expect(kitchenDiscoveries('share',4,false,[2,2,2,2],8)).toContain('quarter');
- expect(kitchenDiscoveries('compare',4,false,[3,1],4)).not.toContain('quarter');
- for(const pieces of [3,6])expect(kitchenDiscoveries('share',3,false,Array(3).fill(pieces/3),pieces)).toContain('third');
- expect(kitchenDiscoveries('share',2,false,[1,0],2)).toEqual([]);
- expect(kitchenDiscoveries('share',3,false,[1,1,0],3)).not.toContain('third');
- expect(kitchenDiscoveries('recipe',0,false,[0],0)).toEqual([]);
+const ids = (p: readonly { id: string }[]) => p.map((r) => r.id).sort();
+it('level 13 asks are exactly half+quarter and three-quarters+quarter, distinct and within one sandwich', () => {
+  expect(COMPARE_PAIRS.map((p) => ids(p)).sort()).toEqual([
+    ['half', 'quarter'],
+    ['quarter', 'three-quarters'],
+  ]);
+  for (const [a, b] of COMPARE_PAIRS) {
+    expect(a.id).not.toBe(b.id);
+    expect(a.numerator / a.denominator + b.numerator / b.denominator).toBeLessThanOrEqual(1);
+  }
+  const seen = new Set<string>(),
+    orders = new Set<string>();
+  for (let seed = 1; seed <= 200; seed++) {
+    const pair = comparePair(new Rng(seed));
+    expect(COMPARE_PAIRS.some((p) => ids(p).join() === ids(pair).join())).toBe(true);
+    seen.add(ids(pair).join());
+    orders.add(pair.map((r) => r.id).join());
+    expect(comparePair(new Rng(seed)).map((r) => r.id)).toEqual(pair.map((r) => r.id));
+  }
+  expect(seen.size).toBe(2);
+  expect(orders.size).toBe(4);
+});
+it('level 13 cut, needs, serving checks, and the larger ask', () => {
+  for (const pair of COMPARE_PAIRS) {
+    expect(compareCut(pair, [2, 4])).toBe(4);
+    expect(compareCut(pair, [2])).toBeUndefined();
+    expect(needs(pair, 2).some((n) => !Number.isInteger(n))).toBe(true);
+  }
+  for (let seed = 1; seed <= 100; seed++) {
+    const pair = comparePair(new Rng(seed)),
+      cut = 4,
+      want = needs(pair, cut);
+    expect(want.every(Number.isInteger)).toBe(true);
+    expect(servesBoth(pair, cut, want)).toBe(true);
+    expect(firstUnmet(pair, cut, want)).toBe(-1);
+    if (pair.some((r) => r.id === 'half')) expect(want.reduce((a, b) => a + b, 0)).toBe(3); // one tray piece left over is fine
+    for (let a = 0; a <= cut; a++)
+      for (let b = 0; b <= cut; b++) {
+        const counts = [a, b],
+          i = firstUnmet(pair, cut, counts);
+        if (a === want[0] && b === want[1]) {
+          expect(i).toBe(-1);
+          continue;
+        }
+        expect(i).toBeGreaterThanOrEqual(0);
+        expect(counts[i]).not.toBe(want[i]);
+        expect(servesBoth(pair, cut, counts)).toBe(false);
+      }
+    expect(servesBoth(pair, 0, [0, 0])).toBe(false);
+    const m = morePlate(pair),
+      frac = (r: (typeof pair)[0]) => r.numerator / r.denominator;
+    expect(frac(pair[m])).toBeGreaterThan(frac(pair[1 - m]));
+  }
+  // Halves cannot serve a quarter.
+  const q = COMPARE_PAIRS[0].find((r) => r.id === 'quarter')!;
+  for (let n = 0; n <= 2; n++) expect(servesFraction(q, 2, n)).toBe(false);
+});
+it('plan table: level 13 is compare, neighbours unchanged', () => {
+  expect(COMPARE_LEVEL).toBe(13);
+  expect(planFor(13).mode).toBe('compare');
+  expect(planFor(12)).toBe(PLANS[11]);
+  expect(planFor(12).mode).toBe('share');
+  expect((planFor(12) as { wholes: number }).wholes).toBe(2);
+  expect(planFor(14)).toBe(SHAPES_PLAN);
+});
+it('compare friends are two distinct critters and never pip', () => {
+  for (let seed = 1; seed <= 100; seed++) {
+    const f = compareFriends(new Rng(seed));
+    expect(f).toHaveLength(2);
+    expect(f[0]).not.toBe(f[1]);
+    expect(f).not.toContain('pip');
+  }
+});
+it('journal discoveries only record what the round really showed', () => {
+  expect(kitchenDiscoveries('share', 2, false, [1, 1], 2)).toEqual(['half']);
+  expect(kitchenDiscoveries('share', 2, true, [1, 1], 2)).toEqual([]);
+  expect(kitchenDiscoveries('share', 4, false, [2, 2], 4)).toContain('quarter');
+  expect(kitchenDiscoveries('compare', 4, false, [2, 1], 3)).toContain('quarter');
+  expect(kitchenDiscoveries('share', 4, false, [2, 2, 2, 2], 8)).toContain('quarter');
+  expect(kitchenDiscoveries('compare', 4, false, [3, 1], 4)).not.toContain('quarter');
+  for (const pieces of [3, 6])
+    expect(kitchenDiscoveries('share', 3, false, Array(3).fill(pieces / 3), pieces)).toContain('third');
+  expect(kitchenDiscoveries('share', 2, false, [1, 0], 2)).toEqual([]);
+  expect(kitchenDiscoveries('share', 3, false, [1, 1, 0], 3)).not.toContain('third');
+  expect(kitchenDiscoveries('recipe', 0, false, [0], 0)).toEqual([]);
 });
 
 it('level 15 is One cup, many ways, and 14 stays Different shape', () => {
@@ -234,7 +463,8 @@ it('level 15 is One cup, many ways, and 14 stays Different shape', () => {
 /** Every pour sequence the jug can hold, from empty (taps past the brim are not poured). */
 function allPours(): Scoop[][] {
   const out: Scoop[][] = [[]];
-  for (let i = 0; i < out.length; i++) for (const s of SCOOPS) if (canPour(out[i], s)) out.push([...out[i], s]);
+  for (let i = 0; i < out.length; i++)
+    for (const s of SCOOPS) if (canPour(out[i], s)) out.push([...out[i], s]);
   return out;
 }
 
@@ -247,7 +477,13 @@ it('level 15 accepts exactly the pours that make one cup, and every way to make 
   }
   // Two halves, a half and two quarters (in any of its three orders), four quarters: five sequences.
   const full = seqs.filter(cupFull).map((p) => p.join(' '));
-  expect(full.sort()).toEqual(['half half', 'half quarter quarter', 'quarter half quarter', 'quarter quarter half', 'quarter quarter quarter quarter']);
+  expect(full.sort()).toEqual([
+    'half half',
+    'half quarter quarter',
+    'quarter half quarter',
+    'quarter quarter half',
+    'quarter quarter quarter quarter',
+  ]);
   for (const way of CUP_WAYS) expect(cupFull(way)).toBe(true);
   expect(cupTrouble([])).toBe('empty');
   expect(cupTrouble(['half', 'quarter'])).toBe('short');
@@ -261,8 +497,14 @@ it('level 15 help reaches one cup from every reachable state, the back arrow tak
     for (let step = 0; step < 20 && !cupFull(p); step++) {
       const fix = cupFix(p);
       expect(fix).not.toBeNull();
-      if (fix === 'undo') { expect(cupTrouble(p)).toBe('over'); p.pop(); }
-      else { expect(canPour(p, fix!)).toBe(true); p.push(fix!); expect(cupTotal(p)).toBeLessThanOrEqual(CUP); }
+      if (fix === 'undo') {
+        expect(cupTrouble(p)).toBe('over');
+        p.pop();
+      } else {
+        expect(canPour(p, fix!)).toBe(true);
+        p.push(fix!);
+        expect(cupTotal(p)).toBeLessThanOrEqual(CUP);
+      }
     }
     expect(cupFull(p)).toBe(true);
   }
@@ -278,7 +520,11 @@ it('level 15 ghost finger fills the cup its seeded way from any state', () => {
       for (let step = 0; step < 20; step++) {
         const s = wayStep(way, p);
         if (s === null) break;
-        if (s === 'undo') p.pop(); else { expect(canPour(p, s)).toBe(true); p.push(s); }
+        if (s === 'undo') p.pop();
+        else {
+          expect(canPour(p, s)).toBe(true);
+          p.push(s);
+        }
       }
       expect(p).toEqual(way);
     }

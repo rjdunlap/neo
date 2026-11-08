@@ -12,16 +12,19 @@ describe('the Sudoku Garden courses', () => {
   });
 
   it('has beds with exactly one solution that the game can reach by working it out', () => {
-    for (const id of IDS) courseBeds(id).forEach((bed, i) => {
-      const label = `${id} bed ${i + 1}`;
-      expect(countSolutions(bed.start, bed.size), label).toBe(1);
-      expect(isSolved(bed.solution, bed.size), label).toBe(true);
-      bed.start.forEach((d, c) => { if (d) expect(d, label).toBe(bed.solution[c]); });
-      const work = techniqueSolve(bed.start, bed.size);
-      expect(work.solved, label).toBe(true);
-      expect(work.grid, label).toEqual(bed.solution);
-      expect(gradeOf(bed.start, bed.size), label).toBe(bed.grade);
-    });
+    for (const id of IDS)
+      courseBeds(id).forEach((bed, i) => {
+        const label = `${id} bed ${i + 1}`;
+        expect(countSolutions(bed.start, bed.size), label).toBe(1);
+        expect(isSolved(bed.solution, bed.size), label).toBe(true);
+        bed.start.forEach((d, c) => {
+          if (d) expect(d, label).toBe(bed.solution[c]);
+        });
+        const work = techniqueSolve(bed.start, bed.size);
+        expect(work.solved, label).toBe(true);
+        expect(work.grid, label).toEqual(bed.solution);
+        expect(gradeOf(bed.start, bed.size), label).toBe(bed.grade);
+      });
   });
 
   it('climbs in difficulty, and the big beds are 9 by 9', () => {

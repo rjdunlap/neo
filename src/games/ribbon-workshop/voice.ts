@@ -4,7 +4,9 @@ export const VOICE = {
   'ribbon.ask.whole': ['Make a ribbon one whole long for this gift. Tap pieces, then tap the bow.'],
   'ribbon.ask.half': ['Make a ribbon a half long for this gift. Tap pieces, then tap the bow.'],
   'ribbon.ask.quarter': ['Make a ribbon a quarter long for this gift. Tap pieces, then tap the bow.'],
-  'ribbon.ask.threeQuarters': ['Make a ribbon three quarters long for this gift. Tap pieces, then tap the bow.'],
+  'ribbon.ask.threeQuarters': [
+    'Make a ribbon three quarters long for this gift. Tap pieces, then tap the bow.',
+  ],
   'ribbon.piece.half': ['A half.'],
   'ribbon.piece.quarter': ['A quarter.'],
   'ribbon.short': ['Not long enough yet. See the gap?'],

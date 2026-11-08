@@ -2,7 +2,34 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
-import { ACTION_RADIUS, BALL_RADIUS, BASKET, BED, CORNER_RADIUS, ENDING_PICTURE, ENDING_PLATES, endingLayout, NAME_BUTTON, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GEAR_CORNER, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
+import {
+  ACTION_RADIUS,
+  BALL_RADIUS,
+  BASKET,
+  BED,
+  CORNER_RADIUS,
+  ENDING_PICTURE,
+  ENDING_PLATES,
+  endingLayout,
+  NAME_BUTTON,
+  EXPLORE_CARD,
+  EXPLORE_MAX,
+  EXPLORE_POSTCARD,
+  exploreGridLayout,
+  exploreLayout,
+  PAGE_ARROW_RADIUS,
+  GEAR_CORNER,
+  GUIDE_CORNER,
+  HOME_BUTTON,
+  homeLayout,
+  LINK_CORNER,
+  NEWCOMER_REACH,
+  playLayout,
+  PROJECT_CARD,
+  PROJECT_PLAY_RADIUS,
+  projectLayout,
+  type Floor,
+} from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
 const VIEWS = [
@@ -20,12 +47,36 @@ interface Box {
   y1: number;
   what: string;
 }
-const disc = (p: { x: number; y: number }, r: number, what: string): Box => ({ x0: p.x - r, y0: p.y - r, x1: p.x + r, y1: p.y + r, what });
-const rect = (p: { x: number; y: number }, w: number, h: number, what: string): Box => ({ x0: p.x - w / 2, y0: p.y - h / 2, x1: p.x + w / 2, y1: p.y + h / 2, what });
+const disc = (p: { x: number; y: number }, r: number, what: string): Box => ({
+  x0: p.x - r,
+  y0: p.y - r,
+  x1: p.x + r,
+  y1: p.y + r,
+  what,
+});
+const rect = (p: { x: number; y: number }, w: number, h: number, what: string): Box => ({
+  x0: p.x - w / 2,
+  y0: p.y - h / 2,
+  x1: p.x + w / 2,
+  y1: p.y + h / 2,
+  what,
+});
 /** The companion at its stage scale, wearing a sun hat or holding an umbrella (as the dressing test measures it). */
-const body = (s: { x: number; y: number; scale: number }): Box => ({ x0: s.x - 150 * s.scale, y0: s.y - 280 * s.scale, x1: s.x + 150 * s.scale, y1: s.y + 10, what: 'companion' });
+const body = (s: { x: number; y: number; scale: number }): Box => ({
+  x0: s.x - 150 * s.scale,
+  y0: s.y - 280 * s.scale,
+  x1: s.x + 150 * s.scale,
+  y1: s.y + 10,
+  what: 'companion',
+});
 /** Every spot the ball can rest on, as a box. */
-const floorBox = (f: Floor): Box => ({ x0: f.x0 - BALL_RADIUS, y0: f.y0 - BALL_RADIUS, x1: f.x1 + BALL_RADIUS, y1: f.y1 + BALL_RADIUS, what: 'floor' });
+const floorBox = (f: Floor): Box => ({
+  x0: f.x0 - BALL_RADIUS,
+  y0: f.y0 - BALL_RADIUS,
+  x1: f.x1 + BALL_RADIUS,
+  y1: f.y1 + BALL_RADIUS,
+  what: 'floor',
+});
 const overlap = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
 function check(v: { w: number; h: number }, targets: Box[], extra: Box[], where: string) {
@@ -38,7 +89,10 @@ function check(v: { w: number; h: number }, targets: Box[], extra: Box[], where:
     expect(overlap(b, corner), `${b.what} in the guide corner, ${where}`).toBe(false);
   }
   for (let i = 0; i < targets.length; i++) {
-    for (let j = i + 1; j < targets.length; j++) expect(overlap(targets[i], targets[j]), `${targets[i].what} and ${targets[j].what}, ${where}`).toBe(false);
+    for (let j = i + 1; j < targets.length; j++)
+      expect(overlap(targets[i], targets[j]), `${targets[i].what} and ${targets[j].what}, ${where}`).toBe(
+        false,
+      );
   }
 }
 
@@ -47,19 +101,32 @@ describe('the root Home layout', () => {
     expect(ACTION_RADIUS * 2).toBeGreaterThanOrEqual(120);
     expect(CORNER_RADIUS * 2).toBeGreaterThanOrEqual(100);
     for (const v of VIEWS) {
-      for (const [young, project] of [[true, false], [true, true], [false, false], [false, true]]) {
+      for (const [young, project] of [
+        [true, false],
+        [true, true],
+        [false, false],
+        [false, true],
+      ]) {
         const l = homeLayout(v, young, project);
         const where = `${v.w}×${v.h}, ${young ? 'lap/toddler' : 'preschool+'}${project ? ', welcome open' : ''}`;
         expect(l.play === null, where).toBe(young);
         expect(l.continue !== null, where).toBe(!young && project);
         expect(l.ball === null, where).toBe(!young);
-        const buttons = [disc(l.who, CORNER_RADIUS, 'who'), disc(l.explore, ACTION_RADIUS, 'explore'), disc(l.daily, ACTION_RADIUS, 'daily'), ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : []), ...(l.continue ? [disc(l.continue, ACTION_RADIUS, 'continue')] : [])];
+        const buttons = [
+          disc(l.who, CORNER_RADIUS, 'who'),
+          disc(l.explore, ACTION_RADIUS, 'explore'),
+          disc(l.daily, ACTION_RADIUS, 'daily'),
+          ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : []),
+          ...(l.continue ? [disc(l.continue, ACTION_RADIUS, 'continue')] : []),
+        ];
         const targets = [...buttons, body(l.stage), ...(l.ball ? [disc(l.ball, BALL_RADIUS, 'ball')] : [])];
         check(v, targets, [floorBox(l.floor)], where);
         // The grown-ups' gear, with the island-games link below it.
         const gear: Box = { x0: v.w - GEAR_CORNER.w, y0: 0, x1: v.w, y1: GEAR_CORNER.h, what: 'gear corner' };
-        for (const t of targets) expect(overlap(t, gear), `${t.what} under the gear or the link, ${where}`).toBe(false);
-        for (const b of buttons) expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
+        for (const t of targets)
+          expect(overlap(t, gear), `${t.what} under the gear or the link, ${where}`).toBe(false);
+        for (const b of buttons)
+          expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
         expect(l.floor.x1, where).toBeGreaterThan(l.floor.x0 + 200);
         expect(l.floor.y1, where).toBeGreaterThanOrEqual(l.floor.y0);
         // The companion and the ball stand on the grass.
@@ -80,12 +147,24 @@ describe('the root Home layout', () => {
 
 /** The welcome bed's two taps: her picture above (whose bed it is) and the newcomer curled in the basket below. */
 const bedParts = (b: { x: number; y: number }): Box[] => [
-  { x0: b.x - BED.w / 2, y0: b.y - BED.h / 2, x1: b.x + BED.w / 2, y1: b.y - BED.h / 2 + BED.picture, what: 'bed picture' },
-  { x0: b.x - BED.w / 2, y0: b.y - BED.h / 2 + BED.picture, x1: b.x + BED.w / 2, y1: b.y + BED.h / 2, what: 'bed newcomer' },
+  {
+    x0: b.x - BED.w / 2,
+    y0: b.y - BED.h / 2,
+    x1: b.x + BED.w / 2,
+    y1: b.y - BED.h / 2 + BED.picture,
+    what: 'bed picture',
+  },
+  {
+    x0: b.x - BED.w / 2,
+    y0: b.y - BED.h / 2 + BED.picture,
+    x1: b.x + BED.w / 2,
+    y1: b.y + BED.h / 2,
+    what: 'bed newcomer',
+  },
 ];
 
 describe('the creature play layout', () => {
-  it('gives each of the welcome bed\'s two taps at least 100 units, against the real plaque height', () => {
+  it("gives each of the welcome bed's two taps at least 100 units, against the real plaque height", () => {
     expect(BED.w).toBeGreaterThanOrEqual(100);
     expect(BED.picture).toBeGreaterThanOrEqual(100);
     expect(BED.h - BED.picture).toBeGreaterThanOrEqual(100);
@@ -99,9 +178,18 @@ describe('the creature play layout', () => {
     for (const v of VIEWS) {
       const l = playLayout(v);
       const where = `${v.w}×${v.h}`;
-      const buttons = [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), rect(l.board, BOARD.w, BOARD.h, 'board'), rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'), rect(l.basket, BASKET.w, BASKET.h, 'basket'), rect(l.books, BASKET.w, BASKET.h, 'books'), ...bedParts(l.bed)];
+      const buttons = [
+        disc(l.back, CORNER_RADIUS, 'back'),
+        disc(l.home, CORNER_RADIUS, 'home'),
+        rect(l.board, BOARD.w, BOARD.h, 'board'),
+        rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'),
+        rect(l.basket, BASKET.w, BASKET.h, 'basket'),
+        rect(l.books, BASKET.w, BASKET.h, 'books'),
+        ...bedParts(l.bed),
+      ];
       check(v, [...buttons, body(l.stage), disc(l.ball, BALL_RADIUS, 'ball')], [floorBox(l.floor)], where);
-      for (const b of buttons) expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
+      for (const b of buttons)
+        expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
       expect(l.floor.x1, where).toBeGreaterThan(l.floor.x0 + 200);
       expect(l.stage.y, where).toBeGreaterThan(l.backdrop.floorTop);
       expect(l.floor.y0, where).toBeGreaterThan(l.backdrop.floorTop);
@@ -118,7 +206,10 @@ describe('the Explore picker layout', () => {
       for (let n = 1; n <= EXPLORE_MAX; n++) {
         const l = exploreLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
-        const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
+        const cards = l.cards.map((c, i) => ({
+          ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`),
+          y1: c.y + EXPLORE_CARD / 2 + NAME,
+        }));
         check(v, [disc(l.back, CORNER_RADIUS, 'back'), ...cards], [], where);
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
         for (const c of cards) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
@@ -136,8 +227,22 @@ describe('the Explore entries and pages layout (RW08)', () => {
       for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
-        const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
-        check(v, [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), ...cards, disc(l.prev, PAGE_ARROW_RADIUS, 'prev'), disc(l.next, PAGE_ARROW_RADIUS, 'next')], [], where);
+        const cards = l.cards.map((c, i) => ({
+          ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`),
+          y1: c.y + EXPLORE_CARD / 2 + NAME,
+        }));
+        check(
+          v,
+          [
+            disc(l.back, CORNER_RADIUS, 'back'),
+            disc(l.home, CORNER_RADIUS, 'home'),
+            ...cards,
+            disc(l.prev, PAGE_ARROW_RADIUS, 'prev'),
+            disc(l.next, PAGE_ARROW_RADIUS, 'next'),
+          ],
+          [],
+          where,
+        );
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
         for (const c of cards) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
         if (n === 4) expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(v.h > v.w ? 2 : 1);
@@ -147,7 +252,7 @@ describe('the Explore entries and pages layout (RW08)', () => {
     expect(() => exploreGridLayout(VIEWS[0], 6)).toThrow();
   });
 
-  it('fits the last place\'s postcard above the cards without shrinking a target (RW14 slice 8)', () => {
+  it("fits the last place's postcard above the cards without shrinking a target (RW14 slice 8)", () => {
     expect(EXPLORE_POSTCARD.w).toBeGreaterThan(EXPLORE_CARD);
     expect(EXPLORE_POSTCARD.h).toBeGreaterThan(EXPLORE_CARD);
     const NAME = 50;
@@ -156,15 +261,36 @@ describe('the Explore entries and pages layout (RW08)', () => {
       for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n, true);
         const where = `${v.w}×${v.h}, ${n} cards and the postcard`;
-        const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
-        const post = { ...rect(l.postcard!, EXPLORE_POSTCARD.w, EXPLORE_POSTCARD.h, 'postcard'), y1: l.postcard!.y + EXPLORE_POSTCARD.h / 2 + NAME };
+        const cards = l.cards.map((c, i) => ({
+          ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`),
+          y1: c.y + EXPLORE_CARD / 2 + NAME,
+        }));
+        const post = {
+          ...rect(l.postcard!, EXPLORE_POSTCARD.w, EXPLORE_POSTCARD.h, 'postcard'),
+          y1: l.postcard!.y + EXPLORE_POSTCARD.h / 2 + NAME,
+        };
         // Five cards are Explore's own entries, the one page the postcard shows on; it has no page arrows.
-        const arrows = n <= 4 ? [disc(l.prev, PAGE_ARROW_RADIUS, 'prev'), disc(l.next, PAGE_ARROW_RADIUS, 'next')] : [];
-        check(v, [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), post, ...cards, ...arrows], [], where);
+        const arrows =
+          n <= 4 ? [disc(l.prev, PAGE_ARROW_RADIUS, 'prev'), disc(l.next, PAGE_ARROW_RADIUS, 'next')] : [];
+        check(
+          v,
+          [
+            disc(l.back, CORNER_RADIUS, 'back'),
+            disc(l.home, CORNER_RADIUS, 'home'),
+            post,
+            ...cards,
+            ...arrows,
+          ],
+          [],
+          where,
+        );
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
-        for (const c of [post, ...cards]) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
+        for (const c of [post, ...cards])
+          expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
         // The cards keep their own layout's rows: the postcard only moves them down.
-        expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(new Set(exploreGridLayout(v, n).cards.map((c) => c.y)).size);
+        expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(
+          new Set(exploreGridLayout(v, n).cards.map((c) => c.y)).size,
+        );
       }
     }
   });
@@ -187,7 +313,8 @@ describe('the welcome project page layout', () => {
         ];
         check(v, targets, [], where);
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
-        for (const t of targets.slice(2)) expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
+        for (const t of targets.slice(2))
+          expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
       }
     }
   });
@@ -213,14 +340,16 @@ describe('the welcome ending layout (RW07 slice 3)', () => {
         body(l.companion),
       ];
       check(v, targets, art, where);
-      for (const a of art) for (const t of targets) {
-        // The picture hangs over the basket, inside the newcomer's touch: it takes no touches of its own.
-        if (a.what === 'picture' && t.what === 'newcomer') continue;
-        expect(overlap(a, t), `${a.what} over ${t.what}, ${where}`).toBe(false);
-      }
+      for (const a of art)
+        for (const t of targets) {
+          // The picture hangs over the basket, inside the newcomer's touch: it takes no touches of its own.
+          if (a.what === 'picture' && t.what === 'newcomer') continue;
+          expect(overlap(a, t), `${a.what} over ${t.what}, ${where}`).toBe(false);
+        }
       expect(overlap(art[1], art[2]), `plates and companion, ${where}`).toBe(false);
       const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
-      for (const t of targets.slice(3)) expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
+      for (const t of targets.slice(3))
+        expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
     }
   });
 });

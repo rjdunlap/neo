@@ -35,11 +35,27 @@ export const MOTIFS: readonly Motif[] = [
 /** A pentatonic note (semitones above C) as a scale step in the octave above middle C, for `sfx`. */
 export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(semitones);
 
-export interface Plan { level: number; name: string; mode: 'lead' | 'both' | 'sign' }
+export interface Plan {
+  level: number;
+  name: string;
+  mode: 'lead' | 'both' | 'sign';
+}
 const PLANS: Plan[] = [
-  { level: 1, name: 'Lead a little band: tap the turtle or the rabbit and the band plays slow or fast', mode: 'lead' },
-  { level: 2, name: 'Two ways to play: hear the tune slow and fast, then finish with the one she likes', mode: 'both' },
-  { level: 3, name: "Two pictured requests: a listener's sign shows the turtle or the rabbit for each half of the tune; she picks that pad and taps Check", mode: 'sign' },
+  {
+    level: 1,
+    name: 'Lead a little band: tap the turtle or the rabbit and the band plays slow or fast',
+    mode: 'lead',
+  },
+  {
+    level: 2,
+    name: 'Two ways to play: hear the tune slow and fast, then finish with the one she likes',
+    mode: 'both',
+  },
+  {
+    level: 3,
+    name: "Two pictured requests: a listener's sign shows the turtle or the rabbit for each half of the tune; she picks that pad and taps Check",
+    mode: 'sign',
+  },
 ];
 
 // Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
@@ -59,7 +75,9 @@ export interface Round {
   requests: [PaceId, PaceId];
 }
 /** The band's friends: anyone from the cast except the mountain's host bear and the pip (the companion's look). */
-const BAND: CritterName[] = (Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'bear' && n !== 'pip');
+const BAND: CritterName[] = (Object.keys(CRITTERS) as CritterName[]).filter(
+  (n) => n !== 'bear' && n !== 'pip',
+);
 export function makeRound(rng: Rng): Round {
   const motif = rng.pick(MOTIFS);
   const friends = rng.shuffle([...BAND]);
@@ -99,8 +117,13 @@ export interface BeatEvent {
 }
 
 export const newScore = (): Score => ({
-  pace: null, pending: null, beat: 0, played: 0, phraseStart: 0,
-  heard: { turtle: 0, rabbit: 0 }, heardEver: { turtle: false, rabbit: false },
+  pace: null,
+  pending: null,
+  beat: 0,
+  played: 0,
+  phraseStart: 0,
+  heard: { turtle: 0, rabbit: 0 },
+  heardEver: { turtle: false, rabbit: false },
 });
 
 /**
@@ -114,7 +137,8 @@ export function select(score: Score, pace: PaceId): Score {
 }
 
 /** Listen again: the tune starts again from its first note on the next beat. What she has heard still counts. */
-export const listenAgain = (score: Score): Score => (score.pace === null ? score : { ...score, phraseStart: score.played });
+export const listenAgain = (score: Score): Score =>
+  score.pace === null ? score : { ...score, phraseStart: score.played };
 
 /**
  * Moves the clock on by `dt` seconds and returns every whole beat it crossed, each exactly once and in tune order.
@@ -143,7 +167,15 @@ export function advance(score: Score, dt: number, motif: Motif): { score: Score;
     }
     const pace = s.pace!;
     const step = (((s.played - s.phraseStart) % BEATS) + BEATS) % BEATS;
-    events.push({ index: s.played, step, pace, melody: noteStep(motif.melody[step]), bass: motif.bass.includes(step), drum: motif.drum.includes(step), at });
+    events.push({
+      index: s.played,
+      step,
+      pace,
+      melody: noteStep(motif.melody[step]),
+      bass: motif.bass.includes(step),
+      drum: motif.drum.includes(step),
+      at,
+    });
     s.heard[pace]++;
     if (s.heard[pace] >= BEATS) s.heardEver[pace] = true;
     s.played++;
@@ -152,7 +184,8 @@ export function advance(score: Score, dt: number, motif: Motif): { score: Score;
 }
 
 /** How many of a pad's four marks are lit: the beats heard at the playing pace since she chose it. */
-export const marksLit = (score: Score, pace: PaceId): number => (score.pace === pace && !score.pending ? Math.min(BEATS, score.heard[pace]) : 0);
+export const marksLit = (score: Score, pace: PaceId): number =>
+  score.pace === pace && !score.pending ? Math.min(BEATS, score.heard[pace]) : 0;
 
 /**
  * The heard gate for Done. Level 1: a whole phrase at the pace she last chose. Level 2: both paces heard whole at some
@@ -193,10 +226,19 @@ export interface Requests {
   done: boolean;
 }
 
-export const newRequests = (): Requests => ({ phrase: 0, choice: null, missed: 0, hinted: false, misses: 0, hints: 0, done: false });
+export const newRequests = (): Requests => ({
+  phrase: 0,
+  choice: null,
+  missed: 0,
+  hinted: false,
+  misses: 0,
+  hints: 0,
+  done: false,
+});
 
 /** The truth table: a Check is right exactly when the picked pad is the pace the sign shows. No timing is judged. */
-export const check = (round: Round, phrase: 0 | 1, choice: PaceId | null): boolean => choice !== null && choice === round.requests[phrase];
+export const check = (round: Round, phrase: 0 | 1, choice: PaceId | null): boolean =>
+  choice !== null && choice === round.requests[phrase];
 
 /** The pad the sign asks for, which is the pad that glows after two wrong Checks. */
 export const glowTarget = (round: Round, r: Requests): PaceId => round.requests[r.phrase];
@@ -236,8 +278,17 @@ export function submit(r: Requests, round: Round): { state: Requests; result: Ch
 export const signBot = (round: Round, r: Requests): PaceId | 'check' | null =>
   r.done ? null : r.choice === round.requests[r.phrase] ? 'check' : round.requests[r.phrase];
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Disc { x: number; y: number; r: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Disc {
+  x: number;
+  y: number;
+  r: number;
+}
 export interface ConductorLayout {
   stand: Rect;
   /** Where each friend's feet stand. */
@@ -276,12 +327,24 @@ export function conductorLayout(view: { w: number; h: number }, level: number): 
     rabbit: { x: padsCx + PAD_GAP / 2, y: padY, w: PAD, h: PAD },
   };
   const bx = view.w - BUTTON - 40;
-  const listen: Disc = portrait ? { x: bx, y: view.h - 3 * BUTTON - 90, r: BUTTON } : { x: bx, y: padY + BUTTON - 10, r: BUTTON };
-  const done: Disc = portrait ? { x: bx, y: view.h - BUTTON - 50, r: BUTTON } : { x: bx, y: padY + PAD + 30, r: BUTTON };
+  const listen: Disc = portrait
+    ? { x: bx, y: view.h - 3 * BUTTON - 90, r: BUTTON }
+    : { x: bx, y: padY + BUTTON - 10, r: BUTTON };
+  const done: Disc = portrait
+    ? { x: bx, y: view.h - BUTTON - 50, r: BUTTON }
+    : { x: bx, y: padY + PAD + 30, r: BUTTON };
   if (!signed) return { stand, friends, pads, listen, done };
   // Landscape: the sign at the top of the right-hand column. Portrait: below the bandstand, right of the pads.
   const sign: Rect = portrait
     ? { x: view.w - SIGN - 50, y: stand.y + stand.h + 30, w: SIGN, h: SIGN }
     : { x: view.w - SIGN - 25, y: stand.y, w: SIGN, h: SIGN };
-  return { stand, friends, pads, listen, done, sign, listener: { x: sign.x + SIGN / 2, y: sign.y + SIGN + 130 } };
+  return {
+    stand,
+    friends,
+    pads,
+    listen,
+    done,
+    sign,
+    listener: { x: sign.x + SIGN / 2, y: sign.y + SIGN + 130 },
+  };
 }

@@ -16,10 +16,55 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  blockingBoard, boardBuilt, boardLayout, boltAt, built, canFinish, cardLayout, CARD_H, CARD_W, corners, coveringBoards, covered, done,
-  emptyState, HEAD, HIT, hintBuild, holeAt, holeAtPoint, holeCount, hintMove, inRect, isFree, mirror, openHoles, overlaps, place,
-  planFor, pose, poses, remove, removed, solve, startState, stuck, toView, toWall, WALL_H, WALL_W, woodpileLayout,
-  type BoltLayout, type BoltPlan, type Hint, type Move, type Pose, type Pt, type Puzzle, type Rect, type State,
+  blockingBoard,
+  boardBuilt,
+  boardLayout,
+  boltAt,
+  built,
+  canFinish,
+  cardLayout,
+  CARD_H,
+  CARD_W,
+  corners,
+  coveringBoards,
+  covered,
+  done,
+  emptyState,
+  HEAD,
+  HIT,
+  hintBuild,
+  holeAt,
+  holeAtPoint,
+  holeCount,
+  hintMove,
+  inRect,
+  isFree,
+  mirror,
+  openHoles,
+  overlaps,
+  place,
+  planFor,
+  pose,
+  poses,
+  remove,
+  removed,
+  solve,
+  startState,
+  stuck,
+  toView,
+  toWall,
+  WALL_H,
+  WALL_W,
+  woodpileLayout,
+  type BoltLayout,
+  type BoltPlan,
+  type Hint,
+  type Move,
+  type Pose,
+  type Pt,
+  type Puzzle,
+  type Rect,
+  type State,
 } from './logic';
 import { PUZZLES } from './puzzles';
 
@@ -27,7 +72,12 @@ import { PUZZLES } from './puzzles';
 const COLORS = ['red', 'blue', 'yellow', 'green', 'purple', 'orange'] as const satisfies readonly ColorName[];
 type BoardColor = (typeof COLORS)[number];
 const PATTERN: Record<BoardColor, 'stripes' | 'spots' | 'rings'> = {
-  red: 'stripes', green: 'spots', blue: 'rings', purple: 'stripes', yellow: 'rings', orange: 'spots',
+  red: 'stripes',
+  green: 'spots',
+  blue: 'rings',
+  purple: 'stripes',
+  yellow: 'rings',
+  orange: 'spots',
 };
 /** Each fruit has its own outline (round, pear, oval, dimpled, pointed heart, curved) so shape, not only colour, tells them apart. */
 const FRUITS = ['apple', 'pear', 'plum', 'orange', 'strawberry', 'banana'] as const;
@@ -47,33 +97,56 @@ function boltArt(): Container {
   const c = new Container();
   c.addChild(
     new Graphics().circle(2, 4, 26).fill({ color: ink, alpha: 0.2 }),
-    new Graphics().circle(0, 0, 26).fill(0xd7dbe3).stroke({ width: 4, color: 0x6b7280 })
-      .circle(-7, -7, 7).fill({ color: 0xffffff, alpha: 0.6 })
-      .moveTo(-12, 0).lineTo(12, 0).moveTo(0, -12).lineTo(0, 12).stroke({ width: 5, color: 0x6b7280, cap: 'round' }),
+    new Graphics()
+      .circle(0, 0, 26)
+      .fill(0xd7dbe3)
+      .stroke({ width: 4, color: 0x6b7280 })
+      .circle(-7, -7, 7)
+      .fill({ color: 0xffffff, alpha: 0.6 })
+      .moveTo(-12, 0)
+      .lineTo(12, 0)
+      .moveTo(0, -12)
+      .lineTo(0, 12)
+      .stroke({ width: 5, color: 0x6b7280, cap: 'round' }),
   );
   return c;
 }
 
 function holeArt(g: Graphics, x: number, y: number) {
-  g.circle(x, y, 20).fill(0x6e5136).stroke({ width: 4, color: 0xb98a5c }).circle(x - 4, y - 4, 10).fill(0x4a3424);
+  g.circle(x, y, 20)
+    .fill(0x6e5136)
+    .stroke({ width: 4, color: 0xb98a5c })
+    .circle(x - 4, y - 4, 10)
+    .fill(0x4a3424);
 }
 
 function boardArt(w: number, h: number, color: BoardColor): Graphics {
   const c = swatch[color];
   const g = new Graphics();
   g.roundRect(-w / 2 + 4, -h / 2 + 8, w, h, 16).fill({ color: ink, alpha: 0.2 });
-  g.roundRect(-w / 2, -h / 2, w, h, 16).fill(c.fill).stroke({ width: 5, color: c.line });
+  g.roundRect(-w / 2, -h / 2, w, h, 16)
+    .fill(c.fill)
+    .stroke({ width: 5, color: c.line });
   // Wood grain.
   for (let y = -h / 2 + 22; y < h / 2 - 10; y += 26) {
-    g.moveTo(-w / 2 + 14, y).bezierCurveTo(-w / 6, y - 6, w / 6, y + 6, w / 2 - 14, y).stroke({ width: 3, color: c.line, alpha: 0.25 });
+    g.moveTo(-w / 2 + 14, y)
+      .bezierCurveTo(-w / 6, y - 6, w / 6, y + 6, w / 2 - 14, y)
+      .stroke({ width: 3, color: c.line, alpha: 0.25 });
   }
   const p = PATTERN[color];
   if (p === 'stripes') {
-    for (let x = -w / 2 + 30; x < w / 2 - 10; x += 44) g.moveTo(x, -h / 2 + 6).lineTo(x - 20, h / 2 - 6).stroke({ width: 9, color: c.light, alpha: 0.75 });
+    for (let x = -w / 2 + 30; x < w / 2 - 10; x += 44)
+      g.moveTo(x, -h / 2 + 6)
+        .lineTo(x - 20, h / 2 - 6)
+        .stroke({ width: 9, color: c.light, alpha: 0.75 });
   } else if (p === 'spots') {
-    for (let y = -h / 2 + 28; y < h / 2 - 16; y += 46) for (let x = -w / 2 + 28 + ((y / 46) % 2 ? 22 : 0); x < w / 2 - 16; x += 46) g.circle(x, y, 9).fill({ color: c.light, alpha: 0.85 });
+    for (let y = -h / 2 + 28; y < h / 2 - 16; y += 46)
+      for (let x = -w / 2 + 28 + ((y / 46) % 2 ? 22 : 0); x < w / 2 - 16; x += 46)
+        g.circle(x, y, 9).fill({ color: c.light, alpha: 0.85 });
   } else {
-    for (let y = -h / 2 + 34; y < h / 2 - 20; y += 60) for (let x = -w / 2 + 34; x < w / 2 - 20; x += 60) g.circle(x, y, 13).stroke({ width: 5, color: c.light, alpha: 0.85 });
+    for (let y = -h / 2 + 34; y < h / 2 - 20; y += 60)
+      for (let x = -w / 2 + 34; x < w / 2 - 20; x += 60)
+        g.circle(x, y, 13).stroke({ width: 5, color: c.light, alpha: 0.85 });
   }
   return g;
 }
@@ -84,15 +157,32 @@ function fruitArt(kind: Fruit): Graphics {
   const line = (color: number) => ({ width: 4, color, join: 'round' as const });
   if (kind === 'apple') {
     const c = swatch.red;
-    g.moveTo(0, -16).bezierCurveTo(-30, -32, -40, 12, -14, 28).bezierCurveTo(-6, 32, 6, 32, 14, 28).bezierCurveTo(40, 12, 30, -32, 0, -16).fill(c.fill).stroke(line(c.line));
+    g.moveTo(0, -16)
+      .bezierCurveTo(-30, -32, -40, 12, -14, 28)
+      .bezierCurveTo(-6, 32, 6, 32, 14, 28)
+      .bezierCurveTo(40, 12, 30, -32, 0, -16)
+      .fill(c.fill)
+      .stroke(line(c.line));
   } else if (kind === 'pear') {
     const c = swatch.green;
-    g.moveTo(0, -30).bezierCurveTo(14, -30, 12, -6, 24, 10).bezierCurveTo(34, 30, 14, 34, 0, 34).bezierCurveTo(-14, 34, -34, 30, -24, 10)
-      .bezierCurveTo(-12, -6, -14, -30, 0, -30).fill(c.fill).stroke(line(c.line));
+    g.moveTo(0, -30)
+      .bezierCurveTo(14, -30, 12, -6, 24, 10)
+      .bezierCurveTo(34, 30, 14, 34, 0, 34)
+      .bezierCurveTo(-14, 34, -34, 30, -24, 10)
+      .bezierCurveTo(-12, -6, -14, -30, 0, -30)
+      .fill(c.fill)
+      .stroke(line(c.line));
   } else if (kind === 'orange') {
     const c = swatch.orange;
     g.circle(0, 4, 29).fill(c.fill).stroke(line(c.line));
-    for (const [x, y] of [[-12, 14], [6, 20], [14, 2], [-2, -6], [-16, -4]]) g.circle(x, y, 2).fill({ color: c.line, alpha: 0.45 });
+    for (const [x, y] of [
+      [-12, 14],
+      [6, 20],
+      [14, 2],
+      [-2, -6],
+      [-16, -4],
+    ])
+      g.circle(x, y, 2).fill({ color: c.line, alpha: 0.45 });
   }
   g.moveTo(0, -18).lineTo(3, -32).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
   g.ellipse(13, -30, 10, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
@@ -101,31 +191,54 @@ function fruitArt(kind: Fruit): Graphics {
 }
 
 function basketArt(w: number, h: number): Graphics {
-  const g = new Graphics().roundRect(-w / 2, -h / 2 + 18, w, h - 18, 22).fill(wood.fill).stroke({ width: 5, color: wood.line });
-  for (let y = -h / 2 + 34; y < h / 2 - 8; y += 18) g.moveTo(-w / 2 + 8, y).lineTo(w / 2 - 8, y).stroke({ width: 3, color: wood.line, alpha: 0.6 });
-  g.moveTo(-w / 2 + 20, -h / 2 + 20).bezierCurveTo(-w / 2 + 20, -h / 2 - 22, w / 2 - 20, -h / 2 - 22, w / 2 - 20, -h / 2 + 20).stroke({ width: 7, color: wood.line, cap: 'round' });
+  const g = new Graphics()
+    .roundRect(-w / 2, -h / 2 + 18, w, h - 18, 22)
+    .fill(wood.fill)
+    .stroke({ width: 5, color: wood.line });
+  for (let y = -h / 2 + 34; y < h / 2 - 8; y += 18)
+    g.moveTo(-w / 2 + 8, y)
+      .lineTo(w / 2 - 8, y)
+      .stroke({ width: 3, color: wood.line, alpha: 0.6 });
+  g.moveTo(-w / 2 + 20, -h / 2 + 20)
+    .bezierCurveTo(-w / 2 + 20, -h / 2 - 22, w / 2 - 20, -h / 2 - 22, w / 2 - 20, -h / 2 + 20)
+    .stroke({ width: 7, color: wood.line, cap: 'round' });
   return g;
 }
 
 function toolboxArt(): Graphics {
   const c = swatch.red;
   return new Graphics()
-    .roundRect(-60, -30, 120, 64, 12).fill(c.fill).stroke({ width: 5, color: c.line })
-    .moveTo(-62, -6).lineTo(62, -6).stroke({ width: 4, color: c.line })
-    .roundRect(-26, -50, 52, 26, 10).stroke({ width: 8, color: 0x6b7280 })
-    .rect(-10, -10, 20, 10).fill(0xd7dbe3).stroke({ width: 3, color: 0x6b7280 });
+    .roundRect(-60, -30, 120, 64, 12)
+    .fill(c.fill)
+    .stroke({ width: 5, color: c.line })
+    .moveTo(-62, -6)
+    .lineTo(62, -6)
+    .stroke({ width: 4, color: c.line })
+    .roundRect(-26, -50, 52, 26, 10)
+    .stroke({ width: 8, color: 0x6b7280 })
+    .rect(-10, -10, 20, 10)
+    .fill(0xd7dbe3)
+    .stroke({ width: 3, color: 0x6b7280 });
 }
 
 function wallArt(): Graphics {
-  const g = new Graphics().roundRect(-16, -16, WALL_W + 32, WALL_H + 32, 26).fill(0xe8c79a).stroke({ width: 6, color: wood.line });
-  for (let y = 18; y < WALL_H; y += 40) for (let x = 18; x < WALL_W; x += 40) g.circle(x, y, 4).fill({ color: wood.line, alpha: 0.3 });
+  const g = new Graphics()
+    .roundRect(-16, -16, WALL_W + 32, WALL_H + 32, 26)
+    .fill(0xe8c79a)
+    .stroke({ width: 6, color: wood.line });
+  for (let y = 18; y < WALL_H; y += 40)
+    for (let x = 18; x < WALL_W; x += 40) g.circle(x, y, 4).fill({ color: wood.line, alpha: 0.3 });
   return g;
 }
 
 /** A board on the wall, drawn round its middle, with its bolt heads on it. */
 class BoardView extends Container {
   readonly bolts = new Map<number, Container>();
-  constructor(readonly w: number, readonly h: number, readonly color: BoardColor) {
+  constructor(
+    readonly w: number,
+    readonly h: number,
+    readonly color: BoardColor,
+  ) {
     super();
     this.addChild(boardArt(w, h, color));
     this.eventMode = 'none';
@@ -136,7 +249,11 @@ class BoardView extends Container {
 /* The game                                                                                       */
 /* ---------------------------------------------------------------------------------------------- */
 
-interface Swing { from: number; to: number; t: number }
+interface Swing {
+  from: number;
+  to: number;
+  t: number;
+}
 type Press = { bolt: number; at: Pt; dragging: boolean } | { wall: Pt };
 
 class BoltBoards implements Game {
@@ -210,9 +327,26 @@ class BoltBoards implements Game {
     this.plan = planFor(ctx.level);
     this.build = !!this.plan.build;
     this.boardLayer.sortableChildren = true;
-    for (const c of [this.wallBack, this.holes, this.behind, this.parked, this.boardLayer, this.glow, this.fly]) c.eventMode = 'none';
+    for (const c of [
+      this.wallBack,
+      this.holes,
+      this.behind,
+      this.parked,
+      this.boardLayer,
+      this.glow,
+      this.fly,
+    ])
+      c.eventMode = 'none';
     this.wall.eventMode = 'none';
-    this.wall.addChild(this.wallBack, this.holes, this.behind, this.parked, this.boardLayer, this.glow, this.fly);
+    this.wall.addChild(
+      this.wallBack,
+      this.holes,
+      this.behind,
+      this.parked,
+      this.boardLayer,
+      this.glow,
+      this.fly,
+    );
     this.wallBack.addChild(wallArt());
     this.basket.addChild(basketArt(150, 120), this.basketFill);
     this.basket.eventMode = 'none';
@@ -227,7 +361,16 @@ class BoltBoards implements Game {
     for (const c of [this.woodpile, this.pileGlow, this.card]) c.eventMode = 'none';
     this.basket.visible = this.toolbox.visible = !this.build;
     this.woodpile.visible = this.pileGlow.visible = this.card.visible = this.build;
-    ctx.stage.addChild(this.wall, this.toolbox, this.basket, this.woodpile, this.card, this.pileGlow, this.hitLayer, this.undoButton);
+    ctx.stage.addChild(
+      this.wall,
+      this.toolbox,
+      this.basket,
+      this.woodpile,
+      this.card,
+      this.pileGlow,
+      this.hitLayer,
+      this.undoButton,
+    );
     this.ctx.listen(window, 'pointercancel', this.onCancel);
     this.layout = boardLayout(ctx.view, this.build);
     this.buildScene();
@@ -236,7 +379,9 @@ class BoltBoards implements Game {
   start() {
     this.resize(this.ctx.view);
     this.wall.alpha = 0;
-    void this.ctx.tw.to(this.wall, { alpha: 1 }, { duration: 0.3 }).then(() => { this.busy = false; });
+    void this.ctx.tw.to(this.wall, { alpha: 1 }, { duration: 0.3 }).then(() => {
+      this.busy = false;
+    });
     void this.ctx.instruct(this.instruction());
   }
 
@@ -269,7 +414,7 @@ class BoltBoards implements Game {
         s.t += dt;
         if (s.t >= SWING) this.swings[i] = null;
         // Two small overshoots, damped, ending exactly on the new pose.
-        else rot = s.to + (s.from - s.to) * Math.cos(s.t * 2 * Math.PI / 0.27) * Math.exp(-s.t / 0.1);
+        else rot = s.to + (s.from - s.to) * Math.cos((s.t * 2 * Math.PI) / 0.27) * Math.exp(-s.t / 0.1);
       }
       if (this.wobbles[i] > 0) {
         this.wobbles[i] = Math.max(0, this.wobbles[i] - dt);
@@ -285,15 +430,16 @@ class BoltBoards implements Game {
     }
     if (this.build) {
       this.pileWobble = Math.max(0, this.pileWobble - dt);
-      this.pileArts.forEach((a) => { if (a) a.rotation = Math.sin(this.pileWobble * 40) * 0.08 * (this.pileWobble / 0.4); });
+      this.pileArts.forEach((a) => {
+        if (a) a.rotation = Math.sin(this.pileWobble * 40) * 0.08 * (this.pileWobble / 0.4);
+      });
     }
     this.undoButton.scale.set(this.undoPulse > 0 ? 1 + 0.08 * Math.sin(this.clock * 8) : 1);
     if (this.undoPulse > 0) this.undoPulse -= dt;
     this.drawGlow(dt);
   }
 
-  destroy() {
-  }
+  destroy() {}
 
   /** Start again: every bolt back in its board. Misses and hints already made still count. */
   restart() {
@@ -306,7 +452,10 @@ class BoltBoards implements Game {
     this.picked = null;
     this.dead = false;
     this.placeAll();
-    if (this.build) { this.drawWoodpile(); this.drawCard(); }
+    if (this.build) {
+      this.drawWoodpile();
+      this.drawCard();
+    }
   }
 
   /** The ghost finger: the hint each step, highest board first at 1–5 and 8 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
@@ -342,7 +491,9 @@ class BoltBoards implements Game {
         authoredShown.add(9);
         return PUZZLES[9][0];
       }
-      const id = this.plan.build[this.scene], list = PUZZLES[id], key = (k: number) => id * 1000 + k;
+      const id = this.plan.build[this.scene],
+        list = PUZZLES[id],
+        key = (k: number) => id * 1000 + k;
       const choices = list.map((_, k) => k).filter((k) => !this.used.has(key(k)));
       const k = rng.pick(choices.length ? choices : list.map((_, k) => k));
       this.used.add(key(k));
@@ -350,7 +501,12 @@ class BoltBoards implements Game {
     }
     const list = PUZZLES[this.plan.id];
     if (this.plan.id === 1 && this.scene === 0) return list[0];
-    if ((this.plan.id === 6 || this.plan.id === 8) && this.scene === 0 && !authoredShown.has(this.plan.id) && !this.ctx.demo) {
+    if (
+      (this.plan.id === 6 || this.plan.id === 8) &&
+      this.scene === 0 &&
+      !authoredShown.has(this.plan.id) &&
+      !this.ctx.demo
+    ) {
       authoredShown.add(this.plan.id);
       this.used.add(0);
       return list[0];
@@ -430,14 +586,23 @@ class BoltBoards implements Game {
 
   private instruction(): LineId {
     switch (this.plan.id) {
-      case 1: return 'bolt.instruct';
-      case 2: return 'bolt.instruct-two';
-      case 3: case 4: return 'bolt.instruct-all';
-      case 5: return 'bolt.instruct-friend';
-      case 6: return 'bolt.instruct-holes';
-      case 8: return 'bolt.instruct-park';
-      case 9: return 'bolt.instruct-build';
-      default: return 'bolt.instruct-holes-friend';
+      case 1:
+        return 'bolt.instruct';
+      case 2:
+        return 'bolt.instruct-two';
+      case 3:
+      case 4:
+        return 'bolt.instruct-all';
+      case 5:
+        return 'bolt.instruct-friend';
+      case 6:
+        return 'bolt.instruct-holes';
+      case 8:
+        return 'bolt.instruct-park';
+      case 9:
+        return 'bolt.instruct-build';
+      default:
+        return 'bolt.instruct-holes-friend';
     }
   }
 
@@ -451,7 +616,8 @@ class BoltBoards implements Game {
 
   /** Put board `i` in a pose, turning about bolt `pivot` (or its middle). */
   private setPose(i: number, q: Pose, pivot: number | null) {
-    const v = this.views[i], d = this.puzzle.boards[i];
+    const v = this.views[i],
+      d = this.puzzle.boards[i];
     if (q.kind === 'down') {
       v.visible = false;
       return;
@@ -493,15 +659,21 @@ class BoltBoards implements Game {
 
   /** Bolt heads on their boards, parked bolts in their holes, and the holes. */
   private drawBolts() {
-    const p = this.puzzle, s = this.state;
+    const p = this.puzzle,
+      s = this.state;
     p.bolts.forEach((_, b) => {
       const v = this.boltView(b);
-      if (v) { v.visible = s[b] === b && this.lifted !== b; v.rotation = 0; v.scale.set(1); }
+      if (v) {
+        v.visible = s[b] === b && this.lifted !== b;
+        v.rotation = 0;
+        v.scale.set(1);
+      }
     });
     this.parked.removeChildren().forEach((c) => c.destroy({ children: true }));
     s.forEach((h, b) => {
       if (h < 0 || h === b) return;
-      const at = holeAt(p, h), art = this.parked.addChild(boltArt());
+      const at = holeAt(p, h),
+        art = this.parked.addChild(boltArt());
       art.position.set(at.x, at.y);
       art.alpha = 0.9;
     });
@@ -533,15 +705,22 @@ class BoltBoards implements Game {
     const qs = poses(this.puzzle, this.state);
     qs.forEach((q, i) => {
       const was = this.shown[i];
-      if (was.kind === q.kind && (q.kind !== 'hanging' || (was.kind === 'hanging' && was.bolt === q.bolt))) return;
+      if (was.kind === q.kind && (q.kind !== 'hanging' || (was.kind === 'hanging' && was.bolt === q.bolt)))
+        return;
       const v = this.views[i];
       if (q.kind === 'down') {
         this.swings[i] = null;
         const wall = toWall(this.layout, { x: 0, y: this.ctx.view.h + 60 });
-        void this.ctx.tw.to(v, { y: Math.max(v.y + 200, wall.y + this.puzzle.boards[i].h), alpha: 0 }, { duration: 0.55, ease: ease.inQuad }).then(() => {
-          v.visible = false;
-          sfx.clunk();
-        });
+        void this.ctx.tw
+          .to(
+            v,
+            { y: Math.max(v.y + 200, wall.y + this.puzzle.boards[i].h), alpha: 0 },
+            { duration: 0.55, ease: ease.inQuad },
+          )
+          .then(() => {
+            v.visible = false;
+            sfx.clunk();
+          });
         this.dropFruit(i);
         return;
       }
@@ -551,9 +730,19 @@ class BoltBoards implements Game {
         v.alpha = 0;
         void this.ctx.tw.to(v, { alpha: 1 }, { duration: 0.25 });
         // Level 9: a board's first bolt swings it up on that bolt.
-        if (this.build && q.kind === 'hanging') { this.swings[i] = { from: q.rot + 0.7, to: q.rot, t: 0 }; v.rotation = q.rot + 0.7; sfx.squeak(4); }
+        if (this.build && q.kind === 'hanging') {
+          this.swings[i] = { from: q.rot + 0.7, to: q.rot, t: 0 };
+          v.rotation = q.rot + 0.7;
+          sfx.squeak(4);
+        }
         const f = this.fruitViews[i];
-        if (f) { this.ctx.tw.kill(f); f.visible = true; f.alpha = 1; const s = poses(this.puzzle, startState(this.puzzle))[i] as Pt; f.position.set(s.x, s.y); }
+        if (f) {
+          this.ctx.tw.kill(f);
+          f.visible = true;
+          f.alpha = 1;
+          const s = poses(this.puzzle, startState(this.puzzle))[i] as Pt;
+          f.position.set(s.x, s.y);
+        }
         return;
       }
       // Pinned and hanging share the holding bolt: turn about it.
@@ -571,8 +760,11 @@ class BoltBoards implements Game {
     const f = this.fruitViews[i];
     if (!f) return;
     const to = toWall(this.layout, this.layout.basket);
-    void this.ctx.tw.to(f, { y: f.y - 40 }, { duration: 0.18, ease: ease.outQuad })
-      .then(() => this.ctx.tw.to(f, { x: to.x, y: to.y - 20, alpha: 0.2 }, { duration: 0.45, ease: ease.inQuad }))
+    void this.ctx.tw
+      .to(f, { y: f.y - 40 }, { duration: 0.18, ease: ease.outQuad })
+      .then(() =>
+        this.ctx.tw.to(f, { x: to.x, y: to.y - 20, alpha: 0.2 }, { duration: 0.45, ease: ease.inQuad }),
+      )
       .then(() => {
         f.visible = false;
         sfx.marimba(5 + (i % 4), 0.4);
@@ -584,7 +776,8 @@ class BoltBoards implements Game {
     const g = this.glow.clear();
     if (this.build) this.pileGlow.clear();
     if (this.finished) return;
-    const p = this.puzzle, pulse = 6 + 2 * Math.sin(this.clock * 6);
+    const p = this.puzzle,
+      pulse = 6 + 2 * Math.sin(this.clock * 6);
     if (this.build) return this.drawBuildGlow(g, pulse);
     if (this.lifted !== null && this.plan.litHoles) {
       for (const h of openHoles(p, this.state)) {
@@ -595,15 +788,26 @@ class BoltBoards implements Game {
     if (this.shimmer) {
       this.shimmer.t -= dt;
       if (this.shimmer.t <= 0) this.shimmer = null;
-      else for (const b of this.shimmer.bolts) g.circle(p.bolts[b].x, p.bolts[b].y, HEAD + 10).stroke({ width: 5, color: 0xffffff, alpha: Math.min(1, this.shimmer.t * 2) });
+      else
+        for (const b of this.shimmer.bolts)
+          g.circle(p.bolts[b].x, p.bolts[b].y, HEAD + 10).stroke({
+            width: 5,
+            color: 0xffffff,
+            alpha: Math.min(1, this.shimmer.t * 2),
+          });
     }
     const h = this.hinted;
     if (h && 'move' in h) {
       const b = p.bolts[h.move.bolt];
-      if (this.lifted !== h.move.bolt) g.circle(b.x, b.y, HIT + pulse).stroke({ width: pulse, color: swatch.yellow.fill });
+      if (this.lifted !== h.move.bolt)
+        g.circle(b.x, b.y, HIT + pulse).stroke({ width: pulse, color: swatch.yellow.fill });
       if (h.move.hole !== undefined) {
         const at = holeAt(p, h.move.hole);
-        g.circle(at.x, at.y, HIT - 10 + pulse).stroke({ width: pulse, color: swatch.yellow.fill, alpha: this.lifted === h.move.bolt ? 1 : 0.5 });
+        g.circle(at.x, at.y, HIT - 10 + pulse).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+          alpha: this.lifted === h.move.bolt ? 1 : 0.5,
+        });
       }
     }
   }
@@ -663,7 +867,10 @@ class BoltBoards implements Game {
     if (this.build) return this.buildTap(at);
     if ('bolt' in press) {
       const v = this.boltView(press.bolt);
-      if (v) { v.scale.set(1); v.rotation = 0; }
+      if (v) {
+        v.scale.set(1);
+        v.rotation = 0;
+      }
       if (press.dragging) {
         const drop = { x: at.x, y: at.y - 40 / this.layout.scale };
         const h = holeAtPoint(this.puzzle, this.state, drop);
@@ -689,7 +896,10 @@ class BoltBoards implements Game {
     this.press = null;
     if (press && 'bolt' in press) {
       const v = this.boltView(press.bolt);
-      if (v) { v.scale.set(1); v.rotation = 0; }
+      if (v) {
+        v.scale.set(1);
+        v.rotation = 0;
+      }
     }
     if (drop && this.lifted !== null) this.putBack();
   }
@@ -717,7 +927,11 @@ class BoltBoards implements Game {
     this.liftedView = null;
     if (b === null) return;
     const v = this.boltView(b);
-    if (v) { v.visible = this.state[b] === b; v.scale.set(1); v.rotation = 0; }
+    if (v) {
+      v.visible = this.state[b] === b;
+      v.scale.set(1);
+      v.rotation = 0;
+    }
     sfx.pop(2);
   }
 
@@ -755,8 +969,11 @@ class BoltBoards implements Game {
     art.position.set(at.x, at.y);
     const to = toWall(this.layout, this.layout.toolbox);
     sfx.ratchet(3);
-    void this.ctx.tw.to(art, { rotation: Math.PI * 3, y: at.y - 30 }, { duration: 0.25, ease: ease.outQuad })
-      .then(() => this.ctx.tw.to(art, { x: to.x, y: to.y - 20, alpha: 0.4 }, { duration: 0.4, ease: ease.inQuad }))
+    void this.ctx.tw
+      .to(art, { rotation: Math.PI * 3, y: at.y - 30 }, { duration: 0.25, ease: ease.outQuad })
+      .then(() =>
+        this.ctx.tw.to(art, { x: to.x, y: to.y - 20, alpha: 0.4 }, { duration: 0.4, ease: ease.inQuad }),
+      )
       .then(() => art.destroy({ children: true }));
     this.commit(r.state);
   }
@@ -806,7 +1023,10 @@ class BoltBoards implements Game {
     this.drawBolts();
     this.animatePoses();
     this.fillBasket();
-    if (this.build) { this.drawWoodpile(); this.drawCard(); }
+    if (this.build) {
+      this.drawWoodpile();
+      this.drawCard();
+    }
   }
 
   /* -------------------------------------------------------------------------------------------- */
@@ -846,20 +1066,26 @@ class BoltBoards implements Game {
 
   /** The nearest empty hole of the picked board within reach of a touch. */
   private pickedHoleAt(at: Pt): number | null {
-    const p = this.puzzle, i = this.picked;
+    const p = this.puzzle,
+      i = this.picked;
     if (i === null) return null;
-    let best: number | null = null, dist = HIT;
+    let best: number | null = null,
+      dist = HIT;
     p.bolts.forEach((q, b) => {
       if (q.board !== i || this.state[b] !== -1) return;
       const d = Math.hypot(q.x - at.x, q.y - at.y);
-      if (d <= dist) { best = b; dist = d; }
+      if (d <= dist) {
+        best = b;
+        dist = d;
+      }
     });
     return best;
   }
 
   /** The board under a touch, if the topmost one there hangs from one bolt and still misses one. */
   private bodyAt(at: Pt): number | null {
-    const p = this.puzzle, qs = poses(p, this.state);
+    const p = this.puzzle,
+      qs = poses(p, this.state);
     let top: number | null = null;
     qs.forEach((q, i) => {
       if (overlaps(p, i, q, at, 1) && (top === null || p.boards[i].z > p.boards[top].z)) top = i;
@@ -869,14 +1095,29 @@ class BoltBoards implements Game {
 
   /** Where the ghost finger picks board `i`: its slot, or a point on its hanging body that resolves to it. */
   private pickPoint(i: number): Pt {
-    const p = this.puzzle, q = pose(p, this.state, i);
+    const p = this.puzzle,
+      q = pose(p, this.state, i);
     if (q.kind === 'down') {
       const r = this.slots[i];
       return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
     }
-    const d = p.boards[i], c = Math.cos(q.rot), sn = Math.sin(q.rot);
-    for (const [u, v] of [[0, 0], [0.3, 0.3], [-0.3, 0.3], [0.3, -0.3], [-0.3, -0.3], [0, 0.4], [0.4, 0], [-0.4, 0], [0, -0.4]]) {
-      const x = u * d.w, y = v * d.h, pt = { x: q.x + x * c - y * sn, y: q.y + x * sn + y * c };
+    const d = p.boards[i],
+      c = Math.cos(q.rot),
+      sn = Math.sin(q.rot);
+    for (const [u, v] of [
+      [0, 0],
+      [0.3, 0.3],
+      [-0.3, 0.3],
+      [0.3, -0.3],
+      [-0.3, -0.3],
+      [0, 0.4],
+      [0.4, 0],
+      [-0.4, 0],
+      [0, -0.4],
+    ]) {
+      const x = u * d.w,
+        y = v * d.h,
+        pt = { x: q.x + x * c - y * sn, y: q.y + x * sn + y * c };
       if (this.bodyAt(pt) === i && this.pickedHoleAt(pt) === null) return toView(this.layout, pt);
     }
     return toView(this.layout, q);
@@ -884,7 +1125,8 @@ class BoltBoards implements Game {
 
   /** Bolt `b` into its hole: a covered hole is one miss while the wall can still be finished, and free at a dead end. */
   private tryPlace(b: number) {
-    const p = this.puzzle, r = place(p, this.state, b);
+    const p = this.puzzle,
+      r = place(p, this.state, b);
     if (!('state' in r)) {
       if (r.refused !== 'covered') return;
       const top = coveringBoards(p, this.state, p.boards[p.bolts[b].board].z, p.bolts[b], HEAD)[0];
@@ -903,7 +1145,10 @@ class BoltBoards implements Game {
     this.drawBolts();
     this.animatePoses();
     const head = this.boltView(b);
-    if (head) { head.rotation = -Math.PI * 3; void this.ctx.tw.to(head, { rotation: 0 }, { duration: 0.3, ease: ease.outQuad }); }
+    if (head) {
+      head.rotation = -Math.PI * 3;
+      void this.ctx.tw.to(head, { rotation: 0 }, { duration: 0.3, ease: ease.outQuad });
+    }
     sfx.ratchet(7, -1);
     this.drawWoodpile();
     this.drawCard();
@@ -935,12 +1180,20 @@ class BoltBoards implements Game {
     this.pileArts = [];
     const p = this.puzzle;
     this.slots.forEach((r, i) => {
-      const pad = new Graphics().roundRect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 18).fill({ color: wood.light, alpha: 0.85 }).stroke({ width: 4, color: wood.line, alpha: 0.6 });
+      const pad = new Graphics()
+        .roundRect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 18)
+        .fill({ color: wood.light, alpha: 0.85 })
+        .stroke({ width: 4, color: wood.line, alpha: 0.6 });
       this.woodpile.addChild(pad);
-      if (pose(p, this.state, i).kind !== 'down') { this.pileArts.push(null); return; }
+      if (pose(p, this.state, i).kind !== 'down') {
+        this.pileArts.push(null);
+        return;
+      }
       const d = p.boards[i];
       const art = boardArt(d.w, d.h, this.colors[i]);
-      art.scale.set(Math.min(0.5 * this.layout.scale, (Math.min(150, r.w) - 24) / d.w, (Math.min(120, r.h) - 24) / d.h));
+      art.scale.set(
+        Math.min(0.5 * this.layout.scale, (Math.min(150, r.w) - 24) / d.w, (Math.min(120, r.h) - 24) / d.h),
+      );
       art.position.set(r.x + r.w / 2, r.y + r.h / 2 + (this.picked === i ? -10 : 4));
       this.woodpile.addChild(art);
       this.pileArts.push(art);
@@ -950,9 +1203,16 @@ class BoltBoards implements Game {
   /** The picture card: the finished wall small, with a tick on each board that already matches it. */
   private drawCard() {
     this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const p = this.puzzle, goal = poses(p, startState(p));
-    this.card.addChild(new Graphics().roundRect(3, 5, CARD_W, CARD_H, 14).fill({ color: ink, alpha: 0.18 })
-      .roundRect(0, 0, CARD_W, CARD_H, 14).fill(cream).stroke({ width: 4, color: wood.line }));
+    const p = this.puzzle,
+      goal = poses(p, startState(p));
+    this.card.addChild(
+      new Graphics()
+        .roundRect(3, 5, CARD_W, CARD_H, 14)
+        .fill({ color: ink, alpha: 0.18 })
+        .roundRect(0, 0, CARD_W, CARD_H, 14)
+        .fill(cream)
+        .stroke({ width: 4, color: wood.line }),
+    );
     const sc = Math.min((CARD_W - 20) / WALL_W, (CARD_H - 30) / WALL_H);
     const inner = this.card.addChild(new Container());
     inner.position.set((CARD_W - WALL_W * sc) / 2, 22);
@@ -963,23 +1223,36 @@ class BoltBoards implements Game {
     for (const i of order) {
       const q = goal[i];
       if (q.kind === 'down') continue;
-      const d = p.boards[i], art = inner.addChild(boardArt(d.w, d.h, this.colors[i]));
+      const d = p.boards[i],
+        art = inner.addChild(boardArt(d.w, d.h, this.colors[i]));
       art.position.set(q.x, q.y);
       art.rotation = q.rot;
       if (boardBuilt(p, this.state, i)) {
-        ticks.moveTo(q.x - 40, q.y).lineTo(q.x - 10, q.y + 30).lineTo(q.x + 45, q.y - 35)
+        ticks
+          .moveTo(q.x - 40, q.y)
+          .lineTo(q.x - 10, q.y + 30)
+          .lineTo(q.x + 45, q.y - 35)
           .stroke({ width: 34, color: 0xffffff, cap: 'round', join: 'round' })
-          .moveTo(q.x - 40, q.y).lineTo(q.x - 10, q.y + 30).lineTo(q.x + 45, q.y - 35)
+          .moveTo(q.x - 40, q.y)
+          .lineTo(q.x - 10, q.y + 30)
+          .lineTo(q.x + 45, q.y - 35)
           .stroke({ width: 18, color: swatch.green.line, cap: 'round', join: 'round' });
       }
     }
     inner.addChild(ticks);
-    this.card.addChild(new Graphics().circle(CARD_W / 2, 10, 9).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line }));
+    this.card.addChild(
+      new Graphics()
+        .circle(CARD_W / 2, 10, 9)
+        .fill(swatch.red.fill)
+        .stroke({ width: 3, color: swatch.red.line }),
+    );
   }
 
   /** Level 9's glows: the picked board's empty holes (open ones bright, covered ones dim), its slot, and the hint. */
   private drawBuildGlow(g: Graphics, pulse: number) {
-    const p = this.puzzle, s = this.state, pg = this.pileGlow;
+    const p = this.puzzle,
+      s = this.state,
+      pg = this.pileGlow;
     if (this.picked !== null) {
       p.bolts.forEach((q, b) => {
         if (q.board !== this.picked || s[b] !== -1) return;
@@ -987,11 +1260,13 @@ class BoltBoards implements Game {
         else g.circle(q.x, q.y, 34 + pulse / 2).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.9 });
       });
       const r = this.slots[this.picked];
-      if (r && pose(p, s, this.picked).kind === 'down') pg.roundRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4, 20).stroke({ width: 6, color: 0xffffff });
+      if (r && pose(p, s, this.picked).kind === 'down')
+        pg.roundRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4, 20).stroke({ width: 6, color: 0xffffff });
     }
     const h = this.hinted;
     if (!h || !('move' in h)) return;
-    const b = h.move.bolt, i = p.bolts[b].board;
+    const b = h.move.bolt,
+      i = p.bolts[b].board;
     if (this.picked === i) {
       g.circle(p.bolts[b].x, p.bolts[b].y, HIT + pulse).stroke({ width: pulse, color: swatch.yellow.fill });
       return;
@@ -999,7 +1274,11 @@ class BoltBoards implements Game {
     const q = pose(p, s, i);
     if (q.kind === 'down') {
       const r = this.slots[i];
-      if (r) pg.roundRect(r.x - pulse / 2, r.y - pulse / 2, r.w + pulse, r.h + pulse, 22).stroke({ width: pulse, color: swatch.yellow.fill });
+      if (r)
+        pg.roundRect(r.x - pulse / 2, r.y - pulse / 2, r.w + pulse, r.h + pulse, 22).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
     } else {
       const cs = corners(p, i, q);
       g.poly(cs.flatMap((c) => [c.x, c.y])).stroke({ width: pulse, color: swatch.yellow.fill });
@@ -1008,12 +1287,16 @@ class BoltBoards implements Game {
 
   /** A covered bolt waits: the board on top wobbles, its free bolts shimmer and the pet names it. A miss from level 4. */
   private coveredTap(b: number) {
-    const p = this.puzzle, bolt = p.bolts[b];
+    const p = this.puzzle,
+      bolt = p.bolts[b];
     const over = coveringBoards(p, this.state, p.boards[bolt.board].z, bolt, HEAD);
     if (!over.length) return;
     const top = over[0];
     this.wobbles[top] = 0.4;
-    this.shimmer = { bolts: p.bolts.map((_, k) => k).filter((k) => p.bolts[k].board === top && isFree(p, this.state, k)), t: 1.2 };
+    this.shimmer = {
+      bolts: p.bolts.map((_, k) => k).filter((k) => p.bolts[k].board === top && isFree(p, this.state, k)),
+      t: 1.2,
+    };
     sfx.boing();
     this.sayOnce(`bolt.on-top.${this.colors[top]}` as LineId);
     if (this.plan.coveredMiss) this.miss();
@@ -1124,7 +1407,9 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const color = rng.pick(COLORS);
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }));
+  c.addChild(
+    new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }),
+  );
   const plank = boardArt(130, 64, color);
   plank.rotation = rng.range(-0.4, 0.4);
   c.addChild(plank);

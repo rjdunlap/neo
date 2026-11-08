@@ -1,34 +1,84 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  bypass, checkBoard, conductors, doneReady, dressingFor, gaps, GLOW_AFTER, HelpTally, initialState, lit, litWith, nextHelp, nextMove, planFor, PLANS,
-  type BoardState, type Edge, type Seen,
+  bypass,
+  checkBoard,
+  conductors,
+  doneReady,
+  dressingFor,
+  gaps,
+  GLOW_AFTER,
+  HelpTally,
+  initialState,
+  lit,
+  litWith,
+  nextHelp,
+  nextMove,
+  planFor,
+  PLANS,
+  type BoardState,
+  type Edge,
+  type Seen,
 } from './logic';
 
-const state = (supply: boolean, ret: boolean, closed = false): BoardState => ({ filled: { supply, return: ret }, closed });
+const state = (supply: boolean, ret: boolean, closed = false): BoardState => ({
+  filled: { supply, return: ret },
+  closed,
+});
 const nothing: Seen = { on: false, off: false };
 
 describe('the terminal graph', () => {
   it('lights only through both lamp terminals, either way round', () => {
-    expect(litWith([['P', 'L'], ['R', 'N']])).toBe(true);
-    expect(litWith([['P', 'R'], ['L', 'N']])).toBe(true);
+    expect(
+      litWith([
+        ['P', 'L'],
+        ['R', 'N'],
+      ]),
+    ).toBe(true);
+    expect(
+      litWith([
+        ['P', 'R'],
+        ['L', 'N'],
+      ]),
+    ).toBe(true);
     // A stub from the battery, joined lamp terminals alone, or a loop away from the battery never lights it.
     expect(litWith([['P', 'L']])).toBe(false);
     expect(litWith([['L', 'R']] as Edge[])).toBe(false);
-    expect(litWith([['P', 'L'], ['L', 'N']])).toBe(false);
-    expect(litWith([['U', 'L'], ['R', 'V'], ['U', 'V']])).toBe(false);
+    expect(
+      litWith([
+        ['P', 'L'],
+        ['L', 'N'],
+      ]),
+    ).toBe(false);
+    expect(
+      litWith([
+        ['U', 'L'],
+        ['R', 'V'],
+        ['U', 'V'],
+      ]),
+    ).toBe(false);
   });
 
   it('rejects a wire that bypasses the lamp', () => {
-    const edges: Edge[] = [['P', 'L'], ['R', 'N'], ['P', 'N']];
+    const edges: Edge[] = [
+      ['P', 'L'],
+      ['R', 'N'],
+      ['P', 'N'],
+    ];
     expect(bypass(edges)).toBe(true);
     expect(litWith(edges)).toBe(false);
   });
 
   it('no level board ever bypasses the lamp, in any state', () => {
-    for (const plan of PLANS) for (const s of [state(false, false), state(true, true, true), state(true, false, true), state(false, true, false)]) {
-      expect(bypass(conductors(plan, s))).toBe(false);
-    }
+    for (const plan of PLANS)
+      for (const s of [
+        state(false, false),
+        state(true, true, true),
+        state(true, false, true),
+        state(false, true, false),
+      ]) {
+        expect(bypass(conductors(plan, s))).toBe(false);
+      }
   });
 });
 
@@ -102,7 +152,10 @@ describe('level 2, a switch changes it', () => {
       seen[lit(plan, s) ? 'on' : 'off'] = true;
       const m = nextMove(plan, s, seen);
       if ('done' in m) break;
-      if ('flip' in m) { s.closed = !s.closed; flips++; }
+      if ('flip' in m) {
+        s.closed = !s.closed;
+        flips++;
+      }
     }
     expect(flips).toBe(1);
     expect(doneReady(plan, seen)).toBe(true);
@@ -111,7 +164,12 @@ describe('level 2, a switch changes it', () => {
 
 describe('level 3, mend the lantern', () => {
   const plan = planFor(3);
-  const states: [boolean, boolean, boolean][] = [[false, false, false], [true, false, false], [false, true, false], [true, true, true]];
+  const states: [boolean, boolean, boolean][] = [
+    [false, false, false],
+    [true, false, false],
+    [false, true, false],
+    [true, true, true],
+  ];
 
   it('has two empty gaps, no fixed wires and a Check', () => {
     expect(plan.fixed).toEqual([]);
@@ -148,12 +206,17 @@ describe('level 3, mend the lantern', () => {
     expect(nextHelp(plan, state(false, true), nothing)).toBe('supply');
     expect(nextHelp(plan, state(true, true), nothing)).toBeNull();
     const t = new HelpTally();
-    t.give('supply'); t.give('supply'); t.give('return');
+    t.give('supply');
+    t.give('supply');
+    t.give('return');
     expect(t.count).toBe(2);
   });
 
   it('either fill order lights the lantern', () => {
-    for (const order of [['supply', 'return'], ['return', 'supply']] as const) {
+    for (const order of [
+      ['supply', 'return'],
+      ['return', 'supply'],
+    ] as const) {
       const s = initialState();
       order.forEach((slot, i) => {
         s.filled[slot] = true;
@@ -164,14 +227,18 @@ describe('level 3, mend the lantern', () => {
 
   it('a bot following nextMove fills both, checks, then is done, with no wrong Check', () => {
     const s = initialState();
-    let checked = false, wrong = 0;
+    let checked = false,
+      wrong = 0;
     const moves: string[] = [];
     for (let i = 0; i < 10; i++) {
       const m = nextMove(plan, s, nothing, checked);
       moves.push(Object.keys(m)[0] + ('fill' in m ? `:${m.fill}` : ''));
       if ('done' in m) break;
       if ('fill' in m) s.filled[m.fill] = true;
-      if ('check' in m) { if (checkBoard(plan, s).right) checked = true; else wrong++; }
+      if ('check' in m) {
+        if (checkBoard(plan, s).right) checked = true;
+        else wrong++;
+      }
     }
     expect(moves).toEqual(['fill:supply', 'fill:return', 'check', 'done']);
     expect(wrong).toBe(0);
@@ -188,7 +255,8 @@ describe('level 3, mend the lantern', () => {
 describe('help accounting', () => {
   it('counts each identity once, however often it is given', () => {
     const t = new HelpTally();
-    t.give('return'); t.give('return');
+    t.give('return');
+    t.give('return');
     expect(t.count).toBe(1);
     t.give('show-on');
     expect(t.count).toBe(2);

@@ -24,7 +24,8 @@ export const COURSES: Record<LanternCourseId, Course> = {
     id: 'lanterns',
     version: 1,
     name: 'Dusk on the Pond',
-    blurb: 'Five ponds of paper lanterns in a row, from a small one to a 5 by 5 that takes planning. Light every lantern with the fewest presses.',
+    blurb:
+      'Five ponds of paper lanterns in a row, from a small one to a 5 by 5 that takes planning. Light every lantern with the fewest presses.',
     ponds: [
       ['..**', '*..*', '....', '*.*.'],
       ['*.***', '*..**', '.**.*', '**..*', '..**.'],
@@ -41,7 +42,7 @@ const parsed = new Map<LanternCourseId, Pond[]>();
 /** The ponds of a course, read once. */
 export function coursePonds(id: LanternCourseId): Pond[] {
   let ponds = parsed.get(id);
-  if (!ponds) parsed.set(id, ponds = COURSES[id].ponds.map(parsePond));
+  if (!ponds) parsed.set(id, (ponds = COURSES[id].ponds.map(parsePond)));
   return ponds;
 }
 

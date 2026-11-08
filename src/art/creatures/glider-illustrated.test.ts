@@ -23,7 +23,8 @@ illustratedSuite({
 describe('glider weights', () => {
   it('pin the face and wing root and move the wing tip, fins and both ribbons', () => {
     const A = GLIDER_ART;
-    for (const p of [...A.eyes, A.nose, A.slots.back]) expect(weights(p.x, p.y)).toMatchObject({ wing: 0, fin: [0, 0], ribbon: [0, 0] });
+    for (const p of [...A.eyes, A.nose, A.slots.back])
+      expect(weights(p.x, p.y)).toMatchObject({ wing: 0, fin: [0, 0], ribbon: [0, 0] });
     expect(weights(A.wing.root.x, A.wing.root.y).wing).toBe(0);
     expect(weights(A.wing.tip.x + 15, A.wing.tip.y + 12).wing).toBeGreaterThan(0.7);
     expect(weights(A.fins[0].tip.x, A.fins[0].tip.y + 8).fin[0]).toBeGreaterThan(0.5);

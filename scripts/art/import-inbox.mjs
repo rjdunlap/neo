@@ -17,7 +17,15 @@
 // Rules and tests: inbox-core.mjs. Pipeline: docs/rework/art-requests/IMPORT.md.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,7 +37,12 @@ const at = (p) => resolve(root, p);
 const require = createRequire(import.meta.url);
 
 const args = process.argv.slice(2);
-const opt = { dryRun: false, choose: [], tool: 'ChatGPT (developer); model as shown in ChatGPT', inbox: 'docs/rework/concepts/inbox' };
+const opt = {
+  dryRun: false,
+  choose: [],
+  tool: 'ChatGPT (developer); model as shown in ChatGPT',
+  inbox: 'docs/rework/concepts/inbox',
+};
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--dry-run') opt.dryRun = true;
@@ -83,7 +96,8 @@ try {
 }
 
 if (opt.dryRun) {
-  for (const w of p.waiting) console.log(`waiting  ${w.stem}: several candidates; pick one with --choose ${w.files[0]}`);
+  for (const w of p.waiting)
+    console.log(`waiting  ${w.stem}: several candidates; pick one with --choose ${w.files[0]}`);
   console.log('dry run: nothing moved or written');
   process.exit(0);
 }
@@ -91,7 +105,9 @@ if (opt.dryRun) {
 for (const m of p.moves) renameSync(join(inbox, m.from), join(generated, m.to));
 manifest = next;
 writeFileSync(manifestPath, manifest);
-for (const w of p.waiting) if (!opt.choose.some((f) => f.startsWith(`${w.stem}-`))) console.log(`waiting  ${w.stem}: several candidates; pick one with --choose ${w.files[0]}`);
+for (const w of p.waiting)
+  if (!opt.choose.some((f) => f.startsWith(`${w.stem}-`)))
+    console.log(`waiting  ${w.stem}: several candidates; pick one with --choose ${w.files[0]}`);
 
 // Prepare what is chosen. A creature or friend set is prepared once per group, from every chosen file.
 const sets = new Map();
@@ -104,17 +120,27 @@ for (const stem of touched) {
     mkdirSync(at('src/art/locations'), { recursive: true });
     const out = at(`src/art/locations/${info.landId}.webp`);
     await sharp(src).webp({ quality: 82, effort: 6 }).toFile(out);
-    await sharp(src).resize(480, 360, { fit: 'cover' }).webp({ quality: 80, effort: 6 }).toFile(at(`src/art/locations/${info.landId}-card.webp`));
+    await sharp(src)
+      .resize(480, 360, { fit: 'cover' })
+      .webp({ quality: 80, effort: 6 })
+      .toFile(at(`src/art/locations/${info.landId}-card.webp`));
     const kb = Math.round(statSync(out).size / 1024);
     console.log(`prepared src/art/locations/${info.landId}.webp (${kb} KB) and its card`);
-    if (kb > 1024) console.log(`warning  ${info.landId}.webp is over 1 MiB; lower the quality (the precache limit is 3 MiB a file)`);
+    if (kb > 1024)
+      console.log(
+        `warning  ${info.landId}.webp is over 1 MiB; lower the quality (the precache limit is 3 MiB a file)`,
+      );
   } else {
     sets.set(info.group, info.outDir);
   }
 }
 for (const [group, outDir] of sets) {
   console.log(`prepare  ${group} set → ${outDir}`);
-  execFileSync('node', ['scripts/creature-art/prepare-sprite.mjs', '--set', group, '--shrink', '2', '--out-dir', outDir], { cwd: root, stdio: 'inherit' });
+  execFileSync(
+    'node',
+    ['scripts/creature-art/prepare-sprite.mjs', '--set', group, '--shrink', '2', '--out-dir', outDir],
+    { cwd: root, stdio: 'inherit' },
+  );
 }
 
 function insertRowsOnce(text, rows) {

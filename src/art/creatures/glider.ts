@@ -30,10 +30,17 @@ export class Glider extends Creature {
 
   constructor() {
     super();
-    this.misfit.scarf = 'no neck: the head runs straight into the wing, so a band would hide the face or the wing root';
+    this.misfit.scarf =
+      'no neck: the head runs straight into the wing, so a band would hide the face or the wing root';
 
     const far = new Graphics();
-    far.moveTo(-40, 6).bezierCurveTo(-30, 50, 10, 74, 40, 70).bezierCurveTo(40, 40, 30, 20, 30, 8).closePath().fill(SKIN.fill).stroke(stroke(SKIN.line));
+    far
+      .moveTo(-40, 6)
+      .bezierCurveTo(-30, 50, 10, 74, 40, 70)
+      .bezierCurveTo(40, 40, 30, 20, 30, 8)
+      .closePath()
+      .fill(SKIN.fill)
+      .stroke(stroke(SKIN.line));
     this.farWing.addChild(far);
     this.farWing.position.set(0, 10);
 
@@ -57,12 +64,26 @@ export class Glider extends Creature {
     ribbonLayer.addChild(ribbonBack, ribbonFront);
 
     const body = new Graphics();
-    body.moveTo(118, -6).bezierCurveTo(118, -40, 60, -46, 0, -40).bezierCurveTo(-60, -34, -120, -16, -134, 0).bezierCurveTo(-110, 20, -40, 34, 30, 34).bezierCurveTo(90, 34, 118, 22, 118, -6).closePath().fill(BODY.fill).stroke(stroke(BODY.line));
+    body
+      .moveTo(118, -6)
+      .bezierCurveTo(118, -40, 60, -46, 0, -40)
+      .bezierCurveTo(-60, -34, -120, -16, -134, 0)
+      .bezierCurveTo(-110, 20, -40, 34, 30, 34)
+      .bezierCurveTo(90, 34, 118, 22, 118, -6)
+      .closePath()
+      .fill(BODY.fill)
+      .stroke(stroke(BODY.line));
     body.moveTo(110, 6).bezierCurveTo(80, 28, -20, 30, -90, 14).stroke(stroke(0xffffff, 6));
     body.ellipse(60, 16, 46, 12).fill(UNDER);
 
     const wing = new Graphics();
-    wing.moveTo(60, -30).bezierCurveTo(40, -90, 0, -150, -40, -176).bezierCurveTo(-46, -140, -80, -70, -110, -24).closePath().fill(SKIN.fill).stroke(stroke(SKIN.line));
+    wing
+      .moveTo(60, -30)
+      .bezierCurveTo(40, -90, 0, -150, -40, -176)
+      .bezierCurveTo(-46, -140, -80, -70, -110, -24)
+      .closePath()
+      .fill(SKIN.fill)
+      .stroke(stroke(SKIN.line));
     puffs(
       wing,
       [
@@ -131,7 +152,9 @@ export class Glider extends Creature {
       chain.forEach((link, i) => {
         for (const g of link) g.position.set(x, y);
         x -= 8;
-        y += (k ? 2.4 : 1.6) * Math.sin(t * 2.6 - i * 0.55 + k * 1.4) + (looping ? 4 * Math.sin(u * Math.PI) : 0);
+        y +=
+          (k ? 2.4 : 1.6) * Math.sin(t * 2.6 - i * 0.55 + k * 1.4) +
+          (looping ? 4 * Math.sin(u * Math.PI) : 0);
       });
     });
     const ex = this.excite(this.reactionLength);

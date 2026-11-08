@@ -5,7 +5,13 @@ import { describe, expect, it } from 'vitest';
 import { landing, levelsInOrder, nextLevel, nextLevelOffer, stepLevel } from './difficulty';
 import type { RoundRecord } from './save';
 
-const round = (level: number, misses: number, hints = 0): RoundRecord => ({ level, misses, hints, seconds: 60, at: 0 });
+const round = (level: number, misses: number, hints = 0): RoundRecord => ({
+  level,
+  misses,
+  hints,
+  seconds: 60,
+  at: 0,
+});
 const range = { min: 1, max: 6 };
 
 describe('stepLevel', () => {
@@ -129,9 +135,11 @@ it('Egg Catch keeps toddler IDs ordered 1,8,2, with safe birthdays and pins outs
   }
 });
 
-
 it('Egg Catch one-gate entry precedes the full tree without renumbering saved steps or pins', () => {
-  for (const [band, order, before] of [['preschool', [2, 3, 9, 4], 3], ['prek', [3, 9, 4, 5], 3]] as const) {
+  for (const [band, order, before] of [
+    ['preschool', [2, 3, 9, 4], 3],
+    ['prek', [3, 9, 4, 5], 3],
+  ] as const) {
     const range = eggCatch.levels(band);
     expect(levelsInOrder(range)).toEqual(order);
     expect(nextLevelOffer(before, range)).toBe(9);
@@ -147,7 +155,6 @@ it('Egg Catch one-gate entry precedes the full tree without renumbering saved st
     expect(landing(9, range, eggCatch.entryLevels)).toBe(levelsInOrder(range)[0]);
   }
 });
-
 
 it('adds repair and spring boards after the school pair without admitting younger entry IDs', () => {
   const range = eggCatch.levels('school');
@@ -198,7 +205,7 @@ describe('Scoop Shop younger entries', () => {
   });
 });
 
- it('keeps Scoop Shop saved IDs while inserting count-on, mixed counts and the school-only 7–9', () => {
+it('keeps Scoop Shop saved IDs while inserting count-on, mixed counts and the school-only 7–9', () => {
   expect(levelsInOrder(scoopShop.levels('prek'))).toEqual([3, 4, 12, 13, 5, 6]);
   expect(levelsInOrder(scoopShop.levels('school'))).toEqual([5, 12, 13, 6, 7, 8, 9]);
   expect(stepLevel(4, 1, scoopShop.levels('prek'))).toBe(12);

@@ -1,13 +1,36 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { blanketArt, bushArt, changeArt, checkBadge, clotheslineArt, FRIENDS, HangingBlanket, lineSag, makeGardener, picnicPhoto, plateArt, requestArt, treeArt } from '../../art/picnic';
+import {
+  blanketArt,
+  bushArt,
+  changeArt,
+  checkBadge,
+  clotheslineArt,
+  FRIENDS,
+  HangingBlanket,
+  lineSag,
+  makeGardener,
+  picnicPhoto,
+  plateArt,
+  requestArt,
+  treeArt,
+} from '../../art/picnic';
 import { cream, ink, RAINBOW, swatch, wood } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
 import { Backdrop } from '../../art/scenery';
 import { music, STYLES } from '../../audio/music';
 import { sfx, type AnimalSound } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
-import { bandForGame, blanketPuzzle, GAME_STEPS, HANG_WORDS, stepLine, whyNot, type BlanketPuzzle, type Hang } from '../../content/picnic';
+import {
+  bandForGame,
+  blanketPuzzle,
+  GAME_STEPS,
+  HANG_WORDS,
+  stepLine,
+  whyNot,
+  type BlanketPuzzle,
+  type Hang,
+} from '../../content/picnic';
 import type { LineId } from '../../content/voice-script';
 import { PICNIC_STEPS, type PicnicStep } from '../../content/world';
 import { onTap } from '../../engine/input';
@@ -60,7 +83,13 @@ export interface Journal {
   retell: RoundButton | null;
 }
 
-const crossIcon = () => new Graphics().moveTo(-16, -16).lineTo(16, 16).moveTo(16, -16).lineTo(-16, 16).stroke({ width: 8, color: ink, cap: 'round' });
+const crossIcon = () =>
+  new Graphics()
+    .moveTo(-16, -16)
+    .lineTo(16, 16)
+    .moveTo(16, -16)
+    .lineTo(-16, 16)
+    .stroke({ width: 8, color: ink, cap: 'round' });
 
 /**
  * The Windy Picnic: Juniper the gardener's picnic has blown into a muddle. Three requests along the top
@@ -73,7 +102,12 @@ export class PicnicScene extends Scene {
   readonly gardener = makeGardener();
   readonly pip = makeCompanion();
   /** Back to the island's map; at the root, an arrow back to the library (RW08 slice 2). */
-  readonly home = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : islandIcon(), swatch.white, 50, () => this.leave(() => (this.app.creatureWorld ? this.app.go.library() : this.app.go.hub())));
+  readonly home = new RoundButton(
+    this.app.creatureWorld ? arrowIcon(-1) : islandIcon(),
+    swatch.white,
+    50,
+    () => this.leave(() => (this.app.creatureWorld ? this.app.go.library() : this.app.go.hub())),
+  );
   readonly journalButton = new RoundButton(journalIcon(), swatch.white, 50, () => this.openJournal());
   readonly requests: Request[] = [];
   hung: Hung[] = [];
@@ -117,17 +151,50 @@ export class PicnicScene extends Scene {
   }
 
   init() {
-    this.backdrop = this.track(new Backdrop({ sky: [swatch.blue.light, cream], hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf], horizon: 0.55, clouds: 5, sun: false, seed: 61 }, this.view));
+    this.backdrop = this.track(
+      new Backdrop(
+        {
+          sky: [swatch.blue.light, cream],
+          hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf],
+          horizon: 0.55,
+          clouds: 5,
+          sun: false,
+          seed: 61,
+        },
+        this.view,
+      ),
+    );
     for (let i = 0; i < 5; i++) {
-      const g = new Graphics().moveTo(0, 0).bezierCurveTo(40, -14, 80, 14, 120, 0).bezierCurveTo(150, -10, 150, -34, 128, -30).stroke({ width: 5, color: 0xffffff, alpha: 0.8, cap: 'round' });
+      const g = new Graphics()
+        .moveTo(0, 0)
+        .bezierCurveTo(40, -14, 80, 14, 120, 0)
+        .bezierCurveTo(150, -10, 150, -34, 128, -30)
+        .stroke({ width: 5, color: 0xffffff, alpha: 0.8, cap: 'round' });
       g.position.set(i * 260, 0);
       this.wind.addChild(g);
     }
     this.basket
-      .moveTo(-22, -4).bezierCurveTo(-22, -40, 22, -40, 22, -4).stroke({ width: 7, color: wood.line, cap: 'round' })
-      .poly([-34, -6, 34, -6, 26, 30, -26, 30]).fill(wood.fill).stroke({ width: 5, color: wood.line, join: 'round' })
-      .rect(-36, -12, 72, 10).fill(swatch.red.fill);
-    this.content.addChild(this.backdrop, this.wind, this.tree, this.line, this.bush, this.friendLayer, this.groundLayer, this.plateLayer, this.basket, this.gardener, this.hungLayer);
+      .moveTo(-22, -4)
+      .bezierCurveTo(-22, -40, 22, -40, 22, -4)
+      .stroke({ width: 7, color: wood.line, cap: 'round' })
+      .poly([-34, -6, 34, -6, 26, 30, -26, 30])
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line, join: 'round' })
+      .rect(-36, -12, 72, 10)
+      .fill(swatch.red.fill);
+    this.content.addChild(
+      this.backdrop,
+      this.wind,
+      this.tree,
+      this.line,
+      this.bush,
+      this.friendLayer,
+      this.groundLayer,
+      this.plateLayer,
+      this.basket,
+      this.gardener,
+      this.hungLayer,
+    );
     this.gardener.scale.set(0.6);
     this.gardener.hitArea = new Circle(0, -130, 150);
     onTap(this.gardener, () => {
@@ -239,7 +306,8 @@ export class PicnicScene extends Scene {
   private render(skip?: PicnicStep) {
     for (const h of this.hung) this.untrack(h.node);
     for (const f of this.friends) this.untrack(f);
-    for (const layer of [this.hungLayer, this.groundLayer, this.plateLayer, this.friendLayer]) layer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    for (const layer of [this.hungLayer, this.groundLayer, this.plateLayer, this.friendLayer])
+      layer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.hung = [];
     this.friends = [];
     this.plates = [];
@@ -388,7 +456,9 @@ export class PicnicScene extends Scene {
     const mod = def && gameById(def.game);
     if (!def || !mod || this.leaving) return;
     const child = store.data.profile.band;
-    this.leave(() => this.app.go.game(def.game, bandForGame(mod.bands, child), { step, level: def.level[child] }));
+    this.leave(() =>
+      this.app.go.game(def.game, bandForGame(mod.bands, child), { step, level: def.level[child] }),
+    );
   }
 
   private askBlanket() {
@@ -404,7 +474,10 @@ export class PicnicScene extends Scene {
   private tapBlanket(e: FederatedPointerEvent) {
     if (this.busy || this.leaving || this.journal || !this.puzzle) return;
     const at = this.hungLayer.toLocal(e.global);
-    const nearest = [...this.hung].sort((a, b) => Math.hypot(a.node.x - at.x, a.node.y + 46 - at.y) - Math.hypot(b.node.x - at.x, b.node.y + 46 - at.y))[0];
+    const nearest = [...this.hung].sort(
+      (a, b) =>
+        Math.hypot(a.node.x - at.x, a.node.y + 46 - at.y) - Math.hypot(b.node.x - at.x, b.node.y + 46 - at.y),
+    )[0];
     if (nearest) this.pickBlanket(nearest.index);
   }
 
@@ -421,7 +494,10 @@ export class PicnicScene extends Scene {
     this.wrongs++;
     const b = p.blankets[index];
     const target = p.blankets[p.target];
-    const line = why === 'pattern' ? this.say('picnic.not-pattern', { pattern: PATTERN_WORDS[b.pattern] }) : this.say('picnic.not-place', { where: HANG_WORDS[b.hang], target: HANG_WORDS[target.hang] });
+    const line =
+      why === 'pattern'
+        ? this.say('picnic.not-pattern', { pattern: PATTERN_WORDS[b.pattern] })
+        : this.say('picnic.not-place', { where: HANG_WORDS[b.hang], target: HANG_WORDS[target.hang] });
     if (this.wrongs >= 2) {
       this.hung.find((x) => x.index === p.target)!.node.glow.visible = true;
       void line.then(() => this.say('picnic.blanket-hint'));
@@ -441,7 +517,11 @@ export class PicnicScene extends Scene {
     for (const other of this.hung) {
       if (other === h) continue;
       sfx.whoosh();
-      void this.tw.to(other.node, { x: this.view.w + 200, y: other.node.y - 120, rotation: 0.6 }, { duration: 1.1, ease: ease.inQuad });
+      void this.tw.to(
+        other.node,
+        { x: this.view.w + 200, y: other.node.y - 120, rotation: 0.6 },
+        { duration: 1.1, ease: ease.inQuad },
+      );
     }
     await this.tw.to(h.node, { x: s.x, y: s.y - 46, rotation: 0 }, { duration: 0.9, ease: ease.inOutSine });
     for (const x of this.hung) this.untrack(x.node);
@@ -452,7 +532,14 @@ export class PicnicScene extends Scene {
     const sx = g.scale.x;
     g.scale.set(sx * 0.4, sx * 0.4 * 0.42);
     await this.tw.to(g.scale, { x: sx, y: sx * 0.42 }, { duration: 0.35, ease: ease.outBack });
-    this.particles.burst(s.x, s.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 14, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
+    this.particles.burst(s.x, s.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, 0xffffff],
+      count: 14,
+      speed: [160, 320],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.gardener.cheer();
     await this.say(stepLine.blanket.done);
     await this.afterStep();
@@ -478,12 +565,26 @@ export class PicnicScene extends Scene {
       sfx.munch();
       f.setMood('happy', 1);
       const p = this.plates[i];
-      if (p) this.particles.burst(p.x, p.y - 20, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 4, speed: [50, 120], gravity: -40, size: [0.3, 0.45] });
+      if (p)
+        this.particles.burst(p.x, p.y - 20, {
+          kind: 'heart',
+          colors: [swatch.pink.fill, swatch.red.fill],
+          count: 4,
+          speed: [50, 120],
+          gravity: -40,
+          size: [0.3, 0.45],
+        });
       await this.tw.wait(0.35);
     }
     const v = this.view;
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.particles.burst(v.w / 2, v.h * 0.45, { kind: 'confetti', colors, count: 60, speed: [250, 600], gravity: 400 });
+    this.particles.burst(v.w / 2, v.h * 0.45, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [250, 600],
+      gravity: 400,
+    });
     sfx.tada();
     // Juniper's photo of the picnic: the one keepsake, saved as soon as it can be seen.
     const photo = picnicPhoto(300);
@@ -497,7 +598,10 @@ export class PicnicScene extends Scene {
     store.flush();
     await this.say('picnic.keepsake');
     const to = this.journalButton.position;
-    await Promise.all([this.tw.to(photo, { x: to.x, y: to.y, rotation: 0.3 }, { duration: 0.7, ease: ease.inOutSine }), this.tw.to(photo.scale, { x: 0.12, y: 0.12 }, { duration: 0.7, ease: ease.inQuad })]);
+    await Promise.all([
+      this.tw.to(photo, { x: to.x, y: to.y, rotation: 0.3 }, { duration: 0.7, ease: ease.inOutSine }),
+      this.tw.to(photo.scale, { x: 0.12, y: 0.12 }, { duration: 0.7, ease: ease.inQuad }),
+    ]);
     photo.destroy({ children: true });
     this.photo = null;
     sfx.sparkle();
@@ -518,7 +622,12 @@ export class PicnicScene extends Scene {
     const book = new Graphics();
     root.addChild(veil, book);
     const rows: JournalRow[] = this.requests.map((r) => {
-      const picture = new RoundButton(requestArt(r.step), swatch.white, 52, () => void this.say(this.done.includes(r.step) ? stepLine[r.step].recap : stepLine[r.step].ask));
+      const picture = new RoundButton(
+        requestArt(r.step),
+        swatch.white,
+        52,
+        () => void this.say(this.done.includes(r.step) ? stepLine[r.step].recap : stepLine[r.step].ask),
+      );
       root.addChild(picture);
       let change: Container | null = null;
       if (this.done.includes(r.step)) {
@@ -531,11 +640,19 @@ export class PicnicScene extends Scene {
       return { step: r.step, picture, change };
     });
     const next = this.nextStep();
-    const go = next ? new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 46, () => this.goFromJournal(next)) : null;
+    const go = next
+      ? new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 46, () => this.goFromJournal(next))
+      : null;
     const close = new RoundButton(crossIcon(), swatch.white, 40, () => this.closeJournal());
     const ended = store.picnic.ended;
     const retell = ended ? new RoundButton(againIcon(0xffffff), swatch.green, 46, () => this.retell()) : null;
-    const keep = store.picnic.keepsake ? picnicPhoto(250) : new Graphics().roundRect(-125, -104, 250, 208, 12).stroke({ width: 5, color: swatch.white.line, alpha: 0.6 }).circle(0, 0, 26).stroke({ width: 5, color: swatch.white.line, alpha: 0.6 });
+    const keep = store.picnic.keepsake
+      ? picnicPhoto(250)
+      : new Graphics()
+          .roundRect(-125, -104, 250, 208, 12)
+          .stroke({ width: 5, color: swatch.white.line, alpha: 0.6 })
+          .circle(0, 0, 26)
+          .stroke({ width: 5, color: swatch.white.line, alpha: 0.6 });
     root.addChild(keep, close, ...(go ? [go] : []), ...(retell ? [retell] : []));
     this.journal = { root, veil, book, keep, rows, go, close, retell };
     this.ui.addChild(root);
@@ -554,10 +671,16 @@ export class PicnicScene extends Scene {
     const h = Math.min(560, v.h - 120);
     const x0 = (v.w - w) / 2;
     const y0 = (v.h - h) / 2;
-    j.book.clear()
-      .roundRect(x0 - 10, y0 - 10, w + 20, h + 20, 28).fill(swatch.green.line)
-      .roundRect(x0, y0, w / 2 - 4, h, 20).fill(0xfffdf6).roundRect(x0 + w / 2 + 4, y0, w / 2 - 4, h, 20).fill(0xfffdf6)
-      .rect(x0 + w / 2 - 4, y0, 8, h).fill(swatch.green.fill);
+    j.book
+      .clear()
+      .roundRect(x0 - 10, y0 - 10, w + 20, h + 20, 28)
+      .fill(swatch.green.line)
+      .roundRect(x0, y0, w / 2 - 4, h, 20)
+      .fill(0xfffdf6)
+      .roundRect(x0 + w / 2 + 4, y0, w / 2 - 4, h, 20)
+      .fill(0xfffdf6)
+      .rect(x0 + w / 2 - 4, y0, 8, h)
+      .fill(swatch.green.fill);
     j.rows.forEach((r, i) => {
       r.picture.position.set(x0 + 90, y0 + h * ((i + 0.5) / 3));
       r.change?.position.set(x0 + Math.min(270, w * 0.32), r.picture.y);

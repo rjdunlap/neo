@@ -2,20 +2,37 @@
 export const VOICE = {
   'game.hat-band': ['Hat band!'],
   'hat-band.intro': ['Two friends want to make a band, {name}!', 'Here are the hats for your band, {name}!'],
-  'hat-band.instruct-1': ['Put a hat on a friend, and they will play. The drum hat plays a beat; the tune hat plays a tune. Then tap the green check.'],
-  'hat-band.instruct-2': ['Swap the hats and tap a star to hear one friend alone. Hear two different bands, then tap the green check.'],
-  'hat-band.instruct-3': ['Put a hat on both friends. Tap each star to hear them alone, then hear them together and tap the green check.'],
+  'hat-band.instruct-1': [
+    'Put a hat on a friend, and they will play. The drum hat plays a beat; the tune hat plays a tune. Then tap the green check.',
+  ],
+  'hat-band.instruct-2': [
+    'Swap the hats and tap a star to hear one friend alone. Hear two different bands, then tap the green check.',
+  ],
+  'hat-band.instruct-3': [
+    'Put a hat on both friends. Tap each star to hear them alone, then hear them together and tap the green check.',
+  ],
   'hat-band.drum': ['The drum hat.', 'A drum hat.'],
   'hat-band.tune': ['The tune hat.', 'A tune hat.'],
   'hat-band.empty': ['Put a hat on a friend to start the band.', 'Pick a hat and give it to a friend.'],
-  'hat-band.hear-whole': ['Listen a little longer, then tap the check.', 'Hear the whole song first, then tap the check.'],
+  'hat-band.hear-whole': [
+    'Listen a little longer, then tap the check.',
+    'Hear the whole song first, then tap the check.',
+  ],
   'hat-band.hear-other': ['Now try a different band. Swap a hat!', 'Change a hat and hear another band.'],
-  'hat-band.hear-alone': ["Tap a friend's star to hear them alone.", 'Tap the star to hear just that friend.'],
+  'hat-band.hear-alone': [
+    "Tap a friend's star to hear them alone.",
+    'Tap the star to hear just that friend.',
+  ],
   'hat-band.both': ['Give the other friend a hat too.', 'Put a hat on both friends.'],
-  'hat-band.together': ['Tap the star again to hear them together.', 'Now let them play together. Tap the star again.'],
+  'hat-band.together': [
+    'Tap the star again to hear them together.',
+    'Now let them play together. Tap the star again.',
+  ],
   'hat-band.solo-on': ['Just one friend, all alone.', 'Listen: only this friend.'],
   'hat-band.solo-off': ['All together again!', 'The whole band together!'],
-  'hat-band.instruct-4': ['Make a song in three parts. Start with the tune alone, end with everybody. Tap a part, then tap friends to change who plays.'],
+  'hat-band.instruct-4': [
+    'Make a song in three parts. Start with the tune alone, end with everybody. Tap a part, then tap friends to change who plays.',
+  ],
   'hat-band.low': ['The low hat.', 'A low hat. Listen how low it plays.'],
   'hat-band.part-1': ['Part one.'],
   'hat-band.part-2': ['Part two.'],
@@ -23,9 +40,15 @@ export const VOICE = {
   'hat-band.clause-first': ['The song starts with the tune all alone.', 'At the start, just the tune plays.'],
   'hat-band.clause-middle': ['The middle part is up to you.', 'You choose who plays in the middle.'],
   'hat-band.clause-last': ['At the end, everybody plays.', 'The last part has everybody together.'],
-  'hat-band.empty-part': ['This part needs somebody to play. Tap a friend.', 'Nobody is playing in this part yet. Tap a friend.'],
+  'hat-band.empty-part': [
+    'This part needs somebody to play. Tap a friend.',
+    'Nobody is playing in this part yet. Tap a friend.',
+  ],
   'hat-band.play': ['Here is your whole song.', "Let's hear the whole song."],
-  'hat-band.check-ok': ['Your song fits! The band will play it for you.', 'That song works! Listen to your band.'],
+  'hat-band.check-ok': [
+    'Your song fits! The band will play it for you.',
+    'That song works! Listen to your band.',
+  ],
   'hat-band.fits': ['Your song fits. Tap the green check.', 'That works! Tap the green check.'],
   'hat-band.bow': ['What a band! They take a bow for you.', 'Lovely band! The friends take a bow.'],
 } satisfies Record<string, string[]>;

@@ -10,15 +10,47 @@ import type { BandLevels } from '../../progress/difficulty';
 export type AnimalId = 'cow' | 'pig' | 'duck' | 'rabbit' | 'bear' | 'frog' | 'penguin';
 export type Row = 'eats' | 'where' | 'baby';
 export type Picture =
-  | 'grass' | 'rootPlant' | 'seeds' | 'berries' | 'snail' | 'fish'
-  | 'field' | 'mudPen' | 'pond' | 'burrow' | 'den' | 'rockyBeach'
-  | 'calf' | 'piglet' | 'duckling' | 'kit' | 'cub' | 'tadpole' | 'chick';
+  | 'grass'
+  | 'rootPlant'
+  | 'seeds'
+  | 'berries'
+  | 'snail'
+  | 'fish'
+  | 'field'
+  | 'mudPen'
+  | 'pond'
+  | 'burrow'
+  | 'den'
+  | 'rockyBeach'
+  | 'calf'
+  | 'piglet'
+  | 'duckling'
+  | 'kit'
+  | 'cub'
+  | 'tadpole'
+  | 'chick';
 
 /** The word on a label tag for each picture (level 1), printed and spoken. */
 export const PICTURE_WORDS: Record<Picture, string> = {
-  grass: 'grass', rootPlant: 'plants', seeds: 'seeds', berries: 'berries', snail: 'snails', fish: 'fish',
-  field: 'field', mudPen: 'mud', pond: 'pond', burrow: 'burrow', den: 'den', rockyBeach: 'beach',
-  calf: 'calf', piglet: 'piglet', duckling: 'duckling', kit: 'kit', cub: 'cub', tadpole: 'tadpole', chick: 'chick',
+  grass: 'grass',
+  rootPlant: 'plants',
+  seeds: 'seeds',
+  berries: 'berries',
+  snail: 'snails',
+  fish: 'fish',
+  field: 'field',
+  mudPen: 'mud',
+  pond: 'pond',
+  burrow: 'burrow',
+  den: 'den',
+  rockyBeach: 'beach',
+  calf: 'calf',
+  piglet: 'piglet',
+  duckling: 'duckling',
+  kit: 'kit',
+  cub: 'cub',
+  tadpole: 'tadpole',
+  chick: 'chick',
 };
 
 export interface Fact {
@@ -60,7 +92,8 @@ const S = {
   ngBear: 'https://kids.nationalgeographic.com/animals/mammals/facts/brown-bear',
   wtFrog: 'https://www.wildlifetrusts.org/wildlife-explorer/amphibians/common-frog',
   froglife: 'https://www.froglife.org/info-advice/amphibians-and-reptiles/common-frog-2/',
-  woodland: 'https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/animals/reptiles-and-amphibians/common-frog/',
+  woodland:
+    'https://www.woodlandtrust.org.uk/trees-woods-and-wildlife/animals/reptiles-and-amphibians/common-frog/',
   sdzPenguin: 'https://ielc.libguides.com/sdzg/factsheets/africanpenguin',
   lpPenguin: 'https://www.lpzoo.org/wp-content/uploads/2020/06/Penguins-Fact-Sheet-2016-FINAL-1.pdf',
   mdPenguin: 'https://www.marylandzoo.org/animal/african-penguin/',
@@ -68,59 +101,155 @@ const S = {
 
 export const ANIMALS: Record<AnimalId, Animal> = {
   cow: {
-    id: 'cow', title: 'Cow', kind: 'cow',
+    id: 'cow',
+    title: 'Cow',
+    kind: 'cow',
     rows: {
-      eats: { line: 'Cows eat grass.', picture: 'grass', sources: [S.sfDocents, S.zooKidsCows], ask: 'Cow is hungry. What does a cow eat?' },
-      where: { line: 'Cows live in a grassy field.', picture: 'field', sources: [S.sfDocents, S.zooKidsCows], ask: 'Cow wants some fresh air. Where do cows live?' },
+      eats: {
+        line: 'Cows eat grass.',
+        picture: 'grass',
+        sources: [S.sfDocents, S.zooKidsCows],
+        ask: 'Cow is hungry. What does a cow eat?',
+      },
+      where: {
+        line: 'Cows live in a grassy field.',
+        picture: 'field',
+        sources: [S.sfDocents, S.zooKidsCows],
+        ask: 'Cow wants some fresh air. Where do cows live?',
+      },
       baby: { line: 'A baby cow is called a calf.', picture: 'calf', sources: [S.sfDocents, S.zooCow] },
     },
   },
   pig: {
-    id: 'pig', title: 'Pig', kind: 'pig',
+    id: 'pig',
+    title: 'Pig',
+    kind: 'pig',
     rows: {
-      eats: { line: 'Pigs eat plants, roots and bugs.', picture: 'rootPlant', sources: [S.mnPig, S.eriePig, S.ngPig], ask: 'Pig is hungry. What does a pig eat?' },
-      where: { line: 'Pigs roll in mud to keep cool.', picture: 'mudPen', sources: [S.ngPig, S.moPig, S.mnPig], ask: 'Pig is hot. Where can a pig keep cool?' },
+      eats: {
+        line: 'Pigs eat plants, roots and bugs.',
+        picture: 'rootPlant',
+        sources: [S.mnPig, S.eriePig, S.ngPig],
+        ask: 'Pig is hungry. What does a pig eat?',
+      },
+      where: {
+        line: 'Pigs roll in mud to keep cool.',
+        picture: 'mudPen',
+        sources: [S.ngPig, S.moPig, S.mnPig],
+        ask: 'Pig is hot. Where can a pig keep cool?',
+      },
       baby: { line: 'A baby pig is called a piglet.', picture: 'piglet', sources: [S.ngPig, S.mnPig] },
     },
   },
   duck: {
-    id: 'duck', title: 'Duck', kind: 'duck',
+    id: 'duck',
+    title: 'Duck',
+    kind: 'duck',
     rows: {
-      eats: { line: 'Ducks eat seeds and water plants.', picture: 'seeds', sources: [S.audMallard, S.massMallard], ask: 'Duck is hungry. What does a duck eat?' },
-      where: { line: 'Ducks live near ponds and lakes.', picture: 'pond', sources: [S.rspbMallard, S.ngMallard], ask: 'Duck wants a swim. Where do ducks live?' },
-      baby: { line: 'A baby duck is called a duckling.', picture: 'duckling', sources: [S.rspbMallard, S.audMallard] },
+      eats: {
+        line: 'Ducks eat seeds and water plants.',
+        picture: 'seeds',
+        sources: [S.audMallard, S.massMallard],
+        ask: 'Duck is hungry. What does a duck eat?',
+      },
+      where: {
+        line: 'Ducks live near ponds and lakes.',
+        picture: 'pond',
+        sources: [S.rspbMallard, S.ngMallard],
+        ask: 'Duck wants a swim. Where do ducks live?',
+      },
+      baby: {
+        line: 'A baby duck is called a duckling.',
+        picture: 'duckling',
+        sources: [S.rspbMallard, S.audMallard],
+      },
     },
   },
   rabbit: {
-    id: 'rabbit', title: 'Rabbit', kind: 'rabbit',
+    id: 'rabbit',
+    title: 'Rabbit',
+    kind: 'rabbit',
     rows: {
-      eats: { line: 'Rabbits eat grass.', picture: 'grass', sources: [S.ptes, S.ypte, S.rspca], ask: 'Rabbit is hungry. What does a rabbit eat?' },
-      where: { line: 'Rabbits live in a burrow under the ground.', picture: 'burrow', sources: [S.wtRabbit, S.ptes], ask: 'Rabbit wants to go home. Where do rabbits live?' },
-      baby: { line: 'A baby rabbit is called a kitten, or kit.', picture: 'kit', sources: [S.ptes, S.wtRabbit] },
+      eats: {
+        line: 'Rabbits eat grass.',
+        picture: 'grass',
+        sources: [S.ptes, S.ypte, S.rspca],
+        ask: 'Rabbit is hungry. What does a rabbit eat?',
+      },
+      where: {
+        line: 'Rabbits live in a burrow under the ground.',
+        picture: 'burrow',
+        sources: [S.wtRabbit, S.ptes],
+        ask: 'Rabbit wants to go home. Where do rabbits live?',
+      },
+      baby: {
+        line: 'A baby rabbit is called a kitten, or kit.',
+        picture: 'kit',
+        sources: [S.ptes, S.wtRabbit],
+      },
     },
   },
   bear: {
-    id: 'bear', title: 'Brown bear', kind: 'brown bear',
+    id: 'bear',
+    title: 'Brown bear',
+    kind: 'brown bear',
     rows: {
-      eats: { line: 'Brown bears eat berries, grass and roots, and sometimes fish.', picture: 'berries', sources: [S.npsKefj, S.npsBears], ask: 'Bear is hungry. What does a brown bear eat?' },
-      where: { line: 'A brown bear sleeps in a den all winter.', picture: 'den', sources: [S.npsBears, S.ngBear], ask: 'Bear is sleepy. Where does a brown bear sleep in winter?' },
+      eats: {
+        line: 'Brown bears eat berries, grass and roots, and sometimes fish.',
+        picture: 'berries',
+        sources: [S.npsKefj, S.npsBears],
+        ask: 'Bear is hungry. What does a brown bear eat?',
+      },
+      where: {
+        line: 'A brown bear sleeps in a den all winter.',
+        picture: 'den',
+        sources: [S.npsBears, S.ngBear],
+        ask: 'Bear is sleepy. Where does a brown bear sleep in winter?',
+      },
       baby: { line: 'A baby bear is called a cub.', picture: 'cub', sources: [S.npsKefj, S.ngBear] },
     },
   },
   frog: {
-    id: 'frog', title: 'Frog', kind: 'frog',
+    id: 'frog',
+    title: 'Frog',
+    kind: 'frog',
     rows: {
-      eats: { line: 'Frogs eat slugs, snails and bugs.', picture: 'snail', sources: [S.wtFrog, S.froglife], ask: 'Frog is hungry. What does a frog eat?' },
-      where: { line: 'Frogs lay their eggs in a pond.', picture: 'pond', sources: [S.wtFrog, S.froglife], ask: 'Frog has eggs to lay. Where does a frog lay its eggs?' },
+      eats: {
+        line: 'Frogs eat slugs, snails and bugs.',
+        picture: 'snail',
+        sources: [S.wtFrog, S.froglife],
+        ask: 'Frog is hungry. What does a frog eat?',
+      },
+      where: {
+        line: 'Frogs lay their eggs in a pond.',
+        picture: 'pond',
+        sources: [S.wtFrog, S.froglife],
+        ask: 'Frog has eggs to lay. Where does a frog lay its eggs?',
+      },
       baby: { line: 'A baby frog is called a tadpole.', picture: 'tadpole', sources: [S.wtFrog, S.woodland] },
     },
   },
   penguin: {
-    id: 'penguin', title: 'African penguin', kind: 'penguin',
+    id: 'penguin',
+    title: 'African penguin',
+    kind: 'penguin',
     rows: {
-      eats: { line: 'African penguins catch fish in the sea.', picture: 'fish', sources: [S.sdzPenguin, S.lpPenguin, S.mdPenguin], ask: 'Penguin is hungry. What does a penguin eat?' },
-      where: { line: 'African penguins live on a rocky beach.', picture: 'rockyBeach', sources: [S.sdzPenguin, S.mdPenguin], ask: 'Penguin wants to rest. Where do African penguins live?' },
-      baby: { line: 'A baby penguin is called a chick.', picture: 'chick', sources: [S.sdzPenguin, S.mdPenguin] },
+      eats: {
+        line: 'African penguins catch fish in the sea.',
+        picture: 'fish',
+        sources: [S.sdzPenguin, S.lpPenguin, S.mdPenguin],
+        ask: 'Penguin is hungry. What does a penguin eat?',
+      },
+      where: {
+        line: 'African penguins live on a rocky beach.',
+        picture: 'rockyBeach',
+        sources: [S.sdzPenguin, S.mdPenguin],
+        ask: 'Penguin wants to rest. Where do African penguins live?',
+      },
+      baby: {
+        line: 'A baby penguin is called a chick.',
+        picture: 'chick',
+        sources: [S.sdzPenguin, S.mdPenguin],
+      },
     },
   },
 };
@@ -134,7 +263,7 @@ export interface LookPlan {
 }
 export const PLANS: LookPlan[] = [
   { mode: 'labels', name: 'Talking labels: touch a word on the page to hear it' },
-  { mode: 'page', name: 'Find the page: tap the visitor\'s tab, then give it the food' },
+  { mode: 'page', name: "Find the page: tap the visitor's tab, then give it the food" },
   { mode: 'row', name: 'The fact box: find the page and the row, then help' },
 ];
 
@@ -146,7 +275,10 @@ export const LEVELS: BandLevels = {
 };
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export interface Visit { animal: AnimalId; row: 'eats' | 'where' }
+export interface Visit {
+  animal: AnimalId;
+  row: 'eats' | 'where';
+}
 export interface Round {
   level: number;
   /** The animals on the tabs, in tab order (level 1: its three pages, in the order they turn). */
@@ -203,7 +335,10 @@ export function check(round: Round, visit: Visit, choice: Picture | null): Verdi
   return owner ? { kind: 'wrong', owner } : { kind: 'ignore' };
 }
 
-export type Hint = { kind: 'tab'; animal: AnimalId } | { kind: 'row'; row: 'eats' | 'where' } | { kind: 'choice'; picture: Picture };
+export type Hint =
+  | { kind: 'tab'; animal: AnimalId }
+  | { kind: 'row'; row: 'eats' | 'where' }
+  | { kind: 'choice'; picture: Picture };
 
 /** The tab while another page is open; then, at level 3, the asked row until it has been touched; then the answer. */
 export function hintFor(round: Round, visit: Visit, open: AnimalId, rowSeen: boolean): Hint {
@@ -225,12 +360,20 @@ export function nearestPoint(points: { x: number; y: number }[], x: number, y: n
   let dist = reach;
   points.forEach((p, i) => {
     const d = Math.hypot(p.x - x, p.y - y);
-    if (d <= dist) { best = i; dist = d; }
+    if (d <= dist) {
+      best = i;
+      dist = d;
+    }
   });
   return best;
 }
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface GuideLayout {
   book: Rect;
   /** Tab faces, top to bottom (landscape) or in a column beside the book (portrait too). */
@@ -267,7 +410,12 @@ export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLay
     const sceneW = w - sceneX - 20;
     visitor = { x: sceneX + sceneW / 2, y: 330 };
     for (let i = 0; i < choiceCount; i++) {
-      choices.push({ x: sceneX + (sceneW - CHOICE) / 2, y: h - 20 - (choiceCount - i) * (CHOICE + 6) + 6, w: CHOICE, h: CHOICE });
+      choices.push({
+        x: sceneX + (sceneW - CHOICE) / 2,
+        y: h - 20 - (choiceCount - i) * (CHOICE + 6) + 6,
+        w: CHOICE,
+        h: CHOICE,
+      });
     }
   } else {
     book = { x: 20, y: 100, w: w - 20 - TAB - 30, h: 70 + rowCount * ROW_H + 20 };
@@ -282,7 +430,8 @@ export function guideLayout(view: View, rowCount = 3, choiceCount = 3): GuideLay
       choices.push({ x: startX + i * (CHOICE + gap), y: h - 30 - CHOICE - 60, w: CHOICE, h: CHOICE });
     }
   }
-  for (let i = 0; i < rowCount; i++) rows.push({ x: book.x + 14, y: book.y + 70 + i * ROW_H, w: book.w - 28, h: ROW_H });
+  for (let i = 0; i < rowCount; i++)
+    rows.push({ x: book.x + 14, y: book.y + 70 + i * ROW_H, w: book.w - 28, h: ROW_H });
   return { book, tabs, rows, visitor, choices };
 }
 

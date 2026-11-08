@@ -1,7 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { ControllerSampler, HeldDirection, idle } from './controller';
 
-const pad = (index: number, buttons: number[] = [], axes = [0, 0], mapping: GamepadMappingType = 'standard') => ({ index, id: `test ${index}`, mapping, connected: true, axes, buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: buttons.includes(i), touched: buttons.includes(i), value: buttons.includes(i) ? 1 : 0 })) });
+const pad = (
+  index: number,
+  buttons: number[] = [],
+  axes = [0, 0],
+  mapping: GamepadMappingType = 'standard',
+) => ({
+  index,
+  id: `test ${index}`,
+  mapping,
+  connected: true,
+  axes,
+  buttons: Array.from({ length: 17 }, (_, i) => ({
+    pressed: buttons.includes(i),
+    touched: buttons.includes(i),
+    value: buttons.includes(i) ? 1 : 0,
+  })),
+});
 const keys = (...codes: string[]) => new Set(codes);
 
 describe('controller semantics', () => {
@@ -10,24 +26,48 @@ describe('controller semantics', () => {
     expect(s.sample([pad(0, [0, 15])], keys()).players[0]).toMatchObject({ action: false, direction: -1 });
     s.sample([pad(0)], keys());
     expect(s.sample([pad(0, [0, 15])], keys()).players[0]).toMatchObject({ action: true, direction: 0 });
-    expect(s.sample([pad(0, [0, 15])], keys()).players[0]).toMatchObject({ action: false, direction: -1, x: 1 });
+    expect(s.sample([pad(0, [0, 15])], keys()).players[0]).toMatchObject({
+      action: false,
+      direction: -1,
+      x: 1,
+    });
     s.sample([pad(0)], keys());
     expect(s.sample([pad(0, [2])], keys()).players[0].undo).toBe(true);
   });
   it('reports the bottom and left buttons as held for as long as they stay down, apart from the one-frame press', () => {
     const s = new ControllerSampler();
     s.sample([pad(0)], keys());
-    expect(s.sample([pad(0, [0])], keys()).players[0]).toMatchObject({ action: true, hold: true, undo: false, holdUndo: false });
+    expect(s.sample([pad(0, [0])], keys()).players[0]).toMatchObject({
+      action: true,
+      hold: true,
+      undo: false,
+      holdUndo: false,
+    });
     expect(s.sample([pad(0, [0])], keys()).players[0]).toMatchObject({ action: false, hold: true });
-    expect(s.sample([pad(0, [0, 2])], keys()).players[0]).toMatchObject({ action: false, hold: true, undo: true, holdUndo: true });
-    expect(s.sample([pad(0, [2])], keys()).players[0]).toMatchObject({ hold: false, holdUndo: true, undo: false });
+    expect(s.sample([pad(0, [0, 2])], keys()).players[0]).toMatchObject({
+      action: false,
+      hold: true,
+      undo: true,
+      holdUndo: true,
+    });
+    expect(s.sample([pad(0, [2])], keys()).players[0]).toMatchObject({
+      hold: false,
+      holdUndo: true,
+      undo: false,
+    });
     expect(s.sample([pad(0)], keys()).players[0]).toMatchObject({ hold: false, holdUndo: false });
     // The keyboard: Enter and Backspace.
     expect(s.sample([], keys('Enter')).players[0]).toMatchObject({ hold: true, action: true });
-    expect(s.sample([], keys('Enter', 'Backspace')).players[0]).toMatchObject({ hold: true, holdUndo: true, action: false, undo: true });
+    expect(s.sample([], keys('Enter', 'Backspace')).players[0]).toMatchObject({
+      hold: true,
+      holdUndo: true,
+      action: false,
+      undo: true,
+    });
   });
   it('keeps player two on the pink paddle when player one disconnects, then reconnects', () => {
-    const s = new ControllerSampler(); s.sample([pad(3), pad(7)], keys());
+    const s = new ControllerSampler();
+    s.sample([pad(3), pad(7)], keys());
     const lost = s.sample([pad(7, [], [0, 1])], keys());
     expect(lost.disconnected).toBe(true);
     expect(lost.players[0].y).toBe(0);
@@ -48,7 +88,11 @@ describe('controller semantics', () => {
 });
 
 describe('hold to repeat', () => {
-  const frame = (x: number, y: number, pressed = -1) => { const c = idle(); Object.assign(c.players[0], { x, y, direction: pressed }); return c; };
+  const frame = (x: number, y: number, pressed = -1) => {
+    const c = idle();
+    Object.assign(c.players[0], { x, y, direction: pressed });
+    return c;
+  };
 
   it('moves once at the press, waits, then repeats while the stick is held', () => {
     const h = new HeldDirection(0.4, 0.1);

@@ -16,9 +16,39 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  allStanding, arc, BALL_R, basketAfter, BOARD_H, BOARD_W, boardLayout, countPads, fallFootprint, flight, GRAB_R, GRASS, isMiss, nearestWorking, NET_X,
-  padLayout, planFor, positionAt, tipLine, pullFrom, pulledBall, roundLines, SLING, solve, trayLayout, type Block, type Flight, type Line, type Plan, type Pt,
-  type Pull, type Stack, type Standing,
+  allStanding,
+  arc,
+  BALL_R,
+  basketAfter,
+  BOARD_H,
+  BOARD_W,
+  boardLayout,
+  countPads,
+  fallFootprint,
+  flight,
+  GRAB_R,
+  GRASS,
+  isMiss,
+  nearestWorking,
+  NET_X,
+  padLayout,
+  planFor,
+  positionAt,
+  tipLine,
+  pullFrom,
+  pulledBall,
+  roundLines,
+  SLING,
+  solve,
+  trayLayout,
+  type Block,
+  type Flight,
+  type Line,
+  type Plan,
+  type Pt,
+  type Pull,
+  type Stack,
+  type Standing,
 } from './logic';
 
 const INSTRUCT: Record<Plan['kind'], LineId> = {
@@ -35,18 +65,25 @@ const FALL_TIME = 0.6;
 
 function ballArt(alpha = 1): Graphics {
   return new Graphics()
-    .circle(0, 0, BALL_R).fill({ color: swatch.pink.fill, alpha }).stroke({ width: 4, color: swatch.pink.line, alpha })
-    .circle(-9, -10, 8).fill({ color: 0xffffff, alpha: 0.6 * alpha });
+    .circle(0, 0, BALL_R)
+    .fill({ color: swatch.pink.fill, alpha })
+    .stroke({ width: 4, color: swatch.pink.line, alpha })
+    .circle(-9, -10, 8)
+    .fill({ color: 0xffffff, alpha: 0.6 * alpha });
 }
 
 function blockArt(b: Block): Graphics {
   const s = swatch[b.color];
   const g = new Graphics()
-    .roundRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, 10).fill(s.fill).stroke({ width: 4, color: s.line });
+    .roundRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, 10)
+    .fill(s.fill)
+    .stroke({ width: 4, color: s.line });
   // Wood grain.
   for (let k = 1; k <= 2; k++) {
     const y = b.y0 + ((b.y1 - b.y0) * k) / 3;
-    g.moveTo(b.x0 + 16, y).quadraticCurveTo((b.x0 + b.x1) / 2, y + 8, b.x1 - 16, y).stroke({ width: 3, color: s.light, alpha: 0.8 });
+    g.moveTo(b.x0 + 16, y)
+      .quadraticCurveTo((b.x0 + b.x1) / 2, y + 8, b.x1 - 16, y)
+      .stroke({ width: 3, color: s.light, alpha: 0.8 });
   }
   return g;
 }
@@ -64,10 +101,18 @@ class CountPad extends Container {
   constructor(readonly value: number) {
     super();
     const half = 55;
-    this.glow.roundRect(-half - 12, -half - 12, 2 * half + 24, 2 * half + 24, 28).fill({ color: 0xfff3a0, alpha: 0.95 });
+    this.glow
+      .roundRect(-half - 12, -half - 12, 2 * half + 24, 2 * half + 24, 28)
+      .fill({ color: 0xfff3a0, alpha: 0.95 });
     this.glow.visible = false;
-    const tile = new Graphics().roundRect(-half, -half, 2 * half, 2 * half, 22).fill(wood.light).stroke({ width: 5, color: wood.line });
-    const n = new Text({ text: String(value), style: { fontFamily: FONT, fontSize: 64, fontWeight: '700', fill: ink } });
+    const tile = new Graphics()
+      .roundRect(-half, -half, 2 * half, 2 * half, 22)
+      .fill(wood.light)
+      .stroke({ width: 5, color: wood.line });
+    const n = new Text({
+      text: String(value),
+      style: { fontFamily: FONT, fontSize: 64, fontWeight: '700', fill: ink },
+    });
     n.anchor.set(0.5);
     this.addChild(this.glow, tile, n);
     this.hitArea = new Rectangle(-half, -half, 2 * half, 2 * half);
@@ -76,9 +121,14 @@ class CountPad extends Container {
 
 function bellArt(): Graphics {
   return new Graphics()
-    .moveTo(-14, 0).quadraticCurveTo(-14, -26, 0, -28).quadraticCurveTo(14, -26, 14, 0).closePath()
-    .fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line })
-    .circle(0, 3, 5).fill(swatch.yellow.line);
+    .moveTo(-14, 0)
+    .quadraticCurveTo(-14, -26, 0, -28)
+    .quadraticCurveTo(14, -26, 14, 0)
+    .closePath()
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 3, color: swatch.yellow.line })
+    .circle(0, 3, 5)
+    .fill(swatch.yellow.line);
 }
 
 interface StackNode {
@@ -142,9 +192,34 @@ class BlockTopple implements Game {
     this.plan = planFor(ctx.level);
     this.lines = roundLines(ctx.level, ctx.rng);
     if (ctx.demo) this.lines = this.lines.slice(0, 1);
-    this.back = ctx.track(new Backdrop({ sky: [0xbfe6f7, 0xfff6e0], hills: [0xc5e7a8, 0xa8dc8f, 0x8fcf73], horizon: 0.72, clouds: 3, sun: true, seed: 157 }, ctx.view));
+    this.back = ctx.track(
+      new Backdrop(
+        {
+          sky: [0xbfe6f7, 0xfff6e0],
+          hills: [0xc5e7a8, 0xa8dc8f, 0x8fcf73],
+          horizon: 0.72,
+          clouds: 3,
+          sun: true,
+          seed: 157,
+        },
+        ctx.view,
+      ),
+    );
     this.back.eventMode = 'none';
-    for (const g of [this.scenery, this.cushions, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.bandFront, this.ball, this.trayG, this.trayFruit]) g.eventMode = 'none';
+    for (const g of [
+      this.scenery,
+      this.cushions,
+      this.highG,
+      this.trail,
+      this.hintG,
+      this.ghost,
+      this.bandBack,
+      this.bandFront,
+      this.ball,
+      this.trayG,
+      this.trayFruit,
+    ])
+      g.eventMode = 'none';
     this.ghost.visible = false;
     this.grabber.eventMode = 'static';
     this.grabber.cursor = 'grab';
@@ -157,7 +232,22 @@ class BlockTopple implements Game {
     this.grabber.on('pointercancel', this.cancel);
     this.ctx.listen(window, 'pointerup', this.release);
     this.ctx.listen(window, 'pointercancel', this.cancel);
-    this.board.addChild(this.scenery, this.trayG, this.trayFruit, this.cushions, this.stacksLayer, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.ball, this.bandFront, this.grabber, this.padLayer);
+    this.board.addChild(
+      this.scenery,
+      this.trayG,
+      this.trayFruit,
+      this.cushions,
+      this.stacksLayer,
+      this.highG,
+      this.trail,
+      this.hintG,
+      this.ghost,
+      this.bandBack,
+      this.ball,
+      this.bandFront,
+      this.grabber,
+      this.padLayer,
+    );
     if (this.plan.kind === 'count') this.drawTray();
     ctx.stage.addChild(this.back, this.board);
     this.resize(ctx.view);
@@ -297,35 +387,63 @@ class BlockTopple implements Game {
     g.rect(-BOARD_W * 2, GRASS, BOARD_W * 5, BOARD_H * 3).fill(0x9ed27c);
     g.rect(-BOARD_W * 2, GRASS, BOARD_W * 5, 10).fill(0x7cbf5c);
     // The sling: a forked branch.
-    g.moveTo(SLING.x - 12, GRASS).lineTo(SLING.x - 8, SLING.y + 60).lineTo(SLING.x - 46, SLING.y - 30)
-      .lineTo(SLING.x - 30, SLING.y - 36).lineTo(SLING.x, SLING.y + 34).lineTo(SLING.x + 30, SLING.y - 36)
-      .lineTo(SLING.x + 46, SLING.y - 30).lineTo(SLING.x + 8, SLING.y + 60).lineTo(SLING.x + 12, GRASS).closePath()
-      .fill(wood.fill).stroke({ width: 4, color: wood.line });
+    g.moveTo(SLING.x - 12, GRASS)
+      .lineTo(SLING.x - 8, SLING.y + 60)
+      .lineTo(SLING.x - 46, SLING.y - 30)
+      .lineTo(SLING.x - 30, SLING.y - 36)
+      .lineTo(SLING.x, SLING.y + 34)
+      .lineTo(SLING.x + 30, SLING.y - 36)
+      .lineTo(SLING.x + 46, SLING.y - 30)
+      .lineTo(SLING.x + 8, SLING.y + 60)
+      .lineTo(SLING.x + 12, GRASS)
+      .closePath()
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line });
     // The hill.
     const hill = this.line.hill;
     if (hill) {
       const w = hill.x1 - hill.x0;
-      g.moveTo(hill.x0 - 20, GRASS).bezierCurveTo(hill.x0 - 10, hill.top - 10, hill.x1 + 10, hill.top - 10, hill.x1 + 20, GRASS).closePath()
-        .fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
-      for (let k = 0; k < 3; k++) g.circle(hill.x0 + w * (0.25 + k * 0.25), hill.top + 30 + (k % 2) * 16, 6).fill(swatch.green.light);
+      g.moveTo(hill.x0 - 20, GRASS)
+        .bezierCurveTo(hill.x0 - 10, hill.top - 10, hill.x1 + 10, hill.top - 10, hill.x1 + 20, GRASS)
+        .closePath()
+        .fill(swatch.green.fill)
+        .stroke({ width: 4, color: swatch.green.line });
+      for (let k = 0; k < 3; k++)
+        g.circle(hill.x0 + w * (0.25 + k * 0.25), hill.top + 30 + (k % 2) * 16, 6).fill(swatch.green.light);
     }
     // The rope net at the right edge.
-    for (let y = GRASS - 260; y < GRASS; y += 26) g.moveTo(NET_X - 14, y).lineTo(NET_X + 14, y + 26).moveTo(NET_X + 14, y).lineTo(NET_X - 14, y + 26);
+    for (let y = GRASS - 260; y < GRASS; y += 26)
+      g.moveTo(NET_X - 14, y)
+        .lineTo(NET_X + 14, y + 26)
+        .moveTo(NET_X + 14, y)
+        .lineTo(NET_X - 14, y + 26);
     g.stroke({ width: 3, color: wood.line, alpha: 0.7 });
-    g.moveTo(NET_X, GRASS - 270).lineTo(NET_X, GRASS).stroke({ width: 6, color: wood.line });
+    g.moveTo(NET_X, GRASS - 270)
+      .lineTo(NET_X, GRASS)
+      .stroke({ width: 6, color: wood.line });
     // A cushion where each stack will land.
     const c = this.cushions.clear();
     for (const s of this.line.stacks) {
       const f = fallFootprint(s, 0);
-      c.roundRect(f.x0 - 6, GRASS - 18, f.x1 - f.x0 + 12, 24, 12).fill(swatch.pink.light).stroke({ width: 3, color: swatch.pink.line });
+      c.roundRect(f.x0 - 6, GRASS - 18, f.x1 - f.x0 + 12, 24, 12)
+        .fill(swatch.pink.light)
+        .stroke({ width: 3, color: swatch.pink.line });
     }
   }
 
   private drawBand(ball: Pt) {
     const l = { x: SLING.x - 38, y: SLING.y - 32 };
     const r = { x: SLING.x + 38, y: SLING.y - 32 };
-    this.bandBack.clear().moveTo(r.x, r.y).lineTo(ball.x, ball.y).stroke({ width: 7, color: swatch.green.line });
-    this.bandFront.clear().moveTo(l.x, l.y).lineTo(ball.x, ball.y).stroke({ width: 7, color: swatch.green.fill });
+    this.bandBack
+      .clear()
+      .moveTo(r.x, r.y)
+      .lineTo(ball.x, ball.y)
+      .stroke({ width: 7, color: swatch.green.line });
+    this.bandFront
+      .clear()
+      .moveTo(l.x, l.y)
+      .lineTo(ball.x, ball.y)
+      .stroke({ width: 7, color: swatch.green.fill });
   }
 
   // ---- The pull ----
@@ -348,7 +466,8 @@ class BlockTopple implements Game {
     const dx = p.x - this.grab.from.x;
     const dy = p.y - this.grab.from.y;
     const pull = pullFrom(dx, dy);
-    if (pull && (!this.aim || Math.abs(pull.length - this.aim.length) > 24)) sfx.squeak(Math.round(pull.length / 40));
+    if (pull && (!this.aim || Math.abs(pull.length - this.aim.length) > 24))
+      sfx.squeak(Math.round(pull.length / 40));
     this.aim = pull;
     const at = pull ? pulledBall(pull) : { x: SLING.x + dx, y: SLING.y + dy };
     this.ball.position.set(at.x, at.y);
@@ -407,11 +526,19 @@ class BlockTopple implements Game {
       sfx.boing();
       if (this.plan.counts) this.misses++;
       this.lineFails++;
-      void this.ctx.say(o.kind === 'hill' ? 'block-topple.hill' : o.kind === 'short' ? 'block-topple.short' : 'block-topple.over');
+      void this.ctx.say(
+        o.kind === 'hill'
+          ? 'block-topple.hill'
+          : o.kind === 'short'
+            ? 'block-topple.short'
+            : 'block-topple.over',
+      );
     }
     await this.rollBack(f);
-    if (isMiss(o) && this.lineFails >= 2 && !this.hinted) this.showHint(nearestWorking(this.line, f.pull, this.standing));
-    else if (this.hinted && this.lastPull) this.drawHint(nearestWorking(this.line, this.lastPull, this.standing));
+    if (isMiss(o) && this.lineFails >= 2 && !this.hinted)
+      this.showHint(nearestWorking(this.line, f.pull, this.standing));
+    else if (this.hinted && this.lastPull)
+      this.drawHint(nearestWorking(this.line, this.lastPull, this.standing));
     this.busy = false;
   }
 
@@ -419,8 +546,16 @@ class BlockTopple implements Game {
   private async rollBack(f: Flight) {
     const c = f.contact;
     const floor = GRASS - BALL_R;
-    await this.ctx.tw.to(this.ball, { y: Math.max(c.y, Math.min(floor, c.y + 140)) }, { duration: 0.25, ease: ease.inQuad });
-    await this.ctx.tw.to(this.ball, { x: SLING.x, y: SLING.y, rotation: this.ball.rotation - 8 }, { duration: 0.75, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      this.ball,
+      { y: Math.max(c.y, Math.min(floor, c.y + 140)) },
+      { duration: 0.25, ease: ease.inQuad },
+    );
+    await this.ctx.tw.to(
+      this.ball,
+      { x: SLING.x, y: SLING.y, rotation: this.ball.rotation - 8 },
+      { duration: 0.75, ease: ease.inOutSine },
+    );
   }
 
   private async topple(i: number, from: number) {
@@ -448,7 +583,14 @@ class BlockTopple implements Game {
     const restY = foot.y0;
     void this.ctx.tw.to(n.bell, { x: foot.x1 - 20, y: restY - 30 }, { duration: 0.4, ease: ease.outBack });
     await this.ctx.tw.to(n.friend, { x: foot.x1 - 60, y: restY }, { duration: 0.4, ease: ease.outBack });
-    this.ctx.particles.burst(this.board.x + foot.x1 - 60, this.board.y + restY - 50, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(this.board.x + foot.x1 - 60, this.board.y + restY - 50, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     sfx.bell(7);
     sfx.giggle();
     n.friend.setMood('happy');
@@ -472,7 +614,9 @@ class BlockTopple implements Game {
   private drawTray() {
     const t = trayLayout();
     const g = this.trayG.clear();
-    g.roundRect(t.x0, t.y0, t.x1 - t.x0, t.y1 - t.y0, 22).fill(wood.light).stroke({ width: 5, color: wood.line });
+    g.roundRect(t.x0, t.y0, t.x1 - t.x0, t.y1 - t.y0, 22)
+      .fill(wood.light)
+      .stroke({ width: 5, color: wood.line });
     // Weave.
     for (let x = t.x0 + 20; x < t.x1 - 10; x += 24) g.moveTo(x, t.y0 + 8).lineTo(x, t.y1 - 8);
     g.stroke({ width: 3, color: wood.line, alpha: 0.35 });
@@ -496,8 +640,16 @@ class BlockTopple implements Game {
         const slot = t.slot(k++, this.lineIndex);
         sfx.pop();
         void this.ctx.tw.to(f.art, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.inOutSine });
-        await this.ctx.tw.to(f.art.scale, { x: FRUIT_SCALE * 1.2, y: FRUIT_SCALE * 1.2 }, { duration: 0.2, ease: ease.outQuad });
-        await this.ctx.tw.to(f.art.scale, { x: FRUIT_SCALE, y: FRUIT_SCALE }, { duration: 0.25, ease: ease.inQuad });
+        await this.ctx.tw.to(
+          f.art.scale,
+          { x: FRUIT_SCALE * 1.2, y: FRUIT_SCALE * 1.2 },
+          { duration: 0.2, ease: ease.outQuad },
+        );
+        await this.ctx.tw.to(
+          f.art.scale,
+          { x: FRUIT_SCALE, y: FRUIT_SCALE },
+          { duration: 0.25, ease: ease.inQuad },
+        );
         if (this.finished) return;
       }
     this.total = basketAfter(this.lines, this.lineIndex);
@@ -577,8 +729,11 @@ class BlockTopple implements Game {
   }
 
   private pulse(f: Container) {
-    void this.ctx.tw.to(f.scale, { x: FRUIT_SCALE * 1.3, y: FRUIT_SCALE * 1.3 }, { duration: 0.18, ease: ease.outQuad }).then(() =>
-      this.ctx.tw.to(f.scale, { x: FRUIT_SCALE, y: FRUIT_SCALE }, { duration: 0.25, ease: ease.inQuad }));
+    void this.ctx.tw
+      .to(f.scale, { x: FRUIT_SCALE * 1.3, y: FRUIT_SCALE * 1.3 }, { duration: 0.18, ease: ease.outQuad })
+      .then(() =>
+        this.ctx.tw.to(f.scale, { x: FRUIT_SCALE, y: FRUIT_SCALE }, { duration: 0.25, ease: ease.inQuad }),
+      );
   }
 
   private async finish() {
@@ -640,10 +795,17 @@ class BlockTopple implements Game {
     const y = GRASS - tipLine(stack);
     const x0 = Math.min(...stack.blocks.map((b) => b.x0)) - 16;
     const x1 = Math.max(...stack.blocks.map((b) => b.x1)) + 16;
-    this.highG.clear()
-      .roundRect(x0, top - 10, x1 - x0, y - top + 10, 14).fill({ color: swatch.yellow.fill, alpha: 0.5 })
-      .roundRect(x0, top - 10, x1 - x0, y - top + 10, 14).stroke({ width: 6, color: swatch.yellow.line });
-    for (let x = x0; x < x1; x += 24) this.highG.moveTo(x, y).lineTo(Math.min(x1, x + 12), y).stroke({ width: 6, color: swatch.yellow.line });
+    this.highG
+      .clear()
+      .roundRect(x0, top - 10, x1 - x0, y - top + 10, 14)
+      .fill({ color: swatch.yellow.fill, alpha: 0.5 })
+      .roundRect(x0, top - 10, x1 - x0, y - top + 10, 14)
+      .stroke({ width: 6, color: swatch.yellow.line });
+    for (let x = x0; x < x1; x += 24)
+      this.highG
+        .moveTo(x, y)
+        .lineTo(Math.min(x1, x + 12), y)
+        .stroke({ width: 6, color: swatch.yellow.line });
   }
 
   private clearHint() {
@@ -656,7 +818,16 @@ class ToppleIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
     const tower = new Container();
-    for (let k = 0; k < 3; k++) tower.addChild(blockArt({ x0: -40, x1: 40, y0: -80 * (k + 1), y1: -80 * k, color: (['blue', 'yellow', 'red'] as const)[k] }));
+    for (let k = 0; k < 3; k++)
+      tower.addChild(
+        blockArt({
+          x0: -40,
+          x1: 40,
+          y0: -80 * (k + 1),
+          y1: -80 * k,
+          color: (['blue', 'yellow', 'red'] as const)[k],
+        }),
+      );
     tower.pivot.set(40, 0);
     tower.position.set(60, 0);
     tower.rotation = 0.25;
@@ -676,7 +847,12 @@ class ToppleIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-110, 50, 220, 30, 15).fill(swatch.pink.light).stroke({ width: 4, color: swatch.pink.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-110, 50, 220, 30, 15)
+      .fill(swatch.pink.light)
+      .stroke({ width: 4, color: swatch.pink.line }),
+  );
   const colors = rng.shuffle(['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as const);
   for (let k = 0; k < 3; k++) {
     const b = blockArt({ x0: -100 + k * 62, x1: -44 + k * 62, y0: 0, y1: 50, color: colors[k] });
@@ -705,7 +881,8 @@ export const blockTopple: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'One of you pulls; the other says "higher" or "harder" from the last dotted path.',
-  offScreen: 'Stack cardboard boxes or blocks, then roll or toss a soft ball at different heights: which stacks tip, and where?',
+  offScreen:
+    'Stack cardboard boxes or blocks, then roll or toss a soft ball at different heights: which stacks tip, and where?',
   hubIcon: () => new ToppleIcon(),
   touchDemo: true,
   sticker,

@@ -1,6 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { canCallFriend, friendsReady, munchAnswer, shareReturns, isTapMode, complete, extras, FOODS, foodWord, lookAlike, missing, MUNCH_PLANS, munchHint, munchRounds, munchTouch, noFood, numberChoices, orderWords, total, TRAY_MAX, wantsMore, type Food, type MunchRound, type MunchTable, type Order } from './logic';
+import {
+  canCallFriend,
+  friendsReady,
+  munchAnswer,
+  shareReturns,
+  isTapMode,
+  complete,
+  extras,
+  FOODS,
+  foodWord,
+  lookAlike,
+  missing,
+  MUNCH_PLANS,
+  munchHint,
+  munchRounds,
+  munchTouch,
+  noFood,
+  numberChoices,
+  orderWords,
+  total,
+  TRAY_MAX,
+  wantsMore,
+  type Food,
+  type MunchRound,
+  type MunchTable,
+  type Order,
+} from './logic';
 
 /** The foods on a round's tray, one entry each. */
 const trayFoods = (r: MunchRound): Food[] => r.kinds.flatMap((k) => Array<Food>(r.tray[k]).fill(k));
@@ -15,10 +41,11 @@ describe('Monster Munch rounds', () => {
           const k = r.kinds[0];
           expect(total(r.tray), plan.name).toBeLessThanOrEqual(TRAY_MAX);
           // Only the round's kinds are on the tray or in the order.
-          for (const f of FOODS) if (!r.kinds.includes(f)) {
-            expect(r.tray[f], `${plan.mode}: no ${f} on the tray`).toBe(0);
-            expect(r.want[f]).toBe(0);
-          }
+          for (const f of FOODS)
+            if (!r.kinds.includes(f)) {
+              expect(r.tray[f], `${plan.mode}: no ${f} on the tray`).toBe(0);
+              expect(r.want[f]).toBe(0);
+            }
           // Every monster's order can be met from the tray.
           for (const f of FOODS) expect(r.tray[f]).toBeGreaterThanOrEqual(r.want[f] * r.monsters);
           if (plan.mode === 'exact' || plan.mode === 'two') {
@@ -29,15 +56,25 @@ describe('Monster Munch rounds', () => {
           }
           if (plan.mode === 'share') expect(r.tray[k]).toBe(r.want[k] * r.monsters);
         }
-        if (plan.mode === 'exact') rounds.slice(1).forEach((r, i) => expect(r.want[r.kinds[0]]).not.toBe(rounds[i].want[rounds[i].kinds[0]]));
+        if (plan.mode === 'exact')
+          rounds
+            .slice(1)
+            .forEach((r, i) => expect(r.want[r.kinds[0]]).not.toBe(rounds[i].want[rounds[i].kinds[0]]));
       }
     }
   });
 
   it('plays two rounds at the tapping levels, a short one first', () => {
-    const counts = (level: number) => munchRounds(MUNCH_PLANS[level - 1], new Rng(3)).map((r) => [r.want.cookie, r.tray.cookie]);
-    expect(counts(1)).toEqual([[4, 4], [6, 6]]);
-    expect(counts(2)).toEqual([[3, 3], [5, 5]]);
+    const counts = (level: number) =>
+      munchRounds(MUNCH_PLANS[level - 1], new Rng(3)).map((r) => [r.want.cookie, r.tray.cookie]);
+    expect(counts(1)).toEqual([
+      [4, 4],
+      [6, 6],
+    ]);
+    expect(counts(2)).toEqual([
+      [3, 3],
+      [5, 5],
+    ]);
   });
 
   it('checks orders, refusals and fair shares', () => {
@@ -80,7 +117,9 @@ describe('Monster Munch rounds', () => {
     expect(orderWords({ ...noFood(), cracker: 1 }, true)).toBe('1 more cracker');
     expect(orderWords({ ...noFood(), cookie: 2, carrot: 1 })).toBe('2 cookies and 1 carrot');
     expect(orderWords({ ...noFood(), carrot: 3, berry: 1 })).toBe('3 carrots and 1 berry');
-    expect(orderWords({ ...noFood(), apple: 1, berry: 2, cracker: 1 })).toBe('1 apple and 2 berries and 1 cracker');
+    expect(orderWords({ ...noFood(), apple: 1, berry: 2, cracker: 1 })).toBe(
+      '1 apple and 2 berries and 1 cracker',
+    );
     for (const f of FOODS) {
       expect(orderWords({ ...noFood(), [f]: 1 })).toBe(`1 ${f}`);
       expect(foodWord(f, 1)).toBe(f);
@@ -102,7 +141,7 @@ describe('Monster Munch rounds', () => {
       }
     }
   });
-  it("the ghost finger plays every round of every level with no refusal, a fair share, the bell only when the order is right, and the right numbers", () => {
+  it('the ghost finger plays every round of every level with no refusal, a fair share, the bell only when the order is right, and the right numbers', () => {
     for (const plan of MUNCH_PLANS) {
       for (let seed = 1; seed <= 60; seed++) {
         const rng = new Rng(seed);
@@ -127,7 +166,16 @@ describe('Monster Munch rounds', () => {
             const hint = munchHint(plan, t);
             if (isTapMode(plan.mode) || plan.mode === 'count') expect(hint).toBeNull();
             else {
-              const kind = move === 'call' ? 'call' : move === 'bell' ? 'bell' : typeof move === 'object' && move && 'pad' in move ? 'pad' : plan.mode === 'exact' || plan.mode === 'two' ? 'food' : 'monster';
+              const kind =
+                move === 'call'
+                  ? 'call'
+                  : move === 'bell'
+                    ? 'bell'
+                    : typeof move === 'object' && move && 'pad' in move
+                      ? 'pad'
+                      : plan.mode === 'exact' || plan.mode === 'two'
+                        ? 'food'
+                        : 'monster';
               expect(hint, `${plan.mode} seed ${seed} step ${step}`).toBe(kind);
             }
             if (move === 'call') {
@@ -142,8 +190,13 @@ describe('Monster Munch rounds', () => {
               } else if (plan.mode === 'leftover') {
                 // The game's own judgment: even shares and fewer left than monsters, so the pads come.
                 const counts = t.fed.map((f) => f[k]);
-                expect(counts.every((c) => c === counts[0]), 'even shares').toBe(true);
-                expect(t.snacks.filter((x) => !x.eaten).length, 'fewer left than monsters').toBeLessThan(r.monsters);
+                expect(
+                  counts.every((c) => c === counts[0]),
+                  'even shares',
+                ).toBe(true);
+                expect(t.snacks.filter((x) => !x.eaten).length, 'fewer left than monsters').toBeLessThan(
+                  r.monsters,
+                );
                 t.pads = numberChoices(r.want[k], rng);
               } else {
                 expect(['exact', 'two']).toContain(plan.mode);
@@ -170,13 +223,27 @@ describe('Monster Munch rounds', () => {
               const snack = t.snacks[move!.give];
               expect(snack.eaten).toBe(false);
               // The game refuses a food a monster already has enough of (and, when giving one each, a second cookie).
-              expect(wantsMore(r.want, t.fed[move!.to], snack.food), `${plan.mode}: the monster still wants ${snack.food}`).toBe(true);
+              expect(
+                wantsMore(r.want, t.fed[move!.to], snack.food),
+                `${plan.mode}: the monster still wants ${snack.food}`,
+              ).toBe(true);
               snack.eaten = true;
               t.fed[move!.to][snack.food]++;
               if (plan.mode === 'count' && t.snacks.every((x) => x.eaten)) won = true;
-              if ((plan.mode === 'each' || plan.mode === 'eachkind') && t.fed.every((f) => complete(r.want, f))) won = true;
+              if (
+                (plan.mode === 'each' || plan.mode === 'eachkind') &&
+                t.fed.every((f) => complete(r.want, f))
+              )
+                won = true;
               if ((plan.mode === 'share' || plan.mode === 'sharekind') && t.snacks.every((x) => x.eaten)) {
-                for (const f of r.kinds) expect(extras(t.fed.map((o) => o[f]), r.want[f]).every((n) => n === 0), 'fair for each kind').toBe(true);
+                for (const f of r.kinds)
+                  expect(
+                    extras(
+                      t.fed.map((o) => o[f]),
+                      r.want[f],
+                    ).every((n) => n === 0),
+                    'fair for each kind',
+                  ).toBe(true);
                 t.pads = numberChoices(r.want[k], rng);
               }
             }
@@ -212,7 +279,8 @@ describe('Monster Munch foods', () => {
   it('varies the food across seeds and uses every food somewhere', () => {
     for (const { p, level } of pooled) {
       const seen = new Set<Food>();
-      for (let seed = 1; seed <= 300; seed++) for (const r of munchRounds(p, new Rng(seed))) r.kinds.forEach((k) => seen.add(k));
+      for (let seed = 1; seed <= 300; seed++)
+        for (const r of munchRounds(p, new Rng(seed))) r.kinds.forEach((k) => seen.add(k));
       expect([...seen].sort(), `level ${level}`).toEqual([...FOODS].sort());
     }
   });
@@ -242,7 +310,8 @@ describe('Monster Munch foods', () => {
 
   it('single-food pooled levels carry one kind, and the other foods stay off the order', () => {
     for (const { p } of pooled.filter(({ p }) => p.mode !== 'two')) {
-      for (let seed = 1; seed <= 100; seed++) for (const r of munchRounds(p, new Rng(seed))) expect(r.kinds).toHaveLength(1);
+      for (let seed = 1; seed <= 100; seed++)
+        for (const r of munchRounds(p, new Rng(seed))) expect(r.kinds).toHaveLength(1);
     }
   });
 
@@ -250,22 +319,37 @@ describe('Monster Munch foods', () => {
     for (const { p, level } of fixed) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const r of munchRounds(p, new Rng(seed))) {
-          expect(r.kinds, `level ${level}`).toEqual(level === 10 || level === 12 ? ['cookie', 'apple'] : ['cookie']);
+          expect(r.kinds, `level ${level}`).toEqual(
+            level === 10 || level === 12 ? ['cookie', 'apple'] : ['cookie'],
+          );
           for (const f of FOODS) if (!r.kinds.includes(f)) expect(r.tray[f]).toBe(0);
         }
       }
     }
     // Same round counts and amounts as before.
-    const counts = (level: number, seed: number) => munchRounds(MUNCH_PLANS[level - 1], new Rng(seed)).map((r) => [r.want.cookie, r.tray.cookie]);
+    const counts = (level: number, seed: number) =>
+      munchRounds(MUNCH_PLANS[level - 1], new Rng(seed)).map((r) => [r.want.cookie, r.tray.cookie]);
     for (const seed of [1, 7, 99]) {
-      expect(counts(1, seed)).toEqual([[4, 4], [6, 6]]);
-      expect(counts(2, seed)).toEqual([[3, 3], [5, 5]]);
-      expect(counts(3, seed)).toEqual([[1, 3], [1, 4]]);
-      expect(counts(9, seed)).toEqual([[3, 3], [3, 3]]);
+      expect(counts(1, seed)).toEqual([
+        [4, 4],
+        [6, 6],
+      ]);
+      expect(counts(2, seed)).toEqual([
+        [3, 3],
+        [5, 5],
+      ]);
+      expect(counts(3, seed)).toEqual([
+        [1, 3],
+        [1, 4],
+      ]);
+      expect(counts(9, seed)).toEqual([
+        [3, 3],
+        [3, 3],
+      ]);
     }
   });
 
-  it('puts only the round\'s kinds on a tray of at most ten, and the bot finishes with every food', () => {
+  it("puts only the round's kinds on a tray of at most ten, and the bot finishes with every food", () => {
     for (const { p } of pooled) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const r of munchRounds(p, new Rng(seed))) {
@@ -286,8 +370,20 @@ describe('Monster Munch big bites and one of each', () => {
   it('serves three big cookies to one monster in two rounds, with nothing to get wrong', () => {
     expect(isTapMode(big.mode)).toBe(true);
     const rounds = munchRounds(big, new Rng(2));
-    expect(rounds.map((r) => [r.monsters, r.tray.cookie, total(r.tray) - r.tray.cookie])).toEqual([[1, 3, 0], [1, 3, 0]]);
-    expect(munchHint(big, { want: rounds[0].want, kinds: rounds[0].kinds, snacks: [], fed: [noFood()], pads: [], asking: 'each' })).toBeNull();
+    expect(rounds.map((r) => [r.monsters, r.tray.cookie, total(r.tray) - r.tray.cookie])).toEqual([
+      [1, 3, 0],
+      [1, 3, 0],
+    ]);
+    expect(
+      munchHint(big, {
+        want: rounds[0].want,
+        kinds: rounds[0].kinds,
+        snacks: [],
+        fed: [noFood()],
+        pads: [],
+        asking: 'each',
+      }),
+    ).toBeNull();
   });
 
   it('puts one spare of each food on the tray, and the bot gives every monster one of each', () => {
@@ -299,7 +395,14 @@ describe('Monster Munch big bites and one of each', () => {
         const snacks = trayFoods(r).map((food) => ({ food, eaten: false }));
         const fed: Order[] = Array.from({ length: r.monsters }, () => noFood());
         for (let guard = 0; guard < 20; guard++) {
-          const move = munchTouch(kinds, { want: r.want, kinds: r.kinds, snacks, fed, pads: [], asking: 'each' });
+          const move = munchTouch(kinds, {
+            want: r.want,
+            kinds: r.kinds,
+            snacks,
+            fed,
+            pads: [],
+            asking: 'each',
+          });
           if (!move) break;
           if (typeof move !== 'object' || !('give' in move)) throw new Error('unexpected move');
           const s = snacks[move.give];
@@ -325,7 +428,6 @@ describe('Monster Munch band tables', () => {
   });
 });
 
-
 describe('Monster Munch sharing both kinds and choosing group counts', () => {
   it('starts with the promised visible quantities, and generates bounded divisible pairs', () => {
     for (let seed = 1; seed <= 300; seed++) {
@@ -346,8 +448,14 @@ describe('Monster Munch sharing both kinds and choosing group counts', () => {
 
   it('returns the overfull kind even when total food per monster matches', () => {
     const want = { ...noFood(), cookie: 2, apple: 1 };
-    const fed = [{ ...noFood(), cookie: 3 }, { ...noFood(), cookie: 1, apple: 2 }];
-    expect(shareReturns(want, fed)).toEqual([{ ...noFood(), cookie: 1 }, { ...noFood(), apple: 1 }]);
+    const fed = [
+      { ...noFood(), cookie: 3 },
+      { ...noFood(), cookie: 1, apple: 2 },
+    ];
+    expect(shareReturns(want, fed)).toEqual([
+      { ...noFood(), cookie: 1 },
+      { ...noFood(), apple: 1 },
+    ]);
     expect(shareReturns(want, [want, want])).toEqual([noFood(), noFood()]);
   });
 
@@ -368,24 +476,39 @@ describe('Monster Munch sharing both kinds and choosing group counts', () => {
         seen.add(`${r.want.cookie}/${r.monsters}/${r.left}`);
       }
     }
-    for (const key of ['2/4/0', '2/4/1', '3/2/0', '3/2/1', '3/2/2', '3/3/0', '3/3/1']) expect(seen.has(key), key).toBe(true);
+    for (const key of ['2/4/0', '2/4/1', '3/2/0', '3/2/1', '3/2/2', '3/3/0', '3/3/1'])
+      expect(seen.has(key), key).toBe(true);
     for (let seed = 1; seed <= 30; seed++) expect(numberChoices(0, new Rng(seed)).sort()).toEqual([0, 1, 2]);
   });
 
   it('reserves existing shares, accepts calls before dealing, and guides a premature bell toward useful play', () => {
     const r = munchRounds(MUNCH_PLANS[10], new Rng(3))[0];
-    const t: MunchTable = { want: r.want, kinds: r.kinds, left: r.left,
-      snacks: trayFoods(r).map((food) => ({ food, eaten: false })), fed: [noFood()], pads: [], asking: 'each' };
+    const t: MunchTable = {
+      want: r.want,
+      kinds: r.kinds,
+      left: r.left,
+      snacks: trayFoods(r).map((food) => ({ food, eaten: false })),
+      fed: [noFood()],
+      pads: [],
+      asking: 'each',
+    };
     expect(friendsReady(t)).toBe(false);
     expect(canCallFriend(t)).toBe(true);
     t.fed.push(noFood(), noFood());
     expect(canCallFriend(t)).toBe(false); // seven visible cookies, six already owed
     expect(munchHint(MUNCH_PLANS[10], t)).toBe('monster');
-    t.fed.forEach((f) => { f.cookie = 2; });
-    t.snacks.slice(0, 6).forEach((s) => { s.eaten = true; });
+    t.fed.forEach((f) => {
+      f.cookie = 2;
+    });
+    t.snacks.slice(0, 6).forEach((s) => {
+      s.eaten = true;
+    });
     expect(friendsReady(t)).toBe(true);
     expect(munchHint(MUNCH_PLANS[10], t)).toBe('bell');
-    t.fed.pop(); t.snacks.slice(4, 6).forEach((s) => { s.eaten = false; });
+    t.fed.pop();
+    t.snacks.slice(4, 6).forEach((s) => {
+      s.eaten = false;
+    });
     expect(friendsReady(t)).toBe(false);
     expect(munchHint(MUNCH_PLANS[10], t)).toBe('call');
   });

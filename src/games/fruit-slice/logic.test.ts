@@ -3,10 +3,63 @@ import { CARRY, PRESS } from '../../engine/ghost';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  arcAt, basketAt, clearingLine, COVER_ROWS, coverBoardsFor, coverHint, coverLines, coverStep, oneLineClears, stripWidth, BOARD_H, BOARD_W, boardsFor, bowlAt, BOWL_R, FLIGHT, FRUIT, distToSegment, hangTime, hintLineFor, HIT_R, insideLength, isFruit,
-  judge, judgeStroke, lineHits, makeToss, met, MIN_LINE, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, reachableCounts, RISE, HANG,
-  MOODS, NOT_FRUIT, signAt, SIGN_W, signsFor, sliceHits, type Kind,
-  finishable, keeps, left, LEVELS, MIXED, mixedHint, piecesOf, putBack, STRIP_MAX, stuck, TOKEN, tokenAt, type Sign,
+  arcAt,
+  basketAt,
+  clearingLine,
+  COVER_ROWS,
+  coverBoardsFor,
+  coverHint,
+  coverLines,
+  coverStep,
+  oneLineClears,
+  stripWidth,
+  BOARD_H,
+  BOARD_W,
+  boardsFor,
+  bowlAt,
+  BOWL_R,
+  FLIGHT,
+  FRUIT,
+  distToSegment,
+  hangTime,
+  hintLineFor,
+  HIT_R,
+  insideLength,
+  isFruit,
+  judge,
+  judgeStroke,
+  lineHits,
+  makeToss,
+  met,
+  MIN_LINE,
+  MIN_TRAVEL,
+  nextKind,
+  pairBoard,
+  pairHint,
+  planFor,
+  reachableCounts,
+  RISE,
+  HANG,
+  MOODS,
+  NOT_FRUIT,
+  signAt,
+  SIGN_W,
+  signsFor,
+  sliceHits,
+  type Kind,
+  finishable,
+  keeps,
+  left,
+  LEVELS,
+  MIXED,
+  mixedHint,
+  piecesOf,
+  putBack,
+  STRIP_MAX,
+  stuck,
+  TOKEN,
+  tokenAt,
+  type Sign,
 } from './logic';
 import { VOICE } from './voice';
 import { fruitSlice } from './index';
@@ -35,13 +88,16 @@ describe('arcs', () => {
               expect(p.y).toBeGreaterThanOrEqual(60);
               expect(p.y).toBeLessThanOrEqual(v.h - 40);
             }
-            const ax = toss.ax * v.w, ay = toss.ay * v.h;
+            const ax = toss.ax * v.w,
+              ay = toss.ay * v.h;
             expect(ay).toBeGreaterThanOrEqual(0.25 * v.h);
             expect(ay).toBeLessThanOrEqual(0.55 * v.h);
             // Clear of home (top left), the sign (top right) and the pet (bottom left).
             expect(Math.hypot(ax, ay)).toBeGreaterThan(160 + HIT_R);
             const s = signAt(v);
-            expect(Math.abs(ax - s.x) > SIGN_W / 2 + HIT_R || Math.abs(ay - s.y) > SIGN_W / 2 + HIT_R).toBe(true);
+            expect(Math.abs(ax - s.x) > SIGN_W / 2 + HIT_R || Math.abs(ay - s.y) > SIGN_W / 2 + HIT_R).toBe(
+              true,
+            );
             expect(ax > 230 || ay < v.h - 260).toBe(true);
           }
         }
@@ -53,9 +109,12 @@ describe('arcs', () => {
         const rng = new Rng(seed);
         for (const aloft of [2, 3]) {
           const ts = Array.from({ length: aloft }, (_, c) => makeToss('pear', c, aloft, rng));
-          for (let i = 0; i < ts.length; i++) for (let j = i + 1; j < ts.length; j++) {
-            expect(Math.hypot((ts[i].ax - ts[j].ax) * v.w, (ts[i].ay - ts[j].ay) * v.h)).toBeGreaterThanOrEqual(180);
-          }
+          for (let i = 0; i < ts.length; i++)
+            for (let j = i + 1; j < ts.length; j++) {
+              expect(
+                Math.hypot((ts[i].ax - ts[j].ax) * v.w, (ts[i].ay - ts[j].ay) * v.h),
+              ).toBeGreaterThanOrEqual(180);
+            }
         }
       }
     });
@@ -101,7 +160,11 @@ describe('swept hits', () => {
     expect(sliceHits({ x: -200, y: 76 }, { x: 200, y: 76 }, fruit)).toEqual([]);
   });
   it('hits come in the order the stroke reaches them', () => {
-    const row = [{ x: 300, y: 0 }, { x: 0, y: 0 }, { x: 150, y: 0 }];
+    const row = [
+      { x: 300, y: 0 },
+      { x: 0, y: 0 },
+      { x: 150, y: 0 },
+    ];
     expect(sliceHits({ x: -100, y: 0 }, { x: 400, y: 0 }, row)).toEqual([1, 2, 0]);
     expect(sliceHits({ x: 400, y: 0 }, { x: -100, y: 0 }, row)).toEqual([0, 2, 1]);
   });
@@ -233,11 +296,15 @@ describe('level 7 boards', () => {
         if (b.n < 4) expect(counts.has(b.n + 1)).toBe(true);
         expect(lineHits(b.hint.a, b.hint.b, b.fruit).length).toBe(b.n);
         expect(Math.hypot(b.hint.b.x - b.hint.a.x, b.hint.b.y - b.hint.a.y)).toBeGreaterThanOrEqual(MIN_LINE);
-        for (const p of [b.hint.a, b.hint.b]) expect(p.x >= 0 && p.x <= BOARD_W && p.y >= 0 && p.y <= BOARD_H).toBe(true);
+        for (const p of [b.hint.a, b.hint.b])
+          expect(p.x >= 0 && p.x <= BOARD_W && p.y >= 0 && p.y <= BOARD_H).toBe(true);
         // Fruit do not overlap, so every one can be told apart.
-        for (let i = 0; i < b.fruit.length; i++) for (let j = i + 1; j < b.fruit.length; j++) {
-          expect(Math.hypot(b.fruit[i].x - b.fruit[j].x, b.fruit[i].y - b.fruit[j].y)).toBeGreaterThanOrEqual(150);
-        }
+        for (let i = 0; i < b.fruit.length; i++)
+          for (let j = i + 1; j < b.fruit.length; j++) {
+            expect(
+              Math.hypot(b.fruit[i].x - b.fruit[j].x, b.fruit[i].y - b.fruit[j].y),
+            ).toBeGreaterThanOrEqual(150);
+          }
       }
     }
   });
@@ -252,7 +319,13 @@ describe('level 7 boards', () => {
   });
   it('a hint line can be found again after some fruit are cut', () => {
     const b = boardsFor(new Rng(4))[0];
-    expect(hintLineFor(b.fruit, b.n, b.fruit.map(() => false))).not.toBeNull();
+    expect(
+      hintLineFor(
+        b.fruit,
+        b.n,
+        b.fruit.map(() => false),
+      ),
+    ).not.toBeNull();
   });
 });
 
@@ -279,12 +352,21 @@ describe('level 8 pair board', () => {
 
 describe('level 9 two-line boards', () => {
   const SEEDS9 = Array.from({ length: 40 }, (_, i) => i + 1);
-  const hitsOf = (l: { a: { x: number; y: number }; b: { x: number; y: number } }, fruit: { x: number; y: number }[]) => lineHits(l.a, l.b, fruit);
+  const hitsOf = (
+    l: { a: { x: number; y: number }; b: { x: number; y: number } },
+    fruit: { x: number; y: number }[],
+  ) => lineHits(l.a, l.b, fruit);
   /** Every line a hand could draw, sampled: a point on the board and an angle, box edge to box edge. */
-  const handLines = (rng: Rng, n: number) => Array.from({ length: n }, () => {
-    const x = rng.range(0, BOARD_W), y = rng.range(0, BOARD_H), t = rng.range(0, Math.PI);
-    return { a: { x: x - Math.cos(t) * 1200, y: y - Math.sin(t) * 1200 }, b: { x: x + Math.cos(t) * 1200, y: y + Math.sin(t) * 1200 } };
-  });
+  const handLines = (rng: Rng, n: number) =>
+    Array.from({ length: n }, () => {
+      const x = rng.range(0, BOARD_W),
+        y = rng.range(0, BOARD_H),
+        t = rng.range(0, Math.PI);
+      return {
+        a: { x: x - Math.cos(t) * 1200, y: y - Math.sin(t) * 1200 },
+        b: { x: x + Math.cos(t) * 1200, y: y + Math.sin(t) * 1200 },
+      };
+    });
 
   it('four boards of two rows (three and two first, then four to six), fruit apart and inside the box', () => {
     for (const seed of SEEDS9) {
@@ -293,10 +375,14 @@ describe('level 9 two-line boards', () => {
       expect(boards[0].fruit.length).toBe(5);
       for (const b of boards) {
         expect(b.n).toBe(2);
-        for (const p of b.fruit) expect(p.x >= 60 && p.x <= BOARD_W - 60 && p.y >= 60 && p.y <= BOARD_H - 60).toBe(true);
-        for (let i = 0; i < b.fruit.length; i++) for (let j = i + 1; j < b.fruit.length; j++) {
-          expect(Math.hypot(b.fruit[i].x - b.fruit[j].x, b.fruit[i].y - b.fruit[j].y)).toBeGreaterThanOrEqual(160);
-        }
+        for (const p of b.fruit)
+          expect(p.x >= 60 && p.x <= BOARD_W - 60 && p.y >= 60 && p.y <= BOARD_H - 60).toBe(true);
+        for (let i = 0; i < b.fruit.length; i++)
+          for (let j = i + 1; j < b.fruit.length; j++) {
+            expect(
+              Math.hypot(b.fruit[i].x - b.fruit[j].x, b.fruit[i].y - b.fruit[j].y),
+            ).toBeGreaterThanOrEqual(160);
+          }
       }
     }
   });
@@ -323,7 +409,9 @@ describe('level 9 two-line boards', () => {
     for (const seed of SEEDS9.slice(0, 15)) {
       for (const b of coverBoardsFor(new Rng(seed))) {
         const pool = coverLines(b.fruit);
-        const firsts = [...pool, ...handLines(rng, 150)].map((l) => hitsOf(l, b.fruit)).filter((h) => h.length && h.length < b.fruit.length);
+        const firsts = [...pool, ...handLines(rng, 150)]
+          .map((l) => hitsOf(l, b.fruit))
+          .filter((h) => h.length && h.length < b.fruit.length);
         const seen = new Set<string>();
         for (const h of firsts) {
           const key = [...h].sort().join(',');
@@ -333,7 +421,17 @@ describe('level 9 two-line boards', () => {
           const rest = b.fruit.map((_, i) => i).filter((i) => !cut[i]);
           const covers = (l: (typeof pool)[number]) => rest.every((i) => hitsOf(l, b.fruit).includes(i));
           const check = clearingLine(b.fruit, cut);
-          expect(check !== null).toBe(pool.some(covers) || coverLines(rest.map((i) => b.fruit[i])).some((l) => lineHits(l.a, l.b, rest.map((i) => b.fruit[i])).length === rest.length));
+          expect(check !== null).toBe(
+            pool.some(covers) ||
+              coverLines(rest.map((i) => b.fruit[i])).some(
+                (l) =>
+                  lineHits(
+                    l.a,
+                    l.b,
+                    rest.map((i) => b.fruit[i]),
+                  ).length === rest.length,
+              ),
+          );
           // What it says can be done can be done: its line crosses every fruit left.
           if (check) expect(rest.every((i) => hitsOf(check, b.fruit).includes(i))).toBe(true);
           if (handLines(rng, 300).some(covers)) expect(oneLineClears(b.fruit, cut)).toBe(true);
@@ -345,7 +443,10 @@ describe('level 9 two-line boards', () => {
   it('the hint belongs to a cover from the state it is shown in', () => {
     for (const seed of SEEDS9.slice(0, 15)) {
       for (const b of coverBoardsFor(new Rng(seed))) {
-        const h = coverHint(b.fruit, b.fruit.map(() => false))!;
+        const h = coverHint(
+          b.fruit,
+          b.fruit.map(() => false),
+        )!;
         const first = hitsOf(h, b.fruit);
         expect(first.length).toBeGreaterThan(0);
         expect(coverStep(b.fruit, [], first, 1)).toBe('more');
@@ -365,7 +466,9 @@ describe('level 9 two-line boards', () => {
 
   it('a first line that strands the rest, or a second that leaves fruit, is stuck', () => {
     const b = coverBoardsFor(new Rng(3))[0];
-    const stuck = coverLines(b.fruit).map((l) => hitsOf(l, b.fruit)).find((h) => h.length && coverStep(b.fruit, [], h, 1) === 'stuck');
+    const stuck = coverLines(b.fruit)
+      .map((l) => hitsOf(l, b.fruit))
+      .find((h) => h.length && coverStep(b.fruit, [], h, 1) === 'stuck');
     expect(stuck).toBeTruthy();
     const first = hitsOf(b.hint, b.fruit);
     const cut = b.fruit.map((_, i) => first.includes(i));
@@ -390,7 +493,7 @@ describe('plans', () => {
 });
 
 describe('level 11 just a few', () => {
-  it('asks for 2, then 3, then 3, with two aloft, on level 5\'s path', () => {
+  it("asks for 2, then 3, then 3, with two aloft, on level 5's path", () => {
     const p = planFor(11);
     expect(p.mode).toBe(planFor(5).mode);
     expect(p.aloft).toBe(2);
@@ -401,8 +504,10 @@ describe('level 11 just a few', () => {
     }
   });
   it('judges exactly as level 5: any fruit until the bowl is full, then refused with one miss', () => {
-    const p11 = planFor(11), p5 = planFor(5);
-    const s11 = signsFor(p11, new Rng(1))[0], s5 = signsFor(p5, new Rng(1))[0];
+    const p11 = planFor(11),
+      p5 = planFor(5);
+    const s11 = signsFor(p11, new Rng(1))[0],
+      s5 = signsFor(p5, new Rng(1))[0];
     for (const k of [...FRUIT, ...NOT_FRUIT]) expect(judge(p11, s11, k)).toEqual(judge(p5, s5, k));
     const r = judgeStroke(p11, s11, ['apple', 'pear', 'lemon']);
     expect(r.cut).toEqual([true, true, false]);
@@ -445,7 +550,8 @@ describe('fruit, not-fruit and moods', () => {
   it('level 3 can ask for each of the nine, and level 6 for each in a row', () => {
     for (const id of [3, 6]) {
       const asked = new Set<Kind | null>();
-      for (let seed = 1; seed <= 300; seed++) for (const sign of signsFor(planFor(id), new Rng(seed))) for (const r of sign.rows) asked.add(r.kind);
+      for (let seed = 1; seed <= 300; seed++)
+        for (const sign of signsFor(planFor(id), new Rng(seed))) for (const r of sign.rows) asked.add(r.kind);
       for (const k of FRUIT) expect(asked.has(k)).toBe(true);
     }
   });
@@ -578,7 +684,9 @@ describe('level 10 twos and threes', () => {
 
   for (const [name, v] of Object.entries(VIEWS)) {
     it(`the bowl strip's six tokens are big, apart and clear of the fruit, bowl, basket, sign and pet, in ${name}`, () => {
-      const bw = bowlAt(v), bk = basketAt(v), sg = signAt(v);
+      const bw = bowlAt(v),
+        bk = basketAt(v),
+        sg = signAt(v);
       const lowestHang = 0.5 * v.h + 14 + HIT_R;
       for (let i = 0; i < STRIP_MAX; i++) {
         const t = tokenAt(v, i);

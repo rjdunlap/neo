@@ -2,9 +2,31 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  BLOOM_TURNS, GearTally, Machine, PITCH, choiceLayout, contacts, corners, dropsInGap, filledWith, gapOf, gearLayout, helpFor,
-  inputOf, lineBoard, mod, outputOf, overlaps, phases, roundFor, toScreen, validate,
-  type Board, type MachineSpec, type Role, type Step,
+  BLOOM_TURNS,
+  GearTally,
+  Machine,
+  PITCH,
+  choiceLayout,
+  contacts,
+  corners,
+  dropsInGap,
+  filledWith,
+  gapOf,
+  gearLayout,
+  helpFor,
+  inputOf,
+  lineBoard,
+  mod,
+  outputOf,
+  overlaps,
+  phases,
+  roundFor,
+  toScreen,
+  validate,
+  type Board,
+  type MachineSpec,
+  type Role,
+  type Step,
 } from './logic';
 
 const SEEDS = Array.from({ length: 500 }, (_, i) => i + 1);
@@ -18,7 +40,8 @@ const views = {
 function machinesOf(steps: Step[]): MachineSpec[] {
   return steps.flatMap((s) => (s.kind === 'one' ? [s.machine] : [s.pair.a, s.pair.b]));
 }
-const dist = (b: Board, i: number, j: number) => Math.hypot(b.sockets[i].x - b.sockets[j].x, b.sockets[i].y - b.sockets[j].y);
+const dist = (b: Board, i: number, j: number) =>
+  Math.hypot(b.sockets[i].x - b.sockets[j].x, b.sockets[i].y - b.sockets[j].y);
 const mk = (roles: Role[], tilt = 0, mirror = false) =>
   new Machine({ board: lineBoard(roles, tilt, mirror), flower: 'tulip', color: 'pink', visitor: 'duck' });
 
@@ -32,7 +55,8 @@ describe('boards and contacts', () => {
           for (const looseIn of [false, true]) {
             const filled = filledWith(b, looseIn);
             const want: [number, number][] = [];
-            for (let i = 0; i + 1 < b.sockets.length; i++) if (filled[i] && filled[i + 1]) want.push([i, i + 1]);
+            for (let i = 0; i + 1 < b.sockets.length; i++)
+              if (filled[i] && filled[i + 1]) want.push([i, i + 1]);
             expect(contacts(b, filled)).toEqual(want);
           }
           for (let i = 0; i < b.sockets.length; i++)
@@ -184,7 +208,11 @@ describe('help', () => {
 });
 
 describe('GearTally', () => {
-  const still = (t: GearTally) => { const r = t.turned(false); t.touched(); return r; };
+  const still = (t: GearTally) => {
+    const r = t.turned(false);
+    t.touched();
+    return r;
+  };
 
   it('is never a miss; two still trials glow with one hint, two more install without another', () => {
     const t = new GearTally();
@@ -230,7 +258,12 @@ describe('authored first rounds', () => {
   it('level 1', () => {
     for (const seed of SEEDS.slice(0, 50)) {
       const [a, b, c] = machinesOf(roundFor(1, new Rng(seed)));
-      expect([a.flower, a.board.tilt, a.board.mirror, a.board.sockets.length]).toEqual(['tulip', 0, false, 2]);
+      expect([a.flower, a.board.tilt, a.board.mirror, a.board.sockets.length]).toEqual([
+        'tulip',
+        0,
+        false,
+        2,
+      ]);
       expect([b.flower, b.board.tilt, b.board.mirror]).toEqual(['daisy', 15, true]);
       expect(c.flower).toBe('sunflower');
     }
@@ -283,7 +316,11 @@ describe('layout', () => {
               expect(p.y + p.h).toBeLessThanOrEqual(v.h);
               for (const k of corners(v)) expect(overlaps(p, k)).toBe(false);
             }
-            parts.forEach((p, i) => parts.forEach((q, j) => { if (i < j) expect(overlaps(p, q)).toBe(false); }));
+            parts.forEach((p, i) =>
+              parts.forEach((q, j) => {
+                if (i < j) expect(overlaps(p, q)).toBe(false);
+              }),
+            );
             expect(l.back.w).toBeGreaterThanOrEqual(100);
             expect(l.back.h).toBeGreaterThanOrEqual(100);
             expect(l.tray.w).toBeGreaterThanOrEqual(100);

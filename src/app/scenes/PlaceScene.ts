@@ -86,7 +86,11 @@ function storySpot(band: Band): StorySpot | null {
   const art = woodlandLandmark();
   const name = label('Woodland Picnic', 22);
   name.position.set(0, 52);
-  node.addChild(new Graphics().ellipse(0, 26, 100, 22).fill({ color: swatch.green.line, alpha: 0.18 }), art, name);
+  node.addChild(
+    new Graphics().ellipse(0, 26, 100, 22).fill({ color: swatch.green.line, alpha: 0.18 }),
+    art,
+    name,
+  );
   if (store.woodland.keepsake) {
     const done = checkBadge(20);
     done.position.set(76, -50);
@@ -157,14 +161,26 @@ export class PlaceScene extends Scene {
   private readonly path = new Graphics();
   private readonly flowers: Flower[] = [];
   private readonly pip = makeCompanion();
-  private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
-  private readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
+  private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () =>
+    this.leave(() => this.app.go.hub()),
+  );
+  private readonly book = new RoundButton(bookIcon(), swatch.white, 50, () =>
+    this.leave(() => this.app.go.stickers()),
+  );
   readonly previous = new RoundButton(arrowIcon(-1), swatch.white, 46, () => this.page(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.white, 46, () => this.page(1));
   private readonly heading = label('', 36);
   /** The hearted games for this place, standing in the sky; absent until something is hearted. */
   shelf: Shelf | null = null;
-  private touch: { id: number; x0: number; scroll0: number; lastX: number; lastT: number; moved: boolean; target: Landmark | StorySpot | MixSpot | Flower | null } | null = null;
+  private touch: {
+    id: number;
+    x0: number;
+    scroll0: number;
+    lastX: number;
+    lastT: number;
+    moved: boolean;
+    target: Landmark | StorySpot | MixSpot | Flower | null;
+  } | null = null;
   private velocity = 0;
   private leaving = false;
   private landWidth = 0;
@@ -176,7 +192,14 @@ export class PlaceScene extends Scene {
     super(app);
     this.place = placeFor(band);
     this.story = storySpot(band);
-    this.mix = new MixHost(app, band, this.ui, () => this.view, this.tw, gamesFor(band).map(g => g.id));
+    this.mix = new MixHost(
+      app,
+      band,
+      this.ui,
+      () => this.view,
+      this.tw,
+      gamesFor(band).map((g) => g.id),
+    );
     this.mixSpot = mixSpot(this.mix.mods);
   }
 
@@ -207,23 +230,47 @@ export class PlaceScene extends Scene {
     this.land.on('pointercancel', (e) => {
       if (this.touch?.id !== e.pointerId) return;
       const target = this.touch.target;
-      if (target && !(target instanceof Flower)) void this.tw.to(target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
+      if (target && !(target instanceof Flower))
+        void this.tw.to(target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
       this.touch = null;
       this.mix.holdCancel();
     });
 
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 155);
-    onTap(this.pip, () => { this.pip.poke(); void voice.say('hub.pick'); });
+    onTap(this.pip, () => {
+      this.pip.poke();
+      void voice.say('hub.pick');
+    });
     // Every hearted game, a bigger kids' one from a signpost too: the heart after a round promises the shelf.
-    const hearted = shelfFor(store.favorites, GAMES.map((g) => g.id)).map((id) => gameById(id)!);
+    const hearted = shelfFor(
+      store.favorites,
+      GAMES.map((g) => g.id),
+    ).map((id) => gameById(id)!);
     if (hearted.length) {
       this.shelf = this.track(new Shelf(hearted, (item) => this.launch(item)));
       this.ui.addChild(this.shelf);
     }
     this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading, this.previous, this.next);
-    if (this.backdrop.sun) onTap(this.backdrop.sun, () => { this.backdrop.sun!.poke(); sfx.sparkle(); }, { radius: 100 });
-    this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
+    if (this.backdrop.sun)
+      onTap(
+        this.backdrop.sun,
+        () => {
+          this.backdrop.sun!.poke();
+          sfx.sparkle();
+        },
+        { radius: 100 },
+      );
+    this.backdrop.clouds.forEach((c) =>
+      onTap(
+        c,
+        () => {
+          c.poke();
+          sfx.whoosh();
+        },
+        { radius: 90 },
+      ),
+    );
     this.scroll = lastScroll.get(this.band) ?? 0;
     // Back from a stop of a live mix: its sheet is up again before the first frame.
     if (this.mix.live) this.mix.resume();
@@ -235,7 +282,11 @@ export class PlaceScene extends Scene {
     const backY = Math.max(ground + 95, v.h * 0.62);
     const frontY = v.h - 55;
     // A story spot stands first on the path, one step like a game, so no game's target shrinks.
-    const spots = [...(this.story ? [this.story] : []), ...(this.mixSpot ? [this.mixSpot] : []), ...this.landmarks];
+    const spots = [
+      ...(this.story ? [this.story] : []),
+      ...(this.mixSpot ? [this.mixSpot] : []),
+      ...this.landmarks,
+    ];
     const n = spots.length;
     // Games zigzag between a back and a front row, each a step further along. Neighbors in a row are
     // two steps apart. Spread out to fill the screen when everything fits; otherwise swipe.
@@ -254,11 +305,18 @@ export class PlaceScene extends Scene {
     const p = this.path.clear().moveTo(-20, mid);
     for (let x = 0; x <= this.landWidth + 40; x += 30) p.lineTo(x, mid + Math.sin(x / 140) * 26);
     p.stroke({ width: 54, color: cream, cap: 'round', join: 'round' });
-    for (let x = 30; x < this.landWidth; x += 90) this.path.ellipse(x, mid + Math.sin(x / 140) * 26, 9, 5).fill({ color: swatch.yellow.light });
+    for (let x = 30; x < this.landWidth; x += 90)
+      this.path.ellipse(x, mid + Math.sin(x / 140) * 26, 9, 5).fill({ color: swatch.yellow.light });
 
     if (!this.flowers.length) {
       const colors: ColorName[] = ['pink', 'purple', 'orange', 'red', 'blue'];
-      for (let i = 0; i < Math.max(6, cols * 2); i++) this.plant((i + 0.5) * (this.landWidth / Math.max(6, cols * 2)), i % 2 ? mid + 55 : backY - 105 + (i % 3) * 12, colors[i % colors.length], false);
+      for (let i = 0; i < Math.max(6, cols * 2); i++)
+        this.plant(
+          (i + 0.5) * (this.landWidth / Math.max(6, cols * 2)),
+          i % 2 ? mid + 55 : backY - 105 + (i % 3) * 12,
+          colors[i % colors.length],
+          false,
+        );
     }
     // The shelf stands in the sky above the back row of games, clear of the home and book buttons.
     this.shelf?.position.set(v.w / 2, Math.max(240, backY - ICON_H - 60));
@@ -301,7 +359,15 @@ export class PlaceScene extends Scene {
     if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
     const x = this.content.toLocal(e.global).x;
     const target = this.find(e.target);
-    this.touch = { id: e.pointerId, x0: x, scroll0: this.scroll, lastX: x, lastT: performance.now(), moved: false, target };
+    this.touch = {
+      id: e.pointerId,
+      x0: x,
+      scroll0: this.scroll,
+      lastX: x,
+      lastT: performance.now(),
+      moved: false,
+      target,
+    };
     this.velocity = 0;
     // Answer the touch right away; a game only opens if the finger lifts without swiping.
     if (target instanceof Flower) {
@@ -323,7 +389,8 @@ export class PlaceScene extends Scene {
     if (!t.moved && Math.abs(x - t.x0) > SWIPE) {
       t.moved = true;
       this.mix.holdCancel(); // scrolling the path never opens the table
-      if (t.target && !(t.target instanceof Flower)) void this.tw.to(t.target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
+      if (t.target && !(t.target instanceof Flower))
+        void this.tw.to(t.target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
     }
     if (t.moved && this.maxScroll > 0) {
       const now = performance.now();
@@ -362,7 +429,12 @@ export class PlaceScene extends Scene {
       return;
     }
     const p = this.land.toLocal(e.global);
-    if (p.y > this.backdrop.groundY) this.plant(p.x, p.y, (['pink', 'purple', 'orange', 'red', 'blue'] as ColorName[])[this.flowers.length % 5]);
+    if (p.y > this.backdrop.groundY)
+      this.plant(
+        p.x,
+        p.y,
+        (['pink', 'purple', 'orange', 'red', 'blue'] as ColorName[])[this.flowers.length % 5],
+      );
   }
 
   private launch(mark: Pick<Landmark | ShelfItem, 'mod' | 'node'>) {
@@ -373,7 +445,11 @@ export class PlaceScene extends Scene {
     void voice.say(mark.mod.titleLine);
     sfx.whoosh();
     const mod = mark.mod;
-    void this.tw.to(mark.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 }).then(() => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { place: this.band }));
+    void this.tw
+      .to(mark.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 })
+      .then(() =>
+        this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { place: this.band }),
+      );
   }
 
   /** Into the story's own scene; its home comes back here. */
@@ -384,7 +460,9 @@ export class PlaceScene extends Scene {
     this.pip.cheer();
     void voice.say('woodland.spot');
     sfx.whoosh();
-    void this.tw.to(spot.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 }).then(() => this.app.go.woodland());
+    void this.tw
+      .to(spot.node.scale, { x: 1.15, y: 1.15 }, { duration: 0.2 })
+      .then(() => this.app.go.woodland());
   }
 
   private leave(go: () => void) {

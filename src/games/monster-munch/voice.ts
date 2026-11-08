@@ -16,12 +16,18 @@ export const VOICE = {
   'munch.need': ['I have {have}. I still need {food}!'],
   'munch.enough': ['That is enough {kind}! Here, you can have it back.'],
   'munch.right': ['Yes! {food}! Thank you!'],
-  'munch.share-kinds': ['Share the cookies and apples fairly. Every monster needs the same number of cookies, and the same number of apples!'],
+  'munch.share-kinds': [
+    'Share the cookies and apples fairly. Every monster needs the same number of cookies, and the same number of apples!',
+  ],
   'munch.unfair-kinds': ['Let us share each kind fairly. The extras come back!'],
-  'munch.friends': ['Cookies for friends! {n} each. Tap the cave to call a friend. Ring the bell when no more friends can have a whole share.'],
+  'munch.friends': [
+    'Cookies for friends! {n} each. Tap the cave to call a friend. Ring the bell when no more friends can have a whole share.',
+  ],
   'munch.friend-hi': ['Hello, friend!'],
   'munch.not-enough': ['Not enough for me! I will go back inside.'],
-  'munch.friends-more': ['Not finished yet! Each friend needs {n} cookies. Can another friend have a whole share?'],
+  'munch.friends-more': [
+    'Not finished yet! Each friend needs {n} cookies. Can another friend have a whole share?',
+  ],
   'munch.friends-how': ['How many friends ate?'],
   'munch.friends-no': ['Let us count the friends together.'],
   'munch.friends-yes': ['Yes! {n} friends ate!'],
@@ -33,7 +39,9 @@ export const VOICE = {
   'munch.each-how': ['How many {kind} did each monster get?'],
   'munch.each-yes': ['Yes! {n} each!'],
   'munch.each-no': ['Let us count one monster together.'],
-  'munch.leftover': ['Share the {kind} so every monster gets the same. When no more can be shared fairly, ring the bell!'],
+  'munch.leftover': [
+    'Share the {kind} so every monster gets the same. When no more can be shared fairly, ring the bell!',
+  ],
   'munch.more': ['It is fair so far, and there are enough {kind} for everyone to have one more!'],
   'munch.left-how': ['And how many {kind} are left over?'],
   'munch.left-yes': ['{n} left over! Those go to the pet. Yum!'],

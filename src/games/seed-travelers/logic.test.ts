@@ -62,13 +62,15 @@ const STARTS: Array<[number, Unit[] | undefined]> = [
 
 describe('the table', () => {
   it('only plume+breeze and burr+fur travel', () => {
-    for (const u of UNITS) for (const c of CARRIERS) {
-      const state = new SeedState(3);
-      state.tapUnit(u);
-      const out = state.tapCarrier(c);
-      expect(out.kind).toBe('trip');
-      if (out.kind === 'trip') expect(out.trip.arrived).toBe((u === 'plume' && c === 'breeze') || (u === 'burr' && c === 'fur'));
-    }
+    for (const u of UNITS)
+      for (const c of CARRIERS) {
+        const state = new SeedState(3);
+        state.tapUnit(u);
+        const out = state.tapCarrier(c);
+        expect(out.kind).toBe('trip');
+        if (out.kind === 'trip')
+          expect(out.trip.arrived).toBe((u === 'plume' && c === 'breeze') || (u === 'burr' && c === 'fur'));
+      }
   });
 });
 
@@ -126,12 +128,27 @@ describe('level 3 accepts every delivering sequence', () => {
     ['plume', 'fur'],
     ['burr', 'breeze'],
   ];
-  const cases: Array<{ name: string; stays: number; seedFirst: boolean; deliver: [Unit, Unit]; unitOrder: Unit[] }> = [];
+  const cases: Array<{
+    name: string;
+    stays: number;
+    seedFirst: boolean;
+    deliver: [Unit, Unit];
+    unitOrder: Unit[];
+  }> = [];
   for (const deliver of orders)
     for (const seedFirst of [true, false])
       for (const stays of [0, 1, 2, 3])
-        for (const unitOrder of [['plume', 'burr'], ['burr', 'plume']] as Unit[][])
-          cases.push({ name: `${deliver} seedFirst=${seedFirst} stays=${stays} on ${unitOrder}`, stays, seedFirst, deliver, unitOrder });
+        for (const unitOrder of [
+          ['plume', 'burr'],
+          ['burr', 'plume'],
+        ] as Unit[][])
+          cases.push({
+            name: `${deliver} seedFirst=${seedFirst} stays=${stays} on ${unitOrder}`,
+            stays,
+            seedFirst,
+            deliver,
+            unitOrder,
+          });
 
   const pair = (s: SeedState, u: Unit, c: Carrier, seedFirst: boolean) => {
     if (seedFirst) {
@@ -319,9 +336,23 @@ describe('seeded rounds', () => {
 
 describe('voice lines', () => {
   const ids = [
-    'game.seed-travelers', 'seeds.ask.breeze', 'seeds.ask.fur', 'seeds.ask.both', 'seeds.name.plume', 'seeds.name.burr',
-    'seeds.which.seed', 'seeds.which.helper', 'seeds.arrived.breeze', 'seeds.arrived.fur', 'seeds.stayed.breeze',
-    'seeds.stayed.fur', 'seeds.load.first', 'seeds.finish', 'seeds.again', 'seeds.hint', 'seeds.done',
+    'game.seed-travelers',
+    'seeds.ask.breeze',
+    'seeds.ask.fur',
+    'seeds.ask.both',
+    'seeds.name.plume',
+    'seeds.name.burr',
+    'seeds.which.seed',
+    'seeds.which.helper',
+    'seeds.arrived.breeze',
+    'seeds.arrived.fur',
+    'seeds.stayed.breeze',
+    'seeds.stayed.fur',
+    'seeds.load.first',
+    'seeds.finish',
+    'seeds.again',
+    'seeds.hint',
+    'seeds.done',
   ];
   it('every id exists in SCRIPT', () => {
     const missing = ids.filter((id) => !(id in (SCRIPT as Record<string, unknown>)));
@@ -335,8 +366,14 @@ describe('layout', () => {
     { name: '1024x768', v: { ...views.landscape, w: 1024, h: 768 } },
     { name: '1024x1365', v: { ...views.portrait, w: 1024, h: 1365 } },
   ];
-  const square = (p: { x: number; y: number }) => ({ l: p.x - SEED_HIT / 2, r: p.x + SEED_HIT / 2, t: p.y - SEED_HIT / 2, b: p.y + SEED_HIT / 2 });
-  const overlapSq = (a: ReturnType<typeof square>, b: ReturnType<typeof square>) => a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
+  const square = (p: { x: number; y: number }) => ({
+    l: p.x - SEED_HIT / 2,
+    r: p.x + SEED_HIT / 2,
+    t: p.y - SEED_HIT / 2,
+    b: p.y + SEED_HIT / 2,
+  });
+  const overlapSq = (a: ReturnType<typeof square>, b: ReturnType<typeof square>) =>
+    a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
   const hitsCircle = (a: ReturnType<typeof square>, c: { x: number; y: number }, r: number) => {
     const dx = Math.max(a.l - c.x, 0, c.x - a.r);
     const dy = Math.max(a.t - c.y, 0, c.y - a.b);

@@ -21,7 +21,10 @@ export const CLAIMS: readonly ClaimId[] = ['crank-moves', 'hand-turned', 'opens'
 export const CLAIM: ClaimId = 'crank-moves';
 export const EFFECTS: readonly Effect[] = ['bob', 'roll'];
 
-export interface Pt { x: number; y: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 export interface Clue {
   id: ClueId;
@@ -57,28 +60,83 @@ export const OBJECTS: readonly AtticObject[] = [
     id: 'bird-box',
     mover: 'bird',
     effect: 'bob',
-    crank: { front: { hub: BIRD_HUB, knob: BIRD_KNOB }, back: { hub: mirror(BIRD_HUB), knob: mirror(BIRD_KNOB) } },
+    crank: {
+      front: { hub: BIRD_HUB, knob: BIRD_KNOB },
+      back: { hub: mirror(BIRD_HUB), knob: mirror(BIRD_KNOB) },
+    },
     clues: [
-      { id: 'bird-box:star', kind: 'star', side: 'front', at: { x: -45, y: 40 }, line: 'attic-finds.clue-star', part: 'star', supports: [] },
-      { id: 'bird-box:handle', kind: 'handle', side: 'front', at: BIRD_KNOB, line: 'attic-finds.clue-handle', part: 'handle', supports: ['hand-turned'] },
-      { id: 'bird-box:rod', kind: 'rod', side: 'back', at: { x: -20, y: -20 }, line: 'attic-finds.clue-rod-bird', part: 'rod', supports: ['crank-moves'] },
+      {
+        id: 'bird-box:star',
+        kind: 'star',
+        side: 'front',
+        at: { x: -45, y: 40 },
+        line: 'attic-finds.clue-star',
+        part: 'star',
+        supports: [],
+      },
+      {
+        id: 'bird-box:handle',
+        kind: 'handle',
+        side: 'front',
+        at: BIRD_KNOB,
+        line: 'attic-finds.clue-handle',
+        part: 'handle',
+        supports: ['hand-turned'],
+      },
+      {
+        id: 'bird-box:rod',
+        kind: 'rod',
+        side: 'back',
+        at: { x: -20, y: -20 },
+        line: 'attic-finds.clue-rod-bird',
+        part: 'rod',
+        supports: ['crank-moves'],
+      },
     ],
   },
   {
     id: 'fish-churn',
     mover: 'fish',
     effect: 'bob',
-    crank: { front: { hub: FISH_HUB, knob: FISH_KNOB }, back: { hub: mirror(FISH_HUB), knob: mirror(FISH_KNOB) } },
+    crank: {
+      front: { hub: FISH_HUB, knob: FISH_KNOB },
+      back: { hub: mirror(FISH_HUB), knob: mirror(FISH_KNOB) },
+    },
     clues: [
-      { id: 'fish-churn:door', kind: 'door', side: 'front', at: { x: 0, y: 100 }, line: 'attic-finds.clue-door', part: 'door', supports: ['opens'] },
-      { id: 'fish-churn:handle', kind: 'handle', side: 'front', at: FISH_KNOB, line: 'attic-finds.clue-handle', part: 'handle', supports: ['hand-turned'] },
-      { id: 'fish-churn:rod', kind: 'rod', side: 'back', at: { x: 30, y: -45 }, line: 'attic-finds.clue-rod-fish', part: 'rod', supports: ['crank-moves'] },
+      {
+        id: 'fish-churn:door',
+        kind: 'door',
+        side: 'front',
+        at: { x: 0, y: 100 },
+        line: 'attic-finds.clue-door',
+        part: 'door',
+        supports: ['opens'],
+      },
+      {
+        id: 'fish-churn:handle',
+        kind: 'handle',
+        side: 'front',
+        at: FISH_KNOB,
+        line: 'attic-finds.clue-handle',
+        part: 'handle',
+        supports: ['hand-turned'],
+      },
+      {
+        id: 'fish-churn:rod',
+        kind: 'rod',
+        side: 'back',
+        at: { x: 30, y: -45 },
+        line: 'attic-finds.clue-rod-fish',
+        part: 'rod',
+        supports: ['crank-moves'],
+      },
     ],
   },
 ];
 
 export const objectOf = (id: ObjectId): AtticObject => OBJECTS.find((o) => o.id === id)!;
-export const clueOf = (id: ClueId): Clue => objectOf(id.split(':')[0] as ObjectId).clues.find((c) => c.id === id)!;
+export const clueOf = (id: ClueId): Clue =>
+  objectOf(id.split(':')[0] as ObjectId).clues.find((c) => c.id === id)!;
 
 /** The evidence rule: a clue backs a claim only through a link the drawing shows. A plain lookup. */
 export const supports = (clue: Clue, claim: ClaimId): boolean => clue.supports.includes(claim);
@@ -93,17 +151,41 @@ export function glowTarget(obj: AtticObject, claim: ClaimId): Clue | null {
 
 /* Levels and rounds ----------------------------------------------------------------------------- */
 
-export interface Plan { id: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9; name: string; mode: 'try' | 'prove' | 'lever' | 'peek' | 'same' | 'context' | 'sources' | 'tell' | 'mend' }
+export interface Plan {
+  id: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+  name: string;
+  mode: 'try' | 'prove' | 'lever' | 'peek' | 'same' | 'context' | 'sources' | 'tell' | 'mend';
+}
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Try it: crank it, then pick the picture of what it did', mode: 'try' },
   { id: 2, name: 'Show the clue: the part that proves the crank makes it bob', mode: 'prove' },
   { id: 3, name: 'Up and down: tap the big handle and the bird or fish goes up, then down', mode: 'lever' },
   { id: 4, name: 'Peek inside: open the little door and watch the rod lift the bird', mode: 'peek' },
-  { id: 5, name: 'Same job: find every thing that can carry the load (two can, one only looks right)', mode: 'same' },
-  { id: 6, name: 'Right for the job: leaves, acorns, then water, and which things can carry each', mode: 'context' },
-  { id: 7, name: 'Two sources: drag the paper that shows each claim into its slot (a list, a drawing, a shop poster)', mode: 'sources' },
-  { id: 8, name: "What can we tell?: stamp each claim shown by the papers, or can't tell (no paper is no proof)", mode: 'tell' },
-  { id: 9, name: 'Mend the exhibit: swap three overclaiming captions for ones the papers show, and pick a paper that could answer an open question', mode: 'mend' },
+  {
+    id: 5,
+    name: 'Same job: find every thing that can carry the load (two can, one only looks right)',
+    mode: 'same',
+  },
+  {
+    id: 6,
+    name: 'Right for the job: leaves, acorns, then water, and which things can carry each',
+    mode: 'context',
+  },
+  {
+    id: 7,
+    name: 'Two sources: drag the paper that shows each claim into its slot (a list, a drawing, a shop poster)',
+    mode: 'sources',
+  },
+  {
+    id: 8,
+    name: "What can we tell?: stamp each claim shown by the papers, or can't tell (no paper is no proof)",
+    mode: 'tell',
+  },
+  {
+    id: 9,
+    name: 'Mend the exhibit: swap three overclaiming captions for ones the papers show, and pick a paper that could answer an open question',
+    mode: 'mend',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -133,7 +215,15 @@ export interface LeverState {
   done: boolean;
 }
 
-export const leverState = (): LeverState => ({ up: false, turns: 0, queued: false, turning: false, doorOpen: false, peeked: false, done: false });
+export const leverState = (): LeverState => ({
+  up: false,
+  turns: 0,
+  queued: false,
+  turning: false,
+  doorOpen: false,
+  peeked: false,
+  done: false,
+});
 
 /** A touch on the handle: starts a half turn, or queues one more if one is already turning. Returns whether a turn started. */
 export function press(s: LeverState): boolean {
@@ -177,10 +267,13 @@ export function finishLever(s: LeverState): boolean {
   return true;
 }
 
-export interface LeverRound { object: ObjectId }
+export interface LeverRound {
+  object: ObjectId;
+}
 /** Level 4 and the session's authored first round are the bird box; level 3 otherwise picks either, seeded. */
 export function makeLeverRound(plan: Plan, rng: Rng, first = false): LeverRound {
-  const object: ObjectId = plan.mode === 'peek' || first ? 'bird-box' : rng.chance(0.5) ? 'bird-box' : 'fish-churn';
+  const object: ObjectId =
+    plan.mode === 'peek' || first ? 'bird-box' : rng.chance(0.5) ? 'bird-box' : 'fish-churn';
   return { object };
 }
 
@@ -193,22 +286,44 @@ export interface Encounter {
   cards: Effect[];
 }
 
-export interface Round { encounters: Encounter[] }
+export interface Round {
+  encounters: Encounter[];
+}
 
 /** The definition's first rounds, played once per level per session (not by the demonstration). */
 export function authored(plan: Plan): Round {
   if (plan.mode === 'try') {
     return {
       encounters: [
-        { object: 'bird-box', start: 'front', order: ['bird-box:star', 'bird-box:handle', 'bird-box:rod'], cards: ['bob', 'roll'] },
-        { object: 'fish-churn', start: 'back', order: ['fish-churn:door', 'fish-churn:handle', 'fish-churn:rod'], cards: ['roll', 'bob'] },
+        {
+          object: 'bird-box',
+          start: 'front',
+          order: ['bird-box:star', 'bird-box:handle', 'bird-box:rod'],
+          cards: ['bob', 'roll'],
+        },
+        {
+          object: 'fish-churn',
+          start: 'back',
+          order: ['fish-churn:door', 'fish-churn:handle', 'fish-churn:rod'],
+          cards: ['roll', 'bob'],
+        },
       ],
     };
   }
   return {
     encounters: [
-      { object: 'fish-churn', start: 'front', order: ['fish-churn:door', 'fish-churn:handle', 'fish-churn:rod'], cards: ['bob', 'roll'] },
-      { object: 'bird-box', start: 'front', order: ['bird-box:star', 'bird-box:rod', 'bird-box:handle'], cards: ['roll', 'bob'] },
+      {
+        object: 'fish-churn',
+        start: 'front',
+        order: ['fish-churn:door', 'fish-churn:handle', 'fish-churn:rod'],
+        cards: ['bob', 'roll'],
+      },
+      {
+        object: 'bird-box',
+        start: 'front',
+        order: ['bird-box:star', 'bird-box:rod', 'bird-box:handle'],
+        cards: ['roll', 'bob'],
+      },
     ],
   };
 }
@@ -247,13 +362,28 @@ export interface EncounterState {
 }
 
 export function encounterState(mode: Plan['mode'], object: AtticObject): EncounterState {
-  return { mode, object, looked: new Set(), tried: false, slot: null, wrong: 0, misses: 0, hints: 0, glow: false, done: false };
+  return {
+    mode,
+    object,
+    looked: new Set(),
+    tried: false,
+    slot: null,
+    wrong: 0,
+    misses: 0,
+    hints: 0,
+    glow: false,
+    done: false,
+  };
 }
 
-export const look = (s: EncounterState, clue: ClueId) => { s.looked.add(clue); };
+export const look = (s: EncounterState, clue: ClueId) => {
+  s.looked.add(clue);
+};
 
 /** The crank turned, by her or by a trial card. */
-export const tryIt = (s: EncounterState) => { s.tried = true; };
+export const tryIt = (s: EncounterState) => {
+  s.tried = true;
+};
 
 /** Help shown: counts once per object. Returns whether it counted. */
 export function help(s: EncounterState): boolean {
@@ -326,7 +456,12 @@ export const WINDOW_R = 150;
 export const CLAIM_W = 300;
 export const CLAIM_H = 130;
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface AtticLayout {
   /** Levels 3-4: the handle's hit circle, the peek door, the Finish button. */
@@ -349,7 +484,10 @@ export interface AtticLayout {
 }
 
 export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 205 });
-export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
+export const shellButtons = (v: View): Rect[] => [
+  { x: 0, y: 0, w: 130, h: 130 },
+  { x: v.w - 130, y: 0, w: 130, h: 130 },
+];
 
 /** Every rectangle of the screen. The level is accepted so a later level can rearrange; levels 1 and 2 share one plan. */
 export const FREE_SCALE = 1.45;
@@ -370,7 +508,9 @@ export function atticLayout(v: View, level: number): AtticLayout {
   const knob = objectOf('bird-box').crank.front.knob;
   const dc = { x: object.x + DOOR_AT.x * fs, y: object.y + DOOR_AT.y * fs };
   return {
-    ...base, object, scale: fs,
+    ...base,
+    object,
+    scale: fs,
     handle: { x: object.x + knob.x * fs, y: object.y + knob.y * fs },
     door: { x: dc.x - DOOR_W / 2, y: dc.y - DOOR_H / 2, w: DOOR_W, h: DOOR_H },
     finish: portrait ? { x: v.w / 2 + 150, y: object.y + OBJ * fs + 150 } : { x: v.w - 100, y: v.h - 100 },
@@ -379,17 +519,33 @@ export function atticLayout(v: View, level: number): AtticLayout {
 
 function classicLayout(v: View): AtticLayout {
   const portrait = v.h > v.w;
-  const free = { handle: { x: 0, y: 0 }, handleR: HANDLE_R, door: { x: 0, y: 0, w: DOOR_W, h: DOOR_H }, finish: { x: 0, y: 0 } };
+  const free = {
+    handle: { x: 0, y: 0 },
+    handleR: HANDLE_R,
+    door: { x: 0, y: 0, w: DOOR_W, h: DOOR_H },
+    finish: { x: 0, y: 0 },
+  };
   const shelfY = 150;
-  const shelf = [{ x: v.w / 2 - 90, y: shelfY }, { x: v.w / 2 + 90, y: shelfY }];
+  const shelf = [
+    { x: v.w / 2 - 90, y: shelfY },
+    { x: v.w / 2 + 90, y: shelfY },
+  ];
   if (portrait) {
     const object = { x: v.w / 2 + 40, y: 480 };
     const below = object.y + OBJ + 150;
     return {
-      ...free, portrait, object, scale: 1, shelf, shelfY,
+      ...free,
+      portrait,
+      object,
+      scale: 1,
+      shelf,
+      shelfY,
       turn: { x: object.x + OBJ + 120, y: object.y + 60 },
       window: { x: object.x - OBJ - 175, y: object.y - 40 },
-      cards: [{ x: v.w / 2 - 85, y: below }, { x: v.w / 2 + 85, y: below }],
+      cards: [
+        { x: v.w / 2 - 85, y: below },
+        { x: v.w / 2 + 85, y: below },
+      ],
       claim: { x: v.w / 2 - 125, y: below },
       slot: { x: v.w / 2 + 100, y: below },
       check: { x: v.w / 2 + 230, y: below },
@@ -400,10 +556,18 @@ function classicLayout(v: View): AtticLayout {
   const object = { x: Math.max(470, v.w * 0.45), y: 430 };
   const right = v.w - 30;
   return {
-    ...free, portrait, object, scale, shelf, shelfY,
+    ...free,
+    portrait,
+    object,
+    scale,
+    shelf,
+    shelfY,
     turn: { x: object.x + 70, y: v.h - 75 },
     window: { x: object.x - OBJ * scale - 160, y: 345 },
-    cards: [{ x: right - CARD * 1.5 - 20, y: v.h - 100 }, { x: right - CARD / 2, y: v.h - 100 }],
+    cards: [
+      { x: right - CARD * 1.5 - 20, y: v.h - 100 },
+      { x: right - CARD / 2, y: v.h - 100 },
+    ],
     claim: { x: right - CLAIM_W / 2 - 10, y: 255 },
     slot: { x: right - 250, y: 410 },
     check: { x: right - 90, y: 410 },
@@ -431,11 +595,16 @@ export interface ToolPart {
   line: LineId;
 }
 
-export interface Tool { id: ToolId; props: readonly Prop[]; parts: readonly ToolPart[] }
+export interface Tool {
+  id: ToolId;
+  props: readonly Prop[];
+  parts: readonly ToolPart[];
+}
 
 export const TOOLS: Record<ToolId, Tool> = {
   basket: {
-    id: 'basket', props: ['bottom', 'rim'],
+    id: 'basket',
+    props: ['bottom', 'rim'],
     parts: [
       { prop: 'bottom', has: true, line: 'attic-finds.part-woven-floor' },
       { prop: 'rim', has: true, line: 'attic-finds.part-tall-sides' },
@@ -443,7 +612,8 @@ export const TOOLS: Record<ToolId, Tool> = {
     ],
   },
   tray: {
-    id: 'tray', props: ['bottom', 'tight'],
+    id: 'tray',
+    props: ['bottom', 'tight'],
     parts: [
       { prop: 'bottom', has: true, line: 'attic-finds.part-flat-floor' },
       { prop: 'tight', has: true, line: 'attic-finds.part-solid' },
@@ -451,7 +621,8 @@ export const TOOLS: Record<ToolId, Tool> = {
     ],
   },
   pail: {
-    id: 'pail', props: ['bottom', 'rim', 'tight'],
+    id: 'pail',
+    props: ['bottom', 'rim', 'tight'],
     parts: [
       { prop: 'bottom', has: true, line: 'attic-finds.part-flat-floor' },
       { prop: 'rim', has: true, line: 'attic-finds.part-tall-sides' },
@@ -459,7 +630,8 @@ export const TOOLS: Record<ToolId, Tool> = {
     ],
   },
   hoop: {
-    id: 'hoop', props: ['rim'],
+    id: 'hoop',
+    props: ['rim'],
     parts: [
       { prop: 'rim', has: true, line: 'attic-finds.part-tall-sides' },
       { prop: 'bottom', has: false, line: 'attic-finds.part-no-floor' },
@@ -467,7 +639,11 @@ export const TOOLS: Record<ToolId, Tool> = {
   },
 };
 
-export interface Job { id: JobId; needs: readonly Prop[]; line: LineId }
+export interface Job {
+  id: JobId;
+  needs: readonly Prop[];
+  line: LineId;
+}
 export const JOBS: Record<JobId, Job> = {
   leaves: { id: 'leaves', needs: ['bottom'], line: 'attic-finds.job-leaves' },
   acorns: { id: 'acorns', needs: ['bottom', 'rim'], line: 'attic-finds.job-acorns' },
@@ -475,7 +651,8 @@ export const JOBS: Record<JobId, Job> = {
 };
 
 /** The rule: a tool can do a job when it has everything the job needs. Nothing else (colour, place, order) enters. */
-export const works = (tool: ToolId, job: JobId): boolean => JOBS[job].needs.every((p) => TOOLS[tool].props.includes(p));
+export const works = (tool: ToolId, job: JobId): boolean =>
+  JOBS[job].needs.every((p) => TOOLS[tool].props.includes(p));
 
 /** What a failing try shows: the first needed property the tool lacks, as it looks with this load. Null if it works. */
 export function reason(tool: ToolId, job: JobId): Reason | null {
@@ -495,7 +672,8 @@ export function decidingPart(tool: ToolId, job: JobId): ToolPart {
   return t.parts.find((x) => x.prop === hardest && x.has)!;
 }
 
-export const workingSet = (job: JobId, tools: readonly ToolId[]): ToolId[] => tools.filter((t) => works(t, job));
+export const workingSet = (job: JobId, tools: readonly ToolId[]): ToolId[] =>
+  tools.filter((t) => works(t, job));
 
 /** Level 5's two sets: two tools that work and one that only looks as if it could. */
 export const SETS: Record<'leaves' | 'acorns', readonly ToolId[]> = {
@@ -512,12 +690,23 @@ export type ToolColor = (typeof TOOL_COLORS)[number];
 export const JOB_FRIENDS = ['bunny', 'duck', 'bear', 'cat', 'pig'] as const;
 export type JobFriend = (typeof JOB_FRIENDS)[number];
 
-export interface JobDeal { job: JobId; tools: ToolId[] }
-export interface JobRound { jobs: JobDeal[]; colors: Record<ToolId, ToolColor>; friend: JobFriend }
+export interface JobDeal {
+  job: JobId;
+  tools: ToolId[];
+}
+export interface JobRound {
+  jobs: JobDeal[];
+  colors: Record<ToolId, ToolColor>;
+  friend: JobFriend;
+}
 
 /** The definition's first rounds, shown once per level per session. */
 function authoredJobs(plan: Plan): JobDeal[] {
-  if (plan.mode === 'same') return [{ job: 'leaves', tools: ['hoop', 'basket', 'tray'] }, { job: 'acorns', tools: ['basket', 'tray', 'pail'] }];
+  if (plan.mode === 'same')
+    return [
+      { job: 'leaves', tools: ['hoop', 'basket', 'tray'] },
+      { job: 'acorns', tools: ['basket', 'tray', 'pail'] },
+    ];
   return [
     { job: 'leaves', tools: ['basket', 'tray', 'pail'] },
     { job: 'acorns', tools: ['pail', 'basket', 'tray'] },
@@ -527,10 +716,18 @@ function authoredJobs(plan: Plan): JobDeal[] {
 
 export function makeJobRound(plan: Plan, rng: Rng, first = false): JobRound {
   const picked = rng.shuffle([...TOOL_COLORS]);
-  const colors: Record<ToolId, ToolColor> = { basket: picked[0], hoop: picked[0], tray: picked[1], pail: picked[2] };
+  const colors: Record<ToolId, ToolColor> = {
+    basket: picked[0],
+    hoop: picked[0],
+    tray: picked[1],
+    pail: picked[2],
+  };
   const friend = rng.pick([...JOB_FRIENDS]);
   if (first) return { jobs: authoredJobs(plan), colors, friend };
-  const order: JobId[] = plan.mode === 'same' ? rng.shuffle<JobId>(['leaves', 'acorns']) : rng.shuffle<JobId>(['leaves', 'acorns', 'water']);
+  const order: JobId[] =
+    plan.mode === 'same'
+      ? rng.shuffle<JobId>(['leaves', 'acorns'])
+      : rng.shuffle<JobId>(['leaves', 'acorns', 'water']);
   const jobs = order.map((job) => ({
     job,
     tools: rng.shuffle([...(plan.mode === 'same' ? SETS[job as 'leaves' | 'acorns'] : CONTEXT_TOOLS)]),
@@ -553,8 +750,17 @@ export interface JobState {
 
 export const CART_SLOTS = 3;
 
-export const jobState = (job: JobId, tools: readonly ToolId[]): JobState =>
-  ({ job, tools, cart: Array(CART_SLOTS).fill(null), tried: new Set(), wrong: 0, misses: 0, hints: 0, glow: false, done: false });
+export const jobState = (job: JobId, tools: readonly ToolId[]): JobState => ({
+  job,
+  tools,
+  cart: Array(CART_SLOTS).fill(null),
+  tried: new Set(),
+  wrong: 0,
+  misses: 0,
+  hints: 0,
+  glow: false,
+  done: false,
+});
 
 export const inCart = (s: JobState): ToolId[] => s.cart.filter((t): t is ToolId => t !== null);
 export const slotOf = (s: JobState, tool: ToolId): number => s.cart.indexOf(tool);
@@ -617,7 +823,11 @@ export const glowingTools = (s: JobState): ToolId[] => (s.glow && !s.done ? work
 
 /** What the pet says when a job is done. */
 export const doneLine = (plan: Plan, job: JobId): LineId =>
-  plan.mode === 'same' ? (job === 'acorns' ? 'attic-finds.same-acorns' : 'attic-finds.same-leaves') : (`attic-finds.context-${job}` as LineId);
+  plan.mode === 'same'
+    ? job === 'acorns'
+      ? 'attic-finds.same-acorns'
+      : 'attic-finds.same-leaves'
+    : (`attic-finds.context-${job}` as LineId);
 
 /* Levels 5-6 layout ------------------------------------------------------------------------------- */
 
@@ -652,7 +862,9 @@ export function jobLayout(v: View): JobLayout {
     const toolsY = v.h / 2 + 20;
     const cart = { x: v.w - 30 - CART_W / 2, y: toolsY + TOOL_BOX / 2 + 40 + CART_H / 2 };
     return {
-      portrait, shelf, shelfY,
+      portrait,
+      shelf,
+      shelfY,
       card: { x: v.w / 2 - 125, y: shelfY + 150 },
       lens: { x: v.w - 25 - LENS_R, y: shelfY + 150 },
       tools: [-1, 0, 1].map((k) => ({ x: v.w / 2 + k * step, y: toolsY })),
@@ -664,7 +876,9 @@ export function jobLayout(v: View): JobLayout {
   const cx = v.w / 2 - 22;
   const cart = { x: v.w - 20 - CART_W / 2, y: v.h - 20 - CART_H / 2 };
   return {
-    portrait, shelf, shelfY,
+    portrait,
+    shelf,
+    shelfY,
     card: { x: cx, y: shelfY + 140 },
     lens: { x: v.w - 25 - LENS_R, y: shelfY + 150 },
     tools: [-1, 0, 1].map((k) => ({ x: cx + k * step, y: 530 })),

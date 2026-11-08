@@ -1,6 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bigSingerIndex, bigTouch, CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, ECHO_RHYTHMS as RHYTHMS, SINGERS, singerToTap, makeCast, songFor, CAST_SIZE, FAST_BEATS, SLOW_BEATS, TEMPO_SPAN, tileFor, type Gap, type Question, type Sound } from './logic';
+import {
+  bigSingerIndex,
+  bigTouch,
+  CHOICES,
+  echoDots,
+  echoRest,
+  GAP_SECONDS,
+  judgeEcho,
+  LEVEL_IDS,
+  makeQuestions,
+  makeRhythms,
+  MIN_APART,
+  planFor,
+  PLANS,
+  ECHO_RHYTHMS as RHYTHMS,
+  SINGERS,
+  singerToTap,
+  makeCast,
+  songFor,
+  CAST_SIZE,
+  FAST_BEATS,
+  SLOW_BEATS,
+  TEMPO_SPAN,
+  tileFor,
+  type Gap,
+  type Question,
+  type Sound,
+} from './logic';
 
 /** Tap times for a rhythm, with each gap stretched by a factor (a child's wobble). */
 const play = (r: Gap[], wobble: number[] = []) => {
@@ -20,7 +47,9 @@ describe('Sound Garden', () => {
         }
         expect(qs).toHaveLength(plan.rounds);
         for (const q of qs) expect(CHOICES[q.ask]).toContain(q.answer);
-        qs.slice(2).forEach((q, i) => expect(q.answer === qs[i].answer && q.answer === qs[i + 1].answer).toBe(false));
+        qs.slice(2).forEach((q, i) =>
+          expect(q.answer === qs[i].answer && q.answer === qs[i + 1].answer).toBe(false),
+        );
       }
     }
   });
@@ -61,11 +90,12 @@ describe('Sound Garden', () => {
 
   it('asks all three directions across seeded rounds and points the bot at the flat path too', () => {
     const seen = new Set<string>();
-    for (let seed = 1; seed <= 200; seed++) for (const q of makeQuestions(PLANS[7], new Rng(seed))) {
-      expect(q.ask).toBe('updownsame');
-      seen.add(q.answer);
-      expect(CHOICES[q.ask][tileFor(q)]).toBe(q.answer);
-    }
+    for (let seed = 1; seed <= 200; seed++)
+      for (const q of makeQuestions(PLANS[7], new Rng(seed))) {
+        expect(q.ask).toBe('updownsame');
+        seen.add(q.answer);
+        expect(CHOICES[q.ask][tileFor(q)]).toBe(q.answer);
+      }
     expect([...seen].sort()).toEqual(['down', 'same', 'up']);
   });
 
@@ -107,7 +137,8 @@ describe('Sound Garden', () => {
 
   const questions = (seeds = 300) => {
     const out: Question[] = [];
-    for (const plan of Object.values(PLANS)) for (let seed = 1; seed <= seeds; seed++) out.push(...makeQuestions(plan, new Rng(seed)));
+    for (const plan of Object.values(PLANS))
+      for (let seed = 1; seed <= seeds; seed++) out.push(...makeQuestions(plan, new Rng(seed)));
     return out;
   };
   const steps = (s: Sound) => s.notes.map((n) => n.step);
@@ -159,7 +190,9 @@ describe('Sound Garden', () => {
         expect(steps(b)).toEqual([...steps(a)].reverse());
         expect(a.notes.length).toBeGreaterThanOrEqual(3);
         expect(a.notes.length).toBeLessThanOrEqual(5);
-        steps(a).slice(1).forEach((s, i) => expect(s).toBeGreaterThan(steps(a)[i]));
+        steps(a)
+          .slice(1)
+          .forEach((s, i) => expect(s).toBeGreaterThan(steps(a)[i]));
       }
     }
   });
@@ -171,7 +204,8 @@ describe('Sound Garden', () => {
       expect(heard.size, ask).toBeGreaterThan(10);
     }
     // The sound is data on the question: the same seed builds the same notes.
-    for (const plan of Object.values(PLANS)) expect(makeQuestions(plan, new Rng(7))).toEqual(makeQuestions(plan, new Rng(7)));
+    for (const plan of Object.values(PLANS))
+      expect(makeQuestions(plan, new Rng(7))).toEqual(makeQuestions(plan, new Rng(7)));
     const highs = new Set(qs.filter((q) => q.ask === 'highlow').map((q) => q.sounds.high.notes[0].step));
     const lows = new Set(qs.filter((q) => q.ask === 'highlow').map((q) => q.sounds.low.notes[0].step));
     expect(highs.size).toBeGreaterThan(3);
@@ -207,7 +241,10 @@ describe('Sound Garden', () => {
       expect(bird).toBeGreaterThanOrEqual(6);
       expect(frog).toBeLessThanOrEqual(2);
     }
-    const gaps = (s: 'bunny' | 'turtle') => songFor(s, 0).beats.slice(1).map((b, i, rest) => b.at - (i ? rest[i - 1].at : 0));
+    const gaps = (s: 'bunny' | 'turtle') =>
+      songFor(s, 0)
+        .beats.slice(1)
+        .map((b, i, rest) => b.at - (i ? rest[i - 1].at : 0));
     const bunny = songFor('bunny', 0).beats;
     const turtle = songFor('turtle', 0).beats;
     expect(bunny.length).toBeGreaterThan(turtle.length);
@@ -219,15 +256,29 @@ describe('Sound Garden', () => {
 });
 
 it('big friends change every four taps and all cast positions are reachable across the cycle', () => {
-  expect(Array.from({ length: 12 }, (_, i) => bigSingerIndex(i, 5))).toEqual([0,0,0,0,1,1,1,1,2,2,2,2]);
+  expect(Array.from({ length: 12 }, (_, i) => bigSingerIndex(i, 5))).toEqual([
+    0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+  ]);
   expect(new Set(Array.from({ length: 20 }, (_, i) => bigSingerIndex(i, 5))).size).toBe(5);
   expect(planFor(8)).toMatchObject({ mode: 'play', big: true, rounds: 12 });
 });
 it('big friend hears the view apart from corner buttons and the companion', () => {
-  for (const [w, h] of [[1024,768], [1024,1365], [1365,768]]) {
-    for (let x = -10; x <= w + 10; x += 10) for (let y = -10; y <= h + 10; y += 10) {
-      expect(bigTouch(x, y, w, h)).toBe(x >= 0 && x <= w && y >= 0 && y <= h && !(y < 160 && (x < 180 || x > w - 180)) && !(x < 300 && y > h - 300));
-    }
+  for (const [w, h] of [
+    [1024, 768],
+    [1024, 1365],
+    [1365, 768],
+  ]) {
+    for (let x = -10; x <= w + 10; x += 10)
+      for (let y = -10; y <= h + 10; y += 10) {
+        expect(bigTouch(x, y, w, h)).toBe(
+          x >= 0 &&
+            x <= w &&
+            y >= 0 &&
+            y <= h &&
+            !(y < 160 && (x < 180 || x > w - 180)) &&
+            !(x < 300 && y > h - 300),
+        );
+      }
     expect(bigTouch(w / 2, h / 2, w, h)).toBe(true);
     expect(bigTouch(w - 10, h - 10, w, h)).toBe(true);
   }

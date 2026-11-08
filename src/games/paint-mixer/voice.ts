@@ -24,7 +24,9 @@ export const VOICE = {
   'pm.next': ['Here comes the next jar.'],
   'pm.done': ['Two buckets, two matches! You mixed them just right.'],
   'pm.instruct.5': ['Fill the bucket to the line: three pots, the same way every time.'],
-  'pm.instruct.6': ["Which jars are the sample's colour? Read their labels, tap every one that matches, then Check."],
+  'pm.instruct.6': [
+    "Which jars are the sample's colour? Read their labels, tap every one that matches, then Check.",
+  ],
   'pm.for-every-3': ['For every {a} {potA}, {b} {potB} and {c} {potC}.'],
   'pm.plan-3': ['Tip it out. For every {a} {potA}, {b} {potB} and {c} {potC}.'],
   'pm.jars.choose': ["Tap every jar that's the sample's colour, then Check."],

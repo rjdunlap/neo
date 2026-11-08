@@ -13,7 +13,22 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  boxSide, clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, rowsOf, type Bed, type Hint, type Puzzle,
+  boxSide,
+  clash,
+  copyBed,
+  deadEnds,
+  FLOWER_NAMES,
+  hintFor,
+  isFull,
+  isSolved,
+  makeBeds,
+  mendTarget,
+  nextMove,
+  planFor,
+  rowsOf,
+  type Bed,
+  type Hint,
+  type Puzzle,
   type RowsPlan,
 } from './logic';
 
@@ -24,7 +39,11 @@ const PACKET = 52;
 export function flowerArt(kind: number, size: number): Container {
   const r = size / 2;
   const g = new Graphics();
-  const stem = (x0: number, y0: number, x1: number, y1: number) => g.moveTo(x0, y0).lineTo(x1, y1).stroke({ width: r * 0.14, color: swatch.green.line, cap: 'round' });
+  const stem = (x0: number, y0: number, x1: number, y1: number) =>
+    g
+      .moveTo(x0, y0)
+      .lineTo(x1, y1)
+      .stroke({ width: r * 0.14, color: swatch.green.line, cap: 'round' });
   switch (kind % 5) {
     case 0: {
       // Daisy: white petals around a yellow middle.
@@ -33,31 +52,61 @@ export function flowerArt(kind: number, size: number): Container {
         g.circle(Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55, r * 0.27);
       }
       g.fill(0xffffff).stroke({ width: r * 0.07, color: swatch.white.line, join: 'round' });
-      g.circle(0, 0, r * 0.32).fill(swatch.yellow.fill).stroke({ width: r * 0.07, color: swatch.yellow.line });
+      g.circle(0, 0, r * 0.32)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: r * 0.07, color: swatch.yellow.line });
       break;
     }
     case 1: {
       // Tulip: a red cup with three points, on a short stem with a leaf.
       stem(0, r * 0.2, 0, r * 0.9);
-      g.ellipse(r * 0.3, r * 0.62, r * 0.28, r * 0.12).fill(swatch.green.fill).stroke({ width: r * 0.06, color: swatch.green.line });
-      g.poly([-0.5, -0.78, -0.22, -0.46, 0, -0.9, 0.22, -0.46, 0.5, -0.78, 0.46, -0.1, 0, 0.3, -0.46, -0.1].map((v) => v * r))
-        .fill(swatch.red.fill).stroke({ width: r * 0.08, color: swatch.red.line, join: 'round' });
+      g.ellipse(r * 0.3, r * 0.62, r * 0.28, r * 0.12)
+        .fill(swatch.green.fill)
+        .stroke({ width: r * 0.06, color: swatch.green.line });
+      g.poly(
+        [-0.5, -0.78, -0.22, -0.46, 0, -0.9, 0.22, -0.46, 0.5, -0.78, 0.46, -0.1, 0, 0.3, -0.46, -0.1].map(
+          (v) => v * r,
+        ),
+      )
+        .fill(swatch.red.fill)
+        .stroke({ width: r * 0.08, color: swatch.red.line, join: 'round' });
       break;
     }
     case 2: {
       // Rose: a pink bloom curled into a spiral, with two leaves.
-      g.ellipse(-r * 0.5, r * 0.55, r * 0.3, r * 0.13).ellipse(r * 0.5, r * 0.55, r * 0.3, r * 0.13).fill(swatch.green.fill).stroke({ width: r * 0.06, color: swatch.green.line });
-      g.circle(0, -r * 0.05, r * 0.62).fill(swatch.pink.fill).stroke({ width: r * 0.08, color: swatch.pink.line });
-      g.arc(0, -r * 0.05, r * 0.4, Math.PI * 0.1, Math.PI * 1.7).stroke({ width: r * 0.08, color: swatch.pink.line, cap: 'round' });
-      g.moveTo(r * 0.12, -r * 0.05 - r * 0.26).arc(0, -r * 0.05, r * 0.2, Math.PI * 1.5, Math.PI * 3).stroke({ width: r * 0.08, color: swatch.pink.line, cap: 'round' });
+      g.ellipse(-r * 0.5, r * 0.55, r * 0.3, r * 0.13)
+        .ellipse(r * 0.5, r * 0.55, r * 0.3, r * 0.13)
+        .fill(swatch.green.fill)
+        .stroke({ width: r * 0.06, color: swatch.green.line });
+      g.circle(0, -r * 0.05, r * 0.62)
+        .fill(swatch.pink.fill)
+        .stroke({ width: r * 0.08, color: swatch.pink.line });
+      g.arc(0, -r * 0.05, r * 0.4, Math.PI * 0.1, Math.PI * 1.7).stroke({
+        width: r * 0.08,
+        color: swatch.pink.line,
+        cap: 'round',
+      });
+      g.moveTo(r * 0.12, -r * 0.05 - r * 0.26)
+        .arc(0, -r * 0.05, r * 0.2, Math.PI * 1.5, Math.PI * 3)
+        .stroke({ width: r * 0.08, color: swatch.pink.line, cap: 'round' });
       break;
     }
     case 3: {
       // Bluebell: a curved stem with three little hanging bells.
-      g.moveTo(-r * 0.05, r * 0.95).bezierCurveTo(-r * 0.05, r * 0.2, r * 0.1, -r * 0.5, -r * 0.35, -r * 0.7).stroke({ width: r * 0.12, color: swatch.green.line, cap: 'round' });
-      for (const [x, y] of [[-r * 0.38, -r * 0.55], [r * 0.12, -r * 0.1], [-r * 0.3, r * 0.25]]) {
-        g.ellipse(x, y, r * 0.26, r * 0.32).fill(swatch.blue.fill).stroke({ width: r * 0.07, color: swatch.blue.line });
-        g.ellipse(x, y + r * 0.3, r * 0.34, r * 0.1).fill(swatch.blue.light).stroke({ width: r * 0.06, color: swatch.blue.line });
+      g.moveTo(-r * 0.05, r * 0.95)
+        .bezierCurveTo(-r * 0.05, r * 0.2, r * 0.1, -r * 0.5, -r * 0.35, -r * 0.7)
+        .stroke({ width: r * 0.12, color: swatch.green.line, cap: 'round' });
+      for (const [x, y] of [
+        [-r * 0.38, -r * 0.55],
+        [r * 0.12, -r * 0.1],
+        [-r * 0.3, r * 0.25],
+      ]) {
+        g.ellipse(x, y, r * 0.26, r * 0.32)
+          .fill(swatch.blue.fill)
+          .stroke({ width: r * 0.07, color: swatch.blue.line });
+        g.ellipse(x, y + r * 0.3, r * 0.34, r * 0.1)
+          .fill(swatch.blue.light)
+          .stroke({ width: r * 0.06, color: swatch.blue.line });
       }
       break;
     }
@@ -68,8 +117,17 @@ export function flowerArt(kind: number, size: number): Container {
         g.circle(Math.cos(a) * r * 0.66, Math.sin(a) * r * 0.66, r * 0.2);
       }
       g.fill(swatch.yellow.fill).stroke({ width: r * 0.06, color: swatch.yellow.line, join: 'round' });
-      g.circle(0, 0, r * 0.44).fill(swatch.brown.line).stroke({ width: r * 0.06, color: 0x6b4630 });
-      for (const [x, y] of [[-0.15, -0.1], [0.12, -0.18], [0.18, 0.1], [-0.08, 0.17], [0.0, 0.0]]) g.circle(x * r, y * r, r * 0.05).fill(swatch.brown.fill);
+      g.circle(0, 0, r * 0.44)
+        .fill(swatch.brown.line)
+        .stroke({ width: r * 0.06, color: 0x6b4630 });
+      for (const [x, y] of [
+        [-0.15, -0.1],
+        [0.12, -0.18],
+        [0.18, 0.1],
+        [-0.08, 0.17],
+        [0.0, 0.0],
+      ])
+        g.circle(x * r, y * r, r * 0.05).fill(swatch.brown.fill);
       break;
     }
   }
@@ -125,7 +183,14 @@ class GardenRows implements Game {
     for (let f = 0; f < this.plan.size; f++) {
       const packet = new Container();
       // The flower on the packet is drawn per bed, from that bed's kinds (see `next`).
-      packet.addChild(new Graphics().circle(0, 5, PACKET).fill(wood.line).circle(0, 0, PACKET).fill(cream).stroke({ width: 5, color: wood.line }));
+      packet.addChild(
+        new Graphics()
+          .circle(0, 5, PACKET)
+          .fill(wood.line)
+          .circle(0, 0, PACKET)
+          .fill(cream)
+          .stroke({ width: 5, color: wood.line }),
+      );
       packet.hitArea = new Circle(0, 0, PACKET + 12);
       onTap(packet, () => this.select(f), { cooldown: 150 });
       this.packets.addChild(packet);
@@ -170,7 +235,9 @@ class GardenRows implements Game {
       this.board.position.set(x, y);
       // A fixed gap, so the round packets never overlap however few flowers there are.
       const gap = PACKET * 2 + 10;
-      this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(x + w + 70 + PACKET, y + h / 2 + (i - (this.n - 1) / 2) * gap));
+      this.packets.children
+        .slice(0, this.n)
+        .forEach((p, i) => p.position.set(x + w + 70 + PACKET, y + h / 2 + (i - (this.n - 1) / 2) * gap));
     } else {
       const total = h + PACKET * 2 + 150;
       const y = Math.max(100, (v.h - total) / 2);
@@ -187,24 +254,39 @@ class GardenRows implements Game {
     const g = this.glow.clear();
     if (this.finished) return;
     if (this.flash && this.clock < this.flash.until) {
-      for (const { r, c } of this.flash.cells) g.roundRect(c * CELL + 3, r * CELL + 3, CELL - 6, CELL - 6, 14).stroke({ width: 7, color: this.flash.color });
+      for (const { r, c } of this.flash.cells)
+        g.roundRect(c * CELL + 3, r * CELL + 3, CELL - 6, CELL - 6, 14).stroke({
+          width: 7,
+          color: this.flash.color,
+        });
     } else this.flash = null;
     if (this.hinted && !this.busy) {
-      g.roundRect(this.hinted.c * CELL + 3, this.hinted.r * CELL + 3, CELL - 6, CELL - 6, 14).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+      g.roundRect(this.hinted.c * CELL + 3, this.hinted.r * CELL + 3, CELL - 6, CELL - 6, 14).stroke({
+        width: 7 + 2 * Math.sin(this.clock * 6),
+        color: swatch.yellow.fill,
+      });
     }
     const ring = this.packetRing.clear();
     const picked = this.packets.children[this.selected];
     // On the couch, while the packets are open, the chosen packet's ring turns teal: the ring has moved out to them.
     const open = this.couchOn && this.choosing && !this.busy;
-    if (picked && picked !== this.packetRing) ring.circle(picked.x, picked.y, PACKET + 9).stroke({ width: open ? 9 : 7, color: open ? swatch.teal.line : ink });
+    if (picked && picked !== this.packetRing)
+      ring
+        .circle(picked.x, picked.y, PACKET + 9)
+        .stroke({ width: open ? 9 : 7, color: open ? swatch.teal.line : ink });
     const spot = this.ring.clear();
     if (this.couchOn && !this.busy) {
       const { r, c } = this.cursor;
-      spot.roundRect(c * CELL + 8, r * CELL + 8, CELL - 16, CELL - 16, 14).stroke({ width: 8, color: swatch.teal.line, alpha: this.choosing ? 0.5 : 1 });
+      spot
+        .roundRect(c * CELL + 8, r * CELL + 8, CELL - 16, CELL - 16, 14)
+        .stroke({ width: 8, color: swatch.teal.line, alpha: this.choosing ? 0.5 : 1 });
     }
     if (this.hinted?.kind === 'plant' && !this.busy) {
       const p = this.packets.children[this.hinted.flower];
-      if (p) ring.circle(p.x, p.y, PACKET + 9 + 3 * Math.sin(this.clock * 6)).stroke({ width: 6, color: swatch.yellow.fill });
+      if (p)
+        ring
+          .circle(p.x, p.y, PACKET + 9 + 3 * Math.sin(this.clock * 6))
+          .stroke({ width: 6, color: swatch.yellow.fill });
     }
   }
 
@@ -214,8 +296,12 @@ class GardenRows implements Game {
     if (this.busy || this.finished || !puzzle) return null;
     const step = nextMove(this.bed, this.given, this.target(), this.plan.rule, this.selected);
     if (!step) return null;
-    if (!step.lift && step.flower !== this.selected) return { tap: { on: this.packets.children[step.flower] }, pause: 0.3 };
-    return { tap: { on: this.board, x: step.c * CELL + CELL / 2, y: step.r * CELL + CELL / 2 }, pause: step.lift ? 0.3 : undefined };
+    if (!step.lift && step.flower !== this.selected)
+      return { tap: { on: this.packets.children[step.flower] }, pause: 0.3 };
+    return {
+      tap: { on: this.board, x: step.c * CELL + CELL / 2, y: step.r * CELL + CELL / 2 },
+      pause: step.lift ? 0.3 : undefined,
+    };
   }
 
   /**
@@ -303,13 +389,25 @@ class GardenRows implements Game {
       p.addChild(flowerArt(puzzle.kinds[f], PACKET * 1.25));
     });
     this.plants.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.nodes = this.bed.map((row, r) => row.map((v, c) => (v === null ? null : this.addPlant(r, c, v, false))));
+    this.nodes = this.bed.map((row, r) =>
+      row.map((v, c) => (v === null ? null : this.addPlant(r, c, v, false))),
+    );
     this.drawSoil();
     this.board.alpha = 0;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.index > 0) return;
-    return this.ctx.instruct(this.plan.mend ? 'rows.mend' : this.rows === 1 ? 'rows.one' : this.plan.rule === 'rows' ? 'rows.rows' : this.plan.rule === 'boxes' ? 'rows.boxes' : 'rows.both');
+    return this.ctx.instruct(
+      this.plan.mend
+        ? 'rows.mend'
+        : this.rows === 1
+          ? 'rows.one'
+          : this.plan.rule === 'rows'
+            ? 'rows.rows'
+            : this.plan.rule === 'boxes'
+              ? 'rows.boxes'
+              : 'rows.both',
+    );
   }
 
   private select(f: number) {
@@ -332,21 +430,30 @@ class GardenRows implements Game {
   private drawSoil() {
     const g = this.soil.clear();
     const w = this.n * CELL;
-    g.roundRect(-14, -14, w + 28, this.rows * CELL + 28, 24).fill(wood.light).stroke({ width: 7, color: wood.line });
+    g.roundRect(-14, -14, w + 28, this.rows * CELL + 28, 24)
+      .fill(wood.light)
+      .stroke({ width: 7, color: wood.line });
     for (let r = 0; r < this.rows; r++)
       for (let c = 0; c < this.n; c++) {
         const planted = this.given[r]?.[c];
         g.roundRect(c * CELL + 5, r * CELL + 5, CELL - 10, CELL - 10, 16)
           .fill(planted ? swatch.brown.fill : swatch.brown.light)
           .stroke({ width: 3, color: swatch.brown.line });
-        if (!planted) g.ellipse(c * CELL + CELL / 2, r * CELL + CELL / 2 + 6, 16, 8).fill({ color: swatch.brown.line, alpha: 0.25 });
+        if (!planted)
+          g.ellipse(c * CELL + CELL / 2, r * CELL + CELL / 2 + 6, 16, 8).fill({
+            color: swatch.brown.line,
+            alpha: 0.25,
+          });
       }
     if (this.plan.rule !== 'boxes') return;
     // Hedge boxes: a low leafy hedge in the gaps between the boxes, bumpy so it reads as a hedge rather than a line.
     const b = boxSide(this.n);
     for (let k = b; k < this.n; k += b) {
       const at = k * CELL;
-      g.roundRect(at - 9, -6, 18, w + 12, 9).roundRect(-6, at - 9, w + 12, 18, 9).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+      g.roundRect(at - 9, -6, 18, w + 12, 9)
+        .roundRect(-6, at - 9, w + 12, 18, 9)
+        .fill(swatch.green.fill)
+        .stroke({ width: 3, color: swatch.green.line });
       for (let t = 12; t < w; t += 24) g.circle(at, t, 7).circle(t, at, 7);
       g.fill(swatch.green.light);
     }
@@ -375,16 +482,35 @@ class GardenRows implements Game {
     this.nodes[r][c] = null;
     if (this.hinted?.kind === 'fix' && this.hinted.r === r && this.hinted.c === c) this.hinted = null;
     sfx.pop(2);
-    const at = this.ctx.stage.toLocal(this.board.toGlobal({ x: c * CELL + CELL / 2, y: r * CELL + CELL / 2 }));
-    this.ctx.particles.burst(at.x, at.y, { kind: 'dot', colors: [swatch.brown.light, 0xffffff], count: 6, speed: [40, 120], gravity: 0, life: [0.3, 0.5] });
+    const at = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: c * CELL + CELL / 2, y: r * CELL + CELL / 2 }),
+    );
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'dot',
+      colors: [swatch.brown.light, 0xffffff],
+      count: 6,
+      speed: [40, 120],
+      gravity: 0,
+      life: [0.3, 0.5],
+    });
   }
 
   private plant(r: number, c: number, flower: number) {
     const hit = clash(this.bed, this.plan.rule, r, c, flower);
     if (hit) {
       this.miss();
-      this.flash = { cells: [{ r, c }, { r: hit.r, c: hit.c }], color: swatch.red.fill, until: this.clock + 1.4 };
-      void this.ctx.say(hit.by === 'row' ? 'rows.clash-row' : hit.by === 'column' ? 'rows.clash-col' : 'rows.clash-box', { flower: FLOWER_NAMES[this.kind(flower)] });
+      this.flash = {
+        cells: [
+          { r, c },
+          { r: hit.r, c: hit.c },
+        ],
+        color: swatch.red.fill,
+        until: this.clock + 1.4,
+      };
+      void this.ctx.say(
+        hit.by === 'row' ? 'rows.clash-row' : hit.by === 'column' ? 'rows.clash-col' : 'rows.clash-box',
+        { flower: FLOWER_NAMES[this.kind(flower)] },
+      );
       return this.maybeHint();
     }
     // Mend the bed starts with repeats, so a lifted swapped flower can leave a spot nothing fits: only a spot this planting closes counts.
@@ -394,7 +520,9 @@ class GardenRows implements Game {
     if (this.hinted && this.hinted.r === r && this.hinted.c === c) this.hinted = null;
     sfx.pop(4 + ((r + c) % 6));
     if (isFull(this.bed)) return void this.bloom();
-    const stuck = deadEnds(this.bed, this.plan.rule).filter((d) => !before.some((b) => b.r === d.r && b.c === d.c));
+    const stuck = deadEnds(this.bed, this.plan.rule).filter(
+      (d) => !before.some((b) => b.r === d.r && b.c === d.c),
+    );
     if (stuck.length) {
       // Each flower fits where it is, but a spot has nothing left to take: something planted earlier has to come out.
       this.miss();
@@ -417,7 +545,9 @@ class GardenRows implements Game {
     this.hinted = hint;
     this.hints++;
     this.wrongs = 0;
-    void this.ctx.say(hint.kind === 'fix' ? (this.plan.mend ? 'rows.mend-hint' : 'rows.hint-fix') : 'rows.hint-plant');
+    void this.ctx.say(
+      hint.kind === 'fix' ? (this.plan.mend ? 'rows.mend-hint' : 'rows.hint-fix') : 'rows.hint-plant',
+    );
   }
 
   /** The bed is full and right: every flower blooms in turn. */
@@ -431,13 +561,25 @@ class GardenRows implements Game {
     for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.n; c++) {
         const node = this.nodes[r][c];
-        if (node) void this.ctx.tw.to(node.scale, { x: 1.18, y: 1.18 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.12 }));
+        if (node)
+          void this.ctx.tw
+            .to(node.scale, { x: 1.18, y: 1.18 }, { duration: 0.12 })
+            .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.12 }));
         sfx.bell(3 + ((r + c) % 7), 0.2);
       }
       await this.ctx.tw.wait(0.12);
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.rows * CELL) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 24, speed: [160, 380], gravity: 0, life: [0.6, 1] });
+    const mid = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.rows * CELL) / 2 }),
+    );
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 24,
+      speed: [160, 380],
+      gravity: 0,
+      life: [0.6, 1],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('rows.bloom');
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
@@ -461,10 +603,19 @@ function miniBed(size: number, cell: number): Container {
   const c = new Container();
   const n = 3;
   const w = n * cell;
-  c.addChild(new Graphics().roundRect(-w / 2 - 10, -w / 2 - 10, w + 20, w + 20, 18).fill(wood.light).stroke({ width: 6, color: wood.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2 - 10, -w / 2 - 10, w + 20, w + 20, 18)
+      .fill(wood.light)
+      .stroke({ width: 6, color: wood.line }),
+  );
   for (let r = 0; r < n; r++)
     for (let col = 0; col < n; col++) {
-      c.addChild(new Graphics().roundRect(-w / 2 + col * cell + 3, -w / 2 + r * cell + 3, cell - 6, cell - 6, 10).fill(swatch.brown.light));
+      c.addChild(
+        new Graphics()
+          .roundRect(-w / 2 + col * cell + 3, -w / 2 + r * cell + 3, cell - 6, cell - 6, 10)
+          .fill(swatch.brown.light),
+      );
       const f = flowerArt((r + col) % n, size);
       f.position.set(-w / 2 + col * cell + cell / 2, -w / 2 + r * cell + cell / 2);
       c.addChild(f);
@@ -486,7 +637,9 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
   const kind = rng.int(0, 4);
-  c.addChild(new Graphics().circle(0, 0, 78).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line }));
+  c.addChild(
+    new Graphics().circle(0, 0, 78).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line }),
+  );
   c.addChild(flowerArt(kind, 120));
   return c;
 }
@@ -503,7 +656,8 @@ export const gardenRows: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Point at a row and ask together: which flower is missing here?',
-  offScreen: 'Lay out three or four different toys in a grid so no kind repeats in any row or column, then take a few away for her to put back.',
+  offScreen:
+    'Lay out three or four different toys in a grid so no kind repeats in any row or column, then take a few away for her to put back.',
   hubIcon: () => new RowsIcon(),
   touchDemo: true,
   sticker,

@@ -59,7 +59,8 @@ const move = (level: number, delta: number, range: LevelRange) => {
 };
 
 /** One level up or down from `level`, held inside the range: what the how-to card's arrows do. */
-export const stepLevel = (level: number, delta: number, range: LevelRange): number => move(clamp(level, range), delta, range);
+export const stepLevel = (level: number, delta: number, range: LevelRange): number =>
+  move(clamp(level, range), delta, range);
 
 /** The level the celebration's "next level" button plays: one above the level just played, or null at the top of the range. */
 export const nextLevelOffer = (played: number, range: LevelRange): number | null => {

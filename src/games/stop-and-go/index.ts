@@ -12,9 +12,44 @@ import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, arrivalOrder, canArrive, carTap, crossTouch, doneLine, GO_TARGET, hintOn, IDLE_POINT, isCross, judgeGo, lampRolls, laneCycles, lightAt, nextGreenLane, nextLamp, nextLight, planFor, rightNow, safe, touchCounts, VEHICLES, cycleFor, type Cycle, type GoPlan, type Lamp, type Lane, type Light, type Road, type Vehicle } from './logic';
+import {
+  LEVELS,
+  arrivalOrder,
+  canArrive,
+  carTap,
+  crossTouch,
+  doneLine,
+  GO_TARGET,
+  hintOn,
+  IDLE_POINT,
+  isCross,
+  judgeGo,
+  lampRolls,
+  laneCycles,
+  lightAt,
+  nextGreenLane,
+  nextLamp,
+  nextLight,
+  planFor,
+  rightNow,
+  safe,
+  touchCounts,
+  VEHICLES,
+  cycleFor,
+  type Cycle,
+  type GoPlan,
+  type Lamp,
+  type Lane,
+  type Light,
+  type Road,
+  type Vehicle,
+} from './logic';
 
-const LAMP: Record<Light, number> = { red: swatch.red.fill, yellow: swatch.yellow.fill, green: swatch.green.fill };
+const LAMP: Record<Light, number> = {
+  red: swatch.red.fill,
+  yellow: swatch.yellow.fill,
+  green: swatch.green.fill,
+};
 const CAR_COLORS: ColorName[] = ['blue', 'pink', 'orange', 'purple', 'teal', 'red'];
 
 /** A three-lamp traffic light on a pole; the lit lamp is bright, the others dim. */
@@ -31,7 +66,9 @@ class TrafficLight extends Container {
   set(l: Light) {
     this.light = l;
     const g = this.box.clear().roundRect(-44, -164, 88, 168, 22).fill(ink);
-    (['red', 'yellow', 'green'] as Light[]).forEach((x, i) => g.circle(0, -134 + i * 52, 22).fill({ color: LAMP[x], alpha: x === l ? 1 : 0.22 }));
+    (['red', 'yellow', 'green'] as Light[]).forEach((x, i) =>
+      g.circle(0, -134 + i * 52, 22).fill({ color: LAMP[x], alpha: x === l ? 1 : 0.22 }),
+    );
   }
 }
 
@@ -53,12 +90,19 @@ type Car = Container & { art: Container; lamp: Graphics; kind: Vehicle; road?: R
 
 /** The windshield face every vehicle shares: two eyes and a smile around (x, y). */
 function face(g: Graphics, x: number, y: number) {
-  g.circle(x - 12, y, 5).circle(x + 12, y, 5).fill(ink);
-  g.moveTo(x - 10, y + 10).quadraticCurveTo(x, y + 16, x + 10, y + 10).stroke({ width: 3, color: ink, cap: 'round' });
+  g.circle(x - 12, y, 5)
+    .circle(x + 12, y, 5)
+    .fill(ink);
+  g.moveTo(x - 10, y + 10)
+    .quadraticCurveTo(x, y + 16, x + 10, y + 10)
+    .stroke({ width: 3, color: ink, cap: 'round' });
 }
 
 function wheel(g: Graphics, x: number, y: number, r: number) {
-  g.circle(x, y, r).fill(ink).circle(x, y, r * 0.4).fill(0xdfe3ea);
+  g.circle(x, y, r)
+    .fill(ink)
+    .circle(x, y, r * 0.4)
+    .fill(0xdfe3ea);
 }
 
 const GLASS = 0xdff3ff;
@@ -87,7 +131,14 @@ const DRAW: Record<Vehicle, (g: Graphics, sw: (typeof swatch)[ColorName]) => [nu
   },
   bike: (g, sw) => {
     for (const x of [-46, 46]) g.circle(x, 8, 22).stroke({ width: 7, color: ink }).circle(x, 8, 5).fill(ink);
-    g.moveTo(-46, 8).lineTo(-10, -26).lineTo(30, -26).lineTo(46, 8).moveTo(-10, -26).lineTo(2, 8).lineTo(-46, 8).stroke({ width: 7, color: sw.line, cap: 'round', join: 'round' });
+    g.moveTo(-46, 8)
+      .lineTo(-10, -26)
+      .lineTo(30, -26)
+      .lineTo(46, 8)
+      .moveTo(-10, -26)
+      .lineTo(2, 8)
+      .lineTo(-46, 8)
+      .stroke({ width: 7, color: sw.line, cap: 'round', join: 'round' });
     g.moveTo(30, -26).lineTo(38, -44).stroke({ width: 7, color: ink, cap: 'round' });
     // The rider leans to the handlebars, with the shared face and a helmet in the bike's colour.
     g.roundRect(-30, -58, 32, 40, 12).fill(sw.fill).stroke({ width: 4, color: sw.line });
@@ -122,7 +173,10 @@ const DRAW: Record<Vehicle, (g: Graphics, sw: (typeof swatch)[ColorName]) => [nu
   },
   digger: (g, sw) => {
     // The arm reaches up and forward, the bucket resting low at the front.
-    g.moveTo(-8, -50).lineTo(40, -76).lineTo(62, -30).stroke({ width: 13, color: sw.line, cap: 'round', join: 'round' });
+    g.moveTo(-8, -50)
+      .lineTo(40, -76)
+      .lineTo(62, -30)
+      .stroke({ width: 13, color: sw.line, cap: 'round', join: 'round' });
     g.poly([50, -32, 78, -30, 74, -4, 54, -8]).fill(ink);
     g.roundRect(-70, -4, 112, 34, 17).fill(ink);
     for (const x of [-52, -24, 4, 26]) g.circle(x, 13, 8).fill(0xdfe3ea);
@@ -203,7 +257,17 @@ class StopAndGo implements Game {
     this.cycle = cycleFor(ctx.rng);
     this.laneCycle = this.plan.mode === 'lanes' ? laneCycles(ctx.rng) : null;
     this.order = this.plan.mode === 'busy' ? arrivalOrder(ctx.rng, this.plan.goal) : [];
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 66 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.5,
+        clouds: 2,
+        sun: true,
+        seed: 66,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.step = new RoundButton(this.feet(), swatch.green, 64, () => void this.walk());
     this.step.visible = this.plan.mode === 'walk';
@@ -222,7 +286,16 @@ class StopAndGo implements Game {
       ctx.track(this.pet);
       ctx.stage.addChild(this.pet);
     } else {
-      const n = this.plan.mode === 'cross' ? this.plan.goal : this.plan.mode === 'send' ? 3 : this.plan.mode === 'lanes' ? 4 : this.plan.mode === 'busy' ? 0 : 1;
+      const n =
+        this.plan.mode === 'cross'
+          ? this.plan.goal
+          : this.plan.mode === 'send'
+            ? 3
+            : this.plan.mode === 'lanes'
+              ? 4
+              : this.plan.mode === 'busy'
+                ? 0
+                : 1;
       for (let i = 0; i < n; i++) {
         // Whose light: two vehicles wait in each lane (a car lane and a bike lane).
         const car = this.addCar(i, this.plan.mode === 'lanes' ? (i % 2 ? 'bike' : 'car') : undefined);
@@ -248,11 +321,21 @@ class StopAndGo implements Game {
   private badge(lane: Lane) {
     const g = new Graphics().roundRect(-46, -250, 92, 66, 16).fill(0xffffff).stroke({ width: 5, color: ink });
     if (lane === 'car') {
-      g.roundRect(-30, -222, 60, 20, 8).fill(swatch.blue.fill).roundRect(-18, -238, 36, 18, 7).fill(swatch.blue.fill);
+      g.roundRect(-30, -222, 60, 20, 8)
+        .fill(swatch.blue.fill)
+        .roundRect(-18, -238, 36, 18, 7)
+        .fill(swatch.blue.fill);
       for (const x of [-16, 16]) g.circle(x, -200, 7).fill(ink);
     } else {
       for (const x of [-20, 20]) g.circle(x, -206, 11).stroke({ width: 4, color: ink });
-      g.moveTo(-20, -206).lineTo(-6, -228).lineTo(14, -228).lineTo(20, -206).moveTo(-6, -228).lineTo(4, -206).lineTo(-20, -206).stroke({ width: 4, color: swatch.orange.line, cap: 'round', join: 'round' });
+      g.moveTo(-20, -206)
+        .lineTo(-6, -228)
+        .lineTo(14, -228)
+        .lineTo(20, -206)
+        .moveTo(-6, -228)
+        .lineTo(4, -206)
+        .lineTo(-20, -206)
+        .stroke({ width: 4, color: swatch.orange.line, cap: 'round', join: 'round' });
     }
     g.eventMode = 'none';
     return g;
@@ -274,12 +357,26 @@ class StopAndGo implements Game {
 
   private feet() {
     const g = new Graphics();
-    for (const [x, y, flip] of [[-14, 6, 1], [14, -8, -1]]) g.ellipse(x, y, 11, 17).fill(0xffffff).circle(x - 6 * flip, y - 22, 4).circle(x, y - 24, 4).circle(x + 6 * flip, y - 22, 4).fill(0xffffff);
+    for (const [x, y, flip] of [
+      [-14, 6, 1],
+      [14, -8, -1],
+    ])
+      g.ellipse(x, y, 11, 17)
+        .fill(0xffffff)
+        .circle(x - 6 * flip, y - 22, 4)
+        .circle(x, y - 24, 4)
+        .circle(x + 6 * flip, y - 22, 4)
+        .fill(0xffffff);
     return g;
   }
 
   private addCar(i: number, lane?: Lane) {
-    const kind = lane === 'bike' ? 'bike' : lane === 'car' ? this.ctx.rng.pick(['car', 'bus', 'van'] as const) : this.ctx.rng.pick(VEHICLES);
+    const kind =
+      lane === 'bike'
+        ? 'bike'
+        : lane === 'car'
+          ? this.ctx.rng.pick(['car', 'bus', 'van'] as const)
+          : this.ctx.rng.pick(VEHICLES);
     const car = carArt(CAR_COLORS[(i + this.done) % CAR_COLORS.length], kind);
     car.lane = lane;
     car.hitArea = new Rectangle(-80, -90, 160, 120);
@@ -292,7 +389,15 @@ class StopAndGo implements Game {
   start() {
     this.layoutCars(true);
     this.busy = false;
-    const line = { lamps: 'go.lamps', toy: 'go.toy', send: 'go.send', walk: 'go.walk', cross: 'go.cross', lanes: 'go.lanes', busy: 'go.busy' } as const;
+    const line = {
+      lamps: 'go.lamps',
+      toy: 'go.toy',
+      send: 'go.send',
+      walk: 'go.walk',
+      cross: 'go.cross',
+      lanes: 'go.lanes',
+      busy: 'go.busy',
+    } as const;
     void this.ctx.instruct(line[this.plan.mode]);
   }
 
@@ -331,7 +436,11 @@ class StopAndGo implements Game {
     this.flag.clear();
     if (this.plan.mode === 'walk') {
       const fx = v.w - 110;
-      this.flag.rect(fx, y - 190, 8, 190).fill(wood.line).poly([fx + 8, y - 190, fx + 80, y - 165, fx + 8, y - 140]).fill(swatch.red.fill);
+      this.flag
+        .rect(fx, y - 190, 8, 190)
+        .fill(wood.line)
+        .poly([fx + 8, y - 190, fx + 80, y - 165, fx + 8, y - 140])
+        .fill(swatch.red.fill);
       this.step.position.set(v.w / 2, v.h - 80);
     }
     this.layoutCars(true);
@@ -341,13 +450,18 @@ class StopAndGo implements Game {
   private layoutCars(snap = false) {
     const y = this.roadY() + 30;
     if (this.plan.mode === 'lanes') {
-      for (const lane of ['car', 'bike'] as Lane[]) this.laneCars(lane).forEach((c, i) => this.place(c, this.light.x - 120 - i * 170, this.laneY(lane) + 30, 0, snap));
+      for (const lane of ['car', 'bike'] as Lane[])
+        this.laneCars(lane).forEach((c, i) =>
+          this.place(c, this.light.x - 120 - i * 170, this.laneY(lane) + 30, 0, snap),
+        );
       return;
     }
     if (this.crossMode) {
       const [a, b] = [this.cars.filter((c) => c.road !== 'ns'), this.cars.filter((c) => c.road === 'ns')];
       a.forEach((c, i) => this.place(c, this.light.x - 120 - i * 170, y, 0, snap));
-      b.forEach((c, i) => this.place(c, this.view.w * 0.62 + 30, this.roadY() + 160 + i * 170, -Math.PI / 2, snap));
+      b.forEach((c, i) =>
+        this.place(c, this.view.w * 0.62 + 30, this.roadY() + 160 + i * 170, -Math.PI / 2, snap),
+      );
       return;
     }
     if (this.plan.mode === 'walk' && this.pet) {
@@ -376,7 +490,10 @@ class StopAndGo implements Game {
     this.clock += dt;
     // Each lane's light runs its own cycle.
     if (this.laneCycle) {
-      for (const [light, lane] of [[this.light, 'car'], [this.light2, 'bike']] as const) {
+      for (const [light, lane] of [
+        [this.light, 'car'],
+        [this.light2, 'bike'],
+      ] as const) {
         const l = lightAt(this.clock, this.laneCycle[lane]);
         if (l !== light.light) {
           light.set(l);
@@ -394,20 +511,33 @@ class StopAndGo implements Game {
     }
     if (this.plan.mode === 'lamps') this.loopCar(dt);
     // Waiting on red, the cars idle: a small rumble, a different motion from green's blink, so colour is not the only cue.
-    for (const c of this.cars) c.art.y = !this.crossMode && this.lightOf(c).light === 'red' ? -Math.abs(Math.sin((this.clock * Math.PI) / 0.6)) * 3 : 0;
+    for (const c of this.cars)
+      c.art.y =
+        !this.crossMode && this.lightOf(c).light === 'red'
+          ? -Math.abs(Math.sin((this.clock * Math.PI) / 0.6)) * 3
+          : 0;
     if (this.crossMode && !this.finished) this.crossing(dt);
     const g = this.glow.clear();
     const ring = (t: TrafficLight) => {
       const b = t.getBounds();
-      g.roundRect(b.x - 10, b.y - 10, b.width + 20, b.height + 20, 24).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.light });
+      g.roundRect(b.x - 10, b.y - 10, b.width + 20, b.height + 20, 24).stroke({
+        width: 7 + 2 * Math.sin(this.clock * 6),
+        color: swatch.yellow.light,
+      });
     };
     // The glow sits on the thing to touch (the front car or the feet), and only while touching it is right.
-    const greenLane: Lane | undefined = this.plan.mode === 'lanes' ? (this.light.light === 'green' ? 'car' : 'bike') : undefined;
-    const on = this.hinting ? hintOn(this.plan.mode, (greenLane === 'bike' ? this.light2 : this.light).light) : null;
+    const greenLane: Lane | undefined =
+      this.plan.mode === 'lanes' ? (this.light.light === 'green' ? 'car' : 'bike') : undefined;
+    const on = this.hinting
+      ? hintOn(this.plan.mode, (greenLane === 'bike' ? this.light2 : this.light).light)
+      : null;
     const target = on === 'car' ? this.front(greenLane) : on === 'step' ? this.step : null;
     if (target) {
       const b = target.getBounds();
-      g.roundRect(b.x - 12, b.y - 12, b.width + 24, b.height + 24, 30).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.light });
+      g.roundRect(b.x - 12, b.y - 12, b.width + 24, b.height + 24, 30).stroke({
+        width: 7 + 2 * Math.sin(this.clock * 6),
+        color: swatch.yellow.light,
+      });
     }
     // At the crossing, glow a green light whose road has fewer cars waiting: that one should turn red.
     if (this.hinting && this.crossMode && this.light.light === 'green' && this.light2.light === 'green') {
@@ -417,7 +547,10 @@ class StopAndGo implements Game {
     // The idle point: both roads red with cars waiting for a while, so the helper points at the busier road's light. Not a miss or a hint.
     if (this.pointing > 0) {
       this.pointing -= dt;
-      const road = crossTouch({ ew: this.light.light, ns: this.light2.light }, { ew: this.waiting('ew'), ns: this.waiting('ns') });
+      const road = crossTouch(
+        { ew: this.light.light, ns: this.light2.light },
+        { ew: this.waiting('ew'), ns: this.waiting('ns') },
+      );
       if (road) ring(road === 'ew' ? this.light : this.light2);
     }
   }
@@ -432,7 +565,17 @@ class StopAndGo implements Game {
     this.puff -= dt;
     if (this.speed > 60 && this.puff <= 0) {
       this.puff = 0.12;
-      this.ctx.particles.burst(car.x - 70, car.y + 20, { colors: [0xffffff, 0xdfe3ea], kind: 'dot', count: 2, speed: [20, 60], size: [0.5, 0.9], life: [0.4, 0.7], gravity: -40, angle: Math.PI, spread: 0.8 });
+      this.ctx.particles.burst(car.x - 70, car.y + 20, {
+        colors: [0xffffff, 0xdfe3ea],
+        kind: 'dot',
+        count: 2,
+        speed: [20, 60],
+        size: [0.5, 0.9],
+        life: [0.4, 0.7],
+        gravity: -40,
+        angle: Math.PI,
+        spread: 0.8,
+      });
     }
   }
 
@@ -449,10 +592,19 @@ class StopAndGo implements Game {
       const lane = nextGreenLane(this.laneCycle, this.clock);
       const car = this.front(lane);
       if (!car) return null;
-      return { tap: { on: car, y: -30 }, when: () => (this.finished || this.front(lane) !== car ? 'cancel' : !this.busy && rightNow(mode, this.lightOf(car).light)) };
+      return {
+        tap: { on: car, y: -30 },
+        when: () =>
+          this.finished || this.front(lane) !== car
+            ? 'cancel'
+            : !this.busy && rightNow(mode, this.lightOf(car).light),
+      };
     }
     if (mode === 'cross' || mode === 'busy') {
-      const road = crossTouch({ ew: this.light.light, ns: this.light2.light }, { ew: this.waiting('ew'), ns: this.waiting('ns') });
+      const road = crossTouch(
+        { ew: this.light.light, ns: this.light2.light },
+        { ew: this.waiting('ew'), ns: this.waiting('ns') },
+      );
       return road ? { tap: spot(road === 'ew' ? this.light : this.light2) } : null;
     }
     if (mode === 'lamps') return { tap: { on: this.lamps[nextLamp(this.rolling) === 'green' ? 0 : 1] } };
@@ -462,7 +614,10 @@ class StopAndGo implements Game {
     if (!target) return null;
     return {
       tap: { on: target, y: GO_TARGET[mode] === 'car' ? -30 : 0 },
-      when: () => (this.finished || (GO_TARGET[mode] === 'car' && this.cars[0] !== car) ? 'cancel' : !this.busy && rightNow(mode, this.light.light)),
+      when: () =>
+        this.finished || (GO_TARGET[mode] === 'car' && this.cars[0] !== car)
+          ? 'cancel'
+          : !this.busy && rightNow(mode, this.light.light),
     };
   }
 
@@ -541,12 +696,16 @@ class StopAndGo implements Game {
   private toot(car: Car) {
     sfx.bell(5, 0.22);
     void this.ctx.tw.wait(0.12).then(() => sfx.bell(7, 0.22));
-    void this.ctx.tw.to(car.art.scale, { x: 0.94, y: 1.08 }, { duration: 0.08 }).then(() => this.ctx.tw.to(car.art.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(car.art.scale, { x: 0.94, y: 1.08 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(car.art.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
   }
 
   /** On red the car brakes: a squash, then back. */
   private squash(car: Car) {
-    void this.ctx.tw.to(car.art.scale, { x: 1.1, y: 0.9 }, { duration: 0.08 }).then(() => this.ctx.tw.to(car.art.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(car.art.scale, { x: 1.1, y: 0.9 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(car.art.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }));
   }
 
   /** A car zooms off to the right, then comes back round to wait again (toy level). */
@@ -568,7 +727,15 @@ class StopAndGo implements Game {
   // Sending cars on green ---------------------------------------------------------------------
 
   private async tapCar(car: Car) {
-    if (this.busy || this.finished || (this.plan.mode !== 'send' && this.plan.mode !== 'toy' && this.plan.mode !== 'lamps' && this.plan.mode !== 'lanes')) return;
+    if (
+      this.busy ||
+      this.finished ||
+      (this.plan.mode !== 'send' &&
+        this.plan.mode !== 'toy' &&
+        this.plan.mode !== 'lamps' &&
+        this.plan.mode !== 'lanes')
+    )
+      return;
     const answer = carTap(this.plan.mode, this.lightOf(car).light, car === this.front(car.lane));
     if (answer === 'toot' || answer === 'drive') {
       this.toot(car);
@@ -631,7 +798,11 @@ class StopAndGo implements Game {
     sfx.animal('hop');
     const x0 = 190;
     const x1 = this.view.w - 170;
-    await this.ctx.tw.to(this.pet, { x: x0 + ((x1 - x0) * this.done) / this.plan.goal }, { duration: 0.35, ease: ease.outQuad });
+    await this.ctx.tw.to(
+      this.pet,
+      { x: x0 + ((x1 - x0) * this.done) / this.plan.goal },
+      { duration: 0.35, ease: ease.outQuad },
+    );
     this.busy = false;
     if (this.done >= this.plan.goal) {
       this.pet.cheer();
@@ -657,7 +828,12 @@ class StopAndGo implements Game {
     if (this.gap > 0 || this.busy) return;
     if (!safe({ ns: this.light2.light, ew: this.light.light })) return;
     const type = (c: Car) => c.road;
-    const front = this.light.light === 'green' ? this.cars.find((c) => type(c) !== 'ns') : this.light2.light === 'green' ? this.cars.find((c) => type(c) === 'ns') : undefined;
+    const front =
+      this.light.light === 'green'
+        ? this.cars.find((c) => type(c) !== 'ns')
+        : this.light2.light === 'green'
+          ? this.cars.find((c) => type(c) === 'ns')
+          : undefined;
     if (!front) return;
     this.gap = 1.1;
     this.cars.splice(this.cars.indexOf(front), 1);
@@ -666,7 +842,9 @@ class StopAndGo implements Game {
     this.hinting = false;
     sfx.whoosh();
     const ns = type(front) === 'ns';
-    void this.ctx.tw.to(front, ns ? { y: -150 } : { x: this.view.w + 150 }, { duration: 1, ease: ease.inQuad }).then(() => front.destroy({ children: true }));
+    void this.ctx.tw
+      .to(front, ns ? { y: -150 } : { x: this.view.w + 150 }, { duration: 1, ease: ease.inQuad })
+      .then(() => front.destroy({ children: true }));
     this.layoutCars();
     // One road empty while its light is still green: a nudge to give the other road a turn.
     if (!this.cars.some((c) => (type(c) === 'ns') === ns) && this.cars.length) void this.ctx.say('go.turn');
@@ -691,7 +869,8 @@ class StopAndGo implements Game {
     else car.position.set(-150, this.roadY() + 30);
     // A thought cloud shows which way it wants to go, kept upright whichever way the car faces.
     const cloud = new Graphics().ellipse(0, 0, 54, 38).fill(0xffffff).stroke({ width: 4, color: ink });
-    if (road === 'ew') cloud.poly([-22, -8, 4, -8, 4, -20, 26, 0, 4, 20, 4, 8, -22, 8]).fill(swatch.green.fill);
+    if (road === 'ew')
+      cloud.poly([-22, -8, 4, -8, 4, -20, 26, 0, 4, 20, 4, 8, -22, 8]).fill(swatch.green.fill);
     else cloud.poly([-8, 22, -8, -4, -20, -4, 0, -26, 20, -4, 8, -4, 8, 22]).fill(swatch.green.fill);
     cloud.eventMode = 'none';
     if (road === 'ew') cloud.position.set(0, -130);

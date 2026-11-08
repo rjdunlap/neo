@@ -16,11 +16,34 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { LEVELS, beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, movePair, pickLook, planFor, solve, solvePair, solved, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
+import {
+  LEVELS,
+  beside,
+  cellAt,
+  eaten,
+  HINT_AFTER,
+  makePrediction,
+  makePuzzle,
+  move,
+  movePair,
+  pickLook,
+  planFor,
+  solve,
+  solvePair,
+  solved,
+  stopper,
+  tapDirection,
+  type Cell,
+  type Dir,
+  type FishColor,
+  type RockLook,
+  type ShownSlide,
+  type SlidePlan,
+  type SlidePuzzle,
+} from './logic';
 
 const CELL = 100;
 const ICE = 0xe3f4ff;
-
 
 function fishArt(color: FishColor = 'orange'): Graphics {
   const g = new Graphics();
@@ -34,38 +57,87 @@ function fishArt(color: FishColor = 'orange'): Graphics {
 /** A pond's stoppers: a snowy rock, a small igloo or a snowman, all the same to the stop rule. */
 function rockArt(look: RockLook = 'rock'): Graphics {
   if (look === 'igloo') {
-    const g = new Graphics().moveTo(-40, 30).arc(0, 30, 40, Math.PI, 0).closePath().fill(0xffffff).stroke({ width: 5, color: 0x8fb3d6, join: 'round' });
-    for (const r of [14, 27]) g.moveTo(-Math.sqrt(40 * 40 - r * r), 30 - r).lineTo(Math.sqrt(40 * 40 - r * r), 30 - r).stroke({ width: 3, color: 0xc9d6e6, cap: 'round' });
+    const g = new Graphics()
+      .moveTo(-40, 30)
+      .arc(0, 30, 40, Math.PI, 0)
+      .closePath()
+      .fill(0xffffff)
+      .stroke({ width: 5, color: 0x8fb3d6, join: 'round' });
+    for (const r of [14, 27])
+      g.moveTo(-Math.sqrt(40 * 40 - r * r), 30 - r)
+        .lineTo(Math.sqrt(40 * 40 - r * r), 30 - r)
+        .stroke({ width: 3, color: 0xc9d6e6, cap: 'round' });
     return g.moveTo(-14, 30).arc(0, 30, 14, Math.PI, 0).closePath().fill(0x5a7a99);
   }
   if (look === 'snowman') {
-    const g = puffs(new Graphics(), [[0, 12, 32], [0, -26, 22]], 0xffffff, 0x8fb3d6, 5);
+    const g = puffs(
+      new Graphics(),
+      [
+        [0, 12, 32],
+        [0, -26, 22],
+      ],
+      0xffffff,
+      0x8fb3d6,
+      5,
+    );
     g.roundRect(-20, -10, 40, 10, 5).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
     g.circle(-8, -30, 3.5).circle(8, -30, 3.5).fill(ink);
     return g.poly([0, -24, 20, -20, 0, -17]).fill(swatch.orange.fill);
   }
-  const g = new Graphics().poly([-40, 30, -34, -14, -12, -34, 18, -32, 38, -6, 40, 30]).fill(0x9aa6b8).stroke({ width: 5, color: 0x6b778a, join: 'round' });
-  return puffs(g, [[-14, -28, 16], [10, -30, 18], [28, -14, 12]], 0xffffff, 0xc9d6e6, 4);
+  const g = new Graphics()
+    .poly([-40, 30, -34, -14, -12, -34, 18, -32, 38, -6, 40, 30])
+    .fill(0x9aa6b8)
+    .stroke({ width: 5, color: 0x6b778a, join: 'round' });
+  return puffs(
+    g,
+    [
+      [-14, -28, 16],
+      [10, -30, 18],
+      [28, -14, 12],
+    ],
+    0xffffff,
+    0xc9d6e6,
+    4,
+  );
 }
 
 function softArt(): Graphics {
-  return puffs(new Graphics(), [[-24, 10, 22], [0, 2, 26], [24, 10, 22], [-10, 20, 20], [12, 20, 20]], 0xffffff, 0xc9d6e6, 4);
+  return puffs(
+    new Graphics(),
+    [
+      [-24, 10, 22],
+      [0, 2, 26],
+      [24, 10, 22],
+      [-10, 20, 20],
+      [12, 20, 20],
+    ],
+    0xffffff,
+    0xc9d6e6,
+    4,
+  );
 }
 
 /** A star mark on the ice, where an ice block has to stop. */
 function starArt(): Graphics {
   const pts: number[] = [];
   for (let i = 0; i < 10; i++) {
-    const r = i % 2 ? 17 : 38, a = -Math.PI / 2 + (i * Math.PI) / 5;
+    const r = i % 2 ? 17 : 38,
+      a = -Math.PI / 2 + (i * Math.PI) / 5;
     pts.push(r * Math.cos(a), r * Math.sin(a));
   }
-  return new Graphics().poly(pts).fill({ color: swatch.yellow.fill, alpha: 0.85 }).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
+  return new Graphics()
+    .poly(pts)
+    .fill({ color: swatch.yellow.fill, alpha: 0.85 })
+    .stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
 }
 
 /** The second penguin on the two-penguin ponds: the same penguin in a red scarf. */
 function scarfedPenguin(): Container {
   const c = penguinArt();
-  const g = new Graphics().roundRect(-25, 12, 50, 13, 6).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+  const g = new Graphics()
+    .roundRect(-25, 12, 50, 13, 6)
+    .fill(swatch.red.fill)
+    .stroke({ width: 3, color: swatch.red.line });
   g.roundRect(8, 18, 13, 26, 5).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
   c.addChild(g);
   return c;
@@ -73,7 +145,10 @@ function scarfedPenguin(): Container {
 
 function blockArt(): Container {
   const c = new Container();
-  const g = new Graphics().roundRect(-42, -42, 84, 84, 16).fill(0xa8dcff).stroke({ width: 5, color: 0x5aa7e0, join: 'round' });
+  const g = new Graphics()
+    .roundRect(-42, -42, 84, 84, 16)
+    .fill(0xa8dcff)
+    .stroke({ width: 5, color: 0x5aa7e0, join: 'round' });
   g.roundRect(-30, -30, 60, 60, 10).fill({ color: 0xd7f0ff, alpha: 0.9 });
   g.moveTo(-26, -8).lineTo(-8, -26).stroke({ width: 5, color: 0xffffff, cap: 'round' });
   g.moveTo(-26, 12).lineTo(12, -26).stroke({ width: 3, color: 0xffffff, alpha: 0.8, cap: 'round' });
@@ -220,7 +295,11 @@ class PenguinSlide implements Game {
     // The chosen penguin of two stands lifted a little, over a blue ring.
     this.penguins.forEach((n, i) => (n.pivot.y = this.pair && i === this.who && !this.finished ? 10 : 0));
     const g = this.glow.clear();
-    if (this.stuck && !this.busy && this.undo.visible) g.circle(this.undo.x, this.undo.y, 68 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
+    if (this.stuck && !this.busy && this.undo.visible)
+      g.circle(this.undo.x, this.undo.y, 68 + 4 * Math.sin(this.clock * 6)).stroke({
+        width: 7,
+        color: swatch.yellow.fill,
+      });
     this.drawArrow();
     this.drawRing();
   }
@@ -254,7 +333,8 @@ class PenguinSlide implements Game {
     if (this.predicting) {
       const stop = this.shown[this.step];
       if (!stop) return out;
-      const dx = stop.to.x - this.focus.x, dy = stop.to.y - this.focus.y;
+      const dx = stop.to.x - this.focus.x,
+        dy = stop.to.y - this.focus.y;
       out.players[0].active = true;
       if (!dx && !dy) {
         out.players[0].action = true;
@@ -296,13 +376,16 @@ class PenguinSlide implements Game {
       for (const p of input.players) {
         if (p.direction >= 0) {
           const c = beside(this.focus, p.direction as Dir);
-          this.focus = { x: Math.min(this.puzzle.cols - 1, Math.max(0, c.x)), y: Math.min(this.puzzle.rows - 1, Math.max(0, c.y)) };
+          this.focus = {
+            x: Math.min(this.puzzle.cols - 1, Math.max(0, c.x)),
+            y: Math.min(this.puzzle.rows - 1, Math.max(0, c.y)),
+          };
         }
         if (p.action) return void this.predict(this.focus);
       }
       return;
     }
-    const p = input.players.find(p => p.undo || p.direction >= 0 || (this.pair && p.action));
+    const p = input.players.find((p) => p.undo || p.direction >= 0 || (this.pair && p.action));
     if (p?.undo) this.back();
     else if (p?.action && this.pair) this.choose((1 - this.who) as 0 | 1);
     else if (p && p.direction >= 0) void this.go(p.direction as Dir);
@@ -346,12 +429,21 @@ class PenguinSlide implements Game {
     if (this.course) {
       if (this.told) return;
       this.told = true;
-      return this.ctx.instruct(this.course.boards.some(b => b.blocks?.length) ? 'slide.ice' : 'slide.go');
+      return this.ctx.instruct(this.course.boards.some((b) => b.blocks?.length) ? 'slide.ice' : 'slide.go');
     }
     if (this.index > 0) return;
     if (this.plan.pal) return this.ctx.instruct('slide.pals');
     if (this.plan.stars) return this.ctx.instruct('slide.star');
-    if (this.plan.blocks) return this.ctx.instruct(this.plan.pairedBlocks ? 'slide.paired' : this.plan.soft ? 'slide.ice-snow' : this.plan.fish === 2 ? 'slide.ice-two' : 'slide.ice');
+    if (this.plan.blocks)
+      return this.ctx.instruct(
+        this.plan.pairedBlocks
+          ? 'slide.paired'
+          : this.plan.soft
+            ? 'slide.ice-snow'
+            : this.plan.fish === 2
+              ? 'slide.ice-two'
+              : 'slide.ice',
+      );
     if (this.plan.soft) return this.ctx.instruct('slide.soft');
     if (this.plan.fish === 3) return this.ctx.instruct('slide.three');
     if (this.plan.fish === 2) return this.ctx.instruct('slide.two');
@@ -362,8 +454,18 @@ class PenguinSlide implements Game {
     const p = this.puzzle;
     const w = p.cols * CELL;
     const h = p.rows * CELL;
-    this.floor.clear().roundRect(-16, -16, w + 32, h + 32, 30).fill(0xffffff).stroke({ width: 6, color: 0xc9d6e6 }).roundRect(0, 0, w, h, 18).fill(ICE);
-    for (let i = 0; i < 6; i++) this.floor.moveTo((i * 137) % w, (i * 71) % h).lineTo(((i * 137) % w) + 30, ((i * 71) % h) + 12).stroke({ width: 3, color: 0xffffff, alpha: 0.8 });
+    this.floor
+      .clear()
+      .roundRect(-16, -16, w + 32, h + 32, 30)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: 0xc9d6e6 })
+      .roundRect(0, 0, w, h, 18)
+      .fill(ICE);
+    for (let i = 0; i < 6; i++)
+      this.floor
+        .moveTo((i * 137) % w, (i * 71) % h)
+        .lineTo(((i * 137) % w) + 30, ((i * 71) % h) + 12)
+        .stroke({ width: 3, color: 0xffffff, alpha: 0.8 });
     this.board.hitArea = new Rectangle(-16, -16, w + 32, h + 32);
     this.things.removeChildren().forEach((c) => c.destroy({ children: true }));
     for (const c of p.soft) this.place(softArt(), c);
@@ -414,7 +516,8 @@ class PenguinSlide implements Game {
     if (this.predicting) return void this.predict(cellAt(this.puzzle, local.x, local.y, CELL));
     if (this.pair) {
       // A tap on the other penguin chooses it.
-      const cell = cellAt(this.puzzle, local.x, local.y, CELL), other = (1 - this.who) as 0 | 1;
+      const cell = cellAt(this.puzzle, local.x, local.y, CELL),
+        other = (1 - this.who) as 0 | 1;
       if (cell.x === this.spots[other].x && cell.y === this.spots[other].y) return void this.choose(other);
     }
     const p = this.at2(this.at);
@@ -433,7 +536,10 @@ class PenguinSlide implements Game {
   private scuffAt(p: { x: number; y: number }, dir: Dir) {
     const a = (dir * Math.PI) / 2;
     const g = this.scuff.clear();
-    for (const r of [52, 66]) g.moveTo(p.x + r * Math.cos(a - 0.6), p.y + r * Math.sin(a - 0.6)).arc(p.x, p.y, r, a - 0.6, a + 0.6).stroke({ width: 6, color: 0x8fb3d6, cap: 'round' });
+    for (const r of [52, 66])
+      g.moveTo(p.x + r * Math.cos(a - 0.6), p.y + r * Math.sin(a - 0.6))
+        .arc(p.x, p.y, r, a - 0.6, a + 0.6)
+        .stroke({ width: 6, color: 0x8fb3d6, cap: 'round' });
     g.alpha = 1;
     void this.ctx.tw.to(g, { alpha: 0 }, { duration: 0.15 });
   }
@@ -466,13 +572,27 @@ class PenguinSlide implements Game {
       sfx.whoosh();
       const home = this.at2(this.at);
       const lean = async () => {
-        await this.ctx.tw.to(this.penguin, { x: home.x + [10, 0, -10, 0][dir], y: home.y + [0, 10, 0, -10][dir] }, { duration: 0.08 });
+        await this.ctx.tw.to(
+          this.penguin,
+          { x: home.x + [10, 0, -10, 0][dir], y: home.y + [0, 10, 0, -10][dir] },
+          { duration: 0.08 },
+        );
         await this.ctx.tw.to(this.penguin, { x: home.x, y: home.y }, { duration: 0.12 });
       };
-      await Promise.all([lean(), this.ctx.tw.to(node, { x: end.x, y: end.y }, { duration: 0.1 * far + 0.08, ease: ease.outQuad })]);
+      await Promise.all([
+        lean(),
+        this.ctx.tw.to(node, { x: end.x, y: end.y }, { duration: 0.1 * far + 0.08, ease: ease.outQuad }),
+      ]);
       sfx.clunk();
       if (this.puzzle.stars?.some((s) => s.x === pushed.to.x && s.y === pushed.to.y)) {
-        this.ctx.particles.burst(this.board.x + end.x, this.board.y + end.y, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 14, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+        this.ctx.particles.burst(this.board.x + end.x, this.board.y + end.y, {
+          kind: 'star',
+          colors: [0xffffff, swatch.yellow.light],
+          count: 14,
+          speed: [100, 240],
+          gravity: 0,
+          life: [0.4, 0.8],
+        });
       }
       if (solved(this.puzzle, this.have, this.blocks)) return void this.win();
       this.checkHelp();
@@ -483,7 +603,11 @@ class PenguinSlide implements Game {
     sfx.whoosh();
     this.penguin.rotation = [0.3, 0, -0.3, 0][dir];
     const end = this.at2(to);
-    await this.ctx.tw.to(this.penguin, { x: end.x, y: end.y }, { duration: 0.1 * passed.length + 0.08, ease: ease.outQuad });
+    await this.ctx.tw.to(
+      this.penguin,
+      { x: end.x, y: end.y },
+      { duration: 0.1 * passed.length + 0.08, ease: ease.outQuad },
+    );
     sfx.clunk();
     this.penguin.rotation = 0;
     this.at = to;
@@ -492,7 +616,14 @@ class PenguinSlide implements Game {
     this.fishNodes.forEach((f, i) => {
       if (got & (1 << i)) {
         f.visible = false;
-        this.ctx.particles.burst(this.board.x + f.x, this.board.y + f.y, { kind: 'star', colors: [0xffffff, swatch.orange.light], count: 12, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+        this.ctx.particles.burst(this.board.x + f.x, this.board.y + f.y, {
+          kind: 'star',
+          colors: [0xffffff, swatch.orange.light],
+          count: 12,
+          speed: [100, 240],
+          gravity: 0,
+          life: [0.4, 0.8],
+        });
       }
     });
     if (got) {
@@ -534,13 +665,24 @@ class PenguinSlide implements Game {
     const p = this.at2(to);
     if (guess.x === to.x && guess.y === to.y) {
       sfx.sparkle();
-      this.ctx.particles.burst(this.board.x + p.x, this.board.y + p.y, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 14, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+      this.ctx.particles.burst(this.board.x + p.x, this.board.y + p.y, {
+        kind: 'star',
+        colors: [0xffffff, swatch.yellow.light],
+        count: 14,
+        speed: [100, 240],
+        gravity: 0,
+        life: [0.4, 0.8],
+      });
       await this.ctx.say('slide.predict.right');
     } else {
       const stop = stopper(this.puzzle, to, dir);
       if (stop.kind === 'rock') {
-        const node = this.rockNodes[this.puzzle.rocks.findIndex((r) => r.x === stop.cell.x && r.y === stop.cell.y)];
-        if (node) void this.ctx.tw.to(node.scale, { x: 1.15, y: 1.15 }, { duration: 0.12, ease: ease.outQuad }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18 }));
+        const node =
+          this.rockNodes[this.puzzle.rocks.findIndex((r) => r.x === stop.cell.x && r.y === stop.cell.y)];
+        if (node)
+          void this.ctx.tw
+            .to(node.scale, { x: 1.15, y: 1.15 }, { duration: 0.12, ease: ease.outQuad })
+            .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18 }));
       }
       await this.ctx.say(stop.kind === 'rock' ? 'slide.predict.rock' : 'slide.predict.edge');
     }
@@ -554,14 +696,22 @@ class PenguinSlide implements Game {
   private drawRing() {
     const g = this.ring.clear();
     if (this.pair && !this.finished) {
-      g.ellipse(this.penguin.x, this.penguin.y + 34, 40, 14).stroke({ width: 6, color: swatch.blue.fill, alpha: 0.85 });
+      g.ellipse(this.penguin.x, this.penguin.y + 34, 40, 14).stroke({
+        width: 6,
+        color: swatch.blue.fill,
+        alpha: 0.85,
+      });
       return;
     }
     if (!this.predicting || !this.puzzle || this.finished) return;
     const at = this.guess ?? (!this.touch && !this.busy ? this.focus : null);
     if (!at) return;
     const p = this.at2(at);
-    g.circle(p.x, p.y, 40).stroke({ width: 8, color: this.guess ? swatch.blue.fill : swatch.yellow.fill, alpha: this.guess ? 1 : 0.6 + 0.3 * Math.sin(this.clock * 6) });
+    g.circle(p.x, p.y, 40).stroke({
+      width: 8,
+      color: this.guess ? swatch.blue.fill : swatch.yellow.fill,
+      alpha: this.guess ? 1 : 0.6 + 0.3 * Math.sin(this.clock * 6),
+    });
   }
 
   /** The solver's next slide from where things stand now, remembered until something moves. */
@@ -615,7 +765,10 @@ class PenguinSlide implements Game {
       this.guess = null;
       this.focus = beside(this.at, this.shown[0].dir);
     }
-    this.settleBlocks((this.puzzle.blocks ?? []).map((c) => ({ ...c })), 0.3);
+    this.settleBlocks(
+      (this.puzzle.blocks ?? []).map((c) => ({ ...c })),
+      0.3,
+    );
     this.fishNodes.forEach((f) => (f.visible = true));
     this.settlePenguins(0.3);
     await this.ctx.tw.wait(0.3);
@@ -644,7 +797,8 @@ class PenguinSlide implements Game {
     if (this.predicting) return;
     const wasStuck = this.stuck;
     this.stuck = this.ahead().moves < 0;
-    if (this.stuck && !wasStuck) void this.ctx.say(this.puzzle.stars?.length ? 'slide.star.stuck' : 'slide.stuck');
+    if (this.stuck && !wasStuck)
+      void this.ctx.say(this.puzzle.stars?.length ? 'slide.star.stuck' : 'slide.stuck');
     if (!this.hinting && this.moves > this.puzzle.best + HINT_AFTER) {
       this.hinting = true;
       this.hints++;
@@ -671,8 +825,12 @@ class PenguinSlide implements Game {
 
   /** The score for the pond just finished, over the board for a moment: the slides taken, and the best route. */
   private async pondScore() {
-    const best = this.puzzle.best, total = this.course!.boards.length;
-    const text = this.moves === best ? `Pond ${this.index + 1} of ${total}: ${this.moves} slides, a perfect route!` : `Pond ${this.index + 1} of ${total}: ${this.moves} slides (best route ${best})`;
+    const best = this.puzzle.best,
+      total = this.course!.boards.length;
+    const text =
+      this.moves === best
+        ? `Pond ${this.index + 1} of ${total}: ${this.moves} slides, a perfect route!`
+        : `Pond ${this.index + 1} of ${total}: ${this.moves} slides (best route ${best})`;
     const note = label(text, 36, ink);
     note.position.set(this.board.x + (this.puzzle.cols * CELL) / 2, Math.max(52, this.board.y - 50));
     note.alpha = 0;
@@ -689,10 +847,15 @@ class PenguinSlide implements Game {
       // The big arrow beside the penguin: the way the next slide goes.
       const shown = this.shown[this.step];
       if (!shown || !this.puzzle || this.finished || (this.busy && !this.guess)) return;
-      const p = this.at2(this.at), ux = [1, 0, -1, 0][shown.dir], uy = [0, 1, 0, -1][shown.dir];
+      const p = this.at2(this.at),
+        ux = [1, 0, -1, 0][shown.dir],
+        uy = [0, 1, 0, -1][shown.dir];
       const bob = this.guess ? 0 : 4 * Math.sin(this.clock * 5);
-      const tip = { x: p.x + ux * (88 + bob), y: p.y + uy * (88 + bob) }, base = { x: p.x + ux * (42 + bob), y: p.y + uy * (42 + bob) };
-      g.poly([tip.x, tip.y, base.x - uy * 34, base.y + ux * 34, base.x + uy * 34, base.y - ux * 34]).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
+      const tip = { x: p.x + ux * (88 + bob), y: p.y + uy * (88 + bob) },
+        base = { x: p.x + ux * (42 + bob), y: p.y + uy * (42 + bob) };
+      g.poly([tip.x, tip.y, base.x - uy * 34, base.y + ux * 34, base.x + uy * 34, base.y - ux * 34])
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
       return;
     }
     if (!this.hinting || this.stuck || this.busy || !this.puzzle) return;
@@ -705,7 +868,9 @@ class PenguinSlide implements Game {
     const uy = [0, 1, 0, -1][first];
     const tip = { x: p.x + ux * (70 + bob), y: p.y + uy * (70 + bob) };
     const base = { x: p.x + ux * (40 + bob), y: p.y + uy * (40 + bob) };
-    g.poly([tip.x, tip.y, base.x - uy * 22, base.y + ux * 22, base.x + uy * 22, base.y - ux * 22]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+    g.poly([tip.x, tip.y, base.x - uy * 22, base.y + ux * 22, base.x + uy * 22, base.y - ux * 22])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
   }
 
   private async win() {

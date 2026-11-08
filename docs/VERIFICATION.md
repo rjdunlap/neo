@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-07 — Prettier and minimal ESLint (codebase item 10, PR #1405)
+
+Changed: repeatable formatting, typed lint for any assertions/floating promises/native game listeners, CI gates, 32 existing floating-promise findings baselined across 11 files; isolated lint compiler leaves app TypeScript 7 unchanged.
+Ran on base `9c283897` plus the feature diff: clean `npm ci` including nested locked lint install; typecheck; full `npm test` (329 files, 6,201 passed / 5 skipped); build; ESLint and final formatting check; 25 focused lint/scaffold/barrel tests. All passed.
+After upstream `397e9e76` landed, preserved and formatted its Two Pails test additions; targeted Puddle Gobble tests (38), typecheck, lint/format checks, links and whitespace passed.
+The formatting commit `1e9db159` was checked across all 1,500 files against Prettier applied to their prior contents: no non-formatting changes. Its full hash is in `.git-blame-ignore-revs`. The final ten formatting adjustments were formatting-only; full tests were not repeated locally after them.
+Not run: browser, ghost finger, offline or device checks; this changes tooling and layout of source text only. Existing lint findings remain unreviewed, and count-based suppressions cannot detect a replacement finding within the same file/rule.
+
 ## 2026-11-07 — Puddle Gobble slice 5: two pails layout probe and definition (PR #1406)
 
 Changed: a probe test only (`logic.test.ts` › *the beach layout* › *two pails probe*: eight numbered things clear of two side-by-side 170-unit pail boxes, the pet corner and the puddle's start on 300 seeds at four views, the five-token strip above both pails) and the [level 12 *Two pails* definition](definitions/puddle-gobble-two-pails.md). No game code.
@@ -86,6 +94,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Formatting / minimal lint | 2026-11-07: clean install, typecheck, 329-file units (6,201 passed / 5 skipped), build, lint, format check, 25 focused checks, 1,500-file mechanical formatting comparison | [Tooling](#2026-11-07--prettier-and-minimal-eslint-codebase-item-10-pr-1405) | 32 existing floating promises baselined; no browser/offline/device checks |
 | New-game scaffold tooling | 2026-11-07: 20 focused tests, temporary generated-game typecheck/docs/barrels, full units (6,187 passed / 5 skipped), build | [Scaffold](#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399) | Browser/offline not run; generated starters still require implementation and game verification |
 | Round cleanup / native global listeners | 2026-11-07: typecheck, full 327-file units (6,084 passed, 5 skipped), final 61 targeted tests and build; standard `early` paint level 3 and `blocktopple` level 3 passed; 296 demo restart/destruction checks across 46 games retained no native listeners | [Cleanup migration](archive/VERIFICATION-2026-11-07.md#2026-11-07--scene-owned-cleanup-migration-codebase-item-7-follow-up-pr-1387); [original pilots](archive/VERIFICATION-2026-11-07.md#2026-11-07--scene-owned-cleanup-helpers-codebase-item-7-pr-1385) | Draw the Pattern level 5 demo constructor fails on unchanged code too; no world, offline, device or child checks. Paint harness now waits on the game clock; bot actions unchanged. |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](archive/VERIFICATION-2026-11-07.md#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |

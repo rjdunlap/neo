@@ -10,7 +10,28 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, BUDDY_LEVEL, buddyCounts, chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, pickBuddy, planFor, popped, step, type Cell, type DotMark, type DotPlan, type Grid } from './logic';
+import {
+  LEVELS,
+  BUDDY_LEVEL,
+  buddyCounts,
+  chainCounts,
+  collapse,
+  demoMove,
+  DOT_COLORS,
+  DOT_MARKS,
+  ensureMove,
+  findLine,
+  findSquare,
+  makeGrid,
+  pickBuddy,
+  planFor,
+  popped,
+  step,
+  type Cell,
+  type DotMark,
+  type DotPlan,
+  type Grid,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const GAP = 108;
@@ -88,7 +109,10 @@ class DotLink implements Game {
     this.palette = ctx.rng.shuffle([...DOT_COLORS]).slice(0, this.plan.colors);
     this.target = this.plan.mode === 'color' ? this.palette[0] : undefined;
     this.grid = ensureMove(this.plan, makeGrid(this.plan, ctx.rng, this.palette), ctx.rng, this.target);
-    this.backdrop = new Backdrop({ sky: [0xfde2f0, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.82, clouds: 2, seed: 81 }, ctx.view);
+    this.backdrop = new Backdrop(
+      { sky: [0xfde2f0, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.82, clouds: 2, seed: 81 },
+      ctx.view,
+    );
     this.board.addChild(this.lines, this.layer, this.touch);
     ctx.stage.addChild(this.backdrop, this.board);
     this.buildDots();
@@ -97,9 +121,15 @@ class DotLink implements Game {
     this.touch.eventMode = 'static';
     this.touch.hitArea = new Rectangle(-GAP / 2, -GAP / 2, this.plan.cols * GAP, this.plan.rows * GAP);
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => this.down(e));
-    this.touch.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.move(e));
+    this.touch.on(
+      'globalpointermove',
+      (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.move(e),
+    );
     this.touch.on('pointerup', (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.up());
-    this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.up());
+    this.touch.on(
+      'pointerupoutside',
+      (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.up(),
+    );
   }
 
   start() {
@@ -149,7 +179,11 @@ class DotLink implements Game {
     const w = (this.plan.cols - 1) * GAP;
     const h = (this.plan.rows - 1) * GAP;
     // The small buddy board grows so each dot's catch area stays well over 100 units for a toddler.
-    const s = Math.min(this.plan.mode === 'buddy' ? 1.4 : 1, (v.h - 150) / (h + GAP), (v.w - 260) / (w + GAP));
+    const s = Math.min(
+      this.plan.mode === 'buddy' ? 1.4 : 1,
+      (v.h - 150) / (h + GAP),
+      (v.w - 260) / (w + GAP),
+    );
     this.board.scale.set(s);
     this.board.position.set(Math.max(190 + (GAP * s) / 2, (v.w - w * s) / 2), (v.h - h * s) / 2 + 20);
   }
@@ -161,13 +195,15 @@ class DotLink implements Game {
       if (this.idle > 12 && !this.hintCells.length) this.hint();
     }
     // Hinted dots bob gently.
-    this.dots.forEach((row, r) => row.forEach((g, c) => {
-      const lit = [...this.hintCells, ...this.buddy].some((h) => h.r === r && h.c === c);
-      const inPath = this.path.some((p) => p.r === r && p.c === c);
-      const k = inPath ? 1.15 : lit ? 1 + 0.12 * Math.abs(Math.sin(this.clock * 5)) : 1;
-      g.scale.x += (k - g.scale.x) * Math.min(1, dt * 12);
-      g.scale.y = g.scale.x;
-    }));
+    this.dots.forEach((row, r) =>
+      row.forEach((g, c) => {
+        const lit = [...this.hintCells, ...this.buddy].some((h) => h.r === r && h.c === c);
+        const inPath = this.path.some((p) => p.r === r && p.c === c);
+        const k = inPath ? 1.15 : lit ? 1 + 0.12 * Math.abs(Math.sin(this.clock * 5)) : 1;
+        g.scale.x += (k - g.scale.x) * Math.min(1, dt * 12);
+        g.scale.y = g.scale.x;
+      }),
+    );
   }
 
   autotouch(): TouchIntent | null {
@@ -269,7 +305,10 @@ class DotLink implements Game {
     for (const c of path) {
       const g = this.dots[c.r][c.c];
       const { x } = this.pos(c);
-      void this.ctx.tw.to(g, { x: x + 10 }, { duration: 0.06 }).then(() => this.ctx.tw.to(g, { x: x - 10 }, { duration: 0.1 })).then(() => this.ctx.tw.to(g, { x }, { duration: 0.06 }));
+      void this.ctx.tw
+        .to(g, { x: x + 10 }, { duration: 0.06 })
+        .then(() => this.ctx.tw.to(g, { x: x - 10 }, { duration: 0.1 }))
+        .then(() => this.ctx.tw.to(g, { x }, { duration: 0.06 }));
     }
   }
 
@@ -311,14 +350,21 @@ class DotLink implements Game {
     for (const c of gone) {
       const g = this.dots[c.r][c.c];
       const at = this.ctx.stage.toLocal(this.board.toGlobal(g.position));
-      this.ctx.particles.burst(at.x, at.y, { colors: [swatch[this.grid[c.r][c.c]].fill, 0xffffff], count: 5, speed: [60, 160], gravity: 200, size: [0.25, 0.4] });
+      this.ctx.particles.burst(at.x, at.y, {
+        colors: [swatch[this.grid[c.r][c.c]].fill, 0xffffff],
+        count: 5,
+        speed: [60, 160],
+        gravity: 200,
+        size: [0.25, 0.4],
+      });
       void tw.to(g.scale, { x: 0, y: 0 }, { duration: 0.18 });
     }
     sfx.pop(9);
     if (loop) sfx.tada();
     const before = this.progress;
     this.progress += counts;
-    if (this.plan.mode === 'color' && counts) void this.ctx.say('count', { n: Math.min(this.plan.goal, this.progress) });
+    if (this.plan.mode === 'color' && counts)
+      void this.ctx.say('count', { n: Math.min(this.plan.goal, this.progress) });
     else if (this.plan.mode !== 'color' && counts && this.plan.mode !== 'tap') void this.ctx.say('praise');
     await tw.wait(0.22);
     // Gravity: everything above falls into the gaps, new dots drop in from the top.
@@ -341,7 +387,10 @@ class DotLink implements Game {
   /** Light up a move that would count right now. */
   private hint() {
     const p = this.plan;
-    const cells = p.mode === 'square' ? findSquare(this.grid) : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
+    const cells =
+      p.mode === 'square'
+        ? findSquare(this.grid)
+        : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
     if (!cells) return;
     this.hintCells = cells;
     this.hints++;
@@ -353,8 +402,17 @@ class DotLink implements Game {
     this.finished = true;
     sfx.tada();
     this.ctx.pet.cheer();
-    const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: ((this.plan.cols - 1) * GAP) / 2, y: ((this.plan.rows - 1) * GAP) / 2 }));
-    this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, ...this.palette.map((k) => swatch[k].fill)], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.2] });
+    const c = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: ((this.plan.cols - 1) * GAP) / 2, y: ((this.plan.rows - 1) * GAP) / 2 }),
+    );
+    this.ctx.particles.burst(c.x, c.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, ...this.palette.map((k) => swatch[k].fill)],
+      count: 30,
+      speed: [150, 400],
+      gravity: 0,
+      life: [0.8, 1.2],
+    });
     await this.ctx.say('dots.done');
     await this.ctx.tw.wait(0.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -366,8 +424,16 @@ class DotsIcon extends WigglyIcon {
     const c = new Container();
     const g = new Graphics();
     const colors: ColorName[] = ['red', 'red', 'blue', 'yellow', 'red', 'blue', 'yellow', 'yellow', 'green'];
-    g.moveTo(-60, -170).lineTo(0, -170).lineTo(-60, -110).stroke({ width: 10, color: swatch.red.line, cap: 'round', join: 'round' });
-    colors.forEach((k, i) => g.circle(-60 + (i % 3) * 60, -170 + Math.floor(i / 3) * 60, 22).fill(swatch[k].fill).stroke({ width: 4, color: swatch[k].line }));
+    g.moveTo(-60, -170)
+      .lineTo(0, -170)
+      .lineTo(-60, -110)
+      .stroke({ width: 10, color: swatch.red.line, cap: 'round', join: 'round' });
+    colors.forEach((k, i) =>
+      g
+        .circle(-60 + (i % 3) * 60, -170 + Math.floor(i / 3) * 60, 22)
+        .fill(swatch[k].fill)
+        .stroke({ width: 4, color: swatch[k].line }),
+    );
     c.addChild(g);
     super(c);
   }
@@ -379,7 +445,9 @@ function sticker(seed: number): Container {
   const g = new Graphics();
   for (let i = 0; i < 5; i++) {
     const k = rng.pick(DOT_COLORS);
-    g.circle((i - 2) * 46, (i % 2) * 30 - 15, 22).fill(swatch[k].fill).stroke({ width: 4, color: swatch[k].line });
+    g.circle((i - 2) * 46, (i % 2) * 30 - 15, 22)
+      .fill(swatch[k].fill)
+      .stroke({ width: 4, color: swatch[k].line });
   }
   c.addChild(g);
   return c;

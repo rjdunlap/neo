@@ -12,7 +12,24 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, appointmentFor, demoAction, EVENT_WORDS, fiveExample, hourOf, laterExample, makeTasks, minuteChoices, planFor, requestFor, spoken, timeOf, type Appointment, type ClockPlan, type ClockTask } from './logic';
+import {
+  LEVELS,
+  appointmentFor,
+  demoAction,
+  EVENT_WORDS,
+  fiveExample,
+  hourOf,
+  laterExample,
+  makeTasks,
+  minuteChoices,
+  planFor,
+  requestFor,
+  spoken,
+  timeOf,
+  type Appointment,
+  type ClockPlan,
+  type ClockTask,
+} from './logic';
 
 const R = 200;
 
@@ -20,7 +37,11 @@ const R = 200;
 function eventArt(id: string): Graphics {
   const g = new Graphics();
   if (id === 'breakfast') {
-    g.moveTo(-36, -4).quadraticCurveTo(0, 44, 36, -4).closePath().fill(swatch.blue.fill).stroke({ width: 4, color: swatch.blue.line });
+    g.moveTo(-36, -4)
+      .quadraticCurveTo(0, 44, 36, -4)
+      .closePath()
+      .fill(swatch.blue.fill)
+      .stroke({ width: 4, color: swatch.blue.line });
     g.ellipse(0, -6, 34, 8).fill(swatch.yellow.light);
     g.moveTo(20, -10).lineTo(40, -36).stroke({ width: 6, color: swatch.white.line, cap: 'round' });
   } else if (id === 'school') {
@@ -28,15 +49,33 @@ function eventArt(id: string): Graphics {
     g.poly([-42, -10, 0, -40, 42, -10]).fill(swatch.red.line);
     g.rect(-8, 12, 16, 22).fill(wood.fill).circle(0, -18, 7).fill(0xffffff).stroke({ width: 2, color: ink });
   } else if (id === 'lunch') {
-    g.poly([-38, 20, 0, -30, 38, 20]).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line, join: 'round' });
-    g.moveTo(-28, 8).lineTo(28, 8).stroke({ width: 6, color: swatch.green.fill }).moveTo(-22, 0).lineTo(22, 0).stroke({ width: 5, color: swatch.red.fill });
+    g.poly([-38, 20, 0, -30, 38, 20])
+      .fill(swatch.yellow.light)
+      .stroke({ width: 4, color: wood.line, join: 'round' });
+    g.moveTo(-28, 8)
+      .lineTo(28, 8)
+      .stroke({ width: 6, color: swatch.green.fill })
+      .moveTo(-22, 0)
+      .lineTo(22, 0)
+      .stroke({ width: 5, color: swatch.red.fill });
   } else if (id === 'park') {
-    g.moveTo(-30, 34).lineTo(-30, -26).lineTo(30, 34).stroke({ width: 6, color: swatch.orange.line, cap: 'round', join: 'round' });
+    g.moveTo(-30, 34)
+      .lineTo(-30, -26)
+      .lineTo(30, 34)
+      .stroke({ width: 6, color: swatch.orange.line, cap: 'round', join: 'round' });
     g.moveTo(-30, -26).lineTo(-12, -26).lineTo(-12, 34).stroke({ width: 5, color: swatch.orange.fill });
     g.circle(26, -16, 12).fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line });
   } else if (id === 'bath') {
     g.roundRect(-40, -4, 80, 34, 14).fill(0xffffff).stroke({ width: 4, color: swatch.blue.line });
-    for (const [x, y, r] of [[-20, -10, 10], [0, -18, 12], [20, -8, 9], [12, -30, 6]]) g.circle(x, y, r).fill({ color: swatch.blue.light, alpha: 0.9 }).stroke({ width: 2, color: swatch.blue.fill });
+    for (const [x, y, r] of [
+      [-20, -10, 10],
+      [0, -18, 12],
+      [20, -8, 9],
+      [12, -30, 6],
+    ])
+      g.circle(x, y, r)
+        .fill({ color: swatch.blue.light, alpha: 0.9 })
+        .stroke({ width: 2, color: swatch.blue.fill });
   } else {
     g.roundRect(-40, 4, 80, 24, 8).fill(swatch.purple.fill).stroke({ width: 4, color: swatch.purple.line });
     g.roundRect(-40, -8, 26, 16, 6).fill(0xffffff);
@@ -95,7 +134,17 @@ class ClockTower implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.tasks = makeTasks(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.6, clouds: 2, sun: true, seed: 19 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.6,
+        clouds: 2,
+        sun: true,
+        seed: 19,
+      },
+      ctx.view,
+    );
     this.drawFace();
     this.ghost.eventMode = 'none';
     this.minuteArc.eventMode = 'none';
@@ -111,7 +160,11 @@ class ClockTower implements Game {
     this.face.on('pointercancel', () => this.cancel());
     // Pixi's pointer event system listens for pointerup, but not native pointercancel.
     this.ctx.listen(window, 'pointercancel', this.cancelPointer);
-    this.request.addChild(new Graphics().roundRect(-125, -60, 250, 120, 22).fill(cream).stroke({ width: 4, color: wood.line }), this.requestHeading, this.requestTime);
+    this.request.addChild(
+      new Graphics().roundRect(-125, -60, 250, 120, 22).fill(cream).stroke({ width: 4, color: wood.line }),
+      this.requestHeading,
+      this.requestTime,
+    );
     this.requestHeading.y = -34;
     this.requestTime.y = 4;
     const replay = label('Tap to hear again', 18, ink);
@@ -119,13 +172,27 @@ class ClockTower implements Game {
     this.request.addChild(replay);
     this.request.hitArea = new Rectangle(-125, -60, 250, 120);
     this.request.visible = this.plan.mode !== 'read';
-    onTap(this.request, () => { if (!this.busy && !this.finished) void this.instruction(); });
+    onTap(this.request, () => {
+      if (!this.busy && !this.finished) void this.instruction();
+    });
     // A length and shape key, so color is never the only cue for choosing a hand.
-    const key = new Graphics().moveTo(-90, 0).lineTo(-35, 0).stroke({ width: 10, color: swatch.blue.line, cap: 'round' }).circle(-35, 0, 10).fill(swatch.blue.line);
-    key.moveTo(-90, 44).lineTo(0, 44).stroke({ width: 7, color: swatch.red.line, cap: 'round' }).poly([-10, 44, 0, 34, 10, 44, 0, 54]).fill(swatch.red.line);
+    const key = new Graphics()
+      .moveTo(-90, 0)
+      .lineTo(-35, 0)
+      .stroke({ width: 10, color: swatch.blue.line, cap: 'round' })
+      .circle(-35, 0, 10)
+      .fill(swatch.blue.line);
+    key
+      .moveTo(-90, 44)
+      .lineTo(0, 44)
+      .stroke({ width: 7, color: swatch.red.line, cap: 'round' })
+      .poly([-10, 44, 0, 34, 10, 44, 0, 54])
+      .fill(swatch.red.line);
     this.handKey.addChild(key);
-    const short = label('Short: middle', 20, ink); short.position.set(50, 0);
-    const long = label('Long: edge', 20, ink); long.position.set(65, 44);
+    const short = label('Short: middle', 20, ink);
+    short.position.set(50, 0);
+    const long = label('Long: edge', 20, ink);
+    long.position.set(65, 44);
     this.handKey.addChild(short, long);
     this.appointmentHeading.visible = this.plan.mode === 'read';
     this.appointmentHeading.eventMode = 'none';
@@ -134,32 +201,58 @@ class ClockTower implements Game {
     // Explanations take no input and leave the existing clock, sign and bell untouched.
     this.comparison.eventMode = 'none';
     this.comparison.visible = false;
-    this.comparison.addChild(new Graphics().roundRect(-125, -80, 250, 160, 20).fill(cream).stroke({ width: 3, color: wood.line }));
-    const before = label('Before', 20, ink); before.position.set(-65, -58);
-    const after = label('+1 hour', 20, ink); after.position.set(65, -58);
-    this.oldClock.position.set(-65, -2); this.oldClock.alpha = 0.5;
+    this.comparison.addChild(
+      new Graphics().roundRect(-125, -80, 250, 160, 20).fill(cream).stroke({ width: 3, color: wood.line }),
+    );
+    const before = label('Before', 20, ink);
+    before.position.set(-65, -58);
+    const after = label('+1 hour', 20, ink);
+    after.position.set(65, -58);
+    this.oldClock.position.set(-65, -2);
+    this.oldClock.alpha = 0.5;
     this.newClock.position.set(65, -2);
     this.newClock.addChild(this.exampleHand);
-    this.oldTime.position.set(-65, 55); this.newTime.position.set(65, 55);
+    this.oldTime.position.set(-65, 55);
+    this.newTime.position.set(65, 55);
     this.comparison.addChild(before, after, this.oldClock, this.newClock, this.oldTime, this.newTime);
     this.bell = new RoundButton(this.bellArt(), swatch.white, 60, () => void this.check());
     this.bell.visible = this.plan.mode !== 'read';
-    ctx.stage.addChild(this.backdrop, this.tower, this.face, this.glow, this.bell, this.request, this.handKey, this.appointmentHeading, this.comparison);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.tower,
+      this.face,
+      this.glow,
+      this.bell,
+      this.request,
+      this.handKey,
+      this.appointmentHeading,
+      this.comparison,
+    );
   }
 
   private bellArt() {
     const g = new Graphics();
-    g.poly([-26, 14, -20, -14, 0, -26, 20, -14, 26, 14]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+    g.poly([-26, 14, -20, -14, 0, -26, 20, -14, 26, 14])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
     g.roundRect(-32, 12, 64, 10, 5).fill(swatch.yellow.line).circle(0, 28, 7).fill(swatch.yellow.line);
     return g;
   }
 
   private drawFace() {
-    const g = new Graphics().circle(0, 0, R + 18).fill(wood.line).circle(0, 0, R + 8).fill(wood.fill).circle(0, 0, R).fill(cream);
+    const g = new Graphics()
+      .circle(0, 0, R + 18)
+      .fill(wood.line)
+      .circle(0, 0, R + 8)
+      .fill(wood.fill)
+      .circle(0, 0, R)
+      .fill(cream);
     for (let m = 0; m < 60; m++) {
       const a = (m / 60) * Math.PI * 2;
       const inner = m % 5 ? R - 12 : R - 24;
-      g.moveTo(Math.sin(a) * inner, -Math.cos(a) * inner).lineTo(Math.sin(a) * (R - 4), -Math.cos(a) * (R - 4)).stroke({ width: m % 5 ? 2 : 5, color: ink, alpha: m % 5 ? 0.4 : 0.8 });
+      g.moveTo(Math.sin(a) * inner, -Math.cos(a) * inner)
+        .lineTo(Math.sin(a) * (R - 4), -Math.cos(a) * (R - 4))
+        .stroke({ width: m % 5 ? 2 : 5, color: ink, alpha: m % 5 ? 0.4 : 0.8 });
     }
     this.face.addChild(g);
     if (this.plan.mode === 'five') {
@@ -195,12 +288,19 @@ class ClockTower implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    const cx = v.w * (this.plan.mode === 'read' ? 0.30 : 0.42);
+    const cx = v.w * (this.plan.mode === 'read' ? 0.3 : 0.42);
     const cy = Math.max(R + 70, v.h * 0.52);
     this.face.position.set(cx, cy);
     // A little tower around the clock.
-    this.tower.clear().roundRect(cx - R - 50, cy - R - 60, 2 * R + 100, v.h - (cy - R - 60) + 40, 30).fill(0xe8dcc8).stroke({ width: 6, color: wood.line });
-    this.tower.poly([cx - R - 70, cy - R - 56, cx, cy - R - 150, cx + R + 70, cy - R - 56]).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line, join: 'round' });
+    this.tower
+      .clear()
+      .roundRect(cx - R - 50, cy - R - 60, 2 * R + 100, v.h - (cy - R - 60) + 40, 30)
+      .fill(0xe8dcc8)
+      .stroke({ width: 6, color: wood.line });
+    this.tower
+      .poly([cx - R - 70, cy - R - 56, cx, cy - R - 150, cx + R + 70, cy - R - 56])
+      .fill(swatch.red.fill)
+      .stroke({ width: 6, color: swatch.red.line, join: 'round' });
     this.bell.position.set(cx + R + 150, cy);
     this.request.position.set(cx + R + 185, cy - 170);
     this.handKey.position.set(cx + R + 150, cy + 120);
@@ -213,19 +313,32 @@ class ClockTower implements Game {
     this.clock += dt;
     this.drawHands();
     if (this.comparison.visible) {
-      const a = this.example.hour / 60 * Math.PI * 2;
-      this.exampleHand.clear().moveTo(0, 0).lineTo(Math.sin(a) * 22, -Math.cos(a) * 22).stroke({ width: 5, color: swatch.blue.line, cap: 'round' });
+      const a = (this.example.hour / 60) * Math.PI * 2;
+      this.exampleHand
+        .clear()
+        .moveTo(0, 0)
+        .lineTo(Math.sin(a) * 22, -Math.cos(a) * 22)
+        .stroke({ width: 5, color: swatch.blue.line, cap: 'round' });
     }
     const arc = this.minuteArc.clear();
     if (this.hinted && this.plan.mode === 'five' && this.example.arc > 0) {
-      const end = this.example.arc / 60 * Math.PI * 2;
-      arc.arc(0, 0, R + 13, -Math.PI / 2, end - Math.PI / 2).stroke({ width: 7, color: swatch.yellow.line, cap: 'round' });
-      arc.circle(Math.sin(end) * (R + 13), -Math.cos(end) * (R + 13), 9).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+      const end = (this.example.arc / 60) * Math.PI * 2;
+      arc
+        .arc(0, 0, R + 13, -Math.PI / 2, end - Math.PI / 2)
+        .stroke({ width: 7, color: swatch.yellow.line, cap: 'round' });
+      arc
+        .circle(Math.sin(end) * (R + 13), -Math.cos(end) * (R + 13), 9)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line });
     }
     const g = this.glow.clear();
     if (this.hinted && this.plan.mode === 'read' && !this.busy) {
       const right = this.choices.find((c) => this.isRight(c.id));
-      if (right) g.roundRect(right.card.x - 224, right.card.y - 79, 448, 158, 26).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+      if (right)
+        g.roundRect(right.card.x - 224, right.card.y - 79, 448, 158, 26).stroke({
+          width: 6 + 2 * Math.sin(this.clock * 6),
+          color: swatch.yellow.fill,
+        });
     }
   }
 
@@ -238,9 +351,15 @@ class ClockTower implements Game {
     }
     if (action.kind === 'check') return { tap: { on: this.bell }, pause: 0.12 };
     const radius = action.kind === 'minute' ? R * 0.82 : R * 0.5;
-    const fromTurns = action.kind === 'minute' ? this.minute / 60 : ((this.hour % 12) + this.minute / 60) / 12;
-    const toTurns = action.kind === 'minute' ? action.minute / 60 : ((action.hour % 12) + this.minute / 60) / 12;
-    const spot = (turns: number) => ({ on: this.face, x: Math.sin(turns * Math.PI * 2) * radius, y: -Math.cos(turns * Math.PI * 2) * radius });
+    const fromTurns =
+      action.kind === 'minute' ? this.minute / 60 : ((this.hour % 12) + this.minute / 60) / 12;
+    const toTurns =
+      action.kind === 'minute' ? action.minute / 60 : ((action.hour % 12) + this.minute / 60) / 12;
+    const spot = (turns: number) => ({
+      on: this.face,
+      x: Math.sin(turns * Math.PI * 2) * radius,
+      y: -Math.cos(turns * Math.PI * 2) * radius,
+    });
     return { trace: spot(fromTurns), via: [spot(toTurns)], pause: 0.12 };
   }
 
@@ -250,11 +369,21 @@ class ClockTower implements Game {
 
   private drawHands() {
     // The short hand sits between numbers as the minutes pass, like a real clock's gears.
-    const hourAngle = this.grab?.hand === 'hour' && this.freeAngle !== null ? this.freeAngle : (((this.hour % 12) + this.minute / 60) / 12) * Math.PI * 2;
-    const minuteAngle = this.grab?.hand === 'minute' && this.freeAngle !== null ? this.freeAngle : (this.minute / 60) * Math.PI * 2;
+    const hourAngle =
+      this.grab?.hand === 'hour' && this.freeAngle !== null
+        ? this.freeAngle
+        : (((this.hour % 12) + this.minute / 60) / 12) * Math.PI * 2;
+    const minuteAngle =
+      this.grab?.hand === 'minute' && this.freeAngle !== null
+        ? this.freeAngle
+        : (this.minute / 60) * Math.PI * 2;
     const hand = (g: Graphics, angle: number, len: number, width: number, color: number, lifted: boolean) => {
-      g.clear().moveTo(0, 0).lineTo(Math.sin(angle) * len, -Math.cos(angle) * len).stroke({ width: lifted ? width + 6 : width, color, cap: 'round' });
-      const x = Math.sin(angle) * len, y = -Math.cos(angle) * len;
+      g.clear()
+        .moveTo(0, 0)
+        .lineTo(Math.sin(angle) * len, -Math.cos(angle) * len)
+        .stroke({ width: lifted ? width + 6 : width, color, cap: 'round' });
+      const x = Math.sin(angle) * len,
+        y = -Math.cos(angle) * len;
       if (g === this.minuteHand) g.poly([x - 12, y, x, y - 12, x + 12, y, x, y + 12]).fill(color);
       else g.circle(x, y, width * 0.9).fill(color);
     };
@@ -263,10 +392,16 @@ class ClockTower implements Game {
     const ghost = this.ghost.clear();
     if (this.hinted && this.plan.mode !== 'read' && this.task) {
       const t = this.task.time;
-      const ha = ((hourOf(t) % 12) + (t % 60) / 60) / 12 * Math.PI * 2;
+      const ha = (((hourOf(t) % 12) + (t % 60) / 60) / 12) * Math.PI * 2;
       const ma = ((t % 60) / 60) * Math.PI * 2;
-      ghost.moveTo(0, 0).lineTo(Math.sin(ha) * R * 0.52, -Math.cos(ha) * R * 0.52).stroke({ width: 18, color: swatch.yellow.fill, alpha: 0.55, cap: 'round' });
-      ghost.moveTo(0, 0).lineTo(Math.sin(ma) * R * 0.82, -Math.cos(ma) * R * 0.82).stroke({ width: 11, color: swatch.yellow.fill, alpha: 0.55, cap: 'round' });
+      ghost
+        .moveTo(0, 0)
+        .lineTo(Math.sin(ha) * R * 0.52, -Math.cos(ha) * R * 0.52)
+        .stroke({ width: 18, color: swatch.yellow.fill, alpha: 0.55, cap: 'round' });
+      ghost
+        .moveTo(0, 0)
+        .lineTo(Math.sin(ma) * R * 0.82, -Math.cos(ma) * R * 0.82)
+        .stroke({ width: 11, color: swatch.yellow.fill, alpha: 0.55, cap: 'round' });
     }
   }
 
@@ -296,12 +431,19 @@ class ClockTower implements Game {
 
   private up(e: FederatedPointerEvent) {
     if (!this.grab || e.pointerId !== this.grab.id) return;
-    const turns = (((this.freeAngle ?? 0) / (Math.PI * 2)) % 1 + 1) % 1;
+    const turns = ((((this.freeAngle ?? 0) / (Math.PI * 2)) % 1) + 1) % 1;
     if (this.grab.hand === 'minute') {
       // Snap the long hand to the nearest mark this level uses.
       const choices = minuteChoices(this.plan.mode);
       const m = turns * 60;
-      this.minute = choices.reduce((best, c) => (Math.min(Math.abs(c - m), 60 - Math.abs(c - m)) < Math.min(Math.abs(best - m), 60 - Math.abs(best - m)) ? c : best), choices[0]);
+      this.minute = choices.reduce(
+        (best, c) =>
+          Math.min(Math.abs(c - m), 60 - Math.abs(c - m)) <
+          Math.min(Math.abs(best - m), 60 - Math.abs(best - m))
+            ? c
+            : best,
+        choices[0],
+      );
     } else {
       // The short hand's number is where it points, allowing for how far past the hour it sits.
       this.hour = Math.round(turns * 12 - this.minute / 60 + 12) % 12 || 12;
@@ -333,7 +475,7 @@ class ClockTower implements Game {
       this.minute = t.from! % 60;
     } else {
       // Start somewhere else, with the long hand at 12.
-      this.hour = ((hourOf(t.time) + 4) % 12) || 12;
+      this.hour = (hourOf(t.time) + 4) % 12 || 12;
       this.minute = 0;
     }
     this.busy = false;
@@ -341,7 +483,8 @@ class ClockTower implements Game {
     this.requestHeading.text = request.heading;
     this.requestTime.text = request.time;
     await this.instruction();
-    if (this.index === 0 && this.plan.mode !== 'read') await this.ctx.say(this.plan.mode === 'hour' ? 'clock.control.hour' : 'clock.controls');
+    if (this.index === 0 && this.plan.mode !== 'read')
+      await this.ctx.say(this.plan.mode === 'hour' ? 'clock.control.hour' : 'clock.controls');
     if (this.index === 0 && this.plan.mode === 'five') await this.ctx.say('clock.five.zero');
   }
 
@@ -349,7 +492,9 @@ class ClockTower implements Game {
     const t = this.task;
     if (this.plan.mode === 'read') return this.ctx.instruct('clock.read');
     if (this.plan.mode === 'later') return this.ctx.instruct('clock.later', { time: spoken(t.from!) });
-    return this.ctx.instruct(this.plan.mode === 'hour' ? 'clock.hour' : 'clock.set', { time: spoken(t.time) });
+    return this.ctx.instruct(this.plan.mode === 'hour' ? 'clock.hour' : 'clock.set', {
+      time: spoken(t.time),
+    });
   }
 
   private buildChoices(appointments: Appointment[]) {
@@ -358,7 +503,10 @@ class ClockTower implements Game {
       const { id, time } = appointment;
       const evidence = appointmentFor(appointment);
       const card = new Container();
-      const background = new Graphics().roundRect(-220, -75, 440, 150, 22).fill(cream).stroke({ width: 4, color: wood.line });
+      const background = new Graphics()
+        .roundRect(-220, -75, 440, 150, 22)
+        .fill(cream)
+        .stroke({ width: 4, color: wood.line });
       background.moveTo(-40, -70).lineTo(-40, 70).stroke({ width: 3, color: wood.line });
       background.eventMode = 'none';
       const node = new Container();
@@ -366,15 +514,19 @@ class ClockTower implements Game {
       const art = eventArt(id);
       art.scale.set(1.1);
       art.y = -14;
-      const name = label(evidence.event, 22, ink); name.y = 53;
+      const name = label(evidence.event, 22, ink);
+      name.y = 53;
       node.addChild(art, name);
       node.hitArea = new Rectangle(-90, -75, 180, 150);
       onTap(node, () => void this.pick(id), { cooldown: 300 });
       const replay = new Container();
       replay.x = 90;
-      const clock = miniClock(hourOf(time), time % 60, 36); clock.x = -75;
-      const timeLabel = label(evidence.time, 32, ink); timeLabel.position.set(44, -18);
-      const hear = label('Tap to hear', 19, ink); hear.position.set(44, 24);
+      const clock = miniClock(hourOf(time), time % 60, 36);
+      clock.x = -75;
+      const timeLabel = label(evidence.time, 32, ink);
+      timeLabel.position.set(44, -18);
+      const hear = label('Tap to hear', 19, ink);
+      hear.position.set(44, 24);
       replay.addChild(clock, timeLabel, hear);
       replay.hitArea = new Rectangle(-130, -75, 260, 150);
       onTap(replay, () => {
@@ -392,7 +544,9 @@ class ClockTower implements Game {
   }
 
   private isRight(id: string) {
-    return this.task.options!.some((appointment) => appointment.id === id && appointment.time === this.task.time);
+    return this.task.options!.some(
+      (appointment) => appointment.id === id && appointment.time === this.task.time,
+    );
   }
 
   private async pick(id: string) {
@@ -404,11 +558,15 @@ class ClockTower implements Game {
   private async check() {
     if (this.busy || this.finished) return;
     if (this.shown === this.task.time) return void this.right();
-    if (this.plan.mode === 'later') return void this.wrong('clock.later.wrong', { now: spoken(this.shown), from: spoken(this.task.from!) });
+    if (this.plan.mode === 'later')
+      return void this.wrong('clock.later.wrong', { now: spoken(this.shown), from: spoken(this.task.from!) });
     await this.wrong('clock.shows', { now: spoken(this.shown), time: spoken(this.task.time) });
   }
 
-  private async wrong(line: 'clock.read.wrong' | 'clock.later.wrong' | 'clock.shows', vars: Record<string, string>) {
+  private async wrong(
+    line: 'clock.read.wrong' | 'clock.later.wrong' | 'clock.shows',
+    vars: Record<string, string>,
+  ) {
     this.busy = true;
     this.misses++;
     this.wrongs++;
@@ -439,18 +597,26 @@ class ClockTower implements Game {
     // A separate dial avoids changing the icon/sticker's stable drawing helper.
     const face = new Graphics().circle(0, 0, 50).fill(wood.line).circle(0, 0, 42).fill(cream);
     for (let h = 0; h < 12; h++) {
-      const a = h / 12 * Math.PI * 2;
+      const a = (h / 12) * Math.PI * 2;
       face.circle(Math.sin(a) * 34, -Math.cos(a) * 34, 2).fill(ink);
     }
-    const ma = e.minute / 60 * Math.PI * 2;
-    face.moveTo(0, 0).lineTo(Math.sin(ma) * 34, -Math.cos(ma) * 34).stroke({ width: 3, color: swatch.red.line, cap: 'round' });
+    const ma = (e.minute / 60) * Math.PI * 2;
+    face
+      .moveTo(0, 0)
+      .lineTo(Math.sin(ma) * 34, -Math.cos(ma) * 34)
+      .stroke({ width: 3, color: swatch.red.line, cap: 'round' });
     this.newClock.addChild(face, this.exampleHand, new Graphics().circle(0, 0, 3).fill(ink));
-    this.oldTime.text = e.from; this.newTime.text = e.to;
+    this.oldTime.text = e.from;
+    this.newTime.text = e.to;
     this.example.hour = e.hourStart;
     this.comparison.visible = true;
     await Promise.all([
       this.ctx.tw.to(this.example, { hour: e.hourEnd }, { duration: 0.8, ease: ease.inOutSine }),
-      this.ctx.say(now ? 'clock.later.wrong' : 'clock.later.example', { now: now ?? '', from: e.fromSpeech, time: e.toSpeech }),
+      this.ctx.say(now ? 'clock.later.wrong' : 'clock.later.example', {
+        now: now ?? '',
+        from: e.fromSpeech,
+        time: e.toSpeech,
+      }),
     ]);
   }
 
@@ -465,11 +631,19 @@ class ClockTower implements Game {
         sfx.bell(2, 0.35);
         await this.ctx.tw.wait(0.22);
       }
-    } else for (const step of [4, 7, 9]) {
-      sfx.bell(step, 0.3);
-      await this.ctx.tw.wait(0.18);
-    }
-    this.ctx.particles.burst(this.face.x, this.face.y - R, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 18, speed: [120, 320], gravity: 0, life: [0.5, 0.9] });
+    } else
+      for (const step of [4, 7, 9]) {
+        sfx.bell(step, 0.3);
+        await this.ctx.tw.wait(0.18);
+      }
+    this.ctx.particles.burst(this.face.x, this.face.y - R, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 18,
+      speed: [120, 320],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     if (event) await this.ctx.say('clock.itis', { time: spoken(t), event: EVENT_WORDS[event] });
     else if (this.plan.mode !== 'later') await this.ctx.say('clock.yay');
@@ -490,22 +664,38 @@ class ClockTower implements Game {
 
 /** A small clock face for the hub icon and sticker. */
 function miniClock(hour: number, minute: number, r: number): Graphics {
-  const g = new Graphics().circle(0, 0, r + 8).fill(wood.line).circle(0, 0, r).fill(cream);
+  const g = new Graphics()
+    .circle(0, 0, r + 8)
+    .fill(wood.line)
+    .circle(0, 0, r)
+    .fill(cream);
   for (let h = 0; h < 12; h++) {
     const a = (h / 12) * Math.PI * 2;
     g.circle(Math.sin(a) * r * 0.82, -Math.cos(a) * r * 0.82, r * 0.05).fill(ink);
   }
   const ha = (((hour % 12) + minute / 60) / 12) * Math.PI * 2;
   const ma = (minute / 60) * Math.PI * 2;
-  g.moveTo(0, 0).lineTo(Math.sin(ha) * r * 0.5, -Math.cos(ha) * r * 0.5).stroke({ width: r * 0.1, color: swatch.blue.line, cap: 'round' });
-  g.moveTo(0, 0).lineTo(Math.sin(ma) * r * 0.8, -Math.cos(ma) * r * 0.8).stroke({ width: r * 0.06, color: swatch.red.line, cap: 'round' });
+  g.moveTo(0, 0)
+    .lineTo(Math.sin(ha) * r * 0.5, -Math.cos(ha) * r * 0.5)
+    .stroke({ width: r * 0.1, color: swatch.blue.line, cap: 'round' });
+  g.moveTo(0, 0)
+    .lineTo(Math.sin(ma) * r * 0.8, -Math.cos(ma) * r * 0.8)
+    .stroke({ width: r * 0.06, color: swatch.red.line, cap: 'round' });
   return g.circle(0, 0, r * 0.07).fill(ink);
 }
 
 class ClockIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics().roundRect(-80, -180, 160, 180, 20).fill(0xe8dcc8).stroke({ width: 5, color: wood.line }).poly([-96, -176, 0, -240, 96, -176]).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line, join: 'round' }));
+    c.addChild(
+      new Graphics()
+        .roundRect(-80, -180, 160, 180, 20)
+        .fill(0xe8dcc8)
+        .stroke({ width: 5, color: wood.line })
+        .poly([-96, -176, 0, -240, 96, -176])
+        .fill(swatch.red.fill)
+        .stroke({ width: 5, color: swatch.red.line, join: 'round' }),
+    );
     const face = miniClock(3, 0, 58);
     face.y = -100;
     c.addChild(face);

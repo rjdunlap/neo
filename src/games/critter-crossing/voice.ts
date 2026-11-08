@@ -2,7 +2,9 @@
 export const VOICE = {
   'game.critter-crossing': ['Critter crossing!'],
   'cross.visible': ['Only critters {rule} can cross the bridge. Tap the critters that fit!'],
-  'cross.hidden': ['The bridge gate has a secret rule! Tap a critter to try it. Watch who crosses, then guess the rule with the light bulb.'],
+  'cross.hidden': [
+    'The bridge gate has a secret rule! Tap a critter to try it. Watch who crosses, then guess the rule with the light bulb.',
+  ],
   'cross.yes': ['The {who} can cross!', 'Yes! The {who} goes across!'],
   'cross.no': ['The {who} has to wait.', 'Not the {who}. It waits here.'],
   'cross.notfit': ['The {who} is not {rule}. Pick a critter that fits.'],
@@ -11,7 +13,10 @@ export const VOICE = {
   'cross.cont-yes': ['The {who} crossed, but that rule would turn it back.'],
   'cross.cont-no': ['The {who} had to wait, but that rule would let it cross.'],
   'cross.settle': ['Two pictures are still in the running! Which critter can settle it? Tap one to try it.'],
-  'cross.same': ['Both pictures would say the same about that one. Try another!', 'That one could not tell them apart.'],
+  'cross.same': [
+    'Both pictures would say the same about that one. Try another!',
+    'That one could not tell them apart.',
+  ],
   'cross.maybe': ['That could be it so far! Try another critter to be sure.'],
   'cross.hint-test': ['Try the glowing critter. It will tell us a lot!'],
   'cross.hint-pick': ['Look at who crossed and who waited. Which picture fits?'],

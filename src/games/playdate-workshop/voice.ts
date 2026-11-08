@@ -1,8 +1,12 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.playdate-workshop': ['Playdate workshop!'],
-  'playdate.instruct.1': ["Both friends want a star on their own page. There's one stamp pad. Give it to a friend, then pass it."],
-  'playdate.instruct.2': ['The friends want to make one banner together. Pick a way to make it, then make it.'],
+  'playdate.instruct.1': [
+    "Both friends want a star on their own page. There's one stamp pad. Give it to a friend, then pass it.",
+  ],
+  'playdate.instruct.2': [
+    'The friends want to make one banner together. Pick a way to make it, then make it.',
+  ],
   'playdate.instruct.3': ['Listen to both friends. Pick a plan that works for both, then make it.'],
   'playdate.request.page': ["I'd like one star on my page."],
   'playdate.request.banner': ["Let's make a banner together!"],

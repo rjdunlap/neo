@@ -8,7 +8,8 @@ describe('couch catalog', () => {
   it('explains every couch game with speakable lines, at a level the game really offers', () => {
     expect(Object.keys(COUCH_INFO).sort()).toEqual([...COUCH_IDS].sort());
     for (const id of COUCH_IDS) {
-      const mod = gameById(id)!, info = COUCH_INFO[id];
+      const mod = gameById(id)!,
+        info = COUCH_INFO[id];
       // One variant, so the text on screen is exactly what is spoken.
       expect(SCRIPT[info.goal], id).toHaveLength(1);
       expect(info.controls.length, id).toBeGreaterThan(0);

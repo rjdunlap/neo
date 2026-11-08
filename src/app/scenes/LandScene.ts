@@ -7,7 +7,19 @@ import { Backdrop, type BackdropStyle } from '../../art/scenery';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { clampLandPage, landFor, landLayout, landPages, olderIn, spotRect, suggest, visibleIn, type Land, type LandId, type LandLayout } from '../../content/lands';
+import {
+  clampLandPage,
+  landFor,
+  landLayout,
+  landPages,
+  olderIn,
+  spotRect,
+  suggest,
+  visibleIn,
+  type Land,
+  type LandId,
+  type LandLayout,
+} from '../../content/lands';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
@@ -41,7 +53,8 @@ let lastLandId: LandId | null = null;
 /** The land she was in last this session, where the map's pet waits. */
 export const lastLand = () => lastLandId;
 /** The page of a land's side (hers, or the bigger kids') she was on this session; 0 if none. */
-export const rememberedPage = (id: LandId, older: boolean) => (older ? pageOf.get(id)?.older : pageOf.get(id)?.mine) ?? 0;
+export const rememberedPage = (id: LandId, older: boolean) =>
+  (older ? pageOf.get(id)?.older : pageOf.get(id)?.mine) ?? 0;
 /** Remembers the page of a land's side for the session (never saved). */
 export function rememberPage(id: LandId, older: boolean, page: number) {
   const p = pageOf.get(id) ?? { mine: 0, older: 0 };
@@ -136,8 +149,12 @@ export class LandScene extends Scene {
   private readonly glow = new Graphics();
   private glowLeft = 0;
   readonly pip = makeCompanion();
-  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(this.goHome, this.options.root?.homeSays));
-  readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
+  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () =>
+    this.leave(this.goHome, this.options.root?.homeSays),
+  );
+  readonly book = new RoundButton(bookIcon(), swatch.white, 50, () =>
+    this.leave(() => this.app.go.stickers()),
+  );
   /** At the root, a house beside Back that always goes Home (RW14 slice 3); null on the island. */
   readonly house: RoundButton | null;
   private readonly heading = label('', 36);
@@ -157,10 +174,14 @@ export class LandScene extends Scene {
   ) {
     super(app);
     this.land = landFor(id);
-    this.drawScenery = options.backdropImage ? null : options.scenery ?? (id === 'barnyard' ? drawBarnyard : null);
+    this.drawScenery = options.backdropImage
+      ? null
+      : (options.scenery ?? (id === 'barnyard' ? drawBarnyard : null));
     this.scenery = this.drawScenery ? new Graphics() : null;
     this.band = store.data.profile.band;
-    const host = options.host ? options.host() : { ...makeHost(this.land), hitArea: new Circle(0, -125, 115) };
+    const host = options.host
+      ? options.host()
+      : { ...makeHost(this.land), hitArea: new Circle(0, -125, 115) };
     this.host = host.node;
     this.hostCritter = host.critter;
     this.hostHit = host.hitArea;
@@ -169,7 +190,14 @@ export class LandScene extends Scene {
       this.home.removeChildAt(1).destroy();
       this.home.addChild(options.homeIcon());
     }
-    this.house = options.root ? new RoundButton(houseIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub(), () => voice.say('nav.home'))) : null;
+    this.house = options.root
+      ? new RoundButton(houseIcon(), swatch.white, 50, () =>
+          this.leave(
+            () => this.app.go.hub(),
+            () => voice.say('nav.home'),
+          ),
+        )
+      : null;
     if (this.house) {
       this.home.meaning = 'back';
       this.house.meaning = 'home';
@@ -183,7 +211,9 @@ export class LandScene extends Scene {
     const style = this.options.backdrop ?? this.land.backdrop;
     const picture = this.options.backdropImage;
     // Under a picture the backdrop only fills and keeps the ground line: no sun or clouds to draw or to take a tap.
-    this.backdrop = this.track(new Backdrop(picture ? { ...style, sun: false, clouds: 0 } : style, this.view));
+    this.backdrop = this.track(
+      new Backdrop(picture ? { ...style, sun: false, clouds: 0 } : style, this.view),
+    );
     this.glow.eventMode = 'none';
     this.content.addChild(this.backdrop);
     if (picture) this.content.addChild(picture);
@@ -194,7 +224,13 @@ export class LandScene extends Scene {
     this.content.addChild(this.glow, this.field);
     const build = (mods: typeof GAMES, into: Landmark[]) => {
       for (const mod of mods) {
-        const mark = makeLandmark(mod, BOX, store.isNew(mod.id), spotRect({ x: 0, y: 0 }, BOX), !!this.options.backdropImage);
+        const mark = makeLandmark(
+          mod,
+          BOX,
+          store.isNew(mod.id),
+          spotRect({ x: 0, y: 0 }, BOX),
+          !!this.options.backdropImage,
+        );
         this.track(mark.icon);
         if (mark.sparkle) this.track(mark.sparkle);
         onTap(mark.node, () => this.launch(mark));
@@ -231,10 +267,37 @@ export class LandScene extends Scene {
 
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 155);
-    onTap(this.pip, () => { this.pip.poke(); void voice.say('hub.pick'); });
-    this.ui.addChild(this.track(this.pip), this.home, ...(this.house ? [this.house] : []), this.book, this.heading, this.keys.ring);
-    if (this.backdrop.sun) onTap(this.backdrop.sun, () => { this.backdrop.sun!.poke(); sfx.sparkle(); }, { radius: 100 });
-    this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
+    onTap(this.pip, () => {
+      this.pip.poke();
+      void voice.say('hub.pick');
+    });
+    this.ui.addChild(
+      this.track(this.pip),
+      this.home,
+      ...(this.house ? [this.house] : []),
+      this.book,
+      this.heading,
+      this.keys.ring,
+    );
+    if (this.backdrop.sun)
+      onTap(
+        this.backdrop.sun,
+        () => {
+          this.backdrop.sun!.poke();
+          sfx.sparkle();
+        },
+        { radius: 100 },
+      );
+    this.backdrop.clouds.forEach((c) =>
+      onTap(
+        c,
+        () => {
+          c.poke();
+          sfx.whoosh();
+        },
+        { radius: 90 },
+      ),
+    );
   }
 
   /** Every game on the side she sees (hers, or the bigger kids'), on every page. */
@@ -263,7 +326,8 @@ export class LandScene extends Scene {
 
   resize(v: View) {
     this.backdrop.resize(v);
-    if (this.options.backdropImage) placePicture(this.options.backdropImage, this.id, v, this.backdrop.groundY);
+    if (this.options.backdropImage)
+      placePicture(this.options.backdropImage, this.id, v, this.backdrop.groundY);
     const arrows = { prev: this.page > 0, next: this.page < this.pages.length - 1 };
     const layout = landLayout(this.showing.length, !!this.sign, v, this.backdrop.groundY, arrows);
     this.layout = layout;
@@ -287,7 +351,10 @@ export class LandScene extends Scene {
       this.sign.position.set(layout.sign.x, layout.sign.y);
       this.sign.scale.set(layout.box.h / 155);
     }
-    for (const [arrow, spot] of [[this.prevArrow, layout.prev], [this.nextArrow, layout.next]] as const) {
+    for (const [arrow, spot] of [
+      [this.prevArrow, layout.prev],
+      [this.nextArrow, layout.next],
+    ] as const) {
       arrow.visible = !!spot;
       if (spot) {
         arrow.position.set(spot.x, spot.y);
@@ -316,22 +383,61 @@ export class LandScene extends Scene {
     const layout = this.layout;
     if (!layout) return [];
     const s = this.scale0;
-    const arrow = (a: PageArrow): FocusSpot[] => (a.visible ? [{ id: a.dir < 0 ? 'prev' : 'next', x: a.x, y: a.y - 100 * a.scale.x, r: 85 * a.scale.x, press: () => this.turnPage(a.dir) }] : []);
+    const arrow = (a: PageArrow): FocusSpot[] =>
+      a.visible
+        ? [
+            {
+              id: a.dir < 0 ? 'prev' : 'next',
+              x: a.x,
+              y: a.y - 100 * a.scale.x,
+              r: 85 * a.scale.x,
+              press: () => this.turnPage(a.dir),
+            },
+          ]
+        : [];
     // Along the path: the back arrow, the page's games, the on arrow.
     const spots: FocusSpot[] = [
       ...arrow(this.prevArrow),
-      ...this.showing.map((m) => ({ id: m.mod.id, x: m.node.x, y: m.node.y - 55 * s, r: 85 * s, press: () => this.launch(m) })),
+      ...this.showing.map((m) => ({
+        id: m.mod.id,
+        x: m.node.x,
+        y: m.node.y - 55 * s,
+        r: 85 * s,
+        press: () => this.launch(m),
+      })),
       ...arrow(this.nextArrow),
     ];
     const hs = this.host.scale.x;
-    spots.push({ id: 'host', x: this.host.x + this.hostHit.x * hs, y: this.host.y + this.hostHit.y * hs, r: this.hostHit.radius * hs, press: () => this.suggestGame() });
+    spots.push({
+      id: 'host',
+      x: this.host.x + this.hostHit.x * hs,
+      y: this.host.y + this.hostHit.y * hs,
+      r: this.hostHit.radius * hs,
+      press: () => this.suggestGame(),
+    });
     if (this.sign && layout.sign) {
       const ss = this.sign.scale.x;
-      spots.push({ id: 'sign', x: this.sign.x, y: this.sign.y - 70 * ss, r: 85 * ss, press: () => this.turnSign() });
+      spots.push({
+        id: 'sign',
+        x: this.sign.x,
+        y: this.sign.y - 70 * ss,
+        r: 85 * ss,
+        press: () => this.turnSign(),
+      });
     }
     spots.push(
       { id: 'home', x: this.home.x, y: this.home.y, r: this.home.radius, press: () => this.home.press() },
-      ...(this.house ? [{ id: 'house', x: this.house.x, y: this.house.y, r: this.house.radius, press: () => this.house!.press() }] : []),
+      ...(this.house
+        ? [
+            {
+              id: 'house',
+              x: this.house.x,
+              y: this.house.y,
+              r: this.house.radius,
+              press: () => this.house!.press(),
+            },
+          ]
+        : []),
       { id: 'book', x: this.book.x, y: this.book.y, r: this.book.radius, press: () => this.book.press() },
     );
     return spots;
@@ -359,7 +465,11 @@ export class LandScene extends Scene {
     for (const mark of this.showing) {
       this.tw.kill(mark.node.scale);
       mark.node.scale.set(this.scale0 * 0.6);
-      void this.tw.to(mark.node.scale, { x: this.scale0, y: this.scale0 }, { duration: 0.3, ease: ease.outBack });
+      void this.tw.to(
+        mark.node.scale,
+        { x: this.scale0, y: this.scale0 },
+        { duration: 0.3, ease: ease.outBack },
+      );
     }
   }
 
@@ -384,7 +494,9 @@ export class LandScene extends Scene {
     const arrow = d < 0 ? this.prevArrow : this.nextArrow;
     const s = arrow.scale.x;
     this.tw.kill(arrow.scale);
-    void this.tw.to(arrow.scale, { x: s * 0.88, y: s * 0.88 }, { duration: 0.08 }).then(() => this.tw.to(arrow.scale, { x: s, y: s }, { duration: 0.25, ease: ease.outBack }));
+    void this.tw
+      .to(arrow.scale, { x: s * 0.88, y: s * 0.88 }, { duration: 0.08 })
+      .then(() => this.tw.to(arrow.scale, { x: s, y: s }, { duration: 0.25, ease: ease.outBack }));
     this.goToPage(page);
     void voice.say('explore.page', { n: this.showing.length });
   }
@@ -394,7 +506,11 @@ export class LandScene extends Scene {
     if (this.leaving) return;
     this.hostCritter.poke();
     // From every game on this side: one on another page turns the land to it first, saying so, then glows.
-    const mod = suggest(this.side.map((m) => m.mod), store.data.games, lastTip.get(this.id));
+    const mod = suggest(
+      this.side.map((m) => m.mod),
+      store.data.games,
+      lastTip.get(this.id),
+    );
     if (!mod) return;
     lastTip.set(this.id, mod.id);
     const onPage = this.pages.findIndex((p) => p.some((m) => m.mod.id === mod.id));
@@ -405,19 +521,25 @@ export class LandScene extends Scene {
     this.glowLeft = 2.6;
     this.tw.kill(mark.node.scale);
     const s = this.scale0;
-    void this.tw.to(mark.node.scale, { x: s * 1.14, y: s * 1.14 }, { duration: 0.18 }).then(() => this.tw.to(mark.node.scale, { x: s, y: s }, { duration: 0.3, ease: ease.outBack }));
-    const tip = () => voice.say('land.try').then(() => {
-      if (!this.leaving && this.suggested === mod.id) return voice.say(mod.titleLine);
-    });
+    void this.tw
+      .to(mark.node.scale, { x: s * 1.14, y: s * 1.14 }, { duration: 0.18 })
+      .then(() => this.tw.to(mark.node.scale, { x: s, y: s }, { duration: 0.3, ease: ease.outBack }));
+    const tip = () =>
+      voice.say('land.try').then(() => {
+        if (!this.leaving && this.suggested === mod.id) return voice.say(mod.titleLine);
+      });
     const page = () => (turned ? voice.say('explore.page', { n: this.showing.length }) : Promise.resolve());
-    if (this.options.hostSaysLine) void voice.say(this.options.hostLine ?? this.land.line).then(() => {
-      if (!this.leaving && this.suggested === mod.id) return page().then(() => {
+    if (this.options.hostSaysLine)
+      void voice.say(this.options.hostLine ?? this.land.line).then(() => {
+        if (!this.leaving && this.suggested === mod.id)
+          return page().then(() => {
+            if (!this.leaving && this.suggested === mod.id) return tip();
+          });
+      });
+    else
+      void page().then(() => {
         if (!this.leaving && this.suggested === mod.id) return tip();
       });
-    });
-    else void page().then(() => {
-      if (!this.leaving && this.suggested === mod.id) return tip();
-    });
   }
 
   /** A round opened from here grows out of its spot, and shrinks back into it (RW14 slice 9). */
@@ -440,7 +562,14 @@ export class LandScene extends Scene {
     this.tw.kill(mark.node.scale);
     void this.tw
       .to(mark.node.scale, { x: this.scale0 * 1.15, y: this.scale0 * 1.15 }, { duration: 0.2 })
-      .then(() => this.app.growFrom(mark.node, () => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { land: this.id, page: this.page })));
+      .then(() =>
+        this.app.growFrom(mark.node, () =>
+          this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, {
+            land: this.id,
+            page: this.page,
+          }),
+        ),
+      );
   }
 
   private readonly goHome = () => (this.options.home ?? this.app.go.hub)();
@@ -473,7 +602,9 @@ export class LandScene extends Scene {
     this.glow.clear();
     if (mark && this.glowLeft > 0) {
       const a = Math.min(1, this.glowLeft) * 0.75;
-      this.glow.ellipse(mark.node.x, mark.node.y - 4, 105 * this.scale0, 30 * this.scale0).fill({ color: swatch.yellow.light, alpha: a });
+      this.glow
+        .ellipse(mark.node.x, mark.node.y - 4, 105 * this.scale0, 30 * this.scale0)
+        .fill({ color: swatch.yellow.light, alpha: a });
     }
   }
 

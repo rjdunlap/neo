@@ -27,7 +27,21 @@ export interface Shape {
   rows: readonly number[];
 }
 
-export type Family = 'mono' | 'domino' | 'I3' | 'corner3' | 'square2' | 'I4' | 'L4' | 'J4' | 'T4' | 'S4' | 'Z4' | 'I5' | 'corner5' | 'square3';
+export type Family =
+  | 'mono'
+  | 'domino'
+  | 'I3'
+  | 'corner3'
+  | 'square2'
+  | 'I4'
+  | 'L4'
+  | 'J4'
+  | 'T4'
+  | 'S4'
+  | 'Z4'
+  | 'I5'
+  | 'corner5'
+  | 'square3';
 
 const BASES: Record<Family, string[]> = {
   mono: ['#'],
@@ -50,14 +64,16 @@ const BASES: Record<Family, string[]> = {
 const TURNS_ONLY = new Set<Family>(['L4', 'J4', 'S4', 'Z4']);
 
 function normalize(cells: Cell[]): Cell[] {
-  const r0 = Math.min(...cells.map((c) => c[0])), c0 = Math.min(...cells.map((c) => c[1]));
+  const r0 = Math.min(...cells.map((c) => c[0])),
+    c0 = Math.min(...cells.map((c) => c[1]));
   return cells.map(([r, c]) => [r - r0, c - c0] as Cell).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
 }
 
 const cellKey = (cells: readonly Cell[]) => cells.map((c) => c.join(',')).join(';');
 
 function makeShape(id: string, family: Family, cells: Cell[]): Shape {
-  const h = Math.max(...cells.map((c) => c[0])) + 1, w = Math.max(...cells.map((c) => c[1])) + 1;
+  const h = Math.max(...cells.map((c) => c[0])) + 1,
+    w = Math.max(...cells.map((c) => c[1])) + 1;
   const rows = Array.from({ length: h }, () => 0);
   for (const [r, c] of cells) rows[r] |= 1 << c;
   return { id, family, cells, w, h, rows };
@@ -76,7 +92,10 @@ function orientations(family: Family): Cell[][] {
     for (let i = 0; i < 4; i++) {
       const n = normalize(cur);
       const k = cellKey(n);
-      if (!seen.has(k)) { seen.add(k); out.push(n); }
+      if (!seen.has(k)) {
+        seen.add(k);
+        out.push(n);
+      }
       cur = turn(cur);
     }
   }
@@ -136,7 +155,10 @@ export const fullMask = (n: number) => (1 << n) - 1;
 
 export function popcount(x: number): number {
   let k = 0;
-  while (x) { x &= x - 1; k++; }
+  while (x) {
+    x &= x - 1;
+    k++;
+  }
   return k;
 }
 
@@ -169,7 +191,8 @@ export interface Placed {
 /** The bed after a placement that fits: the piece is planted, then every full row and column empties at once. The old bed is untouched. */
 export function place(bed: Bed, shapeId: string, a: Anchor): Placed {
   const s = SHAPES[shapeId];
-  const n = bed.n, full = fullMask(n);
+  const n = bed.n,
+    full = fullMask(n);
   const filled = bed.filled.slice();
   for (let i = 0; i < s.h; i++) filled[a.r + i] |= s.rows[i] << a.c;
   const rows: number[] = [];
@@ -204,7 +227,8 @@ export function goalMet(bed: Bed, goal: Goal): boolean {
 /** Lines that are completely filled (a well-formed bed has none). */
 export function fullLines(bed: Bed): number {
   const full = fullMask(bed.n);
-  let k = 0, colAnd = full;
+  let k = 0,
+    colAnd = full;
   for (const m of bed.filled) {
     if (m === full) k++;
     colAnd &= m;
@@ -216,7 +240,8 @@ export function fullLines(bed: Bed): number {
 export function anchors(bed: Bed, shapeId: string): Anchor[] {
   const s = SHAPES[shapeId];
   const out: Anchor[] = [];
-  for (let r = 0; r + s.h <= bed.n; r++) for (let c = 0; c + s.w <= bed.n; c++) if (fits(bed, shapeId, { r, c })) out.push({ r, c });
+  for (let r = 0; r + s.h <= bed.n; r++)
+    for (let c = 0; c + s.w <= bed.n; c++) if (fits(bed, shapeId, { r, c })) out.push({ r, c });
   return out;
 }
 
@@ -243,7 +268,8 @@ export interface Garden {
 export function trayNow(g: Pick<Garden, 'pieces' | 'traySize'>, used: number): number[] {
   for (let start = 0; start < g.pieces.length; start += g.traySize) {
     const idx = [];
-    for (let i = start; i < Math.min(g.pieces.length, start + g.traySize); i++) if (!((used >> i) & 1)) idx.push(i);
+    for (let i = start; i < Math.min(g.pieces.length, start + g.traySize); i++)
+      if (!((used >> i) & 1)) idx.push(i);
     if (idx.length) return idx;
   }
   return [];
@@ -274,9 +300,15 @@ export const SEARCH_CAP = 30_000;
  */
 export function squaresNeeded(bed: Bed, goal: Goal): number {
   const targets = goal === 'clear' ? bed.filled : bed.buds;
-  const n = bed.n, full = fullMask(n);
-  let rowsWith = 0, colsWith = 0;
-  for (let r = 0; r < n; r++) if (targets[r]) { rowsWith |= 1 << r; colsWith |= targets[r]; }
+  const n = bed.n,
+    full = fullMask(n);
+  let rowsWith = 0,
+    colsWith = 0;
+  for (let r = 0; r < n; r++)
+    if (targets[r]) {
+      rowsWith |= 1 << r;
+      colsWith |= targets[r];
+    }
   if (!rowsWith) return 0;
   // Enumerate which lines of the shorter side are chosen; every target off them needs its line on the other side.
   const byRows = popcount(rowsWith) <= popcount(colsWith);
@@ -285,16 +317,23 @@ export function squaresNeeded(bed: Bed, goal: Goal): number {
   const empty = bed.filled.map((m) => ~m & full);
   let best = Infinity;
   for (let s = 0; s < 1 << lines.length; s++) {
-    let rowSel = 0, colSel = 0;
+    let rowSel = 0,
+      colSel = 0;
     if (byRows) {
-      lines.forEach((r, i) => { if ((s >> i) & 1) rowSel |= 1 << r; else colSel |= targets[r]; });
+      lines.forEach((r, i) => {
+        if ((s >> i) & 1) rowSel |= 1 << r;
+        else colSel |= targets[r];
+      });
     } else {
-      lines.forEach((c, i) => { if ((s >> i) & 1) colSel |= 1 << c; });
+      lines.forEach((c, i) => {
+        if ((s >> i) & 1) colSel |= 1 << c;
+      });
       // A target in an unchosen column needs its row.
       for (let r = 0; r < n; r++) if (targets[r] & ~colSel) rowSel |= 1 << r;
     }
     let cells = 0;
-    for (let r = 0; r < n && cells < best; r++) cells += popcount(empty[r] & ((rowSel >> r) & 1 ? full : colSel));
+    for (let r = 0; r < n && cells < best; r++)
+      cells += popcount(empty[r] & ((rowSel >> r) & 1 ? full : colSel));
     if (cells < best) best = cells;
   }
   return best;
@@ -307,10 +346,12 @@ export function squaresNeeded(bed: Bed, goal: Goal): number {
 export function placementsNeeded(g: Pick<Garden, 'pieces' | 'goal' | 'traySize'>, s: State): number {
   const need = squaresNeeded(s.bed, g.goal);
   if (!need) return 0;
-  let sum = 0, k = 0;
+  let sum = 0,
+    k = 0;
   for (let start = 0; start < g.pieces.length; start += g.traySize) {
     const sizes: number[] = [];
-    for (let i = start; i < Math.min(g.pieces.length, start + g.traySize); i++) if (!((s.used >> i) & 1)) sizes.push(SHAPES[g.pieces[i]].cells.length);
+    for (let i = start; i < Math.min(g.pieces.length, start + g.traySize); i++)
+      if (!((s.used >> i) & 1)) sizes.push(SHAPES[g.pieces[i]].cells.length);
     sizes.sort((a, b) => b - a);
     for (const size of sizes) {
       sum += size;
@@ -414,7 +455,8 @@ export const startState = (g: Garden): State => ({ bed: cloneBed(g.bed), used: 0
  * are used up, or the search proved there is no way left (take one back). 'back': the search ran out of room, so step back to her
  * most recent state with a known way (`history` is her states before this one, oldest first; the start at worst).
  */
-export type Hint = { kind: 'plan'; placement: Placement } | { kind: 'stuck' } | { kind: 'back'; steps: number };
+export type Hint =
+  { kind: 'plan'; placement: Placement } | { kind: 'stuck' } | { kind: 'back'; steps: number };
 
 export function hintPlacement(g: Garden, s: State, history: State[], cap = SEARCH_CAP): Hint {
   if (!placements(g, s).length) return { kind: 'stuck' };
@@ -425,7 +467,9 @@ export function hintPlacement(g: Garden, s: State, history: State[], cap = SEARC
   if (Array.isArray(r)) return r.length ? { kind: 'plan', placement: r[0] } : { kind: 'stuck' };
   if (r === 'none') return { kind: 'stuck' };
   // Her most recent state on the stored solution has a known way; the start at worst.
-  for (let i = history.length - 1; i > 0; i--) if (followed(g, history.slice(1, i + 1), history[i]) !== null) return { kind: 'back', steps: history.length - i };
+  for (let i = history.length - 1; i > 0; i--)
+    if (followed(g, history.slice(1, i + 1), history[i]) !== null)
+      return { kind: 'back', steps: history.length - i };
   return { kind: 'back', steps: history.length };
 }
 
@@ -479,18 +523,159 @@ export interface GardenPlan {
 
 const SMALL: Family[] = ['domino', 'I3', 'corner3', 'square2'];
 const MID: Family[] = ['domino', 'I3', 'corner3', 'square2', 'I4', 'L4', 'J4', 'T4'];
-const BIG: Family[] = ['I3', 'corner3', 'square2', 'I4', 'L4', 'J4', 'T4', 'S4', 'Z4', 'I5', 'corner5', 'square3'];
+const BIG: Family[] = [
+  'I3',
+  'corner3',
+  'square2',
+  'I4',
+  'L4',
+  'J4',
+  'T4',
+  'S4',
+  'Z4',
+  'I5',
+  'corner5',
+  'square3',
+];
 
 export const PLANS: GardenPlan[] = [
-  { id: 1, name: 'Finish one row', n: 5, cell: 100, goal: 'buds', pieces: 2, traySize: 2, buds: [1, 2], par: [1, 1], gardens: 3, tinted: true, refusalCounts: false, families: ['domino', 'I3'] },
-  { id: 2, name: 'Rows and columns', n: 5, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 2], par: [2, 2], gardens: 3, tinted: true, refusalCounts: false, families: ['domino', 'I3', 'square2'] },
-  { id: 3, name: 'Two lines with one piece', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 3], par: [2, 3], gardens: 2, tinted: false, refusalCounts: true, families: ['corner3', 'domino', 'I3'] },
-  { id: 4, name: 'Pick the right pieces', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 3], par: [2, 2], gardens: 2, tinted: false, refusalCounts: true, families: SMALL },
-  { id: 5, name: 'Make room first', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [3, 3], par: [3, 3], gardens: 2, tinted: false, refusalCounts: true, families: MID },
-  { id: 6, name: 'Two trays', n: 6, cell: 100, goal: 'buds', pieces: 6, traySize: 3, buds: [3, 4], par: [4, 6], gardens: 1, tinted: false, refusalCounts: true, families: MID },
-  { id: 7, name: 'The big garden', n: 8, cell: 72, goal: 'buds', pieces: 9, traySize: 3, buds: [4, 6], par: [7, 9], gardens: 1, tinted: false, refusalCounts: true, families: BIG },
-  { id: 8, name: 'Clear the whole garden', n: 8, cell: 72, goal: 'clear', pieces: 9, traySize: 3, buds: [0, 0], par: [6, 9], gardens: 1, tinted: false, refusalCounts: true, families: BIG, stones: [8, 16] },
-  { id: 9, name: 'Corner with stripes', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 3], par: [2, 3], gardens: 2, tinted: true, refusalCounts: false, families: ['corner3', 'domino', 'I3'], like: 3 },
+  {
+    id: 1,
+    name: 'Finish one row',
+    n: 5,
+    cell: 100,
+    goal: 'buds',
+    pieces: 2,
+    traySize: 2,
+    buds: [1, 2],
+    par: [1, 1],
+    gardens: 3,
+    tinted: true,
+    refusalCounts: false,
+    families: ['domino', 'I3'],
+  },
+  {
+    id: 2,
+    name: 'Rows and columns',
+    n: 5,
+    cell: 100,
+    goal: 'buds',
+    pieces: 3,
+    traySize: 3,
+    buds: [2, 2],
+    par: [2, 2],
+    gardens: 3,
+    tinted: true,
+    refusalCounts: false,
+    families: ['domino', 'I3', 'square2'],
+  },
+  {
+    id: 3,
+    name: 'Two lines with one piece',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 3,
+    traySize: 3,
+    buds: [2, 3],
+    par: [2, 3],
+    gardens: 2,
+    tinted: false,
+    refusalCounts: true,
+    families: ['corner3', 'domino', 'I3'],
+  },
+  {
+    id: 4,
+    name: 'Pick the right pieces',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 3,
+    traySize: 3,
+    buds: [2, 3],
+    par: [2, 2],
+    gardens: 2,
+    tinted: false,
+    refusalCounts: true,
+    families: SMALL,
+  },
+  {
+    id: 5,
+    name: 'Make room first',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 3,
+    traySize: 3,
+    buds: [3, 3],
+    par: [3, 3],
+    gardens: 2,
+    tinted: false,
+    refusalCounts: true,
+    families: MID,
+  },
+  {
+    id: 6,
+    name: 'Two trays',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 6,
+    traySize: 3,
+    buds: [3, 4],
+    par: [4, 6],
+    gardens: 1,
+    tinted: false,
+    refusalCounts: true,
+    families: MID,
+  },
+  {
+    id: 7,
+    name: 'The big garden',
+    n: 8,
+    cell: 72,
+    goal: 'buds',
+    pieces: 9,
+    traySize: 3,
+    buds: [4, 6],
+    par: [7, 9],
+    gardens: 1,
+    tinted: false,
+    refusalCounts: true,
+    families: BIG,
+  },
+  {
+    id: 8,
+    name: 'Clear the whole garden',
+    n: 8,
+    cell: 72,
+    goal: 'clear',
+    pieces: 9,
+    traySize: 3,
+    buds: [0, 0],
+    par: [6, 9],
+    gardens: 1,
+    tinted: false,
+    refusalCounts: true,
+    families: BIG,
+    stones: [8, 16],
+  },
+  {
+    id: 9,
+    name: 'Corner with stripes',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 3,
+    traySize: 3,
+    buds: [2, 3],
+    par: [2, 3],
+    gardens: 2,
+    tinted: true,
+    refusalCounts: false,
+    families: ['corner3', 'domino', 'I3'],
+    like: 3,
+  },
 ];
 
 /** The level a plan's gardens are built and filtered as. */
@@ -554,18 +739,25 @@ export function decode(text: string, plan: Pick<GardenPlan, 'goal' | 'traySize'>
   const lines = bedText.split('/');
   const n = lines.length;
   const bed = emptyBed(n);
-  lines.forEach((line, r) => [...line].forEach((ch, c) => {
-    if (ch === '.') return;
-    bed.filled[r] |= 1 << c;
-    bed.stones[r] |= 1 << c;
-    if (ch === '*') bed.buds[r] |= 1 << c;
-  }));
+  lines.forEach((line, r) =>
+    [...line].forEach((ch, c) => {
+      if (ch === '.') return;
+      bed.filled[r] |= 1 << c;
+      bed.stones[r] |= 1 << c;
+      if (ch === '*') bed.buds[r] |= 1 << c;
+    }),
+  );
   const pieces = piecesText.split(',');
-  const solution = (solText ?? '').trim() ? solText.trim().split(' ').map((step) => {
-    const [p, at] = step.split('@');
-    const [r, c] = at.split(',').map(Number);
-    return { piece: Number(p), r, c };
-  }) : [];
+  const solution = (solText ?? '').trim()
+    ? solText
+        .trim()
+        .split(' ')
+        .map((step) => {
+          const [p, at] = step.split('@');
+          const [r, c] = at.split(',').map(Number);
+          return { piece: Number(p), r, c };
+        })
+    : [];
   return { n, goal: plan.goal, bed, pieces, traySize: Math.min(plan.traySize, pieces.length), solution };
 }
 
@@ -580,7 +772,8 @@ function pieceMask(n: number, shape: string, at: Anchor): number[] {
 export function transformGarden(g: Garden, t: number): Garden {
   const n = g.n;
   const map = ([r, c]: Cell): Cell => {
-    let rr = r, cc = c;
+    let rr = r,
+      cc = c;
     if (t & 4) [rr, cc] = [cc, rr];
     if (t & 1) cc = n - 1 - cc;
     if (t & 2) rr = n - 1 - rr;
@@ -588,7 +781,12 @@ export function transformGarden(g: Garden, t: number): Garden {
   };
   const mapRows = (rows: number[]) => {
     const out = Array(n).fill(0);
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (has(rows, r, c)) { const [a, b] = map([r, c]); out[a] |= 1 << b; }
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (has(rows, r, c)) {
+          const [a, b] = map([r, c]);
+          out[a] |= 1 << b;
+        }
     return out;
   };
   const mapShape = (id: string) => {
@@ -601,7 +799,12 @@ export function transformGarden(g: Garden, t: number): Garden {
     const cells = SHAPES[g.pieces[p.piece]].cells.map(([r, c]) => map([r + p.r, c + p.c]));
     return { piece: p.piece, r: Math.min(...cells.map((x) => x[0])), c: Math.min(...cells.map((x) => x[1])) };
   });
-  return { ...g, bed: { n, filled: mapRows(g.bed.filled), stones: mapRows(g.bed.stones), buds: mapRows(g.bed.buds) }, pieces, solution };
+  return {
+    ...g,
+    bed: { n, filled: mapRows(g.bed.filled), stones: mapRows(g.bed.stones), buds: mapRows(g.bed.buds) },
+    pieces,
+    solution,
+  };
 }
 
 /** The same garden seen in a left–right mirror: each piece becomes its mirror shape. A mirror keeps par. */
@@ -620,14 +823,25 @@ interface Draft {
   extras: string[];
 }
 
-const draft = (n: number): Draft => ({ n, stones: Array(n).fill(0), buds: Array(n).fill(0), plan: [], extras: [] });
+const draft = (n: number): Draft => ({
+  n,
+  stones: Array(n).fill(0),
+  buds: Array(n).fill(0),
+  plan: [],
+  extras: [],
+});
 
-const setCell = (rows: number[], r: number, c: number) => { rows[r] |= 1 << c; };
+const setCell = (rows: number[], r: number, c: number) => {
+  rows[r] |= 1 << c;
+};
 
 /** Stones on every square of `rows` except the planned pieces' squares. */
 function stoneRows(d: Draft, rows: number[]) {
   const holes = Array(d.n).fill(0);
-  for (const p of d.plan) { const m = pieceMask(d.n, p.shape, p); for (let r = 0; r < d.n; r++) holes[r] |= m[r]; }
+  for (const p of d.plan) {
+    const m = pieceMask(d.n, p.shape, p);
+    for (let r = 0; r < d.n; r++) holes[r] |= m[r];
+  }
   for (const r of rows) d.stones[r] |= fullMask(d.n) & ~holes[r];
 }
 
@@ -636,7 +850,8 @@ function budIn(d: Draft, rng: Rng, line: { r?: number; c?: number }, avoid: Cell
   const cells: Cell[] = [];
   for (let i = 0; i < d.n; i++) {
     const [r, c] = line.r !== undefined ? [line.r, i] : [i, line.c!];
-    if (has(d.stones, r, c) && !has(d.buds, r, c) && !avoid.some((a) => a[0] === r && a[1] === c)) cells.push([r, c]);
+    if (has(d.stones, r, c) && !has(d.buds, r, c) && !avoid.some((a) => a[0] === r && a[1] === c))
+      cells.push([r, c]);
   }
   if (!cells.length) return false;
   const [r, c] = rng.pick(cells);
@@ -653,12 +868,19 @@ function clutter(d: Draft, rng: Rng, rows: number[], density: number) {
     if (!fullLines(bed)) break;
     // Open a square of a clutter row in a full row or column.
     const r = rng.pick(rows);
-    if (d.stones[r] === full || d.stones.reduce((a, m) => a & m, full)) d.stones[r] &= ~(1 << rng.int(0, d.n - 1));
+    if (d.stones[r] === full || d.stones.reduce((a, m) => a & m, full))
+      d.stones[r] &= ~(1 << rng.int(0, d.n - 1));
     else d.stones[rng.pick(rows)] &= ~(1 << rng.int(0, d.n - 1));
   }
 }
 
-function toGarden(d: Draft, plan: GardenPlan, order: 'shuffle' | 'trays' | 'planned-first', rng: Rng, needLast = false): Garden {
+function toGarden(
+  d: Draft,
+  plan: GardenPlan,
+  order: 'shuffle' | 'trays' | 'planned-first',
+  rng: Rng,
+  needLast = false,
+): Garden {
   // The planned pieces and the extras, in tray order; one planned piece goes in the last tray when asked.
   const planned = d.plan.map((p, i) => ({ shape: p.shape, step: i }));
   const extras = d.extras.map((shape) => ({ shape, step: -1 }));
@@ -678,20 +900,35 @@ function toGarden(d: Draft, plan: GardenPlan, order: 'shuffle' | 'trays' | 'plan
   bed.filled = d.stones.slice();
   bed.stones = d.stones.slice();
   bed.buds = d.buds.map((m, r) => m & d.stones[r]);
-  return { n: d.n, goal: plan.goal, bed, pieces: list.map((x) => x.shape), traySize: Math.min(plan.traySize, list.length), solution: [] };
+  return {
+    n: d.n,
+    goal: plan.goal,
+    bed,
+    pieces: list.map((x) => x.shape),
+    traySize: Math.min(plan.traySize, list.length),
+    solution: [],
+  };
 }
 
 /** Level 1: one row nearly full of stones, its gap the shape of a straight piece; a second piece that may also fit. */
 function lineGarden(plan: GardenPlan, rng: Rng): Draft {
   const d = draft(plan.n);
   const len = rng.int(2, 3);
-  const r = rng.int(0, d.n - 1), c = rng.int(0, d.n - len);
+  const r = rng.int(0, d.n - 1),
+    c = rng.int(0, d.n - len);
   d.plan.push({ shape: len === 2 ? 'domino-0' : 'I3-0', r, c });
   stoneRows(d, [r]);
   const buds = rng.int(plan.buds[0], plan.buds[1]);
   for (let i = 0; i < buds; i++) budIn(d, rng, { r });
-  d.extras.push(rng.pick(['square2-0', 'mono-0', len === 2 ? 'I3-0' : 'domino-0', 'corner3-' + rng.int(0, 3)]));
-  clutter(d, rng, Array.from({ length: d.n }, (_, i) => i).filter((i) => i !== r), rng.chance(0.5) ? 0.1 : 0);
+  d.extras.push(
+    rng.pick(['square2-0', 'mono-0', len === 2 ? 'I3-0' : 'domino-0', 'corner3-' + rng.int(0, 3)]),
+  );
+  clutter(
+    d,
+    rng,
+    Array.from({ length: d.n }, (_, i) => i).filter((i) => i !== r),
+    rng.chance(0.5) ? 0.1 : 0,
+  );
   return d;
 }
 
@@ -702,17 +939,27 @@ function lineGarden(plan: GardenPlan, rng: Rng): Draft {
 function crossGarden(plan: GardenPlan, rng: Rng): Draft {
   const d = draft(plan.n);
   const n = d.n;
-  const R = rng.int(1, n - 2), C = rng.int(1, n - 2);
-  const dr = rng.chance(0.5) ? 1 : -1, dc = rng.chance(0.5) ? 1 : -1;
+  const R = rng.int(1, n - 2),
+    C = rng.int(1, n - 2);
+  const dr = rng.chance(0.5) ? 1 : -1,
+    dc = rng.chance(0.5) ? 1 : -1;
   // Row R misses the crossing and (R, C + dc); column C misses the crossing and (R + dr, C).
   const full = fullMask(n);
   d.stones[R] = full & ~(1 << C) & ~(1 << (C + dc));
   for (let r = 0; r < n; r++) if (r !== R && r !== R + dr) d.stones[r] |= 1 << C;
-  d.plan.push({ shape: 'domino-0', r: R, c: Math.min(C, C + dc) }, { shape: 'domino-1', r: Math.min(R, R + dr), c: C });
+  d.plan.push(
+    { shape: 'domino-0', r: R, c: Math.min(C, C + dc) },
+    { shape: 'domino-1', r: Math.min(R, R + dr), c: C },
+  );
   budIn(d, rng, { r: R }, [[R, C]]);
   budIn(d, rng, { c: C }, [[R, C]]);
   d.extras.push(rng.pick(['mono-0', 'I3-0', 'I3-1', 'square2-0']));
-  clutter(d, rng, Array.from({ length: n }, (_, i) => i).filter((i) => i !== R), 0.12);
+  clutter(
+    d,
+    rng,
+    Array.from({ length: n }, (_, i) => i).filter((i) => i !== R),
+    0.12,
+  );
   return d;
 }
 
@@ -723,9 +970,15 @@ function crossGarden(plan: GardenPlan, rng: Rng): Draft {
 function cornerGarden(plan: GardenPlan, rng: Rng): Draft {
   const d = draft(plan.n);
   const n = d.n;
-  const R = rng.int(1, n - 2), C = rng.int(1, n - 2);
-  const dr = rng.chance(0.5) ? 1 : -1, dc = rng.chance(0.5) ? 1 : -1;
-  const cells: Cell[] = [[R, C], [R + dr, C], [R, C + dc]];
+  const R = rng.int(1, n - 2),
+    C = rng.int(1, n - 2);
+  const dr = rng.chance(0.5) ? 1 : -1,
+    dc = rng.chance(0.5) ? 1 : -1;
+  const cells: Cell[] = [
+    [R, C],
+    [R + dr, C],
+    [R, C + dc],
+  ];
   const shape = BY_CELLS.get(cellKey(normalize(cells)))!;
   d.plan.push({ shape, r: Math.min(R, R + dr), c: Math.min(C, C + dc) });
   const full = fullMask(n);
@@ -744,9 +997,16 @@ function cornerGarden(plan: GardenPlan, rng: Rng): Draft {
     d.plan.push({ shape: 'domino-0', r: R2, c: Math.min(C, C + side) });
     budIn(d, rng, { r: R2 }, [[R2, C]]);
   }
-  d.extras.push(rng.pick(third ? ['I3-0', 'I3-1', 'mono-0', 'square2-0'] : ['domino-0', 'domino-1', 'I3-0', 'I3-1']));
+  d.extras.push(
+    rng.pick(third ? ['I3-0', 'I3-1', 'mono-0', 'square2-0'] : ['domino-0', 'domino-1', 'I3-0', 'I3-1']),
+  );
   if (!third) d.extras.push(rng.pick(['domino-0', 'domino-1', 'I3-0', 'I3-1', 'square2-0']));
-  clutter(d, rng, Array.from({ length: n }, (_, i) => i).filter((i) => i !== R && i !== R2), 0.15);
+  clutter(
+    d,
+    rng,
+    Array.from({ length: n }, (_, i) => i).filter((i) => i !== R && i !== R2),
+    0.15,
+  );
   return d;
 }
 
@@ -758,16 +1018,20 @@ function tileBlock(d: Draft, rng: Rng, top: number, m: number, shapes: string[])
     const s = SHAPES[shape];
     if (s.h > m) return false;
     const spots: Anchor[] = [];
-    for (let r = top; r <= top + m - s.h; r++) for (let c = 0; c <= d.n - s.w; c++) {
-      if (!pieceMask(d.n, shape, { r, c }).some((x, i) => x & taken[i])) spots.push({ r, c });
-    }
+    for (let r = top; r <= top + m - s.h; r++)
+      for (let c = 0; c <= d.n - s.w; c++) {
+        if (!pieceMask(d.n, shape, { r, c }).some((x, i) => x & taken[i])) spots.push({ r, c });
+      }
     if (!spots.length) return false;
     const at = rng.pick(spots);
     pieceMask(d.n, shape, at).forEach((x, i) => (taken[i] |= x));
     d.plan.push({ shape, ...at });
   }
   for (let r = top; r < top + m; r++) if (!taken[r]) return false;
-  stoneRows(d, Array.from({ length: m }, (_, i) => top + i));
+  stoneRows(
+    d,
+    Array.from({ length: m }, (_, i) => top + i),
+  );
   return true;
 }
 
@@ -783,13 +1047,18 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
   const d = draft(plan.n);
   const n = d.n;
   const spec =
-    plan.id === 4 ? { m: 2, k: 2, density: 0.15 } :
-    plan.id === 6 ? { m: rng.int(2, 3), k: rng.int(2, 3), density: 0.2 } :
-    plan.id === 7 ? { m: rng.int(3, 4), k: rng.int(3, 5), density: 0.2 } :
-    { m: 4, k: rng.int(6, 7), density: 0 };
+    plan.id === 4
+      ? { m: 2, k: 2, density: 0.15 }
+      : plan.id === 6
+        ? { m: rng.int(2, 3), k: rng.int(2, 3), density: 0.2 }
+        : plan.id === 7
+          ? { m: rng.int(3, 4), k: rng.int(3, 5), density: 0.2 }
+          : { m: 4, k: rng.int(6, 7), density: 0 };
   const top = rng.int(0, n - spec.m);
   // Level 8 plants pieces of three to five squares, so a third to a half of the block stays stone.
-  const pool = familyShapes(plan.families, spec.m).filter((id) => plan.goal !== 'clear' || SHAPES[id].cells.length <= 5);
+  const pool = familyShapes(plan.families, spec.m).filter(
+    (id) => plan.goal !== 'clear' || SHAPES[id].cells.length <= 5,
+  );
   let shapes = Array.from({ length: spec.k }, () => rng.pick(pool));
   if (plan.stones) {
     // Leave between plan.stones[0] and plan.stones[1] stones in the block.
@@ -820,12 +1089,16 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
   if (plan.goal === 'buds') {
     for (const r of rows) budIn(d, rng, { r });
     const want = rng.int(plan.buds[0], plan.buds[1]);
-    for (let guard = 0; d.buds.reduce((a, m) => a + popcount(m), 0) < want && guard < 20; guard++) budIn(d, rng, { r: rng.pick(rows) });
+    for (let guard = 0; d.buds.reduce((a, m) => a + popcount(m), 0) < want && guard < 20; guard++)
+      budIn(d, rng, { r: rng.pick(rows) });
   }
   const others = Array.from({ length: n }, (_, i) => i).filter((r) => !rows.includes(r));
   if (spec.density) clutter(d, rng, others, spec.density);
   const extra = plan.pieces - d.plan.length;
-  const extraPool = plan.id === 4 ? ['square2-0', 'corner3-0', 'corner3-1', 'corner3-2', 'corner3-3', 'I3-1', 'domino-1'] : familyShapes(plan.families, n);
+  const extraPool =
+    plan.id === 4
+      ? ['square2-0', 'corner3-0', 'corner3-1', 'corner3-2', 'corner3-3', 'I3-1', 'domino-1']
+      : familyShapes(plan.families, n);
   for (let i = 0; i < extra; i++) d.extras.push(rng.pick(extraPool));
   return d;
 }
@@ -837,13 +1110,19 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
 function roomGarden(plan: GardenPlan, rng: Rng): Draft | null {
   const d = draft(plan.n);
   const n = d.n;
-  const pool = familyShapes(plan.families, 2).filter((id) => SHAPES[id].h === 2 && SHAPES[id].cells.length >= 3);
-  const big = rng.pick(pool), s = SHAPES[big];
-  const r0 = rng.int(0, n - 2), c = rng.int(0, n - s.w);
+  const pool = familyShapes(plan.families, 2).filter(
+    (id) => SHAPES[id].h === 2 && SHAPES[id].cells.length >= 3,
+  );
+  const big = rng.pick(pool),
+    s = SHAPES[big];
+  const r0 = rng.int(0, n - 2),
+    c = rng.int(0, n - s.w);
   // The upper row's gap: a straight piece away from the big piece's squares.
   const upper = s.rows[0] << c;
   const len = rng.int(2, 3);
-  const starts = Array.from({ length: n - len + 1 }, (_, i) => i).filter((i) => !((((1 << len) - 1) << i) & upper));
+  const starts = Array.from({ length: n - len + 1 }, (_, i) => i).filter(
+    (i) => !((((1 << len) - 1) << i) & upper),
+  );
   if (!starts.length) return null;
   const g = rng.pick(starts);
   d.plan.push({ shape: len === 2 ? 'domino-0' : 'I3-0', r: r0, c: g });
@@ -860,7 +1139,12 @@ function roomGarden(plan: GardenPlan, rng: Rng): Draft | null {
   budIn(d, rng, { r: r0 });
   budIn(d, rng, { r: r0 + 1 });
   budIn(d, rng, { r: r2 });
-  clutter(d, rng, rest.filter((r) => r !== r2), 0.45);
+  clutter(
+    d,
+    rng,
+    rest.filter((r) => r !== r2),
+    0.45,
+  );
   return d;
 }
 
@@ -880,7 +1164,8 @@ function clearsOf(g: Garden, sol: Placement[]): { rows: number; cols: number; bo
 
 /** Whether a garden passes its level's filter (from the definition's table). `par` is the solver's fewest placements. */
 export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean {
-  if (par < plan.par[0] || par > plan.par[1] || g.n !== plan.n || g.pieces.length !== plan.pieces) return false;
+  if (par < plan.par[0] || par > plan.par[1] || g.n !== plan.n || g.pieces.length !== plan.pieces)
+    return false;
   const start = startState(g);
   if (goalMet(start.bed, g.goal) || fullLines(start.bed)) return false;
   const budCount = g.bed.buds.reduce((a, m) => a + popcount(m), 0);
@@ -889,12 +1174,19 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
     case 1: {
       // The buds share one line.
       const cells: Cell[] = [];
-      for (let r = 0; r < g.n; r++) for (let c = 0; c < g.n; c++) if (has(g.bed.buds, r, c)) cells.push([r, c]);
+      for (let r = 0; r < g.n; r++)
+        for (let c = 0; c < g.n; c++) if (has(g.bed.buds, r, c)) cells.push([r, c]);
       return cells.every((x) => x[0] === cells[0][0]) || cells.every((x) => x[1] === cells[0][1]);
     }
     case 2: {
       const all = allShortest(g, start, par);
-      return all.length > 0 && all.every((sol) => { const cl = clearsOf(g, sol); return cl.some((x) => x.rows) && cl.some((x) => x.cols); });
+      return (
+        all.length > 0 &&
+        all.every((sol) => {
+          const cl = clearsOf(g, sol);
+          return cl.some((x) => x.rows) && cl.some((x) => x.cols);
+        })
+      );
     }
     case 3: {
       const all = allShortest(g, start, par);
@@ -906,12 +1198,20 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
     }
     case 5: {
       const all = allShortest(g, start, par);
-      return all.length > 0 && g.pieces.some((id, i) => anchors(g.bed, id).length === 0 && all.every((sol) => sol.some((p) => p.piece === i)));
+      return (
+        all.length > 0 &&
+        g.pieces.some(
+          (id, i) => anchors(g.bed, id).length === 0 && all.every((sol) => sol.some((p) => p.piece === i)),
+        )
+      );
     }
     case 6:
       return par > g.traySize; // needs the second tray
     case 7:
-      return par > 2 * g.traySize && g.solution.some((p) => BIG_FAMILIES.includes(SHAPES[g.pieces[p.piece]].family));
+      return (
+        par > 2 * g.traySize &&
+        g.solution.some((p) => BIG_FAMILIES.includes(SHAPES[g.pieces[p.piece]].family))
+      );
     case 8: {
       const stones = g.bed.filled.reduce((a, m) => a + popcount(m), 0);
       return budCount === 0 && stones >= plan.stones![0] && stones <= plan.stones![1];
@@ -923,11 +1223,15 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
 /** One candidate garden for a plan, under a random symmetry, with the solver's own shortest solution; null when it fails the plan's filter. */
 export function candidate(plan: GardenPlan, rng: Rng, cap = SEARCH_CAP): Garden | null {
   const d =
-    plan.id === 1 ? lineGarden(plan, rng) :
-    plan.id === 2 ? crossGarden(plan, rng) :
-    kindOf(plan) === 3 ? cornerGarden(plan, rng) :
-    plan.id === 5 ? roomGarden(plan, rng) :
-    blockGarden(plan, rng);
+    plan.id === 1
+      ? lineGarden(plan, rng)
+      : plan.id === 2
+        ? crossGarden(plan, rng)
+        : kindOf(plan) === 3
+          ? cornerGarden(plan, rng)
+          : plan.id === 5
+            ? roomGarden(plan, rng)
+            : blockGarden(plan, rng);
   if (!d) return null;
   while (d.plan.length + d.extras.length < plan.pieces) d.extras.push(pickShapes(plan, rng, 1)[0]);
   if (d.plan.length + d.extras.length > plan.pieces) return null;
@@ -1008,8 +1312,21 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell'>, v: View): Gar
     const y = Math.max(64, Math.min((v.h - size) / 2, v.h - 104 - size));
     const tx = x + size + 30 + Math.min(spare / 2, 40);
     const top = Math.max(190, (v.h - 3 * SLOT) / 2 + 20);
-    const slots = [0, 1, 2].map((i) => ({ x: tx, y: Math.min(top, v.h - 3 * SLOT - 38) + i * SLOT, w: SLOT, h: SLOT }));
-    return { x, y, cell: plan.cell, n: plan.n, slots, undo: { x: tx + SLOT / 2, y: Math.max(UNDO_R + 12, slots[0].y - UNDO_R - 16) }, portrait };
+    const slots = [0, 1, 2].map((i) => ({
+      x: tx,
+      y: Math.min(top, v.h - 3 * SLOT - 38) + i * SLOT,
+      w: SLOT,
+      h: SLOT,
+    }));
+    return {
+      x,
+      y,
+      cell: plan.cell,
+      n: plan.n,
+      slots,
+      undo: { x: tx + SLOT / 2, y: Math.max(UNDO_R + 12, slots[0].y - UNDO_R - 16) },
+      portrait,
+    };
   }
   const x = (v.w - size) / 2;
   const block = size + 40 + SLOT;
@@ -1017,21 +1334,42 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell'>, v: View): Gar
   const ty = y + size + 40;
   const left = Math.max(170, (v.w - 3 * SLOT) / 2 + 40);
   const slots = [0, 1, 2].map((i) => ({ x: left + i * SLOT, y: ty, w: SLOT, h: SLOT }));
-  return { x, y, cell: plan.cell, n: plan.n, slots, undo: { x: v.w - 80, y: Math.max(UNDO_R + 12, y - UNDO_R - 14) }, portrait };
+  return {
+    x,
+    y,
+    cell: plan.cell,
+    n: plan.n,
+    slots,
+    undo: { x: v.w - 80, y: Math.max(UNDO_R + 12, y - UNDO_R - 14) },
+    portrait,
+  };
 }
 
 /**
  * The anchor a carried piece snaps to: the square under its top-left square, rounded, if the piece fits there; else the closest
  * fitting anchor within 0.6 of a square; else null. `px, py` is the piece's top-left corner on screen.
  */
-export function nearestAnchor(bed: Bed, shapeId: string, px: number, py: number, lay: Pick<GardenLayout, 'x' | 'y' | 'cell'>): Anchor | null {
-  const fr = (py - lay.y) / lay.cell, fc = (px - lay.x) / lay.cell;
-  const r0 = Math.round(fr), c0 = Math.round(fc);
+export function nearestAnchor(
+  bed: Bed,
+  shapeId: string,
+  px: number,
+  py: number,
+  lay: Pick<GardenLayout, 'x' | 'y' | 'cell'>,
+): Anchor | null {
+  const fr = (py - lay.y) / lay.cell,
+    fc = (px - lay.x) / lay.cell;
+  const r0 = Math.round(fr),
+    c0 = Math.round(fc);
   if (fits(bed, shapeId, { r: r0, c: c0 })) return { r: r0, c: c0 };
-  let best: Anchor | null = null, bestD = Infinity;
-  for (let r = r0 - 1; r <= r0 + 1; r++) for (let c = c0 - 1; c <= c0 + 1; c++) {
-    const d = Math.hypot(r - fr, c - fc);
-    if (d <= 0.6 && d < bestD && fits(bed, shapeId, { r, c })) { best = { r, c }; bestD = d; }
-  }
+  let best: Anchor | null = null,
+    bestD = Infinity;
+  for (let r = r0 - 1; r <= r0 + 1; r++)
+    for (let c = c0 - 1; c <= c0 + 1; c++) {
+      const d = Math.hypot(r - fr, c - fc);
+      if (d <= 0.6 && d < bestD && fits(bed, shapeId, { r, c })) {
+        best = { r, c };
+        bestD = d;
+      }
+    }
   return best;
 }

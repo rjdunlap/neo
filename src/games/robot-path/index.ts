@@ -13,7 +13,30 @@ import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, MEND_PLANS, repairPress, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, VIA_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type PredictPlan, type RepairPlan, type RobotPlan, type Slot } from './logic';
+import {
+  LEVELS,
+  boardFor,
+  DELTAS,
+  DIRECTIONS,
+  expand,
+  FIX_PLANS,
+  MEND_PLANS,
+  repairPress,
+  routePress,
+  PREDICT_PLANS,
+  predictionEnd,
+  ROBOT_PLANS,
+  VIA_PLANS,
+  runPath,
+  shortestPath,
+  slotOfStep,
+  type Cell,
+  type Direction,
+  type PredictPlan,
+  type RepairPlan,
+  type RobotPlan,
+  type Slot,
+} from './logic';
 
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
@@ -41,7 +64,10 @@ class RobotPath implements Game {
   private readonly background = new Graphics();
   private readonly grid = new Graphics();
   private readonly robot = robotArt(65);
-  private readonly star = new Graphics().poly(starPoints(30, 14)).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+  private readonly star = new Graphics()
+    .poly(starPoints(30, 14))
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 4, color: swatch.yellow.line });
   private readonly apple = prop('apple', 'red');
   private readonly appleGlow = new Graphics();
   private readonly queue = new Container();
@@ -70,10 +96,17 @@ class RobotPath implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
-    this.fixPlan = ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : ctx.level === 14 ? ctx.rng.pick(MEND_PLANS) : null;
-    this.plan = this.prediction ?? this.fixPlan ?? (ctx.level === 13 ? ctx.rng.pick(VIA_PLANS) : boardFor(ctx.level, ctx.rng));
+    this.fixPlan =
+      ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : ctx.level === 14 ? ctx.rng.pick(MEND_PLANS) : null;
+    this.plan =
+      this.prediction ??
+      this.fixPlan ??
+      (ctx.level === 13 ? ctx.rng.pick(VIA_PLANS) : boardFor(ctx.level, ctx.rng));
     this.mode = this.plan.mode ?? 'steps';
-    this.solution = this.prediction?.program ?? this.plan.solution?.slots ?? shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
+    this.solution =
+      this.prediction?.program ??
+      this.plan.solution?.slots ??
+      shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
     if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
     if (this.fixPlan) this.program.push(...this.fixPlan.broken.map((slot) => ({ ...slot })));
     if (this.fixPlan?.mode === 'loop') this.loop = this.fixPlan.brokenLoop;
@@ -98,7 +131,20 @@ class RobotPath implements Game {
       this.drawQueue();
     });
     this.loopButton.visible = this.mode === 'loop';
-    ctx.stage.addChild(this.background, this.grid, this.appleGlow, this.apple, this.star, this.robot, this.queue, this.play, this.clear, this.loopButton, this.hint, this.predictionMark);
+    ctx.stage.addChild(
+      this.background,
+      this.grid,
+      this.appleGlow,
+      this.apple,
+      this.star,
+      this.robot,
+      this.queue,
+      this.play,
+      this.clear,
+      this.loopButton,
+      this.hint,
+      this.predictionMark,
+    );
     this.hint.eventMode = 'none';
     this.apple.eventMode = 'none';
     this.appleGlow.eventMode = 'none';
@@ -109,23 +155,42 @@ class RobotPath implements Game {
       this.arrows.push({ dir, button });
     }
     if (this.prediction) {
-      for (let y = 0; y < this.plan.size; y++) for (let x = 0; x < this.plan.size; x++) {
-        const cell: Cell = [x, y];
-        const target = new Graphics().circle(0, 0, 50).fill({ color: swatch.green.fill, alpha: 0.001 });
-        this.predictionCells.push(target);
-        ctx.stage.addChild(target);
-        onTap(target, () => {
-          if (this.running || this.done) return;
-          this.predicted = cell;
-          this.drawPrediction();
-          sfx.bell(6, 0.15);
-        }, { radius: 50 });
-      }
+      for (let y = 0; y < this.plan.size; y++)
+        for (let x = 0; x < this.plan.size; x++) {
+          const cell: Cell = [x, y];
+          const target = new Graphics().circle(0, 0, 50).fill({ color: swatch.green.fill, alpha: 0.001 });
+          this.predictionCells.push(target);
+          ctx.stage.addChild(target);
+          onTap(
+            target,
+            () => {
+              if (this.running || this.done) return;
+              this.predicted = cell;
+              this.drawPrediction();
+              sfx.bell(6, 0.15);
+            },
+            { radius: 50 },
+          );
+        }
     }
   }
 
   start() {
-    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.fixPlan ? (this.fixPlan.mode === 'loop' ? 'robot.mend' : 'robot.fix') : this.plan.via ? 'robot.via' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
+    void this.ctx.instruct(
+      this.prediction
+        ? 'robot.predict'
+        : this.fixPlan
+          ? this.fixPlan.mode === 'loop'
+            ? 'robot.mend'
+            : 'robot.fix'
+          : this.plan.via
+            ? 'robot.via'
+            : this.mode === 'loop'
+              ? 'robot.loop'
+              : this.mode === 'counts'
+                ? 'robot.counts'
+                : 'robot.start',
+    );
   }
 
   /** An arrow tap: a new step, or on counted levels one more of the same step. */
@@ -157,7 +222,10 @@ class RobotPath implements Game {
   }
 
   private position(cell: Cell): { x: number; y: number } {
-    return { x: this.origin[0] + (cell[0] + 0.5) * this.cell, y: this.origin[1] + (cell[1] + 0.5) * this.cell };
+    return {
+      x: this.origin[0] + (cell[0] + 0.5) * this.cell,
+      y: this.origin[1] + (cell[1] + 0.5) * this.cell,
+    };
   }
 
   private async run() {
@@ -192,7 +260,11 @@ class RobotPath implements Game {
     this.drawQueue();
     if (this.prediction) {
       this.done = true;
-      await this.ctx.say(this.predicted && sameCell(this.predicted, result.path[result.path.length - 1]) ? 'robot.predict.right' : 'robot.predict.reveal');
+      await this.ctx.say(
+        this.predicted && sameCell(this.predicted, result.path[result.path.length - 1])
+          ? 'robot.predict.right'
+          : 'robot.predict.reveal',
+      );
       this.ctx.finish({ misses: 0, hints: 0 });
       return;
     }
@@ -234,7 +306,15 @@ class RobotPath implements Game {
     if (this.misses === 2) {
       this.hints++;
       const help = this.fixPlan && this.nextHelp();
-      void this.ctx.say(!help ? 'robot.hint' : help === this.loopButton ? 'robot.mend.hint' : help === this.clear ? 'robot.fix.clear' : 'robot.fix.hint');
+      void this.ctx.say(
+        !help
+          ? 'robot.hint'
+          : help === this.loopButton
+            ? 'robot.mend.hint'
+            : help === this.clear
+              ? 'robot.fix.clear'
+              : 'robot.fix.hint',
+      );
     }
     this.drawHint();
   }
@@ -250,7 +330,9 @@ class RobotPath implements Game {
     const top = this.view.h - (rows > 1 ? 170 : 80);
     if (this.mode === 'loop') {
       // A bracket around the program, with how many times it repeats.
-      const g = new Graphics().roundRect(this.slotX(0) - 62, top - 62, this.plan.limit * 110 + 14, 124, 22).stroke({ width: 6, color: swatch.purple.line });
+      const g = new Graphics()
+        .roundRect(this.slotX(0) - 62, top - 62, this.plan.limit * 110 + 14, 124, 22)
+        .stroke({ width: 6, color: swatch.purple.line });
       const times = label(`×${this.loop}`, 34, swatch.purple.line);
       times.position.set(this.slotX(0) + this.plan.limit * 110 - 18, top - 70);
       this.queue.addChild(g, times);
@@ -259,7 +341,9 @@ class RobotPath implements Game {
     for (let i = 0; i < this.plan.limit; i++) {
       const c = new Container();
       const slot = this.program[i];
-      c.addChild(tile(90, 90, i === this.active || i === this.selectedSlot ? 'yellow' : slot ? 'white' : 'teal'));
+      c.addChild(
+        tile(90, 90, i === this.active || i === this.selectedSlot ? 'yellow' : slot ? 'white' : 'teal'),
+      );
       if (slot) {
         const a = arrow(slot.dir);
         c.addChild(a);
@@ -274,13 +358,14 @@ class RobotPath implements Game {
       c.hitArea = new Rectangle(-50, -50, 100, 100);
       this.slotTargets.push(c);
       // The repair level selects a slot; other levels take it and later steps out.
-      if (!this.prediction) onTap(c, () => {
-        if (!this.running && !this.done) {
-          if (this.fixPlan && i <= this.program.length) this.selectedSlot = i;
-          else this.program.splice(i);
-          this.drawQueue();
-        }
-      });
+      if (!this.prediction)
+        onTap(c, () => {
+          if (!this.running && !this.done) {
+            if (this.fixPlan && i <= this.program.length) this.selectedSlot = i;
+            else this.program.splice(i);
+            this.drawQueue();
+          }
+        });
       this.queue.addChild(c);
     }
     this.drawHint();
@@ -330,15 +415,30 @@ class RobotPath implements Game {
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
     const portrait = v.h > v.w;
     this.cell = portrait ? 100 : Math.max(100, Math.min(128, (v.h - 350) / this.plan.size));
-    this.origin = portrait ? [20, 220] : [Math.max(150, v.w / 2 - 360), Math.max(40, (v.h - this.plan.size * this.cell - 250) / 2)];
+    this.origin = portrait
+      ? [20, 220]
+      : [Math.max(150, v.w / 2 - 360), Math.max(40, (v.h - this.plan.size * this.cell - 250) / 2)];
     const g = this.grid.clear();
     for (let y = 0; y < this.plan.size; y++)
       for (let x = 0; x < this.plan.size; x++) {
         const p = this.position([x, y]);
-        g.roundRect(p.x - this.cell / 2 + 4, p.y - this.cell / 2 + 4, this.cell - 8, this.cell - 8, 12).fill(swatch.green.light).stroke({ width: 3, color: swatch.green.fill });
+        g.roundRect(p.x - this.cell / 2 + 4, p.y - this.cell / 2 + 4, this.cell - 8, this.cell - 8, 12)
+          .fill(swatch.green.light)
+          .stroke({ width: 3, color: swatch.green.fill });
         if (this.plan.rocks.some((r) => r[0] === x && r[1] === y)) {
           const k = this.cell / 100;
-          g.poly([p.x - 36 * k, p.y + 25 * k, p.x - 25 * k, p.y - 28 * k, p.x + 15 * k, p.y - 36 * k, p.x + 40 * k, p.y + 20 * k]).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
+          g.poly([
+            p.x - 36 * k,
+            p.y + 25 * k,
+            p.x - 25 * k,
+            p.y - 28 * k,
+            p.x + 15 * k,
+            p.y - 36 * k,
+            p.x + 40 * k,
+            p.y + 20 * k,
+          ])
+            .fill(swatch.brown.fill)
+            .stroke({ width: 4, color: swatch.brown.line });
         }
       }
     const start = this.position([0, 0]);
@@ -350,7 +450,10 @@ class RobotPath implements Game {
       const a = this.position(this.plan.via);
       this.apple.position.set(a.x, a.y);
       this.apple.scale.set(this.cell / 170);
-      this.appleGlow.clear().circle(a.x, a.y, this.cell / 2 - 6).stroke({ width: 8, color: swatch.yellow.line });
+      this.appleGlow
+        .clear()
+        .circle(a.x, a.y, this.cell / 2 - 6)
+        .stroke({ width: 8, color: swatch.yellow.line });
       this.appleGlow.visible = false;
     }
     const cx = v.w - 190;
@@ -362,14 +465,19 @@ class RobotPath implements Game {
     this.play.position.set(v.w - 90, v.h - 76);
     this.clear.position.set(v.w - 70, 70);
     this.loopButton.position.set(this.slotX(0) + this.plan.limit * 110 + 50, v.h - 80);
-    this.arrows.forEach(({ button }) => { button.visible = !this.prediction; });
+    this.arrows.forEach(({ button }) => {
+      button.visible = !this.prediction;
+    });
     this.clear.visible = !this.prediction;
     this.loopButton.visible = !this.prediction && this.mode === 'loop';
     this.play.visible = true;
     this.predictionCells.forEach((target, i) => {
       const p = this.position([i % this.plan.size, Math.floor(i / this.plan.size)]);
       target.position.set(p.x, p.y);
-      target.clear().circle(0, 0, this.cell / 2).fill({ color: swatch.green.fill, alpha: 0.001 });
+      target
+        .clear()
+        .circle(0, 0, this.cell / 2)
+        .fill({ color: swatch.green.fill, alpha: 0.001 });
       target.hitArea = new Circle(0, 0, this.cell / 2);
     });
     this.drawPrediction();
@@ -449,9 +557,25 @@ export const robotPath: GameModule = {
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 13 ? 'Pick up the apple on the way' : l === 14 ? 'Mend the loop' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
+  describeLevel: (l) =>
+    l === 11
+      ? 'Where will it stop?'
+      : l === 12
+        ? 'Fix the program'
+        : l === 13
+          ? 'Pick up the apple on the way'
+          : l === 14
+            ? 'Mend the loop'
+            : l === 1
+              ? 'One or two steps straight to the star'
+              : l === 2
+                ? 'A short program with a turn'
+                : l === 3
+                  ? 'Plan across a bigger grid'
+                  : planFor(l).name,
   music: STYLES.jelly,
-  offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
+  offScreen:
+    'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),
   touchDemo: true,
   sticker: () => robotArt(150),

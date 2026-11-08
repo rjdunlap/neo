@@ -16,11 +16,22 @@ function shine(g: Graphics, r: number, width: number, alpha: number) {
 }
 
 /** A soap bubble: a clear body, a colored rim and a bright highlight. */
-export function drawBubble(g: Graphics, r: number, color: ColorName | null, fillAlpha?: number, lowerGlint = true, rim = PLAIN_RIM): Graphics {
+export function drawBubble(
+  g: Graphics,
+  r: number,
+  color: ColorName | null,
+  fillAlpha?: number,
+  lowerGlint = true,
+  rim = PLAIN_RIM,
+): Graphics {
   const tint = color ? swatch[color].fill : 0xcfeeff;
   // Colored bubbles are nearly solid so the color is unmistakable; plain ones stay see-through.
   g.circle(0, 0, r).fill({ color: tint, alpha: fillAlpha ?? (color ? 0.78 : 0.2) });
-  g.circle(0, 0, r).stroke({ width: Math.max(3, r * 0.07), color: color ? swatch[color].line : rim, alpha: 0.9 });
+  g.circle(0, 0, r).stroke({
+    width: Math.max(3, r * 0.07),
+    color: color ? swatch[color].line : rim,
+    alpha: 0.9,
+  });
   shine(g, r * 0.72, r * 0.1, 0.85);
   // A decorative spot beside quantity dots can look like one more to count.
   if (lowerGlint) g.circle(r * 0.45, r * 0.42, r * 0.06).fill({ color: 0xffffff, alpha: 0.7 });
@@ -30,7 +41,9 @@ export function drawBubble(g: Graphics, r: number, color: ColorName | null, fill
 /** The finale bubble, ringed with every color. */
 export function drawRainbowBubble(g: Graphics, r: number): Graphics {
   g.circle(0, 0, r).fill({ color: 0xffffff, alpha: 0.25 });
-  RAINBOW.forEach((c, i) => g.circle(0, 0, r - i * r * 0.055).stroke({ width: r * 0.06, color: swatch[c].fill, alpha: 0.9 }));
+  RAINBOW.forEach((c, i) =>
+    g.circle(0, 0, r - i * r * 0.055).stroke({ width: r * 0.06, color: swatch[c].fill, alpha: 0.9 }),
+  );
   return shine(g, r * 0.6, r * 0.09, 0.9);
 }
 
@@ -92,7 +105,8 @@ export class Bubble extends Container {
       if (o.dots) {
         const dots = new Graphics();
         dots.eventMode = 'none';
-        for (const dot of numberDots(o.number)) dots.circle(dot.x * o.r, dot.y * o.r, DOT_RADIUS * o.r).fill(ink);
+        for (const dot of numberDots(o.number))
+          dots.circle(dot.x * o.r, dot.y * o.r, DOT_RADIUS * o.r).fill(ink);
         this.shell.addChild(dots);
       }
       this.shell.addChild(t);

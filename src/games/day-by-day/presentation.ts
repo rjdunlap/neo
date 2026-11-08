@@ -7,9 +7,12 @@ export function gardenTreatment(rng: Rng) {
 
 /** Return beneath the seven records, clear of their full-size replay targets. */
 export function wrapPath(w: number) {
-  const left = w / 2 - 354, right = w / 2 + 354;
+  const left = w / 2 - 354,
+    right = w / 2 + 354;
   return [
-    { x: right, y: 340 }, { x: right, y: 371 },
-    { x: left, y: 371 }, { x: left, y: 340 },
+    { x: right, y: 340 },
+    { x: right, y: 371 },
+    { x: left, y: 371 },
+    { x: left, y: 340 },
   ];
 }

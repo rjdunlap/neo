@@ -3,9 +3,51 @@ import { Rng } from '../../engine/random';
 import { stepLevel } from '../../progress/difficulty';
 import { thingArt } from './art';
 import {
-  authoredBoard, beachLayout, deadEndReachable, dotSpots, LEVELS, letGoWays, MAX_HELD, stripSpan, detour, blocker, done, exactSolutions, fieldFor, fits, greedyClears, hintTarget, inPailBox, inPetCorner,
-  KINDS_BY_TIER, LEVEL_COUNT, PAIL_BOX, STRIP, type Rect, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, numeric, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
-  refusal, thingOf, type Board, type State,
+  authoredBoard,
+  beachLayout,
+  deadEndReachable,
+  dotSpots,
+  LEVELS,
+  letGoWays,
+  MAX_HELD,
+  stripSpan,
+  detour,
+  blocker,
+  done,
+  exactSolutions,
+  fieldFor,
+  fits,
+  greedyClears,
+  hintTarget,
+  inPailBox,
+  inPetCorner,
+  KINDS_BY_TIER,
+  LEVEL_COUNT,
+  PAIL_BOX,
+  STRIP,
+  type Rect,
+  letGo,
+  makeBoard,
+  MAX_PUDDLE_D,
+  moodFor,
+  MOODS,
+  NAMES,
+  NUMBER_KINDS,
+  numeric,
+  passesFilter,
+  placeOn,
+  planFor,
+  PUDDLE_D,
+  puddleStart,
+  soak,
+  soakable,
+  startState,
+  THING_D,
+  thingDiameter,
+  refusal,
+  thingOf,
+  type Board,
+  type State,
 } from './logic';
 
 const plans = Array.from({ length: LEVEL_COUNT }, (_, i) => planFor(i + 1));
@@ -62,9 +104,16 @@ describe('the fit rule and growth', () => {
       tiers.push(s.puddle);
     }
     expect(tiers).toEqual([1, 1, 2, 2, 2, 3, 3]);
-    const big: Board = { plan: planFor(2), start: 4, things: [0, 1, 2].map((id) => ({ id, kind: 'shell', size: 1 })) };
+    const big: Board = {
+      plan: planFor(2),
+      start: 4,
+      things: [0, 1, 2].map((id) => ({ id, kind: 'shell', size: 1 })),
+    };
     let t = startState(big);
-    for (const id of [0, 1, 2]) { const r = soak(big, t, id); if (r.ok) t = r.state; }
+    for (const id of [0, 1, 2]) {
+      const r = soak(big, t, id);
+      if (r.ok) t = r.state;
+    }
     expect(t.puddle).toBe(4);
   });
 
@@ -100,7 +149,10 @@ describe('refusals', () => {
   it('level 8 refuses too-much exactly when puddle + number passes the pail', () => {
     const b = authoredBoard(planFor(8));
     let s = startState(b);
-    for (const id of [1, 2]) { const r = soak(b, s, id); if (r.ok) s = r.state; }
+    for (const id of [1, 2]) {
+      const r = soak(b, s, id);
+      if (r.ok) s = r.state;
+    }
     expect(s.puddle).toBe(12);
     expect(soak(b, s, 5)).toEqual({ ok: false, reason: 'too-much' });
   });
@@ -134,7 +186,11 @@ describe('the authored first rounds', () => {
     const sols = exactSolutions(b);
     expect(sols.map((ids) => ids.map((id) => thingOf(b, id).size))).toEqual([[2, 3, 6]]);
     let s = startState(b);
-    for (const id of [1, 2]) { const r = soak(b, s, id); expect(r.ok).toBe(true); if (r.ok) s = r.state; }
+    for (const id of [1, 2]) {
+      const r = soak(b, s, id);
+      expect(r.ok).toBe(true);
+      if (r.ok) s = r.state;
+    }
     expect(exactSolutions(b, s)).toEqual([]);
     expect(soak(b, s, 5)).toEqual({ ok: false, reason: 'too-much' });
     expect(hintTarget(b, s)).toEqual({ letGo: 2 });
@@ -275,7 +331,10 @@ describe('level 11, too full', () => {
       out.set(key, s);
       if (done(b, s)) continue;
       for (const id of s.soaked) queue.push(letGo(b, s, id));
-      for (const id of s.left) { const r = soak(b, s, id); if (r.ok) queue.push(r.state); }
+      for (const id of s.left) {
+        const r = soak(b, s, id);
+        if (r.ok) queue.push(r.state);
+      }
     }
     return [...out.values()];
   }
@@ -332,7 +391,10 @@ describe('level 11, too full', () => {
   });
 
   it('from every reachable state, the hint reaches the pail within six steps (authored and 200 seeds)', () => {
-    const boards = [authoredBoard(planFor(11)), ...Array.from({ length: 200 }, (_, i) => makeBoard(planFor(11), new Rng(i + 1)))];
+    const boards = [
+      authoredBoard(planFor(11)),
+      ...Array.from({ length: 200 }, (_, i) => makeBoard(planFor(11), new Rng(i + 1))),
+    ];
     for (const [i, b] of boards.entries()) {
       for (const s of reachable(b)) {
         const steps = followHints(b, s, 6);
@@ -342,7 +404,12 @@ describe('level 11, too full', () => {
   });
 
   it('the strip of up to five 100-unit tokens fits inside every view at levels 8 and 11', () => {
-    const views = [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1366, h: 768 }, { w: 1180, h: 768 }];
+    const views = [
+      { w: 1024, h: 768 },
+      { w: 1024, h: 1365 },
+      { w: 1366, h: 768 },
+      { w: 1180, h: 768 },
+    ];
     for (const id of [8, 11]) {
       for (const v of views) {
         const span = stripSpan(planFor(id), MAX_HELD, v.w);
@@ -377,7 +444,10 @@ describe('level 8', () => {
         seen.add(key);
         const steps = followHints(b, s, 8);
         expect(steps, `seed ${seed} at ${key}`).toBeGreaterThanOrEqual(0);
-        for (const id of soakable(b, s)) { const r = soak(b, s, id); if (r.ok && !done(b, r.state)) visit(r.state); }
+        for (const id of soakable(b, s)) {
+          const r = soak(b, s, id);
+          if (r.ok && !done(b, r.state)) visit(r.state);
+        }
       };
       visit(startState(b));
     }
@@ -401,7 +471,8 @@ describe('the bot', () => {
 
   it('a detour goes round a thing in the way, clear on both legs', () => {
     const f = { x0: 40, y0: 130, x1: 984, y1: 728 };
-    const a = { x: 200, y: 400 }, b = { x: 800, y: 400 };
+    const a = { x: 200, y: 400 },
+      b = { x: 800, y: 400 };
     const others = [{ x: 500, y: 410, r: 60 }];
     expect(blocker(a, b, 75, others)).not.toBeNull();
     const w = detour(a, b, 75, others, f)!;
@@ -412,7 +483,12 @@ describe('the bot', () => {
 });
 
 describe('the beach layout', () => {
-  const views = [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1366, h: 768 }, { w: 1180, h: 768 }];
+  const views = [
+    { w: 1024, h: 768 },
+    { w: 1024, h: 1365 },
+    { w: 1366, h: 768 },
+    { w: 1180, h: 768 },
+  ];
 
   it('keeps every thing inside the field, clear of the pet, the pail and each other, on every view', () => {
     for (const p of plans) {
@@ -432,8 +508,11 @@ describe('the beach layout', () => {
             expect(q.x === 0 && q.y === 0).toBe(false);
             expect(inPetCorner(v, q.x, q.y, q.r)).toBe(false);
             expect(inPailBox(p, f, q.x, q.y, q.r)).toBe(false);
-            expect(Math.hypot(q.x - start.x, q.y - start.y)).toBeGreaterThanOrEqual(MAX_PUDDLE_D / 2 + q.r - 0.01);
-            for (const o of pts.slice(i + 1)) expect(Math.hypot(o.x - q.x, o.y - q.y)).toBeGreaterThanOrEqual(o.r + q.r + 30 - 0.01);
+            expect(Math.hypot(q.x - start.x, q.y - start.y)).toBeGreaterThanOrEqual(
+              MAX_PUDDLE_D / 2 + q.r - 0.01,
+            );
+            for (const o of pts.slice(i + 1))
+              expect(Math.hypot(o.x - q.x, o.y - q.y)).toBeGreaterThanOrEqual(o.r + q.r + 30 - 0.01);
           }
         }
       }
@@ -449,7 +528,8 @@ describe('the beach layout', () => {
   // first, eight numbered things at 120 across, placed as beachLayout places them (biggest first, 40 × 400 tries).
   describe('two pails probe', () => {
     const plan = planFor(8);
-    const inTwoPails = (f: Rect, x: number, y: number, r: number) => x + r > f.x1 - 2 * PAIL_BOX && y - r < f.y0 + PAIL_BOX;
+    const inTwoPails = (f: Rect, x: number, y: number, r: number) =>
+      x + r > f.x1 - 2 * PAIL_BOX && y - r < f.y0 + PAIL_BOX;
     const DESIGN = { w: 1024, h: 768 };
     function placeTwoPails(n: number, rng: Rng) {
       const f = fieldFor(plan, DESIGN);
@@ -471,7 +551,8 @@ describe('the beach layout', () => {
         }
       }
       if (out.length !== n) return null;
-      const W = f.x1 - f.x0, H = f.y1 - f.y0;
+      const W = f.x1 - f.x0,
+        H = f.y1 - f.y0;
       return { r, places: out.map((o) => ({ fx: (o.x - f.x0) / W, fy: (o.y - f.y0) / H })) };
     }
 
@@ -488,8 +569,11 @@ describe('the beach layout', () => {
             expect(q.y + got!.r).toBeLessThanOrEqual(f.y1 + 0.01);
             expect(inPetCorner(v, q.x, q.y, got!.r)).toBe(false);
             expect(inTwoPails(f, q.x, q.y, got!.r)).toBe(false);
-            expect(Math.hypot(q.x - start.x, q.y - start.y)).toBeGreaterThanOrEqual(MAX_PUDDLE_D / 2 + got!.r - 0.01);
-            for (const o of pts.slice(i + 1)) expect(Math.hypot(o.x - q.x, o.y - q.y)).toBeGreaterThanOrEqual(2 * got!.r + 30 - 0.01);
+            expect(Math.hypot(q.x - start.x, q.y - start.y)).toBeGreaterThanOrEqual(
+              MAX_PUDDLE_D / 2 + got!.r - 0.01,
+            );
+            for (const o of pts.slice(i + 1))
+              expect(Math.hypot(o.x - q.x, o.y - q.y)).toBeGreaterThanOrEqual(2 * got!.r + 30 - 0.01);
           }
         }
       }
@@ -539,11 +623,13 @@ describe('kinds and beach moods', () => {
 
   it('level 5 boards show at least three different tier-4 kinds over 500 seeds, and numbered boards use every number kind', () => {
     const tier4 = new Set<string>();
-    for (let seed = 1; seed <= 500; seed++) for (const t of makeBoard(planFor(5), new Rng(seed)).things) if (t.size === 4) tier4.add(t.kind);
+    for (let seed = 1; seed <= 500; seed++)
+      for (const t of makeBoard(planFor(5), new Rng(seed)).things) if (t.size === 4) tier4.add(t.kind);
     expect(tier4.size).toBeGreaterThanOrEqual(3);
     for (const id of [6, 7, 8]) {
       const used = new Set<string>();
-      for (let seed = 1; seed <= 200; seed++) for (const t of makeBoard(planFor(id), new Rng(seed)).things) used.add(t.kind);
+      for (let seed = 1; seed <= 200; seed++)
+        for (const t of makeBoard(planFor(id), new Rng(seed)).things) used.add(t.kind);
       expect([...used].sort()).toEqual([...NUMBER_KINDS].sort());
     }
   });
@@ -551,7 +637,8 @@ describe('kinds and beach moods', () => {
   it('the mood is seeded, every mood turns up, and drawing it after the board leaves the board unchanged', () => {
     const seen = new Set<string>();
     for (let seed = 1; seed <= 60; seed++) {
-      const a = new Rng(seed), b = new Rng(seed);
+      const a = new Rng(seed),
+        b = new Rng(seed);
       const board = makeBoard(planFor(4), a);
       const layoutSeed = a.int(1, 1e9);
       const mood = moodFor(new Rng(a.int(1, 1e9)));

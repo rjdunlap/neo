@@ -1,5 +1,15 @@
 import type { Rng } from '../../engine/random';
-import { clues, colorClues, colorLineSolvable, colorPlacements, colorRuns, lineSolvable, PICTURES as KID_PICTURES, placements, runs } from '../pixel-pictures/logic';
+import {
+  clues,
+  colorClues,
+  colorLineSolvable,
+  colorPlacements,
+  colorRuns,
+  lineSolvable,
+  PICTURES as KID_PICTURES,
+  placements,
+  runs,
+} from '../pixel-pictures/logic';
 import { BIG_15, EASY_10, HARD_10, HARD_15, TWO_COLOUR_10, type DrawnPicture } from './pictures';
 import type { BandLevels } from '../../progress/difficulty';
 
@@ -11,7 +21,10 @@ import type { BandLevels } from '../../progress/difficulty';
  * A grid is a flat array, row by row, of marks: empty, filled or crossed. A two-colour picture (level 6) has two fills: `FILLED`
  * in its first colour and `FILLED_2` in its second; each clue number has a colour, and runs of different colours may touch.
  */
-export const EMPTY = 0, FILLED = 1, CROSSED = 2, FILLED_2 = 3;
+export const EMPTY = 0,
+  FILLED = 1,
+  CROSSED = 2,
+  FILLED_2 = 3;
 export type Mark = 0 | 1 | 2 | 3;
 export type Marks = readonly Mark[];
 /** The two kinds of fill a square can hold. */
@@ -41,21 +54,50 @@ export interface PicturePuzzle {
 export function parsePicture(name: string, rows: readonly string[], twoColours = false): PicturePuzzle {
   const size = rows.length;
   if (rows.some((r) => r.length !== size)) throw new Error(`${name}: a picture is a square`);
-  const solution = rows.join('').split('').map((ch) => ch !== '.');
+  const solution = rows
+    .join('')
+    .split('')
+    .map((ch) => ch !== '.');
   const par = solution.filter(Boolean).length;
   if (!twoColours) {
     const { rows: rowClues, cols: colClues } = clues({ name, rows: [...rows] });
-    return { name, size, rows, solution, target: solution.map((on): Mark => (on ? FILLED : EMPTY)), rowClues, colClues, par };
+    return {
+      name,
+      size,
+      rows,
+      solution,
+      target: solution.map((on): Mark => (on ? FILLED : EMPTY)),
+      rowClues,
+      colClues,
+      par,
+    };
   }
-  const letters = [...new Set(rows.join('').replace(/\./g, ''))].sort((a, b) => Number(b === 'b') - Number(a === 'b') || a.localeCompare(b));
+  const letters = [...new Set(rows.join('').replace(/\./g, ''))].sort(
+    (a, b) => Number(b === 'b') - Number(a === 'b') || a.localeCompare(b),
+  );
   if (letters.length !== 2) throw new Error(`${name}: a two-colour picture has two colours`);
   const colors = [letters[0], letters[1]] as const;
   const fillOf = (ch: string): Fill => (ch === colors[1] ? FILLED_2 : FILLED);
   const c = colorClues({ name, rows: [...rows] });
   const counts = (lines: { count: number }[][]) => lines.map((l) => l.map((r) => r.count));
   const inks = (lines: { color: string }[][]) => lines.map((l) => l.map((r) => fillOf(r.color)));
-  const target = rows.join('').split('').map((ch): Mark => (ch === '.' ? EMPTY : fillOf(ch)));
-  return { name, size, rows, solution, target, rowClues: counts(c.rows), colClues: counts(c.cols), colors, rowInks: inks(c.rows), colInks: inks(c.cols), par };
+  const target = rows
+    .join('')
+    .split('')
+    .map((ch): Mark => (ch === '.' ? EMPTY : fillOf(ch)));
+  return {
+    name,
+    size,
+    rows,
+    solution,
+    target,
+    rowClues: counts(c.rows),
+    colClues: counts(c.cols),
+    colors,
+    rowInks: inks(c.rows),
+    colInks: inks(c.cols),
+    par,
+  };
 }
 
 export const fromDrawn = (d: DrawnPicture) => parsePicture(d.name, d.rows);
@@ -64,7 +106,11 @@ export const fromDrawn = (d: DrawnPicture) => parsePicture(d.name, d.rows);
  * The clue read aloud: "3, 1, 4"; an empty line is "nothing". On a two-colour picture each number says its colour, given
  * `names` for the two fills: "3 blue, 2 orange".
  */
-export function clueText(clue: readonly number[], inks?: readonly Fill[], names?: Readonly<Record<Fill, string>>) {
+export function clueText(
+  clue: readonly number[],
+  inks?: readonly Fill[],
+  names?: Readonly<Record<Fill, string>>,
+) {
   if (clue.length === 1 && clue[0] === 0) return 'nothing';
   return inks && names ? clue.map((n, i) => `${n} ${names[inks[i]]}`).join(', ') : clue.join(', ');
 }
@@ -79,11 +125,16 @@ export interface Line {
 }
 
 /** The squares of a line, in order. */
-export const cellsOf = (size: number, line: Line): number[] => Array.from({ length: size }, (_, i) => (line.kind === 'row' ? line.index * size + i : i * size + line.index));
+export const cellsOf = (size: number, line: Line): number[] =>
+  Array.from({ length: size }, (_, i) =>
+    line.kind === 'row' ? line.index * size + i : i * size + line.index,
+  );
 export const lineName = (line: Line) => `${line.kind} ${line.index + 1}`;
-export const clueOf = (p: PicturePuzzle, line: Line) => (line.kind === 'row' ? p.rowClues[line.index] : p.colClues[line.index]);
+export const clueOf = (p: PicturePuzzle, line: Line) =>
+  line.kind === 'row' ? p.rowClues[line.index] : p.colClues[line.index];
 /** A two-colour line's clue numbers' fills (undefined on a one-colour picture). */
-export const inksOf = (p: PicturePuzzle, line: Line) => (line.kind === 'row' ? p.rowInks?.[line.index] : p.colInks?.[line.index]);
+export const inksOf = (p: PicturePuzzle, line: Line) =>
+  line.kind === 'row' ? p.rowInks?.[line.index] : p.colInks?.[line.index];
 
 /* Two colours: a line's marks read as Pixel Pictures' colour lines ('.' empty, a palette letter filled), so its solver is shared. */
 const letterOf = (p: PicturePuzzle, m: Fill) => p.colors![m === FILLED_2 ? 1 : 0];
@@ -93,7 +144,8 @@ export const colorClueOf = (p: PicturePuzzle, line: Line) => {
   return clueOf(p, line).map((count, i) => ({ count, color: letterOf(p, inks[i]) }));
 };
 /** What each mark tells colour line logic: a fill is known to be its colour, a cross known empty, an empty square unknown. */
-export const colorKnowledge = (marks: Marks, p: PicturePuzzle): (string | null)[] => marks.map((m) => (isFill(m) ? letterOf(p, m) : m === CROSSED ? '.' : null));
+export const colorKnowledge = (marks: Marks, p: PicturePuzzle): (string | null)[] =>
+  marks.map((m) => (isFill(m) ? letterOf(p, m) : m === CROSSED ? '.' : null));
 export const allLines = (size: number): Line[] => [
   ...Array.from({ length: size }, (_, index): Line => ({ kind: 'row', index })),
   ...Array.from({ length: size }, (_, index): Line => ({ kind: 'column', index })),
@@ -108,16 +160,28 @@ export type LineStatus = 'open' | 'done' | 'over';
 export function lineStatus(line: Marks, clue: readonly number[]): LineStatus {
   const filled = runs(line.map((m) => m === FILLED));
   if (filled.length === clue.length && filled.every((n, i) => n === clue[i])) return 'done';
-  const fits = placements(line.length, [...clue]).some((pl) => pl.every((on, i) => (line[i] !== FILLED || on) && (line[i] !== CROSSED || !on)));
+  const fits = placements(line.length, [...clue]).some((pl) =>
+    pl.every((on, i) => (line[i] !== FILLED || on) && (line[i] !== CROSSED || !on)),
+  );
   return fits ? 'open' : 'over';
 }
 
 /** As `lineStatus`, on a two-colour line: its runs must match the clue's counts and colours, and runs of different colours may touch. */
-export function colorLineStatus(line: Marks, clue: readonly { count: number; color: string }[], p: PicturePuzzle): LineStatus {
+export function colorLineStatus(
+  line: Marks,
+  clue: readonly { count: number; color: string }[],
+  p: PicturePuzzle,
+): LineStatus {
   const cells = line.map((m) => (isFill(m) ? letterOf(p, m) : '.'));
   const have = colorRuns(cells);
-  if (have.length === clue.length && have.every((r, i) => r.count === clue[i].count && (r.count === 0 || r.color === clue[i].color))) return 'done';
-  const fits = colorPlacements(line.length, [...clue]).some((pl) => pl.every((c, i) => (!isFill(line[i]) || c === cells[i]) && (line[i] !== CROSSED || c === '.')));
+  if (
+    have.length === clue.length &&
+    have.every((r, i) => r.count === clue[i].count && (r.count === 0 || r.color === clue[i].color))
+  )
+    return 'done';
+  const fits = colorPlacements(line.length, [...clue]).some((pl) =>
+    pl.every((c, i) => (!isFill(line[i]) || c === cells[i]) && (line[i] !== CROSSED || c === '.')),
+  );
   return fits ? 'open' : 'over';
 }
 
@@ -127,10 +191,12 @@ export const statusOf = (marks: Marks, p: PicturePuzzle, line: Line): LineStatus
 };
 
 /** Every line's standing: rows first, then columns. */
-export const statuses = (marks: Marks, p: PicturePuzzle): LineStatus[] => allLines(p.size).map((l) => statusOf(marks, p, l));
+export const statuses = (marks: Marks, p: PicturePuzzle): LineStatus[] =>
+  allLines(p.size).map((l) => statusOf(marks, p, l));
 
 /** The picture is finished when exactly its squares are filled, each in its colour. A cross is only a note, so crosses never matter. */
-export const isSolved = (marks: Marks, p: PicturePuzzle) => p.target.every((t, i) => (isFill(marks[i]) ? marks[i] : EMPTY) === t);
+export const isSolved = (marks: Marks, p: PicturePuzzle) =>
+  p.target.every((t, i) => (isFill(marks[i]) ? marks[i] : EMPTY) === t);
 
 export const fillCount = (marks: Marks) => marks.filter(isFill).length;
 
@@ -144,7 +210,8 @@ export const fillCount = (marks: Marks) => marks.filter(isFill).length;
  * two-colour picture the fill is the chosen pot's `color`: it empties a square already that colour, and paints over the other.
  */
 export type Brush = 'fill' | 'empty' | 'cross' | 'lift';
-export const brushFor = (button: 'fill' | 'cross', mark: Mark, color: Fill = FILLED): Brush => (button === 'fill' ? (mark === color ? 'empty' : 'fill') : mark === CROSSED ? 'lift' : 'cross');
+export const brushFor = (button: 'fill' | 'cross', mark: Mark, color: Fill = FILLED): Brush =>
+  button === 'fill' ? (mark === color ? 'empty' : 'fill') : mark === CROSSED ? 'lift' : 'cross';
 
 export interface Stroke {
   mark: Mark;
@@ -155,10 +222,22 @@ export interface Stroke {
 }
 export function paint(mark: Mark, brush: Brush, color: Fill = FILLED): Stroke {
   switch (brush) {
-    case 'fill': return mark === color ? { mark, changed: false, counted: false } : { mark: color, changed: true, counted: true };
-    case 'empty': return isFill(mark) ? { mark: EMPTY, changed: true, counted: false } : { mark, changed: false, counted: false };
-    case 'cross': return mark === EMPTY ? { mark: CROSSED, changed: true, counted: false } : { mark, changed: false, counted: false };
-    case 'lift': return mark === CROSSED ? { mark: EMPTY, changed: true, counted: false } : { mark, changed: false, counted: false };
+    case 'fill':
+      return mark === color
+        ? { mark, changed: false, counted: false }
+        : { mark: color, changed: true, counted: true };
+    case 'empty':
+      return isFill(mark)
+        ? { mark: EMPTY, changed: true, counted: false }
+        : { mark, changed: false, counted: false };
+    case 'cross':
+      return mark === EMPTY
+        ? { mark: CROSSED, changed: true, counted: false }
+        : { mark, changed: false, counted: false };
+    case 'lift':
+      return mark === CROSSED
+        ? { mark: EMPTY, changed: true, counted: false }
+        : { mark, changed: false, counted: false };
   }
 }
 
@@ -175,7 +254,8 @@ export interface Deduction {
 }
 
 /** What each mark tells line logic: a filled square is known filled, a crossed one known empty. */
-export const knowledge = (marks: Marks): (boolean | null)[] => marks.map((m) => (m === FILLED ? true : m === CROSSED ? false : null));
+export const knowledge = (marks: Marks): (boolean | null)[] =>
+  marks.map((m) => (m === FILLED ? true : m === CROSSED ? false : null));
 
 /**
  * Every square one line decides all by itself, given what is known: the squares that every way of fitting the clue to what is
@@ -186,7 +266,9 @@ export function deductions(known: readonly (boolean | null)[], p: PicturePuzzle)
   const seen = new Set<number>();
   for (const line of allLines(p.size)) {
     const cells = cellsOf(p.size, line);
-    const fits = placements(p.size, [...clueOf(p, line)]).filter((pl) => pl.every((on, i) => known[cells[i]] === null || known[cells[i]] === on));
+    const fits = placements(p.size, [...clueOf(p, line)]).filter((pl) =>
+      pl.every((on, i) => known[cells[i]] === null || known[cells[i]] === on),
+    );
     if (!fits.length) continue;
     cells.forEach((cell, i) => {
       if (known[cell] !== null || seen.has(cell)) return;
@@ -208,14 +290,20 @@ export function colorDeductions(known: readonly (string | null)[], p: PicturePuz
   const seen = new Set<number>();
   for (const line of allLines(p.size)) {
     const cells = cellsOf(p.size, line);
-    const fits = colorPlacements(p.size, colorClueOf(p, line)).filter((pl) => pl.every((c, i) => known[cells[i]] === null || known[cells[i]] === c));
+    const fits = colorPlacements(p.size, colorClueOf(p, line)).filter((pl) =>
+      pl.every((c, i) => known[cells[i]] === null || known[cells[i]] === c),
+    );
     if (!fits.length) continue;
     cells.forEach((cell, i) => {
       if (known[cell] !== null || seen.has(cell)) return;
       if (fits.every((pl) => pl[i] === fits[0][i])) {
         seen.add(cell);
         const c = fits[0][i];
-        out.push(c === '.' ? { cell, fill: false, line } : { cell, fill: true, line, color: c === p.colors![1] ? FILLED_2 : FILLED });
+        out.push(
+          c === '.'
+            ? { cell, fill: false, line }
+            : { cell, fill: true, line, color: c === p.colors![1] ? FILLED_2 : FILLED },
+        );
       }
     });
   }
@@ -229,7 +317,15 @@ export type Hint =
    * One line's clue decides this square, for the reason `why` names. On a two-colour picture `color` is the fill it takes and
    * `inks` the colours of the clue's numbers.
    */
-  | { kind: 'fill' | 'cross'; cell: number; line: Line; clue: readonly number[]; why: HintWhy; color?: Fill; inks?: readonly Fill[] };
+  | {
+      kind: 'fill' | 'cross';
+      cell: number;
+      line: Line;
+      clue: readonly number[];
+      why: HintWhy;
+      color?: Fill;
+      inks?: readonly Fill[];
+    };
 
 /**
  * Why a line decides a square, so a hint teaches a step she can use again:
@@ -239,13 +335,19 @@ export type Hint =
  *   middle of that room wherever it sits ("simple boxes");
  * - `fits`: anything else: what is marked leaves only one way for the clue to fit here.
  */
-export type HintWhy = { kind: 'done' } | { kind: 'full' } | { kind: 'overlap'; run: number; room: number } | { kind: 'fits' };
+export type HintWhy =
+  { kind: 'done' } | { kind: 'full' } | { kind: 'overlap'; run: number; room: number } | { kind: 'fits' };
 
 /**
  * The reason square `at` of a line is decided (filled when `fill`), worked out from the line's clue and what is known in it,
  * never from the answer. The line must decide it.
  */
-export function whyFor(lineKnown: readonly (boolean | null)[], clue: readonly number[], at: number, fill: boolean): HintWhy {
+export function whyFor(
+  lineKnown: readonly (boolean | null)[],
+  clue: readonly number[],
+  at: number,
+  fill: boolean,
+): HintWhy {
   const have = runs(lineKnown.map((k) => k === true));
   if (!fill && have.length === clue.length && have.every((n, i) => n === clue[i])) return { kind: 'done' };
   const slack = lineKnown.length - (clue.reduce((a, b) => a + b, 0) + clue.length - 1);
@@ -253,7 +355,8 @@ export function whyFor(lineKnown: readonly (boolean | null)[], clue: readonly nu
   if (fill && lineKnown.every((k) => k === null)) {
     let left = 0;
     for (const run of clue) {
-      if (run > slack && at >= left + slack && at < left + run) return { kind: 'overlap', run, room: run + slack };
+      if (run > slack && at >= left + slack && at < left + run)
+        return { kind: 'overlap', run, room: run + slack };
       left += run + 1;
     }
   }
@@ -267,9 +370,12 @@ export function whyFor(lineKnown: readonly (boolean | null)[], clue: readonly nu
  */
 export function hintFor(marks: Marks, p: PicturePuzzle, near = 0): Hint | null {
   if (isSolved(marks, p)) return null;
-  const dist = (c: number) => Math.abs(Math.floor(c / p.size) - Math.floor(near / p.size)) + Math.abs((c % p.size) - (near % p.size));
+  const dist = (c: number) =>
+    Math.abs(Math.floor(c / p.size) - Math.floor(near / p.size)) + Math.abs((c % p.size) - (near % p.size));
   // A fill in the wrong place or the wrong colour, or a cross on a square of the picture.
-  const wrong = marks.map((m, i) => ((isFill(m) && m !== p.target[i]) || (m === CROSSED && p.solution[i]) ? i : -1)).filter((i) => i >= 0);
+  const wrong = marks
+    .map((m, i) => ((isFill(m) && m !== p.target[i]) || (m === CROSSED && p.solution[i]) ? i : -1))
+    .filter((i) => i >= 0);
   if (wrong.length) {
     const cell = wrong.sort((a, b) => dist(a) - dist(b) || a - b)[0];
     return { kind: 'fix', cell, mark: marks[cell], want: p.target[cell] };
@@ -277,9 +383,18 @@ export function hintFor(marks: Marks, p: PicturePuzzle, near = 0): Hint | null {
   if (p.colors) return colorHint(marks, p, dist);
   const found = deductions(knowledge(marks), p);
   if (!found.length) return null;
-  const best = found.sort((a, b) => Number(b.fill) - Number(a.fill) || dist(a.cell) - dist(b.cell) || a.cell - b.cell)[0];
-  const cells = cellsOf(p.size, best.line), known = knowledge(marks), clue = clueOf(p, best.line);
-  const why = whyFor(cells.map((c) => known[c]), clue, cells.indexOf(best.cell), best.fill);
+  const best = found.sort(
+    (a, b) => Number(b.fill) - Number(a.fill) || dist(a.cell) - dist(b.cell) || a.cell - b.cell,
+  )[0];
+  const cells = cellsOf(p.size, best.line),
+    known = knowledge(marks),
+    clue = clueOf(p, best.line);
+  const why = whyFor(
+    cells.map((c) => known[c]),
+    clue,
+    cells.indexOf(best.cell),
+    best.fill,
+  );
   return { kind: best.fill ? 'fill' : 'cross', cell: best.cell, line: best.line, clue, why };
 }
 
@@ -291,12 +406,28 @@ function colorHint(marks: Marks, p: PicturePuzzle, dist: (c: number) => number):
   const known = colorKnowledge(marks, p);
   const found = colorDeductions(known, p);
   if (!found.length) return null;
-  const best = found.sort((a, b) => Number(b.fill) - Number(a.fill) || dist(a.cell) - dist(b.cell) || a.cell - b.cell)[0];
-  const clue = clueOf(p, best.line), inks = inksOf(p, best.line)!, own = cellsOf(p.size, best.line).map((c) => marks[c]);
+  const best = found.sort(
+    (a, b) => Number(b.fill) - Number(a.fill) || dist(a.cell) - dist(b.cell) || a.cell - b.cell,
+  )[0];
+  const clue = clueOf(p, best.line),
+    inks = inksOf(p, best.line)!,
+    own = cellsOf(p.size, best.line).map((c) => marks[c]);
   const gaps = inks.slice(1).filter((ink, i) => ink === inks[i]).length;
-  const why: HintWhy = !best.fill && colorLineStatus(own, colorClueOf(p, best.line), p) === 'done' ? { kind: 'done' }
-    : clue.reduce((a, b) => a + b, 0) + gaps === p.size ? { kind: 'full' } : { kind: 'fits' };
-  return { kind: best.fill ? 'fill' : 'cross', cell: best.cell, line: best.line, clue, why, inks, ...(best.color ? { color: best.color } : {}) };
+  const why: HintWhy =
+    !best.fill && colorLineStatus(own, colorClueOf(p, best.line), p) === 'done'
+      ? { kind: 'done' }
+      : clue.reduce((a, b) => a + b, 0) + gaps === p.size
+        ? { kind: 'full' }
+        : { kind: 'fits' };
+  return {
+    kind: best.fill ? 'fill' : 'cross',
+    cell: best.cell,
+    line: best.line,
+    clue,
+    why,
+    inks,
+    ...(best.color ? { color: best.color } : {}),
+  };
 }
 
 /** How many rounds of "every line, once" it takes to find the whole picture: the measure of how much care it needs. */
@@ -312,7 +443,8 @@ export function passesNeeded(p: PicturePuzzle): number {
 }
 
 /** Whether line logic alone, with no guessing, finds the whole picture (in its colours, on a two-colour picture). */
-export const solvableByLines = (p: PicturePuzzle) => (p.colors ? colorLineSolvable : lineSolvable)({ name: p.name, rows: [...p.rows] });
+export const solvableByLines = (p: PicturePuzzle) =>
+  (p.colors ? colorLineSolvable : lineSolvable)({ name: p.name, rows: [...p.rows] });
 
 /* ------------------------------------------------------------------------------------------------ */
 /* Levels                                                                                             */
@@ -338,7 +470,12 @@ export const PLANS: Readonly<Record<number, PicturePlan>> = {
   3: { name: 'A 10 by 10 picture that needs more care', size: 10, pictures: 1 },
   4: { name: 'A big 15 by 15 picture', size: 15, pictures: 1 },
   5: { name: 'A small 5 by 5 picture to start', size: 5, pictures: 1 },
-  6: { name: 'Two colours: a 10 by 10 picture in blue and a warm colour', size: 10, pictures: 1, colors: true },
+  6: {
+    name: 'Two colours: a 10 by 10 picture in blue and a warm colour',
+    size: 10,
+    pictures: 1,
+    colors: true,
+  },
   7: { name: 'A 15 by 15 picture that needs more care', size: 15, pictures: 1 },
 };
 
@@ -358,15 +495,18 @@ export const planFor = (level: number): PicturePlan => PLANS[level] ?? (level > 
  */
 export function poolFor(level: number): PicturePuzzle[] {
   const plan = planFor(level);
-  if (plan.size === 5 || plan.size === 6) return KID_PICTURES[plan.size].filter((p) => lineSolvable(p)).map((p) => parsePicture(p.name, p.rows));
+  if (plan.size === 5 || plan.size === 6)
+    return KID_PICTURES[plan.size].filter((p) => lineSolvable(p)).map((p) => parsePicture(p.name, p.rows));
   if (plan.colors) return TWO_COLOUR_10.map((d) => parsePicture(d.name, d.rows, true));
-  const bank = plan === PLANS[7] ? HARD_15 : plan.size === 15 ? BIG_15 : plan === PLANS[2] ? EASY_10 : HARD_10;
+  const bank =
+    plan === PLANS[7] ? HARD_15 : plan.size === 15 ? BIG_15 : plan === PLANS[2] ? EASY_10 : HARD_10;
   return bank.map(fromDrawn);
 }
 
 /** The puzzle for a level, chosen from the seed: the same seed hides the same picture. */
 export function makePuzzles(level: number, rng: Rng): PicturePuzzle[] {
-  const pool = poolFor(level), plan = planFor(level);
+  const pool = poolFor(level),
+    plan = planFor(level);
   return rng.shuffle([...pool]).slice(0, plan.pictures);
 }
 
@@ -385,8 +525,15 @@ export const CLUE_STEP_Y = 24;
 /** `fill2` is the second colour's pot on a two-colour picture, where `fill` is the first's. */
 export type Tool = 'fill' | 'fill2' | 'cross' | 'slide';
 export type SlotKind = Tool | 'hint' | 'again';
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Slot extends Rect { kind: SlotKind }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Slot extends Rect {
+  kind: SlotKind;
+}
 
 /**
  * Where everything sits for touch. The squares are at least 64 across; when the picture (with its clue numbers) does not fit
@@ -418,10 +565,21 @@ export const HOME_H = 210;
  * The touch layout for a `size` by `size` picture whose clue strips are `rowDepth` and `colDepth` numbers deep, in a view of
  * `vw` by `vh` logical units. A Slide button is offered only when the picture is bigger than its window.
  */
-export function touchFrame(vw: number, vh: number, size: number, rowDepth: number, colDepth: number, twoColours = false): TouchFrame {
-  const side = vw >= vh, btn = 72, gap = 10;
-  const gutterX = rowDepth * CLUE_STEP_X + 14, gutterY = colDepth * CLUE_STEP_Y + 14;
-  const panelW = 124, margin = 16;
+export function touchFrame(
+  vw: number,
+  vh: number,
+  size: number,
+  rowDepth: number,
+  colDepth: number,
+  twoColours = false,
+): TouchFrame {
+  const side = vw >= vh,
+    btn = 72,
+    gap = 10;
+  const gutterX = rowDepth * CLUE_STEP_X + 14,
+    gutterY = colDepth * CLUE_STEP_Y + 14;
+  const panelW = 124,
+    margin = 16;
   // The strip for the buttons: a column on the right, or a row at the bottom with the tally above it.
   const area: Rect = side
     ? { x: HOME_W, y: 100, w: vw - HOME_W - margin - panelW - margin, h: vh - 100 - 24 }
@@ -429,13 +587,27 @@ export function touchFrame(vw: number, vh: number, size: number, rowDepth: numbe
   const fit = Math.floor(Math.min(area.w - gutterX - PAD, area.h - gutterY - PAD) / size);
   const cell = Math.max(MIN_TOUCH, Math.min(96, fit));
   const content = size * cell;
-  const maxX = Math.max(0, content + PAD - (area.w - gutterX)), maxY = Math.max(0, content + PAD - (area.h - gutterY));
+  const maxX = Math.max(0, content + PAD - (area.w - gutterX)),
+    maxY = Math.max(0, content + PAD - (area.h - gutterY));
   // The paper hugs a picture that is all in view, and fills the window when it slides.
-  const pw = maxX > 0 ? area.w : gutterX + content + PAD, ph = maxY > 0 ? area.h : gutterY + content + PAD;
+  const pw = maxX > 0 ? area.w : gutterX + content + PAD,
+    ph = maxY > 0 ? area.h : gutterY + content + PAD;
   const paper: Rect = { x: area.x + (area.w - pw) / 2, y: area.y + (area.h - ph) / 2, w: pw, h: ph };
-  const grid: Rect = { x: paper.x + gutterX, y: paper.y + gutterY, w: paper.w - gutterX, h: paper.h - gutterY };
+  const grid: Rect = {
+    x: paper.x + gutterX,
+    y: paper.y + gutterY,
+    w: paper.w - gutterX,
+    h: paper.h - gutterY,
+  };
   // A two-colour picture has a pot for each colour where Fill would be.
-  const kinds: SlotKind[] = ['fill', ...(twoColours ? ['fill2' as const] : []), 'cross', ...(maxX > 0 || maxY > 0 ? ['slide' as const] : []), 'hint', 'again'];
+  const kinds: SlotKind[] = [
+    'fill',
+    ...(twoColours ? ['fill2' as const] : []),
+    'cross',
+    ...(maxX > 0 || maxY > 0 ? ['slide' as const] : []),
+    'hint',
+    'again',
+  ];
   const slots: Slot[] = [];
   let info: Rect;
   if (side) {
@@ -444,7 +616,9 @@ export function touchFrame(vw: number, vh: number, size: number, rowDepth: numbe
     kinds.forEach((kind, k) => slots.push({ kind, x, y: 100 + 92 + k * (btn + gap), w: panelW, h: btn }));
   } else {
     // The row starts right of the pet in the bottom left corner.
-    const by = vh - 24 - btn, room = vw - HOME_W - 24, bw = Math.min(190, Math.floor((room - gap * (kinds.length - 1)) / kinds.length));
+    const by = vh - 24 - btn,
+      room = vw - HOME_W - 24,
+      bw = Math.min(190, Math.floor((room - gap * (kinds.length - 1)) / kinds.length));
     const x0 = HOME_W + (room - (bw * kinds.length + gap * (kinds.length - 1))) / 2;
     info = { x: HOME_W, y: by - 12 - 44, w: room, h: 44 };
     kinds.forEach((kind, k) => slots.push({ kind, x: x0 + k * (bw + gap), y: by, w: bw, h: btn }));
@@ -453,13 +627,17 @@ export function touchFrame(vw: number, vh: number, size: number, rowDepth: numbe
 }
 
 /** How deep the clue strips are: the most numbers in one row's clue, and in one column's. */
-export const clueDepths = (p: PicturePuzzle) => ({ rowDepth: Math.max(...p.rowClues.map((c) => c.length)), colDepth: Math.max(...p.colClues.map((c) => c.length)) });
+export const clueDepths = (p: PicturePuzzle) => ({
+  rowDepth: Math.max(...p.rowClues.map((c) => c.length)),
+  colDepth: Math.max(...p.colClues.map((c) => c.length)),
+});
 
 export type Axis = 'row' | 'column';
 
 /** Which way a stroke begun on `start` runs once the finger is on `at`: the longer of its two movements. Null while it is on the start. */
 export function axisOf(n: number, start: number, at: number): Axis | null {
-  const dr = Math.abs(Math.floor(at / n) - Math.floor(start / n)), dc = Math.abs((at % n) - (start % n));
+  const dr = Math.abs(Math.floor(at / n) - Math.floor(start / n)),
+    dc = Math.abs((at % n) - (start % n));
   return dr === 0 && dc === 0 ? null : dc >= dr ? 'row' : 'column';
 }
 
@@ -469,9 +647,12 @@ export function axisOf(n: number, start: number, at: number): Axis | null {
  */
 export function strokeCells(n: number, start: number, axis: Axis | null, at: number): number[] {
   if (axis === null) return [start];
-  const r = Math.floor(start / n), c = start % n;
-  const to = axis === 'row' ? at % n : Math.floor(at / n), from = axis === 'row' ? c : r;
-  const step = to >= from ? 1 : -1, out: number[] = [];
+  const r = Math.floor(start / n),
+    c = start % n;
+  const to = axis === 'row' ? at % n : Math.floor(at / n),
+    from = axis === 'row' ? c : r;
+  const step = to >= from ? 1 : -1,
+    out: number[] = [];
   for (let k = from; k !== to + step; k += step) out.push(axis === 'row' ? r * n + k : k * n + c);
   return out;
 }
@@ -497,8 +678,11 @@ export function toolForHint(h: Hint): Tool {
  */
 export function headStart(p: PicturePuzzle, rowsLeft = 3): Mark[] {
   const marks: Mark[] = p.solution.map((): Mark => EMPTY);
-  const withSquares = Array.from({ length: p.size }, (_, r) => r).filter((r) => p.solution.slice(r * p.size, (r + 1) * p.size).some(Boolean));
+  const withSquares = Array.from({ length: p.size }, (_, r) => r).filter((r) =>
+    p.solution.slice(r * p.size, (r + 1) * p.size).some(Boolean),
+  );
   const keep = new Set(withSquares.slice(-rowsLeft));
-  for (let i = 0; i < marks.length; i++) if (p.solution[i] && !keep.has(Math.floor(i / p.size))) marks[i] = p.target[i];
+  for (let i = 0; i < marks.length; i++)
+    if (p.solution[i] && !keep.has(Math.floor(i / p.size))) marks[i] = p.target[i];
   return marks;
 }

@@ -16,7 +16,36 @@ import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { barsArt, checkArt, drumArt, HEAD, hatArt, line, WORN_SCALE } from './art';
-import { LEVELS, advance, BEATS, botMove, canFinish, earlyDone, HAT, HATS, hatBandLayout, makeRound, newBand, nextStep, PER_BEAT, planFor, spotlight, STAR, takeOff, voices, waitLeft, wear, type Band, type BeatEvent, type Friend, type HatBandLayout, type HatId, type Plan, type Round, HAT_IDS } from './logic';
+import {
+  LEVELS,
+  advance,
+  BEATS,
+  botMove,
+  canFinish,
+  earlyDone,
+  HAT,
+  HATS,
+  hatBandLayout,
+  makeRound,
+  newBand,
+  nextStep,
+  PER_BEAT,
+  planFor,
+  spotlight,
+  STAR,
+  takeOff,
+  voices,
+  waitLeft,
+  wear,
+  type Band,
+  type BeatEvent,
+  type Friend,
+  type HatBandLayout,
+  type HatId,
+  type Plan,
+  type Round,
+  HAT_IDS,
+} from './logic';
 import { SongBand } from './song';
 
 /** A hat she can lift: drag it onto a friend, or tap it and then tap the friend. */
@@ -27,20 +56,35 @@ class HatPiece extends Container {
   /** How far the finger has travelled since it went down, in the stage's units: a tap barely moves it. */
   travel = 0;
   private downAt: { x: number; y: number } | null = null;
-  constructor(readonly id: HatId, stage: Container) {
+  constructor(
+    readonly id: HatId,
+    stage: Container,
+  ) {
     super();
     // Judge a tap by the finger, not the hat: the drag lifts the hat 40 units above the finger as soon as it moves.
-    this.on('pointerdown', (e) => { this.downAt = stage.toLocal(e.global); this.travel = 0; });
+    this.on('pointerdown', (e) => {
+      this.downAt = stage.toLocal(e.global);
+      this.travel = 0;
+    });
     this.on('globalpointermove', (e) => {
       if (!this.downAt) return;
       const p = stage.toLocal(e.global);
       this.travel = Math.max(this.travel, Math.hypot(p.x - this.downAt.x, p.y - this.downAt.y));
     });
-    this.on('pointerup', () => { this.downAt = null; });
-    this.on('pointerupoutside', () => { this.downAt = null; });
-    this.glow.roundRect(-HAT / 2 - 6, -HAT / 2 - 6, HAT + 12, HAT + 12, 30).fill({ color: 0xfff3a0, alpha: 0.95 }).stroke({ width: 5, color: ink });
+    this.on('pointerup', () => {
+      this.downAt = null;
+    });
+    this.on('pointerupoutside', () => {
+      this.downAt = null;
+    });
+    this.glow
+      .roundRect(-HAT / 2 - 6, -HAT / 2 - 6, HAT + 12, HAT + 12, 30)
+      .fill({ color: 0xfff3a0, alpha: 0.95 })
+      .stroke({ width: 5, color: ink });
     this.glow.visible = false;
-    this.hintGlow.roundRect(-HAT / 2 - 12, -HAT / 2 - 12, HAT + 24, HAT + 24, 34).fill({ color: 0xffe066, alpha: 0.9 });
+    this.hintGlow
+      .roundRect(-HAT / 2 - 12, -HAT / 2 - 12, HAT + 24, HAT + 24, 34)
+      .fill({ color: 0xffe066, alpha: 0.9 });
     this.hintGlow.visible = false;
     this.addChild(this.hintGlow, this.glow, hatArt(id));
     // 140 local units: still 112 across at the worn hat's scale.
@@ -72,9 +116,11 @@ class Player extends Container {
 }
 
 function starArt(on: boolean): Graphics {
-  return new Graphics().poly(starPoints(30, 13)).fill(on ? 0xffffff : swatch.yellow.light).stroke({ width: 4, color: ink, join: 'round' });
+  return new Graphics()
+    .poly(starPoints(30, 13))
+    .fill(on ? 0xffffff : swatch.yellow.light)
+    .stroke({ width: 4, color: ink, join: 'round' });
 }
-
 
 class HatBand implements Game {
   readonly plan: Plan;
@@ -107,7 +153,16 @@ class HatBand implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.round = makeRound(ctx.rng, ctx.level);
-    this.backdrop = new Backdrop({ sky: [0xd9c8f2, 0xfff6e0], hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f], horizon: 0.64, clouds: 2, seed: 157 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd9c8f2, 0xfff6e0],
+        hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f],
+        horizon: 0.64,
+        clouds: 2,
+        seed: 157,
+      },
+      ctx.view,
+    );
     this.stage.eventMode = 'none';
     this.rackBoard.eventMode = 'none';
     this.friends = this.round.cast.map((name) => new Player(name));
@@ -141,11 +196,15 @@ class HatBand implements Game {
     this.draw();
   }
 
-  start() { void this.begin(); }
+  start() {
+    void this.begin();
+  }
 
   private async begin() {
     await this.speak('hat-band.intro', { name: this.ctx.childName });
-    await this.ctx.instruct(`hat-band.instruct-${this.ctx.level <= 1 ? 1 : this.ctx.level >= 3 ? 3 : 2}` as const);
+    await this.ctx.instruct(
+      `hat-band.instruct-${this.ctx.level <= 1 ? 1 : this.ctx.level >= 3 ? 3 : 2}` as const,
+    );
     if (this.finished) return;
     this.ready = true;
     for (const p of this.hats.values()) p.handle.enabled = true;
@@ -154,7 +213,11 @@ class HatBand implements Game {
   /** Feedback during play lowers the band to half while the pet talks; the clock keeps going. */
   private async speak(id: LineId, vars?: LineVars) {
     this.talking++;
-    try { await this.ctx.say(id, vars); } finally { this.talking--; }
+    try {
+      await this.ctx.say(id, vars);
+    } finally {
+      this.talking--;
+    }
   }
 
   resize(v: View) {
@@ -162,15 +225,32 @@ class HatBand implements Game {
     const l = (this.layout = hatBandLayout(v, this.ctx.level, this.round.rack.length));
     const s = l.stage;
     // A little stage: a curtain rail and two posts over a wooden floor.
-    this.stage.clear()
-      .rect(s.x + 20, s.y + 30, 16, s.h - 50).fill(wood.fill).stroke(line(wood.line, 4))
-      .rect(s.x + s.w - 36, s.y + 30, 16, s.h - 50).fill(wood.fill).stroke(line(wood.line, 4))
-      .roundRect(s.x, s.y, s.w, 40, 14).fill(swatch.purple.fill).stroke(line(swatch.purple.line))
-      .roundRect(s.x + 10, s.y + s.h - 40, s.w - 20, 40, 14).fill(wood.light).stroke(line(wood.line));
-    for (let i = 0; i < 6; i++) this.stage.circle(s.x + 50 + (i * (s.w - 100)) / 5, s.y + 40, 10).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+    this.stage
+      .clear()
+      .rect(s.x + 20, s.y + 30, 16, s.h - 50)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4))
+      .rect(s.x + s.w - 36, s.y + 30, 16, s.h - 50)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4))
+      .roundRect(s.x, s.y, s.w, 40, 14)
+      .fill(swatch.purple.fill)
+      .stroke(line(swatch.purple.line))
+      .roundRect(s.x + 10, s.y + s.h - 40, s.w - 20, 40, 14)
+      .fill(wood.light)
+      .stroke(line(wood.line));
+    for (let i = 0; i < 6; i++)
+      this.stage
+        .circle(s.x + 50 + (i * (s.w - 100)) / 5, s.y + 40, 10)
+        .fill(swatch.yellow.fill)
+        .stroke(line(swatch.yellow.line, 3));
     // The rack: a shelf under each hat's place.
     this.rackBoard.clear();
-    for (const r of l.rack) this.rackBoard.roundRect(r.x - 4, r.y + r.h - 18, r.w + 8, 18, 8).fill(wood.fill).stroke(line(wood.line, 4));
+    for (const r of l.rack)
+      this.rackBoard
+        .roundRect(r.x - 4, r.y + r.h - 18, r.w + 8, 18, 8)
+        .fill(wood.fill)
+        .stroke(line(wood.line, 4));
     this.friends.forEach((f, i) => f.position.set(l.friends[i].x, l.friends[i].y));
     this.spots.forEach((spot, i) => {
       const r = l.spots[i];
@@ -205,7 +285,9 @@ class HatBand implements Game {
     }
   }
 
-  private get open() { return this.ready && !this.performing && !this.finished; }
+  private get open() {
+    return this.ready && !this.performing && !this.finished;
+  }
 
   private pick(piece: HatPiece) {
     sfx.tick();
@@ -273,7 +355,9 @@ class HatBand implements Game {
     this.clearHint();
     const f = this.friends[i];
     // Touch-down feedback: the friend hops.
-    void this.ctx.tw.to(f.critter, { y: -14 }, { duration: 0.08 }).then(() => this.ctx.tw.to(f.critter, { y: 0 }, { duration: 0.16 }));
+    void this.ctx.tw
+      .to(f.critter, { y: -14 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(f.critter, { y: 0 }, { duration: 0.16 }));
     if (this.selected) {
       this.put(i, this.selected);
       this.placeHats(true);
@@ -285,7 +369,9 @@ class HatBand implements Game {
     this.clearHint();
     if (this.band.worn[i] === null) {
       // Nothing to hear alone yet: the empty friend gives a little shrug.
-      void this.ctx.tw.to(this.friends[i], { rotation: 0.08 }, { duration: 0.08 }).then(() => this.ctx.tw.to(this.friends[i], { rotation: 0 }, { duration: 0.12 }));
+      void this.ctx.tw
+        .to(this.friends[i], { rotation: 0.08 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(this.friends[i], { rotation: 0 }, { duration: 0.12 }));
       return;
     }
     const was = this.band.solo;
@@ -377,17 +463,31 @@ class HatBand implements Game {
       f.alpha = b.solo !== null && b.solo !== i ? 0.4 : 1;
       if (hat && this.hats.get(hat)) this.hats.get(hat)!.alpha = f.alpha;
       f.ring.clear();
-      const joining = hat !== b.sounding.worn[i] || (b.solo !== b.sounding.solo && (b.solo === i || b.sounding.solo === i));
+      const joining =
+        hat !== b.sounding.worn[i] || (b.solo !== b.sounding.solo && (b.solo === i || b.sounding.solo === i));
       if (joining && waiting > 0) {
         // A ring that empties as the next beat comes, and a little clock face: wait a moment.
-        const cx = 70, cy = -150, a0 = -Math.PI / 2;
-        f.ring.moveTo(cx + 22 * Math.cos(a0), cy + 22 * Math.sin(a0)).arc(cx, cy, 22, a0, a0 + Math.PI * 2 * Math.max(0.02, waiting)).stroke({ width: 7, color: ink, cap: 'round' });
-        f.ring.circle(cx, cy, 10).fill(0xffffff).stroke({ width: 3, color: ink }).moveTo(cx, cy).lineTo(cx, cy - 6).stroke({ width: 2, color: ink });
+        const cx = 70,
+          cy = -150,
+          a0 = -Math.PI / 2;
+        f.ring
+          .moveTo(cx + 22 * Math.cos(a0), cy + 22 * Math.sin(a0))
+          .arc(cx, cy, 22, a0, a0 + Math.PI * 2 * Math.max(0.02, waiting))
+          .stroke({ width: 7, color: ink, cap: 'round' });
+        f.ring
+          .circle(cx, cy, 10)
+          .fill(0xffffff)
+          .stroke({ width: 3, color: ink })
+          .moveTo(cx, cy)
+          .lineTo(cx, cy - 6)
+          .stroke({ width: 2, color: ink });
       }
     });
     this.stars.forEach((star, i) => {
       star.alpha = b.worn[i] === null ? 0.45 : 1;
-      star.scale.set(b.solo === i ? 1.12 : this.hintStar === i ? 1.08 + 0.06 * Math.sin(this.hintFor * 8) : 1);
+      star.scale.set(
+        b.solo === i ? 1.12 : this.hintStar === i ? 1.08 + 0.06 * Math.sin(this.hintFor * 8) : 1,
+      );
     });
     this.done.alpha = canFinish(b, this.ctx.level) || this.performing ? 1 : 0.4;
   }
@@ -401,10 +501,19 @@ class HatBand implements Game {
     this.ctx.pet.cheer();
     for (const f of this.friends) {
       f.critter.cheer();
-      void this.ctx.tw.to(f.critter, { rotation: 0.25 }, { duration: 0.3 }).then(() => this.ctx.tw.to(f.critter, { rotation: 0 }, { duration: 0.3 }));
+      void this.ctx.tw
+        .to(f.critter, { rotation: 0.25 }, { duration: 0.3 })
+        .then(() => this.ctx.tw.to(f.critter, { rotation: 0 }, { duration: 0.3 }));
     }
     const s = this.layout.stage;
-    this.ctx.particles.burst(s.x + s.w / 2, s.y + 60, { kind: 'confetti', colors: [swatch.red.fill, swatch.yellow.fill, swatch.purple.fill, swatch.blue.fill], count: 40, speed: [200, 520], gravity: 600, life: [1, 1.6] });
+    this.ctx.particles.burst(s.x + s.w / 2, s.y + 60, {
+      kind: 'confetti',
+      colors: [swatch.red.fill, swatch.yellow.fill, swatch.purple.fill, swatch.blue.fill],
+      count: 40,
+      speed: [200, 520],
+      gravity: 600,
+      life: [1, 1.6],
+    });
     await this.speak('hat-band.bow');
     await this.ctx.tw.wait(0.3);
     this.ctx.finish({ misses: 0, hints: 0 });
@@ -417,7 +526,14 @@ class HatBand implements Game {
     if (!move) return null;
     if (move === 'done') return { tap: { on: this.done } };
     if ('hat' in move) return { tap: { on: this.hats.get(move.hat)! } };
-    if ('friend' in move) return { tap: { on: this.spots[move.friend], x: this.layout.spots[move.friend].w / 2, y: this.layout.spots[move.friend].h - 60 } };
+    if ('friend' in move)
+      return {
+        tap: {
+          on: this.spots[move.friend],
+          x: this.layout.spots[move.friend].w / 2,
+          y: this.layout.spots[move.friend].h - 60,
+        },
+      };
     return { tap: { on: this.stars[move.star] } };
   }
 
@@ -432,11 +548,21 @@ class HatBand implements Game {
 class HatBandIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics()
-      .rect(-110, -200, 14, 130).fill(wood.fill).stroke(line(wood.line, 4))
-      .rect(96, -200, 14, 130).fill(wood.fill).stroke(line(wood.line, 4))
-      .roundRect(-125, -215, 250, 30, 10).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 5))
-      .roundRect(-120, -80, 240, 30, 10).fill(wood.light).stroke(line(wood.line, 5)));
+    c.addChild(
+      new Graphics()
+        .rect(-110, -200, 14, 130)
+        .fill(wood.fill)
+        .stroke(line(wood.line, 4))
+        .rect(96, -200, 14, 130)
+        .fill(wood.fill)
+        .stroke(line(wood.line, 4))
+        .roundRect(-125, -215, 250, 30, 10)
+        .fill(swatch.purple.fill)
+        .stroke(line(swatch.purple.line, 5))
+        .roundRect(-120, -80, 240, 30, 10)
+        .fill(wood.light)
+        .stroke(line(wood.line, 5)),
+    );
     const drum = hatArt('steady');
     drum.position.set(-48, -130);
     const tune = hatArt('cuckoo');
@@ -449,7 +575,9 @@ class HatBandIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const names = (Object.keys(CRITTERS) as (keyof typeof CRITTERS)[]).filter((n) => n !== 'bear' && n !== 'pip');
+  const names = (Object.keys(CRITTERS) as (keyof typeof CRITTERS)[]).filter(
+    (n) => n !== 'bear' && n !== 'pip',
+  );
   const friend = new Critter(CRITTERS[rng.pick(names)]);
   friend.alive = false;
   friend.scale.set(0.5);
@@ -476,8 +604,10 @@ export const hatBand: GameModule = {
   describeLevel: (level) => planFor(level).name,
   // The band is the music; the island's loop stays silent so it never competes.
   music: silenced(STYLES.jelly),
-  coplayHint: 'One of you puts a hat on the first friend and the other dresses the second; then swap hats. A grown-up can ask "which friend plays the beat?"',
-  offScreen: 'With a willing grown-up, one hums a steady "boom, boom" and the other hums a little tune over it; then swap. Just listening is fine too.',
+  coplayHint:
+    'One of you puts a hat on the first friend and the other dresses the second; then swap hats. A grown-up can ask "which friend plays the beat?"',
+  offScreen:
+    'With a willing grown-up, one hums a steady "boom, boom" and the other hums a little tune over it; then swap. Just listening is fine too.',
   hubIcon: () => new HatBandIcon(),
   touchDemo: true,
   sticker,

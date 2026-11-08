@@ -8,7 +8,18 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { shoreFriendArt, shorePlaceArt, tideIcon } from './art';
-import { hasRoom, makeShoreRounds, shoreAccepted, shoreHint, shoreTouch, unmet, type Arrangement, type Place, type ShoreFriend, type ShoreRound } from './logic';
+import {
+  hasRoom,
+  makeShoreRounds,
+  shoreAccepted,
+  shoreHint,
+  shoreTouch,
+  unmet,
+  type Arrangement,
+  type Place,
+  type ShoreFriend,
+  type ShoreRound,
+} from './logic';
 
 const FRIEND_WORDS: Record<ShoreFriend, string> = { anemone: 'anemone', crab: 'crab', barnacle: 'barnacle' };
 
@@ -62,7 +73,17 @@ export class RockyShore implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.rounds = makeShoreRounds(ctx.level, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x91d8f4, 0xeaf9ff], hills: [0xf3dc9c, 0xe2c27a], horizon: 0.3, clouds: 2, sun: true, seed: 81 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x91d8f4, 0xeaf9ff],
+        hills: [0xf3dc9c, 0xe2c27a],
+        horizon: 0.3,
+        clouds: 2,
+        sun: true,
+        seed: 81,
+      },
+      ctx.view,
+    );
     this.water.eventMode = 'none';
     this.glow.eventMode = 'none';
     // The sand along the bottom takes a held friend back off the shore.
@@ -70,7 +91,15 @@ export class RockyShore implements Game {
     onTap(this.sand, () => this.toSand(), { cooldown: 220 });
     this.tideButton = new RoundButton(tideIcon(), swatch.blue, 58, () => void this.tide());
     // The sea lies under the places: at high tide they stand in it, and it slides away to show the sand.
-    ctx.stage.addChild(this.backdrop, this.sand, this.water, this.placeLayer, this.friendLayer, this.glow, this.tideButton);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.sand,
+      this.water,
+      this.placeLayer,
+      this.friendLayer,
+      this.glow,
+      this.tideButton,
+    );
   }
 
   get round() {
@@ -120,15 +149,24 @@ export class RockyShore implements Game {
         const f = this.friends[move.friend].node;
         g.roundRect(f.x - 64, f.y - 64, 128, 128, 26).stroke({ width: pulse, color: swatch.yellow.fill });
         const p = this.places.find((pl) => pl.place === move.place);
-        if (p) g.roundRect(p.node.x - 136, p.node.y - 96, 272, 192, 34).stroke({ width: pulse, color: swatch.yellow.fill });
+        if (p)
+          g.roundRect(p.node.x - 136, p.node.y - 96, 272, 192, 34).stroke({
+            width: pulse,
+            color: swatch.yellow.fill,
+          });
         // A friend blocking a full place goes back to the sand first, so the sand glows.
-        else if (move.place === 'sand') g.roundRect(160, this.view.h - 165, this.view.w - 350, 150, 34).stroke({ width: pulse, color: swatch.yellow.fill });
+        else if (move.place === 'sand')
+          g.roundRect(160, this.view.h - 165, this.view.w - 350, 150, 34).stroke({
+            width: pulse,
+            color: swatch.yellow.fill,
+          });
       }
     }
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.roundIndex < 0 || this.roundIndex >= this.rounds.length) return null;
+    if (this.busy || this.finished || this.roundIndex < 0 || this.roundIndex >= this.rounds.length)
+      return null;
     const touch = shoreTouch(this.round, this.arrangement, this.held);
     if (!touch) return null;
     if (touch === 'tide') return { tap: { on: this.tideButton }, pause: 1 };
@@ -204,14 +242,16 @@ export class RockyShore implements Game {
     if (this.busy || this.finished) return;
     this.held = this.held === index ? null : index;
     sfx.pop(this.held === null ? 3 : 7);
-    if (this.held !== null) void this.ctx.say('habitat.shore-pick', { friend: FRIEND_WORDS[this.friends[index].kind] });
+    if (this.held !== null)
+      void this.ctx.say('habitat.shore-pick', { friend: FRIEND_WORDS[this.friends[index].kind] });
     this.resize(this.view);
   }
 
   private tapPlace(place: Place) {
     if (this.busy || this.finished) return;
     const held = this.held;
-    if (held === null || this.arrangement[held] === place) return void this.ctx.say(`habitat.shore-place.${place}`);
+    if (held === null || this.arrangement[held] === place)
+      return void this.ctx.say(`habitat.shore-place.${place}`);
     if (!hasRoom(this.round, this.arrangement, place)) {
       sfx.boing();
       return void this.ctx.say('habitat.shore-full');
@@ -254,9 +294,18 @@ export class RockyShore implements Game {
       sfx.sparkle();
       for (const f of this.friends) {
         const y = f.node.y;
-        void this.ctx.tw.to(f.node, { y: y - 24 }, { duration: 0.22, ease: ease.outBack }).then(() => this.ctx.tw.to(f.node, { y }, { duration: 0.2 }));
+        void this.ctx.tw
+          .to(f.node, { y: y - 24 }, { duration: 0.22, ease: ease.outBack })
+          .then(() => this.ctx.tw.to(f.node, { y }, { duration: 0.2 }));
       }
-      this.ctx.particles.burst(this.view.w / 2, this.placeY - 40, { kind: 'star', colors: [swatch.yellow.fill, swatch.blue.fill, swatch.pink.fill], count: 18, speed: [80, 260], gravity: 260, life: [0.6, 1.1] });
+      this.ctx.particles.burst(this.view.w / 2, this.placeY - 40, {
+        kind: 'star',
+        colors: [swatch.yellow.fill, swatch.blue.fill, swatch.pink.fill],
+        count: 18,
+        speed: [80, 260],
+        gravity: 260,
+        life: [0.6, 1.1],
+      });
       await this.ctx.say('habitat.shore-ok');
       await this.ctx.tw.wait(0.5);
       return void this.next();
@@ -267,11 +316,21 @@ export class RockyShore implements Game {
     this.attempts++;
     for (const i of wrong) {
       if (this.friends[i].kind === 'anemone') this.redraw(i, 0);
-      else void this.ctx.tw.to(this.friends[i].node, { alpha: 0.45, x: this.friends[i].node.x + 30 }, { duration: 0.4 });
+      else
+        void this.ctx.tw.to(
+          this.friends[i].node,
+          { alpha: 0.45, x: this.friends[i].node.x + 30 },
+          { duration: 0.4 },
+        );
     }
     sfx.boing();
     const first = wrong[0];
-    const line = this.friends[first].kind === 'crab' ? 'habitat.shore-crab' : this.arrangement[first] === 'high-rock' ? 'habitat.shore-anemone-high' : 'habitat.shore-anemone-dry';
+    const line =
+      this.friends[first].kind === 'crab'
+        ? 'habitat.shore-crab'
+        : this.arrangement[first] === 'high-rock'
+          ? 'habitat.shore-anemone-high'
+          : 'habitat.shore-anemone-dry';
     await this.ctx.say(line);
     if (this.attempts >= 2 && !this.hinting) {
       this.hinting = true;

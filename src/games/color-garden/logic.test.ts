@@ -44,7 +44,9 @@ describe('Color Garden', () => {
       });
     }
     // Earlier levels keep their kinds: fruit up to 5, balloons and flowers at 7.
-    expect(new Set(deal(new Rng(3), PLANS[4]).kinds.filter((k) => k === 'balloon' || k === 'flower')).size).toBe(0);
+    expect(
+      new Set(deal(new Rng(3), PLANS[4]).kinds.filter((k) => k === 'balloon' || k === 'flower')).size,
+    ).toBe(0);
   });
 
   it('drops into the basket under the finger, even where six baskets crowd together', () => {
@@ -106,7 +108,9 @@ describe('Color Garden level 8, Color or kind', () => {
       // Exactly one valid basket for every item under the round's rule.
       items.forEach((key, i) => {
         expect(colors.filter((c) => c === key)).toHaveLength(1);
-        expect(key).toBe(rule === 'color' ? looks![i] : kinds[i] === 'balloon' ? 'kind-balloon' : 'kind-fruit');
+        expect(key).toBe(
+          rule === 'color' ? looks![i] : kinds[i] === 'balloon' ? 'kind-balloon' : 'kind-fruit',
+        );
         if (kinds[i] !== 'balloon') expect(kinds[i]).toBe(FRUIT_FOR[looks![i]]);
       });
     }
@@ -117,19 +121,18 @@ describe('Color Garden level 8, Color or kind', () => {
   });
 });
 
-
 describe('Color Garden tap entry (stable level 9)', () => {
   it('has four fruits, two distinct colors, and exactly one own basket per tap', () => {
     const plan = planFor(9);
     expect(plan).toMatchObject({ tap: true, items: 4, colors: 2, fruit: true });
     for (let seed = 1; seed <= 100; seed++) {
       const round = deal(new Rng(seed), plan);
-      const waiting = round.items.map(key => ({ key }));
-      const baskets = round.colors.map(key => ({ key }));
+      const waiting = round.items.map((key) => ({ key }));
+      const baskets = round.colors.map((key) => ({ key }));
       expect(new Set(round.colors).size).toBe(2);
       expect(waiting).toHaveLength(4);
       for (const item of waiting) {
-        expect(baskets.filter(b => b.key === item.key)).toHaveLength(1);
+        expect(baskets.filter((b) => b.key === item.key)).toHaveLength(1);
         expect(nextToSort([item], baskets)?.basket.key).toBe(item.key);
       }
     }

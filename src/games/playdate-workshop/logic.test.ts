@@ -2,10 +2,49 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  accepts, acceptedPlans, apply, blankTable, BUBBLE, BUTTON, CARD, cardOrder, check, complete, corners, decisionNow, extensions,
-  FRIENDS, gapBetween, give, hintFor, insideView, key, LEVEL_COUNT, nextStep, overlaps, PAGE, pass, planFor, previewOf, replay,
-  roll, specFor, stamp, Tally, targets, variationFor, VARIATIONS, whyNot, workshopLayout,
-  type Action, type Friend, type LevelSpec, type Plan, type PlanId, type Trace, type Why,
+  accepts,
+  acceptedPlans,
+  apply,
+  blankTable,
+  BUBBLE,
+  BUTTON,
+  CARD,
+  cardOrder,
+  check,
+  complete,
+  corners,
+  decisionNow,
+  extensions,
+  FRIENDS,
+  gapBetween,
+  give,
+  hintFor,
+  insideView,
+  key,
+  LEVEL_COUNT,
+  nextStep,
+  overlaps,
+  PAGE,
+  pass,
+  planFor,
+  previewOf,
+  replay,
+  roll,
+  specFor,
+  stamp,
+  Tally,
+  targets,
+  variationFor,
+  VARIATIONS,
+  whyNot,
+  workshopLayout,
+  type Action,
+  type Friend,
+  type LevelSpec,
+  type Plan,
+  type PlanId,
+  type Trace,
+  type Why,
 } from './logic';
 
 const LEVELS = [1, 2, 3];
@@ -14,16 +53,18 @@ const SEEDS = Array.from({ length: 40 }, (_, i) => i * 7919 + 1);
 
 const CANDIDATES: Action[] = [
   ...(['pad', 'roller'] as const).flatMap((t) => (['A', 'B', 'both'] as const).map((to) => give(t, to))),
-  pass('pad'), pass('roller'),
+  pass('pad'),
+  pass('roller'),
   ...(['pageA', 'pageB', 'banner'] as const).flatMap((s) => [stamp(s), roll(s)]),
 ];
 
 function cases() {
   const out: { level: number; own: Friend; spec: LevelSpec; plan: Plan }[] = [];
-  for (const level of LEVELS) for (const own of OWNS) {
-    const spec = specFor(level, own);
-    for (const id of spec.plans) out.push({ level, own, spec, plan: planFor(id, spec.cells, own) });
-  }
+  for (const level of LEVELS)
+    for (const own of OWNS) {
+      const spec = specFor(level, own);
+      for (const id of spec.plans) out.push({ level, own, spec, plan: planFor(id, spec.cells, own) });
+    }
   return out;
 }
 
@@ -34,12 +75,16 @@ function reachable(plan: Plan): Trace[] {
   seen.set('', []);
   while (frontier.length) {
     const next: Trace[] = [];
-    for (const t of frontier) for (const a of CANDIDATES) {
-      if (!accepts(plan, t, a)) continue;
-      const n = [...t, a];
-      const k = n.map(key).join('|');
-      if (!seen.has(k)) { seen.set(k, n); next.push(n); }
-    }
+    for (const t of frontier)
+      for (const a of CANDIDATES) {
+        if (!accepts(plan, t, a)) continue;
+        const n = [...t, a];
+        const k = n.map(key).join('|');
+        if (!seen.has(k)) {
+          seen.set(k, n);
+          next.push(n);
+        }
+      }
     frontier = next;
   }
   return [...seen.values()];
@@ -54,7 +99,8 @@ describe('allowed traces', () => {
       expect(plan.traces.length).toBeGreaterThan(0);
       for (const tr of plan.traces) {
         const table = replay(tr);
-        for (const f of FRIENDS) expect(check(table, spec.requests[f], f, spec.cells), `${plan.id} ${own} ${sig(tr)}`).toBe(true);
+        for (const f of FRIENDS)
+          expect(check(table, spec.requests[f], f, spec.cells), `${plan.id} ${own} ${sig(tr)}`).toBe(true);
       }
     }
   });
@@ -77,7 +123,8 @@ describe('allowed traces', () => {
     expect(turns.traces[0]).toHaveLength(8);
     expect(rolled.traces).toHaveLength(1);
     expect(rolled.traces[0]).toHaveLength(5);
-    for (const p of [turns, rolled]) for (const tr of p.traces) expect(replay(tr).marks.banner).toHaveLength(4);
+    for (const p of [turns, rolled])
+      for (const tr of p.traces) expect(replay(tr).marks.banner).toHaveLength(4);
     const a = rolled.traces.map(sig);
     for (const tr of turns.traces) expect(a).not.toContain(sig(tr));
     expect(acceptedPlans(spec, 'B').sort()).toEqual(['roll', 'turns']);
@@ -89,14 +136,21 @@ describe('allowed traces', () => {
       const side = planFor('side', spec.cells, own);
       expect(side.traces).toHaveLength(12);
       expect(new Set(side.traces.map(sig)).size).toBe(12);
-      for (const [tA, tB] of [['pad', 'roller'], ['roller', 'pad']] as const) {
-        const withAssign = side.traces.filter((t) => sig(t).includes(`give:${tA}:A`) && sig(t).includes(`give:${tB}:B`));
+      for (const [tA, tB] of [
+        ['pad', 'roller'],
+        ['roller', 'pad'],
+      ] as const) {
+        const withAssign = side.traces.filter(
+          (t) => sig(t).includes(`give:${tA}:A`) && sig(t).includes(`give:${tB}:B`),
+        );
         expect(withAssign).toHaveLength(6);
         for (const t of withAssign) {
           const idx = (k: string) => t.findIndex((a) => key(a) === k);
           const mA = replay(t).marks.pageA[0];
           expect(mA.tool).toBe(tA);
-          expect(idx(`give:${tA}:A`)).toBeLessThan(t.findIndex((a) => a.k !== 'give' && (a as { surface: string }).surface === 'pageA'));
+          expect(idx(`give:${tA}:A`)).toBeLessThan(
+            t.findIndex((a) => a.k !== 'give' && (a as { surface: string }).surface === 'pageA'),
+          );
         }
         // give orders: A's give first and B's give first both occur
         expect(withAssign.some((t) => t[0].k === 'give' && (t[0] as { to: string }).to === 'A')).toBe(true);
@@ -144,19 +198,22 @@ describe('the draft that leaves a request out', () => {
   it('every accepted level 3 trace has the own friend page marked only by that friend', () => {
     for (const own of OWNS) {
       const spec = specFor(3, own);
-      for (const id of acceptedPlans(spec, own)) for (const tr of planFor(id, spec.cells, own).traces) {
-        const marks = replay(tr).marks[own === 'A' ? 'pageA' : 'pageB'];
-        expect(marks.length).toBe(1);
-        expect(marks.every((m) => m.by === own)).toBe(true);
-      }
+      for (const id of acceptedPlans(spec, own))
+        for (const tr of planFor(id, spec.cells, own).traces) {
+          const marks = replay(tr).marks[own === 'A' ? 'pageA' : 'pageB'];
+          expect(marks.length).toBe(1);
+          expect(marks.every((m) => m.by === own)).toBe(true);
+        }
     }
   });
 
   it('no accepted card at any level leaves a request unmet', () => {
-    for (const level of LEVELS) for (const own of OWNS) {
-      const spec = specFor(level, own);
-      for (const id of acceptedPlans(spec, own)) expect(previewOf(planFor(id, spec.cells, own), spec).ok).toBe(true);
-    }
+    for (const level of LEVELS)
+      for (const own of OWNS) {
+        const spec = specFor(level, own);
+        for (const id of acceptedPlans(spec, own))
+          expect(previewOf(planFor(id, spec.cells, own), spec).ok).toBe(true);
+      }
   });
 });
 
@@ -168,7 +225,10 @@ describe('refusals', () => {
         const before = replay(tr);
         const snapshot = JSON.stringify(before);
         for (const a of CANDIDATES) {
-          if (accepts(plan, tr, a)) { expect(extensions(plan, [...tr, a]).length).toBeGreaterThan(0); continue; }
+          if (accepts(plan, tr, a)) {
+            expect(extensions(plan, [...tr, a]).length).toBeGreaterThan(0);
+            continue;
+          }
           expect(reasons).toContain(whyNot(plan, tr, a, spec.cells));
           expect(JSON.stringify(replay(tr))).toBe(snapshot);
         }
@@ -177,11 +237,15 @@ describe('refusals', () => {
   });
 
   it('apply never mutates its input table', () => {
-    for (const { plan } of cases()) for (const tr of reachable(plan)) {
-      const t = replay(tr);
-      const snap = JSON.stringify(t);
-      for (const a of CANDIDATES) { apply(t, a); expect(JSON.stringify(t)).toBe(snap); }
-    }
+    for (const { plan } of cases())
+      for (const tr of reachable(plan)) {
+        const t = replay(tr);
+        const snap = JSON.stringify(t);
+        for (const a of CANDIDATES) {
+          apply(t, a);
+          expect(JSON.stringify(t)).toBe(snap);
+        }
+      }
     const blank = blankTable();
     apply(blank, stamp('banner'));
     expect(blank).toEqual(blankTable());
@@ -220,45 +284,52 @@ describe('refusals', () => {
 describe('undo', () => {
   it('replaying the shortened trace equals the table before the last action, for every action kind', () => {
     const kinds = new Set<string>();
-    for (const { plan } of cases()) for (const tr of plan.traces) {
-      let t = blankTable();
-      const states = [t];
-      for (const a of tr) { t = apply(t, a); states.push(t); kinds.add(a.k); }
-      for (let i = 1; i <= tr.length; i++) expect(replay(tr.slice(0, i - 1))).toEqual(states[i - 1]);
-    }
+    for (const { plan } of cases())
+      for (const tr of plan.traces) {
+        let t = blankTable();
+        const states = [t];
+        for (const a of tr) {
+          t = apply(t, a);
+          states.push(t);
+          kinds.add(a.k);
+        }
+        for (let i = 1; i <= tr.length; i++) expect(replay(tr.slice(0, i - 1))).toEqual(states[i - 1]);
+      }
     expect([...kinds].sort()).toEqual(['give', 'pass', 'roll', 'stamp']);
   });
 });
 
 describe('hints', () => {
   it('following nextStep from every reachable trace completes within the shortest remaining length', () => {
-    for (const { plan } of cases()) for (const start of reachable(plan)) {
-      const remaining = Math.min(...extensions(plan, start).map((t) => t.length - start.length));
-      let tr: Trace = start;
-      let steps = 0;
-      while (!complete(plan, tr)) {
-        const a = nextStep(plan, tr);
-        expect(a).not.toBeNull();
-        expect(accepts(plan, tr, a!)).toBe(true);
-        tr = [...tr, a!];
-        steps++;
-        expect(steps).toBeLessThanOrEqual(remaining);
+    for (const { plan } of cases())
+      for (const start of reachable(plan)) {
+        const remaining = Math.min(...extensions(plan, start).map((t) => t.length - start.length));
+        let tr: Trace = start;
+        let steps = 0;
+        while (!complete(plan, tr)) {
+          const a = nextStep(plan, tr);
+          expect(a).not.toBeNull();
+          expect(accepts(plan, tr, a!)).toBe(true);
+          tr = [...tr, a!];
+          steps++;
+          expect(steps).toBeLessThanOrEqual(remaining);
+        }
+        expect(steps).toBe(remaining);
+        expect(nextStep(plan, tr)).toBeNull();
       }
-      expect(steps).toBe(remaining);
-      expect(nextStep(plan, tr)).toBeNull();
-    }
   });
 
   it('hintFor in the plan phase returns an accepted card', () => {
-    for (const level of [2, 3]) for (const own of OWNS) {
-      const spec = specFor(level, own);
-      const ok = acceptedPlans(spec, own);
-      for (const sel of [null, ...spec.plans]) {
-        const h = hintFor(spec, own, 'plan', sel, null, []);
-        expect(h).toEqual({ card: sel && ok.includes(sel) ? sel : ok[0] });
-        expect(ok).toContain((h as { card: PlanId }).card);
+    for (const level of [2, 3])
+      for (const own of OWNS) {
+        const spec = specFor(level, own);
+        const ok = acceptedPlans(spec, own);
+        for (const sel of [null, ...spec.plans]) {
+          const h = hintFor(spec, own, 'plan', sel, null, []);
+          expect(h).toEqual({ card: sel && ok.includes(sel) ? sel : ok[0] });
+          expect(ok).toContain((h as { card: PlanId }).card);
+        }
       }
-    }
   });
 
   it('hintFor in the make phase is the next step, and null when complete', () => {
@@ -272,7 +343,10 @@ describe('hints', () => {
 describe('accounting', () => {
   it('misses are always 0', () => {
     const t = new Tally();
-    t.help('plan'); t.help('make'); t.unmetPreview(); t.unmetPreview();
+    t.help('plan');
+    t.help('make');
+    t.unmetPreview();
+    t.unmetPreview();
     expect(t.misses).toBe(0);
   });
 
@@ -324,9 +398,10 @@ describe('variations', () => {
         const spec = specFor(level, v.own);
         const ok = acceptedPlans(spec, v.own);
         expect(ok.length).toBeGreaterThan(0);
-        for (const id of ok) for (const tr of planFor(id, spec.cells, v.own).traces) {
-          for (const f of FRIENDS) expect(check(replay(tr), spec.requests[f], f, spec.cells)).toBe(true);
-        }
+        for (const id of ok)
+          for (const tr of planFor(id, spec.cells, v.own).traces) {
+            for (const f of FRIENDS) expect(check(replay(tr), spec.requests[f], f, spec.cells)).toBe(true);
+          }
         if (level === 3) {
           expect(previewOf(planFor('justBanner', spec.cells, v.own), spec).ok).toBe(false);
           expect(ok).not.toContain('justBanner');
@@ -375,7 +450,11 @@ describe('layout', () => {
     { name: 'plan 4 cards', ask: { level: 3, phase: 'plan', cards: 4 }, make: false },
   ];
   for (const { level, plan } of cases()) {
-    asks.push({ name: `make L${level} ${plan.id}`, ask: { level, phase: 'make', surfaces: plan.surfaces, tools: plan.tools.length }, make: true });
+    asks.push({
+      name: `make L${level} ${plan.id}`,
+      ask: { level, phase: 'make', surfaces: plan.surfaces, tools: plan.tools.length },
+      make: true,
+    });
   }
 
   for (const [vn, v] of views) {
@@ -392,13 +471,27 @@ describe('layout', () => {
             expect(t.h, tag).toBeGreaterThanOrEqual(100);
             expect(insideView(t, v), tag).toBe(true);
             for (const c of cs) expect(overlaps(t, c), `${tag} corner`).toBe(false);
-            for (let j = i + 1; j < ts.length; j++) expect(gapBetween(t, ts[j]), `${tag} vs #${j}`).toBeGreaterThanOrEqual(30);
+            for (let j = i + 1; j < ts.length; j++)
+              expect(gapBetween(t, ts[j]), `${tag} vs #${j}`).toBeGreaterThanOrEqual(30);
           });
         }
-        for (const c of l!.cards) { expect(c.w).toBeGreaterThanOrEqual(280); expect(c.h).toBeGreaterThanOrEqual(180); }
-        for (const b of [l!.bubbles.A, l!.bubbles.B]) { expect(b.w).toBeGreaterThanOrEqual(260); expect(b.h).toBeGreaterThanOrEqual(150); }
-        for (const b of l!.buttons) { expect(b.w).toBeGreaterThanOrEqual(110); expect(b.h).toBeGreaterThanOrEqual(110); }
-        if (l!.pages) for (const f of FRIENDS) { expect(l!.pages[f].w).toBeGreaterThanOrEqual(200); expect(l!.pages[f].h).toBeGreaterThanOrEqual(200); }
+        for (const c of l!.cards) {
+          expect(c.w).toBeGreaterThanOrEqual(280);
+          expect(c.h).toBeGreaterThanOrEqual(180);
+        }
+        for (const b of [l!.bubbles.A, l!.bubbles.B]) {
+          expect(b.w).toBeGreaterThanOrEqual(260);
+          expect(b.h).toBeGreaterThanOrEqual(150);
+        }
+        for (const b of l!.buttons) {
+          expect(b.w).toBeGreaterThanOrEqual(110);
+          expect(b.h).toBeGreaterThanOrEqual(110);
+        }
+        if (l!.pages)
+          for (const f of FRIENDS) {
+            expect(l!.pages[f].w).toBeGreaterThanOrEqual(200);
+            expect(l!.pages[f].h).toBeGreaterThanOrEqual(200);
+          }
       }
     });
   }

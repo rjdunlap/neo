@@ -20,8 +20,48 @@ import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { BUD_H, BUD_W, BudCard, CARD, CHECK_R, ChoiceCard, claimPic, iconArt, leafArt, lookPic, PACKET_R, packetArt, plantArt, slotArt, Sprout, stickerArt, TILE, tileArt } from './art';
-import { LEVELS, acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, levelName, looks, nextStep, CONSERVATORY_LEVEL, HIDDEN_LEVEL, PAIRS_LEVEL, PETAL_COLORS, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
+import {
+  BUD_H,
+  BUD_W,
+  BudCard,
+  CARD,
+  CHECK_R,
+  ChoiceCard,
+  claimPic,
+  iconArt,
+  leafArt,
+  lookPic,
+  PACKET_R,
+  packetArt,
+  plantArt,
+  slotArt,
+  Sprout,
+  stickerArt,
+  TILE,
+  tileArt,
+} from './art';
+import {
+  LEVELS,
+  acceptedClaim,
+  buildingBud,
+  builtBud,
+  checkClaim,
+  checkLooks,
+  freshRound,
+  levelName,
+  looks,
+  nextStep,
+  CONSERVATORY_LEVEL,
+  HIDDEN_LEVEL,
+  PAIRS_LEVEL,
+  PETAL_COLORS,
+  setupFor,
+  support,
+  type Claim,
+  type Look,
+  type Round,
+  type Setup,
+} from './logic';
 import { SproutPairs } from './pairs';
 import { SproutHidden } from './hidden';
 import { SproutConservatory } from './conservatory';
@@ -78,7 +118,17 @@ class SproutShuffle implements Game {
     this.view = ctx.view;
     this.setup = setupFor(ctx.level, ctx.rng);
     this.round = freshRound(this.setup);
-    this.backdrop = new Backdrop({ sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.42, clouds: 3, sun: false, seed: 131 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xc4ecff, 0xfff6e0],
+        hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e],
+        horizon: 0.42,
+        clouds: 3,
+        sun: false,
+        seed: 131,
+      },
+      ctx.view,
+    );
     this.paths.eventMode = this.rings.eventMode = 'none';
     this.sprout = new Sprout(200);
     ctx.stage.addChild(this.backdrop, this.board);
@@ -160,7 +210,10 @@ class SproutShuffle implements Game {
     this.fan.visible = false;
     const keys = this.claims ? (['sometimes', 'always'] as const) : (['spotted', 'plain'] as const);
     for (const key of keys) {
-      const pic = key === 'sometimes' || key === 'always' ? claimPic(key, s.colors[0]) : lookPic(key, s.colors[key === 'spotted' ? 0 : 1]);
+      const pic =
+        key === 'sometimes' || key === 'always'
+          ? claimPic(key, s.colors[0])
+          : lookPic(key, s.colors[key === 'spotted' ? 0 : 1]);
       const card = new ChoiceCard(key, pic);
       onTap(card, () => this.cardTapped(card));
       this.cards.push(card);
@@ -255,7 +308,8 @@ class SproutShuffle implements Game {
     void this.ctx.tw.to(copy, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.outQuad });
     this.drawPaths();
     if (slots[0] !== null && slots[1] !== null) void this.openSprout();
-    else if (this.round.slots[tile.side] !== null && this.lastInstruction === this.giveLine) this.instruct('sprout.other-plant');
+    else if (this.round.slots[tile.side] !== null && this.lastInstruction === this.giveLine)
+      this.instruct('sprout.other-plant');
   }
 
   /** Both copies are in: the sprout uncurls over 0.8 s, its paths glow, and the pet says what it made. */
@@ -270,12 +324,18 @@ class SproutShuffle implements Game {
     sfx.pluck(9, 0.3);
     const t = { v: 0 };
     const p = this.ctx.tw.to(t, { v: 1 }, { duration: 0.8, ease: ease.outBack });
-    const tick = () => { this.sprout.open(look, this.setup.colors[0], Math.min(1, t.v)); if (t.v < 1 && this.alive) requestAnimationFrame(tick); };
+    const tick = () => {
+      this.sprout.open(look, this.setup.colors[0], Math.min(1, t.v));
+      if (t.v < 1 && this.alive) requestAnimationFrame(tick);
+    };
     tick();
     await p;
     if (!this.alive) return;
     this.sprout.open(look, this.setup.colors[0], 1);
-    this.ctx.particles.burst(this.sprout.x, this.sprout.y - 150, { colors: [swatch[this.setup.colors[0]].fill, swatch[this.setup.colors[1]].fill, 0xffffff], count: 10 });
+    this.ctx.particles.burst(this.sprout.x, this.sprout.y - 150, {
+      colors: [swatch[this.setup.colors[0]].fill, swatch[this.setup.colors[1]].fill, 0xffffff],
+      count: 10,
+    });
     await this.ctx.say(look === 'spotted' ? 'sprout.spotted' : 'sprout.plain');
     if (!this.alive) return;
     this.showFan();
@@ -291,7 +351,12 @@ class SproutShuffle implements Game {
       void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.4, delay: 0.08 * i, ease: ease.outBack });
     }
     const mine = builtBud(this.round);
-    if (mine !== null) { this.glowBud = mine; void this.ctx.tw.wait(1.6).then(() => { if (this.glowBud === mine && this.round.phase === 'fan') this.glowBud = null; }); }
+    if (mine !== null) {
+      this.glowBud = mine;
+      void this.ctx.tw.wait(1.6).then(() => {
+        if (this.glowBud === mine && this.round.phase === 'fan') this.glowBud = null;
+      });
+    }
     this.busy = false;
     if (this.setup.build.length === 0) {
       this.instruct('sprout.fan');
@@ -303,7 +368,10 @@ class SproutShuffle implements Game {
 
   private budTapped(i: number) {
     if (this.finished || this.busy || this.round.phase === 'give') return;
-    if (this.round.opened[i]) { void this.replay(i); return; }
+    if (this.round.opened[i]) {
+      void this.replay(i);
+      return;
+    }
     if (this.setup.build.includes(i)) {
       // Guided: the bud she must build lights its two source tiles.
       sfx.tick();
@@ -338,7 +406,10 @@ class SproutShuffle implements Game {
     this.litRoute = i;
     const t = { v: 0 };
     const p = this.ctx.tw.to(t, { v: 1 }, { duration: 0.6, ease: ease.outBack });
-    const tick = () => { card.open(look, this.setup.colors[0], Math.min(1, Math.max(0, t.v))); if (t.v < 1 && this.alive) requestAnimationFrame(tick); };
+    const tick = () => {
+      card.open(look, this.setup.colors[0], Math.min(1, Math.max(0, t.v)));
+      if (t.v < 1 && this.alive) requestAnimationFrame(tick);
+    };
     tick();
     await p;
     if (!this.alive) return;
@@ -369,7 +440,9 @@ class SproutShuffle implements Game {
       // Not this one: a small shake, no miss. The lit tiles show which.
       sfx.tick();
       const home = tile.handle.home;
-      void this.ctx.tw.to(tile.node, { x: home.x + 10 }, { duration: 0.08 }).then(() => { if (this.alive) void this.ctx.tw.to(tile.node, { x: home.x }, { duration: 0.12, ease: ease.outBack }); });
+      void this.ctx.tw.to(tile.node, { x: home.x + 10 }, { duration: 0.08 }).then(() => {
+        if (this.alive) void this.ctx.tw.to(tile.node, { x: home.x }, { duration: 0.12, ease: ease.outBack });
+      });
       return;
     }
     const built: [boolean, boolean] = [this.round.built[0], this.round.built[1]];
@@ -383,21 +456,29 @@ class SproutShuffle implements Game {
     const to = this.buds[m].toGlobal({ x: (tile.side === 0 ? -1 : 1) * BUD_W * 0.25, y: -BUD_H / 2 + 42 });
     const local = this.board.toLocal(to);
     this.busy = true;
-    void this.ctx.tw.to(copy, { x: local.x, y: local.y }, { duration: 0.45, ease: ease.outQuad }).then(async () => {
-      if (!this.alive) return;
-      copy.destroy();
-      if (!(built[0] && built[1])) { this.busy = false; return; }
-      for (const t of this.tiles) t.handle.enabled = false;
-      const opened = this.round.opened.map((o, k) => o || k === m);
-      this.round = { ...this.round, opened, built: [false, false] };
-      sfx.pluck(2 + m * 2, 0.25);
-      await this.bloom(m);
-      if (!this.alive) return;
-      this.busy = false;
-      if (buildingBud(this.round) === null) { this.showChoice(); return; }
-      for (const t of this.tiles) t.handle.enabled = true;
-      if (opened.filter(Boolean).length === 1) void this.ctx.say('sprout.next-bud');
-    });
+    void this.ctx.tw
+      .to(copy, { x: local.x, y: local.y }, { duration: 0.45, ease: ease.outQuad })
+      .then(async () => {
+        if (!this.alive) return;
+        copy.destroy();
+        if (!(built[0] && built[1])) {
+          this.busy = false;
+          return;
+        }
+        for (const t of this.tiles) t.handle.enabled = false;
+        const opened = this.round.opened.map((o, k) => o || k === m);
+        this.round = { ...this.round, opened, built: [false, false] };
+        sfx.pluck(2 + m * 2, 0.25);
+        await this.bloom(m);
+        if (!this.alive) return;
+        this.busy = false;
+        if (buildingBud(this.round) === null) {
+          this.showChoice();
+          return;
+        }
+        for (const t of this.tiles) t.handle.enabled = true;
+        if (opened.filter(Boolean).length === 1) void this.ctx.say('sprout.next-bud');
+      });
   }
 
   // ——— The choice ———
@@ -407,15 +488,29 @@ class SproutShuffle implements Game {
     this.wrong = 0;
     // Her sprout joins the fan: it shrinks away into the matching bud, leaving the stage to the choice cards.
     const mine = builtBud(this.round);
-    const target = mine === null ? this.sprout.position : this.board.toLocal(this.buds[mine].getGlobalPosition());
-    void this.ctx.tw.to(this.sprout, { x: target.x, y: target.y + 60 }, { duration: 0.6, ease: ease.inOutSine });
-    void this.ctx.tw.to(this.sprout.scale, { x: 0.01, y: 0.01 }, { duration: 0.6, ease: ease.inOutSine }).then(() => { this.sproutScale = 0.01; if (this.alive) this.sprout.visible = false; });
+    const target =
+      mine === null ? this.sprout.position : this.board.toLocal(this.buds[mine].getGlobalPosition());
+    void this.ctx.tw.to(
+      this.sprout,
+      { x: target.x, y: target.y + 60 },
+      { duration: 0.6, ease: ease.inOutSine },
+    );
+    void this.ctx.tw
+      .to(this.sprout.scale, { x: 0.01, y: 0.01 }, { duration: 0.6, ease: ease.inOutSine })
+      .then(() => {
+        this.sproutScale = 0.01;
+        if (this.alive) this.sprout.visible = false;
+      });
     for (const s of this.slots) void this.ctx.tw.to(s, { alpha: 0 }, { duration: 0.4 });
     for (const s of this.slotTiles) if (s) void this.ctx.tw.to(s, { alpha: 0 }, { duration: 0.4 });
     this.choice.visible = true;
     for (const [i, c] of [...this.cards, ...(this.tryButton ? [this.tryButton] : [])].entries()) {
       c.scale.set(0.01);
-      void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.4, delay: 0.5 + 0.1 * i, ease: ease.outBack });
+      void this.ctx.tw.to(
+        c.scale,
+        { x: 1, y: 1 },
+        { duration: 0.4, delay: 0.5 + 0.1 * i, ease: ease.outBack },
+      );
     }
     this.instruct(this.claims ? 'sprout.choose-always' : 'sprout.choose-could');
   }
@@ -455,7 +550,10 @@ class SproutShuffle implements Game {
   /** Check: the only accepted set is every look these plants can make; a wrong set is one miss with its counterexample replayed. */
   private check() {
     if (this.finished || this.busy || this.round.phase !== 'choose' || !this.anyChosen) return;
-    if (this.claims) { this.checkClaim(); return; }
+    if (this.claims) {
+      this.checkClaim();
+      return;
+    }
     const verdict = checkLooks(this.round.chosen, this.setup.routes);
     if (verdict.ok) {
       void this.end('sprout.both-grow');
@@ -464,11 +562,17 @@ class SproutShuffle implements Game {
     this.misses++;
     this.wrong++;
     sfx.boing();
-    if (this.wrong === 2 && !this.glowHinted) { this.glowHinted = true; this.hints++; }
+    if (this.wrong === 2 && !this.glowHinted) {
+      this.glowHinted = true;
+      this.hints++;
+    }
     // Both looks are always makeable at level 2, so a wrong set is always one look short; the `extra` verdict waits for a later cross.
     if (!('missing' in verdict)) return;
     const i = this.setup.routes.indexOf(verdict.route);
-    if (this.wrong >= 2) { this.glowBud = i; this.glowCard = verdict.missing; }
+    if (this.wrong >= 2) {
+      this.glowBud = i;
+      this.glowCard = verdict.missing;
+    }
     void this.counter(i, verdict.missing);
   }
 
@@ -482,10 +586,16 @@ class SproutShuffle implements Game {
     this.misses++;
     this.wrong++;
     sfx.boing();
-    if (this.wrong === 2 && !this.glowHinted) { this.glowHinted = true; this.hints++; }
+    if (this.wrong === 2 && !this.glowHinted) {
+      this.glowHinted = true;
+      this.hints++;
+    }
     if (!verdict.route) return;
     const i = this.setup.routes.indexOf(verdict.route);
-    if (this.wrong >= 2) { this.glowBud = i; this.glowCard = acceptedClaim(this.setup.routes); }
+    if (this.wrong >= 2) {
+      this.glowBud = i;
+      this.glowCard = acceptedClaim(this.setup.routes);
+    }
     void this.counter(i, 'sprout.counter-not-always');
   }
 
@@ -515,7 +625,9 @@ class SproutShuffle implements Game {
     this.busy = true;
     await this.ctx.tw.wait(0.3);
     if (!this.alive) return;
-    void this.ctx.say(line === 'plain' ? 'sprout.counter-plain' : line === 'spotted' ? 'sprout.counter-spotted' : line);
+    void this.ctx.say(
+      line === 'plain' ? 'sprout.counter-plain' : line === 'spotted' ? 'sprout.counter-spotted' : line,
+    );
     await this.bloom(i);
     if (!this.alive) return;
     if (this.wrong >= 2) void this.ctx.say('sprout.glow');
@@ -535,7 +647,10 @@ class SproutShuffle implements Game {
     for (const b of this.buds) {
       const p = b.getGlobalPosition();
       const l = this.ctx.stage.toLocal(p);
-      this.ctx.particles.burst(l.x, l.y - 40, { colors: [swatch.green.fill, swatch[this.setup.colors[0]].fill, 0xffffff], count: 6 });
+      this.ctx.particles.burst(l.x, l.y - 40, {
+        colors: [swatch.green.fill, swatch[this.setup.colors[0]].fill, 0xffffff],
+        count: 6,
+      });
     }
     await this.ctx.say(line);
     if (!this.alive) return;
@@ -553,7 +668,10 @@ class SproutShuffle implements Game {
     const step = nextStep(this.round);
     if (!step) return;
     const key = this.level === 1 ? 'round' : this.round.phase;
-    if (!this.showMeIn.has(key)) { this.showMeIn.add(key); this.hints++; }
+    if (!this.showMeIn.has(key)) {
+      this.showMeIn.add(key);
+      this.hints++;
+    }
     if ('give' in step) {
       const tile = this.tiles.find((t) => t.side === step.give && t.index === step.tile)!;
       void this.ctx.say('sprout.help.give');
@@ -570,7 +688,10 @@ class SproutShuffle implements Game {
       this.round = { ...this.round, claim: want };
       this.glowCard = null;
       this.updateCheck();
-      if (this.checkButton) { this.checkButton.scale.set(1.15); void this.ctx.tw.to(this.checkButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic }); }
+      if (this.checkButton) {
+        this.checkButton.scale.set(1.15);
+        void this.ctx.tw.to(this.checkButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic });
+      }
       void this.ctx.say('sprout.help.claim');
     } else {
       const can = support(this.setup.routes);
@@ -578,7 +699,10 @@ class SproutShuffle implements Game {
       this.round = { ...this.round, chosen: new Set(can) };
       this.glowCard = null;
       this.updateCheck();
-      if (this.checkButton) { this.checkButton.scale.set(1.15); void this.ctx.tw.to(this.checkButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic }); }
+      if (this.checkButton) {
+        this.checkButton.scale.set(1.15);
+        void this.ctx.tw.to(this.checkButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic });
+      }
       void this.ctx.say('sprout.help.choose');
     }
   }
@@ -593,8 +717,11 @@ class SproutShuffle implements Game {
         const idx = this.round.slots[side];
         if (idx === null || this.round.phase !== 'give') continue;
         const tile = this.tiles.find((t) => t.side === side && t.index === idx)!;
-        const from = tile.handle.home, to = this.slots[side].position;
-        g.moveTo(from.x, from.y).bezierCurveTo(from.x, to.y + 60, to.x, to.y + 90, to.x, to.y).stroke({ width: 10, color: swatch[this.setup.colors[side]].fill, alpha: 0.7, cap: 'round' });
+        const from = tile.handle.home,
+          to = this.slots[side].position;
+        g.moveTo(from.x, from.y)
+          .bezierCurveTo(from.x, to.y + 60, to.x, to.y + 90, to.x, to.y)
+          .stroke({ width: 10, color: swatch[this.setup.colors[side]].fill, alpha: 0.7, cap: 'round' });
       }
     }
     if (this.litRoute !== null) {
@@ -603,8 +730,12 @@ class SproutShuffle implements Game {
       for (const side of [0, 1] as const) {
         const tile = this.tiles.find((t) => t.side === side && t.index === route.from[side])!;
         const from = tile.handle.home;
-        const to = this.board.toLocal(card.toGlobal({ x: (side === 0 ? -1 : 1) * BUD_W * 0.25, y: -BUD_H / 2 + 42 }));
-        g.moveTo(from.x, from.y).bezierCurveTo(from.x, (from.y + to.y) / 2, to.x, (from.y + to.y) / 2, to.x, to.y).stroke({ width: 8, color: swatch[this.setup.colors[side]].fill, alpha: 0.75, cap: 'round' });
+        const to = this.board.toLocal(
+          card.toGlobal({ x: (side === 0 ? -1 : 1) * BUD_W * 0.25, y: -BUD_H / 2 + 42 }),
+        );
+        g.moveTo(from.x, from.y)
+          .bezierCurveTo(from.x, (from.y + to.y) / 2, to.x, (from.y + to.y) / 2, to.x, to.y)
+          .stroke({ width: 8, color: swatch[this.setup.colors[side]].fill, alpha: 0.75, cap: 'round' });
       }
     }
   }
@@ -622,11 +753,14 @@ class SproutShuffle implements Game {
         if (this.round.built[side]) continue;
         const tile = this.tiles.find((t) => t.side === side && t.index === route.from[side])!;
         if (tile.handle.dragging) continue;
-        rings.circle(tile.node.x, tile.node.y, (TILE / 2 + 10) * r).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
+        rings
+          .circle(tile.node.x, tile.node.y, (TILE / 2 + 10) * r)
+          .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
       }
       this.buds[building].glow(this.clock % 2 < 1 ? r : null);
     }
-    for (const [i, b] of this.buds.entries()) if (i !== building) b.glow(this.glowBud === i && !this.finished ? r : null);
+    for (const [i, b] of this.buds.entries())
+      if (i !== building) b.glow(this.glowBud === i && !this.finished ? r : null);
     for (const c of this.cards) c.glow(this.glowCard === c.key && !this.finished ? r : null);
   }
 
@@ -635,9 +769,14 @@ class SproutShuffle implements Game {
     if (this.finished || this.busy) return null;
     const step = nextStep(this.round);
     if (!step) return null;
-    if ('give' in step) return { tap: { on: this.tiles.find((t) => t.side === step.give && t.index === step.tile)!.node } };
+    if ('give' in step)
+      return { tap: { on: this.tiles.find((t) => t.side === step.give && t.index === step.tile)!.node } };
     if ('open' in step) return { tap: { on: this.buds[step.open] }, pause: 0.9 };
-    if ('build' in step) return { tap: { on: this.tiles.find((t) => t.side === step.side && t.index === step.tile)!.node }, pause: 0.8 };
+    if ('build' in step)
+      return {
+        tap: { on: this.tiles.find((t) => t.side === step.side && t.index === step.tile)!.node },
+        pause: 0.8,
+      };
     if ('choose' in step) return { tap: { on: this.cards.find((c) => c.key === step.choose)! }, pause: 0.9 };
     if ('claim' in step) return { tap: { on: this.cards.find((c) => c.key === step.claim)! }, pause: 1.2 };
     return this.checkButton?.visible ? { tap: { on: this.checkButton } } : null;
@@ -666,13 +805,21 @@ export const sproutShuffle: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: levelName,
   music: STYLES.paint,
-  coplayHint: 'Before the buds open, one of you says which sprouts the two plants could make; the other opens the buds to check.',
-  offScreen: 'Draw two plants and four arrows between them on paper, and talk about which sprout each arrow would make.',
+  coplayHint:
+    'Before the buds open, one of you says which sprouts the two plants could make; the other opens the buds to check.',
+  offScreen:
+    'Draw two plants and four arrows between them on paper, and talk about which sprout each arrow would make.',
   hubIcon: () => new SproutIcon(),
   touchDemo: true,
   sticker,
   create: (ctx) => {
     const level = Math.round(ctx.level);
-    return level >= CONSERVATORY_LEVEL ? new SproutConservatory(ctx) : level >= HIDDEN_LEVEL ? new SproutHidden(ctx) : level >= PAIRS_LEVEL ? new SproutPairs(ctx) : new SproutShuffle(ctx);
+    return level >= CONSERVATORY_LEVEL
+      ? new SproutConservatory(ctx)
+      : level >= HIDDEN_LEVEL
+        ? new SproutHidden(ctx)
+        : level >= PAIRS_LEVEL
+          ? new SproutPairs(ctx)
+          : new SproutShuffle(ctx);
   },
 };

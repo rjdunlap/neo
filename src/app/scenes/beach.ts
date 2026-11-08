@@ -26,7 +26,12 @@ export interface BeachItem {
 }
 
 /** What the `i`th pool holds: always a sea star or an anemone, and the three kinds take turns across the pools. */
-export const poolLife = (i: number): PoolLife[] => [['star', 'kelp'], ['anemone', 'star'], ['kelp', 'anemone']][i % 3] as PoolLife[];
+export const poolLife = (i: number): PoolLife[] =>
+  [
+    ['star', 'kelp'],
+    ['anemone', 'star'],
+    ['kelp', 'anemone'],
+  ][i % 3] as PoolLife[];
 
 /** The backdrop's sun, which the gulls fly clear of (`Backdrop.resize` puts it here). */
 export const sunRect = (view: View): Rect => {
@@ -47,7 +52,8 @@ export function beachPlan(layout: LandLayout, view: View, ground: number): Beach
 function shorePlan(layout: LandLayout, view: View, ground: number, rocks: number): BeachItem[] {
   const { w, h } = view;
   const keepOut = [...meadowKeepOut(layout, view), sunRect(view)];
-  const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
+  const clear = (r: Rect) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
   const rng = new Rng(151);
   const items: BeachItem[] = [];
   /** Up to `n` of a thing `size` wide and `tall` high whose feet are between `top` and `bottom`. */
@@ -64,7 +70,14 @@ function shorePlan(layout: LandLayout, view: View, ground: number, rocks: number
     }
   };
   /** Makes sure of `need` more of a thing, scanning for room (smaller where it must) when random tries found none. */
-  const ensure = (kind: BeachThing, need: number, size: number, tall: number, top: number, bottom: number) => {
+  const ensure = (
+    kind: BeachThing,
+    need: number,
+    size: number,
+    tall: number,
+    top: number,
+    bottom: number,
+  ) => {
     for (let i = 0; i < need; i++) {
       const spot = scanPlace(clear, rng, w, size, tall, top, bottom);
       if (!spot) return;
@@ -94,7 +107,9 @@ export function drawBeach(g: Graphics, layout: LandLayout, view: View, ground: n
   const waves = new Rng(41);
   for (let y = ground - 46; y < ground - 6; y += 16) {
     for (let x = waves.range(-20, 60); x < view.w; x += waves.range(110, 170)) {
-      g.moveTo(x, y).quadraticCurveTo(x + 14, y - 7, x + 28, y).quadraticCurveTo(x + 42, y - 7, x + 56, y);
+      g.moveTo(x, y)
+        .quadraticCurveTo(x + 14, y - 7, x + 28, y)
+        .quadraticCurveTo(x + 42, y - 7, x + 56, y);
     }
   }
   g.stroke({ color: 0xffffff, width: 3, cap: 'round', alpha: 0.8 });

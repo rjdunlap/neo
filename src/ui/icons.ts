@@ -3,9 +3,16 @@ import { ink, swatch, wood } from '../art/palette';
 import { shapePath, starPoints } from '../art/shapes';
 
 export function islandIcon(): Graphics {
-  return new Graphics().ellipse(0, 18, 30, 12).fill(swatch.blue.fill).ellipse(0, 12, 24, 10).fill(swatch.yellow.light)
-    .moveTo(0, 10).quadraticCurveTo(9, -8, 0, -22).stroke({ width: 6, color: wood.line })
-    .poly([0, -22, -28, -12, -14, -30, 0, -22, 27, -18, 12, -34]).fill(swatch.green.fill);
+  return new Graphics()
+    .ellipse(0, 18, 30, 12)
+    .fill(swatch.blue.fill)
+    .ellipse(0, 12, 24, 10)
+    .fill(swatch.yellow.light)
+    .moveTo(0, 10)
+    .quadraticCurveTo(9, -8, 0, -22)
+    .stroke({ width: 6, color: wood.line })
+    .poly([0, -22, -28, -12, -14, -30, 0, -22, 27, -18, 12, -34])
+    .fill(swatch.green.fill);
 }
 
 /** Simple pictograms for pre-readers, drawn about 60 units across, centered on (0, 0). */
@@ -32,7 +39,10 @@ export function againIcon(color = ink): Graphics {
   const [px, py] = [Math.cos(a1) * r, Math.sin(a1) * r];
   const [tx, ty] = [-Math.sin(a1), Math.cos(a1)];
   const [nx, ny] = [Math.cos(a1), Math.sin(a1)];
-  return g.poly([px + tx * 14, py + ty * 14, px + nx * 12, py + ny * 12, px - nx * 12, py - ny * 12]).fill(color).stroke(line(3, color));
+  return g
+    .poly([px + tx * 14, py + ty * 14, px + nx * 12, py + ny * 12, px - nx * 12, py - ny * 12])
+    .fill(color)
+    .stroke(line(3, color));
 }
 
 /** "Next": a triangle running into a bar, the skip-forward mark (the again arrow is a circle, so the two are not alike). */
@@ -89,7 +99,10 @@ export function bookIcon(): Graphics {
 }
 
 export function arrowIcon(dir: 1 | -1, color = ink): Graphics {
-  return new Graphics().poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22]).fill(color).stroke(line(6, color));
+  return new Graphics()
+    .poly([-12 * dir, -22, 16 * dir, 0, -12 * dir, 22])
+    .fill(color)
+    .stroke(line(6, color));
 }
 
 export function playIcon(color = 0xffffff): Graphics {
@@ -99,67 +112,128 @@ export function playIcon(color = 0xffffff): Graphics {
 /** A picnic basket: the way back to the Windy Picnic. */
 export function basketIcon(): Graphics {
   return new Graphics()
-    .moveTo(-20, -4).bezierCurveTo(-20, -34, 20, -34, 20, -4).stroke(line(6, wood.line))
-    .poly([-30, -6, 30, -6, 23, 26, -23, 26]).fill(wood.fill).stroke(line(5, wood.line))
-    .moveTo(-27, 8).lineTo(27, 8).stroke(line(4, wood.line))
-    .rect(-31, -10, 62, 9).fill(swatch.red.fill)
-    .rect(-19, -10, 9, 9).rect(1, -10, 9, 9).fill(0xffffff)
-    .rect(-31, -10, 62, 9).stroke(line(3, swatch.red.line));
+    .moveTo(-20, -4)
+    .bezierCurveTo(-20, -34, 20, -34, 20, -4)
+    .stroke(line(6, wood.line))
+    .poly([-30, -6, 30, -6, 23, 26, -23, 26])
+    .fill(wood.fill)
+    .stroke(line(5, wood.line))
+    .moveTo(-27, 8)
+    .lineTo(27, 8)
+    .stroke(line(4, wood.line))
+    .rect(-31, -10, 62, 9)
+    .fill(swatch.red.fill)
+    .rect(-19, -10, 9, 9)
+    .rect(1, -10, 9, 9)
+    .fill(0xffffff)
+    .rect(-31, -10, 62, 9)
+    .stroke(line(3, swatch.red.line));
 }
 
 /** Three books standing on a little shelf, one leaning: the library at the root (RW08 slice 2). */
 export function libraryIcon(): Graphics {
   return new Graphics()
-    .roundRect(-30, -28, 16, 52, 3).fill(swatch.blue.fill).stroke(line(4, swatch.blue.line))
-    .roundRect(-12, -34, 18, 58, 3).fill(swatch.orange.fill).stroke(line(4, swatch.orange.line))
-    .rect(-12, -22, 18, 6).fill(swatch.orange.line)
-    .moveTo(10, 24).lineTo(22, -26).lineTo(36, -22).lineTo(25, 26).closePath().fill(swatch.green.fill).stroke(line(4, swatch.green.line))
-    .roundRect(-38, 24, 78, 10, 4).fill(0xc9925a).stroke(line(4, 0x8f5f32));
+    .roundRect(-30, -28, 16, 52, 3)
+    .fill(swatch.blue.fill)
+    .stroke(line(4, swatch.blue.line))
+    .roundRect(-12, -34, 18, 58, 3)
+    .fill(swatch.orange.fill)
+    .stroke(line(4, swatch.orange.line))
+    .rect(-12, -22, 18, 6)
+    .fill(swatch.orange.line)
+    .moveTo(10, 24)
+    .lineTo(22, -26)
+    .lineTo(36, -22)
+    .lineTo(25, 26)
+    .closePath()
+    .fill(swatch.green.fill)
+    .stroke(line(4, swatch.green.line))
+    .roundRect(-38, 24, 78, 10, 4)
+    .fill(0xc9925a)
+    .stroke(line(4, 0x8f5f32));
 }
 
 /** A little notebook with a leaf: the picnic journal. */
 export function journalIcon(): Graphics {
   return new Graphics()
-    .roundRect(-26, -30, 52, 60, 6).fill(swatch.green.light).stroke(line(5, swatch.green.line))
-    .rect(-26, -30, 10, 60).fill(swatch.green.line)
-    .ellipse(6, 0, 13, 7).fill(swatch.green.fill).stroke(line(3, swatch.green.line))
-    .moveTo(-6, 6).lineTo(18, -6).stroke(line(3, swatch.green.line));
+    .roundRect(-26, -30, 52, 60, 6)
+    .fill(swatch.green.light)
+    .stroke(line(5, swatch.green.line))
+    .rect(-26, -30, 10, 60)
+    .fill(swatch.green.line)
+    .ellipse(6, 0, 13, 7)
+    .fill(swatch.green.fill)
+    .stroke(line(3, swatch.green.line))
+    .moveTo(-6, 6)
+    .lineTo(18, -6)
+    .stroke(line(3, swatch.green.line));
 }
 
 /** A tree with a little cabin in its branches: the way to the pet's treehouse. */
 export function treehouseIcon(): Graphics {
   return new Graphics()
-    .rect(-6, 4, 12, 26).fill(wood.line)
-    .circle(0, -8, 26).fill(swatch.green.fill).stroke(line(4, swatch.green.line))
-    .roundRect(-15, -10, 30, 22, 3).fill(wood.fill).stroke(line(3, wood.line))
-    .poly([-19, -10, 0, -26, 19, -10]).fill(swatch.red.fill).stroke(line(3, swatch.red.line))
-    .roundRect(-4, -2, 8, 14, 2).fill(wood.line);
+    .rect(-6, 4, 12, 26)
+    .fill(wood.line)
+    .circle(0, -8, 26)
+    .fill(swatch.green.fill)
+    .stroke(line(4, swatch.green.line))
+    .roundRect(-15, -10, 30, 22, 3)
+    .fill(wood.fill)
+    .stroke(line(3, wood.line))
+    .poly([-19, -10, 0, -26, 19, -10])
+    .fill(swatch.red.fill)
+    .stroke(line(3, swatch.red.line))
+    .roundRect(-4, -2, 8, 14, 2)
+    .fill(wood.line);
 }
 
 /** A clothes hanger: dress a friend (RW06). */
 export function hangerIcon(color = ink): Graphics {
   return new Graphics()
-    .moveTo(-6, -22).bezierCurveTo(-6, -34, 10, -34, 10, -24).bezierCurveTo(10, -16, 0, -16, 0, -8).stroke(line(6, color))
-    .poly([0, -8, 30, 16, -30, 16]).stroke(line(7, color));
+    .moveTo(-6, -22)
+    .bezierCurveTo(-6, -34, 10, -34, 10, -24)
+    .bezierCurveTo(10, -16, 0, -16, 0, -8)
+    .stroke(line(6, color))
+    .poly([0, -8, 30, 16, -30, 16])
+    .stroke(line(7, color));
 }
 
 /** Two arrows facing each other: turn a thing round. */
 export function flipIcon(color = ink): Graphics {
   return new Graphics()
-    .moveTo(-6, 0).lineTo(-26, 0).moveTo(-14, -12).lineTo(-26, 0).lineTo(-14, 12)
-    .moveTo(6, 0).lineTo(26, 0).moveTo(14, -12).lineTo(26, 0).lineTo(14, 12)
+    .moveTo(-6, 0)
+    .lineTo(-26, 0)
+    .moveTo(-14, -12)
+    .lineTo(-26, 0)
+    .lineTo(-14, 12)
+    .moveTo(6, 0)
+    .lineTo(26, 0)
+    .moveTo(14, -12)
+    .lineTo(26, 0)
+    .lineTo(14, 12)
     .stroke(line(6, color))
-    .moveTo(0, -24).lineTo(0, 24).stroke({ width: 4, color, cap: 'round' });
+    .moveTo(0, -24)
+    .lineTo(0, 24)
+    .stroke({ width: 4, color, cap: 'round' });
 }
 
 /** A tick for "done" and "yes". */
 export function checkIcon(color = 0xffffff): Graphics {
-  return new Graphics().moveTo(-20, 2).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 10, color, cap: 'round', join: 'round' });
+  return new Graphics()
+    .moveTo(-20, 2)
+    .lineTo(-6, 16)
+    .lineTo(22, -16)
+    .stroke({ width: 10, color, cap: 'round', join: 'round' });
 }
 
 /** A cross for "none" and "take away". */
 export function crossIcon(color = ink): Graphics {
-  return new Graphics().moveTo(-16, -16).lineTo(16, 16).moveTo(16, -16).lineTo(-16, 16).stroke({ width: 9, color, cap: 'round' });
+  return new Graphics()
+    .moveTo(-16, -16)
+    .lineTo(16, 16)
+    .moveTo(16, -16)
+    .lineTo(-16, 16)
+    .stroke({ width: 9, color, cap: 'round' });
 }
 
 /** A heart about 56 across: solid when it is kept, just an outline when it is not. */
@@ -171,25 +245,42 @@ export function heartIcon(color = 0xffffff, filled = true): Graphics {
 /** A magnifying glass with a star in its lens: the discovery journal. */
 export function magnifierIcon(color = ink): Graphics {
   const g = new Graphics()
-    .moveTo(10, 10).lineTo(26, 26).stroke(line(10, wood.line))
-    .circle(-6, -6, 22).fill(swatch.blue.light).stroke(line(7, color))
-    .poly(starPoints(10, 4.4, 5).map((v, i) => (i % 2 === 0 ? v - 6 : v - 5))).fill(swatch.yellow.fill);
+    .moveTo(10, 10)
+    .lineTo(26, 26)
+    .stroke(line(10, wood.line))
+    .circle(-6, -6, 22)
+    .fill(swatch.blue.light)
+    .stroke(line(7, color))
+    .poly(starPoints(10, 4.4, 5).map((v, i) => (i % 2 === 0 ? v - 6 : v - 5)))
+    .fill(swatch.yellow.fill);
   return g;
 }
 
 /** Two friends side by side: "who's playing?". */
 export function peopleIcon(): Graphics {
   return new Graphics()
-    .circle(-13, -12, 11).fill(swatch.teal.fill).stroke(line(4, swatch.teal.line))
-    .roundRect(-27, 2, 28, 24, 12).fill(swatch.teal.fill).stroke(line(4, swatch.teal.line))
-    .circle(14, -8, 12).fill(swatch.yellow.fill).stroke(line(4, swatch.yellow.line))
-    .roundRect(-1, 8, 30, 22, 12).fill(swatch.yellow.fill).stroke(line(4, swatch.yellow.line));
+    .circle(-13, -12, 11)
+    .fill(swatch.teal.fill)
+    .stroke(line(4, swatch.teal.line))
+    .roundRect(-27, 2, 28, 24, 12)
+    .fill(swatch.teal.fill)
+    .stroke(line(4, swatch.teal.line))
+    .circle(14, -8, 12)
+    .fill(swatch.yellow.fill)
+    .stroke(line(4, swatch.yellow.line))
+    .roundRect(-1, 8, 30, 22, 12)
+    .fill(swatch.yellow.fill)
+    .stroke(line(4, swatch.yellow.line));
 }
 
 /** Three meadow flowers: Explore, and the preview's way to Rainbow Meadow. */
 export function meadowIcon(): Graphics {
   const g = new Graphics();
-  for (const [x, color] of [[-20, swatch.red], [0, swatch.yellow], [20, swatch.pink]] as const) {
+  for (const [x, color] of [
+    [-20, swatch.red],
+    [0, swatch.yellow],
+    [20, swatch.pink],
+  ] as const) {
     g.moveTo(x, 26).lineTo(x, -2).stroke({ color: swatch.green.line, width: 4, cap: 'round' });
     for (let i = 0; i < 5; i++) {
       const a = (i * 2 * Math.PI) / 5;
@@ -203,11 +294,20 @@ export function meadowIcon(): Graphics {
 /** Her friend's ball, `r` units in radius: a red and yellow beach ball. */
 export function ballIcon(r = 24): Graphics {
   return new Graphics()
-    .circle(0, 0, r).fill(swatch.red.fill)
-    .moveTo(-r, 0).arc(0, 0, r, Math.PI, 0).lineTo(0, 0).closePath().fill(swatch.yellow.fill)
-    .moveTo(-r * 0.35, -r * 0.94).quadraticCurveTo(r * 0.15, 0, -r * 0.35, r * 0.94).stroke({ width: Math.max(3, r * 0.1), color: 0xffffff })
-    .circle(0, 0, r).stroke({ width: Math.max(4, r * 0.12), color: swatch.red.line })
-    .circle(-r * 0.4, -r * 0.45, r * 0.16).fill({ color: 0xffffff, alpha: 0.7 });
+    .circle(0, 0, r)
+    .fill(swatch.red.fill)
+    .moveTo(-r, 0)
+    .arc(0, 0, r, Math.PI, 0)
+    .lineTo(0, 0)
+    .closePath()
+    .fill(swatch.yellow.fill)
+    .moveTo(-r * 0.35, -r * 0.94)
+    .quadraticCurveTo(r * 0.15, 0, -r * 0.35, r * 0.94)
+    .stroke({ width: Math.max(3, r * 0.1), color: 0xffffff })
+    .circle(0, 0, r)
+    .stroke({ width: Math.max(4, r * 0.12), color: swatch.red.line })
+    .circle(-r * 0.4, -r * 0.45, r * 0.16)
+    .fill({ color: 0xffffff, alpha: 0.7 });
 }
 
 /** The ball beside the basket: "play with your friend". */
@@ -215,7 +315,13 @@ export function playWithIcon(): Graphics {
   const g = ballIcon(17);
   g.position.set(-14, 8);
   const all = new Graphics();
-  all.roundRect(4, -2, 34, 26, 6).fill(wood.light).stroke(line(4, wood.line)).moveTo(8, -2).quadraticCurveTo(21, -26, 34, -2).stroke(line(4, wood.line));
+  all
+    .roundRect(4, -2, 34, 26, 6)
+    .fill(wood.light)
+    .stroke(line(4, wood.line))
+    .moveTo(8, -2)
+    .quadraticCurveTo(21, -26, 34, -2)
+    .stroke(line(4, wood.line));
   all.addChild(g);
   all.x = -8;
   return all;
@@ -224,8 +330,15 @@ export function playWithIcon(): Graphics {
 /** Four bright tiles: Explore's All games (RW08). */
 export function tilesIcon(): Graphics {
   const g = new Graphics();
-  for (const [x, y, c] of [[-15, -15, swatch.red], [15, -15, swatch.yellow], [-15, 15, swatch.teal], [15, 15, swatch.pink]] as const) {
-    g.roundRect(x - 12, y - 12, 24, 24, 7).fill(c.fill).stroke(line(3, c.line));
+  for (const [x, y, c] of [
+    [-15, -15, swatch.red],
+    [15, -15, swatch.yellow],
+    [-15, 15, swatch.teal],
+    [15, 15, swatch.pink],
+  ] as const) {
+    g.roundRect(x - 12, y - 12, 24, 24, 7)
+      .fill(c.fill)
+      .stroke(line(3, c.line));
   }
   return g;
 }
@@ -237,7 +350,9 @@ export function sixIcon(): Graphics {
   tiles.forEach((c, i) => {
     const x = -24 + (i % 3) * 24;
     const y = -4 + Math.floor(i / 3) * 24;
-    g.roundRect(x - 10, y - 10, 20, 20, 6).fill(c.fill).stroke(line(3, c.line));
+    g.roundRect(x - 10, y - 10, 20, 20, 6)
+      .fill(c.fill)
+      .stroke(line(3, c.line));
   });
   return g;
 }
@@ -245,22 +360,39 @@ export function sixIcon(): Graphics {
 /** A game controller: Explore's Family play, which needs one (or a keyboard). */
 export function padIcon(): Graphics {
   return new Graphics()
-    .roundRect(-30, -16, 60, 32, 16).fill(swatch.blue.fill).stroke(line(4, swatch.blue.line))
-    .rect(-21, -3, 14, 6).fill(0xffffff)
-    .rect(-17, -7, 6, 14).fill(0xffffff)
-    .circle(13, -4, 4).fill(swatch.yellow.fill)
-    .circle(21, 4, 4).fill(swatch.red.fill);
+    .roundRect(-30, -16, 60, 32, 16)
+    .fill(swatch.blue.fill)
+    .stroke(line(4, swatch.blue.line))
+    .rect(-21, -3, 14, 6)
+    .fill(0xffffff)
+    .rect(-17, -7, 6, 14)
+    .fill(0xffffff)
+    .circle(13, -4, 4)
+    .fill(swatch.yellow.fill)
+    .circle(21, 4, 4)
+    .fill(swatch.red.fill);
 }
 
 /** A little arcade cabinet with a star on its screen: Explore's Arcade (docs/rework/ARCADE.md). */
 export function arcadeIcon(): Graphics {
   return new Graphics()
-    .roundRect(-24, -34, 48, 68, 10).fill(swatch.purple.fill).stroke(line(4, swatch.purple.line))
-    .roundRect(-16, -26, 32, 24, 5).fill(swatch.teal.light).stroke(line(3, swatch.purple.line))
-    .star(0, -14, 5, 8, 3.5).fill(swatch.yellow.fill)
-    .roundRect(-18, 6, 36, 10, 4).fill(swatch.purple.light)
-    .moveTo(-8, 11).lineTo(-8, 2).stroke(line(3, ink))
-    .circle(-8, 1, 4).fill(swatch.red.fill)
-    .circle(6, 11, 3.5).fill(swatch.yellow.fill)
-    .circle(14, 11, 3.5).fill(swatch.teal.fill);
+    .roundRect(-24, -34, 48, 68, 10)
+    .fill(swatch.purple.fill)
+    .stroke(line(4, swatch.purple.line))
+    .roundRect(-16, -26, 32, 24, 5)
+    .fill(swatch.teal.light)
+    .stroke(line(3, swatch.purple.line))
+    .star(0, -14, 5, 8, 3.5)
+    .fill(swatch.yellow.fill)
+    .roundRect(-18, 6, 36, 10, 4)
+    .fill(swatch.purple.light)
+    .moveTo(-8, 11)
+    .lineTo(-8, 2)
+    .stroke(line(3, ink))
+    .circle(-8, 1, 4)
+    .fill(swatch.red.fill)
+    .circle(6, 11, 3.5)
+    .fill(swatch.yellow.fill)
+    .circle(14, 11, 3.5)
+    .fill(swatch.teal.fill);
 }

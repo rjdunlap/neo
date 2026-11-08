@@ -17,15 +17,30 @@ export interface RhymePlan {
 }
 
 export const PLANS: RhymePlan[] = [
-  { mode: 'match', choices: 3, questions: 4, name: 'Which one rhymes with "cat"? Three pictures to choose from' },
+  {
+    mode: 'match',
+    choices: 3,
+    questions: 4,
+    name: 'Which one rhymes with "cat"? Three pictures to choose from',
+  },
   { mode: 'match', choices: 4, questions: 4, name: 'Which one rhymes? Four pictures to choose from' },
   { mode: 'pair', choices: 4, questions: 4, name: 'Find the two pictures that rhyme with each other' },
   { mode: 'odd', choices: 4, questions: 4, name: 'Odd one out: three rhyme, one does not' },
   { mode: 'riddle', choices: 3, questions: 4, name: 'Riddle: sound clue, then meaning clue' },
   { mode: 'riddle2', choices: 4, questions: 4, name: 'Riddle: meaning clue first, a fourth decoy' },
   { mode: 'make', choices: 3, questions: 3, name: 'Your turn: make the riddle' },
-  { mode: 'scene', choices: 3, questions: 4, name: 'Silly pairs: who rides in the truck? The rider that rhymes hops in' },
-  { mode: 'scene', choices: 2, questions: 3, name: 'Silly pairs, two to choose: three scenes, the rider or one other picture' },
+  {
+    mode: 'scene',
+    choices: 3,
+    questions: 4,
+    name: 'Silly pairs: who rides in the truck? The rider that rhymes hops in',
+  },
+  {
+    mode: 'scene',
+    choices: 2,
+    questions: 3,
+    name: 'Silly pairs, two to choose: three scenes, the rider or one other picture',
+  },
 ];
 
 /**
@@ -41,9 +56,15 @@ export const LEVELS: BandLevels = {
 };
 
 /** Level 10 sits on its own ID, after level 9 (the preschool opening). */
-export const BASKETS: RhymePlan = { mode: 'baskets', choices: 6, questions: 2, name: 'Rhyme baskets: drag six pictures into three baskets by rhyme, two trays' };
+export const BASKETS: RhymePlan = {
+  mode: 'baskets',
+  choices: 6,
+  questions: 2,
+  name: 'Rhyme baskets: drag six pictures into three baskets by rhyme, two trays',
+};
 
-export const planFor = (level: number) => (level >= 10 ? BASKETS : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
+export const planFor = (level: number) =>
+  level >= 10 ? BASKETS : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Rhyme families of words we can draw. */
 export const FAMILIES: Record<string, string[]> = {
@@ -83,7 +104,11 @@ export function makeQuestions(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
   const big = families.filter((f) => FAMILIES[f].length >= 3);
   for (let i = 0; i < plan.questions; i++) {
     // Distractors come from other families, one word each, so none rhyme with anything else shown.
-    const pick = (exclude: string[], n: number) => rng.shuffle(families.filter((f) => !exclude.includes(f))).slice(0, n).map((f) => rng.pick(FAMILIES[f]));
+    const pick = (exclude: string[], n: number) =>
+      rng
+        .shuffle(families.filter((f) => !exclude.includes(f)))
+        .slice(0, n)
+        .map((f) => rng.pick(FAMILIES[f]));
     if (plan.mode === 'match') {
       const fam = families[i % families.length];
       const [prompt, answer] = rng.shuffle([...FAMILIES[fam]]);
@@ -144,11 +169,17 @@ export const sceneFor = (place: string) => SCENES.find((s) => s.place === place)
 
 /** A round of scenes, each a different place; the rider and one picture from each of two other families, none rhyming with the place or each other. */
 function makeScenes(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
-  return rng.shuffle([...SCENES]).slice(0, plan.questions).map((s) => {
-    const fam = familyOf(s.place);
-    const others = rng.shuffle(Object.keys(FAMILIES).filter((f) => f !== fam)).slice(0, plan.choices - 1).map((f) => rng.pick(FAMILIES[f]));
-    return { prompt: s.place, words: rng.shuffle([s.rider, ...others]), answer: [s.rider] };
-  });
+  return rng
+    .shuffle([...SCENES])
+    .slice(0, plan.questions)
+    .map((s) => {
+      const fam = familyOf(s.place);
+      const others = rng
+        .shuffle(Object.keys(FAMILIES).filter((f) => f !== fam))
+        .slice(0, plan.choices - 1)
+        .map((f) => rng.pick(FAMILIES[f]));
+      return { prompt: s.place, words: rng.shuffle([s.rider, ...others]), answer: [s.rider] };
+    });
 }
 
 // Rhyme baskets (level 10) -------------------------------------------------------------
@@ -187,7 +218,8 @@ export const basketFor = (word: string, keys: readonly string[]) => keys.findInd
 export const familySong = (key: string) => [key, ...FAMILIES[familyOf(key)].filter((w) => w !== key)];
 
 /** Says a list with "and": "cat, star and bug". */
-export const andList = (words: readonly string[]) => `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
+export const andList = (words: readonly string[]) =>
+  `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
 
 // Rhyme Riddles (levels 5–7) -----------------------------------------------------------
 
@@ -206,11 +238,23 @@ export const TAGS = {
   ride: { clue: 'You can ride in it.', fact: 'you do not ride in it', words: ['car', 'truck', 'boat'] },
   fly: { clue: 'It can fly.', fact: 'it does not fly', words: ['bee', 'bat', 'duck', 'bug'] },
   swim: { clue: 'It can swim.', fact: 'it does not swim', words: ['fish', 'duck', 'frog', 'dog', 'whale'] },
-  pet: { clue: 'It can be a pet.', fact: 'it is not a pet', words: ['cat', 'dog', 'fish', 'frog', 'duck', 'snake'] },
+  pet: {
+    clue: 'It can be a pet.',
+    fact: 'it is not a pet',
+    words: ['cat', 'dog', 'fish', 'frog', 'duck', 'snake'],
+  },
   fur: { clue: 'It is furry.', fact: 'it is not furry', words: ['cat', 'dog', 'bear', 'king', 'bat'] },
-  sky: { clue: 'You can see it in the sky.', fact: 'you do not see it in the sky', words: ['star', 'moon', 'bat', 'bee', 'duck'] },
+  sky: {
+    clue: 'You can see it in the sky.',
+    fact: 'you do not see it in the sky',
+    words: ['star', 'moon', 'bat', 'bee', 'duck'],
+  },
   grows: { clue: 'It grows outside.', fact: 'it does not grow outside', words: ['tree', 'pear'] },
-  holds: { clue: 'You can put things in it.', fact: 'you do not put things in it', words: ['jar', 'dish', 'car', 'truck', 'boat', 'mug', 'pail'] },
+  holds: {
+    clue: 'You can put things in it.',
+    fact: 'you do not put things in it',
+    words: ['jar', 'dish', 'car', 'truck', 'boat', 'mug', 'pail'],
+  },
   opens: { clue: 'It opens a door.', fact: 'it does not open a door', words: ['key'] },
 } as const satisfies Record<string, { clue: string; fact: string; words: readonly string[] }>;
 export type Tag = keyof typeof TAGS;
@@ -220,7 +264,11 @@ export const holds = (word: string, tag: Tag) => (TAGS[tag].words as readonly st
  * Pictures that arguably fit a clue without being worth a riddle of their own (a ladybird is seen in the sky, a snail can
  * be a pet, you might eat soup with a mug): never the answer, and never the mate or neutral that must fail that clue.
  */
-export const ARGUABLE: Partial<Record<Tag, readonly string[]>> = { sky: ['bug'], pet: ['snail'], eatwith: ['mug'] };
+export const ARGUABLE: Partial<Record<Tag, readonly string[]>> = {
+  sky: ['bug'],
+  pet: ['snail'],
+  eatwith: ['mug'],
+};
 /** The word plainly fails the clue: it neither holds the tag nor arguably fits it. */
 export const fails = (word: string, tag: Tag) => !holds(word, tag) && !(ARGUABLE[tag] ?? []).includes(word);
 
@@ -250,7 +298,8 @@ export function allRiddles(): Omit<Riddle, 'words'>[] {
       for (const answer of FAMILIES[fam].filter((w) => w !== clueWord)) {
         const mate = FAMILIES[fam].find((w) => w !== clueWord && w !== answer)!;
         for (const tag of TAG_IDS.filter((t) => holds(answer, t) && fails(mate, t))) {
-          for (const trap of TAGS[tag].words.filter((w) => familyOf(w) !== fam)) out.push({ clueWord, answer, mate, trap, tag });
+          for (const trap of TAGS[tag].words.filter((w) => familyOf(w) !== fam))
+            out.push({ clueWord, answer, mate, trap, tag });
         }
       }
     }
@@ -259,7 +308,8 @@ export function allRiddles(): Omit<Riddle, 'words'>[] {
 }
 
 /** The tags a mate holds that neither the answer nor the trap does: the level-7 meaning chip that keeps only the mate. */
-export const mateTags = (r: Pick<Riddle, 'answer' | 'mate' | 'trap'>) => TAG_IDS.filter((t) => holds(r.mate, t) && !holds(r.answer, t) && !holds(r.trap, t));
+export const mateTags = (r: Pick<Riddle, 'answer' | 'mate' | 'trap'>) =>
+  TAG_IDS.filter((t) => holds(r.mate, t) && !holds(r.answer, t) && !holds(r.trap, t));
 
 /** Level 6's fourth picture: from a third family, holding no tag the clue uses. */
 const neutrals = (r: Pick<Riddle, 'answer' | 'trap' | 'tag'>) =>
@@ -288,16 +338,25 @@ export function makeRiddles(plan: RhymePlan, rng: Rng): Riddle[] {
 }
 
 /** The pictures on the shelf that fit both clues: rhyming with `sound` and holding `tag`. */
-export const fitsBoth = (words: readonly string[], sound: string, tag: Tag) => words.filter((w) => rhymes(w, sound) && holds(w, tag));
+export const fitsBoth = (words: readonly string[], sound: string, tag: Tag) =>
+  words.filter((w) => rhymes(w, sound) && holds(w, tag));
 
 /** Level 7: the chips on offer, the sound pair and the meaning pair, each with the working one first. */
-export const chipsFor = (r: Riddle) => ({ sound: [r.clueWord, r.decoyWord!], meaning: [r.tag, r.mateTag!] as Tag[] });
+export const chipsFor = (r: Riddle) => ({
+  sound: [r.clueWord, r.decoyWord!],
+  meaning: [r.tag, r.mateTag!] as Tag[],
+});
 
 /** Level 7: what the pet finds from her two chips (the one picture both keep, or nothing). */
-export const guessFor = (r: Riddle, sound: string, tag: Tag): string | null => fitsBoth(r.words, sound, tag)[0] ?? null;
+export const guessFor = (r: Riddle, sound: string, tag: Tag): string | null =>
+  fitsBoth(r.words, sound, tag)[0] ?? null;
 
 /** Level 7: the next chip or button a capable child taps: the working sound chip, the working meaning chip, then Guess. */
-export function makeTap(r: Riddle, sound: string | null, tag: Tag | null): { sound: string } | { tag: Tag } | 'guess' {
+export function makeTap(
+  r: Riddle,
+  sound: string | null,
+  tag: Tag | null,
+): { sound: string } | { tag: Tag } | 'guess' {
   if (sound !== r.clueWord) return { sound: r.clueWord };
   if (tag !== r.tag) return { tag: r.tag };
   return 'guess';

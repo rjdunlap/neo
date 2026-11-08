@@ -14,9 +14,14 @@ export const PLAQUE = { w: 160, h: 130 };
 
 const frame = (w: number, h: number) =>
   new Graphics()
-    .roundRect(-w / 2 + 4, -h / 2 + 8, w, h, 18).fill({ color: 0x000000, alpha: 0.12 })
-    .roundRect(-w / 2, -h / 2, w, h, 18).fill(wood.fill).stroke({ width: 6, color: wood.line })
-    .roundRect(-w / 2 + 14, -h / 2 + 14, w - 28, h - 28, 10).fill(cream).stroke({ width: 3, color: wood.line });
+    .roundRect(-w / 2 + 4, -h / 2 + 8, w, h, 18)
+    .fill({ color: 0x000000, alpha: 0.12 })
+    .roundRect(-w / 2, -h / 2, w, h, 18)
+    .fill(wood.fill)
+    .stroke({ width: 6, color: wood.line })
+    .roundRect(-w / 2 + 14, -h / 2 + 14, w - 28, h - 28, 10)
+    .fill(cream)
+    .stroke({ width: 3, color: wood.line });
 
 /**
  * The board with her picture on it: every stamp where she put it, as big as it was (a little smaller than in the
@@ -36,9 +41,9 @@ export function pictureBoard(picture: PictureCreation | null): Container {
     return c;
   }
   if ('medium' in picture) {
-    const cell = Math.min((paperW-20)/6, (paperH-20)/8);
+    const cell = Math.min((paperW - 20) / 6, (paperH - 20) / 8);
     const cloth = clothPreview(picture, cell);
-    cloth.position.set(-cell*3, -cell*4);
+    cloth.position.set(-cell * 3, -cell * 4);
     c.addChild(cloth);
     return c;
   }
@@ -47,7 +52,10 @@ export function pictureBoard(picture: PictureCreation | null): Container {
       const art = stampArt(s.kind, s.color, 48);
       art.scale.set(0.46 * s.size);
       art.rotation = (s.turns * Math.PI) / 2;
-      art.position.set(-paperW / 2 + margin + s.x * (paperW - 2 * margin), -paperH / 2 + margin + s.y * (paperH - 2 * margin));
+      art.position.set(
+        -paperW / 2 + margin + s.x * (paperW - 2 * margin),
+        -paperH / 2 + margin + s.y * (paperH - 2 * margin),
+      );
       art.eventMode = 'none';
       c.addChild(art);
     }
@@ -116,7 +124,12 @@ export const TUNE_BEAT = 0.42;
  * and its steps (to light a plaque, hop a friend). `wait` is the scene's own, so a destroyed scene's song stops; so does
  * `going()` turning false between beats.
  */
-export async function singTune(tune: TuneCreation, wait: (seconds: number) => Promise<unknown>, onBeat: (col: number, steps: readonly number[]) => void, going: () => boolean = () => true) {
+export async function singTune(
+  tune: TuneCreation,
+  wait: (seconds: number) => Promise<unknown>,
+  onBeat: (col: number, steps: readonly number[]) => void,
+  going: () => boolean = () => true,
+) {
   const beats = tuneBeats(tune);
   music.duck(beats.length * TUNE_BEAT + 0.6);
   for (let col = 0; col < beats.length && going(); col++) {
@@ -155,18 +168,27 @@ export class TunePlaque extends Container {
     const cell = Math.min(areaW / cols, areaH / rows);
     const x0 = -(cell * (cols - 1)) / 2;
     const y0 = -PLAQUE.h / 2 + 30 + (areaH - cell * (rows - 1)) / 2 - 4;
-    if (col >= 0 && col < cols) g.roundRect(x0 + col * cell - cell / 2, y0 - cell / 2, cell, cell * rows, cell / 2).fill({ color: swatch.yellow.light, alpha: 0.75 });
+    if (col >= 0 && col < cols)
+      g.roundRect(x0 + col * cell - cell / 2, y0 - cell / 2, cell, cell * rows, cell / 2).fill({
+        color: swatch.yellow.light,
+        alpha: 0.75,
+      });
     for (let r = 0; r < rows; r++) {
       for (let k = 0; k < cols; k++) {
         const on = this.tune.notes.some((n) => n.col === k && n.row === r);
         const sw = swatch[ROW_COLORS[r % ROW_COLORS.length]];
         const x = x0 + k * cell;
         const y = y0 + r * cell;
-        if (on) g.circle(x, y, cell * 0.36).fill(sw.fill).stroke({ width: 3, color: sw.line });
+        if (on)
+          g.circle(x, y, cell * 0.36)
+            .fill(sw.fill)
+            .stroke({ width: 3, color: sw.line });
         else g.circle(x, y, cell * 0.2).fill({ color: wood.line, alpha: 0.2 });
       }
     }
     // A green play triangle says "touch to hear it".
-    g.poly([-9, PLAQUE.h / 2 - 40, -9, PLAQUE.h / 2 - 14, 12, PLAQUE.h / 2 - 27]).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line, join: 'round' });
+    g.poly([-9, PLAQUE.h / 2 - 40, -9, PLAQUE.h / 2 - 14, 12, PLAQUE.h / 2 - 27])
+      .fill(swatch.green.fill)
+      .stroke({ width: 3, color: swatch.green.line, join: 'round' });
   }
 }

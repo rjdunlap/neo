@@ -87,22 +87,41 @@ describe('touch how-to cards', () => {
       const levels = levelsOf(g);
       const [first, last] = [levels[0], levels[levels.length - 1]];
       const h = HOW_TO[g.id];
-      const lines = [...h.steps, h.finish, h.note ?? ''].flatMap((l) => (typeof l === 'string' ? [] : Array.isArray(l) ? l : [l]));
+      const lines = [...h.steps, h.finish, h.note ?? ''].flatMap((l) =>
+        typeof l === 'string' ? [] : Array.isArray(l) ? l : [l],
+      );
       for (const l of lines as LevelLine[]) {
         expect(l.text.trim().length, `${g.id} line`).toBeGreaterThan(8);
         if (l.from !== undefined) expect(l.from, `${g.id} "${l.text}" from`).toBeGreaterThanOrEqual(first);
         if (l.to !== undefined) expect(l.to, `${g.id} "${l.text}" to`).toBeLessThanOrEqual(last);
-        if (l.from !== undefined && l.to !== undefined) expect(l.from, `${g.id} "${l.text}"`).toBeLessThanOrEqual(l.to);
+        if (l.from !== undefined && l.to !== undefined)
+          expect(l.from, `${g.id} "${l.text}"`).toBeLessThanOrEqual(l.to);
       }
     }
   });
 
   it('keeps the guarded ladders bounded so new levels inherit no instructions or finish claims', () => {
-    for (const id of ['bubble-pop', 'animal-snack', 'clock-tower', 'block-tower', 'peekaboo-barn', 'splish-splash', 'jelly-drums', 'garden-grow']) {
+    for (const id of [
+      'bubble-pop',
+      'animal-snack',
+      'clock-tower',
+      'block-tower',
+      'peekaboo-barn',
+      'splish-splash',
+      'jelly-drums',
+      'garden-grow',
+    ]) {
       const game = GAMES.find((g) => g.id === id)!;
       const last = Math.max(...levelsOf(game));
       expect(howToFor(game, last + 1)!.steps, id).toEqual([]);
-      if (id === 'clock-tower' || id === 'block-tower' || id === 'peekaboo-barn' || id === 'splish-splash' || id === 'jelly-drums') expect(howToFor(game, last + 1)!.finish).toBe('');
+      if (
+        id === 'clock-tower' ||
+        id === 'block-tower' ||
+        id === 'peekaboo-barn' ||
+        id === 'splish-splash' ||
+        id === 'jelly-drums'
+      )
+        expect(howToFor(game, last + 1)!.finish).toBe('');
       if (id === 'splish-splash' || id === 'jelly-drums') expect(howToFor(game, last + 1)!.note).toBeFalsy();
     }
     const snack = GAMES.find((g) => g.id === 'animal-snack')!;
@@ -177,8 +196,10 @@ describe('touch how-to cards', () => {
     expect(howToFor(pop, 15)!.note).toContain('No touch is wrong');
     expect(howToFor(pop, 14)!.note).toContain('wrong bubble');
     // The sign is mentioned only where there is one, and the new levels do not inherit the dots or the pairs.
-    for (const level of [10, 11, 12, 13, 14]) expect(howToFor(pop, level)!.steps.join(' ')).toContain('sign at the top');
-    for (const level of [12, 13, 14]) expect(howToFor(pop, level)!.steps.join(' ')).not.toMatch(/dots|hold|partner|make 5|make 10/);
+    for (const level of [10, 11, 12, 13, 14])
+      expect(howToFor(pop, level)!.steps.join(' ')).toContain('sign at the top');
+    for (const level of [12, 13, 14])
+      expect(howToFor(pop, level)!.steps.join(' ')).not.toMatch(/dots|hold|partner|make 5|make 10/);
     const stand = GAMES.find((g) => g.id === 'lemonade-stand')!;
     expect(howToFor(stand, 3)!.steps[0]).toContain('price in shells');
     expect(howToFor(stand, 2)!.steps[0]).not.toContain('price in shells');
@@ -209,8 +230,12 @@ describe('explaining a game every time it opens', () => {
 
 describe('the demonstration on a card', () => {
   it('is there for exactly the island games the couch can play, and for nothing else', () => {
-    const withBot = GAMES.filter((g) => demoFor(g.id)).map((g) => g.id).sort();
-    const couchOnIsland = Object.keys(COUCH_INFO).filter((id) => GAMES.some((g) => g.id === id)).sort();
+    const withBot = GAMES.filter((g) => demoFor(g.id))
+      .map((g) => g.id)
+      .sort();
+    const couchOnIsland = Object.keys(COUCH_INFO)
+      .filter((id) => GAMES.some((g) => g.id === id))
+      .sort();
     expect(withBot).toEqual(couchOnIsland);
     expect(withBot).toHaveLength(26);
     expect(demoFor('monster-munch')).toBeNull();

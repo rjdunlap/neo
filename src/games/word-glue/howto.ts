@@ -11,8 +11,20 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: 'Every pair is joined and its new thing has come alive.',
   note: [
-    { from: 1, to: 1, text: 'Every new word is two whole words she already knows. Nothing can go wrong here.' },
-    { from: 2, to: 2, text: 'Every new word is two whole words she already knows. A wrong pair is one miss and the pet says the word\'s parts; after two misses the right pictures glow, which counts as a hint. Hearing a word again never counts.' },
-    { from: 3, to: 3, text: 'Every new word is two whole words she already knows. A wrong friend makes a real thing, and the pet says who it is for; that is one miss. After two misses the friend who asked glows, which counts as a hint. Hearing a word again never counts.' },
+    {
+      from: 1,
+      to: 1,
+      text: 'Every new word is two whole words she already knows. Nothing can go wrong here.',
+    },
+    {
+      from: 2,
+      to: 2,
+      text: "Every new word is two whole words she already knows. A wrong pair is one miss and the pet says the word's parts; after two misses the right pictures glow, which counts as a hint. Hearing a word again never counts.",
+    },
+    {
+      from: 3,
+      to: 3,
+      text: 'Every new word is two whole words she already knows. A wrong friend makes a real thing, and the pet says who it is for; that is one miss. After two misses the friend who asked glows, which counts as a hint. Hearing a word again never counts.',
+    },
   ],
 };

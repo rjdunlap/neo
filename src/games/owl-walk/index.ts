@@ -14,17 +14,41 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, allHome, drawCardFor, farthest, hop, hops, judgeStone, makePath, owlOf, owlToHop, planFor, type OwlPlan, type Spot } from './logic';
+import {
+  LEVELS,
+  allHome,
+  drawCardFor,
+  farthest,
+  hop,
+  hops,
+  judgeStone,
+  makePath,
+  owlOf,
+  owlToHop,
+  planFor,
+  type OwlPlan,
+  type Spot,
+} from './logic';
 
 /** Each stone color also has its own shape, so the match never rests on hue alone. */
-const MARK: Partial<Record<ColorName, ShapeKind>> = { red: 'heart', blue: 'circle', yellow: 'star', green: 'triangle' };
+const MARK: Partial<Record<ColorName, ShapeKind>> = {
+  red: 'heart',
+  blue: 'circle',
+  yellow: 'star',
+  green: 'triangle',
+};
 const OWL_COLORS: ColorName[] = ['purple', 'brown', 'pink'];
 const OWL_SCALE = 0.3;
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 function stoneArt(color: ColorName): Graphics {
   const sw = swatch[color];
-  const g = new Graphics().ellipse(0, 6, 44, 20).fill({ color: 0x000000, alpha: 0.18 }).ellipse(0, 0, 44, 22).fill(sw.fill).stroke(line(sw.line, 4));
+  const g = new Graphics()
+    .ellipse(0, 6, 44, 20)
+    .fill({ color: 0x000000, alpha: 0.18 })
+    .ellipse(0, 0, 44, 22)
+    .fill(sw.fill)
+    .stroke(line(sw.line, 4));
   const mark = MARK[color];
   if (mark) {
     const m = shapePath(new Graphics(), mark, 11).fill(sw.light);
@@ -37,7 +61,14 @@ function stoneArt(color: ColorName): Graphics {
 function cardFace(color: ColorName): Container {
   const sw = swatch[color];
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-56, -76, 112, 152, 14).fill(0xffffff).stroke(line(sw.line, 6)).roundRect(-44, -64, 88, 128, 10).fill(sw.fill));
+  c.addChild(
+    new Graphics()
+      .roundRect(-56, -76, 112, 152, 14)
+      .fill(0xffffff)
+      .stroke(line(sw.line, 6))
+      .roundRect(-44, -64, 88, 128, 10)
+      .fill(sw.fill),
+  );
   const mark = MARK[color];
   if (mark) c.addChild(shapePath(new Graphics(), mark, 30).fill(sw.light).stroke(line(sw.line, 4)));
   return c;
@@ -45,8 +76,13 @@ function cardFace(color: ColorName): Container {
 
 function cardBack(): Graphics {
   return new Graphics()
-    .roundRect(-56, -76, 112, 152, 14).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 6))
-    .circle(0, 0, 26).fill(swatch.yellow.light).circle(12, -8, 22).fill(swatch.purple.fill);
+    .roundRect(-56, -76, 112, 152, 14)
+    .fill(swatch.purple.fill)
+    .stroke(line(swatch.purple.line, 6))
+    .circle(0, 0, 26)
+    .fill(swatch.yellow.light)
+    .circle(12, -8, 22)
+    .fill(swatch.purple.fill);
 }
 
 interface Owl {
@@ -115,15 +151,41 @@ class OwlWalk implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.path = makePath(this.plan, ctx.rng);
-    this.backdrop = ctx.track(new Backdrop({ sky: [swatch.purple.line, swatch.blue.line], hills: [swatch.teal.line, 0x3f7f2e, 0x4a9a35], horizon: 0.42, clouds: 0, sun: false, seed: 77 }, ctx.view));
+    this.backdrop = ctx.track(
+      new Backdrop(
+        {
+          sky: [swatch.purple.line, swatch.blue.line],
+          hills: [swatch.teal.line, 0x3f7f2e, 0x4a9a35],
+          horizon: 0.42,
+          clouds: 0,
+          sun: false,
+          seed: 77,
+        },
+        ctx.view,
+      ),
+    );
     this.moon.circle(0, 0, 40).fill(swatch.yellow.light).circle(16, -10, 34).fill(swatch.purple.line);
     this.dawn.alpha = 0;
     this.sun.visible = false;
     for (const color of this.path) this.stones.push(stoneArt(color));
     const tree = new Graphics().roundRect(-24, -150, 48, 160, 12).fill(wood.fill).stroke(line(wood.line, 5));
-    puffs(tree, [[-60, -170, 54], [55, -165, 52], [0, -215, 62]], swatch.green.line, 0x3f7f2e, 5);
+    puffs(
+      tree,
+      [
+        [-60, -170, 54],
+        [55, -165, 52],
+        [0, -215, 62],
+      ],
+      swatch.green.line,
+      0x3f7f2e,
+      5,
+    );
     const nest = new Graphics().ellipse(0, -120, 92, 34).fill(wood.light).stroke(line(wood.line, 6));
-    for (let k = -3; k <= 3; k++) nest.moveTo(k * 24 - 14, -132).lineTo(k * 24 + 14, -108).stroke(line(wood.line, 3));
+    for (let k = -3; k <= 3; k++)
+      nest
+        .moveTo(k * 24 - 14, -132)
+        .lineTo(k * 24 + 14, -108)
+        .stroke(line(wood.line, 3));
     this.nest.addChild(tree, nest);
     this.deck.addChild(cardBack());
     const back2 = cardBack();
@@ -133,17 +195,36 @@ class OwlWalk implements Game {
     onTap(this.deck, () => void this.flip('child'), { cooldown: 400 });
     this.hintGlow.circle(0, 0, 66).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.hintGlow.visible = false;
-    for (const quiet of [this.previews, this.trail, this.dawn, this.hintGlow, this.flies, this.fx]) quiet.eventMode = 'none';
+    for (const quiet of [this.previews, this.trail, this.dawn, this.hintGlow, this.flies, this.fx])
+      quiet.eventMode = 'none';
     this.touch.eventMode = 'static';
     this.touch.cursor = 'pointer';
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => this.tapAt(e));
-    ctx.stage.addChild(this.backdrop, this.moon, this.sun, this.dawn, this.nest, this.trail, this.hintGlow, ...this.stones, this.flies, this.previews, this.layer, this.touch, this.deck, this.shown, this.fx);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.moon,
+      this.sun,
+      this.dawn,
+      this.nest,
+      this.trail,
+      this.hintGlow,
+      ...this.stones,
+      this.flies,
+      this.previews,
+      this.layer,
+      this.touch,
+      this.deck,
+      this.shown,
+      this.fx,
+    );
     for (let i = 0; i < this.plan.owls; i++) {
       const critter = ctx.track(owlArt(OWL_COLORS[i]));
       critter.scale.set(OWL_SCALE);
       const glow = new Graphics().circle(0, -130, 170).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
-      const ring = new Graphics().circle(0, -130, 185).stroke({ width: 22, color: swatch[OWL_COLORS[i]].light, alpha: 0.95 });
+      const ring = new Graphics()
+        .circle(0, -130, 185)
+        .stroke({ width: 22, color: swatch[OWL_COLORS[i]].light, alpha: 0.95 });
       ring.visible = false;
       critter.addChildAt(ring, 0);
       critter.addChildAt(glow, 0);
@@ -195,7 +276,10 @@ class OwlWalk implements Game {
     this.backdrop.resize(v);
     this.moon.position.set(v.w * 0.75, 120);
     this.sun.position.set(v.w * 0.75, v.h * 0.42);
-    this.dawn.clear().rect(0, 0, v.w, v.h * 0.45).fill(swatch.orange.light);
+    this.dawn
+      .clear()
+      .rect(0, 0, v.w, v.h * 0.45)
+      .fill(swatch.orange.light);
     this.nest.position.set(v.w - 120, v.h - 330 + 10);
     this.stones.forEach((s, i) => s.position.copyFrom(this.stoneAt(i)));
     const t = this.trail.clear();
@@ -234,18 +318,27 @@ class OwlWalk implements Game {
     if (asks && this.selected === null && this.moving().length > 1) {
       const i = owlToHop(this.path, spots, this.card);
       // The owl's tap area is centered a little above its feet.
-      return i === null ? null : { tap: { on: this.owls[i].critter, x: 0, y: -125 }, receiver: this.touch, pause: 0.2 };
+      return i === null
+        ? null
+        : { tap: { on: this.owls[i].critter, x: 0, y: -125 }, receiver: this.touch, pause: 0.2 };
     }
     const i = this.actorOwl();
     if (i === null) return null;
     const to = hop(this.path, spots, i, this.card);
-    return to >= this.path.length ? { tap: { on: this.nest, x: 0, y: -120 }, receiver: this.touch } : { tap: { on: this.stones[to] }, receiver: this.touch };
+    return to >= this.path.length
+      ? { tap: { on: this.nest, x: 0, y: -120 }, receiver: this.touch }
+      : { tap: { on: this.stones[to] }, receiver: this.touch };
   }
 
   destroy() {}
 
   private async intro() {
-    const lines = { one: 'owl.one', turns: 'owl.turns', choose: 'owl.choose', farthest: 'owl.farthest' } as const;
+    const lines = {
+      one: 'owl.one',
+      turns: 'owl.turns',
+      choose: 'owl.choose',
+      farthest: 'owl.farthest',
+    } as const;
     await this.ctx.instruct(lines[this.plan.mode]);
     this.busy = false;
   }
@@ -294,7 +387,8 @@ class OwlWalk implements Game {
     if (who === 'pet') return;
     this.busy = false;
     // One owl left walking: there is nothing to pick.
-    if ((this.plan.mode === 'choose' || this.plan.mode === 'farthest') && movers.length === 1) this.select(movers[0], false);
+    if ((this.plan.mode === 'choose' || this.plan.mode === 'farthest') && movers.length === 1)
+      this.select(movers[0], false);
     const i = this.actorOwl();
     if (i === null) {
       if (!this.told) {
@@ -337,7 +431,8 @@ class OwlWalk implements Game {
     });
     consider({ kind: 'nest' }, this.nestPoint(), NEST_REACH);
     this.owls.forEach((o, i) => {
-      if (o.spot < this.path.length) consider({ kind: 'owl', i }, { x: o.critter.x, y: o.critter.y - 38 }, OWL_REACH);
+      if (o.spot < this.path.length)
+        consider({ kind: 'owl', i }, { x: o.critter.x, y: o.critter.y - 38 }, OWL_REACH);
     });
     // On the farthest level the numbered rings are the most eye-catching thing on the path: touching one means its owl.
     if (this.plan.mode === 'farthest' && this.card) {
@@ -359,13 +454,18 @@ class OwlWalk implements Game {
     const hit = this.nearest(this.touch.toLocal(e.global));
     if (!hit) return;
     // Touch-down answers at once, before the judgment: the stone squashes and a ring spreads.
-    const at = hit.kind === 'owl' ? { x: this.owls[hit.i].critter.x, y: this.owls[hit.i].critter.y - 38 } : this.targetPoint(hit.kind === 'stone' ? hit.i : 'nest');
+    const at =
+      hit.kind === 'owl'
+        ? { x: this.owls[hit.i].critter.x, y: this.owls[hit.i].critter.y - 38 }
+        : this.targetPoint(hit.kind === 'stone' ? hit.i : 'nest');
     this.ripple(at.x, at.y);
     if (hit.kind === 'stone') this.squash(this.stones[hit.i]);
     if (!this.card) {
       if (hit.kind === 'owl') this.owls[hit.i].critter.poke();
       void this.ctx.say('owl.flip-first');
-      void this.ctx.tw.to(this.deck.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 }).then(() => this.ctx.tw.to(this.deck.scale, { x: 1, y: 1 }, { duration: 0.12 }));
+      void this.ctx.tw
+        .to(this.deck.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(this.deck.scale, { x: 1, y: 1 }, { duration: 0.12 }));
       return;
     }
     if (hit.kind === 'owl') void this.pickOwl(hit.i);
@@ -389,13 +489,17 @@ class OwlWalk implements Game {
       const h = hops(this.path, spots, color);
       const best = farthest(this.path, spots, color);
       this.owls[i].critter.poke();
-      await this.miss(() => this.ctx.say('owl.not-farthest', { a: h[i], b: h[best[0]] }), () => {
-        for (const b of best) this.owls[b].glow.visible = true;
-      }, async () => {
-        await this.ctx.say('owl.together');
-        this.busy = false;
-        this.select(best[0], true);
-      });
+      await this.miss(
+        () => this.ctx.say('owl.not-farthest', { a: h[i], b: h[best[0]] }),
+        () => {
+          for (const b of best) this.owls[b].glow.visible = true;
+        },
+        async () => {
+          await this.ctx.say('owl.together');
+          this.busy = false;
+          this.select(best[0], true);
+        },
+      );
       return;
     }
     this.select(i, true);
@@ -439,11 +543,15 @@ class OwlWalk implements Game {
       'early-nest': () => this.ctx.say('owl.early-nest', { color }),
     } as const;
     const to = hop(this.path, spots, i, color);
-    await this.miss(lines[verdict], () => this.showHint(to >= this.path.length ? 'nest' : to), async () => {
-      await this.ctx.say('owl.together');
-      await this.move(i);
-      await this.endTurn();
-    });
+    await this.miss(
+      lines[verdict],
+      () => this.showHint(to >= this.path.length ? 'nest' : to),
+      async () => {
+        await this.ctx.say('owl.together');
+        await this.move(i);
+        await this.endTurn();
+      },
+    );
   }
 
   /** A gentle miss: a boing and a spoken reason; after two, the answer glows (one hint a turn); a third has the pet hop it. */
@@ -485,7 +593,13 @@ class OwlWalk implements Game {
     for (let s = spots[i] + 1; s < this.path.length; s++) {
       if (this.path[s] !== this.card || spots.includes(s)) continue;
       for (let k = 0; k < 5; k++) {
-        const g = new Graphics().circle(0, 0, 15).fill({ color: light, alpha: 0.35 }).circle(0, 0, 8).fill(light).circle(0, 0, 4).fill(0xffffff);
+        const g = new Graphics()
+          .circle(0, 0, 15)
+          .fill({ color: light, alpha: 0.35 })
+          .circle(0, 0, 8)
+          .fill(light)
+          .circle(0, 0, 4)
+          .fill(0xffffff);
         this.flies.addChild(g);
         this.fireflies.push({ g, stone: s, phase: k * 1.3 + s, reach: 26 + k * 6 });
       }
@@ -506,7 +620,9 @@ class OwlWalk implements Game {
   }
 
   private squash(stone: Graphics) {
-    void this.ctx.tw.to(stone.scale, { x: 1.15, y: 0.8 }, { duration: 0.07 }).then(() => this.ctx.tw.to(stone.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(stone.scale, { x: 1.15, y: 0.8 }, { duration: 0.07 })
+      .then(() => this.ctx.tw.to(stone.scale, { x: 1, y: 1 }, { duration: 0.12, ease: ease.outBack }));
   }
 
   /** Hop by hop along the stones to the landing spot (or all the way home), counting the stones aloud. */
@@ -529,7 +645,11 @@ class OwlWalk implements Game {
       owl.critter.hop(0.5);
       sfx.marimba(4 + Math.min(9, k), 0.3);
       if (counted) void this.ctx.say('count', { n: k + 1 });
-      await this.ctx.tw.to(owl.critter, { x: p.x, y: p.y }, { duration: s === to && to >= this.path.length ? 0.6 : counted ? 0.28 : 0.24, ease: ease.inOutSine });
+      await this.ctx.tw.to(
+        owl.critter,
+        { x: p.x, y: p.y },
+        { duration: s === to && to >= this.path.length ? 0.6 : counted ? 0.28 : 0.24, ease: ease.inOutSine },
+      );
     }
     owl.spot = to;
     this.index++;
@@ -541,11 +661,18 @@ class OwlWalk implements Game {
     }
     this.card = null;
     // Only this card fades: a quick next turn may already be turning up another.
-    for (const old of [...this.shown.children]) void this.ctx.tw.to(old, { alpha: 0 }, { duration: 0.3 }).then(() => old.destroy({ children: true }));
+    for (const old of [...this.shown.children])
+      void this.ctx.tw.to(old, { alpha: 0 }, { duration: 0.3 }).then(() => old.destroy({ children: true }));
   }
 
   private async endTurn() {
-    if (allHome(this.path, this.owls.map((o) => o.spot))) return this.finale();
+    if (
+      allHome(
+        this.path,
+        this.owls.map((o) => o.spot),
+      )
+    )
+      return this.finale();
     if (this.plan.mode === 'one') {
       this.busy = false;
       return;
@@ -573,7 +700,13 @@ class OwlWalk implements Game {
     const at = this.targetPoint(to >= this.path.length ? 'nest' : to);
     this.ripple(at.x, at.y);
     await this.move(best);
-    if (allHome(this.path, this.owls.map((o) => o.spot))) return this.finale();
+    if (
+      allHome(
+        this.path,
+        this.owls.map((o) => o.spot),
+      )
+    )
+      return this.finale();
     this.turn = 'child';
     this.busy = false;
     await this.ctx.instruct('owl.your-turn');
@@ -589,7 +722,10 @@ class OwlWalk implements Game {
       if (o.spot >= this.path.length) return;
       const to = hop(this.path, spots, i, this.card!);
       const p = this.spotAt(to, i);
-      const ring = new Graphics().circle(0, -28, 30).fill({ color: swatch[OWL_COLORS[i]].light, alpha: 0.85 }).stroke(line(swatch[OWL_COLORS[i]].line, 4));
+      const ring = new Graphics()
+        .circle(0, -28, 30)
+        .fill({ color: swatch[OWL_COLORS[i]].light, alpha: 0.85 })
+        .stroke(line(swatch[OWL_COLORS[i]].line, 4));
       const n = label(String(h[i]), 26, ink);
       n.y = -28;
       ring.addChild(n);
@@ -663,8 +799,10 @@ export const owlWalk: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
-  coplayHint: 'Take turns with {name}: you flip a card, then {name} does. Say the color together, and cheer each owl home.',
-  offScreen: 'Play a cooperative board game together, like Hoot Owl Hoot! or First Orchard, where everyone wins together.',
+  coplayHint:
+    'Take turns with {name}: you flip a card, then {name} does. Say the color together, and cheer each owl home.',
+  offScreen:
+    'Play a cooperative board game together, like Hoot Owl Hoot! or First Orchard, where everyone wins together.',
   hubIcon: () => new OwlIcon(),
   touchDemo: true,
   sticker,

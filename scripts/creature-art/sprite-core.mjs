@@ -66,11 +66,13 @@ export function keyOut(data, w, h, { mode = 'auto', seed = null, holes = [] } = 
     const border = borderOf(w, h);
     const med = (k) => border.map((i) => data[i * 4 + k]).sort((a, b) => a - b)[border.length >> 1];
     paper = [med(0), med(1), med(2)];
-    const dist = (i) => Math.hypot(data[i * 4] - paper[0], data[i * 4 + 1] - paper[1], data[i * 4 + 2] - paper[2]);
+    const dist = (i) =>
+      Math.hypot(data[i * 4] - paper[0], data[i * 4 + 1] - paper[1], data[i * 4 + 2] - paper[2]);
     const stack = border.filter((i) => dist(i) < PAPER);
     for (const h0 of holes) {
       const i = h0.y * w + h0.x;
-      if (h0.x < 0 || h0.y < 0 || h0.x >= w || h0.y >= h || dist(i) >= PAPER) throw new Error(`hole ${h0.x},${h0.y} is not on the paper`);
+      if (h0.x < 0 || h0.y < 0 || h0.x >= w || h0.y >= h || dist(i) >= PAPER)
+        throw new Error(`hole ${h0.x},${h0.y} is not on the paper`);
       stack.push(i);
     }
     for (const i of stack) bg[i] = 1;
@@ -92,7 +94,8 @@ export function keyOut(data, w, h, { mode = 'auto', seed = null, holes = [] } = 
   const keep = new Uint8Array(n);
   if (seed) {
     const s = seed.y * w + seed.x;
-    if (seed.x < 0 || seed.y < 0 || seed.x >= w || seed.y >= h || bg[s]) throw new Error(`seed ${seed.x},${seed.y} is not on the creature`);
+    if (seed.x < 0 || seed.y < 0 || seed.x >= w || seed.y >= h || bg[s])
+      throw new Error(`seed ${seed.x},${seed.y} is not on the creature`);
     const stack = [s];
     keep[s] = 1;
     while (stack.length) {
@@ -106,11 +109,15 @@ export function keyOut(data, w, h, { mode = 'auto', seed = null, holes = [] } = 
   } else for (let i = 0; i < n; i++) keep[i] = bg[i] ? 0 : 1;
 
   const src = data.slice();
-  let minX = w, minY = h, maxX = -1, maxY = -1;
+  let minX = w,
+    minY = h,
+    maxX = -1,
+    maxY = -1;
   if (mode === 'paper') {
     // Distances read the live buffer, as the pilot did: an edge pixel already un-mixed counts with
     // its new colour when a later neighbour looks inward. Changing this would change the glider's bytes.
-    const dist = (i) => Math.hypot(data[i * 4] - paper[0], data[i * 4 + 1] - paper[1], data[i * 4 + 2] - paper[2]);
+    const dist = (i) =>
+      Math.hypot(data[i * 4] - paper[0], data[i * 4 + 1] - paper[1], data[i * 4 + 2] - paper[2]);
     // Ring 1 touches the paper (or the image's edge), ring 2 touches ring 1.
     const ring = new Uint8Array(n);
     const near = (i, test) => around(i, w, h).some((j) => j < 0 || test(j));
@@ -126,15 +133,22 @@ export function keyOut(data, w, h, { mode = 'auto', seed = null, holes = [] } = 
       if (ring[i]) {
         // Un-mix: the pixel is paper blended with the strongest colour just inside it (usually ink).
         let f = -1;
-        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
-          const j = i + dy * w + dx;
-          if (x + dx < 0 || x + dx >= w || j < 0 || j >= n || !keep[j] || ring[j] === 1) continue;
-          if (f < 0 || dist(j) > dist(f)) f = j;
-        }
+        for (let dy = -2; dy <= 2; dy++)
+          for (let dx = -2; dx <= 2; dx++) {
+            const j = i + dy * w + dx;
+            if (x + dx < 0 || x + dx >= w || j < 0 || j >= n || !keep[j] || ring[j] === 1) continue;
+            if (f < 0 || dist(j) > dist(f)) f = j;
+          }
         if (f >= 0 && dist(f) > RAMP) {
           const fv = [0, 1, 2].map((k) => src[f * 4 + k] - paper[k]);
           const cv = [0, 1, 2].map((k) => data[i * 4 + k] - paper[k]);
-          const a = Math.min(1, Math.max(0, (fv[0] * cv[0] + fv[1] * cv[1] + fv[2] * cv[2]) / (fv[0] ** 2 + fv[1] ** 2 + fv[2] ** 2)));
+          const a = Math.min(
+            1,
+            Math.max(
+              0,
+              (fv[0] * cv[0] + fv[1] * cv[1] + fv[2] * cv[2]) / (fv[0] ** 2 + fv[1] ** 2 + fv[2] ** 2),
+            ),
+          );
           if (a < 1) {
             for (let k = 0; k < 3; k++) data[i * 4 + k] = src[f * 4 + k];
             data[i * 4 + 3] = Math.round(a * 255);
@@ -156,16 +170,18 @@ export function keyOut(data, w, h, { mode = 'auto', seed = null, holes = [] } = 
       const y = (i / w) | 0;
       if (data[i * 4 + 3] < 255) {
         // De-fringe: take the colour of the nearest opaque pixel within two, keep the alpha.
-        let f = -1, best = Infinity;
-        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
-          const j = i + dy * w + dx;
-          if (x + dx < 0 || x + dx >= w || j < 0 || j >= n || !keep[j] || src[j * 4 + 3] < 255) continue;
-          const d = dx * dx + dy * dy;
-          if (d < best) {
-            best = d;
-            f = j;
+        let f = -1,
+          best = Infinity;
+        for (let dy = -2; dy <= 2; dy++)
+          for (let dx = -2; dx <= 2; dx++) {
+            const j = i + dy * w + dx;
+            if (x + dx < 0 || x + dx >= w || j < 0 || j >= n || !keep[j] || src[j * 4 + 3] < 255) continue;
+            const d = dx * dx + dy * dy;
+            if (d < best) {
+              best = d;
+              f = j;
+            }
           }
-        }
         if (f >= 0) for (let k = 0; k < 3; k++) data[i * 4 + k] = src[f * 4 + k];
       }
       minX = Math.min(minX, x);
@@ -213,24 +229,29 @@ export function shrink({ data, w, h }, n) {
   const th = h / n;
   const out = new Uint8ClampedArray(tw * th * 4);
   const count = n * n;
-  for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) {
-    let r = 0, g = 0, b = 0, a = 0;
-    for (let dy = 0; dy < n; dy++) for (let dx = 0; dx < n; dx++) {
-      const s = ((y * n + dy) * w + x * n + dx) * 4;
-      const sa = data[s + 3];
-      r += data[s] * sa;
-      g += data[s + 1] * sa;
-      b += data[s + 2] * sa;
-      a += sa;
+  for (let y = 0; y < th; y++)
+    for (let x = 0; x < tw; x++) {
+      let r = 0,
+        g = 0,
+        b = 0,
+        a = 0;
+      for (let dy = 0; dy < n; dy++)
+        for (let dx = 0; dx < n; dx++) {
+          const s = ((y * n + dy) * w + x * n + dx) * 4;
+          const sa = data[s + 3];
+          r += data[s] * sa;
+          g += data[s + 1] * sa;
+          b += data[s + 2] * sa;
+          a += sa;
+        }
+      const d = (y * tw + x) * 4;
+      if (a > 0) {
+        out[d] = Math.round(r / a);
+        out[d + 1] = Math.round(g / a);
+        out[d + 2] = Math.round(b / a);
+        out[d + 3] = Math.round(a / count);
+      }
     }
-    const d = (y * tw + x) * 4;
-    if (a > 0) {
-      out[d] = Math.round(r / a);
-      out[d + 1] = Math.round(g / a);
-      out[d + 2] = Math.round(b / a);
-      out[d + 3] = Math.round(a / count);
-    }
-  }
   return { data: out, w: tw, h: th };
 }
 
@@ -248,7 +269,12 @@ export function union(list) {
 
 /** A variant's edge offsets from the base's bounds (positive moves right or down), and whether all are within `tolerance`. */
 export function alignment(base, variant, tolerance = TOLERANCE) {
-  const offsets = { left: variant.minX - base.minX, top: variant.minY - base.minY, right: variant.maxX - base.maxX, bottom: variant.maxY - base.maxY };
+  const offsets = {
+    left: variant.minX - base.minX,
+    top: variant.minY - base.minY,
+    right: variant.maxX - base.maxX,
+    bottom: variant.maxY - base.maxY,
+  };
   const ok = Object.values(offsets).every((v) => Math.abs(v) <= tolerance);
   return { offsets, ok };
 }
@@ -270,7 +296,15 @@ const CHOSEN = /^(yes|y|x|✓|✔|chosen|true)$/i;
  * Returns `[{ file, asset }]` sorted by asset; a second chosen file for one asset is an error.
  */
 export function parseManifest(markdown, species) {
-  const rows = markdown.split('\n').filter((l) => /^\s*\|/.test(l)).map((l) => l.split('|').slice(1, -1).map((c) => c.trim()));
+  const rows = markdown
+    .split('\n')
+    .filter((l) => /^\s*\|/.test(l))
+    .map((l) =>
+      l
+        .split('|')
+        .slice(1, -1)
+        .map((c) => c.trim()),
+    );
   const head = rows.find((r) => r.some((c) => /^file$/i.test(c)));
   if (!head) throw new Error('manifest has no table with a File column');
   const fileCol = head.findIndex((c) => /^file$/i.test(c));
@@ -282,7 +316,8 @@ export function parseManifest(markdown, species) {
     if (r === head || r.every((c) => /^:?-+:?$/.test(c))) continue;
     const m = name.exec(r[fileCol] ?? '');
     if (!m || !CHOSEN.test(r[chosenCol] ?? '')) continue;
-    if (chosen.has(m[2])) throw new Error(`two chosen files for ${species} ${m[2]}: ${chosen.get(m[2])} and ${m[1]}`);
+    if (chosen.has(m[2]))
+      throw new Error(`two chosen files for ${species} ${m[2]}: ${chosen.get(m[2])} and ${m[1]}`);
     chosen.set(m[2], m[1]);
   }
   return [...chosen].map(([asset, file]) => ({ file, asset })).sort((a, b) => a.asset.localeCompare(b.asset));

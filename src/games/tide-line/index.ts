@@ -10,7 +10,19 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { DUNE, flag, GRASS_GREEN, iconArt, SAND, SEA, SEA_DEEP, shorePicture, towel, waveButton, WET_SAND } from './art';
+import {
+  DUNE,
+  flag,
+  GRASS_GREEN,
+  iconArt,
+  SAND,
+  SEA,
+  SEA_DEEP,
+  shorePicture,
+  towel,
+  waveButton,
+  WET_SAND,
+} from './art';
 import {
   answerOf,
   AUTHORED_HIGH,
@@ -162,7 +174,18 @@ class TideLine implements Game {
     for (const g of [this.line, this.glow, this.water]) g.eventMode = 'none';
     // The creatures take pokes; the layer itself does not.
     this.critterLayer.eventMode = 'passive';
-    ctx.stage.addChild(this.shore, this.line, this.glow, this.critterLayer, this.water, this.seaHit, this.pailLayer, this.waveBtn, this.picLayer, this.board);
+    ctx.stage.addChild(
+      this.shore,
+      this.line,
+      this.glow,
+      this.critterLayer,
+      this.water,
+      this.seaHit,
+      this.pailLayer,
+      this.waveBtn,
+      this.picLayer,
+      this.board,
+    );
     if (this.plan.mode === 'wave') {
       this.seaHit.eventMode = 'static';
       this.seaHit.cursor = 'grab';
@@ -201,7 +224,15 @@ class TideLine implements Game {
 
   start() {
     const mode = this.plan.mode;
-    void this.ctx.instruct(mode === 'wave' ? 'tl.instruct.1' : mode === 'pail' ? 'tl.instruct.2' : mode === 'line' ? 'tl.instruct.3' : 'tl.instruct.4');
+    void this.ctx.instruct(
+      mode === 'wave'
+        ? 'tl.instruct.1'
+        : mode === 'pail'
+          ? 'tl.instruct.2'
+          : mode === 'line'
+            ? 'tl.instruct.3'
+            : 'tl.instruct.4',
+    );
   }
 
   // Level 1: the wave ---------------------------------------------------------------------------
@@ -239,7 +270,9 @@ class TideLine implements Game {
 
   private wobble(c: Critter) {
     if (this.ctx.tw.busy(c.node)) return;
-    void this.ctx.tw.to(c.node, { rotation: 0.12 }, { duration: 0.1 }).then(() => this.ctx.tw.to(c.node, { rotation: 0 }, { duration: 0.4, ease: ease.outElastic }));
+    void this.ctx.tw
+      .to(c.node, { rotation: 0.12 }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(c.node, { rotation: 0 }, { duration: 0.4, ease: ease.outElastic }));
   }
 
   private readonly onDown = (e: FederatedPointerEvent) => {
@@ -252,7 +285,15 @@ class TideLine implements Game {
     this.target = this.sea.h;
     // Touch-down: foam bursts at the crest.
     sfx.whoosh();
-    this.ctx.particles.burst(p.x, yAt(this.L, this.sea.h), { colors: [0xffffff, swatch.blue.light], count: 6, speed: [40, 120], gravity: 300, angle: -Math.PI / 2, spread: 1, size: [0.25, 0.45] });
+    this.ctx.particles.burst(p.x, yAt(this.L, this.sea.h), {
+      colors: [0xffffff, swatch.blue.light],
+      count: 6,
+      speed: [40, 120],
+      gravity: 300,
+      angle: -Math.PI / 2,
+      spread: 1,
+      size: [0.25, 0.45],
+    });
   };
 
   private readonly onMove = (e: FederatedPointerEvent) => {
@@ -286,7 +327,7 @@ class TideLine implements Game {
     } else if (this.auto) {
       this.auto.t += dt;
       const T = 3.2;
-      this.sea.h = 0.8 * (1 - Math.cos((2 * Math.PI * Math.min(this.auto.t, T)) / T)) / 2;
+      this.sea.h = (0.8 * (1 - Math.cos((2 * Math.PI * Math.min(this.auto.t, T)) / T))) / 2;
       if (this.auto.t >= T) this.auto = null;
       else if (this.auto.t > T / 2 && this.auto.t - dt <= T / 2) sfx.wave(false);
     } else if (this.back) {
@@ -403,7 +444,11 @@ class TideLine implements Game {
     this.ctx.pet.hop();
     sfx.whoosh();
     p.at = null;
-    await tw.to(p.node, { x: this.L.tray.x, y: this.L.tray.y, rotation: 0 }, { duration: 0.7, ease: ease.inOutSine });
+    await tw.to(
+      p.node,
+      { x: this.L.tray.x, y: this.L.tray.y, rotation: 0 },
+      { duration: 0.7, ease: ease.inOutSine },
+    );
     if (this.finished) return;
     p.handle.enabled = true;
     if (out.glow) {
@@ -423,16 +468,23 @@ class TideLine implements Game {
     this.drawGlow();
     if (what === 'glow') void this.ctx.say('tl.look');
     else if (what === 'carry') {
-      const spot = drySpot(this.L, this.view, this.high, this.placed.map((q) => ({ x: q.node.x, y: q.node.y })));
+      const spot = drySpot(
+        this.L,
+        this.view,
+        this.high,
+        this.placed.map((q) => ({ x: q.node.x, y: q.node.y })),
+      );
       this.busy = true;
       p.handle.enabled = false;
       sfx.whoosh();
-      void this.ctx.tw.to(p.node, { x: spot.x, y: spot.y }, { duration: 0.8, ease: ease.inOutSine }).then(() => {
-        if (this.finished) return;
-        p.at = { x: spot.x, h: hAt(this.L, spot.y) };
-        this.busy = false;
-        void this.runSea(p);
-      });
+      void this.ctx.tw
+        .to(p.node, { x: spot.x, y: spot.y }, { duration: 0.8, ease: ease.inOutSine })
+        .then(() => {
+          if (this.finished) return;
+          p.at = { x: spot.x, h: hAt(this.L, spot.y) };
+          this.busy = false;
+          void this.runSea(p);
+        });
     }
   }
 
@@ -452,7 +504,14 @@ class TideLine implements Game {
     const hs = hitSize(kind);
     node.hitArea = new Rectangle(-hs.w / 2, -hs.h, hs.w, hs.h + 6);
     this.pailLayer.addChild(node);
-    const it: Item = { kind, node, handle: null as unknown as DragHandle, at: null, floating: false, settled: false };
+    const it: Item = {
+      kind,
+      node,
+      handle: null as unknown as DragHandle,
+      at: null,
+      floating: false,
+      settled: false,
+    };
     it.handle = draggable(node, this.ctx.tw, {
       onPick: () => sfx.pop(5),
       onDrop: (x, y) => {
@@ -473,7 +532,9 @@ class TideLine implements Game {
   /** The wave button: only once all three things are on the sand does the sea come in. Tapping it early is never counted. */
   private tapWave() {
     if (this.busy || this.finished) return;
-    void this.ctx.tw.to(this.waveBtn.scale, { x: 1.08, y: 1.08 }, { duration: 0.08 }).then(() => this.ctx.tw.to(this.waveBtn.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(this.waveBtn.scale, { x: 1.08, y: 1.08 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(this.waveBtn.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
     if (this.items.some((it) => !it.at || it.handle.dragging)) {
       sfx.tick();
       void this.ctx.say('tl.place-all');
@@ -543,7 +604,9 @@ class TideLine implements Game {
       }
       it.at = null;
       const spot = lineTray(this.L, this.view).spots[it.kind];
-      fetches.push(tw.to(it.node, { x: spot.x, y: spot.y, rotation: 0 }, { duration: 0.7, ease: ease.inOutSine }));
+      fetches.push(
+        tw.to(it.node, { x: spot.x, y: spot.y, rotation: 0 }, { duration: 0.7, ease: ease.inOutSine }),
+      );
     }
     await Promise.all(fetches);
     if (this.finished) return;
@@ -571,9 +634,17 @@ class TideLine implements Game {
       sfx.whoosh();
       const moves = this.items
         .filter((it) => !it.settled)
-        .map((it) => this.ctx.tw.to(it.node, { x: spots[it.kind].x, y: spots[it.kind].y }, { duration: 0.8, ease: ease.inOutSine }).then(() => {
-          it.at = { x: spots[it.kind].x, h: hAt(this.L, spots[it.kind].y) };
-        }));
+        .map((it) =>
+          this.ctx.tw
+            .to(
+              it.node,
+              { x: spots[it.kind].x, y: spots[it.kind].y },
+              { duration: 0.8, ease: ease.inOutSine },
+            )
+            .then(() => {
+              it.at = { x: spots[it.kind].x, h: hAt(this.L, spots[it.kind].y) };
+            }),
+        );
       void Promise.all(moves).then(() => {
         if (this.finished) return;
         this.layoutAll();
@@ -607,10 +678,11 @@ class TideLine implements Game {
       else shorePicture(g, kind, 200, 160, i);
       node.addChild(g);
       node.hitArea = new Rectangle(0, 0, 200, 160);
-      if (i !== turn.strip.gap) onTap(node, () => {
-        sfx.tick();
-        void this.ctx.say(kind === 'high' ? 'tl.pic-in' : 'tl.pic-out');
-      });
+      if (i !== turn.strip.gap)
+        onTap(node, () => {
+          sfx.tick();
+          void this.ctx.say(kind === 'high' ? 'tl.pic-in' : 'tl.pic-out');
+        });
       this.pics.push(node);
       this.picLayer.addChild(node);
     });
@@ -630,8 +702,16 @@ class TideLine implements Game {
 
   private drawGap(g: Graphics) {
     g.clear();
-    for (let x = 0; x < 200; x += 24) g.moveTo(x, 0).lineTo(Math.min(200, x + 12), 0).moveTo(x, 160).lineTo(Math.min(200, x + 12), 160);
-    for (let y = 0; y < 160; y += 24) g.moveTo(0, y).lineTo(0, Math.min(160, y + 12)).moveTo(200, y).lineTo(200, Math.min(160, y + 12));
+    for (let x = 0; x < 200; x += 24)
+      g.moveTo(x, 0)
+        .lineTo(Math.min(200, x + 12), 0)
+        .moveTo(x, 160)
+        .lineTo(Math.min(200, x + 12), 160);
+    for (let y = 0; y < 160; y += 24)
+      g.moveTo(0, y)
+        .lineTo(0, Math.min(160, y + 12))
+        .moveTo(200, y)
+        .lineTo(200, Math.min(160, y + 12));
     g.stroke({ color: swatch.blue.line, width: 5, cap: 'round' });
     g.roundRect(4, 4, 192, 152, 14).fill({ color: 0xffffff, alpha: 0.35 });
   }
@@ -663,7 +743,11 @@ class TideLine implements Game {
     this.drawGlow();
     const gapBox = stripLayout(this.view).pics[turn.strip.gap];
     sfx.whoosh();
-    await this.ctx.tw.to(card.node, { x: gapBox.x + 100, y: gapBox.y + 80 }, { duration: 0.5, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      card.node,
+      { x: gapBox.x + 100, y: gapBox.y + 80 },
+      { duration: 0.5, ease: ease.inOutSine },
+    );
     card.node.scale.set(1);
     sfx.sparkle();
     this.ctx.pet.cheer();
@@ -700,13 +784,25 @@ class TideLine implements Game {
       if (this.grab || this.auto || this.sea.h > 0.05) return null;
       const x = this.view.w * 0.6;
       const crest = yAt(this.L, this.sea.h) + 20;
-      return { trace: { on: this.seaHit, x, y: crest }, via: [{ on: this.seaHit, x, y: yAt(this.L, 0.75) }, { on: this.seaHit, x, y: yAt(this.L, 0.92) }], receiver: this.seaHit, pause: 0.4 };
+      return {
+        trace: { on: this.seaHit, x, y: crest },
+        via: [
+          { on: this.seaHit, x, y: yAt(this.L, 0.75) },
+          { on: this.seaHit, x, y: yAt(this.L, 0.92) },
+        ],
+        receiver: this.seaHit,
+        pause: 0.4,
+      };
     }
     if (this.plan.mode === 'line') {
       if (this.items.some((it) => it.handle.dragging || this.ctx.tw.busy(it.node))) return null;
       const spots = drySpots(this.L, this.view, this.lines);
       const next = this.items.find((it) => !it.settled && !this.dryNow(it));
-      if (next) return { drag: { on: next.node, y: -hitSize(next.kind).h / 2 }, to: { on: this.board, x: spots[next.kind].x, y: spots[next.kind].y } };
+      if (next)
+        return {
+          drag: { on: next.node, y: -hitSize(next.kind).h / 2 },
+          to: { on: this.board, x: spots[next.kind].x, y: spots[next.kind].y },
+        };
       return { tap: { on: this.waveBtn, x: 65, y: 60 } };
     }
     if (this.plan.mode === 'cycle') {
@@ -717,7 +813,12 @@ class TideLine implements Game {
     }
     const p = this.pail;
     if (!p || p.handle.dragging || p.at || this.ctx.tw.busy(p.node)) return null;
-    const spot = drySpot(this.L, this.view, this.high, this.placed.map((q) => ({ x: q.node.x, y: q.node.y })));
+    const spot = drySpot(
+      this.L,
+      this.view,
+      this.high,
+      this.placed.map((q) => ({ x: q.node.x, y: q.node.y })),
+    );
     return { drag: { on: p.node, y: -60 }, to: { on: this.board, x: spot.x, y: spot.y } };
   }
 
@@ -752,21 +853,33 @@ class TideLine implements Game {
     g.rect(0, 0, v.w, L.sand.y + 10).fill(0xbfe6f7);
     g.moveTo(0, L.dunes + 6);
     for (let x = 0; x <= v.w; x += 120) g.quadraticCurveTo(x + 60, L.dunes - 26, x + 120, L.dunes + 6);
-    g.lineTo(v.w, L.sand.y - 30).lineTo(0, L.sand.y - 30).closePath().fill(DUNE);
+    g.lineTo(v.w, L.sand.y - 30)
+      .lineTo(0, L.sand.y - 30)
+      .closePath()
+      .fill(DUNE);
     g.rect(0, L.sand.y - 34, v.w, 26).fill(GRASS_GREEN);
-    for (let x = 14; x < v.w; x += 34) g.moveTo(x, L.sand.y - 34).lineTo(x + 6, L.sand.y - 54).stroke({ color: 0x6fa548, width: 3, cap: 'round' });
+    for (let x = 14; x < v.w; x += 34)
+      g.moveTo(x, L.sand.y - 34)
+        .lineTo(x + 6, L.sand.y - 54)
+        .stroke({ color: 0x6fa548, width: 3, cap: 'round' });
     g.rect(0, yAt(L, 0.12), v.w, L.low - yAt(L, 0.12)).fill({ color: WET_SAND, alpha: 0.6 });
     // The sea-side rocks at the right hold the pail's tray.
     if (this.plan.mode === 'pail') {
-      g.ellipse(L.tray.x, L.tray.y + 8, 82, 22).fill(0x9a93b0).stroke({ color: 0x6f6888, width: 3 });
+      g.ellipse(L.tray.x, L.tray.y + 8, 82, 22)
+        .fill(0x9a93b0)
+        .stroke({ color: 0x6f6888, width: 3 });
     }
     if (this.plan.mode === 'line') {
       const tray = lineTray(L, v);
-      for (const t of THINGS) g.ellipse(tray.spots[t].x, tray.spots[t].y + 8, hitSize(t).w / 2 + 14, 20).fill(0x9a93b0).stroke({ color: 0x6f6888, width: 3 });
+      for (const t of THINGS)
+        g.ellipse(tray.spots[t].x, tray.spots[t].y + 8, hitSize(t).w / 2 + 14, 20)
+          .fill(0x9a93b0)
+          .stroke({ color: 0x6f6888, width: 3 });
       this.waveBtn.position.set(tray.button.x, tray.button.y);
       for (const it of this.items) {
         it.handle.home = { ...tray.spots[it.kind] };
-        if (!it.at && !this.ctx.tw.busy(it.node) && !it.handle.dragging) it.node.position.set(tray.spots[it.kind].x, tray.spots[it.kind].y);
+        if (!it.at && !this.ctx.tw.busy(it.node) && !it.handle.dragging)
+          it.node.position.set(tray.spots[it.kind].x, tray.spots[it.kind].y);
         else if (it.at && !this.ctx.tw.busy(it.node) && !it.handle.dragging) {
           const f = clampFeet(L, v, it.at.x, yAt(L, it.at.h), SIZES[it.kind]);
           it.at.x = f.x;
@@ -799,7 +912,8 @@ class TideLine implements Game {
     });
     // The sea's grab area follows the crest each frame (see update); the board sits at the origin.
     this.board.position.set(0, 0);
-    if (this.pail && !this.pail.at && !this.ctx.tw.busy(this.pail.node)) this.pail.node.position.set(L.tray.x, L.tray.y);
+    if (this.pail && !this.pail.at && !this.ctx.tw.busy(this.pail.node))
+      this.pail.node.position.set(L.tray.x, L.tray.y);
     if (this.pail) this.pail.handle.home = { ...L.tray };
     for (const p of [...this.placed, ...(this.pail?.at ? [this.pail] : [])]) {
       if (!p.at || this.ctx.tw.busy(p.node)) continue;
@@ -818,15 +932,25 @@ class TideLine implements Game {
       if (this.finished || this.busy || !turn || !turn.glow || turn.done) return;
       const i = this.cards.findIndex((c) => c.kind === answerOf(turn.strip));
       const b = stripLayout(this.view).cards[i];
-      if (b) g.roundRect(b.x - 12, b.y - 12, b.w + 24, b.h + 24, 24).stroke({ color: swatch.orange.line, width: 10 });
+      if (b)
+        g.roundRect(b.x - 12, b.y - 12, b.w + 24, b.h + 24, 24).stroke({
+          color: swatch.orange.line,
+          width: 10,
+        });
       return;
     }
     const turn = this.plan.mode === 'line' ? this.rounds[this.round] : this.turns[this.index];
     if (this.finished || !turn || !turn.glow || turn.done) return;
     const w = wrack(this.plan.mode === 'line' ? Math.max(...this.lines) : this.high);
     const top = yAt(this.L, w.top);
-    g.rect(0, this.L.sand.y - 34, this.view.w, top - (this.L.sand.y - 34)).fill({ color: 0xffffff, alpha: 0.55 });
-    g.rect(-10, top - 4, this.view.w + 20, yAt(this.L, w.bottom) - top + 8).stroke({ color: swatch.orange.line, width: 10 });
+    g.rect(0, this.L.sand.y - 34, this.view.w, top - (this.L.sand.y - 34)).fill({
+      color: 0xffffff,
+      alpha: 0.55,
+    });
+    g.rect(-10, top - 4, this.view.w + 20, yAt(this.L, w.bottom) - top + 8).stroke({
+      color: swatch.orange.line,
+      width: 10,
+    });
   }
 
   private drawSea() {

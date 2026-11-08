@@ -29,7 +29,11 @@ export const WOODLAND_GAME_STEPS: WoodlandGameStep[] = [
 export const WOODLAND_BAND = 'school' as const;
 
 export const woodlandLine: Record<WoodlandStep, { ask: LineId; done: LineId; recap: LineId }> = {
-  invitations: { ask: 'woodland.invitations', done: 'woodland.invitations-done', recap: 'woodland.invitations-recap' },
+  invitations: {
+    ask: 'woodland.invitations',
+    done: 'woodland.invitations-done',
+    recap: 'woodland.invitations-recap',
+  },
   baskets: { ask: 'woodland.baskets', done: 'woodland.baskets-done', recap: 'woodland.baskets-recap' },
   beat: { ask: 'woodland.beat', done: 'woodland.beat-done', recap: 'woodland.beat-recap' },
 };
@@ -39,4 +43,13 @@ export const WOODLAND_FRIENDS = ['bear', 'bunny', 'duck'] as const;
 
 /** The picnic beat, eight steps long: a drum, a bell (on a pentatonic step) or a rest. It plays when the friends arrive. */
 export type BeatHit = { drum: true } | { bell: number } | null;
-export const PICNIC_BEAT: BeatHit[] = [{ drum: true }, null, { bell: 7 }, null, { drum: true }, { drum: true }, { bell: 9 }, null];
+export const PICNIC_BEAT: BeatHit[] = [
+  { drum: true },
+  null,
+  { bell: 7 },
+  null,
+  { drum: true },
+  { drum: true },
+  { bell: 9 },
+  null,
+];

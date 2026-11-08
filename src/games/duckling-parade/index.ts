@@ -10,7 +10,24 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
-import { LEVELS, arrive, canJoin, dressingAt, DRESSING_COLORS, makeMeadow, makeRound, needed, nextInPattern, nextStop, planFor, readyForPond, type Dressing, type Meadow, type ParadePlan, type Round } from './logic';
+import {
+  LEVELS,
+  arrive,
+  canJoin,
+  dressingAt,
+  DRESSING_COLORS,
+  makeMeadow,
+  makeRound,
+  needed,
+  nextInPattern,
+  nextStop,
+  planFor,
+  readyForPond,
+  type Dressing,
+  type Meadow,
+  type ParadePlan,
+  type Round,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const MAMA_SCALE = 0.5;
@@ -39,14 +56,27 @@ function drawDressing(g: Graphics, d: Dressing, x: number, y: number) {
   const k = d.size;
   const [a, b] = DRESSING_COLORS[d.kind].map((c) => swatch[c]);
   if (d.kind === 'daisy') {
-    g.moveTo(x, y).lineTo(x, y - 22 * k).stroke({ width: 3, color: swatch.green.line, cap: 'round' });
-    for (let i = 0; i < 6; i++) g.circle(x + Math.cos((i * Math.PI) / 3) * 8 * k, y - 26 * k + Math.sin((i * Math.PI) / 3) * 8 * k, 6 * k).fill(a.fill);
+    g.moveTo(x, y)
+      .lineTo(x, y - 22 * k)
+      .stroke({ width: 3, color: swatch.green.line, cap: 'round' });
+    for (let i = 0; i < 6; i++)
+      g.circle(
+        x + Math.cos((i * Math.PI) / 3) * 8 * k,
+        y - 26 * k + Math.sin((i * Math.PI) / 3) * 8 * k,
+        6 * k,
+      ).fill(a.fill);
     g.circle(x, y - 26 * k, 5 * k).fill(b.fill);
   } else if (d.kind === 'clover') {
     for (const dx of [-14, 0, 14]) g.circle(x + dx * k, y - 6 * k, 9 * k).fill(b.fill);
-    g.circle(x + 4 * k, y - 18 * k, 7 * k).fill(a.fill).circle(x + 4 * k, y - 18 * k, 7 * k).stroke({ width: 2, color: a.line });
+    g.circle(x + 4 * k, y - 18 * k, 7 * k)
+      .fill(a.fill)
+      .circle(x + 4 * k, y - 18 * k, 7 * k)
+      .stroke({ width: 2, color: a.line });
   } else {
-    for (const lean of [-0.3, 0, 0.25]) g.moveTo(x, y).quadraticCurveTo(x + lean * 20 * k, y - 25 * k, x + lean * 40 * k, y - 50 * k).stroke({ width: 4, color: a.line, cap: 'round' });
+    for (const lean of [-0.3, 0, 0.25])
+      g.moveTo(x, y)
+        .quadraticCurveTo(x + lean * 20 * k, y - 25 * k, x + lean * 40 * k, y - 50 * k)
+        .stroke({ width: 4, color: a.line, cap: 'round' });
     if (d.kind === 'cattail') g.roundRect(x - 5 * k, y - 66 * k, 10 * k, 26 * k, 5 * k).fill(b.line);
   }
 }
@@ -71,7 +101,11 @@ class DucklingParade implements Game {
   private readonly ground = new Container();
   private readonly pond = new Graphics();
   private readonly pondGlow = new Graphics();
-  private readonly destination = new Graphics().ellipse(0, 0, 52, 24).stroke({ width: 6, color: swatch.green.line }).ellipse(0, 0, 43, 17).stroke({ width: 3, color: swatch.green.light });
+  private readonly destination = new Graphics()
+    .ellipse(0, 0, 52, 24)
+    .stroke({ width: 6, color: swatch.green.line })
+    .ellipse(0, 0, 43, 17)
+    .stroke({ width: 3, color: swatch.green.light });
   private destinationAge = 1;
   private destroyed = false;
   private readonly card = new Container();
@@ -100,12 +134,24 @@ class DucklingParade implements Game {
     const phases = this.round.ducklings.map(() => ctx.rng.range(0, 6));
     // Drawn after the ducklings' colors, places and wiggles, so those come out as they always have.
     this.meadow = makeMeadow(new Rng(ctx.rng.int(1, 1e9)));
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: this.meadow.hills, horizon: 0.3, clouds: 3, sun: true, seed: 61 }, ctx.view);
+    this.backdrop = new Backdrop(
+      { sky: [0x8fd3f7, 0xe9f7ff], hills: this.meadow.hills, horizon: 0.3, clouds: 3, sun: true, seed: 61 },
+      ctx.view,
+    );
     this.dressing.eventMode = 'none';
     // The steering layer sits on top: anything drawn above it would catch the finger instead.
     this.destination.eventMode = 'none';
     this.destination.visible = false;
-    ctx.stage.addChild(this.backdrop, this.dressing, this.pondGlow, this.pond, this.destination, this.world, this.card, this.ground);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.dressing,
+      this.pondGlow,
+      this.pond,
+      this.destination,
+      this.world,
+      this.card,
+      this.ground,
+    );
     this.card.addChild(this.cardSlots);
 
     this.ground.eventMode = 'static';
@@ -135,7 +181,15 @@ class DucklingParade implements Game {
       const glow = new Graphics().ellipse(0, -4, 52, 22).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
       ctx.track(critter);
-      this.ducklings.push({ color, critter, glow, state: 'loose', home: spots[i], calmUntil: 0, phase: phases[i] });
+      this.ducklings.push({
+        color,
+        critter,
+        glow,
+        state: 'loose',
+        home: spots[i],
+        calmUntil: 0,
+        phase: phases[i],
+      });
       this.world.addChild(glow, critter);
     });
     this.world.addChild(this.mama);
@@ -160,7 +214,9 @@ class DucklingParade implements Game {
         void this.ctx.instruct('parade.colorcount', { n: target!, color: want! });
         break;
       case 'pattern':
-        void this.ctx.instruct(this.plan.oddDuckling ? 'parade.spare' : 'parade.pattern', { pattern: pattern!.join(', ') });
+        void this.ctx.instruct(this.plan.oddDuckling ? 'parade.spare' : 'parade.pattern', {
+          pattern: pattern!.join(', '),
+        });
         break;
     }
   }
@@ -203,7 +259,15 @@ class DucklingParade implements Game {
       .fill(WATER)
       .ellipse(p.x - 60, p.y - 30, 40, 10)
       .fill({ color: 0xffffff, alpha: 0.35 });
-    for (const [dx, dy] of [[-150, 60], [140, -60], [120, 70]]) this.pond.circle(p.x + dx, p.y + dy, 20).fill(0x7cc463).stroke({ width: 3, color: 0x4a9a35 });
+    for (const [dx, dy] of [
+      [-150, 60],
+      [140, -60],
+      [120, 70],
+    ])
+      this.pond
+        .circle(p.x + dx, p.y + dy, 20)
+        .fill(0x7cc463)
+        .stroke({ width: 3, color: 0x4a9a35 });
     this.drawDressing(v);
     for (const d of this.ducklings) if (d.state === 'loose') d.critter.position.copyFrom(this.spotAt(d.home));
     if (!this.placed) {
@@ -222,20 +286,34 @@ class DucklingParade implements Game {
    */
   autotouch(): TouchIntent | null {
     // Ducklings beside Mama's start join at once; let them settle before choosing where to lead her.
-    if (this.busy || this.finished || this.clock < 1 || Math.hypot(this.target.x - this.mama.x, this.target.y - this.mama.y) > 24) return null;
+    if (
+      this.busy ||
+      this.finished ||
+      this.clock < 1 ||
+      Math.hypot(this.target.x - this.mama.x, this.target.y - this.mama.y) > 24
+    )
+      return null;
     const stop = nextStop(
       this.plan,
       this.round,
       this.line.map((d) => d.color),
       this.homeCount,
-      this.ducklings.map((d) => ({ color: d.color, loose: d.state === 'loose', x: d.critter.x, y: d.critter.y })),
+      this.ducklings.map((d) => ({
+        color: d.color,
+        loose: d.state === 'loose',
+        x: d.critter.x,
+        y: d.critter.y,
+      })),
       this.mama,
       this.pondAt,
       this.field(this.view),
     );
     if (!stop) return null;
     // Mama aims a little below the finger (`steer`), so the finger rides a little above where she should stand.
-    const there: Spot = stop.to === 'pond' ? { on: this.ground, x: this.pondAt.x - 40, y: this.pondAt.y - 30 } : { on: this.ducklings[stop.index].critter, y: -150 };
+    const there: Spot =
+      stop.to === 'pond'
+        ? { on: this.ground, x: this.pondAt.x - 40, y: this.pondAt.y - 30 }
+        : { on: this.ducklings[stop.index].critter, y: -150 };
     // A blocked way goes round by a waypoint first (the next call goes on from there).
     if (stop.via) return { tap: { on: this.ground, x: stop.via.x, y: stop.via.y - 30 } };
     if (this.plan.mode === 'tap' || !stop.drag) return { tap: there, receiver: this.ground };
@@ -378,7 +456,12 @@ class DucklingParade implements Game {
     for (const d of this.ducklings) {
       if (d.state !== 'loose' || this.clock < d.calmUntil) continue;
       if (Math.hypot(d.critter.x - this.mama.x, d.critter.y - this.mama.y) > REACH) continue;
-      const result = canJoin(this.plan, this.round, this.line.map((x) => x.color), d.color);
+      const result = canJoin(
+        this.plan,
+        this.round,
+        this.line.map((x) => x.color),
+        d.color,
+      );
       if (result === 'join') this.join(d);
       else this.refuse(d, result);
     }
@@ -387,7 +470,8 @@ class DucklingParade implements Game {
   private join(d: Duckling) {
     d.state = 'line';
     // Reaching the duckling the finger picked spends that tap; ones joining on the way don't.
-    if (Math.hypot(this.target.x - d.critter.x, this.target.y - d.critter.y) < REACH * 1.2) this.joinedAt = this.clock;
+    if (Math.hypot(this.target.x - d.critter.x, this.target.y - d.critter.y) < REACH * 1.2)
+      this.joinedAt = this.clock;
     d.glow.visible = false;
     this.line.push(d);
     this.sinceProgress = 0;
@@ -422,7 +506,13 @@ class DucklingParade implements Game {
     const aimed =
       this.aimedAt > this.joinedAt &&
       near(d) < REACH * 1.2 &&
-      !this.ducklings.some((x) => x !== d && x.state === 'loose' && near(x) < near(d) && canJoin(this.plan, this.round, line, x.color) === 'join');
+      !this.ducklings.some(
+        (x) =>
+          x !== d &&
+          x.state === 'loose' &&
+          near(x) < near(d) &&
+          canJoin(this.plan, this.round, line, x.color) === 'join',
+      );
     if (!aimed) {
       d.calmUntil = this.clock + 0.8;
       sfx.pop(9);
@@ -457,14 +547,27 @@ class DucklingParade implements Game {
 
   /** Which ducklings the hint lights up, or the pond when the line is ready to go home. */
   private drawGlows() {
-    const pondReady = !this.busy && readyForPond(this.plan, this.round, this.line.length) && (this.announcedHome || this.hinting);
+    const pondReady =
+      !this.busy &&
+      readyForPond(this.plan, this.round, this.line.length) &&
+      (this.announcedHome || this.hinting);
     this.pondGlow.clear();
     if (pondReady) {
       const p = this.pondAt;
-      this.pondGlow.ellipse(p.x, p.y, p.rx + 26 + 5 * Math.sin(this.clock * 6), p.ry + 22).fill({ color: 0xfff3a0, alpha: 0.7 });
+      this.pondGlow
+        .ellipse(p.x, p.y, p.rx + 26 + 5 * Math.sin(this.clock * 6), p.ry + 22)
+        .fill({ color: 0xfff3a0, alpha: 0.7 });
     }
     for (const d of this.ducklings) {
-      const show = this.hinting && d.state === 'loose' && canJoin(this.plan, this.round, this.line.map((x) => x.color), d.color) === 'join';
+      const show =
+        this.hinting &&
+        d.state === 'loose' &&
+        canJoin(
+          this.plan,
+          this.round,
+          this.line.map((x) => x.color),
+          d.color,
+        ) === 'join';
       d.glow.visible = show;
       if (show) {
         d.glow.position.copyFrom(d.critter.position);
@@ -478,13 +581,24 @@ class DucklingParade implements Game {
     const g = this.cardSlots.clear();
     const { want, target, pattern } = this.round;
     let dots: { color: number; filled: boolean; next?: boolean }[] = [];
-    if (pattern) dots = pattern.map((c, i) => ({ color: swatch[c].fill, filled: i < this.line.length, next: i === this.line.length }));
-    else if (target !== undefined) dots = Array.from({ length: target }, (_, i) => ({ color: swatch[want ?? 'yellow'].fill, filled: i < this.homeCount }));
+    if (pattern)
+      dots = pattern.map((c, i) => ({
+        color: swatch[c].fill,
+        filled: i < this.line.length,
+        next: i === this.line.length,
+      }));
+    else if (target !== undefined)
+      dots = Array.from({ length: target }, (_, i) => ({
+        color: swatch[want ?? 'yellow'].fill,
+        filled: i < this.homeCount,
+      }));
     else if (want) dots = [{ color: swatch[want].fill, filled: true }];
     this.card.visible = dots.length > 0;
     if (!dots.length) return;
     const w = dots.length * 54 + 26;
-    g.roundRect(-w / 2, -34, w, 68, 26).fill({ color: 0xffffff, alpha: 0.92 }).stroke({ width: 4, color: 0xb9c6d1 });
+    g.roundRect(-w / 2, -34, w, 68, 26)
+      .fill({ color: 0xffffff, alpha: 0.92 })
+      .stroke({ width: 4, color: 0xb9c6d1 });
     dots.forEach((d, i) => {
       const x = -w / 2 + 40 + i * 54;
       // Pattern dots show their color; filled ones are done, the next one is ringed.
@@ -511,7 +625,15 @@ class DucklingParade implements Game {
       await tw.to(d.critter, { x: slot.x, y: slot.y - 40 }, { duration: 0.28, ease: ease.outQuad });
       await tw.to(d.critter, { y: slot.y }, { duration: 0.18, ease: ease.inQuad });
       sfx.splash();
-      this.ctx.particles.burst(slot.x, slot.y, { colors: [WATER, 0xffffff], count: 8, speed: [80, 180], gravity: 500, angle: -Math.PI / 2, spread: 1.2, size: [0.25, 0.4] });
+      this.ctx.particles.burst(slot.x, slot.y, {
+        colors: [WATER, 0xffffff],
+        count: 8,
+        speed: [80, 180],
+        gravity: 500,
+        angle: -Math.PI / 2,
+        spread: 1.2,
+        size: [0.25, 0.4],
+      });
       if (i < swimIn) {
         d.state = 'pond';
         this.homeCount++;
@@ -559,7 +681,14 @@ class DucklingParade implements Game {
     this.mama.cheer();
     for (const d of this.ducklings) if (d.state === 'pond') d.critter.cheer();
     sfx.tada();
-    this.ctx.particles.burst(p.x, p.y - 60, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.blue.light], count: 26, speed: [150, 380], gravity: 0, life: [0.8, 1.3] });
+    this.ctx.particles.burst(p.x, p.y - 60, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.blue.light],
+      count: 26,
+      speed: [150, 380],
+      gravity: 0,
+      life: [0.8, 1.3],
+    });
     await this.ctx.say('parade.done');
     await this.ctx.tw.wait(1);
     this.ctx.finish({ misses: this.misses, hints: this.hints });

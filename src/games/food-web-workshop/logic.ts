@@ -9,7 +9,14 @@ import type { BandLevels } from '../../progress/difficulty';
  */
 
 export type Organism = 'clover' | 'dandelion' | 'caterpillar' | 'snail' | 'bunny' | 'bird';
-export const ORGANISMS: readonly Organism[] = ['clover', 'dandelion', 'caterpillar', 'snail', 'bunny', 'bird'];
+export const ORGANISMS: readonly Organism[] = [
+  'clover',
+  'dandelion',
+  'caterpillar',
+  'snail',
+  'bunny',
+  'bird',
+];
 
 export type RecordId = 'r1' | 'r2' | 'r3' | 'r4' | 'r5' | 'r6';
 export interface FeedingRecord {
@@ -55,7 +62,12 @@ const BRANCH: readonly WebCase[] = [
 
 export const PLANS: readonly WebPlan[] = [
   { level: 1, name: 'Make the picture: two cards, a food chain of three', cases: CHAIN, start: 'empty' },
-  { level: 2, name: 'Turn the arrow: one arrow arrives pointing the wrong way', cases: CHAIN, start: 'one-reversed' },
+  {
+    level: 2,
+    name: 'Turn the arrow: one arrow arrives pointing the wrong way',
+    cases: CHAIN,
+    start: 'one-reversed',
+  },
   { level: 3, name: 'One food, two eaters: the arrows branch', cases: BRANCH, start: 'empty' },
 ];
 
@@ -68,7 +80,8 @@ export interface Arrow {
   to: Organism;
 }
 
-type Change = { kind: 'add'; arrow: Arrow } | { kind: 'turn'; arrow: Arrow } | { kind: 'remove'; arrow: Arrow };
+type Change =
+  { kind: 'add'; arrow: Arrow } | { kind: 'turn'; arrow: Arrow } | { kind: 'remove'; arrow: Arrow };
 
 export interface WebRound {
   plan: WebPlan;
@@ -104,7 +117,9 @@ export function makeRound(level: number, rng: Rng): WebRound {
 
 export function startArrows(round: WebRound): Arrow[] {
   if (round.plan.start === 'empty') return [];
-  return caseRecords(round.webCase).map((r) => (r.id === round.reversed ? { from: r.to, to: r.from } : { from: r.from, to: r.to }));
+  return caseRecords(round.webCase).map((r) =>
+    r.id === round.reversed ? { from: r.to, to: r.from } : { from: r.from, to: r.to },
+  );
 }
 
 export function newState(round: WebRound): WebState {
@@ -164,10 +179,21 @@ export function faults(arrows: readonly Arrow[], c: WebCase): Fault[] {
     if (arrow) out.push({ kind: 'reversed', arrow, record });
   }
   for (const record of records) {
-    if (!arrows.some((a) => (a.from === record.from && a.to === record.to) || (a.from === record.to && a.to === record.from))) out.push({ kind: 'missing', record });
+    if (
+      !arrows.some(
+        (a) =>
+          (a.from === record.from && a.to === record.to) || (a.from === record.to && a.to === record.from),
+      )
+    )
+      out.push({ kind: 'missing', record });
   }
   for (const arrow of arrows) {
-    if (!records.some((r) => (r.from === arrow.from && r.to === arrow.to) || (r.from === arrow.to && r.to === arrow.from))) out.push({ kind: 'extra', arrow });
+    if (
+      !records.some(
+        (r) => (r.from === arrow.from && r.to === arrow.to) || (r.from === arrow.to && r.to === arrow.from),
+      )
+    )
+      out.push({ kind: 'extra', arrow });
   }
   return out;
 }
@@ -187,14 +213,17 @@ export function check(s: WebState): CheckResult | null {
   return { ok: false, fault };
 }
 
-export type HintAction = { kind: 'turn' | 'add' | 'remove'; arrow: Arrow; record?: FeedingRecord } | { kind: 'check' };
+export type HintAction =
+  { kind: 'turn' | 'add' | 'remove'; arrow: Arrow; record?: FeedingRecord } | { kind: 'check' };
 
 /** What help does next: mend the first fault, or point at Show our web when nothing is wrong. */
 export function hintAction(s: Pick<WebState, 'arrows' | 'round'>): HintAction {
   const fault = firstFault(s.arrows, s.round.webCase);
   if (!fault) return { kind: 'check' };
-  if (fault.kind === 'reversed') return { kind: 'turn', arrow: { from: fault.record.from, to: fault.record.to }, record: fault.record };
-  if (fault.kind === 'missing') return { kind: 'add', arrow: { from: fault.record.from, to: fault.record.to }, record: fault.record };
+  if (fault.kind === 'reversed')
+    return { kind: 'turn', arrow: { from: fault.record.from, to: fault.record.to }, record: fault.record };
+  if (fault.kind === 'missing')
+    return { kind: 'add', arrow: { from: fault.record.from, to: fault.record.to }, record: fault.record };
   return { kind: 'remove', arrow: fault.arrow };
 }
 
@@ -250,7 +279,11 @@ export function layout(v: View, cards: number): WebLayout {
   const top = v.h * 0.4;
   const low = v.h * 0.62;
   const cardY = Math.max(100, v.h * 0.12);
-  const stations = [{ x: cx, y: top }, { x: cx - 240, y: low }, { x: cx + 240, y: low }];
+  const stations = [
+    { x: cx, y: top },
+    { x: cx - 240, y: low },
+    { x: cx + 240, y: low },
+  ];
   return {
     cards: Array.from({ length: cards }, (_, i) => ({ x: cx + (i - (cards - 1) / 2) * 250, y: cardY })),
     stations,

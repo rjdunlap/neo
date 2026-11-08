@@ -2,7 +2,9 @@
 export const VOICE = {
   'game.who-am-i': ['Who am I?'],
   'whoami.instruct-fit': ['Who am I? Listen to my clue, then tap the friend it fits.'],
-  'whoami.instruct-turn': ['Who am I? Listen to each clue, and turn over every friend it does not fit. The last friend left is me!'],
+  'whoami.instruct-turn': [
+    'Who am I? Listen to each clue, and turn over every friend it does not fit. The last friend left is me!',
+  ],
   'whoami.next-clue': ['Another clue!', 'Here is another clue!'],
   'whoami.clue.feathers': ['I have feathers!'],
   'whoami.clue.fur': ['I have fur or hair!'],

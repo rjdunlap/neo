@@ -30,7 +30,8 @@ export function cloudRidge(view: View, ground: number): { x: number; top: number
   // Tops stay below the corner buttons and the heading.
   const highest = Math.max(140, ground - 150);
   const out: { x: number; top: number; half: number }[] = [];
-  for (let x = -60; x < view.w + 100; x += rng.range(170, 250)) out.push({ x, top: Math.min(ground - 50, rng.range(highest, highest + 60)), half: rng.range(140, 200) });
+  for (let x = -60; x < view.w + 100; x += rng.range(170, 250))
+    out.push({ x, top: Math.min(ground - 50, rng.range(highest, highest + 60)), half: rng.range(140, 200) });
   return out;
 }
 
@@ -39,7 +40,8 @@ export function mistBands(view: View, ground: number): { x: number; y: number; w
   const rng = new Rng(113);
   const out: { x: number; y: number; w: number }[] = [];
   for (const y of [ground - 70, ground - 30]) {
-    for (let x = rng.range(-80, 40); x < view.w; x += rng.range(260, 380)) out.push({ x, y: y + rng.range(-8, 8), w: rng.range(180, 280) });
+    for (let x = rng.range(-80, 40); x < view.w; x += rng.range(260, 380))
+      out.push({ x, y: y + rng.range(-8, 8), w: rng.range(180, 280) });
   }
   return out;
 }
@@ -48,7 +50,8 @@ export function mistBands(view: View, ground: number): { x: number; y: number; w
 export function mountainPlan(layout: LandLayout, view: View, ground: number): ForestItem[] {
   const { w, h } = view;
   const keepOut = meadowKeepOut(layout, view);
-  const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
+  const clear = (r: Rect) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
   const rng = new Rng(157);
   const items: ForestItem[] = [];
   /** Up to `n` of a thing `size` wide and `tall` high whose feet are between `top` and `bottom`. */
@@ -65,7 +68,14 @@ export function mountainPlan(layout: LandLayout, view: View, ground: number): Fo
     }
   };
   /** Makes sure of `need` more of a thing, scanning for room (smaller where it must) when random tries found none. */
-  const ensure = (kind: ForestThing, need: number, size: number, tall: number, top: number, bottom: number) => {
+  const ensure = (
+    kind: ForestThing,
+    need: number,
+    size: number,
+    tall: number,
+    top: number,
+    bottom: number,
+  ) => {
     for (let i = 0; i < need; i++) {
       const spot = scanPlace(clear, rng, w, size, tall, top, bottom);
       if (!spot) return;
@@ -96,9 +106,15 @@ export function drawMountain(g: Graphics, layout: LandLayout, view: View, ground
   const far = 0x8fc79a;
   const farLine = 0x6aa77a;
   for (const p of cloudRidge(view, ground)) {
-    g.moveTo(p.x - p.half, ground).quadraticCurveTo(p.x - p.half * 0.45, p.top - 6, p.x, p.top).quadraticCurveTo(p.x + p.half * 0.45, p.top - 6, p.x + p.half, ground).closePath().fill(far).stroke({ color: farLine, width: 2.5 });
+    g.moveTo(p.x - p.half, ground)
+      .quadraticCurveTo(p.x - p.half * 0.45, p.top - 6, p.x, p.top)
+      .quadraticCurveTo(p.x + p.half * 0.45, p.top - 6, p.x + p.half, ground)
+      .closePath()
+      .fill(far)
+      .stroke({ color: farLine, width: 2.5 });
     // Treetops along the crest, so the mountain reads as forest.
-    for (let k = -2; k <= 2; k++) g.circle(p.x + k * p.half * 0.18, p.top + Math.abs(k) * 7 + 4, 9).fill(farLine);
+    for (let k = -2; k <= 2; k++)
+      g.circle(p.x + k * p.half * 0.18, p.top + Math.abs(k) * 7 + 4, 9).fill(farLine);
   }
   for (const m of mistBands(view, ground)) mist(g, m.x, m.y, m.w);
   for (const { kind, x, y, rect, k } of mountainPlan(layout, view, ground)) {
@@ -130,40 +146,83 @@ const MOSS_LINE = 0x4f8a3a;
 /** A mossy trunk under a leafy crown, with a bromeliad perched on a branch and an orchid on the bark. */
 function trunk(g: Graphics, x: number, y: number) {
   const top = y - 128;
-  g.moveTo(x - 20, y).lineTo(x - 15, top).lineTo(x + 15, top).lineTo(x + 20, y).closePath().fill(BARK).stroke({ color: BARK_LINE, width: 2.5 });
+  g.moveTo(x - 20, y)
+    .lineTo(x - 15, top)
+    .lineTo(x + 15, top)
+    .lineTo(x + 20, y)
+    .closePath()
+    .fill(BARK)
+    .stroke({ color: BARK_LINE, width: 2.5 });
   // Moss in cushions up the trunk, and draping from the branch.
-  for (const [dx, dy, r] of [[-14, -20, 10], [12, -46, 9], [-10, -78, 9], [13, -108, 8]]) g.circle(x + dx, y + dy, r).fill(MOSS).stroke({ color: MOSS_LINE, width: 1.5 });
-  g.moveTo(x + 14, y - 96).lineTo(x + 32, y - 108).stroke({ color: BARK_LINE, width: 6, cap: 'round' });
+  for (const [dx, dy, r] of [
+    [-14, -20, 10],
+    [12, -46, 9],
+    [-10, -78, 9],
+    [13, -108, 8],
+  ])
+    g.circle(x + dx, y + dy, r)
+      .fill(MOSS)
+      .stroke({ color: MOSS_LINE, width: 1.5 });
+  g.moveTo(x + 14, y - 96)
+    .lineTo(x + 32, y - 108)
+    .stroke({ color: BARK_LINE, width: 6, cap: 'round' });
   // The bromeliad: a rosette of stiff leaves round a red heart, sitting on the branch.
-  for (const a of [-1.1, -0.55, 0, 0.55, 1.1]) g.moveTo(x + 28, y - 110).lineTo(x + 28 + Math.sin(a) * 16, y - 110 - Math.cos(a) * 16).stroke({ color: swatch.green.line, width: 4, cap: 'round' });
-  g.circle(x + 28, y - 112, 4.5).fill(swatch.red.fill).stroke({ color: swatch.red.line, width: 1.5 });
+  for (const a of [-1.1, -0.55, 0, 0.55, 1.1])
+    g.moveTo(x + 28, y - 110)
+      .lineTo(x + 28 + Math.sin(a) * 16, y - 110 - Math.cos(a) * 16)
+      .stroke({ color: swatch.green.line, width: 4, cap: 'round' });
+  g.circle(x + 28, y - 112, 4.5)
+    .fill(swatch.red.fill)
+    .stroke({ color: swatch.red.line, width: 1.5 });
   orchidBloom(g, x - 16, y - 62, swatch.purple);
   // The crown, in the cloud.
-  for (const [dx, dy, r] of [[-22, -132, 20], [20, -134, 20], [0, -144, 22]]) g.circle(x + dx, y + dy, r).fill(0x5fae5a).stroke({ color: MOSS_LINE, width: 2 });
+  for (const [dx, dy, r] of [
+    [-22, -132, 20],
+    [20, -134, 20],
+    [0, -144, 22],
+  ])
+    g.circle(x + dx, y + dy, r)
+      .fill(0x5fae5a)
+      .stroke({ color: MOSS_LINE, width: 2 });
 }
 
 /** A tree fern: a thin, shaggy trunk and a crown of arching fronds. */
 function fern(g: Graphics, x: number, y: number, s: number) {
   const top = y - 76 * s;
-  g.moveTo(x, y).lineTo(x, top).stroke({ color: BARK_LINE, width: 7 * s, cap: 'round' });
+  g.moveTo(x, y)
+    .lineTo(x, top)
+    .stroke({ color: BARK_LINE, width: 7 * s, cap: 'round' });
   for (const a of [-2.3, -1.6, -0.9, -0.3, 0.3, 0.9, 1.6, 2.3]) {
     const ex = x + Math.sin(a) * 44 * s;
     const ey = top + (1 - Math.cos(a)) * 14 * s - 6 * s;
-    g.moveTo(x, top).quadraticCurveTo(x + Math.sin(a) * 26 * s, top - 24 * s, ex, ey).stroke({ color: swatch.green.line, width: 4.5 * s, cap: 'round' });
-    g.moveTo(x, top).quadraticCurveTo(x + Math.sin(a) * 26 * s, top - 24 * s, ex, ey).stroke({ color: swatch.green.fill, width: 2.5 * s, cap: 'round' });
+    g.moveTo(x, top)
+      .quadraticCurveTo(x + Math.sin(a) * 26 * s, top - 24 * s, ex, ey)
+      .stroke({ color: swatch.green.line, width: 4.5 * s, cap: 'round' });
+    g.moveTo(x, top)
+      .quadraticCurveTo(x + Math.sin(a) * 26 * s, top - 24 * s, ex, ey)
+      .stroke({ color: swatch.green.fill, width: 2.5 * s, cap: 'round' });
   }
 }
 
 function orchidBloom(g: Graphics, x: number, y: number, c: { fill: number; line: number }) {
-  for (const a of [0, 1.26, 2.51, 3.77, 5.03]) g.ellipse(x + Math.cos(a) * 5, y + Math.sin(a) * 5, 4.5, 4.5).fill(c.fill).stroke({ color: c.line, width: 1.2 });
+  for (const a of [0, 1.26, 2.51, 3.77, 5.03])
+    g.ellipse(x + Math.cos(a) * 5, y + Math.sin(a) * 5, 4.5, 4.5)
+      .fill(c.fill)
+      .stroke({ color: c.line, width: 1.2 });
   g.circle(x, y, 2.6).fill(swatch.yellow.fill);
 }
 
 /** A low orchid: an arching stem with three blooms over a pair of broad leaves. */
 function orchid(g: Graphics, x: number, y: number) {
-  g.ellipse(x - 8, y - 4, 10, 4).fill(swatch.green.fill).stroke({ color: swatch.green.line, width: 1.5 });
-  g.ellipse(x + 8, y - 4, 10, 4).fill(swatch.green.fill).stroke({ color: swatch.green.line, width: 1.5 });
-  g.moveTo(x, y - 4).quadraticCurveTo(x - 2, y - 32, x + 14, y - 34).stroke({ color: swatch.green.line, width: 2, cap: 'round' });
+  g.ellipse(x - 8, y - 4, 10, 4)
+    .fill(swatch.green.fill)
+    .stroke({ color: swatch.green.line, width: 1.5 });
+  g.ellipse(x + 8, y - 4, 10, 4)
+    .fill(swatch.green.fill)
+    .stroke({ color: swatch.green.line, width: 1.5 });
+  g.moveTo(x, y - 4)
+    .quadraticCurveTo(x - 2, y - 32, x + 14, y - 34)
+    .stroke({ color: swatch.green.line, width: 2, cap: 'round' });
   const c = Math.round(x) % 2 ? swatch.pink : swatch.purple;
   orchidBloom(g, x - 2, y - 22, c);
   orchidBloom(g, x + 6, y - 32, c);
@@ -172,11 +231,20 @@ function orchid(g: Graphics, x: number, y: number) {
 
 /** A tree frog on a broad leaf: green with big red eyes and round toe pads. */
 function frog(g: Graphics, x: number, y: number, face: 1 | -1) {
-  g.moveTo(x - 22, y).quadraticCurveTo(x, y - 14, x + 22, y).quadraticCurveTo(x, y + 6, x - 22, y).closePath().fill(swatch.green.fill).stroke({ color: swatch.green.line, width: 2 });
+  g.moveTo(x - 22, y)
+    .quadraticCurveTo(x, y - 14, x + 22, y)
+    .quadraticCurveTo(x, y + 6, x - 22, y)
+    .closePath()
+    .fill(swatch.green.fill)
+    .stroke({ color: swatch.green.line, width: 2 });
   const body = 0x6fd16a;
-  g.ellipse(x, y - 12, 12, 9).fill(body).stroke({ color: swatch.green.line, width: 2 });
+  g.ellipse(x, y - 12, 12, 9)
+    .fill(body)
+    .stroke({ color: swatch.green.line, width: 2 });
   for (const d of [-6, 6]) {
-    g.circle(x + face * 4 + d, y - 22, 4.5).fill(swatch.red.fill).stroke({ color: swatch.green.line, width: 1.5 });
+    g.circle(x + face * 4 + d, y - 22, 4.5)
+      .fill(swatch.red.fill)
+      .stroke({ color: swatch.green.line, width: 1.5 });
     g.circle(x + face * 4 + d, y - 22, 1.6).fill(ink);
   }
   for (const d of [-12, 12]) g.circle(x + d, y - 4, 2.6).fill(swatch.orange.fill);
@@ -186,9 +254,15 @@ function frog(g: Graphics, x: number, y: number, face: 1 | -1) {
 function hummingbird(g: Graphics, x: number, y: number, face: 1 | -1) {
   g.ellipse(x - face * 4, y - 9, 6, 12).fill({ color: 0xffffff, alpha: 0.6 });
   g.ellipse(x, y, 10, 6).fill(0x3fae7a).stroke({ color: 0x2a7a55, width: 1.5 });
-  g.moveTo(x - face * 9, y + 1).lineTo(x - face * 16, y + 6).stroke({ color: 0x2a7a55, width: 3, cap: 'round' });
-  g.circle(x + face * 8, y - 3, 5).fill(0x3fae7a).stroke({ color: 0x2a7a55, width: 1.5 });
+  g.moveTo(x - face * 9, y + 1)
+    .lineTo(x - face * 16, y + 6)
+    .stroke({ color: 0x2a7a55, width: 3, cap: 'round' });
+  g.circle(x + face * 8, y - 3, 5)
+    .fill(0x3fae7a)
+    .stroke({ color: 0x2a7a55, width: 1.5 });
   g.circle(x + face * 7, y - 6 + 1, 2).fill(swatch.red.fill);
   g.circle(x + face * 9.5, y - 4, 1.2).fill(ink);
-  g.moveTo(x + face * 12, y - 3).lineTo(x + face * 24, y - 1).stroke({ color: ink, width: 1.5, cap: 'round' });
+  g.moveTo(x + face * 12, y - 3)
+    .lineTo(x + face * 24, y - 1)
+    .stroke({ color: ink, width: 1.5, cap: 'round' });
 }

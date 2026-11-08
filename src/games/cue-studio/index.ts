@@ -15,7 +15,30 @@ import { againIcon, checkIcon, nextIcon, playIcon } from '../../ui/icons';
 import { saysFrame } from '../pet-says/logic';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, canFinish, checkRun, mismatch, demoNext, finishRun, firstEmpty, help, isComplete, newStudio, planFor, playRun, restart, step, stickerRecipe, tapAction, tapSlot, trace, undo, type Cue, type CuePlan, type Studio } from './logic';
+import {
+  LEVELS,
+  canFinish,
+  checkRun,
+  mismatch,
+  demoNext,
+  finishRun,
+  firstEmpty,
+  help,
+  isComplete,
+  newStudio,
+  planFor,
+  playRun,
+  restart,
+  step,
+  stickerRecipe,
+  tapAction,
+  tapSlot,
+  trace,
+  undo,
+  type Cue,
+  type CuePlan,
+  type Studio,
+} from './logic';
 
 /** Every card, slot and control is this square, in logical units. */
 const BOX = 112;
@@ -24,7 +47,13 @@ const CUE_COLOR: Record<Cue, ColorName> = { W: 'orange', T: 'purple' };
 /** An open hand: the Wave card. */
 function handIcon(color = ink): Graphics {
   const g = new Graphics();
-  for (const [x, h] of [[-15, 30], [-5, 36], [5, 36], [15, 30]] as const) g.roundRect(x - 4.5, -12 - h, 9, h + 8, 4.5).fill(color);
+  for (const [x, h] of [
+    [-15, 30],
+    [-5, 36],
+    [5, 36],
+    [15, 30],
+  ] as const)
+    g.roundRect(x - 4.5, -12 - h, 9, h + 8, 4.5).fill(color);
   g.roundRect(-20, -18, 40, 36, 14).fill(color);
   return g.roundRect(14, -14, 9, 26, 4.5).fill(color);
 }
@@ -45,15 +74,23 @@ function cueIcon(cue: Cue, color = 0xffffff): Graphics {
 /** Undo: a hooked arrow coming back on itself. */
 function undoIcon(color = ink): Graphics {
   return new Graphics()
-    .moveTo(20, 20).lineTo(20, -2).arc(0, -2, 20, 0, Math.PI, true).lineTo(-20, 6)
+    .moveTo(20, 20)
+    .lineTo(20, -2)
+    .arc(0, -2, 20, 0, Math.PI, true)
+    .lineTo(-20, 6)
     .stroke({ width: 8, color, cap: 'round', join: 'round' })
-    .poly([-33, 2, -20, 20, -7, 2]).fill(color);
+    .poly([-33, 2, -20, 20, -7, 2])
+    .fill(color);
 }
 
 /** Show me: a little lit bulb. */
 function bulbIcon(color = ink): Graphics {
-  return new Graphics().circle(0, -8, 20).fill(swatch.yellow.fill).stroke({ width: 5, color })
-    .roundRect(-10, 12, 20, 14, 4).fill(color);
+  return new Graphics()
+    .circle(0, -8, 20)
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 5, color })
+    .roundRect(-10, 12, 20, 14, 4)
+    .fill(color);
 }
 
 /** A square that answers on touch-down, squashing at once and springing back. */
@@ -61,7 +98,12 @@ class Pad extends Container {
   readonly face = new Container();
   private art: Graphics;
 
-  constructor(private sw: Swatch, icon: Container | null, private readonly onPress: () => void, faceColor?: number) {
+  constructor(
+    private sw: Swatch,
+    icon: Container | null,
+    private readonly onPress: () => void,
+    faceColor?: number,
+  ) {
     super();
     this.art = finishArt({ w: BOX, h: BOX, corner: 24 }, sw, faceColor);
     this.addChild(this.art, this.face);
@@ -131,13 +173,30 @@ class CueStudio implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.s = newStudio(this.plan.slots, this.plan.request);
-    this.backdrop = ctx.track(new Backdrop({ sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xddf2cf], horizon: 0.5, clouds: 2, sun: true, seed: 151 }, ctx.view));
+    this.backdrop = ctx.track(
+      new Backdrop(
+        {
+          sky: [0xc8f0ec, 0xfff6e0],
+          hills: [0xa9e0d6, 0xc5e7a8, 0xddf2cf],
+          horizon: 0.5,
+          clouds: 2,
+          sun: true,
+          seed: 151,
+        },
+        ctx.view,
+      ),
+    );
     this.star = ctx.track(ctx.companion());
     this.star.eventMode = 'none';
     this.height = this.star.getLocalBounds().height;
     this.frame = saysFrame((p) => this.star.partPoints(p), this.star.bodyBounds());
     const sw = swatch[this.star.color as ColorName];
-    this.mitten = new Graphics().circle(0, 0, 24).fill(sw.fill).stroke({ width: 6, color: sw.line }).circle(-8, -9, 6).fill({ color: 0xffffff, alpha: 0.35 });
+    this.mitten = new Graphics()
+      .circle(0, 0, 24)
+      .fill(sw.fill)
+      .stroke({ width: 6, color: sw.line })
+      .circle(-8, -9, 6)
+      .fill({ color: 0xffffff, alpha: 0.35 });
     this.mitten.position.copyFrom(this.frame.rest.right);
     this.star.attach(this.mitten);
     this.actor.addChild(this.star);
@@ -151,21 +210,46 @@ class CueStudio implements Game {
       this.slots.push(new Pad(swatch.white, null, () => this.pickSlot(i), cream));
       this.marks.push(new Graphics());
     }
-    if (this.s.request) for (const cue of this.s.request) {
-      this.requests.push(new Pad(swatch[CUE_COLOR[cue]], cueIcon(cue), () => this.say(cue === 'W' ? 'cue.request-wave' : 'cue.request-turn')));
-    }
+    if (this.s.request)
+      for (const cue of this.s.request) {
+        this.requests.push(
+          new Pad(swatch[CUE_COLOR[cue]], cueIcon(cue), () =>
+            this.say(cue === 'W' ? 'cue.request-wave' : 'cue.request-turn'),
+          ),
+        );
+      }
     this.clue.eventMode = 'none';
     this.requestShelf.eventMode = 'none';
     this.playButton = new Pad(swatch.green, playIcon(), () => void this.play());
     this.stepButton = new Pad(swatch.teal, nextIcon(0xffffff), () => void this.stepOnce());
     this.undoButton = new Pad(swatch.yellow, undoIcon(), () => this.undo());
     this.hintButton = new Pad(swatch.white, bulbIcon(), () => void this.help());
-    this.finishButton = new Pad(swatch.blue, checkIcon(), () => void (this.s.request && !this.s.checked ? this.check() : this.finish()));
+    this.finishButton = new Pad(
+      swatch.blue,
+      checkIcon(),
+      () => void (this.s.request && !this.s.checked ? this.check() : this.finish()),
+    );
     this.pointer.eventMode = 'none';
     this.shelf.eventMode = 'none';
     this.pointer.visible = false;
-    ctx.stage.addChild(this.backdrop, this.actor, this.requestShelf, ...this.requests, this.shelf, this.cards.W, this.cards.T, ...this.slots, ...this.marks, this.clue, this.pointer,
-      this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.actor,
+      this.requestShelf,
+      ...this.requests,
+      this.shelf,
+      this.cards.W,
+      this.cards.T,
+      ...this.slots,
+      ...this.marks,
+      this.clue,
+      this.pointer,
+      this.playButton,
+      this.stepButton,
+      this.undoButton,
+      this.hintButton,
+      this.finishButton,
+    );
     this.draw();
   }
 
@@ -186,7 +270,8 @@ class CueStudio implements Game {
     const ox = Math.max(0, (v.w - 1024) / 2);
     // The definition's rectangles (top-left corners); each box's centre is half a box in.
     const oy = portrait ? Math.max(0, (v.h - 900) / 2) : Math.max(0, (v.h - 768) / 2);
-    const at = (node: Container, x: number, y: number) => node.position.set(ox + x + BOX / 2, oy + y + BOX / 2);
+    const at = (node: Container, x: number, y: number) =>
+      node.position.set(ox + x + BOX / 2, oy + y + BOX / 2);
     const k = Math.min(1.3, 190 / this.height);
     this.actor.scale.set(k);
     const one = this.plan.slots === 1;
@@ -196,26 +281,39 @@ class CueStudio implements Game {
       // A little lower than the definition's 564/708, to leave room under the show's shelf.
       at(this.cards.W, 384, 600);
       at(this.cards.T, 512, 600);
-      [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach((b, i) => at(b, 192 + i * 128, 748));
+      [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach(
+        (b, i) => at(b, 192 + i * 128, 748),
+      );
     } else {
       this.actor.position.set(ox + 828, oy + 330);
       for (let i = 0; i < this.slots.length; i++) at(this.slots[i], one ? 448 : 384 + i * 128, 356);
       // 32 units left of the definition's 128/256, so the cards stand clear of the shelf.
       at(this.cards.W, 96, 356);
       at(this.cards.T, 224, 356);
-      [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach((b, i) => at(b, 192 + i * 128, 532));
+      [this.playButton, this.stepButton, this.undoButton, this.hintButton, this.finishButton].forEach(
+        (b, i) => at(b, 192 + i * 128, 532),
+      );
     }
     this.requests.forEach((pad, i) => at(pad, 384 + i * 128, portrait ? 144 : 136));
     this.requestShelf.clear();
     if (this.requests.length) {
       const first = this.requests[0];
-      this.requestShelf.roundRect(first.x - 72, first.y - 72, 272, 144, 24).fill(cream).stroke({ width: 5, color: wood.line });
+      this.requestShelf
+        .roundRect(first.x - 72, first.y - 72, 272, 144, 24)
+        .fill(cream)
+        .stroke({ width: 5, color: wood.line });
     }
     this.slots.forEach((slot, i) => this.marks[i].position.set(slot.x, slot.y + BOX / 2 + 16));
     const [first, last] = [this.slots[0], this.slots[this.slots.length - 1]];
     const [x0, x1, y0] = [first.x - BOX / 2 - 18, last.x + BOX / 2 + 18, first.y - BOX / 2 - 18];
-    this.shelf.clear().roundRect(x0, y0, x1 - x0, BOX + 52, 26).fill(wood.light).stroke({ width: 6, color: wood.line })
-      .roundRect(x0, y0 + BOX + 30, x1 - x0, 22, 11).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    this.shelf
+      .clear()
+      .roundRect(x0, y0, x1 - x0, BOX + 52, 26)
+      .fill(wood.light)
+      .stroke({ width: 6, color: wood.line })
+      .roundRect(x0, y0 + BOX + 30, x1 - x0, 22, 11)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
     this.draw();
   }
 
@@ -227,7 +325,10 @@ class CueStudio implements Game {
     this.slots.forEach((pad, i) => {
       const cue = program[i];
       // The running slot glows yellow while the companion acts it.
-      pad.paint(this.running === i ? swatch.yellow : cue ? swatch[CUE_COLOR[cue]] : swatch.white, cue ? undefined : cream);
+      pad.paint(
+        this.running === i ? swatch.yellow : cue ? swatch[CUE_COLOR[cue]] : swatch.white,
+        cue ? undefined : cream,
+      );
       pad.setIcon(cue ? cueIcon(cue) : null);
       const on = i < this.lit;
       this.marks[i].clear();
@@ -244,16 +345,22 @@ class CueStudio implements Game {
     this.pointer.visible = !!sel;
     if (sel) this.pointer.position.set(sel.x, sel.y - BOX / 2 - 18);
     if (sel) {
-      const ring = new Graphics().roundRect(-BOX / 2 - 6, -BOX / 2 - 6, BOX + 12, BOX + 12, 28).stroke({ width: 8, color: ink });
+      const ring = new Graphics()
+        .roundRect(-BOX / 2 - 6, -BOX / 2 - 6, BOX + 12, BOX + 12, 28)
+        .stroke({ width: 8, color: ink });
       sel.face.addChild(ring);
     }
     this.clue.clear();
     const wrong = mismatch(this.s);
     if (wrong >= 0 && this.s.helped.size) {
       const slot = this.slots[wrong];
-      this.clue.roundRect(slot.x - 62, slot.y - 62, 124, 124, 26).stroke({ width: 7, color: swatch.yellow.line });
+      this.clue
+        .roundRect(slot.x - 62, slot.y - 62, 124, 124, 26)
+        .stroke({ width: 7, color: swatch.yellow.line });
       const request = this.requests[wrong];
-      this.clue.roundRect(request.x - 62, request.y - 62, 124, 124, 26).stroke({ width: 7, color: swatch.yellow.line });
+      this.clue
+        .roundRect(request.x - 62, request.y - 62, 124, 124, 26)
+        .stroke({ width: 7, color: swatch.yellow.line });
     }
     this.finishButton.setIcon(this.s.request && !this.s.checked ? playIcon() : checkIcon());
     this.finishButton.paint(this.s.request && !this.s.checked ? swatch.orange : swatch.blue);
@@ -264,7 +371,10 @@ class CueStudio implements Game {
   private nudge(node: Container) {
     this.ctx.tw.kill(node);
     node.rotation = 0;
-    void this.ctx.tw.to(node, { rotation: 0.1 }, { duration: 0.1 }).then(() => this.ctx.tw.to(node, { rotation: -0.08 }, { duration: 0.12 })).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.1 }));
+    void this.ctx.tw
+      .to(node, { rotation: 0.1 }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(node, { rotation: -0.08 }, { duration: 0.12 }))
+      .then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.1 }));
   }
 
   private pulse(node: Container) {
@@ -365,8 +475,10 @@ class CueStudio implements Game {
     this.busy = false;
     this.draw();
     if (at === null) return;
-    if (at < 0) { sfx.pop(12); this.say('cue.success'); }
-    else {
+    if (at < 0) {
+      sfx.pop(12);
+      this.say('cue.success');
+    } else {
       sfx.boing();
       this.pulse(this.slots[at]);
       this.say(at === 0 ? 'cue.mismatch-first' : 'cue.mismatch-second');
@@ -507,9 +619,12 @@ class CueStudio implements Game {
   /** The ghost finger: the definition's clean demonstration, from the state. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    const press = this.s.request && this.watchedInitial && mismatch(this.s) >= 0
-      ? (this.s.selected === mismatch(this.s) ? { action: this.s.request[mismatch(this.s)] } : { slot: mismatch(this.s) })
-      : demoNext(this.s, this.changed);
+    const press =
+      this.s.request && this.watchedInitial && mismatch(this.s) >= 0
+        ? this.s.selected === mismatch(this.s)
+          ? { action: this.s.request[mismatch(this.s)] }
+          : { slot: mismatch(this.s) }
+        : demoNext(this.s, this.changed);
     if (press === 'play') return { tap: { on: this.playButton } };
     if (press === 'check') return { tap: { on: this.finishButton } };
     if (press === 'finish') return { tap: { on: this.finishButton } };
@@ -566,8 +681,10 @@ export const cueStudio: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
-  coplayHint: 'Ask {name} what the pet will do before pressing Play, then watch together. Take turns choosing a move.',
-  offScreen: 'Take turns giving each other a two-move show to act out: "wave, then turn around". Then swap the order.',
+  coplayHint:
+    'Ask {name} what the pet will do before pressing Play, then watch together. Take turns choosing a move.',
+  offScreen:
+    'Take turns giving each other a two-move show to act out: "wave, then turn around". Then swap the order.',
   hubIcon: () => new CueIcon(),
   touchDemo: true,
   sticker,

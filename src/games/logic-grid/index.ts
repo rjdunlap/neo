@@ -18,8 +18,40 @@ import { SCRIPT, type LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  answerOf, applyStep, blockOf, brokenClue, colOf, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, isTime, makeRound, nextStep, TIMES, type Time,
-  planFor, rowOf, shapeOf, shown, sizeOf, sq, solved, solveSteps, wrongSquares, type Board, type Clue, type Item, type Mark, type Place, type Plan, type Step,
+  answerOf,
+  applyStep,
+  blockOf,
+  brokenClue,
+  colOf,
+  contradicts,
+  CROSSED,
+  cycle,
+  EMPTY,
+  emptyMarks,
+  FILLED,
+  fullWrong,
+  HATS,
+  isTime,
+  makeRound,
+  nextStep,
+  TIMES,
+  type Time,
+  planFor,
+  rowOf,
+  shapeOf,
+  shown,
+  sizeOf,
+  sq,
+  solved,
+  solveSteps,
+  wrongSquares,
+  type Board,
+  type Clue,
+  type Item,
+  type Mark,
+  type Place,
+  type Plan,
+  type Step,
   type Thing,
 } from './logic';
 
@@ -57,8 +89,14 @@ const nameOf = (f: CritterName) => f[0].toUpperCase() + f.slice(1);
 /** A pond: a blue oval with reeds. */
 function pondArt(): Graphics {
   const g = new Graphics();
-  for (const [x, h] of [[-30, 46], [-20, 58], [26, 50]]) {
-    g.moveTo(x, -18).lineTo(x + 3, -18 - h).stroke({ width: 5, color: swatch.green.line, cap: 'round' });
+  for (const [x, h] of [
+    [-30, 46],
+    [-20, 58],
+    [26, 50],
+  ]) {
+    g.moveTo(x, -18)
+      .lineTo(x + 3, -18 - h)
+      .stroke({ width: 5, color: swatch.green.line, cap: 'round' });
     g.roundRect(x - 2, -18 - h, 9, 22, 4).fill(swatch.brown.fill);
   }
   g.ellipse(0, 0, 44, 20).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line });
@@ -98,20 +136,36 @@ function timeArt(t: number): Graphics {
   const g = new Graphics();
   const a = Math.PI * (1 - t / (TIMES.length - 1));
   const low = t === 0 || t === TIMES.length - 1;
-  g.circle(Math.cos(a) * 34, 18 - Math.sin(a) * 38, 14).fill(low ? swatch.orange.fill : swatch.yellow.fill).stroke({ width: 4, color: low ? swatch.orange.line : swatch.yellow.line });
+  g.circle(Math.cos(a) * 34, 18 - Math.sin(a) * 38, 14)
+    .fill(low ? swatch.orange.fill : swatch.yellow.fill)
+    .stroke({ width: 4, color: low ? swatch.orange.line : swatch.yellow.line });
   g.ellipse(0, 26, 46, 14).fill(swatch.green.fill);
   return g;
 }
 
 /** How a time is said in a clue: "at dawn", "in the morning". */
-const WHEN: Record<Time, string> = { dawn: 'at dawn', morning: 'in the morning', noon: 'at noon', afternoon: 'in the afternoon', evening: 'in the evening' };
+const WHEN: Record<Time, string> = {
+  dawn: 'at dawn',
+  morning: 'in the morning',
+  noon: 'at noon',
+  afternoon: 'in the afternoon',
+  evening: 'in the evening',
+};
 
 /** The missing ball (levels 3–4): a striped circle. */
 function ballArt(): Graphics {
   const g = new Graphics();
   g.circle(0, 0, 30).fill(swatch.white.fill);
-  g.moveTo(-30, 0).arc(0, 0, 30, Math.PI, Math.PI * 1.5).lineTo(0, 0).closePath().fill(swatch.red.fill);
-  g.moveTo(30, 0).arc(0, 0, 30, 0, Math.PI * 0.5).lineTo(0, 0).closePath().fill(swatch.blue.fill);
+  g.moveTo(-30, 0)
+    .arc(0, 0, 30, Math.PI, Math.PI * 1.5)
+    .lineTo(0, 0)
+    .closePath()
+    .fill(swatch.red.fill);
+  g.moveTo(30, 0)
+    .arc(0, 0, 30, 0, Math.PI * 0.5)
+    .lineTo(0, 0)
+    .closePath()
+    .fill(swatch.blue.fill);
   g.circle(0, 0, 30).stroke({ width: 5, color: ink });
   g.ellipse(-11, -14, 9, 5).fill({ color: 0xffffff, alpha: 0.7 });
   return g;
@@ -121,27 +175,47 @@ function ballArt(): Graphics {
 function kiteArt(): Graphics {
   const g = new Graphics();
   g.moveTo(0, 26).bezierCurveTo(-14, 40, 14, 46, 0, 60).stroke({ width: 4, color: ink, cap: 'round' });
-  for (const [x, y] of [[-4, 40], [4, 52]]) g.poly([x - 7, y - 5, x + 7, y + 5, x + 7, y - 5, x - 7, y + 5]).fill(swatch.red.fill);
-  g.poly([0, -34, 24, -4, 0, 26, -24, -4]).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.orange.line, join: 'round' });
+  for (const [x, y] of [
+    [-4, 40],
+    [4, 52],
+  ])
+    g.poly([x - 7, y - 5, x + 7, y + 5, x + 7, y - 5, x - 7, y + 5]).fill(swatch.red.fill);
+  g.poly([0, -34, 24, -4, 0, 26, -24, -4])
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 5, color: swatch.orange.line, join: 'round' });
   g.poly([0, -34, 24, -4, 0, -4]).fill(swatch.orange.fill);
   g.poly([0, 26, -24, -4, 0, -4]).fill(swatch.orange.fill);
-  g.moveTo(0, -34).lineTo(0, 26).moveTo(-24, -4).lineTo(24, -4).stroke({ width: 3, color: swatch.orange.line });
+  g.moveTo(0, -34)
+    .lineTo(0, 26)
+    .moveTo(-24, -4)
+    .lineTo(24, -4)
+    .stroke({ width: 3, color: swatch.orange.line });
   return g;
 }
 
 /** The missing picnic basket (level 7): a woven tub with a handle. */
 function basketArt(): Graphics {
   const g = new Graphics();
-  g.moveTo(-30, -6).bezierCurveTo(-30, -52, 30, -52, 30, -6).stroke({ width: 7, color: swatch.brown.line, cap: 'round' });
+  g.moveTo(-30, -6)
+    .bezierCurveTo(-30, -52, 30, -52, 30, -6)
+    .stroke({ width: 7, color: swatch.brown.line, cap: 'round' });
   g.roundRect(-40, -8, 80, 38, 10).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.brown.line });
   for (const y of [4, 17]) g.moveTo(-36, y).lineTo(36, y).stroke({ width: 3, color: swatch.orange.line });
   for (const x of [-20, 0, 20]) g.moveTo(x, -6).lineTo(x, 28).stroke({ width: 3, color: swatch.orange.line });
   return g;
 }
 
-const thingArt = (t: Thing) => (t === 'ball' ? ballArt() : t === 'kite' ? kiteArt() : t === 'basket' ? basketArt() : pieArt());
+const thingArt = (t: Thing) =>
+  t === 'ball' ? ballArt() : t === 'kite' ? kiteArt() : t === 'basket' ? basketArt() : pieArt();
 
-const ITEM_COLOR = { apple: 'red', balloon: 'blue', flower: 'purple', orange: 'orange', lemon: 'yellow', pear: 'green' } as const;
+const ITEM_COLOR = {
+  apple: 'red',
+  balloon: 'blue',
+  flower: 'purple',
+  orange: 'orange',
+  lemon: 'yellow',
+  pear: 'green',
+} as const;
 
 /** Level 5's items and level 7's snacks, from `prop()`, about 60 across. */
 function itemArt(i: Item): Container {
@@ -161,24 +235,45 @@ const narrow = (b: Board) => !!b.items || b.friends.length > 3;
 const captioned = (b: Board) => narrow(b) && !b.case;
 
 /** Fills a line's slots, for the written clue under the narrow cards. */
-const written = (id: LineId, vars: Record<string, string>) => SCRIPT[id][0].replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? k);
+const written = (id: LineId, vars: Record<string, string>) =>
+  SCRIPT[id][0].replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? k);
 
 /**
  * Level 7's written clues, in the past tense of a case file: places ("Cat was at the pond"), snacks ("Cat brought the pear"),
  * snack and place ("The pear was at the pond"; "The friend at the pond did not bring the pear"), by hat, and this-or-that.
  */
 function caseLine(c: Clue, b: Board): [LineId, Record<string, string>] {
-  const friend = (f: number, hat?: true): Record<string, string> => (hat && b.hats ? { hat: HAT_NAME[HATS[b.hats[f]].color] } : { friend: nameOf(b.friends[f]) });
+  const friend = (f: number, hat?: true): Record<string, string> =>
+    hat && b.hats ? { hat: HAT_NAME[HATS[b.hats[f]].color] } : { friend: nameOf(b.friends[f]) };
   if (c.kind === 'apart') return ['lg.case.without', { place: b.places[c.place], item: b.items![c.item] }];
   if (b.times || c.kind === 'order' || c.kind === 'pair') return timeLine(c, b, friend);
   const has = c.block === 1;
   const what = (i: number) => (has ? b.items![i] : b.places[i]);
   const by = (hat?: true) => (hat && b.hats ? 'hat.' : '');
-  if (c.kind === 'neither') return [has ? 'lg.case.neither.has' : 'lg.case.neither', { friend: nameOf(b.friends[c.friend]), nor: nameOf(b.friends[c.nor]), [has ? 'item' : 'place']: what(c.place) }];
-  if (c.kind === 'either') return [`lg.case.${by(c.hat)}either${has ? '.has' : ''}` as LineId, { ...friend(c.friend, c.hat), [has ? 'item' : 'place']: what(c.place), or: what(c.or) }];
-  if (c.block === 2) return [c.kind === 'direct' ? 'lg.case.with' : 'lg.case.without', { item: b.items![c.friend], place: b.places[c.place] }];
+  if (c.kind === 'neither')
+    return [
+      has ? 'lg.case.neither.has' : 'lg.case.neither',
+      {
+        friend: nameOf(b.friends[c.friend]),
+        nor: nameOf(b.friends[c.nor]),
+        [has ? 'item' : 'place']: what(c.place),
+      },
+    ];
+  if (c.kind === 'either')
+    return [
+      `lg.case.${by(c.hat)}either${has ? '.has' : ''}` as LineId,
+      { ...friend(c.friend, c.hat), [has ? 'item' : 'place']: what(c.place), or: what(c.or) },
+    ];
+  if (c.block === 2)
+    return [
+      c.kind === 'direct' ? 'lg.case.with' : 'lg.case.without',
+      { item: b.items![c.friend], place: b.places[c.place] },
+    ];
   const kind = has ? (c.kind === 'direct' ? 'has' : 'hasnot') : c.kind;
-  return [`lg.case.${by(c.hat)}${kind}` as LineId, { ...friend(c.friend, c.hat), [has ? 'item' : 'place']: what(c.place) }];
+  return [
+    `lg.case.${by(c.hat)}${kind}` as LineId,
+    { ...friend(c.friend, c.hat), [has ? 'item' : 'place']: what(c.place) },
+  ];
 }
 
 /**
@@ -186,30 +281,72 @@ function caseLine(c: Clue, b: Board): [LineId, Record<string, string>] {
  * evening"), order ("Bear came before Duck"; "Pig came right after Cat"; "Pig came two steps after Cat") and the unaligned
  * pair ("Of Cat and the friend at the pond, one came at dawn and one at noon").
  */
-function timeLine(c: Exclude<Clue, { kind: 'apart' }>, b: Board, friend: (f: number, hat?: true) => Record<string, string>): [LineId, Record<string, string>] {
+function timeLine(
+  c: Exclude<Clue, { kind: 'apart' }>,
+  b: Board,
+  friend: (f: number, hat?: true) => Record<string, string>,
+): [LineId, Record<string, string>] {
   const when = (t: number) => WHEN[b.items![t] as Time];
   const name = (f: number) => nameOf(b.friends[f]);
   const by = (hat?: true) => (hat && b.hats ? 'hat.' : '');
   if (c.kind === 'order') {
     if (!c.by) return ['lg.case.before', { friend: name(c.friend), later: name(c.later) }];
-    return [c.by === 1 ? 'lg.case.after1' : 'lg.case.after2', { friend: name(c.friend), later: name(c.later) }];
+    return [
+      c.by === 1 ? 'lg.case.after1' : 'lg.case.after2',
+      { friend: name(c.friend), later: name(c.later) },
+    ];
   }
-  if (c.kind === 'pair') return ['lg.case.pair', { friend: name(c.friend), place: b.places[c.place], when: when(c.time), or: when(c.or) }];
+  if (c.kind === 'pair')
+    return [
+      'lg.case.pair',
+      { friend: name(c.friend), place: b.places[c.place], when: when(c.time), or: when(c.or) },
+    ];
   if (c.kind === 'neither') {
-    if (c.block === 1) return ['lg.case.neither.came', { friend: name(c.friend), nor: name(c.nor), when: when(c.place) }];
+    if (c.block === 1)
+      return ['lg.case.neither.came', { friend: name(c.friend), nor: name(c.nor), when: when(c.place) }];
     return ['lg.case.neither', { friend: name(c.friend), nor: name(c.nor), place: b.places[c.place] }];
   }
   if (c.kind === 'either') {
-    if (c.block === 1) return [`lg.case.${by(c.hat)}either.came` as LineId, { ...friend(c.friend, c.hat), when: when(c.place), or: when(c.or) }];
-    return [`lg.case.${by(c.hat)}either` as LineId, { ...friend(c.friend, c.hat), place: b.places[c.place], or: b.places[c.or] }];
+    if (c.block === 1)
+      return [
+        `lg.case.${by(c.hat)}either.came` as LineId,
+        { ...friend(c.friend, c.hat), when: when(c.place), or: when(c.or) },
+      ];
+    return [
+      `lg.case.${by(c.hat)}either` as LineId,
+      { ...friend(c.friend, c.hat), place: b.places[c.place], or: b.places[c.or] },
+    ];
   }
-  if (c.block === 2) return [c.kind === 'direct' ? 'lg.case.whenat' : 'lg.case.whenatnot', { when: when(c.friend), place: b.places[c.place] }];
-  if (c.block === 1) return [`lg.case.${by(c.hat)}${c.kind === 'direct' ? 'came' : 'camenot'}` as LineId, { ...friend(c.friend, c.hat), when: when(c.place) }];
-  return [`lg.case.${by(c.hat)}${c.kind}` as LineId, { ...friend(c.friend, c.hat), place: b.places[c.place] }];
+  if (c.block === 2)
+    return [
+      c.kind === 'direct' ? 'lg.case.whenat' : 'lg.case.whenatnot',
+      { when: when(c.friend), place: b.places[c.place] },
+    ];
+  if (c.block === 1)
+    return [
+      `lg.case.${by(c.hat)}${c.kind === 'direct' ? 'came' : 'camenot'}` as LineId,
+      { ...friend(c.friend, c.hat), when: when(c.place) },
+    ];
+  return [
+    `lg.case.${by(c.hat)}${c.kind}` as LineId,
+    { ...friend(c.friend, c.hat), place: b.places[c.place] },
+  ];
 }
 
-const HAT_COLOR = { red: swatch.red, blue: swatch.blue, yellow: swatch.yellow, green: swatch.green, purple: swatch.purple } as const;
-const HAT_NAME = { red: 'red striped', blue: 'blue spotty', yellow: 'yellow starry', green: 'green zigzag', purple: 'purple checked' } as const;
+const HAT_COLOR = {
+  red: swatch.red,
+  blue: swatch.blue,
+  yellow: swatch.yellow,
+  green: swatch.green,
+  purple: swatch.purple,
+} as const;
+const HAT_NAME = {
+  red: 'red striped',
+  blue: 'blue spotty',
+  yellow: 'yellow starry',
+  green: 'green zigzag',
+  purple: 'purple checked',
+} as const;
 
 /**
  * Level 4's hat, in critter body coordinates (as `strawHat` sits): a brimmed dome in the hat's colour with its own pattern in
@@ -219,12 +356,46 @@ function hatArt(h: number): Graphics {
   const { color, pattern } = HATS[h];
   const sw = HAT_COLOR[color];
   const g = new Graphics();
-  g.moveTo(-62, -238).bezierCurveTo(-62, -316, 62, -316, 62, -238).closePath().fill(sw.fill).stroke({ width: 6, color: sw.line });
-  if (pattern === 'stripes') for (const x of [-34, 0, 34]) g.roundRect(x - 7, -286 + Math.abs(x) * 0.5, 14, 44 - Math.abs(x) * 0.5, 6).fill(0xffffff);
-  else if (pattern === 'spots') for (const [x, y] of [[-30, -254], [0, -282], [30, -254]]) g.circle(x, y, 13).fill(0xffffff);
-  else if (pattern === 'stars') for (const [x, y] of [[-32, -258], [0, -280], [32, -258]]) g.star(x, y, 5, 18, 8).fill(0xffffff);
-  else if (pattern === 'checks') for (const [x, y] of [[-36, -262], [-12, -284], [12, -262], [36, -284], [-12, -244], [36, -244]]) g.rect(x - 9, y - 9, 18, 18).fill(0xffffff);
-  else g.moveTo(-48, -256).lineTo(-30, -280).lineTo(-12, -256).lineTo(6, -280).lineTo(24, -256).lineTo(42, -280).stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
+  g.moveTo(-62, -238)
+    .bezierCurveTo(-62, -316, 62, -316, 62, -238)
+    .closePath()
+    .fill(sw.fill)
+    .stroke({ width: 6, color: sw.line });
+  if (pattern === 'stripes')
+    for (const x of [-34, 0, 34])
+      g.roundRect(x - 7, -286 + Math.abs(x) * 0.5, 14, 44 - Math.abs(x) * 0.5, 6).fill(0xffffff);
+  else if (pattern === 'spots')
+    for (const [x, y] of [
+      [-30, -254],
+      [0, -282],
+      [30, -254],
+    ])
+      g.circle(x, y, 13).fill(0xffffff);
+  else if (pattern === 'stars')
+    for (const [x, y] of [
+      [-32, -258],
+      [0, -280],
+      [32, -258],
+    ])
+      g.star(x, y, 5, 18, 8).fill(0xffffff);
+  else if (pattern === 'checks')
+    for (const [x, y] of [
+      [-36, -262],
+      [-12, -284],
+      [12, -262],
+      [36, -284],
+      [-12, -244],
+      [36, -244],
+    ])
+      g.rect(x - 9, y - 9, 18, 18).fill(0xffffff);
+  else
+    g.moveTo(-48, -256)
+      .lineTo(-30, -280)
+      .lineTo(-12, -256)
+      .lineTo(6, -280)
+      .lineTo(24, -256)
+      .lineTo(42, -280)
+      .stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
   g.ellipse(0, -236, 104, 20).fill(sw.fill).stroke({ width: 6, color: sw.line });
   return g;
 }
@@ -234,7 +405,8 @@ function pieArt(): Graphics {
   const g = new Graphics();
   g.ellipse(0, 8, 40, 18).fill(swatch.brown.line);
   g.ellipse(0, 0, 40, 18).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.brown.line });
-  for (const x of [-18, 0, 18]) g.moveTo(x, -15).lineTo(x, 15).stroke({ width: 5, color: swatch.orange.line });
+  for (const x of [-18, 0, 18])
+    g.moveTo(x, -15).lineTo(x, 15).stroke({ width: 5, color: swatch.orange.line });
   for (const y of [-7, 7]) g.moveTo(-34, y).lineTo(34, y).stroke({ width: 5, color: swatch.orange.line });
   return g;
 }
@@ -258,7 +430,12 @@ function card(color: { fill: number; line: number }, w = SQ, h = SQ, r = 18): Gr
 class ClueCard extends Container {
   readonly glow = new Graphics();
   readonly w: number;
-  constructor(readonly clue: Clue, b: Board, text?: string, width = 0) {
+  constructor(
+    readonly clue: Clue,
+    b: Board,
+    text?: string,
+    width = 0,
+  ) {
     super();
     if (text !== undefined) {
       // Level 7: a written clue on a plain strip, spoken again when tapped.
@@ -308,8 +485,23 @@ class ClueCard extends Container {
       who = f;
     }
     const sign = new Graphics();
-    if (clue.kind === 'direct') sign.circle(0, 0, 20).fill(swatch.green.fill).moveTo(-9, 0).lineTo(-2, 8).lineTo(10, -8).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
-    else sign.circle(0, 0, 20).fill(swatch.red.fill).moveTo(-8, -8).lineTo(8, 8).moveTo(8, -8).lineTo(-8, 8).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    if (clue.kind === 'direct')
+      sign
+        .circle(0, 0, 20)
+        .fill(swatch.green.fill)
+        .moveTo(-9, 0)
+        .lineTo(-2, 8)
+        .lineTo(10, -8)
+        .stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
+    else
+      sign
+        .circle(0, 0, 20)
+        .fill(swatch.red.fill)
+        .moveTo(-8, -8)
+        .lineTo(8, 8)
+        .moveTo(8, -8)
+        .lineTo(-8, 8)
+        .stroke({ width: 6, color: 0xffffff, cap: 'round' });
     sign.scale.set(small ? 0.75 : 1);
     sign.position.set(x1, 50);
     let what: Container;
@@ -357,7 +549,14 @@ class ClueCard extends Container {
     } else {
       friend(clue.friend, 24);
       friend(clue.nor, 62);
-      const sign = new Graphics().circle(0, 0, 20).fill(swatch.red.fill).moveTo(-8, -8).lineTo(8, 8).moveTo(8, -8).lineTo(-8, 8).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+      const sign = new Graphics()
+        .circle(0, 0, 20)
+        .fill(swatch.red.fill)
+        .moveTo(-8, -8)
+        .lineTo(8, 8)
+        .moveTo(8, -8)
+        .lineTo(-8, 8)
+        .stroke({ width: 6, color: 0xffffff, cap: 'round' });
       sign.scale.set(0.6);
       sign.position.set(102, 24);
       parts.push(sign);
@@ -405,7 +604,8 @@ class MysteryGrid implements Game {
   scrollY = 0;
   /** The window onto the squares at level 8 (the whole L elsewhere). */
   private win = { w: 0, h: 0 };
-  private slideDrag: { id: number; x: number; y: number; ox: number; oy: number; moved: boolean } | null = null;
+  private slideDrag: { id: number; x: number; y: number; ox: number; oy: number; moved: boolean } | null =
+    null;
   private readonly faces = new Container();
   private readonly glowLayer = new Graphics();
   readonly friendCards: Container[] = [];
@@ -430,11 +630,18 @@ class MysteryGrid implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.boards = makeRound(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xcfe0ff, 0xfff6e0], hills: [0xb3c7f2, 0xa8dc8f], horizon: 0.72, clouds: 2, seed: 223 }, ctx.view);
-    for (const g of [this.markLayer, this.glowLayer, this.bodyMask, this.colMask, this.rowMask, this.edges]) g.eventMode = 'none';
+    this.backdrop = new Backdrop(
+      { sky: [0xcfe0ff, 0xfff6e0], hills: [0xb3c7f2, 0xa8dc8f], horizon: 0.72, clouds: 2, seed: 223 },
+      ctx.view,
+    );
+    for (const g of [this.markLayer, this.glowLayer, this.bodyMask, this.colMask, this.rowMask, this.edges])
+      g.eventMode = 'none';
     this.faces.eventMode = 'none';
     this.caption.eventMode = 'none';
-    const hb = new Graphics().roundRect(-60, -50, 120, 100, 26).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line });
+    const hb = new Graphics()
+      .roundRect(-60, -50, 120, 100, 26)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 5, color: swatch.yellow.line });
     const q = label('?', 60, ink);
     q.eventMode = 'none';
     this.help.addChild(hb, q);
@@ -454,7 +661,11 @@ class MysteryGrid implements Game {
 
   private async intro() {
     await this.ctx.say(this.line('mystery'));
-    await this.ctx.instruct((['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five', 'lg.six', 'lg.seven', 'lg.eight'] as const)[this.plan.level - 1]);
+    await this.ctx.instruct(
+      (['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five', 'lg.six', 'lg.seven', 'lg.eight'] as const)[
+        this.plan.level - 1
+      ],
+    );
     if (this.slides) await this.ctx.say('lg.slide');
     await this.readClues();
   }
@@ -466,8 +677,12 @@ class MysteryGrid implements Game {
 
   /** The event clue: by its place, or (level 5) tied to its item (level 7: a bit of a snack on the basket). */
   private sayEvent(b: Board) {
-    if (b.eventItem && b.times) return this.ctx.say('lg.event.basket.time', { when: WHEN[b.items![b.event] as Time] });
-    if (b.eventItem) return this.ctx.say(b.case ? 'lg.event.basket.item' : 'lg.event.kite.item', { item: b.items![b.event] });
+    if (b.eventItem && b.times)
+      return this.ctx.say('lg.event.basket.time', { when: WHEN[b.items![b.event] as Time] });
+    if (b.eventItem)
+      return this.ctx.say(b.case ? 'lg.event.basket.item' : 'lg.event.kite.item', {
+        item: b.items![b.event],
+      });
     return this.ctx.say(this.line('event'), { place: b.places[b.event] });
   }
 
@@ -488,15 +703,21 @@ class MysteryGrid implements Game {
   private clueLine(c: Clue, b: Board, id: 'clue' | 'remind'): [LineId, Record<string, string>] {
     if (b.case || c.kind === 'order' || c.kind === 'pair') return caseLine(c, b);
     if (c.kind === 'apart') return [`lg.${id}.apart`, { place: b.places[c.place], item: b.items![c.item] }];
-    if (c.kind === 'neither') return [`lg.${id}.neither`, { friend: nameOf(b.friends[c.friend]), nor: nameOf(b.friends[c.nor]), place: b.places[c.place] }];
+    if (c.kind === 'neither')
+      return [
+        `lg.${id}.neither`,
+        { friend: nameOf(b.friends[c.friend]), nor: nameOf(b.friends[c.nor]), place: b.places[c.place] },
+      ];
     if (c.kind === 'either') {
       const where = { place: b.places[c.place], or: b.places[c.or] };
-      if (c.hat && b.hats) return [`lg.${id}.hat.either`, { hat: HAT_NAME[HATS[b.hats[c.friend]].color], ...where }];
+      if (c.hat && b.hats)
+        return [`lg.${id}.hat.either`, { hat: HAT_NAME[HATS[b.hats[c.friend]].color], ...where }];
       return [`lg.${id}.either`, { friend: nameOf(b.friends[c.friend]), ...where }];
     }
     const kind = c.block ? (c.kind === 'direct' ? 'has' : 'hasnot') : c.kind;
     const what: Record<string, string> = c.block ? { item: b.items![c.place] } : { place: b.places[c.place] };
-    if (c.hat && b.hats) return [`lg.${id}.hat.${kind}`, { hat: HAT_NAME[HATS[b.hats[c.friend]].color], ...what }];
+    if (c.hat && b.hats)
+      return [`lg.${id}.hat.${kind}`, { hat: HAT_NAME[HATS[b.hats[c.friend]].color], ...what }];
     return [`lg.${id}.${kind}`, { friend: nameOf(b.friends[c.friend]), ...what }];
   }
 
@@ -531,22 +752,29 @@ class MysteryGrid implements Game {
     if (!b) return;
     const s = shapeOf(b);
     const blocks = s.blocks ?? 1;
-    const gw = (s.cols * blocks + 1) * PITCH - 4 + (blocks - 1) * GAP, gh = (s.rows + 1) * PITCH - 4;
+    const gw = (s.cols * blocks + 1) * PITCH - 4 + (blocks - 1) * GAP,
+      gh = (s.rows + 1) * PITCH - 4;
     const safe = safeArea(v);
     const n = this.clueCards.length;
     if (b.times) this.layoutSliding(v, n);
     else if (b.case) {
       // Level 7: the L of three blocks, its written clues in a column beside it (landscape) or two columns under it (portrait),
       // and Help in the L's empty quarter.
-      const cw = HW + 8 * C + GUT, ch = HH + 8 * C + GUT;
+      const cw = HW + 8 * C + GUT,
+        ch = HH + 8 * C + GUT;
       if (this.upright) {
         this.board.position.set(Math.round((v.w - cw) / 2), 146);
-        const y0 = this.board.y + ch + 10, x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W - 12) / 2);
-        const per = Math.ceil(n / 2), pitch = Math.min(LINE_H + 8, Math.floor((safe.y + safe.h - y0) / per));
-        this.clueCards.forEach((c, i) => c.position.set(x0 + Math.floor(i / per) * (CASE_W + 12), y0 + (i % per) * pitch));
+        const y0 = this.board.y + ch + 10,
+          x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W - 12) / 2);
+        const per = Math.ceil(n / 2),
+          pitch = Math.min(LINE_H + 8, Math.floor((safe.y + safe.h - y0) / per));
+        this.clueCards.forEach((c, i) =>
+          c.position.set(x0 + Math.floor(i / per) * (CASE_W + 12), y0 + (i % per) * pitch),
+        );
       } else {
         this.board.position.set(Math.max(safe.x + 162, Math.round((v.w - cw - 14 - CASE_W) / 2)), 146);
-        const x0 = this.board.x + cw + 14, y0 = 146;
+        const x0 = this.board.x + cw + 14,
+          y0 = 146;
         const pitch = Math.min(LINE_H + 16, Math.floor((safe.y + safe.h - 8 - y0) / Math.max(1, n)));
         this.clueCards.forEach((c, i) => c.position.set(x0, y0 + i * pitch));
       }
@@ -572,11 +800,16 @@ class MysteryGrid implements Game {
       const up = this.upright;
       const per = up ? 3 : 2;
       const rows = Math.ceil(n / per);
-      this.board.position.set(up ? (v.w - gw) / 2 : Math.max(safe.x + 170, Math.min((v.w - gw - 300) / 2, safe.x + 200)), 150);
-      const x0 = up ? 0 : this.board.x + gw + 28, y0 = up ? this.board.y + gh + 24 : 150;
+      this.board.position.set(
+        up ? (v.w - gw) / 2 : Math.max(safe.x + 170, Math.min((v.w - gw - 300) / 2, safe.x + 200)),
+        150,
+      );
+      const x0 = up ? 0 : this.board.x + gw + 28,
+        y0 = up ? this.board.y + gh + 24 : 150;
       const width = (inRow: number) => inRow * (CARD_S + 10) - 10;
       this.clueCards.forEach((c, i) => {
-        const r = Math.floor(i / per), inRow = Math.min(per, n - r * per);
+        const r = Math.floor(i / per),
+          inRow = Math.min(per, n - r * per);
         const x = up ? (v.w - width(inRow)) / 2 : x0;
         c.position.set(x + (i % per) * (CARD_S + 10), y0 + r * (SQ + 10));
       });
@@ -602,8 +835,12 @@ class MysteryGrid implements Game {
       const y = this.board.y + gh + (big ? 24 : 40);
       const per = n <= 3 ? n : 2;
       this.clueCards.forEach((c, i) => {
-        const row = Math.floor(i / per), inRow = Math.min(per, n - row * per);
-        c.position.set(v.w / 2 - (inRow * (CARD_W + 16) - 16) / 2 + (i % per) * (CARD_W + 16), y + row * (SQ + 12));
+        const row = Math.floor(i / per),
+          inRow = Math.min(per, n - row * per);
+        c.position.set(
+          v.w / 2 - (inRow * (CARD_W + 16) - 16) / 2 + (i % per) * (CARD_W + 16),
+          y + row * (SQ + 12),
+        );
       });
       this.help.position.set(Math.min(v.w - 110, v.w / 2 + 300), Math.min(v.h - 114, 910));
     } else {
@@ -636,15 +873,23 @@ class MysteryGrid implements Game {
       const per = Math.ceil(n / 2);
       const listH = per * (LINE_H + 6) - 6;
       this.board.position.set(Math.max(safe.x + 8, Math.round((v.w - HW - full) / 2)), 146);
-      this.win = { w: Math.min(full, safe.x + safe.w - 8 - this.board.x - HW), h: Math.min(full, Math.max(v.h - 12, bottom) - listH - 14 - this.board.y - HH) };
+      this.win = {
+        w: Math.min(full, safe.x + safe.w - 8 - this.board.x - HW),
+        h: Math.min(full, Math.max(v.h - 12, bottom) - listH - 14 - this.board.y - HH),
+      };
       const y0 = this.board.y + HH + this.win.h + 14;
       const x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W8 - 12) / 2);
-      this.clueCards.forEach((c, i) => c.position.set(x0 + Math.floor(i / per) * (CASE_W8 + 12), y0 + (i % per) * (LINE_H + 6)));
+      this.clueCards.forEach((c, i) =>
+        c.position.set(x0 + Math.floor(i / per) * (CASE_W8 + 12), y0 + (i % per) * (LINE_H + 6)),
+      );
       this.help.position.set(Math.min(safe.x + 80, x0 - 74), Math.min(y0 + 50, v.h - 280));
     } else {
       this.board.position.set(safe.x + 162, 146);
       const x0 = safe.x + safe.w - 8 - CASE_W8;
-      this.win = { w: Math.min(full, x0 - 14 - this.board.x - HW), h: Math.min(full, bottom - this.board.y - HH) };
+      this.win = {
+        w: Math.min(full, x0 - 14 - this.board.x - HW),
+        h: Math.min(full, bottom - this.board.y - HH),
+      };
       const pitch = Math.min(LINE_H + 16, Math.floor((bottom - 146) / Math.max(1, n)));
       this.clueCards.forEach((c, i) => c.position.set(x0, 146 + i * pitch));
       this.help.position.set(safe.x + 80, Math.min(470, v.h - 300));
@@ -679,7 +924,12 @@ class MysteryGrid implements Game {
   inView(square: number) {
     if (!this.slides) return true;
     const { x, y } = this.cellAt(square);
-    return x - this.scrollX >= HW && x - this.scrollX + C <= HW + this.win.w && y - this.scrollY >= HH && y - this.scrollY + C <= HH + this.win.h;
+    return (
+      x - this.scrollX >= HW &&
+      x - this.scrollX + C <= HW + this.win.w &&
+      y - this.scrollY >= HH &&
+      y - this.scrollY + C <= HH + this.win.h
+    );
   }
 
   /** Slide so a square is in the middle of the window (as near as the edges allow), unless it is already in view. */
@@ -749,8 +999,20 @@ class MysteryGrid implements Game {
     const s = shapeOf(b);
     for (const c of this.critters) this.ctx.untrack(c);
     this.critters = [];
-    const keep = new Set<Container>([this.glowLayer, this.markLayer, this.faces, this.body, this.colStrip, this.rowStrip, this.bodyMask, this.colMask, this.rowMask, this.edges]);
-    for (const layer of [this.board, this.body, this.colStrip, this.rowStrip]) layer.removeChildren().forEach((c) => !keep.has(c) && c.destroy({ children: true }));
+    const keep = new Set<Container>([
+      this.glowLayer,
+      this.markLayer,
+      this.faces,
+      this.body,
+      this.colStrip,
+      this.rowStrip,
+      this.bodyMask,
+      this.colMask,
+      this.rowMask,
+      this.edges,
+    ]);
+    for (const layer of [this.board, this.body, this.colStrip, this.rowStrip])
+      layer.removeChildren().forEach((c) => !keep.has(c) && c.destroy({ children: true }));
     this.slideDrag = null;
     this.scrollX = this.scrollY = 0;
     this.body.position.set(0, 0);
@@ -777,7 +1039,11 @@ class MysteryGrid implements Game {
     else this.headers(b);
     this.board.addChild(this.colStrip, this.rowStrip);
     // Level 8's window: the body and each header strip clipped to its edge of it.
-    const masks: [Container, Graphics][] = [[this.body, this.bodyMask], [this.colStrip, this.colMask], [this.rowStrip, this.rowMask]];
+    const masks: [Container, Graphics][] = [
+      [this.body, this.bodyMask],
+      [this.colStrip, this.colMask],
+      [this.rowStrip, this.rowMask],
+    ];
     for (const [layer, mask] of masks) {
       layer.mask = b.times ? mask : null;
       if (b.times) this.board.addChild(mask);
@@ -788,7 +1054,11 @@ class MysteryGrid implements Game {
     const cs = this.cs;
     for (let i = 0; i < sizeOf(s); i++) {
       const cell = new Container();
-      cell.addChild(b.case ? card({ fill: 0xffffff, line: swatch.white.line }, C, C, 6) : card({ fill: 0xffffff, line: swatch.white.line }));
+      cell.addChild(
+        b.case
+          ? card({ fill: 0xffffff, line: swatch.white.line }, C, C, 6)
+          : card({ fill: 0xffffff, line: swatch.white.line }),
+      );
       cell.position.copyFrom(this.cellAt(i));
       cell.hitArea = new Rectangle(0, 0, cs, cs);
       onTap(cell, () => this.tapSquare(i), { cooldown: 150 });
@@ -797,7 +1067,9 @@ class MysteryGrid implements Game {
     }
     this.body.addChild(this.markLayer, this.faces);
     b.clues.forEach((c) => {
-      const cc = b.case ? new ClueCard(c, b, written(...caseLine(c, b)), b.times ? CASE_W8 : CASE_W) : new ClueCard(c, b);
+      const cc = b.case
+        ? new ClueCard(c, b, written(...caseLine(c, b)), b.times ? CASE_W8 : CASE_W)
+        : new ClueCard(c, b);
       onTap(cc, () => this.tapClue(cc), { cooldown: 400 });
       this.clueCards.push(cc);
       this.clueRow.addChild(cc);
@@ -875,7 +1147,17 @@ class MysteryGrid implements Game {
     basket.position.set(HW / 2, HH / 2 + 8);
     corner.addChild(basket);
     this.board.addChild(corner);
-    const head = (fill: { light: number; line: number }, x: number, y: number, w: number, h: number, art: Container, name: string, onPress: () => void, across: boolean) => {
+    const head = (
+      fill: { light: number; line: number },
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      art: Container,
+      name: string,
+      onPress: () => void,
+      across: boolean,
+    ) => {
       const c = new Container();
       c.addChild(card({ fill: fill.light, line: fill.line }, w, h, 10));
       art.eventMode = 'none';
@@ -903,20 +1185,57 @@ class MysteryGrid implements Game {
           this.headDown(e);
         });
         c.on('globalpointermove', (e) => this.headMove(e));
-        for (const ev of ['pointerup', 'pointerupoutside', 'pointercancel'] as const) c.on(ev, (e) => this.headUp(e, onPress));
+        for (const ev of ['pointerup', 'pointerupoutside', 'pointercancel'] as const)
+          c.on(ev, (e) => this.headUp(e, onPress));
       } else onTap(c, onPress, { cooldown: 300 });
       (across ? this.colStrip : this.rowStrip).addChild(c);
       return c;
     };
     const small = (a: Container, k: number) => (a.scale.set(a.scale.x * k), a);
-    b.places.forEach((p, i) => head(swatch.green, this.colX(i), 0, C, HH, small(placeArt(p), 0.5), p, () => this.tapPlace(i), true));
-    b.items!.forEach((it, i) => head(swatch.orange, this.colX(i, 1), 0, C, HH, small(itemArt(it), 0.6), it, () => this.tapItem(i), true));
-    b.items!.forEach((it, i) => head(swatch.orange, 0, this.rowY(i, 2), HW, C, small(itemArt(it), 0.55), it, () => this.tapItem(i), false));
+    b.places.forEach((p, i) =>
+      head(swatch.green, this.colX(i), 0, C, HH, small(placeArt(p), 0.5), p, () => this.tapPlace(i), true),
+    );
+    b.items!.forEach((it, i) =>
+      head(
+        swatch.orange,
+        this.colX(i, 1),
+        0,
+        C,
+        HH,
+        small(itemArt(it), 0.6),
+        it,
+        () => this.tapItem(i),
+        true,
+      ),
+    );
+    b.items!.forEach((it, i) =>
+      head(
+        swatch.orange,
+        0,
+        this.rowY(i, 2),
+        HW,
+        C,
+        small(itemArt(it), 0.55),
+        it,
+        () => this.tapItem(i),
+        false,
+      ),
+    );
     b.friends.forEach((f, i) => {
       const cr = this.ctx.track(friendArt(f, 0.17));
       if (b.hats) cr.attach(hatArt(b.hats[i]));
       // The critter stands on its feet: lift it so its middle sits on the row.
-      const h = head(swatch.purple, 0, this.rowY(i), HW, C, new Container(), nameOf(f), () => this.tapFriend(i), false);
+      const h = head(
+        swatch.purple,
+        0,
+        this.rowY(i),
+        HW,
+        C,
+        new Container(),
+        nameOf(f),
+        () => this.tapFriend(i),
+        false,
+      );
       cr.position.set(24, C - 6);
       cr.eventMode = 'none';
       h.addChild(cr);
@@ -950,12 +1269,26 @@ class MysteryGrid implements Game {
           this.faces.addChild(face);
         }
         const [cx, cy] = P(76, 26);
-        g.circle(cx, cy, 18 * k).fill(swatch.green.fill).moveTo(...P(68, 26)).lineTo(...P(74, 33)).lineTo(...P(85, 19)).stroke({ width: 5 * k, color: 0xffffff, cap: 'round', join: 'round' });
+        g.circle(cx, cy, 18 * k)
+          .fill(swatch.green.fill)
+          .moveTo(...P(68, 26))
+          .lineTo(...P(74, 33))
+          .lineTo(...P(85, 19))
+          .stroke({ width: 5 * k, color: 0xffffff, cap: 'round', join: 'round' });
       } else if (m.mark === CROSSED) {
         const a = m.auto ? 0.3 : 0.85;
-        g.moveTo(...P(28, 28)).lineTo(...P(72, 72)).moveTo(...P(72, 28)).lineTo(...P(28, 72)).stroke({ width: 9 * k, color: swatch.red.line, alpha: a, cap: 'round' });
+        g.moveTo(...P(28, 28))
+          .lineTo(...P(72, 72))
+          .moveTo(...P(72, 28))
+          .lineTo(...P(28, 72))
+          .stroke({ width: 9 * k, color: swatch.red.line, alpha: a, cap: 'round' });
       }
-      if (this.rings.has(i)) g.roundRect(...P(2, 2), (SQ - 4) * k, (SQ - 4) * k, 16 * k).stroke({ width: 6 * k, color: swatch.red.fill, alpha: 0.8 });
+      if (this.rings.has(i))
+        g.roundRect(...P(2, 2), (SQ - 4) * k, (SQ - 4) * k, 16 * k).stroke({
+          width: 6 * k,
+          color: swatch.red.fill,
+          alpha: 0.8,
+        });
     });
     this.drawGlow();
   }
@@ -965,19 +1298,23 @@ class MysteryGrid implements Game {
     const g = this.glowLayer.clear();
     const b = this.current;
     if (!b || this.phase !== 'grid') return;
-    const target = this.pulse ?? (this.boardMisses >= 2 ? nextStep(b, this.marks)?.square ?? null : null);
+    const target = this.pulse ?? (this.boardMisses >= 2 ? (nextStep(b, this.marks)?.square ?? null) : null);
     if (target === null) return;
     const { x, y } = this.cellAt(target);
     const a = 0.55 + 0.35 * Math.sin(this.clock * 5);
     const pad = this.current?.case ? 6 : 12;
-    g.roundRect(x - pad, y - pad, this.cs + 2 * pad, this.cs + 2 * pad, 2 * pad + 2).fill({ color: 0xfff3a0, alpha: a });
+    g.roundRect(x - pad, y - pad, this.cs + 2 * pad, this.cs + 2 * pad, 2 * pad + 2).fill({
+      color: 0xfff3a0,
+      alpha: a,
+    });
   }
 
   private lightClues(ids: number[]) {
     this.clueCards.forEach((c, i) => (c.glow.visible = ids.includes(i)));
     const b = this.current;
     // One written clue at a time, so a step behind several clues never runs the caption off the screen.
-    if (b && captioned(b) && ids.length) this.caption.text = written(...this.clueLine(b.clues[ids[0]], b, 'clue'));
+    if (b && captioned(b) && ids.length)
+      this.caption.text = written(...this.clueLine(b.clues[ids[0]], b, 'clue'));
   }
 
   // Taps ---------------------------------------------------------------------------------
@@ -1025,7 +1362,8 @@ class MysteryGrid implements Game {
       this.lightClues([against[0]]);
       void this.sayClue(b.clues[against[0]], b, 'remind');
       // A full grid's wrong yeses lift too; this mark already counted, so no second miss.
-      if (fullWrong(b, this.marks)) for (const s of wrongSquares(b, this.marks)) if (this.marks[s] === FILLED) this.marks[s] = EMPTY;
+      if (fullWrong(b, this.marks))
+        for (const s of wrongSquares(b, this.marks)) if (this.marks[s] === FILLED) this.marks[s] = EMPTY;
       this.drawMarks();
       return;
     }
@@ -1144,9 +1482,26 @@ class MysteryGrid implements Game {
     this.critters[who]?.cheer();
     const at = this.friendCards[who];
     const half = b.case ? { x: HW / 2, y: C / 2 } : { x: SQ / 2, y: SQ / 2 };
-    this.ctx.particles.burst(this.board.x + at.x + half.x, this.board.y + at.y + this.rowStrip.y + half.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
-    if (b.times) await this.ctx.say('lg.reveal.basket.time', { friend: nameOf(b.friends[who]), place: b.places[b.solution[who]], when: WHEN[b.items![b.having![who]] as Time] });
-    else await this.ctx.say(this.line('reveal'), { friend: nameOf(b.friends[who]), place: b.places[b.solution[who]], item: b.items?.[b.having![who]] ?? '' });
+    this.ctx.particles.burst(this.board.x + at.x + half.x, this.board.y + at.y + this.rowStrip.y + half.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.orange.light],
+      count: 16,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
+    if (b.times)
+      await this.ctx.say('lg.reveal.basket.time', {
+        friend: nameOf(b.friends[who]),
+        place: b.places[b.solution[who]],
+        when: WHEN[b.items![b.having![who]] as Time],
+      });
+    else
+      await this.ctx.say(this.line('reveal'), {
+        friend: nameOf(b.friends[who]),
+        place: b.places[b.solution[who]],
+        item: b.items?.[b.having![who]] ?? '',
+      });
     if (this.finished) return;
     this.index++;
     this.pie.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -1167,7 +1522,7 @@ class MysteryGrid implements Game {
     const b = this.current;
     if (!b || this.busy || this.finished) return;
     if (this.pending) this.settle();
-    if (this.busy || this.phase === 'grid' && solved(b, this.marks)) return;
+    if (this.busy || (this.phase === 'grid' && solved(b, this.marks))) return;
     if (this.phase === 'answer') {
       if (this.pointed) return void this.found();
       this.hints++;
@@ -1201,18 +1556,30 @@ class MysteryGrid implements Game {
     const snack = blockOf(s, st.square) === 2;
     const when = (t: number) => WHEN[b.items![t] as Time];
     if (b.times && st.why === 'link') void this.ctx.say('lg.link.time');
-    else if (b.times && st.why === 'last' && snack) void this.ctx.say('lg.last.time', { when: when(rowOf(s, st.square)) });
-    else if (b.times && st.why === 'col' && snack) void this.ctx.say('lg.last.timeplace', { place: b.places[colOf(s, st.square)] });
-    else if (b.times && st.why === 'last' && item) void this.ctx.say('lg.last.when', { friend: nameOf(b.friends[rowOf(s, st.square)]) });
-    else if (b.times && st.why === 'col' && item) void this.ctx.say('lg.last.whenfriend', { when: when(colOf(s, st.square)) });
-    else if (st.why === 'order' || st.why === 'pair') void this.sayClue(b.clues[st.clues.find((i) => b.clues[i].kind === st.why)!], b);
+    else if (b.times && st.why === 'last' && snack)
+      void this.ctx.say('lg.last.time', { when: when(rowOf(s, st.square)) });
+    else if (b.times && st.why === 'col' && snack)
+      void this.ctx.say('lg.last.timeplace', { place: b.places[colOf(s, st.square)] });
+    else if (b.times && st.why === 'last' && item)
+      void this.ctx.say('lg.last.when', { friend: nameOf(b.friends[rowOf(s, st.square)]) });
+    else if (b.times && st.why === 'col' && item)
+      void this.ctx.say('lg.last.whenfriend', { when: when(colOf(s, st.square)) });
+    else if (st.why === 'order' || st.why === 'pair')
+      void this.sayClue(b.clues[st.clues.find((i) => b.clues[i].kind === st.why)!], b);
     else if (st.why === 'link') void this.ctx.say('lg.link');
-    else if (st.why === 'last' && snack) void this.ctx.say('lg.last.snack', { item: b.items![rowOf(s, st.square)] });
-    else if (st.why === 'col' && snack) void this.ctx.say('lg.last.snackplace', { place: b.places[colOf(s, st.square)] });
-    else if (st.why === 'last') void this.ctx.say(item ? 'lg.last.thing' : 'lg.last', { friend: nameOf(b.friends[rowOf(s, st.square)]) });
-    else if (st.why === 'col' && item) void this.ctx.say('lg.last.item', { item: b.items![colOf(s, st.square)] });
+    else if (st.why === 'last' && snack)
+      void this.ctx.say('lg.last.snack', { item: b.items![rowOf(s, st.square)] });
+    else if (st.why === 'col' && snack)
+      void this.ctx.say('lg.last.snackplace', { place: b.places[colOf(s, st.square)] });
+    else if (st.why === 'last')
+      void this.ctx.say(item ? 'lg.last.thing' : 'lg.last', {
+        friend: nameOf(b.friends[rowOf(s, st.square)]),
+      });
+    else if (st.why === 'col' && item)
+      void this.ctx.say('lg.last.item', { item: b.items![colOf(s, st.square)] });
     else if (st.why === 'col') void this.ctx.say('lg.last.place', { place: b.places[colOf(s, st.square)] });
-    else if (st.why === 'apart') void this.sayClue(b.clues[st.clues.find((i) => b.clues[i].kind === 'apart')!], b);
+    else if (st.why === 'apart')
+      void this.sayClue(b.clues[st.clues.find((i) => b.clues[i].kind === 'apart')!], b);
     else void this.sayClue(b.clues[st.clues[0]], b);
   }
 
@@ -1229,7 +1596,11 @@ class MysteryGrid implements Game {
     }
     // Level 7's 48 squares: the case file's demo taps the rule solver's yeses in order, since each yes crosses its own row
     // and column; the full step list takes over if a mark of hers is left in the way.
-    const yes = b.case ? solveSteps(shapeOf(b), b.clues).steps.find((x) => x.mark === FILLED && this.marks[x.square] !== FILLED) : undefined;
+    const yes = b.case
+      ? solveSteps(shapeOf(b), b.clues).steps.find(
+          (x) => x.mark === FILLED && this.marks[x.square] !== FILLED,
+        )
+      : undefined;
     const st = yes ?? nextStep(b, this.marks);
     if (!st) return null;
     this.reveal(st.square);
@@ -1249,7 +1620,8 @@ class MysteryGrid implements Game {
   wrongYes() {
     const b = this.current!;
     const s = shapeOf(b);
-    for (let i = 0; i < sizeOf(s); i++) if (this.marks[i] === EMPTY && contradicts(b, i, FILLED).length) return i;
+    for (let i = 0; i < sizeOf(s); i++)
+      if (this.marks[i] === EMPTY && contradicts(b, i, FILLED).length) return i;
     return -1;
   }
 
@@ -1269,11 +1641,19 @@ function miniGrid(): Container {
   const g = new Graphics();
   for (let r = 0; r < 3; r++) {
     for (let col = 0; col < 3; col++) {
-      const x = -96 + col * 68, y = -96 + r * 68;
-      g.roundRect(x, y, 60, 60, 10).fill(r === 0 && col === 0 ? 0xfffbe6 : 0xffffff).stroke({ width: 4, color: swatch.purple.line });
+      const x = -96 + col * 68,
+        y = -96 + r * 68;
+      g.roundRect(x, y, 60, 60, 10)
+        .fill(r === 0 && col === 0 ? 0xfffbe6 : 0xffffff)
+        .stroke({ width: 4, color: swatch.purple.line });
       if (r === 0 || col === 0) continue;
       if ((r + col) % 3 === 0) g.circle(x + 30, y + 30, 16).fill(swatch.green.fill);
-      else g.moveTo(x + 18, y + 18).lineTo(x + 42, y + 42).moveTo(x + 42, y + 18).lineTo(x + 18, y + 42).stroke({ width: 7, color: swatch.red.line, cap: 'round' });
+      else
+        g.moveTo(x + 18, y + 18)
+          .lineTo(x + 42, y + 42)
+          .moveTo(x + 42, y + 18)
+          .lineTo(x + 18, y + 42)
+          .stroke({ width: 7, color: swatch.red.line, cap: 'round' });
     }
   }
   c.addChild(g);
@@ -1287,7 +1667,12 @@ function miniGrid(): Container {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-80, -80, 160, 160, 24).fill(0xffffff).stroke({ width: 7, color: swatch.purple.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-80, -80, 160, 160, 24)
+      .fill(0xffffff)
+      .stroke({ width: 7, color: swatch.purple.line }),
+  );
   const f = friendArt(rng.pick<CritterName>(['cat', 'duck', 'bear', 'dog', 'bunny', 'pig']), 0.48);
   f.alive = false;
   f.position.set(-10, 72);

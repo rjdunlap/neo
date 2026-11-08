@@ -12,9 +12,44 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  accepted, answer, CARD_H, CARD_W, check, CHECK_H, CHECK_W, colX, contacts, glowing, help, informativeColumn, inPuddle, LENS_R, makeRound,
-  MOVEMENTS, nearestCol, observed, orderedCols, planFor, PLAY_R, remaining, roundState, rowY, SLOT_H, SLOT_W, stamp, trackLayout,
-  type CardId, type Contact, type Heading, type Mark, type Mismatch, type MoveId, type Observed, type Rect, type Round, type RoundState,
+  accepted,
+  answer,
+  CARD_H,
+  CARD_W,
+  check,
+  CHECK_H,
+  CHECK_W,
+  colX,
+  contacts,
+  glowing,
+  help,
+  informativeColumn,
+  inPuddle,
+  LENS_R,
+  makeRound,
+  MOVEMENTS,
+  nearestCol,
+  observed,
+  orderedCols,
+  planFor,
+  PLAY_R,
+  remaining,
+  roundState,
+  rowY,
+  SLOT_H,
+  SLOT_W,
+  stamp,
+  trackLayout,
+  type CardId,
+  type Contact,
+  type Heading,
+  type Mark,
+  type Mismatch,
+  type MoveId,
+  type Observed,
+  type Rect,
+  type Round,
+  type RoundState,
   type TrackLayout,
 } from './logic';
 
@@ -36,7 +71,8 @@ const STEPS = [5, 7, 9, 10, 12, 14, 15, 17];
 /** A footprint pad about 70 units across with three toes on the side it points to. */
 function drawPad(g: Graphics, x: number, y: number, heading: Heading, color: number, alpha = 1, s = 1) {
   g.ellipse(x - heading * 6 * s, y, 24 * s, 18 * s).fill({ color, alpha });
-  for (const dy of [-13, 0, 13]) g.circle(x + heading * (24 - Math.abs(dy) * 0.3) * s, y + dy * s, 6.5 * s).fill({ color, alpha });
+  for (const dy of [-13, 0, 13])
+    g.circle(x + heading * (24 - Math.abs(dy) * 0.3) * s, y + dy * s, 6.5 * s).fill({ color, alpha });
 }
 
 /** The mud walker: a plain gray two-footed silhouette with a nub on the side it walks toward. No face. */
@@ -44,14 +80,27 @@ function drawWalker(g: Graphics, heading: Heading, lift = 0) {
   g.clear();
   g.ellipse(0, 6, 22, 6).fill({ color: ink, alpha: 0.12 });
   const y = -lift;
-  g.moveTo(-10, y - 6).lineTo(-12, y + 6).moveTo(10, y - 6).lineTo(12, y + 6).stroke({ width: 7, color: GHOST, cap: 'round' });
-  g.ellipse(0, y - 34, 28, 30).fill(GHOST).stroke({ width: 4, color: 0x6f6f80 });
-  g.ellipse(heading * 26, y - 44, 12, 8).fill(GHOST).stroke({ width: 3, color: 0x6f6f80 });
+  g.moveTo(-10, y - 6)
+    .lineTo(-12, y + 6)
+    .moveTo(10, y - 6)
+    .lineTo(12, y + 6)
+    .stroke({ width: 7, color: GHOST, cap: 'round' });
+  g.ellipse(0, y - 34, 28, 30)
+    .fill(GHOST)
+    .stroke({ width: 4, color: 0x6f6f80 });
+  g.ellipse(heading * 26, y - 44, 12, 8)
+    .fill(GHOST)
+    .stroke({ width: 3, color: 0x6f6f80 });
 }
 
 /** A card's short label (the pet speaks the full name). */
 const SHORT: Record<MoveId, string> = {
-  walk: 'walked', hop: 'hopped', 'walk-back': 'walked back', 'hop-back': 'hopped back', 'walk-stand-walk': 'walked, stopped', 'walk-then-hop': 'walked, hopped',
+  walk: 'walked',
+  hop: 'hopped',
+  'walk-back': 'walked back',
+  'hop-back': 'hopped back',
+  'walk-stand-walk': 'walked, stopped',
+  'walk-then-hop': 'walked, hopped',
 };
 
 /** A card's little picture: the movement's prints on a short strip, with an arrow the way it went. */
@@ -59,16 +108,23 @@ function miniPrints(id: MoveId): Graphics {
   const g = new Graphics();
   const m = MOVEMENTS[id];
   const cols = id === 'walk-then-hop' ? 8 : 6;
-  const cw = 120 / cols, s = id === 'walk-then-hop' ? 0.3 : 0.38;
+  const cw = 120 / cols,
+    s = id === 'walk-then-hop' ? 0.3 : 0.38;
   g.roundRect(-64, -34, 128, 68, 10).fill(MUD);
-  for (const mk of stamp(m, cols)) drawPad(g, -60 + (mk.col + 0.5) * cw, mk.row === 0 ? -20 : 2, mk.heading, MUD_DARK, 1, s);
+  for (const mk of stamp(m, cols))
+    drawPad(g, -60 + (mk.col + 0.5) * cw, mk.row === 0 ? -20 : 2, mk.heading, MUD_DARK, 1, s);
   if (id === 'walk-stand-walk') {
     // A little pause sign over the middle: two bars, where it stood to look.
     const x = -60 + 4 * cw;
-    g.roundRect(x - 7, -32, 5, 12, 2).roundRect(x + 2, -32, 5, 12, 2).fill(ink);
+    g.roundRect(x - 7, -32, 5, 12, 2)
+      .roundRect(x + 2, -32, 5, 12, 2)
+      .fill(ink);
   }
-  const ay = 22, h = m.heading;
-  g.moveTo(-26 * h, ay).lineTo(24 * h, ay).stroke({ width: 4, color: 0xffffff, alpha: 0.85, cap: 'round' });
+  const ay = 22,
+    h = m.heading;
+  g.moveTo(-26 * h, ay)
+    .lineTo(24 * h, ay)
+    .stroke({ width: 4, color: 0xffffff, alpha: 0.85, cap: 'round' });
   g.poly([22 * h, ay - 7, 32 * h, ay, 22 * h, ay + 7]).fill({ color: 0xffffff, alpha: 0.85 });
   return g;
 }
@@ -81,28 +137,58 @@ function cantTellArt(): Graphics {
     g.ellipse(x + 18, -16, 8, 6).fill({ color: GHOST, alpha: 0.75 });
   }
   g.circle(0, -42, 4).fill(ink);
-  g.moveTo(-10, -6).quadraticCurveTo(-10, -26, 2, -26).quadraticCurveTo(14, -26, 12, -14).quadraticCurveTo(10, -6, 0, 0).lineTo(0, 10).stroke({ width: 6, color: swatch.purple.line, cap: 'round' });
+  g.moveTo(-10, -6)
+    .quadraticCurveTo(-10, -26, 2, -26)
+    .quadraticCurveTo(14, -26, 12, -14)
+    .quadraticCurveTo(10, -6, 0, 0)
+    .lineTo(0, 10)
+    .stroke({ width: 6, color: swatch.purple.line, cap: 'round' });
   g.circle(0, 24, 4.5).fill(swatch.purple.line);
   return g;
 }
 
 function playIcon(): Container {
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, PLAY_R).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line }).poly([-14, -20, 22, 0, -14, 20]).fill(0xffffff));
+  c.addChild(
+    new Graphics()
+      .circle(0, 0, PLAY_R)
+      .fill(swatch.blue.fill)
+      .stroke({ width: 5, color: swatch.blue.line })
+      .poly([-14, -20, 22, 0, -14, 20])
+      .fill(0xffffff),
+  );
   c.hitArea = new Rectangle(-PLAY_R, -PLAY_R, 2 * PLAY_R, 2 * PLAY_R);
   return c;
 }
 
 /* The game --------------------------------------------------------------------------------------- */
 
-interface CardNode { id: CardId; node: Container; face: Container; play: Container | null }
-interface Replay { id: MoveId; t: number; heard: number; slow?: boolean }
+interface CardNode {
+  id: CardId;
+  node: Container;
+  face: Container;
+  play: Container | null;
+}
+interface Replay {
+  id: MoveId;
+  t: number;
+  heard: number;
+  slow?: boolean;
+}
 
 const MOVE_LINE: Record<MoveId, LineId> = {
-  walk: 'trackway-tales.fits-walk', 'walk-stand-walk': 'trackway-tales.fits-walk', hop: 'trackway-tales.fits-hop',
-  'walk-back': 'trackway-tales.fits-back', 'hop-back': 'trackway-tales.fits-back', 'walk-then-hop': 'trackway-tales.fits-switch',
+  walk: 'trackway-tales.fits-walk',
+  'walk-stand-walk': 'trackway-tales.fits-walk',
+  hop: 'trackway-tales.fits-hop',
+  'walk-back': 'trackway-tales.fits-back',
+  'hop-back': 'trackway-tales.fits-back',
+  'walk-then-hop': 'trackway-tales.fits-switch',
 };
-const MISMATCH_LINE: Record<Mismatch, LineId> = { extra: 'trackway-tales.extra-mark', missing: 'trackway-tales.missing-mark', toe: 'trackway-tales.wrong-toe' };
+const MISMATCH_LINE: Record<Mismatch, LineId> = {
+  extra: 'trackway-tales.extra-mark',
+  missing: 'trackway-tales.missing-mark',
+  toe: 'trackway-tales.wrong-toe',
+};
 
 class TrackwayTales implements Game {
   readonly hintLabel = 'Show a hint';
@@ -143,7 +229,18 @@ class TrackwayTales implements Game {
   cards: CardNode[] = [];
   readonly slotNode = new Container();
   private readonly slotArt = new Container();
-  private readonly slotLabel = new Text({ text: '', style: { fontFamily: FONT, fontSize: 22, fontWeight: '700', fill: swatch.green.line, align: 'center', wordWrap: true, wordWrapWidth: SLOT_W - 16 } });
+  private readonly slotLabel = new Text({
+    text: '',
+    style: {
+      fontFamily: FONT,
+      fontSize: 22,
+      fontWeight: '700',
+      fill: swatch.green.line,
+      align: 'center',
+      wordWrap: true,
+      wordWrapWidth: SLOT_W - 16,
+    },
+  });
   readonly checkBtn = new Container();
   private readonly glow = new Graphics();
   private readonly lens = new Container();
@@ -151,7 +248,9 @@ class TrackwayTales implements Game {
   private scrubId: number | null = null;
   private t = 0;
   private destroyed = false;
-  private readonly onWindowUp = (e: PointerEvent) => { if (e.pointerId === this.scrubId) this.scrubId = null; };
+  private readonly onWindowUp = (e: PointerEvent) => {
+    if (e.pointerId === this.scrubId) this.scrubId = null;
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -166,7 +265,16 @@ class TrackwayTales implements Game {
     const s = ctx.stage;
     this.bg.eventMode = 'static';
     this.bg.on('pointerdown', () => this.closeLens());
-    for (const g of [this.strips, this.ghostPrints, this.overlay, this.lit, this.puddles, this.walker, this.glow]) g.eventMode = 'none';
+    for (const g of [
+      this.strips,
+      this.ghostPrints,
+      this.overlay,
+      this.lit,
+      this.puddles,
+      this.walker,
+      this.glow,
+    ])
+      g.eventMode = 'none';
     this.lens.eventMode = 'none';
     this.lens.addChild(this.lensArt);
     this.lens.visible = false;
@@ -179,20 +287,48 @@ class TrackwayTales implements Game {
     this.ctx.listen(window, 'pointercancel', this.onWindowUp, true);
     onTap(this.mudArea, (e) => this.tapMud(e), { cooldown: 200 });
 
-    s.addChild(this.bg, this.strips, this.lit, this.ghostPrints, this.overlay, this.puddles, this.walker, this.scrubArea, this.mudArea, this.cardLayer, this.slotNode, this.checkBtn, this.glow, this.lens);
+    s.addChild(
+      this.bg,
+      this.strips,
+      this.lit,
+      this.ghostPrints,
+      this.overlay,
+      this.puddles,
+      this.walker,
+      this.scrubArea,
+      this.mudArea,
+      this.cardLayer,
+      this.slotNode,
+      this.checkBtn,
+      this.glow,
+      this.lens,
+    );
     this.buildCards();
     this.buildBoard();
     this.layout();
     if (this.round.magnified) this.openLens(this.round.magnified, false);
   }
 
-  get misses() { return this.state.misses; }
-  get hints() { return this.state.hints; }
-  get level() { return this.round.c.level; }
+  get misses() {
+    return this.state.misses;
+  }
+  get hints() {
+    return this.state.hints;
+  }
+  get level() {
+    return this.round.c.level;
+  }
 
   start() {
-    const line: LineId = this.level >= 3 ? 'trackway-tales.instruct-puddle' : this.level === 2 ? 'trackway-tales.instruct-toes' : 'trackway-tales.intro';
-    void this.ctx.instruct(line).then(() => { if (!this.destroyed && this.level === 1) void this.ctx.say('trackway-tales.mud-dried'); });
+    const line: LineId =
+      this.level >= 3
+        ? 'trackway-tales.instruct-puddle'
+        : this.level === 2
+          ? 'trackway-tales.instruct-toes'
+          : 'trackway-tales.intro';
+    void this.ctx.instruct(line).then(() => {
+      if (!this.destroyed && this.level === 1) void this.ctx.say('trackway-tales.mud-dried');
+    });
     this.busy = false;
   }
 
@@ -203,10 +339,26 @@ class TrackwayTales implements Game {
       const node = new Container();
       const face = new Container();
       const cant = id === 'cant-tell';
-      face.addChild(new Graphics().roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18).fill(0xffffff).stroke({ width: 5, color: cant ? swatch.purple.line : wood.line }));
+      face.addChild(
+        new Graphics()
+          .roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: cant ? swatch.purple.line : wood.line }),
+      );
       const art = cant ? cantTellArt() : miniPrints(id);
       art.y = cant ? -40 : -80;
-      const label = new Text({ text: cant ? "Can't tell" : SHORT[id], style: { fontFamily: FONT, fontSize: 18, fontWeight: '700', fill: ink, align: 'center', wordWrap: true, wordWrapWidth: CARD_W - 14 } });
+      const label = new Text({
+        text: cant ? "Can't tell" : SHORT[id],
+        style: {
+          fontFamily: FONT,
+          fontSize: 18,
+          fontWeight: '700',
+          fill: ink,
+          align: 'center',
+          wordWrap: true,
+          wordWrapWidth: CARD_W - 14,
+        },
+      });
       label.anchor.set(0.5, 0);
       label.y = cant ? 30 : -40;
       face.addChild(art, label);
@@ -228,18 +380,49 @@ class TrackwayTales implements Game {
   }
 
   private buildBoard() {
-    const page = new Graphics().roundRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, 16).fill(cream).stroke({ width: 5, color: wood.line });
-    for (let i = 1; i < 5; i++) page.moveTo(-SLOT_W / 2 + 12, -SLOT_H / 2 + i * 28).lineTo(SLOT_W / 2 - 12, -SLOT_H / 2 + i * 28).stroke({ width: 2, color: swatch.blue.light });
+    const page = new Graphics()
+      .roundRect(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H, 16)
+      .fill(cream)
+      .stroke({ width: 5, color: wood.line });
+    for (let i = 1; i < 5; i++)
+      page
+        .moveTo(-SLOT_W / 2 + 12, -SLOT_H / 2 + i * 28)
+        .lineTo(SLOT_W / 2 - 12, -SLOT_H / 2 + i * 28)
+        .stroke({ width: 2, color: swatch.blue.light });
     this.slotLabel.anchor.set(0.5);
     this.slotLabel.y = 48;
     this.slotNode.addChild(page, this.slotArt, this.slotLabel);
     this.slotNode.hitArea = new Rectangle(-SLOT_W / 2, -SLOT_H / 2, SLOT_W, SLOT_H);
-    onTap(this.slotNode, () => { if (!this.busy && this.slot) { this.slot = null; sfx.pop(5); this.drawSlot(); } }, { cooldown: 300 });
+    onTap(
+      this.slotNode,
+      () => {
+        if (!this.busy && this.slot) {
+          this.slot = null;
+          sfx.pop(5);
+          this.drawSlot();
+        }
+      },
+      { cooldown: 300 },
+    );
 
     const b = this.checkBtn;
-    b.addChild(new Graphics().roundRect(-CHECK_W / 2, -CHECK_H / 2, CHECK_W, CHECK_H, 22).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line }));
-    b.addChild(new Graphics().moveTo(-62, 0).lineTo(-50, 14).lineTo(-30, -14).stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' }));
-    const t = new Text({ text: 'Check', style: { fontFamily: FONT, fontSize: 32, fontWeight: '700', fill: 0xffffff } });
+    b.addChild(
+      new Graphics()
+        .roundRect(-CHECK_W / 2, -CHECK_H / 2, CHECK_W, CHECK_H, 22)
+        .fill(swatch.green.fill)
+        .stroke({ width: 5, color: swatch.green.line }),
+    );
+    b.addChild(
+      new Graphics()
+        .moveTo(-62, 0)
+        .lineTo(-50, 14)
+        .lineTo(-30, -14)
+        .stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' }),
+    );
+    const t = new Text({
+      text: 'Check',
+      style: { fontFamily: FONT, fontSize: 32, fontWeight: '700', fill: 0xffffff },
+    });
     t.anchor.set(0.5);
     t.x = 18;
     b.addChild(t);
@@ -248,7 +431,8 @@ class TrackwayTales implements Game {
   }
 
   private layout() {
-    const L = this.L, v = this.view;
+    const L = this.L,
+      v = this.view;
     this.bg.clear().rect(0, 0, v.w, v.h).fill(0xcdeaf7);
     this.bg.rect(0, L.mud.y + 40, v.w, v.h).fill(0xf6e3b4);
     this.bg.hitArea = new Rectangle(0, 0, v.w, v.h);
@@ -268,25 +452,40 @@ class TrackwayTales implements Game {
   /* Drawing ---------------------------------------------------------------------------------------- */
 
   private drawStrips() {
-    const L = this.L, g = this.strips.clear(), c = this.round.c;
-    const strip = (r: Rect, fill: number, line: number) => g.roundRect(r.x - 8, r.y, r.w + 16, r.h, 16).fill(fill).stroke({ width: 4, color: line });
+    const L = this.L,
+      g = this.strips.clear(),
+      c = this.round.c;
+    const strip = (r: Rect, fill: number, line: number) =>
+      g
+        .roundRect(r.x - 8, r.y, r.w + 16, r.h, 16)
+        .fill(fill)
+        .stroke({ width: 4, color: line });
     strip(L.practice, CLEAR, 0xc9c2b0);
     strip(L.mud, MUD, MUD_LINE);
     // Dry cracks in the mud, the same every time.
     for (let i = 0; i < c.cols * 2; i++) {
-      const x = L.mud.x + ((i * 53) % L.mud.w), y = L.mud.y + 18 + ((i * 37) % (L.mud.h - 36));
-      g.moveTo(x, y).lineTo(x + 14, y + 9).lineTo(x + 22, y + 4).stroke({ width: 2, color: MUD_LINE, alpha: 0.7 });
+      const x = L.mud.x + ((i * 53) % L.mud.w),
+        y = L.mud.y + 18 + ((i * 37) % (L.mud.h - 36));
+      g.moveTo(x, y)
+        .lineTo(x + 14, y + 9)
+        .lineTo(x + 22, y + 4)
+        .stroke({ width: 2, color: MUD_LINE, alpha: 0.7 });
     }
     for (let col = 1; col < c.cols; col++) {
       const x = L.mud.x + col * L.colW;
-      g.moveTo(x, L.practice.y + 10).lineTo(x, L.practice.y + L.practice.h - 10).stroke({ width: 1.5, color: 0xd8d0bc });
+      g.moveTo(x, L.practice.y + 10)
+        .lineTo(x, L.practice.y + L.practice.h - 10)
+        .stroke({ width: 1.5, color: 0xd8d0bc });
     }
     for (const m of this.o.marks) drawPad(g, colX(L, m.col), rowY(L.mud, m.row), m.heading, MUD_DARK);
     const p = this.puddles.clear();
     if (c.puddle) {
-      const x0 = L.mud.x + c.puddle.from * L.colW, x1 = L.mud.x + (c.puddle.to + 1) * L.colW;
+      const x0 = L.mud.x + c.puddle.from * L.colW,
+        x1 = L.mud.x + (c.puddle.to + 1) * L.colW;
       for (const r of [L.practice, L.mud]) {
-        p.ellipse((x0 + x1) / 2, r.y + r.h / 2, (x1 - x0) / 2 + 10, r.h / 2 - 6).fill({ color: PUDDLE, alpha: 0.92 }).stroke({ width: 4, color: swatch.blue.line });
+        p.ellipse((x0 + x1) / 2, r.y + r.h / 2, (x1 - x0) / 2 + 10, r.h / 2 - 6)
+          .fill({ color: PUDDLE, alpha: 0.92 })
+          .stroke({ width: 4, color: swatch.blue.line });
         p.ellipse((x0 + x1) / 2 - 20, r.y + r.h / 2 - 22, 30, 8).fill({ color: 0xffffff, alpha: 0.5 });
       }
     }
@@ -295,42 +494,65 @@ class TrackwayTales implements Game {
   /** The contacts of the shown movement, each with its place in the movement's own order. */
   private shownContacts(): { k: number; c: Contact }[] {
     if (!this.shown) return [];
-    const m = MOVEMENTS[this.shown], cols = this.round.c.cols;
+    const m = MOVEMENTS[this.shown],
+      cols = this.round.c.cols;
     return contacts(m, cols).map((c) => ({ k: m.heading === 1 ? c.col : cols - 1 - c.col, c }));
   }
 
   private drawGhost() {
-    const L = this.L, g = this.ghostPrints.clear();
+    const L = this.L,
+      g = this.ghostPrints.clear();
     const cols = this.round.c.cols;
     const heading: Heading = this.shown ? MOVEMENTS[this.shown].heading : 1;
     const along = (k: number) => (heading === 1 ? k : cols - 1 - k);
     if (this.replay) {
       const n = Math.floor(this.replay.t / this.step);
-      this.shownContacts().slice(0, n + 1).forEach(({ c }) => c.marks.forEach((m) => drawPad(g, colX(L, m.col), rowY(L.practice, m.row), m.heading, GHOST, 0.75)));
+      this.shownContacts()
+        .slice(0, n + 1)
+        .forEach(({ c }) =>
+          c.marks.forEach((m) => drawPad(g, colX(L, m.col), rowY(L.practice, m.row), m.heading, GHOST, 0.75)),
+        );
     } else {
-      for (const { k, c } of this.shownContacts()) if (k <= this.pos + 0.5) c.marks.forEach((m) => drawPad(g, colX(L, m.col), rowY(L.practice, m.row), m.heading, GHOST, 0.75));
+      for (const { k, c } of this.shownContacts())
+        if (k <= this.pos + 0.5)
+          c.marks.forEach((m) => drawPad(g, colX(L, m.col), rowY(L.practice, m.row), m.heading, GHOST, 0.75));
     }
     // The walker stands at its place along the strip, or waits at the start.
     const k = this.pos < 0 ? -0.55 : this.pos;
     const x = L.mud.x + (along(k) + 0.5) * L.colW;
-    const hop = this.replay ? this.shownContacts()[Math.floor(this.replay.t / this.step)]?.c.gait === 'hop' : false;
+    const hop = this.replay
+      ? this.shownContacts()[Math.floor(this.replay.t / this.step)]?.c.gait === 'hop'
+      : false;
     const lift = hop ? Math.sin(((this.replay!.t % this.step) / this.step) * Math.PI) * 26 : 0;
     drawWalker(this.walker, heading, lift);
-    this.walker.position.set(Math.max(L.practice.x + 20, Math.min(L.practice.x + L.practice.w - 20, x)), L.practice.y + L.practice.h - 14);
+    this.walker.position.set(
+      Math.max(L.practice.x + 20, Math.min(L.practice.x + L.practice.w - 20, x)),
+      L.practice.y + L.practice.h - 14,
+    );
     this.walker.rotation = this.bow.v > 0 ? Math.sin(this.bow.v * Math.PI) * 0.35 * heading : 0;
   }
 
-  private get step() { return this.replay?.slow ? STEP * 2.2 : STEP; }
+  private get step() {
+    return this.replay?.slow ? STEP * 2.2 : STEP;
+  }
 
   private drawLit() {
-    const L = this.L, g = this.lit.clear();
+    const L = this.L,
+      g = this.lit.clear();
     for (const [col, kind] of this.marksLit) {
       const color = kind === 'green' ? swatch.green.fill : swatch.orange.fill;
-      g.roundRect(colX(L, col) - L.colW / 2 + 6, L.mud.y + 8, L.colW - 12, L.mud.h - 16, 14).fill({ color, alpha: 0.55 }).stroke({ width: 5, color: kind === 'green' ? swatch.green.line : swatch.orange.line });
+      g.roundRect(colX(L, col) - L.colW / 2 + 6, L.mud.y + 8, L.colW - 12, L.mud.h - 16, 14)
+        .fill({ color, alpha: 0.55 })
+        .stroke({ width: 5, color: kind === 'green' ? swatch.green.line : swatch.orange.line });
     }
     if (this.ring !== null) {
       const a = 0.55 + 0.35 * Math.sin(this.t * 5);
-      for (const r of [L.practice, L.mud]) g.roundRect(colX(L, this.ring) - L.colW / 2 + 2, r.y + 2, L.colW - 4, r.h - 4, 14).stroke({ width: 8, color: swatch.yellow.fill, alpha: a });
+      for (const r of [L.practice, L.mud])
+        g.roundRect(colX(L, this.ring) - L.colW / 2 + 2, r.y + 2, L.colW - 4, r.h - 4, 14).stroke({
+          width: 8,
+          color: swatch.yellow.fill,
+          alpha: a,
+        });
     }
   }
 
@@ -359,7 +581,14 @@ class TrackwayTales implements Game {
     if (!target || this.finished) return;
     const a = 0.45 + 0.35 * Math.sin(this.t * 5);
     const c = this.cards.find((x) => x.id === target);
-    if (c) g.roundRect(c.node.x - CARD_W / 2 - 10, c.node.y - CARD_H / 2 - 10, CARD_W + 20, CARD_H + 20, 24).stroke({ width: 10, color: swatch.yellow.fill, alpha: a });
+    if (c)
+      g.roundRect(
+        c.node.x - CARD_W / 2 - 10,
+        c.node.y - CARD_H / 2 - 10,
+        CARD_W + 20,
+        CARD_H + 20,
+        24,
+      ).stroke({ width: 10, color: swatch.yellow.fill, alpha: a });
   }
 
   /* Replay and scrub ------------------------------------------------------------------------------- */
@@ -369,7 +598,10 @@ class TrackwayTales implements Game {
     this.closeLens();
     this.startReplay(id);
     const c = this.cards.find((x) => x.id === id);
-    if (c) void this.ctx.tw.to(c.node.scale, { x: 1.06, y: 1.06 }, { duration: 0.08 }).then(() => this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+    if (c)
+      void this.ctx.tw
+        .to(c.node.scale, { x: 1.06, y: 1.06 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
   }
 
   private startReplay(id: MoveId, slow = false) {
@@ -391,14 +623,18 @@ class TrackwayTales implements Game {
       const c = list[r.heard];
       this.pos = c.k;
       if (c.c.gait === 'walk') sfx.drum(0.35);
-      else if (c.c.gait === 'hop') { sfx.drum(0.4); sfx.drum(0.3); }
+      else if (c.c.gait === 'hop') {
+        sfx.drum(0.4);
+        sfx.drum(0.3);
+      }
     }
     if (n >= list.length) {
       this.replay = null;
       this.pos = this.round.c.cols - 1;
       const firstTime = !this.played.has(r.id);
       this.played.add(r.id);
-      if (firstTime && this.played.size === 1 && !this.busy) void this.ctx.instruct('trackway-tales.instruct-choose');
+      if (firstTime && this.played.size === 1 && !this.busy)
+        void this.ctx.instruct('trackway-tales.instruct-choose');
     }
     this.drawGhost();
   }
@@ -426,7 +662,10 @@ class TrackwayTales implements Game {
     if (!Number.isFinite(p.x)) return;
     const cols = this.round.c.cols;
     const along = (p.x - this.L.mud.x) / this.L.colW - 0.5;
-    const k = Math.max(-0.5, Math.min(cols - 1, MOVEMENTS[this.shown].heading === 1 ? along : cols - 1 - along));
+    const k = Math.max(
+      -0.5,
+      Math.min(cols - 1, MOVEMENTS[this.shown].heading === 1 ? along : cols - 1 - along),
+    );
     const before = Math.round(this.pos);
     this.pos = k;
     if (Math.round(k) !== before) sfx.drum(0.2);
@@ -443,15 +682,23 @@ class TrackwayTales implements Game {
     this.drawSlot();
   }
 
-  private say(id: LineId) { return this.ctx.say(id); }
+  private say(id: LineId) {
+    return this.ctx.say(id);
+  }
 
   /** Slide a movement's prints down onto the mud and light its columns in its order, up to the first that differs. */
   private async sweep(id: MoveId, fast = false): Promise<number | null> {
     const L = this.L;
     const g = this.overlay.clear();
-    for (const m of stamp(MOVEMENTS[id], this.round.c.cols)) if (!inPuddle(m.col, this.round.c.puddle)) drawPad(g, colX(L, m.col), rowY(L.practice, m.row), m.heading, 0xffffff, 0.75);
+    for (const m of stamp(MOVEMENTS[id], this.round.c.cols))
+      if (!inPuddle(m.col, this.round.c.puddle))
+        drawPad(g, colX(L, m.col), rowY(L.practice, m.row), m.heading, 0xffffff, 0.75);
     this.overlay.y = 0;
-    await this.ctx.tw.to(this.overlay, { y: L.mud.y - L.practice.y }, { duration: fast ? 0.25 : 0.45, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      this.overlay,
+      { y: L.mud.y - L.practice.y },
+      { duration: fast ? 0.25 : 0.45, ease: ease.inOutSine },
+    );
     if (this.destroyed) return null;
     let i = 0;
     for (const col of orderedCols(MOVEMENTS[id], this.o)) {
@@ -473,8 +720,16 @@ class TrackwayTales implements Game {
 
   private columnDiffers(id: MoveId, col: number): boolean {
     const key = (m: Mark) => `${m.row}${m.heading}`;
-    const a = stamp(MOVEMENTS[id], this.round.c.cols).filter((m) => m.col === col).map(key).sort().join();
-    const b = this.o.marks.filter((m) => m.col === col).map(key).sort().join();
+    const a = stamp(MOVEMENTS[id], this.round.c.cols)
+      .filter((m) => m.col === col)
+      .map(key)
+      .sort()
+      .join();
+    const b = this.o.marks
+      .filter((m) => m.col === col)
+      .map(key)
+      .sort()
+      .join();
     return a !== b;
   }
 
@@ -491,13 +746,18 @@ class TrackwayTales implements Game {
     const r = check(this.state, card);
     if (r.kind === 'ignored') return;
     if (r.kind === 'empty') {
-      void this.ctx.tw.to(this.slotNode, { rotation: 0.08 }, { duration: 0.08 }).then(() => this.ctx.tw.to(this.slotNode, { rotation: 0 }, { duration: 0.3, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(this.slotNode, { rotation: 0.08 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(this.slotNode, { rotation: 0 }, { duration: 0.3, ease: ease.outBack }));
       void this.say('trackway-tales.empty-slot');
       return;
     }
     this.busy = true;
     this.replay = null;
-    if (r.kind === 'right') { await this.win(r.card); return; }
+    if (r.kind === 'right') {
+      await this.win(r.card);
+      return;
+    }
     if (r.kind === 'wrong') {
       await this.sweep(r.card);
       if (this.destroyed) return;
@@ -518,7 +778,10 @@ class TrackwayTales implements Game {
       this.slot = null;
       this.drawSlot();
       const ct = this.cards.find((x) => x.id === 'cant-tell');
-      if (ct) await this.ctx.tw.to(ct.node, { rotation: 0.1 }, { duration: 0.1 }).then(() => this.ctx.tw.to(ct.node, { rotation: 0 }, { duration: 0.4, ease: ease.outBack }));
+      if (ct)
+        await this.ctx.tw
+          .to(ct.node, { rotation: 0.1 }, { duration: 0.1 })
+          .then(() => this.ctx.tw.to(ct.node, { rotation: 0 }, { duration: 0.4, ease: ease.outBack }));
     } else {
       sfx.boing();
       await this.say('trackway-tales.cant-tell-wrong');
@@ -550,7 +813,7 @@ class TrackwayTales implements Game {
         if (this.destroyed) return;
       }
       await this.sweep(fitsBoth[0]);
-      this.stampText = 'two fit: can\'t tell';
+      this.stampText = "two fit: can't tell";
     } else {
       await this.sweep(card as MoveId);
       this.stampText = 'fits every mark';
@@ -560,7 +823,10 @@ class TrackwayTales implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     this.pos = c.cols - 1;
-    void this.ctx.tw.to(this.bow, { v: 1 }, { duration: 0.7 }).then(() => { this.bow.v = 0; this.drawGhost(); });
+    void this.ctx.tw.to(this.bow, { v: 1 }, { duration: 0.7 }).then(() => {
+      this.bow.v = 0;
+      this.drawGhost();
+    });
     await this.say(card === 'cant-tell' ? 'trackway-tales.fits-cant-tell' : MOVE_LINE[card]);
     if (this.destroyed) return;
     await this.say('trackway-tales.done');
@@ -598,11 +864,16 @@ class TrackwayTales implements Game {
     this.open = m;
     const g = this.lensArt.clear();
     const R = LENS_R;
-    g.circle(0, 0, R + 12).fill(wood.light).stroke({ width: 8, color: wood.line });
+    g.circle(0, 0, R + 12)
+      .fill(wood.light)
+      .stroke({ width: 8, color: wood.line });
     g.circle(0, 0, R).fill(MUD);
     drawPad(g, 0, -10, m.heading, MUD_DARK, 1, 2.6);
-    const ay = 74, h = m.heading;
-    g.moveTo(-40 * h, ay).lineTo(36 * h, ay).stroke({ width: 8, color: ink, alpha: 0.6, cap: 'round' });
+    const ay = 74,
+      h = m.heading;
+    g.moveTo(-40 * h, ay)
+      .lineTo(36 * h, ay)
+      .stroke({ width: 8, color: ink, alpha: 0.6, cap: 'round' });
     g.poly([34 * h, ay - 14, 54 * h, ay, 34 * h, ay + 14]).fill({ color: ink, alpha: 0.6 });
     g.circle(0, 0, R).stroke({ width: 6, color: 0xffffff, alpha: 0.5 });
     this.lens.visible = true;
@@ -671,11 +942,13 @@ class TrackwayTales implements Game {
     // Level 2: move the magnifier to the next mark along, so the toes are shown.
     if (this.level === 2 && this.round.magnified && this.open === this.round.magnified) {
       const m = this.round.magnified;
-      const next = this.o.marks.find((x) => x.col === m.col - m.heading) ?? this.o.marks.find((x) => x !== m)!;
+      const next =
+        this.o.marks.find((x) => x.col === m.col - m.heading) ?? this.o.marks.find((x) => x !== m)!;
       return { tap: { on: this.mudArea, x: colX(L, next.col), y: rowY(L.mud, next.row) }, pause: 1.2 };
     }
     const card = (id: CardId) => this.cards.find((c) => c.id === id)!;
-    for (const c of this.cards) if (c.play && !this.played.has(c.id as MoveId)) return { tap: { on: c.play }, pause: 0.4 };
+    for (const c of this.cards)
+      if (c.play && !this.played.has(c.id as MoveId)) return { tap: { on: c.play }, pause: 0.4 };
     const want = answer(this.round.c);
     if (this.slot !== want) return { tap: { on: card(want).face, x: 0, y: -CARD_H / 2 + 50 }, pause: 0.5 };
     return { tap: { on: this.checkBtn }, pause: 1.5 };
@@ -726,8 +999,10 @@ export const trackwayTales: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
-  coplayHint: 'One of you replays and scrubs while the other chooses a card and taps Check, then swap. At the puddle, each say "can tell" or "can\'t tell" before Check.',
-  offScreen: 'On sand or snow, one of you walks or hops across while the other looks away; then the looker reads the marks and says how. Swap.',
+  coplayHint:
+    'One of you replays and scrubs while the other chooses a card and taps Check, then swap. At the puddle, each say "can tell" or "can\'t tell" before Check.',
+  offScreen:
+    'On sand or snow, one of you walks or hops across while the other looks away; then the looker reads the marks and says how. Swap.',
   touchDemo: true,
   hubIcon: () => new WigglyIcon(trackStrip(false)),
   sticker,

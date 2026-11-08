@@ -1,13 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { COUCH_INFO } from './catalog';
 import {
-  cleanName, COUCH_IDS, completeRound, couchDefaults, decide, isNew, levelFor, markSeen, newParty, nextTier, offers, playerNow, repairCouch, reshuffle,
-  roundToken, seedFor, STOPS, tally, tierOf, UNLOCK_TIERS, unlockedIds, type CouchId, type CouchSave,
+  cleanName,
+  COUCH_IDS,
+  completeRound,
+  couchDefaults,
+  decide,
+  isNew,
+  levelFor,
+  markSeen,
+  newParty,
+  nextTier,
+  offers,
+  playerNow,
+  repairCouch,
+  reshuffle,
+  roundToken,
+  seedFor,
+  STOPS,
+  tally,
+  tierOf,
+  UNLOCK_TIERS,
+  unlockedIds,
+  type CouchId,
+  type CouchSave,
 } from './party';
 import { couchGameById as gameById } from '../games/registry';
 
 const reload = (save: CouchSave) => repairCouch(JSON.parse(JSON.stringify(save)));
-const tripSave = (mode: 'together' | 'faceoff', seed = 239): CouchSave => { const s = couchDefaults(); s.party = newParty(mode, seed); return s; };
+const tripSave = (mode: 'together' | 'faceoff', seed = 239): CouchSave => {
+  const s = couchDefaults();
+  s.party = newParty(mode, seed);
+  return s;
+};
 /** Six made-up games, to exercise choosing three out of many before the catalog is that large. */
 const SIX = ['a', 'b', 'c', 'd', 'e', 'f'] as unknown as CouchId[];
 
@@ -18,7 +43,8 @@ describe('isolated couch trips', () => {
       const choices = offers(save.party!, save.trips);
       expect(new Set(choices)).toEqual(new Set(unlockedIds(save.trips)));
       save.party!.selected = choices[stop % 3];
-      const seed = seedFor(save.party!), token = roundToken(save.party!);
+      const seed = seedFor(save.party!),
+        token = roundToken(save.party!);
       save = reload(save);
       expect(offers(save.party!, save.trips)).toEqual(choices);
       expect(seedFor(save.party!)).toBe(seed);
@@ -32,26 +58,48 @@ describe('isolated couch trips', () => {
   });
 
   it('cannot settle an abandoned selection and only schedules supported game levels', () => {
-    const save = tripSave('together'); save.party!.selected = 'penguin-slide';
-    const token = roundToken(save.party!); save.party!.selected = 'bounce-back';
+    const save = tripSave('together');
+    save.party!.selected = 'penguin-slide';
+    const token = roundToken(save.party!);
+    save.party!.selected = 'bounce-back';
     expect(completeRound(save, token, { misses: 0, hints: 0 })).toBe(false);
-    for (const id of COUCH_IDS) for (let stop = 0; stop < 6; stop++) {
-      const mod = gameById(id)!, level = levelFor(id, stop);
-      expect(mod.bands.some(b => level >= mod.levels(b).min && level <= mod.levels(b).max)).toBe(true);
-    }
+    for (const id of COUCH_IDS)
+      for (let stop = 0; stop < 6; stop++) {
+        const mod = gameById(id)!,
+          level = levelFor(id, stop);
+        expect(mod.bands.some((b) => level >= mod.levels(b).min && level <= mod.levels(b).max)).toBe(true);
+      }
   });
 
   it('repairs malformed data without importing a child save, and bounds history without losing sticker counts', () => {
     expect(repairCouch({ version: 99, stickers: [], profile: { name: 'child' } })).toEqual(couchDefaults());
-    const out = repairCouch({ version: 1, trips: -5, party: { seed: 8, selected: 'other', rounds: Array(100).fill({ id: 'penguin-slide', misses: -4, hints: NaN, seed: 7, level: 999 }) }, stickers: { 'penguin-slide': { count: 500, seed: 3 }, other: { count: 5 } } });
+    const out = repairCouch({
+      version: 1,
+      trips: -5,
+      party: {
+        seed: 8,
+        selected: 'other',
+        rounds: Array(100).fill({ id: 'penguin-slide', misses: -4, hints: NaN, seed: 7, level: 999 }),
+      },
+      stickers: { 'penguin-slide': { count: 500, seed: 3 }, other: { count: 5 } },
+    });
     expect(out.party!.rounds).toHaveLength(6);
     expect(out.party!.selected).toBe(null);
-    expect(out.party!.rounds.every(r => r.misses === 0 && r.hints === 0 && r.level <= 5)).toBe(true);
+    expect(out.party!.rounds.every((r) => r.misses === 0 && r.hints === 0 && r.level <= 5)).toBe(true);
     expect(out.stickers).toEqual({ 'penguin-slide': { count: 500, seed: 3 } });
   });
 
   it('upgrades a version 1 save without losing trips, stickers or the trip in progress', () => {
-    const v1 = { version: 1, trips: 2, stickers: { 'penguin-slide': { count: 4, seed: 99 } }, party: { seed: 5, selected: 'bounce-back', rounds: [{ id: 'penguin-slide', seed: 3, level: 4, misses: 1, hints: 0 }] } };
+    const v1 = {
+      version: 1,
+      trips: 2,
+      stickers: { 'penguin-slide': { count: 4, seed: 99 } },
+      party: {
+        seed: 5,
+        selected: 'bounce-back',
+        rounds: [{ id: 'penguin-slide', seed: 3, level: 4, misses: 1, hints: 0 }],
+      },
+    };
     const out = repairCouch(JSON.parse(JSON.stringify(v1)));
     expect(out.version).toBe(3);
     expect(out.trips).toBe(2);
@@ -76,7 +124,8 @@ describe('isolated couch trips', () => {
     };
     let save = couchDefaults();
     expect(save.keepsake).toBe(null);
-    save.party = newParty('faceoff', 3); save.party.selected = 'memory-match' as CouchId;
+    save.party = newParty('faceoff', 3);
+    save.party.selected = 'memory-match' as CouchId;
     finish(save, 1_000);
     expect(save.trips).toBe(1);
     expect(save.keepsake).toEqual({ at: 1_000 });
@@ -94,10 +143,18 @@ describe('isolated couch trips', () => {
       completeRound(save, roundToken(save.party!), { misses: 0, hints: 0 }, 77);
       expect(save.keepsake).toBe(null);
     }
-    expect(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, keepsake: { at: 'noon' } }).keepsake).toEqual({ at: 0 });
-    expect(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, keepsake: { at: -5 } }).keepsake).toEqual({ at: 0 });
-    expect(repairCouch({ version: 3, trips: 3, stickers: {}, party: null, keepsake: null }).keepsake).toEqual({ at: 0 });
-    expect(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, keepsake: { at: 5.9 } }).keepsake).toEqual({ at: 5 });
+    expect(
+      repairCouch({ version: 3, trips: 0, stickers: {}, party: null, keepsake: { at: 'noon' } }).keepsake,
+    ).toEqual({ at: 0 });
+    expect(
+      repairCouch({ version: 3, trips: 0, stickers: {}, party: null, keepsake: { at: -5 } }).keepsake,
+    ).toEqual({ at: 0 });
+    expect(repairCouch({ version: 3, trips: 3, stickers: {}, party: null, keepsake: null }).keepsake).toEqual(
+      { at: 0 },
+    );
+    expect(
+      repairCouch({ version: 3, trips: 0, stickers: {}, party: null, keepsake: { at: 5.9 } }).keepsake,
+    ).toEqual({ at: 5 });
   });
 
   it('keeps two optional names, cleaned and bounded, through a reload and an old save', () => {
@@ -111,17 +168,28 @@ describe('isolated couch trips', () => {
     save.names = ['Rob', 'Sam'];
     expect(reload(save).names).toEqual(['Rob', 'Sam']);
     expect(JSON.stringify(reload(save))).toBe(JSON.stringify(save));
-    expect(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, names: ['  Al ', { x: 1 }, 'third'] }).names).toEqual(['Al', '']);
+    expect(
+      repairCouch({ version: 3, trips: 0, stickers: {}, party: null, names: ['  Al ', { x: 1 }, 'third'] })
+        .names,
+    ).toEqual(['Al', '']);
     expect(repairCouch({ version: 2, trips: 0, stickers: {}, party: null }).names).toEqual(['', '']);
-    expect(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, names: 'Rob' }).names).toEqual(['', '']);
+    expect(repairCouch({ version: 3, trips: 0, stickers: {}, party: null, names: 'Rob' }).names).toEqual([
+      '',
+      '',
+    ]);
   });
 
   it('remembers which games were explained, once each, and only real games', () => {
     const save = couchDefaults();
-    markSeen(save, 'bounce-back'); markSeen(save, 'bounce-back'); markSeen(save, 'penguin-slide');
+    markSeen(save, 'bounce-back');
+    markSeen(save, 'bounce-back');
+    markSeen(save, 'penguin-slide');
     expect(save.seen).toEqual(['bounce-back', 'penguin-slide']);
-    const out = repairCouch({ ...JSON.parse(JSON.stringify(save)), seen: ['penguin-slide', 'penguin-slide', 'not-a-game', 7, 'bounce-back'] });
-    expect(out.seen).toEqual(COUCH_IDS.filter(id => id === 'penguin-slide' || id === 'bounce-back'));
+    const out = repairCouch({
+      ...JSON.parse(JSON.stringify(save)),
+      seen: ['penguin-slide', 'penguin-slide', 'not-a-game', 7, 'bounce-back'],
+    });
+    expect(out.seen).toEqual(COUCH_IDS.filter((id) => id === 'penguin-slide' || id === 'bounce-back'));
   });
 });
 
@@ -131,7 +199,7 @@ describe('unlocking games by finishing trips', () => {
   it('lists every couch game in exactly one tier, starting with a playable set', () => {
     expect(UNLOCK_TIERS[0].length).toBeGreaterThanOrEqual(3);
     expect([...UNLOCK_TIERS.flat()].sort()).toEqual([...COUCH_IDS].sort());
-    for (const id of COUCH_IDS) expect(UNLOCK_TIERS.filter(t => t.includes(id))).toHaveLength(1);
+    for (const id of COUCH_IDS) expect(UNLOCK_TIERS.filter((t) => t.includes(id))).toHaveLength(1);
   });
 
   it('opens one more tier per completed trip, derived from the count and never taken back', () => {
@@ -155,7 +223,8 @@ describe('unlocking games by finishing trips', () => {
   });
 
   it('keeps a trip in progress only on a game the save has unlocked', () => {
-    const save = tripSave('together'); save.party!.selected = 'bounce-back';
+    const save = tripSave('together');
+    save.party!.selected = 'bounce-back';
     expect(reload(save).party!.selected).toBe('bounce-back');
   });
 });
@@ -172,7 +241,7 @@ describe('choosing the next game', () => {
     const first = offers(p, 0, [SIX]);
     expect(first).toHaveLength(3);
     expect(new Set(first).size).toBe(3);
-    first.forEach(id => expect(SIX).toContain(id));
+    first.forEach((id) => expect(SIX).toContain(id));
     expect(offers(JSON.parse(JSON.stringify(p)), 0, [SIX])).toEqual(first);
   });
 
@@ -182,21 +251,27 @@ describe('choosing the next game', () => {
 
   it('avoids the last two games, and prefers games not played this trip', () => {
     for (let seed = 1; seed < 40; seed++) {
-      const p = party(['a', 'b'] as unknown as CouchId[]); p.seed = seed;
+      const p = party(['a', 'b'] as unknown as CouchId[]);
+      p.seed = seed;
       const choices = offers(p, 0, [SIX]);
-      expect(choices).not.toContain('a'); expect(choices).not.toContain('b');
+      expect(choices).not.toContain('a');
+      expect(choices).not.toContain('b');
     }
     const p = party(['a', 'b', 'c', 'd'] as unknown as CouchId[]);
     // Only two games are neither recent nor played, so a played one fills the third place before a recent one.
     const choices = offers(p, 0, [SIX]);
     expect(choices).toEqual(expect.arrayContaining(['e', 'f']));
-    expect(choices).not.toContain('c'); expect(choices).not.toContain('d');
+    expect(choices).not.toContain('c');
+    expect(choices).not.toContain('d');
   });
 
   it('reshuffles for free, and a reload keeps the new choices', () => {
     const p = party();
     const seen = new Set([offers(p, 0, [SIX]).join()]);
-    for (let i = 0; i < 6; i++) { reshuffle(p); seen.add(offers(p, 0, [SIX]).join()); }
+    for (let i = 0; i < 6; i++) {
+      reshuffle(p);
+      seen.add(offers(p, 0, [SIX]).join());
+    }
     expect(seen.size).toBeGreaterThan(1);
     const now = offers(p, 0, [SIX]);
     expect(offers(reload({ ...couchDefaults(), party: p }).party!, 0, [SIX])).toEqual(now);
@@ -206,7 +281,14 @@ describe('choosing the next game', () => {
 describe('face-off trips', () => {
   const start = (id: CouchId, stops = 0) => {
     const save = tripSave('faceoff');
-    save.party!.rounds = Array.from({ length: stops }, () => ({ id: 'bounce-back' as CouchId, seed: 1, level: 3, misses: 0, hints: 0, winner: 'team' as const }));
+    save.party!.rounds = Array.from({ length: stops }, () => ({
+      id: 'bounce-back' as CouchId,
+      seed: 1,
+      level: 3,
+      misses: 0,
+      hints: 0,
+      winner: 'team' as const,
+    }));
     save.party!.selected = id;
     return save;
   };
@@ -234,13 +316,23 @@ describe('face-off trips', () => {
     expect(roundToken(after.party!)).toBe(second);
     expect(completeRound(after, second, { misses: 1, hints: 1, score: 5 })).toBe('stop');
     expect(completeRound(after, second, { misses: 0, hints: 0, score: 0 })).toBe(false);
-    expect(after.party!.rounds).toEqual([{ id: 'penguin-slide', seed: seedFor(save.party!), level: 4, misses: 1, hints: 1, scores: [3, 5], winner: 0 }]);
+    expect(after.party!.rounds).toEqual([
+      {
+        id: 'penguin-slide',
+        seed: seedFor(save.party!),
+        level: 4,
+        misses: 1,
+        hints: 1,
+        scores: [3, 5],
+        winner: 0,
+      },
+    ]);
     expect(after.stickers['penguin-slide']?.count).toBe(1);
     expect(after.party!.turn).toBe(null);
   });
 
   it('puts each score with the player who earned it, whoever chose first', () => {
-    const save = start('penguin-slide', 1);        // stop 2: player 2 chooses and plays first
+    const save = start('penguin-slide', 1); // stop 2: player 2 chooses and plays first
     completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, score: 2 });
     completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, score: 6 });
     expect(save.party!.rounds[1].scores).toEqual([6, 2]);
@@ -262,7 +354,9 @@ describe('face-off trips', () => {
   it('settles a Bounce Back face-off on one shared board, most goals winning', () => {
     const save = start('bounce-back');
     // The first stop is Player 1's choice: the right paddle's player scored 5, the left's 3.
-    expect(completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, scores: [5, 3] })).toBe('stop');
+    expect(completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, scores: [5, 3] })).toBe(
+      'stop',
+    );
     expect(save.party!.rounds[0]).toMatchObject({ id: 'bounce-back', scores: [5, 3], winner: 0 });
     save.party!.selected = 'bounce-back';
     completeRound(save, roundToken(save.party!), { misses: 0, hints: 0, scores: [2, 5] });
@@ -273,11 +367,14 @@ describe('face-off trips', () => {
   it('says which way is better per game', () => {
     expect(decide('penguin-slide', [2, 5])).toBe(0);
     expect(decide('penguin-slide', [5, 2])).toBe(1);
-    const info = COUCH_INFO['bouncy-launch'].score!, was = info.better;
+    const info = COUCH_INFO['bouncy-launch'].score!,
+      was = info.better;
     try {
       info.better = 'higher';
       expect(decide('bouncy-launch', [2, 5])).toBe(1);
-    } finally { info.better = was; }
+    } finally {
+      info.better = was;
+    }
   });
 
   it('adds up wins without inventing a loser: the trip finishes either way', () => {
@@ -294,7 +391,8 @@ describe('face-off trips', () => {
   });
 
   it('keeps together trips free of scores, and saves a face-off byte-for-byte through a backup', () => {
-    const together = tripSave('together'); together.party!.selected = 'penguin-slide';
+    const together = tripSave('together');
+    together.party!.selected = 'penguin-slide';
     completeRound(together, roundToken(together.party!), { misses: 0, hints: 0, score: 9 });
     expect(together.party!.rounds[0].scores).toBeUndefined();
     expect(together.party!.rounds[0].winner).toBeUndefined();
@@ -309,7 +407,17 @@ describe('face-off trips', () => {
     const save = start('bounce-back');
     save.party!.turn = { score: 1, misses: 0, hints: 0 };
     expect(reload(save).party!.turn).toBe(null);
-    const odd = reload({ version: 2, trips: 0, stickers: {}, party: { seed: 3, mode: 'faceoff', selected: null, rounds: [{ id: 'penguin-slide', scores: [1, 'x'], winner: 'robot' }] } } as unknown as CouchSave);
+    const odd = reload({
+      version: 2,
+      trips: 0,
+      stickers: {},
+      party: {
+        seed: 3,
+        mode: 'faceoff',
+        selected: null,
+        rounds: [{ id: 'penguin-slide', scores: [1, 'x'], winner: 'robot' }],
+      },
+    } as unknown as CouchSave);
     expect(odd.party!.rounds[0].winner).toBeUndefined();
     expect(odd.party!.rounds[0].scores).toEqual([1, 0]);
   });

@@ -1,4 +1,12 @@
-import { Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
+import {
+  Container,
+  Graphics,
+  Rectangle,
+  RenderTexture,
+  Sprite,
+  type FederatedPointerEvent,
+  type Renderer,
+} from 'pixi.js';
 import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { flower, starPoints } from '../../art/shapes';
 import { textures } from '../../art/textures';
@@ -13,7 +21,47 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { foldIcon, frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, blankSpot, BRUSH_RADIUS, capMarks, Coverage, fillPath, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, frameShows, halvedIndex, MARGIN, pageKind, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, pickThings, planFor, POT_MARKS, POT_RADIUS, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, touchKind, type PageKind, type PaintPlan, type PotMark, type Primary, type Pt, type Thing, type Touch } from './logic';
+import {
+  LEVELS,
+  blankSpot,
+  BRUSH_RADIUS,
+  capMarks,
+  Coverage,
+  fillPath,
+  FOLD_RADIUS,
+  foldButtonPlace,
+  foldMarks,
+  foldScribbleArea,
+  frameShows,
+  halvedIndex,
+  MARGIN,
+  pageKind,
+  mix,
+  NUDGE_AFTER,
+  nudges,
+  paintStep,
+  PAINTED,
+  pickThings,
+  planFor,
+  POT_MARKS,
+  POT_RADIUS,
+  potLayout,
+  pours,
+  RECIPES,
+  scribble,
+  scribbleArea,
+  SPACING,
+  SPLAT_RADIUS,
+  strokesCounted,
+  touchKind,
+  type PageKind,
+  type PaintPlan,
+  type PotMark,
+  type Primary,
+  type Pt,
+  type Thing,
+  type Touch,
+} from './logic';
 import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -116,27 +164,48 @@ function decor(thing: Thing): Graphics {
       g.stroke({ ...line, color: swatch.yellow.line, width: 9 });
       break;
     case 'apple':
-      g.moveTo(0, -46).quadraticCurveTo(4, -76, 14, -90).stroke({ ...line, color: wood.line, width: 9 });
-      g.moveTo(10, -74).quadraticCurveTo(44, -104, 66, -78).quadraticCurveTo(40, -58, 10, -74).fill(swatch.green.fill).stroke(line);
+      g.moveTo(0, -46)
+        .quadraticCurveTo(4, -76, 14, -90)
+        .stroke({ ...line, color: wood.line, width: 9 });
+      g.moveTo(10, -74)
+        .quadraticCurveTo(44, -104, 66, -78)
+        .quadraticCurveTo(40, -58, 10, -74)
+        .fill(swatch.green.fill)
+        .stroke(line);
       break;
     case 'leaf':
       g.moveTo(-132, 66).lineTo(96, -48).stroke(line);
       for (const t of [-0.45, 0, 0.45]) {
         const [x, y] = [t * 170, -t * 85];
-        g.moveTo(x, y).lineTo(x + 12, y + 30).moveTo(x, y).lineTo(x - 16, y - 28);
+        g.moveTo(x, y)
+          .lineTo(x + 12, y + 30)
+          .moveTo(x, y)
+          .lineTo(x - 16, y - 28);
       }
       g.stroke({ ...line, width: 4 });
       break;
     case 'pumpkin':
-      g.moveTo(-20, -40).quadraticCurveTo(-30, 10, -20, 70).moveTo(20, -40).quadraticCurveTo(30, 10, 20, 70).stroke({ ...line, width: 4 });
+      g.moveTo(-20, -40)
+        .quadraticCurveTo(-30, 10, -20, 70)
+        .moveTo(20, -40)
+        .quadraticCurveTo(30, 10, 20, 70)
+        .stroke({ ...line, width: 4 });
       g.roundRect(-10, -88, 20, 34, 6).fill(swatch.green.fill).stroke(line);
       break;
     case 'grapes':
-      g.moveTo(0, -72).quadraticCurveTo(4, -96, 20, -108).stroke({ ...line, color: wood.line, width: 9 });
-      g.moveTo(8, -88).quadraticCurveTo(-40, -120, -60, -84).quadraticCurveTo(-24, -70, 8, -88).fill(swatch.green.fill).stroke(line);
+      g.moveTo(0, -72)
+        .quadraticCurveTo(4, -96, 20, -108)
+        .stroke({ ...line, color: wood.line, width: 9 });
+      g.moveTo(8, -88)
+        .quadraticCurveTo(-40, -120, -60, -84)
+        .quadraticCurveTo(-24, -70, 8, -88)
+        .fill(swatch.green.fill)
+        .stroke(line);
       break;
     case 'blueberry':
-      g.poly(starPoints(26, 11, 5).map((v, i) => v + (i % 2 ? -52 : 0))).fill(swatch.blue.line).stroke({ ...line, width: 4 });
+      g.poly(starPoints(26, 11, 5).map((v, i) => v + (i % 2 ? -52 : 0)))
+        .fill(swatch.blue.line)
+        .stroke({ ...line, width: 4 });
       g.ellipse(-34, -28, 16, 10).fill({ color: 0xffffff, alpha: 0.5 });
       break;
   }
@@ -158,7 +227,9 @@ function paintPot(color: ColorName | 'rainbow'): Container {
   } else {
     top.fill(swatch[color].fill).stroke({ width: 4, color: swatch[color].line });
   }
-  const drip = new Graphics().roundRect(10, -22, 8, 22, 4).fill(color === 'rainbow' ? swatch.purple.fill : swatch[color].fill);
+  const drip = new Graphics()
+    .roundRect(10, -22, 8, 22, 4)
+    .fill(color === 'rainbow' ? swatch.purple.fill : swatch[color].fill);
   c.addChild(jar, drip, top);
   if (color !== 'rainbow') c.addChild(potMark(POT_MARKS[color]));
   return c;
@@ -173,14 +244,22 @@ function potMark(mark: PotMark): Graphics {
     case 'dot':
       return g.circle(x, y, 7).fill(LINE);
     case 'stripe':
-      return g.moveTo(x - 12, y).lineTo(x + 12, y).stroke({ ...ink, width: 6 });
+      return g
+        .moveTo(x - 12, y)
+        .lineTo(x + 12, y)
+        .stroke({ ...ink, width: 6 });
     case 'star':
       return g.poly(starPoints(10, 4.5, 5).map((v, i) => v + (i % 2 ? y : x))).fill(LINE);
     case 'heart':
-      return g.moveTo(x, y + 9).bezierCurveTo(x - 14, y - 1, x - 8, y - 12, x, y - 4).bezierCurveTo(x + 8, y - 12, x + 14, y - 1, x, y + 9).fill(LINE);
+      return g
+        .moveTo(x, y + 9)
+        .bezierCurveTo(x - 14, y - 1, x - 8, y - 12, x, y - 4)
+        .bezierCurveTo(x + 8, y - 12, x + 14, y - 1, x, y + 9)
+        .fill(LINE);
     case 'swirl':
       g.moveTo(x, y);
-      for (let k = 1; k <= 24; k++) g.lineTo(x + Math.cos(k * 0.5) * k * 0.45, y + Math.sin(k * 0.5) * k * 0.45);
+      for (let k = 1; k <= 24; k++)
+        g.lineTo(x + Math.cos(k * 0.5) * k * 0.45, y + Math.sin(k * 0.5) * k * 0.45);
       return g.stroke({ ...ink, width: 3 });
     case 'ring':
       return g.circle(x, y, 8).stroke(ink);
@@ -241,8 +320,12 @@ class RainbowFingers implements Game {
   /** Misses and hints for the round; `roundMisses` counts this picture's wrong colors, the second of which lights the pot. */
   private readonly tally = newRequestTally();
   /** Read by the browser checks. */
-  get misses() { return this.tally.misses; }
-  get hints() { return this.tally.hints; }
+  get misses() {
+    return this.tally.misses;
+  }
+  get hints() {
+    return this.tally.hints;
+  }
   private lastNag = -10;
   private sinceAsk = 0;
   /** The picked color, or null for rainbow. */
@@ -321,7 +404,10 @@ class RainbowFingers implements Game {
       this.pots.addChild(pot);
       this.potNodes.set(color, pot);
     });
-    this.potRing.circle(0, -6, POT_RADIUS).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 4, color: wood.line });
+    this.potRing
+      .circle(0, -6, POT_RADIUS)
+      .fill({ color: 0xffffff, alpha: 0.7 })
+      .stroke({ width: 4, color: wood.line });
     if (mixing) {
       this.potRing.visible = false;
       const dish = new Graphics()
@@ -379,14 +465,23 @@ class RainbowFingers implements Game {
   private async pour(color: Primary, pot: Container) {
     if (this.poured.length >= 2) this.poured = [];
     this.poured.push(color);
-    void this.ctx.tw.to(pot, { rotation: 0.5 }, { duration: 0.15 }).then(() => this.ctx.tw.to(pot, { rotation: 0 }, { duration: 0.2 }));
+    void this.ctx.tw
+      .to(pot, { rotation: 0.5 }, { duration: 0.15 })
+      .then(() => this.ctx.tw.to(pot, { rotation: 0 }, { duration: 0.2 }));
     sfx.splash();
     const made = this.poured.length === 2 ? mix(this.poured[0], this.poured[1]) : color;
     this.setBrush(made);
     this.drawBowl();
     if (this.poured.length === 2) {
       const p = this.ctx.stage.toLocal(this.bowl.getGlobalPosition());
-      this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [swatch[made].fill, 0xffffff], count: 10, speed: [80, 200], gravity: 0, life: [0.4, 0.8] });
+      this.ctx.particles.burst(p.x, p.y, {
+        kind: 'star',
+        colors: [swatch[made].fill, 0xffffff],
+        count: 10,
+        speed: [80, 200],
+        gravity: 0,
+        life: [0.4, 0.8],
+      });
       sfx.sparkle();
       await this.ctx.say(`color.${made}`);
     } else {
@@ -423,7 +518,13 @@ class RainbowFingers implements Game {
     const slot = (v.w - MARGIN * 2 - 60) / n;
     const scale = Math.min(1.25, slot / 280, (bottom - top) / 270);
     this.pictures = this.things.map((thing, i) => {
-      const pic = new Picture(thing, MARGIN + 30 + slot * (i + 0.5), (top + bottom) / 2 + (i % 2 ? 24 : -24), scale, this.ctx.renderer);
+      const pic = new Picture(
+        thing,
+        MARGIN + 30 + slot * (i + 0.5),
+        (top + bottom) / 2 + (i % 2 ? 24 : -24),
+        scale,
+        this.ctx.renderer,
+      );
       this.pictureLayer.addChild(pic.node);
       return pic;
     });
@@ -435,7 +536,9 @@ class RainbowFingers implements Game {
     this.sinceAsk = 0;
     nextRequest(this.tally);
     const s = pic.scale;
-    void this.ctx.tw.to(pic.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.25, ease: ease.outBack }).then(() => this.ctx.tw.to(pic.node.scale, { x: s, y: s }, { duration: 0.3 }));
+    void this.ctx.tw
+      .to(pic.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.25, ease: ease.outBack })
+      .then(() => this.ctx.tw.to(pic.node.scale, { x: s, y: s }, { duration: 0.3 }));
     const { id: thing, color } = pic.thing;
     if (this.plan.mode === 'mix') {
       const [a, b] = RECIPES[color]!;
@@ -475,7 +578,10 @@ class RainbowFingers implements Game {
     this.lastNag = this.clock;
     const { id: thing, color } = pic.thing;
     if (!this.brushName) {
-      void this.ctx.say(pours(this.plan.mode) ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
+      void this.ctx.say(pours(this.plan.mode) ? 'paint.mixhow' : 'paint.pick', {
+        color,
+        ...this.recipeVars(),
+      });
       return;
     }
     const due = missOnRequest(this.tally);
@@ -496,7 +602,14 @@ class RainbowFingers implements Game {
     const fill = pic.fill();
     if (this.rt) this.ctx.renderer.render({ container: fill, target: this.rt, clear: false });
     fill.destroy();
-    this.ctx.particles.burst(pic.x, pic.y, { kind: 'star', colors: [swatch[pic.thing.color].fill, 0xffffff, 0xfff3a0], count: 16, speed: [120, 300], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(pic.x, pic.y, {
+      kind: 'star',
+      colors: [swatch[pic.thing.color].fill, 0xffffff, 0xfff3a0],
+      count: 16,
+      speed: [120, 300],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     sfx.sparkle();
     this.ctx.pet.cheer();
     this.current++;
@@ -561,8 +674,22 @@ class RainbowFingers implements Game {
     const hh = Math.min(v.h * 0.3, 300);
     for (const side of [-1, 1]) {
       g.moveTo(cx + side * 8, cy - 30)
-        .bezierCurveTo(cx + side * ww * 0.6, cy - hh * 1.1, cx + side * ww * 1.05, cy - hh * 0.3, cx + side * 8, cy)
-        .bezierCurveTo(cx + side * ww * 0.85, cy + hh * 0.1, cx + side * ww * 0.6, cy + hh * 0.9, cx + side * 8, cy + 40);
+        .bezierCurveTo(
+          cx + side * ww * 0.6,
+          cy - hh * 1.1,
+          cx + side * ww * 1.05,
+          cy - hh * 0.3,
+          cx + side * 8,
+          cy,
+        )
+        .bezierCurveTo(
+          cx + side * ww * 0.85,
+          cy + hh * 0.1,
+          cx + side * ww * 0.6,
+          cy + hh * 0.9,
+          cx + side * 8,
+          cy + 40,
+        );
     }
     g.stroke({ width: 5, color: wood.line, alpha: 0.16, join: 'round' });
   }
@@ -570,9 +697,18 @@ class RainbowFingers implements Game {
   update(dt: number) {
     this.clock += dt;
     const coloring = this.pictures.length > 0;
-    const ready = coloring ? !this.picture : frameShows(strokesCounted(this.touches) + this.folds, this.clock);
+    const ready = coloring
+      ? !this.picture
+      : frameShows(strokesCounted(this.touches) + this.folds, this.clock);
     this.idle += dt;
-    if (nudges(this.plan.mode) && !this.done && !this.frameButton.visible && this.idle > NUDGE_AFTER && this.strokes.size === 0) this.nudge();
+    if (
+      nudges(this.plan.mode) &&
+      !this.done &&
+      !this.frameButton.visible &&
+      this.idle > NUDGE_AFTER &&
+      this.strokes.size === 0
+    )
+      this.nudge();
     if (coloring && this.picture && !this.done) {
       this.sinceAsk += dt;
       // Stuck for a while: light up the right pot.
@@ -587,7 +723,12 @@ class RainbowFingers implements Game {
     }
     if (this.frameButton.visible && !this.done) this.frameButton.rotation = 0.06 * Math.sin(this.clock * 3);
     // The fold button pops in after her first mark.
-    if (this.foldButton && !this.foldButton.visible && !this.done && this.touches.length + this.strokes.size > 0) {
+    if (
+      this.foldButton &&
+      !this.foldButton.visible &&
+      !this.done &&
+      this.touches.length + this.strokes.size > 0
+    ) {
       this.foldButton.visible = true;
       this.foldButton.scale.set(0);
       void this.ctx.tw.to(this.foldButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outBack });
@@ -601,7 +742,11 @@ class RainbowFingers implements Game {
     const g = this.potGlow.clear();
     for (const color of this.glowing) {
       const pot = this.potHome.get(color);
-      if (pot) g.circle(pot.x, pot.y - 6, POT_RADIUS + 8 + 4 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.8 });
+      if (pot)
+        g.circle(pot.x, pot.y - 6, POT_RADIUS + 8 + 4 * Math.sin(this.clock * 8)).fill({
+          color: 0xfff3a0,
+          alpha: 0.8,
+        });
     }
   }
 
@@ -613,7 +758,16 @@ class RainbowFingers implements Game {
     if (this.done || this.folding || this.strokes.size > 0) return null;
     const pic = this.picture;
     const fold = this.kind === 'fold';
-    const move = paintStep({ mode: this.plan.mode, strokes: this.touches.length, brush: this.brushName, poured: this.poured, picture: pic?.thing.color ?? null, frame: this.frameButton.visible, fold, folded: this.folded });
+    const move = paintStep({
+      mode: this.plan.mode,
+      strokes: this.touches.length,
+      brush: this.brushName,
+      poured: this.poured,
+      picture: pic?.thing.color ?? null,
+      frame: this.frameButton.visible,
+      fold,
+      folded: this.folded,
+    });
     if (!move) return null;
     if (move.do === 'frame') return { tap: { on: this.frameButton } };
     if (move.do === 'fold') return this.foldButton?.visible ? { tap: { on: this.foldButton } } : null;
@@ -624,7 +778,9 @@ class RainbowFingers implements Game {
     }
     const [start, ...via] = pic
       ? fillPath(pic.thing.circles, pic.scale).map((p) => ({ on: pic.node, x: p.x, y: p.y }))
-      : scribble(this.touches.length, (fold ? foldScribbleArea : scribbleArea)(this.view.w, this.view.h)).map((p) => ({ on: this.paper, x: p.x, y: p.y }));
+      : scribble(this.touches.length, (fold ? foldScribbleArea : scribbleArea)(this.view.w, this.view.h)).map(
+          (p) => ({ on: this.paper, x: p.x, y: p.y }),
+        );
     return { trace: start, via, receiver: this.paper };
   }
 
@@ -656,13 +812,19 @@ class RainbowFingers implements Game {
     // The face is the right half as painted (the live textures, so it shows the print when it opens); the back is plain paper.
     const face = new Container();
     const mask = new Graphics().rect(0, y0, half, h).fill(0xffffff);
-    const sheet = new Graphics().roundRect(-24, y0, half + 24, h, 22).fill(PAPER).stroke({ width: 5, color: wood.line });
+    const sheet = new Graphics()
+      .roundRect(-24, y0, half + 24, h, 22)
+      .fill(PAPER)
+      .stroke({ width: 5, color: wood.line });
     const dry = new Sprite(this.rt);
     const wet = new Sprite(this.wet ?? undefined);
     dry.x = wet.x = -v.w / 2;
     face.addChild(sheet, dry, wet, mask);
     face.mask = mask;
-    const back = new Graphics().roundRect(0, y0, half, h, 22).fill(0xf1e6d2).stroke({ width: 5, color: wood.line });
+    const back = new Graphics()
+      .roundRect(0, y0, half, h, 22)
+      .fill(0xf1e6d2)
+      .stroke({ width: 5, color: wood.line });
     const flap = new Container();
     flap.addChild(face, back);
     flap.position.set(v.w / 2, 0);
@@ -678,7 +840,8 @@ class RainbowFingers implements Game {
     let sx = 1;
     if (t < FOLD_CLOSE) sx = 1 - 2 * smooth(t / FOLD_CLOSE);
     else if (t < FOLD_CLOSE + FOLD_PRESS) sx = -1;
-    else if (t < FOLD_CLOSE + FOLD_PRESS + FOLD_OPEN) sx = -1 + 2 * smooth((t - FOLD_CLOSE - FOLD_PRESS) / FOLD_OPEN);
+    else if (t < FOLD_CLOSE + FOLD_PRESS + FOLD_OPEN)
+      sx = -1 + 2 * smooth((t - FOLD_CLOSE - FOLD_PRESS) / FOLD_OPEN);
     f.flap.scale.x = sx;
     // A little darker as it stands on edge; the back shows while it is over the left half.
     const shade = Math.round(255 * (0.78 + 0.22 * Math.abs(sx)));
@@ -731,7 +894,12 @@ class RainbowFingers implements Game {
     this.ctx.renderer.render({ container: mirrored, target: this.rt, clear: false });
     asIs.destroy();
     mirrored.destroy();
-    this.ctx.renderer.render({ container: this.blank, target: this.wet, clear: true, clearColor: [0, 0, 0, 0] });
+    this.ctx.renderer.render({
+      container: this.blank,
+      target: this.wet,
+      clear: true,
+      clearColor: [0, 0, 0, 0],
+    });
     this.wetPaint = false;
     const aspect = Math.max(1, v.w - MARGIN * 2) / this.paperSize();
     const { marks, halvings } = capMarks(foldMarks(this.paintingMarks, this.foldSince, aspect, Infinity));
@@ -746,7 +914,17 @@ class RainbowFingers implements Game {
     const step = this.stepAt(p.y);
     this.idle = 0;
     this.hue = (this.hue + 70) % 360;
-    const stroke = { x: p.x, y: p.y, hue: this.hue, color: this.brush, travelled: 0, startedAt: this.clock, lastStep: step, lastNoteAt: this.clock, sparkleIn: 30 };
+    const stroke = {
+      x: p.x,
+      y: p.y,
+      hue: this.hue,
+      color: this.brush,
+      travelled: 0,
+      startedAt: this.clock,
+      lastStep: step,
+      lastNoteAt: this.clock,
+      sparkleIn: 30,
+    };
     this.strokes.set(e.pointerId, stroke);
     this.stamp(p.x, p.y, stroke.color ?? hsl(stroke.hue, 0.85, 0.62));
     this.dab(p.x, p.y);
@@ -778,7 +956,15 @@ class RainbowFingers implements Game {
     s.sparkleIn -= dist;
     if (s.sparkleIn <= 0) {
       s.sparkleIn = 45;
-      this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 1, speed: [30, 80], gravity: 0, size: [0.35, 0.6], life: [0.4, 0.7] });
+      this.ctx.particles.burst(p.x, p.y, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0],
+        count: 1,
+        speed: [30, 80],
+        gravity: 0,
+        size: [0.35, 0.6],
+        life: [0.4, 0.7],
+      });
     }
     const step = this.stepAt(p.y);
     if (step !== s.lastStep && this.clock - s.lastNoteAt > 0.07) {
@@ -804,17 +990,31 @@ class RainbowFingers implements Game {
     if (this.foldButton?.visible && this.wetPaint && !this.folding) {
       // Paint waiting on a fold page: the fold button wiggles and the pet looks toward it.
       const b = this.foldButton;
-      void this.ctx.tw.to(b, { rotation: 0.25 }, { duration: 0.12 }).then(() => this.ctx.tw.to(b, { rotation: -0.25 }, { duration: 0.2 })).then(() => this.ctx.tw.to(b, { rotation: 0 }, { duration: 0.12 }));
+      void this.ctx.tw
+        .to(b, { rotation: 0.25 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(b, { rotation: -0.25 }, { duration: 0.2 }))
+        .then(() => this.ctx.tw.to(b, { rotation: 0 }, { duration: 0.12 }));
       this.ctx.pet.wiggle();
       return;
     }
     const area = scribbleArea(this.view.w, this.view.h);
-    const candidates = Array.from({ length: 8 }, () => ({ x: area.x + Math.random() * area.w, y: area.y + Math.random() * area.h }));
+    const candidates = Array.from({ length: 8 }, () => ({
+      x: area.x + Math.random() * area.w,
+      y: area.y + Math.random() * area.h,
+    }));
     const w = this.view.w - MARGIN * 2;
     const h = this.view.h - MARGIN * 2;
     const painted = this.paintingMarks.map((m) => ({ x: MARGIN + m.x * w, y: MARGIN + m.y * h }));
     const spot = blankSpot(painted, candidates);
-    this.ctx.particles.burst(spot.x, spot.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.fill], count: 12, speed: [40, 120], gravity: 0, size: [0.4, 0.7], life: [0.6, 1.1] });
+    this.ctx.particles.burst(spot.x, spot.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.fill],
+      count: 12,
+      speed: [40, 120],
+      gravity: 0,
+      size: [0.4, 0.7],
+      life: [0.6, 1.1],
+    });
     sfx.sparkle();
     this.ctx.pet.hop(0.5);
   }
@@ -847,7 +1047,12 @@ class RainbowFingers implements Game {
   private bloom(x: number, y: number) {
     const colorName = FLOWER_COLORS[Math.floor(Math.random() * FLOWER_COLORS.length)];
     const color = swatch[colorName];
-    this.recordMark({ shape: 'flower', ...this.normalized(x, y), r: SPLAT_RADIUS / this.paperSize(), color: colorName });
+    this.recordMark({
+      shape: 'flower',
+      ...this.normalized(x, y),
+      r: SPLAT_RADIUS / this.paperSize(),
+      color: colorName,
+    });
     // A palm-sized splat: a round blot of paint with the flower growing on it.
     const f = new Graphics().circle(0, 0, SPLAT_RADIUS).fill({ color: color.fill, alpha: 0.45 });
     flower(f, SPLAT_RADIUS * 0.8, color.fill, color.line);
@@ -855,7 +1060,14 @@ class RainbowFingers implements Game {
     f.scale.set(0);
     this.live.addChild(f);
     sfx.bell(this.stepAt(y) + 2, 0.2);
-    this.ctx.particles.burst(x, y, { colors: [color.fill, 0xffffff], count: 14, speed: [100, 240], gravity: 200, size: [0.25, 0.45], life: [0.4, 0.8] });
+    this.ctx.particles.burst(x, y, {
+      colors: [color.fill, 0xffffff],
+      count: 14,
+      speed: [100, 240],
+      gravity: 200,
+      size: [0.25, 0.45],
+      life: [0.4, 0.8],
+    });
     if (this.kind === 'fold') this.wetPaint = true;
     void this.ctx.tw.to(f.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack }).then(async () => {
       await this.ctx.tw.wait(0.4);
@@ -960,10 +1172,16 @@ class Easel extends Container {
       .roundRect(-92, -78, 184, 14, 6)
       .fill(wood.fill)
       .stroke({ width: 4, color: wood.line });
-    const art = new Graphics().roundRect(-80, -150, 160, 124, 10).fill(PAPER).stroke({ width: 6, color: wood.line });
+    const art = new Graphics()
+      .roundRect(-80, -150, 160, 124, 10)
+      .fill(PAPER)
+      .stroke({ width: 6, color: wood.line });
     RAINBOW.forEach((c, i) => {
       const r = 58 - i * 8;
-      art.moveTo(-r, -46).arc(0, -46, r, Math.PI, 0).stroke({ width: 8, color: swatch[c].fill, cap: 'round' });
+      art
+        .moveTo(-r, -46)
+        .arc(0, -46, r, Math.PI, 0)
+        .stroke({ width: 8, color: swatch[c].fill, cap: 'round' });
     });
     art.circle(-52, -126, 12).fill(swatch.yellow.fill);
     const blobs = new Graphics()
@@ -999,7 +1217,9 @@ function sticker(seed: number): Container {
   rng
     .shuffle([...RAINBOW])
     .slice(0, 4)
-    .forEach((col, i) => palette.circle([-52, -12, 30, -58][i], [-30, -60, -50, 30][i], 18).fill(swatch[col].fill));
+    .forEach((col, i) =>
+      palette.circle([-52, -12, 30, -58][i], [-30, -60, -50, 30][i], 18).fill(swatch[col].fill),
+    );
   c.addChild(palette);
   return c;
 }
@@ -1018,13 +1238,14 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'free') return 'Rainbow painting';
     if (p.mode === 'pots') return 'Paint pots: pick a color and hear its name';
     if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
-    if (p.mode === 'recall') return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
+    if (p.mode === 'recall')
+      return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
     if (p.mode === 'mix') return 'Mixing colors: red and yellow make orange';
     return 'Paint the pumpkin: remember orange, then mix red and yellow';
   },
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: 'Guide {name}\'s finger in big swoops, then let go and watch.',
+  coplayHint: "Guide {name}'s finger in big swoops, then let go and watch.",
   offScreen: 'Finger-paint with yogurt and a drop of food coloring on the high-chair tray.',
   hubIcon: () => new Easel(),
   sticker,

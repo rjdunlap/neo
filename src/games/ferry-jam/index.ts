@@ -16,29 +16,82 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
-import { LEVELS, blockers, boatToward, distance, docked, FERRY, ferries, focusPath, hintSlide, parse, planFor, reach, sailed, settle, solve, solved, start, stuck, YELLOW, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
+import {
+  LEVELS,
+  blockers,
+  boatToward,
+  distance,
+  docked,
+  FERRY,
+  ferries,
+  focusPath,
+  hintSlide,
+  parse,
+  planFor,
+  reach,
+  sailed,
+  settle,
+  solve,
+  solved,
+  start,
+  stuck,
+  YELLOW,
+  type FerryPlan,
+  type Harbor,
+  type Layout,
+  type Slide,
+} from './logic';
 
 const CELL = 100;
 /** Colors for the boats besides the ferry. */
-const HULLS: ColorName[] = ['blue', 'green', 'purple', 'orange', 'teal', 'pink', 'yellow', 'brown', 'blue', 'green'];
+const HULLS: ColorName[] = [
+  'blue',
+  'green',
+  'purple',
+  'orange',
+  'teal',
+  'pink',
+  'yellow',
+  'brown',
+  'blue',
+  'green',
+];
 
 /** A boat lying sideways in `len` cells, its stern at the left, drawn at the origin. A ferry is red, or yellow for the second one. */
 function boatArt(len: number, ferry: boolean, color: ColorName): Container {
   const w = len * CELL;
   const sw = swatch[color];
   const g = new Graphics()
-    .roundRect(6, 16, w - 12, CELL - 32, 30).fill(sw.line)
-    .roundRect(6, 10, w - 12, CELL - 32, 30).fill(sw.fill).stroke({ width: 5, color: sw.line })
-    .roundRect(22, 26, w - 44, CELL - 62, 16).fill(sw.light);
+    .roundRect(6, 16, w - 12, CELL - 32, 30)
+    .fill(sw.line)
+    .roundRect(6, 10, w - 12, CELL - 32, 30)
+    .fill(sw.fill)
+    .stroke({ width: 5, color: sw.line })
+    .roundRect(22, 26, w - 44, CELL - 62, 16)
+    .fill(sw.light);
   if (ferry) {
     // A cabin with a funnel and a flag at the bow.
-    g.roundRect(w * 0.2, 22, w * 0.44, CELL - 54, 12).fill(0xffffff).stroke({ width: 4, color: swatch.white.line });
-    g.roundRect(w * 0.34, 8, 22, 22, 6).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
-    g.moveTo(w - 26, 18).lineTo(w - 26, -4).stroke({ width: 4, color: swatch.brown.line, cap: 'round' });
-    g.poly([w - 26, -4, w - 6, 3, w - 26, 10]).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line, join: 'round' });
-    for (const x of [0.28, 0.4, 0.52]) g.circle(w * x, 42, 6).fill(swatch.blue.light).stroke({ width: 2, color: swatch.blue.line });
+    g.roundRect(w * 0.2, 22, w * 0.44, CELL - 54, 12)
+      .fill(0xffffff)
+      .stroke({ width: 4, color: swatch.white.line });
+    g.roundRect(w * 0.34, 8, 22, 22, 6)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 3, color: swatch.yellow.line });
+    g.moveTo(w - 26, 18)
+      .lineTo(w - 26, -4)
+      .stroke({ width: 4, color: swatch.brown.line, cap: 'round' });
+    g.poly([w - 26, -4, w - 6, 3, w - 26, 10])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 2, color: swatch.yellow.line, join: 'round' });
+    for (const x of [0.28, 0.4, 0.52])
+      g.circle(w * x, 42, 6)
+        .fill(swatch.blue.light)
+        .stroke({ width: 2, color: swatch.blue.line });
   } else {
-    for (let i = 0; i < len; i++) g.circle(CELL * (i + 0.5), 40, 9).fill(0xffffff).stroke({ width: 3, color: sw.line });
+    for (let i = 0; i < len; i++)
+      g.circle(CELL * (i + 0.5), 40, 9)
+        .fill(0xffffff)
+        .stroke({ width: 3, color: sw.line });
   }
   const c = new Container();
   c.addChild(g);
@@ -49,8 +102,16 @@ function boatArt(len: number, ferry: boolean, color: ColorName): Container {
 function rockArt(): Graphics {
   const r = CELL / 2;
   const g = new Graphics().circle(0, 4, r - 6).fill({ color: 0xffffff, alpha: 0.75 });
-  g.poly([-34, 18, -38, -6, -22, -30, 6, -36, 30, -22, 38, 4, 28, 26, -6, 32]).fill(swatch.white.line).stroke({ width: 5, color: ink, alpha: 0.55, join: 'round' });
-  g.poly([-24, -8, -14, -24, 6, -28, 20, -18]).stroke({ width: 6, color: swatch.white.light, alpha: 0.8, cap: 'round', join: 'round' });
+  g.poly([-34, 18, -38, -6, -22, -30, 6, -36, 30, -22, 38, 4, 28, 26, -6, 32])
+    .fill(swatch.white.line)
+    .stroke({ width: 5, color: ink, alpha: 0.55, join: 'round' });
+  g.poly([-24, -8, -14, -24, 6, -28, 20, -18]).stroke({
+    width: 6,
+    color: swatch.white.light,
+    alpha: 0.8,
+    cap: 'round',
+    join: 'round',
+  });
   g.circle(14, 12, 5).fill({ color: ink, alpha: 0.18 });
   g.circle(-12, 16, 3.5).fill({ color: ink, alpha: 0.18 });
   return g;
@@ -167,17 +228,27 @@ class FerryJam implements Game {
     if (this.asking && this.askGlow) {
       const i = blockers(this.harbor, this.layout)[0];
       const box = this.boxOf(i, this.layout[i]);
-      g.roundRect(box.x, box.y, box.width, box.height, 22).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+      g.roundRect(box.x, box.y, box.width, box.height, 22).stroke({
+        width: 6 + 2 * Math.sin(this.clock * 6),
+        color: swatch.yellow.fill,
+      });
     }
     if (!this.hinted) return;
     const b = this.harbor.boats[this.hinted.boat];
     const at = this.layout[this.hinted.boat];
-    const box = (p: number) => (b.dir === 'h' ? new Rectangle(p * CELL + 4, b.row * CELL + 4, b.len * CELL - 8, CELL - 8) : new Rectangle(b.col * CELL + 4, p * CELL + 4, CELL - 8, b.len * CELL - 8));
+    const box = (p: number) =>
+      b.dir === 'h'
+        ? new Rectangle(p * CELL + 4, b.row * CELL + 4, b.len * CELL - 8, CELL - 8)
+        : new Rectangle(b.col * CELL + 4, p * CELL + 4, CELL - 8, b.len * CELL - 8);
     const pulse = 6 + 2 * Math.sin(this.clock * 6);
     const now = box(at);
     g.roundRect(now.x, now.y, now.width, now.height, 22).stroke({ width: pulse, color: swatch.yellow.fill });
     const to = box(this.hinted.to);
-    g.roundRect(to.x, to.y, to.width, to.height, 22).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
+    g.roundRect(to.x, to.y, to.width, to.height, 22).stroke({
+      width: 4,
+      color: swatch.yellow.fill,
+      alpha: 0.7,
+    });
   }
 
   destroy() {
@@ -239,7 +310,9 @@ class FerryJam implements Game {
     this.told = true;
     if (this.course) return this.ctx.instruct('ferry.start');
     if (this.plan.entry) return this.ctx.instruct('ferry.start.one');
-    return this.ctx.instruct(this.harbor.yellow ? 'ferry.both' : this.harbor.rocks?.length ? 'ferry.start.rocks' : 'ferry.start');
+    return this.ctx.instruct(
+      this.harbor.yellow ? 'ferry.both' : this.harbor.rocks?.length ? 'ferry.start.rocks' : 'ferry.start',
+    );
   }
 
   private makeBoat(i: number, len: number, ferry: boolean): Container {
@@ -248,7 +321,11 @@ class FerryJam implements Game {
     // With two ferries the yellow one is boats[1], so the other boats count from 2 and never wear yellow.
     const hulls = this.harbor.yellow ? HULLS.filter((c) => c !== 'yellow') : HULLS;
     const first = this.harbor.yellow ? 2 : 1;
-    const art = boatArt(len, ferry, i === FERRY ? 'red' : ferry ? 'yellow' : hulls[(i - first + hulls.length) % hulls.length]);
+    const art = boatArt(
+      len,
+      ferry,
+      i === FERRY ? 'red' : ferry ? 'yellow' : hulls[(i - first + hulls.length) % hulls.length],
+    );
     if (b.dir === 'v') {
       // Stand it up: turned a quarter, with its corner kept at the node's origin.
       art.rotation = Math.PI / 2;
@@ -334,7 +411,9 @@ class FerryJam implements Game {
   private cellXY(i: number, p: number): { x: number; y: number } {
     const b = this.harbor.boats[i];
     const { w, h } = this.sizeOf(i);
-    return b.dir === 'h' ? { x: p * CELL + w / 2, y: b.row * CELL + h / 2 } : { x: b.col * CELL + w / 2, y: p * CELL + h / 2 };
+    return b.dir === 'h'
+      ? { x: p * CELL + w / 2, y: b.row * CELL + h / 2 }
+      : { x: b.col * CELL + w / 2, y: p * CELL + h / 2 };
   }
 
   private placeAll(animate: boolean) {
@@ -385,7 +464,10 @@ class FerryJam implements Game {
     const b = this.harbor.boats[i];
     const node = this.nodes[i];
     const { w, h } = this.sizeOf(i);
-    const p = Math.min(held.max, Math.max(held.min, Math.round((b.dir === 'h' ? node.x - w / 2 : node.y - h / 2) / CELL)));
+    const p = Math.min(
+      held.max,
+      Math.max(held.min, Math.round((b.dir === 'h' ? node.x - w / 2 : node.y - h / 2) / CELL)),
+    );
     const was = this.layout[i];
     const at = this.cellXY(i, p);
     node.scale.set(1);
@@ -487,7 +569,14 @@ class FerryJam implements Game {
     sfx.whoosh();
     await this.fly(last, false);
     const at = this.ctx.stage.toLocal(ferry.getGlobalPosition());
-    this.ctx.particles.burst(at.x, at.y + 40, { kind: 'dot', colors: [0xffffff, swatch.blue.light], count: 14, speed: [60, 200], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(at.x, at.y + 40, {
+      kind: 'dot',
+      colors: [0xffffff, swatch.blue.light],
+      count: 14,
+      speed: [60, 200],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     sfx.sparkle();
     await this.ctx.say(this.moves <= fewest ? 'ferry.best' : 'ferry.out');
@@ -518,7 +607,10 @@ class FerryJam implements Game {
   /** The score for the harbor just cleared, over the board for a moment. */
   private async harborScore(fewest: number) {
     const total = this.harbors.length;
-    const text = this.moves === fewest ? `Harbor ${this.index + 1} of ${total}: ${this.moves} slides, the fewest possible!` : `Harbor ${this.index + 1} of ${total}: ${this.moves} slides (fewest ${fewest})`;
+    const text =
+      this.moves === fewest
+        ? `Harbor ${this.index + 1} of ${total}: ${this.moves} slides, the fewest possible!`
+        : `Harbor ${this.index + 1} of ${total}: ${this.moves} slides (fewest ${fewest})`;
     const note = label(text, 34, ink);
     note.position.set(this.board.x + (this.n * CELL) / 2, Math.max(48, this.board.y - 46));
     note.alpha = 0;
@@ -531,25 +623,48 @@ class FerryJam implements Game {
 
   private boxOf(i: number, p: number) {
     const b = this.harbor.boats[i];
-    return b.dir === 'h' ? new Rectangle(p * CELL + 4, b.row * CELL + 4, b.len * CELL - 8, CELL - 8) : new Rectangle(b.col * CELL + 4, p * CELL + 4, CELL - 8, b.len * CELL - 8);
+    return b.dir === 'h'
+      ? new Rectangle(p * CELL + 4, b.row * CELL + 4, b.len * CELL - 8, CELL - 8)
+      : new Rectangle(b.col * CELL + 4, p * CELL + 4, CELL - 8, b.len * CELL - 8);
   }
 
   /** The highlight on the boat the stick is on; a picked-up boat also shows the way it can slide. */
   private drawFocus(g: Graphics) {
     if (!this.harbor) return;
-    const held = this.grab, i = held ? held.boat : this.focus, b = this.harbor.boats[i];
+    const held = this.grab,
+      i = held ? held.boat : this.focus,
+      b = this.harbor.boats[i];
     const box = this.boxOf(i, held ? held.p : this.layout[i]);
-    g.roundRect(box.x - 3, box.y - 3, box.width + 6, box.height + 6, 24).stroke({ width: held ? 8 : 6, color: ink });
+    g.roundRect(box.x - 3, box.y - 3, box.width + 6, box.height + 6, 24).stroke({
+      width: held ? 8 : 6,
+      color: ink,
+    });
     if (!held) return;
     // Arrowheads past each end of the lane it can still go along.
-    const bob = 4 * Math.sin(this.clock * 8), mid = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    const bob = 4 * Math.sin(this.clock * 8),
+      mid = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
     const head = (dx: number, dy: number, ok: boolean) => {
       if (!ok) return;
-      const tx = mid.x + dx * (box.width / 2 + 22 + bob), ty = mid.y + dy * (box.height / 2 + 22 + bob);
-      g.poly([tx, ty, tx - dx * 18 - dy * 16, ty - dy * 18 + dx * 16, tx - dx * 18 + dy * 16, ty - dy * 18 - dx * 16]).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
+      const tx = mid.x + dx * (box.width / 2 + 22 + bob),
+        ty = mid.y + dy * (box.height / 2 + 22 + bob);
+      g.poly([
+        tx,
+        ty,
+        tx - dx * 18 - dy * 16,
+        ty - dy * 18 + dx * 16,
+        tx - dx * 18 + dy * 16,
+        ty - dy * 18 - dx * 16,
+      ])
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
     };
-    if (b.dir === 'h') { head(-1, 0, held.p > held.min); head(1, 0, held.p < held.max); }
-    else { head(0, -1, held.p > held.min); head(0, 1, held.p < held.max); }
+    if (b.dir === 'h') {
+      head(-1, 0, held.p > held.min);
+      head(1, 0, held.p < held.max);
+    } else {
+      head(0, -1, held.p > held.min);
+      head(0, 1, held.p < held.max);
+    }
   }
 
   /** A finger came back after keys on the island: a boat held by keys goes back, and the undo button returns. */
@@ -601,11 +716,14 @@ class FerryJam implements Game {
     sfx.pop(3 + i);
   }
 
-  private node(i: number) { return this.nodes[i]; }
+  private node(i: number) {
+    return this.nodes[i];
+  }
 
   /** One cell along the picked-up boat's lane, if the stick points along it and there is room. */
   private shift(dir: number) {
-    const g = this.grab!, b = this.harbor.boats[g.boat];
+    const g = this.grab!,
+      b = this.harbor.boats[g.boat];
     const delta = b.dir === 'h' ? (dir === 0 ? 1 : dir === 2 ? -1 : 0) : dir === 1 ? 1 : dir === 3 ? -1 : 0;
     if (!delta) return;
     const p = Math.min(g.max, Math.max(g.min, g.p + delta));
@@ -638,7 +756,10 @@ class FerryJam implements Game {
     this.grab = null;
     const node = this.node(g.boat);
     node.scale.set(1);
-    void this.ctx.tw.to(node, this.cellXY(g.boat, this.layout[g.boat]), { duration: 0.12, ease: ease.outQuad });
+    void this.ctx.tw.to(node, this.cellXY(g.boat, this.layout[g.boat]), {
+      duration: 0.12,
+      ease: ease.outQuad,
+    });
     sfx.pop(2);
   }
 
@@ -683,16 +804,25 @@ class FerryJam implements Game {
       return out;
     }
     const key = this.layout.join(',');
-    if (this.botPlan?.key !== key) this.botPlan = { key, slide: solve(this.harbor, this.layout)?.[0] ?? null };
+    if (this.botPlan?.key !== key)
+      this.botPlan = { key, slide: solve(this.harbor, this.layout)?.[0] ?? null };
     const next = this.botPlan.slide;
     if (!next) return out;
     const p = out.players[0];
     p.active = true;
-    const g = this.grab, b = this.harbor.boats[next.boat];
+    const g = this.grab,
+      b = this.harbor.boats[next.boat];
     if (g) {
-      if (g.boat !== next.boat) { p.undo = true; this.botWait = 0.3; }
-      else if (g.p === next.to) { p.action = true; this.botWait = 0.4; }
-      else { p.direction = b.dir === 'h' ? (next.to > g.p ? 0 : 2) : next.to > g.p ? 1 : 3; this.botWait = 0.22; }
+      if (g.boat !== next.boat) {
+        p.undo = true;
+        this.botWait = 0.3;
+      } else if (g.p === next.to) {
+        p.action = true;
+        this.botWait = 0.4;
+      } else {
+        p.direction = b.dir === 'h' ? (next.to > g.p ? 0 : 2) : next.to > g.p ? 1 : 3;
+        this.botWait = 0.22;
+      }
       return out;
     }
     if (this.focus !== next.boat) {
@@ -710,20 +840,36 @@ class FerryJam implements Game {
   private drawWater() {
     const w = this.n * CELL;
     const g = this.water.clear();
-    g.roundRect(-14, -14, w + 28, w + 28, 26).fill(swatch.blue.light).stroke({ width: 7, color: wood.line });
+    g.roundRect(-14, -14, w + 28, w + 28, 26)
+      .fill(swatch.blue.light)
+      .stroke({ width: 7, color: wood.line });
     for (let r = 0; r < this.n; r++)
-      for (let c = 0; c < this.n; c++) g.roundRect(c * CELL + 5, r * CELL + 5, CELL - 10, CELL - 10, 16).fill({ color: swatch.blue.fill, alpha: (r + c) % 2 ? 0.18 : 0.28 });
+      for (let c = 0; c < this.n; c++)
+        g.roundRect(c * CELL + 5, r * CELL + 5, CELL - 10, CELL - 10, 16).fill({
+          color: swatch.blue.fill,
+          alpha: (r + c) % 2 ? 0.18 : 0.28,
+        });
     // The dock: a gap in the wall on the ferry's row, with planks running out of the harbor.
     const exit = this.harbor ? this.harbor.boats[FERRY].row : 1;
     g.rect(w + 4, exit * CELL + 10, 24, CELL - 20).fill(swatch.blue.light);
-    g.roundRect(w + 8, exit * CELL + 8, 100, CELL - 16, 12).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    for (let x = w + 30; x < w + 104; x += 24) g.moveTo(x, exit * CELL + 12).lineTo(x, exit * CELL + CELL - 12).stroke({ width: 3, color: wood.line, alpha: 0.6 });
+    g.roundRect(w + 8, exit * CELL + 8, 100, CELL - 16, 12)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+    for (let x = w + 30; x < w + 104; x += 24)
+      g.moveTo(x, exit * CELL + 12)
+        .lineTo(x, exit * CELL + CELL - 12)
+        .stroke({ width: 3, color: wood.line, alpha: 0.6 });
     if (!this.harbor?.yellow) return;
     // The yellow ferry's dock: the same, turned to run out of the bottom wall below its column.
     const col = this.harbor.boats[YELLOW].col;
     g.rect(col * CELL + 10, w + 4, CELL - 20, 24).fill(swatch.blue.light);
-    g.roundRect(col * CELL + 8, w + 8, CELL - 16, 100, 12).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    for (let y = w + 30; y < w + 104; y += 24) g.moveTo(col * CELL + 12, y).lineTo(col * CELL + CELL - 12, y).stroke({ width: 3, color: wood.line, alpha: 0.6 });
+    g.roundRect(col * CELL + 8, w + 8, CELL - 16, 100, 12)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+    for (let y = w + 30; y < w + 104; y += 24)
+      g.moveTo(col * CELL + 12, y)
+        .lineTo(col * CELL + CELL - 12, y)
+        .stroke({ width: 3, color: wood.line, alpha: 0.6 });
   }
 
   private async finale() {
@@ -751,7 +897,10 @@ function solveLength(h: Harbor, from: Layout): number {
 class FerryIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const panel = new Graphics().roundRect(-100, -210, 200, 200, 22).fill(swatch.blue.light).stroke({ width: 6, color: wood.line });
+    const panel = new Graphics()
+      .roundRect(-100, -210, 200, 200, 22)
+      .fill(swatch.blue.light)
+      .stroke({ width: 6, color: wood.line });
     c.addChild(panel);
     const ferry = boatArt(2, true, 'red');
     ferry.scale.set(0.6);
@@ -775,7 +924,9 @@ class FerryIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 80).fill(swatch.blue.light).stroke({ width: 6, color: swatch.blue.line }));
+  c.addChild(
+    new Graphics().circle(0, 0, 80).fill(swatch.blue.light).stroke({ width: 6, color: swatch.blue.line }),
+  );
   const ferry = rng.chance(0.5);
   const hull = rng.pick(HULLS);
   const boat = boatArt(2, ferry, ferry ? 'red' : hull);
@@ -799,8 +950,10 @@ export const ferryJam: GameModule = {
   entryLevels: [9, 10],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Share the boats: one of you slides the ones lying sideways, the other the ones standing up. Talk about which has to go first.',
-  offScreen: 'Slide small boxes or toy cars on a tray with a few gaps so one of them can slide out of a notch in the edge.',
+  coplayHint:
+    'Share the boats: one of you slides the ones lying sideways, the other the ones standing up. Talk about which has to go first.',
+  offScreen:
+    'Slide small boxes or toy cars on a tray with a few gaps so one of them can slide out of a notch in the edge.',
   hubIcon: () => new FerryIcon(),
   touchDemo: true,
   sticker,

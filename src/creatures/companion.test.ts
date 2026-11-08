@@ -3,16 +3,35 @@ import { describe, expect, it } from 'vitest';
 import { Critter, CRITTERS } from '../art/critter';
 import { IllustratedCreature, sameArt } from '../art/creatures/illustrated';
 import { ITEM_ART, SLOT, WEARABLES, type ItemTextures, type WearableId } from '../art/creatures/wearables';
-import { Companion, companion, EGG, EGG_STAGES, GUIDE_SCALE, GUIDE_LEAVES_OFF, hueOf, hueTurn, makeCompanion, useItems, wearableBy } from './companion';
+import {
+  Companion,
+  companion,
+  EGG,
+  EGG_STAGES,
+  GUIDE_SCALE,
+  GUIDE_LEAVES_OFF,
+  hueOf,
+  hueTurn,
+  makeCompanion,
+  useItems,
+  wearableBy,
+} from './companion';
 import { SPECIES, SPECIES_IDS } from './species';
 import eggWhole from './art/egg-sprout.png?inline';
 import eggCrack from './art/egg-sprout-crack.png?inline';
 import eggOpen from './art/egg-sprout-open.png?inline';
 
-const PNGS: Record<string, string> = { 'egg-sprout': eggWhole, 'egg-sprout-crack': eggCrack, 'egg-sprout-open': eggOpen };
+const PNGS: Record<string, string> = {
+  'egg-sprout': eggWhole,
+  'egg-sprout-crack': eggCrack,
+  'egg-sprout-open': eggOpen,
+};
 
 const art = sameArt(Texture.WHITE);
-const bounds = (c: { getLocalBounds(): { minX: number; maxX: number; minY: number; maxY: number } }, s: number) => {
+const bounds = (
+  c: { getLocalBounds(): { minX: number; maxX: number; minY: number; maxY: number } },
+  s: number,
+) => {
   const b = c.getLocalBounds();
   return { minX: b.minX * s, maxX: b.maxX * s, minY: b.minY * s, maxY: b.maxY * s };
 };
@@ -46,7 +65,12 @@ describe('the companion (RW05)', () => {
   });
 
   // Each item as a texture of its prepared sprite's size, so a worn item takes the room it will on screen.
-  const items: ItemTextures = Object.fromEntries(WEARABLES.map((w) => [ITEM_ART[w].file, new Texture({ source: new TextureSource({ width: ITEM_ART[w].width, height: ITEM_ART[w].height }) })]));
+  const items: ItemTextures = Object.fromEntries(
+    WEARABLES.map((w) => [
+      ITEM_ART[w].file,
+      new Texture({ source: new TextureSource({ width: ITEM_ART[w].width, height: ITEM_ART[w].height }) }),
+    ]),
+  );
 
   /** Every fullest outfit a species can wear: each head item (or none) with every other item that fits it. */
   const outfits = (species: (typeof SPECIES_IDS)[number]): WearableId[][] => {
@@ -66,7 +90,11 @@ describe('the companion (RW05)', () => {
     const pip = bounds(new Critter(CRITTERS.pip), GUIDE_SCALE);
     for (const species of SPECIES_IDS) {
       for (const worn of outfits(species)) {
-        const c = new Companion({ species, look: { color: SPECIES[species].color, worn } }, art, GUIDE_LEAVES_OFF);
+        const c = new Companion(
+          { species, look: { color: SPECIES[species].color, worn } },
+          art,
+          GUIDE_LEAVES_OFF,
+        );
         const shown = c.rig.children.length;
         const b = bounds(c, GUIDE_SCALE);
         const what = `${species} in ${worn.join(', ')}`;
@@ -79,7 +107,10 @@ describe('the companion (RW05)', () => {
       }
     }
     // Without leaving the umbrella off, the sprout would reach past the corner: the reason the guide drops `held`.
-    const held = bounds(new Companion({ species: 'sprout', look: { color: 'teal', worn: ['umbrella'] } }, art), GUIDE_SCALE);
+    const held = bounds(
+      new Companion({ species: 'sprout', look: { color: 'teal', worn: ['umbrella'] } }, art),
+      GUIDE_SCALE,
+    );
     expect(held.maxX).toBeGreaterThan(pip.maxX + 40);
     useItems({});
   });

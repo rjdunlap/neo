@@ -20,9 +20,11 @@ export interface VoiceInfo {
 export type VoiceQuality = 'premium' | 'enhanced' | 'standard';
 
 /** Novelty voices: never the pet's voice. */
-const NOVELTY = /^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|hysterical|deranged|pipe organ)\b/i;
+const NOVELTY =
+  /^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|hysterical|deranged|pipe organ)\b/i;
 /** Eloquence and old MacinTalk voices: robotic, used only when nothing else is there. */
-const ROBOTIC = /^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|fred|junior|ralph|kathy|victoria|bruce|agnes|vicki)\b/i;
+const ROBOTIC =
+  /^(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|fred|junior|ralph|kathy|victoria|bruce|agnes|vicki)\b/i;
 const FRIENDLY = /^(samantha|ava|allison|susan|zoe|karen|tessa|serena|evan|nathan|joelle|noelle)\b/i;
 
 export function voiceQuality(v: VoiceInfo): VoiceQuality {

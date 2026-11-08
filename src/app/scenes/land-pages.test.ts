@@ -3,8 +3,8 @@ import { clampLandPage, landFor, landPages, olderIn, visibleIn } from '../../con
 import { GAMES } from '../../games/registry';
 import { forgetLands, rememberedPage, rememberPage } from './LandScene';
 
-describe('a full land\'s pages', () => {
-  it('remembers each side\'s page for the session, and forgets them all when another player comes', () => {
+describe("a full land's pages", () => {
+  it("remembers each side's page for the session, and forgets them all when another player comes", () => {
     forgetLands();
     expect(rememberedPage('tinker-lab', false)).toBe(0);
     rememberPage('tinker-lab', false, 1);

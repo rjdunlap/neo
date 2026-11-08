@@ -19,15 +19,51 @@ export interface BeatPlan {
 }
 
 export const PLANS: BeatPlan[] = [
-  { mode: 'free', steps: 4, rows: 2, beats: 1, name: 'Make any beat with drum and clap; it plays round and round' },
+  {
+    mode: 'free',
+    steps: 4,
+    rows: 2,
+    beats: 1,
+    name: 'Make any beat with drum and clap; it plays round and round',
+  },
   { mode: 'see', steps: 4, rows: 2, beats: 3, name: 'Copy a beat you can see: fill the faint squares' },
   { mode: 'hear', steps: 4, rows: 2, beats: 3, name: 'Copy a beat by ear: listen, build it, then check' },
-  { mode: 'repeat', steps: 8, rows: 2, beats: 2, name: 'Make the pattern repeat: the second half matches the first' },
+  {
+    mode: 'repeat',
+    steps: 8,
+    rows: 2,
+    beats: 2,
+    name: 'Make the pattern repeat: the second half matches the first',
+  },
   { mode: 'hear', steps: 8, rows: 3, beats: 2, name: 'A longer beat by ear, with drum, clap and bell' },
-  { mode: 'mend', steps: 4, rows: 2, beats: 3, name: 'Mend the beat: one sound in your copy is missing or extra; fix it, then check' },
-  { mode: 'revise', steps: 4, rows: 2, beats: 2, name: 'Keep the drum, change the claps: listen, then move the claps to match' },
-  { mode: 'sections', steps: 4, rows: 2, beats: 1, name: 'A and B: make a part, copy it, change the copy, then hear one part after the other' },
-  { mode: 'return', steps: 4, rows: 2, beats: 1, name: 'A returning song: put the first part back at the end, change the parts if you like, then hear it' },
+  {
+    mode: 'mend',
+    steps: 4,
+    rows: 2,
+    beats: 3,
+    name: 'Mend the beat: one sound in your copy is missing or extra; fix it, then check',
+  },
+  {
+    mode: 'revise',
+    steps: 4,
+    rows: 2,
+    beats: 2,
+    name: 'Keep the drum, change the claps: listen, then move the claps to match',
+  },
+  {
+    mode: 'sections',
+    steps: 4,
+    rows: 2,
+    beats: 1,
+    name: 'A and B: make a part, copy it, change the copy, then hear one part after the other',
+  },
+  {
+    mode: 'return',
+    steps: 4,
+    rows: 2,
+    beats: 1,
+    name: 'A returning song: put the first part back at the end, change the parts if you like, then hear it',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -42,7 +78,8 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 /** A beat: rows × steps of on/off. */
 export type Beat = boolean[][];
 
-export const empty = (rows: number, steps: number): Beat => Array.from({ length: rows }, () => Array<boolean>(steps).fill(false));
+export const empty = (rows: number, steps: number): Beat =>
+  Array.from({ length: rows }, () => Array<boolean>(steps).fill(false));
 
 /** Row identity is shared by pictures, playback and spoken support. */
 export const INSTRUMENTS = [
@@ -60,7 +97,9 @@ export interface BeatPhrase {
 
 /** Authored on/off matrices: 1 sounds, 0 rests. */
 const phrase = (id: string, name: string, rows: readonly string[]): BeatPhrase => ({
-  id, name, score: rows.map((row) => [...row].map((cell) => cell === '1')),
+  id,
+  name,
+  score: rows.map((row) => [...row].map((cell) => cell === '1')),
 });
 
 export const SHORT_PHRASES: readonly BeatPhrase[] = [
@@ -96,10 +135,14 @@ export const LONG_PHRASES: readonly BeatPhrase[] = [
 export function roundPhrases(plan: BeatPlan, rng: Rng): { id: string; name: string; beat: Beat }[] {
   if (plan.mode === 'free') return [];
   const pool = plan.rows === 3 ? LONG_PHRASES : SHORT_PHRASES;
-  return rng.shuffle([...pool]).slice(0, plan.beats).map((p) => ({
-    id: p.id, name: p.name,
-    beat: p.score.map((row) => plan.mode === 'repeat' ? [...row, ...row] : [...row]),
-  }));
+  return rng
+    .shuffle([...pool])
+    .slice(0, plan.beats)
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      beat: p.score.map((row) => (plan.mode === 'repeat' ? [...row, ...row] : [...row])),
+    }));
 }
 
 /**
@@ -118,7 +161,8 @@ export function mendCopy(model: Beat, round: number, rng: Rng): Beat {
 /** The first square where her beat differs from the model, for the spoken hint. */
 export const firstMismatch = (target: Beat, have: Beat) => {
   for (let step = 0; step < target[0].length; step++)
-    for (let row = 0; row < target.length; row++) if (target[row][step] !== have[row][step]) return { row, step };
+    for (let row = 0; row < target.length; row++)
+      if (target[row][step] !== have[row][step]) return { row, step };
   return null;
 };
 
@@ -133,10 +177,12 @@ export function makeBeat(plan: BeatPlan, rng: Rng): Beat {
     const beat = empty(plan.rows, plan.steps);
     for (let r = 0; r < plan.rows; r++) {
       const hits = rng.int(1, Math.min(3, half - 1));
-      for (const s of rng.shuffle(Array.from({ length: half }, (_, i) => i)).slice(0, hits)) beat[r][s] = true;
+      for (const s of rng.shuffle(Array.from({ length: half }, (_, i) => i)).slice(0, hits))
+        beat[r][s] = true;
     }
     beat[0][0] = true;
-    if (plan.mode === 'repeat') for (let r = 0; r < plan.rows; r++) for (let s = 0; s < half; s++) beat[r][s + half] = beat[r][s];
+    if (plan.mode === 'repeat')
+      for (let r = 0; r < plan.rows; r++) for (let s = 0; s < half; s++) beat[r][s + half] = beat[r][s];
     const crowded = Array.from({ length: plan.steps }, (_, s) => beat.every((row) => row[s])).some(Boolean);
     if (!crowded || plan.rows < 3) return beat;
   }
@@ -146,7 +192,8 @@ export function makeBeat(plan: BeatPlan, rng: Rng): Beat {
 export const givenStep = (plan: BeatPlan, step: number) => plan.mode === 'repeat' && step < plan.steps / 2;
 
 /** A square she cannot change: the first half on repeat levels, the whole drum row when revising. */
-export const givenCell = (plan: BeatPlan, row: number, step: number) => givenStep(plan, step) || (plan.mode === 'revise' && row === 0);
+export const givenCell = (plan: BeatPlan, row: number, step: number) =>
+  givenStep(plan, step) || (plan.mode === 'revise' && row === 0);
 
 /**
  * The start of a revise round: the drum is as in the target; the claps are a different pattern that
@@ -154,8 +201,9 @@ export const givenCell = (plan: BeatPlan, row: number, step: number) => givenSte
  */
 export function reviseStart(target: Beat, rng: Rng): Beat {
   const want = target[1];
-  const options = Array.from({ length: 16 }, (_, n) => [0, 1, 2, 3].map((s) => ((n >> s) & 1) === 1)).filter((row) =>
-    row.some((on, s) => on && !want[s]) && want.some((on, s) => on && !row[s]));
+  const options = Array.from({ length: 16 }, (_, n) => [0, 1, 2, 3].map((s) => ((n >> s) & 1) === 1)).filter(
+    (row) => row.some((on, s) => on && !want[s]) && want.some((on, s) => on && !row[s]),
+  );
   const clap = rng.pick(options);
   return [[...target[0]], clap];
 }
@@ -164,7 +212,9 @@ export const same = (a: Beat, b: Beat) => a.every((row, r) => row.every((on, s) 
 
 /** Steps where the child's beat differs from the target: for the hint. */
 export const differences = (target: Beat, have: Beat) =>
-  Array.from({ length: target[0].length }, (_, s) => s).filter((s) => target.some((row, r) => row[s] !== have[r][s]));
+  Array.from({ length: target[0].length }, (_, s) => s).filter((s) =>
+    target.some((row, r) => row[s] !== have[r][s]),
+  );
 
 /** How many squares are on: free play finishes once the beat has a few sounds. */
 export const hits = (b: Beat) => b.flat().filter(Boolean).length;
@@ -194,8 +244,12 @@ export type BeatMove = { row: number; step: number } | 'check';
  */
 export function beatMove(plan: BeatPlan, goal: Beat, beat: Beat, checkShowing: boolean): BeatMove | null {
   for (let step = 0; step < plan.steps; step++)
-    for (let row = 0; row < plan.rows; row++) if (goal[row][step] !== beat[row][step] && !givenCell(plan, row, step)) return { row, step };
-  return (plan.mode === 'hear' || plan.mode === 'free' || plan.mode === 'mend' || plan.mode === 'revise') && checkShowing ? 'check' : null;
+    for (let row = 0; row < plan.rows; row++)
+      if (goal[row][step] !== beat[row][step] && !givenCell(plan, row, step)) return { row, step };
+  return (plan.mode === 'hear' || plan.mode === 'free' || plan.mode === 'mend' || plan.mode === 'revise') &&
+    checkShowing
+    ? 'check'
+    : null;
 }
 
 /** One finite replay tick. The final tick returns to the live beat after the last target step's full interval. */
@@ -205,15 +259,24 @@ export function replayTick(steps: number, remaining: number) {
 
 /** Specific editable repairs, recomputed after every edit so help never asks for an already fixed cell. */
 export function repairs(plan: BeatPlan, target: Beat, have: Beat) {
-  return target.flatMap((row, r) => row.flatMap((on, step) =>
-    !givenCell(plan, r, step) && on !== have[r][step] ? [{ row: r, step, add: on }] : []));
+  return target.flatMap((row, r) =>
+    row.flatMap((on, step) =>
+      !givenCell(plan, r, step) && on !== have[r][step] ? [{ row: r, step, add: on }] : [],
+    ),
+  );
 }
 
 /** Two sections of a piece (level 8): each a drum-and-clap loop of four steps. */
-export interface Piece { a: Beat; b: Beat }
+export interface Piece {
+  a: Beat;
+  b: Beat;
+}
 export type SectionId = 'a' | 'b';
 
-export const newPiece = (plan: BeatPlan): Piece => ({ a: empty(plan.rows, plan.steps), b: empty(plan.rows, plan.steps) });
+export const newPiece = (plan: BeatPlan): Piece => ({
+  a: empty(plan.rows, plan.steps),
+  b: empty(plan.rows, plan.steps),
+});
 export const clonePiece = (p: Piece): Piece => ({ a: p.a.map((r) => [...r]), b: p.b.map((r) => [...r]) });
 
 /** Why Done is not ready yet, in the order a child would fix it; null when it is. Never a miss. */
@@ -225,13 +288,23 @@ export function pieceGate(p: Piece, previewed: boolean): 'empty-a' | 'empty-b' |
 }
 
 /** The order the preview plays: every step of A, then every step of B. */
-export const previewOrder = (steps: number, order: readonly SectionId[] = ['a', 'b']): { section: SectionId; step: number }[] =>
+export const previewOrder = (
+  steps: number,
+  order: readonly SectionId[] = ['a', 'b'],
+): { section: SectionId; step: number }[] =>
   order.flatMap((section) => Array.from({ length: steps }, (_, step) => ({ section, step })));
 
 /** Level 9: three cards in a row; the song returns when they read circle, square, circle. */
 export type SectionOrder = [SectionId, SectionId, SectionId];
-export const isReturning = (order: readonly SectionId[]) => order[0] === 'a' && order[1] === 'b' && order[2] === 'a';
-const WRONG_ORDERS: SectionOrder[] = [['a', 'a', 'b'], ['a', 'b', 'b'], ['b', 'a', 'a'], ['b', 'a', 'b'], ['b', 'b', 'a']];
+export const isReturning = (order: readonly SectionId[]) =>
+  order[0] === 'a' && order[1] === 'b' && order[2] === 'a';
+const WRONG_ORDERS: SectionOrder[] = [
+  ['a', 'a', 'b'],
+  ['a', 'b', 'b'],
+  ['b', 'a', 'a'],
+  ['b', 'a', 'b'],
+  ['b', 'b', 'a'],
+];
 
 /** Two distinct authored phrases and a card order that does not return yet. Seeded. */
 export function returnStarter(plan: BeatPlan, rng: Rng): { piece: Piece; order: SectionOrder } {
@@ -252,7 +325,12 @@ export function returnGate(p: Piece, order: readonly SectionId[], previewed: boo
 /** The card the hint points at: the last one (the return) unless it is already right, else the first wrong one. */
 export function returnHint(order: readonly SectionId[]): number {
   const want: SectionId[] = ['a', 'b', 'a'];
-  return order[2] !== 'a' ? 2 : Math.max(0, order.findIndex((s, i) => s !== want[i]));
+  return order[2] !== 'a'
+    ? 2
+    : Math.max(
+        0,
+        order.findIndex((s, i) => s !== want[i]),
+      );
 }
 
 export type ReturnMove = { slot: number } | 'preview' | 'check';
@@ -267,7 +345,12 @@ export function returnMove(p: Piece, order: readonly SectionId[], previewed: boo
 export type SectionMove = { row: number; step: number } | 'copy' | 'preview' | 'check';
 
 /** The ghost finger: drum on 0 and 2 in A, copy it into B, add one clap to B, hear it, then Done. */
-export function sectionsMove(plan: BeatPlan, p: Piece, current: SectionId, previewed: boolean): SectionMove | null {
+export function sectionsMove(
+  plan: BeatPlan,
+  p: Piece,
+  current: SectionId,
+  previewed: boolean,
+): SectionMove | null {
   const goalA = empty(plan.rows, plan.steps);
   goalA[0][0] = goalA[0][2] = true;
   if (!same(p.a, goalA)) {

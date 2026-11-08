@@ -64,7 +64,12 @@ export function withBlock(arch: Arch, block: Block): Arch {
   };
 }
 
-const closedArch = (stones: number): Arch => ({ stones, gap: null, left: { held: true }, right: { held: true } });
+const closedArch = (stones: number): Arch => ({
+  stones,
+  gap: null,
+  left: { held: true },
+  right: { held: true },
+});
 
 // ——— Level 1: Keystone ———
 
@@ -95,7 +100,10 @@ export function keystoneArch(plan: KeystonePlan): Arch {
 }
 
 /** Any tap on the stage lifts the next stone; the last one is the keystone. Nothing counts. */
-export function tapPile(plan: KeystonePlan, s: KeystoneState): { state: KeystoneState; event: 'stone' | 'keystone' | 'full'; index: number | null } {
+export function tapPile(
+  plan: KeystonePlan,
+  s: KeystoneState,
+): { state: KeystoneState; event: 'stone' | 'keystone' | 'full'; index: number | null } {
   if (s.pulled || s.placed >= plan.stones) return { state: s, event: 'full', index: null };
   const index = placeOrder(plan.stones)[s.placed];
   const placed = s.placed + 1;
@@ -103,7 +111,10 @@ export function tapPile(plan: KeystonePlan, s: KeystoneState): { state: Keystone
 }
 
 /** The pull: only a closed ring comes off its frame; before that the frame wobbles, free. */
-export function pullKeystone(plan: KeystonePlan, s: KeystoneState): { state: KeystoneState; event: 'pulled' | 'wobble' | 'none' } {
+export function pullKeystone(
+  plan: KeystonePlan,
+  s: KeystoneState,
+): { state: KeystoneState; event: 'pulled' | 'wobble' | 'none' } {
   if (s.pulled) return { state: s, event: 'none' };
   if (s.placed < plan.stones) return { state: s, event: 'wobble' };
   return { state: { ...s, pulled: true }, event: 'pulled' };
@@ -143,11 +154,17 @@ export function pairsPlan(band: Band, rng: Rng): PairsPlan {
     const count = older ? rng.pick([5, 7]) : 5;
     const k = keystone(count);
     // A shoulder: any stone but the keystone and the two springers.
-    const shoulders = Array.from({ length: count }, (_, i) => i).filter((i) => i !== k && i !== 0 && i !== count - 1);
+    const shoulders = Array.from({ length: count }, (_, i) => i).filter(
+      (i) => i !== k && i !== 0 && i !== count - 1,
+    );
     const gap = older && rng.int(0, 1) === 1 ? rng.pick(shoulders) : k;
     const closed = rng.int(0, 1) as 0 | 1;
     const open: Arch = { ...closedArch(count), gap };
-    pairs.push({ count, arches: closed === 0 ? [closedArch(count), open] : [open, closedArch(count)], closed });
+    pairs.push({
+      count,
+      arches: closed === 0 ? [closedArch(count), open] : [open, closedArch(count)],
+      closed,
+    });
     tints.push([0, 1].map(() => Array.from({ length: count }, () => rng.int(0, 2))));
   }
   return { level: 2, pairs, tints };
@@ -158,7 +175,11 @@ export const pairsStart = (): PairsState => ({ pair: 0, pulled: [false, false], 
 export const isAsked = (plan: PairsPlan, s: PairsState) => s.pair === plan.pairs.length - 1;
 
 /** A free pull: the frame comes away and the ring stands or falls; a pulled frame or the asked pair takes no free pull. */
-export function pullFree(plan: PairsPlan, s: PairsState, side: 0 | 1): { state: PairsState; event: 'stands' | 'falls' | 'none' } {
+export function pullFree(
+  plan: PairsPlan,
+  s: PairsState,
+  side: 0 | 1,
+): { state: PairsState; event: 'stands' | 'falls' | 'none' } {
   if (isAsked(plan, s) || s.pulled[side] || s.done) return { state: s, event: 'none' };
   const pulled: [boolean, boolean] = [s.pulled[0], s.pulled[1]];
   pulled[side] = true;
@@ -172,7 +193,11 @@ export function nextPair(s: PairsState): PairsState {
 }
 
 /** The asked pair: the closed ring finishes; the open one is a miss and both stay on their frames. */
-export function predict(plan: PairsPlan, s: PairsState, side: 0 | 1): { state: PairsState; event: 'stands' | 'wrong' | 'none' } {
+export function predict(
+  plan: PairsPlan,
+  s: PairsState,
+  side: 0 | 1,
+): { state: PairsState; event: 'stands' | 'wrong' | 'none' } {
   if (!isAsked(plan, s) || s.done) return { state: s, event: 'none' };
   const pair = plan.pairs[s.pair];
   if (side === pair.closed) return { state: { ...s, pulled: [true, true], done: true }, event: 'stands' };
@@ -202,7 +227,12 @@ export function buttressPlan(band: Band, rng: Rng): ButtressPlan {
     const count = rng.pick([5, 7]);
     const both = band === 'school' && a === 1 && rng.int(0, 1) === 1;
     const walled: Side = rng.int(0, 1) === 0 ? 'left' : 'right';
-    arches.push({ stones: count, gap: null, left: { held: both || walled === 'left' }, right: { held: both || walled === 'right' } });
+    arches.push({
+      stones: count,
+      gap: null,
+      left: { held: both || walled === 'left' },
+      right: { held: both || walled === 'right' },
+    });
     tints.push(Array.from({ length: count }, () => rng.int(0, 2)));
   }
   return { level: 3, arches, tints };
@@ -216,7 +246,10 @@ export function place(s: ButtressState, block: Block): ButtressState {
 }
 
 /** The pull, the one commit: the arch as held stands, or it spreads on the side with nothing pushing back (one miss). */
-export function pull(plan: ButtressPlan, s: ButtressState): { state: ButtressState; stands: boolean; spread: Side | null } {
+export function pull(
+  plan: ButtressPlan,
+  s: ButtressState,
+): { state: ButtressState; stands: boolean; spread: Side | null } {
   if (s.standing) return { state: s, stands: true, spread: null };
   const arch = withBlock(plan.arches[s.arch], s.block);
   if (stands(arch)) return { state: { ...s, standing: true }, stands: true, spread: null };
@@ -249,7 +282,10 @@ export class Tally {
   }
 
   private light() {
-    if (!this.counted) { this.counted = true; this.hints++; }
+    if (!this.counted) {
+      this.counted = true;
+      this.hints++;
+    }
     this.glowing = true;
   }
 
@@ -264,13 +300,13 @@ export class Tally {
 // ——— The ghost finger ———
 
 export type BotMove =
-  | { tap: 'pile' }
-  | { tap: 'handle' }
-  | { tap: 'frame'; side: 0 | 1 }
-  | { drag: 'block'; to: Side };
+  { tap: 'pile' } | { tap: 'handle' } | { tap: 'frame'; side: 0 | 1 } | { drag: 'block'; to: Side };
 
 /** What a capable child does next: never a wrong guess, never a pull with the block in the wrong place. */
-export function botMove(plan: KeystonePlan | PairsPlan | ButtressPlan, state: KeystoneState | PairsState | ButtressState): BotMove | null {
+export function botMove(
+  plan: KeystonePlan | PairsPlan | ButtressPlan,
+  state: KeystoneState | PairsState | ButtressState,
+): BotMove | null {
   if (plan.level === 1) {
     const s = state as KeystoneState;
     if (s.pulled) return null;
@@ -294,12 +330,40 @@ export function botMove(plan: KeystonePlan | PairsPlan | ButtressPlan, state: Ke
 
 // ——— Plans for the grown-ups ———
 
-export function planFor(level: number): { level: 1 | 2 | 3 | 4 | 5; id: 'keystone' | 'pairs' | 'buttress' | 'downhill' | 'valley'; name: string } {
-  if (level >= 5) return { level: 5, id: 'valley', name: 'Over the valley (school): arches across three or four spans and a block on each earth end, then open the spring (two valleys)' };
-  if (level === 4) return { level: 4, id: 'downhill', name: 'Downhill all the way: pick the channel that goes down all the way (pre-K) or set two piers with arrows (school), then open the spring (two roads)' };
-  if (level <= 1) return { level: 1, id: 'keystone', name: 'Keystone: tap and a stone flies onto the frame from each end in turn; the last one is the keystone; then pull the frame and the arch stands (3 stones at toddler, 5 or 7 from preschool)' };
-  if (level === 2) return { level: 2, id: 'pairs', name: 'Which one stands? pull two frames and see which ring holds (two free pairs), then on the last pair tap the one that will stand before pulling' };
-  return { level: 3, id: 'buttress', name: 'Hold it up: drag the block to the side with no wall and pull the frame; a pull with nothing pushing back spreads the ring (two arches)' };
+export function planFor(level: number): {
+  level: 1 | 2 | 3 | 4 | 5;
+  id: 'keystone' | 'pairs' | 'buttress' | 'downhill' | 'valley';
+  name: string;
+} {
+  if (level >= 5)
+    return {
+      level: 5,
+      id: 'valley',
+      name: 'Over the valley (school): arches across three or four spans and a block on each earth end, then open the spring (two valleys)',
+    };
+  if (level === 4)
+    return {
+      level: 4,
+      id: 'downhill',
+      name: 'Downhill all the way: pick the channel that goes down all the way (pre-K) or set two piers with arrows (school), then open the spring (two roads)',
+    };
+  if (level <= 1)
+    return {
+      level: 1,
+      id: 'keystone',
+      name: 'Keystone: tap and a stone flies onto the frame from each end in turn; the last one is the keystone; then pull the frame and the arch stands (3 stones at toddler, 5 or 7 from preschool)',
+    };
+  if (level === 2)
+    return {
+      level: 2,
+      id: 'pairs',
+      name: 'Which one stands? pull two frames and see which ring holds (two free pairs), then on the last pair tap the one that will stand before pulling',
+    };
+  return {
+    level: 3,
+    id: 'buttress',
+    name: 'Hold it up: drag the block to the side with no wall and pull the frame; a pull with nothing pushing back spreads the ring (two arches)',
+  };
 }
 
 export const LEVELS: BandLevels = {
@@ -311,8 +375,16 @@ export const LEVELS: BandLevels = {
 
 // ——— Layout ———
 
-export interface Pt { x: number; y: number }
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
@@ -323,7 +395,11 @@ export const SLOT = 140;
 export const PAIR_FRAME = { w: 300, h: 260 };
 
 /** The ring's shape on a frame: mid radius, stone thickness, and the height of the posts and walls under the springers. */
-export interface Ring { r: number; t: number; post: number }
+export interface Ring {
+  r: number;
+  t: number;
+  post: number;
+}
 
 export const RINGS: Record<1 | 2 | 3, Ring> = {
   1: { r: 235, t: 90, post: 90 },
@@ -353,7 +429,10 @@ export interface WrLayout {
 }
 
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export function overlaps(a: Rect, b: Rect): boolean {
@@ -397,28 +476,56 @@ export function waterRoadLayout(level: number, v: View, stones = 7): WrLayout | 
       pile.push({ x: cx + 60 + (col - (inRow - 1) / 2) * 125, y: ground + 150 + row * 105 });
     }
     out = {
-      ring, ground, stacked: false,
-      frames: [{ centre: { x: cx, y: springY }, box: { x: cx - w / 2, y: springY - outer(ring) - 10, w, h } }],
+      ring,
+      ground,
+      stacked: false,
+      frames: [
+        { centre: { x: cx, y: springY }, box: { x: cx - w / 2, y: springY - outer(ring) - 10, w, h } },
+      ],
       handles: [around({ x: cx, y: springY - 40 }, HANDLE.w, HANDLE.h)],
-      pile, tray: null, slots: null,
+      pile,
+      tray: null,
+      slots: null,
     };
   } else if (l === 2) {
     const gapX = 80;
     const stacked = v.w < 2 * PAIR_FRAME.w + gapX + 2 * HOME_CORNER.w;
     const springY = spring(30);
-    const frameAt = (c: Pt): Frame => ({ centre: c, box: { x: c.x - PAIR_FRAME.w / 2, y: c.y - outer(ring) - 40, w: PAIR_FRAME.w, h: PAIR_FRAME.h } });
+    const frameAt = (c: Pt): Frame => ({
+      centre: c,
+      box: { x: c.x - PAIR_FRAME.w / 2, y: c.y - outer(ring) - 40, w: PAIR_FRAME.w, h: PAIR_FRAME.h },
+    });
     const centres = stacked
-      ? [{ x: cx, y: springY }, { x: cx, y: springY + PAIR_FRAME.h + 40 }]
-      : [{ x: cx - PAIR_FRAME.w / 2 - gapX / 2, y: springY }, { x: cx + PAIR_FRAME.w / 2 + gapX / 2, y: springY }];
-    out = { ring, ground: springY + ring.post, stacked, frames: centres.map(frameAt), handles: [], pile: [], tray: null, slots: null };
+      ? [
+          { x: cx, y: springY },
+          { x: cx, y: springY + PAIR_FRAME.h + 40 },
+        ]
+      : [
+          { x: cx - PAIR_FRAME.w / 2 - gapX / 2, y: springY },
+          { x: cx + PAIR_FRAME.w / 2 + gapX / 2, y: springY },
+        ];
+    out = {
+      ring,
+      ground: springY + ring.post,
+      stacked,
+      frames: centres.map(frameAt),
+      handles: [],
+      pile: [],
+      tray: null,
+      slots: null,
+    };
   } else {
     const springY = spring(0);
     const ground = springY + ring.post;
     const w = 2 * outer(ring) + 40;
     const h = outer(ring) + ring.post + 40;
     out = {
-      ring, ground, stacked: false,
-      frames: [{ centre: { x: cx, y: springY }, box: { x: cx - w / 2, y: springY - outer(ring) - 20, w, h } }],
+      ring,
+      ground,
+      stacked: false,
+      frames: [
+        { centre: { x: cx, y: springY }, box: { x: cx - w / 2, y: springY - outer(ring) - 20, w, h } },
+      ],
       handles: [around({ x: cx, y: springY - 30 }, HANDLE.w, HANDLE.h)],
       pile: [],
       tray: around({ x: cx, y: ground + 200 }, BLOCK, BLOCK),
@@ -428,14 +535,21 @@ export function waterRoadLayout(level: number, v: View, stones = 7): WrLayout | 
       },
     };
   }
-  const inputs = [...out.handles, ...(l === 2 ? out.frames.map((f) => f.box) : []), ...(out.tray ? [out.tray] : []), ...(out.slots ? [out.slots.left, out.slots.right] : [])];
+  const inputs = [
+    ...out.handles,
+    ...(l === 2 ? out.frames.map((f) => f.box) : []),
+    ...(out.tray ? [out.tray] : []),
+    ...(out.slots ? [out.slots.left, out.slots.right] : []),
+  ];
   for (const r of inputs) {
     if (r.w < MIN_TARGET || r.h < MIN_TARGET) return null;
     if (r.x < 0 || r.y < 0 || r.x + r.w > v.w || r.y + r.h > v.h) return null;
     if (corners(v).some((c) => overlaps(r, c))) return null;
   }
-  for (let i = 0; i < inputs.length; i++) for (let j = i + 1; j < inputs.length; j++) if (overlaps(inputs[i], inputs[j])) return null;
-  for (const f of out.frames) if (f.box.x < 0 || f.box.y < 0 || f.box.x + f.box.w > v.w || f.box.y + f.box.h > v.h) return null;
+  for (let i = 0; i < inputs.length; i++)
+    for (let j = i + 1; j < inputs.length; j++) if (overlaps(inputs[i], inputs[j])) return null;
+  for (const f of out.frames)
+    if (f.box.x < 0 || f.box.y < 0 || f.box.x + f.box.w > v.w || f.box.y + f.box.h > v.h) return null;
   return out;
 }
 
@@ -495,7 +609,10 @@ const sum = (a: number[]) => a.reduce((s, x) => s + x, 0);
 export function fallingSettings(r: Road): number[][] {
   const out: number[][] = [];
   const walk = (prefix: number[], above: number) => {
-    if (prefix.length === r.piers.length) { if (above > r.fountain) out.push(prefix); return; }
+    if (prefix.length === r.piers.length) {
+      if (above > r.fountain) out.push(prefix);
+      return;
+    }
     for (let h = Math.min(MAX_STEP, above - 1); h >= 0; h--) walk([...prefix, h], h);
   };
   walk([], r.spring);
@@ -522,7 +639,10 @@ export function pressesLeft(r: Road): number {
   return n ? distance(n, r.piers) : 0;
 }
 
-export interface PierHint { pier: number; dir: 1 | -1 }
+export interface PierHint {
+  pier: number;
+  dir: 1 | -1;
+}
 
 /** The pier and arrow the glow names: the first pier (from the spring) that differs from the nearest falling setting. */
 export function pierHint(r: Road): PierHint | null {
@@ -569,13 +689,17 @@ export interface DownhillState {
 export const ROADS = 2;
 
 /** Pre-K picks one of two whole channels; school sets two piers with arrows. */
-export const downhillKind = (band: Band): 'cards' | 'piers' => (band === 'school' || band === 'grownup' ? 'piers' : 'cards');
+export const downhillKind = (band: Band): 'cards' | 'piers' =>
+  band === 'school' || band === 'grownup' ? 'piers' : 'cards';
 
 const decreasing = (rng: Rng, from: number, to: number, n: number): number[] | null => {
   // n heights strictly between `from` and `to`, strictly decreasing, chosen evenly from the gaps.
   const pool = Array.from({ length: from - to - 1 }, (_, i) => from - 1 - i);
   if (pool.length < n) return null;
-  return rng.shuffle([...pool]).slice(0, n).sort((a, b) => b - a);
+  return rng
+    .shuffle([...pool])
+    .slice(0, n)
+    .sort((a, b) => b - a);
 };
 
 function schoolRoad(rng: Rng, shape: 'hump' | 'dip'): DownhillRoad {
@@ -622,13 +746,23 @@ function cardRoad(rng: Rng): DownhillRoad {
     const cards: [number[], number[]] = good === 0 ? [fallsCard, bad] : [bad, fallsCard];
     return { spring, fountain, start: [], cards, good };
   }
-  return { spring: 5, fountain: 0, start: [], cards: [[3, 1], [1, 4]], good: 0 };
+  return {
+    spring: 5,
+    fountain: 0,
+    start: [],
+    cards: [
+      [3, 1],
+      [1, 4],
+    ],
+    good: 0,
+  };
 }
 
 /** Two roads, one at a time: road 1 starts with a hump (the first useful move is down), road 2 with a dip. */
 export function downhillPlan(band: Band, rng: Rng): DownhillPlan {
   const kind = downhillKind(band);
-  const roads = kind === 'cards' ? [cardRoad(rng), cardRoad(rng)] : [schoolRoad(rng, 'hump'), schoolRoad(rng, 'dip')];
+  const roads =
+    kind === 'cards' ? [cardRoad(rng), cardRoad(rng)] : [schoolRoad(rng, 'hump'), schoolRoad(rng, 'dip')];
   return { level: 4, kind, roads };
 }
 
@@ -651,7 +785,12 @@ export function chooseChannel(plan: DownhillPlan, s: DownhillState, card: 0 | 1)
 }
 
 /** School: an arrow press under a pier (free). */
-export function pressArrow(plan: DownhillPlan, s: DownhillState, pier: number, dir: 1 | -1): { state: DownhillState; bumped: boolean } {
+export function pressArrow(
+  plan: DownhillPlan,
+  s: DownhillState,
+  pier: number,
+  dir: 1 | -1,
+): { state: DownhillState; bumped: boolean } {
   const road = roadNow(plan, s);
   if (s.done || !road || plan.kind !== 'piers') return { state: s, bumped: false };
   const r = pressPier(road, pier, dir);
@@ -659,14 +798,18 @@ export function pressArrow(plan: DownhillPlan, s: DownhillState, pier: number, d
 }
 
 /** Open the spring, the one commit: the water runs all the way, pools at the first stretch that does not drop (one miss), or (no channel yet) nothing happens. */
-export function openSpring(plan: DownhillPlan, s: DownhillState): { state: DownhillState; event: 'falls' | 'stuck' | 'none'; at: number | null; why: 'up' | 'flat' | null } {
+export function openSpring(
+  plan: DownhillPlan,
+  s: DownhillState,
+): { state: DownhillState; event: 'falls' | 'stuck' | 'none'; at: number | null; why: 'up' | 'flat' | null } {
   const road = roadNow(plan, s);
   if (s.done || !road) return { state: s, event: 'none', at: null, why: null };
   if (falls(road)) return { state: { ...s, done: true }, event: 'falls', at: null, why: null };
   return { state: s, event: 'stuck', at: firstStuck(road), why: stuckKind(road) };
 }
 
-export const nextRoad = (plan: DownhillPlan, s: DownhillState): DownhillState => downhillStart(plan, s.road + 1);
+export const nextRoad = (plan: DownhillPlan, s: DownhillState): DownhillState =>
+  downhillStart(plan, s.road + 1);
 
 // ——— Level 5: Over the valley ———
 
@@ -705,17 +848,27 @@ export function valleyPlan(rng: Rng): ValleyPlan {
     const spans = v === 0 ? 3 : rng.pick([3, 4]);
     const bothEarth = v === 1 && rng.int(0, 2) === 0;
     const rock: End = rng.int(0, 1) === 0 ? 'near' : 'far';
-    const ends: Record<End, 'rock' | 'earth'> = bothEarth ? { near: 'earth', far: 'earth' } : { near: rock === 'near' ? 'rock' : 'earth', far: rock === 'far' ? 'rock' : 'earth' };
+    const ends: Record<End, 'rock' | 'earth'> = bothEarth
+      ? { near: 'earth', far: 'earth' }
+      : { near: rock === 'near' ? 'rock' : 'earth', far: rock === 'far' ? 'rock' : 'earth' };
     valleys.push({ spans, ends });
   }
   return { level: 5, valleys };
 }
 
 export const abutmentsFor = (v: Valley) => ENDS.filter((e) => v.ends[e] === 'earth').length;
-export const emptyArcade = (v: Valley): Arcade => ({ arches: Array.from({ length: v.spans }, () => false), abut: { near: false, far: false } });
-export const valleyStart = (valley = 0, v?: Valley): ValleyState => ({ valley, arcade: emptyArcade(v ?? { spans: 3, ends: { near: 'rock', far: 'earth' } }), done: false });
+export const emptyArcade = (v: Valley): Arcade => ({
+  arches: Array.from({ length: v.spans }, () => false),
+  abut: { near: false, far: false },
+});
+export const valleyStart = (valley = 0, v?: Valley): ValleyState => ({
+  valley,
+  arcade: emptyArcade(v ?? { spans: 3, ends: { near: 'rock', far: 'earth' } }),
+  done: false,
+});
 export const archesInTray = (v: Valley, a: Arcade) => v.spans - a.arches.filter(Boolean).length;
-export const abutmentsInTray = (v: Valley, a: Arcade) => abutmentsFor(v) - ENDS.filter((e) => a.abut[e]).length;
+export const abutmentsInTray = (v: Valley, a: Arcade) =>
+  abutmentsFor(v) - ENDS.filter((e) => a.abut[e]).length;
 
 /** Is the end held: rock needs nothing, earth needs an abutment. */
 const endHeld = (v: Valley, a: Arcade, e: End) => v.ends[e] === 'rock' || a.abut[e];
@@ -744,11 +897,21 @@ export function firstUnsupported(v: Valley, a: Arcade): Problem | null {
 }
 
 /** Open the spring over the valley: it stands, or (one miss) every placed arch unheld on a side slides back to the tray. */
-export function openValley(v: Valley, a: Arcade): { stands: boolean; problem: Problem | null; slid: number[]; arcade: Arcade } {
+export function openValley(
+  v: Valley,
+  a: Arcade,
+): { stands: boolean; problem: Problem | null; slid: number[]; arcade: Arcade } {
   const problem = firstUnsupported(v, a);
   if (!problem) return { stands: true, problem: null, slid: [], arcade: a };
-  const slid = a.arches.map((on, i) => (on && !(heldSides(v, a, i).near && heldSides(v, a, i).far) ? i : -1)).filter((i) => i >= 0);
-  return { stands: false, problem, slid, arcade: { arches: a.arches.map((on, i) => on && !slid.includes(i)), abut: { ...a.abut } } };
+  const slid = a.arches
+    .map((on, i) => (on && !(heldSides(v, a, i).near && heldSides(v, a, i).far) ? i : -1))
+    .filter((i) => i >= 0);
+  return {
+    stands: false,
+    problem,
+    slid,
+    arcade: { arches: a.arches.map((on, i) => on && !slid.includes(i)), abut: { ...a.abut } },
+  };
 }
 
 export type Place = { kind: 'span'; span: number } | { kind: 'end'; end: End } | { kind: 'tray' };
@@ -775,7 +938,8 @@ export function moveAbutment(v: Valley, a: Arcade, from: End | 'tray', to: End |
   return { ...a, abut };
 }
 
-export type ValleyHint = { kind: 'span'; span: number } | { kind: 'end'; end: End } | { kind: 'move'; from: End; to: End };
+export type ValleyHint =
+  { kind: 'span'; span: number } | { kind: 'end'; end: End } | { kind: 'move'; from: End; to: End };
 
 /** What the glow names: the empty span, the end slot for an abutment in the tray, or the abutment on the rock end to move. */
 export function valleyHint(v: Valley, a: Arcade): ValleyHint | null {
@@ -804,7 +968,10 @@ export type WaterBotMove =
   | { drag: 'abutment'; from: End | 'tray'; to: End };
 
 /** Never an opening that pools or slides: the falling card, the arrows along the hint, the arches from the spring side, then each earth end. */
-export function waterBotMove(plan: DownhillPlan | ValleyPlan, state: DownhillState | ValleyState): WaterBotMove | null {
+export function waterBotMove(
+  plan: DownhillPlan | ValleyPlan,
+  state: DownhillState | ValleyState,
+): WaterBotMove | null {
   if (plan.level === 4) {
     const s = state as DownhillState;
     if (s.done || s.road >= plan.roads.length) return null;
@@ -869,7 +1036,19 @@ export const heightY = (l: WaterLayout, h: number) => l.ground - h * STEP;
  */
 export function waterLayout(level: number, band: Band, v: View, spans = 4): WaterLayout | null {
   const cx = v.w / 2;
-  const base: WaterLayout = { ground: 0, xs: [], cards: [], stacked: false, arrows: [], open: { x: 0, y: 0, ...OPEN }, deck: 0, spans: [], ends: null, trayArches: [], trayAbutments: [] };
+  const base: WaterLayout = {
+    ground: 0,
+    xs: [],
+    cards: [],
+    stacked: false,
+    arrows: [],
+    open: { x: 0, y: 0, ...OPEN },
+    deck: 0,
+    spans: [],
+    ends: null,
+    trayArches: [],
+    trayAbutments: [],
+  };
   let out: WaterLayout;
   if (planFor(level).level === 4) {
     if (v.w - 168 < 600) return null;
@@ -888,22 +1067,37 @@ export function waterLayout(level: number, band: Band, v: View, spans = 4): Wate
         : [0, 1].map((i) => ({ x: cx + (i === 0 ? -CARD.w - gap / 2 : gap / 2), y: ground + 30, ...CARD }));
       bottom = Math.max(...out.cards.map((c) => c.y + c.h));
     } else {
-      out.arrows = xs.slice(1, 3).map((x) => ({ up: around({ x, y: ground + 75 }, ARROW.w, ARROW.h), down: around({ x, y: ground + 185 }, ARROW.w, ARROW.h) }));
+      out.arrows = xs.slice(1, 3).map((x) => ({
+        up: around({ x, y: ground + 75 }, ARROW.w, ARROW.h),
+        down: around({ x, y: ground + 185 }, ARROW.w, ARROW.h),
+      }));
       bottom = ground + 235;
     }
-    out.open = around({ x: Math.max(x0 + 40, PET_CORNER.w + OPEN.w / 2 + 20), y: bottom + 20 + OPEN.h / 2 }, OPEN.w, OPEN.h);
+    out.open = around(
+      { x: Math.max(x0 + 40, PET_CORNER.w + OPEN.w / 2 + 20), y: bottom + 20 + OPEN.h / 2 },
+      OPEN.w,
+      OPEN.h,
+    );
   } else {
     const width = 2 * END_SLOT.w + spans * SPAN.w;
     const x0 = cx - width / 2;
     const deck = Math.max(HOME_CORNER.h + 10, v.h * 0.3);
     const ground = deck + SPAN.h + 80;
-    const spanRects = Array.from({ length: spans }, (_, i) => ({ x: x0 + END_SLOT.w + i * SPAN.w, y: deck, ...SPAN }));
+    const spanRects = Array.from({ length: spans }, (_, i) => ({
+      x: x0 + END_SLOT.w + i * SPAN.w,
+      y: deck,
+      ...SPAN,
+    }));
     const ends = {
       near: { x: x0, y: deck - 5, ...END_SLOT },
       far: { x: x0 + END_SLOT.w + spans * SPAN.w, y: deck - 5, ...END_SLOT },
     };
     const trayW = spans * TRAY_ARCH.w + (spans - 1) * 20;
-    const trayArches = Array.from({ length: spans }, (_, i) => ({ x: cx - trayW / 2 + i * (TRAY_ARCH.w + 20), y: ground + 30, ...TRAY_ARCH }));
+    const trayArches = Array.from({ length: spans }, (_, i) => ({
+      x: cx - trayW / 2 + i * (TRAY_ARCH.w + 20),
+      y: ground + 30,
+      ...TRAY_ARCH,
+    }));
     const row2 = ground + 30 + TRAY_ARCH.h + 20;
     const row2W = 2 * TRAY_ABUT.w + 20 + 40 + OPEN.w;
     const r0 = cx - row2W / 2;
@@ -911,12 +1105,21 @@ export function waterLayout(level: number, band: Band, v: View, spans = 4): Wate
     const open = { x: r0 + 2 * TRAY_ABUT.w + 20 + 40, y: row2 + 5, ...OPEN };
     out = { ...base, ground, deck, spans: spanRects, ends, trayArches, trayAbutments, open };
   }
-  const inputs = [...out.cards, ...out.arrows.flatMap((a) => [a.up, a.down]), out.open, ...out.spans, ...(out.ends ? [out.ends.near, out.ends.far] : []), ...out.trayArches, ...out.trayAbutments];
+  const inputs = [
+    ...out.cards,
+    ...out.arrows.flatMap((a) => [a.up, a.down]),
+    out.open,
+    ...out.spans,
+    ...(out.ends ? [out.ends.near, out.ends.far] : []),
+    ...out.trayArches,
+    ...out.trayAbutments,
+  ];
   for (const r of inputs) {
     if (r.w < MIN_TARGET || r.h < MIN_TARGET) return null;
     if (r.x < 0 || r.y < 0 || r.x + r.w > v.w || r.y + r.h > v.h) return null;
     if (corners(v).some((c) => overlaps(r, c))) return null;
   }
-  for (let i = 0; i < inputs.length; i++) for (let j = i + 1; j < inputs.length; j++) if (overlaps(inputs[i], inputs[j])) return null;
+  for (let i = 0; i < inputs.length; i++)
+    for (let j = i + 1; j < inputs.length; j++) if (overlaps(inputs[i], inputs[j])) return null;
   return out;
 }

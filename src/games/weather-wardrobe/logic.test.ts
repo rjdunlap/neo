@@ -1,11 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { GROUND_TOUCH, ITEM_NAMES, MISFIT, SHIELD, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, STICKER_WEATHERS, tripPlays, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item, ALL_ITEMS, NOT_WORN, partFor, shieldFor, wardrobeFor, friendFor } from './logic';
+import {
+  GROUND_TOUCH,
+  ITEM_NAMES,
+  MISFIT,
+  SHIELD,
+  ITEM_WORDS,
+  ITEMS,
+  itemsFor,
+  itemToTap,
+  outfitFor,
+  outfits,
+  SLOTS,
+  STICKER_ITEMS,
+  STICKER_WEATHERS,
+  tripPlays,
+  WARDROBE_PLANS,
+  WEATHERS,
+  wardrobePlan,
+  type Item,
+  ALL_ITEMS,
+  NOT_WORN,
+  partFor,
+  shieldFor,
+  wardrobeFor,
+  friendFor,
+} from './logic';
 import { PARTS } from '../../creatures/parts';
 import { SPECIES_IDS } from '../../creatures/species';
 
 /** What each species wears, from its parts table, as the game asks. */
-const WARDROBE = Object.fromEntries(SPECIES_IDS.map((sp) => [sp, wardrobeFor(sp, (p) => !!PARTS[sp].points[p]?.length)]));
+const WARDROBE = Object.fromEntries(
+  SPECIES_IDS.map((sp) => [sp, wardrobeFor(sp, (p) => !!PARTS[sp].points[p]?.length)]),
+);
 
 describe('Weather Wardrobe', () => {
   it('gives every weather at least two things to wear, each spoken plainly', () => {
@@ -36,7 +63,8 @@ describe('Weather Wardrobe', () => {
     expect(STICKER_ITEMS.some((i) => ITEMS[i] === 'windy')).toBe(false);
     // Trips draw their two weathers from all four, so every pair can come up.
     const pairs = new Set<string>();
-    for (let seed = 1; seed <= 300; seed++) for (const o of outfits(wardrobePlan(6), new Rng(seed))) pairs.add([...o.weathers].sort().join('>'));
+    for (let seed = 1; seed <= 300; seed++)
+      for (const o of outfits(wardrobePlan(6), new Rng(seed))) pairs.add([...o.weathers].sort().join('>'));
     expect(pairs.size).toBe(6);
     // Free play's finish needs every weather seen: the fourth is reachable from the sky's order.
     expect(WEATHERS.indexOf('windy')).toBe(3);
@@ -53,7 +81,11 @@ describe('Weather Wardrobe', () => {
           for (const item of o.needed) expect(o.options).toContain(item);
           // Everything offered is either needed or clearly for a weather that is not coming.
           const current = plan.mode === 'change' ? o.weathers[1] : null;
-          for (const item of o.options) expect(o.needed.includes(item) || (current ? ITEMS[item] !== current : !o.weathers.includes(ITEMS[item]))).toBe(true);
+          for (const item of o.options)
+            expect(
+              o.needed.includes(item) ||
+                (current ? ITEMS[item] !== current : !o.weathers.includes(ITEMS[item])),
+            ).toBe(true);
           for (const item of o.needed) {
             if (plan.mode === 'trip') expect(o.weathers).toContain(ITEMS[item]);
             else expect(current ?? o.weathers[0]).toBe(ITEMS[item]);
@@ -86,7 +118,10 @@ describe('Weather Wardrobe', () => {
       }
       for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
         for (const o of outfits(plan, new Rng(seed))) {
-          const sets = plan.mode === 'trip' ? o.weathers.map((w) => o.needed.filter((i) => ITEMS[i] === w)) : [o.needed, ...(o.remove ? [o.remove] : [])];
+          const sets =
+            plan.mode === 'trip'
+              ? o.weathers.map((w) => o.needed.filter((i) => ITEMS[i] === w))
+              : [o.needed, ...(o.remove ? [o.remove] : [])];
           for (const set of sets) expect(new Set(slotsOf(set)).size, plan.name).toBe(set.length);
         }
       }
@@ -97,12 +132,22 @@ describe('Weather Wardrobe', () => {
     for (let seed = 1; seed <= 300; seed++) {
       for (const o of outfits(wardrobePlan(5), new Rng(seed))) expect(o.needed).toHaveLength(3);
       const change = outfits(wardrobePlan(7), new Rng(seed));
-      for (let i = 1; i < change.length; i++) expect([...change[i].remove!].sort()).toEqual([...change[i - 1].needed].sort());
+      for (let i = 1; i < change.length; i++)
+        expect([...change[i].remove!].sort()).toEqual([...change[i - 1].needed].sort());
     }
   });
 
   it('keeps the sticker to the original eight items, so old stickers look the same', () => {
-    expect(STICKER_ITEMS).toEqual(['sunhat', 'sunglasses', 'raincoat', 'umbrella', 'boots', 'beanie', 'scarf', 'mittens']);
+    expect(STICKER_ITEMS).toEqual([
+      'sunhat',
+      'sunglasses',
+      'raincoat',
+      'umbrella',
+      'boots',
+      'beanie',
+      'scarf',
+      'mittens',
+    ]);
     // Wind has no sticker item: the sticker draws from `STICKER_WEATHERS`, each of which has one.
     for (const w of STICKER_WEATHERS) expect(STICKER_ITEMS.some((i) => ITEMS[i] === w)).toBe(true);
   });
@@ -174,7 +219,7 @@ describe('Weather Wardrobe', () => {
     }
   });
 
-  it('level 6 unpacks each weather\'s packed things in forecast order', () => {
+  it("level 6 unpacks each weather's packed things in forecast order", () => {
     for (let seed = 1; seed <= 300; seed++) {
       for (const o of outfits(wardrobePlan(6), new Rng(seed))) {
         const plays = tripPlays(o);
@@ -212,7 +257,8 @@ describe('Weather Wardrobe', () => {
       for (const item of ALL_ITEMS) {
         const part = partFor(item, sp);
         // An item it cannot wear is a missing part or a recorded reason, never a silent gap.
-        if (!WARDROBE[sp].includes(item)) expect(!PARTS[sp].points[part]?.length || !!NOT_WORN[sp][item], `${sp} ${item}`).toBe(true);
+        if (!WARDROBE[sp].includes(item))
+          expect(!PARTS[sp].points[part]?.length || !!NOT_WORN[sp][item], `${sp} ${item}`).toBe(true);
         else expect(PARTS[sp].points[part]?.length, `${sp} ${item} on ${part}`).toBeGreaterThan(0);
       }
       // A held umbrella goes on the stand-in point where no hand is free, so every species can stay dry.
@@ -240,21 +286,32 @@ describe('Weather Wardrobe', () => {
           expect(rounds.length, `${sp} level ${i + 1}`).toBe(plan.rounds);
           for (const o of rounds) {
             const label = `${sp} level ${i + 1} seed ${seed}`;
-            for (const item of [...o.needed, ...o.options, ...(o.remove ?? []), ...(o.worn ?? [])]) expect(wear, label).toContain(item);
+            for (const item of [...o.needed, ...o.options, ...(o.remove ?? []), ...(o.worn ?? [])])
+              expect(wear, label).toContain(item);
             // Everything needed is on offer and suits its weather; each weather of the round needs at least one thing.
             for (const item of o.needed) {
               expect(o.options, label).toContain(item);
               expect(o.weathers, label).toContain(ITEMS[item]);
             }
-            if (plan.mode !== 'sky' && plan.mode !== 'play') for (const w of plan.mode === 'change' ? o.weathers.slice(1) : o.weathers) expect(o.needed.some((n) => ITEMS[n] === w), label).toBe(true);
+            if (plan.mode !== 'sky' && plan.mode !== 'play')
+              for (const w of plan.mode === 'change' ? o.weathers.slice(1) : o.weathers)
+                expect(
+                  o.needed.some((n) => ITEMS[n] === w),
+                  label,
+                ).toBe(true);
             // A distractor never suits the weather it is offered for, so a choice is never ambiguous.
             const target = plan.mode === 'change' ? [o.weathers[1]] : o.weathers;
-            for (const item of o.options) if (!o.needed.includes(item)) expect(target, label).not.toContain(ITEMS[item]);
-            if (plan.mode === 'pick' || plan.mode === 'try') expect(o.options.length, label).toBeGreaterThanOrEqual(2);
+            for (const item of o.options)
+              if (!o.needed.includes(item)) expect(target, label).not.toContain(ITEMS[item]);
+            if (plan.mode === 'pick' || plan.mode === 'try')
+              expect(o.options.length, label).toBeGreaterThanOrEqual(2);
             if (plan.mode === 'all') expect(o.options.length, label).toBeGreaterThan(o.needed.length);
             if (plan.mode === 'sky') {
               expect(o.worn!.length, label).toBeGreaterThanOrEqual(1);
-              expect(o.worn!.every((w) => ITEMS[w] === o.answer), label).toBe(true);
+              expect(
+                o.worn!.every((w) => ITEMS[w] === o.answer),
+                label,
+              ).toBe(true);
             }
           }
         }

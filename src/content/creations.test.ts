@@ -1,26 +1,70 @@
 import { describe, expect, it } from 'vitest';
 import { ROW_STEPS } from '../games/song-maker/logic';
 import {
-  canUndo, cleanCreation, cleanCreations, cleanPicture, cleanTune, emptyCreations, keepCreation, PAINTING_MAX_MARKS, PICTURE_MAX, takeDownCreation, tuneBeats, undoCreation,
-  type PaintingCreation, type PixelPictureCreation, type StampPictureCreation, type TuneCreation,
+  canUndo,
+  cleanCreation,
+  cleanCreations,
+  cleanPicture,
+  cleanTune,
+  emptyCreations,
+  keepCreation,
+  PAINTING_MAX_MARKS,
+  PICTURE_MAX,
+  takeDownCreation,
+  tuneBeats,
+  undoCreation,
+  type PaintingCreation,
+  type PixelPictureCreation,
+  type StampPictureCreation,
+  type TuneCreation,
 } from './creations';
 
-const stamp = (x: number, kind: 'star' | 'cat' = 'star') => ({ kind, color: 'purple' as const, x, y: 0.5, size: 1, turns: 0 });
-const picture = (...xs: number[]): StampPictureCreation => ({ kind: 'picture', stamps: xs.map((x) => stamp(x)) });
+const stamp = (x: number, kind: 'star' | 'cat' = 'star') => ({
+  kind,
+  color: 'purple' as const,
+  x,
+  y: 0.5,
+  size: 1,
+  turns: 0,
+});
+const picture = (...xs: number[]): StampPictureCreation => ({
+  kind: 'picture',
+  stamps: xs.map((x) => stamp(x)),
+});
 const painting = (...xs: number[]): PaintingCreation => ({
-  kind: 'picture', aspect: 4 / 3, marks: xs.map((x, i) => ({ shape: 'dab', color: 0xff00aa + i, x, y: 0.5, r: 0.04 })),
+  kind: 'picture',
+  aspect: 4 / 3,
+  marks: xs.map((x, i) => ({ shape: 'dab', color: 0xff00aa + i, x, y: 0.5, r: 0.04 })),
 });
 const pixels = (...cells: [number, number, 'red' | 'blue'][]): PixelPictureCreation => ({
-  kind: 'picture', size: 4, pixels: cells.map(([x, y, color]) => ({ x, y, color })),
+  kind: 'picture',
+  size: 4,
+  pixels: cells.map(([x, y, color]) => ({ x, y, color })),
 });
-const tune = (rows = 3, ...notes: [number, number][]): TuneCreation => ({ kind: 'tune', cols: 4, rows, notes: notes.map(([col, row]) => ({ col, row })) });
+const tune = (rows = 3, ...notes: [number, number][]): TuneCreation => ({
+  kind: 'tune',
+  cols: 4,
+  rows,
+  notes: notes.map(([col, row]) => ({ col, row })),
+});
 
 describe('what can be kept', () => {
   it('keeps a picture with at least one good stamp and drops the damaged ones', () => {
     expect(cleanPicture({ kind: 'picture', stamps: [] })).toBeNull();
     expect(cleanPicture({ kind: 'picture' })).toBeNull();
-    const odd = cleanPicture({ kind: 'picture', stamps: [{ kind: 'dragon', color: 'purple', x: 0.2, y: 0.2 }, { kind: 'cat', color: 'nope', x: 0.2, y: 0.2 }, { kind: 'cat', color: 'pink', x: 4, y: -2, size: 9, turns: 7 }, 'x', null] });
-    expect(odd && 'stamps' in odd ? odd.stamps : []).toEqual([{ kind: 'cat', color: 'pink', x: 1, y: 0, size: 2, turns: 3 }]);
+    const odd = cleanPicture({
+      kind: 'picture',
+      stamps: [
+        { kind: 'dragon', color: 'purple', x: 0.2, y: 0.2 },
+        { kind: 'cat', color: 'nope', x: 0.2, y: 0.2 },
+        { kind: 'cat', color: 'pink', x: 4, y: -2, size: 9, turns: 7 },
+        'x',
+        null,
+      ],
+    });
+    expect(odd && 'stamps' in odd ? odd.stamps : []).toEqual([
+      { kind: 'cat', color: 'pink', x: 1, y: 0, size: 2, turns: 3 },
+    ]);
   });
 
   it('bounds a picture to the studio limit', () => {
@@ -32,49 +76,113 @@ describe('what can be kept', () => {
   it('keeps a code-drawn painting, repairs its marks, and bounds its size', () => {
     expect(cleanPicture({ kind: 'picture', marks: [], aspect: 1 })).toBeNull();
     expect(cleanPicture(painting(0.1, 0.2))).toBeNull();
-    const marks = Array.from({ length: PAINTING_MAX_MARKS + 40 }, (_, i) => (
+    const marks = Array.from({ length: PAINTING_MAX_MARKS + 40 }, (_, i) =>
       i === 1
         ? { shape: 'flower', color: 'pink', x: -2, y: 4, r: 2 }
         : i === 2
           ? { shape: 'dab', color: -20, x: 0.5, y: 0.5, r: 0 }
-          : { shape: 'dab', color: i, x: i / PAINTING_MAX_MARKS, y: 0.4, r: 0.03 }
-    ));
-    const fixed = cleanPicture({ kind: 'picture', aspect: 8, marks: [...marks, { shape: 'smudge', x: 0.5, y: 0.5 }] });
+          : { shape: 'dab', color: i, x: i / PAINTING_MAX_MARKS, y: 0.4, r: 0.03 },
+    );
+    const fixed = cleanPicture({
+      kind: 'picture',
+      aspect: 8,
+      marks: [...marks, { shape: 'smudge', x: 0.5, y: 0.5 }],
+    });
     expect(fixed && 'marks' in fixed ? fixed.marks : []).toHaveLength(PAINTING_MAX_MARKS);
     expect(fixed && 'marks' in fixed ? fixed.aspect : 0).toBe(2);
-    expect(fixed && 'marks' in fixed ? fixed.marks[1] : null).toEqual({ shape: 'flower', color: 'pink', x: 0, y: 1, r: 0.12 });
-    expect(fixed && 'marks' in fixed ? fixed.marks[2] : null).toEqual({ shape: 'dab', color: 0, x: 0.5, y: 0.5, r: 0.006 });
+    expect(fixed && 'marks' in fixed ? fixed.marks[1] : null).toEqual({
+      shape: 'flower',
+      color: 'pink',
+      x: 0,
+      y: 1,
+      r: 0.12,
+    });
+    expect(fixed && 'marks' in fixed ? fixed.marks[2] : null).toEqual({
+      shape: 'dab',
+      color: 0,
+      x: 0.5,
+      y: 0.5,
+      r: 0.006,
+    });
   });
 
   it('keeps a small pixel picture, dropping damaged, repeated and off-grid squares', () => {
     expect(cleanPicture({ kind: 'picture', size: 4, pixels: [] })).toBeNull();
     expect(cleanPicture({ kind: 'picture', size: 9, pixels: [{ x: 0, y: 0, color: 'red' }] })).toBeNull();
-    expect(cleanPicture({
-      kind: 'picture',
-      size: 4,
-      pixels: [
-        { x: 2, y: 1, color: 'red' },
-        { x: 0, y: 0, color: 'blue' },
-        { x: 2, y: 1, color: 'pink' },
-        { x: 4, y: 0, color: 'green' },
-        { x: 1.5, y: 2, color: 'green' },
-        { x: 1, y: 3, color: 'ultraviolet' },
-      ],
-    })).toEqual(pixels([0, 0, 'blue'], [2, 1, 'red']));
+    expect(
+      cleanPicture({
+        kind: 'picture',
+        size: 4,
+        pixels: [
+          { x: 2, y: 1, color: 'red' },
+          { x: 0, y: 0, color: 'blue' },
+          { x: 2, y: 1, color: 'pink' },
+          { x: 4, y: 0, color: 'green' },
+          { x: 1.5, y: 2, color: 'green' },
+          { x: 1, y: 3, color: 'ultraviolet' },
+        ],
+      }),
+    ).toEqual(pixels([0, 0, 'blue'], [2, 1, 'red']));
   });
 
   it('keeps a tune only if it is a grid Song Maker can draw with at least two different jellies', () => {
     expect(cleanTune(tune(3, [0, 0]))).toBeNull();
     expect(cleanTune(tune(3, [0, 0], [0, 0]))).toBeNull();
-    expect(cleanTune({ kind: 'tune', cols: 4, rows: 7, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }] })).toBeNull();
-    expect(cleanTune({ kind: 'tune', cols: 40, rows: 3, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }] })).toBeNull();
-    expect(cleanTune({ kind: 'tune', cols: 4.5, rows: 3, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }] })).toBeNull();
+    expect(
+      cleanTune({
+        kind: 'tune',
+        cols: 4,
+        rows: 7,
+        notes: [
+          { col: 0, row: 0 },
+          { col: 1, row: 1 },
+        ],
+      }),
+    ).toBeNull();
+    expect(
+      cleanTune({
+        kind: 'tune',
+        cols: 40,
+        rows: 3,
+        notes: [
+          { col: 0, row: 0 },
+          { col: 1, row: 1 },
+        ],
+      }),
+    ).toBeNull();
+    expect(
+      cleanTune({
+        kind: 'tune',
+        cols: 4.5,
+        rows: 3,
+        notes: [
+          { col: 0, row: 0 },
+          { col: 1, row: 1 },
+        ],
+      }),
+    ).toBeNull();
     expect(cleanTune('la la')).toBeNull();
   });
 
   it('drops notes off the grid or repeated, and puts the rest in order', () => {
-    const t = cleanTune({ kind: 'tune', cols: 4, rows: 3, notes: [{ col: 2, row: 1 }, { col: 9, row: 0 }, { col: 0, row: 2 }, { col: 2, row: 1 }, { col: 1, row: -1 }, { col: 0, row: 0 }] });
-    expect(t?.notes).toEqual([{ col: 0, row: 0 }, { col: 0, row: 2 }, { col: 2, row: 1 }]);
+    const t = cleanTune({
+      kind: 'tune',
+      cols: 4,
+      rows: 3,
+      notes: [
+        { col: 2, row: 1 },
+        { col: 9, row: 0 },
+        { col: 0, row: 2 },
+        { col: 2, row: 1 },
+        { col: 1, row: -1 },
+        { col: 0, row: 0 },
+      ],
+    });
+    expect(t?.notes).toEqual([
+      { col: 0, row: 0 },
+      { col: 0, row: 2 },
+      { col: 2, row: 1 },
+    ]);
   });
 
   it('turns anything else away', () => {
@@ -88,7 +196,10 @@ describe('the two places', () => {
   it('starts empty and repairs a damaged save to something it can hold', () => {
     expect(cleanCreations(undefined)).toEqual(emptyCreations());
     expect(cleanCreations('x')).toEqual(emptyCreations());
-    const fixed = cleanCreations({ picture: { current: picture(0.1), previous: { kind: 'picture', stamps: [] } }, tune: { current: { kind: 'picture', stamps: [stamp(0.1)] }, previous: 4 } });
+    const fixed = cleanCreations({
+      picture: { current: picture(0.1), previous: { kind: 'picture', stamps: [] } },
+      tune: { current: { kind: 'picture', stamps: [stamp(0.1)] }, previous: 4 },
+    });
     expect(fixed.picture).toEqual({ current: picture(0.1), previous: null });
     // A picture is not a tune, so the tune place stays empty.
     expect(fixed.tune).toEqual({ current: null, previous: null });

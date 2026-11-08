@@ -5,7 +5,9 @@ import { LINES, PHRASES, WORDS } from './logic';
 describe('typing course', () => {
   const course = COURSES.typing;
   it('courseBest is each pond character count; courseMinimum their sum', () => {
-    expect(courseBest('typing')).toEqual(course.ponds.map((p, i) => course.levels[i] === 6 ? p.length : p.reduce((n, b) => n + b.length, 0)));
+    expect(courseBest('typing')).toEqual(
+      course.ponds.map((p, i) => (course.levels[i] === 6 ? p.length : p.reduce((n, b) => n + b.length, 0))),
+    );
     expect(courseBest('typing')).toEqual([8, 12, 18, 10, 14, 1]);
     expect(courseMinimum('typing')).toBe(courseBest('typing').reduce((a, b) => a + b, 0));
   });

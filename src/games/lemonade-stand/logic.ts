@@ -56,11 +56,42 @@ export interface StandPlan {
 }
 
 export const PLANS: StandPlan[] = [
-  { days: 3, events: false, prices: [1], purse: false, name: 'Three days: read the weather, choose how many cups to make' },
-  { days: 3, events: true, prices: [1], purse: false, name: 'Three days with an event on the forecast: a ferry or a quiet day' },
-  { days: 4, events: true, prices: [1, 2, 3], purse: false, name: 'Four days: choose a price in shells as well as the cups' },
-  { days: 5, events: true, prices: [1, 2, 3], purse: true, name: 'A market week: cups cost shells to make, so read the profit' },
-  { days: 4, events: true, prices: [1, 2, 3], purse: true, boats: 'same', name: 'Two lemon boats: tap the boat that sells lemons cheaper, then run the stand' },
+  {
+    days: 3,
+    events: false,
+    prices: [1],
+    purse: false,
+    name: 'Three days: read the weather, choose how many cups to make',
+  },
+  {
+    days: 3,
+    events: true,
+    prices: [1],
+    purse: false,
+    name: 'Three days with an event on the forecast: a ferry or a quiet day',
+  },
+  {
+    days: 4,
+    events: true,
+    prices: [1, 2, 3],
+    purse: false,
+    name: 'Four days: choose a price in shells as well as the cups',
+  },
+  {
+    days: 5,
+    events: true,
+    prices: [1, 2, 3],
+    purse: true,
+    name: 'A market week: cups cost shells to make, so read the profit',
+  },
+  {
+    days: 4,
+    events: true,
+    prices: [1, 2, 3],
+    purse: true,
+    boats: 'same',
+    name: 'Two lemon boats: tap the boat that sells lemons cheaper, then run the stand',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -83,12 +114,30 @@ export const perTwo = (o: Offer) => (o.shells * 2) / o.lemons;
  * dearer than a shell a lemon, so the opening purse still pays for any batch and a day that keeps shells is always open.
  */
 export const SAME_OFFERS: readonly (readonly [Offer, Offer])[] = [
-  [{ lemons: 2, shells: 1 }, { lemons: 2, shells: 2 }],
-  [{ lemons: 2, shells: 1 }, { lemons: 2, shells: 3 }],
-  [{ lemons: 2, shells: 2 }, { lemons: 2, shells: 4 }],
-  [{ lemons: 4, shells: 2 }, { lemons: 4, shells: 4 }],
-  [{ lemons: 4, shells: 2 }, { lemons: 2, shells: 2 }],
-  [{ lemons: 4, shells: 4 }, { lemons: 2, shells: 4 }],
+  [
+    { lemons: 2, shells: 1 },
+    { lemons: 2, shells: 2 },
+  ],
+  [
+    { lemons: 2, shells: 1 },
+    { lemons: 2, shells: 3 },
+  ],
+  [
+    { lemons: 2, shells: 2 },
+    { lemons: 2, shells: 4 },
+  ],
+  [
+    { lemons: 4, shells: 2 },
+    { lemons: 4, shells: 4 },
+  ],
+  [
+    { lemons: 4, shells: 2 },
+    { lemons: 2, shells: 2 },
+  ],
+  [
+    { lemons: 4, shells: 4 },
+    { lemons: 2, shells: 4 },
+  ],
 ];
 
 export interface Day {
@@ -104,10 +153,15 @@ export interface Day {
 export const cheaperBoat = (boats: readonly [Offer, Offer]) => (perTwo(boats[0]) < perTwo(boats[1]) ? 0 : 1);
 
 /** Shells for two lemons today: the cheaper boat's offer (a wrong boat is never bought from), or the usual price. */
-export const dayPerTwo = (day: Pick<Day, 'boats'>) => (day.boats ? perTwo(day.boats[cheaperBoat(day.boats)]) : PER_TWO);
+export const dayPerTwo = (day: Pick<Day, 'boats'>) =>
+  day.boats ? perTwo(day.boats[cheaperBoat(day.boats)]) : PER_TWO;
 
 /** What the pet says to compare the two boats: shells for two lemons at each, and which side is cheaper. */
-export function boatTalk(boats: readonly [Offer, Offer]): { cheap: number; dear: number; side: 'left' | 'right' } {
+export function boatTalk(boats: readonly [Offer, Offer]): {
+  cheap: number;
+  dear: number;
+  side: 'left' | 'right';
+} {
   const i = cheaperBoat(boats);
   return { cheap: perTwo(boats[i]), dear: perTwo(boats[1 - i]), side: i === 0 ? 'left' : 'right' };
 }
@@ -187,11 +241,26 @@ export function sellDay(plan: StandPlan, day: Day, index: number, made: number, 
   const shells = sold * price;
   const cost = plan.purse ? batchCost(made, dayPerTwo(day)) : 0;
   const saved = plan.purse && day.boats ? batchCost(made, boatTalk(day.boats).dear) - cost : 0;
-  return { day: index, weather: day.weather, event: day.event, price, made, wanted, sold, left: made - sold, unserved: wanted - sold, shells, cost, profit: shells - cost, saved };
+  return {
+    day: index,
+    weather: day.weather,
+    event: day.event,
+    price,
+    made,
+    wanted,
+    sold,
+    left: made - sold,
+    unserved: wanted - sold,
+    shells,
+    cost,
+    profit: shells - cost,
+    saved,
+  };
 }
 
 /** Can the purse pay for this batch (at the day's lemon price)? Always true away from the purse level. */
-export const affordable = (plan: StandPlan, purse: number, cups: number, day: Pick<Day, 'boats'> = {}) => !plan.purse || batchCost(cups, dayPerTwo(day)) <= purse;
+export const affordable = (plan: StandPlan, purse: number, cups: number, day: Pick<Day, 'boats'> = {}) =>
+  !plan.purse || batchCost(cups, dayPerTwo(day)) <= purse;
 
 /**
  * Carry the purse to the next morning. A purse that cannot pay for the smallest batch is topped up by the host
@@ -218,7 +287,12 @@ export function rating(row: Row): Rating {
 }
 
 /** The best batch and price for a day by shells (profit on the purse level), and what it earns. Ties go to the smaller batch, then the lower price. */
-export function bestChoice(plan: StandPlan, day: Day, index: number, purse = START_PURSE): { made: number; price: number; row: Row } {
+export function bestChoice(
+  plan: StandPlan,
+  day: Day,
+  index: number,
+  purse = START_PURSE,
+): { made: number; price: number; row: Row } {
   let best: { made: number; price: number; row: Row } | null = null;
   for (const made of BATCHES) {
     if (!affordable(plan, purse, made, day)) continue;
@@ -257,7 +331,17 @@ export function helps(plan: StandPlan, today: Day, rows: Row[], boatChosen = tru
   const last = same.at(-1);
   if (last) {
     const kind: HelpKind = last.unserved > 0 ? 'out' : last.left >= BATCHES[0] ? 'left' : 'good';
-    out.push({ kind, rows: [last.day], vars: { weather: WEATHER_WORD[last.weather], made: last.made, sold: last.sold, left: last.left, price: last.price } });
+    out.push({
+      kind,
+      rows: [last.day],
+      vars: {
+        weather: WEATHER_WORD[last.weather],
+        made: last.made,
+        sold: last.sold,
+        left: last.left,
+        price: last.price,
+      },
+    });
   }
   if (!priceChoice(plan)) {
     // Only one price, so the rows differ in weather alone and "hotter, more friends" holds without a caveat.
@@ -266,7 +350,12 @@ export function helps(plan: StandPlan, today: Day, rows: Row[], boatChosen = tru
       out.push({
         kind: 'other',
         rows: [other.day],
-        vars: { then: WEATHER_WORD[other.weather], n: other.wanted, weather: WEATHER_WORD[today.weather], more: heat(today.weather) > heat(other.weather) ? 'more' : 'fewer' },
+        vars: {
+          then: WEATHER_WORD[other.weather],
+          n: other.wanted,
+          weather: WEATHER_WORD[today.weather],
+          more: heat(today.weather) > heat(other.weather) ? 'more' : 'fewer',
+        },
       });
     }
   }
@@ -297,7 +386,17 @@ export function insight(plan: StandPlan, rows: Row[]): Insight {
     for (const a of rows) {
       for (const b of rows) {
         if (a.weather === b.weather && a.event === b.event && b.price > a.price && b.wanted < a.wanted) {
-          return { kind: 'price', rows: [a.day, b.day], vars: { weather: WEATHER_WORD[a.weather], low: a.price, high: b.price, lowN: a.wanted, highN: b.wanted } };
+          return {
+            kind: 'price',
+            rows: [a.day, b.day],
+            vars: {
+              weather: WEATHER_WORD[a.weather],
+              low: a.price,
+              high: b.price,
+              lowN: a.wanted,
+              highN: b.wanted,
+            },
+          };
         }
       }
     }
@@ -305,17 +404,37 @@ export function insight(plan: StandPlan, rows: Row[]): Insight {
   for (const a of rows) {
     for (const b of rows) {
       if (heat(a.weather) > heat(b.weather) && sameKind(a, b) && a.wanted > b.wanted) {
-        return { kind: 'weather', rows: [b.day, a.day], vars: { hot: WEATHER_WORD[a.weather], cool: WEATHER_WORD[b.weather], hotN: a.wanted, coolN: b.wanted } };
+        return {
+          kind: 'weather',
+          rows: [b.day, a.day],
+          vars: {
+            hot: WEATHER_WORD[a.weather],
+            cool: WEATHER_WORD[b.weather],
+            hotN: a.wanted,
+            coolN: b.wanted,
+          },
+        };
       }
     }
   }
   if (plan.purse || priceChoice(plan)) {
     // Shells are on the table, so "best" means the day that kept the most (earliest wins a tie).
     const top = rows.reduce((m, r) => (r.profit > m.profit ? r : m));
-    return { kind: 'best', rows: [top.day], vars: { day: top.day + 1, weather: WEATHER_WORD[top.weather], shells: top.profit } };
+    return {
+      kind: 'best',
+      rows: [top.day],
+      vars: { day: top.day + 1, weather: WEATHER_WORD[top.weather], shells: top.profit },
+    };
   }
-  const right = rows.filter((r) => rating(r) === 'good').reduce<Row | null>((m, r) => (!m || r.sold > m.sold ? r : m), null);
-  if (right) return { kind: 'right', rows: [right.day], vars: { day: right.day + 1, weather: WEATHER_WORD[right.weather], made: right.made, sold: right.sold } };
+  const right = rows
+    .filter((r) => rating(r) === 'good')
+    .reduce<Row | null>((m, r) => (!m || r.sold > m.sold ? r : m), null);
+  if (right)
+    return {
+      kind: 'right',
+      rows: [right.day],
+      vars: { day: right.day + 1, weather: WEATHER_WORD[right.weather], made: right.made, sold: right.sold },
+    };
   return { kind: 'plain', rows: [], vars: {} };
 }
 
@@ -327,7 +446,11 @@ export type Forecast = Pick<Day, 'weather' | 'event' | 'boats'>;
  * the day's unseen 0 to 2 extra friends, so it cannot read the future, and then the best choice for that crowd, which
  * on the purse level never costs more than it earns.
  */
-export function forecastChoice(plan: StandPlan, forecast: Forecast, purse = START_PURSE): { made: number; price: number } {
+export function forecastChoice(
+  plan: StandPlan,
+  forecast: Forecast,
+  purse = START_PURSE,
+): { made: number; price: number } {
   const { made, price } = bestChoice(plan, { ...forecast, noise: 1 }, 0, purse);
   return { made, price };
 }

@@ -5,11 +5,20 @@ import { cream, ink, shadow, swatch, wood, type Swatch } from '../../art/palette
 import { againIcon, checkIcon } from '../../ui/icons';
 import type { BannerTheme, Friend, PlanId, RequestId, StampPicture, Surface } from './logic';
 
-const line = (color: number, width: number) => ({ color, width, cap: 'round' as const, join: 'round' as const });
+const line = (color: number, width: number) => ({
+  color,
+  width,
+  cap: 'round' as const,
+  join: 'round' as const,
+});
 
 /** Each friend's colour for marks and page borders: left warm, right cool, never the only cue. */
 export const FRIEND_SWATCH: Record<Friend, Swatch> = { A: swatch.orange, B: swatch.blue };
-export const THEME: Record<BannerTheme, Swatch> = { sun: swatch.yellow, sea: swatch.teal, leaf: swatch.green };
+export const THEME: Record<BannerTheme, Swatch> = {
+  sun: swatch.yellow,
+  sea: swatch.teal,
+  leaf: swatch.green,
+};
 
 /** A stamped picture, centred, about `size` across. */
 export function stampArt(pic: StampPicture, size: number, color: number): Graphics {
@@ -41,7 +50,9 @@ export function stampArt(pic: StampPicture, size: number, color: number): Graphi
 export function pageArt(size: number, sw: Swatch): Graphics {
   const g = new Graphics();
   g.roundRect(-size / 2 + 5, -size / 2 + 7, size, size, 18).fill({ color: shadow, alpha: 0.12 });
-  g.roundRect(-size / 2, -size / 2, size, size, 18).fill(0xffffff).stroke(line(sw.line, 8));
+  g.roundRect(-size / 2, -size / 2, size, size, 18)
+    .fill(0xffffff)
+    .stroke(line(sw.line, 8));
   g.circle(size / 2 - 22, -size / 2 + 22, 11).fill(sw.fill);
   return g;
 }
@@ -49,8 +60,13 @@ export function pageArt(size: number, sw: Swatch): Graphics {
 /** One banner cell: a pennant with the theme's colour. */
 export function cellArt(size: number, theme: Swatch): Graphics {
   const g = new Graphics();
-  g.roundRect(-size / 2, -size / 2, size, size, 14).fill(theme.light).stroke(line(theme.line, 6));
-  g.poly([-size / 2 + 8, -size / 2 + 4, size / 2 - 8, -size / 2 + 4, 0, -size / 2 + 22]).fill({ color: theme.fill, alpha: 0.7 });
+  g.roundRect(-size / 2, -size / 2, size, size, 14)
+    .fill(theme.light)
+    .stroke(line(theme.line, 6));
+  g.poly([-size / 2 + 8, -size / 2 + 4, size / 2 - 8, -size / 2 + 4, 0, -size / 2 + 22]).fill({
+    color: theme.fill,
+    alpha: 0.7,
+  });
   return g;
 }
 
@@ -59,9 +75,13 @@ export function padArt(size: number): Container {
   const c = new Container();
   const g = new Graphics();
   const w = size * 0.8;
-  g.roundRect(-w / 2, -size * 0.05, w, size * 0.32, 12).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 5));
+  g.roundRect(-w / 2, -size * 0.05, w, size * 0.32, 12)
+    .fill(swatch.purple.fill)
+    .stroke(line(swatch.purple.line, 5));
   g.roundRect(-w / 2 + 10, -size * 0.02, w - 20, size * 0.12, 6).fill(swatch.purple.line);
-  g.roundRect(-size * 0.12, -size * 0.4, size * 0.24, size * 0.36, 10).fill(wood.fill).stroke(line(wood.line, 5));
+  g.roundRect(-size * 0.12, -size * 0.4, size * 0.24, size * 0.36, 10)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 5));
   c.addChild(g);
   return c;
 }
@@ -71,11 +91,24 @@ export function rollerArt(size: number): Container {
   const c = new Container();
   const g = new Graphics();
   const w = size * 0.55;
-  g.moveTo(-size * 0.45, -size * 0.25).lineTo(-w / 2, 0).moveTo(size * 0.45, -size * 0.25).lineTo(w / 2, 0).stroke(line(wood.line, 7));
-  g.circle(-size * 0.45, -size * 0.25, size * 0.08).fill(wood.fill).stroke(line(wood.line, 4));
-  g.circle(size * 0.45, -size * 0.25, size * 0.08).fill(wood.fill).stroke(line(wood.line, 4));
-  g.roundRect(-w / 2, -size * 0.12, w, size * 0.3, 14).fill(swatch.red.fill).stroke(line(swatch.red.line, 5));
-  for (let i = -1; i <= 1; i++) g.moveTo(i * w * 0.25, -size * 0.08).lineTo(i * w * 0.25, size * 0.14).stroke(line(swatch.red.line, 3));
+  g.moveTo(-size * 0.45, -size * 0.25)
+    .lineTo(-w / 2, 0)
+    .moveTo(size * 0.45, -size * 0.25)
+    .lineTo(w / 2, 0)
+    .stroke(line(wood.line, 7));
+  g.circle(-size * 0.45, -size * 0.25, size * 0.08)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 4));
+  g.circle(size * 0.45, -size * 0.25, size * 0.08)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 4));
+  g.roundRect(-w / 2, -size * 0.12, w, size * 0.3, 14)
+    .fill(swatch.red.fill)
+    .stroke(line(swatch.red.line, 5));
+  for (let i = -1; i <= 1; i++)
+    g.moveTo(i * w * 0.25, -size * 0.08)
+      .lineTo(i * w * 0.25, size * 0.14)
+      .stroke(line(swatch.red.line, 3));
   c.addChild(g);
   return c;
 }
@@ -85,8 +118,13 @@ export function faceArt(kind: CritterName, r: number): Graphics {
   const spec = CRITTERS[kind] as { color: keyof typeof swatch };
   const sw = swatch[spec.color] ?? swatch.white;
   const g = new Graphics();
-  g.circle(0, 0, r).fill(sw.fill).stroke(line(sw.line, Math.max(2, r * 0.12)));
-  g.circle(-r * 0.35, -r * 0.15, r * 0.12).fill(ink).circle(r * 0.35, -r * 0.15, r * 0.12).fill(ink);
+  g.circle(0, 0, r)
+    .fill(sw.fill)
+    .stroke(line(sw.line, Math.max(2, r * 0.12)));
+  g.circle(-r * 0.35, -r * 0.15, r * 0.12)
+    .fill(ink)
+    .circle(r * 0.35, -r * 0.15, r * 0.12)
+    .fill(ink);
   g.arc(0, r * 0.15, r * 0.35, 0.2 * Math.PI, 0.8 * Math.PI).stroke(line(ink, Math.max(2, r * 0.1)));
   return g;
 }
@@ -173,19 +211,37 @@ export function bubbleArt(f: Friend, w: number, h: number, state: 'none' | 'met'
   const g = new Graphics();
   const sw = FRIEND_SWATCH[f];
   const tailX = f === 'A' ? -w / 2 + 40 : w / 2 - 40;
-  g.poly([tailX - 16, h / 2 - 6, tailX + 16, h / 2 - 6, tailX + (f === 'A' ? -30 : 30), h / 2 + 30]).fill(cream).stroke(line(sw.line, 5));
-  if (f === 'A') g.roundRect(-w / 2, -h / 2, w, h, h / 2.2).fill(cream).stroke(line(sw.line, 6));
+  g.poly([tailX - 16, h / 2 - 6, tailX + 16, h / 2 - 6, tailX + (f === 'A' ? -30 : 30), h / 2 + 30])
+    .fill(cream)
+    .stroke(line(sw.line, 5));
+  if (f === 'A')
+    g.roundRect(-w / 2, -h / 2, w, h, h / 2.2)
+      .fill(cream)
+      .stroke(line(sw.line, 6));
   else {
-    for (const [x, y, r] of [[-w / 2 + 40, 0, 46], [w / 2 - 40, 0, 46], [-w / 4, -h / 2 + 36, 40], [w / 4, -h / 2 + 36, 40], [-w / 4, h / 2 - 36, 40], [w / 4, h / 2 - 36, 40]]) g.circle(x, y, r).fill(cream).stroke(line(sw.line, 6));
+    for (const [x, y, r] of [
+      [-w / 2 + 40, 0, 46],
+      [w / 2 - 40, 0, 46],
+      [-w / 4, -h / 2 + 36, 40],
+      [w / 4, -h / 2 + 36, 40],
+      [-w / 4, h / 2 - 36, 40],
+      [w / 4, h / 2 - 36, 40],
+    ])
+      g.circle(x, y, r).fill(cream).stroke(line(sw.line, 6));
     g.roundRect(-w / 2 + 24, -h / 2 + 18, w - 48, h - 36, 30).fill(cream);
   }
   if (state === 'met') {
-    g.circle(w / 2 - 18, -h / 2 + 18, 22).fill(swatch.green.fill).stroke(line(swatch.green.line, 4));
+    g.circle(w / 2 - 18, -h / 2 + 18, 22)
+      .fill(swatch.green.fill)
+      .stroke(line(swatch.green.line, 4));
   } else if (state === 'unmet') {
     for (let i = 0; i < 24; i++) {
       const a0 = (i / 24) * Math.PI * 2;
       if (i % 2) continue;
-      g.moveTo(Math.cos(a0) * w * 0.56, Math.sin(a0) * h * 0.62).lineTo(Math.cos(a0 + 0.2) * w * 0.56, Math.sin(a0 + 0.2) * h * 0.62);
+      g.moveTo(Math.cos(a0) * w * 0.56, Math.sin(a0) * h * 0.62).lineTo(
+        Math.cos(a0 + 0.2) * w * 0.56,
+        Math.sin(a0 + 0.2) * h * 0.62,
+      );
     }
     g.stroke(line(swatch.yellow.line, 6));
   }
@@ -203,36 +259,77 @@ export function metTick(): Graphics {
 export function cardPicture(id: PlanId, p: Pictured, own: Friend, w: number, h: number): Container {
   const c = new Container();
   const arrow = (x: number, y: number) => {
-    const g = new Graphics().moveTo(x - 12, y).lineTo(x + 12, y).moveTo(x + 4, y - 8).lineTo(x + 12, y).lineTo(x + 4, y + 8).stroke(line(ink, 4));
+    const g = new Graphics()
+      .moveTo(x - 12, y)
+      .lineTo(x + 12, y)
+      .moveTo(x + 4, y - 8)
+      .lineTo(x + 12, y)
+      .lineTo(x + 4, y + 8)
+      .stroke(line(ink, 4));
     c.addChild(g);
   };
-  const face = (i: 0 | 1, x: number, y: number, r = 13) => { const fc = faceArt(p.cast[i], r); fc.position.set(x, y); c.addChild(fc); };
-  const tool = (t: 'pad' | 'roller', x: number, y: number, s = 56) => { const a = t === 'pad' ? padArt(s) : rollerArt(s); a.position.set(x, y); c.addChild(a); };
-  const ownPage = (x: number) => { const pg = miniPage(p, own, 60); pg.position.set(x, 0); c.addChild(pg); };
+  const face = (i: 0 | 1, x: number, y: number, r = 13) => {
+    const fc = faceArt(p.cast[i], r);
+    fc.position.set(x, y);
+    c.addChild(fc);
+  };
+  const tool = (t: 'pad' | 'roller', x: number, y: number, s = 56) => {
+    const a = t === 'pad' ? padArt(s) : rollerArt(s);
+    a.position.set(x, y);
+    c.addChild(a);
+  };
+  const ownPage = (x: number) => {
+    const pg = miniPage(p, own, 60);
+    pg.position.set(x, 0);
+    c.addChild(pg);
+  };
   if (id === 'turns') {
-    const b = miniBanner(p, 4, w - 40); b.y = -h * 0.18; c.addChild(b);
-    face(0, -50, h * 0.22); tool('pad', 0, h * 0.24, 46); face(1, 50, h * 0.22);
-    const g = new Graphics().arc(0, h * 0.22, 46, Math.PI * 1.15, Math.PI * 1.85).stroke(line(ink, 3)); c.addChild(g);
+    const b = miniBanner(p, 4, w - 40);
+    b.y = -h * 0.18;
+    c.addChild(b);
+    face(0, -50, h * 0.22);
+    tool('pad', 0, h * 0.24, 46);
+    face(1, 50, h * 0.22);
+    const g = new Graphics().arc(0, h * 0.22, 46, Math.PI * 1.15, Math.PI * 1.85).stroke(line(ink, 3));
+    c.addChild(g);
   } else if (id === 'roll') {
-    const b = miniBanner(p, 4, w - 40); b.y = -h * 0.18; c.addChild(b);
-    tool('roller', 0, h * 0.26, 90); face(0, -40, h * 0.12); face(1, 40, h * 0.12);
+    const b = miniBanner(p, 4, w - 40);
+    b.y = -h * 0.18;
+    c.addChild(b);
+    tool('roller', 0, h * 0.26, 90);
+    face(0, -40, h * 0.12);
+    face(1, 40, h * 0.12);
   } else if (id === 'side') {
-    const pa = miniPage(p, 'A', 64); pa.position.set(-48, -8);
-    const pb = miniPage(p, 'B', 64); pb.position.set(48, -8);
+    const pa = miniPage(p, 'A', 64);
+    pa.position.set(-48, -8);
+    const pb = miniPage(p, 'B', 64);
+    pb.position.set(48, -8);
     c.addChild(pa, pb);
-    tool('pad', -48, h * 0.33, 40); tool('roller', 48, h * 0.33, 52);
+    tool('pad', -48, h * 0.33, 40);
+    tool('roller', 48, h * 0.33, 52);
   } else if (id === 'bannerThenPage') {
-    const b = miniBanner(p, 2, 90); b.x = -60; c.addChild(b);
-    arrow(8, 0); ownPage(70);
+    const b = miniBanner(p, 2, 90);
+    b.x = -60;
+    c.addChild(b);
+    arrow(8, 0);
+    ownPage(70);
   } else if (id === 'pageThenBanner') {
-    ownPage(-70); arrow(-8, 0);
-    const b = miniBanner(p, 2, 90); b.x = 60; c.addChild(b);
+    ownPage(-70);
+    arrow(-8, 0);
+    const b = miniBanner(p, 2, 90);
+    b.x = 60;
+    c.addChild(b);
   } else if (id === 'justBanner') {
-    const b = miniBanner(p, 2, 100); b.y = -10; c.addChild(b);
-    face(0, -24, h * 0.28); face(1, 24, h * 0.28);
+    const b = miniBanner(p, 2, 100);
+    b.y = -10;
+    c.addChild(b);
+    face(0, -24, h * 0.28);
+    face(1, 24, h * 0.28);
   } else {
-    const pa = miniPage(p, 'A', 64); pa.position.set(-48, 0);
-    const pb = miniPage(p, 'B', 64); pb.position.set(48, 0);
+    const pa = miniPage(p, 'A', 64);
+    pa.position.set(-48, 0);
+    const pb = miniPage(p, 'B', 64);
+    pb.position.set(48, 0);
     c.addChild(pa, pb);
   }
   return c;
@@ -242,19 +339,44 @@ export function cardPicture(id: PlanId, p: Pictured, own: Friend, w: number, h: 
 export function cardPlate(w: number, h: number, lifted: boolean): Graphics {
   const g = new Graphics();
   g.roundRect(-w / 2 + 5, -h / 2 + 8, w, h, 22).fill({ color: shadow, alpha: lifted ? 0.2 : 0.1 });
-  g.roundRect(-w / 2, -h / 2, w, h, 22).fill(lifted ? 0xfffbe8 : 0xffffff).stroke(line(lifted ? swatch.yellow.line : wood.line, lifted ? 8 : 4));
+  g.roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(lifted ? 0xfffbe8 : 0xffffff)
+    .stroke(line(lifted ? swatch.yellow.line : wood.line, lifted ? 8 : 4));
   return g;
 }
 
 /** A trace chip: a small picture of an executed step (not a tap target). */
-export function chipArt(kind: 'give' | 'pass' | 'stamp' | 'roll', by: Friend | 'both' | null, size: number): Container {
+export function chipArt(
+  kind: 'give' | 'pass' | 'stamp' | 'roll',
+  by: Friend | 'both' | null,
+  size: number,
+): Container {
   const c = new Container();
-  const g = new Graphics().roundRect(-size / 2, -size / 2, size, size, 12).fill(0xffffff).stroke(line(by && by !== 'both' ? FRIEND_SWATCH[by].line : wood.line, 4));
+  const g = new Graphics()
+    .roundRect(-size / 2, -size / 2, size, size, 12)
+    .fill(0xffffff)
+    .stroke(line(by && by !== 'both' ? FRIEND_SWATCH[by].line : wood.line, 4));
   c.addChild(g);
-  if (kind === 'give') { const a = padArt(size * 0.7); c.addChild(a); }
-  else if (kind === 'pass') c.addChild(new Graphics().moveTo(-14, 0).lineTo(14, 0).moveTo(6, -8).lineTo(14, 0).lineTo(6, 8).stroke(line(ink, 4)));
-  else if (kind === 'roll') { const r = rollerArt(size * 0.8); c.addChild(r); }
-  else c.addChild(stampArt('star', size * 0.5, by && by !== 'both' ? FRIEND_SWATCH[by].fill : swatch.purple.fill));
+  if (kind === 'give') {
+    const a = padArt(size * 0.7);
+    c.addChild(a);
+  } else if (kind === 'pass')
+    c.addChild(
+      new Graphics()
+        .moveTo(-14, 0)
+        .lineTo(14, 0)
+        .moveTo(6, -8)
+        .lineTo(14, 0)
+        .lineTo(6, 8)
+        .stroke(line(ink, 4)),
+    );
+  else if (kind === 'roll') {
+    const r = rollerArt(size * 0.8);
+    c.addChild(r);
+  } else
+    c.addChild(
+      stampArt('star', size * 0.5, by && by !== 'both' ? FRIEND_SWATCH[by].fill : swatch.purple.fill),
+    );
   return c;
 }
 
@@ -302,7 +424,13 @@ export function watchIcon(): Graphics {
 export function pawIcon(): Graphics {
   const g = new Graphics();
   g.ellipse(0, 8, 16, 13).fill(0xffffff);
-  for (const [x, y] of [[-16, -10], [-5, -18], [6, -18], [17, -10]]) g.circle(x, y, 6).fill(0xffffff);
+  for (const [x, y] of [
+    [-16, -10],
+    [-5, -18],
+    [6, -18],
+    [17, -10],
+  ])
+    g.circle(x, y, 6).fill(0xffffff);
   return g;
 }
 
@@ -311,10 +439,19 @@ export function pawIcon(): Graphics {
 /** The hub icon: two pages with a stamp pad between them. Feet on (0, 0). */
 export function iconArt(): Container {
   const c = new Container();
-  const p = { cast: ['bunny', 'bear'] as [CritterName, CritterName], picture: 'star' as StampPicture, theme: 'sun' as BannerTheme };
-  const a = miniPage(p, 'A', 80); a.position.set(-62, -50); a.rotation = -0.12;
-  const b = miniPage(p, 'B', 80); b.position.set(62, -50); b.rotation = 0.12;
-  const pad = padArt(80); pad.position.set(0, -30);
+  const p = {
+    cast: ['bunny', 'bear'] as [CritterName, CritterName],
+    picture: 'star' as StampPicture,
+    theme: 'sun' as BannerTheme,
+  };
+  const a = miniPage(p, 'A', 80);
+  a.position.set(-62, -50);
+  a.rotation = -0.12;
+  const b = miniPage(p, 'B', 80);
+  b.position.set(62, -50);
+  b.rotation = 0.12;
+  const pad = padArt(80);
+  pad.position.set(0, -30);
   c.addChild(a, b, pad);
   return c;
 }

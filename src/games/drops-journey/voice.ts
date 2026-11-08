@@ -6,7 +6,9 @@ export const VOICE = {
   'drop.instruct.3': ['Can water really go there? Tap a place it can go.'],
   'drop.vapour': ['We draw dots so you can follow it. Real water vapour is invisible.'],
   'drop.evaporate': ['Up it goes!'],
-  'drop.evaporate.why': ['The sun warmed it. It rose as invisible vapour, cooled, and became a tiny drop in the cloud.'],
+  'drop.evaporate.why': [
+    'The sun warmed it. It rose as invisible vapour, cooled, and became a tiny drop in the cloud.',
+  ],
   'drop.rain': ['Rain!'],
   'drop.rain.why': ["The cloud's drops grew heavy and fell as rain."],
   'drop.rainsoak': ['Rain on the hill!'],

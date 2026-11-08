@@ -10,10 +10,35 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { badgeArt, basketArt, boardArt, bubbleArt, iconArt, labelArt, photoArt, pinArt, posterArt, stillCritter } from './art';
 import {
-  BASKET_H, BASKET_W, BUBBLE_H, BUBBLE_W, FRIENDS, LEVELS, makeRound, noticeBoardLayout, Play, planFor,
-  type Friend, type Item, type Outcome, type Plan, type Purpose, type Rect,
+  badgeArt,
+  basketArt,
+  boardArt,
+  bubbleArt,
+  iconArt,
+  labelArt,
+  photoArt,
+  pinArt,
+  posterArt,
+  stillCritter,
+} from './art';
+import {
+  BASKET_H,
+  BASKET_W,
+  BUBBLE_H,
+  BUBBLE_W,
+  FRIENDS,
+  LEVELS,
+  makeRound,
+  noticeBoardLayout,
+  Play,
+  planFor,
+  type Friend,
+  type Item,
+  type Outcome,
+  type Plan,
+  type Purpose,
+  type Rect,
 } from './logic';
 
 /** Each level's authored round leads its first round of a session, and every demonstration. */
@@ -21,8 +46,15 @@ const authoredShown = new Set<number>();
 const PURPOSES: readonly Purpose[] = ['tell', 'sell'];
 const BADGE_D = 44;
 
-interface Slot { node: Container; extras: Container; base: number }
-interface BasketNode { node: Container; purpose: Purpose }
+interface Slot {
+  node: Container;
+  extras: Container;
+  base: number;
+}
+interface BasketNode {
+  node: Container;
+  purpose: Purpose;
+}
 
 class NoticeBoard implements Game {
   readonly plan: Plan;
@@ -92,7 +124,9 @@ class NoticeBoard implements Game {
 
   // The poster and the bench ----------------------------------------------------------------------------------------
 
-  private layout() { return noticeBoardLayout(this.view, this.plan.level); }
+  private layout() {
+    return noticeBoardLayout(this.view, this.plan.level);
+  }
 
   private showPoster(item: Item) {
     this.poster?.destroy({ children: true });
@@ -141,7 +175,11 @@ class NoticeBoard implements Game {
       s.base = scale;
       s.node.position.set(r.x + r.w / 2, r.y);
       s.node.hitArea = new Rectangle(-r.w / 2, 0, r.w, r.h);
-      for (const c of s.node.children) if (c instanceof Critter) { c.scale.set(scale); c.position.set(0, h - 8); }
+      for (const c of s.node.children)
+        if (c instanceof Critter) {
+          c.scale.set(scale);
+          c.position.set(0, h - 8);
+        }
     });
   }
 
@@ -172,14 +210,19 @@ class NoticeBoard implements Game {
     k.rotation = (slot.node.x < this.view.w / 2 ? 1 : slot.node.x > this.view.w / 2 + 1 ? -1 : 0) * 0.1;
     void this.ctx.tw.to(k, { rotation: 0 }, { duration: 0.5 });
     const out = this.play.tapFriend(i);
-    if (out.kind === 'free') { sfx.tick(); k.cheer(); return; }
+    if (out.kind === 'free') {
+      sfx.tick();
+      k.cheer();
+      return;
+    }
     if (out.kind === 'right') return void this.settle(out, i);
     sfx.boing();
     let line: string;
     if (this.plan.mode === 'maker') line = `noticeboard.notme.${f.badge}`;
     else line = f.memory === 'heard' ? 'noticeboard.heard' : `noticeboard.elsewhere.${f.memory}`;
     await this.ctx.say(line as LineId);
-    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item) void this.ctx.say('noticeboard.hint');
+    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item)
+      void this.ctx.say('noticeboard.hint');
   }
 
   private async tapBasket(purpose: Purpose) {
@@ -193,12 +236,17 @@ class NoticeBoard implements Game {
     sfx.boing();
     // The poster dips toward the basket and slides back; the maker says what they want.
     if (this.poster) {
-      const p = this.poster, home = { x: p.x, y: p.y };
-      void this.ctx.tw.to(p, { x: home.x + (b.node.x - home.x) * 0.15, y: home.y + 24 }, { duration: 0.15 })
-        .then(() => { if (this.alive && !p.destroyed) void this.ctx.tw.to(p, home, { duration: 0.25 }); });
+      const p = this.poster,
+        home = { x: p.x, y: p.y };
+      void this.ctx.tw
+        .to(p, { x: home.x + (b.node.x - home.x) * 0.15, y: home.y + 24 }, { duration: 0.15 })
+        .then(() => {
+          if (this.alive && !p.destroyed) void this.ctx.tw.to(p, home, { duration: 0.25 });
+        });
     }
     await this.ctx.say(`noticeboard.want.${out.item.poster.id}` as LineId);
-    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item) void this.ctx.say('noticeboard.hint');
+    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item)
+      void this.ctx.say('noticeboard.hint');
   }
 
   private async settle(out: Extract<Outcome, { kind: 'right' }>, slot: number | null) {
@@ -257,7 +305,8 @@ class NoticeBoard implements Game {
         if (p) {
           sfx.whoosh();
           await this.ctx.tw.to(p, { x: b.node.x, y: b.node.y - 20, rotation: 0.3 }, { duration: 0.4 });
-          if (this.alive && !p.destroyed) await this.ctx.tw.to(p.scale, { x: 0.1, y: 0.1 }, { duration: 0.2 });
+          if (this.alive && !p.destroyed)
+            await this.ctx.tw.to(p.scale, { x: 0.1, y: 0.1 }, { duration: 0.2 });
         }
       }
     }
@@ -268,7 +317,10 @@ class NoticeBoard implements Game {
     this.photoHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.seat(this.play.item);
     sfx.pop(7);
-    if (this.poster) { this.poster.rotation = -0.2; void this.ctx.tw.to(this.poster, { rotation: 0 }, { duration: 0.35 }); }
+    if (this.poster) {
+      this.poster.rotation = -0.2;
+      void this.ctx.tw.to(this.poster, { rotation: 0 }, { duration: 0.35 });
+    }
     await this.ctx.tw.wait(0.4);
     if (!this.alive) return;
     this.busy = false;
@@ -287,7 +339,9 @@ class NoticeBoard implements Game {
   targetNode(): Container | null {
     const t = this.play.target();
     if (!t) return null;
-    return t.kind === 'friend' ? this.slots[t.i].node : this.baskets.find((b) => b.purpose === t.purpose)!.node;
+    return t.kind === 'friend'
+      ? this.slots[t.i].node
+      : this.baskets.find((b) => b.purpose === t.purpose)!.node;
   }
 
   // Motion ---------------------------------------------------------------------------------------------------------
@@ -303,10 +357,20 @@ class NoticeBoard implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
-    sfx.marimba(7); void this.ctx.tw.wait(0.18).then(() => { if (this.alive) sfx.marimba(9); });
+    sfx.marimba(7);
+    void this.ctx.tw.wait(0.18).then(() => {
+      if (this.alive) sfx.marimba(9);
+    });
     for (const s of this.slots) for (const c of s.node.children) if (c instanceof Critter) c.cheer();
     const L = this.layout();
-    this.ctx.particles.burst(L.board.x + L.board.w / 2, L.board.y + L.board.h / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(L.board.x + L.board.w / 2, L.board.y + L.board.h / 2, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.ctx.say('noticeboard.done');
     if (!this.alive) return;
     this.ctx.finish({ misses: this.play.misses, hints: this.play.hints });
@@ -325,9 +389,14 @@ class NoticeBoard implements Game {
     this.boardHolder.addChild(b);
     if (this.poster && !this.busy) this.showPoster(this.play.item);
     else this.poster?.position.set(L.poster.x + L.poster.w / 2, L.poster.y + L.poster.h / 2);
-    if (L.photo) for (const c of this.photoHolder.children) c.position.set(L.photo.x + L.photo.w / 2, L.photo.y + L.photo.h / 2);
+    if (L.photo)
+      for (const c of this.photoHolder.children)
+        c.position.set(L.photo.x + L.photo.w / 2, L.photo.y + L.photo.h / 2);
     this.placeSlots();
-    this.baskets.forEach((bk, k) => { const r = L.baskets[k]; bk.node.position.set(r.x + r.w / 2, r.y + r.h / 2); });
+    this.baskets.forEach((bk, k) => {
+      const r = L.baskets[k];
+      bk.node.position.set(r.x + r.w / 2, r.y + r.h / 2);
+    });
   }
 
   update(dt: number) {
@@ -339,7 +408,11 @@ class NoticeBoard implements Game {
     const L = this.layout();
     const r = t.kind === 'friend' ? L.friends[t.i] : L.baskets[PURPOSES.indexOf(t.purpose)];
     const pulse = 0.6 + 0.4 * Math.sin(this.clock * 4);
-    g.roundRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16, 22).stroke({ width: 8, color: swatch.yellow.fill, alpha: pulse });
+    g.roundRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16, 22).stroke({
+      width: 8,
+      color: swatch.yellow.fill,
+      alpha: pulse,
+    });
   }
 
   /** The ghost finger: tap the answer (the maker, the witness or the basket). */
@@ -352,7 +425,11 @@ class NoticeBoard implements Game {
   destroy() {
     this.alive = false;
     // Friends off the bench are not on the stage, so the scene would not free them.
-    for (const k of this.critters.values()) if (!k.parent && !k.destroyed) { this.ctx.untrack(k); k.destroy({ children: true }); }
+    for (const k of this.critters.values())
+      if (!k.parent && !k.destroyed) {
+        this.ctx.untrack(k);
+        k.destroy({ children: true });
+      }
   }
 }
 
@@ -389,7 +466,8 @@ export const noticeBoard: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
-  coplayHint: "Cover most of a picture-book page with your hand and say something about it, like 'this bear is all alone!' Let her guess, lift your hand, then swap.",
+  coplayHint:
+    "Cover most of a picture-book page with your hand and say something about it, like 'this bear is all alone!' Let her guess, lift your hand, then swap.",
   offScreen: 'When you pass a sign or poster together, ask: who made this, and why?',
   hubIcon: () => new WigglyIcon(iconArt()),
   sticker: (seed) => stickerPicture(seed),

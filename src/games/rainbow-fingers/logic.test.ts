@@ -1,6 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { blankSpot, BRUSH_RADIUS, capMarks, FOLD_AFTER, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, halvedIndex, mirrorX, pageKind, Coverage, fillPath, frameShows, inside, MARGIN, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, PET_CLEAR, pickThings, PLANS, POT_MARKS, POT_RADIUS, POT_SPACING, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, THINGS, touchKind, type PaintState, type Primary, type Touch } from './logic';
+import {
+  blankSpot,
+  BRUSH_RADIUS,
+  capMarks,
+  FOLD_AFTER,
+  FOLD_RADIUS,
+  foldButtonPlace,
+  foldMarks,
+  foldScribbleArea,
+  halvedIndex,
+  mirrorX,
+  pageKind,
+  Coverage,
+  fillPath,
+  frameShows,
+  inside,
+  MARGIN,
+  mix,
+  NUDGE_AFTER,
+  nudges,
+  paintStep,
+  PAINTED,
+  PET_CLEAR,
+  pickThings,
+  PLANS,
+  POT_MARKS,
+  POT_RADIUS,
+  POT_SPACING,
+  potLayout,
+  pours,
+  RECIPES,
+  scribble,
+  scribbleArea,
+  SPACING,
+  SPLAT_RADIUS,
+  strokesCounted,
+  THINGS,
+  touchKind,
+  type PaintState,
+  type Primary,
+  type Touch,
+} from './logic';
 import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
 import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
@@ -42,7 +83,10 @@ describe('Rainbow Fingers', () => {
       const cov = new Coverage(thing.circles);
       expect(cov.total, thing.id).toBeGreaterThan(40);
       expect(cov.paint(1000, 1000, 30)).toBe(0);
-      for (const [x, y, r] of thing.circles) for (let dy = -r; dy <= r; dy += 20) for (let dx = -r; dx <= r; dx += 20) if (inside(thing.circles, x + dx, y + dy)) cov.paint(x + dx, y + dy, 30);
+      for (const [x, y, r] of thing.circles)
+        for (let dy = -r; dy <= r; dy += 20)
+          for (let dx = -r; dx <= r; dx += 20)
+            if (inside(thing.circles, x + dx, y + dy)) cov.paint(x + dx, y + dy, 30);
       expect(cov.covered, thing.id).toBe(1);
     }
   });
@@ -51,7 +95,14 @@ describe('Rainbow Fingers', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         const things = pickThings(plan, new Rng(seed));
-        const st: PaintState = { mode: plan.mode, strokes: 0, brush: null, poured: [], picture: things[0]?.color ?? null, frame: false };
+        const st: PaintState = {
+          mode: plan.mode,
+          strokes: 0,
+          brush: null,
+          poured: [],
+          picture: things[0]?.color ?? null,
+          frame: false,
+        };
         let done = 0;
         const painted: ColorName[] = [];
         let framed = false;
@@ -60,8 +111,10 @@ describe('Rainbow Fingers', () => {
           expect(next, `${plan.mode} seed ${seed} step ${guard}`).not.toBeNull();
           const m = next!;
           if (m.do === 'frame') framed = true;
-          else if (m.do === 'bowl') { st.poured = []; st.brush = null; }
-          else if (m.do === 'pot') {
+          else if (m.do === 'bowl') {
+            st.poured = [];
+            st.brush = null;
+          } else if (m.do === 'pot') {
             if (pours(plan.mode)) {
               if (st.poured.length >= 2) st.poured = [];
               st.poured.push(m.pot as Primary);
@@ -86,18 +139,39 @@ describe('Rainbow Fingers', () => {
       }
     }
     // A half-full bowl of the wrong primary is emptied, not added to.
-    expect(paintStep({ mode: 'mix', strokes: 0, brush: 'red', poured: ['red'], picture: 'green', frame: false })).toEqual({ do: 'bowl' });
-    expect(paintStep({ mode: 'mix', strokes: 0, brush: 'red', poured: ['yellow'], picture: 'orange', frame: false })).toEqual({ do: 'pot', pot: 'red' });
+    expect(
+      paintStep({ mode: 'mix', strokes: 0, brush: 'red', poured: ['red'], picture: 'green', frame: false }),
+    ).toEqual({ do: 'bowl' });
+    expect(
+      paintStep({
+        mode: 'mix',
+        strokes: 0,
+        brush: 'red',
+        poured: ['yellow'],
+        picture: 'orange',
+        frame: false,
+      }),
+    ).toEqual({ do: 'pot', pot: 'red' });
   });
 
   it('draws free strokes that count (over 40 units) inside the clear part of the paper, one band above the other', () => {
-    for (const [w, h] of [[1024, 768], [768, 1024], [1661, 768]]) {
+    for (const [w, h] of [
+      [1024, 768],
+      [768, 1024],
+      [1661, 768],
+    ]) {
       const area = scribbleArea(w, h);
       const ys = new Set<number>();
       for (let i = 0; i < 5; i++) {
         const path = scribble(i, area);
         let length = 0;
-        path.forEach((p, k) => { if (k) length += Math.hypot(p.x - path[k - 1].x, p.y - path[k - 1].y); expect(p.x).toBeGreaterThanOrEqual(area.x); expect(p.x).toBeLessThanOrEqual(area.x + area.w); expect(p.y).toBeGreaterThanOrEqual(area.y); expect(p.y).toBeLessThanOrEqual(area.y + area.h); });
+        path.forEach((p, k) => {
+          if (k) length += Math.hypot(p.x - path[k - 1].x, p.y - path[k - 1].y);
+          expect(p.x).toBeGreaterThanOrEqual(area.x);
+          expect(p.x).toBeLessThanOrEqual(area.x + area.w);
+          expect(p.y).toBeGreaterThanOrEqual(area.y);
+          expect(p.y).toBeLessThanOrEqual(area.y + area.h);
+        });
         expect(length).toBeGreaterThan(40);
         ys.add(Math.round(path.reduce((a, p) => a + p.y, 0) / path.length));
       }
@@ -121,7 +195,12 @@ describe('Rainbow Fingers', () => {
           for (let d = every - carry; d <= len; d += every) {
             const x = a.x + ((b.x - a.x) * d) / len;
             const y = a.y + ((b.y - a.y) * d) / len;
-            if (thing.circles.some(([cx, cy, r]) => Math.hypot(x - cx, y - cy) <= r + (BRUSH_RADIUS * 0.5) / scale)) cov.paint(x, y, (BRUSH_RADIUS + 6) / scale);
+            if (
+              thing.circles.some(
+                ([cx, cy, r]) => Math.hypot(x - cx, y - cy) <= r + (BRUSH_RADIUS * 0.5) / scale,
+              )
+            )
+              cov.paint(x, y, (BRUSH_RADIUS + 6) / scale);
           }
           carry = (carry + len) % every;
         }
@@ -135,11 +214,13 @@ describe('Rainbow Fingers', () => {
     expect(touchKind(20, 0.3)).toBe('hold');
     expect(touchKind(120, 0.8)).toBe('drag');
     const kinds: Touch[] = ['pat', 'hold', 'drag'];
-    for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) for (let c = 0; c < 3; c++) {
-      const five: Touch[] = [kinds[a], kinds[b], kinds[c], kinds[a], kinds[b]];
-      expect(frameShows(strokesCounted(five), 0)).toBe(true);
-      expect(frameShows(strokesCounted(five.slice(0, 4)), 3)).toBe(false);
-    }
+    for (let a = 0; a < 3; a++)
+      for (let b = 0; b < 3; b++)
+        for (let c = 0; c < 3; c++) {
+          const five: Touch[] = [kinds[a], kinds[b], kinds[c], kinds[a], kinds[b]];
+          expect(frameShows(strokesCounted(five), 0)).toBe(true);
+          expect(frameShows(strokesCounted(five.slice(0, 4)), 3)).toBe(false);
+        }
     for (const seconds of [0, 25, 26, 600]) expect(frameShows(strokesCounted([]), seconds)).toBe(false);
     expect(frameShows(strokesCounted(['pat']), 26)).toBe(true);
   });
@@ -150,14 +231,32 @@ describe('Rainbow Fingers', () => {
 
   it('lays the pots out 104 across and apart, clear of the pet and inside the view, in every view', () => {
     expect(POT_RADIUS * 2).toBeGreaterThanOrEqual(104);
-    for (const [w, h] of [[1024, 768], [1024, 1365], [1366, 768], [1180, 820], [700, 900]]) {
-      for (const [n, bowl] of [[7, false], [3, true]] as const) {
+    for (const [w, h] of [
+      [1024, 768],
+      [1024, 1365],
+      [1366, 768],
+      [1180, 820],
+      [700, 900],
+    ]) {
+      for (const [n, bowl] of [
+        [7, false],
+        [3, true],
+      ] as const) {
         const at = potLayout(n, w, h, bowl);
         expect(at.pots).toHaveLength(n);
         expect(!!at.bowl).toBe(bowl);
         const all = [...at.pots, ...(at.bowl ? [at.bowl] : [])];
-        for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) expect(Math.hypot(all[i].x - all[j].x, all[i].y - all[j].y), `${w}x${h} ${i}-${j}`).toBeGreaterThanOrEqual(POT_SPACING - 10);
-        for (let i = 0; i < at.pots.length; i++) for (let j = i + 1; j < at.pots.length; j++) expect(Math.hypot(at.pots[i].x - at.pots[j].x, at.pots[i].y - at.pots[j].y)).toBeGreaterThanOrEqual(POT_SPACING);
+        for (let i = 0; i < all.length; i++)
+          for (let j = i + 1; j < all.length; j++)
+            expect(
+              Math.hypot(all[i].x - all[j].x, all[i].y - all[j].y),
+              `${w}x${h} ${i}-${j}`,
+            ).toBeGreaterThanOrEqual(POT_SPACING - 10);
+        for (let i = 0; i < at.pots.length; i++)
+          for (let j = i + 1; j < at.pots.length; j++)
+            expect(
+              Math.hypot(at.pots[i].x - at.pots[j].x, at.pots[i].y - at.pots[j].y),
+            ).toBeGreaterThanOrEqual(POT_SPACING);
         for (const p of at.pots) {
           expect(p.x - POT_RADIUS, `${w}x${h}`).toBeGreaterThanOrEqual(PET_CLEAR);
           expect(p.x + POT_RADIUS).toBeLessThanOrEqual(w - MARGIN);
@@ -180,8 +279,20 @@ describe('Rainbow Fingers', () => {
   it('nudges only in free play, after eight quiet seconds, at the spot farthest from the paint', () => {
     expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([true, true, false, false, false, false, false]);
     expect(NUDGE_AFTER).toBe(8);
-    const spots = [{ x: 200, y: 200 }, { x: 800, y: 500 }, { x: 500, y: 300 }];
-    expect(blankSpot([{ x: 210, y: 210 }, { x: 520, y: 290 }], spots)).toEqual(spots[1]);
+    const spots = [
+      { x: 200, y: 200 },
+      { x: 800, y: 500 },
+      { x: 500, y: 300 },
+    ];
+    expect(
+      blankSpot(
+        [
+          { x: 210, y: 210 },
+          { x: 520, y: 290 },
+        ],
+        spots,
+      ),
+    ).toEqual(spots[1]);
     expect(blankSpot([], spots)).toEqual(spots[0]);
   });
 
@@ -199,7 +310,10 @@ describe('Rainbow Fingers', () => {
 
     it('prints a mirror copy of each mark since the last fold, flowers as flowers, and nothing twice', () => {
       const old = [dab(0.1), dab(0.2)];
-      const fresh: PaintingMark[] = [dab(0.3, 0.4), { shape: 'flower', x: 0.8, y: 0.2, r: 0.05, color: 'pink' }];
+      const fresh: PaintingMark[] = [
+        dab(0.3, 0.4),
+        { shape: 'flower', x: 0.8, y: 0.2, r: 0.05, color: 'pink' },
+      ];
       const once = foldMarks([...old, ...fresh], old.length);
       expect(once.slice(0, 4)).toEqual([...old, ...fresh]);
       expect(once.slice(4)).toEqual([
@@ -220,7 +334,9 @@ describe('Rainbow Fingers', () => {
     });
 
     it("keeps a folded painting within the cap by the painting's own halving", () => {
-      const full = Array.from({ length: PAINTING_MAX_MARKS }, (_, i) => dab(0.05 + (i % 10) * 0.03, (i % 17) / 17));
+      const full = Array.from({ length: PAINTING_MAX_MARKS }, (_, i) =>
+        dab(0.05 + (i % 10) * 0.03, (i % 17) / 17),
+      );
       const folded = foldMarks(full, 100);
       expect(folded.length).toBeLessThanOrEqual(PAINTING_MAX_MARKS);
       expect(folded.length).toBeGreaterThan(PAINTING_MAX_MARKS / 2);
@@ -236,7 +352,8 @@ describe('Rainbow Fingers', () => {
     });
 
     it('draws fold pages only at level 2, about half of them, the same for the same seed', () => {
-      for (const level of [1, 3, 4, 5, 6, 7]) for (let seed = 1; seed <= 50; seed++) expect(pageKind(level, new Rng(seed))).toBe('plain');
+      for (const level of [1, 3, 4, 5, 6, 7])
+        for (let seed = 1; seed <= 50; seed++) expect(pageKind(level, new Rng(seed))).toBe('plain');
       let folds = 0;
       for (let seed = 1; seed <= 300; seed++) {
         const kind = pageKind(2, new Rng(seed));
@@ -252,7 +369,14 @@ describe('Rainbow Fingers', () => {
       expect(a.next()).toBe(b.next());
     });
 
-    const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }), { w: 1365, h: 768 }, { w: 1024, h: 1638 }];
+    const views = [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(844, 390),
+      computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+      { w: 1365, h: 768 },
+      { w: 1024, h: 1638 },
+    ];
 
     it('puts a 104-unit fold button on the crease, clear of the pots, the pet and the corner buttons', () => {
       for (const { w, h } of views) {
@@ -262,7 +386,8 @@ describe('Rainbow Fingers', () => {
         expect(b.x - FOLD_RADIUS).toBeGreaterThanOrEqual(MARGIN);
         expect(b.y - FOLD_RADIUS).toBeGreaterThanOrEqual(MARGIN);
         expect(b.y + FOLD_RADIUS).toBeLessThanOrEqual(h - MARGIN);
-        const clear = (x: number, y: number) => expect(Math.hypot(b.x - x, b.y - y)).toBeGreaterThanOrEqual(104);
+        const clear = (x: number, y: number) =>
+          expect(Math.hypot(b.x - x, b.y - y)).toBeGreaterThanOrEqual(104);
         for (const pot of potLayout(7, w, h).pots) clear(pot.x, pot.y);
         clear(62, 62); // home
         clear(62, 160); // help
@@ -290,7 +415,16 @@ describe('Rainbow Fingers', () => {
     it('has the ghost finger fold once on a fold page, after its strokes and before the frame, and never elsewhere', () => {
       const run = (fold: boolean) => {
         const moves: string[] = [];
-        let st: PaintState = { mode: 'pots', strokes: 0, brush: null, poured: [], picture: null, frame: false, fold, folded: false };
+        let st: PaintState = {
+          mode: 'pots',
+          strokes: 0,
+          brush: null,
+          poured: [],
+          picture: null,
+          frame: false,
+          fold,
+          folded: false,
+        };
         let folds = 0;
         for (let k = 0; k < 40; k++) {
           const m = paintStep(st)!;
@@ -314,9 +448,20 @@ describe('Rainbow Fingers', () => {
       const plain = run(false);
       expect(plain).not.toContain('fold');
       expect(plain.at(-1)).toBe('frame');
-      expect(paintStep({ mode: 'free', strokes: 9, brush: null, poured: [], picture: null, frame: false })).toEqual({ do: 'stroke' });
+      expect(
+        paintStep({ mode: 'free', strokes: 9, brush: null, poured: [], picture: null, frame: false }),
+      ).toEqual({ do: 'stroke' });
       // The frame came early (one touch and a long look): the fold still comes first, then the frame.
-      const early: PaintState = { mode: 'pots', strokes: 2, brush: 'red', poured: [], picture: null, frame: true, fold: true, folded: false };
+      const early: PaintState = {
+        mode: 'pots',
+        strokes: 2,
+        brush: 'red',
+        poured: [],
+        picture: null,
+        frame: true,
+        fold: true,
+        folded: false,
+      };
       expect(paintStep(early)).toEqual({ do: 'fold' });
       expect(paintStep({ ...early, folded: true })).toEqual({ do: 'frame' });
     });

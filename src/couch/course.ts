@@ -22,7 +22,11 @@ export function courseSpec(id: CourseId): CourseSpec {
   return { id, game: info.game, version: info.version, boards: info.best.length, minimum: info.minimum };
 }
 
-export interface Recent { slides: number; assisted: boolean; at: number }
+export interface Recent {
+  slides: number;
+  assisted: boolean;
+  at: number;
+}
 export interface PlayerRecord {
   runs: number;
   /** Fewest slides in a run that showed no hint, and in one that did. */
@@ -43,7 +47,10 @@ export interface Run {
   /** A hint was shown at some point in the run. It stays set. */
   assisted: boolean;
 }
-export interface Retired { version: number; players: [PlayerRecord, PlayerRecord] }
+export interface Retired {
+  version: number;
+  players: [PlayerRecord, PlayerRecord];
+}
 export interface CourseSave {
   version: number;
   run: Run | null;
@@ -70,8 +77,10 @@ const RECENT_KEEP = 10;
 const RETIRED_KEEP = 3;
 const MAX_COUNT = 999;
 const MAX_SEED = 0x7fffffff;
-const object = (v: unknown): Record<string, unknown> => v && typeof v === 'object' ? v as Record<string, unknown> : {};
-const count = (v: unknown, max = MAX_COUNT) => typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(max, Math.floor(v))) : 0;
+const object = (v: unknown): Record<string, unknown> =>
+  v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
+const count = (v: unknown, max = MAX_COUNT) =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(max, Math.floor(v))) : 0;
 const mark = (v: unknown) => count(v) || null;
 /** Slides per finished pond, up to `boards`. The first damaged entry ends the list, so no later pond is mistaken for an earlier one. */
 function pondSlides(raw: unknown, boards: number): number[] {
@@ -84,8 +93,19 @@ function pondSlides(raw: unknown, boards: number): number[] {
   return out;
 }
 
-export const emptyRecord = (): PlayerRecord => ({ runs: 0, clean: null, assisted: null, recent: [], badges: [] });
-export const courseDefaults = (spec: CourseSpec): CourseSave => ({ version: spec.version, run: null, players: [emptyRecord(), emptyRecord()], retired: [] });
+export const emptyRecord = (): PlayerRecord => ({
+  runs: 0,
+  clean: null,
+  assisted: null,
+  recent: [],
+  badges: [],
+});
+export const courseDefaults = (spec: CourseSpec): CourseSave => ({
+  version: spec.version,
+  run: null,
+  players: [emptyRecord(), emptyRecord()],
+  retired: [],
+});
 
 function repairRecord(raw: unknown): PlayerRecord {
   const v = object(raw);
@@ -93,9 +113,16 @@ function repairRecord(raw: unknown): PlayerRecord {
     runs: count(v.runs, 9999),
     clean: mark(v.clean),
     assisted: mark(v.assisted),
-    recent: (Array.isArray(v.recent) ? v.recent : []).map(object).filter(r => count(r.slides) > 0).slice(0, RECENT_KEEP)
-      .map(r => ({ slides: count(r.slides), assisted: r.assisted === true, at: count(r.at, Number.MAX_SAFE_INTEGER) })),
-    badges: BADGES.filter(b => Array.isArray(v.badges) && v.badges.includes(b)),
+    recent: (Array.isArray(v.recent) ? v.recent : [])
+      .map(object)
+      .filter((r) => count(r.slides) > 0)
+      .slice(0, RECENT_KEEP)
+      .map((r) => ({
+        slides: count(r.slides),
+        assisted: r.assisted === true,
+        at: count(r.at, Number.MAX_SAFE_INTEGER),
+      })),
+    badges: BADGES.filter((b) => Array.isArray(v.badges) && v.badges.includes(b)),
   };
 }
 
@@ -107,7 +134,13 @@ const repairPair = (raw: unknown): [PlayerRecord, PlayerRecord] => {
 function repairRun(raw: unknown, spec: CourseSpec): Run | null {
   const v = object(raw);
   if (!raw || (v.player !== 0 && v.player !== 1)) return null;
-  return { player: v.player, token: count(v.token, MAX_SEED) || 1, slides: pondSlides(v.slides, spec.boards), attempts: count(v.attempts), assisted: v.assisted === true };
+  return {
+    player: v.player,
+    token: count(v.token, MAX_SEED) || 1,
+    slides: pondSlides(v.slides, spec.boards),
+    attempts: count(v.attempts),
+    assisted: v.assisted === true,
+  };
 }
 
 /**
@@ -117,12 +150,19 @@ function repairRun(raw: unknown, spec: CourseSpec): Run | null {
 export function repairCourse(raw: unknown, spec: CourseSpec): CourseSave {
   const v = object(raw);
   const out = courseDefaults(spec);
-  out.retired = (Array.isArray(v.retired) ? v.retired : []).map(object).filter(r => count(r.version) > 0 && count(r.version) !== spec.version)
-    .slice(0, RETIRED_KEEP).map(r => ({ version: count(r.version), players: repairPair(r.players) }));
+  out.retired = (Array.isArray(v.retired) ? v.retired : [])
+    .map(object)
+    .filter((r) => count(r.version) > 0 && count(r.version) !== spec.version)
+    .slice(0, RETIRED_KEEP)
+    .map((r) => ({ version: count(r.version), players: repairPair(r.players) }));
   const stored = count(v.version);
   if (stored && stored !== spec.version) {
     const players = repairPair(v.players);
-    if (players.some(p => p.runs > 0)) out.retired = [{ version: stored, players }, ...out.retired.filter(r => r.version !== stored)].slice(0, RETIRED_KEEP);
+    if (players.some((p) => p.runs > 0))
+      out.retired = [{ version: stored, players }, ...out.retired.filter((r) => r.version !== stored)].slice(
+        0,
+        RETIRED_KEEP,
+      );
     return out;
   }
   out.players = repairPair(v.players);
@@ -132,16 +172,27 @@ export function repairCourse(raw: unknown, spec: CourseSpec): CourseSave {
 
 /** The course's save, created on first use. */
 export function courseOf(save: CouchSave, spec: CourseSpec): CourseSave {
-  return save.courses[spec.id] ??= courseDefaults(spec);
+  return (save.courses[spec.id] ??= courseDefaults(spec));
 }
 
 /** Begin a run for a player, dropping any run left unfinished. */
 export function startRun(course: CourseSave, player: 0 | 1, token: number): Run {
-  return course.run = { player, token: count(token, MAX_SEED) || 1, slides: [], attempts: 0, assisted: false };
+  return (course.run = {
+    player,
+    token: count(token, MAX_SEED) || 1,
+    slides: [],
+    attempts: 0,
+    assisted: false,
+  });
 }
 
 /** Keep what the game reports as it changes. Help, once shown, stays on the run. */
-export function noteProgress(course: CourseSave, spec: CourseSpec, token: number, p: { slides: readonly number[]; attempts: number; assisted: boolean }): boolean {
+export function noteProgress(
+  course: CourseSave,
+  spec: CourseSpec,
+  token: number,
+  p: { slides: readonly number[]; attempts: number; assisted: boolean },
+): boolean {
   const run = course.run;
   if (!run || run.token !== token) return false;
   run.slides = pondSlides(p.slides, spec.boards);
@@ -154,7 +205,12 @@ export function noteProgress(course: CourseSave, spec: CourseSpec, token: number
  * Settle a finished run once. A stale token, or a run with ponds still to play, settles nothing.
  * Updates the player's best in the right category, their last ten runs and their badges.
  */
-export function finishRun(course: CourseSave, spec: CourseSpec, token: number, now = Date.now()): Outcome | null {
+export function finishRun(
+  course: CourseSave,
+  spec: CourseSpec,
+  token: number,
+  now = Date.now(),
+): Outcome | null {
   const run = course.run;
   if (!run || run.token !== token || run.slides.length !== spec.boards) return null;
   const total = run.slides.reduce((n, s) => n + s, 0);
@@ -164,17 +220,34 @@ export function finishRun(course: CourseSave, spec: CourseSpec, token: number, n
   const improved = previous !== null && total < previous;
   if (previous === null || improved) rec[category] = total;
   rec.runs = Math.min(9999, rec.runs + 1);
-  rec.recent = [{ slides: total, assisted: run.assisted, at: count(now, Number.MAX_SAFE_INTEGER) }, ...rec.recent].slice(0, RECENT_KEEP);
+  rec.recent = [
+    { slides: total, assisted: run.assisted, at: count(now, Number.MAX_SAFE_INTEGER) },
+    ...rec.recent,
+  ].slice(0, RECENT_KEEP);
   const earned: Badge[] = [];
   if (!rec.badges.includes('finish')) earned.push('finish');
   if (!run.assisted && total <= spec.minimum && !rec.badges.includes('minimum')) earned.push('minimum');
-  rec.badges = BADGES.filter(b => rec.badges.includes(b) || earned.includes(b));
+  rec.badges = BADGES.filter((b) => rec.badges.includes(b) || earned.includes(b));
   course.run = null;
-  return { player: run.player, total, minimum: spec.minimum, assisted: run.assisted, boards: run.slides.slice(), previous, improved, earned };
+  return {
+    player: run.player,
+    total,
+    minimum: spec.minimum,
+    assisted: run.assisted,
+    boards: run.slides.slice(),
+    previous,
+    improved,
+    earned,
+  };
 }
 
 /** Settle a run in the couch save: records, badges and the one sticker that a finished round gives. */
-export function completeCourse(save: CouchSave, spec: CourseSpec, token: number, now = Date.now()): Outcome | null {
+export function completeCourse(
+  save: CouchSave,
+  spec: CourseSpec,
+  token: number,
+  now = Date.now(),
+): Outcome | null {
   const course = save.courses[spec.id];
   const outcome = course && finishRun(course, spec, token, now);
   if (!outcome) return null;

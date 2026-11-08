@@ -1,6 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { arrivalOrder, canArrive, isCross, laneCycles, LANES, MAX_WAITING, nextGreenLane, carTap, CYCLE, crossTouch, cycleFor, PHASE, VEHICLES, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, LAMPS_LEVEL, lampRolls, nextLamp, planFor, rightNow, safe, touchCounts, type Light, type Road } from './logic';
+import {
+  arrivalOrder,
+  canArrive,
+  isCross,
+  laneCycles,
+  LANES,
+  MAX_WAITING,
+  nextGreenLane,
+  carTap,
+  CYCLE,
+  crossTouch,
+  cycleFor,
+  PHASE,
+  VEHICLES,
+  doneLine,
+  GO_TARGET,
+  hintOn,
+  judgeGo,
+  lightAt,
+  nextLight,
+  PLANS,
+  LAMPS_LEVEL,
+  lampRolls,
+  nextLamp,
+  planFor,
+  rightNow,
+  safe,
+  touchCounts,
+  type Light,
+  type Road,
+} from './logic';
 
 describe('Stop and Go', () => {
   it('cycles green, yellow, red, and back, with greens and reds long enough to wait for', () => {
@@ -74,7 +104,8 @@ describe('Stop and Go', () => {
     expect(GO_TARGET).toEqual({ lamps: 'lamp', toy: 'light', send: 'car', walk: 'step', lanes: 'car' });
     for (const light of ['green', 'yellow', 'red'] as Light[]) {
       expect(rightNow('toy', light)).toBe(true);
-      for (const mode of ['send', 'walk'] as const) expect(rightNow(mode, light)).toBe(judgeGo(light) === 'go');
+      for (const mode of ['send', 'walk'] as const)
+        expect(rightNow(mode, light)).toBe(judgeGo(light) === 'go');
     }
     // A hand that taps the moment `rightNow` allows, one tap at a time and no oftener than a tap and a return take, always lands on green.
     for (const mode of ['send', 'walk'] as const) {
@@ -107,7 +138,10 @@ describe('Stop and Go', () => {
         gap -= 0.05;
         ready -= 0.05;
         // The game rolls one waiting car a second or so on a road whose light is green, if the other is not.
-        const front = safe({ ew: lights.ew, ns: lights.ns }) && gap <= 0 ? (['ew', 'ns'] as Road[]).find((r) => lights[r] === 'green' && waiting[r] > 0) : undefined;
+        const front =
+          safe({ ew: lights.ew, ns: lights.ns }) && gap <= 0
+            ? (['ew', 'ns'] as Road[]).find((r) => lights[r] === 'green' && waiting[r] > 0)
+            : undefined;
         if (front) {
           waiting[front]--;
           through++;
@@ -161,7 +195,8 @@ describe('Stop and Go: every touch answers', () => {
   it('puts the hint on the thing to touch, and only on green', () => {
     expect(hintOn('send', 'green')).toBe('car');
     expect(hintOn('walk', 'green')).toBe('step');
-    for (const mode of ['send', 'walk'] as const) for (const l of ['yellow', 'red'] as Light[]) expect(hintOn(mode, l)).toBeNull();
+    for (const mode of ['send', 'walk'] as const)
+      for (const l of ['yellow', 'red'] as Light[]) expect(hintOn(mode, l)).toBeNull();
     // The hint target is what the demonstration's hand touches.
     expect(hintOn('send', 'green')).toBe(GO_TARGET.send);
     expect(hintOn('walk', 'green')).toBe(GO_TARGET.walk);
@@ -232,7 +267,7 @@ describe('Stop and Go: whose light and the busy crossing', () => {
     }
   });
 
-  it('judges a send by its own lane\'s light alone, and the hand picks a lane that is green', () => {
+  it("judges a send by its own lane's light alone, and the hand picks a lane that is green", () => {
     expect(carTap('lanes', 'green', true)).toBe('send');
     expect(carTap('lanes', 'red', true)).toBe('miss');
     expect(carTap('lanes', 'yellow', true)).toBe('nudge');

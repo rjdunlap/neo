@@ -22,11 +22,53 @@ import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { boardArt, gadgetArt, handArt, iconArt, miniCart, partInSocket, requestArt, socketArt, sparkleArt, standingCritter, stickerArt, stripPicture, conditionTile, tryArt } from './art';
+import {
+  boardArt,
+  gadgetArt,
+  handArt,
+  iconArt,
+  miniCart,
+  partInSocket,
+  requestArt,
+  socketArt,
+  sparkleArt,
+  standingCritter,
+  stickerArt,
+  stripPicture,
+  conditionTile,
+  tryArt,
+} from './art';
 import {
   LEVELS,
-  applyHelp, benchLayout, briefFor, centre, followsTarget, helpFor, helpSteps, kitOf, NEIGHBORS, newCondition, nextMove, PARTS, planFor, runPath, sameGadget, socketAt, SOCKET, SOCKET_WORDS, SOCKETS, STRIP, Tally,
-  type BenchLayout, type Brief, type Condition, type Gadget, type PartId, type Pt, type Round, type Socket,
+  applyHelp,
+  benchLayout,
+  briefFor,
+  centre,
+  followsTarget,
+  helpFor,
+  helpSteps,
+  kitOf,
+  NEIGHBORS,
+  newCondition,
+  nextMove,
+  PARTS,
+  planFor,
+  runPath,
+  sameGadget,
+  socketAt,
+  SOCKET,
+  SOCKET_WORDS,
+  SOCKETS,
+  STRIP,
+  Tally,
+  type BenchLayout,
+  type Brief,
+  type Condition,
+  type Gadget,
+  type PartId,
+  type Pt,
+  type Round,
+  type Socket,
 } from './logic';
 
 /** Seconds the runner takes between two tiles. */
@@ -94,7 +136,17 @@ class GadgetBench implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.brief = briefFor(ctx.level, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xffd6e3, 0xfff6e0], hills: [0xb8e1f7, 0xf3dcb0], horizon: 0.5, clouds: 2, sun: true, seed: 193 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xffd6e3, 0xfff6e0],
+        hills: [0xb8e1f7, 0xf3dcb0],
+        horizon: 0.5,
+        clouds: 2,
+        sun: true,
+        seed: 193,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.runnerLayer.eventMode = 'none';
     this.celebrationLayer.eventMode = 'none';
@@ -126,7 +178,13 @@ class GadgetBench implements Game {
   }
 
   private instruction(): LineId {
-    const lines: Record<number, LineId> = { 1: 'bench.instruct.pick', 2: 'bench.instruct.change', 4: 'bench.instruct.fix', 5: 'bench.instruct.gate', 6: 'bench.instruct.newkit' };
+    const lines: Record<number, LineId> = {
+      1: 'bench.instruct.pick',
+      2: 'bench.instruct.change',
+      4: 'bench.instruct.fix',
+      5: 'bench.instruct.gate',
+      6: 'bench.instruct.newkit',
+    };
     return lines[this.level] ?? 'bench.instruct.build';
   }
 
@@ -168,7 +226,10 @@ class GadgetBench implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.started) return;
-    if (this.busy || this.finished) { this.relayout = true; return; }
+    if (this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -265,8 +326,14 @@ class GadgetBench implements Game {
     // The tray and its parts (a part the model places sits in its socket).
     if (!round.pair) {
       // Level 6: during the pet's build the tray holds the old parts; then only the new box.
-      const shownParts = round.shown ? SOCKETS.map((s) => round.shown!.gadget[s]).filter((p): p is PartId => !!p) : [];
-      const ids: PartId[] = round.kit ? (this.showing ? shownParts : [...round.tray]) : [...round.tray, ...shownParts];
+      const shownParts = round.shown
+        ? SOCKETS.map((s) => round.shown!.gadget[s]).filter((p): p is PartId => !!p)
+        : [];
+      const ids: PartId[] = round.kit
+        ? this.showing
+          ? shownParts
+          : [...round.tray]
+        : [...round.tray, ...shownParts];
       ids.forEach((id, slot) => {
         const node = new Container();
         node.addChild(partInSocket(id));
@@ -286,7 +353,11 @@ class GadgetBench implements Game {
       // The tray's empty slots, drawn under the parts.
       const slots = new Graphics();
       slots.eventMode = 'none';
-      for (const t of l.tray) slots.roundRect(t.x, t.y, t.w, t.h, 20).fill({ color: 0xffffff, alpha: 0.35 }).stroke({ width: 3, color: 0x9c6b3c, alpha: 0.4 });
+      for (const t of l.tray)
+        slots
+          .roundRect(t.x, t.y, t.w, t.h, 20)
+          .fill({ color: 0xffffff, alpha: 0.35 })
+          .stroke({ width: 3, color: 0x9c6b3c, alpha: 0.4 });
       this.board.addChildAt(slots, this.board.children.indexOf(strip));
     }
 
@@ -333,7 +404,8 @@ class GadgetBench implements Game {
     sfx.tick();
     part.node.parent?.addChild(part.node);
     void this.ctx.tw.to(part.node, { rotation: 0.08 }, { duration: 0.12 }).then(() => {
-      if (part.drag.dragging && this.alive) void this.ctx.tw.to(part.node, { rotation: -0.06 }, { duration: 0.16 });
+      if (part.drag.dragging && this.alive)
+        void this.ctx.tw.to(part.node, { rotation: -0.06 }, { duration: 0.16 });
     });
   }
 
@@ -349,9 +421,15 @@ class GadgetBench implements Game {
       const d = Math.hypot(c.x - x, c.y - y);
       if (d <= (SOCKET / 2) * SNAP && (!best || d < best.d)) best = { s, d };
     }
-    if (part.at) { delete this.gadget[part.at]; part.at = null; }
+    if (part.at) {
+      delete this.gadget[part.at];
+      part.at = null;
+    }
     part.drag.home = centre(l.tray[part.slot]);
-    if (!best) { sfx.whoosh(); return false; }
+    if (!best) {
+      sfx.whoosh();
+      return false;
+    }
     const was = this.gadget[best.s];
     if (was && was !== part.id) {
       const other = this.partNode(was);
@@ -435,7 +513,11 @@ class GadgetBench implements Game {
         if (!live()) return;
         // Not at the gate (the tall part works there, it is just too tall), nor from level 4 for a part in its own socket.
         const held = snapshot[result.socket];
-        if (held && failedAt !== 'gate' && (!followsTarget(this.round) || PARTS[held].socket !== result.socket)) {
+        if (
+          held &&
+          failedAt !== 'gate' &&
+          (!followsTarget(this.round) || PARTS[held].socket !== result.socket)
+        ) {
           await this.ctx.say('bench.place.wrong');
           if (!live()) return;
         }
@@ -487,11 +569,21 @@ class GadgetBench implements Game {
       }
     };
     const pulse = which === null ? this.socketNodes.get(socket) : this.boardNodes[which];
-    const pulsing = pulse && !pulse.destroyed
-      ? this.ctx.tw.to(pulse.scale, { x: 1.14, y: 1.14 }, { duration: 0.2, ease: ease.outBack }).then(() => (live() && !pulse.destroyed ? this.ctx.tw.to(pulse.scale, { x: 1, y: 1 }, { duration: 0.25 }) : undefined))
-      : Promise.resolve();
+    const pulsing =
+      pulse && !pulse.destroyed
+        ? this.ctx.tw
+            .to(pulse.scale, { x: 1.14, y: 1.14 }, { duration: 0.2, ease: ease.outBack })
+            .then(() =>
+              live() && !pulse.destroyed
+                ? this.ctx.tw.to(pulse.scale, { x: 1, y: 1 }, { duration: 0.25 })
+                : undefined,
+            )
+        : Promise.resolve();
     await Promise.all([
-      this.ctx.tw.to(runner, { rotation: -0.25 }, { duration: 0.12 }).then(() => (live() ? this.ctx.tw.to(runner, { rotation: 0.15 }, { duration: 0.14 }) : undefined)).then(() => (live() ? this.ctx.tw.to(runner, { rotation: 0 }, { duration: 0.14 }) : undefined)),
+      this.ctx.tw
+        .to(runner, { rotation: -0.25 }, { duration: 0.12 })
+        .then(() => (live() ? this.ctx.tw.to(runner, { rotation: 0.15 }, { duration: 0.14 }) : undefined))
+        .then(() => (live() ? this.ctx.tw.to(runner, { rotation: 0 }, { duration: 0.14 }) : undefined)),
       shake(tile, 7),
       pulsing,
     ]);
@@ -507,7 +599,11 @@ class GadgetBench implements Game {
       await this.ctx.say('bench.ok');
       return;
     }
-    const lit = this.tally.tryFail(result.at, snapshot[result.socket], this.round.yesterday ? snapshot : undefined);
+    const lit = this.tally.tryFail(
+      result.at,
+      snapshot[result.socket],
+      this.round.yesterday ? snapshot : undefined,
+    );
     if (lit && this.alive && epoch === this.epoch) await this.sayGlow();
   }
 
@@ -528,7 +624,10 @@ class GadgetBench implements Game {
 
   /** The glow: the responsible socket (level 1: the passing gadget) lights and the pet names the part. */
   private async sayGlow() {
-    if (this.round.pair) { await this.ctx.say('bench.hint.give'); return; }
+    if (this.round.pair) {
+      await this.ctx.say('bench.hint.give');
+      return;
+    }
     const h = this.help();
     if (h.kind === 'out') await this.ctx.say('bench.fail.gate');
     else if (h.kind === 'install') await this.ctx.say('bench.glow', { part: PARTS[h.part].name });
@@ -563,7 +662,13 @@ class GadgetBench implements Game {
     const l = this.layoutNow;
     const part = this.partNode(id);
     if (!l || !part) return;
-    this.gadget = applyHelp(this.gadget, { kind: 'install', part: id, socket, replaces: this.gadget[socket] ?? null, at: 'smooth' });
+    this.gadget = applyHelp(this.gadget, {
+      kind: 'install',
+      part: id,
+      socket,
+      replaces: this.gadget[socket] ?? null,
+      at: 'smooth',
+    });
     for (const p of this.parts) {
       const at = SOCKETS.find((s) => this.gadget[s] === p.id) ?? null;
       if (at === p.at) continue;
@@ -607,7 +712,10 @@ class GadgetBench implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     this.requestCritter?.cheer();
-    this.ctx.particles.burst(this.boardNodes[0].x, this.boardNodes[0].y, { colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff], count: 14 });
+    this.ctx.particles.burst(this.boardNodes[0].x, this.boardNodes[0].y, {
+      colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff],
+      count: 14,
+    });
     await this.ctx.say('bench.give.ok', { neighbor: this.round.neighbor.name });
     if (!live()) return;
     const gadget = this.round.pair ? this.round.pair.gadgets[this.round.pair.passing] : this.gadget;
@@ -655,17 +763,26 @@ class GadgetBench implements Game {
   /** Level 4's opening: the neighbor rolls yesterday's cart onto the bench under yesterday's faded path, then today's longer path fills in. */
   private async arrive() {
     const l = this.layoutNow;
-    if (!l) { this.showing = false; return; }
+    if (!l) {
+      this.showing = false;
+      return;
+    }
     this.busy = true;
     this.setDrags(false);
     const epoch = this.epoch;
     const live = () => this.alive && epoch === this.epoch;
-    const cart = [this.boardNodes[0], ...this.socketNodes.values(), ...this.parts.filter((p) => p.at).map((p) => p.node)];
+    const cart = [
+      this.boardNodes[0],
+      ...this.socketNodes.values(),
+      ...this.parts.filter((p) => p.at).map((p) => p.node),
+    ];
     const dx = this.view.w;
     for (const n of cart) n.x -= dx;
     void this.ctx.say('bench.yesterday', { neighbor: this.round.neighbor.name });
     sfx.whoosh();
-    await Promise.all(cart.map((n) => this.ctx.tw.to(n, { x: n.x + dx }, { duration: 0.8, ease: ease.outQuad })));
+    await Promise.all(
+      cart.map((n) => this.ctx.tw.to(n, { x: n.x + dx }, { duration: 0.8, ease: ease.outQuad })),
+    );
     if (!live()) return;
     this.requestCritter?.hop(0.9);
     await this.ctx.tw.wait(1.2);
@@ -693,7 +810,10 @@ class GadgetBench implements Game {
   private async showNewKit() {
     const shown = this.round.shown;
     const l = this.layoutNow;
-    if (!shown || !l) { this.showing = false; return; }
+    if (!shown || !l) {
+      this.showing = false;
+      return;
+    }
     this.busy = true;
     this.setDrags(false);
     const epoch = this.epoch;
@@ -718,7 +838,11 @@ class GadgetBench implements Game {
     // The old parts ride off with the first neighbor.
     void this.ctx.say('bench.newkit', { neighbor: shown.neighbor.name });
     sfx.whoosh();
-    await Promise.all(this.parts.map((p) => this.ctx.tw.to(p.node, { x: p.node.x + this.view.w, alpha: 0 }, { duration: 0.8, ease: ease.inQuad })));
+    await Promise.all(
+      this.parts.map((p) =>
+        this.ctx.tw.to(p.node, { x: p.node.x + this.view.w, alpha: 0 }, { duration: 0.8, ease: ease.inQuad }),
+      ),
+    );
     if (!live()) return;
     this.showing = false;
     this.gadget = {};
@@ -732,7 +856,15 @@ class GadgetBench implements Game {
     const live2 = () => this.alive && this.epoch === built;
     for (const p of this.parts) p.node.y -= 140;
     sfx.sparkle();
-    await Promise.all(this.parts.map((p, i) => this.ctx.tw.to(p.node, { y: p.node.y + 140 }, { duration: 0.45, ease: ease.outBack, delay: i * 0.08 })));
+    await Promise.all(
+      this.parts.map((p, i) =>
+        this.ctx.tw.to(
+          p.node,
+          { y: p.node.y + 140 },
+          { duration: 0.45, ease: ease.outBack, delay: i * 0.08 },
+        ),
+      ),
+    );
     if (!live2()) return;
     this.busy = false;
     this.setDrags(true);
@@ -745,7 +877,10 @@ class GadgetBench implements Game {
   private async showFirst() {
     const shown = this.round.shown;
     const l = this.layoutNow;
-    if (!shown || !l) { this.showing = false; return; }
+    if (!shown || !l) {
+      this.showing = false;
+      return;
+    }
     this.busy = true;
     this.setDrags(false);
     const epoch = this.epoch;
@@ -785,7 +920,10 @@ class GadgetBench implements Game {
 
   restart() {
     if (this.finished) return;
-    if (this.busy || this.showing) { this.pending = 'restart'; return; }
+    if (this.busy || this.showing) {
+      this.pending = 'restart';
+      return;
+    }
     this.epoch++;
     this.beginRound();
     this.build();
@@ -804,7 +942,10 @@ class GadgetBench implements Game {
   /** Show a hint: level 1 wiggles the passing gadget's Give hand; levels 2–3 install the part the first unmet condition needs. */
   askForHint() {
     if (this.finished) return;
-    if (this.busy || this.showing) { this.pending = 'hint'; return; }
+    if (this.busy || this.showing) {
+      this.pending = 'hint';
+      return;
+    }
     if (this.round.pair) {
       this.tally.help(1);
       void this.ctx.say('bench.hint.give');
@@ -813,7 +954,10 @@ class GadgetBench implements Game {
       return;
     }
     const h = this.help();
-    if (h.kind === 'done') { void this.ctx.say('bench.hint.done'); return; }
+    if (h.kind === 'done') {
+      void this.ctx.say('bench.hint.done');
+      return;
+    }
     this.tally.help(this.startUnmet);
     if (h.kind === 'out') {
       void this.ctx.say('bench.hint.out', { part: PARTS[h.part].name });
@@ -851,7 +995,10 @@ class GadgetBench implements Game {
     if (this.round.pair) {
       const b = this.boardNodes[this.round.pair.passing];
       const rect = this.layoutNow.boards[this.round.pair.passing];
-      if (b) this.glow.roundRect(b.x - rect.w / 2 - 8 * r, b.y - rect.h / 2 - 8 * r, rect.w + 16 * r, rect.h + 16 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
+      if (b)
+        this.glow
+          .roundRect(b.x - rect.w / 2 - 8 * r, b.y - rect.h / 2 - 8 * r, rect.w + 16 * r, rect.h + 16 * r, 30)
+          .stroke({ width: 8, color: swatch.yellow.fill });
       return;
     }
     const h = this.help();
@@ -862,17 +1009,22 @@ class GadgetBench implements Game {
     if (h.kind === 'out') {
       // A tall part doing nothing: ring its socket and its home slot in the tray.
       const slot = part && this.layoutNow.tray[part.slot];
-      if (slot) this.glow.roundRect(slot.x - 6 * r, slot.y - 6 * r, slot.w + 12 * r, slot.h + 12 * r, 24).stroke({ width: 8, color: swatch.yellow.fill });
+      if (slot)
+        this.glow
+          .roundRect(slot.x - 6 * r, slot.y - 6 * r, slot.w + 12 * r, slot.h + 12 * r, 24)
+          .stroke({ width: 8, color: swatch.yellow.fill });
       return;
     }
-    if (part && !part.drag.dragging && !this.busy && part.at !== h.socket) part.node.rotation = Math.sin(this.clock * 9) * 0.12;
+    if (part && !part.drag.dragging && !this.busy && part.at !== h.socket)
+      part.node.rotation = Math.sin(this.clock * 9) * 0.12;
   }
 
   /** The ghost finger: level 1 tries the failing gadget, the passing one, then gives it; levels 2–3 drag what help names, Try, Give. */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.showing || !this.layoutNow) return null;
     const m = nextMove(this.round, this.gadget, this.tried, this.triedOk, this.level);
-    if ('tryGadget' in m) return this.boardNodes[m.tryGadget] ? { tap: { on: this.boardNodes[m.tryGadget] }, pause: 0.6 } : null;
+    if ('tryGadget' in m)
+      return this.boardNodes[m.tryGadget] ? { tap: { on: this.boardNodes[m.tryGadget] }, pause: 0.6 } : null;
     if ('give' in m) return this.handNodes[m.give] ? { tap: { on: this.handNodes[m.give] } } : null;
     if ('drag' in m) {
       const part = this.partNode(m.drag);
@@ -900,7 +1052,10 @@ class BenchIcon extends WigglyIcon {
 /** A seeded sticker: a cart with one working part in place and a tick. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  return stickerArt(rng.pick(['wheels', 'float', 'umbrella', 'lantern'] as PartId[]), rng.pick(NEIGHBORS).cargo);
+  return stickerArt(
+    rng.pick(['wheels', 'float', 'umbrella', 'lantern'] as PartId[]),
+    rng.pick(NEIGHBORS).cargo,
+  );
 }
 
 export const gadgetBench: GameModule = {
@@ -914,7 +1069,8 @@ export const gadgetBench: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).describe,
   music: STYLES.stickers,
-  coplayHint: 'One of you is the neighbor and says what the cart must get through; the other builds it. Then swap.',
+  coplayHint:
+    'One of you is the neighbor and says what the cart must get through; the other builds it. Then swap.',
   offScreen: 'Find something with wheels at home and ask {name} what the wheels are for.',
   hubIcon: () => new BenchIcon(),
   touchDemo: true,

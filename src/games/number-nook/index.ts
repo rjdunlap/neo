@@ -13,22 +13,53 @@ import { LEVELS, goal, inPlace, makeBoard, nookLayout, planFor, slide, solutionS
 type Tone = { fill: number; line: number; light: number };
 /** Three seeded looks, all from the palette. A tile in its goal place is green in every look, and yellow stays for the hint. */
 const LOOKS = [
-  { name: 'lantern paper', tiles: [swatch.purple], tray: swatch.purple.light, edge: swatch.purple.line, gap: cream, number: ink },
-  { name: 'driftwood', tiles: [wood], tray: swatch.brown.fill, edge: swatch.brown.line, gap: swatch.brown.light, number: ink },
-  { name: 'sea glass', tiles: [swatch.blue, swatch.teal], tray: swatch.white.fill, edge: swatch.white.line, gap: swatch.blue.light, number: ink },
+  {
+    name: 'lantern paper',
+    tiles: [swatch.purple],
+    tray: swatch.purple.light,
+    edge: swatch.purple.line,
+    gap: cream,
+    number: ink,
+  },
+  {
+    name: 'driftwood',
+    tiles: [wood],
+    tray: swatch.brown.fill,
+    edge: swatch.brown.line,
+    gap: swatch.brown.light,
+    number: ink,
+  },
+  {
+    name: 'sea glass',
+    tiles: [swatch.blue, swatch.teal],
+    tray: swatch.white.fill,
+    edge: swatch.white.line,
+    gap: swatch.blue.light,
+    number: ink,
+  },
 ] as const;
 type Look = (typeof LOOKS)[number];
-const GLIDE = 0.15, NUDGE = 0.2;
+const GLIDE = 0.15,
+  NUDGE = 0.2;
 /** A wooden block: a 2-unit shadow under it and a 4-unit lighter top edge, so a gliding tile reads as sliding in a groove. */
 function block(size: number, tone: Tone): Graphics {
-  const s = size - 8, h = s / 2;
-  return new Graphics().roundRect(-h, -h + 2, s, s, 18).fill(shadow)
-    .roundRect(-h, -h, s, s, 18).fill(tone.fill).stroke({ width: 4, color: tone.line })
-    .roundRect(-h + 12, -h + 5, s - 24, 4, 2).fill(tone.light);
+  const s = size - 8,
+    h = s / 2;
+  return new Graphics()
+    .roundRect(-h, -h + 2, s, s, 18)
+    .fill(shadow)
+    .roundRect(-h, -h, s, s, 18)
+    .fill(tone.fill)
+    .stroke({ width: 4, color: tone.line })
+    .roundRect(-h + 12, -h + 5, s - 24, 4, 2)
+    .fill(tone.light);
 }
 function numberArt(value: number, size: number, correct = false, look: Look = LOOKS[0]): Container {
   const c = new Container();
-  c.addChild(block(size, correct ? swatch.green : look.tiles[value % look.tiles.length]), label(String(value), size * 0.4, look.number));
+  c.addChild(
+    block(size, correct ? swatch.green : look.tiles[value % look.tiles.length]),
+    label(String(value), size * 0.4, look.number),
+  );
   c.eventMode = 'none';
   return c;
 }
@@ -76,7 +107,8 @@ class NumberNook implements Game {
       const node = new Container();
       node.hitArea = new Rectangle(-60, -60, 120, 120);
       onTap(node, () => this.choose(i));
-      this.nodes.push(node); this.grid.addChild(node);
+      this.nodes.push(node);
+      this.grid.addChild(node);
     }
     this.grid.addChild(this.glow);
     for (const [node, text, action] of [
@@ -88,25 +120,46 @@ class NumberNook implements Game {
       onTap(node, action);
     }
     for (const part of [this.heading, this.status, this.target, this.targetLabel]) part.eventMode = 'none';
-    ctx.stage.addChild(this.heading, this.status, this.grid, this.target, this.targetLabel, this.undoButton, this.hintButton, this.againButton);
+    ctx.stage.addChild(
+      this.heading,
+      this.status,
+      this.grid,
+      this.target,
+      this.targetLabel,
+      this.undoButton,
+      this.hintButton,
+      this.againButton,
+    );
     this.resize(this.view);
   }
-  start() { void this.ctx.instruct('nook.go'); }
+  start() {
+    void this.ctx.instruct('nook.go');
+  }
   choose(at: number) {
     if (this.finished || !this.ctx.alive) return;
     // One tap during a glide waits for it to land.
-    if (this.glide) { this.queued ??= at; return; }
+    if (this.glide) {
+      this.queued ??= at;
+      return;
+    }
     if (this.board[at] === 0) return;
-    const gap = this.board.indexOf(0), next = slide(this.board, this.plan.cols, at);
+    const gap = this.board.indexOf(0),
+      next = slide(this.board, this.plan.cols, at);
     if (!next) {
-      this.misses++; sfx.boing(); void this.ctx.say('nook.miss');
+      this.misses++;
+      sfx.boing();
+      void this.ctx.say('nook.miss');
       this.nudge = { cell: at, toward: gap, t: 0 };
       if (this.misses % 2 === 0) this.showHint(false);
       return;
     }
     const before = inPlace(this.board);
-    this.history.push(this.board.slice()); this.board = next; this.moves++; this.hinted = -1;
-    this.glide = { cell: gap, from: at, t: 0 }; this.nudge = null;
+    this.history.push(this.board.slice());
+    this.board = next;
+    this.moves++;
+    this.hinted = -1;
+    this.glide = { cell: gap, from: at, t: 0 };
+    this.nudge = null;
     // The gliding tile rides above the new gap's square, with the hint glow still on top.
     this.grid.addChild(this.nodes[gap], this.glow);
     sfx.tick();
@@ -117,22 +170,39 @@ class NumberNook implements Game {
     this.draw();
   }
   private landed() {
-    this.glide = null; this.draw();
+    this.glide = null;
+    this.draw();
     if (this.finished) {
       void this.ctx.say('nook.done').then(() => {
         if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       });
       return;
     }
-    if (this.queued !== null) { const at = this.queued; this.queued = null; this.choose(at); }
+    if (this.queued !== null) {
+      const at = this.queued;
+      this.queued = null;
+      this.choose(at);
+    }
   }
   /** Ends any motion at once, so Undo, Hint and Start over act on the board she sees. */
-  private settle() { this.glide = null; this.nudge = null; this.queued = null; this.place(); }
+  private settle() {
+    this.glide = null;
+    this.nudge = null;
+    this.queued = null;
+    this.place();
+  }
   private draw() {
     this.nodes.forEach((node, i) => {
-      node.removeChildren().forEach(c => c.destroy({ children: true }));
+      node.removeChildren().forEach((c) => c.destroy({ children: true }));
       const value = this.board[i];
-      node.addChild(value ? numberArt(value, this.cell, value === i + 1, this.look) : new Graphics().roundRect(-this.cell / 2 + 4, -this.cell / 2 + 4, this.cell - 8, this.cell - 8, 18).fill(this.look.gap).stroke({ width: 3, color: this.look.edge }));
+      node.addChild(
+        value
+          ? numberArt(value, this.cell, value === i + 1, this.look)
+          : new Graphics()
+              .roundRect(-this.cell / 2 + 4, -this.cell / 2 + 4, this.cell - 8, this.cell - 8, 18)
+              .fill(this.look.gap)
+              .stroke({ width: 3, color: this.look.edge }),
+      );
     });
     this.status.text = this.finished
       ? `${this.moves} slides · the fewest from the start: ${this.fewest}`
@@ -140,43 +210,69 @@ class NumberNook implements Game {
     this.glow.clear();
     if (this.hinted >= 0) {
       const node = this.nodes[this.hinted];
-      this.glow.roundRect(node.x - this.cell / 2, node.y - this.cell / 2, this.cell, this.cell, 20).stroke({ width: 6, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(node.x - this.cell / 2, node.y - this.cell / 2, this.cell, this.cell, 20)
+        .stroke({ width: 6, color: swatch.yellow.fill });
     }
     this.place();
   }
   /** Moves the gliding and nudged tiles' art; the cells themselves never move, so taps land where she sees. */
   private place() {
-    this.nodes.forEach(node => node.children[0]?.position.set(0, 0));
+    this.nodes.forEach((node) => node.children[0]?.position.set(0, 0));
     const offset = (from: number, to: number) => ({
-      x: (from % this.plan.cols - to % this.plan.cols) * this.cell,
+      x: ((from % this.plan.cols) - (to % this.plan.cols)) * this.cell,
       y: (Math.floor(from / this.plan.cols) - Math.floor(to / this.plan.cols)) * this.cell,
     });
     if (this.glide) {
-      const k = 1 - this.glide.t / GLIDE, ease = k * k, d = offset(this.glide.from, this.glide.cell);
+      const k = 1 - this.glide.t / GLIDE,
+        ease = k * k,
+        d = offset(this.glide.from, this.glide.cell);
       this.nodes[this.glide.cell].children[0]?.position.set(d.x * ease, d.y * ease);
     }
     if (this.nudge) {
-      const d = offset(this.nudge.toward, this.nudge.cell), len = Math.hypot(d.x, d.y) || 1, push = 6 * Math.sin(Math.PI * this.nudge.t / NUDGE);
-      this.nodes[this.nudge.cell].children[0]?.position.set(d.x / len * push, d.y / len * push);
+      const d = offset(this.nudge.toward, this.nudge.cell),
+        len = Math.hypot(d.x, d.y) || 1,
+        push = 6 * Math.sin((Math.PI * this.nudge.t) / NUDGE);
+      this.nodes[this.nudge.cell].children[0]?.position.set((d.x / len) * push, (d.y / len) * push);
     }
   }
   private showHint(spoken: boolean) {
     // A hint already showing is repeated, not counted again.
-    if (this.hinted >= 0) { if (spoken) void this.ctx.say('nook.hint'); return; }
+    if (this.hinted >= 0) {
+      if (spoken) void this.ctx.say('nook.hint');
+      return;
+    }
     const step = solutionStep(this.board, this.plan.cols);
     if (!step || step.next < 0) return;
-    this.hinted = step.next; this.hints++; this.draw();
+    this.hinted = step.next;
+    this.hints++;
+    this.draw();
     if (spoken) void this.ctx.say('nook.hint');
   }
-  askForHint() { if (!this.finished) { this.settle(); this.showHint(true); } }
+  askForHint() {
+    if (!this.finished) {
+      this.settle();
+      this.showHint(true);
+    }
+  }
   private undo() {
     if (this.finished) return;
     const before = this.history.pop();
-    if (before) { this.settle(); this.board = before; this.hinted = -1; this.draw(); sfx.tick(); }
+    if (before) {
+      this.settle();
+      this.board = before;
+      this.hinted = -1;
+      this.draw();
+      sfx.tick();
+    }
   }
   restart() {
     if (this.finished) return;
-    this.settle(); this.board = this.initial.slice(); this.history = []; this.hinted = -1; this.draw();
+    this.settle();
+    this.board = this.initial.slice();
+    this.history = [];
+    this.hinted = -1;
+    this.draw();
     void this.ctx.say('nook.restart');
   }
   resize(v: View) {
@@ -185,24 +281,34 @@ class NumberNook implements Game {
     this.cell = l.cell;
     this.grid.position.set(l.grid.x, l.grid.y);
     this.nodes.forEach((node, i) => {
-      node.position.set(i % this.plan.cols * this.cell, Math.floor(i / this.plan.cols) * this.cell);
+      node.position.set((i % this.plan.cols) * this.cell, Math.floor(i / this.plan.cols) * this.cell);
       node.hitArea = new Rectangle(-this.cell / 2, -this.cell / 2, this.cell, this.cell);
     });
     const edge = this.cell / 2 + 10;
-    this.tray.clear().roundRect(-edge, -edge, this.plan.cols * this.cell + 20, this.plan.rows * this.cell + 20, 26)
-      .fill(this.look.tray).stroke({ width: 5, color: this.look.edge });
+    this.tray
+      .clear()
+      .roundRect(-edge, -edge, this.plan.cols * this.cell + 20, this.plan.rows * this.cell + 20, 26)
+      .fill(this.look.tray)
+      .stroke({ width: 5, color: this.look.edge });
     this.heading.position.set(v.w / 2, 112);
     this.status.position.set(v.w / 2, 155);
     const tx = l.target.x;
     this.targetLabel.position.set(tx, 205);
     this.target.position.set(tx - (this.plan.cols - 1) * 25, 250);
-    this.target.removeChildren().forEach(c => c.destroy({ children: true }));
+    this.target.removeChildren().forEach((c) => c.destroy({ children: true }));
     goal(this.plan.rows, this.plan.cols).forEach((value, i) => {
-      const art = value ? numberArt(value, 50, true, this.look) : new Graphics().roundRect(-21, -21, 42, 42, 8).fill(this.look.gap).stroke({ width: 2, color: this.look.edge });
-      art.position.set(i % this.plan.cols * 50, Math.floor(i / this.plan.cols) * 50);
+      const art = value
+        ? numberArt(value, 50, true, this.look)
+        : new Graphics()
+            .roundRect(-21, -21, 42, 42, 8)
+            .fill(this.look.gap)
+            .stroke({ width: 2, color: this.look.edge });
+      art.position.set((i % this.plan.cols) * 50, Math.floor(i / this.plan.cols) * 50);
       this.target.addChild(art);
     });
-    [this.undoButton, this.hintButton, this.againButton].forEach((node, i) => node.position.set(l.buttons[i].x, l.buttons[i].y));
+    [this.undoButton, this.hintButton, this.againButton].forEach((node, i) =>
+      node.position.set(l.buttons[i].x, l.buttons[i].y),
+    );
     this.draw();
   }
   autotouch(): TouchIntent | null {
@@ -213,28 +319,50 @@ class NumberNook implements Game {
   update(dt: number) {
     if (!this.glide && !this.nudge) return;
     if (this.nudge && (this.nudge.t += dt) >= NUDGE) this.nudge = null;
-    if (this.glide && (this.glide.t += dt) >= GLIDE) { this.landed(); return; }
+    if (this.glide && (this.glide.t += dt) >= GLIDE) {
+      this.landed();
+      return;
+    }
     this.place();
   }
-  destroy() { this.finished = true; }
+  destroy() {
+    this.finished = true;
+  }
 }
 function iconArt(seed = 0) {
   const c = new Container();
   [1, 2, 3].forEach((v, i) => {
     const art = numberArt(v, 94, (seed + i) % 2 === 0);
-    art.position.set((i % 2) * 100 - 50, Math.floor(i / 2) * 100 - 150); c.addChild(art);
+    art.position.set((i % 2) * 100 - 50, Math.floor(i / 2) * 100 - 150);
+    c.addChild(art);
   });
-  c.addChild(new Graphics().roundRect(7, -93, 86, 86, 15).fill(cream).stroke({ width: 4, color: swatch.teal.line }));
+  c.addChild(
+    new Graphics().roundRect(7, -93, 86, 86, 15).fill(cream).stroke({ width: 4, color: swatch.teal.line }),
+  );
   return c;
 }
 export const numberNook: GameModule = {
-  id: 'number-nook', name: 'Number Nook', titleLine: 'game.number-nook', region: 'puzzle-peaks', challenge: 'numbers',
-  skills: ['spatial-reasoning', 'planning', 'number-order'], bands: ['grownup'], touchDemo: true,
+  id: 'number-nook',
+  name: 'Number Nook',
+  titleLine: 'game.number-nook',
+  region: 'puzzle-peaks',
+  challenge: 'numbers',
+  skills: ['spatial-reasoning', 'planning', 'number-order'],
+  bands: ['grownup'],
+  touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: level => planFor(level).name, music: STYLES.lullaby, upright: true,
+  describeLevel: (level) => planFor(level).name,
+  music: STYLES.lullaby,
+  upright: true,
   coplayHint: 'Plan together: which tile needs the empty space next? A green tile can still move.',
-  offScreen: 'Arrange numbered paper squares on a tray with one empty space. Slide one neighbour into the gap at a time.',
+  offScreen:
+    'Arrange numbered paper squares on a tray with one empty space. Slide one neighbour into the gap at a time.',
   hubIcon: () => new WigglyIcon(iconArt()),
-  sticker: seed => { const c = iconArt(seed); c.pivot.set(0, -100); c.scale.set(0.65); return c; },
-  create: ctx => new NumberNook(ctx),
+  sticker: (seed) => {
+    const c = iconArt(seed);
+    c.pivot.set(0, -100);
+    c.scale.set(0.65);
+    return c;
+  },
+  create: (ctx) => new NumberNook(ctx),
 };

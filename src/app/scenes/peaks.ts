@@ -47,7 +47,10 @@ export function ridgeHeight(peaks: ReturnType<typeof ridge>, ground: number, x: 
  * The far forest at the mountain's foot, small and visual only like the ridge, so the slopes read as bamboo below
  * and conifers above even when a crowded land leaves the field no room: bamboo along the foot, conifers partway up.
  */
-export function foothills(view: View, ground: number): { kind: 'bamboo' | 'conifer'; x: number; y: number }[] {
+export function foothills(
+  view: View,
+  ground: number,
+): { kind: 'bamboo' | 'conifer'; x: number; y: number }[] {
   const peaks = ridge(view, ground);
   const out: { kind: 'bamboo' | 'conifer'; x: number; y: number }[] = [];
   for (let x = 20; x < view.w; x += 34) {
@@ -62,7 +65,8 @@ export function foothills(view: View, ground: number): { kind: 'bamboo' | 'conif
 export function peaksPlan(layout: LandLayout, view: View, ground: number): PeakItem[] {
   const { w, h } = view;
   const keepOut = meadowKeepOut(layout, view);
-  const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
+  const clear = (r: Rect) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
   const rng = new Rng(149);
   const items: PeakItem[] = [];
   const split = bambooLine(view, ground);
@@ -99,16 +103,33 @@ export function drawPeaks(g: Graphics, layout: LandLayout, view: View, ground: n
   for (const p of ridge(view, ground)) {
     const l = p.x - p.half;
     const r = p.x + p.half;
-    g.moveTo(l, ground).lineTo(p.x, p.top).lineTo(r, ground).closePath().fill(rock).stroke({ color: shade, width: 2.5 });
+    g.moveTo(l, ground)
+      .lineTo(p.x, p.top)
+      .lineTo(r, ground)
+      .closePath()
+      .fill(rock)
+      .stroke({ color: shade, width: 2.5 });
     // The shaded face, so each peak reads as rock with a ridge line.
-    g.moveTo(p.x, p.top).lineTo(r, ground).lineTo(p.x + p.half * 0.15, ground).closePath().fill(shade);
+    g.moveTo(p.x, p.top)
+      .lineTo(r, ground)
+      .lineTo(p.x + p.half * 0.15, ground)
+      .closePath()
+      .fill(shade);
     if (!p.snow) continue;
     // Snow above the snowline: everything higher than a fixed height on the mountain, with a ragged lower edge.
     const line = Math.min(ground - 60, p.top + (ground - p.top) * 0.4);
     const k = (line - p.top) / (ground - p.top);
     const sl = p.x - p.half * k;
     const sr = p.x + p.half * k;
-    g.moveTo(p.x, p.top).lineTo(sr, line).lineTo(sr - (sr - sl) * 0.25, line - 10).lineTo(p.x, line + 4).lineTo(sl + (sr - sl) * 0.25, line - 10).lineTo(sl, line).closePath().fill(snow).stroke({ color: swatch.white.line, width: 1.5, alpha: 0.6 });
+    g.moveTo(p.x, p.top)
+      .lineTo(sr, line)
+      .lineTo(sr - (sr - sl) * 0.25, line - 10)
+      .lineTo(p.x, line + 4)
+      .lineTo(sl + (sr - sl) * 0.25, line - 10)
+      .lineTo(sl, line)
+      .closePath()
+      .fill(snow)
+      .stroke({ color: swatch.white.line, width: 1.5, alpha: 0.6 });
   }
   // The far forest: conifers up the flanks, then bamboo along the foot in front of them.
   const far = foothills(view, ground);
@@ -132,8 +153,12 @@ function bamboo(g: Graphics, x: number, y: number, rng: Rng, s = 1) {
   for (const d of [-10, 0, 9]) {
     const dx = d * s;
     const tall = rng.range(52, 88) * s;
-    g.moveTo(x + dx, y).lineTo(x + dx * 1.2, y - tall).stroke({ color: stem.line, width: 6 * s, cap: 'round' });
-    g.moveTo(x + dx, y).lineTo(x + dx * 1.2, y - tall).stroke({ color: 0x9ed67a, width: 3.5 * s, cap: 'round' });
+    g.moveTo(x + dx, y)
+      .lineTo(x + dx * 1.2, y - tall)
+      .stroke({ color: stem.line, width: 6 * s, cap: 'round' });
+    g.moveTo(x + dx, y)
+      .lineTo(x + dx * 1.2, y - tall)
+      .stroke({ color: 0x9ed67a, width: 3.5 * s, cap: 'round' });
     // Nodes up the cane, and a few narrow leaves.
     if (s === 1) {
       for (let n = 14; n < tall - 6; n += 18) g.moveTo(x + dx - 3.5, y - n).lineTo(x + dx + 3.5, y - n);
@@ -141,7 +166,11 @@ function bamboo(g: Graphics, x: number, y: number, rng: Rng, s = 1) {
     }
     const side = d >= 0 ? 1 : -1;
     const top = y - tall;
-    g.moveTo(x + dx * 1.2, top + 8 * s).quadraticCurveTo(x + dx + side * 12 * s, top - 2 * s, x + dx + side * 20 * s, top + 6 * s).quadraticCurveTo(x + dx + side * 10 * s, top + 10 * s, x + dx * 1.2, top + 8 * s).fill(stem.fill).stroke({ color: stem.line, width: 1.5 });
+    g.moveTo(x + dx * 1.2, top + 8 * s)
+      .quadraticCurveTo(x + dx + side * 12 * s, top - 2 * s, x + dx + side * 20 * s, top + 6 * s)
+      .quadraticCurveTo(x + dx + side * 10 * s, top + 10 * s, x + dx * 1.2, top + 8 * s)
+      .fill(stem.fill)
+      .stroke({ color: stem.line, width: 1.5 });
   }
 }
 
@@ -153,15 +182,34 @@ function conifer(g: Graphics, x: number, y: number, rng: Rng, s = 1) {
   for (let i = 0; i < 3; i++) {
     const base = y - 10 * s - i * tall * 0.26;
     const half = (22 - i * 5) * s;
-    g.moveTo(x - half, base).lineTo(x, base - tall * 0.42).lineTo(x + half, base).closePath().fill(dark).stroke({ color: line, width: 2 * Math.max(s, 0.6) });
+    g.moveTo(x - half, base)
+      .lineTo(x, base - tall * 0.42)
+      .lineTo(x + half, base)
+      .closePath()
+      .fill(dark)
+      .stroke({ color: line, width: 2 * Math.max(s, 0.6) });
   }
 }
 
 function boulder(g: Graphics, x: number, y: number) {
-  g.moveTo(x - 30, y).lineTo(x - 26, y - 24).lineTo(x - 8, y - 38).lineTo(x + 16, y - 34).lineTo(x + 30, y - 14).lineTo(x + 28, y).closePath().fill(0xb7b1c9).stroke({ color: 0x7d7696, width: 2.5 });
-  g.moveTo(x - 8, y - 38).lineTo(x - 2, y - 16).lineTo(x + 28, y - 4).stroke({ color: 0x7d7696, width: 1.5, alpha: 0.7 });
+  g.moveTo(x - 30, y)
+    .lineTo(x - 26, y - 24)
+    .lineTo(x - 8, y - 38)
+    .lineTo(x + 16, y - 34)
+    .lineTo(x + 30, y - 14)
+    .lineTo(x + 28, y)
+    .closePath()
+    .fill(0xb7b1c9)
+    .stroke({ color: 0x7d7696, width: 2.5 });
+  g.moveTo(x - 8, y - 38)
+    .lineTo(x - 2, y - 16)
+    .lineTo(x + 28, y - 4)
+    .stroke({ color: 0x7d7696, width: 1.5, alpha: 0.7 });
 }
 
 function cloud(g: Graphics, x: number, y: number, s: number) {
-  g.ellipse(x, y, 50 * s, 13 * s).ellipse(x - 26 * s, y - 6 * s, 24 * s, 12 * s).ellipse(x + 18 * s, y - 9 * s, 28 * s, 14 * s).fill({ color: 0xffffff, alpha: 0.85 });
+  g.ellipse(x, y, 50 * s, 13 * s)
+    .ellipse(x - 26 * s, y - 6 * s, 24 * s, 12 * s)
+    .ellipse(x + 18 * s, y - 9 * s, 28 * s, 14 * s)
+    .fill({ color: 0xffffff, alpha: 0.85 });
 }

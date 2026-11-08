@@ -2,17 +2,82 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  atticLayout, authored, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, CLAIMS, clueOf, CRANK_HIT, EFFECTS, encounterState, glowing,
-  glowTarget, help, look, makeRound, OBJ, objectOf, OBJECTS, outcome, petCorner, pick, place, PLANS, planFor, shellButtons, SLOT, SPOT_R,
-  supports, tryIt, TURN_R, WINDOW_R, type Pt, type Rect,
-  canFinish, finishLever, leverState, makeLeverRound, press, toggleDoor, turnEnded, TURNS_TO_FINISH, FINISH_R,
+  atticLayout,
+  authored,
+  CARD,
+  check,
+  CHECK_R,
+  CHIP_R,
+  CLAIM,
+  CLAIM_H,
+  CLAIM_W,
+  CLAIMS,
+  clueOf,
+  CRANK_HIT,
+  EFFECTS,
+  encounterState,
+  glowing,
+  glowTarget,
+  help,
+  look,
+  makeRound,
+  OBJ,
+  objectOf,
+  OBJECTS,
+  outcome,
+  petCorner,
+  pick,
+  place,
+  PLANS,
+  planFor,
+  shellButtons,
+  SLOT,
+  SPOT_R,
+  supports,
+  tryIt,
+  TURN_R,
+  WINDOW_R,
+  type Pt,
+  type Rect,
+  canFinish,
+  finishLever,
+  leverState,
+  makeLeverRound,
+  press,
+  toggleDoor,
+  turnEnded,
+  TURNS_TO_FINISH,
+  FINISH_R,
 } from './logic';
 import { atticFinds } from './index';
 import { landing, stepLevel } from '../../progress/difficulty';
 import {
-  addToCart, CART_H, CART_SLOT, CART_W, checkJob, CONTEXT_TOOLS, decidingPart, glowingTools, helpJob, jobLayout, JOB_CHECK_R, JOBS, jobState,
-  LENS_R, makeJobRound, PROPS, reason, removeFromCart, SETS, TOOL_BOX, TOOLS, tryTool, works, workingSet,
-  type JobId, type ToolId,
+  addToCart,
+  CART_H,
+  CART_SLOT,
+  CART_W,
+  checkJob,
+  CONTEXT_TOOLS,
+  decidingPart,
+  glowingTools,
+  helpJob,
+  jobLayout,
+  JOB_CHECK_R,
+  JOBS,
+  jobState,
+  LENS_R,
+  makeJobRound,
+  PROPS,
+  reason,
+  removeFromCart,
+  SETS,
+  TOOL_BOX,
+  TOOLS,
+  tryTool,
+  works,
+  workingSet,
+  type JobId,
+  type ToolId,
 } from './logic';
 
 const VIEWS = {
@@ -24,8 +89,10 @@ const VIEWS = {
 
 const circle = (p: Pt, r: number): Rect => ({ x: p.x - r, y: p.y - r, w: 2 * r, h: 2 * r });
 const box = (p: Pt, w: number, h = w): Rect => ({ x: p.x - w / 2, y: p.y - h / 2, w, h });
-const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, v: { w: number; h: number }) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+const overlap = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Rect, v: { w: number; h: number }) =>
+  a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 const dist = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.y - b.y);
 
 describe('the objects', () => {
@@ -47,7 +114,9 @@ describe('the objects', () => {
     for (const o of OBJECTS) {
       for (const side of ['front', 'back'] as const) {
         const spots = [o.crank[side].hub, ...o.clues.filter((c) => c.side === side).map((c) => c.at)];
-        for (let i = 0; i < spots.length; i++) for (let j = i + 1; j < spots.length; j++) expect(dist(spots[i], spots[j])).toBeGreaterThanOrEqual(100);
+        for (let i = 0; i < spots.length; i++)
+          for (let j = i + 1; j < spots.length; j++)
+            expect(dist(spots[i], spots[j])).toBeGreaterThanOrEqual(100);
         for (const s of spots) expect(Math.max(Math.abs(s.x), Math.abs(s.y))).toBeLessThanOrEqual(OBJ);
       }
     }
@@ -66,7 +135,8 @@ describe('the evidence rule', () => {
   });
 
   it('is a pure lookup: paint proves nothing, the handle only that paws turned it', () => {
-    const star = clueOf('bird-box:star'), handle = clueOf('bird-box:handle');
+    const star = clueOf('bird-box:star'),
+      handle = clueOf('bird-box:handle');
     for (let i = 0; i < 3; i++) {
       expect(CLAIMS.some((c) => supports(star, c))).toBe(false);
       expect(supports(handle, 'hand-turned')).toBe(true);
@@ -100,7 +170,11 @@ describe('rounds', () => {
         expect(new Set(r.encounters.map((e) => e.object)).size).toBe(2);
         for (const e of r.encounters) {
           expect(['front', 'back']).toContain(e.start);
-          expect([...e.order].sort()).toEqual(objectOf(e.object).clues.map((c) => c.id).sort());
+          expect([...e.order].sort()).toEqual(
+            objectOf(e.object)
+              .clues.map((c) => c.id)
+              .sort(),
+          );
         }
         firsts.add(r.encounters[0].object);
       }
@@ -110,7 +184,10 @@ describe('rounds', () => {
 
   it('opens with the authored first rounds', () => {
     expect(makeRound(planFor(1), new Rng(1), true)).toEqual(authored(planFor(1)));
-    expect(authored(planFor(1)).encounters.map((e) => [e.object, e.start])).toEqual([['bird-box', 'front'], ['fish-churn', 'back']]);
+    expect(authored(planFor(1)).encounters.map((e) => [e.object, e.start])).toEqual([
+      ['bird-box', 'front'],
+      ['fish-churn', 'back'],
+    ]);
     expect(authored(planFor(2)).encounters[0]).toMatchObject({ object: 'fish-churn', start: 'front' });
   });
 });
@@ -179,10 +256,17 @@ describe('layout', () => {
       it(`fits ${name} at level ${level} with every target clear of the others, the pet and the shell`, () => {
         const L = atticLayout(v, level);
         const objRect = circle(L.object, OBJ * L.scale);
-        const targets: [string, Rect][] = [['turn', circle(L.turn, TURN_R)], ['object', objRect]];
+        const targets: [string, Rect][] = [
+          ['turn', circle(L.turn, TURN_R)],
+          ['object', objRect],
+        ];
         if (level === 1) L.cards.forEach((c, i) => targets.push([`card${i}`, box(c, CARD)]));
         else {
-          targets.push(['claim', box(L.claim, CLAIM_W, CLAIM_H)], ['slot', box(L.slot, SLOT)], ['check', circle(L.check, CHECK_R)]);
+          targets.push(
+            ['claim', box(L.claim, CLAIM_W, CLAIM_H)],
+            ['slot', box(L.slot, SLOT)],
+            ['check', circle(L.check, CHECK_R)],
+          );
           L.chips.forEach((c, i) => targets.push([`chip${i}`, circle(c, CHIP_R)]));
         }
         const fixed = [petCorner(v), ...shellButtons(v)];
@@ -191,7 +275,8 @@ describe('layout', () => {
           for (const f of fixed) expect(overlap(r, f), `${n} vs shell`).toBe(false);
         }
         for (let i = 0; i < targets.length; i++) {
-          for (let j = i + 1; j < targets.length; j++) expect(overlap(targets[i][1], targets[j][1]), `${targets[i][0]} vs ${targets[j][0]}`).toBe(false);
+          for (let j = i + 1; j < targets.length; j++)
+            expect(overlap(targets[i][1], targets[j][1]), `${targets[i][0]} vs ${targets[j][0]}`).toBe(false);
         }
         for (const o of OBJECTS) {
           for (const side of ['front', 'back'] as const) {
@@ -199,7 +284,8 @@ describe('layout', () => {
             for (const s of spots) {
               const r = circle({ x: L.object.x + s.x * L.scale, y: L.object.y + s.y * L.scale }, SPOT_R);
               expect(inside(r, v), `${o.id} spot inside`).toBe(true);
-              for (const [n, t] of targets) if (n !== 'object') expect(overlap(r, t), `${o.id} spot vs ${n}`).toBe(false);
+              for (const [n, t] of targets)
+                if (n !== 'object') expect(overlap(r, t), `${o.id} spot vs ${n}`).toBe(false);
               for (const f of fixed) expect(overlap(r, f)).toBe(false);
             }
           }
@@ -217,8 +303,11 @@ describe('layout', () => {
 });
 
 describe('levels 3-4: the giant handle', () => {
-  const lever = planFor(3), peek = planFor(4);
-  const turn = (s: ReturnType<typeof leverState>) => { if (press(s)) turnEnded(s); };
+  const lever = planFor(3),
+    peek = planFor(4);
+  const turn = (s: ReturnType<typeof leverState>) => {
+    if (press(s)) turnEnded(s);
+  };
 
   it('has plans by ID, with level 1 and 2 unchanged and an unknown level falling back to 1', () => {
     expect(lever.mode).toBe('lever');
@@ -266,7 +355,8 @@ describe('levels 3-4: the giant handle', () => {
   });
 
   it('opens the door only at level 4, and the door never changes the turns', () => {
-    const a = leverState(), b = leverState();
+    const a = leverState(),
+      b = leverState();
     expect(toggleDoor(a, lever)).toBe(false);
     expect(a.doorOpen).toBe(false);
     expect(toggleDoor(b, peek)).toBe(true);
@@ -278,7 +368,8 @@ describe('levels 3-4: the giant handle', () => {
 
   it('can always be finished within three presses, from any random play', () => {
     for (let seed = 1; seed <= 500; seed++) {
-      const rng = new Rng(seed), s = leverState();
+      const rng = new Rng(seed),
+        s = leverState();
       for (let i = 0; i < rng.int(0, 12); i++) {
         const r = rng.next();
         if (r < 0.5) press(s);
@@ -324,14 +415,16 @@ describe('levels 3-4: the giant handle', () => {
     for (const [name, v] of Object.entries(VIEWS)) {
       for (const level of [3, 4]) {
         const L = atticLayout(v, level);
-        const handle = circle(L.handle, L.handleR), finish = circle(L.finish, FINISH_R);
+        const handle = circle(L.handle, L.handleR),
+          finish = circle(L.finish, FINISH_R);
         expect(L.handleR * 2, name).toBeGreaterThanOrEqual(100);
         expect(FINISH_R * 2).toBeGreaterThanOrEqual(100);
         expect(inside(handle, v), `${name} handle`).toBe(true);
         expect(inside(finish, v), `${name} finish`).toBe(true);
         expect(overlap(finish, handle), `${name} finish/handle`).toBe(false);
         expect(overlap(finish, petCorner(v)), `${name} finish/pet`).toBe(false);
-        for (const b of shellButtons(v)) expect(overlap(finish, b) || overlap(handle, b), `${name} shell`).toBe(false);
+        for (const b of shellButtons(v))
+          expect(overlap(finish, b) || overlap(handle, b), `${name} shell`).toBe(false);
         if (level === 4) {
           expect(L.door.w).toBeGreaterThanOrEqual(100);
           expect(L.door.h).toBeGreaterThanOrEqual(100);
@@ -347,12 +440,16 @@ describe('levels 3-4: the giant handle', () => {
 describe('levels 5-6: same job, different tools', () => {
   const TOOL_IDS = Object.keys(TOOLS) as ToolId[];
   const JOB_IDS = Object.keys(JOBS) as JobId[];
-  const same = planFor(5), context = planFor(6);
-  const subsets = <T,>(xs: readonly T[]): T[][] => xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((a) => [...a, x])], [[]]);
-  const sameKey = (a: readonly string[], b: readonly string[]) => [...a].sort().join() === [...b].sort().join();
+  const same = planFor(5),
+    context = planFor(6);
+  const subsets = <T>(xs: readonly T[]): T[][] =>
+    xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((a) => [...a, x])], [[]]);
+  const sameKey = (a: readonly string[], b: readonly string[]) =>
+    [...a].sort().join() === [...b].sort().join();
   /** Every job with the tools it is dealt: both level-5 sets and the three level-6 jobs. */
   const CASES: { name: string; job: JobId; tools: readonly ToolId[] }[] = [
-    { name: '5 leaves', job: 'leaves', tools: SETS.leaves }, { name: '5 acorns', job: 'acorns', tools: SETS.acorns },
+    { name: '5 leaves', job: 'leaves', tools: SETS.leaves },
+    { name: '5 acorns', job: 'acorns', tools: SETS.acorns },
     ...JOB_IDS.map((job) => ({ name: `6 ${job}`, job, tools: CONTEXT_TOOLS })),
   ];
 
@@ -362,23 +459,32 @@ describe('levels 5-6: same job, different tools', () => {
   });
 
   it('works is exactly needs within props, and reason names the first missing property', () => {
-    for (const t of TOOL_IDS) for (const j of JOB_IDS) {
-      const needs = JOBS[j].needs, props = TOOLS[t].props;
-      expect(works(t, j), `${t}/${j}`).toBe(needs.every((p) => props.includes(p)));
-      const missing = PROPS.find((p) => needs.includes(p) && !props.includes(p));
-      if (works(t, j)) {
-        expect(reason(t, j)).toBeNull();
-        expect(decidingPart(t, j).has).toBe(true);
-        expect(TOOLS[t].parts).toContain(decidingPart(t, j));
-      } else {
-        const expected = missing === 'bottom' ? 'fell' : missing === 'rim' ? (j === 'water' ? 'sloshed' : 'rolled') : 'dripped';
-        expect(reason(t, j), `${t}/${j}`).toBe(expected);
-        const part = decidingPart(t, j);
-        expect(part.prop).toBe(missing);
-        expect(part.has).toBe(false);
-        expect(TOOLS[t].parts).toContain(part);
+    for (const t of TOOL_IDS)
+      for (const j of JOB_IDS) {
+        const needs = JOBS[j].needs,
+          props = TOOLS[t].props;
+        expect(works(t, j), `${t}/${j}`).toBe(needs.every((p) => props.includes(p)));
+        const missing = PROPS.find((p) => needs.includes(p) && !props.includes(p));
+        if (works(t, j)) {
+          expect(reason(t, j)).toBeNull();
+          expect(decidingPart(t, j).has).toBe(true);
+          expect(TOOLS[t].parts).toContain(decidingPart(t, j));
+        } else {
+          const expected =
+            missing === 'bottom'
+              ? 'fell'
+              : missing === 'rim'
+                ? j === 'water'
+                  ? 'sloshed'
+                  : 'rolled'
+                : 'dripped';
+          expect(reason(t, j), `${t}/${j}`).toBe(expected);
+          const part = decidingPart(t, j);
+          expect(part.prop).toBe(missing);
+          expect(part.has).toBe(false);
+          expect(TOOLS[t].parts).toContain(part);
+        }
       }
-    }
   });
 
   it('level-5 sets have two working tools and one look-alike that fails in one property', () => {
@@ -400,7 +506,8 @@ describe('levels 5-6: same job, different tools', () => {
     expect(sameKey(workingSet('acorns', CONTEXT_TOOLS), ['basket', 'pail'])).toBe(true);
     expect(sameKey(workingSet('water', CONTEXT_TOOLS), ['pail'])).toBe(true);
     for (const t of ['basket', 'tray'] as const) {
-      const ok = JOB_IDS.filter((j) => works(t, j)), bad = JOB_IDS.filter((j) => !works(t, j));
+      const ok = JOB_IDS.filter((j) => works(t, j)),
+        bad = JOB_IDS.filter((j) => !works(t, j));
       expect(ok, t).toHaveLength(1 + (t === 'basket' ? 1 : 0));
       expect(ok.length).toBeGreaterThanOrEqual(1);
       expect(bad.length).toBeGreaterThanOrEqual(1);
@@ -428,7 +535,13 @@ describe('levels 5-6: same job, different tools', () => {
           expect(sameKey(r.failing, failing), label).toBe(true);
           expect(s.misses).toBe(1);
           expect(s.done).toBe(false);
-          expect(sameKey(s.cart.filter((t): t is ToolId => t !== null), sub.filter((t) => works(t, c.job))), label).toBe(true);
+          expect(
+            sameKey(
+              s.cart.filter((t): t is ToolId => t !== null),
+              sub.filter((t) => works(t, c.job)),
+            ),
+            label,
+          ).toBe(true);
         } else if (sameKey(sub, good)) {
           expect(r.result, label).toBe('done');
           expect(s.done).toBe(true);
@@ -450,8 +563,14 @@ describe('levels 5-6: same job, different tools', () => {
         const r = makeJobRound(same, new Rng(seed), false);
         expect(r.jobs).toHaveLength(2);
         orders.add(r.jobs.map((j) => j.job).join());
-        expect(sameKey(r.jobs.map((j) => j.job), ['leaves', 'acorns'])).toBe(true);
-        for (const d of r.jobs) expect(sameKey(d.tools, SETS[d.job as 'leaves' | 'acorns']), `seed ${seed}`).toBe(true);
+        expect(
+          sameKey(
+            r.jobs.map((j) => j.job),
+            ['leaves', 'acorns'],
+          ),
+        ).toBe(true);
+        for (const d of r.jobs)
+          expect(sameKey(d.tools, SETS[d.job as 'leaves' | 'acorns']), `seed ${seed}`).toBe(true);
         expect(r.colors.hoop).toBe(r.colors.basket);
       }
       expect(orders.size).toBe(2);
@@ -463,7 +582,12 @@ describe('levels 5-6: same job, different tools', () => {
         const r = makeJobRound(context, new Rng(seed), false);
         expect(r.jobs).toHaveLength(3);
         orders.add(r.jobs.map((j) => j.job).join());
-        expect(sameKey(r.jobs.map((j) => j.job), JOB_IDS)).toBe(true);
+        expect(
+          sameKey(
+            r.jobs.map((j) => j.job),
+            JOB_IDS,
+          ),
+        ).toBe(true);
         for (const d of r.jobs) expect(sameKey(d.tools, CONTEXT_TOOLS), `seed ${seed}`).toBe(true);
         expect(r.colors.hoop).toBe(r.colors.basket);
       }
@@ -478,7 +602,10 @@ describe('levels 5-6: same job, different tools', () => {
         }
         const first = makeJobRound(plan, new Rng(1), true);
         expect(first.jobs[0].job).toBe('leaves');
-        for (const d of first.jobs) expect(sameKey(d.tools, plan === same ? SETS[d.job as 'leaves' | 'acorns'] : CONTEXT_TOOLS)).toBe(true);
+        for (const d of first.jobs)
+          expect(sameKey(d.tools, plan === same ? SETS[d.job as 'leaves' | 'acorns'] : CONTEXT_TOOLS)).toBe(
+            true,
+          );
       }
     });
   });
@@ -549,7 +676,11 @@ describe('levels 5-6: same job, different tools', () => {
       expect(JOB_CHECK_R * 2).toBeGreaterThanOrEqual(100);
       expect(L.tools).toHaveLength(3);
       expect(L.slots).toHaveLength(3);
-      const targets = { ...Object.fromEntries(tools.map((r, i) => [`tool${i}`, r])), ...Object.fromEntries(slots.map((r, i) => [`slot${i}`, r])), check };
+      const targets = {
+        ...Object.fromEntries(tools.map((r, i) => [`tool${i}`, r])),
+        ...Object.fromEntries(slots.map((r, i) => [`slot${i}`, r])),
+        check,
+      };
       for (const [label, r] of Object.entries(targets)) {
         expect(inside(r, v), `${name} ${label} inside`).toBe(true);
         expect(overlap(r, petCorner(v)), `${name} ${label}/pet`).toBe(false);
@@ -559,7 +690,8 @@ describe('levels 5-6: same job, different tools', () => {
         expect(overlap(tools[i], cart), `${name} tool${i}/cart`).toBe(false);
         expect(overlap(tools[i], check), `${name} tool${i}/check`).toBe(false);
         expect(overlap(tools[i], lens), `${name} tool${i}/lens`).toBe(false);
-        for (let j = i + 1; j < 3; j++) expect(overlap(tools[i], tools[j]), `${name} tools ${i}/${j}`).toBe(false);
+        for (let j = i + 1; j < 3; j++)
+          expect(overlap(tools[i], tools[j]), `${name} tools ${i}/${j}`).toBe(false);
       }
       expect(overlap(check, cart), `${name} check/cart`).toBe(false);
       expect(inside(lens, v), `${name} lens`).toBe(true);

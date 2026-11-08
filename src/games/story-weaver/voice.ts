@@ -24,7 +24,9 @@ export const VOICE = {
   'weaver.feel': ['How did {who} feel? Pick a feeling.'],
   'weaver.because': ['{who} felt {feeling} because… Pick a part of your story.'],
   'weaver.becausefree': ['Hmm. {who} {clause}. Would {who} feel {feeling} about that? Try another part.'],
-  'weaver.becausenudge': ["Hmm, I don't think {who} felt {feeling} about that. Listen to your story and try again."],
+  'weaver.becausenudge': [
+    "Hmm, I don't think {who} felt {feeling} about that. Listen to your story and try again.",
+  ],
   'weaver.hint': ['These parts of your story could make {who} feel {feeling}.'],
   'weaver.done': ['The end!'],
 } satisfies Record<string, string[]>;

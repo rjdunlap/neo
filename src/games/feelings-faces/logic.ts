@@ -59,9 +59,10 @@ export type CareEvent = keyof typeof CARE_SCENARIOS;
 export const WISHES = ['hug', 'quiet', 'game', 'grownup'] as const;
 export type Wish = (typeof WISHES)[number];
 /** Success respects the request; feeling happy is not required. */
-export const wishEnding = (wish: Wish) => wish === 'game' ? 'happy' as const : 'calm' as const;
+export const wishEnding = (wish: Wish) => (wish === 'game' ? ('happy' as const) : ('calm' as const));
 
-export type FeelingMode = 'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care' | 'perspective' | 'clue' | 'ask';
+export type FeelingMode =
+  'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care' | 'perspective' | 'clue' | 'ask';
 
 export interface FeelingPlan {
   mode: FeelingMode;
@@ -76,21 +77,100 @@ export interface FeelingPlan {
 }
 
 export const FEELING_PLANS: FeelingPlan[] = [
-  { mode: 'play', choices: 4, feelings: FEELINGS, rounds: 0, name: 'Tap feeling bubbles to see the pet show each feeling' },
-  { mode: 'mirror', choices: 2, feelings: ['happy', 'sad'], rounds: 4, name: "Match the pet's face, happy or sad" },
-  { mode: 'name', choices: 2, feelings: ['happy', 'sad', 'sleepy'], rounds: 4, name: 'Find the happy, sad or sleepy face out of two' },
-  { mode: 'name', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Find a named feeling out of three faces' },
-  { mode: 'help', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Choose what helps: a hug, a pillow, an apple or a scarf' },
-  { mode: 'why', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how the pet feels' },
-  { mode: 'friends', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Find the friend who feels a named feeling' },
-  { mode: 'care', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how to help the pet feel better' },
+  {
+    mode: 'play',
+    choices: 4,
+    feelings: FEELINGS,
+    rounds: 0,
+    name: 'Tap feeling bubbles to see the pet show each feeling',
+  },
+  {
+    mode: 'mirror',
+    choices: 2,
+    feelings: ['happy', 'sad'],
+    rounds: 4,
+    name: "Match the pet's face, happy or sad",
+  },
+  {
+    mode: 'name',
+    choices: 2,
+    feelings: ['happy', 'sad', 'sleepy'],
+    rounds: 4,
+    name: 'Find the happy, sad or sleepy face out of two',
+  },
+  {
+    mode: 'name',
+    choices: 3,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'Find a named feeling out of three faces',
+  },
+  {
+    mode: 'help',
+    choices: 3,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'Choose what helps: a hug, a pillow, an apple or a scarf',
+  },
+  {
+    mode: 'why',
+    choices: 3,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'Watch what happens, then choose how the pet feels',
+  },
+  {
+    mode: 'friends',
+    choices: 4,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'Find the friend who feels a named feeling',
+  },
+  {
+    mode: 'care',
+    choices: 4,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'Watch what happens, then choose how to help the pet feel better',
+  },
   // Level 9, lap's entry (`entryLevels`): the pet alone, no bubbles; each tap shows the next feeling (`pokeAfter`).
-  { mode: 'poke', choices: 0, feelings: FEELINGS, rounds: 0, name: 'Tap the pet to see it show one feeling after another' },
-  { mode: 'help', choices: 2, feelings: FEELINGS, needs: ['sad', 'sleepy', 'hungry'], rounds: 4, name: 'Hug or pillow: choose from two helpers for a sad, sleepy or hungry pet' },
-  { mode: 'perspective', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Two friends, one happening: match each friend’s own reaction' },
-  { mode: 'ask', choices: 4, feelings: ['sad', 'sleepy'], rounds: 4, name: 'Ask first: hear what a friend wants, then offer its stated wish, including quiet space' },
+  {
+    mode: 'poke',
+    choices: 0,
+    feelings: FEELINGS,
+    rounds: 0,
+    name: 'Tap the pet to see it show one feeling after another',
+  },
+  {
+    mode: 'help',
+    choices: 2,
+    feelings: FEELINGS,
+    needs: ['sad', 'sleepy', 'hungry'],
+    rounds: 4,
+    name: 'Hug or pillow: choose from two helpers for a sad, sleepy or hungry pet',
+  },
+  {
+    mode: 'perspective',
+    choices: 3,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'Two friends, one happening: match each friend’s own reaction',
+  },
+  {
+    mode: 'ask',
+    choices: 4,
+    feelings: ['sad', 'sleepy'],
+    rounds: 4,
+    name: 'Ask first: hear what a friend wants, then offer its stated wish, including quiet space',
+  },
   // Level 13 keeps its saved ID.
-  { mode: 'clue', choices: 3, feelings: FEELINGS, rounds: 4, name: 'What happened? Use the face and leftover clue to choose a happening' },
+  {
+    mode: 'clue',
+    choices: 3,
+    feelings: FEELINGS,
+    rounds: 4,
+    name: 'What happened? Use the face and leftover clue to choose a happening',
+  },
 ];
 
 /** Level 9 Poke a feeling is lap's entry, placed first by `order` so levels 1–8 keep their IDs and pins. */
@@ -148,19 +228,58 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
     case 'ask':
       return questions(rng, plan.rounds, WISHES, WISHES, (wish) => wish, plan.choices);
     case 'help':
-      return questions(rng, plan.rounds, plan.needs ?? NEEDS, Object.values(HELPERS), (n) => HELPERS[n], plan.choices);
+      return questions(
+        rng,
+        plan.rounds,
+        plan.needs ?? NEEDS,
+        Object.values(HELPERS),
+        (n) => HELPERS[n],
+        plan.choices,
+      );
     case 'perspective': {
       const events = rng.shuffle(Object.keys(REACTIONS) as ReactionEvent[]).slice(0, 2);
-      return events.flatMap((event) => ([0, 1] as const).map((friend) => ({
-        ...questions(rng, 1, [`${event}:${friend}`], FEELINGS, () => REACTIONS[event][friend], plan.choices)[0], event, friend,
-      })));
+      return events.flatMap((event) =>
+        ([0, 1] as const).map((friend) => ({
+          ...questions(
+            rng,
+            1,
+            [`${event}:${friend}`],
+            FEELINGS,
+            () => REACTIONS[event][friend],
+            plan.choices,
+          )[0],
+          event,
+          friend,
+        })),
+      );
     }
     case 'clue':
-      return questions(rng, plan.rounds, Object.keys(CLUES) as ClueEvent[], Object.keys(CLUES) as ClueEvent[], (e) => e, plan.choices);
+      return questions(
+        rng,
+        plan.rounds,
+        Object.keys(CLUES) as ClueEvent[],
+        Object.keys(CLUES) as ClueEvent[],
+        (e) => e,
+        plan.choices,
+      );
     case 'why':
-      return questions(rng, plan.rounds, Object.keys(EVENTS) as FeelingEvent[], FEELINGS, (e) => EVENTS[e], plan.choices);
+      return questions(
+        rng,
+        plan.rounds,
+        Object.keys(EVENTS) as FeelingEvent[],
+        FEELINGS,
+        (e) => EVENTS[e],
+        plan.choices,
+      );
     case 'care':
-      return questions(rng, plan.rounds, Object.keys(CARE_SCENARIOS) as CareEvent[], Object.values(HELPERS), (e) => CARE_SCENARIOS[e].helper, plan.choices);
+      return questions(
+        rng,
+        plan.rounds,
+        Object.keys(CARE_SCENARIOS) as CareEvent[],
+        Object.values(HELPERS),
+        (e) => CARE_SCENARIOS[e].helper,
+        plan.choices,
+      );
     default:
       // mirror, name and friends: the prompt is the feeling itself.
       return questions(rng, plan.rounds, plan.feelings, plan.feelings, (f) => f, plan.choices);
@@ -171,7 +290,8 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
  * Free play ends once every feeling has been shown and she has tapped six times, or after twelve taps of any kind.
  * Either way the round ends with a sticker; nothing she taps is ever wrong.
  */
-export const playDone = (tried: ReadonlySet<Feeling>, taps: number) => (tried.size === FEELINGS.length && taps >= 6) || taps >= 12;
+export const playDone = (tried: ReadonlySet<Feeling>, taps: number) =>
+  (tried.size === FEELINGS.length && taps >= 6) || taps >= 12;
 
 /** What a poke shows at level 9: a feeling, or the hug that answers a sad pet before the cycle goes on. */
 export type PokeStep = Feeling | 'hug';
@@ -181,14 +301,25 @@ export type PokeStep = Feeling | 'hug';
  * surprised. `prev` is the last step shown, or null before the first tap.
  */
 export const pokeAfter = (prev: PokeStep | null): PokeStep =>
-  prev === null ? 'happy' : prev === 'happy' ? 'surprised' : prev === 'surprised' ? 'sleepy' : prev === 'sleepy' ? 'sad' : prev === 'sad' ? 'hug' : 'surprised';
+  prev === null
+    ? 'happy'
+    : prev === 'happy'
+      ? 'surprised'
+      : prev === 'surprised'
+        ? 'sleepy'
+        : prev === 'sleepy'
+          ? 'sad'
+          : prev === 'sad'
+            ? 'hug'
+            : 'surprised';
 
 /** Level 9 ends after six pokes, as free play does at the least: happy, surprised, sleepy, sad, the hug, surprised. */
 export const POKE_TAPS = 6;
 export const pokeDone = (taps: number) => taps >= POKE_TAPS;
 
 /** The feeling bubble a capable child taps next in free play: one she has not seen the pet show yet, then each in turn. */
-export const bubbleToTap = (tried: ReadonlySet<Feeling>, taps: number): Feeling => FEELINGS.find((f) => !tried.has(f)) ?? FEELINGS[taps % FEELINGS.length];
+export const bubbleToTap = (tried: ReadonlySet<Feeling>, taps: number): Feeling =>
+  FEELINGS.find((f) => !tried.has(f)) ?? FEELINGS[taps % FEELINGS.length];
 
 /**
  * The choice that answers a question, by its place among the options (faces, helpers or friends, left to right as they
@@ -209,7 +340,10 @@ export const FACE_MAX_GROW = 2.4;
  * companion's position. The points are the face parts at rest, in companion units. The river's and glider's faces are a
  * fifth of the sprout's across, so a whole-body card at the pip's 0.48 left their feelings too small to tell apart.
  */
-export function faceFrame(points: readonly { x: number; y: number }[], size: number): { scale: number; x: number; y: number } {
+export function faceFrame(
+  points: readonly { x: number; y: number }[],
+  size: number,
+): { scale: number; x: number; y: number } {
   const xs = points.map((p) => p.x);
   const ys = points.map((p) => p.y);
   const left = Math.min(...xs);

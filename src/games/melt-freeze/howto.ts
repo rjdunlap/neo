@@ -15,7 +15,15 @@ export const HOW_TO: GameHowTo = {
   ],
   note: [
     { to: 2, text: 'Nothing here counts as a mistake.' },
-    { from: 3, to: 3, text: 'Choosing the wrong tool shows what it does; the pet gives a hint, and after two it glows.' },
-    { from: 4, to: 4, text: 'Nothing here counts as a mistake. Each thing she watches melt on the tray is added to her discovery journal in the treehouse.' },
+    {
+      from: 3,
+      to: 3,
+      text: 'Choosing the wrong tool shows what it does; the pet gives a hint, and after two it glows.',
+    },
+    {
+      from: 4,
+      to: 4,
+      text: 'Nothing here counts as a mistake. Each thing she watches melt on the tray is added to her discovery journal in the treehouse.',
+    },
   ],
 };

@@ -23,9 +23,30 @@ export interface Species {
 }
 
 export const SPECIES: Record<SpeciesId, Species> = {
-  sprout: { id: 'sprout', name: 'Sprout', land: 'rainbow-meadow', color: 'teal', names: ['Pip', 'Mochi', 'Clover'], chirp: [9, 11] },
-  river: { id: 'river', name: 'River', land: 'counting-cove', color: 'orange', names: ['Pebble', 'Ripple', 'Bubbles'], chirp: [7, 9, 12] },
-  glider: { id: 'glider', name: 'Cloud glider', land: 'puzzle-peaks', color: 'purple', names: ['Breeze', 'Wisp', 'Sky'], chirp: [12, 14, 11] },
+  sprout: {
+    id: 'sprout',
+    name: 'Sprout',
+    land: 'rainbow-meadow',
+    color: 'teal',
+    names: ['Pip', 'Mochi', 'Clover'],
+    chirp: [9, 11],
+  },
+  river: {
+    id: 'river',
+    name: 'River',
+    land: 'counting-cove',
+    color: 'orange',
+    names: ['Pebble', 'Ripple', 'Bubbles'],
+    chirp: [7, 9, 12],
+  },
+  glider: {
+    id: 'glider',
+    name: 'Cloud glider',
+    land: 'puzzle-peaks',
+    color: 'purple',
+    names: ['Breeze', 'Wisp', 'Sky'],
+    chirp: [12, 14, 11],
+  },
 };
 
 export const isSpecies = (v: unknown): v is SpeciesId => SPECIES_IDS.some((s) => s === v);

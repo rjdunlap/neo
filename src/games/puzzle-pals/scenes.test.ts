@@ -4,7 +4,8 @@ import { PICTURE_H, PICTURE_W, PUZZLE_PLANS } from './logic';
 import { cellFeatures, SCENES, STICKER_SCENES, stickerScene } from './scenes';
 
 /** `SCENES` indexes picked by `new Rng(seed).pick` for seeds 1 to 200, recorded before scenes became data. */
-const PINNED = '34454300133132134204230133221542330534035355003523010120422134150052444140122304544220055032113033110415015250534215105504445312111233024021435030232412032310151421345115300330353525004353030044541551';
+const PINNED =
+  '34454300133132134204230133221542330534035355003523010120422134150052444140122304544220055032113033110415015250534215105504445312111233024021435030232412032310151421345115300330353525004353030044541551';
 
 const SEEDS = Array.from({ length: 25 }, (_, i) => i * 37 + 1);
 
@@ -57,7 +58,10 @@ describe('Puzzle Pals scenes', () => {
     for (const scene of SCENES) {
       for (const plan of PUZZLE_PLANS) {
         for (const seed of SEEDS) {
-          expect(unfairCells(scene.id, seed, plan.cols, plan.rows), `${scene.id} ${plan.cols}x${plan.rows} seed ${seed}`).toEqual([]);
+          expect(
+            unfairCells(scene.id, seed, plan.cols, plan.rows),
+            `${scene.id} ${plan.cols}x${plan.rows} seed ${seed}`,
+          ).toEqual([]);
         }
       }
     }
@@ -73,14 +77,14 @@ describe('Puzzle Pals scenes', () => {
     expect(cellFeatures(features, 4, 3, PICTURE_W, PICTURE_H).slice(0, 4)).toEqual([[], [], [], ['kite']]);
   });
 
-  it('catches the duck\'s original nearly blank top pieces without changing the saved drawing', () => {
-    const duck = SCENES.find(s => s.id === 'duck')!;
+  it("catches the duck's original nearly blank top pieces without changing the saved drawing", () => {
+    const duck = SCENES.find((s) => s.id === 'duck')!;
     for (const seed of SEEDS) {
       const original = pictureScene(duck, seed, false);
       const cells = cellFeatures(original.features, 4, 3, PICTURE_W, PICTURE_H);
       expect(cells[1]).toEqual([]);
       expect(cells[2]).toEqual([]);
-      expect(original.features.some(f => f.name.includes('kite'))).toBe(false);
+      expect(original.features.some((f) => f.name.includes('kite'))).toBe(false);
       original.root.destroy({ children: true });
     }
   });

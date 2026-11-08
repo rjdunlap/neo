@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { GAMES } from '../games/registry';
 import { BANDS, playBand } from '../progress/bands';
-import { ageOf, allGames, clampPage, favoriteGames, forgetExplore, exploreMemory, hasOthers, PAGE_SIZE, pageCount, pageOf } from './explore';
+import {
+  ageOf,
+  allGames,
+  clampPage,
+  favoriteGames,
+  forgetExplore,
+  exploreMemory,
+  hasOthers,
+  PAGE_SIZE,
+  pageCount,
+  pageOf,
+} from './explore';
 import { LANDS } from './lands';
 
 describe('All games', () => {
@@ -56,7 +67,12 @@ describe('pages', () => {
         const pages = pageCount(n, sign);
         const all = Array.from({ length: pages }, (_, p) => pageOf(items, p, sign));
         for (const page of all) expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
-        expect(all.flat().filter((c) => 'game' in c).map((c) => ('game' in c ? c.game : -1))).toEqual(items);
+        expect(
+          all
+            .flat()
+            .filter((c) => 'game' in c)
+            .map((c) => ('game' in c ? c.game : -1)),
+        ).toEqual(items);
         if (sign) expect(all.at(-1)!.at(-1)).toEqual({ signpost: true });
         // No empty page except for an empty list.
         if (n + (sign ? 1 : 0) > 0) for (const page of all) expect(page.length).toBeGreaterThan(0);
@@ -77,12 +93,22 @@ describe('pages', () => {
         expect(all.flat().filter((c) => 'mix' in c)).toHaveLength(1);
         for (const page of all) expect(page.length).toBeGreaterThan(0);
         for (const page of all) expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
-        expect(all.flat().filter((c) => 'game' in c).map((c) => ('game' in c ? c.game : -1))).toEqual(items);
+        expect(
+          all
+            .flat()
+            .filter((c) => 'game' in c)
+            .map((c) => ('game' in c ? c.game : -1)),
+        ).toEqual(items);
         if (sign) expect(all.at(-1)!.at(-1)).toEqual({ signpost: true });
       }
     }
     // The mix and three games fill the first page; the fourth game moves on.
-    expect(pageOf([1, 2, 3, 4], 0, false, true)).toEqual([{ mix: true }, { game: 1 }, { game: 2 }, { game: 3 }]);
+    expect(pageOf([1, 2, 3, 4], 0, false, true)).toEqual([
+      { mix: true },
+      { game: 1 },
+      { game: 2 },
+      { game: 3 },
+    ]);
     expect(pageCount(4, false, true)).toBe(2);
     expect(clampPage(9, 3, false, true)).toBe(0);
   });

@@ -14,7 +14,31 @@ import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, bigSingerIndex, bigTouch, CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
+import {
+  LEVELS,
+  bigSingerIndex,
+  bigTouch,
+  CHOICES,
+  echoDots,
+  echoRest,
+  GAP_SECONDS,
+  judgeEcho,
+  makeQuestions,
+  makeRhythms,
+  makeCast,
+  planFor,
+  singerToTap,
+  songFor,
+  tileFor,
+  type Singer,
+  type Song,
+  type Answer,
+  type Gap,
+  type GardenPlan,
+  type Note,
+  type Question,
+  type Sound,
+} from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -35,13 +59,24 @@ export function art(kind: Kind): Container {
       g.ellipse(-14, 8, 30, 20).fill(body.light).stroke(line(body.line, 4));
       g.poly([50, -6, 84, 4, 50, 14]).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
       g.circle(26, -14, 9).fill(0xffffff).circle(28, -14, 5).fill(ink);
-      if (kind === 'woodpecker') g.moveTo(-10, -48).quadraticCurveTo(10, -76, 30, -44).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+      if (kind === 'woodpecker')
+        g.moveTo(-10, -48)
+          .quadraticCurveTo(10, -76, 30, -44)
+          .fill(swatch.red.fill)
+          .stroke(line(swatch.red.line, 4));
       g.moveTo(-10, 48).lineTo(-14, 66).moveTo(10, 48).lineTo(12, 66).stroke(line(swatch.orange.line, 5));
       break;
     }
     case 'frog':
       g.ellipse(0, 20, 78, 52).fill(swatch.green.fill).stroke(line(swatch.green.line));
-      for (const s of [-1, 1]) g.circle(s * 34, -26, 24).fill(swatch.green.fill).stroke(line(swatch.green.line)).circle(s * 34, -26, 12).fill(0xffffff).circle(s * 34, -24, 7).fill(ink);
+      for (const s of [-1, 1])
+        g.circle(s * 34, -26, 24)
+          .fill(swatch.green.fill)
+          .stroke(line(swatch.green.line))
+          .circle(s * 34, -26, 12)
+          .fill(0xffffff)
+          .circle(s * 34, -24, 7)
+          .fill(ink);
       g.moveTo(-36, 26).quadraticCurveTo(0, 50, 36, 26).stroke(line(swatch.green.line, 5));
       break;
     case 'bunny': {
@@ -52,10 +87,25 @@ export function art(kind: Kind): Container {
       break;
     }
     case 'turtle':
-      for (const x of [-46, 46]) g.ellipse(x, 40, 16, 12).fill(swatch.green.light).stroke(line(swatch.green.line, 4));
-      g.ellipse(70, 10, 24, 20).fill(swatch.green.light).stroke(line(swatch.green.line, 4)).circle(78, 4, 5).fill(ink);
-      g.moveTo(-70, 34).bezierCurveTo(-70, -60, 70, -60, 70, 34).closePath().fill(swatch.brown.fill).stroke(line(swatch.brown.line));
-      for (const [x, y] of [[-30, 0], [0, -24], [30, 0], [0, 18]]) g.circle(x, y, 14).fill(swatch.brown.light);
+      for (const x of [-46, 46])
+        g.ellipse(x, 40, 16, 12).fill(swatch.green.light).stroke(line(swatch.green.line, 4));
+      g.ellipse(70, 10, 24, 20)
+        .fill(swatch.green.light)
+        .stroke(line(swatch.green.line, 4))
+        .circle(78, 4, 5)
+        .fill(ink);
+      g.moveTo(-70, 34)
+        .bezierCurveTo(-70, -60, 70, -60, 70, 34)
+        .closePath()
+        .fill(swatch.brown.fill)
+        .stroke(line(swatch.brown.line));
+      for (const [x, y] of [
+        [-30, 0],
+        [0, -24],
+        [30, 0],
+        [0, 18],
+      ])
+        g.circle(x, y, 14).fill(swatch.brown.light);
       break;
     case 'up':
     case 'down': {
@@ -68,12 +118,19 @@ export function art(kind: Kind): Container {
       }
       g.moveTo(-80, 60).lineTo(pts[0], pts[1]);
       for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]);
-      g.lineTo(80, 60).closePath().fill(up ? swatch.yellow.light : swatch.pink.light).stroke(line(up ? swatch.yellow.line : swatch.pink.line));
+      g.lineTo(80, 60)
+        .closePath()
+        .fill(up ? swatch.yellow.light : swatch.pink.light)
+        .stroke(line(up ? swatch.yellow.line : swatch.pink.line));
       // A big arrow says which way.
       const ay = up ? -70 : -70;
       const dir = up ? -1 : 1;
-      g.moveTo(-40, ay - dir * 20).lineTo(40, ay + dir * 20).stroke(line(ink, 8));
-      g.poly(up ? [40, ay - 22, 52, ay - 18, 42, ay - 6] : [40, ay + 22, 52, ay + 18, 42, ay + 6]).fill(ink).stroke(line(ink, 6));
+      g.moveTo(-40, ay - dir * 20)
+        .lineTo(40, ay + dir * 20)
+        .stroke(line(ink, 8));
+      g.poly(up ? [40, ay - 22, 52, ay - 18, 42, ay - 6] : [40, ay + 22, 52, ay + 18, 42, ay + 6])
+        .fill(ink)
+        .stroke(line(ink, 6));
       break;
     }
     case 'same':
@@ -83,13 +140,29 @@ export function art(kind: Kind): Container {
       break;
     case 'bell':
       g.moveTo(0, 40).lineTo(0, 80).stroke(line(swatch.green.line, 8));
-      g.moveTo(-50, 40).bezierCurveTo(-50, -60, 50, -60, 50, 40).quadraticCurveTo(0, 20, -50, 40).closePath().fill(swatch.purple.fill).stroke(line(swatch.purple.line));
+      g.moveTo(-50, 40)
+        .bezierCurveTo(-50, -60, 50, -60, 50, 40)
+        .quadraticCurveTo(0, 20, -50, 40)
+        .closePath()
+        .fill(swatch.purple.fill)
+        .stroke(line(swatch.purple.line));
       g.circle(0, 44, 10).fill(swatch.yellow.fill);
       break;
     case 'drum':
       g.roundRect(-34, 0, 68, 90, 20).fill(0xfff4e3).stroke(line(wood.line));
-      g.moveTo(-110, 10).bezierCurveTo(-110, -100, 110, -100, 110, 10).quadraticCurveTo(0, 30, -110, 10).closePath().fill(swatch.red.fill).stroke(line(swatch.red.line));
-      for (const [x, y, r] of [[-50, -30, 14], [10, -50, 12], [55, -22, 16], [-10, -10, 9]]) g.circle(x, y, r).fill(0xffffff);
+      g.moveTo(-110, 10)
+        .bezierCurveTo(-110, -100, 110, -100, 110, 10)
+        .quadraticCurveTo(0, 30, -110, 10)
+        .closePath()
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line));
+      for (const [x, y, r] of [
+        [-50, -30, 14],
+        [10, -50, 12],
+        [55, -22, 16],
+        [-10, -10, 9],
+      ])
+        g.circle(x, y, r).fill(0xffffff);
       break;
   }
   return c;
@@ -105,7 +178,10 @@ class Tile extends Container {
     this.glow.circle(0, 0, 150).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.glow.visible = false;
     this.glow.eventMode = 'none';
-    const card = new Graphics().circle(0, 0, 124).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 6, color: 0xb9c6d1 });
+    const card = new Graphics()
+      .circle(0, 0, 124)
+      .fill({ color: 0xffffff, alpha: 0.9 })
+      .stroke({ width: 6, color: 0xb9c6d1 });
     this.addChild(this.glow, card, this.picture);
     onTap(this, onPick, { radius: 130, cooldown: 400 });
   }
@@ -134,7 +210,15 @@ function call(c: Song['call'], step: number) {
   else sfx.knock();
 }
 
-const PICTURE: Record<Answer, Kind> = { high: 'bird', low: 'frog', fast: 'bunny', slow: 'turtle', up: 'up', down: 'down', same: 'same' };
+const PICTURE: Record<Answer, Kind> = {
+  high: 'bird',
+  low: 'frog',
+  fast: 'bunny',
+  slow: 'turtle',
+  up: 'up',
+  down: 'down',
+  same: 'same',
+};
 
 class SoundGarden implements Game {
   readonly plan: GardenPlan;
@@ -177,13 +261,40 @@ class SoundGarden implements Game {
     this.plan = planFor(ctx.level);
     this.questions = makeQuestions(this.plan, ctx.rng);
     this.rhythms = this.plan.mode === 'echo' ? makeRhythms(this.plan.rounds, ctx.rng) : [];
-    this.backdrop = new Backdrop({ sky: [0xbfe6fb, 0xf2fbff], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.55, clouds: 3, sun: true, seed: 17 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xbfe6fb, 0xf2fbff],
+        hills: [0xc8ecb0, 0xa6de8e],
+        horizon: 0.55,
+        clouds: 3,
+        sun: true,
+        seed: 17,
+      },
+      ctx.view,
+    );
     ctx.stage.addChild(this.backdrop);
 
     // The singing bush: tap it to hear the sound again.
-    const bushArt = puffs(new Graphics(), [[-70, 10, 60], [0, -20, 75], [70, 10, 60], [-30, 40, 55], [40, 40, 55]], 0x7cc463, 0x4a9a35, 6);
+    const bushArt = puffs(
+      new Graphics(),
+      [
+        [-70, 10, 60],
+        [0, -20, 75],
+        [70, 10, 60],
+        [-30, 40, 55],
+        [40, 40, 55],
+      ],
+      0x7cc463,
+      0x4a9a35,
+      6,
+    );
     this.bush.addChild(bushArt);
-    for (const [x, y, c] of [[-60, -10, 'pink'], [20, -50, 'yellow'], [60, 20, 'purple'], [-10, 30, 'blue']] as const) {
+    for (const [x, y, c] of [
+      [-60, -10, 'pink'],
+      [20, -50, 'yellow'],
+      [60, 20, 'purple'],
+      [-10, 30, 'blue'],
+    ] as const) {
       const f = flower(new Graphics(), 16, swatch[c].fill, swatch[c].line);
       f.position.set(x, y);
       this.bush.addChild(f);
@@ -192,14 +303,19 @@ class SoundGarden implements Game {
     this.bush.visible = this.plan.mode !== 'play' && this.plan.mode !== 'echo';
     ctx.stage.addChild(this.bush);
 
-    this.tiles = Array.from({ length: this.plan.mode === 'updownsame' ? 3 : 2 }, (_, i) => i).map((i) => new Tile(() => void this.pick(i)));
+    this.tiles = Array.from({ length: this.plan.mode === 'updownsame' ? 3 : 2 }, (_, i) => i).map(
+      (i) => new Tile(() => void this.pick(i)),
+    );
     for (const t of this.tiles) {
       t.visible = this.questions.length > 0;
       ctx.stage.addChild(t);
     }
 
     this.woodpecker = new Container();
-    const trunk = new Graphics().roundRect(-40, -260, 80, 360, 20).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    const trunk = new Graphics()
+      .roundRect(-40, -260, 80, 360, 20)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
     const bird = art('woodpecker');
     bird.position.set(70, -120);
     bird.scale.set(-0.8, 0.8);
@@ -221,7 +337,9 @@ class SoundGarden implements Game {
 
     if (this.plan.big) {
       this.bigPad.hitArea = { contains: (x: number, y: number) => bigTouch(x, y, this.view.w, this.view.h) };
-      onTap(this.bigPad, () => void this.sing(this.singers[bigSingerIndex(this.played, this.cast.length)]), { cooldown: 0 });
+      onTap(this.bigPad, () => void this.sing(this.singers[bigSingerIndex(this.played, this.cast.length)]), {
+        cooldown: 0,
+      });
       ctx.stage.addChild(this.bigPad);
     }
 
@@ -262,7 +380,10 @@ class SoundGarden implements Game {
     this.drumGlow.position.copyFrom(this.drum.position);
     this.drawDots();
     if (this.plan.big) this.placeBig();
-    else this.singers.forEach((s, i) => s.node.position.set(200 + ((v.w - 300) * i) / (this.singers.length - 1), v.h * (i % 2 ? 0.72 : 0.5)));
+    else
+      this.singers.forEach((s, i) =>
+        s.node.position.set(200 + ((v.w - 300) * i) / (this.singers.length - 1), v.h * (i % 2 ? 0.72 : 0.5)),
+      );
   }
 
   private placeBig() {
@@ -273,7 +394,10 @@ class SoundGarden implements Game {
       s.node.visible = i === active || leaving;
       const progress = this.bigSwap < 0 ? 1 : Math.min(1, this.bigSwap / 0.55);
       s.node.alpha = leaving ? 1 - progress : 1;
-      s.node.position.set(this.view.w / 2 + 60 + (leaving ? -progress * this.view.w * 0.5 : (1 - progress) * this.view.w * 0.5), this.view.h * 0.5);
+      s.node.position.set(
+        this.view.w / 2 + 60 + (leaving ? -progress * this.view.w * 0.5 : (1 - progress) * this.view.w * 0.5),
+        this.view.h * 0.5,
+      );
       s.node.scale.set(size * (1 + this.bigBounce * 0.15), size * (1 - this.bigBounce * 0.12));
       s.node.rotation = leaving ? Math.sin(this.bigSwap * 14) * 0.14 : 0;
     });
@@ -304,7 +428,11 @@ class SoundGarden implements Game {
     this.wiggle = Math.max(0, this.wiggle - dt);
     this.bush.rotation = this.wiggle > 0 ? 0.06 * Math.sin(this.clock * 30) : 0;
     for (const t of this.tiles) if (t.glow.visible) t.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
-    this.drumGlow.visible = this.echoHelp && !this.busy && !this.finished && this.taps.length <= (this.rhythms[this.index]?.length ?? -1) &&
+    this.drumGlow.visible =
+      this.echoHelp &&
+      !this.busy &&
+      !this.finished &&
+      this.taps.length <= (this.rhythms[this.index]?.length ?? -1) &&
       (!this.taps.length || this.echoTimer >= GAP_SECONDS[this.rhythms[this.index][this.taps.length - 1]]);
     // Echo: once the taps stop, see if they matched.
     if (this.plan.mode === 'echo' && this.taps.length && !this.busy) {
@@ -320,14 +448,19 @@ class SoundGarden implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
-    if (this.plan.big) return { tap: { on: this.bigPad, x: this.view.w / 2 + 60, y: this.view.h / 2 }, pause: 0.3 };
-    if (this.plan.mode === 'play') return { tap: { on: this.singers.find((s) => s.kind === singerToTap(this.cast, this.played))!.node } };
+    if (this.plan.big)
+      return { tap: { on: this.bigPad, x: this.view.w / 2 + 60, y: this.view.h / 2 }, pause: 0.3 };
+    if (this.plan.mode === 'play')
+      return { tap: { on: this.singers.find((s) => s.kind === singerToTap(this.cast, this.played))!.node } };
     if (this.busy) return null;
     if (this.plan.mode === 'echo') {
       const r = this.rhythms[this.index];
       const made = this.taps.length;
       if (!r || made > r.length) return null;
-      return { tap: { on: this.drum, y: -10 }, pause: made < r.length ? echoRest(r[made], MIN_TAP_GAP) : 0.05 };
+      return {
+        tap: { on: this.drum, y: -10 },
+        pause: made < r.length ? echoRest(r[made], MIN_TAP_GAP) : 0.05,
+      };
     }
     const q = this.question;
     return q ? { tap: { on: this.tiles[tileFor(q)] } } : null;
@@ -350,7 +483,10 @@ class SoundGarden implements Game {
       this.played++;
       this.bigBounce = 1;
       call(song.call, song.beats[0].step);
-      if (this.played >= this.plan.rounds) { void this.finale(); return; }
+      if (this.played >= this.plan.rounds) {
+        void this.finale();
+        return;
+      }
       if (this.played % 4 === 0) this.bigSwap = 0;
       this.placeBig();
       for (let i = 1; i < song.beats.length; i++) {
@@ -364,7 +500,14 @@ class SoundGarden implements Game {
     const song = songFor(s.kind, s.taps);
     s.taps++;
     this.played++;
-    this.ctx.particles.burst(s.node.x, s.node.y - 60, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 4, speed: [40, 120], gravity: -40, size: [0.3, 0.45] });
+    this.ctx.particles.burst(s.node.x, s.node.y - 60, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 4,
+      speed: [40, 120],
+      gravity: -40,
+      size: [0.3, 0.45],
+    });
     if (this.played >= this.plan.rounds) void this.finale();
     // The first beat sounds on touch-down; a patter or a plod bounces once per beat.
     const gap = song.beats[1]?.at ?? 0.5;
@@ -374,7 +517,9 @@ class SoundGarden implements Game {
       if (beat.at > at) await this.ctx.tw.wait(beat.at - at);
       at = beat.at;
       call(song.call, beat.step);
-      void this.ctx.tw.to(s.node.scale, { x: 1.15, y: 0.88 }, { duration: 0.08 }).then(() => this.ctx.tw.to(s.node.scale, { x: 1, y: 1 }, { duration: back, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(s.node.scale, { x: 1.15, y: 0.88 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(s.node.scale, { x: 1, y: 1 }, { duration: back, ease: ease.outBack }));
     }
   }
 
@@ -412,7 +557,9 @@ class SoundGarden implements Game {
       await this.ctx.tw.wait(0.35);
       for (const t of this.tiles) {
         voice(q.sounds[t.answer].notes[0]);
-        void this.ctx.tw.to(t.scale, { x: 1.1, y: 0.92 }, { duration: 0.08 }).then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+        void this.ctx.tw
+          .to(t.scale, { x: 1.1, y: 0.92 }, { duration: 0.08 })
+          .then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
         await this.ctx.tw.wait(0.55);
       }
     }
@@ -441,7 +588,9 @@ class SoundGarden implements Game {
         sfx.knock();
         this.dotCount = i + 1;
         this.drawDots();
-        void tw.to(bird, { rotation: -0.3 }, { duration: 0.05 }).then(() => tw.to(bird, { rotation: 0 }, { duration: 0.1 }));
+        void tw
+          .to(bird, { rotation: -0.3 }, { duration: 0.05 })
+          .then(() => tw.to(bird, { rotation: 0 }, { duration: 0.1 }));
         if (i < r.length) await tw.wait(GAP_SECONDS[r[i]]);
       }
       return;
@@ -476,9 +625,18 @@ class SoundGarden implements Game {
     const tile = this.tiles[i];
     if (tile.answer === q.answer) {
       this.busy = true;
-      void this.ctx.tw.to(tile.scale, { x: 1.15, y: 1.15 }, { duration: 0.12 }).then(() => this.ctx.tw.to(tile.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(tile.scale, { x: 1.15, y: 1.15 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(tile.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
       sfx.sparkle();
-      this.ctx.particles.burst(tile.x, tile.y - 40, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(tile.x, tile.y - 40, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0],
+        count: 14,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       await this.ctx.say(`sg.${q.answer}` as LineId);
       await this.ctx.say('praise');
       await this.next();
@@ -515,7 +673,9 @@ class SoundGarden implements Game {
     this.taps.push(this.clock);
     this.echoTimer = 0;
     sfx.drum();
-    void this.ctx.tw.to(this.drum.scale, { x: 1.08, y: 0.92 }, { duration: 0.06 }).then(() => this.ctx.tw.to(this.drum.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(this.drum.scale, { x: 1.08, y: 0.92 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(this.drum.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }));
   }
 
   private async judge() {
@@ -525,7 +685,14 @@ class SoundGarden implements Game {
     this.busy = true;
     if (judgeEcho(r, taps)) {
       sfx.sparkle();
-      this.ctx.particles.burst(this.drum.x, this.drum.y - 120, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.red.light], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(this.drum.x, this.drum.y - 120, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0, swatch.red.light],
+        count: 16,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       await this.wakeTree();
       await this.ctx.say('sg.echoyes');
       await this.next();
@@ -546,7 +713,10 @@ class SoundGarden implements Game {
     if (!r) return;
     const xs = echoDots(r);
     const left = this.woodpecker.x - xs[xs.length - 1] / 2;
-    for (const x of xs.slice(0, this.dotCount)) g.circle(left + x, this.woodpecker.y - 15, 13).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+    for (const x of xs.slice(0, this.dotCount))
+      g.circle(left + x, this.woodpecker.y - 15, 13)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 4, color: swatch.yellow.line });
   }
 
   private drawTree(awake: boolean) {
@@ -554,7 +724,10 @@ class SoundGarden implements Game {
     const g = this.treeFace.clear();
     for (const x of [-17, 17]) {
       if (awake) g.ellipse(x, -55, 5, 9).fill(ink);
-      else g.moveTo(x - 7, -55).quadraticCurveTo(x, -49, x + 7, -55).stroke(line(ink, 4));
+      else
+        g.moveTo(x - 7, -55)
+          .quadraticCurveTo(x, -49, x + 7, -55)
+          .stroke(line(ink, 4));
     }
     if (awake) g.moveTo(-16, -28).quadraticCurveTo(0, -6, 16, -28).stroke(line(ink, 4));
     else g.ellipse(0, -25, 7, 10).stroke(line(ink, 3));
@@ -566,7 +739,9 @@ class SoundGarden implements Game {
     // A short answering flourish, owned by the scene's tween clock.
     for (let i = 0; i < 3; i++) {
       sfx.knock();
-      void this.ctx.tw.to(this.treeFace.scale, { x: 1.1, y: 1.1 }, { duration: 0.07 }).then(() => this.ctx.tw.to(this.treeFace.scale, { x: 1, y: 1 }, { duration: 0.1 }));
+      void this.ctx.tw
+        .to(this.treeFace.scale, { x: 1.1, y: 1.1 }, { duration: 0.07 })
+        .then(() => this.ctx.tw.to(this.treeFace.scale, { x: 1, y: 1 }, { duration: 0.1 }));
       await this.ctx.tw.wait(i === 0 ? 0.32 : 0.18);
     }
   }
@@ -628,8 +803,8 @@ export const soundGarden: GameModule = {
   music: silenced(STYLES.lullaby),
   touchDemo: true,
   coplayHint: 'Sing along: a high "tweet" with your hand up high, a low "ribbit" with your hand down low.',
-  offScreen: 'Play a pot-and-spoon drum: copy each other\'s taps, fast and slow.',
+  offScreen: "Play a pot-and-spoon drum: copy each other's taps, fast and slow.",
   hubIcon: () => new GardenIcon(),
   sticker,
-  create: (ctx) => ctx.level === 9 || ctx.level === 10 ? new PitchGarden(ctx) : new SoundGarden(ctx),
+  create: (ctx) => (ctx.level === 9 || ctx.level === 10 ? new PitchGarden(ctx) : new SoundGarden(ctx)),
 };

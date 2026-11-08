@@ -11,7 +11,15 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: 'The friends sit down together on the picnic blanket.',
   note: [
-    { from: 1, to: 1, text: 'Every choice is right, and the pet says the word for the way chosen. Nobody is asked to move: the pet does the walking.' },
-    { from: 2, to: 3, text: "Taking the other way is a miss, with both ways named; after two misses at one place the asked-for way glows, which counts as a hint. Hearing the request again is never counted. Nobody is asked to move: the pet does the walking." },
+    {
+      from: 1,
+      to: 1,
+      text: 'Every choice is right, and the pet says the word for the way chosen. Nobody is asked to move: the pet does the walking.',
+    },
+    {
+      from: 2,
+      to: 3,
+      text: 'Taking the other way is a miss, with both ways named; after two misses at one place the asked-for way glows, which counts as a hint. Hearing the request again is never counted. Nobody is asked to move: the pet does the walking.',
+    },
   ],
 };

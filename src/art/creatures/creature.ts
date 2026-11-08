@@ -26,7 +26,12 @@ export interface Accessory extends Container {
   sway(dt: number, excite: number): void;
 }
 
-export const stroke = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+export const stroke = (color: number, width = 6) => ({
+  width,
+  color,
+  join: 'round' as const,
+  cap: 'round' as const,
+});
 
 /** A glossy dot eye that blinks by squashing; `r` is its half-height. */
 export function eye(r: number, tall = 1.2): Container {

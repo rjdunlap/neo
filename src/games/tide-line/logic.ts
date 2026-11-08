@@ -18,11 +18,16 @@ export interface Plan {
 export const PLANS: readonly Plan[] = [
   { level: 1, mode: 'wave', name: 'Come in, go out: pull the sea up the sand and let it go' },
   { level: 2, mode: 'pail', name: 'Stop at the line: put two pails above the seaweed line' },
-  { level: 3, mode: 'line', name: 'Read the line: with the sea out, put a pail, a flag and a towel where they stay dry; then a windy-day line' },
+  {
+    level: 3,
+    mode: 'line',
+    name: 'Read the line: with the sea out, put a pail, a flag and a towel where they stay dry; then a windy-day line',
+  },
   { level: 4, mode: 'cycle', name: "In, out, in, out: finish a day's picture strip of the sea" },
 ];
 
-export const tidePlan = (level: number): Plan => PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
+export const tidePlan = (level: number): Plan =>
+  PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 
 /** Lap 1, toddler 1–2, preschool 2–3, pre-K 3–4. School waits for levels 5–6's definition. */
 export const BAND_LEVELS: BandLevels = {
@@ -52,7 +57,8 @@ export function waterAt(phase: number, low: number, high: number): number {
 export const wrack = (high: number) => ({ mid: high, top: high + BAND / 2, bottom: high - BAND / 2 });
 
 /** A thing whose feet are at height `feet` stays dry when they are above the top of the highest seaweed band. */
-export const isDry = (feet: number, highs: readonly number[]) => feet > Math.max(...highs.map((h) => wrack(h).top));
+export const isDry = (feet: number, highs: readonly number[]) =>
+  feet > Math.max(...highs.map((h) => wrack(h).top));
 
 /** How far the sea comes in, as a height: up to the top of the line, so it touches whatever sits on the line. */
 export const reach = (high: number) => wrack(high).top;
@@ -152,7 +158,8 @@ export const cornerButtons = (view: View): Box[] => [
   { x: 0, y: 0, w: CORNER, h: CORNER },
   { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER },
 ];
-export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 export const PAIL = 120;
 /** How high above the dunes (in heights) a thing may stand on the grass. */
@@ -195,7 +202,13 @@ export interface Size {
 const PAIL_SIZE: Size = { w: PAIL, h: PAIL };
 
 /** Where a dropped thing's feet stand: inside the sand and grass, its top no higher than a pail's, and out of the pet's corner. */
-export function clampFeet(L: ShoreLayout, view: View, x: number, y: number, size: Size = PAIL_SIZE): { x: number; y: number } {
+export function clampFeet(
+  L: ShoreLayout,
+  view: View,
+  x: number,
+  y: number,
+  size: Size = PAIL_SIZE,
+): { x: number; y: number } {
   const fy = Math.max(L.sand.y + Math.max(0, size.h - PAIL), Math.min(L.sand.y + L.sand.h, y));
   // High on the grass a thing would reach up beside the corner buttons: keep it between them.
   const half = Math.max(PAIL, size.w) / 2; // the touch box, not the drawn width
@@ -216,7 +229,12 @@ export function seaGrab(view: View, crestY: number): Box {
 }
 
 /** The ghost finger's (and the pet's carry) spot for a pail: the middle of the dry sand above the line, clear of others. */
-export function drySpot(L: ShoreLayout, view: View, high: number, avoid: readonly { x: number; y: number }[] = []): { x: number; y: number } {
+export function drySpot(
+  L: ShoreLayout,
+  view: View,
+  high: number,
+  avoid: readonly { x: number; y: number }[] = [],
+): { x: number; y: number } {
   const lo = wrack(high).top;
   const feetH = (lo + 1) / 2;
   const y = yAt(L, feetH);
@@ -238,14 +256,21 @@ export const CREATURES: readonly { kind: Creature; at: number; h: number }[] = [
   { kind: 'star', at: 0.66, h: 0.3 },
   { kind: 'crab', at: 0.84, h: 0.48 },
 ];
-export const creatureSpot = (L: ShoreLayout, view: View, c: { at: number; h: number }) => ({ x: PET.w + (view.w - PET.w - 60) * c.at, y: yAt(L, c.h) });
+export const creatureSpot = (L: ShoreLayout, view: View, c: { at: number; h: number }) => ({
+  x: PET.w + (view.w - PET.w - 60) * c.at,
+  y: yAt(L, c.h),
+});
 
 // Level 3: read the line -------------------------------------------------------------------------
 
 export type Thing = 'pail' | 'flag' | 'towel';
 export const THINGS: readonly Thing[] = ['pail', 'flag', 'towel'];
 /** Each thing's drawn size; its touch area is at least 120 each way. */
-export const SIZES: Record<Thing, Size> = { pail: { w: 120, h: 120 }, flag: { w: 100, h: 160 }, towel: { w: 160, h: 100 } };
+export const SIZES: Record<Thing, Size> = {
+  pail: { w: 120, h: 120 },
+  flag: { w: 100, h: 160 },
+  towel: { w: 160, h: 100 },
+};
 export const hitSize = (t: Thing): Size => ({ w: Math.max(120, SIZES[t].w), h: Math.max(120, SIZES[t].h) });
 /** A thing's touch box with its feet at (x, y). */
 export const thingBox = (t: Thing, x: number, y: number): Box => {
@@ -257,7 +282,8 @@ export const thingBox = (t: Thing, x: number, y: number): Box => {
 export const WINDY = 0.15;
 export const ROUNDS = 2;
 /** A round's seaweed lines: one in round 1; round 2 adds the higher windy-day line, which is the one the sea reaches. */
-export const linesFor = (round: number, high: number): number[] => (round === 0 ? [high] : [high, Math.min(0.85, high + WINDY)]);
+export const linesFor = (round: number, high: number): number[] =>
+  round === 0 ? [high] : [high, Math.min(0.85, high + WINDY)];
 /** How far the round's sea comes in: to the top of its highest line. */
 export const seaReach = (lines: readonly number[]) => reach(Math.max(...lines));
 
@@ -299,7 +325,10 @@ export class LineRound {
 }
 
 /** Where each thing waits: on the sea-side rocks at the bottom right, in a row, with the wave button at the right end. */
-export function lineTray(L: ShoreLayout, view: View): { spots: Record<Thing, { x: number; y: number }>; button: Box } {
+export function lineTray(
+  L: ShoreLayout,
+  view: View,
+): { spots: Record<Thing, { x: number; y: number }>; button: Box } {
   const y = L.low - 6;
   const button = { x: view.w - 24 - 130, y: y - 120, w: 130, h: 120 };
   const spots = {} as Record<Thing, { x: number; y: number }>;
@@ -313,7 +342,11 @@ export function lineTray(L: ShoreLayout, view: View): { spots: Record<Thing, { x
 }
 
 /** The ghost finger's (and the pet's carry) spots: side by side, halfway between the highest line and the dunes. */
-export function drySpots(L: ShoreLayout, view: View, lines: readonly number[]): Record<Thing, { x: number; y: number }> {
+export function drySpots(
+  L: ShoreLayout,
+  view: View,
+  lines: readonly number[],
+): Record<Thing, { x: number; y: number }> {
   const top = Math.max(...lines.map((h) => wrack(h).top));
   const y = yAt(L, (top + 1) / 2);
   const at: Record<Thing, number> = { pail: 0.3, flag: 0.5, towel: 0.72 };
@@ -323,7 +356,13 @@ export function drySpots(L: ShoreLayout, view: View, lines: readonly number[]): 
 }
 
 /** Feet between round 2's two lines: wet, because the windy-day sea reaches the top one. */
-export function betweenSpot(L: ShoreLayout, view: View, lines: readonly number[], t: Thing, fx = 0.5): { x: number; y: number } {
+export function betweenSpot(
+  L: ShoreLayout,
+  view: View,
+  lines: readonly number[],
+  t: Thing,
+  fx = 0.5,
+): { x: number; y: number } {
   const lo = Math.min(...lines.map((h) => wrack(h).top));
   const hi = Math.max(...lines.map((h) => wrack(h).bottom));
   return clampFeet(L, view, L.sand.x + L.sand.w * fx, yAt(L, (lo + hi) / 2), SIZES[t]);
@@ -346,11 +385,18 @@ export interface Strip {
 }
 
 /** The first strip of a session: in, out, in, and the last missing, with the halfway card first. */
-export const AUTHORED_STRIP: Strip = { pics: ['high', 'low', 'high', 'low'], gap: 3, cards: ['mid', 'high', 'low'] };
+export const AUTHORED_STRIP: Strip = {
+  pics: ['high', 'low', 'high', 'low'],
+  gap: 3,
+  cards: ['mid', 'high', 'low'],
+};
 
 export function makeStrip(rng: Rng): Strip {
   const start = rng.pick(['high', 'low'] as const);
-  const pics = Array.from({ length: SLOTS }, (_, i) => ((i % 2 === 0) === (start === 'high') ? 'high' : 'low') as 'high' | 'low');
+  const pics = Array.from(
+    { length: SLOTS },
+    (_, i) => ((i % 2 === 0) === (start === 'high') ? 'high' : 'low') as 'high' | 'low',
+  );
   return { pics, gap: rng.int(0, SLOTS - 1), cards: rng.shuffle<Pic>(['high', 'low', 'mid']) };
 }
 
@@ -407,11 +453,21 @@ export function stripLayout(view: View): { pics: Box[]; cards: Box[] } {
   const x0 = (view.w - row) / 2;
   // Below the home button and the help button under it.
   const y0 = CORNER + 90;
-  const pics = Array.from({ length: SLOTS }, (_, i) => ({ x: x0 + i * (PIC.w + gap), y: y0, w: PIC.w, h: PIC.h }));
+  const pics = Array.from({ length: SLOTS }, (_, i) => ({
+    x: x0 + i * (PIC.w + gap),
+    y: y0,
+    w: PIC.w,
+    h: PIC.h,
+  }));
   const cgap = 40;
   const crow = 3 * PIC.w + 2 * cgap;
   const cx0 = Math.max((view.w - crow) / 2, PET.w + 24);
   const cy = y0 + PIC.h + 70;
-  const cards = Array.from({ length: 3 }, (_, i) => ({ x: cx0 + i * (PIC.w + cgap), y: cy, w: PIC.w, h: PIC.h }));
+  const cards = Array.from({ length: 3 }, (_, i) => ({
+    x: cx0 + i * (PIC.w + cgap),
+    y: cy,
+    w: PIC.w,
+    h: PIC.h,
+  }));
   return { pics, cards };
 }

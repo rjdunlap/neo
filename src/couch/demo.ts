@@ -109,7 +109,10 @@ export class Demo {
     this.root.scale.set(scale);
     if (Math.abs(scale - this.maskScale) > 1e-4) {
       this.maskScale = scale;
-      this.mask.clear().roundRect(0, 0, DESIGN_W, DESIGN_H, 18 / scale).fill(0xffffff);
+      this.mask
+        .clear()
+        .roundRect(0, 0, DESIGN_W, DESIGN_H, 18 / scale)
+        .fill(0xffffff);
     }
   }
 
@@ -142,7 +145,10 @@ export class Demo {
     } else if (game.autoplay && !this.touches) {
       const input = game.autoplay(dt);
       game.control?.(input, dt);
-      if (input.typed?.length) { this.typed = input.typed; this.typedHold = HOLD; }
+      if (input.typed?.length) {
+        this.typed = input.typed;
+        this.typedHold = HOLD;
+      }
       for (const part of pressed(input)) this.held.set(part, HOLD);
     }
     game.update(dt);
@@ -182,12 +188,16 @@ export class Demo {
     this.tw.clear();
     this.tracked.clear();
     this.held.clear();
-    this.typed = []; this.typedHold = 0;
+    this.typed = [];
+    this.typedHold = 0;
     this.lit.clear();
     this.finger?.stop();
     // Take everything out of sight now, and destroy it a moment later: a continuation the game had already queued (an `await`
     // that became ready this frame) still runs after this call and may touch its objects.
-    const doomed = [...this.stage.removeChildren(), ...[this.finger?.hand, this.fx, this.pet].filter((o): o is Container => !!o)];
+    const doomed = [
+      ...this.stage.removeChildren(),
+      ...[this.finger?.hand, this.fx, this.pet].filter((o): o is Container => !!o),
+    ];
     for (const o of doomed) o.removeFromParent();
     this.finger = null;
     this.fx = null;
@@ -201,7 +211,11 @@ export class Demo {
     this.fx = fx;
     this.root.addChildAt(fx, this.root.getChildIndex(this.stage) + 1);
     if (this.touches) {
-      const finger = new GhostFinger(this.root, this.opts.renderer.events.rootBoundary, this.opts.input === 'mouse' ? 'mouse' : 'touch');
+      const finger = new GhostFinger(
+        this.root,
+        this.opts.renderer.events.rootBoundary,
+        this.opts.input === 'mouse' ? 'mouse' : 'touch',
+      );
       this.finger = finger;
       this.root.addChildAt(finger.hand, this.root.getChildIndex(fx) + 1);
     }
@@ -215,18 +229,29 @@ export class Demo {
     const talk = () => this.tw.wait(0.5);
     // One part of a course on its own (its best route): begin at that part, and stop when it is finished.
     const part = this.opts.part;
-    const couch = part ? {
-      versus: false,
-      course: {
-        id: part.course,
-        resume: { board: part.board, done: Array.from({ length: part.board }, () => 1), attempts: 0, assisted: false },
-        progress: (p: CourseProgress) => { if (p.done.length > part.board) this.done = true; },
-      },
-    } : undefined;
+    const couch = part
+      ? {
+          versus: false,
+          course: {
+            id: part.course,
+            resume: {
+              board: part.board,
+              done: Array.from({ length: part.board }, () => 1),
+              attempts: 0,
+              assisted: false,
+            },
+            progress: (p: CourseProgress) => {
+              if (p.done.length > part.board) this.done = true;
+            },
+          },
+        }
+      : undefined;
     const lifetime = new Lifetime();
     this.lifetime = lifetime;
     const ctx: GameContext = {
-      get alive() { return lifetime.alive; },
+      get alive() {
+        return lifetime.alive;
+      },
       own: lifetime.own,
       listen: lifetime.listen.bind(lifetime),
       stage: this.stage,

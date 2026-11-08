@@ -25,10 +25,42 @@ export interface OwlPlan {
 }
 
 export const PLANS: OwlPlan[] = [
-  { mode: 'one', owls: 1, colors: 3, stones: 10, twinkle: true, safeCards: true, name: 'Flip a color card, then tap the next stone of that color for the owl to hop to' },
-  { mode: 'turns', owls: 2, colors: 4, stones: 12, twinkle: true, safeCards: true, name: 'Two owls, one each: take turns with the pet and tap the next stone of the card’s color' },
-  { mode: 'choose', owls: 3, colors: 4, stones: 14, twinkle: false, safeCards: false, name: 'Three owls, taking turns: choose an owl, then tap its stone (or the nest when none is left)' },
-  { mode: 'farthest', owls: 3, colors: 4, stones: 16, twinkle: false, safeCards: false, name: 'Which owl hops the farthest with this card? Plan to get everyone home sooner' },
+  {
+    mode: 'one',
+    owls: 1,
+    colors: 3,
+    stones: 10,
+    twinkle: true,
+    safeCards: true,
+    name: 'Flip a color card, then tap the next stone of that color for the owl to hop to',
+  },
+  {
+    mode: 'turns',
+    owls: 2,
+    colors: 4,
+    stones: 12,
+    twinkle: true,
+    safeCards: true,
+    name: 'Two owls, one each: take turns with the pet and tap the next stone of the card’s color',
+  },
+  {
+    mode: 'choose',
+    owls: 3,
+    colors: 4,
+    stones: 14,
+    twinkle: false,
+    safeCards: false,
+    name: 'Three owls, taking turns: choose an owl, then tap its stone (or the nest when none is left)',
+  },
+  {
+    mode: 'farthest',
+    owls: 3,
+    colors: 4,
+    stones: 16,
+    twinkle: false,
+    safeCards: false,
+    name: 'Which owl hops the farthest with this card? Plan to get everyone home sooner',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -77,7 +109,8 @@ export function farthest(path: readonly ColorName[], spots: readonly Spot[], col
   return h.map((n, i) => (n === best && n > 0 ? i : -1)).filter((i) => i >= 0);
 }
 
-export const allHome = (path: readonly ColorName[], spots: readonly Spot[]) => spots.every((s) => s >= path.length);
+export const allHome = (path: readonly ColorName[], spots: readonly Spot[]) =>
+  spots.every((s) => s >= path.length);
 
 /** A card from the pile. The deck is open-ended; it only ever offers colors that are on the path. */
 export const drawCard = (plan: OwlPlan, rng: Rng): ColorName => rng.pick(STONE_COLORS.slice(0, plan.colors));
@@ -86,9 +119,17 @@ export const drawCard = (plan: OwlPlan, rng: Rng): ColorName => rng.pick(STONE_C
  * The card for a turn. On the first levels it is a color with a free stone ahead of one of the owls that may move
  * (`movers`), so the hop is always to a stone she can find; with none left (an owl on the last stone) any color flies home.
  */
-export function drawCardFor(plan: OwlPlan, rng: Rng, path: readonly ColorName[], spots: readonly Spot[], movers: readonly number[]): ColorName {
+export function drawCardFor(
+  plan: OwlPlan,
+  rng: Rng,
+  path: readonly ColorName[],
+  spots: readonly Spot[],
+  movers: readonly number[],
+): ColorName {
   if (!plan.safeCards) return drawCard(plan, rng);
-  const options = STONE_COLORS.slice(0, plan.colors).filter((c) => movers.some((i) => hop(path, spots, i, c) < path.length));
+  const options = STONE_COLORS.slice(0, plan.colors).filter((c) =>
+    movers.some((i) => hop(path, spots, i, c) < path.length),
+  );
   return options.length ? rng.pick(options) : drawCard(plan, rng);
 }
 
@@ -106,7 +147,13 @@ export type StoneVerdict = 'next' | 'far' | 'behind' | 'occupied' | 'wrong-color
  * only when no such stone is left, and every other tap says why it is not (another color, a later stone of the right
  * color, a stone behind the owl, or one with an owl on it).
  */
-export function judgeStone(path: readonly ColorName[], spots: readonly Spot[], i: number, color: ColorName, tapped: number | 'nest'): StoneVerdict {
+export function judgeStone(
+  path: readonly ColorName[],
+  spots: readonly Spot[],
+  i: number,
+  color: ColorName,
+  tapped: number | 'nest',
+): StoneVerdict {
   const to = hop(path, spots, i, color);
   if (tapped === 'nest') return to >= path.length ? 'nest' : 'early-nest';
   if (path[tapped] !== color) return 'wrong-color';
@@ -119,4 +166,8 @@ export function judgeStone(path: readonly ColorName[], spots: readonly Spot[], i
  * The owl a capable child hops with this card: one that goes the farthest (the first of them), which is also what the pet
  * does on its turn. Null when every owl is home.
  */
-export const owlToHop = (path: readonly ColorName[], spots: readonly Spot[], color: ColorName): number | null => farthest(path, spots, color)[0] ?? null;
+export const owlToHop = (
+  path: readonly ColorName[],
+  spots: readonly Spot[],
+  color: ColorName,
+): number | null => farthest(path, spots, color)[0] ?? null;

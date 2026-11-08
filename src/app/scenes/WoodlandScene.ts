@@ -5,12 +5,28 @@ import { cream, ink, RAINBOW, swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
 import { blanketArt, checkBadge } from '../../art/picnic';
 import { Backdrop } from '../../art/scenery';
-import { basketPoleArt, friendCritter, HOUSE_COLORS, pineArt, stoneArt, stumpArt, WoodHouse, woodlandPhoto, woodlandRequestArt } from '../../art/woodland';
+import {
+  basketPoleArt,
+  friendCritter,
+  HOUSE_COLORS,
+  pineArt,
+  stoneArt,
+  stumpArt,
+  WoodHouse,
+  woodlandPhoto,
+  woodlandRequestArt,
+} from '../../art/woodland';
 import { music, STYLES } from '../../audio/music';
 import { sfx, type AnimalSound } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
-import { PICNIC_BEAT, WOODLAND_BAND, WOODLAND_FRIENDS, WOODLAND_GAME_STEPS, woodlandLine } from '../../content/woodland';
+import {
+  PICNIC_BEAT,
+  WOODLAND_BAND,
+  WOODLAND_FRIENDS,
+  WOODLAND_GAME_STEPS,
+  woodlandLine,
+} from '../../content/woodland';
 import { WOODLAND_STEPS, type WoodlandStep } from '../../content/world';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
@@ -23,9 +39,19 @@ import { againIcon, arrowIcon, islandIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 
-const FRIEND_SOUNDS: Record<(typeof WOODLAND_FRIENDS)[number], AnimalSound> = { bear: 'growl', bunny: 'hop', duck: 'quack' };
+const FRIEND_SOUNDS: Record<(typeof WOODLAND_FRIENDS)[number], AnimalSound> = {
+  bear: 'growl',
+  bunny: 'hop',
+  duck: 'quack',
+};
 const STONES = 7;
-const crossIcon = () => new Graphics().moveTo(-16, -16).lineTo(16, 16).moveTo(16, -16).lineTo(-16, 16).stroke({ width: 8, color: ink, cap: 'round' });
+const crossIcon = () =>
+  new Graphics()
+    .moveTo(-16, -16)
+    .lineTo(16, 16)
+    .moveTo(16, -16)
+    .lineTo(-16, 16)
+    .stroke({ width: 8, color: ink, cap: 'round' });
 
 export interface WoodlandRequest {
   step: WoodlandStep;
@@ -55,7 +81,13 @@ export class WoodlandScene extends Scene {
   readonly hazel = makeHazel();
   readonly pip = makeCompanion();
   /** Back to Wonder Woods on the island; at the root, an arrow back to the library (RW08 slice 2). */
-  readonly home = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : islandIcon(), swatch.white, 50, () => this.leave(() => (this.app.creatureWorld ? this.app.go.library() : this.app.go.place(WOODLAND_BAND))));
+  readonly home = new RoundButton(
+    this.app.creatureWorld ? arrowIcon(-1) : islandIcon(),
+    swatch.white,
+    50,
+    () =>
+      this.leave(() => (this.app.creatureWorld ? this.app.go.library() : this.app.go.place(WOODLAND_BAND))),
+  );
   /** The kept photo, in the top-right corner once the story has ended once. */
   readonly photoButton = new RoundButton(woodlandPhoto(78), swatch.white, 50, () => this.openPhoto());
   readonly requests: WoodlandRequest[] = [];
@@ -90,10 +122,41 @@ export class WoodlandScene extends Scene {
   }
 
   init() {
-    this.backdrop = this.track(new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.teal.light, swatch.green.light, 0xc8ecb0], horizon: 0.5, clouds: 2, sun: false, seed: 89 }, this.view));
+    this.backdrop = this.track(
+      new Backdrop(
+        {
+          sky: [swatch.green.light, cream],
+          hills: [swatch.teal.light, swatch.green.light, 0xc8ecb0],
+          horizon: 0.5,
+          clouds: 2,
+          sun: false,
+          seed: 89,
+        },
+        this.view,
+      ),
+    );
     for (let i = 0; i < STONES; i++) this.stones.push(this.stoneLayer.addChild(stoneArt(false)));
-    for (const d of [...this.pines, ...this.houses, this.stoneLayer, this.blanket, this.pole, this.stump, this.friendLayer]) d.eventMode = 'none';
-    this.content.addChild(this.backdrop, ...this.pines, ...this.houses, this.stoneLayer, this.blanket, this.pole, this.stump, this.friendLayer, this.hazel.node);
+    for (const d of [
+      ...this.pines,
+      ...this.houses,
+      this.stoneLayer,
+      this.blanket,
+      this.pole,
+      this.stump,
+      this.friendLayer,
+    ])
+      d.eventMode = 'none';
+    this.content.addChild(
+      this.backdrop,
+      ...this.pines,
+      ...this.houses,
+      this.stoneLayer,
+      this.blanket,
+      this.pole,
+      this.stump,
+      this.friendLayer,
+      this.hazel.node,
+    );
     this.hazel.node.scale.set(0.6);
     this.hazel.node.eventMode = 'static';
     this.hazel.node.hitArea = new Circle(0, -130, 150);
@@ -311,7 +374,13 @@ export class WoodlandScene extends Scene {
     const def = WOODLAND_GAME_STEPS.find((s) => s.id === step);
     const mod = def && gameById(def.game);
     if (!def || !mod || this.leaving) return;
-    this.leave(() => this.app.go.game(def.game, playBand(mod.bands, WOODLAND_BAND), { story: 'woodland', step, level: def.level }));
+    this.leave(() =>
+      this.app.go.game(def.game, playBand(mod.bands, WOODLAND_BAND), {
+        story: 'woodland',
+        step,
+        level: def.level,
+      }),
+    );
   }
 
   // The picnic ----------------------------------------------------------------------------------
@@ -344,7 +413,13 @@ export class WoodlandScene extends Scene {
       }
     }
     const v = this.view;
-    this.particles.burst(v.w / 2, v.h * 0.45, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 60, speed: [250, 600], gravity: 400 });
+    this.particles.burst(v.w / 2, v.h * 0.45, {
+      kind: 'confetti',
+      colors: RAINBOW.map((c) => swatch[c].fill),
+      count: 60,
+      speed: [250, 600],
+      gravity: 400,
+    });
     sfx.tada();
     // Hazel's photo of the picnic: the one keepsake, saved as soon as it can be seen.
     const photo = woodlandPhoto(300);
@@ -357,7 +432,10 @@ export class WoodlandScene extends Scene {
     store.flush();
     await this.say('woodland.keepsake');
     const to = this.photoButton.position;
-    await Promise.all([this.tw.to(photo, { x: to.x, y: to.y, rotation: 0 }, { duration: 0.7, ease: ease.inOutSine }), this.tw.to(photo.scale, { x: 0.26, y: 0.26 }, { duration: 0.7, ease: ease.inQuad })]);
+    await Promise.all([
+      this.tw.to(photo, { x: to.x, y: to.y, rotation: 0 }, { duration: 0.7, ease: ease.inOutSine }),
+      this.tw.to(photo.scale, { x: 0.26, y: 0.26 }, { duration: 0.7, ease: ease.inQuad }),
+    ]);
     photo.destroy({ children: true });
     sfx.sparkle();
     this.photoButton.visible = true;
@@ -377,7 +455,9 @@ export class WoodlandScene extends Scene {
     veil.eventMode = 'static'; // the clearing underneath waits
     const photo = woodlandPhoto(420);
     // Telling it again is offered once this telling has ended.
-    const retell = store.woodland.ended ? new RoundButton(againIcon(0xffffff), swatch.green, 56, () => void this.retell()) : null;
+    const retell = store.woodland.ended
+      ? new RoundButton(againIcon(0xffffff), swatch.green, 56, () => void this.retell())
+      : null;
     const close = new RoundButton(crossIcon(), swatch.white, 50, () => this.closePhoto());
     root.addChild(veil, photo, close, ...(retell ? [retell] : []));
     this.photoView = { root, veil, photo, retell, close };

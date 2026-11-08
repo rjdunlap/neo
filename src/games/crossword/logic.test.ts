@@ -2,8 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { BLOCKED } from '../../learning/words/blocked';
 import {
-  applyHelp, bankFor, clueOf, crossings, decoysFor, emptyBlanks, firstOpen, helpFor, judge, key, lettersOf, makeRound, nearest, nextFill,
-  PLANS, problems, riddleLine, solved, squaresOf, THEMES_3, wordRight, wordsAt, wrongSquares, WORDS_1, WORDS_2, WORDS_4, type Fills,
+  applyHelp,
+  bankFor,
+  clueOf,
+  crossings,
+  decoysFor,
+  emptyBlanks,
+  firstOpen,
+  helpFor,
+  judge,
+  key,
+  lettersOf,
+  makeRound,
+  nearest,
+  nextFill,
+  PLANS,
+  problems,
+  riddleLine,
+  solved,
+  squaresOf,
+  THEMES_3,
+  wordRight,
+  wordsAt,
+  wrongSquares,
+  WORDS_1,
+  WORDS_2,
+  WORDS_4,
+  type Fills,
 } from './logic';
 import { SCRIPT } from '../../content/voice-script';
 import { PICTURE_WORDS } from '../../learning/words/picture-words';
@@ -61,7 +86,13 @@ describe('level 4 riddles', () => {
 
   it('give many different four-word grids', () => {
     const sets = new Set<string>();
-    for (let s = 1; s <= 100; s++) sets.add(makeRound(plan, new Rng(s))[0].words.map((w) => w.word).sort().join('+'));
+    for (let s = 1; s <= 100; s++)
+      sets.add(
+        makeRound(plan, new Rng(s))[0]
+          .words.map((w) => w.word)
+          .sort()
+          .join('+'),
+      );
     expect(sets.size).toBeGreaterThan(15);
   });
 });
@@ -75,7 +106,12 @@ describe('level 3 rounds', () => {
       expect(rest).toEqual([]);
       for (const w of p.words) expect(p.theme!.words).toContain(w.word);
       const got = sets.get(p.theme!.id) ?? new Set<string>();
-      got.add(p.words.map((w) => w.word).sort().join('+'));
+      got.add(
+        p.words
+          .map((w) => w.word)
+          .sort()
+          .join('+'),
+      );
       sets.set(p.theme!.id, got);
     }
     expect([...sets.keys()].sort()).toEqual(THEMES_3.map((t) => t.id).sort());
@@ -93,7 +129,12 @@ describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
   it('form valid rounds', () => {
     for (const round of rounds) {
       expect(round.length).toBe(plan.puzzles);
-      const names = round.map((p) => p.words.map((w) => w.word).sort().join('+'));
+      const names = round.map((p) =>
+        p.words
+          .map((w) => w.word)
+          .sort()
+          .join('+'),
+      );
       expect(new Set(names).size).toBe(names.length);
       for (const p of round) {
         expect(p.words.length).toBe(plan.count);
@@ -115,12 +156,13 @@ describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
   });
 
   it('blank the right squares', () => {
-    for (const round of rounds) for (const p of round) {
-      const want = new Set(crossings(p.words));
-      if (plan.blank === 'crossing-first') for (const w of p.words) want.add(squaresOf(w)[0].key);
-      if (plan.blank === 'all') for (const k of lettersOf(p.words).keys()) want.add(k);
-      expect([...p.blanks].sort()).toEqual([...want].sort());
-    }
+    for (const round of rounds)
+      for (const p of round) {
+        const want = new Set(crossings(p.words));
+        if (plan.blank === 'crossing-first') for (const w of p.words) want.add(squaresOf(w)[0].key);
+        if (plan.blank === 'all') for (const k of lettersOf(p.words).keys()) want.add(k);
+        expect([...p.blanks].sort()).toEqual([...want].sort());
+      }
   });
 
   it('give a fair bank and can be filled from it', () => {
@@ -135,21 +177,29 @@ describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
           expect(bank.length).toBe(missing.length + plan.decoys);
           expect(bank.length).toBeLessThanOrEqual(plan.level === 1 ? 3 : plan.level === 2 ? 4 : 6);
           const pool = [...bank];
-          for (const l of missing) { const at = pool.indexOf(l); expect(at).toBeGreaterThanOrEqual(0); pool.splice(at, 1); }
+          for (const l of missing) {
+            const at = pool.indexOf(l);
+            expect(at).toBeGreaterThanOrEqual(0);
+            pool.splice(at, 1);
+          }
           for (const d of dec) expect(missing).not.toContain(d);
           if (plan.level === 1) {
             const k = p.blanks[0];
-            for (const d of dec) for (const j of wordsAt(p.words, k)) {
-              const w = squaresOf(p.words[j]).map((t) => (t.key === k ? d : t.letter)).join('');
-              expect(WORDS_1).not.toContain(w);
-            }
+            for (const d of dec)
+              for (const j of wordsAt(p.words, k)) {
+                const w = squaresOf(p.words[j])
+                  .map((t) => (t.key === k ? d : t.letter))
+                  .join('');
+                expect(WORDS_1).not.toContain(w);
+              }
           }
         });
         // Fill everything from the banks.
         const rngB = new Rng(5000 + s);
         let fills: Fills = new Map();
         for (let n = 0; n < 50 && !solved(p, fills); n++) {
-          const i = firstOpen(p, fills), f = nextFill(p, fills, i)!;
+          const i = firstOpen(p, fills),
+            f = nextFill(p, fills, i)!;
           const bank = bankFor(p, fills, i, decoysFor(plan, p, i, rngB));
           expect(bank).toContain(f.letter);
           fills = new Map(fills).set(f.key, f.letter);
@@ -160,26 +210,32 @@ describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
   });
 
   it('judge a crossing once for both words, and flag only wrong squares', () => {
-    for (const round of rounds.slice(0, 60)) for (const p of round) {
-      const letters = lettersOf(p.words);
-      for (const k of crossings(p.words)) {
-        const both = wordsAt(p.words, k);
-        expect(both.length).toBe(2);
-        const fills = new Map<string, string>();
-        for (const b of p.blanks) if (b !== k && !both.some((j) => squaresOf(p.words[j]).some((s) => s.key === b))) fills.set(b, letters.get(b)!);
-        // Fill every other blank of the two words correctly, then the crossing.
-        for (const j of both) for (const s of squaresOf(p.words[j])) if (p.blanks.includes(s.key) && s.key !== k) fills.set(s.key, s.letter);
-        const ok = new Map(fills).set(k, letters.get(k)!);
-        const r = judge(p, ok, k);
-        expect(r.wrong).toEqual([]);
-        expect(r.right.sort()).toEqual([...both].sort());
-        const bad = new Map(fills).set(k, letters.get(k) === 'z' ? 'y' : 'z');
-        const rb = judge(p, bad, k);
-        expect(rb.wrong.sort()).toEqual([...both].sort());
-        for (const j of rb.wrong) expect(wrongSquares(p, bad, j)).toContain(k);
-        for (const j of both) for (const q of wrongSquares(p, bad, j)) expect(bad.get(q)).not.toBe(letters.get(q));
+    for (const round of rounds.slice(0, 60))
+      for (const p of round) {
+        const letters = lettersOf(p.words);
+        for (const k of crossings(p.words)) {
+          const both = wordsAt(p.words, k);
+          expect(both.length).toBe(2);
+          const fills = new Map<string, string>();
+          for (const b of p.blanks)
+            if (b !== k && !both.some((j) => squaresOf(p.words[j]).some((s) => s.key === b)))
+              fills.set(b, letters.get(b)!);
+          // Fill every other blank of the two words correctly, then the crossing.
+          for (const j of both)
+            for (const s of squaresOf(p.words[j]))
+              if (p.blanks.includes(s.key) && s.key !== k) fills.set(s.key, s.letter);
+          const ok = new Map(fills).set(k, letters.get(k)!);
+          const r = judge(p, ok, k);
+          expect(r.wrong).toEqual([]);
+          expect(r.right.sort()).toEqual([...both].sort());
+          const bad = new Map(fills).set(k, letters.get(k) === 'z' ? 'y' : 'z');
+          const rb = judge(p, bad, k);
+          expect(rb.wrong.sort()).toEqual([...both].sort());
+          for (const j of rb.wrong) expect(wrongSquares(p, bad, j)).toContain(k);
+          for (const j of both)
+            for (const q of wrongSquares(p, bad, j)) expect(bad.get(q)).not.toBe(letters.get(q));
+        }
       }
-    }
   });
 
   it('give help that is right, prefers crossings, clears wrong tiles and finishes the word', () => {
@@ -190,16 +246,24 @@ describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
         const x = new Set(crossings(p.words));
         p.words.forEach((_, i) => {
           let fills: Fills = new Map();
-          for (const b of p.blanks) if (rng.next() < 0.6) fills = new Map(fills).set(b, rng.next() < 0.7 ? (letters.get(b) === 'z' ? 'y' : 'z') : letters.get(b)!);
+          for (const b of p.blanks)
+            if (rng.next() < 0.6)
+              fills = new Map(fills).set(
+                b,
+                rng.next() < 0.7 ? (letters.get(b) === 'z' ? 'y' : 'z') : letters.get(b)!,
+              );
           let n = 0;
           while (!wordRight(p, fills, i)) {
             expect(n++).toBeLessThan(10);
             const h = helpFor(p, fills, i)!;
             expect(h).not.toBeNull();
             expect(h.letter).toBe(letters.get(h.key));
-            const open = squaresOf(p.words[i]).filter((q) => p.blanks.includes(q.key) && fills.get(q.key) !== q.letter);
+            const open = squaresOf(p.words[i]).filter(
+              (q) => p.blanks.includes(q.key) && fills.get(q.key) !== q.letter,
+            );
             if (open.some((q) => x.has(q.key))) expect(x.has(h.key)).toBe(true);
-            for (const j of wordsAt(p.words, h.key)) for (const q of wrongSquares(p, fills, j)) expect(h.clear).toContain(q);
+            for (const j of wordsAt(p.words, h.key))
+              for (const q of wrongSquares(p, fills, j)) expect(h.clear).toContain(q);
             fills = applyHelp(fills, h);
             for (const j of judge(p, fills, h.key).wrong) throw new Error(`help left word ${j} wrong`);
           }
@@ -211,7 +275,11 @@ describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
 });
 
 describe('nearest', () => {
-  const cs = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 0, y: 100 }];
+  const cs = [
+    { x: 0, y: 0 },
+    { x: 100, y: 0 },
+    { x: 0, y: 100 },
+  ];
   it('picks the closest within reach and null beyond', () => {
     expect(nearest(cs, 60, 5, 80)).toBe(cs[1]);
     expect(nearest(cs, 10, 10, 80)).toBe(cs[0]);

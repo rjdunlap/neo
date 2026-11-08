@@ -65,7 +65,10 @@ function kindsFor(rng: Rng, plan: GardenPlan, items: SortKey[]): PropKind[] {
 }
 
 /** The baskets' colors, then one thing per color and the rest at random, shuffled. */
-export function deal(rng: Rng, plan: GardenPlan): { colors: SortKey[]; items: SortKey[]; kinds: PropKind[]; looks?: ColorName[]; rule?: Rule } {
+export function deal(
+  rng: Rng,
+  plan: GardenPlan,
+): { colors: SortKey[]; items: SortKey[]; kinds: PropKind[]; looks?: ColorName[]; rule?: Rule } {
   if (plan.rule) return dealRule(rng, plan);
   if (plan.shades) {
     const keys: SortKey[] = rng.shuffle(SHADES.map((s): SortKey => `${s}-blue`));
@@ -92,7 +95,9 @@ function dealRule(rng: Rng, plan: GardenPlan) {
   while (pile.length < plan.items) pile.push(rng.pick(combos));
   rng.shuffle(pile);
   const rule = rng.pick(RULES);
-  const baskets: SortKey[] = rng.shuffle(rule === 'color' ? [...hues] : (['kind-fruit', 'kind-balloon'] as SortKey[]));
+  const baskets: SortKey[] = rng.shuffle(
+    rule === 'color' ? [...hues] : (['kind-fruit', 'kind-balloon'] as SortKey[]),
+  );
   return {
     colors: baskets,
     items: pile.map((p): SortKey => (rule === 'color' ? p.c : p.fruit ? 'kind-fruit' : 'kind-balloon')),
@@ -106,7 +111,11 @@ function dealRule(rng: Rng, plan: GardenPlan) {
  * The basket a drop lands in: the nearest one sideways, if the drop is over it or just above it.
  * Neighbouring baskets' reach overlaps when six share the ground, so the nearest wins.
  */
-export function basketAt<B extends { x: number; y: number; w: number }>(baskets: readonly B[], x: number, y: number): B | undefined {
+export function basketAt<B extends { x: number; y: number; w: number }>(
+  baskets: readonly B[],
+  x: number,
+  y: number,
+): B | undefined {
   let best: B | undefined;
   for (const b of baskets) {
     const dx = Math.abs(b.x - x);
@@ -123,7 +132,10 @@ export const DROP_ABOVE = 60;
  * What a capable child does next: take the first piece of fruit still on the tree to the basket of its own color.
  * The ghost finger follows this, so a test can check that it sorts everything and never picks the wrong basket.
  */
-export function nextToSort<I extends { key: SortKey }, B extends { key: SortKey }>(items: readonly I[], baskets: readonly B[]): { item: I; basket: B } | undefined {
+export function nextToSort<I extends { key: SortKey }, B extends { key: SortKey }>(
+  items: readonly I[],
+  baskets: readonly B[],
+): { item: I; basket: B } | undefined {
   for (const item of items) {
     const basket = baskets.find((b) => b.key === item.key);
     if (basket) return { item, basket };

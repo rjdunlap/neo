@@ -3,14 +3,72 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
 import {
-  Bench, BEAD_GAP, BEAD_REACH, BUTTON_R, CARDS, CARD_MIN_H, CheckTally, HANDS, LINK_REACH, MID_GAP, PAIR, PLANS, PUZZLES, PUZZLE_PAIRS, SETS, TRAYS, TRIO,
-  allHeld, beadAt, beadLayout, buildKey, canLink, canon, centre, corners, degrees, enumerate, helpFor, joinShapes, linkAt, linkId, linkState, nextMove,
-  norm, overlaps, requestKey, roundFor, rotateTray, shapeKey, spaced, stepCard, tally, type Kind, type Link,
-  AMMONIA, CARBON_DIOXIDE, HYDROGEN, METHANE, NAMED, NAMED_SHAPES, OXYGEN, REARRANGEMENTS, WATER, enumerateBuilds, linkCount, namesOf,
+  Bench,
+  BEAD_GAP,
+  BEAD_REACH,
+  BUTTON_R,
+  CARDS,
+  CARD_MIN_H,
+  CheckTally,
+  HANDS,
+  LINK_REACH,
+  MID_GAP,
+  PAIR,
+  PLANS,
+  PUZZLES,
+  PUZZLE_PAIRS,
+  SETS,
+  TRAYS,
+  TRIO,
+  allHeld,
+  beadAt,
+  beadLayout,
+  buildKey,
+  canLink,
+  canon,
+  centre,
+  corners,
+  degrees,
+  enumerate,
+  helpFor,
+  joinShapes,
+  linkAt,
+  linkId,
+  linkState,
+  nextMove,
+  norm,
+  overlaps,
+  requestKey,
+  roundFor,
+  rotateTray,
+  shapeKey,
+  spaced,
+  stepCard,
+  tally,
+  type Kind,
+  type Link,
+  AMMONIA,
+  CARBON_DIOXIDE,
+  HYDROGEN,
+  METHANE,
+  NAMED,
+  NAMED_SHAPES,
+  OXYGEN,
+  REARRANGEMENTS,
+  WATER,
+  enumerateBuilds,
+  linkCount,
+  namesOf,
 } from './logic';
 
 const k = (s: string) => s.split('') as Kind[];
-const tallyKey = (kinds: readonly Kind[]) => ['C', 'O', 'H'].map((x) => { const c = kinds.filter((y) => y === x).length; return c ? `${x}${c}` : ''; }).join('');
+const tallyKey = (kinds: readonly Kind[]) =>
+  ['C', 'O', 'H']
+    .map((x) => {
+      const c = kinds.filter((y) => y === x).length;
+      return c ? `${x}${c}` : '';
+    })
+    .join('');
 const SEEDS = Array.from({ length: 60 }, (_, i) => i * 7919 + 3);
 
 describe('enumerate', () => {
@@ -78,7 +136,10 @@ describe('accepted builds', () => {
       expect(b.matched(), p.id).toBeNull();
     }
     for (const set of SETS) {
-      const b = new Bench(set.kinds, set.shapes.map((x) => [x]));
+      const b = new Bench(
+        set.kinds,
+        set.shapes.map((x) => [x]),
+      );
       expect(b.solutions.length, set.id).toBeGreaterThan(0);
       expect(b.done, set.id).toBe(false);
     }
@@ -86,8 +147,14 @@ describe('accepted builds', () => {
 
   it('after either level 4 shape, the other can still be built from it by following nextMove', () => {
     for (const set of SETS) {
-      for (const [first, other] of [[set.shapes[0], set.shapes[1]], [set.shapes[1], set.shapes[0]]]) {
-        const b1 = new Bench(set.kinds, set.shapes.map((x) => [x]));
+      for (const [first, other] of [
+        [set.shapes[0], set.shapes[1]],
+        [set.shapes[1], set.shapes[0]],
+      ]) {
+        const b1 = new Bench(
+          set.kinds,
+          set.shapes.map((x) => [x]),
+        );
         const sol = b1.solutions.find((s) => b1.matched(s)?.[0] === first)!;
         expect(sol, `${set.id} ${first.id}`).toBeDefined();
         const b2 = new Bench(set.kinds, [[other]], sol);
@@ -113,7 +180,12 @@ function followToCheck(bench: Bench): number {
 }
 
 describe('canon and buildKey', () => {
-  const shapes = [...Object.values(TRAYS).flatMap((kinds) => new Bench(kinds, null).solutions.slice(0, 1).map((l) => ({ kinds, links: l }))), ...CARDS];
+  const shapes = [
+    ...Object.values(TRAYS).flatMap((kinds) =>
+      new Bench(kinds, null).solutions.slice(0, 1).map((l) => ({ kinds, links: l })),
+    ),
+    ...CARDS,
+  ];
 
   it('do not change when bead identities are permuted', () => {
     for (const seed of SEEDS) {
@@ -122,7 +194,9 @@ describe('canon and buildKey', () => {
         const n = s.kinds.length;
         const perm = rng.shuffle([...Array(n).keys()]);
         const kinds: Kind[] = new Array(n);
-        s.kinds.forEach((kd, i) => { kinds[perm[i]] = kd; });
+        s.kinds.forEach((kd, i) => {
+          kinds[perm[i]] = kd;
+        });
         const links = s.links.map(([a, b]) => norm(perm[a], perm[b]));
         expect(buildKey(kinds, links)).toBe(buildKey(s.kinds, s.links));
         expect(canon(kinds, links)).toBe(canon(s.kinds, s.links));
@@ -132,7 +206,14 @@ describe('canon and buildKey', () => {
 
   it('give different keys to the different shapes in the table', () => {
     const all = new Map<string, string>();
-    for (const kinds of [k('CHHOO'), k('CHHHHOO'), k('CHHOOO'), k('CCOOOO'), ...Object.values(TRAYS), k('CHHHH')]) {
+    for (const kinds of [
+      k('CHHOO'),
+      k('CHHHHOO'),
+      k('CHHOOO'),
+      k('CCOOOO'),
+      ...Object.values(TRAYS),
+      k('CHHHH'),
+    ]) {
       for (const key of enumerate(kinds)) {
         expect(all.has(key) && all.get(key) !== tallyKey(kinds)).toBe(false);
         all.set(key, tallyKey(kinds));
@@ -175,7 +256,9 @@ describe('roundFor', () => {
 
   it('level 3 gives the authored puzzle turned, then the other pair in either direction', () => {
     const second = new Set<string>();
-    const wantSecond = new Map(PUZZLES.filter((p) => p.id.startsWith('p1')).map((p) => [requestKey(p.to), p.id]));
+    const wantSecond = new Map(
+      PUZZLES.filter((p) => p.id.startsWith('p1')).map((p) => [requestKey(p.to), p.id]),
+    );
     for (const seed of [...SEEDS, ...Array.from({ length: 140 }, (_, i) => i + 1)]) {
       const r = roundFor(3, new Rng(seed));
       expect(r).toHaveLength(2);
@@ -194,7 +277,8 @@ describe('roundFor', () => {
       expect(allHeld(r[1].kinds, r[1].opening)).toBe(true);
       expect(buildKey(r[1].kinds, r[1].opening)).toBe(requestKey(p.from));
       // Every round is playable.
-      for (const st of r) expect(new Bench(st.kinds, st.requests, st.opening).solutions.length).toBeGreaterThan(0);
+      for (const st of r)
+        expect(new Bench(st.kinds, st.requests, st.opening).solutions.length).toBeGreaterThan(0);
     }
     expect(second.size).toBe(2);
   });
@@ -215,7 +299,8 @@ describe('roundFor', () => {
   });
 
   it('is the same for the same seed, and every level in the plans produces a round', () => {
-    for (const lv of [1, 2, 3, 4, 5, 6, 7]) expect(roundFor(lv, new Rng(42)), `level ${lv}`).toEqual(roundFor(lv, new Rng(42)));
+    for (const lv of [1, 2, 3, 4, 5, 6, 7])
+      expect(roundFor(lv, new Rng(42)), `level ${lv}`).toEqual(roundFor(lv, new Rng(42)));
     expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     for (const p of PLANS) expect(roundFor(p.level, new Rng(5)), `level ${p.level}`).toHaveLength(p.rounds);
   });
@@ -226,13 +311,14 @@ describe('rotateTray', () => {
     for (const p of PUZZLES) {
       const t = joinShapes(p.from);
       const n = t.kinds.length;
-      for (let off = 0; off < n; off++) for (const flip of [false, true]) {
-        const r = rotateTray(t.kinds, t.links, off, flip);
-        expect(r.kinds.slice().sort(), `${p.id} ${off} ${flip}`).toEqual(t.kinds.slice().sort());
-        expect(buildKey(r.kinds, r.links), `${p.id} ${off} ${flip}`).toBe(buildKey(t.kinds, t.links));
-        expect(pieceCount(r), `${p.id} ${off} ${flip}`).toBe(pieceCount(t));
-        expect(allHeld(r.kinds, r.links)).toBe(true);
-      }
+      for (let off = 0; off < n; off++)
+        for (const flip of [false, true]) {
+          const r = rotateTray(t.kinds, t.links, off, flip);
+          expect(r.kinds.slice().sort(), `${p.id} ${off} ${flip}`).toEqual(t.kinds.slice().sort());
+          expect(buildKey(r.kinds, r.links), `${p.id} ${off} ${flip}`).toBe(buildKey(t.kinds, t.links));
+          expect(pieceCount(r), `${p.id} ${off} ${flip}`).toBe(pieceCount(t));
+          expect(allHeld(r.kinds, r.links)).toBe(true);
+        }
     }
   });
 });
@@ -254,7 +340,8 @@ describe('Bench', () => {
   it('unlinks, undoes and starts again', () => {
     const b = new Bench(k('HOH'), null);
     expect(b.unlink(0, 1)).toBe(false);
-    b.link(0, 1); b.link(1, 2);
+    b.link(0, 1);
+    b.link(1, 2);
     expect(b.unlink(2, 1)).toBe(true);
     expect(b.links).toHaveLength(1);
     expect(b.undo()).toBe(true);
@@ -291,7 +378,10 @@ describe('Bench', () => {
 
   it('reports which request a finished level 4 build matched, and null when unfinished', () => {
     for (const set of SETS) {
-      const b = new Bench(set.kinds, set.shapes.map((x) => [x]));
+      const b = new Bench(
+        set.kinds,
+        set.shapes.map((x) => [x]),
+      );
       expect(b.matched()).toBeNull();
       for (const shape of set.shapes) {
         b.links = shape.links.slice();
@@ -305,8 +395,17 @@ describe('Bench', () => {
 
   it('keeps the tally and never overfills a hand over random action sequences at levels 3 and 4', () => {
     const make = () => [
-      ...PUZZLES.map((p) => { const j = joinShapes(p.from); return new Bench(j.kinds, [p.to], j.links); }),
-      ...SETS.map((set) => new Bench(set.kinds, set.shapes.map((x) => [x]))),
+      ...PUZZLES.map((p) => {
+        const j = joinShapes(p.from);
+        return new Bench(j.kinds, [p.to], j.links);
+      }),
+      ...SETS.map(
+        (set) =>
+          new Bench(
+            set.kinds,
+            set.shapes.map((x) => [x]),
+          ),
+      ),
     ];
     for (let s = 0; s < 300; s++) {
       const rng = new Rng(s + 1);
@@ -328,11 +427,15 @@ describe('Bench', () => {
   });
 
   it('never changes the beads or overfills a hand over random action sequences', () => {
-    const benches = [...Object.values(TRAYS).map((t) => new Bench(t, null)), ...CARDS.map((c) => new Bench(c.kinds, [[c]]))];
+    const benches = [
+      ...Object.values(TRAYS).map((t) => new Bench(t, null)),
+      ...CARDS.map((c) => new Bench(c.kinds, [[c]])),
+    ];
     for (let s = 0; s < 500; s++) {
       const rng = new Rng(s + 1);
       const b = rng.pick(benches);
-      b.links = []; while (b.undo());
+      b.links = [];
+      while (b.undo());
       const kinds = b.kinds.slice();
       const n = kinds.length;
       for (let step = 0; step < 40; step++) {
@@ -360,10 +463,17 @@ function reachable(bench: Bench, cap = 20000): Link[][] {
   const queue: Link[][] = [start];
   for (let qi = 0; qi < queue.length && seen.size < cap; qi++) {
     const cur = queue[qi];
-    const add = (next: Link[]) => { const kk = key(next); if (!seen.has(kk)) { seen.set(kk, next); queue.push(next); } };
-    for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) {
-      if (canLink(bench.kinds, cur, a, b, bench.doubles)) add([...cur, norm(a, b)]);
-    }
+    const add = (next: Link[]) => {
+      const kk = key(next);
+      if (!seen.has(kk)) {
+        seen.set(kk, next);
+        queue.push(next);
+      }
+    };
+    for (let a = 0; a < n; a++)
+      for (let b = a + 1; b < n; b++) {
+        if (canLink(bench.kinds, cur, a, b, bench.doubles)) add([...cur, norm(a, b)]);
+      }
     cur.forEach((_, i) => add(cur.filter((__, j) => j !== i)));
   }
   return [...seen.values()];
@@ -375,15 +485,27 @@ describe('help', () => {
     ...CARDS.map((c) => ({ id: c.id, bench: new Bench(c.kinds, [[c]]) })),
   ];
   const later = [
-    ...PUZZLES.map((p) => { const j = joinShapes(p.from); return { id: p.id, bench: new Bench(j.kinds, [p.to], j.links) }; }),
-    ...SETS.map((set) => ({ id: set.id, bench: new Bench(set.kinds, set.shapes.map((x) => [x])) })),
+    ...PUZZLES.map((p) => {
+      const j = joinShapes(p.from);
+      return { id: p.id, bench: new Bench(j.kinds, [p.to], j.links) };
+    }),
+    ...SETS.map((set) => ({
+      id: set.id,
+      bench: new Bench(
+        set.kinds,
+        set.shapes.map((x) => [x]),
+      ),
+    })),
   ];
 
   it('is null only when the build is accepted, and otherwise points at a change the nearest build needs', () => {
     for (const { id, bench } of benches) {
       for (const links of reachable(bench)) {
         bench.links = links;
-        if (bench.done) { expect(helpFor(bench), id).toBeNull(); continue; }
+        if (bench.done) {
+          expect(helpFor(bench), id).toBeNull();
+          continue;
+        }
         const h = helpFor(bench);
         expect(h, `${id} ${bench.state}`).not.toBeNull();
         const s = bench.nearest();
@@ -415,7 +537,7 @@ describe('help', () => {
           expect(++steps, `${id} from ${linkListKey(start)}`).toBeLessThanOrEqual(limit);
         }
         const last = nextMove(bench);
-        expect(last === null || ('check' in last)).toBe(true);
+        expect(last === null || 'check' in last).toBe(true);
         expect(!!last).toBe(!!bench.requests);
       }
     }
@@ -426,7 +548,10 @@ describe('help', () => {
       for (const links of reachable(bench)) {
         bench.links = links;
         const h = helpFor(bench);
-        if (bench.done) { expect(h, id).toBeNull(); continue; }
+        if (bench.done) {
+          expect(h, id).toBeNull();
+          continue;
+        }
         expect(h, `${id} ${bench.state}`).not.toBeNull();
         const near = bench.nearest();
         const has = (list: readonly Link[], l: Link) => list.some((x) => x[0] === l[0] && x[1] === l[1]);
@@ -470,7 +595,10 @@ const linkListKey = (l: readonly Link[]) => l.map(linkId).join(',') || '(none)';
 
 describe('CheckTally', () => {
   const cross = CARDS.find((c) => c.id === 'cross')!;
-  const wrong = (bench: Bench, ...pairs: [number, number][]) => { bench.links = []; pairs.forEach(([a, b]) => bench.links.push(norm(a, b))); };
+  const wrong = (bench: Bench, ...pairs: [number, number][]) => {
+    bench.links = [];
+    pairs.forEach(([a, b]) => bench.links.push(norm(a, b)));
+  };
 
   it('counts a miss, ignores a repeat, glows on the second miss, and assists on the third', () => {
     const bench = new Bench(cross.kinds, [[cross]]);
@@ -545,55 +673,75 @@ describe('beadLayout', () => {
     notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
   };
   for (const [name, v] of Object.entries(views)) {
-    for (const n of [2, 3, 4, 5, 6, 7]) for (const cardShapes of [0, 1, 2, 3]) {
-      const withCard = cardShapes > 0;
-      it(`${name}: ${n} beads ${cardShapes} card shape(s) fit and stay clear`, () => {
-        const lay = beadLayout(v, n, cardShapes);
-        expect(lay).not.toBeNull();
-        const l = lay!;
-        expect(l.beads).toHaveLength(n);
-        for (let i = 0; i < n; i++) {
-          const b = l.beads[i];
-          expect(b.x - BEAD_REACH).toBeGreaterThanOrEqual(l.table.x);
-          expect(b.y - BEAD_REACH).toBeGreaterThanOrEqual(l.table.y);
-          expect(b.x + BEAD_REACH).toBeLessThanOrEqual(l.table.x + l.table.w);
-          expect(b.y + BEAD_REACH).toBeLessThanOrEqual(l.table.y + l.table.h);
-          for (let j = i + 1; j < n; j++) expect(Math.hypot(b.x - l.beads[j].x, b.y - l.beads[j].y)).toBeGreaterThanOrEqual(BEAD_GAP);
-        }
-        const parts = { table: l.table, tally: l.tally, undo: l.undo, again: l.again, ...(l.card ? { card: l.card } : {}), ...(l.check ? { check: l.check } : {}) };
-        expect(!!l.card).toBe(withCard);
-        expect(!!l.check).toBe(withCard);
-        const entries = Object.entries(parts);
-        for (const [pn, r] of entries) {
-          expect(r.x, pn).toBeGreaterThanOrEqual(0);
-          expect(r.y, pn).toBeGreaterThanOrEqual(0);
-          expect(r.x + r.w, pn).toBeLessThanOrEqual(v.w);
-          expect(r.y + r.h, pn).toBeLessThanOrEqual(v.h);
-          for (const c of corners(v)) expect(overlaps(r, c), pn).toBe(false);
-          entries.forEach(([qn, q]) => { if (qn !== pn) expect(overlaps(r, q), `${pn}/${qn}`).toBe(false); });
-        }
-        for (const r of [l.undo, l.again, ...(l.check ? [l.check] : [])]) {
-          expect(r.w).toBeGreaterThanOrEqual(100);
-          expect(r.h).toBeGreaterThanOrEqual(100);
-          expect(r.w).toBeGreaterThanOrEqual(2 * BUTTON_R);
-        }
-        if (l.card) expect(l.card.h).toBeGreaterThanOrEqual(CARD_MIN_H);
-        if (cardShapes === 2 && v.w >= v.h) expect(l.card!.h).toBeGreaterThanOrEqual(300);
-        expect(spaced(l.beads)).toBe(true);
-        // No two possible links share a midpoint, so a link tap is unambiguous.
-        const mids: { x: number; y: number }[] = [];
-        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) mids.push({ x: (l.beads[i].x + l.beads[j].x) / 2, y: (l.beads[i].y + l.beads[j].y) / 2 });
-        for (let i = 0; i < mids.length; i++) for (let j = i + 1; j < mids.length; j++) {
-          expect(Math.hypot(mids[i].x - mids[j].x, mids[i].y - mids[j].y)).toBeGreaterThanOrEqual(MID_GAP);
-        }
-        expect(centre(l.table).x).toBeGreaterThan(0);
-      });
-    }
+    for (const n of [2, 3, 4, 5, 6, 7])
+      for (const cardShapes of [0, 1, 2, 3]) {
+        const withCard = cardShapes > 0;
+        it(`${name}: ${n} beads ${cardShapes} card shape(s) fit and stay clear`, () => {
+          const lay = beadLayout(v, n, cardShapes);
+          expect(lay).not.toBeNull();
+          const l = lay!;
+          expect(l.beads).toHaveLength(n);
+          for (let i = 0; i < n; i++) {
+            const b = l.beads[i];
+            expect(b.x - BEAD_REACH).toBeGreaterThanOrEqual(l.table.x);
+            expect(b.y - BEAD_REACH).toBeGreaterThanOrEqual(l.table.y);
+            expect(b.x + BEAD_REACH).toBeLessThanOrEqual(l.table.x + l.table.w);
+            expect(b.y + BEAD_REACH).toBeLessThanOrEqual(l.table.y + l.table.h);
+            for (let j = i + 1; j < n; j++)
+              expect(Math.hypot(b.x - l.beads[j].x, b.y - l.beads[j].y)).toBeGreaterThanOrEqual(BEAD_GAP);
+          }
+          const parts = {
+            table: l.table,
+            tally: l.tally,
+            undo: l.undo,
+            again: l.again,
+            ...(l.card ? { card: l.card } : {}),
+            ...(l.check ? { check: l.check } : {}),
+          };
+          expect(!!l.card).toBe(withCard);
+          expect(!!l.check).toBe(withCard);
+          const entries = Object.entries(parts);
+          for (const [pn, r] of entries) {
+            expect(r.x, pn).toBeGreaterThanOrEqual(0);
+            expect(r.y, pn).toBeGreaterThanOrEqual(0);
+            expect(r.x + r.w, pn).toBeLessThanOrEqual(v.w);
+            expect(r.y + r.h, pn).toBeLessThanOrEqual(v.h);
+            for (const c of corners(v)) expect(overlaps(r, c), pn).toBe(false);
+            entries.forEach(([qn, q]) => {
+              if (qn !== pn) expect(overlaps(r, q), `${pn}/${qn}`).toBe(false);
+            });
+          }
+          for (const r of [l.undo, l.again, ...(l.check ? [l.check] : [])]) {
+            expect(r.w).toBeGreaterThanOrEqual(100);
+            expect(r.h).toBeGreaterThanOrEqual(100);
+            expect(r.w).toBeGreaterThanOrEqual(2 * BUTTON_R);
+          }
+          if (l.card) expect(l.card.h).toBeGreaterThanOrEqual(CARD_MIN_H);
+          if (cardShapes === 2 && v.w >= v.h) expect(l.card!.h).toBeGreaterThanOrEqual(300);
+          expect(spaced(l.beads)).toBe(true);
+          // No two possible links share a midpoint, so a link tap is unambiguous.
+          const mids: { x: number; y: number }[] = [];
+          for (let i = 0; i < n; i++)
+            for (let j = i + 1; j < n; j++)
+              mids.push({ x: (l.beads[i].x + l.beads[j].x) / 2, y: (l.beads[i].y + l.beads[j].y) / 2 });
+          for (let i = 0; i < mids.length; i++)
+            for (let j = i + 1; j < mids.length; j++) {
+              expect(Math.hypot(mids[i].x - mids[j].x, mids[i].y - mids[j].y)).toBeGreaterThanOrEqual(
+                MID_GAP,
+              );
+            }
+          expect(centre(l.table).x).toBeGreaterThan(0);
+        });
+      }
   }
 });
 
 describe('tap targets', () => {
-  const beads = [{ x: 0, y: 0 }, { x: 200, y: 0 }, { x: 0, y: 200 }];
+  const beads = [
+    { x: 0, y: 0 },
+    { x: 200, y: 0 },
+    { x: 0, y: 200 },
+  ];
 
   it('linkAt picks the nearest link within reach and null beyond', () => {
     const links = [norm(0, 1), norm(0, 2)];
@@ -611,7 +759,11 @@ describe('tap targets', () => {
     expect(beadAt({ x: 5, y: 190 }, beads, 0)).toBe(2);
     expect(beadAt({ x: 5, y: 5 }, beads, 0)).toBeNull();
     expect(beadAt({ x: 100, y: 100 }, beads, 0)).toBeNull();
-    const close = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 140, y: 0 }];
+    const close = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 140, y: 0 },
+    ];
     expect(beadAt({ x: 125, y: 0 }, close, 0)).toBe(2);
     expect(beadAt({ x: 100, y: 0 }, close, 1)).toBe(2);
   });
@@ -619,10 +771,14 @@ describe('tap targets', () => {
 
 describe('voice', () => {
   it('uses none of the words the definition keeps out of levels 1-4 (named lines aside)', () => {
-    const ids = Object.keys(SCRIPT).filter((id) => (id.startsWith('bondbeads.') && !id.startsWith('bondbeads.named.')) || id === 'game.bond-beads');
+    const ids = Object.keys(SCRIPT).filter(
+      (id) => (id.startsWith('bondbeads.') && !id.startsWith('bondbeads.named.')) || id === 'game.bond-beads',
+    );
     expect(ids.length).toBeGreaterThan(5);
     const banned = /atom|molecule|water|methane|peroxide|oxygen|hydrogen|carbon|chemical/i;
-    for (const id of ids) for (const line of (SCRIPT as Record<string, readonly string[]>)[id]) expect(line, id).not.toMatch(banned);
+    for (const id of ids)
+      for (const line of (SCRIPT as Record<string, readonly string[]>)[id])
+        expect(line, id).not.toMatch(banned);
   });
 });
 
@@ -634,17 +790,23 @@ describe('voice: named lines (levels 5-6)', () => {
     for (const s of NAMED_SHAPES) expect(named, s.id).toContain(`bondbeads.named.${s.id}`);
     const names = /\b(water|ammonia|methane|hydrogen|oxygen|carbon dioxide)\b/gi;
     const otherNames = /peroxide|methanol|nitrogen|ozone|acid|alcohol|molecule|chemical/i;
-    for (const id of named) for (const line of lines(id)) {
-      expect(line, id).not.toMatch(otherNames);
-      const found = [...line.matchAll(names)].map((m) => m[1].toLowerCase().replace(' ', '-'));
-      // A shape's line names only that shape; the other lines name nothing.
-      const own = NAMED_SHAPES.find((s) => id === `bondbeads.named.${s.id}`);
-      expect(found.every((n) => own && n === own.id), `${id}: ${line}`).toBe(true);
-    }
+    for (const id of named)
+      for (const line of lines(id)) {
+        expect(line, id).not.toMatch(otherNames);
+        const found = [...line.matchAll(names)].map((m) => m[1].toLowerCase().replace(' ', '-'));
+        // A shape's line names only that shape; the other lines name nothing.
+        const own = NAMED_SHAPES.find((s) => id === `bondbeads.named.${s.id}`);
+        expect(
+          found.every((n) => own && n === own.id),
+          `${id}: ${line}`,
+        ).toBe(true);
+      }
   });
 
   it('never says burn, fire, flame, explode or electric', () => {
-    for (const id of named) for (const line of lines(id)) expect(line, id).not.toMatch(/burn|fire|flame|explo|electric|spark|heat/i);
+    for (const id of named)
+      for (const line of lines(id))
+        expect(line, id).not.toMatch(/burn|fire|flame|explo|electric|spark|heat/i);
   });
 });
 
@@ -654,11 +816,20 @@ describe('levels 5-6: named shapes and double holds', () => {
   it('the six named shapes match the source table: beads, hands and links', () => {
     expect(NAMED.size).toBe(6);
     const want: Record<string, { kinds: string; links: number }> = {
-      water: { kinds: 'O1H2', links: 2 }, ammonia: { kinds: 'N1H3', links: 3 }, methane: { kinds: 'C1H4', links: 4 },
-      hydrogen: { kinds: 'H2', links: 1 }, oxygen: { kinds: 'O2', links: 2 }, 'carbon-dioxide': { kinds: 'C1O2', links: 4 },
+      water: { kinds: 'O1H2', links: 2 },
+      ammonia: { kinds: 'N1H3', links: 3 },
+      methane: { kinds: 'C1H4', links: 4 },
+      hydrogen: { kinds: 'H2', links: 1 },
+      oxygen: { kinds: 'O2', links: 2 },
+      'carbon-dioxide': { kinds: 'C1O2', links: 4 },
     };
     for (const s of NAMED_SHAPES) {
-      expect(tally(s.kinds).map((t) => `${t.kind}${t.count}`).join(''), s.id).toBe(want[s.id].kinds);
+      expect(
+        tally(s.kinds)
+          .map((t) => `${t.kind}${t.count}`)
+          .join(''),
+        s.id,
+      ).toBe(want[s.id].kinds);
       expect(s.links, s.id).toHaveLength(want[s.id].links);
       expect(allHeld(s.kinds, s.links), s.id).toBe(true);
       expect(s.pic, s.id).toHaveLength(s.kinds.length);
@@ -693,7 +864,8 @@ describe('levels 5-6: named shapes and double holds', () => {
     expect(big).toContain(requestKey([CARBON_DIOXIDE, WATER, WATER]));
     expect(big).toContain(requestKey([METHANE, OXYGEN, OXYGEN]));
     // Without doubles the one-piece shapes of levels 1-4 are as before.
-    for (const kinds of ['HOH', 'OOO', 'HOOH', 'OOOO', 'CHHHH', 'CHHOO']) expect(enumerate(k(kinds)), kinds).toEqual(enumerate(k(kinds), { doubles: false }));
+    for (const kinds of ['HOH', 'OOO', 'HOOH', 'OOOO', 'CHHHH', 'CHHOO'])
+      expect(enumerate(k(kinds)), kinds).toEqual(enumerate(k(kinds), { doubles: false }));
   });
 
   it('level 5: water first, then ammonia and methane in seeded order, no doubles; level 6: oxygen, carbon dioxide, hydrogen and oxygen', () => {
@@ -708,7 +880,11 @@ describe('levels 5-6: named shapes and double holds', () => {
         expect(tally(s.kinds)).toEqual(tally(joinShapes(s.requests![0]).kinds));
       }
       const r6 = roundFor(6, new Rng(seed));
-      expect(r6.map((s) => s.requests![0].map((x) => x.id).join('+'))).toEqual(['oxygen', 'carbon-dioxide', 'hydrogen+oxygen']);
+      expect(r6.map((s) => s.requests![0].map((x) => x.id).join('+'))).toEqual([
+        'oxygen',
+        'carbon-dioxide',
+        'hydrogen+oxygen',
+      ]);
       for (const s of r6) {
         expect(s.doubles).toBe(true);
         expect(tally(s.kinds)).toEqual(tally(joinShapes(s.requests![0]).kinds));
@@ -719,7 +895,11 @@ describe('levels 5-6: named shapes and double holds', () => {
   });
 
   const steps = [...roundFor(5, new Rng(1)), ...roundFor(6, new Rng(1))];
-  const benches = () => steps.map((s) => ({ id: s.requests![0].map((x) => x.id).join('+'), bench: new Bench(s.kinds, s.requests, s.opening, s.doubles) }));
+  const benches = () =>
+    steps.map((s) => ({
+      id: s.requests![0].map((x) => x.id).join('+'),
+      bench: new Bench(s.kinds, s.requests, s.opening, s.doubles),
+    }));
 
   it('a double needs a free hand on each bead, one tap removes one link, and no triple hold', () => {
     const b = new Bench(k('OCO'), [[CARBON_DIOXIDE]], [], true);
@@ -729,7 +909,9 @@ describe('levels 5-6: named shapes and double holds', () => {
     expect(linkCount(b.links, 0, 1)).toBe(2);
     expect(b.unlink(0, 1)).toBe(true);
     expect(linkCount(b.links, 0, 1)).toBe(1);
-    b.link(0, 1); b.link(1, 2); b.link(1, 2);
+    b.link(0, 1);
+    b.link(1, 2);
+    b.link(1, 2);
     expect(b.done).toBe(true);
     // Hydrogen has one hand: no double on an H.
     const h = new Bench(k('HH'), [[HYDROGEN]], [], true);
@@ -756,7 +938,10 @@ describe('levels 5-6: named shapes and double holds', () => {
       for (const links of reachable(bench)) {
         bench.links = links;
         const h = helpFor(bench);
-        if (bench.done) { expect(h, id).toBeNull(); continue; }
+        if (bench.done) {
+          expect(h, id).toBeNull();
+          continue;
+        }
         expect(h, `${id} ${bench.state}`).not.toBeNull();
         const near = bench.nearest();
         const have = linkCount(links, h!.link[0], h!.link[1]);
@@ -784,7 +969,9 @@ describe('levels 5-6: named shapes and double holds', () => {
 
   it('O2H2 at level 6: H–O–O–H holds every hand but is not the card', () => {
     const b = new Bench(k('OOHH'), [[HYDROGEN, OXYGEN]], [], true);
-    b.link(0, 1); b.link(0, 2); b.link(1, 3);
+    b.link(0, 1);
+    b.link(0, 2);
+    b.link(1, 3);
     expect(allHeld(b.kinds, b.links)).toBe(true);
     expect(b.done).toBe(false);
     expect(helpFor(b)?.kind).toBe('break');
@@ -837,15 +1024,16 @@ describe('level 7: the same atoms, rearranged', () => {
   });
 
   it('every step is solvable, not done at the opening, and every solution uses every bead', () => {
-    for (const seed of SEEDS) for (const st of stepsFor(seed)) {
-      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
-      expect(b.solutions.length).toBeGreaterThan(0);
-      expect(b.done).toBe(false);
-      for (const sol of b.solutions) {
-        expect(allHeld(b.kinds, sol)).toBe(true);
-        expect(buildKey(b.kinds, sol)).toBe(requestKey(st.requests![0]));
+    for (const seed of SEEDS)
+      for (const st of stepsFor(seed)) {
+        const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+        expect(b.solutions.length).toBeGreaterThan(0);
+        expect(b.done).toBe(false);
+        for (const sol of b.solutions) {
+          expect(allHeld(b.kinds, sol)).toBe(true);
+          expect(buildKey(b.kinds, sol)).toBe(requestKey(st.requests![0]));
+        }
       }
-    }
   });
 
   it('keeps the tally over 500 random action sequences with doubles', () => {
@@ -869,47 +1057,54 @@ describe('level 7: the same atoms, rearranged', () => {
   });
 
   it('at the unchanged opening the first help is a link to break that the nearest build removes', () => {
-    for (const seed of seven) for (const st of stepsFor(seed)) {
-      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
-      const h = helpFor(b);
-      expect(h?.kind).toBe('break');
-      expect(linkCount(b.links, h!.link[0], h!.link[1])).toBeGreaterThan(linkCount(b.nearest(), h!.link[0], h!.link[1]));
-      expect(nextMove(b)).toEqual({ cut: h!.link });
-    }
+    for (const seed of seven)
+      for (const st of stepsFor(seed)) {
+        const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+        const h = helpFor(b);
+        expect(h?.kind).toBe('break');
+        expect(linkCount(b.links, h!.link[0], h!.link[1])).toBeGreaterThan(
+          linkCount(b.nearest(), h!.link[0], h!.link[1]),
+        );
+        expect(nextMove(b)).toEqual({ cut: h!.link });
+      }
   });
 
   it('in every reachable state help is null iff done, otherwise changes what the nearest build changes; nextMove finishes', () => {
-    for (const seed of seven.slice(0, 6)) for (const st of stepsFor(seed)) {
-      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
-      const states = reachable(b, 6000);
-      expect(states.length).toBeGreaterThan(1);
-      for (const links of states) {
-        b.links = links;
-        const h = helpFor(b);
-        if (b.done) { expect(h).toBeNull(); continue; }
-        expect(h, b.state).not.toBeNull();
-        const near = b.nearest();
-        const have = linkCount(links, h!.link[0], h!.link[1]);
-        const want = linkCount(near, h!.link[0], h!.link[1]);
-        if (h!.kind === 'break') expect(have).toBeGreaterThan(want);
-        else {
-          expect(have).toBeLessThan(want);
-          expect(canLink(b.kinds, links, h!.link[0], h!.link[1], b.doubles)).toBe(true);
-          if (h!.kind === 'double') expect(have).toBe(1);
-          else expect(h!.link).toContain(h!.bead);
+    for (const seed of seven.slice(0, 6))
+      for (const st of stepsFor(seed)) {
+        const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+        const states = reachable(b, 6000);
+        expect(states.length).toBeGreaterThan(1);
+        for (const links of states) {
+          b.links = links;
+          const h = helpFor(b);
+          if (b.done) {
+            expect(h).toBeNull();
+            continue;
+          }
+          expect(h, b.state).not.toBeNull();
+          const near = b.nearest();
+          const have = linkCount(links, h!.link[0], h!.link[1]);
+          const want = linkCount(near, h!.link[0], h!.link[1]);
+          if (h!.kind === 'break') expect(have).toBeGreaterThan(want);
+          else {
+            expect(have).toBeLessThan(want);
+            expect(canLink(b.kinds, links, h!.link[0], h!.link[1], b.doubles)).toBe(true);
+            if (h!.kind === 'double') expect(have).toBe(1);
+            else expect(h!.link).toContain(h!.bead);
+          }
+        }
+        // From the opening, and from a spread of reachable states, following the help reaches the card.
+        b.links = st.opening.slice();
+        expect(followToCheck(b)).toBeLessThanOrEqual(30);
+        expect(b.done).toBe(true);
+        const stride = Math.max(1, Math.floor(states.length / 60));
+        for (let i = 0; i < states.length; i += stride) {
+          b.links = states[i].slice();
+          expect(followToCheck(b), linkListKey(states[i])).toBeLessThanOrEqual(30);
+          expect(b.done, linkListKey(states[i])).toBe(true);
         }
       }
-      // From the opening, and from a spread of reachable states, following the help reaches the card.
-      b.links = st.opening.slice();
-      expect(followToCheck(b)).toBeLessThanOrEqual(30);
-      expect(b.done).toBe(true);
-      const stride = Math.max(1, Math.floor(states.length / 60));
-      for (let i = 0; i < states.length; i += stride) {
-        b.links = states[i].slice();
-        expect(followToCheck(b), linkListKey(states[i])).toBeLessThanOrEqual(30);
-        expect(b.done, linkListKey(states[i])).toBe(true);
-      }
-    }
   });
 
   it('is named only when it matches the card: the opening hydrogens and oxygen are not accepted at the first puzzle', () => {

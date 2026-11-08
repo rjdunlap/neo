@@ -44,7 +44,12 @@ export const WAY_LOOK: Record<Way, { mood: Mood; scale: number }> = {
   tiny: { mood: 'surprised', scale: 0.7 },
   big: { mood: 'sing', scale: 1.3 },
 };
-export const LINES = ['ps.line.1', 'ps.line.2', 'ps.line.3', 'ps.line.4'] as const satisfies readonly LineId[];
+export const LINES = [
+  'ps.line.1',
+  'ps.line.2',
+  'ps.line.3',
+  'ps.line.4',
+] as const satisfies readonly LineId[];
 
 /** Device-speech ranges that stay intelligible. */
 export const PITCH_RANGE: readonly [number, number] = [0.5, 2];
@@ -60,61 +65,110 @@ const EPS = 1e-9;
 const apart = (a: number, b: number, by: number) => Math.abs(a - b) + EPS >= by;
 
 export function presetsDistinct(a: VoicePreset, b: VoicePreset): boolean {
-  const differ = [a.pitch !== b.pitch, a.rate !== b.rate, (a.volume ?? 1) !== (b.volume ?? 1)].filter(Boolean).length;
+  const differ = [a.pitch !== b.pitch, a.rate !== b.rate, (a.volume ?? 1) !== (b.volume ?? 1)].filter(
+    Boolean,
+  ).length;
   return (apart(a.pitch, b.pitch, PRESET_MARGIN) || apart(a.rate, b.rate, PRESET_MARGIN)) && differ >= 2;
 }
 
 export function clearOfBase(preset: VoicePreset, base: VoicePreset): boolean {
-  return apart(preset.pitch, base.pitch, BASE_MARGIN.pitch) || apart(preset.rate, base.rate, BASE_MARGIN.rate);
+  return (
+    apart(preset.pitch, base.pitch, BASE_MARGIN.pitch) || apart(preset.rate, base.rate, BASE_MARGIN.rate)
+  );
 }
 
 export const inRange = (v: VoicePreset) =>
-  v.pitch >= PITCH_RANGE[0] && v.pitch <= PITCH_RANGE[1] && v.rate >= RATE_RANGE[0] && v.rate <= RATE_RANGE[1];
+  v.pitch >= PITCH_RANGE[0] &&
+  v.pitch <= PITCH_RANGE[1] &&
+  v.rate >= RATE_RANGE[0] &&
+  v.rate <= RATE_RANGE[1];
 
 export type Pair = readonly [Puppet, Puppet];
 
 /** Every pair of puppets, in parked order. */
 export function allPairs(): Pair[] {
   const out: Pair[] = [];
-  for (let i = 0; i < PUPPETS.length; i++) for (let j = i + 1; j < PUPPETS.length; j++) out.push([PUPPETS[i], PUPPETS[j]]);
+  for (let i = 0; i < PUPPETS.length; i++)
+    for (let j = i + 1; j < PUPPETS.length; j++) out.push([PUPPETS[i], PUPPETS[j]]);
   return out;
 }
 
 /** The pairs a voice ask may use. */
-export const voicePairs = (): Pair[] => allPairs().filter(([a, b]) => apart(BASE_VOICE[a].pitch, BASE_VOICE[b].pitch, VOICE_PAIR_MARGIN));
+export const voicePairs = (): Pair[] =>
+  allPairs().filter(([a, b]) => apart(BASE_VOICE[a].pitch, BASE_VOICE[b].pitch, VOICE_PAIR_MARGIN));
 
 /** The higher-pitched puppet of a pair. */
-export const tinyOf = (pair: Pair): Puppet => (BASE_VOICE[pair[0]].pitch >= BASE_VOICE[pair[1]].pitch ? pair[0] : pair[1]);
+export const tinyOf = (pair: Pair): Puppet =>
+  BASE_VOICE[pair[0]].pitch >= BASE_VOICE[pair[1]].pitch ? pair[0] : pair[1];
 /** The lower-pitched puppet of a pair. */
 export const bigOf = (pair: Pair): Puppet => (tinyOf(pair) === pair[0] ? pair[1] : pair[0]);
 
 export type Ask =
-  | { kind: 'name'; puppet: Puppet }
-  | { kind: 'voice'; which: 'tiny' | 'big' }
-  | { kind: 'way'; way: Way };
+  { kind: 'name'; puppet: Puppet } | { kind: 'voice'; which: 'tiny' | 'big' } | { kind: 'way'; way: Way };
 
 export type Place = 'door' | 'tree' | 'pond';
 export const PLACES: readonly Place[] = ['door', 'tree', 'pond'];
 
 /** One story card: this puppet bobs at this place. `voice` sets a way other than the puppet's own (only c3). */
-export interface Scene { puppet: Puppet; place: Place; card: LineId; line: LineId; waited: LineId; voice?: Way }
+export interface Scene {
+  puppet: Puppet;
+  place: Place;
+  card: LineId;
+  line: LineId;
+  waited: LineId;
+  voice?: Way;
+}
 /** `cast[0]` waits at the left peek and `places[0]` is painted left. */
-export interface Story { id: 'a' | 'b' | 'c'; cast: [Puppet, Puppet]; places: [Place, Place]; scenes: [Scene, Scene, Scene] }
+export interface Story {
+  id: 'a' | 'b' | 'c';
+  cast: [Puppet, Puppet];
+  places: [Place, Place];
+  scenes: [Scene, Scene, Scene];
+}
 
-const scene = (id: string, i: number, puppet: Puppet, place: Place, voice?: Way): Scene =>
-  ({ puppet, place, card: `ps.card.${id}${i}` as LineId, line: `ps.sc.${id}${i}` as LineId, waited: `ps.waited.${id}${i}` as LineId, ...(voice ? { voice } : {}) });
+const scene = (id: string, i: number, puppet: Puppet, place: Place, voice?: Way): Scene => ({
+  puppet,
+  place,
+  card: `ps.card.${id}${i}` as LineId,
+  line: `ps.sc.${id}${i}` as LineId,
+  waited: `ps.waited.${id}${i}` as LineId,
+  ...(voice ? { voice } : {}),
+});
 
 /** The three authored cards: scene 1 always walks away from its peek, and a standing puppet's next scene moves it. */
 export const STORIES: readonly Story[] = [
-  { id: 'a', cast: ['bunny', 'bear'], places: ['tree', 'door'], scenes: [scene('a', 1, 'bunny', 'door'), scene('a', 2, 'bear', 'door'), scene('a', 3, 'bear', 'tree')] },
-  { id: 'b', cast: ['bunny', 'duck'], places: ['pond', 'tree'], scenes: [scene('b', 1, 'bunny', 'tree'), scene('b', 2, 'duck', 'pond'), scene('b', 3, 'bunny', 'pond')] },
-  { id: 'c', cast: ['duck', 'cat'], places: ['door', 'pond'], scenes: [scene('c', 1, 'duck', 'pond'), scene('c', 2, 'cat', 'door'), scene('c', 3, 'cat', 'pond', 'tiny')] },
+  {
+    id: 'a',
+    cast: ['bunny', 'bear'],
+    places: ['tree', 'door'],
+    scenes: [scene('a', 1, 'bunny', 'door'), scene('a', 2, 'bear', 'door'), scene('a', 3, 'bear', 'tree')],
+  },
+  {
+    id: 'b',
+    cast: ['bunny', 'duck'],
+    places: ['pond', 'tree'],
+    scenes: [scene('b', 1, 'bunny', 'tree'), scene('b', 2, 'duck', 'pond'), scene('b', 3, 'bunny', 'pond')],
+  },
+  {
+    id: 'c',
+    cast: ['duck', 'cat'],
+    places: ['door', 'pond'],
+    scenes: [
+      scene('c', 1, 'duck', 'pond'),
+      scene('c', 2, 'cat', 'door'),
+      scene('c', 3, 'cat', 'pond', 'tiny'),
+    ],
+  },
 ];
 /** Duck's answer after Cat's sneaky boo. */
 export const SURPRISED: LineId = 'ps.sc.c3-duck';
 
 /** Left and right swapped, for both the places and the cast. */
-export const mirrored = (s: Story): Story => ({ ...s, cast: [s.cast[1], s.cast[0]], places: [s.places[1], s.places[0]] });
+export const mirrored = (s: Story): Story => ({
+  ...s,
+  cast: [s.cast[1], s.cast[0]],
+  places: [s.places[1], s.places[0]],
+});
 
 export interface Plan {
   level: number;
@@ -142,13 +196,23 @@ export const LEVELS: BandLevels = {
   prek: { min: 3, max: 5 },
   school: { min: 4, max: 6 },
 };
-export const LEVEL_NAMES: Record<number, string> = { 1: 'Pop up', 2: 'Make Bunny talk', 3: 'Say it like', 4: 'One scene', 5: 'Two scenes', 6: 'The whole show' };
+export const LEVEL_NAMES: Record<number, string> = {
+  1: 'Pop up',
+  2: 'Make Bunny talk',
+  3: 'Say it like',
+  4: 'One scene',
+  5: 'Two scenes',
+  6: 'The whole show',
+};
 export const ASKS_PER_ROUND = 4;
 
 export function describeLevel(level: number): string {
-  if (level <= 1) return 'Pop up: touch the floor and a puppet rises there, says hello and follows her finger; nothing counted';
-  if (level === 2) return 'Make Bunny talk: tap the puppet the pet names (preschool: then the one with the tiny or big voice)';
-  if (level === 3) return 'Say it like: tap the sleepy, tiny or big bubble to make the puppet say its line that way';
+  if (level <= 1)
+    return 'Pop up: touch the floor and a puppet rises there, says hello and follows her finger; nothing counted';
+  if (level === 2)
+    return 'Make Bunny talk: tap the puppet the pet names (preschool: then the one with the tiny or big voice)';
+  if (level === 3)
+    return 'Say it like: tap the sleepy, tiny or big bubble to make the puppet say its line that way';
   if (level === 4) return 'One scene: bring the puppet up, walk it to the place on the card and bob it';
   if (level === 5) return 'Two scenes: act two cards in order';
   return 'The whole show: act three cards for three friends, who react only to what she showed';
@@ -157,14 +221,18 @@ export function describeLevel(level: number): string {
 const pick = <T>(rng: Rng, list: readonly T[]): T => list[rng.int(0, list.length - 1)];
 const shuffled = <T>(rng: Rng, list: readonly T[]): T[] => {
   const out = list.slice();
-  for (let i = out.length - 1; i > 0; i--) { const j = rng.int(0, i); [out[i], out[j]] = [out[j], out[i]]; }
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
   return out;
 };
 
 /** The puppet an ask means, on the given stage. */
 export function askedPuppet(ask: Ask, puppets: readonly Puppet[]): Puppet | null {
   if (ask.kind === 'name') return ask.puppet;
-  if (ask.kind === 'voice') return ask.which === 'tiny' ? tinyOf([puppets[0], puppets[1]]) : bigOf([puppets[0], puppets[1]]);
+  if (ask.kind === 'voice')
+    return ask.which === 'tiny' ? tinyOf([puppets[0], puppets[1]]) : bigOf([puppets[0], puppets[1]]);
   return null;
 }
 
@@ -184,33 +252,89 @@ const NO_STORY = { story: null, mirror: false, scenes: [] as Scene[] };
 
 export function plan(level: number, band: Band, rng: Rng): Plan {
   if (level <= 1) {
-    return { level: 1, name: LEVEL_NAMES[1], puppets: PUPPETS.slice(), asks: [], line: null, popsToBow: 3, secondsToBow: 30, autoBowAfter: band === 'lap' ? 6 : null, ...NO_STORY };
+    return {
+      level: 1,
+      name: LEVEL_NAMES[1],
+      puppets: PUPPETS.slice(),
+      asks: [],
+      line: null,
+      popsToBow: 3,
+      secondsToBow: 30,
+      autoBowAfter: band === 'lap' ? 6 : null,
+      ...NO_STORY,
+    };
   }
   if (level >= 4) {
     const at = Math.min(6, level);
     const mirror = rng.chance(0.5);
     const base = pick(rng, STORIES);
     const story = mirror ? mirrored(base) : base;
-    return { level: at, name: LEVEL_NAMES[at], puppets: story.cast.slice(), asks: [], line: null, popsToBow: 0, secondsToBow: 0, autoBowAfter: null, story, mirror, scenes: story.scenes.slice(0, at - 3) };
+    return {
+      level: at,
+      name: LEVEL_NAMES[at],
+      puppets: story.cast.slice(),
+      asks: [],
+      line: null,
+      popsToBow: 0,
+      secondsToBow: 0,
+      autoBowAfter: null,
+      story,
+      mirror,
+      scenes: story.scenes.slice(0, at - 3),
+    };
   }
   if (level === 2) {
     const byVoice = band !== 'toddler' && band !== 'lap';
     const pair = pick(rng, byVoice ? voicePairs() : allPairs());
     const asks = nameAsks(rng, pair, byVoice ? 2 : ASKS_PER_ROUND);
     if (byVoice) {
-      let voice: Ask[] = rng.chance(0.5) ? [{ kind: 'voice', which: 'tiny' }, { kind: 'voice', which: 'big' }] : [{ kind: 'voice', which: 'big' }, { kind: 'voice', which: 'tiny' }];
+      let voice: Ask[] = rng.chance(0.5)
+        ? [
+            { kind: 'voice', which: 'tiny' },
+            { kind: 'voice', which: 'big' },
+          ]
+        : [
+            { kind: 'voice', which: 'big' },
+            { kind: 'voice', which: 'tiny' },
+          ];
       const named = (list: Ask[]) => [...asks, ...list].map((a) => askedPuppet(a, pair));
-      const threeAlike = (list: (Puppet | null)[]) => list.some((p, i) => i >= 2 && p === list[i - 1] && p === list[i - 2]);
+      const threeAlike = (list: (Puppet | null)[]) =>
+        list.some((p, i) => i >= 2 && p === list[i - 1] && p === list[i - 2]);
       if (threeAlike(named(voice))) voice = [voice[1], voice[0]];
       asks.push(...voice);
     }
-    return { level: 2, name: LEVEL_NAMES[2], puppets: [pair[0], pair[1]], asks, line: null, popsToBow: 0, secondsToBow: 0, autoBowAfter: null, ...NO_STORY };
+    return {
+      level: 2,
+      name: LEVEL_NAMES[2],
+      puppets: [pair[0], pair[1]],
+      asks,
+      line: null,
+      popsToBow: 0,
+      secondsToBow: 0,
+      autoBowAfter: null,
+      ...NO_STORY,
+    };
   }
   const puppet = pick(rng, PUPPETS);
   const line = pick(rng, LINES);
   const ways = shuffled(rng, WAYS);
-  ways.push(pick(rng, WAYS.filter((w) => w !== ways[2])));
-  return { level: 3, name: LEVEL_NAMES[3], puppets: [puppet], asks: ways.map((way) => ({ kind: 'way', way })), line, popsToBow: 0, secondsToBow: 0, autoBowAfter: null, ...NO_STORY };
+  ways.push(
+    pick(
+      rng,
+      WAYS.filter((w) => w !== ways[2]),
+    ),
+  );
+  return {
+    level: 3,
+    name: LEVEL_NAMES[3],
+    puppets: [puppet],
+    asks: ways.map((way) => ({ kind: 'way', way })),
+    line,
+    popsToBow: 0,
+    secondsToBow: 0,
+    autoBowAfter: null,
+    ...NO_STORY,
+  };
 }
 
 export type Verdict = { right: true } | { right: false; said: LineId };
@@ -218,11 +342,14 @@ export type Verdict = { right: true } | { right: false; said: LineId };
 /** Was the tapped puppet or bubble the asked one? A miss names what she tapped. */
 export function answer(ask: Ask, tapped: Puppet | Way, puppets: readonly Puppet[]): Verdict {
   if (ask.kind === 'way') {
-    if (!(WAYS as readonly string[]).includes(tapped)) return { right: false, said: `ps.im.${tapped as Puppet}` };
+    if (!(WAYS as readonly string[]).includes(tapped))
+      return { right: false, said: `ps.im.${tapped as Puppet}` };
     return tapped === ask.way ? { right: true } : { right: false, said: `ps.was.${tapped as Way}` };
   }
   if ((WAYS as readonly string[]).includes(tapped)) return { right: false, said: `ps.was.${tapped as Way}` };
-  return tapped === askedPuppet(ask, puppets) ? { right: true } : { right: false, said: `ps.im.${tapped as Puppet}` };
+  return tapped === askedPuppet(ask, puppets)
+    ? { right: true }
+    : { right: false, said: `ps.im.${tapped as Puppet}` };
 }
 
 /** What glows after the second miss on one ask. */
@@ -240,8 +367,15 @@ export function askLine(ask: Ask): LineId {
 // ---- story cards (levels 4–6) ----
 
 /** A bob: the tapped puppet and the place it stands at (null when it stands at none). */
-export interface Bob { puppet: Puppet; place: Place | null }
-export type Judged = { kind: 'scene'; index: number } | { kind: 'early'; index: number } | { kind: 'again'; index: number } | { kind: 'free' };
+export interface Bob {
+  puppet: Puppet;
+  place: Place | null;
+}
+export type Judged =
+  | { kind: 'scene'; index: number }
+  | { kind: 'early'; index: number }
+  | { kind: 'again'; index: number }
+  | { kind: 'free' };
 
 /** Scenes tick only in card order, so `done` (how many have ticked) is the whole state. */
 export function judge(scenes: readonly Scene[], done: number, bob: Bob): Judged {
@@ -310,7 +444,12 @@ const CARD_GAP = 12;
 /** The marquee keeps right of the corner buttons' column. */
 const CARD_LEFT = 130;
 
-export interface Box { x: number; y: number; w: number; h: number }
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface Layout {
   portrait: boolean;
   /** The proscenium: `floor` is the floor line with the slot; `bottom` is the apron's edge. */
@@ -357,16 +496,26 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
   const keep = story ? PUPPET_W / 2 + 10 : 40;
   const stand = { min: left + CURTAIN_W + keep, max: right - CURTAIN_W - keep };
   const span = stand.max - stand.min;
-  const homes = Array.from({ length: PUPPETS.length }, (_, i) => stand.min + (span * i) / (PUPPETS.length - 1));
+  const homes = Array.from(
+    { length: PUPPETS.length },
+    (_, i) => stand.min + (span * i) / (PUPPETS.length - 1),
+  );
   const off = Math.min(130, span / 2);
   const spots = level === 2 ? [cx - off, cx + off] : level === 3 ? [cx] : [];
   const curtainH = floor - curtainTop;
-  const curtains: [Box, Box] = [box(left + CURTAIN_W / 2, curtainTop + curtainH / 2, CURTAIN_W, curtainH), box(right - CURTAIN_W / 2, curtainTop + curtainH / 2, CURTAIN_W, curtainH)];
+  const curtains: [Box, Box] = [
+    box(left + CURTAIN_W / 2, curtainTop + curtainH / 2, CURTAIN_W, curtainH),
+    box(right - CURTAIN_W / 2, curtainTop + curtainH / 2, CURTAIN_W, curtainH),
+  ];
   const tassel = box(right - 75, 55, TASSEL, TASSEL);
   const floorTouch = box(cx, (CURTAIN_TOP + floor) / 2, right - left - 2 * CURTAIN_W, floor - CURTAIN_TOP);
   const bow = box(w - 20 - BOW_W / 2, h - 20 - BOW_H / 2, BOW_W, BOW_H);
   let bubbles: Box[] = [];
-  let seats: { x: number; y: number }[] = [{ x: cx - 110, y: floor + 70 }, { x: cx, y: floor + 70 }, { x: cx + 110, y: floor + 70 }];
+  let seats: { x: number; y: number }[] = [
+    { x: cx - 110, y: floor + 70 },
+    { x: cx, y: floor + 70 },
+    { x: cx + 110, y: floor + 70 },
+  ];
   if (level === 3) {
     if (columnOfBubbles) {
       const x = w - 20 - BUBBLE / 2;
@@ -384,12 +533,20 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
       seats = [];
     }
   }
-  let places: number[] = [], marks: [number, number][] = [], snap = 0, peeks: Box[] = [], cards: Box[] = [], end: Box | null = null;
+  let places: number[] = [],
+    marks: [number, number][] = [],
+    snap = 0,
+    peeks: Box[] = [],
+    cards: Box[] = [],
+    end: Box | null = null;
   if (story) {
     places = [stand.min + APART / 2, stand.max - APART / 2];
     marks = places.map((p) => [p - APART / 2, p + APART / 2] as [number, number]);
     snap = Math.min(120, (places[1] - places[0]) / 2);
-    peeks = [box(stand.min, floor + PEEK_H / 2, PEEK_W, PEEK_H), box(stand.max, floor + PEEK_H / 2, PEEK_W, PEEK_H)];
+    peeks = [
+      box(stand.min, floor + PEEK_H / 2, PEEK_W, PEEK_H),
+      box(stand.max, floor + PEEK_H / 2, PEEK_W, PEEK_H),
+    ];
     const n = Math.min(3, level - 3);
     const spanRight = tassel.x - TASSEL / 2 - 12;
     const total = n * CARD_W + (n - 1) * CARD_GAP;
@@ -400,18 +557,44 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
     if (portrait) seats = seats.map((s) => ({ x: s.x, y: floor + PEEK_H + 70 }));
   }
   const bottom = floor + (story ? PEEK_H + 10 : 50);
-  return { portrait, stage: { left, right, top: ARCH_TOP, floor, bottom }, curtains, tassel, floorTouch, stand, homes, spots, bubbles, bow, seats, places, marks, snap, peeks, cards, end };
+  return {
+    portrait,
+    stage: { left, right, top: ARCH_TOP, floor, bottom },
+    curtains,
+    tassel,
+    floorTouch,
+    stand,
+    homes,
+    spots,
+    bubbles,
+    bow,
+    seats,
+    places,
+    marks,
+    snap,
+    peeks,
+    cards,
+    end,
+  };
 }
 
 /** The place (0 left, 1 right) whose centre is within the snap half-width of `x`, or null. */
 export function placeAt(x: number, l: Pick<Layout, 'places' | 'snap'>): 0 | 1 | null {
-  for (const i of [0, 1] as const) if (l.places[i] !== undefined && Math.abs(x - l.places[i]) <= l.snap + EPS) return i;
+  for (const i of [0, 1] as const)
+    if (l.places[i] !== undefined && Math.abs(x - l.places[i]) <= l.snap + EPS) return i;
   return null;
 }
 
 /** The place's mark nearest `x` that stands at least `APART` from every other standing puppet, or null if both are taken. */
-export function freeMark(place: 0 | 1, x: number, others: readonly number[], l: Pick<Layout, 'marks'>): 0 | 1 | null {
-  const order = ([0, 1] as const).slice().sort((a, b) => Math.abs(l.marks[place][a] - x) - Math.abs(l.marks[place][b] - x));
+export function freeMark(
+  place: 0 | 1,
+  x: number,
+  others: readonly number[],
+  l: Pick<Layout, 'marks'>,
+): 0 | 1 | null {
+  const order = ([0, 1] as const)
+    .slice()
+    .sort((a, b) => Math.abs(l.marks[place][a] - x) - Math.abs(l.marks[place][b] - x));
   for (const m of order) if (others.every((o) => apart(o, l.marks[place][m], APART))) return m;
   return null;
 }
@@ -430,10 +613,14 @@ export function standAt(x: number, others: readonly number[], stand: { min: numb
 
 /** The parked puppet whose home is nearest to `x`. */
 export function nearestParked(x: number, parked: readonly Puppet[], homes: readonly number[]): Puppet | null {
-  let best: Puppet | null = null, dist = Infinity;
+  let best: Puppet | null = null,
+    dist = Infinity;
   for (const p of parked) {
     const d = Math.abs(homes[PUPPETS.indexOf(p)] - x);
-    if (d < dist) { dist = d; best = p; }
+    if (d < dist) {
+      dist = d;
+      best = p;
+    }
   }
   return best;
 }

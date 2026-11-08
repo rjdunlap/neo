@@ -9,4 +9,6 @@ const suites = requested === 'all' ? ALL_SUITES : selectNames(requested, SUITES,
 const browser = await launchTestBrowser();
 try {
   await runBrowserSuites(browser, suites);
-} finally { await browser.close(); }
+} finally {
+  await browser.close();
+}

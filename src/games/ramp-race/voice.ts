@@ -3,9 +3,15 @@ export const VOICE = {
   'game.ramp-race': ['Ramp race!'],
   'ramp.explore': ['Tap the ramp to make it taller or shorter. Then press go and watch the car roll!'],
   'ramp.height': ['Make the car stop on the star! Tap the ramp to change how tall it is, then press go.'],
-  'ramp.both': ['Now the floor changes too! Tap the floor for carpet, wood or ice. Can you stop on the star?'],
-  'ramp.fair.floor': ['Which floor lets the car roll farther? Make it a fair test: change only the floor, and keep both ramps the same height.'],
-  'ramp.fair.height': ['Does a taller ramp make the car go farther? Make it a fair test: change only the ramp, and keep both floors the same.'],
+  'ramp.both': [
+    'Now the floor changes too! Tap the floor for carpet, wood or ice. Can you stop on the star?',
+  ],
+  'ramp.fair.floor': [
+    'Which floor lets the car roll farther? Make it a fair test: change only the floor, and keep both ramps the same height.',
+  ],
+  'ramp.fair.height': [
+    'Does a taller ramp make the car go farther? Make it a fair test: change only the ramp, and keep both floors the same.',
+  ],
   'ramp.went': ['{n} marks!', 'It rolled {n} marks!'],
   'ramp.woodonly': ['This floor is wood. Change the ramp instead!'],
   'ramp.short': ['Too short! A taller ramp makes it go farther.'],
@@ -18,18 +24,28 @@ export const VOICE = {
   'ramp.same.height': ['Both lanes are the same! Change the ramp on one of them.'],
   'ramp.unfair.floor': ['That is not a fair test: the ramps are different too. Change only the floor.'],
   'ramp.unfair.height': ['That is not a fair test: the floors are different too. Change only the ramp.'],
-  'ramp.wrong.floor': ['That changes the ramp, not the floor. Make both ramps the same height, then change one floor.'],
-  'ramp.wrong.height': ['That changes the floor, not the ramp. Make both floors the same, then change one ramp.'],
+  'ramp.wrong.floor': [
+    'That changes the ramp, not the floor. Make both ramps the same height, then change one floor.',
+  ],
+  'ramp.wrong.height': [
+    'That changes the floor, not the ramp. Make both floors the same, then change one ramp.',
+  ],
   'ramp.fairhint': ['Change the glowing part of the orange lane, then press go.'],
   'ramp.fairyay': ['A fair test! The {what} went farther.'],
   'ramp.done.explore': ['Four rolls! What a car tester.'],
   'ramp.done.stars': ['Three stars! What a ramp builder.'],
   'ramp.done': ['What a scientist! You tested it fairly.'],
-  'ramp.change.floor': ['Which floor lets the car go farther? Fix the orange lane so only the floors are different, then press go.'],
-  'ramp.change.height': ['Does a taller ramp send the car farther? Fix the orange lane so only the ramps are different, then press go.'],
+  'ramp.change.floor': [
+    'Which floor lets the car go farther? Fix the orange lane so only the floors are different, then press go.',
+  ],
+  'ramp.change.height': [
+    'Does a taller ramp send the car farther? Fix the orange lane so only the ramps are different, then press go.',
+  ],
   'ramp.keepblue': ['The blue lane stays the same. Change the orange lane.'],
   'ramp.shelf': ['Press go and watch where the car stops. Its card will remember.'],
-  'ramp.shelf.change': ['Now change the ramp. If you like, tap the floor to guess: will it stop before the blue flag, or past it? Then press go.'],
+  'ramp.shelf.change': [
+    'Now change the ramp. If you like, tap the floor to guess: will it stop before the blue flag, or past it? Then press go.',
+  ],
   'ramp.shelf.first': ['Press go first. Then you can change it.'],
   'ramp.shelf.same': ['That is the same ramp as last time. Change it to find out something new.'],
   'ramp.guess.right': ['You guessed {side} the flag, and it stopped {side}!'],
@@ -49,7 +65,9 @@ export const VOICE = {
   'ramp.tell.both': ["Yes! Both changed, so we can't tell. Let's make it fair."],
   'ramp.tell.fix': ['Change the orange lane so only one thing is different, then press go.'],
   'ramp.same.tell': ['Both lanes are the same now. Change one thing.'],
-  'ramp.unfair.tell': ['The ramps and the floors are both still different. Make one of them match the blue lane.'],
+  'ramp.unfair.tell': [
+    'The ramps and the floors are both still different. Make one of them match the blue lane.',
+  ],
   'ramp.tell.again': ['What can the cards tell us now?'],
   'ramp.why.floorsame': ['Look at the floors. They are the same.'],
   'ramp.why.rampsame': ['Look at the ramps. They are the same.'],

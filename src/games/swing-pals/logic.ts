@@ -13,15 +13,43 @@ export const HOOKS: readonly Hook[] = ['short', 'middle', 'long'];
 export const LENGTH: Record<Hook, number> = { short: 1, middle: 2.25, long: 4 };
 
 export type Friend = 'bunny' | 'duck' | 'mouse' | 'bear' | 'frog' | 'cat' | 'dog' | 'pig' | 'cow';
-export const FRIENDS: readonly Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog', 'cat', 'dog', 'pig', 'cow'];
+export const FRIENDS: readonly Friend[] = [
+  'bunny',
+  'duck',
+  'mouse',
+  'bear',
+  'frog',
+  'cat',
+  'dog',
+  'pig',
+  'cow',
+];
 export type Weight = 'light' | 'middle' | 'heavy';
 export const WEIGHT: Record<Friend, Weight> = {
-  mouse: 'light', duck: 'light', cat: 'light', bunny: 'middle', frog: 'middle', dog: 'middle', bear: 'heavy', pig: 'heavy', cow: 'heavy',
+  mouse: 'light',
+  duck: 'light',
+  cat: 'light',
+  bunny: 'middle',
+  frog: 'middle',
+  dog: 'middle',
+  bear: 'heavy',
+  pig: 'heavy',
+  cow: 'heavy',
 };
 /** How big a friend is drawn: weight is shown by size, never by a number. A friend is about 250 × scale units tall. */
 export const FRIEND_SCALE: Record<Weight, number> = { light: 0.44, middle: 0.5, heavy: 0.6 };
 /** How far each friend's art reaches above its feet at scale 1 (ears, horns and tufts from `art/critter.ts`). */
-export const ART_TOP: Record<Friend, number> = { bunny: 356, duck: 268, mouse: 256, bear: 256, frog: 250, cat: 292, dog: 250, pig: 292, cow: 276 };
+export const ART_TOP: Record<Friend, number> = {
+  bunny: 356,
+  duck: 268,
+  mouse: 256,
+  bear: 256,
+  frog: 250,
+  cat: 292,
+  dog: 250,
+  pig: 292,
+  cow: 276,
+};
 /** A friend's drawn height in units: the size she reads weight from. */
 export function friendHeight(f: Friend): number {
   return ART_TOP[f] * FRIEND_SCALE[WEIGHT[f]];
@@ -104,7 +132,11 @@ export function land(swing: Swing, t: number): Swing {
  * once. From level 2 a tap waits for the back point (`landsAt`); taps while one waits merge into it. A rung swing takes no
  * push. Nothing here lowers the height.
  */
-export function applyPush(swing: Swing, tapTime: number, level: number): { swing: Swing; landsAt: number | null } {
+export function applyPush(
+  swing: Swing,
+  tapTime: number,
+  level: number,
+): { swing: Swing; landsAt: number | null } {
   if (swing.rung) return { swing, landsAt: null };
   if (swing.t0 === null || !pushWaits(level)) return { swing: land(swing, tapTime), landsAt: tapTime };
   if (swing.waiting) return { swing, landsAt: null };
@@ -168,7 +200,8 @@ export function watchTime(line: Line): number {
 /** The times (after letting go together, up to `watch`) when both swings are back at the pusher at once: the claps. */
 export function clapTimes(petHook: Hook, hook: Hook, watch: number): number[] {
   const out: number[] = [];
-  const Tp = period(petHook), Th = period(hook);
+  const Tp = period(petHook),
+    Th = period(hook);
   for (let k = 1; k * Tp <= watch + 1e-9; k++) {
     const t = k * Tp;
     if (Math.abs(t / Th - Math.round(t / Th)) < 1e-9) out.push(t);
@@ -206,7 +239,8 @@ export function raceWatch(race: Race): number {
 const RANK: Record<Weight, number> = { light: 0, middle: 1, heavy: 2 };
 /** The tempting wrong guess: the heavier friend or the bigger push is on the shorter rope. */
 export function raceTempts(race: Race): boolean {
-  const s = firstBack(race), o = s === 0 ? 1 : 0;
+  const s = firstBack(race),
+    o = s === 0 ? 1 : 0;
   return RANK[WEIGHT[race.friends[s]]] > RANK[WEIGHT[race.friends[o]]] || race.heights[s] > race.heights[o];
 }
 
@@ -217,13 +251,22 @@ export function authoredRace(): Race {
 /* Twice as quick (level 8) ------------------------------------------------------------------------ */
 
 export function authoredRequest(): Line {
-  return { petHook: 'long', petFriend: 'bunny', petHeight: EVEN, hook: 'middle', friend: 'duck', height: EVEN, request: 'twice' };
+  return {
+    petHook: 'long',
+    petFriend: 'bunny',
+    petHeight: EVEN,
+    hook: 'middle',
+    friend: 'duck',
+    height: EVEN,
+    request: 'twice',
+  };
 }
 
 /** The widest gap in phase (each swing's position over its own height) between two hooks released together, over the watch. */
 export function widestApart(a: Hook, b: Hook, watch: number, step = 0.01): number {
   let most = 0;
-  for (let t = 0; t <= watch + 1e-9; t += step) most = Math.max(most, Math.abs(phaseAt(a, 0, t) - phaseAt(b, 0, t)));
+  for (let t = 0; t <= watch + 1e-9; t += step)
+    most = Math.max(most, Math.abs(phaseAt(a, 0, t) - phaseAt(b, 0, t)));
   return most;
 }
 
@@ -247,13 +290,46 @@ export interface Plan {
 
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Push!', mode: 'push', lines: 3, two: false, weights: false, heights: false },
-  { id: 2, name: 'Push when they come back', mode: 'push', lines: 3, two: false, weights: false, heights: false },
+  {
+    id: 2,
+    name: 'Push when they come back',
+    mode: 'push',
+    lines: 3,
+    two: false,
+    weights: false,
+    heights: false,
+  },
   { id: 3, name: 'Short rope, long rope', mode: 'push', lines: 2, two: true, weights: false, heights: false },
   { id: 4, name: 'Swing together', mode: 'together', lines: 3, two: true, weights: false, heights: false },
   { id: 5, name: 'Heavy or light', mode: 'together', lines: 3, two: true, weights: true, heights: false },
-  { id: 6, name: 'Big push, small push', mode: 'together', lines: 3, two: true, weights: true, heights: true },
-  { id: 7, name: 'Who comes back first?', mode: 'predict', lines: 3, two: true, weights: true, heights: true },
-  { id: 8, name: 'Twice as quick', mode: 'together', lines: 3, two: true, weights: false, heights: false, requests: true },
+  {
+    id: 6,
+    name: 'Big push, small push',
+    mode: 'together',
+    lines: 3,
+    two: true,
+    weights: true,
+    heights: true,
+  },
+  {
+    id: 7,
+    name: 'Who comes back first?',
+    mode: 'predict',
+    lines: 3,
+    two: true,
+    weights: true,
+    heights: true,
+  },
+  {
+    id: 8,
+    name: 'Twice as quick',
+    mode: 'together',
+    lines: 3,
+    two: true,
+    weights: false,
+    heights: false,
+    requests: true,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -279,7 +355,10 @@ export interface PushLine {
   swings: Swing[];
 }
 
-export type Round = { kind: 'push'; lines: PushLine[]; goal: Goal } | { kind: 'together'; lines: Line[] } | { kind: 'predict'; lines: Race[] };
+export type Round =
+  | { kind: 'push'; lines: PushLine[]; goal: Goal }
+  | { kind: 'together'; lines: Line[] }
+  | { kind: 'predict'; lines: Race[] };
 
 /** Each level's authored first line, from the definition's first rounds. */
 export function authoredPush(plan: Plan): PushLine {
@@ -293,8 +372,24 @@ export const SMALL = 0.45;
 export const EVEN = 0.8;
 
 export function authoredTogether(plan: Plan): Line {
-  if (plan.id === 4) return { petHook: 'long', petFriend: 'bunny', petHeight: EVEN, hook: 'short', friend: 'bunny', height: EVEN };
-  if (plan.id === 5) return { petHook: 'middle', petFriend: 'mouse', petHeight: EVEN, hook: 'long', friend: 'bear', height: EVEN };
+  if (plan.id === 4)
+    return {
+      petHook: 'long',
+      petFriend: 'bunny',
+      petHeight: EVEN,
+      hook: 'short',
+      friend: 'bunny',
+      height: EVEN,
+    };
+  if (plan.id === 5)
+    return {
+      petHook: 'middle',
+      petFriend: 'mouse',
+      petHeight: EVEN,
+      hook: 'long',
+      friend: 'bear',
+      height: EVEN,
+    };
   return { petHook: 'short', petFriend: 'duck', petHeight: SMALL, hook: 'long', friend: 'frog', height: BIG };
 }
 
@@ -308,7 +403,8 @@ export const AUTHORED_TEMPT: Record<number, { hook: Hook; side: 'quicker' | 'slo
 function seededPush(plan: Plan, rng: Rng, line: number): PushLine {
   if (plan.two) {
     const [a, b] = rng.shuffle([...FRIENDS]);
-    const ropes: Hook[] = line % 2 === 1 ? ['long', 'short'] : rng.chance(0.5) ? ['short', 'long'] : ['long', 'short'];
+    const ropes: Hook[] =
+      line % 2 === 1 ? ['long', 'short'] : rng.chance(0.5) ? ['short', 'long'] : ['long', 'short'];
     return { swings: [stillSwing(ropes[0], a), stillSwing(ropes[1], b)] };
   }
   return { swings: [stillSwing('middle', rng.pick(FRIENDS))] };
@@ -322,7 +418,8 @@ function seededTogether(plan: Plan, rng: Rng, kind: LineKind): Line {
   let petHook = rng.pick(HOOKS);
   let hook = rng.pick(HOOKS.filter((h) => h !== petHook));
   const petFriend0 = rng.pick(FRIENDS);
-  let petFriend = petFriend0, friend = petFriend0;
+  let petFriend = petFriend0,
+    friend = petFriend0;
   if (plan.weights) {
     if (kind === 'tempt') {
       // The heavy friend on her swing, starting on a longer rope than the matching one.
@@ -331,12 +428,15 @@ function seededTogether(plan: Plan, rng: Rng, kind: LineKind): Line {
       petFriend = rng.pick(lights);
       friend = rng.pick(heavies);
     } else if (kind === 'pair') {
-      [petFriend, friend] = rng.chance(0.5) ? [rng.pick(lights), rng.pick(heavies)] : [rng.pick(heavies), rng.pick(lights)];
+      [petFriend, friend] = rng.chance(0.5)
+        ? [rng.pick(lights), rng.pick(heavies)]
+        : [rng.pick(heavies), rng.pick(lights)];
     } else {
       friend = rng.pick(FRIENDS.filter((f) => WEIGHT[f] !== WEIGHT[petFriend]));
     }
   }
-  let petHeight = EVEN, height = EVEN;
+  let petHeight = EVEN,
+    height = EVEN;
   if (plan.heights) [petHeight, height] = rng.chance(0.5) ? [SMALL, BIG] : [BIG, SMALL];
   return { petHook, petFriend, petHeight, hook, friend, height };
 }
@@ -382,7 +482,8 @@ const lightHeavy = (l: Line) => {
   return w.includes('light') && w.includes('heavy');
 };
 /** The "heavy goes slow" temptation: the heavy friend on her swing, starting on a longer rope than the matching one. */
-export const heavyTempts = (l: Line) => WEIGHT[l.friend] === 'heavy' && WEIGHT[l.petFriend] !== 'heavy' && LENGTH[l.hook] > LENGTH[l.petHook];
+export const heavyTempts = (l: Line) =>
+  WEIGHT[l.friend] === 'heavy' && WEIGHT[l.petFriend] !== 'heavy' && LENGTH[l.hook] > LENGTH[l.petHook];
 
 /** Does a round meet its plan's filter (the definition's table)? */
 export function roundFits(plan: Plan, round: Round): boolean {
@@ -397,7 +498,12 @@ export function roundFits(plan: Plan, round: Round): boolean {
     return round.lines.every((l) => {
       if (!plan.two) return l.swings.length === 1 && l.swings[0].hook === 'middle';
       const hooks = l.swings.map((s) => s.hook).sort();
-      return l.swings.length === 2 && hooks[0] === 'long' && hooks[1] === 'short' && period('long') / period('short') >= 1.4;
+      return (
+        l.swings.length === 2 &&
+        hooks[0] === 'long' &&
+        hooks[1] === 'short' &&
+        period('long') / period('short') >= 1.4
+      );
     });
   }
   const lines = round.lines;
@@ -413,7 +519,8 @@ export function roundFits(plan: Plan, round: Round): boolean {
   if (plan.id === 5 && (lines.filter(lightHeavy).length < 2 || !lines.some(heavyTempts))) return false;
   if (plan.heights) {
     if (lines.some((l) => l.height === l.petHeight)) return false;
-    const differ = (l: Line) => [l.friend !== l.petFriend, l.height !== l.petHeight, l.hook !== l.petHook].filter(Boolean).length;
+    const differ = (l: Line) =>
+      [l.friend !== l.petFriend, l.height !== l.petHeight, l.hook !== l.petHook].filter(Boolean).length;
     if (lines.some((l) => differ(l) < 2)) return false;
   }
   return true;
@@ -424,7 +531,11 @@ export function fallbackRound(plan: Plan): Round {
   if (plan.mode === 'predict') {
     return {
       kind: 'predict',
-      lines: [authoredRace(), { hooks: ['long', 'middle'], friends: ['duck', 'pig'], heights: [EVEN, EVEN] }, { hooks: ['middle', 'short'], friends: ['frog', 'cat'], heights: [SMALL, BIG] }],
+      lines: [
+        authoredRace(),
+        { hooks: ['long', 'middle'], friends: ['duck', 'pig'], heights: [EVEN, EVEN] },
+        { hooks: ['middle', 'short'], friends: ['frog', 'cat'], heights: [SMALL, BIG] },
+      ],
     };
   }
   if (plan.requests) {
@@ -432,23 +543,61 @@ export function fallbackRound(plan: Plan): Round {
       kind: 'together',
       lines: [
         authoredRequest(),
-        { petHook: 'short', petFriend: 'frog', petHeight: EVEN, hook: 'short', friend: 'cat', height: EVEN, request: 'half' },
-        { petHook: 'middle', petFriend: 'pig', petHeight: EVEN, hook: 'long', friend: 'mouse', height: EVEN, request: 'together' },
+        {
+          petHook: 'short',
+          petFriend: 'frog',
+          petHeight: EVEN,
+          hook: 'short',
+          friend: 'cat',
+          height: EVEN,
+          request: 'half',
+        },
+        {
+          petHook: 'middle',
+          petFriend: 'pig',
+          petHeight: EVEN,
+          hook: 'long',
+          friend: 'mouse',
+          height: EVEN,
+          request: 'together',
+        },
       ],
     };
   }
   if (plan.mode === 'push') {
     const lines = [authoredPush(plan)];
-    while (lines.length < plan.lines) lines.push(plan.two ? { swings: [stillSwing('long', 'duck'), stillSwing('short', 'bear')] } : { swings: [stillSwing('middle', 'duck')] });
+    while (lines.length < plan.lines)
+      lines.push(
+        plan.two
+          ? { swings: [stillSwing('long', 'duck'), stillSwing('short', 'bear')] }
+          : { swings: [stillSwing('middle', 'duck')] },
+      );
     return { kind: 'push', lines, goal: 'bell' };
   }
   const first = authoredTogether(plan);
   const more: Line[] =
     plan.id === 4
-      ? [{ ...first, petHook: 'short', hook: 'long', petFriend: 'duck', friend: 'duck' }, { ...first, petHook: 'middle', hook: 'short', petFriend: 'frog', friend: 'frog' }]
+      ? [
+          { ...first, petHook: 'short', hook: 'long', petFriend: 'duck', friend: 'duck' },
+          { ...first, petHook: 'middle', hook: 'short', petFriend: 'frog', friend: 'frog' },
+        ]
       : [
-          { petHook: 'short', petFriend: 'mouse', petHeight: plan.heights ? BIG : EVEN, hook: 'long', friend: 'bear', height: plan.heights ? SMALL : EVEN },
-          { petHook: 'long', petFriend: 'bear', petHeight: plan.heights ? SMALL : EVEN, hook: 'middle', friend: 'duck', height: plan.heights ? BIG : EVEN },
+          {
+            petHook: 'short',
+            petFriend: 'mouse',
+            petHeight: plan.heights ? BIG : EVEN,
+            hook: 'long',
+            friend: 'bear',
+            height: plan.heights ? SMALL : EVEN,
+          },
+          {
+            petHook: 'long',
+            petFriend: 'bear',
+            petHeight: plan.heights ? SMALL : EVEN,
+            hook: 'middle',
+            friend: 'duck',
+            height: plan.heights ? BIG : EVEN,
+          },
         ];
   return { kind: 'together', lines: [first, ...more] };
 }
@@ -466,23 +615,31 @@ export function makeRound(plan: Plan, rng: Rng, authored: boolean): { round: Rou
       // Every round holds a tempting race; the authored first race is not one, so a seeded one is.
       const kinds = authored ? [false, ...rng.shuffle([true, false])] : rng.shuffle([true, false, false]);
       const lines: Race[] = [];
-      for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredRace() : seededRace(rng, kinds[i]));
+      for (let i = 0; i < plan.lines; i++)
+        lines.push(i === 0 && authored ? authoredRace() : seededRace(rng, kinds[i]));
       round = { kind: 'predict', lines };
     } else if (plan.requests) {
       // Both requests and the plain together line, in a seeded order; the authored first line is "twice".
-      const asks: Request[] = authored ? ['twice', ...rng.shuffle(['half', 'together'] as Request[])] : rng.shuffle(['twice', 'half', 'together'] as Request[]);
+      const asks: Request[] = authored
+        ? ['twice', ...rng.shuffle(['half', 'together'] as Request[])]
+        : rng.shuffle(['twice', 'half', 'together'] as Request[]);
       const lines: Line[] = [];
-      for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredRequest() : seededRequest(rng, asks[i]));
+      for (let i = 0; i < plan.lines; i++)
+        lines.push(i === 0 && authored ? authoredRequest() : seededRequest(rng, asks[i]));
       round = { kind: 'together', lines };
     } else if (plan.mode === 'push') {
       const lines: PushLine[] = [];
-      for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredPush(plan) : seededPush(plan, rng, i));
+      for (let i = 0; i < plan.lines; i++)
+        lines.push(i === 0 && authored ? authoredPush(plan) : seededPush(plan, rng, i));
       round = { kind: 'push', lines, goal };
     } else {
       // Level 5–6 rounds hold one tempting line and one more light-and-heavy pair; the authored first line is the tempting one.
-      const kinds: LineKind[] = authored ? ['tempt', ...rng.shuffle(['pair', 'any'] as LineKind[])] : rng.shuffle(['tempt', 'pair', 'any'] as LineKind[]);
+      const kinds: LineKind[] = authored
+        ? ['tempt', ...rng.shuffle(['pair', 'any'] as LineKind[])]
+        : rng.shuffle(['tempt', 'pair', 'any'] as LineKind[]);
       const lines: Line[] = [];
-      for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredTogether(plan) : seededTogether(plan, rng, kinds[i]));
+      for (let i = 0; i < plan.lines; i++)
+        lines.push(i === 0 && authored ? authoredTogether(plan) : seededTogether(plan, rng, kinds[i]));
       round = { kind: 'together', lines };
     }
     if (roundFits(plan, round)) return { round, fellBack: false };
@@ -493,12 +650,23 @@ export function makeRound(plan: Plan, rng: Rng, authored: boolean): { round: Rou
 
 /* Layout ------------------------------------------------------------------------------------------- */
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 /** The pet's corner at the bottom left, and the shell's corner buttons (as `petCorner` and `landButtons` in lands.ts). */
 export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 205 });
-export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
+export const shellButtons = (v: View): Rect[] => [
+  { x: 0, y: 0, w: 130, h: 130 },
+  { x: v.w - 130, y: 0, w: 130, h: 130 },
+];
 /** A friend on the seat, around the seat point: half its width, and how far above and below it reaches. */
 export const FRIEND_HALF = 60;
 export const FRIEND_UP = 155;
@@ -548,7 +716,8 @@ export function friendBox(p: Pt): Rect {
   return { x: p.x - FRIEND_HALF, y: p.y - FRIEND_UP, w: FRIEND_HALF * 2, h: FRIEND_UP + FRIEND_DOWN };
 }
 
-const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 export { overlaps as rectsOverlap };
 
 /**
@@ -567,10 +736,23 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
   const columns: Column[] = [];
   for (let i = 0; i < swings; i++) {
     // One swing stands in the middle when its widest arc clears the pet; otherwise each swing takes its column's middle.
-    const cx = swings === 1 ? Math.min(x1 - FRIEND_HALF - 10 - sin * scale, Math.max(v.w / 2, x0 + FRIEND_HALF + 10 + sin * scale)) : x0 + half * (2 * i + 1);
+    const cx =
+      swings === 1
+        ? Math.min(
+            x1 - FRIEND_HALF - 10 - sin * scale,
+            Math.max(v.w / 2, x0 + FRIEND_HALF + 10 + sin * scale),
+          )
+        : x0 + half * (2 * i + 1);
     const pivot = {} as Record<Hook, Pt>;
-    for (const h of HOOKS) pivot[h] = { x: cx + (h === 'short' ? SHORT_SHIFT : 0), y: seatY - (LENGTH[h] / 4) * scale };
-    const col: Column = { pivot, mitten: {} as Record<Hook, Pt>, bell: {} as Record<Hook, Pt>, basket: {} as Record<Hook, Pt>, zone: { x: 0, y: 0, w: 0, h: 0 } };
+    for (const h of HOOKS)
+      pivot[h] = { x: cx + (h === 'short' ? SHORT_SHIFT : 0), y: seatY - (LENGTH[h] / 4) * scale };
+    const col: Column = {
+      pivot,
+      mitten: {} as Record<Hook, Pt>,
+      bell: {} as Record<Hook, Pt>,
+      basket: {} as Record<Hook, Pt>,
+      zone: { x: 0, y: 0, w: 0, h: 0 },
+    };
     columns.push(col);
   }
   const layout: SwingLayout = { scale, seatY, bell, columns };
@@ -586,7 +768,8 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
     if (swings === 1) col.zone = { x: 0, y: 130, w: v.w, h: v.h - 130 };
     else {
       const mid = (columns[0].pivot.middle.x + columns[1].pivot.middle.x) / 2;
-      col.zone = i === 0 ? { x: 0, y: 130, w: mid, h: v.h - 130 } : { x: mid, y: 130, w: v.w - mid, h: v.h - 130 };
+      col.zone =
+        i === 0 ? { x: 0, y: 130, w: mid, h: v.h - 130 } : { x: mid, y: 130, w: v.w - mid, h: v.h - 130 };
     }
   }
   return layout;

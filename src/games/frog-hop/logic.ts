@@ -23,12 +23,32 @@ export interface HopPlan {
 export const PLANS: HopPlan[] = [
   { mode: 'find', top: 8, questions: 5, name: 'Hop to a number on the line, 0 to 8' },
   { mode: 'next', top: 8, questions: 5, name: 'One more or one less: hop to the next number up or back' },
-  { mode: 'add', top: 8, questions: 5, name: 'Start at a number and hop 1 to 4 more: where does the frog land?' },
+  {
+    mode: 'add',
+    top: 8,
+    questions: 5,
+    name: 'Start at a number and hop 1 to 4 more: where does the frog land?',
+  },
   { mode: 'back', top: 8, questions: 5, name: 'Hop back 1 to 4: taking away on the line' },
-  { mode: 'gap', top: 10, questions: 5, name: 'How many hops from one number to another? Choose a number card' },
+  {
+    mode: 'gap',
+    top: 10,
+    questions: 5,
+    name: 'How many hops from one number to another? Choose a number card',
+  },
   { mode: 'big', top: 20, questions: 5, name: 'A longer line to 20: hop on or back up to 6' },
-  { mode: 'make-ten', top: 20, questions: 5, name: 'Hop to 10 first, then hop the rest of a sum that crosses 10' },
-  { mode: 'back-ten', top: 20, questions: 5, name: 'Hop back to 10 first, then hop the rest of a take-away that crosses 10' },
+  {
+    mode: 'make-ten',
+    top: 20,
+    questions: 5,
+    name: 'Hop to 10 first, then hop the rest of a sum that crosses 10',
+  },
+  {
+    mode: 'back-ten',
+    top: 20,
+    questions: 5,
+    name: 'Hop back to 10 first, then hop the rest of a take-away that crosses 10',
+  },
 ];
 
 export const LEVELS: BandLevels = {

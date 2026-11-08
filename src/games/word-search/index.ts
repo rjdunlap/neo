@@ -12,7 +12,22 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
 import { typingPicture } from '../../art/word-pictures';
-import { LEVELS, blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, PICTURE_GRID, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
+import {
+  LEVELS,
+  blankFor,
+  cellsOfWord,
+  hiddenHint,
+  hintFor,
+  judgeLine,
+  lineBetween,
+  makeGrids,
+  PICTURE_GRID,
+  planFor,
+  SMALL_GRID,
+  STONE,
+  type WordGrid,
+  type WordPlan,
+} from './logic';
 import { MSG_H, SCHOOL_TOUCH, touchFrame, type Slot, type Viewport } from './layout';
 import { themeById } from '../../learning/words/themes';
 
@@ -37,7 +52,14 @@ const SLIDE = 14;
 const MSG_MIN_SLOT = 24;
 
 /** A picture word's tile: the tile itself (the target), what sinks on a tap, its paper, its picture and the picture's own scale. */
-interface Tile { node: Container; inner: Container; bg: Graphics; pic: Container; scale: number; word: Text }
+interface Tile {
+  node: Container;
+  inner: Container;
+  bg: Graphics;
+  pic: Container;
+  scale: number;
+  word: Text;
+}
 
 /** "FROG" read aloud and shown in the list as "frog". */
 const spoken = (w: string) => w.charAt(0) + w.slice(1).toLowerCase();
@@ -92,7 +114,16 @@ class WordSearch implements Game {
   slots: Slot[] = [];
   slotNodes: Container[] = [];
   /** A finger on the grid: where it began, how far the grid had slid, and whether it has become a slide. */
-  drag: { id: number; sx: number; sy: number; ox: number; oy: number; cell: number; moved: boolean; marking: boolean } | null = null;
+  drag: {
+    id: number;
+    sx: number;
+    sy: number;
+    ox: number;
+    oy: number;
+    cell: number;
+    moved: boolean;
+    marking: boolean;
+  } | null = null;
   readonly touchLayer = new Graphics();
   readonly buttonLayer = new Container();
   private readonly frame = new Graphics();
@@ -155,16 +186,52 @@ class WordSearch implements Game {
     } else {
       // The how-to card's demonstration shows the taps, not a whole list of words.
       // Three words leave too many squares open for a message, so the demonstration's grid has none.
-      this.grids = makeGrids(ctx.demo ? { ...this.plan, words: Math.min(this.plan.words, 3), message: false } : this.plan, ctx.rng);
+      this.grids = makeGrids(
+        ctx.demo ? { ...this.plan, words: Math.min(this.plan.words, 3), message: false } : this.plan,
+        ctx.rng,
+      );
       this.course = null;
     }
-    for (const part of [this.board, this.paper, this.bands, this.letters, this.glow, this.list, this.listMarks, this.title, this.tally, this.stones, this.reveal, this.messageRow, this.messageLines]) part.eventMode = 'none';
+    for (const part of [
+      this.board,
+      this.paper,
+      this.bands,
+      this.letters,
+      this.glow,
+      this.list,
+      this.listMarks,
+      this.title,
+      this.tally,
+      this.stones,
+      this.reveal,
+      this.messageRow,
+      this.messageLines,
+    ])
+      part.eventMode = 'none';
     this.board.addChild(this.paper, this.stones, this.reveal, this.bands, this.letters, this.glow);
     this.messageRow.addChild(this.messageLines);
     this.list.addChild(this.listMarks);
-    for (const part of [this.frame, this.clip, this.clipMask, this.edges, this.buttonsG, this.buttonText, this.slideNote]) part.eventMode = 'none';
+    for (const part of [
+      this.frame,
+      this.clip,
+      this.clipMask,
+      this.edges,
+      this.buttonsG,
+      this.buttonText,
+      this.slideNote,
+    ])
+      part.eventMode = 'none';
     this.clip.addChild(this.board, this.clipMask);
-    ctx.stage.addChild(this.frame, this.clip, this.edges, this.list, this.title, this.tally, this.slideNote, this.messageRow);
+    ctx.stage.addChild(
+      this.frame,
+      this.clip,
+      this.edges,
+      this.list,
+      this.title,
+      this.tally,
+      this.slideNote,
+      this.messageRow,
+    );
     this.touch = !ctx.couch;
     if (this.touch) {
       // One layer over the grid decides what a finger meant: a short touch is a tap on a letter, a longer one slides the grid.
@@ -181,9 +248,13 @@ class WordSearch implements Game {
     }
   }
 
-  get n() { return this.grid.size; }
+  get n() {
+    return this.grid.size;
+  }
 
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Layout and drawing                                                                            */
@@ -195,15 +266,24 @@ class WordSearch implements Game {
     if (this.touch) return this.resizeTouch(v);
     const n = this.n;
     // The controller reminder covers the bottom of the screen for the first ten seconds, so the grid stays above it.
-    this.cell = Math.max(34, Math.min(66, Math.floor((v.h - 100 - 200 - (this.grid.message ? MSG_H : 0)) / n)));
-    const w = n * this.cell, left = Math.max(160, (v.w - w - 320) / 2);
+    this.cell = Math.max(
+      34,
+      Math.min(66, Math.floor((v.h - 100 - 200 - (this.grid.message ? MSG_H : 0)) / n)),
+    );
+    const w = n * this.cell,
+      left = Math.max(160, (v.w - w - 320) / 2);
     this.board.position.set(left, 104);
     this.list.position.set(left + w + 44, 104);
     this.title.anchor.set(0, 0.5);
     this.tally.anchor.set(0, 0.5);
     this.title.position.set(this.list.x, this.list.y);
     this.tally.position.set(this.list.x, this.list.y + 38);
-    this.listBox = { cols: 1, step: Math.min(38, Math.floor((n * this.cell - 96) / this.grid.words.length)), top: 96, colW: 260 };
+    this.listBox = {
+      cols: 1,
+      step: Math.min(38, Math.floor((n * this.cell - 96) / this.grid.words.length)),
+      top: 96,
+      colW: 260,
+    };
     this.layoutLetters();
     this.layoutList();
     this.layoutMessage(left, 104 + w + 24, w + 300);
@@ -215,7 +295,10 @@ class WordSearch implements Game {
    * slides: the window shows part of it and a drag moves it. The list sits to the right, or under the grid on a tall view.
    */
   private resizeTouch(v: View) {
-    const n = this.n, words = this.grid.words.length, small = n <= planFor(SMALL_GRID).size, school = this.pictureTiles;
+    const n = this.n,
+      words = this.grid.words.length,
+      small = n <= planFor(SMALL_GRID).size,
+      school = this.pictureTiles;
     const f = touchFrame(v.w, v.h, { n, words, school, small, message: !!this.grid.message });
     const { listX, listY, vp, btn } = f;
     this.listBox = f.listBox;
@@ -232,7 +315,11 @@ class WordSearch implements Game {
     // grid's squares are bigger, 96 at the least.
     const pad = PAD;
     const fit = Math.floor(Math.min(vp.w - pad, vp.h - pad) / n);
-    this.cell = school ? SCHOOL_TOUCH : small ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit)) : Math.max(MIN_TOUCH, Math.min(96, fit));
+    this.cell = school
+      ? SCHOOL_TOUCH
+      : small
+        ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit))
+        : Math.max(MIN_TOUCH, Math.min(96, fit));
     const size = n * this.cell;
     this.maxX = Math.max(0, size + pad - vp.w);
     this.maxY = Math.max(0, size + pad - vp.h);
@@ -240,8 +327,13 @@ class WordSearch implements Game {
     this.scrollX = Math.min(this.maxX, Math.max(0, this.scrollX));
     this.scrollY = Math.min(this.maxY, Math.max(0, this.scrollY));
     // The paper hugs a grid that is all in view, and fills the window when the grid slides.
-    const fw = this.maxX > 0 ? vp.w : size + pad, fh = this.maxY > 0 ? vp.h : size + pad;
-    this.frame.clear().roundRect(vp.x + (vp.w - fw) / 2 - 6, vp.y + (vp.h - fh) / 2 - 6, fw + 12, fh + 12, 18).fill(PAPER).stroke({ width: 5, color: 0x9c6b3c });
+    const fw = this.maxX > 0 ? vp.w : size + pad,
+      fh = this.maxY > 0 ? vp.h : size + pad;
+    this.frame
+      .clear()
+      .roundRect(vp.x + (vp.w - fw) / 2 - 6, vp.y + (vp.h - fh) / 2 - 6, fw + 12, fh + 12, 18)
+      .fill(PAPER)
+      .stroke({ width: 5, color: 0x9c6b3c });
     this.clipMask.clear().roundRect(vp.x, vp.y, vp.w, vp.h, 12).fill(0xffffff);
     this.clip.mask = this.clipMask;
     this.frame.visible = true;
@@ -271,8 +363,10 @@ class WordSearch implements Game {
 
   /** The grid sits at the window's top left, slid by the scroll; a grid smaller than the window is centred in it. */
   private layoutBoard() {
-    const size = this.n * this.cell, { x, y, w, h } = this.vp;
-    const offX = this.maxX > 0 ? EDGE : (w - size) / 2, offY = this.maxY > 0 ? EDGE : (h - size) / 2;
+    const size = this.n * this.cell,
+      { x, y, w, h } = this.vp;
+    const offX = this.maxX > 0 ? EDGE : (w - size) / 2,
+      offY = this.maxY > 0 ? EDGE : (h - size) / 2;
     this.board.position.set(x + offX - this.scrollX, y + offY - this.scrollY);
   }
 
@@ -293,18 +387,34 @@ class WordSearch implements Game {
 
   /** Is this square wholly inside the window? */
   private inView(i: number, margin = 4) {
-    const c = this.center(i), r = this.cell / 2, x = this.board.x + c.x, y = this.board.y + c.y;
-    return x - r >= this.vp.x + margin && x + r <= this.vp.x + this.vp.w - margin && y - r >= this.vp.y + margin && y + r <= this.vp.y + this.vp.h - margin;
+    const c = this.center(i),
+      r = this.cell / 2,
+      x = this.board.x + c.x,
+      y = this.board.y + c.y;
+    return (
+      x - r >= this.vp.x + margin &&
+      x + r <= this.vp.x + this.vp.w - margin &&
+      y - r >= this.vp.y + margin &&
+      y + r <= this.vp.y + this.vp.h - margin
+    );
   }
 
   private center(i: number) {
-    return { x: (i % this.n) * this.cell + this.cell / 2, y: Math.floor(i / this.n) * this.cell + this.cell / 2 };
+    return {
+      x: (i % this.n) * this.cell + this.cell / 2,
+      y: Math.floor(i / this.n) * this.cell + this.cell / 2,
+    };
   }
 
   private buildLetters() {
     this.letters.removeChildren().forEach((c) => c.destroy());
     // A stone keeps its square's place in `texts`, with no letter on it.
-    this.texts = this.grid.letters.map((ch) => { const t = label(ch === STONE ? '' : ch, 36, ink); t.eventMode = 'none'; this.letters.addChild(t); return t; });
+    this.texts = this.grid.letters.map((ch) => {
+      const t = label(ch === STONE ? '' : ch, 36, ink);
+      t.eventMode = 'none';
+      this.letters.addChild(t);
+      return t;
+    });
   }
 
   /** Level 6: a blank for each of the message's letters, its words apart; empty on the other levels. */
@@ -313,25 +423,36 @@ class WordSearch implements Game {
     this.messageRow.addChild(this.messageLines);
     this.messageLines.clear();
     const message = this.grid.message ?? '';
-    this.messageSlots = [...message.replace(/ /g, '')].map(() => { const t = label('', 24, ink); t.eventMode = 'none'; this.messageRow.addChild(t); return t; });
+    this.messageSlots = [...message.replace(/ /g, '')].map(() => {
+      const t = label('', 24, ink);
+      t.eventMode = 'none';
+      this.messageRow.addChild(t);
+      return t;
+    });
   }
 
   /** The blanks in a row (two when the row would be too narrow) across `w`, from `x`, `y` (the top of the first row). */
   private layoutMessage(x: number, y: number, w: number) {
-    const message = this.grid.message, g = this.messageLines.clear();
+    const message = this.grid.message,
+      g = this.messageLines.clear();
     if (!message) return;
     this.messageRow.position.set(x, y);
     // Two lines at most, so the row stays inside its strip: on a narrow view the blanks shrink instead.
-    let per = Math.floor(w / MSG_MIN_SLOT), lines = message.length <= per ? [message] : wrapWords(message, per);
+    let per = Math.floor(w / MSG_MIN_SLOT),
+      lines = message.length <= per ? [message] : wrapWords(message, per);
     while (lines.length > 2) lines = wrapWords(message, ++per);
-    const slot = Math.min(36, Math.floor(w / Math.max(...lines.map((l) => l.length)))), rowH = lines.length > 1 ? 32 : 44;
+    const slot = Math.min(36, Math.floor(w / Math.max(...lines.map((l) => l.length)))),
+      rowH = lines.length > 1 ? 32 : 44;
     let k = 0;
     lines.forEach((line, row) => {
-      const left = (w - line.length * slot) / 2, base = row * rowH + rowH - 6;
+      const left = (w - line.length * slot) / 2,
+        base = row * rowH + rowH - 6;
       [...line].forEach((ch, i) => {
         if (ch === ' ') return;
         const cx = left + i * slot + slot / 2;
-        g.moveTo(cx - slot * 0.36, base).lineTo(cx + slot * 0.36, base).stroke({ width: 3, color: 0x7a746a, cap: 'round' });
+        g.moveTo(cx - slot * 0.36, base)
+          .lineTo(cx + slot * 0.36, base)
+          .stroke({ width: 3, color: 0x7a746a, cap: 'round' });
         const t = this.messageSlots[k++];
         t.style.fontSize = Math.round(Math.min(28, slot * 0.8));
         t.position.set(cx, base - t.style.fontSize * 0.6);
@@ -341,18 +462,30 @@ class WordSearch implements Game {
 
   private layoutLetters() {
     const size = Math.round(this.cell * 0.6);
-    this.texts.forEach((t, i) => { t.style.fontSize = size; const c = this.center(i); t.position.set(c.x, c.y + 1); });
+    this.texts.forEach((t, i) => {
+      t.style.fontSize = size;
+      const c = this.center(i);
+      t.position.set(c.x, c.y + 1);
+    });
   }
 
   private buildList() {
     for (const c of this.list.removeChildren()) if (c !== this.listMarks) c.destroy();
     this.list.addChild(this.listMarks);
-    this.entries = this.grid.words.map((p) => { const t = label(this.entryText(p.word, false, 0), 26, ink); t.anchor.set(0, 0.5); t.eventMode = 'none'; this.list.addChild(t); return t; });
+    this.entries = this.grid.words.map((p) => {
+      const t = label(this.entryText(p.word, false, 0), 26, ink);
+      t.anchor.set(0, 0.5);
+      t.eventMode = 'none';
+      this.list.addChild(t);
+      return t;
+    });
     this.buildTiles();
   }
 
   /** Level 8 by touch: the list is pictures, not words. A controller (never at school) keeps the written list. */
-  get pictureTiles() { return !!this.plan.pictures && this.touch; }
+  get pictureTiles() {
+    return !!this.plan.pictures && this.touch;
+  }
 
   /** Level 8: a tile a word, its picture above the word in capitals, a small speaker in the corner; a tap says the word. */
   private buildTiles() {
@@ -360,17 +493,27 @@ class WordSearch implements Game {
     this.tiles = [];
     if (!this.plan.pictures) return;
     this.tiles = this.grid.words.map((p) => {
-      const node = new Container(), inner = new Container(), bg = new Graphics();
+      const node = new Container(),
+        inner = new Container(),
+        bg = new Graphics();
       const pic = new Container();
       pic.addChild(typingPicture(p.word.toLowerCase()));
       // Fit the drawing, whatever its own size and origin, into the tile's top 64 units.
-      const b = pic.getLocalBounds(), scale = Math.min(82 / Math.max(1, b.width), 58 / Math.max(1, b.height));
+      const b = pic.getLocalBounds(),
+        scale = Math.min(82 / Math.max(1, b.width), 58 / Math.max(1, b.height));
       pic.pivot.set(b.x + b.width / 2, b.y + b.height / 2);
       pic.scale.set(scale);
       pic.position.set(SCHOOL_TOUCH / 2, 36);
       const word = label(p.word, 28, ink);
       word.position.set(SCHOOL_TOUCH / 2, 82);
-      const speaker = new Graphics().rect(78, 10, 5, 8).fill(0x7a746a).poly([83, 10, 90, 5, 90, 23, 83, 18]).fill(0x7a746a).moveTo(91 + 6 * Math.cos(-0.9), 14 + 6 * Math.sin(-0.9)).arc(91, 14, 6, -0.9, 0.9).stroke({ width: 2, color: 0x7a746a });
+      const speaker = new Graphics()
+        .rect(78, 10, 5, 8)
+        .fill(0x7a746a)
+        .poly([83, 10, 90, 5, 90, 23, 83, 18])
+        .fill(0x7a746a)
+        .moveTo(91 + 6 * Math.cos(-0.9), 14 + 6 * Math.sin(-0.9))
+        .arc(91, 14, 6, -0.9, 0.9)
+        .stroke({ width: 2, color: 0x7a746a });
       for (const part of [inner, bg, pic, word, speaker]) part.eventMode = 'none';
       inner.addChild(bg, pic, word, speaker);
       node.addChild(inner);
@@ -392,9 +535,11 @@ class WordSearch implements Game {
 
   /** Level 8: the tiles beside the grid in two columns, or under it in one row. */
   private layoutTiles() {
-    const side = this.view.w >= this.view.h, step = SCHOOL_TOUCH + TILE_GAP;
+    const side = this.view.w >= this.view.h,
+      step = SCHOOL_TOUCH + TILE_GAP;
     this.tiles.forEach((t, i) => {
-      if (side) t.node.position.set(this.list.x + (i % 2) * step, this.list.y + 66 + Math.floor(i / 2) * step);
+      if (side)
+        t.node.position.set(this.list.x + (i % 2) * step, this.list.y + 66 + Math.floor(i / 2) * step);
       else t.node.position.set(this.list.x + i * (SCHOOL_TOUCH + 12), this.list.y + 48);
     });
   }
@@ -402,10 +547,20 @@ class WordSearch implements Game {
   /** Unfound: a pale meadow green, so a white hen or cloud still shows. Hinted (or ringed after two misses): the yellow marker. Found: the word's band colour, the word struck through. */
   private paintTiles() {
     this.tiles.forEach((t, i) => {
-      const done = this.found.has(i), hinted = this.hinted?.word === i && !done, col = swatch[BAND_COLORS[i % BAND_COLORS.length]];
-      const fill = done ? col.light : hinted ? swatch.yellow.light : TILE_FILL, line = done ? col.line : hinted ? swatch.yellow.line : 0xb9b0a0;
-      const g = t.bg.clear().roundRect(0, 0, SCHOOL_TOUCH, SCHOOL_TOUCH, 14).fill(fill).stroke({ width: 3, color: line });
-      if (done) g.moveTo(SCHOOL_TOUCH / 2 - t.word.width / 2 - 4, 82).lineTo(SCHOOL_TOUCH / 2 + t.word.width / 2 + 4, 82).stroke({ width: 3, color: 0x7a746a, cap: 'round' });
+      const done = this.found.has(i),
+        hinted = this.hinted?.word === i && !done,
+        col = swatch[BAND_COLORS[i % BAND_COLORS.length]];
+      const fill = done ? col.light : hinted ? swatch.yellow.light : TILE_FILL,
+        line = done ? col.line : hinted ? swatch.yellow.line : 0xb9b0a0;
+      const g = t.bg
+        .clear()
+        .roundRect(0, 0, SCHOOL_TOUCH, SCHOOL_TOUCH, 14)
+        .fill(fill)
+        .stroke({ width: 3, color: line });
+      if (done)
+        g.moveTo(SCHOOL_TOUCH / 2 - t.word.width / 2 - 4, 82)
+          .lineTo(SCHOOL_TOUCH / 2 + t.word.width / 2 + 4, 82)
+          .stroke({ width: 3, color: 0x7a746a, cap: 'round' });
       t.word.style.fill = done ? 0x7a746a : ink;
     });
   }
@@ -414,23 +569,35 @@ class WordSearch implements Game {
   private hopTile(i: number) {
     const t = this.tiles[i];
     if (!t) return;
-    void this.ctx.tw.to(t.pic.scale, { x: t.scale * 1.3, y: t.scale * 1.3 }, { duration: 0.12 }).then(() => this.ctx.tw.to(t.pic.scale, { x: t.scale, y: t.scale }, { duration: 0.16 }));
+    void this.ctx.tw
+      .to(t.pic.scale, { x: t.scale * 1.3, y: t.scale * 1.3 }, { duration: 0.12 })
+      .then(() => this.ctx.tw.to(t.pic.scale, { x: t.scale, y: t.scale }, { duration: 0.16 }));
   }
 
   /** A list entry: the word itself, or on a hidden grid its blanks and length until it is found. */
   private entryText(word: string, found: boolean, stage: number) {
-    return this.plan.hidden && !this.course ? (found ? spoken(word) : blankFor(word, false, stage)) : spoken(word);
+    return this.plan.hidden && !this.course
+      ? found
+        ? spoken(word)
+        : blankFor(word, false, stage)
+      : spoken(word);
   }
 
   /** Where word `i` sits in the list: down a column, then across to the next. */
   private entryAt(i: number) {
-    const { cols, step, top, colW } = this.listBox, rows = Math.ceil(this.grid.words.length / cols);
+    const { cols, step, top, colW } = this.listBox,
+      rows = Math.ceil(this.grid.words.length / cols);
     return { x: 34 + Math.floor(i / rows) * colW, y: top + (i % rows) * step };
   }
 
   private layoutList() {
     const { step } = this.listBox;
-    this.entries.forEach((t, i) => { const at = this.entryAt(i); t.style.fontSize = Math.round(Math.min(28, step * 0.72)); t.position.set(at.x, at.y); t.visible = !this.pictureTiles; });
+    this.entries.forEach((t, i) => {
+      const at = this.entryAt(i);
+      t.style.fontSize = Math.round(Math.min(28, step * 0.72));
+      t.position.set(at.x, at.y);
+      t.visible = !this.pictureTiles;
+    });
     this.tileLayer.visible = this.pictureTiles && !this.finished;
     if (this.pictureTiles) this.layoutTiles();
     this.paintList();
@@ -438,14 +605,17 @@ class WordSearch implements Game {
 
   /** The word list: a dot before each, the found ones struck through and grey, the hinted one on a marker. */
   private paintList() {
-    const g = this.listMarks.clear(), { step, colW } = this.listBox;
+    const g = this.listMarks.clear(),
+      { step, colW } = this.listBox;
     if (this.pictureTiles) {
       this.paintTiles();
       this.tally.text = `${this.found.size} of ${this.grid.words.length} found`;
       return;
     }
     this.grid.words.forEach((_, i) => {
-      const { x, y } = this.entryAt(i), t = this.entries[i], done = this.found.has(i);
+      const { x, y } = this.entryAt(i),
+        t = this.entries[i],
+        done = this.found.has(i);
       t.style.fill = done ? 0x9a948a : ink;
       if (this.plan.hidden) {
         // Blanks stand apart, so a word's length can be counted at a glance; a found word reads as a word.
@@ -454,34 +624,64 @@ class WordSearch implements Game {
         // A long word's blanks pull closer, then shrink, so they stay inside their column.
         const room = colW - 50;
         if (t.width > room) t.style.letterSpacing = 1;
-        if (t.width > room) t.style.fontSize = Math.max(18, Math.floor(Number(t.style.fontSize) * room / t.width));
+        if (t.width > room)
+          t.style.fontSize = Math.max(18, Math.floor((Number(t.style.fontSize) * room) / t.width));
       }
-      if ((this.hinted?.word === i || this.clueWord === i) && !done) g.roundRect(x - 42, y - step / 2 + 2, Math.min(220, colW - 16), step - 4, 10).fill({ color: swatch.yellow.light, alpha: 0.95 }).stroke({ width: 2, color: swatch.yellow.line });
+      if ((this.hinted?.word === i || this.clueWord === i) && !done)
+        g.roundRect(x - 42, y - step / 2 + 2, Math.min(220, colW - 16), step - 4, 10)
+          .fill({ color: swatch.yellow.light, alpha: 0.95 })
+          .stroke({ width: 2, color: swatch.yellow.line });
       const col = swatch[BAND_COLORS[i % BAND_COLORS.length]];
-      g.circle(x - 24, y, 7).fill(done ? col.fill : swatch.white.light).stroke({ width: 2, color: done ? col.line : 0xb9b0a0 });
-      if (done) g.moveTo(x - 8, y).lineTo(x + t.width + 6, y).stroke({ width: 3, color: 0x7a746a, cap: 'round' });
+      g.circle(x - 24, y, 7)
+        .fill(done ? col.fill : swatch.white.light)
+        .stroke({ width: 2, color: done ? col.line : 0xb9b0a0 });
+      if (done)
+        g.moveTo(x - 8, y)
+          .lineTo(x + t.width + 6, y)
+          .stroke({ width: 3, color: 0x7a746a, cap: 'round' });
     });
-    this.tally.text = this.touch ? `${this.found.size} of ${this.grid.words.length} found` : `${this.found.size} of ${this.grid.words.length} found · ${this.guesses} ${this.guesses === 1 ? 'guess' : 'guesses'}`;
+    this.tally.text = this.touch
+      ? `${this.found.size} of ${this.grid.words.length} found`
+      : `${this.found.size} of ${this.grid.words.length} found · ${this.guesses} ${this.guesses === 1 ? 'guess' : 'guesses'}`;
   }
 
   /** The grid's paper and the bands over found words, redrawn when something changes. */
   private paint() {
     this.dirty = false;
-    const w = this.n * this.cell, r = this.cell * 0.42;
+    const w = this.n * this.cell,
+      r = this.cell * 0.42;
     // Touch play has the window's own paper; the grid slides over it.
     if (this.touch) this.paper.clear();
-    else this.paper.clear().roundRect(-14, -14, w + 28, w + 28, 18).fill(PAPER).stroke({ width: 5, color: 0x9c6b3c });
+    else
+      this.paper
+        .clear()
+        .roundRect(-14, -14, w + 28, w + 28, 18)
+        .fill(PAPER)
+        .stroke({ width: 5, color: 0x9c6b3c });
     const s = this.stones.clear();
     this.grid.letters.forEach((ch, i) => {
       if (ch !== STONE) return;
-      const c = this.center(i), rx = this.cell * 0.3, ry = this.cell * 0.22;
-      s.ellipse(c.x, c.y + 2, rx, ry).fill(0xb9b0a0).stroke({ width: 2, color: 0x8f8676 });
+      const c = this.center(i),
+        rx = this.cell * 0.3,
+        ry = this.cell * 0.22;
+      s.ellipse(c.x, c.y + 2, rx, ry)
+        .fill(0xb9b0a0)
+        .stroke({ width: 2, color: 0x8f8676 });
       s.ellipse(c.x - rx * 0.3, c.y - ry * 0.25, rx * 0.35, ry * 0.25).fill({ color: 0xffffff, alpha: 0.45 });
     });
     const g = this.bands.clear();
     this.found.forEach((idx) => {
-      const cells = cellsOfWord(this.n, this.grid.words[idx]), a = this.center(cells[0]), b = this.center(cells[cells.length - 1]);
-      g.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: r * 2, color: swatch[BAND_COLORS[idx % BAND_COLORS.length]].fill, alpha: 0.5, cap: 'round' });
+      const cells = cellsOfWord(this.n, this.grid.words[idx]),
+        a = this.center(cells[0]),
+        b = this.center(cells[cells.length - 1]);
+      g.moveTo(a.x, a.y)
+        .lineTo(b.x, b.y)
+        .stroke({
+          width: r * 2,
+          color: swatch[BAND_COLORS[idx % BAND_COLORS.length]].fill,
+          alpha: 0.5,
+          cap: 'round',
+        });
     });
   }
 
@@ -490,22 +690,32 @@ class WordSearch implements Game {
     if (!this.grid) return;
     if (this.dirty) this.paint();
     if (this.touch) {
-      if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintButtons(); }
+      if (this.pressed && this.clock >= this.pressed.until) {
+        this.pressed = null;
+        this.paintButtons();
+      }
       if (this.edgesDirty) this.paintEdges();
     }
     const g = this.glow.clear();
     if (this.finished || this.busy) return;
-    const cell = this.cell, r = cell * 0.42;
+    const cell = this.cell,
+      r = cell * 0.42;
     if (this.anchor !== null) {
-      const line = lineBetween(this.n, this.anchor, this.cursor), a = this.center(this.anchor);
+      const line = lineBetween(this.n, this.anchor, this.cursor),
+        a = this.center(this.anchor);
       if (line) {
         const b = this.center(this.cursor);
-        g.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: r * 2, color: swatch.yellow.fill, alpha: 0.55, cap: 'round' });
+        g.moveTo(a.x, a.y)
+          .lineTo(b.x, b.y)
+          .stroke({ width: r * 2, color: swatch.yellow.fill, alpha: 0.55, cap: 'round' });
       } else g.circle(a.x, a.y, r).fill({ color: swatch.yellow.fill, alpha: 0.55 });
     }
     if (this.hinted && !this.found.has(this.hinted.word)) {
       const m = this.center(this.hinted.cell);
-      g.circle(m.x, m.y, cell * 0.5 + 2 * Math.sin(this.clock * 6)).stroke({ width: 5, color: swatch.orange.fill });
+      g.circle(m.x, m.y, cell * 0.5 + 2 * Math.sin(this.clock * 6)).stroke({
+        width: 5,
+        color: swatch.orange.fill,
+      });
     }
     if (this.touch) {
       // The square under a finger lights at once.
@@ -517,7 +727,10 @@ class WordSearch implements Game {
       return;
     }
     const at = this.center(this.cursor);
-    g.roundRect(at.x - cell / 2 + 2, at.y - cell / 2 + 2, cell - 4, cell - 4, 10).stroke({ width: 4, color: ink });
+    g.roundRect(at.x - cell / 2 + 2, at.y - cell / 2 + 2, cell - 4, cell - 4, 10).stroke({
+      width: 4,
+      color: ink,
+    });
   }
 
   destroy() {
@@ -533,13 +746,38 @@ class WordSearch implements Game {
   /** A soft strip along each edge that has more of the grid beyond it. */
   private paintEdges() {
     this.edgesDirty = false;
-    const g = this.edges.clear(), { x, y, w, h } = this.vp, t = 12, col = swatch.orange.fill;
+    const g = this.edges.clear(),
+      { x, y, w, h } = this.vp,
+      t = 12,
+      col = swatch.orange.fill;
     if (!this.touch || (this.maxX <= 0 && this.maxY <= 0)) return;
-    const tri = (cx: number, cy: number, dx: number, dy: number) => g.poly([cx + dx * 9 - dy * 12, cy + dy * 9 + dx * 12, cx + dx * 9 + dy * 12, cy + dy * 9 - dx * 12, cx - dx * 9, cy - dy * 9]).fill({ color: swatch.orange.line, alpha: 0.9 });
-    if (this.scrollX > 1) { g.rect(x, y, t, h).fill({ color: col, alpha: 0.3 }); tri(x + t / 2, y + h / 2, -1, 0); }
-    if (this.scrollX < this.maxX - 1) { g.rect(x + w - t, y, t, h).fill({ color: col, alpha: 0.3 }); tri(x + w - t / 2, y + h / 2, 1, 0); }
-    if (this.scrollY > 1) { g.rect(x, y, w, t).fill({ color: col, alpha: 0.3 }); tri(x + w / 2, y + t / 2, 0, -1); }
-    if (this.scrollY < this.maxY - 1) { g.rect(x, y + h - t, w, t).fill({ color: col, alpha: 0.3 }); tri(x + w / 2, y + h - t / 2, 0, 1); }
+    const tri = (cx: number, cy: number, dx: number, dy: number) =>
+      g
+        .poly([
+          cx + dx * 9 - dy * 12,
+          cy + dy * 9 + dx * 12,
+          cx + dx * 9 + dy * 12,
+          cy + dy * 9 - dx * 12,
+          cx - dx * 9,
+          cy - dy * 9,
+        ])
+        .fill({ color: swatch.orange.line, alpha: 0.9 });
+    if (this.scrollX > 1) {
+      g.rect(x, y, t, h).fill({ color: col, alpha: 0.3 });
+      tri(x + t / 2, y + h / 2, -1, 0);
+    }
+    if (this.scrollX < this.maxX - 1) {
+      g.rect(x + w - t, y, t, h).fill({ color: col, alpha: 0.3 });
+      tri(x + w - t / 2, y + h / 2, 1, 0);
+    }
+    if (this.scrollY > 1) {
+      g.rect(x, y, w, t).fill({ color: col, alpha: 0.3 });
+      tri(x + w / 2, y + t / 2, 0, -1);
+    }
+    if (this.scrollY < this.maxY - 1) {
+      g.rect(x, y + h - t, w, t).fill({ color: col, alpha: 0.3 });
+      tri(x + w / 2, y + h - t / 2, 0, 1);
+    }
   }
 
   /** Touch play's two buttons: Hint and Start over. A button sinks while it is pressed. */
@@ -548,9 +786,12 @@ class WordSearch implements Game {
     this.buttonText.removeChildren().forEach((c) => c.destroy());
     this.slots.forEach((s, k) => {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
-      const sw = s.kind === 'hint' ? swatch.blue : swatch.teal, text = s.kind === 'hint' ? 'Hint ◇' : s.w < 150 ? 'Start\nover ↺' : 'Start over ↺';
+      const sw = s.kind === 'hint' ? swatch.blue : swatch.teal,
+        text = s.kind === 'hint' ? 'Hint ◇' : s.w < 150 ? 'Start\nover ↺' : 'Start over ↺';
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
-      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(sw.light).stroke({ width: 3, color: sw.line });
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14)
+        .fill(sw.light)
+        .stroke({ width: 3, color: sw.line });
       const t = label(text, 22, ink);
       t.style.align = 'center';
       if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
@@ -592,15 +833,28 @@ class WordSearch implements Game {
     this.list.alpha = 0;
     this.messageRow.alpha = 0;
     this.tileLayer.alpha = 0;
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.tileLayer, { alpha: 1 }, { duration: 0.3 })]);
+    await Promise.all([
+      this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.list, { alpha: 1 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.messageRow, { alpha: 1 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.tileLayer, { alpha: 1 }, { duration: 0.3 }),
+    ]);
     this.busy = false;
     this.report();
     if (this.spokenGo) return;
     this.spokenGo = true;
-    if (this.grid.message) return this.ctx.instruct(this.touch ? 'wordsearch.go-message' : 'wordsearch.go-message-keys');
-    if (this.plan.hidden && !this.course) return this.ctx.instruct(this.touch ? 'wordsearch.go-hidden' : 'wordsearch.go-hidden-keys');
+    if (this.grid.message)
+      return this.ctx.instruct(this.touch ? 'wordsearch.go-message' : 'wordsearch.go-message-keys');
+    if (this.plan.hidden && !this.course)
+      return this.ctx.instruct(this.touch ? 'wordsearch.go-hidden' : 'wordsearch.go-hidden-keys');
     if (this.pictureTiles) return this.ctx.instruct('wordsearch.go-school');
-    return this.ctx.instruct(!this.touch ? 'wordsearch.go' : this.maxX > 0 || this.maxY > 0 ? 'wordsearch.go-slide' : 'wordsearch.go-touch');
+    return this.ctx.instruct(
+      !this.touch
+        ? 'wordsearch.go'
+        : this.maxX > 0 || this.maxY > 0
+          ? 'wordsearch.go-slide'
+          : 'wordsearch.go-touch',
+    );
   }
 
   /** Hand a course's numbers to the shell. `finished` means the grid just ended, so none of its guesses are "in progress". */
@@ -620,8 +874,12 @@ class WordSearch implements Game {
 
   /** The score for the grid just finished, over the board for a moment. */
   private async gridScore() {
-    const best = this.grid.words.length, total = this.grids.length;
-    const text = this.guesses === best ? `Grid ${this.index + 1} of ${total}: ${this.guesses} guesses, every one right!` : `Grid ${this.index + 1} of ${total}: ${this.guesses} guesses (fewest ${best})`;
+    const best = this.grid.words.length,
+      total = this.grids.length;
+    const text =
+      this.guesses === best
+        ? `Grid ${this.index + 1} of ${total}: ${this.guesses} guesses, every one right!`
+        : `Grid ${this.index + 1} of ${total}: ${this.guesses} guesses (fewest ${best})`;
     const note = label(text, 32, ink);
     note.position.set(this.view.w / 2, 52);
     note.alpha = 0;
@@ -646,18 +904,34 @@ class WordSearch implements Game {
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
         const t = this.texts[r * n + c];
-        void this.ctx.tw.to(t.scale, { x: 1.3, y: 1.3 }, { duration: 0.1 }).then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.12 }));
+        void this.ctx.tw
+          .to(t.scale, { x: 1.3, y: 1.3 }, { duration: 0.1 })
+          .then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.12 }));
       }
       sfx.bell(3 + (r % 7), 0.2);
       await this.ctx.tw.wait(0.07);
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 28, speed: [160, 400], gravity: 0, life: [0.6, 1.1] });
+    const mid = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }),
+    );
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 28,
+      speed: [160, 400],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     this.ctx.pet.cheer();
     sfx.sparkle();
     if (this.course) await this.gridScore();
     else if (!this.grid.message) await this.ctx.say('wordsearch.cleared');
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.tileLayer, { alpha: 0 }, { duration: 0.3 })]);
+    await Promise.all([
+      this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.list, { alpha: 0 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.messageRow, { alpha: 0 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.tileLayer, { alpha: 0 }, { duration: 0.3 }),
+    ]);
     await this.next();
   }
 
@@ -666,11 +940,14 @@ class WordSearch implements Game {
    * blank, then the pet reads the message out and it stays a moment to be read. Reading it is never checked.
    */
   private async readMessage() {
-    const message = this.grid.message!, used = new Set(this.grid.words.flatMap((p) => cellsOfWord(this.n, p)));
+    const message = this.grid.message!,
+      used = new Set(this.grid.words.flatMap((p) => cellsOfWord(this.n, p)));
     const cells = this.grid.letters.flatMap((ch, i) => (used.has(i) || ch === STONE ? [] : [i]));
-    const g = this.reveal.clear(), r = this.cell * 0.42;
+    const g = this.reveal.clear(),
+      r = this.cell * 0.42;
     for (const [k, i] of cells.entries()) {
-      const c = this.center(i), slot = this.messageSlots[k];
+      const c = this.center(i),
+        slot = this.messageSlots[k];
       g.circle(c.x, c.y, r).fill({ color: swatch.yellow.fill, alpha: 0.6 });
       if (slot) {
         slot.text = this.grid.letters[i];
@@ -714,7 +991,16 @@ class WordSearch implements Game {
     const p = this.touchLayer.toLocal(e.global);
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
     const cell = this.cellAt(e.global.x, e.global.y);
-    this.drag = { id: e.pointerId, sx: p.x, sy: p.y, ox: this.scrollX, oy: this.scrollY, cell, moved: false, marking: false };
+    this.drag = {
+      id: e.pointerId,
+      sx: p.x,
+      sy: p.y,
+      ox: this.scrollX,
+      oy: this.scrollY,
+      cell,
+      moved: false,
+      marking: false,
+    };
     if (cell >= 0) this.cursor = cell;
   };
 
@@ -723,7 +1009,8 @@ class WordSearch implements Game {
     if (!d || e.pointerId !== d.id || this.busy || this.finished) return;
     const p = this.touchLayer.toLocal(e.global);
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
-    const dx = p.x - d.sx, dy = p.y - d.sy;
+    const dx = p.x - d.sx,
+      dy = p.y - d.sy;
     if (!d.moved && Math.hypot(dx, dy) < SLIDE) return;
     d.moved = true;
     if (this.maxX > 0 || this.maxY > 0) {
@@ -757,7 +1044,11 @@ class WordSearch implements Game {
     if (end < 0 || end === d.cell) return void this.cancel();
     this.cursor = end;
     // A drag that does not run straight is let go: neither right nor wrong, and it costs nothing.
-    if (!lineBetween(this.n, d.cell, end)) { this.anchor = null; sfx.squeak(); return; }
+    if (!lineBetween(this.n, d.cell, end)) {
+      this.anchor = null;
+      sfx.squeak();
+      return;
+    }
     this.press();
   };
 
@@ -771,7 +1062,8 @@ class WordSearch implements Game {
   private cellAt(gx: number, gy: number) {
     const p = this.board.toLocal({ x: gx, y: gy });
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return -1;
-    const c = Math.floor(p.x / this.cell), r = Math.floor(p.y / this.cell);
+    const c = Math.floor(p.x / this.cell),
+      r = Math.floor(p.y / this.cell);
     return c < 0 || r < 0 || c >= this.n || r >= this.n ? -1 : r * this.n + c;
   }
 
@@ -826,7 +1118,16 @@ class WordSearch implements Game {
     if (this.touch || this.finished || !this.grid) return;
     this.touch = true;
     this.drag = null;
-    for (const part of [this.touchLayer, this.buttonLayer, this.buttonsG, this.buttonText, this.edges, this.frame, this.slideNote]) part.visible = true;
+    for (const part of [
+      this.touchLayer,
+      this.buttonLayer,
+      this.buttonsG,
+      this.buttonText,
+      this.edges,
+      this.frame,
+      this.slideNote,
+    ])
+      part.visible = true;
     this.resize(this.view);
   }
 
@@ -839,8 +1140,11 @@ class WordSearch implements Game {
   }
 
   private move(dir: number) {
-    const n = this.n, r = Math.floor(this.cursor / n), c = this.cursor % n;
-    const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])), nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
+    const n = this.n,
+      r = Math.floor(this.cursor / n),
+      c = this.cursor % n;
+    const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])),
+      nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
     const to = nr * n + nc;
     if (to === this.cursor) return;
     this.cursor = to;
@@ -889,7 +1193,11 @@ class WordSearch implements Game {
         this.ringSaid = ring.word;
         const word = spoken(this.grid.words[ring.word].word);
         // Only while that ring still stands: a word found (or a new mark) meanwhile makes the line stale.
-        if (fresh) void said.then(() => { if (this.hinted === ring && !this.found.has(ring.word)) void this.ctx.say('wordsearch.hint', { word }); });
+        if (fresh)
+          void said.then(() => {
+            if (this.hinted === ring && !this.found.has(ring.word))
+              void this.ctx.say('wordsearch.hint', { word });
+          });
       }
     } else if (hit < 0) {
       this.misses++;
@@ -989,19 +1297,35 @@ class WordSearch implements Game {
     const i = this.grid.words.findIndex((_, k) => !this.found.has(k));
     if (i < 0) return null;
     const cells = cellsOfWord(this.n, this.grid.words[i]);
-    const first = cells[0], last = cells[cells.length - 1];
+    const first = cells[0],
+      last = cells[cells.length - 1];
     // A mark begun at the wrong letter is let go by tapping it again.
-    const target = this.anchor !== null && this.anchor !== first ? this.anchor : this.anchor === null ? first : last;
+    const target =
+      this.anchor !== null && this.anchor !== first ? this.anchor : this.anchor === null ? first : last;
     if (!this.inView(target)) {
-      const c = this.center(target), L = this.touchLayer, { x, y, w, h } = this.vp;
-      const nx = Math.min(this.maxX, Math.max(0, c.x + EDGE - w / 2)), ny = Math.min(this.maxY, Math.max(0, c.y + EDGE - h / 2));
-      const dx = nx - this.scrollX, dy = ny - this.scrollY;
+      const c = this.center(target),
+        L = this.touchLayer,
+        { x, y, w, h } = this.vp;
+      const nx = Math.min(this.maxX, Math.max(0, c.x + EDGE - w / 2)),
+        ny = Math.min(this.maxY, Math.max(0, c.y + EDGE - h / 2));
+      const dx = nx - this.scrollX,
+        dy = ny - this.scrollY;
       // The finger drags the grid the other way: it ends where the grid has moved by the same distance.
-      const cx = x + w / 2, cy = y + h / 2;
-      return { trace: { on: L, x: cx + dx / 2, y: cy + dy / 2 }, via: [{ on: L, x: cx - dx / 2, y: cy - dy / 2 }], receiver: L, pause: 0.4 };
+      const cx = x + w / 2,
+        cy = y + h / 2;
+      return {
+        trace: { on: L, x: cx + dx / 2, y: cy + dy / 2 },
+        via: [{ on: L, x: cx - dx / 2, y: cy - dy / 2 }],
+        receiver: L,
+        pause: 0.4,
+      };
     }
     const at = this.center(target);
-    return { tap: { on: this.board, x: at.x, y: at.y }, receiver: this.touchLayer, pause: this.anchor === null ? 0.35 : 0.7 };
+    return {
+      tap: { on: this.board, x: at.x, y: at.y },
+      receiver: this.touchLayer,
+      pause: this.anchor === null ? 0.35 : 0.7,
+    };
   }
 
   /** A bot that finds the words in list order: walk to a word's first letter, mark it, walk to its last letter, check. */
@@ -1014,13 +1338,33 @@ class WordSearch implements Game {
     const cells = cellsOfWord(this.n, this.grid.words[i]);
     const p = out.players[0];
     p.active = true;
-    const first = cells[0], last = cells[cells.length - 1], n = this.n;
+    const first = cells[0],
+      last = cells[cells.length - 1],
+      n = this.n;
     // A mark begun in the wrong place is let go first.
-    if (this.anchor !== null && this.anchor !== first) { p.undo = true; this.botWait = 0.2; return out; }
+    if (this.anchor !== null && this.anchor !== first) {
+      p.undo = true;
+      this.botWait = 0.2;
+      return out;
+    }
     const target = this.anchor === null ? first : last;
     if (this.cursor !== target) {
-      const fr = Math.floor(this.cursor / n), fc = this.cursor % n, tr = Math.floor(target / n), tc = target % n;
-      p.direction = Math.abs(tc - fc) >= Math.abs(tr - fr) && fc !== tc ? (tc > fc ? 0 : 2) : tr > fr ? 1 : tr < fr ? 3 : tc > fc ? 0 : 2;
+      const fr = Math.floor(this.cursor / n),
+        fc = this.cursor % n,
+        tr = Math.floor(target / n),
+        tc = target % n;
+      p.direction =
+        Math.abs(tc - fc) >= Math.abs(tr - fr) && fc !== tc
+          ? tc > fc
+            ? 0
+            : 2
+          : tr > fr
+            ? 1
+            : tr < fr
+              ? 3
+              : tc > fc
+                ? 0
+                : 2;
       this.botWait = 0.07;
       return out;
     }
@@ -1039,14 +1383,24 @@ function miniGrid(cell: number): Container {
   const c = new Container();
   const rows = ['SFROG', 'WEATK', 'IPQLN', 'MNEWT', 'DUCKS'];
   const w = rows.length * cell;
-  c.addChild(new Graphics().roundRect(-w / 2 - 8, -w / 2 - 8, w + 16, w + 16, 14).fill(PAPER).stroke({ width: 5, color: 0x9c6b3c }));
-  const band = new Graphics().moveTo(-w / 2 + cell * 1.5, -w / 2 + cell * 0.5).lineTo(-w / 2 + cell * 4.5, -w / 2 + cell * 0.5).stroke({ width: cell * 0.82, color: swatch.pink.fill, alpha: 0.55, cap: 'round' });
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2 - 8, -w / 2 - 8, w + 16, w + 16, 14)
+      .fill(PAPER)
+      .stroke({ width: 5, color: 0x9c6b3c }),
+  );
+  const band = new Graphics()
+    .moveTo(-w / 2 + cell * 1.5, -w / 2 + cell * 0.5)
+    .lineTo(-w / 2 + cell * 4.5, -w / 2 + cell * 0.5)
+    .stroke({ width: cell * 0.82, color: swatch.pink.fill, alpha: 0.55, cap: 'round' });
   c.addChild(band);
-  rows.forEach((row, r) => [...row].forEach((ch, k) => {
-    const t = label(ch, Math.round(cell * 0.62), ink);
-    t.position.set(-w / 2 + k * cell + cell / 2, -w / 2 + r * cell + cell / 2 + 1);
-    c.addChild(t);
-  }));
+  rows.forEach((row, r) =>
+    [...row].forEach((ch, k) => {
+      const t = label(ch, Math.round(cell * 0.62), ink);
+      t.position.set(-w / 2 + k * cell + cell / 2, -w / 2 + r * cell + cell / 2 + 1);
+      c.addChild(t);
+    }),
+  );
   return c;
 }
 
@@ -1063,11 +1417,20 @@ class WordIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 78).fill(swatch.pink.light).stroke({ width: 6, color: swatch.pink.line }));
+  c.addChild(
+    new Graphics().circle(0, 0, 78).fill(swatch.pink.light).stroke({ width: 6, color: swatch.pink.line }),
+  );
   const word = rng.pick(['FROG', 'DUCK', 'LILY', 'SWAN', 'ROSE', 'BLOOM']);
-  const band = new Graphics().moveTo(-46, 0).lineTo(46, 0).stroke({ width: 52, color: 0xffffff, alpha: 0.8, cap: 'round' });
+  const band = new Graphics()
+    .moveTo(-46, 0)
+    .lineTo(46, 0)
+    .stroke({ width: 52, color: 0xffffff, alpha: 0.8, cap: 'round' });
   c.addChild(band);
-  [...word].forEach((ch, k) => { const t = label(ch, 30, ink); t.position.set(-34 + k * 23, 1); c.addChild(t); });
+  [...word].forEach((ch, k) => {
+    const t = label(ch, 30, ink);
+    t.position.set(-34 + k * 23, 1);
+    c.addChild(t);
+  });
   return c;
 }
 
@@ -1082,7 +1445,8 @@ export const wordSearch: GameModule = {
   bands: ['school', 'grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
-  coplayHint: 'Tap the first letter of a word, then its last letter. Ask which word to hunt for next, and where the tricky ones might hide: slanted, or backwards.',
+  coplayHint:
+    'Tap the first letter of a word, then its last letter. Ask which word to hunt for next, and where the tricky ones might hide: slanted, or backwards.',
   offScreen: 'Hide a few words in a grid of letters on paper for someone else to find.',
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [SMALL_GRID, PICTURE_GRID],

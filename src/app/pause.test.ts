@@ -28,7 +28,10 @@ describe('escapeAction', () => {
 });
 
 describe('PadStart', () => {
-  const pad = (start: boolean) => ({ connected: true, buttons: Array.from({ length: 10 }, (_, i) => ({ pressed: i === 9 && start })) });
+  const pad = (start: boolean) => ({
+    connected: true,
+    buttons: Array.from({ length: 10 }, (_, i) => ({ pressed: i === 9 && start })),
+  });
 
   it('fires once per press, not while held', () => {
     const s = new PadStart();
@@ -48,7 +51,11 @@ describe('PadStart', () => {
 });
 
 describe('PadSheet', () => {
-  const pad = (held: number[], y = 0) => ({ connected: true, axes: [0, y], buttons: Array.from({ length: 16 }, (_, i) => ({ pressed: held.includes(i) })) });
+  const pad = (held: number[], y = 0) => ({
+    connected: true,
+    axes: [0, y],
+    buttons: Array.from({ length: 16 }, (_, i) => ({ pressed: held.includes(i) })),
+  });
 
   it('moves on a d-pad or stick edge, once per push', () => {
     const s = new PadSheet();
@@ -88,22 +95,34 @@ describe('PadSheet', () => {
 describe('pauseLabels', () => {
   const both = { restart: true, hint: true };
 
-  it('uses the couch pause menu\'s labels where the couch plays the game', () => {
-    expect(pauseLabels(['school'], both, { restart: 'Clear this sea', hint: 'Show a hint' })).toEqual({ restart: 'Clear this sea', hint: 'Show a hint' });
-    expect(pauseLabels(['school'], both, { restart: 'Start this pond again' })).toEqual({ restart: 'Start this pond again', hint: undefined });
+  it("uses the couch pause menu's labels where the couch plays the game", () => {
+    expect(pauseLabels(['school'], both, { restart: 'Clear this sea', hint: 'Show a hint' })).toEqual({
+      restart: 'Clear this sea',
+      hint: 'Show a hint',
+    });
+    expect(pauseLabels(['school'], both, { restart: 'Start this pond again' })).toEqual({
+      restart: 'Start this pond again',
+      hint: undefined,
+    });
   });
 
   it('gives a grown-ups-only game plain labels', () => {
     expect(pauseLabels(['grownup'], both)).toEqual({ restart: 'Start again', hint: 'Show a hint' });
   });
 
-  it('offers a child\'s game nothing the couch has not labelled, so a hint is never a button that steps her down', () => {
+  it("offers a child's game nothing the couch has not labelled, so a hint is never a button that steps her down", () => {
     expect(pauseLabels(['school'], both)).toEqual({ restart: undefined, hint: undefined });
     expect(pauseLabels(['school', 'grownup'], both)).toEqual({ restart: undefined, hint: undefined });
   });
 
   it('needs the game to implement the method', () => {
-    expect(pauseLabels(['grownup'], { restart: true, hint: false })).toEqual({ restart: 'Start again', hint: undefined });
-    expect(pauseLabels(['school'], { restart: false, hint: false }, { restart: 'x', hint: 'y' })).toEqual({ restart: undefined, hint: undefined });
+    expect(pauseLabels(['grownup'], { restart: true, hint: false })).toEqual({
+      restart: 'Start again',
+      hint: undefined,
+    });
+    expect(pauseLabels(['school'], { restart: false, hint: false }, { restart: 'x', hint: 'y' })).toEqual({
+      restart: undefined,
+      hint: undefined,
+    });
   });
 });

@@ -3,7 +3,9 @@ export const VOICE = {
   'game.market-stall': ['Market stall!'],
   'shop.pay': ['The {fruit} costs {n}. Tap coins onto the counter, then ring the bell!'],
   'shop.pair': ['A {a} for {n} and a {b} for {m}. How much for both? Pay, then ring the bell!'],
-  'shop.change': ['You keep the stall! The {fruit} costs {n}, and they paid 10. Give them their change, then ring the bell.'],
+  'shop.change': [
+    'You keep the stall! The {fruit} costs {n}, and they paid 10. Give them their change, then ring the bell.',
+  ],
   'shop.fewest': ['The {fruit} costs {n}. Pay with as few shell coins as you can, then ring the bell!'],
   'shop.again': ['Thank you! Now buy another one, and pay a different way!'],
   'shop.short': ['Not enough yet. It costs {n}.'],
@@ -11,10 +13,14 @@ export const VOICE = {
   'shop.change.short': ['They need more change. The price and the change together make 10.'],
   'shop.change.over': ['That is too much change! The price and the change together make 10.'],
   'shop.sameway': ['That is the same way as before! Try different coins.'],
-  'shop.fewer': ['That pays {n}, but can you use fewer shells? Tap a shell on the mat to put it back, then try again.'],
+  'shop.fewer': [
+    'That pays {n}, but can you use fewer shells? Tap a shell on the mat to put it back, then try again.',
+  ],
   'shop.price': ['That is the price. They paid 10. Give back what is left after paying for the fruit.'],
   'shop.oneprice': ['That pays for one thing. Add both prices to pay for both.'],
-  'shop.values': ['Count what each shell is worth, rather than how many coins you have. A two is worth two, and a five is worth five.'],
+  'shop.values': [
+    'Count what each shell is worth, rather than how many coins you have. A two is worth two, and a five is worth five.',
+  ],
   'shop.one.more': ['One more shell will make the right amount.'],
   'shop.one.less': ['One shell too many. Can you make one less with your coins?'],
   'shop.big': ['One of those coins is worth more than the whole amount. Try smaller coins.'],

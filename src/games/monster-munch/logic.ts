@@ -11,15 +11,30 @@ export type Order = Record<Food, number>;
 export const noFood = (): Order => ({ cookie: 0, apple: 0, carrot: 0, berry: 0, cracker: 0 });
 
 /** Pairs too easy to mix up side by side at level 6: two round, baked browns; two round reds. */
-const LOOK_ALIKE: [Food, Food][] = [['cookie', 'cracker'], ['apple', 'berry']];
-export const lookAlike = (a: Food, b: Food) => LOOK_ALIKE.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
+const LOOK_ALIKE: [Food, Food][] = [
+  ['cookie', 'cracker'],
+  ['apple', 'berry'],
+];
+export const lookAlike = (a: Food, b: Food) =>
+  LOOK_ALIKE.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
 
 /** "1 berry", "3 berries", "2 cookies". */
 export function foodWord(food: Food, n: number): string {
   if (n === 1) return food;
   return food === 'berry' ? 'berries' : `${food}s`;
 }
-export type MunchMode = 'tap' | 'big' | 'count' | 'each' | 'eachkind' | 'exact' | 'two' | 'share' | 'leftover' | 'friends' | 'sharekind';
+export type MunchMode =
+  | 'tap'
+  | 'big'
+  | 'count'
+  | 'each'
+  | 'eachkind'
+  | 'exact'
+  | 'two'
+  | 'share'
+  | 'leftover'
+  | 'friends'
+  | 'sharekind';
 
 export interface MunchPlan {
   mode: MunchMode;
@@ -39,24 +54,105 @@ export interface MunchPlan {
 }
 
 export const MUNCH_PLANS: MunchPlan[] = [
-  { mode: 'tap', rounds: 2, min: 4, max: 6, amounts: [4, 6], name: 'Tap cookies (or the monster) to feed it while it counts them' },
-  { mode: 'count', rounds: 2, min: 3, max: 5, amounts: [3, 5], name: 'Feed three, then five cookies while the monster counts them' },
+  {
+    mode: 'tap',
+    rounds: 2,
+    min: 4,
+    max: 6,
+    amounts: [4, 6],
+    name: 'Tap cookies (or the monster) to feed it while it counts them',
+  },
+  {
+    mode: 'count',
+    rounds: 2,
+    min: 3,
+    max: 5,
+    amounts: [3, 5],
+    name: 'Feed three, then five cookies while the monster counts them',
+  },
   { mode: 'each', rounds: 2, min: 1, max: 1, monsters: [2, 3], name: 'Give each monster one cookie' },
-  { mode: 'exact', rounds: 3, min: 1, max: 4, dots: true, pool: true, name: 'Feed 1 to 4 of one food (number and dots), then ring the bell' },
-  { mode: 'exact', rounds: 3, min: 3, max: 7, pool: true, name: 'Feed 3 to 7 of one food (number only), then ring the bell' },
-  { mode: 'two', rounds: 3, min: 1, max: 3, pool: true, name: 'Feed two foods at once, like "2 carrots and 1 apple"' },
-  { mode: 'share', rounds: 2, min: 2, max: 3, monsters: [2, 3], pool: true, name: 'Share one food fairly, then say how many each monster got' },
-  { mode: 'leftover', rounds: 2, min: 2, max: 3, monsters: [2, 3], pool: true, name: 'Share fairly when it does not come out even: how many each, and how many left over?' },
-  { mode: 'big', rounds: 2, min: 3, max: 3, amounts: [3, 3], name: 'Tap three big cookies (or the monster) and its belly grows' },
-  { mode: 'eachkind', rounds: 2, min: 1, max: 1, monsters: [2, 3], name: 'Give each monster a cookie and an apple' },
-  { mode: 'friends', rounds: 2, min: 2, max: 3, dots: true, name: 'Call friends for groups of 2 or 3 cookies, then count friends and leftovers (including zero)' },
-  { mode: 'sharekind', rounds: 2, min: 1, max: 3, monsters: [2], name: 'Share cookies and apples fairly, then count how many of each per monster' },
+  {
+    mode: 'exact',
+    rounds: 3,
+    min: 1,
+    max: 4,
+    dots: true,
+    pool: true,
+    name: 'Feed 1 to 4 of one food (number and dots), then ring the bell',
+  },
+  {
+    mode: 'exact',
+    rounds: 3,
+    min: 3,
+    max: 7,
+    pool: true,
+    name: 'Feed 3 to 7 of one food (number only), then ring the bell',
+  },
+  {
+    mode: 'two',
+    rounds: 3,
+    min: 1,
+    max: 3,
+    pool: true,
+    name: 'Feed two foods at once, like "2 carrots and 1 apple"',
+  },
+  {
+    mode: 'share',
+    rounds: 2,
+    min: 2,
+    max: 3,
+    monsters: [2, 3],
+    pool: true,
+    name: 'Share one food fairly, then say how many each monster got',
+  },
+  {
+    mode: 'leftover',
+    rounds: 2,
+    min: 2,
+    max: 3,
+    monsters: [2, 3],
+    pool: true,
+    name: 'Share fairly when it does not come out even: how many each, and how many left over?',
+  },
+  {
+    mode: 'big',
+    rounds: 2,
+    min: 3,
+    max: 3,
+    amounts: [3, 3],
+    name: 'Tap three big cookies (or the monster) and its belly grows',
+  },
+  {
+    mode: 'eachkind',
+    rounds: 2,
+    min: 1,
+    max: 1,
+    monsters: [2, 3],
+    name: 'Give each monster a cookie and an apple',
+  },
+  {
+    mode: 'friends',
+    rounds: 2,
+    min: 2,
+    max: 3,
+    dots: true,
+    name: 'Call friends for groups of 2 or 3 cookies, then count friends and leftovers (including zero)',
+  },
+  {
+    mode: 'sharekind',
+    rounds: 2,
+    min: 1,
+    max: 3,
+    monsters: [2],
+    name: 'Share cookies and apples fairly, then count how many of each per monster',
+  },
 ];
 
 /** Tapping levels: a tap feeds the next cookie, and nothing can go wrong. */
 export const isTapMode = (mode: MunchMode) => mode === 'tap' || mode === 'big';
 
-export const munchPlan = (level: number) => MUNCH_PLANS[Math.max(0, Math.min(MUNCH_PLANS.length - 1, level - 1))];
+export const munchPlan = (level: number) =>
+  MUNCH_PLANS[Math.max(0, Math.min(MUNCH_PLANS.length - 1, level - 1))];
 
 export interface MunchRound {
   monsters: number;
@@ -147,7 +243,10 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
       }
       case 'leftover': {
         // Fewer leftovers than monsters, and everything still fits on the tray.
-        const each = rng.int(plan.min, Math.min(plan.max, Math.floor((TRAY_MAX - (monsters - 1)) / monsters)));
+        const each = rng.int(
+          plan.min,
+          Math.min(plan.max, Math.floor((TRAY_MAX - (monsters - 1)) / monsters)),
+        );
         const left = rng.int(1, monsters - 1);
         rounds.push({ monsters, kinds, want: of(each), tray: of(each * monsters + left), left });
         break;
@@ -179,13 +278,17 @@ export function extras(counts: number[], each: number): number[] {
 
 /** Three different answers from 1 to 10, including `answer`. */
 export function numberChoices(answer: number, rng: Rng): number[] {
-  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= (answer === 0 ? 0 : 1) && v <= 10);
+  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter(
+    (v) => v >= (answer === 0 ? 0 : 1) && v <= 10,
+  );
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
 }
 
 /** "3 cookies", "1 apple", "2 berries and 1 carrot"; `more` gives "1 more cookie". Foods are said in `FOODS` order, as the sign shows them. */
 export function orderWords(o: Order, more = false): string {
-  const parts = FOODS.filter((f) => o[f] > 0).map((f) => `${o[f]} ${more ? 'more ' : ''}${foodWord(f, o[f])}`);
+  const parts = FOODS.filter((f) => o[f] > 0).map(
+    (f) => `${o[f]} ${more ? 'more ' : ''}${foodWord(f, o[f])}`,
+  );
   return parts.join(' and ') || 'nothing';
 }
 
@@ -228,7 +331,7 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
     }
     case 'sharekind': {
       for (const food of t.kinds) {
-        const to = t.fed.reduce((best, f, i) => f[food] < t.fed[best][food] ? i : best, 0);
+        const to = t.fed.reduce((best, f, i) => (f[food] < t.fed[best][food] ? i : best), 0);
         const i = t.fed[to][food] < t.want[food] ? waiting(food) : -1;
         if (i >= 0) return { give: i, to };
       }
@@ -318,7 +421,9 @@ export function canCallFriend(t: MunchTable): boolean {
 
 /** All called friends have exactly their group, and no further complete group remains. */
 export function friendsReady(t: MunchTable): boolean {
-  return t.fed.every((f) => complete(t.want, f)) && t.snacks.filter((s) => !s.eaten).length < t.want[t.kinds[0]];
+  return (
+    t.fed.every((f) => complete(t.want, f)) && t.snacks.filter((s) => !s.eaten).length < t.want[t.kinds[0]]
+  );
 }
 
 /** Return only the overfull food of each kind; matching totals alone are not fair shares. */

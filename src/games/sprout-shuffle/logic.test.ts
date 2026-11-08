@@ -1,15 +1,75 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  PETAL_COLORS, PLANS, acceptedClaim, always, buildingBud, builtBud, checkClaim, checkLooks, freshRound, lookCounts, looks, nextStep, planFor, routes, setupFor, support,
-  type Copy, type Genotype, type Look, type Round,
-  PAIRS_NAME, PAIR_POOLS, checkPairs, copiesKey, counterexample, levelName, pairsAlways, pairsNextStep, pairsSetupFor,
-  type Pair, type PairsSetup,
-  RECORD_SLOTS, WATERING, HIDDEN_NAME, GENOTYPES, candidates, checkCandidates, compatible, contradicts, couldTell, drawSprout, hiddenNextStep, hiddenSetupFor, tryRoom,
-  type Candidate, type HiddenPhase,
-  TESTERS, TESTER_NAME, cantTellSprouts, pickStep, testerRecord,
-  BENCHES, BOT_PAIRS, BRIEF, MARKINGS, acceptedPairs, combinedRoutes, conservatorySetupFor, conservatoryStep, counterFor, failingRoute, guaranteed, helpPair, hiddenCopies, locusRoutes, looks2, plantKey,
-  type Plant2, type Marking,
+  PETAL_COLORS,
+  PLANS,
+  acceptedClaim,
+  always,
+  buildingBud,
+  builtBud,
+  checkClaim,
+  checkLooks,
+  freshRound,
+  lookCounts,
+  looks,
+  nextStep,
+  planFor,
+  routes,
+  setupFor,
+  support,
+  type Copy,
+  type Genotype,
+  type Look,
+  type Round,
+  PAIRS_NAME,
+  PAIR_POOLS,
+  checkPairs,
+  copiesKey,
+  counterexample,
+  levelName,
+  pairsAlways,
+  pairsNextStep,
+  pairsSetupFor,
+  type Pair,
+  type PairsSetup,
+  RECORD_SLOTS,
+  WATERING,
+  HIDDEN_NAME,
+  GENOTYPES,
+  candidates,
+  checkCandidates,
+  compatible,
+  contradicts,
+  couldTell,
+  drawSprout,
+  hiddenNextStep,
+  hiddenSetupFor,
+  tryRoom,
+  type Candidate,
+  type HiddenPhase,
+  TESTERS,
+  TESTER_NAME,
+  cantTellSprouts,
+  pickStep,
+  testerRecord,
+  BENCHES,
+  BOT_PAIRS,
+  BRIEF,
+  MARKINGS,
+  acceptedPairs,
+  combinedRoutes,
+  conservatorySetupFor,
+  conservatoryStep,
+  counterFor,
+  failingRoute,
+  guaranteed,
+  helpPair,
+  hiddenCopies,
+  locusRoutes,
+  looks2,
+  plantKey,
+  type Plant2,
+  type Marking,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i);
@@ -28,7 +88,12 @@ describe('looks and routes', () => {
       for (const r of [g('A', 'A'), g('A', 'a'), g('a', 'A'), g('a', 'a')]) {
         const rs = routes(l, r);
         expect(rs).toHaveLength(4);
-        expect(rs.map((x) => x.from)).toEqual([[0, 0], [0, 1], [1, 0], [1, 1]]);
+        expect(rs.map((x) => x.from)).toEqual([
+          [0, 0],
+          [0, 1],
+          [1, 0],
+          [1, 1],
+        ]);
         rs.forEach((x) => expect(x.sprout).toEqual([l[x.from[0]], r[x.from[1]]]));
       }
     const dup = routes(g('A', 'A'), g('a', 'a'));
@@ -149,7 +214,10 @@ describe('plans', () => {
     expect(planFor(1).task).toBe('open-all');
     expect(planFor(2).task).toBe('choose-could');
     expect(planFor(3).task).toBe('choose-always');
-    expect(planFor(3).parents).toEqual([['A', 'a'], ['A', 'a']]);
+    expect(planFor(3).parents).toEqual([
+      ['A', 'a'],
+      ['A', 'a'],
+    ]);
   });
 });
 
@@ -173,7 +241,8 @@ describe('setupFor', () => {
           builds.add(s.build[0]);
         } else expect(s.build).toEqual([0, 1, 2, 3]);
         if (level < 3) {
-          const spottedLeft = s.left.includes('A') && !s.right.includes('A') ? true : !s.left.includes('A') ? false : null;
+          const spottedLeft =
+            s.left.includes('A') && !s.right.includes('A') ? true : !s.left.includes('A') ? false : null;
           sides.add(spottedLeft ? 'left' : 'right');
           orders.add((spottedLeft ? s.left : s.right).join(''));
         } else {
@@ -242,7 +311,12 @@ describe('nextStep', () => {
           const opened = r.opened.slice();
           opened[st.build] = true;
           builtCount++;
-          r = { ...r, opened, built: [false, false], phase: buildingBud({ ...r, opened }) === null ? 'choose' : 'fan' };
+          r = {
+            ...r,
+            opened,
+            built: [false, false],
+            phase: buildingBud({ ...r, opened }) === null ? 'choose' : 'fan',
+          };
         }
       } else if ('claim' in st) {
         expect(r.phase).toBe('choose');
@@ -259,14 +333,15 @@ describe('nextStep', () => {
   }
 
   it('walking the steps finishes all three levels within 12 steps', () => {
-    for (const level of [1, 2, 3]) for (const seed of SEEDS) {
-      const { r, steps, builtCount } = walk(level, seed);
-      expect(r.phase).toBe('done');
-      expect(steps).toBeLessThanOrEqual(12);
-      if (level >= 2) expect(r.opened.every(Boolean)).toBe(true);
-      expect(builtCount).toBe(r.setup.build.length);
-      if (level === 3) expect(r.claim).toBe('sometimes');
-    }
+    for (const level of [1, 2, 3])
+      for (const seed of SEEDS) {
+        const { r, steps, builtCount } = walk(level, seed);
+        expect(r.phase).toBe('done');
+        expect(steps).toBeLessThanOrEqual(12);
+        if (level >= 2) expect(r.opened.every(Boolean)).toBe(true);
+        expect(builtCount).toBe(r.setup.build.length);
+        if (level === 3) expect(r.claim).toBe('sometimes');
+      }
   });
 
   it('never says check until the chosen set is accepted', () => {
@@ -299,7 +374,10 @@ describe('level 3 nextStep', () => {
   it('builds the buds in order, one at a time, from the route sources', () => {
     const r0: Round = { ...freshRound(setupFor(3, new Rng(5))), phase: 'fan' };
     expect(nextStep({ ...r0, opened: [true, false, false, false] })).toMatchObject({ build: 1, side: 0 });
-    expect(nextStep({ ...r0, opened: [true, true, true, false], built: [true, false] })).toMatchObject({ build: 3, side: 1 });
+    expect(nextStep({ ...r0, opened: [true, true, true, false], built: [true, false] })).toMatchObject({
+      build: 3,
+      side: 1,
+    });
   });
 });
 
@@ -309,18 +387,20 @@ describe('builtBud', () => {
     expect(builtBud(r0)).toBeNull();
     expect(builtBud({ ...r0, slots: [1, null] })).toBeNull();
     expect(builtBud({ ...r0, slots: [null, 0] })).toBeNull();
-    for (const i of [0, 1] as const) for (const j of [0, 1] as const) {
-      const idx = builtBud({ ...r0, slots: [i, j] });
-      expect(idx).not.toBeNull();
-      expect(r0.setup.routes[idx!].from).toEqual([i, j]);
-    }
+    for (const i of [0, 1] as const)
+      for (const j of [0, 1] as const) {
+        const idx = builtBud({ ...r0, slots: [i, j] });
+        expect(idx).not.toBeNull();
+        expect(r0.setup.routes[idx!].from).toEqual([i, j]);
+      }
   });
 });
 
 describe('level 4: which pairs always make spotted?', () => {
   const key = (p: Pair) => `${copiesKey(p[0])}x${copiesKey(p[1])}`;
   const canon = (p: Pair) => [copiesKey(p[0]), copiesKey(p[1])].sort().join('x');
-  const names = (pool: number) => pairsAlways(PAIR_POOLS[pool], 'spotted').map((i) => key(PAIR_POOLS[pool][i]));
+  const names = (pool: number) =>
+    pairsAlways(PAIR_POOLS[pool], 'spotted').map((i) => key(PAIR_POOLS[pool][i]));
 
   it('pairsAlways matches the definition table', () => {
     expect(names(0)).toEqual(['AAxaa']);
@@ -367,7 +447,9 @@ describe('level 4: which pairs always make spotted?', () => {
       expect(s.colors).toHaveLength(3);
       s.colors.forEach(([a, b]) => expect(a).not.toBe(b));
       expect(s.pairs.map(canon).sort()).toEqual(PAIR_POOLS[s.pool].map(canon).sort());
-      const always = s.pairs.flatMap((p, i) => (routes(p[0], p[1]).every((r) => looks(r.sprout) === 'spotted') ? [i] : []));
+      const always = s.pairs.flatMap((p, i) =>
+        routes(p[0], p[1]).every((r) => looks(r.sprout) === 'spotted') ? [i] : [],
+      );
       expect([...s.accepted].sort()).toEqual(always);
       expect(s.accepted.size).toBe(pairsAlways(PAIR_POOLS[s.pool], 'spotted').length);
     }
@@ -384,7 +466,8 @@ describe('level 4: which pairs always make spotted?', () => {
     }
   });
 
-  const subsets = (): number[][] => Array.from({ length: 8 }, (_, m) => [0, 1, 2].filter((i) => m & (1 << i)));
+  const subsets = (): number[][] =>
+    Array.from({ length: 8 }, (_, m) => [0, 1, 2].filter((i) => m & (1 << i)));
 
   it('checkPairs accepts exactly the accepted set, in any order, duplicates ignored', () => {
     for (const seed of SEEDS) {
@@ -412,7 +495,10 @@ describe('level 4: which pairs always make spotted?', () => {
         expect(v).toMatchObject({ ok: false, extra: i });
       }
       for (const m of acc) {
-        const v = checkPairs(acc.filter((x) => x !== m), s);
+        const v = checkPairs(
+          acc.filter((x) => x !== m),
+          s,
+        );
         expect(v).toEqual({ ok: false, missing: m });
       }
     }
@@ -473,7 +559,9 @@ describe('level 4: which pairs always make spotted?', () => {
 });
 
 describe('level 5: Hidden Sprouts', () => {
-  const AA = GENOTYPES.AA, Aa = GENOTYPES.Aa, aa = GENOTYPES.aa;
+  const AA = GENOTYPES.AA,
+    Aa = GENOTYPES.Aa,
+    aa = GENOTYPES.aa;
   const spots3: Look[] = ['spotted', 'spotted', 'spotted'];
   const seeds300 = Array.from({ length: 300 }, (_, i) => i);
 
@@ -502,7 +590,9 @@ describe('level 5: Hidden Sprouts', () => {
       expect(contradicts(s.tester, s.first)).toBe(false);
       expect(contradicts(s.tester, [...s.first, ...s.second])).toBe(false);
       expect(candidates(s.tester, s.first)).toEqual(['AA', 'Aa']);
-      expect(candidates(s.tester, [...s.first, ...s.second])).toEqual(s.truth === 'Aa' ? ['Aa'] : ['AA', 'Aa']);
+      expect(candidates(s.tester, [...s.first, ...s.second])).toEqual(
+        s.truth === 'Aa' ? ['Aa'] : ['AA', 'Aa'],
+      );
       expect([...s.order].sort()).toEqual(['AA', 'Aa']);
       expect(s.colors[0]).not.toBe(s.colors[1]);
     }
@@ -618,7 +708,10 @@ describe('level 5: Hidden Sprouts', () => {
     const subsets: Candidate[][] = [[], ['AA'], ['Aa'], ['AA', 'Aa']];
     for (const seed of SEEDS) {
       const s = hiddenSetupFor(new Rng(seed));
-      for (const [phase, rec] of [['choose1', s.first], ['choose2', [...s.first, ...s.second]]] as [HiddenPhase, Look[]][])
+      for (const [phase, rec] of [
+        ['choose1', s.first],
+        ['choose2', [...s.first, ...s.second]],
+      ] as [HiddenPhase, Look[]][])
         for (const sub of subsets) {
           const chosen = new Set<Candidate>(sub);
           let guard = 0;
@@ -647,7 +740,8 @@ describe('level 5: Hidden Sprouts', () => {
 });
 
 describe('level 6: which plant could tell us?', () => {
-  const AA = GENOTYPES.AA, aa = GENOTYPES.aa;
+  const AA = GENOTYPES.AA,
+    aa = GENOTYPES.aa;
   const seeds300 = Array.from({ length: 300 }, (_, i) => i);
 
   it('only the plain tester could tell', () => {
@@ -656,7 +750,8 @@ describe('level 6: which plant could tell us?', () => {
   });
 
   it('under the spotted tester every way of both candidates is spotted', () => {
-    for (const c of ['AA', 'Aa'] as const) for (const r of routes(GENOTYPES[c], AA)) expect(looks(r.sprout)).toBe('spotted');
+    for (const c of ['AA', 'Aa'] as const)
+      for (const r of routes(GENOTYPES[c], AA)) expect(looks(r.sprout)).toBe('spotted');
   });
 
   it('under the plain tester the candidates differ exactly by plain', () => {
@@ -692,7 +787,8 @@ describe('level 6: which plant could tell us?', () => {
   });
 
   it('the plain tester grows six sprouts; the accepted set is candidates of that record, both or one spot copy', () => {
-    let both = 0, one = 0;
+    let both = 0,
+      one = 0;
     for (const seed of seeds300) {
       const s = hiddenSetupFor(new Rng(seed), 6);
       const rec = testerRecord(s);
@@ -739,13 +835,20 @@ describe('level 6: which plant could tell us?', () => {
 
 describe('Patchwork Conservatory (levels 7-8)', () => {
   const LEVELS = [7, 8] as const;
-  const pairsOf = (n: number) => { const o: [number, number][] = []; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) o.push([i, j]); return o; };
+  const pairsOf = (n: number) => {
+    const o: [number, number][] = [];
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) o.push([i, j]);
+    return o;
+  };
   const setupOf = (level: 7 | 8, seed = 1) => conservatorySetupFor(level, new Rng(seed));
   const sup = (rs: { sprout: Genotype }[]) => new Set(rs.map((r) => looks(r.sprout)));
 
   it('accepted pairs match the tables', () => {
     expect(acceptedPairs(BENCHES[7])).toEqual([[0, 1]]);
-    expect(acceptedPairs(BENCHES[8])).toEqual([[0, 1], [0, 2]]);
+    expect(acceptedPairs(BENCHES[8])).toEqual([
+      [0, 1],
+      [0, 2],
+    ]);
   });
 
   it('rejected pairs name a real failing route, spots checked first', () => {
@@ -755,48 +858,62 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
       for (const p of pairsOf(bench.length)) {
         const f = failingRoute(bench[p[0]], bench[p[1]]);
         const isAcc = acc.some((a) => a[0] === p[0] && a[1] === p[1]);
-        if (isAcc) { expect(f).toBeNull(); continue; }
+        if (isAcc) {
+          expect(f).toBeNull();
+          continue;
+        }
         expect(f).not.toBeNull();
         expect(BRIEF).toContain(f!.marking);
         expect(looks(f!.route.sprout)).toBe('plain');
-        const spotsFail = locusRoutes(bench[p[0]], bench[p[1]], 'spots').some((r) => looks(r.sprout) === 'plain');
+        const spotsFail = locusRoutes(bench[p[0]], bench[p[1]], 'spots').some(
+          (r) => looks(r.sprout) === 'plain',
+        );
         expect(f!.marking).toBe(spotsFail ? 'spots' : 'rim');
       }
     }
   });
 
   it('every route of both markings shows for accepted pairs', () => {
-    for (const lv of LEVELS) for (const [i, j] of acceptedPairs(BENCHES[lv]))
-      for (const m of MARKINGS) {
-        const rs = locusRoutes(BENCHES[lv][i], BENCHES[lv][j], m);
-        expect(rs).toHaveLength(4);
-        rs.forEach((r) => expect(looks(r.sprout)).toBe('spotted'));
-      }
+    for (const lv of LEVELS)
+      for (const [i, j] of acceptedPairs(BENCHES[lv]))
+        for (const m of MARKINGS) {
+          const rs = locusRoutes(BENCHES[lv][i], BENCHES[lv][j], m);
+          expect(rs).toHaveLength(4);
+          rs.forEach((r) => expect(looks(r.sprout)).toBe('spotted'));
+        }
   });
 
   it('guaranteed agrees with brute force over the sixteen combined routes', () => {
-    for (const lv of LEVELS) for (const [i, j] of pairsOf(BENCHES[lv].length)) {
-      const cr = combinedRoutes(BENCHES[lv][i], BENCHES[lv][j]);
-      expect(cr).toHaveLength(16);
-      expect(guaranteed(BENCHES[lv][i], BENCHES[lv][j])).toBe(cr.every((c) => c.look.spots && c.look.rim));
-    }
+    for (const lv of LEVELS)
+      for (const [i, j] of pairsOf(BENCHES[lv].length)) {
+        const cr = combinedRoutes(BENCHES[lv][i], BENCHES[lv][j]);
+        expect(cr).toHaveLength(16);
+        expect(guaranteed(BENCHES[lv][i], BENCHES[lv][j])).toBe(cr.every((c) => c.look.spots && c.look.rim));
+      }
   });
 
   it('combined looks are the product of the two supports (independence)', () => {
-    for (const lv of LEVELS) for (const [i, j] of pairsOf(BENCHES[lv].length)) {
-      const [l, r] = [BENCHES[lv][i], BENCHES[lv][j]];
-      const got = new Set(combinedRoutes(l, r).map((c) => `${c.look.spots}/${c.look.rim}`));
-      const want = new Set<string>();
-      for (const a of sup(locusRoutes(l, r, 'spots'))) for (const b of sup(locusRoutes(l, r, 'rim'))) want.add(`${a === 'spotted'}/${b === 'spotted'}`);
-      expect(got).toEqual(want);
-    }
+    for (const lv of LEVELS)
+      for (const [i, j] of pairsOf(BENCHES[lv].length)) {
+        const [l, r] = [BENCHES[lv][i], BENCHES[lv][j]];
+        const got = new Set(combinedRoutes(l, r).map((c) => `${c.look.spots}/${c.look.rim}`));
+        const want = new Set<string>();
+        for (const a of sup(locusRoutes(l, r, 'spots')))
+          for (const b of sup(locusRoutes(l, r, 'rim'))) want.add(`${a === 'spotted'}/${b === 'spotted'}`);
+        expect(got).toEqual(want);
+      }
   });
 
   it('level 7 excludes the plant showing both traits; level 8 uses one', () => {
-    const both = (p: Plant2) => { const l = looks2(p); return l.spots && l.rim; };
+    const both = (p: Plant2) => {
+      const l = looks2(p);
+      return l.spots && l.rim;
+    };
     const a7 = acceptedPairs(BENCHES[7]);
     expect(a7).toHaveLength(1);
-    BENCHES[7].forEach((p, k) => { if (both(p)) expect(a7[0]).not.toContain(k); });
+    BENCHES[7].forEach((p, k) => {
+      if (both(p)) expect(a7[0]).not.toContain(k);
+    });
     expect(BENCHES[7].some(both)).toBe(true);
     const a8 = acceptedPairs(BENCHES[8]);
     expect(a8).toHaveLength(2);
@@ -808,11 +925,18 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
       const s = setupOf(lv);
       for (const p of pairsOf(s.bench.length)) {
         const c = counterFor(s, p);
-        if (s.accepted.some((a) => a[0] === p[0] && a[1] === p[1])) { expect(c).toBeNull(); continue; }
+        if (s.accepted.some((a) => a[0] === p[0] && a[1] === p[1])) {
+          expect(c).toBeNull();
+          continue;
+        }
         expect(c).not.toBeNull();
         expect(c!.marking).toBe(failingRoute(s.bench[p[0]], s.bench[p[1]])!.marking);
         const anyHet = p.some((k) => hiddenCopies(s.bench[k]).includes(c!.marking));
-        if (c!.hider === null) { expect(anyHet).toBe(false); expect(c!.hidden).toEqual([]); continue; }
+        if (c!.hider === null) {
+          expect(anyHet).toBe(false);
+          expect(c!.hidden).toEqual([]);
+          continue;
+        }
         expect(p).toContain(c!.hider);
         expect(looks2(s.bench[c!.hider])[c!.marking]).toBe(true);
         expect(hiddenCopies(s.bench[c!.hider])).toContain(c!.marking);
@@ -823,14 +947,20 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
 
   it('counterFor gives the authored hiders', () => {
     const s7 = setupOf(7);
-    for (const p of [[0, 2], [1, 2]] as const) {
+    for (const p of [
+      [0, 2],
+      [1, 2],
+    ] as const) {
       const c = counterFor(s7, p)!;
       expect(c.hider).toBe(2);
       expect(c.hidden).toEqual(['spots', 'rim']);
     }
     const s8 = setupOf(8);
     expect(counterFor(s8, [0, 3])!.hider).toBeNull();
-    for (const p of [[1, 2], [2, 3]] as const) {
+    for (const p of [
+      [1, 2],
+      [2, 3],
+    ] as const) {
       const c = counterFor(s8, p)!;
       expect(c.hider).toBe(2);
       expect(c.hidden).toEqual(['spots']);
@@ -838,7 +968,8 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
   });
 
   it('helpPair leads to an accepted pair that keeps what is potted', () => {
-    const s7 = setupOf(7), s8 = setupOf(8);
+    const s7 = setupOf(7),
+      s8 = setupOf(8);
     expect(helpPair(s7, [null, null])).toEqual([0, 1]);
     expect(helpPair(s7, [2, null])).toEqual([0, 1]);
     expect(helpPair(s8, [null, null])).toEqual([0, 1]);
@@ -846,24 +977,43 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
     expect(helpPair(s8, [null, 1])).toEqual([0, 1]);
     expect(helpPair(s8, [0, null])).toEqual([0, 1]);
     expect(helpPair(s8, [null, null], [0, 1])).toEqual([0, 2]);
-    for (const s of [s7, s8]) for (const pots of [[null, null], [0, null], [1, null], [2, null], [3, null], [0, 2]] as (number | null)[][])
-      for (const ex of [null, [0, 1]] as (number[] | null)[]) {
-        if (ex && s.level === 7) continue;
-        const h = helpPair(s, pots, ex);
-        expect(s.accepted.some((a) => a[0] === h[0] && a[1] === h[1])).toBe(true);
-      }
+    for (const s of [s7, s8])
+      for (const pots of [
+        [null, null],
+        [0, null],
+        [1, null],
+        [2, null],
+        [3, null],
+        [0, 2],
+      ] as (number | null)[][])
+        for (const ex of [null, [0, 1]] as (number[] | null)[]) {
+          if (ex && s.level === 7) continue;
+          const h = helpPair(s, pots, ex);
+          expect(s.accepted.some((a) => a[0] === h[0] && a[1] === h[1])).toBe(true);
+        }
   });
 
   it('the ghost finger reaches a correct Check from empty or wrong pots', () => {
     for (const lv of LEVELS) {
-      expect(acceptedPairs(BENCHES[lv]).some((a) => a[0] === BOT_PAIRS[lv][0] && a[1] === BOT_PAIRS[lv][1])).toBe(true);
-      for (const start of [[null, null], [lv === 7 ? 2 : 3, null], [null, 2]] as (number | null)[][]) {
+      expect(
+        acceptedPairs(BENCHES[lv]).some((a) => a[0] === BOT_PAIRS[lv][0] && a[1] === BOT_PAIRS[lv][1]),
+      ).toBe(true);
+      for (const start of [
+        [null, null],
+        [lv === 7 ? 2 : 3, null],
+        [null, 2],
+      ] as (number | null)[][]) {
         const pots = [...start];
         const seen = new Set<Marking>();
-        let steps = 0, done = false, checked = false;
+        let steps = 0,
+          done = false,
+          checked = false;
         while (steps++ < 8) {
           const st = conservatoryStep(lv, pots, seen, checked);
-          if ('finish' in st) { done = true; break; }
+          if ('finish' in st) {
+            done = true;
+            break;
+          }
           if ('unpot' in st) pots[pots.indexOf(st.unpot)] = null;
           else if ('pot' in st) pots[pots.indexOf(null)] = st.pot;
           else if ('lens' in st) seen.add(st.lens);
@@ -882,20 +1032,24 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
 
   it('seeded setups keep each plant, permute places, and give distinct colours', () => {
     const ms = (g: Genotype) => [...g].sort().join('');
-    for (const lv of LEVELS) for (const seed of SEEDS) {
-      const s = conservatorySetupFor(lv, new Rng(seed));
-      expect(s.level).toBe(lv);
-      expect(s.bench).toHaveLength(BENCHES[lv].length);
-      s.bench.forEach((p, k) => { for (const m of MARKINGS) expect(ms(p[m])).toBe(ms(BENCHES[lv][k][m])); });
-      expect([...s.places].sort()).toEqual(BENCHES[lv].map((_, i) => i));
-      s.colors.forEach((c) => expect(PETAL_COLORS).toContain(c));
-      expect(new Set(s.colors).size).toBe(s.colors.length);
-      expect(s.accepted).toEqual(acceptedPairs(BENCHES[lv]));
-      expect(s.accepted).toEqual(acceptedPairs(s.bench));
-    }
+    for (const lv of LEVELS)
+      for (const seed of SEEDS) {
+        const s = conservatorySetupFor(lv, new Rng(seed));
+        expect(s.level).toBe(lv);
+        expect(s.bench).toHaveLength(BENCHES[lv].length);
+        s.bench.forEach((p, k) => {
+          for (const m of MARKINGS) expect(ms(p[m])).toBe(ms(BENCHES[lv][k][m]));
+        });
+        expect([...s.places].sort()).toEqual(BENCHES[lv].map((_, i) => i));
+        s.colors.forEach((c) => expect(PETAL_COLORS).toContain(c));
+        expect(new Set(s.colors).size).toBe(s.colors.length);
+        expect(s.accepted).toEqual(acceptedPairs(BENCHES[lv]));
+        expect(s.accepted).toEqual(acceptedPairs(s.bench));
+      }
     expect(conservatorySetupFor(7.4, new Rng(1)).level).toBe(7);
     expect(conservatorySetupFor(8, new Rng(1)).level).toBe(8);
-    const a = conservatorySetupFor(8, new Rng(5)), b = conservatorySetupFor(8, new Rng(5));
+    const a = conservatorySetupFor(8, new Rng(5)),
+      b = conservatorySetupFor(8, new Rng(5));
     expect(a).toEqual(b);
   });
 
@@ -913,7 +1067,12 @@ describe('Patchwork Conservatory (levels 7-8)', () => {
     expect(BENCHES[8].map(plantKey)).toEqual(['AA-bb', 'aa-BB', 'Aa-BB', 'aa-bb']);
     for (const seed of SEEDS.slice(0, 40)) {
       expect(conservatorySetupFor(7, new Rng(seed)).bench.map(plantKey)).toEqual(['AA-bb', 'aa-BB', 'Aa-Bb']);
-      expect(conservatorySetupFor(8, new Rng(seed)).bench.map(plantKey)).toEqual(['AA-bb', 'aa-BB', 'Aa-BB', 'aa-bb']);
+      expect(conservatorySetupFor(8, new Rng(seed)).bench.map(plantKey)).toEqual([
+        'AA-bb',
+        'aa-BB',
+        'Aa-BB',
+        'aa-bb',
+      ]);
     }
   });
 });

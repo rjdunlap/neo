@@ -66,7 +66,8 @@ describe('Shape Sorter', () => {
           // Shapes reach a little past r (a diamond's points, a rectangle's ends): allow for the widest.
           expect(Math.abs(h.x) + h.r * 1.18).toBeLessThanOrEqual(w / 2);
           expect(h.y + h.r * 1.18).toBeLessThanOrEqual(lidH);
-          for (const o of holes) if (o !== h) expect(Math.hypot(o.x - h.x, o.y - h.y)).toBeGreaterThan(h.r + o.r + 20);
+          for (const o of holes)
+            if (o !== h) expect(Math.hypot(o.x - h.x, o.y - h.y)).toBeGreaterThan(h.r + o.r + 20);
           // Dropped in the middle, or anywhere on its rim: that hole.
           expect(holeAt(holes, h.x, h.y)).toBe(h);
           for (let a = 0; a < Math.PI * 2; a += Math.PI / 8) {
@@ -114,7 +115,8 @@ describe('Shape Sorter', () => {
       expect(order).toHaveLength(6);
       expect(new Set(order)).toEqual(new Set(kinds));
       expect(clueKinds(new Rng(seed), holes)).toEqual(order);
-      for (const k of kinds) expect((fitsClue[k] ?? [k]).filter((o) => kinds.includes(o as never))).toEqual([k]);
+      for (const k of kinds)
+        expect((fitsClue[k] ?? [k]).filter((o) => kinds.includes(o as never))).toEqual([k]);
     }
   });
 
@@ -139,10 +141,24 @@ describe('Shape Sorter', () => {
     }
     expect(seen).toEqual(new Set(POOL));
     // The fixed levels keep their lids, and every dealt kind has a name, a clue, a hint and a fact.
-    expect(dealHoles(new Rng(1), planFor(5)).map((h) => h.kind)).toEqual(['circle', 'square', 'triangle', 'star']);
+    expect(dealHoles(new Rng(1), planFor(5)).map((h) => h.kind)).toEqual([
+      'circle',
+      'square',
+      'triangle',
+      'star',
+    ]);
     for (const k of POOL) {
-      for (const id of [`shape.${k}`, `shape.find.clue.${k}`, `shape.find.hint.${k}`, `shape.find.notyet.${k}`, `shape.fact.${k}`]) {
-        expect((SCRIPT[id as keyof typeof SCRIPT] as readonly string[] | undefined)?.length, id).toBeGreaterThan(0);
+      for (const id of [
+        `shape.${k}`,
+        `shape.find.clue.${k}`,
+        `shape.find.hint.${k}`,
+        `shape.find.notyet.${k}`,
+        `shape.fact.${k}`,
+      ]) {
+        expect(
+          (SCRIPT[id as keyof typeof SCRIPT] as readonly string[] | undefined)?.length,
+          id,
+        ).toBeGreaterThan(0);
       }
     }
   });
@@ -165,7 +181,8 @@ describe('Shape Sorter', () => {
         }
       }
     }
-    for (const level of [1, 2, 3, 4, 5, 8, 9, 10]) expect(pieceKinds(new Rng(3), planFor(level)).every((p) => p.scale === 1)).toBe(true);
+    for (const level of [1, 2, 3, 4, 5, 8, 9, 10])
+      expect(pieceKinds(new Rng(3), planFor(level)).every((p) => p.scale === 1)).toBe(true);
   });
 
   it('says a fact on one swallow in three at 5–7 only', () => {
@@ -203,7 +220,8 @@ describe('Shape Sorter', () => {
         expect(right.size).toBe(p.size);
         // The nearest hole still wins with sized holes: dropped on the right one, that one.
         expect(holeAt(laid, right.x, right.y)).toBe(right);
-        for (const h of laid) if (h !== right) expect(sizeMiss(h, p)).toBe(p.size! > h.size! ? 'big' : 'little');
+        for (const h of laid)
+          if (h !== right) expect(sizeMiss(h, p)).toBe(p.size! > h.size! ? 'big' : 'little');
         expect(sizeMiss(right, p)).toBeNull();
       }
     }
@@ -211,7 +229,10 @@ describe('Shape Sorter', () => {
     expect(shapeSorter.levels('preschool')).toEqual({ min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] });
     expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] });
     for (const id of ['shape.size.start', 'shape.size.big', 'shape.size.little', 'shape.size.same']) {
-      expect((SCRIPT[id as keyof typeof SCRIPT] as readonly string[] | undefined)?.length, id).toBeGreaterThan(0);
+      expect(
+        (SCRIPT[id as keyof typeof SCRIPT] as readonly string[] | undefined)?.length,
+        id,
+      ).toBeGreaterThan(0);
     }
   });
 
@@ -232,8 +253,12 @@ describe('Shape Sorter', () => {
         const start = turnStart(new Rng(seed), kind);
         expect(turnStart(new Rng(seed), kind)).toBe(start);
         expect(turnFits(kind, start)).toBe(kind === 'circle');
-        let a = start, taps = 0;
-        while (!turnFits(kind, a) && taps < 12) { a = turnNext(a); taps++; }
+        let a = start,
+          taps = 0;
+        while (!turnFits(kind, a) && taps < 12) {
+          a = turnNext(a);
+          taps++;
+        }
         expect(taps).toBeLessThanOrEqual(3);
         expect(turnFits(kind, a)).toBe(true);
         expect(turnFits(kind, a - turnOffset(kind, a))).toBe(true);
@@ -241,7 +266,8 @@ describe('Shape Sorter', () => {
     }
     expect(seen).toEqual(new Set(Object.keys(TURN_PERIOD)));
     expect(shapeSorter.levels('prek').order).toContain(12);
-    for (const band of ['lap', 'toddler', 'preschool'] as const) expect(shapeSorter.levels(band).order).not.toContain(12);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(shapeSorter.levels(band).order).not.toContain(12);
     expect(shapeSorter.bands).not.toContain('school');
     for (const id of ['shape.turn.start', 'shape.turn.tap', 'shape.turn.wrong', 'shape.turn.help']) {
       expect(SCRIPT[id as keyof typeof SCRIPT]?.length, id).toBeGreaterThan(0);
@@ -252,7 +278,10 @@ describe('Shape Sorter', () => {
     expect(ATTRIBUTE_POOL).not.toContain('heart');
     expect(COUNT_POOL).not.toContain('star');
     expect(CORNERS.star).toBe(10);
-    const seen = new Map<number, Set<string>>([[13, new Set()], [14, new Set()]]);
+    const seen = new Map<number, Set<string>>([
+      [13, new Set()],
+      [14, new Set()],
+    ]);
     for (const level of [13, 14]) {
       const plan = planFor(level);
       expect(plan.sameColor).toBe(true);
@@ -270,9 +299,16 @@ describe('Shape Sorter', () => {
         for (const p of pieces) {
           expect(pool).toContain(p.kind);
           seen.get(level)!.add(p.kind);
-          expect(SCRIPT[(level === 13 ? `shape.attr.${cornerClass(p.kind)}` : `shape.count.${CORNERS[p.kind]}`) as keyof typeof SCRIPT]?.length).toBeGreaterThan(0);
+          expect(
+            SCRIPT[
+              (level === 13
+                ? `shape.attr.${cornerClass(p.kind)}`
+                : `shape.count.${CORNERS[p.kind]}`) as keyof typeof SCRIPT
+            ]?.length,
+          ).toBeGreaterThan(0);
         }
-        if (level === 13) expect(new Set(pieces.map((p) => cornerClass(p.kind)))).toEqual(new Set(['curves', 'corners']));
+        if (level === 13)
+          expect(new Set(pieces.map((p) => cornerClass(p.kind)))).toEqual(new Set(['curves', 'corners']));
         else {
           expect(holes.map((h) => h.attribute)).toEqual([0, 3, 4, 5, 6]);
           const fours = pieces.filter((p) => CORNERS[p.kind] === 4);
@@ -281,7 +317,8 @@ describe('Shape Sorter', () => {
         }
       }
       expect(seen.get(level)).toEqual(new Set(level === 13 ? ATTRIBUTE_POOL : COUNT_POOL));
-      for (const band of ['lap', 'toddler', 'preschool'] as const) expect(shapeSorter.levels(band).order).not.toContain(level);
+      for (const band of ['lap', 'toddler', 'preschool'] as const)
+        expect(shapeSorter.levels(band).order).not.toContain(level);
     }
     expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] });
     expect(shapeSorter.bands).not.toContain('school');
@@ -294,21 +331,26 @@ describe('Shape Sorter', () => {
         continue;
       }
       for (let n = -12; n <= 12; n++) {
-        const a = degrees * Math.PI / 180 * n;
-        for (const delta of [-TURN_TOLERANCE, 0, TURN_TOLERANCE]) expect(turnFits(kind as TurnKind, a + delta)).toBe(true);
-        for (const sign of [-1, 1]) expect(turnFits(kind as TurnKind, a + sign * (TURN_TOLERANCE + 0.001))).toBe(false);
+        const a = ((degrees * Math.PI) / 180) * n;
+        for (const delta of [-TURN_TOLERANCE, 0, TURN_TOLERANCE])
+          expect(turnFits(kind as TurnKind, a + delta)).toBe(true);
+        for (const sign of [-1, 1])
+          expect(turnFits(kind as TurnKind, a + sign * (TURN_TOLERANCE + 0.001))).toBe(false);
       }
     }
   });
 
   it('self-aligns on the second orientation miss of that piece, with a single hint even when a glow is due', () => {
-    const help = startHelp(), a = { turnMisses: 0 }, b = { turnMisses: 0 };
+    const help = startHelp(),
+      a = { turnMisses: 0 },
+      b = { turnMisses: 0 };
     expect(wrongTurn(help, a)).toEqual({ glow: false, align: false });
     expect(wrongTurn(help, a)).toEqual({ glow: true, align: true });
     expect(help).toEqual({ misses: 2, hints: 1, sinceGlow: 0 });
     expect(b.turnMisses).toBe(0);
     // Interleaved wrong holes and another piece do not steal this piece's promised help.
-    const mixed = startHelp(), p = { turnMisses: 0 };
+    const mixed = startHelp(),
+      p = { turnMisses: 0 };
     wrongTurn(mixed, p);
     wrongDrop(mixed);
     expect(wrongTurn(mixed, p)).toEqual({ glow: true, align: true });
@@ -336,7 +378,11 @@ describe('Shape Sorter', () => {
   it('answers every touch at levels 1 and 9, the only levels where nothing can be wrong', () => {
     expect(PLANS.filter((p) => p.everyTouch)).toEqual([PLANS[0], PLANS[8]]);
     for (const p of PLANS.filter((p) => p.everyTouch)) expect(p.holes).toHaveLength(1);
-    const items = [{ x: 0, y: 0 }, { x: 200, y: 0 }, { x: 400, y: 0 }];
+    const items = [
+      { x: 0, y: 0 },
+      { x: 200, y: 0 },
+      { x: 400, y: 0 },
+    ];
     expect(nearest(items, 260, 50)).toBe(items[1]);
     expect(nearest(items, -999, 0)).toBe(items[0]);
     expect(nearest([], 0, 0)).toBeUndefined();
@@ -391,7 +437,8 @@ describe('Shape Sorter', () => {
     expect(shapeSorter.levels('lap')).toEqual({ min: 9, max: 9, order: [9] });
     expect(shapeSorter.levels('toddler').order?.[0]).toBe(9);
     expect(shapeSorter.entryLevels).toEqual([9]);
-    for (const band of ['preschool', 'prek'] as const) expect(shapeSorter.levels(band).order).not.toContain(9);
+    for (const band of ['preschool', 'prek'] as const)
+      expect(shapeSorter.levels(band).order).not.toContain(9);
     expect(shapeSorter.describeLevel(9)).toBe('tap a shape and it hops in');
   });
 });

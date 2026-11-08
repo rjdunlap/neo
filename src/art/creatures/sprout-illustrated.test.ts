@@ -23,7 +23,8 @@ illustratedSuite({
 describe('sprout weights', () => {
   it('pin the face, feet and belly and move the leaves and arms', () => {
     const A = SPROUT_ART;
-    for (const p of [...A.eyes, A.nose, A.slots.tummy, ...A.slots.feet]) expect(weights(p.x, p.y)).toEqual({ leaf: 0, arm: [0, 0] });
+    for (const p of [...A.eyes, A.nose, A.slots.tummy, ...A.slots.feet])
+      expect(weights(p.x, p.y)).toEqual({ leaf: 0, arm: [0, 0] });
     expect(weights(A.leaves.root.x, A.leaves.root.y).leaf).toBe(0);
     expect(weights(A.leaves.tips[0].x + 12, A.leaves.tips[0].y + 8).leaf).toBeGreaterThan(0.9);
     expect(weights(A.leaves.tips[1].x - 12, A.leaves.tips[1].y + 4).leaf).toBeGreaterThan(0.9);

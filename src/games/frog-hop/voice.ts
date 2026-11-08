@@ -2,7 +2,9 @@
 export const VOICE = {
   'hop.ten': ['Start at {n}. {k} hops in all. How many reach 10? Choose that number card!'],
   'hop.backten': ['Start at {n}. Hop back {k} in all. How many hops back reach 10? Choose that number card!'],
-  'hop.restback': ['That is {a} hops back to 10. {k} hops back in all, so {n} more. Tap where the frog lands!'],
+  'hop.restback': [
+    'That is {a} hops back to 10. {k} hops back in all, so {n} more. Tap where the frog lands!',
+  ],
   'hop.rest': ['That is {a} hops to 10. {k} hops in all, so {n} more. Tap where the frog lands!'],
   'game.frog-hop': ['Frog hop!'],
   'hop.find': ['Hop to {n}! Tap the lily pad with {n}.'],

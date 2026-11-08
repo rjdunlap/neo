@@ -27,17 +27,28 @@ export class Lantern extends Container implements Updatable {
   /** Bobbing only starts once it has risen, so it never fights the rise. */
   floating = false;
 
-  constructor(readonly color: Swatch, phase: number) {
+  constructor(
+    readonly color: Swatch,
+    phase: number,
+  ) {
     super();
     this.clock = phase;
     const body = (g: Graphics, fill: number, line: number, rib: number) => {
       g.roundRect(-36, -46, 72, 90, 26).fill(fill).stroke({ width: 5, color: line });
-      g.moveTo(-14, -44).quadraticCurveTo(-24, 0, -14, 42).moveTo(14, -44).quadraticCurveTo(24, 0, 14, 42).stroke({ width: 3, color: rib, alpha: 0.7 });
+      g.moveTo(-14, -44)
+        .quadraticCurveTo(-24, 0, -14, 42)
+        .moveTo(14, -44)
+        .quadraticCurveTo(24, 0, 14, 42)
+        .stroke({ width: 3, color: rib, alpha: 0.7 });
       g.roundRect(-26, -58, 52, 16, 7).fill(line);
       g.roundRect(-20, 40, 40, 11, 5).fill(line);
       return g;
     };
-    this.glow.circle(0, 0, 150).fill({ color: color.fill, alpha: 0.1 }).circle(0, 0, 100).fill({ color: color.light, alpha: 0.16 });
+    this.glow
+      .circle(0, 0, 150)
+      .fill({ color: color.fill, alpha: 0.1 })
+      .circle(0, 0, 100)
+      .fill({ color: color.light, alpha: 0.16 });
     const dim = body(new Graphics(), DIM, 0x2a2f55, 0x2a2f55);
     body(this.bright, color.fill, color.line, color.line);
     this.bright.ellipse(0, -2, 17, 30).fill({ color: color.light, alpha: 0.75 });
@@ -105,17 +116,29 @@ export class FinaleStage extends Container implements Updatable {
     const rng = new Rng(11);
     this.stars.forEach((g, group) => {
       g.clear();
-      for (let i = 0; i < 26; i++) g.circle(rng.range(0, view.w), rng.range(0, view.h * 0.75), rng.range(1.2, 2.8)).fill(group === 0 ? 0xffffff : group === 1 ? 0xfff0b3 : 0xcde6ff);
+      for (let i = 0; i < 26; i++)
+        g.circle(rng.range(0, view.w), rng.range(0, view.h * 0.75), rng.range(1.2, 2.8)).fill(
+          group === 0 ? 0xffffff : group === 1 ? 0xfff0b3 : 0xcde6ff,
+        );
     });
     this.scenery.clear();
     // A pale full moon, and two dark hills along the bottom.
-    this.scenery.circle(view.w - 130, 120, 54).fill(0xfff6d6).circle(view.w - 146, 106, 10).circle(view.w - 118, 140, 14).circle(view.w - 112, 98, 7).fill(0xefe3b4);
+    this.scenery
+      .circle(view.w - 130, 120, 54)
+      .fill(0xfff6d6)
+      .circle(view.w - 146, 106, 10)
+      .circle(view.w - 118, 140, 14)
+      .circle(view.w - 112, 98, 7)
+      .fill(0xefe3b4);
     this.scenery.ellipse(view.w * 0.28, view.h + 40, view.w * 0.5, 130).fill(0x1b2455);
     this.scenery.ellipse(view.w * 0.78, view.h + 70, view.w * 0.46, 140).fill(0x232d62);
     // Spread along the top, in a gentle wave; the title's glass panel sits over the left of them.
     this.rest = this.lanterns.map((_, i) => {
       const n = this.lanterns.length;
-      return { x: view.w * (0.08 + (0.84 * i) / Math.max(1, n - 1)), y: view.h * [0.2, 0.1, 0.24, 0.12, 0.26, 0.14][i % 6] };
+      return {
+        x: view.w * (0.08 + (0.84 * i) / Math.max(1, n - 1)),
+        y: view.h * [0.2, 0.1, 0.24, 0.12, 0.26, 0.14][i % 6],
+      };
     });
     this.lanterns.forEach((l, i) => {
       if (l.floating) l.position.set(this.rest[i].x, this.rest[i].y);
@@ -144,20 +167,39 @@ export class FinaleStage extends Container implements Updatable {
 
   private async run() {
     const rises = this.lanterns.map(async (lantern, i) => {
-      await this.tw.to(lantern, { x: this.rest[i].x, y: this.rest[i].y }, { duration: 1.3, delay: 0.3 + i * 0.38, ease: ease.outCubic });
+      await this.tw.to(
+        lantern,
+        { x: this.rest[i].x, y: this.rest[i].y },
+        { duration: 1.3, delay: 0.3 + i * 0.38, ease: ease.outCubic },
+      );
       if (this.dead) return;
       // The window may have been resized on the way up.
       lantern.position.set(this.rest[i].x, this.rest[i].y);
       lantern.light();
       lantern.floating = true;
       sfx.bell(5 + i, 0.26);
-      this.fx.burst(lantern.x, lantern.y, { kind: 'star', colors: [0xffffff, lantern.color.light, lantern.color.fill], count: 14, speed: [120, 300], gravity: 40, life: [0.6, 1.2] });
+      this.fx.burst(lantern.x, lantern.y, {
+        kind: 'star',
+        colors: [0xffffff, lantern.color.light, lantern.color.fill],
+        count: 14,
+        speed: [120, 300],
+        gravity: 40,
+        life: [0.6, 1.2],
+      });
     });
     await Promise.all(rises);
     if (this.dead) return;
     sfx.tada();
-    const colors = RAINBOW.map(c => swatch[c].fill);
-    const cannon = { kind: 'confetti' as const, colors, count: 44, speed: [600, 1000] as [number, number], spread: 0.5, gravity: 700, life: [1.8, 2.6] as [number, number] };
+    const colors = RAINBOW.map((c) => swatch[c].fill);
+    const cannon = {
+      kind: 'confetti' as const,
+      colors,
+      count: 44,
+      speed: [600, 1000] as [number, number],
+      spread: 0.5,
+      gravity: 700,
+      life: [1.8, 2.6] as [number, number],
+    };
     this.fx.burst(0, this.view.h, { ...cannon, angle: -Math.PI / 3 });
     this.fx.burst(this.view.w, this.view.h, { ...cannon, angle: (-Math.PI * 2) / 3 });
     this.pet.cheer();

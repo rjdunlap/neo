@@ -19,7 +19,13 @@ export interface Compound {
 }
 
 export const COMPOUNDS: readonly Compound[] = [
-  { word: 'sunflower', first: 'sun', second: 'flower', meaning: 'a flower that turns to the sun', levels: [1, 2] },
+  {
+    word: 'sunflower',
+    first: 'sun',
+    second: 'flower',
+    meaning: 'a flower that turns to the sun',
+    levels: [1, 2],
+  },
   { word: 'cupcake', first: 'cup', second: 'cake', meaning: 'a little cake in a cup', levels: [1, 2] },
   { word: 'doghouse', first: 'dog', second: 'house', meaning: 'a house for a dog', levels: [1, 2, 3] },
   { word: 'toothbrush', first: 'tooth', second: 'brush', meaning: 'a brush for teeth', levels: [1, 2, 3] },
@@ -39,7 +45,21 @@ export const COMPOUNDS: readonly Compound[] = [
 export const OPAQUE = ['butterfly', 'hotdog', 'pineapple', 'starfish', 'rainbow', 'buttercup'] as const;
 
 /** Single pictures that can sit beside an asked pair on level 2. */
-export const POOL = ['moon', 'star', 'key', 'tree', 'car', 'hat', 'duck', 'frog', 'bell', 'spoon', 'shell', 'chair', 'jar'] as const;
+export const POOL = [
+  'moon',
+  'star',
+  'key',
+  'tree',
+  'car',
+  'hat',
+  'duck',
+  'frog',
+  'bell',
+  'spoon',
+  'shell',
+  'chair',
+  'jar',
+] as const;
 
 /**
  * Real or rude words that must never be makeable on screen, in either order, from a pair of pictures shown together.
@@ -48,18 +68,118 @@ export const POOL = ['moon', 'star', 'key', 'tree', 'car', 'hat', 'duck', 'frog'
  */
 export const DENY: readonly string[] = [
   // From the definition.
-  'sunfish', 'sunhat', 'sunshine', 'sunset', 'sunrise', 'sunlight', 'sunbeam', 'sundog', 'moonflower', 'moonbeam', 'moonlight',
-  'starfish', 'flowerpot', 'flowerbed', 'cupboard', 'teacup', 'pancake', 'catfish', 'dogfish', 'hotdog', 'dogbowl', 'dogbed',
-  'houseboat', 'boathouse', 'housefly', 'treehouse', 'cathouse', 'bughouse', 'toothpaste', 'toothpick', 'raindrop', 'rainbow',
-  'overcoat', 'bumblebee', 'beeswax', 'sailfish', 'mailbag', 'boxcar', 'hatbox', 'keyhole', 'keyboard', 'shellfish', 'seashell',
-  'bellhop', 'doorbell', 'cowbell', 'armchair', 'highchair', 'footprint', 'football',
+  'sunfish',
+  'sunhat',
+  'sunshine',
+  'sunset',
+  'sunrise',
+  'sunlight',
+  'sunbeam',
+  'sundog',
+  'moonflower',
+  'moonbeam',
+  'moonlight',
+  'starfish',
+  'flowerpot',
+  'flowerbed',
+  'cupboard',
+  'teacup',
+  'pancake',
+  'catfish',
+  'dogfish',
+  'hotdog',
+  'dogbowl',
+  'dogbed',
+  'houseboat',
+  'boathouse',
+  'housefly',
+  'treehouse',
+  'cathouse',
+  'bughouse',
+  'toothpaste',
+  'toothpick',
+  'raindrop',
+  'rainbow',
+  'overcoat',
+  'bumblebee',
+  'beeswax',
+  'sailfish',
+  'mailbag',
+  'boxcar',
+  'hatbox',
+  'keyhole',
+  'keyboard',
+  'shellfish',
+  'seashell',
+  'bellhop',
+  'doorbell',
+  'cowbell',
+  'armchair',
+  'highchair',
+  'footprint',
+  'football',
   // Added by the session's check (2026-10-24): real compounds and common two-word names makeable from a part and a picture.
-  'sunbird', 'sunsail', 'sunchair', 'sunhouse', 'sunboat', 'bellflower', 'starflower', 'flowerbox', 'hairflower', 'beeflower',
-  'paintcup', 'cakebox', 'mooncake', 'sandcake', 'dollcake', 'dogstar', 'dogcoat', 'dogbox', 'dogtoy', 'doghair',
-  'dogbrush', 'dogbell', 'housekey', 'duckhouse', 'beehouse', 'toyhouse', 'shellhouse', 'carbrush', 'cupbrush', 'dollbrush',
-  'toybrush', 'rainhat', 'raintree', 'rainfrog', 'rainbird', 'rainshell', 'carcoat', 'coattree', 'duckcoat', 'dollcoat',
-  'mailcoat', 'beetree', 'beebox', 'beehat', 'hivebox', 'toyboat', 'duckboat', 'boathat', 'mailboat', 'shellboat', 'mailcar',
-  'mailhat', 'housecoat', 'housepaint', 'dogtooth', 'boxtree', 'keybox', 'paintbox', 'birdbox', 'sandbee', 'moonsail',
+  'sunbird',
+  'sunsail',
+  'sunchair',
+  'sunhouse',
+  'sunboat',
+  'bellflower',
+  'starflower',
+  'flowerbox',
+  'hairflower',
+  'beeflower',
+  'paintcup',
+  'cakebox',
+  'mooncake',
+  'sandcake',
+  'dollcake',
+  'dogstar',
+  'dogcoat',
+  'dogbox',
+  'dogtoy',
+  'doghair',
+  'dogbrush',
+  'dogbell',
+  'housekey',
+  'duckhouse',
+  'beehouse',
+  'toyhouse',
+  'shellhouse',
+  'carbrush',
+  'cupbrush',
+  'dollbrush',
+  'toybrush',
+  'rainhat',
+  'raintree',
+  'rainfrog',
+  'rainbird',
+  'rainshell',
+  'carcoat',
+  'coattree',
+  'duckcoat',
+  'dollcoat',
+  'mailcoat',
+  'beetree',
+  'beebox',
+  'beehat',
+  'hivebox',
+  'toyboat',
+  'duckboat',
+  'boathat',
+  'mailboat',
+  'shellboat',
+  'mailcar',
+  'mailhat',
+  'housecoat',
+  'housepaint',
+  'dogtooth',
+  'boxtree',
+  'keybox',
+  'paintbox',
+  'birdbox',
+  'sandbee',
+  'moonsail',
 ];
 
 export interface Plan {
@@ -93,11 +213,14 @@ const byWord = (word: string): Compound => {
   return c;
 };
 
-export const forHead = (head: string): Compound[] => COMPOUNDS.filter((c) => c.second === head && c.levels.includes(3));
+export const forHead = (head: string): Compound[] =>
+  COMPOUNDS.filter((c) => c.second === head && c.levels.includes(3));
 
 /** The entry two pictures make, in either drag order, or null. */
 export function makes(a: string, b: string): Compound | null {
-  return COMPOUNDS.find((c) => (c.first === a && c.second === b) || (c.first === b && c.second === a)) ?? null;
+  return (
+    COMPOUNDS.find((c) => (c.first === a && c.second === b) || (c.first === b && c.second === a)) ?? null
+  );
 }
 
 /** Whether a joined string is a listed or denied word, in either order. */
@@ -107,7 +230,9 @@ export function forms(a: string, b: string): boolean {
 }
 
 /** Every picture the game draws: all the parts and the pool. */
-export const PICTURES: readonly string[] = [...new Set([...COMPOUNDS.flatMap((c) => [c.first, c.second]), ...POOL])];
+export const PICTURES: readonly string[] = [
+  ...new Set([...COMPOUNDS.flatMap((c) => [c.first, c.second]), ...POOL]),
+];
 
 export interface Ask {
   /** The thing this ask makes. */
@@ -125,26 +250,52 @@ export interface Round {
 export function distractorsFor(entry: Compound): string[] {
   const parts = new Set(COMPOUNDS.flatMap((c) => [c.first, c.second]));
   const candidates = [...new Set([...POOL, ...parts])];
-  return candidates.filter((d) => d !== entry.first && d !== entry.second && !forms(entry.first, d) && !forms(entry.second, d));
+  return candidates.filter(
+    (d) => d !== entry.first && d !== entry.second && !forms(entry.first, d) && !forms(entry.second, d),
+  );
 }
 
-const AUTHORED_2: [string, string][] = [['doghouse', 'moon'], ['raincoat', 'key'], ['cupcake', 'star'], ['mailbox', 'duck'], ['sunflower', 'jar']];
+const AUTHORED_2: [string, string][] = [
+  ['doghouse', 'moon'],
+  ['raincoat', 'key'],
+  ['cupcake', 'star'],
+  ['mailbox', 'duck'],
+  ['sunflower', 'jar'],
+];
 const AUTHORED_1 = ['sunflower', 'doghouse', 'cupcake', 'beehive', 'sailboat'];
 
 /** A round at `level`. `authored` gives the definition's first round (the how-to card and demonstration open on it). */
 export function makeRound(level: number, rng: Rng, authored = false): Round {
   const plan = planFor(level);
   if (plan.level === 1) {
-    const words = authored ? AUTHORED_1 : ['sunflower', ...rng.shuffle(COMPOUNDS.filter((c) => c.levels.includes(1) && c.word !== 'sunflower')).slice(0, 4).map((c) => c.word)];
-    return { plan, asks: words.map((w) => byWord(w)).map((entry) => ({ entry, pictures: [entry.first, entry.second] })) };
+    const words = authored
+      ? AUTHORED_1
+      : [
+          'sunflower',
+          ...rng
+            .shuffle(COMPOUNDS.filter((c) => c.levels.includes(1) && c.word !== 'sunflower'))
+            .slice(0, 4)
+            .map((c) => c.word),
+        ];
+    return {
+      plan,
+      asks: words.map((w) => byWord(w)).map((entry) => ({ entry, pictures: [entry.first, entry.second] })),
+    };
   }
   if (plan.level === 2) {
     const picks: [Compound, string][] = authored
       ? AUTHORED_2.map(([w, d]) => [byWord(w), d])
-      : rng.shuffle(COMPOUNDS.filter((c) => c.levels.includes(2))).slice(0, 5).map((entry) => [entry, rng.pick(distractorsFor(entry))]);
+      : rng
+          .shuffle(COMPOUNDS.filter((c) => c.levels.includes(2)))
+          .slice(0, 5)
+          .map((entry) => [entry, rng.pick(distractorsFor(entry))]);
     return {
       plan,
-      asks: picks.map(([entry, d], i) => ({ entry, pictures: authored && i === 0 ? ['dog', 'house', 'moon'] : rng.shuffle([entry.first, entry.second, d]) })),
+      asks: picks.map(([entry, d], i) => ({
+        entry,
+        pictures:
+          authored && i === 0 ? ['dog', 'house', 'moon'] : rng.shuffle([entry.first, entry.second, d]),
+      })),
     };
   }
   const heads: Head[] = authored ? ['house', 'brush'] : rng.shuffle([...HEADS]).slice(0, 2);
@@ -177,7 +328,16 @@ export interface GlueState {
   done: boolean;
 }
 
-export const newState = (round: Round): GlueState => ({ round, index: 0, misses: 0, hints: 0, wrong: new Set(), wrongDrops: 0, glow: false, done: false });
+export const newState = (round: Round): GlueState => ({
+  round,
+  index: 0,
+  misses: 0,
+  hints: 0,
+  wrong: new Set(),
+  wrongDrops: 0,
+  glow: false,
+  done: false,
+});
 
 export const currentAsk = (s: GlueState): Ask | null => (s.done ? null : s.round.asks[s.index]);
 
@@ -292,18 +452,31 @@ export function tableLayout(v: View, n: number): Pt[] {
   const cx = v.w / 2;
   if (n <= 2) {
     const y = v.h * 0.55;
-    return [{ x: cx - 170, y }, { x: cx + 170, y }].slice(0, n);
+    return [
+      { x: cx - 170, y },
+      { x: cx + 170, y },
+    ].slice(0, n);
   }
   if (n === 3) {
     const y = v.h * 0.55;
-    return [{ x: cx - 260, y }, { x: cx, y }, { x: cx + 260, y }];
+    return [
+      { x: cx - 260, y },
+      { x: cx, y },
+      { x: cx + 260, y },
+    ];
   }
   const y = v.h * 0.48;
-  return [{ x: cx, y }, { x: cx - 300, y }, { x: cx + 300, y }, { x: cx, y: y + 215 }];
+  return [
+    { x: cx, y },
+    { x: cx - 300, y },
+    { x: cx + 300, y },
+    { x: cx, y: y + 215 },
+  ];
 }
 
 /** The centre of the table, where a made thing appears. */
-export const tableCentre = (v: View, n: number): Pt => (n === 4 ? tableLayout(v, 4)[0] : { x: v.w / 2, y: v.h * 0.55 });
+export const tableCentre = (v: View, n: number): Pt =>
+  n === 4 ? tableLayout(v, 4)[0] : { x: v.w / 2, y: v.h * 0.55 };
 
 /** The shelf's slots along the top, one per ask. */
 export function shelfLayout(v: View, n: number): Pt[] {
@@ -312,7 +485,13 @@ export function shelfLayout(v: View, n: number): Pt[] {
 }
 
 /** The picture a drop at (x, y) lands on: the nearest within reach other than its own, among `targets`, or null. */
-export function dropTarget(points: readonly Pt[], own: number, x: number, y: number, targets?: readonly number[]): number | null {
+export function dropTarget(
+  points: readonly Pt[],
+  own: number,
+  x: number,
+  y: number,
+  targets?: readonly number[],
+): number | null {
   let best: number | null = null;
   let bestD = DROP_R;
   points.forEach((p, i) => {

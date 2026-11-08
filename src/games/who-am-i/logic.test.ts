@@ -2,9 +2,34 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  botTap, DEFINING, FEATURE_IDS, FEATURES, FRIEND_IDS, FRIENDS, galleryLayout, HOME_CORNER, distinguishable, hasText,
-  helpTargets, keeps, makeRound, PET_CORNER, planFor, PLANS, reason, requestHelp, ruledOut, standing, startPlay, staysText, tap,
-  useful, type Feature, type FriendId, type Rect, type WhoRound,
+  botTap,
+  DEFINING,
+  FEATURE_IDS,
+  FEATURES,
+  FRIEND_IDS,
+  FRIENDS,
+  galleryLayout,
+  HOME_CORNER,
+  distinguishable,
+  hasText,
+  helpTargets,
+  keeps,
+  makeRound,
+  PET_CORNER,
+  planFor,
+  PLANS,
+  reason,
+  requestHelp,
+  ruledOut,
+  standing,
+  startPlay,
+  staysText,
+  tap,
+  useful,
+  type Feature,
+  type FriendId,
+  type Rect,
+  type WhoRound,
 } from './logic';
 
 const SEEDS = 500;
@@ -34,7 +59,8 @@ describe('Who Am I? trait table', () => {
   });
 
   it('has no swims, whiskers, tail or horns features', () => {
-    for (const bad of ['swims', 'whiskers', 'tail', 'horns']) expect(FEATURE_IDS as string[]).not.toContain(bad);
+    for (const bad of ['swims', 'whiskers', 'tail', 'horns'])
+      expect(FEATURE_IDS as string[]).not.toContain(bad);
   });
 });
 
@@ -50,7 +76,10 @@ describe('Who Am I? reasons', () => {
         }
         const r = reason(f, c);
         expect(r.name.length).toBeGreaterThan(0);
-        const owned = [...FRIENDS[f].features.map((x) => FEATURES[x].has), ...FRIENDS[f].features.map((x) => hasText(f, x))];
+        const owned = [
+          ...FRIENDS[f].features.map((x) => FEATURES[x].has),
+          ...FRIENDS[f].features.map((x) => hasText(f, x)),
+        ];
         if (r.kind === 'not') {
           expect(r.clue.length, `${f}/${c}`).toBeGreaterThan(0);
           expect(r.has.length).toBeGreaterThan(0);
@@ -81,7 +110,9 @@ describe('Who Am I? rounds', () => {
           expect(new Set(r.gallery).size, ctx).toBe(plan.friends);
           expect(r.gallery, ctx).toContain(r.answer);
           expect(plan.answers, ctx).toContain(r.answer);
-          expect(new Set(r.gallery.map((g) => FRIENDS[g].group)).size, ctx).toBeGreaterThanOrEqual(plan.minGroups);
+          expect(new Set(r.gallery.map((g) => FRIENDS[g].group)).size, ctx).toBeGreaterThanOrEqual(
+            plan.minGroups,
+          );
           expect(r.clues, ctx).toHaveLength(plan.clues);
           expect(distinguishable(r.answer, r.gallery, plan.allowed), ctx).toBe(true);
           let left: FriendId[] = [...r.gallery];
@@ -95,7 +126,11 @@ describe('Who Am I? rounds', () => {
           expect(left, ctx).toEqual([r.answer]);
           const defining = r.clues.filter((c) => DEFINING.includes(FEATURES[c].family)).length;
           expect(defining, ctx).toBeGreaterThanOrEqual(plan.minDefining);
-          if (plan.mode === 'fit') expect(r.gallery.filter((g) => keeps(r.clues[0], g)), ctx).toEqual([r.answer]);
+          if (plan.mode === 'fit')
+            expect(
+              r.gallery.filter((g) => keeps(r.clues[0], g)),
+              ctx,
+            ).toEqual([r.answer]);
           expect(roundFor(plan.level, seed), ctx).toEqual(r);
           seen.add(r.answer);
         }
@@ -156,8 +191,14 @@ function flipCheck(r: WhoRound, mode: 'turn') {
   for (let c = 0; c < r.clues.length; c++) {
     expect(p.clue).toBe(c);
     const targets = helpTargets(p);
-    expect(targets).toEqual(r.gallery.map((_, i) => i).filter((i) => !p.down.has(i) && !keeps(r.clues[c], r.gallery[i])));
-    expect(targets).toEqual(r.gallery.flatMap((g, i) => (!p.down.has(i) && ruledOut(standing(p), r.clues[c]).includes(g) ? [i] : [])));
+    expect(targets).toEqual(
+      r.gallery.map((_, i) => i).filter((i) => !p.down.has(i) && !keeps(r.clues[c], r.gallery[i])),
+    );
+    expect(targets).toEqual(
+      r.gallery.flatMap((g, i) =>
+        !p.down.has(i) && ruledOut(standing(p), r.clues[c]).includes(g) ? [i] : [],
+      ),
+    );
     targets.forEach((t, k) => {
       const out = tap(p, t);
       const last = k === targets.length - 1;
@@ -296,8 +337,14 @@ describe('Who Am I? ghost finger', () => {
 
 describe('Who Am I? layout', () => {
   const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h;
-  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  for (const [pw, ph] of [[1024, 768], [1366, 1024], [768, 1024], [1024, 1366]]) {
+  const overlap = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  for (const [pw, ph] of [
+    [1024, 768],
+    [1366, 1024],
+    [768, 1024],
+    [1024, 1366],
+  ]) {
     for (let n = 3; n <= 6; n++) {
       it(`${pw}x${ph} with ${n} cards keeps every card big, clear and on screen`, () => {
         const v = computeView(pw, ph);
@@ -311,7 +358,9 @@ describe('Who Am I? layout', () => {
           expect(inside(c, v.w, v.h), `card ${i} inside`).toBe(true);
           expect(overlap(c, pet), `card ${i} pet`).toBe(false);
           expect(overlap(c, home), `card ${i} home`).toBe(false);
-          L.cards.slice(i + 1).forEach((d, j) => expect(overlap(c, d), `cards ${i},${i + 1 + j}`).toBe(false));
+          L.cards
+            .slice(i + 1)
+            .forEach((d, j) => expect(overlap(c, d), `cards ${i},${i + 1 + j}`).toBe(false));
           expect(overlap(c, L.sign), `card ${i} sign`).toBe(false);
           L.strip.forEach((s, k) => expect(overlap(c, s), `card ${i} strip ${k}`).toBe(false));
         });

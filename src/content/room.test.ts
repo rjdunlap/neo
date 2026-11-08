@@ -14,7 +14,13 @@ describe('treehouse room rules', () => {
       expect(it.flip).toBe(false);
     }
     // Starting spots at least a tenth of the room apart, so every item can be picked up by itself.
-    room.items.forEach((a, i) => room.items.slice(i + 1).forEach((b) => expect(Math.hypot(a.x - b.x, (a.y - b.y) * 1.5), `${a.id} ${b.id}`).toBeGreaterThan(0.1)));
+    room.items.forEach((a, i) =>
+      room.items
+        .slice(i + 1)
+        .forEach((b) =>
+          expect(Math.hypot(a.x - b.x, (a.y - b.y) * 1.5), `${a.id} ${b.id}`).toBeGreaterThan(0.1),
+        ),
+    );
     expect(room.frame).toBeNull();
   });
 

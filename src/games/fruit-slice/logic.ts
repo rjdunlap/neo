@@ -6,7 +6,17 @@ import type { BandLevels } from '../../progress/difficulty';
 /** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, the still boards of levels 7–9 and level 10's twos and threes. */
 
 export type Kind = PropKind;
-export const FRUIT: Kind[] = ['apple', 'orange', 'lemon', 'pear', 'blueberries', 'grapes', 'strawberry', 'banana', 'plum'];
+export const FRUIT: Kind[] = [
+  'apple',
+  'orange',
+  'lemon',
+  'pear',
+  'blueberries',
+  'grapes',
+  'strawberry',
+  'banana',
+  'plum',
+];
 /** Beach things nobody would call a fruit (no tomato, no nut). */
 export const NOT_FRUIT: Kind[] = ['balloon', 'flower', 'beachball', 'shell'];
 export const isFruit = (k: Kind) => FRUIT.includes(k);
@@ -24,7 +34,8 @@ export const MIN_LINE = 150;
 export type Mood = 'morning' | 'picnic' | 'sunset';
 export const MOODS: Mood[] = ['morning', 'picnic', 'sunset'];
 
-export type Mode = 'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces' | 'cover' | 'mixed';
+export type Mode =
+  'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces' | 'cover' | 'mixed';
 
 export interface Plan {
   id: number;
@@ -69,7 +80,11 @@ export function planFor(level: number): Plan {
 /* Signs: what a round asks for                                                                   */
 /* ---------------------------------------------------------------------------------------------- */
 
-export interface Row { kind: Kind | null; n: number; cut: number }
+export interface Row {
+  kind: Kind | null;
+  n: number;
+  cut: number;
+}
 
 /** What one sign (or the whole round, at 1–4) asks for. A row with no kind takes any fruit. */
 export interface Sign {
@@ -82,7 +97,11 @@ export interface Sign {
 
 /** The round's signs, in order: one for levels 1–4 and 7's boards are separate (`boardsFor`). */
 export function signsFor(plan: Plan, rng: Rng): Sign[] {
-  const one = (kind: Kind | null, n: number, per = 1, board = false): Sign => ({ rows: [{ kind, n, cut: 0 }], per, board });
+  const one = (kind: Kind | null, n: number, per = 1, board = false): Sign => ({
+    rows: [{ kind, n, cut: 0 }],
+    per,
+    board,
+  });
   switch (plan.mode) {
     case 'touch':
     case 'swipe':
@@ -95,7 +114,14 @@ export function signsFor(plan: Plan, rng: Rng): Sign[] {
     case 'two':
       return [0, 1, 2].map(() => {
         const [a, b] = rng.shuffle([...FRUIT]).slice(0, 2);
-        return { rows: [{ kind: a, n: rng.int(1, 4), cut: 0 }, { kind: b, n: rng.int(1, 4), cut: 0 }], per: 1, board: false };
+        return {
+          rows: [
+            { kind: a, n: rng.int(1, 4), cut: 0 },
+            { kind: b, n: rng.int(1, 4), cut: 0 },
+          ],
+          per: 1,
+          board: false,
+        };
       });
     case 'pieces':
       return [one(null, 6, 2), one(null, 8, 2), one(null, rng.pick([10, 12]), 2, true)];
@@ -160,7 +186,11 @@ export function mixedHint(sign: Sign, bowl: Kind[]): MixedStep {
 export const keeps = (sign: Sign, kind: Kind) => finishable(left(sign) - piecesFor(sign, kind));
 
 /** Whether a cut of this kind would count toward the sign now, and if not, why. Levels 1–2 never refuse. */
-export function judge(plan: Plan, sign: Sign, kind: Kind): { ok: true; row: number } | { ok: false; why: Refusal } {
+export function judge(
+  plan: Plan,
+  sign: Sign,
+  kind: Kind,
+): { ok: true; row: number } | { ok: false; why: Refusal } {
   if (plan.mode === 'touch' || plan.mode === 'swipe') return { ok: true, row: 0 };
   if (!isFruit(kind)) return { ok: false, why: 'not-fruit' };
   if (met(sign)) return { ok: false, why: 'full' };
@@ -184,7 +214,12 @@ export const wanted = (plan: Plan, sign: Sign, kind: Kind) => judge(plan, sign, 
  * bounce, and the whole stroke counts at most one miss. `missed` carries over between calls for a stroke cut as it goes.
  * At level 10 a slice while one piece short bounces for free: the way on is a put-back, not a better cut.
  */
-export function judgeStroke(plan: Plan, sign: Sign, kinds: Kind[], missed = false): { cut: boolean[]; reasons: (Refusal | null)[]; miss: boolean } {
+export function judgeStroke(
+  plan: Plan,
+  sign: Sign,
+  kinds: Kind[],
+  missed = false,
+): { cut: boolean[]; reasons: (Refusal | null)[]; miss: boolean } {
   const cut: boolean[] = [];
   const reasons: (Refusal | null)[] = [];
   let miss = false;
@@ -299,7 +334,13 @@ const COLUMNS: Record<number, number[]> = { 1: [0.5], 2: [0.36, 0.64], 3: [0.28,
 
 export function makeToss(kind: Kind, column: number, aloft: number, rng: Rng): Toss {
   const cols = COLUMNS[aloft] ?? COLUMNS[3];
-  return { kind, column, ax: cols[column] + rng.range(-0.012, 0.012), ay: rng.range(0.27, 0.5), side: rng.chance(0.5) ? -1 : 1 };
+  return {
+    kind,
+    column,
+    ax: cols[column] + rng.range(-0.012, 0.012),
+    ay: rng.range(0.27, 0.5),
+    side: rng.chance(0.5) ? -1 : 1,
+  };
 }
 
 const smooth = (k: number) => k * k * (3 - 2 * k);
@@ -308,7 +349,8 @@ const smooth = (k: number) => k * k * (3 - 2 * k);
 export function arcAt(toss: Toss, t: number, v: View): { x: number; y: number } | null {
   if (t < 0 || t > FLIGHT) return null;
   const b = basketAt(v);
-  const ax = toss.ax * v.w, ay = toss.ay * v.h;
+  const ax = toss.ax * v.w,
+    ay = toss.ay * v.h;
   if (t < RISE) {
     const k = t / RISE;
     // A thrown arc: fast out of the basket, slowing to the top.
@@ -320,13 +362,15 @@ export function arcAt(toss: Toss, t: number, v: View): { x: number; y: number } 
     return { x: ax + toss.side * DRIFT * smooth(k), y: ay + BOB * Math.sin(Math.PI * k) };
   }
   const k = (t - RISE - HANG) / FALL;
-  const sx = ax + toss.side * DRIFT, sy = ay;
+  const sx = ax + toss.side * DRIFT,
+    sy = ay;
   return { x: sx + (b.x - sx) * smooth(k), y: sy + (b.y - sy) * k * k };
 }
 
 /** Seconds of its flight a toss stays within 40 units of its apex. */
 export function hangTime(toss: Toss, v: View, step = 0.01): number {
-  const ax = toss.ax * v.w, ay = toss.ay * v.h;
+  const ax = toss.ax * v.w,
+    ay = toss.ay * v.h;
   let n = 0;
   for (let t = 0; t <= FLIGHT; t += step) {
     const p = arcAt(toss, t, v)!;
@@ -341,10 +385,14 @@ export const hanging = (t: number) => t >= RISE && t <= RISE + HANG;
 /* Geometry                                                                                       */
 /* ---------------------------------------------------------------------------------------------- */
 
-export interface Pt { x: number; y: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 export function distToSegment(p: Pt, a: Pt, b: Pt): number {
-  const dx = b.x - a.x, dy = b.y - a.y;
+  const dx = b.x - a.x,
+    dy = b.y - a.y;
   const len2 = dx * dx + dy * dy;
   const t = len2 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2)) : 0;
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
@@ -352,16 +400,20 @@ export function distToSegment(p: Pt, a: Pt, b: Pt): number {
 
 /** How much of segment a→b lies inside the circle (c, r). */
 export function insideLength(a: Pt, b: Pt, c: Pt, r = HIT_R): number {
-  const dx = b.x - a.x, dy = b.y - a.y;
+  const dx = b.x - a.x,
+    dy = b.y - a.y;
   const len = Math.hypot(dx, dy);
   if (!len) return 0;
-  const ux = dx / len, uy = dy / len;
-  const fx = a.x - c.x, fy = a.y - c.y;
+  const ux = dx / len,
+    uy = dy / len;
+  const fx = a.x - c.x,
+    fy = a.y - c.y;
   const proj = fx * ux + fy * uy;
   const d2 = fx * fx + fy * fy - proj * proj;
   if (d2 >= r * r) return 0;
   const half = Math.sqrt(r * r - d2);
-  const t0 = Math.max(0, -proj - half), t1 = Math.min(len, -proj + half);
+  const t0 = Math.max(0, -proj - half),
+    t1 = Math.min(len, -proj + half);
   return Math.max(0, t1 - t0);
 }
 
@@ -369,7 +421,11 @@ export function insideLength(a: Pt, b: Pt, c: Pt, r = HIT_R): number {
 export function sliceHits(a: Pt, b: Pt, fruits: Pt[], r = HIT_R): number[] {
   const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
   return fruits
-    .map((c, i) => ({ i, d: distToSegment(c, a, b), along: ((c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y)) / len }))
+    .map((c, i) => ({
+      i,
+      d: distToSegment(c, a, b),
+      along: ((c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y)) / len,
+    }))
     .filter((h) => h.d < r)
     .sort((p, q) => p.along - q.along)
     .map((h) => h.i);
@@ -386,9 +442,15 @@ export const lineHits = sliceHits;
 export const BOARD_W = 820;
 export const BOARD_H = 400;
 const BOARD_TOP = 175;
-export const boardOrigin = (v: View) => ({ x: (v.w - BOARD_W) / 2, y: BOARD_TOP + Math.max(0, (v.h - 768) / 3) });
+export const boardOrigin = (v: View) => ({
+  x: (v.w - BOARD_W) / 2,
+  y: BOARD_TOP + Math.max(0, (v.h - 768) / 3),
+});
 
-export interface Line { a: Pt; b: Pt }
+export interface Line {
+  a: Pt;
+  b: Pt;
+}
 export interface Board {
   /** Fruit centers, in board units (0..BOARD_W, 0..BOARD_H). */
   fruit: Pt[];
@@ -412,9 +474,13 @@ export function candidateLines(fruit: Pt[]): Line[] {
   };
   for (let i = 0; i < fruit.length; i++) {
     for (let j = i + 1; j < fruit.length; j++) {
-      const dx = fruit[j].x - fruit[i].x, dy = fruit[j].y - fruit[i].y, len = Math.hypot(dx, dy);
-      const ux = dx / len, uy = dy / len;
-      for (const off of [-50, -25, 0, 25, 50]) add({ x: fruit[i].x - uy * off, y: fruit[i].y + ux * off }, ux, uy);
+      const dx = fruit[j].x - fruit[i].x,
+        dy = fruit[j].y - fruit[i].y,
+        len = Math.hypot(dx, dy);
+      const ux = dx / len,
+        uy = dy / len;
+      for (const off of [-50, -25, 0, 25, 50])
+        add({ x: fruit[i].x - uy * off, y: fruit[i].y + ux * off }, ux, uy);
     }
     for (let a = 0; a < 8; a++) add(fruit[i], Math.cos((a * Math.PI) / 8), Math.sin((a * Math.PI) / 8));
   }
@@ -423,10 +489,12 @@ export function candidateLines(fruit: Pt[]): Line[] {
 
 /** The line through p along (ux, uy), from box edge to box edge, pulled in 10 units. */
 function clipToBox(p: Pt, ux: number, uy: number): Line | null {
-  let lo = -Infinity, hi = Infinity;
+  let lo = -Infinity,
+    hi = Infinity;
   const lim = (pos: number, d: number, max: number) => {
     if (Math.abs(d) < 1e-9) return pos >= 0 && pos <= max;
-    const t0 = (0 - pos) / d, t1 = (max - pos) / d;
+    const t0 = (0 - pos) / d,
+      t1 = (max - pos) / d;
     lo = Math.max(lo, Math.min(t0, t1));
     hi = Math.min(hi, Math.max(t0, t1));
     return true;
@@ -442,19 +510,35 @@ function throughOnly(fruit: Pt[], ids: number[]): Line | null {
   const ps = ids.map((i) => fruit[i]);
   if (ps.length === 1) {
     for (let a = 0; a < 8; a++) {
-      const ux = Math.cos((a * Math.PI) / 8), uy = Math.sin((a * Math.PI) / 8);
-      const l = { a: { x: ps[0].x - ux * 100, y: ps[0].y - uy * 100 }, b: { x: ps[0].x + ux * 100, y: ps[0].y + uy * 100 } };
+      const ux = Math.cos((a * Math.PI) / 8),
+        uy = Math.sin((a * Math.PI) / 8);
+      const l = {
+        a: { x: ps[0].x - ux * 100, y: ps[0].y - uy * 100 },
+        b: { x: ps[0].x + ux * 100, y: ps[0].y + uy * 100 },
+      };
       if (insideBox(l.a) && insideBox(l.b) && sameSet(lineHits(l.a, l.b, fruit), ids)) return l;
     }
     return null;
   }
   // Ends: the two fruit farthest apart.
-  let best: [Pt, Pt] = [ps[0], ps[1]], far = -1;
-  for (const p of ps) for (const q of ps) { const d = Math.hypot(p.x - q.x, p.y - q.y); if (d > far) { far = d; best = [p, q]; } }
+  let best: [Pt, Pt] = [ps[0], ps[1]],
+    far = -1;
+  for (const p of ps)
+    for (const q of ps) {
+      const d = Math.hypot(p.x - q.x, p.y - q.y);
+      if (d > far) {
+        far = d;
+        best = [p, q];
+      }
+    }
   const [p, q] = best;
-  const ux = (q.x - p.x) / far, uy = (q.y - p.y) / far;
+  const ux = (q.x - p.x) / far,
+    uy = (q.y - p.y) / far;
   for (const reach of [100, 70, 40]) {
-    const l = { a: { x: p.x - ux * reach, y: p.y - uy * reach }, b: { x: q.x + ux * reach, y: q.y + uy * reach } };
+    const l = {
+      a: { x: p.x - ux * reach, y: p.y - uy * reach },
+      b: { x: q.x + ux * reach, y: q.y + uy * reach },
+    };
     if (insideBox(l.a) && insideBox(l.b) && sameSet(lineHits(l.a, l.b, fruit), ids)) return l;
   }
   return null;
@@ -497,7 +581,8 @@ export function boardsFor(rng: Rng, ns = [2, 3, 3, 4]): Board[] {
 /** N fruit along one straight row, then the rest scattered off it. */
 function seededRow(n: number, count: number, rng: Rng): Pt[] | null {
   const ang = rng.range(-0.5, 0.5);
-  const ux = Math.cos(ang), uy = Math.sin(ang);
+  const ux = Math.cos(ang),
+    uy = Math.sin(ang);
   const step = rng.range(160, 185);
   const span = step * (n - 1);
   const cx = rng.range(INSET + (span * Math.abs(ux)) / 2, BOARD_W - INSET - (span * Math.abs(ux)) / 2);
@@ -539,7 +624,8 @@ export function pairBoard(rng: Rng, pairs = 3): Board {
     const lines: Line[] = [];
     for (const c of centers) {
       const ang = rng.range(-0.6, 0.6);
-      const ux = Math.cos(ang) * 82, uy = Math.sin(ang) * 82;
+      const ux = Math.cos(ang) * 82,
+        uy = Math.sin(ang) * 82;
       fruit.push({ x: c.x - ux, y: c.y - uy }, { x: c.x + ux, y: c.y + uy });
     }
     if (fruit.some((p) => p.x < 60 || p.x > BOARD_W - 60 || p.y < 60 || p.y > BOARD_H - 60)) continue;
@@ -558,11 +644,15 @@ export function pairBoard(rng: Rng, pairs = 3): Board {
 /** The pair-board line to cut next: the first pair still whole that does not pass the sign, else one fruit alone. */
 export function pairHint(board: Board, cut: boolean[], room: number): Line | null {
   if (room >= 4) {
-    for (let k = 0; k < (board.pairs?.length ?? 0); k++) if (!cut[2 * k] && !cut[2 * k + 1]) return board.pairs![k];
+    for (let k = 0; k < (board.pairs?.length ?? 0); k++)
+      if (!cut[2 * k] && !cut[2 * k + 1]) return board.pairs![k];
   }
   const i = board.fruit.findIndex((_, j) => !cut[j]);
   if (i < 0) return null;
-  return throughOnly(board.fruit.map((p, j) => (cut[j] ? { x: -9999, y: -9999 } : p)), [i]);
+  return throughOnly(
+    board.fruit.map((p, j) => (cut[j] ? { x: -9999, y: -9999 } : p)),
+    [i],
+  );
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -578,8 +668,11 @@ export function coverLines(pts: Pt[]): Line[] {
   const strips: Line[] = [];
   for (let i = 0; i < pts.length; i++) {
     for (let j = i + 1; j < pts.length; j++) {
-      const dx = pts[j].x - pts[i].x, dy = pts[j].y - pts[i].y, len = Math.hypot(dx, dy);
-      const ux = dx / len, uy = dy / len;
+      const dx = pts[j].x - pts[i].x,
+        dy = pts[j].y - pts[i].y,
+        len = Math.hypot(dx, dy);
+      const ux = dx / len,
+        uy = dy / len;
       const offs = pts.map((p) => (p.x - pts[i].x) * -uy + (p.y - pts[i].y) * ux);
       for (const lo of offs) {
         const inStrip = offs.filter((o) => o >= lo && o <= lo + 2 * HIT_R - 0.5);
@@ -602,7 +695,8 @@ export function clearingLine(fruit: Pt[], cut: boolean[]): Line | null {
   const pts = live.map((i) => fruit[i]);
   // The leftovers' own lines and the whole board's, so a line placed by fruit already cut still counts; the one
   // passing closest to every fruit's middle wins, so the glow plainly crosses each.
-  let best: Line | null = null, bestOff = Infinity;
+  let best: Line | null = null,
+    bestOff = Infinity;
   for (const l of [...coverLines(pts), ...coverLines(fruit)]) {
     const hits = lineHits(l.a, l.b, pts);
     if (hits.length !== pts.length) continue;
@@ -617,7 +711,8 @@ export function clearingLine(fruit: Pt[], cut: boolean[]): Line | null {
 const farthest = (l: Line, pts: Pt[]) => Math.max(...pts.map((p) => distToSegment(p, l.a, l.b)));
 
 /** Whether one more straight line can cut every fruit still whole. */
-export const oneLineClears = (fruit: Pt[], cut: boolean[]) => liveOf(fruit, cut).length === 0 || clearingLine(fruit, cut) !== null;
+export const oneLineClears = (fruit: Pt[], cut: boolean[]) =>
+  liveOf(fruit, cut).length === 0 || clearingLine(fruit, cut) !== null;
 
 export type CoverStep = 'cleared' | 'more' | 'stuck';
 
@@ -640,11 +735,30 @@ export function coverHint(fruit: Pt[], cut: boolean[]): Line | null {
     .map((l) => {
       const hits = lineHits(l.a, l.b, fruit);
       const tidy = throughOnly(fruit, hits) ?? l;
-      return { tidy, hits, off: farthest(tidy, hits.map((i) => fruit[i])) };
+      return {
+        tidy,
+        hits,
+        off: farthest(
+          tidy,
+          hits.map((i) => fruit[i]),
+        ),
+      };
     })
     .filter((c) => c.hits.length && c.hits.length < fruit.length)
-    .sort((p, q) => Number(p.off > HIT_R / 2) - Number(q.off > HIT_R / 2) || q.hits.length - p.hits.length || p.off - q.off);
-  for (const { tidy, hits } of lines) if (clearingLine(fruit, fruit.map((_, i) => hits.includes(i)))) return tidy;
+    .sort(
+      (p, q) =>
+        Number(p.off > HIT_R / 2) - Number(q.off > HIT_R / 2) ||
+        q.hits.length - p.hits.length ||
+        p.off - q.off,
+    );
+  for (const { tidy, hits } of lines)
+    if (
+      clearingLine(
+        fruit,
+        fruit.map((_, i) => hits.includes(i)),
+      )
+    )
+      return tidy;
   return null;
 }
 
@@ -660,7 +774,12 @@ export function stripWidth(fruit: Pt[]): number {
 }
 
 /** Level 9's rows per board: three and two first, then four to six. */
-export const COVER_ROWS: [number, number][] = [[3, 2], [2, 2], [3, 2], [3, 3]];
+export const COVER_ROWS: [number, number][] = [
+  [3, 2],
+  [2, 2],
+  [3, 2],
+  [3, 3],
+];
 
 /** Level 9's boards: two seeded rows (crossing or apart, fruit at least 160 apart) that two lines clear and one cannot. */
 export function coverBoardsFor(rng: Rng, rows = COVER_ROWS): Board[] {
@@ -670,7 +789,8 @@ export function coverBoardsFor(rng: Rng, rows = COVER_ROWS): Board[] {
       const second = first && seededRow(b, b, rng);
       if (!first || !second) continue;
       const fruit = [...first, ...second];
-      if (fruit.some((p, i) => fruit.some((q, j) => j > i && Math.hypot(p.x - q.x, p.y - q.y) < 160))) continue;
+      if (fruit.some((p, i) => fruit.some((q, j) => j > i && Math.hypot(p.x - q.x, p.y - q.y) < 160)))
+        continue;
       if (stripWidth(fruit) < 2 * HIT_R + 20) continue;
       if (coverLines(fruit).some((l) => lineHits(l.a, l.b, fruit).length === fruit.length)) continue;
       const hint = coverHint(fruit, []);

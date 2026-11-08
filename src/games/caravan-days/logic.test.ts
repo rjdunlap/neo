@@ -2,13 +2,78 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  afterTooLong, applyHint, camelAt, caravanMap, choose, corners, go, good, goLive, hintFor, legSuns, legsOf, loadPlan, loadStart,
-  loaded, nextLoad, nextPlanMove, overlaps, planPlan, planStart, reachable, reachPlan, roadLayout, safePlan, SKIN, sunPoints,
-  swapPlan, swapStart, pickOffer, goSwap, swapHint, offersAt, worthPlan, worthStart, nextWorthMove, sell, total, better, planFor,
-  type SwapState, type WorthPlan, type WorthStop,
-  passPlan, days, goPass, passHint, quicker, nextPassMove, passStart, DAY_CARDS, DAY, wellsPlan, stretches, minWells, checkWells,
-  minimalPlacements, ghostFor, wellHint, nextWellMove, MARK_MIN, type PassRoad, type WellRoad,
-  tapBale, tapCamel, tapStop, Tally, MIN_TARGET, type CaravanMap, type LoadPlan, type LoadState, type PlanState, type Rect,
+  afterTooLong,
+  applyHint,
+  camelAt,
+  caravanMap,
+  choose,
+  corners,
+  go,
+  good,
+  goLive,
+  hintFor,
+  legSuns,
+  legsOf,
+  loadPlan,
+  loadStart,
+  loaded,
+  nextLoad,
+  nextPlanMove,
+  overlaps,
+  planPlan,
+  planStart,
+  reachable,
+  reachPlan,
+  roadLayout,
+  safePlan,
+  SKIN,
+  sunPoints,
+  swapPlan,
+  swapStart,
+  pickOffer,
+  goSwap,
+  swapHint,
+  offersAt,
+  worthPlan,
+  worthStart,
+  nextWorthMove,
+  sell,
+  total,
+  better,
+  planFor,
+  type SwapState,
+  type WorthPlan,
+  type WorthStop,
+  passPlan,
+  days,
+  goPass,
+  passHint,
+  quicker,
+  nextPassMove,
+  passStart,
+  DAY_CARDS,
+  DAY,
+  wellsPlan,
+  stretches,
+  minWells,
+  checkWells,
+  minimalPlacements,
+  ghostFor,
+  wellHint,
+  nextWellMove,
+  MARK_MIN,
+  type PassRoad,
+  type WellRoad,
+  tapBale,
+  tapCamel,
+  tapStop,
+  Tally,
+  MIN_TARGET,
+  type CaravanMap,
+  type LoadPlan,
+  type LoadState,
+  type PlanState,
+  type Rect,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
@@ -64,8 +129,13 @@ describe('plans', () => {
           expect(m.branches[b].length).toBeGreaterThanOrEqual(2);
           expect(m.branches[b].length).toBeLessThanOrEqual(3);
         }
-        expect(m.stops.filter((x) => x.kind === 'oasis')).toHaveLength(m.branches[0].length + m.branches[1].length);
-        for (const l of m.legs) { expect(l.suns).toBeGreaterThanOrEqual(1); expect(l.suns).toBeLessThanOrEqual(3); }
+        expect(m.stops.filter((x) => x.kind === 'oasis')).toHaveLength(
+          m.branches[0].length + m.branches[1].length,
+        );
+        for (const l of m.legs) {
+          expect(l.suns).toBeGreaterThanOrEqual(1);
+          expect(l.suns).toBeLessThanOrEqual(3);
+        }
         const threes = m.legs.filter((l) => l.suns === 3);
         expect(threes).toHaveLength(1);
         const on = (id: number) => m.branches.findIndex((ids) => ids.includes(id));
@@ -136,7 +206,12 @@ describe('level 1: kneel and load', () => {
 
   it('following nextLoad walks within bales + 2 taps, and taps while walking change nothing', () => {
     for (const bales of [2, 3, 4]) {
-      const p: LoadPlan = { level: 1, bales, colors: ['red', 'blue', 'green', 'teal'].slice(0, bales) as LoadPlan['colors'], oasis: 'rock' };
+      const p: LoadPlan = {
+        level: 1,
+        bales,
+        colors: ['red', 'blue', 'green', 'teal'].slice(0, bales) as LoadPlan['colors'],
+        oasis: 'rock',
+      };
       let s = loadStart(p);
       let taps = 0;
       while (s.phase !== 'walking') {
@@ -175,12 +250,18 @@ const maps = mapsOver();
 
 describe('level 3: day by day across the map', () => {
   it('good contains home and city', () => {
-    for (const m of maps) { const g = good(m); expect(g.has(m.home)).toBe(true); expect(g.has(m.city)).toBe(true); }
+    for (const m of maps) {
+      const g = good(m);
+      expect(g.has(m.home)).toBe(true);
+      expect(g.has(m.city)).toBe(true);
+    }
   });
 
   it('legSuns: adjacent is the road, skipping one oasis sums, otherwise null', () => {
     for (const m of maps) {
-      for (const l of m.legs) { expect(legSuns(m, l.a, l.b)).toBe(l.suns); }
+      for (const l of m.legs) {
+        expect(legSuns(m, l.a, l.b)).toBe(l.suns);
+      }
       for (const ids of m.branches) {
         const chain = [m.home, ...ids, m.city];
         for (let i = 0; i + 2 < chain.length; i++) {
@@ -234,7 +315,8 @@ describe('level 3: day by day across the map', () => {
       for (const st of allStates(m)) {
         const pos = (id: number) => (id === m.home ? -1 : id === m.city ? 99 : m.stops[id].index);
         for (let i = 1; i < st.plan.length; i++) {
-          const a = st.plan[i - 1], b = st.plan[i];
+          const a = st.plan[i - 1],
+            b = st.plan[i];
           if (a !== m.city && b !== m.city) expect(pos(b), `plan ${st.plan}`).toBeGreaterThan(pos(a));
           expect(a).not.toBe(m.city);
         }
@@ -291,8 +373,14 @@ describe('level 3: day by day across the map', () => {
         const h = hintFor(m, st);
         const g = go(m, st);
         const last = st.plan.length ? st.plan[st.plan.length - 1] : m.home;
-        if (!g.arrived) { expect(h).toEqual({ takeOut: st.plan[g.leg] }); continue; }
-        if (last === m.city) { expect(h).toEqual({ go: true }); continue; }
+        if (!g.arrived) {
+          expect(h).toEqual({ takeOut: st.plan[g.leg] });
+          continue;
+        }
+        if (last === m.city) {
+          expect(h).toEqual({ go: true });
+          continue;
+        }
         const forwards = m.legs.filter((l) => l.a === last && l.suns <= SKIN && ok.has(l.b));
         if (forwards.length) {
           expect('flag' in h).toBe(true);
@@ -349,7 +437,9 @@ describe('level 3: day by day across the map', () => {
   });
 });
 
-function lastCity(m: CaravanMap, s: PlanState) { return s.plan[s.plan.length - 1] === m.city; }
+function lastCity(m: CaravanMap, s: PlanState) {
+  return s.plan[s.plan.length - 1] === m.city;
+}
 
 /** Every plan state reachable by tapStop from an empty plan (capped). */
 function allStates(m: CaravanMap, cap = 400): PlanState[] {
@@ -395,7 +485,8 @@ describe('accounting', () => {
 
   it('next resets so the next road counts its own one hint', () => {
     const t = new Tally();
-    t.miss(); t.miss();
+    t.miss();
+    t.miss();
     t.next();
     expect(t.glowing).toBe(false);
     expect(t.here).toBe(0);
@@ -408,7 +499,8 @@ describe('accounting', () => {
 });
 
 describe('layout', () => {
-  const inside = (r: Rect, v: { w: number; h: number }) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
+  const inside = (r: Rect, v: { w: number; h: number }) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
 
   function checkInputs(inputs: Rect[], v: { w: number; h: number }, label: string) {
     const cs = corners(v as never);
@@ -418,7 +510,8 @@ describe('layout', () => {
       expect(inside(r, v), label).toBe(true);
       for (const c of cs) expect(overlaps(r, c), label).toBe(false);
     }
-    for (let i = 0; i < inputs.length; i++) for (let j = i + 1; j < inputs.length; j++) expect(overlaps(inputs[i], inputs[j]), label).toBe(false);
+    for (let i = 0; i < inputs.length; i++)
+      for (let j = i + 1; j < inputs.length; j++) expect(overlaps(inputs[i], inputs[j]), label).toBe(false);
   }
 
   for (const [name, v] of Object.entries(VIEWS)) {
@@ -456,7 +549,8 @@ describe('layout', () => {
     for (const road of l.roads) {
       const pts = sunPoints(road);
       expect(pts).toHaveLength(road.suns);
-      const lo = Math.min(road.from.x, road.to.x), hi = Math.max(road.from.x, road.to.x);
+      const lo = Math.min(road.from.x, road.to.x),
+        hi = Math.max(road.from.x, road.to.x);
       for (const pt of pts) {
         expect(pt.x).toBeGreaterThan(lo);
         expect(pt.x).toBeLessThan(hi);
@@ -465,7 +559,9 @@ describe('layout', () => {
   });
 });
 
-function centre(r: Rect) { return { x: r.x + r.w / 2, y: r.y + r.h / 2 }; }
+function centre(r: Rect) {
+  return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+}
 
 describe('level 4: swap at the stop', () => {
   const roadsOf = (seed: number) => swapPlan(new Rng(seed)).roads;
@@ -477,7 +573,10 @@ describe('level 4: swap at the stop', () => {
       expect(plan.level).toBe(4);
       expect(plan.roads).toHaveLength(2);
       for (const r of plan.roads) {
-        for (const l of r.legs) { expect(l).toBeGreaterThanOrEqual(1); expect(l).toBeLessThanOrEqual(SKIN); }
+        for (const l of r.legs) {
+          expect(l).toBeGreaterThanOrEqual(1);
+          expect(l).toBeLessThanOrEqual(SKIN);
+        }
         expect(new Set(r.wants).size).toBe(3);
         expect(r.carry0).toBe(r.wants[0]);
         expect(r.offers[0].filter((g) => g === r.wants[1])).toHaveLength(1);
@@ -500,63 +599,72 @@ describe('level 4: swap at the stop', () => {
   });
 
   it('exactly one of the four pick sequences reaches the city, and it is the hinted one', () => {
-    for (const seed of SEEDS) for (const road of roadsOf(seed)) {
-      const winners: string[] = [];
-      for (const a of [0, 1] as const) for (const b of [0, 1] as const) {
-        let st = pickOffer(road, swapStart(), a);
-        const carried1 = st.carried!;
-        const g1 = goSwap(road, st);
-        if (g1.event === 'not-wanted') {
-          expect(g1.wants).toBe(road.wants[1]);
-          expect(g1.carried).toBe(carried1);
-          expect(st).toEqual({ at: 1, carried: carried1 });
-          expect(offersAt(road, st)).toEqual(road.offers[0]);
-          continue;
-        }
-        expect(g1.event).toBe('wanted');
-        if (g1.event !== 'wanted') continue;
-        expect(g1.city).toBe(false);
-        st = pickOffer(road, g1.state, b);
-        const carried2 = st.carried!;
-        const g2 = goSwap(road, st);
-        if (g2.event === 'not-wanted') {
-          expect(g2.wants).toBe(road.wants[2]);
-          expect(g2.carried).toBe(carried2);
-          expect(st).toEqual({ at: 2, carried: carried2 });
-          expect(offersAt(road, st)).toEqual(road.offers[1]);
-          continue;
-        }
-        expect(g2.event).toBe('wanted');
-        if (g2.event === 'wanted') { expect(g2.city).toBe(true); winners.push(`${a}${b}`); }
+    for (const seed of SEEDS)
+      for (const road of roadsOf(seed)) {
+        const winners: string[] = [];
+        for (const a of [0, 1] as const)
+          for (const b of [0, 1] as const) {
+            let st = pickOffer(road, swapStart(), a);
+            const carried1 = st.carried!;
+            const g1 = goSwap(road, st);
+            if (g1.event === 'not-wanted') {
+              expect(g1.wants).toBe(road.wants[1]);
+              expect(g1.carried).toBe(carried1);
+              expect(st).toEqual({ at: 1, carried: carried1 });
+              expect(offersAt(road, st)).toEqual(road.offers[0]);
+              continue;
+            }
+            expect(g1.event).toBe('wanted');
+            if (g1.event !== 'wanted') continue;
+            expect(g1.city).toBe(false);
+            st = pickOffer(road, g1.state, b);
+            const carried2 = st.carried!;
+            const g2 = goSwap(road, st);
+            if (g2.event === 'not-wanted') {
+              expect(g2.wants).toBe(road.wants[2]);
+              expect(g2.carried).toBe(carried2);
+              expect(st).toEqual({ at: 2, carried: carried2 });
+              expect(offersAt(road, st)).toEqual(road.offers[1]);
+              continue;
+            }
+            expect(g2.event).toBe('wanted');
+            if (g2.event === 'wanted') {
+              expect(g2.city).toBe(true);
+              winners.push(`${a}${b}`);
+            }
+          }
+        expect(winners).toEqual([
+          `${road.offers[0].indexOf(road.wants[1])}${road.offers[1].indexOf(road.wants[2])}`,
+        ]);
       }
-      expect(winners).toEqual([`${road.offers[0].indexOf(road.wants[1])}${road.offers[1].indexOf(road.wants[2])}`]);
-    }
   });
 
   it('Go with nothing carried is pick-first, and the hint always leads to the city', () => {
-    for (const seed of SEEDS) for (const road of roadsOf(seed)) {
-      expect(goSwap(road, swapStart())).toEqual({ event: 'pick-first' });
-      // every reachable state: at oasis 1 or 2, carrying nothing or either offer
-      for (const at of [1, 2] as const) for (const carried of [null, ...road.offers[at - 1]]) {
-        let st: SwapState = { at, carried };
-        let steps = 0;
-        while (st.at !== 3) {
-          const h = swapHint(road, st)!;
-          expect(h).not.toBeNull();
-          if ('go' in h) {
-            expect(st.carried).toBe(road.wants[st.at]);
-            const r = goSwap(road, st);
-            expect(r.event).toBe('wanted');
-            if (r.event === 'wanted') st = r.state;
-          } else {
-            expect(offersAt(road, st)![h.side]).toBe(road.wants[st.at]);
-            st = pickOffer(road, st, h.side);
+    for (const seed of SEEDS)
+      for (const road of roadsOf(seed)) {
+        expect(goSwap(road, swapStart())).toEqual({ event: 'pick-first' });
+        // every reachable state: at oasis 1 or 2, carrying nothing or either offer
+        for (const at of [1, 2] as const)
+          for (const carried of [null, ...road.offers[at - 1]]) {
+            let st: SwapState = { at, carried };
+            let steps = 0;
+            while (st.at !== 3) {
+              const h = swapHint(road, st)!;
+              expect(h).not.toBeNull();
+              if ('go' in h) {
+                expect(st.carried).toBe(road.wants[st.at]);
+                const r = goSwap(road, st);
+                expect(r.event).toBe('wanted');
+                if (r.event === 'wanted') st = r.state;
+              } else {
+                expect(offersAt(road, st)![h.side]).toBe(road.wants[st.at]);
+                st = pickOffer(road, st, h.side);
+              }
+              expect(++steps).toBeLessThan(6);
+            }
+            expect(swapHint(road, st)).toBeNull();
           }
-          expect(++steps).toBeLessThan(6);
-        }
-        expect(swapHint(road, st)).toBeNull();
       }
-    }
   });
 });
 
@@ -569,13 +677,19 @@ describe('level 5: worth more far away', () => {
     for (const seed of SEEDS) {
       const p = worthPlan(new Rng(seed));
       expect(p.level).toBe(5);
-      expect([[1, 2, 4], [1, 3, 5]]).toContainEqual(p.up);
+      expect([
+        [1, 2, 4],
+        [1, 3, 5],
+      ]).toContainEqual(p.up);
       expect(p.down).toEqual([...p.up].reverse());
       rows.add(p.up.join());
       expect(p.loads[0][0]).not.toBe(p.loads[1][0]);
       for (const l of p.loads) expect(l[0] + l[1]).toBe(3);
       expect(p.named).not.toContain(2);
-      expect([[1, 3], [3, 1]]).toContainEqual(p.named);
+      expect([
+        [1, 3],
+        [3, 1],
+      ]).toContainEqual(p.named);
       named.add(p.named.join());
       expect(worthPlan(new Rng(seed))).toEqual(p);
     }
@@ -588,9 +702,13 @@ describe('level 5: worth more far away', () => {
       const p: WorthPlan = worthPlan(new Rng(seed));
       for (const c of [0, 1]) {
         const stop = p.named[c];
-        const t0 = total(p, 0, stop), t1 = total(p, 1, stop);
+        const t0 = total(p, 0, stop),
+          t1 = total(p, 1, stop);
         expect(t0).not.toBe(t1);
-        for (const t of [t0, t1]) { expect(t).toBeGreaterThanOrEqual(3); expect(t).toBeLessThanOrEqual(20); }
+        for (const t of [t0, t1]) {
+          expect(t).toBeGreaterThanOrEqual(3);
+          expect(t).toBeLessThanOrEqual(20);
+        }
         const b = better(p, c);
         expect(total(p, b, stop)).toBe(Math.max(t0, t1));
         const w = b === 0 ? 1 : 0;
@@ -613,7 +731,11 @@ describe('level 5: worth more far away', () => {
         const moves: string[] = [];
         for (let i = 0; i < 5; i++) {
           const m = nextWorthMove(p, c, st, seen);
-          if ('go' in m) { moves.push('go'); expect(st.looked).toBe(b); break; }
+          if ('go' in m) {
+            moves.push('go');
+            expect(st.looked).toBe(b);
+            break;
+          }
           moves.push(String(m.load));
           seen.add(m.load);
           st = { looked: m.load };
@@ -634,32 +756,41 @@ describe('levels 4-5 plumbing and layout', () => {
   });
 
   it('every input is large, inside the view, clear of the corners and apart', () => {
-    for (const [name, v] of Object.entries(VIEWS)) for (const seed of SEEDS.slice(0, 10)) {
-      const cases: [number, ReturnType<typeof swapPlan> | ReturnType<typeof worthPlan>, number[]][] = [
-        [4, swapPlan(new Rng(seed)), [0, 1]],
-        [5, worthPlan(new Rng(seed)), [0]],
-      ];
-      for (const [level, plan, indexes] of cases) for (const index of indexes) {
-        const lay = roadLayout(level, plan, v, index);
-        expect(lay, `${name} level ${level} seed ${seed}`).not.toBeNull();
-        const rects: Rect[] = [...(lay!.offers ?? []), ...(lay!.bubbles ?? []), ...(lay!.boards ?? []), ...(lay!.loads ?? []), lay!.go!];
-        expect(rects.length).toBe(level === 4 ? 6 : 6);
-        for (const r of rects) {
-          expect(r.w).toBeGreaterThanOrEqual(MIN_TARGET);
-          expect(r.h).toBeGreaterThanOrEqual(MIN_TARGET);
-          expect(r.x).toBeGreaterThanOrEqual(0);
-          expect(r.y).toBeGreaterThanOrEqual(0);
-          expect(r.x + r.w).toBeLessThanOrEqual(v.w);
-          expect(r.y + r.h).toBeLessThanOrEqual(v.h);
-          for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
-        }
-        for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) expect(overlaps(rects[i], rects[j])).toBe(false);
-        if (lay!.offers) {
-          const [a, b] = lay!.offers;
-          expect(b.x - (a.x + a.w)).toBeGreaterThanOrEqual(40);
-        }
+    for (const [name, v] of Object.entries(VIEWS))
+      for (const seed of SEEDS.slice(0, 10)) {
+        const cases: [number, ReturnType<typeof swapPlan> | ReturnType<typeof worthPlan>, number[]][] = [
+          [4, swapPlan(new Rng(seed)), [0, 1]],
+          [5, worthPlan(new Rng(seed)), [0]],
+        ];
+        for (const [level, plan, indexes] of cases)
+          for (const index of indexes) {
+            const lay = roadLayout(level, plan, v, index);
+            expect(lay, `${name} level ${level} seed ${seed}`).not.toBeNull();
+            const rects: Rect[] = [
+              ...(lay!.offers ?? []),
+              ...(lay!.bubbles ?? []),
+              ...(lay!.boards ?? []),
+              ...(lay!.loads ?? []),
+              lay!.go!,
+            ];
+            expect(rects.length).toBe(level === 4 ? 6 : 6);
+            for (const r of rects) {
+              expect(r.w).toBeGreaterThanOrEqual(MIN_TARGET);
+              expect(r.h).toBeGreaterThanOrEqual(MIN_TARGET);
+              expect(r.x).toBeGreaterThanOrEqual(0);
+              expect(r.y).toBeGreaterThanOrEqual(0);
+              expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+              expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+              for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
+            }
+            for (let i = 0; i < rects.length; i++)
+              for (let j = i + 1; j < rects.length; j++) expect(overlaps(rects[i], rects[j])).toBe(false);
+            if (lay!.offers) {
+              const [a, b] = lay!.offers;
+              expect(b.x - (a.x + a.w)).toBeGreaterThanOrEqual(40);
+            }
+          }
       }
-    }
   });
 });
 
@@ -670,9 +801,10 @@ describe('levels 4-5: spoken slots', () => {
     for (const g of GOODS) expect(SCRIPT[`cd.good.${g}` as keyof typeof SCRIPT]).toBeTruthy();
     for (const s of SEEDS) {
       const p = worthPlan(new Rng(s));
-      for (const stop of [1, 2, 3] as const) for (const load of [0, 1] as const) {
-        expect(SCRIPT[`cd.shells.${total(p, load, stop)}` as keyof typeof SCRIPT]).toBeTruthy();
-      }
+      for (const stop of [1, 2, 3] as const)
+        for (const load of [0, 1] as const) {
+          expect(SCRIPT[`cd.shells.${total(p, load, stop)}` as keyof typeof SCRIPT]).toBeTruthy();
+        }
     }
   });
 });
@@ -702,10 +834,17 @@ describe('level 6: mountains or sand', () => {
         expect(d).toBeLessThanOrEqual(6);
         expect(m.sandLegs.length).toBeGreaterThanOrEqual(2);
         expect(m.sandLegs.length).toBeLessThanOrEqual(3);
-        for (const l of m.sandLegs) { expect(l).toBeGreaterThanOrEqual(1); expect(l).toBeLessThanOrEqual(2); expect(l).toBeLessThanOrEqual(SKIN); }
+        for (const l of m.sandLegs) {
+          expect(l).toBeGreaterThanOrEqual(1);
+          expect(l).toBeLessThanOrEqual(2);
+          expect(l).toBeLessThanOrEqual(SKIN);
+        }
         expect(1).toBeLessThanOrEqual(SKIN);
         expect(p).not.toBe(d);
-        if (p < d) { passFirst++; if (m.snow) snowWhenPass.add(s); } else if (m.snow) snowWhenSand.add(s);
+        if (p < d) {
+          passFirst++;
+          if (m.snow) snowWhenPass.add(s);
+        } else if (m.snow) snowWhenSand.add(s);
         expect(DAY_CARDS).toContain(p);
         expect(DAY_CARDS).toContain(d);
       }
@@ -716,7 +855,7 @@ describe('level 6: mountains or sand', () => {
     expect(snowWhenSand.size).toBeGreaterThan(0);
   });
 
-  it('verdicts: right iff the guess is the chosen road\'s days; wrong names the days and direction', () => {
+  it("verdicts: right iff the guess is the chosen road's days; wrong names the days and direction", () => {
     for (const s of SEEDS) {
       for (const m of passPlan(new Rng(s)).maps) {
         for (const road of ROADS) {
@@ -743,7 +882,8 @@ describe('level 6: mountains or sand', () => {
         for (;;) {
           const mv = nextPassMove(m, st);
           if ('go' in mv) break;
-          if ('road' in mv) st.road = mv.road; else st.guess = mv.card;
+          if ('road' in mv) st.road = mv.road;
+          else st.guess = mv.card;
           expect(++steps).toBeLessThanOrEqual(2);
         }
         expect(st.road).toBe(q);
@@ -754,7 +894,7 @@ describe('level 6: mountains or sand', () => {
   });
 });
 
-describe('level 7: a well every day\'s walk', () => {
+describe("level 7: a well every day's walk", () => {
   it('plans: lengths, sites, validity, fewest wells, a choice of placements, deterministic', () => {
     for (const s of SEEDS) {
       const plan = wellsPlan(new Rng(s));
@@ -851,10 +991,21 @@ describe('levels 6-7: layout', () => {
             const tag = `${name} L${level} seed ${s} #${index}`;
             expect(lay, tag).not.toBeNull();
             if (!lay) continue;
-            const rects: Rect[] = [...(lay.bands ?? []), ...(lay.cards ?? []), ...(lay.sites ?? []), ...(lay.stick ? [lay.stick] : []), ...(lay.go ? [lay.go] : [])];
-            if (level === 6) { expect(lay.bands, tag).toHaveLength(2); expect(lay.cards, tag).toHaveLength(DAY_CARDS.length); }
+            const rects: Rect[] = [
+              ...(lay.bands ?? []),
+              ...(lay.cards ?? []),
+              ...(lay.sites ?? []),
+              ...(lay.stick ? [lay.stick] : []),
+              ...(lay.go ? [lay.go] : []),
+            ];
+            if (level === 6) {
+              expect(lay.bands, tag).toHaveLength(2);
+              expect(lay.cards, tag).toHaveLength(DAY_CARDS.length);
+            }
             if (level === 7) {
-              expect(lay.sites, tag).toHaveLength((plan as ReturnType<typeof wellsPlan>).roads[index].sites.length);
+              expect(lay.sites, tag).toHaveLength(
+                (plan as ReturnType<typeof wellsPlan>).roads[index].sites.length,
+              );
               expect(lay.stick, tag).toBeTruthy();
             }
             expect(lay.go, tag).toBeTruthy();
@@ -867,12 +1018,18 @@ describe('levels 6-7: layout', () => {
               expect(r.y + r.h, tag).toBeLessThanOrEqual(v.h);
               for (const c of corners(v)) expect(overlaps(r, c), tag).toBe(false);
             }
-            for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) expect(overlaps(rects[i], rects[j]), tag).toBe(false);
+            for (let i = 0; i < rects.length; i++)
+              for (let j = i + 1; j < rects.length; j++)
+                expect(overlaps(rects[i], rects[j]), tag).toBe(false);
             if (level === 7) {
               const road = (plan as ReturnType<typeof wellsPlan>).roads[index] as WellRoad;
               const marks = lay.marks!;
               expect(marks, tag).toHaveLength(road.length + 1);
-              for (let i = 1; i < marks.length; i++) expect(Math.hypot(marks[i].x - marks[i - 1].x, marks[i].y - marks[i - 1].y), tag).toBeGreaterThanOrEqual(MARK_MIN);
+              for (let i = 1; i < marks.length; i++)
+                expect(
+                  Math.hypot(marks[i].x - marks[i - 1].x, marks[i].y - marks[i - 1].y),
+                  tag,
+                ).toBeGreaterThanOrEqual(MARK_MIN);
             }
           }
         }

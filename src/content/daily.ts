@@ -79,14 +79,24 @@ export function hardLevels(mod: GameModule, band: Band): number[] {
  * On a phone held upright (`upright`, chunk 31) the same pick runs over the upright-ready games first (`upright: true`), then
  * fills from the rest of the pool if fewer than six are ready; the seed is unchanged, so a sideways day is exactly as before.
  */
-export function dailySix(day: string, band: Band, games: readonly GameModule[], pinned: (id: string) => number | null = () => null, upright = false): DailyPick[] {
+export function dailySix(
+  day: string,
+  band: Band,
+  games: readonly GameModule[],
+  pinned: (id: string) => number | null = () => null,
+  upright = false,
+): DailyPick[] {
   const rng = new Rng(daySeed(day, band));
   const pool = rng.shuffle([...dailyPool(band, games)]);
   const chosen: GameModule[] = [];
   const kinds = new Set<GameModule['challenge']>();
   const lands = new Set<string>();
   const take = (from: readonly GameModule[], upTo: number) => {
-    for (let left = from.filter((m) => !chosen.includes(m)); chosen.length < upTo && left.length; left = left.filter((m) => !chosen.includes(m))) {
+    for (
+      let left = from.filter((m) => !chosen.includes(m));
+      chosen.length < upTo && left.length;
+      left = left.filter((m) => !chosen.includes(m))
+    ) {
       // Every kind (or every land) left has had a turn: start its round again.
       if (left.every((m) => kinds.has(m.challenge))) kinds.clear();
       if (left.every((m) => lands.has(m.region))) lands.clear();
@@ -112,7 +122,11 @@ export function dailySix(day: string, band: Band, games: readonly GameModule[], 
     // The preset is drawn for every pick, pinned or not, so one pin never reshuffles the other cards' levels.
     const preset = rng.pick(band === 'grownup' ? hardLevels(mod, at) : presetLevels(mod, at));
     const pin = pinned(mod.id);
-    return { mod, band: at, level: pin !== null && levelsInOrder(mod.levels(at)).includes(pin) ? pin : preset };
+    return {
+      mod,
+      band: at,
+      level: pin !== null && levelsInOrder(mod.levels(at)).includes(pin) ? pin : preset,
+    };
   });
 }
 
@@ -123,4 +137,5 @@ export function levelDots(pick: DailyPick): { at: number; of: number } {
 }
 
 /** She finished a round of this game on `day` (a round's record carries its time): the card shows a tick. */
-export const playedOn = (history: readonly RoundRecord[] | undefined, day: string) => !!history?.some((r) => dayKey(new Date(r.at)) === day);
+export const playedOn = (history: readonly RoundRecord[] | undefined, day: string) =>
+  !!history?.some((r) => dayKey(new Date(r.at)) === day);

@@ -49,26 +49,44 @@ export function planFor(level: number): Plan {
 }
 
 /** True where numbers decide (levels 6–10) rather than pictured tiers. */
-export const numeric = (plan: Plan) => plan.numbers === true || plan.mode === 'plus' || plan.mode === 'add' || plan.mode === 'pail';
+export const numeric = (plan: Plan) =>
+  plan.numbers === true || plan.mode === 'plus' || plan.mode === 'add' || plan.mode === 'pail';
 
 /**
  * Where n dots sit (1–9) on a three-by-three grid of unit steps, as on a die: 5 is four corners and the middle, 6 two
  * columns of three, 7 those six and the middle.
  */
 export function dotSpots(n: number): [number, number][] {
-  const c: [number, number][] = [[-1, -1], [1, 1], [1, -1], [-1, 1]];
-  const sides: [number, number][] = [[-1, 0], [1, 0]];
+  const c: [number, number][] = [
+    [-1, -1],
+    [1, 1],
+    [1, -1],
+    [-1, 1],
+  ];
+  const sides: [number, number][] = [
+    [-1, 0],
+    [1, 0],
+  ];
   const mid: [number, number] = [0, 0];
   switch (Math.max(1, Math.min(9, Math.round(n)))) {
-    case 1: return [mid];
-    case 2: return c.slice(0, 2);
-    case 3: return [c[0], mid, c[1]];
-    case 4: return c;
-    case 5: return [...c, mid];
-    case 6: return [...c, ...sides];
-    case 7: return [...c, ...sides, mid];
-    case 8: return [...c, ...sides, [0, -1], [0, 1]];
-    default: return [...c, ...sides, [0, -1], [0, 1], mid];
+    case 1:
+      return [mid];
+    case 2:
+      return c.slice(0, 2);
+    case 3:
+      return [c[0], mid, c[1]];
+    case 4:
+      return c;
+    case 5:
+      return [...c, mid];
+    case 6:
+      return [...c, ...sides];
+    case 7:
+      return [...c, ...sides, mid];
+    case 8:
+      return [...c, ...sides, [0, -1], [0, 1]];
+    default:
+      return [...c, ...sides, [0, -1], [0, 1], mid];
   }
 }
 
@@ -88,9 +106,25 @@ export const NUMBER_KINDS: Kind[] = ['pebble', 'shell', 'starfish', ...NUMBER_ON
 
 /** What the voice calls each kind ("The {thing} is smaller."). Never a critter or a friend's belonging. */
 export const NAMES: Record<Kind, string> = {
-  shell: 'shell', pebble: 'pebble', leaf: 'leaf', feather: 'feather', pinecone: 'pinecone', boat: 'toy boat', seaweed: 'seaweed',
-  starfish: 'starfish', ball: 'beach ball', driftwood: 'driftwood stick', bucket: 'bucket', hat: 'sun hat', spade: 'sand spade',
-  ring: 'floaty ring', kite: 'kite', umbrella: 'beach umbrella', towel: 'rolled towel', seaglass: 'sea glass', button: 'button',
+  shell: 'shell',
+  pebble: 'pebble',
+  leaf: 'leaf',
+  feather: 'feather',
+  pinecone: 'pinecone',
+  boat: 'toy boat',
+  seaweed: 'seaweed',
+  starfish: 'starfish',
+  ball: 'beach ball',
+  driftwood: 'driftwood stick',
+  bucket: 'bucket',
+  hat: 'sun hat',
+  spade: 'sand spade',
+  ring: 'floaty ring',
+  kite: 'kite',
+  umbrella: 'beach umbrella',
+  towel: 'rolled towel',
+  seaglass: 'sea glass',
+  button: 'button',
 };
 
 /* Beach moods ----------------------------------------------------------------------------------- */
@@ -155,7 +189,12 @@ export interface State {
 export function startState(board: Board): State {
   const held = board.held ?? [];
   const puddle = board.start + held.reduce((sum, id) => sum + thingOf(board, id).size, 0);
-  return { puddle, drops: 0, soaked: [...held], left: board.things.map((t) => t.id).filter((id) => !held.includes(id)) };
+  return {
+    puddle,
+    drops: 0,
+    soaked: [...held],
+    left: board.things.map((t) => t.id).filter((id) => !held.includes(id)),
+  };
 }
 
 export const thingOf = (board: Board, id: number) => board.things.find((t) => t.id === id)!;
@@ -205,7 +244,12 @@ export function soak(board: Board, s: State, id: number): SoakResult {
 /** Levels 8 and 11: a soaked thing hops back onto the sand and the puddle shrinks by its number. Free, never a miss. */
 export function letGo(board: Board, s: State, id: number): State {
   if (board.plan.mode !== 'pail' || !s.soaked.includes(id)) throw new Error(`cannot let ${id} go`);
-  return { ...s, puddle: s.puddle - thingOf(board, id).size, soaked: s.soaked.filter((o) => o !== id), left: [...s.left, id] };
+  return {
+    ...s,
+    puddle: s.puddle - thingOf(board, id).size,
+    soaked: s.soaked.filter((o) => o !== id),
+    left: [...s.left, id],
+  };
 }
 
 export function done(board: Board, s: State) {
@@ -247,7 +291,10 @@ export function exactSolutions(board: Board, s: State = startState(board)): numb
     let ok = true;
     for (const id of ids) {
       const v = thingOf(board, id).size;
-      if (v > p && !board.held) { ok = false; break; }
+      if (v > p && !board.held) {
+        ok = false;
+        break;
+      }
       p += v;
     }
     if (ok) out.push(ids);
@@ -315,9 +362,10 @@ export function deadEndReachable(board: Board) {
 
 /* Boards ---------------------------------------------------------------------------------------- */
 
-
 function picture(rng: Rng, tiers: number[]): Thing[] {
-  return rng.shuffle(tiers).map((size, id) => ({ id, size, kind: rng.pick(KINDS_BY_TIER[size as 1 | 2 | 3 | 4]) }));
+  return rng
+    .shuffle(tiers)
+    .map((size, id) => ({ id, size, kind: rng.pick(KINDS_BY_TIER[size as 1 | 2 | 3 | 4]) }));
 }
 
 function numbered(rng: Rng, values: number[]): Thing[] {
@@ -332,17 +380,146 @@ function distinct(rng: Rng, n: number, lo: number, hi: number) {
 export function authoredBoard(plan: Plan): Board {
   const things = (kinds: [Kind, number][]): Thing[] => kinds.map(([kind, size], id) => ({ id, kind, size }));
   switch (plan.id) {
-    case 1: return { plan, start: 2, things: things([['shell', 1], ['shell', 1], ['shell', 1], ['shell', 1], ['shell', 1]]) };
-    case 2: return { plan, start: 1, things: things([['pebble', 1], ['pebble', 1], ['boat', 2], ['pebble', 1], ['pebble', 1]]) };
-    case 3: return { plan, start: 1, things: things([['leaf', 1], ['pinecone', 2], ['ball', 3], ['leaf', 1], ['pinecone', 2]]) };
-    case 4: return { plan, start: 1, things: things([['shell', 1], ['pinecone', 2], ['shell', 1], ['driftwood', 3], ['pinecone', 2], ['shell', 1], ['pinecone', 2]]) };
-    case 5: return { plan, start: 4, things: things([['feather', 1], ['seaweed', 2], ['ball', 3], ['seaweed', 2], ['ring', 4]]) };
-    case 6: return { plan, start: 3, things: things([['pebble', 1], ['pebble', 2], ['pebble', 4], ['pebble', 5], ['pebble', 7], ['pebble', 3]]) };
-    case 7: return { plan, start: 5, things: things([['pebble', 2], ['shell', 3], ['pebble', 6], ['starfish', 9], ['pebble', 15], ['shell', 4]]) };
-    case 10: return { plan, start: 2, things: things([['pebble', 3], ['pebble', 1], ['pebble', 6], ['pebble', 2], ['pebble', 4]]) };
-    case 11: return { plan, start: 2, pail: 14, held: [0, 1, 2, 3], things: things([['pebble', 4], ['shell', 9], ['pebble', 3], ['starfish', 6]]) };
-    case 9: return { plan, start: 20, things: things([['pebble', 11], ['shell', 3], ['pebble', 17], ['starfish', 8], ['pebble', 19], ['shell', 14]]) };
-    default: return { plan, start: 4, pail: 15, things: things([['pebble', 2], ['pebble', 3], ['shell', 5], ['pebble', 6], ['starfish', 8], ['pebble', 9]]) };
+    case 1:
+      return {
+        plan,
+        start: 2,
+        things: things([
+          ['shell', 1],
+          ['shell', 1],
+          ['shell', 1],
+          ['shell', 1],
+          ['shell', 1],
+        ]),
+      };
+    case 2:
+      return {
+        plan,
+        start: 1,
+        things: things([
+          ['pebble', 1],
+          ['pebble', 1],
+          ['boat', 2],
+          ['pebble', 1],
+          ['pebble', 1],
+        ]),
+      };
+    case 3:
+      return {
+        plan,
+        start: 1,
+        things: things([
+          ['leaf', 1],
+          ['pinecone', 2],
+          ['ball', 3],
+          ['leaf', 1],
+          ['pinecone', 2],
+        ]),
+      };
+    case 4:
+      return {
+        plan,
+        start: 1,
+        things: things([
+          ['shell', 1],
+          ['pinecone', 2],
+          ['shell', 1],
+          ['driftwood', 3],
+          ['pinecone', 2],
+          ['shell', 1],
+          ['pinecone', 2],
+        ]),
+      };
+    case 5:
+      return {
+        plan,
+        start: 4,
+        things: things([
+          ['feather', 1],
+          ['seaweed', 2],
+          ['ball', 3],
+          ['seaweed', 2],
+          ['ring', 4],
+        ]),
+      };
+    case 6:
+      return {
+        plan,
+        start: 3,
+        things: things([
+          ['pebble', 1],
+          ['pebble', 2],
+          ['pebble', 4],
+          ['pebble', 5],
+          ['pebble', 7],
+          ['pebble', 3],
+        ]),
+      };
+    case 7:
+      return {
+        plan,
+        start: 5,
+        things: things([
+          ['pebble', 2],
+          ['shell', 3],
+          ['pebble', 6],
+          ['starfish', 9],
+          ['pebble', 15],
+          ['shell', 4],
+        ]),
+      };
+    case 10:
+      return {
+        plan,
+        start: 2,
+        things: things([
+          ['pebble', 3],
+          ['pebble', 1],
+          ['pebble', 6],
+          ['pebble', 2],
+          ['pebble', 4],
+        ]),
+      };
+    case 11:
+      return {
+        plan,
+        start: 2,
+        pail: 14,
+        held: [0, 1, 2, 3],
+        things: things([
+          ['pebble', 4],
+          ['shell', 9],
+          ['pebble', 3],
+          ['starfish', 6],
+        ]),
+      };
+    case 9:
+      return {
+        plan,
+        start: 20,
+        things: things([
+          ['pebble', 11],
+          ['shell', 3],
+          ['pebble', 17],
+          ['starfish', 8],
+          ['pebble', 19],
+          ['shell', 14],
+        ]),
+      };
+    default:
+      return {
+        plan,
+        start: 4,
+        pail: 15,
+        things: things([
+          ['pebble', 2],
+          ['pebble', 3],
+          ['shell', 5],
+          ['pebble', 6],
+          ['starfish', 8],
+          ['pebble', 9],
+        ]),
+      };
   }
 }
 
@@ -352,19 +529,25 @@ export function passesFilter(board: Board): boolean {
   const s0 = startState(board);
   const tooBig = things.filter((t) => !fits(start, t));
   switch (plan.id) {
-    case 1: return tooBig.length === 0 && things.length === 5;
+    case 1:
+      return tooBig.length === 0 && things.length === 5;
     case 2: {
       if (tooBig.length !== 1) return false;
       // It fits after exactly two soaks.
       let st = s0;
       for (let i = 0; i < 2; i++) {
-        const r = soak(board, st, soakable(board, st).find((id) => id !== tooBig[0].id)!);
+        const r = soak(
+          board,
+          st,
+          soakable(board, st).find((id) => id !== tooBig[0].id)!,
+        );
         if (!r.ok) return false;
         st = r.state;
       }
       return fits(st.puddle, tooBig[0]) && greedyClears(board);
     }
-    case 3: case 4: {
+    case 3:
+    case 4: {
       if (!greedyClears(board)) return false;
       // The biggest thing waits for the most growth: no tier-3 thing fits before (grow × 2) soaks.
       const needs = plan.grow * 2;
@@ -378,12 +561,22 @@ export function passesFilter(board: Board): boolean {
       }
       return st.puddle < 3;
     }
-    case 5: return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 4 && things.length === 5;
+    case 5:
+      return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 4 && things.length === 5;
     // Everything fits from the start, so the only refusal is the order; the numbers are distinct, so "smallest" is never a tie.
-    case 9: return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 6 && things.length === 6;
-    case 6: return tooBig.length >= 2 && greedyClears(board);
+    case 9:
+      return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 6 && things.length === 6;
+    case 6:
+      return tooBig.length >= 2 && greedyClears(board);
     // Five distinct numbers 1–6, each small enough to count as dots; at least two wait for the puddle to grow.
-    case 10: return things.length === 5 && new Set(things.map((t) => t.size)).size === 5 && things.every((t) => t.size >= 1 && t.size <= 6) && tooBig.length >= 2 && greedyClears(board);
+    case 10:
+      return (
+        things.length === 5 &&
+        new Set(things.map((t) => t.size)).size === 5 &&
+        things.every((t) => t.size >= 1 && t.size <= 6) &&
+        tooBig.length >= 2 &&
+        greedyClears(board)
+      );
     case 7: {
       const smallest = Math.min(...things.map((t) => t.size));
       const total = start + things.reduce((sum, t) => sum + t.size, 0);
@@ -408,20 +601,35 @@ export function passesFilter(board: Board): boolean {
 
 function draw(plan: Plan, rng: Rng): Board {
   switch (plan.id) {
-    case 1: return { plan, start: 2, things: picture(rng, [1, 1, 1, 1, 1]) };
-    case 2: return { plan, start: 1, things: picture(rng, [1, 1, 1, 1, 2]) };
-    case 3: return { plan, start: 1, things: picture(rng, [1, 1, 2, 2, 3, ...(rng.chance(0.5) ? [1] : [])]) };
-    case 4: return { plan, start: 1, things: picture(rng, [1, 1, 1, 2, 2, 2, 3]) };
-    case 5: return { plan, start: 4, things: picture(rng, [1, 2, 3, 4, rng.int(1, 4)]) };
-    case 6: return { plan, start: 3, things: numbered(rng, distinct(rng, 6, 1, 10)) };
-    case 7: return { plan, start: rng.int(4, 6), things: numbered(rng, distinct(rng, 6, 1, 20)) };
-    case 9: return { plan, start: 20, things: numbered(rng, distinct(rng, 6, 1, 20)) };
+    case 1:
+      return { plan, start: 2, things: picture(rng, [1, 1, 1, 1, 1]) };
+    case 2:
+      return { plan, start: 1, things: picture(rng, [1, 1, 1, 1, 2]) };
+    case 3:
+      return { plan, start: 1, things: picture(rng, [1, 1, 2, 2, 3, ...(rng.chance(0.5) ? [1] : [])]) };
+    case 4:
+      return { plan, start: 1, things: picture(rng, [1, 1, 1, 2, 2, 2, 3]) };
+    case 5:
+      return { plan, start: 4, things: picture(rng, [1, 2, 3, 4, rng.int(1, 4)]) };
+    case 6:
+      return { plan, start: 3, things: numbered(rng, distinct(rng, 6, 1, 10)) };
+    case 7:
+      return { plan, start: rng.int(4, 6), things: numbered(rng, distinct(rng, 6, 1, 20)) };
+    case 9:
+      return { plan, start: 20, things: numbered(rng, distinct(rng, 6, 1, 20)) };
     case 11: {
       const things = numbered(rng, distinct(rng, rng.int(4, MAX_HELD), 1, 9));
       return { plan, start: 2, pail: rng.int(10, 20), held: things.map((t) => t.id), things };
     }
-    case 10: return { plan, start: 2, things: numbered(rng, distinct(rng, 5, 1, 6)) };
-    default: return { plan, start: rng.int(3, 5), pail: rng.int(12, 20), things: numbered(rng, distinct(rng, 6, 1, 9)) };
+    case 10:
+      return { plan, start: 2, things: numbered(rng, distinct(rng, 5, 1, 6)) };
+    default:
+      return {
+        plan,
+        start: rng.int(3, 5),
+        pail: rng.int(12, 20),
+        things: numbered(rng, distinct(rng, 6, 1, 9)),
+      };
   }
 }
 
@@ -431,7 +639,9 @@ export const MAX_HELD = 5;
 /** Level 11: each set of held things whose letting go leaves exactly the pail (ids by size). */
 export function letGoWays(board: Board): number[][] {
   const s = startState(board);
-  const held = [...(board.held ?? [])].sort((a, b) => thingOf(board, a).size - thingOf(board, b).size || a - b);
+  const held = [...(board.held ?? [])].sort(
+    (a, b) => thingOf(board, a).size - thingOf(board, b).size || a - b,
+  );
   const over = s.puddle - board.pail!;
   const out: number[][] = [];
   for (let mask = 1; mask < 1 << held.length; mask++) {
@@ -452,8 +662,16 @@ export function makeBoard(plan: Plan, rng: Rng): Board & { fallback?: true } {
 
 /* Layout ---------------------------------------------------------------------------------------- */
 
-export interface Rect { x0: number; y0: number; x1: number; y1: number }
-export interface View2 { w: number; h: number }
+export interface Rect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+export interface View2 {
+  w: number;
+  h: number;
+}
 
 /** The pet's bottom-left corner and the pail's top-right corner (level 8), kept clear of things. */
 export const PET_CORNER = 240;
@@ -491,7 +709,11 @@ export function stripSpan(plan: Plan, n: number, w: number) {
 }
 
 /** Each thing's place as fractions of the field, laid out once on the design view so every view shows the same beach. */
-export interface Placed { id: number; fx: number; fy: number }
+export interface Placed {
+  id: number;
+  fx: number;
+  fy: number;
+}
 
 const DESIGN: View2 = { w: 1024, h: 768 };
 
@@ -518,8 +740,11 @@ export function beachLayout(board: Board, rng: Rng): Placed[] {
     if (out.length === board.things.length) break;
   }
   if (out.length !== board.things.length) throw new Error('beach layout failed');
-  const W = f.x1 - f.x0, H = f.y1 - f.y0;
-  return out.map((o) => ({ id: o.id, fx: (o.x - f.x0) / W, fy: (o.y - f.y0) / H })).sort((a, b) => a.id - b.id);
+  const W = f.x1 - f.x0,
+    H = f.y1 - f.y0;
+  return out
+    .map((o) => ({ id: o.id, fx: (o.x - f.x0) / W, fy: (o.y - f.y0) / H }))
+    .sort((a, b) => a.id - b.id);
 }
 
 export function placeOn(f: Rect, p: { fx: number; fy: number }) {
@@ -529,11 +754,14 @@ export function placeOn(f: Rect, p: { fx: number; fy: number }) {
 /* The ghost finger's way ------------------------------------------------------------------------- */
 
 type Pt = { x: number; y: number };
-export interface Obstacle extends Pt { r: number }
+export interface Obstacle extends Pt {
+  r: number;
+}
 
 /** Distance from p to the segment a–b. */
 function segDist(p: Pt, a: Pt, b: Pt) {
-  const dx = b.x - a.x, dy = b.y - a.y;
+  const dx = b.x - a.x,
+    dy = b.y - a.y;
   const len2 = dx * dx + dy * dy;
   const t = len2 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / len2)) : 0;
   return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
@@ -551,14 +779,17 @@ export function blocker(a: Pt, b: Pt, R: number, others: Obstacle[]) {
 export function detour(a: Pt, b: Pt, R: number, others: Obstacle[], f: Rect): Pt | null {
   const o = blocker(a, b, R, others);
   if (!o) return null;
-  const dx = b.x - a.x, dy = b.y - a.y;
+  const dx = b.x - a.x,
+    dy = b.y - a.y;
   const len = Math.hypot(dx, dy) || 1;
-  const nx = -dy / len, ny = dx / len;
+  const nx = -dy / len,
+    ny = dx / len;
   const ways: Pt[] = [];
-  for (const k of [1, -1]) for (const extra of [20, 60, 120]) {
-    const d = R + o.r + extra;
-    ways.push({ x: o.x + nx * d * k, y: o.y + ny * d * k });
-  }
+  for (const k of [1, -1])
+    for (const extra of [20, 60, 120]) {
+      const d = R + o.r + extra;
+      ways.push({ x: o.x + nx * d * k, y: o.y + ny * d * k });
+    }
   const inside = (p: Pt) => p.x >= f.x0 && p.x <= f.x1 && p.y >= f.y0 && p.y <= f.y1;
   return ways.find((w) => inside(w) && !blocker(a, w, R, others) && !blocker(w, b, R, others)) ?? null;
 }

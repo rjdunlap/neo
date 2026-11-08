@@ -7,7 +7,9 @@ export const VOICE = {
   'bumper.not': ['Bloom every flower that is not {color}! Shh, the {color} ones are sleeping.'],
   'bumper.order': ['Bump the flowers in order. Find {n}!'],
   'bumper.start': ['Start at {n}! Bump the numbered flowers to count on, one more each time.'],
-  'bumper.back': ['Start at {n}! Bump the numbered flowers to count back, one less each time, all the way to one.'],
+  'bumper.back': [
+    'Start at {n}! Bump the numbered flowers to count back, one less each time, all the way to one.',
+  ],
   'bumper.next': ['Now {n}!'],
   'bumper.again-color': ['Almost! Find the {color} flowers.'],
   'bumper.again-not': ['Almost! The {color} ones are asleep. Find a flower that is awake.'],

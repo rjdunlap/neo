@@ -30,13 +30,21 @@ export const VOICE = {
   'shape.find.notyet.square': ["That's the {shape}! We're looking for the shape with four equal sides."],
   'shape.find.notyet.triangle': ["That's the {shape}! We're looking for the shape with three corners."],
   'shape.find.notyet.star': ["That's the {shape}! We're looking for the shape with five points."],
-  'shape.find.notyet.heart': ["That's the {shape}! We're looking for the shape with a curved top and a point at the bottom."],
+  'shape.find.notyet.heart': [
+    "That's the {shape}! We're looking for the shape with a curved top and a point at the bottom.",
+  ],
   'shape.find.notyet.hexagon': ["That's the {shape}! We're looking for the shape with six corners."],
   'shape.find.notyet.oval': ["That's the {shape}! We're looking for the stretched circle with no corners."],
-  'shape.find.notyet.rectangle': ["That's the {shape}! We're looking for the shape with two long sides and two short sides."],
-  'shape.find.notyet.diamond': ["That's the {shape}! We're looking for the shape with four equal sides, standing on a point."],
+  'shape.find.notyet.rectangle': [
+    "That's the {shape}! We're looking for the shape with two long sides and two short sides.",
+  ],
+  'shape.find.notyet.diamond': [
+    "That's the {shape}! We're looking for the shape with four equal sides, standing on a point.",
+  ],
   'shape.find.notyet.pentagon': ["That's the {shape}! We're looking for the shape with five corners."],
-  'shape.find.notyet.trapezoid': ["That's the {shape}! We're looking for the shape with four sides, two of them slanting."],
+  'shape.find.notyet.trapezoid': [
+    "That's the {shape}! We're looking for the shape with four sides, two of them slanting.",
+  ],
   'shape.wrong': ["That's the {hole} hole. Try another one!"],
   'shape.done': ['All in! Yay!'],
   'shape.circle': ['Circle!'],

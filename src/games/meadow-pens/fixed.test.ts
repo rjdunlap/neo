@@ -2,23 +2,51 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  BENT_FIELDS, COMPARISONS, COLS, ROWS, bentParts, cellAt, cellOf, cellRect, centre, connected,
-  correctChoice, fenceEdges, fixedTasks, materialCount, meadowLayout, neighbours, rectangleCells,
-  rowsOf, targets, xOf, yOf, type Cell, type Choice, type CompareTask, type Rect,
+  BENT_FIELDS,
+  COMPARISONS,
+  COLS,
+  ROWS,
+  bentParts,
+  cellAt,
+  cellOf,
+  cellRect,
+  centre,
+  connected,
+  correctChoice,
+  fenceEdges,
+  fixedTasks,
+  materialCount,
+  meadowLayout,
+  neighbours,
+  rectangleCells,
+  rowsOf,
+  targets,
+  xOf,
+  yOf,
+  type Cell,
+  type Choice,
+  type CompareTask,
+  type Rect,
 } from './logic';
 
 const SEEDS = 200;
 const permutations: Choice[][] = [
-  ['a', 'b', 'same'], ['a', 'same', 'b'], ['b', 'a', 'same'],
-  ['b', 'same', 'a'], ['same', 'a', 'b'], ['same', 'b', 'a'],
+  ['a', 'b', 'same'],
+  ['a', 'same', 'b'],
+  ['b', 'a', 'same'],
+  ['b', 'same', 'a'],
+  ['same', 'a', 'b'],
+  ['same', 'b', 'a'],
 ];
 const set = (cells: readonly Cell[]) => new Set(cells);
 const ordered = (cells: readonly Cell[]) => [...cells].sort((a, b) => a - b);
 const rectangle = (cells: readonly Cell[]) => {
-  const xs = cells.map(xOf), ys = cells.map(yOf);
+  const xs = cells.map(xOf),
+    ys = cells.map(yOf);
   return (Math.max(...xs) - Math.min(...xs) + 1) * (Math.max(...ys) - Math.min(...ys) + 1) === cells.length;
 };
-const apart = (a: Rect, b: Rect, gap = 0) => a.x + a.w + gap <= b.x || b.x + b.w + gap <= a.x || a.y + a.h + gap <= b.y || b.y + b.h + gap <= a.y;
+const apart = (a: Rect, b: Rect, gap = 0) =>
+  a.x + a.w + gap <= b.x || b.x + b.w + gap <= a.x || a.y + a.h + gap <= b.y || b.y + b.h + gap <= a.y;
 
 /** Independent boundary oracle: count exposed cardinal neighbours, including outside the model. */
 function exposed(cells: readonly Cell[]): number {
@@ -29,10 +57,15 @@ function exposed(cells: readonly Cell[]): number {
 describe('Meadow Pens comparison table', () => {
   it('keeps exact authored grass/fence counts and a full empty row between pens', () => {
     const counts = [
-      [6, 6, 14, 10], [6, 8, 14, 12], [5, 8, 12, 12], [4, 4, 10, 8], [5, 6, 12, 10],
+      [6, 6, 14, 10],
+      [6, 8, 14, 12],
+      [5, 8, 12, 12],
+      [4, 4, 10, 8],
+      [5, 6, 12, 10],
     ];
     COMPARISONS.forEach((f, i) => {
-      const a = rectangleCells(f.a[0], f.a[1]), b = rectangleCells(f.b[0], f.b[1], 0, 2);
+      const a = rectangleCells(f.a[0], f.a[1]),
+        b = rectangleCells(f.b[0], f.b[1], 0, 2);
       expect([a.length, b.length, exposed(a), exposed(b)]).toEqual(counts[i]);
       expect(materialCount(a, 'grass')).toBe(counts[i][0]);
       expect(materialCount(b, 'grass')).toBe(counts[i][1]);
@@ -46,16 +79,38 @@ describe('Meadow Pens comparison table', () => {
   });
 
   it('has exactly one accepted card for every family/material, badge order and card permutation', () => {
-    const expected: Choice[][] = [['same', 'a'], ['b', 'a'], ['b', 'same'], ['same', 'a'], ['b', 'a']];
+    const expected: Choice[][] = [
+      ['same', 'a'],
+      ['b', 'a'],
+      ['b', 'same'],
+      ['same', 'a'],
+      ['b', 'a'],
+    ];
     COMPARISONS.forEach((f, i) => {
       for (const material of ['grass', 'fence'] as const) {
-        for (const badges of [['daisy', 'tulip'], ['tulip', 'daisy']] as const) {
+        for (const badges of [
+          ['daisy', 'tulip'],
+          ['tulip', 'daisy'],
+        ] as const) {
           for (const cards of permutations) {
-            const task: CompareTask = { kind: 'compare', id: f.id, material, badges: [...badges], cards, parts: [rectangleCells(f.a[0], f.a[1]), rectangleCells(f.b[0], f.b[1], 0, 2)] };
+            const task: CompareTask = {
+              kind: 'compare',
+              id: f.id,
+              material,
+              badges: [...badges],
+              cards,
+              parts: [rectangleCells(f.a[0], f.a[1]), rectangleCells(f.b[0], f.b[1], 0, 2)],
+            };
             expect(correctChoice(task)).toBe(expected[i][material === 'grass' ? 0 : 1]);
             expect(cards.filter((c) => c === correctChoice(task))).toHaveLength(1);
             // Reflecting both pens across the model leaves the material comparison unchanged.
-            const reflected: CompareTask = { ...task, parts: task.parts.map((p) => p.map((c) => cellOf(COLS - 1 - xOf(c), yOf(c)))) as [Cell[], Cell[]] };
+            const reflected: CompareTask = {
+              ...task,
+              parts: task.parts.map((p) => p.map((c) => cellOf(COLS - 1 - xOf(c), yOf(c)))) as [
+                Cell[],
+                Cell[],
+              ],
+            };
             expect(correctChoice(reflected)).toBe(correctChoice(task));
           }
         }
@@ -67,7 +122,13 @@ describe('Meadow Pens comparison table', () => {
     for (let seed = 1; seed <= 20; seed++) {
       const tasks = fixedTasks(4, new Rng(seed));
       expect(tasks.map((t) => t.id)).toEqual(['C1', 'C1', 'C3', 'C3', 'C2']);
-      expect(tasks.map((t) => t.kind === 'compare' && t.material)).toEqual(['grass', 'fence', 'grass', 'fence', 'grass']);
+      expect(tasks.map((t) => t.kind === 'compare' && t.material)).toEqual([
+        'grass',
+        'fence',
+        'grass',
+        'fence',
+        'grass',
+      ]);
       expect(tasks.map(correctChoice)).toEqual(['same', 'a', 'b', 'same', 'b']);
     }
   });
@@ -86,7 +147,10 @@ describe('Meadow Pens comparison table', () => {
       expect(tasks[2].id).toBe('C3');
       expect(tasks[3].id).toBe('C3');
       expect(['C2', 'C5']).toContain(tasks[4].id);
-      for (const [a, b] of [[0, 1], [2, 3]]) {
+      for (const [a, b] of [
+        [0, 1],
+        [2, 3],
+      ]) {
         expect(tasks[a].parts).toEqual(tasks[b].parts);
         expect(tasks[a].badges).toEqual(tasks[b].badges);
         expect(tasks[a].cards).toEqual(tasks[b].cards);
@@ -112,19 +176,29 @@ describe('Meadow Pens comparison table', () => {
 
 describe('Meadow Pens two-part fields', () => {
   it('constructs the exact L once from either disjoint rectangular split, including reflection and the one-cell part', () => {
-    const expectedParts = [[6, 2], [8, 2], [9, 1], [8, 4], [10, 3], [12, 6]];
+    const expectedParts = [
+      [6, 2],
+      [8, 2],
+      [9, 1],
+      [8, 4],
+      [10, 3],
+      [12, 6],
+    ];
     const expectedFence = [12, 14, 14, 16, 16, 20];
     BENT_FIELDS.forEach((f, i) => {
       expect(bentParts(f).map((p) => p.length)).toEqual(expectedParts[i]);
       for (const mirror of [false, true]) {
-        const ox = Math.floor((COLS - f.w) / 2), oy = Math.floor((ROWS - f.h) / 2);
+        const ox = Math.floor((COLS - f.w) / 2),
+          oy = Math.floor((ROWS - f.h) / 2);
         const expected: Cell[] = [];
-        for (let y = 0; y < f.h; y++) for (let x = 0; x < f.w; x++) {
-          if (x >= f.w - f.cutW && y < f.cutH) continue;
-          expected.push(cellOf(ox + (mirror ? f.w - 1 - x : x), oy + y));
-        }
+        for (let y = 0; y < f.h; y++)
+          for (let x = 0; x < f.w; x++) {
+            if (x >= f.w - f.cutW && y < f.cutH) continue;
+            expected.push(cellOf(ox + (mirror ? f.w - 1 - x : x), oy + y));
+          }
         for (const split of ['vertical', 'horizontal'] as const) {
-          const parts = bentParts(f, mirror, split), all = parts.flat();
+          const parts = bentParts(f, mirror, split),
+            all = parts.flat();
           expect(ordered(all)).toEqual(ordered(expected));
           expect(set(all).size).toBe(all.length);
           expect(all.length).toBe(f.w * f.h - f.cutW * f.cutH);
@@ -137,7 +211,11 @@ describe('Meadow Pens two-part fields', () => {
               expect(rows.flat()).toHaveLength(part.length);
               expect(set(rows.flat())).toEqual(set(part));
               expect(rows.every((r) => r.length === rows[0].length)).toBe(true);
-              expect(rows.every((r) => r.every((c) => (tall ? xOf(c) : yOf(c)) === (tall ? xOf(r[0]) : yOf(r[0]))))).toBe(true);
+              expect(
+                rows.every((r) =>
+                  r.every((c) => (tall ? xOf(c) : yOf(c)) === (tall ? xOf(r[0]) : yOf(r[0]))),
+                ),
+              ).toBe(true);
             }
           }
           expect(connected(all)).toBe(true);
@@ -183,51 +261,59 @@ describe('Meadow Pens two-part fields', () => {
 
 describe('Meadow Pens fixed-field layouts', () => {
   const views = [
-    computeView(1024, 768), computeView(768, 1024), computeView(844, 390),
+    computeView(1024, 768),
+    computeView(768, 1024),
+    computeView(844, 390),
     computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
     computeView(820, 1180),
   ];
   it('keeps the actual logical orientation branches and full-size answer/count targets clear', () => {
     const orientations = new Set<boolean>();
-    for (const level of [4, 5]) for (const view of views) {
-      const l = meadowLayout(view, level);
-      expect(l).not.toBeNull();
-      if (!l) continue;
-      orientations.add(l.tall);
-      expect(l.tall).toBe(view.h > view.w && view.h >= 1150);
-      expect(l.stack).toBeNull();
-      expect(l.fixed).toBe(true);
-      expect(l.cards).toHaveLength(3);
-      expect(targets(l)).not.toContain(l.bell);
-      for (let i = 0; i < 3; i++) {
-        const card = l.cards![i];
-        expect(card.w).toBeGreaterThanOrEqual(130);
-        expect(card.h).toBeGreaterThanOrEqual(130);
-        expect(card.x).toBeGreaterThanOrEqual(0);
-        expect(card.y).toBeGreaterThanOrEqual(0);
-        expect(card.x + card.w).toBeLessThanOrEqual(view.w);
-        expect(card.y + card.h).toBeLessThanOrEqual(view.h);
-        for (let j = i + 1; j < 3; j++) expect(apart(card, l.cards![j], 30)).toBe(true);
-      }
-      // Check each field, not only the authored L1: L3's small part is exactly one full cell.
-      const tasks = level === 4
-        ? COMPARISONS.map((f) => ({ parts: [rectangleCells(f.a[0], f.a[1]), rectangleCells(f.b[0], f.b[1], 0, 2)] }))
-        : BENT_FIELDS.flatMap((f) => [false, true].map((mirror) => ({ parts: bentParts(f, mirror) })));
-      for (const t of tasks) for (const part of t.parts) {
-        expect(part.length).toBeGreaterThan(0);
-        for (const c of part) {
-          const r = cellRect(l, c), p = centre(r);
-          expect(r.w).toBeGreaterThanOrEqual(100);
-          expect(r.h).toBeGreaterThanOrEqual(100);
-          expect(cellAt(l, p.x, p.y)).toBe(c);
-          expect(r.x).toBeGreaterThanOrEqual(0);
-          expect(r.y).toBeGreaterThanOrEqual(0);
-          expect(r.x + r.w).toBeLessThanOrEqual(view.w);
-          expect(r.y + r.h).toBeLessThanOrEqual(view.h);
-          for (const card of l.cards!) expect(apart(r, card, 30)).toBe(true);
+    for (const level of [4, 5])
+      for (const view of views) {
+        const l = meadowLayout(view, level);
+        expect(l).not.toBeNull();
+        if (!l) continue;
+        orientations.add(l.tall);
+        expect(l.tall).toBe(view.h > view.w && view.h >= 1150);
+        expect(l.stack).toBeNull();
+        expect(l.fixed).toBe(true);
+        expect(l.cards).toHaveLength(3);
+        expect(targets(l)).not.toContain(l.bell);
+        for (let i = 0; i < 3; i++) {
+          const card = l.cards![i];
+          expect(card.w).toBeGreaterThanOrEqual(130);
+          expect(card.h).toBeGreaterThanOrEqual(130);
+          expect(card.x).toBeGreaterThanOrEqual(0);
+          expect(card.y).toBeGreaterThanOrEqual(0);
+          expect(card.x + card.w).toBeLessThanOrEqual(view.w);
+          expect(card.y + card.h).toBeLessThanOrEqual(view.h);
+          for (let j = i + 1; j < 3; j++) expect(apart(card, l.cards![j], 30)).toBe(true);
         }
+        // Check each field, not only the authored L1: L3's small part is exactly one full cell.
+        const tasks =
+          level === 4
+            ? COMPARISONS.map((f) => ({
+                parts: [rectangleCells(f.a[0], f.a[1]), rectangleCells(f.b[0], f.b[1], 0, 2)],
+              }))
+            : BENT_FIELDS.flatMap((f) => [false, true].map((mirror) => ({ parts: bentParts(f, mirror) })));
+        for (const t of tasks)
+          for (const part of t.parts) {
+            expect(part.length).toBeGreaterThan(0);
+            for (const c of part) {
+              const r = cellRect(l, c),
+                p = centre(r);
+              expect(r.w).toBeGreaterThanOrEqual(100);
+              expect(r.h).toBeGreaterThanOrEqual(100);
+              expect(cellAt(l, p.x, p.y)).toBe(c);
+              expect(r.x).toBeGreaterThanOrEqual(0);
+              expect(r.y).toBeGreaterThanOrEqual(0);
+              expect(r.x + r.w).toBeLessThanOrEqual(view.w);
+              expect(r.y + r.h).toBeLessThanOrEqual(view.h);
+              for (const card of l.cards!) expect(apart(r, card, 30)).toBe(true);
+            }
+          }
       }
-    }
     expect(orientations).toEqual(new Set([false, true]));
   });
 });

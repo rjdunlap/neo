@@ -9,7 +9,25 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { tile } from '../shared';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { choicesFor, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, ROW_H, shoreArea, shoreSpots, THING_NAMES, THING_SIZE, trayLayout, type GraphPlan, type Question, type Shore, type ShoreThing } from './logic';
+import {
+  choicesFor,
+  lineHint,
+  lineKinds,
+  lineMove,
+  lineQuestions,
+  makeShore,
+  planFor,
+  ROW_H,
+  shoreArea,
+  shoreSpots,
+  THING_NAMES,
+  THING_SIZE,
+  trayLayout,
+  type GraphPlan,
+  type Question,
+  type Shore,
+  type ShoreThing,
+} from './logic';
 
 /** The shore's backdrop seeds: one a round, so the dunes change while the rule does not. */
 const SHORES = [12, 57, 230];
@@ -69,7 +87,17 @@ export class LineUp implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.kinds = lineKinds(ctx.band);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0x7fcbe0, 0xf6e3ad, 0xeed49a], horizon: 0.2, clouds: 2, sun: true, seed: ctx.rng.pick(SHORES) }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0x7fcbe0, 0xf6e3ad, 0xeed49a],
+        horizon: 0.2,
+        clouds: 2,
+        sun: true,
+        seed: ctx.rng.pick(SHORES),
+      },
+      ctx.view,
+    );
     this.tray.eventMode = 'none';
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.tray, this.layer, this.glow);
@@ -94,12 +122,13 @@ export class LineUp implements Game {
         // A hop still under way would pull it back toward the old layout's slot.
         this.ctx.tw.kill(th.node);
         th.node.position.set(t.slotX(th.slot), t.rowY(th.kind));
-      }
-      else th.node.position.set(spots[i].x, spots[i].y);
+      } else th.node.position.set(spots[i].x, spots[i].y);
     });
     this.rows.forEach((r, i) => r.position.set((t.left + t.right) / 2, t.rowY(i)));
     const area = shoreArea(v.w, v.h, this.kinds, this.plan.max);
-    this.pads.forEach((p, i) => p.node.position.set(v.w / 2 + (i - (this.pads.length - 1) / 2) * 160, (area.top + area.bottom) / 2));
+    this.pads.forEach((p, i) =>
+      p.node.position.set(v.w / 2 + (i - (this.pads.length - 1) / 2) * 160, (area.top + area.bottom) / 2),
+    );
     this.drawTray();
   }
 
@@ -116,20 +145,29 @@ export class LineUp implements Game {
       if (link.rows.length < 2) continue;
       const ys = link.rows.map((r) => t.rowY(r));
       const x = t.slotX(link.k);
-      for (let y = Math.min(...ys); y < Math.max(...ys); y += 18) g.moveTo(x, y).lineTo(x, Math.min(y + 10, Math.max(...ys)));
+      for (let y = Math.min(...ys); y < Math.max(...ys); y += 18)
+        g.moveTo(x, y).lineTo(x, Math.min(y + 10, Math.max(...ys)));
     }
     g.stroke({ width: 5, color: ink, cap: 'round' });
-    for (const b of why.glow) g.circle(t.slotX(b.k), t.rowY(b.row), 46).stroke({ width: pulse, color: swatch.yellow.fill });
+    for (const b of why.glow)
+      g.circle(t.slotX(b.k), t.rowY(b.row), 46).stroke({ width: pulse, color: swatch.yellow.fill });
     if (q.ask === 'more') {
       const p = this.pads.find((x) => x.n === q.answer);
-      if (p) g.roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22).stroke({ width: pulse, color: swatch.yellow.fill });
+      if (p)
+        g.roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
     }
   }
 
   /** The ghost finger: each thing on the sand in turn (quick taps, they belong together), then the row or the number. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.shore) return null;
-    const move = lineMove(this.things.map((t) => t.placed), this.questions[this.q]);
+    const move = lineMove(
+      this.things.map((t) => t.placed),
+      this.questions[this.q],
+    );
     if (!move) return null;
     if (move.do === 'thing') return { tap: { on: this.things[move.index].node }, pause: 0.2 };
     if (move.do === 'row') return { tap: { on: this.rows[move.row], x: 0, y: 0 } };
@@ -193,12 +231,17 @@ export class LineUp implements Game {
     for (const c of this.tray.children.slice()) c.destroy({ children: true });
     const g = this.tray.clear();
     const t = this.layout();
-    g.roundRect(t.left, t.top, t.right - t.left, t.bottom - t.top, 22).fill({ color: 0xffffff, alpha: 0.8 }).stroke({ width: 4, color: 0xc9a75e });
+    g.roundRect(t.left, t.top, t.right - t.left, t.bottom - t.top, 22)
+      .fill({ color: 0xffffff, alpha: 0.8 })
+      .stroke({ width: 4, color: 0xc9a75e });
     this.shore.kinds.forEach((kind, r) => {
       const y = t.rowY(r);
-      g.roundRect(t.left + 8, y - ROW_H / 2 + 3, t.right - t.left - 16, ROW_H - 6, 16).fill(ROW_TINTS[r % ROW_TINTS.length]);
+      g.roundRect(t.left + 8, y - ROW_H / 2 + 3, t.right - t.left - 16, ROW_H - 6, 16).fill(
+        ROW_TINTS[r % ROW_TINTS.length],
+      );
       // An empty slot is a soft ring, so the rows line up one to one before anything is in them.
-      for (let k = 0; k < this.plan.max; k++) g.circle(t.slotX(k), y, 34).stroke({ width: 3, color: 0xc9a75e, alpha: 0.45 });
+      for (let k = 0; k < this.plan.max; k++)
+        g.circle(t.slotX(k), y, 34).stroke({ width: 3, color: 0xc9a75e, alpha: 0.45 });
       const pic = new Container();
       pic.addChild(tile(96, 92, 'white'));
       const art = thingArt(kind);
@@ -286,7 +329,8 @@ export class LineUp implements Game {
     this.wrongs++;
     sfx.boing();
     const q = this.questions[this.q];
-    if (why === 'taller' && q.ask === 'more') await this.ctx.say('graph.line.taller', { a: this.name(q.a), b: this.name(q.b) });
+    if (why === 'taller' && q.ask === 'more')
+      await this.ctx.say('graph.line.taller', { a: this.name(q.a), b: this.name(q.b) });
     else await this.ctx.say('graph.line.look');
     if (this.wrongs >= 2 && !this.hint) {
       this.hints++;

@@ -35,12 +35,34 @@ export const SPROUT_ART = {
   ],
   /** The head, torso and feet, pinned; the arms lie outside it on either side. */
   body: [
-    { x: 95, y: 165 }, { x: 170, y: 140 }, { x: 240, y: 136 }, { x: 320, y: 140 }, { x: 385, y: 152 }, { x: 405, y: 215 },
-    { x: 400, y: 282 }, { x: 410, y: 350 }, { x: 445, y: 375 }, { x: 455, y: 420 }, { x: 430, y: 450 }, { x: 150, y: 460 },
-    { x: 70, y: 430 }, { x: 35, y: 395 }, { x: 60, y: 360 }, { x: 130, y: 345 }, { x: 130, y: 280 }, { x: 85, y: 250 },
+    { x: 95, y: 165 },
+    { x: 170, y: 140 },
+    { x: 240, y: 136 },
+    { x: 320, y: 140 },
+    { x: 385, y: 152 },
+    { x: 405, y: 215 },
+    { x: 400, y: 282 },
+    { x: 410, y: 350 },
+    { x: 445, y: 375 },
+    { x: 455, y: 420 },
+    { x: 430, y: 450 },
+    { x: 150, y: 460 },
+    { x: 70, y: 430 },
+    { x: 35, y: 395 },
+    { x: 60, y: 360 },
+    { x: 130, y: 345 },
+    { x: 130, y: 280 },
+    { x: 85, y: 250 },
   ],
   /** The sprout: both leaves bend about the stem's root on the head; the fork is where the stem splits. */
-  leaves: { root: { x: 245, y: 140 }, fork: { x: 242, y: 100 }, tips: [{ x: 113, y: 22 }, { x: 394, y: 105 }] },
+  leaves: {
+    root: { x: 245, y: 140 },
+    fork: { x: 242, y: 100 },
+    tips: [
+      { x: 113, y: 22 },
+      { x: 394, y: 105 },
+    ],
+  },
   /** The arms, each an ellipse (centre and radii) that wags about its root at the shoulder. */
   arms: [
     { root: { x: 120, y: 285 }, tip: { x: 90, y: 335 }, centre: { x: 85, y: 312 }, rx: 50, ry: 38 },
@@ -50,11 +72,20 @@ export const SPROUT_ART = {
     head: { x: 245, y: 142 },
     eyes: { x: 300, y: 216 },
     neck: { x: 262, y: 286 },
-    hands: [{ x: 95, y: 320 }, { x: 445, y: 320 }],
-    feet: [{ x: 165, y: 420 }, { x: 435, y: 405 }],
+    hands: [
+      { x: 95, y: 320 },
+      { x: 445, y: 320 },
+    ],
+    feet: [
+      { x: 165, y: 420 },
+      { x: 435, y: 405 },
+    ],
     back: { x: 70, y: 240 },
     tummy: { x: 262, y: 360 },
-    ears: [{ x: 105, y: 185 }, { x: 370, y: 160 }],
+    ears: [
+      { x: 105, y: 185 },
+      { x: 370, y: 160 },
+    ],
   },
   /** Slot widths, in creature units. */
   widths: { head: 120, neck: 180 },
@@ -66,14 +97,32 @@ export const SPROUT_ART = {
 /** RW06 prep: where the nine generated wearables sit, in sprite pixels (`wearables.ts`). Judged in the preview at rest and through a touch. */
 export const SPROUT_WEAR: WearTable = {
   crown: { fits: [{ at: { x: 245, y: 118 }, width: 150, ride: { x: 245, y: 150 } }] },
-  scarf: { fits: [{ at: { x: 262, y: 318 }, width: 140 }], note: 'drawn from a little above, so its open middle shows on the chest' },
+  scarf: {
+    fits: [{ at: { x: 262, y: 318 }, width: 140 }],
+    note: 'drawn from a little above, so its open middle shows on the chest',
+  },
   sunhat: { fits: [{ at: { x: 250, y: 128 }, width: 200, ride: { x: 250, y: 150 } }] },
   sunglasses: { fits: [{ at: { x: 300, y: 218 }, width: 140 }] },
-  raincoat: { misfit: 'drawn for an upright body with long arms: on the round sitter the sleeves stand off its stubby arms and the coat sits on its belly like a bib', redraw: true },
-  umbrella: { fits: [{ at: { x: 445, y: 320 }, width: 260, rotation: 0.35, behind: true }], note: 'held behind the paw like a parasol; the paw does not close round the handle' },
+  raincoat: {
+    misfit:
+      'drawn for an upright body with long arms: on the round sitter the sleeves stand off its stubby arms and the coat sits on its belly like a bib',
+    redraw: true,
+  },
+  umbrella: {
+    fits: [{ at: { x: 445, y: 320 }, width: 260, rotation: 0.35, behind: true }],
+    note: 'held behind the paw like a parasol; the paw does not close round the handle',
+  },
   beanie: { fits: [{ at: { x: 245, y: 160 }, width: 160 }] },
-  boots: { misfit: 'its feet face the viewer, soles out, so a side-on boot stands beside the foot instead of on it', redraw: true },
-  mittens: { fits: [{ at: { x: 95, y: 320 }, width: 55, flip: true }, { at: { x: 445, y: 320 }, width: 55 }] },
+  boots: {
+    misfit: 'its feet face the viewer, soles out, so a side-on boot stands beside the foot instead of on it',
+    redraw: true,
+  },
+  mittens: {
+    fits: [
+      { at: { x: 95, y: 320 }, width: 55, flip: true },
+      { at: { x: 445, y: 320 }, width: 55 },
+    ],
+  },
 };
 
 const COLS = 24;
@@ -92,7 +141,9 @@ export function weights(x: number, y: number): W {
   // Everything above the head is sprout; the stem's base (a band round the root) is pinned.
   const above = Math.max(smooth(150, 135, y), Math.abs(x - r.x) < 35 ? smooth(152, 138, y) : 0);
   const leaf = above * smooth(0, 40, Math.hypot(x - r.x, y - r.y));
-  const arm = A.arms.map((a) => smooth(1, 0.35, ((x - a.centre.x) / a.rx) ** 2 + ((y - a.centre.y) / a.ry) ** 2));
+  const arm = A.arms.map((a) =>
+    smooth(1, 0.35, ((x - a.centre.x) / a.rx) ** 2 + ((y - a.centre.y) / a.ry) ** 2),
+  );
   return { leaf, arm };
 }
 
@@ -138,11 +189,19 @@ export class IllustratedSprout extends IllustratedCreature {
     const t = this.clock;
     const ex = this.stir;
     // The leaves sway slowly and spin when touched, bending about the stem's root.
-    if (leaf > 0) bend(A.leaves.root, x, y, 0.1 * Math.sin(t * 1.6) + ex * 0.25 * Math.sin(this.flap), leaf, out);
+    if (leaf > 0)
+      bend(A.leaves.root, x, y, 0.1 * Math.sin(t * 1.6) + ex * 0.25 * Math.sin(this.flap), leaf, out);
     for (let i = 0; i < 2; i++) {
       if (arm[i] <= 0) continue;
       const side = i ? -1 : 1;
-      bend(A.arms[i].root, x, y, side * (0.06 * Math.sin(t * 2.2 + i) + ex * 0.15 * Math.sin(this.flap * 1.2)), arm[i], out);
+      bend(
+        A.arms[i].root,
+        x,
+        y,
+        side * (0.06 * Math.sin(t * 2.2 + i) + ex * 0.15 * Math.sin(this.flap * 1.2)),
+        arm[i],
+        out,
+      );
     }
   }
 }

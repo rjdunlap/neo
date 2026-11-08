@@ -98,7 +98,13 @@ export const sfx = {
   /** A dry brush across dust: a short, soft hiss. */
   brush() {
     const o = out();
-    if (o) noise(o.ctx, o.dest, o.t, 0.12, 0.09 * jitter(200), { type: 'bandpass', hz: 3200 * jitter(), q: 0.8, sweepTo: 1800 });
+    if (o)
+      noise(o.ctx, o.dest, o.t, 0.12, 0.09 * jitter(200), {
+        type: 'bandpass',
+        hz: 3200 * jitter(),
+        q: 0.8,
+        sweepTo: 1800,
+      });
   },
 
   /** Scissors closing on paper: a short bright crunch and a tiny click. */
@@ -183,7 +189,9 @@ export const sfx = {
     const o = out();
     if (!o) return;
     noise(o.ctx, o.dest, o.t, 0.45, 0.28, { type: 'lowpass', hz: 3000, sweepTo: 500 });
-    [0, 0.06, 0.13].forEach((d, i) => tone(o.ctx, o.dest, 'sine', 500 + i * 180, o.t + d, 0.15, 0.003, 0.08, 1100 + i * 200));
+    [0, 0.06, 0.13].forEach((d, i) =>
+      tone(o.ctx, o.dest, 'sine', 500 + i * 180, o.t + d, 0.15, 0.003, 0.08, 1100 + i * 200),
+    );
   },
 
   /** A bolt spinning out: a ratchet's clicks climbing four pentatonic steps from `step` (falling with `dir` −1, a bolt going in). */
@@ -291,7 +299,9 @@ export const sfx = {
   shake() {
     const o = out();
     if (!o) return;
-    [0, 0.09, 0.18].forEach((d) => noise(o.ctx, o.dest, o.t + d, 0.07, 0.3, { type: 'bandpass', hz: 4200, q: 1.5 }));
+    [0, 0.09, 0.18].forEach((d) =>
+      noise(o.ctx, o.dest, o.t + d, 0.07, 0.3, { type: 'bandpass', hz: 4200, q: 1.5 }),
+    );
   },
 
   /** A soft hand drum. */

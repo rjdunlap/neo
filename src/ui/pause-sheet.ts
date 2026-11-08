@@ -25,7 +25,12 @@ export interface PauseSheet {
  * open settings, and a round can offer its own entries (start again, show a hint). Plain HTML so a keyboard reaches every
  * button; a pad moves over them through `move` and `press`.
  */
-export function openPauseSheet({ onResume, onGrownUps, onShort, actions = [] }: PauseSheetOptions): PauseSheet {
+export function openPauseSheet({
+  onResume,
+  onGrownUps,
+  onShort,
+  actions = [],
+}: PauseSheetOptions): PauseSheet {
   const root = document.createElement('div');
   root.className = 'pause';
   root.innerHTML = `

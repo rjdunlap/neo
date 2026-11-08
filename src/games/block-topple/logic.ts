@@ -85,10 +85,19 @@ export interface Line {
 export type Standing = number[];
 export const allStanding = (line: Line): Standing => line.stacks.map((s) => s.blocks.length);
 /** A stack still holds its friend while none of it has tipped. */
-export const holdsFriend = (line: Line, standing: Standing, i: number) => standing[i] === line.stacks[i].blocks.length;
+export const holdsFriend = (line: Line, standing: Standing, i: number) =>
+  standing[i] === line.stacks[i].blocks.length;
 
 export type Contact =
-  | { kind: 'block'; stack: number; block: number; /** How high above the grass the push lands. */ h: number; t: number; x: number; y: number }
+  | {
+      kind: 'block';
+      stack: number;
+      block: number;
+      /** How high above the grass the push lands. */ h: number;
+      t: number;
+      x: number;
+      y: number;
+    }
   | { kind: 'hill' | 'grass' | 'net'; t: number; x: number; y: number };
 
 export type Outcome =
@@ -112,12 +121,18 @@ export function pullFrom(dx: number, dy: number): Pull | null {
   const length = Math.hypot(dx, dy);
   if (length < MIN_PULL) return null;
   // The launch goes opposite the pull: pulling left and down throws right and up.
-  return { angle: clamp(Math.atan2(dy, -dx) / DEG, MIN_ANGLE, MAX_ANGLE), length: Math.min(length, MAX_PULL) };
+  return {
+    angle: clamp(Math.atan2(dy, -dx) / DEG, MIN_ANGLE, MAX_ANGLE),
+    length: Math.min(length, MAX_PULL),
+  };
 }
 
 /** Where the ball sits while pulled: the clamped pull, drawn back from the sling. */
 export function pulledBall(pull: Pull): Pt {
-  return { x: SLING.x - Math.cos(pull.angle * DEG) * pull.length, y: SLING.y + Math.sin(pull.angle * DEG) * pull.length };
+  return {
+    x: SLING.x - Math.cos(pull.angle * DEG) * pull.length,
+    y: SLING.y + Math.sin(pull.angle * DEG) * pull.length,
+  };
 }
 
 /** The launch velocity, units per second (y down). */
@@ -150,7 +165,10 @@ function rootsAt(vy: number, c: number): [number, number] | null {
  * corners are square: a toy contact that a child cannot tell from a round one. x is linear in t and y is quadratic, so the
  * entry is solved exactly.
  */
-export function entryTime(pull: Pull, box: { x0: number; x1: number; y0: number; y1: number }): number | null {
+export function entryTime(
+  pull: Pull,
+  box: { x0: number; x1: number; y0: number; y1: number },
+): number | null {
   const { vx, vy } = launch(pull);
   const X0 = box.x0 - BALL_R;
   const X1 = box.x1 + BALL_R;
@@ -164,7 +182,12 @@ export function entryTime(pull: Pull, box: { x0: number; x1: number; y0: number;
   const r = rootsAt(vy, Y1);
   if (!r) return null;
   const s = rootsAt(vy, Y0);
-  const parts: [number, number][] = s ? [[r[0], Math.min(r[1], s[0])], [Math.max(r[0], s[1]), r[1]]] : [[r[0], r[1]]];
+  const parts: [number, number][] = s
+    ? [
+        [r[0], Math.min(r[1], s[0])],
+        [Math.max(r[0], s[1]), r[1]],
+      ]
+    : [[r[0], r[1]]];
   let best: number | null = null;
   for (const [lo, hi] of parts) {
     if (hi < lo) continue;
@@ -199,7 +222,8 @@ export function contactOf(line: Line, pull: Pull, standing: Standing = allStandi
     if (holdsFriend(line, standing, i)) {
       const t = entryTime(pull, targetBox(stack, standing[i]));
       const top = standing[i] - 1;
-      if (t !== null) hits.push({ kind: 'block', stack: i, block: top, h: GRASS - stack.blocks[top].y0, t, ...at(t) });
+      if (t !== null)
+        hits.push({ kind: 'block', stack: i, block: top, h: GRASS - stack.blocks[top].y0, t, ...at(t) });
     }
   });
   if (line.hill) {
@@ -242,7 +266,9 @@ function outcomeOf(line: Line, c: Contact, standing: Standing): Outcome {
   if (c.kind === 'block') {
     if (!holdsFriend(line, standing, c.stack)) return { kind: 'spent', stack: c.stack };
     const from = tips(line.stacks[c.stack], c.block, c.h);
-    return from === null ? { kind: 'thump', stack: c.stack, block: c.block } : { kind: 'tip', stack: c.stack, from };
+    return from === null
+      ? { kind: 'thump', stack: c.stack, block: c.block }
+      : { kind: 'tip', stack: c.stack, from };
   }
   if (c.kind === 'hill') return { kind: 'hill' };
   if (c.kind === 'net') return { kind: 'over' };
@@ -255,7 +281,12 @@ function outcomeOf(line: Line, c: Contact, standing: Standing): Outcome {
 export const isMiss = (o: Outcome) => o.kind === 'short' || o.kind === 'over' || o.kind === 'hill';
 
 /** Whether the pull tips a stack that still holds its friend (only `stack`, if given). */
-export function works(line: Line, pull: Pull, standing: Standing = allStanding(line), stack?: number): boolean {
+export function works(
+  line: Line,
+  pull: Pull,
+  standing: Standing = allStanding(line),
+  stack?: number,
+): boolean {
   const o = flight(line, pull, standing).outcome;
   return o.kind === 'tip' && (stack === undefined || o.stack === stack);
 }
@@ -269,7 +300,8 @@ export function windows(line: Line, standing: Standing = allStanding(line), stac
   return ANGLES.map((angle) => LENGTHS.map((length) => works(line, { angle, length }, standing, stack)));
 }
 
-export const share = (grid: boolean[][]) => grid.flat().filter(Boolean).length / (ANGLES.length * LENGTHS.length);
+export const share = (grid: boolean[][]) =>
+  grid.flat().filter(Boolean).length / (ANGLES.length * LENGTHS.length);
 
 /** A rectangle of grid cells, inclusive: angle indices a0..a1, length indices l0..l1. */
 export interface Window {
@@ -309,7 +341,8 @@ export function largestWindow(grid: boolean[][]): Window | null {
 }
 
 /** Whether a window is at least `degrees` by `units`. */
-export const fits = (w: Window | null, degrees: number, units: number) => !!w && windowSize(w).degrees >= degrees && windowSize(w).units >= units;
+export const fits = (w: Window | null, degrees: number, units: number) =>
+  !!w && windowSize(w).degrees >= degrees && windowSize(w).units >= units;
 
 /** The pull at the centre of the largest working window: a shot that keeps working when nudged. */
 export function solve(line: Line, standing: Standing = allStanding(line), stack?: number): Pull | null {
@@ -368,11 +401,29 @@ export interface Plan {
 }
 
 export const PLANS: Plan[] = [
-  { kind: 'close', name: 'Big and close: pull back and let go to tip a big tower', lines: 3, counts: false, trail: false },
+  {
+    kind: 'close',
+    name: 'Big and close: pull back and let go to tip a big tower',
+    lines: 3,
+    counts: false,
+    trail: false,
+  },
   { kind: 'far', name: 'Farther: how hard to pull, from the last arc', lines: 3, counts: true, trail: true },
   { kind: 'hill', name: 'Over the hill: aim high enough to clear it', lines: 3, counts: true, trail: true },
-  { kind: 'high', name: 'Hit it high: a short wide stack only tips from a bump high up', lines: 3, counts: true, trail: true },
-  { kind: 'count', name: 'Count the basket: tip each stack, then count the fruit in the tray', lines: 3, counts: true, trail: true },
+  {
+    kind: 'high',
+    name: 'Hit it high: a short wide stack only tips from a bump high up',
+    lines: 3,
+    counts: true,
+    trail: true,
+  },
+  {
+    kind: 'count',
+    name: 'Count the basket: tip each stack, then count the fruit in the tray',
+    lines: 3,
+    counts: true,
+    trail: true,
+  },
 ];
 
 /** Level 5 (counting the fruit tray) is school only (docs/definitions/block-topple.md). */
@@ -383,13 +434,20 @@ export const LEVELS: BandLevels = {
 };
 /** Level 5's stacks are level 4's: the same authored line, seeded shapes and filter. */
 const shapeOf = (plan: Plan): Exclude<PlanKind, 'count'> => (plan.kind === 'count' ? 'high' : plan.kind);
-export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+export const planFor = (level: number): Plan =>
+  PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 
 const BLOCK_H = 100;
 function tower(x0: number, width: number, count: number, friend: Friend, colors: BlockColor[]): Stack {
   return {
     friend,
-    blocks: Array.from({ length: count }, (_, k) => ({ x0, x1: x0 + width, y0: GRASS - BLOCK_H * (k + 1), y1: GRASS - BLOCK_H * k, color: colors[k % colors.length] })),
+    blocks: Array.from({ length: count }, (_, k) => ({
+      x0,
+      x1: x0 + width,
+      y0: GRASS - BLOCK_H * (k + 1),
+      y1: GRASS - BLOCK_H * k,
+      color: colors[k % colors.length],
+    })),
   };
 }
 
@@ -404,7 +462,13 @@ function wideStack(x0: number, friend: Friend, colors: BlockColor[]): Stack {
     friend,
     blocks: [
       { x0, x1: x0 + WIDE_BASE, y0: GRASS - BLOCK_H, y1: GRASS, color: colors[0] },
-      { x0: x0 + inset, x1: x0 + inset + BLOCK_H, y0: GRASS - 2 * BLOCK_H, y1: GRASS - BLOCK_H, color: colors[1] },
+      {
+        x0: x0 + inset,
+        x1: x0 + inset + BLOCK_H,
+        y0: GRASS - 2 * BLOCK_H,
+        y1: GRASS - BLOCK_H,
+        color: colors[1],
+      },
     ],
   };
 }
@@ -432,7 +496,10 @@ export function authoredLine(plan: Plan): Line {
     case 'far':
       return { stacks: [tower(530, 100, 2, 'bear', ['green', 'orange'])], hill: null };
     case 'hill':
-      return { stacks: [tower(540, 100, 2, 'duck', ['purple', 'yellow'])], hill: { x0: HILL_X.x0, x1: HILL_X.x1, top: HILL_TOP } };
+      return {
+        stacks: [tower(540, 100, 2, 'duck', ['purple', 'yellow'])],
+        hill: { x0: HILL_X.x0, x1: HILL_X.x1, top: HILL_TOP },
+      };
     case 'high':
       return { stacks: [wideStack(430, 'pig', ['orange', 'blue'])], hill: null };
   }
@@ -448,7 +515,10 @@ function seededLine(plan: Plan, rng: Rng, shape: number): Line {
       return { stacks: [tower(rng.int(CLOSE_X.max + FAR_GAP, 540), 100, 2, friend, colors())], hill: null };
     case 'hill': {
       const shift = rng.int(-10, 10);
-      return { stacks: [tower(rng.int(520, 550), 100, 2, friend, colors())], hill: { x0: HILL_X.x0 + shift, x1: HILL_X.x1 + shift, top: HILL_TOP } };
+      return {
+        stacks: [tower(rng.int(520, 550), 100, 2, friend, colors())],
+        hill: { x0: HILL_X.x0 + shift, x1: HILL_X.x1 + shift, top: HILL_TOP },
+      };
     }
     case 'high':
       // Two shapes by line: a tall thin tower (only its first block thumps), then another short wide stack.
@@ -473,14 +543,27 @@ export function thumpShare(line: Line): number {
 
 /** Whether a line meets its plan's filter (the table in the definition). */
 export function meetsPlan(plan: Plan, line: Line): boolean {
-  if (line.stacks.some((s, i) => fallFootprint(s, 0).x1 > FALL_MAX || line.stacks.some((o, j) => j !== i && overlapsX(fallFootprint(s, 0), o.blocks[0])))) return false;
+  if (
+    line.stacks.some(
+      (s, i) =>
+        fallFootprint(s, 0).x1 > FALL_MAX ||
+        line.stacks.some((o, j) => j !== i && overlapsX(fallFootprint(s, 0), o.blocks[0])),
+    )
+  )
+    return false;
   const grid = windows(line);
   const w = largestWindow(grid);
   switch (shapeOf(plan)) {
     case 'close':
       return fits(w, 20, 30) && share(grid) >= 0.25;
     case 'far':
-      return line.stacks[0].blocks[0].x0 >= CLOSE_X.max + FAR_GAP && !works(line, { angle: 45, length: 60 }) && flight(line, { angle: 45, length: 60 }).outcome.kind === 'short' && LENGTHS.some((length) => length > 60 && works(line, { angle: 45, length })) && fits(w, 8, 20);
+      return (
+        line.stacks[0].blocks[0].x0 >= CLOSE_X.max + FAR_GAP &&
+        !works(line, { angle: 45, length: 60 }) &&
+        flight(line, { angle: 45, length: 60 }).outcome.kind === 'short' &&
+        LENGTHS.some((length) => length > 60 && works(line, { angle: 45, length })) &&
+        fits(w, 8, 20)
+      );
     case 'hill':
       return flatPullsBlocked(line) && fits(w, 8, 20);
     case 'high':
@@ -498,7 +581,8 @@ export function flatPullsBlocked(line: Line): boolean {
   return true;
 }
 
-const overlapsX = (a: { x0: number; x1: number }, b: { x0: number; x1: number }) => a.x0 < b.x1 && b.x0 < a.x1;
+const overlapsX = (a: { x0: number; x1: number }, b: { x0: number; x1: number }) =>
+  a.x0 < b.x1 && b.x0 < a.x1;
 
 export const MAX_TRIES = 50;
 /** A seeded line that meets its plan (`shape` picks level 4's stack: odd a tall tower, even a wide stack), or (never needed, a test checks) the authored one. */
@@ -513,7 +597,10 @@ export function makeLine(plan: Plan, rng: Rng, shape = 0): { line: Line; fallbac
 /** A round's lines: the authored first line, then seeded ones (with their fruit at level 5). */
 export function roundLines(level: number, rng: Rng): Line[] {
   const plan = planFor(level);
-  const lines = [authoredLine(plan), ...Array.from({ length: plan.lines - 1 }, (_, i) => makeLine(plan, rng, i + 1).line)];
+  const lines = [
+    authoredLine(plan),
+    ...Array.from({ length: plan.lines - 1 }, (_, i) => makeLine(plan, rng, i + 1).line),
+  ];
   if (plan.kind !== 'count') return lines;
   return [lines[0], ...lines.slice(1).map((line) => withFruit(line, rng))];
 }
@@ -531,7 +618,10 @@ export function withFruit(line: Line, rng: Rng): Line {
     ...line,
     stacks: line.stacks.map((s) => {
       const n = rng.int(1, s.blocks.length);
-      const fruit = rng.shuffle(s.blocks.map((_, k) => k)).slice(0, n).sort((a, b) => a - b);
+      const fruit = rng
+        .shuffle(s.blocks.map((_, k) => k))
+        .slice(0, n)
+        .sort((a, b) => a - b);
       return { ...s, fruit };
     }),
   };
@@ -542,7 +632,8 @@ export const fruitOn = (line: Line): { stack: number; block: number }[] =>
   line.stacks.flatMap((s, stack) => (s.fruit ?? []).map((block) => ({ stack, block })));
 
 /** The tray's running total once line `i` has tipped. */
-export const basketAfter = (lines: Line[], i: number) => lines.slice(0, i + 1).reduce((n, l) => n + fruitOn(l).length, 0);
+export const basketAfter = (lines: Line[], i: number) =>
+  lines.slice(0, i + 1).reduce((n, l) => n + fruitOn(l).length, 0);
 
 /** Three pads: the total and its neighbours, never below 1 (a total of 1 shows 1, 2, 3), in a seeded order. */
 export function countPads(total: number, rng: Rng): number[] {
@@ -557,7 +648,10 @@ const GROUP_GAP = 10;
 export function trayLayout() {
   return {
     ...TRAY,
-    slot: (k: number, group: number): Pt => ({ x: TRAY.x0 + SLOT / 2 + k * SLOT + group * GROUP_GAP, y: (TRAY.y0 + TRAY.y1) / 2 }),
+    slot: (k: number, group: number): Pt => ({
+      x: TRAY.x0 + SLOT / 2 + k * SLOT + group * GROUP_GAP,
+      y: (TRAY.y0 + TRAY.y1) / 2,
+    }),
     slotR: SLOT / 2 - 4,
   };
 }
@@ -565,7 +659,12 @@ export function trayLayout() {
 /** The three number pads, top left of the sky: 110 square with 10 between. */
 export const PAD = 110;
 export function padLayout(): { x0: number; y0: number; x1: number; y1: number }[] {
-  return [0, 1, 2].map((k) => ({ x0: 50 + k * (PAD + 10), y0: 20, x1: 50 + k * (PAD + 10) + PAD, y1: 20 + PAD }));
+  return [0, 1, 2].map((k) => ({
+    x0: 50 + k * (PAD + 10),
+    y0: 20,
+    x1: 50 + k * (PAD + 10) + PAD,
+    y1: 20 + PAD,
+  }));
 }
 
 // ---- Layout ----

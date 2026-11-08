@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CONCEPTS, CONCEPT_IDS, SUBJECTS, STICKER_CONCEPTS, poolFor, cardToTap, makeRounds, opposites, PLANS, word } from './logic';
+import {
+  CONCEPTS,
+  CONCEPT_IDS,
+  SUBJECTS,
+  STICKER_CONCEPTS,
+  poolFor,
+  cardToTap,
+  makeRounds,
+  opposites,
+  PLANS,
+  word,
+} from './logic';
 
 describe('Opposites', () => {
   it('keeps spoken words unique and the lap pool at its original eight pairs', () => {
@@ -40,19 +51,21 @@ describe('Opposites', () => {
 
   it('varies every eligible subject and keeps both sides of a pair on the same animal', () => {
     const seen = { size: new Set<string>(), mood: new Set<string>() };
-    for (const plan of PLANS) for (let seed = 1; seed <= 200; seed++) {
-      for (const r of makeRounds(plan, new Rng(seed))) {
-        const cards = [...r.cards, ...(r.ask ? [r.ask] : [])];
-        for (const c of cards) {
-          if (c.concept === 'size' || c.concept === 'mood') {
-            expect(SUBJECTS[c.concept]).toContain(c.who);
-            seen[c.concept].add(c.who!);
-          } else expect(c.who).toBeUndefined();
-          for (const other of cards.filter((x) => x.concept === c.concept)) expect(other.who).toBe(c.who);
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 200; seed++) {
+        for (const r of makeRounds(plan, new Rng(seed))) {
+          const cards = [...r.cards, ...(r.ask ? [r.ask] : [])];
+          for (const c of cards) {
+            if (c.concept === 'size' || c.concept === 'mood') {
+              expect(SUBJECTS[c.concept]).toContain(c.who);
+              seen[c.concept].add(c.who!);
+            } else expect(c.who).toBeUndefined();
+            for (const other of cards.filter((x) => x.concept === c.concept)) expect(other.who).toBe(c.who);
+          }
         }
       }
-    }
-    for (const concept of ['size', 'mood'] as const) expect([...seen[concept]].sort()).toEqual([...SUBJECTS[concept]].sort());
+    for (const concept of ['size', 'mood'] as const)
+      expect([...seen[concept]].sort()).toEqual([...SUBJECTS[concept]].sort());
   });
 
   it('asks only about pictures on screen, with exactly one right answer', () => {

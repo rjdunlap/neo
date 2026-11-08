@@ -1,9 +1,23 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
-export interface Board { rows: number; cols: number; tiles: number[]; start: number; pond: number; berry?: number }
-export interface Plan { rows: number; cols: number; tiles: readonly number[]; start: number; pond: number }
-const open = (rows: number, cols: number, rocks: readonly number[] = []) => Array.from({ length: rows * cols }, (_, i) => i).filter(i => !rocks.includes(i));
+export interface Board {
+  rows: number;
+  cols: number;
+  tiles: number[];
+  start: number;
+  pond: number;
+  berry?: number;
+}
+export interface Plan {
+  rows: number;
+  cols: number;
+  tiles: readonly number[];
+  start: number;
+  pond: number;
+}
+const open = (rows: number, cols: number, rocks: readonly number[] = []) =>
+  Array.from({ length: rows * cols }, (_, i) => i).filter((i) => !rocks.includes(i));
 /**
  * Levels 1–3, frozen coverage plans; a seed picks one and flips or transposes it. Every plan stays within 4 × 4,
  * so `completion`'s memo key (`mask * 16 + at`) holds and a transposed plan keeps cells at 100 units.
@@ -33,21 +47,28 @@ const PLAN_NAMES = [
 const planLevel = (level: number) => Math.max(0, Math.min(PLANS.length - 1, level - 1));
 export function makeBoard(level: number, rng: Rng): Board {
   if (isMaze(level)) return makeMaze(level, rng);
-  const set = PLANS[planLevel(level)], p = set[rng.int(0, set.length - 1)];
-  const flipX = rng.chance(0.5), flipY = rng.chance(0.5), transpose = rng.chance(0.5);
+  const set = PLANS[planLevel(level)],
+    p = set[rng.int(0, set.length - 1)];
+  const flipX = rng.chance(0.5),
+    flipY = rng.chance(0.5),
+    transpose = rng.chance(0.5);
   return transformPlan(p, flipX, flipY, transpose);
 }
 export function transformPlan(p: Plan, flipX: boolean, flipY: boolean, transpose: boolean): Board {
-  const cols = transpose ? p.rows : p.cols, rows = transpose ? p.cols : p.rows;
+  const cols = transpose ? p.rows : p.cols,
+    rows = transpose ? p.cols : p.rows;
   const transform = (i: number) => {
     const r = flipY ? p.rows - 1 - Math.floor(i / p.cols) : Math.floor(i / p.cols);
-    const c = flipX ? p.cols - 1 - i % p.cols : i % p.cols;
+    const c = flipX ? p.cols - 1 - (i % p.cols) : i % p.cols;
     return transpose ? c * cols + r : r * cols + c;
   };
   return { rows, cols, tiles: p.tiles.map(transform), start: transform(p.start), pond: transform(p.pond) };
 }
 export function adjacent(b: Board, a: number, z: number): boolean {
-  return b.tiles.includes(z) && Math.abs(Math.floor(a / b.cols) - Math.floor(z / b.cols)) + Math.abs(a % b.cols - z % b.cols) === 1;
+  return (
+    b.tiles.includes(z) &&
+    Math.abs(Math.floor(a / b.cols) - Math.floor(z / b.cols)) + Math.abs((a % b.cols) - (z % b.cols)) === 1
+  );
 }
 export function moveError(b: Board, path: readonly number[], at: number): 'far' | 'visited' | 'pond' | null {
   if (!adjacent(b, path[path.length - 1], at)) return 'far';
@@ -58,9 +79,15 @@ export function moveError(b: Board, path: readonly number[], at: number): 'far' 
 export function step(b: Board, path: readonly number[], at: number): number[] | null {
   return moveError(b, path, at) ? null : [...path, at];
 }
-export const solved = (b: Board, path: readonly number[]) => validPath(b, path) && path.length === b.tiles.length && path.at(-1) === b.pond;
+export const solved = (b: Board, path: readonly number[]) =>
+  validPath(b, path) && path.length === b.tiles.length && path.at(-1) === b.pond;
 export function validPath(b: Board, path: readonly number[]): boolean {
-  return path[0] === b.start && new Set(path).size === path.length && path.every((at, i) => b.tiles.includes(at) && (i === 0 || adjacent(b, path[i - 1], at))) && (!path.includes(b.pond) || (path.at(-1) === b.pond && path.length === b.tiles.length));
+  return (
+    path[0] === b.start &&
+    new Set(path).size === path.length &&
+    path.every((at, i) => b.tiles.includes(at) && (i === 0 || adjacent(b, path[i - 1], at))) &&
+    (!path.includes(b.pond) || (path.at(-1) === b.pond && path.length === b.tiles.length))
+  );
 }
 /** Exact completion from any legal prefix. Memoized failed states keep the 16-space search small. */
 export function completion(b: Board, path: readonly number[]): number[] | null {
@@ -71,13 +98,19 @@ export function completion(b: Board, path: readonly number[]): number[] | null {
     const key = mask * 16 + at;
     if (failed.has(key)) return null;
     for (const next of b.tiles) {
-      if ((mask & (1 << next)) || !adjacent(b, at, next) || (next === b.pond && length !== b.tiles.length - 1)) continue;
+      if (mask & (1 << next) || !adjacent(b, at, next) || (next === b.pond && length !== b.tiles.length - 1))
+        continue;
       const tail = search(next, mask | (1 << next), length + 1);
       if (tail) return [next, ...tail];
     }
-    failed.add(key); return null;
+    failed.add(key);
+    return null;
   };
-  return search(path[path.length - 1], path.reduce((m, i) => m | (1 << i), 0), path.length);
+  return search(
+    path[path.length - 1],
+    path.reduce((m, i) => m | (1 << i), 0),
+    path.length,
+  );
 }
 /** A hint revises only as far as necessary; the UI performs each undo through its normal control. */
 export function helpFor(b: Board, path: readonly number[]): { undo: number; next: number } | null {
@@ -134,34 +167,55 @@ const MAZE_NAMES: Record<number, string> = {
 };
 export const levelName = (level: number) => MAZE_NAMES[level] ?? PLAN_NAMES[planLevel(level)];
 export function parseMaze(rows: readonly string[]): Board {
-  const cols = rows[0].length, tiles: number[] = [];
-  let start = -1, pond = -1, berry: number | undefined;
-  rows.forEach((row, r) => [...row].forEach((ch, c) => {
-    const at = r * cols + c;
-    if (ch === '#') return;
-    tiles.push(at);
-    if (ch === 'S') start = at; else if (ch === 'P') pond = at; else if (ch === 'B') berry = at;
-  }));
+  const cols = rows[0].length,
+    tiles: number[] = [];
+  let start = -1,
+    pond = -1,
+    berry: number | undefined;
+  rows.forEach((row, r) =>
+    [...row].forEach((ch, c) => {
+      const at = r * cols + c;
+      if (ch === '#') return;
+      tiles.push(at);
+      if (ch === 'S') start = at;
+      else if (ch === 'P') pond = at;
+      else if (ch === 'B') berry = at;
+    }),
+  );
   return { rows: rows.length, cols, tiles, start, pond, ...(berry === undefined ? {} : { berry }) };
 }
 /** A left–right and/or top–bottom flip; never a transpose, which would shrink a 4 × 7 maze below 100 units. */
 export function flipBoard(b: Board, flipX: boolean, flipY: boolean): Board {
-  const f = (i: number) => (flipY ? b.rows - 1 - Math.floor(i / b.cols) : Math.floor(i / b.cols)) * b.cols + (flipX ? b.cols - 1 - i % b.cols : i % b.cols);
-  return { rows: b.rows, cols: b.cols, tiles: b.tiles.map(f).sort((x, y) => x - y), start: f(b.start), pond: f(b.pond), ...(b.berry === undefined ? {} : { berry: f(b.berry) }) };
+  const f = (i: number) =>
+    (flipY ? b.rows - 1 - Math.floor(i / b.cols) : Math.floor(i / b.cols)) * b.cols +
+    (flipX ? b.cols - 1 - (i % b.cols) : i % b.cols);
+  return {
+    rows: b.rows,
+    cols: b.cols,
+    tiles: b.tiles.map(f).sort((x, y) => x - y),
+    start: f(b.start),
+    pond: f(b.pond),
+    ...(b.berry === undefined ? {} : { berry: f(b.berry) }),
+  };
 }
 export function makeMaze(level: number, rng: Rng): Board {
   const set = MAZES[level];
   const rows = set[rng.int(0, set.length - 1)];
   return flipBoard(parseMaze(rows), rng.chance(0.5), rng.chance(0.5));
 }
-export const neighbours = (b: Board, at: number) => b.tiles.filter(z => adjacent(b, at, z));
+export const neighbours = (b: Board, at: number) => b.tiles.filter((z) => adjacent(b, at, z));
 /** The tree's one route from `from` to `to`, both ends included. */
 export function routeBetween(b: Board, from: number, to: number): number[] {
-  const back = new Map<number, number>([[from, from]]), queue = [from];
+  const back = new Map<number, number>([[from, from]]),
+    queue = [from];
   while (queue.length) {
     const at = queue.shift()!;
     if (at === to) break;
-    for (const z of neighbours(b, at)) if (!back.has(z)) { back.set(z, at); queue.push(z); }
+    for (const z of neighbours(b, at))
+      if (!back.has(z)) {
+        back.set(z, at);
+        queue.push(z);
+      }
   }
   if (!back.has(to)) return [];
   const route = [to];
@@ -174,11 +228,12 @@ export function mainline(b: Board): Set<number> {
   if (b.berry !== undefined) for (const at of routeBetween(b, b.start, b.berry)) line.add(at);
   return line;
 }
-export const goalOf = (b: Board, berry: boolean) => b.berry !== undefined && !berry ? b.berry : b.pond;
+export const goalOf = (b: Board, berry: boolean) => (b.berry !== undefined && !berry ? b.berry : b.pond);
 /** The first tile from the turtle toward the goal: the way out of a dead end, otherwise the next route tile. */
 export const nextToward = (b: Board, at: number, goal: number) => routeBetween(b, at, goal)[1] ?? -1;
 /** The end of a dead end: a tile with one way in that is not the start, pond or berry. */
-export const deadEnd = (b: Board, at: number) => at !== b.start && at !== b.pond && at !== b.berry && neighbours(b, at).length === 1;
+export const deadEnd = (b: Board, at: number) =>
+  at !== b.start && at !== b.pond && at !== b.berry && neighbours(b, at).length === 1;
 
 export interface MazeState {
   /** The turtle's current route from the start: a simple path in the tree. */
@@ -198,46 +253,87 @@ export type MazeMove =
   | { kind: 'walk'; to: number }
   | { kind: 'refuse'; miss: boolean }
   | { kind: 'ignore'; far: boolean };
-export const mazeStart = (b: Board): MazeState => ({ path: [b.start], berry: false, misses: 0, branches: [], snack: false, reached: [b.start] });
+export const mazeStart = (b: Board): MazeState => ({
+  path: [b.start],
+  berry: false,
+  misses: 0,
+  branches: [],
+  snack: false,
+  reached: [b.start],
+});
 /** Start over: the same maze and the berry back on its bush; misses and counted branches stay. */
 export const mazeRestart = (b: Board, s: MazeState): MazeState => ({ ...s, path: [b.start], berry: false });
 /** One step back along the trail (Undo, a tap on the last tile, one step of a walk back). Always free. */
-export const mazeBack = (s: MazeState): MazeState => s.path.length > 1 ? { ...s, path: s.path.slice(0, -1) } : s;
+export const mazeBack = (s: MazeState): MazeState =>
+  s.path.length > 1 ? { ...s, path: s.path.slice(0, -1) } : s;
 /**
  * What a touch on tile `at` does at a maze level. Only levels 6–7 count misses: a step into a wrong branch once per
  * branch per round, and (level 7) a pond step without the berry once per round. Back steps and far taps are free.
  */
-export function mazeTouch(b: Board, level: number, s: MazeState, at: number): { state: MazeState; move: MazeMove } {
+export function mazeTouch(
+  b: Board,
+  level: number,
+  s: MazeState,
+  at: number,
+): { state: MazeState; move: MazeMove } {
   const here = s.path[s.path.length - 1];
   if (at === here || !b.tiles.includes(at)) return { state: s, move: { kind: 'ignore', far: false } };
-  if (s.path.length > 1 && at === s.path[s.path.length - 2]) return { state: mazeBack(s), move: { kind: 'back' } };
+  if (s.path.length > 1 && at === s.path[s.path.length - 2])
+    return { state: mazeBack(s), move: { kind: 'back' } };
   const earlier = s.path.indexOf(at);
   if (earlier >= 0) return { state: s, move: { kind: 'walk', to: earlier } };
   if (!adjacent(b, here, at)) return { state: s, move: { kind: 'ignore', far: true } };
   if (at === b.pond && b.berry !== undefined && !s.berry) {
-    return { state: { ...s, snack: true, misses: s.misses + (s.snack ? 0 : 1) }, move: { kind: 'refuse', miss: !s.snack } };
+    return {
+      state: { ...s, snack: true, misses: s.misses + (s.snack ? 0 : 1) },
+      move: { kind: 'refuse', miss: !s.snack },
+    };
   }
   const line = mainline(b);
   const wrong = level >= 6 && line.has(here) && !line.has(at);
   const miss = wrong && !s.branches.includes(at);
   const progress = line.has(at) && !s.reached.includes(at);
   const state: MazeState = {
-    ...s, path: [...s.path, at], berry: s.berry || at === b.berry, misses: s.misses + (miss ? 1 : 0),
-    branches: miss ? [...s.branches, at] : s.branches, reached: progress ? [...s.reached, at] : s.reached,
+    ...s,
+    path: [...s.path, at],
+    berry: s.berry || at === b.berry,
+    misses: s.misses + (miss ? 1 : 0),
+    branches: miss ? [...s.branches, at] : s.branches,
+    reached: progress ? [...s.reached, at] : s.reached,
   };
-  return { state, move: { kind: 'forward', miss, berry: at === b.berry && !s.berry, pond: at === b.pond, deadEnd: deadEnd(b, at), progress } };
+  return {
+    state,
+    move: {
+      kind: 'forward',
+      miss,
+      berry: at === b.berry && !s.berry,
+      pond: at === b.pond,
+      deadEnd: deadEnd(b, at),
+      progress,
+    },
+  };
 }
 
 /* A seeded look for the round: the moss season and the berry kind. Neither changes a rule; drawn once per board. */
 export const SEASONS = ['spring', 'autumn', 'snow'] as const;
 export const BERRIES = ['red', 'blue', 'strawberry'] as const;
-export interface Look { season: (typeof SEASONS)[number]; berry: (typeof BERRIES)[number] }
+export interface Look {
+  season: (typeof SEASONS)[number];
+  berry: (typeof BERRIES)[number];
+}
 /** Picked after the board, so a seed's board is the same with or without a look. */
-export const pickLook = (rng: Rng): Look => ({ season: SEASONS[rng.int(0, SEASONS.length - 1)], berry: BERRIES[rng.int(0, BERRIES.length - 1)] });
+export const pickLook = (rng: Rng): Look => ({
+  season: SEASONS[rng.int(0, SEASONS.length - 1)],
+  berry: BERRIES[rng.int(0, BERRIES.length - 1)],
+});
 /** A small, fixed scatter per hedge (3–5 leaves at offsets in −1..1), from the cell index so redraws never move it. */
 export function leafSpots(at: number): [number, number][] {
   let h = Math.imul(at + 1, 2654435761) >>> 0;
-  const next = () => { h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
+  const next = () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0;
+    h ^= h >>> 13;
+    return (h >>> 0) / 4294967296;
+  };
   return Array.from({ length: 3 + Math.floor(next() * 3) }, () => [next() * 2 - 1, next() * 2 - 1]);
 }
 

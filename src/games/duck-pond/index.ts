@@ -10,7 +10,23 @@ import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, HIDING_SLOTS, hidingRevealSlots, numberSentence, stickerDucks, bankSize, duckMove, hidingPuzzle, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan, type PondStory } from './logic';
+import {
+  LEVELS,
+  HIDING_SLOTS,
+  hidingRevealSlots,
+  numberSentence,
+  stickerDucks,
+  bankSize,
+  duckMove,
+  hidingPuzzle,
+  padValues,
+  planFor,
+  SLOTS,
+  story,
+  tenStarts,
+  type DuckPlan,
+  type PondStory,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const WATER = 0x7cc4f2;
@@ -26,9 +42,21 @@ class Duck extends Container {
   pondOffset: [number, number] | null = null;
   /** Sitting this one out (for example once enough ducks are in). */
   resting = false;
-  private readonly ripple = new Graphics().ellipse(0, -6, 66, 26).fill(WATER).stroke({ width: 4, color: 0xbfe6ff });
+  private readonly ripple = new Graphics()
+    .ellipse(0, -6, 66, 26)
+    .fill(WATER)
+    .stroke({ width: 4, color: 0xbfe6ff });
   private clock = Math.random() * 6;
-  private arc: { x0: number; y0: number; x1: number; y1: number; t: number; dur: number; h: number; done: () => void } | null = null;
+  private arc: {
+    x0: number;
+    y0: number;
+    x1: number;
+    y1: number;
+    t: number;
+    dur: number;
+    h: number;
+    done: () => void;
+  } | null = null;
 
   constructor() {
     super();
@@ -113,7 +141,8 @@ class Pad extends Container {
     this.shake = Math.max(0, this.shake - dt * 2);
     this.rotation = 0.03 * Math.sin(this.clock * 1.5) + 0.25 * this.shake * Math.sin(this.shake * 20);
     this.glowRing.clear();
-    if (this.glowing) this.glowRing.circle(0, 0, 80 + 5 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.7 });
+    if (this.glowing)
+      this.glowRing.circle(0, 0, 80 + 5 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.7 });
   }
 }
 
@@ -147,7 +176,17 @@ class DuckPond implements Game {
     this.plan = planFor(ctx.level);
     this.view = ctx.view;
     this.backdrop = ctx.track(
-      new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.42, clouds: 3, sun: true, seed: 33 }, ctx.view),
+      new Backdrop(
+        {
+          sky: [0x8fd3f7, 0xe9f7ff],
+          hills: [0xc8ecb0, 0x9edb86],
+          horizon: 0.42,
+          clouds: 3,
+          sun: true,
+          seed: 33,
+        },
+        ctx.view,
+      ),
     );
     const board = new Graphics()
       .rect(-8, 40, 16, 110)
@@ -178,18 +217,37 @@ class DuckPond implements Game {
     const g = this.pond.clear();
     g.ellipse(x, y, 390, 128).fill(WATER).stroke({ width: 10, color: WATER_EDGE });
     g.ellipse(x - 40, y - 20, 300, 80).fill({ color: 0xffffff, alpha: 0.12 });
-    for (const [dx, dy, r] of [[-330, 50, 28], [310, 70, 24], [-280, -70, 20]]) {
-      g.circle(x + dx, y + dy, r).fill(LILY.fill).stroke({ width: 4, color: LILY.line });
+    for (const [dx, dy, r] of [
+      [-330, 50, 28],
+      [310, 70, 24],
+      [-280, -70, 20],
+    ]) {
+      g.circle(x + dx, y + dy, r)
+        .fill(LILY.fill)
+        .stroke({ width: 4, color: LILY.line });
     }
-    for (const [dx, h] of [[-410, 120], [-395, 90], [405, 110], [420, 80]]) {
-      g.moveTo(x + dx, y + 60).quadraticCurveTo(x + dx + 6, y + 60 - h / 2, x + dx - 4, y + 60 - h).stroke({ width: 7, color: 0x4a9a35, cap: 'round' });
+    for (const [dx, h] of [
+      [-410, 120],
+      [-395, 90],
+      [405, 110],
+      [420, 80],
+    ]) {
+      g.moveTo(x + dx, y + 60)
+        .quadraticCurveTo(x + dx + 6, y + 60 - h / 2, x + dx - 4, y + 60 - h)
+        .stroke({ width: 7, color: 0x4a9a35, cap: 'round' });
       g.ellipse(x + dx - 4, y + 60 - h, 7, 20).fill(0x8f6142);
     }
     const bridge = this.bridge.clear();
     bridge.rect(x - 190, y - 58, 28, 138).fill(wood.line);
     bridge.rect(x + 162, y - 58, 28, 138).fill(wood.line);
-    bridge.roundRect(x - 220, y - 58, 440, 34, 8).fill(wood.fill).stroke({ width: 6, color: wood.line });
-    bridge.roundRect(x - 220, y - 8, 440, 46, 8).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    bridge
+      .roundRect(x - 220, y - 58, 440, 34, 8)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
+    bridge
+      .roundRect(x - 220, y - 8, 440, 46, 8)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
     bridge.visible = this.plan.mode === 'hide';
     this.sign.position.set(v.w / 2 + 380, 150);
     this.layoutBank();
@@ -208,9 +266,22 @@ class DuckPond implements Game {
   /** The ghost finger on the how-to card: send the ducks in (all of them, or as many as the sign says), or touch the lily pad with the answer. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    const move = duckMove(this.plan, this.bank.filter((d) => !d.resting).length, this.swimmers.length, this.want, this.pads.map((p) => p.value), this.answer);
+    const move = duckMove(
+      this.plan,
+      this.bank.filter((d) => !d.resting).length,
+      this.swimmers.length,
+      this.want,
+      this.pads.map((p) => p.value),
+      this.answer,
+    );
     if (move === null) return null;
-    if (move === 'duck') return { tap: { on: (this.plan.mode === 'bye' ? this.swimmers[0] : this.bank.find((d) => !d.resting))!, y: -46 } };
+    if (move === 'duck')
+      return {
+        tap: {
+          on: (this.plan.mode === 'bye' ? this.swimmers[0] : this.bank.find((d) => !d.resting))!,
+          y: -46,
+        },
+      };
     return { tap: { on: this.pads[move.pad] } };
   }
 
@@ -254,7 +325,14 @@ class DuckPond implements Game {
     d.setSwimming(true);
     d.zIndex = d.y;
     sfx.splash();
-    this.ctx.particles.burst(d.x, d.y - 10, { colors: [0xffffff, 0xbfe6ff], count: 10, speed: [80, 220], gravity: 500, size: [0.2, 0.4], life: [0.4, 0.7] });
+    this.ctx.particles.burst(d.x, d.y - 10, {
+      colors: [0xffffff, 0xbfe6ff],
+      count: 10,
+      speed: [80, 220],
+      gravity: 500,
+      size: [0.2, 0.4],
+      life: [0.4, 0.7],
+    });
   }
 
   /** Ducks arriving from off-screen straight into the pond (no tapping needed). */
@@ -307,11 +385,12 @@ class DuckPond implements Game {
   }
 
   private quackChorus() {
-    this.swimmers.forEach((d, i) =>
-      void this.tw.wait(i * 0.12).then(() => {
-        d.critter.cheer();
-        if (i < 4) sfx.animal('quack');
-      }),
+    this.swimmers.forEach(
+      (d, i) =>
+        void this.tw.wait(i * 0.12).then(() => {
+          d.critter.cheer();
+          if (i < 4) sfx.animal('quack');
+        }),
     );
   }
 
@@ -475,7 +554,11 @@ class DuckPond implements Game {
     this.signText.text = String(n);
     this.signText.y = dots ? -18 : 0;
     const g = this.signDots.clear();
-    if (dots) for (let i = 0; i < n; i++) g.circle((i - (n - 1) / 2) * 26, 40, 9).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    if (dots)
+      for (let i = 0; i < n; i++)
+        g.circle((i - (n - 1) / 2) * 26, 40, 9)
+          .fill(swatch.yellow.fill)
+          .stroke({ width: 3, color: swatch.yellow.line });
     this.sign.scale.set(0);
     void this.tw.to(this.sign.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
   }
@@ -501,7 +584,10 @@ class DuckPond implements Game {
       return pad;
     });
     this.layoutPads();
-    this.pads.forEach((pad, i) => void this.tw.to(pad.scale, { x: 1, y: 1 }, { duration: 0.4, delay: i * 0.1, ease: ease.outBack }));
+    this.pads.forEach(
+      (pad, i) =>
+        void this.tw.to(pad.scale, { x: 1, y: 1 }, { duration: 0.4, delay: i * 0.1, ease: ease.outBack }),
+    );
   }
 
   private layoutPads() {
@@ -602,7 +688,14 @@ class DuckPond implements Game {
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
     const { x, y } = this.pondCenter();
-    this.ctx.particles.burst(x, y - 100, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(x, y - 100, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     await this.tw.wait(1.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -660,7 +753,12 @@ function sticker(seed: number): Container {
     d.position.set((i - (n - 1) / 2) * 110, i % 2 ? 14 : 0);
     c.addChild(d);
   }
-  c.addChild(new Graphics().ellipse(0, -6, 80 + n * 50, 26).fill(WATER).stroke({ width: 5, color: 0xbfe6ff }));
+  c.addChild(
+    new Graphics()
+      .ellipse(0, -6, 80 + n * 50, 26)
+      .fill(WATER)
+      .stroke({ width: 5, color: 0xbfe6ff }),
+  );
   return c;
 }
 
@@ -677,7 +775,8 @@ export const duckPond: GameModule = {
     const p = planFor(level);
     if (p.mode === 'along') return `Count along as ${p.max} ducks hop in`;
     if (p.mode === 'bye') return 'Wave bye-bye as each of five ducks swims off, then count them back';
-    if (p.mode === 'make') return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
+    if (p.mode === 'make')
+      return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
     if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;
     if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
     if (p.mode === 'hide') return 'Part and whole: how many ducks hide under the bridge?';

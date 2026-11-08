@@ -9,11 +9,26 @@ import { couchStore } from '../../couch/store';
 import { CouchInput } from '../../engine/controller';
 import type { View } from '../../engine/view';
 import { openParentPanel } from '../../parent/panel';
-import { blankToFill, cardName, isBlankProfile, MAX_PROFILES, type ProfileEntry } from '../../progress/profiles';
+import {
+  blankToFill,
+  cardName,
+  isBlankProfile,
+  MAX_PROFILES,
+  type ProfileEntry,
+} from '../../progress/profiles';
 import { defaults, type SaveData } from '../../progress/save';
 import { store } from '../../progress/store';
 import { gearButton } from '../../ui/grownups';
-import { couchNameFor, modeFor, POINTER_WINDOW_MS, readNewPlayer, skipsEgg, sourceOfClick, type Mode, type NewPlayer } from '../chooser';
+import {
+  couchNameFor,
+  modeFor,
+  POINTER_WINDOW_MS,
+  readNewPlayer,
+  skipsEgg,
+  sourceOfClick,
+  type Mode,
+  type NewPlayer,
+} from '../chooser';
 import { selectPlayer } from '../players';
 import { applySettings } from '../settings';
 import { Scene } from '../Scene';
@@ -27,7 +42,20 @@ interface Item {
 /** A small game controller, for the card's own way into couch play. */
 const PAD = `<svg viewBox="0 0 46 30" aria-hidden="true"><path fill="#6b6b7b" d="M10 3h26c5 0 8.5 4 9.4 11l1 8c.4 4-2 6-5.2 6-2.2 0-3.5-1.2-4.8-3.2L33.4 20H12.6l-1.4 4.8C9.9 26.8 8.6 28 6.4 28c-3.2 0-5.6-2-5.2-6l1-8C3.1 7 6 3 10 3z"/><path stroke="#fff" stroke-width="2.6" stroke-linecap="round" d="M13 9v8M9 13h8"/><circle cx="32" cy="10.5" r="2.2" fill="#fff"/><circle cx="37" cy="14.5" r="2.2" fill="#fff"/></svg>`;
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = '') => {
   const node = document.createElement(tag);
@@ -74,7 +102,17 @@ export class ChooserScene extends Scene {
 
   init() {
     this.backdrop = this.track(
-      new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xaee39a, 0x9edb86], horizon: 0.62, clouds: 3, sun: true, seed: 12 }, this.view),
+      new Backdrop(
+        {
+          sky: [0x8fd3f7, 0xe9f7ff],
+          hills: [0xc8ecb0, 0xaee39a, 0x9edb86],
+          horizon: 0.62,
+          clouds: 3,
+          sun: true,
+          seed: 12,
+        },
+        this.view,
+      ),
     );
     this.content.addChild(this.backdrop);
 
@@ -84,10 +122,14 @@ export class ChooserScene extends Scene {
     this.page.append(title, ask, this.cards, this.note);
     this.note.hidden = true;
     // A key (Tab included) brings the ring; any real pointer takes it away, and makes the click that follows its tap.
-    this.page.addEventListener('pointerdown', () => {
-      this.pointerAt = performance.now();
-      this.showRing(false);
-    }, true);
+    this.page.addEventListener(
+      'pointerdown',
+      () => {
+        this.pointerAt = performance.now();
+        this.showRing(false);
+      },
+      true,
+    );
     window.addEventListener('keydown', this.onKeyDown);
     document.body.append(this.page, this.gear.el);
     setTimeout(() => this.page.classList.add('chooser--in'), 16);
@@ -106,10 +148,13 @@ export class ChooserScene extends Scene {
   /** Keys and controllers are only read while nothing else (the add form, the grown-ups' page) wants Enter and the arrows. */
   private startInput() {
     if (this.input || this.closed) return;
-    this.input = new CouchInput(() => {
-      audio.unlock();
-      voice.unlock();
-    }, () => {});
+    this.input = new CouchInput(
+      () => {
+        audio.unlock();
+        voice.unlock();
+      },
+      () => {},
+    );
   }
 
   private stopInput() {
@@ -118,7 +163,12 @@ export class ChooserScene extends Scene {
   }
 
   private async build() {
-    const items = await Promise.all(store.profiles.map(async (entry): Promise<Item> => ({ entry, save: (await store.peek(entry.id)) ?? defaults() })));
+    const items = await Promise.all(
+      store.profiles.map(async (entry): Promise<Item> => ({
+        entry,
+        save: (await store.peek(entry.id)) ?? defaults(),
+      })),
+    );
     if (this.closed) return;
     this.items = items;
     this.cards.replaceChildren();
@@ -133,7 +183,12 @@ export class ChooserScene extends Scene {
       play.dataset.id = entry.id;
       play.setAttribute('aria-label', `Play as ${name}`);
       play.append(this.friend(save), el('span', 'chooser__name', name));
-      play.addEventListener('click', (e) => this.choose(entry.id, modeFor(sourceOfClick(e.detail, performance.now() - this.pointerAt < POINTER_WINDOW_MS))));
+      play.addEventListener('click', (e) =>
+        this.choose(
+          entry.id,
+          modeFor(sourceOfClick(e.detail, performance.now() - this.pointerAt < POINTER_WINDOW_MS)),
+        ),
+      );
       const couch = el('button', 'chooser__couch');
       couch.type = 'button';
       couch.setAttribute('aria-label', `${name}: couch play, with a controller or keyboard`);
@@ -155,7 +210,9 @@ export class ChooserScene extends Scene {
       this.buttons.push(add);
     }
     this.note.hidden = canAdd;
-    if (!canAdd) this.note.textContent = 'Everyone has a place. To add someone new, a grown-up can remove a player in the grown-ups’ page (hold the gear).';
+    if (!canAdd)
+      this.note.textContent =
+        'Everyone has a place. To add someone new, a grown-up can remove a player in the grown-ups’ page (hold the gear).';
 
     const mine = this.buttons.findIndex((b) => b.dataset.id === store.activeId);
     this.setFocus(mine >= 0 ? mine : 0);
@@ -269,7 +326,10 @@ export class ChooserScene extends Scene {
     voice.stop();
     this.stopInput();
     // The page edits whoever it is pointed at; closing it brings the chooser back, showing any change.
-    openParentPanel(() => this.app.go.start(), () => this.app.go.start());
+    openParentPanel(
+      () => this.app.go.start(),
+      () => this.app.go.start(),
+    );
   }
 
   // ---- Add a player ---------------------------------------------------------------------------------------------
@@ -308,7 +368,10 @@ export class ChooserScene extends Scene {
       const read: NewPlayer = readNewPlayer(name.value, month.value, yearBox.value, new Date());
       if (!read.ok) {
         problem.hidden = false;
-        problem.textContent = read.problem === 'name' ? 'Please type a name.' : 'Please choose the month and the year they were born (not a date that has not happened).';
+        problem.textContent =
+          read.problem === 'name'
+            ? 'Please type a name.'
+            : 'Please choose the month and the year they were born (not a date that has not happened).';
         (read.problem === 'name' ? name : month.value ? yearBox : month).focus();
         return;
       }
@@ -329,7 +392,8 @@ export class ChooserScene extends Scene {
       const p = this.form?.querySelector<HTMLElement>('[data-problem]');
       if (p) {
         p.hidden = false;
-        p.textContent = 'There is no room for another player. A grown-up can remove someone in the grown-ups’ page.';
+        p.textContent =
+          'There is no room for another player. A grown-up can remove someone in the grown-ups’ page.';
       }
       return;
     }

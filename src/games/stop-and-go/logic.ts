@@ -21,8 +21,16 @@ export const PLANS: GoPlan[] = [
   { mode: 'send', goal: 5, name: 'The light changes by itself: tap a car only when the light is green' },
   { mode: 'walk', goal: 8, name: 'Red light, green light: step toward the flag on green, freeze on red' },
   { mode: 'cross', goal: 6, name: 'Traffic helper: let one road go at a time at the crossing' },
-  { mode: 'lanes', goal: 6, name: 'Whose light? A car lane and a bike lane each have their own light: send the front one whose own light is green' },
-  { mode: 'busy', goal: 8, name: 'Busy crossing: cars arrive one at a time on both roads; hand over one road at a time' },
+  {
+    mode: 'lanes',
+    goal: 6,
+    name: 'Whose light? A car lane and a bike lane each have their own light: send the front one whose own light is green',
+  },
+  {
+    mode: 'busy',
+    goal: 8,
+    name: 'Busy crossing: cars arrive one at a time on both roads; hand over one road at a time',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -38,9 +46,14 @@ export const isCross = (mode: GoMode) => mode === 'cross' || mode === 'busy';
 
 /** Lap's first level, 9 (the easiest, so it sits outside PLANS): two lamps, a looping car, nothing to get wrong. */
 export const LAMPS_LEVEL = 9;
-export const LAMPS_PLAN: GoPlan = { mode: 'lamps', goal: 8, name: 'Go car, stop car: tap the green lamp to make the car go and the red lamp to make it stop (lap\'s first level)' };
+export const LAMPS_PLAN: GoPlan = {
+  mode: 'lamps',
+  goal: 8,
+  name: "Go car, stop car: tap the green lamp to make the car go and the red lamp to make it stop (lap's first level)",
+};
 
-export const planFor = (level: number) => (level === LAMPS_LEVEL ? LAMPS_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
+export const planFor = (level: number) =>
+  level === LAMPS_LEVEL ? LAMPS_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export type Light = 'green' | 'yellow' | 'red';
 
@@ -101,7 +114,8 @@ export const GO_TARGET = { lamps: 'lamp', toy: 'light', send: 'car', walk: 'step
  * Whether a tap that lands now is right: the toy light answers every tap, but a car or a step is only right on green
  * (yellow is a nudge and red the one miss). The demonstration's hand waits over its target until this is true.
  */
-export const rightNow = (mode: GoMode, light: Light) => mode === 'lamps' || mode === 'toy' || judgeGo(light) === 'go';
+export const rightNow = (mode: GoMode, light: Light) =>
+  mode === 'lamps' || mode === 'toy' || judgeGo(light) === 'go';
 
 export type Road = 'ew' | 'ns';
 
@@ -139,7 +153,8 @@ export function carTap(mode: GoMode, light: Light, front: boolean): CarAnswer {
 }
 
 /** At the toy level a touch on the light or a car counts toward the round; elsewhere only a send or a step does. */
-export const touchCounts = (mode: GoMode, answer: CarAnswer | 'light') => (mode === 'toy' || mode === 'lamps') && (answer === 'light' || answer === 'drive' || answer === 'toot');
+export const touchCounts = (mode: GoMode, answer: CarAnswer | 'light') =>
+  (mode === 'toy' || mode === 'lamps') && (answer === 'light' || answer === 'drive' || answer === 'toot');
 
 /**
  * The lap level's two lamps: green sets the looping car going, red brakes it (and a second touch of the same lamp keeps
@@ -155,11 +170,14 @@ export const nextLamp = (rolling: boolean): Lamp => (rolling ? 'red' : 'green');
  * right (green), so the glow leads to the action. The crossing's glow is on a light instead (`null` here).
  */
 export const hintOn = (mode: GoMode, light: Light): 'car' | 'step' | null =>
-  (mode === 'send' || mode === 'lanes') && light === 'green' ? 'car' : mode === 'walk' && light === 'green' ? 'step' : null;
+  (mode === 'send' || mode === 'lanes') && light === 'green'
+    ? 'car'
+    : mode === 'walk' && light === 'green'
+      ? 'step'
+      : null;
 
 /** The line said when the round is done: the walk ends at the flag, the other levels with the cars. */
 export const doneLine = (mode: GoMode) => (mode === 'walk' ? 'go.done.walk' : 'go.done');
-
 
 // Whose light? ------------------------------------------------------------------------------------
 
@@ -176,14 +194,24 @@ export function laneCycles(rng: { range(min: number, max: number): number }): Re
   const gap = rng.range(1, 1.8);
   const y = PHASE.yellow;
   return {
-    car: [{ light: 'green', seconds: a }, { light: 'yellow', seconds: y }, { light: 'red', seconds: gap + b + y + gap }],
-    bike: [{ light: 'red', seconds: a + y + gap }, { light: 'green', seconds: b }, { light: 'yellow', seconds: y }, { light: 'red', seconds: gap }],
+    car: [
+      { light: 'green', seconds: a },
+      { light: 'yellow', seconds: y },
+      { light: 'red', seconds: gap + b + y + gap },
+    ],
+    bike: [
+      { light: 'red', seconds: a + y + gap },
+      { light: 'green', seconds: b },
+      { light: 'yellow', seconds: y },
+      { light: 'red', seconds: gap },
+    ],
   };
 }
 
 /** The lane to send next at time `t`: the one whose light is green, else the one that turns green first. */
 export function nextGreenLane(cycles: Record<Lane, Cycle>, t: number): Lane {
-  for (let s = 0; s < 40; s += 0.05) for (const lane of LANES) if (lightAt(t + s, cycles[lane]) === 'green') return lane;
+  for (let s = 0; s < 40; s += 0.05)
+    for (const lane of LANES) if (lightAt(t + s, cycles[lane]) === 'green') return lane;
   return 'car';
 }
 

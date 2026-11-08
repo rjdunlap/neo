@@ -17,15 +17,33 @@ import type { BandLevels } from '../../progress/difficulty';
 export type Prop = 'hat' | 'whiskers' | 'boots';
 export const PROPS: readonly Prop[] = ['hat', 'whiskers', 'boots'];
 /** The three pairs a brief can use, as (P, Q). */
-export const PAIRS: readonly [Prop, Prop][] = [['hat', 'whiskers'], ['hat', 'boots'], ['whiskers', 'boots']];
+export const PAIRS: readonly [Prop, Prop][] = [
+  ['hat', 'whiskers'],
+  ['hat', 'boots'],
+  ['whiskers', 'boots'],
+];
 
 export type Bit = 0 | 1;
 /** The four tuples (P, Q) in a fixed order: 00, 01, 10, 11. */
-export const TUPLES: readonly [Bit, Bit][] = [[0, 0], [0, 1], [1, 0], [1, 1]];
+export const TUPLES: readonly [Bit, Bit][] = [
+  [0, 0],
+  [0, 1],
+  [1, 0],
+  [1, 1],
+];
 
 /** Species without natural whiskers, so a toy whisker set reads as a toy. */
 export const SPECIES: readonly CritterName[] = ['pip', 'bear', 'dog', 'pig', 'duck', 'cow'];
-export const COLORS: readonly ColorName[] = ['teal', 'brown', 'orange', 'pink', 'yellow', 'green', 'blue', 'purple'];
+export const COLORS: readonly ColorName[] = [
+  'teal',
+  'brown',
+  'orange',
+  'pink',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+];
 
 export interface Fixture {
   p: Bit;
@@ -40,8 +58,7 @@ export type Op = 'AND' | 'OR';
  * not a slot), a gate combines two readings. A slot is a sensor without `fixed`, or a gate.
  */
 export type Node =
-  | { kind: 'sensor'; prop: Prop | null; fixed?: true }
-  | { kind: 'gate'; op: Op | null; a: Node; b: Node };
+  { kind: 'sensor'; prop: Prop | null; fixed?: true } | { kind: 'gate'; op: Op | null; a: Node; b: Node };
 
 export type Value = true | false | 'incomplete';
 
@@ -127,9 +144,7 @@ export function complete(node: Node): boolean {
 }
 
 export type Verdict =
-  | { status: 'incomplete'; slot: number }
-  | { status: 'pass' }
-  | { status: 'fail'; rows: number[] };
+  { status: 'incomplete'; slot: number } | { status: 'pass' } | { status: 'fail'; rows: number[] };
 
 /** Check the whole domain: every fixture, whether or not it was sent. Incomplete comes before fail. */
 export function check(graph: Node, brief: Brief): Verdict {
@@ -166,7 +181,9 @@ export type Help = { kind: 'run'; fixture: number } | { kind: 'install'; graph: 
  */
 export function helpFor(graph: Node, brief: Brief, presses: number): Help {
   if (presses >= 2) return { kind: 'install', graph: solutions(brief)[0] ?? graph };
-  const wrongs = complete(graph) ? [graph] : candidateGraphs(brief).filter((g) => check(g, brief).status !== 'pass');
+  const wrongs = complete(graph)
+    ? [graph]
+    : candidateGraphs(brief).filter((g) => check(g, brief).status !== 'pass');
   const i = brief.fixtures.findIndex((f) => wrongs.some((g) => evaluate(g, f, brief) !== wanted(f, brief)));
   return { kind: 'run', fixture: Math.max(0, i) };
 }
@@ -206,7 +223,10 @@ export function briefFor(level: number, rng: Rng): Brief {
   if (plan.level === 1) {
     const p = rng.pick(PROPS);
     const q = rng.pick(PROPS.filter((x) => x !== p));
-    const tuples = rng.shuffle<[Bit, Bit]>([[1, 0], [0, 0]]);
+    const tuples = rng.shuffle<[Bit, Bit]>([
+      [1, 0],
+      [0, 0],
+    ]);
     const who = cast(rng, 2);
     const sensor: Node = { kind: 'sensor', prop: p, fixed: true };
     return {
@@ -249,7 +269,10 @@ export class Tally implements CoachTally {
   miss(): boolean {
     if (!missEvery(this)) return false;
     this.glowing = true;
-    if (!this.lit) { this.lit = true; hinted(this); }
+    if (!this.lit) {
+      this.lit = true;
+      hinted(this);
+    }
     return true;
   }
 
@@ -289,17 +312,29 @@ export function nextMove(brief: Brief, graph: Node, sent: readonly boolean[]): M
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export const CARD = { w: 130, h: 150 };
@@ -350,7 +385,12 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     const left = PET_CORNER.w + M;
     const cols = 2;
     for (let i = 0; i < n; i++) {
-      fixtures.push({ x: left + (i % cols) * (CARD.w + gap), y: top + Math.floor(i / cols) * (CARD.h + gap), w: CARD.w, h: CARD.h });
+      fixtures.push({
+        x: left + (i % cols) * (CARD.w + gap),
+        y: top + Math.floor(i / cols) * (CARD.h + gap),
+        w: CARD.w,
+        h: CARD.h,
+      });
     }
     const stageRight = left + cols * CARD.w + (cols - 1) * gap;
     const signW = withSign ? 220 : 0;
@@ -376,7 +416,8 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     const rowY = withSign ? sign!.y + sign!.h + M : Math.max(top, HOME_CORNER.h + M);
     const rowW = n * CARD.w + (n - 1) * gap;
     const rowX = Math.max(withSign ? M : HOME_CORNER.w + M, (v.w - rowW) / 2);
-    for (let i = 0; i < n; i++) fixtures.push({ x: rowX + i * (CARD.w + gap), y: rowY, w: CARD.w, h: CARD.h });
+    for (let i = 0; i < n; i++)
+      fixtures.push({ x: rowX + i * (CARD.w + gap), y: rowY, w: CARD.w, h: CARD.h });
     const by = v.h - PET_CORNER.h - M - SEND.h / 2;
     const mTop = rowY + CARD.h + M;
     const mBottom = by - SEND.h / 2 - M;
@@ -392,9 +433,16 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     }
     send = { x: slow.x - 24 - SEND.w, y: by - SEND.h / 2, w: SEND.w, h: SEND.h };
   }
-  const slot: Rect | null = withSign ? { x: machine.x + machine.w / 2 - SLOT / 2, y: machine.y + 24, w: SLOT, h: SLOT } : null;
+  const slot: Rect | null = withSign
+    ? { x: machine.x + machine.w / 2 - SLOT / 2, y: machine.y + 24, w: SLOT, h: SLOT }
+    : null;
   const doorTop = slot ? slot.y + slot.h + 36 : machine.y + 70;
-  const door: Rect = { x: machine.x + machine.w / 2 - 80, y: doorTop, w: 160, h: Math.max(150, machine.y + machine.h - 16 - doorTop) };
+  const door: Rect = {
+    x: machine.x + machine.w / 2 - 80,
+    y: doorTop,
+    w: 160,
+    h: Math.max(150, machine.y + machine.h - 16 - doorTop),
+  };
   const picks: Rect[] = [];
   if (slot) {
     const c = centre(slot);
@@ -402,7 +450,16 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     const py = slot.y + slot.h + 12;
     for (let i = 0; i < 2; i++) picks.push({ x: c.x - pw / 2 + i * (PICK + 20), y: py, w: PICK, h: PICK });
   }
-  const parts = [...fixtures, machine, send, slow, ...(sign ? [sign] : []), ...(check ? [check] : []), ...(done ? [done] : []), ...(undo ? [undo] : [])];
+  const parts = [
+    ...fixtures,
+    machine,
+    send,
+    slow,
+    ...(sign ? [sign] : []),
+    ...(check ? [check] : []),
+    ...(done ? [done] : []),
+    ...(undo ? [undo] : []),
+  ];
   if (machine.h < 300) return null;
   if (!parts.every((p) => inside(p, v))) return null;
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;

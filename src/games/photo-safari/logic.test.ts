@@ -2,8 +2,43 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { photoSafari } from './index';
 import { stepLevel } from '../../progress/difficulty';
-import { CHANGED_PLAN, TRUE_PLAN, WHO_DOING_PLAN, planFor, TELL_WHICH_PLAN, TELL_BOTH_PLAN, chipsFor, chipPhrase, fits, fewestChips, judgeTell, sameChip, tellHint, toggleChip, ACTIONS, animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
-import { TODDLER_ACTIONS, actionsAt, changeScene, claimTruths, stillLine, changeLine, sentence, SPOTS as SPOT_LIST, PLACE_WORDS, type Spot } from './logic';
+import {
+  CHANGED_PLAN,
+  TRUE_PLAN,
+  WHO_DOING_PLAN,
+  planFor,
+  TELL_WHICH_PLAN,
+  TELL_BOTH_PLAN,
+  chipsFor,
+  chipPhrase,
+  fits,
+  fewestChips,
+  judgeTell,
+  sameChip,
+  tellHint,
+  toggleChip,
+  ACTIONS,
+  animalToTap,
+  describe,
+  makeScene,
+  matches,
+  PLANS,
+  request,
+  nearestSighting,
+  sightingPositions,
+} from './logic';
+import {
+  TODDLER_ACTIONS,
+  actionsAt,
+  changeScene,
+  claimTruths,
+  stillLine,
+  changeLine,
+  sentence,
+  SPOTS as SPOT_LIST,
+  PLACE_WORDS,
+  type Spot,
+} from './logic';
 
 group('Photo Safari', () => {
   it('always has exactly one animal matching the request, with distinct spots in the original modes', () => {
@@ -11,7 +46,8 @@ group('Photo Safari', () => {
       for (let seed = 1; seed <= 300; seed++) {
         const scene = makeScene(plan, new Rng(seed));
         expect(scene.sightings).toHaveLength(plan.animals);
-        if (plan.mode !== 'clues' && plan.mode !== 'both') expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(plan.animals);
+        if (plan.mode !== 'clues' && plan.mode !== 'both')
+          expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(plan.animals);
         if (plan.mode === 'snap') {
           expect(scene.target).toBe(-1);
           continue;
@@ -62,26 +98,34 @@ group('Photo Safari', () => {
   });
 
   it('keeps shared actors 150 units apart and gives each a 100-unit nearest-target area after resizing', () => {
-    for (const plan of [PLANS[4], PLANS[6]]) for (let seed = 1; seed <= 100; seed++) {
-      const scene = makeScene(plan, new Rng(seed));
-      for (const [w, h] of [[1024, 768], [1366, 768], [1024, 1366], [1180, 820]]) {
-        const positions = sightingPositions(scene.sightings, w, h);
-        positions.forEach((p, i) => {
-          expect(p.x).toBeGreaterThanOrEqual(150);
-          expect(p.x).toBeLessThanOrEqual(w - 95);
-          expect(p.y - 155).toBeGreaterThan(150);
-          for (let j = i + 1; j < positions.length; j++) expect(Math.hypot(p.x - positions[j].x, p.y - positions[j].y)).toBeGreaterThanOrEqual(150);
-          // Body centre and the entire boundary of a 100-unit target, even in the overlapping circles.
-          for (const radius of [0, 50, 75]) for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
-            const point = { x: p.x + radius * Math.cos(angle), y: p.y - 60 + radius * Math.sin(angle) };
-            expect(nearestSighting(positions, point)).toBe(i);
-            const reverse = [...positions].reverse();
-            expect(nearestSighting(reverse, point)).toBe(positions.length - 1 - i);
-          }
-        });
-        expect(nearestSighting(positions, { x: 0, y: 0 })).toBe(-1);
+    for (const plan of [PLANS[4], PLANS[6]])
+      for (let seed = 1; seed <= 100; seed++) {
+        const scene = makeScene(plan, new Rng(seed));
+        for (const [w, h] of [
+          [1024, 768],
+          [1366, 768],
+          [1024, 1366],
+          [1180, 820],
+        ]) {
+          const positions = sightingPositions(scene.sightings, w, h);
+          positions.forEach((p, i) => {
+            expect(p.x).toBeGreaterThanOrEqual(150);
+            expect(p.x).toBeLessThanOrEqual(w - 95);
+            expect(p.y - 155).toBeGreaterThan(150);
+            for (let j = i + 1; j < positions.length; j++)
+              expect(Math.hypot(p.x - positions[j].x, p.y - positions[j].y)).toBeGreaterThanOrEqual(150);
+            // Body centre and the entire boundary of a 100-unit target, even in the overlapping circles.
+            for (const radius of [0, 50, 75])
+              for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+                const point = { x: p.x + radius * Math.cos(angle), y: p.y - 60 + radius * Math.sin(angle) };
+                expect(nearestSighting(positions, point)).toBe(i);
+                const reverse = [...positions].reverse();
+                expect(nearestSighting(reverse, point)).toBe(positions.length - 1 - i);
+              }
+          });
+          expect(nearestSighting(positions, { x: 0, y: 0 })).toBe(-1);
+        }
       }
-    }
   });
 
   it('keeps swimming in water across every mode while offering every action', () => {
@@ -133,7 +177,8 @@ group('Photo Safari', () => {
           expect(i).toBeGreaterThanOrEqual(0);
           expect(i).toBeLessThan(scene.sightings.length);
           seen.add(i);
-          if (plan.mode !== 'snap') expect(scene.sightings.filter((s) => matches(plan.mode, s, scene.sightings[i]))).toHaveLength(1);
+          if (plan.mode !== 'snap')
+            expect(scene.sightings.filter((s) => matches(plan.mode, s, scene.sightings[i]))).toHaveLength(1);
         }
         expect(seen.size).toBe(plan.mode === 'snap' ? Math.min(plan.photos, plan.animals) : 1);
       }
@@ -144,75 +189,117 @@ group('Photo Safari', () => {
 group('telling a listener', () => {
   it('preserves IDs, reserved gaps and school difficulty order', () => {
     for (let i = 1; i <= 7; i++) expect(planFor(i)).toBe(PLANS[i - 1]);
-    expect(planFor(8)).toBe(CHANGED_PLAN); expect(planFor(9)).toBe(TRUE_PLAN); expect(planFor(12)).toBe(WHO_DOING_PLAN);
-    expect(planFor(10)).toBe(TELL_WHICH_PLAN); expect(planFor(11)).toBe(TELL_BOTH_PLAN);
+    expect(planFor(8)).toBe(CHANGED_PLAN);
+    expect(planFor(9)).toBe(TRUE_PLAN);
+    expect(planFor(12)).toBe(WHO_DOING_PLAN);
+    expect(planFor(10)).toBe(TELL_WHICH_PLAN);
+    expect(planFor(11)).toBe(TELL_BOTH_PLAN);
     const range = photoSafari.levels('school');
     expect(range).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
-    expect(stepLevel(7, 1, range)).toBe(8); expect(stepLevel(10, -1, range)).toBe(9);
+    expect(stepLevel(7, 1, range)).toBe(8);
+    expect(stepLevel(10, -1, range)).toBe(9);
   });
   it('speaks doing words before place words regardless of selection order', () => {
-    expect(chipPhrase([{ kind: 'spot', value: 'pond' }, { kind: 'action', value: 'jumping' }])).toBe('jumping in the pond');
+    expect(
+      chipPhrase([
+        { kind: 'spot', value: 'pond' },
+        { kind: 'action', value: 'jumping' },
+      ]),
+    ).toBe('jumping in the pond');
   });
-  for (const level of [10, 11]) it(`level ${level}: fair scenes, all descriptions, solver and supported revision over 250 seeds`, () => {
-    const uniqueKinds = new Set<string>();
-    const seenResults = new Set<string>();
-    for (let seed = 1; seed <= 250; seed++) {
-      const rng = new Rng(seed), scene = makeScene(planFor(level), rng), chips = chipsFor(scene, rng);
-      expect(makeScene(planFor(level), new Rng(seed))).toEqual(scene);
-      expect(scene.sightings).toHaveLength(level === 10 ? 3 : 4);
-      expect(new Set(scene.sightings.map((s) => s.animal)).size).toBe(scene.sightings.length);
-      expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(2);
-      expect(new Set(scene.sightings.map((s) => s.action)).size).toBe(2);
-      expect(scene.sightings.some((s) => s.action === 'swimming')).toBe(false);
-      expect(chips).toHaveLength(4);
-      expect(chips.every((c) => scene.sightings.some((s) => s[c.kind] === c.value))).toBe(true);
-      const singles = chips.filter((c) => judgeTell([c], scene).result === 'right');
-      expect(singles).toHaveLength(level === 10 ? 1 : 0);
-      singles.forEach((c) => uniqueKinds.add(c.kind));
-      if (level === 11) for (const c of chips) expect(fits([c], scene.sightings)).toHaveLength(2);
-      expect(chips.some((c) => { const f = fits([c], scene.sightings); return f.length === 2 && f.includes(scene.target); })).toBe(true);
-      const solver = fewestChips(scene);
-      expect(solver).toHaveLength(level === 10 ? 1 : 2);
-      expect(judgeTell(solver, scene).result).toBe('right');
-      const pairs = chips.filter((c) => c.kind === 'action').flatMap((a) => chips.filter((c) => c.kind === 'spot').map((b) => [a, b]));
-      expect(pairs.filter((p) => judgeTell(p, scene).result === 'right')).toHaveLength(1);
-      const sets = [[], ...chips.map((c) => [c]), ...pairs];
-      expect(sets).toHaveLength(9);
-      for (const chosen of sets) {
-        // Independent truth table, including empty words and surplus truthful words.
-        const found = scene.sightings.flatMap((s, i) => chosen.every((c) => s[c.kind] === c.value) ? [i] : []);
-        const expected = !chosen.length ? 'empty' : !found.length ? 'nobody' : found.includes(scene.target)
-          ? found.length === 1 ? 'right' : 'too-little' : found.length === 1 ? 'other' : 'other-many';
-        const judged = judgeTell(chosen, scene);
-        expect(judged).toEqual({ result: expected, fits: found }); seenResults.add(expected);
-        if (expected === 'too-little' || expected === 'other-many') expect(found).toHaveLength(2);
-        const hint = tellHint(chosen, scene);
-        expect(judgeTell([...hint.chosen, ...hint.glow], scene).result).toBe('right');
-        expect(hint.glow.every((c) => !hint.chosen.some((k) => sameChip(c, k)))).toBe(true);
-        for (const chip of chips) {
-          const toggled = toggleChip(chosen, chip);
-          expect(new Set(toggled.map((c) => c.kind)).size).toBe(toggled.length);
-          expect(toggled.some((c) => sameChip(c, chip))).toBe(!chosen.some((c) => sameChip(c, chip)));
+  for (const level of [10, 11])
+    it(`level ${level}: fair scenes, all descriptions, solver and supported revision over 250 seeds`, () => {
+      const uniqueKinds = new Set<string>();
+      const seenResults = new Set<string>();
+      for (let seed = 1; seed <= 250; seed++) {
+        const rng = new Rng(seed),
+          scene = makeScene(planFor(level), rng),
+          chips = chipsFor(scene, rng);
+        expect(makeScene(planFor(level), new Rng(seed))).toEqual(scene);
+        expect(scene.sightings).toHaveLength(level === 10 ? 3 : 4);
+        expect(new Set(scene.sightings.map((s) => s.animal)).size).toBe(scene.sightings.length);
+        expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(2);
+        expect(new Set(scene.sightings.map((s) => s.action)).size).toBe(2);
+        expect(scene.sightings.some((s) => s.action === 'swimming')).toBe(false);
+        expect(chips).toHaveLength(4);
+        expect(chips.every((c) => scene.sightings.some((s) => s[c.kind] === c.value))).toBe(true);
+        const singles = chips.filter((c) => judgeTell([c], scene).result === 'right');
+        expect(singles).toHaveLength(level === 10 ? 1 : 0);
+        singles.forEach((c) => uniqueKinds.add(c.kind));
+        if (level === 11) for (const c of chips) expect(fits([c], scene.sightings)).toHaveLength(2);
+        expect(
+          chips.some((c) => {
+            const f = fits([c], scene.sightings);
+            return f.length === 2 && f.includes(scene.target);
+          }),
+        ).toBe(true);
+        const solver = fewestChips(scene);
+        expect(solver).toHaveLength(level === 10 ? 1 : 2);
+        expect(judgeTell(solver, scene).result).toBe('right');
+        const pairs = chips
+          .filter((c) => c.kind === 'action')
+          .flatMap((a) => chips.filter((c) => c.kind === 'spot').map((b) => [a, b]));
+        expect(pairs.filter((p) => judgeTell(p, scene).result === 'right')).toHaveLength(1);
+        const sets = [[], ...chips.map((c) => [c]), ...pairs];
+        expect(sets).toHaveLength(9);
+        for (const chosen of sets) {
+          // Independent truth table, including empty words and surplus truthful words.
+          const found = scene.sightings.flatMap((s, i) =>
+            chosen.every((c) => s[c.kind] === c.value) ? [i] : [],
+          );
+          const expected = !chosen.length
+            ? 'empty'
+            : !found.length
+              ? 'nobody'
+              : found.includes(scene.target)
+                ? found.length === 1
+                  ? 'right'
+                  : 'too-little'
+                : found.length === 1
+                  ? 'other'
+                  : 'other-many';
+          const judged = judgeTell(chosen, scene);
+          expect(judged).toEqual({ result: expected, fits: found });
+          seenResults.add(expected);
+          if (expected === 'too-little' || expected === 'other-many') expect(found).toHaveLength(2);
+          const hint = tellHint(chosen, scene);
+          expect(judgeTell([...hint.chosen, ...hint.glow], scene).result).toBe('right');
+          expect(hint.glow.every((c) => !hint.chosen.some((k) => sameChip(c, k)))).toBe(true);
+          for (const chip of chips) {
+            const toggled = toggleChip(chosen, chip);
+            expect(new Set(toggled.map((c) => c.kind)).size).toBe(toggled.length);
+            expect(toggled.some((c) => sameChip(c, chip))).toBe(!chosen.some((c) => sameChip(c, chip)));
+          }
+        }
+        for (const [w, h] of [
+          [1024, 768],
+          [1024, 1365],
+        ]) {
+          const ground = Math.min(h * 0.78, h - 200);
+          const points = sightingPositions(scene.sightings, w, h, ground);
+          points.forEach((p, i) => {
+            expect(p.y).toBeLessThan(h - 138);
+            for (const q of points.slice(i + 1))
+              expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(150);
+          });
         }
       }
-      for (const [w, h] of [[1024, 768], [1024, 1365]]) {
-        const ground = Math.min(h * 0.78, h - 200);
-        const points = sightingPositions(scene.sightings, w, h, ground);
-        points.forEach((p, i) => {
-          expect(p.y).toBeLessThan(h - 138);
-          for (const q of points.slice(i + 1)) expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(150);
-        });
-      }
-    }
-    expect([...seenResults].sort()).toEqual((level === 10 ? ['empty', 'right', 'too-little', 'other', 'other-many', 'nobody'] : ['empty', 'right', 'too-little', 'other', 'other-many']).sort());
-    if (level === 10) expect([...uniqueKinds].sort()).toEqual(['action', 'spot']);
-  });
+      expect([...seenResults].sort()).toEqual(
+        (level === 10
+          ? ['empty', 'right', 'too-little', 'other', 'other-many', 'nobody']
+          : ['empty', 'right', 'too-little', 'other', 'other-many']
+        ).sort(),
+      );
+      if (level === 10) expect([...uniqueKinds].sort()).toEqual(['action', 'spot']);
+    });
 });
 
 group('Photo Safari levels 8, 9 and 12 rules', () => {
   const SEEDS = 400;
-  const diffKeys = (a: { animal: string; action: string; spot: string }, b: { animal: string; action: string; spot: string }) =>
-    (['animal', 'action', 'spot'] as const).filter((k) => a[k] !== b[k]);
+  const diffKeys = (
+    a: { animal: string; action: string; spot: string },
+    b: { animal: string; action: string; spot: string },
+  ) => (['animal', 'action', 'spot'] as const).filter((k) => a[k] !== b[k]);
 
   it('act: three friends, three places, three toddler actions, the doing word alone decides', () => {
     for (let seed = 1; seed <= SEEDS; seed++) {
@@ -246,7 +333,10 @@ group('Photo Safari levels 8, 9 and 12 rules', () => {
         expect(changedIdx).toEqual([scene.target]);
         const diff = diffKeys(scene.sightings[scene.target], before[scene.target]);
         expect(diff).toEqual([scene.change]);
-        scene.sightings.forEach((s, i) => { expect(s.animal).toBe(before[i].animal); expect(actionsAt(s.spot)).toContain(s.action); });
+        scene.sightings.forEach((s, i) => {
+          expect(s.animal).toBe(before[i].animal);
+          expect(actionsAt(s.spot)).toContain(s.action);
+        });
         if (round < 2) expect(scene.change).toBe('action');
         else {
           const free = SPOTS_FREE(before);
@@ -255,11 +345,17 @@ group('Photo Safari levels 8, 9 and 12 rules', () => {
           if (scene.change === 'spot') expect(scene.sightings[scene.target].spot).toBe(free);
         }
         kinds.add(`${round}:${scene.change}`);
-        const was = before[scene.target], now = scene.sightings[scene.target];
+        const was = before[scene.target],
+          now = scene.sightings[scene.target];
         const line = changeLine(scene);
         expect(line).toContain(now.animal);
-        if (scene.change === 'spot') { expect(line).toContain(PLACE_WORDS[was.spot]); expect(line).toContain(PLACE_WORDS[now.spot]); }
-        else { expect(line).toContain(was.action); expect(line).toContain(now.action); }
+        if (scene.change === 'spot') {
+          expect(line).toContain(PLACE_WORDS[was.spot]);
+          expect(line).toContain(PLACE_WORDS[now.spot]);
+        } else {
+          expect(line).toContain(was.action);
+          expect(line).toContain(now.action);
+        }
         scene.sightings.forEach((_, i) => {
           const still = stillLine(scene, i);
           expect(still).toContain('still');
@@ -301,7 +397,8 @@ group('Photo Safari levels 8, 9 and 12 rules', () => {
         const scene = makeScene(TRUE_PLAN, new Rng(seed), 0, truthy);
         expect(makeScene(TRUE_PLAN, new Rng(seed), 0, truthy)).toEqual(scene);
         expect(scene.truthy).toBe(truthy);
-        const t = scene.sightings[scene.target], claim = scene.claim!;
+        const t = scene.sightings[scene.target],
+          claim = scene.claim!;
         expect(scene.sightings).toHaveLength(3);
         expect(new Set(scene.sightings.map((s) => s.animal)).size).toBe(3);
         expect(claim.animal).toBe(t.animal);
@@ -310,11 +407,16 @@ group('Photo Safari levels 8, 9 and 12 rules', () => {
         expect(request('true', scene)).toBe(sentence(claim));
         const diff = diffKeys(claim, t);
         if (truthy) expect(claim).toEqual(t);
-        else { expect(diff).toHaveLength(1); expect(['action', 'spot']).toContain(diff[0]); falseKinds.add(diff[0]); }
+        else {
+          expect(diff).toHaveLength(1);
+          expect(['action', 'spot']).toContain(diff[0]);
+          falseKinds.add(diff[0]);
+        }
       }
     }
     expect([...falseKinds].sort()).toEqual(['action', 'spot']);
   });
 });
 
-const SPOTS_FREE = (before: { spot: Spot }[]): Spot => SPOT_LIST.find((s) => !before.some((b) => b.spot === s))!;
+const SPOTS_FREE = (before: { spot: Spot }[]): Spot =>
+  SPOT_LIST.find((s) => !before.some((b) => b.spot === s))!;

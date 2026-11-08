@@ -39,7 +39,9 @@ export class Shelf extends Container implements Updatable {
       .stroke({ width: 3, color: wood.line });
     panel.eventMode = 'none';
     // A heart set into the plank says what the shelf is without a word.
-    const heart = shapePath(new Graphics(), 'heart', 8).fill(swatch.pink.fill).stroke({ width: 2, color: swatch.pink.line });
+    const heart = shapePath(new Graphics(), 'heart', 8)
+      .fill(swatch.pink.fill)
+      .stroke({ width: 2, color: swatch.pink.line });
     heart.position.set(0, 10);
     heart.eventMode = 'none';
     this.addChild(panel, heart);
@@ -52,7 +54,12 @@ export class Shelf extends Container implements Updatable {
       icon.position.set(-(b.x + b.width / 2) * s, -(b.y + b.height) * s);
       icon.eventMode = 'none';
       const node = new Container();
-      node.addChild(new Graphics().ellipse(0, 0, Math.min(52, (b.width * s) / 2 + 12), 9).fill({ color: swatch.green.line, alpha: 0.18 }), icon);
+      node.addChild(
+        new Graphics()
+          .ellipse(0, 0, Math.min(52, (b.width * s) / 2 + 12), 9)
+          .fill({ color: swatch.green.line, alpha: 0.18 }),
+        icon,
+      );
       node.position.set((i - (mods.length - 1) / 2) * SHELF_PITCH, 0);
       onTap(node, () => pick(item));
       node.hitArea = new Rectangle(-SHELF_PITCH / 2 + 4, -PANEL_H + 4, SHELF_PITCH - 8, PANEL_H + 12);

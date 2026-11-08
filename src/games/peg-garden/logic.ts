@@ -25,7 +25,12 @@ export const PLANS: PegPlan[] = [
   { mode: 'number', pegs: 14, count: 5, name: 'Aim the launcher to hit a numbered flower: "hit 3"' },
   { mode: 'order', pegs: 14, count: 3, name: 'Hit numbered flowers 1, 2, 3 in order' },
   { mode: 'cup', pegs: 12, count: 3, name: 'Into the cup: aim the pearl into the cup with that many dots' },
-  { mode: 'plant', pegs: 11, count: 2, name: 'Plant a bud: drag a seed onto a marked spot so the dropped pearl rolls into the cup' },
+  {
+    mode: 'plant',
+    pegs: 11,
+    count: 2,
+    name: 'Plant a bud: drag a seed onto a marked spot so the dropped pearl rolls into the cup',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -37,9 +42,15 @@ export const LEVELS: BandLevels = {
 
 /** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
 export const BIG_LEVEL = 8;
-export const BIG_PLAN: PegPlan = { mode: 'big', pegs: 4, count: 0, name: 'Four huge flowers: any pearl that touches one makes it bloom' };
+export const BIG_PLAN: PegPlan = {
+  mode: 'big',
+  pegs: 4,
+  count: 0,
+  name: 'Four huge flowers: any pearl that touches one makes it bloom',
+};
 
-export const planFor = (level: number) => (level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
+export const planFor = (level: number) =>
+  level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** The huge buds' radius: nearly three plain buds across, so a pearl dropped anywhere near one touches it. */
 export const BIG_PEG = 60;
@@ -102,12 +113,19 @@ export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
 export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
   if (plan.mode === 'big') return BIG_SPOTS.map((p): PegSpot => ({ ...p, kind: 'plain', r: BIG_PEG }));
   // Into the cup and Plant a bud keep their buds a pearl's width above the cups along the sand.
-  const places = plan.mode === 'cup' || plan.mode === 'plant' ? grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP) : grid(shape);
-  const spots = rng.shuffle(places).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
+  const places =
+    plan.mode === 'cup' || plan.mode === 'plant'
+      ? grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP)
+      : grid(shape);
+  const spots = rng
+    .shuffle(places)
+    .slice(0, plan.pegs)
+    .map((p): PegSpot => ({ ...p, kind: 'plain' }));
   // Specials and numbers sit in the middle rows, where an aimed shot can reach them.
   const reachable = rng.shuffle(spots.filter((s) => s.x > 80 && s.x < BOARD.w - 80));
   if (plan.mode === 'color') reachable.slice(0, plan.count).forEach((s) => (s.kind = 'special'));
-  if (plan.mode === 'number' || plan.mode === 'order') reachable.slice(0, plan.count).forEach((s, i) => (s.kind = i + 1));
+  if (plan.mode === 'number' || plan.mode === 'order')
+    reachable.slice(0, plan.count).forEach((s, i) => (s.kind = i + 1));
   return spots;
 }
 
@@ -132,7 +150,10 @@ export const blooms = (kind: PegSpot['kind'], mode: PegMode, target: number | un
 export const TRAY = { slots: 12, gap: 26, y: BOARD.h - 15 };
 
 /** Where the `i`th finished pearl sits in the tray (pearls past the last slot wait in it). */
-export const traySlot = (i: number) => ({ x: BOARD.w / 2 + (Math.min(i, TRAY.slots - 1) - (TRAY.slots - 1) / 2) * TRAY.gap, y: TRAY.y });
+export const traySlot = (i: number) => ({
+  x: BOARD.w / 2 + (Math.min(i, TRAY.slots - 1) - (TRAY.slots - 1) / 2) * TRAY.gap,
+  y: TRAY.y,
+});
 
 /** The numbers to aim for, one per shot. Order levels count up from 1. */
 export function targets(plan: PegPlan, rng: Rng): number[] {
@@ -155,8 +176,20 @@ export function aimVelocity(angle: number) {
  * An angle near `near` whose shot touches bud `want`, preferring one whose neighbours a hair either side touch it too (the
  * couch bot and the ghost finger both aim with it), or null if no angle does. A shot is exact, so a lone angle still works.
  */
-export function aimAt(world: BallWorld, want: number, near: number, margins: readonly number[] = [0.012, 0.005, 0]): number | null {
-  const hits = (a: number) => simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, world, BOARD.h, 12, 1 / 30).hits.includes(want);
+export function aimAt(
+  world: BallWorld,
+  want: number,
+  near: number,
+  margins: readonly number[] = [0.012, 0.005, 0],
+): number | null {
+  const hits = (a: number) =>
+    simulate(
+      { x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball },
+      world,
+      BOARD.h,
+      12,
+      1 / 30,
+    ).hits.includes(want);
   const angles: number[] = [];
   for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.01) angles.push(a);
   for (const m of margins) {
@@ -180,20 +213,34 @@ export const DRIFT = 20;
  * with none counts against her (`early`), the one that touches it soonest, since a pearl is least certain after many bounces,
  * and otherwise the one that touches most. Ties go to the middle.
  */
-export function dropAt(world: BallWorld, wanted: (bud: number) => boolean, drift: number, early = false): { x: number; sure: boolean } {
+export function dropAt(
+  world: BallWorld,
+  wanted: (bud: number) => boolean,
+  drift: number,
+  early = false,
+): { x: number; sure: boolean } {
   const xs: number[] = [];
   for (let x = BOARD.ball + 2; x <= BOARD.w - BOARD.ball - 2; x += 4) xs.push(x);
   xs.sort((a, b) => Math.abs(a - BOARD.w / 2) - Math.abs(b - BOARD.w / 2));
   // What each place is worth, best first when compared in turn.
   const worth = (x: number) => {
     const tries = [-2, 0, 2].map((off) => {
-      const hits = simulate({ x: x + off, y: 40, vx: drift, vy: 60, r: BOARD.ball }, world, BOARD.h, 12, 1 / 30).hits;
+      const hits = simulate(
+        { x: x + off, y: 40, vx: drift, vy: 60, r: BOARD.ball },
+        world,
+        BOARD.h,
+        12,
+        1 / 30,
+      ).hits;
       const first = hits.findIndex(wanted);
       return { count: hits.filter(wanted).length, first: first < 0 ? Infinity : first };
     });
     const floor = Math.min(...tries.map((t) => t.count));
     const sum = tries.reduce((a, t) => a + t.count, 0);
-    return { floor, key: early ? [floor > 0 ? 1 : 0, -Math.max(...tries.map((t) => t.first)), sum] : [floor, sum] };
+    return {
+      floor,
+      key: early ? [floor > 0 ? 1 : 0, -Math.max(...tries.map((t) => t.first)), sum] : [floor, sum],
+    };
   };
   const beats = (a: number[], b: number[]) => {
     for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] > b[i];
@@ -221,7 +268,8 @@ export const ledgeX = (x: number) => Math.max(BOARD.ball, Math.min(BOARD.w - BOA
  * `STALL_AT` pearls in a row that woke nothing wanted, and on the colour level while its hint is on.
  */
 export const guided = (mode: PegMode, stalled: number, hinting: boolean) =>
-  (mode === 'bloom' || mode === 'big' || mode === 'color') && (stalled >= STALL_AT || (mode === 'color' && hinting));
+  (mode === 'bloom' || mode === 'big' || mode === 'color') &&
+  (stalled >= STALL_AT || (mode === 'color' && hinting));
 
 // Level 6, Into the cup ------------------------------------------------------------------------------------------------
 
@@ -242,11 +290,23 @@ export const SAMPLE = 1 / 30;
 export const CUP_STEP = 0.005;
 export const CUP_MARGIN = 0.012;
 
-export const worldOf = (spots: PegSpot[]): BallWorld => ({ pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r ?? BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 });
+export const worldOf = (spots: PegSpot[]): BallWorld => ({
+  pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r ?? BOARD.peg })),
+  left: 0,
+  right: BOARD.w,
+  gravity: 900,
+  bounce: 0.62,
+});
 
 /** Where an aimed shot ends up: the cup it falls into, or null when it is still on the board at the cutoff. */
 export function landing(world: BallWorld, angle: number): number | null {
-  const { landed } = simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(angle), r: BOARD.ball }, world, BOARD.h, CUTOFF, SAMPLE);
+  const { landed } = simulate(
+    { x: BOARD.w / 2, y: 40, ...aimVelocity(angle), r: BOARD.ball },
+    world,
+    BOARD.h,
+    CUTOFF,
+    SAMPLE,
+  );
   return landed.y - BOARD.ball >= BOARD.h ? cupAt(landed.x) : null;
 }
 
@@ -264,7 +324,11 @@ export function landingTable(world: BallWorld): { angle: number; cup: number | n
  * side land there too, checked by fresh shots since a shot between samples can bounce anywhere. Aims nearest the middle of
  * the widest run of samples in that cup are tried first; null when none has the margin.
  */
-export function aimInto(world: BallWorld, table: { angle: number; cup: number | null }[], cup: number): number | null {
+export function aimInto(
+  world: BallWorld,
+  table: { angle: number; cup: number | null }[],
+  cup: number,
+): number | null {
   const runs: { from: number; to: number }[] = [];
   for (let i = 0; i < table.length; i++) {
     if (table[i].cup !== cup) continue;
@@ -296,7 +360,12 @@ export function aimInto(world: BallWorld, table: { angle: number; cup: number | 
 export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
   let spots = makeBoard(plan, rng, shape);
   let table = landingTable(worldOf(spots));
-  for (let tries = 0; tries < 30 && !Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(spots), table, c)).every((a) => a !== null); tries++) {
+  for (
+    let tries = 0;
+    tries < 30 &&
+    !Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(spots), table, c)).every((a) => a !== null);
+    tries++
+  ) {
     spots = makeBoard(plan, rng, shape);
     table = landingTable(worldOf(spots));
   }
@@ -304,7 +373,10 @@ export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
   // Only a cup some aim reaches with room to spare is ever asked for (every cup, unless thirty boards in a row failed).
   const world = worldOf(spots);
   const reachable = dots.filter((_, c) => aimInto(world, table, c) !== null);
-  const asks = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1)).filter((n) => reachable.includes(n)).slice(0, plan.count);
+  const asks = rng
+    .shuffle(Array.from({ length: CUPS }, (_, i) => i + 1))
+    .filter((n) => reachable.includes(n))
+    .slice(0, plan.count);
   return { spots, table, dots, asks };
 }
 
@@ -354,19 +426,32 @@ export function makePlantRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
     const spots = makeBoard(plan, rng, shape);
     const taken = (p: Place) => spots.some((s) => Math.hypot(s.x - p.x, s.y - p.y) < 1);
     const places: Place[] = [];
-    for (const p of rng.shuffle(grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP && !taken(p)))) {
-      if (places.length < PLACES && places.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= PLACE_GAP)) places.push(p);
+    for (const p of rng.shuffle(
+      grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP && !taken(p)),
+    )) {
+      if (places.length < PLACES && places.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= PLACE_GAP))
+        places.push(p);
     }
     const dropX = Math.round(rng.range(DROP_RANGE.min, DROP_RANGE.max));
     if (places.length < 3) continue;
-    const runs = plantings(places.length).map((ix) => ({ ix, cup: plantRun(spots, ix.map((i) => places[i]), dropX) }));
+    const runs = plantings(places.length).map((ix) => ({
+      ix,
+      cup: plantRun(
+        spots,
+        ix.map((i) => places[i]),
+        dropX,
+      ),
+    }));
     if (runs.some((r) => r.cup === null)) continue;
     const bare = runs[0].cup;
     const singles = runs.filter((r) => r.ix.length === 1 && r.cup !== bare);
     if (!singles.length) continue;
     const cup = rng.pick(singles).cup!;
     // The hint is the place whose single bud reaches the cup nearest under the drop, where it is easiest to see.
-    const hint = singles.filter((r) => r.cup === cup).map((r) => r.ix[0]).sort((a, b) => Math.abs(places[a].x - dropX) - Math.abs(places[b].x - dropX))[0];
+    const hint = singles
+      .filter((r) => r.cup === cup)
+      .map((r) => r.ix[0])
+      .sort((a, b) => Math.abs(places[a].x - dropX) - Math.abs(places[b].x - dropX))[0];
     return { spots, dropX, places, cup, hint };
   }
   // Eighty failed boards in a row never happen on the shipped shapes (a rule test grows hundreds); this keeps the type total.
@@ -374,11 +459,17 @@ export function makePlantRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
 }
 
 /** The marked place a let-go seed snaps onto: the nearest free place within `SNAP`, or null to go back to the tray. */
-export function snapPlace(places: Place[], x: number, y: number, taken: (i: number) => boolean): number | null {
+export function snapPlace(
+  places: Place[],
+  x: number,
+  y: number,
+  taken: (i: number) => boolean,
+): number | null {
   let best: number | null = null;
   places.forEach((p, i) => {
     const d = Math.hypot(p.x - x, p.y - y);
-    if (d <= SNAP && !taken(i) && (best === null || d < Math.hypot(places[best].x - x, places[best].y - y))) best = i;
+    if (d <= SNAP && !taken(i) && (best === null || d < Math.hypot(places[best].x - x, places[best].y - y)))
+      best = i;
   });
   return best;
 }

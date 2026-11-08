@@ -2,10 +2,56 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  applyPull, authored, bestRig, cardSpots, CARD, circleBox, crateBottom, crateHook, CRATE_H, endsRight, fallbackRound, FRIENDS, friendBox, guessCards,
-  handleAt, HANDLE_HIT, HOOK_HIT, hooksOf, KNOT, knotsCards, ledgeSpots, liftLayout, lineFits, makeRound, paws, pawsCards, petCorner,
-  PARCELS, parcelsFor, pawSpots, PAW_HALF, PLANS, planFor, pullDirection, pullers, pullersAt, ratio, rectsOverlap, rigOf, RIGS, rigsFor, roundFits, shellButtons, travel, TRAY_HIT,
-  wheels, workingRigs, works, type Line, type Rect,
+  applyPull,
+  authored,
+  bestRig,
+  cardSpots,
+  CARD,
+  circleBox,
+  crateBottom,
+  crateHook,
+  CRATE_H,
+  endsRight,
+  fallbackRound,
+  FRIENDS,
+  friendBox,
+  guessCards,
+  handleAt,
+  HANDLE_HIT,
+  HOOK_HIT,
+  hooksOf,
+  KNOT,
+  knotsCards,
+  ledgeSpots,
+  liftLayout,
+  lineFits,
+  makeRound,
+  paws,
+  pawsCards,
+  petCorner,
+  PARCELS,
+  parcelsFor,
+  pawSpots,
+  PAW_HALF,
+  PLANS,
+  planFor,
+  pullDirection,
+  pullers,
+  pullersAt,
+  ratio,
+  rectsOverlap,
+  rigOf,
+  RIGS,
+  rigsFor,
+  roundFits,
+  shellButtons,
+  travel,
+  TRAY_HIT,
+  wheels,
+  workingRigs,
+  works,
+  type Line,
+  type Rect,
 } from './logic';
 
 const VIEWS = {
@@ -15,7 +61,15 @@ const VIEWS = {
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
 
-const line = (w: number, h: number, g: number, l: number, ask?: Line['ask']): Line => ({ w, h, g, l, waiting: 'bunny', puller: 'bear', ask });
+const line = (w: number, h: number, g: number, l: number, ask?: Line['ask']): Line => ({
+  w,
+  h,
+  g,
+  l,
+  waiting: 'bunny',
+  puller: 'bear',
+  ask,
+});
 
 describe('the rule', () => {
   it('two strands halve the pull and double the rope; the branch wheel only turns it around', () => {
@@ -49,7 +103,11 @@ describe('the rule', () => {
           const best = bestRig(ln);
           if (best) {
             expect(workingRigs(ln)).toContain(best);
-            const fewest = Math.min(...workingRigs(ln).filter((r) => r !== 'direct').map(wheels));
+            const fewest = Math.min(
+              ...workingRigs(ln)
+                .filter((r) => r !== 'direct')
+                .map(wheels),
+            );
             if (best !== 'direct') expect(wheels(best)).toBe(fewest);
           }
         }
@@ -150,24 +208,33 @@ describe('plans and rounds', () => {
 
 describe('fresh content', () => {
   it('the authored first lines are unchanged', () => {
-    const nums = (p: number) => authored(planFor(p)).map(({ w, h, g, l, waiting, puller, ask }) => [w, h, g, l, waiting, puller, ask]);
+    const nums = (p: number) =>
+      authored(planFor(p)).map(({ w, h, g, l, waiting, puller, ask }) => [w, h, g, l, waiting, puller, ask]);
     expect(nums(1)).toEqual([[1, 2, 1, 0, 'bunny', 'duck', undefined]]);
     expect(nums(2)).toEqual([[2, 2, 2, 0, 'frog', 'mouse', undefined]]);
     expect(nums(3)).toEqual([[4, 2, 2, 2, 'bunny', 'bear', undefined]]);
     expect(nums(4)).toEqual([[4, 1, 2, 2, 'duck', 'bear', undefined]]);
-    expect(nums(5)).toEqual([[4, 2, 3, 0, 'bunny', 'mouse', 'ground'], [2, 2, 0, 2, 'duck', 'frog', 'ledge']]);
+    expect(nums(5)).toEqual([
+      [4, 2, 3, 0, 'bunny', 'mouse', 'ground'],
+      [2, 2, 0, 2, 'duck', 'frog', 'ledge'],
+    ]);
     expect(nums(6)).toEqual([[6, 3, 3, 0, 'frog', 'bear', 'ground']]);
     // The definition's first parcel: a crate of apples.
     expect(authored(planFor(1))[0].parcel).toBe('apples');
   });
 
   it('a parcel always agrees with its stones: light things on 1–2, heavy on 3–6', () => {
-    for (let w = 1; w <= 6; w++) for (const p of PARCELS) expect(lineFits(planFor(4), { ...line(w, 1, 3, 2), parcel: p })).toBe(w >= 2 && w <= 4 && parcelsFor(w).includes(p));
-    for (const p of PLANS) for (const l of [...authored(p), ...fallbackRound(p)]) {
-      expect(l.parcel).toBeDefined();
-      expect(parcelsFor(l.w)).toContain(l.parcel);
-      expect(lineFits(p, l)).toBe(true);
-    }
+    for (let w = 1; w <= 6; w++)
+      for (const p of PARCELS)
+        expect(lineFits(planFor(4), { ...line(w, 1, 3, 2), parcel: p })).toBe(
+          w >= 2 && w <= 4 && parcelsFor(w).includes(p),
+        );
+    for (const p of PLANS)
+      for (const l of [...authored(p), ...fallbackRound(p)]) {
+        expect(l.parcel).toBeDefined();
+        expect(parcelsFor(l.w)).toContain(l.parcel);
+        expect(lineFits(p, l)).toBe(true);
+      }
     expect(roundFits(planFor(1), fallbackRound(planFor(1)))).toBe(true);
   });
 
@@ -207,7 +274,8 @@ describe('layout', () => {
     it(`fits the ${name} view at every ledge height`, () => {
       const L = liftLayout(v);
       const inside = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
-      const clear = (r: Rect) => !rectsOverlap(r, petCorner(v)) && shellButtons(v).every((b) => !rectsOverlap(r, b));
+      const clear = (r: Rect) =>
+        !rectsOverlap(r, petCorner(v)) && shellButtons(v).every((b) => !rectsOverlap(r, b));
       for (let h = 1; h <= 3; h++) {
         const ln = line(4, h, 3, 2);
         const ledge = ledgeSpots(L, v, h);
@@ -223,37 +291,53 @@ describe('layout', () => {
           expect(inside(t)).toBe(true);
           expect(clear(t)).toBe(true);
         }
-        for (let i = 0; i < targets.length; i++) for (let j = i + 1; j < targets.length; j++) expect(rectsOverlap(targets[i], targets[j])).toBe(false);
+        for (let i = 0; i < targets.length; i++)
+          for (let j = i + 1; j < targets.length; j++)
+            expect(rectsOverlap(targets[i], targets[j])).toBe(false);
         // The push handle on the crate is apart from the crate's hook and the other handles.
-        expect(rectsOverlap(circleBox(handleAt(L, v, 'direct', ln, 0), HANDLE_HIT), circleBox(L.groundHandle, HANDLE_HIT))).toBe(false);
+        expect(
+          rectsOverlap(
+            circleBox(handleAt(L, v, 'direct', ln, 0), HANDLE_HIT),
+            circleBox(L.groundHandle, HANDLE_HIT),
+          ),
+        ).toBe(false);
         // A stroke has room: down from the ground handle, up from the ledge handle.
         expect(v.h - L.groundHandle.y).toBeGreaterThanOrEqual(150);
         expect(ledge.handle.y - HANDLE_HIT).toBeGreaterThanOrEqual(60);
-        expect(Math.hypot(ledge.handle.x - ledge.waiting.x, ledge.handle.y - ledge.waiting.y)).toBeGreaterThanOrEqual(100);
+        expect(
+          Math.hypot(ledge.handle.x - ledge.waiting.x, ledge.handle.y - ledge.waiting.y),
+        ).toBeGreaterThanOrEqual(100);
         // Friends and the raised crate stay inside the view and clear of the pet and the buttons.
         for (const p of [...L.ground, ...ledge.pullers, ledge.waiting]) {
           expect(inside(friendBox(p))).toBe(true);
           expect(clear(friendBox(p))).toBe(true);
         }
         // The paw prints beside each handle stay in view and clear of every friend's face and both wheels.
-        const avoid = [...L.ground, ...ledge.pullers, ledge.waiting].map(friendBox).concat([circleBox(L.branchHook, 50), circleBox(crateHook(L, 0), 50)]);
-        for (const rig of RIGS) for (let n = 1; n <= 6; n++) {
-          const pts = pawSpots(v, handleAt(L, v, rig, ln, 0), n, avoid);
-          for (const p of pts) {
-            expect(inside(circleBox(p, PAW_HALF))).toBe(true);
-            if (rig !== 'direct') for (const a of avoid) expect(rectsOverlap(circleBox(p, PAW_HALF), a)).toBe(false);
+        const avoid = [...L.ground, ...ledge.pullers, ledge.waiting]
+          .map(friendBox)
+          .concat([circleBox(L.branchHook, 50), circleBox(crateHook(L, 0), 50)]);
+        for (const rig of RIGS)
+          for (let n = 1; n <= 6; n++) {
+            const pts = pawSpots(v, handleAt(L, v, rig, ln, 0), n, avoid);
+            for (const p of pts) {
+              expect(inside(circleBox(p, PAW_HALF))).toBe(true);
+              if (rig !== 'direct')
+                for (const a of avoid) expect(rectsOverlap(circleBox(p, PAW_HALF), a)).toBe(false);
+            }
           }
-        }
         const top = crateBottom(L, h) - CRATE_H;
         expect(top).toBeGreaterThan(0);
         // The two wheels never meet, even with the crate at the top.
-        expect(Math.hypot(crateHook(L, 3).x - L.branchHook.x, crateHook(L, 3).y - L.branchHook.y)).toBeGreaterThan(100);
+        expect(
+          Math.hypot(crateHook(L, 3).x - L.branchHook.x, crateHook(L, 3).y - L.branchHook.y),
+        ).toBeGreaterThan(100);
       }
-      for (const n of [2, 3]) for (const c of cardSpots(v, n)) {
-        const r = { x: c.x - CARD / 2, y: c.y - CARD / 2, w: CARD, h: CARD };
-        expect(inside(r)).toBe(true);
-        expect(clear(r)).toBe(true);
-      }
+      for (const n of [2, 3])
+        for (const c of cardSpots(v, n)) {
+          const r = { x: c.x - CARD / 2, y: c.y - CARD / 2, w: CARD, h: CARD };
+          expect(inside(r)).toBe(true);
+          expect(clear(r)).toBe(true);
+        }
     });
   }
 });

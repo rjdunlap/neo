@@ -1,7 +1,9 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.sprout-shuffle': ['Sprout Shuffle!'],
-  'sprout.give': ['Two plants, one new sprout. Give the sprout one copy from each plant: tap a copy under this plant, and one under that plant.'],
+  'sprout.give': [
+    'Two plants, one new sprout. Give the sprout one copy from each plant: tap a copy under this plant, and one under that plant.',
+  ],
   'sprout.other-plant': ['Good. Now one copy from the other plant.'],
   'sprout.spotted': ['Spotted! One spot copy is enough to make spots.'],
   'sprout.plain': ['Plain. Two plain copies make a plain sprout.'],
@@ -12,27 +14,41 @@ export const VOICE = {
   'sprout.choose-could': ['Which sprouts could these plants make? Choose every one, then tap the leaf.'],
   'sprout.card-spotted': ['A spotted sprout.'],
   'sprout.card-plain': ['A plain sprout.'],
-  'sprout.counter-plain': ['Look at this way: a plain copy and a plain copy. That makes a plain sprout, so plain can grow too.'],
-  'sprout.counter-spotted': ['Look at this way: it gives a spot copy. One spot copy is enough, so a spotted sprout can grow too.'],
+  'sprout.counter-plain': [
+    'Look at this way: a plain copy and a plain copy. That makes a plain sprout, so plain can grow too.',
+  ],
+  'sprout.counter-spotted': [
+    'Look at this way: it gives a spot copy. One spot copy is enough, so a spotted sprout can grow too.',
+  ],
   'sprout.glow': ['The glowing bud shows a sprout you have not chosen yet.'],
   'sprout.both-grow': ['Spotted or plain: both can grow. Nice work!'],
   'sprout.help.give': ['I gave this copy for you. It goes to its own slot.'],
   'sprout.help.open': ['I opened a bud for you. Look at its two copies.'],
   'sprout.help.build': ['This copy belongs to the closed bud. I tapped it for you.'],
   'sprout.help.choose': ['I chose every sprout these plants can make. Tap the leaf to check.'],
-  'sprout.both-spotted': ["Both plants are spotted. Let's see what their sprouts can be. Give the sprout one copy from each plant."],
-  'sprout.build-all': ['These two plants can make a sprout four ways. Tap the two glowing copies to grow each bud.'],
+  'sprout.both-spotted': [
+    "Both plants are spotted. Let's see what their sprouts can be. Give the sprout one copy from each plant.",
+  ],
+  'sprout.build-all': [
+    'These two plants can make a sprout four ways. Tap the two glowing copies to grow each bud.',
+  ],
   'sprout.next-bud': ['One way grown. Now the next bud.'],
   'sprout.choose-always': ['Will their sprouts always be spotted? Choose a card, then tap the leaf.'],
   'sprout.card-sometimes': ['Spotted sometimes. Plain can grow too.'],
   'sprout.card-always': ['Always spotted.'],
-  'sprout.counter-not-always': ['This way, each plant gives a plain copy. That sprout is plain, so spotted is not always.'],
+  'sprout.counter-not-always': [
+    'This way, each plant gives a plain copy. That sprout is plain, so spotted is not always.',
+  ],
   'sprout.sometimes-done': ['Spotted most ways, plain one way. Spotted can happen, but not always.'],
   'sprout.try-one': ['A seed takes one way, by chance. Try again and see which way the next one takes.'],
   'sprout.help.claim': ['I chose the card that fits every bud. Tap the leaf to check.'],
-  'sprout.bed-ask': ['Spotted sprouts for the whole bed, please. Every one! Choose every pair whose sprouts are always spotted, then tap the leaf. The magnifier shows a pair\'s four ways.'],
+  'sprout.bed-ask': [
+    "Spotted sprouts for the whole bed, please. Every one! Choose every pair whose sprouts are always spotted, then tap the leaf. The magnifier shows a pair's four ways.",
+  ],
   'sprout.pairs-fan': ['Here are the four ways this pair can make a sprout.'],
-  'sprout.pair-counter-plain': ['This way, both give a plain copy. That sprout is plain, so this pair is not always spotted.'],
+  'sprout.pair-counter-plain': [
+    'This way, both give a plain copy. That sprout is plain, so this pair is not always spotted.',
+  ],
   'sprout.pair-counter-spotted': ['Look at this pair: every way makes spots. It is always spotted too.'],
   'sprout.pairs-glow': ['The glowing pairs make a spotted sprout every way.'],
   'sprout.pairs-done': ['Those pairs can only make spotted sprouts. A bed full of spots!'],
@@ -41,19 +57,33 @@ export const VOICE = {
   'sprout.pair.AA-Aa': ['This plant has two spot copies, and that one has one spot copy and one plain copy.'],
   'sprout.pair.AA-aa': ['This plant has two spot copies, and that one has two plain copies.'],
   'sprout.pair.Aa-AA': ['This plant has one spot copy and one plain copy, and that one has two spot copies.'],
-  'sprout.pair.Aa-Aa': ['This plant has one spot copy and one plain copy, and that one has one spot copy and one plain copy.'],
-  'sprout.pair.Aa-aa': ['This plant has one spot copy and one plain copy, and that one has two plain copies.'],
+  'sprout.pair.Aa-Aa': [
+    'This plant has one spot copy and one plain copy, and that one has one spot copy and one plain copy.',
+  ],
+  'sprout.pair.Aa-aa': [
+    'This plant has one spot copy and one plain copy, and that one has two plain copies.',
+  ],
   'sprout.pair.aa-AA': ['This plant has two plain copies, and that one has two spot copies.'],
-  'sprout.pair.aa-Aa': ['This plant has two plain copies, and that one has one spot copy and one plain copy.'],
+  'sprout.pair.aa-Aa': [
+    'This plant has two plain copies, and that one has one spot copy and one plain copy.',
+  ],
   'sprout.pair.aa-aa': ['This plant has two plain copies, and that one has two plain copies.'],
-  'sprout.hidden-intro': ["This plant's copies are a secret. Let's grow its sprouts beside a plain plant and find out. Tap the watering can."],
-  'sprout.could-ask': ['Which copies could the hidden plant have? Choose every one that could, then tap the leaf.'],
+  'sprout.hidden-intro': [
+    "This plant's copies are a secret. Let's grow its sprouts beside a plain plant and find out. Tap the watering can.",
+  ],
+  'sprout.could-ask': [
+    'Which copies could the hidden plant have? Choose every one that could, then tap the leaf.',
+  ],
   'sprout.card-AA': ['Two spot copies.'],
   'sprout.card-Aa': ['One spot copy and one plain copy.'],
   'sprout.both-could': ["Both could. We can't tell yet. Tap the watering can to grow more sprouts."],
-  'sprout.plain-tells': ['A plain sprout! Two spot copies can never make a plain sprout. It has one spot copy.'],
+  'sprout.plain-tells': [
+    'A plain sprout! Two spot copies can never make a plain sprout. It has one spot copy.',
+  ],
   'sprout.still-both': ["All spotted, and still both could. Spotted sprouts can't tell us which."],
-  'sprout.counter-not-ruled-out': ["One spot copy can make spotted sprouts too. Those spotted sprouts don't rule it out."],
+  'sprout.counter-not-ruled-out': [
+    "One spot copy can make spotted sprouts too. Those spotted sprouts don't rule it out.",
+  ],
   'sprout.counter-fits': ['Two spot copies make spotted every way. Those sprouts fit.'],
   'sprout.counter-no-plain': ["No way here makes a plain sprout, so it can't be two spot copies."],
   'sprout.hidden-glow': ['The glowing cards fit every sprout on the label.'],
@@ -64,14 +94,24 @@ export const VOICE = {
   'sprout.try-plain-water': ['A plain sprout grew! Tap the watering can to grow the rest.'],
   'sprout.help.water': ['Tap the watering can to grow its sprouts.'],
   'sprout.help.hidden': ['I chose every card that fits the sprouts. Tap the leaf to check.'],
-  'sprout.tester-intro': ["This plant's copies are a secret. Which plant should we grow it with, to find out? Tap one to plant it, then tap the watering can."],
-  'sprout.tester-ask': ['Which plant should we grow it with? Tap one to plant it, then tap the watering can.'],
+  'sprout.tester-intro': [
+    "This plant's copies are a secret. Which plant should we grow it with, to find out? Tap one to plant it, then tap the watering can.",
+  ],
+  'sprout.tester-ask': [
+    'Which plant should we grow it with? Tap one to plant it, then tap the watering can.',
+  ],
   'sprout.card-aa': ['Two plain copies.'],
-  'sprout.tester-all-spotted': ["Spotted every way, whichever copies the hidden plant has. This plant can't tell us anything. Let's choose again."],
+  'sprout.tester-all-spotted': [
+    "Spotted every way, whichever copies the hidden plant has. This plant can't tell us anything. Let's choose again.",
+  ],
   'sprout.tester-couldnt': ["Even the plain plant couldn't tell us this time. Both still could."],
-  'sprout.help.tester': ['A plain plant could grow a plain sprout. I planted it for you. Tap the watering can.'],
+  'sprout.help.tester': [
+    'A plain plant could grow a plain sprout. I planted it for you. Tap the watering can.',
+  ],
   'sprout.pc-brief': ['Every sprout spotted, and every one with a rim, please.'],
-  'sprout.pc-plant-two': ['Plant two that will always make sprouts like this. Look through the lenses to see every way.'],
+  'sprout.pc-plant-two': [
+    'Plant two that will always make sprouts like this. Look through the lenses to see every way.',
+  ],
   'sprout.pc-lens-spots': ['The spots lens: every way these two can give spot copies.'],
   'sprout.pc-lens-rim': ['The rim lens: every way these two can give rim copies.'],
   'sprout.pc-every-spotted': ['Every way spotted.'],
@@ -79,7 +119,9 @@ export const VOICE = {
   'sprout.pc-always-works': ['These two can only make sprouts like this.'],
   'sprout.pc-counter-rim': ['This way, both give a no-rim copy. That sprout has no rim.'],
   'sprout.pc-counter-plain': ['This way, both give a plain copy. That sprout is plain.'],
-  'sprout.pc-hidden-plain-rim': ['This plant has spots and a rim, but it carries a plain copy and a no-rim copy too.'],
+  'sprout.pc-hidden-plain-rim': [
+    'This plant has spots and a rim, but it carries a plain copy and a no-rim copy too.',
+  ],
   'sprout.pc-hidden-plain': ['This plant has spots, but it carries a plain copy too.'],
   'sprout.pc-hidden-rim': ['This plant has a rim, but it carries a no-rim copy too.'],
   'sprout.pc-two-rim-copies': ['This one has two rim copies, so it always gives a rim.'],

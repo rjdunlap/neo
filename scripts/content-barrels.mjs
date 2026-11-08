@@ -27,13 +27,15 @@ const BLOCKS = [
   {
     path: 'src/content/voice-script.ts',
     file: 'voice.ts',
-    imports: (ids) => ids.map((id) => `import { VOICE as ${camel(id)}Voice } from '../games/${id}/voice.ts';`),
+    imports: (ids) =>
+      ids.map((id) => `import { VOICE as ${camel(id)}Voice } from '../games/${id}/voice.ts';`),
     entries: (ids) => ids.map((id) => `  ...${camel(id)}Voice,`),
   },
   {
     path: 'src/content/howto.ts',
     file: 'howto.ts',
-    imports: (ids) => ids.map((id) => `import { HOW_TO as ${camel(id)}HowTo } from '../games/${id}/howto.ts';`),
+    imports: (ids) =>
+      ids.map((id) => `import { HOW_TO as ${camel(id)}HowTo } from '../games/${id}/howto.ts';`),
     entries: (ids) => ids.map((id) => `  '${id}': ${camel(id)}HowTo,`),
   },
 ];
@@ -41,7 +43,10 @@ const BLOCKS = [
 function fill(text, name, lines, path) {
   const begin = `// BEGIN ${name} (scripts/content-barrels.mjs)`;
   const end = `// END ${name}`;
-  const re = new RegExp(`^([ \\t]*)${begin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n[\\s\\S]*?^[ \\t]*${end}$`, 'm');
+  const re = new RegExp(
+    `^([ \\t]*)${begin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n[\\s\\S]*?^[ \\t]*${end}$`,
+    'm',
+  );
   const m = re.exec(text);
   if (!m) throw new Error(`${path}: no "${begin}" … "${end}" block`);
   return text.replace(re, [`${m[1]}${begin}`, ...lines, `${m[1]}${end}`].join('\n'));

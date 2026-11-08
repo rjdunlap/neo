@@ -15,10 +15,56 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  applyPull, bestRig, BRANCH_Y, CARD, cardSpots, countsMisses, crateBottom, crateHook, CRATE_H, CRATE_W, endsRight, guessCards, handleAt,
-  HANDLE_HIT, HOOK_HIT, hooksOf, knotsCards, ledgeSpots, ledgeY, liftLayout, makeRound, paws, pawsCards, planFor, pullDirection, pullers,
-  circleBox, friendBox, LOOKS, PARCELS, parcelOf, pawSpots, ratio, rigOf, rigsFor, TRAY_HIT, travel, WHEEL_R, works, type Friend, type Haul, type HookId, type Hooks,
-  type LiftLayout, type Line, type Look, type Parcel, type Plan, type Pt, type Rig,
+  applyPull,
+  bestRig,
+  BRANCH_Y,
+  CARD,
+  cardSpots,
+  countsMisses,
+  crateBottom,
+  crateHook,
+  CRATE_H,
+  CRATE_W,
+  endsRight,
+  guessCards,
+  handleAt,
+  HANDLE_HIT,
+  HOOK_HIT,
+  hooksOf,
+  knotsCards,
+  ledgeSpots,
+  ledgeY,
+  liftLayout,
+  makeRound,
+  paws,
+  pawsCards,
+  planFor,
+  pullDirection,
+  pullers,
+  circleBox,
+  friendBox,
+  LOOKS,
+  PARCELS,
+  parcelOf,
+  pawSpots,
+  ratio,
+  rigOf,
+  rigsFor,
+  TRAY_HIT,
+  travel,
+  WHEEL_R,
+  works,
+  type Friend,
+  type Haul,
+  type HookId,
+  type Hooks,
+  type LiftLayout,
+  type Line,
+  type Look,
+  type Parcel,
+  type Plan,
+  type Pt,
+  type Rig,
 } from './logic';
 
 /** Each level's authored first lines lead its first round of a session. */
@@ -28,22 +74,58 @@ const SPECS: Record<Friend, CritterSpec> = {
   bunny: CRITTERS.bunny,
   duck: CRITTERS.duck,
   bear: CRITTERS.bear,
-  mouse: { color: 'white', ears: 'round', earColor: 'pink', snout: 'nose', noseColor: 0xff8fa3, whiskers: true },
+  mouse: {
+    color: 'white',
+    ears: 'round',
+    earColor: 'pink',
+    snout: 'nose',
+    noseColor: 0xff8fa3,
+    whiskers: true,
+  },
   frog: { color: 'green', ears: 'none', snout: 'none', belly: true },
   cat: CRITTERS.cat,
   dog: CRITTERS.dog,
   pig: CRITTERS.pig,
 };
-const NAMES: Record<Friend, string> = { bunny: 'bunnies', duck: 'ducks', mouse: 'mice', bear: 'bears', frog: 'frogs', cat: 'cats', dog: 'dogs', pig: 'pigs' };
+const NAMES: Record<Friend, string> = {
+  bunny: 'bunnies',
+  duck: 'ducks',
+  mouse: 'mice',
+  bear: 'bears',
+  frog: 'frogs',
+  cat: 'cats',
+  dog: 'dogs',
+  pig: 'pigs',
+};
 const BRASS = { fill: 0xf2c14e, line: 0xb8862b };
 const ROPE = 0xa8865a;
 const KNOT_COLOR = 0xf3e2c0;
 /** Each round's sky, hills and leaves; the meadow is the game's first look. */
 const SCENES: Record<Look, { sky: [number, number]; hills: number[]; sun: boolean; leaf: number[] }> = {
-  meadow: { sky: [0xbfe6ff, 0xf3fbe8], hills: [0xbfe3a0, 0x9fd38a, 0x86c96e], sun: true, leaf: [0x6cc070, 0x5bb062, 0x7fd07c] },
-  spring: { sky: [swatch.blue.light, swatch.pink.light], hills: [swatch.green.light, 0xbfe3a0, 0x9fd38a], sun: true, leaf: [0x7fd07c, 0x6cc070, 0x8fdc86] },
-  autumn: { sky: [swatch.yellow.light, swatch.orange.light], hills: [swatch.orange.light, swatch.yellow.light, swatch.brown.light], sun: true, leaf: [swatch.orange.fill, swatch.red.fill, swatch.yellow.fill] },
-  evening: { sky: [swatch.purple.light, swatch.orange.light], hills: [0x9fb8d8, 0x86a8c8, 0x7096b8], sun: false, leaf: [0x4f9a68, 0x45895c, 0x5aa874] },
+  meadow: {
+    sky: [0xbfe6ff, 0xf3fbe8],
+    hills: [0xbfe3a0, 0x9fd38a, 0x86c96e],
+    sun: true,
+    leaf: [0x6cc070, 0x5bb062, 0x7fd07c],
+  },
+  spring: {
+    sky: [swatch.blue.light, swatch.pink.light],
+    hills: [swatch.green.light, 0xbfe3a0, 0x9fd38a],
+    sun: true,
+    leaf: [0x7fd07c, 0x6cc070, 0x8fdc86],
+  },
+  autumn: {
+    sky: [swatch.yellow.light, swatch.orange.light],
+    hills: [swatch.orange.light, swatch.yellow.light, swatch.brown.light],
+    sun: true,
+    leaf: [swatch.orange.fill, swatch.red.fill, swatch.yellow.fill],
+  },
+  evening: {
+    sky: [swatch.purple.light, swatch.orange.light],
+    hills: [0x9fb8d8, 0x86a8c8, 0x7096b8],
+    sun: false,
+    leaf: [0x4f9a68, 0x45895c, 0x5aa874],
+  },
 };
 const STONE = 0x9a9aa8;
 const FRIEND_SCALE = 0.4;
@@ -81,13 +163,22 @@ function wheelArt(r = WHEEL_R): Graphics {
 
 function crateArt(w: number): Graphics {
   const g = new Graphics()
-    .roundRect(-CRATE_W / 2, -CRATE_H, CRATE_W, CRATE_H, 10).fill(wood.fill).stroke({ width: 5, color: wood.line })
-    .moveTo(-CRATE_W / 2 + 8, -CRATE_H + 8).lineTo(CRATE_W / 2 - 8, -8).moveTo(CRATE_W / 2 - 8, -CRATE_H + 8).lineTo(-CRATE_W / 2 + 8, -8)
+    .roundRect(-CRATE_W / 2, -CRATE_H, CRATE_W, CRATE_H, 10)
+    .fill(wood.fill)
+    .stroke({ width: 5, color: wood.line })
+    .moveTo(-CRATE_W / 2 + 8, -CRATE_H + 8)
+    .lineTo(CRATE_W / 2 - 8, -8)
+    .moveTo(CRATE_W / 2 - 8, -CRATE_H + 8)
+    .lineTo(-CRATE_W / 2 + 8, -8)
     .stroke({ width: 4, color: wood.line, alpha: 0.5 });
   // Stone dots: one per stone of weight, in a row of up to three.
   for (let i = 0; i < w; i++) {
-    const row = Math.floor(i / 3), col = i % 3, inRow = Math.min(3, w - row * 3);
-    g.circle((col - (inRow - 1) / 2) * 34, -CRATE_H / 2 - 16 + row * 34, 13).fill(STONE).stroke({ width: 3, color: 0x6e6e7c });
+    const row = Math.floor(i / 3),
+      col = i % 3,
+      inRow = Math.min(3, w - row * 3);
+    g.circle((col - (inRow - 1) / 2) * 34, -CRATE_H / 2 - 16 + row * 34, 13)
+      .fill(STONE)
+      .stroke({ width: 3, color: 0x6e6e7c });
   }
   return g;
 }
@@ -99,15 +190,35 @@ function parcelArt(kind: Parcel): Graphics {
   switch (kind) {
     case 'apples':
       // A wicker basket heaped with three red apples.
-      g.circle(-14, -30, 12).circle(14, -30, 12).circle(0, -38, 12).fill(red.fill).stroke({ width: 3, color: red.line });
+      g.circle(-14, -30, 12)
+        .circle(14, -30, 12)
+        .circle(0, -38, 12)
+        .fill(red.fill)
+        .stroke({ width: 3, color: red.line });
       g.moveTo(0, -50).lineTo(3, -56).stroke({ width: 3, color: wood.line });
-      g.moveTo(-28, -26).lineTo(28, -26).lineTo(22, 0).lineTo(-22, 0).closePath().fill(brown.fill).stroke({ width: 4, color: brown.line });
+      g.moveTo(-28, -26)
+        .lineTo(28, -26)
+        .lineTo(22, 0)
+        .lineTo(-22, 0)
+        .closePath()
+        .fill(brown.fill)
+        .stroke({ width: 4, color: brown.line });
       g.moveTo(-25, -14).lineTo(25, -14).stroke({ width: 3, color: brown.line, alpha: 0.6 });
       break;
     case 'kite':
       // A diamond kite on its tail of bows.
-      g.moveTo(0, -56).lineTo(20, -32).lineTo(0, -8).lineTo(-20, -32).closePath().fill(blue.fill).stroke({ width: 4, color: blue.line });
-      g.moveTo(0, -56).lineTo(0, -8).moveTo(-20, -32).lineTo(20, -32).stroke({ width: 3, color: blue.line, alpha: 0.6 });
+      g.moveTo(0, -56)
+        .lineTo(20, -32)
+        .lineTo(0, -8)
+        .lineTo(-20, -32)
+        .closePath()
+        .fill(blue.fill)
+        .stroke({ width: 4, color: blue.line });
+      g.moveTo(0, -56)
+        .lineTo(0, -8)
+        .moveTo(-20, -32)
+        .lineTo(20, -32)
+        .stroke({ width: 3, color: blue.line, alpha: 0.6 });
       g.moveTo(0, -8).quadraticCurveTo(10, -2, 4, 0).stroke({ width: 3, color: ink });
       g.ellipse(-6, -2, 6, 4).ellipse(14, -2, 6, 4).fill(yellow.fill);
       break;
@@ -121,7 +232,12 @@ function parcelArt(kind: Parcel): Graphics {
     case 'pumpkin':
       // A round orange pumpkin with three darker ribs and a green stem.
       g.ellipse(0, -22, 28, 22).fill(orange.fill).stroke({ width: 4, color: orange.line });
-      g.moveTo(-10, -42).quadraticCurveTo(-18, -22, -10, -2).moveTo(10, -42).quadraticCurveTo(18, -22, 10, -2).moveTo(0, -44).lineTo(0, 0)
+      g.moveTo(-10, -42)
+        .quadraticCurveTo(-18, -22, -10, -2)
+        .moveTo(10, -42)
+        .quadraticCurveTo(18, -22, 10, -2)
+        .moveTo(0, -44)
+        .lineTo(0, 0)
         .stroke({ width: 3, color: orange.line });
       g.roundRect(-4, -54, 8, 13, 3).fill(green.fill).stroke({ width: 2, color: green.line });
       break;
@@ -145,22 +261,35 @@ function parcelArt(kind: Parcel): Graphics {
 }
 
 function pawArt(): Graphics {
-  return new Graphics().ellipse(0, 4, 9, 8).fill(ink).circle(-9, -7, 4).circle(-3, -11, 4).circle(3, -11, 4).circle(9, -7, 4).fill(ink);
+  return new Graphics()
+    .ellipse(0, 4, 9, 8)
+    .fill(ink)
+    .circle(-9, -7, 4)
+    .circle(-3, -11, 4)
+    .circle(3, -11, 4)
+    .circle(9, -7, 4)
+    .fill(ink);
 }
 
 function card(n: number): Container {
   const c = new Container();
   const bg = new Graphics();
   c.addChild(bg);
-  const t = new Text({ text: String(n), style: { fontFamily: FONT, fontSize: 52, fontWeight: '700', fill: ink } });
+  const t = new Text({
+    text: String(n),
+    style: { fontFamily: FONT, fontSize: 52, fontWeight: '700', fill: ink },
+  });
   t.anchor.set(0.5);
   t.y = -14;
   c.addChild(t);
   // That many knot dots under the numeral, so the card can be counted without reading.
   const dots = new Graphics();
-  const per = Math.min(n, 5), rows = Math.ceil(n / 5);
+  const per = Math.min(n, 5),
+    rows = Math.ceil(n / 5);
   for (let i = 0; i < n; i++) {
-    const row = Math.floor(i / 5), col = i % 5, inRow = row < rows - 1 ? per : n - row * 5;
+    const row = Math.floor(i / 5),
+      col = i % 5,
+      inRow = row < rows - 1 ? per : n - row * 5;
     dots.circle((col - (inRow - 1) / 2) * 18, 30 + row * 16 - (rows - 1) * 8, 6).fill(ROPE);
   }
   c.addChild(dots);
@@ -225,7 +354,10 @@ class LiftIt implements Game {
   private readonly paws = new Container();
   private readonly glow = new Graphics();
   private readonly counter = new Container();
-  private readonly counterText = new Text({ text: '0', style: { fontFamily: FONT, fontSize: 48, fontWeight: '700', fill: ink } });
+  private readonly counterText = new Text({
+    text: '0',
+    style: { fontFamily: FONT, fontSize: 48, fontWeight: '700', fill: ink },
+  });
   private readonly panel = new Container();
   private cards: { node: Container; value: number; bg: Graphics }[] = [];
   /** Shown rise of the crate, in rungs (eases toward the haul). */
@@ -252,17 +384,34 @@ class LiftIt implements Game {
     this.look = ctx.rng.pick(LOOKS);
     this.layout = liftLayout(ctx.view);
     const scene = SCENES[this.look];
-    this.backdrop = new Backdrop({ sky: scene.sky, hills: scene.hills, horizon: 0.78, clouds: 2, sun: scene.sun, seed: 271 }, ctx.view);
+    this.backdrop = new Backdrop(
+      { sky: scene.sky, hills: scene.hills, horizon: 0.78, clouds: 2, sun: scene.sun, seed: 271 },
+      ctx.view,
+    );
     this.drift.eventMode = 'none';
     if (this.look === 'autumn')
-      for (let i = 0; i < 5; i++) this.drift.addChild(new Graphics().ellipse(0, 0, 14, 8).fill(scene.leaf[i % 3]).moveTo(-14, 0).lineTo(14, 0).stroke({ width: 2, color: wood.line, alpha: 0.5 }));
+      for (let i = 0; i < 5; i++)
+        this.drift.addChild(
+          new Graphics()
+            .ellipse(0, 0, 14, 8)
+            .fill(scene.leaf[i % 3])
+            .moveTo(-14, 0)
+            .lineTo(14, 0)
+            .stroke({ width: 2, color: wood.line, alpha: 0.5 }),
+        );
     for (const g of [this.tree, this.hookRings, this.rope, this.glow, this.fixedWheel]) g.eventMode = 'none';
     this.crate.eventMode = 'none';
     this.friendLayer.eventMode = 'none';
     this.paws.eventMode = 'none';
     this.counter.eventMode = 'none';
     this.counterText.anchor.set(0.5);
-    this.counter.addChild(new Graphics().roundRect(-70, -50, 140, 100, 22).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 5, color: wood.line }), this.counterText);
+    this.counter.addChild(
+      new Graphics()
+        .roundRect(-70, -50, 140, 100, 22)
+        .fill({ color: 0xffffff, alpha: 0.9 })
+        .stroke({ width: 5, color: wood.line }),
+      this.counterText,
+    );
     this.counter.visible = this.plan.counter;
     this.parcel.eventMode = 'none';
 
@@ -278,12 +427,30 @@ class LiftIt implements Game {
     this.ctx.listen(window, 'pointerup', this.release);
     this.ctx.listen(window, 'pointercancel', this.release, true);
 
-    ctx.stage.addChild(this.backdrop, this.tree, this.hookRings, this.crate, this.rope, this.fixedWheel, this.drift, this.friendLayer, this.counter, this.glow, this.paws, this.handle, this.wheelLayer, this.panel);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.tree,
+      this.hookRings,
+      this.crate,
+      this.rope,
+      this.fixedWheel,
+      this.drift,
+      this.friendLayer,
+      this.counter,
+      this.glow,
+      this.paws,
+      this.handle,
+      this.wheelLayer,
+      this.panel,
+    );
     this.crate.addChild(this.parcel);
 
     for (let i = 0; i < this.plan.tray; i++) {
       const node = new Container();
-      node.addChild(new Graphics().ellipse(0, WHEEL_R + 6, WHEEL_R, 10).fill({ color: 0x000000, alpha: 0.12 }), wheelArt());
+      node.addChild(
+        new Graphics().ellipse(0, WHEEL_R + 6, WHEEL_R, 10).fill({ color: 0x000000, alpha: 0.12 }),
+        wheelArt(),
+      );
       node.hitArea = new Circle(0, 0, TRAY_HIT);
       this.wheelLayer.addChild(node);
       const w: WheelNode = { node, on: null, slot: i, drag: null as unknown as DragHandle };
@@ -312,8 +479,12 @@ class LiftIt implements Game {
 
   start() {
     const lines: Record<number, LineId> = {
-      1: 'lift-it.instruct-pull', 2: 'lift-it.instruct-push-or-pull', 3: 'lift-it.instruct-heavy',
-      4: 'lift-it.instruct-knots', 5: 'lift-it.instruct-who', 6: 'lift-it.instruct-numbers',
+      1: 'lift-it.instruct-pull',
+      2: 'lift-it.instruct-push-or-pull',
+      3: 'lift-it.instruct-heavy',
+      4: 'lift-it.instruct-knots',
+      5: 'lift-it.instruct-who',
+      6: 'lift-it.instruct-numbers',
     };
     void this.ctx.instruct(lines[this.plan.id]);
     if (this.plan.request) void this.sayAsk();
@@ -399,7 +570,14 @@ class LiftIt implements Game {
     waiting?.c.hop(1);
     waiting?.c.setMood('happy', 1.5);
     this.ctx.pet.cheer();
-    this.ctx.particles.burst(spot.x, spot.y - 80, { kind: 'star', colors: [BRASS.fill, 0xffffff, swatch.yellow.light], count: 12, speed: [100, 240], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(spot.x, spot.y - 80, {
+      kind: 'star',
+      colors: [BRASS.fill, 0xffffff, swatch.yellow.light],
+      count: 12,
+      speed: [100, 240],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     let say: LineId = 'lift-it.landed';
     if (this.plan.id === 2) say = 'lift-it.same-friends';
     else if (this.plan.id === 3) say = 'lift-it.two-ropes';
@@ -468,27 +646,48 @@ class LiftIt implements Game {
     const g = this.tree.clear();
     const y = ledgeY(L, l.h);
     const ledge = ledgeSpots(L, this.view, l.h);
-    g.roundRect(L.trunkX - 40, BRANCH_Y - 30, 80, L.groundY - BRANCH_Y + 50, 30).fill(wood.fill).stroke({ width: 5, color: wood.line });
+    g.roundRect(L.trunkX - 40, BRANCH_Y - 30, 80, L.groundY - BRANCH_Y + 50, 30)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
     // The branch over the crate, with the ring the rope's standing end ties to.
-    g.roundRect(L.ring.x - 70, BRANCH_Y - 14, L.trunkX - L.ring.x + 70, 28, 14).fill(wood.fill).stroke({ width: 5, color: wood.line });
+    g.roundRect(L.ring.x - 70, BRANCH_Y - 14, L.trunkX - L.ring.x + 70, 28, 14)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
     g.circle(L.ring.x, L.ring.y + 8, 9).stroke({ width: 5, color: 0x8c8c9c });
     // The ledge: a plank on the bough at her height.
-    g.roundRect(ledge.from, y, L.trunkX - ledge.from, 24, 10).fill(wood.light).stroke({ width: 5, color: wood.line });
-    g.moveTo(ledge.from + 30, y + 24).lineTo(L.trunkX - 30, y + 110).stroke({ width: 10, color: wood.line });
+    g.roundRect(ledge.from, y, L.trunkX - ledge.from, 24, 10)
+      .fill(wood.light)
+      .stroke({ width: 5, color: wood.line });
+    g.moveTo(ledge.from + 30, y + 24)
+      .lineTo(L.trunkX - 30, y + 110)
+      .stroke({ width: 10, color: wood.line });
     // Leaves along the top.
     const leaf = SCENES[this.look].leaf;
-    for (let x = L.ring.x - 120; x <= this.view.w + 60; x += 95) g.circle(x, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14, 70).fill(leaf[Math.abs(Math.round(x / 95)) % 3]);
+    for (let x = L.ring.x - 120; x <= this.view.w + 60; x += 95)
+      g.circle(x, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14, 70).fill(leaf[Math.abs(Math.round(x / 95)) % 3]);
     g.circle(L.trunkX, BRANCH_Y + 10, 95).fill(leaf[1]);
     if (this.look === 'spring')
       // Blossom on the bough.
       for (let x = L.ring.x - 100; x <= this.view.w + 40; x += 95)
-        for (const [dx, dy] of [[-30, 10], [18, -4], [-4, 34]]) g.circle(x + dx, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14 + dy, 9).fill(swatch.pink.light).circle(x + dx, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14 + dy, 3.5).fill(swatch.yellow.fill);
+        for (const [dx, dy] of [
+          [-30, 10],
+          [18, -4],
+          [-4, 34],
+        ])
+          g.circle(x + dx, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14 + dy, 9)
+            .fill(swatch.pink.light)
+            .circle(x + dx, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14 + dy, 3.5)
+            .fill(swatch.yellow.fill);
     if (this.look === 'evening') {
       // A lantern hangs from the bough, left of the ring.
       const lx = L.ring.x - 60;
-      g.moveTo(lx, BRANCH_Y + 10).lineTo(lx, BRANCH_Y + 50).stroke({ width: 3, color: ink });
+      g.moveTo(lx, BRANCH_Y + 10)
+        .lineTo(lx, BRANCH_Y + 50)
+        .stroke({ width: 3, color: ink });
       g.circle(lx, BRANCH_Y + 76, 34).fill({ color: swatch.yellow.light, alpha: 0.35 });
-      g.roundRect(lx - 14, BRANCH_Y + 54, 28, 40, 8).fill(swatch.yellow.fill).stroke({ width: 4, color: wood.line });
+      g.roundRect(lx - 14, BRANCH_Y + 54, 28, 40, 8)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 4, color: wood.line });
       g.rect(lx - 10, BRANCH_Y + 48, 20, 7).fill(wood.line);
     }
   }
@@ -597,7 +796,11 @@ class LiftIt implements Game {
     this.ctx.tw.kill(this.rock);
     this.rock.a = 1;
     void this.ctx.tw.to(this.rock, { a: 0 }, { duration: 0.8 });
-    const reason: LineId = !endsRight(rig, l) ? 'lift-it.wrong-pullers' : pullers(rig, l) === 0 ? 'lift-it.nobody-up' : 'lift-it.too-heavy';
+    const reason: LineId = !endsRight(rig, l)
+      ? 'lift-it.wrong-pullers'
+      : pullers(rig, l) === 0
+        ? 'lift-it.nobody-up'
+        : 'lift-it.too-heavy';
     const vars = { paws: paws(rig, l), friends: pullers(rig, l), who: NAMES[l.puller] };
     if (countsMisses(this.plan)) {
       if (this.tried.has(rig)) {
@@ -627,7 +830,8 @@ class LiftIt implements Game {
 
   private ask(rig: Rig) {
     const l = this.cur;
-    if (this.plan.ask === 'knots') this.showQuestion({ kind: 'guess', values: guessCards(l), answer: travel(rig, l), rig });
+    if (this.plan.ask === 'knots')
+      this.showQuestion({ kind: 'guess', values: guessCards(l), answer: travel(rig, l), rig });
     else this.showQuestion({ kind: 'paws', values: pawsCards(rig, l), answer: paws(rig, l), rig });
   }
 
@@ -655,8 +859,11 @@ class LiftIt implements Game {
     this.cards.forEach((c, i) => c.node.position.copyFrom(spots[i]));
     const bg = this.panel.children[0] as Graphics | undefined;
     if (bg && spots.length) {
-      const x0 = spots[0].x - CARD / 2 - 24, x1 = spots[spots.length - 1].x + CARD / 2 + 24;
-      bg.clear().roundRect(x0, spots[0].y - CARD / 2 - 24, x1 - x0, CARD + 48, 30).fill({ color: 0xffffff, alpha: 0.75 });
+      const x0 = spots[0].x - CARD / 2 - 24,
+        x1 = spots[spots.length - 1].x + CARD / 2 + 24;
+      bg.clear()
+        .roundRect(x0, spots[0].y - CARD / 2 - 24, x1 - x0, CARD + 48, 30)
+        .fill({ color: 0xffffff, alpha: 0.75 });
     }
   }
 
@@ -665,7 +872,11 @@ class LiftIt implements Game {
   private drawCards(lit: number | null = null) {
     for (const c of this.cards) {
       const glowing = this.cardGlow === c.value || lit === c.value;
-      c.bg.clear().roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 20).fill(glowing ? swatch.yellow.light : 0xffffff).stroke({ width: glowing ? 9 : 5, color: glowing ? swatch.yellow.fill : wood.line });
+      c.bg
+        .clear()
+        .roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 20)
+        .fill(glowing ? swatch.yellow.light : 0xffffff)
+        .stroke({ width: glowing ? 9 : 5, color: glowing ? swatch.yellow.fill : wood.line });
     }
   }
 
@@ -708,7 +919,12 @@ class LiftIt implements Game {
       this.parcelMisses++;
       sfx.boing();
       this.drawCards(q.answer);
-      await this.ctx.say(q.kind === 'paws' ? 'lift-it.count-paws' : 'lift-it.count-knots', { paws: q.answer, knots: q.answer, w: l.w, ropes: ratio(q.rig) });
+      await this.ctx.say(q.kind === 'paws' ? 'lift-it.count-paws' : 'lift-it.count-knots', {
+        paws: q.answer,
+        knots: q.answer,
+        w: l.w,
+        ropes: ratio(q.rig),
+      });
     }
     if (this.destroyed) return;
     this.clearCards();
@@ -812,7 +1028,7 @@ class LiftIt implements Game {
     for (const f of this.friends) {
       if (f.at === 'waiting' || this.busy) continue;
       // The pullers lean in while the rope moves.
-      const pulling = this.grab?.haul && ((f.at === 'ledge') === (rig === 'movable'));
+      const pulling = this.grab?.haul && (f.at === 'ledge') === (rig === 'movable');
       f.c.rotation = pulling ? 0.08 * Math.sin(this.t * 8) : 0;
     }
   }
@@ -835,16 +1051,24 @@ class LiftIt implements Game {
     const stroke = { width: 7, color: ROPE, cap: 'round' as const, join: 'round' as const };
     let free: [Pt, Pt] | null = null;
     if (rig === 'fixed') {
-      g.moveTo(L.cx + r, top).lineTo(B.x - r, B.y).arc(B.x, B.y, r, Math.PI, 2 * Math.PI).lineTo(H.x, H.y).stroke(stroke);
+      g.moveTo(L.cx + r, top)
+        .lineTo(B.x - r, B.y)
+        .arc(B.x, B.y, r, Math.PI, 2 * Math.PI)
+        .lineTo(H.x, H.y)
+        .stroke(stroke);
       g.circle(L.cx + r, top - 4, 7).fill(ROPE);
       free = [{ x: B.x + r, y: B.y }, H];
     } else if (rig === 'movable' || rig === 'both') {
-      g.moveTo(L.ring.x, L.ring.y + 14).lineTo(C.x - r, C.y).arc(C.x, C.y, r, Math.PI, 0, true);
+      g.moveTo(L.ring.x, L.ring.y + 14)
+        .lineTo(C.x - r, C.y)
+        .arc(C.x, C.y, r, Math.PI, 0, true);
       if (rig === 'movable') {
         g.lineTo(H.x, H.y);
         free = [{ x: C.x + r, y: C.y }, H];
       } else {
-        g.lineTo(B.x - r, B.y).arc(B.x, B.y, r, Math.PI, 2 * Math.PI).lineTo(H.x, H.y);
+        g.lineTo(B.x - r, B.y)
+          .arc(B.x, B.y, r, Math.PI, 2 * Math.PI)
+          .lineTo(H.x, H.y);
         free = [{ x: B.x + r, y: B.y }, H];
       }
       g.stroke(stroke);
@@ -854,7 +1078,7 @@ class LiftIt implements Game {
     if (free) {
       const [a, b] = free;
       const len = Math.hypot(b.x - a.x, b.y - a.y);
-      const phase = ((this.haul.knots * KNOT_GAP) % KNOT_GAP + KNOT_GAP) % KNOT_GAP;
+      const phase = (((this.haul.knots * KNOT_GAP) % KNOT_GAP) + KNOT_GAP) % KNOT_GAP;
       for (let s = phase + 20; s < len - 30; s += KNOT_GAP) {
         const k = s / len;
         g.circle(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k, 6).fill(KNOT_COLOR);
@@ -875,15 +1099,22 @@ class LiftIt implements Game {
     const nobody = pullers(rig, l) === 0;
     const k = this.knotArt.clear();
     if (rig === 'direct') {
-      k.circle(0, 0, 44).fill({ color: 0xffffff, alpha: 0.35 }).stroke({ width: 5, color: 0xffffff, alpha: 0.9 });
+      k.circle(0, 0, 44)
+        .fill({ color: 0xffffff, alpha: 0.35 })
+        .stroke({ width: 5, color: 0xffffff, alpha: 0.9 });
     } else {
-      k.circle(0, 0, 40).fill(nobody ? 0xc8c8c8 : ROPE).stroke({ width: 6, color: nobody ? 0x9a9a9a : wood.line });
+      k.circle(0, 0, 40)
+        .fill(nobody ? 0xc8c8c8 : ROPE)
+        .stroke({ width: 6, color: nobody ? 0x9a9a9a : wood.line });
       k.circle(-10, -10, 9).fill({ color: KNOT_COLOR, alpha: 0.7 });
     }
     // An arrow the way to pull.
     const up = pullDirection(rig) === 'up';
     const ay = up ? -62 : 62;
-    k.moveTo(-18, ay + (up ? 14 : -14)).lineTo(0, ay).lineTo(18, ay + (up ? 14 : -14)).stroke({ width: 7, color: nobody ? 0x9a9a9a : 0xffffff, cap: 'round', join: 'round' });
+    k.moveTo(-18, ay + (up ? 14 : -14))
+      .lineTo(0, ay)
+      .lineTo(18, ay + (up ? 14 : -14))
+      .stroke({ width: 7, color: nobody ? 0x9a9a9a : 0xffffff, cap: 'round', join: 'round' });
     // Paw prints: how many friends' pulls the rope needs (hidden at level 6 until the cards are answered).
     const need = paws(rig, l);
     const hide = this.plan.ask === 'numbers' && this.answeredFor !== rig;
@@ -892,7 +1123,11 @@ class LiftIt implements Game {
       if (!hide) for (let i = 0; i < need; i++) this.paws.addChild(pawArt());
     }
     const n = this.paws.children.length;
-    const avoid = [...this.friends.map((f) => friendBox(f.c.position)), circleBox(L.branchHook, WHEEL_R), circleBox(crateHook(L, this.shown), WHEEL_R)];
+    const avoid = [
+      ...this.friends.map((f) => friendBox(f.c.position)),
+      circleBox(L.branchHook, WHEEL_R),
+      circleBox(crateHook(L, this.shown), WHEEL_R),
+    ];
     if (this.held) avoid.push({ x: this.parcel.x - 30, y: this.parcel.y - 56, w: 60, h: 56 });
     const spots = pawSpots(this.view, H, n, avoid);
     this.paws.children.forEach((p, i) => p.position.copyFrom(spots[i]));
@@ -907,20 +1142,32 @@ class LiftIt implements Game {
       const filled = this.hooks[h];
       if (!filled) {
         const hover = this.hoverHook === h;
-        g.circle(p.x, p.y, HOOK_HIT - 6).fill({ color: 0xffffff, alpha: hover ? 0.4 : 0.18 }).stroke({ width: hover ? 8 : 5, color: hover ? swatch.yellow.fill : 0xffffff, alpha: 0.9 });
-        g.moveTo(p.x, p.y - WHEEL_R - 10).lineTo(p.x, p.y - 14).stroke({ width: 5, color: 0x8c8c9c });
+        g.circle(p.x, p.y, HOOK_HIT - 6)
+          .fill({ color: 0xffffff, alpha: hover ? 0.4 : 0.18 })
+          .stroke({ width: hover ? 8 : 5, color: hover ? swatch.yellow.fill : 0xffffff, alpha: 0.9 });
+        g.moveTo(p.x, p.y - WHEEL_R - 10)
+          .lineTo(p.x, p.y - 14)
+          .stroke({ width: 5, color: 0x8c8c9c });
         g.circle(p.x, p.y - 6, 9).stroke({ width: 5, color: 0x8c8c9c });
       }
       if (this.glowRig) {
         const want = hooksOf(this.glowRig)[h];
         if (want !== filled) {
           const pulse = 6 * Math.sin(this.t * 5);
-          gl.circle(p.x, p.y, HOOK_HIT + 10 + pulse).stroke({ width: want ? 9 : 4, color: swatch.yellow.fill, alpha: want ? 0.9 : 0.5 });
+          gl.circle(p.x, p.y, HOOK_HIT + 10 + pulse).stroke({
+            width: want ? 9 : 4,
+            color: swatch.yellow.fill,
+            alpha: want ? 0.9 : 0.5,
+          });
           if (!want) {
             const w = this.wheels.find((o) => o.on === h);
             if (w) {
               const slot = this.layout.tray[w.slot];
-              gl.circle(slot.x, slot.y, TRAY_HIT + 4 + pulse).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.5 });
+              gl.circle(slot.x, slot.y, TRAY_HIT + 4 + pulse).stroke({
+                width: 4,
+                color: swatch.yellow.fill,
+                alpha: 0.5,
+              });
             }
           }
         }
@@ -959,13 +1206,19 @@ class LiftIt implements Game {
     if (this.plan.ask !== 'none' && this.answeredFor !== this.rig) return { tap: { on: this.handle } };
     const H = this.freeEnd();
     const dy = pullDirection(this.rig) === 'down' ? STROKE : -Math.min(STROKE, H.y - 20);
-    return { trace: { on: this.ctx.stage, x: H.x, y: H.y }, via: [{ on: this.ctx.stage, x: H.x, y: H.y + dy }], receiver: this.handle, pause: 0.35 };
+    return {
+      trace: { on: this.ctx.stage, x: H.x, y: H.y },
+      via: [{ on: this.ctx.stage, x: H.x, y: H.y + dy }],
+      receiver: this.handle,
+      pause: 0.35,
+    };
   }
 
   /** Five leaves fall slowly from the bough past the ledge, wrapping round the view. */
   private driftLeaves() {
     const v = this.view;
-    const top = BRANCH_Y + 40, span = Math.max(200, this.layout.groundY - top);
+    const top = BRANCH_Y + 40,
+      span = Math.max(200, this.layout.groundY - top);
     this.drift.children.forEach((leaf, i) => {
       const k = (this.t * (0.05 + 0.012 * i) + i / 5) % 1;
       const x = (i * 0.23 + 0.15) * v.w + Math.sin(this.t * 0.9 + i * 2) * 40 + k * 120;
@@ -1004,7 +1257,9 @@ class LiftIt implements Game {
 
 function liftPicture(friend: Friend | null, rise: number, parcel: Parcel = 'apples'): Container {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-120, -250, 240, 24, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }));
+  c.addChild(
+    new Graphics().roundRect(-120, -250, 240, 24, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }),
+  );
   const wheel = wheelArt(36);
   wheel.position.set(-10, -200);
   const crate = new Container();
@@ -1012,7 +1267,10 @@ function liftPicture(friend: Friend | null, rise: number, parcel: Parcel = 'appl
   crate.scale.set(0.7);
   crate.position.set(-10 - 36, -20 - rise);
   const rope = new Graphics()
-    .moveTo(-46, -20 - rise - CRATE_H * 0.7).lineTo(-46, -200).arc(-10, -200, 36, Math.PI, 2 * Math.PI).lineTo(26, -40)
+    .moveTo(-46, -20 - rise - CRATE_H * 0.7)
+    .lineTo(-46, -200)
+    .arc(-10, -200, 36, Math.PI, 2 * Math.PI)
+    .lineTo(26, -40)
     .stroke({ width: 5, color: ROPE });
   c.addChild(rope, crate, wheel);
   if (friend) {
@@ -1023,7 +1281,11 @@ function liftPicture(friend: Friend | null, rise: number, parcel: Parcel = 'appl
     const p = parcelArt(parcel);
     p.scale.set(0.8);
     p.position.set(80, -170);
-    c.addChild(new Graphics().roundRect(30, -150, 110, 16, 6).fill(wood.light).stroke({ width: 3, color: wood.line }), k, p);
+    c.addChild(
+      new Graphics().roundRect(30, -150, 110, 16, 6).fill(wood.light).stroke({ width: 3, color: wood.line }),
+      k,
+      p,
+    );
   }
   return c;
 }
@@ -1047,7 +1309,11 @@ class LiftIcon extends WigglyIcon {
 
 function sticker(seed: number): Container {
   const kinds: Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog'];
-  const c = liftPicture(kinds[Math.abs(seed) % kinds.length], 80, PARCELS[Math.floor(Math.abs(seed) / kinds.length) % PARCELS.length]);
+  const c = liftPicture(
+    kinds[Math.abs(seed) % kinds.length],
+    80,
+    PARCELS[Math.floor(Math.abs(seed) / kinds.length) % PARCELS.length],
+  );
   c.scale.set(0.85);
   c.y = 90;
   return c;
@@ -1064,8 +1330,10 @@ export const liftIt: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'One of you hangs the wheels, the other pulls. On the knot levels, both say the count aloud before the haul.',
-  offScreen: 'Look for a pulley on a walk (a flagpole, a crane, window blinds, a well) and say which way the rope is pulled and which way the load goes.',
+  coplayHint:
+    'One of you hangs the wheels, the other pulls. On the knot levels, both say the count aloud before the haul.',
+  offScreen:
+    'Look for a pulley on a walk (a flagpole, a crane, window blinds, a well) and say which way the rope is pulled and which way the load goes.',
   touchDemo: true,
   hubIcon: () => new LiftIcon(),
   sticker,

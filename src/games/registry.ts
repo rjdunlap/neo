@@ -5,10 +5,16 @@ import type { GameModule } from './types';
 function moduleOf(path: string, exports: Record<string, unknown>): GameModule {
   const folder = path.split('/')[1];
   const mods = Object.values(exports).filter(
-    (v): v is GameModule => !!v && typeof v === 'object' && typeof (v as GameModule).id === 'string' && typeof (v as GameModule).create === 'function',
+    (v): v is GameModule =>
+      !!v &&
+      typeof v === 'object' &&
+      typeof (v as GameModule).id === 'string' &&
+      typeof (v as GameModule).create === 'function',
   );
-  if (mods.length !== 1) throw new Error(`src/games/${folder}/index.ts exports ${mods.length} game modules, not one`);
-  if (mods[0].id !== folder) throw new Error(`src/games/${folder} holds the game "${mods[0].id}"; a game's folder is named by its id`);
+  if (mods.length !== 1)
+    throw new Error(`src/games/${folder}/index.ts exports ${mods.length} game modules, not one`);
+  if (mods[0].id !== folder)
+    throw new Error(`src/games/${folder} holds the game "${mods[0].id}"; a game's folder is named by its id`);
   return mods[0];
 }
 
@@ -20,7 +26,9 @@ const spot = (id: string) => landOrder.get(id) ?? Number.MAX_SAFE_INTEGER;
  * Every minigame, found from its folder (`src/games/<id>/index.ts`), in island order: land by land, each land's games
  * in its order in `LANDS`. Nothing lists games by hand here; a new game needs only its folder and its land.
  */
-export const GAMES: GameModule[] = Object.entries(import.meta.glob<Record<string, unknown>>('./*/index.ts', { eager: true }))
+export const GAMES: GameModule[] = Object.entries(
+  import.meta.glob<Record<string, unknown>>('./*/index.ts', { eager: true }),
+)
   .map(([path, exports]) => moduleOf(path, exports))
   .sort((a, b) => spot(a.id) - spot(b.id) || a.id.localeCompare(b.id));
 

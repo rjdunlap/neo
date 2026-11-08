@@ -16,7 +16,10 @@ import { LOCATIONS } from './LocationScene';
  */
 export type ResultPlace = BackdropStyle | 'home' | { picture: LandId; sky: BackdropStyle };
 
-export function resultPlace(origin: Origin | undefined, opts: { story: boolean; root: boolean }): ResultPlace | null {
+export function resultPlace(
+  origin: Origin | undefined,
+  opts: { story: boolean; root: boolean },
+): ResultPlace | null {
   if (!opts.root || opts.story) return null;
   if (origin && 'land' in origin && origin.land in LOCATIONS) {
     const sky = LOCATIONS[origin.land]!.backdrop ?? landFor(origin.land).backdrop;
@@ -37,7 +40,12 @@ export class ResultBackdrop extends Container {
     const pictured = typeof place === 'object' && 'picture' in place ? place : null;
     const sprite = pictured ? pictureSprite(pictured.picture) : null;
     // Under a picture the sky only fills behind it, without a sun or clouds.
-    this.sky = place === 'home' ? null : pictured ? new Backdrop({ ...pictured.sky, sun: false, clouds: 0 }, view) : new Backdrop(place as BackdropStyle, view);
+    this.sky =
+      place === 'home'
+        ? null
+        : pictured
+          ? new Backdrop({ ...pictured.sky, sun: false, clouds: 0 }, view)
+          : new Backdrop(place as BackdropStyle, view);
     this.home = place === 'home' ? homeBackdrop() : null;
     this.addChild((this.sky ?? this.home)!);
     if (pictured && sprite) {

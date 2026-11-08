@@ -38,7 +38,9 @@ describe('Puzzle Peaks as a location', () => {
         if (kind === 'bamboo') expect(y, where).toBeGreaterThanOrEqual(bambooLine(view, ground));
         if (kind === 'conifer') expect(y, where).toBeLessThanOrEqual(bambooLine(view, ground));
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(peaksPlan(layout, view, ground)).toEqual(plan);
     }
   });
@@ -72,7 +74,10 @@ describe('Puzzle Peaks as a location', () => {
       const random = vi.spyOn(Math, 'random').mockReturnValue(phase);
       let glider: Companion;
       try {
-        glider = new Companion({ species: 'glider', look: { color: SPECIES.glider.color }, id: null }, sameArt(Texture.WHITE));
+        glider = new Companion(
+          { species: 'glider', look: { color: SPECIES.glider.color }, id: null },
+          sameArt(Texture.WHITE),
+        );
       } finally {
         random.mockRestore();
       }
@@ -101,21 +106,37 @@ describe('Puzzle Peaks as a location', () => {
       const hit = glider.touchArea(10);
       const smallest = Math.min(...[...landLayouts('puzzle-peaks')].map(({ layout }) => layout.box.w));
       expect(smallest, 'the crowded land reaches a smaller drawing size').toBeLessThan(170);
-      const at = (b: typeof box, x: number, y: number, s: number): Rect => ({ x: x + b.minX * s, y: y + b.minY * s, w: (b.maxX - b.minX) * s, h: (b.maxY - b.minY) * s });
+      const at = (b: typeof box, x: number, y: number, s: number): Rect => ({
+        x: x + b.minX * s,
+        y: y + b.minY * s,
+        w: (b.maxX - b.minX) * s,
+        h: (b.maxY - b.minY) * s,
+      });
       for (const { view, layout, where } of landLayouts('puzzle-peaks')) {
         const s = hostScale(layout.box);
         const { x, y } = layout.host;
         const body = at(box, x, y, s);
-        const touch: Rect = { x: x + (hit.x - hit.radius) * s, y: y + (hit.y - hit.radius) * s, w: hit.radius * 2 * s, h: hit.radius * 2 * s };
+        const touch: Rect = {
+          x: x + (hit.x - hit.radius) * s,
+          y: y + (hit.y - hit.radius) * s,
+          w: hit.radius * 2 * s,
+          h: hit.radius * 2 * s,
+        };
         expect(hit.radius * 2 * s, `touch circle ${where}`).toBeGreaterThanOrEqual(100);
         const own = spotRect(layout.host, layout.box);
         const others = meadowKeepOut(layout, view).filter((r) => r.x !== own.x || r.y !== own.y);
         for (const r of [body, touch]) {
-          expect(r.x >= own.x && r.y >= own.y && r.x + r.w <= own.x + own.w && r.y + r.h <= own.y + own.h, `inside its spot ${where}`).toBe(true);
+          expect(
+            r.x >= own.x && r.y >= own.y && r.x + r.w <= own.x + own.w && r.y + r.h <= own.y + own.h,
+            `inside its spot ${where}`,
+          ).toBe(true);
           for (const k of others) expect(overlaps(r, k), where).toBe(false);
         }
         const swoop = at(loop, x, y, s);
-        expect(swoop.x >= 0 && swoop.y >= 0 && swoop.x + swoop.w <= view.w, `the loop stays on screen ${where}, phase=${phase}: ${JSON.stringify(swoop)}`).toBe(true);
+        expect(
+          swoop.x >= 0 && swoop.y >= 0 && swoop.x + swoop.w <= view.w,
+          `the loop stays on screen ${where}, phase=${phase}: ${JSON.stringify(swoop)}`,
+        ).toBe(true);
       }
       glider.destroy({ children: true });
       reaction.glider.destroy({ children: true });

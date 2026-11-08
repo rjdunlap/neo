@@ -1,7 +1,12 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export interface Tile { x: number; y: number; z: number; kind: number }
+export interface Tile {
+  x: number;
+  y: number;
+  z: number;
+  kind: number;
+}
 export type Pair = [number, number];
 export const PLANS = [
   { name: 'Open rows · 12 tiles', cols: 4, rows: 3, layers: 1, layout: 'square', kinds: 6 },
@@ -13,7 +18,8 @@ export const PLANS = [
 ] as const;
 
 export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
+export const planFor = (level: number) =>
+  PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
 
@@ -21,7 +27,8 @@ export const present = (mask: number, i: number) => !!(mask & (1 << i));
 export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
   if (!present(mask, i)) return false;
   const a = tiles[i];
-  let left = false, right = false;
+  let left = false,
+    right = false;
   for (let j = 0; j < tiles.length; j++) {
     if (j === i || !present(mask, j)) continue;
     const b = tiles[j];
@@ -32,10 +39,12 @@ export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
   }
   return !left || !right;
 }
-export const freeTiles = (tiles: readonly Tile[], mask: number): number[] => tiles.map((_, i) => i).filter(i => free(tiles, mask, i));
+export const freeTiles = (tiles: readonly Tile[], mask: number): number[] =>
+  tiles.map((_, i) => i).filter((i) => free(tiles, mask, i));
 export const removePair = (mask: number, [a, b]: Pair) => mask & ~(1 << a) & ~(1 << b);
 export function pairs(tiles: readonly Tile[], mask: number, geometryOnly = false): Pair[] {
-  const open = freeTiles(tiles, mask), out: Pair[] = [];
+  const open = freeTiles(tiles, mask),
+    out: Pair[] = [];
   open.forEach((a, i) => {
     for (const b of open.slice(i + 1)) if (geometryOnly || tiles[a].kind === tiles[b].kind) out.push([a, b]);
   });
@@ -66,15 +75,18 @@ function assign(tiles: Tile[], symbols: number[], rng: Rng): Tile[] {
   return tiles;
 }
 export function makeBoard(level: number, rng: Rng): Tile[] {
-  const plan = planFor(level), tiles: Tile[] = [];
+  const plan = planFor(level),
+    tiles: Tile[] = [];
   const add = (x: number, y: number, z: number) => tiles.push({ x, y, z, kind: 0 });
-  for (let y = 0; y < plan.rows; y++) for (let x = 0; x < plan.cols; x++) {
-    // The crown's missing corners open different paths into its two raised rows.
-    if (plan.layout === 'crown' && y !== 1 && (x === 0 || x === 5)) continue;
-    add(x, y, 0);
-  }
+  for (let y = 0; y < plan.rows; y++)
+    for (let x = 0; x < plan.cols; x++) {
+      // The crown's missing corners open different paths into its two raised rows.
+      if (plan.layout === 'crown' && y !== 1 && (x === 0 || x === 5)) continue;
+      add(x, y, 0);
+    }
   if (plan.layout === 'square') {
-    for (let z = 1; z < plan.layers; z++) for (let y = 1; y <= 2; y++) for (let x = 1; x <= 2; x++) add(x, y, z);
+    for (let z = 1; z < plan.layers; z++)
+      for (let y = 1; y <= 2; y++) for (let x = 1; x <= 2; x++) add(x, y, z);
   } else if (plan.layout === 'bridge') {
     for (let x = 1; x <= 4; x++) add(x, 1, 1);
     for (const x of [2, 3]) add(x, 1, 2);
@@ -93,12 +105,19 @@ export function makeBoard(level: number, rng: Rng): Tile[] {
 /** Recovery keeps exactly the remaining pictures, laid in open rows. Even a stranded tower can be rescued. */
 export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[] {
   const counts = new Map<number, number>();
-  tiles.forEach((t, i) => { if (present(mask, i)) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1); });
+  tiles.forEach((t, i) => {
+    if (present(mask, i)) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
+  });
   const symbols: number[] = [];
   for (const [kind, count] of counts) {
     if (count % 2) throw new Error('Remaining pictures must come in pairs');
     for (let i = 0; i < count / 2; i++) symbols.push(kind);
   }
-  const out = Array.from({ length: symbols.length * 2 }, (_, i) => ({ x: i % 6, y: Math.floor(i / 6), z: 0, kind: 0 }));
+  const out = Array.from({ length: symbols.length * 2 }, (_, i) => ({
+    x: i % 6,
+    y: Math.floor(i / 6),
+    z: 0,
+    kind: 0,
+  }));
   return assign(out, symbols, rng);
 }

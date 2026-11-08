@@ -16,8 +16,34 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BOARDS } from './puzzles';
 import {
   LEVELS,
-  FRUITS, hintMove, jarHeight, jarLayout, JAR_W, legal, LID_COLOR, LOOKS, move, moves, PIECE, planFor, present, refusal, render, RIM, roundBoards,
-  search, solve, solved, UNDO_INSET, uniformFull, type Board, type JarPlan, type JarSpot, type Labels, type Look, type Move,
+  FRUITS,
+  hintMove,
+  jarHeight,
+  jarLayout,
+  JAR_W,
+  legal,
+  LID_COLOR,
+  LOOKS,
+  move,
+  moves,
+  PIECE,
+  planFor,
+  present,
+  refusal,
+  render,
+  RIM,
+  roundBoards,
+  search,
+  solve,
+  solved,
+  UNDO_INSET,
+  uniformFull,
+  type Board,
+  type JarPlan,
+  type JarSpot,
+  type Labels,
+  type Look,
+  type Move,
 } from './logic';
 
 /** How far a lifted piece rises above where it sat. */
@@ -36,10 +62,25 @@ export function fruitArt(kind: number, size = 1): Container {
   const g = new Graphics();
   switch (kind) {
     case 0: // strawberry: a rounded heart point-down, seeds, a green cap
-      g.moveTo(0, 22).bezierCurveTo(-26, 4, -24, -18, -8, -17).bezierCurveTo(-3, -17, 0, -14, 0, -14).bezierCurveTo(0, -14, 3, -17, 8, -17).bezierCurveTo(24, -18, 26, 4, 0, 22)
-        .fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line, join: 'round' });
-      for (const [x, y] of [[-8, -5], [7, -6], [0, 3], [-6, 9], [6, 9], [0, -9]]) g.ellipse(x, y, 1.8, 2.6).fill(swatch.yellow.light);
-      g.poly([-12, -17, -4, -13, 0, -21, 4, -13, 12, -17, 6, -9, -6, -9]).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line, join: 'round' });
+      g.moveTo(0, 22)
+        .bezierCurveTo(-26, 4, -24, -18, -8, -17)
+        .bezierCurveTo(-3, -17, 0, -14, 0, -14)
+        .bezierCurveTo(0, -14, 3, -17, 8, -17)
+        .bezierCurveTo(24, -18, 26, 4, 0, 22)
+        .fill(swatch.red.fill)
+        .stroke({ width: 3, color: swatch.red.line, join: 'round' });
+      for (const [x, y] of [
+        [-8, -5],
+        [7, -6],
+        [0, 3],
+        [-6, 9],
+        [6, 9],
+        [0, -9],
+      ])
+        g.ellipse(x, y, 1.8, 2.6).fill(swatch.yellow.light);
+      g.poly([-12, -17, -4, -13, 0, -21, 4, -13, 12, -17, 6, -9, -6, -9])
+        .fill(swatch.green.fill)
+        .stroke({ width: 2, color: swatch.green.line, join: 'round' });
       break;
     case 1: // blueberry: a round berry with a star-shaped crown
       g.circle(0, 2, 20).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
@@ -48,35 +89,64 @@ export function fruitArt(kind: number, size = 1): Container {
       break;
     case 2: // orange: a big round fruit with dimples and a leaf
       g.circle(0, 2, 21).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
-      for (const [x, y] of [[-9, 0], [6, 7], [-2, 11], [9, -6]]) g.circle(x, y, 1.6).fill(swatch.orange.line);
+      for (const [x, y] of [
+        [-9, 0],
+        [6, 7],
+        [-2, 11],
+        [9, -6],
+      ])
+        g.circle(x, y, 1.6).fill(swatch.orange.line);
       g.ellipse(7, -20, 8, 4).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
       break;
     case 3: // pear: a small top on a wide bottom, with a stem
       g.circle(0, -6, 11).fill(swatch.green.fill);
       g.circle(0, 8, 16).fill(swatch.green.fill);
-      g.moveTo(-11, -6).bezierCurveTo(-11, 0, -16, 2, -16, 8).arc(0, 8, 16, Math.PI, 0, true).bezierCurveTo(16, 2, 11, 0, 11, -6).arc(0, -6, 11, 0, Math.PI, true)
+      g.moveTo(-11, -6)
+        .bezierCurveTo(-11, 0, -16, 2, -16, 8)
+        .arc(0, 8, 16, Math.PI, 0, true)
+        .bezierCurveTo(16, 2, 11, 0, 11, -6)
+        .arc(0, -6, 11, 0, Math.PI, true)
         .stroke({ width: 3, color: swatch.green.line, join: 'round' });
       g.moveTo(0, -17).lineTo(3, -24).stroke({ width: 3, color: swatch.brown.line, cap: 'round' });
       break;
     case 4: // plum: an oval with a crease and a stem
       g.ellipse(0, 2, 17, 21).fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line });
-      g.moveTo(-2, -16).bezierCurveTo(-8, -4, -8, 10, -2, 21).stroke({ width: 2, color: swatch.purple.line, alpha: 0.7 });
+      g.moveTo(-2, -16)
+        .bezierCurveTo(-8, -4, -8, 10, -2, 21)
+        .stroke({ width: 2, color: swatch.purple.line, alpha: 0.7 });
       g.moveTo(0, -18).lineTo(-3, -25).stroke({ width: 3, color: swatch.brown.line, cap: 'round' });
       g.ellipse(7, -8, 4, 6).fill({ color: 0xffffff, alpha: 0.3 });
       break;
     case 5: // cherries: two small round berries on stems joined at the top, so never a strawberry
-      g.moveTo(-10, 6).quadraticCurveTo(-8, -12, 2, -22).stroke({ width: 3, color: swatch.green.line, cap: 'round' });
-      g.moveTo(11, 9).quadraticCurveTo(10, -8, 2, -22).stroke({ width: 3, color: swatch.green.line, cap: 'round' });
+      g.moveTo(-10, 6)
+        .quadraticCurveTo(-8, -12, 2, -22)
+        .stroke({ width: 3, color: swatch.green.line, cap: 'round' });
+      g.moveTo(11, 9)
+        .quadraticCurveTo(10, -8, 2, -22)
+        .stroke({ width: 3, color: swatch.green.line, cap: 'round' });
       g.ellipse(6, -21, 7, 3.5).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
       g.circle(-10, 11, 11).fill(swatch.red.line).stroke({ width: 3, color: ink, alpha: 0.6 });
       g.circle(11, 13, 11).fill(swatch.red.line).stroke({ width: 3, color: ink, alpha: 0.6 });
-      g.circle(-13, 7, 3).fill({ color: 0xffffff, alpha: 0.45 }).circle(8, 9, 3).fill({ color: 0xffffff, alpha: 0.45 });
+      g.circle(-13, 7, 3)
+        .fill({ color: 0xffffff, alpha: 0.45 })
+        .circle(8, 9, 3)
+        .fill({ color: 0xffffff, alpha: 0.45 });
       break;
     default: // lemon: a pointed oval, a bump at each end
-      g.moveTo(-24, 2).quadraticCurveTo(-20, -18, 0, -18).quadraticCurveTo(20, -18, 24, 2).quadraticCurveTo(20, 20, 0, 20).quadraticCurveTo(-20, 20, -24, 2)
-        .fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
+      g.moveTo(-24, 2)
+        .quadraticCurveTo(-20, -18, 0, -18)
+        .quadraticCurveTo(20, -18, 24, 2)
+        .quadraticCurveTo(20, 20, 0, 20)
+        .quadraticCurveTo(-20, 20, -24, 2)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
       g.ellipse(-8, -7, 6, 3).fill({ color: 0xffffff, alpha: 0.4 });
-      for (const [x, y] of [[4, -4], [10, 6], [-4, 9]]) g.circle(x, y, 1.4).fill(swatch.yellow.line);
+      for (const [x, y] of [
+        [4, -4],
+        [10, 6],
+        [-4, 9],
+      ])
+        g.circle(x, y, 1.4).fill(swatch.yellow.line);
   }
   const c = new Container();
   c.addChild(g);
@@ -84,23 +154,43 @@ export function fruitArt(kind: number, size = 1): Container {
   return c;
 }
 
-const JAM = [swatch.red.fill, swatch.blue.fill, swatch.orange.fill, swatch.green.fill, swatch.purple.fill, swatch.pink.fill, swatch.yellow.fill];
+const JAM = [
+  swatch.red.fill,
+  swatch.blue.fill,
+  swatch.orange.fill,
+  swatch.green.fill,
+  swatch.purple.fill,
+  swatch.pink.fill,
+  swatch.yellow.fill,
+];
 
 /** An empty glass jar of a capacity, its base at (0, 0). */
 function jarArt(cap: number): Graphics {
   const h = jarHeight(cap);
   const w = JAR_W;
   return new Graphics()
-    .roundRect(-w / 2, -h + RIM - 8, w, h - RIM + 8, 22).fill({ color: swatch.teal.light, alpha: 0.45 }).stroke({ width: 5, color: swatch.teal.line })
-    .roundRect(-w / 2 - 6, -h + RIM - 18, w + 12, 18, 8).fill({ color: swatch.teal.light, alpha: 0.7 }).stroke({ width: 4, color: swatch.teal.line })
-    .roundRect(-w / 2 + 12, -h + RIM + 6, 10, h - RIM - 30, 5).fill({ color: 0xffffff, alpha: 0.45 });
+    .roundRect(-w / 2, -h + RIM - 8, w, h - RIM + 8, 22)
+    .fill({ color: swatch.teal.light, alpha: 0.45 })
+    .stroke({ width: 5, color: swatch.teal.line })
+    .roundRect(-w / 2 - 6, -h + RIM - 18, w + 12, 18, 8)
+    .fill({ color: swatch.teal.light, alpha: 0.7 })
+    .stroke({ width: 4, color: swatch.teal.line })
+    .roundRect(-w / 2 + 12, -h + RIM + 6, 10, h - RIM - 30, 5)
+    .fill({ color: 0xffffff, alpha: 0.45 });
 }
 
 function lidArt(look: Look): Graphics {
   const c = swatch[LID_COLOR[look]];
   return new Graphics()
-    .roundRect(-JAR_W / 2 - 10, -26, JAR_W + 20, 26, 10).fill(c.fill).stroke({ width: 4, color: c.line })
-    .circle(-30, -13, 4).fill(0xffffff).circle(0, -13, 4).fill(0xffffff).circle(30, -13, 4).fill(0xffffff);
+    .roundRect(-JAR_W / 2 - 10, -26, JAR_W + 20, 26, 10)
+    .fill(c.fill)
+    .stroke({ width: 4, color: c.line })
+    .circle(-30, -13, 4)
+    .fill(0xffffff)
+    .circle(0, -13, 4)
+    .fill(0xffffff)
+    .circle(30, -13, 4)
+    .fill(0xffffff);
 }
 
 /** Each look's wall and window pane. */
@@ -118,27 +208,45 @@ function drawPantry(g: Graphics, look: Look, v: View, spots: JarSpot[], cap: num
   const { wall, pane } = PANTRY[look];
   g.clear().rect(0, 0, v.w, v.h).fill(wall);
   const jarTop = spots.length ? Math.min(...spots.map((s) => s.y - jarHeight(cap))) : v.h / 2;
-  const w = Math.min(360, v.w * 0.42), x = (v.w - w) / 2, y = 20;
+  const w = Math.min(360, v.w * 0.42),
+    x = (v.w - w) / 2,
+    y = 20;
   const h = Math.max(56, Math.min(240, jarTop - 30 - y));
-  g.roundRect(x - 12, y - 12, w + 24, h + 24, 16).fill(wood.fill).stroke({ width: 4, color: wood.line });
+  g.roundRect(x - 12, y - 12, w + 24, h + 24, 16)
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line });
   g.rect(x, y, w, h).fill(pane);
-  if (look === 'morning') g.circle(x + w * 0.75, y + h * 0.4, Math.min(34, h * 0.28)).fill(swatch.yellow.fill);
+  if (look === 'morning')
+    g.circle(x + w * 0.75, y + h * 0.4, Math.min(34, h * 0.28)).fill(swatch.yellow.fill);
   else if (look === 'rain') {
     for (let i = 0; i < 14; i++) {
-      const sx = x + 14 + ((i * 53) % (w - 28)), sy = y + 10 + ((i * 37) % Math.max(1, h - 34));
-      g.moveTo(sx, sy).lineTo(sx - 5, sy + 16).stroke({ width: 3, color: swatch.teal.line, cap: 'round' });
+      const sx = x + 14 + ((i * 53) % (w - 28)),
+        sy = y + 10 + ((i * 37) % Math.max(1, h - 34));
+      g.moveTo(sx, sy)
+        .lineTo(sx - 5, sy + 16)
+        .stroke({ width: 3, color: swatch.teal.line, cap: 'round' });
     }
   } else {
-    g.circle(x + w * 0.5, y + h * 0.45, Math.min(46, h * 0.36)).fill({ color: swatch.yellow.light, alpha: 0.7 });
+    g.circle(x + w * 0.5, y + h * 0.45, Math.min(46, h * 0.36)).fill({
+      color: swatch.yellow.light,
+      alpha: 0.7,
+    });
     g.circle(x + w * 0.5, y + h * 0.45, Math.min(22, h * 0.18)).fill(swatch.yellow.fill);
   }
-  g.rect(x + w / 2 - 4, y, 8, h).fill(wood.fill).rect(x, y + h / 2 - 4, w, 8).fill(wood.fill);
+  g.rect(x + w / 2 - 4, y, 8, h)
+    .fill(wood.fill)
+    .rect(x, y + h / 2 - 4, w, 8)
+    .fill(wood.fill);
   const cloth = swatch[LID_COLOR[look]];
   for (const base of [...new Set(spots.map((s) => s.y))]) {
     const row = spots.filter((s) => s.y === base);
-    const left = Math.min(...row.map((s) => s.x)) - JAR_W, right = Math.max(...row.map((s) => s.x)) + JAR_W;
-    g.roundRect(left, base + 10, right - left, 22, 6).fill(wood.fill).stroke({ width: 3, color: wood.line });
-    for (let sx = left, i = 0; sx < right; sx += 24, i++) g.rect(sx, base - 2, Math.min(24, right - sx), 12).fill(i % 2 ? 0xffffff : cloth.light);
+    const left = Math.min(...row.map((s) => s.x)) - JAR_W,
+      right = Math.max(...row.map((s) => s.x)) + JAR_W;
+    g.roundRect(left, base + 10, right - left, 22, 6)
+      .fill(wood.fill)
+      .stroke({ width: 3, color: wood.line });
+    for (let sx = left, i = 0; sx < right; sx += 24, i++)
+      g.rect(sx, base - 2, Math.min(24, right - sx), 12).fill(i % 2 ? 0xffffff : cloth.light);
   }
 }
 
@@ -193,7 +301,9 @@ class JarSort implements Game {
   private relayout = false;
   /** The system took the touch away (a swipe from the edge): the drag that ends because of it puts the fruit back. */
   private cancelled = false;
-  private readonly onCancel = () => { this.cancelled = true; };
+  private readonly onCancel = () => {
+    this.cancelled = true;
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -235,7 +345,10 @@ class JarSort implements Game {
     this.undoButton.scale.set(this.undoPulse > 0 ? 1 + 0.08 * Math.sin(this.clock * 8) : 1);
     if (this.undoPulse > 0) {
       this.undoPulse -= dt;
-      g.circle(this.undoButton.x, this.undoButton.y, 62 + 3 * Math.sin(this.clock * 6)).stroke({ width: 6, color: swatch.yellow.fill });
+      g.circle(this.undoButton.x, this.undoButton.y, 62 + 3 * Math.sin(this.clock * 6)).stroke({
+        width: 6,
+        color: swatch.yellow.fill,
+      });
     }
     if (this.busy || this.finished) return;
     const box = (i: number, pad = 0) => {
@@ -245,7 +358,9 @@ class JarSort implements Game {
     if (this.lifted !== null && this.plan.lit) {
       for (let i = 0; i < this.board.length; i++) {
         if (!legal(this.board, this.plan.cap, this.lifted, i)) continue;
-        g.roundRect(...box(i, 4), 24).fill({ color: swatch.yellow.light, alpha: 0.35 }).stroke({ width: 5, color: swatch.yellow.fill });
+        g.roundRect(...box(i, 4), 24)
+          .fill({ color: swatch.yellow.light, alpha: 0.35 })
+          .stroke({ width: 5, color: swatch.yellow.fill });
       }
     }
     if (this.hinted) {
@@ -263,7 +378,8 @@ class JarSort implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.jars.length) return null;
     const key = render(this.board);
-    if (this.botPlan?.key !== key) this.botPlan = { key, path: solve(this.board, this.plan.cap, this.labels) };
+    if (this.botPlan?.key !== key)
+      this.botPlan = { key, path: solve(this.board, this.plan.cap, this.labels) };
     const next = this.botPlan.path?.[0];
     if (!next) return null;
     const tapJar = (i: number, pause?: number): TouchIntent => {
@@ -293,7 +409,10 @@ class JarSort implements Game {
     this.par = solve(this.board, this.plan.cap, this.labels)?.length ?? this.plan.par[1];
     this.build();
     this.jarLayer.alpha = this.pieceLayer.alpha = 0;
-    await Promise.all([this.ctx.tw.to(this.jarLayer, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.pieceLayer, { alpha: 1 }, { duration: 0.3 })]);
+    await Promise.all([
+      this.ctx.tw.to(this.jarLayer, { alpha: 1 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.pieceLayer, { alpha: 1 }, { duration: 0.3 }),
+    ]);
     this.busy = false;
     if (this.relayout) {
       this.relayout = false;
@@ -310,12 +429,14 @@ class JarSort implements Game {
     this.pieceLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     const spots = jarLayout(this.plan.jars, this.plan.cap, this.ctx.view);
     this.jars = this.board.map((_, i) => this.makeJar(i, spots[i]));
-    this.pieces = this.board.map((jar) => jar.map((k) => {
-      const p = fruitArt(k);
-      p.eventMode = 'none';
-      this.pieceLayer.addChild(p);
-      return p;
-    }));
+    this.pieces = this.board.map((jar) =>
+      jar.map((k) => {
+        const p = fruitArt(k);
+        p.eventMode = 'none';
+        this.pieceLayer.addChild(p);
+        return p;
+      }),
+    );
     this.placePieces();
     this.jars.forEach((_, i) => this.drawLid(i, false));
   }
@@ -331,7 +452,12 @@ class JarSort implements Game {
     const want = this.labels?.[i];
     if (want !== undefined && want !== null) {
       mat = new Container();
-      mat.addChild(new Graphics().roundRect(-JAR_W / 2 - 8, 2, JAR_W + 16, 28, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }));
+      mat.addChild(
+        new Graphics()
+          .roundRect(-JAR_W / 2 - 8, 2, JAR_W + 16, 28, 12)
+          .fill(wood.fill)
+          .stroke({ width: 4, color: wood.line }),
+      );
       const pic = fruitArt(want, 0.5);
       pic.position.set(0, 16);
       mat.addChild(pic);
@@ -372,15 +498,18 @@ class JarSort implements Game {
   }
 
   private placePieces() {
-    this.pieces.forEach((col, j) => col.forEach((p, i) => {
-      this.ctx.tw.kill(p);
-      const at = this.slot(j, i);
-      p.position.set(at.x, at.y - (this.lifted === j && i === col.length - 1 ? LIFT : 0));
-    }));
+    this.pieces.forEach((col, j) =>
+      col.forEach((p, i) => {
+        this.ctx.tw.kill(p);
+        const at = this.slot(j, i);
+        p.position.set(at.x, at.y - (this.lifted === j && i === col.length - 1 ? LIFT : 0));
+      }),
+    );
   }
 
   private drawLid(i: number, chime: boolean) {
-    const j = this.jars[i], jar = this.board[i];
+    const j = this.jars[i],
+      jar = this.board[i];
     const want = this.labels?.[i];
     const full = uniformFull(jar, this.plan.cap);
     // On a labelled board a jar full of the wrong fruit waits for its lid, and so does a full spare jar.
@@ -428,7 +557,8 @@ class JarSort implements Game {
     const press = this.press;
     if (!press || press.jar !== i || this.lifted !== i) return;
     const j = this.jars[i];
-    const dx = j.carrier.x - j.spot.x, dy = j.carrier.y - j.spot.y;
+    const dx = j.carrier.x - j.spot.x,
+      dy = j.carrier.y - j.spot.y;
     if (Math.hypot(dx, dy) < DRAG_START) return;
     const p = this.pieces[i][this.pieces[i].length - 1];
     this.ctx.tw.kill(p);
@@ -441,14 +571,16 @@ class JarSort implements Game {
   private release(i: number): boolean {
     const j = this.jars[i];
     if (!j || j.carrier.destroyed) return true;
-    const dx = j.carrier.x - j.spot.x, dy = j.carrier.y - j.spot.y;
+    const dx = j.carrier.x - j.spot.x,
+      dy = j.carrier.y - j.spot.y;
     const press = this.press;
     const cancelled = this.cancelled;
     this.press = null;
     this.cancelled = false;
     this.placeJar(j, j.spot);
-    if (cancelled) return this.setDown(), true;
-    if (!press || this.busy || this.finished || this.lifted !== i || Math.hypot(dx, dy) < DRAG_START) return true;
+    if (cancelled) return (this.setDown(), true);
+    if (!press || this.busy || this.finished || this.lifted !== i || Math.hypot(dx, dy) < DRAG_START)
+      return true;
     const finger = this.finger(press, dx, dy, i);
     const target = this.jarAt(finger.x, finger.y - 40);
     if (target === null || target === i) this.setDown();
@@ -459,17 +591,24 @@ class JarSort implements Game {
   /** The finger now: where it went down plus how far the carrier has followed it (the jar's middle if the press was not seen). */
   private finger(press: { x: number; y: number }, dx: number, dy: number, i: number) {
     const s = this.jars[i].spot;
-    return Number.isNaN(press.x) ? { x: s.x + dx, y: s.y - s.hit.h / 2 + dy } : { x: press.x + dx, y: press.y + dy };
+    return Number.isNaN(press.x)
+      ? { x: s.x + dx, y: s.y - s.hit.h / 2 + dy }
+      : { x: press.x + dx, y: press.y + dy };
   }
 
   /** The jar whose hit box holds the point, or the nearest within a little slack. */
   private jarAt(x: number, y: number): number | null {
-    let best: number | null = null, bestD = Infinity;
+    let best: number | null = null,
+      bestD = Infinity;
     this.jars.forEach((j, i) => {
       const h = j.spot.hit;
-      const dx = Math.max(h.x - x, 0, x - (h.x + h.w)), dy = Math.max(h.y - 60 - y, 0, y - (h.y + h.h));
+      const dx = Math.max(h.x - x, 0, x - (h.x + h.w)),
+        dy = Math.max(h.y - 60 - y, 0, y - (h.y + h.h));
       const d = Math.hypot(dx, dy);
-      if (d < 30 && d < bestD) { best = i; bestD = d; }
+      if (d < 30 && d < bestD) {
+        best = i;
+        bestD = d;
+      }
     });
     return best;
   }
@@ -499,7 +638,9 @@ class JarSort implements Game {
     this.setDown();
     sfx.boing();
     const t = this.jars[to].root;
-    void this.ctx.tw.to(t, { x: t.x + 8 }, { duration: 0.06 }).then(() => this.ctx.tw.to(t, { x: this.jars[to].spot.x }, { duration: 0.1 }));
+    void this.ctx.tw
+      .to(t, { x: t.x + 8 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(t, { x: this.jars[to].spot.x }, { duration: 0.1 }));
     void this.ctx.say(why === 'full' ? 'jar.refuse-full' : (`jar.refuse-kind.${FRUITS[kind]}` as LineId));
     if (this.plan.lit) return;
     this.misses++;
@@ -553,7 +694,9 @@ class JarSort implements Game {
 
   /** Stuck: no move is left, or a small search proves there is no way out from here. Never a miss or a hint. */
   private checkStuck() {
-    const dead = !moves(this.board, this.plan.cap).length || search(this.board, this.plan.cap, this.labels, DEAD_END_LIMIT) === 'none';
+    const dead =
+      !moves(this.board, this.plan.cap).length ||
+      search(this.board, this.plan.cap, this.labels, DEAD_END_LIMIT) === 'none';
     if (!dead) return;
     this.undoPulse = 4;
     void this.ctx.say('jar.stuck');
@@ -585,16 +728,28 @@ class JarSort implements Game {
     this.board.forEach((jar, i) => {
       if (!jar.length) return;
       const s = this.jars[i].spot;
-      const jam = new Graphics().roundRect(-JAR_W / 2 + 6, -jar.length * PIECE - 10, JAR_W - 12, jar.length * PIECE + 2, 16).fill({ color: JAM[jar[0]], alpha: 0.85 });
+      const jam = new Graphics()
+        .roundRect(-JAR_W / 2 + 6, -jar.length * PIECE - 10, JAR_W - 12, jar.length * PIECE + 2, 16)
+        .fill({ color: JAM[jar[0]], alpha: 0.85 });
       jam.alpha = 0;
       this.jars[i].root.addChildAt(jam, this.jars[i].mat ? 2 : 1);
       void this.ctx.tw.to(jam, { alpha: 1 }, { duration: 0.4 });
       for (const p of this.pieces[i]) void this.ctx.tw.to(p, { alpha: 0 }, { duration: 0.4 });
-      this.ctx.particles.burst(s.x, s.y - jarHeight(this.plan.cap) / 2, { kind: 'dot', colors: [JAM[jar[0]], 0xffffff], count: 10, speed: [60, 180], gravity: 0, life: [0.4, 0.8] });
+      this.ctx.particles.burst(s.x, s.y - jarHeight(this.plan.cap) / 2, {
+        kind: 'dot',
+        colors: [JAM[jar[0]], 0xffffff],
+        count: 10,
+        speed: [60, 180],
+        gravity: 0,
+        life: [0.4, 0.8],
+      });
     });
     await this.ctx.say('jar.done');
     const away = this.ctx.view.w + 200;
-    await Promise.all([this.ctx.tw.to(this.jarLayer, { x: away }, { duration: 0.7, ease: ease.inOutSine }), this.ctx.tw.to(this.pieceLayer, { x: away }, { duration: 0.7, ease: ease.inOutSine })]);
+    await Promise.all([
+      this.ctx.tw.to(this.jarLayer, { x: away }, { duration: 0.7, ease: ease.inOutSine }),
+      this.ctx.tw.to(this.pieceLayer, { x: away }, { duration: 0.7, ease: ease.inOutSine }),
+    ]);
     this.jarLayer.x = this.pieceLayer.x = 0;
     await this.next();
   }
@@ -627,11 +782,19 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const kind = rng.int(0, 4);
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }));
+  c.addChild(
+    new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }),
+  );
   const jar = new Graphics()
-    .roundRect(-36, -34, 72, 86, 18).fill(JAM[kind]).stroke({ width: 5, color: ink })
-    .roundRect(-42, -48, 84, 20, 8).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line })
-    .roundRect(-26, -6, 52, 30, 8).fill(0xffffff).stroke({ width: 3, color: ink });
+    .roundRect(-36, -34, 72, 86, 18)
+    .fill(JAM[kind])
+    .stroke({ width: 5, color: ink })
+    .roundRect(-42, -48, 84, 20, 8)
+    .fill(swatch.red.fill)
+    .stroke({ width: 4, color: swatch.red.line })
+    .roundRect(-26, -6, 52, 30, 8)
+    .fill(0xffffff)
+    .stroke({ width: 3, color: ink });
   c.addChild(jar);
   const f = fruitArt(kind, 0.55);
   f.position.set(0, 9);
@@ -651,7 +814,8 @@ export const jarSort: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'One of you says which fruit to move, and the other moves it.',
-  offScreen: 'Stack two colors of blocks or pom-poms in cups or a cardboard tube and sort them so only the top one can move.',
+  offScreen:
+    'Stack two colors of blocks or pom-poms in cups or a cardboard tube and sort them so only the top one can move.',
   hubIcon: () => new JarIcon(),
   touchDemo: true,
   sticker,

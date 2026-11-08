@@ -10,9 +10,16 @@ export class DiscoveryMemory {
   private epoch = 0;
   last?: string;
 
-  clear() { this.owner = undefined; this.last = undefined; this.epoch++; }
+  clear() {
+    this.owner = undefined;
+    this.last = undefined;
+    this.epoch++;
+  }
   token(owner: object): DiscoveryToken {
-    if (owner !== this.owner) { this.clear(); this.owner = owner; }
+    if (owner !== this.owner) {
+      this.clear();
+      this.owner = owner;
+    }
     return { owner, epoch: this.epoch };
   }
   current(token: DiscoveryToken, owner: object): boolean {
@@ -31,12 +38,24 @@ export function launchDiscovery(go: Pick<Routes, 'game'>, id: string, band: Band
 
 /** A round launched by the mix: which session, which stop, which round. Only the scene that claimed it is in the mix. */
 export interface MixRound {
-  session: number; p: number; round: number;
+  session: number;
+  p: number;
+  round: number;
   /** What the stop card says before the stop's title: a hop over the stop before it (D3). */
   lead?: 'mix.skip';
 }
-interface MixSession { owner: object; id: number; place: Band; state: MixState; /** The stops, frozen when it started. */ readonly ids: readonly string[] }
-interface HeldLineup { owner: object; place: Band; ids: readonly string[] }
+interface MixSession {
+  owner: object;
+  id: number;
+  place: Band;
+  state: MixState;
+  /** The stops, frozen when it started. */ readonly ids: readonly string[];
+}
+interface HeldLineup {
+  owner: object;
+  place: Band;
+  ids: readonly string[];
+}
 
 /**
  * The live Little surprises session (D2b), in memory only. It belongs to one save object: a profile switch, reset,
@@ -56,9 +75,16 @@ export class MixMemory {
     return this.session.id;
   }
   /** Ends the live session; the held lineup stays for the next one. */
-  end() { this.session = undefined; this.pending = undefined; this.serial++; }
+  end() {
+    this.session = undefined;
+    this.pending = undefined;
+    this.serial++;
+  }
   /** A different player, or a replaced save: the session and the held lineup both go. */
-  forget() { this.end(); this.held = undefined; }
+  forget() {
+    this.end();
+    this.held = undefined;
+  }
   /** The held lineup for this save at this home spot, if a grown-up has edited one. */
   lineup(owner: object, place: Band): readonly string[] | undefined {
     return this.held?.owner === owner && this.held.place === place ? this.held.ids : undefined;
@@ -87,7 +113,7 @@ export class MixMemory {
     const s = this.own(owner);
     if (!s) return undefined;
     s.state = step(s.state, { type: 'launch', p });
-    return this.pending = { session: s.id, p, round: s.state.round, ...(lead ? { lead } : {}) };
+    return (this.pending = { session: s.id, p, round: s.state.round, ...(lead ? { lead } : {}) });
   }
   claim(owner: object): MixRound | undefined {
     const r = this.pending;

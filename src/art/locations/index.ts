@@ -15,7 +15,11 @@ const HORIZON: Partial<Record<LandId, number>> = { 'rainbow-meadow': 395 };
 export const horizonOf = (id: LandId) => HORIZON[id] ?? Math.round(PICTURE.h * 0.38);
 
 /** The land IDs a folder's file names give, split into backdrops and cards; a name that is not a land is returned as stray. */
-export function locationFiles(paths: string[]): { pictures: Map<LandId, string>; cards: Map<LandId, string>; stray: string[] } {
+export function locationFiles(paths: string[]): {
+  pictures: Map<LandId, string>;
+  cards: Map<LandId, string>;
+  stray: string[];
+} {
   const pictures = new Map<LandId, string>();
   const cards = new Map<LandId, string>();
   const stray: string[] = [];
@@ -47,7 +51,8 @@ export async function loadLocationArt(): Promise<void> {
 }
 
 /** A location's loaded picture, or null (none, not loaded yet, or `classic/`). */
-export const locationPicture = (id: LandId): Texture | null => loaded.get(FILES.pictures.get(id) ?? '') ?? null;
+export const locationPicture = (id: LandId): Texture | null =>
+  loaded.get(FILES.pictures.get(id) ?? '') ?? null;
 /** A location's loaded Places card, or null. */
 export const locationCard = (id: LandId): Texture | null => loaded.get(FILES.cards.get(id) ?? '') ?? null;
 
@@ -55,7 +60,11 @@ export const locationCard = (id: LandId): Texture | null => loaded.get(FILES.car
  * Where the picture goes so that its painted horizon lies on the scene's `ground` line (where `landLayout` puts the spots)
  * and it still covers the whole view: centred across, cropping the sides or the sky in the spare dimension.
  */
-export function pictureFit(view: { w: number; h: number }, ground: number, horizon: number): { x: number; y: number; scale: number } {
+export function pictureFit(
+  view: { w: number; h: number },
+  ground: number,
+  horizon: number,
+): { x: number; y: number; scale: number } {
   const scale = Math.max(view.w / PICTURE.w, ground / horizon, (view.h - ground) / (PICTURE.h - horizon));
   return { x: view.w / 2, y: ground - horizon * scale, scale };
 }

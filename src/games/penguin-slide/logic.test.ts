@@ -2,9 +2,43 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { levelsInOrder } from '../../progress/difficulty';
 import { penguinSlide } from './index';
-import { alone, movePair, solvePair, cellAt, makePrediction, PREDICTIONS, stopper, eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, solved, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import {
+  alone,
+  movePair,
+  solvePair,
+  cellAt,
+  makePrediction,
+  PREDICTIONS,
+  stopper,
+  eatsTwoFromStart,
+  FISH_COLORS,
+  hasDeadEnd,
+  PAIRED_BLOCK_PONDS,
+  pickLook,
+  ROCK_LOOKS,
+  beside,
+  eaten,
+  makePuzzle,
+  move,
+  PLANS,
+  slide,
+  solve,
+  solved,
+  tapDirection,
+  type Cell,
+  type Dir,
+  type SlidePuzzle,
+} from './logic';
 
-const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
+const tiny: SlidePuzzle = {
+  cols: 4,
+  rows: 3,
+  rocks: [{ x: 3, y: 1 }],
+  soft: [{ x: 1, y: 2 }],
+  start: { x: 0, y: 0 },
+  fish: [{ x: 2, y: 2 }],
+  best: 0,
+};
 
 describe('Penguin Slide', () => {
   it('slides until a rock, the edge or soft snow, eating fish on the way', () => {
@@ -26,7 +60,9 @@ describe('Penguin Slide', () => {
         expect(p.best).toBeGreaterThanOrEqual(plan.moves[0]);
         expect(p.best).toBeLessThanOrEqual(plan.moves[1]);
         expect(solve(p, p.start).moves).toBe(p.best);
-        const all = [p.start, ...p.rocks, ...p.soft, ...p.fish, ...(p.blocks ?? [])].map((c) => `${c.x},${c.y}`);
+        const all = [p.start, ...p.rocks, ...p.soft, ...p.fish, ...(p.blocks ?? [])].map(
+          (c) => `${c.x},${c.y}`,
+        );
         expect(new Set(all).size).toBe(all.length);
         expect(p.fish).toHaveLength(plan.fish);
         expect(p.blocks?.length ?? 0).toBe(plan.blocks ?? 0);
@@ -93,7 +129,14 @@ describe('Penguin Slide ice blocks', () => {
   //  . . . ~ . .
   //  . F . . . .
   const pond = (blocks: Cell[]): SlidePuzzle => ({
-    cols: 6, rows: 3, rocks: [{ x: 5, y: 0 }], soft: [{ x: 3, y: 1 }], blocks, start: { x: 0, y: 0 }, fish: [{ x: 1, y: 2 }], best: 0,
+    cols: 6,
+    rows: 3,
+    rocks: [{ x: 5, y: 0 }],
+    soft: [{ x: 3, y: 1 }],
+    blocks,
+    start: { x: 0, y: 0 },
+    fish: [{ x: 1, y: 2 }],
+    best: 0,
   });
 
   it('a block stops a slide like a rock, and pushing it skates it to its next stop while the penguin stays put', () => {
@@ -112,19 +155,37 @@ describe('Penguin Slide ice blocks', () => {
     expect(move(pond([{ x: 1, y: 1 }]), { x: 0, y: 1 }, 0)!.pushed!.to).toEqual({ x: 3, y: 1 }); // sinks into the snow
     expect(move(pond([{ x: 3, y: 2 }]), { x: 4, y: 2 }, 2)!.pushed!.to).toEqual({ x: 2, y: 2 }); // the fish is not covered
     expect(move(pond([{ x: 1, y: 1 }]), { x: 1, y: 0 }, 1)).toBeNull(); // the fish is right behind it
-    expect(move(pond([{ x: 1, y: 1 }, { x: 2, y: 1 }]), { x: 0, y: 1 }, 0)).toBeNull(); // another block is right behind it
+    expect(
+      move(
+        pond([
+          { x: 1, y: 1 },
+          { x: 2, y: 1 },
+        ]),
+        { x: 0, y: 1 },
+        0,
+      ),
+    ).toBeNull(); // another block is right behind it
     expect(move(pond([{ x: 4, y: 0 }]), { x: 3, y: 0 }, 0)).toBeNull(); // a rock is right behind it
     expect(move(pond([]), { x: 0, y: 0 }, 2)).toBeNull(); // nothing at all: a bump
   });
 
   it('a block shut in front of the fish leaves no way, which the solver reports as stuck', () => {
     // P B F: the fish is right behind the block, so it will not move and the penguin cannot pass.
-    const shut: SlidePuzzle = { cols: 3, rows: 1, rocks: [], soft: [], blocks: [{ x: 1, y: 0 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 0 }], best: 0 };
+    const shut: SlidePuzzle = {
+      cols: 3,
+      rows: 1,
+      rocks: [],
+      soft: [],
+      blocks: [{ x: 1, y: 0 }],
+      start: { x: 0, y: 0 },
+      fish: [{ x: 2, y: 0 }],
+      best: 0,
+    };
     expect(solve(shut, shut.start).moves).toBe(-1);
   });
 
   it('every block level needs a push: frozen blocks leave the fish out of reach or farther', () => {
-    for (const plan of PLANS.filter(p => p.blocks)) {
+    for (const plan of PLANS.filter((p) => p.blocks)) {
       expect(plan.blocks).toBeGreaterThan(0);
       for (let seed = 1; seed <= 150; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
@@ -142,13 +203,18 @@ it('level 7 preserves the board size and gives two-fish routes with meaningful b
   expect(p.moves).toEqual([4, 6]);
   for (let seed = 1; seed <= 60; seed++) {
     const puzzle = makePuzzle(p, new Rng(seed));
-    let at = puzzle.start, have = 0, blocks = puzzle.blocks!, pushes = 0;
+    let at = puzzle.start,
+      have = 0,
+      blocks = puzzle.blocks!,
+      pushes = 0;
     for (let step = 0; step < puzzle.best; step++) {
       const first = solve(puzzle, at, have, blocks).first;
       expect(first).toBeGreaterThanOrEqual(0);
       const m = move(puzzle, at, first as Dir, blocks)!;
       if (m.pushed) pushes++;
-      have |= eaten(puzzle, m.passed); at = m.to; blocks = m.blocks;
+      have |= eaten(puzzle, m.passed);
+      at = m.to;
+      blocks = m.blocks;
       expect(solve(puzzle, at, have, blocks).moves).toBe(puzzle.best - step - 1);
     }
     expect(pushes).toBeGreaterThan(0);
@@ -156,42 +222,69 @@ it('level 7 preserves the board size and gives two-fish routes with meaningful b
   }
 });
 
-it('level 8 combines useful snow stops with a useful block on every generated pond',()=>{
- const plan=PLANS[7];expect([plan.fish,plan.blocks,plan.soft]).toEqual([2,1,1]);
- for(let seed=1;seed<=150;seed++){
-  const p=makePuzzle(plan,new Rng(seed));
-  expect(solve({...p,soft:[]},p.start).moves).not.toBe(p.best);
-  const frozen=solve({...p,rocks:[...p.rocks,...p.blocks!],blocks:[]},p.start).moves;
-  expect(frozen===-1||frozen>p.best).toBe(true);
- }
+it('level 8 combines useful snow stops with a useful block on every generated pond', () => {
+  const plan = PLANS[7];
+  expect([plan.fish, plan.blocks, plan.soft]).toEqual([2, 1, 1]);
+  for (let seed = 1; seed <= 150; seed++) {
+    const p = makePuzzle(plan, new Rng(seed));
+    expect(solve({ ...p, soft: [] }, p.start).moves).not.toBe(p.best);
+    const frozen = solve({ ...p, rocks: [...p.rocks, ...p.blocks!], blocks: [] }, p.start).moves;
+    expect(frozen === -1 || frozen > p.best).toBe(true);
+  }
 });
 
-it('paired-block ponds need each block, preserve their solver distance under seeded reflections, and vary',()=>{
- const seen=new Set<string>();
- for(let seed=1;seed<=200;seed++){
-  const p=makePuzzle(PLANS[8],new Rng(seed)),signature=JSON.stringify(p);
-  if(seen.has(signature))continue;seen.add(signature);
-  expect(solve(p,p.start).moves).toBe(p.best);
-  for(let i=0;i<2;i++){
-   const frozen=solve({...p,rocks:[...p.rocks,p.blocks![i]],blocks:p.blocks!.filter((_,j)=>j!==i)},p.start).moves;
-   expect(frozen===-1||frozen>p.best).toBe(true);
+it('paired-block ponds need each block, preserve their solver distance under seeded reflections, and vary', () => {
+  const seen = new Set<string>();
+  for (let seed = 1; seed <= 200; seed++) {
+    const p = makePuzzle(PLANS[8], new Rng(seed)),
+      signature = JSON.stringify(p);
+    if (seen.has(signature)) continue;
+    seen.add(signature);
+    expect(solve(p, p.start).moves).toBe(p.best);
+    for (let i = 0; i < 2; i++) {
+      const frozen = solve(
+        { ...p, rocks: [...p.rocks, p.blocks![i]], blocks: p.blocks!.filter((_, j) => j !== i) },
+        p.start,
+      ).moves;
+      expect(frozen === -1 || frozen > p.best).toBe(true);
+    }
+    let at = p.start,
+      have = 0,
+      blocks = p.blocks!,
+      pushed = new Set<number>();
+    for (let step = 0; step < p.best; step++) {
+      const d = solve(p, at, have, blocks).first;
+      expect(d).toBeGreaterThanOrEqual(0);
+      const m = move(p, at, d as Dir, blocks)!;
+      if (m.pushed) pushed.add(m.pushed.index);
+      at = m.to;
+      blocks = m.blocks;
+      have |= eaten(p, m.passed);
+    }
+    expect(have).toBe(1);
+    expect(pushed.size).toBe(2);
   }
-  let at=p.start,have=0,blocks=p.blocks!,pushed=new Set<number>();
-  for(let step=0;step<p.best;step++){
-   const d=solve(p,at,have,blocks).first;expect(d).toBeGreaterThanOrEqual(0);
-   const m=move(p,at,d as Dir,blocks)!;if(m.pushed)pushed.add(m.pushed.index);
-   at=m.to;blocks=m.blocks;have|=eaten(p,m.passed);
-  }
-  expect(have).toBe(1);expect(pushed.size).toBe(2);
- }
- expect(PAIRED_BLOCK_PONDS).toHaveLength(4);expect(seen.size).toBe(16);
+  expect(PAIRED_BLOCK_PONDS).toHaveLength(4);
+  expect(seen.size).toBe(16);
 });
 
 describe('Penguin Slide fair ponds', () => {
   it('spots a dead end: a slide that leaves the fish out of reach', () => {
     // A level-1 pond the old generator made: one slide right eats the fish, but down then along the
     // bottom row leaves the penguin circling the bottom corners and the top-left, never back.
-    const trap: SlidePuzzle = { cols: 5, rows: 4, rocks: [{ x: 2, y: 1 }, { x: 1, y: 0 }, { x: 4, y: 2 }], soft: [], start: { x: 3, y: 1 }, fish: [{ x: 4, y: 1 }], best: 1 };
+    const trap: SlidePuzzle = {
+      cols: 5,
+      rows: 4,
+      rocks: [
+        { x: 2, y: 1 },
+        { x: 1, y: 0 },
+        { x: 4, y: 2 },
+      ],
+      soft: [],
+      start: { x: 3, y: 1 },
+      fish: [{ x: 4, y: 1 }],
+      best: 1,
+    };
     expect(solve(trap, trap.start).moves).toBe(1);
     expect(hasDeadEnd(trap)).toBe(true);
     expect(hasDeadEnd(tiny)).toBe(false);
@@ -226,7 +319,8 @@ describe('Penguin Slide fair ponds', () => {
   }, 15000);
 
   it('seeded looks use every rock look and fish colour, and repeat for a seed', () => {
-    const rocks = new Set<string>(), fish = new Set<string>();
+    const rocks = new Set<string>(),
+      fish = new Set<string>();
     for (let seed = 1; seed <= 60; seed++) {
       const look = pickLook(new Rng(seed));
       expect(pickLook(new Rng(seed))).toEqual(look);
@@ -253,9 +347,30 @@ describe('Penguin Slide fair ponds', () => {
   }, 15000);
 
   it('a first slide past two fish counts as eating two from the start', () => {
-    const p: SlidePuzzle = { cols: 5, rows: 3, rocks: [], soft: [], start: { x: 0, y: 0 }, fish: [{ x: 1, y: 0 }, { x: 3, y: 0 }, { x: 0, y: 2 }], best: 0 };
+    const p: SlidePuzzle = {
+      cols: 5,
+      rows: 3,
+      rocks: [],
+      soft: [],
+      start: { x: 0, y: 0 },
+      fish: [
+        { x: 1, y: 0 },
+        { x: 3, y: 0 },
+        { x: 0, y: 2 },
+      ],
+      best: 0,
+    };
     expect(eatsTwoFromStart(p)).toBe(true);
-    expect(eatsTwoFromStart({ ...p, fish: [{ x: 1, y: 0 }, { x: 3, y: 1 }, { x: 0, y: 2 }] })).toBe(false);
+    expect(
+      eatsTwoFromStart({
+        ...p,
+        fish: [
+          { x: 1, y: 0 },
+          { x: 3, y: 1 },
+          { x: 0, y: 2 },
+        ],
+      }),
+    ).toBe(false);
   });
 });
 
@@ -265,7 +380,9 @@ describe('Penguin Slide level 11, Where will it stop?', () => {
 
   it('is a small one-fish prediction pond, two ponds a round', () => {
     expect(plan.predict).toBe(true);
-    expect([plan.cols, plan.rows, plan.fish, plan.rocks, plan.soft, plan.blocks ?? 0, plan.puzzles]).toEqual([5, 4, 1, 3, 0, 0, 2]);
+    expect([plan.cols, plan.rows, plan.fish, plan.rocks, plan.soft, plan.blocks ?? 0, plan.puzzles]).toEqual([
+      5, 4, 1, 3, 0, 0, 2,
+    ]);
   });
 
   it('shows three slides that each really move the penguin, the fish eaten only on the last', () => {
@@ -305,7 +422,8 @@ describe('Penguin Slide level 11, Where will it stop?', () => {
         const stop = stopper(p, s.to, s.dir);
         const next = beside(s.to, s.dir);
         const off = next.x < 0 || next.y < 0 || next.x >= p.cols || next.y >= p.rows;
-        if (stop.kind === 'rock') expect(p.rocks.some((r) => same(r, stop.cell)) && same(stop.cell, next)).toBe(true);
+        if (stop.kind === 'rock')
+          expect(p.rocks.some((r) => same(r, stop.cell)) && same(stop.cell, next)).toBe(true);
         else expect(off).toBe(true);
       }
     }
@@ -321,7 +439,9 @@ describe('Penguin Slide level 11, Where will it stop?', () => {
   });
 
   it('varies the ponds by seed', () => {
-    const boards = new Set(Array.from({ length: 30 }, (_, i) => JSON.stringify(makePrediction(plan, new Rng(i + 1)))));
+    const boards = new Set(
+      Array.from({ length: 30 }, (_, i) => JSON.stringify(makePrediction(plan, new Rng(i + 1)))),
+    );
     expect(boards.size).toBeGreaterThan(25);
   });
 });
@@ -331,7 +451,15 @@ describe('Penguin Slide level 12, A block onto the star', () => {
   const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
 
   it('solved needs every fish eaten and every star covered by a block', () => {
-    const base: SlidePuzzle = { cols: 4, rows: 1, rocks: [], soft: [], start: { x: 0, y: 0 }, fish: [{ x: 3, y: 0 }], best: 0 };
+    const base: SlidePuzzle = {
+      cols: 4,
+      rows: 1,
+      rocks: [],
+      soft: [],
+      start: { x: 0, y: 0 },
+      fish: [{ x: 3, y: 0 }],
+      best: 0,
+    };
     expect(solved(base, 0, [])).toBe(false);
     expect(solved(base, 1, [])).toBe(true); // no stars: fish only
     const starry: SlidePuzzle = { ...base, fish: [], stars: [{ x: 2, y: 0 }] };
@@ -347,7 +475,9 @@ describe('Penguin Slide level 12, A block onto the star', () => {
   });
 
   it('is a star-and-block plan with no fish', () => {
-    expect([plan.fish, plan.soft, plan.rocks, plan.blocks, plan.stars, plan.puzzles]).toEqual([0, 1, 3, 1, 1, 2]);
+    expect([plan.fish, plan.soft, plan.rocks, plan.blocks, plan.stars, plan.puzzles]).toEqual([
+      0, 1, 3, 1, 1, 2,
+    ]);
     expect(plan.moves).toEqual([3, 6]);
   });
 
@@ -362,7 +492,10 @@ describe('Penguin Slide level 12, A block onto the star', () => {
       expect(p.stars, at).toHaveLength(1);
       expect(p.blocks, at).toHaveLength(1);
       const star = p.stars![0];
-      expect([...p.rocks, ...p.soft, ...p.blocks!, p.start].some((c) => same(c, star)), at).toBe(false);
+      expect(
+        [...p.rocks, ...p.soft, ...p.blocks!, p.start].some((c) => same(c, star)),
+        at,
+      ).toBe(false);
       const all = [p.start, ...p.rocks, ...p.soft, ...p.blocks!, star].map((c) => `${c.x},${c.y}`);
       expect(new Set(all).size, at).toBe(all.length);
       // A frozen block can never reach the star (it starts elsewhere), so the block must be pushed.
@@ -370,14 +503,20 @@ describe('Penguin Slide level 12, A block onto the star', () => {
       // The soft snow matters.
       expect(solve({ ...p, soft: [] }, p.start).moves, at).not.toBe(p.best);
       // Follow the hint arrow: ends solved in exactly `best` moves, each step one closer.
-      let pos = p.start, have = 0, blocks = p.blocks!, used = 0;
+      let pos = p.start,
+        have = 0,
+        blocks = p.blocks!,
+        used = 0;
       while (!solved(p, have, blocks) && used < 40) {
         const { first, moves } = solve(p, pos, have, blocks);
         expect(moves, at).toBe(p.best - used);
         expect(first, at).toBeGreaterThanOrEqual(0);
         const m = move(p, pos, first as Dir, blocks)!;
         expect(m, at).not.toBeNull();
-        have |= eaten(p, m.passed); pos = m.to; blocks = m.blocks; used++;
+        have |= eaten(p, m.passed);
+        pos = m.to;
+        blocks = m.blocks;
+        used++;
       }
       expect(used, at).toBe(p.best);
       expect(solved(p, have, blocks), at).toBe(true);
@@ -407,7 +546,10 @@ describe('Penguin Slide level 12, A block onto the star', () => {
       expect(p.best, at).toBeGreaterThanOrEqual(4);
       expect(p.best, at).toBeLessThanOrEqual(7);
       expect(solvePair(p, [p.start, pal]).moves, at).toBe(p.best);
-      expect([...p.rocks, ...p.fish, p.start].some((c) => same(c, pal)), at).toBe(false);
+      expect(
+        [...p.rocks, ...p.fish, p.start].some((c) => same(c, pal)),
+        at,
+      ).toBe(false);
       // Each penguin alone, with the other frozen like a rock, is stuck or slower.
       for (const m of alone(p)) expect(m === -1 || m > p.best, at).toBe(true);
       // Following the hint step by step eats every fish in exactly `best` slides, and switches penguin.
@@ -427,7 +569,10 @@ describe('Penguin Slide level 12, A block onto the star', () => {
         expect(used, at).toBeLessThanOrEqual(p.best);
       }
       expect(used, at).toBe(p.best);
-      expect(whos.some((w) => w !== whos[0]), at).toBe(true);
+      expect(
+        whos.some((w) => w !== whos[0]),
+        at,
+      ).toBe(true);
       // A penguin never lands on or slides through the other one.
       for (const who of [0, 1] as const) {
         for (const dir of [0, 1, 2, 3] as Dir[]) {
@@ -437,7 +582,10 @@ describe('Penguin Slide level 12, A block onto the star', () => {
           if (same(beside(from[who], dir), other)) expect(m, at).toBeNull();
           if (m) {
             expect(same(m.spots[who], other), at).toBe(false);
-            expect(m.passed.some((c) => same(c, other)), at).toBe(false);
+            expect(
+              m.passed.some((c) => same(c, other)),
+              at,
+            ).toBe(false);
             expect(same(m.spots[1 - who], other), at).toBe(true);
           }
         }

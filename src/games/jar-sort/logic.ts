@@ -23,7 +23,11 @@ export type Fruit = (typeof FRUITS)[number];
 /** The pantry behind the jars: the window's light and the lids' colour change with the round; the rules never do. */
 export const LOOKS = ['morning', 'rain', 'evening'] as const;
 export type Look = (typeof LOOKS)[number];
-export const LID_COLOR: Record<Look, 'red' | 'blue' | 'purple'> = { morning: 'red', rain: 'blue', evening: 'purple' };
+export const LID_COLOR: Record<Look, 'red' | 'blue' | 'purple'> = {
+  morning: 'red',
+  rain: 'blue',
+  evening: 'purple',
+};
 
 export interface JarPlan {
   id: number;
@@ -42,14 +46,94 @@ export interface JarPlan {
 }
 
 export const PLANS: JarPlan[] = [
-  { id: 1, name: 'Two kinds, two jars to fill', jars: 3, cap: 2, kinds: 2, par: [2, 3], boards: 2, lit: true, labels: false },
-  { id: 2, name: 'Two kinds, taller jars', jars: 3, cap: 3, kinds: 2, par: [3, 5], boards: 2, lit: true, labels: false },
-  { id: 3, name: 'Three kinds, one spare jar', jars: 4, cap: 3, kinds: 3, par: [4, 7], boards: 2, lit: false, labels: false },
-  { id: 4, name: 'Three kinds, two spare jars', jars: 5, cap: 4, kinds: 3, par: [6, 9], boards: 2, lit: false, labels: false },
-  { id: 5, name: 'Four kinds', jars: 6, cap: 4, kinds: 4, par: [9, 13], boards: 1, lit: false, labels: false },
-  { id: 6, name: 'Four kinds, one spare jar: plan ahead', jars: 5, cap: 4, kinds: 4, par: [10, 15], boards: 1, lit: false, labels: false },
-  { id: 7, name: 'Five kinds', jars: 7, cap: 4, kinds: 5, par: [12, 18], boards: 1, lit: false, labels: false },
-  { id: 8, name: 'Every fruit has its jar', jars: 6, cap: 4, kinds: 4, par: [10, 16], boards: 1, lit: false, labels: true },
+  {
+    id: 1,
+    name: 'Two kinds, two jars to fill',
+    jars: 3,
+    cap: 2,
+    kinds: 2,
+    par: [2, 3],
+    boards: 2,
+    lit: true,
+    labels: false,
+  },
+  {
+    id: 2,
+    name: 'Two kinds, taller jars',
+    jars: 3,
+    cap: 3,
+    kinds: 2,
+    par: [3, 5],
+    boards: 2,
+    lit: true,
+    labels: false,
+  },
+  {
+    id: 3,
+    name: 'Three kinds, one spare jar',
+    jars: 4,
+    cap: 3,
+    kinds: 3,
+    par: [4, 7],
+    boards: 2,
+    lit: false,
+    labels: false,
+  },
+  {
+    id: 4,
+    name: 'Three kinds, two spare jars',
+    jars: 5,
+    cap: 4,
+    kinds: 3,
+    par: [6, 9],
+    boards: 2,
+    lit: false,
+    labels: false,
+  },
+  {
+    id: 5,
+    name: 'Four kinds',
+    jars: 6,
+    cap: 4,
+    kinds: 4,
+    par: [9, 13],
+    boards: 1,
+    lit: false,
+    labels: false,
+  },
+  {
+    id: 6,
+    name: 'Four kinds, one spare jar: plan ahead',
+    jars: 5,
+    cap: 4,
+    kinds: 4,
+    par: [10, 15],
+    boards: 1,
+    lit: false,
+    labels: false,
+  },
+  {
+    id: 7,
+    name: 'Five kinds',
+    jars: 7,
+    cap: 4,
+    kinds: 5,
+    par: [12, 18],
+    boards: 1,
+    lit: false,
+    labels: false,
+  },
+  {
+    id: 8,
+    name: 'Every fruit has its jar',
+    jars: 6,
+    cap: 4,
+    kinds: 4,
+    par: [10, 16],
+    boards: 1,
+    lit: false,
+    labels: true,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -109,7 +193,8 @@ export function solved(b: Board, cap: number, labels?: Labels): boolean {
 
 export function moves(b: Board, cap: number): Move[] {
   const out: Move[] = [];
-  for (let from = 0; from < b.length; from++) for (let to = 0; to < b.length; to++) if (legal(b, cap, from, to)) out.push({ from, to });
+  for (let from = 0; from < b.length; from++)
+    for (let to = 0; to < b.length; to++) if (legal(b, cap, from, to)) out.push({ from, to });
   return out;
 }
 
@@ -121,12 +206,17 @@ export function canonical(b: Board, labels?: Labels): string {
   if (labels) {
     // Mats pin their jars; only the spare jars can trade places.
     const fixed = labels.map((k, i) => (k === null ? null : b[i].join('')));
-    const spare = b.filter((_, i) => labels[i] === null).map((j) => j.join('')).sort();
+    const spare = b
+      .filter((_, i) => labels[i] === null)
+      .map((j) => j.join(''))
+      .sort();
     return fixed.filter((s) => s !== null).join('|') + '#' + spare.join('|');
   }
   const sorted = b.map((j) => j.join('')).sort();
   const names = new Map<string, string>();
-  const renamed = sorted.map((j) => [...j].map((k) => names.get(k) ?? (names.set(k, String(names.size)), String(names.size - 1))).join(''));
+  const renamed = sorted.map((j) =>
+    [...j].map((k) => names.get(k) ?? (names.set(k, String(names.size)), String(names.size - 1))).join(''),
+  );
   return renamed.sort().join('|');
 }
 
@@ -139,7 +229,9 @@ export function search(b: Board, cap: number, labels?: Labels, limit = SEARCH_CA
   if (solved(b, cap, labels)) return [];
   const startKey = canonical(b, labels);
   // Each key keeps the real board it was reached as, so a path's moves are real jar numbers.
-  const seen = new Map<string, { board: Board; parent: string | null; move: Move | null }>([[startKey, { board: b, parent: null, move: null }]]);
+  const seen = new Map<string, { board: Board; parent: string | null; move: Move | null }>([
+    [startKey, { board: b, parent: null, move: null }],
+  ]);
   let frontier = [startKey];
   while (frontier.length) {
     const next: string[] = [];
@@ -180,12 +272,20 @@ export function solve(b: Board, cap: number, labels?: Labels, limit = SEARCH_CAP
  */
 export type Hint = { kind: 'move'; move: Move } | { kind: 'stuck' } | { kind: 'back'; steps: number };
 
-export function hintMove(b: Board, cap: number, labels: Labels | undefined, history: Board[], limit = SEARCH_CAP): Hint {
+export function hintMove(
+  b: Board,
+  cap: number,
+  labels: Labels | undefined,
+  history: Board[],
+  limit = SEARCH_CAP,
+): Hint {
   if (!moves(b, cap).length) return { kind: 'stuck' };
   const r = search(b, cap, labels, limit);
   if (Array.isArray(r)) return r.length ? { kind: 'move', move: r[0] } : { kind: 'stuck' };
   if (r === 'none') return { kind: 'stuck' };
-  for (let i = history.length - 1; i > 0; i--) if (Array.isArray(search(history[i], cap, labels, limit))) return { kind: 'back', steps: history.length - i };
+  for (let i = history.length - 1; i > 0; i--)
+    if (Array.isArray(search(history[i], cap, labels, limit)))
+      return { kind: 'back', steps: history.length - i };
   return { kind: 'back', steps: history.length };
 }
 
@@ -200,7 +300,9 @@ export function greedy(b: Board, cap: number, labels?: Labels, steps = 200): boo
     if (solved(board, cap, labels)) return true;
     const all = moves(board, cap).filter((m) => !seen.has(render(move(board, m.from, m.to))));
     const same = all.find((m) => board[m.to].length > 0);
-    const empty = all.find((m) => board[m.to].length === 0 && !board[m.from].every((k) => k === board[m.from][0]));
+    const empty = all.find(
+      (m) => board[m.to].length === 0 && !board[m.from].every((k) => k === board[m.from][0]),
+    );
     const pick = same ?? empty;
     if (!pick) return false;
     board = move(board, pick.from, pick.to);
@@ -258,7 +360,8 @@ export interface JarSpot {
 }
 
 function rowXs(n: number, v: View): number[] {
-  const left = 150, right = v.w - 40;
+  const left = 150,
+    right = v.w - 40;
   const step = Math.min(150, (right - left) / Math.max(1, n));
   const mid = (left + right) / 2;
   return Array.from({ length: n }, (_, i) => mid + (i - (n - 1) / 2) * step);
@@ -268,15 +371,23 @@ function rowXs(n: number, v: View): number[] {
 export function jarLayout(n: number, cap: number, v: View): JarSpot[] {
   const h = jarHeight(cap);
   const room = (v.w - 190) / n;
-  const spot = (x: number, base: number): JarSpot => ({ x, y: base, hit: { x: x - HIT_W / 2, y: base - h, w: HIT_W, h } });
+  const spot = (x: number, base: number): JarSpot => ({
+    x,
+    y: base,
+    hit: { x: x - HIT_W / 2, y: base - h, w: HIT_W, h },
+  });
   if (room >= MIN_PITCH) {
     // One row, standing in the middle of the space under the header and above the round arrow.
     const bottom = v.h - UNDO_INSET - 54 - 20;
     const base = Math.min(bottom, HEADER + Math.max(0, (bottom - HEADER - h) / 2) + h);
     return rowXs(n, v).map((x) => spot(x, base));
   }
-  const upper = Math.ceil(n / 2), lower = n - upper;
+  const upper = Math.ceil(n / 2),
+    lower = n - upper;
   const total = 2 * h + ROW_GAP;
   const topY = HEADER + Math.max(0, (v.h - 40 - HEADER - total) / 2);
-  return [...rowXs(upper, v).map((x) => spot(x, topY + h)), ...rowXs(lower, v).map((x) => spot(x, topY + total))];
+  return [
+    ...rowXs(upper, v).map((x) => spot(x, topY + h)),
+    ...rowXs(lower, v).map((x) => spot(x, topY + total)),
+  ];
 }

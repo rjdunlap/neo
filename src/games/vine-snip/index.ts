@@ -15,13 +15,54 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  alongVine, ANCHOR_Y, arcAt, BAND, beat, BOARD_H, BOARD_W, boardOrigin, cutBy, distToSegment, FRIEND_MAX, FRIEND_MIN, FRIENDS, GROW, growAt, landing, LEAF_Y,
-  linesFor, MOUTH_Y, nearestVine, pairsOf, planFor, posAt, solvePair, startSwing, swingFrom, TAP_TRAVEL, vineSeg, windows,
-  type FriendKind, type Kind, type Landing, type Line, type Pair, type Plan, type Pt, type Swing,
+  alongVine,
+  ANCHOR_Y,
+  arcAt,
+  BAND,
+  beat,
+  BOARD_H,
+  BOARD_W,
+  boardOrigin,
+  cutBy,
+  distToSegment,
+  FRIEND_MAX,
+  FRIEND_MIN,
+  FRIENDS,
+  GROW,
+  growAt,
+  landing,
+  LEAF_Y,
+  linesFor,
+  MOUTH_Y,
+  nearestVine,
+  pairsOf,
+  planFor,
+  posAt,
+  solvePair,
+  startSwing,
+  swingFrom,
+  TAP_TRAVEL,
+  vineSeg,
+  windows,
+  type FriendKind,
+  type Kind,
+  type Landing,
+  type Line,
+  type Pair,
+  type Plan,
+  type Pt,
+  type Swing,
 } from './logic';
 
 const COLOR: Record<Kind, ColorName> = { apple: 'red', orange: 'orange', lemon: 'yellow', pear: 'green' };
-const NAME: Record<FriendKind, string> = { bunny: 'Bunny', bear: 'Bear', duck: 'Duck', pig: 'Pig', dog: 'Dog', cat: 'Cat' };
+const NAME: Record<FriendKind, string> = {
+  bunny: 'Bunny',
+  bear: 'Bear',
+  duck: 'Duck',
+  pig: 'Pig',
+  dog: 'Dog',
+  cat: 'Cat',
+};
 /** Each friend rings its own pentatonic step when it munches. */
 const NOTE: Record<FriendKind, number> = { bunny: 5, bear: 6, duck: 7, pig: 8, dog: 9, cat: 10 };
 const FRIEND_SCALE = 0.76;
@@ -32,7 +73,12 @@ const FLOAT = 1.2;
 type Phase = 'rest' | 'swing' | 'fall' | 'eat' | 'miss' | 'done';
 type HangPhase = Exclude<Phase, 'done'> | 'fed';
 
-interface Stroke { id: number; last: Pt; travel: number; cutAny: boolean }
+interface Stroke {
+  id: number;
+  last: Pt;
+  travel: number;
+  cutAny: boolean;
+}
 
 function fruitArt(kind: Kind): Container {
   return prop(kind, COLOR[kind]);
@@ -83,15 +129,31 @@ class VineSnip implements Game {
   readonly layer = new Container();
   readonly growBtn = new Container();
   private readonly onCancel = (e: PointerEvent) => {
-    if (this.stroke?.id === e.pointerId) { this.stroke = null; this.trail = []; }
+    if (this.stroke?.id === e.pointerId) {
+      this.stroke = null;
+      this.trail = [];
+    }
   };
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.lines = linesFor(this.plan, ctx.rng);
     if (ctx.demo) this.lines.splice(1);
-    this.back = ctx.track(new Backdrop({ sky: [0x9fd8f5, 0xe9f7e0], hills: [0xb8e3a8, 0x8fcf7f, 0x7cc06c], horizon: 0.86, clouds: 3, sun: true, seed: 211 }, ctx.view));
-    for (const o of [this.back, this.board, this.ground, this.branch, this.vinesG, this.glowG, this.trailG]) o.eventMode = 'none';
+    this.back = ctx.track(
+      new Backdrop(
+        {
+          sky: [0x9fd8f5, 0xe9f7e0],
+          hills: [0xb8e3a8, 0x8fcf7f, 0x7cc06c],
+          horizon: 0.86,
+          clouds: 3,
+          sun: true,
+          seed: 211,
+        },
+        ctx.view,
+      ),
+    );
+    for (const o of [this.back, this.board, this.ground, this.branch, this.vinesG, this.glowG, this.trailG])
+      o.eventMode = 'none';
     this.board.addChild(this.ground, this.branch, this.vinesG, this.glowG);
     this.layer.eventMode = 'static';
     this.layer.on('pointerdown', (e) => this.down(e));
@@ -126,7 +188,8 @@ class VineSnip implements Game {
       if (h.phase === 'fall' && h.fall) this.falling(h, dt);
       if (h.phase === 'miss' && h.float) this.floating(h);
       h.art.position.set(h.at.x, h.at.y);
-      if (h.phase === 'swing' || h.phase === 'rest') h.art.rotation = h.swing ? -0.6 * (h.at.x - h.swing.ax) / h.swing.len : 0;
+      if (h.phase === 'swing' || h.phase === 'rest')
+        h.art.rotation = h.swing ? (-0.6 * (h.at.x - h.swing.ax)) / h.swing.len : 0;
       h.friend.x = h.friendX;
       h.stump.x = h.friendX;
     }
@@ -166,9 +229,17 @@ class VineSnip implements Game {
     if (!this.canSnip) return void this.say(this.instructLine(), this.vars());
     this.hints++;
     // A fruit swinging or hanging on a vine that cannot feed its friend grows its vines back first.
-    if (this.keeps) for (const h of this.hangs) if (h.phase !== 'fed' && !h.alive[solvePair(h.pair, this.line).keep]) this.regrow(h);
+    if (this.keeps)
+      for (const h of this.hangs)
+        if (h.phase !== 'fed' && !h.alive[solvePair(h.pair, this.line).keep]) this.regrow(h);
     this.glowOn = true;
-    void this.say(this.plan.mode === 'snip' || this.plan.mode === 'two' ? 'vine-snip.hint-vine' : this.keepHint() ? 'vine-snip.hint-keep' : 'vine-snip.hint');
+    void this.say(
+      this.plan.mode === 'snip' || this.plan.mode === 'two'
+        ? 'vine-snip.hint-vine'
+        : this.keepHint()
+          ? 'vine-snip.hint-keep'
+          : 'vine-snip.hint',
+    );
   }
 
   /**
@@ -197,7 +268,12 @@ class VineSnip implements Game {
       return { tap: { on: this.ctx.stage, x: p.x, y: p.y }, receiver: this.layer, when };
     }
     if (h.swing || this.keeps) return { tap: { on: this.ctx.stage, x: p.x, y: p.y }, receiver: this.layer };
-    return { trace: { on: this.ctx.stage, x: p.x - 60, y: p.y + 10 }, via: [{ on: this.ctx.stage, x: p.x + 60, y: p.y - 10 }], receiver: this.layer, pause: 0.8 };
+    return {
+      trace: { on: this.ctx.stage, x: p.x - 60, y: p.y + 10 },
+      via: [{ on: this.ctx.stage, x: p.x + 60, y: p.y - 10 }],
+      receiver: this.layer,
+      pause: 0.8,
+    };
   }
 
   /** For scripted checks: the focus fruit (the first fields, as at levels 1–3), then every fruit. */
@@ -209,18 +285,36 @@ class VineSnip implements Game {
     const one = (x: Hang) => {
       const plan = solvePair(x.pair, line);
       return {
-        phase: x.phase, alive: [...x.alive], keep: plan.keep, at: plan.at, friend: x.pair.friend, fruit: this.toStage(x.at),
+        phase: x.phase,
+        alive: [...x.alive],
+        keep: plan.keep,
+        at: plan.at,
+        friend: x.pair.friend,
+        fruit: this.toStage(x.at),
         vines: x.pair.fruit.vines.map((v) => this.toStage(alongVine(v, x.at, 0.15))),
-        offset: x.swing ? (((this.clock - x.swing.t0) % beat(x.swing.len)) + beat(x.swing.len)) % beat(x.swing.len) : null,
+        offset: x.swing
+          ? (((this.clock - x.swing.t0) % beat(x.swing.len)) + beat(x.swing.len)) % beat(x.swing.len)
+          : null,
         beat: x.swing ? beat(x.swing.len) : 0,
       };
     };
     const vine = h?.pair.fruit.vines.find((_, i) => h.alive[i]);
     return {
-      level: this.plan.level, index: this.index, phase: this.phase, misses: this.misses, hints: this.hints, glow: this.glowOn,
-      alive: h ? [...h.alive] : [], beat: T, offset: s ? (((this.clock - s.t0) % T) + T) % T : null, at: h ? solvePair(h.pair, line).at : null,
-      windows: s && h ? windows(s, h.pair.friend.x) : [], vineAt: vine && h ? this.toStage(alongVine(vine, h.at, 0.15)) : null,
-      friend: h?.pair.friend, fruit: h ? this.toStage(h.at) : null, hangs: this.hangs.map(one),
+      level: this.plan.level,
+      index: this.index,
+      phase: this.phase,
+      misses: this.misses,
+      hints: this.hints,
+      glow: this.glowOn,
+      alive: h ? [...h.alive] : [],
+      beat: T,
+      offset: s ? (((this.clock - s.t0) % T) + T) % T : null,
+      at: h ? solvePair(h.pair, line).at : null,
+      windows: s && h ? windows(s, h.pair.friend.x) : [],
+      vineAt: vine && h ? this.toStage(alongVine(vine, h.at, 0.15)) : null,
+      friend: h?.pair.friend,
+      fruit: h ? this.toStage(h.at) : null,
+      hangs: this.hangs.map(one),
     };
   }
 
@@ -251,7 +345,8 @@ class VineSnip implements Game {
 
   private instructLine(): string {
     if (this.plan.mode === 'snip') return 'vine-snip.instruct-snip';
-    if (this.plan.mode === 'two') return this.alive.filter(Boolean).length === 1 ? 'vine-snip.other' : 'vine-snip.instruct-two';
+    if (this.plan.mode === 'two')
+      return this.alive.filter(Boolean).length === 1 ? 'vine-snip.other' : 'vine-snip.instruct-two';
     if (this.plan.mode === 'keep') return 'vine-snip.instruct-keep';
     if (this.plan.mode === 'pair') return 'vine-snip.instruct-both';
     return 'vine-snip.instruct-wait';
@@ -289,13 +384,35 @@ class VineSnip implements Game {
       const stump = new Graphics();
       stump.eventMode = 'none';
       const top = MOUTH_Y + MOUTH_UP;
-      stump.roundRect(-60, top - 6, 120, BOARD_H - top + 6, 14).fill(wood.fill).stroke({ width: 5, color: wood.line });
-      stump.ellipse(0, top - 4, 60, 12).fill(wood.light).stroke({ width: 4, color: wood.line });
-      const h: Hang = { pair, alive: [], swing: null, phase: 'rest', at: { ...pair.fruit.rest }, fall: null, float: null, art, friend, stump, friendX: pair.friend.x };
+      stump
+        .roundRect(-60, top - 6, 120, BOARD_H - top + 6, 14)
+        .fill(wood.fill)
+        .stroke({ width: 5, color: wood.line });
+      stump
+        .ellipse(0, top - 4, 60, 12)
+        .fill(wood.light)
+        .stroke({ width: 4, color: wood.line });
+      const h: Hang = {
+        pair,
+        alive: [],
+        swing: null,
+        phase: 'rest',
+        at: { ...pair.fruit.rest },
+        fall: null,
+        float: null,
+        art,
+        friend,
+        stump,
+        friendX: pair.friend.x,
+      };
       this.rest(h);
       return h;
     });
-    this.board.addChild(...this.hangs.map((h) => h.stump), ...this.hangs.map((h) => h.friend), ...this.hangs.map((h) => h.art));
+    this.board.addChild(
+      ...this.hangs.map((h) => h.stump),
+      ...this.hangs.map((h) => h.friend),
+      ...this.hangs.map((h) => h.art),
+    );
     this.board.setChildIndex(this.glowG, this.board.children.length - 1);
     this.drawBoard(line);
   }
@@ -325,12 +442,18 @@ class VineSnip implements Game {
 
   /** Snipping waits while any fruit is in the air, being eaten or floating back. */
   private get canSnip() {
-    return !this.busy && !this.finished && this.hangs.every((h) => h.phase === 'rest' || h.phase === 'swing' || h.phase === 'fed');
+    return (
+      !this.busy &&
+      !this.finished &&
+      this.hangs.every((h) => h.phase === 'rest' || h.phase === 'swing' || h.phase === 'fed')
+    );
   }
 
   /** The vines she can snip now: [fruit, vine] for each live vine of an uneaten fruit. */
   private live(): { h: Hang; i: number }[] {
-    return this.hangs.flatMap((h) => (h.phase === 'fed' ? [] : h.pair.fruit.vines.flatMap((_, i) => (h.alive[i] ? [{ h, i }] : []))));
+    return this.hangs.flatMap((h) =>
+      h.phase === 'fed' ? [] : h.pair.fruit.vines.flatMap((_, i) => (h.alive[i] ? [{ h, i }] : [])),
+    );
   }
 
   private down(e: FederatedPointerEvent) {
@@ -340,13 +463,17 @@ class VineSnip implements Game {
     this.trail = [{ ...this.toStage(p), t: this.clock }];
     // Level 1: a touch anywhere snips the one vine. Otherwise a touch on a vine snips it at once.
     if (this.plan.mode === 'snip') return void this.snip(this.hangs[0], 0, e);
-    let best: { h: Hang; i: number } | null = null, bd = Infinity;
+    let best: { h: Hang; i: number } | null = null,
+      bd = Infinity;
     for (const c of this.live()) {
       const k = nearestVine(p, [c.h.pair.fruit.vines[c.i]], c.h.at);
       if (k < 0) continue;
       const [a, b] = vineSeg(c.h.pair.fruit.vines[c.i], c.h.at);
       const d = distToSegment(p, a, b);
-      if (d < bd) { bd = d; best = c; }
+      if (d < bd) {
+        bd = d;
+        best = c;
+      }
     }
     if (best) this.snip(best.h, best.i, e);
   }
@@ -395,7 +522,8 @@ class VineSnip implements Game {
       if (!this.toldSwing) {
         this.toldSwing = true;
         void this.say('vine-snip.swings').then(() => {
-          if (!this.finished && this.plan.mode === 'two' && h.phase === 'swing') void this.ctx.instruct('vine-snip.other' as LineId, this.vars(h));
+          if (!this.finished && this.plan.mode === 'two' && h.phase === 'swing')
+            void this.ctx.instruct('vine-snip.other' as LineId, this.vars(h));
         });
       }
       return;
@@ -438,7 +566,14 @@ class VineSnip implements Game {
     sfx.bell(NOTE[h.pair.friend.kind]);
     h.friend.cheer();
     const m = this.toStage({ x: h.friendX, y: MOUTH_Y });
-    this.ctx.particles.burst(m.x, m.y, { kind: 'star', colors: [swatch[COLOR[h.pair.fruit.kind]].light, 0xffffff], count: 10, speed: [80, 200], gravity: 0, life: [0.4, 0.8] });
+    this.ctx.particles.burst(m.x, m.y, {
+      kind: 'star',
+      colors: [swatch[COLOR[h.pair.fruit.kind]].light, 0xffffff],
+      count: 10,
+      speed: [80, 200],
+      gravity: 0,
+      life: [0.4, 0.8],
+    });
     this.busy = true;
     await this.say('vine-snip.munch', this.vars(h));
     if (this.finished) return;
@@ -466,7 +601,13 @@ class VineSnip implements Game {
     // At levels 4–5, a vine that could never reach the friend gets its own reason.
     const straight = this.keeps && !h.swing;
     const wrong = this.keeps && !!h.swing && !windows(h.swing, h.pair.friend.x).length;
-    const id = straight ? 'vine-snip.straight' : wrong ? 'vine-snip.wrong-side' : f.landing.side === 'late' ? 'vine-snip.late' : 'vine-snip.early';
+    const id = straight
+      ? 'vine-snip.straight'
+      : wrong
+        ? 'vine-snip.wrong-side'
+        : f.landing.side === 'late'
+          ? 'vine-snip.late'
+          : 'vine-snip.early';
     void this.say(id, this.vars(h));
   }
 
@@ -480,7 +621,10 @@ class VineSnip implements Game {
       return;
     }
     if (!fl.bubble) {
-      fl.bubble = new Graphics().circle(0, 0, 62).fill({ color: 0xffffff, alpha: 0.25 }).stroke({ width: 4, color: 0xffffff, alpha: 0.8 });
+      fl.bubble = new Graphics()
+        .circle(0, 0, 62)
+        .fill({ color: 0xffffff, alpha: 0.25 })
+        .stroke({ width: 4, color: 0xffffff, alpha: 0.8 });
       h.art.addChild(fl.bubble);
       h.art.rotation = 0;
     }
@@ -528,9 +672,16 @@ class VineSnip implements Game {
     g.roundRect(-10, LEAF_Y - 20, BOARD_W + 20, BOARD_H - LEAF_Y + 20, 40).fill(0x8fcf7f);
     g.ellipse(BOARD_W / 2, LEAF_Y + 4, BOARD_W / 2 - 10, 26).fill(swatch.green.light);
     const b = this.branch.clear();
-    b.roundRect(-30, ANCHOR_Y - 22, BOARD_W + 60, 34, 17).fill(wood.fill).stroke({ width: 6, color: wood.line });
-    for (let x = 10; x < BOARD_W; x += 70) b.ellipse(x, ANCHOR_Y - 26, 30, 15).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
-    for (const p of pairsOf(line)) for (const v of p.fruit.vines) b.circle(v.ax, ANCHOR_Y, 12).fill(wood.light).stroke({ width: 4, color: wood.line });
+    b.roundRect(-30, ANCHOR_Y - 22, BOARD_W + 60, 34, 17)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
+    for (let x = 10; x < BOARD_W; x += 70)
+      b.ellipse(x, ANCHOR_Y - 26, 30, 15)
+        .fill(swatch.green.fill)
+        .stroke({ width: 3, color: swatch.green.line });
+    for (const p of pairsOf(line))
+      for (const v of p.fruit.vines)
+        b.circle(v.ax, ANCHOR_Y, 12).fill(wood.light).stroke({ width: 4, color: wood.line });
   }
 
   private drawVines() {
@@ -542,9 +693,14 @@ class VineSnip implements Game {
         const a = { x: v.ax, y: ANCHOR_Y };
         const f = h.at;
         // A slight cosmetic sag; the rules treat the vine as straight.
-        const mx = (a.x + f.x) / 2 + 6, my = (a.y + f.y) / 2 + 8;
-        g.moveTo(a.x, a.y).quadraticCurveTo(mx, my, f.x, f.y - 30).stroke({ width: 9, color: swatch.green.line, cap: 'round' });
-        g.moveTo(a.x, a.y).quadraticCurveTo(mx, my, f.x, f.y - 30).stroke({ width: 4, color: swatch.green.fill, cap: 'round' });
+        const mx = (a.x + f.x) / 2 + 6,
+          my = (a.y + f.y) / 2 + 8;
+        g.moveTo(a.x, a.y)
+          .quadraticCurveTo(mx, my, f.x, f.y - 30)
+          .stroke({ width: 9, color: swatch.green.line, cap: 'round' });
+        g.moveTo(a.x, a.y)
+          .quadraticCurveTo(mx, my, f.x, f.y - 30)
+          .stroke({ width: 4, color: swatch.green.fill, cap: 'round' });
         for (const k of [0.3, 0.62]) {
           const p = alongVine(v, f, k);
           g.ellipse(p.x + 10, p.y, 12, 6).fill(swatch.green.fill);
@@ -553,7 +709,9 @@ class VineSnip implements Game {
     }
     for (const s of this.stubs) {
       const k = (this.clock - s.t) / 0.8;
-      g.moveTo(s.ax, ANCHOR_Y).lineTo(s.ax + 8 * Math.sin(k * 12), ANCHOR_Y + 40).stroke({ width: 7, color: swatch.green.line, alpha: 1 - k, cap: 'round' });
+      g.moveTo(s.ax, ANCHOR_Y)
+        .lineTo(s.ax + 8 * Math.sin(k * 12), ANCHOR_Y + 40)
+        .stroke({ width: 7, color: swatch.green.line, alpha: 1 - k, cap: 'round' });
     }
   }
 
@@ -576,7 +734,9 @@ class VineSnip implements Game {
       if (this.keeps && !h.alive[keep]) continue;
       // Levels 4–5: the vine to keep glows yellow and the ones to snip orange, until only it is left.
       if (this.keeps && h.alive.some((a, i) => a && i !== keep)) {
-        h.alive.forEach((a, i) => a && vineGlow(i, i === keep ? swatch.yellow.fill : swatch.orange.line, pulse * 0.85));
+        h.alive.forEach(
+          (a, i) => a && vineGlow(i, i === keep ? swatch.yellow.fill : swatch.orange.line, pulse * 0.85),
+        );
         continue;
       }
       const s = h.swing;
@@ -593,26 +753,39 @@ class VineSnip implements Game {
           g.circle(p.x, p.y, 13).fill({ color: swatch.yellow.fill, alpha: pulse });
         }
       }
-      g.roundRect(h.pair.friend.x - BAND / 2, MOUTH_Y - 8, BAND, 16, 8).fill({ color: swatch.yellow.light, alpha: pulse * 0.6 });
+      g.roundRect(h.pair.friend.x - BAND / 2, MOUTH_Y - 8, BAND, 16, 8).fill({
+        color: swatch.yellow.light,
+        alpha: pulse * 0.6,
+      });
     }
   }
 
   private drawTrail() {
     const g = this.trailG.clear();
     this.trail = this.trail.filter((p) => this.clock - p.t < 0.3);
-    if (this.trail.length === 1) g.circle(this.trail[0].x, this.trail[0].y, 12).fill({ color: 0xffffff, alpha: 0.9 });
+    if (this.trail.length === 1)
+      g.circle(this.trail[0].x, this.trail[0].y, 12).fill({ color: 0xffffff, alpha: 0.9 });
     for (let i = 1; i < this.trail.length; i++) {
-      const p = this.trail[i - 1], q = this.trail[i];
+      const p = this.trail[i - 1],
+        q = this.trail[i];
       const a = 1 - (this.clock - q.t) / 0.3;
-      g.moveTo(p.x, p.y).lineTo(q.x, q.y).stroke({ width: 4 + 12 * a, color: 0xffffff, alpha: 0.85 * a, cap: 'round' });
+      g.moveTo(p.x, p.y)
+        .lineTo(q.x, q.y)
+        .stroke({ width: 4 + 12 * a, color: 0xffffff, alpha: 0.85 * a, cap: 'round' });
     }
   }
 
   private drawGrow() {
     const g = new Graphics();
-    g.circle(0, 0, GROW / 2).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line });
+    g.circle(0, 0, GROW / 2)
+      .fill(swatch.green.light)
+      .stroke({ width: 6, color: swatch.green.line });
     // A curling vine with a leaf: grow back.
-    g.arc(0, 4, 26, Math.PI * 0.9, Math.PI * 2.3).stroke({ width: 8, color: swatch.green.line, cap: 'round' });
+    g.arc(0, 4, 26, Math.PI * 0.9, Math.PI * 2.3).stroke({
+      width: 8,
+      color: swatch.green.line,
+      cap: 'round',
+    });
     g.ellipse(18, -24, 16, 9).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
     g.poly([-30, -2, -18, 14, -40, 14]).fill(swatch.green.line);
     this.growBtn.addChild(g);
@@ -633,7 +806,10 @@ class VineIcon extends WigglyIcon {
     apple.scale.set(0.55);
     apple.position.set(-10, -88);
     c.addChild(apple);
-    const mouth = new Graphics().ellipse(-10, -10, 34, 20).fill(0x7a2e3e).stroke({ width: 5, color: 0x2b2b3a });
+    const mouth = new Graphics()
+      .ellipse(-10, -10, 34, 20)
+      .fill(0x7a2e3e)
+      .stroke({ width: 5, color: 0x2b2b3a });
     c.addChild(mouth);
     super(c);
   }
@@ -644,8 +820,13 @@ function sticker(seed: number): Container {
   const kind = rng.pick(['apple', 'orange', 'lemon', 'pear'] as Kind[]);
   const fk = rng.pick(FRIENDS);
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 80).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line }));
-  const vine = new Graphics().moveTo(rng.range(-30, 30), -78).lineTo(0, -46).stroke({ width: 6, color: swatch.green.line, cap: 'round' });
+  c.addChild(
+    new Graphics().circle(0, 0, 80).fill(swatch.green.light).stroke({ width: 6, color: swatch.green.line }),
+  );
+  const vine = new Graphics()
+    .moveTo(rng.range(-30, 30), -78)
+    .lineTo(0, -46)
+    .stroke({ width: 6, color: swatch.green.line, cap: 'round' });
   c.addChild(vine);
   const friend = new Critter(CRITTERS[fk]);
   friend.alive = false;
@@ -674,7 +855,8 @@ export const vineSnip: GameModule = {
   offScreen: {
     all: 'Hang a sock from a string, swing it, and let go at different moments over a laundry basket. Then hold it by two strings and let one go.',
     lap: 'Hold a soft toy up high, say "snip!" and let it drop into her lap or onto a cushion.',
-    toddler: 'Hold a soft toy by its arm over a laundry basket and let her say "snip!" for you to let go. Then swing it first and let go again.',
+    toddler:
+      'Hold a soft toy by its arm over a laundry basket and let her say "snip!" for you to let go. Then swing it first and let go again.',
   },
   hubIcon: () => new VineIcon(),
   touchDemo: true,

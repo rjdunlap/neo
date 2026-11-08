@@ -4,8 +4,32 @@ import { computeView } from '../../engine/view';
 import { BOARDS } from './puzzles';
 import { VOICE } from './voice';
 import {
-  canonical, FRUITS, LID_COLOR, LOOKS, roundBoards, greedy, hintMove, HIT_W, jarLayout, legal, matLabels, move, moves, parse, PLANS, planFor, present, refusal, render, search, solve, solved,
-  uniformFull, UNDO_INSET, type Board, type Labels,
+  canonical,
+  FRUITS,
+  LID_COLOR,
+  LOOKS,
+  roundBoards,
+  greedy,
+  hintMove,
+  HIT_W,
+  jarLayout,
+  legal,
+  matLabels,
+  move,
+  moves,
+  parse,
+  PLANS,
+  planFor,
+  present,
+  refusal,
+  render,
+  search,
+  solve,
+  solved,
+  uniformFull,
+  UNDO_INSET,
+  type Board,
+  type Labels,
 } from './logic';
 
 const VIEWS = {
@@ -78,7 +102,7 @@ describe('Jar Sort rules', () => {
     for (let seed = 1; seed <= 60; seed++) {
       const round = roundBoards(list, plan, new Rng(seed), plan.boards);
       expect(round).toHaveLength(2);
-      expect(list.indexOf(round[0]) % 2, 'a round opens with a pair\'s two-move board').toBe(0);
+      expect(list.indexOf(round[0]) % 2, "a round opens with a pair's two-move board").toBe(0);
       expect(list.indexOf(round[1])).toBe(list.indexOf(round[0]) + 1);
       expect(roundBoards(list, plan, new Rng(seed), 1)).toEqual([round[0]]);
       firsts.add(round[0]);
@@ -103,10 +127,23 @@ describe('Jar Sort rules', () => {
       for (const s of list) {
         const b = parse(s);
         expect(b, s).toHaveLength(plan.jars);
-        expect(b.every((j) => j.length <= plan.cap), s).toBe(true);
-        for (let k = 0; k < plan.kinds; k++) expect(b.flat().filter((x) => x === k), `${s} kind ${k}`).toHaveLength(plan.cap);
-        expect(b.flat().every((k) => k >= 0 && k < plan.kinds), s).toBe(true);
-        expect(b.some((j) => uniformFull(j, plan.cap)), `${s} starts with a finished jar`).toBe(false);
+        expect(
+          b.every((j) => j.length <= plan.cap),
+          s,
+        ).toBe(true);
+        for (let k = 0; k < plan.kinds; k++)
+          expect(
+            b.flat().filter((x) => x === k),
+            `${s} kind ${k}`,
+          ).toHaveLength(plan.cap);
+        expect(
+          b.flat().every((k) => k >= 0 && k < plan.kinds),
+          s,
+        ).toBe(true);
+        expect(
+          b.some((j) => uniformFull(j, plan.cap)),
+          `${s} starts with a finished jar`,
+        ).toBe(false);
         const path = solve(b, plan.cap, labels);
         expect(path, s).not.toBeNull();
         expect(path!.length, `${s} at level ${plan.id}`).toBeGreaterThanOrEqual(plan.par[0]);
@@ -120,7 +157,11 @@ describe('Jar Sort rules', () => {
         expect(solved(at, plan.cap, labels)).toBe(true);
       }
       // Level 1's pairs share their few puzzles and differ in where the fruit stand (its own test checks them).
-      if (plan.id > 1) expect(new Set(list.map((s) => canonical(parse(s), labels))).size, `level ${plan.id} repeats a board`).toBe(list.length);
+      if (plan.id > 1)
+        expect(
+          new Set(list.map((s) => canonical(parse(s), labels))).size,
+          `level ${plan.id} repeats a board`,
+        ).toBe(list.length);
     }
   });
 
@@ -141,7 +182,10 @@ describe('Jar Sort rules', () => {
           const b = present(s, plan, new Rng(seed));
           expect(render(a.board)).toBe(render(b.board));
           expect(solve(a.board, plan.cap, a.labels)!.length, s).toBe(fewest);
-          expect(a.board.flat().every((k) => k >= 0 && k < FRUITS.length), s).toBe(true);
+          expect(
+            a.board.flat().every((k) => k >= 0 && k < FRUITS.length),
+            s,
+          ).toBe(true);
           expect(new Set(a.board.flat()).size, s).toBe(plan.kinds);
           if (plan.labels) {
             expect(a.labels!.filter((k) => k !== null)).toHaveLength(plan.kinds);
@@ -157,7 +201,10 @@ describe('Jar Sort rules', () => {
     expect(canonical(shown)).toBe(canonical(parse(BOARDS[1][0])));
     // All seven fruits are in use: over a few seeds, cherries and lemons turn up on a three-kind board.
     const seen = new Set<number>();
-    for (let seed = 1; seed <= 40; seed++) present(BOARDS[3][0], planFor(3), new Rng(seed)).board.flat().forEach((k) => seen.add(k));
+    for (let seed = 1; seed <= 40; seed++)
+      present(BOARDS[3][0], planFor(3), new Rng(seed))
+        .board.flat()
+        .forEach((k) => seen.add(k));
     expect(seen.size).toBe(FRUITS.length);
   });
 
@@ -186,7 +233,8 @@ describe('Jar Sort rules', () => {
   });
 
   it('runs the worst top-level search well under the cap, and falls back to taking moves back past it', () => {
-    let worst = 0, slowest = 0;
+    let worst = 0,
+      slowest = 0;
     for (const plan of PLANS.slice(4)) {
       const labels = matLabels(plan);
       for (const s of BOARDS[plan.id]) {
@@ -212,7 +260,8 @@ describe('Jar Sort rules', () => {
 
   it('keeps a hint quick from long wanders on the big boards', () => {
     const rng = new Rng(23);
-    let slowest = 0, backs = 0;
+    let slowest = 0,
+      backs = 0;
     for (const plan of PLANS.slice(4)) {
       const labels = matLabels(plan);
       for (const s of BOARDS[plan.id].slice(0, 4)) {
@@ -224,7 +273,9 @@ describe('Jar Sort rules', () => {
         if (hint.kind === 'back') backs++;
       }
     }
-    console.log(`Jar Sort slowest hint after a long wander: ${slowest.toFixed(0)} ms, ${backs} fell back to undo`);
+    console.log(
+      `Jar Sort slowest hint after a long wander: ${slowest.toFixed(0)} ms, ${backs} fell back to undo`,
+    );
     expect(backs).toBe(0);
     expect(slowest).toBeLessThan(1500);
   });
@@ -258,11 +309,16 @@ describe('Jar Sort layout', () => {
           // The pet's corner: the bottom-left 150 by 220.
           expect(h.x >= 150 || h.y + h.h <= v.h - 220, `${where} jar ${i} in the pet's corner`).toBe(true);
           // The round arrow: a 54 circle 80 in from the bottom-right corner.
-          const ux = v.w - UNDO_INSET, uy = v.h - UNDO_INSET;
+          const ux = v.w - UNDO_INSET,
+            uy = v.h - UNDO_INSET;
           const clear = h.x + h.w <= ux - 54 || h.y + h.h <= uy - 54;
           expect(clear, `${where} jar ${i} under the round arrow`).toBe(true);
           for (const o of spots.slice(i + 1)) {
-            const apart = h.x + h.w <= o.hit.x || o.hit.x + o.hit.w <= h.x || h.y + h.h <= o.hit.y || o.hit.y + o.hit.h <= h.y;
+            const apart =
+              h.x + h.w <= o.hit.x ||
+              o.hit.x + o.hit.w <= h.x ||
+              h.y + h.h <= o.hit.y ||
+              o.hit.y + o.hit.h <= h.y;
             expect(apart, `${where} jars overlap`).toBe(true);
           }
         }

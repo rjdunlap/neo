@@ -1,17 +1,54 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  NEEDS, PLANS, SITES, allowed, ancestors, best, blocking, byId, candidates, extend, fits, hatch, helpFor, judge, kin, makeRound, missing, ordered, pickSites, plans, sharedRelative, suits, tempting, type Pair, type Tree, type Turtle,
+  NEEDS,
+  PLANS,
+  SITES,
+  allowed,
+  ancestors,
+  best,
+  blocking,
+  byId,
+  candidates,
+  extend,
+  fits,
+  hatch,
+  helpFor,
+  judge,
+  kin,
+  makeRound,
+  missing,
+  ordered,
+  pickSites,
+  plans,
+  sharedRelative,
+  suits,
+  tempting,
+  type Pair,
+  type Tree,
+  type Turtle,
 } from './logic';
 
 /** The definition's first round: Fern and Reed with Moss, Brook and Willow; Sorrel and Pine with Dune and Ash. */
 function firstTree(): Tree {
-  const t = (id: number, name: string, sex: 'f' | 'm', parents: [number, number] | null, gen: number): Turtle => ({ id, name, sex, parents, gen, tint: 0 });
+  const t = (
+    id: number,
+    name: string,
+    sex: 'f' | 'm',
+    parents: [number, number] | null,
+    gen: number,
+  ): Turtle => ({ id, name, sex, parents, gen, tint: 0 });
   return {
     turtles: [
-      t(0, 'Fern', 'f', null, 0), t(1, 'Reed', 'm', null, 0), t(2, 'Sorrel', 'f', null, 0), t(3, 'Pine', 'm', null, 0),
-      t(4, 'Moss', 'f', [0, 1], 1), t(5, 'Brook', 'm', [0, 1], 1), t(6, 'Willow', 'f', [0, 1], 1),
-      t(7, 'Dune', 'm', [2, 3], 1), t(8, 'Ash', 'f', [2, 3], 1),
+      t(0, 'Fern', 'f', null, 0),
+      t(1, 'Reed', 'm', null, 0),
+      t(2, 'Sorrel', 'f', null, 0),
+      t(3, 'Pine', 'm', null, 0),
+      t(4, 'Moss', 'f', [0, 1], 1),
+      t(5, 'Brook', 'm', [0, 1], 1),
+      t(6, 'Willow', 'f', [0, 1], 1),
+      t(7, 'Dune', 'm', [2, 3], 1),
+      t(8, 'Ash', 'f', [2, 3], 1),
     ],
     nested: [],
   };
@@ -20,8 +57,19 @@ function firstTree(): Tree {
 /** Level 2's: Moss and Dune nested and have Lichen and Marsh; a third family of Thistle and Sage. */
 function secondTree(): Tree {
   const tree = firstTree();
-  const t = (id: number, name: string, sex: 'f' | 'm', parents: [number, number] | null, gen: number): Turtle => ({ id, name, sex, parents, gen, tint: 0 });
-  tree.turtles.push(t(9, 'Bramble', 'f', null, 0), t(10, 'Flint', 'm', null, 0), t(11, 'Thistle', 'm', [9, 10], 1), t(12, 'Sage', 'f', [9, 10], 1));
+  const t = (
+    id: number,
+    name: string,
+    sex: 'f' | 'm',
+    parents: [number, number] | null,
+    gen: number,
+  ): Turtle => ({ id, name, sex, parents, gen, tint: 0 });
+  tree.turtles.push(
+    t(9, 'Bramble', 'f', null, 0),
+    t(10, 'Flint', 'm', null, 0),
+    t(11, 'Thistle', 'm', [9, 10], 1),
+    t(12, 'Sage', 'f', [9, 10], 1),
+  );
   tree.turtles.push(t(13, 'Lichen', 'f', [4, 7], 2), t(14, 'Marsh', 'm', [4, 7], 2));
   tree.nested = [[4, 7]];
   return tree;
@@ -39,7 +87,12 @@ describe('kin', () => {
 
   it('is symmetric and catches siblings, cousins and an uncle, never strangers', () => {
     const tree = secondTree();
-    for (const [a, b] of [[4, 5], [13, 14], [13, 5], [13, 8]] as const) {
+    for (const [a, b] of [
+      [4, 5],
+      [13, 14],
+      [13, 5],
+      [13, 8],
+    ] as const) {
       expect(kin(tree, a, b, 2)).toBe(true);
       expect(kin(tree, b, a, 2)).toBe(true);
     }
@@ -72,7 +125,12 @@ describe('pairs and plans', () => {
   it('lists every maximal plan once, each valid', () => {
     const tree = firstTree();
     const all = plans(tree, 1);
-    const keys = all.map((p) => p.map((x) => x.join('-')).sort().join(','));
+    const keys = all.map((p) =>
+      p
+        .map((x) => x.join('-'))
+        .sort()
+        .join(','),
+    );
     expect(new Set(keys).size).toBe(keys.length);
     for (const p of all) {
       const used = p.flat();
@@ -80,8 +138,24 @@ describe('pairs and plans', () => {
       for (const [a, b] of p) expect(allowed(tree, [], a, b, 1)).toBe(true);
     }
     // The definition's two plans: Moss–Dune with Ash–Brook, and Willow–Dune with Ash–Brook.
-    expect(keys).toContain([[4, 7], [8, 5]].map((x) => x.join('-')).sort().join(','));
-    expect(keys).toContain([[6, 7], [8, 5]].map((x) => x.join('-')).sort().join(','));
+    expect(keys).toContain(
+      [
+        [4, 7],
+        [8, 5],
+      ]
+        .map((x) => x.join('-'))
+        .sort()
+        .join(','),
+    );
+    expect(keys).toContain(
+      [
+        [6, 7],
+        [8, 5],
+      ]
+        .map((x) => x.join('-'))
+        .sort()
+        .join(','),
+    );
     expect(best(tree, 1)).toBe(2);
   });
 
@@ -115,47 +189,59 @@ describe('rounds', () => {
   }
 
   it('the same seed gives the same round', () => {
-    for (const level of [1, 2, 3]) expect(makeRound(level, new Rng(42))).toEqual(makeRound(level, new Rng(42)));
+    for (const level of [1, 2, 3])
+      expect(makeRound(level, new Rng(42))).toEqual(makeRound(level, new Rng(42)));
   });
 });
 
 describe('help', () => {
   it('every prefix of a full plan extends', () => {
-    for (const seed of seeds(60)) for (const level of [1, 2]) {
-      const r = makeRound(level, new Rng(seed));
-      for (const full of plans(r.tree, r.plan.depth).filter((x) => x.length === r.target)) {
-        for (let k = 0; k <= full.length; k++) {
-          const done = extend(r.tree, full.slice(0, k), r.plan.depth, r.target);
-          expect(done).not.toBeNull();
-          expect(done!.slice(0, k)).toEqual(full.slice(0, k));
-          for (const [a, b] of done!) expect(allowed(r.tree, [], a, b, r.plan.depth)).toBe(true);
+    for (const seed of seeds(60))
+      for (const level of [1, 2]) {
+        const r = makeRound(level, new Rng(seed));
+        for (const full of plans(r.tree, r.plan.depth).filter((x) => x.length === r.target)) {
+          for (let k = 0; k <= full.length; k++) {
+            const done = extend(r.tree, full.slice(0, k), r.plan.depth, r.target);
+            expect(done).not.toBeNull();
+            expect(done!.slice(0, k)).toEqual(full.slice(0, k));
+            for (const [a, b] of done!) expect(allowed(r.tree, [], a, b, r.plan.depth)).toBe(true);
+          }
         }
       }
-    }
   });
 
   it('a blocked plan always has a nest to undo, and undoing as told reaches a plan that extends', () => {
     let blocked = 0;
-    for (const seed of seeds(120)) for (const level of [1, 2]) {
-      const r = makeRound(level, new Rng(seed));
-      const { tree } = r, depth = r.plan.depth;
-      // Every short maximal plan is a dead end she could reach.
-      for (const dead of plans(tree, depth).filter((x) => x.length < r.target)) {
-        blocked++;
-        let plan: Pair[] = dead.slice();
-        expect(extend(tree, plan, depth, r.target)).toBeNull();
-        let steps = 0;
-        while (!extend(tree, plan, depth, r.target)) {
-          const help = helpFor(tree, plan, depth, r.target);
-          expect(help.kind).toBe('undo');
-          if (help.kind !== 'undo') break;
-          plan = plan.filter((_, i) => i !== help.nest);
-          steps++;
+    for (const seed of seeds(120))
+      for (const level of [1, 2]) {
+        const r = makeRound(level, new Rng(seed));
+        const { tree } = r,
+          depth = r.plan.depth;
+        // Every short maximal plan is a dead end she could reach.
+        for (const dead of plans(tree, depth).filter((x) => x.length < r.target)) {
+          blocked++;
+          let plan: Pair[] = dead.slice();
+          expect(extend(tree, plan, depth, r.target)).toBeNull();
+          let steps = 0;
+          while (!extend(tree, plan, depth, r.target)) {
+            const help = helpFor(tree, plan, depth, r.target);
+            expect(help.kind).toBe('undo');
+            if (help.kind !== 'undo') break;
+            plan = plan.filter((_, i) => i !== help.nest);
+            steps++;
+          }
+          expect(steps).toBeGreaterThan(0);
+          if (dead.length === 1)
+            expect(
+              extend(
+                tree,
+                dead.filter((_, i) => i !== blocking(tree, dead, depth, r.target)),
+                depth,
+                r.target,
+              ),
+            ).not.toBeNull();
         }
-        expect(steps).toBeGreaterThan(0);
-        if (dead.length === 1) expect(extend(tree, dead.filter((_, i) => i !== blocking(tree, dead, depth, r.target)), depth, r.target)).not.toBeNull();
       }
-    }
     expect(blocked).toBeGreaterThan(0);
   });
 
@@ -163,14 +249,26 @@ describe('help', () => {
     const tree = firstTree();
     const h = helpFor(tree, [], 1, 2);
     expect(h.kind).toBe('pair');
-    expect(helpFor(tree, [[4, 7], [8, 5]], 1, 2).kind).toBe('spring');
+    expect(
+      helpFor(
+        tree,
+        [
+          [4, 7],
+          [8, 5],
+        ],
+        1,
+        2,
+      ).kind,
+    ).toBe('spring');
   });
 });
 
 describe('hatching', () => {
   it('adds two hatchlings per nest with both parents and four grandparents', () => {
     const tree = secondTree();
-    const plan: Pair[] = [ordered(tree, 13, 11), ordered(tree, 12, 5), ordered(tree, 8, 14)].filter((p) => byId(tree, p[0]).sex === 'f') as Pair[];
+    const plan: Pair[] = [ordered(tree, 13, 11), ordered(tree, 12, 5), ordered(tree, 8, 14)].filter(
+      (p) => byId(tree, p[0]).sex === 'f',
+    ) as Pair[];
     const before = tree.turtles.length;
     const born = hatch(tree, plan, new Rng(3));
     expect(born).toHaveLength(plan.length * 2);

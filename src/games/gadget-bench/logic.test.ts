@@ -2,8 +2,40 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  applyHelp, benchLayout, briefFor, corners, helpFor, LEVEL2_STEPS, need, nextMove, overlaps, PART_IDS, PARTS, passingDesigns, runPath, SOCKETS,
-  socketConflict, Tally, handles, helpSteps, LEVEL4_CARTS, newCondition, targetDesign, kitOf, responsible, followsTarget, LOW_TWIN, NEW_KIT, LEVEL5_PAIRS, LEVEL6_PAIRS, NEIGHBORS, type Condition, type Gadget, type PartId, type Rect, type Round,
+  applyHelp,
+  benchLayout,
+  briefFor,
+  corners,
+  helpFor,
+  LEVEL2_STEPS,
+  need,
+  nextMove,
+  overlaps,
+  PART_IDS,
+  PARTS,
+  passingDesigns,
+  runPath,
+  SOCKETS,
+  socketConflict,
+  Tally,
+  handles,
+  helpSteps,
+  LEVEL4_CARTS,
+  newCondition,
+  targetDesign,
+  kitOf,
+  responsible,
+  followsTarget,
+  LOW_TWIN,
+  NEW_KIT,
+  LEVEL5_PAIRS,
+  LEVEL6_PAIRS,
+  NEIGHBORS,
+  type Condition,
+  type Gadget,
+  type PartId,
+  type Rect,
+  type Round,
 } from './logic';
 
 const SEEDS = Array.from({ length: 500 }, (_, i) => i + 1);
@@ -17,12 +49,13 @@ describe('runPath', () => {
   it('stops at the first unmet condition and its socket for every part and socket', () => {
     for (const c of CONDS.filter((x) => x !== 'smooth')) {
       const n = need(c)!;
-      for (const s of SOCKETS) for (const p of [undefined, ...PART_IDS]) {
-        const g: Gadget = p ? { [s]: p } : {};
-        const r = runPath(g, ['smooth', c]);
-        if (s === n.socket && p === n.part) expect(r.ok).toBe(true);
-        else expect(r).toEqual({ ok: false, at: c, socket: n.socket, part: n.part });
-      }
+      for (const s of SOCKETS)
+        for (const p of [undefined, ...PART_IDS]) {
+          const g: Gadget = p ? { [s]: p } : {};
+          const r = runPath(g, ['smooth', c]);
+          if (s === n.socket && p === n.part) expect(r.ok).toBe(true);
+          else expect(r).toEqual({ ok: false, at: c, socket: n.socket, part: n.part });
+        }
     }
   });
   it('passes smooth when empty, fails at the first other condition, and ignores decoys in free sockets', () => {
@@ -94,12 +127,17 @@ describe('level 2', () => {
       expect(sh.neighbor, msg).not.toBe(r.neighbor);
       let passes = 0;
       const winners: PartId[] = [];
-      for (const s of SOCKETS) for (const p of [undefined, ...r.tray]) {
-        const g: Gadget = { ...sh.gadget };
-        if (p) g[s] = p; else delete g[s];
-        if (p === sh.gadget[s]) continue;
-        if (ok(g, r.path)) { passes++; winners.push(p!); }
-      }
+      for (const s of SOCKETS)
+        for (const p of [undefined, ...r.tray]) {
+          const g: Gadget = { ...sh.gadget };
+          if (p) g[s] = p;
+          else delete g[s];
+          if (p === sh.gadget[s]) continue;
+          if (ok(g, r.path)) {
+            passes++;
+            winners.push(p!);
+          }
+        }
       expect(passes, msg).toBe(1);
       expect(r.tray, msg).toHaveLength(3);
       expect(new Set(r.tray).size, msg).toBe(3);
@@ -131,7 +169,10 @@ describe('level 3', () => {
       const d = designs[0];
       expect(runPath({ [a]: d[b], [b]: d[a] }, r.path).ok, msg).toBe(false);
       expect(Object.values(d), msg).not.toContain('flag');
-      const needed = r.path.map(need).filter(Boolean).map((n) => n!.part);
+      const needed = r.path
+        .map(need)
+        .filter(Boolean)
+        .map((n) => n!.part);
       const decoy = r.tray.find((p) => p !== 'flag' && !needed.includes(p))!;
       expect(PARTS[decoy].socket, msg).not.toBeNull();
       expect(r.open, msg).not.toContain(PARTS[decoy].socket);
@@ -160,9 +201,15 @@ describe('help', () => {
         const design = passingDesigns(r.path, r.tray, r.open)[0];
         // Random starting gadgets over the open sockets.
         const g: Gadget = {};
-        for (const s of r.open) { const p = rng.pick([undefined, ...r.tray]); if (p && !Object.values(g).includes(p)) g[s] = p; }
+        for (const s of r.open) {
+          const p = rng.pick([undefined, ...r.tray]);
+          if (p && !Object.values(g).includes(p)) g[s] = p;
+        }
         const h = helpFor(g, r.path);
-        if (ok(g, r.path)) { expect(h).toEqual({ kind: 'done' }); continue; }
+        if (ok(g, r.path)) {
+          expect(h).toEqual({ kind: 'done' });
+          continue;
+        }
         if (h.kind !== 'install') throw new Error('expected install');
         expect(design[h.socket], `seed ${seed}`).toBe(h.part);
         expect(h.replaces).toBe(g[h.socket] ?? null);
@@ -181,7 +228,12 @@ describe('help', () => {
     const h = helpFor(g, ['smooth', 'rain', 'dark']);
     expect(h).toMatchObject({ kind: 'install', part: 'umbrella', socket: 'top', replaces: 'flag' });
     expect(applyHelp(g, h)).toEqual({ top: 'umbrella', front: 'lantern' });
-    expect(applyHelp({ front: 'umbrella' }, { kind: 'install', part: 'umbrella', socket: 'top', replaces: null, at: 'rain' })).toEqual({ top: 'umbrella' });
+    expect(
+      applyHelp(
+        { front: 'umbrella' },
+        { kind: 'install', part: 'umbrella', socket: 'top', replaces: null, at: 'rain' },
+      ),
+    ).toEqual({ top: 'umbrella' });
   });
 });
 
@@ -222,7 +274,9 @@ describe('Tally', () => {
   });
   it('resets glow and counts on the next round but keeps misses and hints', () => {
     const t = new Tally();
-    t.miss(); t.miss(); t.help(1);
+    t.miss();
+    t.miss();
+    t.help(1);
     const [m, h] = [t.misses, t.hints];
     t.nextRound();
     expect(t.glowing).toBe(false);
@@ -234,23 +288,53 @@ describe('Tally', () => {
 
 describe('layout', () => {
   const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024) };
-  const cases: [number, number, number][] = [[1, 2, 0], [2, 3, 3], [3, 3, 4], [4, 4, 4], [5, 4, 4], [6, 3, 4]];
+  const cases: [number, number, number][] = [
+    [1, 2, 0],
+    [2, 3, 3],
+    [3, 3, 4],
+    [4, 4, 4],
+    [5, 4, 4],
+    [6, 3, 4],
+  ];
   for (const [name, v] of Object.entries(views)) {
     for (const [level, tiles, tray] of cases) {
       it(`fits level ${level} in ${name}`, () => {
         const l = benchLayout(level, tiles, tray, v)!;
         expect(l).not.toBeNull();
-        const all: Rect[] = [l.request, ...l.tiles, ...l.boards, ...l.hands, ...l.tray, l.strip, ...(l.tryButton ? [l.tryButton] : []), ...(l.giveButton ? [l.giveButton] : [])];
-        for (const b of l.boards) { expect(b.w).toBeGreaterThanOrEqual(220); expect(b.h).toBeGreaterThanOrEqual(180); }
-        for (const r of [...l.hands, ...l.tray]) { expect(r.w).toBeGreaterThanOrEqual(100); expect(r.h).toBeGreaterThanOrEqual(100); }
-        for (const b of [l.tryButton, l.giveButton]) if (b) { expect(b.w).toBeGreaterThanOrEqual(110); expect(b.h).toBeGreaterThanOrEqual(110); }
+        const all: Rect[] = [
+          l.request,
+          ...l.tiles,
+          ...l.boards,
+          ...l.hands,
+          ...l.tray,
+          l.strip,
+          ...(l.tryButton ? [l.tryButton] : []),
+          ...(l.giveButton ? [l.giveButton] : []),
+        ];
+        for (const b of l.boards) {
+          expect(b.w).toBeGreaterThanOrEqual(220);
+          expect(b.h).toBeGreaterThanOrEqual(180);
+        }
+        for (const r of [...l.hands, ...l.tray]) {
+          expect(r.w).toBeGreaterThanOrEqual(100);
+          expect(r.h).toBeGreaterThanOrEqual(100);
+        }
+        for (const b of [l.tryButton, l.giveButton])
+          if (b) {
+            expect(b.w).toBeGreaterThanOrEqual(110);
+            expect(b.h).toBeGreaterThanOrEqual(110);
+          }
         expect(l.tiles).toHaveLength(tiles);
         expect(l.tray).toHaveLength(tray);
         for (const r of all) {
           expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h).toBe(true);
           for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
         }
-        all.forEach((a, i) => all.forEach((b, j) => { if (i < j) expect(overlaps(a, b)).toBe(false); }));
+        all.forEach((a, i) =>
+          all.forEach((b, j) => {
+            if (i < j) expect(overlaps(a, b)).toBe(false);
+          }),
+        );
         if (level === 1) {
           expect(l.boards).toHaveLength(2);
           expect(l.hands).toHaveLength(2);
@@ -270,8 +354,14 @@ describe('layout', () => {
     for (const [level, tiles, tray] of cases) {
       const l = benchLayout(level, tiles, tray, v);
       if (l) {
-        for (const r of [...l.hands, ...l.tray]) { expect(r.w).toBeGreaterThanOrEqual(100); expect(r.h).toBeGreaterThanOrEqual(100); }
-        for (const b of l.boards) { expect(b.w).toBeGreaterThanOrEqual(220); expect(b.h).toBeGreaterThanOrEqual(180); }
+        for (const r of [...l.hands, ...l.tray]) {
+          expect(r.w).toBeGreaterThanOrEqual(100);
+          expect(r.h).toBeGreaterThanOrEqual(100);
+        }
+        for (const b of l.boards) {
+          expect(b.w).toBeGreaterThanOrEqual(220);
+          expect(b.h).toBeGreaterThanOrEqual(180);
+        }
       }
     }
   });
@@ -284,7 +374,8 @@ describe('nextMove', () => {
         const p = r.pair!.passing;
         const f = (1 - p) as 0 | 1;
         expect(nextMove(r, {}, [false, false], false, 1)).toEqual({ tryGadget: f });
-        const t = [false, false]; t[f] = true;
+        const t = [false, false];
+        t[f] = true;
         expect(nextMove(r, {}, t, false, 1)).toEqual({ tryGadget: p });
         expect(nextMove(r, {}, [true, true], false, 1)).toEqual({ give: p });
       }
@@ -309,7 +400,10 @@ describe('nextMove', () => {
       for (const r of briefFor(3, new Rng(seed)).rounds) {
         const m = nextMove(r, {}, [false], false, 3);
         if (!('drag' in m)) throw new Error('expected drag');
-        const n = r.path.map(need).filter(Boolean).map((x) => x!);
+        const n = r.path
+          .map(need)
+          .filter(Boolean)
+          .map((x) => x!);
         expect(n.some((x) => x.part === m.drag && x.socket === m.to)).toBe(true);
       }
     }
@@ -338,7 +432,10 @@ const oldRun = (g: Gadget, path: readonly Condition[]) => {
 function assemblies(parts: readonly PartId[]): Gadget[] {
   const out: Gadget[] = [];
   const walk = (i: number, g: Gadget) => {
-    if (i === SOCKETS.length) { out.push({ ...g }); return; }
+    if (i === SOCKETS.length) {
+      out.push({ ...g });
+      return;
+    }
     walk(i + 1, g);
     for (const p of parts) {
       if (Object.values(g).includes(p)) continue;
@@ -356,9 +453,10 @@ const obvious = (r: Round) => need(newCondition(r)!)!.part;
 
 describe('paddle wheels model', () => {
   it('pass bump and puddle in under only, and nothing anywhere else', () => {
-    for (const c of CONDS) for (const s of SOCKETS) {
-      expect(handles('paddles', s, c), `${s} ${c}`).toBe(s === 'under' && (c === 'bump' || c === 'puddle'));
-    }
+    for (const c of CONDS)
+      for (const s of SOCKETS) {
+        expect(handles('paddles', s, c), `${s} ${c}`).toBe(s === 'under' && (c === 'bump' || c === 'puddle'));
+      }
     expect(PARTS.paddles.fixes).toEqual(['bump', 'puddle']);
     for (const s of SOCKETS) for (const c of CONDS) expect(handles(undefined, s, c)).toBe(false);
     expect(ok({ under: 'paddles' }, ['smooth', 'bump', 'puddle'])).toBe(true);
@@ -369,16 +467,27 @@ describe('paddle wheels model', () => {
   it('keep the old rule exactly for every assembly of the five old parts', () => {
     const conds = CONDS.filter((c) => c !== 'smooth');
     const paths: Condition[][] = [['smooth']];
-    for (const a of conds) { paths.push(['smooth', a]); for (const b of conds) { paths.push(['smooth', a, b]); for (const c of conds) paths.push(['smooth', a, b, c]); } }
+    for (const a of conds) {
+      paths.push(['smooth', a]);
+      for (const b of conds) {
+        paths.push(['smooth', a, b]);
+        for (const c of conds) paths.push(['smooth', a, b, c]);
+      }
+    }
     const all = assemblies(OLD_PARTS);
     expect(all.length).toBeGreaterThan(100);
-    for (const g of all) for (const p of paths) expect(runPath(g, p), JSON.stringify([g, p])).toEqual(oldRun(g, p));
+    for (const g of all)
+      for (const p of paths) expect(runPath(g, p), JSON.stringify([g, p])).toEqual(oldRun(g, p));
   });
   it('need never names the paddle wheels, and levels 1-3 never hold them', () => {
     for (const c of CONDS) expect(need(c)?.part).not.toBe('paddles');
     for (const level of [1, 2, 3]) {
       forRounds(level, (r, _i, seed) => {
-        const parts = [...r.tray, ...r.pair?.gadgets.flatMap((g) => Object.values(g)) ?? [], ...Object.values(r.shown?.gadget ?? {})];
+        const parts = [
+          ...r.tray,
+          ...(r.pair?.gadgets.flatMap((g) => Object.values(g)) ?? []),
+          ...Object.values(r.shown?.gadget ?? {}),
+        ];
         expect(parts, `level ${level} seed ${seed}`).not.toContain('paddles');
       });
     }
@@ -408,7 +517,10 @@ describe('level 4 rules', () => {
       if (!o.ok) expect(['bump', 'puddle'].includes(o.at) && o.at !== nc, msg).toBe(true);
       // No assembly without paddles passes.
       const noPaddles = assemblies(r.tray.filter((p) => p !== 'paddles'));
-      expect(noPaddles.some((g) => ok(g, r.path)), msg).toBe(false);
+      expect(
+        noPaddles.some((g) => ok(g, r.path)),
+        msg,
+      ).toBe(false);
       expect(r.open).toEqual([...SOCKETS]);
       expect(r.tray).toHaveLength(4);
       expect(r.tray).toContain('paddles');
@@ -473,7 +585,8 @@ describe('level 4 help', () => {
             const h = helpFor(g, r.path, r);
             if (h.kind !== 'install') throw new Error('expected install');
             const next = applyHelp(g, h);
-            for (const s of SOCKETS) if (g[s] && g[s] === target[s]) expect(next[s], `seed ${seed} ${JSON.stringify(g)}`).toBe(g[s]);
+            for (const s of SOCKETS)
+              if (g[s] && g[s] === target[s]) expect(next[s], `seed ${seed} ${JSON.stringify(g)}`).toBe(g[s]);
             g = next;
             steps++;
           }
@@ -485,7 +598,11 @@ describe('level 4 help', () => {
   it('installs the paddle wheels from the cart and from the obvious fix', () => {
     forRounds(4, (r, _i, seed) => {
       for (const g of [r.yesterday!.gadget, { ...r.yesterday!.gadget, under: obvious(r) }]) {
-        expect(helpFor(g, r.path, r), `seed ${seed}`).toMatchObject({ kind: 'install', part: 'paddles', socket: 'under' });
+        expect(helpFor(g, r.path, r), `seed ${seed}`).toMatchObject({
+          kind: 'install',
+          part: 'paddles',
+          socket: 'under',
+        });
       }
     });
   });
@@ -494,7 +611,8 @@ describe('level 4 help', () => {
       for (const seed of SEEDS.slice(0, 40)) {
         for (const r of briefFor(level, new Rng(seed)).rounds) {
           const parts = [...r.tray, ...Object.values(r.shown?.gadget ?? {})] as PartId[];
-          for (const g of assemblies([...new Set(parts)])) expect(helpFor(g, r.path, r)).toEqual(helpFor(g, r.path));
+          for (const g of assemblies([...new Set(parts)]))
+            expect(helpFor(g, r.path, r)).toEqual(helpFor(g, r.path));
         }
       }
     }
@@ -561,12 +679,22 @@ describe('level 4 nextMove', () => {
         for (let i = 0; i < 8 && !gave; i++) {
           const m = nextMove(r, g, tried, triedOk, 4);
           moves.push(Object.keys(m)[0] + ':' + Object.values(m)[0]);
-          if ('tryCart' in m) { tried[0] = true; triedOk = ok(g, r.path); }
-          else if ('drag' in m) {
-            g = applyHelp(g, { kind: 'install', part: m.drag, socket: m.to, replaces: g[m.to] ?? null, at: 'bump' });
+          if ('tryCart' in m) {
+            tried[0] = true;
+            triedOk = ok(g, r.path);
+          } else if ('drag' in m) {
+            g = applyHelp(g, {
+              kind: 'install',
+              part: m.drag,
+              socket: m.to,
+              replaces: g[m.to] ?? null,
+              at: 'bump',
+            });
             triedOk = false;
-          } else if ('giveCart' in m) { expect(ok(g, r.path), `seed ${seed}`).toBe(true); gave = true; }
-          else throw new Error('unexpected move');
+          } else if ('giveCart' in m) {
+            expect(ok(g, r.path), `seed ${seed}`).toBe(true);
+            gave = true;
+          } else throw new Error('unexpected move');
         }
         expect(gave, `seed ${seed} ${moves.join(' ')}`).toBe(true);
         expect(moves[0]).toBe('tryCart:true');
@@ -584,58 +712,90 @@ const SIX_OLD: PartId[] = ['wheels', 'float', 'umbrella', 'lantern', 'flag', 'pa
 const NEW_PARTS: PartId[] = ['rollers', 'lid', 'raft', 'glowstones'];
 const TALL: PartId[] = ['wheels', 'paddles', 'umbrella', 'flag'];
 const isTall = (p: PartId) => PARTS[p].tall;
-const fixers = (kit: readonly PartId[], c: Condition) => kit.filter((p) => PARTS[p].fixes.length === 1 && PARTS[p].fixes[0] === c);
+const fixers = (kit: readonly PartId[], c: Condition) =>
+  kit.filter((p) => PARTS[p].fixes.length === 1 && PARTS[p].fixes[0] === c);
 
 describe('new parts model', () => {
   it('each new part passes only its condition in its own socket, and tall is exactly four parts', () => {
-    const expected: Record<string, [string, Condition]> = { rollers: ['under', 'bump'], lid: ['top', 'rain'], raft: ['under', 'puddle'], glowstones: ['top', 'dark'] };
-    for (const p of NEW_PARTS) for (const s of SOCKETS) for (const c of CONDS) {
-      expect(handles(p, s, c), `${p} ${s} ${c}`).toBe(s === expected[p][0] && c === expected[p][1]);
-    }
+    const expected: Record<string, [string, Condition]> = {
+      rollers: ['under', 'bump'],
+      lid: ['top', 'rain'],
+      raft: ['under', 'puddle'],
+      glowstones: ['top', 'dark'],
+    };
+    for (const p of NEW_PARTS)
+      for (const s of SOCKETS)
+        for (const c of CONDS) {
+          expect(handles(p, s, c), `${p} ${s} ${c}`).toBe(s === expected[p][0] && c === expected[p][1]);
+        }
     expect(ALL_PARTS.filter(isTall).sort()).toEqual([...TALL].sort());
     expect(LOW_TWIN).toEqual({ wheels: 'rollers', umbrella: 'lid' });
   });
   it('keeps the level 1-4 answers with and without a kit argument', () => {
     const conds = CONDS.filter((c) => c !== 'smooth');
     const paths: Condition[][] = [['smooth']];
-    for (const a of conds) { paths.push(['smooth', a]); for (const b of conds) { paths.push(['smooth', a, b]); for (const c of conds) paths.push(['smooth', a, b, c]); } }
-    for (const g of assemblies(OLD_PARTS)) for (const p of paths) {
-      const want = oldRun(g, p);
-      expect(runPath(g, p), JSON.stringify([g, p])).toEqual(want);
-      expect(runPath(g, p, SIX_OLD), JSON.stringify([g, p])).toEqual(want);
+    for (const a of conds) {
+      paths.push(['smooth', a]);
+      for (const b of conds) {
+        paths.push(['smooth', a, b]);
+        for (const c of conds) paths.push(['smooth', a, b, c]);
+      }
     }
+    for (const g of assemblies(OLD_PARTS))
+      for (const p of paths) {
+        const want = oldRun(g, p);
+        expect(runPath(g, p), JSON.stringify([g, p])).toEqual(want);
+        expect(runPath(g, p, SIX_OLD), JSON.stringify([g, p])).toEqual(want);
+      }
     // With the paddle wheels too, the kit argument changes nothing.
-    for (const g of assemblies(SIX_OLD)) for (const p of paths) expect(runPath(g, p, SIX_OLD), JSON.stringify([g, p])).toEqual(runPath(g, p));
+    for (const g of assemblies(SIX_OLD))
+      for (const p of paths) expect(runPath(g, p, SIX_OLD), JSON.stringify([g, p])).toEqual(runPath(g, p));
     for (const c of CONDS) expect(responsible(c, SIX_OLD)).toEqual(need(c));
   });
   it('keeps helpFor with and without the round on every level 1-4 round, and the briefs hold no new part', () => {
     for (const level of [1, 2, 3, 4]) {
       forRounds(level, (r, _i, seed) => {
-        const held = [...r.tray, ...(r.pair?.gadgets.flatMap((g) => Object.values(g)) ?? []), ...Object.values(r.shown?.gadget ?? {}), ...Object.values(r.yesterday?.gadget ?? {})];
+        const held = [
+          ...r.tray,
+          ...(r.pair?.gadgets.flatMap((g) => Object.values(g)) ?? []),
+          ...Object.values(r.shown?.gadget ?? {}),
+          ...Object.values(r.yesterday?.gadget ?? {}),
+        ];
         for (const p of NEW_PARTS) expect(held, `level ${level} seed ${seed}`).not.toContain(p);
         expect(r.kit).toBeUndefined();
         expect(kitOf(r)).toBeUndefined();
         expect(r.path).not.toContain('gate');
       });
     }
-    for (const level of [2, 3]) for (const seed of SEEDS.slice(0, 20)) for (const r of briefFor(level, new Rng(seed)).rounds) {
-      for (const g of assemblies(SIX_OLD)) expect(helpFor(g, r.path, r)).toEqual(helpFor(g, r.path));
-    }
+    for (const level of [2, 3])
+      for (const seed of SEEDS.slice(0, 20))
+        for (const r of briefFor(level, new Rng(seed)).rounds) {
+          for (const g of assemblies(SIX_OLD)) expect(helpFor(g, r.path, r)).toEqual(helpFor(g, r.path));
+        }
   });
 });
 
 describe('the gate', () => {
   it('stops the cart exactly when earlier conditions pass and a socket holds a tall part, at the first such socket', () => {
-    const paths: Condition[][] = [['smooth'], ['smooth', 'bump'], ['smooth', 'rain', 'dark'], ['smooth', 'bump', 'rain'], ['smooth', 'puddle', 'dark'], ['smooth', 'bump', 'puddle', 'dark']];
-    for (const g of assemblies(ALL_PARTS)) for (const conds of paths) {
-      const r = runPath(g, [...conds, 'gate']);
-      const earlier = runPath(g, conds);
-      const tallSocket = SOCKETS.find((s) => g[s] && isTall(g[s]!));
-      const msg = JSON.stringify([g, conds]);
-      if (!earlier.ok) expect(r, msg).toEqual(earlier);
-      else if (tallSocket) expect(r, msg).toEqual({ ok: false, at: 'gate', socket: tallSocket, part: g[tallSocket] });
-      else expect(r.ok, msg).toBe(true);
-    }
+    const paths: Condition[][] = [
+      ['smooth'],
+      ['smooth', 'bump'],
+      ['smooth', 'rain', 'dark'],
+      ['smooth', 'bump', 'rain'],
+      ['smooth', 'puddle', 'dark'],
+      ['smooth', 'bump', 'puddle', 'dark'],
+    ];
+    for (const g of assemblies(ALL_PARTS))
+      for (const conds of paths) {
+        const r = runPath(g, [...conds, 'gate']);
+        const earlier = runPath(g, conds);
+        const tallSocket = SOCKETS.find((s) => g[s] && isTall(g[s]!));
+        const msg = JSON.stringify([g, conds]);
+        if (!earlier.ok) expect(r, msg).toEqual(earlier);
+        else if (tallSocket)
+          expect(r, msg).toEqual({ ok: false, at: 'gate', socket: tallSocket, part: g[tallSocket] });
+        else expect(r.ok, msg).toBe(true);
+      }
   });
 });
 
@@ -648,7 +808,10 @@ describe('level 5 rules', () => {
       expect(r.path[3]).toBe('gate');
       const conds = r.path.slice(1, 3);
       expect(socketConflict(r.path), msg).toBe(false);
-      expect(conds.some((c) => isTall(need(c)!.part)), msg).toBe(true);
+      expect(
+        conds.some((c) => isTall(need(c)!.part)),
+        msg,
+      ).toBe(true);
       for (const c of conds) {
         const part = need(c)!.part;
         expect(r.tray, msg).toContain(part);
@@ -658,7 +821,10 @@ describe('level 5 rules', () => {
       expect(r.tray, `${msg}: four tray parts, the footprint benchLayout(5, 4, 4) holds`).toHaveLength(4);
       expect(r.open).toEqual([...SOCKETS]);
       const familiar: Gadget = {};
-      for (const c of conds) { const n = need(c)!; familiar[n.socket] = n.part; }
+      for (const c of conds) {
+        const n = need(c)!;
+        familiar[n.socket] = n.part;
+      }
       expect(runPath(familiar, r.path), msg).toMatchObject({ ok: false, at: 'gate' });
       const designs = passingDesigns(r.path, r.tray, r.open, kitOf(r));
       expect(designs, msg).toHaveLength(1);
@@ -762,10 +928,18 @@ describe('help at levels 5 and 6', () => {
   it('level 5: from the familiar design, help installs the low twin first', () => {
     forRounds(5, (r, _i, seed) => {
       const familiar: Gadget = {};
-      for (const c of r.path.slice(1, 3)) { const n = need(c)!; familiar[n.socket] = n.part; }
+      for (const c of r.path.slice(1, 3)) {
+        const n = need(c)!;
+        familiar[n.socket] = n.part;
+      }
       const h = helpFor(familiar, r.path, r);
       const tallSocket = SOCKETS.find((s) => familiar[s] && isTall(familiar[s]!))!;
-      expect(h, `seed ${seed}`).toMatchObject({ kind: 'install', socket: tallSocket, part: LOW_TWIN[familiar[tallSocket]!], replaces: familiar[tallSocket] });
+      expect(h, `seed ${seed}`).toMatchObject({
+        kind: 'install',
+        socket: tallSocket,
+        part: LOW_TWIN[familiar[tallSocket]!],
+        replaces: familiar[tallSocket],
+      });
     });
   });
 });
@@ -776,7 +950,10 @@ describe('level 5 tally', () => {
       for (const r of briefFor(5, new Rng(seed)).rounds) {
         const t = new Tally();
         const fam: Gadget = {};
-        for (const c of r.path.slice(1, 3)) { const n = need(c)!; fam[n.socket] = n.part; }
+        for (const c of r.path.slice(1, 3)) {
+          const n = need(c)!;
+          fam[n.socket] = n.part;
+        }
         const startUnmet = helpSteps({}, r);
         expect(startUnmet).toBeGreaterThan(0);
         const first = runPath(fam, r.path);
@@ -815,15 +992,27 @@ describe('levels 5 and 6 nextMove', () => {
     for (let i = 0; i < 16 && !gave; i++) {
       const m = nextMove(r, g, tried, triedOk, level);
       moves.push(Object.keys(m)[0] + ':' + Object.values(m)[0]);
-      if ('tryCart' in m) { tried[0] = true; triedOk = runPath(g, r.path, kitOf(r)).ok; }
-      else if ('drag' in m) { g = applyHelp(g, { kind: 'install', part: m.drag, socket: m.to, replaces: g[m.to] ?? null, at: 'bump' }); triedOk = false; }
-      else if ('takeOut' in m) {
+      if ('tryCart' in m) {
+        tried[0] = true;
+        triedOk = runPath(g, r.path, kitOf(r)).ok;
+      } else if ('drag' in m) {
+        g = applyHelp(g, {
+          kind: 'install',
+          part: m.drag,
+          socket: m.to,
+          replaces: g[m.to] ?? null,
+          at: 'bump',
+        });
+        triedOk = false;
+      } else if ('takeOut' in m) {
         const s = SOCKETS.find((x) => g[x] === m.takeOut);
         expect(s, `seed ${seed} ${moves.join(' ')}`).toBeDefined();
         delete g[s!];
         triedOk = false;
-      } else if ('giveCart' in m) { expect(runPath(g, r.path, kitOf(r)).ok, `seed ${seed}`).toBe(true); gave = true; }
-      else throw new Error('unexpected move');
+      } else if ('giveCart' in m) {
+        expect(runPath(g, r.path, kitOf(r)).ok, `seed ${seed}`).toBe(true);
+        gave = true;
+      } else throw new Error('unexpected move');
     }
     expect(gave, `level ${level} seed ${seed} ${moves.join(' ')}`).toBe(true);
     return moves;
@@ -832,7 +1021,10 @@ describe('levels 5 and 6 nextMove', () => {
     for (const seed of SEEDS.slice(0, 200)) {
       for (const r of briefFor(5, new Rng(seed)).rounds) {
         const moves = play(5, seed, r);
-        const needs = r.path.map(need).filter(Boolean).map((n) => n!.part);
+        const needs = r.path
+          .map(need)
+          .filter(Boolean)
+          .map((n) => n!.part);
         expect(moves.slice(0, 2).sort(), `seed ${seed}`).toEqual(needs.map((p) => 'drag:' + p).sort());
         expect(moves[2]).toBe('tryCart:true');
         expect(moves.filter((m) => m.startsWith('tryCart')).length).toBeLessThanOrEqual(2);

@@ -14,7 +14,9 @@ export function cupArt(full = true): Container {
   const c = new Container();
   const g = new Graphics();
   g.moveTo(8, -26).lineTo(15, -46).stroke(line(swatch.red.fill, 5));
-  g.poly([-20, -24, 20, -24, 15, 26, -15, 26]).fill({ color: 0xffffff, alpha: 0.85 }).stroke(line(GLASS, 3.5));
+  g.poly([-20, -24, 20, -24, 15, 26, -15, 26])
+    .fill({ color: 0xffffff, alpha: 0.85 })
+    .stroke(line(GLASS, 3.5));
   if (full) {
     g.poly([-18, -14, 18, -14, 14.2, 24, -14.2, 24]).fill(swatch.yellow.fill);
     g.ellipse(0, -14, 18, 3.5).fill(swatch.yellow.light);
@@ -24,7 +26,10 @@ export function cupArt(full = true): Container {
   g.circle(-18, -24, 9).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2.5));
   for (let i = 0; i < 3; i++) {
     const a = (i * Math.PI) / 3;
-    g.moveTo(-18 - Math.cos(a) * 7, -24 - Math.sin(a) * 7).lineTo(-18 + Math.cos(a) * 7, -24 + Math.sin(a) * 7);
+    g.moveTo(-18 - Math.cos(a) * 7, -24 - Math.sin(a) * 7).lineTo(
+      -18 + Math.cos(a) * 7,
+      -24 + Math.sin(a) * 7,
+    );
   }
   g.stroke(line(swatch.yellow.light, 1.6));
   c.addChild(g);
@@ -37,7 +42,18 @@ export function forecastIcon(w: Weather, size = 80): Container {
   if (w === 'cloudy') {
     const s = size / 60;
     const g = new Graphics();
-    puffs(g, [[-22 * s, 6 * s, 17 * s], [0, -8 * s, 24 * s], [24 * s, 6 * s, 17 * s], [0, 10 * s, 19 * s]], swatch.white.light, swatch.white.line, 4 * s);
+    puffs(
+      g,
+      [
+        [-22 * s, 6 * s, 17 * s],
+        [0, -8 * s, 24 * s],
+        [24 * s, 6 * s, 17 * s],
+        [0, 10 * s, 19 * s],
+      ],
+      swatch.white.light,
+      swatch.white.line,
+      4 * s,
+    );
     c.addChild(g);
   } else {
     c.addChild(weatherIcon(w, size));
@@ -55,11 +71,24 @@ export function eventIcon(e: StandEvent, size = 80): Container {
     g.roundRect(-18, -18, 36, 24, 5).fill(0xffffff).stroke(line(swatch.white.line, 3));
     g.rect(-5, -34, 10, 16).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
     for (const x of [-9, 9]) g.circle(x, -6, 4).fill(swatch.blue.light);
-    g.moveTo(-40, 32).quadraticCurveTo(-20, 22, 0, 32).quadraticCurveTo(20, 42, 40, 32).stroke(line(swatch.blue.fill, 4));
+    g.moveTo(-40, 32)
+      .quadraticCurveTo(-20, 22, 0, 32)
+      .quadraticCurveTo(20, 42, 40, 32)
+      .stroke(line(swatch.blue.fill, 4));
     c.addChild(g);
   } else {
     // A sleepy bubble: "z z z" on a pale cloud.
-    puffs(g, [[-22, 4, 16], [0, -6, 22], [22, 4, 16]], swatch.purple.light, swatch.purple.line, 4);
+    puffs(
+      g,
+      [
+        [-22, 4, 16],
+        [0, -6, 22],
+        [22, 4, 16],
+      ],
+      swatch.purple.light,
+      swatch.purple.line,
+      4,
+    );
     c.addChild(g);
     const z = label('zzz', 30, swatch.purple.line);
     z.y = -2;
@@ -78,9 +107,16 @@ export function pitcherArt(): Container {
   g.poly([-41, -96, 41, -96, 35, -4, -35, -4]).fill(swatch.yellow.fill);
   g.ellipse(0, -96, 41, 7).fill(swatch.yellow.light);
   g.ellipse(-20, -50, 5, 20).fill({ color: 0xffffff, alpha: 0.5 });
-  g.poly([-52, -142, -34, -150, 34, -150, 52, -142, 44, -138, -44, -138]).fill(0xffffff).stroke(line(GLASS, 4));
+  g.poly([-52, -142, -34, -150, 34, -150, 52, -142, 44, -138, -44, -138])
+    .fill(0xffffff)
+    .stroke(line(GLASS, 4));
   c.addChild(g);
-  for (const [x, y] of [[-14, -62], [14, -40], [-4, -22]]) c.addChild(new Graphics().circle(x, y, 6).fill({ color: 0xffffff, alpha: 0.7 }));
+  for (const [x, y] of [
+    [-14, -62],
+    [14, -40],
+    [-4, -22],
+  ])
+    c.addChild(new Graphics().circle(x, y, 6).fill({ color: 0xffffff, alpha: 0.7 }));
   return c;
 }
 
@@ -106,7 +142,12 @@ export function miniStand(): Container {
 
 /** A chalkboard-style speech sign: a small round-cornered board. */
 export function boardArt(w: number, h: number): Graphics {
-  return new Graphics().roundRect(-w / 2, -h / 2 + 5, w, h, 18).fill(wood.line).roundRect(-w / 2, -h / 2, w, h, 18).fill(0xfffaf0).stroke(line(wood.line, 5));
+  return new Graphics()
+    .roundRect(-w / 2, -h / 2 + 5, w, h, 18)
+    .fill(wood.line)
+    .roundRect(-w / 2, -h / 2, w, h, 18)
+    .fill(0xfffaf0)
+    .stroke(line(wood.line, 5));
 }
 
 /** A lightbulb for the Help button. */
@@ -136,7 +177,10 @@ export function lemonArt(): Graphics {
 export function boatArt(offer: Offer, sail: number, sailLine: number): Container {
   const c = new Container();
   const g = new Graphics();
-  g.moveTo(-104, 44).quadraticCurveTo(-52, 34, 0, 44).quadraticCurveTo(52, 54, 104, 44).stroke(line(swatch.blue.fill, 5));
+  g.moveTo(-104, 44)
+    .quadraticCurveTo(-52, 34, 0, 44)
+    .quadraticCurveTo(52, 54, 104, 44)
+    .stroke(line(swatch.blue.fill, 5));
   g.rect(-4, -168, 8, 172).fill(wood.fill).stroke(line(wood.line, 3));
   g.poly([6, -168, 44, -156, 6, -144]).fill(sail).stroke(line(sailLine, 3));
   g.poly([-100, 0, 100, 0, 80, 38, -80, 38]).fill(sail).stroke(line(sailLine, 5));

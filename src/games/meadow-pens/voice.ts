@@ -1,11 +1,21 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.meadow-pens': ['Meadow pens!'],
-  'meadow.instruct.1': ['Paint squares of grass for a pen. Make it as big as your friend asks, then ring the bell.'],
-  'meadow.instruct.2': ['How many squares of grass will cover the whole field? Count the rows, then tap a card.'],
-  'meadow.instruct.3': ['Paint the squares of grass, and use every fence piece on the stack. Then ring the bell.'],
-  'meadow.instruct.4': ['Look at both pens. Listen for grass or fence, then choose a pen, or choose the same.'],
-  'meadow.instruct.5': ['The bent field has two parts. Count the squares in both parts, then choose a card for all the grass.'],
+  'meadow.instruct.1': [
+    'Paint squares of grass for a pen. Make it as big as your friend asks, then ring the bell.',
+  ],
+  'meadow.instruct.2': [
+    'How many squares of grass will cover the whole field? Count the rows, then tap a card.',
+  ],
+  'meadow.instruct.3': [
+    'Paint the squares of grass, and use every fence piece on the stack. Then ring the bell.',
+  ],
+  'meadow.instruct.4': [
+    'Look at both pens. Listen for grass or fence, then choose a pen, or choose the same.',
+  ],
+  'meadow.instruct.5': [
+    'The bent field has two parts. Count the squares in both parts, then choose a card for all the grass.',
+  ],
   'meadow.ask4.grass': ['Which pen has more squares of grass?'],
   'meadow.ask4.fence': ['Which pen needs more fence pieces?'],
   'meadow.ask5': ['How many squares of grass cover the whole field?'],

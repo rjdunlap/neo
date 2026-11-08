@@ -1,9 +1,15 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.timeline-trail': ['Timeline trail!'],
-  'trail.instruct.1': ['These two pictures show the {place} at two times. Which one is from long ago? Tap it, or hang it on the left post.'],
-  'trail.instruct.2': ['These pictures show the {place} at different times. Where does the loose picture go? Drag it to the gap where it belongs.'],
-  'trail.instruct.3': ['These pictures show the {place} at different times. Hang them one at a time, from long ago on the left to now on the right.'],
+  'trail.instruct.1': [
+    'These two pictures show the {place} at two times. Which one is from long ago? Tap it, or hang it on the left post.',
+  ],
+  'trail.instruct.2': [
+    'These pictures show the {place} at different times. Where does the loose picture go? Drag it to the gap where it belongs.',
+  ],
+  'trail.instruct.3': [
+    'These pictures show the {place} at different times. Hang them one at a time, from long ago on the left to now on the right.',
+  ],
   'trail.card.shore-0': ['An empty shore with one rock.'],
   'trail.card.shore-1': ['A little dock on the shore.'],
   'trail.card.shore-2': ['The dock with a boat shed.'],
@@ -18,7 +24,7 @@ export const VOICE = {
   'trail.card.nest-3': ['The pet now, at the treehouse door.'],
   'trail.yes': ['Yes! {caption}.', 'That is it: {caption}.'],
   'trail.other': ['Not there. {reason}'],
-  'trail.not-first': ["That is the {place} now. {reason} Which one is from long ago?"],
+  'trail.not-first': ['That is the {place} now. {reason} Which one is from long ago?'],
   'trail.not-now': ['That one is from long ago. {reason} Hang it on the left post.'],
   'trail.hint-glow': ['Look, the glowing gap is where it belongs.'],
   'trail.help': ['The glowing gap is where this picture goes.'],

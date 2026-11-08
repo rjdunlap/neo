@@ -1,9 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  answerOf, applyStep, brokenClue, contradicts, CROSSED, cycle, decides, EMPTY, emptyMarks, FILLED, fullWrong, holds, makeBoard, makeRound,
-  nextStep, HATS, hatted, ITEMS, SNACKS, onGrid, blockOf, rowOf, colOf, sizeOf, PLACES, planFor, PLANS, shapeOf, shown, solutionMarks, solved, solutions, solveSteps, sq, wrongSquares, type Board, type Mark,
-  countSolutions, PLACES5, TIMES, type Clue,
+  answerOf,
+  applyStep,
+  brokenClue,
+  contradicts,
+  CROSSED,
+  cycle,
+  decides,
+  EMPTY,
+  emptyMarks,
+  FILLED,
+  fullWrong,
+  holds,
+  makeBoard,
+  makeRound,
+  nextStep,
+  HATS,
+  hatted,
+  ITEMS,
+  SNACKS,
+  onGrid,
+  blockOf,
+  rowOf,
+  colOf,
+  sizeOf,
+  PLACES,
+  planFor,
+  PLANS,
+  shapeOf,
+  shown,
+  solutionMarks,
+  solved,
+  solutions,
+  solveSteps,
+  sq,
+  wrongSquares,
+  type Board,
+  type Mark,
+  countSolutions,
+  PLACES5,
+  TIMES,
+  type Clue,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i * 7919 + 3);
@@ -22,11 +60,19 @@ describe('boards at every level', () => {
         expect(solutions(s, b.clues)).toEqual([[...b.solution, ...(b.having ?? [])]]);
         expect(b.clues.every((c) => holds(c, b.solution, b.having))).toBe(true);
         expect(solveSteps(s, b.clues).done).toBe(true);
-        b.clues.forEach((_, i) => expect(solveSteps(s, b.clues.filter((__, j) => j !== i)).done).toBe(false));
+        b.clues.forEach((_, i) =>
+          expect(
+            solveSteps(
+              s,
+              b.clues.filter((__, j) => j !== i),
+            ).done,
+          ).toBe(false),
+        );
         expect(b.clues.length).toBeGreaterThanOrEqual(plan.clues);
         expect(b.clues.length).toBeLessThanOrEqual(plan.maxClues ?? plan.clues);
         for (const c of b.clues) expect(plan.kinds).toContain(c.kind);
-        for (const [k, n] of Object.entries(plan.each ?? {})) expect(b.clues.filter((c) => c.kind === k)).toHaveLength(n as number);
+        for (const [k, n] of Object.entries(plan.each ?? {}))
+          expect(b.clues.filter((c) => c.kind === k)).toHaveLength(n as number);
       }
     });
     it(`level ${plan.level}: cast, distinct friends and places, event names one friend`, () => {
@@ -56,7 +102,9 @@ describe('boards at every level', () => {
     expect(planFor(2).level).toBe(2);
     for (const seed of SEEDS) {
       expect(makeBoard(planFor(1), new Rng(seed)).clues.every((c) => c.kind === 'direct')).toBe(true);
-      const k = makeBoard(planFor(2), new Rng(seed)).clues.map((c) => c.kind).sort();
+      const k = makeBoard(planFor(2), new Rng(seed))
+        .clues.map((c) => c.kind)
+        .sort();
       expect(k).toEqual(['direct', 'not']);
     }
   });
@@ -75,7 +123,8 @@ describe('what a clue decides and contradicts', () => {
         } else {
           const want = new Map<number, Mark>();
           for (let i = 0; i < s.rows * s.cols; i++) {
-            const r = Math.floor(i / s.cols), col = i % s.cols;
+            const r = Math.floor(i / s.cols),
+              col = i % s.cols;
             if (i === own) want.set(i, FILLED);
             else if (r === c.friend || col === c.place) want.set(i, CROSSED);
           }
@@ -127,7 +176,13 @@ describe('what a clue decides and contradicts', () => {
       });
       expect(quiet.length).toBeGreaterThan(0);
       found += quiet.length;
-      for (const i of quiet) expect(wrongSquares(b, Object.assign(emptyMarks(shapeOf(b)), { [i]: want[i] === FILLED ? CROSSED : FILLED }))).toEqual([i]);
+      for (const i of quiet)
+        expect(
+          wrongSquares(
+            b,
+            Object.assign(emptyMarks(shapeOf(b)), { [i]: want[i] === FILLED ? CROSSED : FILLED }),
+          ),
+        ).toEqual([i]);
     }
     expect(found).toBeGreaterThan(0);
   });
@@ -171,7 +226,7 @@ describe('marks on the grid', () => {
       marks[y] = EMPTY;
       expect(shown(s, marks).every((x) => x.mark === EMPTY && !x.auto)).toBe(true);
       // her own marks in the way stay hers
-      const other = (y + 1) % 3 + Math.floor(y / 3) * 3;
+      const other = ((y + 1) % 3) + Math.floor(y / 3) * 3;
       const m2 = emptyMarks(s);
       m2[y] = FILLED;
       m2[other] = FILLED;
@@ -298,7 +353,14 @@ describe('levels 3 and 4: three friends on three places', () => {
         expect(s).toEqual({ rows: 3, cols: 3 });
         expect(solutions(s, b.clues)).toEqual([b.solution]);
         expect(solveSteps(s, b.clues).done).toBe(true);
-        b.clues.forEach((_, i) => expect(solveSteps(s, b.clues.filter((__, j) => j !== i)).done).toBe(false));
+        b.clues.forEach((_, i) =>
+          expect(
+            solveSteps(
+              s,
+              b.clues.filter((__, j) => j !== i),
+            ).done,
+          ).toBe(false),
+        );
         expect(b.clues.length).toBeGreaterThanOrEqual(3);
         expect(b.clues.length).toBeLessThanOrEqual(4);
         expect(b.clues.filter((c) => c.kind === 'direct').length).toBeLessThanOrEqual(1);
@@ -317,7 +379,9 @@ describe('levels 3 and 4: three friends on three places', () => {
         expect(b.solution.filter((p) => p === b.event)).toHaveLength(1);
         expect(b.solution[answerOf(b)]).toBe(b.event);
         // the event is only a place: knowing it alone leaves every assignment for the other friends open
-        expect(solutions(s, [{ kind: 'direct', friend: answerOf(b), place: b.event }]).length).toBeGreaterThan(1);
+        expect(
+          solutions(s, [{ kind: 'direct', friend: answerOf(b), place: b.event }]).length,
+        ).toBeGreaterThan(1);
       }
     });
     it(`level ${plan.level}: hats`, () => {
@@ -341,7 +405,9 @@ describe('levels 3 and 4: three friends on three places', () => {
         const want = solutionMarks(b);
         const rng = new Rng(seed + 11);
         for (let t = 0; t < 4; t++) {
-          let marks: Mark[] = emptyMarks(s).map(() => (rng.next() < 0.5 ? EMPTY : ([FILLED, CROSSED] as Mark[])[rng.int(0, 1)]));
+          let marks: Mark[] = emptyMarks(s).map(() =>
+            rng.next() < 0.5 ? EMPTY : ([FILLED, CROSSED] as Mark[])[rng.int(0, 1)],
+          );
           let n = 0;
           while (!solved(b, marks)) {
             const st = nextStep(b, marks);
@@ -386,12 +452,19 @@ describe('levels 3 and 4: three friends on three places', () => {
     }
   });
   it("the 'col' step closes a column with one friend left, on a square grid only", () => {
-    const clues = [{ kind: 'not', friend: 0, place: 0 }, { kind: 'not', friend: 1, place: 0 }] as const;
+    const clues = [
+      { kind: 'not', friend: 0, place: 0 },
+      { kind: 'not', friend: 1, place: 0 },
+    ] as const;
     const sq3 = solveSteps({ rows: 3, cols: 3 }, clues).steps;
     const col = sq3.find((st) => st.why === 'col');
     expect(col).toMatchObject({ square: sq({ rows: 3, cols: 3 }, 2, 0), mark: FILLED, clues: [0, 1] });
     expect(solveSteps({ rows: 3, cols: 4 }, clues).steps.some((st) => st.why === 'col')).toBe(false);
-    expect(solveSteps({ rows: 2, cols: 3 }, [{ kind: 'not', friend: 0, place: 0 }]).steps.some((st) => st.why === 'col')).toBe(false);
+    expect(
+      solveSteps({ rows: 2, cols: 3 }, [{ kind: 'not', friend: 0, place: 0 }]).steps.some(
+        (st) => st.why === 'col',
+      ),
+    ).toBe(false);
   });
   it('levels 1 and 2 are unchanged in shape', () => {
     for (const seed of SEEDS) {
@@ -409,7 +482,8 @@ describe('levels 3 and 4: three friends on three places', () => {
 describe('level 5: who, where and what', () => {
   const plan = planFor(5);
   const seeds5 = SEEDS.slice(0, 100);
-  const each = (fn: (b: Board, seed: number) => void) => seeds5.forEach((seed) => fn(makeBoard(plan, new Rng(seed)), seed));
+  const each = (fn: (b: Board, seed: number) => void) =>
+    seeds5.forEach((seed) => fn(makeBoard(plan, new Rng(seed)), seed));
   const blockOne = (s: ReturnType<typeof shapeOf>, i: number) => blockOf(s, i) === 1;
 
   it('the plan is what the definition says', () => {
@@ -442,7 +516,14 @@ describe('level 5: who, where and what', () => {
       expect(solutions(s, b.clues)).toEqual([[...b.solution, ...b.having!]]);
       expect(b.clues.every((c) => holds(c, b.solution, b.having))).toBe(true);
       expect(solveSteps(s, b.clues).done).toBe(true);
-      b.clues.forEach((_, i) => expect(solveSteps(s, b.clues.filter((__, j) => j !== i)).done).toBe(false));
+      b.clues.forEach((_, i) =>
+        expect(
+          solveSteps(
+            s,
+            b.clues.filter((__, j) => j !== i),
+          ).done,
+        ).toBe(false),
+      );
     });
   });
 
@@ -466,10 +547,12 @@ describe('level 5: who, where and what', () => {
   });
 
   it('the event names exactly one friend, in the right block', () => {
-    let items = 0, places = 0;
+    let items = 0,
+      places = 0;
     each((b) => {
       const at = b.eventItem ? b.having! : b.solution;
-      if (b.eventItem) items++; else places++;
+      if (b.eventItem) items++;
+      else places++;
       expect(at.filter((x) => x === b.event)).toHaveLength(1);
       expect(at[answerOf(b)]).toBe(b.event);
       expect(answerOf(b)).toBeGreaterThanOrEqual(0);
@@ -484,7 +567,8 @@ describe('level 5: who, where and what', () => {
       b.clues.forEach((c, ci) => {
         if (c.kind !== 'apart') return;
         expect(decides(s, c)).toEqual([]);
-        for (let i = 0; i < sizeOf(s); i++) for (const m of [FILLED, CROSSED] as Mark[]) expect(contradicts(b, i, m)).not.toContain(ci);
+        for (let i = 0; i < sizeOf(s); i++)
+          for (const m of [FILLED, CROSSED] as Mark[]) expect(contradicts(b, i, m)).not.toContain(ci);
       });
       solutionMarks(b).forEach((m, i) => expect(contradicts(b, i, m)).toEqual([]));
     });
@@ -523,7 +607,8 @@ describe('level 5: who, where and what', () => {
       marks[y] = FILLED;
       shown(s, marks).forEach((x, i) => {
         if (i === y) return expect(x).toEqual({ mark: FILLED, auto: false });
-        const share = blockOf(s, i) === blockOf(s, y) && (rowOf(s, i) === rowOf(s, y) || colOf(s, i) === colOf(s, y));
+        const share =
+          blockOf(s, i) === blockOf(s, y) && (rowOf(s, i) === rowOf(s, y) || colOf(s, i) === colOf(s, y));
         expect(x).toEqual(share ? { mark: CROSSED, auto: true } : { mark: EMPTY, auto: false });
       });
     }
@@ -533,7 +618,13 @@ describe('level 5: who, where and what', () => {
     const scramble = (b: Board, rng: Rng): Mark[] => {
       const want = solutionMarks(b);
       const fill = rng.next();
-      return want.map((_, i) => (rng.next() > fill ? EMPTY : rng.next() < 0.5 ? want[i] : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)]));
+      return want.map((_, i) =>
+        rng.next() > fill
+          ? EMPTY
+          : rng.next() < 0.5
+            ? want[i]
+            : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)],
+      );
     };
     for (const seed of seeds5) {
       const b = makeBoard(plan, new Rng(seed));
@@ -550,7 +641,9 @@ describe('level 5: who, where and what', () => {
           expect(st.mark).toBe(want[st.square]);
           if (st.why === 'clue') {
             expect(st.clues).toHaveLength(1);
-            expect(decides(s, b.clues[st.clues[0]]).some((x) => x.square === st.square && x.mark === st.mark)).toBe(true);
+            expect(
+              decides(s, b.clues[st.clues[0]]).some((x) => x.square === st.square && x.mark === st.mark),
+            ).toBe(true);
           }
           if (st.why === 'apart') expect(st.mark).toBe(CROSSED);
           for (const ci of st.clues) expect(b.clues[ci]).toBeDefined();
@@ -616,7 +709,9 @@ describe('level 5: who, where and what', () => {
         expect(b.items).toBeUndefined();
         expect(b.having).toBeUndefined();
         expect(b.eventItem).toBeUndefined();
-        expect(b.clues.every((c) => c.kind !== 'apart' && (c as { block?: number }).block === undefined)).toBe(true);
+        expect(
+          b.clues.every((c) => c.kind !== 'apart' && (c as { block?: number }).block === undefined),
+        ).toBe(true);
         expect(blockOne(shapeOf(b), 0)).toBe(false);
       }
     }
@@ -626,14 +721,24 @@ describe('level 5: who, where and what', () => {
 describe('level 6: this one or that one', () => {
   const plan = planFor(6);
   const seeds6 = SEEDS.slice(0, 80);
-  const each = (fn: (b: Board, seed: number) => void) => seeds6.forEach((seed) => fn(makeBoard(plan, new Rng(seed)), seed));
+  const each = (fn: (b: Board, seed: number) => void) =>
+    seeds6.forEach((seed) => fn(makeBoard(plan, new Rng(seed)), seed));
 
   it('the plan is what the definition says; earlier plans stay free of the new kinds', () => {
     expect(plan.level).toBe(6);
-    expect([plan.friends, plan.places, plan.clues, plan.maxClues, plan.maxDirect, plan.hats, plan.atLeast]).toEqual([4, 4, 4, 6, 0, 'some', { either: 1, neither: 1 }]);
+    expect([
+      plan.friends,
+      plan.places,
+      plan.clues,
+      plan.maxClues,
+      plan.maxDirect,
+      plan.hats,
+      plan.atLeast,
+    ]).toEqual([4, 4, 4, 6, 0, 'some', { either: 1, neither: 1 }]);
     expect(plan.kinds).toEqual(['not', 'either', 'neither']);
     expect(plan.items).toBeUndefined();
-    for (const p of PLANS.filter((x) => x.level < 6)) expect(p.kinds.some((k) => k === 'either' || k === 'neither')).toBe(false);
+    for (const p of PLANS.filter((x) => x.level < 6))
+      expect(p.kinds.some((k) => k === 'either' || k === 'neither')).toBe(false);
   });
 
   it('HATS all differ in colour and pattern', () => {
@@ -651,7 +756,14 @@ describe('level 6: this one or that one', () => {
       expect(new Set(b.solution).size).toBe(4);
       expect(b.clues.every((c) => holds(c, b.solution))).toBe(true);
       expect(solveSteps(s, b.clues).done).toBe(true);
-      b.clues.forEach((_, i) => expect(solveSteps(s, b.clues.filter((__, j) => j !== i)).done).toBe(false));
+      b.clues.forEach((_, i) =>
+        expect(
+          solveSteps(
+            s,
+            b.clues.filter((__, j) => j !== i),
+          ).done,
+        ).toBe(false),
+      );
       expect(b.items).toBeUndefined();
     });
   });
@@ -674,7 +786,7 @@ describe('level 6: this one or that one', () => {
     });
   });
 
-  it('either names two distinct places including the friend\'s; neither names two distinct friends both away from the place', () => {
+  it("either names two distinct places including the friend's; neither names two distinct friends both away from the place", () => {
     each((b) => {
       for (const c of b.clues) {
         if (c.kind === 'either') {
@@ -696,8 +808,9 @@ describe('level 6: this one or that one', () => {
     });
   });
 
-  it('decides: either crosses the friend\'s other two places, neither its two squares; contradicts fires on a yes there, never on the solution', () => {
-    let eithers = 0, neithers = 0;
+  it("decides: either crosses the friend's other two places, neither its two squares; contradicts fires on a yes there, never on the solution", () => {
+    let eithers = 0,
+      neithers = 0;
     each((b) => {
       const s = shapeOf(b);
       const want = solutionMarks(b);
@@ -705,7 +818,9 @@ describe('level 6: this one or that one', () => {
         if (c.kind === 'either') {
           eithers++;
           const d = decides(s, c);
-          const others = [0, 1, 2, 3].filter((p) => p !== c.place && p !== c.or).map((p) => sq(s, c.friend, p));
+          const others = [0, 1, 2, 3]
+            .filter((p) => p !== c.place && p !== c.or)
+            .map((p) => sq(s, c.friend, p));
           expect(d.map((x) => x.square).sort()).toEqual(others.sort());
           expect(d.every((x) => x.mark === CROSSED)).toBe(true);
           for (const x of d) expect(contradicts(b, x.square, FILLED)).toContain(ci);
@@ -713,7 +828,9 @@ describe('level 6: this one or that one', () => {
         } else if (c.kind === 'neither') {
           neithers++;
           const d = decides(s, c);
-          expect(d.map((x) => x.square).sort()).toEqual([sq(s, c.friend, c.place), sq(s, c.nor, c.place)].sort());
+          expect(d.map((x) => x.square).sort()).toEqual(
+            [sq(s, c.friend, c.place), sq(s, c.nor, c.place)].sort(),
+          );
           expect(d.every((x) => x.mark === CROSSED)).toBe(true);
           for (const x of d) expect(contradicts(b, x.square, FILLED)).toContain(ci);
           for (const x of d) expect(contradicts(b, x.square, CROSSED)).not.toContain(ci);
@@ -733,7 +850,13 @@ describe('level 6: this one or that one', () => {
       const rng = new Rng(seed + 6);
       const scramble = (): Mark[] => {
         const fill = rng.next();
-        return want.map((w) => (rng.next() > fill ? EMPTY : rng.next() < 0.5 ? w : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)]));
+        return want.map((w) =>
+          rng.next() > fill
+            ? EMPTY
+            : rng.next() < 0.5
+              ? w
+              : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)],
+        );
       };
       for (const start of [emptyMarks(s), scramble(), scramble()]) {
         let marks: Mark[] = start;
@@ -789,16 +912,26 @@ describe('level 6: this one or that one', () => {
 describe('level 7: case file', () => {
   const plan = planFor(7);
   const seeds7 = SEEDS.slice(0, 40);
-  const each = (fn: (b: Board, seed: number) => void) => seeds7.forEach((seed) => fn(makeBoard(plan, new Rng(seed)), seed));
+  const each = (fn: (b: Board, seed: number) => void) =>
+    seeds7.forEach((seed) => fn(makeBoard(plan, new Rng(seed)), seed));
   const wantOf = (b: Board) => solutionMarks(b);
 
   it('the plan is what the definition says; earlier plans have no case', () => {
     expect(plan.level).toBe(7);
-    expect([plan.friends, plan.places, plan.clues, plan.maxClues, plan.hats, plan.case, plan.thing]).toEqual([4, 4, 5, 8, 'some', true, 'basket']);
+    expect([plan.friends, plan.places, plan.clues, plan.maxClues, plan.hats, plan.case, plan.thing]).toEqual([
+      4,
+      4,
+      5,
+      8,
+      'some',
+      true,
+      'basket',
+    ]);
     expect(plan.items).toBe(SNACKS);
     expect([...plan.kinds].sort()).toEqual(['direct', 'either', 'neither', 'not']);
     for (const p of PLANS.filter((x) => x.level < 7)) expect(p.case).toBeUndefined();
-    for (const seed of seeds7.slice(0, 15)) for (let lv = 1; lv <= 6; lv++) expect(makeBoard(planFor(lv), new Rng(seed)).case).toBeUndefined();
+    for (const seed of seeds7.slice(0, 15))
+      for (let lv = 1; lv <= 6; lv++) expect(makeBoard(planFor(lv), new Rng(seed)).case).toBeUndefined();
   });
 
   it('three 4x4 blocks; one solution; every clue true; rule solver finishes; no spare clue; 5-8 clues', () => {
@@ -810,7 +943,14 @@ describe('level 7: case file', () => {
       expect(solutions(s, b.clues)).toEqual([[...b.solution, ...b.having!]]);
       expect(b.clues.every((c) => holds(c, b.solution, b.having))).toBe(true);
       expect(solveSteps(s, b.clues).done).toBe(true);
-      b.clues.forEach((_, i) => expect(solveSteps(s, b.clues.filter((__, j) => j !== i)).done).toBe(false));
+      b.clues.forEach((_, i) =>
+        expect(
+          solveSteps(
+            s,
+            b.clues.filter((__, j) => j !== i),
+          ).done,
+        ).toBe(false),
+      );
       expect(b.clues.length).toBeGreaterThanOrEqual(5);
       expect(b.clues.length).toBeLessThanOrEqual(8);
       for (const c of b.clues) expect(plan.kinds).toContain(c.kind);
@@ -820,7 +960,8 @@ describe('level 7: case file', () => {
   it('hats: at least one hatted clue, none on block 2; four distinct friends, places, snacks and hats', () => {
     each((b) => {
       expect(b.clues.some((c) => hatted(c))).toBe(true);
-      for (const c of b.clues) if ((c.kind === 'direct' || c.kind === 'not') && c.block === 2) expect(c).not.toHaveProperty('hat');
+      for (const c of b.clues)
+        if ((c.kind === 'direct' || c.kind === 'not') && c.block === 2) expect(c).not.toHaveProperty('hat');
       expect(b.hats).toHaveLength(4);
       expect(new Set(b.hats).size).toBe(4);
       expect(new Set(b.friends).size).toBe(4);
@@ -865,12 +1006,13 @@ describe('level 7: case file', () => {
   });
 
   it('decides and contradicts for block 1 and 2 clues stay inside their block and never fire on the solution marks', () => {
-    let seen1 = 0, seen2 = 0;
+    let seen1 = 0,
+      seen2 = 0;
     each((b) => {
       const s = shapeOf(b);
       const want = wantOf(b);
       b.clues.forEach((c, ci) => {
-        const k = c.kind === 'apart' || c.kind === 'order' || c.kind === 'pair' ? 0 : c.block ?? 0;
+        const k = c.kind === 'apart' || c.kind === 'order' || c.kind === 'pair' ? 0 : (c.block ?? 0);
         if (k === 1) seen1++;
         if (k === 2) seen2++;
         for (const d of decides(s, c)) {
@@ -898,16 +1040,25 @@ describe('level 7: case file', () => {
       const rng = new Rng(seed + 11);
       const marks = emptyMarks(s);
       const ys: number[] = [];
-      for (let k = 0; k < 3; k++) { const i = sq(s, rng.int(0, 3), rng.int(0, 3), k); marks[i] = FILLED; ys.push(i); }
+      for (let k = 0; k < 3; k++) {
+        const i = sq(s, rng.int(0, 3), rng.int(0, 3), k);
+        marks[i] = FILLED;
+        ys.push(i);
+      }
       shown(s, marks).forEach((x, i) => {
         if (!x.auto) return;
         expect(marks[i]).toBe(EMPTY);
-        const near = ys.filter((j) => blockOf(s, j) === blockOf(s, i) && (rowOf(s, j) === rowOf(s, i) || colOf(s, j) === colOf(s, i)));
+        const near = ys.filter(
+          (j) =>
+            blockOf(s, j) === blockOf(s, i) && (rowOf(s, j) === rowOf(s, i) || colOf(s, j) === colOf(s, i)),
+        );
         expect(near.length).toBeGreaterThan(0);
       });
       const only = emptyMarks(s);
       only[ys[2]] = FILLED;
-      shown(s, only).forEach((x, i) => { if (blockOf(s, i) !== 2) expect(x.auto).toBe(false); });
+      shown(s, only).forEach((x, i) => {
+        if (blockOf(s, i) !== 2) expect(x.auto).toBe(false);
+      });
     });
   });
 
@@ -933,7 +1084,13 @@ describe('level 7: case file', () => {
       const rng = new Rng(seed + 7);
       const scramble = (): Mark[] => {
         const fill = rng.next();
-        return want.map((w) => (rng.next() > fill ? EMPTY : rng.next() < 0.5 ? w : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)]));
+        return want.map((w) =>
+          rng.next() > fill
+            ? EMPTY
+            : rng.next() < 0.5
+              ? w
+              : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)],
+        );
       };
       for (const start of [emptyMarks(s), scramble(), scramble()]) {
         let marks: Mark[] = start;
@@ -953,7 +1110,8 @@ describe('level 7: case file', () => {
   });
 
   it('every full wrong grid is fullWrong; brokenClue names a really broken clue, or -1 only when nothing can be named', () => {
-    let named = 0, fallback = 0;
+    let named = 0,
+      fallback = 0;
     const ident = [0, 1, 2, 3];
     for (const seed of seeds7) {
       const b = makeBoard(plan, new Rng(seed));
@@ -962,21 +1120,31 @@ describe('level 7: case file', () => {
       for (let t = 0; t < 25; t++) {
         const perm = () => (rng.chance(0.8) ? rng.shuffle([0, 1, 2, 3]) : ident.map(() => rng.int(0, 3)));
         const cols = [perm(), perm(), perm()];
-        if (t % 3 === 0) { cols[0] = [...b.solution]; cols[1] = [...b.having!]; }
+        if (t % 3 === 0) {
+          cols[0] = [...b.solution];
+          cols[1] = [...b.having!];
+        }
         const marks = emptyMarks(s);
         cols.forEach((c, k) => c.forEach((p, f) => (marks[sq(s, f, p, k)] = FILLED)));
-        const isAnswer = cols[0].every((p, f) => p === b.solution[f]) && cols[1].every((p, f) => p === b.having![f]) && cols[2].every((p, t2) => p === b.solution[b.having!.indexOf(t2)]);
+        const isAnswer =
+          cols[0].every((p, f) => p === b.solution[f]) &&
+          cols[1].every((p, f) => p === b.having![f]) &&
+          cols[2].every((p, t2) => p === b.solution[b.having!.indexOf(t2)]);
         expect(solved(b, marks)).toBe(isAnswer);
         expect(fullWrong(b, marks)).toBe(!isAnswer);
         if (isAnswer) continue;
         const k = brokenClue(b, marks);
         const [a, h, z] = cols;
-        const block2False = (c: (typeof b.clues)[number]) => 'block' in c && c.block === 2 && !holds(c, z, ident);
+        const block2False = (c: (typeof b.clues)[number]) =>
+          'block' in c && c.block === 2 && !holds(c, z, ident);
         if (k >= 0) {
           named++;
           const falseOf01 = !holds(b.clues[k], a, h);
           expect(falseOf01 || block2False(b.clues[k])).toBe(true);
-          if (!falseOf01) { fallback++; expect(b.clues.every((x) => holds(x, a, h))).toBe(true); }
+          if (!falseOf01) {
+            fallback++;
+            expect(b.clues.every((x) => holds(x, a, h))).toBe(true);
+          }
         } else {
           expect(b.clues.every((x) => holds(x, a, h))).toBe(true);
           expect(b.clues.some(block2False)).toBe(false);
@@ -991,7 +1159,8 @@ describe('level 7: case file', () => {
   });
 
   it('same seed, same puzzle', () => {
-    for (const seed of seeds7.slice(0, 20)) expect(makeRound(plan, new Rng(seed))).toEqual(makeRound(plan, new Rng(seed)));
+    for (const seed of seeds7.slice(0, 20))
+      expect(makeRound(plan, new Rng(seed))).toEqual(makeRound(plan, new Rng(seed)));
   });
 });
 
@@ -1001,11 +1170,21 @@ describe('level 8: who came first?', () => {
   const boards = seeds8.map((seed) => makeBoard(plan, new Rng(seed)));
   const each = (fn: (b: Board, seed: number) => void) => boards.forEach((b, i) => fn(b, seeds8[i]));
   /** The marks an assignment (friend → place, friend → time) puts on all three blocks. */
-  const marksOf = (b: Board, a: readonly number[], h: readonly number[]) => solutionMarks({ ...b, solution: [...a], having: [...h] });
+  const marksOf = (b: Board, a: readonly number[], h: readonly number[]) =>
+    solutionMarks({ ...b, solution: [...a], having: [...h] });
 
   it('the plan is what the definition says (clues capped at 9 so the list fits at 64); earlier plans have no times', () => {
     expect(plan.level).toBe(8);
-    expect([plan.friends, plan.places, plan.clues, plan.maxClues, plan.hats, plan.case, plan.times, plan.thing]).toEqual([5, 5, 7, 9, 'some', true, true, 'basket']);
+    expect([
+      plan.friends,
+      plan.places,
+      plan.clues,
+      plan.maxClues,
+      plan.hats,
+      plan.case,
+      plan.times,
+      plan.thing,
+    ]).toEqual([5, 5, 7, 9, 'some', true, true, 'basket']);
     expect(plan.items).toBe(TIMES);
     expect(plan.placePool).toBe(PLACES5);
     expect([...plan.kinds].sort()).toEqual(['direct', 'either', 'neither', 'not', 'order', 'pair']);
@@ -1027,7 +1206,14 @@ describe('level 8: who came first?', () => {
       expect(countSolutions(s, b.clues, 3)).toBe(1);
       expect(b.clues.every((c) => holds(c, b.solution, b.having))).toBe(true);
       expect(solveSteps(s, b.clues).done).toBe(true);
-      b.clues.forEach((_, i) => expect(solveSteps(s, b.clues.filter((__, j) => j !== i)).done).toBe(false));
+      b.clues.forEach((_, i) =>
+        expect(
+          solveSteps(
+            s,
+            b.clues.filter((__, j) => j !== i),
+          ).done,
+        ).toBe(false),
+      );
       expect(b.clues.length).toBeGreaterThanOrEqual(7);
       expect(b.clues.length).toBeLessThanOrEqual(9);
       expect(b.clues.some((c) => c.kind === 'order')).toBe(true);
@@ -1037,7 +1223,8 @@ describe('level 8: who came first?', () => {
       expect(new Set(b.friends).size).toBe(5);
     });
     // The exact solver agrees with the fast count on a few boards.
-    for (const b of boards.slice(0, 3)) expect(solutions(shapeOf(b), b.clues)).toEqual([[...b.solution, ...b.having!]]);
+    for (const b of boards.slice(0, 3))
+      expect(solutions(shapeOf(b), b.clues)).toEqual([[...b.solution, ...b.having!]]);
   });
 
   it('an order clue is true of its friends; a pair names two different friends at its two times', () => {
@@ -1062,7 +1249,12 @@ describe('level 8: who came first?', () => {
     const b = boards[0];
     const s = shapeOf(b);
     const kinds = new Set<string>();
-    const clues: Clue[] = [...b.clues, { kind: 'order', friend: 0, later: 1 }, { kind: 'order', friend: 2, later: 3, by: 2 }, { kind: 'pair', friend: 0, place: 1, time: 0, or: 3 }];
+    const clues: Clue[] = [
+      ...b.clues,
+      { kind: 'order', friend: 0, later: 1 },
+      { kind: 'order', friend: 2, later: 3, by: 2 },
+      { kind: 'pair', friend: 0, place: 1, time: 0, or: 3 },
+    ];
     for (const c of clues) {
       kinds.add(c.kind);
       const all = solutions(s, [c]).map((x) => marksOf(b, x.slice(0, 5), x.slice(5)));
@@ -1074,7 +1266,8 @@ describe('level 8: who came first?', () => {
   });
 
   it('contradicts never fires on the solution marks; every rule-solver step agrees; order and pair steps appear', () => {
-    let order = 0, pair = 0;
+    let order = 0,
+      pair = 0;
     each((b) => {
       const s = shapeOf(b);
       const want = solutionMarks(b);
@@ -1093,7 +1286,14 @@ describe('level 8: who came first?', () => {
       const s = shapeOf(b);
       const want = solutionMarks(b);
       const rng = new Rng(seed + 7);
-      const scramble = (): Mark[] => want.map((w) => (rng.next() < 0.5 ? EMPTY : rng.next() < 0.6 ? w : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)]));
+      const scramble = (): Mark[] =>
+        want.map((w) =>
+          rng.next() < 0.5
+            ? EMPTY
+            : rng.next() < 0.6
+              ? w
+              : ([EMPTY, FILLED, CROSSED] as Mark[])[rng.int(0, 2)],
+        );
       for (const start of [emptyMarks(s), scramble()]) {
         let marks: Mark[] = start;
         let n = 0;
@@ -1117,7 +1317,10 @@ describe('level 8: who came first?', () => {
       const rng = new Rng(seed + 3);
       for (let t = 0; t < 10; t++) {
         const cols = [0, 1, 2].map(() => rng.shuffle([0, 1, 2, 3, 4]));
-        if (t % 2 === 0) { cols[0] = [...b.solution]; cols[1] = [...b.having!]; }
+        if (t % 2 === 0) {
+          cols[0] = [...b.solution];
+          cols[1] = [...b.having!];
+        }
         const marks = emptyMarks(s);
         cols.forEach((c, k) => c.forEach((p, f) => (marks[sq(s, f, p, k)] = FILLED)));
         if (solved(b, marks)) continue;
@@ -1127,7 +1330,10 @@ describe('level 8: who came first?', () => {
         named++;
         const [a, h, z] = cols;
         const c = b.clues[k];
-        const in2 = c.kind === 'pair' ? z.indexOf(c.place) !== c.time && z.indexOf(c.place) !== c.or : 'block' in c && c.block === 2 && !holds(c, z, [0, 1, 2, 3, 4]);
+        const in2 =
+          c.kind === 'pair'
+            ? z.indexOf(c.place) !== c.time && z.indexOf(c.place) !== c.or
+            : 'block' in c && c.block === 2 && !holds(c, z, [0, 1, 2, 3, 4]);
         expect(!holds(c, a, h) || in2).toBe(true);
       }
     });
@@ -1135,7 +1341,8 @@ describe('level 8: who came first?', () => {
   });
 
   it('same seed, same puzzle; a board takes well under a second', () => {
-    for (const seed of seeds8.slice(0, 5)) expect(makeRound(plan, new Rng(seed))).toEqual(makeRound(plan, new Rng(seed)));
+    for (const seed of seeds8.slice(0, 5))
+      expect(makeRound(plan, new Rng(seed))).toEqual(makeRound(plan, new Rng(seed)));
     const t0 = performance.now();
     for (let i = 0; i < 10; i++) makeBoard(plan, new Rng(1000 + i));
     expect((performance.now() - t0) / 10).toBeLessThan(500);

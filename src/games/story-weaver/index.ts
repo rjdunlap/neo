@@ -17,8 +17,22 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bookArt, owlOnStump, tilePicture } from './art';
 import {
   LEVELS,
-  botStep, clauseOf, eventClause, layout, pageText, PAGE_PARTS, planFor, PROBLEM_IDS, slotBoxes, storyText, TILE_H, TILE_W,
-  WeaverRound, WHO, type Part, type WeaverLayout,
+  botStep,
+  clauseOf,
+  eventClause,
+  layout,
+  pageText,
+  PAGE_PARTS,
+  planFor,
+  PROBLEM_IDS,
+  slotBoxes,
+  storyText,
+  TILE_H,
+  TILE_W,
+  WeaverRound,
+  WHO,
+  type Part,
+  type WeaverLayout,
 } from './logic';
 
 /** Seconds per lit word while a page is read. */
@@ -78,27 +92,70 @@ class StoryWeaver implements Game {
     this.round = new WeaverRound(ctx.level, ctx.rng);
     this.seed = ctx.rng.int(0, 999);
     this.lay = layout(ctx.view, this.round.plan.pages);
-    this.backdrop = new Backdrop({ sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x86c98f], horizon: 0.86, clouds: 2, sun: true, seed: 139 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd6efc8, 0xfff6e0],
+        hills: [0x9fd3a8, 0x86c98f],
+        horizon: 0.86,
+        clouds: 2,
+        sun: true,
+        seed: 139,
+      },
+      ctx.view,
+    );
     ctx.stage.addChild(this.backdrop);
     for (let p = 1; p <= this.round.plan.pages; p++) this.makePage(p);
     this.owl = owlOnStump();
     this.owl.root.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.strip.eventMode = 'none';
-    const read = new RoundButton(icon((g) => {
-      g.ellipse(-6, 0, 20, 26).fill(swatch.brown.light).stroke({ width: 5, color: swatch.brown.line });
-      for (let i = 1; i <= 3; i++) g.arc(14, 0, 8 * i, -0.6, 0.6).stroke({ width: 4, color: ink, cap: 'round' });
-    }), swatch.yellow, 56, () => void this.readToOwl());
-    const mine = new RoundButton(icon((g) => {
-      g.poly([-34, -20, 0, -12, 34, -20, 34, 22, 0, 30, -34, 22]).fill(0xffffff).stroke({ width: 4, color: wood.line });
-      g.moveTo(-14, 4).lineTo(-2, 16).lineTo(20, -10).stroke({ width: 6, color: swatch.green.line, cap: 'round', join: 'round' });
-    }), swatch.green, 56, () => void this.thatsMine());
-    const hint = new RoundButton(icon((g) => {
-      g.poly(starPoints(26, 11)).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
-    }), swatch.white, 56, () => this.askForHint());
-    const skip = new RoundButton(icon((g) => {
-      g.moveTo(-20, 0).lineTo(18, 0).moveTo(4, -14).lineTo(18, 0).lineTo(4, 14).stroke({ width: 8, color: ink, cap: 'round', join: 'round' });
-    }), swatch.blue, 56, () => void this.skip());
+    const read = new RoundButton(
+      icon((g) => {
+        g.ellipse(-6, 0, 20, 26).fill(swatch.brown.light).stroke({ width: 5, color: swatch.brown.line });
+        for (let i = 1; i <= 3; i++)
+          g.arc(14, 0, 8 * i, -0.6, 0.6).stroke({ width: 4, color: ink, cap: 'round' });
+      }),
+      swatch.yellow,
+      56,
+      () => void this.readToOwl(),
+    );
+    const mine = new RoundButton(
+      icon((g) => {
+        g.poly([-34, -20, 0, -12, 34, -20, 34, 22, 0, 30, -34, 22])
+          .fill(0xffffff)
+          .stroke({ width: 4, color: wood.line });
+        g.moveTo(-14, 4)
+          .lineTo(-2, 16)
+          .lineTo(20, -10)
+          .stroke({ width: 6, color: swatch.green.line, cap: 'round', join: 'round' });
+      }),
+      swatch.green,
+      56,
+      () => void this.thatsMine(),
+    );
+    const hint = new RoundButton(
+      icon((g) => {
+        g.poly(starPoints(26, 11))
+          .fill(swatch.yellow.fill)
+          .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+      }),
+      swatch.white,
+      56,
+      () => this.askForHint(),
+    );
+    const skip = new RoundButton(
+      icon((g) => {
+        g.moveTo(-20, 0)
+          .lineTo(18, 0)
+          .moveTo(4, -14)
+          .lineTo(18, 0)
+          .lineTo(4, 14)
+          .stroke({ width: 8, color: ink, cap: 'round', join: 'round' });
+      }),
+      swatch.blue,
+      56,
+      () => void this.skip(),
+    );
     this.buttons = { read, mine, hint, skip };
     ctx.stage.addChild(this.strip, this.owl.root, read, mine, hint, skip, this.glow);
   }
@@ -106,7 +163,8 @@ class StoryWeaver implements Game {
   start() {
     this.refresh();
     this.resize(this.view);
-    const line: LineId = this.round.level === 1 ? 'weaver.one' : this.round.level === 2 ? 'weaver.two' : 'weaver.three';
+    const line: LineId =
+      this.round.level === 1 ? 'weaver.one' : this.round.level === 2 ? 'weaver.two' : 'weaver.three';
     void this.ctx.instruct(line).then(() => {
       this.busy = false;
     });
@@ -181,7 +239,13 @@ class StoryWeaver implements Game {
     const glowing = this.round.glowing();
     if (!this.busy) {
       for (const t of this.tiles.filter((t) => glowing.includes(t.id))) {
-        g.roundRect(t.node.x - TILE_W / 2 - 8, t.node.y - TILE_H / 2 - 8, TILE_W + 16, TILE_H + 16, 26).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+        g.roundRect(
+          t.node.x - TILE_W / 2 - 8,
+          t.node.y - TILE_H / 2 - 8,
+          TILE_W + 16,
+          TILE_H + 16,
+          26,
+        ).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
       }
     }
   }
@@ -192,7 +256,7 @@ class StoryWeaver implements Game {
   }
 
   private nextLine(): LineId {
-    return (`weaver.next.${this.round.active}` as LineId);
+    return `weaver.next.${this.round.active}` as LineId;
   }
 
   /** Rebuild the tray for the active part and redraw pages and buttons. */
@@ -231,10 +295,22 @@ class StoryWeaver implements Game {
   }
 
   private drawTiles() {
-    const sw = { who: swatch.orange, where: swatch.green, problem: swatch.red, try: swatch.blue, ending: swatch.purple, feeling: swatch.yellow, reason: swatch.pink }[this.round.active];
+    const sw = {
+      who: swatch.orange,
+      where: swatch.green,
+      problem: swatch.red,
+      try: swatch.blue,
+      ending: swatch.purple,
+      feeling: swatch.yellow,
+      reason: swatch.pink,
+    }[this.round.active];
     for (const t of this.tiles) {
       const on = t.id === this.selected;
-      t.bg.clear().roundRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 22).fill(on ? sw.light : 0xffffff).stroke({ width: on ? 9 : 6, color: on ? swatch.yellow.line : sw.line });
+      t.bg
+        .clear()
+        .roundRect(-TILE_W / 2, -TILE_H / 2, TILE_W, TILE_H, 22)
+        .fill(on ? sw.light : 0xffffff)
+        .stroke({ width: on ? 9 : 6, color: on ? swatch.yellow.line : sw.line });
     }
   }
 
@@ -256,14 +332,25 @@ class StoryWeaver implements Game {
       const page = i + 1;
       const box = this.lay.pages[i];
       const open = r.pageOpen(page);
-      this.pageBgs[i].clear().roundRect(0, 0, box.w, box.h, 18).fill(open ? 0xffffff : swatch.white.light).stroke({ width: 5, color: open ? wood.line : swatch.white.line });
-      for (let d = 0; d < page; d++) this.pageBgs[i].circle(box.w / 2 - (page - 1) * 9 + d * 18, 16, 5).fill(open ? wood.line : swatch.white.line);
+      this.pageBgs[i]
+        .clear()
+        .roundRect(0, 0, box.w, box.h, 18)
+        .fill(open ? 0xffffff : swatch.white.light)
+        .stroke({ width: 5, color: open ? wood.line : swatch.white.line });
+      for (let d = 0; d < page; d++)
+        this.pageBgs[i]
+          .circle(box.w / 2 - (page - 1) * 9 + d * 18, 16, 5)
+          .fill(open ? wood.line : swatch.white.line);
       this.pages[i].alpha = open ? 1 : 0.55;
       slotBoxes(box, page).forEach((b, j) => {
         const s = this.slots[i][j];
         const id = r.story[s.part as 'who'] as string | undefined;
         const active = open && r.active === s.part && r.phase !== 'done';
-        s.bg.clear().roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 14).fill(id ? swatch.yellow.light : active ? swatch.blue.light : swatch.white.light).stroke({ width: active ? 6 : 3, color: active ? swatch.blue.line : swatch.white.line });
+        s.bg
+          .clear()
+          .roundRect(-b.w / 2, -b.h / 2, b.w, b.h, 14)
+          .fill(id ? swatch.yellow.light : active ? swatch.blue.light : swatch.white.light)
+          .stroke({ width: active ? 6 : 3, color: active ? swatch.blue.line : swatch.white.line });
         s.art?.destroy({ children: true });
         s.art = null;
         if (id) {
@@ -285,7 +372,10 @@ class StoryWeaver implements Game {
     if (!text || this.finished) return;
     this.strip.removeChildren().forEach((c) => c.destroy());
     this.words = text.split(' ').map((w) => {
-      const t = new Text({ text: w, style: { fontFamily: FONT, fontSize: 30, fontWeight: '600', fill: ink } });
+      const t = new Text({
+        text: w,
+        style: { fontFamily: FONT, fontSize: 30, fontWeight: '600', fill: ink },
+      });
       t.alpha = 0.45;
       this.strip.addChild(t);
       return t;
@@ -294,7 +384,10 @@ class StoryWeaver implements Game {
     this.litClock = WORD_SECONDS;
     this.layoutWords();
     sfx.bell(4, 0.2);
-    await Promise.all([this.ctx.say(line, { text }), this.ctx.tw.wait(this.words.length * WORD_SECONDS + 0.2)]);
+    await Promise.all([
+      this.ctx.say(line, { text }),
+      this.ctx.tw.wait(this.words.length * WORD_SECONDS + 0.2),
+    ]);
   }
 
   /** The strip's words, wrapped across two lines and shrunk if needed. */
@@ -303,7 +396,8 @@ class StoryWeaver implements Game {
     if (!this.words.length) return;
     let scale = 1;
     for (;;) {
-      let x = 0, y = 0;
+      let x = 0,
+        y = 0;
       const lineH = 38 * scale;
       const rows: Text[][] = [[]];
       for (const w of this.words) {
@@ -345,7 +439,8 @@ class StoryWeaver implements Game {
     if (!r.setActive(want)) return;
     sfx.pop(6);
     this.refresh();
-    if ((want === 'try' || want === 'ending') && r.active === 'problem') void this.ctx.say('weaver.needproblem');
+    if ((want === 'try' || want === 'ending') && r.active === 'problem')
+      void this.ctx.say('weaver.needproblem');
   }
 
   private async tapTile(t: Tile) {
@@ -359,7 +454,9 @@ class StoryWeaver implements Game {
       sfx.pop(5 + (this.tiles.indexOf(t) % 5));
       this.ctx.tw.kill(t.node);
       const y = t.node.y;
-      void this.ctx.tw.to(t.node, { y: y + 10 }, { duration: 0.1 }).then(() => this.ctx.tw.to(t.node, { y }, { duration: 0.2, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(t.node, { y: y + 10 }, { duration: 0.1 })
+        .then(() => this.ctx.tw.to(t.node, { y }, { duration: 0.2, ease: ease.outBack }));
       void this.ctx.say('weaver.tile', { clause: part === 'feeling' ? t.id : clauseOf(part, t.id) });
       return;
     }
@@ -380,7 +477,9 @@ class StoryWeaver implements Game {
       // A page that just opened says its first choice.
       if (res.pageDone && r.active === 'try') await this.ctx.say('weaver.next.try', { who: this.who() });
     } else {
-      await this.readAloud(pageText(r.story, PAGE_PARTS[2].includes(part) ? 2 : PAGE_PARTS[3].includes(part) ? 3 : 1));
+      await this.readAloud(
+        pageText(r.story, PAGE_PARTS[2].includes(part) ? 2 : PAGE_PARTS[3].includes(part) ? 3 : 1),
+      );
       if (res.answered) {
         await this.ctx.say('weaver.owl.thanks');
         this.owlHop();
@@ -477,7 +576,9 @@ class StoryWeaver implements Game {
   private owlHop() {
     const o = this.owl.owl;
     this.ctx.tw.kill(o);
-    void this.ctx.tw.to(o, { y: -46 }, { duration: 0.15, ease: ease.outQuad }).then(() => this.ctx.tw.to(o, { y: -26 }, { duration: 0.25, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(o, { y: -46 }, { duration: 0.15, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(o, { y: -26 }, { duration: 0.25, ease: ease.outBack }));
   }
 
   /** The whole story, a bow, then the round ends. */
@@ -556,8 +657,10 @@ export const storyWeaver: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Be the owl: close your eyes while {name} reads you the story, then ask about the part you could not picture.',
-  offScreen: 'Tell a three-part story at bedtime (who and where, what went wrong, how it ended) and ask why the friend felt the way they did.',
+  coplayHint:
+    'Be the owl: close your eyes while {name} reads you the story, then ask about the part you could not picture.',
+  offScreen:
+    'Tell a three-part story at bedtime (who and where, what went wrong, how it ended) and ask why the friend felt the way they did.',
   hubIcon: () => new WeaverIcon(),
   touchDemo: true,
   sticker,

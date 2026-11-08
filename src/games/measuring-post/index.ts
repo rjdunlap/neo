@@ -18,13 +18,48 @@ import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  cupArt, drawBalance, handIcon, hubArt, jugArt, LITTLE, objectArt, padArt, parcelArt, ribbonArt, sendIcon, speakerIcon,
-  stickerArt, tickIcon, toolArt, unitArt,
+  cupArt,
+  drawBalance,
+  handIcon,
+  hubArt,
+  jugArt,
+  LITTLE,
+  objectArt,
+  padArt,
+  parcelArt,
+  ribbonArt,
+  sendIcon,
+  speakerIcon,
+  stickerArt,
+  tickIcon,
+  toolArt,
+  unitArt,
 } from './art';
 import {
   LEVELS,
-  answerRow, commonExact, compareAnswer, GLOW_AFTER, gramsFor, PER_GROUP, tableAnswer, helpId, HelpTally, planFor, remeasure, tasksFor, TOOL_FOR, TOOLS,
-  toolAnswers, UNIT_VALUE, type Attribute, type LevelPlan, type MeasureRecord, type Pick, type Step, type Task, type Tool,
+  answerRow,
+  commonExact,
+  compareAnswer,
+  GLOW_AFTER,
+  gramsFor,
+  PER_GROUP,
+  tableAnswer,
+  helpId,
+  HelpTally,
+  planFor,
+  remeasure,
+  tasksFor,
+  TOOL_FOR,
+  TOOLS,
+  toolAnswers,
+  UNIT_VALUE,
+  type Attribute,
+  type LevelPlan,
+  type MeasureRecord,
+  type Pick,
+  type Step,
+  type Task,
+  type Tool,
   type UnitSize,
 } from './logic';
 
@@ -43,8 +78,16 @@ const GROUP_AT = 3.0;
 const TWO_AT = 4.2;
 const WATCH_END = 5.4;
 
-interface Pt { x: number; y: number }
-interface Box { x: number; y: number; w: number; h: number }
+interface Pt {
+  x: number;
+  y: number;
+}
+interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 /**
  * Where things go. Landscape centres the 1024×768 plan; portrait stretches the 768×1024 plan over the view (positions
@@ -70,32 +113,60 @@ interface Layout {
 
 function layoutFor(v: View): Layout {
   if (v.w >= v.h) {
-    const ox = (v.w - 1024) / 2, oy = (v.h - 768) / 2;
+    const ox = (v.w - 1024) / 2,
+      oy = (v.h - 768) / 2;
     const P = (x: number, y: number): Pt => ({ x: ox + x, y: oy + y });
     const board = { x: ox + 180, y: oy + 150, w: 780, h: 330 };
     const strip = { x: board.x, y: board.y, w: board.w, h: 90 };
-    const slotY = strip.y + strip.h, slotH = board.y + board.h - slotY;
+    const slotY = strip.y + strip.h,
+      slotH = board.y + board.h - slotY;
     return {
-      landscape: true, board, strip,
-      slots: [{ x: board.x, y: slotY, w: board.w / 2, h: slotH }, { x: board.x + board.w / 2, y: slotY, w: board.w / 2, h: slotH }],
-      pair: [{ ...board, w: board.w / 2 }, { ...board, x: board.x + board.w / 2, w: board.w / 2 }],
-      tools: [P(340, 555), P(520, 555), P(700, 555)], units: [P(430, 555), P(610, 555)],
-      answers: [P(375, 555), P(765, 555)], answerSize: { w: 320, h: 110 },
-      help: P(340, 700), replay: P(550, 700), send: P(800, 700),
+      landscape: true,
+      board,
+      strip,
+      slots: [
+        { x: board.x, y: slotY, w: board.w / 2, h: slotH },
+        { x: board.x + board.w / 2, y: slotY, w: board.w / 2, h: slotH },
+      ],
+      pair: [
+        { ...board, w: board.w / 2 },
+        { ...board, x: board.x + board.w / 2, w: board.w / 2 },
+      ],
+      tools: [P(340, 555), P(520, 555), P(700, 555)],
+      units: [P(430, 555), P(610, 555)],
+      answers: [P(375, 555), P(765, 555)],
+      answerSize: { w: 320, h: 110 },
+      help: P(340, 700),
+      replay: P(550, 700),
+      send: P(800, 700),
     };
   }
-  const sx = v.w / 768, sy = v.h / 1024;
+  const sx = v.w / 768,
+    sy = v.h / 1024;
   const P = (x: number, y: number): Pt => ({ x: x * sx, y: y * sy });
   const board = { x: 170 * sx, y: 150 * sy, w: 560 * sx, h: 460 * sy };
   const strip = { x: board.x, y: board.y, w: board.w, h: 100 * sy };
-  const slotY = strip.y + strip.h, slotH = (board.y + board.h - slotY) / 2;
+  const slotY = strip.y + strip.h,
+    slotH = (board.y + board.h - slotY) / 2;
   return {
-    landscape: false, board, strip,
-    slots: [{ x: board.x, y: slotY, w: board.w, h: slotH }, { x: board.x, y: slotY + slotH, w: board.w, h: slotH }],
-    pair: [{ ...board, h: board.h / 2 }, { ...board, y: board.y + board.h / 2, h: board.h / 2 }],
-    tools: [P(260, 700), P(440, 700), P(620, 700)], units: [P(350, 700), P(530, 700)],
-    answers: [P(450, 672), P(450, 800)], answerSize: { w: 540, h: 110 },
-    help: P(260, 930), replay: P(440, 930), send: P(620, 930),
+    landscape: false,
+    board,
+    strip,
+    slots: [
+      { x: board.x, y: slotY, w: board.w, h: slotH },
+      { x: board.x, y: slotY + slotH, w: board.w, h: slotH },
+    ],
+    pair: [
+      { ...board, h: board.h / 2 },
+      { ...board, y: board.y + board.h / 2, h: board.h / 2 },
+    ],
+    tools: [P(260, 700), P(440, 700), P(620, 700)],
+    units: [P(350, 700), P(530, 700)],
+    answers: [P(450, 672), P(450, 800)],
+    answerSize: { w: 540, h: 110 },
+    help: P(260, 930),
+    replay: P(440, 930),
+    send: P(620, 930),
   };
 }
 
@@ -103,9 +174,20 @@ function layoutFor(v: View): Layout {
  * What the round is doing now. Taps only act in `tool`, `send` (level 1), `answer` (levels 2–3) and `unit` (level 3:
  * pick the units to measure both objects; `remeasure` animates them, `between` explains a unit that does not fit).
  */
-type Phase = 'tool' | 'wrong' | 'measure' | 'unit' | 'remeasure' | 'between' | 'send' | 'answer' | 'sending' | 'done'
+type Phase =
+  | 'tool'
+  | 'wrong'
+  | 'measure'
+  | 'unit'
+  | 'remeasure'
+  | 'between'
+  | 'send'
+  | 'answer'
+  | 'sending'
+  | 'done'
   /** Level 4: watch the kilogram balance the grams, then choose a number of grams and Check. */
-  | 'watch' | 'choose';
+  | 'watch'
+  | 'choose';
 
 const FRIENDS: CritterName[] = ['bunny', 'bear', 'duck'];
 const ROW_FRIENDS: [CritterName, CritterName] = ['cat', 'dog'];
@@ -120,7 +202,12 @@ const label = (text: string, size = 34) => {
 /** A labelled weight standing on (0, 0). */
 function massWeight(text: string, w: number, h: number, color: number, size = 14): Container {
   const c = new Container();
-  c.addChild(new Graphics().poly([-w / 2 + 5, -h, w / 2 - 5, -h, w / 2, 0, -w / 2, 0]).fill(color).stroke({ width: 3, color: ink }));
+  c.addChild(
+    new Graphics()
+      .poly([-w / 2 + 5, -h, w / 2 - 5, -h, w / 2, 0, -w / 2, 0])
+      .fill(color)
+      .stroke({ width: 3, color: ink }),
+  );
   const t = label(text, size);
   t.y = -h / 2;
   c.addChild(t);
@@ -265,8 +352,14 @@ class MeasuringPost implements Game {
     this.miss('tool');
     this.phase = 'wrong';
     this.shake(pad);
-    void Promise.all([this.ctx.say(`measure.wrong.${tool}.${task.attribute}` as LineId), this.ctx.tw.wait(0.6)]).then(() => {
-      if (this.alive && this.phase === 'wrong') { this.phase = 'tool'; this.redraw(); }
+    void Promise.all([
+      this.ctx.say(`measure.wrong.${tool}.${task.attribute}` as LineId),
+      this.ctx.tw.wait(0.6),
+    ]).then(() => {
+      if (this.alive && this.phase === 'wrong') {
+        this.phase = 'tool';
+        this.redraw();
+      }
     });
     this.redraw();
   }
@@ -282,7 +375,9 @@ class MeasuringPost implements Game {
       this.glowAt = null;
       this.phase = 'sending';
       this.redraw();
-      void Promise.all([this.ctx.say(`measure.right.${task.ask}` as LineId), this.ctx.tw.wait(0.8)]).then(() => this.alive && this.next());
+      void Promise.all([this.ctx.say(`measure.right.${task.ask}` as LineId), this.ctx.tw.wait(0.8)]).then(
+        () => this.alive && this.next(),
+      );
       return;
     }
     sfx.boing();
@@ -316,7 +411,10 @@ class MeasuringPost implements Game {
       this.glowAt = null;
       this.phase = 'sending';
       this.redraw();
-      void Promise.all([this.ctx.say(`measure.right3.${task.attribute}` as LineId), this.ctx.tw.wait(0.8)]).then(() => this.alive && this.next());
+      void Promise.all([
+        this.ctx.say(`measure.right3.${task.attribute}` as LineId),
+        this.ctx.tw.wait(0.8),
+      ]).then(() => this.alive && this.next());
       return;
     }
     sfx.boing();
@@ -346,7 +444,8 @@ class MeasuringPost implements Game {
     // A repeated Check of the same wrong choice is not another miss.
     if (this.phase !== 'choose' || this.chosen === null || this.checked === this.chosen) return;
     this.checked = this.chosen;
-    const task = this.current, kg = task.table!.kg;
+    const task = this.current,
+      kg = task.table!.kg;
     if (this.chosen === tableAnswer(task)) {
       sfx.bell(9, 0.3);
       this.ctx.pet.cheer();
@@ -370,7 +469,9 @@ class MeasuringPost implements Game {
   }
 
   private shake(pad: Container) {
-    void this.ctx.tw.to(pad, { rotation: 0.12 }, { duration: 0.08 }).then(() => { if (this.alive) void this.ctx.tw.to(pad, { rotation: 0 }, { duration: 0.12 }); });
+    void this.ctx.tw.to(pad, { rotation: 0.12 }, { duration: 0.08 }).then(() => {
+      if (this.alive) void this.ctx.tw.to(pad, { rotation: 0 }, { duration: 0.12 });
+    });
   }
 
   send() {
@@ -388,7 +489,9 @@ class MeasuringPost implements Game {
       this.redraw();
       sfx.sparkle();
       this.ctx.pet.cheer();
-      void this.ctx.tw.wait(0.6).then(() => this.alive && this.ctx.finish({ misses: this.misses, hints: this.tally.count }));
+      void this.ctx.tw
+        .wait(0.6)
+        .then(() => this.alive && this.ctx.finish({ misses: this.misses, hints: this.tally.count }));
       return;
     }
     this.task++;
@@ -399,7 +502,11 @@ class MeasuringPost implements Game {
     this.commonSize = null;
     this.chosen = null;
     this.checked = null;
-    if (this.plan.mode === 'table') { this.phase = 'watch'; this.t = 0; this.rolling = false; }
+    if (this.plan.mode === 'table') {
+      this.phase = 'watch';
+      this.t = 0;
+      this.rolling = false;
+    }
     this.redraw();
     this.askQuestion();
   }
@@ -413,7 +520,9 @@ class MeasuringPost implements Game {
       } else void this.ctx.say(`measure.kg.ask.${this.current.table!.kg}` as LineId);
       return;
     }
-    void this.ctx.say(`measure.${this.plan.mode === 'common' ? 'ask3' : 'ask'}.${this.current.attribute}` as LineId);
+    void this.ctx.say(
+      `measure.${this.plan.mode === 'common' ? 'ask3' : 'ask'}.${this.current.attribute}` as LineId,
+    );
   }
 
   private miss(step: Step) {
@@ -428,10 +537,17 @@ class MeasuringPost implements Game {
 
   private glowUseful(step: Step) {
     const L = this.layout;
-    if (step === 'tool') this.glowAt = { p: L.tools[TOOLS.indexOf(TOOL_FOR[this.current.attribute])], w: TOOL_PAD.w, h: TOOL_PAD.h };
-    else if (step === 'answer' && this.plan.mode === 'table') this.glowAt = { p: L.tools[tableAnswer(this.current)], ...TOOL_PAD };
+    if (step === 'tool')
+      this.glowAt = {
+        p: L.tools[TOOLS.indexOf(TOOL_FOR[this.current.attribute])],
+        w: TOOL_PAD.w,
+        h: TOOL_PAD.h,
+      };
+    else if (step === 'answer' && this.plan.mode === 'table')
+      this.glowAt = { p: L.tools[tableAnswer(this.current)], ...TOOL_PAD };
     else if (step === 'unit') this.glowAt = { p: L.units[1], ...TOOL_PAD };
-    else if (step === 'answer' && this.plan.mode === 'common') this.glowAt = { p: L.tools[compareAnswer(this.current, this.commonSize!)], ...TOOL_PAD };
+    else if (step === 'answer' && this.plan.mode === 'common')
+      this.glowAt = { p: L.tools[compareAnswer(this.current, this.commonSize!)], ...TOOL_PAD };
     else if (step === 'answer') this.glowAt = { p: L.answers[answerRow(this.current)], ...L.answerSize };
     else this.glowAt = { p: L.send, w: 100, h: 100 };
   }
@@ -441,7 +557,15 @@ class MeasuringPost implements Game {
   /** The step Help works on now, or null while a tool measures. */
   private get step(): Step | null {
     const p = this.phase;
-    return p === 'tool' || p === 'wrong' ? 'tool' : p === 'unit' ? 'unit' : p === 'answer' || p === 'choose' ? 'answer' : p === 'send' ? 'send' : null;
+    return p === 'tool' || p === 'wrong'
+      ? 'tool'
+      : p === 'unit'
+        ? 'unit'
+        : p === 'answer' || p === 'choose'
+          ? 'answer'
+          : p === 'send'
+            ? 'send'
+            : null;
   }
 
   /**
@@ -465,9 +589,11 @@ class MeasuringPost implements Game {
       else if (this.plan.mode === 'table') {
         // Help again chooses the right row; once it is chosen, Help points at Check (she still presses it).
         if (this.chosen !== tableAnswer(task)) this.choose(tableAnswer(task));
-        else { this.glowAt = { p: this.layout.send, w: 100, h: 100 }; void this.ctx.say('measure.kg.check'); }
-      }
-      else if (common) this.pickCompare(compareAnswer(task, this.commonSize!));
+        else {
+          this.glowAt = { p: this.layout.send, w: 100, h: 100 };
+          void this.ctx.say('measure.kg.check');
+        }
+      } else if (common) this.pickCompare(compareAnswer(task, this.commonSize!));
       else this.pickRow(answerRow(task));
       return;
     }
@@ -475,10 +601,17 @@ class MeasuringPost implements Game {
     this.pointed.add(id);
     this.offerAt = null;
     this.glowUseful(step);
-    void this.ctx.say(step === 'tool' ? `measure.hint.tool.${task.attribute}` as LineId
-      : step === 'unit' ? `measure.hint.unit.${task.attribute}` as LineId
-        : this.plan.mode === 'table' ? `measure.kg.hint.${task.table!.kg}` as LineId
-          : common ? this.compareHint() : `measure.hint.row.${task.attribute}.${task.ask}` as LineId);
+    void this.ctx.say(
+      step === 'tool'
+        ? (`measure.hint.tool.${task.attribute}` as LineId)
+        : step === 'unit'
+          ? (`measure.hint.unit.${task.attribute}` as LineId)
+          : this.plan.mode === 'table'
+            ? (`measure.kg.hint.${task.table!.kg}` as LineId)
+            : common
+              ? this.compareHint()
+              : (`measure.hint.row.${task.attribute}.${task.ask}` as LineId),
+    );
   }
 
   askForHint() {
@@ -488,15 +621,22 @@ class MeasuringPost implements Game {
   replay() {
     const task = this.current;
     if (this.phase === 'tool' || this.phase === 'wrong') this.askQuestion();
-    else if (this.phase === 'send' && this.plan.mode === 'table') void this.ctx.say(`measure.kg.right.${task.table!.kg}` as LineId);
+    else if (this.phase === 'send' && this.plan.mode === 'table')
+      void this.ctx.say(`measure.kg.right.${task.table!.kg}` as LineId);
     else if (this.phase === 'send') void this.ctx.say(`measure.result.1.${task.attribute}` as LineId);
-    else if (this.phase === 'choose') void this.ctx.say('measure.kg.watch').then(() => { if (this.alive && this.phase === 'choose') this.askQuestion(); });
+    else if (this.phase === 'choose')
+      void this.ctx.say('measure.kg.watch').then(() => {
+        if (this.alive && this.phase === 'choose') this.askQuestion();
+      });
     else if (this.phase === 'unit') void this.ctx.say(`measure.raw.${task.attribute}` as LineId);
     else if (this.phase === 'answer' && this.plan.mode === 'common') {
-      void this.ctx.say(`measure.common.${task.attribute}.${this.commonSize}` as LineId).then(() => { if (this.alive && this.phase === 'answer') this.askQuestion(); });
-    }
-    else if (this.phase === 'answer') {
-      void this.ctx.say(`measure.equal.${task.attribute}` as LineId).then(() => { if (this.alive) void this.ctx.say(`measure.result.2.${task.attribute}` as LineId); });
+      void this.ctx.say(`measure.common.${task.attribute}.${this.commonSize}` as LineId).then(() => {
+        if (this.alive && this.phase === 'answer') this.askQuestion();
+      });
+    } else if (this.phase === 'answer') {
+      void this.ctx.say(`measure.equal.${task.attribute}` as LineId).then(() => {
+        if (this.alive) void this.ctx.say(`measure.result.2.${task.attribute}` as LineId);
+      });
     }
   }
 
@@ -519,7 +659,10 @@ class MeasuringPost implements Game {
     const task = this.current;
     if (!this.commonSize) return task.records;
     const size = this.commonSize;
-    return task.objects!.map((o) => ({ unit: { attribute: task.attribute, size }, count: Math.floor(o.quantity / UNIT_VALUE[size]) }));
+    return task.objects!.map((o) => ({
+      unit: { attribute: task.attribute, size },
+      count: Math.floor(o.quantity / UNIT_VALUE[size]),
+    }));
   }
 
   private measureLength(): number {
@@ -535,7 +678,9 @@ class MeasuringPost implements Game {
         // The friends' own records, in different units: they cannot be compared yet.
         this.phase = 'unit';
         this.redraw();
-        void this.ctx.say(`measure.raw.${task.attribute}` as LineId).then(() => { if (this.alive && this.phase === 'unit') void this.ctx.say('measure.unit'); });
+        void this.ctx.say(`measure.raw.${task.attribute}` as LineId).then(() => {
+          if (this.alive && this.phase === 'unit') void this.ctx.say('measure.unit');
+        });
         return;
       }
       const size = this.commonSize!;
@@ -543,7 +688,10 @@ class MeasuringPost implements Game {
         // Big units leave one object between marks: explore, no miss; offer the little ones.
         this.phase = 'between';
         this.redraw();
-        void Promise.all([this.ctx.say(`measure.between.${task.attribute}` as LineId), this.ctx.tw.wait(0.6)]).then(() => {
+        void Promise.all([
+          this.ctx.say(`measure.between.${task.attribute}` as LineId),
+          this.ctx.tw.wait(0.6),
+        ]).then(() => {
           if (!this.alive || this.phase !== 'between') return;
           this.phase = 'unit';
           this.offerAt = { p: this.layout.units[1], ...TOOL_PAD };
@@ -553,7 +701,9 @@ class MeasuringPost implements Game {
       }
       this.phase = 'answer';
       this.redraw();
-      void this.ctx.say(`measure.common.${task.attribute}.${size}` as LineId).then(() => { if (this.alive && this.phase === 'answer') this.askQuestion(); });
+      void this.ctx.say(`measure.common.${task.attribute}.${size}` as LineId).then(() => {
+        if (this.alive && this.phase === 'answer') this.askQuestion();
+      });
       return;
     }
     if (this.plan.mode === 'tool') {
@@ -564,8 +714,10 @@ class MeasuringPost implements Game {
     }
     this.phase = 'answer';
     this.redraw();
-    void this.ctx.say(`measure.result.2.${task.attribute}` as LineId)
-      .then(() => { if (this.alive) void this.ctx.instruct(task.ask === 'big' ? 'measure.instruct.2-big' : 'measure.instruct.2'); });
+    void this.ctx.say(`measure.result.2.${task.attribute}` as LineId).then(() => {
+      if (this.alive)
+        void this.ctx.instruct(task.ask === 'big' ? 'measure.instruct.2-big' : 'measure.instruct.2');
+    });
   }
 
   // ---- Drawing ----
@@ -598,7 +750,10 @@ class MeasuringPost implements Game {
       const s = rec.unit.size === 'big' ? 52 : 36;
       for (let i = 0; i < shown; i++) {
         const b = unitArt(attr, rec.unit.size);
-        b.position.set(pans.right.x + (i % 2 === 0 ? -s / 2 - 2 : s / 2 + 2), pans.right.y - Math.floor(i / 2) * s);
+        b.position.set(
+          pans.right.x + (i % 2 === 0 ? -s / 2 - 2 : s / 2 + 2),
+          pans.right.y - Math.floor(i / 2) * s,
+        );
         c.addChild(b);
       }
       return c;
@@ -622,7 +777,10 @@ class MeasuringPost implements Game {
   private fit(art: Container, box: Box, max = 1.1, pad = 24, s = this.fitScale(art, box, max, pad)) {
     const b = art.getLocalBounds();
     art.scale.set(s);
-    art.position.set(box.x + box.w / 2 - (b.x + b.width / 2) * s, box.y + box.h / 2 - (b.y + b.height / 2) * s);
+    art.position.set(
+      box.x + box.w / 2 - (b.x + b.width / 2) * s,
+      box.y + box.h / 2 - (b.y + b.height / 2) * s,
+    );
     this.board.addChild(art);
   }
 
@@ -635,13 +793,19 @@ class MeasuringPost implements Game {
   private countBadge(attr: Attribute, rec: MeasureRecord, p: Pt, dim = false) {
     const c = new Container();
     if (dim) c.alpha = 0.55;
-    c.addChild(new Graphics().roundRect(-62, -34, 124, 68, 18).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 3, color: swatch.white.line }));
+    c.addChild(
+      new Graphics()
+        .roundRect(-62, -34, 124, 68, 18)
+        .fill({ color: 0xffffff, alpha: 0.9 })
+        .stroke({ width: 3, color: swatch.white.line }),
+    );
     const n = label(String(rec.count));
     n.x = -32;
     const u = unitArt(attr, rec.unit.size);
     const ub = u.getLocalBounds();
     // One scale for both sizes (set by the big unit), so a big unit never looks smaller than a little one.
-    const big = unitArt(attr, 'big'), bb = big.getLocalBounds();
+    const big = unitArt(attr, 'big'),
+      bb = big.getLocalBounds();
     big.destroy();
     const us = Math.min(1, 56 / Math.max(bb.width, bb.height));
     u.scale.set(us);
@@ -658,20 +822,36 @@ class MeasuringPost implements Game {
       const big = unitArt(attr, 'big');
       big.position.set(-LITTLE.length, -18);
       c.addChild(big);
-      for (let i = 0; i < 2; i++) { const w = unitArt(attr, 'little'); w.position.set(-LITTLE.length + i * LITTLE.length, 18); c.addChild(w); }
+      for (let i = 0; i < 2; i++) {
+        const w = unitArt(attr, 'little');
+        w.position.set(-LITTLE.length + i * LITTLE.length, 18);
+        c.addChild(w);
+      }
       return c;
     }
     if (attr === 'mass') {
       const g = new Graphics();
       const pans = drawBalance(g, 0, 60, 90, 0);
       c.addChild(g);
-      const big = unitArt(attr, 'big'); big.position.copyFrom(pans.left); c.addChild(big);
-      for (let i = 0; i < 2; i++) { const b = unitArt(attr, 'little'); b.position.set(pans.right.x + (i ? 20 : -20), pans.right.y); c.addChild(b); }
+      const big = unitArt(attr, 'big');
+      big.position.copyFrom(pans.left);
+      c.addChild(big);
+      for (let i = 0; i < 2; i++) {
+        const b = unitArt(attr, 'little');
+        b.position.set(pans.right.x + (i ? 20 : -20), pans.right.y);
+        c.addChild(b);
+      }
       return c;
     }
-    const big = cupArt('big'); big.position.set(-60, 30); c.addChild(big);
+    const big = cupArt('big');
+    big.position.set(-60, 30);
+    c.addChild(big);
     c.addChild(new Graphics().rect(-14, -10, 28, 6).rect(-14, 4, 28, 6).fill(ink));
-    for (let i = 0; i < 2; i++) { const s = cupArt('little'); s.position.set(40 + i * 46, 30); c.addChild(s); }
+    for (let i = 0; i < 2; i++) {
+      const s = cupArt('little');
+      s.position.set(40 + i * 46, 30);
+      c.addChild(s);
+    }
     return c;
   }
 
@@ -680,7 +860,9 @@ class MeasuringPost implements Game {
     const key = `${this.task}|${this.phase}|${this.commonSize}|${this.watchStage()}|${this.chosen}|${shown.join(',')}|${this.t > (this.plan.mode === 'rows' ? EQUIV : 0) ? 1 : 0}`;
     if (key === this.drawnKey) return;
     this.drawnKey = key;
-    const L = this.layout, task = this.current, attr = task.attribute;
+    const L = this.layout,
+      task = this.current,
+      attr = task.attribute;
     this.board.removeChildren().forEach((c) => c.destroy({ children: true }));
     const measuring = this.phase !== 'tool' && this.phase !== 'wrong';
 
@@ -694,13 +876,22 @@ class MeasuringPost implements Game {
       friend.position.set(L.board.x + 70, L.board.y + L.board.h - 24);
       this.board.addChild(friend);
       const area = { x: L.board.x + 130, y: L.board.y, w: L.board.w - 130, h: L.board.h };
-      this.fit(measuring ? this.recordArt(attr, task.quantity, task.records[0], shown[0]) : objectArt(attr), area, 1.3);
-      if (measuring && shown[0] === task.records[0].count) this.countBadge(attr, task.records[0], { x: L.board.x + L.board.w - 80, y: L.board.y + 50 });
+      this.fit(
+        measuring ? this.recordArt(attr, task.quantity, task.records[0], shown[0]) : objectArt(attr),
+        area,
+        1.3,
+      );
+      if (measuring && shown[0] === task.records[0].count)
+        this.countBadge(attr, task.records[0], { x: L.board.x + L.board.w - 80, y: L.board.y + 50 });
     } else if (!measuring) {
       const friend = friendHead(FRIENDS[this.task % FRIENDS.length]);
       friend.position.set(L.board.x + 70, L.board.y + L.board.h - 24);
       this.board.addChild(friend);
-      this.fit(objectArt(attr, task.quantity * LITTLE.length), { x: L.board.x + 130, y: L.board.y, w: L.board.w - 130, h: L.board.h }, 1.3);
+      this.fit(
+        objectArt(attr, task.quantity * LITTLE.length),
+        { x: L.board.x + 130, y: L.board.y, w: L.board.w - 130, h: L.board.h },
+        1.3,
+      );
     } else {
       // The strip first (one big is two little), then both friends' records.
       this.fit(this.stripArt(attr), L.strip, 0.9, 8);
@@ -710,7 +901,12 @@ class MeasuringPost implements Game {
           const friend = friendHead(ROW_FRIENDS[i], 0.22);
           friend.position.set(slot.x + 44, slot.y + slot.h - 10);
           this.board.addChild(friend);
-          this.fit(this.recordArt(attr, task.quantity, rec, shown[i]), { x: slot.x + 70, y: slot.y, w: slot.w - 70, h: slot.h }, 1, 14);
+          this.fit(
+            this.recordArt(attr, task.quantity, rec, shown[i]),
+            { x: slot.x + 70, y: slot.y, w: slot.w - 70, h: slot.h },
+            1,
+            14,
+          );
           if (shown[i] === rec.count) this.countBadge(attr, rec, { x: slot.x + slot.w - 70, y: slot.y + 38 });
         });
       }
@@ -718,14 +914,18 @@ class MeasuringPost implements Game {
 
     // The shelf shows only while a tool is wanted; the answer rows only on level 2's answer.
     const shelf = this.phase === 'tool' || this.phase === 'wrong';
-    for (const pad of this.toolPads.values()) { pad.visible = shelf; pad.alpha = this.phase === 'wrong' ? 0.7 : 1; }
+    for (const pad of this.toolPads.values()) {
+      pad.visible = shelf;
+      pad.alpha = this.phase === 'wrong' ? 0.7 : 1;
+    }
     const unit = this.phase === 'unit';
     for (const [size, pad] of this.unitPads) {
       pad.visible = unit;
       pad.removeChildren().forEach((c) => c.destroy({ children: true }));
       if (!unit) continue;
       // The same scale for both sizes, so the big unit looks bigger.
-      const u = unitArt(attr, size), b = u.getLocalBounds();
+      const u = unitArt(attr, size),
+        b = u.getLocalBounds();
       u.scale.set(attr === 'length' ? 0.9 : 1.2);
       u.position.set(-(b.x + b.width / 2) * u.scale.x, -(b.y + b.height / 2) * u.scale.y);
       pad.addChild(padArt(TOOL_PAD.w, TOOL_PAD.h), u);
@@ -761,7 +961,12 @@ class MeasuringPost implements Game {
       pad.removeChildren().forEach((c) => c.destroy({ children: true }));
       if (!choosing) return;
       pad.addChild(padArt(TOOL_PAD.w, TOOL_PAD.h), label(`${task.table!.options[i]} g`, 30));
-      if (this.chosen === i) pad.addChild(new Graphics().roundRect(-TOOL_PAD.w / 2 - 6, -TOOL_PAD.h / 2 - 6, TOOL_PAD.w + 12, TOOL_PAD.h + 12, 24).stroke({ width: 6, color: swatch.green.line }));
+      if (this.chosen === i)
+        pad.addChild(
+          new Graphics()
+            .roundRect(-TOOL_PAD.w / 2 - 6, -TOOL_PAD.h / 2 - 6, TOOL_PAD.w + 12, TOOL_PAD.h + 12, 24)
+            .stroke({ width: 6, color: swatch.green.line }),
+        );
     });
     this.checkButton.visible = choosing;
     this.checkButton.alpha = this.chosen === null ? 0.5 : 1;
@@ -780,9 +985,13 @@ class MeasuringPost implements Game {
    * kilograms against two groups) and the table, whose rows fill as they are seen, with the row to fill last.
    */
   private drawTable(task: Task) {
-    const L = this.layout, table = task.table!, stage = this.watchStage();
-    const grouped = stage >= PER_GROUP + 1, two = stage >= PER_GROUP + 2;
-    const kgs = two ? 2 : 1, smalls = two ? 2 * PER_GROUP : Math.min(PER_GROUP, stage);
+    const L = this.layout,
+      table = task.table!,
+      stage = this.watchStage();
+    const grouped = stage >= PER_GROUP + 1,
+      two = stage >= PER_GROUP + 2;
+    const kgs = two ? 2 : 1,
+      smalls = two ? 2 * PER_GROUP : Math.min(PER_GROUP, stage);
     const c = new Container();
     const g = new Graphics();
     const pans = drawBalance(g, 0, 0, 130, (0.32 * (kgs * PER_GROUP - smalls)) / (kgs * PER_GROUP));
@@ -805,7 +1014,11 @@ class MeasuringPost implements Game {
     }
     for (let k = 0; k < (grouped ? kgs : 0); k++) {
       const y = pans.right.y - k * 42;
-      c.addChild(new Graphics().roundRect(pans.right.x - 56, y - 38, 112, 40, 8).stroke({ width: 3, color: swatch.orange.line }));
+      c.addChild(
+        new Graphics()
+          .roundRect(pans.right.x - 56, y - 38, 112, 40, 8)
+          .stroke({ width: 3, color: swatch.orange.line }),
+      );
       const t = label('1000 g', 20);
       t.anchor.set(0, 0.5);
       t.position.set(pans.right.x + 62, y - 18);
@@ -818,12 +1031,22 @@ class MeasuringPost implements Game {
     [...table.known, table.kg].forEach((kg, r) => {
       const ask = kg === table.kg;
       const seen = kg > 2 || (kg === 1 ? grouped : two);
-      const value = ask ? (answered ? gramsFor(kg) : this.chosen !== null ? table.options[this.chosen] : null) : seen ? gramsFor(kg) : null;
+      const value = ask
+        ? answered
+          ? gramsFor(kg)
+          : this.chosen !== null
+            ? table.options[this.chosen]
+            : null
+        : seen
+          ? gramsFor(kg)
+          : null;
       const y = r * 64;
       const name = label(`${kg} kg =`, 30);
       name.anchor.set(1, 0.5);
       name.position.set(-12, y);
-      const box = new Graphics().roundRect(4, y - 26, 160, 52, 12).fill(ask && answered ? swatch.green.light : 0xffffff)
+      const box = new Graphics()
+        .roundRect(4, y - 26, 160, 52, 12)
+        .fill(ask && answered ? swatch.green.light : 0xffffff)
         .stroke({ width: 3, color: ask ? swatch.orange.line : swatch.white.line });
       const v = label(value === null ? (ask ? '?' : '') : `${value} g`, 30);
       v.position.set(84, y);
@@ -837,11 +1060,16 @@ class MeasuringPost implements Game {
    * unit is chosen, the object shows those units and their count beside the first one.
    */
   private drawPair(task: Task, shown: number[], measuring: boolean) {
-    const L = this.layout, attr = task.attribute;
+    const L = this.layout,
+      attr = task.attribute;
     const records = this.shownRecords();
     const raw = this.commonSize === null && measuring;
     const areas = L.pair.map((box) => ({ x: box.x + 70, y: box.y + 70, w: box.w - 80, h: box.h - 76 }));
-    const arts = task.objects!.map((o, i) => measuring ? this.recordArt(attr, o.quantity, records[i], shown[i]) : objectArt(attr, o.quantity * LITTLE.length));
+    const arts = task.objects!.map((o, i) =>
+      measuring
+        ? this.recordArt(attr, o.quantity, records[i], shown[i])
+        : objectArt(attr, o.quantity * LITTLE.length),
+    );
     // One scale for both, so a longer ribbon looks longer.
     const scale = Math.min(...arts.map((a, i) => this.fitScale(a, areas[i], 1, 10)));
     task.objects!.forEach((_, i) => {
@@ -853,7 +1081,8 @@ class MeasuringPost implements Game {
       this.fit(arts[i], areas[i], 1, 10, scale);
       // The first record stays; the common-unit count sits beside it once those units are all laid.
       const first = { x: box.x + 80, y: box.y + 40 };
-      if (measuring && (!raw || shown[i] === rec.count)) this.countBadge(attr, task.records[i], first, this.commonSize !== null);
+      if (measuring && (!raw || shown[i] === rec.count))
+        this.countBadge(attr, task.records[i], first, this.commonSize !== null);
       const fits = this.commonSize !== null && remeasure(task, this.commonSize)[i] !== null;
       if (fits && this.phase !== 'remeasure') this.countBadge(attr, rec, { x: first.x + 140, y: first.y });
     });
@@ -882,7 +1111,9 @@ class MeasuringPost implements Game {
   start() {
     this.started = true;
     this.redraw();
-    void this.ctx.instruct(`measure.instruct.${this.plan.level}` as LineId).then(() => this.alive && this.askQuestion());
+    void this.ctx
+      .instruct(`measure.instruct.${this.plan.level}` as LineId)
+      .then(() => this.alive && this.askQuestion());
   }
 
   update(dt: number) {
@@ -893,21 +1124,33 @@ class MeasuringPost implements Game {
       if (this.t >= WATCH_END) {
         this.phase = 'choose';
         this.redraw();
-        void this.watchLine.then(() => { if (this.alive && this.phase === 'choose') this.askQuestion(); });
-      } else { if (this.watchStage() !== before) sfx.tick(); this.redraw(); }
+        void this.watchLine.then(() => {
+          if (this.alive && this.phase === 'choose') this.askQuestion();
+        });
+      } else {
+        if (this.watchStage() !== before) sfx.tick();
+        this.redraw();
+      }
     }
     if (this.started && (this.phase === 'measure' || this.phase === 'remeasure')) {
       const before = this.t;
       this.t += dt;
-      if (this.plan.mode === 'rows' && before < EQUIV && this.t >= 0.2 && before < 0.2) void this.ctx.say(`measure.equal.${this.current.attribute}` as LineId);
+      if (this.plan.mode === 'rows' && before < EQUIV && this.t >= 0.2 && before < 0.2)
+        void this.ctx.say(`measure.equal.${this.current.attribute}` as LineId);
       if (this.t >= this.measureLength()) this.measured();
-      else { if (this.shownUnits(this.t).join() !== this.shownUnits(before).join()) sfx.tick(); this.redraw(); }
+      else {
+        if (this.shownUnits(this.t).join() !== this.shownUnits(before).join()) sfx.tick();
+        this.redraw();
+      }
     }
     const g = this.glow.clear();
     const at = this.glowAt ?? this.offerAt;
     if (at) {
-      g.roundRect(at.p.x - at.w / 2 - 10, at.p.y - at.h / 2 - 10, at.w + 20, at.h + 20, 26)
-        .stroke({ width: 8, color: swatch.yellow.line, alpha: 0.6 + 0.4 * Math.sin(this.clock * 4) });
+      g.roundRect(at.p.x - at.w / 2 - 10, at.p.y - at.h / 2 - 10, at.w + 20, at.h + 20, 26).stroke({
+        width: 8,
+        color: swatch.yellow.line,
+        alpha: 0.6 + 0.4 * Math.sin(this.clock * 4),
+      });
     }
   }
 
@@ -915,7 +1158,10 @@ class MeasuringPost implements Game {
     this.layout = layoutFor(v);
     const L = this.layout;
     this.background.clear().rect(0, 0, v.w, v.h).fill(0xf3efe2);
-    this.background.roundRect(L.board.x, L.board.y, L.board.w, L.board.h, 32).fill(0xfffdf6).stroke({ width: 4, color: swatch.brown.light });
+    this.background
+      .roundRect(L.board.x, L.board.y, L.board.w, L.board.h, 32)
+      .fill(0xfffdf6)
+      .stroke({ width: 4, color: swatch.brown.light });
     TOOLS.forEach((tool, i) => this.toolPads.get(tool)!.position.copyFrom(L.tools[i]));
     this.answerPads.forEach((pad, i) => pad.position.copyFrom(L.answers[i]));
     SIZES.forEach((size, i) => this.unitPads.get(size)!.position.copyFrom(L.units[i]));
@@ -945,7 +1191,8 @@ class MeasuringPost implements Game {
       const ans = tableAnswer(this.current);
       return { tap: { on: this.chosen === ans ? this.checkButton : this.tablePads[ans] } };
     }
-    if (this.phase === 'answer' && this.plan.mode === 'common') return { tap: { on: this.comparePads[compareAnswer(this.current, this.commonSize!)] } };
+    if (this.phase === 'answer' && this.plan.mode === 'common')
+      return { tap: { on: this.comparePads[compareAnswer(this.current, this.commonSize!)] } };
     if (this.phase === 'answer') return { tap: { on: this.answerPads[answerRow(this.current)] } };
     return null;
   }
@@ -967,7 +1214,8 @@ export const measuringPost: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
   touchDemo: true,
-  coplayHint: 'Take turns: one of you asks a friend\'s question, the other runs the counter and picks the tool, then swap.',
+  coplayHint:
+    "Take turns: one of you asks a friend's question, the other runs the counter and picks the tool, then swap.",
   hubIcon: () => new WigglyIcon(hubArt()),
   sticker: (seed) => stickerArt(seed),
   create: (ctx) => new MeasuringPost(ctx),

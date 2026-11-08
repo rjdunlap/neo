@@ -14,7 +14,23 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawClay, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
 import { rangeFor } from '../../progress/difficulty';
 import { SaltTanks } from './salt';
-import { ALL_SHAPES, CLAY_SHAPES, floats, PAIRS, pairsFor, shapesFor, SINK_LEVELS, sinkPlan, thingsFor, thingWord, type ClayExperiment, type ClayShape, type PairKind, type SinkPlan, type Thing } from './logic';
+import {
+  ALL_SHAPES,
+  CLAY_SHAPES,
+  floats,
+  PAIRS,
+  pairsFor,
+  shapesFor,
+  SINK_LEVELS,
+  sinkPlan,
+  thingsFor,
+  thingWord,
+  type ClayExperiment,
+  type ClayShape,
+  type PairKind,
+  type SinkPlan,
+  type Thing,
+} from './logic';
 
 interface Item {
   /** The thing as the journal knows it; null for the small one of a Big and small pair, which files nothing. */
@@ -100,12 +116,26 @@ class SinkFloat implements Game {
     this.plan = sinkPlan(ctx.level);
     ctx.stage.addChild(this.background, this.tankBack, this.tray, this.baskets);
     if (this.plan.mode === 'shape') this.buildClay();
-    for (const thing of this.plan.mode === 'shape' || this.plan.mode === 'pair' ? [] : thingsFor(this.plan, ctx.rng)) {
+    for (const thing of this.plan.mode === 'shape' || this.plan.mode === 'pair'
+      ? []
+      : thingsFor(this.plan, ctx.rng)) {
       const node = new Container();
       node.addChild(thingArt(thing));
       node.hitArea = new Rectangle(-60, -60, 120, 120);
-      const item: Item = { thing, floats: floats(thing), word: thingWord(thing), size: 1.2, node, drag: null, done: false };
-      if (this.plan.mode === 'sort') item.drag = draggable(node, ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.sort(item, x, y) });
+      const item: Item = {
+        thing,
+        floats: floats(thing),
+        word: thingWord(thing),
+        size: 1.2,
+        node,
+        drag: null,
+        done: false,
+      };
+      if (this.plan.mode === 'sort')
+        item.drag = draggable(node, ctx.tw, {
+          onPick: () => sfx.tick(),
+          onDrop: (x, y) => this.sort(item, x, y),
+        });
       else if (this.plan.mode !== 'guess') onTap(node, () => this.tapDrop(item));
       this.items.push(item);
       ctx.stage.addChild(node);
@@ -119,12 +149,24 @@ class SinkFloat implements Game {
           node.addChild(big ? thingArt(p.big.thing) : smallArt(p.small.art));
           node.visible = false;
           node.scale.set(0);
-          this.items.push({ thing: big ? p.big.thing : null, floats: p.floats, word: big ? p.big.word : p.small.word, size: big ? p.big.size : p.small.size, pair: { kind, big }, node, drag: null, done: false });
+          this.items.push({
+            thing: big ? p.big.thing : null,
+            floats: p.floats,
+            word: big ? p.big.word : p.small.word,
+            size: big ? p.big.size : p.small.size,
+            pair: { kind, big },
+            node,
+            drag: null,
+            done: false,
+          });
           ctx.stage.addChild(node);
         }
       }
     }
-    for (const [button, icon, guess] of [[this.floatButton, floatIcon(), true], [this.sinkButton, sinkIcon(), false]] as const) {
+    for (const [button, icon, guess] of [
+      [this.floatButton, floatIcon(), true],
+      [this.sinkButton, sinkIcon(), false],
+    ] as const) {
       button.addChild(tile(150, 130), icon);
       icon.scale.set(1.3);
       button.hitArea = new Rectangle(-85, -75, 170, 150);
@@ -182,7 +224,10 @@ class SinkFloat implements Game {
     const item = this.items.find((i) => !i.done && !i.node.destroyed && !i.drag?.dragging);
     if (!item) return null;
     if (this.plan.mode !== 'sort') return { tap: { on: item.node } };
-    return { drag: { on: item.node }, to: { on: this.baskets, x: this.view.w * 0.87, y: this.basketY(item.floats ? 'float' : 'sink') } };
+    return {
+      drag: { on: item.node },
+      to: { on: this.baskets, x: this.view.w * 0.87, y: this.basketY(item.floats ? 'float' : 'sink') },
+    };
   }
 
   // Dropping things in ----------------------------------------------------------------
@@ -211,15 +256,39 @@ class SinkFloat implements Game {
     await tw.to(node, { x, y: t.top - 70 }, { duration: 0.45, ease: ease.outQuad });
     await tw.to(node, { y: t.surface }, { duration: 0.25, ease: ease.inQuad });
     sfx.splash();
-    this.ctx.particles.burst(x, t.surface, { colors: [swatch.blue.fill, swatch.blue.light], count: 14, speed: [150, 320], gravity: 700, angle: -Math.PI / 2, spread: 1.4, size: [0.3, 0.5] });
-    const wet: Wet = { node, floats: item.floats, slot, phase: this.ctx.rng.range(0, 6), settled: false, rest: this.restGap(item) };
+    this.ctx.particles.burst(x, t.surface, {
+      colors: [swatch.blue.fill, swatch.blue.light],
+      count: 14,
+      speed: [150, 320],
+      gravity: 700,
+      angle: -Math.PI / 2,
+      spread: 1.4,
+      size: [0.3, 0.5],
+    });
+    const wet: Wet = {
+      node,
+      floats: item.floats,
+      slot,
+      phase: this.ctx.rng.range(0, 6),
+      settled: false,
+      rest: this.restGap(item),
+    };
     this.wet.push(wet);
     if (wet.floats) {
       await tw.to(node, { y: t.surface - 8 }, { duration: 0.3, ease: ease.outBack });
       sfx.pop(9);
     } else {
       for (let i = 0; i < 3; i++) void tw.wait(0.2 + i * 0.25).then(() => sfx.pop(3 - i));
-      this.ctx.particles.burst(x, t.surface + 40, { kind: 'ring', colors: [swatch.white.fill], count: 6, speed: [20, 60], gravity: -120, angle: -Math.PI / 2, spread: 0.6, life: [0.8, 1.2] });
+      this.ctx.particles.burst(x, t.surface + 40, {
+        kind: 'ring',
+        colors: [swatch.white.fill],
+        count: 6,
+        speed: [20, 60],
+        gravity: -120,
+        angle: -Math.PI / 2,
+        spread: 0.6,
+        life: [0.8, 1.2],
+      });
       await tw.to(node, { y: t.bottom - wet.rest }, { duration: 1.1, ease: ease.inOutSine });
       sfx.clunk();
     }
@@ -249,7 +318,11 @@ class SinkFloat implements Game {
     const node = item.node;
     if (item.pair) {
       // The small one has waited beside the big one: a little hop says it is its turn.
-      void this.ctx.tw.to(node.scale, { x: item.size * 1.25, y: item.size * 1.25 }, { duration: 0.2, ease: ease.outQuad }).then(() => this.ctx.tw.to(node.scale, { x: item.size, y: item.size }, { duration: 0.3, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(node.scale, { x: item.size * 1.25, y: item.size * 1.25 }, { duration: 0.2, ease: ease.outQuad })
+        .then(() =>
+          this.ctx.tw.to(node.scale, { x: item.size, y: item.size }, { duration: 0.3, ease: ease.outBack }),
+        );
       return void this.ctx.instruct('sink.pair-guess', { thing: item.word });
     }
     node.scale.set(0);
@@ -286,7 +359,11 @@ class SinkFloat implements Game {
     const item = this.items[this.current];
     item.done = true;
     (floatsGuess ? this.floatButton : this.sinkButton).scale.set(0.9);
-    void this.ctx.tw.to((floatsGuess ? this.floatButton : this.sinkButton).scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    void this.ctx.tw.to(
+      (floatsGuess ? this.floatButton : this.sinkButton).scale,
+      { x: 1, y: 1 },
+      { duration: 0.3, ease: ease.outBack },
+    );
     // A guess is never a wrong answer: the water shows what happens, and surprises are celebrated too.
     void this.splash(item).then(async () => {
       const result = item.floats;
@@ -345,7 +422,10 @@ class SinkFloat implements Game {
     void this.splash(item).then(async () => {
       await this.ctx.say(item.floats ? 'sink.floats' : 'sink.sinks');
       if (this.wrong >= 2) void this.ctx.say('sink.hint');
-      this.wet.splice(this.wet.findIndex((w) => w.node === item.node), 1);
+      this.wet.splice(
+        this.wet.findIndex((w) => w.node === item.node),
+        1,
+      );
       this.toBasket(item, item.floats ? 'float' : 'sink');
       this.busy = false;
       this.after();
@@ -375,7 +455,11 @@ class SinkFloat implements Game {
     this.ctx.pet.cheer();
     sfx.sparkle();
     await this.ctx.say('sink.done');
-    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.seen].map((t) => entryId('sink-float', t)) });
+    this.ctx.finish({
+      misses: this.misses,
+      hints: this.hints,
+      discoveries: [...this.seen].map((t) => entryId('sink-float', t)),
+    });
   }
 
   // Make it float ----------------------------------------------------------------------
@@ -482,7 +566,15 @@ class SinkFloat implements Game {
     await tw.to(node, { x, y: t.top - 70 }, { duration: 0.45, ease: ease.outQuad });
     await tw.to(node, { y: t.surface }, { duration: 0.25, ease: ease.inQuad });
     sfx.splash();
-    this.ctx.particles.burst(x, t.surface, { colors: [swatch.blue.fill, swatch.blue.light], count: 14, speed: [150, 320], gravity: 700, angle: -Math.PI / 2, spread: 1.4, size: [0.3, 0.5] });
+    this.ctx.particles.burst(x, t.surface, {
+      colors: [swatch.blue.fill, swatch.blue.light],
+      count: 14,
+      speed: [150, 320],
+      gravity: 700,
+      angle: -Math.PI / 2,
+      spread: 1.4,
+      size: [0.3, 0.5],
+    });
     if (this.clayShape === 'boat' || this.clayShape === 'leaky') {
       await tw.to(node, { y: t.surface - 8 }, { duration: 0.3, ease: ease.outBack });
       this.clayAt = 'float';
@@ -491,13 +583,38 @@ class SinkFloat implements Game {
         return true;
       }
       await tw.wait(0.4);
-      for (let i = 0; i < 4; i++) void tw.wait(i * 0.25).then(() => this.ctx.particles.burst(node.x + 14, node.y + 30, { kind: 'ring', colors: [swatch.white.fill], count: 3, speed: [20, 50], gravity: -120, angle: -Math.PI / 2, spread: 0.5, life: [0.6, 1] }));
+      for (let i = 0; i < 4; i++)
+        void tw.wait(i * 0.25).then(() =>
+          this.ctx.particles.burst(node.x + 14, node.y + 30, {
+            kind: 'ring',
+            colors: [swatch.white.fill],
+            count: 3,
+            speed: [20, 50],
+            gravity: -120,
+            angle: -Math.PI / 2,
+            spread: 0.5,
+            life: [0.6, 1],
+          }),
+        );
       await tw.to(this.leak, { water: 1 }, { duration: 1, ease: ease.inOutSine });
       this.clayAt = 'moving';
     }
     for (let i = 0; i < 3; i++) void tw.wait(0.2 + i * 0.25).then(() => sfx.pop(3 - i));
-    this.ctx.particles.burst(x, t.surface + 40, { kind: 'ring', colors: [swatch.white.fill], count: 6, speed: [20, 60], gravity: -120, angle: -Math.PI / 2, spread: 0.6, life: [0.8, 1.2] });
-    await tw.to(node, { y: t.bottom - 30, rotation: this.clayShape === 'leaky' ? 0.25 : 0 }, { duration: this.clayShape === 'flat' ? 1.5 : 1.1, ease: ease.inOutSine });
+    this.ctx.particles.burst(x, t.surface + 40, {
+      kind: 'ring',
+      colors: [swatch.white.fill],
+      count: 6,
+      speed: [20, 60],
+      gravity: -120,
+      angle: -Math.PI / 2,
+      spread: 0.6,
+      life: [0.8, 1.2],
+    });
+    await tw.to(
+      node,
+      { y: t.bottom - 30, rotation: this.clayShape === 'leaky' ? 0.25 : 0 },
+      { duration: this.clayShape === 'flat' ? 1.5 : 1.1, ease: ease.inOutSine },
+    );
     sfx.clunk();
     this.clayAt = 'bottom';
     await tw.wait(0.3);
@@ -524,7 +641,14 @@ class SinkFloat implements Game {
   resize(v: View) {
     this.view = v;
     const counter = v.h * 0.74;
-    this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light).rect(0, counter, v.w, v.h - counter).fill(wood.light).rect(0, counter - 8, v.w, 12).fill(wood.fill);
+    this.background
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(swatch.teal.light)
+      .rect(0, counter, v.w, v.h - counter)
+      .fill(wood.light)
+      .rect(0, counter - 8, v.w, 12)
+      .fill(wood.fill);
     const sorting = this.plan.mode === 'sort';
     const guessing = this.guessMode;
     const shaping = this.plan.mode === 'shape';
@@ -532,18 +656,29 @@ class SinkFloat implements Game {
     const r = sorting || guessing || shaping ? v.w * 0.72 : v.w - 60;
     this.tank = { l, r, top: 150, surface: 230, bottom: counter };
     const t = this.tank;
-    this.tankBack.clear().roundRect(l, t.top, r - l, t.bottom - t.top, 24).fill({ color: swatch.white.fill, alpha: 0.5 }).rect(l + 6, t.surface, r - l - 12, t.bottom - t.surface - 6).fill({ color: swatch.blue.fill, alpha: 0.35 });
+    this.tankBack
+      .clear()
+      .roundRect(l, t.top, r - l, t.bottom - t.top, 24)
+      .fill({ color: swatch.white.fill, alpha: 0.5 })
+      .rect(l + 6, t.surface, r - l - 12, t.bottom - t.surface - 6)
+      .fill({ color: swatch.blue.fill, alpha: 0.35 });
     const front = this.tankFront.clear();
     front.moveTo(l + 6, t.surface);
     for (let x = l + 6; x <= r - 6; x += 20) front.lineTo(x, t.surface + Math.sin(x / 30) * 4);
     front.stroke({ width: 4, color: swatch.blue.fill, alpha: 0.8 });
-    front.roundRect(l, t.top, r - l, t.bottom - t.top, 24).stroke({ width: 8, color: swatch.white.fill }).roundRect(l + 18, t.top + 20, 14, 120, 7).fill({ color: swatch.white.fill, alpha: 0.6 });
+    front
+      .roundRect(l, t.top, r - l, t.bottom - t.top, 24)
+      .stroke({ width: 8, color: swatch.white.fill })
+      .roundRect(l + 18, t.top + 20, 14, 120, 7)
+      .fill({ color: swatch.white.fill, alpha: 0.6 });
 
     const b = this.baskets.clear();
     if (sorting) {
       for (const kind of ['float', 'sink'] as const) {
         const y = this.basketY(kind);
-        b.roundRect(v.w * 0.87 - 100, y - 70, 200, 140, 26).fill(kind === 'float' ? swatch.blue.light : swatch.white.light).stroke({ width: 6, color: wood.line });
+        b.roundRect(v.w * 0.87 - 100, y - 70, 200, 140, 26)
+          .fill(kind === 'float' ? swatch.blue.light : swatch.white.light)
+          .stroke({ width: 6, color: wood.line });
       }
       this.drawBasketIcons(v);
     }
@@ -568,7 +703,9 @@ class SinkFloat implements Game {
       const at = Math.min(this.current, this.items.length - 1);
       const pairEnd = at - (at % 2) + 1;
       this.items.forEach((item, i) => {
-        item.node.visible = pairing ? (i >= pairEnd - 1 && i <= pairEnd) || this.wet.some((w) => w.node === item.node) : i <= this.current || item.done;
+        item.node.visible = pairing
+          ? (i >= pairEnd - 1 && i <= pairEnd) || this.wet.some((w) => w.node === item.node)
+          : i <= this.current || item.done;
         if (item.done) return;
         if (pairing) item.node.position.set(v.w * 0.86, v.h * (item.pair?.big ? 0.3 : 0.5));
         else if (i === this.current) item.node.position.set(v.w * 0.86, v.h * 0.38);
@@ -625,8 +762,15 @@ class SinkFloat implements Game {
     const next = this.items.find((i) => !i.done);
     if (!next) return;
     const y = this.basketY(next.floats ? 'float' : 'sink');
-    g.roundRect(this.view.w * 0.87 - 108, y - 78, 216, 156, 30).stroke({ width: 8, color: swatch.yellow.line });
-    if (next.drag) g.roundRect(next.drag.home.x - 66, next.drag.home.y - 66, 132, 132, 24).stroke({ width: 8, color: swatch.yellow.line });
+    g.roundRect(this.view.w * 0.87 - 108, y - 78, 216, 156, 30).stroke({
+      width: 8,
+      color: swatch.yellow.line,
+    });
+    if (next.drag)
+      g.roundRect(next.drag.home.x - 66, next.drag.home.y - 66, 132, 132, 24).stroke({
+        width: 8,
+        color: swatch.yellow.line,
+      });
   }
 
   /** Couch play on guessing levels: left and right choose float or sink; the bottom button makes the guess. */

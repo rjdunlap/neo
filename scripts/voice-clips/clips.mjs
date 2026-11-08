@@ -17,8 +17,25 @@ export const SETTINGS = {
  * The rest stays on device speech until the iPad listen passes (docs/ROADMAP.md#a-better-voice).
  */
 export const PREFIXES = [
-  'game', 'praise', 'sticker', 'again', 'hub', 'nav', 'home', 'island', 'land', 'place', 'explore', 'parent',
-  'hatch', 'stickers', 'friends', 'keep', 'play', 'bubble', 'duck',
+  'game',
+  'praise',
+  'sticker',
+  'again',
+  'hub',
+  'nav',
+  'home',
+  'island',
+  'land',
+  'place',
+  'explore',
+  'parent',
+  'hatch',
+  'stickers',
+  'friends',
+  'keep',
+  'play',
+  'bubble',
+  'duck',
 ];
 
 /** Variants with a `{slot}` stay on device speech: a rendered fragment mid-sentence sounds jarring. */
@@ -35,4 +52,8 @@ export function chosenTexts(script) {
 }
 
 /** A clip's file name (without `.m4a`): the exact text under the pinned settings. */
-export const clipKey = (text) => createHash('sha256').update(`${JSON.stringify(SETTINGS)}\n${text}`).digest('hex').slice(0, 16);
+export const clipKey = (text) =>
+  createHash('sha256')
+    .update(`${JSON.stringify(SETTINGS)}\n${text}`)
+    .digest('hex')
+    .slice(0, 16);

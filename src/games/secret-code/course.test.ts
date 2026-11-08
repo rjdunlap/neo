@@ -27,7 +27,12 @@ describe('the Code Doors course', () => {
       const history: Guess[] = [];
       for (;;) {
         const guess: (number | null)[] = Array(plan.slots).fill(null);
-        for (let m = nextMove(plan, history, code, guess); 'stone' in m; m = nextMove(plan, history, code, guess)) guess[guess.indexOf(null)] = m.stone;
+        for (
+          let m = nextMove(plan, history, code, guess);
+          'stone' in m;
+          m = nextMove(plan, history, code, guess)
+        )
+          guess[guess.indexOf(null)] = m.stone;
         expect(candidates(plan, history).some((c) => c.join() === guess.join())).toBe(true);
         const marks = score(code, guess as number[], plan.yellow);
         history.push({ stones: guess as number[], marks });

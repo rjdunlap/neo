@@ -33,7 +33,9 @@ export const VOICE = {
   'feel.event-basket': ['Lunch time! But the picnic basket is empty.'],
   'feel.ask': ['Tap {friend} to ask what {friend} wants.'],
   'feel.wish-hug': ['{friend} says, I would like a hug. Can you offer a hug?'],
-  'feel.wish-quiet': ['{friend} says, I would like a quiet spot on the blanket. Can you give {friend} space?'],
+  'feel.wish-quiet': [
+    '{friend} says, I would like a quiet spot on the blanket. Can you give {friend} space?',
+  ],
   'feel.wish-game': ['{friend} says, I would like to play ball. Can you offer a game?'],
   'feel.wish-grownup': ['{friend} says, I would like a grown-up. Can you bring Hazel to the door?'],
   'feel.asked': ['{friend} asked for something else. Ask again!'],

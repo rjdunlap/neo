@@ -1,12 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
-import { ANIMALS, STICKER_ANIMALS, SCENES, roundScene, COVER_NAMES, FEELINGS, FEELING_WORDS, FEELING_CHANCE, nearestSpot, pickFeeling, shouldNudge, shouldSelfOpen, planFor, ONE_DOOR_LEVEL, SELF_OPEN_SECONDS, deal, newcomer, pickTarget, PLANS, spotToTap, type Animal, type Feeling } from './logic';
+import {
+  ANIMALS,
+  STICKER_ANIMALS,
+  SCENES,
+  roundScene,
+  COVER_NAMES,
+  FEELINGS,
+  FEELING_WORDS,
+  FEELING_CHANCE,
+  nearestSpot,
+  pickFeeling,
+  shouldNudge,
+  shouldSelfOpen,
+  planFor,
+  ONE_DOOR_LEVEL,
+  SELF_OPEN_SECONDS,
+  deal,
+  newcomer,
+  pickTarget,
+  PLANS,
+  spotToTap,
+  type Animal,
+  type Feeling,
+} from './logic';
 
 describe('Peekaboo Barn', () => {
   it('preserves old sticker choices and supplies a distinct spoken name for each cover', () => {
     expect(STICKER_ANIMALS).toEqual(['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear']);
-    expect(Object.fromEntries(Object.entries(COVER_NAMES).slice(0, 4))).toEqual({ hay: 'haystack', bush: 'bush', door: 'door', crate: 'crate' });
+    expect(Object.fromEntries(Object.entries(COVER_NAMES).slice(0, 4))).toEqual({
+      hay: 'haystack',
+      bush: 'bush',
+      door: 'door',
+      crate: 'crate',
+    });
     expect(new Set(Object.values(COVER_NAMES)).size).toBe(16);
     for (const id of ['peek.found', 'peek.yes'] as const) {
       for (const line of SCRIPT[id]) expect(line).toContain('{cover}');
@@ -15,20 +43,24 @@ describe('Peekaboo Barn', () => {
 
   it('deals named distinct covers in any seeded setting at every level', () => {
     const seen = new Set<string>();
-    for (const plan of PLANS) for (let seed = 1; seed <= 200; seed++) {
-      const scene = roundScene(new Rng(seed), plan.spots);
-      expect(scene).toEqual(roundScene(new Rng(seed), plan.spots));
-      expect(scene.covers).toHaveLength(plan.spots);
-      expect(new Set(scene.covers).size).toBe(plan.spots);
-      expect(SCENES[scene.id].length).toBeGreaterThanOrEqual(4);
-      for (const cover of scene.covers) expect(COVER_NAMES[cover]).toBeTruthy();
-      seen.add(scene.id);
-    }
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 200; seed++) {
+        const scene = roundScene(new Rng(seed), plan.spots);
+        expect(scene).toEqual(roundScene(new Rng(seed), plan.spots));
+        expect(scene.covers).toHaveLength(plan.spots);
+        expect(new Set(scene.covers).size).toBe(plan.spots);
+        expect(SCENES[scene.id].length).toBeGreaterThanOrEqual(4);
+        for (const cover of scene.covers) expect(COVER_NAMES[cover]).toBeTruthy();
+        seen.add(scene.id);
+      }
     expect([...seen].sort()).toEqual(['barnyard', 'bedroom', 'beach', 'garden'].sort());
   });
 
   it('resolves neighboring hit areas to the nearer cover and rejects points outside', () => {
-    const spots = [{ x: 300, y: 700, scale: 1 }, { x: 532, y: 700, scale: 1 }];
+    const spots = [
+      { x: 300, y: 700, scale: 1 },
+      { x: 532, y: 700, scale: 1 },
+    ];
     expect(nearestSpot(415, 590, spots)).toBe(0);
     expect(nearestSpot(417, 590, spots)).toBe(1);
     expect(nearestSpot(416, 590, spots)).toBe(0);
@@ -41,9 +73,18 @@ describe('Peekaboo Barn', () => {
   it('nudges only quiet free play after six seconds, with everyone hidden', () => {
     expect(shouldNudge(PLANS[0], 5.99, ['hidden', 'hidden'], false)).toBe(false);
     expect(shouldNudge(PLANS[0], 6, ['hidden', 'hidden'], false)).toBe(true);
-    for (const pose of ['out', 'peek']) expect(shouldNudge(PLANS[0], 10, ['hidden', pose], false)).toBe(false);
+    for (const pose of ['out', 'peek'])
+      expect(shouldNudge(PLANS[0], 10, ['hidden', pose], false)).toBe(false);
     expect(shouldNudge(PLANS[0], 10, ['hidden'], true)).toBe(false);
-    for (const mode of ['find', 'remember'] as const) expect(shouldNudge(PLANS.find((p) => p.mode === mode)!, 10, ['hidden'], false)).toBe(false);
+    for (const mode of ['find', 'remember'] as const)
+      expect(
+        shouldNudge(
+          PLANS.find((p) => p.mode === mode)!,
+          10,
+          ['hidden'],
+          false,
+        ),
+      ).toBe(false);
   });
 
   it('fits every level in four hiding places, with a wrong place to try on question levels', () => {
@@ -87,8 +128,26 @@ describe('Peekaboo Barn', () => {
         const animals = deal(rng, plan.spots);
         if (plan.mode !== 'free') {
           const target = pickTarget(rng, animals, null);
-          expect(animals[spotToTap(plan, animals.map(() => 'hidden'), animals, target, -1)!]).toBe(target);
-          expect(spotToTap(plan, animals.map(() => 'hidden'), animals, null, -1)).toBeNull();
+          expect(
+            animals[
+              spotToTap(
+                plan,
+                animals.map(() => 'hidden'),
+                animals,
+                target,
+                -1,
+              )!
+            ],
+          ).toBe(target);
+          expect(
+            spotToTap(
+              plan,
+              animals.map(() => 'hidden'),
+              animals,
+              null,
+              -1,
+            ),
+          ).toBeNull();
           continue;
         }
         const poses = animals.map(() => 'hidden');
@@ -103,9 +162,25 @@ describe('Peekaboo Barn', () => {
         }
         expect(visited.size).toBe(plan.spots);
         // Everyone out: wait.
-        expect(spotToTap(plan, poses.map(() => 'out'), animals, null, last)).toBeNull();
+        expect(
+          spotToTap(
+            plan,
+            poses.map(() => 'out'),
+            animals,
+            null,
+            last,
+          ),
+        ).toBeNull();
         // Only one place free: that one, even if it was the last.
-        expect(spotToTap(plan, poses.map((_, k) => (k === last ? 'hidden' : 'out')), animals, null, last)).toBe(last);
+        expect(
+          spotToTap(
+            plan,
+            poses.map((_, k) => (k === last ? 'hidden' : 'out')),
+            animals,
+            null,
+            last,
+          ),
+        ).toBe(last);
       }
     }
   });
@@ -115,13 +190,16 @@ describe('Peekaboo Barn', () => {
       expect([...FEELINGS]).not.toContain('sad');
       for (const feeling of FEELINGS) expect(FEELING_WORDS[feeling]).toMatch(/^[a-z]+$/);
       expect(new Set(Object.values(FEELING_WORDS)).size).toBe(FEELINGS.length);
-      for (const line of SCRIPT['peek.feel']) for (const key of ['{feeling}', '{animal}', '{word}']) expect(line).toContain(key);
+      for (const line of SCRIPT['peek.feel'])
+        for (const key of ['{feeling}', '{animal}', '{word}']) expect(line).toContain(key);
       expect(SCRIPT['peek.feel'].some((line) => line.includes('{cover}'))).toBe(true);
     });
 
     it('shows a feeling on some free-play reveals at levels 1–2 only, every feeling in turn and never the same twice running', () => {
-      for (const plan of PLANS.filter((p) => p.mode !== 'free')) for (let seed = 1; seed <= 50; seed++) expect(pickFeeling(new Rng(seed), plan, null)).toBeNull();
-      for (let seed = 1; seed <= 50; seed++) expect(pickFeeling(new Rng(seed), planFor(ONE_DOOR_LEVEL), null)).toBeNull();
+      for (const plan of PLANS.filter((p) => p.mode !== 'free'))
+        for (let seed = 1; seed <= 50; seed++) expect(pickFeeling(new Rng(seed), plan, null)).toBeNull();
+      for (let seed = 1; seed <= 50; seed++)
+        expect(pickFeeling(new Rng(seed), planFor(ONE_DOOR_LEVEL), null)).toBeNull();
       for (const level of [1, 2]) {
         const plan = planFor(level);
         expect(plan.mode).toBe('free');
@@ -142,8 +220,10 @@ describe('Peekaboo Barn', () => {
         expect(felt / 300).toBeLessThan(FEELING_CHANCE + 0.1);
       }
       // Within one round the stream is seeded, so a replay shows the same faces.
-      const a = new Rng(7); const b = new Rng(7);
-      for (let i = 0; i < 40; i++) expect(pickFeeling(a, PLANS[0], null)).toBe(pickFeeling(b, PLANS[0], null));
+      const a = new Rng(7);
+      const b = new Rng(7);
+      for (let i = 0; i < 40; i++)
+        expect(pickFeeling(a, PLANS[0], null)).toBe(pickFeeling(b, PLANS[0], null));
     });
   });
 

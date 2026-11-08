@@ -13,17 +13,49 @@ import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { arrowArt, checkArt, cloudArt, dropArt, friendArt, motionArt, needSignArt, patchArt, pondArt, rewindArt, rippleArt } from './art';
 import {
-  CHECK, check, flipBed, makeRoute, planFor, routeFresh, routeHint, routeLayout, routeNext, routeRestart, tryRoute,
-  type Cause, type Plan, type Place, type RouteLayout, type RouteRound, type RouteState, type RouteTrial,
+  arrowArt,
+  checkArt,
+  cloudArt,
+  dropArt,
+  friendArt,
+  motionArt,
+  needSignArt,
+  patchArt,
+  pondArt,
+  rewindArt,
+  rippleArt,
+} from './art';
+import {
+  CHECK,
+  check,
+  flipBed,
+  makeRoute,
+  planFor,
+  routeFresh,
+  routeHint,
+  routeLayout,
+  routeNext,
+  routeRestart,
+  tryRoute,
+  type Cause,
+  type Plan,
+  type Place,
+  type RouteLayout,
+  type RouteRound,
+  type RouteState,
+  type RouteTrial,
 } from './logic';
 
 /** The authored board leads the first level-4 round of a session. */
 let authoredShown = false;
 
 /** A drop that has settled: in a bed's pocket or a pond slot. */
-interface Settled { node: Container; at: Place; index: number }
+interface Settled {
+  node: Container;
+  at: Place;
+  index: number;
+}
 
 export class RainRoute implements Game {
   readonly plan: Plan;
@@ -57,7 +89,17 @@ export class RainRoute implements Game {
     if (first && !ctx.demo) authoredShown = true;
     this.round = makeRoute(ctx.rng, first);
     this.s = routeFresh(this.round);
-    this.backdrop = new Backdrop({ sky: [0xcfe4f5, 0xfff6e0], hills: [0xd6efc8, 0xc5e7a8], horizon: 0.86, clouds: 0, sun: false, seed: 157 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xcfe4f5, 0xfff6e0],
+        hills: [0xd6efc8, 0xc5e7a8],
+        horizon: 0.86,
+        clouds: 0,
+        sun: false,
+        seed: 157,
+      },
+      ctx.view,
+    );
     this.layout = routeLayout(ctx.view, this.round.bed, this.round.mirror)!;
     const c = this.layout.cloud;
     this.cloud = cloudArt(c.w, c.h);
@@ -69,8 +111,16 @@ export class RainRoute implements Game {
     this.check = checkArt(CHECK);
     this.check.hitArea = new Rectangle(-CHECK / 2, -CHECK / 2, CHECK, CHECK);
     onTap(this.check, () => this.tapCheck());
-    for (const n of [this.boardLayer, this.patchLayer, this.glow, this.dropLayer, this.signLayer]) n.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.boardLayer, this.patchLayer, this.glow, this.dropLayer, this.signLayer);
+    for (const n of [this.boardLayer, this.patchLayer, this.glow, this.dropLayer, this.signLayer])
+      n.eventMode = 'none';
+    ctx.stage.addChild(
+      this.backdrop,
+      this.boardLayer,
+      this.patchLayer,
+      this.glow,
+      this.dropLayer,
+      this.signLayer,
+    );
     for (let i = 0; i < 2; i++) {
       const t = new Container();
       const p = this.layout.beds[i].patch;
@@ -87,13 +137,27 @@ export class RainRoute implements Game {
   get state() {
     const cur = this.s.current;
     return {
-      level: 4, bed: this.round.bed, start: this.round.start.slice(), surfaces: this.s.sockets.slice(), mirror: this.round.mirror, friend: this.round.friend,
-      current: cur ? [...cur.stored, cur.pond] : null, misses: this.s.misses, hints: this.s.hints, glow: this.s.glow, pointing: this.s.pointing ? 'check' : null,
-      passed: this.s.passed, busy: this.busy, finished: this.finished, drops: this.settled.length,
+      level: 4,
+      bed: this.round.bed,
+      start: this.round.start.slice(),
+      surfaces: this.s.sockets.slice(),
+      mirror: this.round.mirror,
+      friend: this.round.friend,
+      current: cur ? [...cur.stored, cur.pond] : null,
+      misses: this.s.misses,
+      hints: this.s.hints,
+      glow: this.s.glow,
+      pointing: this.s.pointing ? 'check' : null,
+      passed: this.s.passed,
+      busy: this.busy,
+      finished: this.finished,
+      drops: this.settled.length,
     };
   }
 
-  start() { void this.ctx.instruct('rain.instruct.4'); }
+  start() {
+    void this.ctx.instruct('rain.instruct.4');
+  }
 
   destroy() {
     this.finished = true;
@@ -106,7 +170,9 @@ export class RainRoute implements Game {
 
   // ---- drawing ----
 
-  private dir(): 1 | -1 { return this.round.mirror ? -1 : 1; }
+  private dir(): 1 | -1 {
+    return this.round.mirror ? -1 : 1;
+  }
 
   private drawBoard() {
     const l = this.layout;
@@ -122,7 +188,13 @@ export class RainRoute implements Game {
 
   private patchGraphic(i: number): Graphics {
     const b = this.layout.beds[i];
-    const g = patchArt(this.s.sockets[i], b.patch.w, b.patch.h, b.pockets.map((p) => ({ x: p.x - b.patch.x, y: p.y - b.patch.y, w: p.w, h: p.h })), this.dir());
+    const g = patchArt(
+      this.s.sockets[i],
+      b.patch.w,
+      b.patch.h,
+      b.pockets.map((p) => ({ x: p.x - b.patch.x, y: p.y - b.patch.y, w: p.w, h: p.h })),
+      this.dir(),
+    );
     g.position.set(b.patch.x, b.patch.y);
     this.patchLayer.addChild(g);
     return g;
@@ -167,7 +239,10 @@ export class RainRoute implements Game {
   private async tryIt(narrate: boolean) {
     this.busy = true;
     this.s = { ...this.s, pointing: false };
-    if (this.settled.length) { await this.freshen(); if (this.finished) return; }
+    if (this.settled.length) {
+      await this.freshen();
+      if (this.finished) return;
+    }
     this.drawSigns();
     const next = tryRoute(this.s);
     await this.showRun(next.current!);
@@ -178,7 +253,9 @@ export class RainRoute implements Game {
     if (narrate) await this.ctx.say(this.routeLine());
   }
 
-  private routeLine(): LineId { return `rain.route.${this.s.sockets.join('-')}` as LineId; }
+  private routeLine(): LineId {
+    return `rain.route.${this.s.sockets.join('-')}` as LineId;
+  }
 
   private async showRun(t: RouteTrial) {
     const count = { pocket: [0, 0], slot: 0 };
@@ -199,25 +276,47 @@ export class RainRoute implements Game {
     node.addChild(dropArt(44));
     const top = l.beds[0];
     const cloudY = l.cloud.y + l.cloud.h / 2 - 20;
-    const startX = end === 0 ? top.pockets[index].x : top.patch.x + dir * (top.patch.w / 2 - 50 - 30 * (unit % 2));
+    const startX =
+      end === 0 ? top.pockets[index].x : top.patch.x + dir * (top.patch.w / 2 - 50 - 30 * (unit % 2));
     node.position.set(startX, cloudY);
     this.dropLayer.addChild(node);
     this.flying.add(node);
-    const done = () => { this.flying.delete(node); this.settled.push({ node, at: end, index }); };
+    const done = () => {
+      this.flying.delete(node);
+      this.settled.push({ node, at: end, index });
+    };
     const settle = async (bed: number) => {
       const p = l.beds[bed].pockets[index];
-      await this.ctx.tw.to(node, { x: p.x, y: p.y }, { duration: bed === 0 ? 0.6 : 0.35, ease: bed === 0 ? ease.inQuad : ease.outQuad });
+      await this.ctx.tw.to(
+        node,
+        { x: p.x, y: p.y },
+        { duration: bed === 0 ? 0.6 : 0.35, ease: bed === 0 ? ease.inQuad : ease.outQuad },
+      );
       if (this.finished) return;
       sfx.marimba(5 + index * 2 + bed, 0.4);
-      this.ctx.particles.burst(p.x, p.y, { kind: 'dot', colors: [swatch.blue.light, 0xffffff], count: 6, speed: [40, 100], gravity: 200, life: [0.2, 0.4] });
+      this.ctx.particles.burst(p.x, p.y, {
+        kind: 'dot',
+        colors: [swatch.blue.light, 0xffffff],
+        count: 6,
+        speed: [40, 100],
+        gravity: 200,
+        life: [0.2, 0.4],
+      });
       done();
       await this.ctx.tw.wait(0.2);
     };
-    if (end === 0) { await settle(0); return; }
+    if (end === 0) {
+      await settle(0);
+      return;
+    }
     // Run past the top bed: onto its ground, down the first arrow.
     const lines = motionArt();
     lines.scale.x = dir;
-    await this.ctx.tw.to(node, { y: top.patch.y - top.patch.h / 2 + 10 }, { duration: 0.5, ease: ease.inQuad });
+    await this.ctx.tw.to(
+      node,
+      { y: top.patch.y - top.patch.h / 2 + 10 },
+      { duration: 0.5, ease: ease.inQuad },
+    );
     if (this.finished) return;
     sfx.pluck(3, 0.2);
     node.addChildAt(lines, 0);
@@ -226,10 +325,18 @@ export class RainRoute implements Game {
     if (this.finished) return;
     await this.ctx.tw.to(node, { x: a.x2, y: a.y2 }, { duration: 0.35, ease: ease.inQuad });
     if (this.finished) return;
-    if (end === 1) { lines.visible = false; await settle(1); return; }
+    if (end === 1) {
+      lines.visible = false;
+      await settle(1);
+      return;
+    }
     // And past the low bed: across its ground, down the second arrow, into a pond slot.
     const low = l.beds[1].patch;
-    await this.ctx.tw.to(node, { x: low.x + dir * (low.w / 2 - 40), y: low.y - low.h / 2 + 14 }, { duration: 0.35, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      node,
+      { x: low.x + dir * (low.w / 2 - 40), y: low.y - low.h / 2 + 14 },
+      { duration: 0.35, ease: ease.inOutSine },
+    );
     if (this.finished) return;
     sfx.pluck(2, 0.2);
     const b = l.arrows[1];
@@ -253,10 +360,16 @@ export class RainRoute implements Game {
   private cheer() {
     const f = this.friend;
     if (!f) return;
-    if (this.round.friend === 'frog') sfx.ribbit(); else if (this.round.friend === 'duck') sfx.animal('quack'); else sfx.squeak(6);
+    if (this.round.friend === 'frog') sfx.ribbit();
+    else if (this.round.friend === 'duck') sfx.animal('quack');
+    else sfx.squeak(6);
     this.ctx.tw.kill(f);
     const y = this.layout.friend.y;
-    void this.ctx.tw.to(f, { y: y - 24 }, { duration: 0.18, ease: ease.outQuad }).then(() => (this.finished ? undefined : this.ctx.tw.to(f, { y }, { duration: 0.25, ease: ease.outBack })));
+    void this.ctx.tw
+      .to(f, { y: y - 24 }, { duration: 0.18, ease: ease.outQuad })
+      .then(() =>
+        this.finished ? undefined : this.ctx.tw.to(f, { y }, { duration: 0.25, ease: ease.outBack }),
+      );
   }
 
   /** Back to fresh ground: the pond tips into its drain and fresh beds slide in under the rewind badge. Nothing rises to the cloud. */
@@ -265,13 +378,19 @@ export class RainRoute implements Game {
     this.rewind.visible = true;
     const old = this.settled;
     this.settled = [];
-    for (const d of old) void this.ctx.tw.to(d.node, { alpha: 0, y: d.node.y + (d.at === 'pond' ? 40 : 0) }, { duration: 0.4, ease: ease.inQuad });
+    for (const d of old)
+      void this.ctx.tw.to(
+        d.node,
+        { alpha: 0, y: d.node.y + (d.at === 'pond' ? 40 : 0) },
+        { duration: 0.4, ease: ease.inQuad },
+      );
     const dx = -this.dir() * 80;
     const olds = this.patches;
     this.patches = [0, 1].map((i) => {
       void this.ctx.tw.to(olds[i], { alpha: 0 }, { duration: 0.4 });
       const n = this.patchGraphic(i);
-      n.x += dx; n.alpha = 0;
+      n.x += dx;
+      n.alpha = 0;
       void this.ctx.tw.to(n, { x: n.x - dx, alpha: 1 }, { duration: 0.45, ease: ease.outQuad });
       return n;
     });
@@ -293,10 +412,13 @@ export class RainRoute implements Game {
   /** Show a flipped bed: its new ground, a squash and its sound; a board with drops on it wipes to fresh. */
   private flipTo(next: RouteState, i: number) {
     this.s = next;
-    if (next.sockets[i] === 'stone') sfx.clunk(); else sfx.squish();
+    if (next.sockets[i] === 'stone') sfx.clunk();
+    else sfx.squish();
     if (this.settled.length) {
       this.busy = true;
-      void this.freshen().then(() => { if (!this.finished) this.idle(); });
+      void this.freshen().then(() => {
+        if (!this.finished) this.idle();
+      });
     } else {
       const old = this.patches[i];
       this.patches[i] = this.patchGraphic(i);
@@ -314,7 +436,10 @@ export class RainRoute implements Game {
   }
 
   private async judge() {
-    if (!this.s.current) { await this.tryIt(false); if (this.finished) return; }
+    if (!this.s.current) {
+      await this.tryIt(false);
+      if (this.finished) return;
+    }
     const before = this.s.glow;
     const { state, verdict } = check(this.s, this.round);
     this.s = state;
@@ -347,7 +472,8 @@ export class RainRoute implements Game {
     if (!sign) return;
     this.ctx.tw.kill(sign);
     sign.rotation = 0;
-    void this.ctx.tw.to(sign, { rotation: 0.12 }, { duration: 0.1 })
+    void this.ctx.tw
+      .to(sign, { rotation: 0.12 }, { duration: 0.1 })
       .then(() => (this.finished ? undefined : this.ctx.tw.to(sign, { rotation: -0.1 }, { duration: 0.14 })))
       .then(() => (this.finished ? undefined : this.ctx.tw.to(sign, { rotation: 0 }, { duration: 0.12 })));
   }
@@ -373,7 +499,10 @@ export class RainRoute implements Game {
     if (this.finished) return;
     const go = () => {
       if (this.finished) return;
-      if (this.busy) { void this.ctx.tw.wait(0.2).then(go); return; }
+      if (this.busy) {
+        void this.ctx.tw.wait(0.2).then(go);
+        return;
+      }
       this.s = routeRestart(this.s, this.round);
       for (const d of this.settled) d.node.destroy({ children: true });
       this.settled = [];
@@ -387,7 +516,10 @@ export class RainRoute implements Game {
 
   private idle() {
     this.busy = false;
-    if (this.stale) { this.stale = false; this.resize(this.ctx.view); }
+    if (this.stale) {
+      this.stale = false;
+      this.resize(this.ctx.view);
+    }
   }
 
   resize(view: View) {
@@ -395,7 +527,10 @@ export class RainRoute implements Game {
     const l = this.layout;
     this.backdrop.resize(view);
     if (this.busy) this.stale = true;
-    else { this.drawBoard(); this.placeSettled(); }
+    else {
+      this.drawBoard();
+      this.placeSettled();
+    }
     this.cloud.position.set(l.cloud.x, l.cloud.y);
     this.check.position.set(l.check.x, l.check.y);
     this.beds.forEach((b, i) => b.position.set(l.beds[i].patch.x, l.beds[i].patch.y));
@@ -407,10 +542,18 @@ export class RainRoute implements Game {
     if (this.finished || this.s.passed) return;
     const pulse = 6 + 4 * Math.sin(this.clock * 5);
     const ring = (x: number, y: number, w: number, h: number) =>
-      this.glow.roundRect(x - w / 2 - pulse, y - h / 2 - pulse, w + 2 * pulse, h + 2 * pulse, 26).stroke({ width: 7, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(x - w / 2 - pulse, y - h / 2 - pulse, w + 2 * pulse, h + 2 * pulse, 26)
+        .stroke({ width: 7, color: swatch.yellow.fill });
     // The causal glow sits behind the bed's tap target, so it never blocks a tap.
-    if (this.s.glow !== null) { const p = this.layout.beds[this.s.glow].patch; ring(p.x, p.y, p.w, p.h); }
-    if (this.s.pointing && !this.busy) { const c = this.layout.check; ring(c.x, c.y, c.w, c.h); }
+    if (this.s.glow !== null) {
+      const p = this.layout.beds[this.s.glow].patch;
+      ring(p.x, p.y, p.w, p.h);
+    }
+    if (this.s.pointing && !this.busy) {
+      const c = this.layout.check;
+      ring(c.x, c.y, c.w, c.h);
+    }
   }
 
   autotouch(): TouchIntent | null {

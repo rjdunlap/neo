@@ -37,7 +37,16 @@ import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon, type HowToIntro } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
-import { againIcon, arrowIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
+import {
+  againIcon,
+  arrowIcon,
+  basketIcon,
+  checkIcon,
+  heartIcon,
+  houseIcon,
+  nextIcon,
+  treehouseIcon,
+} from '../../ui/icons';
 import { FONT } from '../../ui/text';
 import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
@@ -58,7 +67,15 @@ export class GameScene extends Scene {
   private readonly stage = new Container();
   private readonly pet = makeGuide();
   /** Hold to leave. On the island it is a house; at the root it goes back, so it is a back arrow (RW14 slice 3, set in `init`). */
-  private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave(), 0xffffff, () => this.sayBack());
+  private readonly home = new HoldButton(
+    houseIcon(),
+    swatch.white,
+    44,
+    0.5,
+    () => this.leave(),
+    0xffffff,
+    () => this.sayBack(),
+  );
   /** For the grown-up: hold to open the how-to card. Quiet on purpose, and a long hold so a small hand does not open it. */
   private readonly help = new HoldButton(questionIcon(), swatch.white, 38, 0.9, () => this.openHelp());
   private helpCard: HowToPanel | null = null;
@@ -66,13 +83,25 @@ export class GameScene extends Scene {
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   /** The "again", heart and "home" buttons, once the celebration offers them. */
   /** The result's buttons. At the root a game opened from a location or Explore page has `home` as Back to that place and `house` as Home. */
-  after: { again: RoundButton; next: RoundButton | null; heart: RoundButton; home: RoundButton; house: RoundButton | null; keep: RoundButton | null } | null = null;
+  after: {
+    again: RoundButton;
+    next: RoundButton | null;
+    heart: RoundButton;
+    home: RoundButton;
+    house: RoundButton | null;
+    keep: RoundButton | null;
+  } | null = null;
   /** What she made this round, offered for the treehouse (null when the game made nothing or it was empty). */
   private made: Creation | null = null;
   /** Journal entries this round showed her for the first time. */
   private discovered: JournalEntry[] = [];
   private readonly discoveryToken = discoveryMemory.token(store.data);
-  private discovery: { id: string; tile: DiscoveryTile; another: DiscoveryTile | null; anotherId?: string } | null = null;
+  private discovery: {
+    id: string;
+    tile: DiscoveryTile;
+    another: DiscoveryTile | null;
+    anotherId?: string;
+  } | null = null;
   /** The Little surprises round this scene plays, claimed as it is built; a game opened any other way is never in a mix. */
   readonly mixRound: MixRound | undefined = mixMemory.claim(store.data);
   /** Next stop (or All done) and Skip on a mix's result, in D1b's rectangles. */
@@ -92,7 +121,9 @@ export class GameScene extends Scene {
   private returningTouch = false;
   private speechSerial = 0;
   private resultSpeech: Promise<void> = Promise.resolve();
-  private readonly touchUp = () => { this.returningTouch = false; };
+  private readonly touchUp = () => {
+    this.returningTouch = false;
+  };
   private level = 1;
   private seconds = 0;
   private finished = false;
@@ -147,7 +178,11 @@ export class GameScene extends Scene {
   init() {
     const band = this.band;
     const range = this.mod.levels(band);
-    this.level = this.story?.level ?? (this.startLevel === undefined ? store.levelFor(this.mod.id, range, this.mod.entryLevels) : stepLevel(this.startLevel, 0, range));
+    this.level =
+      this.story?.level ??
+      (this.startLevel === undefined
+        ? store.levelFor(this.mod.id, range, this.mod.entryLevels)
+        : stepLevel(this.startLevel, 0, range));
     this.content.addChild(this.stage);
 
     this.pet.scale.set(GUIDE_SCALE);
@@ -169,17 +204,27 @@ export class GameScene extends Scene {
     window.addEventListener('blur', this.touchUp);
     this.keys = new CouchInput(
       () => {
-        audio.unlock(); voice.unlock();
+        audio.unlock();
+        voice.unlock();
         // A key arriving between frames cancels a held discovery choice before its pointer can release.
-        this.discovery?.tile.cancel(); this.discovery?.another?.cancel();
-        this.mixControls?.tile.cancel(); this.mixControls?.skip?.cancel();
+        this.discovery?.tile.cancel();
+        this.discovery?.another?.cancel();
+        this.mixControls?.tile.cancel();
+        this.mixControls?.skip?.cancel();
       },
       () => undefined,
       { listening: () => !this.app.paused && !isParentPanelOpen() },
     );
 
     // Every time a game is opened it explains itself on a card (with a demonstration where there is a bot), and the round waits for Play.
-    const card = shouldExplain({ enabled: store.data.settings.howToCards, id: this.mod.id, story: !!this.story, again: this.again }) ? howToFor(this.mod, this.level) : null;
+    const card = shouldExplain({
+      enabled: store.data.settings.howToCards,
+      id: this.mod.id,
+      story: !!this.story,
+      again: this.again,
+    })
+      ? howToFor(this.mod, this.level)
+      : null;
     if (card) this.openIntro(card);
     else this.build();
   }
@@ -189,7 +234,9 @@ export class GameScene extends Scene {
     const band = this.band;
     const lifetime = this.lifetime;
     const ctx: GameContext = {
-      get alive() { return lifetime.alive; },
+      get alive() {
+        return lifetime.alive;
+      },
       own: lifetime.own,
       listen: lifetime.listen.bind(lifetime),
       stage: this.stage,
@@ -248,7 +295,10 @@ export class GameScene extends Scene {
   private async sayStop() {
     const round = this.mixRound!;
     const still = () => !this.game && !this.gone && this.app.scene === this;
-    if (round.lead) { await voice.say(round.lead); if (!still()) return; }
+    if (round.lead) {
+      await voice.say(round.lead);
+      if (!still()) return;
+    }
     // The session's first launch came from the mix spot (or Again mix); a Home back to the same card is not a new offer.
     if (round.round === 1) {
       await voice.say('mix.offer');
@@ -261,9 +311,17 @@ export class GameScene extends Scene {
     const wasController = this.inputInUse.kind === 'controller';
     this.inputInUse.sample(keys);
     this.drive(keys, dt, wasController);
-    if (this.resultReady) { this.syncDiscovery(); this.syncMix(); }
+    if (this.resultReady) {
+      this.syncDiscovery();
+      this.syncMix();
+    }
     // A stop card's row is for touch: a key or pad takes it off, and a touch puts it back.
-    if (this.helpCard && !this.game && this.stopRow !== null && this.stopRow !== (this.inputInUse.kind === 'touch')) {
+    if (
+      this.helpCard &&
+      !this.game &&
+      this.stopRow !== null &&
+      this.stopRow !== (this.inputInUse.kind === 'touch')
+    ) {
       this.stopRow = !this.stopRow;
       this.helpCard.layout(this.view);
     }
@@ -294,12 +352,14 @@ export class GameScene extends Scene {
       if (!keys.players.some((p) => p.action || p.back || p.undo || p.direction >= 0)) return;
       if (intro && keys.players.some((p) => p.action)) this.playFromIntro();
       else if (intro && keys.players.some((p) => p.back || p.undo)) this.backFromIntro();
-      else if (intro && (lead.direction === 0 || lead.direction === 2)) this.stepIntroLevel(lead.direction === 0 ? 1 : -1);
+      else if (intro && (lead.direction === 0 || lead.direction === 2))
+        this.stepIntroLevel(lead.direction === 0 ? 1 : -1);
       else if (!intro && keys.players.some((p) => p.action || p.back || p.undo)) this.closeHelp();
       return;
     }
     if (pressed(keys)) this.keyed = true;
-    if (this.keyed && this.game?.control && controllerPlays(this.mod, this.level)) this.game.control(keys, dt);
+    if (this.keyed && this.game?.control && controllerPlays(this.mod, this.level))
+      this.game.control(keys, dt);
   }
 
   /** The buttons after a round: arrows move the ring, the bottom button presses. The first press only shows where the ring is. */
@@ -307,11 +367,23 @@ export class GameScene extends Scene {
     const after = this.after;
     if (!after) return;
     this.offeredFor += dt;
-    const buttons = [after.again, ...(after.next ? [after.next] : []), after.home, ...(after.house ? [after.house] : []), after.heart, ...(after.keep ? [after.keep] : [])];
+    const buttons = [
+      after.again,
+      ...(after.next ? [after.next] : []),
+      after.home,
+      ...(after.house ? [after.house] : []),
+      after.heart,
+      ...(after.keep ? [after.keep] : []),
+    ];
     const at = Math.min(this.focus, buttons.length - 1);
     const focused = buttons[at];
     this.ring.visible = this.inputInUse.kind === 'controller';
-    this.ring.clear().circle(0, 0, focused.radius + 12).stroke({ width: 14, color: 0xffffff }).circle(0, 0, focused.radius + 12).stroke({ width: 5, color: ink });
+    this.ring
+      .clear()
+      .circle(0, 0, focused.radius + 12)
+      .stroke({ width: 14, color: 0xffffff })
+      .circle(0, 0, focused.radius + 12)
+      .stroke({ width: 5, color: ink });
     this.ring.position.copyFrom(focused.position);
     if (this.offeredFor < 0.35 || !wasController) return;
     for (const p of keys.players) {
@@ -354,7 +426,11 @@ export class GameScene extends Scene {
     const game = this.game;
     if (!game || this.helpCard || this.finished || this.gone) return [];
     const couch = (COUCH_INFO as Record<string, CouchInfo | undefined>)[this.mod.id];
-    const labels = pauseLabels(this.mod.bands, { restart: !!game.restart, hint: !!game.askForHint }, game.hintLabel ? { ...couch, hint: game.hintLabel } : couch);
+    const labels = pauseLabels(
+      this.mod.bands,
+      { restart: !!game.restart, hint: !!game.askForHint },
+      game.hintLabel ? { ...couch, hint: game.hintLabel } : couch,
+    );
     const actions: PauseAction[] = [];
     if (labels.restart) actions.push({ label: labels.restart, run: () => game.restart?.() });
     if (labels.hint) actions.push({ label: labels.hint, run: () => game.askForHint?.() });
@@ -383,9 +459,27 @@ export class GameScene extends Scene {
     // The ladder marks what her progress suggests and a grown-up's pin; neither follows the arrows. A celebration's next level is not a suggestion.
     const suggested = store.levelFor(mod.id, range, mod.entryLevels);
     const pinned = store.data.games[mod.id]?.pinned ?? null;
-    const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta), suggested, pinned } : undefined;
-    const hear = () => { voice.stop(); void voice.say(mod.titleLine); };
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.backFromIntro(), backIcon: this.app.creatureWorld ? () => (this.story ? basketIcon() : backArt(this.origin, 52)) : undefined, hear, demo, pick, levelCard: mod.levelCard, stops: this.stopRowFor() });
+    const pick =
+      range.max > range.min
+        ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta), suggested, pinned }
+        : undefined;
+    const hear = () => {
+      voice.stop();
+      void voice.say(mod.titleLine);
+    };
+    const card = new HowToPanel(info, () => undefined, {
+      icon: () => mod.hubIcon(),
+      play: () => this.playFromIntro(),
+      back: () => this.backFromIntro(),
+      backIcon: this.app.creatureWorld
+        ? () => (this.story ? basketIcon() : backArt(this.origin, 52))
+        : undefined,
+      hear,
+      demo,
+      pick,
+      levelCard: mod.levelCard,
+      stops: this.stopRowFor(),
+    });
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.
@@ -452,9 +546,24 @@ export class GameScene extends Scene {
   resultWayOut(): { home: RoundButton; house: RoundButton | null } {
     const root = this.app.creatureWorld;
     const from = root && !this.story ? originArt(this.origin) : null;
-    const icon = from ? backToArt(from.picture) : this.story ? basketIcon() : root ? arrowIcon(-1, 0xffffff) : houseIcon(0xffffff);
-    const home = new RoundButton(icon, swatch.blue, 66, () => this.leaveSaying(this.backLine(), () => this.goHome()));
-    const house = from ? new RoundButton(houseIcon(), swatch.white, 50, () => this.leaveSaying(() => voice.say('nav.home'), () => this.app.go.hub())).means('home') : null;
+    const icon = from
+      ? backToArt(from.picture)
+      : this.story
+        ? basketIcon()
+        : root
+          ? arrowIcon(-1, 0xffffff)
+          : houseIcon(0xffffff);
+    const home = new RoundButton(icon, swatch.blue, 66, () =>
+      this.leaveSaying(this.backLine(), () => this.goHome()),
+    );
+    const house = from
+      ? new RoundButton(houseIcon(), swatch.white, 50, () =>
+          this.leaveSaying(
+            () => voice.say('nav.home'),
+            () => this.app.go.hub(),
+          ),
+        ).means('home')
+      : null;
     if (root) home.means('back');
     return { home, house };
   }
@@ -504,7 +613,8 @@ export class GameScene extends Scene {
       return;
     }
     // A project round names its step only once finished, so the page speaks a done line only for a finished round.
-    if (this.story && 'project' in this.story) this.app.go.project(this.finished ? this.story.step : undefined);
+    if (this.story && 'project' in this.story)
+      this.app.go.project(this.finished ? this.story.step : undefined);
     else if (this.story?.story === 'woodland') this.app.go.woodland(this.story.step);
     else if (this.story) this.app.go.picnic(this.story.step);
     else goToOrigin(this.app.go, this.origin, () => this.app.go.place(store.data.profile.band));
@@ -514,19 +624,33 @@ export class GameScene extends Scene {
     if (this.finished || !this.liveResult() || this.navigating) return;
     this.finished = true;
     this.made = cleanCreation(result.creation);
-    this.discovered = store.discover(result.discoveries).map((id) => entryById(id)).filter((e): e is JournalEntry => !!e);
+    this.discovered = store
+      .discover(result.discoveries)
+      .map((id) => entryById(id))
+      .filter((e): e is JournalEntry => !!e);
     this.closeHelp();
     const band = this.band;
     store.recordRound(
       this.mod.id,
-      { level: this.level, misses: result.misses, hints: result.hints, seconds: Math.round(this.seconds), at: Date.now() },
+      {
+        level: this.level,
+        misses: result.misses,
+        hints: result.hints,
+        seconds: Math.round(this.seconds),
+        at: Date.now(),
+      },
       this.mod.levels(band),
       // A story round plays the story's level, and a Today's six card (or its Again / Next level) the day's preset level: neither
       // moves the game's own level. A discovery opened from the six carries its origin but plays her saved level, so it adapts.
       !this.story && !(this.origin && 'daily' in this.origin && this.startLevel !== undefined),
     );
     // Finishing completes the request, however much help it took.
-    if (this.story && 'project' in this.story) store.completeWelcomeStep(this.story.step, this.made, { misses: result.misses, hints: result.hints, level: this.level });
+    if (this.story && 'project' in this.story)
+      store.completeWelcomeStep(this.story.step, this.made, {
+        misses: result.misses,
+        hints: result.hints,
+        level: this.level,
+      });
     else if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);
@@ -540,16 +664,16 @@ export class GameScene extends Scene {
   /** Happy pet, confetti, a sticker, then "again?". */
   private async celebrate(seed: number) {
     const v = this.view;
-    const layer = this.resultLayer = new Container();
+    const layer = (this.resultLayer = new Container());
     const place = resultPlace(this.origin, { story: !!this.story, root: this.app.creatureWorld });
-    const backdrop = this.resultPlace = place ? this.track(new ResultBackdrop(place, v)) : null;
+    const backdrop = (this.resultPlace = place ? this.track(new ResultBackdrop(place, v)) : null);
     const veil = new Graphics().rect(0, 0, v.w, v.h).fill({ color: 0xfff4e3, alpha: this.veilAlpha() });
     this.resultVeil = veil;
     veil.eventMode = 'static'; // nothing underneath can be tapped now
     veil.alpha = 0;
     if (backdrop) backdrop.alpha = 0;
     const confetti = this.track(new Particles());
-    const star = this.resultStar = this.track(makeCompanion());
+    const star = (this.resultStar = this.track(makeCompanion()));
     star.scale.set(0.8);
     const placeStar = () => star.position.set(this.view.w / 2, this.view.h - 20 + this.resultPetOffset.y);
     placeStar();
@@ -566,7 +690,15 @@ export class GameScene extends Scene {
     await this.tw.to(veil, { alpha: 1 }, { duration: 0.3 });
     void this.tw.to(this.resultPetOffset, { y: 0 }, { duration: 0.6, ease: ease.outBack });
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    const cannon = { kind: 'confetti' as const, colors, count: 40, speed: [550, 950] as [number, number], spread: 0.5, gravity: 700, life: [1.6, 2.4] as [number, number] };
+    const cannon = {
+      kind: 'confetti' as const,
+      colors,
+      count: 40,
+      speed: [550, 950] as [number, number],
+      spread: 0.5,
+      gravity: 700,
+      life: [1.6, 2.4] as [number, number],
+    };
     confetti.burst(0, v.h, { ...cannon, angle: -Math.PI / 3 });
     confetti.burst(v.w, v.h, { ...cannon, angle: (-Math.PI * 2) / 3 });
     sfx.tada();
@@ -584,36 +716,70 @@ export class GameScene extends Scene {
     void hopLoop();
 
     await this.tw.wait(0.6);
-    const sticker = this.resultSticker = stickerize(this.mod.sticker(seed), 110);
+    const sticker = (this.resultSticker = stickerize(this.mod.sticker(seed), 110));
     sticker.position.set(this.view.w / 2, this.view.h * 0.33);
     sticker.scale.set(0);
     sticker.rotation = -0.08;
     layer.addChild(sticker);
     void this.tw.to(sticker.scale, { x: 1, y: 1 }, { duration: 0.55, ease: ease.outBack });
     sfx.sparkle();
-    confetti.burst(sticker.x, sticker.y, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 18, speed: [200, 380], gravity: 0, life: [0.6, 1] });
+    confetti.burst(sticker.x, sticker.y, {
+      kind: 'star',
+      colors: [0xffd54a, 0xffffff],
+      count: 18,
+      speed: [200, 380],
+      gravity: 0,
+      life: [0.6, 1],
+    });
     await this.tw.wait(0.5);
     void voice.say('sticker');
     await this.tw.wait(1.8);
 
     // A first look at something for her journal: a little card with what she found, then on to the buttons.
     if (this.discovered.length) {
-      const pill = this.resultPill = discoveryPill(this.discovered);
+      const pill = (this.resultPill = discoveryPill(this.discovered));
       pill.position.set(this.view.w / 2, this.view.h * 0.555);
       pill.scale.set(0);
       layer.addChild(pill);
       void this.tw.to(pill.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
       sfx.sparkle();
-      confetti.burst(pill.x, pill.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 12, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
+      confetti.burst(pill.x, pill.y, {
+        kind: 'star',
+        colors: [swatch.yellow.fill, 0xffffff],
+        count: 12,
+        speed: [160, 320],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       void voice.say('journal.new');
       await this.tw.wait(1.8);
     }
 
     // "Again" plays the level she just finished (a story round plays its own), so it means what it looks like; the map applies the step up or down.
-    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () => this.navigateResult(() => { this.relaunchMix(); this.app.go.game(this.mod.id, this.band, this.story, true, this.origin, this.story ? undefined : this.level); }));
+    const again = new RoundButton(againIcon(0xffffff), swatch.green, 66, () =>
+      this.navigateResult(() => {
+        this.relaunchMix();
+        this.app.go.game(
+          this.mod.id,
+          this.band,
+          this.story,
+          true,
+          this.origin,
+          this.story ? undefined : this.level,
+        );
+      }),
+    );
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
     const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
-    const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.navigateResult(() => { this.relaunchMix(); this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo); }));
+    const next =
+      upTo === null
+        ? null
+        : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () =>
+            this.navigateResult(() => {
+              this.relaunchMix();
+              this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo);
+            }),
+          );
     const { home, house } = this.resultWayOut();
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);
@@ -632,7 +798,14 @@ export class GameScene extends Scene {
       show(on);
       if (on) {
         sfx.sparkle();
-        confetti.burst(heart.x, heart.y, { kind: 'star', colors: [swatch.pink.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
+        confetti.burst(heart.x, heart.y, {
+          kind: 'star',
+          colors: [swatch.pink.fill, 0xffffff],
+          count: 14,
+          speed: [180, 340],
+          gravity: 0,
+          life: [0.5, 0.9],
+        });
         void this.resultVoice('heart.on');
       } else void this.resultVoice('heart.off');
     });
@@ -654,12 +827,26 @@ export class GameScene extends Scene {
         house.visible = false;
         check.visible = true;
         sfx.sparkle();
-        confetti.burst(keep!.x, keep!.y, { kind: 'star', colors: [swatch.green.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
+        confetti.burst(keep!.x, keep!.y, {
+          kind: 'star',
+          colors: [swatch.green.fill, 0xffffff],
+          count: 14,
+          speed: [180, 340],
+          gravity: 0,
+          life: [0.5, 0.9],
+        });
         void this.resultVoice('keep.done');
       });
     }
     this.after = { again, next, heart, home, house, keep };
-    for (const b of [again, ...(next ? [next] : []), heart, home, ...(house ? [house] : []), ...(keep ? [keep] : [])]) {
+    for (const b of [
+      again,
+      ...(next ? [next] : []),
+      heart,
+      home,
+      ...(house ? [house] : []),
+      ...(keep ? [keep] : []),
+    ]) {
       b.scale.set(0);
       layer.addChild(b);
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
@@ -695,24 +882,37 @@ export class GameScene extends Scene {
   private candidates() {
     // Inside a mix the mix's own controls take D1b's rectangles, so two "next" pictures never compete.
     if (this.mixRound) return [];
-    return discoveryCandidates({ current: this.mod.id, band: store.data.profile.band, playedBand: this.band, story: !!this.story }, GAMES);
+    return discoveryCandidates(
+      { current: this.mod.id, band: store.data.profile.band, playedBand: this.band, story: !!this.story },
+      GAMES,
+    );
   }
 
   private canDiscover(): boolean {
-    return this.liveResult() && !this.navigating && this.resultReady && this.inputInUse.kind === 'touch' && !this.returningTouch && !this.app.paused && !isParentPanelOpen();
+    return (
+      this.liveResult() &&
+      !this.navigating &&
+      this.resultReady &&
+      this.inputInUse.kind === 'touch' &&
+      !this.returningTouch &&
+      !this.app.paused &&
+      !isParentPanelOpen()
+    );
   }
 
   /** Only eligibility changes can replace a displayed offer. Frames/resize/Heart/Keep retain it. */
   private syncDiscovery(speak = true) {
     if (!this.resultReady) return;
     const candidates = this.liveResult() ? this.candidates() : [];
-    if (this.discovery && !candidates.some(m => m.id === this.discovery!.id)) this.replaceDiscovery(candidates, speak);
-    else if (!this.discovery && candidates.length && this.canDiscover()) this.replaceDiscovery(candidates, speak);
+    if (this.discovery && !candidates.some((m) => m.id === this.discovery!.id))
+      this.replaceDiscovery(candidates, speak);
+    else if (!this.discovery && candidates.length && this.canDiscover())
+      this.replaceDiscovery(candidates, speak);
     const offer = this.discovery;
     if (!offer) return;
     const visible = this.canDiscover();
-    const other = candidates.find(m => m.id !== offer.id);
-    const mod = candidates.find(m => m.id === offer.id);
+    const other = candidates.find((m) => m.id !== offer.id);
+    const mod = candidates.find((m) => m.id === offer.id);
     if (visible && mod && other?.id !== offer.anotherId) {
       offer.another?.destroy({ children: true });
       offer.another = other ? this.makeAnother(mod, other) : null;
@@ -735,9 +935,15 @@ export class GameScene extends Scene {
       if (!mod && speak && this.canDiscover()) void this.queueDiscovery('discovery.empty');
       return;
     }
-    const tile = new DiscoveryTile(288, 112, nextGameArt(mod, SCRIPT[mod.titleLine][0].replace(/!$/, '')), () => this.chooseDiscovery(mod.id), () => this.canDiscover());
+    const tile = new DiscoveryTile(
+      288,
+      112,
+      nextGameArt(mod, SCRIPT[mod.titleLine][0].replace(/!$/, '')),
+      () => this.chooseDiscovery(mod.id),
+      () => this.canDiscover(),
+    );
     tile.position.set(32, 24);
-    const other = candidates.find(m => m.id !== mod.id);
+    const other = candidates.find((m) => m.id !== mod.id);
     this.resultLayer!.addChild(tile);
     const cycle = other ? this.makeAnother(mod, other) : null;
     this.discovery = { id: mod.id, tile, another: cycle, anotherId: other?.id };
@@ -746,23 +952,29 @@ export class GameScene extends Scene {
   }
 
   private makeAnother(mod: GameModule, other: GameModule): DiscoveryTile {
-    const tile = new DiscoveryTile(112, 112, anotherGameArt(mod, other), () => {
-      if (this.canDiscover()) this.replaceDiscovery(this.candidates(), true, true);
-    }, () => this.canDiscover());
+    const tile = new DiscoveryTile(
+      112,
+      112,
+      anotherGameArt(mod, other),
+      () => {
+        if (this.canDiscover()) this.replaceDiscovery(this.candidates(), true, true);
+      },
+      () => this.canDiscover(),
+    );
     tile.position.set(32, 160);
     this.resultLayer!.addChild(tile);
     return tile;
   }
 
   private sayDiscovery(line: 'discovery.offer' | 'discovery.another') {
-    const mod = this.candidates().find(m => m.id === this.discovery?.id);
+    const mod = this.candidates().find((m) => m.id === this.discovery?.id);
     if (!mod || !this.canDiscover()) return;
     void this.queueDiscovery(line, SCRIPT[mod.titleLine][0].replace(/!$/, ''), mod.id);
   }
 
   private resultVoice(line: LineId): Promise<void> {
     this.speechSerial++;
-    return this.resultSpeech = this.whileHere(voice.say(line));
+    return (this.resultSpeech = this.whileHere(voice.say(line)));
   }
 
   /** An offer restored or deliberately changed mid-speech waits for the ordinary result/Keep line. */
@@ -775,7 +987,7 @@ export class GameScene extends Scene {
 
   private chooseDiscovery(id: string) {
     if (!this.canDiscover() || id !== this.discovery?.id) return;
-    if (!this.candidates().some(m => m.id === id)) {
+    if (!this.candidates().some((m) => m.id === id)) {
       this.replaceDiscovery(); // Never launch a replacement behind the old picture.
       return;
     }
@@ -796,7 +1008,7 @@ export class GameScene extends Scene {
   private mixSession() {
     if (!this.mixRound || !this.inMix()) return undefined;
     const session = mixMemory.live(store.data)!;
-    const mods = session.ids.map(id => GAMES.find(m => m.id === id)).filter((m): m is GameModule => !!m);
+    const mods = session.ids.map((id) => GAMES.find((m) => m.id === id)).filter((m): m is GameModule => !!m);
     return { place: session.place, state: session.state, mods, ids: session.ids };
   }
 
@@ -817,12 +1029,16 @@ export class GameScene extends Scene {
     const session = this.mixSession();
     const visible = !!session && this.canDiscover();
     const next = session ? nextUp(session.state) : null;
-    if (session && session.mods && (!this.mixControls || this.mixControls.next !== next)) this.buildMix(session.mods, next);
+    if (session && session.mods && (!this.mixControls || this.mixControls.next !== next))
+      this.buildMix(session.mods, next);
     const c = this.mixControls;
     if (!c) return;
     c.tile.visible = visible;
     if (!visible) c.tile.cancel();
-    if (c.skip) { c.skip.visible = visible; if (!visible) c.skip.cancel(); }
+    if (c.skip) {
+      c.skip.visible = visible;
+      if (!visible) c.skip.cancel();
+    }
   }
 
   private buildMix(mods: GameModule[], next: number | null) {
@@ -830,13 +1046,30 @@ export class GameScene extends Scene {
     this.mixControls?.skip?.destroy({ children: true });
     const state = this.mixSession()!.state;
     const art = next === null ? allDoneArt(mods) : nextStopArt(mods[next], titleOf(mods[next]), state);
-    const tile = new DiscoveryTile(288, 112, art, () => this.chooseMixNext(), () => this.canDiscover(), swatch.yellow);
+    const tile = new DiscoveryTile(
+      288,
+      112,
+      art,
+      () => this.chooseMixNext(),
+      () => this.canDiscover(),
+      swatch.yellow,
+    );
     tile.position.set(32, 24);
     const hop = new Container();
     const icon = hopIcon(swatch.yellow.line);
     icon.position.set(56, 60);
     hop.addChild(icon);
-    const skip = next === null ? null : new DiscoveryTile(112, 112, hop, () => this.skipMixNext(), () => this.canDiscover(), swatch.yellow);
+    const skip =
+      next === null
+        ? null
+        : new DiscoveryTile(
+            112,
+            112,
+            hop,
+            () => this.skipMixNext(),
+            () => this.canDiscover(),
+            swatch.yellow,
+          );
     skip?.position.set(32, 160);
     this.resultLayer!.addChild(tile, ...(skip ? [skip] : []));
     this.mixControls = { tile, skip, next };
@@ -846,7 +1079,10 @@ export class GameScene extends Scene {
     const session = this.mixSession();
     if (!session?.mods || !this.canDiscover()) return;
     const next = nextUp(session.state);
-    void this.queueMix(next === null ? 'mix.last' : 'mix.next', next === null ? undefined : titleOf(session.mods[next]));
+    void this.queueMix(
+      next === null ? 'mix.last' : 'mix.next',
+      next === null ? undefined : titleOf(session.mods[next]),
+    );
   }
 
   private async queueMix(line: LineId, title?: string) {
@@ -901,7 +1137,9 @@ export class GameScene extends Scene {
       tiles: () => {
         const state = this.mixSession()?.state ?? session.state;
         const next = this.mixRound!.p;
-        return mods.map((mod, p) => new StopTile(mod, state.items[p], p === next, () => this.hearStop(p), 100));
+        return mods.map(
+          (mod, p) => new StopTile(mod, state.items[p], p === next, () => this.hearStop(p), 100),
+        );
       },
       skip: () => this.skipFromCard(),
     };
@@ -919,7 +1157,15 @@ export class GameScene extends Scene {
   private skipFromCard() {
     const session = this.mixSession();
     const p = this.mixRound?.p;
-    if (!session || p === undefined || this.game || this.navigating || !this.liveResult() || session.state.items[p]?.state !== 'upcoming') return;
+    if (
+      !session ||
+      p === undefined ||
+      this.game ||
+      this.navigating ||
+      !this.liveResult() ||
+      session.state.items[p]?.state !== 'upcoming'
+    )
+      return;
     const after = mixMemory.apply(store.data, { type: 'skip', p })!;
     const r = mixReturn(after, true);
     this.navigateResult(() => {
@@ -975,9 +1221,20 @@ export class GameScene extends Scene {
     const name = store.data.profile.name.trim() || 'your little one';
     const body = new Text({
       text: template.replaceAll('{name}', name),
-      style: { fontFamily: FONT, fontSize: 19, fill: ink, fontWeight: '500', align: 'center', wordWrap: true, wordWrapWidth: 520 },
+      style: {
+        fontFamily: FONT,
+        fontSize: 19,
+        fill: ink,
+        fontWeight: '500',
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: 520,
+      },
     });
-    const head = new Text({ text: 'GROWN-UP TIP', style: { fontFamily: FONT, fontSize: 12, fill: 0x6b6b7b, fontWeight: '600', letterSpacing: 1.5 } });
+    const head = new Text({
+      text: 'GROWN-UP TIP',
+      style: { fontFamily: FONT, fontSize: 12, fill: 0x6b6b7b, fontWeight: '600', letterSpacing: 1.5 },
+    });
     head.anchor.set(0.5, 0);
     body.anchor.set(0.5, 0);
     head.y = 12;
@@ -985,7 +1242,10 @@ export class GameScene extends Scene {
     const w = Math.max(body.width, head.width) + 40;
     const card = new Container();
     card.addChild(
-      new Graphics().roundRect(-w / 2, 0, w, body.height + 46, 18).fill({ color: 0xffffff, alpha: 0.94 }).stroke({ width: 2, color: 0xeadfcd }),
+      new Graphics()
+        .roundRect(-w / 2, 0, w, body.height + 46, 18)
+        .fill({ color: 0xffffff, alpha: 0.94 })
+        .stroke({ width: 2, color: 0xeadfcd }),
       head,
       body,
     );

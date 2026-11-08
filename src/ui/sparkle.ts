@@ -13,9 +13,17 @@ export class Sparkle extends Container implements Updatable {
   constructor(size = 26) {
     super();
     const gold = swatch.yellow;
-    const big = new Graphics().poly(starPoints(size, size * 0.4, 4)).fill(gold.fill).stroke({ width: 4, color: gold.line, join: 'round' });
-    const glint = new Graphics().circle(-size * 0.1, -size * 0.1, size * 0.14).fill({ color: 0xffffff, alpha: 0.9 });
-    const small = new Graphics().poly(starPoints(size * 0.42, size * 0.17, 4)).fill(0xffffff).stroke({ width: 2.5, color: gold.line, join: 'round' });
+    const big = new Graphics()
+      .poly(starPoints(size, size * 0.4, 4))
+      .fill(gold.fill)
+      .stroke({ width: 4, color: gold.line, join: 'round' });
+    const glint = new Graphics()
+      .circle(-size * 0.1, -size * 0.1, size * 0.14)
+      .fill({ color: 0xffffff, alpha: 0.9 });
+    const small = new Graphics()
+      .poly(starPoints(size * 0.42, size * 0.17, 4))
+      .fill(0xffffff)
+      .stroke({ width: 2.5, color: gold.line, join: 'round' });
     small.position.set(size * 0.95, size * 0.7);
     this.addChild(big, glint, small);
     this.eventMode = 'none';

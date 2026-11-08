@@ -50,7 +50,12 @@ export const LOCATIONS: Partial<Record<LandId, Place>> = {
   treehouse: { resident: 'dapple', scenery: drawCanyon },
   'cozy-village': { resident: 'bramble', scenery: drawVillage },
   // Night falls here only: the grove's own sky replaces the land's day one, which the classic island keeps.
-  'story-grove': { resident: 'lumen', scenery: drawGrove, backdrop: GROVE_BACKDROP, headingColor: GROVE_HEADING },
+  'story-grove': {
+    resident: 'lumen',
+    scenery: drawGrove,
+    backdrop: GROVE_BACKDROP,
+    headingColor: GROVE_HEADING,
+  },
   // The lab is in a cave's mouth, so the cave's rock replaces the land's day sky here only.
   'tinker-lab': { resident: 'mossback', scenery: drawLab, backdrop: LAB_BACKDROP, headingColor: LAB_HEADING },
   // The farm and the lake have no resident species: the land's cow and cat greet her, and each keeps its own sky.
@@ -59,7 +64,8 @@ export const LOCATIONS: Partial<Record<LandId, Place>> = {
 };
 
 /** The land a resident is at home in: a pilot species' `land`, or a second-wave resident's. */
-export const homeOf = (resident: SpeciesId | CastId): LandId => (resident in SPECIES ? SPECIES[resident as SpeciesId].land : RESIDENTS[resident as CastId].land);
+export const homeOf = (resident: SpeciesId | CastId): LandId =>
+  resident in SPECIES ? SPECIES[resident as SpeciesId].land : RESIDENTS[resident as CastId].land;
 
 export const isLocation = (id: LandId) => id in LOCATIONS;
 
@@ -96,7 +102,11 @@ export class LocationScene extends LandScene {
       hostLine = 'location.home';
     } else if (species && species in SPECIES) {
       host = () => {
-        resident = new Companion({ species: species as SpeciesId, look: { color: SPECIES[species as SpeciesId].color }, id: null });
+        resident = new Companion({
+          species: species as SpeciesId,
+          look: { color: SPECIES[species as SpeciesId].color },
+          id: null,
+        });
         return { node: resident, critter: resident, hitArea: resident.touchArea(10) };
       };
     } else if (species && castArt(species as CastId)) {
@@ -119,7 +129,13 @@ export class LocationScene extends LandScene {
       hostLine,
       page,
       // At the root Back carries Places' picture and a house beside it goes Home (RW14 slice 3).
-      ...(back ? { home: back, homeIcon: () => fittedBack(entryArt('places'), 50, ink), root: { homeSays: () => voice.say('result.back', { place: ENTRY_NAMES.places }) } } : {}),
+      ...(back
+        ? {
+            home: back,
+            homeIcon: () => fittedBack(entryArt('places'), 50, ink),
+            root: { homeSays: () => voice.say('result.back', { place: ENTRY_NAMES.places }) },
+          }
+        : {}),
     });
     this.resident = resident;
     this.atHome = atHome;

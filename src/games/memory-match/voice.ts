@@ -7,7 +7,9 @@ export const VOICE = {
   'memory.number-word': ['Find the number word and the numeral that names it!'],
   'memory.clock': ['Find the clocks that show the same time.'],
   'memory.clock-pair': ['Both show {card}. A pair!'],
-  'memory.clock-hint': ['You have seen {card}. Look at the glowing card. The long hand points to {minute}, and the short hand is {hour}.'],
+  'memory.clock-hint': [
+    'You have seen {card}. Look at the glowing card. The long hand points to {minute}, and the short hand is {hour}.',
+  ],
   'memory.fraction': ['Find the fraction picture and the words that name it!'],
   'memory.fraction-card': ['{amount}.'],
   'memory.card': ['{card}.'],

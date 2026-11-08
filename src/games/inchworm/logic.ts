@@ -12,10 +12,12 @@ import type { BandLevels } from '../../progress/difficulty';
  * each hop, then count the hops; and measure a thing longer than a short ruler by laying the ruler twice,
  * a chalk mark where the first lay ends, then adding the two parts.
  */
-export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken' | 'hop' | 'slide';
+export type MeasureMode =
+  'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken' | 'hop' | 'slide';
 
 /** The levels that read a ruler instead of laying worms. */
-export const isRuler = (mode: MeasureMode) => mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum' || mode === 'broken';
+export const isRuler = (mode: MeasureMode) =>
+  mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum' || mode === 'broken';
 
 /** The levels laid out with the smaller ruler unit and the pads along the bottom: the ruler levels, one worm hopping up to 8 long, and a thing up to 12 long under a short ruler. */
 export const isWide = (mode: MeasureMode) => isRuler(mode) || mode === 'hop' || mode === 'slide';
@@ -36,12 +38,37 @@ export const PLANS: MeasurePlan[] = [
   { mode: 'say', max: 6, rounds: 3, name: 'Measure with worms, then pick how many worms long' },
   { mode: 'compare', max: 6, rounds: 3, name: 'Measure two things: which is longer, and by how many worms?' },
   { mode: 'ruler', max: 8, rounds: 4, name: 'Read a ruler, even when the pencil does not start at 0' },
-  { mode: 'rulerdiff', max: 8, rounds: 4, name: 'Two things on one ruler, starting at different marks: how much longer is one?' },
-  { mode: 'rulersum', max: 4, rounds: 4, name: 'Two things end to end on the ruler: how long are they together?' },
-  { mode: 'units', max: 6, rounds: 4, name: 'Measure one thing with big worms, then little worms: which number did the little worms make?' },
-  { mode: 'broken', max: 7, rounds: 4, name: 'The broken ruler: no 0 to start from, so count the spaces it covers' },
+  {
+    mode: 'rulerdiff',
+    max: 8,
+    rounds: 4,
+    name: 'Two things on one ruler, starting at different marks: how much longer is one?',
+  },
+  {
+    mode: 'rulersum',
+    max: 4,
+    rounds: 4,
+    name: 'Two things end to end on the ruler: how long are they together?',
+  },
+  {
+    mode: 'units',
+    max: 6,
+    rounds: 4,
+    name: 'Measure one thing with big worms, then little worms: which number did the little worms make?',
+  },
+  {
+    mode: 'broken',
+    max: 7,
+    rounds: 4,
+    name: 'The broken ruler: no 0 to start from, so count the spaces it covers',
+  },
   { mode: 'hop', max: 8, rounds: 3, name: 'One worm, hop by hop: tap it along, then count the chalk marks' },
-  { mode: 'slide', max: 12, rounds: 3, name: 'Longer than the ruler: lay a short ruler twice, then add the two parts' },
+  {
+    mode: 'slide',
+    max: 12,
+    rounds: 3,
+    name: 'Longer than the ruler: lay a short ruler twice, then add the two parts',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -60,7 +87,8 @@ export const UNIT_SIZE = [2, 1] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export type Thing = 'leaf' | 'pencil' | 'snake' | 'stick' | 'crayon' | 'carrot' | 'rope' | 'paintbrush' | 'feather';
+export type Thing =
+  'leaf' | 'pencil' | 'snake' | 'stick' | 'crayon' | 'carrot' | 'rope' | 'paintbrush' | 'feather';
 
 export interface Measure {
   thing: Thing;
@@ -79,7 +107,17 @@ export interface Measure {
   ruler?: number;
 }
 
-export const THINGS: Thing[] = ['leaf', 'pencil', 'snake', 'stick', 'crayon', 'carrot', 'rope', 'paintbrush', 'feather'];
+export const THINGS: Thing[] = [
+  'leaf',
+  'pencil',
+  'snake',
+  'stick',
+  'crayon',
+  'carrot',
+  'rope',
+  'paintbrush',
+  'feather',
+];
 
 /** Things not in the round before, so a thing never shows twice running. One draw either way, so lengths keep their seeds. */
 const fresh = (out: readonly Measure[], not?: Thing) => {
@@ -111,7 +149,12 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
       if (length2 === length) continue;
       const [s1, s2] = diffStarts(out.length, rng);
       if (s1 + length > RULER || s2 + length2 > RULER) continue;
-      const m: Measure = { thing, length, start: s1, other: { thing: rng.pick(fresh(out, thing)), length: length2, start: s2 } };
+      const m: Measure = {
+        thing,
+        length,
+        start: s1,
+        other: { thing: rng.pick(fresh(out, thing)), length: length2, start: s2 },
+      };
       // Different starts must make the ends tell a different story from the lengths (and not the same story twice).
       if (s1 !== s2 && temptingReading(m, 'rulerdiff') === null) continue;
       if (out.length > 0 && answerOf(out[out.length - 1], 'rulerdiff') === answerOf(m, 'rulerdiff')) continue;
@@ -121,7 +164,12 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
       const start = out.length % 2 === 0 ? 0 : rng.int(1, 2);
       if (start + length + length2 > RULER) continue;
       if (out.length > 0 && answerOf(out[out.length - 1], 'rulersum') === length + length2) continue;
-      out.push({ thing, length, start, other: { thing: rng.pick(fresh(out, thing)), length: length2, start: start + length } });
+      out.push({
+        thing,
+        length,
+        start,
+        other: { thing: rng.pick(fresh(out, thing)), length: length2, start: start + length },
+      });
     } else out.push({ thing, length });
   }
   // Comparing: one round of the three is two jumps in a sand pit, placed after the lengths are drawn so they keep their seeds.
@@ -247,10 +295,21 @@ export function choices(m: Measure, mode: MeasureMode, rng: Rng): number[] {
 }
 
 export const answerOf = (m: Measure, mode: MeasureMode) =>
-  mode === 'units' ? (m.ask === 'big' ? m.length : m.other!.length) :
-  mode === 'compare' || mode === 'rulerdiff' ? Math.abs(m.length - m.other!.length) : mode === 'rulersum' ? m.length + m.other!.length : m.length;
+  mode === 'units'
+    ? m.ask === 'big'
+      ? m.length
+      : m.other!.length
+    : mode === 'compare' || mode === 'rulerdiff'
+      ? Math.abs(m.length - m.other!.length)
+      : mode === 'rulersum'
+        ? m.length + m.other!.length
+        : m.length;
 
-export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'hop' } | { kind: 'slide'; at: number } | { kind: 'answer'; value: number };
+export type MeasureTouch =
+  | { kind: 'worm'; row: number }
+  | { kind: 'hop' }
+  | { kind: 'slide'; at: number }
+  | { kind: 'answer'; value: number };
 
 /**
  * The next real touch for a clean measuring round: fill each unfinished row, then choose its reading.
@@ -259,8 +318,12 @@ export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'hop' } | { k
  */
 export function measureTouch(m: Measure, mode: MeasureMode, worms: readonly number[]): MeasureTouch | null {
   if (isRuler(mode)) return { kind: 'answer', value: answerOf(m, mode) };
-  if (mode === 'slide') return (worms[0] ?? 0) < 2 ? { kind: 'slide', at: slideSlots(m)[worms[0] ?? 0] } : { kind: 'answer', value: m.length };
-  if (mode === 'hop') return (worms[0] ?? 0) < m.length ? { kind: 'hop' } : { kind: 'answer', value: m.length };
+  if (mode === 'slide')
+    return (worms[0] ?? 0) < 2
+      ? { kind: 'slide', at: slideSlots(m)[worms[0] ?? 0] }
+      : { kind: 'answer', value: m.length };
+  if (mode === 'hop')
+    return (worms[0] ?? 0) < m.length ? { kind: 'hop' } : { kind: 'answer', value: m.length };
   const lengths = [m.length, ...(m.other ? [m.other.length] : [])];
   const row = lengths.findIndex((length, i) => (worms[i] ?? 0) < length);
   if (row >= 0) return { kind: 'worm', row };
@@ -281,14 +344,25 @@ export interface Span {
 export function hintSpans(m: Measure, mode: MeasureMode): Span[] {
   if (mode === 'ruler' || mode === 'broken') return [{ row: 0, from: m.start ?? 0, count: m.length }];
   // Longer than the ruler: the first ruler's worth and the rest, as two parts.
-  if (mode === 'slide') return [{ row: 0, from: 0, count: m.ruler! }, { row: 0, from: m.ruler!, count: m.length - m.ruler! }];
-  if (mode === 'rulersum') return [{ row: 0, from: m.start ?? 0, count: m.length }, { row: 1, from: m.other!.start!, count: m.other!.length }];
+  if (mode === 'slide')
+    return [
+      { row: 0, from: 0, count: m.ruler! },
+      { row: 0, from: m.ruler!, count: m.length - m.ruler! },
+    ];
+  if (mode === 'rulersum')
+    return [
+      { row: 0, from: m.start ?? 0, count: m.length },
+      { row: 1, from: m.other!.start!, count: m.other!.length },
+    ];
   if (mode !== 'rulerdiff') return [];
   const firstLonger = m.length > m.other!.length;
-  const longer = firstLonger ? { start: m.start ?? 0, length: m.length } : { start: m.other!.start ?? 0, length: m.other!.length };
+  const longer = firstLonger
+    ? { start: m.start ?? 0, length: m.length }
+    : { start: m.other!.start ?? 0, length: m.other!.length };
   const shorter = Math.min(m.length, m.other!.length);
   return [{ row: firstLonger ? 0 : 1, from: longer.start + shorter, count: longer.length - shorter }];
 }
 
 /** The longer and the shorter thing of two, for the spoken question. */
-export const longerShorter = (m: Measure): [Thing, Thing] => (m.length > m.other!.length ? [m.thing, m.other!.thing] : [m.other!.thing, m.thing]);
+export const longerShorter = (m: Measure): [Thing, Thing] =>
+  m.length > m.other!.length ? [m.thing, m.other!.thing] : [m.other!.thing, m.thing];

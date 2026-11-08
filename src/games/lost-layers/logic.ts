@@ -20,9 +20,17 @@ export const PICTURES = ['curl', 'fan', 'ribbon', 'dot'] as const;
 export type Picture = (typeof PICTURES)[number];
 
 /** What the pet calls each invented creature. */
-export const CREATURE: Record<Picture, string> = { curl: 'curl shell', fan: 'fan fern', ribbon: 'ribbon fish', dot: 'dot snail' };
+export const CREATURE: Record<Picture, string> = {
+  curl: 'curl shell',
+  fan: 'fan fern',
+  ribbon: 'ribbon fish',
+  dot: 'dot snail',
+};
 
-export interface Layer { picture: Picture | null; stripe?: boolean }
+export interface Layer {
+  picture: Picture | null;
+  stripe?: boolean;
+}
 export type Layout = 'low' | 'high';
 export type Placement = readonly [number, number, number];
 export type Story = 'in-the-mud' | 'washed-away';
@@ -59,7 +67,11 @@ export function gull(c: Case): Layer[] {
 
 /** Shell Cove's three pieces, bottom to top. */
 export function cove(c: Case): Layer[] {
-  return [{ picture: c.pictures[0] }, { picture: null, stripe: c.level >= 2 ? c.stripe : undefined }, { picture: c.pictures[2] }];
+  return [
+    { picture: c.pictures[0] },
+    { picture: null, stripe: c.level >= 2 ? c.stripe : undefined },
+    { picture: c.pictures[2] },
+  ];
 }
 
 /** The Gull Cliff row with this picture. */
@@ -71,11 +83,17 @@ export type Reason = 'out-of-order' | 'picture-off-twin' | 'wavy-squeezed' | 'st
  * What is red about a placement, first reason first: the order, then a picture off its twin, then a squeezed wavy line,
  * then (after the stripe look) the stripe. Empty when it fits.
  */
-export function problems(c: Case, rows: Placement, looked = false): { reason: Reason; piece?: number; gap?: number }[] {
+export function problems(
+  c: Case,
+  rows: Placement,
+  looked = false,
+): { reason: Reason; piece?: number; gap?: number }[] {
   const out: { reason: Reason; piece?: number; gap?: number }[] = [];
   const pieces = cove(c);
   for (let i = 0; i < 2; i++) if (rows[i + 1] <= rows[i]) out.push({ reason: 'out-of-order', piece: i + 1 });
-  pieces.forEach((p, i) => { if (p.picture && rows[i] !== twinRow(c, p.picture)) out.push({ reason: 'picture-off-twin', piece: i }); });
+  pieces.forEach((p, i) => {
+    if (p.picture && rows[i] !== twinRow(c, p.picture)) out.push({ reason: 'picture-off-twin', piece: i });
+  });
   for (const g of GAPS) if (rows[g + 1] - rows[g] < 2) out.push({ reason: 'wavy-squeezed', gap: g });
   if (looked && c.level >= 2) {
     const striped = lostRow(c);
@@ -85,24 +103,32 @@ export function problems(c: Case, rows: Placement, looked = false): { reason: Re
 }
 
 /** Whether the placement keeps every rule. */
-export const valid = (c: Case, rows: Placement, looked = false): boolean => problems(c, rows, looked).length === 0;
+export const valid = (c: Case, rows: Placement, looked = false): boolean =>
+  problems(c, rows, looked).length === 0;
 
 /** Every valid placement, over the 20 ways to choose three rows of six. */
 export function alignments(c: Case, looked = false): Placement[] {
   const out: Placement[] = [];
-  for (let a = 1; a <= ROWS; a++) for (let b = a + 1; b <= ROWS; b++) for (let d = b + 1; d <= ROWS; d++) {
-    const p: Placement = [a, b, d];
-    if (valid(c, p, looked)) out.push(p);
-  }
+  for (let a = 1; a <= ROWS; a++)
+    for (let b = a + 1; b <= ROWS; b++)
+      for (let d = b + 1; d <= ROWS; d++) {
+        const p: Placement = [a, b, d];
+        if (valid(c, p, looked)) out.push(p);
+      }
   return out;
 }
 
 /** Where the lost fossil's time went at Shell Cove: into the plain mud piece, or into the rock the sea took. */
-export const story = (c: Case, rows: Placement): Story => (rows[1] === lostRow(c) ? 'in-the-mud' : 'washed-away');
+export const story = (c: Case, rows: Placement): Story =>
+  rows[1] === lostRow(c) ? 'in-the-mud' : 'washed-away';
 
 /** The placement that tells a story (the two fits differ only in the plain piece's row). */
 export function placementFor(c: Case, s: Story, looked = false): Placement | null {
-  return alignments(c, looked).find((p) => story(c, p) === s) ?? alignments(c, false).find((p) => story(c, p) === s) ?? null;
+  return (
+    alignments(c, looked).find((p) => story(c, p) === s) ??
+    alignments(c, false).find((p) => story(c, p) === s) ??
+    null
+  );
 }
 
 /** Whether a look's result changes which placements fit. Only looking inside the plain mud can. */
@@ -116,9 +142,21 @@ export const samePlacement = (a: Placement, b: Placement) => a[0] === b[0] && a[
 
 /* Ties ------------------------------------------------------------------------------------------- */
 
-export interface Tie { piece: number; from: number; to: number; green: boolean }
-export interface Band { gap: number; red: boolean }
-export interface Ties { ties: Tie[]; bands: Band[]; stripe: Tie | null }
+export interface Tie {
+  piece: number;
+  from: number;
+  to: number;
+  green: boolean;
+}
+export interface Band {
+  gap: number;
+  red: boolean;
+}
+export interface Ties {
+  ties: Tie[];
+  bands: Band[];
+  stripe: Tie | null;
+}
 
 /**
  * The marks between the cliffs: a tie from each pictured piece to its twin row (green and level beside it, red and slanted
@@ -153,7 +191,13 @@ export function allGreen(t: Ties): boolean {
 /** Each level's first round, as the definition describes it. */
 export function authored(level: number): Case {
   return level >= 2
-    ? { level: 2, pictures: ['dot', 'curl', 'ribbon'], layout: 'high', stripe: true, looks: ['lens-wavy', 'lens-mud', 'lens-shell'] }
+    ? {
+        level: 2,
+        pictures: ['dot', 'curl', 'ribbon'],
+        layout: 'high',
+        stripe: true,
+        looks: ['lens-wavy', 'lens-mud', 'lens-shell'],
+      }
     : { level: 1, pictures: ['curl', 'fan', 'ribbon'], layout: 'low', stripe: false, looks: [...LOOKS] };
 }
 
@@ -191,8 +235,16 @@ export interface RoundState {
 export function roundState(c: Case): RoundState {
   const fits = alignments(c);
   const s: RoundState = {
-    c, level: c.level, rows: [1, 2, 6], stamped: [], looked: false, misses: 0, hints: 0,
-    stepMisses: { arrange: 0, look: 0, claim: 0 }, hinted: new Set(), done: false,
+    c,
+    level: c.level,
+    rows: [1, 2, 6],
+    stamped: [],
+    looked: false,
+    misses: 0,
+    hints: 0,
+    stepMisses: { arrange: 0, look: 0, claim: 0 },
+    hinted: new Set(),
+    done: false,
   };
   if (c.level >= 2) {
     s.rows = [...fits[0]] as [number, number, number];
@@ -289,7 +341,10 @@ export function claim(s: RoundState, what: Claim): ClaimResult {
   return { kind: 'ruled-out', placement: shown, glow };
 }
 
-export type LookResult = { kind: 'ignored' } | { kind: 'informative'; stripe: boolean } | { kind: 'useless'; look: LookId; glow: boolean };
+export type LookResult =
+  | { kind: 'ignored' }
+  | { kind: 'informative'; stripe: boolean }
+  | { kind: 'useless'; look: LookId; glow: boolean };
 
 /** Commit a look (level 2). Only the look inside the plain mud can tell the stories apart; another is a miss. */
 export function commitLook(s: RoundState, look: LookId): LookResult {
@@ -311,7 +366,8 @@ export function help(s: RoundState): boolean {
   return true;
 }
 
-export type GlowTarget = { kind: 'fit'; placement: Placement } | { kind: 'look'; look: LookId } | { kind: 'claim'; claim: Claim };
+export type GlowTarget =
+  { kind: 'fit'; placement: Placement } | { kind: 'look'; look: LookId } | { kind: 'claim'; claim: Claim };
 
 /** What glows for a step: a fit not yet stamped, the mud look, or the right claim. */
 export function glowTarget(s: RoundState, step: Step = currentStep(s)): GlowTarget | null {
@@ -333,10 +389,16 @@ export function glowing(s: RoundState): GlowTarget | null {
 
 /* Levels ----------------------------------------------------------------------------------------- */
 
-export interface Plan { id: number; name: string }
+export interface Plan {
+  id: number;
+  name: string;
+}
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Two stories: every way the broken cliff fits, then whether the rocks can tell' },
-  { id: 2, name: 'One more look: pick the look that tells two stories apart, then the story that still fits' },
+  {
+    id: 2,
+    name: 'One more look: pick the look that tells two stories apart, then the story that still fits',
+  },
 ];
 
 export const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
@@ -344,8 +406,16 @@ export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS
 
 /* Layout ----------------------------------------------------------------------------------------- */
 
-export interface Pt { x: number; y: number }
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export const ROW_H = 100;
 export const COL_W = 180;
@@ -377,44 +447,63 @@ export interface LayersLayout {
 }
 
 export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 205 });
-export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
+export const shellButtons = (v: View): Rect[] => [
+  { x: 0, y: 0, w: 130, h: 130 },
+  { x: v.w - 130, y: 0, w: 130, h: 130 },
+];
 
 /** The centre of a row (1–6, bottom to top). */
 export const rowY = (L: LayersLayout, row: number): number => L.bottom - (row - 0.5) * ROW_H;
 
 /** The nearest row to a height, clamped to the column. */
-export const nearestRow = (L: LayersLayout, y: number): number => Math.max(1, Math.min(ROWS, Math.round((L.bottom - y) / ROW_H + 0.5)));
+export const nearestRow = (L: LayersLayout, y: number): number =>
+  Math.max(1, Math.min(ROWS, Math.round((L.bottom - y) / ROW_H + 0.5)));
 
 export function layersLayout(v: View, level: number): LayersLayout {
   const portrait = v.h > v.w;
   if (portrait) {
     const mid = v.w / 2;
-    const gullX = mid - 40 - COL_W, coveX = mid + 40;
-    const top = 150, bottom = top + ROWS * ROW_H;
+    const gullX = mid - 40 - COL_W,
+      coveX = mid + 40;
+    const top = 150,
+      bottom = top + ROWS * ROW_H;
     const t1 = bottom + 30 + BTN_H / 2;
     const t2 = t1 + BTN_H / 2 + 20 + CARD_H / 2;
     const lx = gullX - 60 - LOOK_W / 2;
     return {
-      portrait, gullX, coveX, bottom,
+      portrait,
+      gullX,
+      coveX,
+      bottom,
       action: { x: mid - 120, y: t1 },
       cantTell: { x: mid + 120, y: t1 },
-      cards: [{ x: mid - 120, y: t2 }, { x: mid + 120, y: t2 }],
+      cards: [
+        { x: mid - 120, y: t2 },
+        { x: mid + 120, y: t2 },
+      ],
       looks: [0, 1, 2].map((i) => ({ x: lx, y: top + 70 + i * (LOOK_H + 20) })),
       slot: { x: lx, y: top + 70 + 3 * (LOOK_H + 20) + 10 },
       lens: { x: mid, y: top + 250 },
     };
   }
   const ox = Math.max(0, (v.w - 1024) / 2);
-  const gullX = ox + 300, coveX = ox + 560;
+  const gullX = ox + 300,
+    coveX = ox + 560;
   const bottom = 80 + ROWS * ROW_H;
   const rx = Math.min(v.w - 30 - BTN_W / 2, ox + 900);
   const lx = ox + 50 + LOOK_W / 2;
   // Level 2 stacks the slot and Look above the cards in the right column; the look cards wait on the left, above the pet.
   const y0 = level >= 2 ? 145 + SLOT_H + 10 : 145;
   return {
-    portrait, gullX, coveX, bottom,
+    portrait,
+    gullX,
+    coveX,
+    bottom,
     action: { x: rx, y: y0 + BTN_H / 2 },
-    cards: [{ x: rx, y: y0 + BTN_H + 12 + CARD_H / 2 }, { x: rx, y: y0 + BTN_H + 24 + CARD_H * 1.5 }],
+    cards: [
+      { x: rx, y: y0 + BTN_H + 12 + CARD_H / 2 },
+      { x: rx, y: y0 + BTN_H + 24 + CARD_H * 1.5 },
+    ],
     cantTell: { x: rx, y: y0 + BTN_H + 36 + CARD_H * 2 + BTN_H / 2 },
     looks: [0, 1, 2].map((i) => ({ x: lx, y: 145 + LOOK_H / 2 + i * (LOOK_H + 12) })),
     slot: { x: rx, y: 145 + SLOT_H / 2 },

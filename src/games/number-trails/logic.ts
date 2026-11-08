@@ -20,12 +20,17 @@ const ZERO_TO_NINE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 export const PLANS: readonly TrailPlan[] = [
   { digits: ONE_TO_FIVE, wakeThem: false, name: 'Trace 1 to 5, then watch that many appear and count them' },
   { digits: ZERO_TO_NINE, wakeThem: false, name: 'Trace 0 to 9, then watch that many appear and count them' },
-  { digits: ZERO_TO_NINE, wakeThem: true, name: 'Trace 0 to 9, then tap to wake exactly that many from a bigger group' },
+  {
+    digits: ZERO_TO_NINE,
+    wakeThem: true,
+    name: 'Trace 0 to 9, then tap to wake exactly that many from a bigger group',
+  },
 ];
 
 export const LEVELS: BandLevels = { preschool: { min: 1, max: 2 }, prek: { min: 2, max: 3 } };
 
-export const planFor = (level: number): TrailPlan => PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
+export const planFor = (level: number): TrailPlan =>
+  PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 
 /** The numeral this round draws. */
 export const numeralFor = (level: number, rng: Rng): number => rng.pick(planFor(level).digits);
@@ -45,19 +50,22 @@ export const thingFor = (rng: Rng) => rng.pick(THINGS);
  * last, so adding it never changed which numeral or thing a seed gives; it is only paint.
  */
 export function roundFor(level: number, rng: Rng): { n: number; thing: (typeof THINGS)[number]; look: Look } {
-  const n = numeralFor(level, rng), thing = thingFor(rng);
+  const n = numeralFor(level, rng),
+    thing = thingFor(rng);
   return { n, thing, look: pickLook(rng) };
 }
 
 /** What the voice calls `n` of a thing: "1 duck", "2 ducks", "0 ducks". */
-export const thingWord = (thing: (typeof THINGS)[number], n: number): string => (n === 1 ? thing.one : thing.plural);
+export const thingWord = (thing: (typeof THINGS)[number], n: number): string =>
+  n === 1 ? thing.one : thing.plural;
 
 /** Most things on the screen at once. */
 export const MAX_THINGS = 12;
 
 /** In a waking round the group is the numeral and three more, so she counts the numeral out of a bigger group. The round ends by itself at the numeral, so no tap can overshoot. */
 export const SPARE = 3;
-export const groupSize = (n: number, wakeThem: boolean): number => (n === 0 ? 0 : wakeThem ? Math.min(MAX_THINGS, n + SPARE) : n);
+export const groupSize = (n: number, wakeThem: boolean): number =>
+  n === 0 ? 0 : wakeThem ? Math.min(MAX_THINGS, n + SPARE) : n;
 
 /** A thing's tap circle has this radius: 120 units across on screen, the island's 100-unit minimum with room. */
 export const THING_HIT = 60;

@@ -4,21 +4,33 @@ import { SHAPES } from './shapes';
 import type { BandLevels } from '../../progress/difficulty';
 
 /** A place in the heap, in grid pitches (120 units); odd layers sit half a pitch over. */
-export interface Cell { x: number; y: number; z: number }
+export interface Cell {
+  x: number;
+  y: number;
+  z: number;
+}
 /** A heap: where each piece lies, its kind, and the clearing route the kinds were dealt along. */
-export interface Board { cells: readonly Cell[]; kinds: readonly number[]; route: readonly number[] }
+export interface Board {
+  cells: readonly Cell[];
+  kinds: readonly number[];
+  route: readonly number[];
+}
 
 /** Each kind has its own silhouette and its own colour, so finding one is a single-feature search. */
 export const KINDS = ['shell', 'acorn', 'apple', 'star', 'leaf', 'duck', 'flower', 'mushroom'] as const;
 export type KindName = (typeof KINDS)[number];
-const APPLE = 2, SHELL = 0, LEAF = 4, DUCK = 5;
+const APPLE = 2,
+  SHELL = 0,
+  LEAF = 4,
+  DUCK = 5;
 /** Level 1 always asks for apples first; its second kind is one of these, from the seed. */
 export const LEVEL1_SECOND = [SHELL, DUCK, LEAF] as const;
 
 /** Where the heap blew down: the ground, its edge and the sky band behind the header. Levels 1–2 keep the meadow. */
 export const LOOKS = ['meadow', 'sand', 'autumn'] as const;
 export type Look = (typeof LOOKS)[number];
-export const lookFor = (level: number, rng: Rng): Look => (planFor(level).id <= 2 ? 'meadow' : rng.pick(LOOKS));
+export const lookFor = (level: number, rng: Rng): Look =>
+  planFor(level).id <= 2 ? 'meadow' : rng.pick(LOOKS);
 
 /** The windy drop-in: each layer falls this long, the next starting this much later, bottom layer first. */
 export const DROP_FALL = 0.35;
@@ -26,7 +38,8 @@ export const DROP_STAGGER = 0.15;
 /** Seconds before piece `i` starts to fall: upper layers land after the ones they rest on. */
 export const dropDelay = (cells: readonly Cell[], i: number) => cells[i].z * DROP_STAGGER;
 /** When the last piece has landed. */
-export const dropEnd = (cells: readonly Cell[]) => Math.max(...cells.map((_, i) => dropDelay(cells, i))) + DROP_FALL;
+export const dropEnd = (cells: readonly Cell[]) =>
+  Math.max(...cells.map((_, i) => dropDelay(cells, i))) + DROP_FALL;
 
 export const PITCH = 120;
 export const RADIUS = 56;
@@ -53,11 +66,38 @@ export interface PilePlan {
 
 export const PLANS: readonly PilePlan[] = [
   { id: 1, name: 'Find three, flat', pieces: 6, kinds: 2, layers: 1, tray: 3, asked: true, count: false },
-  { id: 2, name: 'Find three in a little pile', pieces: 9, kinds: 3, layers: 2, tray: 3, asked: true, count: false },
+  {
+    id: 2,
+    name: 'Find three in a little pile',
+    pieces: 9,
+    kinds: 3,
+    layers: 2,
+    tray: 3,
+    asked: true,
+    count: false,
+  },
   { id: 3, name: 'Any three you like', pieces: 6, kinds: 2, layers: 1, tray: 5, asked: false, count: false },
-  { id: 4, name: 'A little heap, a little tray', pieces: 9, kinds: 3, layers: 2, tray: 5, asked: false, count: false },
+  {
+    id: 4,
+    name: 'A little heap, a little tray',
+    pieces: 9,
+    kinds: 3,
+    layers: 2,
+    tray: 5,
+    asked: false,
+    count: false,
+  },
   { id: 5, name: 'Four kinds', pieces: 12, kinds: 4, layers: 2, tray: 5, asked: false, count: false },
-  { id: 6, name: 'Five kinds, three layers', pieces: 15, kinds: 5, layers: 3, tray: 5, asked: false, count: true },
+  {
+    id: 6,
+    name: 'Five kinds, three layers',
+    pieces: 15,
+    kinds: 5,
+    layers: 3,
+    tray: 5,
+    asked: false,
+    count: true,
+  },
   { id: 7, name: 'Six kinds', pieces: 18, kinds: 6, layers: 3, tray: 5, asked: false, count: true },
   { id: 8, name: 'The big heap', pieces: 24, kinds: 8, layers: 3, tray: 5, asked: false, count: true },
 ];
@@ -67,7 +107,8 @@ export const LEVELS: BandLevels = {
   prek: { min: 3, max: 6 },
   school: { min: 5, max: 8 },
 };
-export const planFor = (level: number): PilePlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
+export const planFor = (level: number): PilePlan =>
+  PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
 export const fullMask = (n: number) => (1 << n) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
@@ -78,15 +119,19 @@ export const covers = (a: Cell, b: Cell) => a.z > b.z && Math.hypot(a.x - b.x, a
 /** Free: nothing present lies on it. There is no side rule, so taking pieces only ever frees others. */
 export function free(cells: readonly Cell[], mask: number, i: number): boolean {
   if (!present(mask, i)) return false;
-  for (let j = 0; j < cells.length; j++) if (j !== i && present(mask, j) && covers(cells[j], cells[i])) return false;
+  for (let j = 0; j < cells.length; j++)
+    if (j !== i && present(mask, j) && covers(cells[j], cells[i])) return false;
   return true;
 }
-export const freePieces = (cells: readonly Cell[], mask: number) => cells.map((_, i) => i).filter((i) => free(cells, mask, i));
+export const freePieces = (cells: readonly Cell[], mask: number) =>
+  cells.map((_, i) => i).filter((i) => free(cells, mask, i));
 
 /** How many of each kind sit in the tray: every kind has three pieces, so it is the number taken, mod 3. */
 export function tray(board: Board, mask: number): number[] {
   const out = new Array<number>(KINDS.length).fill(0);
-  board.kinds.forEach((k, i) => { if (!present(mask, i)) out[k]++; });
+  board.kinds.forEach((k, i) => {
+    if (!present(mask, i)) out[k]++;
+  });
   return out.map((n) => n % 3);
 }
 export const trayTotal = (board: Board, mask: number) => tray(board, mask).reduce((a, b) => a + b, 0);
@@ -139,7 +184,10 @@ function takes(board: Board, mask: number, t: number): { i: number; mask: number
   return out.sort((a, b) => a.rank - b.rank);
 }
 
-export interface SearchBudget { left: number; dead: Set<number> }
+export interface SearchBudget {
+  left: number;
+  dead: Set<number>;
+}
 export const budget = (cap = SEARCH_CAP): SearchBudget => ({ left: cap, dead: new Set() });
 
 /** Can this heap be cleared by taps alone (no put-back)? Null when the budget ran out first. */
@@ -162,7 +210,12 @@ export type Hint = { take: number; fallback: boolean } | { back: number; fallbac
  * the heap (one that makes three, then one joining its kind, then any); failing that, or once on it, the route
  * fallback: put back what is not the route's next kind (a lone kind first), then take the heap in its clearing-route order.
  */
-export function hintFor(board: Board, mask: number, t: number, opts: { asked?: number; fallback?: boolean; cap?: number } = {}): Hint | null {
+export function hintFor(
+  board: Board,
+  mask: number,
+  t: number,
+  opts: { asked?: number; fallback?: boolean; cap?: number } = {},
+): Hint | null {
   if (mask === 0) return null;
   if (opts.asked !== undefined) {
     const i = board.route.find((r) => board.kinds[r] === opts.asked && free(board.cells, mask, r));
@@ -211,7 +264,9 @@ export function assign(cells: readonly Cell[], kinds: readonly number[], rng: Rn
   if (cells.length !== kinds.length * 3) throw new Error('Pile Match needs three pieces of each kind');
   const route = routeFor(cells, rng);
   const out = new Array<number>(cells.length).fill(0);
-  route.forEach((i, n) => { out[i] = kinds[Math.floor(n / 3)]; });
+  route.forEach((i, n) => {
+    out[i] = kinds[Math.floor(n / 3)];
+  });
   return { cells, kinds: out, route };
 }
 
@@ -220,7 +275,10 @@ export function makeBoard(level: number, rng: Rng): Board {
   const plan = planFor(level);
   const shapes = SHAPES[plan.id];
   const cells = shapes[rng.int(0, shapes.length - 1)];
-  const kinds = plan.id === 1 ? [APPLE, rng.pick(LEVEL1_SECOND)] : rng.shuffle(KINDS.map((_, k) => k)).slice(0, plan.kinds);
+  const kinds =
+    plan.id === 1
+      ? [APPLE, rng.pick(LEVEL1_SECOND)]
+      : rng.shuffle(KINDS.map((_, k) => k)).slice(0, plan.kinds);
   return assign(cells, kinds, rng);
 }
 
@@ -247,7 +305,12 @@ export const TAG_W = 104;
 const ROW_GAP = 24;
 const LEFT = 150;
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface PileLayout {
   /** Every piece's centre, in view units. */
   pieces: { x: number; y: number }[];
@@ -265,25 +328,47 @@ export function pileLayout(cells: readonly Cell[], t: number, asked: boolean, v:
   let x = (LEFT + right) / 2 - rowW / 2;
   const y = v.h - 20 - SLOT_H;
   let tag: Rect | null = null;
-  if (asked) { tag = { x, y, w: TAG_W, h: SLOT_H }; x += TAG_W + ROW_GAP; }
-  const slots = Array.from({ length: t }, (_, k) => ({ x: x + k * (SLOT_W + SLOT_GAP), y, w: SLOT_W, h: SLOT_H }));
+  if (asked) {
+    tag = { x, y, w: TAG_W, h: SLOT_H };
+    x += TAG_W + ROW_GAP;
+  }
+  const slots = Array.from({ length: t }, (_, k) => ({
+    x: x + k * (SLOT_W + SLOT_GAP),
+    y,
+    w: SLOT_W,
+    h: SLOT_H,
+  }));
   const basket = { x: x + t * SLOT_W + (t - 1) * SLOT_GAP + ROW_GAP, y, w: BASKET_W, h: SLOT_H };
-  const xs = cells.map((c) => c.x), ys = cells.map((c) => c.y);
-  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-  const heapW = (maxX - minX) * PITCH + 2 * RADIUS, heapH = (maxY - minY) * PITCH + 2 * RADIUS;
-  const top = HEADER, bottom = y - 40;
+  const xs = cells.map((c) => c.x),
+    ys = cells.map((c) => c.y);
+  const minX = Math.min(...xs),
+    maxX = Math.max(...xs),
+    minY = Math.min(...ys),
+    maxY = Math.max(...ys);
+  const heapW = (maxX - minX) * PITCH + 2 * RADIUS,
+    heapH = (maxY - minY) * PITCH + 2 * RADIUS;
+  const top = HEADER,
+    bottom = y - 40;
   const scale = Math.min(1, (right - LEFT) / heapW, (bottom - top) / heapH);
-  const cx = (LEFT + right) / 2, cy = (top + bottom) / 2;
+  const cx = (LEFT + right) / 2,
+    cy = (top + bottom) / 2;
   const pieces = cells.map((c) => ({
-    x: cx + ((c.x - (minX + maxX) / 2) * PITCH) * scale,
-    y: cy + ((c.y - (minY + maxY) / 2) * PITCH) * scale,
+    x: cx + (c.x - (minX + maxX) / 2) * PITCH * scale,
+    y: cy + (c.y - (minY + maxY) / 2) * PITCH * scale,
   }));
   return { pieces, slots, basket, tag, scale };
 }
 
 /** What a touch at (x, y) lands on: the free piece it is inside, else the topmost covered piece under it. */
-export function pieceAt(board: Board, mask: number, layout: PileLayout, x: number, y: number): { i: number; free: boolean } | null {
-  const near = (i: number, r: number) => Math.hypot(layout.pieces[i].x - x, layout.pieces[i].y - y) <= r * layout.scale;
+export function pieceAt(
+  board: Board,
+  mask: number,
+  layout: PileLayout,
+  x: number,
+  y: number,
+): { i: number; free: boolean } | null {
+  const near = (i: number, r: number) =>
+    Math.hypot(layout.pieces[i].x - x, layout.pieces[i].y - y) <= r * layout.scale;
   for (const i of freePieces(board.cells, mask)) if (near(i, HIT)) return { i, free: true };
   let best: number | null = null;
   board.cells.forEach((c, i) => {

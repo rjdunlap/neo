@@ -90,13 +90,31 @@ class JellyDrums implements Game {
     });
     this.again = new RoundButton(replayArt(), swatch.yellow, 56, () => void this.listenAgain());
     this.again.visible = this.plan.mode === 'echo' && !ctx.couch;
-    ctx.stage.addChild(this.sky, this.mountains, this.garland, this.stageG, ...this.jellies, ...this.fans, this.again);
+    ctx.stage.addChild(
+      this.sky,
+      this.mountains,
+      this.garland,
+      this.stageG,
+      ...this.jellies,
+      ...this.fans,
+      this.again,
+    );
     if (this.plan.mode === 'wake') {
       this.jellies.forEach((j) => (j.eventMode = 'none'));
-      onTap(this.anywhere, (e) => {
-        const x = ctx.stage.toLocal(e.global).x;
-        this.tapJelly(nearestAwake(this.jellies.map((j) => j.x), awakeJellies(this.notes), x));
-      }, { cooldown: 90 });
+      onTap(
+        this.anywhere,
+        (e) => {
+          const x = ctx.stage.toLocal(e.global).x;
+          this.tapJelly(
+            nearestAwake(
+              this.jellies.map((j) => j.x),
+              awakeJellies(this.notes),
+              x,
+            ),
+          );
+        },
+        { cooldown: 90 },
+      );
       ctx.stage.addChild(this.anywhere);
     }
   }
@@ -120,7 +138,11 @@ class JellyDrums implements Game {
       [cx - 60, top - 260, 420, 0x9f8be6],
     ];
     for (const [x, y, half, color] of peaks) {
-      m.moveTo(x - half, top).quadraticCurveTo(x - 30, y - 30, x, y).quadraticCurveTo(x + 30, y - 30, x + half, top).closePath().fill(color);
+      m.moveTo(x - half, top)
+        .quadraticCurveTo(x - 30, y - 30, x, y)
+        .quadraticCurveTo(x + 30, y - 30, x + half, top)
+        .closePath()
+        .fill(color);
       m.moveTo(x - 58, y + 52)
         .quadraticCurveTo(x - 20, y - 22, x, y - 4)
         .quadraticCurveTo(x + 20, y - 22, x + 58, y + 52)
@@ -137,7 +159,10 @@ class JellyDrums implements Game {
       .stroke({ width: 6, color: wood.line })
       .rect(cx - 452, top + 26, 904, v.h * 0.12)
       .fill(wood.line);
-    for (let i = 0; i < 8; i++) this.stageG.rect(cx - 452 + i * 113 + 54, top + 26, 5, v.h * 0.12).fill({ color: 0x000000, alpha: 0.12 });
+    for (let i = 0; i < 8; i++)
+      this.stageG
+        .rect(cx - 452 + i * 113 + 54, top + 26, 5, v.h * 0.12)
+        .fill({ color: 0x000000, alpha: 0.12 });
 
     this.jellies.forEach((j, i) => j.position.set(cx + (i - 2) * 178, top + 10));
     // Between the garland and the jellies' tops, clear of both.
@@ -183,7 +208,8 @@ class JellyDrums implements Game {
     this.lastJelly = i;
     this.sing(i);
     if (this.plan.mode !== 'echo') {
-      const woke = this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
+      const woke =
+        this.plan.mode === 'wake' ? awakeJellies(this.notes + 1).length - awakeJellies(this.notes).length : 0;
       this.notes++;
       this.setLit(Math.floor((this.notes / this.plan.goal) * BULBS));
       if (woke) this.wakeUp();
@@ -236,7 +262,13 @@ class JellyDrums implements Game {
     this.jellies.forEach((j, k) => {
       void this.ctx.tw.wait(k * 0.06).then(() => {
         j.glow(0.6);
-        this.ctx.particles.burst(j.x, j.y - j.height * 0.9, { kind: 'star', colors, count: 8, speed: [120, 260], life: [0.6, 1] });
+        this.ctx.particles.burst(j.x, j.y - j.height * 0.9, {
+          kind: 'star',
+          colors,
+          count: 8,
+          speed: [120, 260],
+          life: [0.6, 1],
+        });
       });
     });
     this.twinkle = 0.8;
@@ -294,7 +326,9 @@ class JellyDrums implements Game {
     const cx = v.w / 2;
     const [x0, x1, y, sag] = [cx - 400, cx + 400, 70, 80];
     const g = this.garland.clear();
-    g.moveTo(x0, y).quadraticCurveTo(cx, y + sag * 2, x1, y).stroke({ width: 4, color: 0x6b5aa8 });
+    g.moveTo(x0, y)
+      .quadraticCurveTo(cx, y + sag * 2, x1, y)
+      .stroke({ width: 4, color: 0x6b5aa8 });
     for (let k = 0; k < BULBS; k++) {
       const t = (k + 0.5) / BULBS;
       const bx = (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx + t * t * x1;
@@ -303,7 +337,9 @@ class JellyDrums implements Game {
       const color = swatch[RAINBOW[k % RAINBOW.length]];
       g.rect(bx - 6, by - 4, 12, 10).fill(0x6b5aa8);
       if (on) g.circle(bx, by + 20, 26).fill({ color: color.fill, alpha: 0.25 });
-      g.circle(bx, by + 20, 15).fill(on ? color.fill : 0xf4f0ff).stroke({ width: 4, color: on ? color.line : 0xcfc6ee });
+      g.circle(bx, by + 20, 15)
+        .fill(on ? color.fill : 0xf4f0ff)
+        .stroke({ width: 4, color: on ? color.line : 0xcfc6ee });
     }
   }
 
@@ -385,7 +421,14 @@ class JellyDrums implements Game {
     this.fans.forEach((f) => f.cheer());
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, 120, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, 120, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     await this.ctx.tw.wait(1.6);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -453,11 +496,13 @@ export const jellyDrums: GameModule = {
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
   music: silenced(STYLES.jelly),
-  coplayHint: 'Sing along! Big jellies sing low, little jellies sing high. Hum the low one, then the high one, and see if {name} plays it.',
+  coplayHint:
+    'Sing along! Big jellies sing low, little jellies sing high. Hum the low one, then the high one, and see if {name} plays it.',
   offScreen: {
     all: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',
     // School: a build or test with a result, predicting first.
-    school: 'Line up pots by size and guess which one will sound lowest before you tap it. Then play a tune from low to high.',
+    school:
+      'Line up pots by size and guess which one will sound lowest before you tap it. Then play a tune from low to high.',
   },
   hubIcon: () => new JellyStand(),
   touchDemo: true,

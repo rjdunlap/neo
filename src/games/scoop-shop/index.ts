@@ -66,7 +66,9 @@ export function scoopArt(color: ColorName, r = SCOOP_R): Graphics {
   const g = new Graphics();
   g.circle(0, 0, r).fill(sw.fill).stroke({ width: 4, color: sw.line });
   for (const x of [-0.6, 0, 0.6]) g.circle(x * r, r * 0.62, r * 0.32).fill(sw.fill);
-  g.moveTo(-r * 0.95, r * 0.35).quadraticCurveTo(0, r * 0.75, r * 0.95, r * 0.35).stroke({ width: 4, color: sw.line });
+  g.moveTo(-r * 0.95, r * 0.35)
+    .quadraticCurveTo(0, r * 0.75, r * 0.95, r * 0.35)
+    .stroke({ width: 4, color: sw.line });
   g.ellipse(-r * 0.35, -r * 0.4, r * 0.24, r * 0.14).fill({ color: 0xffffff, alpha: 0.6 });
   return g;
 }
@@ -76,7 +78,11 @@ function coneArt(scale = 1): Graphics {
     .poly([-34, 0, 34, 0, 0, 96])
     .fill(WAFFLE.fill)
     .stroke({ width: 5, color: WAFFLE.line, join: 'round' });
-  for (const t of [0.3, 0.6]) g.moveTo(-34 + 34 * t, 96 * t).lineTo(34 - 34 * t + 10, 0).moveTo(34 - 34 * t, 96 * t).lineTo(-34 + 34 * t - 10, 0);
+  for (const t of [0.3, 0.6])
+    g.moveTo(-34 + 34 * t, 96 * t)
+      .lineTo(34 - 34 * t + 10, 0)
+      .moveTo(34 - 34 * t, 96 * t)
+      .lineTo(-34 + 34 * t - 10, 0);
   g.stroke({ width: 3, color: WAFFLE.line });
   g.scale.set(scale);
   return g;
@@ -86,7 +92,10 @@ function coneArt(scale = 1): Graphics {
 function cupArt(scale = 1): Graphics {
   const fill = swatch.blue.light;
   const line = swatch.blue.line;
-  const g = new Graphics().poly([-38, 0, 38, 0, 28, 74, -28, 74]).fill(fill).stroke({ width: 5, color: line, join: 'round' });
+  const g = new Graphics()
+    .poly([-38, 0, 38, 0, 28, 74, -28, 74])
+    .fill(fill)
+    .stroke({ width: 5, color: line, join: 'round' });
   for (const x of [-14, 0, 14]) g.moveTo(x * 1.4, 8).lineTo(x, 68);
   g.stroke({ width: 3, color: line, alpha: 0.6 });
   // The fluted rim: a row of little scallops along the top.
@@ -106,7 +115,10 @@ function bowlArt(scale = 1): Graphics {
     const a = (Math.PI * i) / 16;
     pts.push(48 * Math.cos(a), 34 * Math.sin(a));
   }
-  const g = new Graphics().poly(pts).fill(WAFFLE.fill).stroke({ width: 5, color: WAFFLE.line, join: 'round' });
+  const g = new Graphics()
+    .poly(pts)
+    .fill(WAFFLE.fill)
+    .stroke({ width: 5, color: WAFFLE.line, join: 'round' });
   for (const x of [-24, 0, 24]) g.moveTo(x - 12, 4).lineTo(x + 8, 30 - Math.abs(x) * 0.4);
   for (const x of [-24, 0, 24]) g.moveTo(x + 12, 4).lineTo(x - 8, 30 - Math.abs(x) * 0.4);
   g.moveTo(-40, 16).lineTo(40, 16);
@@ -116,14 +128,20 @@ function bowlArt(scale = 1): Graphics {
   return g;
 }
 
-const holderArt = (kind: ConeKind, scale = 1) => (kind === 'cup' ? cupArt(scale) : kind === 'bowl' ? bowlArt(scale) : coneArt(scale));
+const holderArt = (kind: ConeKind, scale = 1) =>
+  kind === 'cup' ? cupArt(scale) : kind === 'bowl' ? bowlArt(scale) : coneArt(scale);
 
 /** A flavor tub on the counter, its ice cream heaped on top. */
 function tubArt(color: ColorName): Container {
   const c = new Container();
   const sw = swatch[color];
   const heap = new Graphics();
-  for (const [x, y, r] of [[-30, -44, 26], [0, -54, 30], [30, -44, 26]]) heap.circle(x, y, r);
+  for (const [x, y, r] of [
+    [-30, -44, 26],
+    [0, -54, 30],
+    [30, -44, 26],
+  ])
+    heap.circle(x, y, r);
   heap.fill(sw.fill).stroke({ width: 4, color: sw.line });
   const tub = new Graphics()
     .roundRect(-56, -44, 112, 82, 14)
@@ -203,8 +221,12 @@ class ScoopShop implements Game {
   private clock = 0;
   private destroyed = false;
 
-  get hinted() { return this.support.glow; }
-  private get revisedMemory() { return this.plan.mode === 'change' || this.plan.mode === 'topfirst'; }
+  get hinted() {
+    return this.support.glow;
+  }
+  private get revisedMemory() {
+    return this.plan.mode === 'change' || this.plan.mode === 'topfirst';
+  }
   private readonly kinds: CritterName[];
   private readonly scene: WindowScene;
   private readonly cones: ConeKind[];
@@ -221,7 +243,16 @@ class ScoopShop implements Game {
     this.bubble.eventMode = 'none';
     this.ring.eventMode = 'none';
     this.mats.eventMode = 'none';
-    ctx.stage.addChild(this.wall, this.room, this.people, this.counter, this.mats, this.bubble, this.tubGlow, this.ring);
+    ctx.stage.addChild(
+      this.wall,
+      this.room,
+      this.people,
+      this.counter,
+      this.mats,
+      this.bubble,
+      this.tubGlow,
+      this.ring,
+    );
     for (const color of this.flavors) {
       const tub = tubArt(color);
       tub.visible = this.plan.mode !== 'customer';
@@ -267,22 +298,31 @@ class ScoopShop implements Game {
     const c = this.counter.clear();
     c.rect(0, top, v.w, v.h - top).fill(wood.fill);
     c.rect(0, top, v.w, 26).fill(wood.light).stroke({ width: 4, color: wood.line });
-    for (let x = 40; x < v.w; x += 120) c.moveTo(x, top + 40).lineTo(x, v.h).stroke({ width: 3, color: wood.line, alpha: 0.4 });
+    for (let x = 40; x < v.w; x += 120)
+      c.moveTo(x, top + 40)
+        .lineTo(x, v.h)
+        .stroke({ width: 3, color: wood.line, alpha: 0.4 });
     const two = this.plan.mode === 'two' ? twoConeLayout(v.w, top) : null;
-    for (const { x } of two ? two.map(s => s.cone) : [this.coneSpot()]) {
-      c.roundRect(x - 46, top - 30, 92, 44, 12).fill(0xc9d3dc).stroke({ width: 4, color: 0x8c9aa8 });
+    for (const { x } of two ? two.map((s) => s.cone) : [this.coneSpot()]) {
+      c.roundRect(x - 46, top - 30, 92, 44, 12)
+        .fill(0xc9d3dc)
+        .stroke({ width: 4, color: 0x8c9aa8 });
       c.ellipse(x, top - 30, 40, 9).fill(0x8c9aa8);
     }
     const m = this.mats.clear();
     // Each friend's mat runs under them and their own cone, so whose cone is whose stays clear when the pictures hide.
     two?.forEach(({ friend, cone }, side) => {
       const left = Math.min(friend.x, cone.x) - 90;
-      m.roundRect(left, top + 30, Math.abs(friend.x - cone.x) + 180, 34, 14).fill(side ? 0xffe3c2 : 0xd4ecff).stroke({ width: 4, color: side ? 0xd99a5a : 0x6aa3d6 });
+      m.roundRect(left, top + 30, Math.abs(friend.x - cone.x) + 180, 34, 14)
+        .fill(side ? 0xffe3c2 : 0xd4ecff)
+        .stroke({ width: 4, color: side ? 0xd99a5a : 0x6aa3d6 });
       for (const x of [friend.x, cone.x]) m.circle(x, top + 47, 9).fill(side ? 0xd99a5a : 0x6aa3d6);
     });
     const xs = spread(this.flavors.length, 150, v.w - 40, 140);
     this.flavors.forEach((color, i) => this.tubs.get(color)!.position.set(xs[i], v.h - 70));
-    this.guests.forEach((guest, side) => guest?.position.set(this.view.w * (side ? 0.76 : 0.25), this.counterTop + 18));
+    this.guests.forEach((guest, side) =>
+      guest?.position.set(this.view.w * (side ? 0.76 : 0.25), this.counterTop + 18),
+    );
     if (two) {
       this.pair.forEach((s, i) => {
         if (s.served) return;
@@ -290,7 +330,8 @@ class ScoopShop implements Game {
         s.cone.position.copyFrom(two[i].cone);
       });
     } else {
-      if (this.customer && this.plan.mode !== 'customer') this.customer.position.copyFrom(this.customerSpot());
+      if (this.customer && this.plan.mode !== 'customer')
+        this.customer.position.copyFrom(this.customerSpot());
       if (this.cone) this.cone.position.copyFrom(this.coneSpot());
     }
     const cs = this.customerSpot();
@@ -313,7 +354,9 @@ class ScoopShop implements Game {
         const hx = x + 15 + i * hw;
         const hb = y + h - 40;
         const ht = hb - Math.min(110, h * 0.45) - (i % 2) * 18;
-        r.rect(hx + 6, ht, hw - 12, hb - ht).fill(i % 2 ? 0xfff1d6 : 0xffe0e6).stroke({ width: 3, color: 0xc7a98a });
+        r.rect(hx + 6, ht, hw - 12, hb - ht)
+          .fill(i % 2 ? 0xfff1d6 : 0xffe0e6)
+          .stroke({ width: 3, color: 0xc7a98a });
         r.poly([hx, ht, hx + hw / 2, ht - 40, hx + hw, ht]).fill(swatch[roofs[i % roofs.length]].fill);
         r.roundRect(hx + hw / 2 - 12, hb - 40, 24, 40, 8).fill(wood.fill);
       }
@@ -321,10 +364,13 @@ class ScoopShop implements Game {
     } else {
       r.circle(x + 50, y + 44, 20).fill(0xfff6c8);
       r.circle(x + 58, y + 38, 18).fill(0x4a4f8f);
-      for (let i = 0; i < 18; i++) r.circle(x + 30 + ((i * 97) % (w - 60)), y + 24 + ((i * 53) % (h * 0.5)), 2.5).fill(0xffffff);
+      for (let i = 0; i < 18; i++)
+        r.circle(x + 30 + ((i * 97) % (w - 60)), y + 24 + ((i * 53) % (h * 0.5)), 2.5).fill(0xffffff);
       // A string of lanterns sagging across the window.
       const sy = y + h * 0.42;
-      r.moveTo(x + 8, sy).quadraticCurveTo(x + w / 2, sy + 50, x + w - 8, sy).stroke({ width: 3, color: 0x2e3260 });
+      r.moveTo(x + 8, sy)
+        .quadraticCurveTo(x + w / 2, sy + 50, x + w - 8, sy)
+        .stroke({ width: 3, color: 0x2e3260 });
       const colors: ColorName[] = ['red', 'yellow', 'orange', 'pink'];
       for (let i = 1; i <= 4; i++) {
         const t = i / 5;
@@ -343,18 +389,26 @@ class ScoopShop implements Game {
     const g = this.tubGlow.clear();
     if (this.plan.mode === 'customer') {
       const guest = this.guests[this.choices[this.customerIndex]?.match];
-      if (this.support.glow && guest && !this.busy) g.roundRect(guest.x - 78, guest.y - 365, 156, 130, 24).stroke({ width: 10, color: 0xffe478, alpha: 0.8 + 0.2 * Math.sin(this.clock * 7) });
+      if (this.support.glow && guest && !this.busy)
+        g.roundRect(guest.x - 78, guest.y - 365, 156, 130, 24).stroke({
+          width: 10,
+          color: 0xffe478,
+          alpha: 0.8 + 0.2 * Math.sin(this.clock * 7),
+        });
       return;
     }
     const ring = this.ring.clear();
     const chosen = this.pair[this.customerIndex];
     if (chosen && !chosen.served && !this.finished) {
-      ring.roundRect(chosen.cone.x - 74, chosen.cone.y - 172, 148, 296, 28).stroke({ width: 9, color: 0x3d8fd6 });
+      ring
+        .roundRect(chosen.cone.x - 74, chosen.cone.y - 172, 148, 296, 28)
+        .stroke({ width: 9, color: 0x3d8fd6 });
     }
     if (this.support.glow && this.order && this.cone && !this.busy) {
       const want = nextNeeded(this.order, this.cone.colors);
       const tub = want && this.tubs.get(want);
-      if (tub) g.circle(tub.x, tub.y - 20, 80 + 5 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.75 });
+      if (tub)
+        g.circle(tub.x, tub.y - 20, 80 + 5 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.75 });
     }
   }
 
@@ -371,16 +425,22 @@ class ScoopShop implements Game {
     if (this.plan.mode === 'two') {
       // Two cones: choose the cone the route says, through the same tap as hers, then take only what it needs next.
       if (!this.hidden) return null;
-      const placed = this.pair.reduce((n, s, i) => n + (s.served ? this.orders[i].scoops.length : s.cone.colors.length), 0);
+      const placed = this.pair.reduce(
+        (n, s, i) => n + (s.served ? this.orders[i].scoops.length : s.cone.colors.length),
+        0,
+      );
       const want = this.route[placed];
-      if (want !== undefined && want !== this.customerIndex && !this.pair[want].served) return { tap: { on: this.pair[want].cone, x: 0, y: -40 } };
+      if (want !== undefined && want !== this.customerIndex && !this.pair[want].served)
+        return { tap: { on: this.pair[want].cone, x: 0, y: -40 } };
     }
     const color = scoopToTake(this.plan, order, cone.colors, this.flavors);
     const tub = color && this.tubs.get(color);
     return tub ? { tap: { on: tub, x: 0, y: -20 } } : null;
   }
 
-  destroy() { this.destroyed = true; }
+  destroy() {
+    this.destroyed = true;
+  }
 
   // Customers -------------------------------------------------------------------------
 
@@ -398,7 +458,12 @@ class ScoopShop implements Game {
       guest.position.set(side ? this.view.w + 160 : -160, this.counterTop + 18);
       const picture = new Container();
       picture.eventMode = 'none';
-      picture.addChild(new Graphics().roundRect(-95, -490, 190, 150, 28).fill(0xffffff).stroke({ width: 5, color: 0xb9c6d1 }));
+      picture.addChild(
+        new Graphics()
+          .roundRect(-95, -490, 190, 150, 28)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: 0xb9c6d1 }),
+      );
       const scoop = scoopArt(choice.pictures[side], 43);
       scoop.position.set(0, -420);
       picture.addChild(scoop);
@@ -408,7 +473,13 @@ class ScoopShop implements Game {
       this.ctx.track(guest);
       this.people.addChild(guest);
       this.guests[side] = guest;
-      arrivals.push(this.ctx.tw.to(guest, { x: this.view.w * (side ? 0.76 : 0.25) }, { duration: 0.7, ease: ease.outBack }));
+      arrivals.push(
+        this.ctx.tw.to(
+          guest,
+          { x: this.view.w * (side ? 0.76 : 0.25) },
+          { duration: 0.7, ease: ease.outBack },
+        ),
+      );
     }
     const cone = new Cone(this.cones[this.customerIndex]);
     cone.add(choice.scoop);
@@ -426,7 +497,10 @@ class ScoopShop implements Game {
     const guest = this.guests[side];
     if (!guest) return;
     guest.poke();
-    if (this.busy || this.finished) { sfx.giggle(); return; }
+    if (this.busy || this.finished) {
+      sfx.giggle();
+      return;
+    }
     const choice = this.choices[this.customerIndex];
     if (customerToServe(choice, side)) {
       this.customer = guest;
@@ -460,7 +534,12 @@ class ScoopShop implements Game {
     this.people.addChild(critter);
     this.customer = critter;
     // Tapping the customer: a peek on the last level (the picture hid), elsewhere the order said again, free.
-    onTap(critter, () => ((this.plan.mode === 'memory' || this.revisedMemory) ? void this.peek() : this.tapCustomer(critter)), { cooldown: 600 });
+    onTap(
+      critter,
+      () =>
+        this.plan.mode === 'memory' || this.revisedMemory ? void this.peek() : this.tapCustomer(critter),
+      { cooldown: 600 },
+    );
     critter.hitArea = new Circle(0, -150, 150);
 
     const cone = new Cone(this.cones[this.customerIndex] ?? 'cone');
@@ -524,7 +603,12 @@ class ScoopShop implements Game {
         return a === b ? this.ctx.instruct('scoop.twosame', { a }) : this.ctx.instruct('scoop.two', { a, b });
       case 'mixed': {
         const [first, second] = scoopCounts(order);
-        return this.ctx.instruct('scoop.mixed', { n: first.count, a: first.color, m: second.count, b: second.color });
+        return this.ctx.instruct('scoop.mixed', {
+          n: first.count,
+          a: first.color,
+          m: second.count,
+          b: second.color,
+        });
       }
       case 'count':
         if (this.plan.start) return this.ctx.instruct('scoop.fill', { n: s.length, a });
@@ -539,7 +623,7 @@ class ScoopShop implements Game {
     this.bubble.removeChildren().forEach((x) => x.destroy({ children: true }));
     const count = this.plan.mode === 'count';
     const mixed = this.plan.mode === 'mixed';
-    const h = this.plan.mode === 'free' ? 150 : (count || mixed) ? 190 : 110 + order.scoops.length * 40;
+    const h = this.plan.mode === 'free' ? 150 : count || mixed ? 190 : 110 + order.scoops.length * 40;
     const w = count || mixed ? 240 : 170;
     const card = new Graphics()
       .roundRect(-w / 2, -h, w, h, 30)
@@ -547,10 +631,18 @@ class ScoopShop implements Game {
       .stroke({ width: 5, color: 0xb9c6d1 })
       .poly([-w / 2 + 20, -40, -w / 2 - 50, 30, -w / 2 + 50, -20])
       .fill(0xffffff);
-    card.moveTo(-w / 2 + 20, -40).lineTo(-w / 2 - 50, 30).lineTo(-w / 2 + 50, -20).stroke({ width: 5, color: 0xb9c6d1, join: 'round' });
+    card
+      .moveTo(-w / 2 + 20, -40)
+      .lineTo(-w / 2 - 50, 30)
+      .lineTo(-w / 2 + 50, -20)
+      .stroke({ width: 5, color: 0xb9c6d1, join: 'round' });
     this.bubble.addChild(card);
     if (this.plan.mode === 'free') {
-      const heart = new Graphics().circle(-18, -86, 24).circle(18, -86, 24).poly([-40, -76, 40, -76, 0, -30]).fill(swatch.pink.fill);
+      const heart = new Graphics()
+        .circle(-18, -86, 24)
+        .circle(18, -86, 24)
+        .poly([-40, -76, 40, -76, 0, -30])
+        .fill(swatch.pink.fill);
       if (this.ctx.level === 10) {
         heart.scale.set(0.45);
         heart.position.set(40, -12);
@@ -570,7 +662,9 @@ class ScoopShop implements Game {
       this.bubble.addChild(numeral);
       const filled = countSlots(order, this.plan.start ? (this.cone?.colors.length ?? order.start ?? 0) : n);
       order.scoops.forEach((c, i) => {
-        const s = filled[i] ? scoopArt(c, 18) : new Graphics().circle(0, 0, 18).stroke({ width: 3, color: swatch[c].line });
+        const s = filled[i]
+          ? scoopArt(c, 18)
+          : new Graphics().circle(0, 0, 18).stroke({ width: 3, color: swatch[c].line });
         s.position.set((i - (n - 1) / 2) * 42, -62);
         this.bubble.addChild(s);
       });
@@ -606,7 +700,9 @@ class ScoopShop implements Game {
 
   private hideBubble() {
     this.hidden = true;
-    void this.ctx.tw.to(this.bubble.scale, { x: 0, y: 0 }, { duration: 0.3 }).then(() => this.hidden && (this.bubble.visible = false));
+    void this.ctx.tw
+      .to(this.bubble.scale, { x: 0, y: 0 }, { duration: 0.3 })
+      .then(() => this.hidden && (this.bubble.visible = false));
   }
 
   /** Memory levels: tap the customer to see the order again (it counts as a hint). */
@@ -660,7 +756,8 @@ class ScoopShop implements Game {
     this.choose(0);
     await Promise.all(arrivals);
     if (this.destroyed) return;
-    for (const s of this.pair) void tw.to(s.cone.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    for (const s of this.pair)
+      void tw.to(s.cone.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     sfx.pop(6);
     await this.ctx.instruct('scoop.two-cones');
     for (const [i, s] of this.pair.entries()) {
@@ -679,7 +776,9 @@ class ScoopShop implements Game {
   private orderPicture(order: Order, kind: ConeKind): Container {
     const picture = new Container();
     picture.eventMode = 'none';
-    picture.addChild(new Graphics().roundRect(-100, -560, 200, 230, 28).fill(0xffffff).stroke({ width: 5, color: 0xb9c6d1 }));
+    picture.addChild(
+      new Graphics().roundRect(-100, -560, 200, 230, 28).fill(0xffffff).stroke({ width: 5, color: 0xb9c6d1 }),
+    );
     const mini = new Container();
     mini.addChild(holderArt(kind, 0.75));
     order.scoops.forEach((c, i) => {
@@ -695,7 +794,9 @@ class ScoopShop implements Game {
   }
 
   private hidePicture(s: Side) {
-    void this.ctx.tw.to(s.picture.scale, { x: 0, y: 0 }, { duration: 0.3 }).then(() => { if (!s.served && this.hidden) s.picture.visible = false; });
+    void this.ctx.tw.to(s.picture.scale, { x: 0, y: 0 }, { duration: 0.3 }).then(() => {
+      if (!s.served && this.hidden) s.picture.visible = false;
+    });
   }
 
   private askFriend(i: number) {
@@ -726,7 +827,10 @@ class ScoopShop implements Game {
     const s = this.pair[i];
     if (!s || s.served) return;
     s.friend.poke();
-    if (this.busy || this.finished || !this.hidden) { sfx.giggle(); return; }
+    if (this.busy || this.finished || !this.hidden) {
+      sfx.giggle();
+      return;
+    }
     void this.peekFriend(i);
   }
 
@@ -807,8 +911,15 @@ class ScoopShop implements Game {
       if (this.plan.start) this.showBubble(order, false);
       sfx.squish();
       // Free play and counting count each scoop aloud as it lands.
-      if (this.plan.mode === 'free' || this.plan.mode === 'count') void this.ctx.say('count', { n: cone.colors.length });
-      this.ctx.particles.burst(to.x, to.y, { colors: [swatch[color].fill, 0xffffff], count: 6, speed: [60, 140], gravity: 300, size: [0.2, 0.35] });
+      if (this.plan.mode === 'free' || this.plan.mode === 'count')
+        void this.ctx.say('count', { n: cone.colors.length });
+      this.ctx.particles.burst(to.x, to.y, {
+        colors: [swatch[color].fill, 0xffffff],
+        count: 6,
+        speed: [60, 140],
+        gravity: 300,
+        size: [0.2, 0.35],
+      });
       this.busy = false;
       if (complete(this.plan, order, cone.colors)) await this.serve();
       return;
@@ -857,18 +968,30 @@ class ScoopShop implements Game {
     tw.kill(cone);
     cone.eventMode = 'none';
     // As it slides over, the cone plays itself bottom to top: each scoop bobs and sings its tub's note.
-    const slide = tw.to(cone, { x: mouth.x, y: mouth.y + 40, rotation: -0.3 }, { duration: 0.6, ease: ease.inOutSine });
+    const slide = tw.to(
+      cone,
+      { x: mouth.x, y: mouth.y + 40, rotation: -0.3 },
+      { duration: 0.6, ease: ease.inOutSine },
+    );
     const scoops = [...cone.scoops.children];
     for (const [i, s] of scoops.entries()) {
       sfx.pop(5 + this.flavors.indexOf(cone.colors[i]));
-      void tw.to(s.scale, { x: 1.18, y: 1.18 }, { duration: 0.07 }).then(() => tw.to(s.scale, { x: 1, y: 1 }, { duration: 0.1 }));
+      void tw
+        .to(s.scale, { x: 1.18, y: 1.18 }, { duration: 0.07 })
+        .then(() => tw.to(s.scale, { x: 1, y: 1 }, { duration: 0.1 }));
       await tw.wait(Math.min(0.2, 0.75 / scoops.length));
     }
     await slide;
     for (const s of [...cone.scoops.children].reverse()) {
       sfx.munch();
       critter.poke();
-      this.ctx.particles.burst(cone.x, cone.y + s.y, { colors: [0xffffff, 0xfff3a0], count: 5, speed: [40, 120], gravity: 200, size: [0.2, 0.3] });
+      this.ctx.particles.burst(cone.x, cone.y + s.y, {
+        colors: [0xffffff, 0xfff3a0],
+        count: 5,
+        speed: [40, 120],
+        gravity: 200,
+        size: [0.2, 0.3],
+      });
       await tw.to(s.scale, { x: 0, y: 0 }, { duration: 0.22 });
       await tw.wait(0.12);
     }
@@ -885,7 +1008,10 @@ class ScoopShop implements Game {
     this.customer = null;
     if (!two) return void this.nextCustomer();
     // Level 7: the other cone is chosen for her, free; both friends fed ends the round.
-    const next = coneAfterServe(this.pair.map(s => s.served), this.customerIndex);
+    const next = coneAfterServe(
+      this.pair.map((s) => s.served),
+      this.customerIndex,
+    );
     if (next < 0) return void this.end();
     this.choose(next);
     this.busy = false;
@@ -911,7 +1037,12 @@ class ShopIcon extends WigglyIcon {
       s.position.set(0, -124 - i * 46);
       c.addChild(s);
     });
-    const cherry = new Graphics().circle(6, -246, 14).fill(swatch.red.fill).moveTo(8, -258).quadraticCurveTo(12, -276, 24, -280).stroke({ width: 4, color: 0x4a9a35, cap: 'round' });
+    const cherry = new Graphics()
+      .circle(6, -246, 14)
+      .fill(swatch.red.fill)
+      .moveTo(8, -258)
+      .quadraticCurveTo(12, -276, 24, -280)
+      .stroke({ width: 4, color: 0x4a9a35, cap: 'round' });
     c.addChild(cherry);
     super(c);
     this.hitArea = new Rectangle(-80, -290, 160, 290);

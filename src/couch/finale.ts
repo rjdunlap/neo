@@ -27,11 +27,15 @@ export interface Finale {
 /** What a player is called: their own name, or "Player 1" and "Player 2". */
 export type Namer = (player: number) => string;
 const plain: Namer = (player) => `Player ${player + 1}`;
-export const namerOf = (names: readonly string[] | undefined): Namer => (player) => names?.[player]?.trim() || plain(player);
+export const namerOf =
+  (names: readonly string[] | undefined): Namer =>
+  (player) =>
+    names?.[player]?.trim() || plain(player);
 
 /** The sentence that closes a trip. Nobody loses: both players always light every lantern. */
 export function verdictOf(p: Party, who: Namer = plain): string {
-  if (p.mode !== 'faceoff') return 'You made a whole trip together. Stay here, stop for the evening, or set out again.';
+  if (p.mode !== 'faceoff')
+    return 'You made a whole trip together. Stay here, stop for the evening, or set out again.';
   const [a, b] = tally(p);
   if (a === b) return `It ended ${a} to ${b}: you both win the evening!`;
   return `${who(a > b ? 0 : 1)} wins ${Math.max(a, b)} to ${Math.min(a, b)}, and you both lit all six lanterns!`;
@@ -43,7 +47,7 @@ export function finaleOf(save: CouchSave): Finale | null {
   if (!p || p.rounds.length < STOPS) return null;
   const faceoff = p.mode === 'faceoff';
   const score = tally(p);
-  const stops = p.rounds.map<FinaleStop>(r => ({
+  const stops = p.rounds.map<FinaleStop>((r) => ({
     id: r.id,
     owner: faceoff && (r.winner === 0 || r.winner === 1) ? r.winner : 'both',
     helped: r.hints > 0,

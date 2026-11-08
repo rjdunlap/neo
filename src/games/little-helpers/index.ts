@@ -78,7 +78,13 @@ class Helper extends Container {
     g.circle(-9, -26, 6).circle(9, -26, 6).fill(0xffffff).circle(-8, -25, 3).circle(10, -25, 3).fill(ink);
     for (const s of [-1, 1]) g.ellipse(s * 12, 2, 9, 5).fill(sw.line);
     // A waving arm, shown only while it waves.
-    this.arm.moveTo(0, 0).lineTo(12, -22).stroke({ width: 7, color: sw.line, cap: 'round' }).circle(12, -22, 6).fill(sw.fill).stroke({ width: 3, color: sw.line });
+    this.arm
+      .moveTo(0, 0)
+      .lineTo(12, -22)
+      .stroke({ width: 7, color: sw.line, cap: 'round' })
+      .circle(12, -22, 6)
+      .fill(sw.fill)
+      .stroke({ width: 3, color: sw.line });
     this.arm.position.set(22, -26);
     this.arm.visible = false;
     this.body.addChild(g, this.arm);
@@ -166,7 +172,16 @@ class LittleHelpers implements Game {
     this.basket.eventMode = 'none';
     this.pile.eventMode = 'none';
     this.badge.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.scenery, this.field, this.basket, this.pile, this.ghosts, this.fruitNode, this.badge);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.scenery,
+      this.field,
+      this.basket,
+      this.pile,
+      this.ghosts,
+      this.fruitNode,
+      this.badge,
+    );
     onTap(this.field, (e) => this.touchField(e), { cooldown: 180 });
     this.field.cursor = 'default';
     onTap(this.fruitNode, (e) => this.touchFruit(e), { cooldown: 180 });
@@ -180,7 +195,15 @@ class LittleHelpers implements Game {
       this.helpers.push(h);
       ctx.stage.addChild(h);
     }
-    const icon = new Graphics().roundRect(-24, -12, 40, 24, 10).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }).circle(18, 0, 12).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }).circle(-10, 0, 5).fill(ink);
+    const icon = new Graphics()
+      .roundRect(-24, -12, 40, 24, 10)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line })
+      .circle(18, 0, 12)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line })
+      .circle(-10, 0, 5)
+      .fill(ink);
     this.whistle = new RoundButton(icon, swatch.white, 54, () => void this.blow());
     this.whistle.visible = usesWhistle(this.plan);
     ctx.stage.addChild(this.whistle);
@@ -231,7 +254,12 @@ class LittleHelpers implements Game {
     this.clock += dt;
     // Level 9: once every ring is full, the whistle wiggles to say "now".
     const f = this.fruit;
-    const full = ringsSayWhen(this.plan) && f && !this.busy && this.arrived() === f.need && this.carrying.length === f.need;
+    const full =
+      ringsSayWhen(this.plan) &&
+      f &&
+      !this.busy &&
+      this.arrived() === f.need &&
+      this.carrying.length === f.need;
     this.whistle.rotation = full ? 0.18 * Math.sin(this.clock * 12) : 0;
     if (this.emptyRings) {
       this.blink = Math.max(0, this.blink - dt);
@@ -255,7 +283,11 @@ class LittleHelpers implements Game {
       return { tap: { on: this.fruitNode, x: this.groupX(g, f), y: -10 - partsOf(f)[g] * 12 } };
     }
     if (this.plan.mode === 'strong') {
-      const next = nextStrong(f.need, this.carrying.filter((h) => !h.big).length, this.carrying.filter((h) => h.big).length);
+      const next = nextStrong(
+        f.need,
+        this.carrying.filter((h) => !h.big).length,
+        this.carrying.filter((h) => h.big).length,
+      );
       if (!next) return { tap: { on: this.whistle } };
       const h = this.nearestWaiting(this.fruitNode.x, this.fruitNode.y, next === 'big');
       return h ? { tap: { on: h, y: -28 } } : null;
@@ -390,15 +422,22 @@ class LittleHelpers implements Game {
     const s = this.spot();
     this.badge.position.set(s.x - 200, s.y - 210);
     const teamed = teamedPlan(this.plan);
-    const counts = teamed ? partsOf(f).map((_, g) => this.carrying.filter((h) => h.team === g && !h.moving).length) : [];
-    const rings = badgeRings(f.need, this.plan.mode === 'strong' ? this.power(this.carrying.filter((h) => !h.moving)) : this.arrived());
+    const counts = teamed
+      ? partsOf(f).map((_, g) => this.carrying.filter((h) => h.team === g && !h.moving).length)
+      : [];
+    const rings = badgeRings(
+      f.need,
+      this.plan.mode === 'strong' ? this.power(this.carrying.filter((h) => !h.moving)) : this.arrived(),
+    );
     // A bunch or pair counts its extras per team: a ring with no place stands outside the frame.
     if (teamed) rings.extra = partsOf(f).reduce((sum, p, g) => sum + Math.max(0, counts[g] - p), 0);
     const full = new Graphics();
     const empty = new Graphics();
     const extra = new Graphics();
     const ring = (x: number, y: number, r: number, filled: boolean) =>
-      filled ? full.circle(x, y, r).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line }) : empty.circle(x, y, r).fill(0xffffff).stroke({ width: 4, color: swatch.green.line });
+      filled
+        ? full.circle(x, y, r).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line })
+        : empty.circle(x, y, r).fill(0xffffff).stroke({ width: 4, color: swatch.green.line });
     const numeral = this.plan.mode === 'numeral' || this.plan.mode === 'more';
     let right: number;
     let ringY = 0;
@@ -407,7 +446,12 @@ class LittleHelpers implements Game {
       // Rings in little teams, one team per fruit: two twos look different from four, and each fills as its own team arrives.
       const parts = partsOf(f);
       const w = 40 + f.need * 30 + (parts.length - 1) * 26;
-      this.badge.addChild(new Graphics().roundRect(-w / 2, -36, w, 72, 24).fill(0xffffff).stroke({ width: 5, color: wood.line }));
+      this.badge.addChild(
+        new Graphics()
+          .roundRect(-w / 2, -36, w, 72, 24)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: wood.line }),
+      );
       let x = -w / 2 + 35;
       parts.forEach((each, k) => {
         for (let j = 0; j < each; j++) ring(x + j * 30, 0, 12, j < counts[k]);
@@ -418,7 +462,12 @@ class LittleHelpers implements Game {
       ringR = 9;
       ringY = 26;
       const w = Math.max(100, 30 + f.need * 26);
-      this.badge.addChild(new Graphics().roundRect(-w / 2, -58, w, 108, 24).fill(0xffffff).stroke({ width: 5, color: wood.line }));
+      this.badge.addChild(
+        new Graphics()
+          .roundRect(-w / 2, -58, w, 108, 24)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: wood.line }),
+      );
       const n = label(String(f.need), 46, ink);
       n.y = -18;
       this.badge.addChild(n);
@@ -426,12 +475,21 @@ class LittleHelpers implements Game {
       right = w / 2;
     } else {
       const w = 40 + Math.min(f.need, 8) * 34;
-      this.badge.addChild(new Graphics().roundRect(-w / 2, -36, w, 72, 24).fill(0xffffff).stroke({ width: 5, color: wood.line }));
+      this.badge.addChild(
+        new Graphics()
+          .roundRect(-w / 2, -36, w, 72, 24)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: wood.line }),
+      );
       for (let i = 0; i < f.need; i++) ring(-w / 2 + 37 + i * 34, 0, 12, i < rings.filled);
       right = w / 2;
     }
     // Extras wait outside the frame, in orange: one too many shows as a ring with no place.
-    for (let i = 0; i < rings.extra; i++) extra.circle(right + 24 + i * (ringR * 2 + 8), ringY, ringR).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
+    for (let i = 0; i < rings.extra; i++)
+      extra
+        .circle(right + 24 + i * (ringR * 2 + 8), ringY, ringR)
+        .fill(swatch.orange.fill)
+        .stroke({ width: 4, color: swatch.orange.line });
     this.badge.addChild(full, empty, extra);
     this.emptyRings = empty;
   }
@@ -440,12 +498,18 @@ class LittleHelpers implements Game {
 
   /** The waiting helper nearest a point, or null when everyone is out helping. */
   private nearestWaiting(x: number, y: number, big?: boolean): Helper | undefined {
-    return this.helpers.filter((h) => h.visible && h.slot < 0 && !h.moving && (big === undefined || h.big === big)).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+    return this.helpers
+      .filter((h) => h.visible && h.slot < 0 && !h.moving && (big === undefined || h.big === big))
+      .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
   }
 
   /** A helper hops and squeaks: the answer to a touch while a fruit drops in or is carried away. */
   private hopNear(x: number, y: number) {
-    const h = this.nearestWaiting(x, y) ?? this.helpers.filter((k) => !k.moving).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+    const h =
+      this.nearestWaiting(x, y) ??
+      this.helpers
+        .filter((k) => !k.moving)
+        .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
     if (!h) return;
     h.react('hop');
     sfx.squeak(6 + this.ctx.rng.int(0, 4));
@@ -459,7 +523,8 @@ class LittleHelpers implements Game {
       return this.hopNear(p.x, p.y);
     }
     // A bunch or pair: the tap goes to the fruit it landed nearest.
-    if (teamedPlan(this.plan)) return this.send(nearestTeam(partsOf(this.fruit), this.fruitNode.toLocal(e.global).x));
+    if (teamedPlan(this.plan))
+      return this.send(nearestTeam(partsOf(this.fruit), this.fruitNode.toLocal(e.global).x));
     this.send();
   }
 
@@ -492,7 +557,11 @@ class LittleHelpers implements Game {
     const h = chosen ?? this.nearestWaiting(this.fruitNode.x, this.fruitNode.y);
     if (!h) return this.shrug();
     // Level 6: a fruit whose team is full does not take another helper.
-    if (this.plan.mode === 'groups' && this.carrying.filter((x) => x.team === team).length >= partsOf(f)[team]) return this.teamFull(h, partsOf(f)[team]);
+    if (
+      this.plan.mode === 'groups' &&
+      this.carrying.filter((x) => x.team === team).length >= partsOf(f)[team]
+    )
+      return this.teamFull(h, partsOf(f)[team]);
     if (ringsSayWhen(this.plan) && this.carrying.length >= f.need) return this.bounceOff(h, f);
     h.slot = this.carrying.length;
     h.team = team;
@@ -501,16 +570,26 @@ class LittleHelpers implements Game {
     h.moving = true;
     if (!quiet) sfx.pop(5 + Math.min(6, n));
     // Everyone shuffles to make room in the row.
-    for (const x of this.carrying) if (x !== h && !x.moving) void this.ctx.tw.to(x, this.standAt(x), { duration: 0.2 });
-    void this.ctx.tw.to(h, { x: to.x, y: to.y }, { duration: quiet ? 0.01 : 0.35, ease: ease.outQuad }).then(() => {
-      h.moving = false;
-      if (this.fruit === f) this.drawBadge(f);
-      if (quiet) return;
-      // The pet counts what the team adds up to: a big helper makes it jump by two.
-      void this.ctx.say('count', { n });
-      // Only the arrival that completes the team starts the lift (two can land in the same moment).
-      if (!usesWhistle(this.plan) && !this.busy && this.fruit === f && this.carrying.length >= f.need && !this.carrying.some((x) => x.moving)) void this.lift();
-    });
+    for (const x of this.carrying)
+      if (x !== h && !x.moving) void this.ctx.tw.to(x, this.standAt(x), { duration: 0.2 });
+    void this.ctx.tw
+      .to(h, { x: to.x, y: to.y }, { duration: quiet ? 0.01 : 0.35, ease: ease.outQuad })
+      .then(() => {
+        h.moving = false;
+        if (this.fruit === f) this.drawBadge(f);
+        if (quiet) return;
+        // The pet counts what the team adds up to: a big helper makes it jump by two.
+        void this.ctx.say('count', { n });
+        // Only the arrival that completes the team starts the lift (two can land in the same moment).
+        if (
+          !usesWhistle(this.plan) &&
+          !this.busy &&
+          this.fruit === f &&
+          this.carrying.length >= f.need &&
+          !this.carrying.some((x) => x.moving)
+        )
+          void this.lift();
+      });
   }
 
   /** Level 6: this fruit already has its whole team. The waiting helper hops, and the pet says how many it has. Not a miss. */
@@ -576,12 +655,23 @@ class LittleHelpers implements Game {
     const parts = partsOf(f);
     const t = teamed ? teamsResult(parts, this.teamCounts(f)) : null;
     // Short: the team (or a fruit's team) is too small to lift; extra: a team has more than its fruit needs.
-    const result = t ? (t.empty ? 'nudge' : t.lift ? 'lift' : t.over.length ? 'extra' : 'short') : whistleFor(f.need, this.power());
+    const result = t
+      ? t.empty
+        ? 'nudge'
+        : t.lift
+          ? 'lift'
+          : t.over.length
+            ? 'extra'
+            : 'short'
+      : whistleFor(f.need, this.power());
     if (result === 'lift') return void this.lift();
     if (result === 'short' && ringsSayWhen(this.plan)) {
       // Level 9: not full yet. They strain, the empty rings blink, and nothing is counted.
       this.blink = 1.2;
-      for (const h of this.carrying) void this.ctx.tw.to(h, { y: h.y - 10 }, { duration: 0.12 }).then(() => this.ctx.tw.to(h, { y: h.y + 10 }, { duration: 0.12 }));
+      for (const h of this.carrying)
+        void this.ctx.tw
+          .to(h, { y: h.y - 10 }, { duration: 0.12 })
+          .then(() => this.ctx.tw.to(h, { y: h.y + 10 }, { duration: 0.12 }));
       if (this.talking) return;
       this.talking = true;
       return void this.ctx.say('helpers.whistle.notfull').then(() => (this.talking = false));
@@ -599,24 +689,68 @@ class LittleHelpers implements Game {
     sfx.boing();
     const groups = this.plan.mode === 'groups';
     const split = this.plan.mode === 'split';
-    const vars = { n: f.need, m: f.need / f.groups, list: skipCount(f), a: parts[0], b: parts[1], total: f.need };
+    const vars = {
+      n: f.need,
+      m: f.need / f.groups,
+      list: skipCount(f),
+      a: parts[0],
+      b: parts[1],
+      total: f.need,
+    };
     // The teams that are too small strain at the fruit and tip it; at 5 and 8 the whole team does.
     const strainers = t ? this.carrying.filter((h) => t.short.includes(h.team)) : this.carrying;
     if (result === 'short' || (t && t.short.length)) {
-      for (const h of strainers) void this.ctx.tw.to(h, { y: h.y - 10 }, { duration: 0.12 }).then(() => this.ctx.tw.to(h, { y: h.y + 10 }, { duration: 0.12 }));
-      void this.ctx.tw.to(this.fruitNode, { rotation: 0.08 }, { duration: 0.1 }).then(() => this.ctx.tw.to(this.fruitNode, { rotation: 0 }, { duration: 0.2 }));
+      for (const h of strainers)
+        void this.ctx.tw
+          .to(h, { y: h.y - 10 }, { duration: 0.12 })
+          .then(() => this.ctx.tw.to(h, { y: h.y + 10 }, { duration: 0.12 }));
+      void this.ctx.tw
+        .to(this.fruitNode, { rotation: 0.08 }, { duration: 0.1 })
+        .then(() => this.ctx.tw.to(this.fruitNode, { rotation: 0 }, { duration: 0.2 }));
     }
     if (result === 'short') {
       // At 5 the line names the gap: "4 are here. It needs 6. 2 more!"
-      if (this.plan.mode === 'more') await this.ctx.say('helpers.more.short', { m: this.carrying.length, n: f.need, gap: f.need - this.carrying.length });
-      else await this.ctx.say(split ? 'helpers.split.wrong' : this.plan.mode === 'strong' ? 'helpers.strong.short' : groups ? 'helpers.groups.short' : 'helpers.heavy', vars);
+      if (this.plan.mode === 'more')
+        await this.ctx.say('helpers.more.short', {
+          m: this.carrying.length,
+          n: f.need,
+          gap: f.need - this.carrying.length,
+        });
+      else
+        await this.ctx.say(
+          split
+            ? 'helpers.split.wrong'
+            : this.plan.mode === 'strong'
+              ? 'helpers.strong.short'
+              : groups
+                ? 'helpers.groups.short'
+                : 'helpers.heavy',
+          vars,
+        );
     } else {
-      await this.ctx.say(split ? 'helpers.split.wrong' : this.plan.mode === 'strong' ? 'helpers.strong.extra' : groups ? 'helpers.groups.extra' : 'helpers.extra', vars);
+      await this.ctx.say(
+        split
+          ? 'helpers.split.wrong'
+          : this.plan.mode === 'strong'
+            ? 'helpers.strong.extra'
+            : groups
+              ? 'helpers.groups.extra'
+              : 'helpers.extra',
+        vars,
+      );
       // The extras walk back: those past a fruit's team, or past what the need holds.
-      if (t) for (const g of t.over) for (const h of this.carrying.filter((x) => x.team === g).slice(parts[g])) this.release(h);
+      if (t)
+        for (const g of t.over)
+          for (const h of this.carrying.filter((x) => x.team === g).slice(parts[g])) this.release(h);
       else if (this.plan.mode === 'strong') {
         const team = this.carrying;
-        for (const h of team.slice(keepWithin(team.map((x) => (x.big ? BIG_POWER : 1)), f.need))) this.release(h);
+        for (const h of team.slice(
+          keepWithin(
+            team.map((x) => (x.big ? BIG_POWER : 1)),
+            f.need,
+          ),
+        ))
+          this.release(h);
       } else for (const h of this.carrying.slice(f.need)) this.release(h);
       await this.ctx.tw.wait(0.5);
     }
@@ -641,11 +775,15 @@ class LittleHelpers implements Game {
     if (this.plan.mode === 'strong') {
       // One team that works, the most big helpers first; the helpers to send are ringed where they wait.
       const mix = strongMixes(f.need)[0];
-      const crew = [...this.helpers.filter((h) => h.big).slice(0, mix.big), ...this.helpers.filter((h) => !h.big).slice(0, mix.small)];
+      const crew = [
+        ...this.helpers.filter((h) => h.big).slice(0, mix.big),
+        ...this.helpers.filter((h) => !h.big).slice(0, mix.small),
+      ];
       crew.forEach((h, i) => {
         const at = this.slotAt(i);
         g.circle(at.x, at.y - 24, 32).stroke({ width: 5, color: swatch.yellow.fill });
-        if (h.slot < 0) g.circle(h.home.x, h.home.y - 28, h.big ? 46 : 38).stroke({ width: 5, color: swatch.yellow.fill });
+        if (h.slot < 0)
+          g.circle(h.home.x, h.home.y - 28, h.big ? 46 : 38).stroke({ width: 5, color: swatch.yellow.fill });
       });
       return;
     }
@@ -664,10 +802,18 @@ class LittleHelpers implements Game {
     void this.ctx.say('helpers.lift');
     sfx.whoosh();
     for (const h of team) h.moving = true;
-    await Promise.all([tw.to(this.fruitNode, { y: this.fruitNode.y - 40 }, { duration: 0.3 }), ...team.map((h) => tw.to(h, { y: h.y - 40 }, { duration: 0.3 }))]);
+    await Promise.all([
+      tw.to(this.fruitNode, { y: this.fruitNode.y - 40 }, { duration: 0.3 }),
+      ...team.map((h) => tw.to(h, { y: h.y - 40 }, { duration: 0.3 })),
+    ]);
     const b = this.basketAt();
     const dx = b.x - this.fruitNode.x;
-    await Promise.all([tw.to(this.fruitNode, { x: b.x, y: b.y - 120 }, { duration: 1.1, ease: ease.inOutSine }), ...team.map((h) => tw.to(h, { x: h.x + dx - 60, y: h.y - 20 }, { duration: 1.1, ease: ease.inOutSine }))]);
+    await Promise.all([
+      tw.to(this.fruitNode, { x: b.x, y: b.y - 120 }, { duration: 1.1, ease: ease.inOutSine }),
+      ...team.map((h) =>
+        tw.to(h, { x: h.x + dx - 60, y: h.y - 20 }, { duration: 1.1, ease: ease.inOutSine }),
+      ),
+    ]);
     // Into the basket it goes, every fruit of a bunch.
     for (const keep of [...this.fruitNode.children]) {
       this.fruitNode.removeChild(keep);
@@ -677,15 +823,26 @@ class LittleHelpers implements Game {
       this.pile.addChild(keep);
     }
     sfx.sparkle();
-    this.ctx.particles.burst(b.x, b.y - 60, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(b.x, b.y - 60, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     for (const h of team) {
       h.slot = -1;
-      void tw.to(h, { x: h.home.x, y: h.home.y }, { duration: 0.9, ease: ease.inOutSine }).then(() => (h.moving = false));
+      void tw
+        .to(h, { x: h.home.x, y: h.home.y }, { duration: 0.9, ease: ease.inOutSine })
+        .then(() => (h.moving = false));
     }
     const f = this.fruit;
-    if (this.plan.mode === 'groups' && f) await this.ctx.say('helpers.groups.total', { n: f.groups, m: f.need / f.groups, total: f.need });
-    else if (this.plan.mode === 'split' && f) await this.ctx.say('helpers.split.total', { a: partsOf(f)[0], b: partsOf(f)[1], total: f.need });
+    if (this.plan.mode === 'groups' && f)
+      await this.ctx.say('helpers.groups.total', { n: f.groups, m: f.need / f.groups, total: f.need });
+    else if (this.plan.mode === 'split' && f)
+      await this.ctx.say('helpers.split.total', { a: partsOf(f)[0], b: partsOf(f)[1], total: f.need });
     else await this.ctx.say('praise');
     await tw.wait(0.6);
     await this.next();

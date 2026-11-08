@@ -1,14 +1,37 @@
-import { Assets, Circle, ColorMatrixFilter, Container, Graphics, Rectangle, Sprite, type Texture } from 'pixi.js';
+import {
+  Assets,
+  Circle,
+  ColorMatrixFilter,
+  Container,
+  Graphics,
+  Rectangle,
+  Sprite,
+  type Texture,
+} from 'pixi.js';
 import type { Mood } from '../art/critter';
 import { swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
 import type { Creature } from '../art/creatures/creature';
-import { IllustratedCreature, loadArt, type ArtSet, type Mood as RigMood } from '../art/creatures/illustrated';
+import {
+  IllustratedCreature,
+  loadArt,
+  type ArtSet,
+  type Mood as RigMood,
+} from '../art/creatures/illustrated';
 import { GLIDER_WEAR, IllustratedGlider } from '../art/creatures/glider-illustrated';
 import { IllustratedRiver, RIVER_WEAR } from '../art/creatures/river-illustrated';
 import { IllustratedSprout, SPROUT_WEAR } from '../art/creatures/sprout-illustrated';
 import { changeWorn, SLOT, type WearSlot } from '../art/creatures/wear-slots';
-import { fileOf, fits, loadWearables, wearItem, WEARABLES, type ItemTextures, type WearableId, type WearTables } from '../art/creatures/wearables';
+import {
+  fileOf,
+  fits,
+  loadWearables,
+  wearItem,
+  WEARABLES,
+  type ItemTextures,
+  type WearableId,
+  type WearTables,
+} from '../art/creatures/wearables';
 import { sfx } from '../audio/sfx';
 import type { PetColor } from '../content/world';
 import type { Individual } from '../progress/save';
@@ -30,17 +53,26 @@ import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
 const files = import.meta.glob<string>('./art/*.png', { query: '?url', import: 'default', eager: true });
 const fileUrl = (name: string) => files[`./art/${name}.png`];
 
-const loaded: { sets: Partial<Record<SpeciesId, ArtSet>>; pictures: Map<string, Texture>; items: ItemTextures } = { sets: {}, pictures: new Map(), items: {} };
+const loaded: {
+  sets: Partial<Record<SpeciesId, ArtSet>>;
+  pictures: Map<string, Texture>;
+  items: ItemTextures;
+} = { sets: {}, pictures: new Map(), items: {} };
 
 /** Where each wearable sits on each species (RW06), from the rigs' own tables. */
 export const WEAR: WearTables = { sprout: SPROUT_WEAR, river: RIVER_WEAR, glider: GLIDER_WEAR };
 
 /** The items a species can wear, in the wardrobe's order: its misfits are never offered. */
-export const wearableBy = (species: SpeciesId): WearableId[] => WEARABLES.filter((w) => fits(WEAR[species][w]));
+export const wearableBy = (species: SpeciesId): WearableId[] =>
+  WEARABLES.filter((w) => fits(WEAR[species][w]));
 
 export const EGG_STAGES = ['whole', 'crack', 'open'] as const;
 export type EggStage = (typeof EGG_STAGES)[number];
-const EGG_FILE: Record<EggStage, string> = { whole: 'egg-sprout', crack: 'egg-sprout-crack', open: 'egg-sprout-open' };
+const EGG_FILE: Record<EggStage, string> = {
+  whole: 'egg-sprout',
+  crack: 'egg-sprout-crack',
+  open: 'egg-sprout-open',
+};
 
 /** Loads every species' rig art, the portraits, the card paper, the sprout's egg and the wearables. Never throws: what fails falls back (an item that failed is not drawn). */
 export async function loadCollectionArt(): Promise<void> {
@@ -108,7 +140,14 @@ export const GUIDE_SCALE = 0.42;
 export const GUIDE_LEAVES_OFF: readonly WearSlot[] = ['held'];
 
 /** The mood a scene asks for, as a rig shows it: the rigs have no singing face, so a song shows as happy. */
-const RIG_MOOD: Record<Mood, RigMood> = { happy: 'happy', surprised: 'surprised', sing: 'happy', sleepy: 'sleepy', sad: 'sad', calm: 'calm' };
+const RIG_MOOD: Record<Mood, RigMood> = {
+  happy: 'happy',
+  surprised: 'surprised',
+  sing: 'happy',
+  sleepy: 'sleepy',
+  sad: 'sad',
+  calm: 'calm',
+};
 
 /** A colour's hue, in degrees. */
 export function hueOf(rgb: number): number {
@@ -129,8 +168,9 @@ export function hueOf(rgb: number): number {
  */
 export function hueTurn(species: SpeciesId, color: PetColor): number {
   if (color === SPECIES[species].color) return 0;
-  const turn = hueOf(swatch[color as ColorName].fill) - hueOf(swatch[SPECIES[species].color as ColorName].fill);
-  return ((turn % 360) + 540) % 360 - 180;
+  const turn =
+    hueOf(swatch[color as ColorName].fill) - hueOf(swatch[SPECIES[species].color as ColorName].fill);
+  return (((turn % 360) + 540) % 360) - 180;
 }
 
 /** Turns a picture to her chosen colour; nothing (and no filter) for the species' own. */
@@ -148,7 +188,8 @@ export function recolor(node: Container, species: SpeciesId, color: PetColor) {
 }
 
 /** Half way from white to a colour. */
-const halfway = (rgb: number) => [16, 8, 0].reduce((n, shift) => n | (Math.round((255 + ((rgb >> shift) & 0xff)) / 2) << shift), 0);
+const halfway = (rgb: number) =>
+  [16, 8, 0].reduce((n, shift) => n | (Math.round((255 + ((rgb >> shift) & 0xff)) / 2) << shift), 0);
 
 /** Plays a species' chirp: its two or three pentatonic steps, one after another. */
 export function chirp(species: SpeciesId) {
@@ -462,7 +503,10 @@ export const makeIndividual = (who: Individual): Companion => new Companion(who)
  * A collection card's picture: the species' portrait over the card paper, the paper washed with her colour. `size` is
  * the card's side in units. A still picture, so a card never keeps a live rig. Without the art, a frozen rig.
  */
-export function makePortrait(who: Pick<Individual, 'species'> & { look: { color: PetColor } }, size: number): Container {
+export function makePortrait(
+  who: Pick<Individual, 'species'> & { look: { color: PetColor } },
+  size: number,
+): Container {
   const card = new Container();
   const paper = loaded.pictures.get('card-paper');
   const tone = swatch[who.look.color as ColorName];
@@ -474,7 +518,12 @@ export function makePortrait(who: Pick<Individual, 'species'> & { look: { color:
     p.tint = halfway(tone.light);
     card.addChild(p);
   } else {
-    card.addChild(new Graphics().roundRect(-size / 2, -size / 2, size, size, size * 0.16).fill(tone.light).stroke({ width: 5, color: tone.line }));
+    card.addChild(
+      new Graphics()
+        .roundRect(-size / 2, -size / 2, size, size, size * 0.16)
+        .fill(tone.light)
+        .stroke({ width: 5, color: tone.line }),
+    );
   }
   const face = loaded.pictures.get(`${who.species}-portrait`);
   if (face) {
@@ -517,12 +566,22 @@ export function makeEgg(stage: EggStage): Container {
  * pixels under each sprite's top-left, as the preparation script reported them; a test checks that every stage's left
  * and bottom edges land on the same source pixel (within one), which is why one bottom anchor places all three.
  */
-export const EGG = { scale: 0.5, bottom: 134, origins: { whole: [189, 107], crack: [189, 107], open: [189, 26] } as Record<EggStage, [number, number]>, files: EGG_FILE };
+export const EGG = {
+  scale: 0.5,
+  bottom: 134,
+  origins: { whole: [189, 107], crack: [189, 107], open: [189, 26] } as Record<EggStage, [number, number]>,
+  files: EGG_FILE,
+};
 
 /** The drawn egg: the fallback when the art did not load. */
 export function drawEgg(g: Graphics, cracks = 0): Graphics {
   g.clear().ellipse(0, 0, 100, 130).fill(swatch.white.fill).stroke({ width: 7, color: swatch.teal.line });
-  for (const [x, y, r] of [[-35, -60, 18], [38, -20, 22], [-40, 55, 20], [30, 75, 14]]) {
+  for (const [x, y, r] of [
+    [-35, -60, 18],
+    [38, -20, 22],
+    [-40, 55, 20],
+    [30, 75, 14],
+  ]) {
     g.circle(x, y, r).fill(swatch.teal.light);
   }
   if (cracks) {

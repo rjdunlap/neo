@@ -18,7 +18,10 @@ export const SUBSTANCES = {
   chocolate: { solid: 'a chocolate square', melted: 'a brown pool', reversible: true, word: 'chocolate' },
   stone: { solid: 'a grey stone', melted: null, reversible: false, word: 'stone' },
   spoon: { solid: 'a wooden spoon', melted: null, reversible: false, word: 'spoon' },
-} as const satisfies Record<string, { solid: string; melted: string | null; reversible: boolean; word: string }>;
+} as const satisfies Record<
+  string,
+  { solid: string; melted: string | null; reversible: boolean; word: string }
+>;
 export type Substance = keyof typeof SUBSTANCES;
 export const ALL_SUBSTANCES = Object.keys(SUBSTANCES) as Substance[];
 
@@ -36,7 +39,12 @@ export function step(s: Substance, state: State, tool: Tool): State {
 /** What the voice says after a tool on a thing: the change, the named thing that stays, or "already" when the tool cannot change it. */
 export function sayAfter(s: Substance, before: State, tool: Tool): LineId {
   const after = step(s, before, tool);
-  if (after !== before) return after === 'melted' ? 'meltfreeze.melt' : s === 'ice' ? 'meltfreeze.freeze.ice' : 'meltfreeze.freeze';
+  if (after !== before)
+    return after === 'melted'
+      ? 'meltfreeze.melt'
+      : s === 'ice'
+        ? 'meltfreeze.freeze.ice'
+        : 'meltfreeze.freeze';
   if (!melts(s)) return s === 'stone' ? 'meltfreeze.stays.stone' : 'meltfreeze.stays.spoon';
   return tool === 'sun' ? 'meltfreeze.already.melted' : 'meltfreeze.already.hard';
 }
@@ -49,8 +57,14 @@ export interface Plan {
 }
 
 export const PLANS: Plan[] = [
-  { mode: 'watch', name: 'Sun and snow: tap the sun to melt an ice cube and the snowflake to freeze it again' },
-  { mode: 'turn', name: 'Three things in turn: warm each one and see which melt, then cool the ones that did' },
+  {
+    mode: 'watch',
+    name: 'Sun and snow: tap the sun to melt an ice cube and the snowflake to freeze it again',
+  },
+  {
+    mode: 'turn',
+    name: 'Three things in turn: warm each one and see which melt, then cool the ones that did',
+  },
   { mode: 'make', name: 'Make it…: three request cards, each asking for the sun or the snowflake' },
   { mode: 'tray', name: 'Some do, some don’t: warm and cool a tray of four things together' },
 ];
@@ -94,7 +108,11 @@ export function requestsFor(rng: Rng, authored: boolean): Request[] {
 
 /** Level 4: a round is two trays of four distinct things, each with two that change and two that stay. */
 export function traysFor(rng: Rng, authored: boolean): Substance[][] {
-  if (authored) return [['ice', 'butter', 'stone', 'spoon'], ['chocolate', 'ice', 'stone', 'spoon']];
+  if (authored)
+    return [
+      ['ice', 'butter', 'stone', 'spoon'],
+      ['chocolate', 'ice', 'stone', 'spoon'],
+    ];
   return [0, 1].map(() => rng.shuffle([...rng.shuffle([...CHANGERS]).slice(0, 2), ...STAYERS]));
 }
 
@@ -147,7 +165,8 @@ export class MakeRound {
 
   /** She taps a tool. */
   tap(tool: Tool): Outcome {
-    if (this.finished) return { changed: false, done: false, miss: false, hint: null, glow: false, supported: false };
+    if (this.finished)
+      return { changed: false, done: false, miss: false, hint: null, glow: false, supported: false };
     const r = this.request;
     const after = step(r.thing, this.state, tool);
     const changed = after !== this.state;
@@ -220,22 +239,40 @@ export function tableLayout(view: View, n: number): TableLayout {
     const snow = { x: view.w / 2 + 20, y: toolY - TOOL / 2, w: TOOL, h: TOOL };
     const table = { x: 40, y: Math.round(view.h * 0.36), w: view.w - 80, h: 240 };
     const thing = Math.min(150, Math.floor((table.w - 40) / Math.max(n, 1)) - 16);
-    return { table, spots: spots(n, table, thing), thing, sun, snow, card: { x: view.w / 2 - 80, y: top, w: 160, h: 160 } };
+    return {
+      table,
+      spots: spots(n, table, thing),
+      thing,
+      sun,
+      snow,
+      card: { x: view.w / 2 - 80, y: top, w: 160, h: 160 },
+    };
   }
   const right = view.w - 40 - TOOL;
   const sun = { x: right, y: view.h / 2 - TOOL - 24, w: TOOL, h: TOOL };
   const snow = { x: right, y: view.h / 2 + 24, w: TOOL, h: TOOL };
   const table = { x: PET.w + 10, y: view.h / 2 - 40, w: right - 60 - PET.w, h: 220 };
   const thing = Math.min(150, Math.floor((table.w - 40) / Math.max(n, 1)) - 16);
-  return { table, spots: spots(n, table, thing), thing, sun, snow, card: { x: table.x + table.w / 2 - 80, y: top - 30, w: 160, h: 160 } };
+  return {
+    table,
+    spots: spots(n, table, thing),
+    thing,
+    sun,
+    snow,
+    card: { x: table.x + table.w / 2 - 80, y: top - 30, w: 160, h: 160 },
+  };
 }
 
 function spots(n: number, table: Box, size: number) {
   const gap = (table.w - n * size) / (n + 1);
-  return Array.from({ length: n }, (_, i) => ({ x: table.x + gap + size / 2 + i * (size + gap), y: table.y + table.h / 2 - 20 }));
+  return Array.from({ length: n }, (_, i) => ({
+    x: table.x + gap + size / 2 + i * (size + gap),
+    y: table.y + table.h / 2 - 20,
+  }));
 }
 
-export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET.w, h: PET.h });
 
 export const LEVELS: BandLevels = {

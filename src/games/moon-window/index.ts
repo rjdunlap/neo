@@ -8,14 +8,49 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawLitOutline, drawMoon, drawWall, frameArt, iconArt, laterArt, requestArt, shutterArt, stickerArt, windowArt } from './art';
-import { LEVELS, AMOUNT_WORDS, amountOf, CardRound, center, compareBoards, LOOK_PRESSES, lookStart, lookViews, missSpot, moonPlan, sameBoards, viewLine, windowLayout, type Plan, type WindowLayout } from './logic';
+import {
+  drawLitOutline,
+  drawMoon,
+  drawWall,
+  frameArt,
+  iconArt,
+  laterArt,
+  requestArt,
+  shutterArt,
+  stickerArt,
+  windowArt,
+} from './art';
+import {
+  LEVELS,
+  AMOUNT_WORDS,
+  amountOf,
+  CardRound,
+  center,
+  compareBoards,
+  LOOK_PRESSES,
+  lookStart,
+  lookViews,
+  missSpot,
+  moonPlan,
+  sameBoards,
+  viewLine,
+  windowLayout,
+  type Plan,
+  type WindowLayout,
+} from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
 
 /** The window's stars, as fractions of its radius: a quiet sky with nothing that implies an hour. */
-const STARS = [{ x: -0.62, y: -0.48 }, { x: 0.58, y: -0.62 }, { x: 0.7, y: 0.4 }, { x: -0.5, y: 0.66 }, { x: 0.1, y: -0.82 }, { x: -0.82, y: 0.08 }];
+const STARS = [
+  { x: -0.62, y: -0.48 },
+  { x: 0.58, y: -0.62 },
+  { x: 0.7, y: 0.4 },
+  { x: -0.5, y: 0.66 },
+  { x: 0.1, y: -0.82 },
+  { x: -0.82, y: 0.08 },
+];
 const WINDOW_D = 340;
 const CARD = 220;
 const THUMB_R = 36;
@@ -62,7 +97,8 @@ class MoonWindow implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = moonPlan(ctx.level);
-    this.layout = windowLayout(ctx.view, ctx.level) ?? windowLayout({ w: 1024, h: 768, scale: 1 }, ctx.level)!;
+    this.layout =
+      windowLayout(ctx.view, ctx.level) ?? windowLayout({ w: 1024, h: 768, scale: 1 }, ctx.level)!;
     const authored = !!ctx.demo || !authoredShown.has(ctx.level);
     if (!ctx.demo) authoredShown.add(ctx.level);
     ctx.stage.addChild(this.wall);
@@ -86,7 +122,8 @@ class MoonWindow implements Game {
       this.askForHint = () => this.nudge();
       this.hintLabel = 'Show a hint';
     } else {
-      const boards = this.plan.mode === 'same' ? sameBoards(ctx.rng, authored) : compareBoards(ctx.rng, authored);
+      const boards =
+        this.plan.mode === 'same' ? sameBoards(ctx.rng, authored) : compareBoards(ctx.rng, authored);
       this.round = new CardRound(ctx.demo ? boards.slice(0, 1) : boards);
       for (let i = 0; i < 2; i++) {
         const node = new Container();
@@ -113,7 +150,10 @@ class MoonWindow implements Game {
 
   start() {
     if (this.plan.mode === 'look') {
-      void this.ctx.say('moonwindow.intro').then(() => this.ctx.say(viewLine(this.views[0]))).then(() => this.ctx.instruct('moonwindow.instruct.look'));
+      void this.ctx
+        .say('moonwindow.intro')
+        .then(() => this.ctx.say(viewLine(this.views[0])))
+        .then(() => this.ctx.instruct('moonwindow.instruct.look'));
     } else this.askRequest();
   }
 
@@ -170,7 +210,9 @@ class MoonWindow implements Game {
       if (this.ctx.tw.busy(node.scale)) return;
       sfx.tick();
       void this.ctx.say(viewLine(k));
-      void this.ctx.tw.to(node.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }));
+      void this.ctx.tw
+        .to(node.scale, { x: 1.12, y: 1.12 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }));
     });
     node.scale.set(0);
     this.ctx.stage.addChild(node);
@@ -209,14 +251,23 @@ class MoonWindow implements Game {
   private askRequest() {
     if (!this.round || this.round.finished) return;
     const b = this.round.board;
-    void this.ctx.instruct(this.plan.mode === 'same' ? 'moonwindow.instruct.same' : b.ask === 'more' ? 'moonwindow.instruct.more' : 'moonwindow.instruct.less');
+    void this.ctx.instruct(
+      this.plan.mode === 'same'
+        ? 'moonwindow.instruct.same'
+        : b.ask === 'more'
+          ? 'moonwindow.instruct.more'
+          : 'moonwindow.instruct.less',
+    );
   }
 
   private tapCard(i: 0 | 1) {
     if (this.finished || !this.round) return;
     const card = this.cards[i];
     sfx.tick();
-    if (!this.ctx.tw.busy(card.node.scale)) void this.ctx.tw.to(card.node.scale, { x: 1.08, y: 1.08 }, { duration: 0.1 }).then(() => this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+    if (!this.ctx.tw.busy(card.node.scale))
+      void this.ctx.tw
+        .to(card.node.scale, { x: 1.08, y: 1.08 }, { duration: 0.1 })
+        .then(() => this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
     if (this.busy) return;
     const out = this.round.tap(i);
     this.misses = this.round.misses;
@@ -238,13 +289,19 @@ class MoonWindow implements Game {
       const home = { x: card.node.x, y: card.node.y };
       const beside = center(missSpot(this.view, this.layout));
       await this.ctx.tw.to(card.node, beside, { duration: 0.35, ease: ease.outQuad });
-      await this.ctx.say('moonwindow.miss.same', { has: AMOUNT_WORDS[amountOf(card.k)], want: AMOUNT_WORDS[amountOf(b.target!)] });
+      await this.ctx.say('moonwindow.miss.same', {
+        has: AMOUNT_WORDS[amountOf(card.k)],
+        want: AMOUNT_WORDS[amountOf(b.target!)],
+      });
       await this.ctx.tw.to(card.node, home, { duration: 0.35, ease: ease.outQuad });
     } else {
       // Both cards outline their lit part while the pet compares them.
       drawLitOutline(card.outline, card.k, this.layout.cardMoonR);
       drawLitOutline(other.outline, other.k, this.layout.cardMoonR);
-      await this.ctx.say('moonwindow.miss.compare', { a: AMOUNT_WORDS[amountOf(card.k)], b: AMOUNT_WORDS[amountOf(other.k)] });
+      await this.ctx.say('moonwindow.miss.compare', {
+        a: AMOUNT_WORDS[amountOf(card.k)],
+        b: AMOUNT_WORDS[amountOf(other.k)],
+      });
     }
     this.drawGlow();
     this.busy = false;
@@ -263,13 +320,27 @@ class MoonWindow implements Game {
       await this.ctx.tw.to(card.node, { x: w.x, y: w.y }, { duration: 0.45, ease: ease.inOutSine });
       await this.ctx.tw.to(card.node.scale, { x: k, y: k }, { duration: 0.2 });
       sfx.sparkle();
-      this.ctx.particles.burst(w.x, w.y, { kind: 'ring', colors: [swatch.yellow.light, swatch.white.fill], count: 10, speed: [40, 110], gravity: -20, life: [0.5, 0.9] });
+      this.ctx.particles.burst(w.x, w.y, {
+        kind: 'ring',
+        colors: [swatch.yellow.light, swatch.white.fill],
+        count: 10,
+        speed: [40, 110],
+        gravity: -20,
+        life: [0.5, 0.9],
+      });
       await this.ctx.say('moonwindow.right');
       await this.ctx.tw.to(card.node, { alpha: 0 }, { duration: 0.2 });
       card.node.position.set(home.x, home.y);
       card.node.scale.set(1);
     } else {
-      this.ctx.particles.burst(card.node.x, card.node.y, { kind: 'ring', colors: [swatch.yellow.light, swatch.white.fill], count: 10, speed: [40, 110], gravity: -20, life: [0.5, 0.9] });
+      this.ctx.particles.burst(card.node.x, card.node.y, {
+        kind: 'ring',
+        colors: [swatch.yellow.light, swatch.white.fill],
+        count: 10,
+        speed: [40, 110],
+        gravity: -20,
+        life: [0.5, 0.9],
+      });
       await this.ctx.say(viewLine(card.k));
     }
     await this.ctx.tw.wait(0.3);
@@ -282,7 +353,15 @@ class MoonWindow implements Game {
       c.node.alpha = 0;
       c.node.y += 30;
     }
-    await Promise.all(this.cards.map((c, j) => this.ctx.tw.wait(j * 0.1).then(() => this.ctx.tw.to(c.node, { alpha: 1, y: c.node.y - 30 }, { duration: 0.35, ease: ease.outBack }))));
+    await Promise.all(
+      this.cards.map((c, j) =>
+        this.ctx.tw
+          .wait(j * 0.1)
+          .then(() =>
+            this.ctx.tw.to(c.node, { alpha: 1, y: c.node.y - 30 }, { duration: 0.35, ease: ease.outBack }),
+          ),
+      ),
+    );
     this.busy = false;
     this.askRequest();
   }
@@ -300,7 +379,10 @@ class MoonWindow implements Game {
     const g = this.glow.clear();
     if (this.finished || !this.round || !this.round.glowing) return;
     const c = this.cards[this.round.hintFor()].node;
-    g.roundRect(c.x - CARD / 2 - 12, c.y - CARD / 2 - 12, CARD + 24, CARD + 24, 30).stroke({ width: 8, color: swatch.yellow.line });
+    g.roundRect(c.x - CARD / 2 - 12, c.y - CARD / 2 - 12, CARD + 24, CARD + 24, 30).stroke({
+      width: 8,
+      color: swatch.yellow.line,
+    });
   }
 
   // Round end and the pause sheet -----------------------------------------------------------------------
@@ -310,7 +392,10 @@ class MoonWindow implements Game {
     this.finished = true;
     this.glow.clear();
     const r = this.layout.moonR;
-    this.moonGlow.clear().circle(0, 0, r + 26).fill({ color: swatch.yellow.light, alpha: 0.5 });
+    this.moonGlow
+      .clear()
+      .circle(0, 0, r + 26)
+      .fill({ color: swatch.yellow.light, alpha: 0.5 });
     this.moonGlow.alpha = 0;
     void this.ctx.tw.to(this.moonGlow, { alpha: 1 }, { duration: 0.6 });
     await this.ctx.tw.wait(0.6);

@@ -9,14 +9,23 @@ export type Cell = Side | null;
 export type Board = readonly Cell[];
 
 export const LINES: readonly (readonly [number, number, number])[] = [
-  [0, 1, 2], [3, 4, 5], [6, 7, 8],
-  [0, 3, 6], [1, 4, 7], [2, 5, 8],
-  [0, 4, 8], [2, 4, 6],
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6],
 ];
 
 export type LevelId = 'finish' | 'stop' | 'first';
 
-export interface Plan { level: number; id: LevelId; name: string }
+export interface Plan {
+  level: number;
+  id: LevelId;
+  name: string;
+}
 
 const PLANS: readonly Plan[] = [
   { level: 1, id: 'finish', name: 'Finish the row: set the third shell' },
@@ -41,7 +50,8 @@ export const POSITIONS = 3;
 
 export const other = (s: Side): Side => (s === 'shell' ? 'pebble' : 'shell');
 export const key = (b: Board) => b.map((c) => (c === 'shell' ? 'x' : c === 'pebble' ? 'o' : '.')).join('');
-export const fromKey = (k: string): Board => [...k].map((ch) => (ch === 'x' ? 'shell' : ch === 'o' ? 'pebble' : null));
+export const fromKey = (k: string): Board =>
+  [...k].map((ch) => (ch === 'x' ? 'shell' : ch === 'o' ? 'pebble' : null));
 export const count = (b: Board, s: Side) => b.filter((c) => c === s).length;
 export const empties = (b: Board) => b.flatMap((c, i) => (c === null ? [i] : []));
 
@@ -69,7 +79,8 @@ export function winsFor(b: Board, side: Side): number[] {
 
 /** A position she can be asked to move in: legal counts (either player went first), no completed line, a square free. */
 export function herTurn(b: Board): boolean {
-  const s = count(b, 'shell'), p = count(b, 'pebble');
+  const s = count(b, 'shell'),
+    p = count(b, 'pebble');
   if (!(s === p || p === s + 1)) return false;
   if (wonLine(b, 'shell') || wonLine(b, 'pebble')) return false;
   return empties(b).length > 0;
@@ -145,11 +156,20 @@ export function rightSquare(level: number, b: Board): number {
 export function fits(level: number, b: Board): boolean {
   if (!herTurn(b)) return false;
   const pieces = 9 - empties(b).length;
-  const hers = winsFor(b, 'shell'), pets = winsFor(b, 'pebble');
+  const hers = winsFor(b, 'shell'),
+    pets = winsFor(b, 'pebble');
   switch (planFor(level).id) {
-    case 'finish': return hers.length === 1 && pets.length === 0 && pieces <= 5;
-    case 'stop': return pets.length === 1 && hers.length === 0 && pieces <= 5 && value(place(b, pets[0], 'shell'), 'pebble') >= 0;
-    case 'first': return hers.length === 1 && pets.length === 1 && hers[0] !== pets[0];
+    case 'finish':
+      return hers.length === 1 && pets.length === 0 && pieces <= 5;
+    case 'stop':
+      return (
+        pets.length === 1 &&
+        hers.length === 0 &&
+        pieces <= 5 &&
+        value(place(b, pets[0], 'shell'), 'pebble') >= 0
+      );
+    case 'first':
+      return hers.length === 1 && pets.length === 1 && hers[0] !== pets[0];
   }
 }
 
@@ -162,7 +182,8 @@ export function pool(level: number): Board[] {
   const seen = new Set<string>();
   for (let n = 0; n < 3 ** 9; n++) {
     const b: Cell[] = [];
-    for (let i = 0, m = n; i < 9; i++, m = Math.floor(m / 3)) b.push(m % 3 === 0 ? null : m % 3 === 1 ? 'shell' : 'pebble');
+    for (let i = 0, m = n; i < 9; i++, m = Math.floor(m / 3))
+      b.push(m % 3 === 0 ? null : m % 3 === 1 ? 'shell' : 'pebble');
     if (fits(level, b)) seen.add(canonical(b));
   }
   const out = [...seen].sort().map(fromKey);
@@ -203,10 +224,18 @@ export function decidingLine(b: Board, wrong: number, reply: number): readonly [
 // ---- a round ----
 
 export const SHELL_COLORS = ['pink', 'orange', 'purple', 'teal', 'blue'] as const;
-export type ShellColor = typeof SHELL_COLORS[number];
+export type ShellColor = (typeof SHELL_COLORS)[number];
 
-export interface Position { board: Board; right: number; symmetry: number }
-export interface Round { level: number; positions: Position[]; colors: [ShellColor, ShellColor] }
+export interface Position {
+  board: Board;
+  right: number;
+  symmetry: number;
+}
+export interface Round {
+  level: number;
+  positions: Position[];
+  colors: [ShellColor, ShellColor];
+}
 
 export function makeRound(level: number, rng: Rng): Round {
   const plan = planFor(level);
@@ -244,13 +273,23 @@ export class Score {
   glowing = false;
   private hinted = false;
 
-  newPosition() { this.wrongs = 0; this.glowing = false; this.hinted = false; }
+  newPosition() {
+    this.wrongs = 0;
+    this.glowing = false;
+    this.hinted = false;
+  }
 
   answer(right: boolean): Outcome {
-    if (right) { this.glowing = false; return 'right'; }
+    if (right) {
+      this.glowing = false;
+      return 'right';
+    }
     this.misses++;
     this.wrongs++;
-    if (this.wrongs >= 2 && !this.glowing) { this.light(); return 'glow'; }
+    if (this.wrongs >= 2 && !this.glowing) {
+      this.light();
+      return 'glow';
+    }
     return 'miss';
   }
 
@@ -263,18 +302,36 @@ export class Score {
 
   private light() {
     this.glowing = true;
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
   }
 }
 
 // ---- layout ----
 
-export interface Pt { x: number; y: number }
-export interface Box extends Pt { w: number; h: number }
-export const SQUARE = 150, GROOVE = 12, BORDER = 20;
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Box extends Pt {
+  w: number;
+  h: number;
+}
+export const SQUARE = 150,
+  GROOVE = 12,
+  BORDER = 20;
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
-export interface Layout { portrait: boolean; cell: number; board: Box; squares: Box[]; shellPile: Box; pebblePile: Box }
+export interface Layout {
+  portrait: boolean;
+  cell: number;
+  board: Box;
+  squares: Box[];
+  shellPile: Box;
+  pebblePile: Box;
+}
 
 /** The board right of the pet's corner in landscape, centred above the pet's row in portrait; null rather than squares under 100. */
 export function layout(view: { w: number; h: number }): Layout | null {
@@ -292,10 +349,20 @@ export function layout(view: { w: number; h: number }): Layout | null {
   const left = cx - size / 2 + BORDER;
   const up = cy - size / 2 + BORDER;
   const squares = Array.from({ length: 9 }, (_, i) =>
-    box(left + cell / 2 + (i % 3) * (cell + GROOVE), up + cell / 2 + Math.floor(i / 3) * (cell + GROOVE), cell, cell));
+    box(
+      left + cell / 2 + (i % 3) * (cell + GROOVE),
+      up + cell / 2 + Math.floor(i / 3) * (cell + GROOVE),
+      cell,
+      cell,
+    ),
+  );
   const pile = 70;
   const pileY = portrait ? cy - size / 2 - pile / 2 - 4 : cy - size / 2 + pile;
-  const shellPile = portrait ? box(cx - size / 2 + pile, pileY, pile, pile) : box(cx - size / 2 - pile / 2 - 12, pileY, pile, pile);
-  const pebblePile = portrait ? box(cx + size / 2 - pile, pileY, pile, pile) : box(cx + size / 2 + pile / 2 + 12, pileY, pile, pile);
+  const shellPile = portrait
+    ? box(cx - size / 2 + pile, pileY, pile, pile)
+    : box(cx - size / 2 - pile / 2 - 12, pileY, pile, pile);
+  const pebblePile = portrait
+    ? box(cx + size / 2 - pile, pileY, pile, pile)
+    : box(cx + size / 2 + pile / 2 + 12, pileY, pile, pile);
   return { portrait, cell, board: box(cx, cy, size, size), squares, shellPile, pebblePile };
 }

@@ -2,15 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import {
-  answerFor, AUTHORED, BADGES, FRIENDS, glowFor, HOME_CORNER, isItemDecoy, LOOKALIKE, makeRound, noticeBoardLayout, PET_CORNER,
-  PLACES, Play, POOL_1, POOL_2, POOL_3, posterById, type Item, type Rect, type Round,
+  answerFor,
+  AUTHORED,
+  BADGES,
+  FRIENDS,
+  glowFor,
+  HOME_CORNER,
+  isItemDecoy,
+  LOOKALIKE,
+  makeRound,
+  noticeBoardLayout,
+  PET_CORNER,
+  PLACES,
+  Play,
+  POOL_1,
+  POOL_2,
+  POOL_3,
+  posterById,
+  type Item,
+  type Rect,
+  type Round,
 } from './logic';
 
 const SEEDS = 300;
 const seeds = Array.from({ length: SEEDS }, (_, i) => i + 1);
 const roundFor = (level: number, seed: number) => makeRound(level, new Rng(seed));
 const lines = SCRIPT as Record<string, readonly string[]>;
-const distinct = <T,>(xs: T[]) => new Set(xs).size === xs.length;
+const distinct = <T>(xs: T[]) => new Set(xs).size === xs.length;
 
 describe('pools and authored rounds', () => {
   it('has the pool sizes from the definition', () => {
@@ -32,7 +50,9 @@ describe('pools and authored rounds', () => {
     expect(r.items.map((i) => i.poster.id)).toEqual(AUTHORED[1]);
     expect(r.items[1].poster.about).toBe(true);
     expect(r.items[1].subject).toBeDefined();
-    expect(r.items[1].subject).not.toBe(answerFor(r.items[1]).kind === 'friend' ? (answerFor(r.items[1]) as { i: number }).i : -1);
+    expect(r.items[1].subject).not.toBe(
+      answerFor(r.items[1]).kind === 'friend' ? (answerFor(r.items[1]) as { i: number }).i : -1,
+    );
   });
   it('authored level 2 starts with a stretched poster and has both truths', () => {
     const r = makeRound(2, new Rng(1), true);
@@ -82,7 +102,8 @@ describe('level 1 rounds', () => {
     }
   });
   it('is deterministic per seed', () => {
-    for (const lv of [1, 2, 3]) for (const s of seeds.slice(0, 40)) expect(roundFor(lv, s)).toEqual(roundFor(lv, s));
+    for (const lv of [1, 2, 3])
+      for (const s of seeds.slice(0, 40)) expect(roundFor(lv, s)).toEqual(roundFor(lv, s));
   });
 });
 
@@ -133,7 +154,10 @@ describe('level 3 rounds', () => {
       expect(sells).toBeLessThanOrEqual(3);
       expect(4 - sells).toBeGreaterThanOrEqual(1);
       expect(4 - sells).toBeLessThanOrEqual(3);
-      expect(r.items.some((i) => isItemDecoy(i.poster)), `seed ${s}`).toBe(true);
+      expect(
+        r.items.some((i) => isItemDecoy(i.poster)),
+        `seed ${s}`,
+      ).toBe(true);
       for (const it of r.items) {
         expect(it.poster.level).toBe(3);
         expect(answerFor(it)).toEqual({ kind: 'basket', purpose: it.poster.purpose });
@@ -213,41 +237,44 @@ describe('accounting', () => {
     expect(p.hints).toBe(2);
   });
   it('plays every level to the end and then ignores taps', () => {
-    for (const lv of [1, 2, 3]) for (const s of seeds.slice(0, 60)) {
-      const p = new Play(roundFor(lv, s));
-      let last: ReturnType<Play['tapFriend']> | undefined;
-      let guard = 0;
-      while (!p.done && guard++ < 10) {
-        const t = p.target()!;
-        last = t.kind === 'friend' ? p.tapFriend(t.i) : p.tapBasket(t.purpose);
-        expect(last.kind).toBe('right');
+    for (const lv of [1, 2, 3])
+      for (const s of seeds.slice(0, 60)) {
+        const p = new Play(roundFor(lv, s));
+        let last: ReturnType<Play['tapFriend']> | undefined;
+        let guard = 0;
+        while (!p.done && guard++ < 10) {
+          const t = p.target()!;
+          last = t.kind === 'friend' ? p.tapFriend(t.i) : p.tapBasket(t.purpose);
+          expect(last.kind).toBe('right');
+        }
+        expect(p.done).toBe(true);
+        expect((last as { done: boolean }).done).toBe(true);
+        expect(p.misses + p.hints).toBe(0);
+        expect(p.target()).toBeNull();
+        expect(p.tapFriend(0)).toEqual({ kind: 'free' });
+        expect(p.tapBasket('tell')).toEqual({ kind: 'free' });
+        expect(p.requestHint()).toBe(false);
       }
-      expect(p.done).toBe(true);
-      expect((last as { done: boolean }).done).toBe(true);
-      expect(p.misses + p.hints).toBe(0);
-      expect(p.target()).toBeNull();
-      expect(p.tapFriend(0)).toEqual({ kind: 'free' });
-      expect(p.tapBasket('tell')).toEqual({ kind: 'free' });
-      expect(p.requestHint()).toBe(false);
-    }
   });
 });
 
 describe('hints lead somewhere', () => {
   it('glowFor is the maker, the witness or the right basket, and is not a wrong answer', () => {
-    for (const lv of [1, 2, 3]) for (const s of seeds) {
-      const r: Round = roundFor(lv, s);
-      for (const it of r.items) {
-        const g = glowFor(it);
-        expect(g).toEqual(answerFor(it));
-        if (lv === 1) expect(g).toEqual({ kind: 'friend', i: it.bench.findIndex((f) => f.name === it.maker) });
-        if (lv === 2) expect(g).toEqual({ kind: 'friend', i: it.witness });
-        if (lv === 3) expect(g).toEqual({ kind: 'basket', purpose: it.poster.purpose });
-        const p = new Play({ level: lv, items: [it] });
-        const out = g.kind === 'friend' ? p.tapFriend(g.i) : p.tapBasket(g.purpose);
-        expect(out.kind).toBe('right');
+    for (const lv of [1, 2, 3])
+      for (const s of seeds) {
+        const r: Round = roundFor(lv, s);
+        for (const it of r.items) {
+          const g = glowFor(it);
+          expect(g).toEqual(answerFor(it));
+          if (lv === 1)
+            expect(g).toEqual({ kind: 'friend', i: it.bench.findIndex((f) => f.name === it.maker) });
+          if (lv === 2) expect(g).toEqual({ kind: 'friend', i: it.witness });
+          if (lv === 3) expect(g).toEqual({ kind: 'basket', purpose: it.poster.purpose });
+          const p = new Play({ level: lv, items: [it] });
+          const out = g.kind === 'friend' ? p.tapFriend(g.i) : p.tapBasket(g.purpose);
+          expect(out.kind).toBe('right');
+        }
       }
-    }
   });
   it('Play.target follows the current poster', () => {
     const p = new Play(roundFor(1, 4));
@@ -259,31 +286,45 @@ describe('hints lead somewhere', () => {
 });
 
 describe('layout', () => {
-  const views = [{ w: 1024, h: 768 }, { w: 1366, h: 1024 }, { w: 768, h: 1024 }, { w: 1024, h: 1366 }];
-  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  for (const v of views) for (const lv of [1, 2, 3]) {
-    it(`fits level ${lv} at ${v.w}x${v.h}`, () => {
-      const l = noticeBoardLayout(v, lv);
-      expect(l.friends).toHaveLength(3);
-      expect(l.baskets).toHaveLength(lv === 3 ? 2 : 0);
-      expect(!!l.photo).toBe(lv === 2);
-      const named: [string, Rect][] = [['poster', l.poster], ...l.friends.map((r, i): [string, Rect] => [`friend${i}`, r]),
-        ...l.baskets.map((r, i): [string, Rect] => [`basket${i}`, r])];
-      if (l.photo) named.push(['photo', l.photo]);
-      for (const [n, r] of named) {
-        expect(r.w, n).toBeGreaterThanOrEqual(100);
-        expect(r.h, n).toBeGreaterThanOrEqual(100);
-        expect(r.x, n).toBeGreaterThanOrEqual(0);
-        expect(r.y, n).toBeGreaterThanOrEqual(0);
-        expect(r.x + r.w, n).toBeLessThanOrEqual(v.w);
-        expect(r.y + r.h, n).toBeLessThanOrEqual(v.h);
-        expect(r.x < PET_CORNER && r.y + r.h > v.h - PET_CORNER, `${n} in pet corner`).toBe(false);
-        expect(r.x < HOME_CORNER && r.y < HOME_CORNER, `${n} in home corner`).toBe(false);
-      }
-      named.forEach(([na, a], i) => named.forEach(([nb, b], j) => { if (i < j) expect(overlap(a, b), `${na}/${nb}`).toBe(false); }));
-      if (l.photo && v.h > v.w) expect(l.photo.x).toBeGreaterThanOrEqual(l.poster.x + l.poster.w);
-    });
-  }
+  const views = [
+    { w: 1024, h: 768 },
+    { w: 1366, h: 1024 },
+    { w: 768, h: 1024 },
+    { w: 1024, h: 1366 },
+  ];
+  const overlap = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  for (const v of views)
+    for (const lv of [1, 2, 3]) {
+      it(`fits level ${lv} at ${v.w}x${v.h}`, () => {
+        const l = noticeBoardLayout(v, lv);
+        expect(l.friends).toHaveLength(3);
+        expect(l.baskets).toHaveLength(lv === 3 ? 2 : 0);
+        expect(!!l.photo).toBe(lv === 2);
+        const named: [string, Rect][] = [
+          ['poster', l.poster],
+          ...l.friends.map((r, i): [string, Rect] => [`friend${i}`, r]),
+          ...l.baskets.map((r, i): [string, Rect] => [`basket${i}`, r]),
+        ];
+        if (l.photo) named.push(['photo', l.photo]);
+        for (const [n, r] of named) {
+          expect(r.w, n).toBeGreaterThanOrEqual(100);
+          expect(r.h, n).toBeGreaterThanOrEqual(100);
+          expect(r.x, n).toBeGreaterThanOrEqual(0);
+          expect(r.y, n).toBeGreaterThanOrEqual(0);
+          expect(r.x + r.w, n).toBeLessThanOrEqual(v.w);
+          expect(r.y + r.h, n).toBeLessThanOrEqual(v.h);
+          expect(r.x < PET_CORNER && r.y + r.h > v.h - PET_CORNER, `${n} in pet corner`).toBe(false);
+          expect(r.x < HOME_CORNER && r.y < HOME_CORNER, `${n} in home corner`).toBe(false);
+        }
+        named.forEach(([na, a], i) =>
+          named.forEach(([nb, b], j) => {
+            if (i < j) expect(overlap(a, b), `${na}/${nb}`).toBe(false);
+          }),
+        );
+        if (l.photo && v.h > v.w) expect(l.photo.x).toBeGreaterThanOrEqual(l.poster.x + l.poster.w);
+      });
+    }
 });
 
 describe('voice', () => {
@@ -292,19 +333,35 @@ describe('voice', () => {
     for (const p of [...POOL_1, ...POOL_2, ...POOL_3]) has(`noticeboard.poster.${p.id}`);
     for (const p of POOL_1) has(`noticeboard.why.${p.id}`);
     for (const p of POOL_3) has(`noticeboard.want.${p.id}`);
-    for (const p of POOL_2) { has(`noticeboard.stretched.${p.topic}`); has(`noticeboard.label.${p.topic}`); }
+    for (const p of POOL_2) {
+      has(`noticeboard.stretched.${p.topic}`);
+      has(`noticeboard.label.${p.topic}`);
+    }
     for (const b of BADGES) has(`noticeboard.notme.${b}`);
     for (const pl of PLACES) has(`noticeboard.elsewhere.${pl}`);
-    for (const k of ['instruct.1', 'instruct.2', 'instruct.3', 'heard', 'saw', 'true', 'tell', 'sell', 'hint', 'done']) has(`noticeboard.${k}`);
+    for (const k of [
+      'instruct.1',
+      'instruct.2',
+      'instruct.3',
+      'heard',
+      'saw',
+      'true',
+      'tell',
+      'sell',
+      'hint',
+      'done',
+    ])
+      has(`noticeboard.${k}`);
   });
   it('keeps the tone kind and never names a friend species', () => {
     const ids = Object.keys(lines).filter((k) => k.startsWith('noticeboard.'));
     expect(ids.length).toBeGreaterThan(50);
     const bad = /\b(wrong|fake|lie|lies|trick|scam)\b/i;
     const species = new RegExp(`\\b(${FRIENDS.join('|')})\\b`, 'i');
-    for (const id of ids) for (const text of lines[id]) {
-      expect(bad.test(text), `${id}: ${text}`).toBe(false);
-      expect(species.test(text), `${id}: ${text}`).toBe(false);
-    }
+    for (const id of ids)
+      for (const text of lines[id]) {
+        expect(bad.test(text), `${id}: ${text}`).toBe(false);
+        expect(species.test(text), `${id}: ${text}`).toBe(false);
+      }
   });
 });

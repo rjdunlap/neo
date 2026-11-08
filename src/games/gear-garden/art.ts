@@ -2,7 +2,12 @@ import { Container, Graphics } from 'pixi.js';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { BLOOM_TURNS, PITCH, TEETH, TIP, type FlowerColor, type FlowerKind } from './logic';
 
-const stroke = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+const stroke = (color: number, width = 5) => ({
+  width,
+  color,
+  join: 'round' as const,
+  cap: 'round' as const,
+});
 
 /** The gear colours, by role: the handle's gear, the idler and the loose gear, and the flower's. */
 export const GEAR_COLORS = { input: 'blue', idler: 'teal', loose: 'orange', output: 'green' } as const;
@@ -16,13 +21,22 @@ export function gearArt(r: number, color: keyof typeof swatch): Graphics {
   const tip = TIP * r;
   for (let k = 0; k < TEETH; k++) {
     const a = k * PITCH;
-    for (const [da, rr] of [[-0.5, root], [-0.28, tip], [0.28, tip], [0.5, root]] as const) {
+    for (const [da, rr] of [
+      [-0.5, root],
+      [-0.28, tip],
+      [0.28, tip],
+      [0.5, root],
+    ] as const) {
       const t = a + da * PITCH;
       pts.push(Math.cos(t) * rr, Math.sin(t) * rr);
     }
   }
-  g.poly(pts).fill(sw.fill).stroke(stroke(sw.line, Math.max(3, r * 0.06)));
-  g.circle(0, 0, r * 0.55).fill(sw.light).stroke(stroke(sw.line, 3));
+  g.poly(pts)
+    .fill(sw.fill)
+    .stroke(stroke(sw.line, Math.max(3, r * 0.06)));
+  g.circle(0, 0, r * 0.55)
+    .fill(sw.light)
+    .stroke(stroke(sw.line, 3));
   for (let k = 0; k < 4; k++) {
     const a = (k * Math.PI) / 2 + Math.PI / 4;
     g.circle(Math.cos(a) * r * 0.32, Math.sin(a) * r * 0.32, r * 0.08).fill(sw.line);
@@ -34,9 +48,14 @@ export function gearArt(r: number, color: keyof typeof swatch): Graphics {
 /** The handle: a spoke out to a big knob, riding on the input gear. */
 export function handleArt(r: number): Graphics {
   return new Graphics()
-    .moveTo(0, 0).lineTo(r * 0.62, 0).stroke(stroke(wood.line, r * 0.16))
-    .circle(r * 0.62, 0, r * 0.24).fill(swatch.red.fill).stroke(stroke(swatch.red.line, 4))
-    .circle(r * 0.56, -r * 0.06, r * 0.07).fill(0xffffff);
+    .moveTo(0, 0)
+    .lineTo(r * 0.62, 0)
+    .stroke(stroke(wood.line, r * 0.16))
+    .circle(r * 0.62, 0, r * 0.24)
+    .fill(swatch.red.fill)
+    .stroke(stroke(swatch.red.line, 4))
+    .circle(r * 0.56, -r * 0.06, r * 0.07)
+    .fill(0xffffff);
 }
 
 /** The flower on the output's axle, opening one ring of petals per quarter turn (`open` 0–4). */
@@ -47,7 +66,9 @@ export function flowerArt(kind: FlowerKind, color: FlowerColor, r: number, open:
   const s = r * 0.62;
   const rings = Math.max(0, Math.min(BLOOM_TURNS, open));
   if (rings === 0) {
-    g.ellipse(0, 0, s * 0.42, s * 0.55).fill(swatch.green.fill).stroke(stroke(swatch.green.line, 4));
+    g.ellipse(0, 0, s * 0.42, s * 0.55)
+      .fill(swatch.green.fill)
+      .stroke(stroke(swatch.green.line, 4));
     g.ellipse(0, -s * 0.15, s * 0.26, s * 0.3).fill(sw.fill);
   }
   for (let ring = rings; ring >= 1; ring--) {
@@ -57,8 +78,10 @@ export function flowerArt(kind: FlowerKind, color: FlowerColor, r: number, open:
       const a = (k / n) * Math.PI * 2 + ring * 0.3;
       const cx = Math.cos(a) * len * 0.55;
       const cy = Math.sin(a) * len * 0.55;
-      const petal = new Graphics().ellipse(0, 0, len * 0.5, kind === 'tulip' ? len * 0.36 : len * 0.2)
-        .fill(ring % 2 ? sw.fill : sw.light).stroke(stroke(sw.line, 3));
+      const petal = new Graphics()
+        .ellipse(0, 0, len * 0.5, kind === 'tulip' ? len * 0.36 : len * 0.2)
+        .fill(ring % 2 ? sw.fill : sw.light)
+        .stroke(stroke(sw.line, 3));
       petal.position.set(cx, cy);
       petal.rotation = a;
       c.addChild(petal);
@@ -66,8 +89,16 @@ export function flowerArt(kind: FlowerKind, color: FlowerColor, r: number, open:
   }
   c.addChild(g);
   if (rings > 0) {
-    const centre = kind === 'sunflower' ? 0x8f6142 : kind === 'daisy' ? swatch.yellow.fill : swatch.yellow.light;
-    c.addChild(new Graphics().circle(0, 0, s * 0.3).fill(centre).stroke(stroke(ink, 3)).circle(-s * 0.08, -s * 0.08, s * 0.07).fill(0xffffff));
+    const centre =
+      kind === 'sunflower' ? 0x8f6142 : kind === 'daisy' ? swatch.yellow.fill : swatch.yellow.light;
+    c.addChild(
+      new Graphics()
+        .circle(0, 0, s * 0.3)
+        .fill(centre)
+        .stroke(stroke(ink, 3))
+        .circle(-s * 0.08, -s * 0.08, s * 0.07)
+        .fill(0xffffff),
+    );
   }
   return c;
 }
@@ -86,9 +117,12 @@ export function arrowArt(r: number, dir: 1 | -1, color: number): Graphics {
   const tang = to + (dir === 1 ? Math.PI / 2 : -Math.PI / 2);
   const hs = Math.max(18, r * 0.26);
   g.poly([
-    tx + Math.cos(tang) * hs, ty + Math.sin(tang) * hs,
-    tx + Math.cos(tang + 2.4) * hs, ty + Math.sin(tang + 2.4) * hs,
-    tx + Math.cos(tang - 2.4) * hs, ty + Math.sin(tang - 2.4) * hs,
+    tx + Math.cos(tang) * hs,
+    ty + Math.sin(tang) * hs,
+    tx + Math.cos(tang + 2.4) * hs,
+    ty + Math.sin(tang + 2.4) * hs,
+    tx + Math.cos(tang - 2.4) * hs,
+    ty + Math.sin(tang - 2.4) * hs,
   ]).fill(color);
   return g;
 }
@@ -96,15 +130,21 @@ export function arrowArt(r: number, dir: 1 | -1, color: number): Graphics {
 /** The wooden machine face behind the gears. */
 export function panelArt(w: number, h: number): Graphics {
   return new Graphics()
-    .roundRect(-w / 2, -h / 2 + 8, w, h, 30).fill(wood.line)
-    .roundRect(-w / 2, -h / 2, w, h, 30).fill(wood.light).stroke(stroke(wood.line, 6));
+    .roundRect(-w / 2, -h / 2 + 8, w, h, 30)
+    .fill(wood.line)
+    .roundRect(-w / 2, -h / 2, w, h, 30)
+    .fill(wood.light)
+    .stroke(stroke(wood.line, 6));
 }
 
 /** The tray the loose gear rests in. */
 export function trayArt(s: number): Graphics {
   return new Graphics()
-    .roundRect(-s / 2, -s / 2 + 6, s, s, 26).fill(wood.line)
-    .roundRect(-s / 2, -s / 2, s, s, 26).fill(cream).stroke(stroke(wood.line, 5));
+    .roundRect(-s / 2, -s / 2 + 6, s, s, 26)
+    .fill(wood.line)
+    .roundRect(-s / 2, -s / 2, s, s, 26)
+    .fill(cream)
+    .stroke(stroke(wood.line, 5));
 }
 
 /** An empty socket: a peg in a dashed ring the size of a gear. */
@@ -123,7 +163,14 @@ export function socketArt(r: number): Graphics {
 /** The round Turn-back button: a curved arrow anticlockwise. */
 export function backArt(s: number): Container {
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 4, s / 2).fill(swatch.purple.line).circle(0, 0, s / 2).fill(swatch.purple.fill).stroke(stroke(swatch.purple.line, 5)));
+  c.addChild(
+    new Graphics()
+      .circle(0, 4, s / 2)
+      .fill(swatch.purple.line)
+      .circle(0, 0, s / 2)
+      .fill(swatch.purple.fill)
+      .stroke(stroke(swatch.purple.line, 5)),
+  );
   const arrow = arrowArt(s * 0.24, -1, 0xffffff);
   arrow.position.set(0, s * 0.14);
   c.addChild(arrow);
@@ -131,10 +178,16 @@ export function backArt(s: number): Container {
 }
 
 /** A small picture of a machine, for the level-3 panels and the other-machine card. */
-export function miniMachine(sockets: readonly { x: number; y: number; role: string }[], flower: FlowerKind, color: FlowerColor, r: number): Container {
+export function miniMachine(
+  sockets: readonly { x: number; y: number; role: string }[],
+  flower: FlowerKind,
+  color: FlowerColor,
+  r: number,
+): Container {
   const c = new Container();
   for (const s of sockets) {
-    const node = s.role === 'gap' ? socketArt(r) : gearArt(r, GEAR_COLORS[s.role as 'input' | 'idler' | 'output']);
+    const node =
+      s.role === 'gap' ? socketArt(r) : gearArt(r, GEAR_COLORS[s.role as 'input' | 'idler' | 'output']);
     node.position.set(s.x * r, s.y * r);
     c.addChild(node);
     if (s.role === 'output') {
@@ -154,7 +207,12 @@ export function miniMachine(sockets: readonly { x: number; y: number; role: stri
 }
 
 /** Two meshed gears with a tulip on one: the hub icon and the sticker's base. */
-export function gearPair(r: number, open = BLOOM_TURNS, color: FlowerColor = 'pink', kind: FlowerKind = 'tulip'): Container {
+export function gearPair(
+  r: number,
+  open = BLOOM_TURNS,
+  color: FlowerColor = 'pink',
+  kind: FlowerKind = 'tulip',
+): Container {
   const c = new Container();
   const a = gearArt(r, 'blue');
   a.position.set(-r, 0);

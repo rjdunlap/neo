@@ -10,7 +10,25 @@ import type { View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawTable, ghostArt, iconArt, puddleArt, snowArt, solidArt, sunArt, targetArt } from './art';
-import { LEVELS, MakeRound, meltPlan, melts, requestsFor, sayAfter, step, SUBSTANCES, tableLayout, thingsFor, toolFor, traysFor, type Plan, type State, type Substance, type TableLayout, type Tool } from './logic';
+import {
+  LEVELS,
+  MakeRound,
+  meltPlan,
+  melts,
+  requestsFor,
+  sayAfter,
+  step,
+  SUBSTANCES,
+  tableLayout,
+  thingsFor,
+  toolFor,
+  traysFor,
+  type Plan,
+  type State,
+  type Substance,
+  type TableLayout,
+  type Tool,
+} from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
@@ -90,7 +108,10 @@ class MeltFreeze implements Game {
       this.trays = traysFor(ctx.rng, authored);
       this.show(this.trays[0]);
     }
-    for (const [button, art, tool] of [[this.sunButton, sunArt(), 'sun'], [this.snowButton, snowArt(), 'snow']] as const) {
+    for (const [button, art, tool] of [
+      [this.sunButton, sunArt(), 'sun'],
+      [this.snowButton, snowArt(), 'snow'],
+    ] as const) {
       art.scale.set(1.15);
       button.addChild(tile(150, 150), art);
       button.hitArea = new Rectangle(-80, -80, 160, 160);
@@ -113,7 +134,15 @@ class MeltFreeze implements Game {
       const ghost = ghostArt(id);
       node.addChild(puddle, ghost, solid);
       node.hitArea = new Rectangle(-70, -110, 140, 150);
-      const thing: Thing = { id, state: melts(id) ? state : 'solid', node, solid, puddle, ghost, warmed: false };
+      const thing: Thing = {
+        id,
+        state: melts(id) ? state : 'solid',
+        node,
+        solid,
+        puddle,
+        ghost,
+        warmed: false,
+      };
       this.pose(thing);
       onTap(node, () => this.wiggle(thing));
       this.things.push(thing);
@@ -144,7 +173,9 @@ class MeltFreeze implements Game {
   /** The ghost finger: the sun, then the snowflake, for whatever is on the table; the right tool for a request. */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
-    const tap = (tool: Tool): TouchIntent => ({ tap: { on: tool === 'sun' ? this.sunButton : this.snowButton } });
+    const tap = (tool: Tool): TouchIntent => ({
+      tap: { on: tool === 'sun' ? this.sunButton : this.snowButton },
+    });
     switch (this.plan.mode) {
       case 'watch':
         return !this.seenMelt ? tap('sun') : !this.seenFreeze ? tap('snow') : null;
@@ -163,7 +194,9 @@ class MeltFreeze implements Game {
   private wiggle(t: Thing) {
     if (this.ctx.tw.busy(t.node)) return;
     sfx.tick();
-    void this.ctx.tw.to(t.node, { rotation: 0.12 }, { duration: 0.1 }).then(() => this.ctx.tw.to(t.node, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }));
+    void this.ctx.tw
+      .to(t.node, { rotation: 0.12 }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(t.node, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }));
   }
 
   // Tools -------------------------------------------------------------------------------
@@ -213,7 +246,15 @@ class MeltFreeze implements Game {
     void tw.to(t.puddle, { alpha: 1 }, { duration: 0.4 });
     void tw.wait(0.5).then(() => {
       sfx.pop(2);
-      this.ctx.particles.burst(t.node.x + 30, t.node.y - 10, { colors: [swatch.blue.light, swatch.white.fill], count: 5, speed: [40, 120], gravity: 500, angle: Math.PI / 2, spread: 0.6, size: [0.25, 0.4] });
+      this.ctx.particles.burst(t.node.x + 30, t.node.y - 10, {
+        colors: [swatch.blue.light, swatch.white.fill],
+        count: 5,
+        speed: [40, 120],
+        gravity: 500,
+        angle: Math.PI / 2,
+        spread: 0.6,
+        size: [0.25, 0.4],
+      });
     });
     await tw.to(t.solid.scale, { y: 0.05 }, { duration: 1.1, ease: ease.inOutSine });
     await tw.to(t.solid, { alpha: 0 }, { duration: 0.15 });
@@ -225,7 +266,14 @@ class MeltFreeze implements Game {
   private async freeze(t: Thing) {
     const tw = this.ctx.tw;
     sfx.sparkle();
-    this.ctx.particles.burst(t.node.x, t.node.y - 40, { kind: 'ring', colors: [swatch.blue.light, swatch.white.fill], count: 8, speed: [30, 90], gravity: -40, life: [0.6, 1] });
+    this.ctx.particles.burst(t.node.x, t.node.y - 40, {
+      kind: 'ring',
+      colors: [swatch.blue.light, swatch.white.fill],
+      count: 8,
+      speed: [30, 90],
+      gravity: -40,
+      life: [0.6, 1],
+    });
     void tw.to(t.ghost, { alpha: 0 }, { duration: 0.3 });
     t.solid.alpha = 1;
     void tw.to(t.puddle.scale, { x: 0, y: 0 }, { duration: 1.0, ease: ease.inQuad });
@@ -288,7 +336,10 @@ class MeltFreeze implements Game {
 
   private askRequest() {
     const r = this.round!.request;
-    void this.ctx.instruct(r.to === 'melted' ? 'meltfreeze.instruct.make.melt' : 'meltfreeze.instruct.make.hard', { thing: SUBSTANCES[r.thing].word });
+    void this.ctx.instruct(
+      r.to === 'melted' ? 'meltfreeze.instruct.make.melt' : 'meltfreeze.instruct.make.hard',
+      { thing: SUBSTANCES[r.thing].word },
+    );
   }
 
   private async makeTap(tool: Tool) {
@@ -361,7 +412,11 @@ class MeltFreeze implements Game {
     } else {
       for (const t of movers) t.state = step(t.id, t.state, tool);
       void this.ctx.say(tool === 'sun' ? 'meltfreeze.melt' : 'meltfreeze.freeze');
-      await Promise.all(movers.map((t, i) => this.ctx.tw.wait(i * 0.15).then(() => (tool === 'sun' ? this.melt(t) : this.freeze(t)))));
+      await Promise.all(
+        movers.map((t, i) =>
+          this.ctx.tw.wait(i * 0.15).then(() => (tool === 'sun' ? this.melt(t) : this.freeze(t))),
+        ),
+      );
       if (tool === 'sun') {
         for (const t of movers) this.changed.add(t.id);
         if (this.things.some((t) => !melts(t.id))) {
@@ -375,13 +430,23 @@ class MeltFreeze implements Game {
     this.tray++;
     if (this.tray >= this.trays.length) return void this.end();
     void this.ctx.say('meltfreeze.next');
-    await Promise.all(this.things.map((t) => this.ctx.tw.to(t.node, { alpha: 0, y: t.node.y + 40 }, { duration: 0.35 })));
+    await Promise.all(
+      this.things.map((t) => this.ctx.tw.to(t.node, { alpha: 0, y: t.node.y + 40 }, { duration: 0.35 })),
+    );
     this.show(this.trays[this.tray]);
     for (const t of this.things) {
       t.node.alpha = 0;
       t.node.y += 40;
     }
-    await Promise.all(this.things.map((t, i) => this.ctx.tw.wait(i * 0.08).then(() => this.ctx.tw.to(t.node, { alpha: 1, y: t.node.y - 40 }, { duration: 0.35, ease: ease.outBack }))));
+    await Promise.all(
+      this.things.map((t, i) =>
+        this.ctx.tw
+          .wait(i * 0.08)
+          .then(() =>
+            this.ctx.tw.to(t.node, { alpha: 1, y: t.node.y - 40 }, { duration: 0.35, ease: ease.outBack }),
+          ),
+      ),
+    );
     this.busy = false;
     void this.ctx.instruct('meltfreeze.instruct.tray');
   }
@@ -396,7 +461,13 @@ class MeltFreeze implements Game {
     this.ctx.pet.cheer();
     sfx.tada();
     await this.ctx.say('meltfreeze.done');
-    const discoveries = this.plan.mode === 'tray' ? [...[...this.changed].map((s) => entryId('melt-freeze', s)), ...(this.seenStay ? [entryId('melt-freeze', 'stays')] : [])] : undefined;
+    const discoveries =
+      this.plan.mode === 'tray'
+        ? [
+            ...[...this.changed].map((s) => entryId('melt-freeze', s)),
+            ...(this.seenStay ? [entryId('melt-freeze', 'stays')] : []),
+          ]
+        : undefined;
     this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries });
   }
 
@@ -438,7 +509,12 @@ class MeltFreeze implements Game {
   private place() {
     const L = this.layout;
     const v = this.view;
-    this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light).rect(0, L.table.y + L.table.h - 20, v.w, v.h).fill({ color: swatch.teal.fill, alpha: 0.18 });
+    this.background
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(swatch.teal.light)
+      .rect(0, L.table.y + L.table.h - 20, v.w, v.h)
+      .fill({ color: swatch.teal.fill, alpha: 0.18 });
     drawTable(this.table, L.table);
     this.things.forEach((t, i) => {
       if (this.ctx.tw.busy(t.node)) return;

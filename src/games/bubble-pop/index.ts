@@ -14,7 +14,28 @@ import { BubbleBackdrop } from './backdrop';
 import { LOOKS, sceneFor } from './scenes';
 import { modePicture } from './mode-art';
 import { TargetSignView } from './sign';
-import { LEVELS, bondNumbers, bubbleToPop, choosePalette, countRun, modeCardFor, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
+import {
+  LEVELS,
+  bondNumbers,
+  bubbleToPop,
+  choosePalette,
+  countRun,
+  modeCardFor,
+  signFor,
+  FRIEND_SOUND,
+  FRIENDS,
+  inReach,
+  isRight,
+  meant,
+  nearestShown,
+  planFor,
+  spawnTarget,
+  showsDots,
+  staysPut,
+  TAP_REACH,
+  type BubblePlan,
+  type Friend,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 class BubblePop implements Game {
@@ -81,7 +102,8 @@ class BubblePop implements Game {
       const step = this.run.length > 1 ? this.run[1] - this.run[0] : 1;
       const first = this.run[0];
       if (step < 0) void this.ctx.instruct('bubble.back', { n: first });
-      else if (step > 1) void this.ctx.instruct('bubble.by', { by: step === 10 ? 'tens' : 'fives', n: first });
+      else if (step > 1)
+        void this.ctx.instruct('bubble.by', { by: step === 10 ? 'tens' : 'fives', n: first });
       else if (first > 1) void this.ctx.instruct('bubble.start', { n: first });
       else void this.ctx.instruct('bubble.count');
       this.run.forEach((n, i) => this.spawn(n, i));
@@ -142,7 +164,9 @@ class BubblePop implements Game {
   /** The ghost finger on the how-to card: pop what a capable child would, and the rainbow bubble last. */
   autotouch(): TouchIntent | null {
     if (this.phase === 'done') return null;
-    const shown = this.bubbles.filter((b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h));
+    const shown = this.bubbles.filter(
+      (b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h),
+    );
     if (this.phase === 'finale') {
       const rainbow = shown.find((b) => b.rainbow);
       return rainbow ? { tap: { on: rainbow }, ...(this.catcher ? { receiver: this.catcher } : {}) } : null;
@@ -169,7 +193,14 @@ class BubblePop implements Game {
     if (staysPut(p.mode)) color = RAINBOW[index % RAINBOW.length];
     const critter = p.mode === 'free' && rng.chance(0.3) ? rng.pick(FRIENDS) : undefined;
 
-    const b = new Bubble({ r, color, number, critter, dots: showsDots(this.ctx.level), rim: LOOKS[this.backdrop.scene].rim });
+    const b = new Bubble({
+      r,
+      color,
+      number,
+      critter,
+      dots: showsDots(this.ctx.level),
+      rim: LOOKS[this.backdrop.scene].rim,
+    });
     if (staysPut(p.mode)) {
       b.position.set(rng.range(150 + r, v.w - 50 - r), rng.range(130 + r, v.h - 60 - r));
       const a = rng.range(0, Math.PI * 2);
@@ -180,7 +211,8 @@ class BubblePop implements Game {
       b.vy = -p.speed * rng.range(0.8, 1.25);
     }
     if (p.anywhere) b.eventMode = 'none';
-    else onTap(b, (e) => this.tapped(b, this.layer.toLocal(e.global)), { radius: r * TAP_REACH, cooldown: 300 });
+    else
+      onTap(b, (e) => this.tapped(b, this.layer.toLocal(e.global)), { radius: r * TAP_REACH, cooldown: 300 });
     this.layer.addChild(b);
     this.bubbles.push(b);
     this.spawned++;
@@ -202,13 +234,18 @@ class BubblePop implements Game {
 
   /** Pop anywhere: any touch pops the bubble nearest it among those on the screen, the rainbow bubble last; with none showing it does nothing. */
   private tappedAnywhere(at: { x: number; y: number }) {
-    const shown = this.bubbles.filter((b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h));
+    const shown = this.bubbles.filter(
+      (b) => !b.popped && !b.destroyed && inReach(b, this.view.w, this.view.h),
+    );
     if (this.phase === 'finale') {
       const rainbow = shown.find((b) => b.rainbow);
       if (rainbow) this.tapped(rainbow);
       return;
     }
-    const near = nearestShown(shown.filter((b) => !b.rainbow), at);
+    const near = nearestShown(
+      shown.filter((b) => !b.rainbow),
+      at,
+    );
     if (near) this.tapped(near);
   }
 
@@ -222,7 +259,13 @@ class BubblePop implements Game {
     if (p.mode === 'bonds') {
       // Drifting bubbles overlap: the touch goes to the bubble whose middle is nearest the finger.
       const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
-      const near = at ? live.reduce((best, o) => (Math.hypot(o.x - at.x, o.y - at.y) < Math.hypot(best.x - at.x, best.y - at.y) ? o : best), tapped) : tapped;
+      const near = at
+        ? live.reduce(
+            (best, o) =>
+              Math.hypot(o.x - at.x, o.y - at.y) < Math.hypot(best.x - at.x, best.y - at.y) ? o : best,
+            tapped,
+          )
+        : tapped;
       return void this.tapBond(near);
     }
     const live = this.bubbles.filter((o) => !o.popped && !o.rainbow);
@@ -298,7 +341,8 @@ class BubblePop implements Game {
     this.idle = 0;
     if (this.clock - this.lastNag > 4) {
       this.lastNag = this.clock;
-      if (this.plan.mode === 'color') void this.ctx.say('bubble.wrong', { wrong: b.color!, color: this.target! });
+      if (this.plan.mode === 'color')
+        void this.ctx.say('bubble.wrong', { wrong: b.color!, color: this.target! });
       else void this.ctx.say('bubble.find', { n: this.nextNumber });
     }
     if (this.missStreak >= 2) {
@@ -360,7 +404,12 @@ class BubblePop implements Game {
     this.phase = 'finale';
     const rest = this.bubbles.filter((b) => !b.popped);
     // A straggler may float off the top (and be removed) before its turn comes.
-    rest.forEach((b, i) => void this.ctx.tw.wait(0.2 + i * 0.09).then(() => !b.popped && this.bubbles.includes(b) && this.pop(b)));
+    rest.forEach(
+      (b, i) =>
+        void this.ctx.tw
+          .wait(0.2 + i * 0.09)
+          .then(() => !b.popped && this.bubbles.includes(b) && this.pop(b)),
+    );
     await this.ctx.tw.wait(0.5 + rest.length * 0.09);
 
     const v = this.view;
@@ -383,8 +432,23 @@ class BubblePop implements Game {
     this.phase = 'done';
     b.popped = true;
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(b.x, b.y, { colors, kind: 'confetti', count: 70, speed: [250, 650], gravity: 500, size: [0.6, 1.1], life: [1, 1.8] });
-    this.ctx.particles.burst(b.x, b.y, { colors: [0xffffff, 0xfff3a0], kind: 'star', count: 16, speed: [120, 300], gravity: 0, life: [0.6, 1] });
+    this.ctx.particles.burst(b.x, b.y, {
+      colors,
+      kind: 'confetti',
+      count: 70,
+      speed: [250, 650],
+      gravity: 500,
+      size: [0.6, 1.1],
+      life: [1, 1.8],
+    });
+    this.ctx.particles.burst(b.x, b.y, {
+      colors: [0xffffff, 0xfff3a0],
+      kind: 'star',
+      count: 16,
+      speed: [120, 300],
+      gravity: 0,
+      life: [0.6, 1],
+    });
     sfx.pop(10);
     sfx.tada();
     this.ctx.pet.cheer();
@@ -406,7 +470,12 @@ class BubbleMachine extends Container {
   constructor() {
     super();
     const sw = swatch.teal;
-    const line = (color: number, width = 7) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+    const line = (color: number, width = 7) => ({
+      width,
+      color,
+      join: 'round' as const,
+      cap: 'round' as const,
+    });
     const g = new Graphics()
       .roundRect(-66, -14, 34, 16, 7)
       .roundRect(32, -14, 34, 16, 7)
@@ -449,7 +518,11 @@ class BubbleMachine extends Container {
     if (this.next <= 0 && this.puffs.length < 8) {
       this.next = 0.5 + Math.random() * 0.8;
       const colors: (ColorName | null)[] = [null, 'pink', 'blue', 'yellow', 'green', 'purple'];
-      const g = drawBubble(new Graphics(), 10 + Math.random() * 14, colors[Math.floor(Math.random() * colors.length)]);
+      const g = drawBubble(
+        new Graphics(),
+        10 + Math.random() * 14,
+        colors[Math.floor(Math.random() * colors.length)],
+      );
       g.position.set(0, -190);
       this.addChild(g);
       this.puffs.push({ g, vx: (Math.random() - 0.5) * 70, vy: -50 - Math.random() * 40, life: 2.6 });
@@ -483,7 +556,8 @@ function countLevel(level: number): string {
   const p = planFor(level);
   if (p.steps?.includes(-1)) return `Count back to 1 from a number between ${p.start![0]} and ${p.start![1]}`;
   if (p.steps) return 'Count by tens or fives (10, 20, 30 … or 5, 10, 15 …)';
-  if (p.start) return `Start at a number between ${p.start[0]} and ${p.start[1]} and count up (${p.goal} bubbles)`;
+  if (p.start)
+    return `Start at a number between ${p.start[0]} and ${p.start[1]} and count up (${p.goal} bubbles)`;
   return `Numbers in order, 1 to ${p.goal}`;
 }
 
@@ -499,7 +573,8 @@ export const bubblePop: GameModule = {
   entryLevels: [15],
   describeLevel: (level) => {
     const p = planFor(level);
-    if (p.anywhere) return `Tap anywhere on the screen to pop the nearest bubble, ${p.goal} pops (lap's first level)`;
+    if (p.anywhere)
+      return `Tap anywhere on the screen to pop the nearest bubble, ${p.goal} pops (lap's first level)`;
     if (p.mode === 'free') return `Pop anything, ${p.goal} pops`;
     if (p.mode === 'color') return `Pop one color, ${p.colors} colors in play`;
     if (p.mode === 'bonds') return `Pop two bubbles that make ${p.sum} together (${p.goal} pairs)`;

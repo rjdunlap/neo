@@ -14,8 +14,27 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cardArt, iconArt, madeArt, partArt, type Made } from './art';
 import {
   LEVELS,
-  applyHint, canDrag, CARD, COMPOUNDS, currentAsk, drop, dropTarget, hintFor, MADE, makeRound, newState, planFor, restartState, SHELF,
-  shelfLayout, tableCentre, tableLayout, type Ask, type Compound, type GlueState, type Pt,
+  applyHint,
+  canDrag,
+  CARD,
+  COMPOUNDS,
+  currentAsk,
+  drop,
+  dropTarget,
+  hintFor,
+  MADE,
+  makeRound,
+  newState,
+  planFor,
+  restartState,
+  SHELF,
+  shelfLayout,
+  tableCentre,
+  tableLayout,
+  type Ask,
+  type Compound,
+  type GlueState,
+  type Pt,
 } from './logic';
 
 /** The made thing is drawn about 160 across. */
@@ -72,9 +91,26 @@ class WordGlue implements Game {
     const authored = !!ctx.demo || !authoredShown.has(this.level);
     if (authored && !ctx.demo) authoredShown.add(this.level);
     this.s = newState(makeRound(this.level, ctx.rng, authored));
-    this.backdrop = new Backdrop({ sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x86c98f, 0x8fcf73], horizon: 0.36, clouds: 2, sun: true, seed: 233 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd6efc8, 0xfff6e0],
+        hills: [0x9fd3a8, 0x86c98f, 0x8fcf73],
+        horizon: 0.36,
+        clouds: 2,
+        sun: true,
+        seed: 233,
+      },
+      ctx.view,
+    );
     for (const l of [this.glow, this.madeLayer, this.shelfLayer, this.bubble]) l.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.shelfLayer, this.glow, this.cardLayer, this.madeLayer, this.bubble);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.shelfLayer,
+      this.glow,
+      this.cardLayer,
+      this.madeLayer,
+      this.bubble,
+    );
   }
 
   start() {
@@ -97,7 +133,11 @@ class WordGlue implements Game {
       th.made.node.position.set(slots[i].x, slots[i].y);
     });
     this.placeBubble();
-    if (this.showing && !this.busy) this.showing.made.node.position.set(tableCentre(v, this.cards.length).x, tableCentre(v, this.cards.length).y);
+    if (this.showing && !this.busy)
+      this.showing.made.node.position.set(
+        tableCentre(v, this.cards.length).x,
+        tableCentre(v, this.cards.length).y,
+      );
   }
 
   update(dt: number) {
@@ -113,7 +153,8 @@ class WordGlue implements Game {
         th.made.alive(th.t);
       }
     }
-    if (this.level === 3 && this.bubble.visible) this.bubble.y = this.bubbleY() + Math.sin(this.clock * 3) * 4;
+    if (this.level === 3 && this.bubble.visible)
+      this.bubble.y = this.bubbleY() + Math.sin(this.clock * 3) * 4;
     this.drawGlow();
   }
 
@@ -134,7 +175,8 @@ class WordGlue implements Game {
       this.demoTouched = true;
       if (other) return { tap: { on: other.node }, pause: 0.8 };
     }
-    const from = card(pair[0]), to = card(pair[1]);
+    const from = card(pair[0]),
+      to = card(pair[1]);
     if (!from || !to) return null;
     if (this.level === 1 && this.ctx.band === 'lap') return { tap: { on: from.node }, pause: 1 };
     return { drag: { on: from.node }, to: { on: to.node } };
@@ -203,7 +245,11 @@ class WordGlue implements Game {
         c.node.position.set(pts[i].x, pts[i].y);
         if (c.handle) c.handle.home = { ...pts[i] };
         c.node.scale.set(0.2);
-        void this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.4, delay: i * 0.08, ease: ease.outBack });
+        void this.ctx.tw.to(
+          c.node.scale,
+          { x: 1, y: 1 },
+          { duration: 0.4, delay: i * 0.08, ease: ease.outBack },
+        );
       });
       sfx.pop(5);
       await this.ctx.tw.wait(0.45 + this.cards.length * 0.08);
@@ -246,13 +292,20 @@ class WordGlue implements Game {
     if (this.finished) return;
     sfx.pop(6);
     const ask = currentAsk(this.s);
-    if (this.level === 3 && ask && key === ask.entry.first) void this.ctx.say('wordglue.ask', { head: ask.entry.second });
+    if (this.level === 3 && ask && key === ask.entry.first)
+      void this.ctx.say('wordglue.ask', { head: ask.entry.second });
     else void this.ctx.say('wordglue.word', { word: key });
   }
 
   private target(card: CardNode, x: number, y: number): number | null {
     const own = this.cards.indexOf(card);
-    return dropTarget(this.cards.map((c) => c.handle?.home ?? { x: c.node.x, y: c.node.y }), own, x, y, this.level === 3 ? [0] : undefined);
+    return dropTarget(
+      this.cards.map((c) => c.handle?.home ?? { x: c.node.x, y: c.node.y }),
+      own,
+      x,
+      y,
+      this.level === 3 ? [0] : undefined,
+    );
   }
 
   private dropped(card: CardNode, x: number, y: number): boolean {
@@ -261,7 +314,8 @@ class WordGlue implements Game {
     const own = this.cards.indexOf(card);
     const home = card.handle.home;
     let target = this.target(card, x, y);
-    if (target === null && this.level === 1 && Math.hypot(x - home.x, y - home.y) < TAP_SLOP) target = own === 0 ? 1 : 0;
+    if (target === null && this.level === 1 && Math.hypot(x - home.x, y - home.y) < TAP_SLOP)
+      target = own === 0 ? 1 : 0;
     if (target === null) return false;
     const other = this.cards[target];
     const out = drop(this.s, card.key, other.key);
@@ -294,9 +348,16 @@ class WordGlue implements Game {
     sfx.boing();
     for (const c of [card, other]) {
       this.ctx.tw.kill(c.node);
-      void this.ctx.tw.to(c.node, { rotation: 0.14 }, { duration: 0.08 }).then(() => this.ctx.tw.to(c.node, { rotation: -0.1 }, { duration: 0.1 })).then(() => this.ctx.tw.to(c.node, { rotation: 0 }, { duration: 0.12 }));
+      void this.ctx.tw
+        .to(c.node, { rotation: 0.14 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(c.node, { rotation: -0.1 }, { duration: 0.1 }))
+        .then(() => this.ctx.tw.to(c.node, { rotation: 0 }, { duration: 0.12 }));
     }
-    await this.ctx.say('wordglue.miss.make', { word: ask.entry.word, first: ask.entry.first, second: ask.entry.second });
+    await this.ctx.say('wordglue.miss.make', {
+      word: ask.entry.word,
+      first: ask.entry.first,
+      second: ask.entry.second,
+    });
     if (this.dead) return;
     this.busy = false;
     this.relayout();
@@ -311,7 +372,11 @@ class WordGlue implements Game {
     card.node.visible = false;
     head.node.visible = false;
     const shown = this.show(made);
-    await this.ctx.say('wordglue.miss.for', { made: made.word, meaning: made.meaning, head: ask.entry.second });
+    await this.ctx.say('wordglue.miss.for', {
+      made: made.word,
+      meaning: made.meaning,
+      head: ask.entry.second,
+    });
     if (this.dead) return;
     sfx.pop(3);
     await this.ctx.tw.to(shown.node.scale, { x: 0.01, y: 0.01 }, { duration: 0.25 });
@@ -334,7 +399,11 @@ class WordGlue implements Game {
     made.node.scale.set(0.2);
     this.madeLayer.addChild(made.node);
     this.showing = { made, t: 0 };
-    void this.ctx.tw.to(made.node.scale, { x: MADE / MADE_ART, y: MADE / MADE_ART }, { duration: 0.35, ease: ease.outBack });
+    void this.ctx.tw.to(
+      made.node.scale,
+      { x: MADE / MADE_ART, y: MADE / MADE_ART },
+      { duration: 0.35, ease: ease.outBack },
+    );
     return made;
   }
 
@@ -342,19 +411,33 @@ class WordGlue implements Game {
   private async join(entry: Compound, dragged: CardNode | null) {
     this.busy = true;
     for (const c of this.cards) if (c.handle) c.handle.enabled = false;
-    const a = this.cardOf(entry.first), b = this.cardOf(entry.second);
+    const a = this.cardOf(entry.first),
+      b = this.cardOf(entry.second);
     const centre = tableCentre(this.view, this.cards.length);
     const parts = [a, b].filter((c): c is CardNode => !!c);
     // A supported join flies the right pair in; a dragged one is already on its partner.
-    await Promise.all(parts.map((c) => {
-      this.ctx.tw.kill(c.node);
-      return this.ctx.tw.to(c.node, { x: centre.x + (c === dragged ? 10 : 0), y: centre.y }, { duration: 0.25, ease: ease.inOutSine });
-    }));
+    await Promise.all(
+      parts.map((c) => {
+        this.ctx.tw.kill(c.node);
+        return this.ctx.tw.to(
+          c.node,
+          { x: centre.x + (c === dragged ? 10 : 0), y: centre.y },
+          { duration: 0.25, ease: ease.inOutSine },
+        );
+      }),
+    );
     if (this.dead) return;
     sfx.pop(5);
     void this.ctx.tw.wait(0.12).then(() => !this.dead && sfx.pop(9));
     for (const c of parts) c.node.visible = false;
-    this.ctx.particles.burst(centre.x, centre.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill], count: 12, speed: [80, 200], gravity: 200, life: [0.5, 0.9] });
+    this.ctx.particles.burst(centre.x, centre.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill],
+      count: 12,
+      speed: [80, 200],
+      gravity: 200,
+      life: [0.5, 0.9],
+    });
     const made = this.show(entry);
     this.bubble.visible = false;
     await this.ctx.say('wordglue.join', { first: entry.first, second: entry.second, word: entry.word });
@@ -416,7 +499,12 @@ class WordGlue implements Game {
     }
     const asker = this.cardOf(ask.entry.first);
     if (!asker) return;
-    const g = new Graphics().roundRect(-44, -36, 88, 72, 24).fill(0xffffff).stroke({ width: 4, color: swatch.purple.light }).poly([-10, 34, 10, 34, 0, 50]).fill(0xffffff);
+    const g = new Graphics()
+      .roundRect(-44, -36, 88, 72, 24)
+      .fill(0xffffff)
+      .stroke({ width: 4, color: swatch.purple.light })
+      .poly([-10, 34, 10, 34, 0, 50])
+      .fill(0xffffff);
     const icon = partArt(ask.entry.second);
     icon.scale.set(0.42);
     this.bubble.addChild(g, icon);
@@ -437,7 +525,10 @@ class WordGlue implements Game {
     const pulse = 7 + 2 * Math.sin(this.clock * 6);
     const ring = (c: CardNode | undefined, color: number, width: number) => {
       if (!c || !c.node.visible) return;
-      g.roundRect(c.node.x - CARD / 2 - 10, c.node.y - CARD / 2 - 10, CARD + 20, CARD + 20, 34).stroke({ width, color });
+      g.roundRect(c.node.x - CARD / 2 - 10, c.node.y - CARD / 2 - 10, CARD + 20, CARD + 20, 34).stroke({
+        width,
+        color,
+      });
     };
     // Near feedback: whichever picture a held one would join glows faintly, the same for every picture.
     if (this.near !== null) ring(this.cards[this.near], swatch.white.fill, 6);
@@ -445,7 +536,8 @@ class WordGlue implements Game {
     if (!ask || this.busy) return;
     if (this.s.glow || this.hintPulse > 0) {
       if (this.level === 3) ring(this.cardOf(ask.entry.first), swatch.yellow.fill, pulse);
-      else for (const k of [ask.entry.first, ask.entry.second]) ring(this.cardOf(k), swatch.yellow.fill, pulse);
+      else
+        for (const k of [ask.entry.first, ask.entry.second]) ring(this.cardOf(k), swatch.yellow.fill, pulse);
     }
   }
 }
@@ -472,7 +564,8 @@ export const wordGlue: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Silly Compounds: take turns inventing names for things in the room, like a spoon hat or a sock house. Let her name one first.',
+  coplayHint:
+    'Silly Compounds: take turns inventing names for things in the room, like a spoon hat or a sock house. Let her name one first.',
   offScreen: 'Find a toothbrush, a doorbell or a raincoat at home and say its two little words.',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,

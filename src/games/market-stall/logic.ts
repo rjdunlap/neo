@@ -22,10 +22,34 @@ export const PLANS: ShopPlan[] = [
   { mode: 'count', coins: [1], price: [1, 4], orders: 4, name: 'Count out 1 to 4 shell coins for the price' },
   { mode: 'twos', coins: [1, 2], price: [2, 6], orders: 4, name: 'Pay 2 to 6 with ones and twos' },
   { mode: 'mix', coins: [1, 2, 5], price: [3, 9], orders: 4, name: 'Pay 3 to 9 with ones, twos and fives' },
-  { mode: 'pair', coins: [1, 2, 5], price: [1, 5], orders: 3, name: 'Two things to buy: add the prices, then pay' },
-  { mode: 'ways', coins: [1, 2, 5], price: [4, 10], orders: 3, name: 'Pay the same price two different ways' },
-  { mode: 'change', coins: [1, 2, 5], price: [2, 9], orders: 3, name: 'Keep the stall: a customer pays 10, give the change' },
-  { mode: 'fewest', coins: [1, 2, 5], price: [4, 10], orders: 3, name: 'Pay 4 to 10 with as few shell coins as possible' },
+  {
+    mode: 'pair',
+    coins: [1, 2, 5],
+    price: [1, 5],
+    orders: 3,
+    name: 'Two things to buy: add the prices, then pay',
+  },
+  {
+    mode: 'ways',
+    coins: [1, 2, 5],
+    price: [4, 10],
+    orders: 3,
+    name: 'Pay the same price two different ways',
+  },
+  {
+    mode: 'change',
+    coins: [1, 2, 5],
+    price: [2, 9],
+    orders: 3,
+    name: 'Keep the stall: a customer pays 10, give the change',
+  },
+  {
+    mode: 'fewest',
+    coins: [1, 2, 5],
+    price: [4, 10],
+    orders: 3,
+    name: 'Pay 4 to 10 with as few shell coins as possible',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -71,19 +95,27 @@ export const sum = (coins: number[]) => coins.reduce((a, b) => a + b, 0);
 export function fewest(amount: number, coins: number[]): number[] {
   const out: number[] = [];
   let left = amount;
-  for (const c of [...coins].sort((a, b) => b - a)) while (left >= c) out.push(c), (left -= c);
+  for (const c of [...coins].sort((a, b) => b - a)) while (left >= c) (out.push(c), (left -= c));
   return out;
 }
 
 /** An exact payment is efficient when it uses no more coins than the best available payment. */
-export const usesFewestCoins = (amount: number, coins: number[], payment: number[]) => sum(payment) === amount && payment.length === fewest(amount, coins).length;
+export const usesFewestCoins = (amount: number, coins: number[], payment: number[]) =>
+  sum(payment) === amount && payment.length === fewest(amount, coins).length;
 
 /** Two payments count as different ways if they use different coins, not just a different order. */
 export const sameWay = (a: number[], b: number[]) => [...a].sort().join() === [...b].sort().join();
 
 /** A second way to pay, for the hint on 'ways' levels: break one coin of the first way into smaller ones. */
 export function anotherWay(amount: number, coins: number[], first: number[]): number[] {
-  const options = [fewest(amount, coins), fewest(amount, coins.filter((c) => c < 5)), Array(amount).fill(1)];
+  const options = [
+    fewest(amount, coins),
+    fewest(
+      amount,
+      coins.filter((c) => c < 5),
+    ),
+    Array(amount).fill(1),
+  ];
   return options.find((o) => !sameWay(o, first)) ?? options[2];
 }
 
@@ -102,17 +134,18 @@ export function payTouch(payment: number[], onMat: number[]): { coin: number } |
 }
 
 /** Explain a wrong amount; specific misconceptions take precedence over its size. */
-export type MissKind = 'price' | 'one-price' | 'counted-coins' | 'one-more' | 'one-less' | 'big-coin' | 'short' | 'over';
+export type MissKind =
+  'price' | 'one-price' | 'counted-coins' | 'one-more' | 'one-less' | 'big-coin' | 'short' | 'over';
 export function missKind(plan: ShopPlan, order: Order, coins: number[]): MissKind | null {
   const want = target(plan, order);
   const got = sum(coins);
   if (got === want) return null;
   if (plan.mode === 'change' && got === sum(order.prices)) return 'price';
   if (plan.mode === 'pair' && order.prices.includes(got)) return 'one-price';
-  if (coins.length === want && coins.some(c => c > 1)) return 'counted-coins';
+  if (coins.length === want && coins.some((c) => c > 1)) return 'counted-coins';
   if (got === want - 1) return 'one-more';
   if (got === want + 1) return 'one-less';
-  if (coins.some(c => c > want)) return 'big-coin';
+  if (coins.some((c) => c > want)) return 'big-coin';
   return got < want ? 'short' : 'over';
 }
 
@@ -152,7 +185,11 @@ export function pips(value: number, r: number): { x: number; y: number; r: numbe
   for (let i = 0; i < value; i++) {
     const row = Math.floor(i / 5);
     const inRow = Math.min(5, value - row * 5);
-    out.push({ x: ((i % 5) - (inRow - 1) / 2) * step, y: r * (rows > 1 ? 0.3 : 0.36) + row * r * 0.26, r: r * 0.11 });
+    out.push({
+      x: ((i % 5) - (inRow - 1) / 2) * step,
+      y: r * (rows > 1 ? 0.3 : 0.36) + row * r * 0.26,
+      r: r * 0.11,
+    });
   }
   return out;
 }
@@ -168,12 +205,16 @@ export function teachLine(plan: ShopPlan, firstWay: number[] | null): 'biggest' 
 
 /** Choose the stall once for the round, after making its prices. Sticker draws use their own table. */
 export const STALL_IDS = ['fruit', 'flower', 'balloon'] as const;
-export type StallId = typeof STALL_IDS[number];
+export type StallId = (typeof STALL_IDS)[number];
 export const stallFor = (rng: Rng): StallId => rng.pick(STALL_IDS);
 
 /** The balloon's string stays above the payment mat; all price tags keep their original position. */
 export function goodPlacement(kind: PropKind, count: number, index: number) {
-  return { x: index * 150 - (count - 1) * 75, y: kind === 'balloon' ? -30 : -10, scale: kind === 'balloon' ? 1 : 1.2 };
+  return {
+    x: index * 150 - (count - 1) * 75,
+    y: kind === 'balloon' ? -30 : -10,
+    scale: kind === 'balloon' ? 1 : 1.2,
+  };
 }
 
 /** Shared round stock anchor for every stall; the existing payment area keeps its geometry. */

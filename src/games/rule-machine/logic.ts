@@ -15,7 +15,15 @@ export const LOOKS: readonly Look[] = ['hat', 'blue', 'big', 'spots'];
 export type Creature = 'pip' | 'duck' | 'pig' | 'cat' | 'bear' | 'dog' | 'bunny';
 export const CREATURES: readonly Creature[] = ['pip', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 /** Each creature's body colour (the same as `CRITTERS`; a test compares them). */
-export const COLOR_OF: Record<Creature, string> = { pip: 'teal', duck: 'yellow', pig: 'pink', cat: 'orange', bear: 'brown', dog: 'brown', bunny: 'white' };
+export const COLOR_OF: Record<Creature, string> = {
+  pip: 'teal',
+  duck: 'yellow',
+  pig: 'pink',
+  cat: 'orange',
+  bear: 'brown',
+  dog: 'brown',
+  bunny: 'white',
+};
 
 /** A creature never already shows the machine's look: no blue one under `blue` (Pip's teal is too near blue to read as a change). */
 export function canTake(c: Creature, look: Look): boolean {
@@ -24,18 +32,30 @@ export function canTake(c: Creature, look: Look): boolean {
 }
 
 /** What a creature looks like: as it is (`look` null) or changed. */
-export interface Picture { creature: Creature; look: Look | null }
+export interface Picture {
+  creature: Creature;
+  look: Look | null;
+}
 
 export type LookRule = { kind: 'look'; change: Look };
 /** `a × in + b`; levels 1–2 use only `a = 1`, levels 3–8 extend it without a new type. */
 export type NumRule = { kind: 'num'; a: 1 | 2 | 3; b: number };
 export type Rule = LookRule | NumRule;
 
-export function dress(rule: LookRule, c: Creature): Picture { return { creature: c, look: rule.change }; }
-export function apply(rule: NumRule, n: number): number { return rule.a * n + rule.b; }
-export interface Row { in: number; out: number }
+export function dress(rule: LookRule, c: Creature): Picture {
+  return { creature: c, look: rule.change };
+}
+export function apply(rule: NumRule, n: number): number {
+  return rule.a * n + rule.b;
+}
+export interface Row {
+  in: number;
+  out: number;
+}
 /** True iff the rule gives every row's out. */
-export function fits(rule: NumRule, rows: readonly Row[]): boolean { return rows.every((r) => apply(rule, r.in) === r.out); }
+export function fits(rule: NumRule, rows: readonly Row[]): boolean {
+  return rows.every((r) => apply(rule, r.in) === r.out);
+}
 
 export const MAX_COUNT = 12;
 
@@ -61,10 +81,58 @@ export interface Plan {
 }
 
 const PLANS: readonly Plan[] = [
-  { level: 1, id: 'hats', ask: 'look', name: 'Hat machine', machines: 2, walkers: 3, predictions: 2, tray: 0, shelf: 'none', cardAfter: 0, lights: 5 },
-  { level: 2, id: 'more', ask: 'count', name: 'One more goes in', machines: 2, walkers: 0, predictions: 4, tray: 5, shelf: 'none', cardAfter: 0, lights: 4 },
-  { level: 3, id: 'what', ask: 'count', name: 'What does it do?', machines: 2, walkers: 0, predictions: 4, tray: 5, shelf: 'after', cardAfter: 3, lights: 4 },
-  { level: 4, id: 'covered', ask: 'count', name: 'Covered machine', machines: 2, walkers: 0, predictions: 1, tray: 5, shelf: 'start', cardAfter: 0, lights: 5 },
+  {
+    level: 1,
+    id: 'hats',
+    ask: 'look',
+    name: 'Hat machine',
+    machines: 2,
+    walkers: 3,
+    predictions: 2,
+    tray: 0,
+    shelf: 'none',
+    cardAfter: 0,
+    lights: 5,
+  },
+  {
+    level: 2,
+    id: 'more',
+    ask: 'count',
+    name: 'One more goes in',
+    machines: 2,
+    walkers: 0,
+    predictions: 4,
+    tray: 5,
+    shelf: 'none',
+    cardAfter: 0,
+    lights: 4,
+  },
+  {
+    level: 3,
+    id: 'what',
+    ask: 'count',
+    name: 'What does it do?',
+    machines: 2,
+    walkers: 0,
+    predictions: 4,
+    tray: 5,
+    shelf: 'after',
+    cardAfter: 3,
+    lights: 4,
+  },
+  {
+    level: 4,
+    id: 'covered',
+    ask: 'count',
+    name: 'Covered machine',
+    machines: 2,
+    walkers: 0,
+    predictions: 1,
+    tray: 5,
+    shelf: 'start',
+    cardAfter: 0,
+    lights: 5,
+  },
 ];
 
 /** Pre-K plays level 1 only; school plays 2–4 (5–8 append later without renumbering). */
@@ -74,15 +142,28 @@ export const LEVELS: BandLevels = {
 };
 
 /** Level 3's shelf: two adds and a take-away never agree on any input, so every row breaks both wrong cards. */
-export const WHAT_POOL: readonly NumRule[] = [{ kind: 'num', a: 1, b: 2 }, { kind: 'num', a: 1, b: 3 }, { kind: 'num', a: 1, b: -1 }];
+export const WHAT_POOL: readonly NumRule[] = [
+  { kind: 'num', a: 1, b: 2 },
+  { kind: 'num', a: 1, b: 3 },
+  { kind: 'num', a: 1, b: -1 },
+];
 /** Level 4's pool: each has at least two trap partners on the tray 0–4. */
-export const COVERED_POOL: readonly NumRule[] = [{ kind: 'num', a: 2, b: 0 }, { kind: 'num', a: 3, b: 0 }, { kind: 'num', a: 1, b: 2 }, { kind: 'num', a: 1, b: 4 }];
+export const COVERED_POOL: readonly NumRule[] = [
+  { kind: 'num', a: 2, b: 0 },
+  { kind: 'num', a: 3, b: 0 },
+  { kind: 'num', a: 1, b: 2 },
+  { kind: 'num', a: 1, b: 4 },
+];
 export const COVERED_TRAY: readonly number[] = [0, 1, 2, 3, 4];
 
 export const sameRule = (p: NumRule, q: NumRule) => p.a === q.a && p.b === q.b;
 
 /** Pool rules other than `rule` that give the same output as it on at least one tray car (a car that tells them nothing). */
-export function trapPartners(rule: NumRule, pool: readonly NumRule[] = COVERED_POOL, tray: readonly number[] = COVERED_TRAY): NumRule[] {
+export function trapPartners(
+  rule: NumRule,
+  pool: readonly NumRule[] = COVERED_POOL,
+  tray: readonly number[] = COVERED_TRAY,
+): NumRule[] {
   return pool.filter((q) => !sameRule(q, rule) && tray.some((n) => apply(q, n) === apply(rule, n)));
 }
 
@@ -110,10 +191,19 @@ export function judgeCard(card: NumRule, shelf: readonly NumRule[], rows: readon
  * The car that tells the open cards apart: the lowest-numbered unfed car after which only one card fits (the hint's
  * glow and the bot's choice). Null when one card already fits or no unfed car settles it.
  */
-export function settlingCar(shelf: readonly NumRule[], rows: readonly Row[], tray: readonly number[], fed: readonly number[], rule: NumRule): number | null {
+export function settlingCar(
+  shelf: readonly NumRule[],
+  rows: readonly Row[],
+  tray: readonly number[],
+  fed: readonly number[],
+  rule: NumRule,
+): number | null {
   const open = openCards(shelf, rows);
   if (open.length <= 1) return null;
-  const slots = tray.map((n, i) => ({ n, i })).filter((c) => !fed.includes(c.i)).sort((a, b) => a.n - b.n);
+  const slots = tray
+    .map((n, i) => ({ n, i }))
+    .filter((c) => !fed.includes(c.i))
+    .sort((a, b) => a.n - b.n);
   for (const { n, i } of slots) if (open.filter((c) => apply(c, n) === apply(rule, n)).length === 1) return i;
   return null;
 }
@@ -121,7 +211,9 @@ export function settlingCar(shelf: readonly NumRule[], rows: readonly Row[], tra
 /** Level 4's last prediction: the tray slot of the lowest-numbered car not yet fed, or null when all five went in. */
 export function lastCar(tray: readonly number[], fed: readonly number[]): number | null {
   let best: number | null = null;
-  tray.forEach((n, i) => { if (!fed.includes(i) && (best === null || n < tray[best])) best = i; });
+  tray.forEach((n, i) => {
+    if (!fed.includes(i) && (best === null || n < tray[best])) best = i;
+  });
   return best;
 }
 
@@ -160,7 +252,10 @@ export type Machine = LookMachine | CountMachine;
 
 function shuffle<T>(rng: Rng, xs: T[]): T[] {
   const a = xs.slice();
-  for (let i = a.length - 1; i > 0; i--) { const j = rng.int(0, i); [a[i], a[j]] = [a[j], a[i]]; }
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
   return a;
 }
 
@@ -185,7 +280,10 @@ export function makeRound(level: number, rng: Rng): Machine[] {
     const looks = shuffle(rng, LOOKS.slice()).slice(0, plan.machines);
     return looks.map((change) => {
       const rule: LookRule = { kind: 'look', change };
-      const pool = shuffle(rng, CREATURES.filter((c) => canTake(c, change)));
+      const pool = shuffle(
+        rng,
+        CREATURES.filter((c) => canTake(c, change)),
+      );
       const walkers = pool.slice(0, plan.walkers);
       const waiting = pool.slice(plan.walkers, plan.walkers + plan.predictions);
       return { rule, walkers, waiting, pictures: waiting.map((c) => picturesFor(rule, c, rng)) };
@@ -193,20 +291,24 @@ export function makeRound(level: number, rng: Rng): Machine[] {
   }
   const padOrders = () => Array.from({ length: plan.predictions }, () => shuffle(rng, [0, 1, 2]));
   if (plan.shelf === 'after') {
-    return shuffle(rng, WHAT_POOL.slice()).slice(0, plan.machines).map((rule) => ({
-      rule,
-      tray: shuffle(rng, [1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, plan.tray),
-      padOrders: padOrders(),
-      shelf: shuffle(rng, WHAT_POOL.slice()),
-    }));
+    return shuffle(rng, WHAT_POOL.slice())
+      .slice(0, plan.machines)
+      .map((rule) => ({
+        rule,
+        tray: shuffle(rng, [1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, plan.tray),
+        padOrders: padOrders(),
+        shelf: shuffle(rng, WHAT_POOL.slice()),
+      }));
   }
   if (plan.shelf === 'start') {
-    return shuffle(rng, COVERED_POOL.slice()).slice(0, plan.machines).map((rule) => ({
-      rule,
-      tray: shuffle(rng, COVERED_TRAY.slice()),
-      padOrders: padOrders(),
-      shelf: shuffle(rng, [rule, ...shuffle(rng, trapPartners(rule)).slice(0, 2)]),
-    }));
+    return shuffle(rng, COVERED_POOL.slice())
+      .slice(0, plan.machines)
+      .map((rule) => ({
+        rule,
+        tray: shuffle(rng, COVERED_TRAY.slice()),
+        padOrders: padOrders(),
+        shelf: shuffle(rng, [rule, ...shuffle(rng, trapPartners(rule)).slice(0, 2)]),
+      }));
   }
   const bs = shuffle(rng, [1, 2]);
   return bs.map((b) => ({
@@ -236,15 +338,27 @@ export class Score {
   glowing = false;
   private hinted = false;
 
-  newMachine() { this.hinted = false; this.newAsk(); }
-  newAsk() { this.wrongs = 0; this.glowing = false; }
+  newMachine() {
+    this.hinted = false;
+    this.newAsk();
+  }
+  newAsk() {
+    this.wrongs = 0;
+    this.glowing = false;
+  }
 
   answer(right: boolean, isCounted: boolean): Outcome {
-    if (right) { this.glowing = false; return 'right'; }
+    if (right) {
+      this.glowing = false;
+      return 'right';
+    }
     if (!isCounted) return 'free';
     this.misses++;
     this.wrongs++;
-    if (this.wrongs >= 2 && !this.glowing) { this.light(); return 'glow'; }
+    if (this.wrongs >= 2 && !this.glowing) {
+      this.light();
+      return 'glow';
+    }
     return 'miss';
   }
 
@@ -265,19 +379,40 @@ export class Score {
 
   private light() {
     this.glowing = true;
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
   }
 }
 
 // ---- layout ----
 
-export interface Pt { x: number; y: number }
-export interface Box extends Pt { w: number; h: number }
-export const COL_W = 90, COL_H = 150, COL_GAP = 10;
-export const HOPPER = 160, BODY_W = 360, BODY_H = 180, CHUTE_W = 140;
-export const CAR_W = 120, CAR_H = 110, CAR_GAP = 16;
-export const PICTURE = 150, PAD = 120, PAD_GAP = 30;
-export const CARD_W = 120, CARD_H = 120, CARD_GAP = 10, PEEK = 110;
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Box extends Pt {
+  w: number;
+  h: number;
+}
+export const COL_W = 90,
+  COL_H = 150,
+  COL_GAP = 10;
+export const HOPPER = 160,
+  BODY_W = 360,
+  BODY_H = 180,
+  CHUTE_W = 140;
+export const CAR_W = 120,
+  CAR_H = 110,
+  CAR_GAP = 16;
+export const PICTURE = 150,
+  PAD = 120,
+  PAD_GAP = 30;
+export const CARD_W = 120,
+  CARD_H = 120,
+  CARD_GAP = 10,
+  PEEK = 110;
 /** Landscape with a shelf: the row starts right of the help button under Home. */
 const SHELF_ROW_LEFT = 120;
 
@@ -319,11 +454,20 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
   const machineY = portrait
     ? (hasShelf ? shelfY + CARD_H / 2 + 40 : tableY + COL_H / 2 + 90) + BODY_H / 2
     : tableY + COL_H / 2 + 20 + BODY_H / 2;
-  const rowY = portrait ? machineY + BODY_H / 2 + (hasShelf ? 60 : 120) + CAR_H / 2 : machineY + BODY_H / 2 + 30 + 75;
-  const tableLeft = !portrait && hasShelf ? Math.max(SHELF_ROW_LEFT, cx - (span + 20 + shelfW) / 2) : cx - span / 2;
-  const columns = Array.from({ length: 5 }, (_, i) => box(tableLeft + COL_W / 2 + i * (COL_W + colGap), tableY, COL_W, COL_H));
+  const rowY = portrait
+    ? machineY + BODY_H / 2 + (hasShelf ? 60 : 120) + CAR_H / 2
+    : machineY + BODY_H / 2 + 30 + 75;
+  const tableLeft =
+    !portrait && hasShelf ? Math.max(SHELF_ROW_LEFT, cx - (span + 20 + shelfW) / 2) : cx - span / 2;
+  const columns = Array.from({ length: 5 }, (_, i) =>
+    box(tableLeft + COL_W / 2 + i * (COL_W + colGap), tableY, COL_W, COL_H),
+  );
   const shelfLeft = portrait ? cx - shelfW / 2 : tableLeft + span + 20;
-  const shelf = hasShelf ? Array.from({ length: 3 }, (_, i) => box(shelfLeft + CARD_W / 2 + i * (CARD_W + CARD_GAP), shelfY, CARD_W, CARD_H)) : [];
+  const shelf = hasShelf
+    ? Array.from({ length: 3 }, (_, i) =>
+        box(shelfLeft + CARD_W / 2 + i * (CARD_W + CARD_GAP), shelfY, CARD_W, CARD_H),
+      )
+    : [];
   const mw = HOPPER + BODY_W + CHUTE_W;
   const mx = cx - mw / 2;
   const hopper = box(mx + HOPPER / 2, machineY - 10, HOPPER, HOPPER);
@@ -332,13 +476,24 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
   // The bottom row keeps right of the pet in landscape; in portrait it sits above the pet's row and can centre.
   const trayW = 5 * CAR_W + 4 * CAR_GAP;
   const left = portrait ? cx - trayW / 2 : Math.max(190, cx - trayW / 2);
-  const tray = Array.from({ length: 5 }, (_, i) => box(left + CAR_W / 2 + i * (CAR_W + CAR_GAP), rowY, CAR_W, CAR_H));
+  const tray = Array.from({ length: 5 }, (_, i) =>
+    box(left + CAR_W / 2 + i * (CAR_W + CAR_GAP), rowY, CAR_W, CAR_H),
+  );
   const p = planFor(level).ask === 'look' ? PICTURE : PAD;
   const padsW = 3 * p + 2 * PAD_GAP;
   const padsCx = left + trayW / 2;
-  const pads = Array.from({ length: 3 }, (_, i) => box(padsCx - padsW / 2 + p / 2 + i * (p + PAD_GAP), rowY, p, p));
+  const pads = Array.from({ length: 3 }, (_, i) =>
+    box(padsCx - padsW / 2 + p / 2 + i * (p + PAD_GAP), rowY, p, p),
+  );
   return {
-    portrait, columns, hopper, body, chute, pads, tray, shelf,
+    portrait,
+    columns,
+    hopper,
+    body,
+    chute,
+    pads,
+    tray,
+    shelf,
     peek: box(body.x, body.y - 6, PEEK, PEEK),
     // Waiting things stand in the hopper's mouth (below the table); outputs land at the chute's far end.
     waitAt: { x: hopper.x, y: hopper.y + 10 },

@@ -75,7 +75,10 @@ class Flower extends Container {
     super();
     this.position.set(bumper.x, bumper.y);
     this.head.addChild(this.petals);
-    const center = new Graphics().circle(0, 0, 20).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+    const center = new Graphics()
+      .circle(0, 0, 20)
+      .fill(swatch.orange.fill)
+      .stroke(line(swatch.orange.line, 4));
     this.head.addChild(center);
     if (bumper.number !== null) {
       const n = label(String(bumper.number), 30, 0xffffff);
@@ -99,27 +102,43 @@ class Flower extends Container {
   }
 
   private draw() {
-    const sw = this.sleepy ? { fill: 0xc4c4cc, line: swatch[this.color].line, light: swatch.white.light } : swatch[this.color];
+    const sw = this.sleepy
+      ? { fill: 0xc4c4cc, line: swatch[this.color].line, light: swatch.white.light }
+      : swatch[this.color];
     const g = this.petals.clear();
     const open = this.bloomed ? 1 : 0.62;
     if (this.table === 'pond') {
       // A notched lily pad, tinted to keep the color mission readable.
       const r = this.bloomed ? 42 : 32;
-      g.moveTo(0, 0).arc(0, 0, r, -0.5, Math.PI * 2 - 0.85).closePath()
-        .fill(this.bloomed ? sw.fill : sw.light).stroke(line(sw.line, 4));
-      for (const a of [1, 2.5, 4]) g.moveTo(0, 0).lineTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8).stroke(line(sw.line, 2));
+      g.moveTo(0, 0)
+        .arc(0, 0, r, -0.5, Math.PI * 2 - 0.85)
+        .closePath()
+        .fill(this.bloomed ? sw.fill : sw.light)
+        .stroke(line(sw.line, 4));
+      for (const a of [1, 2.5, 4])
+        g.moveTo(0, 0)
+          .lineTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8)
+          .stroke(line(sw.line, 2));
       return;
     }
     if (this.table === 'hive') {
       const r = this.bloomed ? 42 : 32;
-      const hex = (radius: number) => Array.from({ length: 6 }, (_, i) => [Math.cos(i * Math.PI / 3) * radius, Math.sin(i * Math.PI / 3) * radius]).flat();
-      g.poly(hex(r)).fill(this.bloomed ? sw.fill : sw.light).stroke(line(sw.line, 4));
+      const hex = (radius: number) =>
+        Array.from({ length: 6 }, (_, i) => [
+          Math.cos((i * Math.PI) / 3) * radius,
+          Math.sin((i * Math.PI) / 3) * radius,
+        ]).flat();
+      g.poly(hex(r))
+        .fill(this.bloomed ? sw.fill : sw.light)
+        .stroke(line(sw.line, 4));
       g.poly(hex(r - 8)).stroke(line(sw.line, 2));
       return;
     }
     for (let i = 0; i < 6; i++) {
       const a = (i * Math.PI) / 3;
-      g.circle(Math.cos(a) * 24 * open, Math.sin(a) * 24 * open, this.bloomed ? 18 : 15).fill(this.bloomed ? sw.fill : sw.light).stroke(line(sw.line, 4));
+      g.circle(Math.cos(a) * 24 * open, Math.sin(a) * 24 * open, this.bloomed ? 18 : 15)
+        .fill(this.bloomed ? sw.fill : sw.light)
+        .stroke(line(sw.line, 4));
     }
   }
 
@@ -139,8 +158,11 @@ class Flower extends Container {
     this.rippleAge = Math.min(1, this.rippleAge + dt * 1.8);
     if (this.table === 'pond') {
       this.ripple.clear();
-      if (this.rippleAge < 1) for (const offset of [0, 12]) this.ripple.circle(0, 0, 38 + this.rippleAge * 25 + offset)
-        .stroke({ color: swatch.white.fill, width: 3, alpha: (1 - this.rippleAge) * 0.65 });
+      if (this.rippleAge < 1)
+        for (const offset of [0, 12])
+          this.ripple
+            .circle(0, 0, 38 + this.rippleAge * 25 + offset)
+            .stroke({ color: swatch.white.fill, width: 3, alpha: (1 - this.rippleAge) * 0.65 });
     }
     this.head.scale.set(1 + 0.25 * Math.sin(this.bump * Math.PI));
     if (this.sleepy) this.snore.y = -44 - 6 * Math.sin(this.rippleAge * Math.PI);
@@ -162,7 +184,13 @@ function ladybug(): Container {
     .moveTo(0, -r)
     .lineTo(0, r)
     .stroke(line(ink, 3));
-  for (const [x, y] of [[-8, -4], [8, -4], [-7, 8], [7, 8]]) g.circle(x, y, 3.5).fill(ink);
+  for (const [x, y] of [
+    [-8, -4],
+    [8, -4],
+    [-7, 8],
+    [7, 8],
+  ])
+    g.circle(x, y, 3.5).fill(ink);
   c.addChild(g);
   return c;
 }
@@ -219,22 +247,43 @@ class BumperGarden implements Game {
     this.bumpers = makeBumpers(this.plan, ctx.rng, this.table);
     const colors = ctx.rng.shuffle([...FLOWER_COLORS]);
     this.target = colors[0];
-    this.flowers = this.bumpers.map((b) => ctx.track(new Flower(b, colors[b.color % colors.length], this.table)));
+    this.flowers = this.bumpers.map((b) =>
+      ctx.track(new Flower(b, colors[b.color % colors.length], this.table)),
+    );
     this.world = makeWorld(this.bumpers);
     this.ball = { x: LAUNCH.x, y: LAUNCH.y, vx: 0, vy: 0, r: TABLE.ball };
 
     // The garden bed, hedges steering down to the flippers, and the pot that catches the ladybug.
     const bedColor = swatch[this.table === 'pond' ? 'teal' : this.table === 'hive' ? 'yellow' : 'green'];
-    const bed = new Graphics().roundRect(-14, -14, TABLE.w + 28, TABLE.h + 28, 40).fill(bedColor.line)
-      .roundRect(0, 0, TABLE.w, TABLE.h, 30).fill(bedColor.light);
-    if (this.table === 'pond') for (let y = 90; y < 450; y += 120) bed.ellipse(300, y, 75, 16).stroke({ color: swatch.teal.fill, width: 4, alpha: 0.5 });
-    if (this.table === 'hive') for (let y = 100; y < 440; y += 110) {
-      const points = Array.from({ length: 6 }, (_, i) => [300 + Math.cos(i * Math.PI / 3) * 43, y + Math.sin(i * Math.PI / 3) * 43]).flat();
-      bed.poly(points).stroke({ color: swatch.yellow.fill, width: 4, alpha: 0.45 });
-    }
-    for (let k = 0; k < 18; k++) bed.circle(40 + ((k * 137) % (TABLE.w - 80)), 60 + ((k * 211) % (TABLE.h - 240)), 5).fill({ color: 0xffffff, alpha: 0.4 });
+    const bed = new Graphics()
+      .roundRect(-14, -14, TABLE.w + 28, TABLE.h + 28, 40)
+      .fill(bedColor.line)
+      .roundRect(0, 0, TABLE.w, TABLE.h, 30)
+      .fill(bedColor.light);
+    if (this.table === 'pond')
+      for (let y = 90; y < 450; y += 120)
+        bed.ellipse(300, y, 75, 16).stroke({ color: swatch.teal.fill, width: 4, alpha: 0.5 });
+    if (this.table === 'hive')
+      for (let y = 100; y < 440; y += 110) {
+        const points = Array.from({ length: 6 }, (_, i) => [
+          300 + Math.cos((i * Math.PI) / 3) * 43,
+          y + Math.sin((i * Math.PI) / 3) * 43,
+        ]).flat();
+        bed.poly(points).stroke({ color: swatch.yellow.fill, width: 4, alpha: 0.45 });
+      }
+    for (let k = 0; k < 18; k++)
+      bed
+        .circle(40 + ((k * 137) % (TABLE.w - 80)), 60 + ((k * 211) % (TABLE.h - 240)), 5)
+        .fill({ color: 0xffffff, alpha: 0.4 });
     const hedge = new Graphics();
-    puffs(hedge, funnel().filter((_, i) => i % 2 === 0).map((p) => [p.x, p.y + 6, 16] as [number, number, number]), swatch.green.fill, swatch.green.line);
+    puffs(
+      hedge,
+      funnel()
+        .filter((_, i) => i % 2 === 0)
+        .map((p) => [p.x, p.y + 6, 16] as [number, number, number]),
+      swatch.green.fill,
+      swatch.green.line,
+    );
     const pot = new Graphics()
       .moveTo(LAUNCH.x - 48, TABLE.h - 40)
       .lineTo(LAUNCH.x + 48, TABLE.h - 40)
@@ -252,7 +301,18 @@ class BumperGarden implements Game {
     this.flippers.right.node.scale.x = -1;
     this.readyRing.eventMode = 'none';
     this.numberStrip.eventMode = 'none';
-    this.board.addChild(bed, this.glow, hedge, ...this.flowers, this.flippers.left.node, this.flippers.right.node, this.readyRing, pot, this.ballNode, this.numberStrip);
+    this.board.addChild(
+      bed,
+      this.glow,
+      hedge,
+      ...this.flowers,
+      this.flippers.left.node,
+      this.flippers.right.node,
+      this.readyRing,
+      pot,
+      this.ballNode,
+      this.numberStrip,
+    );
     this.drawNumberStrip();
     this.ballNode.position.set(this.ball.x, this.ball.y);
 
@@ -281,7 +341,9 @@ class BumperGarden implements Game {
       // She sees which ones are the asked color first; then, as the words land, they fall asleep.
       void this.ctx.tw.wait(1.4).then(() => {
         if (this.finished) return;
-        this.flowers.forEach((f, i) => { if (!this.wanted(i) && !f.bloomed) f.sleep(true); });
+        this.flowers.forEach((f, i) => {
+          if (!this.wanted(i) && !f.bloomed) f.sleep(true);
+        });
         sfx.squish();
       });
     } else if (p.mode === 'color') void this.ctx.instruct('bumper.color', { color: this.target });
@@ -300,7 +362,10 @@ class BumperGarden implements Game {
     for (const side of ['left', 'right'] as FlipperSide[]) {
       const g = this.sides[side].clear();
       g.circle(0, 0, 70).fill({ color: 0xffffff, alpha: 0.5 }).stroke(line(swatch.green.line, 6));
-      g.moveTo(side === 'left' ? 22 : -22, -26).lineTo(side === 'left' ? -18 : 18, 0).lineTo(side === 'left' ? 22 : -22, 26).stroke(line(swatch.green.line, 9));
+      g.moveTo(side === 'left' ? 22 : -22, -26)
+        .lineTo(side === 'left' ? -18 : 18, 0)
+        .lineTo(side === 'left' ? 22 : -22, 26)
+        .stroke(line(swatch.green.line, 9));
       g.position.set(side === 'left' ? 110 : v.w - 110, v.h * 0.48);
     }
   }
@@ -383,11 +448,16 @@ class BumperGarden implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
-    if (this.state === 'held') return this.plan.mode === 'spring' ? { tap: { on: this.board, x: LAUNCH.x, y: LAUNCH.y }, receiver: this.input } : null;
+    if (this.state === 'held')
+      return this.plan.mode === 'spring'
+        ? { tap: { on: this.board, x: LAUNCH.x, y: LAUNCH.y }, receiver: this.input }
+        : null;
     if (this.plan.mode === 'spring' || this.clock < this.thinkAt) return null;
     this.thinkAt = this.clock + 0.25;
     const noise = this.ctx.rng.clone().range(-40, 40);
-    const flip = planFlip(this.world, this.bumpers.length, this.ball, this.wide, noise, (i) => this.wanted(i));
+    const flip = planFlip(this.world, this.bumpers.length, this.ball, this.wide, noise, (i) =>
+      this.wanted(i),
+    );
     if (!flip) return null;
     const due: Due = { frame: flip.frame, age: 0, armed: false, ready: false, since: 0 };
     this.due = due;
@@ -488,9 +558,11 @@ class BumperGarden implements Game {
     const y = FLIPPER.y + Math.sin(f.angle) * FLIPPER.length;
     const pulse = (1 + Math.sin(this.clock * 6)) / 2;
     const r = 25 + pulse * 5;
-    g.circle(x, y, r).fill({ color: swatch.yellow.light, alpha: 0.16 + pulse * 0.12 })
+    g.circle(x, y, r)
+      .fill({ color: swatch.yellow.light, alpha: 0.16 + pulse * 0.12 })
       .stroke({ color: swatch.white.fill, width: 9, alpha: 0.85 })
-      .circle(x, y, r).stroke({ color: swatch.yellow.line, width: 4, alpha: 0.8 + pulse * 0.2 });
+      .circle(x, y, r)
+      .stroke({ color: swatch.yellow.line, width: 4, alpha: 0.8 + pulse * 0.2 });
   }
 
   private drawGlow() {
@@ -511,13 +583,21 @@ class BumperGarden implements Game {
     numbers.forEach((n, i) => {
       const x = TABLE.w / 2 + (i - (numbers.length - 1) / 2) * gap;
       const current = n === this.next && !this.finished;
-      const circle = new Graphics().circle(x, 40, 22).fill(current ? swatch.yellow.fill : swatch.white.light)
+      const circle = new Graphics()
+        .circle(x, 40, 22)
+        .fill(current ? swatch.yellow.fill : swatch.white.light)
         .stroke({ color: current ? swatch.orange.line : swatch.green.line, width: current ? 5 : 2 });
       const text = label(String(n), 25, ink);
       text.position.set(x, 40);
       this.numberStrip.addChild(circle, text);
-      if (i < numbers.length - 1) this.numberStrip.addChild(new Graphics()
-        .moveTo(x + 27, 36).lineTo(x + 32, 40).lineTo(x + 27, 44).stroke(line(swatch.green.line, 3)));
+      if (i < numbers.length - 1)
+        this.numberStrip.addChild(
+          new Graphics()
+            .moveTo(x + 27, 36)
+            .lineTo(x + 32, 40)
+            .lineTo(x + 27, 44)
+            .stroke(line(swatch.green.line, 3)),
+        );
     });
   }
 
@@ -527,7 +607,8 @@ class BumperGarden implements Game {
       const ac = audio.ctx;
       if (!ac) return;
       const hz = stepHz(step - 5);
-      for (const delay of [0, 0.06]) tone(ac, audio.sfxOut, 'triangle', hz, ac.currentTime + delay, gain * 0.45, 0.008, 0.07);
+      for (const delay of [0, 0.06])
+        tone(ac, audio.sfxOut, 'triangle', hz, ac.currentTime + delay, gain * 0.45, 0.008, 0.07);
       sfx.bell(step - 5, gain * 0.3);
     } else if (this.table === 'hive') sfx.marimba(step + 2, gain);
     else sfx.bell(step, gain);
@@ -544,18 +625,27 @@ class BumperGarden implements Game {
     this.wrongs = 0;
     this.hinting = false;
     const p = this.ctx.stage.toLocal(this.board.toGlobal({ x: f.x, y: f.y }));
-    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [swatch[f.color].fill, 0xffffff], count: 10, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [swatch[f.color].fill, 0xffffff],
+      count: 10,
+      speed: [100, 240],
+      gravity: 0,
+      life: [0.4, 0.8],
+    });
     const mode = this.plan.mode;
-    if (mode === 'color' || mode === 'bloom') void this.ctx.say('count', { n: this.flowers.filter((o) => o.bloomed).length });
+    if (mode === 'color' || mode === 'bloom')
+      void this.ctx.say('count', { n: this.flowers.filter((o) => o.bloomed).length });
     if (mode === 'order') {
       void this.ctx.say('count', { n: this.next });
       this.next += this.plan.descend ? -1 : 1;
       this.drawNumberStrip();
     }
     if (this.done()) void this.finale();
-    else if (mode === 'order') void this.ctx.tw.wait(0.9).then(() => {
-      if (!this.finished) void this.ctx.instruct('bumper.next', { n: this.next });
-    });
+    else if (mode === 'order')
+      void this.ctx.tw.wait(0.9).then(() => {
+        if (!this.finished) void this.ctx.instruct('bumper.next', { n: this.next });
+      });
   }
 
   private done(): boolean {
@@ -594,9 +684,18 @@ class BumperGarden implements Game {
     if (this.finished) return;
     this.finished = true;
     this.state = 'held';
-    this.flowers.forEach((f, i) => void this.ctx.tw.wait(i * 0.08).then(() => (f.bloom(), f.hit(), this.chime(4 + i, 0.2))));
+    this.flowers.forEach(
+      (f, i) => void this.ctx.tw.wait(i * 0.08).then(() => (f.bloom(), f.hit(), this.chime(4 + i, 0.2))),
+    );
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     this.ctx.pet.cheer();
     await this.ctx.say('bumper.done');
@@ -611,13 +710,23 @@ class BumperGarden implements Game {
 function tableArt(seed = 1): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const g = new Graphics().roundRect(-90, -200, 180, 200, 26).fill(swatch.green.line).roundRect(-80, -190, 160, 180, 22).fill(0xb9e3a0);
+  const g = new Graphics()
+    .roundRect(-90, -200, 180, 200, 26)
+    .fill(swatch.green.line)
+    .roundRect(-80, -190, 160, 180, 22)
+    .fill(0xb9e3a0);
   c.addChild(g);
   const colors = rng.shuffle([...FLOWER_COLORS]);
-  for (const [x, y, k] of [[-36, -140, 0], [36, -110, 1]] as const) {
+  for (const [x, y, k] of [
+    [-36, -140, 0],
+    [36, -110, 1],
+  ] as const) {
     const sw = swatch[colors[k]];
     const f = new Graphics();
-    for (let i = 0; i < 6; i++) f.circle(x + Math.cos((i * Math.PI) / 3) * 16, y + Math.sin((i * Math.PI) / 3) * 16, 12).fill(sw.fill).stroke(line(sw.line, 3));
+    for (let i = 0; i < 6; i++)
+      f.circle(x + Math.cos((i * Math.PI) / 3) * 16, y + Math.sin((i * Math.PI) / 3) * 16, 12)
+        .fill(sw.fill)
+        .stroke(line(sw.line, 3));
     f.circle(x, y, 12).fill(swatch.orange.fill);
     c.addChild(f);
   }
@@ -648,4 +757,3 @@ export const bumperGarden: GameModule = {
   sticker: (seed) => tableArt(seed),
   create: (ctx) => new BumperGarden(ctx),
 };
-

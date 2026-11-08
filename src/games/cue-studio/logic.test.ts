@@ -1,8 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  canFinish, checkRun, CUES, demoNext, finishRun, help, isComplete, isProgram, newStudio, planFor, PLANS, playRun, restart, step,
-  stickerRecipe, tapAction, tapSlot, trace, undo, type Cue, type Studio,
+  canFinish,
+  checkRun,
+  CUES,
+  demoNext,
+  finishRun,
+  help,
+  isComplete,
+  isProgram,
+  newStudio,
+  planFor,
+  PLANS,
+  playRun,
+  restart,
+  step,
+  stickerRecipe,
+  tapAction,
+  tapSlot,
+  trace,
+  undo,
+  type Cue,
+  type Studio,
 } from './logic';
 
 const fill = (s: Studio, ...cues: Cue[]) => cues.forEach((c) => tapAction(s, c));
@@ -131,9 +150,27 @@ describe('undo', () => {
 
   it('every edit and Undo clears played and finish', () => {
     const edits: [string, (s: Studio) => void][] = [
-      ['replace', (s) => { tapSlot(s, 0); tapAction(s, 'T'); }],
-      ['undo', (s) => { undo(s); }],
-      ['help insert', (s) => { undo(s); finishRun(s); help(s); }],
+      [
+        'replace',
+        (s) => {
+          tapSlot(s, 0);
+          tapAction(s, 'T');
+        },
+      ],
+      [
+        'undo',
+        (s) => {
+          undo(s);
+        },
+      ],
+      [
+        'help insert',
+        (s) => {
+          undo(s);
+          finishRun(s);
+          help(s);
+        },
+      ],
     ];
     for (const [name, doEdit] of edits) {
       const s = newStudio(2);
@@ -256,7 +293,12 @@ describe('help', () => {
 
 describe('requested repair', () => {
   const request: Cue[] = ['W', 'T'];
-  const programs: Cue[][] = [['W', 'W'], ['W', 'T'], ['T', 'W'], ['T', 'T']];
+  const programs: Cue[][] = [
+    ['W', 'W'],
+    ['W', 'T'],
+    ['T', 'W'],
+    ['T', 'T'],
+  ];
   const replace = (s: Studio, at: number, cue: Cue) => {
     tapSlot(s, at);
     tapAction(s, cue);
@@ -290,7 +332,10 @@ describe('requested repair', () => {
   });
 
   it('each correct local replacement reduces mismatches and either repair order reaches success', () => {
-    for (const order of [[0, 1], [1, 0]]) {
+    for (const order of [
+      [0, 1],
+      [1, 0],
+    ]) {
       const s = newStudio(2, request);
       let remaining = 2;
       for (const at of order) {
@@ -306,15 +351,16 @@ describe('requested repair', () => {
 
   it('every legal replacement changes only its chosen slot and Help solves every alternative', () => {
     for (const program of programs) {
-      for (let at = 0; at < 2; at++) for (const cue of CUES) {
-        const s = newStudio(2, request);
-        program.forEach((value, slot) => replace(s, slot, value));
-        replace(s, at, cue);
-        expect(s.program[at]).toBe(cue);
-        expect(s.program[1 - at]).toBe(program[1 - at]);
-        expect(isProgram(s.program, 2)).toBe(true);
-        expect(s.misses).toBe(0);
-      }
+      for (let at = 0; at < 2; at++)
+        for (const cue of CUES) {
+          const s = newStudio(2, request);
+          program.forEach((value, slot) => replace(s, slot, value));
+          replace(s, at, cue);
+          expect(s.program[at]).toBe(cue);
+          expect(s.program[1 - at]).toBe(program[1 - at]);
+          expect(isProgram(s.program, 2)).toBe(true);
+          expect(s.misses).toBe(0);
+        }
       const s = newStudio(2, request);
       program.forEach((cue, at) => replace(s, at, cue));
       for (let press = 0; press < 4; press++) {
@@ -347,7 +393,8 @@ describe('requested repair', () => {
 
   it('moving an existing clue to the next mismatch stays free, including a subsequent Check', () => {
     const s = newStudio(2, request);
-    check(s); check(s);
+    check(s);
+    check(s);
     replace(s, 0, 'W');
     expect(check(s)).toBe(1);
     expect(s.hints).toBe(1);
@@ -486,7 +533,10 @@ describe('the demonstration', () => {
         tapSlot(s, p.slot);
       } else {
         const r = tapAction(s, p.action);
-        if (r === 'replace') { replaced = true; changed = true; }
+        if (r === 'replace') {
+          replaced = true;
+          changed = true;
+        }
       }
     }
     return { s, replaced, done: false };

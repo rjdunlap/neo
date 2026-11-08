@@ -12,10 +12,26 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: 'Every friend is on a cushion.',
   note: [
-    { from: 1, to: 1, text: 'Nothing here counts as a miss. After two shots that land short or fly over, a dotted path shows a pull that works, which counts as a hint.' },
-    { from: 2, to: 5, text: 'A shot that lands short or flies over counts as a miss. A bump that tips nothing is never a miss. After two misses, a dotted path shows a pull that works, which counts as a hint.' },
-    { from: 5, to: 5, text: 'A wrong count counts as one miss; the pet then counts the tray aloud. A second wrong count lights the right number, which counts as a hint.' },
-    { text: 'After two bumps on a stack that tip nothing, a golden band shows how high a bump has to land, which counts as a hint.' },
-    { text: 'The flight and the tip follow simple toy rules (slow gravity; a push as high as the stack is wide tips it), close to real but not exact.' },
+    {
+      from: 1,
+      to: 1,
+      text: 'Nothing here counts as a miss. After two shots that land short or fly over, a dotted path shows a pull that works, which counts as a hint.',
+    },
+    {
+      from: 2,
+      to: 5,
+      text: 'A shot that lands short or flies over counts as a miss. A bump that tips nothing is never a miss. After two misses, a dotted path shows a pull that works, which counts as a hint.',
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'A wrong count counts as one miss; the pet then counts the tray aloud. A second wrong count lights the right number, which counts as a hint.',
+    },
+    {
+      text: 'After two bumps on a stack that tip nothing, a golden band shows how high a bump has to land, which counts as a hint.',
+    },
+    {
+      text: 'The flight and the tip follow simple toy rules (slow gravity; a push as high as the stack is wide tips it), close to real but not exact.',
+    },
   ],
 };

@@ -28,7 +28,8 @@ describe('The Windy Picnic', () => {
   });
 
   it('speaks every request, its change in the scene, and its recap', () => {
-    for (const id of PICNIC_STEPS) for (const line of Object.values(stepLine[id])) expect(SCRIPT[line], line).toBeDefined();
+    for (const id of PICNIC_STEPS)
+      for (const line of Object.values(stepLine[id])) expect(SCRIPT[line], line).toBeDefined();
     expect(new Set([...GAME_STEPS.map((s) => s.id), 'blanket'])).toEqual(new Set(PICNIC_STEPS));
   });
 
@@ -39,7 +40,9 @@ describe('The Windy Picnic', () => {
         expect(p.blankets.length).toBe(band === 'lap' || band === 'toddler' ? 2 : 3);
         const target = p.blankets[p.target];
         expect(target.pattern).toBe('stripes');
-        const fits = p.blankets.filter((b) => b.pattern === 'stripes' && (!p.withPlace || b.hang === target.hang));
+        const fits = p.blankets.filter(
+          (b) => b.pattern === 'stripes' && (!p.withPlace || b.hang === target.hang),
+        );
         expect(fits).toEqual([target]);
         // No two blankets share a hanging spot.
         expect(new Set(p.blankets.map((b) => `${b.hang}${b.slot}`)).size).toBe(p.blankets.length);
@@ -49,7 +52,12 @@ describe('The Windy Picnic', () => {
           // Early school needs both clues: stripes alone or the place alone leaves two blankets.
           expect(p.blankets.filter((b) => b.pattern === 'stripes')).toHaveLength(2);
           expect(p.blankets.filter((b) => b.hang === target.hang)).toHaveLength(2);
-          expect(p.blankets.map((_, i) => whyNot(p, i)).filter(Boolean).sort()).toEqual(['pattern', 'place']);
+          expect(
+            p.blankets
+              .map((_, i) => whyNot(p, i))
+              .filter(Boolean)
+              .sort(),
+          ).toEqual(['pattern', 'place']);
         } else {
           expect(new Set(p.blankets.map((b) => b.pattern)).size).toBe(p.blankets.length);
           expect(new Set(p.blankets.map((b) => b.hang)).size).toBe(p.blankets.length);

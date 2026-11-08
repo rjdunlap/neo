@@ -7,10 +7,22 @@ export const HOW_TO: GameHowTo = {
     { to: 1, text: 'Tap to send the ladybug up.' },
     { from: 2, text: 'Tap the left or right side of the screen to flip the ladybug back up.' },
     { from: 3, to: 3, text: 'Bump the flowers of the color asked for.' },
-    { from: 8, to: 8, text: 'Bump every flower that is not the color asked for. The flowers of that color fall asleep; bumping one only chimes.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'Bump every flower that is not the color asked for. The flowers of that color fall asleep; bumping one only chimes.',
+    },
     { from: 4, to: 5, text: 'Bump the numbered flowers in order.' },
-    { from: 6, to: 6, text: 'Start at the highlighted number in the strip. Bump each numbered flower to count on by one.' },
-    { from: 9, to: 9, text: 'Start at the highlighted number in the strip. Bump each numbered flower to count back by one to 1.' },
+    {
+      from: 6,
+      to: 6,
+      text: 'Start at the highlighted number in the strip. Bump each numbered flower to count on by one.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Start at the highlighted number in the strip. Bump each numbered flower to count back by one to 1.',
+    },
   ],
   finish: [
     { from: 1, to: 1, text: 'The round ends after six launches.' },
@@ -20,6 +32,19 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'The round ends when every awake flower has bloomed.' },
     { from: 9, to: 9, text: 'The round ends when flower 1 blooms, after all the numbers before it.' },
   ],
-  note: [{ text: 'Each round has a Meadow, Pond or Hive table. Lily pads and hexagonal flowers bloom by the same rule.' }, { from: 2, to: 6, text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.' },
-    { from: 8, to: 9, text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.' }],
+  note: [
+    {
+      text: 'Each round has a Meadow, Pond or Hive table. Lily pads and hexagonal flowers bloom by the same rule.',
+    },
+    {
+      from: 2,
+      to: 6,
+      text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.',
+    },
+    {
+      from: 8,
+      to: 9,
+      text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.',
+    },
+  ],
 };

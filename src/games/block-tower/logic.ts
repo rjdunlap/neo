@@ -24,9 +24,21 @@ export const PLANS: TowerPlan[] = [
   { mode: 'tumble', rounds: 2, name: 'Tap to stack blocks, then knock the tower down' },
   { mode: 'friend', rounds: 3, name: 'Stack until the tower is as tall as a friend, then knock it down' },
   { mode: 'flag', rounds: 3, name: 'Build up to the flag (3 to 6 blocks), then ring the bell' },
-  { mode: 'match', rounds: 3, name: "Compare with Duck's tower: just as tall, one block taller, or one shorter" },
-  { mode: 'stand', rounds: 3, name: 'Which tower will stand? Guess, then let go and see (a guess is never wrong)' },
-  { mode: 'reach', rounds: 2, name: 'Stack blocks out past the table edge to touch the star without tipping' },
+  {
+    mode: 'match',
+    rounds: 3,
+    name: "Compare with Duck's tower: just as tall, one block taller, or one shorter",
+  },
+  {
+    mode: 'stand',
+    rounds: 3,
+    name: 'Which tower will stand? Guess, then let go and see (a guess is never wrong)',
+  },
+  {
+    mode: 'reach',
+    rounds: 2,
+    name: 'Stack blocks out past the table edge to touch the star without tipping',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -59,7 +71,8 @@ export function topples(xs: readonly number[], edge: number | null, direction: R
 }
 
 /** The middle of the blocks from `k` up: what has to be over block `k - 1`. */
-export const middleFrom = (xs: readonly number[], k: number) => xs.slice(k).reduce((s, x) => s + x, 0) / (xs.length - k);
+export const middleFrom = (xs: readonly number[], k: number) =>
+  xs.slice(k).reduce((s, x) => s + x, 0) / (xs.length - k);
 
 // Measuring rounds --------------------------------------------------------------------------------
 
@@ -78,7 +91,8 @@ export interface TowerRound {
   ask?: Ask;
 }
 
-export const targetFor = (bear: number, ask: Ask) => bear + (ask === 'taller' ? 1 : ask === 'shorter' ? -1 : 0);
+export const targetFor = (bear: number, ask: Ask) =>
+  bear + (ask === 'taller' ? 1 : ask === 'shorter' ? -1 : 0);
 
 export function makeRounds(plan: TowerPlan, rng: Rng): TowerRound[] {
   const out: TowerRound[] = [];
@@ -108,7 +122,8 @@ export function makeRounds(plan: TowerPlan, rng: Rng): TowerRound[] {
 }
 
 /** A tower that's too short or too tall, or just right. */
-export const compare = (have: number, want: number): 'short' | 'tall' | 'right' => (have < want ? 'short' : have > want ? 'tall' : 'right');
+export const compare = (have: number, want: number): 'short' | 'tall' | 'right' =>
+  have < want ? 'short' : have > want ? 'tall' : 'right';
 
 // Which tower will stand? --------------------------------------------------------------------------
 
@@ -132,7 +147,11 @@ export function makeStand(rng: Rng, subtle: boolean): StandRound {
   const reach = ([a, b]: [number, number]) => a + b;
   const standing = shapes.filter((p) => topples(tower(p), null) === -1 && reach(p) >= (subtle ? 4 : 2));
   const up = rng.pick(standing);
-  const falling = shapes.filter((p) => topples(tower(p), null) !== -1 && (subtle ? Math.abs(reach(p) - reach(up)) <= 1 : reach(p) >= reach(up) + 2));
+  const falling = shapes.filter(
+    (p) =>
+      topples(tower(p), null) !== -1 &&
+      (subtle ? Math.abs(reach(p) - reach(up)) <= 1 : reach(p) >= reach(up) + 2),
+  );
   const down = rng.pick(falling);
   const dir = rng.chance(0.5) ? 1 : -1;
   const stands = rng.int(0, 1);
@@ -151,8 +170,13 @@ export const STAND_PAIRS = [
   { id: 'M4', up: [0, 3, 4], down: [0, 4, 4], fall: 1 },
 ] as const;
 export type AuthoredStand = StandRound & { id: string; direction: number; color: number };
-export function standVariant(pair: typeof STAND_PAIRS[number], direction: number, stands: number, color = 0): AuthoredStand {
-  const towers = [pair.up, pair.down].map(t => Object.freeze(t.map(x => x * direction)));
+export function standVariant(
+  pair: (typeof STAND_PAIRS)[number],
+  direction: number,
+  stands: number,
+  color = 0,
+): AuthoredStand {
+  const towers = [pair.up, pair.down].map((t) => Object.freeze(t.map((x) => x * direction)));
   if (stands === 1) towers.reverse();
   return Object.freeze({ id: pair.id, direction, stands, color, towers: Object.freeze(towers) });
 }
@@ -182,7 +206,9 @@ export class StandObservation {
     this.phase = 'releasing';
     return true;
   }
-  settle(): void { if (this.phase === 'releasing') this.phase = 'result'; }
+  settle(): void {
+    if (this.phase === 'releasing') this.phase = 'result';
+  }
   continue(): boolean {
     if (this.phase !== 'result') return false;
     this.observed++;
@@ -204,9 +230,15 @@ export function makeReachRounds(rng: Rng): readonly DirectedReachRound[] {
 }
 
 /** Project canonical outward eighths to screen units, and normalize before snapping. */
-export const reachX = (u: number, edge: number, width: number, direction: ReachDirection) => edge + direction * u * width / W;
-export const reachDrop = (x: number, edge: number, width: number, direction: ReachDirection): number | null => {
-  const u = direction * (x - edge) * W / width;
+export const reachX = (u: number, edge: number, width: number, direction: ReachDirection) =>
+  edge + (direction * u * width) / W;
+export const reachDrop = (
+  x: number,
+  edge: number,
+  width: number,
+  direction: ReachDirection,
+): number | null => {
+  const u = (direction * (x - edge) * W) / width;
   return u < -2 * W || u > 1.6 * W ? null : reachSlot(u);
 };
 
@@ -226,7 +258,8 @@ export const REACH: ReachRound[] = [
 export const SLOTS = Array.from({ length: 2 * W + W / 2 + 1 }, (_, i) => i - W - W / 2);
 
 /** Snap a horizontal drag (in eighths) to the same domain searched by hints and the finger bot. */
-export const reachSlot = (x: number) => Math.max(SLOTS[0], Math.min(SLOTS[SLOTS.length - 1], Math.round(x))) || 0;
+export const reachSlot = (x: number) =>
+  Math.max(SLOTS[0], Math.min(SLOTS[SLOTS.length - 1], Math.round(x))) || 0;
 
 export const rightSide = (x: number) => x + W / 2;
 export const reached = (xs: readonly number[], star: number) => xs.some((x) => rightSide(x) >= star);
@@ -249,10 +282,13 @@ export function finish(placed: readonly number[], round: ReachRound): number[] |
 // What a capable child does next (the ghost finger on the how-to card follows these) ----------------------------
 
 /** On the basket levels: add a block while the tower is short of the target, ring the bell when it is exactly right, take one back if it is tall. */
-export const stackMove = (have: number, want: number): 'add' | 'ring' | 'take' => (have < want ? 'add' : have > want ? 'take' : 'ring');
+export const stackMove = (have: number, want: number): 'add' | 'ring' | 'take' =>
+  have < want ? 'add' : have > want ? 'take' : 'ring';
 
 /** On "which tower will stand?": the tower whose every block has its own middle and the middle of the blocks above over the block below. */
-export const standingTower = (round: StandRound): number => round.towers.findIndex((t) => topples(t, null) === -1);
+export const standingTower = (round: StandRound): number =>
+  round.towers.findIndex((t) => topples(t, null) === -1);
 
 /** On the reach levels: where the next block goes (eighths from the table edge), or undefined when no way on is left from these blocks. */
-export const nextReach = (placed: readonly number[], round: ReachRound): number | undefined => finish(placed, round)?.[0];
+export const nextReach = (placed: readonly number[], round: ReachRound): number | undefined =>
+  finish(placed, round)?.[0];

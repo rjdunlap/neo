@@ -20,22 +20,30 @@ export function drawBarnyard(g: Graphics, layout: LandLayout, view: View, ground
   // Split rails on short posts, with a straw edge at their feet.
   g.rect(0, edge + 12, view.w, 10).fill(swatch.yellow.light);
   for (let px = 18; px < view.w; px += 100) {
-    g.roundRect(px - 5, edge - 22, 10, 38, 3).fill(wood.light).stroke({ color: wood.line, width: 2 });
+    g.roundRect(px - 5, edge - 22, 10, 38, 3)
+      .fill(wood.light)
+      .stroke({ color: wood.line, width: 2 });
   }
-  for (const y of [edge - 14, edge + 1]) g.rect(0, y, view.w, 7).fill(wood.light).stroke({ color: wood.line, width: 2 });
+  for (const y of [edge - 14, edge + 1])
+    g.rect(0, y, view.w, 7).fill(wood.light).stroke({ color: wood.line, width: 2 });
 
-  const s = layout.box.h * 0.95 / 250;
+  const s = (layout.box.h * 0.95) / 250;
   const hx = layout.host.x;
   const hy = layout.host.y;
   g.ellipse(hx, hy + 2, 96 * s, 17 * s).fill(swatch.yellow.light);
   for (const dx of [-72, -40, 25, 60]) {
-    g.moveTo(hx + dx * s, hy + 3 * s).lineTo(hx + (dx + 13) * s, hy - 2 * s).stroke({ color: wood.light, width: 2 });
+    g.moveTo(hx + dx * s, hy + 3 * s)
+      .lineTo(hx + (dx + 13) * s, hy - 2 * s)
+      .stroke({ color: wood.light, width: 2 });
   }
   // The milk pail stands beside the cow, clear of her body-centered hit circle.
   const px = hx + 170 * s;
   const py = hy - 2 * s;
   g.ellipse(px, py - 31 * s, 14 * s, 19 * s).stroke({ color: swatch.white.line, width: 3 * s });
   g.poly([px - 19 * s, py - 34 * s, px + 19 * s, py - 34 * s, px + 14 * s, py, px - 14 * s, py])
-    .fill(swatch.white.light).stroke({ color: swatch.white.line, width: 3 * s });
-  g.ellipse(px, py - 34 * s, 19 * s, 5 * s).fill(swatch.white.fill).stroke({ color: swatch.white.line, width: 3 * s });
+    .fill(swatch.white.light)
+    .stroke({ color: swatch.white.line, width: 3 * s });
+  g.ellipse(px, py - 34 * s, 19 * s, 5 * s)
+    .fill(swatch.white.fill)
+    .stroke({ color: swatch.white.line, width: 3 * s });
 }

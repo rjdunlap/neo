@@ -24,7 +24,9 @@ export function windowArt(d: number, stars: { x: number; y: number }[]): Graphic
   const r = d / 2;
   const g = new Graphics();
   g.circle(0, 6, r + 22).fill(WOOD_LINE);
-  g.circle(0, 0, r + 22).fill(swatch.brown.light).stroke({ width: 5, color: WOOD_LINE });
+  g.circle(0, 0, r + 22)
+    .fill(swatch.brown.light)
+    .stroke({ width: 5, color: WOOD_LINE });
   g.circle(0, 0, r).fill(SKY).stroke({ width: 4, color: SKY_EDGE });
   for (const s of stars) g.circle(s.x * r, s.y * r, 3.5).fill(STAR);
   return g;
@@ -32,7 +34,12 @@ export function windowArt(d: number, stars: { x: number; y: number }[]): Graphic
 
 /** A sky disk for a card's small round frame. */
 export function frameArt(r: number): Graphics {
-  return new Graphics().circle(0, 0, r + 10).fill(swatch.brown.light).stroke({ width: 4, color: WOOD_LINE }).circle(0, 0, r).fill(SKY);
+  return new Graphics()
+    .circle(0, 0, r + 10)
+    .fill(swatch.brown.light)
+    .stroke({ width: 4, color: WOOD_LINE })
+    .circle(0, 0, r)
+    .fill(SKY);
 }
 
 /** The Moon at stop `k`: the whole outline faintly, then the lit part. Nothing at k 0. Draws into `g`, centered on (0, 0). */
@@ -41,7 +48,10 @@ export function drawMoon(g: Graphics, k: number, r: number) {
   const pts = moonShape(k, r);
   if (!pts.length) return g;
   g.circle(0, 0, r).fill(MOON_DARK).stroke({ width: 2, color: 0x6a78a8 });
-  g.poly(pts.flatMap((p) => [p.x, p.y]), true).fill(MOON_LIT);
+  g.poly(
+    pts.flatMap((p) => [p.x, p.y]),
+    true,
+  ).fill(MOON_LIT);
   if (amountOf(k) === 'full') g.circle(0, 0, r).stroke({ width: 3, color: MOON_LINE });
   return g;
 }
@@ -51,14 +61,21 @@ export function drawLitOutline(g: Graphics, k: number, r: number) {
   g.clear();
   const pts = moonShape(k, r + 6);
   if (!pts.length) return g;
-  g.poly(pts.flatMap((p) => [p.x, p.y]), true).stroke({ width: 6, color: swatch.yellow.fill });
+  g.poly(
+    pts.flatMap((p) => [p.x, p.y]),
+    true,
+  ).stroke({ width: 6, color: swatch.yellow.fill });
   return g;
 }
 
 /** The Later button's picture: a curved arrow over three small dots (some days going by), never a clock. */
 export function laterArt(): Graphics {
   const g = new Graphics();
-  g.arc(0, -4, 42, Math.PI * 0.95, Math.PI * 1.95).stroke({ width: 12, color: swatch.blue.line, cap: 'round' });
+  g.arc(0, -4, 42, Math.PI * 0.95, Math.PI * 1.95).stroke({
+    width: 12,
+    color: swatch.blue.line,
+    cap: 'round',
+  });
   g.poly([40, -30, 58, 4, 22, 0], true).fill(swatch.blue.line);
   for (let i = -1; i <= 1; i++) g.circle(i * 24, 40, 7).fill(swatch.blue.line);
   return g;
@@ -92,7 +109,11 @@ export function shutterArt(r: number): Graphics {
 export function iconArt(k = 2, size = 100): Container {
   const c = new Container();
   const r = size / 2;
-  const win = windowArt(size, [{ x: -0.6, y: -0.5 }, { x: 0.55, y: -0.6 }, { x: 0.6, y: 0.55 }]);
+  const win = windowArt(size, [
+    { x: -0.6, y: -0.5 },
+    { x: 0.55, y: -0.6 },
+    { x: 0.6, y: 0.55 },
+  ]);
   const moon = drawMoon(new Graphics(), k, r * 0.5);
   c.addChild(win, moon);
   c.y = -r - 10;

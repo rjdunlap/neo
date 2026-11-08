@@ -2,10 +2,82 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  askRank, BIG_LITTLE, DARKEST_FIRST, fromHsl, gapMids, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, luminance, SHADE_COLORS, SHADE_LIGHTNESS, SHADE_STEP, shades, WHERE_DOES_IT_GO, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
-  BOOT_COLORS, HIDDEN_HEIGHTS, HIDDEN_LINES, hiddenStart, inversions, isSorted, mixedPair, pairTest, SWEEP_START, sweepAfter, sweepNext, type Sweep,
-  FOOT_BASE, headTop, MEASURING_RIBBON, RIBBON_FRIENDS, RIBBON_MAX, RIBBON_MIN, RIBBON_PAIRS, RIBBON_SNAP, ribbonLaneAt, ribbonLayout, ribbonPairs, ribbonPull, ribbonTaller,
-  pickRounds, propSize, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE, WHO_FITS,
+  askRank,
+  BIG_LITTLE,
+  DARKEST_FIRST,
+  fromHsl,
+  gapMids,
+  insertAsks,
+  insertGap,
+  insertGapFor,
+  insertLayout,
+  insertLine,
+  insertWhy,
+  luminance,
+  SHADE_COLORS,
+  SHADE_LIGHTNESS,
+  SHADE_STEP,
+  shades,
+  WHERE_DOES_IT_GO,
+  BIG_LITTLE_ASKS,
+  CRITTER_H,
+  CYCLE,
+  CYCLE_SCALE,
+  CYCLE_TAPS,
+  cycleAt,
+  dealSteps,
+  dropSpot,
+  FIT_PROPS,
+  fitAsks,
+  fitTry,
+  FLAG_COLORS,
+  FRIEND_SCALE,
+  FRIENDS,
+  middleAsks,
+  MIDDLE_ONE,
+  MIN_RATIO,
+  paradeLayout,
+  BOOT_COLORS,
+  HIDDEN_HEIGHTS,
+  HIDDEN_LINES,
+  hiddenStart,
+  inversions,
+  isSorted,
+  mixedPair,
+  pairTest,
+  SWEEP_START,
+  sweepAfter,
+  sweepNext,
+  type Sweep,
+  FOOT_BASE,
+  headTop,
+  MEASURING_RIBBON,
+  RIBBON_FRIENDS,
+  RIBBON_MAX,
+  RIBBON_MIN,
+  RIBBON_PAIRS,
+  RIBBON_SNAP,
+  ribbonLaneAt,
+  ribbonLayout,
+  ribbonPairs,
+  ribbonPull,
+  ribbonTaller,
+  pickRounds,
+  propSize,
+  SIZE_CYCLE,
+  SIZE_PLANS,
+  sizeBell,
+  sizeOrder,
+  sizePlan,
+  sizeScale,
+  sizeTouch,
+  sizeWord,
+  stepBell,
+  STEPS,
+  stepScale,
+  TARGET,
+  TWO_IN_A_LINE,
+  WHO_FITS,
 } from './logic';
 import { fitPose } from './props';
 import { sizeParade } from './index';
@@ -20,7 +92,8 @@ describe('Size Parade', () => {
   it('orders ranks from smallest or biggest, and bigger ranks are bigger', () => {
     expect(sizeOrder(3, 'small')).toEqual([0, 1, 2]);
     expect(sizeOrder(3, 'big')).toEqual([2, 1, 0]);
-    for (let n = 2; n <= 5; n++) for (let r = 1; r < n; r++) expect(sizeScale(r, n)).toBeGreaterThan(sizeScale(r - 1, n));
+    for (let n = 2; n <= 5; n++)
+      for (let r = 1; r < n; r++) expect(sizeScale(r, n)).toBeGreaterThan(sizeScale(r - 1, n));
   });
 
   it('the ghost finger finds the biggest or smallest friend, and lines every level up in order, touching no wrong friend', () => {
@@ -79,7 +152,8 @@ describe('Size Parade', () => {
         const slots = plan.mode === 'line' ? plan.count : 0;
         const { friends, targetW, spots } = paradeLayout(plan.count, slots, v.w);
         expect(targetW, plan.name).toBeGreaterThanOrEqual(100);
-        for (let i = 1; i < friends.length; i++) expect(friends[i] - friends[i - 1], plan.name).toBeGreaterThanOrEqual(targetW);
+        for (let i = 1; i < friends.length; i++)
+          expect(friends[i] - friends[i - 1], plan.name).toBeGreaterThanOrEqual(targetW);
         expect(friends[0] - targetW / 2).toBeGreaterThanOrEqual(80);
         expect(friends[friends.length - 1] + targetW / 2).toBeLessThanOrEqual(v.w);
         for (let i = 1; i < spots.length; i++) expect(spots[i] - spots[i - 1]).toBeGreaterThanOrEqual(132);
@@ -88,11 +162,13 @@ describe('Size Parade', () => {
   });
 
   it('takes a drop near the glowing spot as generously as before, and names another spot rather than counting it', () => {
-    const { spots } = paradeLayout(5, 5, 1024), y = 300;
+    const { spots } = paradeLayout(5, 5, 1024),
+      y = 300;
     for (let glowing = 0; glowing < 5; glowing++) {
       expect(dropSpot(spots[glowing], y, spots, y, glowing)).toBe(glowing);
       expect(dropSpot(spots[glowing] + 80, y + 90, spots, y, glowing)).toBe(glowing);
-      for (let other = 0; other < 5; other++) if (Math.abs(other - glowing) > 1) expect(dropSpot(spots[other], y, spots, y, glowing)).toBe(other);
+      for (let other = 0; other < 5; other++)
+        if (Math.abs(other - glowing) > 1) expect(dropSpot(spots[other], y, spots, y, glowing)).toBe(other);
     }
     expect(dropSpot(spots[2], y + 200, spots, y, 2)).toBeNull();
     expect(dropSpot(spots[4] + 200, y, spots, y, 0)).toBeNull();
@@ -102,7 +178,11 @@ describe('Size Parade', () => {
     expect(sizePlan(17)).toBe(TWO_IN_A_LINE);
     expect(sizePlan(10)).toBe(MIDDLE_ONE);
     expect(sizePlan(4).count).toBe(4);
-    const order = sizeOrder(2, 'small'), friends = [{ rank: 1, placed: false }, { rank: 0, placed: false }];
+    const order = sizeOrder(2, 'small'),
+      friends = [
+        { rank: 1, placed: false },
+        { rank: 0, placed: false },
+      ];
     expect(friends[sizeTouch(order, 0, friends)!].rank).toBe(0);
     friends[1].placed = true;
     expect(friends[sizeTouch(order, 1, friends)!].rank).toBe(1);
@@ -126,15 +206,28 @@ describe('Size Parade', () => {
           const steps = dealSteps(rng, plan, row);
           expect(steps, plan.name).toHaveLength(plan.count);
           // Littlest first, every step distinct and on the five-step scale, so rank still means size and neighbours differ by at least 18 units.
-          for (let r = 1; r < plan.count; r++) { expect(steps[r], plan.name).toBeGreaterThan(steps[r - 1]); expect(gameH(steps[r]) - gameH(steps[r - 1])).toBeGreaterThanOrEqual(18); }
-          for (const st of steps) expect(st).toBeGreaterThanOrEqual(0), expect(st).toBeLessThan(STEPS);
-          if (plan.mode === 'line' || row === 0 || plan.bigLittle) { expect(steps[0]).toBe(0); expect(steps[plan.count - 1]).toBe(STEPS - 1); }
+          for (let r = 1; r < plan.count; r++) {
+            expect(steps[r], plan.name).toBeGreaterThan(steps[r - 1]);
+            expect(gameH(steps[r]) - gameH(steps[r - 1])).toBeGreaterThanOrEqual(18);
+          }
+          for (const st of steps) (expect(st).toBeGreaterThanOrEqual(0), expect(st).toBeLessThan(STEPS));
+          if (plan.mode === 'line' || row === 0 || plan.bigLittle) {
+            expect(steps[0]).toBe(0);
+            expect(steps[plan.count - 1]).toBe(STEPS - 1);
+          }
           // Two friends stay at least two steps apart, a ratio of at least 1.4; the first row's 2.4 needs no adult.
           if (plan.count === 2) expect(stepScale(steps[1]) / stepScale(steps[0])).toBeGreaterThanOrEqual(1.4);
           // In a varied pick row the asked friend is never a near call against its neighbours.
-          if (plan.mode === 'pick' && row > 0) { const asked = plan.order === 'small' ? 0 : plan.count - 1, ratio = (a: number, b: number) => Math.max(stepScale(a), stepScale(b)) / Math.min(stepScale(a), stepScale(b));
-          for (const n of [asked - 1, asked + 1]) if (steps[n] !== undefined) expect(ratio(steps[n], steps[asked]), plan.name).toBeGreaterThanOrEqual(MIN_RATIO); }
-          if (plan.count === 2 && row === 0) expect(stepScale(steps[1]) / stepScale(steps[0])).toBeCloseTo(2.38, 1);
+          if (plan.mode === 'pick' && row > 0) {
+            const asked = plan.order === 'small' ? 0 : plan.count - 1,
+              ratio = (a: number, b: number) =>
+                Math.max(stepScale(a), stepScale(b)) / Math.min(stepScale(a), stepScale(b));
+            for (const n of [asked - 1, asked + 1])
+              if (steps[n] !== undefined)
+                expect(ratio(steps[n], steps[asked]), plan.name).toBeGreaterThanOrEqual(MIN_RATIO);
+          }
+          if (plan.count === 2 && row === 0)
+            expect(stepScale(steps[1]) / stepScale(steps[0])).toBeCloseTo(2.38, 1);
         }
       }
     }
@@ -147,7 +240,11 @@ describe('Size Parade', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const steps = dealSteps(new Rng(seed), MIDDLE_ONE, 1, 1);
       expect(steps).toHaveLength(3);
-      for (const n of [0, 2]) expect(Math.max(stepScale(steps[n]), stepScale(steps[1])) / Math.min(stepScale(steps[n]), stepScale(steps[1]))).toBeGreaterThanOrEqual(MIN_RATIO);
+      for (const n of [0, 2])
+        expect(
+          Math.max(stepScale(steps[n]), stepScale(steps[1])) /
+            Math.min(stepScale(steps[n]), stepScale(steps[1])),
+        ).toBeGreaterThanOrEqual(MIN_RATIO);
     }
     expect(FRIENDS).toHaveLength(8);
     expect(new Set(FRIENDS).size).toBe(8);
@@ -159,8 +256,13 @@ describe('Size Parade', () => {
   it('level 16 cycles one friend through three sizes and back, ending after a bounded number of taps, big enough to see and small enough to touch', () => {
     expect(sizePlan(16)).toBe(SIZE_CYCLE);
     expect(cycleAt(0)).toEqual({ step: 0, word: null });
-    const steps = [0], words: string[] = [];
-    for (let t = 1; t <= CYCLE.length; t++) { const c = cycleAt(t); steps.push(c.step); words.push(c.word!); }
+    const steps = [0],
+      words: string[] = [];
+    for (let t = 1; t <= CYCLE.length; t++) {
+      const c = cycleAt(t);
+      steps.push(c.step);
+      words.push(c.word!);
+    }
     expect(steps).toEqual([0, 2, 4, 2, 0]);
     expect(words).toEqual(['bigger', 'biggest', 'smaller', 'littlest']);
     expect(new Set(steps).size).toBe(3);
@@ -178,7 +280,8 @@ describe('Size Parade', () => {
     expect(pickRounds(BIG_LITTLE)).toBe(3);
     expect(pickRounds(SIZE_PLANS[0])).toBe(4);
     expect(BIG_LITTLE_ASKS).toEqual(['big', 'small', 'big']);
-    for (let i = 1; i < BIG_LITTLE_ASKS.length; i++) expect(BIG_LITTLE_ASKS[i]).not.toBe(BIG_LITTLE_ASKS[i - 1]);
+    for (let i = 1; i < BIG_LITTLE_ASKS.length; i++)
+      expect(BIG_LITTLE_ASKS[i]).not.toBe(BIG_LITTLE_ASKS[i - 1]);
     expect(askRank('big', 2)).toBe(1);
     expect(askRank('small', 2)).toBe(0);
     expect(askRank('big')).toBe(2);
@@ -194,7 +297,11 @@ describe('Size Parade', () => {
       expect(friends[1] + targetW / 2).toBeLessThanOrEqual(v.w);
     }
     for (const ask of BIG_LITTLE_ASKS) {
-      const order = [askRank(ask, 2)], friends = [{ rank: 1, placed: false }, { rank: 0, placed: false }];
+      const order = [askRank(ask, 2)],
+        friends = [
+          { rank: 1, placed: false },
+          { rank: 0, placed: false },
+        ];
       expect(friends[sizeTouch(order, 0, friends)!].rank).toBe(ask === 'big' ? 1 : 0);
     }
   });
@@ -207,10 +314,14 @@ describe('Size Parade', () => {
     expect(FIT_PROPS.map((p) => p.kind)).toEqual(['bed', 'chair', 'bowl', 'door']);
     const h = (step: number) => stepScale(step) * FRIEND_SCALE * CRITTER_H;
     for (const { kind, ratio } of FIT_PROPS) {
-      for (let step = 0; step < STEPS; step++) expect(propSize(kind, h(step)) / h(step)).toBeCloseTo(ratio, 6);
-      for (let step = 1; step < STEPS; step++) expect(propSize(kind, h(step))).toBeGreaterThan(propSize(kind, h(step - 1)));
+      for (let step = 0; step < STEPS; step++)
+        expect(propSize(kind, h(step)) / h(step)).toBeCloseTo(ratio, 6);
+      for (let step = 1; step < STEPS; step++)
+        expect(propSize(kind, h(step))).toBeGreaterThan(propSize(kind, h(step - 1)));
       // The biggest friend's prop still stands above the row and below the progress dots in a landscape view.
-      expect(propSize(kind, h(4)) * (kind === 'bed' ? 0.62 : kind === 'door' ? 1.04 : 1)).toBeLessThan(768 - 330 - 140);
+      expect(propSize(kind, h(4)) * (kind === 'bed' ? 0.62 : kind === 'door' ? 1.04 : 1)).toBeLessThan(
+        768 - 330 - 140,
+      );
     }
   });
 
@@ -223,7 +334,8 @@ describe('Size Parade', () => {
       expect(new Set(ranks)).toEqual(new Set([0, 1, 2]));
       for (const fitting of ranks) {
         expect([0, 1, 2].filter((rank) => fitTry(rank, fitting) === 'fits')).toEqual([fitting]);
-        for (const rank of [0, 1, 2]) if (rank !== fitting) expect(fitTry(rank, fitting)).toBe(rank > fitting ? 'big' : 'little');
+        for (const rank of [0, 1, 2])
+          if (rank !== fitting) expect(fitTry(rank, fitting)).toBe(rank > fitting ? 'big' : 'little');
       }
     }
     // Over many rounds no rank fits more often than chance would make "always the biggest" a strategy.
@@ -234,15 +346,19 @@ describe('Size Parade', () => {
 
   it('level 11 deals the even spread first, then varied sizes that keep the fitting friend clearly apart from each neighbour, and the bot taps it', () => {
     for (let seed = 1; seed <= 60; seed++) {
-      const rng = new Rng(seed), asks = fitAsks(rng);
+      const rng = new Rng(seed),
+        asks = fitAsks(rng);
       asks.forEach((ask, row) => {
-        const fitting = askRank(ask, 3), steps = dealSteps(rng, WHO_FITS, row, fitting);
+        const fitting = askRank(ask, 3),
+          steps = dealSteps(rng, WHO_FITS, row, fitting);
         if (row === 0) expect(steps).toEqual([0, 2, 4]);
         expect(new Set(steps).size).toBe(3);
-        for (const n of [fitting - 1, fitting + 1]) if (steps[n] !== undefined) {
-          const a = stepScale(steps[n]), b = stepScale(steps[fitting]);
-          expect(Math.max(a, b) / Math.min(a, b)).toBeGreaterThanOrEqual(MIN_RATIO);
-        }
+        for (const n of [fitting - 1, fitting + 1])
+          if (steps[n] !== undefined) {
+            const a = stepScale(steps[n]),
+              b = stepScale(steps[fitting]);
+            expect(Math.max(a, b) / Math.min(a, b)).toBeGreaterThanOrEqual(MIN_RATIO);
+          }
         const friends = rng.shuffle([0, 1, 2]).map((rank) => ({ rank, placed: false }));
         expect(friends[sizeTouch([fitting], 0, friends)!].rank).toBe(fitting);
       });
@@ -255,7 +371,8 @@ describe('Size Parade', () => {
     for (let fit = 0; fit < STEPS; fit++) {
       const size = propSize('bed', h(fit));
       expect(fitPose('bed', size, h(fit)).x).toBeLessThanOrEqual(size / 2);
-      for (let big = fit + 1; big < STEPS; big++) if (h(big) / h(fit) >= MIN_RATIO) expect(fitPose('bed', size, h(big)).x).toBeGreaterThan(size / 2);
+      for (let big = fit + 1; big < STEPS; big++)
+        if (h(big) / h(fit) >= MIN_RATIO) expect(fitPose('bed', size, h(big)).x).toBeGreaterThan(size / 2);
       expect(fitPose('bed', size, h(fit) * MIN_RATIO).x).toBeGreaterThan(size / 2);
     }
     // In the other props the friend stands or sits at the prop, and the biggest friend's try stays inside the landscape sky.
@@ -294,8 +411,11 @@ describe('Size Parade', () => {
       expect(asks).toHaveLength(4);
       expect(asks.filter((a) => a.order === 'small')).toHaveLength(2);
       expect(asks.filter((a) => a.order === 'big')).toHaveLength(2);
-      for (const a of asks) expect(a.rank).toBeGreaterThanOrEqual(0), expect(a.rank).toBeLessThanOrEqual(4);
-      const inner = asks.filter((a) => { const g = insertGapFor(a); return g !== 0 && g !== 4; });
+      for (const a of asks) (expect(a.rank).toBeGreaterThanOrEqual(0), expect(a.rank).toBeLessThanOrEqual(4));
+      const inner = asks.filter((a) => {
+        const g = insertGapFor(a);
+        return g !== 0 && g !== 4;
+      });
       expect(inner.length, `seed ${seed}`).toBeGreaterThanOrEqual(2);
     }
   });
@@ -305,31 +425,42 @@ describe('Size Parade', () => {
   });
 
   it('level 12 has a line of four in strict order and exactly one right gap', () => {
-    for (let seed = 1; seed <= 300; seed++) for (const ask of insertAsks(new Rng(seed))) {
-      const line = insertLine(ask);
-      expect(line).toHaveLength(4);
-      expect(new Set(line).size).toBe(4);
-      expect(line).not.toContain(ask.rank);
-      line.forEach((r, i) => { if (i) ask.order === 'small' ? expect(r).toBeGreaterThan(line[i - 1]) : expect(r).toBeLessThan(line[i - 1]); });
-      const right = insertGapFor(ask);
-      expect(right).toBeGreaterThanOrEqual(0);
-      expect(right).toBeLessThanOrEqual(4);
-      // Inserting at the right gap gives a full line in order; any other gap breaks it.
-      for (let g = 0; g <= 4; g++) {
-        const full = [...line.slice(0, g), ask.rank, ...line.slice(g)];
-        const ordered = full.every((r, i) => !i || (ask.order === 'small' ? r > full[i - 1] : r < full[i - 1]));
-        expect(ordered, `gap ${g}`).toBe(g === right);
-        expect(insertWhy(ask, g) === null).toBe(g === right);
+    for (let seed = 1; seed <= 300; seed++)
+      for (const ask of insertAsks(new Rng(seed))) {
+        const line = insertLine(ask);
+        expect(line).toHaveLength(4);
+        expect(new Set(line).size).toBe(4);
+        expect(line).not.toContain(ask.rank);
+        line.forEach((r, i) => {
+          if (i)
+            ask.order === 'small'
+              ? expect(r).toBeGreaterThan(line[i - 1])
+              : expect(r).toBeLessThan(line[i - 1]);
+        });
+        const right = insertGapFor(ask);
+        expect(right).toBeGreaterThanOrEqual(0);
+        expect(right).toBeLessThanOrEqual(4);
+        // Inserting at the right gap gives a full line in order; any other gap breaks it.
+        for (let g = 0; g <= 4; g++) {
+          const full = [...line.slice(0, g), ask.rank, ...line.slice(g)];
+          const ordered = full.every(
+            (r, i) => !i || (ask.order === 'small' ? r > full[i - 1] : r < full[i - 1]),
+          );
+          expect(ordered, `gap ${g}`).toBe(g === right);
+          expect(insertWhy(ask, g) === null).toBe(g === right);
+        }
       }
-    }
   });
 
   it('level 12 reads a drop at each gap as that gap, and a drop far from the line as none', () => {
     for (const view of VIEWS) {
-      const lineY = view.h - 90, { rest } = insertLayout(view.w, null), mids = gapMids(rest);
+      const lineY = view.h - 90,
+        { rest } = insertLayout(view.w, null),
+        mids = gapMids(rest);
       expect(mids).toHaveLength(5);
       mids.forEach((x, g) => {
-        for (const up of [0, 50, 100, 150]) expect(insertGap(x, lineY - up, rest, lineY), `gap ${g} up ${up}`).toBe(g);
+        for (const up of [0, 50, 100, 150])
+          expect(insertGap(x, lineY - up, rest, lineY), `gap ${g} up ${up}`).toBe(g);
         expect(insertGap(x, view.h - 400, rest, lineY)).toBeNull();
       });
     }
@@ -339,12 +470,16 @@ describe('Size Parade', () => {
     for (const view of VIEWS) {
       const none = insertLayout(view.w, null);
       expect(none.rest).toHaveLength(4);
-      none.rest.forEach((x, i) => { if (i) expect(x - none.rest[i - 1]).toBeGreaterThanOrEqual(TARGET.w); });
+      none.rest.forEach((x, i) => {
+        if (i) expect(x - none.rest[i - 1]).toBeGreaterThanOrEqual(TARGET.w);
+      });
       for (let g = 0; g <= 4; g++) {
         const l = insertLayout(view.w, g);
         expect(l.xs).toHaveLength(4);
         expect(l.openW).toBeGreaterThanOrEqual(100);
-        l.xs.forEach((x, i) => { if (i) expect(x - l.xs[i - 1], `gap ${g}`).toBeGreaterThanOrEqual(TARGET.w); });
+        l.xs.forEach((x, i) => {
+          if (i) expect(x - l.xs[i - 1], `gap ${g}`).toBeGreaterThanOrEqual(TARGET.w);
+        });
         if (g > 0 && g < 4) expect(l.xs[g] - l.xs[g - 1]).toBeCloseTo(2 * l.openW, 5);
         else expect(l.xs[1] - l.xs[0]).toBeCloseTo(l.openW, 5);
       }
@@ -352,27 +487,37 @@ describe('Size Parade', () => {
   });
 
   it('level 12 explains a wrong gap truthfully, pointing toward the right one', () => {
-    for (let seed = 1; seed <= 300; seed++) for (const ask of insertAsks(new Rng(seed))) {
-      const line = insertLine(ask), right = insertGapFor(ask);
-      for (let g = 0; g <= 4; g++) {
-        const why = insertWhy(ask, g);
-        if (g === right) { expect(why).toBeNull(); continue; }
-        expect(why).not.toBeNull();
-        expect(why!.side).toBe(g < right ? 'after' : 'before');
-        expect([g, g - 1]).toContain(why!.friend);
-        expect(why!.friend).toBeGreaterThanOrEqual(0);
-        expect(why!.friend).toBeLessThan(4);
-        expect(why!.cmp).toBe(ask.rank > line[why!.friend] ? 'bigger' : 'smaller');
-        // The friend named really is on the wrong side of the newcomer in the line's order.
-        const comesFirst = ask.order === 'small' ? line[why!.friend] < ask.rank : line[why!.friend] > ask.rank;
-        expect(comesFirst).toBe(why!.side === 'before' ? false : true);
+    for (let seed = 1; seed <= 300; seed++)
+      for (const ask of insertAsks(new Rng(seed))) {
+        const line = insertLine(ask),
+          right = insertGapFor(ask);
+        for (let g = 0; g <= 4; g++) {
+          const why = insertWhy(ask, g);
+          if (g === right) {
+            expect(why).toBeNull();
+            continue;
+          }
+          expect(why).not.toBeNull();
+          expect(why!.side).toBe(g < right ? 'after' : 'before');
+          expect([g, g - 1]).toContain(why!.friend);
+          expect(why!.friend).toBeGreaterThanOrEqual(0);
+          expect(why!.friend).toBeLessThan(4);
+          expect(why!.cmp).toBe(ask.rank > line[why!.friend] ? 'bigger' : 'smaller');
+          // The friend named really is on the wrong side of the newcomer in the line's order.
+          const comesFirst =
+            ask.order === 'small' ? line[why!.friend] < ask.rank : line[why!.friend] > ask.rank;
+          expect(comesFirst).toBe(why!.side === 'before' ? false : true);
+        }
       }
-    }
   });
 
   it('level 15 shades are five distinct, evenly stepped, readable steps from darkest to lightest', () => {
     expect(SHADE_STEP).toBeGreaterThanOrEqual(0);
-    for (let i = 1; i < SHADE_LIGHTNESS.length; i++) expect(SHADE_LIGHTNESS[i] - SHADE_LIGHTNESS[i - 1]).toBeCloseTo(SHADE_LIGHTNESS[1] - SHADE_LIGHTNESS[0], 9);
+    for (let i = 1; i < SHADE_LIGHTNESS.length; i++)
+      expect(SHADE_LIGHTNESS[i] - SHADE_LIGHTNESS[i - 1]).toBeCloseTo(
+        SHADE_LIGHTNESS[1] - SHADE_LIGHTNESS[0],
+        9,
+      );
     for (const color of SHADE_COLORS) {
       const five = shades(color);
       expect(five).toHaveLength(5);
@@ -380,7 +525,8 @@ describe('Size Parade', () => {
       five.forEach((s, i) => {
         expect(luminance(s.line), `${color} ${i} line darker`).toBeLessThan(luminance(s.fill));
         if (!i) return;
-        const lo = luminance(five[i - 1].fill), hi = luminance(s.fill);
+        const lo = luminance(five[i - 1].fill),
+          hi = luminance(s.fill);
         expect(hi, `${color} ${i}`).toBeGreaterThan(lo);
         expect((hi + 0.05) / (lo + 0.05), `${color} ${i} contrast`).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
       });
@@ -394,7 +540,12 @@ describe('Size Parade', () => {
     expect(fromHsl(0, 0, 1)).toBe(0xffffff);
   });
   describe('level 13 Hidden heights', () => {
-    const perms = (n: number): number[][] => n === 0 ? [[]] : perms(n - 1).flatMap(p => Array.from({ length: n }, (_, i) => [...p.slice(0, i), n - 1, ...p.slice(i)]));
+    const perms = (n: number): number[][] =>
+      n === 0
+        ? [[]]
+        : perms(n - 1).flatMap((p) =>
+            Array.from({ length: n }, (_, i) => [...p.slice(0, i), n - 1, ...p.slice(i)]),
+          );
     const ALL = [...perms(4), ...perms(5)];
 
     it('is planned as a hidden littlest-first level in the school ladder', () => {
@@ -408,35 +559,43 @@ describe('Size Parade', () => {
     });
 
     it('seeded starts are permutations that are never sorted and repeat per seed', () => {
-      for (const n of HIDDEN_LINES) for (let seed = 1; seed <= 300; seed++) {
-        const line = hiddenStart(new Rng(seed), n);
-        expect([...line].sort((a, b) => a - b)).toEqual(Array.from({ length: n }, (_, i) => i));
-        expect(isSorted(line)).toBe(false);
-        expect(inversions(line)).toBeGreaterThanOrEqual(2);
-        expect(hiddenStart(new Rng(seed), n)).toEqual(line);
-      }
+      for (const n of HIDDEN_LINES)
+        for (let seed = 1; seed <= 300; seed++) {
+          const line = hiddenStart(new Rng(seed), n);
+          expect([...line].sort((a, b) => a - b)).toEqual(Array.from({ length: n }, (_, i) => i));
+          expect(isSorted(line)).toBe(false);
+          expect(inversions(line)).toBeGreaterThanOrEqual(2);
+          expect(hiddenStart(new Rng(seed), n)).toEqual(line);
+        }
     });
 
     it('a pair test swaps only when the left friend is bigger, and only ever helps', () => {
-      for (const line of ALL) for (let a = 0; a < line.length; a++) for (let b = 0; b < line.length; b++) {
-        if (a === b) continue;
-        const copy = [...line], { line: out, swapped } = pairTest(line, a, b);
-        expect(line).toEqual(copy);
-        const [l, r] = a < b ? [a, b] : [b, a];
-        expect(swapped).toBe(line[l] > line[r]);
-        if (swapped) {
-          expect(out[l]).toBe(line[r]); expect(out[r]).toBe(line[l]);
-          expect(inversions(out)).toBeLessThan(inversions(line));
-        } else expect(out).toEqual(line);
-        expect(inversions(out)).toBeLessThanOrEqual(inversions(line));
-      }
+      for (const line of ALL)
+        for (let a = 0; a < line.length; a++)
+          for (let b = 0; b < line.length; b++) {
+            if (a === b) continue;
+            const copy = [...line],
+              { line: out, swapped } = pairTest(line, a, b);
+            expect(line).toEqual(copy);
+            const [l, r] = a < b ? [a, b] : [b, a];
+            expect(swapped).toBe(line[l] > line[r]);
+            if (swapped) {
+              expect(out[l]).toBe(line[r]);
+              expect(out[r]).toBe(line[l]);
+              expect(inversions(out)).toBeLessThan(inversions(line));
+            } else expect(out).toEqual(line);
+            expect(inversions(out)).toBeLessThanOrEqual(inversions(line));
+          }
     });
 
     it('isSorted matches zero inversions, and mixedPair points at a swap that mends exactly one', () => {
       for (const line of ALL) {
         expect(isSorted(line)).toBe(inversions(line) === 0);
         const i = mixedPair(line);
-        if (isSorted(line)) { expect(i).toBeNull(); continue; }
+        if (isSorted(line)) {
+          expect(i).toBeNull();
+          continue;
+        }
         expect(i).not.toBeNull();
         expect(line[i!]).toBeGreaterThan(line[i! + 1]);
         const t = pairTest(line, i!, i! + 1);
@@ -447,12 +606,15 @@ describe('Size Parade', () => {
 
     it('the ghost sweep always sorts within n(n-1)/2 tests, even after interference', () => {
       const run = (start: number[], s0: Sweep) => {
-        let line = start, s = s0, tests = 0;
+        let line = start,
+          s = s0,
+          tests = 0;
         for (;;) {
           const step = sweepNext(s);
           if (step === 'gate') return { line, tests };
           const t = pairTest(line, step[0], step[1]);
-          line = t.line; tests++;
+          line = t.line;
+          tests++;
           s = sweepAfter(s, line.length, t.swapped);
           expect(tests).toBeLessThanOrEqual(50);
         }
@@ -460,20 +622,26 @@ describe('Size Parade', () => {
       for (const line of ALL) {
         const r = run(line, SWEEP_START);
         expect(isSorted(r.line)).toBe(true);
-        expect(r.tests).toBeLessThanOrEqual(line.length * (line.length - 1) / 2);
+        expect(r.tests).toBeLessThanOrEqual((line.length * (line.length - 1)) / 2);
       }
-      for (const n of HIDDEN_LINES) for (let seed = 1; seed <= 200; seed++) {
-        const rng = new Rng(seed);
-        let line = hiddenStart(rng, n);
-        for (let k = rng.int(0, 6); k > 0; k--) line = pairTest(line, rng.int(0, n - 1), rng.int(0, n - 1)).line;
-        expect(isSorted(run(line, SWEEP_START).line)).toBe(true);
-      }
+      for (const n of HIDDEN_LINES)
+        for (let seed = 1; seed <= 200; seed++) {
+          const rng = new Rng(seed);
+          let line = hiddenStart(rng, n);
+          for (let k = rng.int(0, 6); k > 0; k--)
+            line = pairTest(line, rng.int(0, n - 1), rng.int(0, n - 1)).line;
+          expect(isSorted(run(line, SWEEP_START).line)).toBe(true);
+        }
     });
 
-    it('following the hint pair repeatedly sorts in exactly the line\'s inversions', () => {
+    it("following the hint pair repeatedly sorts in exactly the line's inversions", () => {
       for (const start of ALL) {
-        let line = start, tests = 0;
-        for (let i = mixedPair(line); i !== null; i = mixedPair(line)) { line = pairTest(line, i, i + 1).line; tests++; }
+        let line = start,
+          tests = 0;
+        for (let i = mixedPair(line); i !== null; i = mixedPair(line)) {
+          line = pairTest(line, i, i + 1).line;
+          tests++;
+        }
         expect(isSorted(line)).toBe(true);
         expect(tests).toBe(inversions(start));
       }
@@ -490,7 +658,9 @@ describe('Size Parade', () => {
       for (const seed of SEEDS) {
         const pairs = ribbonPairs(new Rng(seed));
         expect(pairs).toHaveLength(RIBBON_PAIRS);
-        for (const { friends: [a, b] } of pairs) {
+        for (const {
+          friends: [a, b],
+        } of pairs) {
           expect(a.animal).not.toBe(b.animal);
           expect(RIBBON_FRIENDS).toContain(a.animal);
           expect(Math.abs(a.height - b.height)).toBeGreaterThanOrEqual(10);
@@ -498,7 +668,10 @@ describe('Size Parade', () => {
           expect(a.foot).not.toBe(b.foot);
           expect(Math.min(a.foot, b.foot)).toBe(FOOT_BASE);
           // The ribbon reaches every head with room to spare, and starts below it.
-          for (const f of [a, b]) { expect(f.height).toBeLessThan(RIBBON_MAX - RIBBON_SNAP); expect(f.height).toBeGreaterThan(RIBBON_MIN + RIBBON_SNAP); }
+          for (const f of [a, b]) {
+            expect(f.height).toBeLessThan(RIBBON_MAX - RIBBON_SNAP);
+            expect(f.height).toBeGreaterThan(RIBBON_MIN + RIBBON_SNAP);
+          }
         }
       }
     });
@@ -507,7 +680,10 @@ describe('Size Parade', () => {
         const pairs = ribbonPairs(new Rng(seed));
         expect(pairs.filter((p) => p.tricky)).toHaveLength(2);
         for (const p of pairs) {
-          const t = ribbonTaller(p), s = (1 - t) as 0 | 1, tall = p.friends[t], short = p.friends[s];
+          const t = ribbonTaller(p),
+            s = (1 - t) as 0 | 1,
+            tall = p.friends[t],
+            short = p.friends[s];
           expect(tall.height).toBeGreaterThan(short.height);
           if (p.tricky) {
             expect(short.foot).toBeGreaterThan(tall.foot);
@@ -521,14 +697,21 @@ describe('Size Parade', () => {
       }
     });
     it('puts the taller friend on the bank and on the stump across seeds, so a side rule fails', () => {
-      const sides = new Set<number>(), tricksBySide = new Set<string>();
-      for (const seed of SEEDS) for (const p of ribbonPairs(new Rng(seed))) { sides.add(ribbonTaller(p)); tricksBySide.add(`${ribbonTaller(p)}${p.tricky}`); }
+      const sides = new Set<number>(),
+        tricksBySide = new Set<string>();
+      for (const seed of SEEDS)
+        for (const p of ribbonPairs(new Rng(seed))) {
+          sides.add(ribbonTaller(p));
+          tricksBySide.add(`${ribbonTaller(p)}${p.tricky}`);
+        }
       expect(sides.size).toBe(2);
       expect(tricksBySide.size).toBe(4);
       // Neither "always the higher head" nor "always the lower head" wins a round.
       for (const seed of SEEDS) {
         const pairs = ribbonPairs(new Rng(seed));
-        const byTop = pairs.filter((p) => (headTop(p.friends[0]) > headTop(p.friends[1]) ? 0 : 1) === ribbonTaller(p)).length;
+        const byTop = pairs.filter(
+          (p) => (headTop(p.friends[0]) > headTop(p.friends[1]) ? 0 : 1) === ribbonTaller(p),
+        ).length;
         expect(byTop).toBe(2);
       }
     });

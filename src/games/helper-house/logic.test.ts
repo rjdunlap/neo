@@ -3,13 +3,49 @@ import { gapAt, gapY, handleRect, setLine, switches, GAPS, PITCH } from './logic
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  ARRIVALS, MAX_LEVEL, START_WARMTH, STEPS, SUN_SCRIPTS, Tally, WARMTH_MAX, planFor, zoneOf, briefFor, candidateBoards, complete, corners, dayFor, glowFor, helpFor, houseLayout, meetsGoal,
-  nextMove, offersSetup, openRows, overlaps, placeSensor, read, runDay, setRow, solutions, startBoard, type Board, type Day, type Failure, type Socket, type SunLevel, type Zone,
+  ARRIVALS,
+  MAX_LEVEL,
+  START_WARMTH,
+  STEPS,
+  SUN_SCRIPTS,
+  Tally,
+  WARMTH_MAX,
+  planFor,
+  zoneOf,
+  briefFor,
+  candidateBoards,
+  complete,
+  corners,
+  dayFor,
+  glowFor,
+  helpFor,
+  houseLayout,
+  meetsGoal,
+  nextMove,
+  offersSetup,
+  openRows,
+  overlaps,
+  placeSensor,
+  read,
+  runDay,
+  setRow,
+  solutions,
+  startBoard,
+  type Board,
+  type Day,
+  type Failure,
+  type Socket,
+  type SunLevel,
+  type Zone,
 } from './logic';
 
 const SEEDS = Array.from({ length: 120 }, (_, i) => i);
 const briefs = (level: number) => SEEDS.map((s) => briefFor(level, new Rng(s)));
-const day = (sun: number, arrivals: number[] = []): Day => ({ sun: SUN_SCRIPTS[sun].slice(), arrivals, warmth: 0 });
+const day = (sun: number, arrivals: number[] = []): Day => ({
+  sun: SUN_SCRIPTS[sun].slice(),
+  arrivals,
+  warmth: 0,
+});
 const level3 = (reading: SunLevel | null): Board => setRow(startBoard(3), 1, reading);
 
 describe('the step model', () => {
@@ -17,8 +53,34 @@ describe('the step model', () => {
     const d = day(0, [2, 5, 8]);
     const { trace, met, failure } = runDay(placeSensor(startBoard(1), 'eye', 'door'), d);
     expect(trace).toHaveLength(STEPS);
-    expect(trace.map((t) => t.reading)).toEqual(['far', 'far', 'near', 'far', 'far', 'near', 'far', 'far', 'near', 'far', 'far', 'far']);
-    expect(trace.map((t) => t.matched)).toEqual([null, null, 0, null, null, 0, null, null, 0, null, null, null]);
+    expect(trace.map((t) => t.reading)).toEqual([
+      'far',
+      'far',
+      'near',
+      'far',
+      'far',
+      'near',
+      'far',
+      'far',
+      'near',
+      'far',
+      'far',
+      'far',
+    ]);
+    expect(trace.map((t) => t.matched)).toEqual([
+      null,
+      null,
+      0,
+      null,
+      null,
+      0,
+      null,
+      null,
+      0,
+      null,
+      null,
+      null,
+    ]);
     expect(trace.map((t) => t.inside)).toEqual([0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3]);
     expect(trace.every((t) => t.waiting === 0)).toBe(true);
     expect(trace.map((t) => t.opened)).toEqual(trace.map((t) => t.matched === 0));
@@ -112,7 +174,11 @@ describe('the board space', () => {
     for (const b of briefs(1)) expect(solutions(b).map((s) => s.sensor.socket)).toEqual(['door']);
     for (const b of briefs(2)) expect(solutions(b).map((s) => s.sensor.kind)).toEqual(['sun']);
     for (const b of briefs(3)) {
-      expect(solutions(b).map((s) => s.rows[1].reading).sort()).toEqual(['bright', 'dim']);
+      expect(
+        solutions(b)
+          .map((s) => s.rows[1].reading)
+          .sort(),
+      ).toEqual(['bright', 'dim']);
       for (const r of ['bright', 'dim'] as const) {
         const { trace } = runDay(level3(r), b.day);
         expect(trace.filter((t) => t.sun === 'dark').every((t) => t.helperOn)).toBe(true);
@@ -215,7 +281,9 @@ describe('the ghost finger', () => {
   it('places the right piece then watches at levels 1–2, and at level 3 watches once before filling the row', () => {
     for (const b of briefs(1).slice(0, 5)) {
       expect(nextMove(b, b.board, 0)).toEqual({ place: { kind: 'eye', socket: 'door' } });
-      expect(nextMove(b, placeSensor(b.board, 'eye', 'window'), 1)).toEqual({ place: { kind: 'eye', socket: 'door' } });
+      expect(nextMove(b, placeSensor(b.board, 'eye', 'window'), 1)).toEqual({
+        place: { kind: 'eye', socket: 'door' },
+      });
       expect(nextMove(b, placeSensor(b.board, 'eye', 'door'), 0)).toEqual({ watch: true });
     }
     for (const b of briefs(2).slice(0, 5)) {
@@ -233,7 +301,15 @@ describe('the ghost finger', () => {
 
 describe('the layout', () => {
   const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024) };
-  const all = (l: NonNullable<ReturnType<typeof houseLayout>>) => [l.house, ...l.rows.flatMap((r) => [r.reading, r.action]), ...l.bench, l.watch, l.step, l.undo, ...l.sockets];
+  const all = (l: NonNullable<ReturnType<typeof houseLayout>>) => [
+    l.house,
+    ...l.rows.flatMap((r) => [r.reading, r.action]),
+    ...l.bench,
+    l.watch,
+    l.step,
+    l.undo,
+    ...l.sockets,
+  ];
   it('holds full-size targets clear of the corners in both orientations at every level', () => {
     for (const level of [1, 2, 3, 4, 5]) {
       const b = briefFor(level, new Rng(7));
@@ -241,19 +317,36 @@ describe('the layout', () => {
         const l = houseLayout(b, v);
         expect(l, `${name} level ${level}`).not.toBeNull();
         for (const t of [...l!.bench, ...l!.sockets]) expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(110);
-        for (const r of l!.rows) { expect(r.reading.w).toBeGreaterThanOrEqual(130); expect(r.reading.h).toBeGreaterThanOrEqual(110); expect(r.action.w).toBeGreaterThanOrEqual(130); }
+        for (const r of l!.rows) {
+          expect(r.reading.w).toBeGreaterThanOrEqual(130);
+          expect(r.reading.h).toBeGreaterThanOrEqual(110);
+          expect(r.action.w).toBeGreaterThanOrEqual(130);
+        }
         expect(l!.watch.w).toBeGreaterThanOrEqual(120);
         expect(l!.watch.h).toBeGreaterThanOrEqual(100);
         expect(Math.min(l!.step.w, l!.undo.w)).toBeGreaterThanOrEqual(100);
-        const buttons = [...l!.rows.flatMap((r) => [r.reading, r.action]), ...l!.bench, l!.watch, l!.step, l!.undo];
+        const buttons = [
+          ...l!.rows.flatMap((r) => [r.reading, r.action]),
+          ...l!.bench,
+          l!.watch,
+          l!.step,
+          l!.undo,
+        ];
         for (const p of buttons) {
-          expect(corners(v).some((c) => overlaps(p, c)), `${name} level ${level} under a corner`).toBe(false);
+          expect(
+            corners(v).some((c) => overlaps(p, c)),
+            `${name} level ${level} under a corner`,
+          ).toBe(false);
           expect(p.x >= 0 && p.y >= 0 && p.x + p.w <= v.w && p.y + p.h <= v.h).toBe(true);
         }
         expect(l!.sockets).toHaveLength(b.sockets.length);
         expect(l!.bench).toHaveLength(level === 3 || level === 4 ? 3 : level === 5 ? 1 : level);
         const parts = all(l!).filter((p) => p !== l!.house);
-        parts.forEach((p, i) => parts.forEach((q, j) => { if (i < j) expect(overlaps(p, q), `${name} level ${level} overlap ${i}/${j}`).toBe(false); }));
+        parts.forEach((p, i) =>
+          parts.forEach((q, j) => {
+            if (i < j) expect(overlaps(p, q), `${name} level ${level} overlap ${i}/${j}`).toBe(false);
+          }),
+        );
       }
     }
   });
@@ -273,7 +366,13 @@ describe('the layout', () => {
 describe('level 4: the chilly nook', () => {
   const nook = (r0: Zone | null, a0: 'on' | 'off', r1: Zone | null, a1: 'on' | 'off'): Board => {
     const b = startBoard(4);
-    return { ...b, rows: [{ ...b.rows[0], reading: r0, action: a0 }, { ...b.rows[1], reading: r1, action: a1 }] };
+    return {
+      ...b,
+      rows: [
+        { ...b.rows[0], reading: r0, action: a0 },
+        { ...b.rows[1], reading: r1, action: a1 },
+      ],
+    };
   };
   const good = setRow(setRow(startBoard(4), 0, 'cool'), 1, 'warm');
   const d4 = () => briefFor(4, new Rng(1)).day;
@@ -288,9 +387,35 @@ describe('level 4: the chilly nook', () => {
   });
   it('reads the warmth the previous step left, before the heater acts: cool → on, warm → off oscillates 2–3', () => {
     const { trace, met, failure } = runDay(good, d4());
-    expect(trace.map((t) => t.reading)).toEqual(['cool', 'cool', 'warm', 'cool', 'warm', 'cool', 'warm', 'cool', 'warm', 'cool', 'warm', 'cool']);
+    expect(trace.map((t) => t.reading)).toEqual([
+      'cool',
+      'cool',
+      'warm',
+      'cool',
+      'warm',
+      'cool',
+      'warm',
+      'cool',
+      'warm',
+      'cool',
+      'warm',
+      'cool',
+    ]);
     expect(trace.map((t) => t.matched)).toEqual([0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]);
-    expect(trace.map((t) => t.helperOn)).toEqual([true, true, false, true, false, true, false, true, false, true, false, true]);
+    expect(trace.map((t) => t.helperOn)).toEqual([
+      true,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+    ]);
     expect(trace.map((t) => t.warmth)).toEqual([2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3]);
     expect(met).toBe(true);
     expect(failure).toBeNull();
@@ -321,7 +446,11 @@ describe('level 4: the chilly nook', () => {
     expect(failure).toBe('too-warm');
   });
   it('names never-warms for boards that stay cool', () => {
-    for (const board of [nook('warm', 'on', null, 'off'), nook('hot', 'on', null, 'off'), nook('cool', 'on', 'cool', 'off')]) {
+    for (const board of [
+      nook('warm', 'on', null, 'off'),
+      nook('hot', 'on', null, 'off'),
+      nook('cool', 'on', 'cool', 'off'),
+    ]) {
       expect(runDay(board, d4()).failure).toBe('never-warms');
     }
   });
@@ -387,7 +516,9 @@ describe('level 4: the chilly nook', () => {
       expect(three.board).toEqual(two.board);
       if (one.placed !== null) expect(typeof one.placed).toBe('number');
     }
-    function sameAccepted(x: Board) { return x.rows.every((r, i) => r.reading === good.rows[i].reading); }
+    function sameAccepted(x: Board) {
+      return x.rows.every((r, i) => r.reading === good.rows[i].reading);
+    }
   });
   it('has the ghost finger fill cool in row 0, warm in row 1, then watch', () => {
     for (const b of briefs(4).slice(0, 10)) {
@@ -416,14 +547,20 @@ describe('level 4: the chilly nook', () => {
 
 describe('level 5: where does the sensor look?', () => {
   const at = (socket: Socket | null) => placeSensor(startBoard(5), 'sun', socket);
-  const lit = (b: Board, d: Day) => runDay(b, d).trace.map((t) => (t.helperOn ? 1 : 0)).join('');
+  const lit = (b: Board, d: Day) =>
+    runDay(b, d)
+      .trace.map((t) => (t.helperOn ? 1 : 0))
+      .join('');
 
   it('is the fifth and last level, named Where does it look?, with the level 3 answer given and fixed', () => {
     expect(planFor(5).name).toBe('Where does it look?');
     expect(MAX_LEVEL).toBe(7);
     const start = startBoard(5);
     expect(start.sensor).toEqual({ kind: 'sun', socket: 'lamp' });
-    expect(start.rows.map((r) => [r.reading, r.action, r.given])).toEqual([['dark', 'on', true], ['bright', 'off', true]]);
+    expect(start.rows.map((r) => [r.reading, r.action, r.given])).toEqual([
+      ['dark', 'on', true],
+      ['bright', 'off', true],
+    ]);
     expect(openRows(start)).toEqual([]);
     expect(setRow(start, 1, 'dim')).toEqual(start);
   });
@@ -438,8 +575,16 @@ describe('level 5: where does the sensor look?', () => {
     }
   });
   it('runs the hand-run traces on the three level 3 scripts', () => {
-    expect([0, 1, 2].map((s) => lit(at('roof'), day(s)))).toEqual(['000000011110', '000000111110', '000000111100']);
-    expect([0, 1, 2].map((s) => lit(at('lamp'), day(s)))).toEqual(['000000010100', '000000101000', '000000101000']);
+    expect([0, 1, 2].map((s) => lit(at('roof'), day(s)))).toEqual([
+      '000000011110',
+      '000000111110',
+      '000000111100',
+    ]);
+    expect([0, 1, 2].map((s) => lit(at('lamp'), day(s)))).toEqual([
+      '000000010100',
+      '000000101000',
+      '000000101000',
+    ]);
     for (const s of [0, 1, 2]) {
       expect(lit(at('shed'), day(s))).toBe('111111111111');
       expect(lit(at(null), day(s))).toBe('000000000000');
@@ -465,9 +610,15 @@ describe('level 5: where does the sensor look?', () => {
     }
   });
   it('names one failure per failing board: blind on the bench, flickers under the lamp, on at morning in the shed', () => {
-    const want: Record<string, Failure | null> = { bench: 'sensor-blind', lamp: 'lamp-flickers', roof: null, shed: 'lamp-on-at-morning' };
+    const want: Record<string, Failure | null> = {
+      bench: 'sensor-blind',
+      lamp: 'lamp-flickers',
+      roof: null,
+      shed: 'lamp-on-at-morning',
+    };
     for (const s of [0, 1, 2]) {
-      for (const [k, f] of Object.entries(want)) expect(runDay(at(k === 'bench' ? null : (k as Socket)), day(s)).failure).toBe(f);
+      for (const [k, f] of Object.entries(want))
+        expect(runDay(at(k === 'bench' ? null : (k as Socket)), day(s)).failure).toBe(f);
     }
   });
   it('glows the sensor for every failure and helps it to the roof in one press, then places nothing', () => {
@@ -476,7 +627,10 @@ describe('level 5: where does the sensor look?', () => {
         const o = runDay(board, b.day);
         if (o.failure) expect(glowFor(board, o.failure)).toBe('sensor');
         const h = helpFor(board, b, 1);
-        if (board.sensor.socket === 'roof') { expect(h.placed).toBeNull(); continue; }
+        if (board.sensor.socket === 'roof') {
+          expect(h.placed).toBeNull();
+          continue;
+        }
         expect(h.placed).toBe('sensor');
         expect(h.board.sensor.socket).toBe('roof');
         expect(meetsGoal(h.board, b.day)).toBe(true);
@@ -492,11 +646,18 @@ describe('level 5: where does the sensor look?', () => {
   });
   it('keeps its three sockets full size and at least 140 apart centre to centre in both orientations', () => {
     const b = briefFor(5, new Rng(2));
-    for (const v of [computeView(1024, 768), computeView(768, 1024), computeView(1366, 1024), computeView(1024, 1366)]) {
+    for (const v of [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(1366, 1024),
+      computeView(1024, 1366),
+    ]) {
       const l = houseLayout(b, v)!;
       expect(l).not.toBeNull();
       const c = l.sockets.map((r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 }));
-      for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) expect(Math.hypot(c[i].x - c[j].x, c[i].y - c[j].y)).toBeGreaterThanOrEqual(140);
+      for (let i = 0; i < c.length; i++)
+        for (let j = i + 1; j < c.length; j++)
+          expect(Math.hypot(c[i].x - c[j].x, c[i].y - c[j].y)).toBeGreaterThanOrEqual(140);
       for (const r of l.sockets) expect(r.w).toBeGreaterThanOrEqual(110);
     }
   });
@@ -504,10 +665,16 @@ describe('level 5: where does the sensor look?', () => {
 
 describe('levels 6-7: lines on the warmth gauge', () => {
   const brief = (level: number) => briefFor(level, new Rng(3));
-  const lineBoard = (level: number, on: number, off = on): Board => ({ ...startBoard(level), lines: { on, off } });
+  const lineBoard = (level: number, on: number, off = on): Board => ({
+    ...startBoard(level),
+    lines: { on, off },
+  });
   const warmths = (b: Board) => runDay(b, brief(b.level).day).trace.map((t) => t.warmth);
   const failureOf = (b: Board) => runDay(b, brief(b.level).day).failure;
-  const accepted = (level: number) => candidateBoards(brief(level)).filter((b) => meetsGoal(b, brief(level).day)).map((b) => [b.lines!.on, b.lines!.off]);
+  const accepted = (level: number) =>
+    candidateBoards(brief(level))
+      .filter((b) => meetsGoal(b, brief(level).day))
+      .map((b) => [b.lines!.on, b.lines!.off]);
 
   it('reproduces the hand-run warmth table', () => {
     const table: Record<number, [number[], number]> = {
@@ -521,7 +688,10 @@ describe('levels 6-7: lines on the warmth gauge', () => {
     for (const g of [1, 2, 3, 4, 5, 6]) {
       const b = lineBoard(6, g);
       const out = runDay(b, brief(6).day);
-      expect(out.trace.map((t) => t.warmth), `line ${g}`).toEqual(table[g][0]);
+      expect(
+        out.trace.map((t) => t.warmth),
+        `line ${g}`,
+      ).toEqual(table[g][0]);
       expect(switches(out.trace), `line ${g}`).toBe(table[g][1]);
     }
     const two = runDay(lineBoard(7, 3, 4), brief(7).day);
@@ -532,7 +702,10 @@ describe('levels 6-7: lines on the warmth gauge', () => {
   it('has bounded board spaces and the stated accepted sets', () => {
     expect(candidateBoards(brief(6))).toHaveLength(6);
     expect(candidateBoards(brief(7))).toHaveLength(21);
-    expect(accepted(6)).toEqual([[3, 3], [4, 4]]);
+    expect(accepted(6)).toEqual([
+      [3, 3],
+      [4, 4],
+    ]);
     expect(accepted(7)).toEqual([[3, 4]]);
   });
 
@@ -576,7 +749,10 @@ describe('levels 6-7: lines on the warmth gauge', () => {
         const f = runDay(b, br.day).failure;
         if (!f) continue;
         const piece = glowFor(b, f);
-        if (level === 6) { expect(piece).toBe('line'); continue; }
+        if (level === 6) {
+          expect(piece).toBe('line');
+          continue;
+        }
         expect(['on-line', 'off-line']).toContain(piece);
         const { on, off } = b.lines!;
         const wrong = piece === 'on-line' ? on !== 3 : off !== 4;
@@ -614,15 +790,16 @@ describe('levels 6-7: lines on the warmth gauge', () => {
     const day = brief(6).day;
     const trace = (g: number) => runDay(lineBoard(6, g), day).trace.map((t) => t.warmth);
     const warms = [3, 4, 5, 6];
-    for (const a of warms) for (const b of warms) {
-      if (a >= b) continue;
-      const lo = trace(a);
-      const hi = trace(b);
-      // Both reach the comfy band; they agree until the lower line is reached.
-      const reach = lo.findIndex((w) => w >= a);
-      expect(hi.slice(0, reach + 1)).toEqual(lo.slice(0, reach + 1));
-      expect(hi.findIndex((w) => w >= 2)).toBe(lo.findIndex((w) => w >= 2));
-    }
+    for (const a of warms)
+      for (const b of warms) {
+        if (a >= b) continue;
+        const lo = trace(a);
+        const hi = trace(b);
+        // Both reach the comfy band; they agree until the lower line is reached.
+        const reach = lo.findIndex((w) => w >= a);
+        expect(hi.slice(0, reach + 1)).toEqual(lo.slice(0, reach + 1));
+        expect(hi.findIndex((w) => w >= 2)).toBe(lo.findIndex((w) => w >= 2));
+      }
   });
 
   it('level 7: every single-line board switches at least 10 times and exactly one board is accepted', () => {
@@ -632,7 +809,8 @@ describe('levels 6-7: lines on the warmth gauge', () => {
       const out = runDay(lineBoard(7, g), br.day);
       if (g >= 3 && g <= 4) expect(switches(out.trace)).toBeGreaterThanOrEqual(10);
     }
-    for (let g = 1; g <= GAPS; g++) expect(switches(runDay(lineBoard(7, g), br.day).trace), `gap ${g}`).toBeGreaterThanOrEqual(8);
+    for (let g = 1; g <= GAPS; g++)
+      expect(switches(runDay(lineBoard(7, g), br.day).trace), `gap ${g}`).toBeGreaterThanOrEqual(8);
     expect(solutions(br)).toHaveLength(1);
     expect(switches(runDay(lineBoard(7, 3, 4), br.day).trace)).toBeLessThanOrEqual(8);
   });
@@ -644,17 +822,19 @@ describe('levels 6-7: lines on the warmth gauge', () => {
   });
 
   it('setLine never lets the on line exceed the off line', () => {
-    for (let on = 1; on <= GAPS; on++) for (let off = on; off <= GAPS; off++) for (let g = 0; g <= GAPS + 1; g++) {
-      const b = lineBoard(7, on, off);
-      for (const piece of ['on-line', 'off-line'] as const) {
-        const n = setLine(b, piece, g).lines!;
-        expect(n.on).toBeLessThanOrEqual(n.off);
-        expect(n.on).toBeGreaterThanOrEqual(1);
-        expect(n.off).toBeLessThanOrEqual(GAPS);
-      }
-      const one = setLine(b, 'line', g).lines!;
-      expect(one.on).toBe(one.off);
-    }
+    for (let on = 1; on <= GAPS; on++)
+      for (let off = on; off <= GAPS; off++)
+        for (let g = 0; g <= GAPS + 1; g++) {
+          const b = lineBoard(7, on, off);
+          for (const piece of ['on-line', 'off-line'] as const) {
+            const n = setLine(b, piece, g).lines!;
+            expect(n.on).toBeLessThanOrEqual(n.off);
+            expect(n.on).toBeGreaterThanOrEqual(1);
+            expect(n.off).toBeLessThanOrEqual(GAPS);
+          }
+          const one = setLine(b, 'line', g).lines!;
+          expect(one.on).toBe(one.off);
+        }
     expect(setLine(lineBoard(7, 3, 4), 'on-line', 6).lines).toEqual({ on: 4, off: 4 });
     expect(setLine(lineBoard(7, 3, 4), 'off-line', 1).lines).toEqual({ on: 3, off: 3 });
   });
@@ -670,17 +850,18 @@ describe('levels 6-7: lines on the warmth gauge', () => {
   });
 
   it('plays out to a finish with the bot and with help', () => {
-    for (const level of [6, 7]) for (const s of SEEDS.slice(0, 30)) {
-      const br = briefFor(level, new Rng(s));
-      let b = br.board;
-      let days = 0;
-      for (let i = 0; i < 6 && !(meetsGoal(b, br.day) && days > 0); i++) {
-        const m = nextMove(br, b, days);
-        if ('line' in m) b = setLine(b, m.line, m.gap);
-        else days++;
+    for (const level of [6, 7])
+      for (const s of SEEDS.slice(0, 30)) {
+        const br = briefFor(level, new Rng(s));
+        let b = br.board;
+        let days = 0;
+        for (let i = 0; i < 6 && !(meetsGoal(b, br.day) && days > 0); i++) {
+          const m = nextMove(br, b, days);
+          if ('line' in m) b = setLine(b, m.line, m.gap);
+          else days++;
+        }
+        expect(meetsGoal(b, br.day), `${level}/${s}`).toBe(true);
       }
-      expect(meetsGoal(b, br.day), `${level}/${s}`).toBe(true);
-    }
   });
 
   it('tallies a line piece: the same failure twice glows it, one hint, no misses', () => {
@@ -702,34 +883,51 @@ describe('levels 6-7: lines on the warmth gauge', () => {
   });
 
   it('lays the gauge out at every view with full-size handles', () => {
-    const views = [computeView(1024, 768), computeView(768, 1024), computeView(1366, 1024), computeView(1024, 1366)];
-    for (const level of [6, 7]) for (const v of views) {
-      const l = houseLayout(brief(level), v);
-      expect(l, `${level} ${v.w}x${v.h}`).not.toBeNull();
-      const g = l!.gauge!;
-      expect(g).not.toBeNull();
-      expect(g.pitch).toBeGreaterThanOrEqual(60);
-      expect(PITCH).toBeGreaterThanOrEqual(60);
-      expect(g.column.w).toBeGreaterThanOrEqual(110);
-      expect(g.column.h).toBeGreaterThanOrEqual(420);
-      for (let k = 1; k < GAPS; k++) expect(gapY(g, k) - gapY(g, k + 1)).toBeGreaterThanOrEqual(60);
-      for (let k = 1; k <= GAPS; k++) expect(gapAt(g, gapY(g, k))).toBe(k);
-      const avoid = [l!.watch, l!.step, l!.undo, ...l!.rows.flatMap((r) => [r.reading, r.action]), ...corners(v)];
-      const handles = (['line', 'on-line', 'off-line'] as const).flatMap((p) => Array.from({ length: GAPS }, (_, i) => handleRect(g, p, i + 1)));
-      const rects = level === 7 ? [...handles, g.jar!] : handles.filter((_, i) => i < GAPS);
-      expect(g.jar === null).toBe(level === 6);
-      for (const r of rects) {
-        expect(r.w).toBeGreaterThanOrEqual(110);
-        expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h, `${level} ${v.w}x${v.h} ${JSON.stringify(r)}`).toBe(true);
-        for (const a of avoid) expect(overlaps(r, a), `${level} ${v.w}x${v.h}`).toBe(false);
-      }
-      if (level === 7) {
-        for (let k = 1; k < GAPS; k++) {
-          expect(overlaps(handleRect(g, 'on-line', k), handleRect(g, 'off-line', k + 1))).toBe(false);
-          expect(overlaps(handleRect(g, 'on-line', k + 1), handleRect(g, 'off-line', k))).toBe(false);
+    const views = [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(1366, 1024),
+      computeView(1024, 1366),
+    ];
+    for (const level of [6, 7])
+      for (const v of views) {
+        const l = houseLayout(brief(level), v);
+        expect(l, `${level} ${v.w}x${v.h}`).not.toBeNull();
+        const g = l!.gauge!;
+        expect(g).not.toBeNull();
+        expect(g.pitch).toBeGreaterThanOrEqual(60);
+        expect(PITCH).toBeGreaterThanOrEqual(60);
+        expect(g.column.w).toBeGreaterThanOrEqual(110);
+        expect(g.column.h).toBeGreaterThanOrEqual(420);
+        for (let k = 1; k < GAPS; k++) expect(gapY(g, k) - gapY(g, k + 1)).toBeGreaterThanOrEqual(60);
+        for (let k = 1; k <= GAPS; k++) expect(gapAt(g, gapY(g, k))).toBe(k);
+        const avoid = [
+          l!.watch,
+          l!.step,
+          l!.undo,
+          ...l!.rows.flatMap((r) => [r.reading, r.action]),
+          ...corners(v),
+        ];
+        const handles = (['line', 'on-line', 'off-line'] as const).flatMap((p) =>
+          Array.from({ length: GAPS }, (_, i) => handleRect(g, p, i + 1)),
+        );
+        const rects = level === 7 ? [...handles, g.jar!] : handles.filter((_, i) => i < GAPS);
+        expect(g.jar === null).toBe(level === 6);
+        for (const r of rects) {
+          expect(r.w).toBeGreaterThanOrEqual(110);
+          expect(
+            r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h,
+            `${level} ${v.w}x${v.h} ${JSON.stringify(r)}`,
+          ).toBe(true);
+          for (const a of avoid) expect(overlaps(r, a), `${level} ${v.w}x${v.h}`).toBe(false);
         }
-        expect(overlaps(handleRect(g, 'on-line', 3), handleRect(g, 'off-line', 3))).toBe(false);
+        if (level === 7) {
+          for (let k = 1; k < GAPS; k++) {
+            expect(overlaps(handleRect(g, 'on-line', k), handleRect(g, 'off-line', k + 1))).toBe(false);
+            expect(overlaps(handleRect(g, 'on-line', k + 1), handleRect(g, 'off-line', k))).toBe(false);
+          }
+          expect(overlaps(handleRect(g, 'on-line', 3), handleRect(g, 'off-line', 3))).toBe(false);
+        }
       }
-    }
   });
 });

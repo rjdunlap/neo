@@ -42,10 +42,10 @@ describe('lands', () => {
   it('shows Robot Path among preschool’s Tinker Lab games and keeps it on younger signposts', () => {
     const land = landOf('robot-path')!;
     expect(land.id).toBe('tinker-lab');
-    expect(visibleIn(land, 'preschool', GAMES).map(g => g.id)).toContain('robot-path');
-    expect(olderIn(land, 'preschool', GAMES).map(g => g.id)).not.toContain('robot-path');
+    expect(visibleIn(land, 'preschool', GAMES).map((g) => g.id)).toContain('robot-path');
+    expect(olderIn(land, 'preschool', GAMES).map((g) => g.id)).not.toContain('robot-path');
     for (const band of ['lap', 'toddler'] as const) {
-      expect(olderIn(land, band, GAMES).map(g => g.id)).toContain('robot-path');
+      expect(olderIn(land, band, GAMES).map((g) => g.id)).toContain('robot-path');
     }
   });
 
@@ -76,7 +76,7 @@ describe('lands', () => {
     expect(visibleGames(top, GAMES).length).toBe(GAMES.length);
   });
 
-  it('split each land into her games and the bigger kids\' games, keeping younger favorites as she grows', () => {
+  it("split each land into her games and the bigger kids' games, keeping younger favorites as she grows", () => {
     for (const land of LANDS) {
       let before: string[] = [];
       for (const band of bands) {
@@ -94,7 +94,11 @@ describe('lands', () => {
   it('list on the home spot exactly the games the lands show her', () => {
     for (const band of bands) {
       const fromLands = LANDS.flatMap((l) => visibleIn(l, band, GAMES).map((g) => g.id)).sort();
-      expect(visibleGames(band, GAMES).map((g) => g.id).sort()).toEqual(fromLands);
+      expect(
+        visibleGames(band, GAMES)
+          .map((g) => g.id)
+          .sort(),
+      ).toEqual(fromLands);
     }
   });
 });
@@ -108,7 +112,8 @@ describe('the band a game plays in', () => {
         if (g.bands.includes(band)) expect(play).toBe(band);
         else if (g.bands.some((b) => bandRank(b) < bandRank(band))) {
           expect(bandRank(play)).toBeLessThan(bandRank(band));
-          for (const b of g.bands) if (bandRank(b) < bandRank(band)) expect(bandRank(b)).toBeLessThanOrEqual(bandRank(play));
+          for (const b of g.bands)
+            if (bandRank(b) < bandRank(band)) expect(bandRank(b)).toBeLessThanOrEqual(bandRank(play));
         } else expect(play).toBe(lowestBand(g.bands));
       }
     }
@@ -118,14 +123,21 @@ describe('the band a game plays in', () => {
     expect(playBand(['lap', 'toddler', 'preschool'], 'school')).toBe('preschool');
     expect(playBand(['prek', 'school'], 'lap')).toBe('prek');
     expect(playBand(['lap', 'school'], 'preschool')).toBe('lap');
-    for (const g of GAMES) for (const band of bands) if (!forAgeOrYounger(g, band)) expect(playBand(g.bands, band)).toBe(lowestBand(g.bands));
+    for (const g of GAMES)
+      for (const band of bands)
+        if (!forAgeOrYounger(g, band)) expect(playBand(g.bands, band)).toBe(lowestBand(g.bands));
   });
 });
 
-describe('a host\'s suggestion', () => {
+describe("a host's suggestion", () => {
   const mods = GAMES.slice(0, 4);
   const stats = (rows: Record<string, number | null>) =>
-    Object.fromEntries(Object.entries(rows).map(([id, at]) => [id, { plays: at === null ? 0 : 1, history: at === null ? [] : [{ at }] }]));
+    Object.fromEntries(
+      Object.entries(rows).map(([id, at]) => [
+        id,
+        { plays: at === null ? 0 : 1, history: at === null ? [] : [{ at }] },
+      ]),
+    );
 
   it('is a game she has not played yet, first', () => {
     expect(suggest(mods, stats({ [mods[0].id]: 5, [mods[1].id]: null }))?.id).toBe(mods[1].id);
@@ -146,7 +158,7 @@ describe('a host\'s suggestion', () => {
   });
 });
 
-describe('a land\'s layout', () => {
+describe("a land's layout", () => {
   it('fits every page of every land, at every band, both ways of looking, on one screen with large separate targets', () => {
     for (const [name, view] of Object.entries(VIEWS)) {
       for (const land of LANDS) {
@@ -161,7 +173,9 @@ describe('a land\'s layout', () => {
               const layout = landLayout(page.length, older.length > 0, view, groundOf(view.h), arrows);
               expect(layout, `${land.id} ${band} ${name} page ${p}`).not.toBeNull();
               const all = layoutSpots(layout!).map((s) => spotRect(s, layout!.box));
-              expect(all.length).toBe(page.length + 1 + (older.length ? 1 : 0) + (arrows.prev ? 1 : 0) + (arrows.next ? 1 : 0));
+              expect(all.length).toBe(
+                page.length + 1 + (older.length ? 1 : 0) + (arrows.prev ? 1 : 0) + (arrows.next ? 1 : 0),
+              );
               expect(all.length, `${land.id} ${band} page ${p}`).toBeLessThanOrEqual(LAND_SPOTS);
               expect(!!layout!.prev).toBe(arrows.prev);
               expect(!!layout!.next).toBe(arrows.next);
@@ -194,9 +208,13 @@ describe('a land\'s layout', () => {
           const sizes = pages.map((p) => p.length);
           expect(Math.max(...sizes) - Math.min(...sizes), where).toBeLessThanOrEqual(1);
           // Earlier pages take the extra game.
-          expect([...sizes].sort((a, b) => b - a), where).toEqual(sizes);
+          expect(
+            [...sizes].sort((a, b) => b - a),
+            where,
+          ).toEqual(sizes);
           if (1 + side.length + (sign ? 1 : 0) <= LAND_SPOTS) expect(pages.length, where).toBe(1);
-          else for (const s of sizes) expect(1 + s + 2 + (sign ? 1 : 0), where).toBeLessThanOrEqual(LAND_SPOTS);
+          else
+            for (const s of sizes) expect(1 + s + 2 + (sign ? 1 : 0), where).toBeLessThanOrEqual(LAND_SPOTS);
         }
       }
     }
@@ -209,7 +227,7 @@ describe('a land\'s layout', () => {
     expect(landPages([], true)).toEqual([[]]);
   });
 
-  it('holds a carried page inside the side\'s pages', () => {
+  it("holds a carried page inside the side's pages", () => {
     expect(clampLandPage(undefined, 2)).toBe(0);
     expect(clampLandPage(1, 2)).toBe(1);
     expect(clampLandPage(5, 2)).toBe(1);
@@ -234,9 +252,17 @@ describe('the map', () => {
       for (const [i, [id, s]] of spots.entries()) {
         const where = `${id} ${name}`;
         // The drawing (about 184 wide, from 100 above to its name 90 below) stays on screen and under the title.
-        expect(s.x - 92 >= 0 && s.x + 92 <= view.w && s.y - 100 >= 80 && s.y + 92 <= view.h, where).toBe(true);
-        for (const b of mapButtons(view)) expect(Math.hypot(s.x - b.x, s.y - b.y), `${where} button`).toBeGreaterThanOrEqual(MAP_RADIUS + b.r);
-        for (const [other, t] of spots.slice(i + 1)) expect(Math.hypot(s.x - t.x, s.y - t.y), `${where} ${other}`).toBeGreaterThanOrEqual(2 * MAP_RADIUS);
+        expect(s.x - 92 >= 0 && s.x + 92 <= view.w && s.y - 100 >= 80 && s.y + 92 <= view.h, where).toBe(
+          true,
+        );
+        for (const b of mapButtons(view))
+          expect(Math.hypot(s.x - b.x, s.y - b.y), `${where} button`).toBeGreaterThanOrEqual(
+            MAP_RADIUS + b.r,
+          );
+        for (const [other, t] of spots.slice(i + 1))
+          expect(Math.hypot(s.x - t.x, s.y - t.y), `${where} ${other}`).toBeGreaterThanOrEqual(
+            2 * MAP_RADIUS,
+          );
       }
     }
   });

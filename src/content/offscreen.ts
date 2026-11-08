@@ -14,7 +14,11 @@ function lineAt(offScreen: string | OffScreenLines, band: Band): string | null {
  * The off-screen idea for a game at the band she plays it (`playBand`, the band every launch uses), with her name in place
  * of `{name}`; `null` when the game has no line or withholds it at that band. No other templating.
  */
-export function offScreenFor(mod: Pick<GameModule, 'bands' | 'offScreen'>, band: Band, childName: string): string | null {
+export function offScreenFor(
+  mod: Pick<GameModule, 'bands' | 'offScreen'>,
+  band: Band,
+  childName: string,
+): string | null {
   if (!mod.offScreen) return null;
   const line = lineAt(mod.offScreen, playBand(mod.bands, band));
   return line === null ? null : line.replaceAll('{name}', childName.trim() || NO_NAME);

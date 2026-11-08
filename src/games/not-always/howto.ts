@@ -11,7 +11,13 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: "The round ends after the friend's last claim; one sticker.",
   note: [
-    { from: 2, to: 2, text: 'One card is enough to show "all" is wrong, and if two cards break a claim either is right. Every claim is about the cards on screen only. Rounds without hints move her up: she tested claims with the friend\'s spoken help, which is not evidence she reasons this way on her own.' },
-    { text: 'One card is enough to show "all" is wrong. Every claim is about the cards on screen only. Rounds without hints move her up: she tested claims with the friend\'s spoken help, which is not evidence she reasons this way on her own.' },
+    {
+      from: 2,
+      to: 2,
+      text: 'One card is enough to show "all" is wrong, and if two cards break a claim either is right. Every claim is about the cards on screen only. Rounds without hints move her up: she tested claims with the friend\'s spoken help, which is not evidence she reasons this way on her own.',
+    },
+    {
+      text: 'One card is enough to show "all" is wrong. Every claim is about the cards on screen only. Rounds without hints move her up: she tested claims with the friend\'s spoken help, which is not evidence she reasons this way on her own.',
+    },
   ],
 };

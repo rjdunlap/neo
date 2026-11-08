@@ -16,14 +16,34 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, danceSeconds, saysFrame, type SaysFrame, makeTurns, MOVE_CUES, MOVE_WORDS, shouldNudge, stickerRecipe, planFor, type Move, type SaysPlan, type Turn } from './logic';
+import {
+  LEVELS,
+  danceSeconds,
+  saysFrame,
+  type SaysFrame,
+  makeTurns,
+  MOVE_CUES,
+  MOVE_WORDS,
+  shouldNudge,
+  stickerRecipe,
+  planFor,
+  type Move,
+  type SaysPlan,
+  type Turn,
+} from './logic';
 
 /** The freeze dance's tune, in pentatonic steps. */
 const DANCE = [5, 7, 9, 7, 5, 4, 5, 7, 9, 10, 9, 7];
 /** The pip's mittens at rest, for the hub icon and the stickers, which keep the original drawing. */
 const PIP_REST = { left: { x: -128, y: -95 }, right: { x: 128, y: -95 } };
 
-const mitten = (sw: { fill: number; line: number }) => new Graphics().circle(0, 0, 27).fill(sw.fill).stroke({ width: 6, color: sw.line }).circle(-9, -10, 7).fill({ color: 0xffffff, alpha: 0.35 });
+const mitten = (sw: { fill: number; line: number }) =>
+  new Graphics()
+    .circle(0, 0, 27)
+    .fill(sw.fill)
+    .stroke({ width: 6, color: sw.line })
+    .circle(-9, -10, 7)
+    .fill({ color: 0xffffff, alpha: 0.35 });
 
 /** The big pet with two mitten hands riding on its body, so they hop and squash with it. */
 class Mover<P extends Container & { attach(child: Container): void }> extends Container {
@@ -84,7 +104,19 @@ class PetSays implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.turns = makeTurns(this.plan, ctx.rng);
-    this.backdrop = ctx.track(new Backdrop({ sky: [swatch.blue.light, 0xfff4e3], hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf], horizon: 0.62, clouds: 3, sun: true, seed: 33 }, ctx.view));
+    this.backdrop = ctx.track(
+      new Backdrop(
+        {
+          sky: [swatch.blue.light, 0xfff4e3],
+          hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf],
+          horizon: 0.62,
+          clouds: 3,
+          sun: true,
+          seed: 33,
+        },
+        ctx.view,
+      ),
+    );
     const star = ctx.companion();
     const b = star.getLocalBounds();
     this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 520 / b.width));
@@ -131,8 +163,9 @@ class PetSays implements Game {
         return;
       }
       void this.ctx.say('says.next');
-      void this.ctx.tw.to(this.next, { rotation: 0.12 }, { duration: 0.3 }).then(() =>
-        this.ctx.tw.to(this.next, { rotation: 0 }, { duration: 0.3 }));
+      void this.ctx.tw
+        .to(this.next, { rotation: 0.12 }, { duration: 0.3 })
+        .then(() => this.ctx.tw.to(this.next, { rotation: 0 }, { duration: 0.3 }));
     }
     if (!this.dancing) return;
     this.danceLeft -= dt;
@@ -151,8 +184,13 @@ class PetSays implements Game {
 
   /** The ghost finger on the how-to card: the grown-up's green arrow, tapped once the pet has finished its move (or its dance and freeze). */
   autotouch(): TouchIntent | null {
-    if (this.plan.mode === 'pat') return this.busy || this.finished ? null : { tap: { on: this.mover.pet, x: this.mover.pet.touch.x, y: this.mover.pet.touch.y } };
-    return this.busy || this.finished || this.dancing || !this.next.visible ? null : { tap: { on: this.next } };
+    if (this.plan.mode === 'pat')
+      return this.busy || this.finished
+        ? null
+        : { tap: { on: this.mover.pet, x: this.mover.pet.touch.x, y: this.mover.pet.touch.y } };
+    return this.busy || this.finished || this.dancing || !this.next.visible
+      ? null
+      : { tap: { on: this.next } };
   }
 
   destroy() {
@@ -161,7 +199,14 @@ class PetSays implements Game {
   }
 
   private async intro() {
-    const lines: Record<SaysPlan['mode'], LineId> = { copy: 'says.copy', body: 'says.body', pairs: 'says.pairs', says: 'says.rule', freeze: 'says.freeze', pat: 'says.pat' };
+    const lines: Record<SaysPlan['mode'], LineId> = {
+      copy: 'says.copy',
+      body: 'says.body',
+      pairs: 'says.pairs',
+      says: 'says.rule',
+      freeze: 'says.freeze',
+      pat: 'says.pat',
+    };
     if (this.plan.mode === 'pat') {
       // The pet waits to be patted; the first move comes with her first touch.
       this.busy = false;
@@ -291,15 +336,25 @@ class PetSays implements Game {
   // The moves ---------------------------------------------------------------------------------------
 
   private hands(l: { x: number; y: number }, r: { x: number; y: number }, duration = 0.18) {
-    return Promise.all([this.ctx.tw.to(this.mover.left, l, { duration, ease: ease.inOutSine }), this.ctx.tw.to(this.mover.right, r, { duration, ease: ease.inOutSine })]);
+    return Promise.all([
+      this.ctx.tw.to(this.mover.left, l, { duration, ease: ease.inOutSine }),
+      this.ctx.tw.to(this.mover.right, r, { duration, ease: ease.inOutSine }),
+    ]);
   }
 
   private rest() {
-    return Promise.all([this.hands(this.frame.rest.left, this.frame.rest.right, 0.22), this.ctx.tw.to(this.mover.scale, { y: Math.abs(this.mover.scale.x) }, { duration: 0.2 })]);
+    return Promise.all([
+      this.hands(this.frame.rest.left, this.frame.rest.right, 0.22),
+      this.ctx.tw.to(this.mover.scale, { y: Math.abs(this.mover.scale.x) }, { duration: 0.2 }),
+    ]);
   }
 
   private stretch(k: number) {
-    return this.ctx.tw.to(this.mover.scale, { y: Math.abs(this.mover.scale.x) * k }, { duration: 0.25, ease: ease.outBack });
+    return this.ctx.tw.to(
+      this.mover.scale,
+      { y: Math.abs(this.mover.scale.x) * k },
+      { duration: 0.25, ease: ease.outBack },
+    );
   }
 
   async perform(move: Move) {
@@ -347,7 +402,8 @@ class PetSays implements Game {
       }
       case 'wiggle':
         sfx.giggle();
-        for (let k = 0; k < 4; k++) await tw.to(this.mover, { rotation: k % 2 ? -0.14 : 0.14 }, { duration: 0.12 });
+        for (let k = 0; k < 4; k++)
+          await tw.to(this.mover, { rotation: k % 2 ? -0.14 : 0.14 }, { duration: 0.12 });
         await tw.to(this.mover, { rotation: 0 }, { duration: 0.12 });
         break;
       case 'up':
@@ -431,9 +487,13 @@ function sticker(seed: number): Container {
   const m = pipMover({ ...CRITTERS.pip, color });
   m.pet.alive = false;
 
-  if (pose === 0) { m.left.position.set(-70, -300); m.right.position.set(70, -300); }
-  else if (pose === 1) { m.left.position.set(-20, -112); m.right.position.set(20, -112); }
-  else m.right.position.set(150, -210);
+  if (pose === 0) {
+    m.left.position.set(-70, -300);
+    m.right.position.set(70, -300);
+  } else if (pose === 1) {
+    m.left.position.set(-20, -112);
+    m.right.position.set(20, -112);
+  } else m.right.position.set(150, -210);
   m.scale.set(0.62);
   m.y = 90;
   c.addChild(m);

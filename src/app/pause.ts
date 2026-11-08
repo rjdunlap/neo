@@ -22,11 +22,19 @@ export function escapeAction({ panelOpen, paused, canPause, busy }: EscapeState)
   return canPause && !busy ? 'pause' : 'ignore';
 }
 
-type Pads = readonly ({ connected: boolean; buttons: readonly { pressed: boolean }[]; axes?: readonly number[] } | null)[];
+type Pads = readonly ({
+  connected: boolean;
+  buttons: readonly { pressed: boolean }[];
+  axes?: readonly number[];
+} | null)[];
 
 function readPads(pads?: Pads): Pads {
   if (pads) return pads;
-  try { return [...(navigator.getGamepads?.() ?? [])]; } catch { return []; }
+  try {
+    return [...(navigator.getGamepads?.() ?? [])];
+  } catch {
+    return [];
+  }
 }
 
 /** Start (the standard mapping's button 9) on any connected pad, as one press: true on the frame it goes down. */

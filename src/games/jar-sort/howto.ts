@@ -11,7 +11,13 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: 'Every jar is one kind of fruit.',
   note: [
-    { from: 3, text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her; a fruit dropped where it cannot go counts as a mistake.' },
-    { to: 2, text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her.' },
+    {
+      from: 3,
+      text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her; a fruit dropped where it cannot go counts as a mistake.',
+    },
+    {
+      to: 2,
+      text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her.',
+    },
   ],
 };

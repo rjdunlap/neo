@@ -2,7 +2,35 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { landing, stepLevel } from '../../progress/difficulty';
 import { secretCode } from './index';
-import { contradictsClues, crossedOut, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, demoCode, madeCode, makeCode, nextMark, nextMove, petTries, petTry, PLANS, planFor, rowsThatFit, ruledOut, quickCode, score, solverTries, suggestion, swapResult, visibleRows, wrongMarks, type Guess, type Mark } from './logic';
+import {
+  contradictsClues,
+  crossedOut,
+  detectiveDoor,
+  candidates,
+  DOORS,
+  doorKinds,
+  ignoredClues,
+  demoCode,
+  madeCode,
+  makeCode,
+  nextMark,
+  nextMove,
+  petTries,
+  petTry,
+  PLANS,
+  planFor,
+  rowsThatFit,
+  ruledOut,
+  quickCode,
+  score,
+  solverTries,
+  suggestion,
+  swapResult,
+  visibleRows,
+  wrongMarks,
+  type Guess,
+  type Mark,
+} from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -84,7 +112,10 @@ describe('Secret Code', () => {
           if (marks.every((m) => m === 'green')) break;
           guess = Array(plan.slots).fill(null);
         }
-        expect(history.at(-1)?.marks.every((m) => m === 'green'), `${plan.name} seed ${seed}`).toBe(true);
+        expect(
+          history.at(-1)?.marks.every((m) => m === 'green'),
+          `${plan.name} seed ${seed}`,
+        ).toBe(true);
       }
     }
   });
@@ -130,15 +161,22 @@ describe('Detective doors', () => {
       expect(candidates(plan, door.history)).toEqual([door.code]);
       expect(suggestion(plan, door.history, door.code)).toEqual(door.code);
       expect(contradictsClues(plan, door.history, door.code)).toBe(false);
-      for (const other of candidates(plan, [])) if (other.join() !== door.code.join()) {
-        expect(contradictsClues(plan, door.history, other)).toBe(true);
-      }
+      for (const other of candidates(plan, []))
+        if (other.join() !== door.code.join()) {
+          expect(contradictsClues(plan, door.history, other)).toBe(true);
+        }
     }
   });
 
   it('level 11: four slots, five colors, three distinct shown guesses that leave exactly one code, generated quickly', () => {
     const plan = planFor(11);
-    expect(plan).toMatchObject({ slots: 4, colors: 5, repeats: false, detective: true, clues: { min: 3, max: 3 } });
+    expect(plan).toMatchObject({
+      slots: 4,
+      colors: 5,
+      repeats: false,
+      detective: true,
+      clues: { min: 3, max: 3 },
+    });
     let slowest = 0;
     for (let seed = 1; seed <= 300; seed++) {
       const t0 = performance.now();
@@ -157,7 +195,9 @@ describe('Detective doors', () => {
       // A try that differs from the answer always contradicts some shown mark.
       expect(contradictsClues(plan, door.history, [...door.code].reverse())).toBe(true);
       // The reasoning bot (and the ghost finger) opens it on the first try.
-      expect(nextMove(plan, door.history, door.code, [null, null, null, null])).toEqual({ stone: door.code[0] });
+      expect(nextMove(plan, door.history, door.code, [null, null, null, null])).toEqual({
+        stone: door.code[0],
+      });
     }
     // Generation happens between doors; it must never stall the round.
     expect(slowest).toBeLessThan(250);
@@ -165,7 +205,8 @@ describe('Detective doors', () => {
 
   it('shows every detective clue at full view on the smallest screen', () => {
     // Even at the door's highest place (430), every shown clue fits, so none is hidden or left out of the miss rule.
-    for (const plan of Object.values(PLANS).filter((p) => p.detective)) expect(rowsThatFit(430)).toBeGreaterThanOrEqual(plan.clues!.max);
+    for (const plan of Object.values(PLANS).filter((p) => p.detective))
+      expect(rowsThatFit(430)).toBeGreaterThanOrEqual(plan.clues!.max);
   });
 
   it('never charges a miss for a mark that has scrolled out of sight, but still does for one on screen', () => {
@@ -175,7 +216,13 @@ describe('Detective doors', () => {
     expect(rowsThatFit(430)).toBeGreaterThanOrEqual(3);
     const code = [0, 1, 2, 3];
     // Only the first try puts stone 1 in slot 0; the four after it never do.
-    const history: Guess[] = [[1, 0, 3, 2], [2, 3, 0, 1], [3, 2, 1, 0], [2, 0, 3, 1], [3, 0, 1, 2]].map((stones) => ({ stones, marks: score(code, stones, plan.yellow) }));
+    const history: Guess[] = [
+      [1, 0, 3, 2],
+      [2, 3, 0, 1],
+      [3, 2, 1, 0],
+      [2, 0, 3, 1],
+      [3, 0, 1, 2],
+    ].map((stones) => ({ stones, marks: score(code, stones, plan.yellow) }));
     const shown = visibleRows(history, rowsThatFit(460));
     expect(shown).toEqual(history.slice(1));
     expect(ignoredClues(plan, history, [1, 4, 4, 4])).toEqual([0]);
@@ -196,7 +243,8 @@ describe('Detective doors', () => {
           history.push({ stones: guess, marks: score(code, guess, plan.yellow) });
           const idea = suggestion(plan, history, code);
           for (const h of history) expect(score(idea, h.stones, plan.yellow)).toEqual(h.marks);
-          for (const fit of [3, 4, 6]) expect(ignoredClues(plan, visibleRows(history, fit), idea)).toEqual([]);
+          for (const fit of [3, 4, 6])
+            expect(ignoredClues(plan, visibleRows(history, fit), idea)).toEqual([]);
         }
       }
     }
@@ -274,7 +322,7 @@ describe('Detective doors', () => {
     expect(petTry(plan, [], new Rng(5))).toEqual(petTry(plan, [], new Rng(5)));
   });
 
-  it('places level 9 after 4 and 12 after 9 in school\'s order and keeps pre-K at 1 to 3', () => {
+  it("places level 9 after 4 and 12 after 9 in school's order and keeps pre-K at 1 to 3", () => {
     expect(secretCode.levels('school')).toEqual({ min: 2, max: 12, order: [2, 3, 4, 9, 12, 5, 6, 7, 8, 11] });
     expect(secretCode.levels('prek')).toEqual({ min: 1, max: 3 });
     expect(stepLevel(4, 1, secretCode.levels('school'))).toBe(9);
@@ -352,12 +400,23 @@ describe('Detective doors', () => {
     });
 
     it('has the plan and all 64 codes', () => {
-      expect(plan).toMatchObject({ slots: 3, colors: 4, yellow: true, repeats: true, maker: true, swap: true, codes: 1 });
+      expect(plan).toMatchObject({
+        slots: 3,
+        colors: 4,
+        yellow: true,
+        repeats: true,
+        maker: true,
+        swap: true,
+        codes: 1,
+      });
       expect(candidates(plan, [])).toHaveLength(64);
       for (let seed = 1; seed <= 200; seed++) {
         const code = madeCode(plan, new Rng(seed));
         expect(code).toHaveLength(3);
-        for (const c of code) { expect(c).toBeGreaterThanOrEqual(0); expect(c).toBeLessThanOrEqual(3); }
+        for (const c of code) {
+          expect(c).toBeGreaterThanOrEqual(0);
+          expect(c).toBeLessThanOrEqual(3);
+        }
       }
     });
 
@@ -369,7 +428,12 @@ describe('Detective doors', () => {
         const history: Guess[] = [];
         for (let t = 0; t < tries; t++) {
           const guess: (number | null)[] = [null, null, null];
-          for (let m = nextMove(plan, history, code, guess); 'stone' in m; m = nextMove(plan, history, code, guess)) guess[guess.indexOf(null)] = m.stone;
+          for (
+            let m = nextMove(plan, history, code, guess);
+            'stone' in m;
+            m = nextMove(plan, history, code, guess)
+          )
+            guess[guess.indexOf(null)] = m.stone;
           const stones = guess as number[];
           if (t > 0) expect(contradictsClues(plan, history, stones)).toBe(false);
           history.push({ stones, marks: score(code, stones, true) });
@@ -390,7 +454,7 @@ describe('Detective doors', () => {
       }
     });
 
-    it('quickCode picks a quick, seeded code without moving the round\'s generator', () => {
+    it("quickCode picks a quick, seeded code without moving the round's generator", () => {
       let differ = 0;
       for (let seed = 1; seed <= 100; seed++) {
         const rng = new Rng(seed);
@@ -399,7 +463,10 @@ describe('Detective doors', () => {
         expect(rng.int(0, 1000000)).toBe(twin.int(0, 1000000));
         expect(quickCode(plan, new Rng(seed), 1)).toEqual(code);
         expect(code).toHaveLength(3);
-        for (const c of code) { expect(c).toBeGreaterThanOrEqual(0); expect(c).toBeLessThanOrEqual(3); }
+        for (const c of code) {
+          expect(c).toBeGreaterThanOrEqual(0);
+          expect(c).toBeLessThanOrEqual(3);
+        }
         const other = quickCode(plan, new Rng(seed), 2);
         if (other.join() !== code.join()) differ++;
         const draw = new Rng(new Rng(seed).int(1, 2 ** 31 - 1) ^ 1);

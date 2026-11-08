@@ -6,7 +6,8 @@ import { GhostFinger, GHOST_POINTER } from './ghost';
 // `draggable` listens on `window`; the test runs without a DOM, so give it a window that keeps its listeners.
 const listeners = new Map<string, Set<(e: unknown) => void>>();
 const fakeWindow = {
-  addEventListener: (type: string, fn: (e: unknown) => void) => void (listeners.get(type) ?? listeners.set(type, new Set()).get(type)!).add(fn),
+  addEventListener: (type: string, fn: (e: unknown) => void) =>
+    void (listeners.get(type) ?? listeners.set(type, new Set()).get(type)!).add(fn),
   removeEventListener: (type: string, fn: (e: unknown) => void) => void listeners.get(type)?.delete(fn),
 };
 let draggable: typeof import('./drag').draggable;
@@ -21,7 +22,8 @@ afterEach(() => listeners.clear());
 
 /** A real finger's window `pointerup`, as the browser would send after the canvas heard it. */
 const windowUp = (pointerId: number) => listeners.get('pointerup')?.forEach((fn) => fn({ pointerId }));
-const down = (obj: Container, pointerId: number, x: number, y: number) => obj.emit('pointerdown', { pointerId, global: new Point(x, y) } as never);
+const down = (obj: Container, pointerId: number, x: number, y: number) =>
+  obj.emit('pointerdown', { pointerId, global: new Point(x, y) } as never);
 
 function scene() {
   const root = new Container();
@@ -99,7 +101,7 @@ describe('GhostFinger', () => {
     expect(heard).not.toHaveBeenCalled();
   });
 
-  it('aims at a spot on the object, in the object\'s own coordinates, and follows it if it moves', () => {
+  it("aims at a spot on the object, in the object's own coordinates, and follows it if it moves", () => {
     const { root, ghost } = scene();
     const critter = thing(root, 100, 100);
     critter.scale.set(0.5);

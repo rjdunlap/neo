@@ -1,8 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { FAN_EVERY, fanAnswering, isScale, JELLY_NAMES, JellyNamer, NAME_EVERY, ScaleWatch, planFor } from './logic';
-import { awakeJellies, nearestAwake, WAKE_AT, WAKE_ORDER, FREE_SONG, freeNote, IdleNudge, JELLIES, jellyToTap, drawTune, NUDGE_AFTER, PLANS, SONGS, tunesOf, type Tune } from './logic';
+import {
+  FAN_EVERY,
+  fanAnswering,
+  isScale,
+  JELLY_NAMES,
+  JellyNamer,
+  NAME_EVERY,
+  ScaleWatch,
+  planFor,
+} from './logic';
+import {
+  awakeJellies,
+  nearestAwake,
+  WAKE_AT,
+  WAKE_ORDER,
+  FREE_SONG,
+  freeNote,
+  IdleNudge,
+  JELLIES,
+  jellyToTap,
+  drawTune,
+  NUDGE_AFTER,
+  PLANS,
+  SONGS,
+  tunesOf,
+  type Tune,
+} from './logic';
 
 const echoPlans = () => PLANS.filter((p) => p.mode === 'echo');
 const round = (seed: number, length: number, goal: number) => {
@@ -45,8 +70,10 @@ describe('Jelly Drums', () => {
         const steps = t.notes.slice(1).map((n, k) => n - t.notes[k]);
         if (t.kind === 'up') expect(steps.every((d) => d === 1)).toBe(true);
         if (t.kind === 'down') expect(steps.every((d) => d === -1)).toBe(true);
-        if (t.kind === 'hop') expect(steps.every((d, k) => Math.abs(d) >= 2 && (k === 0 || d === -steps[k - 1]))).toBe(true);
-        if (t.kind === 'wiggle') expect(steps.every((d, k) => Math.abs(d) === 1 && (k === 0 || d === -steps[k - 1]))).toBe(true);
+        if (t.kind === 'hop')
+          expect(steps.every((d, k) => Math.abs(d) >= 2 && (k === 0 || d === -steps[k - 1]))).toBe(true);
+        if (t.kind === 'wiggle')
+          expect(steps.every((d, k) => Math.abs(d) === 1 && (k === 0 || d === -steps[k - 1]))).toBe(true);
       }
     }
   });
@@ -97,7 +124,8 @@ describe('Jelly Drums', () => {
       expect(awakeJellies(WAKE_AT[1] - 1)).toEqual([0]);
       expect(awakeJellies(WAKE_AT[1])).toEqual([0, 4]);
       expect(awakeJellies(wake.goal).sort()).toEqual([0, 1, 2, 3, 4]);
-      for (let n = 1; n <= wake.goal; n++) expect(awakeJellies(n).length - awakeJellies(n - 1).length).toBeLessThanOrEqual(1);
+      for (let n = 1; n <= wake.goal; n++)
+        expect(awakeJellies(n).length - awakeJellies(n - 1).length).toBeLessThanOrEqual(1);
       expect(WAKE_AT.every((at, k) => k === 0 || at > WAKE_AT[k - 1])).toBe(true);
       expect(WAKE_AT.at(-1)!).toBeLessThan(wake.goal);
       expect([...WAKE_ORDER].sort()).toEqual([0, 1, 2, 3, 4]);
@@ -111,8 +139,9 @@ describe('Jelly Drums', () => {
       expect(nearestAwake(xs, [0, 1, 2, 3, 4], 170)).toBe(3);
     });
 
-    it("has a bot that taps only awake jellies and ends at the goal", () => {
-      for (let n = 0; n < wake.goal; n++) expect(awakeJellies(n)).toContain(jellyToTap('wake', 'play', [], 0, n)!);
+    it('has a bot that taps only awake jellies and ends at the goal', () => {
+      for (let n = 0; n < wake.goal; n++)
+        expect(awakeJellies(n)).toContain(jellyToTap('wake', 'play', [], 0, n)!);
       expect(jellyToTap('wake', 'done', [], 0, wake.goal)).toBeNull();
     });
   });
@@ -131,7 +160,8 @@ describe('Jelly Drums', () => {
     it('waits through the first pause and the tune, then copies it note for note, with no wrong tap', () => {
       for (const plan of PLANS.filter((p) => p.mode === 'echo')) {
         const tune = drawTune(new Rng(7), plan.length).notes;
-        for (const phase of ['play', 'listen', 'done'] as const) expect(jellyToTap('echo', phase, tune, 0, 0)).toBeNull();
+        for (const phase of ['play', 'listen', 'done'] as const)
+          expect(jellyToTap('echo', phase, tune, 0, 0)).toBeNull();
         const copy: number[] = [];
         for (let at = 0; at < tune.length; at++) copy.push(jellyToTap('echo', 'turn', tune, at, 0)!);
         expect(copy).toEqual(tune);
@@ -150,7 +180,9 @@ describe('Jelly Drums', () => {
 
   describe('free-play twists and names', () => {
     it('puts the fans on level 2 and the scale on level 3 only; level 1 stays plain', () => {
-      expect(PLANS.map((p) => p.twist ?? null)).toEqual(PLANS.map((_, k) => (k === 1 ? 'fans' : k === 2 ? 'scale' : null)));
+      expect(PLANS.map((p) => p.twist ?? null)).toEqual(
+        PLANS.map((_, k) => (k === 1 ? 'fans' : k === 2 ? 'scale' : null)),
+      );
       expect(planFor(1).twist).toBeUndefined();
     });
 
@@ -182,7 +214,8 @@ describe('Jelly Drums', () => {
 
     it('names every jelly with a spoken line, and says low and high', () => {
       expect(JELLY_NAMES).toHaveLength(JELLIES);
-      for (const id of [...JELLY_NAMES, 'jelly.lowhigh' as const]) expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
+      for (const id of [...JELLY_NAMES, 'jelly.lowhigh' as const])
+        expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
     });
 
     it('names at most once in eight taps, never the same jelly twice in a row, and says low and high once', () => {
@@ -225,7 +258,6 @@ describe('Jelly Drums', () => {
       expect(namer.tap(3, true)).toBeNull();
       expect(namer.tap(3)).toBe('jelly.name.green');
     });
-
 
     it('says low and high only after both the biggest and the littlest jelly sang', () => {
       const namer = new JellyNamer();

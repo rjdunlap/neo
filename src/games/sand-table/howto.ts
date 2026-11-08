@@ -14,7 +14,15 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 3, text: 'Tap the flag (Show) whenever you like the sand.' },
   ],
   note: [
-    { from: 1, to: 2, text: 'Nothing here is wrong, and finishing is not a test. The sand follows a made-up toy rule; real sand behaves differently.' },
-    { from: 3, to: 3, text: 'The picture is an idea to try, never a target. The sand follows a made-up toy rule; real sand behaves differently.' },
+    {
+      from: 1,
+      to: 2,
+      text: 'Nothing here is wrong, and finishing is not a test. The sand follows a made-up toy rule; real sand behaves differently.',
+    },
+    {
+      from: 3,
+      to: 3,
+      text: 'The picture is an idea to try, never a target. The sand follows a made-up toy rule; real sand behaves differently.',
+    },
   ],
 };

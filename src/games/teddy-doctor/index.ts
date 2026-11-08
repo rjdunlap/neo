@@ -49,7 +49,9 @@ const SKIN = { fill: 0xf3c99b, line: 0xc98f5a };
 // ----- drawings, all centered on (0, 0) -----
 
 function bandage(g = new Graphics(), s = 1) {
-  g.roundRect(-34 * s, -13 * s, 68 * s, 26 * s, 13 * s).fill(SKIN.fill).stroke(line(SKIN.line, 4 * s));
+  g.roundRect(-34 * s, -13 * s, 68 * s, 26 * s, 13 * s)
+    .fill(SKIN.fill)
+    .stroke(line(SKIN.line, 4 * s));
   g.roundRect(-12 * s, -9 * s, 24 * s, 18 * s, 5 * s).fill(0xfbe4c8);
   for (const x of [-24, -18, 18, 24]) g.circle(x * s, 0, 2 * s).fill(SKIN.line);
   return g;
@@ -66,12 +68,18 @@ function toolArt(tool: Tool): Container {
       g.roundRect(-44, -32, 88, 64, 18).fill(swatch.blue.light).stroke(line(swatch.blue.line));
       for (let a = 0; a < 3; a++) {
         const r = (a * Math.PI) / 3;
-        g.moveTo(-Math.cos(r) * 18, -Math.sin(r) * 18).lineTo(Math.cos(r) * 18, Math.sin(r) * 18).stroke(line(0xffffff, 5));
+        g.moveTo(-Math.cos(r) * 18, -Math.sin(r) * 18)
+          .lineTo(Math.cos(r) * 18, Math.sin(r) * 18)
+          .stroke(line(0xffffff, 5));
       }
       break;
     case 'tissue':
       g.roundRect(-42, -10, 84, 44, 8).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
-      g.moveTo(-20, -8).quadraticCurveTo(-26, -44, 0, -38).quadraticCurveTo(26, -44, 20, -8).fill(0xffffff).stroke(line(0xc9d6de, 4));
+      g.moveTo(-20, -8)
+        .quadraticCurveTo(-26, -44, 0, -38)
+        .quadraticCurveTo(26, -44, 20, -8)
+        .fill(0xffffff)
+        .stroke(line(0xc9d6de, 4));
       break;
     case 'bottle':
       g.roundRect(-34, -40, 68, 80, 22).fill(swatch.red.fill).stroke(line(swatch.red.line));
@@ -104,7 +112,12 @@ function toolArt(tool: Tool): Container {
       g.star(0, -58, 5, 16, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
       break;
     case 'flashlight':
-      g.moveTo(14, -16).lineTo(56, -38).lineTo(56, 38).lineTo(14, 16).closePath().fill({ color: 0xfff3a0, alpha: 0.85 });
+      g.moveTo(14, -16)
+        .lineTo(56, -38)
+        .lineTo(56, 38)
+        .lineTo(14, 16)
+        .closePath()
+        .fill({ color: 0xfff3a0, alpha: 0.85 });
       g.roundRect(-46, -14, 52, 28, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
       g.roundRect(4, -20, 14, 40, 5).fill(0xc0c6cc).stroke(line(0x7e8790, 4));
       break;
@@ -119,7 +132,9 @@ function scaleArt(g: Graphics) {
   g.circle(0, -12, 30).fill(0xffffff).stroke(line(swatch.teal.line));
   for (let k = 0; k < 5; k++) {
     const a = Math.PI * (1.15 + k * 0.175);
-    g.moveTo(Math.cos(a) * 22, -12 + Math.sin(a) * 22).lineTo(Math.cos(a) * 28, -12 + Math.sin(a) * 28).stroke(line(swatch.teal.line, 3));
+    g.moveTo(Math.cos(a) * 22, -12 + Math.sin(a) * 22)
+      .lineTo(Math.cos(a) * 28, -12 + Math.sin(a) * 28)
+      .stroke(line(swatch.teal.line, 3));
   }
   return g;
 }
@@ -135,7 +150,10 @@ function sock(g: Graphics, fill: number, edge: number, s = 1) {
     .closePath()
     .fill(fill)
     .stroke(line(edge, 4 * s));
-  for (const y of [-18, -8]) g.moveTo(-10 * s, y * s).lineTo(10 * s, y * s).stroke(line(0xffffff, 4 * s));
+  for (const y of [-18, -8])
+    g.moveTo(-10 * s, y * s)
+      .lineTo(10 * s, y * s)
+      .stroke(line(0xffffff, 4 * s));
   return g;
 }
 
@@ -197,15 +215,28 @@ class TeddyDoctor implements Game {
     this.view = v;
     const floorY = v.h * 0.68;
     const g = this.room.clear();
-    g.rect(0, 0, v.w, floorY).fill(cream).rect(0, floorY - 120, v.w, 18).fill(swatch.teal.light);
+    g.rect(0, 0, v.w, floorY)
+      .fill(cream)
+      .rect(0, floorY - 120, v.w, 18)
+      .fill(swatch.teal.light);
     g.rect(0, floorY, v.w, v.h - floorY).fill(wood.light);
-    for (let x = 0; x < v.w; x += 90) g.moveTo(x, floorY).lineTo(x - 40, v.h).stroke(line(wood.fill, 3));
+    for (let x = 0; x < v.w; x += 90)
+      g.moveTo(x, floorY)
+        .lineTo(x - 40, v.h)
+        .stroke(line(wood.fill, 3));
     // A heart sign on the wall and a soft mat to stand on.
     const hx = v.w * 0.36;
-    g.roundRect(hx - 60, 70, 120, 100, 20).fill(0xffffff).stroke(line(swatch.pink.line, 5));
-    g.moveTo(hx, 150).bezierCurveTo(hx - 50, 118, hx - 34, 84, hx, 102).bezierCurveTo(hx + 34, 84, hx + 50, 118, hx, 150).fill(swatch.pink.fill);
+    g.roundRect(hx - 60, 70, 120, 100, 20)
+      .fill(0xffffff)
+      .stroke(line(swatch.pink.line, 5));
+    g.moveTo(hx, 150)
+      .bezierCurveTo(hx - 50, 118, hx - 34, 84, hx, 102)
+      .bezierCurveTo(hx + 34, 84, hx + 50, 118, hx, 150)
+      .fill(swatch.pink.fill);
     this.spot = { x: v.w * 0.36, y: v.h - 100 };
-    g.ellipse(this.spot.x, this.spot.y + 6, 190, 30).fill(swatch.blue.light).stroke(line(swatch.blue.line, 4));
+    g.ellipse(this.spot.x, this.spot.y + 6, 190, 30)
+      .fill(swatch.blue.light)
+      .stroke(line(swatch.blue.line, 4));
     if (this.patient) this.patient.position.set(this.spot.x, this.spot.y);
     this.layoutPair();
     this.layoutTools();
@@ -231,7 +262,8 @@ class TeddyDoctor implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.patient && !this.choosing) this.patient.x = this.spot.x + (this.shiver ? 3 * Math.sin(this.clock * 40) : 0);
+    if (this.patient && !this.choosing)
+      this.patient.x = this.spot.x + (this.shiver ? 3 * Math.sin(this.clock * 40) : 0);
     for (const s of this.symptoms) if (s.label === 'stars') s.rotation += dt * 2;
     this.drawGlow();
   }
@@ -240,7 +272,13 @@ class TeddyDoctor implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.patient || !this.round) return null;
     if (this.choosing) return { tap: { on: this.patient, x: 0, y: -130 } };
-    const move = doctorTouch(this.plan.mode, this.round, this.step, this.scrapes.map((s) => s.part), this.done);
+    const move = doctorTouch(
+      this.plan.mode,
+      this.round,
+      this.step,
+      this.scrapes.map((s) => s.part),
+      this.done,
+    );
     if (!move) return null;
     const at = partSpot(this.round.patient, move.part);
     if (move.kind === 'tap') return { tap: { on: this.patient, x: at.x, y: at.y } };
@@ -259,17 +297,25 @@ class TeddyDoctor implements Game {
     if (this.finished || this.wrongs < 2 || !this.patient) return;
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);
     if (this.choosing) {
-      g.ellipse(this.patient.x, this.patient.y - 150, 165, 210).stroke({ width: 8, color: swatch.yellow.line, alpha: a });
+      g.ellipse(this.patient.x, this.patient.y - 150, 165, 210).stroke({
+        width: 8,
+        color: swatch.yellow.line,
+        alpha: a,
+      });
       return;
     }
     if (this.plan.mode === 'rules') {
-      for (const t of this.tools) if (allowedChecks(this.round, this.done).includes(t.tool as Check)) g.circle(t.home.x, t.home.y, 78).fill({ color: 0xfff3a0, alpha: a });
+      for (const t of this.tools)
+        if (allowedChecks(this.round, this.done).includes(t.tool as Check))
+          g.circle(t.home.x, t.home.y, 78).fill({ color: 0xfff3a0, alpha: a });
       return;
     }
     const want = wantedTool(this.round, this.step);
     const tool = this.tools.find((t) => t.tool === want);
-    if (tool && this.tools.length > 1) g.circle(tool.home.x, tool.home.y, 78).fill({ color: 0xfff3a0, alpha: a });
-    const part = this.plan.mode === 'part' ? this.scrapes[0]?.part : this.plan.mode === 'clue' ? this.round.part : null;
+    if (tool && this.tools.length > 1)
+      g.circle(tool.home.x, tool.home.y, 78).fill({ color: 0xfff3a0, alpha: a });
+    const part =
+      this.plan.mode === 'part' ? this.scrapes[0]?.part : this.plan.mode === 'clue' ? this.round.part : null;
     if (part) {
       const p = this.partAt(part);
       g.circle(p.x, p.y, 56).stroke({ width: 8, color: swatch.yellow.line, alpha: a });
@@ -299,17 +345,24 @@ class TeddyDoctor implements Game {
     p.hop(0.6);
     if (this.plan.mode === 'play' || this.plan.mode === 'choose') {
       // Boo-boos sit close together, so a tap goes to the nearest one rather than whichever is drawn on top.
-      p.hitArea = this.plan.mode === 'choose' ? new Rectangle(-125, -330, 250, 370) : new Rectangle(-175, -340, 350, 390);
+      p.hitArea =
+        this.plan.mode === 'choose'
+          ? new Rectangle(-125, -330, 250, 370)
+          : new Rectangle(-175, -340, 350, 390);
       onTap(p, (e) => void (this.choosing ? this.choose(true) : this.tapAt(e.global)), { cooldown: 250 });
     } else if (this.plan.mode === 'part') {
       // Lap: a tap on the patient uses the bandage where the finger landed, so no drag is needed; the named part still has to be the one touched.
       p.hitArea = new Rectangle(-175, -340, 350, 390);
-      onTap(p, (e) => {
-        const tool = this.tools[0];
-        if (!tool || tool.drag.dragging) return;
-        const at = this.ctx.stage.toLocal(e.global);
-        void this.use(tool, at.x, at.y);
-      }, { cooldown: 250 });
+      onTap(
+        p,
+        (e) => {
+          const tool = this.tools[0];
+          if (!tool || tool.drag.dragging) return;
+          const at = this.ctx.stage.toLocal(e.global);
+          void this.use(tool, at.x, at.y);
+        },
+        { cooldown: 250 },
+      );
     }
     this.setTools(r.tools);
     this.showSymptoms();
@@ -365,7 +418,13 @@ class TeddyDoctor implements Game {
   }
 
   private async sayRules(instruction = false) {
-    const text = this.round.rules.map((r) => r.kind === 'before' ? `${STEP_WORDS[r.tool]} before you ${STEP_WORDS[r.other]}` : `${STEP_WORDS[r.tool]} ${r.kind}`).join(', and ');
+    const text = this.round.rules
+      .map((r) =>
+        r.kind === 'before'
+          ? `${STEP_WORDS[r.tool]} before you ${STEP_WORDS[r.other]}`
+          : `${STEP_WORDS[r.tool]} ${r.kind}`,
+      )
+      .join(', and ');
     if (instruction) await this.ctx.instruct('doctor.rules', { rule: text });
     else await this.ctx.say('doctor.rules', { rule: text });
   }
@@ -413,12 +472,16 @@ class TeddyDoctor implements Game {
         this.scrapes.push({ part: r.part!, node: this.scrape(r.part!) });
         return;
       case 'bump': {
-        g.circle(at.x + 30, at.y + 10, 24).fill(swatch.pink.light).stroke(line(swatch.pink.line, 4));
+        g.circle(at.x + 30, at.y + 10, 24)
+          .fill(swatch.pink.light)
+          .stroke(line(swatch.pink.line, 4));
         const stars = new Container();
         stars.label = 'stars';
         for (let i = 0; i < 3; i++) {
           const a = (i * Math.PI * 2) / 3;
-          stars.addChild(new Graphics().star(Math.cos(a) * 40, Math.sin(a) * 18, 5, 10, 5).fill(swatch.yellow.fill));
+          stars.addChild(
+            new Graphics().star(Math.cos(a) * 40, Math.sin(a) * 18, 5, 10, 5).fill(swatch.yellow.fill),
+          );
         }
         stars.position.set(at.x + 30, at.y - 30);
         p.attach(stars);
@@ -426,14 +489,21 @@ class TeddyDoctor implements Game {
         break;
       }
       case 'sniffles':
-        g.moveTo(at.x + 10, at.y + 8).quadraticCurveTo(at.x + 22, at.y + 30, at.x + 12, at.y + 36).quadraticCurveTo(at.x + 2, at.y + 30, at.x + 10, at.y + 8).fill(swatch.blue.fill);
+        g.moveTo(at.x + 10, at.y + 8)
+          .quadraticCurveTo(at.x + 22, at.y + 30, at.x + 12, at.y + 36)
+          .quadraticCurveTo(at.x + 2, at.y + 30, at.x + 10, at.y + 8)
+          .fill(swatch.blue.fill);
         break;
       case 'tummy':
-        for (let k = 0; k < 2; k++) g.moveTo(at.x - 34 + k * 40, at.y).arc(at.x - 24 + k * 40, at.y, 10, Math.PI, Math.PI * 2.6).stroke(line(swatch.green.line, 4));
+        for (let k = 0; k < 2; k++)
+          g.moveTo(at.x - 34 + k * 40, at.y)
+            .arc(at.x - 24 + k * 40, at.y, 10, Math.PI, Math.PI * 2.6)
+            .stroke(line(swatch.green.line, 4));
         p.setMood('sad');
         break;
       case 'cold':
-        for (const side of [-1, 1]) g.ellipse(side * 40, -4, 34, 18).fill({ color: swatch.blue.light, alpha: 0.8 });
+        for (const side of [-1, 1])
+          g.ellipse(side * 40, -4, 34, 18).fill({ color: swatch.blue.light, alpha: 0.8 });
         this.shiver = true;
         break;
     }
@@ -445,7 +515,10 @@ class TeddyDoctor implements Game {
     const at = partSpot(this.round.patient, part);
     const node = new Container();
     const g = new Graphics().ellipse(0, 0, 24, 16).fill({ color: swatch.red.fill, alpha: 0.35 });
-    for (const dx of [-10, 0, 10]) g.moveTo(dx - 5, -7).lineTo(dx + 5, 7).stroke(line(swatch.red.line, 4));
+    for (const dx of [-10, 0, 10])
+      g.moveTo(dx - 5, -7)
+        .lineTo(dx + 5, 7)
+        .stroke(line(swatch.red.line, 4));
     node.addChild(g);
     node.position.set(at.x, at.y);
     this.patient!.attach(node);
@@ -468,7 +541,14 @@ class TeddyDoctor implements Game {
     this.patient!.attach(b);
     void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
     const p = this.partAt(part);
-    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 8, speed: [80, 200], gravity: 0, life: [0.4, 0.7] });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 8,
+      speed: [80, 200],
+      gravity: 0,
+      life: [0.4, 0.7],
+    });
     sfx.squish();
   }
 
@@ -479,7 +559,12 @@ class TeddyDoctor implements Game {
     if (this.busy || this.finished || !this.scrapes.length || !this.patient) return;
     const local = this.patient.toLocal(at);
     if (!Number.isFinite(local.x) || !Number.isFinite(local.y)) return;
-    const part = nearestPart(this.round.patient, local.x, local.y, this.scrapes.map((s) => s.part));
+    const part = nearestPart(
+      this.round.patient,
+      local.x,
+      local.y,
+      this.scrapes.map((s) => s.part),
+    );
     const s = this.scrapes.find((k) => k.part === part)!;
     this.scrapes.splice(this.scrapes.indexOf(s), 1);
     this.cover(s.node);
@@ -551,7 +636,7 @@ class TeddyDoctor implements Game {
     }
 
     // Check-ups: the steps in order.
-    const want = mode === 'rules' ? item.tool as Check : r.steps[this.step];
+    const want = mode === 'rules' ? (item.tool as Check) : r.steps[this.step];
     if (mode === 'rules' ? !allowedChecks(r, this.done).includes(want) : item.tool !== want) {
       this.miss();
       if (mode === 'rules') await this.sayRules();
@@ -582,14 +667,22 @@ class TeddyDoctor implements Game {
       case 'scrape':
         return this.patch(r.part!);
       case 'bump':
-        g.roundRect(at.x - 36, at.y - 22, 72, 44, 14).fill(swatch.blue.light).stroke(line(swatch.blue.line, 5));
+        g.roundRect(at.x - 36, at.y - 22, 72, 44, 14)
+          .fill(swatch.blue.light)
+          .stroke(line(swatch.blue.line, 5));
         break;
       case 'sniffles':
-        g.moveTo(at.x - 18, at.y + 6).quadraticCurveTo(at.x - 26, at.y - 22, at.x, at.y - 16).quadraticCurveTo(at.x + 26, at.y - 22, at.x + 18, at.y + 6).fill(0xffffff).stroke(line(0xc9d6de, 4));
+        g.moveTo(at.x - 18, at.y + 6)
+          .quadraticCurveTo(at.x - 26, at.y - 22, at.x, at.y - 16)
+          .quadraticCurveTo(at.x + 26, at.y - 22, at.x + 18, at.y + 6)
+          .fill(0xffffff)
+          .stroke(line(0xc9d6de, 4));
         void this.ctx.tw.wait(1.2).then(() => g.destroy());
         break;
       case 'tummy':
-        g.roundRect(at.x - 30, at.y - 34, 60, 68, 20).fill(swatch.red.fill).stroke(line(swatch.red.line, 5));
+        g.roundRect(at.x - 30, at.y - 34, 60, 68, 20)
+          .fill(swatch.red.fill)
+          .stroke(line(swatch.red.line, 5));
         break;
       case 'cold':
         for (const side of [-1, 1]) {
@@ -615,7 +708,14 @@ class TeddyDoctor implements Game {
     if (tool === 'stethoscope') {
       for (let k = 0; k < 2; k++) {
         sfx.drum();
-        this.ctx.particles.burst(at.x, at.y - 20, { kind: 'heart', colors: [swatch.pink.fill], count: 3, speed: [60, 120], gravity: -60, life: [0.6, 1] });
+        this.ctx.particles.burst(at.x, at.y - 20, {
+          kind: 'heart',
+          colors: [swatch.pink.fill],
+          count: 3,
+          speed: [60, 120],
+          gravity: -60,
+          life: [0.6, 1],
+        });
         await this.ctx.tw.wait(0.35);
       }
       await this.ctx.say('doctor.heart');
@@ -666,16 +766,28 @@ class TeddyDoctor implements Game {
     const tall = this.spot.y - top + 90;
     const band = tall / CHART.length;
     const chart = new Graphics().roundRect(-40, -tall, 80, tall, 16).fill(0xffffff).stroke(line(0x9aa5b1, 5));
-    CHART.forEach((color, i) => chart.rect(-30, -(i + 1) * band + 8, 60, band - 16).fill({ color, alpha: 0.75 }));
+    CHART.forEach((color, i) =>
+      chart.rect(-30, -(i + 1) * band + 8, 60, band - 16).fill({ color, alpha: 0.75 }),
+    );
     chart.position.set(this.spot.x, this.spot.y);
     chart.scale.y = 0;
     this.ctx.stage.addChildAt(chart, this.ctx.stage.getChildIndex(p));
     sfx.whoosh();
     await this.ctx.tw.to(chart.scale, { y: 1 }, { duration: 0.5, ease: ease.outBack });
-    const mark = new Graphics().moveTo(this.spot.x - 70, top).lineTo(this.spot.x + 70, top).stroke(line(swatch.yellow.line, 6));
+    const mark = new Graphics()
+      .moveTo(this.spot.x - 70, top)
+      .lineTo(this.spot.x + 70, top)
+      .stroke(line(swatch.yellow.line, 6));
     mark.star(this.spot.x, top, 5, 26, 12).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
     this.ctx.stage.addChildAt(mark, this.ctx.stage.getChildIndex(p) + 1);
-    this.ctx.particles.burst(this.spot.x, top, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 8, speed: [80, 200], gravity: 0, life: [0.4, 0.7] });
+    this.ctx.particles.burst(this.spot.x, top, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, 0xffffff],
+      count: 8,
+      speed: [80, 200],
+      gravity: 0,
+      life: [0.4, 0.7],
+    });
     sfx.sparkle();
     // Standing still and proud: a hop here would lift the head off the star.
     p.setMood('happy', 1.5);
@@ -689,14 +801,18 @@ class TeddyDoctor implements Game {
     this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
     const r = this.round;
     if (!r.steps.length) return;
-    const g = new Graphics().roundRect(-190, -70, 380, 140, 22).fill(0xffffff).stroke(line(swatch.blue.line, 5));
+    const g = new Graphics()
+      .roundRect(-190, -70, 380, 140, 22)
+      .fill(0xffffff)
+      .stroke(line(swatch.blue.line, 5));
     this.card.addChild(g);
     r.steps.forEach((tool, i) => {
       const x = (i - 1) * 120;
       const unordered = this.plan.mode === 'rules';
       const complete = unordered ? this.done.includes(tool) : i < this.step;
       const shown = unordered || this.plan.mode === 'card' || complete;
-      if (!unordered && i === this.step) g.roundRect(x - 52, -58, 104, 116, 18).fill({ color: 0xfff3a0, alpha: 0.9 });
+      if (!unordered && i === this.step)
+        g.roundRect(x - 52, -58, 104, 116, 18).fill({ color: 0xfff3a0, alpha: 0.9 });
       if (shown) {
         const art = toolArt(tool);
         art.scale.set(0.6);
@@ -707,7 +823,11 @@ class TeddyDoctor implements Game {
         q.position.set(x, -4);
         this.card.addChild(q);
       }
-      if (complete) g.moveTo(x + 18, 40).lineTo(x + 28, 52).lineTo(x + 46, 26).stroke(line(swatch.green.line, 6));
+      if (complete)
+        g.moveTo(x + 18, 40)
+          .lineTo(x + 28, 52)
+          .lineTo(x + 46, 26)
+          .stroke(line(swatch.green.line, 6));
       if (!unordered) {
         const n = label(String(i + 1), 24, swatch.blue.line);
         n.position.set(x - 38, 44);
@@ -722,7 +842,14 @@ class TeddyDoctor implements Game {
     p.setMood('happy', 2);
     p.cheer();
     sfx.giggle();
-    this.ctx.particles.burst(this.spot.x, this.spot.y - 200, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 12, speed: [100, 260], gravity: -40, life: [0.8, 1.3] });
+    this.ctx.particles.burst(this.spot.x, this.spot.y - 200, {
+      kind: 'heart',
+      colors: [swatch.pink.fill, swatch.red.fill],
+      count: 12,
+      speed: [100, 260],
+      gravity: -40,
+      life: [0.8, 1.3],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('doctor.better');
     await this.ctx.tw.wait(0.4);
@@ -741,7 +868,14 @@ class TeddyDoctor implements Game {
   private async finale() {
     this.finished = true;
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     await this.ctx.say('doctor.done');
     await this.ctx.tw.wait(0.5);
@@ -763,7 +897,11 @@ function teddyArt(seed = 1): Container {
   b.rotation = -0.3;
   t.attach(b);
   const kit = new Graphics().roundRect(52, -66, 76, 60, 12).fill(0xffffff).stroke(line(swatch.red.line, 5));
-  kit.moveTo(90, -50).bezierCurveTo(76, -60, 70, -44, 90, -24).bezierCurveTo(110, -44, 104, -60, 90, -50).fill(swatch.red.fill);
+  kit
+    .moveTo(90, -50)
+    .bezierCurveTo(76, -60, 70, -44, 90, -24)
+    .bezierCurveTo(110, -44, 104, -60, 90, -50)
+    .fill(swatch.red.fill);
   c.addChild(t, kit);
   c.hitArea = new Circle(0, -70, 90);
   return c;
@@ -786,7 +924,8 @@ export const teddyDoctor: GameModule = {
   offScreen: {
     all: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
     // School: a build or test with a result, predicting first.
-    school: 'Give a teddy a check-up: measure how tall it is with blocks or a ruler, and write it on a chart with what will help.',
+    school:
+      'Give a teddy a check-up: measure how tall it is with blocks or a ruler, and write it on a chart with what will help.',
   },
   hubIcon: () => new WigglyIcon(teddyArt(1)),
   sticker: (seed) => teddyArt(seed),

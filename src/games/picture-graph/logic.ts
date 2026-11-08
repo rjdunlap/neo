@@ -10,7 +10,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * levels use a key: one block stands for two critters (or, at level 9, five tally marks), so the bars no longer match
  * a count of one, and the number of blocks is the tempting wrong answer.
  */
-export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives' | 'pair' | 'claim';
+export type GraphMode =
+  'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives' | 'pair' | 'claim';
 
 export interface GraphPlan {
   mode: GraphMode;
@@ -26,22 +27,102 @@ export interface GraphPlan {
 }
 
 export const PLANS: GraphPlan[] = [
-  { mode: 'build', kinds: 2, max: 4, graphs: 2, per: 1, name: 'Count two kinds of critters and build their bars, one block each' },
-  { mode: 'most', kinds: 3, max: 5, graphs: 2, per: 1, name: 'Build three bars, then: which has the most? the fewest?' },
-  { mode: 'more', kinds: 3, max: 6, graphs: 2, per: 1, name: 'Build the graph, then: how many more ducks than pigs?' },
-  { mode: 'read', kinds: 4, max: 6, graphs: 2, per: 1, name: 'A graph is already built: how many in all? which two are the same?' },
-  { mode: 'scale', kinds: 3, max: 4, graphs: 2, per: 2, name: 'Each block is two critters: build the bars from the pairs, then how many more?' },
-  { mode: 'scaleread', kinds: 3, max: 5, graphs: 2, per: 2, name: 'A graph where each block is two critters: how many in all? how many more?' },
-  { mode: 'tally', kinds: 3, min: 4, max: 7, graphs: 1, per: 1, name: 'Record each kind in tally marks, grouping every five, then build and compare one graph' },
+  {
+    mode: 'build',
+    kinds: 2,
+    max: 4,
+    graphs: 2,
+    per: 1,
+    name: 'Count two kinds of critters and build their bars, one block each',
+  },
+  {
+    mode: 'most',
+    kinds: 3,
+    max: 5,
+    graphs: 2,
+    per: 1,
+    name: 'Build three bars, then: which has the most? the fewest?',
+  },
+  {
+    mode: 'more',
+    kinds: 3,
+    max: 6,
+    graphs: 2,
+    per: 1,
+    name: 'Build the graph, then: how many more ducks than pigs?',
+  },
+  {
+    mode: 'read',
+    kinds: 4,
+    max: 6,
+    graphs: 2,
+    per: 1,
+    name: 'A graph is already built: how many in all? which two are the same?',
+  },
+  {
+    mode: 'scale',
+    kinds: 3,
+    max: 4,
+    graphs: 2,
+    per: 2,
+    name: 'Each block is two critters: build the bars from the pairs, then how many more?',
+  },
+  {
+    mode: 'scaleread',
+    kinds: 3,
+    max: 5,
+    graphs: 2,
+    per: 2,
+    name: 'A graph where each block is two critters: how many in all? how many more?',
+  },
+  {
+    mode: 'tally',
+    kinds: 3,
+    min: 4,
+    max: 7,
+    graphs: 1,
+    per: 1,
+    name: 'Record each kind in tally marks, grouping every five, then build and compare one graph',
+  },
   // An easy entry with a high ID: real things from the shore lined up in rows, the step before blocks. Pre-K plays two kinds
   // and asks which row has the most; school plays three and then asks how many more (`lineKinds`, `lineQuestions`).
-  { mode: 'line', kinds: 3, min: 2, max: 6, graphs: 2, per: 1, name: 'Line up shells, stones, sticks and feathers in rows by kind: which row has the most?' },
+  {
+    mode: 'line',
+    kinds: 3,
+    min: 2,
+    max: 6,
+    graphs: 2,
+    per: 1,
+    name: 'Line up shells, stones, sticks and feathers in rows by kind: which row has the most?',
+  },
   // Tally cards stand where the meadow was: 10 to 35 of each kind in groups of five, and each block is five.
-  { mode: 'fives', kinds: 3, min: 2, max: 7, graphs: 2, per: 5, name: 'A key of five: build the bars from tally cards, one block for each group of five, then how many more?' },
+  {
+    mode: 'fives',
+    kinds: 3,
+    min: 2,
+    max: 7,
+    graphs: 2,
+    per: 5,
+    name: 'A key of five: build the bars from tally cards, one block for each group of five, then how many more?',
+  },
   // A tally card and three finished graphs: a plain one, one keyed by twos, and a plain trap as tall as the keyed one.
-  { mode: 'pair', kinds: 3, max: 4, graphs: 2, per: 2, name: 'Two pictures, one meadow: which two graphs show the tally card? One has a key of two; one only looks the same' },
+  {
+    mode: 'pair',
+    kinds: 3,
+    max: 4,
+    graphs: 2,
+    per: 2,
+    name: 'Two pictures, one meadow: which two graphs show the tally card? One has a key of two; one only looks the same',
+  },
   // A finished graph and three things a friend says about the meadow, one at a time: stamp each yes, no, or the graph can't say.
-  { mode: 'claim', kinds: 3, max: 6, graphs: 2, per: 1, name: 'What the graph can say: stamp what a friend says yes, no, or "the graph can\'t say" (it shows how many, not who came first)' },
+  {
+    mode: 'claim',
+    kinds: 3,
+    max: 6,
+    graphs: 2,
+    per: 1,
+    name: 'What the graph can say: stamp what a friend says yes, no, or "the graph can\'t say" (it shows how many, not who came first)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -53,7 +134,8 @@ export const LEVELS: BandLevels = {
 export const ownScene = (plan: GraphPlan) => plan.mode === 'line' || plan.mode === 'pair';
 
 /** The levels whose graph is already built when the round opens, so there is nothing to build. */
-export const prebuilt = (plan: GraphPlan) => plan.mode === 'read' || plan.mode === 'scaleread' || plan.mode === 'claim';
+export const prebuilt = (plan: GraphPlan) =>
+  plan.mode === 'read' || plan.mode === 'scaleread' || plan.mode === 'claim';
 
 /** The blocks each bar holds when it matches the critters. */
 export const barsFor = (plan: GraphPlan, g: Graph): number[] => g.counts.map((n) => n / plan.per);
@@ -84,11 +166,27 @@ export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
     const counts = kinds.map(() => rng.int(plan.min ?? 1, plan.max) * plan.per);
     const top = Math.max(...counts);
     const low = Math.min(...counts);
-    if (plan.mode === 'most' && (counts.filter((c) => c === top).length > 1 || counts.filter((c) => c === low).length > 1)) continue;
-    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally' || plan.mode === 'fives' || plan.mode === 'pair' || plan.mode === 'claim') && new Set(counts).size < counts.length) continue;
+    if (
+      plan.mode === 'most' &&
+      (counts.filter((c) => c === top).length > 1 || counts.filter((c) => c === low).length > 1)
+    )
+      continue;
+    if (
+      (plan.mode === 'more' ||
+        plan.mode === 'scale' ||
+        plan.mode === 'scaleread' ||
+        plan.mode === 'tally' ||
+        plan.mode === 'fives' ||
+        plan.mode === 'pair' ||
+        plan.mode === 'claim') &&
+      new Set(counts).size < counts.length
+    )
+      continue;
     // Reading levels: exactly one pair of equal bars, for "which two are the same?".
     if (plan.mode === 'read') {
-      const pairs = counts.flatMap((c, i) => counts.slice(i + 1).map((d, j) => (c === d ? [i, i + 1 + j] : null))).filter(Boolean);
+      const pairs = counts
+        .flatMap((c, i) => counts.slice(i + 1).map((d, j) => (c === d ? [i, i + 1 + j] : null)))
+        .filter(Boolean);
       if (pairs.length !== 1) continue;
     }
     return { kinds, counts };
@@ -98,17 +196,29 @@ export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
 export function questionsFor(plan: GraphPlan, g: Graph, rng: Rng): Question[] {
   const c = g.counts;
   const more = (): Question => {
-    const [a, b] = rng.shuffle(c.map((_, i) => i)).slice(0, 2).sort((x, y) => c[y] - c[x]);
+    const [a, b] = rng
+      .shuffle(c.map((_, i) => i))
+      .slice(0, 2)
+      .sort((x, y) => c[y] - c[x]);
     return { ask: 'more', a, b, answer: c[a] - c[b] };
   };
   if (plan.mode === 'build') return [];
   if (plan.mode === 'claim') return claimsFor(g, rng).map((claim) => ({ ask: 'claim', claim }));
-  if (plan.mode === 'most') return [{ ask: 'most', answer: c.indexOf(Math.max(...c)) }, { ask: 'fewest', answer: c.indexOf(Math.min(...c)) }];
+  if (plan.mode === 'most')
+    return [
+      { ask: 'most', answer: c.indexOf(Math.max(...c)) },
+      { ask: 'fewest', answer: c.indexOf(Math.min(...c)) },
+    ];
   if (plan.mode === 'more' || plan.mode === 'tally') return [more()];
   if (plan.mode === 'scale' || plan.mode === 'fives') return [more()];
   if (plan.mode === 'scaleread') return [{ ask: 'total', answer: c.reduce((s, x) => s + x, 0) }, more()];
-  const pair = c.flatMap((x, i) => c.slice(i + 1).map((y, j) => (x === y ? [i, i + 1 + j] : null))).find(Boolean) as [number, number];
-  return [{ ask: 'total', answer: c.reduce((s, x) => s + x, 0) }, { ask: 'same', answer: pair }];
+  const pair = c
+    .flatMap((x, i) => c.slice(i + 1).map((y, j) => (x === y ? [i, i + 1 + j] : null)))
+    .find(Boolean) as [number, number];
+  return [
+    { ask: 'total', answer: c.reduce((s, x) => s + x, 0) },
+    { ask: 'same', answer: pair },
+  ];
 }
 
 /**
@@ -130,13 +240,18 @@ export function choicesFor(answer: number, rng: Rng, per = 1, taller?: number): 
 }
 
 /** The taller bar's count in a "how many more" question without a key, offered as the tempting wrong answer. */
-export const tallerCount = (plan: GraphPlan, g: Graph, q: Question) => (q.ask === 'more' && plan.per === 1 ? g.counts[q.a] : undefined);
+export const tallerCount = (plan: GraphPlan, g: Graph, q: Question) =>
+  q.ask === 'more' && plan.per === 1 ? g.counts[q.a] : undefined;
 
 /**
  * A tap on a bar while answering "which two are the same?". The first tap lifts that bar; a tap on the lifted bar
  * lowers it again, free; a tap on another bar makes the pair, right or wrong, and lowers the lifted one.
  */
-export function sameTap(first: number | null, tapped: number, answer: [number, number]): { first: number | null; result: 'lift' | 'lower' | 'right' | 'wrong' } {
+export function sameTap(
+  first: number | null,
+  tapped: number,
+  answer: [number, number],
+): { first: number | null; result: 'lift' | 'lower' | 'right' | 'wrong' } {
   if (first === null) return { first: tapped, result: 'lift' };
   if (first === tapped) return { first: null, result: 'lower' };
   const pair = [first, tapped].sort((a, b) => a - b);
@@ -145,19 +260,24 @@ export function sameTap(first: number | null, tapped: number, answer: [number, n
 }
 
 /** The bars a "same" hint glows: the answer bar not yet lifted, or both when the lifted one is wrong or none is. */
-export const sameHint = (first: number | null, answer: [number, number]) => (first !== null && answer.includes(first) ? answer.filter((i) => i !== first) : [...answer]);
+export const sameHint = (first: number | null, answer: [number, number]) =>
+  first !== null && answer.includes(first) ? answer.filter((i) => i !== first) : [...answer];
 
 /**
  * What a hint shows after two misses on a number question, so she sees why: for "how many more", a line from the
  * shorter bar's top across the taller bar (`line`, in blocks) and the taller bar's blocks above it (`blocks`, as
  * column and block index); for "how many in all", every block.
  */
-export function whyBlocks(q: Question, bars: number[]): { line?: { from: number; to: number; at: number }; blocks: { kind: number; k: number }[] } {
+export function whyBlocks(
+  q: Question,
+  bars: number[],
+): { line?: { from: number; to: number; at: number }; blocks: { kind: number; k: number }[] } {
   if (q.ask === 'more') {
     const blocks = Array.from({ length: bars[q.a] - bars[q.b] }, (_, j) => ({ kind: q.a, k: bars[q.b] + j }));
     return { line: { from: q.b, to: q.a, at: bars[q.b] }, blocks };
   }
-  if (q.ask === 'total') return { blocks: bars.flatMap((n, kind) => Array.from({ length: n }, (_, k) => ({ kind, k }))) };
+  if (q.ask === 'total')
+    return { blocks: bars.flatMap((n, kind) => Array.from({ length: n }, (_, k) => ({ kind, k }))) };
   return { blocks: [] };
 }
 
@@ -168,13 +288,23 @@ export const CRITTER_H = 72;
 export const GROUP_GAP = 56;
 
 /** The meadow's room for critters' feet: clear of the key on the left, the number pads on the right and the graph's top (which is 422 above the bottom). */
-export const meadowArea = (w: number, h: number) => ({ left: 216, right: w - 236, top: 165, bottom: Math.min(h * 0.5, 370, h - 430) });
+export const meadowArea = (w: number, h: number) => ({
+  left: 216,
+  right: w - 236,
+  top: 165,
+  bottom: Math.min(h * 0.5, 370, h - 430),
+});
 
 /**
  * Where each critter stands when a block is one critter: one critter to a slot of the same grid pairs use, so no two
  * touch, none stands on the graph and the count is always what she sees. In the order of the graph's kinds.
  */
-export function meadowSpots(g: Graph, w: number, h: number, rng: Rng): { kind: number; x: number; y: number }[] {
+export function meadowSpots(
+  g: Graph,
+  w: number,
+  h: number,
+  rng: Rng,
+): { kind: number; x: number; y: number }[] {
   const kinds = g.counts.flatMap((n, kind) => Array.from({ length: n }, () => kind));
   const spots = groupSpots(kinds.length, 1, meadowArea(w, h), rng);
   return kinds.map((kind, i) => ({ kind, ...spots[i] }));
@@ -193,7 +323,13 @@ export const groupSize = (per: number) => ({ w: (per - 1) * GROUP_GAP + CRITTER_
  * jitter, so it looks scattered but no two groups can touch and none leaves the area. Random placement ran out of
  * room for nine pairs in a meadow this small.
  */
-export function groupSpots(n: number, per: number, area: ReturnType<typeof meadowArea>, rng: Rng, size = groupSize(per)): Spot[] {
+export function groupSpots(
+  n: number,
+  per: number,
+  area: ReturnType<typeof meadowArea>,
+  rng: Rng,
+  size = groupSize(per),
+): Spot[] {
   const cols = Math.max(1, Math.floor((area.right - area.left) / size.w) + 1);
   const rows = Math.max(1, Math.floor((area.bottom - area.top) / size.h) + 1);
   const stepX = cols > 1 ? (area.right - area.left) / (cols - 1) : 0;
@@ -202,8 +338,20 @@ export function groupSpots(n: number, per: number, area: ReturnType<typeof meado
   // A group moves at most half its spare room from its slot, and never out of the area (clamping only brings it back toward its slot).
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
   return slots.map((i) => ({
-    x: clamp(area.left + (i % cols) * stepX + (stepX > size.w ? rng.range(-(stepX - size.w) / 2, (stepX - size.w) / 2) : 0), area.left, area.right),
-    y: clamp(area.top + Math.floor(i / cols) * stepY + (stepY > size.h ? rng.range(-(stepY - size.h) / 2, (stepY - size.h) / 2) : 0), area.top, area.bottom),
+    x: clamp(
+      area.left +
+        (i % cols) * stepX +
+        (stepX > size.w ? rng.range(-(stepX - size.w) / 2, (stepX - size.w) / 2) : 0),
+      area.left,
+      area.right,
+    ),
+    y: clamp(
+      area.top +
+        Math.floor(i / cols) * stepY +
+        (stepY > size.h ? rng.range(-(stepY - size.h) / 2, (stepY - size.h) / 2) : 0),
+      area.top,
+      area.bottom,
+    ),
   }));
 }
 
@@ -238,7 +386,12 @@ export function cardLayout(w: number, h: number, rows: number, groups: number) {
 }
 
 /** One touch a capable child makes: a block added to a bar, the check, a column answering "which?", or a number pad. */
-export type GraphMove = { do: 'add'; kind: number } | { do: 'check' } | { do: 'column'; kind: number } | { do: 'number'; n: number } | { do: 'stamp'; stamp: Stamp };
+export type GraphMove =
+  | { do: 'add'; kind: number }
+  | { do: 'check' }
+  | { do: 'column'; kind: number }
+  | { do: 'number'; n: number }
+  | { do: 'stamp'; stamp: Stamp };
 
 /**
  * What a capable child touches next, from what is on the screen. While she is building, she adds a block to a bar
@@ -246,9 +399,16 @@ export type GraphMove = { do: 'add'; kind: number } | { do: 'check' } | { do: 'c
  * answers it: the column for "most", "fewest" and (one tap, then the other) "same", the number pad for "how many
  * more" and "how many in all", the claim's stamp. Null when there is nothing to do yet, such as a reading level before its question arrives.
  */
-export function graphMove(plan: GraphPlan, graph: Graph, bars: number[], question: Question | undefined, firstSame: number | null): GraphMove | null {
+export function graphMove(
+  plan: GraphPlan,
+  graph: Graph,
+  bars: number[],
+  question: Question | undefined,
+  firstSame: number | null,
+): GraphMove | null {
   if (question) {
-    if (question.ask === 'same') return { do: 'column', kind: firstSame === null ? question.answer[0] : question.answer[1] };
+    if (question.ask === 'same')
+      return { do: 'column', kind: firstSame === null ? question.answer[0] : question.answer[1] };
     if (question.ask === 'most' || question.ask === 'fewest') return { do: 'column', kind: question.answer };
     if (question.ask === 'claim') return { do: 'stamp', stamp: question.claim.answer };
     return { do: 'number', n: question.answer };
@@ -269,7 +429,12 @@ export function tallyMove(graph: Graph, tallies: number[]): GraphMove {
 export type ShoreThing = 'shell' | 'stone' | 'stick' | 'feather';
 /** Real things from the shore; never litter. */
 export const THINGS: ShoreThing[] = ['shell', 'stone', 'stick', 'feather'];
-export const THING_NAMES: Record<ShoreThing, string> = { shell: 'shells', stone: 'stones', stick: 'sticks', feather: 'feathers' };
+export const THING_NAMES: Record<ShoreThing, string> = {
+  shell: 'shells',
+  stone: 'stones',
+  stick: 'sticks',
+  feather: 'feathers',
+};
 
 export interface Shore {
   kinds: ShoreThing[];
@@ -293,7 +458,10 @@ export function lineQuestions(shore: Shore, rng: Rng): Question[] {
   const c = shore.counts;
   const qs: Question[] = [{ ask: 'most', answer: c.indexOf(Math.max(...c)) }];
   if (c.length > 2) {
-    const [a, b] = rng.shuffle(c.map((_, i) => i)).slice(0, 2).sort((x, y) => c[y] - c[x]);
+    const [a, b] = rng
+      .shuffle(c.map((_, i) => i))
+      .slice(0, 2)
+      .sort((x, y) => c[y] - c[x]);
     qs.push({ ask: 'more', a, b, answer: c[a] - c[b] });
   }
   return qs;
@@ -304,7 +472,10 @@ export function lineQuestions(shore: Shore, rng: Rng): Question[] {
  * have a thing there), and the things nothing matches (`glow`). For "most", every row is joined and the longest row's things
  * past the next longest glow; for "how many more", the two rows asked about, and the glowing things are the answer.
  */
-export function lineHint(q: Question, counts: number[]): { links: { k: number; rows: number[] }[]; glow: { row: number; k: number }[] } {
+export function lineHint(
+  q: Question,
+  counts: number[],
+): { links: { k: number; rows: number[] }[]; glow: { row: number; k: number }[] } {
   const rows = q.ask === 'more' ? [q.a, q.b] : counts.map((_, i) => i);
   const top = q.ask === 'more' ? q.a : q.ask === 'most' ? q.answer : -1;
   if (top < 0) return { links: [], glow: [] };
@@ -316,7 +487,8 @@ export function lineHint(q: Question, counts: number[]): { links: { k: number; r
 }
 
 /** One touch a capable child makes at level 8: a thing on the sand, a row, or a number pad. */
-export type LineMove = { do: 'thing'; index: number } | { do: 'row'; row: number } | { do: 'number'; n: number };
+export type LineMove =
+  { do: 'thing'; index: number } | { do: 'row'; row: number } | { do: 'number'; n: number };
 
 /** The ghost finger: each thing on the sand in turn, then the row with the most and the number for "how many more". */
 export function lineMove(placed: readonly boolean[], question: Question | undefined): LineMove | null {
@@ -356,12 +528,26 @@ export function trayLayout(w: number, h: number, rows: number, max: number) {
 }
 
 /** The sand's room for things' centres: below the corner buttons, above the tray, each thing's tap square clear of the tray. */
-export const shoreArea = (w: number, h: number, rows: number, max: number) => ({ left: 150, right: w - 150, top: 168, bottom: trayLayout(w, h, rows, max).top - THING_SIZE / 2 - 10 });
+export const shoreArea = (w: number, h: number, rows: number, max: number) => ({
+  left: 150,
+  right: w - 150,
+  top: 168,
+  bottom: trayLayout(w, h, rows, max).top - THING_SIZE / 2 - 10,
+});
 
 /** Where each thing lies on the sand: one to a grid slot a tap square wide, so no two squares overlap. In the order of the shore's kinds. */
-export function shoreSpots(shore: Shore, plan: GraphPlan, w: number, h: number, rng: Rng): { kind: number; x: number; y: number }[] {
+export function shoreSpots(
+  shore: Shore,
+  plan: GraphPlan,
+  w: number,
+  h: number,
+  rng: Rng,
+): { kind: number; x: number; y: number }[] {
   const kinds = shore.counts.flatMap((n, kind) => Array.from({ length: n }, () => kind));
-  const spots = groupSpots(kinds.length, 1, shoreArea(w, h, shore.kinds.length, plan.max), rng, { w: THING_SIZE, h: THING_SIZE });
+  const spots = groupSpots(kinds.length, 1, shoreArea(w, h, shore.kinds.length, plan.max), rng, {
+    w: THING_SIZE,
+    h: THING_SIZE,
+  });
   return rng.shuffle(kinds.map((kind, i) => ({ kind, ...spots[i] })));
 }
 
@@ -405,7 +591,8 @@ export function makePairRound(plan: GraphPlan, rng: Rng): PairRound {
 }
 
 /** Which gentle line a wrong pair gets: the keyed graph with the trap (the same heights, a different key) has its own. */
-export const pairWhy = (round: PairRound, a: number, b: number): 'key' | 'look' => ([a, b].includes(round.keyed) && [a, b].includes(round.trap) ? 'key' : 'look');
+export const pairWhy = (round: PairRound, a: number, b: number): 'key' | 'look' =>
+  [a, b].includes(round.keyed) && [a, b].includes(round.trap) ? 'key' : 'look';
 
 /** The ghost finger: one right graph, then the other; a wrong first pick is tapped again to lower it. */
 export function pairMove(round: PairRound, first: number | null): number {
@@ -425,7 +612,12 @@ export const PAIR_ROWS = 8;
  */
 export function pairLayout(w: number, h: number, rows: number) {
   const cardW = PAIR_CARD.faceW + PAIR_CARD.marksW + 24;
-  const card = { left: w / 2 - cardW / 2, right: w / 2 + cardW / 2, top: 150, bottom: 150 + rows * PAIR_CARD.rowH + 12 };
+  const card = {
+    left: w / 2 - cardW / 2,
+    right: w / 2 + cardW / 2,
+    top: 150,
+    bottom: 150 + rows * PAIR_CARD.rowH + 12,
+  };
   const left = 160;
   const right = w - 24;
   const gap = 18;
@@ -438,7 +630,12 @@ export function pairLayout(w: number, h: number, rows: number) {
   const top = card.bottom + 18 + Math.min(30, (room - gh) / 2);
   const mid = (left + right) / 2;
   return {
-    card: { ...card, rowY: (r: number) => card.top + 6 + PAIR_CARD.rowH / 2 + r * PAIR_CARD.rowH, faceX: card.left + PAIR_CARD.faceW / 2, marksX: card.left + PAIR_CARD.faceW + 8 },
+    card: {
+      ...card,
+      rowY: (r: number) => card.top + 6 + PAIR_CARD.rowH / 2 + r * PAIR_CARD.rowH,
+      faceX: card.left + PAIR_CARD.faceW / 2,
+      marksX: card.left + PAIR_CARD.faceW + 8,
+    },
     gw,
     gh,
     top,
@@ -490,7 +687,9 @@ export function claimsFor(g: Graph, rng: Rng): Claim[] {
   const moreClaim = (answer: 'yes' | 'no'): Claim => {
     const [x, y] = rng.shuffle(c.map((_, i) => i)).slice(0, 2);
     const [big, small] = c[x] > c[y] ? [x, y] : [y, x];
-    return answer === 'yes' ? { say: 'more', a: big, b: small, answer } : { say: 'more', a: small, b: big, answer };
+    return answer === 'yes'
+      ? { say: 'more', a: big, b: small, answer }
+      : { say: 'more', a: small, b: big, answer };
   };
   const moreYes = rng.chance(0.5);
   const claims: Claim[] = [
@@ -509,7 +708,8 @@ export function stampWhy(c: Claim, stamp: Stamp): 'right' | 'cant' | 'can' | 'lo
 }
 
 /** The bars a claim names, lit after a wrong stamp: the two compared, every bar for "the most", the one named for a can't-say. */
-export const claimBars = (c: Claim, kinds: number): number[] => (c.say === 'more' ? [c.a, c.b] : c.say === 'most' ? Array.from({ length: kinds }, (_, i) => i) : [c.a]);
+export const claimBars = (c: Claim, kinds: number): number[] =>
+  c.say === 'more' ? [c.a, c.b] : c.say === 'most' ? Array.from({ length: kinds }, (_, i) => i) : [c.a];
 
 /** A stamp's radius: 112 across, a whole tap target. */
 export const STAMP_R = 56;

@@ -8,7 +8,9 @@ export const VOICE = {
   'gobble.instruct-number': ['The puddle soaks up any number up to its own. Each one makes it one bigger!'],
   'gobble.instruct-add': ['The puddle soaks up any number up to its own, and each number adds to it!'],
   'gobble.instruct-order-number': ['The puddle is 20. Soak up the numbers, smallest first!'],
-  'gobble.instruct-too-full': ['The puddle is too full! Tap numbers at the top to let them go, until it is exactly {t}, like the pail.'],
+  'gobble.instruct-too-full': [
+    'The puddle is too full! Tap numbers at the top to let them go, until it is exactly {t}, like the pail.',
+  ],
   'gobble.instruct-pail': ['Make the puddle just right: exactly {t}, like the pail!'],
   'gobble.too-big': ['Too big yet! Soak little things to grow.'],
   'gobble.too-big-number': ['{v}. The puddle is {p}: too big yet.'],

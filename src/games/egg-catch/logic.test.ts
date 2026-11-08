@@ -1,7 +1,43 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { repairBoards, repairTarget, repairGate, simulateFlipflop, flipflopBoards, laneChoice, pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, BARN_ASPECT, exitOffsets, farBarnAt, HORIZON, laneXs, routeCx, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
+import {
+  repairBoards,
+  repairTarget,
+  repairGate,
+  simulateFlipflop,
+  flipflopBoards,
+  laneChoice,
+  pairBoards,
+  pairExits,
+  pairGateToFlip,
+  pairNeeds,
+  basketMove,
+  caught,
+  glowLane,
+  HenPace,
+  exitFor,
+  exitWanted,
+  gatesFor,
+  gateToFlip,
+  routeTouch,
+  LANES,
+  makeEggs,
+  PLANS,
+  targetsFor,
+  predictGates,
+  BARN_ASPECT,
+  exitOffsets,
+  farBarnAt,
+  HORIZON,
+  laneXs,
+  routeCx,
+  type EggInAir,
+  type Shell,
+  HEN_SHELLS,
+  HEN_NOTES,
+  SHELL,
+} from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -12,9 +48,16 @@ describe('Egg Catch', () => {
         eggs.slice(1).forEach((e, i) => expect(e.lane).not.toBe(eggs[i].lane));
         const mixes = plan.mode === 'brown' || plan.mode === 'sort';
         if (mixes) expect(eggs.every((e) => e.shell === 'brown' || e.shell === 'white')).toBe(true);
-        else if (plan.mode === 'tap' || plan.mode === 'lane' || plan.mode === 'catch') expect(eggs.every((e) => e.shell === HEN_SHELLS[e.lane])).toBe(true);
+        else if (plan.mode === 'tap' || plan.mode === 'lane' || plan.mode === 'catch')
+          expect(eggs.every((e) => e.shell === HEN_SHELLS[e.lane])).toBe(true);
         else expect(eggs.every((e) => e.shell === 'brown')).toBe(true);
-        eggs.slice(2).forEach((e, i) => expect(e.shell === 'white' && eggs[i].shell === 'white' && eggs[i + 1].shell === 'white').toBe(false));
+        eggs
+          .slice(2)
+          .forEach((e, i) =>
+            expect(e.shell === 'white' && eggs[i].shell === 'white' && eggs[i + 1].shell === 'white').toBe(
+              false,
+            ),
+          );
         expect(eggs.filter((e) => e.shell !== 'white').length).toBeGreaterThanOrEqual(plan.eggs);
       }
     }
@@ -25,11 +68,15 @@ describe('Egg Catch', () => {
     for (const shell of HEN_SHELLS) {
       expect(shell).not.toBe('white');
       const rgb = (n: number) => [n >> 16, (n >> 8) & 255, n & 255];
-      expect(Math.hypot(...rgb(SHELL[shell].fill).map((c, i) => c - rgb(SHELL.white.fill)[i]))).toBeGreaterThan(100);
+      expect(
+        Math.hypot(...rgb(SHELL[shell].fill).map((c, i) => c - rgb(SHELL.white.fill)[i])),
+      ).toBeGreaterThan(100);
       expect(basketMove([{ x: 600, shell }], 230, [230, 420, 600, 790])).toBe(600);
       expect(glowLane([{ lane: 2, shell, t: 0.5 }], [{ lane: 0, shell: 'brown' }], 0)).toBe(2);
     }
-    expect(new Set(makeEggs(PLANS[1], new Rng(7), 100).map((e) => e.shell))).toEqual(new Set(['brown', 'speckled', 'blue']));
+    expect(new Set(makeEggs(PLANS[1], new Rng(7), 100).map((e) => e.shell))).toEqual(
+      new Set(['brown', 'speckled', 'blue']),
+    );
   });
 
   it('routes every exit with the gates the hint shows', () => {
@@ -50,7 +97,9 @@ describe('Egg Catch', () => {
       expect(new Set(targets.map((t) => t.basket))).toEqual(new Set([0, 1]));
       targets.forEach(({ basket, nest }, i) => {
         expect(nest).toBe(1 - basket);
-        expect([0, 1, 2].every((offset) => targets[(i + offset) % targets.length].basket === basket)).toBe(false);
+        expect([0, 1, 2].every((offset) => targets[(i + offset) % targets.length].basket === basket)).toBe(
+          false,
+        );
         for (const start of [false, true]) {
           const gates = [start, false, false];
           const hint = gatesFor(basket, true);
@@ -143,15 +192,22 @@ describe('Egg Catch', () => {
     for (let a = 0; a < LANES; a++) {
       for (let b = 0; b < LANES; b++) {
         for (let c = 0; c < LANES; c++) {
-          for (const shells of [['white', 'brown'], ['brown', 'white'], ['white', 'white']] as const) {
+          for (const shells of [
+            ['white', 'brown'],
+            ['brown', 'white'],
+            ['white', 'white'],
+          ] as const) {
             if (a === b) continue;
             const air = [at(a, shells[0]), at(b, shells[1])];
             const x = basketMove(air, lanes[c], lanes);
             if (x === null) continue;
             // It only moves if the basket was wrong for some egg, and the new place is right for every egg up to that one.
-            const k = air.findIndex((e) => (e.shell === 'brown' ? Math.abs(lanes[c] - e.x) > 38 : Math.abs(lanes[c] - e.x) <= 125));
+            const k = air.findIndex((e) =>
+              e.shell === 'brown' ? Math.abs(lanes[c] - e.x) > 38 : Math.abs(lanes[c] - e.x) <= 125,
+            );
             expect(k).toBeGreaterThanOrEqual(0);
-            for (const e of air.slice(0, k + 1)) expect(e.shell === 'brown' ? Math.abs(x - e.x) <= 38 : Math.abs(x - e.x) > 125).toBe(true);
+            for (const e of air.slice(0, k + 1))
+              expect(e.shell === 'brown' ? Math.abs(x - e.x) <= 38 : Math.abs(x - e.x) > 125).toBe(true);
           }
         }
       }
@@ -179,7 +235,11 @@ describe('Egg Catch', () => {
             down = null;
           }
           if (t >= free && !down) {
-            const x = basketMove(air.map((e) => ({ x: lanes[e.lane], shell: e.shell })), target, lanes);
+            const x = basketMove(
+              air.map((e) => ({ x: lanes[e.lane], shell: e.shell })),
+              target,
+              lanes,
+            );
             if (x !== null) {
               const travel = Math.min(0.95, Math.max(0.45, Math.abs(x - finger) / 560));
               down = { at: t + travel, x };
@@ -200,9 +260,16 @@ describe('Egg Catch', () => {
             const e = air.shift()!;
             const inBasket = caught(lanes[e.lane], basket);
             if (e.shell !== 'white') {
-              expect(inBasket, `${plan.mode} seed ${seed}: a brown egg landed in the hay at ${t.toFixed(1)} s`).toBe(true);
+              expect(
+                inBasket,
+                `${plan.mode} seed ${seed}: a brown egg landed in the hay at ${t.toFixed(1)} s`,
+              ).toBe(true);
               got++;
-            } else expect(inBasket, `${plan.mode} seed ${seed}: a white egg landed in the basket at ${t.toFixed(1)} s`).toBe(false);
+            } else
+              expect(
+                inBasket,
+                `${plan.mode} seed ${seed}: a white egg landed in the basket at ${t.toFixed(1)} s`,
+              ).toBe(false);
           }
         }
         expect(got).toBe(plan.eggs);
@@ -279,7 +346,17 @@ describe('Egg Catch', () => {
     }
     const eggs = makeEggs(PLANS[2], new Rng(4));
     // In the air, the brown egg that lands first wins over a white egg lower down and the stream.
-    expect(glowLane([{ lane: 0, shell: 'white', t: 0.9 }, { lane: 2, shell: 'brown', t: 0.3 }, { lane: 3, shell: 'brown', t: 0.6 }], eggs, 0)).toBe(3);
+    expect(
+      glowLane(
+        [
+          { lane: 0, shell: 'white', t: 0.9 },
+          { lane: 2, shell: 'brown', t: 0.3 },
+          { lane: 3, shell: 'brown', t: 0.6 },
+        ],
+        eggs,
+        0,
+      ),
+    ).toBe(3);
   });
 });
 
@@ -290,8 +367,10 @@ it('deals solvable unsolved two-hen boards, with hints that fix a needed gate', 
     for (const b of boards) {
       expect(b.basket).not.toBe(b.nest);
       expect(pairExits(b.gates, b.whiteBranch)).not.toEqual([b.basket, b.nest]);
-      const solutions = Array.from({ length: 8 }, (_, bits) => [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as [boolean, boolean, boolean])
-        .filter((g) => pairExits(g, b.whiteBranch).every((exit, i) => exit === [b.basket, b.nest][i]));
+      const solutions = Array.from(
+        { length: 8 },
+        (_, bits) => [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as [boolean, boolean, boolean],
+      ).filter((g) => pairExits(g, b.whiteBranch).every((exit, i) => exit === [b.basket, b.nest][i]));
       expect(solutions).toHaveLength(1);
       const gates = [...b.gates];
       let steps = 0;
@@ -318,7 +397,10 @@ it('Under the hen deals five changing cues and accepts a forgiving tap only unde
       for (const egg of eggs) {
         for (let lane = 0; lane < LANES; lane++) {
           for (const offset of [-95, 0, 95]) {
-            expect(laneChoice(lanes[lane] + offset, lanes, egg.lane)).toEqual({ lane, lay: lane === egg.lane });
+            expect(laneChoice(lanes[lane] + offset, lanes, egg.lane)).toEqual({
+              lane,
+              lay: lane === egg.lane,
+            });
           }
         }
       }
@@ -327,7 +409,6 @@ it('Under the hen deals five changing cues and accepts a forgiving tap only unde
     expect(laneChoice(width + 200, lanes, 3)).toEqual({ lane: 3, lay: true });
   }
 });
-
 
 it('deals four visible failed runs with exactly one repair on the trace and a truthful hint', () => {
   for (let seed = 1; seed <= 200; seed++) {
@@ -362,7 +443,10 @@ it('deals four visible failed runs with exactly one repair on the trace and a tr
 });
 
 it('simulates the spring after each passage and deals one unique working start for both top-entry eggs', () => {
-  const starts = Array.from({ length: 8 }, (_, bits) => [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as [boolean, boolean, boolean]);
+  const starts = Array.from(
+    { length: 8 },
+    (_, bits) => [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as [boolean, boolean, boolean],
+  );
   for (const start of starts) {
     const before = [...start];
     const result = simulateFlipflop(start);
@@ -374,7 +458,9 @@ it('simulates the spring after each passage and deals one unique working start f
     for (const board of flipflopBoards(new Rng(seed), 3)) {
       expect(board.basket < 2).not.toBe(board.nest < 2);
       expect(simulateFlipflop(board.gates).exits).not.toEqual([board.basket, board.nest]);
-      const solutions = starts.filter((g) => simulateFlipflop(g).exits.every((exit, i) => exit === [board.basket, board.nest][i]));
+      const solutions = starts.filter((g) =>
+        simulateFlipflop(g).exits.every((exit, i) => exit === [board.basket, board.nest][i]),
+      );
       expect(solutions).toHaveLength(1);
       const gates = [...board.gates];
       for (const { gate, right } of pairNeeds(board)) gates[gate] = right;
@@ -385,7 +471,14 @@ it('simulates the spring after each passage and deals one unique working start f
 
 describe('Egg Catch far barn', () => {
   // Logical views: iPad landscape, an iPad Air, a wide phone, iPad portrait and the tallest view before the turn prompt.
-  const VIEWS = [[1024, 768], [1105, 768], [1365, 768], [768, 1024], [1024, 1365], [1024, 1638]] as const;
+  const VIEWS = [
+    [1024, 768],
+    [1105, 768],
+    [1365, 768],
+    [768, 1024],
+    [1024, 1365],
+    [1024, 1638],
+  ] as const;
   const overlaps = (a: number[], b: number[]) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
 
   it('stands a far barn, 60 to 80 tall, on the horizon at the left of every level, at every view', () => {
@@ -417,7 +510,8 @@ describe('Egg Catch far barn', () => {
             expect(overlaps(box, [x - 80, h - 160, x + 80, h]), `${at} bin`).toBe(false);
           }
         } else {
-          for (const x of laneXs(plan.mode, w)) expect(overlaps(box, [x - 85, 0, x + 85, h]), `${at} lane`).toBe(false);
+          for (const x of laneXs(plan.mode, w))
+            expect(overlaps(box, [x - 85, 0, x + 85, h]), `${at} lane`).toBe(false);
           if (plan.mode === 'lane') expect(box[2], `${at} tap columns`).toBeLessThan(150);
         }
       }

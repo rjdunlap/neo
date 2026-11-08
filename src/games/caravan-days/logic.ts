@@ -21,12 +21,25 @@ export type Landmark = 'palm' | 'rock' | 'spring';
 export const LANDMARKS: readonly Landmark[] = ['palm', 'rock', 'spring'];
 export const BALE_COLORS: readonly ColorName[] = ['red', 'orange', 'green', 'blue', 'purple', 'teal'];
 
-export interface Pt { x: number; y: number }
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export const LEVEL_NAMES: Record<number, string> = {
-  1: 'Kneel and load', 2: 'Can we reach it?', 3: 'Day by day across the map', 4: 'Swap at the stop', 5: 'Worth more far away',
-  6: 'Mountains or sand', 7: 'A well every day\'s walk',
+  1: 'Kneel and load',
+  2: 'Can we reach it?',
+  3: 'Day by day across the map',
+  4: 'Swap at the stop',
+  5: 'Worth more far away',
+  6: 'Mountains or sand',
+  7: "A well every day's walk",
 };
 
 // ——— Level 1: kneel and load ———
@@ -208,7 +221,10 @@ export function good(map: CaravanMap): Set<number> {
   while (queue.length) {
     const s = queue.shift()!;
     for (const l of map.legs) {
-      if (l.b === s && l.suns <= SKIN && !seen.has(l.a)) { seen.add(l.a); queue.push(l.a); }
+      if (l.b === s && l.suns <= SKIN && !seen.has(l.a)) {
+        seen.add(l.a);
+        queue.push(l.a);
+      }
     }
   }
   return seen;
@@ -253,9 +269,13 @@ export type FlagResult = { state: PlanState; event: 'flag' | 'take-out' | 'not-a
 
 /** Tap a stop: a flag on the next stop or one oasis beyond it on the same branch; a flagged stop takes its flag and the later ones out. */
 export function tapStop(map: CaravanMap, s: PlanState, stop: number): FlagResult {
-  if (stop === map.home) return s.plan.length ? { state: { plan: [], walked: 0 }, event: 'take-out' } : { state: s, event: 'none' };
+  if (stop === map.home)
+    return s.plan.length
+      ? { state: { plan: [], walked: 0 }, event: 'take-out' }
+      : { state: s, event: 'none' };
   const i = s.plan.indexOf(stop);
-  if (i >= 0) return { state: { plan: s.plan.slice(0, i), walked: Math.min(s.walked, i) }, event: 'take-out' };
+  if (i >= 0)
+    return { state: { plan: s.plan.slice(0, i), walked: Math.min(s.walked, i) }, event: 'take-out' };
   const last = lastStop(map, s);
   if (last === map.city) return { state: s, event: 'not-adjacent' };
   if (legSuns(map, last, stop) === null) return { state: s, event: 'not-adjacent' };
@@ -269,7 +289,11 @@ export function goLive(map: CaravanMap, s: PlanState): boolean {
 /** The suns of each leg of the plan, from home. */
 export function legsOf(map: CaravanMap, s: PlanState): number[] {
   let at = map.home;
-  return s.plan.map((stop) => { const n = legSuns(map, at, stop) ?? 0; at = stop; return n; });
+  return s.plan.map((stop) => {
+    const n = legSuns(map, at, stop) ?? 0;
+    at = stop;
+    return n;
+  });
 }
 
 export type GoResult = { arrived: true } | { arrived: false; leg: number; suns: number };
@@ -364,7 +388,8 @@ export function swapRoad(rng: Rng, skipAhead: boolean): SwapRoad {
   const [w1, w2, wc] = [g[0], g[1], g[2]];
   const decoy1 = skipAhead ? wc : g[3];
   const decoy2 = g[4];
-  const side = (right: Good, decoy: Good): [Good, Good] => (rng.chance(0.5) ? [right, decoy] : [decoy, right]);
+  const side = (right: Good, decoy: Good): [Good, Good] =>
+    rng.chance(0.5) ? [right, decoy] : [decoy, right];
   const friends = rng.shuffle(FRIENDS.slice());
   const marks = rng.shuffle(LANDMARKS.slice());
   return {
@@ -454,7 +479,10 @@ export interface WorthPlan {
   landmarks: [Landmark, Landmark];
 }
 
-export const PRICE_ROWS: readonly [number, number, number][] = [[1, 2, 4], [1, 3, 5]];
+export const PRICE_ROWS: readonly [number, number, number][] = [
+  [1, 2, 4],
+  [1, 3, 5],
+];
 export const BALES = 3;
 
 export function worthPlan(rng: Rng): WorthPlan {
@@ -462,12 +490,21 @@ export function worthPlan(rng: Rng): WorthPlan {
   const up = rng.pick(PRICE_ROWS).slice() as [number, number, number];
   const down = up.slice().reverse() as [number, number, number];
   const counts = rng.shuffle([0, 1, 2, 3]);
-  const loads: [[number, number], [number, number]] = [[counts[0], BALES - counts[0]], [counts[1], BALES - counts[1]]];
+  const loads: [[number, number], [number, number]] = [
+    [counts[0], BALES - counts[0]],
+    [counts[1], BALES - counts[1]],
+  ];
   const first: WorthStop = rng.chance(0.5) ? 1 : 3;
   const marks = rng.shuffle(LANDMARKS.slice());
   return {
-    level: 5, goods: [g[0], g[1]], up, down, loads, named: [first, first === 1 ? 3 : 1],
-    legs: [rng.int(1, 2), rng.int(1, 2), rng.int(1, 2)], landmarks: [marks[0], marks[1]],
+    level: 5,
+    goods: [g[0], g[1]],
+    up,
+    down,
+    loads,
+    named: [first, first === 1 ? 3 : 1],
+    legs: [rng.int(1, 2), rng.int(1, 2), rng.int(1, 2)],
+    landmarks: [marks[0], marks[1]],
   };
 }
 
@@ -508,7 +545,12 @@ export function worthStart(): WorthState {
 }
 
 /** What the ghost finger taps next: both loads, the better one last, then Go. */
-export function nextWorthMove(plan: WorthPlan, caseIndex: number, s: WorthState, seen: ReadonlySet<number>): { load: 0 | 1 } | { go: true } {
+export function nextWorthMove(
+  plan: WorthPlan,
+  caseIndex: number,
+  s: WorthState,
+  seen: ReadonlySet<number>,
+): { load: 0 | 1 } | { go: true } {
   const b = better(plan, caseIndex);
   const other = b === 0 ? 1 : 0;
   if (!seen.has(other)) return { load: other };
@@ -551,7 +593,7 @@ export function passMap(rng: Rng, passQuicker: boolean): PassMap {
     const map: PassMap = { passLegs, snow, sandLegs, landmarks: [marks[0], marks[1]] };
     const p = days(map, 'pass');
     const s = days(map, 'sand');
-    if (s < 4 || s > 6 || p === s || (p < s) !== passQuicker) continue;
+    if (s < 4 || s > 6 || p === s || p < s !== passQuicker) continue;
     return map;
   }
 }
@@ -592,7 +634,10 @@ export function quicker(map: PassMap): PassRoad {
 }
 
 /** What the ghost finger taps next: the quicker road, its day card, then Go. */
-export function nextPassMove(map: PassMap, s: PassState): { road: PassRoad } | { card: number } | { go: true } {
+export function nextPassMove(
+  map: PassMap,
+  s: PassState,
+): { road: PassRoad } | { card: number } | { go: true } {
   const r = quicker(map);
   if (s.road !== r) return { road: r };
   if (s.guess !== days(map, r)) return { card: days(map, r) };
@@ -668,7 +713,10 @@ export function ghostFor(road: WellRoad, wells: readonly number[]): number[] {
   let shared = -1;
   for (const p of minimalPlacements(road)) {
     const n = p.filter((s) => wells.includes(s)).length;
-    if (n > shared) { best = p; shared = n; }
+    if (n > shared) {
+      best = p;
+      shared = n;
+    }
   }
   return best;
 }
@@ -747,7 +795,10 @@ export class Tally {
   }
 
   private light() {
-    if (!this.counted) { this.counted = true; this.hints++; }
+    if (!this.counted) {
+      this.counted = true;
+      this.hints++;
+    }
     this.glowing = true;
   }
 
@@ -775,7 +826,10 @@ export const BOARD = { w: 150, h: 110 };
 export const LOAD = { w: 230, h: 150 };
 
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export function overlaps(a: Rect, b: Rect): boolean {
@@ -835,14 +889,52 @@ export const STICK = { w: 160, h: 110 };
 export const MARK_MIN = 56;
 
 /** The level plans, for the grown-ups' description. */
-export function planFor(level: number): { level: number; id: 'load' | 'reach' | 'plan' | 'swap' | 'worth' | 'pass' | 'wells'; name: string } {
-  if (level <= 1) return { level: 1, id: 'load', name: 'Kneel and load: tap the camel so it kneels, tap each bale, tap the camel and off it goes (2 bales at toddler, 3–4 from preschool)' };
-  if (level === 2) return { level: 2, id: 'reach', name: 'Can we reach it? count the suns on two roads and tap the water within the two-day skin (two roads)' };
-  if (level === 3) return { level: 3, id: 'plan', name: 'Day by day across the map: flag the stops to the city so no leg is longer than the skin, then Go (two maps)' };
-  if (level === 4) return { level: 4, id: 'swap', name: 'Swap at the stop: at each oasis give the camel the good the next stop wants, of two offers, then Go (two roads)' };
-  if (level === 5) return { level: 5, id: 'worth', name: 'Worth more far away: count two three-bale loads\' shells at the named stop and send the one that brings more; the better load reverses (two cases)' };
-  if (level === 6) return { level: 6, id: 'pass', name: 'Mountains or sand: choose either road and say how many days it takes, counting the snow day on the pass (two maps; about 9 and up)' };
-  return { level: 7, id: 'wells', name: 'A well every day\'s walk: dig wells so no stretch of road is longer than a day\'s walk, with as few wells as she can (two roads; about 9 and up)' };
+export function planFor(level: number): {
+  level: number;
+  id: 'load' | 'reach' | 'plan' | 'swap' | 'worth' | 'pass' | 'wells';
+  name: string;
+} {
+  if (level <= 1)
+    return {
+      level: 1,
+      id: 'load',
+      name: 'Kneel and load: tap the camel so it kneels, tap each bale, tap the camel and off it goes (2 bales at toddler, 3–4 from preschool)',
+    };
+  if (level === 2)
+    return {
+      level: 2,
+      id: 'reach',
+      name: 'Can we reach it? count the suns on two roads and tap the water within the two-day skin (two roads)',
+    };
+  if (level === 3)
+    return {
+      level: 3,
+      id: 'plan',
+      name: 'Day by day across the map: flag the stops to the city so no leg is longer than the skin, then Go (two maps)',
+    };
+  if (level === 4)
+    return {
+      level: 4,
+      id: 'swap',
+      name: 'Swap at the stop: at each oasis give the camel the good the next stop wants, of two offers, then Go (two roads)',
+    };
+  if (level === 5)
+    return {
+      level: 5,
+      id: 'worth',
+      name: "Worth more far away: count two three-bale loads' shells at the named stop and send the one that brings more; the better load reverses (two cases)",
+    };
+  if (level === 6)
+    return {
+      level: 6,
+      id: 'pass',
+      name: 'Mountains or sand: choose either road and say how many days it takes, counting the snow day on the pass (two maps; about 9 and up)',
+    };
+  return {
+    level: 7,
+    id: 'wells',
+    name: "A well every day's walk: dig wells so no stretch of road is longer than a day's walk, with as few wells as she can (two roads; about 9 and up)",
+  };
 }
 
 export const LEVELS: BandLevels = {
@@ -863,7 +955,12 @@ function rowStops(v: View, y: number): Pt[] {
  * Every input at least 100 units, clear of the corners and each other; portrait stacks rather than shrinks, and a short
  * view (a phone sideways) pulls the rows in without shrinking a target. Null when a view cannot hold the level.
  */
-export function roadLayout(level: number, plan: LoadPlan | ReachPlan | PlanPlan | SwapPlan | WorthPlan | PassPlan | WellsPlan, v: View, index = 0): RoadLayout | null {
+export function roadLayout(
+  level: number,
+  plan: LoadPlan | ReachPlan | PlanPlan | SwapPlan | WorthPlan | PassPlan | WellsPlan,
+  v: View,
+  index = 0,
+): RoadLayout | null {
   const wide = v.w >= v.h;
   const midY = v.h * 0.5;
   const short = v.h < 600;
@@ -874,7 +971,15 @@ export function roadLayout(level: number, plan: LoadPlan | ReachPlan | PlanPlan 
     const oasis = { x: v.w - 180, y: wide ? midY - 60 : midY - 100 };
     const n = (plan as LoadPlan).bales;
     const bales = Array.from({ length: n }, (_, i) => around({ x: 250 + i * 130, y: baleY }, BALE));
-    out = { camel: around(start, CAMEL.w, CAMEL.h), start, bales, skin: { x: -999, y: -999 }, stops: [around(oasis, OASIS)], go: null, roads: [{ from: start, to: oasis, suns: 0 }] };
+    out = {
+      camel: around(start, CAMEL.w, CAMEL.h),
+      start,
+      bales,
+      skin: { x: -999, y: -999 },
+      stops: [around(oasis, OASIS)],
+      go: null,
+      roads: [{ from: start, to: oasis, suns: 0 }],
+    };
   } else if (level === 2) {
     const road = (plan as ReachPlan).roads[index];
     const start = { x: 300, y: midY + 20 };
@@ -882,9 +987,16 @@ export function roadLayout(level: number, plan: LoadPlan | ReachPlan | PlanPlan 
     const upper = { x: v.w - 170, y: midY - gap };
     const lower = { x: v.w - 170, y: midY + gap };
     out = {
-      camel: around(start, CAMEL.w, CAMEL.h), start, bales: [], skin: { x: start.x, y: Math.min(start.y + 170, v.h - 40) },
-      stops: [around(upper, OASIS), around(lower, OASIS)], go: null,
-      roads: [{ from: start, to: upper, suns: road.suns[0] }, { from: start, to: lower, suns: road.suns[1] }],
+      camel: around(start, CAMEL.w, CAMEL.h),
+      start,
+      bales: [],
+      skin: { x: start.x, y: Math.min(start.y + 170, v.h - 40) },
+      stops: [around(upper, OASIS), around(lower, OASIS)],
+      go: null,
+      roads: [
+        { from: start, to: upper, suns: road.suns[0] },
+        { from: start, to: lower, suns: road.suns[1] },
+      ],
     };
   } else if (level === 4 || level === 5) {
     const legs = level === 4 ? (plan as SwapPlan).roads[index].legs : (plan as WorthPlan).legs;
@@ -895,8 +1007,12 @@ export function roadLayout(level: number, plan: LoadPlan | ReachPlan | PlanPlan 
     const go = around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h);
     const mid = (PET_CORNER.w + go.x) / 2;
     const base = {
-      camel: around({ x: pts[0].x, y: stopY + 48 }, CAMEL.w * 0.55, CAMEL.h * 0.55), start: { x: pts[0].x, y: stopY + 48 }, bales: [],
-      skin: { x: -999, y: -999 }, stops: pts.map((p) => around(p, OASIS)), go,
+      camel: around({ x: pts[0].x, y: stopY + 48 }, CAMEL.w * 0.55, CAMEL.h * 0.55),
+      start: { x: pts[0].x, y: stopY + 48 },
+      bales: [],
+      skin: { x: -999, y: -999 },
+      stops: pts.map((p) => around(p, OASIS)),
+      go,
       roads: [0, 1, 2].map((i) => ({ from: pts[i], to: pts[i + 1], suns: legs[i], a: i, b: i + 1 })),
     };
     if (level === 4) {
@@ -911,7 +1027,10 @@ export function roadLayout(level: number, plan: LoadPlan | ReachPlan | PlanPlan 
       out = {
         ...base,
         boards: pts.slice(1).map((p) => around({ x: p.x, y: stopY + 140 }, BOARD.w, BOARD.h)),
-        loads: [around({ x: mid - gap / 2, y: lowY }, LOAD.w, LOAD.h), around({ x: mid + gap / 2, y: lowY }, LOAD.w, LOAD.h)],
+        loads: [
+          around({ x: mid - gap / 2, y: lowY }, LOAD.w, LOAD.h),
+          around({ x: mid + gap / 2, y: lowY }, LOAD.w, LOAD.h),
+        ],
       };
     }
   } else if (level === 6) {
@@ -935,26 +1054,42 @@ export function roadLayout(level: number, plan: LoadPlan | ReachPlan | PlanPlan 
     pts[map.city] = city;
     map.branches.forEach((ids, b) => {
       const y = b === 0 ? midY - gap : midY + gap;
-      ids.forEach((id, i) => { pts[id] = { x: ids.length === 1 ? (x0 + x1) / 2 : x0 + (i * (x1 - x0)) / (ids.length - 1), y }; });
+      ids.forEach((id, i) => {
+        pts[id] = { x: ids.length === 1 ? (x0 + x1) / 2 : x0 + (i * (x1 - x0)) / (ids.length - 1), y };
+      });
     });
     out = {
-      camel: around(home, CAMEL.w, CAMEL.h), start: home, bales: [], skin: { x: home.x, y: Math.min(home.y + 150, v.h - 40) },
+      camel: around(home, CAMEL.w, CAMEL.h),
+      start: home,
+      bales: [],
+      skin: { x: home.x, y: Math.min(home.y + 150, v.h - 40) },
       stops: pts.map((p) => around(p, OASIS)),
       go: around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h),
       roads: map.legs.map((l) => ({ from: pts[l.a], to: pts[l.b], suns: l.suns, a: l.a, b: l.b })),
     };
   }
   // At levels 4–5 the stops are scenery; the offers, bubbles, boards and loads are the inputs.
-  const inputs = level >= 4
-    ? [...(out.offers ?? []), ...(out.bubbles ?? []), ...(out.boards ?? []), ...(out.loads ?? []), ...(out.bands ?? []), ...(out.cards ?? []),
-      ...(out.sites ?? []), ...(out.stick ? [out.stick] : []), ...(out.go ? [out.go] : [])]
-    : [...out.stops, ...out.bales, ...(out.go ? [out.go] : []), ...(level === 1 ? [out.camel] : [])];
+  const inputs =
+    level >= 4
+      ? [
+          ...(out.offers ?? []),
+          ...(out.bubbles ?? []),
+          ...(out.boards ?? []),
+          ...(out.loads ?? []),
+          ...(out.bands ?? []),
+          ...(out.cards ?? []),
+          ...(out.sites ?? []),
+          ...(out.stick ? [out.stick] : []),
+          ...(out.go ? [out.go] : []),
+        ]
+      : [...out.stops, ...out.bales, ...(out.go ? [out.go] : []), ...(level === 1 ? [out.camel] : [])];
   for (const r of inputs) {
     if (r.w < MIN_TARGET || r.h < MIN_TARGET) return null;
     if (r.x < 0 || r.y < 0 || r.x + r.w > v.w || r.y + r.h > v.h) return null;
     if (corners(v).some((c) => overlaps(r, c))) return null;
   }
-  for (let i = 0; i < inputs.length; i++) for (let j = i + 1; j < inputs.length; j++) if (overlaps(inputs[i], inputs[j])) return null;
+  for (let i = 0; i < inputs.length; i++)
+    for (let j = i + 1; j < inputs.length; j++) if (overlaps(inputs[i], inputs[j])) return null;
   return out;
 }
 
@@ -979,7 +1114,10 @@ function passLayout(map: PassMap, v: View): RoadLayout | null {
   const midY = (passY + sandY) / 2;
   const home = { x: 120, y: midY };
   const city = { x: v.w - 110, y: midY };
-  const bands = [{ x: x0, y: top, w: x1 - x0, h: band }, { x: x0, y: top + band + between, w: x1 - x0, h: band }];
+  const bands = [
+    { x: x0, y: top, w: x1 - x0, h: band },
+    { x: x0, y: top + band + between, w: x1 - x0, h: band },
+  ];
   // The pass: inns close together in the middle, climbing to the hut.
   const k = map.passLegs;
   const xa = x0 + (x1 - x0) * 0.24;
@@ -993,20 +1131,37 @@ function passLayout(map: PassMap, v: View): RoadLayout | null {
   // The sand: oases spread wide, the road winding round the dunes.
   const n = map.sandLegs.length;
   const sandPts: Pt[] = [home];
-  for (let i = 1; i < n; i++) sandPts.push({ x: x0 + 30 + ((x1 - x0 - 60) * i) / n, y: sandY + (i % 2 ? 28 : -28) });
+  for (let i = 1; i < n; i++)
+    sandPts.push({ x: x0 + 30 + ((x1 - x0 - 60) * i) / n, y: sandY + (i % 2 ? 28 : -28) });
   sandPts.push(city);
   const pass = passPts.slice(1).map((p, i) => ({ from: passPts[i], to: p, suns: 1, a: i, b: i + 1 }));
-  const sand = sandPts.slice(1).map((p, i) => ({ from: sandPts[i], to: p, suns: map.sandLegs[i], a: i, b: i + 1 }));
+  const sand = sandPts
+    .slice(1)
+    .map((p, i) => ({ from: sandPts[i], to: p, suns: map.sandLegs[i], a: i, b: i + 1 }));
   const rowW = DAY_CARDS.length * CARD + (DAY_CARDS.length - 1) * CARD_GAP;
   const cardsY = wide ? v.h - 90 : Math.min(v.h - 90, top + 2 * band + between + 240);
   const go = around({ x: v.w - 110, y: cardsY }, GO.w, GO.h);
   const left = PET_CORNER.w + 20;
   const mid = (left + go.x - 30) / 2;
   if (mid - rowW / 2 < left) return null;
-  const cards = DAY_CARDS.map((_, i) => ({ x: mid - rowW / 2 + i * (CARD + CARD_GAP), y: cardsY - CARD / 2, w: CARD, h: CARD }));
+  const cards = DAY_CARDS.map((_, i) => ({
+    x: mid - rowW / 2 + i * (CARD + CARD_GAP),
+    y: cardsY - CARD / 2,
+    w: CARD,
+    h: CARD,
+  }));
   return {
-    camel: around(home, CAMEL.w * 0.45, CAMEL.h * 0.45), start: home, bales: [], skin: { x: -999, y: -999 },
-    stops: [around(home, OASIS), around(city, OASIS)], go, roads: [...pass, ...sand], bands, cards, pass, sand,
+    camel: around(home, CAMEL.w * 0.45, CAMEL.h * 0.45),
+    start: home,
+    bales: [],
+    skin: { x: -999, y: -999 },
+    stops: [around(home, OASIS), around(city, OASIS)],
+    go,
+    roads: [...pass, ...sand],
+    bands,
+    cards,
+    pass,
+    sand,
     hut: passPts[Math.ceil(k / 2)],
   };
 }
@@ -1042,7 +1197,15 @@ function wellsLayout(road: WellRoad, v: View): RoadLayout | null {
   const stick = around({ x: xL + STICK.w / 2 + 90, y: y0 - 150 }, STICK.w, STICK.h);
   const go = around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h);
   return {
-    camel: around(marks[0], CAMEL.w * 0.45, CAMEL.h * 0.45), start: marks[0], bales: [], skin: { x: -999, y: -999 },
-    stops: [around(marks[0], OASIS), around(marks[L], OASIS)], go, roads: [], marks, sites, stick,
+    camel: around(marks[0], CAMEL.w * 0.45, CAMEL.h * 0.45),
+    start: marks[0],
+    bales: [],
+    skin: { x: -999, y: -999 },
+    stops: [around(marks[0], OASIS), around(marks[L], OASIS)],
+    go,
+    roads: [],
+    marks,
+    sites,
+    stick,
   };
 }

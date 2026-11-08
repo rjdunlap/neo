@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { HOME_BUTTON } from './home-layout';
-import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, DRESS_RADIUS, friendsLayout, pageCount, PER_PAGE } from './friends-layout';
+import {
+  ARROW_RADIUS,
+  BACK,
+  CARD,
+  COME_RADIUS,
+  DRESS_RADIUS,
+  friendsLayout,
+  pageCount,
+  PER_PAGE,
+} from './friends-layout';
 
 /** The four views the land layouts are tested in (an iPad sideways and upright, a phone sideways, one with a notch), and a wide laptop. */
 const VIEWS = [
@@ -19,7 +28,13 @@ interface Box {
   y1: number;
   what: string;
 }
-const square = (x: number, y: number, half: number, what: string): Box => ({ x0: x - half, y0: y - half, x1: x + half, y1: y + half, what });
+const square = (x: number, y: number, half: number, what: string): Box => ({
+  x0: x - half,
+  y0: y - half,
+  x1: x + half,
+  y1: y + half,
+  what,
+});
 const overlap = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
 
 describe('the Friends layout', () => {
@@ -30,7 +45,13 @@ describe('the Friends layout', () => {
           const l = friendsLayout(v, count, page);
           expect(l.cards).toHaveLength(Math.min(PER_PAGE, count - page * PER_PAGE));
           // The stage friend: its body-centred touch circle (about 120 units across the feet's top) stays on screen.
-          const stage: Box = { x0: l.stage.x - 130, y0: l.stage.y - 230, x1: l.stage.x + 130, y1: l.stage.y + 10, what: 'stage' };
+          const stage: Box = {
+            x0: l.stage.x - 130,
+            y0: l.stage.y - 230,
+            x1: l.stage.x + 130,
+            y1: l.stage.y + 10,
+            what: 'stage',
+          };
           const boxes: Box[] = [
             ...l.cards.map((c, i) => square(c.x, c.y, CARD / 2, `card ${i}`)),
             square(l.come.x, l.come.y, COME_RADIUS + 6, 'come'),
@@ -39,7 +60,11 @@ describe('the Friends layout', () => {
             square(HOME_BUTTON.x, HOME_BUTTON.y, 58, 'home at the root'),
             stage,
           ];
-          if (l.arrows) boxes.push(square(l.arrows.previous.x, l.arrows.previous.y, ARROW_RADIUS, 'previous'), square(l.arrows.next.x, l.arrows.next.y, ARROW_RADIUS, 'next'));
+          if (l.arrows)
+            boxes.push(
+              square(l.arrows.previous.x, l.arrows.previous.y, ARROW_RADIUS, 'previous'),
+              square(l.arrows.next.x, l.arrows.next.y, ARROW_RADIUS, 'next'),
+            );
           const where = `${v.w}×${v.h}, ${count} friends, page ${page}`;
           for (const b of boxes) {
             expect(b.x0, `${b.what} ${where}`).toBeGreaterThanOrEqual(0);
@@ -49,7 +74,9 @@ describe('the Friends layout', () => {
           }
           for (let i = 0; i < boxes.length; i++) {
             for (let j = i + 1; j < boxes.length; j++) {
-              expect(overlap(boxes[i], boxes[j]), `${boxes[i].what} and ${boxes[j].what}, ${where}`).toBe(false);
+              expect(overlap(boxes[i], boxes[j]), `${boxes[i].what} and ${boxes[j].what}, ${where}`).toBe(
+                false,
+              );
             }
           }
           expect(!!l.arrows).toBe(count > PER_PAGE);

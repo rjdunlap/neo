@@ -1,9 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Circle, Container, Rectangle } from 'pixi.js';
 vi.mock('../audio/voice', () => ({ voice: { stop: vi.fn(), say: vi.fn(async () => {}), unlock: vi.fn() } }));
-vi.mock('../audio/music', async (real) => ({ ...(await real<object>()), music: { play: vi.fn(), stop: vi.fn() } }));
+vi.mock('../audio/music', async (real) => ({
+  ...(await real<object>()),
+  music: { play: vi.fn(), stop: vi.fn() },
+}));
 // Text can't be measured without a canvas; a card's name pill only needs a width.
-vi.mock('./text', async (real) => { const { Container } = await import('pixi.js'); return { ...(await real<object>()), label: () => new Container() }; });
+vi.mock('./text', async (real) => {
+  const { Container } = await import('pixi.js');
+  return { ...(await real<object>()), label: () => new Container() };
+});
 vi.mock('../audio/sfx', () => ({ sfx: new Proxy({}, { get: () => () => {} }) }));
 import { swatch } from '../art/palette';
 import { ExploreScene } from '../app/scenes/ExploreScene';
@@ -20,17 +26,35 @@ import { HoldButton, RoundButton, SQUASH } from './buttons';
  * buttons and cards had before the finish, and the squash that answers a finger as it lands.
  */
 
-const fakeApp = () => ({ go: new Proxy({}, { get: () => vi.fn() }), view: computeView(1024, 768), creatureWorld: true, scene: null, paused: false });
-const fakeEl = (): unknown => new Proxy(Object.assign(new EventTarget(), { style: {}, classList: { add() {}, remove() {}, toggle() {} } }), {
-  get: (t, k) => (k in t ? (t as never)[k] : typeof k === 'string' && /^(set|remove|append|query|get)/.test(k) ? () => fakeEl() : undefined),
-  set: (t, k, v) => ((t as unknown as Record<PropertyKey, unknown>)[k] = v, true),
+const fakeApp = () => ({
+  go: new Proxy({}, { get: () => vi.fn() }),
+  view: computeView(1024, 768),
+  creatureWorld: true,
+  scene: null,
+  paused: false,
 });
+const fakeEl = (): unknown =>
+  new Proxy(
+    Object.assign(new EventTarget(), { style: {}, classList: { add() {}, remove() {}, toggle() {} } }),
+    {
+      get: (t, k) =>
+        k in t
+          ? (t as never)[k]
+          : typeof k === 'string' && /^(set|remove|append|query|get)/.test(k)
+            ? () => fakeEl()
+            : undefined,
+      set: (t, k, v) => (((t as unknown as Record<PropertyKey, unknown>)[k] = v), true),
+    },
+  );
 const circle = (node: Container) => node.hitArea as Circle;
 const touch = (node: Container) => node.emit('pointerdown', { pointerId: 1 } as never);
 
 beforeEach(() => {
   vi.stubGlobal('window', Object.assign(new EventTarget(), { setTimeout, clearTimeout }));
-  vi.stubGlobal('document', Object.assign(new EventTarget(), { createElement: fakeEl, body: fakeEl(), querySelector: () => null }));
+  vi.stubGlobal(
+    'document',
+    Object.assign(new EventTarget(), { createElement: fakeEl, body: fakeEl(), querySelector: () => null }),
+  );
   store.data = defaults();
   store.data.profile.band = 'preschool';
 });
@@ -76,7 +100,12 @@ describe('buttons and cards with a finish (RW14 slice 7)', () => {
       for (const c of s.cards) {
         const h = c.node.hitArea as Rectangle;
         expect(h).toBeInstanceOf(Rectangle);
-        expect([h.x, h.y, h.width, h.height]).toEqual([-EXPLORE_CARD / 2, -EXPLORE_CARD / 2, EXPLORE_CARD, EXPLORE_CARD]);
+        expect([h.x, h.y, h.width, h.height]).toEqual([
+          -EXPLORE_CARD / 2,
+          -EXPLORE_CARD / 2,
+          EXPLORE_CARD,
+          EXPLORE_CARD,
+        ]);
       }
       expect(EXPLORE_CARD).toBe(150);
       for (const b of [s.back, s.home]) expect(circle(b).radius).toBe(CORNER_RADIUS + 14);

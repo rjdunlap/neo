@@ -13,13 +13,33 @@ export const HOW_TO: GameHowTo = {
     { from: 9, to: 9, text: 'Tap the duck foot or the cat paw, then tap the mud to make its print.' },
     { to: 2, text: 'The back arrow removes the latest stamp.' },
     { from: 7, to: 9, text: 'The back arrow removes the latest stamp or print.' },
-    { from: 3, to: 6, text: 'The back arrow removes the latest stamp; pick up another and tap the bin to remove it.' },
-    { from: 5, to: 6, text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.' },
+    {
+      from: 3,
+      to: 6,
+      text: 'The back arrow removes the latest stamp; pick up another and tap the bin to remove it.',
+    },
+    {
+      from: 5,
+      to: 6,
+      text: 'Make the picture you are asked for (a garden, or two friends on an adventure) and tell its story.',
+    },
   ],
   finish: [
-    { from: 7, to: 7, text: 'The eighth pat finishes the picture by itself. After the round, the tree house button hangs it up.' },
-    { from: 1, to: 2, text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself. After the round, the tree house button hangs it up.' },
-    { from: 3, to: 6, text: 'Tap the music note to hear the picture play, left to right; tap the green arrow when it is done. After the round, the tree house button hangs it up.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'The eighth pat finishes the picture by itself. After the round, the tree house button hangs it up.',
+    },
+    {
+      from: 1,
+      to: 2,
+      text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself. After the round, the tree house button hangs it up.',
+    },
+    {
+      from: 3,
+      to: 6,
+      text: 'Tap the music note to hear the picture play, left to right; tap the green arrow when it is done. After the round, the tree house button hangs it up.',
+    },
     { from: 8, to: 8, text: 'Tap the green arrow to finish; the eighth pat finishes by itself.' },
     { from: 9, to: 9, text: 'Tap the green arrow to finish; the tenth print finishes by itself.' },
   ],

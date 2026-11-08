@@ -1,7 +1,35 @@
 import { critterSort } from './index';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place, makePlantRound, SPROUT_PLANS } from './logic';
+import {
+  COUNT_PARTS,
+  COUNT_PLAN,
+  countParts,
+  morePart,
+  countSpot,
+  planFor,
+  exampleIndices,
+  examplePlaces,
+  hasNeitherMat,
+  hintFor,
+  neitherMat,
+  MAT_RX,
+  MAT_RY,
+  sortPlaceAt,
+  hoopCenters,
+  makeRound,
+  nextToSort,
+  OVERLAPPING,
+  placeAt,
+  placeOf,
+  PLANS,
+  ruleToTap,
+  SEPARATE,
+  spotFor,
+  type Place,
+  makePlantRound,
+  SPROUT_PLANS,
+} from './logic';
 import { fits, HAVE_WORDS, type PlantRule } from '../../learning/sorting/rules';
 
 describe('Critter Sort', () => {
@@ -19,26 +47,32 @@ describe('Critter Sort', () => {
     for (let seed = 1; seed <= 300; seed++) {
       const r = makeRound(COUNT_PLAN, new Rng(seed));
       expect(r).toEqual(makeRound(COUNT_PLAN, new Rng(seed)));
-      expect(new Set(r.critters.map(c => `${c.kind}${c.hat}`)).size).toBe(6);
+      expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(6);
       const counts = countParts(r.critters, r.rules);
       expect(Object.values(counts).sort()).toEqual([1, 2, 3]);
       const right = morePart(counts)!;
       winners.add(right);
       for (const part of COUNT_PARTS) {
-        expect(counts[part]).toBe(r.critters.filter(c => placeOf(c, r.rules) === part).length);
+        expect(counts[part]).toBe(r.critters.filter((c) => placeOf(c, r.rules) === part).length);
         expect(counts[right]).toBeGreaterThanOrEqual(counts[part]);
       }
       // Both the sorting bot and the final counting positions stay in their proper parts.
-      for (const v of [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }]) {
+      for (const v of [
+        { w: 1024, h: 768 },
+        { w: 1024, h: 1365 },
+      ]) {
         const centers = hoopCenters('two', 2, v);
-        const points = COUNT_PARTS.flatMap(part => Array.from({ length: counts[part] }, (_, k) => {
-          const p = countSpot(centers, part, k, counts[part]);
-          expect(sortPlaceAt(centers, 'two', p.x, p.y)).toBe(part);
-          return p;
-        }));
-        for (let i = 0; i < points.length; i++) for (let j = i + 1; j < points.length; j++) {
-          expect(Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y)).toBeGreaterThan(108.8);
-        }
+        const points = COUNT_PARTS.flatMap((part) =>
+          Array.from({ length: counts[part] }, (_, k) => {
+            const p = countSpot(centers, part, k, counts[part]);
+            expect(sortPlaceAt(centers, 'two', p.x, p.y)).toBe(part);
+            return p;
+          }),
+        );
+        for (let i = 0; i < points.length; i++)
+          for (let j = i + 1; j < points.length; j++) {
+            expect(Math.hypot(points[i].x - points[j].x, points[i].y - points[j].y)).toBeGreaterThan(108.8);
+          }
       }
     }
     expect(winners).toEqual(new Set(COUNT_PARTS));
@@ -47,10 +81,16 @@ describe('Critter Sort', () => {
 
   it('separate hoops never overlap, and overlapping hoops really do', () => {
     const kinds = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const;
-    const all = kinds.flatMap((kind) => [{ kind, hat: false }, { kind, hat: true }]);
+    const all = kinds.flatMap((kind) => [
+      { kind, hat: false },
+      { kind, hat: true },
+    ]);
     for (const [a, b] of SEPARATE) expect(all.some((c) => fits(c, a) && fits(c, b))).toBe(false);
     for (const [a, b] of OVERLAPPING) {
-      expect(all.some((c) => fits(c, a) && fits(c, b)), `${a} ${b}`).toBe(true);
+      expect(
+        all.some((c) => fits(c, a) && fits(c, b)),
+        `${a} ${b}`,
+      ).toBe(true);
       expect(all.some((c) => fits(c, a) && !fits(c, b))).toBe(true);
       expect(all.some((c) => !fits(c, a) && fits(c, b))).toBe(true);
     }
@@ -62,14 +102,20 @@ describe('Critter Sort', () => {
         const r = makeRound(plan, new Rng(seed));
         expect(r.critters).toHaveLength(plan.critters);
         expect(new Set(r.critters.map((c) => `${c.kind}${c.hat}`)).size).toBe(plan.critters);
-        const places = new Set(r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not')));
+        const places = new Set(
+          r.critters.map((c) => placeOf(c, r.rules, plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not')),
+        );
         expect(places.has('out')).toBe(true);
         expect(places.has('left')).toBe(true);
-        if (plan.mode === 'two') expect(places.has('right')).toBe(true), expect(places.has('both')).toBe(false);
-        if (plan.mode === 'venn') expect(places.has('both')).toBe(true), expect(places.has('right')).toBe(true);
+        if (plan.mode === 'two')
+          (expect(places.has('right')).toBe(true), expect(places.has('both')).toBe(false));
+        if (plan.mode === 'venn')
+          (expect(places.has('both')).toBe(true), expect(places.has('right')).toBe(true));
         if (plan.mode === 'guess') {
           expect(r.options).toHaveLength(3);
-          const sortsTheSame = r.options!.filter((o) => r.critters.every((c) => fits(c, o) === fits(c, r.rules[0])));
+          const sortsTheSame = r.options!.filter((o) =>
+            r.critters.every((c) => fits(c, o) === fits(c, r.rules[0])),
+          );
           expect(sortsTheSame).toEqual([r.rules[0]]);
         }
       }
@@ -80,11 +126,28 @@ describe('Critter Sort', () => {
     for (const plan of PLANS) {
       if (plan.mode === 'guess') continue;
       const hoops = ['one', 'not', 'resort', 'butnot'].includes(plan.mode) ? 1 : 2;
-      const places: Place[] = ['one', 'not', 'resort', 'butnot'].includes(plan.mode) ? ['left'] : plan.mode === 'two' ? ['left', 'right'] : ['left', 'right', 'both'];
-      for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 1024 }, { w: 768, h: 1024 }]) {
+      const places: Place[] = ['one', 'not', 'resort', 'butnot'].includes(plan.mode)
+        ? ['left']
+        : plan.mode === 'two'
+          ? ['left', 'right']
+          : ['left', 'right', 'both'];
+      for (const v of [
+        { w: 1024, h: 768 },
+        { w: 1366, h: 1024 },
+        { w: 768, h: 1024 },
+      ]) {
         const centers = hoopCenters(plan.mode, hoops, v);
         // k = 1 is the spot the ghost finger uses; 0 is the hint's glow.
-        for (const place of places) for (const k of [0, 1]) expect(placeAt(centers, spotFor(centers, plan.mode, place, k).x, spotFor(centers, plan.mode, place, k).y), `${plan.mode} ${place} ${k}`).toBe(place);
+        for (const place of places)
+          for (const k of [0, 1])
+            expect(
+              placeAt(
+                centers,
+                spotFor(centers, plan.mode, place, k).x,
+                spotFor(centers, plan.mode, place, k).y,
+              ),
+              `${plan.mode} ${place} ${k}`,
+            ).toBe(place);
         // Back on the grass is never a part of the diagram.
         expect(placeAt(centers, v.w / 2, v.h - 40)).toBe('out');
       }
@@ -96,20 +159,31 @@ describe('Critter Sort', () => {
       if (plan.mode === 'guess') continue;
       for (let seed = 1; seed <= 100; seed++) {
         const round = makeRound(plan, new Rng(seed));
-        const centers = hoopCenters(plan.mode, plan.mode === 'butnot' ? 1 : round.rules.length, { w: 1024, h: 768 });
+        const centers = hoopCenters(plan.mode, plan.mode === 'butnot' ? 1 : round.rules.length, {
+          w: 1024,
+          h: 768,
+        });
         const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
         const sorters = round.critters.map((c) => ({ c, placed: null as Place | null }));
         let moves = 0;
-        for (let next = nextToSort(sorters, round.rules, not); next; next = nextToSort(sorters, round.rules, not)) {
+        for (
+          let next = nextToSort(sorters, round.rules, not);
+          next;
+          next = nextToSort(sorters, round.rules, not)
+        ) {
           const spot = spotFor(centers, plan.mode, next.place, 1);
           // It lands where the game puts it right, and that is the part the critter belongs in.
-          expect(placeAt(centers, spot.x, spot.y), `${plan.mode} seed ${seed}`).toBe(placeOf(next.who.c, round.rules, not));
+          expect(placeAt(centers, spot.x, spot.y), `${plan.mode} seed ${seed}`).toBe(
+            placeOf(next.who.c, round.rules, not),
+          );
           next.who.placed = next.place;
           moves++;
         }
         const wanted = round.critters.filter((c) => placeOf(c, round.rules, not) !== 'out');
         expect(moves).toBe(wanted.length);
-        expect(sorters.filter((s) => s.placed === null).every((s) => placeOf(s.c, round.rules, not) === 'out')).toBe(true);
+        expect(
+          sorters.filter((s) => s.placed === null).every((s) => placeOf(s.c, round.rules, not) === 'out'),
+        ).toBe(true);
       }
     }
   });
@@ -122,16 +196,24 @@ describe('Critter Sort', () => {
       const round = makeRound(plan, new Rng(seed));
       expect(round).toEqual(makeRound(plan, new Rng(seed)));
       expect(round.newcomer).toBeGreaterThanOrEqual(0);
-      const sorters = round.critters.map((c, i) => ({ c, placed: i === round.newcomer ? null : placeOf(c, round.rules) }));
+      const sorters = round.critters.map((c, i) => ({
+        c,
+        placed: i === round.newcomer ? null : placeOf(c, round.rules),
+      }));
       const who = sorters[round.newcomer!];
       const place = placeOf(who.c, round.rules);
       seen.add(place);
-      expect(new Set(sorters.filter(s => s.placed).map(s => s.placed))).toEqual(new Set(['left', 'right', 'both', 'out']));
-      expect(sorters.filter(s => !s.placed)).toEqual([who]);
+      expect(new Set(sorters.filter((s) => s.placed).map((s) => s.placed))).toEqual(
+        new Set(['left', 'right', 'both', 'out']),
+      );
+      expect(sorters.filter((s) => !s.placed)).toEqual([who]);
       const next = nextToSort(sorters, round.rules, false, true)!;
       expect(next).toEqual({ who, place });
       expect(hintFor(sorters, who, round.rules, false, true)).toBe(who);
-      for (const v of [{ w: 1024, h: 768 }, { w: 768, h: 1024 }]) {
+      for (const v of [
+        { w: 1024, h: 768 },
+        { w: 768, h: 1024 },
+      ]) {
         const centers = hoopCenters(plan.mode, 2, v);
         const target = spotFor(centers, plan.mode, place, 1);
         expect(sortPlaceAt(centers, plan.mode, target.x, target.y)).toBe(place);
@@ -149,18 +231,22 @@ describe('Critter Sort', () => {
       const round = makeRound(plan, new Rng(seed));
       expect(round).toEqual(makeRound(plan, new Rng(seed)));
       expect(round.nextRule).toBeDefined();
-      expect(round.critters.some(c => fits(c, round.rules[0]) !== fits(c, round.nextRule!))).toBe(true);
+      expect(round.critters.some((c) => fits(c, round.rules[0]) !== fits(c, round.nextRule!))).toBe(true);
       for (const rule of [round.rules[0], round.nextRule!]) {
-        const sorters = round.critters.map(c => ({ c, placed: null as Place | null }));
-        expect(new Set(sorters.map(s => placeOf(s.c, [rule])))).toEqual(new Set(['left', 'out']));
-        for (let next = nextToSort(sorters, [rule], false, true); next; next = nextToSort(sorters, [rule], false, true)) {
+        const sorters = round.critters.map((c) => ({ c, placed: null as Place | null }));
+        expect(new Set(sorters.map((s) => placeOf(s.c, [rule])))).toEqual(new Set(['left', 'out']));
+        for (
+          let next = nextToSort(sorters, [rule], false, true);
+          next;
+          next = nextToSort(sorters, [rule], false, true)
+        ) {
           const centers = hoopCenters(plan.mode, 1, { w: 1024, h: 768 });
           const target = spotFor(centers, plan.mode, next.place, 1);
           expect(sortPlaceAt(centers, plan.mode, target.x, target.y)).toBe(next.place);
           expect(hintFor(sorters, next.who, [rule], false, true)).toBe(next.who);
           next.who.placed = next.place;
         }
-        expect(sorters.every(s => s.placed)).toBe(true);
+        expect(sorters.every((s) => s.placed)).toBe(true);
       }
     }
   });
@@ -174,15 +260,18 @@ describe('Critter Sort', () => {
       expect(r).toEqual(makeRound(plan, new Rng(seed)));
       pairs.add(r.rules.join());
       const [a, b] = r.rules;
-      expect(r.critters.some(c => fits(c, a) && !fits(c, b))).toBe(true);
-      expect(r.critters.some(c => fits(c, a) && fits(c, b))).toBe(true);
-      expect(r.critters.some(c => !fits(c, a) && !fits(c, b))).toBe(true);
-      const sorters = r.critters.map(c => ({ c, placed: null as Place | null }));
+      expect(r.critters.some((c) => fits(c, a) && !fits(c, b))).toBe(true);
+      expect(r.critters.some((c) => fits(c, a) && fits(c, b))).toBe(true);
+      expect(r.critters.some((c) => !fits(c, a) && !fits(c, b))).toBe(true);
+      const sorters = r.critters.map((c) => ({ c, placed: null as Place | null }));
       for (const s of sorters) {
         expect(placeOf(s.c, r.rules, 'butnot')).toBe(fits(s.c, a) && !fits(s.c, b) ? 'left' : 'out');
         expect(hintFor(sorters, s, r.rules, 'butnot', true)).toBe(s);
       }
-      for (const v of [{ w: 1024, h: 768 }, { w: 768, h: 1024 }]) {
+      for (const v of [
+        { w: 1024, h: 768 },
+        { w: 768, h: 1024 },
+      ]) {
         const centers = hoopCenters(plan.mode, 1, v);
         for (const s of sorters) {
           const place = placeOf(s.c, r.rules, 'butnot');
@@ -190,8 +279,13 @@ describe('Critter Sort', () => {
           expect(sortPlaceAt(centers, plan.mode, target.x, target.y)).toBe(place);
         }
       }
-      for (let next = nextToSort(sorters, r.rules, 'butnot', true); next; next = nextToSort(sorters, r.rules, 'butnot', true)) next.who.placed = next.place;
-      expect(sorters.every(s => s.placed)).toBe(true);
+      for (
+        let next = nextToSort(sorters, r.rules, 'butnot', true);
+        next;
+        next = nextToSort(sorters, r.rules, 'butnot', true)
+      )
+        next.who.placed = next.place;
+      expect(sorters.every((s) => s.placed)).toBe(true);
       expect(makeRound(plan, new Rng(seed), r.rules.join()).rules.join()).not.toBe(r.rules.join());
     }
     expect(pairs.size).toBeGreaterThan(6);
@@ -211,7 +305,11 @@ describe('Critter Sort', () => {
   it('makes the leaf mat an explicit, reachable outside answer, keeps bare grass free, and hints the missed outsider', () => {
     for (const plan of PLANS) {
       expect(hasNeitherMat(plan.mode)).toBe(['two', 'venn', 'not', 'resort', 'butnot'].includes(plan.mode));
-      for (const v of [{ w: 1024, h: 768 }, { w: 1366, h: 768 }, { w: 1024, h: 1366 }]) {
+      for (const v of [
+        { w: 1024, h: 768 },
+        { w: 1366, h: 768 },
+        { w: 1024, h: 1366 },
+      ]) {
         const centers = hoopCenters(plan.mode, ['two', 'venn'].includes(plan.mode) ? 2 : 1, v);
         expect(sortPlaceAt(centers, plan.mode, v.w / 2, v.h - 40)).toBeNull();
         if (!hasNeitherMat(plan.mode)) continue;
@@ -221,18 +319,30 @@ describe('Critter Sort', () => {
         expect(mat.y - MAT_RY).toBeGreaterThan(centers[0].y + 150);
         expect(mat.y + MAT_RY).toBeLessThan(v.h - 120);
         // The whole 100-unit center target is accepted, with no hoop overlap.
-        for (const [dx, dy] of [[-50, 0], [50, 0], [0, -50], [0, 50]]) {
+        for (const [dx, dy] of [
+          [-50, 0],
+          [50, 0],
+          [0, -50],
+          [0, 50],
+        ]) {
           expect(sortPlaceAt(centers, plan.mode, mat.x + dx, mat.y + 50 + dy)).toBe('out');
         }
         for (let seed = 1; seed <= 100; seed++) {
           const r = makeRound(plan, new Rng(seed));
           const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
           const examples = exampleIndices(plan, r);
-          const sorters = r.critters.map((c, i) => ({ c, placed: examples.includes(i) ? placeOf(c, r.rules, not) : null as Place | null }));
+          const sorters = r.critters.map((c, i) => ({
+            c,
+            placed: examples.includes(i) ? placeOf(c, r.rules, not) : (null as Place | null),
+          }));
           const outsider = sorters.find((s) => placeOf(s.c, r.rules, not) === 'out')!;
           expect(hintFor(sorters, outsider, r.rules, not, true)).toBe(outsider);
           let moves = 0;
-          for (let next = nextToSort(sorters, r.rules, not, true); next; next = nextToSort(sorters, r.rules, not, true)) {
+          for (
+            let next = nextToSort(sorters, r.rules, not, true);
+            next;
+            next = nextToSort(sorters, r.rules, not, true)
+          ) {
             const p = spotFor(centers, plan.mode, next.place, 1);
             expect(sortPlaceAt(centers, plan.mode, p.x, p.y)).toBe(next.place);
             next.who.placed = next.place;
@@ -254,7 +364,9 @@ describe('Critter Sort', () => {
     for (let seed = 1; seed <= 100; seed++) {
       const round = makeRound(plan, new Rng(seed));
       expect(round.options).toContain(ruleToTap(round));
-      expect(round.critters.every((c) => fits(c, ruleToTap(round)) === (placeOf(c, round.rules) === 'left'))).toBe(true);
+      expect(
+        round.critters.every((c) => fits(c, ruleToTap(round)) === (placeOf(c, round.rules) === 'left')),
+      ).toBe(true);
     }
   });
 
@@ -275,7 +387,12 @@ describe('Critter Sort', () => {
   });
 
   it('worked examples sit in their own places (each hoop, or the middle), leave at least two to carry, and the bot and hint never touch them', () => {
-    for (const [level, places] of [[1, ['left']], [2, ['left', 'right']], [3, ['both']], [5, ['left']]] as const) {
+    for (const [level, places] of [
+      [1, ['left']],
+      [2, ['left', 'right']],
+      [3, ['both']],
+      [5, ['left']],
+    ] as const) {
       const plan = PLANS[level - 1];
       expect(examplePlaces(plan.mode)).toEqual(places);
       const not = plan.mode === 'butnot' ? 'butnot' : plan.mode === 'not';
@@ -284,8 +401,13 @@ describe('Critter Sort', () => {
         const ex = exampleIndices(plan, r);
         expect(ex).toHaveLength(places.length);
         expect(new Set(ex).size).toBe(ex.length);
-        ex.forEach((i, k) => expect(placeOf(r.critters[i], r.rules, not), `level ${level} seed ${seed}`).toBe(places[k]));
-        const sorters = r.critters.map((c, i) => ({ c, placed: ex.includes(i) ? placeOf(c, r.rules, not) : (null as Place | null) }));
+        ex.forEach((i, k) =>
+          expect(placeOf(r.critters[i], r.rules, not), `level ${level} seed ${seed}`).toBe(places[k]),
+        );
+        const sorters = r.critters.map((c, i) => ({
+          c,
+          placed: ex.includes(i) ? placeOf(c, r.rules, not) : (null as Place | null),
+        }));
         const loose = sorters.filter((s) => !s.placed && placeOf(s.c, r.rules, not) !== 'out');
         expect(loose.length).toBeGreaterThanOrEqual(2);
         // The hint after a miss on a critter that stays out points at a loose critter, never an example.
@@ -320,13 +442,20 @@ describe('Critter Sort', () => {
           const parent = r.parent!;
           for (const rule of r.rules as PlantRule[]) {
             // Every sign shows a value the big plant actually has.
-            const parentHas = rule === 'round' ? parent.leaves === 'round' : rule === 'pointyleaf' ? parent.leaves === 'pointy' : parent.petals === rule;
+            const parentHas =
+              rule === 'round'
+                ? parent.leaves === 'round'
+                : rule === 'pointyleaf'
+                  ? parent.leaves === 'pointy'
+                  : parent.petals === rule;
             expect(parentHas).toBe(true);
             expect(HAVE_WORDS[rule]).toBeTruthy();
           }
           kinds.add(r.rules[0] === 'spotted' || r.rules[0] === 'plain');
           expect(r.critters).toHaveLength(plan.critters);
-          expect(new Set(r.critters.map((c) => `${c.plant!.leaves}${c.plant!.petals}${c.plant!.pot}`)).size).toBe(plan.critters);
+          expect(
+            new Set(r.critters.map((c) => `${c.plant!.leaves}${c.plant!.petals}${c.plant!.pot}`)).size,
+          ).toBe(plan.critters);
           const places = r.critters.map((c) => placeOf(c, r.rules));
           if (level === 12) {
             const matching = places.filter((p) => p !== 'out').length;
@@ -342,25 +471,45 @@ describe('Critter Sort', () => {
             const leaf = c.plant!.leaves === parent.leaves;
             const petal = c.plant!.petals === parent.petals;
             if (level === 13) {
-              const [a, b] = r.rules.map((rule) => (rule === 'round' || rule === 'pointyleaf' ? leaf : petal));
+              const [a, b] = r.rules.map((rule) =>
+                rule === 'round' || rule === 'pointyleaf' ? leaf : petal,
+              );
               expect(places[i]).toBe(a && b ? 'both' : a ? 'left' : b ? 'right' : 'out');
-            } else expect(places[i] !== 'out').toBe(r.rules[0] === 'round' || r.rules[0] === 'pointyleaf' ? leaf : petal);
+            } else
+              expect(places[i] !== 'out').toBe(
+                r.rules[0] === 'round' || r.rules[0] === 'pointyleaf' ? leaf : petal,
+              );
           });
           // A worked example sits in its place and a hint always leads to an unplaced plant.
           const ex = exampleIndices(plan, r);
           expect(ex).toHaveLength(level === 13 ? 1 : 1);
           expect(ex[0]).toBeGreaterThanOrEqual(0);
-          const sorters = r.critters.map((c, i) => ({ c, placed: ex.includes(i) ? placeOf(c, r.rules) : null as Place | null }));
+          const sorters = r.critters.map((c, i) => ({
+            c,
+            placed: ex.includes(i) ? placeOf(c, r.rules) : (null as Place | null),
+          }));
           const mat = hasNeitherMat(plan.mode);
           let moves = 0;
-          for (let next = nextToSort(sorters, r.rules, false, mat); next; next = nextToSort(sorters, r.rules, false, mat)) {
+          for (
+            let next = nextToSort(sorters, r.rules, false, mat);
+            next;
+            next = nextToSort(sorters, r.rules, false, mat)
+          ) {
             expect(next.place).toBe(placeOf(next.who.c, r.rules));
             next.who.placed = next.place;
             moves++;
           }
           expect(moves).toBeGreaterThan(0);
           const missed = sorters.find((x) => placeOf(x.c, r.rules) !== 'out')!;
-          expect(hintFor(sorters.map((x) => ({ ...x, placed: null })), { ...missed, placed: null }, r.rules, false, mat)).toBeTruthy();
+          expect(
+            hintFor(
+              sorters.map((x) => ({ ...x, placed: null })),
+              { ...missed, placed: null },
+              r.rules,
+              false,
+              mat,
+            ),
+          ).toBeTruthy();
         }
         // Level 12's second round shows the other kind of feature.
         if (level === 12) expect(kinds.size).toBe(2);
@@ -369,7 +518,11 @@ describe('Critter Sort', () => {
   });
 
   it('plant rules never read the pot and critter rules ignore plants', () => {
-    const c = { kind: 'cow' as const, hat: false, plant: { leaves: 'round' as const, petals: 'plain' as const, pot: 0 } };
+    const c = {
+      kind: 'cow' as const,
+      hat: false,
+      plant: { leaves: 'round' as const, petals: 'plain' as const, pot: 0 },
+    };
     expect(fits(c, 'round')).toBe(true);
     expect(fits({ ...c, plant: { ...c.plant, pot: 4 } }, 'round')).toBe(true);
     expect(fits(c, 'spotted')).toBe(false);
