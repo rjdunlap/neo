@@ -278,3 +278,9 @@ Changed: Microsoft’s supported npm aliases keep the TypeScript 7.0.2 CLI along
 Ran on `99f8d597` plus the feature diff: clean `npm ci`; `npm ls` compatibility check; native `tsc` 7.0.2 executable routing; `tsc6` and imported API 6.0.3 (compatibility package 6.0.2); lint; formatting check; full `npm test` (329 files, 6,204 passed / 5 skipped); `npm run build` including native typecheck; links and whitespace. All passed.
 The lockfile keeps existing package versions unchanged except the intentional root `typescript` alias; the native compiler remains 7.0.2. Contributor instructions moved to [Code quality](../CODE-QUALITY.md).
 Not run: browser, ghost finger, offline or device checks; no game, asset, save or navigation changes.
+
+## 2026-11-07 — Puddle Gobble slice 6: level 12 Two pails (PR #1409)
+
+Changed: level 12 *Two pails* (school 5–12, order adds 12): two pails, pour by leading onto a matching pail, tap a full pail to tip it back; a pail re-arms when the puddle moves 30 away or its number changes; voice lines `gobble.hint-pour`, `gobble.hint-tip`, `gobble.done-two-pails`; the browser suite gained a level 12 section.
+Ran: `npm run typecheck`; `npm test` (passing after `npm run game-docs`); `npm run build`; `BROWSER_SUITE=puddlegobble PUDDLE_ONLY=12` (upright 1024×1365: wrong-pail lead, refused overshoot of the 7 = 1 miss, pour 1+2+3 into the 9, tip back, requested hint = 1 hint, finished to a sticker; screenshot `puddle-gobble-12-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=puddle-gobble FINGER_LEVELS=12` (finished in 19.3 s, after the re-arm fix it found).
+Not run: the rest of the puddlegobble suite (levels 1–11 unchanged), other suites, offline. Open: whether a full pail is tipped back unaided and whether an accidental tip happens on an iPad ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).

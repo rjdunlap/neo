@@ -20,6 +20,7 @@ import {
   BRANCH_Y,
   CARD,
   cardSpots,
+  counterBox,
   countsMisses,
   crateBottom,
   crateHook,
@@ -48,6 +49,8 @@ import {
   parcelOf,
   pawSpots,
   ratio,
+  REPLAY_HIT,
+  replaySpot,
   rigOf,
   rigsFor,
   TRAY_HIT,
@@ -271,6 +274,26 @@ function pawArt(): Graphics {
     .fill(ink);
 }
 
+/** The replay button: a round button with a curled arrow, 120 across. */
+function replayArt(): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .circle(0, 0, REPLAY_HIT - 4)
+    .fill({ color: 0xffffff, alpha: 0.9 })
+    .stroke({ width: 6, color: wood.line });
+  // Three quarters of a circle, and its arrowhead.
+  g.arc(0, 0, 28, -Math.PI * 0.35, Math.PI * 1.25).stroke({
+    width: 10,
+    color: swatch.green.fill,
+    cap: 'round',
+  });
+  const a = -Math.PI * 0.35;
+  const tip = { x: 28 * Math.cos(a), y: 28 * Math.sin(a) };
+  g.poly([tip.x - 16, tip.y - 6, tip.x + 14, tip.y - 14, tip.x + 4, tip.y + 16]).fill(swatch.green.fill);
+  c.addChild(g);
+  return c;
+}
+
 function card(n: number): Container {
   const c = new Container();
   const bg = new Graphics();
@@ -329,6 +352,11 @@ class LiftIt implements Game {
   question: Question | null = null;
   guess: number | null = null;
   t = 0;
+  /** The last delivered parcel's line and wheels (from level 3 the replay button hauls it again), and whether it is replaying. */
+  last: { line: Line; hooks: Hooks; ons: (HookId | null)[] } | null = null;
+  replaying = false;
+  private replayLine: Line | null = null;
+  readonly replayButton = new Container();
 
   private layout: LiftLayout;
   private view: View;
@@ -352,6 +380,8 @@ class LiftIt implements Game {
   readonly handle = new Container();
   private readonly knotArt = new Graphics();
   private readonly paws = new Container();
+  /** The pet's paw riding the handle while Show a hint pulls a stroke (levels 1–2). */
+  readonly helperPaw = new Graphics();
   private readonly glow = new Graphics();
   private readonly counter = new Container();
   private readonly counterText = new Text({
@@ -414,6 +444,22 @@ class LiftIt implements Game {
     );
     this.counter.visible = this.plan.counter;
     this.parcel.eventMode = 'none';
+    this.helperPaw.eventMode = 'none';
+    this.helperPaw.visible = false;
+    const fur = swatch[ctx.pet.color];
+    this.helperPaw
+      .ellipse(0, 10, 30, 26)
+      .circle(-30, -20, 13)
+      .circle(-11, -34, 13)
+      .circle(11, -34, 13)
+      .circle(30, -20, 13)
+      .fill(fur.fill)
+      .stroke({ width: 5, color: ink })
+      .ellipse(0, 12, 17, 14)
+      .fill(fur.light);
+    this.replayButton.addChild(replayArt());
+    this.replayButton.visible = false;
+    onTap(this.replayButton, () => void this.replay(), { radius: REPLAY_HIT, cooldown: 400 });
 
     this.handle.addChild(this.knotArt);
     this.handle.hitArea = new Circle(0, 0, HANDLE_HIT);
@@ -440,7 +486,9 @@ class LiftIt implements Game {
       this.glow,
       this.paws,
       this.handle,
+      this.helperPaw,
       this.wheelLayer,
+      this.replayButton,
       this.panel,
     );
     this.crate.addChild(this.parcel);
@@ -465,6 +513,7 @@ class LiftIt implements Game {
   }
 
   get cur(): Line {
+    if (this.replayLine) return this.replayLine;
     return this.lines[Math.min(this.line, this.lines.length - 1)];
   }
 
@@ -497,7 +546,30 @@ class LiftIt implements Game {
   /* Lines ----------------------------------------------------------------------------------------- */
 
   private buildLine() {
-    const l = this.cur;
+    this.dress(this.cur);
+    this.hooks = { branch: this.plan.prebuilt === 'fixed', crate: false };
+    for (const w of this.wheels) {
+      w.on = null;
+      w.drag.home = { ...this.layout.tray[w.slot] };
+      w.node.position.copyFrom(w.drag.home);
+    }
+    this.haul = { rung: 0, knots: 0 };
+    this.shown = 0;
+    this.lastTick = 0;
+    this.counterText.text = '0';
+    this.tried.clear();
+    this.parcelMisses = 0;
+    this.glowRig = null;
+    this.glowCounted = false;
+    this.answeredFor = null;
+    this.guess = null;
+    this.helperLeft = 0;
+    this.layoutAll();
+    this.busy = false;
+  }
+
+  /** Draws a line's friends, crate and parcel, touching none of the parcel's accounting (the replay dresses the last line, then this one again). */
+  private dress(l: Line) {
     for (const f of this.friends) {
       this.ctx.untrack(f.c);
       f.c.destroy({ children: true });
@@ -527,25 +599,6 @@ class LiftIt implements Game {
     // On the crate's left corner, clear of the crate's wheel and the rope tied at its middle.
     this.parcel.position.set(PARCEL_X, -CRATE_H);
     this.parcel.scale.set(0.95);
-    this.hooks = { branch: this.plan.prebuilt === 'fixed', crate: false };
-    for (const w of this.wheels) {
-      w.on = null;
-      w.drag.home = { ...this.layout.tray[w.slot] };
-      w.node.position.copyFrom(w.drag.home);
-    }
-    this.haul = { rung: 0, knots: 0 };
-    this.shown = 0;
-    this.lastTick = 0;
-    this.counterText.text = '0';
-    this.tried.clear();
-    this.parcelMisses = 0;
-    this.glowRig = null;
-    this.glowCounted = false;
-    this.answeredFor = null;
-    this.guess = null;
-    this.helperLeft = 0;
-    this.layoutAll();
-    this.busy = false;
   }
 
   private async landed() {
@@ -553,6 +606,7 @@ class LiftIt implements Game {
     this.grab = null;
     const l = this.cur;
     const rig = this.rig;
+    this.last = { line: l, hooks: { ...this.hooks }, ons: this.wheels.map((w) => w.on) };
     sfx.clunk();
     const waiting = this.friends.find((f) => f.at === 'waiting');
     const L = this.layout;
@@ -630,7 +684,9 @@ class LiftIt implements Game {
       const p = f.at === 'waiting' ? ledge.waiting : f.at === 'ledge' ? ledge.pullers[f.i] : L.ground[f.i];
       f.c.position.set(p.x, p.y);
     }
-    this.counter.position.set(Math.max(150, L.cx - 220), BRANCH_Y + 200);
+    const cb = counterBox(L);
+    this.counter.position.set(cb.x + cb.w / 2, cb.y + cb.h / 2);
+    this.replayButton.position.copyFrom(replaySpot(this.view));
     if (this.held) this.placeHeld();
     this.fixedWheel.position.copyFrom(L.branchHook);
   }
@@ -939,6 +995,89 @@ class LiftIt implements Game {
     this.busy = false;
   }
 
+  /* Replay (level 3 up) -------------------------------------------------------------------------- */
+
+  /** The button shows once a parcel has arrived this round, while nothing is being pulled, hung or asked. */
+  get canReplay(): boolean {
+    return (
+      this.plan.id >= 3 &&
+      this.last !== null &&
+      !this.busy &&
+      !this.finished &&
+      !this.question &&
+      !this.grab &&
+      this.haul.rung === 0 &&
+      this.shown < 0.01
+    );
+  }
+
+  /** Hauls the last parcel again on its own wheels with the knots counted aloud; never a miss, a hint or a new parcel. */
+  async replay() {
+    const last = this.last;
+    if (!last || !this.canReplay) return;
+    this.busy = true;
+    this.replaying = true;
+    this.helperLeft = 0;
+    this.replayButton.scale.set(1.15);
+    void this.ctx.tw.to(this.replayButton.scale, { x: 1, y: 1 }, { duration: 0.25 });
+    sfx.pop(6);
+    const saved = { hooks: { ...this.hooks }, ons: this.wheels.map((w) => w.on) };
+    const setWheels = (hooks: Hooks, ons: (HookId | null)[]) => {
+      this.hooks = { ...hooks };
+      this.wheels.forEach((w, i) => {
+        w.on = ons[i];
+        w.drag.home = w.on ? this.hookPos(w.on) : { ...this.layout.tray[w.slot] };
+        w.node.position.copyFrom(w.drag.home);
+      });
+    };
+    this.replayLine = last.line;
+    setWheels(last.hooks, last.ons);
+    this.dress(last.line);
+    this.counter.visible = true;
+    this.counterText.text = '0';
+    this.lastTick = 0;
+    this.haul = { rung: 0, knots: 0 };
+    this.layoutAll();
+    const l = last.line;
+    const rig = this.rig;
+    const total = travel(rig, l);
+    await this.ctx.say('lift-it.replay');
+    if (this.destroyed) return;
+    // One knot at a time: the rope comes, the handle dips, and the pet says the count before the next.
+    for (let k = 1; k <= total; k++) {
+      if (rig !== 'direct')
+        void this.ctx.tw.to(this.offset, { d: 50 }, { duration: 0.4, ease: ease.outQuad });
+      await this.ctx.tw.to(
+        this.haul,
+        { knots: k, rung: (l.h * k) / total },
+        { duration: 0.5, ease: ease.inOutSine },
+      );
+      if (this.destroyed) return;
+      void this.ctx.tw.to(this.offset, { d: 0 }, { duration: 0.2 });
+      await this.ctx.say('lift-it.knot-n', { n: k });
+      if (this.destroyed) return;
+    }
+    this.friends.find((f) => f.at === 'waiting')?.c.hop(1);
+    await this.ctx.say(ratio(rig) === 2 ? 'lift-it.half-twice' : 'lift-it.count-knots', { knots: total });
+    if (this.destroyed) return;
+    this.haul = { rung: 0, knots: 0 };
+    this.fall = { r: this.shown };
+    await this.ctx.tw.to(this.fall, { r: 0 }, { duration: 0.8, ease: ease.inOutSine });
+    this.fall = null;
+    if (this.destroyed) return;
+    // Back to her own parcel, with her wheels where she left them.
+    this.replayLine = null;
+    setWheels(saved.hooks, saved.ons);
+    this.dress(this.cur);
+    this.shown = 0;
+    this.lastTick = 0;
+    this.counterText.text = '0';
+    this.counter.visible = this.plan.counter;
+    this.layoutAll();
+    this.replaying = false;
+    this.busy = false;
+  }
+
   /* Help ------------------------------------------------------------------------------------------ */
 
   private showGlow() {
@@ -992,9 +1131,16 @@ class LiftIt implements Game {
       const step = Math.min(this.helperLeft, dt * 1.6);
       this.helperLeft -= step;
       this.haul = applyPull(this.haul, rig, l, step * 120);
+      // The pet's paw draws the handle along with the stroke, then lets it spring back.
+      if (!this.grab && rig !== 'direct') {
+        this.offset.d = (1 - this.helperLeft) * 120;
+        if (this.helperLeft <= 0)
+          void this.ctx.tw.to(this.offset, { d: 0 }, { duration: 0.3, ease: ease.outBack });
+      }
     }
     if (this.look === 'autumn') this.driftLeaves();
     if (this.fall) this.shown = this.fall.r;
+    else if (this.replaying) this.shown = this.haul.rung;
     else if (!this.busy) this.shown += (this.haul.rung - this.shown) * (1 - Math.exp(-dt * 10));
     // One tick per knot going by, and the counter at levels 4–6.
     const k = Math.floor(this.haul.knots + 1e-6);
@@ -1025,6 +1171,9 @@ class LiftIt implements Game {
     this.drawRope();
     this.drawHandle();
     this.drawHooks();
+    this.replayButton.visible = this.canReplay;
+    this.helperPaw.visible = this.helperLeft > 0 && this.handle.visible;
+    if (this.helperPaw.visible) this.helperPaw.position.set(this.handle.x + 6, this.handle.y - 8);
     for (const f of this.friends) {
       if (f.at === 'waiting' || this.busy) continue;
       // The pullers lean in while the rope moves.
@@ -1117,7 +1266,7 @@ class LiftIt implements Game {
       .stroke({ width: 7, color: nobody ? 0x9a9a9a : 0xffffff, cap: 'round', join: 'round' });
     // Paw prints: how many friends' pulls the rope needs (hidden at level 6 until the cards are answered).
     const need = paws(rig, l);
-    const hide = this.plan.ask === 'numbers' && this.answeredFor !== rig;
+    const hide = this.plan.ask === 'numbers' && this.answeredFor !== rig && !this.replaying;
     if (this.paws.children.length !== (hide ? 0 : need)) {
       for (const c of this.paws.removeChildren()) c.destroy();
       if (!hide) for (let i = 0; i < need; i++) this.paws.addChild(pawArt());
@@ -1150,7 +1299,7 @@ class LiftIt implements Game {
           .stroke({ width: 5, color: 0x8c8c9c });
         g.circle(p.x, p.y - 6, 9).stroke({ width: 5, color: 0x8c8c9c });
       }
-      if (this.glowRig) {
+      if (this.glowRig && !this.replaying) {
         const want = hooksOf(this.glowRig)[h];
         if (want !== filled) {
           const pulse = 6 * Math.sin(this.t * 5);

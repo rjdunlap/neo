@@ -550,6 +550,17 @@ export function cardSpots(v: View, n: number): Pt[] {
   return Array.from({ length: n }, (_, i) => ({ x: x0 + i * (CARD + gap), y: Math.round(v.h * 0.42) }));
 }
 
+/** The replay button (from level 3): in the open sky left of the crate, below the top-left shell button and above the pet. */
+export const REPLAY_HIT = 60;
+export const replaySpot = (v: View): Pt => ({ x: 75, y: Math.min(440, v.h - 205 - REPLAY_HIT - 20) });
+/** The knot counter's box, centred where the game draws it. */
+export const counterBox = (L: LiftLayout): Rect => ({
+  x: Math.max(150, L.cx - 220) - 70,
+  y: BRANCH_Y + 150,
+  w: 140,
+  h: 100,
+});
+
 /** A paw print's box half-size. */
 export const PAW_HALF = 14;
 
