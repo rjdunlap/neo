@@ -262,15 +262,26 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         followed.push(g.tile);
         await tap(`kit.tapOn(neo.scene.game.tiles[${g.tile}])`);
       }
-      assert.equal(g6.tray[followed[0]] + g6.tray[followed[1]], 10, 'the glow starts with a pair that makes ten');
+      assert.equal(
+        g6.tray[followed[0]] + g6.tray[followed[1]],
+        10,
+        'the glow starts with a pair that makes ten',
+      );
       assert.ok('check' in (await glowing()), 'then the check glows');
       assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'the whole glow is one hint');
       await tap('kit.tapOn(neo.scene.game.check)');
       await idle();
       assert.equal(await page.evaluate(() => neo.scene.game.found.length), 1);
       await build3([followed[2], followed[0], followed[1]]);
-      assert.deepEqual(await page.evaluate(() => [neo.scene.game.found.length, neo.scene.game.misses]), [1, 2]);
-      const key = (w) => w.map((i) => g6.tray[i]).sort((x, y) => x - y).join();
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.found.length, neo.scene.game.misses]),
+        [1, 2],
+      );
+      const key = (w) =>
+        w
+          .map((i) => g6.tray[i])
+          .sort((x, y) => x - y)
+          .join();
       const second = g6.right.find((w) => key(w) !== key(followed));
       assert.ok(second, 'a second three exists');
       await build3(second);

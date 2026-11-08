@@ -336,7 +336,8 @@ class FruitSums implements Game {
     else if (this.slotB === i) this.slotB = null;
     else if (this.slotC === i) this.slotC = null;
     else if (this.slotA === null) this.slotA = i;
-    else if (this.three && this.slotB !== null) this.slotC = i; // all full: the newest is swapped, as with two
+    else if (this.three && this.slotB !== null)
+      this.slotC = i; // all full: the newest is swapped, as with two
     else this.slotB = i; // both full: the newest one is swapped for this fruit, which is free
     sfx.marimba(this.tray[i] % 8, 0.4);
     void this.ctx.say('fsums.num', { n: this.tray[i] });
@@ -465,7 +466,8 @@ class FruitSums implements Game {
 
   /** What glows now: the next step of a way she has not found, from what is in the boxes. */
   glowing(): HintGlow | null {
-    if (this.three) return hintGlow3(this.tray, this.target, this.found, [this.slotA, this.slotB, this.slotC]);
+    if (this.three)
+      return hintGlow3(this.tray, this.target, this.found, [this.slotA, this.slotB, this.slotC]);
     return hintGlow(
       this.tray,
       this.plan.ops,
@@ -507,7 +509,13 @@ class FruitSums implements Game {
       life: [0.5, 0.9],
     });
     await this.ctx.say(
-      this.signSum ? 'fsums.right4' : this.clear ? 'fsums.right5' : this.three ? 'fsums.right6' : 'fsums.right',
+      this.signSum
+        ? 'fsums.right4'
+        : this.clear
+          ? 'fsums.right5'
+          : this.three
+            ? 'fsums.right6'
+            : 'fsums.right',
       words,
     );
     if (this.found.length >= waysNeeded(this.plan)) {

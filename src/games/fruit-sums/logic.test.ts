@@ -497,9 +497,13 @@ describe('Fruit Sums level 6, Three fruit', () => {
       expect(r.target).toBeLessThanOrEqual(18);
       for (const v of r.tray) expect(v >= 1 && v <= plan.maxTile).toBe(true);
       const ts = triples(r.tray, r.target);
-      expect(new Set(ts.map((t) => tripleKey(t.map((i) => r.tray[i])))).size).toBeGreaterThanOrEqual(WAYS_PER_ROUND);
+      expect(new Set(ts.map((t) => tripleKey(t.map((i) => r.tray[i])))).size).toBeGreaterThanOrEqual(
+        WAYS_PER_ROUND,
+      );
       expect(
-        ts.some(([i, j, k]) => [r.tray[i] + r.tray[j], r.tray[i] + r.tray[k], r.tray[j] + r.tray[k]].includes(10)),
+        ts.some(([i, j, k]) =>
+          [r.tray[i] + r.tray[j], r.tray[i] + r.tray[k], r.tray[j] + r.tray[k]].includes(10),
+        ),
       ).toBe(true);
     }
   });
@@ -546,7 +550,13 @@ describe('Fruit Sums level 6, Three fruit', () => {
                 else if ('tile' in glow) tap3(boxes, glow.tile);
               }
               expect(done).toBe(true);
-              expect(judge3(boxes.map((i) => tray[i!]), target, found).kind).toBe('right');
+              expect(
+                judge3(
+                  boxes.map((i) => tray[i!]),
+                  target,
+                  found,
+                ).kind,
+              ).toBe('right');
             }
     }
   });

@@ -29,7 +29,11 @@ export const HOW_TO: GameHowTo = {
   finish: [
     { to: 3, text: 'The round ends after two different ways to make the number.' },
     { from: 4, to: 4, text: 'The round ends after two different pairs that make the same as the sign.' },
-    { from: 5, to: 5, text: 'Each right pair drops into the basket, and the round ends when the tree is empty.' },
+    {
+      from: 5,
+      to: 5,
+      text: 'Each right pair drops into the basket, and the round ends when the tree is empty.',
+    },
     { from: 6, text: 'The round ends after two different sets of three fruit that make the number.' },
   ],
   note: [
