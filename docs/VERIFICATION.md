@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-07 — New-game scaffold (codebase item 11, PR #1399)
+
+Changed: `npm run new-game` and templates create colocated starters, a browser stub/page and land entry; content barrels accept an optional repository root for isolated generation. No production game added.
+Ran on `13b4871d` plus the feature diff: 20 focused generator safety/CLI/formatting tests; temporary `scaffold-check` typecheck, `npm run game-docs`, six content barrel/docs checks; temporary game and its generated inventory changes removed afterwards.
+Full `npm test`: 328 files, 6,187 passed / 5 skipped (before the final two generator tests); `npm run build` passed. Final focused generator checks cover the last CLI/formatting/rollback edits. Links and diff whitespace checked at closeout.
+Not run: browser, ghost finger, offline or device checks; this changes developer tooling only. Generated starters remain unfinished until their game-specific implementation and checks are done.
+
 ## 2026-11-07 — Gem Swap slice 1: 20 trays a level, three looks, a visible fall (PR #1398)
 
 Changed: `scripts/gem-swap-trays.mjs` writes `boards.ts` (20 exact-par trays a level at 1–4; generated ones are distinct, settled, match-free and, above level 1, have a dead-end first swap and a falling line on a shortest route); three seeded looks; `drops()` and the fall tween with landing squash; cascade pops on rising steps. Ran: `npm run typecheck`; `npx vitest run src/games/gem-swap` (8/8); `BROWSER_SUITE=gemswap` filtered (levels 1 and 4, rejected swaps, hint, undo/restart, portrait 768×1024 screenshot at level 4 in first snow); `game-reviewer` (autumn cell tint changed to yellow.light afterwards).
@@ -74,22 +81,16 @@ Browser at `http://localhost:5187`: `BROWSER_SUITE=fourth FOURTH_ONLY=puzzle PUZ
 The same ignored `test-results/cleanup-probe.mjs` verified `alive`/owned cleanup/listener release on leaving a round and real paint demo listeners across replay/destruction (2→0→2→0); no page errors. Server stopped.
 Not run: `world`, offline, device or child play (no navigation, persistence or assets changed); bot gestures unchanged. The wall-time paint harness remains timing-sensitive.
 
-## 2026-11-07 — Shared tracing and sorting helpers (codebase item 6 complete, PR #1383)
-
-Changed: shared tracing/feedback, sorting predicates/types, name normalization and letter vocabulary in `src/learning/`; letter-picture, sorting-sign and plant art in `src/art/`; game/journal callers and woods harness imports updated. The nine moved bodies/data match exactly; game-specific rules remain local. Tested base `dcc001e4` plus working diff.
-Ran: `npm run typecheck`; `npm test` (325 files, 6,068 passed, 5 skipped, 67.51 s); `npm run build`; source review (caught and fixed the woods level-9 dynamic predicate import).
-Browser: `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails,critter-crossing FINGER_LEVELS=1` passed (Number Trails preschool 5.0 s; Critter Crossing pre-K 7.1 s). Same URL: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=9 TO_LEVEL=9` passed (both/neither predicates, free bare grass, misses/glow, saved score and sticker). Server stopped.
-Not run: offline, `world`, device and child play; no behavior, assets, persistence or navigation changed.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| New-game scaffold tooling | 2026-11-07: 20 focused tests, temporary generated-game typecheck/docs/barrels, full units (6,187 passed / 5 skipped), build | [Scaffold](#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399) | Browser/offline not run; generated starters still require implementation and game verification |
 | Round cleanup / native global listeners | 2026-11-07: typecheck, full 327-file units (6,084 passed, 5 skipped), final 61 targeted tests and build; standard `early` paint level 3 and `blocktopple` level 3 passed; 296 demo restart/destruction checks across 46 games retained no native listeners | [Cleanup migration](#2026-11-07--scene-owned-cleanup-migration-codebase-item-7-follow-up-pr-1387); [original pilots](#2026-11-07--scene-owned-cleanup-helpers-codebase-item-7-pr-1385) | Draw the Pattern level 5 demo constructor fails on unchanged code too; no world, offline, device or child checks. Paint harness now waits on the game clock; bot actions unchanged. |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](archive/VERIFICATION-2026-11-07.md#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |
-| Shared learning modules | 2026-11-07: typecheck/build; 325 files, 6,068 units passed, 5 skipped; Number Trails/Critter Crossing level-1 demos and woods sort9 passed | [Tracing/sorting completion](#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383) | Item 6 complete after the word-learning pilot; no device/offline check |
+| Shared learning modules | 2026-11-07: typecheck/build; 325 files, 6,068 units passed, 5 skipped; Number Trails/Critter Crossing level-1 demos and woods sort9 passed | [Tracing/sorting completion](archive/VERIFICATION-2026-11-07.md#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383) | Item 6 complete after the word-learning pilot; no device/offline check |
 | Shared coach (`src/progress/coach.test.ts`) | 2026-11-07: typecheck, full 6,046 units, build | [Shared coach](archive/VERIFICATION-2026-11-07.md#2026-11-07--shared-misseshints-coach-codebase-item-8) | Pilots only: Fill and Dump, Sorting Machine, Rainbow Fingers |
 | Generated game docs (`src/content/game-docs.test.ts`) | 2026-11-07: typecheck, full 6,034 units; stale check proven to fail on an edited page | [Generated game inventory docs](archive/VERIFICATION-2026-11-07.md#2026-11-07--generated-game-inventory-docs-codebase-item-3) | Runs in every `npm test`; rerun `npm run game-docs` after a game, land or page change |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |

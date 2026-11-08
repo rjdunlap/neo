@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+
+// TODO: register this suite in scripts/browser/registry.mjs and the README browser table.
+// Use the harness's isolated profile, silent browser and real kit taps/drags.
+export function createSuite({ page, launch, finished, screenshot }) {
+  async function @METHOD@() {
+    await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+    await launch(@ID_LITERAL@, 1);
+    // TODO: first/top levels, one wrong answer, a shown hint, finish and one reward.
+    assert.fail('Scaffold: implement real input and tally assertions before running this suite');
+    await finished(@ID_LITERAL@);
+    await screenshot('@ID@-portrait'); // set the portrait viewport before this shot
+  }
+  return { @METHOD@ };
+}

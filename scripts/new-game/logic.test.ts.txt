@@ -1,0 +1,7 @@
+import { describe, it } from 'vitest';
+
+describe(@NAME@, () => {
+  it.todo('seeded puzzles are solvable and targets are valid');
+  it.todo('acceptable alternative solutions and hints lead to completion');
+  it.todo('misses and shown hints count deliberately, including assisted completion');
+});

@@ -1,0 +1,4 @@
+export const VOICE = {
+  @TITLE@: [@NAME@],
+  @INSTRUCTION@: ['TODO: a short spoken instruction for the implemented action.'],
+};
