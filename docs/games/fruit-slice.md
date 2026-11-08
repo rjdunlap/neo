@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | toddler | 1–2 |
-| preschool | 2–4 |
-| pre-K | 3–6 |
+| preschool | 2, 3, 4, 11 |
+| pre-K | 3, 4, 11, 5, 6 |
 | school | 5–10 |
 
 | Level | Plays like |
@@ -25,12 +25,13 @@
 | 8 | Pieces by twos |
 | 9 | Two lines clear it |
 | 10 | Twos and threes |
+| 11 | Just a few |
 
 <!-- end generated -->
 
 **Starts as:** touch a fruit hanging at the top of its slow arc and it splits
 
-**Grows into:** swipe across it, only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N, pieces by twos, two lines that together cut every fruit, and twos and threes (apples two pieces, oranges three); a wrong cut bounces off with a boing, missed fruit drifts back, no clock
+**Grows into:** swipe across it, only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N, pieces by twos, two lines that together cut every fruit, twos and threes (apples two pieces, oranges three), and for the youngest a few (stop at two or three, level 11); a wrong cut bounces off with a boing, missed fruit drifts back, no clock
 
 ## Design notes
 

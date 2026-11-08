@@ -120,3 +120,7 @@ Changed: 133 remaining tables and ten inline ladders moved to `logic.ts`; Playda
 Tested: base `566ad6be` plus working diff. Ran: `npm run typecheck`; `npm test` (325 files, 6,057 passed, 5 skipped; 6,062 total), including both source guards and game-docs staleness.
 Direct probes (`test-results/check-ladders.mjs` and `test-results/check-inline-ladders.mjs`, ignored and retained in the worktree): all 133 table initializers byte-identical; all ten inline tables match original supported-band ranges and order. Unsupported inline bands now use the standard `rangeFor` fallback. Fresh-context reviewer found no issues.
 Not run: browser play, build or offline (no shared runtime change). No new device check.
+
+## 2026-11-07 — Cut Along slice 1: picture themes and new shapes (PR #1380)
+
+Changed: seeded picture themes at levels 1–5 and 7, level 6 as three of four shapes (door, kite; flag retired), level 7 as three of seven (star, moon), `cut.piece.<theme>.<piece>` lines; slots, colours and themes moved into `logic.ts`; the `cutalong` suite's level-6 portrait shot became a level-7 garland play. Ran: typecheck; `npm test` (325 files, 6,067 passed, 1 skipped; new theme, slot, line, colour and cuttability tests); `npm run build`; `BROWSER_SUITE=cutalong` (pass); a probe screenshot of each new theme. Not run: `fingerdemo` (bot unchanged), world, offline, any device. Open: level 8 themes; iPad checks.

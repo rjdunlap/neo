@@ -6,9 +6,11 @@ import {
   arcAt, basketAt, clearingLine, COVER_ROWS, coverBoardsFor, coverHint, coverLines, coverStep, oneLineClears, stripWidth, BOARD_H, BOARD_W, boardsFor, bowlAt, BOWL_R, FLIGHT, FRUIT, distToSegment, hangTime, hintLineFor, HIT_R, insideLength, isFruit,
   judge, judgeStroke, lineHits, makeToss, met, MIN_LINE, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, reachableCounts, RISE, HANG,
   MOODS, NOT_FRUIT, signAt, SIGN_W, signsFor, sliceHits, type Kind,
-  finishable, keeps, left, MIXED, mixedHint, piecesOf, putBack, STRIP_MAX, stuck, TOKEN, tokenAt, type Sign,
+  finishable, keeps, left, LEVELS, MIXED, mixedHint, piecesOf, putBack, STRIP_MAX, stuck, TOKEN, tokenAt, type Sign,
 } from './logic';
 import { VOICE } from './voice';
+import { fruitSlice } from './index';
+import { landing } from '../../progress/difficulty';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -181,7 +183,7 @@ describe('judging', () => {
 });
 
 describe('choice exists and no round stalls', () => {
-  for (const id of [3, 4, 5, 6, 8]) {
+  for (const id of [3, 4, 5, 6, 8, 11]) {
     it(`level ${id}`, () => {
       const plan = planFor(id);
       for (const seed of SEEDS) {
@@ -380,10 +382,48 @@ describe('level 9 two-line boards', () => {
 
 describe('plans', () => {
   it('names each level and keeps the hang the same at every level (harder means choices, not speed)', () => {
-    for (let id = 1; id <= 10; id++) expect(planFor(id).id).toBe(id);
+    for (let id = 1; id <= 11; id++) expect(planFor(id).id).toBe(id);
     expect(RISE + HANG).toBeLessThan(FLIGHT);
     expect(planFor(1).aloft).toBe(1);
-    expect(Math.max(...[1, 2, 3, 4, 5, 6, 8].map((i) => planFor(i).aloft))).toBe(3);
+    expect(Math.max(...[1, 2, 3, 4, 5, 6, 8, 11].map((i) => planFor(i).aloft))).toBe(3);
+  });
+});
+
+describe('level 11 just a few', () => {
+  it('asks for 2, then 3, then 3, with two aloft, on level 5\'s path', () => {
+    const p = planFor(11);
+    expect(p.mode).toBe(planFor(5).mode);
+    expect(p.aloft).toBe(2);
+    for (const seed of SEEDS) {
+      const signs = signsFor(p, new Rng(seed));
+      expect(signs.map((s) => s.rows[0].n)).toEqual([2, 3, 3]);
+      for (const s of signs) expect(s.rows[0].kind).toBeNull();
+    }
+  });
+  it('judges exactly as level 5: any fruit until the bowl is full, then refused with one miss', () => {
+    const p11 = planFor(11), p5 = planFor(5);
+    const s11 = signsFor(p11, new Rng(1))[0], s5 = signsFor(p5, new Rng(1))[0];
+    for (const k of [...FRUIT, ...NOT_FRUIT]) expect(judge(p11, s11, k)).toEqual(judge(p5, s5, k));
+    const r = judgeStroke(p11, s11, ['apple', 'pear', 'lemon']);
+    expect(r.cut).toEqual([true, true, false]);
+    expect(r.miss).toBe(true);
+    expect(met(s11)).toBe(true);
+    expect(judge(p11, s11, 'plum')).toEqual({ ok: false, why: 'full' });
+  });
+  it('sits between 4 and 5 in preschool and pre-K, and nowhere in school or toddler', () => {
+    expect(LEVELS.preschool?.order).toEqual([2, 3, 4, 11]);
+    expect(LEVELS.prek?.order).toEqual([3, 4, 11, 5, 6]);
+    for (const band of ['preschool', 'prek'] as const) {
+      const r = LEVELS[band]!;
+      expect(r.min).toBe(Math.min(...r.order!));
+      expect(r.max).toBe(Math.max(...r.order!));
+    }
+    expect(LEVELS.school).toEqual({ min: 5, max: 10 });
+    expect(LEVELS.toddler).toEqual({ min: 1, max: 2 });
+  });
+  it('a carried 11 starts school at its easiest, not its hardest', () => {
+    expect(landing(11, LEVELS.school!, fruitSlice.entryLevels)).toBe(5);
+    expect(landing(11, LEVELS.prek!, fruitSlice.entryLevels)).toBe(11);
   });
 });
 
