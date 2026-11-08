@@ -89,6 +89,7 @@ class GemSwap implements Game {
   private view: View;
   private dead = false;
   private sinceMatch = 0;
+  private stoneSaid = false;
   private botWait = 0.4;
   /** Touch layout (buttons, tappable gems) until a key or pad is used; couch play never has it. */
   private touch: boolean;
@@ -226,7 +227,9 @@ class GemSwap implements Game {
     if (this.board[i] === STONE) {
       this.cursor = i;
       sfx.tick();
-      void this.ctx.say('gem-swap.stone');
+      // Said once until the next swap, so tapping a stone again does not stack the line.
+      if (!this.stoneSaid) void this.ctx.say('gem-swap.stone');
+      this.stoneSaid = true;
       this.draw();
       return;
     }
@@ -258,6 +261,7 @@ class GemSwap implements Game {
     this.history.push([...this.board]);
     this.presses++;
     this.sinceMatch = 0;
+    this.stoneSaid = false;
     this.hinted = null;
     this.pending = step;
     this.wave = 0;
