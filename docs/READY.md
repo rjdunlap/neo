@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`jar-sort` slice 2, level 9 *Three kinds, bright jars*** (preschool to school; slice 1 is built; new level on the existing interaction placed between 2 and 3: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build): [build slices](deep-dives/jar-sort.md#build-slices-in-order).
+- **`jar-sort` slice 2, level 9 *Three kinds, bright jars*** (claimed by `claude/jar-sort-bright-jars`, 2026-11-07; preschool to school; slice 1 is built; new level on the existing interaction placed between 2 and 3: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build): [build slices](deep-dives/jar-sort.md#build-slices-in-order).
 - **`fruit-sums` slice 2, level 4 *Same as the sign*** (school; slice 1 is built; new level on the existing interaction: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4): [build slices](deep-dives/fruit-sums.md#build-slices-in-order).
 - **`marble-jump` slice 2, level 7 *Finish in the star hole* and the fewest-moves line** (grown-up; slice 1 is built; model change: typecheck, rule tests with levels 1–6 unchanged, one browser play of 7 with one finish off the star, one portrait screenshot, `fingerdemo` at 7, build): [build slices](deep-dives/marble-jump.md#build-slices-in-order).
 - **`number-nook` slice 2, line slides** (grown-up; slice 1 is built; change to the existing interaction: typecheck, rule tests that a line slide equals its single slides and refused taps leave the board alone, one browser play at level 3 with one line slide and one refused diagonal tap, no `fingerdemo`): [build slices](deep-dives/number-nook.md#build-slices-in-order).
