@@ -3,7 +3,13 @@ import { Rng } from '../../engine/random';
 import {
   ANY,
   FULL,
+  GOLD_LEVEL,
   HOLES,
+  NONE,
+  allowed,
+  goldAfter,
+  goldPairs,
+  hasGoldTrap,
   JUMPS,
   carry,
   count,
@@ -237,5 +243,86 @@ describe('Marble Jump', () => {
       expect(fewest).toBeLessThanOrEqual(movesIn(solve(board, goal)!));
     }
     expect(performance.now() - started).toBeLessThan(3000);
+  });
+  it('agrees with independent reachability for every board and gold marble', () => {
+    // can[board * 16 + gold]: the board can clear with the gold marble last, never jumping it.
+    const can = new Uint8Array((FULL + 1) * 16);
+    for (let gold = 0; gold < 15; gold++) can[(1 << gold) * 16 + gold] = 1;
+    for (let n = 2; n <= 15; n++)
+      for (let board = 1; board <= FULL; board++) {
+        if (count(board) !== n) continue;
+        for (let gold = 0; gold < 15; gold++) {
+          if (!occupied(board, gold)) continue;
+          for (const j of moves(board))
+            if (j.over !== gold && can[jump(board, j) * 16 + goldAfter(gold, j)]) can[board * 16 + gold] = 1;
+        }
+      }
+    for (let board = 1; board <= FULL; board += 7)
+      for (let gold = 0; gold < 15; gold++)
+        if (occupied(board, gold))
+          expect(solve(board, ANY, gold) !== null, `board ${board} gold ${gold}`).toBe(
+            !!can[board * 16 + gold],
+          );
+  });
+  it('seeds level 8 with nine marbles and a gold one that can finish last, with a trap', () => {
+    const pairs = goldPairs();
+    expect(pairs.length).toBeGreaterThanOrEqual(1000);
+    expect(GOLD_LEVEL).toBe(8);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 80; seed++) {
+      const round = makeRound(GOLD_LEVEL, new Rng(seed));
+      expect(round).toEqual(makeRound(GOLD_LEVEL, new Rng(seed)));
+      expect(count(round.board)).toBe(9);
+      expect(round.goal).toBe(ANY);
+      expect(occupied(round.board, round.gold)).toBe(true);
+      expect(hasGoldTrap(round.board, round.gold)).toBe(true);
+      seen.add(`${round.board}:${round.gold}`);
+      // The route the hint and the bot follow never jumps gold, and leaves gold last.
+      let { board, gold } = round;
+      for (const j of solve(board, ANY, gold)!) {
+        expect(j.over).not.toBe(gold);
+        board = jump(board, j);
+        gold = goldAfter(gold, j);
+      }
+      expect(board).toBe(1 << gold);
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(60);
+    for (let level = 1; level < GOLD_LEVEL; level++) expect(makeRound(level, new Rng(3)).gold).toBe(NONE);
+  });
+  it('refuses jumps over gold and never hints one, even after recovery', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const round = makeRound(GOLD_LEVEL, new Rng(seed));
+      const rng = new Rng(seed + 100);
+      // Wander with allowed jumps to a dead end, then recover the way Hint does.
+      const boards = [round.board],
+        golds = [round.gold];
+      for (;;) {
+        const options = allowed(boards.at(-1)!, golds.at(-1)!);
+        expect(options.every((j) => j.over !== golds.at(-1))).toBe(true);
+        if (!options.length) break;
+        const j = rng.pick(options);
+        boards.push(jump(boards.at(-1)!, j));
+        golds.push(goldAfter(golds.at(-1)!, j));
+      }
+      const last = boards.length - 1;
+      if (count(boards[last]) === 1) {
+        expect(boards[last]).toBe(1 << golds[last]);
+        continue;
+      }
+      expect(solve(boards[last], ANY, golds[last])).toBeNull();
+      const back = recovery(boards, ANY, golds)!;
+      expect(back).toBeLessThan(last);
+      const hint = solve(boards[back], ANY, golds[back])![0];
+      expect(hint.over).not.toBe(golds[back]);
+      for (let i = back + 1; i <= last; i++) expect(solve(boards[i], ANY, golds[i])).toBeNull();
+    }
+  });
+  it('counts the fewest moves with gold no lower than without it', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const { board, gold } = makeRound(GOLD_LEVEL, new Rng(seed));
+      const withGold = fewestMoves(board, ANY, gold)!;
+      expect(withGold).toBeGreaterThanOrEqual(fewestMoves(board)!);
+      expect(withGold).toBeLessThanOrEqual(8);
+    }
   });
 });
