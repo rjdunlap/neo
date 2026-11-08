@@ -41,9 +41,9 @@ export default defineConfig({
       },
       // The first worker still takes control at once, so the very first visit already works offline;
       // an update waits (no skipWaiting) until every open copy of the app has closed.
-      // The code-drawn game catalog's routes bundle passed 5 MiB with Attic Finds level 9 (2026-11-03); cache it offline with an explicit
-      // 6 MiB per-file bound. `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB); `m4a` the rendered voice clips (src/audio/clips/).
-      workbox: { maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2,m4a}'], clientsClaim: true },
+      // The code-drawn game catalog's routes bundle passed 5 MiB with Attic Finds level 9 (2026-11-03) and 6 MiB with Cut Along level 11
+      // (2026-11-07); cache it offline with an explicit 8 MiB per-file bound. `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB); `m4a` the rendered voice clips (src/audio/clips/).
+      workbox: { maximumFileSizeToCacheInBytes: 8 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2,m4a}'], clientsClaim: true },
     }),
   ],
   // `scripts/creature-art/*.test.mjs` checks the sprite preparation tool's pixel rules on synthetic images.

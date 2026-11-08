@@ -4,7 +4,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
 /**
  * Cut Along by touch: level 1 by taps, two strays at 3 (two misses, the glow), level 5's circle both ways round, level 7
  * upright in the garland with a star or moon, a wrong outline at 8, one stray on level 9's spirals upright, a wrong line and
- * a hint at 10 upright.
+ * a hint at 10 upright, and level 11 upright: a tap between shapes, a stray and a hint, one piece dropped off the picture
+ * (it floats to the middle) and two placed where they were let go.
  * `CUT_LEVELS=9` (a comma list) plays only those levels.
  */
 async function cutAlongPlay() {
@@ -177,6 +178,50 @@ async function cutAlongPlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1], 'level 10: one miss, one hint');
   await page.setViewportSize({ width: 1024, height: 768 });
   played.push('a wrong line and a hint at 10 upright');
+  }
+  // Level 11 upright: on each sheet a tap between the shapes chooses nothing (never a miss), then a tap chooses a shape (the
+  // first, the second, the third); the first is strayed off (one miss) and the hint lit (one hint) before it is cut. The first
+  // piece is let go off the picture and floats to its middle; the other two land where they were let go.
+  if (want(11)) {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await launch('cut-along', 11); await idle();
+  n = await stickers();
+  const paperAt = (x, y) => page.evaluate(({ x, y }) => { const g = neo.scene.game, p = g.paper.toGlobal({ x: x * g.s, y: y * g.s }); return [p.x, p.y]; }, { x, y });
+  const picAt = (x, y) => page.evaluate(({ x, y }) => { const g = neo.scene.game, pic = g.layout.picture, p = g.picture.toGlobal({ x: x * pic.w, y: y * pic.h }); return [p.x, p.y]; }, { x, y });
+  const L = await page.evaluate(async () => { const L = await import('/src/games/cut-along/logic.ts'); return { xs: [...L.OWN_XS], y: L.OWN_Y }; });
+  const drops = [null, [0.25, 0.3], [0.7, 0.62]];
+  for (let k = 0; k < 3; k++) {
+    await idle();
+    assert.equal(await page.evaluate(() => neo.scene.game.choosing), true, `sheet ${k + 1} offers shapes`);
+    if (k === 2) { await page.waitForTimeout(400); await screenshot('cut-along-11-own-portrait'); }
+    const between = await paperAt((L.xs[0] + L.xs[1]) / 2, L.y);
+    await page.evaluate(([x, y]) => kit.tap(x, y), between); await page.waitForTimeout(150);
+    assert.equal(await page.evaluate(() => neo.scene.game.choosing), true, 'a tap between the shapes chooses nothing');
+    const offered = await page.evaluate((k) => neo.scene.game.choices[k], k);
+    await page.evaluate(([x, y]) => kit.tap(x, y), await paperAt(L.xs[k], L.y)); await page.waitForTimeout(200);
+    assert.equal(await page.evaluate(() => neo.scene.game.active.cut.kind), offered[k], `the tapped shape (${offered[k]}) is the one to cut`);
+    if (k === 0) {
+      await stray();
+      await page.evaluate(() => neo.scene.game.askForHint());
+      st = await state(); assert.deepEqual([st.misses, st.hints, st.glow], [1, 1, true], 'a stray is one miss, the hint lights the stretch');
+    }
+    await cutActive(0);
+    await page.waitForFunction(() => neo.scene.game.held?.handle.enabled, null, { timeout: 8000 });
+    await page.waitForTimeout(300);
+    const from = await page.evaluate(() => { const p = neo.scene.game.held.holder.getGlobalPosition(); return [p.x, p.y]; });
+    // The piece rides 40 units above the finger, so the finger lets go 40 below where the piece should land.
+    const target = drops[k] ? await picAt(...drops[k]) : await paperAt(0.2, 0.9);
+    const scale = await page.evaluate(() => neo.scene.game.hand.worldTransform.a);
+    await page.evaluate(({ a, b }) => kit.drag(kit.line(a, b, 14)), { a: from, b: [target[0], target[1] + 40 * scale] });
+    await page.waitForFunction((k) => neo.scene.game.owned.length > k, k, { timeout: 8000 });
+    const at = await page.evaluate((k) => neo.scene.game.owned[k], k);
+    if (!drops[k]) assert.deepEqual([at.x, at.y], [0.5, 0.5], 'a piece let go off the picture floats to its middle');
+    else assert.ok(Math.abs(at.x - drops[k][0]) < 0.06 && Math.abs(at.y - drops[k][1]) < 0.06, `piece ${k + 1} lands where it was let go (${at.x.toFixed(2)}, ${at.y.toFixed(2)})`);
+  }
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1], 'level 11: one miss, one hint');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  played.push('level 11 upright: a tap between shapes, a stray and a hint, one drop off the picture and two placed');
   }
   assert.deepEqual(errors, [], 'page errors');
   log(`Cut Along: ${played.join('; ')}`);
