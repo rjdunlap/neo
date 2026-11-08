@@ -26,4 +26,10 @@ export const VOICE = {
   'fsums.again4': ['Can you find two different fruit that make the same as {p} plus {q}?'],
   'fsums.samesign': ['That is the sum on the sign! Can you find two different fruit?'],
   'fsums.done4': ['Two ways to make the same as {p} plus {q}! Great thinking!'],
+  'fsums.start5': [
+    'Make {n}! Tap two fruit that make {n}, then tap the check. Can you clear the whole tree?',
+  ],
+  'fsums.right5': ['{a} plus {b} makes {n}! Into the basket!', 'Yes! {a} plus {b} is {n}! Into the basket!'],
+  'fsums.again5': ['Which two fruit make {n} now?'],
+  'fsums.done5': ['The tree is empty! Every fruit found a partner to make {n}!'],
 } satisfies Record<string, string[]>;

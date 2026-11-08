@@ -19,6 +19,8 @@ export interface TreePlan {
   maxTile: number;
   /** The sign holds a sum of two fruit instead of a numeral; she makes the same amount with two other fruit. */
   signPair?: true;
+  /** Every fruit pairs with another to make the number; each right pair drops into a basket until the tree is empty. */
+  clearTree?: true;
   name: string;
 }
 
@@ -52,16 +54,26 @@ export const PLANS: readonly TreePlan[] = [
     signPair: true,
     name: 'Add two fruit to make the same as the sum on the sign, two different ways',
   },
+  {
+    ops: ['plus'],
+    target: [6, 10],
+    tiles: 6,
+    maxTile: 9,
+    clearTree: true,
+    name: 'Clear the tree: pair up all six fruit so each pair adds to a number up to 10',
+  },
 ];
 
-export const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
+/** Clearing the tree (to 10) is easier than making numbers up to 20, so level 5 comes after level 1. */
+export const LEVELS: BandLevels = { school: { min: 1, max: 5, order: [1, 5, 2, 4, 3] } };
 
 export const planFor = (level: number): TreePlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
 export const choosesSign = (level: number) => planFor(level).ops.length > 1;
 
-/** Every round asks for this many different ways to make the number. */
+/** Every round asks for this many different ways to make the number (at a clear-the-tree level, a pair for every two fruit). */
 export const WAYS_PER_ROUND = 2;
+export const waysNeeded = (plan: TreePlan) => (plan.clearTree ? plan.tiles / 2 : WAYS_PER_ROUND);
 
 /** One way to make the number: tile indices into the tray, the first being the number you start from. */
 export interface Way {
@@ -79,13 +91,22 @@ export function wayKey(a: number, op: Op, b: number): string {
   return op === 'plus' ? `+${Math.min(a, b)},${Math.max(a, b)}` : `-${a},${b}`;
 }
 
-/** Every distinct way (by number, not by which fruit) to make `target` from the tray; the first fruit of each is the earliest in the tray. */
-export function solutions(tray: readonly number[], ops: readonly Op[], target: number): Way[] {
+/**
+ * Every distinct way (by number, not by which fruit) to make `target` from the tray; the first fruit of each is the earliest in
+ * the tray. Fruit already gone into the basket (`gone[i]`) are not on the tree any more.
+ */
+export function solutions(
+  tray: readonly number[],
+  ops: readonly Op[],
+  target: number,
+  gone: readonly boolean[] = [],
+): Way[] {
   const seen = new Set<string>(),
     out: Way[] = [];
   for (let a = 0; a < tray.length; a++) {
+    if (gone[a]) continue;
     for (let b = 0; b < tray.length; b++) {
-      if (a === b) continue;
+      if (a === b || gone[b]) continue;
       for (const op of ops) {
         if (op === 'plus' && b < a) continue;
         if (made(tray[a], op, tray[b]) !== target) continue;
@@ -128,8 +149,9 @@ export function hintWay(
   target: number,
   found: readonly string[],
   first: number | null = null,
+  gone: readonly boolean[] = [],
 ): Way | null {
-  const open = solutions(tray, ops, target).filter(
+  const open = solutions(tray, ops, target, gone).filter(
     (w) => !found.includes(wayKey(tray[w.a], w.op, tray[w.b])),
   );
   if (first !== null) {
@@ -162,8 +184,9 @@ export function hintGlow(
   slotA: number | null,
   slotB: number | null,
   op: Op | null,
+  gone: readonly boolean[] = [],
 ): HintGlow | null {
-  const way = hintWay(tray, ops, target, found, slotA);
+  const way = hintWay(tray, ops, target, found, slotA, gone);
   if (!way) return null;
   // The start fruit sits in the second box: a sum just needs its partner; a take-away goes home to start again in the first box.
   if (slotA === null) return { tile: way.a === slotB && way.op === 'plus' ? way.b : way.a };
@@ -178,11 +201,33 @@ export interface TreeRound {
   tray: number[];
   /** At a sign-pair level, the sum on the sign (in the order shown); `target` is its total. */
   sign?: readonly [number, number];
+  /** At a clear-the-tree level: every fruit pairs up and the round ends when the tree is empty. */
+  clear?: true;
 }
 
 /** The ways already taken before she makes one: the sign's own sum at a sign-pair level, then the ways she found. */
 export function takenWays(round: TreeRound, found: readonly string[]): string[] {
+  // Clearing the tree counts by fruit, not by number: a second 3 + 7 from two other fruit is a new pair.
+  if (round.clear) return [];
   return round.sign ? [wayKey(round.sign[0], 'plus', round.sign[1]), ...found] : [...found];
+}
+
+/**
+ * "Clear the tree": three pairs that each make the number, so every fruit has a partner. A pair may come twice (two 3s and two
+ * 7s), but not all three, so a wrong pair is always there to try. Any order of right pairs empties the tree.
+ */
+function clearRound(plan: TreePlan, rng: Rng): TreeRound {
+  const [lo, hi] = plan.target;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const target = rng.int(lo, hi);
+    const halves: number[] = [];
+    for (let h = Math.max(1, target - plan.maxTile); h <= Math.floor(target / 2); h++) halves.push(h);
+    const picks = Array.from({ length: plan.tiles / 2 }, () => rng.pick(halves));
+    if (new Set(picks).size < 2) continue;
+    const tray = picks.flatMap((h) => [h, target - h]);
+    return { target, tray: rng.shuffle(tray), clear: true };
+  }
+  throw new Error('Fruit Sums: no clear-the-tree tray');
 }
 
 /** "Same as the sign": the sign shows one sum, and two other pairs in the tray make the same amount. */
@@ -216,6 +261,7 @@ export function makeRound(level: number, rng: Rng): TreeRound {
   const plan = planFor(level),
     [lo, hi] = plan.target;
   if (plan.signPair) return pairRound(plan, rng);
+  if (plan.clearTree) return clearRound(plan, rng);
   for (let attempt = 0; attempt < 200; attempt++) {
     const target = rng.int(lo, hi);
     const tray: number[] = [];
@@ -280,7 +326,15 @@ export interface TreeLayout {
   check: Pt;
   leaves: Pt[];
   tiles: Pt[];
+  /** Where right pairs go at a clear-the-tree level: below the tray, never a touch target. */
+  basket: Pt;
 }
+
+export const BASKET_W = 260;
+export const BASKET_H = 96;
+/** A fruit in the basket is drawn this size, the k-th one along this far from its middle. */
+export const BASKET_SCALE = 0.5;
+export const basketSpot = (basket: Pt, k: number): Pt => ({ x: basket.x + (k - 2.5) * 40, y: basket.y - 66 });
 
 export function layoutFor(w: number, h: number, count: number, signs: boolean): TreeLayout {
   // A tall window (portrait) puts the working rows lower rather than leaving the bottom empty.
@@ -317,6 +371,7 @@ export function layoutFor(w: number, h: number, count: number, signs: boolean): 
         ]
       : [],
     tiles,
+    basket: { x: cx + 20, y: Math.min(h - 70, tiles[count - 1].y + TILE / 2 + 95) },
   };
 }
 
