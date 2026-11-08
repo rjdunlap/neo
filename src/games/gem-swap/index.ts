@@ -123,7 +123,9 @@ class GemSwap implements Game {
     this.resize(this.view);
   }
   start() {
-    void this.ctx.instruct(this.touch ? 'gem-swap.go' : 'couch.how.gem-swap');
+    void this.ctx.instruct(
+      !this.touch ? 'couch.how.gem-swap' : this.ctx.level === 6 ? 'gem-swap.long' : 'gem-swap.go',
+    );
   }
   resize(v: View) {
     this.view = v;
@@ -190,7 +192,9 @@ class GemSwap implements Game {
       ? `Line cleared${this.wave ? ' · a falling line!' : ''}`
       : this.route === null
         ? 'No clearing route · Undo or Restart to revise'
-        : 'Swap neighbours · make a line of three';
+        : this.ctx.level === 6
+          ? 'Swap neighbours · one swap makes a long line'
+          : 'Swap neighbours · make a line of three';
   }
   private choose(i: number) {
     if (this.busy || this.finished || this.dead || this.board[i] < 0) return;

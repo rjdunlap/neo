@@ -140,6 +140,61 @@ describe('Gem Swap', () => {
       }
     }
   });
+  it('makes every shortest route at level 6 use a swap that clears a long line or a crossing', () => {
+    expect(PLANS[5]).toMatchObject({ size: 5, gems: 20 });
+    const pool = POOLS[5];
+    expect(pool.filter((t) => t.par === 3)).toHaveLength(10);
+    expect(pool.filter((t) => t.par === 4)).toHaveLength(10);
+    // Independent of the generator: four in a row anywhere, or one gem at the middle-or-end of both an across and a down three.
+    const same = (b: Board, cells: number[]) => cells.every((c) => b[c] >= 0 && b[c] === b[cells[0]]);
+    const run = (i: number, d: number, n: number) => Array.from({ length: n }, (_, k) => i + k * d);
+    const fits = (i: number, d: number, n: number) =>
+      d === 1 ? (i % 5) + n <= 5 : Math.floor(i / 5) + n <= 5;
+    const threesThrough = (b: Board, c: number, d: number) =>
+      [0, 1, 2].some((back) => {
+        const start = c - back * d;
+        return (
+          start >= 0 &&
+          (d === 5 || Math.floor(start / 5) === Math.floor(c / 5)) &&
+          fits(start, d, 3) &&
+          same(b, run(start, d, 3))
+        );
+      });
+    const long = (b: Board, pair: Swap) => {
+      const after = swap(b, 5, pair)!.waves[0].board;
+      return after.some(
+        (_, i) =>
+          [1, 5].some((d) => fits(i, d, 4) && same(after, run(i, d, 4))) ||
+          (after[i] >= 0 && threesThrough(after, i, 1) && threesThrough(after, i, 5)),
+      );
+    };
+    for (const puzzle of pool) {
+      expect(breadthFirst(puzzle.board, 5)).toBe(puzzle.par);
+      // Enumerate every shortest route: a route that never makes a long swap would be a counterexample.
+      const shortCut = (b: Board, left: number): boolean =>
+        left === 0
+          ? clear(b)
+          : moves(b, 5).some((pair) => {
+              const after = swap(b, 5, pair)!.board;
+              return !long(b, pair) && breadthFirst(after, 5) === left - 1 && shortCut(after, left - 1);
+            });
+      expect(shortCut(puzzle.board, puzzle.par)).toBe(false);
+      expect(
+        moves(puzzle.board, 5).some((pair) => breadthFirst(swap(puzzle.board, 5, pair)!.board, 5) === null),
+      ).toBe(true);
+      // The hint follows a shortest route, so it reaches the long swap; its search stays small from every state on it.
+      let b: Board = puzzle.board,
+        used = false;
+      while (!clear(b)) {
+        const stats = { nodes: 0 },
+          route = solve(b, 5, stats)!;
+        expect(stats.nodes).toBeLessThan(2000);
+        used ||= long(b, route[0]);
+        b = swap(b, 5, route[0])!.board;
+      }
+      expect(used).toBe(true);
+    }
+  });
   it('tells the drawing which row each surviving gem fell from', () => {
     for (const pool of POOLS)
       for (const puzzle of pool) {

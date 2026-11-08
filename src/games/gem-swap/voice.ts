@@ -4,6 +4,9 @@ export const VOICE = {
   'gem-swap.go': [
     'Tap a gem, then its neighbour. Make a line of three matching shapes. The gems above fall into the gaps. Clear the tray!',
   ],
+  'gem-swap.long': [
+    'Tap a gem, then its neighbour. Every shortest way to clear this tray needs one swap that makes four or five in a line, or two lines crossing. Find it!',
+  ],
   'gem-swap.miss': ['That swap makes no line. Look for three matching shapes in a row or column.'],
   'gem-swap.hint': ['Swap the two outlined gems. This starts a way to clear the tray.'],
   'gem-swap.stuck': [

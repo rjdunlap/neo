@@ -5,7 +5,14 @@ export const HOW_TO: GameHowTo = {
   goal: 'Clear the tray by swapping gems into matching lines.',
   steps: [
     'Tap a gem, then an occupied neighbour to swap them; tap the selected gem again to cancel.',
-    'Make a horizontal or vertical line of three matching shapes. Gems above fall into the gaps; no new gems arrive.',
+    {
+      text: 'Make a horizontal or vertical line of three matching shapes. Gems above fall into the gaps; no new gems arrive.',
+      to: 5,
+    },
+    {
+      text: 'Make lines of matching shapes; gems above fall and none arrive. Every shortest route needs one swap that makes four or five in a line, or two lines crossing.',
+      from: 6,
+    },
     'Tap Undo to revise a swap, or Restart to bring back the starting tray.',
     'Tap Hint to outline a swap that starts a clearing route.',
   ],

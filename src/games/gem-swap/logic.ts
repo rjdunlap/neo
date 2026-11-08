@@ -15,9 +15,10 @@ export const PLANS = [
   { size: 5, gems: 15, name: 'Fifteen gems: plan three swaps through the gaps' },
   { size: 5, gems: 18, name: 'Eighteen gems: plan four swaps and cascades' },
   { size: 6, gems: 24, name: 'Twenty-four gems: plan five swaps on a six-by-six tray' },
+  { size: 5, gems: 20, name: 'One swap, a long line: find the swap that clears four or more' },
 ];
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 5 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const clear = (b: Board) => b.every((k) => k < 0);
 export const neighbors = (a: number, b: number, size: number) =>
