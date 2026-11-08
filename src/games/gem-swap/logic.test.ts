@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { POOLS } from './boards';
-import { botTarget, clear, fall, hintFor, makePuzzle, matches, moves, neighbors, PLANS, solve, swap, type Board, type Swap } from './logic';
+import { botTarget, clear, drops, fall, hintFor, makePuzzle, matches, moves, neighbors, PLANS, solve, swap, type Board, type Swap } from './logic';
 
 /** Independent breadth-first oracle, as a check on the game's shortest-route DFS. */
 function breadthFirst(board: Board, size: number): number | null {
@@ -38,9 +38,9 @@ describe('Gem Swap', () => {
     expect(b).toEqual(saved);
     expect(swap([0, 0, 1, 1], 2, [0, 1])).toBeNull();
   });
-  it('has three stable compact boards per plan with exact pars, no initial matches and the stated gem counts', () => {
+  it('has at least twenty stable compact boards per plan with exact pars, no initial matches and the stated gem counts', () => {
     POOLS.forEach((pool, p) => {
-      expect(pool).toHaveLength(3);
+      expect(pool.length).toBeGreaterThanOrEqual(20);
       for (const puzzle of pool) {
         const size = PLANS[p].size;
         expect(matches(puzzle.board, size)).toEqual([]);
@@ -54,7 +54,7 @@ describe('Gem Swap', () => {
   it('builds deterministic varied boards and every hint/bot swap reduces the exact remaining par', () => {
     for (let level = 1; level <= PLANS.length; level++) {
       const variants = new Set<string>();
-      for (let seed = 1; seed <= 60; seed++) {
+      for (let seed = 1; seed <= 120; seed++) {
         const puzzle = makePuzzle(level, new Rng(seed));
         expect(puzzle).toEqual(makePuzzle(level, new Rng(seed)));
         variants.add(puzzle.board.join(','));
@@ -74,7 +74,33 @@ describe('Gem Swap', () => {
         }
         expect(remaining).toBe(0);
       }
-      expect(variants.size).toBeGreaterThan(30);
+      expect(variants.size).toBeGreaterThan(60);
+    }
+  });
+  it('gives every generated tray above level 1 a dead-end first swap and a falling line on some shortest route', () => {
+    // The first three trays of each level are the hand-made originals; the script's trays follow.
+    POOLS.slice(1).forEach(pool => pool.slice(3).forEach(puzzle => {
+      const size = Math.sqrt(puzzle.board.length);
+      const left = (b: Board) => solve(b, size)?.length ?? null;
+      const cascades = (b: Board, n: number): boolean => n > 0 && moves(b, size).some(pair => {
+        const step = swap(b, size, pair)!;
+        return left(step.board) === n - 1 && (step.waves.length > 1 || cascades(step.board, n - 1));
+      });
+      expect(moves(puzzle.board, size).some(pair => left(swap(puzzle.board, size, pair)!.board) === null)).toBe(true);
+      expect(cascades(puzzle.board, puzzle.par)).toBe(true);
+    }));
+  });
+  it('tells the drawing which row each surviving gem fell from', () => {
+    for (const pool of POOLS) for (const puzzle of pool) {
+      const size = Math.sqrt(puzzle.board.length);
+      for (const pair of moves(puzzle.board, size)) for (const wave of swap(puzzle.board, size, pair)!.waves) {
+        const after = fall(wave.board.map((k, i) => wave.removed.includes(i) ? -1 : k), size);
+        drops(wave.board, wave.removed, size).forEach((from, i) => {
+          if (from < 0) { expect(after[i]).toBe(-1); return; }
+          expect(after[i]).toBe(wave.board[from * size + i % size]);
+          expect(from).toBeLessThanOrEqual(Math.floor(i / size));
+        });
+      }
     }
   });
   it('supports alternatives and identifies dead ends rather than recommending an arbitrary match', () => {
