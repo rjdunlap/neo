@@ -1,8 +1,8 @@
-// Writes src/games/gem-swap/boards.ts: Gem Swap's frozen trays, 20 a level. The first three of each level are the
+// Writes src/games/gem-swap/boards.ts: Gem Swap's frozen trays, 20 a level. The first three of levels 1–4 are the
 // hand-made originals and keep their place; the rest are built backwards from an empty tray (drop in a line of three,
 // then undo a swap that would make it) and kept only when an exact breadth-first search finds the level's par, the tray
-// is settled with no starting line, and (levels 2–4) one accepted first swap is a dead end and some shortest route has a
-// falling line. Trays equal under mirroring or recolouring count once. Reproducible:
+// is settled with no starting line, and (levels 2–5) one accepted first swap is a dead end and some shortest route has a
+// falling line; at level 5 every column starts with a gem. Trays equal under mirroring or recolouring count once. Reproducible:
 //   node scripts/gem-swap-trays.mjs
 import { writeFileSync } from 'node:fs';
 import { Rng } from '../src/engine/random.ts';
@@ -91,6 +91,8 @@ function unswap(board, size, rng) {
   }
   return pairs.length ? rng.pick(pairs) : null;
 }
+/** The six-by-six level is about planning across a wider tray, so every column starts with a gem in it. */
+const spansWidth = (board, size) => columnsOf(board, size).every(col => col.length > 0);
 function candidate(plan, swaps, rng) {
   const lines = plan.gems / 3;
   const groups = Array(swaps).fill(1);
@@ -104,8 +106,9 @@ function candidate(plan, swaps, rng) {
 }
 
 const pools = PLANS.map((plan, index) => {
-  const level = index + 1, target = POOLS[index][0].par;
-  const kept = POOLS[index].slice(0, 3).map(t => ({ par: t.par, board: [...t.board] }));
+  // Levels 1–4 open with their hand-made originals; level 5 (6×6) is all generated. Every level's par is its number.
+  const level = index + 1, target = level;
+  const kept = (level <= 4 ? POOLS[index] : []).slice(0, 3).map(t => ({ par: t.par, board: [...t.board] }));
   const seen = new Set(kept.map(t => canonical(t.board, plan.size)));
   const rng = new Rng(20261107 + level * 1009);
   for (let tries = 0; kept.length < PER_LEVEL && tries < 200000; tries++) {
@@ -113,6 +116,7 @@ const pools = PLANS.map((plan, index) => {
     if (!board) continue;
     const name = canonical(board, plan.size);
     if (seen.has(name) || matches(board, plan.size).length || fall(board, plan.size).join() !== board.join()) continue;
+    if (level === 5 && !spansWidth(board, plan.size)) continue;
     if (par(board, plan.size) !== target || !interesting(board, plan.size, target, level)) continue;
     seen.add(name); kept.push({ par: target, board });
   }

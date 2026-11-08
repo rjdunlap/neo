@@ -10,9 +10,10 @@ export const PLANS = [
   { size: 4, gems: 12, name: 'Twelve gems: plan two swaps and falling lines' },
   { size: 5, gems: 15, name: 'Fifteen gems: plan three swaps through the gaps' },
   { size: 5, gems: 18, name: 'Eighteen gems: plan four swaps and cascades' },
+  { size: 6, gems: 24, name: 'Twenty-four gems: plan five swaps on a six-by-six tray' },
 ];
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 5 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const clear = (b: Board) => b.every(k => k < 0);
 export const neighbors = (a: number, b: number, size: number) => a >= 0 && b >= 0 && a < size * size && b < size * size && Math.abs(a % size - b % size) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;
@@ -77,13 +78,17 @@ export function moves(board: Board, size: number): Swap[] {
   }
   return out;
 }
-/** All accepted swaps remove gems, so the search is acyclic and finite. Returns an exact shortest clearing route. */
-export function solve(board: Board, size: number): Swap[] | null {
+/**
+ * All accepted swaps remove gems, so the search is acyclic and finite. Returns an exact shortest clearing route.
+ * `stats.nodes` counts the distinct trays visited, so tests can hold the hint search to a budget on bigger trays.
+ */
+export function solve(board: Board, size: number, stats?: { nodes: number }): Swap[] | null {
   const memo = new Map<string, Swap[] | null>();
   const visit = (b: Board): Swap[] | null => {
     if (clear(b)) return [];
     const key = b.join(',');
     if (memo.has(key)) return memo.get(key)!;
+    if (stats) stats.nodes++;
     let best: Swap[] | null = null;
     for (const move of moves(b, size)) {
       const after = swap(b, size, move)!;

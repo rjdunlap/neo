@@ -90,6 +90,20 @@ describe('Gem Swap', () => {
       expect(cascades(puzzle.board, puzzle.par)).toBe(true);
     }));
   });
+  it('keeps the hint search on the six-by-six trays across all six columns and under a node budget from every state on the stored route', () => {
+    // A tray's search memoises every tray reachable from it, so the opening count also bounds every later revision.
+    expect(PLANS[4]).toMatchObject({ size: 6, gems: 24 });
+    for (const puzzle of POOLS[4]) {
+      expect(puzzle.par).toBe(5);
+      for (let x = 0; x < 6; x++) expect(puzzle.board.some((k, i) => i % 6 === x && k >= 0)).toBe(true);
+      let b: Board = puzzle.board;
+      while (!clear(b)) {
+        const stats = { nodes: 0 }, route = solve(b, 6, stats)!;
+        expect(stats.nodes).toBeLessThan(2000);
+        b = swap(b, 6, route[0])!.board;
+      }
+    }
+  });
   it('tells the drawing which row each surviving gem fell from', () => {
     for (const pool of POOLS) for (const puzzle of pool) {
       const size = Math.sqrt(puzzle.board.length);

@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–4 |
+| grown-up | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,12 +16,13 @@
 | 2 | Twelve gems: plan two swaps and falling lines |
 | 3 | Fifteen gems: plan three swaps through the gaps |
 | 4 | Eighteen gems: plan four swaps and cascades |
+| 5 | Twenty-four gems: plan five swaps on a six-by-six tray |
 
 <!-- end generated -->
 
 **Starts as:** swap occupied neighbours to make matching lines of three and clear a finite tray
 
-**Grows into:** four untimed levels with 6/12/15/18 gems, falling cascades, 20 generated solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
+**Grows into:** five untimed levels with 6/12/15/18/24 gems (the last on a 6×6 tray), falling cascades, 20 solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
 
 ## Design notes
 
