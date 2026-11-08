@@ -29,11 +29,14 @@ import {
   planFor,
   shapeFor,
   stickerNumber,
+  takenWays,
+  wayKey,
   type FruitShape,
   type HintGlow,
   type Look,
   type Op,
   type TreeLayout,
+  type TreeRound,
 } from './logic';
 
 const FRUIT: ColorName[] = ['red', 'orange', 'yellow', 'green', 'purple', 'pink'];
@@ -113,6 +116,9 @@ class FruitSums implements Game {
   readonly signs: boolean;
   readonly target: number;
   readonly tray: number[];
+  /** At level 4 the sign shows a sum, "6 + 4", rather than its total. */
+  readonly signSum: readonly [number, number] | null;
+  private readonly round: TreeRound;
   readonly tiles: Container[] = [];
   readonly leaves = new Map<Op, Container>();
   readonly check = new Container();
@@ -150,9 +156,10 @@ class FruitSums implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.signs = choosesSign(ctx.level);
-    const round = makeRound(ctx.level, ctx.rng);
+    const round = (this.round = makeRound(ctx.level, ctx.rng));
     this.target = round.target;
     this.tray = round.tray;
+    this.signSum = round.sign ?? null;
     this.op = this.signs ? null : 'plus';
     this.look = ctx.rng.pick(LOOKS);
     this.layout = layoutFor(ctx.view.w, ctx.view.h, this.tray.length, this.signs);
@@ -169,7 +176,17 @@ class FruitSums implements Game {
         'none';
 
     this.signNumber = label(`${this.target}`, 84, ink);
-    this.sign.addChild(tile(260, 120, 'yellow'), this.signNumber);
+    this.sign.addChild(tile(260, 120, 'yellow'));
+    if (this.signSum) {
+      // Two small fruit of the round's tree and a plus between them, in the order they are spoken.
+      this.signSum.forEach((v, k) => {
+        const f = fruit(v, 'pink', shapeFor(this.look, k));
+        f.scale.set(0.7);
+        f.position.set(k === 0 ? -80 : 80, 0);
+        this.sign.addChild(f);
+      });
+      this.sign.addChild(signArt('plus', 40, swatch.brown.line));
+    } else this.sign.addChild(this.signNumber);
     this.sign.eventMode = 'none';
 
     for (const at of ['a', 'b'] as const) this.slots.addChild(this.slotArt(at));
@@ -236,7 +253,19 @@ class FruitSums implements Game {
 
   start() {
     this.drop();
-    void this.ctx.instruct(this.signs ? 'fsums.start3' : 'fsums.start', { n: this.target });
+    if (this.signSum) void this.ctx.instruct('fsums.start4', this.signWords());
+    else void this.ctx.instruct(this.signs ? 'fsums.start3' : 'fsums.start', { n: this.target });
+  }
+
+  /** The sign's sum, for the level-4 lines. */
+  private signWords() {
+    const [p, q] = this.signSum ?? [0, 0];
+    return { p, q, n: this.target };
+  }
+
+  /** The ways that are no longer new: the sign's own sum at level 4, then hers. */
+  taken(): string[] {
+    return takenWays(this.round, this.found);
   }
 
   /** The tree drops its fruit: each falls from above the top edge and lands with a bounce on a falling note. */
@@ -323,8 +352,8 @@ class FruitSums implements Game {
     const av = this.tray[this.slotA],
       bv = this.tray[this.slotB],
       op = this.op;
-    const verdict = judge(av, op, bv, this.target, this.found);
-    const words = { a: av, b: bv, op: opWord(op), n: this.target, m: verdict.made };
+    const verdict = judge(av, op, bv, this.target, this.taken());
+    const words = { ...this.signWords(), a: av, b: bv, op: opWord(op), m: verdict.made };
     if (verdict.kind === 'below') {
       sfx.pop(2);
       void this.ctx.say('fsums.below', words);
@@ -332,7 +361,8 @@ class FruitSums implements Game {
     }
     if (verdict.kind === 'same') {
       sfx.pop(4);
-      void this.ctx.say('fsums.same');
+      const theSign = this.signSum && wayKey(av, op, bv) === this.taken()[0];
+      void this.ctx.say(theSign ? 'fsums.samesign' : 'fsums.same', words);
       this.clearSlots();
       return;
     }
@@ -366,19 +396,19 @@ class FruitSums implements Game {
       this.tray,
       this.plan.ops,
       this.target,
-      this.found,
+      this.taken(),
       this.slotA,
       this.slotB,
       this.signs ? this.op : 'plus',
     );
   }
 
-  private async hearWrong(words: { a: number; b: number; op: string; n: number; m: number }, hint: boolean) {
-    await this.ctx.say('fsums.wrong', words);
+  private async hearWrong(words: Record<string, string | number>, hint: boolean) {
+    await this.ctx.say(this.signSum ? 'fsums.wrong4' : 'fsums.wrong', words);
     if (hint && !this.finished) await this.ctx.say('fsums.hint');
   }
 
-  private async celebrate(words: { a: number; b: number; op: string; n: number }, key: string) {
+  private async celebrate(words: Record<string, string | number>, key: string) {
     this.busy = true;
     this.found.push(key);
     this.foundText.text = this.found.map((k) => this.sentence(k)).join('     ');
@@ -396,10 +426,10 @@ class FruitSums implements Game {
       gravity: 300,
       life: [0.5, 0.9],
     });
-    await this.ctx.say('fsums.right', words);
+    await this.ctx.say(this.signSum ? 'fsums.right4' : 'fsums.right', words);
     if (this.found.length >= WAYS_PER_ROUND) {
       this.finished = true;
-      await this.ctx.say('fsums.done', { n: this.target });
+      await this.ctx.say(this.signSum ? 'fsums.done4' : 'fsums.done', words);
       await this.ctx.tw.wait(0.6);
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
@@ -407,14 +437,16 @@ class FruitSums implements Game {
     await this.ctx.tw.wait(0.5);
     this.clearSlots();
     this.sumMisses = 0;
-    await this.ctx.instruct('fsums.again', { n: this.target });
+    if (this.signSum) await this.ctx.instruct('fsums.again4', this.signWords());
+    else await this.ctx.instruct('fsums.again', { n: this.target });
     this.busy = false;
   }
 
-  /** "7 + 5 = 12" for a found way, rebuilt from its key. */
+  /** "7 + 5 = 12" for a found way, rebuilt from its key; at level 4 "7 + 5 = 6 + 4". */
   private sentence(key: string): string {
     const [x, y] = key.slice(1).split(',').map(Number);
-    return key[0] === '+' ? `${x} + ${y} = ${this.target}` : `${x} − ${y} = ${this.target}`;
+    const total = this.signSum ? `${this.signSum[0]} + ${this.signSum[1]}` : `${this.target}`;
+    return key[0] === '+' ? `${x} + ${y} = ${total}` : `${x} − ${y} = ${total}`;
   }
 
   private clearSlots() {
@@ -471,7 +503,7 @@ class FruitSums implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.landed.every(Boolean)) return null;
-    const way = hintWay(this.tray, this.plan.ops, this.target, this.found);
+    const way = hintWay(this.tray, this.plan.ops, this.target, this.taken());
     if (!way) return null;
     const want = [way.a, way.b],
       have = [this.slotA, this.slotB];

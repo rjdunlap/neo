@@ -21,6 +21,7 @@ import {
   shapeFor,
   solutions,
   stickerNumber,
+  takenWays,
   wayKey,
   type HintGlow,
   type Op,
@@ -57,20 +58,61 @@ describe('Fruit Sums rounds', () => {
     }
   });
 
-  it('levels 1 and 2 add only, and the sign is not a choice until level 3', () => {
+  it('levels 1, 2 and 4 add only, and the sign is a choice only at level 3', () => {
     expect(planFor(1).ops).toEqual(['plus']);
     expect(planFor(2).ops).toEqual(['plus']);
-    expect([1, 2, 3].map(choosesSign)).toEqual([false, false, true]);
+    expect(planFor(4).ops).toEqual(['plus']);
+    expect([1, 2, 3, 4].map(choosesSign)).toEqual([false, false, true, false]);
+  });
+
+  it('level 4: the sign holds a sum of two fruit up to 9, and at least two other ways make the same', () => {
+    const plan = planFor(4);
+    expect(plan.signPair).toBe(true);
+    for (const seed of SEEDS) {
+      const round = makeRound(4, new Rng(seed));
+      const { target, tray, sign } = round;
+      expect(sign).toBeDefined();
+      const [p, q] = sign!;
+      expect(p + q).toBe(target);
+      for (const v of [p, q]) {
+        expect(v).toBeGreaterThanOrEqual(1);
+        expect(v).toBeLessThanOrEqual(9);
+      }
+      expect(target).toBeGreaterThanOrEqual(6);
+      expect(target).toBeLessThanOrEqual(14);
+      const signKey = wayKey(p, 'plus', q);
+      const others = solutions(tray, plan.ops, target).filter(
+        (w) => wayKey(tray[w.a], w.op, tray[w.b]) !== signKey,
+      );
+      expect(others.length).toBeGreaterThanOrEqual(WAYS_PER_ROUND);
+      expect(takenWays(round, [])).toEqual([signKey]);
+      expect(takenWays(round, ['+1,2'])).toEqual([signKey, '+1,2']);
+    }
+  });
+
+  it('level 4: the sign’s own sum, either way round, is the same way and not a miss', () => {
+    expect(judge(6, 'plus', 4, 10, [wayKey(6, 'plus', 4)])).toMatchObject({ kind: 'same' });
+    expect(judge(4, 'plus', 6, 10, [wayKey(6, 'plus', 4)])).toMatchObject({ kind: 'same' });
+    expect(judge(7, 'plus', 3, 10, [wayKey(6, 'plus', 4)])).toMatchObject({ kind: 'right' });
+    expect(judge(5, 'plus', 3, 10, [wayKey(6, 'plus', 4)])).toMatchObject({ kind: 'wrong', made: 8 });
+  });
+
+  it('levels 1 to 3 have no sign sum, and nothing is taken before she starts', () => {
+    for (const level of [1, 2, 3]) {
+      const round = makeRound(level, new Rng(5));
+      expect(round.sign).toBeUndefined();
+      expect(takenWays(round, [])).toEqual([]);
+    }
   });
 
   it('is the same round for the same seed', () => {
     expect(makeRound(2, new Rng(9))).toEqual(makeRound(2, new Rng(9)));
   });
 
-  it('is a school ladder of three levels and a level beyond the plans reads as the last', () => {
-    expect(LEVELS.school).toEqual({ min: 1, max: 3 });
+  it('is a school ladder of four levels and a level beyond the plans reads as the last', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 4 });
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(9)).toBe(PLANS[2]);
+    expect(planFor(9)).toBe(PLANS[3]);
   });
 });
 
@@ -129,7 +171,7 @@ describe('Fruit Sums layout', () => {
     [1024, 1366],
   ];
   for (const [w, h] of views) {
-    for (const level of [1, 2, 3]) {
+    for (const level of [1, 2, 3, 4]) {
       it(`${w}x${h} level ${level}: every touch target is at least 100 units, on screen, apart, and clear of the pet corner`, () => {
         const plan = planFor(level),
           signs = choosesSign(level);
@@ -210,13 +252,16 @@ describe('Fruit Sums hint that follows through', () => {
   };
 
   it('following the glow from any boxes and sign builds an unfound way and lights the check', () => {
-    for (const level of [1, 3]) {
+    for (const level of [1, 3, 4]) {
       const ops = planFor(level).ops,
         signs = choosesSign(level);
       for (const seed of SEEDS.slice(0, 80)) {
-        const { target, tray } = makeRound(level, new Rng(seed));
-        const firstWay = solutions(tray, ops, target)[0];
-        for (const found of [[], [wayKey(tray[firstWay.a], firstWay.op, tray[firstWay.b])]]) {
+        const round = makeRound(level, new Rng(seed));
+        const { target, tray } = round;
+        const taken0 = takenWays(round, []);
+        const firstWay = hintWay(tray, ops, target, taken0)!;
+        const firstKey = wayKey(tray[firstWay.a], firstWay.op, tray[firstWay.b]);
+        for (const found of [taken0, takenWays(round, [firstKey])]) {
           for (let a = -1; a < tray.length; a++)
             for (let b = -1; b < tray.length; b++) {
               if (a === b && a >= 0) continue;

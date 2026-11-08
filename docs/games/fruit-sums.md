@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–3 |
+| school | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Make a number up to 10 by adding two fruit, two different ways |
 | 2 | Make a number up to 20 by adding two fruit, two different ways |
 | 3 | Make a number up to 15 by adding or taking away, two different ways |
+| 4 | Add two fruit to make the same as the sum on the sign, two different ways |
 
 <!-- end generated -->
 
