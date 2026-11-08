@@ -173,3 +173,7 @@ Late follow-up (0.8 s wait before the next level 9 board): only typecheck and th
 ## 2026-11-07 — Lift It slice 1: looks, parcels, three more friends, varied lines at 1–3
 
 Changed: four seeded looks, six parcels by weight, cat/dog/pig friends, widened lines at levels 1–3, `pawSpots` for paw prints, two level-2 voice lines. Ran: typecheck; 21 lift-it rule tests (authored lines unchanged, parcel group matches stones, all values appear over 500 seeds, paw prints clear at four views); `BROWSER_SUITE=liftit` (level 1 by strokes, level 6 wrong rig + hint, level 3 portrait screenshot in the autumn look with two wheels). Not run: `fingerdemo` (bot unchanged), build, offline, `world`, device; whether the parcels read as apples and pumpkins to a child is open.
+
+## 2026-11-07 — Block Garden slice 1: looks, flower kinds, 24 gardens, three-garden pre-K rounds (PR #1390)
+
+Changed: four seeded looks, four flower kinds with flowers kept in the basket, frozen gardens at 5–8 raised from 14 to 24 each, levels 1–2 rounds of three gardens. Ran: typecheck; 36 block-garden rule tests (minimum now 24); `npm test` (327 files, 6104 tests); `npm run game-docs` (no changes); `BROWSER_SUITE=blockgarden` (levels 1, 3, 6 upright, 5 upright in autumn, 8) with a visual check of rain and evening at level 5 and evening stripes at level 2. Not run: build (no shared files or assets changed), `fingerdemo` (bot unchanged), offline, `world`, iPad; whether the looks read well to a child is open.
