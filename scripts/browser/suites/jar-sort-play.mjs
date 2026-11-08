@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Sudoku Garden by touch: both ends of the ladder, a wrong number, Marks, Erase, a hint, targets of at least 64 units upright and sideways. */
+  /** Jar Sort by touch: level 1's pair, level 9's bright jars, misses, a hint, a drag and undo at 3, upright looks, level 8's mats. */
   async function jarSortPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -96,6 +96,36 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     st = await state();
     assert.deepEqual([st.misses, st.hints], [0, 0]);
     await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
+    // Level 9: level 3's four jars and three kinds with the lit jars still on; a refused move is free, as at 1 and 2.
+    const stickers9 = await page.evaluate(() => kit.store.data.stickers.length);
+    await launch('jar-sort', 9);
+    await idle();
+    st = await state();
+    assert.equal(st.board.split('|').length, 4, 'level 9 has four jars');
+    const lifted9 = st.board.split('|').findIndex((j) => j.length > 0);
+    await tapJar(lifted9);
+    assert.ok(await page.evaluate(() => neo.scene.game.plan.lit), 'level 9 keeps the bright jars on');
+    await page.evaluate(() => kit.tap((neo.view.w / 2) * neo.view.scale, (neo.view.h - 30) * neo.view.scale));
+    await page.waitForTimeout(200);
+    const refused9 = await refusedPair();
+    assert.ok(refused9, 'level 9 has a refused move to try');
+    const before9 = (await state()).board;
+    await tapJar(refused9.from);
+    await tapJar(refused9.to);
+    await page.waitForTimeout(400);
+    st = await state();
+    assert.deepEqual(
+      [st.misses, st.board],
+      [0, before9],
+      'a refused move at level 9 is free and changes nothing',
+    );
+    await screenshot('jar-sort-9-landscape');
+    await solveAll();
+    st = await state();
+    assert.deepEqual([st.misses, st.hints], [0, 0]);
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers9, {
+      timeout: 15000,
+    });
     // Level 3: a refused move is one miss; the second lights the hint once; a drag moves a fruit like two taps; undo takes it back.
     await launch('jar-sort', 3);
     await idle();
@@ -163,7 +193,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     });
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Jar Sort: a seeded level 1 pair and level 8 solved by taps, refused moves (free at 1, misses at 3), a hint, a drag, undo, level 3 upright in the rain look, level 7 upright',
+      'Jar Sort: a seeded level 1 pair, level 9 and level 8 solved by taps, refused moves (free at 1 and 9, misses at 3), a hint, a drag, undo, level 3 upright in the rain look, level 7 upright',
     );
   }
 

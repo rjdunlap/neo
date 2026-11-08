@@ -134,13 +134,28 @@ export const PLANS: JarPlan[] = [
     lit: false,
     labels: true,
   },
+  // Level 9 is level 3's three kinds in four jars with the lit jars and free refusals still on: a gentler step between 2 and 3.
+  {
+    id: 9,
+    name: 'Three kinds, bright jars',
+    jars: 4,
+    cap: 3,
+    kinds: 3,
+    par: [4, 6],
+    boards: 2,
+    lit: true,
+    labels: false,
+  },
 ];
 
 export const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 5 },
+  preschool: { min: 1, max: 9, order: [1, 2, 9, 3] },
+  prek: { min: 2, max: 9, order: [2, 9, 3, 4, 5] },
   school: { min: 4, max: 8 },
 };
+
+/** Easy levels with high IDs, placed earlier by a band's `order`. */
+export const ENTRY_LEVELS = [9] as const;
 
 export function planFor(level: number): JarPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

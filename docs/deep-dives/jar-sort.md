@@ -1,6 +1,6 @@
 # Jar Sort deep dive
 
-*ID `jar-sort` · bands preschool, pre-K, school · levels 1–8 on 2026-11-07 · session `claude/dive-jar-sort` ([PR #1361](https://github.com/rjdunlap/neo/pull/1361))*
+*ID `jar-sort` · bands preschool, pre-K, school · levels 1–9 on 2026-11-07 · session `claude/dive-jar-sort` ([PR #1361](https://github.com/rjdunlap/neo/pull/1361))*
 
 ## The game today
 
@@ -108,11 +108,11 @@ None new. Couch play stays "later" as decided on 2026-10-23.
 ## Build slices, in order
 
 1. **Built 2026-11-07 (PR #1365).** **Fresh content: pantry looks, two more fruits, more level 1 boards and more boards** (preschool to school; typecheck, rule tests, one filtered `jarsort` play at level 3 with one portrait screenshot in the rain look, build because voice lines change; no `fingerdemo`).
-2. **Level 9 *Three kinds, bright jars*** placed between 2 and 3 (new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build).
+2. **Built 2026-11-07 (PR #1412).** **Level 9 *Three kinds, bright jars*** placed between 2 and 3 (new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build).
 3. **Level 10 *A little jar to park in*** (model change on the existing interaction: typecheck, rule tests with levels 1–9 unchanged, one browser play of 10 with one refused move on the little jar, `fingerdemo` at 10, build).
 4. **Level 11 *Like the picture*** (new interaction: typecheck, unit tests, one scripted play with one refused move and one hint, one portrait screenshot, `fingerdemo` at 11, build).
 5. **Level 12 *Scoop the run*** (model change on the existing interaction: typecheck, rule tests, one browser play of 12, `fingerdemo` at 12, build).
 
 ## What was built in this session
 
-Research and ideation (PR #1361). **Slice 1 built 2026-11-07 (PR #1365):** a code-drawn pantry backdrop (window pane per look: morning sun, rain, evening lamp; shelf with striped cloth under each row) in three seeded looks with lid colours red, blue, purple (`LOOKS`, `LID_COLOR` in `logic.ts`); cherries and lemon (`FRUITS` now 7, board kinds still at most five; jam pink and yellow; marimba steps 6 and 10; four new voice lines, not rendered, so device speech); level 1 is four authored pairs picked by seed (level 1 renames fruit but keeps jar order; pairs differ in where fruit stand, since a 3×2 two-kind board has only two puzzles of each length); levels 2–8 hold 20 solver-checked boards each. Sticker unchanged. Checks in [VERIFICATION](../VERIFICATION.md).
+Research and ideation (PR #1361). **Slice 1 built 2026-11-07 (PR #1365):** a code-drawn pantry backdrop (window pane per look: morning sun, rain, evening lamp; shelf with striped cloth under each row) in three seeded looks with lid colours red, blue, purple (`LOOKS`, `LID_COLOR` in `logic.ts`); cherries and lemon (`FRUITS` now 7, board kinds still at most five; jam pink and yellow; marimba steps 6 and 10; four new voice lines, not rendered, so device speech); level 1 is four authored pairs picked by seed (level 1 renames fruit but keeps jar order; pairs differ in where fruit stand, since a 3×2 two-kind board has only two puzzles of each length); levels 2–8 hold 20 solver-checked boards each. Sticker unchanged. Checks in [VERIFICATION](../VERIFICATION.md). **Slice 2 built 2026-11-07 (PR #1412):** level 9 (four jars of three, three kinds, par 4–6, two boards, lit target jars) with 20 solver-checked boards (none equal to level 3's; lengths 4, 5 and 6), not the 14 planned, because the generic test needs at least 20 for every level above 1; preschool plays 1, 2, 9, 3 and pre-K 2, 9, 3, 4, 5, school unchanged. Departure from the dive: `ENTRY_LEVELS = [9]` is wired as `entryLevels`, so a pre-K child saved at 9 who moves to school lands on 4, not 8, the hardest; the bands' starting levels do not move. The how-to card's bright-jars step and free-moves note now hold at 9; the bot and voice lines are unchanged.

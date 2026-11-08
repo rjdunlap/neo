@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import { computeView } from '../../engine/view';
 import { BOARDS } from './puzzles';
 import { VOICE } from './voice';
 import {
   canonical,
+  ENTRY_LEVELS,
   FRUITS,
+  LEVELS,
   LID_COLOR,
   LOOKS,
   roundBoards,
@@ -163,6 +166,27 @@ describe('Jar Sort rules', () => {
           `level ${plan.id} repeats a board`,
         ).toBe(list.length);
     }
+  });
+
+  it('places level 9, three kinds with bright jars, between 2 and 3 for preschool and pre-K, and lands school at its easiest', () => {
+    const plan = planFor(9);
+    expect(plan.id).toBe(9);
+    expect(plan.lit).toBe(true);
+    expect(plan.par).toEqual([4, 6]);
+    expect([plan.jars, plan.cap, plan.kinds]).toEqual([planFor(3).jars, planFor(3).cap, planFor(3).kinds]);
+    expect(levelsInOrder(LEVELS.preschool!)).toEqual([1, 2, 9, 3]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([2, 9, 3, 4, 5]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 6, 7, 8]);
+    expect(stepLevel(2, 1, LEVELS.prek!)).toBe(9);
+    expect(stepLevel(9, 1, LEVELS.prek!)).toBe(3);
+    expect(ENTRY_LEVELS).toEqual([9]);
+    expect(landing(9, LEVELS.school!, ENTRY_LEVELS)).toBe(4);
+    expect(landing(9, LEVELS.prek!, ENTRY_LEVELS)).toBe(9);
+    // New puzzles, not level 3's with the lights on.
+    const three = new Set(BOARDS[3].map((s) => canonical(parse(s))));
+    for (const s of BOARDS[9]) expect(three.has(canonical(parse(s))), s).toBe(false);
+    // Every length from 4 to 6 turns up.
+    expect(new Set(BOARDS[9].map((s) => solve(parse(s), plan.cap)!.length))).toEqual(new Set([4, 5, 6]));
   });
 
   it('gives level 6 boards that the obvious same-kind-first player cannot finish', () => {
