@@ -109,7 +109,7 @@ Decision 1 is added to [Waiting on the developer](../WAITING-ON-DEVELOPER.md). B
 ## Build slices, in order
 
 1. **Built.** **Looks, flower kinds, more gardens and a longer pre-K round** (four looks, four flower kinds, at least 24 frozen gardens at 5–8, three gardens a round at 1–2; typecheck, rule tests, one filtered `blockgarden` play at level 5 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
-2. **Level 9 *Corner with stripes*** placed between 2 and 3 for pre-K and school (new level on the existing interaction: typecheck, rule and registry/how-to tests with the new pre-K `[1, 2, 9, 3]` and school `order`, one browser play of 9, `fingerdemo` at 9).
+2. **Built.** **Level 9 *Corner with stripes*** placed between 2 and 3 for pre-K and school (new level on the existing interaction: typecheck, rule and registry/how-to tests with the new pre-K `[1, 2, 9, 3]` and school `order`, one browser play of 9, `fingerdemo` at 9).
 3. **Level 10 *See what comes next*** placed between 5 and 6 for school (new presentation of the tray: layout probe at 768×1024 first, typecheck, rule and registry/how-to tests with the school `order`, one browser play of 10 with one tap on a faded piece, one portrait screenshot, `fingerdemo` at 10, build because voice lines change).
 4. **Level 11 *Mind the snail*** (model change, the `keep` mask: typecheck, unit tests with levels 1–10 gardens unchanged, one scripted play with one refused snail clear and one hint, one portrait screenshot, `fingerdemo` at 11, build).
 5. **Level 12 *Mind the snails*** after slice 4 (new level on the slice-4 model: typecheck, rule tests including the hint inside the cap, one browser play of 12, `fingerdemo` at 12).
@@ -118,4 +118,6 @@ Gated: level 14 (decision 1). Not planned: level 13 (box clears stay a proposal)
 
 ## What was built in this session
 
-Slice 1 (2026-11-07, PR #1390): four garden looks per round (morning, autumn, rain, evening) picked with `ctx.rng` after the gardens so a look never changes a garden; four flower kinds (poppy, tulip, daisy, sunflower) by bud place via `flowerAt`, with woken flowers peeking out of the basket (newest 7); frozen gardens at levels 5–8 raised from 14 to 24 each (`PER_LEVEL` 24 in `scripts/block-garden-gardens.mjs`, the first 14 unchanged); levels 1–2 are three gardens a round. Slices 2–5 are not built.
+Slice 1 (2026-11-07, PR #1390): four garden looks per round (morning, autumn, rain, evening) picked with `ctx.rng` after the gardens so a look never changes a garden; four flower kinds (poppy, tulip, daisy, sunflower) by bud place via `flowerAt`, with woken flowers peeking out of the basket (newest 7); frozen gardens at levels 5–8 raised from 14 to 24 each (`PER_LEVEL` 24 in `scripts/block-garden-gardens.mjs`, the first 14 unchanged); levels 1–2 are three gardens a round.
+
+Slice 2 (2026-11-07): level 9 *Corner with stripes* is level 3's corner gardens (same generator and filter, via `like: 3` and `kindOf`) with the bud-line stripes on and refused drops free; pre-K `order` `[1, 2, 9, 3]`, school `[2, 9, 3, 4, 5, 6]`, `entryLevels: [9]` (a grown-up lands at 5); how-to lines for 9 and a level-9 section in the `blockgarden` browser suite. Slices 3–5 are not built.
