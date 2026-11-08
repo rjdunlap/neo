@@ -47,7 +47,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
 
 - **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
-- **Prettier and a minimal ESLint** (one reformat commit in `.git-blame-ignore-revs`; typecheck, unit tests, build): [item 10](CODEBASE-REVIEW-2026-11-07.md#10-a-formatter-and-a-minimal-lint).
+- **Prettier and a minimal ESLint** (claimed on `codex/code-quality-tools`; draft PR pending): (one reformat commit in `.git-blame-ignore-revs`; typecheck, unit tests, build): [item 10](CODEBASE-REVIEW-2026-11-07.md#10-a-formatter-and-a-minimal-lint).
 
 ### Study follow-ups (docs-only definitions)
 
