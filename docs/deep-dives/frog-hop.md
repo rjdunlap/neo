@@ -134,7 +134,7 @@ IDs are appended, never inserted. They form a **school window of 3–13** (the l
 
 **Couch play today.** Frog Hop is a team couch game (`COUCH_INFO['frog-hop']`, school band, `level: [3, 3, 4, 5, 6, 6]`). A new level reaches the couch only through that table, and every stop must stay inside the school range. Level 7 already works with `control()` (cards then pads) and can take the last stop with one change; 8 and 10 reuse the same ring, 9 reuses the cards, 11 needs the ring and bot to read the stride; 12 and 13 need new controls (two buttons; a sweep) and are not couch levels. Slice 8 below widens the stops.
 
-**A grown-up window (waits on a `grownup` band or a couch-side plan table).** The older work the school band cannot hold is the natural content for it. Scores, closeness and face-offs are allowed in couch play and never in a child's save. A `grownup` band does not exist yet (Lands stage B; its name is open), and a couch stop's level must sit inside a band's range, so these wait the way [Jelly Drums' grown-up levels](jelly-drums.md#decisions-for-the-developer) do (its decision 5). They would be appended after 13 (IDs 14 and up are taken by the younger entries, so assign when built) and ordered easy to hard in their own window. Standards for these are the ones I did not open (3.NF.A.2, 6.NS.C.5–7: from memory); 2.NBT.A.2 and 2.NBT.B.8 I did.
+**A grown-up window (waits on a `grownup` band or a couch-side plan table).** The older work the school band cannot hold is the natural content for it. Scores, closeness and face-offs are allowed in couch play and never in a child's save. A `grownup` band does not exist yet (Lands stage B; its name is open), and a couch stop's level must sit inside a band's range, so these wait the way [Jelly Drums' grown-up levels](jelly-drums.md#decisions-for-the-developer) do (its decision 5). They would be appended after 13 (the next free IDs when built; see the [Fraction Landings numbering](../definitions/frog-hop-fraction-landings.md#numbering)) and ordered easy to hard in their own window. Standards for these are the ones I did not open (3.NF.A.2, 6.NS.C.5–7: from memory); 2.NBT.A.2 and 2.NBT.B.8 I did.
 
 | Level (window) | Name | First round | What they decide | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -143,6 +143,8 @@ IDs are appended, never inserted. They form a **school window of 3–13** (the l
 | G3 | Below zero | The line goes under the water: `3 − 5`, "the frog goes below zero" | where a subtraction that passes zero lands (6.NS.C.5–7) | A wrong pad is named with its minus sign; two misses count the hops aloud | the line has pads to −10 and 10; every trip passes zero; the label reads "−2"; the answer is unique | M. A signed numeral and a water-line drawing; reading a minus is the hard part |
 
 *Note, 2026-10-22:* the [integers study](subjects/integers.md) proposes **Sea Lift** (a lift on a vertical line whose zero is the water) as the owner of numbers below zero, and G3 then retires into it (that study's decision 1, lean); G3 stays as later Frog Hop arithmetic only if the developer chooses that instead. Nothing here changes until then.
+
+*Note, 2026-11-09:* G2 **Halves on the line** retires into **Fraction Landings** (school band, grade 3), defined in [its packet](../definitions/frog-hop-fraction-landings.md) with quarters as well as halves; it is not kept as separate grown-up content.
 
 | G4 | Estimate on 0–1000 | Like level 13 with a bigger line | where 640 sits | Unscored closeness | as level 13 | M, after 13 |
 | G5 | Estimate duel (couch) | Two players place a frog for the same number on an unmarked 0–1000 line | who is closer (a score) | The true spot is shown to both; no penalty | the same seeded number for both; the closeness function is symmetric and defined everywhere | M–L. A couch entry in `COUCH_IDS`, `UNLOCK_TIERS` and the catalog, a sweeping `control()`, a bot and a seeded pair, with the controls named by `prompts()` |
@@ -153,7 +155,7 @@ IDs are appended, never inserted. They form a **school window of 3–13** (the l
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
-All four are easier than level 1 or fit between existing levels, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are assigned when built (14 and up). A cheap order is an appended slice for the younger band, easy to hard.
+All four are easier than level 1 or fit between existing levels, so they are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are the next free IDs when built (see the [Fraction Landings numbering](../definitions/frog-hop-fraction-landings.md#numbering)). A cheap order is an appended slice for the younger band, easy to hard.
 
 | Entry | Band and place | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -167,7 +169,7 @@ All four are easier than level 1 or fit between existing levels, so they are pla
 - **A timer, speed scoring, a race, lives, falling in the water or a winner** (*Frog Jump*'s time pads, *Frogger*, the second player's race, the chutes in *Chutes and Ladders*). A wrong answer boings and teaches; the frog never drowns.
 - **A spinner or a die.** A random number is not the learning; the generator deals a fair one.
 - **Multiplication tables as hops** and **skip counting as a level** (Bubble Pop's sequences, Little Helpers' equal groups). Kept to a sketch above.
-- **Negative numbers and fractions as levels**: older than the school band, and fractions of food are Pet Kitchen's.
+- **Negative numbers as levels**: older than the school band (Sea Lift, above). **Fractions** as places on the line are **Fraction Landings** (school, grade 3 per the [fractions study](subjects/fractions.md); [definition](../definitions/frog-hop-fraction-landings.md)); fractions of food stay Pet Kitchen's.
 - **Coins and money**: Market Stall. **Rulers and length in units**: Inchworm Measure.
 - **A "how many more than" between two groups**: Picture Graph. **Bye-bye ducks and a countdown song**: Duck Pond's entry; the frog does not need a second song.
 - **A journal entry, a picnic step or a kept creation.** A number line is not a discovery about the world.
@@ -203,6 +205,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 10. **Level 12, Big hops and little hops** (define first with a child). A prototype before the full slice.
 11. **Level 13, Where does it go?** (decision 5), then the grown-up window (G1–G5, decision 6) after Lands stage B or a couch-side plan table.
 12. **Sketches**: hops of 2 and 5, a vertical line.
+13. **Fraction Landings FL1–FL2** (defined 2026-11-09, [definition](../definitions/frog-hop-fraction-landings.md); school; new-levels tier plus one landscape and one portrait screenshot of FL2; either order with slices 4, 5 and 7).
 
 ## What was built in this session
 
