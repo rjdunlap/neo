@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { selectNames } from '../selection.mjs';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
   /** Jar Sort by touch: level 1's pair, level 9's bright jars, misses, a hint, a drag and undo at 3, upright looks, level 10's little jar, level 8's mats. */
@@ -38,7 +39,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         const m = await page.evaluate(async () => {
           const L = await import('/src/games/jar-sort/logic.ts'),
             g = neo.scene.game;
-          return g.busy ? null : (L.solve(g.board, g.caps, g.labels)?.[0] ?? null);
+          return g.busy
+            ? null
+            : (L.solve(g.board, g.caps, g.labels, undefined, { rule: g.plan.rule, goal: g.goal })?.[0] ??
+                null);
         });
         if (!m) {
           await page.waitForTimeout(250);
@@ -57,9 +61,70 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
           g = neo.scene.game;
         for (let f = 0; f < g.board.length; f++)
           for (let t = 0; t < g.board.length; t++)
-            if (L.refusal(g.board, g.caps, f, t)) return { from: f, to: t };
+            if (L.refusal(g.board, g.caps, f, t, g.plan.rule)) return { from: f, to: t };
         return null;
       });
+    const playNew = async (level) => {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+      await launch('jar-sort', level);
+      await idle();
+      const before = await state();
+      if (level === 11) {
+        await screenshot('jar-sort-11-picture-portrait');
+        const refused = await refusedPair();
+        assert.ok(refused, 'a full cup can refuse the fruit');
+        for (let n = 1; n <= 2; n++) {
+          await tapJar(refused.from);
+          await tapJar(refused.to);
+          const st = await state();
+          assert.deepEqual([st.misses, st.hints, st.hinted, st.board], [n, n - 1, n === 2, before.board]);
+        }
+        const target = await page.evaluate(() => neo.scene.game.goal.map((jar) => jar.join('')).join('|'));
+        assert.notEqual(target, before.board, 'the picture is a different arrangement');
+        assert.equal(await page.evaluate(() => neo.scene.game.picture.visible), true);
+      } else {
+        const scoop = await page.evaluate(async () => {
+          const { liftCount } = await import('/src/games/jar-sort/logic.ts');
+          const g = neo.scene.game;
+          const from = g.board.findIndex((jar) => liftCount(jar, g.plan.rule) > 1);
+          const to = g.board.findIndex((jar) => !jar.length);
+          return { from, to, count: liftCount(g.board[from], g.plan.rule) };
+        });
+        await tapJar(scoop.from);
+        const raised = await page.evaluate(({ from, count }) => {
+          const g = neo.scene.game;
+          const pieces = g.pieces[from];
+          return pieces.slice(-count).every((p, i) => p.y < g.slot(from, pieces.length - count + i).y);
+        }, scoop);
+        assert.equal(raised, true, 'the whole run lifts together');
+        await tapJar(scoop.to);
+        await idle();
+        const after = (await state()).board.split('|');
+        assert.equal(after[scoop.to].length, scoop.count, 'the whole scoop moved in one action');
+        assert.equal(after[scoop.from].length, before.board.split('|')[scoop.from].length - scoop.count);
+        await tap('neo.scene.game.undoButton');
+        await page.waitForTimeout(200);
+        assert.equal((await state()).board, before.board, 'undo puts back the entire scoop');
+      }
+      await solveAll();
+      await finished('jar-sort');
+      const result = await state();
+      assert.deepEqual([result.index, result.misses, result.hints], level === 11 ? [2, 2, 1] : [1, 0, 0]);
+      await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, {
+        timeout: 15000,
+      });
+      log(
+        level === 11
+          ? 'Jar Sort 11: portrait, full cup refusals, one hint, both picture boards, one sticker'
+          : 'Jar Sort 12: whole run lifted and moved, one undo, solved by taps, one sticker',
+      );
+    };
+    if (process.env.JAR_SORT_LEVELS) {
+      for (const level of selectNames(process.env.JAR_SORT_LEVELS, ['11', '12'], 'JAR_SORT_LEVELS'))
+        await playNew(Number(level));
+      return;
+    }
     // Level 1: a seeded authored pair; a refused move under lit jars is free; a tap on the ground sets a lifted fruit back.
     await launch('jar-sort', 1);
     await idle();
@@ -159,6 +224,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.evaluate(() => neo.scene.game.undoButton.press());
     await page.waitForTimeout(300);
     assert.equal((await state()).board, before, 'the round arrow takes it back');
+    await playNew(11);
+    await playNew(12);
     assert.deepEqual(errors, [], 'page errors');
     // Level 3 upright in the rain look (relaunched until the round picks it): the pantry window, a blue lid colour, jars clear.
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -249,6 +316,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, {
       timeout: 15000,
     });
+    await playNew(11);
+    await playNew(12);
     assert.deepEqual(errors, [], 'page errors');
     log(
       'Jar Sort: a seeded level 1 pair, level 9 and level 8 solved by taps, refused moves (free at 1 and 9, misses at 3), a hint, a drag, undo, level 3 upright in the rain look, level 7 upright, level 10 upright with a refused third fruit on the little jar',
