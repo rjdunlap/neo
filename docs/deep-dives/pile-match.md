@@ -117,7 +117,7 @@ None new. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-ru
 
 1. **Built (2026-11-07, PR #1371).** **Looks, the windy drop-in, more shapes and a varied level 1** (preschool to school; typecheck, rule tests, one filtered `pilematch` play at level 4 with one portrait screenshot in the autumn look, and `fingerdemo` at 1 because the drop-in changes when the bot may tap; build only if shared files change). The suite's level 1 script must not assume shells come second.
 2. **Built (2026-11-09, PR #1438).** **Level 9 *A smaller tray*** (new level on the existing interaction: typecheck, rule tests at `t = 4`, one browser play of 9 with one full-tray refusal, `fingerdemo` at 9).
-3. **Level 11 *Any three in a little pile*** placed between 3 and 4 (new level on the existing interaction: typecheck, rule and registry tests with the new `order`, one browser play of 11, `fingerdemo` at 11).
+3. **In progress (claude/pile-match-little-pile).** **Level 11 *Any three in a little pile*** placed between 3 and 4 (new level on the existing interaction: typecheck, rule and registry tests with the new `order`, one browser play of 11, `fingerdemo` at 11).
 4. **Two more kinds and level 10 *Look closely*** (model change and new art on the existing interaction: typecheck, rule tests, one browser play of 10 with one refused tap and one portrait screenshot, `fingerdemo` at 10, build because voice lines change). Add a device check: whether the level 10 colour pairs read for a colour-blind child.
 
 ## What was built in this session

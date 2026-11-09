@@ -7,7 +7,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **Phone held upright, shell slice 2: the rest of the root** (ready; shell tier): upright layout tests and one screenshot per root scene; `classic/` stays sideways-only; after the game batches, per its [definition](definitions/phone-portrait.md#shell-slice-2-the-rest-of-the-root-ready); it now matters only on narrow tablets and computers.
-- **`pile-match`, slices 3–4 in the dive's order** (preschool to school; [build slices](deep-dives/pile-match.md#build-slices-in-order); slices 1–2 are built).
+- **`pile-match`, slices 3–4 in the dive's order** (preschool to school; [build slices](deep-dives/pile-match.md#build-slices-in-order); slices 1–2 are built; slice 3 in progress on `claude/pile-match-little-pile`).
 
 - **Study `nature-sustainability`: define Picnic Loop 7–8 (N4)** (docs only): specify the cup schedule, wash-tub capacity and accepted plans for Second Chance Shed. [Source](deep-dives/subjects/nature-sustainability.md#build-slices-in-order).
 - **Study `earth-materials`: define Sand Table sediment evidence (E3)** (docs only): source-check one breeze transport table and define the before-and-after trace and observation answers for rung 4. [Source](deep-dives/subjects/earth-materials.md#build-slices-in-order).
