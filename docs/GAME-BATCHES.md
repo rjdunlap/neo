@@ -494,6 +494,14 @@ Built 2026-10-31, [PR #1057](https://github.com/rjdunlap/neo/pull/1057); [closeo
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/second-chance-shed-5-6.md#check-tier) sets it (typecheck and rule tests with the registry, lands and how-to tests; a filtered `browser-check.mjs` play at level 5 with the tin to Remake, a failing ring, a repeated ring counting nothing, then the tin to the friend, and at level 6 with the tempting plan, two failed rings and the glow, one Show me one and the finish; one portrait screenshot at level 6; `fingerdemo` at 5 and 6; one build). Review gate: the building session's source check of the new item and its fits, recorded in VERIFICATION.
 
+### second-chance-shed 3: Picnic Loop
+
+Defined 2026-11-09 (nature-sustainability N4); not yet built.
+
+- **`second-chance-shed`, levels 7–8 (N4)** (new interaction on the built game; school range to {4–8}): a day of picnics for the friends, each needing a cup at every picnic, with a few washable cups, a wash tub that washes two between picnics and one-use cups that go to the Last Heap; level 7 is the loop (target 2) and level 8 three picnics with two authored cases (target 5). The big mug replaces the study's jar. [Definition](definitions/second-chance-shed-7-8.md), [nature-sustainability study slice N4](deep-dives/subjects/nature-sustainability.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's check tier](definitions/second-chance-shed-7-8.md#check-tier) sets it (typecheck and rule tests with the registry, lands and how-to tests; one filtered `browser-check.mjs` play at levels 7 and 8; one portrait screenshot of level 8; `fingerdemo` at 7 and 8; one build). Review gate: the building session's source check of the picnic set, recorded in VERIFICATION.
+
 ### sand-table 1: Levels 1–3
 
 Built 2026-10-23; [build note](archive/COMPLETED-2026-10-09.md#sand-table-levels-13-e2-2026-10-23). Home land is Rainbow Meadow (see the note). No longer eligible for dispatch.
