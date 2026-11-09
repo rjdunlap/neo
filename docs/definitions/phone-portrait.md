@@ -62,10 +62,13 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 | Batch | For | Games (kind) |
 | --- | --- | --- |
 | 1 (built in shell slice 1) | grown-up six | `word-search` (words), `sudoku-garden` (logic), `island-bridges` (space), `pond-conga` (hands), `brain-break` (noticing), `number-nook` (numbers) |
-| 2 | the rest of grown-up | `picture-logic`, `lantern-lights`, `block-garden`, `gem-swap`, `tile-pairs`, `pyramid-solitaire` |
-| 3 | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
-| 4 | the last grown-up games | `log-roll`, `marble-jump`, `snowball-merge`, `species-comeback`, plus the two most-played early-school games from the developer's feedback |
-| 5 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games with a portrait branch first (cheaper) |
+| 2 | grown-up: a second game per kind, and music | `hat-band` (music), `crossword` (words), `picture-logic` (logic), `tile-pairs` (noticing), `gem-swap` (space), `lantern-lights` (logic) |
+| 3 | grown-up: the rest of the smaller boards | `block-garden`, `logic-grid`, `species-comeback`, `pyramid-solitaire` |
+| 4 | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
+| 5 | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
+| 6 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games with a portrait branch first (cheaper) |
+
+The order of batches 2 to 5 was changed on 2026-11-09, when the phone became the grown-ups' daily playtest: the [roadmap's recommendations](../ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09) give the reasons and what follows the grown-up games (an upright sweep of the early-school games, then batches by kind).
 
 Batch 1 is all games that list `grownup`, and between them cover six kinds, so a grown-up's upright six is complete on the first day. About 168 games means roughly 28 batches; the order after batch 4 follows the feedback, not this table.
 
