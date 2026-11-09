@@ -23,14 +23,14 @@ export const HOW_TO: GameHowTo = {
     {
       from: 7,
       to: 7,
-      text: 'Try finishing the top row, then the left column, then the square that is left.',
+      text: 'Try the top row first, then the left column and the remaining square.',
     },
     'Undo takes back the last tap, a whole line at once. Start over restores the starting board.',
     { from: 1, to: 6, text: 'Hint outlines a tile on a shortest route.' },
     {
       from: 7,
       to: 7,
-      text: 'Hint looks for a shortest route. If the search takes too long, it shows a move that helps finish the board.',
+      text: 'Hint looks for a shortest route and lights a tile that can help you finish.',
     },
   ],
   finish:
