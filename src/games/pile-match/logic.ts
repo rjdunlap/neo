@@ -56,11 +56,11 @@ export interface PilePlan {
   pieces: number;
   kinds: number;
   layers: number;
-  /** Tray slots: 3 (the basket) in asked mode, else 5, the most that fits beside the pet at 104 units a slot. */
-  tray: 3 | 5;
+  /** Tray slots: 3 (the basket) in asked mode, else 5, the most that fits beside the pet at 104 units a slot; level 9 has 4. */
+  tray: 3 | 4 | 5;
   /** Levels 1–2 name one kind at a time and only it is taken. */
   asked: boolean;
-  /** Levels 6–8 end with the pet counting the baskets by threes. */
+  /** Levels 6–9 end with the pet counting the baskets by threes. */
   count: boolean;
 }
 
@@ -100,12 +100,13 @@ export const PLANS: readonly PilePlan[] = [
   },
   { id: 7, name: 'Six kinds', pieces: 18, kinds: 6, layers: 3, tray: 5, asked: false, count: true },
   { id: 8, name: 'The big heap', pieces: 24, kinds: 8, layers: 3, tray: 5, asked: false, count: true },
+  { id: 9, name: 'A smaller tray', pieces: 18, kinds: 6, layers: 3, tray: 4, asked: false, count: true },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  school: { min: 5, max: 9 },
 };
 export const planFor = (level: number): PilePlan =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];

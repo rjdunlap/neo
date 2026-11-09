@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–4 |
 | pre-K | 3–6 |
-| school | 5–8 |
+| school | 5–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 6 | Five kinds, three layers |
 | 7 | Six kinds |
 | 8 | The big heap |
+| 9 | A smaller tray |
 
 <!-- end generated -->
 

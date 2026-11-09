@@ -148,6 +148,42 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, {
       timeout: 15000,
     });
+    // Level 9: a four-place tray fills without a three, a fifth tap is refused (one miss), then solved by taps.
+    await launch('pile-match', 9);
+    await idle();
+    await page.waitForTimeout(300);
+    const stickers9 = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal(await page.evaluate(() => neo.scene.game.layout.slots.length), 4, 'level 9 draws four places');
+    for (let guard = 0; guard < 10 && (await state()).tray < 4; guard++) {
+      const i = await page.evaluate(async () => {
+        const L = await import('/src/games/pile-match/logic.ts'),
+          g = neo.scene.game,
+          t = L.tray(g.board, g.mask);
+        const open = L.freePieces(g.board.cells, g.mask);
+        return (
+          open.find((i) => t[g.board.kinds[i]] === 0) ??
+          open.find((i) => t[g.board.kinds[i]] === 1) ??
+          open[0]
+        );
+      });
+      await tapPiece(i);
+    }
+    assert.equal((await state()).tray, 4, 'the tray fills to four');
+    const refused9 = await page.evaluate(async () => {
+      const L = await import('/src/games/pile-match/logic.ts'),
+        g = neo.scene.game,
+        t = L.tray(g.board, g.mask);
+      return L.freePieces(g.board.cells, g.mask).find((i) => t[g.board.kinds[i]] < 2) ?? -1;
+    });
+    assert.ok(refused9 >= 0, 'a free piece the full four-place tray must refuse');
+    await tapPiece(refused9);
+    st = await state();
+    assert.deepEqual([st.misses, st.tray], [1, 4], 'the full four-place tray refuses and counts once');
+    await screenshot('pile-match-9-full-tray');
+    await solveAll();
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers9, {
+      timeout: 15000,
+    });
     // Level 4 upright in the autumn look (relaunched until the seed gives it): taps wait for the drop-in, one screenshot, solved by taps.
     await page.setViewportSize({ width: 768, height: 1024 });
     let look = '';
@@ -172,7 +208,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 4 upright in autumn, all solved by taps',
+      'Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 9 with a full four-place tray, level 4 upright in autumn, all solved by taps',
     );
   }
 
