@@ -117,8 +117,8 @@ By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S8) 
 1. **Built.** **Looks, parcels, three more friends and varied lines at 1–3** (preschool to school; typecheck, rule tests, one filtered `liftit` play at level 3 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
 2. **Built.** **The replay button and the helping paw** (from the definition; level 3 up: the replay button replays the last haul with the knots counted aloud; levels 1–2: a drawn pet paw rides the handle when Show a hint pulls; typecheck, unit tests including a layout test for the button clear of the pet and shell, one browser play at level 4 that taps replay, one portrait screenshot; build because voice lines change).
 3. **Built.** **Level 9 *How many paws?*** placed between 4 and 5 (new level on the existing card interaction: typecheck, rule and registry/how-to tests with the new `order`, one browser play of 9 with one wrong card, `fingerdemo` at 9, build because voice lines change).
-4. **Level 7 *Three ropes*** (new interaction, the movable knot: layout probe at 768×1024 first, then unit tests, one scripted play with one wrong rig and one hint, one portrait screenshot, `fingerdemo` at 7, build).
-5. **Level 8 *Three ropes by the numbers*** after slice 4 (new level on the existing interaction: typecheck, rule tests, one browser play of 8, `fingerdemo` at 8).
+4. **Level 7 *Three ropes*** (claimed on `codex/lift-it-three-ropes` with slice 5, after the iPad layout probe) (new interaction, the movable knot: layout probe at 768×1024 first, then unit tests, one scripted play with one wrong rig and one hint, one portrait screenshot, `fingerdemo` at 7, build).
+5. **Level 8 *Three ropes by the numbers*** (claimed on `codex/lift-it-three-ropes`) after slice 4 (new level on the existing interaction: typecheck, rule tests, one browser play of 8, `fingerdemo` at 8).
 
 Gated: level 10 (decision 1). Device check to add when slice 4 lands: whether three strands read as three on an iPad.
 
