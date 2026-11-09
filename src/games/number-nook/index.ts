@@ -146,7 +146,13 @@ class NumberNook implements Game {
     this.resize(this.view);
   }
   start() {
-    void this.ctx.instruct(this.plan.order === 'columns' ? 'nook.columns' : 'nook.go');
+    const instruction =
+      this.plan.order === 'columns'
+        ? 'nook.columns'
+        : this.plan.rows === 3 && this.plan.cols === 4
+          ? 'nook.twelve'
+          : 'nook.go';
+    void this.ctx.instruct(instruction);
   }
   choose(at: number) {
     if (this.finished || !this.ctx.alive) return;

@@ -7,6 +7,9 @@ export const VOICE = {
   'nook.columns': [
     'Match the small goal. Read down each column: one, two, three; then four, five, six. Slide tiles along the empty space’s row or column.',
   ],
+  'nook.twelve': [
+    'Slide the tiles to match the small goal. Try putting one through four in the top row first. Then use the two rows below.',
+  ],
   'nook.miss': ['That tile cannot reach the gap. Tap a tile in the same row or column as the empty space.'],
   'nook.hint': ['Slide the glowing tile. It starts a shortest way to put the numbers in order.'],
   'nook.restart': ['The starting tiles are back. Try another route.'],

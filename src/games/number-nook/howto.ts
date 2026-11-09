@@ -15,6 +15,11 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Read down each column of the goal: 1, 2, 3; then 4, 5, 6. Green tiles match that goal, but can still move.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: 'Try building the top row first. Once 1 through 4 are in place, use the two rows below to finish.',
+    },
     'Undo takes back the last tap, a whole line at once. Hint outlines a tile on a shortest route. Start over restores the starting board.',
   ],
   finish:

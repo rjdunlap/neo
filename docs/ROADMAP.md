@@ -134,7 +134,7 @@ The [first](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#short-ladder-audit-2
 
 | Direction | Next useful work | Detail |
 | --- | --- | --- |
-| **Number Nook** | Ready: level 6 Twelve spaces, then level 7 The fifteen; the column-order goal is built, while the school opening and couch course stay decision-dependent | [Build slices](deep-dives/number-nook.md#build-slices-in-order) |
+| **Number Nook** | Level 6 Twelve spaces is built, with a 3×4 board and exact hints. Level 7 The fifteen is ready. The school opening and couch course await decisions. | [Build slices](deep-dives/number-nook.md#build-slices-in-order) |
 | **Shape Sorter** | Attribute sorts built through pre-K 14; only developer-dependent school/creature alternatives remain | [Deep dive](deep-dives/shape-sorter.md#decisions-for-the-developer) |
 | **Memory Match's equivalent representations** | Levels 13–14 are separate decision-dependent slices; level-10 and younger-band decisions stay open | [Build slices](deep-dives/memory-match.md#build-slices-in-order) |
 | **Owl Walk Home** | Every remaining slice is gated: Stepping stones (decision 6), Color or shape (decision 7 and the iPad speech check), the grown-up seat (decision 5) | [Build slices](deep-dives/owl-walk.md#build-slices-in-order) |

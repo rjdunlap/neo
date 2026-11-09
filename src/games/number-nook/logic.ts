@@ -11,6 +11,7 @@ export const PLANS = [
   { rows: 3, cols: 3, near: 14, far: 14, order: 'rows', name: 'Nine spaces: weave rows and columns' },
   { rows: 2, cols: 4, near: 18, far: 18, order: 'rows', name: 'Eight spaces: two long rows' },
   { rows: 3, cols: 3, near: 14, far: 14, order: 'columns', name: 'Nine spaces: read the new goal' },
+  { rows: 3, cols: 4, near: 24, far: 24, order: 'rows', name: 'Twelve spaces' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const goal = (rows: number, cols: number, order: GoalOrder = 'rows') =>
@@ -24,11 +25,13 @@ export const solved = (board: readonly number[], target: readonly number[] = goa
 export const inPlace = (board: readonly number[], target: readonly number[] = goal(1, board.length)) =>
   board.filter((v, i) => v !== 0 && v === target[i]).length;
 export function neighbours(board: readonly number[], cols: number): number[] {
-  const z = board.indexOf(0),
-    r = Math.floor(z / cols),
+  return gapNeighbours(board.indexOf(0), board.length, cols);
+}
+function gapNeighbours(z: number, size: number, cols: number): number[] {
+  const r = Math.floor(z / cols),
     c = z % cols;
   return [z - cols, z + cols, z - 1, z + 1].filter(
-    (i) => i >= 0 && i < board.length && Math.abs(Math.floor(i / cols) - r) + Math.abs((i % cols) - c) === 1,
+    (i) => i >= 0 && i < size && Math.abs(Math.floor(i / cols) - r) + Math.abs((i % cols) - c) === 1,
   );
 }
 export function slide(board: readonly number[], cols: number, at: number): number[] | null {
@@ -63,7 +66,7 @@ export function lineSlide(
 }
 
 const pools = new Map<number, number[][]>();
-/** The boards a level draws from, every one at an exact shortest distance inside its range. */
+/** The small-board pools, each board an exact shortest distance inside the level's range. */
 export function pool(level: number): number[][] {
   const cached = pools.get(level);
   if (cached) return cached;
@@ -81,6 +84,7 @@ const tables = new Map<string, Map<string, { distance: number; next: number }>>(
 const key = (b: readonly number[]) => b.join('');
 export function distances(rows: number, cols: number, order: GoalOrder = 'rows') {
   if (rows === 3 && cols === 3) return rankedDistances(goal(rows, cols, order), cols, neighbours, slide);
+  if (rows * cols > 9) throw new RangeError('Full distance tables are only for small boards');
   const shape = `${rows},${cols}`,
     cached = tables.get(shape);
   if (cached) return cached;
@@ -101,10 +105,75 @@ export function distances(rows: number, cols: number, order: GoalOrder = 'rows')
   tables.set(shape, table);
   return table;
 }
+
+const twelveGoal = goal(3, 4);
+const twelveMoves = twelveGoal.map((_, gap) => gapNeighbours(gap, twelveGoal.length, 4));
+const twelveManhattan = twelveGoal.map((_, at) =>
+  twelveGoal.map((_, tile) => {
+    if (!tile) return 0;
+    const home = tile - 1;
+    return Math.abs(Math.floor(at / 4) - Math.floor(home / 4)) + Math.abs((at % 4) - (home % 4));
+  }),
+);
+
+/** Iterative-deepening A*: Manhattan distance ignores tile interference, so the first route found is shortest. */
+function twelveStep(board: readonly number[]) {
+  const tiles = board.slice(),
+    gap = tiles.indexOf(0);
+  // On an even-width board, inversion count plus the gap's row is invariant modulo two.
+  let parity = Math.floor(gap / 4);
+  for (let i = 0; i < tiles.length; i++) {
+    for (let j = i + 1; j < tiles.length; j++) if (tiles[j] && tiles[i] > tiles[j]) parity++;
+  }
+  if (parity % 2 !== 0) return null;
+
+  const estimate = tiles.reduce((sum, tile, i) => sum + twelveManhattan[i][tile], 0);
+  // Return the cell to slide at this depth, -1 at the goal or null when this bound is too small.
+  function search(blank: number, previous: number, remaining: number, lowerBound: number): number | null {
+    if (lowerBound > remaining) return null;
+    if (lowerBound === 0) return -1;
+    for (const at of twelveMoves[blank]) {
+      if (at === previous) continue;
+      const tile = tiles[at];
+      tiles[blank] = tile;
+      tiles[at] = 0;
+      const nextBound = lowerBound + twelveManhattan[blank][tile] - twelveManhattan[at][tile];
+      const found = search(at, blank, remaining - 1, nextBound);
+      tiles[at] = tile;
+      tiles[blank] = 0;
+      if (found !== null) return at;
+    }
+    return null;
+  }
+  // Each slide changes Manhattan distance by one, so only bounds of the same parity can solve the board.
+  for (let distance = estimate; ; distance += 2) {
+    const next = search(gap, -1, distance, estimate);
+    if (next !== null) return { distance, next };
+  }
+}
+
 export function solutionStep(board: readonly number[], cols: number, order: GoalOrder = 'rows') {
+  if (board.length === 12 && cols === 4) return twelveStep(board);
   return distances(board.length / cols, cols, order).get(key(board)) ?? null;
 }
 export function makeBoard(level: number, rng: Rng): number[] {
+  const plan = planFor(level);
+  if (plan.rows === 3 && plan.cols === 4) {
+    // A 24-slide walk is an upper bound. Check it to discard walks with shortcuts.
+    for (;;) {
+      const board = twelveGoal.slice();
+      let gap = board.length - 1,
+        previous = -1;
+      for (let i = 0; i < plan.far; i++) {
+        const at = rng.pick(twelveMoves[gap].filter((cell) => cell !== previous));
+        board[gap] = board[at];
+        board[at] = 0;
+        previous = gap;
+        gap = at;
+      }
+      if (twelveStep(board)?.distance === plan.far) return board;
+    }
+  }
   return rng.pick(pool(level)).slice();
 }
 
@@ -126,5 +195,5 @@ export function nookLayout(w: number, h: number, rows: number, cols: number) {
 }
 
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 5 },
+  grownup: { min: 1, max: 6 },
 };
