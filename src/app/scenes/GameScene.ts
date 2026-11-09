@@ -20,6 +20,8 @@ import { GAMES } from '../../games/registry';
 import { discoveryMemory, launchDiscovery, mixMemory, type MixRound } from '../discovery';
 import { mixReturn, mixStop, nextUp } from '../../content/mix';
 import { titleOf } from '../mix';
+import { dailySix, dayKey, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { openPlaytestSheet, type PlaytestSheet } from '../../ui/playtest-sheet';
 import { allDoneArt, hopIcon, nextStopArt, StopTile } from '../../ui/mix';
 import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
@@ -91,6 +93,10 @@ export class GameScene extends Scene {
     house: RoundButton | null;
     keep: RoundButton | null;
   } | null = null;
+  /** A daily round's result: the next-of-six tile, the grown-up's note pencil and its open sheet. */
+  dailyNext: DiscoveryTile | null = null;
+  dailyNote: RoundButton | null = null;
+  private dailySheet: PlaytestSheet | null = null;
   /** What she made this round, offered for the treehouse (null when the game made nothing or it was empty). */
   private made: Creation | null = null;
   /** Journal entries this round showed her for the first time. */
@@ -403,6 +409,7 @@ export class GameScene extends Scene {
     window.removeEventListener('pointercancel', this.touchUp);
     window.removeEventListener('blur', this.touchUp);
     this.keys?.destroy();
+    this.dailySheet?.close();
     this.closeHelp();
     this.lifetime.destroy();
     this.game?.destroy();
@@ -861,7 +868,10 @@ export class GameScene extends Scene {
     this.resultReady = true;
     this.syncDiscovery(false);
     this.syncMix();
+    const nextDaily = this.showDailyNext();
     await speech;
+    if (this.speechSerial === serial && nextDaily && this.liveResult() && !this.navigating)
+      void voice.say('mix.next', { title: titleOf(nextDaily.mod) });
     if (this.speechSerial === serial && this.discovery?.tile.visible) this.sayDiscovery('discovery.offer');
     if (this.speechSerial === serial && this.mixControls?.tile.visible) this.sayMix();
   }
@@ -879,9 +889,67 @@ export class GameScene extends Scene {
     run();
   }
 
+  /** A Today's six card's round (or its Again / Next level): its result offers the next of the six, not a discovery. */
+  private get dailyRound(): boolean {
+    return !!this.origin && 'daily' in this.origin && this.startLevel !== undefined && !this.story;
+  }
+
+  /**
+   * On a daily round's result: the next of today's six not yet played, in D1b's rectangle (so "Play all" is one tap per
+   * game), and for a grown-up a pencil that opens the playtest note for this game. Nothing when the six are done: the way
+   * out goes back to the page and its flourish.
+   */
+  private showDailyNext(): DailyPick | null {
+    if (!this.dailyRound || this.mixRound || !this.resultLayer) return null;
+    const day = dayKey(new Date());
+    const played = (id: string) => playedOn(store.data.games[id]?.history, day);
+    const picks = dailySix(
+      day,
+      store.data.profile.band,
+      GAMES,
+      (id) => store.data.games[id]?.pinned ?? null,
+      this.app.uprightPhone(),
+    );
+    const live = () => this.liveResult() && !this.navigating && this.resultReady && !this.dailySheet;
+    const next = nextOfSix(picks, this.mod.id, played);
+    if (next) {
+      const tile = new DiscoveryTile(
+        288,
+        112,
+        nextGameArt(next.mod, titleOf(next.mod)),
+        () =>
+          this.navigateResult(() =>
+            this.app.go.game(next.mod.id, next.band, undefined, false, { daily: true }, next.level),
+          ),
+        live,
+      );
+      tile.position.set(32, 24);
+      this.resultLayer.addChild(tile);
+      this.dailyNext = tile;
+    }
+    if (store.data.profile.band === 'grownup' && picks.some((p) => p.mod.id === this.mod.id)) {
+      const pencil = new RoundButton(noteIcon(), swatch.white, 50, () => {
+        if (!live()) return;
+        this.speechSerial++;
+        voice.stop();
+        this.dailySheet = openPlaytestSheet({
+          day,
+          picks,
+          played,
+          only: this.mod.id,
+          onClose: () => (this.dailySheet = null),
+        });
+      });
+      pencil.position.set(32 + 50, 160 + 50);
+      this.resultLayer.addChild(pencil);
+      this.dailyNote = pencil;
+    }
+    return next;
+  }
+
   private candidates() {
-    // Inside a mix the mix's own controls take D1b's rectangles, so two "next" pictures never compete.
-    if (this.mixRound) return [];
+    // Inside a mix the mix's own controls take D1b's rectangles, so two "next" pictures never compete; so does a daily round's next of six.
+    if (this.mixRound || this.dailyRound) return [];
     return discoveryCandidates(
       { current: this.mod.id, band: store.data.profile.band, playedBand: this.band, story: !!this.story },
       GAMES,
@@ -1264,4 +1332,15 @@ export class GameScene extends Scene {
     void this.tw.to(card, { alpha: 1 }, { duration: 0.4, delay: 0.6 });
     void this.tw.wait(9).then(dismiss);
   }
+}
+
+/** A pencil, for a grown-up's playtest note on a daily round's result. */
+function noteIcon(): Graphics {
+  return new Graphics()
+    .poly([-18, 18, -13, 2, 9, -20, 20, -9, -2, 13])
+    .fill(swatch.yellow.fill)
+    .stroke({ color: ink, width: 4, join: 'round' })
+    .poly([-18, 18, -13, 2, -2, 13])
+    .fill(0xfff4e3)
+    .stroke({ color: ink, width: 4, join: 'round' });
 }

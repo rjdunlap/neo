@@ -10,6 +10,7 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  fifteenRoute,
   goal,
   inPlace,
   lineSlide,
@@ -76,10 +77,12 @@ function numberArt(value: number, size: number, correct = false, look: Look = LO
 class NumberNook implements Game {
   readonly plan;
   readonly look: Look;
+  readonly targetBoard: number[];
   board: number[];
   readonly initial: number[];
   /** The shortest route from the starting board, shown after finishing. */
-  readonly fewest: number;
+  readonly fewest: number | null;
+  private route: ReturnType<typeof fifteenRoute> = null;
   readonly nodes: Container[] = [];
   readonly undoButton = new Container();
   readonly hintButton = new Container();
@@ -105,10 +108,16 @@ class NumberNook implements Game {
   moves = 0;
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.targetBoard = goal(this.plan.rows, this.plan.cols, this.plan.order);
+    if (this.plan.order === 'columns') this.heading.text = 'Match the column-order goal';
     this.look = ctx.rng.pick(LOOKS);
     this.board = makeBoard(ctx.level, ctx.rng);
     this.initial = this.board.slice();
-    this.fewest = solutionStep(this.initial, this.plan.cols)!.distance;
+    if (this.plan.rows === 4) this.route = fifteenRoute(this.initial);
+    this.fewest =
+      this.plan.rows === 4
+        ? (this.route?.distance ?? null)
+        : solutionStep(this.initial, this.plan.cols, this.plan.order)!.distance;
     this.view = ctx.view;
     this.grid.addChild(this.tray);
     this.tray.eventMode = 'none';
@@ -143,7 +152,15 @@ class NumberNook implements Game {
     this.resize(this.view);
   }
   start() {
-    void this.ctx.instruct('nook.go');
+    const instruction =
+      this.plan.order === 'columns'
+        ? 'nook.columns'
+        : this.plan.rows === 4
+          ? 'nook.fifteen'
+          : this.plan.rows === 3 && this.plan.cols === 4
+            ? 'nook.twelve'
+            : 'nook.go';
+    void this.ctx.instruct(instruction);
   }
   choose(at: number) {
     if (this.finished || !this.ctx.alive) return;
@@ -163,9 +180,11 @@ class NumberNook implements Game {
       if (this.misses % 2 === 0) this.showHint(false);
       return;
     }
-    const before = inPlace(this.board);
+    const before = inPlace(this.board, this.targetBoard);
     this.history.push(this.board.slice());
     this.board = line.board;
+    if (this.route?.moves[0] === at && line.steps.length === 1) this.route.moves.shift();
+    else this.route = null;
     // Each tile moved is one slide, so a line slide counts the same as its single slides and Undo takes it back whole.
     this.moves += line.steps.length;
     this.hinted = -1;
@@ -176,9 +195,9 @@ class NumberNook implements Game {
     this.grid.addChild(...tiles.map((g) => this.nodes[g.cell]), this.glow);
     sfx.tick();
     // The in-place note climbs a step for each tile now home and falls back when one leaves.
-    const now = inPlace(this.board);
+    const now = inPlace(this.board, this.targetBoard);
     if (now !== before) sfx.bell(2 + now, 0.25);
-    if (solved(this.board)) this.finished = true;
+    if (solved(this.board, this.targetBoard)) this.finished = true;
     this.draw();
   }
   private landed() {
@@ -209,7 +228,7 @@ class NumberNook implements Game {
       const value = this.board[i];
       node.addChild(
         value
-          ? numberArt(value, this.cell, value === i + 1, this.look)
+          ? numberArt(value, this.cell, value === this.targetBoard[i], this.look)
           : new Graphics()
               .roundRect(-this.cell / 2 + 4, -this.cell / 2 + 4, this.cell - 8, this.cell - 8, 18)
               .fill(this.look.gap)
@@ -217,7 +236,9 @@ class NumberNook implements Game {
       );
     });
     this.status.text = this.finished
-      ? `${this.moves} slides · the fewest from the start: ${this.fewest}`
+      ? this.fewest === null
+        ? `${this.moves} slides`
+        : `${this.moves} slides · the fewest from the start: ${this.fewest}`
       : `${this.moves} slides · green tiles are in place`;
     this.glow.clear();
     if (this.hinted >= 0) {
@@ -250,18 +271,23 @@ class NumberNook implements Game {
       this.nodes[this.nudge.cell].children[0]?.position.set((d.x / len) * push, (d.y / len) * push);
     }
   }
-  private showHint(spoken: boolean) {
-    // A hint already showing is repeated, not counted again.
-    if (this.hinted >= 0) {
-      if (spoken) void this.ctx.say('nook.hint');
-      return;
+  private nextSlide(): number {
+    if (this.plan.rows === 4) {
+      this.route ??= fifteenRoute(this.board);
+      return this.route?.moves[0] ?? -1;
     }
-    const step = solutionStep(this.board, this.plan.cols);
-    if (!step || step.next < 0) return;
-    this.hinted = step.next;
-    this.hints++;
-    this.draw();
-    if (spoken) void this.ctx.say('nook.hint');
+    return solutionStep(this.board, this.plan.cols, this.plan.order)?.next ?? -1;
+  }
+  private showHint(spoken: boolean) {
+    // A hint already showing is repeated without counting again.
+    if (this.hinted < 0) {
+      const next = this.nextSlide();
+      if (next < 0) return;
+      this.hinted = next;
+      this.hints++;
+      this.draw();
+    }
+    if (spoken) void this.ctx.say(this.route?.distance === null ? 'nook.borderHint' : 'nook.hint');
   }
   askForHint() {
     if (!this.finished) {
@@ -275,6 +301,7 @@ class NumberNook implements Game {
     if (before) {
       this.settle();
       this.board = before;
+      this.route = null;
       this.hinted = -1;
       this.draw();
       sfx.tick();
@@ -284,6 +311,7 @@ class NumberNook implements Game {
     if (this.finished) return;
     this.settle();
     this.board = this.initial.slice();
+    this.route = null;
     this.history = [];
     this.hinted = -1;
     this.draw();
@@ -310,7 +338,7 @@ class NumberNook implements Game {
     this.targetLabel.position.set(tx, 205);
     this.target.position.set(tx - (this.plan.cols - 1) * 25, 250);
     this.target.removeChildren().forEach((c) => c.destroy({ children: true }));
-    goal(this.plan.rows, this.plan.cols).forEach((value, i) => {
+    this.targetBoard.forEach((value, i) => {
       const art = value
         ? numberArt(value, 50, true, this.look)
         : new Graphics()
@@ -327,8 +355,8 @@ class NumberNook implements Game {
   }
   autotouch(): TouchIntent | null {
     if (this.finished || this.glide) return null;
-    const step = solutionStep(this.board, this.plan.cols);
-    return step && step.next >= 0 ? { tap: { on: this.nodes[step.next] }, pause: 0.5 } : null;
+    const next = this.nextSlide();
+    return next >= 0 ? { tap: { on: this.nodes[next] }, pause: 0.5 } : null;
   }
   update(dt: number) {
     if (!this.glide && !this.nudge) return;

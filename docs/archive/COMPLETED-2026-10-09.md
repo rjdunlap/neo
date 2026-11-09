@@ -3227,3 +3227,26 @@ Deviation from the definition: the authored board's small-board bolts are at y 2
 ## Scene-owned cleanup migration (codebase item 7 follow-up, 2026-11-07)
 
 [PR #1387](https://github.com/rjdunlap/neo/pull/1387) migrates all 92 remaining native global-listener registrations in 42 game files to `ctx.listen`; a tuple comparison preserves every target, callback and options value. Fluffy Salon keeps early release through the returned disposer, and five scene-only liveness flags use `ctx.alive` (Number Nook, Log Roll, Pyramid Solitaire, Tile Pairs and Snowball Merge). Board-generation guards and shorter-lived cleanup remain local. Two test fixtures use real lifetimes. Rainbow Fingers’ wrong-stroke browser check now waits on its game clock. Typecheck, units, build, filtered paint and Block Topple play and 296 demo restart/destruction checks across 46 games passed; Draw the Pattern level 5 has a constructor failure also reproduced on unchanged code. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--scene-owned-cleanup-migration-codebase-item-7-follow-up-pr-1387) records scope, evidence and gaps.
+
+
+## Log Roll soft moss and the stone bridge (2026-11-08)
+
+[PR #1429](https://github.com/rjdunlap/neo/pull/1429) delivers dive slices 4–5 together. Level 6 is a 6×5 floor at depth 8, with three moss stones and two gaps: moss supports lying logs and gently refuses standing ones. Its four floors have 3, 3, 4 and 3 starts. Level 7 is a 7×5 floor at depth 12, with a purple-ringed standing switch and two bridge stones. A lying press does nothing; standing raises the bridge, which persists through ordinary rolls and is restored by Undo or Start over. Its four floors have 3, 3, 3 and 4 starts, all requiring the switch. Both levels mirror their floors; levels 1–5 regenerate unchanged. Bridge hints use memoised forward search over pose and bridge flag, while the reversible levels retain reverse search. Spoken support, level-scoped how-to and the ghost finger cover both additions. School, couch and swipes remain gated.
+
+Typecheck, 14 rule tests, 329 unit-test files (6294 passed, 5 skipped), build, filtered real-touch plays and both demonstrations passed; portraits reviewed. [Proof](../VERIFICATION.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). No offline or device/child check was run.
+
+## Number Nook level 5 Read the new goal (2026-11-08)
+
+[PR #1430](https://github.com/rjdunlap/neo/pull/1430), `codex/number-nook-column-goal`, completes slice 4 as a named complete part of the remaining [Number Nook slices](../deep-dives/number-nook.md#build-slices-in-order). Level 5 is a 3×3 column-order target (`1 4 7 / 2 5 8 / 3 6 _`) exactly 14 slides away; green tiles, in-place notes, completion, hints and the ghost finger follow that target, with `nook.columns` and level-scoped how-to. Both 3×3 goals share a 9!-byte rank-indexed distance array and keep parity membership separate; discovery ranks preserve earlier seeded pools. The grown-up range is 1–5. Levels 6–7 remain ready in order, while the school opening and couch course retain their decision gates.
+
+Typecheck, 14 rules, 217 content/registry tests (1 skipped), build, lint, filtered level-5 real-touch play and a clean 20.4 s demonstration passed; the portrait was reviewed. [Proof](../VERIFICATION.md#2026-11-08--number-nook-slice-4-level-5-read-the-new-goal-pr-1430). Offline, real iPad speech/touch and person acceptance were not run.
+
+## Number Nook level 6 Twelve spaces (2026-11-08)
+
+[PR #1431](https://github.com/rjdunlap/neo/pull/1431) completes [Number Nook slice 5](../deep-dives/number-nook.md#build-slices-in-order). The 3×4 row-order board starts exactly 24 slides from its goal. A seeded walk proposes each board, and an exact iterative-deepening search verifies its distance. Hint and the ghost finger use the same search. The spoken instruction and how-to suggest putting the top row in place first. The grown-up range is 1–6. Slice 6, the 4×4 board, is the next ready item.
+
+## Number Nook level 7 The fifteen (2026-11-09)
+
+[PR #1432](https://github.com/rjdunlap/neo/pull/1432) completes [Number Nook slice 6](../deep-dives/number-nook.md#build-slices-in-order). The 4×4 row-order board starts exactly 30 slides away. Hint searches up to 60,000 nodes before offering a route that completes the top row, the left column and the remaining 3×3. The hint and ghost finger share the route, and the finish compares the player's slide count with the verified starting optimum. The grown-up range is 1–7. The school opening and couch course still await decisions.
+
+Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 43.3 s demonstration passed. The portrait was reviewed. [Checks](../VERIFICATION.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432). Offline and real-device checks were not run.

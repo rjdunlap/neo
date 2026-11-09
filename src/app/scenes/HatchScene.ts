@@ -17,9 +17,29 @@ import { label } from '../../ui/text';
 import { Scene } from '../Scene';
 import { applySettings } from '../settings';
 
+/**
+ * Where the hatch puts its choices and its go button, from the view's width. A wide view keeps the button at the right of
+ * the plate with the choices beside it; a narrow one (a phone held upright, 768 units) centers the choices across the plate
+ * and puts the button under them, with the grown-up's name field below that.
+ */
+export function hatchLayout(w: number, naming: boolean) {
+  if (w >= 900)
+    return { cx: (w - 160) / 2, namePitch: 245, next: { x: w - 90, y: 220 }, plateH: 340, formTop: 300 };
+  return {
+    cx: w / 2,
+    namePitch: 235,
+    next: { x: w / 2, y: naming ? 370 : 440 },
+    plateH: naming ? 600 : 500,
+    formTop: 450,
+  };
+}
+
 export class HatchScene extends Scene {
   /** It has a name field, and nothing here has started yet. */
   canPause = false;
+  /** Laid out for a phone held upright as well (chunk 31): a new player on a phone never has to turn it to begin. */
+  upright = true;
+  uprightArea = true;
   private readonly background = homeBackdrop();
   private readonly plate = new Graphics();
   private eggHeight = 260;
@@ -203,17 +223,18 @@ export class HatchScene extends Scene {
     this.egg.position.set(l.stage.x, l.stage.y - height / 2);
     this.pip?.position.set(l.stage.x, l.stage.y);
     this.pip?.scale.set(l.stage.scale);
-    this.next.position.set(v.w - 90, 220);
+    const l2 = hatchLayout(v.w, this.step === 'name');
+    this.next.position.set(l2.next.x, l2.next.y);
     this.plate.visible = this.step !== 'egg';
     this.plate
       .clear()
-      .roundRect(30, 24, v.w - 60, 340, 42)
+      .roundRect(30, 24, v.w - 60, l2.plateH, 42)
       .fill({ color: swatch.white.fill, alpha: 0.92 })
       .stroke({ width: 3, color: swatch.teal.light });
     this.plate.eventMode = 'none';
     if (this.form) {
       this.form.style.bottom = 'auto';
-      this.form.style.top = `calc(var(--safe-top) + ${300 * v.scale}px)`;
+      this.form.style.top = `calc(var(--safe-top) + ${l2.formTop * v.scale}px)`;
     }
     this.nameLabel.text = this.step === 'name' ? this.name : '';
     this.nameLabel.scale.set(1);
@@ -223,8 +244,7 @@ export class HatchScene extends Scene {
     this.choices.children
       .filter((c) => c !== this.selected)
       .forEach((c, i) => {
-        const x =
-          this.step === 'color' ? (v.w - 160) / 2 + ((i % 4) - 1.5) * 138 : (v.w - 160) / 2 + (i - 1) * 245;
+        const x = this.step === 'color' ? l2.cx + ((i % 4) - 1.5) * 138 : l2.cx + (i - 1) * l2.namePitch;
         const y = this.step === 'color' ? 155 + Math.floor(i / 4) * 125 : 220;
         c.position.set(x, y);
         if (this.step === 'color' ? PET_COLORS[i] === this.color : this.names[i] === this.name) {

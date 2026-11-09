@@ -32,6 +32,8 @@ export default defineConfig({
         background_color: '#FFF4E3',
         theme_color: '#FFF4E3',
         start_url: './',
+        // Long-press the installed icon: straight to Today's six (D10). On a phone the root opens the six anyway.
+        shortcuts: [{ name: "Today's six", short_name: 'Six', url: './?daily' }],
         // `classic/` (the island game) links its own copy, public/classic/manifest.webmanifest, which starts there.
         scope: './',
         icons: [

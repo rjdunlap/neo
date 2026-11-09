@@ -304,3 +304,15 @@ Not run: full units locally (PR CI runs them), `fingerdemo` (bot unchanged), oth
 Changed: level 9 (four jars of three, three kinds, par 4–6, lit target jars) with 20 solver-checked boards, none equal to level 3's; preschool 1, 2, 9, 3 and pre-K 2, 9, 3, 4, 5; `entryLevels` [9] so a school move lands on 4; how-to card holds the bright-jars step at 9.
 Ran: `npm run typecheck`; vitest for `src/games/jar-sort`, the registry test and `src/content` (231 passed, with a new level 9 rule test); `BROWSER_SUITE=jarsort` (level 9: four jars, lit, one refused move free with the board unchanged, solved by taps with 0 misses and 0 hints, a sticker, landscape screenshot); `fingerdemo` with `FINGER_ONLY=jar-sort FINGER_LEVELS=9` (15.9 s); `npm run build`.
 Not run: full `npm test` (CI runs it), offline, other suites. Open: device checks.
+
+## 2026-11-07 — Fruit Sums slice 2: level 4 Same as the sign (PR #1413)
+
+Changed: level 4 (the sign shows a sum of two fruit; any pair with that total counts, the sign's own pair is "the same as the sign" and not a miss; tray of five, targets 6–14); LEVELS now 1–4; how-to card reworded and level-scoped; `fruitsums` gained a level-4 block and `FROM_LEVEL=4`.
+Ran: `npm run typecheck`; `npm test` (329 files, 6229 passed); `BROWSER_SUITE=fruitsums FROM_LEVEL=4` (portrait 768×1024, sign 7 + 5, one wrong total as a miss, two ways, one sticker, screenshot); `fingerdemo` with `FINGER_ONLY=fruit-sums FINGER_LEVELS=4` (11.1 s); game-reviewer found no defects.
+Not run: build, levels 1–3 browser play (unchanged), tapping the sign's own pair in a browser (unit-tested in `judge`), offline. Open: device checks.
+
+## 2026-11-07 — Marble Jump slice 2: level 7 Finish in the star hole and the fewest-moves line (PR #1414)
+
+Changed: goal-aware `solve`/`recovery`, level 7 star pairs (levels 1–6 draws pinned by a 240-round hash test), the star drawing, `marble.star`, and the "N moves · fewest possible M" status after any finish; grown-up range 1–7.
+Ran: `npm run typecheck`; `npm test` (329 files, all pass); `BROWSER_SUITE=marblejump` (level 7 off-star route with no finish and no miss, portrait screenshot, Hint recovery, star finish with moves line, one sticker); `fingerdemo` with `FINGER_ONLY=marble-jump FINGER_LEVELS=7` (30.9 s); `npm run build`. game-reviewer: no bugs, one wording fix.
+Open: offline not run; clips for the two new voice lines not rendered (device speech fallback); no real iPad or enjoyment check.

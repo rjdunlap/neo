@@ -5,6 +5,15 @@ export const VOICE = {
   'jar.instruct-labels': [
     'Every fruit has its own jar. Look at the pictures under the jars, and put each fruit on its picture.',
   ],
+  'jar.instruct-picture': [
+    'Make the cups look like the picture above. Tap a cup to lift its top fruit. You can put it on any fruit if there is room.',
+  ],
+  'jar.cup-matches': ['This cup matches the picture!'],
+  'jar.picture-done': ['All the cups match the picture!'],
+  'jar.instruct-scoop': [
+    'Tap a jar to scoop up the matching fruit on top. Tap where they go. As many as fit will hop in.',
+  ],
+  'jar.hint-scoop': ['Try scooping from the glowing jar into the other bright jar.'],
   'jar.refuse-kind.strawberry': ['Strawberry goes on strawberry, or in an empty jar.'],
   'jar.refuse-kind.blueberry': ['Blueberry goes on blueberry, or in an empty jar.'],
   'jar.refuse-kind.orange': ['Orange goes on orange, or in an empty jar.'],

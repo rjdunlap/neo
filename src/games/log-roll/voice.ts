@@ -7,6 +7,21 @@ export const VOICE = {
   'log.go.cradle': [
     'Tip the log across the stones with the arrow buttons. This time the finish is the wooden cradle on two stones. Lay the log down across both of them.',
   ],
+  'log.go.moss': [
+    'Tip the log to the hollow. The green moss is too soft to stand on. Lie the log across it to pass.',
+  ],
+  'log.moss': ['The moss is too soft to stand on. Lie the log across it. It stayed where it was.'],
+  'log.go.bridge': [
+    'Stand the log on the purple ring to raise the two bridge stones. A lying log does not press the switch. Then roll across and stand in the hollow. Undo can take back the press.',
+  ],
+  'log.switch': ['A lying log does not press this switch. Stand the log on the purple ring.'],
+  'log.raised': ['The standing log pressed the switch! The bridge stays raised. Roll across to the hollow.'],
+  'log.hint.bridge': [
+    'Tip in the glowing direction. This shortest route stands on the switch before crossing the bridge.',
+  ],
+  'log.done.bridge': [
+    'You raised the bridge and reached the hollow! You planned the switch and the crossing.',
+  ],
   'log.cradle': ['Standing does not fit the cradle. Lie the log down across both cradle stones.'],
   'log.edge': [
     'The log needs a stone under both ends. It stayed where it was. Try another direction, or Undo to find more room.',

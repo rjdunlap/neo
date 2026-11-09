@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Log Roll levels 6–7 (2026-11-08, PR #1429):** on an iPad, do the green moss and purple-ringed switch make their lying/standing rules clear? Does the bridge rising read as two new supporting stones, and does Undo lowering it make sense? Check spoken moss/switch feedback and grown-up enjoyment; browser play does not establish these.
+
 - [ ] **Number Trails (dive, 2026-11-06; proposed slices, nothing built):** can a three-year-old stay inside the 0.1 corridor in portrait? On an iPad, how is the speech of "zero" and the single digits? Does the flying hint read as help, and do dotted and start-only trails (level 6) stay clear to a four-year-old?
 - [ ] **Playdate Workshop (levels 1–3, 2026-11-06):** does a three-year-old understand passing the pad from the pictured requests? Do pre-K children compare the plans or pick the first card?
 - [ ] **Playdate Workshop:** are the co-play roles (one chooses, one operates) wanted by families? How does iPad speech say the first-person lines?
@@ -748,7 +750,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 - [ ] **How-computers-work proposals, when defined/built:** observe whether a child follows input → rule → output, distinguishes false from an incomplete machine and uses a counterexample to revise; check all-visible state, sound-off traces, replayable iPad speech, 100-unit controls, selected-slot editing and pet clearance in both layouts. Try Festival Signals with tweens/parents and swap builder/tester roles; do they choose and enjoy it? Check Picture Bytes row order/key and Memory Desk live/stored contrast. Automation cannot establish independent understanding or transfer. Practical cards retain named review ([study](deep-dives/subjects/how-computers-work.md)).
 
-- [ ] **Recovered grown-up puzzles:** Marble Jump (six levels, Puzzle Peaks), Log Roll (three, Tinker Lab) and Snowball Merge (three, Lantern Lake) need real-iPad touch, device speech and adult enjoyment checks. Inspect controls/pet clearance in both orientations and the ghost finger; can a player understand blocked-route recovery, upright goal and once-per-slide merges? [Integration evidence](archive/SESSION-CLEANUP-2026-10-14.md).
+- [ ] **Recovered grown-up puzzles:** Marble Jump (six levels, Puzzle Peaks), Log Roll (seven, Tinker Lab) and Snowball Merge (three, Lantern Lake) need real-iPad touch, device speech and adult enjoyment checks. Inspect controls/pet clearance in both orientations and the ghost finger; can a player understand blocked-route recovery, upright goal and once-per-slide merges? [Integration evidence](archive/SESSION-CLEANUP-2026-10-14.md).
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 
@@ -815,7 +817,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 
 **Grown-ups at the computer or TV**
 
-- [ ] **Number Nook:** on an iPad, try all three boards: are the gap, goal miniature and green placed tiles clear, are taps comfortable, and do Undo, Start over and shortest-route hints support planning? Check device speech and whether a person wants another board. Browser play does not establish these.
+- [ ] **Number Nook:** on an iPad, try all five levels: are the gap, goal miniature and green placed tiles clear, are taps comfortable, and do Undo, Start over and shortest-route hints support planning? At level 5, does the player read down the goal's columns before sliding, and does `nook.columns` make that order clear through device speech? Check whether a person wants another board. Browser play does not establish these.
 
 - [ ] **Gem Swap:** try the four trays with a person: do selection outlines and the new falling tween (pulse, fall, landing squash, rising pops) make the next choice readable at a glance, do the three looks stay legible, and does the player want another board? Real iPad targets/speech and real controller play remain unverified. At level 6 *One swap, a long line*: does a grown-up spot the long swap without Hint, and does device speech read the `gem-swap.long` line clearly? At level 8 *Iced gems*: does the frost (wash, teal frame, snowflake) read as "cannot move yet" at a glance in all three looks, does a grown-up find the thawing line without Hint, and is `gem-swap.iced` clear on device speech?
 - [ ] **Tile Pairs:** try the six layouts with a person, and check whether the visible stack, free-tile tint and clearing hint make pair choices understandable; judge whether the person wants another board. Real iPad touch, device speech and controller use remain unverified.
@@ -867,6 +869,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 
 - [ ] On a real iPhone and a real Android phone, sideways: does the island read at about half the iPad's size (the grown-up tip, the how-to cards and the pet's speech bubbles are the smallest text), does a notch or rounded corner leave only a cream strip (the safe-area insets are checked with faked values in Chrome, never on a real device), and does the island button, the book and the gate's top corners sit where a thumb lands?
 - [ ] Held upright, does the turn prompt appear, go when the phone turns (iOS settles its safe area a moment after a turn) and leave the game where it was? Does the phone's rotation lock leave a grown-up stuck on it with no way past (there is deliberately no "play upright" button)?
+- [ ] **A phone is Today's six alone (2026-11-09).** On a real iPhone and Android phone, upright and sideways: does "Who's playing?" open the six, does a new player hatch without turning, are the cards and level lines readable, do Play all and the next-of-six tile carry a sitting through, does the notes sheet scroll with the keyboard up, and does Copy all notes reach the clipboard (iOS Safari and the installed app)?
 - [ ] **Upright play (chunk 31, after each [phone-portrait](definitions/phone-portrait.md) batch):** on a real phone held upright, do Home, Today's six and each newly upright game read and play comfortably with a thumb (targets are about 51 px, as sideways); does turning mid-round keep the round where it was; does a not-ready card's badge make sense; does an installed app now turn? The developer's verdict per game goes in [OBSERVATIONS](OBSERVATIONS.md) and picks the next batch.
 - [ ] First-touch sound, the silent switch (`navigator.audioSession.type = 'playback'`, iOS 16.4 and later) and the phone's own speech voices; Add to Home Screen on both platforms and an update arriving after the app is closed and reopened.
 

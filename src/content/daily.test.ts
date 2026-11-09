@@ -10,6 +10,7 @@ import {
   dayKey,
   hardLevels,
   levelDots,
+  nextOfSix,
   presetLevels,
   playedOn,
 } from './daily';
@@ -224,5 +225,22 @@ describe("today's six on a phone held upright (chunk 31)", () => {
       ).toBe(true);
       expect(six, day).toHaveLength(DAILY_COUNT);
     }
+  });
+});
+
+describe('the next of the six', () => {
+  const six = dailySix('2026-11-09', 'grownup', GAMES);
+  const ids = six.map((p) => p.mod.id);
+
+  it('starts with the first card from the page, and goes on in card order', () => {
+    expect(nextOfSix(six, null, () => false)?.mod.id).toBe(ids[0]);
+    expect(nextOfSix(six, ids[0], () => false)?.mod.id).toBe(ids[1]);
+  });
+
+  it('skips played cards, wraps, and never offers the round just played', () => {
+    const played = new Set([ids[0], ids[1], ids[3], ids[4], ids[5]]);
+    expect(nextOfSix(six, ids[5], (id) => played.has(id))?.mod.id).toBe(ids[2]);
+    expect(nextOfSix(six, ids[2], (id) => played.has(id))).toBeNull();
+    expect(nextOfSix(six, ids[2], () => false)?.mod.id).toBe(ids[3]);
   });
 });

@@ -23,6 +23,7 @@ import {
 import { flipItem, moveItem, tidy } from '../content/room';
 import { SPECIES, type SpeciesId } from '../creatures/species';
 import type { LandId } from '../content/lands';
+import { setNote, type PlaytestNote } from '../content/playtest';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
@@ -216,6 +217,13 @@ export class Store {
 
   get favorites(): readonly string[] {
     return this.data.favorites;
+  }
+
+  /** A grown-up's playtest note for a game on a day (one each; an empty one removes it). Saved at once. */
+  notePlaytest(entry: PlaytestNote) {
+    this.data.playtest = setNote(this.data.playtest, entry);
+    this.save();
+    this.flush();
   }
 
   isFavorite(gameId: string): boolean {
