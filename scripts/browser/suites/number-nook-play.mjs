@@ -4,7 +4,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
   /** Number Nook: both ends, rejected tap, a hint counted once, the glide, revision, a portrait in a new look, shortest route and one sticker. */
   async function numberNookPlay() {
     // NOOK_LEVELS=4 plays only the newest level; the default is both ends plus the nine-space board.
-    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4').split(',').map(Number)) {
+    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4,5').split(',').map(Number)) {
       await launch('number-nook', level);
       await page.waitForTimeout(400);
       // Level 1's portrait is taken in a look other than today's lantern paper.
@@ -15,6 +15,25 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       ) {
         await launch('number-nook', level);
         await page.waitForTimeout(400);
+      }
+      if (level === 5) {
+        const goalProof = await page.evaluate(async () => {
+          const { goal, solved, solutionStep } = await import('/src/games/number-nook/logic.ts');
+          const g = neo.scene.game;
+          return {
+            target: g.targetBoard,
+            miniature: g.target.children.map((c) => c.children?.[1]?.text ?? 0),
+            rowGoalSolves: solved(goal(3, 3), g.targetBoard),
+            wrongGoalHint: solutionStep(g.board, 3),
+            distance: solutionStep(g.board, 3, 'columns').distance,
+            instruction: neo.scene.instruction,
+          };
+        });
+        assert.deepEqual(goalProof.target, [1, 4, 7, 2, 5, 8, 3, 6, 0]);
+        assert.deepEqual(goalProof.miniature, ['1', '4', '7', '2', '5', '8', '3', '6', 0]);
+        assert.equal(goalProof.rowGoalSolves, false);
+        assert.equal(goalProof.wrongGoalHint, null);
+        assert.equal(goalProof.distance, 14);
       }
       const original = await page.evaluate(() => neo.scene.game.board.slice());
       const wrong = await page.evaluate(async () => {
@@ -42,7 +61,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await page.evaluate(async () => {
         const { solutionStep } = await import('/src/games/number-nook/logic.ts');
         const g = neo.scene.game;
-        kit.tapOn(g.nodes[solutionStep(g.board, g.plan.cols).next]);
+        kit.tapOn(g.nodes[solutionStep(g.board, g.plan.cols, g.plan.order).next]);
       });
       await page.waitForTimeout(260);
       await tap('neo.scene.game.againButton');
@@ -92,12 +111,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'undo takes back the whole line',
         );
       }
-      if (level === 1 || level === 4) {
+      if (level === 1 || level >= 4) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         assert.ok(await page.evaluate(() => neo.scene.game.cell >= 64));
         log(`Number Nook portrait look: ${await page.evaluate(() => neo.scene.game.look.name)}`);
-        await screenshot(level === 1 ? 'number-nook-portrait' : 'number-nook-portrait-4');
+        await screenshot(level === 1 ? 'number-nook-portrait' : `number-nook-portrait-${level}`);
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(300);
       }
@@ -106,10 +125,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const { solutionStep } = await import('/src/games/number-nook/logic.ts');
         const g = neo.scene.game;
         for (let guard = 0; guard < 60 && !g.finished; guard++) {
-          const step = solutionStep(g.board, g.plan.cols);
+          const step = solutionStep(g.board, g.plan.cols, g.plan.order);
           if (!step || step.next < 0) throw new Error('Missing sliding route');
           kit.tapOn(g.nodes[step.next]);
           await kit.sleep(220);
+        }
+        if (g.plan.order === 'columns') {
+          const { solved } = await import('/src/games/number-nook/logic.ts');
+          if (!solved(g.board, g.targetBoard) || solved(g.board)) throw new Error('Wrong goal completed');
         }
         return g.status.text;
       });

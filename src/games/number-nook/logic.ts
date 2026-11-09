@@ -1,19 +1,28 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
+import { rankedDistances } from './ranked-distances';
+
+export type GoalOrder = 'rows' | 'columns';
 
 /** Each level draws a board whose shortest route is `near`..`far` slides, so the small boards have a pool, not one puzzle. */
 export const PLANS = [
-  { rows: 2, cols: 2, near: 3, far: 5, name: 'Four spaces: one small loop' },
-  { rows: 2, cols: 3, near: 7, far: 9, name: 'Six spaces: plan around two rows' },
-  { rows: 3, cols: 3, near: 14, far: 14, name: 'Nine spaces: weave rows and columns' },
-  { rows: 2, cols: 4, near: 18, far: 18, name: 'Eight spaces: two long rows' },
+  { rows: 2, cols: 2, near: 3, far: 5, order: 'rows', name: 'Four spaces: one small loop' },
+  { rows: 2, cols: 3, near: 7, far: 9, order: 'rows', name: 'Six spaces: plan around two rows' },
+  { rows: 3, cols: 3, near: 14, far: 14, order: 'rows', name: 'Nine spaces: weave rows and columns' },
+  { rows: 2, cols: 4, near: 18, far: 18, order: 'rows', name: 'Eight spaces: two long rows' },
+  { rows: 3, cols: 3, near: 14, far: 14, order: 'columns', name: 'Nine spaces: read the new goal' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
-export const goal = (rows: number, cols: number) =>
-  Array.from({ length: rows * cols }, (_, i) => (i + 1) % (rows * cols));
-export const solved = (board: readonly number[]) => board.every((v, i) => v === (i + 1) % board.length);
-/** How many numbered tiles sit in their goal place; the in-place note rises and falls with it. */
-export const inPlace = (board: readonly number[]) => board.filter((v, i) => v !== 0 && v === i + 1).length;
+export const goal = (rows: number, cols: number, order: GoalOrder = 'rows') =>
+  Array.from(
+    { length: rows * cols },
+    (_, i) => (order === 'columns' ? (i % cols) * rows + Math.floor(i / cols) + 1 : i + 1) % (rows * cols),
+  );
+export const solved = (board: readonly number[], target: readonly number[] = goal(1, board.length)) =>
+  board.every((v, i) => v === target[i]);
+/** How many numbered tiles sit in this round's goal place. */
+export const inPlace = (board: readonly number[], target: readonly number[] = goal(1, board.length)) =>
+  board.filter((v, i) => v !== 0 && v === target[i]).length;
 export function neighbours(board: readonly number[], cols: number): number[] {
   const z = board.indexOf(0),
     r = Math.floor(z / cols),
@@ -53,19 +62,25 @@ export function lineSlide(
   }
 }
 
+const pools = new Map<number, number[][]>();
 /** The boards a level draws from, every one at an exact shortest distance inside its range. */
 export function pool(level: number): number[][] {
+  const cached = pools.get(level);
+  if (cached) return cached;
   const p = planFor(level);
-  return [...distances(p.rows, p.cols)]
+  const boards = [...distances(p.rows, p.cols, p.order)]
     .filter(([, info]) => info.distance >= p.near && info.distance <= p.far)
     .map(([k]) => k.split('').map(Number));
+  pools.set(level, boards);
+  return boards;
 }
 /** Reverse breadth-first search: all reachable positions, with exact distances and a next slide.
  * Small boards have 12/360 states, the eight-space board 20,160 and the nine-space board 181,440. Cached per shape.
  * This proves every hint decreases distance, even after arbitrary exploratory slides. */
 const tables = new Map<string, Map<string, { distance: number; next: number }>>();
 const key = (b: readonly number[]) => b.join('');
-export function distances(rows: number, cols: number) {
+export function distances(rows: number, cols: number, order: GoalOrder = 'rows') {
+  if (rows === 3 && cols === 3) return rankedDistances(goal(rows, cols, order), cols, neighbours, slide);
   const shape = `${rows},${cols}`,
     cached = tables.get(shape);
   if (cached) return cached;
@@ -86,8 +101,8 @@ export function distances(rows: number, cols: number) {
   tables.set(shape, table);
   return table;
 }
-export function solutionStep(board: readonly number[], cols: number) {
-  return distances(board.length / cols, cols).get(key(board)) ?? null;
+export function solutionStep(board: readonly number[], cols: number, order: GoalOrder = 'rows') {
+  return distances(board.length / cols, cols, order).get(key(board)) ?? null;
 }
 export function makeBoard(level: number, rng: Rng): number[] {
   return rng.pick(pool(level)).slice();
@@ -111,5 +126,5 @@ export function nookLayout(w: number, h: number, rows: number, cols: number) {
 }
 
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 4 },
+  grownup: { min: 1, max: 5 },
 };
