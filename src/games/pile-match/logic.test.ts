@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { rangeFor } from '../../progress/difficulty';
 import {
   accepted,
   askedKind,
@@ -17,6 +18,7 @@ import {
   hintFor,
   KINDS,
   LEVEL1_SECOND,
+  LEVELS,
   LOOKS,
   lookFor,
   makeBoard,
@@ -182,7 +184,7 @@ describe('Pile Match rules', () => {
       }
   });
 
-  it('no shape repeats within a level, and levels 1 and 3, 2 and 4 share none', () => {
+  it('no shape repeats within a level, levels 1 and 3, 2 and 4 share none, and 9 reuses 7', () => {
     // A shape is its cells moved to the corner, since the layout centres every heap.
     const key = (cells: readonly { x: number; y: number; z: number }[]) => {
       const x0 = Math.min(...cells.map((c) => c.x)),
@@ -194,6 +196,7 @@ describe('Pile Match rules', () => {
     };
     const keys = (id: number) => SHAPES[id].map(key);
     for (const plan of PLANS) expect(new Set(keys(plan.id)).size).toBe(SHAPES[plan.id].length);
+    expect(keys(9)).toEqual(keys(7));
     for (const [a, b] of [
       [1, 3],
       [2, 4],
@@ -266,6 +269,31 @@ describe('Pile Match rules', () => {
     for (let s = 0; s < 40; s++) expect(reach(makeBoard(3, rng), 5)).toBe(false);
     for (const level of [4, 5])
       expect(Array.from({ length: 20 }, () => reach(makeBoard(level, rng), 5)).some(Boolean)).toBe(true);
+    expect(Array.from({ length: 10 }, () => reach(makeBoard(9, rng), 4)).some(Boolean)).toBe(true);
+  });
+
+  it('level 9 is the level 7 heap with a four-place tray, and every board clears along its route', () => {
+    const [seven, nine] = [planFor(7), planFor(9)];
+    expect([nine.pieces, nine.kinds, nine.layers, nine.tray, nine.count]).toEqual([
+      seven.pieces,
+      seven.kinds,
+      seven.layers,
+      4,
+      true,
+    ]);
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 5, max: 9 });
+    const rng = new Rng(9);
+    for (let s = 0; s < 40; s++) {
+      const b = makeBoard(9, rng);
+      let m = fullMask(b.cells.length);
+      for (const i of b.route) {
+        const r = take(b, m, i, 4);
+        expect(accepted(r)).toBe(true);
+        m = (r as { mask: number }).mask;
+        expect(trayTotal(b, m)).toBeLessThanOrEqual(2);
+      }
+      expect(m).toBe(0);
+    }
   });
 
   it('in asked mode the asked kind always has a free piece', () => {
@@ -326,20 +354,22 @@ describe('Pile Match rules', () => {
       }
   });
 
-  it('the level-8 hint search stays quick, and a capped search returns the fallback rather than nothing', () => {
+  it('the level-8 and level-9 hint searches stay quick, and a capped search returns the fallback rather than nothing', () => {
     const rng = new Rng(51);
-    let worst = 0;
-    for (let s = 0; s < 30; s++) {
-      const b = makeBoard(8, rng);
-      for (const mask of wander(b, 5, rng, 40).filter((_, k) => k % 5 === 0)) {
-        const t0 = performance.now();
-        hintFor(b, mask, 5);
-        worst = Math.max(worst, performance.now() - t0);
-        if (mask) expect(followHints(b, mask, 5, 0)).toBeLessThanOrEqual(24 + 5);
+    for (const plan of [planFor(8), planFor(9)]) {
+      let worst = 0;
+      for (let s = 0; s < 30; s++) {
+        const b = makeBoard(plan.id, rng);
+        for (const mask of wander(b, plan.tray, rng, 40).filter((_, k) => k % 5 === 0)) {
+          const t0 = performance.now();
+          hintFor(b, mask, plan.tray);
+          worst = Math.max(worst, performance.now() - t0);
+          if (mask) expect(followHints(b, mask, plan.tray, 0)).toBeLessThanOrEqual(plan.pieces + plan.tray);
+        }
       }
+      console.log(`Pile Match level-${plan.id} worst hint: ${worst.toFixed(1)} ms`);
+      expect(worst).toBeLessThan(250);
     }
-    console.log(`Pile Match level-8 worst hint: ${worst.toFixed(1)} ms`);
-    expect(worst).toBeLessThan(250);
     expect(clearable(makeBoard(8, new Rng(1)), fullMask(24), 5, budget(1))).toBeNull();
   });
 
@@ -384,7 +414,7 @@ describe('Pile Match rules', () => {
   });
 
   it('plans: preschool to school ladder names', () => {
-    expect(PLANS.map((p) => p.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(PLANS.map((p) => p.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(planFor(8).pieces).toBe(24);
     expect(SHAPES[8][0].filter((c) => c.z === 0).length).toBe(15);
   });
