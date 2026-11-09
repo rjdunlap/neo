@@ -153,7 +153,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await idle();
     await page.waitForTimeout(300);
     const stickers9 = await page.evaluate(() => kit.store.data.stickers.length);
-    assert.equal(await page.evaluate(() => neo.scene.game.layout.slots.length), 4, 'level 9 draws four places');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.layout.slots.length),
+      4,
+      'level 9 draws four places',
+    );
     for (let guard = 0; guard < 10 && (await state()).tray < 4; guard++) {
       const i = await page.evaluate(async () => {
         const L = await import('/src/games/pile-match/logic.ts'),
