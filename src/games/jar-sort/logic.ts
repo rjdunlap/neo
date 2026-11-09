@@ -10,6 +10,11 @@ import type { BandLevels } from '../../progress/difficulty';
 
 export type Jar = number[];
 export type Board = Jar[];
+export type JarRule = 'any' | 'scoop';
+export interface Variant {
+  rule?: JarRule;
+  goal?: Board;
+}
 /** The kind each jar's mat asks for, or null for a spare jar without one. */
 export type Labels = (number | null)[];
 export interface Move {
@@ -45,6 +50,7 @@ export interface JarPlan {
   labels: boolean;
   /** Each jar's capacity in the frozen board's order, when they differ; `cap` is then the tall jars' height and each kind's count. */
   caps?: number[];
+  rule?: JarRule;
 }
 
 /** One capacity for every jar, or one per jar in board order. */
@@ -166,12 +172,37 @@ export const PLANS: JarPlan[] = [
     labels: false,
     caps: [4, 4, 4, 4, 2],
   },
+  {
+    id: 11,
+    name: 'Like the picture',
+    jars: 3,
+    cap: 3,
+    kinds: 3,
+    par: [2, 5],
+    boards: 2,
+    lit: false,
+    labels: false,
+    caps: [3, 2, 1],
+    rule: 'any',
+  },
+  {
+    id: 12,
+    name: 'Scoop the run',
+    jars: 5,
+    cap: 4,
+    kinds: 4,
+    par: [6, 10],
+    boards: 1,
+    lit: false,
+    labels: false,
+    rule: 'scoop',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 9, order: [1, 2, 9, 3] },
   prek: { min: 2, max: 9, order: [2, 9, 3, 4, 5] },
-  school: { min: 4, max: 10, order: [4, 5, 6, 7, 8, 10] },
+  school: { min: 4, max: 12, order: [4, 5, 6, 7, 8, 10, 11, 12] },
 };
 
 /** Easy levels with high IDs, placed earlier by a band's `order`. */
@@ -198,22 +229,41 @@ export function matLabels(plan: JarPlan): Labels | undefined {
 
 const top = (j: Jar) => (j.length ? j[j.length - 1] : -1);
 
-export function legal(b: Board, cap: Caps, from: number, to: number): boolean {
+export function legal(b: Board, cap: Caps, from: number, to: number, rule?: JarRule): boolean {
   if (from === to || !b[from]?.length || !b[to]) return false;
   const t = b[to];
-  return t.length < capAt(cap, to) && (t.length === 0 || top(t) === top(b[from]));
+  return t.length < capAt(cap, to) && (rule === 'any' || t.length === 0 || top(t) === top(b[from]));
 }
 
 /** Why a move is refused, for the spoken reason: the target is full, or a different kind is on top. Null when it is legal (or there is nothing to lift). */
-export function refusal(b: Board, cap: Caps, from: number, to: number): 'full' | 'kind' | null {
-  if (from === to || !b[from]?.length || legal(b, cap, from, to)) return null;
+export function refusal(
+  b: Board,
+  cap: Caps,
+  from: number,
+  to: number,
+  rule?: JarRule,
+): 'full' | 'kind' | null {
+  if (from === to || !b[from]?.length || legal(b, cap, from, to, rule)) return null;
   return b[to].length >= capAt(cap, to) ? 'full' : 'kind';
 }
 
+/** How many fruit lift together. A scoop can leave some of this run behind if the target has less room. */
+export function liftCount(jar: Jar, rule?: JarRule): number {
+  if (rule !== 'scoop') return 1;
+  let first = jar.length;
+  const kind = top(jar);
+  while (first > 0 && jar[first - 1] === kind) first--;
+  return jar.length - first;
+}
+
+export function transferCount(b: Board, cap: Caps, from: number, to: number, rule?: JarRule): number {
+  return Math.min(liftCount(b[from], rule), capAt(cap, to) - b[to].length);
+}
+
 /** The board after a legal move, as a new board; the old one is untouched. */
-export function move(b: Board, from: number, to: number): Board {
+export function move(b: Board, from: number, to: number, count = 1): Board {
   const next = b.map((j) => j.slice());
-  next[to].push(next[from].pop()!);
+  next[to].push(...next[from].splice(-count));
   return next;
 }
 
@@ -221,15 +271,19 @@ export function uniformFull(j: Jar, cap: number): boolean {
   return j.length === cap && j.every((k) => k === j[0]);
 }
 
-export function solved(b: Board, cap: Caps, labels?: Labels): boolean {
+export const matchesCup = (jar: Jar, picture: Jar) =>
+  jar.length === picture.length && jar.every((kind, i) => kind === picture[i]);
+
+export function solved(b: Board, cap: Caps, labels?: Labels, goal?: Board): boolean {
+  if (goal) return b.every((jar, i) => matchesCup(jar, goal[i]));
   if (!b.every((j, i) => j.length === 0 || uniformFull(j, capAt(cap, i)))) return false;
   return !labels || labels.every((k, i) => k === null || (b[i].length === capAt(cap, i) && b[i][0] === k));
 }
 
-export function moves(b: Board, cap: Caps): Move[] {
+export function moves(b: Board, cap: Caps, rule?: JarRule): Move[] {
   const out: Move[] = [];
   for (let from = 0; from < b.length; from++)
-    for (let to = 0; to < b.length; to++) if (legal(b, cap, from, to)) out.push({ from, to });
+    for (let to = 0; to < b.length; to++) if (legal(b, cap, from, to, rule)) out.push({ from, to });
   return out;
 }
 
@@ -278,9 +332,17 @@ export const SEARCH_CAP = 200_000;
 export type SearchResult = Move[] | 'none' | 'capped';
 
 /** Breadth-first over puzzle keys from `b`: a shortest move list, 'none' when every reachable board was seen without a finish, 'capped' past `limit` keys. */
-export function search(b: Board, cap: Caps, labels?: Labels, limit = SEARCH_CAP): SearchResult {
-  if (solved(b, cap, labels)) return [];
-  const startKey = canonical(b, labels, cap);
+export function search(
+  b: Board,
+  cap: Caps,
+  labels?: Labels,
+  limit = SEARCH_CAP,
+  { rule, goal }: Variant = {},
+): SearchResult {
+  if (solved(b, cap, labels, goal)) return [];
+  // The picture fixes both cup positions and fruit identities for this search.
+  const keyFor = goal ? render : (board: Board) => canonical(board, labels, cap);
+  const startKey = keyFor(b);
   // Each key keeps the real board it was reached as, so a path's moves are real jar numbers.
   const seen = new Map<string, { board: Board; parent: string | null; move: Move | null }>([
     [startKey, { board: b, parent: null, move: null }],
@@ -290,12 +352,12 @@ export function search(b: Board, cap: Caps, labels?: Labels, limit = SEARCH_CAP)
     const next: string[] = [];
     for (const key of frontier) {
       const board = seen.get(key)!.board;
-      for (const m of moves(board, cap)) {
-        const after = move(board, m.from, m.to);
-        const k = canonical(after, labels, cap);
+      for (const m of moves(board, cap, rule)) {
+        const after = move(board, m.from, m.to, transferCount(board, cap, m.from, m.to, rule));
+        const k = keyFor(after);
         if (seen.has(k)) continue;
         seen.set(k, { board: after, parent: key, move: m });
-        if (solved(after, cap, labels)) {
+        if (solved(after, cap, labels, goal)) {
           const path: Move[] = [];
           for (let at: string | null = k; at; at = seen.get(at)!.parent) {
             const step = seen.get(at)!;
@@ -313,8 +375,14 @@ export function search(b: Board, cap: Caps, labels?: Labels, limit = SEARCH_CAP)
 }
 
 /** A shortest solution from `b`, or null when there is none (or the search ran out of room). */
-export function solve(b: Board, cap: Caps, labels?: Labels, limit = SEARCH_CAP): Move[] | null {
-  const r = search(b, cap, labels, limit);
+export function solve(
+  b: Board,
+  cap: Caps,
+  labels?: Labels,
+  limit = SEARCH_CAP,
+  variant?: Variant,
+): Move[] | null {
+  const r = search(b, cap, labels, limit, variant);
   return Array.isArray(r) ? r : null;
 }
 
@@ -331,13 +399,14 @@ export function hintMove(
   labels: Labels | undefined,
   history: Board[],
   limit = SEARCH_CAP,
+  variant: Variant = {},
 ): Hint {
-  if (!moves(b, cap).length) return { kind: 'stuck' };
-  const r = search(b, cap, labels, limit);
+  if (!moves(b, cap, variant.rule).length) return { kind: 'stuck' };
+  const r = search(b, cap, labels, limit, variant);
   if (Array.isArray(r)) return r.length ? { kind: 'move', move: r[0] } : { kind: 'stuck' };
   if (r === 'none') return { kind: 'stuck' };
   for (let i = history.length - 1; i > 0; i--)
-    if (Array.isArray(search(history[i], cap, labels, limit)))
+    if (Array.isArray(search(history[i], cap, labels, limit, variant)))
       return { kind: 'back', steps: history.length - i };
   return { kind: 'back', steps: history.length };
 }
@@ -378,13 +447,21 @@ export function roundBoards(list: readonly string[], plan: JarPlan, rng: Rng, co
  * A frozen board as she sees it: kinds renamed from all seven fruits and jars shuffled from the seed (level 1 keeps its authored
  * jar order, so the lit jars stand where the pair was drawn), each jar's capacity moving with it. Neither changes the shortest solution.
  */
-export function present(s: string, plan: JarPlan, rng: Rng): { board: Board; labels?: Labels; caps: Caps } {
-  const raw = parse(s);
+export function present(
+  s: string,
+  plan: JarPlan,
+  rng: Rng,
+): { board: Board; labels?: Labels; caps: Caps; goal?: Board } {
+  const [start, target] = s.split('>');
+  const raw = parse(start);
+  const goal = target === undefined ? undefined : parse(target);
   const mats = matLabels(plan);
   const names = rng.shuffle(FRUITS.map((_, i) => i));
   const order = plan.id === 1 ? raw.map((_, i) => i) : rng.shuffle(raw.map((_, i) => i));
+  const rename = (board: Board) => order.map((i) => board[i].map((k) => names[k]));
   return {
-    board: order.map((i) => raw[i].map((k) => names[k])),
+    board: rename(raw),
+    goal: goal && rename(goal),
     labels: mats && order.map((i) => (mats[i] === null ? null : names[mats[i]!])),
     caps: plan.caps ? order.map((i) => plan.caps![i]) : plan.cap,
   };
@@ -399,6 +476,7 @@ export const HIT_W = 120;
 export const PIECE = 52;
 export const RIM = 36;
 export const HEADER = 120;
+export const PICTURE_HEADER = 300;
 /** The round arrow's middle is this far in from the bottom-right corner; its radius is 54. */
 export const UNDO_INSET = 80;
 const ROW_GAP = 40;
@@ -425,23 +503,23 @@ function rowXs(n: number, v: View): number[] {
  * One row when the jars get at least 130 units each, else two with the extra jar on top. Clear of the pet's corner and the round
  * arrow. Jars of different heights stand on one base line, each row as tall as the tallest jar.
  */
-export function jarLayout(n: number, cap: Caps, v: View): JarSpot[] {
+export function jarLayout(n: number, cap: Caps, v: View, header = HEADER): JarSpot[] {
   const h = jarHeight(Math.max(...Array.from({ length: n }, (_, i) => capAt(cap, i))));
   const room = (v.w - 190) / n;
   const spot = (x: number, base: number, i: number): JarSpot => {
-    const jh = jarHeight(capAt(cap, i));
+    const jh = Math.max(100, jarHeight(capAt(cap, i)));
     return { x, y: base, hit: { x: x - HIT_W / 2, y: base - jh, w: HIT_W, h: jh } };
   };
   if (room >= MIN_PITCH) {
     // One row, standing in the middle of the space under the header and above the round arrow.
     const bottom = v.h - UNDO_INSET - 54 - 20;
-    const base = Math.min(bottom, HEADER + Math.max(0, (bottom - HEADER - h) / 2) + h);
+    const base = Math.min(bottom, header + Math.max(0, (bottom - header - h) / 2) + h);
     return rowXs(n, v).map((x, i) => spot(x, base, i));
   }
   const upper = Math.ceil(n / 2),
     lower = n - upper;
   const total = 2 * h + ROW_GAP;
-  const topY = HEADER + Math.max(0, (v.h - 40 - HEADER - total) / 2);
+  const topY = header + Math.max(0, (v.h - 40 - header - total) / 2);
   return [
     ...rowXs(upper, v).map((x, i) => spot(x, topY + h, i)),
     ...rowXs(lower, v).map((x, i) => spot(x, topY + total, upper + i)),
