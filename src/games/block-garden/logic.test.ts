@@ -153,7 +153,7 @@ describe('level 1, garden 1', () => {
 
 describe('rounds, looks and flowers', () => {
   it('a pre-K round at levels 1 and 2 is three gardens; the rest keep theirs', () => {
-    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1, 2, 1, 1]);
+    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1, 2, 1, 1, 1]);
   });
 
   it('every look and every flower kind is reachable', () => {
@@ -227,7 +227,7 @@ describe('level 9, Corner with stripes', () => {
   it('sits between 2 and 3 for pre-K and school; grown-ups never reach it', () => {
     expect(LEVELS.prek).toEqual({ min: 1, max: 9, order: [1, 2, 9, 3] });
     expect(LEVELS.school).toEqual({ min: 2, max: 11, order: [2, 9, 3, 4, 5, 10, 6, 11] });
-    expect(LEVELS.grownup).toEqual({ min: 5, max: 11, order: [5, 10, 6, 7, 8, 11] });
+    expect(LEVELS.grownup).toEqual({ min: 5, max: 12, order: [5, 10, 6, 7, 8, 11, 12] });
     expect(ENTRY_LEVELS).toEqual([9]);
     expect(stepLevel(2, 1, LEVELS.prek!)).toBe(9);
     expect(stepLevel(9, 1, LEVELS.prek!)).toBe(3);
@@ -290,11 +290,12 @@ describe('level 11, Mind the snail', () => {
     throw new Error('no snail');
   };
 
-  it("is school's top level and a grown-up's last", () => {
+  it("is school's top level and comes after the big gardens for a grown-up", () => {
     expect(plan.name).toBe('Mind the snail');
     expect(stepLevel(6, 1, LEVELS.school!)).toBe(11);
     expect(stepLevel(11, 1, LEVELS.school!)).toBe(11);
     expect(stepLevel(8, 1, LEVELS.grownup!)).toBe(11);
+    expect(stepLevel(11, 1, LEVELS.grownup!)).toBe(12);
     expect(stepLevel(11, -1, LEVELS.grownup!)).toBe(8);
     expect(LEVELS.prek!.max).toBe(9);
   });
@@ -376,7 +377,82 @@ describe('level 11, Mind the snail', () => {
   }, 60_000);
 });
 
-describe.each([5, 6, 7, 8, 10, 11].map((id) => [id, planFor(id)] as const))(
+describe('level 12, Mind the snails', () => {
+  const plan = planFor(12);
+  const snailsOf = (g: Garden): [number, number][] => {
+    const out: [number, number][] = [];
+    for (let r = 0; r < g.n; r++)
+      for (let c = 0; c < g.n; c++) if (has(g.bed.keep ?? [], r, c)) out.push([r, c]);
+    return out;
+  };
+
+  it("is level 7's big garden with two snails, a grown-up's last; school stops at 11", () => {
+    expect(plan.name).toBe('Mind the snails');
+    expect(plan.snails).toBe(2);
+    const { id: _a, name: _b, snails: _c, ...same } = plan;
+    const { id: _d, name: _e, ...seven } = planFor(7);
+    expect(same).toEqual(seven);
+    expect(stepLevel(12, 1, LEVELS.grownup!)).toBe(12);
+    expect(stepLevel(12, -1, LEVELS.grownup!)).toBe(11);
+    expect(LEVELS.school!.max).toBe(11);
+  });
+
+  it("two snails: a planting that fills either snail's line is refused, and names that snail", () => {
+    // Snails at (0,0) and (2,0); row 0 is stone but for (0,6)-(0,7), row 2 but for (2,7).
+    const g = decode(
+      'sooooo../......../soooooo./......../......../......../......*./o.......:mono-0,domino-0',
+      plan,
+    );
+    expect(allowed(g.bed, 'mono-0', { r: 1, c: 0 })).toBe(true);
+    expect(allowed(g.bed, 'domino-0', { r: 0, c: 6 })).toBe(false);
+    expect(place(g.bed, 'domino-0', { r: 0, c: 6 }).snails).toEqual([[0, 0]]);
+    expect(allowed(g.bed, 'mono-0', { r: 2, c: 7 })).toBe(false);
+    for (let t = 0; t < 8; t++) expect(count(transformGarden(g, t).bed.keep!)).toBe(2);
+  });
+
+  it('each garden: two snails on plain stones with no bud in their lines, a tempting first-tray planting, par 7–9', () => {
+    for (const text of GARDENS[12]) {
+      const g = decode(text, plan);
+      const snails = snailsOf(g);
+      expect(snails.length).toBe(2);
+      for (const [r, c] of snails) {
+        expect(has(g.bed.stones, r, c)).toBe(true);
+        expect(g.bed.buds[r]).toBe(0);
+        expect(g.bed.buds.every((m) => !((m >> c) & 1))).toBe(true);
+      }
+      expect(g.solution.length).toBeGreaterThanOrEqual(7);
+      expect(g.solution.length).toBeLessThanOrEqual(9);
+      expect(
+        trayNow(g, 0).some((i) => anchors(g.bed, g.pieces[i]).some((a) => !allowed(g.bed, g.pieces[i], a))),
+      ).toBe(true);
+      let s = startState(g);
+      for (const p of g.solution) s = apply(g, s, p);
+      for (const [r, c] of snails) expect(has(s.bed.keep!, r, c)).toBe(true);
+    }
+  });
+
+  it('along the stored solution the hint reads the plan, and off it the hint never picks a snail', () => {
+    const rng = new Rng(43);
+    for (const text of GARDENS[12].slice(0, 6)) {
+      const g = decode(text, plan);
+      const history: State[] = [];
+      let s = startState(g);
+      for (const p of g.solution) {
+        expect(hintPlacement(g, s, history)).toEqual({ kind: 'plan', placement: p });
+        history.push(s);
+        s = apply(g, s, p);
+      }
+      const states = wander(g, rng, rng.int(1, 2));
+      const w = states[states.length - 1];
+      if (goalMet(w.bed, g.goal)) continue;
+      const hint = hintPlacement(g, w, states.slice(0, -1));
+      if (hint.kind === 'plan')
+        expect(allowed(w.bed, g.pieces[hint.placement.piece], hint.placement)).toBe(true);
+    }
+  }, 60_000);
+});
+
+describe.each([5, 6, 7, 8, 10, 11, 12].map((id) => [id, planFor(id)] as const))(
   'frozen gardens, level %i',
   (id, plan) => {
     const list = GARDENS[id];
@@ -386,7 +462,10 @@ describe.each([5, 6, 7, 8, 10, 11].map((id) => [id, planFor(id)] as const))(
     });
 
     it('each is well formed, its stored solution replays to the goal at par, and it passes the filter', () => {
-      for (const text of list) {
+      // Level 12's filter searches the 8×8 bed without its snails (up to 1.8 million states); the generator ran it on every
+      // garden, two are run again here, and the level 12 tests above check the rest of its conditions on all of them.
+      const heavy = plan.snails && plan.n === 8 ? 2 : list.length;
+      list.forEach((text, k) => {
         const g = decode(text, plan);
         expect(g.n).toBe(plan.n);
         expect(fullLines(g.bed)).toBe(0);
@@ -398,9 +477,9 @@ describe.each([5, 6, 7, 8, 10, 11].map((id) => [id, planFor(id)] as const))(
           s = apply(g, s, p);
         }
         expect(goalMet(s.bed, g.goal)).toBe(true);
-        expect(passesFilter(plan, g, g.solution.length)).toBe(true);
-      }
-    });
+        if (k < heavy) expect(passesFilter(plan, g, g.solution.length)).toBe(true);
+      });
+    }, 60_000);
 
     it('par is the fewest placements, and every symmetry of the garden keeps it', () => {
       // Levels 7–8 were checked by the generator with a two-million-state search; two each are checked again here.
