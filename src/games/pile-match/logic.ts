@@ -62,10 +62,22 @@ export interface PilePlan {
   asked: boolean;
   /** Levels 6–9 end with the pet counting the baskets by threes. */
   count: boolean;
+  /** Levels 3 and 11 are free play: two kinds never fill the tray, nothing is a miss and put-backs never bring a hint. */
+  freePlay: boolean;
 }
 
 export const PLANS: readonly PilePlan[] = [
-  { id: 1, name: 'Find three, flat', pieces: 6, kinds: 2, layers: 1, tray: 3, asked: true, count: false },
+  {
+    id: 1,
+    name: 'Find three, flat',
+    pieces: 6,
+    kinds: 2,
+    layers: 1,
+    tray: 3,
+    asked: true,
+    count: false,
+    freePlay: false,
+  },
   {
     id: 2,
     name: 'Find three in a little pile',
@@ -75,8 +87,19 @@ export const PLANS: readonly PilePlan[] = [
     tray: 3,
     asked: true,
     count: false,
+    freePlay: false,
   },
-  { id: 3, name: 'Any three you like', pieces: 6, kinds: 2, layers: 1, tray: 5, asked: false, count: false },
+  {
+    id: 3,
+    name: 'Any three you like',
+    pieces: 6,
+    kinds: 2,
+    layers: 1,
+    tray: 5,
+    asked: false,
+    count: false,
+    freePlay: true,
+  },
   {
     id: 4,
     name: 'A little heap, a little tray',
@@ -86,8 +109,19 @@ export const PLANS: readonly PilePlan[] = [
     tray: 5,
     asked: false,
     count: false,
+    freePlay: false,
   },
-  { id: 5, name: 'Four kinds', pieces: 12, kinds: 4, layers: 2, tray: 5, asked: false, count: false },
+  {
+    id: 5,
+    name: 'Four kinds',
+    pieces: 12,
+    kinds: 4,
+    layers: 2,
+    tray: 5,
+    asked: false,
+    count: false,
+    freePlay: false,
+  },
   {
     id: 6,
     name: 'Five kinds, three layers',
@@ -97,19 +131,67 @@ export const PLANS: readonly PilePlan[] = [
     tray: 5,
     asked: false,
     count: true,
+    freePlay: false,
   },
-  { id: 7, name: 'Six kinds', pieces: 18, kinds: 6, layers: 3, tray: 5, asked: false, count: true },
-  { id: 8, name: 'The big heap', pieces: 24, kinds: 8, layers: 3, tray: 5, asked: false, count: true },
-  { id: 9, name: 'A smaller tray', pieces: 18, kinds: 6, layers: 3, tray: 4, asked: false, count: true },
+  {
+    id: 7,
+    name: 'Six kinds',
+    pieces: 18,
+    kinds: 6,
+    layers: 3,
+    tray: 5,
+    asked: false,
+    count: true,
+    freePlay: false,
+  },
+  {
+    id: 8,
+    name: 'The big heap',
+    pieces: 24,
+    kinds: 8,
+    layers: 3,
+    tray: 5,
+    asked: false,
+    count: true,
+    freePlay: false,
+  },
+  {
+    id: 9,
+    name: 'A smaller tray',
+    pieces: 18,
+    kinds: 6,
+    layers: 3,
+    tray: 4,
+    asked: false,
+    count: true,
+    freePlay: false,
+  },
+  {
+    id: 11,
+    name: 'Any three in a little pile',
+    pieces: 6,
+    kinds: 2,
+    layers: 2,
+    tray: 5,
+    asked: false,
+    count: false,
+    freePlay: true,
+  },
 ];
 
+/** Level 11 is an easier step between 3 and 4, so a band that does not list it starts at its easiest level instead. */
+export const ENTRY_LEVELS = [11] as const;
+
 export const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 4 },
-  prek: { min: 3, max: 6 },
+  preschool: { min: 1, max: 11, order: [1, 2, 3, 11, 4] },
+  prek: { min: 3, max: 11, order: [3, 11, 4, 5, 6] },
   school: { min: 5, max: 9 },
 };
-export const planFor = (level: number): PilePlan =>
-  PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
+/** The plan with this ID; an ID with no plan (10 is not built yet) clamps into levels 1–9. */
+export const planFor = (level: number): PilePlan => {
+  const id = Math.floor(level);
+  return PLANS.find((p) => p.id === id) ?? PLANS[Math.max(0, Math.min(8, id - 1))];
+};
 
 export const fullMask = (n: number) => (1 << n) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));

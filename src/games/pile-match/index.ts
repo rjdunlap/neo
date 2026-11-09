@@ -12,6 +12,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  ENTRY_LEVELS,
   accepted,
   askedKind,
   covers,
@@ -806,7 +807,7 @@ class PileMatch implements Game {
       p.zIndex = this.board.cells[i].z * 10;
       this.settle();
       this.shade();
-      if (this.plan.id >= 4 && ++this.putBacks >= 3) this.showHint();
+      if (!this.plan.asked && !this.plan.freePlay && ++this.putBacks >= 3) this.showHint();
     });
     this.shade();
     this.slideTray();
@@ -829,12 +830,12 @@ class PileMatch implements Game {
     this.miss();
   }
 
-  /** A full tray turns the piece away; from level 4 the first refusal counts until something leaves the tray. */
+  /** A full tray turns the piece away; from level 4 (never in free play) the first refusal counts until something leaves the tray. */
   private full() {
     sfx.boing();
     this.fullGlow = 1.5;
     void this.ctx.say('pile.full');
-    if (this.plan.id < 4 || this.fullCounted) return;
+    if (this.plan.asked || this.plan.freePlay || this.fullCounted) return;
     this.fullCounted = true;
     this.miss();
   }
@@ -925,6 +926,7 @@ export const pileMatch: GameModule = {
   skills: ['matching', 'visual-search', 'counting', 'planning'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   coplayHint: 'One of you names a kind, and the other finds three.',

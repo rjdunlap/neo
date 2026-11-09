@@ -111,7 +111,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Draw the Pattern (`draw-the-pattern`) | designed 2026-11-05 (slice 1 built; slices 2–3 ready) | [Dive](deep-dives/draw-the-pattern.md), [tracker](deep-dives/README.md#tracker) |
 | Swing Pals (`swing-pals`) | designed 2026-11-06 (slices 1–3 ready) | [Dive](deep-dives/swing-pals.md), [tracker](deep-dives/README.md#tracker) |
 | Bolt Boards (`bolt-boards`) | designed (dive 2026-11-06) | [Dive](deep-dives/bolt-boards.md) |
-| Puddle Gobble (`puddle-gobble`) | designed (dive 2026-11-06; slices 1–4 ready) | [Dive](deep-dives/puddle-gobble.md), [tracker](deep-dives/README.md#tracker) |
+| Puddle Gobble (`puddle-gobble`) | designed (dive 2026-11-06; slices 1–3 built, slice 4 ready) | [Dive](deep-dives/puddle-gobble.md), [tracker](deep-dives/README.md#tracker) |
 | Fruit Slice (`fruit-slice`) | designed, wave 5 (slices 1–4 ready; fractions closure and the journal wait on decisions) | [Dive](deep-dives/fruit-slice.md) |
 | Cut Along (`cut-along`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
 | Domino Run (`domino-run`) | designed 2026-11-07 ([dive](deep-dives/domino-run.md): slices 1–4 ready, no new decisions); wave 5 | [Tracker](deep-dives/README.md#tracker) |

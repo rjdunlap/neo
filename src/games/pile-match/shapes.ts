@@ -44,6 +44,20 @@ const FLAT6B = [
   heap('.##./#..#/.##.'),
 ];
 
+/** Four on the grass and two on top: level 11, the little pile between 3 and 4. */
+const PILE6 = [
+  heap('####', '#.#'),
+  heap('####', '##'),
+  heap('###/#', '##'),
+  heap('#.#/#.#', '##'),
+  heap('##/##', '#/#'),
+  heap('###/..#', '.##'),
+  heap('.##/##.', '##'),
+  heap('#../.##/..#', '#/.#'),
+  heap('#.#./.#.#', '#.#'),
+  heap('.#./###', '##'),
+];
+
 /** Six on the grass and three on top: level 2. */
 const PILE9 = [
   heap('####/.##.', '###'),
@@ -139,4 +153,5 @@ export const SHAPES: Record<number, Cell[][]> = {
   7: PILE18,
   8: PILE24,
   9: PILE18,
+  11: PILE6,
 };
