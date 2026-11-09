@@ -18,6 +18,7 @@ import { isSpecies, SPECIES, type SpeciesId } from '../creatures/species';
 import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
 import { isLandId, type LandId } from '../content/lands';
+import { cleanPlaytest, type PlaytestNote } from '../content/playtest';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -133,6 +134,8 @@ export interface SaveData {
    * shortcut, kept per profile; null before her first visit. Never a gate or a reminder.
    */
   explore: { last: LandId | null };
+  /** A grown-up's playtest notes on Today's six rounds (`src/content/playtest.ts`): one per game and day, bounded. */
+  playtest: PlaytestNote[];
 }
 
 export const HISTORY_LENGTH = 10;
@@ -165,6 +168,7 @@ export function defaults(): SaveData {
     creations: emptyCreations(),
     journal: emptyJournal(),
     explore: { last: null },
+    playtest: [],
   };
 }
 
@@ -362,6 +366,7 @@ export function migrate(raw: unknown): SaveData {
     creations: cleanCreations(raw.creations),
     journal: cleanJournal(raw.journal),
     explore: { last: isObj(raw.explore) && isLandId(raw.explore.last) ? raw.explore.last : null },
+    playtest: cleanPlaytest(raw.playtest),
   };
 }
 

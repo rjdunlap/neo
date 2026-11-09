@@ -87,7 +87,8 @@ async function boot() {
       hub: () => {
         const six = daily;
         daily = false;
-        void app.show(six ? new DailyScene(app) : new HomeScene(app));
+        // On a phone the six are the whole root (`App.phoneOnly`): Home and what it leads to stay on tablets and computers.
+        void app.show(six || app.phoneOnly ? new DailyScene(app) : new HomeScene(app));
       },
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),

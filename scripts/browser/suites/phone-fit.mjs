@@ -296,15 +296,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       });
       await at('ChooserScene');
       await p.locator('.chooser__play').first().tap();
-      await at('HomeScene');
-      await p.waitForTimeout(400);
-      assert.deepEqual(
-        await asked(),
-        { turning: false, upright: true, w: 768, scene: 'HomeScene' },
-        'Home lays out upright with no prompt',
-      );
-      await p.screenshot({ path: `${output}/upright-home.png` });
-      await p.evaluate(() => neo.go.daily());
+      // On a phone the root is Today's six alone (2026-11-09): "Who's playing?" opens the six, never Home.
       await at('DailyScene');
       await p.waitForTimeout(400);
       assert.deepEqual(
@@ -325,6 +317,20 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         `a grown-up's upright six is all upright-ready, with no turn badge (${JSON.stringify(six)})`,
       );
       await p.screenshot({ path: `${output}/upright-daily.png` });
+      assert.deepEqual(
+        await p.evaluate(() => ({
+          phone: neo.phoneOnly,
+          all: neo.scene.all.visible,
+          playAll: neo.scene.playAll.visible,
+          notes: !!neo.scene.notes,
+        })),
+        { phone: true, all: false, playAll: true, notes: true },
+        'the phone six: no All games, Play all and a grown-up notes pencil',
+      );
+      const cardPx = await p.evaluate(
+        () => neo.scene.cards[0].node.getChildByLabel('frame').getBounds().width,
+      );
+      assert.ok(cardPx >= 110, `an upright card uses the width (${cardPx} px; it was about 75)`);
       const id = six[0].id;
       await p.evaluate(() => kit.tapOn(neo.scene.cards[0].node));
       await at('GameScene');
@@ -348,9 +354,28 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
           .filter((b) => b.x0 < -0.5 || b.x1 > innerWidth + 0.5),
       );
       assert.deepEqual(off, [], "the result's buttons stay on an upright screen");
+      // The result offers the next of the six, and a grown-up the note pencil; the pencil's sheet saves a reaction.
+      assert.deepEqual(
+        await p.evaluate(() => ({ next: !!neo.scene.dailyNext, note: !!neo.scene.dailyNote })),
+        { next: true, note: true },
+      );
+      await p.evaluate(() => neo.scene.dailyNote.press());
+      await p.locator('.playtest [data-rate="good"]').tap();
+      await p.locator('.playtest [data-done]').tap();
+      assert.deepEqual(
+        await p.evaluate(() => kit.store.data.playtest.map((n) => [n.game, n.rating])),
+        [[id, 'good']],
+        'the playtest note is saved',
+      );
       await p.screenshot({ path: `${output}/upright-result.png` });
       await p.evaluate(() => neo.scene.after.home.press());
       await at('DailyScene');
+      assert.equal(
+        await p.evaluate(
+          () => neo.scene.picks.find((x) => !neo.scene.cards.find((c) => c.pick === x)) ?? null,
+        ),
+        null,
+      );
       await p.waitForTimeout(400);
       assert.equal(
         await p.evaluate(
@@ -374,7 +399,7 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
     }
     assert.deepEqual(bad, []);
     log(
-      "Upright root: Home, Today's six, an upright round and its result laid out at 768 wide with no prompt, back to the six with a tick, and a not-ready game still asked to turn passed",
+      "Upright root: the phone's Today's six (no Home), an upright round and its result laid out at 768 wide with no prompt, back to the six with a tick, and a not-ready game still asked to turn passed",
     );
   }
 

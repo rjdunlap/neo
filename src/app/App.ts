@@ -4,7 +4,15 @@ import { initTextures } from '../art/textures';
 import { audio } from '../audio/engine';
 import { voice } from '../audio/voice';
 import { trackPointers } from '../engine/input';
-import { clampInsets, computeView, needsTurn, NO_INSETS, type Insets, type View } from '../engine/view';
+import {
+  clampInsets,
+  computeView,
+  needsTurn,
+  NO_INSETS,
+  phoneSized,
+  type Insets,
+  type View,
+} from '../engine/view';
 import { isParentPanelOpen, openParentPanel } from '../parent/panel';
 import { store } from '../progress/store';
 import { openPauseSheet, type PauseSheet } from '../ui/pause-sheet';
@@ -355,6 +363,15 @@ export class App {
     };
   }
 
+  /**
+   * On a phone the root is Today's six alone (the developer, 2026-11-09): no Home, Explore or island, so the hub route
+   * opens the six and the six's Back goes to "Who's playing?". Read when a scene opens; a tablet or computer is never one.
+   */
+  get phoneOnly(): boolean {
+    const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    return this.creatureWorld && phoneSized(window.innerWidth, window.innerHeight, touch);
+  }
+
   /** A touch screen held upright (a phone): the turn prompt's condition, and the upright design area's for a ready scene. */
   uprightPhone(): boolean {
     const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
@@ -363,7 +380,8 @@ export class App {
 
   /** An upright phone gets the turn prompt, unless the scene suits it (plain HTML, or a layout of its own for the upright area). */
   private refreshTurn() {
-    const on = this.uprightPhone() && !this.scene?.upright;
+    // No scene yet (boot): nothing to cover, so the prompt never flashes before the first screen.
+    const on = this.uprightPhone() && !!this.scene && !this.scene.upright;
     if (on === this.turning) return;
     this.turning = on;
     this.turn.visible = on;

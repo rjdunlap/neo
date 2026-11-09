@@ -431,6 +431,15 @@ describe('migrate', () => {
     expect(migrate({ favorites: Array.from({ length: 50 }, (_, i) => `g${i}`) }).favorites).toHaveLength(12);
   });
 
+  it('keeps playtest notes bounded and repaired', () => {
+    expect(defaults().playtest).toEqual([]);
+    expect(migrate({ playtest: 'nope' }).playtest).toEqual([]);
+    const save = defaults();
+    save.playtest = [{ day: '2026-11-09', game: 'word-search', level: 2, rating: 'ok', note: 'fine', at: 5 }];
+    expect(migrate(JSON.parse(JSON.stringify(save))).playtest).toEqual(save.playtest);
+    expect(migrate({ playtest: [{ day: 'x', game: 'a', rating: 'ok' }] }).playtest).toEqual([]);
+  });
+
   it('remembers no place at first, keeps a known last place through a backup, and drops a damaged one (RW14 slice 8)', () => {
     expect(defaults().explore).toEqual({ last: null });
     expect(migrate({ version: 3, profile: { name: 'Mia', band: 'prek' } }).explore).toEqual({ last: null });

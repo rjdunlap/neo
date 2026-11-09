@@ -76,6 +76,17 @@ export function needsTurn(pxW: number, pxH: number, touch: boolean): boolean {
   return touch && pxH > pxW * UPRIGHT_PHONE;
 }
 
+/** The shorter side, in CSS pixels, under which a touch screen is a phone (an iPad mini's is 744). */
+export const PHONE_SHORT_SIDE = 600;
+
+/**
+ * A phone, held either way: a touch screen whose shorter side is under `PHONE_SHORT_SIDE`. On a phone the root is
+ * Today's six alone (the developer, 2026-11-09): no Home, Explore or island. Tablets and desktop windows are never phones.
+ */
+export function phoneSized(pxW: number, pxH: number, touch: boolean): boolean {
+  return touch && Math.min(pxW, pxH) < PHONE_SHORT_SIDE;
+}
+
 /**
  * How much to enlarge small grown-up text so it stays readable where the island is drawn small (a phone
  * at about half the iPad's scale): 1 from `scale` 0.72 up, so a tablet or computer is unchanged, and 1.5 at most.

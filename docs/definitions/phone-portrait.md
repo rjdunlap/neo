@@ -38,6 +38,19 @@ Built 2026-11-05: `computeView(..., upright)`, `Scene.uprightArea`, `GameModule.
 - **Files (expected):** `src/engine/view.ts` (+ test), `src/app/App.ts`, `src/app/Scene.ts`, `src/app/scenes/GameScene.ts`, `HomeScene.ts`, `DailyScene.ts`, `src/creatures/home-layout.ts`, `src/content/daily.ts` (+ test), `src/games/types.ts`, `src/games/registry.test.ts`, `vite.config.ts`, `public/classic/manifest.webmanifest`, `src/app/scenes/resident-check.ts` (a `phoneUpright: computeView(390, 844, …)` fixture beside `portrait` and `phone`), `scripts/browser-check.mjs` (upright cases), plus batch 1's games.
 - **Check tier:** shell. Typecheck, unit tests, build; the layout tests at the new fixture for every touched scene; `phonefit` changed to expect no prompt over a ready game and the prompt over a not-ready one; one filtered upright browser pass at 390 × 844 with `hasTouch` (Home → Today's six → one card → a finished round → back on the six with a tick) and one screenshot of each touched screen; the offline check once because the manifest changes. `world` only if the island's route changes.
 
+### The daily playtest slice: a phone is Today's six alone (built 2026-11-09)
+
+The developer, 2026-11-09: the developer and their wife will playtest the six each day on their phones, and the rest of the experience is archived on a phone. Built in one PR:
+
+- **A phone is the six.** `phoneSized` (`src/engine/view.ts`: a touch screen whose shorter side is under 600 CSS pixels, held either way) makes `App.phoneOnly` true at the root; the hub route then opens `DailyScene` instead of Home, the six page's Back goes to "Who's playing?", and its All games button is not drawn. Home, Explore, creature play and the island at `classic/` stay on tablets and computers; nothing is deleted. A round's house on a phone comes back to the six.
+- **First run upright.** `HatchScene` sets `uprightArea` and lays out from `hatchLayout` (choices centered across the plate, the go button under them, the grown-up's name field below), and `App.refreshTurn` no longer shows the prompt before the first scene exists.
+- **The six page upright.** A tall view uses the whole width (two columns, cards up to 300 units, a larger name and level line) and keeps a strip under the cards for the pet; a turn of the phone re-picks the six and redraws the turn badges.
+- **Play all.** A green play button opens the first card not yet played today; a daily round's result shows the next unplayed card in the discovery rectangle (`nextOfSix` in `src/content/daily.ts`), so the set is one tap per game. With all six played the way out returns to the page and its flourish.
+- **Playtest notes (grown-up profiles only).** A pencil on the six page and on a daily round's result opens a plain-HTML sheet (`src/ui/playtest-sheet.ts`): Good, Fine or Needs work plus a line of text per game and day, saved in the profile's own save (`SaveData.playtest`, bounded at 300 notes, repaired on load) and copied as text with Copy all notes for [OBSERVATIONS](../OBSERVATIONS.md).
+- **Shortcut.** The root manifest has a Today's six shortcut (`./?daily`) for tablets, where Home is still the root.
+
+Shell slice 2 below now matters only on tablets and computers that are narrow enough to be asked to turn (none today), so the game batches come first.
+
 ### Shell slice 2: the rest of the root (ready)
 
 All games, Explore, Friends, Dress, the hatch, the journal and the sticker book on the root, each with a layout test at the upright fixture and one screenshot. The island at `classic/` (map, lands, places, stories) stays sideways-only: the cutover retires it, and the turn prompt stays there.

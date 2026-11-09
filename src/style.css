@@ -198,6 +198,108 @@ html.turning .pet-name-form {
   font-size: 15px;
 }
 
+/* ---------- A grown-up's playtest notes on Today's six (src/ui/playtest-sheet.ts) ---------- */
+
+.playtest {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(16px, var(--safe-bottom))
+    max(16px, var(--safe-left));
+  background: rgb(43 43 58 / 0.45);
+}
+html.turning .playtest {
+  display: none;
+}
+.playtest__card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(520px, 100%);
+  margin: auto 0;
+  padding: 22px 18px;
+  border-radius: 24px;
+  background: var(--cream);
+  box-shadow: 0 10px 40px rgb(0 0 0 / 0.25);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.playtest h1 {
+  margin: 0;
+  font-size: 26px;
+}
+.playtest h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.playtest h2 small,
+.playtest__lead,
+.playtest__status {
+  margin: 0;
+  color: var(--quiet);
+  font-size: 14px;
+  font-weight: 500;
+}
+.playtest__status:empty {
+  display: none;
+}
+.playtest__game {
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+.playtest__rates,
+.playtest__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.playtest__actions {
+  justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+.playtest button {
+  font: inherit;
+  font-size: 16px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 14px;
+  border: 2px solid var(--teal-line);
+  background: var(--card);
+  color: var(--ink);
+  touch-action: manipulation;
+}
+.playtest button[aria-pressed='true'],
+.playtest button.btn--primary {
+  background: var(--teal);
+  font-weight: 600;
+}
+.playtest button:focus-visible,
+.playtest textarea:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+.playtest textarea {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 16px;
+  border: 2px solid var(--teal-line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  resize: vertical;
+}
+
 /* ---------- Parent zone (plain HTML: grown-up UI doesn't need to be a game) ---------- */
 
 .parent {
