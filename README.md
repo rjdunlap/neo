@@ -278,7 +278,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 
 | Game | Land | Levels | Starts as |
 | --- | --- | --- | --- |
-| [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 8 | jump a marble over a neighbour into an empty hole to leave one |
+| [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 9 | jump a marble over a neighbour into an empty hole to leave one |
 | [Log Roll](docs/games/log-roll.md) | Tinker Lab | 7 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 3 | slide equal numbered snowballs together to make the pictured target |
 | [Brain Break](docs/games/brain-break.md) | Lantern Lake | 6 | find and light 1 to 9 on a shuffled pond of numbered stones, then of stones showing sums and take-aways |
