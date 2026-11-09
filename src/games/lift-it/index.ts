@@ -24,6 +24,7 @@ import {
   countsMisses,
   crateBottom,
   crateHook,
+  crateRing,
   CRATE_H,
   CRATE_W,
   endsRight,
@@ -42,6 +43,7 @@ import {
   planFor,
   pullDirection,
   pullers,
+  pullersAt,
   circleBox,
   friendBox,
   LOOKS,
@@ -53,6 +55,7 @@ import {
   replaySpot,
   rigOf,
   rigsFor,
+  TIE_HIT,
   TRAY_HIT,
   travel,
   WHEEL_R,
@@ -341,6 +344,7 @@ class LiftIt implements Game {
   busy = true;
   finished = false;
   hooks: Hooks = { branch: false, crate: false };
+  tiedToCrate = false;
   haul: Haul = { rung: 0, knots: 0 };
   /** Rigs tugged on this parcel that could not lift it or ended at the wrong friends, and this parcel's misses. */
   tried = new Set<Rig>();
@@ -353,7 +357,7 @@ class LiftIt implements Game {
   guess: number | null = null;
   t = 0;
   /** The last delivered parcel's line and wheels (from level 3 the replay button hauls it again), and whether it is replaying. */
-  last: { line: Line; hooks: Hooks; ons: (HookId | null)[] } | null = null;
+  last: { line: Line; hooks: Hooks; tiedToCrate: boolean; ons: (HookId | null)[] } | null = null;
   replaying = false;
   private replayLine: Line | null = null;
   readonly replayButton = new Container();
@@ -378,6 +382,8 @@ class LiftIt implements Game {
   private readonly friendLayer = new Container();
   private friends: { c: Critter; at: 'ground' | 'ledge' | 'waiting'; i: number }[] = [];
   readonly handle = new Container();
+  readonly tieButton = new Container();
+  private readonly tieArt = new Graphics();
   private readonly knotArt = new Graphics();
   private readonly paws = new Container();
   /** The pet's paw riding the handle while Show a hint pulls a stroke (levels 1–2). */
@@ -412,7 +418,7 @@ class LiftIt implements Game {
     if (first) authoredShown.add(this.plan.id);
     this.lines = makeRound(this.plan, ctx.rng, first).lines;
     this.look = ctx.rng.pick(LOOKS);
-    this.layout = liftLayout(ctx.view);
+    this.layout = liftLayout(ctx.view, this.plan.movableKnot);
     const scene = SCENES[this.look];
     this.backdrop = new Backdrop(
       { sky: scene.sky, hills: scene.hills, horizon: 0.78, clouds: 2, sun: scene.sun, seed: 271 },
@@ -461,6 +467,9 @@ class LiftIt implements Game {
     this.replayButton.visible = false;
     onTap(this.replayButton, () => void this.replay(), { radius: REPLAY_HIT, cooldown: 400 });
 
+    this.tieButton.addChild(this.tieArt);
+    this.tieButton.visible = false;
+    onTap(this.tieButton, () => this.moveKnot(), { radius: TIE_HIT });
     this.handle.addChild(this.knotArt);
     this.handle.hitArea = new Circle(0, 0, HANDLE_HIT);
     this.handle.eventMode = 'static';
@@ -488,6 +497,7 @@ class LiftIt implements Game {
       this.handle,
       this.helperPaw,
       this.wheelLayer,
+      this.tieButton,
       this.replayButton,
       this.panel,
     );
@@ -518,7 +528,7 @@ class LiftIt implements Game {
   }
 
   get rig(): Rig {
-    return this.plan.prebuilt ?? rigOf(this.hooks);
+    return this.plan.prebuilt ?? rigOf(this.hooks, this.tiedToCrate);
   }
 
   /** Whether the rope has a handle at all: at levels 5–6 a crate with no wheel has no rope to pull. */
@@ -534,6 +544,8 @@ class LiftIt implements Game {
       4: 'lift-it.instruct-knots',
       5: 'lift-it.instruct-who',
       6: 'lift-it.instruct-numbers',
+      7: 'lift-it.instruct-three',
+      8: 'lift-it.instruct-three-numbers',
       9: 'lift-it.instruct-paws',
     };
     void this.ctx.instruct(lines[this.plan.id]);
@@ -549,6 +561,7 @@ class LiftIt implements Game {
   private buildLine() {
     this.dress(this.cur);
     this.hooks = { branch: this.plan.prebuilt === 'fixed', crate: false };
+    this.tiedToCrate = false;
     for (const w of this.wheels) {
       w.on = null;
       w.drag.home = { ...this.layout.tray[w.slot] };
@@ -607,7 +620,12 @@ class LiftIt implements Game {
     this.grab = null;
     const l = this.cur;
     const rig = this.rig;
-    this.last = { line: l, hooks: { ...this.hooks }, ons: this.wheels.map((w) => w.on) };
+    this.last = {
+      line: l,
+      hooks: { ...this.hooks },
+      tiedToCrate: this.tiedToCrate,
+      ons: this.wheels.map((w) => w.on),
+    };
     sfx.clunk();
     const waiting = this.friends.find((f) => f.at === 'waiting');
     const L = this.layout;
@@ -636,8 +654,9 @@ class LiftIt implements Game {
     let say: LineId = 'lift-it.landed';
     if (this.plan.id === 2) say = 'lift-it.same-friends';
     else if (this.plan.id === 3) say = 'lift-it.two-ropes';
+    else if (rig === 'three') say = 'lift-it.three-ropes';
     else if (this.plan.counter) say = ratio(rig) === 2 ? 'lift-it.half-twice' : 'lift-it.count-knots';
-    await this.ctx.say(say, { knots: travel(rig, l) });
+    await this.ctx.say(say, { knots: travel(rig, l), w: l.w, paws: paws(rig, l) });
     if (this.destroyed) return;
     // The crate comes back down empty.
     this.haul = { rung: 0, knots: 0 };
@@ -662,7 +681,7 @@ class LiftIt implements Game {
 
   resize(v: View) {
     this.view = v;
-    this.layout = liftLayout(v);
+    this.layout = liftLayout(v, this.plan.movableKnot);
     this.backdrop.resize(v);
     for (const w of this.wheels) {
       w.drag.home = w.on ? this.hookPos(w.on) : { ...this.layout.tray[w.slot] };
@@ -711,6 +730,7 @@ class LiftIt implements Game {
       .fill(wood.fill)
       .stroke({ width: 5, color: wood.line });
     g.circle(L.ring.x, L.ring.y + 8, 9).stroke({ width: 5, color: 0x8c8c9c });
+    if (L.movableKnot) g.circle(L.cx + WHEEL_R, L.ring.y + 8, 9).stroke({ width: 5, color: 0x8c8c9c });
     // The ledge: a plank on the bough at her height.
     g.roundRect(ledge.from, y, L.trunkX - ledge.from, 24, 10)
       .fill(wood.light)
@@ -784,8 +804,20 @@ class LiftIt implements Game {
       w.node.position.copyFrom(w.drag.home);
       sfx.clunk();
     } else w.drag.home = { ...this.layout.tray[w.slot] };
+    if (!this.hooks.branch || !this.hooks.crate) this.tiedToCrate = false;
     if (this.rig !== before) this.rigChanged();
     return !!hook;
+  }
+
+  private moveKnot() {
+    if (!this.plan.movableKnot || !this.hooks.branch || !this.hooks.crate || !this.canHang()) return;
+    if (this.wheels.some((w) => w.drag.dragging)) return;
+    this.tiedToCrate = !this.tiedToCrate;
+    sfx.clunk();
+    this.tieArt.scale.set(1.15);
+    void this.ctx.tw.to(this.tieArt.scale, { x: 1, y: 1 }, { duration: 0.25 });
+    this.rigChanged();
+    this.speak(this.tiedToCrate ? 'lift-it.tied-crate' : 'lift-it.tied-branch', undefined, true);
   }
 
   private rigChanged() {
@@ -980,7 +1012,7 @@ class LiftIt implements Game {
       const said: LineId =
         q.kind !== 'paws'
           ? 'lift-it.count-knots'
-          : ratio(q.rig) === 2
+          : ratio(q.rig) > 1
             ? 'lift-it.count-paws'
             : 'lift-it.count-paws-one';
       await this.ctx.say(said, {
@@ -1029,9 +1061,18 @@ class LiftIt implements Game {
     this.replayButton.scale.set(1.15);
     void this.ctx.tw.to(this.replayButton.scale, { x: 1, y: 1 }, { duration: 0.25 });
     sfx.pop(6);
-    const saved = { hooks: { ...this.hooks }, ons: this.wheels.map((w) => w.on) };
-    const setWheels = (hooks: Hooks, ons: (HookId | null)[]) => {
+    const saved = {
+      hooks: { ...this.hooks },
+      tiedToCrate: this.tiedToCrate,
+      ons: this.wheels.map((w) => w.on),
+    };
+    const setWheels = ({
+      hooks,
+      tiedToCrate,
+      ons,
+    }: Pick<NonNullable<LiftIt['last']>, 'hooks' | 'tiedToCrate' | 'ons'>) => {
       this.hooks = { ...hooks };
+      this.tiedToCrate = tiedToCrate;
       this.wheels.forEach((w, i) => {
         w.on = ons[i];
         w.drag.home = w.on ? this.hookPos(w.on) : { ...this.layout.tray[w.slot] };
@@ -1039,7 +1080,7 @@ class LiftIt implements Game {
       });
     };
     this.replayLine = last.line;
-    setWheels(last.hooks, last.ons);
+    setWheels(last);
     this.dress(last.line);
     this.counter.visible = true;
     this.counterText.text = '0';
@@ -1075,7 +1116,7 @@ class LiftIt implements Game {
     if (this.destroyed) return;
     // Back to her own parcel, with her wheels where she left them.
     this.replayLine = null;
-    setWheels(saved.hooks, saved.ons);
+    setWheels(saved);
     this.dress(this.cur);
     this.shown = 0;
     this.lastTick = 0;
@@ -1096,7 +1137,9 @@ class LiftIt implements Game {
       this.glowCounted = true;
       this.hints++;
     }
-    void this.ctx.say('lift-it.hint');
+    const knotOnly = this.hooks.branch && this.hooks.crate && (best === 'both' || best === 'three');
+    const line = knotOnly ? 'lift-it.hint-ring' : best === 'three' ? 'lift-it.hint-three' : 'lift-it.hint';
+    void this.ctx.say(line);
   }
 
   askForHint() {
@@ -1121,8 +1164,12 @@ class LiftIt implements Game {
       void this.ctx.say('lift-it.hint');
       return;
     }
+    if (this.plan.movableKnot && works(this.rig, this.cur) && endsRight(this.rig, this.cur)) {
+      void this.ctx.say('lift-it.now-pull');
+      return;
+    }
     const best = bestRig(this.cur, rigsFor(this.plan));
-    if (best && best !== this.rig && this.glowRig === null) this.showGlow();
+    if (best && best !== this.rig && (this.glowRig === null || this.plan.movableKnot)) this.showGlow();
     else void this.ctx.say(best === this.rig ? 'lift-it.hint-pull' : 'lift-it.hint');
   }
 
@@ -1179,13 +1226,14 @@ class LiftIt implements Game {
     this.drawRope();
     this.drawHandle();
     this.drawHooks();
+    if (this.plan.movableKnot) this.drawTie();
     this.replayButton.visible = this.canReplay;
     this.helperPaw.visible = this.helperLeft > 0 && this.handle.visible;
     if (this.helperPaw.visible) this.helperPaw.position.set(this.handle.x + 6, this.handle.y - 8);
     for (const f of this.friends) {
       if (f.at === 'waiting' || this.busy) continue;
       // The pullers lean in while the rope moves.
-      const pulling = this.grab?.haul && (f.at === 'ledge') === (rig === 'movable');
+      const pulling = this.grab?.haul && f.at === pullersAt(rig);
       f.c.rotation = pulling ? 0.08 * Math.sin(this.t * 8) : 0;
     }
   }
@@ -1207,7 +1255,27 @@ class LiftIt implements Game {
     const r = WHEEL_R;
     const stroke = { width: 7, color: ROPE, cap: 'round' as const, join: 'round' as const };
     let free: [Pt, Pt] | null = null;
-    if (rig === 'fixed') {
+    if (rig === 'three') {
+      const tie = crateRing(L, this.shown);
+      g.moveTo(tie.x, tie.y)
+        .lineTo(B.x - r, B.y)
+        .arc(B.x, B.y, r, Math.PI, 2 * Math.PI)
+        .lineTo(C.x - r, C.y)
+        .arc(C.x, C.y, r, Math.PI, 0, true)
+        .lineTo(H.x, H.y)
+        .stroke(stroke);
+      free = [{ x: C.x + r, y: C.y }, H];
+    } else if (L.movableKnot && (rig === 'fixed' || rig === 'both')) {
+      const anchor = { x: C.x + r, y: rig === 'both' ? L.ring.y + 14 : top };
+      g.moveTo(anchor.x, anchor.y);
+      if (rig === 'both') g.lineTo(C.x + r, C.y).arc(C.x, C.y, r, 0, Math.PI);
+      g.lineTo(B.x + r, B.y)
+        .arc(B.x, B.y, r, 0, Math.PI, true)
+        .lineTo(H.x, H.y)
+        .stroke(stroke);
+      g.circle(anchor.x, anchor.y, 8).fill(ROPE);
+      free = [{ x: B.x - r, y: B.y }, H];
+    } else if (rig === 'fixed') {
       g.moveTo(L.cx + r, top)
         .lineTo(B.x - r, B.y)
         .arc(B.x, B.y, r, Math.PI, 2 * Math.PI)
@@ -1333,6 +1401,29 @@ class LiftIt implements Game {
     }
   }
 
+  private drawTie() {
+    const at = crateRing(this.layout, this.shown);
+    const both = this.hooks.branch && this.hooks.crate;
+    this.tieButton.visible = both && !this.finished;
+    this.tieButton.eventMode = this.canHang() ? 'static' : 'none';
+    this.tieButton.position.copyFrom(at);
+    if (both) {
+      const face = this.tiedToCrate ? ROPE : cream;
+      this.tieArt
+        .clear()
+        .circle(0, 0, 27)
+        .fill(face)
+        .stroke({ color: wood.line, width: 5 })
+        .circle(0, 0, 12)
+        .stroke({ color: this.tiedToCrate ? KNOT_COLOR : BRASS.line, width: 6 });
+      if (this.tiedToCrate) this.tieArt.circle(0, 0, 7).fill(KNOT_COLOR);
+    }
+    if (this.glowRig && !this.replaying && (this.glowRig === 'three') !== this.tiedToCrate) {
+      const pulse = 5 * Math.sin(this.t * 5);
+      this.glow.circle(at.x, at.y, 42 + pulse).stroke({ color: swatch.yellow.fill, width: 8 });
+    }
+  }
+
   /* Bot ------------------------------------------------------------------------------------------- */
 
   autotouch(): TouchIntent | null {
@@ -1359,6 +1450,7 @@ class LiftIt implements Game {
           if (w) return { drag: { on: w.node }, to: { on: stage, ...this.hookPos(h) }, pause: 0.7 };
         }
       }
+      if ((best === 'three') !== this.tiedToCrate) return { tap: { on: this.tieButton }, pause: 0.6 };
       return null;
     }
     if (this.plan.ask !== 'none' && this.answeredFor !== this.rig) return { tap: { on: this.handle } };
@@ -1406,6 +1498,7 @@ class LiftIt implements Game {
   destroy() {
     this.destroyed = true;
     this.handle.removeAllListeners();
+    this.tieButton.removeAllListeners();
     for (const w of this.wheels) w.drag.destroy();
     for (const f of this.friends) this.ctx.untrack(f.c);
   }
