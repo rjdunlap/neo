@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   distances,
@@ -38,9 +38,9 @@ describe('Number Nook', () => {
       expect(seen.size, `level ${level}`).toBeGreaterThanOrEqual(least);
     }
   });
-  it('keeps the seeded boards of levels 1–3 unchanged by level 4', () => {
+  it('keeps the seeded boards of levels 1–4 unchanged by the column-order goal', () => {
     const boards: Record<string, string> = {};
-    for (let level = 1; level <= 3; level++)
+    for (let level = 1; level <= 4; level++)
       for (let seed = 1; seed <= 3; seed++)
         boards[`${level}-${seed}`] = makeBoard(level, new Rng(seed)).join('');
     expect(boards).toEqual({
@@ -53,9 +53,12 @@ describe('Number Nook', () => {
       '3-1': '034126758',
       '3-2': '014732586',
       '3-3': '712643580',
+      '4-1': '62513074',
+      '4-2': '26473510',
+      '4-3': '04362157',
     });
     expect(planFor(4)).toMatchObject({ rows: 2, cols: 4, near: 18, far: 18 });
-    expect(planFor(9)).toBe(planFor(4));
+    expect(planFor(9)).toBe(planFor(5));
   });
   it('counts the numbered tiles in their goal place', () => {
     expect(inPlace(goal(3, 3))).toBe(8);
@@ -63,7 +66,7 @@ describe('Number Nook', () => {
     expect(inPlace([1, 2, 0, 3])).toBe(2);
   });
   it('generates seeded boards at a shortest distance inside the level range and solves them with legal hints', () => {
-    for (let level = 1; level <= 4; level++)
+    for (let level = 1; level <= 5; level++)
       for (let seed = 1; seed <= 25; seed++) {
         const p = planFor(level);
         let board = makeBoard(level, new Rng(seed));
@@ -71,16 +74,16 @@ describe('Number Nook', () => {
         expect(board.slice().sort((a, b) => a - b)).toEqual(
           Array.from({ length: p.rows * p.cols }, (_, i) => i),
         );
-        const start = solutionStep(board, p.cols)!.distance;
+        const start = solutionStep(board, p.cols, p.order)!.distance;
         expect(start).toBeGreaterThanOrEqual(p.near);
         expect(start).toBeLessThanOrEqual(p.far);
         for (let remaining = start; remaining > 0; remaining--) {
-          const step = solutionStep(board, p.cols)!;
+          const step = solutionStep(board, p.cols, p.order)!;
           expect(step.distance).toBe(remaining);
           board = slide(board, p.cols, step.next)!;
           expect(board).not.toBeNull();
         }
-        expect(solved(board)).toBe(true);
+        expect(solved(board, goal(p.rows, p.cols, p.order))).toBe(true);
       }
   });
   it('hints still shorten the route after any legal exploratory slide', () => {
@@ -98,6 +101,70 @@ describe('Number Nook', () => {
           expect(slide(next, cols, b.indexOf(0))).toEqual(b);
         }
       }
+  });
+  it('reads column order for completion and the green in-place tiles', () => {
+    const rows = goal(3, 3),
+      columns = goal(3, 3, 'columns');
+    expect(columns).toEqual([1, 4, 7, 2, 5, 8, 3, 6, 0]);
+    expect(solved(columns, columns)).toBe(true);
+    expect(solved(rows, columns)).toBe(false);
+    expect(solved(columns)).toBe(false);
+    expect(inPlace(columns, columns)).toBe(8);
+    expect(inPlace(rows, columns)).toBe(2);
+    expect(inPlace(columns)).toBe(2);
+    const moved = slide(columns, 3, 7)!;
+    expect(solved(moved, columns)).toBe(false);
+    expect(inPlace(moved, columns)).toBe(7);
+    expect(planFor(5)).toMatchObject({ rows: 3, cols: 3, near: 14, far: 14, order: 'columns' });
+    expect(pool(5).length).toBe(1893);
+  });
+  it('keeps the two opposite-parity goals isolated whichever table is initialized first', async () => {
+    for (const first of ['rows', 'columns'] as const) {
+      vi.resetModules();
+      const fresh = await import('./logic');
+      const second = first === 'rows' ? 'columns' : 'rows';
+      for (const order of [first, second] as const) {
+        const other = order === 'rows' ? 'columns' : 'rows';
+        const target = fresh.goal(3, 3, order);
+        expect(fresh.distances(3, 3, order).size).toBe(181440);
+        expect(fresh.solutionStep(target, 3, order)).toEqual({ distance: 0, next: -1 });
+        expect(fresh.solutionStep(target, 3, other)).toBeNull();
+      }
+      // Looking up the second goal must not overwrite the first goal's distances or membership.
+      for (const order of [first, second] as const) {
+        const target = fresh.goal(3, 3, order);
+        const near = fresh.slide(target, 3, 7)!;
+        expect(fresh.solutionStep(near, 3, order)?.distance).toBe(1);
+        expect(fresh.solutionStep(near, 3, order)?.next).toBe(8);
+        expect(fresh.solutionStep(target, 3, order)?.distance).toBe(0);
+      }
+    }
+  });
+  it('has an exact, legal decreasing hint throughout the alternate goal table, including after exploration', () => {
+    const target = goal(3, 3, 'columns');
+    let checked = 0;
+    for (const [key, info] of distances(3, 3, 'columns')) {
+      const board = key.split('').map(Number);
+      if (!info.distance) {
+        expect(board).toEqual(target);
+        expect(info.next).toBe(-1);
+      } else {
+        const next = slide(board, 3, info.next);
+        if (!next || solutionStep(next, 3, 'columns')?.distance !== info.distance - 1)
+          throw new Error(`No decreasing legal hint for ${key}`);
+      }
+      // Every edge changes distance by exactly one. Together with distance zero only at the goal,
+      // this proves shortest distances rather than merely a route that eventually arrives.
+      for (const at of neighbours(board, 3)) {
+        const explored = slide(board, 3, at)!;
+        const after = solutionStep(explored, 3, 'columns');
+        if (!after || Math.abs(after.distance - info.distance) !== 1)
+          throw new Error(`Incorrect distance after exploring ${key} at ${at}`);
+      }
+      checked++;
+    }
+    expect(checked).toBe(181440);
+    expect(solutionStep(goal(3, 3), 3, 'columns')).toBeNull();
   });
   it('rejects distant, diagonal, blank and wrapped moves without mutating the board', () => {
     const b = goal(3, 3),
@@ -159,7 +226,7 @@ describe('Number Nook', () => {
 describe('Number Nook on a phone held upright (chunk 31)', () => {
   it('fits every board, the goal picture and the buttons in each upright view', () => {
     for (const [name, v] of Object.entries(UPRIGHT_VIEWS))
-      for (const level of [1, 2, 3, 4]) {
+      for (const level of [1, 2, 3, 4, 5]) {
         const { rows, cols } = planFor(level);
         const l = nookLayout(v.w, v.h, rows, cols);
         const cells = Array.from({ length: rows * cols }, (_, i) =>

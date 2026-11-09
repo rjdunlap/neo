@@ -310,3 +310,9 @@ Not run: full `npm test` (CI runs it), offline, other suites. Open: device check
 Changed: level 4 (the sign shows a sum of two fruit; any pair with that total counts, the sign's own pair is "the same as the sign" and not a miss; tray of five, targets 6–14); LEVELS now 1–4; how-to card reworded and level-scoped; `fruitsums` gained a level-4 block and `FROM_LEVEL=4`.
 Ran: `npm run typecheck`; `npm test` (329 files, 6229 passed); `BROWSER_SUITE=fruitsums FROM_LEVEL=4` (portrait 768×1024, sign 7 + 5, one wrong total as a miss, two ways, one sticker, screenshot); `fingerdemo` with `FINGER_ONLY=fruit-sums FINGER_LEVELS=4` (11.1 s); game-reviewer found no defects.
 Not run: build, levels 1–3 browser play (unchanged), tapping the sign's own pair in a browser (unit-tested in `judge`), offline. Open: device checks.
+
+## 2026-11-07 — Marble Jump slice 2: level 7 Finish in the star hole and the fewest-moves line (PR #1414)
+
+Changed: goal-aware `solve`/`recovery`, level 7 star pairs (levels 1–6 draws pinned by a 240-round hash test), the star drawing, `marble.star`, and the "N moves · fewest possible M" status after any finish; grown-up range 1–7.
+Ran: `npm run typecheck`; `npm test` (329 files, all pass); `BROWSER_SUITE=marblejump` (level 7 off-star route with no finish and no miss, portrait screenshot, Hint recovery, star finish with moves line, one sticker); `fingerdemo` with `FINGER_ONLY=marble-jump FINGER_LEVELS=7` (30.9 s); `npm run build`. game-reviewer: no bugs, one wording fix.
+Open: offline not run; clips for the two new voice lines not rendered (device speech fallback); no real iPad or enjoyment check.
