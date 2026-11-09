@@ -2,6 +2,8 @@
 
 Defined 2026-11-09 as slice **R3** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order), from its [candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit) and the [Frog Hop deep dive](../deep-dives/frog-hop.md). It is two new Frog Hop levels on the existing pad and card interactions, not a new game. Nothing is built yet. Every [open decision](#open-decisions) has a default the build uses.
 
+**Status:** defined 2026-11-09 ([PR #1440](https://github.com/rjdunlap/neo/pull/1440)); not built.
+
 **Fun action and purpose:** the frog's lily pads now sit at quarters of a whole. The sign asks for hops of a quarter, a half or a whole, and she taps where the frog will land; the frog then hops there, each hop as long as its size. In the second level the frog lands on a lily with one hop size, plants a flag, goes back to zero and she chooses how many hops of another size reach the same flag. The learning goal is **fractions as numbers on a line, measured as intervals from zero**, and **equivalent positions**: two quarters land where one half does, and four quarters, two halves and one whole all land on 1 (CCSS 3.NF.A.2a–b, 3.NF.A.3a and 3.NF.A.3c; the [study's anchors](../deep-dives/subjects/fractions.md#anchors-and-evidence-limits)). Only halves and quarters of one whole are used, so the study's math-educator review (for Whole Switch, Window Mosaic and division) does not gate these levels.
 
 ## References
