@@ -545,7 +545,7 @@ export interface GardenPlan {
   like?: number;
   /** The next tray shows faded beside the one in front of her, and cannot be lifted (level 10). */
   preview?: boolean;
-  /** Snails on stones that must never be picked (level 11). */
+  /** Snails on stones that must never be picked (one at level 11, two at 12). */
   snails?: number;
 }
 
@@ -737,6 +737,22 @@ export const PLANS: GardenPlan[] = [
     families: MID,
     snails: 1,
   },
+  {
+    id: 12,
+    name: 'Mind the snails',
+    n: 8,
+    cell: 72,
+    goal: 'buds',
+    pieces: 9,
+    traySize: 3,
+    buds: [4, 6],
+    par: [7, 9],
+    gardens: 1,
+    tinted: false,
+    refusalCounts: true,
+    families: BIG,
+    snails: 2,
+  },
 ];
 
 /** The level a plan's gardens are built and filtered as. */
@@ -745,10 +761,11 @@ export const kindOf = (plan: Pick<GardenPlan, 'id' | 'like'>): number => plan.li
 export const LEVELS: BandLevels = {
   // Level 9 is level 3's corner gardens with the stripes on and refused drops free: a gentler step between 2 and 3.
   // Level 10 is level 6's two trays with the next one shown: a step before the blind tray at 6.
-  // Level 11 is a two-tray garden with a snail's line that must never fill: school's top, a grown-up's last.
+  // Level 11 is a two-tray garden with a snail's line that must never fill: school's top. Level 12 is the big garden with
+  // two snails: a grown-up's last.
   prek: { min: 1, max: 9, order: [1, 2, 9, 3] },
   school: { min: 2, max: 11, order: [2, 9, 3, 4, 5, 10, 6, 11] },
-  grownup: { min: 5, max: 11, order: [5, 10, 6, 7, 8, 11] },
+  grownup: { min: 5, max: 12, order: [5, 10, 6, 7, 8, 11, 12] },
 };
 
 /** Easy levels with high IDs, placed earlier by a band's `order`. */
@@ -1120,8 +1137,11 @@ function familyShapes(families: readonly Family[], maxH: number): string[] {
   return families.flatMap((f) => FAMILY_SHAPES[f]).filter((id) => SHAPES[id].h <= maxH);
 }
 
+/** The 8×8 bud gardens (levels 7 and 12): a three- or four-row block and at least one five- or nine-square piece. */
+const bigBuds = (plan: GardenPlan) => plan.n === 8 && plan.goal === 'buds';
+
 /**
- * Levels 4 and 6–8: a block of rows full of stones but for the planned pieces' squares, buds in every row of the block, scattered
+ * Levels 4, 6–8 and 11–12: a block of rows full of stones but for the planned pieces' squares, buds in every row of the block, scattered
  * stones elsewhere and extra pieces (a decoy at 4; at 6–7 pieces that have to be planted somewhere harmless before the next tray).
  */
 function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
@@ -1130,9 +1150,9 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
   const spec =
     plan.id === 4
       ? { m: 2, k: 2, density: 0.15 }
-      : kindOf(plan) === 6 || plan.snails
+      : kindOf(plan) === 6 || (plan.snails && !bigBuds(plan))
         ? { m: rng.int(2, 3), k: rng.int(2, 3), density: 0.2 }
-        : plan.id === 7
+        : bigBuds(plan)
           ? { m: rng.int(3, 4), k: rng.int(3, 5), density: 0.2 }
           : { m: 4, k: rng.int(6, 7), density: 0 };
   const top = rng.int(0, n - spec.m);
@@ -1150,7 +1170,7 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
       shapes = Array.from({ length: spec.k }, () => rng.pick(pool));
     }
   }
-  if (plan.id === 7 && !shapes.some((id) => BIG_FAMILIES.includes(SHAPES[id].family))) {
+  if (bigBuds(plan) && !shapes.some((id) => BIG_FAMILIES.includes(SHAPES[id].family))) {
     shapes[0] = rng.pick(familyShapes(BIG_FAMILIES, spec.m));
   }
   // Level 4's rows are straight gaps (one piece each); the decoy cannot finish them.
@@ -1230,31 +1250,36 @@ function roomGarden(plan: GardenPlan, rng: Rng): Draft | null {
 }
 
 /**
- * Level 11: level 6's two-tray block, plus one other row of stones with a straight gap a tray piece fills, and a snail on one of
- * its stones. Filling that row would pick the snail's house, so its gap is the easy place she must leave alone.
+ * Levels 11–12: level 6's two-tray block (level 7's big one at 12), plus one other row of stones per snail with a straight gap a
+ * tray piece fills, and a snail on one of its stones. Filling that row would pick the snail's house, so its gap is the easy place
+ * she must leave alone.
  */
 function snailGarden(plan: GardenPlan, rng: Rng): Draft | null {
   const d = blockGarden(plan, rng);
-  if (!d || !d.extras.length) return null;
+  const snails = plan.snails ?? 0;
+  if (!d || d.extras.length < snails) return null;
   const n = d.n;
-  const blockRows = new Set<number>();
-  for (let r = 0; r < n; r++) if (d.buds[r]) blockRows.add(r);
-  const free = Array.from({ length: n }, (_, i) => i).filter((r) => !blockRows.has(r));
-  if (!free.length) return null;
-  const r = rng.pick(free);
-  const len = rng.int(2, 3);
-  const g = rng.int(0, n - len);
-  d.stones[r] = fullMask(n) & ~(((1 << len) - 1) << g);
-  d.buds[r] = 0;
-  // The snail sits on a stone of that row whose column holds no bud.
-  const budCols = d.buds.reduce((a, m) => a | m, 0);
-  const spots = Array.from({ length: n }, (_, c) => c).filter(
-    (c) => has(d.stones, r, c) && !((budCols >> c) & 1),
-  );
-  if (!spots.length) return null;
-  setCell(d.keep, r, rng.pick(spots));
-  // One of the extras is the piece that would fill the gap.
-  d.extras[0] = len === 2 ? 'domino-0' : 'I3-0';
+  const taken = new Set<number>();
+  for (let r = 0; r < n; r++) if (d.buds[r]) taken.add(r);
+  for (let k = 0; k < snails; k++) {
+    const free = Array.from({ length: n }, (_, i) => i).filter((r) => !taken.has(r));
+    if (!free.length) return null;
+    const r = rng.pick(free);
+    taken.add(r);
+    const len = rng.int(2, 3);
+    const g = rng.int(0, n - len);
+    d.stones[r] = fullMask(n) & ~(((1 << len) - 1) << g);
+    d.buds[r] = 0;
+    // The snail sits on a stone of that row whose column holds no bud.
+    const budCols = d.buds.reduce((a, m) => a | m, 0);
+    const spots = Array.from({ length: n }, (_, c) => c).filter(
+      (c) => has(d.stones, r, c) && !((budCols >> c) & 1),
+    );
+    if (!spots.length) return null;
+    setCell(d.keep, r, rng.pick(spots));
+    // One of the extras is the piece that would fill the gap.
+    d.extras[k] = len === 2 ? 'domino-0' : 'I3-0';
+  }
   return d;
 }
 
@@ -1362,8 +1387,9 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
       const stones = g.bed.filled.reduce((a, m) => a + popcount(m), 0);
       return budCount === 0 && stones >= plan.stones![0] && stones <= plan.stones![1];
     }
-    case 11: {
-      // One snail, on a stone that is not a bud, with no bud in its row or column.
+    case 11:
+    case 12: {
+      // One snail (two at 12), each on a stone that is not a bud, with no bud in its row or column.
       const keep = g.bed.keep ?? [];
       const spots: Cell[] = [];
       for (let r = 0; r < g.n; r++) for (let c = 0; c < g.n; c++) if (has(keep, r, c)) spots.push([r, c]);
@@ -1371,15 +1397,19 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
       const budCols = g.bed.buds.reduce((a, m) => a | m, 0);
       if (spots.some(([r, c]) => g.bed.buds[r] || (budCols >> c) & 1 || !has(g.bed.stones, r, c)))
         return false;
-      // Needs the second tray, and a piece in front of her fits where it would pick the snail's house.
-      if (par <= g.traySize) return false;
+      // Needs the second tray (the third at 12, like level 7), and a piece in front of her fits where it would pick a snail's house.
+      if (par <= (bigBuds(plan) ? 2 : 1) * g.traySize) return false;
       const tempting = trayNow(g, 0).some((i) =>
         anchors(g.bed, g.pieces[i]).some((a) => !allowed(g.bed, g.pieces[i], a)),
       );
       if (!tempting) return false;
       // Without the snail, some shortest way empties its stone: the snail changes the plan.
       const free = withoutSnails(g);
-      const freePar = solve(free, startState(free), SEARCH_CAP * 10)?.length;
+      const freePar = solve(
+        free,
+        startState(free),
+        bigBuds(plan) ? SEARCH_CAP * 60 : SEARCH_CAP * 10,
+      )?.length;
       if (freePar === undefined) return false;
       return allShortest(free, startState(free), freePar).some((sol) => snailsCleared(g, sol) > 0);
     }
