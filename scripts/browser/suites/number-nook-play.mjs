@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   /** Number Nook: both ends, rejected tap, a hint counted once, the glide, revision, a portrait in a new look, shortest route and one sticker. */
   async function numberNookPlay() {
-    // NOOK_LEVELS=4 plays only the newest level; the default is both ends plus the nine-space board.
-    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4,5').split(',').map(Number)) {
+    // NOOK_LEVELS=6 runs just the twelve-space board.
+    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4,5,6').split(',').map(Number)) {
       await launch('number-nook', level);
       await page.waitForTimeout(400);
       // Level 1's portrait is taken in a look other than today's lantern paper.
@@ -34,6 +34,21 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.equal(goalProof.rowGoalSolves, false);
         assert.equal(goalProof.wrongGoalHint, null);
         assert.equal(goalProof.distance, 14);
+      }
+      if (level === 6) {
+        const proof = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            cells: g.nodes.length,
+            miniature: g.target.children.map((c) => c.children?.[1]?.text ?? 0),
+            fewest: g.fewest,
+            instruction: neo.scene.instruction?.id,
+          };
+        });
+        assert.equal(proof.cells, 12);
+        assert.deepEqual(proof.miniature, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', 0]);
+        assert.equal(proof.fewest, 24);
+        assert.equal(proof.instruction, 'nook.twelve');
       }
       const original = await page.evaluate(() => neo.scene.game.board.slice());
       const wrong = await page.evaluate(async () => {
@@ -137,6 +152,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         return g.status.text;
       });
       assert.match(line, /fewest from the start: \d+/);
+      if (level === 6) assert.match(line, /fewest from the start: 24$/);
       await finished('number-nook');
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
       log(`Number Nook level ${level}: touch, revision and reward passed`);

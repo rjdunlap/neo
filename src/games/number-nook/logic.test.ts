@@ -38,7 +38,7 @@ describe('Number Nook', () => {
       expect(seen.size, `level ${level}`).toBeGreaterThanOrEqual(least);
     }
   });
-  it('keeps the seeded boards of levels 1–4 unchanged by the column-order goal', () => {
+  it('keeps the seeded boards of levels 1–4 unchanged', () => {
     const boards: Record<string, string> = {};
     for (let level = 1; level <= 4; level++)
       for (let seed = 1; seed <= 3; seed++)
@@ -58,7 +58,7 @@ describe('Number Nook', () => {
       '4-3': '04362157',
     });
     expect(planFor(4)).toMatchObject({ rows: 2, cols: 4, near: 18, far: 18 });
-    expect(planFor(9)).toBe(planFor(5));
+    expect(planFor(9)).toBe(planFor(6));
   });
   it('counts the numbered tiles in their goal place', () => {
     expect(inPlace(goal(3, 3))).toBe(8);
@@ -66,7 +66,7 @@ describe('Number Nook', () => {
     expect(inPlace([1, 2, 0, 3])).toBe(2);
   });
   it('generates seeded boards at a shortest distance inside the level range and solves them with legal hints', () => {
-    for (let level = 1; level <= 5; level++)
+    for (let level = 1; level <= 6; level++)
       for (let seed = 1; seed <= 25; seed++) {
         const p = planFor(level);
         let board = makeBoard(level, new Rng(seed));
@@ -85,6 +85,43 @@ describe('Number Nook', () => {
         }
         expect(solved(board, goal(p.rows, p.cols, p.order))).toBe(true);
       }
+  });
+  it('agrees with an independent breadth-first search from the 3 by 4 goal', () => {
+    const target = goal(3, 4);
+    const queue = [{ board: target, distance: 0 }];
+    const seen = new Set([target.join(',')]);
+    for (const { board, distance } of queue) {
+      const hint = solutionStep(board, 4);
+      expect(hint?.distance).toBe(distance);
+      if (distance) expect(solutionStep(slide(board, 4, hint!.next)!, 4)?.distance).toBe(distance - 1);
+      if (distance === 10) continue;
+      for (const at of neighbours(board, 4)) {
+        const next = slide(board, 4, at)!;
+        const key = next.join(',');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        queue.push({ board: next, distance: distance + 1 });
+      }
+    }
+    expect(solutionStep([2, 1, ...target.slice(2)], 4)).toBeNull();
+  });
+  it('finds exact hints within 350 ms on long 3 by 4 detours up to 44 slides from the goal', () => {
+    for (const [board, distance] of [
+      [[11, 2, 4, 9, 10, 3, 8, 6, 5, 0, 7, 1], 40],
+      [[4, 7, 3, 9, 11, 10, 5, 1, 8, 0, 2, 6], 44],
+      [[3, 4, 5, 10, 7, 2, 6, 1, 8, 11, 9, 0], 44],
+    ] as const) {
+      let current: readonly number[] = board;
+      for (let remaining = distance; remaining > 0; remaining--) {
+        const start = performance.now();
+        const hint = solutionStep(current, 4);
+        expect(performance.now() - start).toBeLessThan(350);
+        expect(hint?.distance).toBe(remaining);
+        current = slide(current, 4, hint!.next)!;
+        expect(current).not.toBeNull();
+      }
+      expect(current).toEqual(goal(3, 4));
+    }
   });
   it('hints still shorten the route after any legal exploratory slide', () => {
     for (const [rows, cols] of [
@@ -226,7 +263,7 @@ describe('Number Nook', () => {
 describe('Number Nook on a phone held upright (chunk 31)', () => {
   it('fits every board, the goal picture and the buttons in each upright view', () => {
     for (const [name, v] of Object.entries(UPRIGHT_VIEWS))
-      for (const level of [1, 2, 3, 4, 5]) {
+      for (const level of [1, 2, 3, 4, 5, 6]) {
         const { rows, cols } = planFor(level);
         const l = nookLayout(v.w, v.h, rows, cols);
         const cells = Array.from({ length: rows * cols }, (_, i) =>
@@ -261,5 +298,11 @@ describe('Number Nook on a phone held upright (chunk 31)', () => {
       trayRight = l.grid.x + 3.5 * l.cell + 10;
     expect(goalRight).toBeLessThan(1024);
     expect(trayRight).toBeLessThan(goalLeft);
+  });
+  it('fits three long rows sideways above the buttons', () => {
+    const l = nookLayout(1024, 768, 3, 4);
+    expect(l.cell).toBe(136);
+    expect(l.grid.y + 2.5 * l.cell + 10).toBeLessThan(l.buttons[0].y - 50);
+    expect(l.grid.x + 3.5 * l.cell + 10).toBeLessThan(l.target.x - 1.5 * 50 - 21);
   });
 });
