@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Lift It by touch: level 1 hauled in strokes; level 6 with one wrong rig (one miss) and a requested glow (one hint), then the cards and the haul; level 3 upright with two wheels hung; level 4 replay; level 9 paws cards (FROM_LEVEL=9 plays only 9). */
+  /** Lift It by touch: level 1 hauled in strokes; level 6 with one wrong rig (one miss) and a requested glow (one hint), then the cards and the haul; level 3 upright with two wheels hung; level 4 replay; level 9 paws cards. FROM_LEVEL=7, 8 or 9 runs only that level. */
   async function liftItPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -65,6 +65,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
               await kit.sleep(300);
               return 'hang';
             }
+          if ((rig === 'three') !== g.tiedToCrate) {
+            kit.tapOn(g.tieButton);
+            await kit.sleep(300);
+            return 'tie';
+          }
         }
         const h = g.handle.getGlobalPosition();
         const down = g.rig === 'fixed' || g.rig === 'both';
@@ -160,7 +165,63 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       st = await state();
       assert.deepEqual([st.misses, st.hints], [1, 1], 'level 9: one miss, one hint');
     }
+    async function threeRopes(level) {
+      if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('lift-it', level);
+      await idle();
+      const n = await page.evaluate(() => kit.store.data.stickers.length);
+      await step('both');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.tieButton.visible),
+        false,
+        'one wheel cannot move the knot',
+      );
+      await step('both');
+      assert.equal((await state()).rig, 'both');
+      if (level === 7) {
+        await step('both');
+        await step('both');
+        assert.equal((await state()).misses, 1, 'the same failed rig counts once');
+        await page.evaluate(() => neo.scene.game.askForHint());
+        assert.deepEqual([(await state()).hints, (await state()).glow], [1, 'three']);
+      }
+      assert.equal(await step('three'), 'tie');
+      assert.equal((await state()).rig, 'three');
+      if (level === 7) {
+        await tap('neo.scene.game.tieButton');
+        assert.equal((await state()).rig, 'both', 'the same ring returns the knot to the branch');
+        await step('three');
+        assert.equal((await state()).misses, 1, 'moving the knot is free');
+        await screenshot('lift-it-7-three-ropes-portrait');
+      } else {
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.paws.children.length),
+          0,
+          'paws hidden until answered',
+        );
+        assert.equal(await step('three'), 'tap');
+        const question = () =>
+          page.evaluate(() => {
+            const { kind, values, answer } = neo.scene.game.question;
+            return { kind, values, answer };
+          });
+        assert.deepEqual(await question(), { kind: 'paws', values: [2, 3, 6], answer: 2 });
+        await tapCard(3);
+        await page.waitForFunction(() => neo.scene.game.question?.kind === 'knots');
+        assert.deepEqual(await question(), { kind: 'knots', values: [3, 6, 9], answer: 9 });
+      }
+      await playOut(n);
+      const st = await state();
+      assert.deepEqual([st.misses, st.hints], [1, level === 7 ? 1 : 0]);
+      log(`Lift It level ${level}: tied to the crate and delivered all parcels with one miss`);
+    }
+
     let st;
+    if (['7', '8'].includes(process.env.FROM_LEVEL)) {
+      await threeRopes(Number(process.env.FROM_LEVEL));
+      assert.deepEqual(errors, [], 'page errors');
+      return;
+    }
     if (process.env.FROM_LEVEL === '9') {
       await level9();
       assert.deepEqual(errors, [], 'page errors');
