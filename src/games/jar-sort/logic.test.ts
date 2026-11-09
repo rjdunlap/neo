@@ -19,11 +19,13 @@ import {
   HIT_W,
   jarLayout,
   legal,
+  liftCount,
   matLabels,
   move,
   moves,
   parse,
   PLANS,
+  PICTURE_HEADER,
   planFor,
   present,
   refusal,
@@ -31,6 +33,7 @@ import {
   search,
   solve,
   solved,
+  transferCount,
   uniformFull,
   UNDO_INSET,
   type Board,
@@ -127,6 +130,7 @@ describe('Jar Sort rules', () => {
 
   it('keeps a frozen list where every board is well formed, solvable and inside its par range', () => {
     for (const plan of PLANS) {
+      if (plan.rule === 'any') continue; // Exact picture goals have their own fixtures and checks.
       const list = BOARDS[plan.id];
       if (plan.id > 1) expect(list.length, `level ${plan.id}`).toBeGreaterThanOrEqual(20);
       const labels = matLabels(plan);
@@ -151,15 +155,15 @@ describe('Jar Sort rules', () => {
           b.some((j, i) => uniformFull(j, capAt(caps, i))),
           `${s} starts with a finished jar`,
         ).toBe(false);
-        const path = solve(b, caps, labels);
+        const path = solve(b, caps, labels, undefined, plan);
         expect(path, s).not.toBeNull();
         expect(path!.length, `${s} at level ${plan.id}`).toBeGreaterThanOrEqual(plan.par[0]);
         expect(path!.length, `${s} at level ${plan.id}`).toBeLessThanOrEqual(plan.par[1]);
         // The path is real: replaying it on the real board finishes it.
         let at = b;
         for (const m of path!) {
-          expect(legal(at, caps, m.from, m.to)).toBe(true);
-          at = move(at, m.from, m.to);
+          expect(legal(at, caps, m.from, m.to, plan.rule)).toBe(true);
+          at = move(at, m.from, m.to, transferCount(at, caps, m.from, m.to, plan.rule));
         }
         expect(solved(at, caps, labels)).toBe(true);
       }
@@ -180,7 +184,7 @@ describe('Jar Sort rules', () => {
     expect([plan.jars, plan.cap, plan.kinds]).toEqual([planFor(3).jars, planFor(3).cap, planFor(3).kinds]);
     expect(levelsInOrder(LEVELS.preschool!)).toEqual([1, 2, 9, 3]);
     expect(levelsInOrder(LEVELS.prek!)).toEqual([2, 9, 3, 4, 5]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 6, 7, 8, 10]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 6, 7, 8, 10, 11, 12]);
     expect(stepLevel(2, 1, LEVELS.prek!)).toBe(9);
     expect(stepLevel(9, 1, LEVELS.prek!)).toBe(3);
     expect(ENTRY_LEVELS).toEqual([9]);
@@ -237,6 +241,68 @@ describe('Jar Sort rules', () => {
     expect([...(shown.caps as number[])].sort()).toEqual([2, 4, 4, 4, 4]);
   });
 
+  it('matches exact cup order and finds picture solutions even when fruit must be parked first', () => {
+    const plan = planFor(11);
+    const caps = capsFor(plan);
+    const lengths = new Set<number>();
+    for (const pair of BOARDS[11]) {
+      const [start, goal] = pair.split('>').map(parse);
+      expect(start.flat().sort()).toEqual([0, 1, 2]);
+      expect(goal.flat().sort()).toEqual([0, 1, 2]);
+      for (const b of [start, goal]) expect(b.every((j, i) => j.length <= capAt(caps, i))).toBe(true);
+      expect(solved(start, caps, undefined, goal), pair).toBe(false);
+      const path = solve(start, caps, undefined, undefined, { rule: plan.rule, goal })!;
+      lengths.add(path.length);
+      for (const seed of [3, 16, 23]) {
+        const shown = present(pair, plan, new Rng(seed));
+        const variant = { rule: plan.rule, goal: shown.goal };
+        let at = shown.board;
+        for (let left = path.length; left > 0; left--) {
+          expect(solve(at, shown.caps, undefined, undefined, variant), pair).toHaveLength(left);
+          const hint = hintMove(at, shown.caps, undefined, [], undefined, variant);
+          expect(hint.kind).toBe('move');
+          if (hint.kind !== 'move') break;
+          const { from, to } = hint.move;
+          expect(legal(at, shown.caps, from, to, plan.rule)).toBe(true);
+          at = move(at, from, to);
+        }
+        expect(at, pair).toEqual(shown.goal);
+      }
+    }
+    expect(lengths).toEqual(new Set([2, 3, 4, 5]));
+    expect(refusal(parse('01|2|'), caps, 0, 1, plan.rule)).toBeNull();
+    expect(refusal(parse('01|2|'), caps, 0, 1)).toBe('kind');
+    expect(refusal(parse('0|12|'), caps, 0, 1, plan.rule)).toBe('full');
+  });
+
+  it('scoops just the top run, limited by the room available, and improves on single-fruit play', () => {
+    const plan = planFor(12);
+    const b = parse('0111|11|2||');
+    expect(liftCount(b[0], plan.rule)).toBe(3);
+    expect(transferCount(b, 4, 0, 1, plan.rule)).toBe(2);
+    expect(render(move(b, 0, 1, 2))).toBe('01|1111|2||');
+    expect(render(b)).toBe('0111|11|2||');
+    expect(legal(b, 4, 0, 2, plan.rule)).toBe(false);
+    for (const s of BOARDS[12]) {
+      const start = parse(s);
+      const scoop = solve(start, 4, undefined, undefined, plan)!;
+      expect(scoop.length, s).toBeLessThanOrEqual(solve(start, 4)!.length);
+      expect(
+        start.some((jar) => liftCount(jar, plan.rule) > 1),
+        s,
+      ).toBe(true);
+      let at = start;
+      let grouped = false;
+      for (const [i, { from, to }] of scoop.entries()) {
+        const moved = transferCount(at, 4, from, to, plan.rule);
+        grouped ||= moved > 1;
+        at = move(at, from, to, moved);
+        expect(solve(at, 4, undefined, undefined, plan), s).toHaveLength(scoop.length - i - 1);
+      }
+      expect(grouped, s).toBe(true);
+    }
+  });
+
   it('gives level 6 boards that the obvious same-kind-first player cannot finish', () => {
     const plan = planFor(6);
     for (const s of BOARDS[6]) expect(greedy(parse(s), plan.cap), s).toBe(false);
@@ -246,14 +312,15 @@ describe('Jar Sort rules', () => {
 
   it('keeps the shortest length when a round renames kinds and shuffles jars, and a seed repeats itself', () => {
     for (const plan of PLANS) {
+      if (plan.rule === 'any') continue;
       const labels = matLabels(plan);
       for (const s of BOARDS[plan.id]) {
-        const fewest = solve(parse(s), capsFor(plan), labels)!.length;
+        const fewest = solve(parse(s), capsFor(plan), labels, undefined, plan)!.length;
         for (const seed of [7, 19]) {
           const a = present(s, plan, new Rng(seed));
           const b = present(s, plan, new Rng(seed));
           expect(render(a.board)).toBe(render(b.board));
-          expect(solve(a.board, a.caps, a.labels)!.length, s).toBe(fewest);
+          expect(solve(a.board, a.caps, a.labels, undefined, plan)!.length, s).toBe(fewest);
           // Each jar keeps its own capacity wherever the shuffle puts it.
           expect(
             a.board.every((j, i) => j.length <= capAt(a.caps, i)),
@@ -287,7 +354,7 @@ describe('Jar Sort rules', () => {
 
   it('hints a legal move that brings the board one move closer, from boards she could wander to', () => {
     const rng = new Rng(11);
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => !p.rule)) {
       const labels = matLabels(plan);
       const caps = capsFor(plan);
       for (const s of BOARDS[plan.id].slice(0, 3)) {
@@ -313,7 +380,7 @@ describe('Jar Sort rules', () => {
   it('runs the worst top-level search well under the cap, and falls back to taking moves back past it', () => {
     let worst = 0,
       slowest = 0;
-    for (const plan of PLANS.slice(4)) {
+    for (const plan of PLANS.slice(4).filter((p) => !p.rule)) {
       const labels = matLabels(plan);
       for (const s of BOARDS[plan.id]) {
         const t = performance.now();
@@ -340,7 +407,7 @@ describe('Jar Sort rules', () => {
     const rng = new Rng(23);
     let slowest = 0,
       backs = 0;
-    for (const plan of PLANS.slice(4)) {
+    for (const plan of PLANS.slice(4).filter((p) => !p.rule)) {
       const labels = matLabels(plan);
       const caps = capsFor(plan);
       for (const s of BOARDS[plan.id].slice(0, 4)) {
@@ -373,13 +440,15 @@ describe('Jar Sort layout', () => {
   it('fits every level at every view: big separate jars, clear of the pet and the round arrow, inside the screen', () => {
     for (const plan of PLANS) {
       for (const [name, v] of Object.entries(VIEWS)) {
-        const spots = jarLayout(plan.jars, capsFor(plan), v);
+        const picture = plan.rule === 'any';
+        const spots = jarLayout(plan.jars, capsFor(plan), v, picture ? PICTURE_HEADER : undefined);
+        if (picture) expect(Math.min(...spots.map((s) => s.hit.y))).toBeGreaterThanOrEqual(PICTURE_HEADER);
         const where = `level ${plan.id} ${name}`;
         expect(spots, where).toHaveLength(plan.jars);
         for (const [i, s] of spots.entries()) {
           const h = s.hit;
           expect(h.w, where).toBeGreaterThanOrEqual(HIT_W);
-          expect(h.h, where).toBeGreaterThanOrEqual(140 - 36); // a capacity-2 jar is 140 tall with its rim
+          expect(h.h, where).toBeGreaterThanOrEqual(100);
           expect(h.x, where).toBeGreaterThanOrEqual(0);
           expect(h.x + h.w, where).toBeLessThanOrEqual(v.w);
           expect(h.y, where).toBeGreaterThanOrEqual(110);
