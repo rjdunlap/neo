@@ -6,8 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`marble-jump` slice 4, level 9 *A bigger triangle*** (grown-up; [build slices](deep-dives/marble-jump.md#build-slices-in-order); slices 1–3 are built): slice 4 level 9 *A bigger triangle* after slice 1 (new level with a layout change: typecheck, rule tests, a layout check that every hole is at least 78 units across at 768×1024 and 1024×768, one browser play of 9, one portrait screenshot, `fingerdemo` at 9, build). The school opening, square boards and a couch course wait on [decisions](WAITING-ON-DEVELOPER.md).
-
 - **Phone held upright, shell slice 2: the rest of the root** (ready; shell tier): upright layout tests and one screenshot per root scene; `classic/` stays sideways-only; after the game batches, per its [definition](definitions/phone-portrait.md#shell-slice-2-the-rest-of-the-root-ready); it now matters only on narrow tablets and computers.
 - **`pile-match`, slices 3–4 in the dive's order** (preschool to school; [build slices](deep-dives/pile-match.md#build-slices-in-order); slices 1–2 are built).
 

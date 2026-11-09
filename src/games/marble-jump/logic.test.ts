@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   ANY,
+  BIG,
+  BIG_FEWEST,
+  BIG_LEVEL,
   FULL,
+  LEVELS,
+  boardLayout,
+  fewestFor,
+  SMALL,
   GOLD_LEVEL,
   HOLES,
   NONE,
@@ -327,5 +334,98 @@ describe('Marble Jump', () => {
       expect(withGold).toBeGreaterThanOrEqual(fewestMoves(board)!);
       expect(withGold).toBeLessThanOrEqual(8);
     }
+  });
+  it('builds the 21-hole board with the straight-line jumps, and every single-hole start clears', () => {
+    expect(BIG.holes).toHaveLength(21);
+    expect(BIG.jumps).toHaveLength(60);
+    expect(BIG.full).toBe(2 ** 21 - 1);
+    for (const j of BIG.jumps) {
+      const a = BIG.holes[j.from],
+        b = BIG.holes[j.over],
+        c = BIG.holes[j.to];
+      expect([b.row * 2, b.col * 2]).toEqual([a.row + c.row, a.col + c.col]);
+    }
+    for (let i = 0; i < 21; i++) {
+      let board = BIG.full ^ (1 << i);
+      const route = solve(board, ANY, NONE, BIG);
+      expect(route, `start ${i}`).toHaveLength(19);
+      for (const j of route!) board = jump(board, j, BIG);
+      expect(count(board)).toBe(1);
+    }
+    // The small board is untouched: a big-board jump is not a small-board jump.
+    expect(jump(SMALL.full ^ 1, BIG.jumps.at(-1)!)).toBe(SMALL.full ^ 1);
+  });
+  it('seeds level 9 with a 20-marble single-hole start on the big board, and range 1–9', () => {
+    expect(LEVELS.grownup).toEqual({ min: 1, max: BIG_LEVEL });
+    const starts = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const round = makeRound(BIG_LEVEL, new Rng(seed));
+      expect(round).toEqual(makeRound(BIG_LEVEL, new Rng(seed)));
+      expect([round.goal, round.gold]).toEqual([ANY, NONE]);
+      expect(count(round.board)).toBe(marblesFor(BIG_LEVEL));
+      expect(count(BIG.full ^ round.board)).toBe(1);
+      starts.add(round.board);
+      expect(paint(round.board, new Rng(seed), BIG).filter((c) => c >= 0)).toHaveLength(20);
+    }
+    expect(starts.size).toBe(21);
+  });
+  it('recovers from a deep dead end on the big board within a time budget', () => {
+    let worst = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const rng = new Rng(seed);
+      let board = BIG.full ^ (1 << rng.int(0, 20));
+      const history: number[] = [];
+      for (let m = moves(board, BIG); m.length; m = moves(board, BIG)) {
+        history.push(board);
+        board = jump(board, rng.pick(m), BIG);
+      }
+      history.push(board);
+      BIG.memo.clear();
+      const t = performance.now();
+      const back = recovery(history, ANY, undefined, BIG);
+      worst = Math.max(worst, performance.now() - t);
+      expect(back).not.toBeNull();
+      expect(solve(history[back!], ANY, NONE, BIG)).not.toBeNull();
+      for (let i = back! + 1; i < history.length; i++) expect(solve(history[i], ANY, NONE, BIG)).toBeNull();
+    }
+    expect(worst).toBeLessThan(500);
+  });
+  it('freezes a symmetric fewest-moves table for the big board that matches the exact search', () => {
+    expect(BIG_FEWEST).toHaveLength(21);
+    const dist = BIG.holes.map((h) => [h.row - h.col, h.col, 5 - h.row]);
+    for (const p of PERMS)
+      dist.forEach((d, i) => {
+        const to = dist.findIndex((e) => e[0] === d[p[0]] && e[1] === d[p[1]] && e[2] === d[p[2]]);
+        expect(BIG_FEWEST[to]).toBe(BIG_FEWEST[i]);
+      });
+    for (let i = 0; i < 21; i++) {
+      expect(fewestFor(BIG.full ^ (1 << i), ANY, NONE, BIG)).toBe(BIG_FEWEST[i]);
+      expect(BIG_FEWEST[i]).toBeLessThanOrEqual(19);
+    }
+    // One exact recompute (a few seconds): the corner start.
+    BIG.memo.clear();
+    expect(fewestMoves(BIG.full ^ 1, ANY, NONE, BIG)).toBe(BIG_FEWEST[0]);
+    BIG.memo.clear();
+  }, 30000);
+  it('lays out both boards with 78-unit holes apart, inside the view and above the buttons', () => {
+    for (const tri of [SMALL, BIG])
+      for (const [w, h] of [
+        [1024, 768],
+        [1024, 1365],
+        [1366, 768],
+      ]) {
+        const l = boardLayout(tri, w, h);
+        for (let a = 0; a < l.holes.length; a++) {
+          const p = l.holes[a];
+          expect(p.x - 39).toBeGreaterThan(0);
+          expect(p.x + 39).toBeLessThan(w);
+          for (let b = a + 1; b < l.holes.length; b++)
+            expect(Math.hypot(p.x - l.holes[b].x, p.y - l.holes[b].y)).toBeGreaterThanOrEqual(78);
+        }
+        // The top hole sits below the status line; the groove (44 tall) ends above the 78-tall buttons at h − 65.
+        expect(l.top - 39).toBeGreaterThan(132);
+        expect(l.groove + 22).toBeLessThan(h - 65 - 39);
+        expect(l.cx - l.half).toBeGreaterThan(0);
+      }
   });
 });

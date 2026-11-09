@@ -278,7 +278,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 
 | Game | Land | Levels | Starts as |
 | --- | --- | --- | --- |
-| [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 8 | jump a marble over a neighbour into an empty hole to leave one |
+| [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 9 | jump a marble over a neighbour into an empty hole to leave one |
 | [Log Roll](docs/games/log-roll.md) | Tinker Lab | 7 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 3 | slide equal numbered snowballs together to make the pictured target |
 | [Brain Break](docs/games/brain-break.md) | Lantern Lake | 6 | find and light 1 to 9 on a shuffled pond of numbered stones, then of stones showing sums and take-aways |
@@ -402,7 +402,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `pyramid` | Pyramid Solitaire levels 1 and 3: actual card taps, mismatched pair and hint, repeated-hint accounting, Undo/Start over, legal dead-end recovery, portrait targets, one sticker per round, land launch, home return and interruption | Demo: `FINGER_ONLY=pyramid-solitaire` |
 | `numbernook` | Number Nook levels 1, 3–7: single and line slides, refused tap, hint once, Undo/Start over accounting, portrait targets and one sticker per round. Level 5 checks the column goal, level 6 the 24-slide start, and level 7 a detour that triggers the fallback. | `NOOK_LEVELS=7` for one level, or `FINGER_ONLY=number-nook FINGER_LEVELS=7` for the demo |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
-| `marblejump` | Marble Jump levels 1 and 6: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
+| `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
 | `logroll` | Log Roll levels 1, 4, 5, 6 and 7: invalid rolls, Hint, Undo, cradle stand, refused moss stand, lying/standing switch presses, bridge undo/reset, portrait and Tinker Lab launch | `LOG_ROLL_LEVELS=6,7` filters levels; ghost finger: `FINGER_ONLY=log-roll FINGER_LEVELS=6,7` |
 | `snowball` | Snowball Merge levels 1 and 3: inert press, Hint counted once, Undo/Restart, portrait and Lantern Lake return | Ghost finger: `FINGER_ONLY=snowball-merge` |
