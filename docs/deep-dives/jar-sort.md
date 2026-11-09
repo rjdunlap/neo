@@ -109,6 +109,8 @@ None new. Couch play stays "later" as decided on 2026-10-23.
 
 ## Build slices, in order
 
+Claimed on `codex/jar-sort-picture-and-scoop`. Slices 4 and 5 add school levels 11 and 12 in order, using the mixed-capacity board from slice 3. Expected changes are in `src/games/jar-sort/`, the filtered browser suite, and the game, roadmap and verification docs.
+
 1. **Built 2026-11-07 (PR #1365).** **Fresh content: pantry looks, two more fruits, more level 1 boards and more boards** (preschool to school; typecheck, rule tests, one filtered `jarsort` play at level 3 with one portrait screenshot in the rain look, build because voice lines change; no `fingerdemo`).
 2. **Built 2026-11-07 (PR #1412).** **Level 9 *Three kinds, bright jars*** placed between 2 and 3 (new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build).
 3. **Built 2026-11-08 (PR #1417).** **Level 10 *A little jar to park in*** (model change on the existing interaction: typecheck, rule tests with levels 1–9 unchanged, one browser play of 10 with one refused move on the little jar, `fingerdemo` at 10, build).
