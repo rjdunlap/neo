@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   /** Number Nook: both ends, rejected tap, a hint counted once, the glide, revision, a portrait in a new look, shortest route and one sticker. */
   async function numberNookPlay() {
-    // NOOK_LEVELS=6 runs just the twelve-space board.
-    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4,5,6').split(',').map(Number)) {
+    // Set NOOK_LEVELS to run just the changed board.
+    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4,5,6,7').split(',').map(Number)) {
       await launch('number-nook', level);
       await page.waitForTimeout(400);
       // Level 1's portrait is taken in a look other than today's lantern paper.
@@ -35,7 +35,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.equal(goalProof.wrongGoalHint, null);
         assert.equal(goalProof.distance, 14);
       }
-      if (level === 6) {
+      if (level >= 6) {
         const proof = await page.evaluate(() => {
           const g = neo.scene.game;
           return {
@@ -45,10 +45,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             instruction: neo.scene.instruction?.id,
           };
         });
-        assert.equal(proof.cells, 12);
-        assert.deepEqual(proof.miniature, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', 0]);
-        assert.equal(proof.fewest, 24);
-        assert.equal(proof.instruction, 'nook.twelve');
+        const cells = level === 7 ? 16 : 12;
+        assert.equal(proof.cells, cells);
+        assert.deepEqual(proof.miniature, [...Array.from({ length: cells - 1 }, (_, i) => String(i + 1)), 0]);
+        assert.equal(proof.fewest, level === 7 ? 30 : 24);
+        assert.equal(proof.instruction, level === 7 ? 'nook.fifteen' : 'nook.twelve');
       }
       const original = await page.evaluate(() => neo.scene.game.board.slice());
       const wrong = await page.evaluate(async () => {
@@ -74,9 +75,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await tap('neo.scene.game.undoButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), original);
       await page.evaluate(async () => {
-        const { solutionStep } = await import('/src/games/number-nook/logic.ts');
         const g = neo.scene.game;
-        kit.tapOn(g.nodes[solutionStep(g.board, g.plan.cols, g.plan.order).next]);
+        kit.tapOn(g.autotouch().tap.on);
       });
       await page.waitForTimeout(260);
       await tap('neo.scene.game.againButton');
@@ -126,6 +126,56 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'undo takes back the whole line',
         );
       }
+      if (level === 7) {
+        // Replay a legal detour to a board the exact search cannot solve within its node budget.
+        const detour = await page.evaluate(async () => {
+          const { fifteenRoute, neighbours, slide, solved } = await import('/src/games/number-nook/logic.ts');
+          const { Rng } = await import('/src/engine/random.ts');
+          const g = neo.scene.game;
+          const rng = new Rng(78);
+          for (let attempt = 0; attempt < 12; attempt++) {
+            const moves = [];
+            let board = g.board;
+            let previous = -1;
+            for (let i = 0; i < 60; i++) {
+              const at = rng.pick(neighbours(board, 4).filter((cell) => cell !== previous));
+              previous = board.indexOf(0);
+              board = slide(board, 4, at);
+              if (solved(board)) break;
+              moves.push(at);
+            }
+            if (moves.length === 60 && fifteenRoute(board).distance === null) return { moves, board };
+          }
+          throw new Error('No detour triggered the budgeted fallback');
+        });
+        await page.evaluate(async (moves) => {
+          const g = neo.scene.game;
+          for (const at of moves) {
+            kit.tapOn(g.nodes[at]);
+            await kit.until(() => !g.glide);
+          }
+        }, detour.moves);
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.board), detour.board);
+        await page.evaluate(() => {
+          const g = neo.scene.game;
+          const say = g.ctx.say;
+          g.testHintLines = [];
+          g.ctx.say = (line, ...args) => {
+            g.testHintLines.push(line);
+            return say(line, ...args);
+          };
+        });
+        await tap('neo.scene.game.hintButton');
+        await tap('neo.scene.game.hintButton');
+        const proof = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return { hints: g.hints, misses: g.misses, hinted: g.hinted, spoken: g.testHintLines };
+        });
+        assert.equal(proof.misses, 1, 'the detour is free exploration');
+        assert.equal(proof.hints, 2, 'only one hint is counted on the detour board');
+        assert.ok(proof.hinted >= 0);
+        assert.deepEqual(proof.spoken, ['nook.borderHint', 'nook.borderHint']);
+      }
       if (level === 1 || level >= 4) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
@@ -137,13 +187,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       const line = await page.evaluate(async () => {
-        const { solutionStep } = await import('/src/games/number-nook/logic.ts');
         const g = neo.scene.game;
-        for (let guard = 0; guard < 60 && !g.finished; guard++) {
-          const step = solutionStep(g.board, g.plan.cols, g.plan.order);
-          if (!step || step.next < 0) throw new Error('Missing sliding route');
-          kit.tapOn(g.nodes[step.next]);
-          await kit.sleep(220);
+        for (let guard = 0; guard < 150 && !g.finished; guard++) {
+          const intent = g.autotouch();
+          if (!intent?.tap) throw new Error('Missing sliding route');
+          kit.tapOn(intent.tap.on);
+          await kit.until(() => !g.glide);
         }
         if (g.plan.order === 'columns') {
           const { solved } = await import('/src/games/number-nook/logic.ts');
@@ -153,6 +202,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       });
       assert.match(line, /fewest from the start: \d+/);
       if (level === 6) assert.match(line, /fewest from the start: 24$/);
+      if (level === 7) assert.match(line, /fewest from the start: 30$/);
       await finished('number-nook');
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
       log(`Number Nook level ${level}: touch, revision and reward passed`);

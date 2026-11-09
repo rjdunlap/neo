@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   distances,
+  fifteenRoute,
   goal,
   inPlace,
   lineSlide,
@@ -58,7 +59,7 @@ describe('Number Nook', () => {
       '4-3': '04362157',
     });
     expect(planFor(4)).toMatchObject({ rows: 2, cols: 4, near: 18, far: 18 });
-    expect(planFor(9)).toBe(planFor(6));
+    expect(planFor(9)).toBe(planFor(7));
   });
   it('counts the numbered tiles in their goal place', () => {
     expect(inPlace(goal(3, 3))).toBe(8);
@@ -260,10 +261,104 @@ describe('Number Nook', () => {
   });
 });
 
+describe('The fifteen', () => {
+  const target = goal(4, 4);
+  const top = [0, 1, 2, 3];
+  const left = [4, 8, 12];
+
+  function follow(start: number[], moves: number[], keepEdges = false) {
+    let board = start;
+    const matches = (cells: number[]) => cells.every((at) => board[at] === target[at]);
+    let topDone = matches(top),
+      leftDone = topDone && matches(left);
+    for (const at of moves) {
+      const next = slide(board, 4, at);
+      expect(next, `slide ${at} on ${board.join(',')}`).not.toBeNull();
+      board = next!;
+      if (keepEdges) {
+        if (topDone) expect(matches(top)).toBe(true);
+        if (leftDone) expect(matches(left)).toBe(true);
+        topDone ||= matches(top);
+        leftDone ||= topDone && matches(left);
+      }
+    }
+    expect(board).toEqual(target);
+  }
+
+  it('returns useful recovery within 350 ms when the exact search runs out of nodes', () => {
+    const detour = [0, 12, 9, 13, 15, 11, 10, 14, 3, 7, 2, 5, 4, 8, 6, 1];
+    const start = performance.now();
+    const hint = fifteenRoute(detour);
+    const elapsed = performance.now() - start;
+    expect(elapsed).toBeLessThan(350);
+    expect(hint?.distance).toBeNull();
+    follow(detour, hint!.moves, true);
+  });
+
+  it('draws varied seeded permutations with a proven 30-slide route to the goal', () => {
+    const seen = new Set<string>();
+    expect(planFor(7)).toMatchObject({ rows: 4, cols: 4, near: 30, far: 30 });
+    for (let seed = 1; seed <= 25; seed++) {
+      const board = makeBoard(7, new Rng(seed));
+      expect(board).toEqual(makeBoard(7, new Rng(seed)));
+      expect(board.slice().sort((a, b) => a - b)).toEqual(Array.from({ length: 16 }, (_, i) => i));
+      const hint = fifteenRoute(board);
+      expect(hint?.distance).toBe(30);
+      expect(hint?.moves).toHaveLength(30);
+      follow(board, hint!.moves);
+      seen.add(board.join(','));
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(20);
+  });
+
+  it('agrees with breadth-first distances near the goal and rejects impossible parity', () => {
+    const queue = [{ board: target, distance: 0 }];
+    const seen = new Set([target.join(',')]);
+    for (const { board, distance } of queue) {
+      const hint = fifteenRoute(board);
+      expect(hint?.distance).toBe(distance);
+      expect(hint?.moves).toHaveLength(distance);
+      follow(board, hint!.moves);
+      if (distance === 7) continue;
+      for (const at of neighbours(board, 4)) {
+        const next = slide(board, 4, at)!,
+          key = next.join(',');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        queue.push({ board: next, distance: distance + 1 });
+      }
+    }
+    expect(fifteenRoute([2, 1, ...target.slice(2)])).toBeNull();
+    expect(fifteenRoute([2, 1, ...target.slice(2)], 0)).toBeNull();
+  });
+
+  it('recovers from legal detours without disturbing completed edges', () => {
+    for (const fixed of [[], top, [...top, ...left]]) {
+      for (let seed = 1; seed <= 30; seed++) {
+        const rng = new Rng(seed);
+        let board = target,
+          previous = -1;
+        for (let i = 0; i < 71; i++) {
+          const at = rng.pick(
+            neighbours(board, 4).filter((cell) => !fixed.includes(cell) && cell !== previous),
+          );
+          previous = board.indexOf(0);
+          board = slide(board, 4, at)!;
+        }
+        const before = board.slice();
+        const hint = fifteenRoute(board, 0);
+        expect(hint?.distance).toBeNull();
+        expect(board).toEqual(before);
+        follow(board, hint!.moves, true);
+      }
+    }
+  });
+});
+
 describe('Number Nook on a phone held upright (chunk 31)', () => {
   it('fits every board, the goal picture and the buttons in each upright view', () => {
     for (const [name, v] of Object.entries(UPRIGHT_VIEWS))
-      for (const level of [1, 2, 3, 4, 5, 6]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 7]) {
         const { rows, cols } = planFor(level);
         const l = nookLayout(v.w, v.h, rows, cols);
         const cells = Array.from({ length: rows * cols }, (_, i) =>
@@ -298,6 +393,18 @@ describe('Number Nook on a phone held upright (chunk 31)', () => {
       trayRight = l.grid.x + 3.5 * l.cell + 10;
     expect(goalRight).toBeLessThan(1024);
     expect(trayRight).toBeLessThan(goalLeft);
+  });
+  it('fits the four-row tray clear of the goal picture and buttons in both orientations', () => {
+    for (const [w, h] of [
+      [768, 1024],
+      [1024, 768],
+    ]) {
+      const l = nookLayout(w, h, 4, 4);
+      expect(l.cell).toBeGreaterThanOrEqual(64);
+      expect(l.grid.y + 3.5 * l.cell + 10).toBeLessThan(l.buttons[0].y - 50);
+      expect(l.grid.x + 3.5 * l.cell + 10).toBeLessThan(l.target.x - 1.5 * 50 - 21);
+      expect(l.target.x + 1.5 * 50 + 21).toBeLessThan(w);
+    }
   });
   it('fits three long rows sideways above the buttons', () => {
     const l = nookLayout(1024, 768, 3, 4);

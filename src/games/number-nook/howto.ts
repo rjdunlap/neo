@@ -20,7 +20,18 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'Try building the top row first. Once 1 through 4 are in place, use the two rows below to finish.',
     },
-    'Undo takes back the last tap, a whole line at once. Hint outlines a tile on a shortest route. Start over restores the starting board.',
+    {
+      from: 7,
+      to: 7,
+      text: 'Try finishing the top row, then the left column, then the square that is left.',
+    },
+    'Undo takes back the last tap, a whole line at once. Start over restores the starting board.',
+    { from: 1, to: 6, text: 'Hint outlines a tile on a shortest route.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Hint looks for a shortest route. If the search takes too long, it shows a move that helps finish the board.',
+    },
   ],
   finish:
     'The round ends when every numbered tile and the empty space match the goal. Then it shows your slides and the fewest possible.',
