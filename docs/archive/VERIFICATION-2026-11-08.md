@@ -53,3 +53,15 @@ Open: the level 10 play passed 4 of 5 runs; one run after the landscape fix fail
 Changed: level 8 (nine marbles, one gold that must be last; 540 pairs on 255 boards, a jump over gold on offer from the start) with gold carried through `solve`, `recovery` and `fewestMoves`; a jump over gold is refused with `marble.gold` and one miss; range 1–8, levels 1–7 draws unchanged. Also made the `marblejump` suite relaunch level 7 until it draws a pair with an off-star finish (a pre-existing flake).
 Ran: `npm run typecheck`; `npm test` (329 files, 6265 tests); `BROWSER_SUITE=marblejump` (levels 1, 2, 6, 7, 8 with one refused jump over gold, one hint, gold finish, portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=marble-jump FINGER_LEVELS=8` (18.8 s); game-reviewer, no blocking findings.
 Not run: build, offline. New voice lines are not rendered as clips; device speech and enjoyment open.
+
+## 2026-11-08 — Lift It slice 2: replay button and the helping paw (PR #1424)
+
+Changed: replay button from level 3 up (hauls the last delivered parcel again, the pet counting each knot aloud; never changes line, misses or hints, awards nothing) and the pet's paw riding the handle on the level 1–2 hint; new voice lines `lift-it.replay` and `lift-it.knot-n`; a button-clearance layout test at four views.
+Ran: `npm run typecheck`; `npm test` (329 files, 6271 tests); `npm run build`; `BROWSER_SUITE=liftit` (level 1 hint with paw and one hint counted, level 6 wrong rig plus hint, level 3 autumn portrait, level 4 portrait taps replay with line, misses, hints and rig unchanged and one sticker; screenshot `lift-it-4-replay-portrait`).
+Not run: `fingerdemo` (bot's actions unchanged), offline. New voice lines are not rendered as clips; device speech of the counting and whether the button reads as "again" are open.
+
+## 2026-11-08 — Fruit Sums slice 4: level 6 Three fruit (PR #1425)
+
+Changed: level 6 (three fruit in three boxes joined by two plus signs, target 11–18, two different triples; same three in any order is the same way; a two-fruit check is no miss; hint glows a make-ten pair, then the third fruit, then the check); school `order` [1, 5, 2, 4, 3, 6]; voice lines `fsums.start6`, `fill6`, `third`, `right6`, `wrong6`, `done6`; how-to card scoped by level; `fruitsums` gained `FROM_LEVEL=6`.
+Ran: `npm run typecheck`; `npm test` (329 files, 6282 passed, 1 skipped); `BROWSER_SUITE=fruitsums FROM_LEVEL=6` (portrait 768×1024, two-fruit check as no miss, two wrong threes, one hint followed through, reordered triple as the same way, two ways, one sticker, `fruit-sums-6-portrait-hint`); `fingerdemo` at 6 (13.9 s); game-reviewer, no defects.
+Not run: build (no shared files or assets changed), levels 1–5 in a browser, offline, iPad, device speech or child play.
