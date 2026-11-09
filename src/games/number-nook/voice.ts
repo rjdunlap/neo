@@ -10,6 +10,10 @@ export const VOICE = {
   'nook.twelve': [
     'Slide the tiles to match the small goal. Try putting one through four in the top row first. Then use the two rows below.',
   ],
+  'nook.fifteen': [
+    'Slide the tiles to match the small goal. Try the top row first, then the left column. Finish the square that is left.',
+  ],
+  'nook.borderHint': ['Slide the glowing tile. It is one move on a route to the goal.'],
   'nook.miss': ['That tile cannot reach the gap. Tap a tile in the same row or column as the empty space.'],
   'nook.hint': ['Slide the glowing tile. It starts a shortest way to put the numbers in order.'],
   'nook.restart': ['The starting tiles are back. Try another route.'],

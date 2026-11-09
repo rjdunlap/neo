@@ -125,7 +125,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Gem Swap (`gem-swap`) | designed 2026-11-07 ([dive](deep-dives/gem-swap.md): slices 1–5 built; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Log Roll (`log-roll`) | designed 2026-11-07 ([dive](deep-dives/log-roll.md): slices 1–5 ready; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Marble Jump (`marble-jump`) | designed 2026-11-07 ([dive](deep-dives/marble-jump.md): slices 1–4 ready; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
-| Number Nook (`number-nook`) | designed 2026-11-07 ([dive](deep-dives/number-nook.md): slices 1–6 ready; two decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Number Nook (`number-nook`) | designed 2026-11-07 ([dive](deep-dives/number-nook.md): slices 1–6 built through level 7; the school opening and couch course await decisions); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Pyramid Solitaire (`pyramid-solitaire`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Snowball Merge (`snowball-merge`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Tile Pairs (`tile-pairs`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
