@@ -27,6 +27,8 @@
 
 ## Design notes
 
+Level 4 *Where did it go?* is defined, not built: see the [E3 definition](../definitions/sand-table-sediment.md) (2026-11-09).
+
 *After sand trays and sandboxes; [definition](../definitions/sand-table.md).* A warm tray of dry sand sits under a bucket. Tap the tray and a shower of grains pours down, lands and slides into a heap; tap a scoop paddle and a scoopful lifts back into the bucket and the heap slumps. The grains follow an invented toy rule, not measured sand, and the how-to card says so. Any landscape is a finished one: planting the flag (level 3: **Show**, when the pet walks the landscape) ends the round with 0 misses and 0 hints, and nothing is kept. Pouring into an empty bucket or past the rim is never a miss; at level 3 spilled grains collect in the pail and can be tipped back. Show a hint (the pause sheet) is a real demonstration action that counts nothing, and Start again restarts the round. Home is Rainbow Meadow (Bubble Beach and Treehouse failed their scene decor tests).
 
 **Levels.** Level 1 *Make a mound* (lap, toddler): one bay. Level 2 *Two little hills* (toddler, preschool): two bays. Level 3 *A landscape to show* (preschool, pre-K): three bays and the pail, from a seeded start and a pictured invitation. Levels 4–6 are reserved for the study's sediment rungs.

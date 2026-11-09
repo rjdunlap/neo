@@ -4,6 +4,8 @@ Defined 2026-10-22 as slice **E1** of the [earth-materials study](../deep-dives/
 
 **Status: built 2026-10-23 (E2; levels 1–3 on the defaults below, except the home land: Rainbow Meadow, see open decision 2).** Original status: ready to build with no review gate. These three rungs make no geology claim: the grains follow an invented toy rule, and the how-to card says so. The study's geology/model reviewer is needed before the sediment rungs (E3 onward), and its practical reviewer before any real sand, soil or field card; neither blocks E2. Every open call has a default ([open decisions](#open-decisions)).
 
+Level 4 (*Where did it go?*, the breeze and the first question with a right answer) is defined separately in [sand-table-sediment.md](sand-table-sediment.md) (E3, 2026-11-09); not built.
+
 **Fun action and purpose:** a warm tray of dry sand sits under a bucket. She taps the tray, and a short shower of grains pours down, lands and slides into a heap. She taps a scoop paddle and a scoopful lifts back into the bucket, and the heap slumps. The landscape stays as she left it, so the next tap builds on what is there. The learning is **early spatial cause and effect**: where I pour is where it grows, a tall heap spreads at its sides, taking some away lowers it, and the sand never disappears (it is in the bucket, the tray or the spill pail). Rung 3 adds deliberately shaping a landscape to show.
 
 ## Identity and overlap

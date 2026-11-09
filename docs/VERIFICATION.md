@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-11-09 — Sand Table level 4 definition, earth-materials E3 (docs only)
+
+Changed: new [definition](definitions/sand-table-sediment.md) for school level 4 *Where did it go?* (one-puff breeze rule, three authored hills in two directions, answer is the bay that gained); READY, the study, backlog row, Sand Table's definition and page. Sources opened: Geological Society of London "By wind" and University of Arizona HiRISE pages; the USGS eolian page returned 403 and the NPS White Sands PDF was unreadable.
+Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, any browser or device check; nothing was implemented. Open: the E4 build and its source re-check.
+
 ## 2026-11-09 — Second Chance Shed Picnic Loop 7–8 definition, nature-sustainability N4 (docs only, PR #1442)
 
 Changed: new [definition](definitions/second-chance-shed-7-8.md) for school levels 7–8 (cups across picnics, two-place wash tub, big mug in place of the study's jar, two authored cases at level 8); READY, the study, backlog row and [batch second-chance-shed 3](GAME-BATCHES.md#second-chance-shed-3-picnic-loop).
