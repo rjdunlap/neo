@@ -99,6 +99,10 @@ In `src/content/daily.test.ts`, pure, over the real registry:
 
 Shell/navigation: typecheck, unit tests, build, one filtered browser flow (Home, Today's six, one card, a finished round, back on the six with a tick, portrait screenshot), and the production offline check once for slice 1 because Home's navigation changes. `world` only if the island's route changes. Slice 2 is logic plus one screenshot. Slice 3 reuses D2b's filtered mix flow. An iPad and a child's reaction stay person checks.
 
+## On a phone, and playing all six (built 2026-11-09)
+
+On a phone the six are the whole root, R6's Play all is built as a play button plus a next-of-six tile on each daily round's result (not through the mix planner), and a grown-up's profile can leave a playtest note per game and day: [the daily playtest slice](phone-portrait.md#the-daily-playtest-slice-a-phone-is-todays-six-alone-built-2026-11-09).
+
 ## Open decisions
 
 For [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) after slice 1 is played:

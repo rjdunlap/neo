@@ -108,6 +108,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
       <h2>Playing</h2>
       <p class="muted">Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.</p>
       <p class="muted">Today's six, the six-tile button on Home, is a different mix of games each day, chosen by their age, each at a level picked for the day. Those rounds earn their usual sticker but do not move a game's level, a pinned level is used instead, and nothing is missed on a day they do not play.</p>
+      <p class="muted">On a phone the app is Today's six alone, held upright or sideways; Home, Explore and the island games stay on a tablet or computer. A grown-up's profile also gets a pencil on the six page and after each of its rounds, for a quick reaction and a note on the game; the notes stay on this device, and Copy all notes puts them on the clipboard.</p>
       <div class="parent__row">
         <label for="p-tips">Show grown-up tips during games</label>
         <input id="p-tips" type="checkbox" />

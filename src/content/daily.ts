@@ -139,3 +139,20 @@ export function levelDots(pick: DailyPick): { at: number; of: number } {
 /** She finished a round of this game on `day` (a round's record carries its time): the card shows a tick. */
 export const playedOn = (history: readonly RoundRecord[] | undefined, day: string) =>
   !!history?.some((r) => dayKey(new Date(r.at)) === day);
+
+/**
+ * The next of the day's six to play after `after` (a game ID, or null from the page): the first not yet played today, in
+ * card order, starting from the card after it and wrapping. Null when every other card is played: the day's set is done.
+ */
+export function nextOfSix(
+  picks: readonly DailyPick[],
+  after: string | null,
+  played: (id: string) => boolean,
+): DailyPick | null {
+  const at = picks.findIndex((p) => p.mod.id === after);
+  for (let i = 1; i <= picks.length; i++) {
+    const p = picks[(at + i + picks.length) % picks.length];
+    if (p.mod.id !== after && !played(p.mod.id)) return p;
+  }
+  return null;
+}

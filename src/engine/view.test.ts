@@ -3,6 +3,7 @@ import {
   clampInsets,
   computeView,
   needsTurn,
+  phoneSized,
   NO_INSETS,
   safeArea,
   spread,
@@ -126,5 +127,15 @@ describe('the upright design area (chunk 31)', () => {
     const v = computeView(390, 844, { top: 47, right: 0, bottom: 34, left: 0 }, true);
     expect(v.w).toBeGreaterThanOrEqual(UPRIGHT_W - 1e-9);
     expect(v.h).toBeGreaterThanOrEqual(UPRIGHT_H - 1e-9);
+  });
+});
+
+describe('phoneSized', () => {
+  it('is a touch screen with a short side under 600, held either way', () => {
+    expect(phoneSized(390, 844, true)).toBe(true);
+    expect(phoneSized(844, 390, true)).toBe(true);
+    expect(phoneSized(744, 1133, true)).toBe(false); // iPad mini
+    expect(phoneSized(1024, 768, true)).toBe(false);
+    expect(phoneSized(390, 844, false)).toBe(false); // a narrow desktop window
   });
 });
