@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Pile Match by touch: level 1 with one wrong kind, level 8 with a full tray refused, three put-backs and the hint they bring, level 4 upright in the autumn look; one sticker each. */
+  /** Pile Match by touch: level 1 with one wrong kind, level 8 with a full tray refused, three put-backs and the hint they bring, level 9's four places, level 11's free little pile, level 4 upright in the autumn look; one sticker each. */
   async function pileMatchPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -188,6 +188,63 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers9, {
       timeout: 15000,
     });
+    // Level 11: a little pile of two kinds; a covered touch and three put-backs are never counted, the tray never fills.
+    await launch('pile-match', 11);
+    await idle();
+    await page.waitForTimeout(300);
+    const stickers11 = await page.evaluate(() => kit.store.data.stickers.length);
+    const pile = await page.evaluate(async () => {
+      const L = await import('/src/games/pile-match/logic.ts'),
+        g = neo.scene.game,
+        open = L.freePieces(g.board.cells, g.mask);
+      return {
+        slots: g.layout.slots.length,
+        layers: [0, 1].map((z) => g.board.cells.filter((c) => c.z === z).length),
+        covered: g.board.cells.map((_, i) => i).find((i) => !open.includes(i)),
+        top: open.find((i) => g.board.cells[i].z === 1),
+      };
+    });
+    assert.deepEqual(
+      [pile.slots, pile.layers],
+      [5, [4, 2]],
+      'level 11 is four on the grass, two on top, five places',
+    );
+    await tapPiece(pile.covered);
+    st = await state();
+    assert.deepEqual([st.misses, st.tray], [0, 0], 'a covered touch wiggles and is never counted');
+    for (let k = 0; k < 3; k++) {
+      await tapPiece(pile.top);
+      await tapSlot(0);
+    }
+    await page.waitForTimeout(300);
+    st = await state();
+    assert.deepEqual(
+      [st.tray, st.misses, st.hints, st.hinted],
+      [0, 0, 0, false],
+      'put-backs in free play never bring the hint',
+    );
+    await screenshot('pile-match-11-little-pile');
+    let most = 0;
+    for (let guard = 0; guard < 20 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+      const i = await page.evaluate(async () => {
+        const L = await import('/src/games/pile-match/logic.ts'),
+          g = neo.scene.game,
+          t = L.tray(g.board, g.mask),
+          open = L.freePieces(g.board.cells, g.mask);
+        // Spread the kinds out first, to hold as many as two kinds can.
+        return open.find((i) => t[g.board.kinds[i]] < 2) ?? open[0] ?? -1;
+      });
+      if (i < 0) break;
+      await tapPiece(i);
+      most = Math.max(most, (await state()).tray);
+    }
+    await page.waitForFunction(() => neo.scene.finished, null, { timeout: 20000 });
+    st = await state();
+    assert.ok(most <= 4, `the tray never fills (held ${most})`);
+    assert.deepEqual([st.misses, st.hints], [0, 0], 'level 11 solved with nothing counted');
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers11, {
+      timeout: 15000,
+    });
     // Level 4 upright in the autumn look (relaunched until the seed gives it): taps wait for the drop-in, one screenshot, solved by taps.
     await page.setViewportSize({ width: 768, height: 1024 });
     let look = '';
@@ -212,7 +269,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 9 with a full four-place tray, level 4 upright in autumn, all solved by taps',
+      'Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 9 with a full four-place tray, level 11 free play with nothing counted, level 4 upright in autumn, all solved by taps',
     );
   }
 

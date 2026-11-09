@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| preschool | 1–4 |
-| pre-K | 3–6 |
+| preschool | 1, 2, 3, 11, 4 |
+| pre-K | 3, 11, 4, 5, 6 |
 | school | 5–9 |
 
 | Level | Plays like |
@@ -23,6 +23,7 @@
 | 7 | Six kinds |
 | 8 | The big heap |
 | 9 | A smaller tray |
+| 11 | Any three in a little pile |
 
 <!-- end generated -->
 
