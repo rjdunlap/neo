@@ -12,6 +12,7 @@ export const HOW_TO: GameHowTo = {
   finish: [
     {
       from: 8,
+      to: 8,
       text: 'The gold marble may jump but is never jumped (trying counts a miss), so it is left last. The end shows your moves and the fewest possible.',
     },
     {
