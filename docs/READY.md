@@ -8,8 +8,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`marble-jump` slice 4, level 9 *A bigger triangle*** (grown-up; [build slices](deep-dives/marble-jump.md#build-slices-in-order); slices 1–3 are built): slice 4 level 9 *A bigger triangle* after slice 1 (new level with a layout change: typecheck, rule tests, a layout check that every hole is at least 78 units across at 768×1024 and 1024×768, one browser play of 9, one portrait screenshot, `fingerdemo` at 9, build). The school opening, square boards and a couch course wait on [decisions](WAITING-ON-DEVELOPER.md).
 
-- **Phone held upright, shell slice 2: the rest of the root** (ready; shell tier): upright layout tests and one screenshot per root scene; `classic/` stays sideways-only. [Definition](definitions/phone-portrait.md#shell-slice-2-the-rest-of-the-root-ready).
-- **`pile-match`, slices 2–4 in the dive's order** (preschool to school; [build slices](deep-dives/pile-match.md#build-slices-in-order); slice 1 is built). Slice 2, level 9 *A smaller tray*, claimed 2026-11-09 on `claude/pile-match-smaller-tray` (expected files: `src/games/pile-match/` logic, layout, levels, how-to and tests, `scripts/browser/suites/pile-match-play.mjs`, docs).
+- **Phone held upright, shell slice 2: the rest of the root** (ready; shell tier): upright layout tests and one screenshot per root scene; `classic/` stays sideways-only; after the game batches, per its [definition](definitions/phone-portrait.md#shell-slice-2-the-rest-of-the-root-ready); it now matters only on narrow tablets and computers.
+- **`pile-match`, slices 3–4 in the dive's order** (preschool to school; [build slices](deep-dives/pile-match.md#build-slices-in-order); slices 1–2 are built).
 
 - **`block-garden` slice 5, level 12 *Mind the snails*** (pre-K to grown-up; [build slices](deep-dives/block-garden.md#build-slices-in-order); slices 1–4 are built, so it is ready; typecheck, rule tests, one browser play of 12, `fingerdemo` at 12). Level 14 *One little gap* (preschool) waits on a [decision](WAITING-ON-DEVELOPER.md); box clears stay a proposal.
 
