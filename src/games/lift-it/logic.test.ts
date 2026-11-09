@@ -11,6 +11,7 @@ import {
   circleBox,
   crateBottom,
   crateHook,
+  crateRing,
   CRATE_H,
   CRATE_W,
   counterBox,
@@ -53,7 +54,9 @@ import {
   roundFits,
   shellButtons,
   travel,
+  TIE_HIT,
   TRAY_HIT,
+  WHEEL_R,
   wheels,
   workingRigs,
   works,
@@ -95,6 +98,21 @@ describe('the rule', () => {
         expect(paws('fixed', ln)).toBe(paws('direct', ln));
         expect(travel('movable', ln)).toBe(2 * travel('fixed', ln));
       }
+  });
+
+  it('tying to the crate adds one supporting strand only with both wheels', () => {
+    for (const rig of RIGS) expect(rigOf(hooksOf(rig), true)).toBe(rig === 'both' ? 'three' : rig);
+    expect(ratio('three')).toBe(3);
+    expect(wheels('three')).toBe(2);
+    expect(pullDirection('three')).toBe('up');
+    expect(pullersAt('three')).toBe('ledge');
+    for (let w = 1; w <= 6; w++) {
+      const ln = line(w, 2, 2, 2);
+      expect(paws('three', ln)).toBe(Math.ceil(w / 3));
+      expect(travel('three', ln)).toBe(6);
+      expect(paws('three', ln) * travel('three', ln)).toBeGreaterThanOrEqual(w * ln.h);
+    }
+    expect(bestRig(line(4, 2, 2, 1), rigsFor(planFor(7)))).toBe('both');
   });
 
   it('a rig works when its pullers can give the paws it needs', () => {
@@ -180,7 +198,7 @@ describe('plans and rounds', () => {
   });
 
   it('level 9 sits between 4 and 5 for school only, and its authored line asks 4 paws on the branch, 2 on the crate', () => {
-    expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([3, 4, 9, 5, 6]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([3, 4, 9, 5, 6, 7, 8]);
     expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).not.toContain(9);
     const p9 = planFor(9);
     expect(p9.ask).toBe('paws');
@@ -192,6 +210,23 @@ describe('plans and rounds', () => {
     expect(paws('movable', l9)).toBe(2);
     expect(pawsCards('fixed', l9)).toContain(4);
     expect(pawsCards('movable', l9)).toContain(2);
+  });
+
+  it('the authored three-strand deliveries teach the knot before asking for numbers', () => {
+    const [first] = authored(planFor(7));
+    expect([first.w, first.h, first.g, first.l, first.ask]).toEqual([6, 2, 2, 2, undefined]);
+    expect(workingRigs(first, rigsFor(planFor(7)))).toEqual(['three']);
+    const [numbers] = authored(planFor(8));
+    expect([numbers.w, numbers.h, numbers.g, numbers.l, numbers.ask]).toEqual([6, 3, 0, 2, 'ledge']);
+    expect(workingRigs(numbers, rigsFor(planFor(8)))).toEqual(['three']);
+    expect(pawsCards('three', numbers)).toEqual([2, 3, 6]);
+    expect(knotsCards(numbers)).toEqual([3, 6, 9]);
+    expect(paws('three', numbers)).toBe(2);
+    expect(travel('three', numbers)).toBe(9);
+    for (const level of [7, 8]) {
+      const plan = planFor(level);
+      expect(roundFits(plan, fallbackRound(plan))).toBe(true);
+    }
   });
 
   it('level 9: the paws card is exact for every rig on offer, and each round mixes one- and two-strand lines', () => {
@@ -221,6 +256,13 @@ describe('plans and rounds', () => {
           expect(fellBack).toBe(false);
           expect(roundFits(plan, lines)).toBe(true);
           expect(makeRound(plan, new Rng(seed), first).lines).toEqual(lines);
+          if (plan.movableKnot)
+            expect(
+              lines.some((l) => {
+                const accepted = rigsFor(plan).filter((r) => works(r, l) && endsRight(r, l));
+                return accepted.length === 1 && accepted[0] === 'three';
+              }),
+            ).toBe(true);
           for (const l of lines) {
             expect(FRIENDS).toContain(l.waiting);
             expect(l.waiting).not.toBe(l.puller);
@@ -236,6 +278,7 @@ describe('plans and rounds', () => {
                 expect(new Set(cards).size).toBe(3);
                 expect(cards.filter((c) => c === paws(r, l))).toHaveLength(1);
                 expect(l.w % ratio(r)).toBe(0);
+                expect(knotsCards(l).filter((c) => c === travel(r, l))).toHaveLength(1);
               }
               expect(knotsCards(l).filter((c) => c === travel('fixed', l))).toHaveLength(1);
               expect(travel('fixed', l)).not.toBe(travel('both', l));
@@ -312,6 +355,37 @@ describe('fresh content', () => {
 });
 
 describe('layout', () => {
+  for (const name of ['portrait', 'landscape'] as const) {
+    it(`keeps the tie target apart from the wheels, handle and shell on the ${name} iPad fixture`, () => {
+      const v = VIEWS[name];
+      const L = liftLayout(v, true);
+      const shell = [petCorner(v), ...shellButtons(v), circleBox(replaySpot(v), REPLAY_HIT)];
+      const clearsShell = (target: Rect) => shell.every((box) => !rectsOverlap(target, box));
+      for (const h of [1, 2, 3]) {
+        const ln = line(6, h, 2, 2);
+        const tie = crateRing(L, 0);
+        for (const rig of ['both', 'three'] as const) {
+          const handle = handleAt(L, v, rig, ln, 0);
+          expect(clearsShell(circleBox(handle, HANDLE_HIT)), `${rig} handle at height ${h}`).toBe(true);
+          expect(Math.hypot(handle.x - tie.x, handle.y - tie.y)).toBeGreaterThanOrEqual(TIE_HIT + HANDLE_HIT);
+        }
+      }
+      for (const rise of [0, 1, 2, 3]) {
+        const tie = crateRing(L, rise);
+        const hook = crateHook(L, rise);
+        const area = circleBox(tie, TIE_HIT);
+        expect(area.w).toBeGreaterThanOrEqual(100);
+        expect(area.x >= 0 && area.y >= 0 && area.x + area.w <= v.w && area.y + area.h <= v.h).toBe(true);
+        expect(clearsShell(area)).toBe(true);
+        for (const wheel of [hook, L.branchHook])
+          expect(Math.hypot(wheel.x - tie.x, wheel.y - tie.y)).toBeGreaterThanOrEqual(TIE_HIT + HOOK_HIT);
+        // The tied strand stays to the left of the two crate-wheel strands, which are a wheel diameter apart.
+        expect(hook.x - WHEEL_R - tie.x).toBeGreaterThanOrEqual(25);
+        expect(hook.x - WHEEL_R).toBe(L.branchHook.x + WHEEL_R);
+      }
+    });
+  }
+
   for (const [name, v] of Object.entries(VIEWS)) {
     it(`fits the ${name} view at every ledge height`, () => {
       const L = liftLayout(v);
