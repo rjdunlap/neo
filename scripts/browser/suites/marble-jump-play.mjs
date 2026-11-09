@@ -279,6 +279,68 @@ export function createSuite({
       );
       await finished('marble-jump');
     }
+    // Level 9: the 21-hole board fits both orientations, refuses a wrong jump, hints and clears.
+    for (const [width, height] of [
+      [1024, 768],
+      [768, 1024],
+    ]) {
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(300);
+      await launch('marble-jump', 9);
+      await page.waitForTimeout(400);
+      const fit = await page.evaluate(() => {
+        const g = neo.scene.game,
+          hole = g.nodes.map((n) => n.getBounds()),
+          button = g.undoButton.getBounds();
+        return {
+          holes: g.nodes.length,
+          title: g.title.text,
+          lowest: Math.max(...hole.map((b) => b.maxY)),
+          buttonTop: button.minY,
+        };
+      });
+      assert.equal(fit.holes, 21);
+      assert.equal(fit.title, 'A bigger triangle');
+      assert.ok(fit.lowest < fit.buttonTop, `the bottom row clears the buttons at ${width}x${height}`);
+      if (width === 1024) {
+        const pair = await page.evaluate(async () => {
+          const L = await import('/src/games/marble-jump/logic.ts'),
+            g = neo.scene.game;
+          for (let a = 0; a < 21; a++)
+            for (let b = 0; b < 21; b++)
+              if (
+                L.occupied(g.board, a) &&
+                !L.occupied(g.board, b) &&
+                !L.moves(g.board, L.BIG).some((j) => j.from === a && j.to === b)
+              )
+                return [a, b];
+        });
+        await tapHole(pair[0]);
+        await tapHole(pair[1]);
+        assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);
+        await tap('neo.scene.game.hintButton');
+        assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+        const hinted = await page.evaluate(() => neo.scene.game.hinted);
+        await tapHole(hinted.from);
+        await tapHole(hinted.to);
+        await screenshot('marble-jump-9-landscape');
+      } else {
+        await screenshot('marble-jump-9-portrait');
+      }
+      let jumps = 0;
+      while (await page.evaluate(() => !neo.scene.game.finished)) {
+        const next = await page.evaluate(async () => {
+          const L = await import('/src/games/marble-jump/logic.ts'),
+            g = neo.scene.game;
+          return L.solve(g.board, L.ANY, L.NONE, L.BIG)[0];
+        });
+        await tapHole(next.from);
+        await tapHole(next.to);
+        assert.ok(++jumps <= 19);
+      }
+      assert.match(await page.evaluate(() => neo.scene.game.status.text), /moves · fewest possible (9|10)$/);
+      await finished('marble-jump');
+    }
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
     await page.evaluate(() => neo.go.land('puzzle-peaks'));
@@ -293,7 +355,7 @@ export function createSuite({
     await page.waitForTimeout(400);
     assert.deepEqual(errors, []);
     log(
-      'Marble Jump: first/last, level 7 off-star finish and star finish, level 8 refused jump over gold and gold finish, illegal jump, hint recovery, undo/restart, portrait, land launch/leave and one sticker passed',
+      'Marble Jump: first/last, level 7 off-star finish and star finish, level 8 refused jump over gold and gold finish, level 9 21-hole fit both ways with a miss, a hint and a clear, illegal jump, hint recovery, undo/restart, portrait, land launch/leave and one sticker passed',
     );
   }
 

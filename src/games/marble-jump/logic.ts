@@ -167,7 +167,8 @@ export function goldPairs(): readonly { board: number; gold: number }[] {
 /** A round's board, goal hole and gold marble. Levels 1–6 draw exactly as before and have no goal or gold. */
 export function makeRound(level: number, rng: Rng): { board: number; goal: number; gold: number } {
   // Every one of the 21 single-hole starts clears (asserted in logic.test.ts).
-  if (level === BIG_LEVEL) return { board: BIG.full ^ (1 << rng.int(0, BIG.holes.length - 1)), goal: ANY, gold: NONE };
+  if (level === BIG_LEVEL)
+    return { board: BIG.full ^ (1 << rng.int(0, BIG.holes.length - 1)), goal: ANY, gold: NONE };
   if (level === STAR_LEVEL) return { ...rng.pick(starPairs()), gold: NONE };
   if (level >= GOLD_LEVEL) return { ...rng.pick(goldPairs()), goal: ANY };
   return { board: makeBoard(level, rng), goal: ANY, gold: NONE };
@@ -226,7 +227,9 @@ export function fewestMoves(board: number, goal = ANY, gold = NONE, tri = SMALL)
  * Fewest moves from each single-hole start of the big board, by `fewestMoves` run offline (3–6 s a start, too slow for the
  * finish). logic.test.ts checks the table is symmetric and recomputes one start.
  */
-export const BIG_FEWEST: readonly number[] = [10, 9, 9, 9, 10, 9, 9, 9, 9, 9, 9, 10, 9, 10, 9, 10, 9, 9, 9, 9, 10];
+export const BIG_FEWEST: readonly number[] = [
+  10, 9, 9, 9, 10, 9, 9, 9, 9, 9, 9, 10, 9, 10, 9, 10, 9, 9, 9, 9, 10,
+];
 /** The fewest moves for a round's starting board: the frozen table for a big-board start, an exact search otherwise. */
 export function fewestFor(board: number, goal = ANY, gold = NONE, tri = SMALL): number | null {
   const start = tri.holes.findIndex((_, i) => board === (tri.full ^ (1 << i)));

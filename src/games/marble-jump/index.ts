@@ -534,10 +534,10 @@ export const marbleJump: GameModule = {
     level === BIG_LEVEL
       ? `${marblesFor(level)} marbles on a bigger, 21-hole triangle; leave one`
       : level === GOLD_LEVEL
-      ? `${marblesFor(level)} marbles, one gold; the gold one must be the last left`
-      : level === STAR_LEVEL
-        ? `${marblesFor(level)} marbles; the last one must finish in the star hole`
-        : `${marblesFor(level)} marbles on a triangular board; leave one`,
+        ? `${marblesFor(level)} marbles, one gold; the gold one must be the last left`
+        : level === STAR_LEVEL
+          ? `${marblesFor(level)} marbles; the last one must finish in the star hole`
+          : `${marblesFor(level)} marbles on a triangular board; leave one`,
   music: STYLES.lullaby,
   coplayHint: 'Plan the next two jumps together before trying them.',
   offScreen: 'Make a triangle of fifteen circles on paper and use counters to try the same jumps.',
