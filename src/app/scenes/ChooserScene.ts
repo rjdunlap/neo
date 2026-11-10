@@ -316,9 +316,9 @@ export class ChooserScene extends Scene {
     }
     this.page.classList.add('chooser--leaving');
     this.cards.querySelector(`.chooser__card[data-id="${id}"]`)?.classList.add('is-chosen');
+    // The chosen card pops and the rest fade, with a giggle; the screen changes after the squash's beat (U7 R3). No spoken
+    // greeting: the next screen's own first line would cut it after a syllable.
     sfx.giggle();
-    void voice.say('start.hi');
-    // The chosen card pops and the rest fade; the screen changes after the squash's beat, not after the greeting (U7 R3).
     await this.tw.wait(LEAVE_BEAT);
     if (this.closed) return;
     // To the island map: the lands, their home spot and the picnic, with their friend waiting where they were last.
