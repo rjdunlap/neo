@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Grown-up upright games batch 4 (chunk 31, 2026-11-09)
+
+Branch `claude/upright-grownup-batch-4` (PR number to be added at merge) adds upright phone play for Log Roll, Marble Jump and Snowball Merge; the grown-up upright pool is now 19 games, every game that lists the grown-up band. Log Roll's layout moved into the exported `logRollLayout(v, floor)`: upright, the floor starts at y 230 (below Home and "?") and centres in the tall view, with stones up to 112 units (smallest 88 units on the 8-wide level 4 floor on a short view, 76 sideways). Snowball Merge's `snowballLayout(v)` grows upright cells to 160 (128 sideways). Marble Jump needed no layout change: `boardLayout` already fits. Sideways layouts are unchanged.
+
+The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-4-chunk-31) records the target sizes (smallest 51 px for Log Roll and Snowball Merge, 39.6 px for Marble Jump's 78-unit holes and buttons) and touch play.
+
 ### Grown-up upright games batch 3 (chunk 31, 2026-11-09)
 
 [PR #1454](https://github.com/rjdunlap/neo/pull/1454) adds upright phone play for Block Garden, Logic Grid, Species Comeback and Pyramid Solitaire; the grown-up upright pool is now 16 games across seven kinds. Pyramid Solitaire (`pyramidLayout`) stacks the pyramid, status line and Undo/Hint/Start over in the middle of the tall view, buttons clear of the guide. Species Comeback (`comebackLayout`) starts the tree and the release-site phase below Home and "?", with the nests in a centered row and Spring under them. Logic Grid extracts `caseLayout` (level 7) and `slidingLayout` (level 8) and starts boards at y 214 below Home and "?" (level 5's two-block board too). Block Garden's `gardenLayout` keeps a bed that would reach under Home below it on a short phone. `upright: true` applies to every band, so the child levels of Logic Grid and Block Garden were screenshotted upright too.

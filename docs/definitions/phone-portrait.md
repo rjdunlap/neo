@@ -64,7 +64,7 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 | 1 (built in shell slice 1) | grown-up six | `word-search` (words), `sudoku-garden` (logic), `island-bridges` (space), `pond-conga` (hands), `brain-break` (noticing), `number-nook` (numbers) |
 | 2 (built) | grown-up: a second game per kind, and music | `hat-band` (music), `crossword` (words), `picture-logic` (logic), `tile-pairs` (noticing), `gem-swap` (space), `lantern-lights` (logic) |
 | 3 (built) | grown-up: the rest of the smaller boards | `block-garden`, `logic-grid`, `species-comeback`, `pyramid-solitaire` |
-| 4 (in progress: `claude/upright-grownup-batch-4`) | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
+| 4 (built) | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
 | 5 | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
 | 6 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games with a portrait branch first (cheaper) |
 
@@ -75,6 +75,8 @@ Batch 1 gave grown-ups one upright game in each of six kinds. Feedback from the 
 Batch 2 brings the grown-up upright pool to 12 games across seven kinds. The [batch closeout](../archive/COMPLETED-2026-10-09.md#grown-up-upright-games-batch-2-chunk-31-2026-11-09) records the layouts and checks.
 
 Batch 3 brings the grown-up upright pool to 16 games across the same seven kinds. The [batch closeout](../archive/COMPLETED-2026-10-09.md#grown-up-upright-games-batch-3-chunk-31-2026-11-09) records the layouts and checks.
+
+Batch 4 brings the grown-up upright pool to 19 games, every game that lists the grown-up band. The [batch closeout](../archive/COMPLETED-2026-10-09.md#grown-up-upright-games-batch-4-chunk-31-2026-11-09) records the layouts and checks.
 
 ## Feedback loop
 
