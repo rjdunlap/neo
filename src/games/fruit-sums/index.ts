@@ -31,6 +31,8 @@ import {
   judge3,
   layoutFor,
   makeRound,
+  keyOp,
+  opSign,
   opWord,
   planFor,
   shapeFor,
@@ -48,14 +50,19 @@ import {
 
 const FRUIT: ColorName[] = ['red', 'orange', 'yellow', 'green', 'purple', 'pink'];
 
-/** A plus or a minus drawn from bars, so it never depends on a font having the glyph. */
+/** A plus, a minus or a times drawn from bars, so it never depends on a font having the glyph; times is a plus turned. */
 function signArt(op: Op, size: number, color: number): Graphics {
   const t = size * 0.18,
     r = size / 2;
   const g = new Graphics().roundRect(-r, -t / 2, size, t, t / 2).fill(color);
-  if (op === 'plus') g.roundRect(-t / 2, -r, t, size, t / 2).fill(color);
+  if (op !== 'minus') g.roundRect(-t / 2, -r, t, size, t / 2).fill(color);
+  if (op === 'times') g.rotation = Math.PI / 4;
   return g;
 }
+
+/** Each leaf rings its own pentatonic step and says its sign. */
+const LEAF_STEP: Record<Op, number> = { plus: 5, minus: 3, times: 7 };
+const LEAF_LINE = { plus: 'fsums.plus', minus: 'fsums.minus', times: 'fsums.times' } as const;
 
 /** Each tree's sky and hills; the orchard morning is the game's first look. */
 const SCENES: Record<Look, { sky: [number, number]; hills: number[] }> = {
@@ -182,7 +189,7 @@ class FruitSums implements Game {
     this.three = !!round.three;
     this.op = this.signs ? null : 'plus';
     this.look = ctx.rng.pick(LOOKS);
-    this.layout = layoutFor(ctx.view.w, ctx.view.h, this.tray.length, this.signs, this.three);
+    this.layout = layoutFor(ctx.view.w, ctx.view.h, this.tray.length, this.leafCount(), this.three);
     this.backdrop = new Backdrop(
       { ...SCENES[this.look], horizon: 0.3, clouds: 2, sun: true, seed: 57 },
       ctx.view,
@@ -275,6 +282,11 @@ class FruitSums implements Game {
     for (const t of this.tiles) t.pivot.y = t.y + TILE;
   }
 
+  /** The sign leaves shown: none, plus and take away, or those and times. */
+  private leafCount() {
+    return this.signs ? this.plan.ops.length : 0;
+  }
+
   private slotArt(at: 'a' | 'b' | 'c' | 'op'): Graphics {
     const g = new Graphics()
       .roundRect(-SLOT / 2, -SLOT / 2, SLOT, SLOT, 24)
@@ -289,6 +301,7 @@ class FruitSums implements Game {
     if (this.signSum) void this.ctx.instruct('fsums.start4', this.signWords());
     else if (this.clear) void this.ctx.instruct('fsums.start5', { n: this.target });
     else if (this.three) void this.ctx.instruct('fsums.start6', { n: this.target });
+    else if (this.plan.times) void this.ctx.instruct('fsums.start7', { n: this.target });
     else void this.ctx.instruct(this.signs ? 'fsums.start3' : 'fsums.start', { n: this.target });
   }
 
@@ -347,8 +360,10 @@ class FruitSums implements Game {
   private tapLeaf(op: Op) {
     if (this.busy || this.finished) return;
     this.op = this.op === op ? null : op;
-    sfx.bell(this.op === 'plus' ? 5 : 3, 0.3);
-    if (this.op) void this.ctx.say(this.op === 'plus' ? 'fsums.plus' : 'fsums.minus');
+    if (this.op) {
+      sfx.bell(LEAF_STEP[this.op], 0.3);
+      void this.ctx.say(LEAF_LINE[this.op]);
+    } else sfx.bell(3, 0.3);
     this.afterChange();
   }
 
@@ -537,11 +552,11 @@ class FruitSums implements Game {
     this.busy = false;
   }
 
-  /** "7 + 5 = 12" for a found way, rebuilt from its key; at level 4 "7 + 5 = 6 + 4", at level 6 "2 + 3 + 7 = 12". */
+  /** "7 + 5 = 12" for a found way, rebuilt from its key; at level 4 "7 + 5 = 6 + 4", at level 6 "2 + 3 + 7 = 12", or "3 × 4 = 12". */
   private sentence(key: string): string {
     const parts = key.slice(1).split(',');
     const total = this.signSum ? `${this.signSum[0]} + ${this.signSum[1]}` : `${this.target}`;
-    return `${parts.join(key[0] === '+' ? ' + ' : ' − ')} = ${total}`;
+    return `${parts.join(` ${opSign(keyOp(key))} `)} = ${total}`;
   }
 
   /** The right pair leaves the tree: both fruit shrink into the basket, and the boxes are empty again. */
@@ -576,7 +591,7 @@ class FruitSums implements Game {
   // ---- shell hooks ----
 
   resize(view: View) {
-    const l = (this.layout = layoutFor(view.w, view.h, this.tray.length, this.signs, this.three));
+    const l = (this.layout = layoutFor(view.w, view.h, this.tray.length, this.leafCount(), this.three));
     this.backdrop.resize(view);
     this.sign.position.set(l.sign.x, l.sign.y);
     this.foundText.position.set(l.found.x, l.found.y);

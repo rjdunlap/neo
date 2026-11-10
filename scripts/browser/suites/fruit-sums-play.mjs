@@ -32,15 +32,16 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       if (way.op) await tap(`kit.tapOn(neo.scene.game.leaves.get('${way.op}'))`);
       await tap('kit.tapOn(neo.scene.game.check)');
     };
-    // FROM_LEVEL=4 starts at level 4; FROM_LEVEL=6 plays only the newest level.
+    // FROM_LEVEL=4 starts at level 4; FROM_LEVEL=7 plays only the newest level.
     const from = Number(process.env.FROM_LEVEL ?? 1);
     if (from <= 3) await levelsOneToThree();
     if (from <= 4) await levelFour();
     if (from <= 5) await levelFive();
-    await levelSix();
+    if (from <= 6) await levelSix();
+    await levelSeven();
     assert.deepEqual(errors, []);
     log(
-      `Fruit Sums: ${from <= 3 ? 'levels 1 and 3, no-pick check, two misses and one hint that glows the start fruit, its partner and the check, the same sum the other way round, two ways to finish, a take away by leaf, portrait in the cove look; ' : ''}${from <= 4 ? 'level 4 with the sum on the sign, one wrong total, the sign\'s own pair as the same way when the tray holds it, two ways written "x + y = p + q", portrait; ' : ''}${from <= 5 ? 'level 5 portrait, one wrong pair as a miss, three pairs into the basket until the tree is empty; ' : ''}level 6 portrait with three boxes, a two-fruit check as no miss, two wrong totals and one hint that glows a pair making ten, its third fruit and the check, the same three in another order as the same way, two ways; one sticker per round passed`,
+      `Fruit Sums: ${from <= 3 ? 'levels 1 and 3, no-pick check, two misses and one hint that glows the start fruit, its partner and the check, the same sum the other way round, two ways to finish, a take away by leaf, portrait in the cove look; ' : ''}${from <= 4 ? 'level 4 with the sum on the sign, one wrong total, the sign\'s own pair as the same way when the tray holds it, two ways written "x + y = p + q", portrait; ' : ''}${from <= 5 ? 'level 5 portrait, one wrong pair as a miss, three pairs into the basket until the tree is empty; ' : ''}${from <= 6 ? 'level 6 portrait with three boxes, a two-fruit check as no miss, two wrong totals and one hint that glows a pair making ten, its third fruit and the check, the same three in another order as the same way, two ways; ' : ''}level 7 portrait with three leaves, one wrong product as a miss, a times way written with ×, then a way with another sign; one sticker per round passed`,
     );
 
     async function levelsOneToThree() {
@@ -207,6 +208,58 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       }
       await finished('fruit-sums');
       log(`Fruit Sums level 5: make ${t5[0]}, tray ${t5[1].join(',')}, cleared in three pairs`);
+    }
+
+    async function levelSeven() {
+      // Level 7: three leaves; a times that makes another number is a miss, then a times way and a way with another sign finish.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('fruit-sums', 7);
+      await landed();
+      await page.waitForTimeout(500);
+      assert.deepEqual(await page.evaluate(() => [...neo.scene.game.leaves.keys()]), [
+        'plus',
+        'minus',
+        'times',
+      ]);
+      const ways = await page.evaluate(() => {
+        const g = neo.scene.game,
+          t = g.tray,
+          out = { times: null, other: null, wrong: null };
+        for (let a = 0; a < t.length; a++)
+          for (let b = 0; b < t.length; b++) {
+            if (a === b) continue;
+            if (!out.times && t[a] * t[b] === g.target) out.times = { a, b, op: 'times' };
+            if (!out.wrong && t[a] * t[b] !== g.target) out.wrong = { a, b, op: 'times' };
+          }
+        for (let a = 0; a < t.length; a++)
+          for (let b = 0; b < t.length; b++) {
+            if (a === b || out.other) continue;
+            if (t[a] + t[b] === g.target) out.other = { a, b, op: 'plus' };
+            else if (t[a] - t[b] === g.target) out.other = { a, b, op: 'minus' };
+          }
+        return out;
+      });
+      assert.ok(
+        ways.times && ways.other && ways.wrong,
+        'a times way, a way with another sign and a wrong product',
+      );
+      await build(ways.wrong);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.checkMade.visible]), [
+        1,
+        true,
+      ]);
+      for (const k of ['slotA', 'slotB'])
+        if (await page.evaluate((k) => neo.scene.game[k] !== null, k))
+          await tap(`kit.tapOn(neo.scene.game.tiles[neo.scene.game['${k}']])`);
+      await tap(`kit.tapOn(neo.scene.game.leaves.get('times'))`); // the leaf is still chosen: tapping it again clears it
+      await build(ways.times);
+      await idle();
+      assert.equal(await page.evaluate(() => neo.scene.game.found.length), 1);
+      assert.match(await page.evaluate(() => neo.scene.game.foundText.text), /×/);
+      await build(ways.other);
+      await page.waitForTimeout(400);
+      await screenshot('fruit-sums-7-portrait');
+      await finished('fruit-sums');
     }
 
     async function levelSix() {
