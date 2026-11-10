@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/marble-jump; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `marble-jump` · **Land:** Puzzle Peaks · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `marble-jump` · **Land:** Puzzle Peaks · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial planning, revising a route
 

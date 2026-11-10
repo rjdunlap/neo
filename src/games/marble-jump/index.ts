@@ -528,6 +528,7 @@ export const marbleJump: GameModule = {
   challenge: 'space',
   skills: ['spatial planning', 'revising a route'],
   bands: ['grownup'],
+  upright: true,
   touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) =>

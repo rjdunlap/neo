@@ -41,6 +41,29 @@ function snowball(value: number, radius: number) {
   return c;
 }
 
+/**
+ * Where the field and its buttons go: the field's top-left corner and cell, the 100-unit arrows in one row under it (which
+ * keeps every button apart and clear of the corner pet, in both orientations) and the 160 × 100 Undo, Hint and Start over
+ * row under them. An upright phone (chunk 31) has the width for 160-unit cells.
+ */
+export function snowballLayout(v: View) {
+  const cell = Math.min(v.upright ? 160 : 128, (v.h - 430) / SIZE);
+  const top = 155 + (v.h - 768) * 0.3,
+    w = cell * SIZE;
+  const arrows = Object.fromEntries(
+    (['left', 'up', 'down', 'right'] as Direction[]).map((d, i) => [
+      d,
+      { x: v.w / 2 + (i - 1.5) * 120, y: top + w + 78 },
+    ]),
+  ) as Record<Direction, { x: number; y: number }>;
+  return {
+    cell,
+    field: { x: (v.w - w) / 2, y: top },
+    arrows,
+    buttons: [0, 1, 2].map((i) => ({ x: v.w / 2 + (i - 1) * 180, y: top + w + 190 })),
+  };
+}
+
 class SnowballMerge implements Game {
   readonly puzzle;
   board: number[];
@@ -121,10 +144,11 @@ class SnowballMerge implements Game {
   }
 
   resize(v: View) {
-    this.cell = Math.min(128, (v.h - 430) / SIZE);
-    const top = 155 + (v.h - 768) * 0.3,
+    const l = snowballLayout(v);
+    this.cell = l.cell;
+    const top = l.field.y,
       w = this.cell * SIZE;
-    this.field.position.set((v.w - w) / 2, top);
+    this.field.position.copyFrom(l.field);
     this.title.position.set(v.w / 2, top - 70);
     this.status.position.set(v.w / 2, top - 40);
     this.ground
@@ -138,12 +162,9 @@ class SnowballMerge implements Game {
         .roundRect(p.x - this.cell / 2 + 5, p.y - this.cell / 2 + 5, this.cell - 10, this.cell - 10, 14)
         .fill(swatch.white.light);
     }
-    // A horizontal arrow row keeps every button apart and clear of the corner pet, in both orientations.
-    (['left', 'up', 'down', 'right'] as Direction[]).forEach((d, i) =>
-      this.arrows[d].position.set(v.w / 2 + (i - 1.5) * 120, top + w + 78),
-    );
+    DIRECTIONS.forEach((d) => this.arrows[d].position.copyFrom(l.arrows[d]));
     [this.undoButton, this.hintButton, this.restartButton].forEach((b, i) =>
-      b.position.set(v.w / 2 + (i - 1) * 180, top + w + 190),
+      b.position.copyFrom(l.buttons[i]),
     );
     // Nodes remain the same during a tween; scale and its final position follow the new view.
     for (const node of this.nodes.values()) node.scale.set(this.cell / 108);
@@ -296,6 +317,7 @@ export const snowballMerge: GameModule = {
   challenge: 'space',
   skills: ['spatial-planning', 'doubling', 'revision'],
   bands: ['grownup'],
+  upright: true,
   inputs: ['touch'],
   touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),
