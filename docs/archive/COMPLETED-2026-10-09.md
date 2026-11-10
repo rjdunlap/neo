@@ -2,9 +2,9 @@
 
 ### Grown-up upright games batch 4 (chunk 31, 2026-11-09)
 
-Branch `claude/upright-grownup-batch-4` (PR number to be added at merge) adds upright phone play for Log Roll, Marble Jump and Snowball Merge; the grown-up upright pool is now 19 games, every game that lists the grown-up band. Log Roll's layout moved into the exported `logRollLayout(v, floor)`: upright, the floor starts at y 230 (below Home and "?") and centres in the tall view, with stones up to 112 units (smallest 88 units on the 8-wide level 4 floor on a short view, 76 sideways). Snowball Merge's `snowballLayout(v)` grows upright cells to 160 (128 sideways). Marble Jump needed no layout change: `boardLayout` already fits. Sideways layouts are unchanged.
+PR #1457 (`claude/upright-grownup-batch-4`) adds upright phone play for Log Roll, Marble Jump and Snowball Merge; the grown-up upright pool is now 19 games, every game that lists the grown-up band. Log Roll's layout moved into the exported `logRollLayout(v, floor)`: upright, the floor starts at y 230 (below Home and "?") and centres in the tall view, with stones up to 112 units (smallest 88 units on the 8-wide level 4 floor on a short view, 76 sideways). Snowball Merge's `snowballLayout(v)` grows upright cells to 160 (128 sideways). Marble Jump needed no layout change: `boardLayout` already fits. Sideways layouts are unchanged.
 
-The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-4-chunk-31) records the target sizes (smallest 51 px for Log Roll and Snowball Merge, 39.6 px for Marble Jump's 78-unit holes and buttons) and touch play.
+The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-4-chunk-31-pr-1457) records the target sizes (smallest 51 px for Log Roll and Snowball Merge, 39.6 px for Marble Jump's 78-unit holes and buttons) and touch play.
 
 ### Grown-up upright games batch 3 (chunk 31, 2026-11-09)
 
