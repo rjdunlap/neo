@@ -29,7 +29,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 8,
+      to: 8,
       text: 'The sign shows a take-away across 10. First tap the number card for the hops back that reach 10. Listen to the split, then tap the lily pad where the rest of the hops back land.',
+    },
+    { from: 9, to: 9, text: 'Hop quarters and halves: tap where the frog lands.' },
+    {
+      from: 10,
+      text: 'Land on a lily, then choose how many hops of the other size reach it.',
     },
   ],
   finish: 'Answer five questions to bring the frog home.',

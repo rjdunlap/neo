@@ -900,7 +900,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 
     if (!only || only === 'hop')
       for (const level of process.env.HOP_LEVELS?.split(',').map(Number) ||
-        Array.from({ length: Math.max(0, 9 - fromLevel) }, (_, i) => fromLevel + i)) {
+        Array.from({ length: Math.max(0, 11 - fromLevel) }, (_, i) => fromLevel + i)) {
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
@@ -933,6 +933,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             if (g.plan.mode === 'gap') {
               const n = Math.abs(q.hops);
               kit.tapOn(g.cards.find((c) => (right ? c.n === n : c.n !== n)).node);
+              return;
+            }
+            if (g.plan.mode === 'frac-match' && g.matchStage === 'count') {
+              kit.tapOn(g.cards.find((c) => (right ? c.n === q.answer2 : c.n !== q.answer2)).node);
               return;
             }
             if ((g.plan.mode === 'make-ten' || g.plan.mode === 'back-ten') && g.makeTenStage === 'bridge') {
@@ -979,16 +983,35 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         };
         for (let n = 0; n < 5; n++) {
           await idle(n);
-          if (n === 0) {
+          if (n === 0 && mode === 'frac-match') {
+            // One wrong pad, the right pad plants the flag, then two wrong cards bring the counted hops and the glow.
+            await answer(false);
+            await answer(true);
+            assert.equal(await page.evaluate(() => neo.scene.game.matchStage), 'count');
+            assert.equal(await page.evaluate(() => neo.scene.game.signText.text), '? hops of ¼');
+            await answer(false);
+            await answer(false);
+            assert.deepEqual(await counts(), [3, 1], 'help across both stages charges one hint');
+            await screenshot(`frog-hop-${level}`);
+            await page.setViewportSize({ width: 768, height: 1024 });
+            await page.waitForTimeout(250);
+            await screenshot(`frog-hop-${level}-portrait`);
+            await page.setViewportSize({ width: 1024, height: 768 });
+            await page.waitForTimeout(250);
+          } else if (n === 0) {
             await answer(false);
             await answer(false);
             assert.deepEqual(await counts(), [2, 1]);
             if (level >= 5) await screenshot(`frog-hop-${level}`);
           }
+          if (mode === 'frac-match' && n > 0) await answer(true);
           await answer(true);
         }
         await finished('frog-hop');
-        assert.deepEqual(await score('frog-hop'), [mode === 'make-ten' || mode === 'back-ten' ? 4 : 2, 1]);
+        assert.deepEqual(await score('frog-hop'), [
+          mode === 'make-ten' || mode === 'back-ten' ? 4 : mode === 'frac-match' ? 3 : 2,
+          1,
+        ]);
         log(
           `Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`,
         );
