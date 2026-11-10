@@ -8,7 +8,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **U2: one picture, one meaning** (shell and `stamp-studio`): new pictures for Today's six, the wardrobe and Stamp Studio's tools, so the four squares mean All games and the basket means the project.
+- **U2: one picture, one meaning** (shell and `stamp-studio`; claimed by `claude/one-picture-one-meaning`, 2026-11-09): new pictures for Today's six, the wardrobe and Stamp Studio's tools, so the four squares mean All games and the basket means the project.
 - **U3: an honest Back in a round** (shell): decide tap or a visible hold cue for `GameScene`'s Back and question mark, and add Leave to the Paused sheet.
 - **U4: show what to touch when it is quiet** (shell): an idle wobble on the egg and a bounce on the project's next card.
 
