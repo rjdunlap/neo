@@ -2,6 +2,7 @@ import { playerChanged, selectPlayer } from '../app/players';
 import { applySettings } from '../app/settings';
 import { voice } from '../audio/voice';
 import { GAMES, playsByTouch } from '../games/registry';
+import type { GameModule } from '../games/types';
 import { BANDS, playBand, type Band } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
 import {
@@ -15,9 +16,19 @@ import { store } from '../progress/store';
 import { visibleGames } from '../content/lands';
 import { offScreenIdeas } from '../content/offscreen';
 import { projectRecap } from './recap';
-import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
-import { SPECIES, SPECIES_IDS } from '../creatures/species';
+import { SPECIES } from '../creatures/species';
+import {
+  ageCopy,
+  bandSmall,
+  bandWhere,
+  findingCopy,
+  friendHeading,
+  playingCopy,
+  weekCopy,
+  type PanelApp,
+} from './copy';
+import { matchesSearch, weekRows, type WeekRow } from './week';
 
 const MONTHS = [
   'January',
@@ -52,9 +63,17 @@ const clock = (at: number) =>
  *
  * It edits one player at a time, whoever is picked at the top, and closing it puts back whoever was playing when it opened
  * (`onClose`), or, if that player was removed here, goes to `onGone` (the chooser).
+ *
+ * `app` is the app that opened it: the root's page never mentions the island map (U8a); classic keeps its words.
  */
-export function openParentPanel(onClose: () => void, onGone: () => void = onClose) {
+export function openParentPanel(
+  onClose: () => void,
+  onGone: () => void = onClose,
+  { app = 'classic' }: { app?: PanelApp } = {},
+) {
   if (current) return;
+  const playing = playingCopy(app);
+  const finding = findingCopy(app);
   const openedFor = store.activeId;
   const root = document.createElement('div');
   current = root;
@@ -88,13 +107,13 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <input id="p-year" type="number" inputmode="numeric" placeholder="e.g. ${new Date().getFullYear() - 3}" />
       </div>
       <p class="muted" data-age></p>
-      <p class="muted">With a birth month and year, their age picks the band by itself and moves them up as they grow. Choose a band below to start somewhere else instead. It sets their home spot on the map and the levels games start at. Every land stays open: a land shows the games for their age and younger, each at the levels nearest their age, and its signpost leads to games for bigger kids at their easiest levels. The birth month and year stay on this device, and are in the backup file.</p>
+      <p class="muted">${esc(ageCopy(app))}</p>
       <div class="parent__bands" data-bands>
-        ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${b.ages} · ${esc(placeFor(b.id).name)}</small></button>`).join('')}
+        ${BANDS.map((b) => `<button type="button" data-band="${b.id}">${b.label}<small>${esc(bandSmall(app, b.id))}</small></button>`).join('')}
       </div>
       <div class="parent__actions" style="margin-top:10px"><button class="btn" data-follow hidden>Follow their age again</button></div>
 
-      <h2>Your island friend</h2>
+      <h2>${esc(friendHeading(app))}</h2>
       <div class="parent__row">
         <label for="p-pet-name">Your friend's name</label>
         <input id="p-pet-name" type="text" autocomplete="off" maxlength="40" />
@@ -104,11 +123,9 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <select id="p-pet-color">${PET_COLORS.map((color) => `<option value="${color}">${color}</option>`).join('')}</select>
       </div>
       <p class="muted" data-no-friend hidden>No friend yet: they meet one when their egg hatches.</p>
-      ${import.meta.env.DEV ? '<div class="parent__actions" style="margin-top:10px"><button class="btn" data-meet-all>Meet everyone (development)</button></div>' : ''}
+
       <h2>Playing</h2>
-      <p class="muted">Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.</p>
-      <p class="muted">Today's six, the six-tile button on Home, is a different mix of games each day, chosen by their age, each at a level picked for the day. Those rounds earn their usual sticker but do not move a game's level, a pinned level is used instead, and nothing is missed on a day they do not play.</p>
-      <p class="muted">On a phone the app is Today's six alone, held upright or sideways; Home, Explore and the island games stay on a tablet or computer. A grown-up's profile also gets a pencil on the six page and after each of its rounds, for a quick reaction and a note on the game; the notes stay on this device, and Copy all notes puts them on the clipboard.</p>
+      ${playing.before.map((line) => `<p class="muted">${esc(line)}</p>`).join('')}
       <div class="parent__row">
         <label for="p-tips">Show grown-up tips during games</label>
         <input id="p-tips" type="checkbox" />
@@ -117,15 +134,18 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <label for="p-howto">Show how to play before each game</label>
         <input id="p-howto" type="checkbox" />
       </div>
-      <p class="muted">A card with the goal and how to play, a demonstration for some games, and a big Play button. Holding the ? in a game opens it again.</p>
-      <p class="muted">Hold the picnic blanket on a little one's home spot to choose its games.</p>
-
+      ${playing.after.map((line) => `<p class="muted">${esc(line)}</p>`).join('')}
+${
+  finding
+    ? `
       <h2>Finding games</h2>
       <div class="parent__row">
-        <label for="p-layout">Home spot layout</label>
+        <label for="p-layout">${esc(finding.label)}</label>
         <select id="p-layout"><option value="path">Swiping path (original)</option><option value="subjects">Subject cards (try on iPad)</option></select>
       </div>
-      <p class="muted">The home spot on the map holds every game for their age in one place. Subject cards show four large choices at a time; the swiping path shows them all along one path.</p>
+      <p class="muted">${esc(finding.note)}</p>`
+    : ''
+}
 
       <h2>Sound</h2>
       <p class="muted">Kept for each player.</p>
@@ -179,7 +199,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   const petColor = $<HTMLSelectElement>('#p-pet-color');
   const tips = $<HTMLInputElement>('#p-tips');
   const howto = $<HTMLInputElement>('#p-howto');
-  const layout = $<HTMLSelectElement>('#p-layout');
+  const layout = root.querySelector<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
   const speechBox = $<HTMLInputElement>('#p-speech');
   const musicBox = $<HTMLInputElement>('#p-music');
@@ -208,7 +228,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
       : birth
         ? 'Starting where their age puts them'
         : 'No birth month and year yet, so they start in the band chosen below';
-    return `${age}${why}: ${placeFor(store.data.profile.band).name}.`;
+    return `${age}${why}: ${bandWhere(app, store.data.profile.band)}.`;
   };
 
   const render = () => {
@@ -224,7 +244,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     year.value = birth ? String(birth.year) : '';
     $('[data-age]').textContent = ageNote();
     $('[data-follow]').toggleAttribute('hidden', startBand === null);
-    layout.value = d.settings.placeLayout;
+    if (layout) layout.value = d.settings.placeLayout;
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
     volume.value = String(d.settings.volume);
@@ -239,7 +259,28 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     root
       .querySelectorAll<HTMLButtonElement>('[data-band]')
       .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
-    $('[data-week]').innerHTML = weekSummary();
+    // A pin re-renders the week, which keeps Every game open and its search as they were.
+    const week = $('[data-week]');
+    const wasOpen = week.querySelector<HTMLDetailsElement>('[data-week-every]')?.open ?? false;
+    const query = week.querySelector<HTMLInputElement>('#p-search')?.value ?? '';
+    week.innerHTML = weekSummary(app);
+    const every = week.querySelector<HTMLDetailsElement>('[data-week-every]')!;
+    const search = week.querySelector<HTMLInputElement>('#p-search')!;
+    every.open = wasOpen;
+    search.value = query;
+    const filter = () => {
+      let shown = 0;
+      every.querySelectorAll<HTMLTableRowElement>('tr[data-name]').forEach((tr) => {
+        const match = matchesSearch(tr.dataset.name!, search.value);
+        tr.hidden = !match;
+        if (match) shown++;
+      });
+      const none = every.querySelector<HTMLElement>('[data-no-match]')!;
+      none.hidden = shown > 0;
+      none.textContent = `No game called “${search.value.trim()}”.`;
+    };
+    search.addEventListener('input', filter);
+    filter();
     $('[data-voice-note]').textContent = voiceNote();
     root.querySelectorAll<HTMLSelectElement>('[data-pin]').forEach((sel) =>
       sel.addEventListener('change', () => {
@@ -272,15 +313,6 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     friend.look.color = petColor.value as PetColor;
     store.save();
   });
-  // The reseed path at cutover (RW05): seeds the river and the glider so a developer sees three friends before adventures
-  // exist. Absent from a production build.
-  if (import.meta.env.DEV) {
-    root.querySelector('[data-meet-all]')?.addEventListener('click', () => {
-      for (const id of SPECIES_IDS)
-        if (id !== 'sprout') store.meet(id, SPECIES[id].names[0], SPECIES[id].color, `dev:${id}`);
-      render();
-    });
-  }
 
   name.addEventListener('input', () => {
     store.data.profile.name = name.value.slice(0, 40);
@@ -336,7 +368,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     store.data.settings.howToCards = howto.checked;
     store.save();
   });
-  layout.addEventListener('change', () => {
+  layout?.addEventListener('change', () => {
     store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path';
     store.save();
   });
@@ -440,60 +472,60 @@ function voiceNote(): string {
   return `${who} ${shared} For a clearer voice on an iPad, open Settings → Accessibility → Spoken Content → Voices → English, download a voice marked Enhanced or Premium (Ava, Zoe or Samantha), then close and reopen Puddle Island.`;
 }
 
-function weekSummary(): string {
-  const since = Date.now() - 7 * DAY;
-  const band = store.data.profile.band;
-  // What the lands show her: every game for her age and younger, each with the levels it plays for her.
-  const games = visibleGames(band, GAMES);
-  const rows = games.map((g) => {
-    const stats = store.stats(g.id);
-    const recent = stats.history.filter((r) => r.at >= since);
-    const seconds = recent.reduce((t, r) => t + r.seconds, 0);
-    const minutes = seconds > 0 ? Math.max(1, Math.round(seconds / 60)) : 0;
-    const range = g.levels(playBand(g.bands, band));
-    const now = store.levelFor(g.id, range, g.entryLevels);
-    const options = [`<option value="">Automatic</option>`];
-    for (const l of levelsInOrder(range)) {
-      options.push(
-        `<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`,
-      );
-    }
-    // A game that takes only a controller opens its couch puzzle-shelf course, which sets its own level: a pin would never apply.
-    const byTouch = playsByTouch(g);
-    const picker =
-      byTouch && range.max > range.min
-        ? `<select data-pin="${g.id}" aria-label="Level for ${esc(g.name)}">${options.join('')}</select>`
-        : '';
-    return `<tr>
+/** One game's row: its name and level, with a picker to keep it on a level, then rounds and minutes this week. */
+function weekRow(row: WeekRow<GameModule>, band: Band, older: string): string {
+  const g = row.game;
+  if (row.older)
+    return `<tr data-game="${g.id}" data-name="${esc(g.name)}"><td><strong>${esc(g.name)}</strong><br><span class="muted">${esc(older)}</span></td><td>${row.rounds}</td><td>${row.minutes}</td></tr>`;
+  const range = g.levels(playBand(g.bands, band));
+  const now = store.levelFor(g.id, range, g.entryLevels);
+  const options = [`<option value="">Automatic</option>`];
+  for (const l of levelsInOrder(range)) {
+    options.push(
+      `<option value="${l}" ${row.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`,
+    );
+  }
+  // A game that takes only a controller opens its couch puzzle-shelf course, which sets its own level: a pin would never apply.
+  const byTouch = playsByTouch(g);
+  const picker =
+    byTouch && range.max > range.min
+      ? `<select data-pin="${g.id}" aria-label="Level for ${esc(g.name)}">${options.join('')}</select>`
+      : '';
+  return `<tr data-game="${g.id}" data-name="${esc(g.name)}">
         <td><strong>${esc(g.name)}</strong><br>${
           byTouch
             ? `<span class="muted">Level ${now}: ${esc(g.describeLevel(now))}</span>${picker ? `<br>${picker}` : ''}`
             : `<span class="muted">Needs a keyboard or controller: it opens on the couch puzzle shelf, which sets its own levels.</span>`
         }</td>
-        <td>${recent.length}</td><td>${minutes}</td>
+        <td>${row.rounds}</td><td>${row.minutes}</td>
       </tr>`;
-  });
-  // A land's signpost leads to games for bigger kids, so she may also have played some of those.
-  for (const g of GAMES.filter((g) => !games.includes(g))) {
-    const recent = store.stats(g.id).history.filter((r) => r.at >= since);
-    if (!recent.length) continue;
-    const minutes = Math.max(1, Math.round(recent.reduce((t, r) => t + r.seconds, 0) / 60));
-    rows.push(
-      `<tr><td><strong>${esc(g.name)}</strong><br><span class="muted">A game for bigger kids, from a signpost</span></td><td>${recent.length}</td><td>${minutes}</td></tr>`,
-    );
-  }
+}
+
+function weekSummary(app: PanelApp): string {
+  const since = Date.now() - 7 * DAY;
+  const band = store.data.profile.band;
+  const words = weekCopy(app);
+  // What the lands show her: every game for her age and younger, each with the levels it plays for her.
+  const games = visibleGames(band, GAMES);
+  const { first, all } = weekRows(games, GAMES, (g) => store.stats(g.id), since);
+  const head = '<tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>';
+  const table = (rows: WeekRow<GameModule>[], attr: string) =>
+    `<table ${attr}>${head}${rows.map((r) => weekRow(r, band, words.older)).join('')}</table>`;
   const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
   // Each idea is the line for the band she plays that game at, with her name; a game that withholds its line there is skipped.
   const ideas = offScreenIdeas(played.length ? played : games, band, store.data.profile.name);
   return `
-    <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Every game for her age and younger is shown with the levels it plays for her, plus any game for bigger kids she played this week.</p>
-    <table>
-      <tr><th>Game and level</th><th>Rounds</th><th>Minutes</th></tr>
-      ${rows.join('')}
-    </table>
+    <p class="muted">${esc(words.intro)}</p>
+    ${first.length ? table(first, 'data-week-played') : '<p data-week-played>Nothing played this week yet.</p>'}
+    <details class="parent__every" data-week-every>
+      <summary>Every game for their age (${games.length})</summary>
+      <input id="p-search" class="parent__search" type="search" autocomplete="off" placeholder="Search by name" aria-label="Search games by name" />
+      <p class="muted" data-no-match hidden></p>
+      ${table(all, 'data-week-all')}
+    </details>
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
-    <p><strong>The Windy Picnic</strong> (a story on the island map): ${picnicSummary()}</p>
+    ${words.picnic ? `<p><strong>The Windy Picnic</strong> (a story on the island map): ${picnicSummary()}</p>` : ''}
     <div data-recap-welcome>${projectRecap(store.data, store.data.profile.name)}</div>
     ${ideas.map((i) => `<p><strong>Off-screen idea:</strong> ${esc(i.line)}</p>`).join('')}`;
 }

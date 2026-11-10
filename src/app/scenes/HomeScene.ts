@@ -72,6 +72,7 @@ export class HomeScene extends Scene {
       openParentPanel(
         () => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()),
         () => this.app.go.start(),
+        { app: 'root' },
       );
     },
     onShort: () => void voice.say('parent.ask'),
