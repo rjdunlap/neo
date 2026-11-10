@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor } from '../../progress/difficulty';
 import {
+  ARRANGEMENTS,
   LEVELS,
   MAX_THINGS,
   PLANS,
   SPARE,
+  arrangedSpots,
+  spotsFor,
   THINGS,
   THING_GAP,
   THING_HIT,
@@ -18,7 +21,7 @@ import {
   thingSpots,
   thingWord,
 } from './logic';
-import { LOOKS, hintDue, showTheWay, tuneStep } from '../../learning/tracing/feedback';
+import { LOOKS, hintDue, pickLook, showTheWay, tuneStep } from '../../learning/tracing/feedback';
 import { sampleStroke } from '../../learning/tracing/strokes';
 import { DIGITS } from './digits';
 
@@ -46,6 +49,8 @@ describe('number trails levels', () => {
     expect(numeralFor(2, new Rng(3))).toBe(numeralFor(2, new Rng(3)));
     expect(thingFor(new Rng(3))).toBe(thingFor(new Rng(3)));
     expect(THINGS.every((t) => t.plural.endsWith('s'))).toBe(true);
+    expect(THINGS.length).toBeGreaterThanOrEqual(8);
+    expect(new Set(THINGS.map((t) => t.id)).size).toBe(THINGS.length);
   });
 });
 
@@ -99,6 +104,62 @@ describe('where things sit', () => {
         }
       }
   });
+  const inside = (
+    spots: { x: number; y: number }[],
+    rect: { x: number; y: number; w: number; h: number },
+  ) => {
+    for (const [i, a] of spots.entries()) {
+      expect(a.x - THING_HIT).toBeGreaterThanOrEqual(rect.x - 1e-9);
+      expect(a.x + THING_HIT).toBeLessThanOrEqual(rect.x + rect.w + 1e-9);
+      expect(a.y - THING_HIT).toBeGreaterThanOrEqual(rect.y - 1e-9);
+      expect(a.y + THING_HIT).toBeLessThanOrEqual(rect.y + rect.h + 1e-9);
+      for (const b of spots.slice(i + 1))
+        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(THING_GAP - 1e-9);
+    }
+  };
+  it('keeps every arrangement inside the room with 128-unit gaps at every view, falling back to rows, never null', () => {
+    for (const [w, h] of views)
+      for (const arrangement of ARRANGEMENTS)
+        for (let count = 0; count <= MAX_THINGS; count++) {
+          const rect = { x: 150, y: 140, w: w - 190, h: h - 190 };
+          const own = arrangedSpots(arrangement, count, rect);
+          if (own) {
+            expect(own.length).toBe(count);
+            inside(own, rect);
+          }
+          const spots = spotsFor(arrangement, count, rect);
+          expect(spots, `${arrangement} of ${count} in ${w}x${h}`).not.toBeNull();
+          expect(spots!.length).toBe(count);
+          inside(spots!, rect);
+        }
+  });
+  it('really shows each arrangement for the counts it suits, in the smallest room', () => {
+    const small = { x: 150, y: 140, w: 1024 - 190, h: 768 - 190 },
+      upright = { x: 150, y: 140, w: 768 - 190, h: 1024 - 190 };
+    for (const rect of [small, upright]) {
+      for (let count = 3; count <= 11; count++) expect(arrangedSpots('ring', count, rect)).not.toBeNull();
+      for (let count = 2; count <= MAX_THINGS; count++)
+        expect(arrangedSpots('pairs', count, rect)).not.toBeNull();
+      for (let count = 4; count <= 8; count++) expect(arrangedSpots('twoRows', count, rect)).not.toBeNull();
+    }
+    expect(arrangedSpots('ring', 2, small)).toBeNull();
+    expect(arrangedSpots('ring', 12, small)).toBeNull();
+    expect(arrangedSpots('twoRows', 12, upright)).toBeNull();
+    const twoRows = arrangedSpots('twoRows', 7, small)!;
+    expect(new Set(twoRows.map((s) => s.y)).size).toBe(2);
+  });
+  it('counts a ring clockwise from the top and pairs two by two, an odd one alone', () => {
+    const rect = { x: 150, y: 140, w: 834, h: 578 };
+    const ring = arrangedSpots('ring', 9, rect)!;
+    expect(ring[0].y).toBeLessThan(Math.min(...ring.slice(1).map((s) => s.y)));
+    expect(ring[1].x).toBeGreaterThan(ring[0].x);
+    const pairs = arrangedSpots('pairs', 5, rect)!;
+    expect(pairs[0].y).toBe(pairs[1].y);
+    expect(pairs[1].x - pairs[0].x).toBeCloseTo(THING_GAP);
+    expect(pairs[2].y).toBeGreaterThan(pairs[0].y);
+    expect(pairs[4].x).toBe(pairs[0].x);
+    expect(pairs.filter((s) => s.y === pairs[4].y)).toHaveLength(1);
+  });
   it('says so rather than shrinking a target when the room is too small', () => {
     expect(thingSpots(9, { x: 0, y: 0, w: 600, h: 130 })).toBeNull();
   });
@@ -109,7 +170,7 @@ describe('where things sit', () => {
 });
 
 describe('number trails hint, looks and tune', () => {
-  it('draws the look after the numeral and the thing, so a seed keeps its round', () => {
+  it('draws the look after the numeral and the thing, and the arrangement last, so a seed keeps its round', () => {
     for (let seed = 1; seed <= 200; seed++)
       for (const level of [1, 2, 3]) {
         const a = new Rng(seed),
@@ -117,7 +178,8 @@ describe('number trails hint, looks and tune', () => {
         const b = new Rng(seed);
         expect(round.n).toBe(numeralFor(level, b));
         expect(round.thing).toBe(thingFor(b));
-        expect(LOOKS).toContain(round.look);
+        expect(round.look).toBe(pickLook(b));
+        expect(ARRANGEMENTS).toContain(round.arrangement);
       }
     const looks = new Set(Array.from({ length: 200 }, (_, i) => roundFor(2, new Rng(i + 1)).look));
     expect(looks.size).toBe(LOOKS.length);

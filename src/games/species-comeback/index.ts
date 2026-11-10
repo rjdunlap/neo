@@ -30,6 +30,7 @@ import {
   type Pair,
   type Round,
   type Site,
+  type Tree,
   type Turtle,
 } from './logic';
 
@@ -249,7 +250,7 @@ class SpeciesComeback implements Game {
   private readonly siteLayer = new Container();
   private readonly needs = new Container();
   private readonly needIcons = new Map<Feature, Graphics>();
-  private readonly slots = new Map<number, { x: number; y: number }>();
+  private slots = new Map<number, { x: number; y: number }>();
   private view: View;
   private card = 96;
   private clock = 0;
@@ -348,81 +349,27 @@ class SpeciesComeback implements Game {
   private layout() {
     const v = this.view,
       tree = this.round.tree;
-    const portrait = v.h > v.w;
-    const families: { founders: Turtle[]; kids: Turtle[] }[] = [];
-    const founders = tree.turtles.filter((t) => t.gen === 0);
-    for (let i = 0; i < founders.length; i += 2) {
-      const mum = founders[i],
-        dad = founders[i + 1];
-      families.push({
-        founders: [mum, dad],
-        kids: tree.turtles.filter((t) => t.gen === 1 && t.parents?.[0] === mum.id),
-      });
-    }
-    const blocks = families.map((f) => Math.max(2, f.kids.length));
-    let s = 96;
-    const gap = 14,
-      famGap = 30;
-    const widthAt = (size: number) =>
-      blocks.reduce((a, b) => a + b * (size + gap), 0) + famGap * (blocks.length - 1);
-    while (s > MIN_TOUCH && widthAt(s) > v.w - 40) s -= 4;
-    this.card = s;
-    const rowH = s + 38;
-    const top = 112 + s / 2;
-    let x = (v.w - widthAt(s)) / 2;
-    this.slots.clear();
-    families.forEach((f, i) => {
-      const bw = blocks[i] * (s + gap),
-        mid = x + bw / 2;
-      f.founders.forEach((t, k) => this.slots.set(t.id, { x: mid + (k - 0.5) * (s + gap), y: top }));
-      f.kids.forEach((t, k) =>
-        this.slots.set(t.id, { x: mid + (k - (f.kids.length - 1) / 2) * (s + gap), y: top + rowH }),
-      );
-      x += bw + famGap;
-    });
-    for (const pair of tree.nested) {
-      const third = tree.turtles.filter(
-        (t) => t.gen === 2 && t.parents?.[0] === pair[0] && t.parents?.[1] === pair[1],
-      );
-      const a = this.slots.get(pair[0])!,
-        b = this.slots.get(pair[1])!;
-      const mid = Math.min(
-        Math.max((a.x + b.x) / 2, 40 + (third.length * (s + gap)) / 2),
-        v.w - 40 - (third.length * (s + gap)) / 2,
-      );
-      third.forEach((t, k) =>
-        this.slots.set(t.id, { x: mid + (k - (third.length - 1) / 2) * (s + gap), y: top + rowH * 2 }),
-      );
-    }
-    const hatchRow = tree.nested.length ? 3 : 2;
-    const hs = Math.max(MIN_TOUCH, Math.round(s * 0.8));
-    this.hatchlings.forEach((t, k) =>
-      this.slots.set(t.id, {
-        x: v.w / 2 + (k - (this.hatchlings.length - 1) / 2) * (hs + 10),
-        y: top + rowH * hatchRow - (s - hs) / 2,
-      }),
-    );
+    const l = comebackLayout(v, tree, this.hatchlings, this.nests.length);
+    this.card = l.card;
+    this.slots = l.slots;
     for (const [id, c] of this.cards) {
-      c.setSize(byId(tree, id).gen === 3 ? hs : s);
+      c.setSize(byId(tree, id).gen === 3 ? l.hatch : l.card);
       if (!this.inNest(id)) {
         const p = this.slots.get(id)!;
         c.position.set(p.x, p.y);
       }
     }
-    // The nest row along the bottom, clear of the pet's corner, with Spring at its right end.
-    const nestY = portrait ? top + rowH * (hatchRow + 1) + 20 : v.h - 86;
-    const spacing = Math.min(170, (v.w - 220 - 200) / Math.max(1, this.nests.length - 1 || 1));
     this.nests.forEach((n, i) => {
-      n.position.set(220 + i * spacing, nestY);
+      n.position.copyFrom(l.nests[i]);
       this.drawNest(i);
     });
-    this.spring.position.set(v.w - 110, nestY);
+    this.spring.position.copyFrom(l.spring);
     if (!this.sprung) for (const [k, p] of this.plan.entries()) this.placeInNest(k, p, false);
     this.drawSpring();
     this.drawLines();
     this.wall
       .clear()
-      .roundRect(20, 92, v.w - 40, (portrait ? nestY - 60 : nestY - 70) - 92, 24)
+      .roundRect(20, l.wall.top, v.w - 40, l.wall.bottom - l.wall.top, 24)
       .fill({ color: WALL, alpha: 0.8 });
     if (this.phase === 'site' || this.phase === 'done') this.layoutSites();
   }
@@ -436,8 +383,9 @@ class SpeciesComeback implements Game {
     const band = v.h * (v.h > v.w ? 0.26 : 0.24);
     const k = Math.min(1, band / Math.max(1, bounds.height), (v.w - 40) / Math.max(1, bounds.width));
     this.tree.scale.set(k);
-    this.tree.position.set(v.w / 2 - (bounds.x + bounds.width / 2) * k, 96 - bounds.y * k);
-    const needY = 96 + band + 72;
+    const top = v.upright ? 210 : 96;
+    this.tree.position.set(v.w / 2 - (bounds.x + bounds.width / 2) * k, top - bounds.y * k);
+    const needY = top + band + 72;
     this.needs.position.set(v.w / 2, needY);
     // Three across when they fit beside the pet's corner, else two over one.
     const w = SITE_W + 24,
@@ -997,8 +945,84 @@ function sticker(seed: number): Container {
   return c;
 }
 
+/**
+ * The tree's slots (card centers), card sizes, nests, Spring and the wall behind the tree. Upright (chunk 31) the tree starts
+ * below Home and "?", and Spring stands under a centered row of nests rather than at the row's right end.
+ */
+export function comebackLayout(v: View, tree: Tree, hatchlings: readonly Turtle[], nests: number) {
+  const portrait = v.h > v.w;
+  const families: { founders: Turtle[]; kids: Turtle[] }[] = [];
+  const founders = tree.turtles.filter((t) => t.gen === 0);
+  for (let i = 0; i < founders.length; i += 2) {
+    const mum = founders[i],
+      dad = founders[i + 1];
+    families.push({
+      founders: [mum, dad],
+      kids: tree.turtles.filter((t) => t.gen === 1 && t.parents?.[0] === mum.id),
+    });
+  }
+  const blocks = families.map((f) => Math.max(2, f.kids.length));
+  let s = 96;
+  const gap = 14,
+    famGap = 30;
+  const widthAt = (size: number) =>
+    blocks.reduce((a, b) => a + b * (size + gap), 0) + famGap * (blocks.length - 1);
+  while (s > MIN_TOUCH && widthAt(s) > v.w - 40) s -= 4;
+  const rowH = s + 38;
+  const wallTop = v.upright ? 200 : 92;
+  const top = wallTop + 20 + s / 2;
+  let x = (v.w - widthAt(s)) / 2;
+  const slots = new Map<number, { x: number; y: number }>();
+  families.forEach((f, i) => {
+    const bw = blocks[i] * (s + gap),
+      mid = x + bw / 2;
+    f.founders.forEach((t, k) => slots.set(t.id, { x: mid + (k - 0.5) * (s + gap), y: top }));
+    f.kids.forEach((t, k) =>
+      slots.set(t.id, { x: mid + (k - (f.kids.length - 1) / 2) * (s + gap), y: top + rowH }),
+    );
+    x += bw + famGap;
+  });
+  for (const pair of tree.nested) {
+    const third = tree.turtles.filter(
+      (t) => t.gen === 2 && t.parents?.[0] === pair[0] && t.parents?.[1] === pair[1],
+    );
+    const a = slots.get(pair[0])!,
+      b = slots.get(pair[1])!;
+    const mid = Math.min(
+      Math.max((a.x + b.x) / 2, 40 + (third.length * (s + gap)) / 2),
+      v.w - 40 - (third.length * (s + gap)) / 2,
+    );
+    third.forEach((t, k) =>
+      slots.set(t.id, { x: mid + (k - (third.length - 1) / 2) * (s + gap), y: top + rowH * 2 }),
+    );
+  }
+  const hatchRow = tree.nested.length ? 3 : 2;
+  const hs = Math.max(MIN_TOUCH, Math.round(s * 0.8));
+  hatchlings.forEach((t, k) =>
+    slots.set(t.id, {
+      x: v.w / 2 + (k - (hatchlings.length - 1) / 2) * (hs + 10),
+      y: top + rowH * hatchRow - (s - hs) / 2,
+    }),
+  );
+  // The nest row along the bottom, clear of the pet's corner, with Spring at its right end (upright: centered, Spring below).
+  const nestY = portrait ? top + rowH * (hatchRow + 1) + 20 : v.h - 86;
+  const spacing = v.upright
+    ? Math.min(170, (v.w - 40 - NEST_W) / Math.max(1, nests - 1))
+    : Math.min(170, (v.w - 220 - 200) / Math.max(1, nests - 1 || 1));
+  const left = v.upright ? v.w / 2 - ((nests - 1) * spacing) / 2 : 220;
+  return {
+    card: s,
+    hatch: hs,
+    slots,
+    nests: Array.from({ length: nests }, (_, i) => ({ x: left + i * spacing, y: nestY })),
+    spring: v.upright ? { x: v.w / 2, y: nestY + 120 } : { x: v.w - 110, y: nestY },
+    wall: { top: wallTop, bottom: portrait ? nestY - 60 : nestY - 70 },
+  };
+}
+
 export const speciesComeback: GameModule = {
   id: 'species-comeback',
+  upright: true,
   name: 'Species Comeback',
   titleLine: 'game.species-comeback',
   region: 'barnyard',

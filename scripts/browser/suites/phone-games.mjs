@@ -156,7 +156,13 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
               };
               if (move.tap) return { points: [at(move.tap)], pause: move.pause };
               if (move.trace) return { points: [at(move.trace), ...move.via.map(at)], pause: move.pause };
-              throw new Error('Expected a tap or trace from the grown-up game');
+              // A carried piece rides `lift` units above the finger, so the finger lands that far below the spot.
+              if (move.drag)
+                return {
+                  points: [at(move.drag), at({ ...move.to, y: (move.to.y ?? 0) + (move.lift ?? 40) })],
+                  pause: move.pause,
+                };
+              throw new Error('Expected a tap, trace or drag from the grown-up game');
             });
             if (step?.performance) break;
             if (step?.finished) {

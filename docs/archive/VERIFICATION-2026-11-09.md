@@ -28,3 +28,32 @@ At school levels 7 and 8, hang both wheels and tap the crate ring to move the ti
 Typecheck, build, link and diff checks, scoped ESLint and Prettier, and 223 focused game and content tests passed (1 skipped). The 34 Lift It rules cover 500 seeds, exact cards, fallback rounds and 100-unit ring clearance at 768×1024 and 1024×768. An earlier full local run caught a landscape overlap since corrected and an unrelated Bolt Boards timing failure that passed in isolation.
 `BROWSER_SUITE=liftit FROM_LEVEL=7` passed a failed tug, a repeat counted once, one hint and a sticker. Reviewed the 768×1024 portrait with three separate strands. `FROM_LEVEL=8` passed the two-paw and nine-knot cards, one wrong card and a sticker. Filtered `fingerdemo` finished levels 7 and 8 in 66.4 and 62.5 demo seconds.
 Open checks are real iPad play and device speech. The offline suite and older Lift It browser levels were outside this pass.
+
+## 2026-11-09 — Marble Jump slice 4: level 9 A bigger triangle (PR #1428)
+
+Changed: level 9, a six-row 21-hole triangle (20 marbles, all 21 starts clear), range 1–9; a closer-packed `boardLayout` (hit circles still 78 across); a frozen `BIG_FEWEST` table for the fewest-moves line; recovery cost measured (worst cold dead-end check about 5,000 boards, 2 ms).
+Ran: `npm run typecheck`; `npm test` (331 files, 6328 passed; a first run under load had 8 timeouts, a clean rerun passed); `BROWSER_SUITE=marblejump` (adds level 9 at 1024×768 and 768×1024: bottom row above the buttons, one miss, one hint, finish with the moves line, one sticker; two screenshots); `fingerdemo` with `FINGER_ONLY=marble-jump FINGER_LEVELS=9` (45.1 s); `npm run build`.
+Not run: offline. The `marble.go9` line is not rendered as a clip; device speech and enjoyment open.
+
+## 2026-11-09 — Pile Match slice 2, level 9 A smaller tray (PR #1438)
+
+School level 9 replays level 7's 18-piece heap with a four-place tray (count by threes to 18). Added `tray: 3 | 4 | 5`; school band is now 5–9; no voice-line or bot changes.
+
+Ran: `npm run typecheck`; `npm test` (331 files, 6330 tests; 17 Pile Match rule tests: every board clears along its route at `t = 4` with the tray never above 2, a full four-place tray is reachable, hint search at levels 8 and 9 under 250 ms, hints legal and non-looping); `BROWSER_SUITE=pilematch` (level 9 four slots drawn, tray filled to four with no three, one refused tap = one miss, screenshot, solved by the ghost finger's choices, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=9` (26.8 s).
+
+Not run: build (no shared files or assets changed), offline, `world`. Open: iPad play of the four-place tray.
+
+## 2026-11-09 — Pile Match slice 3, level 11 Any three in a little pile (PR #1441)
+
+Preschool and pre-K level 11: six pieces, two kinds, two layers, five-place tray, free play like level 3 (nothing is a miss). `entryLevels: [11]` keeps a carried level 11 from entering school at 9. No voice-line or bot changes.
+
+Ran: `npm run typecheck`; `npm test` (331 files, 6343 tests; 19 Pile Match rule tests: level 11 shapes never fill a 5-place tray, 4 + 2 layers, no shape shared with levels 2/4, band orders, `stepLevel` 3 to 11 to 4, `landing(11, school)` = 5); `BROWSER_SUITE=pilematch` (levels 1, 8, 9, 11, 4; level 11 covered touch and three put-backs uncounted, tray at most 4, 0 misses 0 hints, sticker, sand-look screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=11 FINGER_BAND=prek` (9.9 s).
+
+Not run: build (no shared files or assets changed), offline. Open: iPad play.
+
+## 2026-11-09 — Pile Match slice 4, level 10 Look closely (PR #1444)
+
+School level 10: twelve pieces of four look-alike kinds (two shapes in two colours) on two layers, five-place tray; a blue feather and a white sock join the kinds; a full-tray refusal names colour and shape.
+
+Ran: `npm run typecheck`; `npm test` (331 files, 6346 tests; 24 Pile Match rule tests); `BROWSER_SUITE=pilematch` (level 10 upright: tray filled to five, one refused tap counted once and named by colour and shape, portrait screenshot, solved by taps); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=10` (17.8 s); `npm run build`; an ad-hoc screenshot confirmed the feather and sock art reads.
+Not run: offline, `world`, any iPad or device check. Open: colour-blind reading of the level 10 pairs, a six-year-old's interest and device speech are in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

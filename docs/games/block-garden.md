@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/block-garden; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `block-garden` · **Land:** Rainbow Meadow · **Ages:** pre-K–grown-up · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `block-garden` · **Land:** Rainbow Meadow · **Ages:** pre-K–grown-up · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-planning, shape-composition, planning
 

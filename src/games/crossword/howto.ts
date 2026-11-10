@@ -26,14 +26,14 @@ export const HOW_TO: GameHowTo = {
     },
     { to: 4, text: 'A tile in a square can be dragged back out. Help (?) puts one right letter in.' },
     {
-      from: 5,
-      to: 5,
-      text: 'Tap a square to choose it and its across word, and tap it again for its down word. The clue shows above the grid; the speaker reads it aloud.',
-    },
-    {
       from: 6,
       to: 6,
-      text: 'A five by five mini where every letter is in an across and a down word. Tap a square, tap it again to turn to its other word; the speaker reads the clue.',
+      text: 'A five by five mini where every letter is in an across and a down word.',
+    },
+    {
+      from: 5,
+      to: 6,
+      text: 'Tap a square to select it. It keeps Across or Down when that direction is available. Tap the same square again to switch. The speaker reads the clue above the grid.',
     },
     {
       from: 5,
