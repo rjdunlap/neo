@@ -47,13 +47,15 @@ export function playingCopy(app: PanelApp): { before: string[]; after: string[] 
       : "On a phone the app is Today's six alone, held upright or sideways; Home, Explore and the island games stay on a tablet or computer.";
   return {
     before: [
-      'Puddle Island has no timer of its own. To limit how long she plays, use the device\'s tools: Screen Time app limits, or Guided Access, on an iPad.',
+      "Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.",
       `${six}, chosen by their age, each at a level picked for the day. Those rounds earn their usual sticker but do not move a game's level, a pinned level is used instead, and nothing is missed on a day they do not play.`,
       `${phone} A grown-up's profile also gets a pencil on the six page and after each of its rounds, for a quick reaction and a note on the game; the notes stay on this device, and Copy all notes puts them on the clipboard.`,
     ],
     after: [
       'A card with the goal and how to play, a demonstration for some games, and a big Play button. The ? in a game opens it again.',
-      ...(app === 'classic' ? ["Hold the picnic blanket on a little one's home spot to choose its games."] : []),
+      ...(app === 'classic'
+        ? ["Hold the picnic blanket on a little one's home spot to choose its games."]
+        : []),
     ],
   };
 }

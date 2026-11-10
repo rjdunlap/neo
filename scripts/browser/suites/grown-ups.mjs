@@ -53,10 +53,10 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
     const frozen = await page.evaluate(() => neo.scene.seconds);
     await page.waitForTimeout(800);
     assert.equal(await page.evaluate(() => neo.scene.seconds), frozen, 'the round holds still while paused');
-    assert.equal(
-      await page.locator('.pause button.btn').count(),
-      1,
-      "a child's game whose help follows misses offers no entries of its own",
+    assert.deepEqual(
+      await page.locator('.pause button.btn').allTextContents(),
+      ['Keep playing', 'Leave'],
+      "a child's game whose help follows misses offers no entries of its own, only Leave",
     );
     await screenshot('pause-sheet');
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -78,6 +78,7 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
       'Keep playing',
       'Start this bed again',
       'Show a hint',
+      'Leave',
     ]);
     await screenshot('pause-sheet-actions');
     await page.locator('.pause button.btn', { hasText: 'Show a hint' }).click();
@@ -112,7 +113,9 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
     await padTap(13);
     assert.equal(await focusedText(), 'Show a hint');
     await padTap(13);
+    await padTap(13);
     assert.equal(await focusedText(), 'Keep playing', 'the ring wraps');
+    await padTap(12);
     await padTap(12);
     await padTap(12);
     assert.equal(await focusedText(), 'Start this bed again');
@@ -240,9 +243,78 @@ export function createSuite({ page, browser, errors, islandUrl, log, ready, scen
     } finally {
       await touchContext.close();
     }
+
+    // U8a: at the root, held upright on a phone, the page says nothing about the map, and This week opens on what she
+    // played, with every game folded behind a search; pinning one from the fold lists it first.
+    const wide = page.viewportSize();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(new URL('/', islandUrl(process.env.GAME_URL || 'http://127.0.0.1:5173')).href);
+    await page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit && neo.creatureWorld);
+    await page.evaluate(() => neo.go.start());
+    await scene('ChooserScene');
+    await gear.waitFor();
+    await holdOn(gear, 2400);
+    await page.locator('.parent').waitFor();
+    const words = await page.locator('.parent').innerText();
+    for (const word of [
+      'home spot',
+      'Home spot',
+      'picnic',
+      'signpost',
+      'Windy',
+      'Meet everyone',
+      'island map',
+    ])
+      assert.ok(!words.includes(word), `the root's page does not say "${word}"`);
+    assert.equal(await page.locator('#p-layout').count(), 0, 'no home spot layout at the root');
+    assert.equal(
+      await page.locator('[data-week-every]').evaluate((d) => d.open),
+      false,
+      'every game starts folded',
+    );
+    await screenshot('parent-root-upright');
+    const pick = await page.evaluate(() => {
+      const first = new Set(
+        [...document.querySelectorAll('[data-week-played] [data-pin]')].map((s) => s.dataset.pin),
+      );
+      const sel = [...document.querySelectorAll('[data-week-all] [data-pin]')].find(
+        (s) => !first.has(s.dataset.pin),
+      );
+      return { id: sel.dataset.pin, name: sel.closest('tr').dataset.name };
+    });
+    await page.locator('[data-week-every] summary').click();
+    await page.locator('#p-search').fill(pick.name.slice(1, 7).toUpperCase());
+    assert.ok(
+      await page.locator(`[data-week-all] tr[data-game="${pick.id}"]`).isVisible(),
+      'the search finds the game mid-word, in any case',
+    );
+    assert.ok(
+      (await page.locator('[data-week-all] tr[data-name]:visible').count()) <
+        (await page.locator('[data-week-all] tr[data-name]').count()),
+      'and hides the rest',
+    );
+    await page.locator(`[data-week-all] [data-pin="${pick.id}"]`).selectOption({ index: 1 });
+    await page.locator(`[data-week-played] [data-pin="${pick.id}"]`).waitFor();
+    assert.equal(
+      await page.locator('[data-week-every]').evaluate((d) => d.open),
+      true,
+      'the fold stays open',
+    );
+    assert.equal(
+      await page.locator('#p-search').inputValue(),
+      pick.name.slice(1, 7).toUpperCase(),
+      'and keeps the search',
+    );
+    await page.locator('[data-week-played]').scrollIntoViewIfNeeded();
+    await screenshot('parent-root-week');
+    await page.locator(`[data-week-played] [data-pin="${pick.id}"]`).selectOption('');
+    assert.equal(await page.evaluate((id) => kit.store.stats(id).pinned, pick.id), null, 'the pin is undone');
+    await page.locator('[data-done]').click();
+    await scene('ChooserScene');
+    await page.setViewportSize(wide);
     assert.deepEqual(errors, []);
     log(
-      "The grown-ups' gear (tap, mouse hold, Enter hold, touch tap and hold), Esc and the pause sheet, no play timer, and undoing a reset after a reload passed",
+      "The grown-ups' gear (tap, mouse hold, Enter hold, touch tap and hold), Esc and the pause sheet, no play timer, undoing a reset after a reload, and the root's page upright (no map words, This week folded with a search and a pin from the fold) passed",
     );
   }
 
