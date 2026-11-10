@@ -6,6 +6,7 @@ export const VOICE = {
   'fsums.num': ['{n}!'],
   'fsums.plus': ['Plus!'],
   'fsums.minus': ['Take away!'],
+  'fsums.times': ['Times!'],
   'fsums.fill': ['Tap two fruit first, then the check.'],
   'fsums.fillsign': ['Tap two fruit and a sign first, then the check.'],
   'fsums.right': ['{a} {op} {b} makes {n}!', 'Yes! {a} {op} {b} is {n}!'],
@@ -38,4 +39,5 @@ export const VOICE = {
   'fsums.right6': ['{a} plus {b} plus {c} makes {n}!', 'Yes! {a} plus {b} plus {c} is {n}!'],
   'fsums.wrong6': ['{a} plus {b} plus {c} makes {m}. We need {n}.'],
   'fsums.done6': ['Two ways to make {n} with three fruit! Great thinking!'],
+  'fsums.start7': ['Make {n}! Tap two fruit and a sign: plus, take away or times. Then tap the check.'],
 } satisfies Record<string, string[]>;

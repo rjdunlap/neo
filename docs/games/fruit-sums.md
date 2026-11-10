@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1, 5, 2, 4, 3, 6 |
+| school | 1, 5, 2, 4, 3, 6, 7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 4 | Add two fruit to make the same as the sum on the sign, two different ways |
 | 5 | Clear the tree: pair up all six fruit so each pair adds to a number up to 10 |
 | 6 | Make a number from 11 to 18 by adding three fruit, two different ways |
+| 7 | Make a number up to 24 by adding, taking away or multiplying, two different ways |
 
 <!-- end generated -->
 
