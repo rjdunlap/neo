@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/lantern-lights; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `lantern-lights` · **Land:** Lantern Lake · **Ages:** school–grown-up · **Challenge:** logic · **Plays by:** touch and controller · **Ghost finger:** yes
+**ID:** `lantern-lights` · **Land:** Lantern Lake · **Ages:** school–grown-up · **Challenge:** logic · **Plays by:** touch and controller, upright on a phone · **Ghost finger:** yes
 
 **Skills:** logic, planning, pattern-finding
 
@@ -30,6 +30,8 @@
 **Grows into:** 4 by 4 and 5 by 5 ponds that take planning, then 6 by 6 ponds (levels 7–8, one winning set), then lily-pond shapes (level 9: a pad is already lit and never pressed, so the pond is a ring, an L or a diamond); a hint that always brings the fewest presses down by one and says whether the pond has one short way or several; after a pond is lit by touch, a Show me a short way replay; one puzzle-shelf course scored in presses against an exactly worked-out par (Dusk on the Pond)
 
 ## Design notes
+
+On an upright phone the pond sits below the corner controls, with the count above it and the round controls underneath.
 
 **Decided 2026-10-23 (on the developer's delegation):** What counts as a miss in Lantern Lights by touch, and the other grown-up puzzles: Count a miss only where the game shows it: Lantern Lights stays 0; Sudoku Garden's wrong digit (against the solution) stays a miss and now gets the gentle boing and a spoken hint; Island Bridges' stray plank and Picture Logic's stray fill stop counting as misses (0, adapt on hints). ([record](../archive/DECISIONS-2026-10-23.md))
 

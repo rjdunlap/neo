@@ -22,7 +22,7 @@ A grown-up taps one of four arrow buttons and every snowball on a 3×3 snowfield
 - **No automatic glow.** `misses` is always 0 and nothing lights on its own: not after repeated inert arrows, not on a dead end. The rules for every activity ask for a glow after two misses; Log Roll's glow after two refused rolls is the precedent. Here the natural trigger is reaching a dead end (glow Undo) and, separately, two inert arrows in a row (glow the route's next arrow); the first counts as a hint only once, by the existing `hinted` guard.
 - **Two shades only.** Snowballs are blue below 16 and purple from 16 up, so 16, 32 and 64 look alike apart from the number; a 128 would too.
 - **Snowballs teleport on merge.** Both inputs tween to the target cell, then the board redraws: there is no join moment (a squash, a puff, the doubled ball growing).
-- **Fixed layout.** `cell = min(128, (v.h - 430) / 3)` and the arrow and button rows use fixed widths around the centre. Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches-six-games-each-ready-batch-1-built) owns the upright pass; any larger board should derive the cell from `SIZE` in the same place so that pass stays small.
+- **Fixed layout.** `cell = min(128, (v.h - 430) / 3)` and the arrow and button rows use fixed widths around the centre. Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches) owns the upright pass; any larger board should derive the cell from `SIZE` in the same place so that pass stays small.
 - **Replay variety** is the four turned copies above.
 - **Person checks** are already listed in [DEVICE-CHECKS](../DEVICE-CHECKS.md) under "Recovered grown-up puzzles": real-iPad touch, speech, adult enjoyment and whether once-per-slide merges are understood.
 

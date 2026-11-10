@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/hat-band; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `hat-band` · **Land:** Music Mountain · **Ages:** preschool–grown-up · **Challenge:** music · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `hat-band` · **Land:** Music Mountain · **Ages:** preschool–grown-up · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** listening, musical roles, texture, cause and effect
 
@@ -27,6 +27,8 @@
 **Grows into:** take a hat off or swap it for another, tap a star to hear one friend alone, then hear each hat alone and the two together before Done (no wrong mix, no misses); at level 4, Check the song against the picture of how it starts and ends (a complete song that does not fit is a miss, with a hint after the second)
 
 ## Design notes
+
+Hat Band fits upright on a phone, including the three performers and song cards in Build a song.
 
 *preschool–grown-up (levels 1–4; preschool 1–2, pre-K 1–3, school 2–4, grown-up 4) · after Toca Band and BANDIMAL; [definition](../definitions/hat-band.md).* Two friends (seeded) stand on a little stage with a rack of hats. Each hat is a musical job: a drum hat plays a beat with no notes, a tune hat plays four pentatonic notes; both loop at a fixed 80 beats a minute, so the pace is not a choice (Little Conductor owns pace) and any mix sounds fine. Drag a hat onto a friend, or tap a hat and then tap a friend (a tap is judged by finger travel under 24 units); a drop away from a friend returns the hat. The part joins at the next beat, with a pending ring while it waits; tapping a worn hat takes it off, and a hat put on an occupied friend replaces the old one. A worn friend bobs and flashes their prop on the beat. The pet says "the drum hat" or "the tune hat" the first time each hat is lifted and not again. Music is silenced (`silenced(STYLES.jelly)`); the band is the music, and speech ducks it to half.
 
