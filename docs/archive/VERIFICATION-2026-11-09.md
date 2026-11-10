@@ -28,3 +28,9 @@ At school levels 7 and 8, hang both wheels and tap the crate ring to move the ti
 Typecheck, build, link and diff checks, scoped ESLint and Prettier, and 223 focused game and content tests passed (1 skipped). The 34 Lift It rules cover 500 seeds, exact cards, fallback rounds and 100-unit ring clearance at 768×1024 and 1024×768. An earlier full local run caught a landscape overlap since corrected and an unrelated Bolt Boards timing failure that passed in isolation.
 `BROWSER_SUITE=liftit FROM_LEVEL=7` passed a failed tug, a repeat counted once, one hint and a sticker. Reviewed the 768×1024 portrait with three separate strands. `FROM_LEVEL=8` passed the two-paw and nine-knot cards, one wrong card and a sticker. Filtered `fingerdemo` finished levels 7 and 8 in 66.4 and 62.5 demo seconds.
 Open checks are real iPad play and device speech. The offline suite and older Lift It browser levels were outside this pass.
+
+## 2026-11-09 — Marble Jump slice 4: level 9 A bigger triangle (PR #1428)
+
+Changed: level 9, a six-row 21-hole triangle (20 marbles, all 21 starts clear), range 1–9; a closer-packed `boardLayout` (hit circles still 78 across); a frozen `BIG_FEWEST` table for the fewest-moves line; recovery cost measured (worst cold dead-end check about 5,000 boards, 2 ms).
+Ran: `npm run typecheck`; `npm test` (331 files, 6328 passed; a first run under load had 8 timeouts, a clean rerun passed); `BROWSER_SUITE=marblejump` (adds level 9 at 1024×768 and 768×1024: bottom row above the buttons, one miss, one hint, finish with the moves line, one sticker; two screenshots); `fingerdemo` with `FINGER_ONLY=marble-jump FINGER_LEVELS=9` (45.1 s); `npm run build`.
+Not run: offline. The `marble.go9` line is not rendered as a clip; device speech and enjoyment open.
