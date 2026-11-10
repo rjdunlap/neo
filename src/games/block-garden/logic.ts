@@ -1540,7 +1540,9 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v
   }
   const x = (v.w - size) / 2;
   const block = size + 40 + SLOT + (plan.preview ? 8 + NEXT_H : 0);
-  const y = Math.max(128, 128 + (v.h - 128 - 74 - block) / 2);
+  // An upright phone (chunk 31) keeps a wide bed below Home and "?" (to y 210).
+  const minY = v.upright && x < 115 ? 214 : 128;
+  const y = Math.max(minY, minY + (v.h - minY - 74 - block) / 2);
   const ty = y + size + 40;
   const left = Math.max(170, (v.w - 3 * SLOT) / 2 + 40);
   const slots = [0, 1, 2].map((i) => ({ x: left + i * SLOT, y: ty, w: SLOT, h: SLOT }));

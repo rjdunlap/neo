@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Grown-up upright games batch 3 (chunk 31, 2026-11-09)
+
+[PR #1454](https://github.com/rjdunlap/neo/pull/1454) adds upright phone play for Block Garden, Logic Grid, Species Comeback and Pyramid Solitaire; the grown-up upright pool is now 16 games across seven kinds. Pyramid Solitaire (`pyramidLayout`) stacks the pyramid, status line and Undo/Hint/Start over in the middle of the tall view, buttons clear of the guide. Species Comeback (`comebackLayout`) starts the tree and the release-site phase below Home and "?", with the nests in a centered row and Spring under them. Logic Grid extracts `caseLayout` (level 7) and `slidingLayout` (level 8) and starts boards at y 214 below Home and "?" (level 5's two-block board too). Block Garden's `gardenLayout` keeps a bed that would reach under Home below it on a short phone. `upright: true` applies to every band, so the child levels of Logic Grid and Block Garden were screenshotted upright too.
+
+The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-3-chunk-31-pr-1454) records the target sizes (smallest 51 px for Pyramid Solitaire, 36.6 px for Block Garden's 72-unit beds, 32.5 px for the 64-unit squares and cards of Logic Grid and Species Comeback, as held sideways) and touch play.
+
 ### Grown-up upright games batch 2 (chunk 31, 2026-11-09)
 
 [PR #1448](https://github.com/rjdunlap/neo/pull/1448) adds upright phone play for Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights. Crossword enlarges its keys and grid. Picture Logic enlarges its painting cells and tools and uses the existing sliding board. Tile Pairs and Gem Swap lift their buttons above the guide, and Lantern Lights puts the pond below the corner controls.

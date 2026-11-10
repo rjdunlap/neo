@@ -1137,6 +1137,7 @@ function sticker(seed: number): Container {
 
 export const blockGarden: GameModule = {
   id: 'block-garden',
+  upright: true,
   name: 'Block Garden',
   titleLine: 'game.block-garden',
   region: 'puzzle-peaks',

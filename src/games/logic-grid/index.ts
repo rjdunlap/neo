@@ -760,31 +760,20 @@ class MysteryGrid implements Game {
     else if (b.case) {
       // Level 7: the L of three blocks, its written clues in a column beside it (landscape) or two columns under it (portrait),
       // and Help in the L's empty quarter.
-      const cw = HW + 8 * C + GUT,
-        ch = HH + 8 * C + GUT;
-      if (this.upright) {
-        this.board.position.set(Math.round((v.w - cw) / 2), 146);
-        const y0 = this.board.y + ch + 10,
-          x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W - 12) / 2);
-        const per = Math.ceil(n / 2),
-          pitch = Math.min(LINE_H + 8, Math.floor((safe.y + safe.h - y0) / per));
-        this.clueCards.forEach((c, i) =>
-          c.position.set(x0 + Math.floor(i / per) * (CASE_W + 12), y0 + (i % per) * pitch),
-        );
-      } else {
-        this.board.position.set(Math.max(safe.x + 162, Math.round((v.w - cw - 14 - CASE_W) / 2)), 146);
-        const x0 = this.board.x + cw + 14,
-          y0 = 146;
-        const pitch = Math.min(LINE_H + 16, Math.floor((safe.y + safe.h - 8 - y0) / Math.max(1, n)));
-        this.clueCards.forEach((c, i) => c.position.set(x0, y0 + i * pitch));
-      }
-      this.help.position.set(this.board.x + HW + 6 * C + GUT, this.board.y + HH + 6 * C + GUT);
-      this.win = { w: 8 * C + GUT, h: 8 * C + GUT };
+      const l = caseLayout(v, n, this.upright);
+      this.board.position.copyFrom(l.board);
+      this.clueCards.forEach((c, i) => c.position.copyFrom(l.clues[i]));
+      this.help.position.copyFrom(l.help);
+      this.win = l.win;
     } else if (b.items) {
       // Level 5: the two blocks across, the five narrow cards in one row under them, the written clue under the cards.
       const row = n * (CARD_S + 10) - 10;
       const up = this.upright;
-      this.board.position.set(up ? (v.w - gw) / 2 : Math.max(safe.x + 180, (v.w - gw) / 2), 150);
+      // An upright phone's 768 width puts the two blocks' corner under Home and "?" (chunk 31), so they start below them.
+      this.board.position.set(
+        up ? (v.w - gw) / 2 : Math.max(safe.x + 180, (v.w - gw) / 2),
+        v.upright ? 214 : 150,
+      );
       const y = this.board.y + gh + 22;
       const x = up ? (v.w - row) / 2 : this.board.x;
       this.clueCards.forEach((c, i) => c.position.set(x + i * (CARD_S + 10), y));
@@ -865,35 +854,11 @@ class MysteryGrid implements Game {
    * the window across the top, the clues in two columns under it, right of the pet, and Help above the pet.
    */
   private layoutSliding(v: View, n: number) {
-    const safe = safeArea(v);
-    const full = 10 * C + GUT;
-    const bottom = safe.y + safe.h - 8;
-    if (this.upright) {
-      // The list sits right under the window, which takes what height the list leaves (the whole L on a tall screen).
-      const per = Math.ceil(n / 2);
-      const listH = per * (LINE_H + 6) - 6;
-      this.board.position.set(Math.max(safe.x + 8, Math.round((v.w - HW - full) / 2)), 146);
-      this.win = {
-        w: Math.min(full, safe.x + safe.w - 8 - this.board.x - HW),
-        h: Math.min(full, Math.max(v.h - 12, bottom) - listH - 14 - this.board.y - HH),
-      };
-      const y0 = this.board.y + HH + this.win.h + 14;
-      const x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W8 - 12) / 2);
-      this.clueCards.forEach((c, i) =>
-        c.position.set(x0 + Math.floor(i / per) * (CASE_W8 + 12), y0 + (i % per) * (LINE_H + 6)),
-      );
-      this.help.position.set(Math.min(safe.x + 80, x0 - 74), Math.min(y0 + 50, v.h - 280));
-    } else {
-      this.board.position.set(safe.x + 162, 146);
-      const x0 = safe.x + safe.w - 8 - CASE_W8;
-      this.win = {
-        w: Math.min(full, x0 - 14 - this.board.x - HW),
-        h: Math.min(full, bottom - this.board.y - HH),
-      };
-      const pitch = Math.min(LINE_H + 16, Math.floor((bottom - 146) / Math.max(1, n)));
-      this.clueCards.forEach((c, i) => c.position.set(x0, 146 + i * pitch));
-      this.help.position.set(safe.x + 80, Math.min(470, v.h - 300));
-    }
+    const l = slidingLayout(v, n, this.upright);
+    this.board.position.copyFrom(l.board);
+    this.win = l.win;
+    this.clueCards.forEach((c, i) => c.position.copyFrom(l.clues[i]));
+    this.help.position.copyFrom(l.help);
     const { w, h } = this.win;
     this.bodyMask.clear().rect(HW, HH, w, h).fill(0xffffff);
     this.colMask.clear().rect(HW, 0, w, HH).fill(0xffffff);
@@ -1683,8 +1648,92 @@ function sticker(seed: number): Container {
   return c;
 }
 
+/**
+ * Level 7: the L of three blocks (its 64-unit squares start HW, HH in from the board's corner), its written clues in a column
+ * beside it (landscape) or two columns under it (portrait), and Help in the L's empty quarter. An upright phone (chunk 31)
+ * starts the board below Home and "?".
+ */
+export function caseLayout(v: View, n: number, portrait: boolean) {
+  const safe = safeArea(v);
+  const cw = HW + 8 * C + GUT,
+    ch = HH + 8 * C + GUT;
+  let board: { x: number; y: number }, clues: { x: number; y: number }[];
+  if (portrait) {
+    board = { x: Math.round((v.w - cw) / 2), y: v.upright ? 214 : 146 };
+    const y0 = board.y + ch + 10,
+      x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W - 12) / 2);
+    const per = Math.ceil(n / 2),
+      pitch = Math.min(LINE_H + 8, Math.floor((safe.y + safe.h - y0) / per));
+    clues = Array.from({ length: n }, (_, i) => ({
+      x: x0 + Math.floor(i / per) * (CASE_W + 12),
+      y: y0 + (i % per) * pitch,
+    }));
+  } else {
+    board = { x: Math.max(safe.x + 162, Math.round((v.w - cw - 14 - CASE_W) / 2)), y: 146 };
+    const x0 = board.x + cw + 14,
+      y0 = 146;
+    const pitch = Math.min(LINE_H + 16, Math.floor((safe.y + safe.h - 8 - y0) / Math.max(1, n)));
+    clues = Array.from({ length: n }, (_, i) => ({ x: x0, y: y0 + i * pitch }));
+  }
+  return {
+    board,
+    clues,
+    clueSize: { w: CASE_W, h: LINE_H },
+    cell: C,
+    help: { x: board.x + HW + 6 * C + GUT, y: board.y + HH + 6 * C + GUT },
+    win: { w: 8 * C + GUT, h: 8 * C + GUT },
+  };
+}
+
+/**
+ * Level 8: the L (748 by 728) is taller than the screen below the shell, so its squares slide under a window, headers pinned.
+ * Landscape: the window right of the pet's corner, the written clues in one column beside it, Help above the pet. Portrait:
+ * the window across the top (below Home and "?" on an upright phone), the clues in two columns under it, right of the pet,
+ * and Help beside them.
+ */
+export function slidingLayout(v: View, n: number, portrait: boolean) {
+  const safe = safeArea(v);
+  const full = 10 * C + GUT;
+  const bottom = safe.y + safe.h - 8;
+  if (portrait) {
+    // The list sits right under the window, which takes what height the list leaves (the whole L on a tall screen).
+    const per = Math.ceil(n / 2);
+    const listH = per * (LINE_H + 6) - 6;
+    const board = { x: Math.max(safe.x + 8, Math.round((v.w - HW - full) / 2)), y: v.upright ? 214 : 146 };
+    const win = {
+      w: Math.min(full, safe.x + safe.w - 8 - board.x - HW),
+      h: Math.min(full, Math.max(v.h - 12, bottom) - listH - 14 - board.y - HH),
+    };
+    const y0 = board.y + HH + win.h + 14;
+    const x0 = Math.max(safe.x + 176, (v.w - 2 * CASE_W8 - 12) / 2);
+    return {
+      board,
+      win,
+      clues: Array.from({ length: n }, (_, i) => ({
+        x: x0 + Math.floor(i / per) * (CASE_W8 + 12),
+        y: y0 + (i % per) * (LINE_H + 6),
+      })),
+      clueSize: { w: CASE_W8, h: LINE_H },
+      cell: C,
+      help: { x: Math.min(safe.x + 80, x0 - 74), y: Math.min(y0 + 50, v.h - (v.upright ? 230 : 280)) },
+    };
+  }
+  const board = { x: safe.x + 162, y: 146 };
+  const x0 = safe.x + safe.w - 8 - CASE_W8;
+  const pitch = Math.min(LINE_H + 16, Math.floor((bottom - 146) / Math.max(1, n)));
+  return {
+    board,
+    win: { w: Math.min(full, x0 - 14 - board.x - HW), h: Math.min(full, bottom - board.y - HH) },
+    clues: Array.from({ length: n }, (_, i) => ({ x: x0, y: 146 + i * pitch })),
+    clueSize: { w: CASE_W8, h: LINE_H },
+    cell: C,
+    help: { x: safe.x + 80, y: Math.min(470, v.h - 300) },
+  };
+}
+
 export const logicGrid: GameModule = {
   id: 'logic-grid',
+  upright: true,
   name: 'Mystery Grid',
   titleLine: 'game.logic-grid',
   region: 'puzzle-peaks',

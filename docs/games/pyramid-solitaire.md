@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/pyramid-solitaire; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `pyramid-solitaire` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `pyramid-solitaire` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** number-complements, planning, revision
 

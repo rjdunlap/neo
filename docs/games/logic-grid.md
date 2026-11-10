@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/logic-grid; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `logic-grid` · **Land:** Puzzle Peaks · **Ages:** preschool–grown-up · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `logic-grid` · **Land:** Puzzle Peaks · **Ages:** preschool–grown-up · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** deduction, reasoning, using-evidence
 

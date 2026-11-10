@@ -205,21 +205,16 @@ class PyramidSolitaire implements Game {
     this.hintButton.alpha = this.hinted ? 0.7 : 1;
   }
   resize(v: View) {
+    const l = pyramidLayout(v, this.puzzle.rows);
     this.ground.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
     this.ground
-      .ellipse(v.w / 2, v.h * 0.5, Math.min(380, v.w * 0.45), v.h * 0.34)
+      .ellipse(v.w / 2, l.middle, Math.min(380, v.w * 0.45), v.upright ? 330 : v.h * 0.34)
       .fill({ color: cream, alpha: 0.7 });
     this.heading.position.set(v.w / 2, 107);
     this.guide.position.set(v.w / 2, 148);
-    const gapY = Math.min(104, (v.h - 470) / (this.puzzle.rows - 1));
-    const top = 225;
-    for (let row = 0; row < this.puzzle.rows; row++)
-      for (let col = 0; col <= row; col++)
-        this.nodes[at(row, col)].position.set(v.w / 2 + (col - row / 2) * 116, top + row * gapY);
-    this.status.position.set(v.w / 2, v.h - 157);
-    [this.undoButton, this.hintButton, this.againButton].forEach((b, i) =>
-      b.position.set(v.w / 2 + (i - 1) * 190, v.h - 80),
-    );
+    this.nodes.forEach((n, i) => n.position.copyFrom(l.cards[i]));
+    this.status.position.copyFrom(l.status);
+    [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.copyFrom(l.buttons[i]));
     this.draw();
   }
   autotouch(): TouchIntent | null {
@@ -232,6 +227,28 @@ class PyramidSolitaire implements Game {
   update(_dt: number) {}
   destroy() {}
 }
+/**
+ * Card centers (100-unit squares), the status line and the three 164 × 100 buttons. Upright (chunk 31) the pyramid, status
+ * and buttons stand together in the middle of the tall view, the buttons clear of the guide's corner.
+ */
+export function pyramidLayout(v: View, rows: number) {
+  const gapY = v.upright ? 104 : Math.min(104, (v.h - 470) / (rows - 1));
+  const top = v.upright ? Math.max(225, Math.round((v.h - ((rows - 1) * gapY + 330)) / 2)) : 225;
+  const cards: { x: number; y: number }[] = [];
+  for (let row = 0; row < rows; row++)
+    for (let col = 0; col <= row; col++)
+      cards[at(row, col)] = { x: v.w / 2 + (col - row / 2) * 116, y: top + row * gapY };
+  const last = top + (rows - 1) * gapY;
+  const status = { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
+  const buttonY = v.upright ? status.y + 100 : v.h - 80;
+  return {
+    cards,
+    status,
+    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 190, y: buttonY })),
+    middle: v.upright ? (top + buttonY) / 2 : v.h * 0.5,
+  };
+}
+
 function icon(seed = 0): Container {
   const c = new Container();
   [6, 7, 13].forEach((rank, i) => {
@@ -243,6 +260,7 @@ function icon(seed = 0): Container {
 }
 export const pyramidSolitaire: GameModule = {
   id: 'pyramid-solitaire',
+  upright: true,
   name: 'Pyramid Solitaire',
   titleLine: 'game.pyramid-solitaire',
   region: 'puzzle-peaks',
