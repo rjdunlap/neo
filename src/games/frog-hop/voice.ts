@@ -33,6 +33,7 @@ export const VOICE = {
   'hop.frac.whole': ['Each hop is one {size}, not a whole. One whole is four gaps.'],
   'hop.frac.ticks': ['Count the hops between the pads, not the pads.'],
   'hop.frac.count': ['Count the {size} hops from {where}.'],
+  'hop.frac.flag': ['Count the {size} hops from zero to the flag.'],
   'hop.frac.same-smaller': ['A {small} hop is shorter than a {big} hop, so it takes more hops.'],
   'hop.frac.same-bigger': ['A {big} hop is longer than a {small} hop, so it takes fewer hops.'],
   'hop.yay': ['Ribbit! Right on!', 'Splash! You got it!', 'Hoppy day!'],

@@ -469,7 +469,9 @@ class FrogHop implements Game {
     this.wrongs = 0;
     this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     const back = this.plan.mode === 'back-ten';
-    this.setSign(`${this.q.start} ${back ? '−' : '+'} ${this.q.toTen} ${back ? '−' : '+'} ${this.q.remaining}`);
+    this.setSign(
+      `${this.q.start} ${back ? '−' : '+'} ${this.q.toTen} ${back ? '−' : '+'} ${this.q.remaining}`,
+    );
     this.busy = false;
     await this.ctx.instruct(back ? 'hop.restback' : 'hop.rest', {
       a: this.q.toTen!,
@@ -605,16 +607,21 @@ class FrogHop implements Game {
       if (kind === 'same') {
         const small = sizeWord(Math.min(q.jump!, q.jump2!));
         const big = sizeWord(Math.max(q.jump!, q.jump2!));
-        return this.ctx.say(q.jump2! < q.jump! ? 'hop.frac.same-smaller' : 'hop.frac.same-bigger', { small, big });
+        return this.ctx.say(q.jump2! < q.jump! ? 'hop.frac.same-smaller' : 'hop.frac.same-bigger', {
+          small,
+          big,
+        });
       }
       if (kind === 'one-more' || kind === 'one-less')
         return this.ctx.say(kind === 'one-more' ? 'hop.wrong.one-more' : 'hop.wrong.one-less');
-      return this.ctx.say('hop.wrong.count', { n: 0 });
+      return this.ctx.say('hop.frac.flag', { size: sizeWord(q.jump2!) });
     }
     const kind = fracMiss(q.start, q.jump!, q.count!, n);
     if (kind === 'backward') return this.ctx.say('hop.wrong.forward');
     if (kind === 'size')
-      return this.ctx.say(q.jump === 1 ? 'hop.frac.size-short' : 'hop.frac.size-long', { size });
+      return q.jump === 1
+        ? this.ctx.say('hop.frac.size-short')
+        : this.ctx.say('hop.frac.size-long', { size });
     if (kind === 'whole') return this.ctx.say('hop.frac.whole', { size });
     if (kind === 'one-more' || kind === 'one-less') return this.ctx.say('hop.frac.ticks');
     return this.ctx.say('hop.frac.count', { size, where: fracWords(q.start) });
