@@ -23,7 +23,7 @@ A grown-up tips a wooden log across a pond of stepping stones with four arrow bu
 
 **Known gaps.**
 - `showHint` adds a hint each time it runs, even when the same arrow already glows (a repeated Hint tap, or the fourth and sixth failed rolls). Marble Jump and Snowball Merge count a visible hint once. Since misses are always 0, hints alone drive difficulty here, so the double count matters more.
-- The layout hard-codes five rows (`(v.h - 440) / 5`, `c * 5 + 28`, the hollow at `4.5 * c`), and `goal()` is always the bottom-right corner. Any taller floor, mirrored floor or moved hollow needs these generalised first. Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches-six-games-each-ready-batch-1-built) also lists `log-roll`, so slice 1's layout work should derive from the floor size and leave the upright pass a one-line change.
+- The layout hard-codes five rows (`(v.h - 440) / 5`, `c * 5 + 28`, the hollow at `4.5 * c`), and `goal()` is always the bottom-right corner. Any taller floor, mirrored floor or moved hollow needs these generalised first. Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches) also lists `log-roll`, so slice 1's layout work should derive from the floor size and leave the upright pass a one-line change.
 - The log jumps between poses with no motion, so a newcomer has to infer what "tip" did.
 - Person checks: whether a grown-up new to rolling blocks reads the standing/lying difference from the drawn rings and stripes, and whether four separate arrow buttons feel better than swiping on the board.
 
@@ -128,4 +128,4 @@ Ran: `npm run typecheck`; `npm test` (329 files); `BROWSER_SUITE=logroll`; `fing
 Ran: `npm run typecheck`; `npm test` (329 files); `BROWSER_SUITE=logroll` (levels 1, 4 and 5, with an upright stop on a cradle at 5 and landscape screenshot `log-roll-cradle-stand`); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=5` (14.4 s). Not run: build (CI), offline, portrait screenshot at 5.
 
 
-**Slices 4–5 built (PR #1429).** Levels 6–7 add soft moss and a standing switch with a persistent bridge; [build note](../archive/COMPLETED-2026-10-09.md#log-roll-soft-moss-and-the-stone-bridge-2026-11-08) and [verification](../VERIFICATION.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). School, couch and swipe decisions remain open.
+**Slices 4–5 built (PR #1429).** Levels 6–7 add soft moss and a standing switch with a persistent bridge; [build note](../archive/COMPLETED-2026-10-09.md#log-roll-soft-moss-and-the-stone-bridge-2026-11-08) and [verification](../archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). School, couch and swipe decisions remain open.

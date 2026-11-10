@@ -11,6 +11,7 @@ import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cartArt, itemArt, madeArt, placeArt } from './art';
+import { PicnicShed } from './picnic';
 import { PlanShed } from './plan';
 import {
   LEVELS,
@@ -25,6 +26,7 @@ import {
   roundFor,
   shedLayout,
   ShedTally,
+  PLAN_MAX,
   SORT_MAX,
   type ItemId,
   type Place,
@@ -423,6 +425,7 @@ export const secondChanceShed: GameModule = {
   sticker,
   create: (ctx) => {
     const plan = planFor(ctx.level);
+    if (plan.level > PLAN_MAX) return new PicnicShed(ctx, plan);
     return plan.level > SORT_MAX ? new PlanShed(ctx, plan) : new SecondChanceShed(ctx);
   },
 };

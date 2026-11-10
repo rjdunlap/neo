@@ -26,6 +26,16 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Once the wheels hang, say how many paws the rope will need, then pull to check. Wheels that cannot lift it are fine: the wobble agrees with the card.',
     },
+    {
+      from: 7,
+      to: 8,
+      text: 'Hang both wheels and tap the ring on the crate to move the tied end. Count the three strands that hold the crate, then pull up.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Listen for who wants to pull, then pick the paws and knots cards before the haul.',
+    },
     { from: 5, to: 6, text: 'Pick wheels that end the rope at the friends who will pull.' },
     {
       from: 6,
@@ -35,7 +45,21 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: 'Every parcel reaches its friend on the ledge.',
   note: [
-    { text: 'Pulling is never counted against her, and a crate that is too heavy only wobbles.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'Trying a knot is free. A wrong tug or card counts as a miss. The right card lights, and after two misses the pet points out the rig or card.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'Trying a knot is free. A tug on a rig that cannot lift counts once per parcel. After two misses the right hooks and ring glow.',
+    },
+    {
+      from: 1,
+      to: 4,
+      text: 'Pulling is never counted against her, and a crate that is too heavy only wobbles.',
+    },
     {
       from: 3,
       to: 9,

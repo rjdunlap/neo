@@ -1,6 +1,6 @@
 # Vine Snip — first playable slice (sketch)
 
-Status: **defined 2026-11-03** in [definitions/vine-snip.md](definitions/vine-snip.md), which supersedes this sketch's engine, levels and open calls (closed-form rules in the game's `logic.ts` under the October 23 S4 decision; counting dropped as a Fruit Slice overlap; *Which vine stays?* and *Two friends* replace levels 4–5). Written 2026-10-13 from the developer's request for a Cut the Rope type game. Nothing is built. Proposed game ID: `vine-snip`. The text below is the original sketch, kept for its research.
+Status: **defined 2026-11-03** in [definitions/vine-snip.md](../definitions/vine-snip.md), which supersedes this sketch's engine, levels and open calls (closed-form rules in the game's `logic.ts` under the October 23 S4 decision; counting dropped as a Fruit Slice overlap; *Which vine stays?* and *Two friends* replace levels 4–5). Written 2026-10-13 from the developer's request for a Cut the Rope type game. Nothing is built. Proposed game ID: `vine-snip`. The text below is the original sketch, kept for its research.
 
 "Cut the Rope" and its monster are ZeptoLab's names and characters, so this game uses its own: fruit hangs from vines in the orchard, and a hungry island friend waits below. The idea of cutting a rope so something falls is not protected; the characters and art are not borrowed.
 
@@ -57,7 +57,7 @@ Later, as proposals: two friends who want different counts, a bubble that lifts,
 ## Build slices
 
 1. **The engine slice:** `src/engine/rope.ts`, its tests and the level solver in `logic.ts`. Unit tests only; no game is registered yet.
-2. **Levels 1–3 as a registered game:** `vine-snip` with the contract (`GameModule`), art, sound, voice lines, how-to with ghost finger, README row, [GAMES.md](GAMES.md) entry. Tier: typecheck, rule tests, one scripted play of levels 1 and 3 (one miss, one hint), one portrait screenshot, and `fingerdemo` filtered to it.
+2. **Levels 1–3 as a registered game:** `vine-snip` with the contract (`GameModule`), art, sound, voice lines, how-to with ghost finger, README row, [GAMES.md](../GAMES.md) entry. Tier: typecheck, rule tests, one scripted play of levels 1 and 3 (one miss, one hint), one portrait screenshot, and `fingerdemo` filtered to it.
 3. **Levels 4–5 (count and order).**
 4. **Extras as separate slices:** bubble, bounce leaf, two friends.
 

@@ -22,7 +22,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 6,
+      to: 6,
       text: 'Tap three fruit that add up to the number; they hop into the three boxes. Tap a fruit in a box to put it back.',
+    },
+    {
+      from: 7,
+      text: 'Tap two fruit, then a leaf to choose plus, take away or times. The fruit you tap first is the one you start from.',
     },
     'Tap the green check to see what you made. Any way that makes the number counts.',
   ],
@@ -34,7 +39,8 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Each right pair drops into the basket, and the round ends when the tree is empty.',
     },
-    { from: 6, text: 'The round ends after two different sets of three fruit that make the number.' },
+    { from: 6, to: 6, text: 'The round ends after two different sets of three fruit that make the number.' },
+    { from: 7, text: 'The round ends after two different ways to make the number.' },
   ],
   note: [
     {
@@ -52,7 +58,12 @@ export const HOW_TO: GameHowTo = {
       text: 'A try that makes another number tells how much it made and how much the sign makes. The sign’s own two numbers are not a miss; they just ask for a different pair. After two misses a glow shows a fruit to start with, then its partner. Each way is written like 7 + 5 = 6 + 4.',
     },
     {
+      from: 7,
+      text: 'Every tray can be made with times and with another sign. 3 × 4 and 4 × 3 are the same way, as with plus; taking away more than you have just says so. After two misses a glow shows a fruit to start with, then its partner and a leaf, choosing a sign not used yet.',
+    },
+    {
       from: 6,
+      to: 6,
       text: 'Finding two fruit that make ten first, then adding the third, is a good way in. A check with only two fruit asks for a third and is not a miss; the same three numbers in another order are the same way. After two misses a glow shows the fruit to use, a pair that makes ten first.',
     },
     {

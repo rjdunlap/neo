@@ -247,12 +247,10 @@ class LanternLights implements Game {
   resize(v: View) {
     this.view = v;
     if (!this.pond) return;
-    // The counts sit beside the pond, clear of the edge; where the room beside it is too narrow (a big pond in
-    // portrait), they share one line above it, between the top corner buttons, and the pond moves down to make room.
-    const wide = (v.w - Math.min(116, Math.floor((v.h - 262) / this.n)) * this.n) / 2 >= SIDE_ROOM;
-    this.cell = Math.min(116, Math.floor((v.h - (wide ? 262 : 322)) / this.n));
-    const bw = this.n * this.cell;
-    this.board.position.set((v.w - bw) / 2, wide ? 112 : 172);
+    const { wide, cell, board, buttons, after } = pondLayout(v, this.n);
+    this.cell = cell;
+    const bw = this.n * cell;
+    this.board.position.copyFrom(board);
     this.stacked = !wide;
     if (wide) {
       const x = Math.min((v.w + bw) / 2 + 150, v.w - 120);
@@ -266,13 +264,11 @@ class LanternLights implements Game {
     this.tapLayer.clear().rect(0, 0, bw, bw).fill({ color: 0xffffff, alpha: 0.001 });
     this.tapLayer.hitArea = new Rectangle(0, 0, bw, bw);
     this.tapLayer.position.copyFrom(this.board.position);
-    // The buttons sit in a row under the pond, clear of the pet's corner.
-    const y = this.board.y + bw + 78;
-    [this.undoButton, this.hintButton, this.againButton].forEach((b, i) =>
-      b.position.set(v.w / 2 + (i - 1) * 180, y),
+    [this.undoButton, this.hintButton, this.againButton].forEach((button, i) =>
+      button.position.copyFrom(buttons[i]),
     );
-    this.shortButton.position.set(v.w / 2 - 120, y);
-    this.nextButton.position.set(v.w / 2 + 170, y);
+    this.shortButton.position.copyFrom(after[0]);
+    this.nextButton.position.copyFrom(after[1]);
     this.layout();
   }
 
@@ -788,8 +784,28 @@ function sticker(seed: number): Container {
   return c;
 }
 
+export function pondLayout(v: View, n: number) {
+  // When the counts cannot sit beside the pond, stack them above it. The upright grid starts below Help.
+  const wide = (v.w - Math.min(116, Math.floor((v.h - 262) / n)) * n) / 2 >= SIDE_ROOM;
+  const boardY = wide ? 112 : v.upright ? 226 : 172;
+  const cell = Math.min(116, Math.floor((v.h - boardY - 150) / n));
+  const bw = n * cell;
+  const y = boardY + bw + 78;
+  return {
+    wide,
+    cell,
+    board: { x: (v.w - bw) / 2, y: boardY },
+    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 180, y })),
+    after: [
+      { x: v.w / 2 - 120, y },
+      { x: v.w / 2 + 170, y },
+    ],
+  };
+}
+
 export const lanternLights: GameModule = {
   id: 'lantern-lights',
+  upright: true,
   liveController: true,
   name: 'Lantern Lights',
   titleLine: 'game.lantern-lights',

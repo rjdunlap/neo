@@ -6,10 +6,10 @@ import type { BandLevels } from '../../progress/difficulty';
  * number from two of them and a sign. Every way that works is accepted; a round asks for two different ways. The rules a test
  * can hold the screen to live here: which trays a level builds, which ways count, what a try makes, and where things sit.
  */
-export type Op = 'plus' | 'minus';
+export type Op = 'plus' | 'minus' | 'times';
 
 export interface TreePlan {
-  /** The signs she may use. One sign is shown fixed; two are leaves she chooses between. */
+  /** The signs she may use. One sign is shown fixed; two or three are leaves she chooses between. */
   ops: readonly Op[];
   /** The number on the sign. */
   target: readonly [number, number];
@@ -23,6 +23,10 @@ export interface TreePlan {
   clearTree?: true;
   /** Three fruit and two plus signs make the number, rather than two fruit. */
   three?: true;
+  /** Plus, take away and times leaves; the number on the sign comes from `targets`, and every tray holds a times way. */
+  times?: true;
+  /** At a times level, the numbers the sign may show (each has two factors of at least 2 up to `maxTile`). */
+  targets?: readonly number[];
   name: string;
 }
 
@@ -73,10 +77,19 @@ export const PLANS: readonly TreePlan[] = [
     three: true,
     name: 'Make a number from 11 to 18 by adding three fruit, two different ways',
   },
+  {
+    ops: ['plus', 'minus', 'times'],
+    target: [6, 24],
+    targets: [6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24],
+    tiles: 6,
+    maxTile: 12,
+    times: true,
+    name: 'Make a number up to 24 by adding, taking away or multiplying, two different ways',
+  },
 ];
 
-/** Clearing the tree (to 10) is easier than making numbers up to 20, so level 5 comes after level 1; three fruit come last. */
-export const LEVELS: BandLevels = { school: { min: 1, max: 6, order: [1, 5, 2, 4, 3, 6] } };
+/** Clearing the tree (to 10) is easier than making numbers up to 20, so level 5 comes after level 1; three fruit, then times, come last. */
+export const LEVELS: BandLevels = { school: { min: 1, max: 7, order: [1, 5, 2, 4, 3, 6, 7] } };
 
 export const planFor = (level: number): TreePlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
@@ -93,13 +106,20 @@ export interface Way {
   b: number;
 }
 
-export const made = (a: number, op: Op, b: number) => (op === 'plus' ? a + b : a - b);
-export const opWord = (op: Op) => (op === 'plus' ? 'plus' : 'take away');
-export const opSign = (op: Op) => (op === 'plus' ? '+' : '−');
+export const made = (a: number, op: Op, b: number) =>
+  op === 'plus' ? a + b : op === 'times' ? a * b : a - b;
+export const opWord = (op: Op) => (op === 'plus' ? 'plus' : op === 'times' ? 'times' : 'take away');
+export const opSign = (op: Op) => (op === 'plus' ? '+' : op === 'times' ? '×' : '−');
+/** Adding and multiplying are the same either way round; taking away is not. */
+export const commutes = (op: Op) => op !== 'minus';
+/** The first character of a way's key names its sign. */
+const KEY_SIGN: Record<string, Op> = { '+': 'plus', '-': 'minus', '*': 'times' };
+export const keyOp = (key: string): Op => KEY_SIGN[key[0]];
 
-/** Adding is the same either way round; taking away is not. Two tries with the same key are the same way. */
+/** Two tries with the same key are the same way: 3 × 4 and 4 × 3 share one, and 2 + 2 and 2 × 2 do not. */
 export function wayKey(a: number, op: Op, b: number): string {
-  return op === 'plus' ? `+${Math.min(a, b)},${Math.max(a, b)}` : `-${a},${b}`;
+  if (op === 'minus') return `-${a},${b}`;
+  return `${op === 'plus' ? '+' : '*'}${Math.min(a, b)},${Math.max(a, b)}`;
 }
 
 /**
@@ -119,7 +139,7 @@ export function solutions(
     for (let b = 0; b < tray.length; b++) {
       if (a === b || gone[b]) continue;
       for (const op of ops) {
-        if (op === 'plus' && b < a) continue;
+        if (commutes(op) && b < a) continue;
         if (made(tray[a], op, tray[b]) !== target) continue;
         const key = wayKey(tray[a], op, tray[b]);
         if (!seen.has(key)) {
@@ -162,19 +182,23 @@ export function hintWay(
   first: number | null = null,
   gone: readonly boolean[] = [],
 ): Way | null {
-  const open = solutions(tray, ops, target, gone).filter(
+  let open = solutions(tray, ops, target, gone).filter(
     (w) => !found.includes(wayKey(tray[w.a], w.op, tray[w.b])),
   );
+  if (ops.includes('times')) {
+    // With three signs to choose from, the hint leads to one she has not used yet when there is one.
+    const used = new Set(found.map(keyOp));
+    open = [...open.filter((w) => !used.has(w.op)), ...open.filter((w) => used.has(w.op))];
+  }
   if (first !== null) {
     for (const w of open) {
       if (w.a === first) return w;
-      if (w.op === 'plus' && w.b === first) return { a: w.b, op: 'plus', b: w.a };
+      if (commutes(w.op) && w.b === first) return { a: w.b, op: w.op, b: w.a };
     }
     // Another fruit with the same number starts the same way just as well.
     for (const w of open) {
       if (tray[w.a] === tray[first] && w.b !== first) return { ...w, a: first };
-      if (w.op === 'plus' && tray[w.b] === tray[first] && w.a !== first)
-        return { a: first, op: 'plus', b: w.a };
+      if (commutes(w.op) && tray[w.b] === tray[first] && w.a !== first) return { a: first, op: w.op, b: w.a };
     }
   }
   return open[0] ?? null;
@@ -199,8 +223,8 @@ export function hintGlow(
 ): HintGlow | null {
   const way = hintWay(tray, ops, target, found, slotA, gone);
   if (!way) return null;
-  // The start fruit sits in the second box: a sum just needs its partner; a take-away goes home to start again in the first box.
-  if (slotA === null) return { tile: way.a === slotB && way.op === 'plus' ? way.b : way.a };
+  // The start fruit sits in the second box: a sum or product just needs its partner; a take-away goes home to start again.
+  if (slotA === null) return { tile: way.a === slotB && commutes(way.op) ? way.b : way.a };
   if (way.a !== slotA) return { tile: slotA };
   if (slotB !== way.b) return { tile: way.b };
   if (op !== way.op) return { leaf: way.op };
@@ -362,6 +386,33 @@ function threeRound(plan: TreePlan, rng: Rng): TreeRound {
 }
 
 /**
+ * "A times leaf": one way is a times with two factors of at least 2, and a second is a plus (or, for a small number, a take-away),
+ * so a tray always needs two different signs. The other fruit are anything up to `maxTile`, and whatever they make counts too.
+ */
+function timesRound(plan: TreePlan, rng: Rng): TreeRound {
+  const max = plan.maxTile;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const target = rng.pick(plan.targets ?? [12]);
+    const factors: number[] = [];
+    for (let f = 2; f * f <= target; f++) if (target % f === 0 && target / f <= max) factors.push(f);
+    if (!factors.length) continue;
+    const f = rng.pick(factors);
+    const tray = [f, target / f];
+    const base = target <= max - 1 && rng.chance(0.4) ? rng.int(1, max - target) : 0;
+    if (base) tray.push(target + base, base);
+    else {
+      const x = rng.int(Math.max(1, target - max), Math.floor(target / 2));
+      tray.push(x, target - x);
+    }
+    while (tray.length < plan.tiles) tray.push(rng.int(1, max));
+    if (tray.some((v) => v < 1 || v > max)) continue;
+    if (solutions(tray, plan.ops, target).length < WAYS_PER_ROUND) continue;
+    return { target, tray: rng.shuffle(tray) };
+  }
+  throw new Error('Fruit Sums: no times tray');
+}
+
+/**
  * A tray built around two different ways so the round can always be finished (and by a plain sum or a take-away at level 3),
  * plus fruit that make nothing in particular. Whatever else the extra fruit happen to make is accepted too.
  */
@@ -371,6 +422,7 @@ export function makeRound(level: number, rng: Rng): TreeRound {
   if (plan.signPair) return pairRound(plan, rng);
   if (plan.clearTree) return clearRound(plan, rng);
   if (plan.three) return threeRound(plan, rng);
+  if (plan.times) return timesRound(plan, rng);
   for (let attempt = 0; attempt < 200; attempt++) {
     const target = rng.int(lo, hi);
     const tray: number[] = [];
@@ -451,7 +503,10 @@ export const basketSpot = (basket: Pt, k: number): Pt => ({ x: basket.x + (k - 2
 /** Three boxes pack closer: two plus signs this size between them, and a 696-unit row that fits a 768-unit portrait width. */
 export const PLUS3 = 48;
 
-export function layoutFor(w: number, h: number, count: number, signs: boolean, three = false): TreeLayout {
+export const LEAF_PITCH3 = 140;
+
+/** `leaves` is how many sign leaves the level shows: none, two (plus and take away) or three (and times). */
+export function layoutFor(w: number, h: number, count: number, leaves: number, three = false): TreeLayout {
   // A tall window (portrait) puts the working rows lower rather than leaving the bottom empty.
   const cx = w / 2,
     drop = Math.max(0, Math.min(200, (h - 768) * 0.35)),
@@ -460,7 +515,7 @@ export function layoutFor(w: number, h: number, count: number, signs: boolean, t
   const at = (dx: number, y = row): Pt => ({ x: x0 + dx, y });
   const cols = Math.max(1, Math.min(count, Math.floor((w - 190 + GAP) / (TILE + GAP))));
   const rows = Math.ceil(count / cols);
-  const trayTop = (signs ? 600 : 480) + drop;
+  const trayTop = (leaves ? 600 : 480) + drop;
   // A short window squeezes the tray upward rather than off the bottom.
   const top = Math.min(trayTop, h - 60 - TILE / 2 - (rows - 1) * (TILE + GAP));
   const tiles: Pt[] = [];
@@ -477,12 +532,11 @@ export function layoutFor(w: number, h: number, count: number, signs: boolean, t
     ...(three
       ? { a: at(0), op: at(98), b: at(196), op2: at(294), c: at(392), equals: at(484), check: at(576) }
       : { a: at(60), op: at(194), b: at(328), op2: at(328), c: at(328), equals: at(417), check: at(526) }),
-    leaves: signs
-      ? [
-          { x: cx - 85, y: top - 150 },
-          { x: cx + 85, y: top - 150 },
-        ]
-      : [],
+    // Two leaves 170 apart; three (plus, take away, times) at a 140 pitch, still 30 units between them.
+    leaves: Array.from({ length: leaves }, (_, k) => ({
+      x: cx + (leaves === 3 ? (k - 1) * LEAF_PITCH3 : k === 0 ? -85 : 85),
+      y: top - 150,
+    })),
     tiles,
     basket: { x: cx + 20, y: Math.min(h - 70, tiles[count - 1].y + TILE / 2 + 95) },
   };

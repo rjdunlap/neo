@@ -89,10 +89,12 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       });
     // Level 11 (school's top), upright: the snail's line has an easy gap; the carried piece over it shows the snail worried, a drop
     // there is refused as a miss, a second one lights the hint, the hinted piece is planted, then the rest by drags and one sticker.
-    // GARDEN_LEVELS=11 runs this part alone.
-    if (!process.env.GARDEN_LEVELS || process.env.GARDEN_LEVELS === '11') {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      await launch('block-garden', 11);
+    // GARDEN_LEVELS=11 runs this part alone. Level 12 (a grown-up's last: level 7's big bed with two snails) plays the same way
+    // sideways; GARDEN_LEVELS=12 runs it alone.
+    for (const level of [11, 12]) {
+      if (process.env.GARDEN_LEVELS && process.env.GARDEN_LEVELS !== String(level)) continue;
+      await page.setViewportSize(level === 11 ? { width: 768, height: 1024 } : { width: 1024, height: 768 });
+      await launch('block-garden', level);
       await idle();
       const stickers11 = await page.evaluate(() => kit.store.data.stickers.length);
       const snailSpot = () =>
@@ -107,13 +109,20 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
           return null;
         });
       const spot = await snailSpot();
-      assert.ok(spot && spot.snails.length === 1, 'level 11 has a tray piece that would fill the snail line');
+      assert.ok(
+        spot && spot.snails.length === 1,
+        `level ${level} has a tray piece that would fill a snail line`,
+      );
+      const snailCount = await page.evaluate(() =>
+        neo.scene.game.state.bed.keep.reduce((a, m) => a + m.toString(2).split('1').length - 1, 0),
+      );
+      assert.equal(snailCount, level === 11 ? 1 : 2, `level ${level} has its snails`);
       await page.waitForTimeout(400);
-      await screenshot('block-garden-11-portrait');
+      await screenshot(level === 11 ? 'block-garden-11-portrait' : 'block-garden-12-landscape');
       // The shadow over the snail's line: the worried snail instead of the shimmer.
       await page.evaluate(({ piece, r, c }) => (neo.scene.game.shadow = { piece, at: { r, c } }), spot);
       await page.waitForTimeout(200);
-      await screenshot('block-garden-11-worried');
+      await screenshot(`block-garden-${level}-worried`);
       await page.evaluate(() => (neo.scene.game.shadow = null));
       for (let k = 1; k <= 2; k++) {
         const s = await snailSpot();
@@ -147,9 +156,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         timeout: 15000,
       });
       assert.deepEqual(errors, [], 'page errors');
-      if (process.env.GARDEN_LEVELS === '11') {
+      if (process.env.GARDEN_LEVELS === String(level)) {
         log(
-          'Block Garden level 11 upright: the worried snail over its line, two refused snail drops (two misses), the hint lit once and planted, the rest by drags, the snail kept, one sticker',
+          `Block Garden level ${level} ${level === 11 ? 'upright' : 'sideways, two snails'}: the worried snail over its line, two refused snail drops (two misses), the hint lit once and planted, the rest by drags, the snails kept, one sticker`,
         );
         return;
       }

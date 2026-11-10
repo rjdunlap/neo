@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { grass, ink, swatch, wood, type ColorName } from '../../art/palette';
+import { grass, ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { palmOnGlass } from '../../engine/input';
@@ -12,8 +12,10 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  ENTRY_LEVELS,
   accepted,
   askedKind,
+  colourOf,
   covers,
   DROP_FALL,
   dropDelay,
@@ -27,6 +29,7 @@ import {
   makeBoard,
   pieceAt,
   pileLayout,
+  silhouetteOf,
   planFor,
   present,
   putBack,
@@ -41,10 +44,11 @@ import {
   type PilePlan,
 } from './logic';
 
-/** Each kind's colour from the palette: every kind differs from the others in colour and in outline. */
-const COLORS: ColorName[] = ['pink', 'brown', 'red', 'orange', 'green', 'yellow', 'purple', 'teal'];
-/** Each kind's marimba step as it lands, rising one step for the second and third. */
-const NOTES = [3, 4, 5, 6, 7, 8, 9, 10];
+/** Each base kind's marimba step as it lands, rising one step for the second and third; a look-alike uses its silhouette's. */
+const NOTES = [3, 4, 5, 6, 7, 8, 9, 10, 2, 1];
+const noteOf = (kind: number) => NOTES[silhouetteOf(kind)];
+/** Stickers roll among the first eight kinds, so a saved sticker's seed keeps drawing the same kind. */
+const STICKER_KINDS = 8;
 /** A piece's hop from the heap into the tray; taps during it are ignored. */
 const FLIGHT = 0.3;
 /** Pieces in the tray are drawn a little smaller, to sit inside a 104-unit slot. */
@@ -62,12 +66,12 @@ const LOOK_ART: Record<Look, { ground: number; rim: number; sky: number }> = {
 /** Fallen leaves in the autumn look: brown, orange and red, never the green of the leaf kind. */
 const AUTUMN_LEAVES = [swatch.brown.fill, swatch.orange.fill, swatch.red.fill];
 
-/** A kind's picture, about 70 units across, centred on (0, 0). */
+/** A kind's picture, about 70 units across, centred on (0, 0): its silhouette in its colour. */
 function kindArt(kind: number): Graphics {
-  const c = swatch[COLORS[kind]];
+  const c = swatch[colourOf(kind)];
   const g = new Graphics();
   const line = { width: 4, color: c.line, join: 'round' as const, cap: 'round' as const };
-  switch (kind) {
+  switch (silhouetteOf(kind)) {
     case 0: // shell: a ridged fan on a little hinge
       g.moveTo(-32, 4)
         .bezierCurveTo(-34, -36, 34, -36, 32, 4)
@@ -143,7 +147,7 @@ function kindArt(kind: number): Graphics {
       }
       g.circle(0, 0, 11).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
       break;
-    default: // mushroom: a spotted cap on a pale stem
+    case 7: // mushroom: a spotted cap on a pale stem
       g.roundRect(-10, -2, 20, 32, 8).fill(0xfff6e8).stroke({ width: 4, color: swatch.brown.line });
       g.moveTo(-34, 2).bezierCurveTo(-34, -40, 34, -40, 34, 2).closePath().fill(c.fill).stroke(line);
       for (const [x, y, r] of [
@@ -152,6 +156,56 @@ function kindArt(kind: number): Graphics {
         [18, -6, 4],
       ])
         g.circle(x, y, r).fill(0xffffff);
+      break;
+    case 8: // feather: a curved quill with barbs either side
+      g.moveTo(-6, 36)
+        .bezierCurveTo(-30, 10, -22, -24, 14, -36)
+        .bezierCurveTo(26, -14, 18, 18, -6, 36)
+        .closePath()
+        .fill(c.fill)
+        .stroke(line);
+      g.moveTo(-10, 40)
+        .bezierCurveTo(-4, 10, 2, -14, 12, -32)
+        .stroke({ width: 3, color: c.line, cap: 'round' });
+      for (const [x, y] of [
+        [-4, 16],
+        [0, 2],
+        [4, -12],
+      ])
+        g.moveTo(x, y)
+          .lineTo(x - 14, y - 4)
+          .moveTo(x, y)
+          .lineTo(x + 12, y - 10)
+          .stroke({ width: 2, color: c.line });
+      break;
+    case 9: {
+      // sock: a leg with a ribbed top, bent at the ankle into a foot, with a heel and toe in another colour
+      const patch = c.fill === swatch.white.fill ? swatch.blue : swatch.white;
+      g.moveTo(-14, -34)
+        .lineTo(10, -34)
+        .lineTo(10, 6)
+        .lineTo(30, 18)
+        .bezierCurveTo(40, 24, 34, 38, 22, 36)
+        .lineTo(-6, 26)
+        .bezierCurveTo(-18, 22, -16, 12, -14, 6)
+        .closePath()
+        .fill(c.fill)
+        .stroke(line);
+      g.moveTo(-14, 6).bezierCurveTo(-18, 20, -10, 26, -2, 26).lineTo(-2, 14).closePath().fill(patch.fill);
+      g.moveTo(24, 20).bezierCurveTo(36, 24, 36, 36, 22, 36).lineTo(20, 22).closePath().fill(patch.fill);
+      for (const y of [-28, -22])
+        g.moveTo(-14, y).lineTo(10, y).stroke({ width: 3, color: c.line, alpha: 0.7 });
+      g.moveTo(-14, -34)
+        .lineTo(10, -34)
+        .lineTo(10, 6)
+        .lineTo(30, 18)
+        .bezierCurveTo(40, 24, 34, 38, 22, 36)
+        .lineTo(-6, 26)
+        .bezierCurveTo(-18, 22, -16, 12, -14, 6)
+        .closePath()
+        .stroke(line);
+      break;
+    }
   }
   return g;
 }
@@ -162,7 +216,7 @@ class Piece extends Container {
   readonly shadow = new Graphics().ellipse(0, 0, RADIUS - 6, 10).fill({ color: ink, alpha: 0.15 });
   constructor(readonly kind: number) {
     super();
-    const c = swatch[COLORS[kind]];
+    const c = swatch[colourOf(kind)];
     this.shadow.y = SHADOW_Y;
     this.addChild(
       this.shadow,
@@ -704,7 +758,7 @@ class PileMatch implements Game {
     this.hinted = null;
     if (!accepted(r)) {
       if (r.refused === 'wrong-kind') return this.wrongKind(i, asked!);
-      if (r.refused === 'full') return this.full();
+      if (r.refused === 'full') return this.full(i);
       return;
     }
     this.fallback = !!hinted && 'take' in hinted && hinted.take === i && hinted.fallback;
@@ -731,7 +785,7 @@ class PileMatch implements Game {
     await this.ctx.tw.to(p, { x: (p.x + to.x) / 2, y: over }, { duration: FLIGHT * 0.5, ease: ease.outQuad });
     await this.ctx.tw.to(p, to, { duration: FLIGHT * 0.5, ease: ease.inQuad });
     p.zIndex = 100;
-    sfx.marimba(NOTES[kind] + before, 0.4);
+    sfx.marimba(noteOf(kind) + before, 0.4);
     if (pop !== null) await this.pop(pop);
     this.settle();
     this.botCache = null;
@@ -748,7 +802,7 @@ class PileMatch implements Game {
     this.fullCounted = false;
     const three = this.trayOrder.filter((j) => this.board.kinds[j] === kind);
     this.trayOrder = this.trayOrder.filter((j) => this.board.kinds[j] !== kind);
-    sfx.bell(NOTES[kind] + 3, 0.3);
+    sfx.bell(noteOf(kind) + 3, 0.3);
     void this.ctx.say('pile.pop');
     await Promise.all(
       three.map((j) =>
@@ -771,7 +825,7 @@ class PileMatch implements Game {
     }
     this.ctx.particles.burst(b.x, b.y - 30, {
       kind: 'dot',
-      colors: [swatch[COLORS[kind]].fill, 0xffffff],
+      colors: [swatch[colourOf(kind)].fill, 0xffffff],
       count: 10,
       speed: [60, 180],
       gravity: 0,
@@ -806,7 +860,7 @@ class PileMatch implements Game {
       p.zIndex = this.board.cells[i].z * 10;
       this.settle();
       this.shade();
-      if (this.plan.id >= 4 && ++this.putBacks >= 3) this.showHint();
+      if (!this.plan.asked && !this.plan.freePlay && ++this.putBacks >= 3) this.showHint();
     });
     this.shade();
     this.slideTray();
@@ -829,12 +883,19 @@ class PileMatch implements Game {
     this.miss();
   }
 
-  /** A full tray turns the piece away; from level 4 the first refusal counts until something leaves the tray. */
-  private full() {
+  /**
+   * A full tray turns the piece away; from level 4 (never in free play) the first refusal counts until something leaves
+   * the tray. At level 10 the pet first names the piece fully ("That is a blue sea star"), colour and shape.
+   */
+  private full(i: number) {
     sfx.boing();
     this.fullGlow = 1.5;
-    void this.ctx.say('pile.full');
-    if (this.plan.id < 4 || this.fullCounted) return;
+    if (this.plan.lookAlike)
+      void this.ctx
+        .say(`pile.this-is.${KINDS[this.board.kinds[i]]}` as LineId)
+        .then(() => this.ctx.say('pile.full'));
+    else void this.ctx.say('pile.full');
+    if (this.plan.asked || this.plan.freePlay || this.fullCounted) return;
     this.fullCounted = true;
     this.miss();
   }
@@ -898,7 +959,7 @@ class PileIcon extends WigglyIcon {
 
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  const kind = rng.int(0, KINDS.length - 1);
+  const kind = rng.int(0, STICKER_KINDS - 1);
   const c = new Container();
   c.addChild(
     new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }),
@@ -925,6 +986,7 @@ export const pileMatch: GameModule = {
   skills: ['matching', 'visual-search', 'counting', 'planning'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   coplayHint: 'One of you names a kind, and the other finds three.',

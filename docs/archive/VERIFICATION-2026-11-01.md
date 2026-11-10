@@ -46,25 +46,25 @@
 
 - [PR #1095](https://github.com/rjdunlap/neo/pull/1095), branch `claude/dive-rhyme-time`: [dive](../deep-dives/rhyme-time.md). Four builds queued (batches rhyme-time 1–4: fresh families, level 8 *Silly pairs*, the level 9 preschool opening, level 10 *Rhyme baskets*); *Change the start* stays a sketch; tracker, READY, batches, backlog, ideas, the poetry study and device checks updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds and the two device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rhyme-time-dive-2026-11-01-proposed-nothing-built)).
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds and the two device checks ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#rhyme-time-dive-2026-11-01-proposed-nothing-built)).
 
 ## 2026-11-01 — Secret Code deep dive (docs only)
 
 - [PR #1096](https://github.com/rjdunlap/neo/pull/1096), branch `claude/dive-secret-code`: [dive](../deep-dives/secret-code.md). Six builds queued (batches secret-code 1–6: fair rows and a refreshed hint, level 8 *Four slots*, level 9 *Be the door*, the level 10 preschool opening, level 11 *A bigger detective door*, the couch course *The Code Doors*) and the maker/breaker definition after level 9; tracker, READY, batches, backlog, ideas, roadmap and device checks updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the six builds and the three device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#secret-code-dive-2026-11-01-proposed-levels-not-yet-built)).
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the six builds and the three device checks ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#secret-code-dive-2026-11-01-proposed-levels-not-yet-built)).
 
 ## 2026-11-01 — Shape Buddies deep dive (docs only)
 
 - [PR #1097](https://github.com/rjdunlap/neo/pull/1097), branch `claude/dive-shape-buddies`: [dive](../deep-dives/shape-buddies.md). Five builds queued (batches shape-buddies 1–5: what grows, level 4 *Down and catch*, level 5 *A cup on the ledge*, level 6 *Which way round?*, the level 7 preschool opening) and the shared-roles definition after batch 5; tracker, READY, batches, backlog, ideas, roadmap and device checks updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the five builds and the four device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#shape-buddies-dive-2026-11-01-proposed-levels-not-yet-built)).
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the five builds and the four device checks ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#shape-buddies-dive-2026-11-01-proposed-levels-not-yet-built)).
 
 ## 2026-11-01 — Sing-Along Barn deep dive (docs only)
 
 - [PR #1098](https://github.com/rjdunlap/neo/pull/1098), branch `claude/dive-sing-along-barn`: [dive](../deep-dives/sing-along-barn.md). Three builds queued (batches sing-along-barn 1–3: tunes with their own notes, level 7 *Finish the line*, level 8 *Which one finishes it?*); slices 4–5 stay in the dive. Tracker, READY, batches, backlog, ideas, roadmap, poetry study notes, device checks and the GAMES song count (eight) updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds and the four device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#sing-along-barn-dive-2026-11-01-proposed-new-tunes-and-levels-not-yet-built)).
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds and the four device checks ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#sing-along-barn-dive-2026-11-01-proposed-new-tunes-and-levels-not-yet-built)).
 
 ## 2026-11-01 — Rule Machine levels 1–2 (algebra-balance AB1)
 
@@ -72,7 +72,7 @@
 - Ran (tested at 4a1c763e, Vite dev on http://localhost:5821, `VITE_SPEECH=off`): typecheck; 25 rule tests with the registry, lands, how-to and content tests (215 passed); `BROWSER_SUITE=rulemachine` three consecutive passes after a script race fix (level 1 at pre-K a free wrong first guess, two counted wrongs and the glow, saved 2 misses/1 hint; portrait level 2 one wrong pad after two rows, saved 1/0; screenshots of the glow and the portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rule-machine FINGER_LEVELS=2` (43 s); `npm run build`; `game-reviewer`, its two findings fixed (a resize during the car's hop could softlock; the truth now shows beside her pick).
 - Full `npm test` ran once: 6 failures: timing tests in other games (penguin-slide, block-garden, fluffy-salon, keep-house) that passed in isolation under machine load (flakes), and the voice-clip test, which needed the new title's Kokoro clip (rendered with `scripts/voice-clips/render.mjs`; clip tests 4 passed).
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): the device and person checks there.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): the device and person checks there.
 
 ## 2026-11-01 — Sprout Shuffle level 4, which pairs always make spotted (genetics G5)
 
@@ -80,7 +80,7 @@
 - Ran (Vite dev on http://localhost:5643, `VITE_SPEECH=off`): typecheck; 29 Sprout Shuffle rule tests (10 new); howto and registry tests 41/41; `BROWSER_SUITE=sproutshuffle SPROUT_LEVELS=4` (free magnifier fan, two wrong Checks with counterexample and glow, accepted pairs, saved 2 misses/1 hint; landscape and portrait screenshots reviewed), re-passed after the review fix; `FINGER_ONLY=sprout-shuffle FINGER_LEVELS=4` clean 3.4 s; `game-reviewer` (no rule findings; two cosmetic races fixed).
 - Full `npm test` 4095/4099: four time-bounded tests in other games (block-garden, fluffy-salon, keep-house, penguin-slide) failed under load and passed 110/110 on an isolated rerun.
 - Source check of the counterexample lines: they follow standard single-gene complete-dominance Punnett results (AA×aa, AA×Aa, AA×AA all dominant; Aa×aa half recessive; Aa×Aa a quarter; aa×aa all recessive), as in introductory Mendelian sources such as Khan Academy and Britannica; lines remain draft.
-- Not run: build (CI runs it), levels 1–3 suite (unchanged code), offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23)): pair-card wording by ear and on iPad, magnifier discoverability, whether two accepted pairs read as both right.
+- Not run: build (CI runs it), levels 1–3 suite (unchanged code), offline. Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#from-the-delegated-decisions-2026-10-23)): pair-card wording by ear and on iPad, magnifier discoverability, whether two accepted pairs read as both right.
 
 ## 2026-11-01 — Household Casebook definition (everyday-life-long-ago H5, docs only)
 
@@ -118,7 +118,7 @@
 - Ran (commit 44faac49 on base 205a5d4e, Vite dev on http://localhost:5648): typecheck; full unit suite 4128 passed (29 Not Always rule tests: authored rounds, 300-seed rows per level, decoy, mends, accounting, hint targets finish every round, layout at four views); `npm run build`; `BROWSER_SUITE=notalways` (pre-K level 1 two fitting cards then glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, one false mend, then true 1/0; screenshots of level 1, portrait level 2 and level 3 mends); `BROWSER_SUITE=fingerdemo FINGER_ONLY=not-always FINGER_LEVELS=2,3` (7.3 s, 8.5 s).
 - `game-reviewer` found two minor issues, fixed (mend reading token, narrow-view rows); rule tests re-ran, the browser play was not re-run after them.
 - Not run: offline check, any device or child check.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#not-always-philosophy-reasoning-study-2026-10-31-levels-13-built-2026-11-01)): the person and device checks there.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#not-always-philosophy-reasoning-study-2026-10-31-levels-13-built-2026-11-01)): the person and device checks there.
 
 ## 2026-11-01 — Caravan Days levels 6–7 (china-india-silk-road CS4)
 
@@ -126,7 +126,7 @@
 - Ran (commit 8a2ccef5): typecheck; 44 caravan-days rule tests (7 new: level 6 plans, verdicts and bot over 300 seeds, level 7 plans, full subset enumeration over 100 seeds, layout at four views); full `npm test` 291 files / 4135 tests; `npm run build`; `BROWSER_SUITE=caravandays CARAVAN_FROM=6` on a private Vite port (level 6 Go before both free, slower road with a wrong count a miss, help a hint, its right count accepted, portrait screenshot, saved 1/1; level 7 Done empty free, one well a miss, help a hint, fewest placement plus an extra accepted, portrait screenshot, saved 1/1); `fingerdemo` `FINGER_ONLY=caravan-days FINGER_LEVELS=6,7 FINGER_BAND=school` 19.4 s and 19.7 s.
 - `game-reviewer`: no blocking findings. History lines source-checked against Wikipedia (Caravanserai, Edicts of Ashoka).
 - Not run: other suites, offline check, device checks.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#caravan-days-levels-67-cs4-2026-11-01)): snow day and road length, the switchback in portrait, fewer wells, device speech for day and hoofprint slots.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#caravan-days-levels-67-cs4-2026-11-01)): snow day and road length, the switchback in portrait, fewer wells, device speech for day and hoofprint slots.
 
 ## 2026-11-01 — Paint Mixer levels 3–4 (ratio and proportion, batch paint-mixer 2)
 
@@ -134,7 +134,7 @@
 - Ran (commit 451b424e on base e426c78f, Vite on http://localhost:5902, `VITE_SPEECH=off`): typecheck; 46 paint-mixer rule tests; full unit suite 291 files / 4157 tests; `npm run build`; `BROWSER_SUITE=paintmixer` levels 1–4 (level 3 one-row "more, the same way" no miss, stray Check 1 miss, table filling, portrait second bucket, saved 1/0; level 4 one row, same amount again no miss, two rows, saved 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=paint-mixer FINGER_LEVELS=3,4` (33.8 s, 17.0 s); screenshots paint-mixer-3-portrait and paint-mixer-4-landscape reviewed.
 - `game-reviewer`: nothing material (one Text leak fixed).
 - Not run: offline check (no persistence or asset change), device checks.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-14)): the table and fill line on an iPad, "for every" device speech, whether the stray reads as a trick, whether the second level-3 bucket is a chore.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#paint-mixer-levels-14)): the table and fill line on an iPad, "for every" device speech, whether the stray reads as a trick, whether the second level-3 bucket is a chore.
 
 ## 2026-11-01 — Egg Catch far barn (visual identity V1)
 
@@ -149,7 +149,7 @@
 - Ran (branch commit cf248a3b plus fixes through 5256c396, Vite on http://localhost:5671, `VITE_SPEECH=off`): typecheck; 38 Spinner Fair rule tests (sets, cards, race starts, `isFair`, `give`, `nextGive`, layouts at six views); full unit suite 291 files / 4178 tests; `npm run build`; `BROWSER_SUITE=spinnerfair45` (level 4 with one card on a wrong spinner, 1 miss, then both sets, saved 1/0; portrait level 5 with a wrong *fair*, an unfair, an uneven Check, a wedge moved the wrong way then back to 3–3, six-spin race, second race, 2 misses, 1 hint, saved 2/1; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=spinner-fair FINGER_LEVELS=4,5` (31.2 s and 36.4 s, clean).
 - The first browser run found a real bug (Pixi `removeChildren(1)` threw on a one-child wheel, so level 5 never opened); fixed and re-passed. `game-reviewer`: one minor finding (old wedge drag listeners not released between races), fixed in 5256c396 with unit tests re-passed, not re-played in the browser.
 - Not run: offline check (no persistence or asset change), other suites.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#spinner-fair-levels-45-chance-statistics-cs1-batch-spinner-fair-2-2026-11-01)): the face cards without words, grabbing a wedge piece on an iPad in portrait, "a fair race can end level", device speech.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#spinner-fair-levels-45-chance-statistics-cs1-batch-spinner-fair-2-2026-11-01)): the face cards without words, grabbing a wedge piece on an iPad in portrait, "a fair race can end level", device speech.
 
 ## 2026-11-01 — Tide Line levels 3–4 (oceans slice 1, batch tide-line 2)
 
@@ -157,7 +157,7 @@
 - Ran (working diff over origin/main e80fc0fe plus two newer merges, Vite on http://localhost:5637): typecheck; 68 Tide Line rule tests; full `npm test` 291 files / 4211 tests; `npm run build`; `BROWSER_SUITE=tideline34` (level 3: early wave not counted, round 1 dry, round 2 the pail between the lines floats and is fetched while flag and towel stay, saved 1/0; level 4 in portrait: two wrong cards then the glow, two strips, saved 2/1; screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=3,4` (25.6 s and 4.7 s).
 - `game-reviewer` fixes: round-2 things fly back before they can be grabbed; layout re-applied after fetch and carry tweens; a placed card stays in the gap on resize. `rules-tester` fix: `clampFeet` keeps a thing's 120-wide touch box clear of corner buttons and the pet.
 - Not run: offline check, other suites.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#tide-line-levels-34-oceans-study-slice-1-batch-tide-line-2-2026-11-01)): the seaweed line in sunlight and the two lines, the halfway picture at pre-K, device speech.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#tide-line-levels-34-oceans-study-slice-1-batch-tide-line-2-2026-11-01)): the seaweed line in sunlight and the two lines, the halfway picture at pre-K, device speech.
 
 ## 2026-11-01 — Notice Board levels 1–3 (media-literacy ML1)
 
@@ -165,7 +165,7 @@
 - Ran (base origin/main 7ffc22b1; commit 177663fc plus review fix e68dc0a0, Vite on http://localhost:5589): typecheck; full `npm test` 292 files / 4243 tests (32 Notice Board rule tests); `BROWSER_SUITE=noticeboard` (pre-K level 1 two wrong badges, the glow, then the maker 2/1; portrait level 2 heard-it friend then the witness through a stretched and a true poster 1/0; level 3 a free friend tap, a wrong basket then the right one 1/0; screenshots reviewed incl. level 2 portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=notice-board FINGER_LEVELS=2,3` (10.8 s, 11.3 s); `npm run build`.
 - `game-reviewer` fix: a late hint line after the poster has moved on is guarded; a level-1 how-to note scoped.
 - Not run: offline check, other suites.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01)): witness versus nearest friend at four, basket by price or words at seven, badges and place pictures at bubble size on an iPad, a grown-up using the card.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01)): witness versus nearest friend at four, basket by price or words at seven, badges and place pictures at bubble size on an iPad, a grown-up using the card.
 
 ## 2026-11-01 — Rainbow Fingers fold pages (Mirror Brush fold button)
 
@@ -181,4 +181,4 @@
 - Ran (commit 6a35f937 plus review fix f6bd22e5, Vite on http://localhost:5812, `VITE_SPEECH=off`): typecheck; full `npm test` 293 files / 4279 tests (28 Shell Rows rule tests); `BROWSER_SUITE=shellrows` (pre-K level 1 with a free full square, two wrong squares answered by the reply and rewind, the glow, 2 misses/1 hint; portrait school level 3 with the block answered by the pet taking her three, 1/0, screenshot mid-replay; re-run after the review fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=shell-rows FINGER_LEVELS=1,3` (6.0 s each); `npm run build`.
 - `game-reviewer` fixes: a softlock when the view resized during the right-square settle (a killed awaited tween), and misplaced pieces on a resize mid-replay; the resize case was not separately probed in the browser.
 - Not run: offline check, other suites.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#shell-rows-strategy-games-study-2026-10-31-levels-13-built-2026-11-01)): pebbles looked at before the shell at level 2, the replay as a lesson, "three in a row" and the pet's lines in device speech, the new title clip.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#shell-rows-strategy-games-study-2026-10-31-levels-13-built-2026-11-01)): pebbles looked at before the shell at level 2, the replay as a lesson, "three in a row" and the pet's lines in device speech, the new title clip.

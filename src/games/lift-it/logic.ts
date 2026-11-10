@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * is its weight over the strands that hold it, and the rope comes that many times as far. See docs/definitions/lift-it.md.
  */
 
-export type Rig = 'direct' | 'fixed' | 'movable' | 'both';
+export type Rig = 'direct' | 'fixed' | 'movable' | 'both' | 'three';
 export const RIGS: readonly Rig[] = ['direct', 'fixed', 'movable', 'both'];
 export type HookId = 'branch' | 'crate';
 export interface Hooks {
@@ -35,15 +35,16 @@ export type Ask = 'ground' | 'ledge';
 /** Drag units per knot of rope. */
 export const KNOT = 120;
 
-export function rigOf(hooks: Hooks): Rig {
-  if (hooks.branch && hooks.crate) return 'both';
+export function rigOf(hooks: Hooks, tiedToCrate = false): Rig {
+  if (hooks.branch && hooks.crate) return tiedToCrate ? 'three' : 'both';
   if (hooks.crate) return 'movable';
   if (hooks.branch) return 'fixed';
   return 'direct';
 }
 
 export function hooksOf(rig: Rig): Hooks {
-  return { branch: rig === 'fixed' || rig === 'both', crate: rig === 'movable' || rig === 'both' };
+  const both = rig === 'both' || rig === 'three';
+  return { branch: rig === 'fixed' || both, crate: rig === 'movable' || both };
 }
 
 export function wheels(rig: Rig): number {
@@ -51,19 +52,20 @@ export function wheels(rig: Rig): number {
   return Number(h.branch) + Number(h.crate);
 }
 
-/** Strands holding the crate: two once a wheel hangs on it. */
-export function ratio(rig: Rig): 1 | 2 {
+/** Strands holding the crate; tying the end to the crate adds a third. */
+export function ratio(rig: Rig): 1 | 2 | 3 {
+  if (rig === 'three') return 3;
   return rig === 'movable' || rig === 'both' ? 2 : 1;
 }
 
 /** Which way the hand moves: up on the crate or at the ledge, down at the ground. */
 export function pullDirection(rig: Rig): 'up' | 'down' {
-  return rig === 'direct' || rig === 'movable' ? 'up' : 'down';
+  return rig === 'direct' || pullersAt(rig) === 'ledge' ? 'up' : 'down';
 }
 
 /** Where the rope's end is, and so who pulls it. */
 export function pullersAt(rig: Rig): Ask {
-  return rig === 'movable' ? 'ledge' : 'ground';
+  return rig === 'movable' || rig === 'three' ? 'ledge' : 'ground';
 }
 
 export interface Line {
@@ -119,7 +121,7 @@ export function endsRight(rig: Rig, line: Line): boolean {
  */
 export function bestRig(line: Line, among: readonly Rig[] = RIGS): Rig | null {
   const ok = among.filter((r) => works(r, line) && endsRight(r, line));
-  const order: Rig[] = ['fixed', 'movable', 'both', 'direct'];
+  const order: Rig[] = ['fixed', 'movable', 'both', 'three', 'direct'];
   ok.sort(
     (a, b) =>
       (a === 'direct' ? 9 : wheels(a)) - (b === 'direct' ? 9 : wheels(b)) ||
@@ -163,6 +165,8 @@ export interface Plan {
   ask: 'none' | 'knots' | 'paws' | 'numbers';
   /** Levels 5–6: a request names the pullers, and misses count. */
   request: boolean;
+  /** Both wheels let her move the standing end from the branch to the crate. */
+  movableKnot?: true;
   lines: number;
 }
 
@@ -239,20 +243,42 @@ export const PLANS: readonly Plan[] = [
     request: true,
     lines: 3,
   },
+  {
+    id: 7,
+    name: 'Three ropes',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: true,
+    ask: 'none',
+    request: false,
+    movableKnot: true,
+    lines: 3,
+  },
+  {
+    id: 8,
+    name: 'Three ropes by the numbers',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: true,
+    ask: 'numbers',
+    request: true,
+    movableKnot: true,
+    lines: 3,
+  },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 9, order: [3, 4, 9, 5, 6] },
+  school: { min: 3, max: 9, order: [3, 4, 9, 5, 6, 7, 8] },
 };
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.id === level) ?? PLANS[0];
 }
 
-/** Whether a tug can be a miss (5–6 only; levels 1–4 adapt through hints alone, and 9 counts only its cards). */
-export const countsMisses = (plan: Plan) => plan.request;
+/** Whether a tug can be a miss. Level 9 counts only its cards. */
+export const countsMisses = (plan: Plan) => plan.request || plan.movableKnot === true;
 
 /** The rigs she can make at a plan: the prebuilt one, or what its hooks allow; no hands-only push once a request names a rope. */
 export function rigsFor(plan: Plan): Rig[] {
@@ -261,6 +287,7 @@ export function rigsFor(plan: Plan): Rig[] {
     const h = hooksOf(r);
     return (!h.branch || plan.hooks.includes('branch')) && (!h.crate || plan.hooks.includes('crate'));
   });
+  if (plan.movableKnot && all.includes('both')) all.push('three');
   return plan.request ? all.filter((r) => r !== 'direct') : all;
 }
 
@@ -303,6 +330,12 @@ export function lineFits(plan: Plan, line: Line): boolean {
     case 9:
       // Even weights, so the paws card is exact for every rig on offer.
       return (w === 2 || w === 4) && h <= 2 && g >= 1;
+    case 7:
+      return w >= 3 && g <= 2;
+    case 8:
+      return (
+        h >= 2 && g <= 2 && among.every((r) => !works(r, line) || !endsRight(r, line) || w % ratio(r) === 0)
+      );
     case 5:
     case 6: {
       if (plan.id === 6 && (w < 3 || h < 2)) return false;
@@ -326,7 +359,12 @@ export function roundFits(plan: Plan, lines: readonly Line[]): boolean {
     if (!lines.some((l) => workingRigs(l, among).some((r) => ratio(r) === 1))) return false;
     if (!lines.some((l) => !workingRigs(l, among).some((r) => ratio(r) === 1))) return false;
   }
-  if (plan.request && !lines.some((l) => l.ask === 'ground')) return false;
+  if (plan.movableKnot) {
+    const among = rigsFor(plan);
+    // Every round needs a parcel that cannot be delivered without moving the knot.
+    if (!lines.some((l) => bestRig(l, among) === 'three')) return false;
+  }
+  if ((plan.id === 5 || plan.id === 6) && !lines.some((l) => l.ask === 'ground')) return false;
   if (plan.id === 6 && !lines.some((l) => l.w === 6 && l.g === 3)) return false;
   return true;
 }
@@ -344,6 +382,10 @@ export function authored(plan: Plan): Line[] {
       return [{ w: 4, h: 1, g: 2, l: 2, waiting: 'duck', puller: 'bear', parcel: 'books' }];
     case 9:
       return [{ w: 4, h: 1, g: 2, l: 2, waiting: 'cat', puller: 'pig', parcel: 'teapot' }];
+    case 7:
+      return [{ w: 6, h: 2, g: 2, l: 2, waiting: 'bunny', puller: 'bear', parcel: 'books' }];
+    case 8:
+      return [{ w: 6, h: 3, g: 0, l: 2, waiting: 'frog', puller: 'bear', ask: 'ledge', parcel: 'pumpkin' }];
     case 5:
       return [
         { w: 4, h: 2, g: 3, l: 0, waiting: 'bunny', puller: 'mouse', ask: 'ground', parcel: 'teapot' },
@@ -370,6 +412,20 @@ function seededLine(plan: Plan, rng: Rng, want?: Ask): Line {
       return { ...base, w: rng.int(2, 4), h: rng.int(1, 2), g: rng.int(1, 3), l: rng.int(0, 2) };
     case 9:
       return { ...base, w: rng.pick([2, 4]), h: rng.int(1, 2), g: rng.int(1, 3), l: rng.int(0, 2) };
+    case 7:
+      return { ...base, w: rng.int(3, 6), h: rng.int(1, 3), g: rng.int(1, 2), l: rng.int(1, 2) };
+    case 8: {
+      const ask = want ?? 'ledge';
+      const w = ask === 'ground' ? 4 : rng.pick([3, 6]);
+      return {
+        ...base,
+        w,
+        h: rng.int(2, 3),
+        g: ask === 'ground' ? 2 : rng.int(0, 2),
+        l: w === 3 ? 1 : 2,
+        ask,
+      };
+    }
     default: {
       const ask = want ?? (rng.chance(0.5) ? 'ground' : 'ledge');
       const w = plan.id === 6 ? rng.int(3, 6) : rng.int(2, 5);
@@ -404,6 +460,14 @@ export function fallbackRound(plan: Plan): Line[] {
       { w: 4, h: 2, g: 3, l: 2, waiting: 'mouse', puller: 'bunny' },
     ],
     5: [{ w: 3, h: 3, g: 2, l: 1, waiting: 'frog', puller: 'bear', ask: 'ground' }],
+    7: [
+      { w: 4, h: 1, g: 2, l: 2, waiting: 'dog', puller: 'duck' },
+      { w: 3, h: 3, g: 1, l: 1, waiting: 'mouse', puller: 'bunny' },
+    ],
+    8: [
+      { w: 4, h: 2, g: 2, l: 2, waiting: 'mouse', puller: 'duck', ask: 'ground' },
+      { w: 3, h: 3, g: 0, l: 1, waiting: 'bunny', puller: 'frog', ask: 'ledge' },
+    ],
     6: [
       { w: 4, h: 2, g: 0, l: 2, waiting: 'mouse', puller: 'duck', ask: 'ledge' },
       { w: 4, h: 3, g: 2, l: 0, waiting: 'bunny', puller: 'frog', ask: 'ground' },
@@ -430,6 +494,12 @@ export function makeRound(plan: Plan, rng: Rng, first: boolean): { lines: Line[]
         const c = seededLine(plan, rng, want);
         if (plan.id === 6 && i === plan.lines - 1 && !lines.some((l) => l.w === 6 && l.g === 3))
           Object.assign(c, { w: 6, g: 3, ask: 'ground' });
+        if (
+          plan.movableKnot &&
+          i === plan.lines - 1 &&
+          !lines.some((l) => bestRig(l, rigsFor(plan)) === 'three')
+        )
+          Object.assign(c, { w: 6, l: 2, ...(plan.request ? { ask: 'ledge' } : {}) });
         if (lineFits(plan, c)) line = { ...c, parcel: rng.pick(parcelsFor(c.w)) };
       }
       if (!line) break;
@@ -488,6 +558,7 @@ export const WHEEL_R = 50;
 /** Hit radii: hooks 120 across, the handle 130, tray wheels 120. Cards are 120 square. */
 export const HOOK_HIT = 60;
 export const HANDLE_HIT = 65;
+export const TIE_HIT = 50;
 export const TRAY_HIT = 60;
 export const CARD = 120;
 /** A friend's box around its feet, at the drawn scale. */
@@ -496,6 +567,7 @@ export const FRIEND_UP = 100;
 export const BRANCH_Y = 40;
 
 export interface LiftLayout {
+  movableKnot: boolean;
   groundY: number;
   rung: number;
   /** The crate's centre line. */
@@ -510,23 +582,24 @@ export interface LiftLayout {
   ground: Pt[];
 }
 
-export function liftLayout(v: View): LiftLayout {
+export function liftLayout(v: View, movableKnot = false): LiftLayout {
   const groundY = v.h - 128;
   const rung = Math.min(170, (groundY - (BRANCH_Y + 150 + CRATE_H)) / 3);
-  const cx = Math.max(290, Math.round(v.w * 0.4));
+  const cx = Math.max(290, Math.round(v.w * (movableKnot ? 0.46 : 0.4)));
   return {
+    movableKnot,
     groundY,
     rung,
     cx,
     trunkX: v.w - 70,
     ring: { x: cx - WHEEL_R, y: BRANCH_Y + 14 },
-    branchHook: { x: cx + 2 * WHEEL_R, y: BRANCH_Y + 60 },
-    groundHandle: { x: cx + 3 * WHEEL_R, y: groundY - 190 },
+    branchHook: { x: cx + (movableKnot ? -2 : 2) * WHEEL_R, y: BRANCH_Y + 60 },
+    groundHandle: { x: cx + (movableKnot ? -3 : 3) * WHEEL_R, y: groundY - 190 },
     tray: [
       { x: v.w - 200, y: v.h - 64 },
       { x: v.w - 70, y: v.h - 64 },
     ],
-    ground: [0, 1, 2].map((i) => ({ x: cx + 230 + i * 80, y: groundY })),
+    ground: [0, 1, 2].map((i) => ({ x: cx + (movableKnot ? -225 : 230) + i * 80, y: groundY })),
   };
 }
 
@@ -539,6 +612,12 @@ export const crateHook = (L: LiftLayout, rung: number): Pt => ({
   x: L.cx,
   y: crateBottom(L, rung) - CRATE_H - WHEEL_R,
 });
+/** The crate's tie ring sits down the left edge, clear of the wheel above it. */
+export const crateRing = (L: LiftLayout, rung: number): Pt => ({
+  x: L.cx - CRATE_W / 2,
+  y: crateBottom(L, rung) - CRATE_H + 40,
+});
+
 /** The ledge handle and the two ledge pullers below it; the waiting friend at the ledge's lip. */
 export function ledgeSpots(
   L: LiftLayout,
@@ -546,6 +625,19 @@ export function ledgeSpots(
   h: number,
 ): { handle: Pt; pullers: Pt[]; waiting: Pt; from: number } {
   const y = ledgeY(L, h);
+  if (L.movableKnot) {
+    // Keep the rising end close to the wheel and the friends to its right, clear of the strand.
+    const hx = L.cx + 180;
+    return {
+      handle: { x: hx, y: y - 170 },
+      pullers: [
+        { x: hx + 60, y },
+        { x: hx + 140, y },
+      ],
+      waiting: { x: hx + 225, y },
+      from: L.cx + 100,
+    };
+  }
   const hx = Math.min(L.cx + 400, v.w - 110);
   return {
     handle: { x: hx, y: y - 170 },
@@ -561,7 +653,7 @@ export function ledgeSpots(
 /** Where the handle sits for a rig before a stroke (the crate's middle for a push). */
 export function handleAt(L: LiftLayout, v: View, rig: Rig, line: Line, rung: number): Pt {
   if (rig === 'direct') return { x: L.cx, y: crateBottom(L, rung) - CRATE_H / 2 };
-  if (rig === 'movable') return ledgeSpots(L, v, line.h).handle;
+  if (pullersAt(rig) === 'ledge') return ledgeSpots(L, v, line.h).handle;
   return L.groundHandle;
 }
 

@@ -8,9 +8,9 @@ Puddle Island has three kinds of user: the developer's daughter (one year old th
 
 ### 1. The primary user has never been observed, and the gap is widening
 
-Every verification entry since the project began records headless Chrome and unit tests. [DEVICE-CHECKS](DEVICE-CHECKS.md) holds **241 open items**, most of them "device speech and child play remain unobserved", and its [fifteen-minute iPad session](DEVICE-CHECKS.md#one-ipad-session-about-fifteen-minutes) has never been run. In the same month the repository took about 3,200 commits and the catalog reached 131 games. The roadmap still says the immediate feedback loop is "grown-ups playing in a desktop browser".
+Every verification entry since the project began records headless Chrome and unit tests. [DEVICE-CHECKS](../DEVICE-CHECKS.md) holds **241 open items**, most of them "device speech and child play remain unobserved", and its [fifteen-minute iPad session](DEVICE-CHECKS-2026-11-09.md#one-ipad-session-about-fifteen-minutes) has never been run. In the same month the repository took about 3,200 commits and the catalog reached 131 games. The roadmap still says the immediate feedback loop is "grown-ups playing in a desktop browser".
 
-That loop is informative for the grown-up and couch users. It says nothing about the one-year-old. Published usability work with children stops at about age three (NN/g's children studies cover 3 to 12; Sesame Workshop's tablet guide covers preschoolers), so no external study can stand in for watching her. The project's single most valuable research act is a five-minute observation on the iPad, repeated weekly, with the notes written down. [The protocol below](#a-five-minute-observation-protocol-for-the-lap-band) is built for that, and [OBSERVATIONS.md](OBSERVATIONS.md) is where the entries go.
+That loop is informative for the grown-up and couch users. It says nothing about the one-year-old. Published usability work with children stops at about age three (NN/g's children studies cover 3 to 12; Sesame Workshop's tablet guide covers preschoolers), so no external study can stand in for watching her. The project's single most valuable research act is a five-minute observation on the iPad, repeated weekly, with the notes written down. [The protocol below](#a-five-minute-observation-protocol-for-the-lap-band) is built for that, and [OBSERVATIONS.md](../OBSERVATIONS.md) is where the entries go.
 
 ### 2. At twelve to eighteen months she will tap, bang and swipe; dragging is not yet reliable
 
@@ -58,7 +58,7 @@ The couch route grew for the developer's wife and then for grandparents on TV, l
 
 | # | Recommendation | Why | Cost |
 | --- | --- | --- | --- |
-| R1 | **Run the fifteen-minute iPad session this week, and the five-minute lap observation below three times.** Write both in [OBSERVATIONS.md](OBSERVATIONS.md). | Nothing else here can be judged without it; it closes dozens of device checks at once | A person, no code |
+| R1 | **Run the fifteen-minute iPad session this week, and the five-minute lap observation below three times.** Write both in [OBSERVATIONS.md](../OBSERVATIONS.md). | Nothing else here can be judged without it; it closes dozens of device checks at once | A person, no code |
 | R2 | **Lap-level audit: every lap level finishes with taps alone.** Add a tap-then-tap or tap-anywhere path, or move the level to toddler. Guard it with a rule test per game where the logic allows | Drag is the least reliable gesture before three | Medium; one game per batch |
 | R3 | **A lap start that needs no reading.** For a lap player, Home's green play button opens a round of a lap favorite (or Mix's next pick) directly; the card shows the ghost-finger demo and one sentence, with Play as the only other target. The full Explore stays one tap away | Removes three reading screens from every session | Medium; shell |
 | R4 | **The card and tip talk to the adult in one line.** Level names instead of numbers on the card; the grown-up tip spoken once at round start and shown outside the play field | The adult is the player at lap and is holding the iPad one-handed | Small |
@@ -67,7 +67,7 @@ The couch route grew for the developer's wife and then for grandparents on TV, l
 | R7 | **Hatch and Home show what to touch when sound is off.** A wobble or sparkle on the egg; a bounce on the creature | iPads are often silent; speech is the only cue today | Small |
 | R8 | **One couch evening with a real controller and a TV**, recorded as a device check | The route's whole premise is unobserved | A person, no code |
 
-R1 and R8 are the developer's. R2 to R5 and R7 are build slices and should enter [READY](READY.md) through the usual claim, in the order above. R6 is a planning rule for the coordinator.
+R1 and R8 are the developer's. R2 to R5 and R7 are build slices and should enter [READY](../READY.md) through the usual claim, in the order above. R6 is a planning rule for the coordinator.
 
 ## A five-minute observation protocol for the lap band
 
@@ -83,7 +83,7 @@ Children under three cannot think aloud, and pairing them with another child doe
 4. Whether she repeats an action that worked.
 5. How she leaves: hands it back, hits Home by accident, swipes out of the app, is lifted away, round ends.
 
-**After, write one entry (ten lines at most) in [OBSERVATIONS.md](OBSERVATIONS.md):**
+**After, write one entry (ten lines at most) in [OBSERVATIONS.md](../OBSERVATIONS.md):**
 
 ```
 ## 2026-10-26 · Peg Garden level 8 · build 83d2a3ce
@@ -117,7 +117,7 @@ No child, iPad, controller or grandparent was observed. The walkthrough used a m
 
 ## Sources
 
-Project: [ROADMAP](ROADMAP.md#where-we-are), [DEVICE-CHECKS](DEVICE-CHECKS.md), [VERIFICATION](VERIFICATION.md), [FAMILY-EXPERIENCE](FAMILY-EXPERIENCE.md), [DISCOVERY](DISCOVERY.md), [rework README](rework/README.md), `src/parent/panel.ts`, `src/content/howto.ts`, `src/games/peg-garden/index.ts`.
+Project: [ROADMAP](../ROADMAP.md#where-we-are), [DEVICE-CHECKS](../DEVICE-CHECKS.md), [VERIFICATION](../VERIFICATION.md), [FAMILY-EXPERIENCE](../FAMILY-EXPERIENCE.md), [DISCOVERY](../DISCOVERY.md), [rework README](../rework/README.md), `src/parent/panel.ts`, `src/content/howto.ts`, `src/games/peg-garden/index.ts`.
 
 External:
 

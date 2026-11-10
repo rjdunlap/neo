@@ -7,6 +7,10 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await mossyLookPlay();
       return;
     }
+    if (process.env.MOSSY_ONLY === 'patch') {
+      await mossyPatchPlay();
+      return;
+    }
     for (const level of process.env.MOSSY_ONLY === 'navigation' ? [] : [1, 3]) {
       await launch('mossy-path', level);
       await page.waitForTimeout(350);
@@ -246,6 +250,56 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       g.resize(neo.view);
     });
     await screenshot('mossy-path-7-snow');
+  }
+
+  /** Level 8, a little patch: a free far tap that pulses, one counted visited tap, a finish and one sticker. */
+  async function mossyPatchPlay() {
+    await launch('mossy-path', 8);
+    await page.waitForTimeout(350);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const far = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game;
+      return g.board.tiles.find((at) => at !== g.path.at(-1) && L.moveError(g.board, g.path, at) === 'far');
+    });
+    await tap(`neo.scene.game.nodes[${far}]`);
+    assert.deepEqual(
+      await page.evaluate(() => [
+        neo.scene.game.path.length,
+        neo.scene.game.misses,
+        neo.scene.game.pulseTime > 0,
+      ]),
+      [1, 0, true],
+      'a far tap at level 8 is free and pulses the tiles beside the turtle',
+    );
+    const first = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game;
+      return L.completion(g.board, g.path)[0];
+    });
+    await tap(`neo.scene.game.nodes[${first}]`);
+    await tap(`neo.scene.game.nodes[${await page.evaluate(() => neo.scene.game.board.start)}]`);
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a visited tap still counts one miss');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(350);
+    assert.ok(
+      await page.evaluate(() => neo.scene.game.cell >= 100),
+      'portrait patch cells stay at least 100 units',
+    );
+    await screenshot('mossy-path-8-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(350);
+    await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game;
+      for (const at of L.completion(g.board, g.path)) {
+        kit.tapOn(g.nodes[at]);
+        await kit.sleep(170);
+      }
+    });
+    await finished('mossy-path');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log('Mossy Path 8: free far tap, counted visited tap, finish and one sticker passed');
   }
 
   return { mossyPathPlay };

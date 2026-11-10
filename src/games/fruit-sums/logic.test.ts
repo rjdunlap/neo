@@ -19,6 +19,7 @@ import {
   dropStep,
   hintGlow,
   hintGlow3,
+  keyOp,
   hintTriple,
   hintWay,
   judge,
@@ -120,11 +121,11 @@ describe('Fruit Sums rounds', () => {
     expect(makeRound(2, new Rng(9))).toEqual(makeRound(2, new Rng(9)));
   });
 
-  it('is a school ladder of six levels with Clear the tree after level 1 and Three fruit last, and a level beyond the plans reads as the last', () => {
-    expect(LEVELS.school).toEqual({ min: 1, max: 6, order: [1, 5, 2, 4, 3, 6] });
+  it('is a school ladder of seven levels with Clear the tree after level 1, then Three fruit and A times leaf last, and a level beyond the plans reads as the last', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 7, order: [1, 5, 2, 4, 3, 6, 7] });
     expect([...levelsInOrder(LEVELS.school!)].sort()).toEqual(PLANS.map((_, i) => i + 1));
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(9)).toBe(PLANS[5]);
+    expect(planFor(9)).toBe(PLANS[6]);
     expect(waysNeeded(planFor(1))).toBe(WAYS_PER_ROUND);
     expect(waysNeeded(planFor(5))).toBe(3);
     expect(waysNeeded(planFor(6))).toBe(WAYS_PER_ROUND);
@@ -311,11 +312,11 @@ describe('Fruit Sums layout', () => {
     [1024, 1366],
   ];
   for (const [w, h] of views) {
-    for (const level of [1, 2, 3, 4, 5, 6]) {
+    for (const level of [1, 2, 3, 4, 5, 6, 7]) {
       it(`${w}x${h} level ${level}: every touch target is at least 100 units, on screen, apart, and clear of the pet corner`, () => {
         const plan = planFor(level),
           signs = choosesSign(level);
-        const l = layoutFor(w, h, plan.tiles, signs, !!plan.three);
+        const l = layoutFor(w, h, plan.tiles, signs ? plan.ops.length : 0, !!plan.three);
         const boxes = [
           ...l.tiles.map((p) => ({ ...p, s: TILE })),
           ...(plan.three ? [l.a, l.b, l.c] : [l.a, l.b]).map((p) => ({ ...p, s: SLOT })),
@@ -339,7 +340,7 @@ describe('Fruit Sums layout', () => {
             expect(Math.abs(p.x - q.x) >= reach || Math.abs(p.y - q.y) >= reach).toBe(true);
           }
         }
-        expect(l.leaves).toHaveLength(signs ? 2 : 0);
+        expect(l.leaves).toHaveLength(signs ? plan.ops.length : 0);
         if (plan.three) {
           // Each plus sign sits in the gap between two boxes, clear of both.
           for (const [p, op, q] of [
@@ -566,5 +567,87 @@ describe('Fruit Sums level 6, Three fruit', () => {
     expect(hintGlow3(tray, 14, [], [1, 3, null])).toEqual({ tile: 5 });
     expect(hintGlow3(tray, 14, ['+2,4,8'], [1, null, null])).toEqual({ tile: 1 });
     expect(hintGlow3(tray, 14, [], [1, 3, 5])).toEqual({ check: true });
+  });
+});
+
+describe('Fruit Sums level 7, A times leaf', () => {
+  const plan = planFor(7);
+
+  it('has plus, take away and times leaves, and the sign is a choice', () => {
+    expect(plan.ops).toEqual(['plus', 'minus', 'times']);
+    expect(choosesSign(7)).toBe(true);
+    for (const level of [1, 2, 3, 4, 5, 6]) expect(planFor(level).ops).not.toContain('times');
+  });
+
+  it('every target comes from the composite list, and every tray has a times way and at least two ways in all', () => {
+    for (const n of plan.targets!) {
+      expect(n).toBeGreaterThanOrEqual(6);
+      expect(n).toBeLessThanOrEqual(24);
+      let f = 2;
+      while (f * f <= n && !(n % f === 0 && n / f <= plan.maxTile)) f++;
+      expect(f * f <= n).toBe(true);
+    }
+    const signs = new Set<string>();
+    for (const seed of SEEDS) {
+      const { target, tray } = makeRound(7, new Rng(seed));
+      expect(plan.targets).toContain(target);
+      const ways = solutions(tray, plan.ops, target);
+      expect(ways.length).toBeGreaterThanOrEqual(WAYS_PER_ROUND);
+      const times = ways.filter((w) => w.op === 'times');
+      expect(times.some((w) => tray[w.a] >= 2 && tray[w.b] >= 2)).toBe(true);
+      // Two different signs always work, so a second way never needs times again.
+      expect(new Set(ways.map((w) => w.op)).size).toBeGreaterThanOrEqual(2);
+      for (const w of ways) signs.add(w.op);
+    }
+    expect(signs).toEqual(new Set(['plus', 'minus', 'times']));
+  });
+
+  it('times is the same either way round, and never the same way as a plus', () => {
+    expect(made(3, 'times', 4)).toBe(12);
+    expect(wayKey(3, 'times', 4)).toBe(wayKey(4, 'times', 3));
+    expect(wayKey(2, 'times', 2)).not.toBe(wayKey(2, 'plus', 2));
+    expect(keyOp(wayKey(3, 'times', 4))).toBe('times');
+    expect(judge(4, 'times', 3, 12, [wayKey(3, 'times', 4)])).toMatchObject({ kind: 'same' });
+    expect(judge(4, 'times', 3, 12, [wayKey(4, 'plus', 8)])).toMatchObject({ kind: 'right' });
+    expect(judge(4, 'times', 5, 12, [])).toMatchObject({ kind: 'wrong', made: 20 });
+    // A times way is listed once, from its earlier fruit.
+    expect(solutions([4, 3, 9], ['times'], 12)).toEqual([{ a: 0, op: 'times', b: 1 }]);
+  });
+
+  it('the hint prefers a sign she has not used yet, and follows through from a fruit in the first box', () => {
+    const tray = [3, 4, 8, 5, 1, 11],
+      ops = plan.ops;
+    // 3 × 4, 4 + 8, 1 + 11 and 4 × 3 all make 12.
+    expect(hintWay(tray, ops, 12, [wayKey(3, 'times', 4)])!.op).not.toBe('times');
+    expect(hintWay(tray, ops, 12, [wayKey(4, 'plus', 8)])!.op).toBe('times');
+    // With 4 in the first box and plus used, the hint turns 3 × 4 round to start from it.
+    expect(hintWay(tray, ops, 12, [wayKey(4, 'plus', 8)], 1)).toEqual({ a: 1, op: 'times', b: 0 });
+    expect(hintGlow(tray, ops, 12, [wayKey(4, 'plus', 8)], 1, 0, 'plus')).toEqual({ leaf: 'times' });
+    // The partner sitting in the second box with the first empty: a times only needs its partner, as a sum does.
+    expect(hintGlow(tray, ops, 12, [wayKey(4, 'plus', 8)], null, 0, null)).toEqual({ tile: 1 });
+    // Playing the hint step by step always ends at the check, and the way it builds is new and right.
+    for (const seed of SEEDS.slice(0, 60)) {
+      const { target, tray: t } = makeRound(7, new Rng(seed));
+      const found: string[] = [];
+      for (let round = 0; round < WAYS_PER_ROUND; round++) {
+        let a: number | null = null,
+          b: number | null = null,
+          op: Op | null = null;
+        for (let step = 0; step < 8; step++) {
+          const g = hintGlow(t, ops, target, found, a, b, op);
+          expect(g).not.toBeNull();
+          if ('check' in g!) break;
+          if ('leaf' in g!) op = g.leaf;
+          else if (a === g!.tile) a = null;
+          else if (b === g!.tile) b = null;
+          else if (a === null) a = g!.tile;
+          else b = g!.tile;
+        }
+        const v = judge(t[a!], op!, t[b!], target, found);
+        expect(v.kind).toBe('right');
+        if (v.kind === 'right') found.push(v.key);
+      }
+      expect(new Set(found.map(keyOp)).size).toBe(2);
+    }
   });
 });

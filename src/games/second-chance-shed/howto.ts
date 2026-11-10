@@ -16,6 +16,14 @@ export const HOW_TO: GameHowTo = {
     { from: 5, to: 6, text: "A friend's bubble shows what they need; give them something that fits." },
     { from: 5, to: 6, text: 'Ring the bell when your plan is ready.' },
     { from: 6, to: 6, text: 'Two friends need things, and one thing fits both: plan who gets what.' },
+    { from: 7, to: 8, text: 'Give every friend a cup at every picnic, then ring the bell.' },
+    {
+      from: 7,
+      to: 8,
+      text: 'A used cup goes through the wash tub before it comes back. The tub washes two.',
+    },
+    { from: 7, to: 8, text: 'One-use cups go to the Last Heap. Keep it within its outlines.' },
+    { from: 8, to: 8, text: 'The painter needs the big mug, clean, at the time on the board.' },
   ],
   finish: [
     { from: 1, to: 4, text: 'Every thing has found its place, and the yard shows what each one made.' },
@@ -23,6 +31,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 6,
       text: 'A ring of the bell on a plan that works: every place makes its thing, then each friend uses the gift.',
+    },
+    {
+      from: 7,
+      to: 8,
+      text: 'A ring of the bell on a plan that works: the day plays through, picnic by picnic, with the tub washing in between.',
     },
   ],
   note: [
@@ -34,7 +47,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 5,
-      to: 6,
+      to: 8,
       text: "Moving things is free. Only a ring of the bell that doesn't work counts as a miss, and the friend or place says what is still missing; after two, the glow shows one fix, which counts as a hint.",
     },
     {
@@ -42,9 +55,15 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'A round with no misses may mean she planned who gets what, or that the friends happened to stand in an order where the first fitting thing works.',
     },
+    { from: 7, to: 8, text: "The target is today's puzzle, not a rule about real rubbish." },
+    {
+      from: 8,
+      to: 8,
+      text: 'A round with no misses is good evidence she planned the washes across the whole day.',
+    },
     {
       from: 1,
-      to: 6,
+      to: 8,
       text: "These are the island's own rules. Check what your town's recycling and compost take.",
     },
   ],

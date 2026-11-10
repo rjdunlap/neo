@@ -1,9 +1,22 @@
 # Observations of real play
 
-One entry per time a person watched someone play on a real device: the child on the iPad, a grown-up with a controller on a TV, a grandparent on a laptop. Newest first. Keep each entry to about ten lines; what was wrong goes in the entry, and the fix goes through [READY](READY.md) as usual. The protocol and the fields are in the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band). When an entry answers an item in [DEVICE-CHECKS](DEVICE-CHECKS.md), tick that item and link the entry.
+What people said after really playing. For now that means the phone playtest (the developer, 2026-11-09): the developer and their wife each play [Today's six](definitions/todays-six.md#on-a-phone-and-playing-all-six-built-2026-11-09) on their own phone and leave notes. This file is the project's only record of its users, and what it says decides what is built next. Chrome checks in [VERIFICATION](VERIFICATION.md) do not belong here.
 
-This file is the project's only record of its users. Chrome checks in [VERIFICATION](VERIFICATION.md) do not belong here.
+## How a note gets here
+
+1. On a grown-up profile (13 and up), the pencil on the six page or after a round opens the notes sheet: Good, Fine or Needs work, and a line of text for each game played that day.
+2. **Copy all notes** copies everything as text. Paste it under Entries, as given, or hand it to a session and it will do the same.
+3. Anything said out loud counts too: write it as a line under the same heading.
 
 ## Entries
 
-*None yet (2026-10-24).*
+Newest first. One heading per paste, `### 2026-11-12, <player>, <phone>` (for example "iPhone, Safari" or "Android, installed app"), then the pasted text unedited. A session adds one line under an entry for each thing it led to, linking the READY line or the PR, and never rewrites what was said.
+
+*None yet (2026-11-09).*
+
+## What a session does with an entry
+
+- **A fix or a wish** becomes one bounded line in [READY](READY.md), directly under the phone lines in Next ten, linked from the entry.
+- **"Needs work" on the same game twice** outranks new content for that game.
+- **An answer to a question** in [what the phone playtest can answer](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now) deletes that question there.
+- **A grown-up enjoying a game** says the game flows, reads and sounds right. It does not say a child is ready for it; child and iPad observations are [parked](DEVICE-CHECKS.md), and the protocol written for them is [in the archive](archive/USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) for when they start.

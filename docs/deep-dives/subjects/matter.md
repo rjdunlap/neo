@@ -38,7 +38,7 @@ These are curriculum destinations, not developmental deadlines, and none shows t
 | [Ramp Race](../../GAMES.md) | Pre-K to school: a fair test with two lanes; short and long rolls named gently | The best model for Melt and Freeze's fair-test levels |
 | [Light Lab](../../GAMES.md), [Seesaw Balance](../../GAMES.md) | Ordered plans with spare pieces; a balance rule | Seesaw Balance is a ready scale for a conservation level |
 | Color Garden, Scoop Shop | Mixing colours and stacking flavours | Not matter-state; Color Garden owns colour mixing |
-| [Day by Day](../../day-by-day.md), Weather Wardrobe | Weather observations | Water states outdoors are the weather study's Drop's Journey |
+| [Day by Day](../../archive/DAY-BY-DAY-FIRST-SLICE.md), Weather Wardrobe | Weather observations | Water states outdoors are the weather study's Drop's Journey |
 
 **Overlap with the weather study.** [Drop's Journey](weather-water.md) follows water around a world (ponds, clouds, rain). Melt and Freeze is a tabletop of many substances and a heat dial. They share ice, water and steam, so they must not both animate a "water cycle". Melt and Freeze never leaves the table, and Drop's Journey never offers a heat dial.
 

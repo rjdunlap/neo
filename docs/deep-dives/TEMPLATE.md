@@ -4,7 +4,7 @@
 
 ## The game today
 
-What she does, the learning purpose, and the ladder level by level (a table: level, plan name, bands whose window includes it, what she decides). What each round draws from (the content pools and their sizes). Known gaps, person checks and couch use.
+What she does, the learning purpose, and the ladder level by level (a table: level, plan name, bands whose window includes it, what she decides). What each round draws from (the content pools and their sizes). Known gaps and couch use.
 
 ## Similar games
 
@@ -34,7 +34,7 @@ The first action a player can attempt without an adult supplying the answer; wha
 
 ### Easier entries and levels between existing ones
 
-Append stable IDs and place them with the built `order`/`entryLevels` support. Identify any remaining band, content, accounting or device decisions; do not silently renumber saves or infer that the former level-order blocker still exists.
+Append stable IDs and place them with the built `order`/`entryLevels` support. Identify any remaining band, content or accounting decisions, each with the default the build takes; do not silently renumber saves or infer that the former level-order blocker still exists.
 
 ### Left out on purpose
 

@@ -26,6 +26,8 @@ export interface Plan {
   starts: readonly (readonly number[])[];
   /** Level 3 asks for a picture (never checked) and ends with Show. */
   show: boolean;
+  /** Level 4: an authored hill, one breeze puff and a question; no pours or scoops. */
+  breeze?: boolean;
 }
 
 const flat = Array.from({ length: COLS }, () => 1);
@@ -65,13 +67,36 @@ export const PLANS: readonly Plan[] = [
     ],
     show: true,
   },
+  {
+    level: 4,
+    name: 'Where did it go?',
+    bays: [
+      [0, 3],
+      [4, 7],
+      [8, 11],
+    ],
+    pours: bayPours(3),
+    // The three authored hills as a breeze from the left meets them; a breeze from the right meets each one reversed.
+    starts: [
+      [1, 2, 3, 4, 3, 2, 1, 1, 1, 1, 1, 1],
+      [1, 2, 3, 3, 2, 1, 0, 0, 1, 1, 1, 1],
+      [1, 1, 1, 1, 2, 3, 4, 3, 2, 1, 1, 1],
+    ],
+    show: false,
+    breeze: true,
+  },
 ];
+
+export type Wind = 'left' | 'right';
+/** The hill with a hollow downwind (index 1 of level 4's starts): its right line is the hollow one. */
+export const HOLLOW_HILL = 1;
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
+  school: { min: 3, max: 4 },
 };
 
 export function planFor(level: number): Plan {
@@ -99,11 +124,26 @@ export interface SandState {
   invite: Invitation | null;
   /** Whether a grain has spilled this round (the first one is spoken). */
   spilled: boolean;
+  /** Level 4: where the breeze blows from, which authored hill, and the puff once it has run (null before). */
+  wind: Wind | null;
+  hill: number;
+  puff: BreezeResult | null;
+  /** Level 4's round accounting, kept through Start again. */
+  quiz: Quiz;
 }
 
 export function startState(level: number, rng: Rng): SandState {
   const plan = planFor(level);
-  const start = plan.starts.length === 1 ? plan.starts[0] : rng.pick([...plan.starts]);
+  let wind: Wind | null = null;
+  let hill = 0;
+  let start: readonly number[];
+  if (plan.breeze) {
+    // six setups: three hills, two directions
+    const k = rng.int(0, plan.starts.length * 2 - 1);
+    hill = k % plan.starts.length;
+    wind = k < plan.starts.length ? 'left' : 'right';
+    start = wind === 'left' ? plan.starts[hill] : [...plan.starts[hill]].reverse();
+  } else start = plan.starts.length === 1 ? plan.starts[0] : rng.pick([...plan.starts]);
   let invite: Invitation | null = null;
   if (plan.show) {
     const options = (['tall', 'hills', 'flat'] as const).filter((k) => k !== describeLandscape([...start]));
@@ -118,6 +158,10 @@ export function startState(level: number, rng: Rng): SandState {
     flag: false,
     invite,
     spilled: false,
+    wind,
+    hill,
+    puff: null,
+    quiz: { misses: 0, hints: 0, glowCounted: false, pathCounted: false },
   };
 }
 
@@ -128,6 +172,7 @@ export function restart(s: SandState) {
   s.h = [...s.start];
   s.bucket = GRAINS - sum(s.start);
   s.pail = 0;
+  s.puff = null;
 }
 
 export type SandEvent =
@@ -140,7 +185,9 @@ export type SandEvent =
   /** A grain is lifted off a column into the bucket. */
   | { kind: 'lift'; col: number }
   /** Pail sand returns to the bucket. */
-  | { kind: 'refill'; n: number };
+  | { kind: 'refill'; n: number }
+  /** Level 4: the breeze carries a top grain from one column, low along the surface, to another. */
+  | { kind: 'hop'; from: number; to: number };
 
 export interface SandResult {
   /** `empty` when nothing could move (no sand to pour, nothing to scoop, empty pail): a neutral answer, not a miss. */
@@ -232,6 +279,144 @@ export function emptyPail(s: SandState): SandResult {
   return done(s, n > 0 ? [{ kind: 'refill', n }] : [], n);
 }
 
+// ---- The breeze (level 4) ----------------------------------------------------------------------------------------------
+
+/**
+ * One puff of an invented toy breeze, after the Geological Society's "By wind" and HiRISE's dune notes: grains come off the
+ * slope facing the breeze and the top, hop downwind and drop where the surface first falls away (shelter), then slide as built.
+ */
+export interface BreezeResult {
+  wind: Wind;
+  /** The tray before and after. */
+  before: number[];
+  after: number[];
+  /** The columns that each gave one grain (the shimmering ones), upwind first. */
+  lifted: number[];
+  /** Hops, then slides and any spill, in the order they happened. */
+  events: SandEvent[];
+}
+
+/** The left-hand rule on `h` in place: which columns lift, the hops and the settle, as a breeze from the left meets them. */
+function puffLeft(s: SandState, events: SandEvent[]): number[] {
+  const h = s.h;
+  const lifted: number[] = [];
+  for (let i = 0; i < COLS - 1; i++) if (h[i] >= 2 && h[i] >= (i === 0 ? 0 : h[i - 1])) lifted.push(i);
+  for (const i of lifted) h[i]--;
+  for (const i of [...lifted].reverse()) {
+    let j = i + 1;
+    while (j < COLS - 1 && !(h[j] < h[j - 1])) j++;
+    h[j]++;
+    events.push({ kind: 'hop', from: i, to: j });
+  }
+  settle(s, events);
+  return lifted;
+}
+
+const mirrorCol = (c: number) => COLS - 1 - c;
+function mirrorEvent(e: SandEvent): SandEvent {
+  if (e.kind === 'hop' || e.kind === 'slide') return { ...e, from: mirrorCol(e.from), to: mirrorCol(e.to) };
+  if (e.kind === 'drop' || e.kind === 'spill' || e.kind === 'lift') return { ...e, col: mirrorCol(e.col) };
+  return e;
+}
+
+/** The columns a breeze would lift from this tray, without moving anything (they shimmer before the puff). */
+export function liftedColumns(h: readonly number[], wind: Wind): number[] {
+  const t = wind === 'left' ? [...h] : [...h].reverse();
+  const out: number[] = [];
+  for (let i = 0; i < COLS - 1; i++) if (t[i] >= 2 && t[i] >= (i === 0 ? 0 : t[i - 1])) out.push(i);
+  return wind === 'left' ? out : out.map(mirrorCol);
+}
+
+/** Blow once. A breeze from the right is the left-hand rule on the reversed tray, reversed back, events mirrored. */
+export function blow(s: SandState, wind: Wind): BreezeResult {
+  const before = [...s.h];
+  const events: SandEvent[] = [];
+  let lifted: number[];
+  if (wind === 'left') lifted = puffLeft(s, events);
+  else {
+    s.h.reverse();
+    lifted = puffLeft(s, events).map(mirrorCol);
+    s.h.reverse();
+    for (let k = 0; k < events.length; k++) events[k] = mirrorEvent(events[k]);
+  }
+  if (events.length > 0) s.flag = true;
+  return { wind, before, after: [...s.h], lifted, events };
+}
+
+/** Level 4's Breeze button: the round's one puff. A second call returns the same puff and moves nothing. */
+export function puff(s: SandState): BreezeResult {
+  if (!s.puff) s.puff = blow(s, s.wind ?? 'left');
+  return s.puff;
+}
+
+const baySum = (plan: Plan, h: readonly number[], b: number) =>
+  sum(h.slice(plan.bays[b][0], plan.bays[b][1] + 1));
+
+export type BayChange = 'gained' | 'lost' | 'same';
+
+/** How one bay's sand changed across the puff. */
+export function bayChange(
+  plan: Plan,
+  before: readonly number[],
+  after: readonly number[],
+  bay: number,
+): BayChange {
+  const d = baySum(plan, after, bay) - baySum(plan, before, bay);
+  return d > 0 ? 'gained' : d < 0 ? 'lost' : 'same';
+}
+
+/** The accepted answers: every bay whose sand grew. */
+export function gainedBays(plan: Plan, before: readonly number[], after: readonly number[]): number[] {
+  return plan.bays.map((_, b) => b).filter((b) => bayChange(plan, before, after, b) === 'gained');
+}
+
+// ---- Level 4's accounting -----------------------------------------------------------------------------------------------
+
+export interface Quiz {
+  misses: number;
+  hints: number;
+  glowCounted: boolean;
+  pathCounted: boolean;
+}
+
+export interface AnswerResult {
+  change: BayChange;
+  /** The second miss lights the gaining pad (one hint, once per round). */
+  glow: boolean;
+}
+
+/** A pad tap after the puff. A pad that did not gain is one miss and keeps the pads. */
+export function answer(s: SandState, bay: number): AnswerResult {
+  const p = puff(s);
+  const change = bayChange(s.plan, p.before, p.after, bay);
+  if (change === 'gained') return { change, glow: false };
+  s.quiz.misses++;
+  let glow = false;
+  if (s.quiz.misses >= 2 && !s.quiz.glowCounted) {
+    s.quiz.glowCounted = true;
+    s.quiz.hints++;
+    glow = true;
+  }
+  return { change, glow };
+}
+
+export type BreezeHint = 'breeze' | 'path' | 'glow';
+
+/** Show a hint at level 4: before the puff, the breeze (free); then the dotted path (one hint); then the glow (one, once). */
+export function breezeHint(s: SandState): BreezeHint {
+  if (!s.puff) return 'breeze';
+  if (!s.quiz.pathCounted) {
+    s.quiz.pathCounted = true;
+    s.quiz.hints++;
+    return 'path';
+  }
+  if (!s.quiz.glowCounted) {
+    s.quiz.glowCounted = true;
+    s.quiz.hints++;
+  }
+  return 'glow';
+}
+
 // ---- Show -------------------------------------------------------------------------------------------------------------
 
 /** What the pet says at Show: the first of these that holds. Every landscape gets a kind line. */
@@ -271,7 +456,7 @@ export function apply(s: SandState, a: SandAction): SandResult {
   return 'pour' in a ? pour(s, a.pour) : 'scoop' in a ? scoop(s, a.scoop) : emptyPail(s);
 }
 
-export type BotStep = SandAction | { flag: true };
+export type BotStep = SandAction | { flag: true } | { breeze: true } | { answer: number };
 
 /**
  * The ghost finger's short round, step by step from `taken` actions so far. Level 1: four pours, one scoop. Level 2: three on the
@@ -279,6 +464,10 @@ export type BotStep = SandAction | { flag: true };
  */
 export function botStep(s: SandState, taken: number): BotStep {
   const lvl = s.plan.level;
+  if (s.plan.breeze) {
+    if (!s.puff) return { breeze: true };
+    return { answer: gainedBays(s.plan, s.puff.before, s.puff.after)[0] };
+  }
   if (lvl === 1) return taken < 4 ? { pour: 0 } : taken < 5 ? { scoop: 0 } : { flag: true };
   if (lvl === 2)
     return taken < 3 ? { pour: 0 } : taken < 4 ? { pour: 1 } : taken < 5 ? { scoop: 0 } : { flag: true };
@@ -365,5 +554,7 @@ export function describeSand(level: number): string {
     ? 'Pour and scoop one sand heap'
     : level === 2
       ? 'Build or lower two hills'
-      : 'Shape a landscape and show it';
+      : level === 3
+        ? 'Shape a landscape and show it'
+        : 'Watch the breeze and find where the sand landed';
 }

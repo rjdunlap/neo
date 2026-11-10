@@ -297,12 +297,14 @@ export const SUITES = [
   'smoke',
   'phone',
   'phonefit',
+  'uprightgames',
   'howto',
   'howtolevel',
   'lookitup',
   'whoami',
   'shed',
   'shedplan',
+  'shedpicnic',
   'gears',
   'meadow',
   'lens',
@@ -466,6 +468,7 @@ export const ALL_SUITES = [
   'whoami',
   'shed',
   'shedplan',
+  'shedpicnic',
   'gears',
   'meadow',
   'lens',
@@ -652,6 +655,7 @@ export function createChecks(fixture) {
     'smoke',
     'phoneFit',
     'phoneGames',
+    'uprightGames',
     'howToIntro',
     'howToLevelPick',
     'readyForAdventurePlay',
@@ -996,6 +1000,7 @@ export async function runSuite(suite, fixture) {
     smoke,
     phoneFit,
     phoneGames,
+    uprightGames,
     howToIntro,
     howToLevelPick,
     readyForAdventurePlay,
@@ -1004,6 +1009,7 @@ export async function runSuite(suite, fixture) {
     senseDetectivePlay,
     shedPlay,
     shedPlanPlay,
+    shedPicnicPlay,
     gearsPlay,
     meadowPlay,
     lensPlay,
@@ -1211,12 +1217,14 @@ export async function runSuite(suite, fixture) {
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
   if (suite === 'phone') await phoneGames();
+  if (suite === 'uprightgames') await uprightGames();
   if (suite === 'all' || suite === 'howto') await howToIntro();
   if (suite === 'all' || suite === 'howto' || suite === 'howtolevel') await howToLevelPick();
   if (suite === 'all' || suite === 'lookitup') await lookItUpPlay();
   if (suite === 'all' || suite === 'whoami') await whoAmIPlay();
   if (suite === 'all' || suite === 'shed') await shedPlay();
   if (suite === 'all' || suite === 'shedplan') await shedPlanPlay();
+  if (suite === 'all' || suite === 'shedpicnic') await shedPicnicPlay();
   if (suite === 'all' || suite === 'gears') await gearsPlay();
   if (suite === 'all' || suite === 'meadow') await meadowPlay();
   if (suite === 'all' || suite === 'lens') await lensPlay();

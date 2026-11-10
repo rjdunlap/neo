@@ -44,6 +44,20 @@ const FLAT6B = [
   heap('.##./#..#/.##.'),
 ];
 
+/** Four on the grass and two on top: level 11, the little pile between 3 and 4. */
+const PILE6 = [
+  heap('####', '#.#'),
+  heap('####', '##'),
+  heap('###/#', '##'),
+  heap('#.#/#.#', '##'),
+  heap('##/##', '#/#'),
+  heap('###/..#', '.##'),
+  heap('.##/##.', '##'),
+  heap('#../.##/..#', '#/.#'),
+  heap('#.#./.#.#', '#.#'),
+  heap('.#./###', '##'),
+];
+
 /** Six on the grass and three on top: level 2. */
 const PILE9 = [
   heap('####/.##.', '###'),
@@ -128,7 +142,7 @@ const PILE24 = [
   heap('#####/#####/####.', '####/####', '/.#.#'),
 ];
 
-/** Frozen shapes for each level, by level ID: ten a level, and no two levels share a pool. */
+/** Frozen shapes for each level, by level ID: ten a level. Level 9 is level 7's heap with a smaller tray and level 10 is level 5's with look-alike kinds; no other two share a pool. */
 export const SHAPES: Record<number, Cell[][]> = {
   1: FLAT6,
   2: PILE9,
@@ -138,4 +152,7 @@ export const SHAPES: Record<number, Cell[][]> = {
   6: PILE15,
   7: PILE18,
   8: PILE24,
+  9: PILE18,
+  10: PILE12,
+  11: PILE6,
 };

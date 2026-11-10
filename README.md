@@ -2,7 +2,7 @@
 
 A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through early school (ages 6–8); the long-term plan grows through elementary school, roughly grade 5 / age eleven. Art uses Pixi Graphics and prepared illustrated sprites; sound is synthesized with Web Audio.
 
-**Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (Home, creature play, Friends and dressing, Explore and the library; the welcome adventure is partly built). Add `?daily` to the root URL to try **Today's six**, a daily landing page of six games in place of Home (a trial; All games stays one tap away). Every push to `main` redeploys via GitHub Actions
+**Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (Home, creature play, Friends and dressing, Explore and the library; the welcome adventure is partly built). On a phone the root opens **Today's six**, six games picked each day, and that is where play is being tried now ([try it on a phone](#try-it-on-a-phone)); on a tablet or computer add `?daily` to the root URL to see the same page in place of Home. Every push to `main` redeploys via GitHub Actions
 
 [Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Development workflow review](docs/DEVELOPMENT-WORKFLOW.md)
 
@@ -23,29 +23,33 @@ npm test           # unit tests: saves, difficulty, the lands, every game's rule
 npm run build      # type-check + production build into dist/
 ```
 
+## Try it on a phone
+
+This is how the game is being played and judged right now: two grown-ups, each on their own phone, a few minutes a day.
+
+- **Open it:** <https://rjdunlap.github.io/neo/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain browser tab the browser's own bars take some of the screen.
+- **A phone is Today's six.** Pick or add a player at "Who's playing?" and the phone opens six games for that player's age, re-picked each day. The green play button runs them in order, one tap per game. Home, Explore, creature play and the island at `classic/` are for tablets and computers.
+- **Hold it either way.** Games that have been laid out for an upright phone play upright; the others show a turn badge on their card and ask for the phone sideways (turn off the rotation lock for those). Each [batch](docs/definitions/phone-portrait.md#game-batches) makes more games upright.
+- **Leave notes.** A grown-up player (13 and up) sees a pencil on the six page and after each round: Good, Fine or Needs work, and a line of text. **Copy all notes** copies them as text; paste them into [docs/OBSERVATIONS.md](docs/OBSERVATIONS.md) or send them to whoever is building. What the notes say decides what is built next.
+- **Targets are about half an iPad's size.** A 100-unit target is about 51 CSS pixels upright (a grown-up board's 64-unit minimum is about 33). A phone shows whether a game flows, reads and sounds right for a grown-up; it does not show what a small hand can do.
+- **The notch and rounded corners are respected.** Play sits inside the safe area and the corner buttons stay reachable.
+- **It has its own save.** A phone browser and the home-screen app made from it each keep a separate save. To carry one over, use Save a backup and Restore from a backup on the grown-ups' page.
+
+To look at work that is not merged yet:
+
+- **A branch:** with the phone on the same Wi-Fi, run `npm run dev:lan` and open the "Network" address it prints. That page is plain HTTP, so there is no install and no offline mode; it is for looking and playing.
+- **On the computer:** Chrome's device toolbar (⌥⌘I, then ⇧⌘M) with an iPhone preset shows the layout. It does not fake a notch: to see the safe-area handling, set `--safe-left`, `--safe-right` and `--safe-bottom` on `<html>` in the console (for example `document.documentElement.style.setProperty('--safe-left', '47px')`).
+
+Couch play is for a computer or TV with a keyboard or controller and is not a phone feature. Sound should play through an iPhone's silent switch (iOS 16.4 and later) and speech uses the phone's own voices where no clip is rendered. The few things only a real phone can answer are listed under [what the phone playtest can answer](docs/DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now).
+
 ## Try it on the iPad
+
+For when there is one; nothing has been tried on an iPad yet.
 
 - **Quick look, same Wi-Fi:** `npm run dev:lan`, then open the "Network" URL it prints in Safari on the iPad. Fine for playing; offline mode and "Add to Home Screen" as a full app need HTTPS (below).
 - **The real thing:** open <https://rjdunlap.github.io/neo/classic/> (the island game; the root is the creature-world route) in Safari on the iPad → Share → Add to Home Screen. It then runs full screen and works with Wi-Fi off. A new version downloads in the background while she plays and takes over the next time the app is opened after being closed (swiped away), so an update never interrupts a game.
 - **Lock her in:** Settings → Accessibility → Guided Access, then triple-click the top button inside the app. Guided Access can also set a time limit.
 - **Limit her time:** the app has no timer of its own. Use Screen Time → App Limits (check Screen Time → See All Activity after a few minutes of play to see where the Home Screen app is listed) or a Guided Access time limit.
-
-## Try it on a phone
-
-A phone is a good way to look at the island before the iPad arrives. It differs from the iPad in four ways:
-
-- **Hold it sideways.** The islands are drawn wide. An upright phone shows a picture asking to turn it, and the game waits behind it; turn off the rotation lock (iPhone: Control Center; Android: quick settings). An installed Android app is locked to landscape; an iPhone cannot be locked by a web app.
-- **Everything is about half the iPad's size.** At 844 × 390 the island is drawn at about 0.5 scale, so a 100-unit target is about 50 points across, against about 110 on an 11-inch iPad. The phone shows whether the games flow, read and sound right; it cannot show whether a small hand can drag, herd or pull. Judge those on the iPad.
-- **The notch and rounded corners are respected.** The island sits inside the safe area, so a phone with a notch shows a cream strip at each side, and the buttons in the corners (and the grown-ups' gear in the top-right corner) stay reachable.
-- **It has its own save.** A phone browser, and the home-screen app made from it, each keep a separate save from the iPad's. To carry one over, use Save a backup and Restore from a backup in the grown-up zone.
-
-To get it there:
-
-- **Live site (the merged `main`):** open <https://rjdunlap.github.io/neo/classic/> in Safari (iPhone) or Chrome (Android). Share → Add to Home Screen on iPhone, or ⋮ → Install app on Android, runs it full screen and offline; in a plain Safari or Chrome tab the browser's own bars take some of the screen.
-- **A branch not yet merged:** with the phone on the same Wi-Fi, run `npm run dev:lan` and open the "Network" address it prints. That page is plain HTTP, so there is no install and no offline mode; it is for looking and playing.
-- **On the computer:** Chrome's device toolbar (⌥⌘I, then ⇧⌘M) with an iPhone preset, rotated sideways, shows the layout. It does not fake a notch: to see the safe-area handling, set `--safe-left`, `--safe-right` and `--safe-bottom` on `<html>` in the console (for example `document.documentElement.style.setProperty('--safe-left', '47px')`).
-
-Couch play is for a computer or TV with a keyboard or controller and is not a phone feature. Sound should play through an iPhone's silent switch (iOS 16.4 and later, as on the iPad) and speech uses the phone's own voices; neither has been heard on a phone yet (see the [roadmap](docs/DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
 ## The island and its games
 
@@ -61,11 +65,11 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 131 games, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 132 games, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
-The [verification log](docs/VERIFICATION.md) records which checks each one has passed; judgments of fun and clarity, and real-iPad checks, are still open for the newest games (see the [roadmap](docs/DEVICE-CHECKS.md#needs-a-person-or-a-device)).
+The [verification log](docs/VERIFICATION.md) records which checks each one has passed; it does not judge fun or clarity: that comes from the [playtest notes](docs/OBSERVATIONS.md).
 
 <!-- generated: child games (npm run game-docs) -->
 
@@ -122,13 +126,13 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 12 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
 | [Little Helpers](docs/games/little-helpers.md) | lap–school | Counting Cove | 9 | tap a fruit and a helper carries it home |
 | [Pet Kitchen](docs/games/pet-kitchen.md) | lap–school | Counting Cove | 15 | tap pieces onto the plate with fewest (lap), cut a sandwich or pie in halves and share; friends eat the meal |
-| [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 8 | hop to a number on the lily pads |
+| [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 10 | hop to a number on the lily pads |
 | [Picture Graph](docs/games/picture-graph.md) | pre-K–school | Counting Cove | 11 | count critters and build their bars, one block each |
 | [Lasso Loops](docs/games/lasso-loops.md) | preschool–school | Counting Cove | 6 | draw a loop around fireflies: they fly into a jar |
 | [Fill and Dump](docs/games/fill-dump.md) | lap–preschool | Counting Cove | 7 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
 | [Number Trails](docs/games/number-trails.md) | preschool–pre-K | Counting Cove | 3 | follow a firefly along a numeral, starting at the green ring and arrow, then watch that many things pop up and count them |
-| [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 6 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
-| [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 8 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
+| [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 7 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
+| [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 11 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
 | [Ribbon Workshop](docs/games/ribbon-workshop.md) | school | Counting Cove | 3 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |
 | [Paint Mixer](docs/games/paint-mixer.md) | school | Counting Cove | 6 | tap a pot to pour a drop into the bucket until its colour is the sample jar's, the way a recipe scales |
 | [Spinner Fair](docs/games/spinner-fair.md) | preschool–school | Counting Cove | 5 | tap a spinner and a critter's block drops onto its bar |
@@ -144,7 +148,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: two big lamps, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
 | [Pet Says](docs/games/pet-says.md) | lap–pre-K | Cozy Village | 6 | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) |
 | [Lemonade Stand](docs/games/lemonade-stand.md) | school | Cozy Village | 5 | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table |
-| [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 6 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
+| [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 8 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
 | [Swap Meet](docs/games/swap-meet.md) | toddler–school | Cozy Village | 4 | trade pictured toys, with both objects crossing |
 | [Village Vote](docs/games/village-vote.md) | preschool–school | Cozy Village | 3 | count pictured toy preferences, then everyone plays |
 | [Relay Woods](docs/games/relay-woods.md) | toddler–school | Cozy Village | 4 | pass a picture along three connected friends |
@@ -161,10 +165,10 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |
 | [Habitat Helpers](docs/games/habitat-helpers.md) | preschool–school | Rainbow Meadow | 9 | place Bunny's food, water and shelter, then open the garden gate |
 | [Jar Sort](docs/games/jar-sort.md) | preschool–school | Rainbow Meadow | 12 | tap a jar to lift its top fruit, tap another to drop it; two kinds in three jars, lit jars show where it fits |
-| [Block Garden](docs/games/block-garden.md) | pre-K–grown-up | Rainbow Meadow | 11 | drag shaped seed pieces onto a garden bed; a full row or column blooms and empties, until every bud blooms; a faint shadow shows where a piece will land |
+| [Block Garden](docs/games/block-garden.md) | pre-K–grown-up | Rainbow Meadow | 12 | drag shaped seed pieces onto a garden bed; a full row or column blooms and empties, until every bud blooms; a faint shadow shows where a piece will land |
 | [Swing Pals](docs/games/swing-pals.md) | lap–school | Rainbow Meadow | 8 | tap to push a friend on a tree swing until its feet ring the bell in the leaves; a push never lowers it and the bell stays lit |
-| [Lift It](docs/games/lift-it.md) | preschool–school | Rainbow Meadow | 7 | drag the rope's end in strokes to haul a crate up to a friend on the tree's ledge; a crate that is held never slides back |
-| [Sand Table](docs/games/sand-table.md) | lap–pre-K | Rainbow Meadow | 3 | tap the tray to pour dry sand into a heap, tap a scoop paddle to lift some back into the bucket, then plant the flag; level 2 adds a second bay, level 3 a pail for spills and a landscape to Show |
+| [Lift It](docs/games/lift-it.md) | preschool–school | Rainbow Meadow | 9 | drag the rope's end in strokes to haul a crate up to a friend on the tree's ledge; a crate that is held never slides back |
+| [Sand Table](docs/games/sand-table.md) | lap–school | Rainbow Meadow | 4 | tap the tray to pour dry sand into a heap, tap a scoop paddle to lift some back into the bucket, then plant the flag; level 2 adds a second bay, level 3 a pail for spills and a landscape to Show |
 | [Food Web Workshop](docs/games/food-web-workshop.md) | school | Rainbow Meadow | 3 | watch two picture cards replay what was seen eating what (a food symbol floats into the eater's mouth), drag a food's badge onto its eater to draw an arrow from food to eater, then press Show our web |
 | [Meadow Pens](docs/games/meadow-pens.md) | school | Rainbow Meadow | 5 | a friend asks for a pen: paint squares of grass on a meadow grid and the fence builds itself around the biggest connected group (other squares are flowers, a ring of grass round a hole is a pond), then ring the bell to check |
 | [Sprout Shuffle](docs/games/sprout-shuffle.md) | school | Rainbow Meadow | 8 | tap or drag one copy tile from each parent plant into a possible sprout, then open every bud |
@@ -182,7 +186,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Garden Rows](docs/games/garden-rows.md) | preschool–school | Puzzle Peaks | 10 | plant a 3 by 3 flower bed so each row has one of every flower |
 | [Ferry Jam](docs/games/ferry-jam.md) | pre-K–school | Puzzle Peaks | 10 | drag boats along their lanes in a small harbor so the red ferry can reach the dock; nothing is a mistake, and undo is always there |
 | [Critter Crossing](docs/games/critter-crossing.md) | pre-K–school | Puzzle Peaks | 8 | critters line up at a bridge gate; at first its rule is on the sign, then it is a secret: try critters one at a time, watch who crosses and who waits, then guess the rule |
-| [Mossy Path](docs/games/mossy-path.md) | toddler–school | Puzzle Peaks | 7 | tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch |
+| [Mossy Path](docs/games/mossy-path.md) | toddler–school | Puzzle Peaks | 8 | tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch |
 | [Shell Rows](docs/games/shell-rows.md) | pre-K–school | Puzzle Peaks | 3 | she and the pet take turns setting shells and pebbles on a 3 by 3 grid in wet sand; one move from a match under way |
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 8 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
@@ -278,7 +282,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 
 | Game | Land | Levels | Starts as |
 | --- | --- | --- | --- |
-| [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 8 | jump a marble over a neighbour into an empty hole to leave one |
+| [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 9 | jump a marble over a neighbour into an empty hole to leave one |
 | [Log Roll](docs/games/log-roll.md) | Tinker Lab | 7 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 3 | slide equal numbered snowballs together to make the pictured target |
 | [Brain Break](docs/games/brain-break.md) | Lantern Lake | 6 | find and light 1 to 9 on a shuffled pond of numbered stones, then of stones showing sums and take-aways |
@@ -352,6 +356,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `fingerdemo` | The ghost finger's bot plays each game's demonstration to the end at the first and last entries of its ordered band ladders, with no wrong move and no hint, inside the 75 seconds a finger demonstration gets (a few seconds to about a minute a play) | `FINGER_ONLY=id,id`, `FINGER_LEVELS=3,4` (play these levels instead, to time the ones between; each is tried in a band whose level order includes it), `FINGER_BAND=prek` (optional: the band those levels play at), `RAINBOW_FOLD=1` (with `FINGER_ONLY=rainbow-fingers FINGER_LEVELS=2`: step the demo seed to a fold page and assert the bot folds) |
 | `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, the strips left plain cream, nothing on a scene's UI layer covered, a tap on a button, the grown-ups' gear and panel reachable), the turn prompt for an upright phone (390 × 844) on the island and not on **Who's playing?** (plain HTML that suits it), nor for a sideways phone, any tablet shape or a mouse; the upright root pass at 390 × 844 (Home, Today's six, an upright round and its result, back with a tick; a game not yet upright-ready keeps the prompt) (about 40 seconds) | |
 | `phone` | `phonefit`, then every game's middle level at 844 × 390: stray taps, nothing stranded at the origin or off the window on the UI layer, and a screenshot of each in `test-results/browser/phone/` (about 3 seconds a game) | `PHONE_ONLY=id,id` |
+| `uprightgames` | First and highest grown-up levels at 390 × 844 with real Chromium touches and one screenshot per game. Hat Band goes through Check; the other batch 2 games play to a sticker | Required: `PHONE_ONLY=id,id` |
 | `grownups` | The gear on **Who's playing?** (a tap shows a hint, a mouse hold or held Enter opens the page without choosing a card, typing in the name field does not leave the page), Esc and the pause sheet in a game (the round holds still, Esc resumes, the sheet's gear opens the page and Esc closes that to the map, a Sudoku Garden round's Start again and Show a hint, and a pad moving over the sheet with A on release), no play timer, undoing a reset after a reload, and a touch tap and hold on the map's gear (about 45 seconds) | |
 | `profiles` | **Who's playing?** from an empty device: only Add a player, the form refusing a missing name or birth and one that has not happened, Add filling the blank first profile (still at `neo.save`) and hatching an egg, a tap opening the island map with the age's home spot, the map's button back, a 13-or-older player choosing a friend with no egg, Enter and the card's couch button opening couch play with that person as Player 1, an arrow key moving the ring, the grown-ups' page editing any player (birth, a chosen start band, following the age again, a birth that has not happened refused) and putting back whoever was playing, a backup of everyone, removing a player and their save, restoring from the file, a couch file refused, and a reload (about 1 minute) | |
 | `world` | Add a player, hatching, the lands map, a land's games against the rules, a game launched from a land and the way back to it, the home spot (both layouts: every subject and game card in all six bands and both orientations (a controller-only card's key cap and its way back), each game at its play band), return memory, cancellation, a birthday changing the home spot, the grown-ups' gear and panel (about 5 minutes) | |
@@ -402,7 +407,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `pyramid` | Pyramid Solitaire levels 1 and 3: actual card taps, mismatched pair and hint, repeated-hint accounting, Undo/Start over, legal dead-end recovery, portrait targets, one sticker per round, land launch, home return and interruption | Demo: `FINGER_ONLY=pyramid-solitaire` |
 | `numbernook` | Number Nook levels 1, 3–7: single and line slides, refused tap, hint once, Undo/Start over accounting, portrait targets and one sticker per round. Level 5 checks the column goal, level 6 the 24-slide start, and level 7 a detour that triggers the fallback. | `NOOK_LEVELS=7` for one level, or `FINGER_ONLY=number-nook FINGER_LEVELS=7` for the demo |
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
-| `marblejump` | Marble Jump levels 1 and 6: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
+| `marblejump` | Marble Jump levels 1, 2, 6, 7, 8 and 9: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
 | `logroll` | Log Roll levels 1, 4, 5, 6 and 7: invalid rolls, Hint, Undo, cradle stand, refused moss stand, lying/standing switch presses, bridge undo/reset, portrait and Tinker Lab launch | `LOG_ROLL_LEVELS=6,7` filters levels; ghost finger: `FINGER_ONLY=log-roll FINGER_LEVELS=6,7` |
 | `snowball` | Snowball Merge levels 1 and 3: inert press, Hint counted once, Undo/Restart, portrait and Lantern Lake return | Ghost finger: `FINGER_ONLY=snowball-merge` |
@@ -434,7 +439,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `lostlayers` | Lost Layers by touch: level 1 a red It fits (one miss), Can't tell hidden then free with one card, a one-story claim while the other fits (second miss, the other fit stamped), a requested hint twice (one hint), level 2 a free preview and a wavy look (one miss), portrait screenshot with the lens open | `FINGER_ONLY=lost-layers FINGER_LEVELS=1,2` for the demo |
 | `trackwaytales` | Trackway Tales by touch: level 1 a replay, a scrub, a wrong hop Check (one miss) and a requested hint twice (one hint), then the bot's finish; level 3 L3-pause with a fitting card free and the bot's Can't tell (0 misses), L3-switch with a wrong Can't tell (one miss), portrait screenshot | `FINGER_ONLY=trackway-tales FINGER_LEVELS=1,2,3` for the demo |
 | `blockgarden` | Block Garden by touch: level 1's authored row and level 8's whole bed planted by drags along the solver's way (no misses or hints, a sticker each), two refused drops at level 3 (two misses, one hint) and the hinted piece planted, undo, level 6 upright (screenshot) | about 1 min |
-| `pilematch` | Pile Match by touch: level 1 with one wrong-kind tap (one miss, nothing taken) solved by taps, level 8 with the tray filled to five and a refused tap twice (one miss), three put-backs (free, one hint), solved, portrait screenshot; one sticker per round | `FINGER_ONLY=pile-match` for the demonstration |
+| `pilematch` | Pile Match by touch: level 1 with one wrong-kind tap (one miss, nothing taken) solved by taps, level 8 with the tray filled to five and a refused tap twice (one miss), three put-backs (free, one hint), solved, portrait screenshot; level 9 with four slots, the tray filled to four and one refused tap; one sticker per round | `FINGER_ONLY=pile-match` for the demonstration |
 | `ribbon` | Ribbon Workshop by touch: level 1 with an empty Check (free) and two wrong Checks (glow, one hint) then both gifts; level 3 portrait with the tempting two-halves ribbon (one miss), return, scissors, snip, quarter; one sticker per round | `FINGER_ONLY=ribbon-workshop` for the demonstration |
 | `sealift` | Sea Lift by touch: level 1 with a dock tap (free), a wrong stop twice (one miss, the lift returns to the water) and Show a hint twice (one hint), played out; level 3 with an empty landing (free) and −2 before −5 (one miss, nobody boards), played out; level 2 portrait screenshot mid-ride; level 4 with a landing tap and a card number (free), one wrong card (one miss, card dims), Show a hint once and the right card, level 4 portrait screenshot with the card column clear; level 5 with the own stop (free), a wrong stop (one miss) and the twin; one sticker per round | `FINGER_ONLY=sea-lift FINGER_LEVELS=1,3` (and `4,5`) for the demonstration |
 | `recipeworkshop` | Recipe Workshop by touch: level 1 with an empty Serve (free) and an uncounted hint, level 2 with two failed Serves (glow, one hint) and a requested hint that counts nothing more, level 3 in portrait with a drag of a dollop into the right bowl (selects it), an unmixed Serve (one miss) and the bot serving both bowls | |
