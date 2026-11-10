@@ -81,6 +81,14 @@ Log Roll dive (2026-11-07), three calls; slices 1–5 go ahead regardless ([the 
 | **A controller or couch course for Log Roll?** | Lean: skip; couch play retires at Lands stage E, and a d-pad would only duplicate the arrows | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
 | **Swipe on the board as well as the arrow buttons?** | Lean: yes as an addition, buttons kept, after a person says whether the buttons feel slow; it follows the input pitfalls | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
 
+Snowball Merge dive (2026-11-09), three calls; slices 1–4 go ahead regardless ([the dive](deep-dives/snowball-merge.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Open a school level (doubling to 16) with a short instruction, behind a source check?** | Lean: later, after a child plays level 1 once; it costs a level row, `order`/`entryLevels`, a voice line and dot art | [Snowball Merge dive](deep-dives/snowball-merge.md#decisions-for-the-developer) |
+| **A controller or couch course for Snowball Merge?** | Lean: skip; couch play retires at Lands stage E, and a d-pad only duplicates the arrows | [Snowball Merge dive](deep-dives/snowball-merge.md#decisions-for-the-developer) |
+| **Swipe on the field as well as the arrow buttons?** | Lean: yes as an addition after a person says whether buttons feel slow; it follows the input pitfalls | [Snowball Merge dive](deep-dives/snowball-merge.md#decisions-for-the-developer) |
+
 Marble Jump dive (2026-11-07), three calls; slices 1–4 go ahead regardless ([the dive](deep-dives/marble-jump.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
