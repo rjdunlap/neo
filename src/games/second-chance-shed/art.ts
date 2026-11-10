@@ -9,6 +9,7 @@ import {
   type ItemId,
   type Place,
   type RequestId,
+  type VesselId,
 } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -469,4 +470,143 @@ export function filledArt(r: RequestId, gift: ItemId): Container {
   else if (r === 'seedling') madeSeedling(g, 0, -36);
   c.addChild(g, itemArt(gift, 110));
   return c;
+}
+
+// ---- levels 7–8: the picnic set ----
+
+const CUP_COLOR: Record<Exclude<VesselId, 'mug'>, { fill: number; line: number; light: number }> = {
+  red: swatch.red,
+  blue: swatch.blue,
+  yellow: swatch.yellow,
+};
+
+/** A washable vessel, drawn about 76 units tall centred on (0, 0): a sturdy beaker with a thick rim, or the enamel mug. */
+export function vesselArt(v: VesselId): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (v === 'mug') {
+    g.roundRect(18, -18, 30, 36, 14).stroke(line(swatch.blue.line, 9));
+    g.roundRect(18, -18, 30, 36, 14).stroke(line(0xffffff, 4));
+    g.roundRect(-34, -34, 58, 70, 12).fill(0xffffff).stroke(line(swatch.blue.line, 5));
+    g.roundRect(-34, -34, 58, 12, 6).fill(swatch.blue.fill);
+    g.circle(-6, 8, 9).fill(swatch.blue.light);
+  } else {
+    const col = CUP_COLOR[v];
+    g.poly([-30, -34, 30, -34, 22, 36, -22, 36]).fill(col.fill).stroke(line(col.line, 5));
+    g.roundRect(-34, -40, 68, 12, 6).fill(col.line);
+    g.rect(-14, -20, 8, 40).fill({ color: 0xffffff, alpha: 0.35 });
+  }
+  c.addChild(g);
+  return c;
+}
+
+/** A one-use cup: thin, pleated, plain white with one stripe (its material is never named). */
+export function oneUseArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.poly([-26, -32, 26, -32, 18, 32, -18, 32]).fill(0xffffff).stroke(line(0xb8b8c8, 3));
+  for (const x of [-12, 0, 12])
+    g.moveTo(x * 1.1, -28)
+      .lineTo(x * 0.75, 28)
+      .stroke(line(0xdadae4, 2));
+  g.rect(-24, -18, 48, 6).fill(swatch.teal.fill);
+  g.roundRect(-28, -36, 56, 6, 3).fill(0xe6e6ee);
+  c.addChild(g);
+  return c;
+}
+
+/** The one-use stack: a leaning tower of thin cups, about 100 units, centred on (0, 0). */
+export function stackArt(): Container {
+  const c = new Container();
+  for (let i = 0; i < 4; i++) {
+    const cup = oneUseArt();
+    cup.scale.set(0.9);
+    cup.position.set(i * 2, 22 - i * 12);
+    c.addChild(cup);
+  }
+  return c;
+}
+
+/** A wash tub, `w` × `h`, drawn from its top-left: a wooden tub with suds, holding two slots. */
+export function tubArt(w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(0, 0, w, h, 26).fill(wood.light).stroke(line(wood.line, 6));
+  g.roundRect(8, 8, w - 16, h - 16, 20).fill(swatch.blue.light);
+  for (const y of [0.25, 0.75]) g.rect(0, h * y - 5, w, 10).fill(wood.line);
+  for (const [x, y, r] of [
+    [14, 14, 10],
+    [w - 18, 20, 12],
+    [w / 2, 8, 9],
+    [16, h - 18, 11],
+    [w - 16, h - 14, 9],
+  ])
+    g.circle(x, y, r).fill(0xffffff).stroke(line(swatch.blue.fill, 2));
+  c.addChild(g);
+  return c;
+}
+
+/** A friend's seat at a picnic, 104 square from its top-left: a picnic mat with the friend peeking over a cup spot. */
+export function seatArt(friend: number, size: number): Container {
+  const c = new Container();
+  const mats = [swatch.pink, swatch.green, swatch.orange, swatch.purple];
+  const g = new Graphics();
+  g.roundRect(0, 0, size, size, 18).fill(mats[friend].light).stroke(line(mats[friend].line, 4));
+  g.ellipse(size / 2, size - 26, 34, 12).fill({ color: ink, alpha: 0.12 });
+  c.addChild(g);
+  const who = [CRITTERS.bunny, CRITTERS.duck, CRITTERS.pig, CRITTERS.bear][friend];
+  const critter = new Critter(who);
+  critter.alive = false;
+  critter.scale.set(0.2);
+  critter.position.set(24, 58);
+  c.addChild(critter);
+  return c;
+}
+
+/** The sun over a picnic: low on the left at breakfast, high at lunch, setting at supper; `w` wide, 44 tall. */
+export function sunHeaderArt(picnic: number, w: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(4, 40)
+    .lineTo(w - 4, 40)
+    .stroke(line(swatch.green.line, 4));
+  const x = [0.2, 0.5, 0.8][picnic] * w;
+  const y = [30, 12, 32][picnic];
+  const col = picnic === 2 ? swatch.orange : swatch.yellow;
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    g.moveTo(x + Math.cos(a) * 16, y + Math.sin(a) * 16)
+      .lineTo(x + Math.cos(a) * 22, y + Math.sin(a) * 22)
+      .stroke(line(col.line, 3));
+  }
+  g.circle(x, y, 12).fill(col.fill).stroke(line(col.line, 3));
+  g.rect(0, 40, w, 6).fill({ color: 0xffffff, alpha: 0 });
+  c.addChild(g);
+  return c;
+}
+
+/** The painter, feet on (0, 0): a cat with a brush, and a bubble of the brush in the big mug. */
+export function painterArt(): { critter: Critter; bubble: Container } {
+  const critter = new Critter(CRITTERS.cat);
+  critter.scale.set(0.42);
+  const brush = new Graphics();
+  brush.moveTo(0, 0).lineTo(0, -50).stroke(line(wood.line, 6));
+  brush.ellipse(0, -60, 7, 14).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 3));
+  brush.scale.set(1 / 0.42 / 1.6);
+  brush.position.set(80, -70);
+  critter.attach(brush);
+  const bubble = new Container();
+  const b = new Graphics();
+  b.roundRect(-62, -44, 124, 88, 30).fill(0xffffff).stroke(line(ink, 4));
+  b.poly([-10, 42, 10, 42, -4, 60]).fill(0xffffff).stroke(line(ink, 4));
+  b.rect(-12, 38, 24, 6).fill(0xffffff);
+  bubble.addChild(b);
+  const mug = vesselArt('mug');
+  mug.scale.set(0.8);
+  mug.position.set(-4, 8);
+  const tip = new Graphics();
+  tip.moveTo(18, 6).lineTo(-4, -34).stroke(line(wood.line, 5));
+  tip.ellipse(-8, -40, 5, 9).fill(swatch.purple.fill);
+  bubble.addChild(tip, mug);
+  return { critter, bubble };
 }

@@ -70,4 +70,29 @@ export const VOICE = {
   'shed.bell.cart': ['Find a place for everything first.'],
   'shed.made.buttons': ['The tin keeps my buttons safe!'],
   'shed.ring-now': ['Your plan works. Ring the bell!'],
+  'shed.picnic.instruct.7': [
+    "Plan the cups for the whole day. The tub washes two between picnics. Today's puzzle: send at most two to the Last Heap. Ring the bell when you're ready.",
+  ],
+  'shed.picnic.instruct.8': [
+    "Plan the cups for three picnics. The tub washes two after breakfast and two after lunch. Today's puzzle: send at most five to the Last Heap, and the painter needs the big mug. Ring the bell when you're ready.",
+  ],
+  'shed.picnic.seats': ['Every friend needs a cup first.'],
+  'shed.picnic.wash': [
+    'On our island, a used cup goes through the wash tub before anyone drinks from it again.',
+  ],
+  'shed.picnic.oneuse': [
+    "On our island, the tub can't wash a one-use cup. It goes to the Last Heap after one drink.",
+  ],
+  'shed.picnic.heap.2': ['This plan sends more than two to the Last Heap. Can it send fewer?'],
+  'shed.picnic.heap.5': ['This plan sends more than five to the Last Heap. Can it send fewer?'],
+  'shed.picnic.paint.after0': [
+    "After breakfast I'm painting. I need the big mug, clean, for my brush water.",
+  ],
+  'shed.picnic.paint.after1': ["After lunch I'm painting. I need the big mug, clean, for my brush water."],
+  'shed.picnic.paint.notmug': ["That's a cup. I asked for the big mug."],
+  'shed.picnic.paint.later.after0': ['The big mug is mine after breakfast.'],
+  'shed.picnic.paint.later.after1': ['The big mug is mine after lunch.'],
+  'shed.picnic.paint.dirty': ['The big mug needs a wash before I take it.'],
+  'shed.picnic.paint.thanks': ['A clean mug for my brush water. Thank you!'],
+  'shed.picnic.done': ['Every friend had a cup at every picnic. What a day!'],
 } satisfies Record<string, string[]>;

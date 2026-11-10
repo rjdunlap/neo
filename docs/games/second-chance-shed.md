@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3–4 |
-| school | 4–6 |
+| school | 4–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,8 @@
 | 4 | Remake |
 | 5 | Someone needs it |
 | 6 | Two friends |
+| 7 | Picnic Loop |
+| 8 | Three picnics |
 
 <!-- end generated -->
 
