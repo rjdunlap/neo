@@ -17,21 +17,53 @@ import { arrowIcon, islandIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
 
-const TRAY_COUNT = 5;
 const RADIUS = 48;
+/** A tray sticker's pitch. */
+const TRAY_PITCH = 136;
+
+/** Where the sticker book puts things: the page area, Home, the page arrows by the heading, and the tray along the bottom. */
+export interface StickerBookLayout {
+  area: PageArea;
+  home: { x: number; y: number };
+  previous: { x: number; y: number };
+  next: { x: number; y: number };
+  trayPrevious: { x: number; y: number };
+  trayNext: { x: number; y: number };
+  /** Stickers on a page of the tray: five on the wide area, four on the 768-unit upright area (chunk 31), clear of its arrows. */
+  trayCount: number;
+  /** The centre of tray sticker `i` of `n` shown. */
+  traySpot: (i: number, n: number) => { x: number; y: number };
+}
+
+export function stickerBookLayout(v: { w: number; h: number }): StickerBookLayout {
+  const trayCount = v.w < 900 ? 4 : 5;
+  return {
+    area: { x: 35, y: 135, w: v.w - 70, h: v.h - 305 },
+    home: { x: 64, y: 64 },
+    previous: { x: v.w / 2 - 220, y: 64 },
+    next: { x: v.w / 2 + 220, y: 64 },
+    trayPrevious: { x: 70, y: v.h - 72 },
+    trayNext: { x: v.w - 70, y: v.h - 72 },
+    trayCount,
+    traySpot: (i, n) => ({ x: v.w / 2 + (i - (n - 1) / 2) * TRAY_PITCH, y: v.h - 75 }),
+  };
+}
 const PAGE_NAMES = ['Meadow', 'Beach', 'Farm', 'Under the sea', 'Space'];
 
 export class StickerBookScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31). */
+  upright = true;
+  uprightArea = true;
   private readonly background = new Graphics();
   private readonly pageArt = new Graphics();
   private readonly tray = new Graphics();
   private readonly stickers = new Container();
   private readonly heading = label('Meadow', 32);
   private readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.app.go.hub());
-  private readonly prev = new RoundButton(arrowIcon(-1), swatch.purple, 45, () => this.turn(-1));
-  private readonly next = new RoundButton(arrowIcon(1), swatch.purple, 45, () => this.turn(1));
-  private readonly trayPrev = new RoundButton(arrowIcon(-1), swatch.teal, 42, () => this.turnTray(-1));
-  private readonly trayNext = new RoundButton(arrowIcon(1), swatch.teal, 42, () => this.turnTray(1));
+  private readonly prev = new RoundButton(arrowIcon(-1), swatch.purple, 50, () => this.turn(-1));
+  private readonly next = new RoundButton(arrowIcon(1), swatch.purple, 50, () => this.turn(1));
+  private readonly trayPrev = new RoundButton(arrowIcon(-1), swatch.teal, 50, () => this.turnTray(-1));
+  private readonly trayNext = new RoundButton(arrowIcon(1), swatch.teal, 50, () => this.turnTray(1));
   private page = 0;
   private trayPage = 0;
   private area: PageArea = { x: 40, y: 135, w: 944, h: 430 };
@@ -45,14 +77,15 @@ export class StickerBookScene extends Scene {
   }
 
   resize(v: View) {
-    this.area = { x: 35, y: 135, w: v.w - 70, h: v.h - 305 };
+    const l = stickerBookLayout(v);
+    this.area = l.area;
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    this.home.position.set(64, 64);
+    this.home.position.set(l.home.x, l.home.y);
     this.heading.position.set(v.w / 2, 64);
-    this.prev.position.set(v.w / 2 - 220, 64);
-    this.next.position.set(v.w / 2 + 220, 64);
-    this.trayPrev.position.set(70, v.h - 72);
-    this.trayNext.position.set(v.w - 70, v.h - 72);
+    this.prev.position.set(l.previous.x, l.previous.y);
+    this.next.position.set(l.next.x, l.next.y);
+    this.trayPrev.position.set(l.trayPrevious.x, l.trayPrevious.y);
+    this.trayNext.position.set(l.trayNext.x, l.trayNext.y);
     this.tray
       .clear()
       .roundRect(25, v.h - 135, v.w - 50, 120, 30)
@@ -80,12 +113,13 @@ export class StickerBookScene extends Scene {
     this.stickers.removeChildren().forEach((c) => c.destroy({ children: true }));
     const all = store.data.stickers.filter((s) => gameById(s.game));
     const loose = all.filter((s) => !s.placement);
-    const max = Math.max(0, Math.ceil(loose.length / TRAY_COUNT) - 1);
+    const l = stickerBookLayout(this.view);
+    const max = Math.max(0, Math.ceil(loose.length / l.trayCount) - 1);
     this.trayPage = Math.max(0, Math.min(max, this.trayPage));
     this.trayPrev.visible = this.trayPage > 0;
     this.trayNext.visible = this.trayPage < max;
     const placed = all.filter((s) => s.placement?.page === STICKER_PAGES[this.page]);
-    const visibleLoose = loose.slice(this.trayPage * TRAY_COUNT, (this.trayPage + 1) * TRAY_COUNT);
+    const visibleLoose = loose.slice(this.trayPage * l.trayCount, (this.trayPage + 1) * l.trayCount);
     for (const record of [...placed, ...visibleLoose]) {
       const node = stickerize(gameById(record.game)!.sticker(record.seed), RADIUS);
       node.hitArea = new Circle(0, 0, 55);
@@ -97,7 +131,8 @@ export class StickerBookScene extends Scene {
         );
       } else {
         const i = visibleLoose.indexOf(record);
-        node.position.set(this.view.w / 2 + (i - (visibleLoose.length - 1) / 2) * 136, this.view.h - 75);
+        const spot = l.traySpot(i, visibleLoose.length);
+        node.position.set(spot.x, spot.y);
       }
       this.stickers.addChild(node);
       const handle = draggable(node, this.tw, {

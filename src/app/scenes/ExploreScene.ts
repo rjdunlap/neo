@@ -140,6 +140,9 @@ export class ExploreScene extends Scene {
           )
         : null;
     this.lead = !!this.mix?.mods;
+    // Laid out for a phone held upright as well (chunk 31), except where Little surprises leads: its sheet and Make my
+    // mix's table are drawn on the 1024 width, so that page keeps the turn prompt.
+    this.upright = this.uprightArea = !this.lead;
     this.page = clampPage(page, this.list.length, this.signpost, this.lead);
     if (entry) exploreMemory.pages[entry] = this.page;
     if (entry === 'all') exploreMemory.others = others;

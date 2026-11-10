@@ -18,6 +18,50 @@ import { Scene } from '../Scene';
 
 const PER_PAGE = 8;
 const CARD = { w: 190, h: 170, gap: 24 };
+
+/** Where the journal puts things: Back, the page arrows, a page of eight cards, the page dots and the strip with its Play. */
+export interface JournalLayout {
+  back: { x: number; y: number };
+  previous: { x: number; y: number };
+  next: { x: number; y: number };
+  /** A page's eight card centres, in reading order. */
+  cards: { x: number; y: number }[];
+  dotsY: number;
+  strip: { x: number; y: number; w: number };
+  play: { x: number; y: number };
+}
+
+/**
+ * Two rows of four on the wide area; on the 768-unit upright area (chunk 31, docs/definitions/phone-portrait.md) four
+ * rows of two, so a page still holds eight and no card shrinks. Centered in the space above the strip.
+ */
+export function journalLayout(v: { w: number; h: number }): JournalLayout {
+  const narrow = v.w < 900;
+  const cols = narrow ? 2 : 4;
+  const rows = PER_PAGE / cols;
+  const top = 140;
+  const bottom = v.h - 235;
+  const cy = (top + bottom) / 2;
+  // Four across leave room for the 100-unit page arrows at the edges only with a narrower gap between columns.
+  const pitch = CARD.w + (narrow ? CARD.gap : 16);
+  const cards = Array.from({ length: PER_PAGE }, (_, slot) => ({
+    x: v.w / 2 + ((slot % cols) - (cols - 1) / 2) * pitch,
+    y: cy + (Math.floor(slot / cols) - (rows - 1) / 2) * (CARD.h + CARD.gap),
+  }));
+  const side = narrow ? 70 : 50;
+  const w = Math.min(v.w - (narrow ? 100 : 220), 760);
+  const strip = { x: v.w / 2, y: v.h - 105, w };
+  return {
+    back: { x: 65, y: 65 },
+    previous: { x: side, y: v.h / 2 - 40 },
+    next: { x: v.w - side, y: v.h / 2 - 40 },
+    cards,
+    dotsY: v.h - 215,
+    strip,
+    play: { x: strip.x + w / 2 - 80, y: strip.y },
+  };
+}
+
 /** Which page was open last, for this session. */
 let lastPage = 0;
 /** Another player is at the screen: the page the last one had open is not theirs. */
@@ -38,6 +82,9 @@ interface Card {
  * entry, found or not, has a visible way to find it. Nothing here is random, timed or lost.
  */
 export class JournalScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31). */
+  upright = true;
+  uprightArea = true;
   readonly cards: Card[] = [];
   page = lastPage;
   selected: JournalEntry = JOURNAL[0];
@@ -128,25 +175,21 @@ export class JournalScene extends Scene {
       .roundRect(50, 120, v.w - 100, v.h - 150, 36)
       .fill({ color: swatch.yellow.light, alpha: 0.5 })
       .stroke({ width: 5, color: swatch.yellow.line, alpha: 0.6 });
-    this.back.position.set(65, 65);
+    const l = journalLayout(v);
+    this.back.position.set(l.back.x, l.back.y);
     this.heading.position.set(v.w / 2, 58);
     this.count.position.set(v.w / 2, 98);
-    this.previous.position.set(48, v.h / 2 - 40);
-    this.next.position.set(v.w - 48, v.h / 2 - 40);
-    // Two rows of four, centered in the space above the strip that tells about the chosen card.
-    const top = 140;
-    const bottom = v.h - 235;
-    const cy = (top + bottom) / 2;
-    const dy = (CARD.h + CARD.gap) / 2;
+    this.previous.position.set(l.previous.x, l.previous.y);
+    this.next.position.set(l.next.x, l.next.y);
     this.cards.forEach((c, i) => {
-      const slot = i % PER_PAGE;
+      const slot = l.cards[i % PER_PAGE];
       c.node.visible = Math.floor(i / PER_PAGE) === this.page;
-      c.node.position.set(v.w / 2 + ((slot % 4) - 1.5) * (CARD.w + CARD.gap), cy + (slot < 4 ? -dy : dy));
+      c.node.position.set(slot.x, slot.y);
     });
     this.dots.clear();
     for (let i = 0; i < this.pages; i++)
       this.dots
-        .circle(v.w / 2 + (i - (this.pages - 1) / 2) * 28, v.h - 215, i === this.page ? 8 : 5)
+        .circle(v.w / 2 + (i - (this.pages - 1) / 2) * 28, l.dotsY, i === this.page ? 8 : 5)
         .fill(swatch.teal.line);
     this.previous.visible = this.page > 0;
     this.next.visible = this.page < this.pages - 1;
@@ -159,9 +202,7 @@ export class JournalScene extends Scene {
     const entry = this.selected;
     const mod = gameById(entry.game);
     const found = store.journal.found.includes(entry.id);
-    const w = Math.min(v.w - 220, 760);
-    const x = v.w / 2;
-    const y = v.h - 105;
+    const { x, y, w } = journalLayout(v).strip;
     const strip = new Graphics()
       .roundRect(x - w / 2, y - 62, w, 124, 30)
       .fill({ color: 0xffffff, alpha: 0.96 })
@@ -198,7 +239,8 @@ export class JournalScene extends Scene {
     where.position.set(x - w / 2 + 28, y + 40);
     text.eventMode = where.eventMode = 'none';
     this.detail.addChild(strip, text, where);
-    this.play.position.set(x + w / 2 - 80, y);
+    const { play } = journalLayout(v);
+    this.play.position.set(play.x, play.y);
   }
 
   private choose(entry: JournalEntry) {

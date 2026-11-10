@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
+import { UPRIGHT_VIEWS } from '../games/upright-check';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
 import {
@@ -39,6 +40,8 @@ const VIEWS = [
   computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
   computeView(1366, 768),
 ];
+/** Those, and a phone held upright on the 768 × 1024 upright area, for the scenes that lay out on it (chunk 31). */
+const WITH_UPRIGHT = [...VIEWS, ...Object.values(UPRIGHT_VIEWS)];
 
 interface Box {
   x0: number;
@@ -100,7 +103,7 @@ describe('the root Home layout', () => {
   it('fits every exit for each band layout, clear of the guide corner and the gear and link corner, the ball landing clear of them', () => {
     expect(ACTION_RADIUS * 2).toBeGreaterThanOrEqual(120);
     expect(CORNER_RADIUS * 2).toBeGreaterThanOrEqual(100);
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       for (const [young, project] of [
         [true, false],
         [true, true],
@@ -137,7 +140,7 @@ describe('the root Home layout', () => {
   });
 
   it('covers the view with the backdrop', () => {
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       const { backdrop: b } = homeLayout(v, false);
       expect(1536 * b.scale).toBeGreaterThanOrEqual(v.w - 0.01);
       expect(1024 * b.scale).toBeGreaterThanOrEqual(v.h - 0.01);
@@ -202,7 +205,7 @@ describe('the Explore picker layout', () => {
     expect(EXPLORE_CARD).toBeGreaterThanOrEqual(150);
     // A card's name sits under it, inside this much.
     const NAME = 50;
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       for (let n = 1; n <= EXPLORE_MAX; n++) {
         const l = exploreLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
@@ -223,7 +226,7 @@ describe('the Explore entries and pages layout (RW08)', () => {
   it('fits one to five 150-unit cards with their names, Back, Home and both page arrows apart, clear of the corners', () => {
     expect(PAGE_ARROW_RADIUS * 2).toBeGreaterThanOrEqual(120);
     const NAME = 50;
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
@@ -256,7 +259,7 @@ describe('the Explore entries and pages layout (RW08)', () => {
     expect(EXPLORE_POSTCARD.w).toBeGreaterThan(EXPLORE_CARD);
     expect(EXPLORE_POSTCARD.h).toBeGreaterThan(EXPLORE_CARD);
     const NAME = 50;
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       expect(exploreGridLayout(v, 4).postcard, `${v.w}×${v.h}`).toBeNull();
       for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n, true);
