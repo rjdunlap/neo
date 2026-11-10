@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — U6 one way to browse defined (docs only)
+
+**Changed:** new [definition](definitions/one-way-to-browse.md) of U6 in two slices (U6a the Arcade first, U6b the fold); READY, the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built).
+
 ## 2026-11-10 — U5b, tips held to her band (PR #1468)
 
 **Changed:** 29 games have a `coplayHintLap` override so a lap profile's co-play tip has the grown-up talk while she taps, points or watches; toddler tips unchanged; the registry test's `PENDING_U5B` list removed and three phrases added to its ask list.
