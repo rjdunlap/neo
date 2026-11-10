@@ -25,6 +25,9 @@ type Card = Container & { item: WearableId };
  * The item textures are shared by every scene, so nothing here destroys them.
  */
 export class DressScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31). */
+  upright = true;
+  uprightArea = true;
   private readonly floor = new Graphics();
   private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () =>
     this.app.go.friends(this.id),

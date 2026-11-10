@@ -70,19 +70,32 @@ export function homeLayout(v: { w: number; h: number }, young: boolean, project 
   const backdrop = backdropFit(v);
   const right = v.w - 50 - ACTION_RADIUS;
   const mid = Math.max(GEAR_CORNER.h + ACTION_RADIUS + 20, v.h * 0.42);
-  const stage = { x: Math.round(v.w * 0.4), y: v.h - 60, scale: 1.2 };
+  // On the 768-unit upright area (chunk 31) the companion keeps right of the guide corner: 150 units either side at its scale.
+  const stage = {
+    x: Math.round(Math.max(v.w * 0.4, GUIDE_CORNER.w + 150 * 1.2 + 10)),
+    y: v.h - 60,
+    scale: 1.2,
+  };
   const row = 2 * ACTION_RADIUS + 40;
   const cont = !young && project ? { x: right, y: mid } : null;
   const top = cont ? mid + row : mid;
   const explore = { x: right, y: young ? mid + 80 : top + row };
   const play = young ? null : { x: right, y: top };
   const daily = { x: right - row, y: explore.y };
-  const ball = young ? { x: Math.min(stage.x + 280, right - 2 * ACTION_RADIUS - 60), y: v.h - 90 } : null;
+  // The ball rests beside the companion, never against it (the 768-unit upright area brings the two together).
+  const ballX = Math.max(
+    Math.min(stage.x + 280, right - 2 * ACTION_RADIUS - 60),
+    stage.x + 150 * 1.2 + BALL_RADIUS + 20,
+  );
+  const ball = young ? { x: ballX, y: v.h - 90 } : null;
   // The youngest's Today's six stands well above the grass; an older Explore can sit low, so the floor (unused without the ball) keeps left of it.
+  // (On a tall view, upright, every button stands well above the floor, so it runs as far right as the youngest's.)
+  const floorY0 = Math.max(backdrop.floorTop + 40, v.h - 220);
+  const clear = young || explore.y + ACTION_RADIUS + BALL_RADIUS < floorY0;
   const floor = {
     x0: GUIDE_CORNER.w + BALL_RADIUS,
-    x1: (young ? right : daily.x) - ACTION_RADIUS - BALL_RADIUS - 30,
-    y0: Math.max(backdrop.floorTop + 40, v.h - 220),
+    x1: (clear ? right : daily.x) - ACTION_RADIUS - BALL_RADIUS - 30,
+    y0: floorY0,
     y1: v.h - BALL_RADIUS - 20,
   };
   return {
@@ -179,7 +192,9 @@ export function exploreLayout(v: { w: number; h: number }, n: number): ExploreLa
   if (n < 1 || n > EXPLORE_MAX) throw new Error(`Explore holds one to ${EXPLORE_MAX} locations, not ${n}`);
   const gap = 80;
   const step = EXPLORE_CARD + gap;
-  const rows = Math.ceil(n / EXPLORE_ROW);
+  // Four to a row where they fit, three on the 768-unit upright area (chunk 31).
+  const perRow = Math.min(EXPLORE_ROW, Math.max(1, Math.floor((v.w - 2 * 40 + gap) / step)));
+  const rows = Math.ceil(n / perRow);
   const y0 =
     rows === 1
       ? Math.round(v.h * 0.45)

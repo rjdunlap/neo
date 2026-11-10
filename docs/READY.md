@@ -8,13 +8,18 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Phone held upright, shell slice 2: the rest of the root** (ready; shell tier): upright layout tests and one screenshot per root scene; `classic/` stays sideways-only; batches 1–5 are built, and the early-school batches wait on the two players' [playtest notes](OBSERVATIONS.md); per its [definition](definitions/phone-portrait.md#shell-slice-2-the-rest-of-the-root-ready); it now matters only on narrow tablets and computers.
+- **U1: name the pictures** (shell): a short label under each Home button and each result button, at every band and upright; layout tests keep every target at least 100 units.
+- **U2: one picture, one meaning** (shell and `stamp-studio`): new pictures for Today's six, the wardrobe and Stamp Studio's tools, so the four squares mean All games and the basket means the project.
+- **U3: an honest Back in a round** (shell): decide tap or a visible hold cue for `GameScene`'s Back and question mark, and add Leave to the Paused sheet.
+- **U4: show what to touch when it is quiet** (shell): an idle wobble on the egg and a bounce on the project's next card.
 
 - **`mossy-path`, slices 3–5 in the dive's order** (toddler to school; [build slices](deep-dives/mossy-path.md#build-slices-in-order)): slice 3 level 9 *Two snacks* (typecheck, rule tests, one browser play of 9, `fingerdemo` at 9, build); slice 4 level 10 *Plan, then go* after slice 3 (new interaction: unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 10, build); slice 5 level 11 *Thick moss* (solver rewrite: rule tests including levels 1–3 and 8 unchanged, one browser play of 11, `fingerdemo` at 11, build).
 - **`number-trails`, slices 3–6 in the dive's order** (`letter-trails` helpers; preschool and pre-K; [build slices](deep-dives/number-trails.md#build-slices-in-order); slices 1–2 are built): slice 3 check the digits against the HWT chart (`digits.test.ts`, `fingerdemo` at 2; once the chart is open); slice 4 level 4 *First numbers* (rule tests, browser play of 4, `fingerdemo` at 4); slice 5 level 5 *Write how many* (new interaction: unit tests, one scripted play, one portrait screenshot); slice 6 level 6 *Less help each time* (rule tests, one play, `fingerdemo` at 6, one screenshot; coordinate with Letter Trails level 9 if in flight). Level 7 and the journal are optional calls in the [dive](deep-dives/number-trails.md#decisions-for-the-developer).
 - **`bolt-boards`, remaining slices in the dive's order** (`tinker-lab`; toddler to school; [build slices](deep-dives/bolt-boards.md#build-slices-in-order)):
 
 ## Queued
+
+- **Phone held upright, shell slice 3: the rest of the root's scenes** (shell tier): lay out creature play (`PlayScene`), the library (`LibraryScene`), Welcome a New Friend's project and ending pages (`ProjectScene`), the Arcade (`ArcadeScene`), the locations (`LocationScene`), and Little surprises and Make my mix on All games at lap and toddler on the 768 × 1024 area, each with a layout test at `UPRIGHT_VIEWS` and one screenshot; `classic/` stays sideways-only. It matters only on narrow tablets and computers, so it sits after the phone and playtest lines. [Definition](definitions/phone-portrait.md#shell-slice-3-the-rest-of-the-roots-scenes-ready)
 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check; status `person`): once someone has listened to the first 215 clips on a phone ([what the phone playtest can answer](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
@@ -42,12 +47,8 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 ### UX review (2026-11-09)
 
-From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); one item per session, in this order, shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
+From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1–U4 now lead Next ten (one item per session, in that order); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
 
-- **U1: name the pictures** (shell): a short label under each Home button and each result button, at every band and upright; layout tests keep every target at least 100 units.
-- **U2: one picture, one meaning** (shell and `stamp-studio`): new pictures for Today's six, the wardrobe and Stamp Studio's tools, so the four squares mean All games and the basket means the project.
-- **U3: an honest Back in a round** (shell): decide tap or a visible hold cue for `GameScene`'s Back and question mark, and add Leave to the Paused sheet.
-- **U4: show what to touch when it is quiet** (shell): an idle wobble on the egg and a bounce on the project's next card.
 - **U5–U8: define first** (docs only, one each): a first six she can start, one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
 
 ### Study follow-ups (docs-only definitions)

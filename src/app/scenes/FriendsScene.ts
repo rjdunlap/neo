@@ -32,6 +32,9 @@ import { applySettings } from '../settings';
  * the friend on the stage, and coming back puts that friend on the stage again.
  */
 export class FriendsScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31). */
+  upright = true;
+  uprightArea = true;
   private readonly floor = new Graphics();
   private readonly back = new RoundButton(
     this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(),
