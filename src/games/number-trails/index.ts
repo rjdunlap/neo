@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics } from 'pixi.js';
-import { cream, ink, RAINBOW, swatch } from '../../art/palette';
+import { cream, RAINBOW, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -13,14 +13,16 @@ import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../../le
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { DIGITS } from './digits';
+import { drawThing } from './things';
 import {
   LEVELS,
   THING_HIT,
   groupSize,
   planFor,
   roundFor,
+  spotsFor,
   stickerDigit,
-  thingSpots,
+  type Arrangement,
   thingWord,
   trailTolerance,
 } from './logic';
@@ -29,56 +31,6 @@ type Phase = 'trace' | 'show' | 'wake' | 'done';
 
 /** A sleeping thing is tinted this pale blue, with a small z, until she wakes it. */
 const ASLEEP = 0xc5cdea;
-
-const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
-
-/** One of the things she counts, drawn from shapes, centered on (0, 0) and about 100 units across. */
-function drawThing(id: string): Container {
-  const c = new Container(),
-    g = new Graphics();
-  c.addChild(g);
-  if (id === 'duck') {
-    g.ellipse(0, 12, 46, 32)
-      .fill(swatch.yellow.fill)
-      .stroke(line(swatch.yellow.line))
-      .circle(26, -22, 24)
-      .fill(swatch.yellow.fill)
-      .stroke(line(swatch.yellow.line))
-      .poly([46, -22, 68, -14, 46, -6])
-      .fill(swatch.orange.fill)
-      .stroke(line(swatch.orange.line, 4))
-      .circle(32, -28, 4.5)
-      .fill(ink)
-      .moveTo(-30, 8)
-      .quadraticCurveTo(-8, 34, 22, 14)
-      .stroke(line(swatch.yellow.line, 5));
-  } else if (id === 'apple') {
-    g.moveTo(0, -24)
-      .bezierCurveTo(-16, -44, -62, -32, -54, 8)
-      .bezierCurveTo(-48, 48, -20, 62, 0, 52)
-      .bezierCurveTo(20, 62, 48, 48, 54, 8)
-      .bezierCurveTo(62, -32, 16, -44, 0, -24)
-      .closePath()
-      .fill(swatch.red.fill)
-      .stroke(line(swatch.red.line))
-      .moveTo(0, -26)
-      .quadraticCurveTo(4, -48, 12, -56)
-      .stroke(line(swatch.brown.line, 6))
-      .ellipse(24, -44, 18, 8)
-      .fill(swatch.green.fill)
-      .stroke(line(swatch.green.line, 4));
-  } else {
-    const pts: number[] = [];
-    for (let i = 0; i < 10; i++) {
-      const r = i % 2 === 0 ? 50 : 22,
-        a = -Math.PI / 2 + (i * Math.PI) / 5;
-      pts.push(Math.cos(a) * r, Math.sin(a) * r + 4);
-    }
-    g.poly(pts).fill(swatch.yellow.fill).stroke(line(swatch.orange.line));
-    g.circle(-10, 4, 4).circle(10, 4, 4).fill(ink);
-  }
-  return c;
-}
 
 /** The numeral drawn with the same stroke table the game traces, for icons and stickers. */
 function numeralArt(digit: number, width: number, color: number): Graphics {
@@ -96,6 +48,7 @@ class NumberTrails implements Game {
   readonly n: number;
   private readonly thing: ReturnType<typeof roundFor>['thing'];
   private readonly look: Look;
+  private readonly arrangement: Arrangement;
   /** The fifth of the stroke whose note last sounded; the firefly's note climbs as she reaches each new one. */
   private fifth = 0;
   /** The second wander on a stroke asks the firefly to show the way once she lets go. */
@@ -135,6 +88,7 @@ class NumberTrails implements Game {
     this.n = round.n;
     this.thing = round.thing;
     this.look = round.look;
+    this.arrangement = round.arrangement;
     this.strokes = DIGITS[String(this.n)];
     this.tolerance = trailTolerance(ctx.level);
     ctx.stage.addChild(this.background, this.canvas, this.pile, this.heading);
@@ -282,7 +236,7 @@ class NumberTrails implements Game {
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
-    const spots = thingSpots(size, this.pileRect());
+    const spots = spotsFor(this.arrangement, size, this.pileRect());
     if (!spots) throw new Error(`Number Trails: ${size} things do not fit this view`);
     this.things = spots.map((s) => {
       const t = drawThing(this.thing.id);
@@ -421,7 +375,7 @@ class NumberTrails implements Game {
         tipY - dy * 26 - dx * 14,
       ])
       .fill(swatch.green.fill)
-      .stroke(line(swatch.green.line, 4));
+      .stroke({ width: 4, color: swatch.green.line, cap: 'round', join: 'round' });
   }
 
   resize(v: View) {
@@ -433,7 +387,7 @@ class NumberTrails implements Game {
     this.draw();
     this.placeFirefly();
     if (this.things.length) {
-      const spots = thingSpots(this.things.length, this.pileRect());
+      const spots = spotsFor(this.arrangement, this.things.length, this.pileRect());
       if (spots) this.things.forEach((t, i) => t.position.set(spots[i].x, spots[i].y));
     }
   }
