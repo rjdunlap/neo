@@ -519,6 +519,7 @@ describe('game registry', () => {
       'size-parade',
       'snowball-merge',
       'species-comeback',
+      'stamp-studio',
       'sudoku-garden',
       'tile-pairs',
       'word-search',

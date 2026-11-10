@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/stamp-studio; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `stamp-studio` · **Land:** Painted Canyon · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `stamp-studio` · **Land:** Painted Canyon · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** composition, creative-expression, spatial-reasoning
 

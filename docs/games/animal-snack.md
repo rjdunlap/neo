@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/animal-snack; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `animal-snack` · **Land:** Barnyard · **Ages:** lap–preschool · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `animal-snack` · **Land:** Barnyard · **Ages:** lap–preschool · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** animals, words, matching, counting
 

@@ -4,6 +4,7 @@ import { FRIEND_HIT, friendFeet, friendXs, PLANS as snackPlans, snackXs } from '
 import { farLayout, stripRings, windowRings } from './far-lights/logic';
 import { PLANS as bubblePlans, spawnBox, TAP_REACH } from './bubble-pop/logic';
 import { ANIMALS, CARD_HIT, cardSpots, rowXs } from './sing-along-barn/logic';
+import { BUTTON_REACH, stampLayout } from './stamp-studio/logic';
 import { insertLayout, paradeLayout, ribbonLayout, RIBBON_LANE, TARGET } from './size-parade/logic';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
 
@@ -126,5 +127,28 @@ describe.each(Object.entries(views))('Lap and toddler upright batch 5 on %s', (_
     expect(r.xs[0] - TARGET.w / 2).toBeGreaterThanOrEqual(150);
     expect(r.lanes[1] + RIBBON_LANE / 2).toBeLessThanOrEqual(v.w);
     expect(r.lanes[1] - r.lanes[0]).toBeGreaterThanOrEqual(260);
+  });
+
+  it('Stamp Studio: the paper, up to four stamps, the colours and the side buttons fit', () => {
+    for (const transform of [false, true])
+      for (let n = 1; n <= 4; n++) {
+        const l = stampLayout(v, n, transform);
+        const round = (what: string, p: { x: number; y: number }, r = BUTTON_REACH) => square(what, p, 2 * r);
+        // Bin, Turn and Grow show together only on a transform level; Play and Undo show on every level.
+        const side = transform ? [l.bin, l.turn, l.grow] : [l.bin];
+        check(v, [
+          {
+            what: 'paper',
+            x: l.paper.x + l.paper.w / 2,
+            y: l.paper.y + l.paper.h / 2,
+            w: l.paper.w,
+            h: l.paper.h,
+          },
+          ...l.choices.map((p) => round('stamp', p)),
+          ...l.colors.map((p) => round('colour', p, 43 + 14)),
+          ...[l.finish, l.undo, l.play, ...side].map((p) => round('button', p)),
+        ]);
+        expect(l.paper.w).toBeGreaterThanOrEqual(500);
+      }
   });
 });
