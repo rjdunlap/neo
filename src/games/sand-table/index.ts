@@ -926,6 +926,7 @@ export const sandTable: GameModule = {
   describeLevel: describeSand,
   music: STYLES.paint,
   coplayHint: 'One taps a change in the sand; the other says (or points to) what changed. Then swap.',
+  coplayHintLap: 'Let {name} tap a change in the sand, then say what changed and point to it together.',
   offScreen:
     'A tray of dry sand, rice or oats and a scoop: pour a heap, scoop some away, and watch the sides slide.',
   hubIcon: () => new SandIcon(),
