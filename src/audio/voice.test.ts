@@ -98,4 +98,60 @@ describe('voice.sayIn', () => {
     await said;
     expect(synth.speak).not.toHaveBeenCalled();
   });
+
+  describe('a cut line never holds a game (U7 R4)', () => {
+    /** A promise's state, read without waiting for it. */
+    const watch = (p: Promise<void>) => {
+      const seen = { done: false };
+      void p.then(() => (seen.done = true));
+      return seen;
+    };
+
+    it('stop() ends a silenced line at once, and every other line pending', async () => {
+      const { voice } = await import('./voice');
+      voice.enabled = false;
+      const one = watch(voice.say('nav.home'));
+      const two = watch(voice.sayIn('nav.home', { pitch: 2, rate: 1.3 }));
+      await vi.advanceTimersByTimeAsync(10);
+      expect(one.done).toBe(true); // the second line cut it
+      expect(two.done).toBe(false);
+      voice.stop();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(two.done).toBe(true);
+    });
+
+    it('a new line ends the silenced one it cuts when it starts', async () => {
+      const { voice } = await import('./voice');
+      voice.enabled = false;
+      const first = watch(voice.say('nav.back'));
+      await vi.advanceTimersByTimeAsync(100);
+      expect(first.done).toBe(false);
+      const second = watch(voice.say('nav.home'));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(first.done).toBe(true);
+      expect(second.done).toBe(false);
+    });
+
+    it('stop() ends a device line whose engine never fires end, and a clip still loading', async () => {
+      const { voice } = await import('./voice');
+      const { audio } = await import('./engine');
+      synth.speak.mockImplementationOnce((u: FakeUtterance) => void spoken.push(u)); // no end, ever
+      (audio as { ctx: { state: string } | null }).ctx = null;
+      const device = watch(voice.say('nav.back'));
+      await vi.advanceTimersByTimeAsync(10);
+      expect(device.done).toBe(false);
+      voice.stop();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(device.done).toBe(true);
+
+      (audio as { ctx: { state: string } | null }).ctx = { state: 'running' };
+      const clip = watch(voice.say('nav.home')); // fetch never answers
+      await vi.advanceTimersByTimeAsync(10);
+      expect(clip.done).toBe(false);
+      voice.stop();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(clip.done).toBe(true);
+      expect(audio.duck).toHaveBeenLastCalledWith(false);
+    });
+  });
 });

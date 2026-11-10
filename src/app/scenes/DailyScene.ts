@@ -19,6 +19,7 @@ import { fitArt } from '../../ui/origin-art';
 import { FONT } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
+import { WayOut } from '../leave';
 
 const MUTED = 0x6b6b7b;
 /** The top of the card grid, under the corner buttons and the title. */
@@ -53,18 +54,26 @@ export class DailyScene extends Scene {
   private readonly backdrop = homeBackdrop();
   /** Back goes Home; on a phone, where the six are the whole app (`App.phoneOnly`), to "Who's playing?". */
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => (this.app.phoneOnly ? this.app.go.start() : this.app.go.hub()), voice.say('nav.back')),
+    this.leave(
+      this.back,
+      () => (this.app.phoneOnly ? this.app.go.start() : this.app.go.hub()),
+      () => voice.say('nav.back'),
+    ),
   ).means('back');
   /** Play all: opens the first of the six not yet played today; each round's result then offers the next one. */
   readonly playAll = new RoundButton(playIcon(), swatch.green, CORNER_RADIUS, () => {
     const next = nextOfSix(this.picks, null, (id) => this.played(id));
-    if (next) this.open(next);
+    if (next) this.open(next, this.playAll);
   });
   /** A grown-up's playtest notes on today's six (plain HTML, `src/ui/playtest-sheet.ts`); never drawn for a child. */
   readonly notes: RoundButton | null;
   private sheet: PlaytestSheet | null = null;
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => this.app.go.explore('all', 0, false), voice.say('explore.all')),
+    this.leave(
+      this.all,
+      () => this.app.go.explore('all', 0, false),
+      () => voice.say('explore.all'),
+    ),
   );
   private readonly title = new Text({
     text: "Today's six",
@@ -80,7 +89,11 @@ export class DailyScene extends Scene {
   readonly day = dayKey(new Date());
   picks: DailyPick[];
   cards: DailyCard[] = [];
-  private leaving = false;
+  /** The first tap's way out; a second tap while leaving does nothing (U7 R2). */
+  private readonly out = new WayOut(
+    (s) => this.tw.wait(s),
+    () => this.app.scene === this,
+  );
   private readonly grownUp = store.data.profile.band === 'grownup';
   private uprightPhone: boolean;
 
@@ -118,11 +131,15 @@ export class DailyScene extends Scene {
     for (const c of this.cards) this.ui.addChild(c.node);
   }
 
-  private open(pick: DailyPick) {
-    void this.leave(
-      () => this.app.go.game(pick.mod.id, pick.band, undefined, false, { daily: true }, pick.level),
-      voice.say(pick.mod.titleLine),
+  /** Opens a game; the tapped card (or Play all) shows it was chosen. The game says its own name as it opens. */
+  private open(pick: DailyPick, from: Container) {
+    void this.leave(from, () =>
+      this.app.go.game(pick.mod.id, pick.band, undefined, false, { daily: true }, pick.level),
     );
+  }
+
+  private get leaving(): boolean {
+    return this.out.leaving;
   }
 
   private openNotes() {
@@ -224,23 +241,22 @@ export class DailyScene extends Scene {
       () => {
         if (this.leaving) return;
         sfx.tick();
-        node.scale.set(0.92);
-        window.setTimeout(() => !node.destroyed && node.scale.set(1), 110);
+        node.scale.set(0.92); // pressed, and held so while the screen changes
         voice.stop();
-        this.open(pick);
+        this.open(pick, node);
       },
       { cooldown: 400 },
     );
     return node;
   }
 
-  /** A short beat for the squish and the game's name, then the way out; a second tap while leaving does nothing. */
-  private async leave(go: () => void, speech?: Promise<void>) {
-    if (this.leaving) return;
-    this.leaving = true;
-    await (speech ? Promise.race([speech, this.tw.wait(1.1)]) : this.tw.wait(0.2));
-    if (this.app.scene !== this) return;
-    go();
+  /**
+   * The way out (U7 R2, R3): the pressed picture stays chosen and the rest dim, its line starts, and the screen changes
+   * after the squash's beat rather than after the line; a second tap while leaving does nothing.
+   */
+  private leave(node: Container, go: () => void, say?: () => Promise<void>) {
+    const others = [this.back, this.all, this.playAll, this.notes, ...this.cards.map((c) => c.node)];
+    return this.out.take(node, others, go, say);
   }
 
   resize(_v: View) {

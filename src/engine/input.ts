@@ -1,4 +1,5 @@
 import { Circle, type Container, type FederatedPointerEvent } from 'pixi.js';
+import { markTiming } from './timing';
 
 /** Where the last finger (or mouse) was, in canvas CSS pixels. Critters' eyes follow it. */
 export const gaze = { x: 0, y: 0, at: -Infinity };
@@ -66,6 +67,7 @@ export function onTap(obj: Container, fn: (e: FederatedPointerEvent) => void, op
     const now = performance.now();
     if (now - last < cooldown || palmOnGlass()) return;
     last = now;
+    markTiming('tap');
     fn(e);
   });
 }
