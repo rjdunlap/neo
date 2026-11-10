@@ -520,6 +520,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Without speech, do the scoop paddles read as "take away"?
 - [ ] On an iPad, does the Graphics redraw keep up during rapid taps?
 - [ ] On an iPad, hear the Show lines (device speech).
+- [ ] **Level 4 *Where did it go?* (2026-11-10).** On an iPad, hear the 13 new level-4 lines in device speech; is the whoosh comfortable; with a school-age child, does the kept outline read as "before" and the pad question as "which bay gained"?
 
 ## Look It Up levels 1–3
 

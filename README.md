@@ -61,7 +61,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 131 games, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 132 games, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -164,7 +164,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Block Garden](docs/games/block-garden.md) | pre-K–grown-up | Rainbow Meadow | 12 | drag shaped seed pieces onto a garden bed; a full row or column blooms and empties, until every bud blooms; a faint shadow shows where a piece will land |
 | [Swing Pals](docs/games/swing-pals.md) | lap–school | Rainbow Meadow | 8 | tap to push a friend on a tree swing until its feet ring the bell in the leaves; a push never lowers it and the bell stays lit |
 | [Lift It](docs/games/lift-it.md) | preschool–school | Rainbow Meadow | 9 | drag the rope's end in strokes to haul a crate up to a friend on the tree's ledge; a crate that is held never slides back |
-| [Sand Table](docs/games/sand-table.md) | lap–pre-K | Rainbow Meadow | 3 | tap the tray to pour dry sand into a heap, tap a scoop paddle to lift some back into the bucket, then plant the flag; level 2 adds a second bay, level 3 a pail for spills and a landscape to Show |
+| [Sand Table](docs/games/sand-table.md) | lap–school | Rainbow Meadow | 4 | tap the tray to pour dry sand into a heap, tap a scoop paddle to lift some back into the bucket, then plant the flag; level 2 adds a second bay, level 3 a pail for spills and a landscape to Show |
 | [Food Web Workshop](docs/games/food-web-workshop.md) | school | Rainbow Meadow | 3 | watch two picture cards replay what was seen eating what (a food symbol floats into the eater's mouth), drag a food's badge onto its eater to draw an arrow from food to eater, then press Show our web |
 | [Meadow Pens](docs/games/meadow-pens.md) | school | Rainbow Meadow | 5 | a friend asks for a pen: paint squares of grass on a meadow grid and the fence builds itself around the biggest connected group (other squares are flowers, a ring of grass round a hole is a pond), then ring the bell to check |
 | [Sprout Shuffle](docs/games/sprout-shuffle.md) | school | Rainbow Meadow | 8 | tap or drag one copy tile from each parent plant into a possible sprout, then open every bud |
