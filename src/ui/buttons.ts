@@ -80,6 +80,37 @@ export function spring(node: Container, delay = 0) {
   frame(step);
 }
 
+/** How much the other choices fade while the chosen one leads the way out (U7 R2). */
+export const UNCHOSEN_ALPHA = 0.6;
+
+/**
+ * Marks the picture a tap chose while the screen changes (U7 R2, docs/definitions/never-swallow-a-tap.md): it keeps its
+ * pressed scale (any spring back stops), a thick white ring is drawn round its outline, and every other choice in `others`
+ * dims, so it is plain which tap counted. Returns the undo (back to full size, the ring gone, the others as they were),
+ * for a scene that stays after all.
+ */
+export function chosen(node: Container, others: readonly (Container | null | undefined)[]): () => void {
+  springs.set(node, (springs.get(node) ?? 0) + 1);
+  const ring = new Graphics();
+  ring.label = 'chosen-ring';
+  const radius = (node as { radius?: unknown }).radius;
+  if (typeof radius === 'number') ring.circle(0, 0, radius + 7);
+  else {
+    const b = node.getLocalBounds();
+    ring.roundRect(b.x - 7, b.y - 7, b.width + 14, b.height + 14, 30);
+  }
+  ring.stroke({ color: 0xffffff, width: 9 });
+  node.addChild(ring);
+  const dimmed = others.filter((o): o is Container => !!o && o !== node && !o.destroyed);
+  const alphas = dimmed.map((o) => o.alpha);
+  for (const o of dimmed) o.alpha = UNCHOSEN_ALPHA;
+  return () => {
+    if (!ring.destroyed) ring.destroy();
+    if (!node.destroyed) node.scale.set(1);
+    dimmed.forEach((o, i) => !o.destroyed && (o.alpha = alphas[i]));
+  };
+}
+
 /** A big round button in the shared finish that squashes when pressed and springs back. */
 export class RoundButton extends Container {
   constructor(
