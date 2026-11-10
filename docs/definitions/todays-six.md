@@ -103,7 +103,7 @@ Shell/navigation: typecheck, unit tests, build, one filtered browser flow (Home,
 
 On a phone the six are the whole root, R6's Play all is built as a play button plus a next-of-six tile on each daily round's result (not through the mix planner), and a grown-up's profile can leave a playtest note per game and day: [the daily playtest slice](phone-portrait.md#the-daily-playtest-slice-a-phone-is-todays-six-alone-built-2026-11-09).
 
-## U5: a first six she can start (status ready, defined 2026-11-10)
+## U5: a first six she can start (status built 2026-11-10)
 
 From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#4-todays-six-does-not-suit-a-brand-new-player), finding 4: a one-year-old's first six showed Word Glue with a grown-up tip that asks her to name something, and a four-year-old's showed Day by Day at level 4, a three-step card for a game never played. The review asked for three things; one of them is already built.
 
@@ -139,8 +139,8 @@ In `daily.test.ts`, over the real registry: with every game new, each child's pi
 
 ### Slices and check tier
 
-1. **U5a, first levels and the tip field** (built 2026-11-10, [PR #1467](https://github.com/rjdunlap/neo/pull/1467); six games still ask at lap and wait on the registry test's `PENDING_U5B` list for U5b) (shell tier): `src/content/daily.ts`, `daily.test.ts`, the shared six helper, `DailyScene.ts`, `GameScene.ts` (`begin`, `showDailyNext`), `src/progress/store.ts` (the shared first-level start), `src/games/types.ts`, Word Glue's module and the registry test. Checks: typecheck, unit tests, build, and one scripted Today's six flow on a fresh pre-K profile (a new game's card on its first dot, one finished round, back on the page with the card unchanged, the result's next tile at its first level) with one portrait screenshot. `world` only if a route changes; no offline check, since persistence and assets do not.
-2. **U5b, the tip audit** (content tier, after U5a): game modules' tips only; typecheck and the registry test. No browser run.
+1. **U5a, first levels and the tip field** (built 2026-11-10, [PR #1467](https://github.com/rjdunlap/neo/pull/1467)) (shell tier): `src/content/daily.ts`, `daily.test.ts`, the shared six helper, `DailyScene.ts`, `GameScene.ts` (`begin`, `showDailyNext`), `src/progress/store.ts` (the shared first-level start), `src/games/types.ts`, Word Glue's module and the registry test. Checks: typecheck, unit tests, build, and one scripted Today's six flow on a fresh pre-K profile (a new game's card on its first dot, one finished round, back on the page with the card unchanged, the result's next tile at its first level) with one portrait screenshot. `world` only if a route changes; no offline check, since persistence and assets do not.
+2. **U5b, the tip audit** (built 2026-11-10, [PR #1468](https://github.com/rjdunlap/neo/pull/1468); 29 games have a lap override) (content tier): game modules' tips only; typecheck and the registry test. No browser run.
 
 **Dependencies.** Both slices touch `GameScene.ts`, which the U3 round controls and the phone slices also changed; a build session rechecks open PRs and branches on it (`scripts/overlap.sh`) before claiming. Nothing here changes saves, routes or the classic island's six beyond the same shared code.
 
