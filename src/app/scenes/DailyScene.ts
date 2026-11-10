@@ -4,13 +4,13 @@ import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { dailySix, dayKey, levelDots, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { dayKey, levelDots, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { todaysSix } from '../daily-six';
 import { makeCompanion } from '../../creatures/companion';
 import { BACK } from '../../creatures/friends-layout';
 import { CORNER_RADIUS, GUIDE_CORNER, HOME_BUTTON } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
-import { GAMES } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon, playIcon, tilesIcon } from '../../ui/icons';
@@ -100,13 +100,7 @@ export class DailyScene extends Scene {
   }
 
   private pickSix(): DailyPick[] {
-    return dailySix(
-      this.day,
-      store.data.profile.band,
-      GAMES,
-      (id) => store.data.games[id]?.pinned ?? null,
-      this.uprightPhone,
-    );
+    return todaysSix(this.day, this.uprightPhone);
   }
 
   private played(id: string): boolean {

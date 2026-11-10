@@ -566,6 +566,9 @@ export const wordGlue: GameModule = {
   music: STYLES.paint,
   coplayHint:
     'Silly Compounds: take turns inventing names for things in the room, like a spoon hat or a sock house. Let her name one first.',
+  // At one year she points and pats while the grown-up does the naming (U5a's lap tip rule).
+  coplayHintLap:
+    'Silly Compounds: hold up two things from the room, like a spoon and a hat, and call them a spoon hat. She pats each one while you say the silly name.',
   offScreen: 'Find a toothbrush, a doorbell or a raincoat at home and say its two little words.',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,

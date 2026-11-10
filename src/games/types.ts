@@ -133,8 +133,13 @@ export interface GameModule {
    * the turn prompt. A registry test lists these games.
    */
   upright?: true;
-  /** A prompt for the grown-up in early bands. `{name}` is the child's name. */
+  /** A prompt for the grown-up in early bands (lap and toddler). `{name}` is the child's name. Read through `tipFor`. */
   coplayHint?: string;
+  /**
+   * The lap band's own tip, when `coplayHint` asks more than a one-year-old can give (U5a): a lap tip never asks her to name,
+   * say, count, tell, answer or take a speaking turn. `false` shows no tip at lap. Only on games that list `lap`.
+   */
+  coplayHintLap?: string | false;
   /**
    * A real-world activity that carries the same skill off the screen, for the parent zone. A plain string serves every band;
    * `OffScreenLines` gives a band its own sentence (`null` withholds it there). Read through `offScreenFor` (`src/content/offscreen.ts`),
@@ -297,4 +302,16 @@ export interface Game {
   update(dt: number): void;
   resize(view: View): void;
   destroy(): void;
+}
+
+/**
+ * The grown-up tip a round shows at `band` (lap and toddler only; U5a): lap takes `coplayHintLap` when the game sets one
+ * (`false` shows none), otherwise the shared `coplayHint`; toddler and older read `coplayHint`.
+ */
+export function tipFor(
+  mod: Pick<GameModule, 'coplayHint' | 'coplayHintLap'>,
+  band: Band,
+): string | undefined {
+  if (band === 'lap' && mod.coplayHintLap !== undefined) return mod.coplayHintLap || undefined;
+  return mod.coplayHint;
 }

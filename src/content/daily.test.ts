@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { GAMES, playsByTouch } from '../games/registry';
+import { GAMES, gameById, playsByTouch } from '../games/registry';
 import { BANDS } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
+import type { RoundRecord } from '../progress/save';
 import {
   DAILY_COUNT,
   GROWNUP_FIRST,
@@ -13,6 +14,7 @@ import {
   nextOfSix,
   presetLevels,
   playedOn,
+  newToday,
 } from './daily';
 
 /** How many times each value appears. */
@@ -242,5 +244,91 @@ describe('the next of the six', () => {
     expect(nextOfSix(six, ids[5], (id) => played.has(id))?.mod.id).toBe(ids[2]);
     expect(nextOfSix(six, ids[2], (id) => played.has(id))).toBeNull();
     expect(nextOfSix(six, ids[2], () => false)?.mod.id).toBe(ids[3]);
+  });
+});
+
+describe('a first six she can start (U5a)', () => {
+  const children = BANDS.map((b) => b.id).filter((b) => b !== 'grownup');
+  const first = (p: { mod: (typeof GAMES)[number]; band: Parameters<(typeof GAMES)[number]['levels']>[0] }) =>
+    levelsInOrder(p.mod.levels(p.band))[0];
+  const all = () => true;
+
+  it("plays every new game at its band's first level in play order", () => {
+    for (const band of children) {
+      for (const day of days) {
+        for (const p of dailySix(day, band, GAMES, undefined, false, all))
+          expect(p.level, `${band} ${p.mod.id}`).toBe(first(p));
+      }
+    }
+  });
+
+  it('starts Day by Day at its first pre-K level, not a preset deep in the ladder', () => {
+    const games = [
+      gameById('day-by-day')!,
+      ...dailyPool('prek', GAMES)
+        .filter((m) => m.id !== 'day-by-day')
+        .slice(0, 5),
+    ];
+    const levels = new Set<number>();
+    for (const day of days) {
+      const p = dailySix(day, 'prek', games, undefined, false, all).find((q) => q.mod.id === 'day-by-day')!;
+      expect(p.level).toBe(levelsInOrder(p.mod.levels('prek'))[0]);
+      levels.add(dailySix(day, 'prek', games).find((q) => q.mod.id === 'day-by-day')!.level);
+    }
+    // Without freshness the preset reaches past the first level on some day.
+    expect([...levels].some((l) => l !== levelsInOrder(gameById('day-by-day')!.levels('prek'))[0])).toBe(
+      true,
+    );
+  });
+
+  it('keeps the six and their levels exactly when nothing is new', () => {
+    for (const band of BANDS.map((b) => b.id)) {
+      for (const day of days.slice(0, 10)) {
+        expect(dailySix(day, band, GAMES, undefined, true, () => false)).toEqual(
+          dailySix(day, band, GAMES, undefined, true),
+        );
+      }
+    }
+  });
+
+  it('changes only the new games’ levels, never the games or their order', () => {
+    for (const band of children) {
+      for (const day of days) {
+        const plain = dailySix(day, band, GAMES);
+        const isNew = (id: string) => id === plain[1].mod.id || id === plain[4].mod.id;
+        const mixed = dailySix(day, band, GAMES, undefined, false, isNew);
+        expect(mixed.map((p) => p.mod.id)).toEqual(plain.map((p) => p.mod.id));
+        mixed.forEach((p, i) => expect(p.level).toBe(isNew(p.mod.id) ? first(p) : plain[i].level));
+      }
+    }
+  });
+
+  it('lets a pin win over a first level', () => {
+    for (const band of children) {
+      const target = dailySix(days[0], band, GAMES)[2];
+      const order = levelsInOrder(target.mod.levels(target.band));
+      const pin = order[order.length - 1];
+      const six = dailySix(days[0], band, GAMES, (id) => (id === target.mod.id ? pin : null), false, all);
+      expect(six[2].level).toBe(pin);
+    }
+  });
+
+  it("keeps a grown-up's six at their hardest, new or not", () => {
+    for (const day of days)
+      expect(dailySix(day, 'grownup', GAMES, undefined, false, all)).toEqual(dailySix(day, 'grownup', GAMES));
+  });
+
+  it('counts a game new to her today until a round from an earlier day', () => {
+    const today = '2026-11-10';
+    const at = (d: Date) => ({ at: d.getTime(), level: 1, misses: 0, hints: 0, seconds: 30 }) as RoundRecord;
+    const noon = at(new Date(2026, 10, 10, 12));
+    const yesterday = at(new Date(2026, 10, 9, 18));
+    expect(newToday(undefined, today)).toBe(true);
+    expect(newToday({ plays: 0, history: [] }, today)).toBe(true);
+    expect(newToday({ plays: 2, history: [noon, noon] }, today)).toBe(true);
+    expect(newToday({ plays: 2, history: [yesterday, noon] }, today)).toBe(false);
+    // History holds only the last ten: ten today out of ten counted is new; ten today out of twelve is not.
+    expect(newToday({ plays: 10, history: Array(10).fill(noon) }, today)).toBe(true);
+    expect(newToday({ plays: 12, history: Array(10).fill(noon) }, today)).toBe(false);
   });
 });

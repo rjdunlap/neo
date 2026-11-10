@@ -39,6 +39,13 @@ export const isStruggle = (r: RoundRecord) => r.misses >= 4 || r.hints >= 2;
 export const landing = (level: number, range: LevelRange, entries: readonly number[] = []): number =>
   entries.includes(level) && !levelsInOrder(range).includes(level) ? levelsInOrder(range)[0] : level;
 
+/**
+ * The level a game starts at for a player who has never finished it: the band's easiest level in play order (not level 1
+ * when the range has an `order`). `Store.levelFor` and Today's six (U5a) both start a new game here, so there is one rule.
+ */
+export const firstLevel = (range: LevelRange, entries: readonly number[] = []): number =>
+  landing(levelsInOrder(range)[0], range, entries);
+
 /** A level inside the range; one outside it lands on the nearest end of the order. */
 const clamp = (level: number, range: LevelRange) => {
   if (!range.order) return Math.min(range.max, Math.max(range.min, level));
