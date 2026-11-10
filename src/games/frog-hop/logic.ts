@@ -9,16 +9,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * a half or a whole, then two hop sizes that reach the same lily.
  */
 export type HopMode =
-  | 'find'
-  | 'next'
-  | 'add'
-  | 'back'
-  | 'gap'
-  | 'big'
-  | 'make-ten'
-  | 'back-ten'
-  | 'frac-hop'
-  | 'frac-match';
+  'find' | 'next' | 'add' | 'back' | 'gap' | 'big' | 'make-ten' | 'back-ten' | 'frac-hop' | 'frac-match';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -207,7 +198,8 @@ function fracQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   for (;;) {
     const qs = [first, ...rng.shuffle([...rest]).slice(0, plan.questions - 1)].map(make);
     const repeats = qs.some(
-      (q, i) => i > 0 && (q.target === qs[i - 1].target || answerOf(plan.mode, q) === answerOf(plan.mode, qs[i - 1])),
+      (q, i) =>
+        i > 0 && (q.target === qs[i - 1].target || answerOf(plan.mode, q) === answerOf(plan.mode, qs[i - 1])),
     );
     const fair = match
       ? qs.some((q) => q.target > 4)

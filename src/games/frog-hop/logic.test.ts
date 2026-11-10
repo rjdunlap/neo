@@ -183,7 +183,8 @@ describe('Frog Hop, Fraction Landings', () => {
           expect(q.target).toBe(q.start + q.jump! * q.count!);
           expect(Number.isInteger(q.target)).toBe(true);
           expect(q.lo).toBe(0);
-          for (const t of [q.start, q.target]) (expect(t).toBeGreaterThanOrEqual(0), expect(t).toBeLessThanOrEqual(8));
+          for (const t of [q.start, q.target])
+            (expect(t).toBeGreaterThanOrEqual(0), expect(t).toBeLessThanOrEqual(8));
           expect([1, 2, 4]).toContain(q.jump);
           if (mode === 'frac-hop') expect(q.target).toBeLessThanOrEqual(4);
         }
@@ -253,7 +254,17 @@ describe('Frog Hop, Fraction Landings', () => {
   });
 
   it('names ticks 0 to 2 in glyphs and words that agree, with a quarter name only for even ticks', () => {
-    expect(Array.from({ length: 9 }, (_, t) => fracName(t))).toEqual(['0', '¼', '½', '¾', '1', '1¼', '1½', '1¾', '2']);
+    expect(Array.from({ length: 9 }, (_, t) => fracName(t))).toEqual([
+      '0',
+      '¼',
+      '½',
+      '¾',
+      '1',
+      '1¼',
+      '1½',
+      '1¾',
+      '2',
+    ]);
     expect(fracName(6)).toBe('1½');
     expect(fracWords(6)).toBe('one and a half');
     for (let t = 0; t <= 8; t++) {
