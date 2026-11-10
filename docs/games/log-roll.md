@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/log-roll; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `log-roll` · **Land:** Tinker Lab · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `log-roll` · **Land:** Tinker Lab · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-reasoning, planning, mental-rotation
 

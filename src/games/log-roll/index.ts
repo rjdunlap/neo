@@ -29,6 +29,41 @@ import {
   type State,
 } from './logic';
 
+/** The 116 × 100 direction buttons and the 160 × 100 Undo, Hint and Start over buttons, by their centres. */
+export const DIRECTION_SIZE = { w: 116, h: 100 },
+  BUTTON_SIZE = { w: 160, h: 100 };
+
+/**
+ * Where a floor goes: its cell size and top-left stone, the heading and status above it, the direction row and the
+ * Undo, Hint and Start over row under it. Sideways the floor starts at y 180; an upright phone (chunk 31) starts it below
+ * Home and "?" and centres the whole column in the tall view, with stones up to 112 units.
+ */
+export function logRollLayout(v: View, floor: readonly string[]) {
+  const rows = floor.length,
+    cols = floor[0].length;
+  const cell = v.upright
+    ? Math.min(112, (v.h - 520) / rows, (v.w - 64) / cols)
+    : Math.min(96, (v.h - 440) / rows, (v.w - 160) / cols);
+  const bx = (v.w - cell * cols) / 2,
+    by = v.upright ? Math.max(230, Math.round((v.h - cell * rows - 290) / 2)) : 180;
+  const bottom = by + cell * rows;
+  const directions = Object.fromEntries(
+    (['left', 'up', 'down', 'right'] as const).map((d, i) => [
+      d,
+      { x: v.w / 2 + (i - 1.5) * 132, y: bottom + 76 },
+    ]),
+  ) as Record<Direction, { x: number; y: number }>;
+  return {
+    cell,
+    bx,
+    by,
+    heading: { x: v.w / 2, y: by - 68 },
+    status: { x: v.w / 2, y: by - 25 },
+    directions,
+    buttons: [0, 1, 2].map((i) => ({ x: v.w / 2 + (i - 1) * 184, y: bottom + 192 })),
+  };
+}
+
 /** Code-drawn wood: rings distinguish the standing end from a log lying across two stones. */
 function drawLog(g: Graphics, w: number, h: number, upright: boolean) {
   g.clear()
@@ -180,7 +215,7 @@ class LogRoll implements Game {
     const names = { up: '↑ Up', down: '↓ Down', left: '← Left', right: 'Right →' };
     for (const d of DIRECTIONS) {
       const node = new Container();
-      node.addChild(tile(116, 100, 'teal'), label(names[d], 25, ink));
+      node.addChild(tile(DIRECTION_SIZE.w, DIRECTION_SIZE.h, 'teal'), label(names[d], 25, ink));
       node.hitArea = new Rectangle(-58, -50, 116, 100);
       onTap(node, () => this.choose(d));
       this.directions[d] = node;
@@ -449,17 +484,15 @@ class LogRoll implements Game {
     void this.ctx.say('log.restart');
   }
   resize(v: View) {
-    const { floor } = this.puzzle.plan;
-    this.cell = Math.min(96, (v.h - 440) / floor.length, (v.w - 160) / floor[0].length);
-    this.bx = (v.w - this.cell * floor[0].length) / 2;
-    this.heading.position.set(v.w / 2, 112);
-    this.status.position.set(v.w / 2, 155);
-    const bottom = this.by + this.cell * floor.length;
-    (['left', 'up', 'down', 'right'] as const).forEach((d, i) =>
-      this.directions[d].position.set(v.w / 2 + (i - 1.5) * 132, bottom + 76),
-    );
+    const l = logRollLayout(v, this.puzzle.plan.floor);
+    this.cell = l.cell;
+    this.bx = l.bx;
+    this.by = l.by;
+    this.heading.position.copyFrom(l.heading);
+    this.status.position.copyFrom(l.status);
+    DIRECTIONS.forEach((d) => this.directions[d].position.copyFrom(l.directions[d]));
     [this.undoButton, this.hintButton, this.againButton].forEach((node, i) =>
-      node.position.set(v.w / 2 + (i - 1) * 184, bottom + 192),
+      node.position.copyFrom(l.buttons[i]),
     );
     this.draw();
   }
@@ -528,6 +561,7 @@ export const logRoll: GameModule = {
   challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'mental-rotation'],
   bands: ['grownup'],
+  upright: true,
   touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,

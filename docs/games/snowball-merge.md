@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/snowball-merge; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `snowball-merge` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `snowball-merge` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-planning, doubling, revision
 
