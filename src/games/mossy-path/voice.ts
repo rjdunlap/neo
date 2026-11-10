@@ -16,10 +16,13 @@ export const VOICE = {
   'moss.done': ['Every tile bloomed, and the turtle reached the pond!'],
   'moss.maze': ['Help the turtle find the way to the pond. Tap or slide along the moss.'],
   'moss.maze-berry': ['The turtle wants a berry snack on the way. Get the berry first, then go to the pond.'],
+  'moss.maze-berries': ['Two berries for the turtle, in any order. Then the pond.'],
   'moss.hedge': ["Hedges all around. Let's turn back."],
   'moss.stop': ['That way stops at the hedge. Look for the way that keeps going.'],
   'moss.snack': ['The pond can wait. Get the berry first!'],
+  'moss.snack-both': ['The pond can wait. The turtle wants both berries first!'],
   'moss.berry': ['Yum, a berry! Now to the pond.'],
+  'moss.berry-one': ['One berry! Where is the other one?'],
   'moss.hint-maze': ['The gold tile is the way to go.'],
   'moss.done-maze': ['The turtle found the way to the pond!'],
 } satisfies Record<string, string[]>;

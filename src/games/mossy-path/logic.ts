@@ -8,6 +8,8 @@ export interface Board {
   start: number;
   pond: number;
   berry?: number;
+  /** Level 9's second berry, on its own spur. */
+  berry2?: number;
 }
 export interface Plan {
   rows: number;
@@ -139,8 +141,8 @@ export function helpFor(b: Board, path: readonly number[]): { undo: number; next
   return null;
 }
 
-/* Levels 4–7, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
-export const isMaze = (level: number) => level >= 4 && level <= 7;
+/* Levels 4–7 and 9, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
+export const isMaze = (level: number) => (level >= 4 && level <= 7) || level === 9;
 /** Frozen boards (six per level), rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
 export const MAZES: Record<number, readonly (readonly string[])[]> = {
   4: [
@@ -175,12 +177,22 @@ export const MAZES: Record<number, readonly (readonly string[])[]> = {
     ['B..S...', '######.', '###....', '####.#P'],
     ['#B##.##', 'S.....P', '###.###', '##...##'],
   ],
+  // Two berries, each at the end of its own spur off the way to the pond, one nearer the start; at least one wrong branch.
+  9: [
+    ['#B#.#B#', 'S......', '##.##.#', '##.##.P'],
+    ['S...#.B', '##.##.#', 'B..#...', '##...#P'],
+    ['S.#...B', '#.#.#.#', '#...#.P', '###B#.#'],
+    ['..S...B', '.####.#', '...#...', '##B#.#P'],
+    ['B.#.#B#', '#.#...#', '#...#.#', 'S.#.#.P'],
+    ['S.....#', '#.#.#.B', 'B.#.###', '##....P'],
+  ],
 };
 const MAZE_NAMES: Record<number, string> = {
   4: 'Follow the moss: one winding path to the pond',
   5: 'Which way? One fork',
   6: 'Look before you go: dead ends one step deep',
   7: 'Snack on the way: get the berry, then the pond',
+  9: 'Two snacks: both berries, then the pond',
 };
 export const levelName = (level: number) =>
   MAZE_NAMES[level] ?? (level === 8 ? PATCH_NAME : PLAN_NAMES[planLevel(level)]);
@@ -188,8 +200,8 @@ export function parseMaze(rows: readonly string[]): Board {
   const cols = rows[0].length,
     tiles: number[] = [];
   let start = -1,
-    pond = -1,
-    berry: number | undefined;
+    pond = -1;
+  const berries: number[] = [];
   rows.forEach((row, r) =>
     [...row].forEach((ch, c) => {
       const at = r * cols + c;
@@ -197,10 +209,19 @@ export function parseMaze(rows: readonly string[]): Board {
       tiles.push(at);
       if (ch === 'S') start = at;
       else if (ch === 'P') pond = at;
-      else if (ch === 'B') berry = at;
+      else if (ch === 'B') berries.push(at);
     }),
   );
-  return { rows: rows.length, cols, tiles, start, pond, ...(berry === undefined ? {} : { berry }) };
+  const [berry, berry2] = berries;
+  return {
+    rows: rows.length,
+    cols,
+    tiles,
+    start,
+    pond,
+    ...(berry === undefined ? {} : { berry }),
+    ...(berry2 === undefined ? {} : { berry2 }),
+  };
 }
 /** A left–right and/or top–bottom flip; never a transpose, which would shrink a 4 × 7 maze below 100 units. */
 export function flipBoard(b: Board, flipX: boolean, flipY: boolean): Board {
@@ -214,6 +235,7 @@ export function flipBoard(b: Board, flipX: boolean, flipY: boolean): Board {
     start: f(b.start),
     pond: f(b.pond),
     ...(b.berry === undefined ? {} : { berry: f(b.berry) }),
+    ...(b.berry2 === undefined ? {} : { berry2: f(b.berry2) }),
   };
 }
 export function makeMaze(level: number, rng: Rng): Board {
@@ -240,23 +262,43 @@ export function routeBetween(b: Board, from: number, to: number): number[] {
   while (route[0] !== from) route.unshift(back.get(route[0])!);
   return route;
 }
-/** The way to the pond, and the berry's way where there is one: tiles on it are never a wrong turn. */
+/** The board's berries: none, one (level 7) or two (level 9). */
+export const berriesOf = (b: Board): number[] =>
+  [b.berry, b.berry2].filter((at): at is number => at !== undefined);
+/** The way to the pond, and each berry's way: tiles on them are never a wrong turn. */
 export function mainline(b: Board): Set<number> {
   const line = new Set(routeBetween(b, b.start, b.pond));
-  if (b.berry !== undefined) for (const at of routeBetween(b, b.start, b.berry)) line.add(at);
+  for (const berry of berriesOf(b)) for (const at of routeBetween(b, b.start, berry)) line.add(at);
   return line;
 }
-export const goalOf = (b: Board, berry: boolean) => (b.berry !== undefined && !berry ? b.berry : b.pond);
+/**
+ * Where the turtle heads next: the nearest uneaten berry from `at` by the tree's distance (the first listed on a tie),
+ * or the pond once `berry` says every berry is eaten.
+ */
+export function goalOf(b: Board, berry: boolean, at = b.start, eaten: readonly number[] = []): number {
+  if (berry) return b.pond;
+  let goal = b.pond,
+    best = Infinity;
+  for (const t of berriesOf(b)) {
+    if (eaten.includes(t)) continue;
+    const d = routeBetween(b, at, t).length;
+    if (d < best) [goal, best] = [t, d];
+  }
+  return goal;
+}
 /** The first tile from the turtle toward the goal: the way out of a dead end, otherwise the next route tile. */
 export const nextToward = (b: Board, at: number, goal: number) => routeBetween(b, at, goal)[1] ?? -1;
 /** The end of a dead end: a tile with one way in that is not the start, pond or berry. */
 export const deadEnd = (b: Board, at: number) =>
-  at !== b.start && at !== b.pond && at !== b.berry && neighbours(b, at).length === 1;
+  at !== b.start && at !== b.pond && !berriesOf(b).includes(at) && neighbours(b, at).length === 1;
 
 export interface MazeState {
   /** The turtle's current route from the start: a simple path in the tree. */
   path: number[];
+  /** Whether every berry on the board is eaten. */
   berry: boolean;
+  /** The berry tiles eaten so far this round. */
+  eaten: number[];
   misses: number;
   /** Wrong-branch entrance tiles already counted this round. */
   branches: number[];
@@ -266,7 +308,16 @@ export interface MazeState {
   reached: number[];
 }
 export type MazeMove =
-  | { kind: 'forward'; miss: boolean; berry: boolean; pond: boolean; deadEnd: boolean; progress: boolean }
+  | {
+      kind: 'forward';
+      miss: boolean;
+      /** A berry was eaten by this step; `left` berries remain after it. */
+      berry: boolean;
+      left: number;
+      pond: boolean;
+      deadEnd: boolean;
+      progress: boolean;
+    }
   | { kind: 'back' }
   | { kind: 'walk'; to: number }
   | { kind: 'refuse'; miss: boolean }
@@ -274,19 +325,26 @@ export type MazeMove =
 export const mazeStart = (b: Board): MazeState => ({
   path: [b.start],
   berry: false,
+  eaten: [],
   misses: 0,
   branches: [],
   snack: false,
   reached: [b.start],
 });
-/** Start over: the same maze and the berry back on its bush; misses and counted branches stay. */
-export const mazeRestart = (b: Board, s: MazeState): MazeState => ({ ...s, path: [b.start], berry: false });
+/** Start over: the same maze and the berries back on their bushes; misses and counted branches stay. */
+export const mazeRestart = (b: Board, s: MazeState): MazeState => ({
+  ...s,
+  path: [b.start],
+  berry: false,
+  eaten: [],
+});
 /** One step back along the trail (Undo, a tap on the last tile, one step of a walk back). Always free. */
 export const mazeBack = (s: MazeState): MazeState =>
   s.path.length > 1 ? { ...s, path: s.path.slice(0, -1) } : s;
 /**
- * What a touch on tile `at` does at a maze level. Only levels 6–7 count misses: a step into a wrong branch once per
- * branch per round, and (level 7) a pond step without the berry once per round. Back steps and far taps are free.
+ * What a touch on tile `at` does at a maze level. Only levels 6, 7 and 9 count misses: a step into a wrong branch once
+ * per branch per round, and (levels 7 and 9) a pond step before every berry is eaten once per round. Back steps and far
+ * taps are free; a berry spur is never a wrong branch, and the berries may be eaten in either order.
  */
 export function mazeTouch(
   b: Board,
@@ -301,7 +359,8 @@ export function mazeTouch(
   const earlier = s.path.indexOf(at);
   if (earlier >= 0) return { state: s, move: { kind: 'walk', to: earlier } };
   if (!adjacent(b, here, at)) return { state: s, move: { kind: 'ignore', far: true } };
-  if (at === b.pond && b.berry !== undefined && !s.berry) {
+  const berries = berriesOf(b);
+  if (at === b.pond && berries.length && !s.berry) {
     return {
       state: { ...s, snack: true, misses: s.misses + (s.snack ? 0 : 1) },
       move: { kind: 'refuse', miss: !s.snack },
@@ -311,10 +370,13 @@ export function mazeTouch(
   const wrong = level >= 6 && line.has(here) && !line.has(at);
   const miss = wrong && !s.branches.includes(at);
   const progress = line.has(at) && !s.reached.includes(at);
+  const ate = berries.includes(at) && !s.eaten.includes(at),
+    eaten = ate ? [...s.eaten, at] : s.eaten;
   const state: MazeState = {
     ...s,
     path: [...s.path, at],
-    berry: s.berry || at === b.berry,
+    berry: s.berry || (berries.length > 0 && eaten.length === berries.length),
+    eaten,
     misses: s.misses + (miss ? 1 : 0),
     branches: miss ? [...s.branches, at] : s.branches,
     reached: progress ? [...s.reached, at] : s.reached,
@@ -324,7 +386,8 @@ export function mazeTouch(
     move: {
       kind: 'forward',
       miss,
-      berry: at === b.berry && !s.berry,
+      berry: ate,
+      left: berries.length - eaten.length,
       pond: at === b.pond,
       deadEnd: deadEnd(b, at),
       progress,
@@ -359,5 +422,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 4, max: 4 },
   preschool: { min: 4, max: 5 },
   prek: { min: 5, max: 8, order: [5, 6, 8] },
-  school: { min: 1, max: 8, order: [6, 8, 1, 7, 2, 3] },
+  school: { min: 1, max: 9, order: [6, 8, 1, 7, 9, 2, 3] },
 };

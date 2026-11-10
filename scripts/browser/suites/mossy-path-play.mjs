@@ -11,6 +11,10 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await mossyPatchPlay();
       return;
     }
+    if (process.env.MOSSY_ONLY === 'snacks') {
+      await mossySnacksPlay();
+      return;
+    }
     for (const level of process.env.MOSSY_ONLY === 'navigation' ? [] : [1, 3]) {
       await launch('mossy-path', level);
       await page.waitForTimeout(350);
@@ -300,6 +304,70 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
     await finished('mossy-path');
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
     log('Mossy Path 8: free far tap, counted visited tap, finish and one sticker passed');
+  }
+
+  /** Level 9: the farther berry first, an early pond refused once, then the nearer berry and the pond. */
+  async function mossySnacksPlay() {
+    await launch('mossy-path', 9);
+    await page.waitForTimeout(350);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const plan = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        b = neo.scene.game.board,
+        d = (t) => L.routeBetween(b, b.start, t).length;
+      const [near, far] = L.berriesOf(b).sort((x, y) => d(x) - d(y));
+      return { near, far, toFar: L.routeBetween(b, b.start, far).slice(1) };
+    });
+    for (const at of plan.toFar) await tap(`neo.scene.game.nodes[${at}]`);
+    assert.deepEqual(
+      await page.evaluate(() => neo.scene.game.maze_.eaten),
+      [plan.far],
+      'the farther berry first',
+    );
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'a berry spur is never a miss');
+    // Walk to the pond's edge with one berry: the pond refuses once and counts one miss.
+    const toPond = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game,
+        b = g.board;
+      return L.routeBetween(b, g.path.at(-1), b.pond).slice(1);
+    });
+    for (const at of toPond) await tap(`neo.scene.game.nodes[${at}]`);
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.finished]),
+      [1, false],
+      'the pond waits for both berries',
+    );
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(350);
+    assert.ok(
+      await page.evaluate(() => neo.scene.game.cell >= 100),
+      'portrait maze cells stay at least 100 units',
+    );
+    await screenshot('mossy-path-9-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(350);
+    await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game;
+      for (let guard = 0; guard < 60 && !g.finished; guard++) {
+        const s = g.maze_,
+          here = s.path.at(-1);
+        kit.tapOn(g.nodes[L.nextToward(g.board, here, L.goalOf(g.board, s.berry, here, s.eaten))]);
+        await kit.sleep(170);
+      }
+    });
+    assert.deepEqual(
+      await page.evaluate(() => neo.scene.game.maze_.eaten.slice().sort()),
+      [plan.near, plan.far].sort(),
+      'both berries before the pond',
+    );
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);
+    await finished('mossy-path');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log(
+      'Mossy Path 9: farther berry first, early pond refused once, both berries, finish and one sticker passed',
+    );
   }
 
   return { mossyPathPlay };

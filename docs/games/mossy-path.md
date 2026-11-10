@@ -11,7 +11,7 @@
 | toddler | 4 |
 | preschool | 4–5 |
 | pre-K | 5, 6, 8 |
-| school | 6, 8, 1, 7, 2, 3 |
+| school | 6, 8, 1, 7, 9, 2, 3 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 6 | Look before you go: dead ends one step deep |
 | 7 | Snack on the way: get the berry, then the pond |
 | 8 | A little patch: bloom every tile |
+| 9 | Two snacks: both berries, then the pond |
 
 <!-- end generated -->
 
