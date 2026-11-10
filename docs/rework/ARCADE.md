@@ -30,11 +30,11 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 - Until she taps something (preschool and up; at lap and toddler it stays on the first card until a tap, since [RW03](HOME-NAVIGATION.md#routes-and-meaning) asks for no carousel that advances itself), the spotlight works like an arcade cabinet's attract mode: after the demo finishes a round, or 20 seconds, it moves to the next card on the page. Once she taps a card it stays where she put it.
 - First tap on a card spotlights it and says its title; a tap on the spotlighted card, or the big green Play button on the window, starts the game.
 
-**Filters.** One "Topics" button opens a sheet of picture tiles: All games, Played before (last played first, from the round history) and each of the ten subjects, drawn with that subject's landmark and spoken by its existing subject line. The chosen filter shows on the button. No search and no text-only chips, so it works without reading.
+**Filters.** One "Topics" button opens a sheet of picture tiles: For me (games for her band, land by land; the first tile and the default filter, drawn with her own companion), All games, Played before (last played first, from the round history) and each of the ten subjects, drawn with that subject's landmark and spoken by its existing subject line. The chosen filter shows on the button. No search and no text-only chips, so it works without reading.
 
 **Tags.** Derived, never hand-kept: the subject (Senses, Music, Art, Animals, Numbers, Everyday, Shapes, Puzzles, Stories, Science), the age seen from her band ("Bigger kids", "Little ones"; hers needs no tag) and "Controller" for a game that couch play can also play. The spotlight adds the level's description and the game's skills.
 
-**Paging.** Six cards a page with Explore's yellow arrows, not drag-scrolling: Pixi 8 never sends `pointercancel`, and telling a scroll from a tap is custom pointer code that a first slice does not need.
+**Paging.** Six cards a page with Explore's yellow arrows and a "2 of 6" count between them (hidden on one page; the Arcade also sets `upright`, so a phone or narrow tablet gets two columns and the Topics tiles fit without paging), not drag-scrolling: Pixi 8 never sends `pointercancel`, and telling a scroll from a tap is custom pointer code that a first slice does not need.
 
 **Returning.** A game started here keeps the origin `{ explore: 'arcade', page }`, so the result's Back returns to the same page (and `originArt` shows the Arcade's picture). The chosen filter and spotlit game are remembered for the session, as Explore's pages are.
 
