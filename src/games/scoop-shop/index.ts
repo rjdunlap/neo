@@ -1079,6 +1079,8 @@ export const scoopShop: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Be the customer! Ask {name} for "pink, please!" and say thank you.',
+  coplayHintLap:
+    'Be the customer! Point at the pink scoop, say "pink, please!", and say thank you for whatever {name} serves.',
   offScreen: {
     all: 'Play ice cream shop with colored pom-poms or blocks stacked in a cup.',
     // Under 3: no pom-poms (small parts).

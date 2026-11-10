@@ -786,6 +786,7 @@ export const duckPond: GameModule = {
   },
   music: STYLES.hub,
   coplayHint: 'Count out loud with {name}, and touch each duck as you count.',
+  coplayHintLap: 'Count out loud as {name} touches each duck: "one, two, three!"',
   offScreen: 'Line up toy ducks or spoons and count them together, touching each one.',
   hubIcon: () => new PondIcon(),
   entryLevels: [12],

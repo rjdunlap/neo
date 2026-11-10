@@ -852,6 +852,7 @@ export const vineSnip: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'One of you says "now!" when the fruit swings toward the friend; the other snips.',
+  coplayHintLap: 'Say "now!" when the fruit swings toward the friend, and let {name} snip.',
   offScreen: {
     all: 'Hang a sock from a string, swing it, and let go at different moments over a laundry basket. Then hold it by two strings and let one go.',
     lap: 'Hold a soft toy up high, say "snip!" and let it drop into her lap or onto a cushion.',

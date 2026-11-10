@@ -1636,6 +1636,8 @@ export const atticFinds: GameModule = {
   music: STYLES.paint,
   coplayHint:
     'Take turns: one tries a thing while the other watches what happens. Before Check, both say which ones you would pick. In the casebook, one reads a paper aloud and the other says which card it could show, before anyone taps Check.',
+  coplayHintLap:
+    'Try a thing and watch what happens with {name}. Before Check, point together at the ones you would pick.',
   offScreen:
     'With a grown-up, look at one ordinary thing at home that has a handle or a lid, and say what it is for. "I don\'t know" is a fine answer.',
   touchDemo: true,

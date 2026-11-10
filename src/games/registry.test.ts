@@ -561,18 +561,10 @@ describe('grown-up tips held to her band (U5a)', () => {
     'she tells',
     'she answers',
     'her turn to',
-  ];
-  /**
-   * Pending the U5b audit (docs/definitions/todays-six.md#tips-held-to-her-band-u5a-mechanism-u5b-audit): each tip here asks
-   * her a question at lap and is read one by one there, then gets a lap override or `false`. Shrink this list; never grow it.
-   */
-  const PENDING_U5B = [
-    'sink-float',
-    'puddle-lens',
-    'melt-freeze',
-    'fluffy-salon',
-    'scoop-shop',
-    'puzzle-pals',
+    // Added by the U5b read: a lap tip has the grown-up count, guess and chant while she taps.
+    'out loud with her',
+    'guess together',
+    'say it together',
   ];
 
   it('asks nothing of her at lap', () => {
@@ -583,17 +575,7 @@ describe('grown-up tips held to her band (U5a)', () => {
         t.toLowerCase(),
       );
       const asks = ASKS.filter((a) => read.some((t) => t.includes(a)));
-      // A pending game must still ask (so a tip fixed in U5b leaves the list); every other game must not.
-      if (PENDING_U5B.includes(mod.id)) expect(asks, `${mod.id} still pending: ${tip}`).not.toEqual([]);
-      else expect(asks, `${mod.id}: ${tip}`).toEqual([]);
-    }
-  });
-
-  it('keeps the pending list to games that still need the audit', () => {
-    for (const id of PENDING_U5B) {
-      const mod = gameById(id);
-      expect(mod?.bands, id).toContain('lap');
-      expect(mod?.coplayHintLap, id).toBeUndefined();
+      expect(asks, `${mod.id}: ${tip}`).toEqual([]);
     }
   });
 

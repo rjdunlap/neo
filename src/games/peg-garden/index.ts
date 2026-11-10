@@ -1151,6 +1151,8 @@ export const pegGarden: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Guess together where the pearl will land before {name} lets go.',
+  coplayHintLap:
+    'Point to where you think the pearl will land before {name} lets go, then watch it fall together.',
   offScreen: {
     all: 'Roll a marble down a tilted tray with toy blocks as bumpers.',
     // Under 3: a large soft ball instead of a marble (small parts).

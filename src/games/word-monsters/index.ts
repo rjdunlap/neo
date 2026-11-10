@@ -583,6 +583,8 @@ export const wordMonsters: GameModule = {
   music: STYLES.hub,
   touchDemo: true,
   coplayHint: 'Make each monster\'s sound together, slowly: "mmm", "sss", then blend them into a word.',
+  coplayHintLap:
+    'Make each monster\'s sound slowly as {name} taps it: "mmm", "sss". Then blend them into a word.',
   offScreen: 'Play I-spy with sounds: "I spy something that starts with sss."',
   hubIcon: () => new MonstersIcon(),
   sticker,

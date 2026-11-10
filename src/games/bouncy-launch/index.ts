@@ -1198,6 +1198,8 @@ export const bouncyLaunch: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "pull... and let go!" together, then guess where {name}\'s pet will land.',
+  coplayHintLap:
+    'Say "pull... and let go!" as {name} pulls, then point to where you think the pet will land.',
   offScreen: {
     all: 'Roll a ball down a ramp: tilt it more or less and see how far it goes.',
     // School: a build or test with a result, predicting first.

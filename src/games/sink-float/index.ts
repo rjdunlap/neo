@@ -886,6 +886,8 @@ export const sinkFloat: GameModule = {
   describeLevel: (l) => sinkPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Before each splash, ask {name}: will it float or sink? Every guess is a good guess.',
+  coplayHintLap:
+    'Before each splash, say what you think: "I think it will float!" Then watch it with {name}. Every guess is a good guess.',
   offScreen: 'At bath time, test a spoon, a cup, a toy and a sponge: which float and which sink?',
   hubIcon: () => new WigglyIcon(tankArt()),
   touchDemo: true,

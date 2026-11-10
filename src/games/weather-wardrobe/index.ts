@@ -1164,6 +1164,8 @@ export const weatherWardrobe: GameModule = {
   touchDemo: true,
   music: STYLES.hub,
   coplayHint: 'Look out the real window with {name}: what is the weather today, and what would we wear?',
+  coplayHintLap:
+    'Look out the real window with {name} and say what you see: "It\'s sunny! Let\'s wear a hat."',
   offScreen: 'Before going out, let {name} pick one thing to wear for the weather, like a hat or boots.',
   hubIcon: () => {
     const c = new Container();

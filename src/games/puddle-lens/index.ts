@@ -1225,6 +1225,7 @@ export const puddleLens: GameModule = {
   touchDemo: true,
   coplayHint:
     'Slide and lens: ask {name} for a view ("show me the little boxes!"), then check it together. At the plant-or-animal slides, guess first: before each turn of the dial, both of you say plant, animal or can\'t tell yet.',
+  coplayHintLap: 'Say what you see as {name} slides the lens: "Look, little boxes!" Point at it together.',
   offScreen:
     'Look at a leaf with just your eyes. What would a lens show? Then look at a leaf and a piece of lettuce: which bends, and which stays stiff? Plants are stiff because of their walls.',
   hubIcon: () => new LensIcon(),

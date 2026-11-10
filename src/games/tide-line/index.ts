@@ -1012,6 +1012,7 @@ export const tideLine: GameModule = {
   describeLevel: (l) => tidePlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'One of you is the sea and pulls the wave; the other says "in!" and "out!" before it turns.',
+  coplayHintLap: 'Say "in!" and "out!" as the wave turns, and let {name} pull it.',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker: (seed) => iconArt(seed),

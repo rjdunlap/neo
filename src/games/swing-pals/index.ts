@@ -1388,6 +1388,7 @@ export const swingPals: GameModule = {
   music: STYLES.paint,
   coplayHint:
     'One of you pushes; the other says "now!" when the friend comes back. On the rope levels, both guess the rope aloud before tapping.',
+  coplayHintLap: 'Say "now!" when the friend swings back, and let {name} tap.',
   offScreen: {
     all: 'Tie a sock to a string and swing it short and long: count the swings together. At the playground, push in time and feel it go higher.',
     // Under 3: no string (a cord).

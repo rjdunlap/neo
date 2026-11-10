@@ -342,6 +342,7 @@ export const puzzlePals: GameModule = {
   touchDemo: true,
   coplayHint:
     'Ask {name} what is in each piece: an ear, a sun, a flower? Say where it goes: top, bottom, corner, next to.',
+  coplayHintLap: 'Say what is in each piece as {name} picks it up: "an ear, a sun!" Point to where it goes.',
   offScreen: {
     all: 'Cut an old card or a cereal box picture into two or three pieces and put it back together.',
     // School: a build or test with a result, predicting first.

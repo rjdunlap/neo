@@ -854,6 +854,7 @@ export const monsterMunch: GameModule = {
   describeLevel: (l) => munchPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Count each bite out loud with {name} as the monster munches.',
+  coplayHintLap: 'Count each bite out loud as the monster munches, and munch along with {name}.',
   offScreen:
     'At snack time, share crackers between two plates so each has the same, and count them together.',
   hubIcon: () => new MunchIcon(),

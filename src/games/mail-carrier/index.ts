@@ -663,6 +663,7 @@ export const mailCarrier: GameModule = {
   touchDemo: true,
   entryLevels: [10],
   coplayHint: 'Read the house numbers together as you pass them: "two, four, five..."',
+  coplayHintLap: 'Read the house numbers out loud as you pass them: "two, four, five..."',
   offScreen: {
     all: 'Find the number on your own front door, then spot numbers on a walk.',
     // School: a build or test with a result, predicting first.
