@@ -128,4 +128,4 @@ Ran: `npm run typecheck`; `npm test` (329 files); `BROWSER_SUITE=logroll`; `fing
 Ran: `npm run typecheck`; `npm test` (329 files); `BROWSER_SUITE=logroll` (levels 1, 4 and 5, with an upright stop on a cradle at 5 and landscape screenshot `log-roll-cradle-stand`); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=5` (14.4 s). Not run: build (CI), offline, portrait screenshot at 5.
 
 
-**Slices 4–5 built (PR #1429).** Levels 6–7 add soft moss and a standing switch with a persistent bridge; [build note](../archive/COMPLETED-2026-10-09.md#log-roll-soft-moss-and-the-stone-bridge-2026-11-08) and [verification](../VERIFICATION.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). School, couch and swipe decisions remain open.
+**Slices 4–5 built (PR #1429).** Levels 6–7 add soft moss and a standing switch with a persistent bridge; [build note](../archive/COMPLETED-2026-10-09.md#log-roll-soft-moss-and-the-stone-bridge-2026-11-08) and [verification](../archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). School, couch and swipe decisions remain open.

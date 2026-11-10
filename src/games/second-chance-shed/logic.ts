@@ -218,16 +218,21 @@ export const PLANS: Plan[] = [
   { level: 4, name: 'Remake', open: ['worm', 'shelf', 'mend', 'remake'], count: 6, counts: true },
   { level: 5, name: 'Someone needs it', open: ['worm', 'shelf', 'mend', 'remake'], count: 5, counts: true },
   { level: 6, name: 'Two friends', open: ['worm', 'shelf', 'mend', 'remake'], count: 5, counts: true },
+  // Levels 7–8 plan cups across picnics (PicnicShed); no thing comes off the cart, so `open` and `count` are unused.
+  { level: 7, name: 'Picnic Loop', open: [], count: 0, counts: true },
+  { level: 8, name: 'Three picnics', open: [], count: 0, counts: true },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
-  school: { min: 4, max: 6 },
+  school: { min: 4, max: 8 },
 };
 /** The last level that brings one thing at a time; above it the cart is laid out and planned (levels 5–6). */
 export const SORT_MAX = 4;
+/** The last level that plans things once; above it the cups are planned across picnics (levels 7–8). */
+export const PLAN_MAX = 6;
 export const MAX_LEVEL = PLANS.length;
 
 export function planFor(level: number): Plan {
@@ -254,6 +259,7 @@ function tripled(items: ItemId[]): boolean {
 /** The level's ordered items: one of each open place first, filled from the reviewed table, never paper, never a repeat. */
 export function roundFor(level: number, rng: Rng): Round {
   const plan = planFor(level);
+  if (plan.level > PLAN_MAX) throw new Error(`level ${plan.level} is a picnic day: use picnicDayFor`);
   if (plan.level > SORT_MAX) return planRoundFor(plan.level, rng);
   const pool = (p: Place) =>
     ITEM_IDS.filter((id) => ITEMS[id].place === p && !ITEMS[id].paper && (ITEMS[id].from ?? 1) <= plan.level);
@@ -597,13 +603,25 @@ export class PlanTally {
     const c = checkPlan(round, plan);
     if (c.kind === 'ok') return c;
     if (c.kind === 'onCart') return { kind: 'cart', indices: c.indices };
-    const sig = plan.join(',');
-    if (sig === this.lastFail) return { kind: 'fail', check: c, counted: false, glowed: false };
+    return { kind: 'fail', check: c, ...this.failed(plan.join(',')) };
+  }
+
+  /** Levels 7–8: the same accounting for a picnic board; an empty seat is free, like something left on the cart. */
+  ringPicnic(day: PicnicDay, plan: PicnicPlan): PicnicRing {
+    const c = checkPicnic(day, plan);
+    if (c.kind === 'ok') return c;
+    if (c.kind === 'emptySeat') return { kind: 'seats', check: c };
+    return { kind: 'fail', check: c, ...this.failed(picnicSignature(day, plan)) };
+  }
+
+  /** A failed ring: one miss, unless the plan (by its signature) is the one that last failed; the second miss glows. */
+  private failed(sig: string): { counted: boolean; glowed: boolean } {
+    if (sig === this.lastFail) return { counted: false, glowed: false };
     this.lastFail = sig;
     this.misses++;
     const was = this.glowing;
     if (this.misses >= GLOW_AFTER) this.hint();
-    return { kind: 'fail', check: c, counted: true, glowed: !was && this.glowing };
+    return { counted: true, glowed: !was && this.glowing };
   }
 
   /** The pause sheet's Show a hint: 'glow' the first time, then 'move' (Show me one), a hint each. */
@@ -689,4 +707,523 @@ export function spotAt(l: PlanLayout, x: number, y: number): Spot | null {
     }
   }
   return best;
+}
+
+// ---- levels 7–8: Picnic Loop, cups planned across picnics (docs/definitions/second-chance-shed-7-8.md) ----
+
+/** The washable vessels, in the order every tie-break uses: three cups, then the big mug. */
+export const VESSEL_IDS = ['red', 'blue', 'yellow', 'mug'] as const;
+export type VesselId = (typeof VESSEL_IDS)[number];
+/** The picnic set: a separate record from ITEMS, so the level 1–6 pools never draw it. */
+export const VESSELS: Record<VesselId, { id: VesselId; name: string }> = {
+  red: { id: 'red', name: 'red cup' },
+  blue: { id: 'blue', name: 'blue cup' },
+  yellow: { id: 'yellow', name: 'yellow cup' },
+  mug: { id: 'mug', name: 'big mug' },
+};
+export const SEATS = 4;
+export const TUB_SLOTS = 2;
+
+export interface PicnicDay {
+  level: 7 | 8;
+  /** Breakfast and lunch (2), or supper too (3). */
+  picnics: number;
+  /** The most one-use cups the Last Heap's outlines allow: the day's puzzle, never a rule. */
+  target: number;
+  /** Level 8: the painter takes the big mug, clean, in the gap after this picnic (0 breakfast, 1 lunch). */
+  promise: { after: 0 | 1 } | null;
+}
+
+/** Level 7: two picnics, target 2. Level 8: three picnics, target 5, and one of the two authored handovers (seeded). */
+export function picnicDayFor(level: number, rng: Rng): PicnicDay {
+  if (level <= 7) return { level: 7, picnics: 2, target: 2, promise: null };
+  return { level: 8, picnics: 3, target: 5, promise: { after: rng.chance(0.5) ? 1 : 0 } };
+}
+
+/** Somewhere a cup can be on the board: a friend's seat at a picnic, a slot in the tub after a picnic, or with the painter. */
+export type PicnicStop =
+  { at: 'seat'; picnic: number; seat: number } | { at: 'tub'; tub: number; slot: number } | { at: 'painter' };
+
+/**
+ * What the board shows. A washable's route lists its stops in time order (its token sits at the last; earlier seats keep
+ * a ring); each one-use cup has a single stop.
+ */
+export interface PicnicPlan {
+  routes: Record<VesselId, PicnicStop[]>;
+  oneUse: PicnicStop[];
+}
+
+export const emptyPicnic = (): PicnicPlan => ({
+  routes: { red: [], blue: [], yellow: [], mug: [] },
+  oneUse: [],
+});
+
+/** A stop's place in the day: picnic p at 2p, the tub after it at 2p + 1, the handover just after that tub. */
+export function stopTime(day: PicnicDay, s: PicnicStop): number {
+  if (s.at === 'seat') return 2 * s.picnic;
+  if (s.at === 'tub') return 2 * s.tub + 1;
+  return day.promise ? 2 * day.promise.after + 1.5 : Infinity;
+}
+
+export const sameStop = (a: PicnicStop, b: PicnicStop) =>
+  a.at === b.at &&
+  (a.at === 'seat'
+    ? a.picnic === (b as typeof a).picnic && a.seat === (b as typeof a).seat
+    : a.at === 'tub'
+      ? a.tub === (b as typeof a).tub && a.slot === (b as typeof a).slot
+      : true);
+
+export type PicnicCup = VesselId | 'oneUse';
+
+/** Who is at a stop: a washable (as a ring or its token), a one-use cup (by index), or nobody. */
+export function occupant(plan: PicnicPlan, s: PicnicStop): { vessel: VesselId } | { oneUse: number } | null {
+  for (const v of VESSEL_IDS) if (plan.routes[v].some((r) => sameStop(r, s))) return { vessel: v };
+  const i = plan.oneUse.findIndex((r) => sameStop(r, s));
+  return i >= 0 ? { oneUse: i } : null;
+}
+
+const before = (day: PicnicDay, route: PicnicStop[], t: number) => route.filter((r) => stopTime(day, r) < t);
+
+/** Clear a stop for a newcomer: a washable there is cut back to its route before that time, a one-use cup goes to the stack. */
+function displace(day: PicnicDay, plan: PicnicPlan, s: PicnicStop, keep: VesselId | number): PicnicPlan {
+  const o = occupant(plan, s);
+  if (!o) return plan;
+  if ('vessel' in o) {
+    if (o.vessel === keep) return plan;
+    return {
+      ...plan,
+      routes: { ...plan.routes, [o.vessel]: before(day, plan.routes[o.vessel], stopTime(day, s)) },
+    };
+  }
+  if (o.oneUse === keep) return plan;
+  return { ...plan, oneUse: plan.oneUse.filter((_, i) => i !== o.oneUse) };
+}
+
+/**
+ * Drop a washable's token: on the shelf its route clears; anywhere else the route keeps its stops before that time and
+ * ends there (so breakfast → tub → lunch is three drops, and an earlier drop takes back the later trips). A cup already
+ * there is cut back (a swap, never counted).
+ */
+export function dropVessel(
+  day: PicnicDay,
+  plan: PicnicPlan,
+  v: VesselId,
+  to: PicnicStop | 'shelf',
+): PicnicPlan {
+  if (to === 'shelf') return { ...plan, routes: { ...plan.routes, [v]: [] } };
+  const t = stopTime(day, to);
+  const cleared = displace(day, plan, to, v);
+  return { ...cleared, routes: { ...cleared.routes, [v]: [...before(day, cleared.routes[v], t), to] } };
+}
+
+/** Place a one-use cup from the stack (`from` 'stack') or move one already out; on the stack it goes back. One stop each. */
+export function dropOneUse(
+  day: PicnicDay,
+  plan: PicnicPlan,
+  from: number | 'stack',
+  to: PicnicStop | 'stack',
+): PicnicPlan {
+  let next = from === 'stack' ? plan : { ...plan, oneUse: plan.oneUse.filter((_, i) => i !== from) };
+  if (to === 'stack') return next;
+  next = displace(day, next, to, -1);
+  return { ...next, oneUse: [...next.oneUse, to] };
+}
+
+/** The ring Show me one and the ghost finger make, as a drag on the board. */
+export type PicnicMove =
+  | { kind: 'vessel'; vessel: VesselId; to: PicnicStop | 'shelf' }
+  | { kind: 'oneUse'; from: number | 'stack'; to: PicnicStop | 'stack' };
+
+export function applyPicnicMove(day: PicnicDay, plan: PicnicPlan, m: PicnicMove): PicnicPlan {
+  return m.kind === 'vessel' ? dropVessel(day, plan, m.vessel, m.to) : dropOneUse(day, plan, m.from, m.to);
+}
+
+/** The board as a grid: who sits at every seat, every tub slot, and the painter. */
+export function picnicBoard(day: PicnicDay, plan: PicnicPlan) {
+  const seats = Array.from({ length: day.picnics }, () => Array<PicnicCup | null>(SEATS).fill(null));
+  const tubs = Array.from({ length: day.picnics - 1 }, () => Array<PicnicCup | null>(TUB_SLOTS).fill(null));
+  let painter: PicnicCup | null = null;
+  const put = (s: PicnicStop, c: PicnicCup) => {
+    if (s.at === 'seat') seats[s.picnic][s.seat] = c;
+    else if (s.at === 'tub') tubs[s.tub][s.slot] = c;
+    else painter = c;
+  };
+  for (const v of VESSEL_IDS) for (const s of plan.routes[v]) put(s, v);
+  for (const s of plan.oneUse) put(s, 'oneUse');
+  return { seats, tubs, painter: painter as PicnicCup | null };
+}
+
+/** One-use cups on seats: each goes to the Last Heap after its drink. */
+export const heapOf = (plan: PicnicPlan) => plan.oneUse.filter((s) => s.at === 'seat').length;
+
+export type PicnicCheck =
+  | { kind: 'ok' }
+  | { kind: 'emptySeat'; seats: { picnic: number; seat: number }[] }
+  | { kind: 'unwashed'; vessel: VesselId; picnic: number }
+  | { kind: 'oneUseInTub'; tub: number; slot: number }
+  | { kind: 'promise'; why: 'notmug' | 'later' | 'dirty' }
+  | { kind: 'unmet' }
+  | { kind: 'overTarget'; heap: number };
+
+/** Walk a route: the picnics it serves dirty (no tub since its last drink), and whether it ends with the painter dirty. */
+function walk(route: PicnicStop[]) {
+  let clean = true;
+  const dirty: number[] = [];
+  let painterDirty = false;
+  for (const s of route) {
+    if (s.at === 'seat') {
+      if (!clean) dirty.push(s.picnic);
+      clean = false;
+    } else if (s.at === 'tub') clean = true;
+    else painterDirty = !clean;
+  }
+  return { dirty, painterDirty };
+}
+
+/**
+ * The first unmet condition, in the definition's order: an empty seat (free), a used cup served again without the tub
+ * (earliest picnic, then vessel order), a one-use cup in a tub, the painter's promise, the painter still waiting, then the
+ * heap over its outlines. A clean cup in a tub and a cup left on the shelf are both accepted.
+ */
+export function checkPicnic(day: PicnicDay, plan: PicnicPlan): PicnicCheck {
+  const board = picnicBoard(day, plan);
+  const empty = board.seats.flatMap((row, picnic) =>
+    row.flatMap((c, seat) => (c === null ? [{ picnic, seat }] : [])),
+  );
+  if (empty.length) return { kind: 'emptySeat', seats: empty };
+  for (let p = 0; p < day.picnics; p++)
+    for (const v of VESSEL_IDS)
+      if (walk(plan.routes[v]).dirty.includes(p)) return { kind: 'unwashed', vessel: v, picnic: p };
+  const inTub = plan.oneUse.find((s) => s.at === 'tub');
+  if (inTub?.at === 'tub') return { kind: 'oneUseInTub', tub: inTub.tub, slot: inTub.slot };
+  if (day.promise) {
+    const after = day.promise.after;
+    const mug = plan.routes.mug;
+    if (board.painter !== null && board.painter !== 'mug') return { kind: 'promise', why: 'notmug' };
+    if (mug.some((s) => s.at === 'seat' && s.picnic > after)) return { kind: 'promise', why: 'later' };
+    if (board.painter === 'mug' && walk(mug).painterDirty) return { kind: 'promise', why: 'dirty' };
+    if (board.painter === null) return { kind: 'unmet' };
+  }
+  const heap = heapOf(plan);
+  if (heap > day.target) return { kind: 'overTarget', heap };
+  return { kind: 'ok' };
+}
+
+/** A washable's day as the rules reason about it: the picnics it serves, the tubs it is washed in, and the handover. */
+export interface VesselSchedule {
+  serves: boolean[];
+  tubs: boolean[];
+  painter: boolean;
+}
+/** One schedule per vessel, in VESSEL_IDS order. */
+export type PicnicSchedule = VesselSchedule[];
+
+export function scheduleOf(day: PicnicDay, plan: PicnicPlan): PicnicSchedule {
+  return VESSEL_IDS.map((v) => {
+    const r = plan.routes[v];
+    return {
+      serves: Array.from({ length: day.picnics }, (_, p) => r.some((s) => s.at === 'seat' && s.picnic === p)),
+      tubs: Array.from({ length: day.picnics - 1 }, (_, t) => r.some((s) => s.at === 'tub' && s.tub === t)),
+      painter: r.some((s) => s.at === 'painter'),
+    };
+  });
+}
+
+/** A route's stops as time-ordered keys ('p0' a picnic, 't0' a tub, 'g' the handover), without seat or slot. */
+type Key = { key: string; time: number };
+function keysOfSchedule(day: PicnicDay, s: VesselSchedule): Key[] {
+  const out: Key[] = [];
+  s.serves.forEach((b, p) => b && out.push({ key: `p${p}`, time: 2 * p }));
+  s.tubs.forEach((b, t) => b && out.push({ key: `t${t}`, time: 2 * t + 1 }));
+  if (s.painter) out.push({ key: 'g', time: stopTime(day, { at: 'painter' }) });
+  return out.sort((a, b) => a.time - b.time);
+}
+const keyOf = (day: PicnicDay, s: PicnicStop): Key => ({
+  key: s.at === 'seat' ? `p${s.picnic}` : s.at === 'tub' ? `t${s.tub}` : 'g',
+  time: stopTime(day, s),
+});
+
+/** Does a schedule keep the wash rule, wash only used cups, and (for the mug) keep the promise? */
+function lawful(day: PicnicDay, v: VesselId, s: VesselSchedule): boolean {
+  if (s.painter && (v !== 'mug' || !day.promise)) return false;
+  if (v === 'mug' && day.promise && !s.painter) return false;
+  let clean = true;
+  let handed = false;
+  for (const k of keysOfSchedule(day, s)) {
+    if (handed) return false;
+    if (k.key[0] === 'p') {
+      if (!clean) return false;
+      clean = false;
+    } else if (k.key[0] === 't') {
+      if (clean) return false; // a clean wash: accepted on the board, never enumerated
+      clean = true;
+    } else {
+      if (!clean) return false;
+      handed = true;
+    }
+  }
+  return true;
+}
+
+const scheduleCache = new Map<string, PicnicSchedule[]>();
+
+/**
+ * Every accepted schedule: each washable's picnics, tubs and handover keeping the wash rule and the promise, at most four
+ * washables a picnic and two a tub, and the heap (seats minus washable drinks) within `target`. Clean washes are left out.
+ */
+export function schedules(day: PicnicDay, target = day.target): PicnicSchedule[] {
+  const id = `${day.picnics}:${day.promise?.after ?? '-'}:${target}`;
+  const hit = scheduleCache.get(id);
+  if (hit) return hit;
+  const T = day.picnics - 1;
+  const options = VESSEL_IDS.map((v) => {
+    const out: VesselSchedule[] = [];
+    for (let sm = 0; sm < 1 << day.picnics; sm++)
+      for (let tm = 0; tm < 1 << T; tm++)
+        for (const painter of [false, true]) {
+          const s: VesselSchedule = {
+            serves: Array.from({ length: day.picnics }, (_, p) => !!((sm >> p) & 1)),
+            tubs: Array.from({ length: T }, (_, t) => !!((tm >> t) & 1)),
+            painter,
+          };
+          if (lawful(day, v, s)) out.push(s);
+        }
+    return out;
+  });
+  const result: PicnicSchedule[] = [];
+  const acc: VesselSchedule[] = [];
+  const rec = (i: number) => {
+    if (i === VESSEL_IDS.length) {
+      let drinks = 0;
+      for (let p = 0; p < day.picnics; p++) drinks += acc.filter((s) => s.serves[p]).length;
+      for (let t = 0; t < T; t++) if (acc.filter((s) => s.tubs[t]).length > TUB_SLOTS) return;
+      if (day.picnics * SEATS - drinks <= target) result.push(acc.slice());
+      return;
+    }
+    for (const o of options[i]) {
+      acc.push(o);
+      rec(i + 1);
+      acc.pop();
+    }
+  };
+  rec(0);
+  scheduleCache.set(id, result);
+  return result;
+}
+
+/** Stops a route shares with a target route from the start, in time order. */
+function prefix(a: Key[], b: Key[]): number {
+  let c = 0;
+  while (c < a.length && c < b.length && a[c].key === b[c].key) c++;
+  return c;
+}
+
+/**
+ * How far a board is from an accepted schedule, counted in drags: for each washable, its stops after the longest start it
+ * shares with the target route plus the target's stops after that start (a drop rewrites the end of a route, so a route is
+ * fixed from its start); plus each one-use cup a picnic still needs, and each one-use cup in a tub or with the painter.
+ */
+export function picnicDistance(day: PicnicDay, plan: PicnicPlan, target: PicnicSchedule): number {
+  let d = 0;
+  VESSEL_IDS.forEach((v, i) => {
+    const r = plan.routes[v].map((s) => keyOf(day, s));
+    const n = keysOfSchedule(day, target[i]);
+    const c = prefix(r, n);
+    d += r.length - c + (n.length - c);
+  });
+  for (let p = 0; p < day.picnics; p++) {
+    const want = SEATS - target.filter((s) => s.serves[p]).length;
+    const have = plan.oneUse.filter((s) => s.at === 'seat' && s.picnic === p).length;
+    d += Math.max(0, want - have);
+  }
+  return d + plan.oneUse.filter((s) => s.at !== 'seat').length;
+}
+
+/** The accepted schedule closest to her board; ties go to the enumeration's order (vessel order, earliest stops first). */
+export function nearestPicnic(day: PicnicDay, plan: PicnicPlan): PicnicSchedule | null {
+  let best: PicnicSchedule | null = null;
+  let bestD = Infinity;
+  for (const s of schedules(day)) {
+    const d = picnicDistance(day, plan, s);
+    if (d < bestD) {
+      bestD = d;
+      best = s;
+    }
+  }
+  return best;
+}
+
+/**
+ * One drag toward the nearest accepted schedule, for the glow, Show me one and the ghost finger; null once the board is
+ * accepted. It fixes the earliest place her board and that schedule differ (then vessel order): a route that went
+ * somewhere the schedule's doesn't is cut back to its previous stop (or the shelf), a route that stops short moves its
+ * token to the schedule's next stop, a one-use cup in a tub or with the painter goes back to the stack, and an empty seat
+ * the schedule fills with a one-use cup gets one. Each drag lowers `picnicDistance` and never rings the bell.
+ */
+export function nextPicnicMove(day: PicnicDay, plan: PicnicPlan): PicnicMove | null {
+  if (checkPicnic(day, plan).kind === 'ok') return null;
+  const target = nearestPicnic(day, plan);
+  if (!target) return null;
+  const board = picnicBoard(day, plan);
+  const keys = VESSEL_IDS.map((v) => plan.routes[v].map((s) => keyOf(day, s)));
+  const goals = target.map((s) => keysOfSchedule(day, s));
+  const prefixes = VESSEL_IDS.map((_, i) => prefix(keys[i], goals[i]));
+  /** Is this washable's stop at this time part of the start it already shares with the target? */
+  const settled = (v: VesselId, time: number) => {
+    const i = VESSEL_IDS.indexOf(v);
+    return keys[i].slice(0, prefixes[i]).some((k) => k.time === time);
+  };
+  const want = (p: number) => SEATS - target.filter((s) => s.serves[p]).length;
+  const oneUseAt = (p: number) => plan.oneUse.filter((s) => s.at === 'seat' && s.picnic === p).length;
+  const spotFor = (key: string): PicnicStop => {
+    if (key === 'g') return { at: 'painter' };
+    const n = Number(key.slice(1));
+    const row = key[0] === 'p' ? board.seats[n] : board.tubs[n];
+    const make = (k: number): PicnicStop =>
+      key[0] === 'p' ? { at: 'seat', picnic: n, seat: k } : { at: 'tub', tub: n, slot: k };
+    const time = key[0] === 'p' ? 2 * n : 2 * n + 1;
+    // A seat a spare one-use cup holds first, then an empty one, then one a washable holds beyond its shared start.
+    if (key[0] === 'p' && oneUseAt(n) > want(n)) {
+      const k = row.indexOf('oneUse');
+      if (k >= 0) return make(k);
+    }
+    const e = row.indexOf(null);
+    if (e >= 0) return make(e);
+    const w = row.findIndex((c) => c !== null && c !== 'oneUse' && !settled(c, time));
+    if (w >= 0) return make(w);
+    return make(row.indexOf('oneUse'));
+  };
+  let best: { time: number; order: number; move: PicnicMove } | null = null;
+  const offer = (time: number, order: number, move: PicnicMove) => {
+    if (!best || time < best.time || (time === best.time && order < best.order)) best = { time, order, move };
+  };
+  VESSEL_IDS.forEach((v, i) => {
+    const r = keys[i],
+      n = goals[i],
+      c = prefixes[i];
+    if (c < r.length && (c === n.length || n[c].time > r[c].time)) {
+      offer(r[c].time, i, { kind: 'vessel', vessel: v, to: c > 0 ? plan.routes[v][c - 1] : 'shelf' });
+    } else if (c < n.length) {
+      offer(n[c].time, i, { kind: 'vessel', vessel: v, to: spotFor(n[c].key) });
+    }
+  });
+  plan.oneUse.forEach((s, i) => {
+    if (s.at !== 'seat') offer(stopTime(day, s), 10, { kind: 'oneUse', from: i, to: 'stack' });
+  });
+  for (let p = 0; p < day.picnics; p++) {
+    const seat = board.seats[p].indexOf(null);
+    if (oneUseAt(p) < want(p) && seat >= 0)
+      offer(2 * p, 11, { kind: 'oneUse', from: 'stack', to: { at: 'seat', picnic: p, seat } });
+  }
+  return (best as { move: PicnicMove } | null)?.move ?? null;
+}
+
+export type PicnicRing =
+  | { kind: 'ok' }
+  | { kind: 'seats'; check: Extract<PicnicCheck, { kind: 'emptySeat' }> }
+  | {
+      kind: 'fail';
+      check: Exclude<PicnicCheck, { kind: 'ok' } | { kind: 'emptySeat' }>;
+      counted: boolean;
+      glowed: boolean;
+    };
+
+/** The seat-and-slot map, so ringing again on an unchanged failed board counts nothing. */
+export function picnicSignature(day: PicnicDay, plan: PicnicPlan): string {
+  const b = picnicBoard(day, plan);
+  return JSON.stringify([b.seats, b.tubs, b.painter]);
+}
+
+// ---- levels 7–8 layout (the 1024×768 design area, centred in the view) ----
+
+/** Picnic Loop's own drop pad: the board fits up to twelve seats, so the levels 5–6 pad of 30 would not fit. */
+export const PICNIC_PAD = 16;
+export const CUP = 100;
+export const SEAT = 104;
+export const SEAT_GAP = 32;
+
+export interface PicnicLayout {
+  /** The shelf's resting place for each washable, in the top row. */
+  shelf: Record<VesselId, Rect>;
+  /** The one-use stack: a drag from it takes a new cup. */
+  stack: Rect;
+  /** The whole shelf-and-stack row, one drop area: a washable let go there clears its route, a one-use cup goes back. */
+  back: Rect;
+  bell: Rect;
+  /** One header per picnic (the sun low, high, setting): not targets. */
+  headers: Rect[];
+  /** [picnic][seat]; rows are friends, columns are picnics. */
+  seats: Rect[][];
+  /** The drawn tub after each picnic, and its two slots. */
+  tubs: Rect[];
+  slots: Rect[][];
+  painter: Rect | null;
+  heap: Rect;
+}
+
+export function picnicLayout(view: View, day: PicnicDay): PicnicLayout {
+  const ox = Math.max(0, (view.w - 1024) / 2);
+  const oy = Math.max(0, (view.h - 768) / 2);
+  const r = (x: number, y: number, w: number, h: number): Rect => ({ x: ox + x, y: oy + y, w, h });
+  const shelf = Object.fromEntries(VESSEL_IDS.map((v, i) => [v, r(126 + i * 124, 30, CUP, CUP)])) as Record<
+    VesselId,
+    Rect
+  >;
+  const stack = r(622, 30, CUP, CUP);
+  const back = r(126, 20, 596, 120);
+  const bell = r(762, 20, 120, 120);
+  const cols = day.picnics * 2 - 1;
+  const span = cols * SEAT + (cols - 1) * SEAT_GAP;
+  const x0 = 176 + (648 - span) / 2;
+  const colX = (c: number) => x0 + c * (SEAT + SEAT_GAP);
+  const headers = Array.from({ length: day.picnics }, (_, p) => r(colX(2 * p), 160, SEAT, 44));
+  const seats = Array.from({ length: day.picnics }, (_, p) =>
+    Array.from({ length: SEATS }, (_, k) => r(colX(2 * p), 216 + k * (SEAT + SEAT_GAP), SEAT, SEAT)),
+  );
+  const tubs = Array.from({ length: day.picnics - 1 }, (_, t) => r(colX(2 * t + 1) - 8, 336, SEAT + 16, 272));
+  const slots = Array.from({ length: day.picnics - 1 }, (_, t) =>
+    Array.from({ length: TUB_SLOTS }, (_, k) => r(colX(2 * t + 1), 352 + k * (SEAT + SEAT_GAP), SEAT, SEAT)),
+  );
+  const painter = day.promise ? r(856, 216, 148, 220) : null;
+  const heap = day.promise ? r(856, 468, 148, 260) : r(856, 216, 148, 260);
+  return { shelf, stack, back, bell, headers, seats, tubs, slots, painter, heap };
+}
+
+/** Where a cup let go at (x, y) lands: the nearest seat, tub slot, painter or the shelf row whose padded area holds it. */
+export function picnicSpotAt(l: PicnicLayout, x: number, y: number): PicnicStop | 'back' | null {
+  const areas: [PicnicStop | 'back', Rect][] = [
+    ['back', l.back],
+    ...l.seats.flatMap((col, picnic) =>
+      col.map((rc, seat): [PicnicStop, Rect] => [{ at: 'seat', picnic, seat }, rc]),
+    ),
+    ...l.slots.flatMap((col, tub) =>
+      col.map((rc, slot): [PicnicStop, Rect] => [{ at: 'tub', tub, slot }, rc]),
+    ),
+    ...(l.painter ? [[{ at: 'painter' }, l.painter] as [PicnicStop, Rect]] : []),
+  ];
+  let best: PicnicStop | 'back' | null = null;
+  let bestD = Infinity;
+  for (const [s, rc] of areas) {
+    if (
+      x < rc.x - PICNIC_PAD ||
+      x > rc.x + rc.w + PICNIC_PAD ||
+      y < rc.y - PICNIC_PAD ||
+      y > rc.y + rc.h + PICNIC_PAD
+    )
+      continue;
+    const c = centre(rc);
+    const d = (c.x - x) ** 2 + (c.y - y) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      best = s;
+    }
+  }
+  return best;
+}
+
+/** The rectangle of a stop on the board. */
+export function stopRect(l: PicnicLayout, s: PicnicStop): Rect {
+  if (s.at === 'seat') return l.seats[s.picnic][s.seat];
+  if (s.at === 'tub') return l.slots[s.tub][s.slot];
+  return l.painter!;
 }

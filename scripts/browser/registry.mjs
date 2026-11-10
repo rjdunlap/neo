@@ -303,6 +303,7 @@ export const SUITES = [
   'whoami',
   'shed',
   'shedplan',
+  'shedpicnic',
   'gears',
   'meadow',
   'lens',
@@ -466,6 +467,7 @@ export const ALL_SUITES = [
   'whoami',
   'shed',
   'shedplan',
+  'shedpicnic',
   'gears',
   'meadow',
   'lens',
@@ -1004,6 +1006,7 @@ export async function runSuite(suite, fixture) {
     senseDetectivePlay,
     shedPlay,
     shedPlanPlay,
+    shedPicnicPlay,
     gearsPlay,
     meadowPlay,
     lensPlay,
@@ -1217,6 +1220,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'whoami') await whoAmIPlay();
   if (suite === 'all' || suite === 'shed') await shedPlay();
   if (suite === 'all' || suite === 'shedplan') await shedPlanPlay();
+  if (suite === 'all' || suite === 'shedpicnic') await shedPicnicPlay();
   if (suite === 'all' || suite === 'gears') await gearsPlay();
   if (suite === 'all' || suite === 'meadow') await meadowPlay();
   if (suite === 'all' || suite === 'lens') await lensPlay();

@@ -144,7 +144,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: two big lamps, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
 | [Pet Says](docs/games/pet-says.md) | lap–pre-K | Cozy Village | 6 | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) |
 | [Lemonade Stand](docs/games/lemonade-stand.md) | school | Cozy Village | 5 | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table |
-| [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 6 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
+| [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 8 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
 | [Swap Meet](docs/games/swap-meet.md) | toddler–school | Cozy Village | 4 | trade pictured toys, with both objects crossing |
 | [Village Vote](docs/games/village-vote.md) | preschool–school | Cozy Village | 3 | count pictured toy preferences, then everyone plays |
 | [Relay Woods](docs/games/relay-woods.md) | toddler–school | Cozy Village | 4 | pass a picture along three connected friends |

@@ -496,7 +496,7 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/second
 
 ### second-chance-shed 3: Picnic Loop
 
-Defined 2026-11-09 (nature-sustainability N4); not yet built.
+Built 2026-11-09, [PR #1445](https://github.com/rjdunlap/neo/pull/1445) (nature-sustainability N4); both levels shipped in the one batch. Scope retained for dependency reference; this batch is no longer eligible.
 
 - **`second-chance-shed`, levels 7–8 (N4)** (new interaction on the built game; school range to {4–8}): a day of picnics for the friends, each needing a cup at every picnic, with a few washable cups, a wash tub that washes two between picnics and one-use cups that go to the Last Heap; level 7 is the loop (target 2) and level 8 three picnics with two authored cases (target 5). The big mug replaces the study's jar. [Definition](definitions/second-chance-shed-7-8.md), [nature-sustainability study slice N4](deep-dives/subjects/nature-sustainability.md#build-slices-in-order)
 

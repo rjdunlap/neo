@@ -1,5 +1,6 @@
 # Needs a person or a device
 
+- [ ] **Second Chance Shed levels 7–8, Picnic Loop (2026-11-09, PR #1445):** with a school child on an iPad, do rows read as friends and columns as picnics, do the route rings read as "already used", and is "save the good cups" discovered or only the one-use stack used? Check device speech of the new `shed.picnic.*` lines.
 - [ ] **Log Roll levels 6–7 (2026-11-08, PR #1429):** on an iPad, do the green moss and purple-ringed switch make their lying/standing rules clear? Does the bridge rising read as two new supporting stones, and does Undo lowering it make sense? Check spoken moss/switch feedback and grown-up enjoyment; browser play does not establish these.
 
 - [ ] **Number Trails (dive, 2026-11-06; proposed slices, nothing built):** can a three-year-old stay inside the 0.1 corridor in portrait? On an iPad, how is the speech of "zero" and the single digits? Does the flying hint read as help, and do dotted and start-only trails (level 6) stay clear to a four-year-old?
