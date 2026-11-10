@@ -12,6 +12,12 @@ What people said after really playing. For now that means the phone playtest (th
 
 Newest first. One heading per paste, `### 2026-11-12, <player>, <phone>` (for example "iPhone, Safari" or "Android, installed app"), then the pasted text unedited. A session adds one line under an entry for each thing it led to, linking the READY line or the PR, and never rewrites what was said.
 
+### 2026-11-10, developer, phone
+
+> Navigation for pond congo on mobile wasn't very friendly
+
+- [Swipe anywhere on the screen to steer Pond Conga](https://github.com/rjdunlap/neo/pull/1463).
+
 ### 2026-11-09, developer and wife
 
 > My wife and I played the cross mini-game, the only annoying part was typing the word sometimes put letters not in the clue you're working on.. I.e. instead of going down, is starts adding the 2nd letter to a word across

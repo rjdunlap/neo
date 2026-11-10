@@ -401,7 +401,7 @@ export function createSuite({ page, errors, log, ready, scene, tap, screenshot, 
     const stickers = await page.evaluate(() => kit.store.data.stickers.length);
     let st = await state();
     assert.deepEqual([st.waiting, st.tries, st.of], [true, 0, 5], 'nothing moves before a touch');
-    assert.ok(st.note.includes('Touch the pond'), 'the line of help says how to set off');
+    assert.ok(st.note.includes('Touch to set off'), 'the line of help says how to set off');
     assert.deepEqual(await targets('level 1 landscape'), []);
     await touchPond();
     await page.waitForFunction(() => neo.scene.game.misses >= 1, null, { timeout: 20000 });
