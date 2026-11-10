@@ -41,7 +41,7 @@ creatures: {
 | Caller | Token | When |
 | --- | --- | --- |
 | `HatchScene` | `start` | The first friend, as today's hatch |
-| A development seed | `dev:<species>` | `kit.store.meet(...)` from a scripted check, and a dev-only "Meet everyone (development)" button on the grown-ups' page under `import.meta.env.DEV`, which seeds the river and the glider with their first suggested names. This is the reseed path at cutover: it is how a developer sees three cards before RW07 exists, and it is absent from a production build |
+| A development seed | `dev:<species>` | `kit.store.meet(...)` from a scripted check, and `kit.meetAll()` in `src/dev/testkit.ts` (the dev-only grown-ups'-page button went in U8a), which seeds the river and the glider with their first suggested names. This is the reseed path at cutover: it is how a developer sees three cards before RW07 exists, and it is absent from a production build |
 | RW07's adoption | `project:<id>:<step>` | Not built here; the token rule is what makes its replay idempotent |
 
 **Profiles** are untouched: `creatures` sits inside each profile's `SaveData`, so the index, `switchTo`, `removeProfile`, `exportAll` and `restoreAll` need no change beyond their tests. `applySettings()` pushes the companion's name into `voice.pet` instead of `pet.name`, so every `{pet}` voice line (46 today) speaks the companion; `selectPlayer` already calls it.

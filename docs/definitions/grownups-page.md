@@ -1,6 +1,6 @@
 # The grown-ups' page speaks of the root (U8, definition)
 
-*Status: defined 2026-11-10; nothing built. Docs only.*
+*Status: built 2026-11-10 (PR #1472): U8a, the whole definition.*
 
 From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#10-grown-ups-get-child-surfaces-and-stale-words), finding 10 and recommendation U8: the grown-ups' page still describes the island map, and its This week table lists every game for her age with a level picker on each, 57 rows at lap and 175 at grown-up. The review asked for three things: remove the map words, remove the development row, and fold This week's rows behind a search or "played this week". This page settles each, and keeps the classic island's page as it is.
 

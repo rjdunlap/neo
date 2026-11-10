@@ -1,11 +1,16 @@
 # Puddle Island verification
 
+## 2026-11-10 — U8a, the grown-ups' page speaks of the root (PR #1472)
+
+**Changed:** `openParentPanel` takes `{ app: 'root' | 'classic' }`; the root's page drops map, home spot, picnic and layout words, groups bands by age and omits Finding games; This week shows played or pinned games first with every game for her age in a closed, searchable fold; the dev button is now `kit.meetAll()`.
+**Ran:** typecheck; `npm test` (341 files, 6528 passed); `npm run build`; `BROWSER_SUITE=grownups` once, with a new root step at 390×844 (no map words, fold closed, search, pin from the fold, fold stays open) and the pause-sheet steps fixed to expect Leave (stale since the round Back and help change); screenshots checked.
+**Not run:** `lands` and `hatching-and-map` (classic text unchanged), `world` and offline (no route, persistence or asset change).
+
 ## 2026-11-10 — U8 the grown-ups' page speaks of the root defined (docs only)
 
 **Changed:** new [definition](definitions/grownups-page.md) of U8 as one slice (U8a, the root's grown-ups' page); READY, the UX review and the roadmap point to it.
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** code checks (docs only; nothing built).
-**Open:** U8a.
 
 ## 2026-11-10 — U7 never swallow a tap defined (docs only)
 
@@ -279,7 +284,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `phonefit`, `phone` | 2026-11-09, `phonefit` with the upright root pass changed for the phone-only root (the six from the chooser, Play all, next of six, a saved playtest note) at port 5187, passed ([entry](archive/VERIFICATION-2026-11-09.md#2026-11-09--daily-playtest-slice-a-phone-is-todays-six-alone-pr-1434)); 2026-11-05, `phonefit` with the upright root pass (Home, Today's six, an upright round, result, back with a tick; a not-ready game keeps the prompt) at port 5366, passed ([entry](archive/VERIFICATION-2026-11-05.md#2026-11-05--phone-held-upright-shell-slice-1-with-batch-1-chunk-31)); 2026-10-09, `phonefit` on Lands stage A (a land under the faked notch; the chooser opens the map); 2026-10-09, `phonefit` on the chooser (an upright phone is not asked to turn on "Who's playing?", only when the island starts; no sideways scrolling; the couch button 100 units tall); 2026-10-09, on the merged tree: `phonefit` (a faked notch with plain cream strips, the turn prompt over the couch button, tablet shapes left alone) and `phone` (every game's middle level at 844 × 390, 73 games; before the cream frame, `phonefit` after it; `phonefit` again 2026-10-09 with the gear inside the faked cutouts) | Phone support entry | `phonefit` about 15 seconds; `phone` about three minutes. Chrome automation with a faked notch: no phone has run it |
 | `world` | 2026-11-10 (U3): both checks passed at `http://localhost:5196`. Classic land return on a tap, hatching, save reload, home, birthdays, and all six bands’ subject pages in both orientations | [U3 entry](#2026-11-10--u3-round-back-and-help-pr-1462) | Subject pages checked with isolated Chromium |
 | `friends` | 2026-10-20: hatch Mochi, river Pebble, basket, Friends, Come with me, reload, second profile, reset keeps friend and undo restores stickers; landscape, portrait, chooser and treehouse screenshots | [RW05 entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--rw05-slice-1-the-collection-model-and-friends) | Chrome only; recognition, speech, hue-filter cost and boot cost need the iPad |
-| `grownups` | 2026-10-15: pause sheet in Sudoku Garden (Start this bed again, Show a hint, synthetic pad moving, wrapping and A on release); earlier 2026-10-09 gear, storage layer and undo cases | Gear entry | About 40 seconds |
+| `grownups` | 2026-11-10: root page upright at 390×844 (no map words, played-this-week table, closed searchable fold, pin from the fold) and pause-sheet steps expecting Leave; 2026-10-15: pause sheet in Sudoku Garden (Start this bed again, Show a hint, synthetic pad moving, wrapping and A on release); earlier 2026-10-09 gear, storage layer and undo cases | Gear entry | About 40 seconds |
 | `profiles` | 2026-10-09, on Lands stage A (the chooser opens the map); 2026-10-09, new: from an empty device through add-a-player, the three ways in, the grown-ups' page per player, remove, backup and restore of everyone, and a reload | Profiles stage 1b entry | About 1 minute; also broken on purpose (Enter opening the island) to see it fail |
 | `woodland` | 2026-10-20: passed after Mail Carrier slice 1 ([entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--mail-carrier-support-truth-slice-1)); 2026-10-16: new suite (about 1.5 minutes), entry only at school, story spot first, portrait, real story rounds with a miss and help, resume, ending, one photo, one sticker per round, retelling, Home | [Woodland Picnic](archive/VERIFICATION-2026-10-16.md#2026-10-16--woodland-picnic) | None recorded |
 | `picnic` | 2026-10-21: passed after the story branch in `GameScene` gained the `project` member ([entry](archive/VERIFICATION-2026-10-21.md#2026-10-21--rw07-slice-1-welcome-a-new-friend-record-page-continue-pretty-and-yummy)); 2026-10-16: passed as a regression after story-ID store changes | [RW07 slice 1](archive/VERIFICATION-2026-10-21.md#2026-10-21--rw07-slice-1-welcome-a-new-friend-record-page-continue-pretty-and-yummy) | Windy Picnic unchanged |
