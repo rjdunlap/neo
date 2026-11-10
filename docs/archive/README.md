@@ -67,3 +67,11 @@ Cut Along closeout rotated the oldest live verification entry (Weather Wardrobe,
 Peg Garden batch 1 closeout rotated the oldest live verification entry (Stop and Go, slice 2) into [Verification 2026-10-22](VERIFICATION-2026-10-22.md), leaving fifteen dated entries live.
 
 Little Helpers slice 1 closeout rotated the oldest live verification entry (Fill and Dump level 6) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
+
+Docs streamlined for the phone-playtest focus (2026-11-09):
+
+- [Device checks backlog 2026-11-09](DEVICE-CHECKS-2026-11-09.md): the 616 iPad, child, TV and controller checks collected up to the day they were parked, grouped by game. The live page is now a short [parked note](../DEVICE-CHECKS.md).
+- [Waiting on the developer 2026-11-09](WAITING-ON-DEVELOPER-2026-11-09.md): the per-game optional decisions the waiting list used to repeat; each is still in its dive's own "Decisions for the developer" section with a default. The live list is [two rows](../WAITING-ON-DEVELOPER.md).
+- [Roadmap cleanup 2026-11-09](ROADMAP-CLEANUP-2026-11-09.md): the roadmap's per-game "Where we are" bullets and its newest-game chain; the README tables are the inventory.
+- [User research review 2026-10-24](USER-RESEARCH-2026-10-24.md): the research review and the five-minute child observation protocol, for when child observations start. Real play is now recorded as phone playtest notes in [OBSERVATIONS](../OBSERVATIONS.md).
+- [Block Topple sketch 2026-10-14](BLOCK-TOPPLE-SKETCH-2026-10-14.md), [Vine Snip sketch 2026-10-13](VINE-SNIP-SKETCH-2026-10-13.md) and [Day by Day first slice](DAY-BY-DAY-FIRST-SLICE.md): early notes that sat loose in `docs/`; each game's live page is in [docs/games/](../GAMES.md).

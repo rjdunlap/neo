@@ -168,7 +168,7 @@
 ## 2026-10-23 — Waiting on the developer: every open question decided on delegation
 
 - [PR #886](https://github.com/rjdunlap/neo/pull/886), `claude/waiting-decisions`: the developer asked for every open question to be decided and acted on. 178 of 182 rows decided by [standing rules](DECISIONS-2026-10-23.md#standing-rules) and each row's lean; each decision is recorded in its source (about 130 docs) and in the [record](DECISIONS-2026-10-23.md). [Waiting](../WAITING-ON-DEVELOPER.md) keeps 4 questions (the `classic/` deletion, two on-device name lists, the first language's family reviewer).
-- Follow-on edits: READY ungated (11 lines) with 12 builds queued; 48 former gates moved to [DEVICE-CHECKS](../DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23); AGENTS.md allows build-time Kokoro voice clips, a Sing-Along Barn tune exception and a grown-up wording rule; ROADMAP chunk 16, D4a and D4b set ready.
+- Follow-on edits: READY ungated (11 lines) with 12 builds queued; 48 former gates moved to [DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#from-the-delegated-decisions-2026-10-23); AGENTS.md allows build-time Kokoro voice clips, a Sing-Along Barn tune exception and a grown-up wording rule; ROADMAP chunk 16, D4a and D4b set ready.
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. Docs only; no code checks.
 - Not checked: each source edit was written by a subagent from its row and read back only by link check and spot checks, not line by line.
 
@@ -305,7 +305,7 @@
 
 - `claude/cue-studio` ([PR #917](https://github.com/rjdunlap/neo/pull/917)) on base `origin/main` `3c88988d`: new pre-K game `cue-studio` (Wave and Turn cards, one then two slots, Play, Step, Undo, a complete-run-only Finish and counted-once help; free creation, so misses are always 0), home Tinker Lab (14 games; the school view pages 7 + 6, land-pages test updated). Plain words only (Wave, Turn, Play, Step, Undo); no computer-science terms are claimed.
 - Ran: typecheck; `npx vitest run` 226 files passed, with 26 new rule tests in `src/games/cue-studio/logic.test.ts`; `npm run build`; `BROWSER_SUITE=cuestudio` on `http://localhost:5991` (levels 1 and 2: empty Play and Finish inert, a full shelf, select-and-replace, an edit invalidating Finish, Undo, Step completing a run, help counted once, a helped play, portrait targets of 100 units or more, portrait and landscape screenshots, one sticker per round) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=cue-studio` clean (5.5 s, 14.5 s). `game-reviewer` found no bugs; two minor fixes applied.
-- Not run: `lands`, `howto` and `smoke` suites (harness unchanged; the lands unit test passed), offline check, an iPad. Open: level 3 (P3); [device check](../DEVICE-CHECKS.md#cue-studio-levels-12-2026-10-23).
+- Not run: `lands`, `howto` and `smoke` suites (harness unchanged; the lands unit test passed), offline check, an iPad. Open: level 3 (P3); [device check](DEVICE-CHECKS-2026-11-09.md#cue-studio-levels-12-2026-10-23).
 
 ## 2026-10-23 — The Arcade: portal-style game grid (Explore's fifth entry)
 

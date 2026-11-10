@@ -93,7 +93,7 @@ With setting off, speech disabled/unsupported, no accepted exact local voice, mi
 
 ## Review evidence template and open device checklist
 
-**All rows below are unfilled; no reviewer selected and no acceptance established.** Store the completed evidence with a versioned table/commit and link it from [DEVICE-CHECKS](../DEVICE-CHECKS.md#european-portuguese-stage-1-pilot-wl1). The developer names the family reviewer in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer). No assistant, generic native-speaker label or web translation substitutes for that person.
+**All rows below are unfilled; no reviewer selected and no acceptance established.** Store the completed evidence with a versioned table/commit and link it from [DEVICE-CHECKS](../archive/DEVICE-CHECKS-2026-11-09.md#european-portuguese-stage-1-pilot-wl1). The developer names the family reviewer in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer). No assistant, generic native-speaker label or web translation substitutes for that person.
 
 Repeat this template for **each of the 20 keys and every shipped variant/line**; inventory completeness and explicit acceptance must be auditable:
 

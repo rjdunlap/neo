@@ -1899,7 +1899,7 @@ Not checked, and still open: a real Pro Controller or Joy-Con, a TV (text size a
 
 ## 2026-10-14 — Dexterity, popular-mobile and physics research; subject-session tracker
 
-- Docs only, across PRs #289, #290 and #291 and this branch: roadmap chunks 25–28, [Vine Snip](../vine-snip.md), [Block Topple](../block-topple.md), [PHYSICS-GAMES.md](../PHYSICS-GAMES.md), the [subject sessions](../deep-dives/subjects.md) and candidate rows in IDEAS.
+- Docs only, across PRs #289, #290 and #291 and this branch: roadmap chunks 25–28, [Vine Snip](VINE-SNIP-SKETCH-2026-10-13.md), [Block Topple](BLOCK-TOPPLE-SKETCH-2026-10-14.md), [PHYSICS-GAMES.md](../PHYSICS-GAMES.md), the [subject sessions](../deep-dives/subjects.md) and candidate rows in IDEAS.
 - Ran: `git diff --check` and `node scripts/check-links.mjs` (links ok). No code, tests, browser or device.
 - Later the same day: the subject tracker gained a life-skills group, an every-audience answer for each subject (toddler to middle school to parents) and a middle-band decision; `git diff --check` and links ok again.
 - Open: research came from web searches and a few fetches; the Physics Playground paper and NGSS grade 2–5 text did not load; several figures are search-summary level; the physics-engine choice is a decision for the developer.

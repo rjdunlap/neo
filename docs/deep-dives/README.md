@@ -17,7 +17,7 @@ The [family experience review](../FAMILY-EXPERIENCE.md) adds a design lens: what
    - **Fresh content** inside existing levels.
    - **New levels appended on top**, never renumbered.
    - **Openings to a younger band** from level 1.
-   - **Easier entries or levels between existing ones**, appended with stable IDs and placed using the built band's `order`; declare `entryLevels` for appended easy entry IDs so birthdays land safely. Remaining content, band and accounting decisions stay under [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer).
+   - **Easier entries or levels between existing ones**, appended with stable IDs and placed using the built band's `order`; declare `entryLevels` for appended easy entry IDs so birthdays land safely. Remaining content, band and accounting decisions stay in the dive's own "Decisions for the developer" section, each with a default the build takes; they are not copied to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer).
 
    For each level write:
    - its first round;
@@ -26,14 +26,14 @@ The [family experience review](../FAMILY-EXPERIENCE.md) adds a design lens: what
    - what a rule test asserts;
    - its cost and couplings (art, voice, the ghost-finger bot, couch, journal, the picnic).
 
-   Say which band window each level falls in. Mark anything that needs a decision from the developer, and add that decision to the roadmap's "Waiting on the developer".
+   Say which band window each level falls in. Mark anything the developer may want to decide, with the default the build takes, in the dive's own "Decisions for the developer" section; it is not copied to the waiting list.
    Also write a small **experience and presentation** section: the first unsupported action; touch acknowledgment and the visible consequence; the content/arrangement variety; cognitive challenge versus motor precision; a supported ending and replay path; solo/co-play roles where meaningful; and what a person or device still needs to judge. Creative choice and prediction stay distinct from wrong answers. Include one concrete art/feel example using the existing code-drawn tools, not a request for a global rendering rewrite.
 5. **Write it up** as `docs/deep-dives/<game-id>.md` from the [template](TEMPLATE.md), ending with an ordered list of build slices, each sized for one session.
 6. **Do not build.** The write-up alone is a complete deep dive. Order the build slices so the first is cheap and ready, and say which checks it would need, so the next session can start it at once.
 7. **Update the docs and close the row.**
    - Set the row's status and link its deep dive.
    - Point the game's rows in the IDEAS ladder rounds at the deep dive.
-   - Add each slice that is ready (no decision or person gate) as one line in the ready list's [Queued](../READY.md#queued) section, grouped with the game's other lines and unnumbered; gated slices stay only in the write-up.
+   - Add each slice that is ready (not waiting on a family reviewer or a waiting-list row; a parked device or child check is not a gate) as one line in the ready list's [Queued](../READY.md#queued) section, grouped with the game's other lines and unnumbered; gated slices stay only in the write-up.
    - Add a short VERIFICATION entry (docs only: what changed and that links and `git diff --check` ran).
 
 **Status values:** **not started**; **in progress** (a branch is on it); **designed** (the write-up is merged and slices are waiting); **building** (slices are being built from the write-up); **done** (every slice the write-up calls ready is built, or deliberately left).

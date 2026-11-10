@@ -177,14 +177,14 @@
 - [PR #1273](https://github.com/rjdunlap/neo/pull/1273): new game `far-lights` (Tinker Lab, now 25 games; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4); title clip rendered; land-count tests updated. Tested at commit `e48a245d`.
 - Ran: `npm run typecheck`; full `npm test` (4 failures before the land-count fix: clip, how-to wording, two land counts, all fixed; affected files then 25 files, 254 tests pass; far-lights rule tests 33); `GAME_URL=http://localhost:5357 BROWSER_SUITE=farlights` (level 1 three taps 0/0; level 3 portrait wrong tap 1/0 with screenshot; level 4 too-bright Check, Show a hint twice counted once, Check, board two 1/1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=far-lights FINGER_LEVELS=1,2,4` (14.6 s, 11.3 s, 12.0 s); `npm run build`. Review fixes (hint glide leaving the game busy, lights draggable at the level-2 finish) re-passed `farlights` and `fingerdemo` 2,4.
 - Not run: the offline check, couch suites, `world`; an iPad and device speech.
-- Open: a lap child's tap-to-halo link, a toddler's one-finger drag, halo read as brighter not bigger, an astronomy reviewer ([device checks](../DEVICE-CHECKS.md#far-lights-levels-14-astronomy-slice-2-2026-11-05)).
+- Open: a lap child's tap-to-halo link, a toddler's one-finger drag, halo read as brighter not bigger, an astronomy reviewer ([device checks](DEVICE-CHECKS-2026-11-09.md#far-lights-levels-14-astronomy-slice-2-2026-11-05)).
 
 ## 2026-11-05 — Seed Travelers levels 1–3 (life-science slice 2)
 
 - [PR #1275](https://github.com/rjdunlap/neo/pull/1275): new game `seed-travelers` (Rainbow Meadow, now 16 games; toddler 1–2, preschool 1–3, pre-K 2–3); title clip rendered; a help glow over the carrier that swallowed taps was fixed with `eventMode: 'none'`; `game-reviewer` found two guard gaps (finish line and close-up across a restart or resize), fixed.
 - Ran (Vite on port 5732, `VITE_SPEECH=off`, at `dc3eb856` or its parent with only guard edits after): `npm run typecheck`; full `npm test` 5232 pass (two failures, the clip manifest and the toddler off-screen line, fixed afterwards; one Secret Code timing flake passed alone); rule tests 58; `npm run build`; `BROWSER_SUITE=seeds` (level 1 bellows, one Replay, basket 0/0; level 3 portrait: plume and critter stay, Show a hint twice counted once, both delivered 0/1, one screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=seed-travelers` (levels 1 and 3); `BROWSER_SUITE=smoke SMOKE_ONLY=seed-travelers` (levels 1–3).
 - Not run: `world`, couch, the offline check; level 2 only in smoke and the rule tests; an iPad and device speech.
-- Open: [device checks](../DEVICE-CHECKS.md#seed-travelers-levels-13-life-science-slice-2-2026-11-05).
+- Open: [device checks](DEVICE-CHECKS-2026-11-09.md#seed-travelers-levels-13-life-science-slice-2-2026-11-05).
 
 ## 2026-11-05 — Draw the Pattern deep dive (docs only)
 
@@ -245,7 +245,7 @@ Changed: school level 10 (`salt.ts` `SaltTanks`, `SALT_DEPTHS`/`floatsIn`/`saltR
 - [PR #1289](https://github.com/rjdunlap/neo/pull/1289): heater and thermometer, `[zone] → on` and `[zone] → off` rows, warmth 2–4 goal, school band 2–4, voice lines `hh.*.4`, how-to step, `HH_LEVELS` in the `helperhouse` case.
 - Ran (commit `b401e617` plus `f9949ecc`'s one-token glow fix, covered by a new unit test; port 5332): `npm run typecheck`; `npm test` (308 files, 5338 tests); Helper House rule tests (36); `BROWSER_SUITE=helperhouse HH_LEVELS=4` PASS (cool dragged, hot tapped, two too-warm days, off-row glow with one hint, portrait screenshot, Show me to warm, finish 0 misses/2 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=helper-house FINGER_LEVELS=4` (11.5 s); `npm run build`.
 - Not run: the on-row (never-warms) glow in the browser (unit-tested only); the offline check; other suites; a real iPad.
-- Open: thermometer, heater and friend moods on an iPad, and the science-educator read of the warmth wording ([DEVICE-CHECKS](../DEVICE-CHECKS.md#helper-house-level-4)).
+- Open: thermometer, heater and friend moods on an iPad, and the science-educator read of the warmth wording ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#helper-house-level-4)).
 
 ## 2026-11-05 — Crossword definition (docs only)
 
@@ -265,14 +265,14 @@ Open: `fingerdemo` not run (the bots tap game objects, not positions); no real p
 - [PR #1294](https://github.com/rjdunlap/neo/pull/1294): the new game `crossword` (Story Grove; pre-K 1-2, school 2), 14 rule tests, how-to card with ghost finger, `cw.*` voice lines and one rendered clip, new `crossword` browser case.
 - Ran (commit `2110069a` plus review fixes; port 5477): `npm run typecheck`; `npm test` (309 files, 5359 tests, before the review fixes; crossword rule tests 14/14 after); `npm run build`; `BROWSER_SUITE=crossword` PASS (level 1 wrong crossing tile 1 miss and Help 1 hint to the sticker; level 2 768 x 1024 portrait screenshot with the bank and Help at least 100 units, to the sticker 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=1,2` PASS (12.5 s, 20.5 s).
 - Not run: the offline check, other suites, a real iPad.
-- Open: device speech of letter names and spelled non-words, and whether a four-year-old sees one letter serve two words ([DEVICE-CHECKS](../DEVICE-CHECKS.md#crossword-levels-1-2-2026-11-05)).
+- Open: device speech of letter names and spelled non-words, and whether a four-year-old sees one letter serve two words ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#crossword-levels-1-2-2026-11-05)).
 
 ## 2026-11-05 — Mystery Grid (logic-grid) levels 1-2
 
 - [PR #1295](https://github.com/rjdunlap/neo/pull/1295): the new game `logic-grid` (Puzzle Peaks; preschool 1-2, pre-K 2), 19 rule tests, how-to card with ghost finger, `lg.*` voice lines and one rendered clip, new `logicgrid` browser case.
 - Ran (commit `9e9d79db`; port 5273, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (one how-to length failure fixed; then content, games, audio and scripts: 4,660 passed; the rule tests found and fixed a Help null with a wrong extra yes); `npm run build`; `BROWSER_SUITE=logicgrid` PASS (level 1 resting ruled-out yes 1 miss, Help 1 hint then marks with no second hint, bot to the sticker 1/1; level 2 yes-to-no on the not square free, 768 x 1024 portrait fit with targets at least 96 units, both boards 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=1,2` PASS (10.1 s, 15.6 s) before the last review-fix commit, which did not touch the bot path (the `logicgrid` case re-passed after it); `game-reviewer` found three low issues, fixed.
 - Not run: a landscape screenshot (layout asserted in portrait only; landscape clearance computed by the reviewer), the offline check, other suites, a real iPad.
-- Open: device speech of slotted clue lines and whether a three-year-old follows a spoken "not" ([DEVICE-CHECKS](../DEVICE-CHECKS.md#mystery-grid-levels-1-2-2026-11-05)).
+- Open: device speech of slotted clue lines and whether a three-year-old follows a spoken "not" ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#mystery-grid-levels-1-2-2026-11-05)).
 
 ## 2026-11-05 — Sense Detective level 5 (B4b)
 
@@ -292,4 +292,4 @@ Changed: level 5 *Can we tell?* (quilted parcels, `checkTell`, *Can't tell yet*,
 - [PR #1298](https://github.com/rjdunlap/neo/pull/1298): level 3 *Three friends* (pre-K, school) and level 4 *The friend in the red hat* (school); a column step in the rule solver, hat art, `lg.*` voice lines, how-to card, `LOGICGRID_FROM=3` filter in the `logicgrid` case.
 - Ran (commits `35496f34`, `49bce450` on base `8cdaacc7`; port 5803, Vite dev): `npm run typecheck`; `npm test` (all pass after a how-to wording fix; 38 logic-grid rule tests incl. level 3-4 properties and a hand-made column-step test); `BROWSER_SUITE=logicgrid LOGICGRID_FROM=3` PASS (level 3 ruled-out yes 1 miss, Help 1 hint, 1024 x 768 and 768 x 1024 fit with targets at least 96 and clear of the pet corner, bot to the sticker saved [1,1]; level 4 hats distinct and every clue a hat clue, bot to the sticker [0,0]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=3,4` PASS (level 4 again after the not-only change); `game-reviewer` found one issue (level 4 allowed a direct clue), fixed.
 - Not run: `npm run build` (no shared assets), levels 1-2 of the suite (unchanged), the offline check, a real iPad.
-- Open: device speech of slotted hat clues and a child's reaction ([DEVICE-CHECKS](../DEVICE-CHECKS.md#mystery-grid-levels-3-4-2026-11-05)).
+- Open: device speech of slotted hat clues and a child's reaction ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#mystery-grid-levels-3-4-2026-11-05)).

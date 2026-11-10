@@ -1,12 +1,12 @@
 # Block Topple — first playable slice (sketch)
 
-Status: **defined 2026-11-03** in [definitions/block-topple.md](definitions/block-topple.md), which supersedes this sketch's engine, levels and open calls (a closed-form flight and one tipping rule in the game's `logic.ts` under the October 23 S4 decision; no `src/engine/blocks.ts`; level 4 re-shaped as *Hit it high*; no lap level). Written 2026-10-14 from the developer's request for an Angry Birds type game). Nothing is built. Proposed game ID: `block-topple`. The text below is the original sketch, kept for its research. It was a backlog row ("Block Topple … could be a Bouncy Launch mode") and is promoted here because the new part is the physics, not a level. Run `scripts/overlap.sh block-topple src/engine/blocks.ts` before building.
+Status: **defined 2026-11-03** in [definitions/block-topple.md](../definitions/block-topple.md), which supersedes this sketch's engine, levels and open calls (a closed-form flight and one tipping rule in the game's `logic.ts` under the October 23 S4 decision; no `src/engine/blocks.ts`; level 4 re-shaped as *Hit it high*; no lap level). Written 2026-10-14 from the developer's request for an Angry Birds type game). Nothing is built. Proposed game ID: `block-topple`. The text below is the original sketch, kept for its research. It was a backlog row ("Block Topple … could be a Bouncy Launch mode") and is promoted here because the new part is the physics, not a level. Run `scripts/overlap.sh block-topple src/engine/blocks.ts` before building.
 
 "Angry Birds", its birds and its pigs are Rovio's. The idea of slinging a ball at a stack is not protected; the characters and art are not borrowed, and nothing here is an enemy.
 
 ## Fun action and learning
 
-Pull a slingshot back, let go, and watch a ball arc into a stack of blocks and tumble it. The learning is **estimating angle and power** (improving a shot from the last arc), **prediction** (where is this tower weak: low or high?) and later **counting what fell**. It differs from [Bouncy Launch](GAMES.md#bouncy-launch) (one pull distance, a flat strip, no structure) and [Block Tower](GAMES.md#block-tower) (stacking by an exact balance rule, no impact).
+Pull a slingshot back, let go, and watch a ball arc into a stack of blocks and tumble it. The learning is **estimating angle and power** (improving a shot from the last arc), **prediction** (where is this tower weak: low or high?) and later **counting what fell**. It differs from [Bouncy Launch](../GAMES.md#bouncy-launch) (one pull distance, a flat strip, no structure) and [Block Tower](../GAMES.md#block-tower) (stacking by an exact balance rule, no impact).
 
 ## What the research gave (opened 2026-10-14)
 
@@ -59,8 +59,8 @@ Later, as proposals: a bounce leaf, a seesaw, targets that need two hits, a seco
 ## Build slices
 
 1. **The engine slice:** `src/engine/blocks.ts`, its tests and the sampled-window level checker. Unit tests only; no game registered.
-2. **Levels 1–3 as a registered game:** the contract, art, sound, voice, how-to with ghost finger, README row, [GAMES.md](GAMES.md) entry. Tier: typecheck, rule tests, one scripted play (levels 1 and 3, one short shot, one hint), one portrait screenshot, `fingerdemo` filtered.
+2. **Levels 1–3 as a registered game:** the contract, art, sound, voice, how-to with ghost finger, README row, [GAMES.md](../GAMES.md) entry. Tier: typecheck, rule tests, one scripted play (levels 1 and 3, one short shot, one hint), one portrait screenshot, `fingerdemo` filtered.
 3. **Levels 4–5.**
-4. **Extras as separate slices.** A Bubble Cannon built on the same pull handle is a separate game ([IDEAS](IDEAS.md#candidates)).
+4. **Extras as separate slices.** A Bubble Cannon built on the same pull handle is a separate game ([IDEAS](../IDEAS.md#candidates)).
 
 Not run: any code. The window sizes and the robustness to rounding are claims until slice 1 tests them.
