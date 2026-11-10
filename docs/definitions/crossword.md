@@ -30,11 +30,9 @@ Each level names its own word set, how many words a round draws, the grid and th
 
 ## Screen and controls
 
-Phone playtest follow-up claimed on `codex/crossword-keep-direction`: keep the selected direction when tapping a different square that has a clue in that direction. [Playtest note](../OBSERVATIONS.md#2026-11-09-developer-and-wife).
-
 **Levels 1–4 (touch, children):** a word is **active** when she taps its clue square or one of its squares (tapping a crossing square again switches to the other word). The active word's squares outline at once. Letter tiles in the bank are dragged into its squares with `draggable` (`src/engine/drag.ts`, riding 40 units above the finger, as Word Monsters' letters do); a tile dropped near a blank square snaps to the nearest one, and a square's tile can be dragged back out. Each tile and square says its letter's name on touch-down. Squares and tiles are at least 100 by 100 units.
 
-**Levels 5–6 (grown-ups):** tap a square to select it and its across word; tap it again for the down word. The keyboard (three rows, keys at least 64 units) types into the selected square and moves on; a backspace key clears. A hardware keyboard works the same. Squares are at least 64 units; a 9 by 9 fits beside the clue bar at 1024 by 768.
+**Levels 5–6 (grown-ups):** tap a square to select it in the current direction when possible. Tap the same square twice in a row to switch between Across and Down. The keyboard (three rows, keys at least 64 units) types into the selected square and moves on; a backspace key clears. A hardware keyboard works the same. Squares are at least 64 units; a 9 by 9 fits beside the clue bar at 1024 by 768. [Playtest note](../OBSERVATIONS.md#2026-11-09-developer-and-wife) · [PR #1455](https://github.com/rjdunlap/neo/pull/1455).
 
 **Layout plan** (logical units from `view`; the build proves it, these are not screenshot proof): landscape 1024 by 768 keeps the top 140 for the shell and the pet's corner x0–160, y548–768. Grid x180–800, y150–770 at most (6 by 6 at 100 with 4-unit gaps); bank on the right x830–1000 in up to three rows of two 100-unit tiles from y180; Help 120 by 100 at x850–970, y600–700. Portrait 768 by 1024: grid centred at y150–770; bank in two rows of three tiles at x200–540, y790–1004; Help at x600–720, y850–950. Levels 1–2's smaller grids centre in the same box. Every target stays clear of the pet and corner buttons; nothing shrinks to fit.
 

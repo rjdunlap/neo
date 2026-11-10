@@ -16,7 +16,7 @@ Newest first. One heading per paste, `### 2026-11-12, <player>, <phone>` (for ex
 
 > My wife and I played the cross mini-game, the only annoying part was typing the word sometimes put letters not in the clue you're working on.. I.e. instead of going down, is starts adding the 2nd letter to a word across
 
-- [Keep the clue direction while typing in Crossword](READY.md#next-ten).
+- [Keep the clue direction while typing in Crossword](https://github.com/rjdunlap/neo/pull/1455).
 
 ## What a session does with an entry
 

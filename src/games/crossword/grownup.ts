@@ -60,7 +60,7 @@ export function phoneCrosswordLayout(v: View, w: number, h: number) {
 }
 
 /**
- * Crossword levels 5–6 for grown-ups: tap a square to select it and its across word (again for the down word), type on the
+ * Crossword levels 5–6 for grown-ups: tap a square to select it in the current direction (again to switch), type on the
  * A–Z keys or a hardware keyboard, and the grid is checked when every square is full. A wrong check is one miss and circles
  * the wrong squares, which stay editable; Help reveals one letter of the selected word for one hint.
  */

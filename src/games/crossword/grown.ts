@@ -157,6 +157,8 @@ export type Fills = ReadonlyMap<string, string>;
 export interface Cursor {
   key: string;
   dir: Dir;
+  /** Only a player tap primes this square for a direction change. */
+  tapped?: true;
 }
 
 /** The word through square `k` in `dir`, or -1. */
@@ -167,16 +169,15 @@ export const wordIn = (p: GrownPuzzle, k: string, dir: Dir) =>
 export const activeWord = (p: GrownPuzzle, c: Cursor) => wordIn(p, c.key, c.dir);
 
 /**
- * Tapping a square: a new square selects it and its across word (its down word if it has no across); tapping the selected
- * square again turns to its other word.
+ * Keep the current direction when the tapped square has a word in it. Two consecutive taps on the same square turn to
+ * its other word, if it has one.
  */
 export function tapSquare(p: GrownPuzzle, c: Cursor | null, k: string): Cursor {
   const has = (d: Dir) => wordIn(p, k, d) >= 0;
-  if (c && c.key === k) {
-    const other: Dir = c.dir === 'across' ? 'down' : 'across';
-    return has(other) ? { key: k, dir: other } : c;
-  }
-  return { key: k, dir: has('across') ? 'across' : 'down' };
+  const dir = c?.dir ?? 'across';
+  const other = dir === 'across' ? 'down' : 'across';
+  const turn = c?.tapped && c.key === k;
+  return { key: k, dir: has(other) && (turn || !has(dir)) ? other : dir, tapped: true };
 }
 
 /** The cursor at word `i`'s first square not yet filled (or its first square). */
@@ -200,7 +201,7 @@ export function typeLetter(
   if (!revealed.has(c.key)) next.set(c.key, letter.toLowerCase());
   const sq = squaresOf(p.words[activeWord(p, c)]);
   const after = sq.slice(sq.findIndex((s) => s.key === c.key) + 1).find((s) => !revealed.has(s.key));
-  return { fills: next, cursor: after ? { ...c, key: after.key } : c };
+  return { fills: next, cursor: { key: after?.key ?? c.key, dir: c.dir } };
 }
 
 /** Backspace clears the cursor's square, or when it is empty steps back one square in the word and clears that. */
@@ -211,9 +212,10 @@ export function backspace(
   c: Cursor,
 ): { fills: Map<string, string>; cursor: Cursor } {
   const next = new Map(fills);
+  const cursor: Cursor = { key: c.key, dir: c.dir };
   if (next.has(c.key) && !revealed.has(c.key)) {
     next.delete(c.key);
-    return { fills: next, cursor: c };
+    return { fills: next, cursor };
   }
   const sq = squaresOf(p.words[activeWord(p, c)]);
   const before = sq
@@ -223,9 +225,9 @@ export function backspace(
     )
     .reverse()
     .find((s) => !revealed.has(s.key));
-  if (!before) return { fills: next, cursor: c };
+  if (!before) return { fills: next, cursor };
   next.delete(before.key);
-  return { fills: next, cursor: { ...c, key: before.key } };
+  return { fills: next, cursor: { ...cursor, key: before.key } };
 }
 
 // Judging ---------------------------------------------------------------------------------
