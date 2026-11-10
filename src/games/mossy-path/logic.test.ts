@@ -8,6 +8,12 @@ import {
   leafSpots,
   pickLook,
   PLANS,
+  PATCHES,
+  countsMiss,
+  isMaze,
+  LEVELS,
+  levelName,
+  plansFor,
   SEASONS,
   transformPlan,
   goalOf,
@@ -162,6 +168,71 @@ describe('Mossy Path levels 1-3 plans', () => {
       }
       expect(seen.size, `level ${level}`).toBe(3);
     }
+  });
+});
+
+describe('Mossy Path level 8, a little patch', () => {
+  it('has five small boards, each within 3 × 4, completing under every symmetry with large cells', () => {
+    expect(PATCHES).toHaveLength(5);
+    for (const [n, p] of PATCHES.entries())
+      for (const [fx, fy, t] of SYMMETRIES) {
+        const b = transformPlan(p, fx, fy, t),
+          label = `patch ${n} ${fx} ${fy} ${t}`;
+        expect(Math.max(b.rows, b.cols), label).toBeLessThanOrEqual(4);
+        expect(Math.min(b.rows, b.cols), label).toBeLessThanOrEqual(3);
+        expect(b.tiles.length, label).toBeLessThanOrEqual(9);
+        expect(b.start !== b.pond && b.tiles.includes(b.start) && b.tiles.includes(b.pond), label).toBe(true);
+        expect(Math.min(132, (768 - 330) / b.rows, (1024 - 320) / b.cols), label).toBeGreaterThanOrEqual(100);
+        expect(routeCount(b), label).toBe(routeCount(transformPlan(p, false, false, false)));
+        // The bot: follow helpFor's taps from the start; it never needs Undo and finishes with no miss.
+        let path = [b.start];
+        for (let guard = 0; guard < 12 && !solved(b, path); guard++) {
+          const help = helpFor(b, path)!;
+          expect(help.undo, label).toBe(0);
+          expect(moveError(b, path, help.next), label).toBeNull();
+          path = step(b, path, help.next)!;
+        }
+        expect(solved(b, path), label).toBe(true);
+      }
+  });
+  it('gives every board one or two complete routes, at least one board two', () => {
+    const counts = PATCHES.map((p) => routeCount(transformPlan(p, false, false, false)));
+    expect(counts.every((c) => c >= 1 && c <= 2)).toBe(true);
+    expect(counts).toContain(2);
+  });
+  it('plays every patch for some seed as a coverage board, never a maze', () => {
+    expect(isMaze(8)).toBe(false);
+    expect(plansFor(8)).toBe(PATCHES);
+    expect(levelName(8)).toBe('A little patch: bloom every tile');
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const b = makeBoard(8, new Rng(seed));
+      expect(b.berry).toBeUndefined();
+      const n = PATCHES.findIndex((p) =>
+        SYMMETRIES.some(([fx, fy, t]) => sameBoard(transformPlan(p, fx, fy, t), b)),
+      );
+      expect(n, `seed ${seed}`).toBeGreaterThanOrEqual(0);
+      seen.add(n);
+    }
+    expect(seen.size).toBe(PATCHES.length);
+  });
+  it('never counts a far tap at level 8, and still counts visited and early-pond taps', () => {
+    const b = transformPlan(PATCHES[0], false, false, false);
+    // 0 1 2 / 3 4 5: from 0, tile 2 is far, 0 is visited, and 5 is the pond.
+    expect(moveError(b, [0], 2)).toBe('far');
+    expect(countsMiss(8, 'far')).toBe(false);
+    expect(countsMiss(8, 'visited')).toBe(true);
+    expect(countsMiss(8, 'pond')).toBe(true);
+    expect(countsMiss(8, null)).toBe(false);
+    for (const level of [1, 2, 3]) expect(countsMiss(level, 'far')).toBe(true);
+    expect(moveError(b, [0, 3, 4], 3)).toBe('visited');
+    expect(moveError(b, [0, 3, 4], 5)).toBe('pond');
+  });
+  it('slots 8 after 6 for pre-K and school without changing any first level', () => {
+    expect(LEVELS.prek?.order).toEqual([5, 6, 8]);
+    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 2, 3]);
+    expect(LEVELS.toddler).toEqual({ min: 4, max: 4 });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 5 });
   });
 });
 

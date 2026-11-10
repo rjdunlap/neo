@@ -13,6 +13,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 import {
   LEVELS,
   completion,
+  countsMiss,
   goalOf,
   helpFor,
   isMaze,
@@ -316,6 +317,14 @@ class MossyPath implements Game {
     }
     if (!this.alive || this.finished || at === this.path.at(-1)) return;
     const error = moveError(this.board, this.path, at);
+    // Level 8: a far tap is free; the tiles she can step to pulse.
+    if (error && !countsMiss(this.ctx.level, error)) {
+      this.pulseAt(
+        neighbours(this.board, this.path.at(-1)!).filter((z) => !moveError(this.board, this.path, z)),
+      );
+      void this.ctx.say('moss.far');
+      return;
+    }
     if (error) {
       this.misses++;
       this.consecutive++;
@@ -574,7 +583,20 @@ class MossyPath implements Game {
       : null;
   }
   update(dt: number) {
-    if (!this.alive || !this.maze || this.finished) return;
+    if (!this.alive || this.finished) return;
+    this.pulse.clear();
+    if (this.pulseTime > 0) {
+      this.pulseTime -= dt;
+      const a = Math.max(0, this.pulseTime / 0.45),
+        half = this.cell / 2 - 3;
+      for (const at of this.pulseCells) {
+        const n = this.nodes[at];
+        this.pulse
+          .roundRect(n.x - half, n.y - half, half * 2, half * 2, 20)
+          .stroke({ width: 6, color: swatch.yellow.fill, alpha: a });
+      }
+    }
+    if (!this.maze) return;
     if (this.walkTo >= 0) {
       this.walkClock -= dt;
       if (this.walkClock <= 0) {
@@ -595,18 +617,6 @@ class MossyPath implements Game {
         this.idle = 0;
         this.hinted = this.mazeNext();
         this.draw();
-      }
-    }
-    this.pulse.clear();
-    if (this.pulseTime > 0) {
-      this.pulseTime -= dt;
-      const a = Math.max(0, this.pulseTime / 0.45),
-        half = this.cell / 2 - 3;
-      for (const at of this.pulseCells) {
-        const n = this.nodes[at];
-        this.pulse
-          .roundRect(n.x - half, n.y - half, half * 2, half * 2, 20)
-          .stroke({ width: 6, color: swatch.yellow.fill, alpha: a });
       }
     }
   }
