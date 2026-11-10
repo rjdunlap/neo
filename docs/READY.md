@@ -42,6 +42,16 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 - **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
 
+### UX review (2026-11-09)
+
+From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); one item per session, in this order, shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
+
+- **U1: name the pictures** (shell): a short label under each Home button and each result button, at every band and upright; layout tests keep every target at least 100 units.
+- **U2: one picture, one meaning** (shell and `stamp-studio`): new pictures for Today's six, the wardrobe and Stamp Studio's tools, so the four squares mean All games and the basket means the project.
+- **U3: an honest Back in a round** (shell): decide tap or a visible hold cue for `GameScene`'s Back and question mark, and add Leave to the Paused sheet.
+- **U4: show what to touch when it is quiet** (shell): an idle wobble on the egg and a bounce on the project's next card.
+- **U5–U8: define first** (docs only, one each): a first six she can start, one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
+
 ### Study follow-ups (docs-only definitions)
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).

@@ -169,7 +169,7 @@ describe('numbers', () => {
 describe('typing', () => {
   const p = makeMini(MINIS[0]);
   const none = new Set<string>();
-  const acrossOnly = () => {
+  const singleDirection = () => {
     for (const q of allPuzzles())
       for (const k of lettersOf(q.words).keys()) {
         const a = wordIn(q, k, 'across') >= 0,
@@ -184,12 +184,39 @@ describe('typing', () => {
     expect(c1.dir).toBe('across');
     expect(tapSquare(p, c1, k).dir).toBe('down');
     expect(tapSquare(p, tapSquare(p, c1, k), k).dir).toBe('across');
-    const lone = acrossOnly();
+    const lone = singleDirection();
     expect(lone).not.toBeNull();
     const { q, k: lk, a } = lone!;
     const c = tapSquare(q, null, lk);
     expect(c.dir).toBe(a ? 'across' : 'down');
     expect(tapSquare(q, c, lk)).toEqual(c);
+    const opposite = a ? 'down' : 'across';
+    expect(tapSquare(q, { key: 'elsewhere', dir: opposite }, lk).dir).toBe(c.dir);
+  });
+  it('keeps Down when moving to a different crossing and types along that clue', () => {
+    const word = p.words.find((w) => w.dir === 'down')!;
+    const [first, second, third] = squaresOf(word);
+    const across = tapSquare(p, null, second.key);
+    const down = tapSquare(p, across, second.key);
+    const start = tapSquare(p, down, first.key);
+    const one = typeLetter(p, new Map(), none, start, first.letter);
+    const two = typeLetter(p, one.fills, none, one.cursor, second.letter);
+    expect([...two.fills]).toEqual([
+      [first.key, first.letter],
+      [second.key, second.letter],
+    ]);
+    expect(two.cursor).toMatchObject({ key: third.key, dir: 'down' });
+  });
+  it('requires a second tap to turn after the cursor advanced there by typing', () => {
+    const word = p.words.find((w) => w.dir === 'down')!;
+    const [first, second] = squaresOf(word);
+    const across = tapSquare(p, null, first.key);
+    const down = tapSquare(p, across, first.key);
+    const { cursor } = typeLetter(p, new Map(), none, down, first.letter);
+    expect(cursor).toMatchObject({ key: second.key, dir: 'down' });
+    const tapped = tapSquare(p, cursor, second.key);
+    expect(tapped.dir).toBe('down');
+    expect(tapSquare(p, tapped, second.key).dir).toBe('across');
   });
   it('typing fills and advances, staying on the last square', () => {
     const w = p.words.findIndex((x) => x.dir === 'across' && x.word === 'boast');
