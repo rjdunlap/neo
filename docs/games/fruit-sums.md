@@ -24,7 +24,7 @@
 
 **Starts as:** tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways
 
-**Grows into:** add to 10, add to 20, plus or take away to 15, then make the same as a sum on the sign, then clear a tree of six fruit pair by pair into a basket, then add three fruit in three boxes to make a number up to 18; three looks (orchard, cove, autumn), fruit that drop in, and a hint that glows step by step
+**Grows into:** add to 10, add to 20, plus or take away to 15, then make the same as a sum on the sign, then clear a tree of six fruit pair by pair into a basket, then add three fruit in three boxes to make a number up to 18, then choose a plus, take-away or times leaf to reach a number up to 24; three looks (orchard, cove, autumn), fruit that drop in, and a hint that glows step by step
 
 ## Design notes
 
@@ -37,3 +37,5 @@
 **Clear the tree (slice 3, level 5).** Six fruit on the tree, a target of 6–10 (fruit 1–9); she taps pairs that make the target and each right pair flies into a woven basket below the tray, leaving the tree. The round ends when the tree is empty after three pairs. Counted by fruit, not by number, so a second 3 + 7 is a new pair with no "same way" verdict; a wrong pair is a miss and the fruit stay. The round always has a wrong pair and always empties, however she orders right pairs. The two-miss glow skips fruit already in the basket. The school levels now run in the order 1, 5, 2, 4, 3.
 
 **Three fruit (slice 4, level 6).** Six fruit (1–9) and a target of 11–18; three boxes joined by two plus signs, and she taps three fruit that add to the number, then a different three. A pair that makes ten (such as 2 + 8, then 2 more) is the natural strategy. The same three in any order is "the same way", not a miss; the check with two fruit says "Tap a third fruit first" and is not a miss; a wrong total is a miss and the fruit stay to swap. After two misses the hint glows a pair that makes ten, then the third fruit, then the check. Taps 100+ units, a 696-unit row that fits 768 portrait.
+
+**A times leaf (slice 5, level 7).** School only, last in the level order. Three leaves (plus, take away, times) sit in a row at a 140 pitch; fruit go up to 12 and the target is a composite number (6 to 24). Every tray holds a times way (both factors at least 2) and a way with another sign, and the round needs two different ways. Times is commutative: 3 × 4 and 4 × 3 are one way, while 2 × 2 is not the same way as 2 + 2. Found ways are written "3 × 4 = 12". The hint prefers a sign she has not used yet. The new voice lines (`fsums.times`, `fsums.start7`) have no generated clips yet and use device speech.
