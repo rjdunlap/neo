@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/picture-logic; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `picture-logic` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** logic · **Plays by:** touch and controller · **Ghost finger:** yes
+**ID:** `picture-logic` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** logic · **Plays by:** touch and controller, upright on a phone · **Ghost finger:** yes
 
 **Skills:** logic, deduction, patterns
 
@@ -27,6 +27,8 @@
 **Grows into:** a small 5 by 5 level to start, then 10 by 10 and 15 by 15 pictures solvable by line logic alone, and a two-colour level (blue plus one warm colour, two colour pots, clue numbers in their run's colour); seven 5 by 5, eight easier and eight harder 10 by 10 pictures, five 15 by 15 and five harder 15 by 15 that need more care; hints that name the line and its clue and say why; the finished picture takes its colors and says what it is; two puzzle-shelf courses scored in fills against par (Pond Pictures, The Big Pictures)
 
 ## Design notes
+
+On an upright phone, the paint tools and cells have larger targets. Slide keeps the entire picture reachable while the clues stay pinned.
 
 *grown-up, on the island by touch and on the couch · after Picross and Cross Pix, built on Pixel Pictures' logic levels.* A grid hides a picture. The numbers beside each row and above each column say how long the runs of filled squares in that line are, in order. Fill what the numbers allow, cross out what they rule out, and when the filled squares are exactly the picture's, its squares take their colors and it says what it is ("It is a sailboat!"). **By touch (the island):** touch a square to fill it (a filled one empties); a drag along a row or column paints a run, taking the squares between however fast the finger moves, the first square deciding whether the stroke fills or empties. Three tools sit beside the picture (under it on a tall view): **Fill**, **Cross** (marks a square, lifts a cross) and, when the picture is bigger than its window, **Slide**; **Hint** and **Start over** are buttons. Every square and button is at least 64 logical units, so the 10 by 10 pictures slide a little and the 15 by 15 ones a lot on a landscape tablet (an upright tablet shows a 10 by 10 whole): the clue numbers stay pinned along the top and left while the squares move under them; Slide, or a drag on the clue strips, moves the picture, soft strips with an arrow show where there is more, a painting finger held near the window's edge carries the picture along under it, and a hint switches to the tool it needs and slides its square into view. When the picture is done it shrinks to show all of itself before it takes its colors. **On the couch:** the stick or D-pad moves (hold to repeat) and the cursor's row and column are tinted so a far-off number is easy to follow; the bottom button fills the square (on a filled one it empties it); the left button crosses a square out (on a crossed one it lifts the cross); and **holding** either button while the stick moves paints a whole run, the first square deciding what the stroke does. A line's clue turns grey when its filled runs match it and red when no way of filling it fits the marks, judged from the clue alone and never from the answer.
 

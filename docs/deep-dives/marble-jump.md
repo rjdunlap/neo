@@ -28,7 +28,7 @@ A grown-up plays peg solitaire on a wooden 15-hole triangle. She taps a marble, 
 - **A marble changes colour when it lands.** `marbleArt(i)` picks the colour from the *hole* index, so the marble that jumped is redrawn in the landing hole's colour. That breaks the "this marble moved" reading.
 - **No motion.** The jumping marble and the removed one swap state in a single redraw. A newcomer has to infer which marble left from the six-spark burst.
 - A Hint tap while a hint is already showing does nothing silently. It should at least repeat `marble.hint`.
-- The layout hard-codes five rows (102-unit spacing, a 263-unit tray half-width, `top = (view.h - 410) / 2`). Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches-six-games-each-ready-batch-1-built) lists `marble-jump`, and any larger board needs this derived from the row count.
+- The layout hard-codes five rows (102-unit spacing, a 263-unit tray half-width, `top = (view.h - 410) / 2`). Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches) lists `marble-jump`, and any larger board needs this derived from the row count.
 - Person checks ([device checks](../DEVICE-CHECKS.md)): real-iPad touch and speech, whether blocked-route recovery is understood, and adult enjoyment.
 
 ## Similar games

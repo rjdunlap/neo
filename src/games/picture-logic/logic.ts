@@ -572,9 +572,10 @@ export function touchFrame(
   rowDepth: number,
   colDepth: number,
   twoColours = false,
+  upright = false,
 ): TouchFrame {
   const side = vw >= vh,
-    btn = 72,
+    btn = upright ? 88 : 72,
     gap = 10;
   const gutterX = rowDepth * CLUE_STEP_X + 14,
     gutterY = colDepth * CLUE_STEP_Y + 14;
@@ -585,7 +586,7 @@ export function touchFrame(
     ? { x: HOME_W, y: 100, w: vw - HOME_W - margin - panelW - margin, h: vh - 100 - 24 }
     : { x: 24, y: HOME_H, w: vw - 48, h: vh - HOME_H - 24 - btn - 12 - 44 - 12 };
   const fit = Math.floor(Math.min(area.w - gutterX - PAD, area.h - gutterY - PAD) / size);
-  const cell = Math.max(MIN_TOUCH, Math.min(96, fit));
+  const cell = Math.max(upright ? 88 : MIN_TOUCH, Math.min(96, fit));
   const content = size * cell;
   const maxX = Math.max(0, content + PAD - (area.w - gutterX)),
     maxY = Math.max(0, content + PAD - (area.h - gutterY));

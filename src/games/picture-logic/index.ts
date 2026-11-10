@@ -268,22 +268,17 @@ class PictureLogic implements Game {
     if (!this.puzzle) return;
     if (this.touch) return this.resizeTouch(v);
     const n = this.n;
-    // The controller reminder covers the bottom of the screen for the first ten seconds, so the picture stays above it.
-    const room = v.h - 100 - 200;
-    this.gap = Math.min(24, Math.max(15, Math.floor(room / (n * 2.2))));
-    this.cell = Math.max(22, Math.min(46, Math.floor((room - this.colDepth * this.gap) / n)));
-    const gutter = this.rowDepth * this.gap * 1.1 + 30,
-      width = gutter + n * this.cell;
-    const left = Math.max(152, (v.w - width - 300) / 2);
-    this.board.position.set(left + gutter, 100 + this.colDepth * this.gap + 30);
-    this.clueLayer.position.set(this.board.x, this.board.y);
-    const right = this.board.x + n * this.cell + 36;
+    const frame = controllerFrame(v, n, this.rowDepth, this.colDepth);
+    this.gap = frame.gap;
+    this.cell = frame.cell;
+    this.board.position.copyFrom(frame.board);
+    this.clueLayer.position.copyFrom(frame.board);
     this.info.anchor.set(0, 0.5);
     this.sub.anchor.set(0, 0.5);
-    this.info.position.set(right, this.board.y + 20);
-    this.sub.position.set(right, this.board.y + 60);
-    this.bannerBox.position.set(right, this.board.y + 100);
-    (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(220, v.w - right - 44);
+    this.info.position.copyFrom(frame.tally);
+    this.sub.position.set(frame.tally.x, frame.tally.y + 40);
+    this.bannerBox.position.set(frame.tally.x, frame.tally.y + 80);
+    this.banner.style.wordWrapWidth = Math.max(220, v.w - frame.tally.x - 44);
     this.showBanner(this.banner.text);
     this.layoutClues();
     this.dirty = true;
@@ -295,7 +290,7 @@ class PictureLogic implements Game {
    */
   private resizeTouch(v: View) {
     const { rowDepth, colDepth } = clueDepths(this.puzzle);
-    const f = touchFrame(v.w, v.h, this.n, rowDepth, colDepth, !!this.puzzle.colors);
+    const f = touchFrame(v.w, v.h, this.n, rowDepth, colDepth, !!this.puzzle.colors, v.upright);
     this.frame = f;
     this.cell = f.cell;
     this.scrollX = Math.min(f.maxX, Math.max(0, this.scrollX));
@@ -1445,8 +1440,26 @@ function sticker(seed: number): Container {
   return c;
 }
 
+export function controllerFrame(v: View, size: number, rowDepth: number, colDepth: number) {
+  // Leave space at the bottom for the controller reminder and, on a phone, the tally and hint.
+  const top = v.upright ? 210 : 100;
+  const room = v.h - top - (v.upright ? 240 : 200);
+  const gap = Math.min(24, Math.max(15, Math.floor(room / (size * 2.2))));
+  const gutter = rowDepth * gap * 1.1 + 30;
+  const boardRoom = v.upright ? v.w - 48 - gutter : Infinity;
+  const cell = Math.max(22, Math.min(46, Math.floor(Math.min(boardRoom, room - colDepth * gap) / size)));
+  const width = gutter + size * cell;
+  const left = v.upright ? (v.w - width) / 2 : Math.max(152, (v.w - width - 300) / 2);
+  const board = { x: left + gutter, y: top + colDepth * gap + 30 };
+  const tally = v.upright
+    ? { x: Math.max(152, left), y: board.y + size * cell + 20 }
+    : { x: board.x + size * cell + 36, y: board.y + 20 };
+  return { gap, cell, gutter, board, tally };
+}
+
 export const pictureLogic: GameModule = {
   id: 'picture-logic',
+  upright: true,
   liveController: true,
   name: 'Picture Logic',
   titleLine: 'game.picture-logic',

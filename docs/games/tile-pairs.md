@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/tile-pairs; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `tile-pairs` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** noticing · **Plays by:** touch and controller · **Ghost finger:** yes
+**ID:** `tile-pairs` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** noticing · **Plays by:** touch and controller, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-planning, matching
 
@@ -26,6 +26,8 @@
 **Grows into:** six seeded, solvable layouts: 12/20/24 tiles, then a 24-tile bridge, twin terraces and crown with more matching choices; Undo, a clearing-route Hint, and Shuffle into open rows; touch and controller demos; no clock or loss screen
 
 ## Design notes
+
+On an upright phone the three controls sit above the guide, below the full-width tile stacks.
 
 *Spatial matching and planning, after Mahjong solitaire.* Tap two tiles with the same picture to remove them. Each must have a clear top and an open left or right side on its layer; bright tiles are free, muted tiles are blocked. Pictures differ by both shape and color. Tap a selected tile again to cancel it. Touch answers on press; on the couch, the stick or D-pad moves between free tiles and the bottom button selects.
 

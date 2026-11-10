@@ -230,12 +230,13 @@ class Crossword implements Game {
   private layoutBank() {
     const v = this.view;
     const n = this.bank.length;
+    const uprightCenter = v.w / 2 - (v.upright ? 70 : 120);
     this.bank.forEach((t, i) => {
       if (this.upright && this.wideBank) {
         const row = Math.floor(i / 3),
           cols = Math.min(3, n - row * 3);
-        t.position.set(v.w / 2 - 120 - ((cols - 1) / 2) * 112 + (i % 3) * 112, this.help.y - 54 + row * 108);
-      } else if (this.upright) t.position.set(v.w / 2 - 120 - ((n - 1) / 2) * 112 + i * 112, this.help.y);
+        t.position.set(uprightCenter - ((cols - 1) / 2) * 112 + (i % 3) * 112, this.help.y - 54 + row * 108);
+      } else if (this.upright) t.position.set(uprightCenter - ((n - 1) / 2) * 112 + i * 112, this.help.y);
       else if (this.wideBank) t.position.set(v.w - 162 + (i % 2) * 108, 210 + Math.floor(i / 2) * 108);
       else t.position.set(v.w - 90, 210 + i * 108);
       if (t.drag) t.drag.home = { x: t.x, y: t.y };
@@ -733,6 +734,7 @@ function sticker(seed: number): Container {
 
 export const crossword: GameModule = {
   id: 'crossword',
+  upright: true,
   name: 'Crossword',
   titleLine: 'game.crossword',
   region: 'story-grove',

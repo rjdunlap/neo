@@ -31,7 +31,7 @@ She drags a shaped seed piece from the tray onto a square garden bed. A shadow s
 - **The pre-K range ends at 3.** Level 3 already counts refused drops and drops the stripes, so a four-year-old who struggles at 3 has only levels 1–2, which are two short gardens each.
 - **No younger opening.** Preschool has no level, though the first garden (a striped row, one gap, a domino) is a preschool-sized task.
 - **Hint cap.** The definition named a 200,000-state hint search; the build uses `SEARCH_CAP = 30_000` and falls back to stepping back (a recorded deviation). Any new 8×8 level has to keep the stored solution as the hint's main source.
-- **Phone upright.** Block Garden is in [batch 2 of the upright phone work](../definitions/phone-portrait.md#game-batches-six-games-each-ready-batch-1-built); new layout here should keep `gardenLayout` the single source of the slot and bed rectangles so that batch has one place to change.
+- **Phone upright.** Block Garden is in [batch 2 of the upright phone work](../definitions/phone-portrait.md#game-batches); new layout here should keep `gardenLayout` the single source of the slot and bed rectangles so that batch has one place to change.
 - **Couch.** Block Garden has no couch entry (`src/couch/catalog.ts`); the definition left couch play for later.
 
 ## Similar games

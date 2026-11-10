@@ -28,6 +28,11 @@
 - [ ] **Lantern Lights school opening: can a seven-year-old finish a level-1 pond?** From the spoken instruction and the card alone, does she finish and notice a press also flips its neighbours (built 2026-11-04)?
 - [ ] **Is the Lantern Lights stuck nudge well timed?** `lantern.stuck-school` comes six presses past the fewest: too early or late, and does she find the Hint button from it?
 - [ ] **Is level 2 (four presses) a fair top for school?** Or should level 3 open at that band?
+
+## Grown-up upright games batch 2
+
+- [ ] Play Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights on an upright phone. Check that the smallest targets are comfortable to reach, finish Hat Band’s encore to its sticker, and check Picture Logic’s board with a hardware controller. Record what the two players see in [Observations](OBSERVATIONS.md). [Browser and layout checks](VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-2-chunk-31-pr-1448)
+
 ## Vine Snip levels 1–3 (vine-snip slice 1, built 2026-11-04)
 
 - [ ] **Does a toddler connect the tap on the vine with the drop?** At level 1, does a tap anywhere read as "I let the fruit go", or does she look for the vine?
