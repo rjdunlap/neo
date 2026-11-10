@@ -85,3 +85,8 @@ Changed: school levels 7–8 *Picnic Loop* on `second-chance-shed` (`picnic.ts` 
 Ran: `npm run typecheck`; `npm test` (332 files, 6378 passed, 1 skipped); `BROWSER_SUITE=shedpicnic` (level 7: unwashed carry 1 miss, unchanged ring free, washes, finish 1/0; level 8 case A: promise miss, empty-seat ring free, painter waiting second miss and glow, portrait screenshot, Show a hint then Show me one handing the mug over, ghost finger to the finish 2/2); `BROWSER_SUITE=fingerdemo FINGER_ONLY=second-chance-shed FINGER_LEVELS=7,8 FINGER_BAND=school` (31.5 s, 53.6 s); `npm run build`; `node scripts/check-links.mjs`.
 Source check (the definition's gate): washable cups and mugs over disposable ones is consistent with EPA, [Reduce, Reuse, Recycle: What you can do](https://www.epa.gov/recycle/what-you-can-do); the one-use cups' material is never named, so no bin rule is implied.
 Not run: other suites, the offline check, case B in the browser (rule tests cover it).
+
+## 2026-11-09 — Snowball Merge deep dive (docs only, PR #1447)
+
+Changed: new [deep dive](../deep-dives/snowball-merge.md) (five build slices, three developer decisions); the dive tracker, study backlog, READY (slices queued, research line removed, the phone-upright grown-up batches line moved into Next ten) and the waiting-on-developer list updated. Nothing is built.
+Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, any browser or device check. Open: the three decisions (school opening, couch course, swipe) and a person's play of level 1 on the iPad.
