@@ -8,7 +8,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **U3: an honest Back in a round** (shell): decide tap or a visible hold cue for `GameScene`'s Back and question mark, and add Leave to the Paused sheet.
+- **U3: an honest Back in a round** (shell): decide tap or a visible hold cue for `GameScene`'s Back and question mark, and add Leave to the Paused sheet. Claimed on `codex/round-back-pause`.
 - **U4: show what to touch when it is quiet** (shell): an idle wobble on the egg and a bounce on the project's next card.
 
 - **`mossy-path`, slices 3–5 in the dive's order** (toddler to school; [build slices](deep-dives/mossy-path.md#build-slices-in-order)): slice 3 level 9 *Two snacks* (typecheck, rule tests, one browser play of 9, `fingerdemo` at 9, build); slice 4 level 10 *Plan, then go* after slice 3 (new interaction: unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 10, build); slice 5 level 11 *Thick moss* (solver rewrite: rule tests including levels 1–3 and 8 unchanged, one browser play of 11, `fingerdemo` at 11, build).
