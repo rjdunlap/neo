@@ -8,8 +8,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **U5a: a first six she can start** (claimed by branch `claude/first-six-start`; shell tier: typecheck, unit tests, build, one scripted Today's six flow on a fresh pre-K profile with one portrait screenshot): a game new to her today plays its band's first level on the card all day, a pin still wins, grown-ups unchanged, one shared six helper for the page and the result's next tile; plus `coplayHintLap` with a tip rule test, Word Glue fixed. [Definition](definitions/todays-six.md#u5-a-first-six-she-can-start-status-ready-defined-2026-11-10)
-- **U5b: tips held to her band** (after U5a; content tier: typecheck and the registry test): read every tip a lap or toddler profile sees against the rule and add a lap override or `false` where one does not suit her. [Definition](definitions/todays-six.md#tips-held-to-her-band-u5a-mechanism-u5b-audit)
+- **U5b: tips held to her band** (U5a is built; the registry test's `PENDING_U5B` list names the six games to start with: sink-float, puddle-lens, melt-freeze, fluffy-salon, scoop-shop, puzzle-pals; content tier: typecheck and the registry test): read every tip a lap or toddler profile sees against the rule and add a lap override or `false` where one does not suit her. [Definition](definitions/todays-six.md#tips-held-to-her-band-u5a-mechanism-u5b-audit)
 - **U6–U8: define first** (docs only, one each): one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
 
 - **`mossy-path`, slices 4–5 in the dive's order** (toddler to school; [build slices](deep-dives/mossy-path.md#build-slices-in-order)): slice 4 level 10 *Plan, then go* (new interaction: unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 10, build); slice 5 level 11 *Thick moss* (solver rewrite: rule tests including levels 1–3 and 8 unchanged, one browser play of 11, `fingerdemo` at 11, build).

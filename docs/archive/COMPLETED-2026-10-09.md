@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### U5a, a first six she can start (2026-11-10)
+
+[PR #1467](https://github.com/rjdunlap/neo/pull/1467): a game new to her today (`newToday` in `src/content/daily.ts`) plays its band's first level in play order through a shared `firstLevel` in `src/progress/difficulty.ts` (also used by `Store.levelFor`); a pin still wins and a grown-up's six ignore it. One helper, `todaysSix(day, upright)` in `src/app/daily-six.ts`, builds the six for `DailyScene` and `GameScene.showDailyNext`. `GameModule.coplayHintLap` with `tipFor(mod, band)` holds a tip to her band; Word Glue has a lap tip. Six games still ask at lap and are on the registry test's `PENDING_U5B` list. See [verification](../VERIFICATION.md) (the entry is in the live file).
+
 ### U3, round Back and help (2026-11-10)
 
 [PR #1462](https://github.com/rjdunlap/neo/pull/1462) makes the round’s Back and question mark respond to a tap. Paused → Leave takes the same return route as Back. See [verification](../VERIFICATION.md#2026-11-10--u3-round-back-and-help-pr-1462).
