@@ -49,11 +49,17 @@ The developer, 2026-11-09: the developer and their wife will playtest the six ea
 - **Playtest notes (grown-up profiles only).** A pencil on the six page and on a daily round's result opens a plain-HTML sheet (`src/ui/playtest-sheet.ts`): Good, Fine or Needs work plus a line of text per game and day, saved in the profile's own save (`SaveData.playtest`, bounded at 300 notes, repaired on load) and copied as text with Copy all notes for [OBSERVATIONS](../OBSERVATIONS.md).
 - **Shortcut.** The root manifest has a Today's six shortcut (`./?daily`) for tablets, where Home is still the root.
 
-Shell slice 2 below now matters only on tablets and computers that are narrow enough to be asked to turn (none today), so the game batches come first.
+Shell slices 2 (built) and 3 now matter only on tablets and computers that are narrow enough to be asked to turn (none today), so the game batches come first.
 
-### Shell slice 2: the rest of the root (ready)
+### Shell slice 2: the rest of the root (built 2026-11-10)
 
-All games, Explore, Friends, Dress, the hatch, the journal and the sticker book on the root, each with a layout test at the upright fixture and one screenshot. The island at `classic/` (map, lands, places, stories) stays sideways-only: the cutover retires it, and the turn prompt stays there.
+Built 2026-11-10: `ExploreScene` (its five entries, All games, Places), `FriendsScene`, `DressScene`, `JournalScene` and `StickerBookScene` set `upright`/`uprightArea` and lay out on the 768 × 1024 area. Places (`exploreLayout`, `src/creatures/home-layout.ts`) goes three to a row there; `journalLayout` (four rows of two; on the wide area the column gap narrowed 24 to 16 so the 100-unit page arrows stay in the view) and `stickerBookLayout` (four on the tray; arrows 100 units) are pure functions with tests in `src/app/scenes/upright-root.test.ts`; `UPRIGHT_VIEWS` from `src/games/upright-check.ts` joined the Friends, Dress, Home and Explore layout tests. Home's companion now stands right of the guide corner at 768 wide. All games at lap and toddler, where Little surprises leads, keeps the turn prompt (`upright = !this.lead`). One scripted pass at 390 × 844 shot each scene with no prompt and no page errors. The island at `classic/` stays sideways-only: the cutover retires it.
+
+**Still sideways at the root (the turn prompt stays):** creature play (`PlayScene`), the library (`LibraryScene`), Welcome a New Friend's project and ending pages (`ProjectScene`), the Arcade (`ArcadeScene`), the locations (`LocationScene`), and Little surprises and Make my mix on All games at lap and toddler. They are **shell slice 3** below.
+
+### Shell slice 3: the rest of the root's scenes (ready)
+
+Lay out the scenes named above on the 768 × 1024 area, each with a layout test at `UPRIGHT_VIEWS` and one screenshot; Little surprises' stop sheet and Make my mix's table need a narrow layout before All games at lap and toddler can drop its prompt. It matters only on narrow tablets and computers (a phone's root is Today's six alone), so it follows the phone and playtest lines.
 
 ### Game batches
 
