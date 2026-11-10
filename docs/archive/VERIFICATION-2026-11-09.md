@@ -50,3 +50,10 @@ Preschool and pre-K level 11: six pieces, two kinds, two layers, five-place tray
 Ran: `npm run typecheck`; `npm test` (331 files, 6343 tests; 19 Pile Match rule tests: level 11 shapes never fill a 5-place tray, 4 + 2 layers, no shape shared with levels 2/4, band orders, `stepLevel` 3 to 11 to 4, `landing(11, school)` = 5); `BROWSER_SUITE=pilematch` (levels 1, 8, 9, 11, 4; level 11 covered touch and three put-backs uncounted, tray at most 4, 0 misses 0 hints, sticker, sand-look screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=11 FINGER_BAND=prek` (9.9 s).
 
 Not run: build (no shared files or assets changed), offline. Open: iPad play.
+
+## 2026-11-09 — Pile Match slice 4, level 10 Look closely (PR #1444)
+
+School level 10: twelve pieces of four look-alike kinds (two shapes in two colours) on two layers, five-place tray; a blue feather and a white sock join the kinds; a full-tray refusal names colour and shape.
+
+Ran: `npm run typecheck`; `npm test` (331 files, 6346 tests; 24 Pile Match rule tests); `BROWSER_SUITE=pilematch` (level 10 upright: tray filled to five, one refused tap counted once and named by colour and shape, portrait screenshot, solved by taps); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=10` (17.8 s); `npm run build`; an ad-hoc screenshot confirmed the feather and sock art reads.
+Not run: offline, `world`, any iPad or device check. Open: colour-blind reading of the level 10 pairs, a six-year-old's interest and device speech are in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
