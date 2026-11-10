@@ -7,7 +7,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, arrowIcon } from '../../ui/icons';
+import { arrowIcon, turnIcon, undoIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
@@ -122,7 +122,7 @@ class StampStudio implements Game {
         this.colors.push(b);
       }
     this.finish = new RoundButton(arrowIcon(1), swatch.green, 48, () => this.complete());
-    this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () =>
+    this.undo = new RoundButton(undoIcon(), swatch.white, 48, () =>
       this.remove(this.stamps.at(-1) ?? null),
     );
     const binArt = new Graphics()
@@ -140,7 +140,7 @@ class StampStudio implements Game {
     this.bin = new RoundButton(binArt, swatch.white, 48, () => {
       if (this.plan.move) this.remove(this.selected);
     });
-    this.turn = new RoundButton(againIcon(), swatch.white, 48, () => {
+    this.turn = new RoundButton(turnIcon(), swatch.white, 48, () => {
       if (!this.done && this.selected) {
         this.selected.data.turns = (this.selected.data.turns + 1) % 4;
         this.layoutStamp(this.selected);

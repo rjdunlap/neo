@@ -332,7 +332,7 @@ export const SHARED = {
   'room.picture': ['What a lovely picture you made!', 'Look at your picture!'],
   'room.picture-empty': ['Make a picture in Stamp Studio or Rainbow Fingers, and it can hang here!'],
   'room.tune': ['Listen to the song you made!', 'Your very own song!'],
-  'room.friends': ['Who is in the basket? Your friends!'],
+  'room.friends': ['Who is in the nest? Your friends!'],
   'play.library': ['Story time! Let us look at the books.'],
   'library.hello': ['Your books! Tap one: your journal, or a story.'],
   'library.journal': ['Your journal!'],

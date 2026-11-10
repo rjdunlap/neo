@@ -19,12 +19,12 @@ import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import {
   againIcon,
-  arrowIcon,
-  basketIcon,
   crossIcon,
   flipIcon,
   islandIcon,
   magnifierIcon,
+  nestIcon,
+  undoIcon as hookIcon,
 } from '../../ui/icons';
 import { Sparkle } from '../../ui/sparkle';
 import { BOARD, PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
@@ -33,9 +33,9 @@ import { label } from '../../ui/text';
 import { Scene } from '../Scene';
 
 const FRAME = 190;
-/** A small "back" arrow for the buttons that bring back the earlier picture or song. */
+/** A small undo hook for the buttons that bring back the earlier picture or song (not the Back arrow, U2). */
 const undoIcon = () => {
-  const a = arrowIcon(-1);
+  const a = hookIcon();
   a.scale.set(0.7);
   return a;
 };
@@ -82,7 +82,7 @@ export class RoomScene extends Scene {
     this.app.go.journal();
   });
   private readonly ring = new Graphics();
-  /** Friends' way in until RW08's Home (RW05): her friend goes to look in the basket, then Friends opens. */
+  /** Friends' way in until RW08's Home (RW05): her friend goes to look in the nest, then Friends opens. */
   readonly basket = new Container();
   readonly pieces = new Map<RoomItemId, Piece>();
   private picker: StickerPicker | null = null;
@@ -136,7 +136,7 @@ export class RoomScene extends Scene {
   }
 
   private makeBasket() {
-    const art = basketIcon();
+    const art = nestIcon();
     art.scale.set(2.2);
     art.eventMode = 'none';
     this.basket.addChild(new Graphics().ellipse(0, 34, 62, 14).fill({ color: 0x000000, alpha: 0.12 }), art);
@@ -145,7 +145,7 @@ export class RoomScene extends Scene {
     this.ui.addChild(this.basket);
   }
 
-  /** A tap, not a move: her friend goes to see who is in the basket, then Friends opens. */
+  /** A tap, not a move: her friend goes to see who is in the nest, then Friends opens. */
   private async openFriends() {
     if (this.acting) return;
     this.acting = true;

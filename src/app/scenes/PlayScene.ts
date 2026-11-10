@@ -14,14 +14,14 @@ import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { BOARD, PLAQUE, pictureBoard, singTune, TunePlaque } from '../../ui/creation-art';
-import { arrowIcon, basketIcon, houseIcon, libraryIcon } from '../../ui/icons';
+import { arrowIcon, houseIcon, libraryIcon, nestIcon } from '../../ui/icons';
 import { Scene } from '../Scene';
 import { BallPlay } from './ball-play';
 
 /**
  * Creature play at the root (RW06 slice 2, docs/rework/HOME.md#creature-play-playscene), the root's `room`: the ball to
  * throw for her friend as often as she likes, her kept picture and tune drawn from the save as the treehouse draws them,
- * the basket to Friends and the books to the library (RW08 slice 2). Back and Home both return Home. Nothing is kept or counted here: keeping still happens only
+ * the nest to Friends and the books to the library (RW08 slice 2). Back and Home both return Home. Nothing is kept or counted here: keeping still happens only
  * at a round's end, and the ball has no score, sticker or end.
  */
 export class PlayScene extends Scene {
@@ -149,7 +149,7 @@ export class PlayScene extends Scene {
     this.plaque.hitArea = new Rectangle(-PLAQUE.w / 2 - 10, -PLAQUE.h / 2 - 10, PLAQUE.w + 20, PLAQUE.h + 20);
     onTap(this.board, () => void this.viewPicture(), { cooldown: 400 });
     onTap(this.plaque, () => void this.playTune(), { cooldown: 400 });
-    const art = basketIcon();
+    const art = nestIcon();
     art.scale.set(2.2);
     art.eventMode = 'none';
     this.basket.addChild(new Graphics().ellipse(0, 34, 62, 14).fill({ color: 0x000000, alpha: 0.12 }), art);
@@ -237,7 +237,7 @@ export class PlayScene extends Scene {
     this.app.go.library();
   }
 
-  /** Her friend goes to see who is in the basket, then Friends opens. */
+  /** Her friend goes to see who is in the nest, then Friends opens. */
   private async openFriends() {
     if (this.leaving) return;
     this.leaving = true;
