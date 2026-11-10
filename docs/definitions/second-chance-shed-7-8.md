@@ -1,8 +1,10 @@
 # Second Chance Shed, levels 7–8: Picnic Loop (definition)
 
+**Built:** levels 7–8 (PR #1445); nothing further to build here; read “Build resolutions” for where the build departs from the text.
+
 Defined 2026-11-09 as slice **N4** of the [nature-and-sustainability study](../deep-dives/subjects/nature-sustainability.md#build-slices-in-order). It is drawn from the study's [proposed ladder](../deep-dives/subjects/nature-sustainability.md#first-games-proposed-ladder-second-chance-shed) and [rules to define](../deep-dives/subjects/nature-sustainability.md#rules-mistakes-help-and-proof-to-define), and sits on top of the built [levels 5–6](second-chance-shed-5-6.md) (N3, [PR #1057](https://github.com/rjdunlap/neo/pull/1057)). It was read against the current code in `src/games/second-chance-shed/`. Docs only: no level, vessel, voice line or save field below exists yet.
 
-**Status: ready to build**, as batch [second-chance-shed 3](../GAME-BATCHES.md#second-chance-shed-3-picnic-loop), at the new-interaction tier ([check tier](#check-tier)). Every open call has a default ([open decisions](#open-decisions)). The one gate is the same as N2's and N3's: the building session source-checks the picnic set (cups, mug, wash tub) and records the check in its verification entry.
+**Status: built 2026-11-09 ([PR #1445](https://github.com/rjdunlap/neo/pull/1445)); see [build resolutions](#build-resolutions).** Was: ready to build, as batch [second-chance-shed 3](../GAME-BATCHES.md#second-chance-shed-3-picnic-loop), at the new-interaction tier ([check tier](#check-tier)). Every open call has a default ([open decisions](#open-decisions)). The one gate is the same as N2's and N3's: the building session source-checks the picnic set (cups, mug, wash tub) and records the check in its verification entry.
 
 **Fun action and purpose:** friends come to the shed yard for a day of picnics: breakfast and lunch at level 7, then supper too at level 8. Every friend needs a cup at every picnic. The shed has a few good washable cups, a wash tub that washes only two between picnics, and a stack of one-use cups that go to the Last Heap after one drink. She plans the whole day on one board: which cup each friend drinks from at each picnic, and which used cups go in the tub. Then she rings the cart bell. When the plan works, the day plays through: friends sip, cups splash in the tub, one-use cups stack neatly on the Last Heap, and its counter stays within the day's target.
 
@@ -292,3 +294,14 @@ Each has a default the build uses; none blocks it.
 3. **Level 8's case choice.** Default: seeded, half each. Alternative: case B first (its simplest accepted plan, not using the mug, is easier), then A.
 4. **The fourth vessel.** Default: the big mug. Alternative: a fourth cup in green, with level 8's promise moved to one of the cups.
 5. **Clean washes.** Default: allowed and harmless. Alternative: the tub refuses a clean cup, floating it back.
+
+## Build resolutions
+
+Built 2026-11-09 (PR #1445); every open decision took its default (school {4–8}, live heap, seeded case half each, big mug, clean washes allowed). Where the build departs from the text above:
+
+- **Help distance.** "Fewest differing route stops" conflicts with the drop rule (a drop rewrites the end of a route, so inserting a wash before a lunch stop cuts the lunch stop). The build counts, per cup, the stops after the longest start it shares with the target route plus the target's stops after it, plus one-use cups a picnic still needs and one-use cups in a tub or with the painter. Nearest uses the same measure, so every Show me one strictly lowers it; "never removes a stop the nearest keeps" holds for the shared start.
+- **Washable at a picnic.** Show me one takes a spare one-use seat (only when that picnic has more one-use cups than the target needs), else an empty seat, else a seat held by a cup beyond its shared start.
+- **Back drop area.** The shelf and the one-use stack are one "back" drop area (their 24-unit gap was under 2×`PICNIC_PAD`); the bell moved to x 762.
+- **How-to.** "Ring the bell" folds into the first picnic step (cards allow four steps).
+- **Schedules.** `schedules()` includes cups washed and never used again (counts unchanged: 24, 312/61, 93/19, minima 2 and 5, promise-free 4); clean washes are excluded; `checkPicnic` accepts both.
+- **Source check (the gate).** Washable cups and mugs over disposable ones is consistent with EPA, [Reduce, Reuse, Recycle: What you can do](https://www.epa.gov/recycle/what-you-can-do) ("set the table with cloth napkins and reusable dishes, glasses, and silverware"; "reusable containers instead of disposable ones"). The one-use cups' material is never named, so no bin rule is implied; the two-place tub and the target are puzzle constraints, not factual claims.

@@ -3233,7 +3233,7 @@ Deviation from the definition: the authored board's small-board bolts are at y 2
 
 [PR #1429](https://github.com/rjdunlap/neo/pull/1429) delivers dive slices 4–5 together. Level 6 is a 6×5 floor at depth 8, with three moss stones and two gaps: moss supports lying logs and gently refuses standing ones. Its four floors have 3, 3, 4 and 3 starts. Level 7 is a 7×5 floor at depth 12, with a purple-ringed standing switch and two bridge stones. A lying press does nothing; standing raises the bridge, which persists through ordinary rolls and is restored by Undo or Start over. Its four floors have 3, 3, 3 and 4 starts, all requiring the switch. Both levels mirror their floors; levels 1–5 regenerate unchanged. Bridge hints use memoised forward search over pose and bridge flag, while the reversible levels retain reverse search. Spoken support, level-scoped how-to and the ghost finger cover both additions. School, couch and swipes remain gated.
 
-Typecheck, 14 rule tests, 329 unit-test files (6294 passed, 5 skipped), build, filtered real-touch plays and both demonstrations passed; portraits reviewed. [Proof](../VERIFICATION.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). No offline or device/child check was run.
+Typecheck, 14 rule tests, 329 unit-test files (6294 passed, 5 skipped), build, filtered real-touch plays and both demonstrations passed; portraits reviewed. [Proof](VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429). No offline or device/child check was run.
 
 ## Number Nook level 5 Read the new goal (2026-11-08)
 
@@ -3259,3 +3259,7 @@ Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 
 ## Pile Match slice 4, level 10 Look closely (2026-11-09)
 
 [PR #1444](https://github.com/rjdunlap/neo/pull/1444), `claude/pile-match-look-closely`: a blue feather and a white sock (kinds 8, 9), 16 appended variant kinds (10–25) and level 10 (school after 9, 12 · 4 · 2, tray 5, `PILE12` shapes, two silhouettes in two colours). Full-tray refusal names colour and shape. Build details are in the [dive](../deep-dives/pile-match.md#what-was-built-in-this-session).
+
+## Second Chance Shed levels 7-8, slice N4 (2026-11-09)
+
+Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/neo/pull/1445)), batch second-chance-shed 3, [definition](../definitions/second-chance-shed-7-8.md#build-resolutions): school {4–8} levels 7 *Picnic Loop* (breakfast and lunch, target 2) and 8 (supper too, two authored cases, big mug, target 5) with `picnic.ts`, picnic rules in `logic.ts`, 32 rule tests and the `shedpicnic` browser suite. Build resolutions (help distance, seat choice, shared back drop area, schedules) are in the definition and the [game page](../games/second-chance-shed.md). Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-09--second-chance-shed-picnic-loop-78-built-nature-sustainability-n4-pr-1445).
