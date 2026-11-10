@@ -13,6 +13,12 @@ import {
   missKind,
   hintCharge,
   stickerNumber,
+  fracMiss,
+  matchMiss,
+  fracName,
+  fracWords,
+  quarterName,
+  type HopQuestion,
 } from './logic';
 
 describe('Frog Hop', () => {
@@ -161,5 +167,129 @@ describe('Frog Hop support', () => {
     );
     expect(fingerprint).toMatchSnapshot();
     frog.destroy({ children: true });
+  });
+});
+
+describe('Frog Hop, Fraction Landings', () => {
+  const at = (mode: string) => PLANS.find((p) => p.mode === mode)!;
+  const key = (q: HopQuestion) => `${q.start}/${q.jump}/${q.count}/${q.jump2}`;
+
+  it('hops whole numbers of ticks along 0 to 2, with every landing on the nine pads in view', () => {
+    for (const mode of ['frac-hop', 'frac-match']) {
+      const plan = at(mode);
+      expect(plan.unit).toBe(4);
+      for (let seed = 1; seed <= 300; seed++)
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          expect(q.target).toBe(q.start + q.jump! * q.count!);
+          expect(Number.isInteger(q.target)).toBe(true);
+          expect(q.lo).toBe(0);
+          for (const t of [q.start, q.target])
+            (expect(t).toBeGreaterThanOrEqual(0), expect(t).toBeLessThanOrEqual(8));
+          expect([1, 2, 4]).toContain(q.jump);
+          if (mode === 'frac-hop') expect(q.target).toBeLessThanOrEqual(4);
+        }
+    }
+  });
+
+  it('opens Fraction Hop on one half hop from zero, with another half hop, a start past zero and no repeats', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(at('frac-hop'), new Rng(seed));
+      expect(key(qs[0])).toBe('0/2/1/undefined');
+      expect(qs.filter((q) => q.jump === 2).length).toBeGreaterThanOrEqual(2);
+      expect(qs.some((q) => q.start > 0)).toBe(true);
+      expect(new Set(qs.map(key)).size).toBe(5);
+    }
+  });
+
+  it('asks Fraction Match for a card that reaches the same lily with the other hop size', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(at('frac-match'), new Rng(seed));
+      expect(key(qs[0])).toBe('0/2/2/1');
+      expect(new Set(qs.map(key)).size).toBe(5);
+      expect(qs.some((q) => q.target > 4)).toBe(true);
+      qs.forEach((q, i) => {
+        expect(q.start).toBe(0);
+        expect(q.answer2! * q.jump2!).toBe(q.target);
+        expect(q.jump2).not.toBe(q.jump);
+        expect(GAP_CARDS).toContain(q.answer2);
+        expect(q.count).toBeLessThanOrEqual(4);
+        if (i > 0) {
+          expect(q.target).not.toBe(qs[i - 1].target);
+          expect(q.answer2).not.toBe(qs[i - 1].answer2);
+        }
+      });
+    }
+  });
+
+  it('names every wrong pad, the most telling slip first', () => {
+    for (const mode of ['frac-hop', 'frac-match'])
+      for (let seed = 1; seed <= 100; seed++)
+        for (const q of makeQuestions(at(mode), new Rng(seed)))
+          for (let pad = 0; pad < WINDOW; pad++) {
+            const kind = fracMiss(q.start, q.jump!, q.count!, pad);
+            expect(kind === 'correct').toBe(pad === q.target);
+            if (kind === 'backward') expect(pad).toBeLessThanOrEqual(q.start);
+            if (kind === 'size') expect(pad).toBe(q.start + (q.jump === 1 ? 2 : 1) * q.count!);
+            if (kind === 'whole') (expect(q.jump).toBeLessThan(4), expect(pad).toBe(q.start + 4 * q.count!));
+            if (kind === 'one-more') expect(pad).toBe(q.target + 1);
+            if (kind === 'one-less') expect(pad).toBe(q.target - 1);
+          }
+    // A half hop answered with one-tick hops is a size slip before a one-off count.
+    expect(fracMiss(0, 2, 1, 1)).toBe('size');
+    // Quarter hops answered with half hops, then with whole hops.
+    expect(fracMiss(0, 1, 2, 4)).toBe('size');
+    expect(fracMiss(0, 1, 1, 4)).toBe('whole');
+    expect(fracMiss(1, 1, 2, 4)).toBe('one-more');
+    expect(fracMiss(2, 1, 1, 2)).toBe('backward');
+    expect(fracMiss(0, 1, 3, 1)).toBe('count');
+  });
+
+  it('names a wrong card: the first count again, then one off, then a miscount', () => {
+    const q = makeQuestions(at('frac-match'), new Rng(1))[0];
+    expect(matchMiss(q, 4)).toBe('correct');
+    expect(matchMiss(q, 2)).toBe('same');
+    expect(matchMiss(q, 5)).toBe('one-more');
+    expect(matchMiss(q, 3)).toBe('one-less');
+    expect(matchMiss(q, 1)).toBe('count');
+  });
+
+  it('names ticks 0 to 2 in glyphs and words that agree, with a quarter name only for even ticks', () => {
+    expect(Array.from({ length: 9 }, (_, t) => fracName(t))).toEqual([
+      '0',
+      '¼',
+      '½',
+      '¾',
+      '1',
+      '1¼',
+      '1½',
+      '1¾',
+      '2',
+    ]);
+    expect(fracName(6)).toBe('1½');
+    expect(fracWords(6)).toBe('one and a half');
+    for (let t = 0; t <= 8; t++) {
+      expect(fracWords(t)).toBeTruthy();
+      expect(quarterName(t) !== undefined).toBe([2, 4, 6, 8].includes(t));
+    }
+    expect(quarterName(2)).toBe('two quarters');
+  });
+
+  it('points the ghost finger at the right pad, and at Fraction Match the right card after the flag', () => {
+    for (const mode of ['frac-hop', 'frac-match'] as const)
+      for (let seed = 1; seed <= 100; seed++)
+        for (const q of makeQuestions(at(mode), new Rng(seed))) {
+          expect(answerSlot(mode, q, q.lo)).toBe(q.target);
+          if (mode === 'frac-match') expect(GAP_CARDS[answerSlot(mode, q, q.lo, true)]).toBe(q.answer2);
+        }
+  });
+
+  it('puts both levels at the top of school only, and the voice lines carry their slots', () => {
+    const fl = PLANS.length;
+    expect(at('frac-match')).toBe(PLANS[fl - 1]);
+    expect(at('frac-hop')).toBe(PLANS[fl - 2]);
+    expect(frogHop.levels('prek').max).toBeLessThan(fl - 1);
+    for (const n of ['{where}', '{hops}']) expect(SCRIPT['hop.frac'][0]).toContain(n);
+    expect(SCRIPT['hop.frac.second'][0]).toContain('{size}');
+    for (const n of ['{first}', '{second}', '{name}']) expect(SCRIPT['hop.frac.same'][0]).toContain(n);
   });
 });

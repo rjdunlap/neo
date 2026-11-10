@@ -205,7 +205,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 10. **Level 12, Big hops and little hops** (define first with a child). A prototype before the full slice.
 11. **Level 13, Where does it go?** (decision 5), then the grown-up window (G1–G5, decision 6) after Lands stage B or a couch-side plan table.
 12. **Sketches**: hops of 2 and 5, a vertical line.
-13. **Fraction Landings FL1–FL2** (defined 2026-11-09, [definition](../definitions/frog-hop-fraction-landings.md); school; new-levels tier plus one landscape and one portrait screenshot of FL2; either order with slices 4, 5 and 7).
+13. **Fraction Landings FL1–FL2** (built 2026-11-10, [PR #1449](https://github.com/rjdunlap/neo/pull/1449); school levels 9 `frac-hop` and 10 `frac-match`, appended, no `order`; [definition](../definitions/frog-hop-fraction-landings.md)). Slices 4, 5 and 7 now take the next free IDs, 11 onward.
 
 ## What was built in this session
 

@@ -3249,7 +3249,7 @@ Typecheck, 14 rules, 217 content/registry tests (1 skipped), build, lint, filter
 
 [PR #1432](https://github.com/rjdunlap/neo/pull/1432) completes [Number Nook slice 6](../deep-dives/number-nook.md#build-slices-in-order). The 4×4 row-order board starts exactly 30 slides away. Hint searches up to 60,000 nodes before offering a route that completes the top row, the left column and the remaining 3×3. The hint and ghost finger share the route, and the finish compares the player's slide count with the verified starting optimum. The grown-up range is 1–7. The school opening and couch course still await decisions.
 
-Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 43.3 s demonstration passed. The portrait was reviewed. [Checks](../VERIFICATION.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432). Offline and real-device checks were not run.
+Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 43.3 s demonstration passed. The portrait was reviewed. [Checks](VERIFICATION-2026-11-09.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432). Offline and real-device checks were not run.
 
 ## Lift It levels 7–8 Three ropes (2026-11-09)
 
