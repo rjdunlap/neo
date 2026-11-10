@@ -5,10 +5,10 @@ vi.mock('../audio/music', async (real) => ({
   ...(await real<object>()),
   music: { play: vi.fn(), stop: vi.fn() },
 }));
-// Text can't be measured without a canvas; a card's name pill only needs a width.
+// Text can't be measured without a canvas; a card's or a button's name pill only needs a place.
 vi.mock('./text', async (real) => {
   const { Container } = await import('pixi.js');
-  return { ...(await real<object>()), label: () => new Container() };
+  return { ...(await real<object>()), label: () => new Container(), namePill: () => new Container() };
 });
 vi.mock('../audio/sfx', () => ({ sfx: new Proxy({}, { get: () => () => {} }) }));
 import { swatch } from '../art/palette';
@@ -89,6 +89,8 @@ describe('buttons and cards with a finish (RW14 slice 7)', () => {
       expect(circle(s.who).radius).toBe(CORNER_RADIUS + 14);
       for (const b of [s.play, s.explore]) if (b) expect(circle(b).radius).toBe(ACTION_RADIUS + 14);
       expect(s.explore.children[1]).toBeDefined();
+      // Each carries its name (U1) after its picture, so the picture keeps its place.
+      for (const b of [s.who, s.play, s.explore, s.daily]) if (b) expect(b.children.length).toBe(3);
     }
   });
 

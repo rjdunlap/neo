@@ -1,3 +1,4 @@
+import { nameBelow } from '../content/button-names';
 import { BACK, type Spot } from './friends-layout';
 
 /**
@@ -23,6 +24,11 @@ export const GUIDE_CORNER = { w: 200, h: 200 };
 export const LINK_CORNER = { w: 300, h: 100 };
 /** Home's top-right corner: the grown-ups' gear, with the island-games link below it until RW08's cutover. */
 export const GEAR_CORNER = { w: 300, h: 150 };
+/**
+ * How wide each Home button's name (U1) may be: Who's playing in its corner, Explore and Today's six side by side (160
+ * apart), and Continue and Play with {pet}, each alone in its row by the right edge.
+ */
+export const HOME_NAME_W = { who: 2 * BACK.x - 8, pair: 150, alone: 216 } as const;
 /** The tune plaque's height (`PLAQUE` in `src/ui/creation-art.ts`, which this Pixi-free module does not import). */
 const PLAQUE_H = 130;
 
@@ -91,10 +97,11 @@ export function homeLayout(v: { w: number; h: number }, young: boolean, project 
   // The youngest's Today's six stands well above the grass; an older Explore can sit low, so the floor (unused without the ball) keeps left of it.
   // (On a tall view, upright, every button stands well above the floor, so it runs as far right as the youngest's.)
   const floorY0 = Math.max(backdrop.floorTop + 40, v.h - 220);
-  const clear = young || explore.y + ACTION_RADIUS + BALL_RADIUS < floorY0;
+  // The buttons' names (U1) reach below them and out past their sides; the ball keeps clear of those too.
+  const clear = young || explore.y + nameBelow(ACTION_RADIUS) + BALL_RADIUS < floorY0;
   const floor = {
     x0: GUIDE_CORNER.w + BALL_RADIUS,
-    x1: (clear ? right : daily.x) - ACTION_RADIUS - BALL_RADIUS - 30,
+    x1: (clear ? right : daily.x) - Math.max(ACTION_RADIUS, HOME_NAME_W.pair / 2) - BALL_RADIUS - 30,
     y0: floorY0,
     y1: v.h - BALL_RADIUS - 20,
   };

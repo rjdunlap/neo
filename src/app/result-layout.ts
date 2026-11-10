@@ -3,6 +3,9 @@ import type { View } from '../engine/view';
 /** The result's buttons (`GameScene.showResult`): Again, Next level and the way out are 132 units, the heart and Keep 112, the house 100. */
 export const RESULT_RADIUS = { again: 66, next: 66, home: 66, heart: 56, keep: 56, house: 50 } as const;
 
+/** How wide each button's name may be at the root (U1): the way out and the house stand 136 to 140 apart. */
+export const RESULT_NAME_W = { again: 160, next: 160, home: 126, heart: 140, keep: 140, house: 126 } as const;
+
 export interface Spot {
   x: number;
   y: number;

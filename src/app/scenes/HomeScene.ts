@@ -5,7 +5,8 @@ import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { makeCompanion, type Companion } from '../../creatures/companion';
-import { ACTION_RADIUS, CORNER_RADIUS, homeLayout } from '../../creatures/home-layout';
+import { HOME_NAMES, playName } from '../../content/button-names';
+import { ACTION_RADIUS, CORNER_RADIUS, HOME_NAME_W, homeLayout } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -40,26 +41,26 @@ export class HomeScene extends Scene {
   readonly pet: Companion = this.track(makeCompanion());
   readonly who = new RoundButton(peopleIcon(), swatch.white, CORNER_RADIUS, () =>
     this.leave('home.who', () => this.app.go.start()),
-  );
+  ).named(HOME_NAMES.who, HOME_NAME_W.who);
   /** Welcome a New Friend (RW07): drawn while the project is open and hers, never empty. */
   readonly cont: RoundButton | null =
     !this.young && showsContinue(store.welcome, store.data.profile.band)
       ? new RoundButton(basketIcon(), swatch.orange, ACTION_RADIUS, () =>
           this.leave('home.continue', () => this.app.go.project()),
-        )
+        ).named(HOME_NAMES.continue, HOME_NAME_W.alone)
       : null;
   readonly play: RoundButton | null = this.young
     ? null
     : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () =>
         this.leave('home.play', () => this.app.go.room()),
-      );
+      ).named(playName(voice.pet), HOME_NAME_W.alone);
   readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () =>
     this.leave('home.explore', () => this.app.go.explore()),
-  );
+  ).named(HOME_NAMES.explore, HOME_NAME_W.pair);
   /** Today's six (D10): six games for the day at preset levels, for every band; its Back comes Home. */
   readonly daily = new RoundButton(sixIcon(), swatch.white, ACTION_RADIUS, () =>
     this.leave('daily.go', () => this.app.go.daily()),
-  );
+  ).named(HOME_NAMES.daily, HOME_NAME_W.pair);
   readonly toy: BallPlay | null = this.young
     ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')))
     : null;
