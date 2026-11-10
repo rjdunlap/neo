@@ -103,7 +103,7 @@ Level 4 *First numbers* is the appended easy entry (stable ID 4, preschool `orde
 Each is sized for one session. A slice that adds a level is built in level order, extends `PLANS`, `LEVELS` (with `order`/`entryLevels` where stated), `describeLevel`, bounded how-to `LevelLine`s, the README row and [GAMES.md](../GAMES.md).
 
 1. **The flying hint, looks and a rising tune** (built 2026-11-07, PR #1372). Reuse Letter Trails' exported helpers; draw the look after the numeral and the thing. Tier: typecheck, rule tests (hint due at the second wander, the shown stretch moves forward, a seed's numeral unchanged by the look), `fingerdemo` at 1 and 3.
-2. **More things and arrangements** (ready). Tier: typecheck, rule tests (every kind has a plural and fits its 120-unit circle; every arrangement at every supported view keeps 128-unit gaps inside the room), one portrait screenshot of a ring of nine.
+2. **More things and arrangements** (ready; claimed 2026-11-10 by `claude/number-trails-things-arrangements`). Tier: typecheck, rule tests (every kind has a plural and fits its 120-unit circle; every arrangement at every supported view keeps 128-unit gaps inside the room), one portrait screenshot of a ring of nine.
 3. **Check the digits against the HWT chart** (ready once the chart is opened; decided 2026-10-23). Tier: `digits.test.ts`, `fingerdemo` at 2; note sticker redraws.
 4. **Level 4, *First numbers*** (ready). Tier: typecheck, rule tests (draws, order, landing), browser play of 4 and `fingerdemo` at 4.
 5. **Level 5, *Write how many*** (ready; a new interaction). Tier: typecheck, unit tests, one scripted play (a ring of three, one wrong card, the glow, zero), one portrait screenshot.
