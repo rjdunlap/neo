@@ -98,3 +98,9 @@ Typecheck, formatting, build, lint and 327 targeted tests passed across 15 files
 At `GAME_URL=http://localhost:5196`, `BROWSER_SUITE=uprightgames PHONE_ONLY=hat-band,crossword,picture-logic,tile-pairs,gem-swap,lantern-lights` passed. Chromium touches started Check in Hat Band 4 after four touches. Crossword 5/6, Picture Logic 5/7, Tile Pairs 1/6, Gem Swap 1/8 and Lantern Lights 1/9 each finished with one sticker.
 One screenshot per game reviewed at 390 × 844. Smallest targets, rounded to CSS pixels, were 51 for Hat Band, Tile Pairs and Lantern Lights, and 45 for Crossword, Picture Logic and Gem Swap. The Picture Logic test also checked the controller layout width.
 Hat Band’s encore exceeded the 90-second headless cutoff on initial attempts, so its sticker is unverified. [Real-phone playtest](DEVICE-CHECKS-2026-11-09.md#grown-up-upright-games-batch-2) remains open. Offline verification was outside this layout slice. After integrating Frog Hop from `6b202ea1`, typecheck, 85 targeted tests and link checks passed. The upright play evidence still applies to the same six games.
+
+## 2026-11-09 — Mossy Path slice 2, level 8 *A little patch*
+
+Changed: `mossy-path` level 8 (pre-K, school; five frozen `PATCHES`, a free far tap with pulse), registry `order`s, how-to steps and level-7 line caps.
+Ran: `npm run typecheck`; `npm test` (332 files, 6401 passed); `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=patch` (free far tap with pulse, counted visited tap, portrait screenshot with cells at least 100, finish, one sticker) PASS; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=8` PASS (pre-K, 6.3 s).
+Not run: other suites, offline, an iPad, a child.
