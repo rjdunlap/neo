@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — Number Trails slice 2, more things and arrangements (PR #1453)
+
+Changed: `number-trails` `THINGS` 3 to 8 kinds (new `things.ts`, `drawThing` recenters and scales to the tap circle); `ARRANGEMENTS` rows, twoRows, pairs, ring with a rows fallback.
+Ran: `npm run typecheck`; number-trails tests (3 files, 26: every arrangement at counts 0–12 and five views, seed stability, every kind's Pixi bounds); targeted vitest of number-trails, registry, content and scripts (34 files); one scripted portrait play of level 3 (ring of nine lemons, six woken, sticker, no page errors, screenshot reviewed).
+Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Local full `npm test` had 8–9 unrelated timing failures in other games under load (CI runs the full suite).
+
 ## 2026-11-09 — Docs streamlined for the phone-playtest focus (docs only, PR #1452)
 
 **Changed:** device, child and controller checks are parked ([DEVICE-CHECKS](DEVICE-CHECKS.md) is one short page; its 616 items are in [the archive](archive/DEVICE-CHECKS-2026-11-09.md)); [WAITING-ON-DEVELOPER](WAITING-ON-DEVELOPER.md) is two rows; the roadmap, READY, AGENTS.md, the session guide, the docs-keeper agent and the dive template name the phone focus and stop repeating either list; 82 coverage caveats lost their device-only clauses; [OBSERVATIONS](OBSERVATIONS.md) and the README's phone section describe the playtest loop; four loose docs and the removed roadmap text moved to [the archive](archive/README.md).
@@ -85,20 +91,6 @@ Preschool and pre-K level 11: six pieces, two kinds, two layers, five-place tray
 Ran: `npm run typecheck`; `npm test` (331 files, 6343 tests; 19 Pile Match rule tests: level 11 shapes never fill a 5-place tray, 4 + 2 layers, no shape shared with levels 2/4, band orders, `stepLevel` 3 to 11 to 4, `landing(11, school)` = 5); `BROWSER_SUITE=pilematch` (levels 1, 8, 9, 11, 4; level 11 covered touch and three put-backs uncounted, tray at most 4, 0 misses 0 hints, sticker, sand-look screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=11 FINGER_BAND=prek` (9.9 s).
 
 Not run: build (no shared files or assets changed), offline. Open: iPad play.
-
-## 2026-11-09 — Pile Match slice 2, level 9 A smaller tray (PR #1438)
-
-School level 9 replays level 7's 18-piece heap with a four-place tray (count by threes to 18). Added `tray: 3 | 4 | 5`; school band is now 5–9; no voice-line or bot changes.
-
-Ran: `npm run typecheck`; `npm test` (331 files, 6330 tests; 17 Pile Match rule tests: every board clears along its route at `t = 4` with the tray never above 2, a full four-place tray is reachable, hint search at levels 8 and 9 under 250 ms, hints legal and non-looping); `BROWSER_SUITE=pilematch` (level 9 four slots drawn, tray filled to four with no three, one refused tap = one miss, screenshot, solved by the ghost finger's choices, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=9` (26.8 s).
-
-Not run: build (no shared files or assets changed), offline, `world`. Open: iPad play of the four-place tray.
-
-## 2026-11-09 — Marble Jump slice 4: level 9 A bigger triangle (PR #1428)
-
-Changed: level 9, a six-row 21-hole triangle (20 marbles, all 21 starts clear), range 1–9; a closer-packed `boardLayout` (hit circles still 78 across); a frozen `BIG_FEWEST` table for the fewest-moves line; recovery cost measured (worst cold dead-end check about 5,000 boards, 2 ms).
-Ran: `npm run typecheck`; `npm test` (331 files, 6328 passed; a first run under load had 8 timeouts, a clean rerun passed); `BROWSER_SUITE=marblejump` (adds level 9 at 1024×768 and 768×1024: bottom row above the buttons, one miss, one hint, finish with the moves line, one sticker; two screenshots); `fingerdemo` with `FINGER_ONLY=marble-jump FINGER_LEVELS=9` (45.1 s); `npm run build`.
-Not run: offline. The `marble.go9` line is not rendered as a clip; device speech and enjoyment open.
 
 ## Coverage summary
 
@@ -240,7 +232,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `livekeys` (eleven games, keys and back to touch) | 2026-10-15: the 2026-10-13 eight (Sudoku Garden, Word Search, Island Bridges, Picture Logic, Pond Conga, Tile Pairs, Gem Swap, Lantern Lights) plus Bouncy Launch L3, Ferry Jam L3 and Penguin Slide L2 (`LIVE_ONLY` filter), each touch → key → touch → key → touch; no page errors. The eight were not re-run after group 3; no real pad or iPad |
 | `landkeys` (focus rings on the map and the lands) | 2026-10-13: ring hidden for a finger, first key only shows it, arrows, Backspace (nothing on the map, back from a land), held Enter through map-to-land, Enter on the host, tap with the ring showing; landscape and portrait screenshots | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--focus-rings-on-the-map-and-the-lands-lands-stage-c2) / [PR #271](https://github.com/rjdunlap/neo/pull/271) | Synthetic keys only: no real keyboard or pad, no iPad or TV; the home spots, picnic, stickers, treehouse, journal and hatching have no ring yet |
 | `fruitsums`, `fingerdemo` (`fruit-sums`) | 2026-11-09 (slice 5): `fruitsums` PASS (level 7 with `FROM_LEVEL=7`: wrong product as a miss, a times way, a way with another sign, portrait; levels 1–6 from earlier slices), `fingerdemo` at 7 (14.2 s), typecheck, 333 files / 6435 tests | PR #1451 | Levels 1–6 not re-played in slice 5; no build, world, offline or couch run |
-| `numbertrails`, `fingerdemo` (`number-trails`) | 2026-11-07 (slice 1): `fingerdemo` at levels 1 and 3 clean (5.2 s, 9.2 s), typecheck, 322 files / 6035 tests; 2026-10-13: levels 1 and 3 (wandering drags give two misses and one hint, the count, waking from a bigger group), portrait, one sticker per round | Number Trails entry / [PR #1372](https://github.com/rjdunlap/neo/pull/1372) | Hint flight not played in a browser; interim numeral forms unchecked against a publisher's chart |
+| `numbertrails`, `fingerdemo` (`number-trails`) | 2026-11-10 (slice 2): typecheck, 26 number-trails tests, one portrait play of a ring of nine; 2026-11-07 (slice 1): `fingerdemo` at levels 1 and 3 clean (5.2 s, 9.2 s), typecheck, 322 files / 6035 tests; 2026-10-13: levels 1 and 3 (wandering drags give two misses and one hint, the count, waking from a bigger group), portrait, one sticker per round | Number Trails entries / [PR #1453](https://github.com/rjdunlap/neo/pull/1453), [PR #1372](https://github.com/rjdunlap/neo/pull/1372) | Hint flight not played in a browser; interim numeral forms unchecked against a publisher's chart |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
 | `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |
 | `gemswap`, `fingerdemo`/`couchgames` (`gem-swap`) | 2026-11-08 (slice 5, `gemswap` levels 1 and 8, refused iced tap, portrait screenshot at 8, passed twice; `fingerdemo` level 8 before the frost redraw; typecheck, units, build; no device speech or person's play; level 7 stone tap now unit-tested only); 2026-11-07 (slice 3, `gemswap` levels 1 and 6, rejected swaps, hint, undo/restart, portrait targets and screenshot at 6; `fingerdemo` level 6); 2026-10-12 couch demos and controller bot | Gem Swap slice 5 entry / [PR #1423](https://github.com/rjdunlap/neo/pull/1423) | `couchgames` and offline not run (trip mapping unchanged); fall, 6×6 and frost readability, `gem-swap.long`/`gem-swap.iced` device speech and real devices/person play open |
