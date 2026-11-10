@@ -65,7 +65,7 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 | 2 (built) | grown-up: a second game per kind, and music | `hat-band` (music), `crossword` (words), `picture-logic` (logic), `tile-pairs` (noticing), `gem-swap` (space), `lantern-lights` (logic) |
 | 3 (built) | grown-up: the rest of the smaller boards | `block-garden`, `logic-grid`, `species-comeback`, `pyramid-solitaire` |
 | 4 (built) | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
-| 5 | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
+| 5 (built) | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
 | 6 onward | one band at a time | six games of six different kinds at the band the developer is playing, chosen from those Today's six shows most; games from the sweep's fits-as-is list first (cheapest), then small fixes |
 
 The order of batches 2 to 5 was changed on 2026-11-09, when the phone became the grown-ups' daily playtest: the [roadmap's recommendations](../ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09) give the reasons and what follows the grown-up games (the upright sweep of the early-school games, built the same day and recorded [below](#the-upright-sweep-built-2026-11-09), then batches by kind).
@@ -77,6 +77,8 @@ Batch 2 brings the grown-up upright pool to 12 games across seven kinds. The [ba
 Batch 3 brings the grown-up upright pool to 16 games across the same seven kinds. The [batch closeout](../archive/COMPLETED-2026-10-09.md#grown-up-upright-games-batch-3-chunk-31-2026-11-09) records the layouts and checks.
 
 Batch 4 brings the grown-up upright pool to 19 games, every game that lists the grown-up band. The [batch closeout](../archive/COMPLETED-2026-10-09.md#grown-up-upright-games-batch-4-chunk-31-2026-11-09) records the layouts and checks.
+
+Batch 5 brings the upright-ready games to 25, adding the lap and toddler six (`far-lights`, left unjudged by the sweep, is now laid out). The [batch closeout](../archive/COMPLETED-2026-10-09.md#lap-and-toddler-upright-games-batch-5-chunk-31-2026-11-09) records the layouts and checks.
 
 ### The upright sweep (built 2026-11-09)
 

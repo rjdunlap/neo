@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Lap and toddler upright games, batch 5 (chunk 31, 2026-11-09)
+
+Branch `claude/upright-lap-toddler-batch-5` sets `upright: true` on Bubble Pop, Sing-Along Barn, Animal Snack, Size Parade, Far Lights and Stamp Studio; the upright-ready list is 25 games. Bubble Pop (start box named `spawnBox`) and Size Parade fit as is. Animal Snack's `spotEdges`/`snackXs` run the feeding spot 160..w-20 on the narrow upright area so five 110-wide snacks stay apart. Sing-Along Barn's `rowXs` (row starts at 170 upright, clear of the pet) and `cardSpots` (up to ten song cards in two rows) moved to `logic.ts`. Far Lights had returned null (a dark screen) at every level upright; the strip and window now run full width below Home and "?", the window capped at 820 tall, the curtain tassel just below the strip's right end, and level 8's pair moves right; sideways is unchanged. Stamp Studio's `stampLayout` puts the paper at the left edge below Home (578 wide), Play and Undo in the right column, stamps in the bottom row and colours from x 175. The shell's `GameScene.placeTip` moves the lap and toddler grown-up tip below Home and "?" (y 220) upright, because the tip was wider than the 768 area and covered Home; sideways and iPad are unchanged.
+
+The [verification entry](../VERIFICATION.md#2026-11-09--lap-and-toddler-upright-games-batch-5-chunk-31) records the checks: the new `upright-batch-5.test.ts` holds every game to the 100-unit minimum and at least 50 px for the smallest target at 390 × 844.
+
 ### Grown-up upright games batch 4 (chunk 31, 2026-11-09)
 
 PR #1457 (`claude/upright-grownup-batch-4`) adds upright phone play for Log Roll, Marble Jump and Snowball Merge; the grown-up upright pool is now 19 games, every game that lists the grown-up band. Log Roll's layout moved into the exported `logRollLayout(v, floor)`: upright, the floor starts at y 230 (below Home and "?") and centres in the tall view, with stones up to 112 units (smallest 88 units on the 8-wide level 4 floor on a short view, 76 sideways). Snowball Merge's `snowballLayout(v)` grows upright cells to 160 (128 sideways). Marble Jump needed no layout change: `boardLayout` already fits. Sideways layouts are unchanged.
