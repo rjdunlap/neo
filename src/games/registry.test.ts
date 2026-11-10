@@ -583,8 +583,9 @@ describe('grown-up tips held to her band (U5a)', () => {
         t.toLowerCase(),
       );
       const asks = ASKS.filter((a) => read.some((t) => t.includes(a)));
-      if (PENDING_U5B.includes(mod.id)) continue;
-      expect(asks, `${mod.id}: ${tip}`).toEqual([]);
+      // A pending game must still ask (so a tip fixed in U5b leaves the list); every other game must not.
+      if (PENDING_U5B.includes(mod.id)) expect(asks, `${mod.id} still pending: ${tip}`).not.toEqual([]);
+      else expect(asks, `${mod.id}: ${tip}`).toEqual([]);
     }
   });
 
