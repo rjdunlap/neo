@@ -233,7 +233,7 @@ class SandTable implements Game {
     this.replayNode.hitArea = new Rectangle(-l.pail.w / 2, -l.pail.h / 2, l.pail.w, l.pail.h);
     if (this.state.wind) {
       const left = this.state.wind === 'left';
-      this.deco.node.position.set(left ? t.x - 2 : t.x + t.w + 2, t.y - 40);
+      this.deco.node.position.set(left ? t.x + 46 : t.x + t.w - 46, t.y + 48);
     }
     this.pailNode.position.set(l.pail.x + l.pail.w / 2, l.pail.y + l.pail.h / 2);
     this.pailNode.hitArea = new Rectangle(-l.pail.w / 2, -l.pail.h / 2, l.pail.w, l.pail.h);
@@ -301,16 +301,13 @@ class SandTable implements Game {
       }
       return;
     }
-    // where the sand grew keeps a different tint
+    // where the sand grew keeps a different tint: one tinted grain per grain gained, just under the surface
     for (let c = 0; c < COLS; c++) {
-      const grew = Math.min(this.disp[c], p.after[c]) - p.before[c];
-      if (grew > 0.05) {
-        const top = this.topY(this.disp[c]);
-        g.roundRect(this.colX(c) - l.colW / 2 + 3, top + 4, l.colW - 6, grew * l.rowH - 4, 8).fill({
-          color: MOVED,
-          alpha: 0.75,
-        });
-      }
+      const grew = Math.round(Math.min(this.disp[c], p.after[c]) - p.before[c]);
+      for (let k = 0; k < grew; k++)
+        g.circle(this.colX(c), this.topY(this.disp[c]) + (k + 0.75) * l.rowH, Math.min(16, l.rowH * 0.32))
+          .fill(MOVED)
+          .stroke({ width: 3, color: MOVED_LINE });
     }
     // the surface from before, dashed
     const pts = p.before.map((h, c) => ({ x: this.colX(c), y: this.topY(h) }));
@@ -572,8 +569,8 @@ class SandTable implements Game {
     const left = this.state.wind !== 'right';
     drawBreezeLines(
       this.windLines,
-      left ? l.tray.x + 10 : l.tray.x + l.tray.w - 10,
-      l.tray.y + 20,
+      left ? l.tray.x + 90 : l.tray.x + l.tray.w - 90,
+      l.tray.y + 30,
       left ? 1 : -1,
       0.25 + this.gust * 0.75,
     );
