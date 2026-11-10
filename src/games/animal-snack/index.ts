@@ -10,7 +10,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
@@ -30,6 +30,8 @@ import {
   FRIEND_SCALE,
   friendFeet,
   friendXs,
+  snackXs,
+  spotEdges,
   makeRounds,
   nearestFriend,
   SCENE_SPECS,
@@ -229,7 +231,7 @@ class AnimalSnack implements Game {
     const xs = friendXs(this.friends.length, v.w);
     this.friends.forEach((f, i) => f.node.position.set(xs[i], friendFeet(v.h)));
     const loose = this.snacks.filter((s) => !s.eaten);
-    const fx = spread(loose.length, 220, v.w - 80, 140);
+    const fx = snackXs(loose.length, v.w);
     loose.forEach((s, i) => {
       if (s.drag?.dragging) return;
       s.node.position.set(fx[i], v.h - 85);
@@ -242,8 +244,7 @@ class AnimalSnack implements Game {
   /** The snacks' place at the bottom: a picnic blanket in the meadow, a trough in the orchard, a tin tub in the garden, a big bowl at dusk. */
   private drawSpot(v: View) {
     const g = this.spot.clear();
-    const left = 170;
-    const right = v.w - 50;
+    const { left, right } = spotEdges(v.w);
     const mid = (left + right) / 2;
     switch (SCENE_SPECS[this.scene].spot) {
       case 'blanket':
@@ -863,6 +864,7 @@ export const animalSnack: GameModule = {
   challenge: 'words',
   skills: ['animals', 'words', 'matching', 'counting'],
   bands: ['lap', 'toddler', 'preschool'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,

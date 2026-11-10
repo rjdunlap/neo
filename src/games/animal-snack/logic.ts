@@ -156,6 +156,14 @@ export const FRIEND_HIT = { y: -125, r: 190 };
 export const friendXs = (n: number, w: number) => spread(n, 200, w - 60, 270);
 export const friendFeet = (h: number) => h * 0.64;
 
+/**
+ * The feeding spot's edges and its snacks' places across a view `w` wide. On the narrow upright area (chunk 31) the spot
+ * reaches from just right of the guide to the edge, so five 110-wide snacks keep apart.
+ */
+export const spotEdges = (w: number) => (w < 900 ? { left: 160, right: w - 20 } : { left: 170, right: w - 50 });
+export const snackXs = (n: number, w: number) =>
+  w < 900 ? spread(n, spotEdges(w).left, spotEdges(w).right, 140) : spread(n, 220, w - 80, 140);
+
 /** The orchard tree's canopy across the left of the view (drawn in `drawDecor`). */
 const ORCHARD_TREE = { left: 10, right: 220 };
 

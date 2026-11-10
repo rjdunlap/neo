@@ -174,6 +174,16 @@ export interface DemoBubble extends Reachable {
   rainbow?: boolean;
 }
 
+/**
+ * Where a new bubble of radius `r` may start in a `w` × `h` view: a still one (count and bonds) anywhere right of Home, "?"
+ * and the guide and below the sign, a rising one just below the bottom edge, right of the guide's column. Ranges of its middle.
+ */
+export function spawnBox(w: number, h: number, r: number, still: boolean) {
+  return still
+    ? { x: [150 + r, w - 50 - r], y: [130 + r, h - 60 - r] }
+    : { x: [130 + r, w - 40 - r], y: [h + r + 10, h + r + 10] };
+}
+
 /** Whether a bubble's middle is comfortably on the screen (half its radius in), so a finger can reach it. A bubble rising in from below counts as soon as it shows. */
 export const inReach = (b: Reachable, w: number, h: number) =>
   b.x >= b.r / 2 && b.x <= w - b.r / 2 && b.y >= b.r / 2 && b.y <= h - b.r / 2;

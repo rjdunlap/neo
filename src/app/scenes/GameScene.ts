@@ -285,8 +285,7 @@ export class GameScene extends Scene {
     this.pet.position.set(74, view.h - 18);
     this.home.position.set(62, 62);
     this.help.position.set(62, 160);
-    this.tip?.position.set(view.w / 2, 16);
-    this.tip?.scale.set(textBoost(view.scale));
+    if (this.tip) this.placeTip(this.tip);
     this.helpCard?.layout(view);
     this.layoutResult(view);
   }
@@ -1288,6 +1287,16 @@ export class GameScene extends Scene {
   }
 
   /** A small card for the grown-up, which fades after a few seconds or when tapped. */
+  /**
+   * The tip at the top centre, its small text boosted on a phone; on the narrow upright area (chunk 31) a tip that would
+   * cover Home and "?" moves down below them instead.
+   */
+  private placeTip(card: Container) {
+    const v = this.view;
+    card.scale.set(textBoost(v.scale)); // small text stays readable on a phone
+    card.position.set(v.w / 2, v.w / 2 - card.width / 2 < 124 ? 220 : 16);
+  }
+
   private showTip(template: string) {
     const name = store.data.profile.name.trim() || 'your little one';
     const body = new Text({
@@ -1322,8 +1331,7 @@ export class GameScene extends Scene {
     );
     card.alpha = 0;
     // `resize` only moves a tip that already exists, and a tip made after the first resize (once Play is pressed) would sit at the origin, over the home button.
-    card.position.set(this.view.w / 2, 16);
-    card.scale.set(textBoost(this.view.scale)); // small text stays readable on a phone
+    this.placeTip(card);
     const dismiss = () => {
       if (this.tip !== card) return;
       this.tip = null;

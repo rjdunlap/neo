@@ -498,8 +498,10 @@ describe('game registry', () => {
   it('lists the upright-ready games (chunk 31), so the converted set is inspectable', () => {
     // Add a batch here as it lands (docs/definitions/phone-portrait.md).
     const upright = [
+      'animal-snack',
       'block-garden',
       'brain-break',
+      'bubble-pop',
       'crossword',
       'gem-swap',
       'hat-band',
@@ -512,6 +514,7 @@ describe('game registry', () => {
       'picture-logic',
       'pond-conga',
       'pyramid-solitaire',
+      'size-parade',
       'snowball-merge',
       'species-comeback',
       'sudoku-garden',
