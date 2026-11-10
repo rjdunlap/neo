@@ -30,6 +30,8 @@ Each level names its own word set, how many words a round draws, the grid and th
 
 ## Screen and controls
 
+Phone playtest follow-up claimed on `codex/crossword-keep-direction`: keep the selected direction when tapping a different square that has a clue in that direction. [Playtest note](../OBSERVATIONS.md#2026-11-09-developer-and-wife).
+
 **Levels 1–4 (touch, children):** a word is **active** when she taps its clue square or one of its squares (tapping a crossing square again switches to the other word). The active word's squares outline at once. Letter tiles in the bank are dragged into its squares with `draggable` (`src/engine/drag.ts`, riding 40 units above the finger, as Word Monsters' letters do); a tile dropped near a blank square snaps to the nearest one, and a square's tile can be dragged back out. Each tile and square says its letter's name on touch-down. Squares and tiles are at least 100 by 100 units.
 
 **Levels 5–6 (grown-ups):** tap a square to select it and its across word; tap it again for the down word. The keyboard (three rows, keys at least 64 units) types into the selected square and moves on; a backspace key clears. A hardware keyboard works the same. Squares are at least 64 units; a 9 by 9 fits beside the clue bar at 1024 by 768.
