@@ -122,9 +122,7 @@ class StampStudio implements Game {
         this.colors.push(b);
       }
     this.finish = new RoundButton(arrowIcon(1), swatch.green, 48, () => this.complete());
-    this.undo = new RoundButton(undoIcon(), swatch.white, 48, () =>
-      this.remove(this.stamps.at(-1) ?? null),
-    );
+    this.undo = new RoundButton(undoIcon(), swatch.white, 48, () => this.remove(this.stamps.at(-1) ?? null));
     const binArt = new Graphics()
       .roundRect(-19, -15, 38, 42, 5)
       .stroke({ width: 6, color: swatch.brown.line })

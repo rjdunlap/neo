@@ -4,7 +4,16 @@ import { swatch } from '../art/palette';
 import type { Origin } from '../app/App';
 import type { ExploreEntry } from '../content/explore';
 import { landFor } from '../content/lands';
-import { arcadeIcon, arrowIcon, heartIcon, libraryIcon, meadowIcon, padIcon, sixIcon, tilesIcon } from './icons';
+import {
+  arcadeIcon,
+  arrowIcon,
+  heartIcon,
+  libraryIcon,
+  meadowIcon,
+  padIcon,
+  sixIcon,
+  tilesIcon,
+} from './icons';
 
 /** Explore's entries at the root (RW08): the name under each card, and its picture (about 60 units across). */
 export const ENTRY_NAMES: Record<ExploreEntry, string> = {
