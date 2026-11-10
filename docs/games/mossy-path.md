@@ -10,8 +10,8 @@
 | --- | --- |
 | toddler | 4 |
 | preschool | 4–5 |
-| pre-K | 5–6 |
-| school | 6, 1, 7, 2, 3 |
+| pre-K | 5, 6, 8 |
+| school | 6, 8, 1, 7, 2, 3 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 5 | Which way? One fork |
 | 6 | Look before you go: dead ends one step deep |
 | 7 | Snack on the way: get the berry, then the pond |
+| 8 | A little patch: bloom every tile |
 
 <!-- end generated -->
 

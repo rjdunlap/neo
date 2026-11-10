@@ -39,15 +39,29 @@ export const PLANS: readonly (readonly Plan[])[] = [
     { rows: 4, cols: 4, tiles: open(4, 4, [1, 10]), start: 0, pond: 12 },
   ],
 ];
+/**
+ * Level 8, *a little patch*: small coverage boards for pre-K and school's step between the mazes and levels 1–3.
+ * Each fits 3 × 3 (or 2 × 4), so every symmetry keeps cells large; the open 3 × 3 has two complete routes.
+ */
+export const PATCHES: readonly Plan[] = [
+  { rows: 2, cols: 3, tiles: open(2, 3), start: 0, pond: 5 },
+  { rows: 2, cols: 4, tiles: open(2, 4), start: 0, pond: 4 },
+  { rows: 3, cols: 3, tiles: open(3, 3, [4]), start: 0, pond: 1 },
+  { rows: 3, cols: 3, tiles: open(3, 3, [2]), start: 0, pond: 5 },
+  { rows: 3, cols: 3, tiles: open(3, 3), start: 0, pond: 2 },
+];
 const PLAN_NAMES = [
   'A winding trail: bloom every tile',
   'An open patch: plan a route through every tile',
   'Two rocks: visit fourteen tiles through narrow passages',
 ];
+const PATCH_NAME = 'A little patch: bloom every tile';
 const planLevel = (level: number) => Math.max(0, Math.min(PLANS.length - 1, level - 1));
+/** The coverage plans a level draws from: level 8's little patches, otherwise levels 1–3's. */
+export const plansFor = (level: number): readonly Plan[] => (level === 8 ? PATCHES : PLANS[planLevel(level)]);
 export function makeBoard(level: number, rng: Rng): Board {
   if (isMaze(level)) return makeMaze(level, rng);
-  const set = PLANS[planLevel(level)],
+  const set = plansFor(level),
     p = set[rng.int(0, set.length - 1)];
   const flipX = rng.chance(0.5),
     flipY = rng.chance(0.5),
@@ -76,6 +90,9 @@ export function moveError(b: Board, path: readonly number[], at: number): 'far' 
   if (at === b.pond && path.length !== b.tiles.length - 1) return 'pond';
   return null;
 }
+/** Whether a refused coverage tap counts a miss: at level 8 a far tap is free (the tiles beside the turtle pulse). */
+export const countsMiss = (level: number, error: ReturnType<typeof moveError>) =>
+  error !== null && !(error === 'far' && level === 8);
 export function step(b: Board, path: readonly number[], at: number): number[] | null {
   return moveError(b, path, at) ? null : [...path, at];
 }
@@ -123,7 +140,7 @@ export function helpFor(b: Board, path: readonly number[]): { undo: number; next
 }
 
 /* Levels 4–7, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
-export const isMaze = (level: number) => level >= 4;
+export const isMaze = (level: number) => level >= 4 && level <= 7;
 /** Frozen boards (six per level), rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
 export const MAZES: Record<number, readonly (readonly string[])[]> = {
   4: [
@@ -165,7 +182,8 @@ const MAZE_NAMES: Record<number, string> = {
   6: 'Look before you go: dead ends one step deep',
   7: 'Snack on the way: get the berry, then the pond',
 };
-export const levelName = (level: number) => MAZE_NAMES[level] ?? PLAN_NAMES[planLevel(level)];
+export const levelName = (level: number) =>
+  MAZE_NAMES[level] ?? (level === 8 ? PATCH_NAME : PLAN_NAMES[planLevel(level)]);
 export function parseMaze(rows: readonly string[]): Board {
   const cols = rows[0].length,
     tiles: number[] = [];
@@ -340,6 +358,6 @@ export function leafSpots(at: number): [number, number][] {
 export const LEVELS: BandLevels = {
   toddler: { min: 4, max: 4 },
   preschool: { min: 4, max: 5 },
-  prek: { min: 5, max: 6 },
-  school: { min: 1, max: 7, order: [6, 1, 7, 2, 3] },
+  prek: { min: 5, max: 8, order: [5, 6, 8] },
+  school: { min: 1, max: 8, order: [6, 8, 1, 7, 2, 3] },
 };
