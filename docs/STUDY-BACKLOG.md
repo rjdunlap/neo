@@ -127,7 +127,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Marble Jump (`marble-jump`) | designed 2026-11-07 ([dive](deep-dives/marble-jump.md): slices 1–4 built; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Number Nook (`number-nook`) | designed 2026-11-07 ([dive](deep-dives/number-nook.md): slices 1–6 built through level 7; the school opening and couch course await decisions); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Pyramid Solitaire (`pyramid-solitaire`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
-| Snowball Merge (`snowball-merge`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Snowball Merge (`snowball-merge`) | designed 2026-11-09, wave 7; slices 1–5 ready | [Dive](deep-dives/snowball-merge.md), [tracker](deep-dives/README.md#tracker) |
 | Tile Pairs (`tile-pairs`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Pixel Pictures (`pixel-pictures`) | designed | [Dive](deep-dives/pixel-pictures.md) |
 | Ferry Jam (`ferry-jam`) | designed | [Dive](deep-dives/ferry-jam.md) |
