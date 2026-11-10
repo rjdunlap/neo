@@ -7,8 +7,16 @@ import {
   GRAINS,
   PLANS,
   RIM,
+  answer,
   apply,
+  bayChange,
+  bayOf,
+  blow,
   botStep,
+  breezeHint,
+  gainedBays,
+  liftedColumns,
+  puff,
   describeLandscape,
   emptyPail,
   hintAction,
@@ -230,13 +238,14 @@ describe('Sand Table: help and the ghost finger', () => {
   });
 
   it('the bot reaches its flag at every level and every start, following the invitation at level 3', () => {
-    for (const plan of PLANS)
+    for (const plan of PLANS.filter((p) => !p.breeze))
       for (const seed of SEEDS.slice(0, 120)) {
         const s = startState(plan.level, new Rng(seed));
         let taken = 0;
         for (; taken < 30; taken++) {
           const step = botStep(s, taken);
           if ('flag' in step) break;
+          if ('breeze' in step || 'answer' in step) throw new Error('breeze step below level 4');
           apply(s, step);
           invariants(s);
         }
@@ -298,4 +307,210 @@ describe('Sand Table: layout', () => {
       });
     }
   }
+});
+
+describe('Sand Table level 4: the breeze', () => {
+  const plan = planFor(4);
+  const at = (hill: number, wind: 'left' | 'right') => {
+    const s = startState(4, new Rng(1));
+    s.wind = wind;
+    s.hill = hill;
+    s.h = wind === 'left' ? [...plan.starts[hill]] : [...plan.starts[hill]].reverse();
+    s.bucket = GRAINS - sum(s.h);
+    s.start = [...s.h];
+    s.puff = null;
+    return s;
+  };
+  const m = (c: number) => COLS - 1 - c;
+  // The definition's frozen table: hill, lifted, hops (from, to), settle moves, after, answer bay.
+  const TRACES = [
+    {
+      lifted: [1, 2, 3],
+      hops: [
+        [3, 5],
+        [2, 6],
+        [1, 6],
+      ],
+      slides: [[6, 7]],
+      after: [1, 1, 2, 3, 3, 3, 2, 2, 1, 1, 1, 1],
+      sums: [
+        [10, 7, 4],
+        [7, 10, 4],
+      ],
+      answer: 1,
+    },
+    {
+      lifted: [1, 2, 3],
+      hops: [
+        [3, 5],
+        [2, 6],
+        [1, 6],
+      ],
+      slides: [[6, 7]],
+      after: [1, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1],
+      sums: [
+        [9, 3, 4],
+        [6, 6, 4],
+      ],
+      answer: 1,
+    },
+    {
+      lifted: [4, 5, 6],
+      hops: [
+        [6, 8],
+        [5, 9],
+        [4, 9],
+      ],
+      slides: [[9, 10]],
+      after: [1, 1, 1, 1, 1, 2, 3, 3, 3, 2, 2, 1],
+      sums: [
+        [4, 12, 5],
+        [4, 9, 8],
+      ],
+      answer: 2,
+    },
+  ];
+  const bays = (h: number[]) => plan.bays.map(([a, b]) => sum(h.slice(a, b + 1)));
+
+  TRACES.forEach((t, hill) => {
+    it(`hill ${hill}: the frozen trace, from the left and mirrored from the right`, () => {
+      const s = at(hill, 'left');
+      expect(liftedColumns(s.h, 'left')).toEqual(t.lifted);
+      const r = puff(s);
+      expect(r.lifted).toEqual(t.lifted);
+      expect(
+        r.events
+          .filter((e) => e.kind === 'hop')
+          .map((e) => [(e as { from: number }).from, (e as { to: number }).to]),
+      ).toEqual(t.hops);
+      expect(
+        r.events
+          .filter((e) => e.kind === 'slide')
+          .map((e) => [(e as { from: number }).from, (e as { to: number }).to]),
+      ).toEqual(t.slides);
+      expect(r.events.some((e) => e.kind === 'spill')).toBe(false);
+      expect(r.after).toEqual(t.after);
+      expect([bays(r.before), bays(r.after)]).toEqual(t.sums);
+      expect(gainedBays(plan, r.before, r.after)).toEqual([t.answer]);
+
+      const q = at(hill, 'right');
+      const rr = puff(q);
+      expect(rr.lifted).toEqual(t.lifted.map(m));
+      expect(rr.after).toEqual([...t.after].reverse());
+      expect(
+        rr.events
+          .filter((e) => e.kind === 'hop')
+          .map((e) => [(e as { from: number }).from, (e as { to: number }).to]),
+      ).toEqual(t.hops.map(([a, b]) => [m(a), m(b)]));
+      expect(gainedBays(plan, rr.before, rr.after)).toEqual([2 - t.answer]);
+    });
+  });
+
+  it('the answer: one gaining bay per setup, every hop lands in it, never the upwind bay; all three bays are sometimes the answer', () => {
+    const answers = new Set<number>();
+    for (let hill = 0; hill < 3; hill++)
+      for (const wind of ['left', 'right'] as const) {
+        const s = at(hill, wind);
+        const r = puff(s);
+        const g = gainedBays(plan, r.before, r.after);
+        expect(g).toHaveLength(1);
+        answers.add(g[0]);
+        for (const e of r.events) if (e.kind === 'hop') expect(bayOf(plan, e.to)).toBe(g[0]);
+        expect(g[0]).not.toBe(wind === 'left' ? 0 : 2);
+        for (let b = 0; b < 3; b++)
+          if (b !== g[0]) expect(bayChange(plan, r.before, r.after, b)).not.toBe('gained');
+        // reasons: the upwind lifted bay lost, an untouched bay is the same
+        const lifted = bayOf(plan, r.lifted[0]);
+        expect(bayChange(plan, r.before, r.after, lifted)).toBe('lost');
+        expect(bayChange(plan, r.before, r.after, g[0])).toBe('gained');
+      }
+    expect([...answers].sort()).toEqual([0, 1, 2]);
+    // an untouched bay in the hill-in-the-middle setup reads same
+    const s = at(2, 'left');
+    const r = puff(s);
+    expect(bayChange(plan, r.before, r.after, 0)).toBe('same');
+  });
+
+  it('every seed starts on one of the six setups with the bucket holding the rest', () => {
+    const seen = new Set<string>();
+    for (const seed of SEEDS) {
+      const s = startState(4, new Rng(seed));
+      invariants(s);
+      expect(s.puff).toBe(null);
+      const base = plan.starts[s.hill];
+      expect(s.h).toEqual(s.wind === 'left' ? [...base] : [...base].reverse());
+      seen.add(`${s.hill}${s.wind}`);
+    }
+    expect(seen.size).toBe(6);
+  });
+
+  it('random trays from levels 1-3, both directions: conservation, bounds, downwind hops, at most 11 lifted, never the far wall', () => {
+    for (let seed = 1; seed <= 2000; seed++) {
+      const rng = new Rng(seed);
+      const s = startState(rng.int(1, 3), rng);
+      for (let k = 0; k < rng.int(0, 40); k++) apply(s, random(s, rng));
+      for (const wind of ['left', 'right'] as const) {
+        const t: SandState = { ...s, h: [...s.h] };
+        const mirrorT: SandState = { ...s, h: [...s.h].reverse() };
+        const r = blow(t, wind);
+        invariants(t);
+        expect(r.lifted.length).toBeLessThanOrEqual(11);
+        expect(r.lifted).not.toContain(wind === 'left' ? COLS - 1 : 0);
+        for (const e of r.events)
+          if (e.kind === 'hop') expect(wind === 'left' ? e.to > e.from : e.to < e.from).toBe(true);
+        // mirror: right = reverse, left-hand rule, reverse
+        const r2 = blow(mirrorT, wind === 'left' ? 'right' : 'left');
+        expect([...r2.after].reverse()).toEqual(r.after);
+      }
+    }
+  });
+
+  it('is deterministic, including after Start again', () => {
+    const run = (seed: number) => {
+      const s = startState(4, new Rng(seed));
+      const first = puff(s);
+      restart(s);
+      expect(s.h).toEqual(first.before);
+      const again = puff(s);
+      expect(again).toEqual(first);
+      return [s.hill, s.wind, first];
+    };
+    for (const seed of [1, 2, 3, 9]) expect(run(seed)).toEqual(run(seed));
+  });
+
+  it('accounting: two wrong pads and the path count misses 2, hints 2; no third hint; the free parts count nothing', () => {
+    const s = at(2, 'left');
+    expect(breezeHint(s)).toBe('breeze');
+    expect(s.quiz).toMatchObject({ misses: 0, hints: 0 });
+    puff(s);
+    expect(answer(s, 0)).toEqual({ change: 'same', glow: false });
+    expect(breezeHint(s)).toBe('path');
+    expect(answer(s, 1)).toEqual({ change: 'lost', glow: true });
+    expect(s.quiz).toMatchObject({ misses: 2, hints: 2 });
+    expect(breezeHint(s)).toBe('glow');
+    restart(s);
+    puff(s);
+    expect(s.quiz).toMatchObject({ misses: 2, hints: 2 });
+    expect(answer(s, 2).change).toBe('gained');
+    expect(s.quiz).toMatchObject({ misses: 2, hints: 2 });
+
+    // one miss, then a hint request: misses 1, hints 1 (the scripted play's round)
+    const t = at(0, 'right');
+    puff(t);
+    expect(answer(t, 2).change).toBe('lost');
+    expect(breezeHint(t)).toBe('path');
+    expect(answer(t, 1).change).toBe('gained');
+    expect(t.quiz).toMatchObject({ misses: 1, hints: 1 });
+  });
+
+  it('the bot taps Breeze, then the gaining pad', () => {
+    for (const seed of SEEDS.slice(0, 60)) {
+      const s = startState(4, new Rng(seed));
+      expect(botStep(s, 0)).toEqual({ breeze: true });
+      const r = puff(s);
+      const step = botStep(s, 1);
+      expect(step).toEqual({ answer: gainedBays(plan, r.before, r.after)[0] });
+      expect(answer(s, (step as { answer: number }).answer).change).toBe('gained');
+    }
+  });
 });
