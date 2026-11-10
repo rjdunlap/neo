@@ -1,8 +1,10 @@
 # Frog Hop, Fraction Landings (definition)
 
-Defined 2026-11-09 as slice **R3** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order), from its [candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit) and the [Frog Hop deep dive](../deep-dives/frog-hop.md). It is two new Frog Hop levels on the existing pad and card interactions, not a new game. Nothing is built yet. Every [open decision](#open-decisions) has a default the build uses.
+**Built:** levels 9–10 (PR #1449); nothing left to build; read “Numbering” for the IDs and the Registration bullet above it for the actual registration (no `order` was needed).
 
-**Status:** defined 2026-11-09 ([PR #1440](https://github.com/rjdunlap/neo/pull/1440)); not built. **Claimed 2026-11-10** by `claude/frog-hop-fraction-landings-build` (FL1 and FL2).
+Defined 2026-11-09 as slice **R3** of the [fractions study](../deep-dives/subjects/fractions.md#build-slices-in-order), from its [candidates row](../deep-dives/subjects/fractions.md#candidates-and-fit) and the [Frog Hop deep dive](../deep-dives/frog-hop.md). It is two new Frog Hop levels on the existing pad and card interactions, not a new game. Built 2026-11-10 (see the status line). Every [open decision](#open-decisions) has a default the build uses.
+
+**Status:** defined 2026-11-09 ([PR #1440](https://github.com/rjdunlap/neo/pull/1440)); **built** (PR #1449): FL1 is level 9 `frac-hop`, FL2 is level 10 `frac-match`, school 3–10 with no `order` (appended); the fallthrough line is `hop.frac.flag`. Nothing remains to build here.
 
 **Fun action and purpose:** the frog's lily pads now sit at quarters of a whole. The sign asks for hops of a quarter, a half or a whole, and she taps where the frog will land; the frog then hops there, each hop as long as its size. In the second level the frog lands on a lily with one hop size, plants a flag, goes back to zero and she chooses how many hops of another size reach the same flag. The learning goal is **fractions as numbers on a line, measured as intervals from zero**, and **equivalent positions**: two quarters land where one half does, and four quarters, two halves and one whole all land on 1 (CCSS 3.NF.A.2a–b, 3.NF.A.3a and 3.NF.A.3c; the [study's anchors](../deep-dives/subjects/fractions.md#anchors-and-evidence-limits)). Only halves and quarters of one whole are used, so the study's math-educator review (for Whole Switch, Window Mosaic and division) does not gate these levels.
 
@@ -84,7 +86,7 @@ Every first-stage count is at most 4, so the sign stays short, and every card an
 - **Ghost finger:** `autotouch()` taps the answer pad on FL1; on FL2 the answer pad, then the answer card, through `answerSlot`.
 - **How-to card:** one `LevelLine` per level: FL1 "Hop quarters and halves: tap where the frog lands"; FL2 "Land on a lily, then choose how many hops of the other size reach it".
 - **Voice (`voice.ts`):** `hop.frac` ("Start at {where}. Hop one {size}{times}. Where will the frog land?"), `hop.frac.match` ("Hop {hops}. Where will the frog land?"), `hop.frac.second` ("How many {size} hops reach the flag?"), and the miss, `also` and `same` lines above. Spoken numbers are always words, never glyphs. The slots go through device speech until the slotted-clip work (V3).
-- **Registration:** both levels `school` only, at the top of the school ladder through `order`. Not a couch level (the couch stops stay `[3, 3, 4, 5, 6, 6]`). No new land, band, save field or sticker.
+- **Registration:** both levels `school` only, at the top of the school ladder (appended as levels 9 and 10, so no `order` was needed). Not a couch level (the couch stops stay `[3, 3, 4, 5, 6, 6]`). No new land, band, save field or sticker.
 - **Grown-ups' targeting row:** "Fractions as places on a line; equal hops of a quarter and a half; equivalent positions" · 3.NF.A.2, 3.NF.A.3a, 3.NF.A.3c · off screen: a masking-tape line 0–2 on the floor and paper strips one quarter and one half long to step along it.
 
 ### Numbering
