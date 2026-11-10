@@ -329,6 +329,7 @@ export class ChooserScene extends Scene {
     openParentPanel(
       () => this.app.go.start(),
       () => this.app.go.start(),
+      { app: this.app.creatureWorld ? 'root' : 'classic' },
     );
   }
 

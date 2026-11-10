@@ -5,6 +5,7 @@
  */
 import { audio } from '../audio/engine';
 import { store } from '../progress/store';
+import { SPECIES, SPECIES_IDS } from '../creatures/species';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const canvas = () => document.querySelector('canvas')!;
@@ -72,6 +73,15 @@ const kit = {
   ) {
     const p = from.getGlobalPosition();
     await kit.drag(kit.line([p.x, p.y], [to.x, to.y], n));
+  },
+  /**
+   * The reseed path at cutover (RW05): meets the river and the glider too, so a developer sees three friends before
+   * adventures exist. Reopen the screen to see them.
+   */
+  meetAll() {
+    for (const id of SPECIES_IDS)
+      if (id !== 'sprout') store.meet(id, SPECIES[id].names[0], SPECIES[id].color, `dev:${id}`);
+    store.save();
   },
   async until(test: () => boolean, ms = 12000) {
     const t0 = performance.now();
