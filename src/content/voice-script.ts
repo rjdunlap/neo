@@ -393,6 +393,7 @@ export const SHARED = {
   'daily.done': ['You played all six today! Play one again, or tap the tiles for every game.'],
   // The Arcade's lines stay on device speech until a clip render takes the `arcade` prefix (scripts/voice-clips/clips.mjs).
   'arcade.open': ['The arcade! Watch a game play, then tap it to play.'],
+  'arcade.mine': ['Games for you!'],
   'arcade.played': ['Games you played before!'],
   'arcade.topics': ['What kind of game? Tap a picture!'],
   'arcade.empty': ['Nothing here yet. Play a game, and it waits here!'],

@@ -13,8 +13,14 @@ import { SUBJECTS, type RegionId } from './world';
  * games are listed after hers and only tagged as such.
  */
 
-/** What the Topics sheet offers: every game, the ones she has played (last played first), or one subject. */
-export type ArcadeFilter = 'all' | 'played' | RegionId;
+/**
+ * What the Topics sheet offers: her own age's games (For me, the default), every game, the ones she has played (last
+ * played first), or one subject.
+ */
+export type ArcadeFilter = 'mine' | 'all' | 'played' | RegionId;
+
+/** The filter the Arcade opens on: a first visit, a different player, or a remembered filter no longer offered. */
+export const DEFAULT_FILTER: ArcadeFilter = 'mine';
 
 /** A subject's one-word tag, from its spoken line (`subject.music` → Music). */
 const TOPIC_WORDS: Record<string, string> = {
@@ -35,9 +41,14 @@ export function topicWord(region: RegionId): string {
   return s ? (TOPIC_WORDS[s.line.slice('subject.'.length)] ?? s.name) : region;
 }
 
-/** The filters in the order the Topics sheet shows them: All, Played before, then each subject that has a game. */
+/** The filters in the order the Topics sheet shows them: For me, All, Played before, then each subject that has a game. */
 export function arcadeFilters(games: readonly GameModule[]): ArcadeFilter[] {
-  return ['all', 'played', ...SUBJECTS.filter((s) => games.some((g) => g.region === s.id)).map((s) => s.id)];
+  return [
+    'mine',
+    'all',
+    'played',
+    ...SUBJECTS.filter((s) => games.some((g) => g.region === s.id)).map((s) => s.id),
+  ];
 }
 
 export const isArcadeFilter = (v: unknown, games: readonly GameModule[]): v is ArcadeFilter =>
@@ -45,16 +56,24 @@ export const isArcadeFilter = (v: unknown, games: readonly GameModule[]): v is A
 
 /** A filter's name on its tile and on the Topics button. */
 export function filterName(f: ArcadeFilter): string {
-  return f === 'all' ? 'All games' : f === 'played' ? 'Played before' : topicWord(f);
+  return f === 'mine'
+    ? 'For me'
+    : f === 'all'
+      ? 'All games'
+      : f === 'played'
+        ? 'Played before'
+        : topicWord(f);
 }
 
 /** What a filter's tile says when it is chosen. */
 export function filterLine(f: ArcadeFilter): LineId {
-  return f === 'all'
-    ? 'explore.all'
-    : f === 'played'
-      ? 'arcade.played'
-      : SUBJECTS.find((s) => s.id === f)!.line;
+  return f === 'mine'
+    ? 'arcade.mine'
+    : f === 'all'
+      ? 'explore.all'
+      : f === 'played'
+        ? 'arcade.played'
+        : SUBJECTS.find((s) => s.id === f)!.line;
 }
 
 /** When she last finished a round of a game, or 0. */
@@ -63,8 +82,9 @@ export function lastPlayed(stats: GameStats | undefined): number {
 }
 
 /**
- * The games a filter shows, in order. All games and a subject: hers (and younger ones) land by land, then the other ages'.
- * Played before: every game with a finished round, the most recent first.
+ * The games a filter shows, in order. For me: only her own age's games (`ageOf` is `'hers'`), land by land. All games and
+ * a subject: hers (and younger ones) land by land, then the other ages'. Played before: every game with a finished round,
+ * the most recent first.
  */
 export function arcadeList(
   filter: ArcadeFilter,
@@ -73,6 +93,7 @@ export function arcadeList(
   lands: readonly Land[],
   stats: Readonly<Record<string, GameStats | undefined>>,
 ): GameModule[] {
+  if (filter === 'mine') return allGames(band, games, lands).filter((g) => ageOf(g, band) === 'hers');
   const ordered = [...allGames(band, games, lands), ...allGames(band, games, lands, true)];
   if (filter === 'played') {
     return ordered
@@ -96,6 +117,11 @@ export function tagsFor(mod: GameModule, band: Band): string[] {
 
 /** The cards on one page of a list, and how many pages it takes (at least one: an empty page says so). */
 export const arcadePages = (n: number, perPage: number) => Math.max(1, Math.ceil(n / perPage));
+/** The page count under the grid ("2 of 6"), or null when the list fits on one page. */
+export function pageLabel(page: number, n: number, perPage: number): string | null {
+  const pages = arcadePages(n, perPage);
+  return pages > 1 ? `${clampArcadePage(page, n, perPage) + 1} of ${pages}` : null;
+}
 export const clampArcadePage = (page: number, n: number, perPage: number) =>
   Math.min(Math.max(0, Math.floor(page) || 0), arcadePages(n, perPage) - 1);
 export function arcadePage<T>(items: readonly T[], page: number, perPage: number): T[] {
@@ -109,9 +135,9 @@ export interface ArcadeMemory {
   spotlight: string | null;
 }
 
-export const arcadeMemory: ArcadeMemory = { filter: 'all', spotlight: null };
+export const arcadeMemory: ArcadeMemory = { filter: DEFAULT_FILTER, spotlight: null };
 
 export function forgetArcade() {
-  arcadeMemory.filter = 'all';
+  arcadeMemory.filter = DEFAULT_FILTER;
   arcadeMemory.spotlight = null;
 }
