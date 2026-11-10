@@ -68,3 +68,8 @@ Not run: build, full `npm test`, other suites, any iPad or device check. Open: t
 
 Changed: new [definition](../definitions/frog-hop-fraction-landings.md) for two school Frog Hop levels, FL1 `frac-hop` and FL2 `frac-match` (tick model, cases, named misses, rule tests, tier); READY, the fractions study, the Frog Hop dive (G2 retired into it, IDs "next free when built") and the study docs updated. Nothing is built.
 Ran: `node scripts/check-links.mjs` and `git diff --check` (both passed). Not run: typecheck, tests, any browser or device check; no new source opened. Open: the build, device speech of the fraction words and whether a six-year-old enjoys FL1 (person checks).
+
+## 2026-11-09 — Second Chance Shed Picnic Loop 7–8 definition, nature-sustainability N4 (docs only, PR #1442)
+
+Changed: new [definition](../definitions/second-chance-shed-7-8.md) for school levels 7–8 (cups across picnics, two-place wash tub, big mug in place of the study's jar, two authored cases at level 8); READY, the study, backlog row and [batch second-chance-shed 3](../GAME-BATCHES.md#second-chance-shed-3-picnic-loop).
+Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, any browser or device check; nothing was implemented. Open: the build, its picnic-set source check, and the person and device checks in the definition's check tier.

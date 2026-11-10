@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/sing-along-barn; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sing-along-barn` · **Land:** Barnyard · **Ages:** lap–pre-K · **Challenge:** music · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sing-along-barn` · **Land:** Barnyard · **Ages:** lap–pre-K · **Challenge:** music · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** song-order, animal-words, cause-effect, choice
 

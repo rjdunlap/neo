@@ -5,7 +5,7 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
@@ -25,6 +25,7 @@ import {
   STAMP_NAMES,
   stickerStamp,
   stampDemo,
+  stampLayout,
   type Stamp,
   type StampKind,
 } from './logic';
@@ -296,25 +297,20 @@ class StampStudio implements Game {
   }
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
-    this.width = v.w - 350;
-    this.height = v.h - 290;
-    this.paper.position.set(180, 135);
+    const l = stampLayout(v, this.choices.length, this.plan.transform);
+    this.width = l.paper.w;
+    this.height = l.paper.h;
+    this.paper.position.set(l.paper.x, l.paper.y);
     this.sheet
       .clear()
       .roundRect(0, 0, this.width, this.height, 24)
       .fill(cream)
       .stroke({ width: 7, color: swatch.brown.line });
     this.sheet.hitArea = new Rectangle(0, 0, this.width, this.height);
-    const xs = spread(this.choices.length, 185, v.w - 180, 135);
-    this.choices.forEach((b, i) => b.position.set(xs[i], v.h - 77));
-    this.colors.forEach((b, i) => b.position.set(220 + i * 125, 65));
-    this.finish.position.set(v.w - 77, 65);
-    this.undo.position.set(v.w - 77, v.h - 77);
-    this.bin.position.set(v.w - 77, v.h / 2 - (this.plan.transform ? 130 : 0));
-    this.turn.position.set(v.w - 77, v.h / 2);
-    this.grow.position.set(v.w - 77, v.h / 2 + 130);
-    // Left of the paper, between the hold-to-open help (y 160) and the pet.
-    this.play.position.set(88, v.h / 2 + 20);
+    this.choices.forEach((b, i) => b.position.set(l.choices[i].x, l.choices[i].y));
+    this.colors.forEach((b, i) => b.position.set(l.colors[i].x, l.colors[i].y));
+    for (const k of ['finish', 'undo', 'bin', 'turn', 'grow', 'play'] as const)
+      this[k].position.set(l[k].x, l[k].y);
     if (this.scan) this.stopScan();
     for (const s of this.stamps) this.layoutStamp(s);
     this.drawSelection();
@@ -388,6 +384,7 @@ export const stampStudio: GameModule = {
   challenge: 'space',
   skills: ['composition', 'creative-expression', 'spatial-reasoning'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [7, 8, 9],
   describeLevel: (l) => planFor(l).name,

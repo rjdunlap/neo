@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/size-parade; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `size-parade` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `size-parade` · **Land:** Puzzle Peaks · **Ages:** lap–school · **Challenge:** numbers · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** comparison, measurement, ordering
 

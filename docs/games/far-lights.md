@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/far-lights; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `far-lights` · **Land:** Tinker Lab · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `far-lights` · **Land:** Tinker Lab · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** observation, comparing, distance, brightness
 

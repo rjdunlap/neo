@@ -29,6 +29,7 @@ import {
   meant,
   nearestShown,
   planFor,
+  spawnBox,
   spawnTarget,
   showsDots,
   staysPut,
@@ -201,13 +202,14 @@ class BubblePop implements Game {
       dots: showsDots(this.ctx.level),
       rim: LOOKS[this.backdrop.scene].rim,
     });
+    const at = spawnBox(v.w, v.h, r, staysPut(p.mode));
     if (staysPut(p.mode)) {
-      b.position.set(rng.range(150 + r, v.w - 50 - r), rng.range(130 + r, v.h - 60 - r));
+      b.position.set(rng.range(at.x[0], at.x[1]), rng.range(at.y[0], at.y[1]));
       const a = rng.range(0, Math.PI * 2);
       b.vx = Math.cos(a) * p.speed;
       b.vy = Math.sin(a) * p.speed;
     } else {
-      b.position.set(rng.range(130 + r, v.w - 40 - r), v.h + r + 10);
+      b.position.set(rng.range(at.x[0], at.x[1]), at.y[0]);
       b.vy = -p.speed * rng.range(0.8, 1.25);
     }
     if (p.anywhere) b.eventMode = 'none';
@@ -569,6 +571,7 @@ export const bubblePop: GameModule = {
   challenge: 'hands',
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [15],
   describeLevel: (level) => {

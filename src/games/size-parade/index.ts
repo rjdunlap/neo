@@ -1548,6 +1548,7 @@ export const sizeParade: GameModule = {
   challenge: 'numbers',
   skills: ['comparison', 'measurement', 'ordering'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (b) => rangeFor(LEVELS, b),
   // Levels 16, 9, 17, 10, 11, 12, 13 and 15 have high IDs and sit in the order where they fit; 16 is the lap's one growing friend, 9 its big-or-little pair, 17 the first drag a toddler meets, 11 the props after the lines of three, 12, 13 and 15 the lines after the lines of five.
   entryLevels: [9, 16, 17],

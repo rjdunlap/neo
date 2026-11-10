@@ -27,6 +27,8 @@ import {
   pickTune,
   planFor,
   rhymeSides,
+  rowXs,
+  cardSpots,
   tunesFor,
   type Animal,
   type Note,
@@ -309,7 +311,7 @@ class SingAlongBarn implements Game {
   }
 
   private restSpot(i: number) {
-    const xs = spread(this.plan.verses, 150, this.view.w - 40, 190);
+    const xs = rowXs(this.plan.verses, this.view.w);
     return { x: xs[i], y: this.view.h - 36 };
   }
 
@@ -336,34 +338,19 @@ class SingAlongBarn implements Game {
   }
 
   private choiceSpot(k: number) {
-    const xs = spread(ANIMALS.length, 150, this.view.w - 40, 190);
+    const xs = rowXs(ANIMALS.length, this.view.w);
     return { x: xs[k], y: this.view.h - 36 };
   }
 
   // ----- Choosing the song -----
 
-  /** More than five songs sit in two rows, so a card never shrinks below the five-card size. */
-  private cardCols = () =>
-    this.tuneCards.length > 5 ? Math.ceil(this.tuneCards.length / 2) : this.tuneCards.length;
-
-  private cardScale = () => (this.cardCols() > 4 ? 0.6 : this.cardCols() > 3 ? 0.72 : 1);
+  private cardScale = () => cardSpots(this.tuneCards.length, this.view.w, this.view.h).scale;
 
   private layoutCards() {
-    // 250 apart: 30 clear between two 220-wide cards, and both fit a 768-wide upright view.
-    const y = this.view.h * 0.42;
-    // Four cards shrink to 0.72 (158 across, 180 apart) and five to 0.6 (132 by 120, 150 apart) so a row still fits an
-    // upright 768-wide view with room for the pet; ten cards are two rows of five, 150 apart (30 clear between rows).
-    const spacing = 250 * this.cardScale();
-    const cols = this.cardCols();
-    const rows = Math.ceil(this.tuneCards.length / cols);
+    const spots = cardSpots(this.tuneCards.length, this.view.w, this.view.h);
     this.tuneCards.forEach((card, k) => {
-      const row = Math.floor(k / cols);
-      const inRow = Math.min(cols, this.tuneCards.length - row * cols);
-      card.scale.set(this.cardScale());
-      card.position.set(
-        this.view.w / 2 + ((k % cols) - (inRow - 1) / 2) * spacing,
-        y + (row - (rows - 1) / 2) * spacing,
-      );
+      card.scale.set(spots.scale);
+      card.position.set(spots.at[k].x, spots.at[k].y);
     });
   }
 
@@ -1190,6 +1177,7 @@ export const singAlongBarn: GameModule = {
   challenge: 'music',
   skills: ['song-order', 'animal-words', 'cause-effect', 'choice'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);

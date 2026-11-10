@@ -1,3 +1,4 @@
+import { spread } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 import type { ColorName } from '../../art/palette';
 import { STAMP_KINDS, type StampKindId } from '../../content/creations';
@@ -427,3 +428,39 @@ export const LEVELS: BandLevels = {
   prek: { min: 4, max: 6 },
   school: { min: 5, max: 6 },
 };
+
+/** A round button's touch radius (`RoundButton`: its 48 radius and 14 more). */
+export const BUTTON_REACH = 62;
+
+/**
+ * Where the paper and the buttons sit in a view. Sideways: the paper between the left column (Home, "?", Play, the pet)
+ * and the right one (Finish, Bin, Turn, Grow, Undo), the colours above it and the stamps below. On the narrow upright area
+ * (chunk 31) the paper runs from the left edge below Home and "?", Play and Undo join the right column, and the stamps
+ * take the whole bottom row right of the guide; the colours start 45 further left, clear of Finish.
+ */
+export function stampLayout(
+  v: { w: number; h: number; upright?: true },
+  choices: number,
+  transform: boolean,
+) {
+  const tall = v.upright === true;
+  const paper = tall
+    ? { x: 20, y: 230, w: v.w - 190, h: v.h - 230 - 180 }
+    : { x: 180, y: 135, w: v.w - 350, h: v.h - 290 };
+  const col = v.w - 77;
+  return {
+    paper,
+    choices: (tall ? spread(choices, 165, v.w - 20, 135) : spread(choices, 185, v.w - 180, 135)).map((x) => ({
+      x,
+      y: v.h - 77,
+    })),
+    colors: STAMP_COLORS.map((_, i) => ({ x: (tall ? 175 : 220) + i * 125, y: 65 })),
+    finish: { x: col, y: 65 },
+    undo: { x: col, y: tall ? v.h - 237 : v.h - 77 },
+    bin: { x: col, y: v.h / 2 - (transform ? 130 : 0) },
+    turn: { x: col, y: v.h / 2 },
+    grow: { x: col, y: v.h / 2 + 130 },
+    // Sideways: left of the paper, between the hold-to-open help (y 160) and the pet.
+    play: tall ? { x: col, y: 200 } : { x: 88, y: v.h / 2 + 20 },
+  };
+}

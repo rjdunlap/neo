@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/bubble-pop; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `bubble-pop` · **Land:** Bubble Beach · **Ages:** lap–school · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `bubble-pop` · **Land:** Bubble Beach · **Ages:** lap–school · **Challenge:** hands · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** cause-effect, tracking, colors, counting
 
