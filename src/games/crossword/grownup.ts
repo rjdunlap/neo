@@ -35,6 +35,30 @@ const KEY_PITCH = 72;
 /** The 26 letters, then backspace and Help: four columns of seven beside the grid, or seven columns of four under it. */
 const KEYS = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '⌫', '?'];
 
+const PHONE_TILE = 88;
+const PHONE_KEY_PITCH = 94;
+const PHONE_COLUMNS = 7;
+
+export function phoneCrosswordLayout(v: View, w: number, h: number) {
+  const clue = { x: 150, y: 110, w: v.w - 174, h: 100 };
+  const rows = Math.ceil(KEYS.length / PHONE_COLUMNS);
+  const clueEnd = clue.y + clue.h;
+  // On a short view an eight-row grid and four rows of keys share the available height.
+  const tile = Math.min(PHONE_TILE, Math.floor((v.h - clueEnd - 70) / (h + rows)));
+  const pitchX = Math.min(PHONE_KEY_PITCH, (v.w - 150 - 2 - tile) / (PHONE_COLUMNS - 1));
+  const pitchY = tile + 6;
+  const keysY = v.h - 24 - (rows - 1) * pitchY - tile;
+  const keys = KEYS.map((_, i) => ({
+    x: 150 + tile / 2 + (i % PHONE_COLUMNS) * pitchX,
+    y: keysY + tile / 2 + Math.floor(i / PHONE_COLUMNS) * pitchY,
+  }));
+  const board = {
+    x: (v.w - w * tile) / 2,
+    y: (clueEnd + keysY - h * tile) / 2,
+  };
+  return { board, clue, keys, tile };
+}
+
 /**
  * Crossword levels 5–6 for grown-ups: tap a square to select it and its across word (again for the down word), type on the
  * A–Z keys or a hardware keyboard, and the grid is checked when every square is full. A wrong check is one miss and circles
@@ -223,7 +247,19 @@ export class GrownCrossword implements Game {
     const gw = p.w * SQ,
       gh = p.h * SQ;
     const safe = safeArea(v);
-    if (this.upright) {
+    const phone = v.upright ? phoneCrosswordLayout(v, p.w, p.h) : null;
+    this.board.scale.set(phone ? phone.tile / SQ : 1);
+    this.keys.scale.set(phone ? phone.tile / KEY : 1);
+    this.speaker.scale.set(v.upright ? PHONE_TILE / KEY : 1);
+    if (phone) {
+      const f = phone;
+      this.layoutBar(f.clue.x, f.clue.y, f.clue.w, f.clue.h);
+      this.board.position.copyFrom(f.board);
+      this.title.position.set(v.w / 2, f.clue.y - 30);
+      KEYS.forEach((k, i) =>
+        this.keyMap.get(k)!.position.set(f.keys[i].x / this.keys.scale.x, f.keys[i].y / this.keys.scale.y),
+      );
+    } else if (this.upright) {
       // Clue bar under the top buttons, keys along the bottom right of the pet, the grid centred between them.
       // An upright iPad view is taller than the design area; the corner buttons stay at its top, so the bar follows them.
       const top = 170;
@@ -254,16 +290,16 @@ export class GrownCrossword implements Game {
     }
   }
 
-  private layoutBar(x: number, y: number, w: number) {
+  private layoutBar(x: number, y: number, w: number, h = 84) {
     this.clueBar.position.set(x, y);
     this.clueBg
       .clear()
-      .roundRect(0, 0, w, 84, 18)
+      .roundRect(0, 0, w, h, 18)
       .fill({ color: 0xffffff, alpha: 0.95 })
       .stroke({ width: 4, color: swatch.blue.line });
-    this.speaker.position.set(w - 42, 42);
-    this.clueText.position.set(18, 42);
-    this.clueText.style.wordWrapWidth = w - 100;
+    this.speaker.position.set(w - h / 2, h / 2);
+    this.clueText.position.set(18, h / 2);
+    this.clueText.style.wordWrapWidth = w - h - 16;
   }
 
   /** Keys from the top-left corner (x, y), `cols` to a row. */
@@ -394,7 +430,10 @@ export class GrownCrossword implements Game {
     this.draw();
     sfx.tada();
     const p = this.puzzle;
-    const mid = { x: this.board.x + (p.w * SQ) / 2, y: this.board.y + (p.h * SQ) / 2 };
+    const mid = {
+      x: this.board.x + (p.w * SQ * this.board.scale.x) / 2,
+      y: this.board.y + (p.h * SQ * this.board.scale.y) / 2,
+    };
     this.ctx.particles.burst(mid.x, mid.y, {
       kind: 'star',
       colors: [0xffffff, 0xfff3a0, swatch.orange.light],

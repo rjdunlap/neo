@@ -140,4 +140,4 @@ Ran (2026-11-08): `npm run typecheck`; unit tests for `src/games/number-nook` (1
 
 **Slice 5 built.** A seeded 24-slide walk generates candidates for the 3×4 row-order board, and an exact search accepts boards whose shortest route is 24 slides. Hint and the ghost finger call the same solver. The four-column layout has 87-unit cells upright and 136 sideways. [Build note](../archive/COMPLETED-2026-10-09.md#number-nook-level-6-twelve-spaces-2026-11-08).
 
-**Slice 6 built.** [Build note](../archive/COMPLETED-2026-10-09.md#number-nook-level-7-the-fifteen-2026-11-09) and [checks](../VERIFICATION.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432).
+**Slice 6 built.** [Build note](../archive/COMPLETED-2026-10-09.md#number-nook-level-7-the-fifteen-2026-11-09) and [checks](../archive/VERIFICATION-2026-11-09.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432).

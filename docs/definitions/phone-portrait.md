@@ -1,6 +1,6 @@
 # Phone held upright: portrait play, a few games at a time (chunk 31)
 
-Requested by the developer on 2026-11-05: on a phone the app asks to be turned sideways, and the developer prefers to play upright. Enable both orientations, converting a few games at a time and tying each batch to [Today's six](todays-six.md) so the developer can play the new ones and give feedback. Chunk **31** of the [roadmap](../ROADMAP.md#chunks). Docs only; nothing here is built yet.
+Requested by the developer on 2026-11-05: on a phone the app asks to be turned sideways, and the developer prefers to play upright. Enable both orientations, converting a few games at a time and tying each batch to [Today's six](todays-six.md) so the developer can play the new ones and give feedback. Chunk **31** of the [roadmap](../ROADMAP.md#chunks). The build status of each slice is recorded below.
 
 ## Why the phone asks to turn today
 
@@ -19,7 +19,7 @@ Upright targets come out exactly as large as sideways ones already are, so the r
 
 ## What a game has to do
 
-A game is **upright-ready** when, with the view at least 768 wide and much taller than wide (768 × 1100 to 768 × 1700), every target is at least 100 units, inside the view and clear of the pet and the corner buttons, and the play reads at a glance. Usually that means the row of choices becomes two rows or a column, and the scene centers in the guaranteed 768 × 1024 rectangle with scenery above and below, the way a wide desktop window shows scenery at the sides today. A game that already relays out from `view.w`/`view.h` with a portrait branch is mostly a narrower-width check; one with positions built on a 1024 width needs real layout work.
+A game is **upright-ready** when, with the view at least 768 wide and much taller than wide (768 × 1100 to 768 × 1700), every target is at least 100 units (64 for grown-up play), inside the view and clear of the pet and the corner buttons, and the play reads at a glance. Usually that means the row of choices becomes two rows or a column, and the scene centers in the guaranteed 768 × 1024 rectangle with scenery above and below, the way a wide desktop window shows scenery at the sides today. A game that already relays out from `view.w`/`view.h` with a portrait branch is mostly a narrower-width check; one with positions built on a 1024 width needs real layout work.
 
 A game says it is ready with one field on its module, `upright: true` (`src/games/types.ts`). A registry test lists the games carrying it, the way the silenced-music test lists those games, so the converted set is always inspectable. A game without the field keeps the turn prompt on an upright phone, exactly as today; nothing becomes worse while the batches proceed.
 
@@ -55,14 +55,14 @@ Shell slice 2 below now matters only on tablets and computers that are narrow en
 
 All games, Explore, Friends, Dress, the hatch, the journal and the sticker book on the root, each with a layout test at the upright fixture and one screenshot. The island at `classic/` (map, lands, places, stories) stays sideways-only: the cutover retires it, and the turn prompt stays there.
 
-### Game batches: six games each (ready; batch 1 built)
+### Game batches
 
-Each batch is one session and one PR, picked so that Today's six at the developer's band has six **different kinds of challenge** ready, which is what the six already prefers. Per game: `upright: true`, a layout test at the upright fixture (targets ≥ 100 units, inside the view, pet and corners clear) for its first and top level, and one upright screenshot at 390 × 844. `fingerdemo` for a game only if its bot's targets moved in a way the layout test cannot show. The tier is the "existing-game bug fix on an unchanged interaction" one, six times over, with no new rules: rule tests are untouched.
+Each batch is one session and one PR, picked so that Today's six at the developer's band has six **different kinds of challenge** ready, which is what the six already prefers. Per game: `upright: true`, a layout test at the upright fixture (targets ≥ 100 units (64 for grown-up play), inside the view, pet and corners clear) for its first and top level, and one upright screenshot at 390 × 844. `fingerdemo` for a game only if its bot's targets moved in a way the layout test cannot show. The tier is the "existing-game bug fix on an unchanged interaction" one, six times over, with no new rules: rule tests are untouched.
 
 | Batch | For | Games (kind) |
 | --- | --- | --- |
 | 1 (built in shell slice 1) | grown-up six | `word-search` (words), `sudoku-garden` (logic), `island-bridges` (space), `pond-conga` (hands), `brain-break` (noticing), `number-nook` (numbers) |
-| 2 ([claimed](https://github.com/rjdunlap/neo/tree/codex/upright-grownup-batch-2)) | grown-up: a second game per kind, and music | `hat-band` (music), `crossword` (words), `picture-logic` (logic), `tile-pairs` (noticing), `gem-swap` (space), `lantern-lights` (logic) |
+| 2 (built) | grown-up: a second game per kind, and music | `hat-band` (music), `crossword` (words), `picture-logic` (logic), `tile-pairs` (noticing), `gem-swap` (space), `lantern-lights` (logic) |
 | 3 | grown-up: the rest of the smaller boards | `block-garden`, `logic-grid`, `species-comeback`, `pyramid-solitaire` |
 | 4 | grown-up: boards drawn for a 1024 width | `log-roll`, `marble-jump`, `snowball-merge` |
 | 5 | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
@@ -70,9 +70,9 @@ Each batch is one session and one PR, picked so that Today's six at the develope
 
 The order of batches 2 to 5 was changed on 2026-11-09, when the phone became the grown-ups' daily playtest: the [roadmap's recommendations](../ROADMAP.md#upright-games-for-grown-ups-recommendations-2026-11-09) give the reasons and what follows the grown-up games (an upright sweep of the early-school games, then batches by kind).
 
-Batch 1 is all games that list `grownup`, and between them cover six kinds, so a grown-up's upright six is complete on the first day. About 168 games means roughly 28 batches; the order after batch 4 follows the feedback, not this table.
+Batch 1 gave grown-ups one upright game in each of six kinds. Feedback from the phone playtest can move a game up in the order.
 
-Batch 2 claim: convert the six named games at their first and highest grown-up levels, using shell slice 1. Expected changes are in the six game folders, the upright registry and browser checks, and the owning roadmap and verification docs.
+Batch 2 brings the grown-up upright pool to 12 games across seven kinds. The [batch closeout](../archive/COMPLETED-2026-10-09.md#grown-up-upright-games-batch-2-chunk-31-2026-11-09) records the layouts and checks.
 
 ## Feedback loop
 

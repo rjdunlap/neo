@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/gem-swap; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `gem-swap` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch and controller · **Ghost finger:** yes
+**ID:** `gem-swap` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** space · **Plays by:** touch and controller, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spatial-planning, cause-and-effect
 
@@ -28,6 +28,8 @@
 **Grows into:** eight untimed levels with 6/12/15/18/24 gems (level 5 on a 6×6 tray), a level 6 of one swap with a long line, a level 7 where grey stones stay put and gems rest on them, and a level 8 where iced gems cannot be swapped until a line clears beside them, falling cascades, 20 solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
 
 ## Design notes
+
+On an upright phone the controls sit between the tray and the guide.
 
 *Ice (level 8).* An iced gem is a gem with frost on it (stored as kind + `ICE`, so 8–13 means iced; drawn with a white wash, teal frame and snowflake). It makes lines and falls with its ice, but cannot be swapped until a line clears in an orthogonally adjacent cell (not diagonal). Thawing happens per wave, cascades included, before the gems fall. Tapping an iced gem ticks, says the ice line once until the next swap, keeps the selection, and is not a miss or a hint. Level 8 is 5×5 with 15 gems and par 4; its 20 generated trays start from a par-3 tray with two gems iced and are kept only when the ice costs exactly one swap (ice-free par 3), some shortest route swaps a gem that started iced, and there is a dead-end first swap and a falling line. Levels 1–7 have no ice and their trays are unchanged.
 

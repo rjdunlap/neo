@@ -594,6 +594,7 @@ function sticker(seed: number): Container {
 
 export const hatBand: GameModule = {
   id: 'hat-band',
+  upright: true,
   name: 'Hat Band',
   titleLine: 'game.hat-band',
   region: 'music-mountain',

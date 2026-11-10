@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Grown-up upright games batch 2 (chunk 31, 2026-11-09)
+
+[PR #1448](https://github.com/rjdunlap/neo/pull/1448) adds upright phone play for Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights. Crossword enlarges its keys and grid. Picture Logic enlarges its painting cells and tools and uses the existing sliding board. Tile Pairs and Gem Swap lift their buttons above the guide, and Lantern Lights puts the pond below the corner controls.
+
+The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-2-chunk-31-pr-1448) records the target sizes and touch play. The real-phone playtest remains open.
+
+
 ### Light Lab art split (codebase item 9, 2026-11-07)
 
 [PR #1411](https://github.com/rjdunlap/neo/pull/1411) moves Light Lab's drawing helpers, `Bloom`, hub icon, seeded sticker art and visual constants to `src/games/light-lab/art.ts`. Its entry point shrinks from 1,540 to 1,263 lines (58,867 to 48,315 bytes), keeping game state, input and layout together. All 27 non-import declarations match by token comparison ignoring added exports, formatting and trailing commas; the game class and module are unchanged. Item 9 remains open for other large files, one per session.
@@ -3249,7 +3256,7 @@ Typecheck, 14 rules, 217 content/registry tests (1 skipped), build, lint, filter
 
 [PR #1432](https://github.com/rjdunlap/neo/pull/1432) completes [Number Nook slice 6](../deep-dives/number-nook.md#build-slices-in-order). The 4×4 row-order board starts exactly 30 slides away. Hint searches up to 60,000 nodes before offering a route that completes the top row, the left column and the remaining 3×3. The hint and ghost finger share the route, and the finish compares the player's slide count with the verified starting optimum. The grown-up range is 1–7. The school opening and couch course still await decisions.
 
-Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 43.3 s demonstration passed. The portrait was reviewed. [Checks](../VERIFICATION.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432). Offline and real-device checks were not run.
+Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 43.3 s demonstration passed. The portrait was reviewed. [Checks](VERIFICATION-2026-11-09.md#2026-11-09--number-nook-slice-6-level-7-the-fifteen-pr-1432). Offline and real-device checks were not run.
 
 ## Lift It levels 7–8 Three ropes (2026-11-09)
 

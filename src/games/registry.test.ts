@@ -494,13 +494,19 @@ describe('game registry', () => {
   });
 
   it('lists the upright-ready games (chunk 31), so the converted set is inspectable', () => {
-    // Batch 1: the grown-up six, one game of each kind. Add a batch here as it lands (docs/definitions/phone-portrait.md).
+    // Add a batch here as it lands (docs/definitions/phone-portrait.md).
     const upright = [
       'brain-break',
+      'crossword',
+      'gem-swap',
+      'hat-band',
       'island-bridges',
+      'lantern-lights',
       'number-nook',
+      'picture-logic',
       'pond-conga',
       'sudoku-garden',
+      'tile-pairs',
       'word-search',
     ];
     expect(
@@ -508,7 +514,7 @@ describe('game registry', () => {
         .map((g) => g.id)
         .sort(),
     ).toEqual(upright);
-    expect(new Set(upright.map((id) => gameById(id)!.challenge)).size).toBe(6);
+    expect(new Set(upright.map((id) => gameById(id)!.challenge)).size).toBe(7);
   });
 
   it("keeps the island's music for the games where the music is only a setting", () => {

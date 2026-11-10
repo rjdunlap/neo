@@ -182,11 +182,9 @@ class GemSwap implements Game {
   resize(v: View) {
     this.view = v;
     const size = this.puzzle.size;
-    this.pitch = Math.min(108, (v.w - 180) / size, (v.h - 290) / size);
-    this.tray.position.set(
-      v.w / 2 - ((size - 1) * this.pitch) / 2,
-      (v.h - 10) / 2 - ((size - 1) * this.pitch) / 2,
-    );
+    const frame = gemLayout(v, size);
+    this.pitch = frame.pitch;
+    this.tray.position.copyFrom(frame.tray);
     this.nodes.forEach((n, i) => {
       n.position.set((i % size) * this.pitch, Math.floor(i / size) * this.pitch);
       n.hitArea = new Rectangle(-this.pitch / 2, -this.pitch / 2, this.pitch, this.pitch);
@@ -202,7 +200,7 @@ class GemSwap implements Game {
     this.tally.position.set(v.w / 2, 64);
     this.help.position.set(v.w / 2, 105);
     [this.undoButton, this.hintButton, this.restartButton].forEach((n, i) =>
-      n.position.set(v.w / 2 + (i - 1) * 170, v.h - 65),
+      n.position.copyFrom(frame.buttons[i]),
     );
     this.draw();
   }
@@ -470,8 +468,19 @@ function sticker(seed: number) {
   }
   return c;
 }
+export function gemLayout(v: View, size: number) {
+  const pitch = Math.min(108, (v.w - 180) / size, (v.h - 290) / size);
+  const half = ((size - 1) * pitch) / 2;
+  return {
+    pitch,
+    tray: { x: v.w / 2 - half, y: (v.h - 10) / 2 - half },
+    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 170, y: v.h - (v.upright ? 230 : 65) })),
+  };
+}
+
 export const gemSwap: GameModule = {
   id: 'gem-swap',
+  upright: true,
   liveController: true,
   name: 'Gem Swap',
   titleLine: 'game.gem-swap',

@@ -128,19 +128,13 @@ class TilePairs implements Game {
   }
   resize(v: View) {
     this.view = v;
-    const cols = Math.max(...this.tiles.map((t) => t.x)) + 1;
-    const rows = Math.max(...this.tiles.map((t) => t.y)) + 1;
-    this.board.position.set(v.w / 2 - (cols - 1) * 60, (v.h - 110) / 2 - (rows - 1) * 58);
-    this.nodes.forEach((n, i) =>
-      n.position.set(
-        this.tiles[i].x * 120 + this.tiles[i].z * 6,
-        this.tiles[i].y * 116 - this.tiles[i].z * 6,
-      ),
-    );
+    const frame = tilePairsLayout(v, this.tiles);
+    this.board.position.copyFrom(frame.board);
+    this.nodes.forEach((n, i) => n.position.copyFrom(frame.tiles[i]));
     this.tally.position.set(v.w / 2, 66);
     this.help.position.set(v.w / 2, 104);
     [this.undoButton, this.hintButton, this.shuffleButton].forEach((n, i) =>
-      n.position.set(v.w / 2 + (i - 1) * 180, v.h - 70),
+      n.position.copyFrom(frame.buttons[i]),
     );
     this.draw();
   }
@@ -347,8 +341,19 @@ function sticker(seed: number) {
   }
   return c;
 }
+export function tilePairsLayout(v: View, tiles: readonly Tile[]) {
+  const cols = Math.max(...tiles.map((t) => t.x)) + 1;
+  const rows = Math.max(...tiles.map((t) => t.y)) + 1;
+  return {
+    board: { x: v.w / 2 - (cols - 1) * 60, y: (v.h - 110) / 2 - (rows - 1) * 58 },
+    tiles: tiles.map((t) => ({ x: t.x * 120 + t.z * 6, y: t.y * 116 - t.z * 6 })),
+    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 180, y: v.h - (v.upright ? 230 : 70) })),
+  };
+}
+
 export const tilePairs: GameModule = {
   id: 'tile-pairs',
+  upright: true,
   liveController: true,
   name: 'Tile Pairs',
   titleLine: 'game.tile-pairs',

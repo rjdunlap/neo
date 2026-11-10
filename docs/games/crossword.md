@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/crossword; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `crossword` · **Land:** Story Grove · **Ages:** pre-K–grown-up · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `crossword` · **Land:** Story Grove · **Ages:** pre-K–grown-up · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** spelling, letters, vocabulary
 
@@ -28,6 +28,8 @@
 **Grows into:** level 1 (pre-K): three 4 by 4 puzzles of two crossing three-letter picture words, only the crossing square blank, a bank of the right letter and two decoys; level 2 (pre-K, school): two puzzles of three words in a chain (23 picture words), the crossings and each first letter blank; tap a picture to hear its word, a full wrong word is one miss, wrong tiles hop back with a spoken spelling, two misses glow the next square and tile, Help is a hint; level 3 (school): one themed grid of four crossing words (6 by 6 at most), every letter blank, a bank of the word's missing letters plus two decoys, the theme named at the start; level 4 (school): one free criss-cross of four of 15 drawn picture words (6 by 6 at most), every letter blank, the same bank, a speaker in each clue square that says a riddle (free), and a Show me eye that reveals the picture and says the word (one hint, once per word); level 5 (grown-up): *Written clues*, one free criss-cross of 7–8 of 44 farm, kitchen and garden words (8 by 8 at most, 64-unit squares), each with one written clue read in a clue bar (a speaker key reads it aloud), typed on A–Z keys (a hardware keyboard works while the game is live), judged only when every square is filled (a wrong check is one miss and circles the wrong squares), Help reveals one right letter (a hint); level 6 (grown-up): *The mini*, one of six frozen, fully checked 5 by 5 minis with block squares and 10 clues
 
 ## Design notes
+
+On an upright phone the grown-up grid, keys and clue speaker enlarge. The keyboard sits to the right of the guide.
 
 *Levels 1–6 built · Story Grove · [definition](../definitions/crossword.md).* She drags letters into a small crossword of picture words, where one letter serves two words. Pre-K plays levels 1–2, school levels 2–4, grown-up levels 5–6. Skills: spelling, letters, vocabulary. Every picture clue square (Pond Typing's `typingPicture` art, an arrow showing the direction) taps to say the word and make it the active word; tapping a square or crossing again switches word.
 

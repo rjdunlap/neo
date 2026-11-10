@@ -297,6 +297,7 @@ export const SUITES = [
   'smoke',
   'phone',
   'phonefit',
+  'uprightgames',
   'howto',
   'howtolevel',
   'lookitup',
@@ -654,6 +655,7 @@ export function createChecks(fixture) {
     'smoke',
     'phoneFit',
     'phoneGames',
+    'uprightGames',
     'howToIntro',
     'howToLevelPick',
     'readyForAdventurePlay',
@@ -998,6 +1000,7 @@ export async function runSuite(suite, fixture) {
     smoke,
     phoneFit,
     phoneGames,
+    uprightGames,
     howToIntro,
     howToLevelPick,
     readyForAdventurePlay,
@@ -1214,6 +1217,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'smoke') await smoke();
   if (suite === 'all' || suite === 'phone' || suite === 'phonefit') await phoneFit();
   if (suite === 'phone') await phoneGames();
+  if (suite === 'uprightgames') await uprightGames();
   if (suite === 'all' || suite === 'howto') await howToIntro();
   if (suite === 'all' || suite === 'howto' || suite === 'howtolevel') await howToLevelPick();
   if (suite === 'all' || suite === 'lookitup') await lookItUpPlay();
