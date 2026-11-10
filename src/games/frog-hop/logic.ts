@@ -5,9 +5,23 @@ import type { BandLevels } from '../../progress/difficulty';
  * Frog Hop: a number line of lily pads. Find a number, then one more and one less, then adding
  * and taking away as hops along the line, then how many hops lie between two numbers, then a
  * longer line to 20, then splits a sum at ten, forward and back. Nine pads show at a time; on the long line the
- * view slides to fit.
+ * view slides to fit. At the top of school the pads sit at quarters of a whole (Fraction Landings): hops of a quarter,
+ * a half or a whole, then two hop sizes that reach the same lily.
  */
-export type HopMode = 'find' | 'next' | 'add' | 'back' | 'gap' | 'big' | 'make-ten' | 'back-ten';
+export type HopMode =
+  | 'find'
+  | 'next'
+  | 'add'
+  | 'back'
+  | 'gap'
+  | 'big'
+  | 'make-ten'
+  | 'back-ten'
+  | 'frac-hop'
+  | 'frac-match';
+
+/** Fraction Landings: the pads are quarter ticks, 0 to 2. */
+export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
 
 /** The two levels that split a trip at ten: a card for the hops to ten, then a pad for where the rest land. */
 export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
@@ -18,6 +32,8 @@ export interface HopPlan {
   top: number;
   questions: number;
   name: string;
+  /** Ticks per whole on the fraction levels (4: quarters); whole-number plans leave it out. */
+  unit?: number;
 }
 
 export const PLANS: HopPlan[] = [
@@ -49,6 +65,20 @@ export const PLANS: HopPlan[] = [
     questions: 5,
     name: 'Hop back to 10 first, then hop the rest of a take-away that crosses 10',
   },
+  {
+    mode: 'frac-hop',
+    top: 8,
+    unit: 4,
+    questions: 5,
+    name: 'Quarter and half hops along one whole: where does the frog land?',
+  },
+  {
+    mode: 'frac-match',
+    top: 8,
+    unit: 4,
+    questions: 5,
+    name: 'Two hop sizes, one lily: how many hops of the other size reach the same place?',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -77,21 +107,113 @@ export interface HopQuestion {
   toTen?: number;
   /** On split-at-ten questions, the hops after reaching ten. */
   remaining?: number;
+  /** Fraction levels: ticks per hop (1 a quarter, 2 a half, 4 a whole) and how many hops. */
+  jump?: number;
+  count?: number;
+  /** Fraction Match: the second hop size, and the card that answers it (`answer2 × jump2 = target`). */
+  jump2?: number;
+  answer2?: number;
 }
 
-/** The answer a child gives: a pad, or for 'gap' the number of hops. */
-export const answerOf = (mode: HopMode, q: HopQuestion) => (mode === 'gap' ? Math.abs(q.hops) : q.target);
+/** The answer a child gives: a pad, for 'gap' the number of hops, for Fraction Match the hops of the second size. */
+export const answerOf = (mode: HopMode, q: HopQuestion) =>
+  mode === 'gap' ? Math.abs(q.hops) : mode === 'frac-match' ? q.answer2! : q.target;
 
 /** Number cards offered on 'gap' levels. */
 export const GAP_CARDS = [1, 2, 3, 4, 5, 6];
 
 /**
  * Which spot answers a question, for the couch bot and the how-to card's ghost finger: a lily pad counted from the first one
- * in view, or on 'gap' levels a number card by its place in `GAP_CARDS`. -1 when the answer is not on screen.
+ * in view, or on 'gap' levels (and Fraction Match's second stage) a number card by its place in `GAP_CARDS`. -1 when the
+ * answer is not on screen.
  */
-export function answerSlot(mode: HopMode, q: HopQuestion, lo: number): number {
-  const slot = mode === 'gap' ? GAP_CARDS.indexOf(answerOf('gap', q)) : q.target - lo;
-  return slot >= 0 && slot < (mode === 'gap' ? GAP_CARDS.length : WINDOW) ? slot : -1;
+export function answerSlot(mode: HopMode, q: HopQuestion, lo: number, secondStage = false): number {
+  const card = mode === 'gap' || (mode === 'frac-match' && secondStage);
+  const slot = card ? GAP_CARDS.indexOf(answerOf(mode, q)) : q.target - lo;
+  return slot >= 0 && slot < (card ? GAP_CARDS.length : WINDOW) ? slot : -1;
+}
+
+/** A pad's name on the fraction line, by tick: mixed numbers past one. */
+const FRAC_NAMES = ['0', '¼', '½', '¾', '1', '1¼', '1½', '1¾', '2'];
+const FRAC_WORDS = [
+  'zero',
+  'one quarter',
+  'one half',
+  'three quarters',
+  'one',
+  'one and a quarter',
+  'one and a half',
+  'one and three quarters',
+  'two',
+];
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+export const fracName = (t: number) => FRAC_NAMES[t];
+export const fracWords = (t: number) => FRAC_WORDS[t];
+/** The landing counted in quarters ("two quarters"), offered only where it differs from the plain name (ticks 2, 4, 6, 8). */
+export const quarterName = (t: number) => (t > 0 && t % 2 === 0 ? `${NUMBER_WORDS[t]} quarters` : undefined);
+/** Counting quarter hops says "one quarter, two quarters…"; bigger hops say the plain landing name. */
+export const hopWords = (t: number, jump: number) =>
+  jump === 1 ? `${NUMBER_WORDS[t]} ${t === 1 ? 'quarter' : 'quarters'}` : fracWords(t);
+/** A hop size: its glyph on the sign and its spoken word. */
+export const sizeName = (jump: number) => (jump === 1 ? '¼' : jump === 2 ? '½' : '1');
+export const sizeWord = (jump: number) => (jump === 1 ? 'quarter' : jump === 2 ? 'half' : 'whole');
+/** "two halves", "one whole", "four quarters". */
+export const hopsWords = (jump: number, count: number) =>
+  `${NUMBER_WORDS[count]} ${count === 1 ? sizeWord(jump) : jump === 2 ? 'halves' : `${sizeWord(jump)}s`}`;
+/** The spoken hops on a sign: "one half", or "one quarter, three times". */
+export const hopPhrase = (jump: number, count: number) =>
+  count === 1 ? `one ${sizeWord(jump)}` : `one ${sizeWord(jump)}, ${NUMBER_WORDS[count]} times`;
+
+/** Fraction Hop cases: start tick, ticks per hop, hops. Every landing is inside 0 to 1. */
+const FRAC_HOP_CASES: [number, number, number][] = [
+  [0, 2, 1],
+  [0, 1, 1],
+  [0, 1, 2],
+  [0, 1, 3],
+  [0, 1, 4],
+  [0, 2, 2],
+  [1, 1, 1],
+  [1, 1, 2],
+  [1, 1, 3],
+  [1, 2, 1],
+  [2, 1, 1],
+  [2, 1, 2],
+  [2, 2, 1],
+];
+/** Fraction Match cases from 0: first size, hops, then the second size (the card is `target / jump2`). */
+const FRAC_MATCH_CASES: [number, number, number][] = [
+  [2, 2, 1],
+  [2, 3, 1],
+  [1, 4, 2],
+  [4, 2, 2],
+  [2, 4, 4],
+  [1, 2, 2],
+  [4, 1, 1],
+  [2, 1, 1],
+];
+
+function fracQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const match = plan.mode === 'frac-match';
+  const cases = match ? FRAC_MATCH_CASES : FRAC_HOP_CASES;
+  const make = ([a, b, c]: [number, number, number]): HopQuestion => {
+    if (match) {
+      const target = a * b;
+      return { start: 0, target, hops: target, lo: 0, jump: a, count: b, jump2: c, answer2: target / c };
+    }
+    return { start: a, target: a + b * c, hops: b * c, lo: 0, jump: b, count: c };
+  };
+  // Both open on the easiest case: one half hop from zero, or two halves then quarters.
+  const [first, ...rest] = cases;
+  for (;;) {
+    const qs = [first, ...rng.shuffle([...rest]).slice(0, plan.questions - 1)].map(make);
+    const repeats = qs.some(
+      (q, i) => i > 0 && (q.target === qs[i - 1].target || answerOf(plan.mode, q) === answerOf(plan.mode, qs[i - 1])),
+    );
+    const fair = match
+      ? qs.some((q) => q.target > 4)
+      : qs.filter((q) => q.jump === 2).length >= 2 && qs.some((q) => q.start > 0);
+    if (!repeats && fair) return qs;
+  }
 }
 
 function windowFor(top: number, a: number, b: number, rng: Rng): number {
@@ -101,6 +223,7 @@ function windowFor(top: number, a: number, b: number, rng: Rng): number {
 }
 
 export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  if (isFrac(plan.mode)) return fracQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -162,6 +285,29 @@ export function missKind(start: number, answer: number, chosen: number, card: bo
   if (chosen === answer + direction) return 'one-more';
   if (chosen === answer - direction) return 'one-less';
   return 'count';
+}
+
+/**
+ * A wrong pad on a fraction question, most telling first: behind the start; hops of the wrong size (one-tick hops for a
+ * half or whole, half hops for a quarter); whole hops; one tick off (counting pads, not gaps); otherwise a miscount.
+ */
+export type FracMiss = 'correct' | 'backward' | 'size' | 'whole' | 'one-more' | 'one-less' | 'count';
+export function fracMiss(start: number, jump: number, count: number, chosen: number): FracMiss {
+  const target = start + jump * count;
+  if (chosen === target) return 'correct';
+  if (chosen <= start) return 'backward';
+  if (chosen === start + (jump === 1 ? 2 : 1) * count) return 'size';
+  if (jump < 4 && chosen === start + 4 * count) return 'whole';
+  if (chosen === target + 1) return 'one-more';
+  if (chosen === target - 1) return 'one-less';
+  return 'count';
+}
+
+/** A wrong card at Fraction Match's second stage: the first stage's hop count is the telling slip. */
+export function matchMiss(q: HopQuestion, chosen: number): 'correct' | 'same' | HopMiss {
+  if (chosen === q.answer2) return 'correct';
+  if (chosen === q.count) return 'same';
+  return missKind(0, q.answer2!, chosen, true);
 }
 
 /** Both stages can show help; only the first demonstration charges a hint. */

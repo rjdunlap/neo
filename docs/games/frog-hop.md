@@ -4,13 +4,13 @@
 
 **ID:** `frog-hop` · **Land:** Counting Cove · **Ages:** preschool–school · **Challenge:** numbers · **Plays by:** touch · **Ghost finger:** yes
 
-**Skills:** number-line, adding, taking-away, counting-on
+**Skills:** number-line, adding, taking-away, counting-on, fractions
 
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–4 |
-| school | 3–8 |
+| school | 3–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,8 @@
 | 6 | A longer line to 20: hop on or back up to 6 |
 | 7 | Hop to 10 first, then hop the rest of a sum that crosses 10 |
 | 8 | Hop back to 10 first, then hop the rest of a take-away that crosses 10 |
+| 9 | Quarter and half hops along one whole: where does the frog land? |
+| 10 | Two hop sizes, one lily: how many hops of the other size reach the same place? |
 
 <!-- end generated -->
 
