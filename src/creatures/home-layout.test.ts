@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { UPRIGHT_VIEWS } from '../games/upright-check';
 import { BOARD, PLAQUE } from '../ui/creation-art';
+import { HOME_NAMES, NAME_MAX, nameBelow, nameWidth, PILL, playName } from '../content/button-names';
 import { BACK } from './friends-layout';
+import { SPECIES } from './species';
 import {
   ACTION_RADIUS,
   BALL_RADIUS,
@@ -22,6 +24,7 @@ import {
   GEAR_CORNER,
   GUIDE_CORNER,
   HOME_BUTTON,
+  HOME_NAME_W,
   homeLayout,
   LINK_CORNER,
   NEWCOMER_REACH,
@@ -135,6 +138,58 @@ describe('the root Home layout', () => {
         // The companion and the ball stand on the grass.
         expect(l.stage.y, where).toBeGreaterThan(l.backdrop.floorTop);
         expect(l.floor.y0, where).toBeGreaterThan(l.backdrop.floorTop);
+      }
+    }
+  });
+
+  it("puts each button's name (U1) inside the view, clear of the other buttons, names, the companion and the ball", () => {
+    for (const pet of Object.values(SPECIES).flatMap((s) => s.names)) {
+      expect(nameWidth(playName(pet)), pet).toBeLessThanOrEqual(HOME_NAME_W.alone);
+      expect(playName(pet).length).toBeLessThanOrEqual(NAME_MAX);
+    }
+    expect(playName('Bartholomew the Brave')).toBe('Play');
+    expect(nameWidth(HOME_NAMES.who)).toBeLessThanOrEqual(HOME_NAME_W.who);
+    for (const k of ['explore', 'daily'] as const)
+      expect(nameWidth(HOME_NAMES[k])).toBeLessThanOrEqual(HOME_NAME_W.pair);
+    expect(nameWidth(HOME_NAMES.continue)).toBeLessThanOrEqual(HOME_NAME_W.alone);
+    for (const v of WITH_UPRIGHT) {
+      for (const [young, project] of [
+        [true, false],
+        [false, false],
+        [false, true],
+      ]) {
+        const l = homeLayout(v, young, project);
+        const where = `${v.w}×${v.h}, ${young ? 'lap/toddler' : 'preschool+'}${project ? ', welcome open' : ''}`;
+        const named = [
+          { what: 'who', at: l.who, r: CORNER_RADIUS, w: HOME_NAME_W.who },
+          { what: 'explore', at: l.explore, r: ACTION_RADIUS, w: HOME_NAME_W.pair },
+          { what: 'daily', at: l.daily, r: ACTION_RADIUS, w: HOME_NAME_W.pair },
+          ...(l.play ? [{ what: 'play', at: l.play, r: ACTION_RADIUS, w: HOME_NAME_W.alone }] : []),
+          ...(l.continue
+            ? [{ what: 'continue', at: l.continue, r: ACTION_RADIUS, w: HOME_NAME_W.alone }]
+            : []),
+        ];
+        const names = named.map((n) =>
+          rect({ x: n.at.x, y: n.at.y + nameBelow(n.r) - PILL.h / 2 }, n.w, PILL.h, `${n.what}'s name`),
+        );
+        const others = [
+          body(l.stage),
+          floorBox(l.floor),
+          ...(l.ball ? [disc(l.ball, BALL_RADIUS, 'ball')] : []),
+        ];
+        for (let i = 0; i < names.length; i++) {
+          const b = names[i];
+          expect(b.x0, `${b.what} ${where}`).toBeGreaterThanOrEqual(0);
+          expect(b.x1, `${b.what} ${where}`).toBeLessThanOrEqual(v.w);
+          expect(b.y1, `${b.what} ${where}`).toBeLessThanOrEqual(v.h);
+          for (const o of others) expect(overlap(b, o), `${b.what} and ${o.what}, ${where}`).toBe(false);
+          for (let j = 0; j < named.length; j++) {
+            if (j === i) continue;
+            const o = named[j];
+            expect(overlap(b, disc(o.at, o.r, o.what)), `${b.what} and ${o.what}, ${where}`).toBe(false);
+            if (j > i) expect(overlap(b, names[j]), `${b.what} and ${names[j].what}, ${where}`).toBe(false);
+          }
+        }
       }
     }
   });

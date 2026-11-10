@@ -78,3 +78,10 @@ Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, 
 
 Changed: new [definition](../definitions/sand-table-sediment.md) for school level 4 *Where did it go?* (one-puff breeze rule, three authored hills in two directions, answer is the bay that gained); READY, the study, backlog row, Sand Table's definition and page. Sources opened: Geological Society of London "By wind" and University of Arizona HiRISE pages; the USGS eolian page returned 403 and the NPS White Sands PDF was unreadable.
 Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, any browser or device check; nothing was implemented. Open: the E4 build and its source re-check.
+
+## 2026-11-09 — Second Chance Shed Picnic Loop 7–8 built, nature-sustainability N4 (PR #1445)
+
+Changed: school levels 7–8 *Picnic Loop* on `second-chance-shed` (`picnic.ts` scene, picnic rules and layout in `logic.ts`, art, `shed.picnic.*` voice, how-to steps, 32 rule tests in `picnic.test.ts`, browser suite `shedpicnic`); school range now {4–8}.
+Ran: `npm run typecheck`; `npm test` (332 files, 6378 passed, 1 skipped); `BROWSER_SUITE=shedpicnic` (level 7: unwashed carry 1 miss, unchanged ring free, washes, finish 1/0; level 8 case A: promise miss, empty-seat ring free, painter waiting second miss and glow, portrait screenshot, Show a hint then Show me one handing the mug over, ghost finger to the finish 2/2); `BROWSER_SUITE=fingerdemo FINGER_ONLY=second-chance-shed FINGER_LEVELS=7,8 FINGER_BAND=school` (31.5 s, 53.6 s); `npm run build`; `node scripts/check-links.mjs`.
+Source check (the definition's gate): washable cups and mugs over disposable ones is consistent with EPA, [Reduce, Reuse, Recycle: What you can do](https://www.epa.gov/recycle/what-you-can-do); the one-use cups' material is never named, so no bin rule is implied.
+Not run: other suites, the offline check, case B in the browser (rule tests cover it).

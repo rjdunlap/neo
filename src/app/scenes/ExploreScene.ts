@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
 import { landmarkFor, Signpost } from '../../art/lands';
-import { cream, ink, swatch } from '../../art/palette';
+import { cream, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { locationCard } from '../../art/locations';
 import { music, STYLES } from '../../audio/music';
@@ -37,7 +37,7 @@ import { store } from '../../progress/store';
 import { finish, RoundButton, spring, squash } from '../../ui/buttons';
 import { arrowIcon, houseIcon } from '../../ui/icons';
 import { ENTRY_NAMES, entryArt, fitArt } from '../../ui/origin-art';
-import { label } from '../../ui/text';
+import { namePill } from '../../ui/text';
 import type { App } from '../App';
 import type { Box } from '../transition';
 import { Scene } from '../Scene';
@@ -296,13 +296,9 @@ export class ExploreScene extends Scene {
     const node = new Container();
     const { w, h } = size;
     fitArt(art, Math.min(w, h) - 30);
-    const text = label(name, 22, ink);
-    text.y = h / 2 + 26;
-    // The name sits on its own cream pill so it reads over the busy backdrop.
-    const pill = new Graphics()
-      .roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17)
-      .fill(cream);
-    node.addChild(finish({ w, h, corner: 28 }, swatch.green, cream), art, pill, text);
+    const pill = namePill(name);
+    pill.y = h / 2 + 26;
+    node.addChild(finish({ w, h, corner: 28 }, swatch.green, cream), art, pill);
     node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
     if (act)
       onTap(

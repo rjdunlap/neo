@@ -3,6 +3,8 @@ import { shadow, type Swatch } from '../art/palette';
 import { sfx } from '../audio/sfx';
 import { onTap, palmOnGlass } from '../engine/input';
 import type { Meaning } from './origin-art';
+import { namePill } from './text';
+import { PILL } from '../content/button-names';
 
 /** `a` moved toward `b` by `t` (0–1), channel by channel. */
 function blend(a: number, b: number, t: number): number {
@@ -100,6 +102,14 @@ export class RoundButton extends Container {
   /** Marks the button as Home or Back (RW14 slice 3), for chaining onto its construction. */
   means(meaning: Meaning): this {
     this.meaning = meaning;
+    return this;
+  }
+
+  /** Puts a short name on a pill across the button's lower rim (U1), at most `maxW` wide; for chaining onto its construction. */
+  named(name: string, maxW?: number): this {
+    const pill = namePill(name, maxW);
+    pill.y = this.radius - PILL.lift;
+    this.addChild(pill);
     return this;
   }
 

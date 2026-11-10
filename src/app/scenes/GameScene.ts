@@ -29,7 +29,8 @@ import { nextSpot } from '../../couch/focus';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { resultSpots } from '../result-layout';
+import { RESULT_NAME_W, resultSpots } from '../result-layout';
+import { RESULT_NAMES } from '../../content/button-names';
 import { textBoost, type View } from '../../engine/view';
 import { pauseLabels, type PauseAction } from '../pause';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
@@ -848,6 +849,10 @@ export class GameScene extends Scene {
       });
     }
     this.after = { again, next, heart, home, house, keep };
+    // At the root each picture carries its name (U1), so the way on reads with the sound off.
+    if (this.app.creatureWorld)
+      for (const k of ['again', 'next', 'heart', 'home', 'house', 'keep'] as const)
+        this.after[k]?.named(RESULT_NAMES[k], RESULT_NAME_W[k]);
     for (const b of [
       again,
       ...(next ? [next] : []),
