@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS, type View } from '../engine/view';
 import { FRIEND_HIT, friendFeet, friendXs, PLANS as snackPlans, snackXs } from './animal-snack/logic';
 import { PLANS as bubblePlans, spawnBox, TAP_REACH } from './bubble-pop/logic';
+import { ANIMALS, CARD_HIT, cardSpots, rowXs } from './sing-along-barn/logic';
 import { insertLayout, paradeLayout, ribbonLayout, RIBBON_LANE, TARGET } from './size-parade/logic';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
 
@@ -57,6 +58,22 @@ describe.each(Object.entries(views))('Lap and toddler upright batch 5 on %s', (_
     check(v, [{ what: 'Bell', x: v.w - 80, y: 110, w: 110, h: 110 }]);
   });
 
+  it('Sing-Along Barn: the five friends to choose and up to ten song cards fit', () => {
+    // A friend at the choice size: its 100-radius body circle at 0.55, 120 above its feet, which stand 36 from the bottom.
+    for (let n = 1; n <= ANIMALS.length; n++)
+      check(
+        v,
+        rowXs(n, v.w).map((x) => square('friend', { x, y: v.h - 36 - 120 * 0.55 }, 110)),
+      );
+    for (let n = 2; n <= 10; n++) {
+      const c = cardSpots(n, v.w, v.h);
+      check(
+        v,
+        c.at.map((p) => ({ what: 'song card', ...p, w: CARD_HIT.w * c.scale, h: CARD_HIT.h * c.scale })),
+      );
+    }
+  });
+
   it('Size Parade: the line, the five-place insert and the ribbon lanes fit', () => {
     for (let n = 2; n <= 5; n++) {
       const l = paradeLayout(n, n, v.w);
@@ -65,7 +82,8 @@ describe.each(Object.entries(views))('Lap and toddler upright batch 5 on %s', (_
         v,
         l.friends.map((x) => ({ what: 'friend', x, y: v.h - 90 - TARGET.h / 2, w: l.targetW, h: TARGET.h })),
       );
-      for (const [a, b] of l.spots.slice(1).map((s, i) => [l.spots[i], s])) expect(b - a).toBeGreaterThanOrEqual(100);
+      for (const [a, b] of l.spots.slice(1).map((s, i) => [l.spots[i], s]))
+        expect(b - a).toBeGreaterThanOrEqual(100);
     }
     const ins = insertLayout(v.w, 2);
     expect(ins.openW).toBeGreaterThanOrEqual(100);

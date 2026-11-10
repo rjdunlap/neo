@@ -1,3 +1,4 @@
+import { spread } from '../../engine/view';
 import { MIDDLE_C, stepToMidi } from '../../audio/notes';
 import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
@@ -584,4 +585,37 @@ export function farmAnimals(plan: SingPlan, rng: Rng): Animal[] {
 export function nextInvite(invited: readonly Animal[], plan: SingPlan): Animal | null {
   if (invited.length >= plan.verses) return null;
   return ANIMALS.find((a) => !invited.includes(a)) ?? null;
+}
+
+/**
+ * The friends' row along the bottom of a view `w` wide: up to 190 apart from 150 to the right edge less 40. On the narrow
+ * upright area (chunk 31) the row starts 20 further from the guide and runs to 20 from the edge, so five friends at the
+ * choice size (110-unit bodies) stay apart and clear of the pet.
+ */
+export const rowXs = (n: number, w: number) =>
+  w < 900 ? spread(n, 170, w - 20, 190) : spread(n, 150, w - 40, 190);
+
+/** A song card's touch area at full size, centred on the card. */
+export const CARD_HIT = { w: 220, h: 200 };
+
+/**
+ * Where the song cards sit, centred across a view `w` wide at 0.42 of its height. Four cards shrink to 0.72 (158 across,
+ * 180 apart) and five to 0.6 (132 by 120, 150 apart) so a row still fits an upright 768-wide view with room for the pet;
+ * more than five sit in two rows, so a card never shrinks below the five-card size (ten are two rows of five, 150 apart).
+ */
+export function cardSpots(n: number, w: number, h: number) {
+  const cols = n > 5 ? Math.ceil(n / 2) : n;
+  const scale = cols > 4 ? 0.6 : cols > 3 ? 0.72 : 1;
+  // 250 apart at full size: 30 clear between two 220-wide cards.
+  const spacing = 250 * scale;
+  const rows = Math.ceil(n / cols);
+  const at = Array.from({ length: n }, (_, k) => {
+    const row = Math.floor(k / cols);
+    const inRow = Math.min(cols, n - row * cols);
+    return {
+      x: w / 2 + ((k % cols) - (inRow - 1) / 2) * spacing,
+      y: h * 0.42 + (row - (rows - 1) / 2) * spacing,
+    };
+  });
+  return { scale, at };
 }

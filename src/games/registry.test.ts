@@ -514,6 +514,7 @@ describe('game registry', () => {
       'picture-logic',
       'pond-conga',
       'pyramid-solitaire',
+      'sing-along-barn',
       'size-parade',
       'snowball-merge',
       'species-comeback',

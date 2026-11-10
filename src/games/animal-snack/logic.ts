@@ -160,7 +160,8 @@ export const friendFeet = (h: number) => h * 0.64;
  * The feeding spot's edges and its snacks' places across a view `w` wide. On the narrow upright area (chunk 31) the spot
  * reaches from just right of the guide to the edge, so five 110-wide snacks keep apart.
  */
-export const spotEdges = (w: number) => (w < 900 ? { left: 160, right: w - 20 } : { left: 170, right: w - 50 });
+export const spotEdges = (w: number) =>
+  w < 900 ? { left: 160, right: w - 20 } : { left: 170, right: w - 50 };
 export const snackXs = (n: number, w: number) =>
   w < 900 ? spread(n, spotEdges(w).left, spotEdges(w).right, 140) : spread(n, 220, w - 80, 140);
 
