@@ -42,3 +42,11 @@ School level 9 replays level 7's 18-piece heap with a four-place tray (count by 
 Ran: `npm run typecheck`; `npm test` (331 files, 6330 tests; 17 Pile Match rule tests: every board clears along its route at `t = 4` with the tray never above 2, a full four-place tray is reachable, hint search at levels 8 and 9 under 250 ms, hints legal and non-looping); `BROWSER_SUITE=pilematch` (level 9 four slots drawn, tray filled to four with no three, one refused tap = one miss, screenshot, solved by the ghost finger's choices, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=9` (26.8 s).
 
 Not run: build (no shared files or assets changed), offline, `world`. Open: iPad play of the four-place tray.
+
+## 2026-11-09 — Pile Match slice 3, level 11 Any three in a little pile (PR #1441)
+
+Preschool and pre-K level 11: six pieces, two kinds, two layers, five-place tray, free play like level 3 (nothing is a miss). `entryLevels: [11]` keeps a carried level 11 from entering school at 9. No voice-line or bot changes.
+
+Ran: `npm run typecheck`; `npm test` (331 files, 6343 tests; 19 Pile Match rule tests: level 11 shapes never fill a 5-place tray, 4 + 2 layers, no shape shared with levels 2/4, band orders, `stepLevel` 3 to 11 to 4, `landing(11, school)` = 5); `BROWSER_SUITE=pilematch` (levels 1, 8, 9, 11, 4; level 11 covered touch and three put-backs uncounted, tray at most 4, 0 misses 0 hints, sticker, sand-look screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=11 FINGER_BAND=prek` (9.9 s).
+
+Not run: build (no shared files or assets changed), offline. Open: iPad play.
