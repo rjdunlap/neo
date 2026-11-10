@@ -12,6 +12,7 @@ import type { View } from '../../engine/view';
 import type { App } from '../App';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
+import { IdleCue, wobble } from '../../ui/idle-cue';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
@@ -50,6 +51,10 @@ export class HatchScene extends Scene {
   private readonly choices = new Container();
   private pip: Companion | null = null;
   private taps = 0;
+  /** The lean a tap leaves on the egg; the quiet cue rocks it about this. */
+  private tilt = 0;
+  /** With nothing touched for a few seconds the egg rocks, so a silent first screen still shows what to tap (U4). */
+  private readonly quiet = new IdleCue();
   private step: 'egg' | 'color' | 'name' = 'egg';
   private readonly selected = new Graphics();
   private readonly nameLabel = label('', 42, swatch.teal.line);
@@ -92,6 +97,13 @@ export class HatchScene extends Scene {
     this.content.addChild(this.background, this.egg, this.plate, this.choices);
     this.ui.addChild(this.next, this.nameLabel);
     this.next.visible = false;
+    this.track({
+      update: (dt: number) => {
+        if (this.step !== 'egg' || !this.egg.visible) return;
+        this.quiet.update(dt);
+        this.egg.rotation = this.tilt + wobble(this.quiet.progress);
+      },
+    });
     if (this.quick) {
       // Old enough to choose a friend without an egg: straight to the colors.
       this.egg.visible = false;
@@ -106,7 +118,9 @@ export class HatchScene extends Scene {
         this.taps++;
         sfx.pop();
         this.showEgg(this.taps);
-        this.egg.rotation = (this.taps % 2 ? 1 : -1) * 0.1;
+        this.quiet.reset();
+        this.tilt = (this.taps % 2 ? 1 : -1) * 0.1;
+        this.egg.rotation = this.tilt;
         if (this.taps === 4) {
           this.egg.visible = false;
           this.step = 'color';

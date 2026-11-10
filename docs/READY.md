@@ -8,13 +8,14 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **U4: show what to touch when it is quiet** (shell): an idle wobble on the egg and a bounce on the project's next card.
+- **U5–U8: define first** (docs only, one each): a first six she can start, one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
 
 - **`mossy-path`, slices 4–5 in the dive's order** (toddler to school; [build slices](deep-dives/mossy-path.md#build-slices-in-order)): slice 4 level 10 *Plan, then go* (new interaction: unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 10, build); slice 5 level 11 *Thick moss* (solver rewrite: rule tests including levels 1–3 and 8 unchanged, one browser play of 11, `fingerdemo` at 11, build).
 - **`number-trails`, slices 3–6 in the dive's order** (`letter-trails` helpers; preschool and pre-K; [build slices](deep-dives/number-trails.md#build-slices-in-order); slices 1–2 are built): slice 3 check the digits against the HWT chart (`digits.test.ts`, `fingerdemo` at 2; once the chart is open); slice 4 level 4 *First numbers* (rule tests, browser play of 4, `fingerdemo` at 4); slice 5 level 5 *Write how many* (new interaction: unit tests, one scripted play, one portrait screenshot); slice 6 level 6 *Less help each time* (rule tests, one play, `fingerdemo` at 6, one screenshot; coordinate with Letter Trails level 9 if in flight). Level 7 and the journal are optional calls in the [dive](deep-dives/number-trails.md#decisions-for-the-developer).
 - **`bolt-boards`, remaining slices in the dive's order** (`tinker-lab`; toddler to school; [build slices](deep-dives/bolt-boards.md#build-slices-in-order)):
 
 - **Phone held upright, shell slice 3: the rest of the root's scenes** (shell tier): lay out creature play (`PlayScene`), the library (`LibraryScene`), Welcome a New Friend's project and ending pages (`ProjectScene`), the Arcade (`ArcadeScene`), the locations (`LocationScene`), and Little surprises and Make my mix on All games at lap and toddler on the 768 × 1024 area, each with a layout test at `UPRIGHT_VIEWS` and one screenshot; `classic/` stays sideways-only. It matters only on narrow tablets and computers, so it sits after the phone and playtest lines. [Definition](definitions/phone-portrait.md#shell-slice-3-the-rest-of-the-roots-scenes-ready)
+- **`snowball-merge`, slices 1–5 in the dive's order** (`lantern-lake`; grown-up; [build slices](deep-dives/snowball-merge.md#build-slices-in-order)): slice 1 boards, looks, the join moment, the glow and a par line (existing-game change: typecheck, rule tests, one filtered `BROWSER_SUITE=snowball` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3; build only if shared files change); slice 2 level 4 *Make 128* after slice 1 (new level: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4); slice 3 level 5 *The ice rock* (model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build); slice 4 level 6 *Build a snowman* (typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one overshoot and Undo, one portrait screenshot, `fingerdemo` at 6); slice 5 level 7 *A wider field* only after phone-upright batch 4 (unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 7, build). The school opening, couch course and swipes are optional calls in the [dive](deep-dives/snowball-merge.md#decisions-for-the-developer).
 
 ## Queued
 
@@ -34,7 +35,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`snowball-merge`, slices 1–5 in the dive's order** (`lantern-lake`; grown-up; [build slices](deep-dives/snowball-merge.md#build-slices-in-order)): slice 1 boards, looks, the join moment, the glow and a par line (existing-game change: typecheck, rule tests, one filtered `BROWSER_SUITE=snowball` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3; build only if shared files change); slice 2 level 4 *Make 128* after slice 1 (new level: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4); slice 3 level 5 *The ice rock* (model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build); slice 4 level 6 *Build a snowman* (typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one overshoot and Undo, one portrait screenshot, `fingerdemo` at 6); slice 5 level 7 *A wider field* only after phone-upright batch 4 (unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 7, build). The school opening, couch course and swipes are optional calls in the [dive](deep-dives/snowball-merge.md#decisions-for-the-developer).
 
 ### Codebase structure (2026-11-07 review)
 
@@ -44,9 +44,8 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 ### UX review (2026-11-09)
 
-From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U4 leads Next ten (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
+From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1 to U4 are built; U5–U8 follow in Next ten (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
 
-- **U5–U8: define first** (docs only, one each): a first six she can start, one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
 
 ### Study follow-ups (docs-only definitions)
 

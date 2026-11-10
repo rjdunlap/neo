@@ -104,3 +104,53 @@ Hat Band’s encore exceeded the 90-second headless cutoff on initial attempts, 
 Changed: `mossy-path` level 8 (pre-K, school; five frozen `PATCHES`, a free far tap with pulse), registry `order`s, how-to steps and level-7 line caps.
 Ran: `npm run typecheck`; `npm test` (332 files, 6401 passed); `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=patch` (free far tap with pulse, counted visited tap, portrait screenshot with cells at least 100, finish, one sticker) PASS; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=8` PASS (pre-K, 6.3 s).
 Not run: other suites, offline, an iPad, a child.
+
+## 2026-11-09 — Fruit Sums slice 5, level 7 *A times leaf* (PR #1451)
+
+Changed: `fruit-sums` level 7 (school, last in order): plus, take-away and times leaves, composite targets up to 24, fruit up to 12; new lines `fsums.times`, `fsums.start7`.
+Ran: `npm run typecheck`; `npm test` (333 files, 6435 passed; 76 fruit-sums rule tests, layout tests at five views include level 7); `BROWSER_SUITE=fruitsums FROM_LEVEL=7` (portrait 768×1024, a wrong product as a miss, a times way, a way with another sign, screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=fruit-sums FINGER_LEVELS=7` (14.2 s).
+Not run: `npm run build` (no shared file changed), other suites, device speech of the new lines (no clips yet), an iPad, a child.
+
+## 2026-11-09 — Docs streamlined for the phone-playtest focus (docs only, PR #1452)
+
+**Changed:** device, child and controller checks are parked ([DEVICE-CHECKS](../DEVICE-CHECKS.md) is one short page; its 616 items are in [the archive](DEVICE-CHECKS-2026-11-09.md)); [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) is two rows; the roadmap, READY, AGENTS.md, the session guide, the docs-keeper agent and the dive template name the phone focus and stop repeating either list; 82 coverage caveats lost their device-only clauses; [OBSERVATIONS](../OBSERVATIONS.md) and the README's phone section describe the playtest loop; four loose docs and the removed roadmap text moved to [the archive](README.md).
+
+**Ran:** `node scripts/check-links.mjs` (links ok) and `git diff --check`. No code changed and no code checks ran locally; CI runs `npm test` and the build on the PR.
+
+## 2026-11-09 — Grown-up upright games batch 3 (chunk 31, PR #1454)
+
+**Changed:** `block-garden`, `logic-grid`, `species-comeback` and `pyramid-solitaire` set `upright: true` (all bands) with upright layouts (`pyramidLayout`, `comebackLayout`, `caseLayout`/`slidingLayout`, a `gardenLayout` guard); the `uprightgames` suite now plays drag intents. Smallest targets at 390 × 844: Pyramid Solitaire 51 px, Block Garden beds 36.6 px, Logic Grid squares and Species Comeback cards 32.5 px (the 64-unit grown-up minimum, as sideways).
+
+**Ran:** `npm run typecheck`; `npm test` (334 files, all pass after `npm run game-docs`), including the new `upright-batch-3.test.ts` (16 tests on the phone, small, tall and short upright views; Block Garden at all 12 levels); `BROWSER_SUITE=uprightgames PHONE_ONLY=pyramid-solitaire,species-comeback,block-garden,logic-grid` on a 390 × 844 touch phone: block-garden 5 and 12, logic-grid 7 and 8, pyramid-solitaire 1 and 3, species-comeback 1 and 3 each finished with one sticker; top-level screenshots reviewed, and child levels of Logic Grid (1, 5, 6) and Block Garden (prek 1, school) screenshotted upright.
+
+**Not run:** `npm run build` (only game files and one browser suite changed; CI builds), `fingerdemo` (the upright play covers the bots' targets), offline.
+
+## 2026-11-09 — Grown-up upright games batch 4 (chunk 31, PR #1457)
+
+**Changed:** `log-roll`, `marble-jump` and `snowball-merge` set `upright: true`; `logRollLayout(v, floor)` and `snowballLayout(v)` are exported layouts (Log Roll's floor starts at y 230 and centres in the tall view; Snowball cells grow to 160 upright); Marble Jump's `boardLayout` already fit. Smallest targets at 390 × 844: Log Roll and Snowball Merge 100 units = 51 px, Marble Jump 78 units = 39.6 px (as sideways). The grown-up upright pool is 19 games.
+
+**Ran:** `npm run typecheck`; `npm test` (336 files, 6469 tests, all pass), including the new `upright-batch-4.test.ts` (every Log Roll floor and its mirror, both Marble Jump boards with holes 78 apart, Snowball's field at 390 × 844, 375 × 667, 430 × 932 with insets and 375 × 601); `BROWSER_SUITE=uprightgames PHONE_ONLY=log-roll,marble-jump,snowball-merge` on a 390 × 844 touch phone: each game finished with one sticker (marble-jump 1 in 4 touches and 9 in 38; log-roll 1 in 4 and 7 in 12; snowball-merge 1 in 3 and 3 in 8); top-level screenshots reviewed.
+
+**Not run:** `npm run build` (no shared files or assets changed; CI builds), `fingerdemo` (the bots tap nodes by reference), other suites.
+
+## 2026-11-09 — Lap and toddler upright games, batch 5 (chunk 31)
+
+**Changed:** `bubble-pop`, `sing-along-barn`, `animal-snack`, `size-parade`, `far-lights` and `stamp-studio` set `upright: true` (25 upright-ready games); new layouts `spawnBox`, `spotEdges`/`snackXs`, `rowXs`/`cardSpots`, a Far Lights upright layout (it was a dark screen upright) and `stampLayout`; `GameScene.placeTip` moves the lap and toddler tip below Home upright. Sideways layouts unchanged.
+**Ran:** `npm run typecheck`; full `npm test` (337 files, 6493 passed, 1 skipped), including the new `upright-batch-5.test.ts` (every game at 390 × 844, 375 × 667, 430 × 932 with a notch and a short 375 × 601: 100-unit minimum, smallest target at least 50 px at 390 × 844); `npm run build`; one upright screenshot per game at 390 × 844 on the dev server without `?uprightall` (no turn prompt, no page errors): bubble-pop 14, sing-along-barn 6 and 3, animal-snack 5 and 1, size-parade 15, far-lights 6, stamp-studio 6 and 9; far-lights 1, 5 and 8 also with `?uprightall` after the fix.
+**Not run:** `BROWSER_SUITE=uprightgames` (it plays only grown-up-band games), `phonefit`, offline (no manifest, asset or persistence change), `fingerdemo` (bots read live node positions; no rule change).
+
+## 2026-11-09 — Crossword keeps the clue direction (PR #1455)
+
+A square tap keeps Across or Down where available. Two consecutive taps on a crossing switch direction, including after typing moved the cursor there.
+
+Ran on `2b0467e3` plus the working diff: typecheck, 71 Crossword rule tests (both new cases failed before the fix), and a 390 × 844 Chromium probe at `GAME_URL=http://localhost:5199` on level 6. Touch selection, a physical-keyboard event and an on-screen key entered two Down letters in the right squares. Two taps switched the clue to Across.
+
+At the same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=5,6 FINGER_BAND=grownup` finished levels 5 and 6 (37.5 s and 51.5 s).
+
+The broader `crossword` browser suite and offline checks were not run for this typing fix.
+
+## 2026-11-09 — Upright sweep of the early-school games (chunk 31, PR #1456)
+
+**Changed:** a dev-server-only `?uprightall` switch in `GameScene` (absent from the build; no match in `dist`) and the `uprightsweep` browser suite, which plays every school-band game not yet `upright` at its top school level on a 390 × 844 touch phone and sorts it by measured target size. No game became upright.
+**Ran:** `npm run typecheck`; `npm test` (335 files, 6455 tests pass); `npm run build`; `BROWSER_SUITE=phonefit` passed (the turn prompt still shows over a not-ready game without the switch); `BROWSER_SUITE=uprightsweep` over all 124 games (pass) plus filtered reruns. Result: 57 fit, 37 small fix, 28 need a layout, 1 not judged, 1 not a phone game; the "look" group was judged by eye from thumbnails, and `fruit-sums` flipped between runs. Lists: [the sweep](../definitions/phone-portrait.md#the-upright-sweep-built-2026-11-09).
+**Not run:** offline and `world` (no persistence, asset or navigation change).
