@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-10 — U7 never swallow a tap defined (docs only)
+
+**Changed:** new [definition](definitions/never-swallow-a-tap.md) of U7 in four slices (U7a the phone's way in, U7b Day by Day and the held-line look, U7c the tablet root, U7d classify); READY, the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built).
+**Open:** the four slices.
+
 ## 2026-11-10 — U6 one way to browse defined (docs only)
 
 **Changed:** new [definition](definitions/one-way-to-browse.md) of U6 in two slices (U6a the Arcade first, U6b the fold); READY, the UX review and the roadmap point to it.

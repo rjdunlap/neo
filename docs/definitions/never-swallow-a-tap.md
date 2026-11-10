@@ -1,0 +1,74 @@
+# Never swallow a tap (U7, definition)
+
+*Status: defined 2026-11-10; nothing built. Docs only.*
+
+From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#8-taps-are-dropped-and-screens-are-slow-to-answer), finding 8 and recommendation U7: a tap that does nothing, or a screen that takes seconds to answer, reads to a child as "it's broken" and to a grown-up as "it froze". The review asked for two things: let a second tap interrupt a spoken name, and show the pressed picture as chosen while a screen changes. This page settles what each means in the code, and adds the measurement the slow screens need first.
+
+**Where it shows.** On a phone the root is **Who's playing?**, then Today's six and the games (`App.phoneOnly`); Home, Explore, the Arcade, the library and creature play are not reached there. So the phone parts are the chooser, Today's six's cards and in-game taps, and they come first. Home, Explore and the Arcade are tablet and computer screens and follow.
+
+## What is there today (`origin/main` at `4fc6e429`)
+
+- **In a game, a tapped thing's name holds input.** Day by Day's card pick sets `busy`, awaits `ctx.say('week.name')`, then clears `busy` (`src/games/day-by-day/index.ts`, around line 398); every handler returns early while `busy`, so the arrow ignores her for the length of the line. Nothing shows it is busy.
+- **With sound off, a line still lasts.** `voice.speak` keeps a muted line's pacing: it resolves after 600 ms plus 45 ms a character (`src/audio/voice.ts`, around line 89), so a muted "Tuesday" holds Day by Day for about a second. The review ran with `VITE_SPEECH=off`, standing in for an iPad's silent switch.
+- **`voice.stop()` does not end a line's promise in every path.** It bumps the turn, cuts a playing clip and cancels device speech; the muted timer is never cut, and whether a cancelled utterance fires `end` or `error` depends on the engine (the 1.5 s + 90 ms a character fallback timer resolves it otherwise). So "a second tap calls `voice.stop()`" alone would not fix what the review measured.
+- **The root waits before it leaves.** Each scene's `leave` (Home, Explore, the Arcade, Today's six, the library, creature play) plays the picture's line, or a squish, and changes screen after the line or a cap, whichever is first: 0.9 s on Home, 1.1 s elsewhere, 0.2 s with no line. A second tap while leaving does nothing. The pressed button squashes on touch-down (`squash` in `src/ui/buttons.ts`) and springs back, so by the time the screen moves nothing shows which picture she chose; Home shows only her friend's cheer.
+- **The change itself is short.** `App.show` (`src/app/App.ts`) blocks taps, snapshots the old screen (`picture`, a `generateTexture` of the whole root), destroys it, runs `next.init()` and `resize`, then grows, shrinks or fades over 0.3–0.35 s (`TRANSITION_SECONDS`).
+- **The gap the code does not explain.** The cap plus the transition comes to about 1.3 s; the review measured two to four seconds from a tap on a Home or menu picture to the new screen, and four to five seconds for the chooser to fade in on launch. *Hypotheses, to be measured (R1):* the next scene's `init()` (building cards, backdrops and the companion rig), the old screen's snapshot at full resolution, and, for the chooser, the profile reads (`store.peek` for each player) and the app's first load before it.
+
+## Requirements
+
+### R1. Measure before cutting
+
+The build's first step, before any change: performance marks in `App.show` at the tap (the time the leaving scene's `leave` was called, passed through as it is for `growBox`), at `next.init()` done, at the first transition frame and at settled, plus the chooser's marks from page start to its cards shown. A dev-only probe (`test-results/`, through `launchTestBrowser`) reads them for: Home → Explore, Explore → the Arcade, Today's six → a game, a game's result → Today's six, and the chooser on a cold and a warm load, each three times with speech off at 1024 × 768 and 390 × 844. The numbers, before and after, go in the slice's verification entry. If the measurement finds a cause outside this page's hypotheses, the slice fixes what is inside its files and writes the rest down as a new line rather than growing.
+
+### R2. A pressed picture stays chosen
+
+- On touch-down the chosen picture squashes as now, then **holds a chosen look** (it stays pressed, with a thick white ring drawn round its outline) until the screen changes; the scene's other choices **dim to 60%** at the same moment, so it is plain which tap counted. The look is one shared helper in `src/ui/buttons.ts` (`chosen(node, others)`), used by every root `leave`.
+- A second tap on the **same** picture while leaving does nothing, as now. A tap on a **different** picture does nothing either: the first choice stands (the screen is already going), and the dim says so.
+- Taps during `App.show`'s transition stay blocked (`blocker`); the chosen look carries into the grow, since the new screen grows out of that picture's box.
+
+### R3. The screen starts changing at once
+
+- `leave` starts the change within **0.3 s** of touch-down (the squash's beat, 0.2 s), not after the line. The line keeps playing over the transition and into the new screen: `App.show` does not stop speech, and the next scene's own first line cuts it as any new line does.
+- Where R1 finds `init()` or the snapshot slow, the build makes the change start before the expensive part (snapshot at the view's scale rather than the device's resolution, or build the next scene's heavy layers over the first frames), whichever the numbers point to, and keeps the transition's look.
+- **Target**, measured as in R1 with speech off: the transition's first frame within 0.5 s of the tap, settled within 1 s, on a computer; the phone figures are recorded, not gated (a desktop browser is not a phone).
+- **The chooser:** its cards show as soon as the profile index is read; each card's picture fills in when its save is read, instead of waiting for every `store.peek`. The fade-in stays under 0.4 s. Target: cards on screen within 1 s of the app's first frame on a warm load.
+
+### R4. A tapped name never holds input
+
+The rule, for every game: **a line that names or answers what she just tapped never holds input.** The game updates its state, starts the line, and takes the next tap at once; a new tap's line cuts the old one (`voice.speak` already cuts a clip and cancels device speech).
+
+- **Which lines.** Cuttable and never awaited before input reopens: a tapped thing's name (a card, a day, a letter, a colour), a right answer's short confirmation, a free choice's reaction. **Held**, as now: the instruction (`ctx.instruct`), which she needs to hear to know what to do, a hint after a miss, and a step's spoken result where the next step depends on hearing it (Day by Day's `week.record`, "Tuesday was rainy", before the next day is asked). A held line still shows it is holding: R5.
+- **The shell's part.** `voice.stop()` ends every pending line's promise at once (the muted timer included, so a muted line can be cut), and a new `say` resolves the one it cuts. A unit test in `src/audio/voice.test.ts` asserts both with speech muted. This keeps games that await a line from waiting out a line nobody hears.
+- **The Day by Day pilot.** The card pick (`week.name`) stops awaiting: `busy` clears as the line starts, and a tap on the arrow, or another card, acts at once and cuts the name. A wrong pick's boing and hint stay held. The `week` suite's "interrupted speech" case is extended to tap the arrow during the name and see the day placed.
+- **The other games** are classified, not swept: a grep at `4fc6e429` finds about 120 game folders that both set a busy-style flag and await `ctx.say`, which is an upper bound on games that might hold a name, not evidence that they do. A docs-only step reads each and lists, per game, the awaited lines that name a tapped thing (R4's cuttable kind); fixes then go in by game batch as each game is next worked on, at the existing-game bug-fix tier. Phone-ready games (upright-ready, on Today's six) first.
+
+### R5. A held line shows it
+
+While a game holds input for an instruction or a hint, the corner guide (her friend) shows it is talking with a gentle bob (the guide has no talking look today; `makeGuide` in `src/creatures/companion.ts`), and a tap on the board during the hold gives the soft UI tap (`sfx.tick`) rather than nothing. This is shell work in `GameScene`'s `say`/`instruct` wrappers, so every game gets it without its own change; a game whose own large pet stands in for the guide (AGENTS: spoken support) shows it on that pet instead.
+
+## What the rule tests assert
+
+- `voice.test.ts`: with speech muted, `say` then `stop()` resolves the first promise at once; `say` then a second `say` resolves the first when the second starts.
+- A `chosen` helper test in `src/ui/`: the chosen node keeps its pressed scale and ring, every other node passed is at 60% alpha, and undoing it (a scene that stays, such as an aborted `leave`) restores both.
+- The root scenes' `leave` tests (or `src/app/screen-keys.test.ts`-style tests over the real scenes): `go` is called within 0.3 s of the tap with the line still pending; a second tap while leaving calls nothing.
+- Day by Day's rule or scene test: after a card pick, the arrow is accepted before `week.name` resolves; `week.record` still holds.
+- `chooser.test.ts`: cards are built from the profile index before every `peek` resolves, and each fills in when its save arrives.
+
+## Slices and check tier
+
+1. **U7a, the shell and the phone's way in** (shell tier): R1, R2, R3 for the chooser and Today's six, and R4's shell part (`voice.stop`). Files: `src/audio/voice.ts` and its test, `src/ui/buttons.ts`, `src/app/App.ts` (marks; the snapshot only if R1 points there), `src/app/scenes/DailyScene.ts`, `src/app/scenes/ChooserScene.ts` and `src/app/chooser.test.ts`. Checks: typecheck, unit tests, build, the R1 probe before and after, `BROWSER_SUITE=phonefit` (the upright root pass: Today's six to a round and back) and `BROWSER_SUITE=profiles` (the chooser). No `world`: no route changes. No offline check: persistence and assets do not change.
+2. **U7b, Day by Day and the held-line look** (existing-game bug fix plus shell): R4's pilot and R5. Files: `src/games/day-by-day/index.ts`, `src/app/scenes/GameScene.ts` (the guide's talking look and the wait tick), `src/creatures/companion.ts` (the bob). Checks: typecheck, unit tests, `BROWSER_SUITE=week WEEK_LEVELS=1,4` (a tap on the arrow during the name), and `fingerdemo` at Day by Day's first and last levels only if the bot's timing changes. Build, since `GameScene` is shared.
+3. **U7c, the tablet root** (shell tier, after U6a and U6b): R2 and R3 for Home, Explore, the Arcade, the library and creature play. Files: those scenes' `leave` helpers (`HomeScene`, `ExploreScene`, `ArcadeScene`, `LibraryScene`, `PlayScene`). Checks: typecheck, unit tests, build, the R1 probe, `BROWSER_SUITE=home` (its main flow walks every one of these screens). No `world` unless a route changes.
+4. **U7d, classify the rest** (docs only): R4's list of awaited name lines per game, written into this page or a short table beside it, and a READY line per game batch that holds any.
+
+Each slice is one session. U7a can ship alone: it is the phone's part.
+
+**Dependencies.** U7c edits the same root scenes as U6a (the Arcade), U6b (Explore, Home's routes) and phone-portrait shell slice 3 (creature play, the library, the Arcade); it waits until U6 has landed, and its session runs `scripts/overlap.sh` on those files first. U7a's `DailyScene` change is the `leave` helper and the card's tap only, which U6b (the All games button's target) does not touch, so U7a may go before or after U6. `classic/` is untouched: its map and menus are a separate shell and are not reached from a phone's root.
+
+## Open decisions
+
+For [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) after U7a is played, none blocking:
+
+- **A different picture after a first tap.** Decided: the first choice stands while the screen changes (R2). The alternative, letting a later tap redirect, was rejected for making the screen she lands on depend on the timing of two taps.
+- **Which lines hold.** Decided per R4: instructions, hints and a step's spoken result hold; names and confirmations do not. A game where real play shows she needs to hear a name before moving on can hold it, written down in that game's GAMES entry.
