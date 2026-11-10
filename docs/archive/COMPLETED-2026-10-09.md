@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### U3, round Back and help (2026-11-10)
+
+[PR #1462](https://github.com/rjdunlap/neo/pull/1462) makes the round’s Back and question mark respond to a tap. Paused → Leave takes the same return route as Back. See [verification](../VERIFICATION.md#2026-11-10--u3-round-back-and-help-pr-1462).
+
 ### Lap and toddler upright games, batch 5 (chunk 31, 2026-11-09)
 
 Branch `claude/upright-lap-toddler-batch-5` sets `upright: true` on Bubble Pop, Sing-Along Barn, Animal Snack, Size Parade, Far Lights and Stamp Studio; the upright-ready list is 25 games. Bubble Pop (start box named `spawnBox`) and Size Parade fit as is. Animal Snack's `spotEdges`/`snackXs` run the feeding spot 160..w-20 on the narrow upright area so five 110-wide snacks stay apart. Sing-Along Barn's `rowXs` (row starts at 170 upright, clear of the pet) and `cardSpots` (up to ten song cards in two rows) moved to `logic.ts`. Far Lights had returned null (a dark screen) at every level upright; the strip and window now run full width below Home and "?", the window capped at 820 tall, the curtain tassel just below the strip's right end, and level 8's pair moves right; sideways is unchanged. Stamp Studio's `stampLayout` puts the paper at the left edge below Home (578 wide), Play and Undo in the right column, stamps in the bottom row and colours from x 175. The shell's `GameScene.placeTip` moves the lap and toddler grown-up tip below Home and "?" (y 220) upright, because the tip was wider than the 768 area and covered Home; sideways and iPad are unchanged.
@@ -22,7 +26,7 @@ The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-b
 
 [PR #1448](https://github.com/rjdunlap/neo/pull/1448) adds upright phone play for Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights. Crossword enlarges its keys and grid. Picture Logic enlarges its painting cells and tools and uses the existing sliding board. Tile Pairs and Gem Swap lift their buttons above the guide, and Lantern Lights puts the pond below the corner controls.
 
-The [verification entry](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-2-chunk-31-pr-1448) records the target sizes and touch play. The real-phone playtest remains open.
+The [verification entry](VERIFICATION-2026-11-09.md#2026-11-09--grown-up-upright-games-batch-2-chunk-31-pr-1448) records the target sizes and touch play. The real-phone playtest remains open.
 
 
 ### Light Lab art split (codebase item 9, 2026-11-07)

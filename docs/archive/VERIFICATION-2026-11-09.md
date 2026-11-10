@@ -90,3 +90,11 @@ Not run: other suites, the offline check, case B in the browser (rule tests cove
 
 Changed: new [deep dive](../deep-dives/snowball-merge.md) (five build slices, three developer decisions); the dive tracker, study backlog, READY (slices queued, research line removed, the phone-upright grown-up batches line moved into Next ten) and the waiting-on-developer list updated. Nothing is built.
 Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, any browser or device check. Open: the three decisions (school opening, couch course, swipe) and a person's play of level 1 on the iPad.
+
+## 2026-11-09 — Grown-up upright games batch 2 (chunk 31, PR #1448)
+
+Added upright phone play for Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights. Tested base `415bf158` plus the working diff.
+Typecheck, formatting, build, lint and 327 targeted tests passed across 15 files (one skipped), including layout at the reference, small, inset and short phone fixtures. In the initial full unit run, a stale generated-doc check and Secret Code’s timing check failed. Both passed in the targeted rerun after regenerating the docs.
+At `GAME_URL=http://localhost:5196`, `BROWSER_SUITE=uprightgames PHONE_ONLY=hat-band,crossword,picture-logic,tile-pairs,gem-swap,lantern-lights` passed. Chromium touches started Check in Hat Band 4 after four touches. Crossword 5/6, Picture Logic 5/7, Tile Pairs 1/6, Gem Swap 1/8 and Lantern Lights 1/9 each finished with one sticker.
+One screenshot per game reviewed at 390 × 844. Smallest targets, rounded to CSS pixels, were 51 for Hat Band, Tile Pairs and Lantern Lights, and 45 for Crossword, Picture Logic and Gem Swap. The Picture Logic test also checked the controller layout width.
+Hat Band’s encore exceeded the 90-second headless cutoff on initial attempts, so its sticker is unverified. [Real-phone playtest](DEVICE-CHECKS-2026-11-09.md#grown-up-upright-games-batch-2) remains open. Offline verification was outside this layout slice. After integrating Frog Hop from `6b202ea1`, typecheck, 85 targeted tests and link checks passed. The upright play evidence still applies to the same six games.

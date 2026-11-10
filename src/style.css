@@ -157,6 +157,10 @@ html.turning .pet-name-form {
   align-items: center;
   gap: 18px;
   width: min(420px, 100%);
+  max-height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  touch-action: pan-y;
   padding: 28px 24px;
   border-radius: 24px;
   background: var(--cream);

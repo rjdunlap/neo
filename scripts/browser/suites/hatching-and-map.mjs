@@ -61,7 +61,7 @@ export function createSuite({ page, log, ready, scene, pickFirst, addFirstPlayer
     assert.deepEqual(barn.back, barn.older);
     assert.equal(barn.sign, barn.older.length > 0);
     await screenshot('land-barnyard-lap');
-    // A game opens at her band, and holding home comes back to the land.
+    // A game opens at her band, and a single tap on the round's house returns to the land.
     await page.evaluate(() => kit.tapOn(neo.scene.mine[0].node, 0, -60));
     await scene('GameScene');
     assert.deepEqual(await page.evaluate(() => [neo.scene.mod.id, neo.scene.band, neo.scene.origin]), [
@@ -69,10 +69,8 @@ export function createSuite({ page, log, ready, scene, pickFirst, addFirstPlayer
       'lap',
       { land: 'barnyard', page: 0 },
     ]);
-    await page.mouse.move(62, 62);
-    await page.mouse.down();
+    await tap('neo.scene.home');
     await scene('LandScene');
-    await page.mouse.up();
     assert.equal(await page.evaluate(() => neo.scene.id), 'barnyard');
     // The island button goes back to the map, where the pet now waits by the barnyard; the home spot holds every lap game.
     await tap('neo.scene.home');

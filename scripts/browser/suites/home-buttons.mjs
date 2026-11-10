@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 
-export function createSuite({ page, errors, log, ready, scene, pickFirst, screenshot }) {
+export function createSuite({ page, errors, log, ready, scene, pickFirst, screenshot, tap }) {
   /**
    * RW14 slice 3: one meaning per button at the root (`HOME_ONLY=buttons`). Counting Cove shows Back (Places' picture) and a
    * house beside it in both orientations; a game's how-to card and round show a back arrow, not a house; the result's Back
-   * returns to the location, and the location's house goes Home.
+   * returns to the location, and the location's house goes Home. Round Back and Paused → Leave return there too.
    */
   async function homeButtons() {
     await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href);
@@ -59,8 +59,11 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     }
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
-    await page.evaluate(() => kit.tapOn(neo.scene.showing[0].node));
-    await scene('GameScene');
+    const openRoundCard = async () => {
+      await tap('neo.scene.showing[0].node');
+      await scene('GameScene');
+    };
+    await openRoundCard();
     await page.waitForTimeout(1200);
     assert.equal(
       await page.evaluate(() => neo.scene.helpCard?.backButton?.meaning),
@@ -72,6 +75,21 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await page.waitForTimeout(800);
     assert.equal(await page.evaluate(() => neo.scene.home.meaning), 'back', 'the round leaves Back');
     await screenshot('buttons-round');
+    await tap('neo.scene.home');
+    await scene('LocationScene');
+    assert.equal(await page.evaluate(() => neo.scene.id), 'counting-cove');
+
+    await openRoundCard();
+    await page.evaluate(() => neo.scene.playFromIntro());
+    await page.keyboard.press('Escape');
+    const paused = page.getByRole('dialog', { name: 'Paused' });
+    await paused.getByRole('button', { name: 'Leave', exact: true }).click();
+    await scene('LocationScene');
+    assert.equal(await page.evaluate(() => neo.scene.id), 'counting-cove');
+    assert.equal(await paused.count(), 0);
+
+    await openRoundCard();
+    await page.evaluate(() => neo.scene.playFromIntro());
     await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
     await page.waitForFunction(() => neo.scene.after?.home, null, { timeout: 15000 });
     await page.waitForTimeout(600);
@@ -91,7 +109,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await scene('HomeScene');
     assert.deepEqual(errors, []);
     log(
-      'Buttons: location Back + house in both orientations, how-to Back, round Back, result Back to the location, house Home passed',
+      'Buttons: location Back + house in both orientations, how-to Back, tap on round Back, Paused Leave, result Back, and house Home passed',
     );
   }
 
