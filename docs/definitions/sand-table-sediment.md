@@ -2,7 +2,7 @@
 
 Defined 2026-11-09 as slice **E3** of the [earth-materials study](../deep-dives/subjects/earth-materials.md#build-slices-in-order), from its [rung 4](../deep-dives/subjects/earth-materials.md#first-games-proposed-ladder-sand-table) and the built [levels 1–3](sand-table.md). Docs only: no code, voice line or art exists for it yet.
 
-**Status: ready to build (E4).** The 2026-10-23 delegation freezes the transport table after a source check against university or geological-survey sources instead of a named reviewer. This session's check is [below](#source-check); the building session repeats it once, as E1's did, and records any change here before writing `logic.ts`. Every open call has a default ([open decisions](#open-decisions)).
+**Status: built 2026-11-10 (E4), level 4 *Where did it go?*.** Built differences: the pulsing "ghost finger" is a soft glow behind the gaining pad plus sparkles; the pre-puff hint runs the breeze; the how-to goal line is level-neutral and level-scoped steps carry the level-4 wording; the two breeze voice lines share one text; pad taps while grains move give a tick and do not answer. Original status: ready to build. The 2026-10-23 delegation freezes the transport table after a source check against university or geological-survey sources instead of a named reviewer. This session's check is [below](#source-check); the building session repeats it once, as E1's did, and records any change here before writing `logic.ts`. Every open call has a default ([open decisions](#open-decisions)).
 
 **Fun action and purpose:** an authored sand hill sits in the tray, and its top grains shimmer. She taps the breeze, a whoosh crosses the table, and the shimmering grains hop over the top and drop on the far side. The old outline stays drawn. The pet asks, "Where did the blown sand land?" and she taps under that part of the tray. The learning is **observing where wind moves sand and where it drops it**, the study's rung 4 for K/S: the breeze lifts grains from the side it hits and the top, and they settle where the hill shelters them. It is the observation step before rung 5's controlled comparison (NGSS 4-ESS2-1, observations of erosion; 2-ESS2-1, how wind changes land). It makes no claim about wind speed, time or how much real sand moves.
 
@@ -15,7 +15,7 @@ Defined 2026-11-09 as slice **E3** of the [earth-materials study](../deep-dives/
 
 ## Source check
 
-Opened 2026-11-09:
+Opened 2026-11-09; rechecked 2026-11-10 by the building session, unchanged (both pages still say the same):
 
 | Source | What it says | What the toy borrows |
 | --- | --- | --- |
