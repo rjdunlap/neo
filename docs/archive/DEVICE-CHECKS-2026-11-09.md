@@ -33,7 +33,7 @@
 
 ## Grown-up upright games batch 2
 
-- [ ] Play Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights on an upright phone. Check that the smallest targets are comfortable to reach, finish Hat Band’s encore to its sticker, and check Picture Logic’s board with a hardware controller. Record what the two players see in [Observations](../OBSERVATIONS.md). [Browser and layout checks](../VERIFICATION.md#2026-11-09--grown-up-upright-games-batch-2-chunk-31-pr-1448)
+- [ ] Play Hat Band, Crossword, Picture Logic, Tile Pairs, Gem Swap and Lantern Lights on an upright phone. Check that the smallest targets are comfortable to reach, finish Hat Band’s encore to its sticker, and check Picture Logic’s board with a hardware controller. Record what the two players see in [Observations](../OBSERVATIONS.md). [Browser and layout checks](VERIFICATION-2026-11-09.md#2026-11-09--grown-up-upright-games-batch-2-chunk-31-pr-1448)
 
 ## Vine Snip levels 1–3 (vine-snip slice 1, built 2026-11-04)
 

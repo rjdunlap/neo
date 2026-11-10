@@ -26,7 +26,7 @@ const DEMO_MIN_SCALE = 0.7;
 const NOTE_CONTROLLER = 'A demonstration: a controller moves the highlight. You tap or drag.';
 const NOTE_FINGER = 'A demonstration of this level: a pretend finger taps and drags. You do the same.';
 const NOTE_MOUSE = 'A demonstration of this level: a pointer clicks and drags. You do the same.';
-/** The level arrows are held for a moment, like the home and "?" buttons, so a small hand's tap does not change the game. */
+/** The level arrows are held for a moment so a small hand's tap does not change the game. */
 const STEP_RADIUS = 38;
 const STEP_HOLD = 0.35;
 const STEP_GAP = 10;
@@ -541,7 +541,7 @@ export class HowToPanel extends Container {
   }
 }
 
-/** The "?" on the hold-to-open button. */
+/** The question mark on the round's how-to button. */
 export function questionIcon(): Text {
   const t = new Text({ text: '?', style: { fontFamily: FONT, fontSize: 46, fill: ink, fontWeight: '600' } });
   t.anchor.set(0.5);

@@ -37,7 +37,7 @@ import type { Game, GameContext, GameModule, RoundResult } from '../../games/typ
 import type { Band } from '../../progress/bands';
 import { nextLevelOffer, stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
-import { HoldButton, RoundButton } from '../../ui/buttons';
+import { RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon, type HowToIntro } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
 import {
@@ -61,7 +61,7 @@ import { Scene } from '../Scene';
 
 /**
  * Hosts one round of a minigame and owns everything around it:
- * the pet guide, the hold-to-leave home button, co-play tips, and the celebration at the end.
+ * the pet guide, the round's Back and help buttons, co-play tips, and the celebration at the end.
  */
 export class GameScene extends Scene {
   /** Built when the round is about to start: after the intro, for a game that is opened for the first time. */
@@ -69,18 +69,9 @@ export class GameScene extends Scene {
   private readonly lifetime = new Lifetime();
   private readonly stage = new Container();
   private readonly pet = makeGuide();
-  /** Hold to leave. On the island it is a house; at the root it goes back, so it is a back arrow (RW14 slice 3, set in `init`). */
-  private readonly home = new HoldButton(
-    houseIcon(),
-    swatch.white,
-    44,
-    0.5,
-    () => this.leave(),
-    0xffffff,
-    () => this.sayBack(),
-  );
-  /** For the grown-up: hold to open the how-to card. Quiet on purpose, and a long hold so a small hand does not open it. */
-  private readonly help = new HoldButton(questionIcon(), swatch.white, 38, 0.9, () => this.openHelp());
+  /** The island house or the root's Back to the round's origin. */
+  private readonly home: RoundButton;
+  private readonly help = new RoundButton(questionIcon(), swatch.white, 38, () => this.openHelp());
   private helpCard: HowToPanel | null = null;
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
@@ -178,11 +169,13 @@ export class GameScene extends Scene {
     this.upright = this.uprightArea =
       mod.upright === true ||
       (import.meta.env.DEV && new URLSearchParams(globalThis.location?.search).has('uprightall'));
-    if (this.app.creatureWorld) {
-      // At the root a house always goes Home; this goes back to the round's origin, its story's page or the mix's next stop.
-      this.home.setIcon(this.story ? basketIcon() : backArt(this.origin, 44, ink));
-      this.home.meaning = 'back';
-    }
+    const icon = this.app.creatureWorld
+      ? this.story
+        ? basketIcon()
+        : backArt(this.origin, 44, ink)
+      : houseIcon();
+    this.home = new RoundButton(icon, swatch.white, 44, () => this.leave());
+    if (this.app.creatureWorld) this.home.means('back');
   }
 
   init() {
@@ -203,9 +196,7 @@ export class GameScene extends Scene {
     });
     this.pet.hitArea = new Circle(0, -125, 170);
     this.track(this.pet);
-    this.track(this.home);
     this.help.alpha = 0.6;
-    this.track(this.help);
     this.ui.addChild(this.pet, this.home, this.help);
     this.ring.visible = false;
     window.addEventListener('pointerdown', this.touchDown, true);
@@ -285,7 +276,7 @@ export class GameScene extends Scene {
     this.game?.resize(view);
     this.pet.position.set(74, view.h - 18);
     this.home.position.set(62, 62);
-    this.help.position.set(62, 160);
+    this.help.position.set(62, 172);
     if (this.tip) this.placeTip(this.tip);
     this.helpCard?.layout(view);
     this.layoutResult(view);
@@ -428,13 +419,14 @@ export class GameScene extends Scene {
   }
 
   /**
-   * Start again and show a hint on the pause sheet, labelled as the couch pause menu labels them; none before the round
-   * is built, while the how-to card is up, or once it is finished. Each resumes first, as the couch does, so a hint can
-   * speak and a restart can finish what it is doing.
+   * Leave follows the round's Back route. The other actions are available only while the round is playable.
+   * Each resumes first, so a hint can speak and a restart can finish what it is doing.
    */
   override pauseActions(): PauseAction[] {
     const game = this.game;
-    if (!game || this.helpCard || this.finished || this.gone) return [];
+    if (!game || this.finished || this.gone) return [];
+    const leave = { label: 'Leave', run: () => this.leave() };
+    if (this.helpCard) return [leave];
     const couch = (COUCH_INFO as Record<string, CouchInfo | undefined>)[this.mod.id];
     const labels = pauseLabels(
       this.mod.bands,
@@ -445,6 +437,7 @@ export class GameScene extends Scene {
     if (labels.restart) actions.push({ label: labels.restart, run: () => game.restart?.() });
     if (labels.hint) actions.push({ label: labels.hint, run: () => game.askForHint?.() });
     if (this.inMix()) actions.push({ label: 'Skip this game', run: () => this.skipFromPause() });
+    actions.push(leave);
     return actions;
   }
 
@@ -453,7 +446,6 @@ export class GameScene extends Scene {
     if (this.helpCard || this.finished) return;
     const info = howToFor(this.mod, this.level);
     if (!info) return;
-    sfx.tick();
     const card = new HowToPanel(info, () => this.closeHelp());
     card.layout(this.view);
     this.helpCard = card;
@@ -538,7 +530,10 @@ export class GameScene extends Scene {
   }
 
   private leave() {
-    this.navigateResult(() => this.goHome());
+    this.navigateResult(() => {
+      void this.backLine()?.();
+      this.goHome();
+    });
   }
 
   /** The root's Back label (RW14 slice 3): "Back to Rainbow Meadow" where the origin has a name, else "Back!". Nothing on the island. */
@@ -576,14 +571,6 @@ export class GameScene extends Scene {
       : null;
     if (root) home.means('back');
     return { home, house };
-  }
-
-  /** Touch-down on the round's hold-to-leave: its label while it fills. */
-  private sayBack() {
-    const line = this.backLine();
-    if (!line || this.navigating) return;
-    voice.stop();
-    void line();
   }
 
   /**

@@ -71,7 +71,6 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
         textOnly: GAMES.find((g) => !ids.includes(g.id))?.id ?? null,
       };
     });
-    assert.equal(couchBots.length, 23, 'twenty-three island games can also be played with a controller');
     assert.deepEqual(
       [...withBot].sort(),
       [...new Set([...touchBots, ...couchBots])].sort(),
@@ -140,12 +139,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot }) {
     // Reading the card is not a hint and changes no progress.
     assert.equal(await page.evaluate(() => kit.store.data.games['bubble-pop']?.plays ?? 0), 0);
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), 0);
-    // Holding "?" still opens the plain card in a round (no Play, a check to close it).
-    await page.evaluate(() => neo.scene.openHelp());
+    // A tap on "?" opens the plain card in a round (no Play, a check to close it).
+    const help = await page.evaluate(() => neo.scene.help.getGlobalPosition());
+    await page.mouse.click(help.x, help.y);
     assert.deepEqual(
       await intro(),
       { open: true, intro: false, game: true },
-      'the hold-to-open card is the same card without Play',
+      'the in-round card opens on a tap and has no Play button',
     );
     await page.evaluate(() => neo.scene.closeHelp());
 

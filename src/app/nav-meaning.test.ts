@@ -169,7 +169,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
       expect(v.w).toBeGreaterThanOrEqual(1024);
   });
 
-  it('a round: its hold-to-leave is a back arrow to its origin, never a house', async () => {
+  it('a round: its Back button returns to its origin', async () => {
     const mod = gameById('bubble-pop')!;
     for (const [origin, route, args] of [
       [{ land: 'bubble-beach' }, 'land', ['bubble-beach', undefined]],
