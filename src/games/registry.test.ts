@@ -503,6 +503,7 @@ describe('game registry', () => {
       'brain-break',
       'bubble-pop',
       'crossword',
+      'far-lights',
       'gem-swap',
       'hat-band',
       'island-bridges',

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS, type View } from '../engine/view';
 import { FRIEND_HIT, friendFeet, friendXs, PLANS as snackPlans, snackXs } from './animal-snack/logic';
+import { farLayout, stripRings, windowRings } from './far-lights/logic';
 import { PLANS as bubblePlans, spawnBox, TAP_REACH } from './bubble-pop/logic';
 import { ANIMALS, CARD_HIT, cardSpots, rowXs } from './sing-along-barn/logic';
 import { insertLayout, paradeLayout, ribbonLayout, RIBBON_LANE, TARGET } from './size-parade/logic';
@@ -71,6 +72,35 @@ describe.each(Object.entries(views))('Lap and toddler upright batch 5 on %s', (_
         v,
         c.at.map((p) => ({ what: 'song card', ...p, w: CARD_HIT.w * c.scale, h: CARD_HIT.h * c.scale })),
       );
+    }
+  });
+
+  it('Far Lights: every level lays out, its touch circles, tassel, Check and buttons fit', () => {
+    for (let level = 1; level <= 8; level++) {
+      const l = farLayout(v, level);
+      expect(l, `level ${level}`).not.toBeNull();
+      if (!l) continue;
+      const rings = [
+        ...stripRings(l),
+        ...(level === 2 || level === 4 ? [] : windowRings(l)),
+        ...(l.tassel ? [l.tassel] : []),
+      ];
+      check(v, [
+        ...rings.map((c) => square('touch', c, 2 * c.r)),
+        ...[l.check, l.fit, l.step].flatMap((r) =>
+          r ? [{ what: 'button', x: r.x + r.w / 2, y: r.y + r.h / 2, w: r.w, h: r.h }] : [],
+        ),
+      ]);
+      // The window, which the strip lights are dragged into on some levels, clears Home, "?" and the guide too.
+      check(v, [
+        {
+          what: 'window',
+          x: l.window.x + l.window.w / 2,
+          y: l.window.y + l.window.h / 2,
+          w: l.window.w,
+          h: l.window.h,
+        },
+      ]);
     }
   });
 

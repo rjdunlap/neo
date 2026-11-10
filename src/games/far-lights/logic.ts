@@ -415,6 +415,8 @@ export const LANE_3 = 80;
 /** Width of the little house at the strip's left end. */
 export const HOUSE_W = 130;
 const M = 20;
+/** The upright window's tallest: the lights read as one scene and not a long empty sky. */
+const TALL_WINDOW_H = 820;
 
 export interface FarLayout {
   /** Levels 2–6: the side strip, the house's window, each stop's x, each lane's y. */
@@ -492,26 +494,39 @@ export function farLayout(v: View, level: number): FarLayout | null {
   let top = M;
   let tassel: Ring | null = null;
   let lanes3: number[] = [];
+  // On the narrow upright area (chunk 31) the strip and window run the full width below Home and "?", and the curtain's
+  // tassel hangs just below the strip's right end, so four stops still fit 120 apart.
+  const tall = v.upright === true;
   if (level >= 2) {
-    const sx = HOME_CORNER.w + M;
-    strip = { x: sx, y: M, w: v.w - sx - M, h: 2 * LANE_H + 20 };
+    const sx = tall ? M : HOME_CORNER.w + M;
+    strip = { x: sx, y: tall ? HOME_CORNER.h + M : M, w: v.w - sx - M, h: 2 * LANE_H + 20 };
     house = { x: strip.x, y: strip.y + 10, w: HOUSE_W, h: 2 * LANE_H };
     const first = house.x + house.w + TOUCH / 2 + 10;
     const curtained = level >= 5;
     if (curtained)
-      tassel = { x: strip.x + strip.w - TASSEL / 2 - 10, y: strip.y + strip.h / 2, r: TASSEL / 2 };
-    const last = curtained ? tassel!.x - TASSEL / 2 - TOUCH / 2 : strip.x + strip.w - TOUCH / 2 - 10;
+      tassel = {
+        x: strip.x + strip.w - TASSEL / 2 - 10,
+        y: tall ? strip.y + strip.h + 10 + TASSEL / 2 : strip.y + strip.h / 2,
+        r: TASSEL / 2,
+      };
+    const last = curtained && !tall ? tassel!.x - TASSEL / 2 - TOUCH / 2 : strip.x + strip.w - TOUCH / 2 - 10;
     const gap = Math.min(200, (last - first) / 3);
     if (gap < STOP_GAP) return null;
     stopX = STOPS.map((s) => first + (s - 1) * gap);
     laneY = { A: strip.y + 10 + LANE_H / 2, B: strip.y + 10 + LANE_H * 1.5 };
     if (level === 6) lanes3 = [0, 1, 2].map((k) => strip!.y + 10 + LANE_3 * (k + 0.5));
-    top = strip.y + strip.h + M;
+    top = strip.y + strip.h + M + (tall && curtained ? TASSEL + 10 : 0);
   }
-  const win: Rect = { x: left, y: top, w: v.w - left - M, h: v.h - top - M };
+  const win: Rect = tall
+    ? (() => {
+        const y = Math.max(top, HOME_CORNER.h + M);
+        return { x: M, y, w: v.w - 2 * M, h: Math.min(TALL_WINDOW_H, v.h - PET_CORNER.h - M - y) };
+      })()
+    : { x: left, y: top, w: v.w - left - M, h: v.h - top - M };
   if (win.w < MIN_WINDOW.w || win.h < MIN_WINDOW.h) return null;
   const touchR = (level === 1 ? TOUCH_1 : TOUCH) / 2;
-  const cx = win.x + win.w / 2;
+  // Level 8's left light steps 120 left with its halo still in the window: on the narrow upright window that moves the pair right a little.
+  const cx = Math.max(win.x + win.w / 2, level === 8 ? win.x + 120 + HALO_MAX + 150 : 0);
   // Level 8 centres the lights in the room above its buttons, and keeps them 150 from the centre so a stop-1 light can step 120 left.
   const cy = level === 8 ? win.y + (win.h - BUTTON - 20) / 2 : win.y + win.h / 2 - (level === 4 ? 30 : 0);
   const three = level === 1 || level === 6;
@@ -559,7 +574,8 @@ export function farLayout(v: View, level: number): FarLayout | null {
   if (corners(v).some((k) => overlaps(win, k)) || (strip && corners(v).some((k) => overlaps(strip!, k))))
     return null;
   if (strip && overlaps(strip, win)) return null;
-  if (tassel && strip && !inside(ringBox(tassel), strip)) return null;
+  if (tassel && strip && (tall ? overlaps(ringBox(tassel), win) : !inside(ringBox(tassel), strip)))
+    return null;
   // The halos stay inside the window, never touch each other, and the Check covers none of them.
   const halos = haloRings(l);
   if (halos.some((h) => !inside(ringBox(h), win))) return null;

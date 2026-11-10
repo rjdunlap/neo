@@ -1062,6 +1062,7 @@ export const farLights: GameModule = {
   challenge: 'noticing',
   skills: ['observation', 'comparing', 'distance', 'brightness'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
