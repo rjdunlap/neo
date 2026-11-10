@@ -22,7 +22,7 @@ Find the named game/batch heading and read only that section plus the batch cont
 - **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### feelings-faces 1: Helping and explaining happenings
 
@@ -32,7 +32,7 @@ Built 2026-10-21, [PR #766](https://github.com/rjdunlap/neo/pull/766); [closeout
 - **`feelings-faces`, level 11 *Two friends, one happening*** (new interaction): one happening, two friends with two different faces, a question for each; pre-K top and the school entry. [Slice 4](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 13 *What happened?*** (new level; after 11): a face and a leftover clue, three happening cards; school. [Slice 5](deep-dives/feelings-faces.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### sound-garden 1: Listening direction and visible echoes
 
@@ -41,7 +41,7 @@ Built 2026-10-22, [PR #779](https://github.com/rjdunlap/neo/pull/779); [closeout
 - **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
 - **`sound-garden`, echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree answers. [Slice 4](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### sound-garden 2: One big friend
 
@@ -49,14 +49,14 @@ Built 2026-10-22, [PR #784](https://github.com/rjdunlap/neo/pull/784); [closeout
 
 - **`sound-garden`, level 8 One big friend** (new lap entry): one screen-filling singer, `entryLevels`, lap order 8, 1. [Slice 5](deep-dives/sound-garden.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### sound-garden 3: Pitch drawing and copying
 
 - **`sound-garden`, level 9 Sing Higher** (new interaction): drag a singer up to sing higher on pentatonic steps, creative finish; preschool order 2, 3, 4, 9, and pre-K. [Slice 6](deep-dives/sound-garden.md#new-levels-on-top)
 - **`sound-garden`, level 10 Copy the shape** (new level; after *Sing Higher*): sing back a two- then three-note direction; pre-K. [Slice 7](deep-dives/sound-garden.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### teddy-doctor 1: Choose a patient and order a check-up
 
@@ -65,21 +65,21 @@ Built in [#798](https://github.com/rjdunlap/neo/pull/798); [build note](archive/
 - **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
 - **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### scoop-shop 1: Younger scoop and customer entries
 
 - **`scoop-shop`, lap entry 10 Any scoop** (new level on the existing interaction, with `order`/`entryLevels`): one tap, one scoop, one munch; lap order 10, 1. [Slice 3](deep-dives/scoop-shop.md#younger-band-openings)
 - **`scoop-shop`, toddler 11 Who wanted pink?** (new interaction): tap the customer whose picture matches the scoop already on the cone; toddler order 1, 2, 11, 3. [Slice 4](deep-dives/scoop-shop.md#easier-entries-and-levels-between-existing-ones)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### scoop-shop 2: Count-on and mixed-colour orders
 
 - **`scoop-shop`, level 12 Fill it up** (new level on the existing interaction): count on from scoops already on the cone; pre-K and school. [Slice 5](deep-dives/scoop-shop.md#new-levels-on-top)
 - **`scoop-shop`, level 13 Three pink and two blue** (new level): two colours with a count each, any order; pre-K and school. [Slice 6](deep-dives/scoop-shop.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### scoop-shop 3: Change and reverse
 
@@ -92,7 +92,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 - **`scoop-shop`, level 7 Two cones** (**built 2026-11-03, [PR #1194](https://github.com/rjdunlap/neo/pull/1194)**): after batch3 and built11; one pair, three scoops total, free cone selection distinct from friend peek, independent state/accounting and both service orders.
 
-Standalone EF1b new interaction, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Separate admission, current source/contract review, actual full-size layout/placement, rules, filtered wrong-scoop/peek/completion play, portrait and two-order demo; shared-file/asset build tier as applicable. Person/device gates stay open.
+Standalone EF1b new interaction, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Separate admission, current source/contract review, actual full-size layout/placement, rules, filtered wrong-scoop/peek/completion play, portrait and two-order demo; shared-file/asset build tier as applicable.
 
 ### shape-sorter 1: Sorting entry, shape pool and three sizes
 
@@ -102,7 +102,7 @@ Built 2026-10-22, [PR #817](https://github.com/rjdunlap/neo/pull/817); [closeout
 - **`shape-sorter`, more shapes, sizes and colours, slice 4** (logic tier plus build): oval, rectangle, diamond, pentagon and trapezoid with lines, pool draws at 6–8, sizes at 6–7, a rainbow one colour, the box's property facts. [Dive](deep-dives/shape-sorter.md#fresh-content-inside-existing-levels)
 - **`shape-sorter`, level 11 *Big, middle, little*, slice 5** (new levels, plus a portrait screenshot): one shape in three sizes; preschool `order [3, 4, 5, 6, 7, 11]`, pre-K `order [5, 6, 7, 11, 8]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### shape-sorter 2: Turn it to fit
 
@@ -110,7 +110,7 @@ Built 2026-10-22, [PR #822](https://github.com/rjdunlap/neo/pull/822); [closeout
 
 - **`shape-sorter`, level 12 *Turn it to fit*, slice 6** (new interaction): tap a piece to turn it a notch, then carry it to an upright hole; pre-K `order [5, 6, 7, 11, 8, 12]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### shape-sorter 3: Corners, curves and corner counts
 
@@ -119,7 +119,7 @@ Built 2026-10-22, [PR #842](https://github.com/rjdunlap/neo/pull/842); [closeout
 - **`shape-sorter`, level 13 *Corners or curves*, slice 7** (new levels; after slice 4): two mouths, curves or corners; pre-K `order […, 12, 13]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 - **`shape-sorter`, level 14 *Count the corners*, slice 8** (new levels; after slice 4): holes labelled 0, 3, 4, 5, 6 with dots; pre-K top by default. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### mail-carrier 1: Tool signs, helpers and numbers past ten
 
@@ -129,7 +129,7 @@ Built 2026-10-22, [PR #850](https://github.com/rjdunlap/neo/pull/850); [closeout
 - **`mail-carrier`, level 9 *Who can help?*, slice 4** (new levels tier, after slice 3: typecheck, rule tests, one play of 9, a portrait screenshot, `fingerdemo` at 9): the problem pictures, helper hats, the six journal entries; pre-K `order [3, 4, 5, 9, 6]`, school `order [4, 5, 9, 6, 7, 8]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 - **`mail-carrier`, level 12 *Numbers past ten*, slice 5** (new levels tier): two-digit numerals 10–20 with the ten-and-ones spoken; pre-K `order [3, 4, 5, 9, 12, 6]`, school `order [4, 5, 9, 12, 6, 7, 8]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### mail-carrier 2: Spoken map clues and both street sides
 
@@ -138,7 +138,7 @@ Built 2026-10-23 in [#856](https://github.com/rjdunlap/neo/pull/856); [build not
 - **`mail-carrier`, level 13 *Hazel's clue*, slice 6** (new levels on the map interaction: typecheck, rule tests over 300 seeds for clue uniqueness on both map orientations, one play of 13, `fingerdemo` at 13): Hazel says a spoken clue and the carrier finds the one house it names; school `order [4, 5, 9, 12, 6, 13, 7, 8]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 - **`mail-carrier`, level 11 *Both sides of the street*, slice 7** (new interaction tier: typecheck, rule tests, one play of 11, a portrait screenshot that decides decision 7, `fingerdemo` at 11): odd numbers on one side and even on the other, house found from the parity then the order; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### mail-carrier 3: Compare delivery routes
 
@@ -146,7 +146,7 @@ Built 2026-10-23 in [PR #874](https://github.com/rjdunlap/neo/pull/874); [build 
 
 - **`mail-carrier`, level 14 *Three letters, your way*, slice 8** (new levels on the route interaction, plus the free second walk: typecheck, rule tests, one play of 14 taking the second plan, `fingerdemo` at 14): plan three stops in any order, then optionally compare a second order's stone count; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11, 14]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### mail-carrier 4: Make the key
 
@@ -154,14 +154,14 @@ Built and verified 2026-10-23 in [PR #881](https://github.com/rjdunlap/neo/pull/
 
 - **`mail-carrier`, level 15 *Make the key*, slice 9** (new interaction tier: typecheck, rule tests, one play of 15, a portrait screenshot of the wet key, `fingerdemo` at 15): match each sign row to its house to fill Hazel's key, then deliver two letters; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### garden-grow 1: Flower variety and the lap growth entry
 
 - **`garden-grow`, flower kinds** (content, levels 1–7): daisy, tulip, sunflower and bell-flower; kind varies per request, color alone is judged. [Slice 3](deep-dives/garden-grow.md#fresh-content-inside-existing-levels)
 - **`garden-grow`, level 8 Grow it up** (new level, after slice 2): one big bed, every touch grows the next stage, three flowers; lap `order: [8, 1, 2]`, `entryLevels: [8]`. [Slice 4](deep-dives/garden-grow.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### garden-grow 2: Rows, columns and equal rows
 
@@ -169,27 +169,27 @@ Proof: use the union of the included check tiers under the batch contract; prese
 - **`garden-grow`, level 10 Columns of colors** (new level, after level 9 *Rows of colors*): three columns in two or three colors. [Slice 6](deep-dives/garden-grow.md#new-levels-on-top)
 - **`garden-grow`, level 11 Same in every row** (new level, after level 9 *Rows of colors*): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### stop-and-go 1: Go car, stop car
 
 - **`stop-and-go`, lap entry 9 Go car, stop car** (new interaction): a looping car, two huge lamps, no misses; lap order 9, 1, `entryLevels: [9]`. [Slice 3](deep-dives/stop-and-go.md#younger-band-openings)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### stop-and-go 2: Whose light and the busy crossing
 
 - **`stop-and-go`, level 5 Whose light? and the pre-K window** (new level): two lanes with their own lights, send the one whose light is green; preschool 2–5, pre-K 3–5. [Slice 4](deep-dives/stop-and-go.md#new-levels-on-top)
 - **`stop-and-go`, level 6 Busy crossing** (new level): cars arrive on both roads, she hands over one road at a time; an idle point helps level 4 too; pre-K 3–6. [Slice 5](deep-dives/stop-and-go.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### weather-wardrobe 1: Visible consequences and the lap fitting entry
 
 - **`weather-wardrobe`, a miss that shows why** (existing-game change): a wrong item goes on for a moment, shows its cold, hot, wet or blown consequence and hops back; accounting unchanged. [Slice 3](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`weather-wardrobe`, lap entry 8 Try it on** (new level, after *a miss that shows why*): anything goes on, the fitting item stops the weather, no misses; lap order 1, 8, 2, `entryLevels: [8]`. [Slice 4](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### weather-wardrobe 2: Wind (built)
 
@@ -201,7 +201,7 @@ Built 2026-10-26, [PR #987](https://github.com/rjdunlap/neo/pull/987); [closeout
 
 - **`weather-wardrobe`, level 10 Two friends, two places** (new drag interaction): drag each item to the friend whose weather it suits; pre-K. [Slice 8](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### peg-garden 1: Numbered buds, shot trail and board variety
 
@@ -210,7 +210,7 @@ Built 2026-10-22, [PR #770](https://github.com/rjdunlap/neo/pull/770); [closeout
 - **`peg-garden`, numbered buds wait their turn and the last shot stays faint** (existing-game change, levels 4–5): only the asked numeral blooms; the previous path stays as faint dots. [Slice 2](deep-dives/peg-garden.md#build-slices-in-order)
 - **`peg-garden`, shell tray and board themes** (content): pearls collect in a tray and pour back; four simulated board shapes, three backdrops. [Slice 3](deep-dives/peg-garden.md#fresh-content-inside-existing-levels)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### peg-garden 2: Big buds
 
@@ -218,7 +218,7 @@ Built 2026-10-23; [closeout](archive/COMPLETED-2026-10-09.md#peg-garden-level-8-
 
 - **`peg-garden`, level 8 Big buds** (new lap entry): four huge buds, every touch blooms one; lap order 8, 1, toddler 8, 1, 2, `entryLevels: [8]`; plans keyed by ID. [Slice 4](deep-dives/peg-garden.md#younger-band-openings)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### peg-garden 3: Cup aiming and planting a bud
 
@@ -227,7 +227,7 @@ Built 2026-10-24, [PR #923](https://github.com/rjdunlap/neo/pull/923); [closeout
 - **`peg-garden`, level 6 Into the cup** (new interaction): aim the pearl into the cup with that many dots; every cup reachable with margin; pre-K top. [Slice 5](deep-dives/peg-garden.md#new-levels-on-top)
 - **`peg-garden`, level 7 Plant a bud** (new interaction, after level 6 *Into the cup*): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### little-helpers 1: Visible quantities, carrying variety and the full-team whistle
 
@@ -237,7 +237,7 @@ Built 2026-10-22, [PR #804](https://github.com/rjdunlap/neo/pull/804); [closeout
 - **`little-helpers`, things to carry and three places** (content): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods. [Slice 3](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
 - **`little-helpers`, level 9 Whistle when it's full** (new level, after *the badge fills*): rings say when, no misses; toddler order 1, 2, 9, preschool 2, 9, 3, 4; plans keyed by ID. [Slice 5](deep-dives/little-helpers.md#easier-entries-and-levels-between-existing-ones)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### little-helpers 2: Build teams, share helpers and count strong helpers
 
@@ -247,7 +247,7 @@ Built 2026-10-23, [PR #863](https://github.com/rjdunlap/neo/pull/863); [closeout
 - **`little-helpers`, level 7 Everyone helps** (new interaction): split a crowd of 4–7 between two fruits; pre-K top and school. [Slice 6](deep-dives/little-helpers.md#new-levels-on-top)
 - **`little-helpers`, level 8 Strong helpers** (new interaction): big helpers count two, every exact mix right; school. [Slice 7](deep-dives/little-helpers.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### monster-munch 1: Food variety, monsters and places (complete)
 
@@ -259,7 +259,7 @@ Built (reference only, do not recreate):
 - **`monster-munch`, level 9 Big bites** (new lap entry): three big cookies, the monster itself feeds, the belly grows; `BandLevels`, lap order 9, 1, 2, `entryLevels: [9, 10]`. [Slice 3](deep-dives/monster-munch.md#younger-band-openings)
 - **`monster-munch`, level 10 One of each** (new level, after *Big bites*): a cookie and an apple for each monster; toddler order 2, 3, 10, 4. [Slice 4](deep-dives/monster-munch.md#easier-entries-and-levels-between-existing-ones)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### monster-munch 2: Sharing two kinds and choosing group counts
 
@@ -268,7 +268,7 @@ Built 2026-10-26, [PR #989](https://github.com/rjdunlap/neo/pull/989); [closeout
 - **`monster-munch`, level 12 Share two kinds** (new level, after *Big bites*): deal cookies and apples fairly, then how many of each; school order 6, 7, 12, 8. [Slice 5](deep-dives/monster-munch.md#new-levels-on-top)
 - **`monster-munch`, level 11 How many friends?** (new interaction, after *Big bites*): call friends from a cave, two each, ring when no one else can have two, then how many friends and how many left; school top. [Slice 6](deep-dives/monster-munch.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### rhythm-neighbors 1: Younger turn-taking and its journal page
 
@@ -278,7 +278,7 @@ Built 2026-10-22, [PR #853](https://github.com/rjdunlap/neo/pull/853); [closeout
 - **`rhythm-neighbors`, level 8 My turn, your turn** (new level on the tap interaction: rule tests, one play, `fingerdemo` at 8): the bird knocks, one big frog glows and waits, one tap answers; toddler order `[2, 8, 3]`; no misses. [Dive](deep-dives/rhythm-neighbors.md#new-levels-on-top)
 - **`rhythm-neighbors`, journal page** (small; after slice 1): "The frogs answered the woodpecker", filed from a finished turn-taking round. [Dive](deep-dives/rhythm-neighbors.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### rhythm-neighbors 2: Knock a call
 
@@ -286,7 +286,7 @@ Built 2026-10-24, [PR #925](https://github.com/rjdunlap/neo/pull/925); [closeout
 
 - **`rhythm-neighbors`, level 9 Knock a call** (new interaction tier; after level 8): she knocks the tree two to five times and the frogs answer with the gaps reversed; toddler `[2, 8, 9, 3]`, preschool `[9, 3, 4]`, `entryLevels [7, 9]`. [Dive](deep-dives/rhythm-neighbors.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### seesaw-balance 1: Truthful support and varied weighing props
 
@@ -295,7 +295,7 @@ Built 2026-10-23, [PR #858](https://github.com/rjdunlap/neo/pull/858); [closeout
 - **`seesaw-balance`, support truth, slice 1 (built)** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 6, `fingerdemo` at 1): a tap on a loose friend hops it to the empty tray at 1–2, the glow after two overs rings the next block on the grass when the tray is under, the how-to's levels 1–2 line says tap or drag, new voice variants; IDs and windows unchanged. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, two faces per weight, wrappings and boxes, slice 2 (built)** (logic tier, plus one filtered play of 2 and 4): a friend pool per weight with a distinct-faces test, seeded present wrappings, parcel and crate boxes at 6–7. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### seesaw-balance 2: Lap bounce and heavier-or-lighter choices
 
@@ -304,7 +304,7 @@ Built 2026-10-26, [PR #991](https://github.com/rjdunlap/neo/pull/991); [closeout
 - **`seesaw-balance`, level 12 *Wheee!* with the lap band, slice 3** (new interaction tier: typecheck, units, one scripted play at lap and toddler, one portrait screenshot, `fingerdemo` at 12): the `bounce` mode, any touch on the empty tray sends a duck up; `bands` gains `lap`, lap `order [12]`, toddler `order [12, 1, 2]`, `entryLevels: [12]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 13 *Who is heavier?*, slice 4** (new interaction tier, taps on friends: typecheck, rule tests, one play of 13 with one wrong tap and one hint, `fingerdemo` at 13): tap the heavier or lighter of two tipped friends; preschool `order [2, 13, 3, 4]`, `entryLevels: [12, 13]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### seesaw-balance 3: Order weights, estimate and find the difference
 
@@ -314,11 +314,11 @@ Built 2026-10-26, [PR #993](https://github.com/rjdunlap/neo/pull/993); [closeout
 - **`seesaw-balance`, level 15 *Guess the pumpkin*, slice 6** (new levels tier, plus a portrait screenshot for the guess sign): an unscored guess, then blocks until level, then the real number; pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands). [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 16 *How much heavier?*, slice 7** (new levels tier): add blocks to the light side until level, then say the difference; school `order [6, 7, 15, 16, 8, 9, 10, 11]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### seesaw-balance 4: Which way will it tip
 
-Built: level17 prediction/release, slice8 ([PR #1000](https://github.com/rjdunlap/neo/pull/1000)); [build note](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-4-predict-the-tip-slice-8-2026-10-26). No open implementation subtask; person/device acceptance stays open.
+Built: level17 prediction/release, slice8 ([PR #1000](https://github.com/rjdunlap/neo/pull/1000)); [build note](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-4-predict-the-tip-slice-8-2026-10-26). No open implementation subtask.
 
 ### fluffy-salon 1: Customer variety and younger styling entries
 
@@ -329,25 +329,25 @@ Status 2026-10-26: built. Slices 3 and 4 (levels 6 and 7) landed 2026-10-23 ([PR
 - **`fluffy-salon`, level 7 *Snip snip*, slice 4** (new levels on an existing interaction): two big buttons, grow and snip; lap and toddler `order [6, 1, 7, 2]`, `entryLevels: [6, 7]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 8 *Pink, please*, slice 5** (new levels on an existing interaction): five bottles and color-only requests, a wrong color named without a miss; toddler `order [6, 1, 7, 2, 8]`, preschool `order [2, 8, 3, 4]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### fluffy-salon 2: Two customers and comparative styling
 
-Built 2026-10-26: slices 6–7, levels 9–10 ([PR #1002](https://github.com/rjdunlap/neo/pull/1002)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-2-two-customers-and-comparative-styling-slices-67-2026-10-26). No open implementation subtask; person/device acceptance stays open.
+Built 2026-10-26: slices 6–7, levels 9–10 ([PR #1002](https://github.com/rjdunlap/neo/pull/1002)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-2-two-customers-and-comparative-styling-slices-67-2026-10-26). No open implementation subtask.
 
 - **`fluffy-salon`, level 9 *Two customers*, slice 6** (new interaction, plus a portrait screenshot): two friends in two chairs with a two-part card each, either order finishes; preschool `order [2, 8, 3, 4, 9]`, pre-K `order [3, 4, 5, 9]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 10 *Longer than Pip's*, slice 7** (new interaction): make the pet's fur longer or shorter than a friend's, with a comparison line drawn in the mirror; pre-K `order [3, 4, 5, 9, 10]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### fluffy-salon 3: Two colours and changed requests
 
-Built 2026-10-26: slices 8–9, levels 11–12 ([PR #1009](https://github.com/rjdunlap/neo/pull/1009)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-3-two-colors-and-changed-requests-slices-89-2026-10-26). No open implementation subtask; person/device acceptance stays open.
+Built 2026-10-26: slices 8–9, levels 11–12 ([PR #1009](https://github.com/rjdunlap/neo/pull/1009)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-3-two-colors-and-changed-requests-slices-89-2026-10-26). No open implementation subtask.
 
 - **`fluffy-salon`, level 11 *Two colors*, slice 8** (new levels): "pink and blue, please", at least 35 % of strands in each; pre-K `order [3, 4, 5, 9, 10, 11]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 12 *Changed my mind*, slice 9** (new levels): a loved style is asked to be the opposite, so snip undoes grow and comb undoes curl; pre-K `order [3, 4, 5, 9, 10, 11, 12]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### size-parade 1: Parade variety and younger size entries
 
@@ -356,32 +356,32 @@ Proof: use the union of the included check tiers under the batch contract; prese
 - **`size-parade`, level 17 *Two in a line*, slice 4** (landed 2026-10-23; slice 3 then added 9 and `entryLevels` [9, 16, 17]) (new levels on an existing interaction): the two-friend line plan, the first drag a toddler meets; toddler `order [9, 1, 2, 3, 4, 17]`, preschool `order [3, 4, 17, 5, 6]`, `entryLevels: [9, 16, 17]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 - **`size-parade`, level 10 *Big, middle, little*, slice 5** (landed 2026-10-23) (new levels on an existing interaction): the middle of three with a ringed-middle cue, at least two of four questions asking for it; preschool `order [3, 4, 17, 10, 5, 6]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### size-parade 2: Who fits
 
 - **`size-parade`, level 11 *Who fits?*, slice 6** (landed 2026-10-28) (new interaction, plus a portrait screenshot): a bed, chair, bowl and door each fitting exactly one of three friends, too big and too little tried on screen; preschool `order [3, 4, 17, 10, 5, 6, 11]`, pre-K `order [5, 6, 11, 7, 8]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### size-parade 3: Insert a friend and order shades
 
 - **`size-parade`, level 12 *Where does this one go?*, slice 7** (landed 2026-10-30, PR #1031) (new interaction, plus a portrait screenshot): a fifth friend dropped into the nearest gap of an ordered line that opens under the finger; pre-K `order [5, 6, 11, 7, 8, 12]`, school `order [7, 8, 12]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 - **`size-parade`, level 15 *Darkest first*, slice 8** (landed 2026-10-30, PR #1031) (new levels on an existing interaction, plus a device contrast check): five shades of one friend lined up darkest or lightest first; pre-K `order [5, 6, 11, 7, 8, 12, 15]`, school `order [7, 8, 12, 15]`; Shade Lineup leaves the notebook. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### size-parade 4: Hidden heights
 
 - **`size-parade`, level 13 *Hidden heights*, slice 9** (landed 2026-11-01, PR #1083) (new interaction, plus a portrait screenshot): boots behind a fence, a tapped pair swaps only when out of order, a gate that opens on a sorted line, a bot that sorts by pair tests; school `order [7, 8, 12, 13, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### size-parade 5: The measuring ribbon
 
 - **`size-parade`, level 14 *The measuring ribbon*, slice 10** (landed 2026-11-02, PR #1118) (new interaction, plus a portrait screenshot): two friends on different footing compared with a ribbon that snaps to a head, a tap before measuring is a prediction and never a miss; school `order [7, 8, 12, 13, 14, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### pet-kitchen 1: Meal variety and lap tap-sharing
 
@@ -390,7 +390,7 @@ Built 2026-10-23, [PR #860](https://github.com/rjdunlap/neo/pull/860); [closeout
 - **`pet-kitchen`, friends, the meal eaten, round wholes, the fraction seen and a third fruit, slice 2** (fresh content tier: typecheck, rule tests for the pie's cuts and the fruit pool, one filtered play of 2 and 7, `fingerdemo` at 7): `CRITTERS` dealt from the seed, a seeded pie or sandwich each round, the chew, the fraction bubble at 7, the banana. [Slice 2](deep-dives/pet-kitchen.md#build-slices-in-order)
 - **`pet-kitchen`, level 10 *One for you, one for me* and the lap band, slice 3** (new interaction tier: typecheck, rule tests, the picnic unit test, one play of 10 with a tap off a piece, a portrait screenshot, `fingerdemo` at 10, the `picnic` suite's sandwiches step once): tap dealing; `bands` gains `lap` with `{ min: 10, max: 10 }`, toddler `order [10, 1]`, `entryLevels: [10]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### pet-kitchen 2: Fair shares, thirds and equivalent shapes
 
@@ -400,7 +400,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 - **`pet-kitchen`, level 12 *Two pizzas, three friends*, slice 5 (built)** (new levels tier: typecheck, rule tests, one play of 12 with a halves serve, `fingerdemo` at 12): thirds of two wholes; school `order [5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 - **`pet-kitchen`, level 14 *Different shape, same share*, slice 6 (built)** (new interaction tier, a cut per whole: typecheck, rule tests, one play of 14, a portrait screenshot of the overlay, `fingerdemo` at 14): two shapes of one share; pre-K `order [11, 3, 4, 14, 5, 6]`, school `order [14, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### pet-kitchen 3: Compare shares
 
@@ -408,7 +408,7 @@ Built 2026-10-30, [PR #1032](https://github.com/rjdunlap/neo/pull/1032); [closeo
 
 - **`pet-kitchen`, level 13 *Who has more?*, slice 7 (built)** (new interaction tier, the question after the serve: typecheck, rule tests over the fraction pairs, one play of 13 with one wrong "more", `fingerdemo` at 13): compare two shares; school `order [14, 5, 6, 7, 8, 9, 12, 13]`, and the three journal entries land here. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### pet-kitchen 4: Equivalent cup measures
 
@@ -416,7 +416,7 @@ Built 2026-10-31, [PR #1084](https://github.com/rjdunlap/neo/pull/1084); [closeo
 
 - **`pet-kitchen`, level 15 *One cup, many ways*, slice 8 (built)** (new interaction tier per the cooking packet: typecheck, rule tests over every half-and-quarter combination, one play of 15 with an oversupply undo, a portrait screenshot, `fingerdemo` at 15): the packet's equivalent-measures round; school `order [14, 5, 6, 7, 8, 9, 12, 13, 15]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story gate.
 
 ### ribbon-workshop 1: First ribbons
 
@@ -642,7 +642,7 @@ Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trai
 
 ### river-tablets 1: One token each, the envelope and which row
 
-Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [definition](definitions/river-tablets.md), [archived build note](archive/COMPLETED-2026-10-09.md#river-tablets-levels-13-ancient-river-civilizations-ar2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–6 are defined (AR3) as batches river-tablets 2 and 3.
+Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [definition](definitions/river-tablets.md), [archived build note](archive/COMPLETED-2026-10-09.md#river-tablets-levels-13-ancient-river-civilizations-ar2-2026-10-27). Whole three-level new-game batch. Levels 4–6 are defined (AR3) as batches river-tablets 2 and 3.
 
 ### river-tablets 2: A ten-mark and check the delivery
 
@@ -662,7 +662,7 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/river-
 
 ### caravan-days 1: Kneel and load, can we reach it, and day by day
 
-Built 2026-10-27, [PR #1020](https://github.com/rjdunlap/neo/pull/1020); [definition](definitions/caravan-days.md), [archived build note](archive/COMPLETED-2026-10-09.md#caravan-days-levels-13-china-india-and-the-silk-road-cs2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–5 are defined (CS3) as batch caravan-days 2.
+Built 2026-10-27, [PR #1020](https://github.com/rjdunlap/neo/pull/1020); [definition](definitions/caravan-days.md), [archived build note](archive/COMPLETED-2026-10-09.md#caravan-days-levels-13-china-india-and-the-silk-road-cs2-2026-10-27). Whole three-level new-game batch. Levels 4–5 are defined (CS3) as batch caravan-days 2.
 
 ### caravan-days 2: Swap at the stop and worth more far away
 
@@ -686,7 +686,7 @@ Built; [batch record](archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-202
 
 ### little-loom 1: Levels 1–3 (VA2)
 
-Built; [build note](archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-2026-10-25). Later levels and person/device gates remain separate.
+Built; [build note](archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-2026-10-25). Later levels remain separate.
 
 
 ### swap-meet 1: Levels 1–4 (ME2)
@@ -707,11 +707,11 @@ Built2026-10-26, [PR #983](https://github.com/rjdunlap/neo/pull/983); [packet](d
 
 ### keep-house 1: Who's at the door, who works where, the cook's walk and fit the household
 
-Built 2026-10-27, [PR #1021](https://github.com/rjdunlap/neo/pull/1021); [definition](definitions/keep-house.md), [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-14-medieval-life-ml2-2026-10-27). Whole four-level new-game batch. Device checks remain; levels 5–6 are built as batch keep-house 2.
+Built 2026-10-27, [PR #1021](https://github.com/rjdunlap/neo/pull/1021); [definition](definitions/keep-house.md), [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-14-medieval-life-ml2-2026-10-27). Whole four-level new-game batch. Levels 5–6 are built as batch keep-house 2.
 
 ### keep-house 2: Read the ruin and stone or timber
 
-Built 2026-10-31, [PR #1038](https://github.com/rjdunlap/neo/pull/1038) (defined 2026-10-30, [PR #1034](https://github.com/rjdunlap/neo/pull/1034)); [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-56-medieval-life-ml3-2026-10-31). Both levels in one worker, branch and PR. Device checks remain.
+Built 2026-10-31, [PR #1038](https://github.com/rjdunlap/neo/pull/1038) (defined 2026-10-30, [PR #1034](https://github.com/rjdunlap/neo/pull/1034)); [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-56-medieval-life-ml3-2026-10-31). Both levels in one worker, branch and PR.
 
 - **`keep-house`, levels 5–6 (the build of study slice ML3)** (two new interactions on an existing game; school only, `school: { min: 4, max: 6 }`, no renumbering): drag picture labels onto the roofless rooms of a 3 × 3 ruin by their remains, four rooms and five labels, a hearth or drain shared by two rooms so a deciding clue decides, a wrong label is a miss (level 5); build a lord's hall in timber (2 bags, lasts 15 years, rebuilt) or stone (5 bags, 8 years, stands) for a purse and a stay, the years play out and a choice is never a miss, in level 3's Keep it grammar (level 6). Bags are counters; nothing accrues. Files: `src/games/keep-house/` (logic, art, scene, rule tests), voice lines `kh.*`, the how-to card, the `keephouse` browser case. Withdraw clause: if level 6 plays as a worksheet, it goes to Household Casebook instead. [Definition](definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber), [study build slices](deep-dives/subjects/medieval-life.md)
 
@@ -719,7 +719,7 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/keep-h
 
 ### water-road 1: Keystone, which one stands and hold it up
 
-Built 2026-10-27, [PR #1022](https://github.com/rjdunlap/neo/pull/1022); [definition](definitions/water-road.md), [archived build note](archive/COMPLETED-2026-10-09.md#water-road-levels-13-greece-and-rome-am2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–5 are defined (AM3) as batch water-road 2.
+Built 2026-10-27, [PR #1022](https://github.com/rjdunlap/neo/pull/1022); [definition](definitions/water-road.md), [archived build note](archive/COMPLETED-2026-10-09.md#water-road-levels-13-greece-and-rome-am2-2026-10-27). Whole three-level new-game batch. Levels 4–5 are defined (AM3) as batch water-road 2.
 
 ### water-road 2: Downhill all the way and over the valley
 
@@ -759,7 +759,7 @@ Proof: shell/save tier, as the definition sets it; to be confirmed when the batc
 
 - **`spinner-fair`, levels 1-3 (chance-statistics study slice CS1)** (a new game, one declared batch; preschool 1-2, pre-K 2-3, school 3-5; Counting Cove, 13 games becoming 14, so the land now pages): tap a big spinner and a critter's block drops on its bar, six spins with nothing counted (level 1), then which came up most (level 2), then pick the spinner that gives the pet the better chance and watch ten spins; a spin is never a miss and the better spinner may lose (level 3). [Definition](definitions/spinner-fair.md), [study build slices](deep-dives/subjects/chance-statistics.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/spinner-fair.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Spinner Fair with level 1 to its sticker and level 3 with one wrong pick, the glow on the second and ten spins, one portrait screenshot of level 3, `fingerdemo` at level 3, one build). Device checks stay open. Levels 4-5 are batch `spinner-fair 2`; levels 6-10 need their own definitions.
+Proof: new-game tier, as the [definition's check tier](definitions/spinner-fair.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Spinner Fair with level 1 to its sticker and level 3 with one wrong pick, the glow on the second and ten spins, one portrait screenshot of level 3, `fingerdemo` at level 3, one build). Levels 4-5 are batch `spinner-fair 2`; levels 6-10 need their own definitions.
 
 ### spinner-fair 2: Sure, maybe, no way and make it fair
 
@@ -775,7 +775,7 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 - **`tide-line`, levels 1-2 and the shore art kit (oceans study slice 1)** (a new game, one declared batch; lap 1, toddler 1-2, preschool 2; Bubble Beach, 12 games becoming 13, fallback Counting Cove only if the lands test fails): pull the big wave up the sand and let it slide back while the shore answers, with nothing wrong (level 1); then drag a pail above the seaweed line and only then watch the sea come in, a floated pail fetched back by the pet (level 2). The shared `src/art/shore.ts` creatures, `sfx.wave` and `sfx.gull` ship here. [Definition](definitions/tide-line.md), [study build slices](deep-dives/subjects/oceans.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/tide-line.md#check-tier-for-the-builds) sets it (typecheck, rule tests for levels 1-2 with the registry, lands, how-to, off-screen and `beach.test.ts`, a `browser-check.mjs` case filtered to Tide Line with level 1 to its sticker and level 2 with one pail below the line, the float and fetch, a second miss and the glow, then a dry pail, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Device checks stay open. Levels 3-4 are batch `tide-line 2`; levels 5-7 need their own definition.
+Proof: new-game tier, as the [definition's check tier](definitions/tide-line.md#check-tier-for-the-builds) sets it (typecheck, rule tests for levels 1-2 with the registry, lands, how-to, off-screen and `beach.test.ts`, a `browser-check.mjs` case filtered to Tide Line with level 1 to its sticker and level 2 with one pail below the line, the float and fetch, a second miss and the glow, then a dry pail, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Levels 3-4 are batch `tide-line 2`; levels 5-7 need their own definition.
 
 ### tide-line 2: Read the line and in, out, in, out
 
@@ -791,7 +791,7 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 - **`rule-machine`, levels 1-2 (algebra-balance study slice AB1)** (a new game, one declared batch; pre-K 1, school 2; Puzzle Peaks, 13 games becoming 14, so the land now pages): creatures go into a hat machine and come out wearing a hat, and she taps what the fourth will look like from three pictures (level 1); then cars with counters go in and come out with one or two more, and she taps the count on the pads once two rows show; feeding is never a miss and a first wrong prediction on a new rule is free (level 2). [Definition](definitions/rule-machine.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/rule-machine.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Rule Machine with level 1 given a free wrong picture and then two wrong on the second prediction and the glow, level 2 to its sticker with one wrong pad after two rows, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Device checks stay open. Levels 3-4 are batch `rule-machine 2`; levels 5-8 need their own definitions.
+Proof: new-game tier, as the [definition's check tier](definitions/rule-machine.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Rule Machine with level 1 given a free wrong picture and then two wrong on the second prediction and the glow, level 2 to its sticker with one wrong pad after two rows, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Levels 3-4 are batch `rule-machine 2`; levels 5-8 need their own definitions.
 
 ### rule-machine 2: The rule shelf and the covered machine
 
@@ -830,37 +830,37 @@ Expected files: `src/games/puppet-stage/{logic,logic.test,art,index}.ts`, its `h
 
 - **`drops-journey`, levels 1-3 (weather-water study slice 8)** (**built 2026-10-31**, [PR #1066](https://github.com/rjdunlap/neo/pull/1066), branch `claude/drops-journey-1-3`; a new game, one declared batch; preschool 1, pre-K 1-2, school 2-3; Tinker Lab): tap a picture card to send a water drop to a lawful next stop among five places, finishing after three stops (level 1); reach a postcard goal such as the snow by any lawful route, with the pet replaying the story (level 2); then one uphill can't-go card is a miss, with a glow after two (level 3). [Definition](definitions/drops-journey.md), [study build slices](deep-dives/subjects/weather-water.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/drops-journey.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 to its sticker and level 3 with one can't-go card, the glow and its hint, then Finish, one portrait screenshot of level 2 mid-move, `fingerdemo` at levels 1 and 3, one build). The building session's source check of the speech lines goes in its verification entry. All three levels shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8). Device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/drops-journey.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 to its sticker and level 3 with one can't-go card, the glow and its hint, then Finish, one portrait screenshot of level 2 mid-move, `fingerdemo` at levels 1 and 3, one build). The building session's source check of the speech lines goes in its verification entry. All three levels shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8).
 
 ### sprout-shuffle 1: which pairs always make spotted
 
 - **`sprout-shuffle`, level 4 *which pairs always make spotted?*** (**built 2026-11-01**, [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`; new level on the existing interaction; school; the first build of Hidden Sprouts, genetics G5, whose levels 5 and 6 follow as later complete parts): choose which parent pairs guarantee a spotted sprout and keep every explanation compatible with what was seen. Scope, rules and the school range are in the [definition](definitions/hidden-sprouts.md); depends on Sprout Shuffle levels 1–3, built 2026-10-30.
 
-Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
+Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5).
 
 ### sprout-shuffle 2: Patchwork Conservatory
 
 - **`sprout-shuffle`, levels 7–8 Patchwork Conservatory** (genetics G7; a new interaction on the same game, school and up; level 7 one accepted pair with a trap plant, level 8 two accepted plans plus a free "Another way?"): plan a cross guaranteed to satisfy a two-trait planting brief over two explicitly independent toy loci. [Definition](definitions/patchwork-conservatory.md). **Built 2026-11-03**, [PR #1184](https://github.com/rjdunlap/neo/pull/1184), branch `claude/sprout-shuffle-conservatory` (levels 7 and 8 together); [closeout](archive/COMPLETED-2026-10-09.md#sprout-shuffle-levels-78-patchwork-conservatory-genetics-g7-2026-11-03).
 
-Proof: new-interaction tier, as the [definition's checks](definitions/patchwork-conservatory.md#checks-for-the-builds) set it (typecheck; unit tests for the rule properties, how-to and registry; one filtered scripted play of level 7 with a Check on `AA bb` × `Aa Bb`, a second miss and the glow, then the accepted pair, and of level 8 with both plans found; one portrait screenshot with a lens open; `fingerdemo` at 7 and 8; build). Device and person checks stay open there.
+Proof: new-interaction tier, as the [definition's checks](definitions/patchwork-conservatory.md#checks-for-the-builds) set it (typecheck; unit tests for the rule properties, how-to and registry; one filtered scripted play of level 7 with a Check on `AA bb` × `Aa Bb`, a second miss and the glow, then the accepted pair, and of level 8 with both plans found; one portrait screenshot with a lens open; `fingerdemo` at 7 and 8; build).
 
 ### forecast-detective 1: Which way is the wind and a postcard didn't come
 
 - **`forecast-detective`, levels 1-2 (weather-water study slice 9)** (**built 2026-10-31**, [PR #1069](https://github.com/rjdunlap/neo/pull/1069), branch `claude/forecast-detective-1-2`; a new game, one declared batch; school 1-2; Tinker Lab, fallback Cozy Village): lift covered flaps on a wind vane, two island postcards and a thermometer, work out which weathers a disclosed pretend wind rule still allows, and answer with one weather card (level 1); then one clue is missing, so she names the weather when the rest still decide or taps *Can't tell yet* when they cannot (level 2). [Definition](definitions/forecast-detective.md), [study build slices](deep-dives/subjects/weather-water.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/forecast-detective.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 using one not-yet Check, one ruled-out Check, a second miss for the glow and its hint, then the right card to the sticker, and level 2's authored case with an overclaimed weather then *Can't tell yet*, one portrait screenshot of level 2 with the missing flap and five cards, `fingerdemo` at levels 1 and 2, one build). The building session's source check of the speech lines goes in its verification entry. Both levels shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9). Device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/forecast-detective.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 using one not-yet Check, one ruled-out Check, a second miss for the glow and its hint, then the right card to the sticker, and level 2's authored case with an overclaimed weather then *Can't tell yet*, one portrait screenshot of level 2 with the missing flap and five cards, `fingerdemo` at levels 1 and 2, one build). The building session's source check of the speech lines goes in its verification entry. Both levels shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9).
 
 ### drift-cards 1: Where will it wash up and send it to a friend
 
 - **`drift-cards`, levels 1–2 (oceans study slice 6)** **built 2026-10-31**, [PR #1078](https://github.com/rjdunlap/neo/pull/1078), branch `claude/drift-cards-1-2`; a new game, one declared batch; school 1–3; Bubble Beach, fallback Tinker Lab): predict which beach each of three numbered wooden cards reaches as it rides the arrows of a pretend current map (level 1); then choose which boat to drop from so the card reaches the asked friend (level 2). [Definition](definitions/drift-cards.md), [study build slices](deep-dives/subjects/oceans.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 using the free first card wrong, one counted wrong beach, a second miss for the glow, then the right beach, and level 2 with one wrong boat then a right boat, one portrait screenshot of level 2 mid-drift, `fingerdemo` at level 2, one build). The building session's source check of the speech lines goes in its verification entry. If the allowance cannot cover both levels, stop after a complete level 1 with a draft-PR checkpoint. Device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 using the free first card wrong, one counted wrong beach, a second miss for the glow, then the right beach, and level 2 with one wrong boat then a right boat, one portrait screenshot of level 2 mid-drift, `fingerdemo` at level 2, one build). The building session's source check of the speech lines goes in its verification entry. If the allowance cannot cover both levels, stop after a complete level 1 with a draft-PR checkpoint.
 
 ### drift-cards 2: Find the hidden current
 
 - **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). **Built 2026-11-02**, [PR #1119](https://github.com/rjdunlap/neo/pull/1119), branch `claude/drift-cards-3`; school 1–3 (the cards and Check sit in a row under the sea in every orientation, a deviation from the definition's side column in landscape). Depends on batch drift-cards 1, built.
 
-Proof: new-interaction tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck; rule tests 6–9; one filtered play of the authored case with option B, option C and the glow, then option A and the replay; one portrait screenshot with the fog and three patch cards; `fingerdemo` at level 3; a build for the card and voice). Device and person checks stay open there.
+Proof: new-interaction tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck; rule tests 6–9; one filtered play of the authored case with option B, option C and the glow, then option A and the replay; one portrait screenshot with the fog and three patch cards; `fingerdemo` at level 3; a build for the card and voice).
 
 ### not-always 1: Not all of them, Every one? and Say it better
 
@@ -868,7 +868,7 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/drift-
 
 - **`not-always`, levels 1–3 (philosophy-reasoning study slice 1, PR1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks): a friend on a crate makes a claim about a row of picture cards; tap the card that breaks it (level 1); tap a breaker or stamp *Every one!* when nothing breaks the claim (level 2); break the claim, then pick the mended claim true of every card (level 3). [Definition](definitions/not-always.md), [study build slices](deep-dives/subjects/philosophy-reasoning.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/not-always.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands and how-to, a `browser-check.mjs` case with its README row: level 1 with one fitting card then a second for the glow and the breaker, level 2 with a false stamp then a true claim stamped, level 3 with one false mend then the true one, one portrait screenshot of level 2, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person and device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/not-always.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands and how-to, a `browser-check.mjs` case with its README row: level 1 with one fitting card then a second for the glow and the breaker, level 2 with a false stamp then a true claim stamped, level 3 with one false mend then the true one, one portrait screenshot of level 2, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint.
 
 ### notice-board 1: Who made it, who saw it, to tell or to sell
 
@@ -876,7 +876,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/not-always.md
 
 - **`notice-board`, levels 1–3 (media-literacy study slice 1, ML1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab): island friends pin made-up picture posters to a village board; tap the friend whose badge matches the poster's stamp (level 1); tap the friend who actually saw it and their photo settles the poster (level 2); sort each poster into *Here's what happened* or *Come and get some!* (level 3, school only). [Definition](definitions/notice-board.md), [study build slices](deep-dives/subjects/media-literacy.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/notice-board.md#check-tier) sets it (typecheck, rule tests 1–7 with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case with its README row: level 1 with two wrong friends for the glow then the maker, level 2 with the heard-it friend (a miss) then the witness through one stretched and one true poster, level 3 with one wrong basket then the right one, one portrait screenshot of level 2 with the memory bubbles and the photo, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person and device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/notice-board.md#check-tier) sets it (typecheck, rule tests 1–7 with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case with its README row: level 1 with two wrong friends for the glow then the maker, level 2 with the heard-it friend (a miss) then the witness through one stretched and one true poster, level 3 with one wrong basket then the right one, one portrait screenshot of level 2 with the memory bubbles and the photo, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint.
 
 ### shell-rows 1: Finish the row, stop the row, win first
 
@@ -884,7 +884,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/notice-board.
 
 - **`shell-rows`, levels 1–3 (strategy-games study slice 1, SG1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Puzzle Peaks, paging, fallback Bubble Beach): a 3 by 3 grid in wet sand with a match already under way; set one shell to finish her row (level 1), to stop the pet's row (level 2), or to win first when both rows are on the board (level 3); a wrong square is answered by the pet's honest reply, then the board rewinds. [Definition](definitions/shell-rows.md), [study build slices](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/shell-rows.md#check-tier-for-the-build) sets it (typecheck, rule tests with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case: level 1 with one wrong square then a second for the glow and its hint then the right square to the next position, level 3 with the block then the right square to its sticker, one portrait screenshot of level 3 mid-replay, `fingerdemo` at levels 1 and 3, one build). Person and device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/shell-rows.md#check-tier-for-the-build) sets it (typecheck, rule tests with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case: level 1 with one wrong square then a second for the glow and its hint then the right square to the next position, level 3 with the block then the right square to its sticker, one portrait screenshot of level 3 mid-replay, `fingerdemo` at levels 1 and 3, one build).
 
 ### orchard-rows 1: Equal rows, every way, only one long row
 
@@ -892,7 +892,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/shell-rows.md
 
 - **`orchard-rows`, levels 4–6 (number-structure study slice 2, the build of NS1)** (extends the built game, new-interaction tier; school 4–6, Barnyard unchanged; Counting Cove / Puzzle Peaks as the game already sits): a basket of 12 to 24 saplings and a row-count control; the saplings deal into equal rows at once and the leftover stays in the basket; find a row count with none left over (level 4), plant every different orchard one basket can make (level 5), find the one of three baskets that only makes one long row (level 6, a separate *One long row* button as the answer). [Definition](definitions/orchard-rows.md), [study build slices](deep-dives/subjects/number-structure.md#build-slices-in-order)
 
-Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a `browser-check.mjs` filter: level 4 with Plant on a leftover, a second for the glow and its hint, then the glowing arrow to Plant; level 5 with one shape planted twice (free); level 6 with one wrong basket claimed, then the prime; one portrait screenshot of level 5 at one long row of its basket; `fingerdemo` at levels 4, 5 and 6; one build). If the allowance cannot cover all three levels, stop after complete levels 4–5 with a draft-PR checkpoint; level 6 is then its own run. Person and device checks stay open.
+Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a `browser-check.mjs` filter: level 4 with Plant on a leftover, a second for the glow and its hint, then the glowing arrow to Plant; level 5 with one shape planted twice (free); level 6 with one wrong basket claimed, then the prime; one portrait screenshot of level 5 at one long row of its basket; `fingerdemo` at levels 4, 5 and 6; one build). If the allowance cannot cover all three levels, stop after complete levels 4–5 with a draft-PR checkpoint; level 6 is then its own run.
 
 ### thought-bubbles 1: What does she want, Where will he look, How do we know
 
@@ -900,7 +900,7 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/orchar
 
 - **`thought-bubbles`, levels 1–3 (literature-meaning study slice 1, LM1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Story Grove, paging, fallback Cozy Village): a tiny picture story plays on a cottage stage, then she drags one of three picture cards into a friend's empty thought bubble and the friend acts on it; what the friend wants (level 1), where he will look from what he saw (level 2, away or watching stories), why he did it and where the picture shows it (level 3). [Definition](definitions/thought-bubbles.md), [study build slices](deep-dives/subjects/literature-meaning.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/thought-bubbles.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands and how-to, a `browser-check.mjs` case with its README row: level 1 with one wrong card, a second for the glow, then the right card; level 2 with the actual place in an away story then the right card, and a watching story answered right; level 3 with one wrong reason then the right one, one free region tap, then the clue; one portrait screenshot of level 2, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person and device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/thought-bubbles.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands and how-to, a `browser-check.mjs` case with its README row: level 1 with one wrong card, a second for the glow, then the right card; level 2 with the actual place in an away story then the right card, and a watching story answered right; level 3 with one wrong reason then the right one, one free region tap, then the clue; one portrait screenshot of level 2, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint.
 
 ### maker-lane 1: Along the lane, who can use it now, where did it begin
 
@@ -918,7 +918,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/maker-lane.md
 
 Files expected: `src/games/lemonade-stand/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, its `voice.ts`, its `howto.ts` (a step scoped `{ from: 5 }`), `scripts/browser/suites/woods-batch.mjs`, the README row and `docs/GAMES.md`.
 
-Proof: new-interaction tier, as the [dive's slice 1](deep-dives/lemonade-stand.md#build-slices-in-order) sets it (typecheck; unit tests for the offer pool, no-loss and affordability with the cheaper boat, true comparisons and the savings insight; one scripted play `BROWSER_SUITE=woods WOODS_ONLY=lemon` at level 5 with one wrong boat, a second for the glow, then the right boat, and the lightbulb on a different day, so the round pays 2 misses and 2 hints; one portrait screenshot of the jetty; `fingerdemo` at level 5). Build only if shared files change. Person and device checks stay open.
+Proof: new-interaction tier, as the [dive's slice 1](deep-dives/lemonade-stand.md#build-slices-in-order) sets it (typecheck; unit tests for the offer pool, no-loss and affordability with the cheaper boat, true comparisons and the savings insight; one scripted play `BROWSER_SUITE=woods WOODS_ONLY=lemon` at level 5 with one wrong boat, a second for the glow, then the right boat, and the lightbulb on a different day, so the round pays 2 misses and 2 hints; one portrait screenshot of the jetty; `fingerdemo` at level 5). Build only if shared files change.
 
 ### pixel-pictures 1: Fresh pictures and colour logic
 
@@ -928,7 +928,7 @@ Proof: new-interaction tier, as the [dive's slice 1](deep-dives/lemonade-stand.m
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `scripts/browser/suites/woods-batch.mjs` only if the level-6 case needs an update, and `docs/GAMES.md`.
 
-Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads to a settled square); one filtered regression play of level 6 (the `woods` suite's Pixel Pictures 6 case) and `fingerdemo` at 6. Person and device checks stay open.
+Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads to a settled square); one filtered regression play of level 6 (the `woods` suite's Pixel Pictures 6 case) and `fingerdemo` at 6.
 
 ### pixel-pictures 2: Both ways and Twice as big
 
@@ -958,7 +958,7 @@ Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, e
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
-Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes. Person and device checks stay open.
+Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes.
 
 ### ferry-jam 1: Fair hints and fuller harbors
 
@@ -968,7 +968,7 @@ Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cann
 
 Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `docs/GAMES.md`.
 
-Proof: typecheck and the game's rule tests; one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`. Person and device checks stay open.
+Proof: typecheck and the game's rule tests; one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`.
 
 ### ferry-jam 2: Rocks in the harbor
 
@@ -998,7 +998,7 @@ Proof: new rule tier: typecheck and rule tests; one play of level 8 to its stick
 
 Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
-Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); one scripted play of level 9 and of level 10 with one wrong tap, a second for the glow, then the blocker; `fingerdemo` at 9 and 10; one portrait screenshot of level 10's question. Person and device checks stay open.
+Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); one scripted play of level 9 and of level 10 with one wrong tap, a second for the glow, then the blocker; `fingerdemo` at 9 and 10; one portrait screenshot of level 10's question.
 
 ### garden-rows 1: Seeded flower sets and Mend the bed
 
@@ -1008,7 +1008,7 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); o
 
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
-Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions in the dive); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. Person and device checks stay open.
+Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions in the dive); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7.
 
 ### garden-rows 2: Hedge boxes
 
@@ -1018,7 +1018,7 @@ Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions 
 
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
-Proof: typecheck, rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. Person and device checks stay open.
+Proof: typecheck, rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9.
 
 ### garden-rows 3: One row
 
@@ -1028,7 +1028,7 @@ Proof: typecheck, rule tests; one play of level 8 with a box clash and one of le
 
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/lands.ts` or registry tests as needed, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
-Proof: typecheck and unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Person and device checks stay open.
+Proof: typecheck and unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot.
 
 ### habitat-helpers 1: Equivalent pieces and pooled gardens
 
@@ -1770,4 +1770,4 @@ Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (eve
 
 Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `path.ts` (new), `baskets.ts` (exported arrow and card helpers), `index.ts`, its `howto.ts`, its `voice.ts`, a `scripts/browser-check.mjs` case, `README.md` row, `docs/GAMES.md`.
 
-Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows-path.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a filtered scripted play: level 7 with one wrong part pad, a second for the glow and its hint, then the glowing pad and a sign tap; level 8 with an arrow at the range end and the path laid at 2; level 9 to its sticker; one portrait screenshot of level 9 with both signs; `fingerdemo` at 7, 8 and 9; one build). Stop point: levels 7 and 9 share the fixed path and pads and level 8's moving path is the separable part; if the allowance cannot cover all three, finish 7 and 9 (level 8 skipped through `order`) with a draft-PR checkpoint, and level 8 is then its own run. Person and device checks stay open.
+Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows-path.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a filtered scripted play: level 7 with one wrong part pad, a second for the glow and its hint, then the glowing pad and a sign tap; level 8 with an arrow at the range end and the path laid at 2; level 9 to its sticker; one portrait screenshot of level 9 with both signs; `fingerdemo` at 7, 8 and 9; one build). Stop point: levels 7 and 9 share the fixed path and pads and level 8's moving path is the separable part; if the allowance cannot cover all three, finish 7 and 9 (level 8 skipped through `order`) with a draft-PR checkpoint, and level 8 is then its own run.

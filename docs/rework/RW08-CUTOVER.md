@@ -59,9 +59,9 @@ Slices 1 and 2 do not depend on RW07's song step or ending. Home's Continue alre
 
 ## Slice 3: the cutover (approved; starts when the developer has played slices 1–2)
 
-**Decided 2026-10-23 by the developer:** yes, delete `classic/` once they have played slices 1–2 on the iPad. A session starts slice 3 only when the developer says they have done that.
+**Decided 2026-10-23 by the developer:** yes, delete `classic/` once they have played slices 1–2 on the iPad. A session starts slice 3 only when the developer says go. (2026-11-09: there is no iPad yet, so a look in a computer browser serves if they want one; a phone shows only Today's six.)
 
-Run this only after the developer says go. They should first have played slices 1 and 2 on the iPad ([device check](../DEVICE-CHECKS.md)).
+Run this only after the developer says go ([waiting](../WAITING-ON-DEVELOPER.md#still-waiting)).
 
 - **Deleted:** `classic/index.html`, `public/classic/manifest.webmanifest`, the `classic` Vite input and its precache entry, and `src/main.ts`. The root becomes the only page, and `src/rework.ts` may be renamed `src/main.ts`. Also delete `MapScene`, `PlaceScene`, `SubjectPlaceScene`, `settings.placeLayout`, `go.place`, the `{ place }` origin, place session caches, `CreaturePreview` and its `?preview` branch (`src/dev/creature-preview.ts`; `?cast` stays dev-only), `docs/rework/home-navigation.html` (its packet stays; the HTML lives on in Git history) and the `.classic-link`. `places.ts` keeps only what other code reads (place names in grown-up text and the band's voice). It is not a catalog. `LandScene` stays as `LocationScene`'s base. `forgetLands` stays.
 - **Every `go.hub()` caller is audited together**, as RW03 asks. That covers the chooser, the hatch, the birthday, the grown-ups' page launch, stories, result fallbacks, the sticker book, the treehouse and the dev harness. At the root they already mean Home. Each is checked and none is deleted blindly.

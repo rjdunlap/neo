@@ -4,7 +4,7 @@ Written 2026-10-14 from the developer's request to look for more physics-type ga
 
 ## What the island has already
 
-Built: Sink or Float (buoyancy by trial), Seesaw Balance (balance), Ramp Race (ramps), Bouncy Launch (a pull sets a flight; `engine/ball.ts` takes a `gravity` value), Peg Garden and Bumper Garden (bounces), Block Tower (stacking by an explicit balance rule), Chain Reaction (a deterministic marble machine), Light Lab (beams), Fill and Dump (pouring), Pond Conga and Duckling Parade (steering). In the notebook already: Wobble Works (bridges), Water Paths (draw a channel), Magnet Fishing, Gear Garden, Circuit Garden, Roll Table and Pond Merge (a circle-pile solver), Mini Putt, Lander and Drift, Breezy Balloon, Keepy Uppy, Tilt Together, Sand Table and Mole Mine. Sketched this week: [Vine Snip](vine-snip.md) (ropes) and [Block Topple](block-topple.md) (a slingshot at a stack).
+Built: Sink or Float (buoyancy by trial), Seesaw Balance (balance), Ramp Race (ramps), Bouncy Launch (a pull sets a flight; `engine/ball.ts` takes a `gravity` value), Peg Garden and Bumper Garden (bounces), Block Tower (stacking by an explicit balance rule), Chain Reaction (a deterministic marble machine), Light Lab (beams), Fill and Dump (pouring), Pond Conga and Duckling Parade (steering). In the notebook already: Wobble Works (bridges), Water Paths (draw a channel), Magnet Fishing, Gear Garden, Circuit Garden, Roll Table and Pond Merge (a circle-pile solver), Mini Putt, Lander and Drift, Breezy Balloon, Keepy Uppy, Tilt Together, Sand Table and Mole Mine. Sketched this week: [Vine Snip](archive/VINE-SNIP-SKETCH-2026-10-13.md) (ropes) and [Block Topple](archive/BLOCK-TOPPLE-SKETCH-2026-10-14.md) (a slingshot at a stack).
 
 ## What the research says
 

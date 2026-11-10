@@ -69,7 +69,7 @@
 - [PR #777](https://github.com/rjdunlap/neo/pull/777), `claude/trace-prints`, tested `047814b2` (plus guard-only `e46ce8f8`) on base `b02b6337`: `TracePrints` mud tray, level 8 leaf prints (lap) and level 9 two feet (toddler); the print margin is `max(across / 2, farthest reach) + 5`, a deviation from the definition.
 - Ran `npm run typecheck`; `npm test` (2459 passed); Stamp Studio tests (39 passed; new rule tests for levels 1-7 unchanged, bands and landing, a print on the mud at three paper sizes, duck vs paw aspect at least 15%, finish once and the demo reaching the finish with both makers, pair line once including undo, no fossil wording, finish tests for 8 and 9); `npm run build`.
 - Served at `http://localhost:5930`: `BROWSER_SUITE=creative CREATIVE_ONLY=stamps STAMP_LEVELS=8,9` passed (eight pats end level 8, both makers plus back and green arrows at 9, prints inside the mud in portrait, scores 0/0, stickers); `BROWSER_SUITE=fingerdemo FINGER_ONLY=stamp-studio FINGER_LEVELS=8,9` passed (12.0 s, 11.3 s); a one-off probe showed the level 8 and 9 how-to cards fit portrait 768×1024.
-- Not run: `world`, offline, couch (unaffected), Stamp Studio levels 1-7 browser loop (class unchanged). Open: a one-year-old and a two-year-old with the prints and the makers ([DEVICE-CHECKS](../DEVICE-CHECKS.md#stamp-studio-trace-prints-levels-89)).
+- Not run: `world`, offline, couch (unaffected), Stamp Studio levels 1-7 browser loop (class unchanged). Open: a one-year-old and a two-year-old with the prints and the makers ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#stamp-studio-trace-prints-levels-89)).
 
 ## 2026-10-22 — Sound Garden listening direction and visible echoes (slices 3–4)
 
@@ -77,7 +77,7 @@
 - Ran typecheck; 76 focused Sound Garden/Rhythm Neighbors/how-to/registry/difficulty tests passed; build passed. Initial full run: 2455 passed, 4 skipped, one Rhythm Neighbors pool-count failure. Preserving its original eight-pattern export fixed that failure; its focused rules now pass. Required CI will establish the full final tree.
 - `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=5,7` passed: free replay, two misses/one hint, per-tap drum lights, fading dots, tree wake, all answers, completion/accounting/sticker; level 7 portrait inspected with three separate full-size choices. Pool export correction preserves the same twelve Sound Garden patterns and does not invalidate the touch evidence.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=5,7`: levels 5 and 7 clean in 34.2 s and 22.3 s, no page errors. Inspected level 5 layout and level 7 portrait. No page errors in touch play.
-- Not run: world, offline, stories, couch (no navigation/assets/persistence/story/control changes). iPad audio/speech, dot interpretation and child understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#sound-garden-listening-direction-and-visible-echoes-levels-7-and-5).
+- Not run: world, offline, stories, couch (no navigation/assets/persistence/story/control changes). iPad audio/speech, dot interpretation and child understanding remain open in [DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#sound-garden-listening-direction-and-visible-echoes-levels-7-and-5).
 
 ## 2026-10-22 — Second Chance Shed 1–4 definition (nature-sustainability N1, docs only)
 
@@ -97,7 +97,7 @@
 - Passed typecheck, 72 focused Sound Garden/difficulty/how-to/registry tests, full units (2459 passed, four skipped), build. After the final ending-only guard, typecheck/focused rules/build and the level-8 play passed again; no changes to the bot action.
 - `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=8` passed portrait, grass-edge taps, quick taps through handoffs, zero misses/hints, saved sticker and ending. Initial run used logical coordinates as CSS pixels; a small view-scale probe identified the harness error, corrected with `toGlobal`. No page errors.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=8` clean in 15.6 s. Inspected `test-results/browser/sound-garden-8-portrait.png`: large friend and clear shell/pet corners.
-- Not run: world, offline, stories, couch (no route, asset, save-format or controller changes). iPad audio/speech and child's understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#sound-garden-one-big-friend-level-8). Level-1 every-touch retrofit and #733 preserved.
+- Not run: world, offline, stories, couch (no route, asset, save-format or controller changes). iPad audio/speech and child's understanding remain open in [DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#sound-garden-one-big-friend-level-8). Level-1 every-touch retrofit and #733 preserved.
 
 ## 2026-10-22 — Integers study (subject research, docs only)
 
@@ -112,7 +112,7 @@
 - Passed typecheck, 74 focused rule/difficulty/how-to/registry tests and build. Full units first passed 2460 tests / four skipped with one how-to wording failure; corrected wording and all 19 how-to tests passed. PR CI on `35826ecc` passed all 208 files: 2461 tests passed / four skipped, and production build.
 - `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=9,10` passed endpoints, cancellation, second-finger rejection, twelve creative notes, two wrong contours/one stem hint, valid alternative pitches, ending/stickers and portrait. Initial attempt was interrupted by HMR; frozen-source replay passed. Follow-up at level 10 also passed an actual replay-bird tap using `toGlobal` coordinates and asserting the bird answers.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=9,10` clean: 19.6 s / 37.5 s, no misses, hints or page errors. Both portrait images inspected: clear controls, singers and companion clearance.
-- Not run: world, offline, stories and couch (unaffected). iPad audio/speech and child understanding remain open in [device checks](../DEVICE-CHECKS.md#sound-garden-pitch-drawing-and-copying-levels-910); gated level-1 retrofit, other levels and #733 untouched.
+- Not run: world, offline, stories and couch (unaffected). iPad audio/speech and child understanding remain open in [device checks](DEVICE-CHECKS-2026-11-09.md#sound-garden-pitch-drawing-and-copying-levels-910); gated level-1 retrofit, other levels and #733 untouched.
 
 ## 2026-10-22 — Adventure Walk levels 1–3 definition (movement-exercise, docs only)
 
