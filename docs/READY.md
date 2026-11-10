@@ -8,7 +8,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **U5–U8: define first** (docs only, one each): a first six she can start, one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
+- **U5a: a first six she can start** (shell tier: typecheck, unit tests, build, one scripted Today's six flow on a fresh pre-K profile with one portrait screenshot): a game new to her today plays its band's first level on the card all day, a pin still wins, grown-ups unchanged, one shared six helper for the page and the result's next tile; plus `coplayHintLap` with a tip rule test, Word Glue fixed. [Definition](definitions/todays-six.md#u5-a-first-six-she-can-start-status-ready-defined-2026-11-10)
+- **U5b: tips held to her band** (after U5a; content tier: typecheck and the registry test): read every tip a lap or toddler profile sees against the rule and add a lap override or `false` where one does not suit her. [Definition](definitions/todays-six.md#tips-held-to-her-band-u5a-mechanism-u5b-audit)
+- **U6–U8: define first** (docs only, one each): one way to browse, never swallow a tap, the grown-ups' page speaks of the root.
 
 - **`mossy-path`, slices 4–5 in the dive's order** (toddler to school; [build slices](deep-dives/mossy-path.md#build-slices-in-order)): slice 4 level 10 *Plan, then go* (new interaction: unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 10, build); slice 5 level 11 *Thick moss* (solver rewrite: rule tests including levels 1–3 and 8 unchanged, one browser play of 11, `fingerdemo` at 11, build).
 - **`number-trails`, slices 3–6 in the dive's order** (`letter-trails` helpers; preschool and pre-K; [build slices](deep-dives/number-trails.md#build-slices-in-order); slices 1–2 are built): slice 3 check the digits against the HWT chart (`digits.test.ts`, `fingerdemo` at 2; once the chart is open); slice 4 level 4 *First numbers* (rule tests, browser play of 4, `fingerdemo` at 4); slice 5 level 5 *Write how many* (new interaction: unit tests, one scripted play, one portrait screenshot); slice 6 level 6 *Less help each time* (rule tests, one play, `fingerdemo` at 6, one screenshot; coordinate with Letter Trails level 9 if in flight). Level 7 and the journal are optional calls in the [dive](deep-dives/number-trails.md#decisions-for-the-developer).
@@ -44,7 +46,7 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 ### UX review (2026-11-09)
 
-From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1 to U4 are built; U5–U8 follow in Next ten (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
+From the [adversarial UX review](UX-REVIEW-2026-11-09.md#recommendations-in-priority-order); U1 to U4 are built; U5 is defined ([definition](definitions/todays-six.md#u5-a-first-six-she-can-start-status-ready-defined-2026-11-10)) and U6–U8 follow in Next ten (one item per session); shell tier (typecheck, unit tests, build, the one or two suites that lean on it, `world` if navigation changed).
 
 
 ### Study follow-ups (docs-only definitions)
