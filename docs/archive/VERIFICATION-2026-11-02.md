@@ -13,7 +13,7 @@
 - Ran (Vite on http://localhost:5951, `VITE_SPEECH=off`, base origin/main bc267ed7 plus this branch): typecheck; 36 Drift Cards rule tests (12 new, re-run after the review fixes); full `npm test` 4291 passed (before the review fixes); `npm run build`; `BROWSER_SUITE=driftcards` (levels 1–2 unchanged; level 3 in portrait: B a miss, B again free, C second miss and glow, A and replay, saved 2/1); `fingerdemo` `FINGER_LEVELS=3` `drift-cards` (37.4 s); one portrait screenshot reviewed.
 - S1 voice check: NOAA "What is a current?" (opened 2026-11-02) supports wind, density and tides but not seasons, so `drift.limits` was reworded. `game-reviewer` fixes: duplicate hand cards and unresized cards on the replay, a stale fog-cell trace, restart forgetting tried patches.
 - Not run: offline check, other suites.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#drift-cards-levels-13-oceans-slice-6-2026-10-31-level-3-built-2026-11-02)): detective work versus trial and error, reading arrows cell by cell, "South-west" in iPad speech.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#drift-cards-levels-13-oceans-slice-6-2026-10-31-level-3-built-2026-11-02)): detective work versus trial and error, reading arrows cell by cell, "South-west" in iPad speech.
 
 ## 2026-11-02 — Size Parade level 14 The measuring ribbon (size-parade batch 5, slice 10)
 
@@ -29,7 +29,7 @@
 - Ran (commit ae2baa61, Vite on http://localhost:5563): typecheck; 41 rule tests (enumerated over shelves and feeding orders, 300 seeds); full `npm test` on the first commit, then rule-machine plus content tests (209) after a layout tweak; `npm run build`; `BROWSER_SUITE=rulemachine RM_LEVELS=3,4` (landscape level 3 wrong card then right, 1/0; portrait level 4 with early and still-open card taps uncounted, trap car first, a ruled-out card, Peek, the settling car and last pad, 1 miss/1 hint; level 4 re-run after the review fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rule-machine FINGER_LEVELS=3,4` (49.9 s, 18.0 s); screenshots of level 3 shelf and portrait level 4.
 - `game-reviewer` fixes: the cover now returns when the card hangs after an unused Peek; the pet repeats level 2's ask after the card hangs.
 - Not run: levels 1–2 browser play (unchanged paths), offline check, the CCSS/England wording source check.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): fairness of the covered machine and "two cards still fit", card pictures and Peek on an iPad, the wording check.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): fairness of the covered machine and "two cards still fit", card pictures and Peek on an iPad, the wording check.
 
 ## 2026-11-02 — Orchard Rows levels 4–6 (number-structure NS1, batch orchard-rows 1)
 
@@ -51,7 +51,7 @@
 - Ran (HEAD of the branch, Vite dev on http://localhost:5741, `VITE_SPEECH=off`): typecheck; full units 4366 passed with 5 failures (four load timeouts in unchanged block-garden, fluffy-salon, keep-house, penguin-slide that passed alone, 110/110, and the voice-clip coverage test, fixed by rendering the title clip); voice clips, registry, lands, how-to and thought-bubbles tests 219/219 (25 rule tests); `npm run build` (precache 423 entries).
 - `BROWSER_SUITE=thoughtbubbles` (`thought-bubbles-play.mjs`): pre-K level 1 two wrong cards, glow, apple (2/1); portrait school level 2 away story miss and replay, then start place, then a watching story (1/0); level 3 wrong reason, rain, free vase tap, clouds (1/0). `fingerdemo` `FINGER_ONLY=thought-bubbles FINGER_LEVELS=2,3` clean (34.7 s, 17.3 s). The play found the second-miss glow lighting only after the speech; fixed.
 - Not run: offline check (no persistence or navigation change), other suites, any device or child check.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-levels-13-built-2026-11-02)): the four person and device checks there.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#thought-bubbles-literature-meaning-study-2026-10-31-levels-13-built-2026-11-02)): the four person and device checks there.
 
 ## 2026-11-02 — Maker Lane levels 1–3 (food-fiber-systems FS1)
 
@@ -59,7 +59,7 @@
 - Ran: `npm run typecheck`; full `npx vitest run` before the review fixes (all passed except the voice-clip and how-to wording tests, both then fixed), then maker-lane and `src/content` (194 tests, 26 new rule tests) after the fixes; River Tablets and Keep House unit tests (109) after the art move; `npm run build`.
 - Browser: `BROWSER_SUITE=makerlane` (toddler level 1 free tap on a maker who is not waving, then the waving makers 0/0; portrait preschool level 2 two refused makers, bubbles, glow, then the right makers 2/1; pre-K level 3 sheep for the sock with replay, dimmed card and the scarf beside the sock, then the cotton plant 1/0), re-run after the review fixes; `fingerdemo` `FINGER_ONLY=maker-lane FINGER_LEVELS=2,3` (21.6 s and 17.6 s, before the review fixes, which did not change the bot).
 - Not run: offline check (no persistence or navigation change); no iPad or device speech check; FS3 (the grown-ups' card) not built.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#maker-lane-food-fiber-systems-study-2026-10-31-levels-13-built-2026-11-02)): whether a four-year-old picks the sheep for the sock and the replay changes her next pick, whether the thought bubble tells her which maker comes next, and the agricultural-literacy or textile review of the makers' pictures and lines.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#maker-lane-food-fiber-systems-study-2026-10-31-levels-13-built-2026-11-02)): whether a four-year-old picks the sheep for the sock and the replay changes her next pick, whether the thought bubble tells her which maker comes next, and the agricultural-literacy or textile review of the makers' pictures and lines.
 
 ## 2026-11-02 — Lemonade Stand level 5 Two lemon boats (lemonade-stand batch 1)
 
@@ -148,7 +148,7 @@
 - [PR #1135](https://github.com/rjdunlap/neo/pull/1135): `paint-mixer` levels 5 (three pots) and 6 (which jars match) and six journal paint-shelf entries; sample generalised to n pots, new `shelf.ts` and `jars.ts`; base `origin/main` d53e56df, server http://localhost:5197 (`VITE_SPEECH=off`).
 - Ran: typecheck; `npm test` 4,480 pass (a first run had four timing-sensitive tests in other games fail under load, a rerun passed); 88 Paint Mixer rule tests (levels 1-4 seed-identical); build; `BROWSER_SUITE=paintmixer PAINT_LEVELS=5,6` twice (second after review fixes: level 5 extra drop, Undo, rows, portrait, both recipes on the shelf; level 6 empty Check free, wrong jar twice, lid reveal, portrait with lid open, right set); `fingerdemo` `FINGER_ONLY=paint-mixer FINGER_LEVELS=5,6` (32.6 s, 12.5 s).
 - Not run: levels 1-4 browser play (covered by the seed-identical test), offline check.
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-56)): shelf colours as six, one-more-of-each, labels as two counts, the circled count without speech, lid zone versus jar.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#paint-mixer-levels-56)): shelf colours as six, one-more-of-each, labels as two counts, the circled count without speech, lid zone versus jar.
 
 ## 2026-11-02 — Penguin Slide fair ponds and seeded looks (penguin-slide batch 1)
 

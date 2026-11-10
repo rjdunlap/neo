@@ -85,4 +85,4 @@ Implementation details supersede the proposal where they differ: level 4 has a t
 
 Show the key defaults on, can be changed in Esc's pause menu and survives resize/pond changes within the round. An explicit or automatic hint temporarily shows the relevant repair key even with the coach off. The how-to's keyboard diagram shows and lights only the key being pressed, with no full alphabet or interactive on-screen keyboard. The trip maps to 1,1,2,3,4,5. Bubble Pond version 2 retains its first three ponds and adds capitals, a line and a repair pond; old version 1 runs restart, records retire without comparison. Its character-only par is 63 (8+12+18+10+14+1); Shift/arrows/Backspace stay free. No typed text enters saves.
 
-Real laptop/child checks, sticky-Shift reach, Caps Lock, non-US layouts and device speech remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#pond-typing-levels-13-ke2-2026-10-24).
+Real laptop/child checks, sticky-Shift reach, Caps Lock, non-US layouts and device speech remain open in [DEVICE-CHECKS](../archive/DEVICE-CHECKS-2026-11-09.md#pond-typing-levels-13-ke2-2026-10-24).

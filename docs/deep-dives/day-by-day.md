@@ -2,7 +2,7 @@
 
 *ID `day-by-day` · bands pre-K, school · levels 1–3 audited 2026-10-15 at `ae77222` · session `codex/day-by-day-deep-dive`, [PR #349](https://github.com/rjdunlap/neo/pull/349) · dispatch `day-by-day-dive-20261015T074430Z`*
 
-Research and proposals only. The [first-slice definition](../day-by-day.md) describes built play; this document proposes its next steps without changing that contract.
+Research and proposals only. The [first-slice definition](../archive/DAY-BY-DAY-FIRST-SLICE.md) describes built play; this document proposes its next steps without changing that contract.
 
 ## The game today
 

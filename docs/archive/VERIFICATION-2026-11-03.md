@@ -162,7 +162,7 @@
 - [PR #1159](https://github.com/rjdunlap/neo/pull/1159), code commits bae19b8c and cbbdd976: levels 4–6 (pre-K 3–5, school 4–6), 33 voice lines, how-to, off-screen, `puppetstory` suite; `game-reviewer` two findings, fixed.
 - Ran: `npm run typecheck`; 49 puppet-stage rule tests; full `npm test` 4599 passed (297 files) at bae19b8c; `npm run build`; `BROWSER_SUITE=puppetstory` at cbbdd976 (server localhost:5637, `VITE_SPEECH=off`): level 4 three off-card bobs then glow 0/1, level 5 card 2 first twice 2/1 with glow, level 6 portrait card 1, early The end 1/0 with Bow, rest to the cheer and Bow; one portrait screenshot of level 6 mid-show; `fingerdemo` `FINGER_ONLY=puppet-stage FINGER_LEVELS=4,5,6 FINGER_BAND=school` 7.0, 10.9, 16.3 s.
 - Not run: offline check, couch suites (no couch), the levels 1–3 suite (unchanged), device speech.
-- Open: four device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#puppet-stage-levels-46-tp2-2026-11-03)).
+- Open: four device checks ([DEVICE-CHECKS](DEVICE-CHECKS-2026-11-09.md#puppet-stage-levels-46-tp2-2026-11-03)).
 
 ## 2026-11-03 — Vine Snip definition (docs only)
 
