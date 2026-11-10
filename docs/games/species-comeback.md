@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/species-comeback; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `species-comeback` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `species-comeback` · **Land:** Lantern Lake · **Ages:** grown-up · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** animals, logic, planning, reasoning
 
