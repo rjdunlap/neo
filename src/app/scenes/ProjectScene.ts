@@ -32,6 +32,7 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
+import { bounce, IdleCue } from '../../ui/idle-cue';
 import { PLAQUE, pictureBoard, singTune, TunePlaque } from '../../ui/creation-art';
 import { arrowIcon, checkIcon, frameIcon, houseIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -77,6 +78,9 @@ export class ProjectScene extends Scene {
   private readonly plates = new Container();
   private readonly marks = new Graphics();
   private singing = false;
+  /** With nothing touched for a few seconds the card to tap next hops, its arrow with it, so the page shows where to go with sound off (U4). */
+  private readonly quiet = new IdleCue();
+  private layout: ReturnType<typeof endingLayout> | null = null;
 
   constructor(
     app: App,
@@ -120,6 +124,7 @@ export class ProjectScene extends Scene {
     onTap(
       this.basket,
       () => {
+        this.quiet.reset();
         this.newcomer.poke();
         if (this.ending === 'naming') void this.sing();
       },
@@ -140,6 +145,7 @@ export class ProjectScene extends Scene {
     this.marks.eventMode = 'none';
     this.content.addChild(this.picture, this.plates, this.lead);
     this.ui.addChild(this.marks, this.arrow, this.back, this.home);
+    this.track({ update: (dt: number) => this.cue(dt) });
   }
 
   private card(step: WelcomeStep) {
@@ -237,6 +243,7 @@ export class ProjectScene extends Scene {
   /** Speaks the step's ask and puts up its Play arrow (and takes down any other). */
   raise(step: WelcomeStep, spoken: boolean) {
     if (this.leaving) return;
+    this.quiet.reset();
     this.raised = step;
     for (const c of this.cards) c.play.visible = c.step === step;
     this.card(step).node.scale.set(1.06);
@@ -263,6 +270,7 @@ export class ProjectScene extends Scene {
 
   resize(v: View) {
     const l = endingLayout(v);
+    this.layout = l;
     this.backdrop.position.set(l.backdrop.x, l.backdrop.y);
     this.backdrop.scale.set(l.backdrop.scale);
     this.back.position.set(l.back.x, l.back.y);
@@ -279,6 +287,20 @@ export class ProjectScene extends Scene {
     this.lead.position.set(l.companion.x, l.companion.y);
     this.lead.scale.set(l.companion.scale);
     this.drawMarks();
+  }
+
+  /** The quiet cue: the raised card (its arrow is what to touch), else the next step's, hops; the others sit at their places. */
+  private cue(dt: number) {
+    const l = this.layout;
+    if (!l || this.ending !== 'off' || this.leaving) return;
+    this.quiet.update(dt);
+    const target = this.raised ?? nextWelcomeStep(store.welcome);
+    const lift = bounce(this.quiet.progress);
+    this.cards.forEach((c, i) => {
+      const dy = c.step === target ? lift : 0;
+      c.node.y = l.cards[i].y + dy;
+      c.play.y = l.plays[i].y + dy;
+    });
   }
 
   /** The yellow ring round the name she tapped. */
