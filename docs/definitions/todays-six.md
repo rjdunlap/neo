@@ -103,6 +103,47 @@ Shell/navigation: typecheck, unit tests, build, one filtered browser flow (Home,
 
 On a phone the six are the whole root, R6's Play all is built as a play button plus a next-of-six tile on each daily round's result (not through the mix planner), and a grown-up's profile can leave a playtest note per game and day: [the daily playtest slice](phone-portrait.md#the-daily-playtest-slice-a-phone-is-todays-six-alone-built-2026-11-09).
 
+## U5: a first six she can start (status ready, defined 2026-11-10)
+
+From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#4-todays-six-does-not-suit-a-brand-new-player), finding 4: a one-year-old's first six showed Word Glue with a grown-up tip that asks her to name something, and a four-year-old's showed Day by Day at level 4, a three-step card for a game never played. The review asked for three things; one of them is already built.
+
+| Asked | Decision |
+| --- | --- |
+| Offer the next of the six on the result | **Built** after the review (`a039f06d`, 2026-11-09, [the daily playtest slice](phone-portrait.md#the-daily-playtest-slice-a-phone-is-todays-six-alone-built-2026-11-09)): `showDailyNext` puts the next unplayed card on every daily round's result, at every band and orientation. Nothing more here |
+| Pick the six from each game's first level for a new player | **U5a**, below: per game, not per player |
+| Hold tips to her band | **U5a** adds the mechanism and fixes Word Glue; **U5b** audits the rest |
+| The level dots are never explained | **Out.** Explaining them needs reading or speech, and with U5a a new player's cards each show one filled dot, which reads as a start. Left to the earlier review's R4 (a one-line card) and to watching real play |
+| Movie Night's card is a video play button | **Out.** It is the game's own picture, not a shell control; it belongs with a later picture pass like U2's, not with the levels |
+
+### The level rule (U5a)
+
+- **New to her today.** A game is new for the day when she had finished no round of it before today's local day (`dayKey`). Round history is capped at `HISTORY_LENGTH`, so the test uses `plays` with it: the game is new when it has no stats, or when `plays` equals the number of its history rounds dated today (every round ever counted was today's). Rounds finished today do not end newness until tomorrow, so **a card never changes level during the day**: Day by Day stays at its first level after she plays it, and the next of the six on the result agrees with the page.
+- **A new game's level** is the one an ordinary first launch gives it: the band's easiest level in play order (`levelsInOrder(range)[0]`), landed through `entryLevels` as `store.levelFor` does for a never-played game. The build pulls that start into one exported function that both `store.levelFor` and the daily use, so there are not two rules.
+- **A game she has played before today** keeps the day's preset level from `presetLevels`, as now. The day's preset is chosen deliberately not to cap at her saved level: daily rounds record with `adapt` off, and on a phone the six are the whole root, so a cap would hold her at the first level for good.
+- **Children's bands only.** A grown-up's six keep `hardLevels` (two grown-up games, four early-school games at their hardest); the review found Crossword at level 6 clear, and a hard grown-up day is the point.
+- **A pin still wins**, over a first level as over a preset.
+- **The seed is untouched.** `dailySix` still draws the seeded `rng.pick` for every pick, new or not, as it already does for pins. So the six games, their order and every played game's level are the same for everyone at a band on a day; only a new game's level differs by profile.
+- **Shape.** `daily.ts` stays pure: `dailySix` takes one more callback, `fresh(id)`, beside `pinned`, defaulting to "never new" so existing tests and callers keep their meaning. A pure `newToday(stats, day)` in `daily.ts` does the history arithmetic. The page (`DailyScene`) and the result's next tile (`GameScene.showDailyNext`) both build their six through **one shared helper** that reads the store (day, band, pins, freshness, upright), so the two can never disagree; the playtest sheet takes the picks it is given.
+
+### Tips held to her band (U5a mechanism, U5b audit)
+
+- The grown-up tip shows only at lap and toddler (`GameScene.begin`), and today one `coplayHint` serves both. Add an optional **`coplayHintLap?: string | false`** on `GameModule`: lap shows `coplayHintLap` when set (`false` shows none), otherwise `coplayHint`; toddler always shows `coplayHint`. A pure `tipFor(mod, band)` resolves it and `begin()` uses it. The field is allowed only on games that list `lap`.
+- **The rule.** A tip shown at lap never asks her to name, say, count, tell, answer or take a speaking turn: at about one year she points, pats and watches while the grown-up talks. Toddler tips may ask for a single word.
+- **The test.** In the registry tests: for every game listing `lap`, `tipFor(mod, 'lap')` contains none of a short phrase list ("ask her", "let her name", "let her say", "let her tell", "have her", "she names", "she says", "she counts", "she tells", "she answers", "her turn to") unless the game is on a small, commented allow list; and `coplayHintLap` appears only on games listing `lap`.
+- **U5a** fixes Word Glue (its tip invites her to invent a name; the lap version has the grown-up name a silly compound while she points at the two things) and lands the field, resolver, rule and test.
+- **U5b** reads every other tip a lap or toddler profile can see, one by one against the rule (a phrase list catches the obvious cases, not the meaning), and writes a lap override or `false` where a tip does not suit her; the PR lists each game changed and why. No count is promised before the read.
+
+### What the rule tests assert
+
+In `daily.test.ts`, over the real registry: with every game new, each child's pick is at its band's first level in play order (Day by Day at pre-K plays 1, not 4); with no game new, the six and their levels equal today's `dailySix` exactly; with a mix, the games and order are the same as with none new and only the new games' levels change; a pin wins over a first level; a grown-up's six ignore `fresh`; `newToday` is true for no stats, true when every counted round was today (including a history at its cap), and false after one round on an earlier day. In the registry tests: the tip rule and field placement above.
+
+### Slices and check tier
+
+1. **U5a, first levels and the tip field** (shell tier): `src/content/daily.ts`, `daily.test.ts`, the shared six helper, `DailyScene.ts`, `GameScene.ts` (`begin`, `showDailyNext`), `src/progress/store.ts` (the shared first-level start), `src/games/types.ts`, Word Glue's module and the registry test. Checks: typecheck, unit tests, build, and one scripted Today's six flow on a fresh pre-K profile (a new game's card on its first dot, one finished round, back on the page with the card unchanged, the result's next tile at its first level) with one portrait screenshot. `world` only if a route changes; no offline check, since persistence and assets do not.
+2. **U5b, the tip audit** (content tier, after U5a): game modules' tips only; typecheck and the registry test. No browser run.
+
+**Dependencies.** Both slices touch `GameScene.ts`, which the U3 round controls and the phone slices also changed; a build session rechecks open PRs and branches on it (`scripts/overlap.sh`) before claiming. Nothing here changes saves, routes or the classic island's six beyond the same shared code.
+
 ## Open decisions
 
 For [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) after slice 1 is played:
