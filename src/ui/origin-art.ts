@@ -4,7 +4,16 @@ import { swatch } from '../art/palette';
 import type { Origin } from '../app/App';
 import type { ExploreEntry } from '../content/explore';
 import { landFor } from '../content/lands';
-import { arcadeIcon, arrowIcon, heartIcon, libraryIcon, meadowIcon, padIcon, tilesIcon } from './icons';
+import {
+  arcadeIcon,
+  arrowIcon,
+  heartIcon,
+  libraryIcon,
+  meadowIcon,
+  padIcon,
+  sixIcon,
+  tilesIcon,
+} from './icons';
 
 /** Explore's entries at the root (RW08): the name under each card, and its picture (about 60 units across). */
 export const ENTRY_NAMES: Record<ExploreEntry, string> = {
@@ -50,7 +59,7 @@ export function originArt(origin: Origin | undefined): { picture: Container; pla
   if (origin && 'explore' in origin)
     return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
   if (origin && 'library' in origin) return { picture: libraryIcon(), place: 'the library' };
-  if (origin && 'daily' in origin) return { picture: tilesIcon(), place: "today's six" };
+  if (origin && 'daily' in origin) return { picture: sixIcon(), place: "today's six" };
   // At the root a home spot is All games' first page (`placeAtRoot`), where Little surprises' stops come back to.
   if (origin && 'place' in origin) return { picture: entryArt('all'), place: ENTRY_NAMES.all };
   return null;

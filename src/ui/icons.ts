@@ -45,6 +45,38 @@ export function againIcon(color = ink): Graphics {
     .stroke(line(3, color));
 }
 
+/** Undo: a hooked arrow coming back on itself. Not the Back arrow, which leaves the screen (U2). */
+export function undoIcon(color = ink): Graphics {
+  return new Graphics()
+    .moveTo(20, 20)
+    .lineTo(20, -2)
+    .arc(0, -2, 20, 0, Math.PI, true)
+    .lineTo(-20, 6)
+    .stroke({ width: 8, color, cap: 'round', join: 'round' })
+    .poly([-33, 2, -20, 20, -7, 2])
+    .fill(color);
+}
+
+/** Turn a thing a quarter round: a tilted square under a short curved arrow. Not the Again circle (U2). */
+export function turnIcon(color = ink): Graphics {
+  const r = 28;
+  const [a0, a1] = [Math.PI * 1.05, Math.PI * 1.75];
+  const g = new Graphics()
+    .poly([0, -2, 16, 10, 4, 26, -12, 14])
+    .fill(swatch.purple.fill)
+    .stroke(line(4, swatch.purple.line))
+    .moveTo(Math.cos(a0) * r, 6 + Math.sin(a0) * r)
+    .arc(0, 6, r, a0, a1)
+    .stroke(line(7, color));
+  const [px, py] = [Math.cos(a1) * r, 6 + Math.sin(a1) * r];
+  const [tx, ty] = [-Math.sin(a1), Math.cos(a1)];
+  const [nx, ny] = [Math.cos(a1), Math.sin(a1)];
+  return g
+    .poly([px + tx * 14, py + ty * 14, px + nx * 11, py + ny * 11, px - nx * 11, py - ny * 11])
+    .fill(color)
+    .stroke(line(3, color));
+}
+
 /** "Next": a triangle running into a bar, the skip-forward mark (the again arrow is a circle, so the two are not alike). */
 export function nextIcon(color = ink): Graphics {
   return new Graphics()
@@ -343,18 +375,62 @@ export function tilesIcon(): Graphics {
   return g;
 }
 
-/** Six tiles, three by two, with a sun over them: Home's Today's six (D10), a ready-made set for the day. */
+/**
+ * A day's page with the sun on it: Home's Today's six (D10), a ready-made set for the day. No tiles, so it is not
+ * mistaken for All games' four squares (U2, docs/UX-REVIEW-2026-11-09.md finding 2).
+ */
 export function sixIcon(): Graphics {
-  const g = new Graphics().circle(0, -30, 10).fill(swatch.yellow.fill).stroke(line(3, swatch.yellow.line));
-  const tiles = [swatch.red, swatch.orange, swatch.yellow, swatch.green, swatch.teal, swatch.purple];
-  tiles.forEach((c, i) => {
-    const x = -24 + (i % 3) * 24;
-    const y = -4 + Math.floor(i / 3) * 24;
-    g.roundRect(x - 10, y - 10, 20, 20, 6)
+  const g = new Graphics()
+    .roundRect(-28, -24, 56, 54, 8)
+    .fill(0xffffff)
+    .stroke(line(4, swatch.white.line))
+    .roundRect(-28, -24, 56, 14, 6)
+    .fill(swatch.red.fill)
+    .stroke(line(4, swatch.red.line));
+  for (const x of [-14, 14]) g.roundRect(x - 3, -32, 6, 14, 3).fill(ink);
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    g.moveTo(Math.cos(a) * 13, 10 + Math.sin(a) * 13).lineTo(Math.cos(a) * 18, 10 + Math.sin(a) * 18);
+  }
+  return g
+    .stroke(line(4, swatch.yellow.line))
+    .circle(0, 10, 9)
+    .fill(swatch.yellow.fill)
+    .stroke(line(3, swatch.yellow.line));
+}
+
+/**
+ * A round nest with three little friends peeking over its rim: where her friends live in the room (RW06). Not the
+ * basket, which means the project (U2).
+ */
+export function nestIcon(): Graphics {
+  const g = new Graphics();
+  for (const [x, y, c] of [
+    [-17, -10, swatch.teal],
+    [17, -10, swatch.pink],
+    [0, -18, swatch.yellow],
+  ] as const) {
+    g.poly([x - 11, y - 4, x - 9, y - 17, x - 2, y - 9])
+      .poly([x + 11, y - 4, x + 9, y - 17, x + 2, y - 9])
       .fill(c.fill)
-      .stroke(line(3, c.line));
-  });
-  return g;
+      .stroke(line(3, c.line))
+      .circle(x, y, 11)
+      .fill(c.fill)
+      .stroke(line(3, c.line))
+      .circle(x - 4, y - 1, 2.2)
+      .circle(x + 4, y - 1, 2.2)
+      .fill(ink);
+  }
+  g.moveTo(-32, -2)
+    .bezierCurveTo(-30, 30, 30, 30, 32, -2)
+    .closePath()
+    .fill(wood.fill)
+    .stroke(line(5, wood.line));
+  for (const y of [6, 15]) {
+    const half = y === 6 ? 28 : 22;
+    g.moveTo(-half, y).quadraticCurveTo(0, y + 6, half, y);
+  }
+  return g.stroke(line(3, wood.line)).ellipse(0, -2, 32, 5).fill(wood.line);
 }
 
 /** A game controller: Explore's Family play, which needs one (or a keyboard). */
