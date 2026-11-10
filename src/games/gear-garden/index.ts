@@ -754,6 +754,8 @@ export const gearGarden: GameModule = {
   music: STYLES.stickers,
   coplayHint:
     'Take turns guessing: say "same way" or "other way" before she turns the handle, and let her check; then swap.',
+  coplayHintLap:
+    'Say "same way" or "other way" before {name} turns the handle, then watch the gears together to check.',
   offScreen: 'Look for something at home that turns, and watch which way it goes.',
   hubIcon: () => new GearIcon(),
   touchDemo: true,

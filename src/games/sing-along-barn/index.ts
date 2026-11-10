@@ -1199,6 +1199,8 @@ export const singAlongBarn: GameModule = {
   music: silenced(STYLES.quiet),
   coplayHint:
     'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines. When the song stops before a word, wait for {name} to say it, then sing it together. When two pictures wait, say the end of the line slowly ("go away … we want to …") and let {name} choose.',
+  coplayHintLap:
+    'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse.',
   offScreen:
     'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),

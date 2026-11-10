@@ -573,6 +573,7 @@ export const meltFreeze: GameModule = {
   describeLevel: (l) => meltPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Ask {name} what the sun did, then what the snowflake did.',
+  coplayHintLap: 'Tell {name} what happened: "The sun melted it! The snowflake froze it!"',
   offScreen: 'Put an ice cube on a plate by a window and watch it with her. Say what is happening.',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,

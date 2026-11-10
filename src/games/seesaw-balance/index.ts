@@ -1488,6 +1488,8 @@ export const seesawBalance: GameModule = {
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Hold two things with {name}, one in each hand: which is heavier? Then try them on the seesaw.',
+  coplayHintLap:
+    'Hold two things with {name}, one in each hand, and say which feels heavier. Then try them on the seesaw.',
   offScreen: {
     all: 'Hang two cups from a coat hanger and add spoons or coins until it hangs level.',
     // Under 3: no coins (small parts).

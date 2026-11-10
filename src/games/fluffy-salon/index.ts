@@ -1251,6 +1251,8 @@ export const fluffySalon: GameModule = {
   entryLevels: [6, 7],
   touchDemo: true,
   coplayHint: 'Be the customer! Ask {name} for "long and pink, please!" and say how you like it.',
+  coplayHintLap:
+    'Be the customer! Point at your own hair, say "long and pink, please!", and cheer whatever {name} makes.',
   offScreen: 'Play hair salon with a doll or stuffed animal: brushing, ribbons, and a mirror.',
   hubIcon: () => new SalonIcon(),
   sticker,

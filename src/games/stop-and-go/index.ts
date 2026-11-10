@@ -936,6 +936,7 @@ export const stopAndGo: GameModule = {
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Say it together: "Red means stop! Green means go!" and freeze like statues on red.',
+  coplayHintLap: 'Say "Red means stop! Green means go!" and freeze like statues with {name} on red.',
   offScreen: 'Play red light, green light in the hallway: walk on green, freeze on red.',
   hubIcon: () => new GoIcon(),
   sticker,

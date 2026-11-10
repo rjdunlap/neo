@@ -589,6 +589,7 @@ export const bubblePop: GameModule = {
   },
   music: STYLES.bubbles,
   coplayHint: 'Say "pop!" together, name the colors as {name} pops them, and count any dots together.',
+  coplayHintLap: 'Say "pop!" as {name} pops each bubble, name its color, and count any dots out loud.',
   offScreen: 'Blow real bubbles outside and pop them together. Count the pops out loud.',
   hubIcon: () => new BubbleMachine(),
   touchDemo: true,

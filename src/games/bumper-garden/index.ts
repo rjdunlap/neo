@@ -751,6 +751,7 @@ export const bumperGarden: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "flip!" together, and count each flower as it blooms.',
+  coplayHintLap: 'Say "flip!" as {name} taps, and count each flower out loud as it blooms.',
   offScreen: 'Roll a ball down a tilted tray with a few cups as bumpers. Which cup does it hit first?',
   hubIcon: () => new WigglyIcon(tableArt(1)),
   touchDemo: true,

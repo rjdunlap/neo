@@ -1124,6 +1124,8 @@ export const photoSafari: GameModule = {
   music: STYLES.hub,
   coplayHint:
     'Make an I spy request with an action and a place: "I spy someone jumping in the pond." Look at the album together at the end: "What is the bunny doing? Where is it?"',
+  coplayHintLap:
+    'Make an I spy request with an action and a place: "I spy someone jumping in the pond." Look at the album together at the end and say what each friend is doing.',
   offScreen: 'Play "I spy" with places: "I spy a teddy under the table."',
   touchDemo: true,
   hubIcon: () => new SafariIcon(),

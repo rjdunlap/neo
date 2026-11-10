@@ -908,6 +908,7 @@ export const littleHelpers: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Count the helpers together as they line up: "one, two, three... heave ho!"',
+  coplayHintLap: 'Count the helpers out loud as they line up: "one, two, three... heave ho!"',
   offScreen: 'Carry a big pillow together: how many hands does it take?',
   hubIcon: () => new HelpersIcon(),
   touchDemo: true,

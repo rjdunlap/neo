@@ -474,6 +474,7 @@ export const moonWindow: GameModule = {
   describeLevel: (l) => moonPlan(l).description,
   music: STYLES.lullaby,
   coplayHint: 'Before {name} presses, ask what the Moon will look like later. Then look together.',
+  coplayHintLap: 'Before {name} presses, say what you think the Moon will look like later. Then look together.',
   offScreen: "Next time you see the Moon, say how much of it is lit. If you can't see it, that counts too.",
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,

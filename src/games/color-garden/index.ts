@@ -496,6 +496,7 @@ export const colorGarden: GameModule = {
   music: STYLES.paint,
   touchDemo: true,
   coplayHint: 'Say each color with {name}: "red apple, red basket!"',
+  coplayHintLap: 'Say each color as {name} matches it: "red apple, red basket!"',
   offScreen: 'Sort socks or blocks into piles by color together.',
   hubIcon: () => new TreeIcon(),
   sticker,

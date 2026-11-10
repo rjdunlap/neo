@@ -1168,6 +1168,7 @@ export const feelingsFaces: GameModule = {
   describeLevel: (l) => feelingPlan(l).name,
   music: STYLES.paint,
   coplayHint: 'Make the same face as the pet with {name}, and name the feeling together.',
+  coplayHintLap: 'Make the same face as the pet with {name}, and name the feeling: "Happy!"',
   offScreen:
     'Make happy, sad, sleepy and surprised faces in a mirror together, and talk about what makes each one happen.',
   hubIcon: () => {
