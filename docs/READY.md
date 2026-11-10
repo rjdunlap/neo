@@ -8,7 +8,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **U8: define first** (docs only): the grown-ups' page speaks of the root.
+- **U8: define first** (docs only): the grown-ups' page speaks of the root (claimed: `claude/define-u8-grownups-page`).
 - **U6a: the Arcade first** (shell tier; [definition](definitions/one-way-to-browse.md#slices-and-check-tier)): a "For me" topic that opens first, a page count ("2 of 6"), and the Arcade laid out upright (takes the Arcade's part of shell slice 3). Checks: typecheck, unit tests, build, `BROWSER_SUITE=home HOME_ONLY=arcade`, one upright screenshot at 390 × 844 and one at 768 × 1024. U6b (the fold: All games leaves Explore, Little surprises an Explore entry at lap and toddler, empty Favorites shows the heart, Family play straight to couch; shell tier with `world`) follows after U6a.
 - **U7a: the phone's way in** (shell tier; [definition](definitions/never-swallow-a-tap.md#slices-and-check-tier)): measure the slow screens first (R1), then a pressed picture stays chosen, the change starts within 0.3 s, the chooser shows its cards before every save is read, and `voice.stop()` ends a muted line's promise. Checks: typecheck, unit tests, build, the R1 timing probe before and after, `BROWSER_SUITE=phonefit` and `BROWSER_SUITE=profiles`.
 
