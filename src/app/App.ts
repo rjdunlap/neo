@@ -430,6 +430,7 @@ export class App {
         openParentPanel(
           () => (store.data.creatures.owned.length > 0 ? this.go.hub() : this.go.hatch()),
           () => this.go.start(),
+          { app: this.creatureWorld ? 'root' : 'classic' },
         );
       },
     });
