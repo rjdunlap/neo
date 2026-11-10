@@ -3254,3 +3254,8 @@ Typecheck, 22 rule tests, build, a filtered play after a 60-move detour and the 
 ## Lift It levels 7–8 Three ropes (2026-11-09)
 
 [PR #1437](https://github.com/rjdunlap/neo/pull/1437) completes slices 4–5 of the [Lift It dive](../deep-dives/lift-it.md#build-slices-in-order). At level 7, hanging both wheels makes the crate ring available. Tapping it moves the tied end between the branch and crate, changing the supporting strand count from two to three and moving the pull to the ledge. Level 8 adds a puller request and exact paws and knots cards. Each round includes a parcel that needs three strands, and replay keeps the delivered parcel's tie position. The school ladder is 3, 4, 9, 5, 6, 7, 8. Level 10 still awaits a toddler-band decision. Ring, strand and speech checks on iPad remain open.
+
+
+## Pile Match slice 4, level 10 Look closely (2026-11-09)
+
+[PR #1444](https://github.com/rjdunlap/neo/pull/1444), `claude/pile-match-look-closely`: a blue feather and a white sock (kinds 8, 9), 16 appended variant kinds (10–25) and level 10 (school after 9, 12 · 4 · 2, tray 5, `PILE12` shapes, two silhouettes in two colours). Full-tray refusal names colour and shape. Build details are in the [dive](../deep-dives/pile-match.md#what-was-built-in-this-session).

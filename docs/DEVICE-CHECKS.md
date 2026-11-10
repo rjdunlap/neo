@@ -1163,3 +1163,9 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, drag the level-8 headers to slide the 748 x 728 L under its window in both orientations: does the slide feel direct, do the pinned header strips stay readable, and does a tap on a half-hidden square slide it into view without surprise?
 - [ ] Listen to device speech of the slotted order and pair clues ("Pig came two steps after Cat", "Of Cat and the friend at the pond, one came at dawn and one at noon").
+
+## Pile Match level 10 (2026-11-09)
+
+- [ ] Do the level 10 colour pairs (yellow/blue, orange/purple) read apart for a colour-blind child, and do the shapes carry the match when colour does not?
+- [ ] Does a six-year-old find the look-alike level interesting or tiresome, and does she notice that both shape and colour must match?
+- [ ] Listen to device speech of "That is an orange sea star" (and the other colour-shape names): are they clear?

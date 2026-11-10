@@ -142,7 +142,7 @@ const PILE24 = [
   heap('#####/#####/####.', '####/####', '/.#.#'),
 ];
 
-/** Frozen shapes for each level, by level ID: ten a level. Level 9 is level 7's heap with a smaller tray; no other two share a pool. */
+/** Frozen shapes for each level, by level ID: ten a level. Level 9 is level 7's heap with a smaller tray and level 10 is level 5's with look-alike kinds; no other two share a pool. */
 export const SHAPES: Record<number, Cell[][]> = {
   1: FLAT6,
   2: PILE9,
@@ -153,5 +153,6 @@ export const SHAPES: Record<number, Cell[][]> = {
   7: PILE18,
   8: PILE24,
   9: PILE18,
+  10: PILE12,
   11: PILE6,
 };

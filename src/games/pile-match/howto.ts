@@ -9,7 +9,7 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 11, text: 'Three the same in the tray pop away.' },
     { from: 2, to: 2, text: 'Things underneath wait until what is on top is gone.' },
     { from: 4, to: 11, text: 'Things underneath wait until what is on top is gone.' },
-    { from: 4, to: 9, text: 'When the tray is full, tap a thing in the tray to put it back.' },
+    { from: 4, to: 10, text: 'When the tray is full, tap a thing in the tray to put it back.' },
   ],
   finish: 'The grass is clear.',
   note: [
@@ -27,9 +27,14 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
-      to: 9,
+      to: 10,
       text: 'Touching something underneath and putting things back are never counted. A tap the full tray turns away counts as a mistake, once until something leaves the tray.',
     },
     { from: 9, to: 9, text: 'The tray has four places, so finish one kind before starting too many others.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'Two shapes in two colours: a set of three must match in shape and colour. A piece the full tray turns away is named in full.',
+    },
   ],
 };
