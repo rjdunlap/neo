@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Pile Match by touch: level 1 with one wrong kind, level 8 with a full tray refused, three put-backs and the hint they bring, level 9's four places, level 11's free little pile, level 4 upright in the autumn look; one sticker each. */
+  /** Pile Match by touch: level 1 with one wrong kind, level 8 with a full tray refused, three put-backs and the hint they bring, level 9's four places, level 11's free little pile, level 4 upright in the autumn look, level 10 upright with a refused look-alike named in full; one sticker each. */
   async function pileMatchPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -266,10 +266,78 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers4, {
       timeout: 15000,
     });
+    // Level 10 upright: two outlines in two colours; fill the five places, one refused tap is named in full (one miss), one screenshot, solved by taps.
+    await launch('pile-match', 10);
+    await idle();
+    await page.waitForTimeout(300);
+    const stickers10 = await page.evaluate(() => kit.store.data.stickers.length);
+    const looks = await page.evaluate(async () => {
+      const L = await import('/src/games/pile-match/logic.ts'),
+        g = neo.scene.game,
+        kinds = [...new Set(g.board.kinds)];
+      g.said = [];
+      const say = g.ctx.say.bind(g.ctx);
+      g.ctx.say = (id, ...rest) => {
+        g.said.push(id);
+        return say(id, ...rest);
+      };
+      return {
+        kinds: kinds.length,
+        shapes: new Set(kinds.map(L.silhouetteOf)).size,
+        colours: new Set(kinds.map(L.colourOf)).size,
+      };
+    });
+    assert.deepEqual(
+      [looks.kinds, looks.shapes, looks.colours],
+      [4, 2, 2],
+      'level 10 is two outlines in two colours',
+    );
+    for (let guard = 0; guard < 12 && (await state()).tray < 5; guard++) {
+      const i = await page.evaluate(async () => {
+        const L = await import('/src/games/pile-match/logic.ts'),
+          g = neo.scene.game,
+          t = L.tray(g.board, g.mask);
+        const open = L.freePieces(g.board.cells, g.mask);
+        return (
+          open.find((i) => t[g.board.kinds[i]] === 0) ?? open.find((i) => t[g.board.kinds[i]] === 1) ?? -1
+        );
+      });
+      if (i < 0) break;
+      await tapPiece(i);
+    }
+    let refused10 = -1;
+    if ((await state()).tray === 5)
+      refused10 = await page.evaluate(async () => {
+        const L = await import('/src/games/pile-match/logic.ts'),
+          g = neo.scene.game,
+          t = L.tray(g.board, g.mask);
+        return L.freePieces(g.board.cells, g.mask).find((i) => t[g.board.kinds[i]] < 2) ?? -1;
+      });
+    assert.ok(refused10 >= 0, 'the five places fill and a free piece must be refused');
+    const name10 = await page.evaluate(async (i) => {
+      const L = await import('/src/games/pile-match/logic.ts');
+      return L.KINDS[neo.scene.game.board.kinds[i]];
+    }, refused10);
+    await tapPiece(refused10);
+    await page.waitForTimeout(200);
+    st = await state();
+    assert.deepEqual([st.misses, st.tray], [1, 5], 'the full tray refuses and counts once');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.said[0]),
+      `pile.this-is.${name10}`,
+      'the refused piece is named by colour and shape',
+    );
+    await screenshot('pile-match-10-look-closely-portrait');
+    await solveAll();
+    st = await state();
+    assert.equal(st.misses, 1, 'level 10 solved with the one miss');
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers10, {
+      timeout: 15000,
+    });
     await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 9 with a full four-place tray, level 11 free play with nothing counted, level 4 upright in autumn, all solved by taps',
+      'Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 9 with a full four-place tray, level 11 free play with nothing counted, level 4 upright in autumn, level 10 upright with a named refusal, all solved by taps',
     );
   }
 

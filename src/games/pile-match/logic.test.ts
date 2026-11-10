@@ -17,7 +17,13 @@ import {
   fullMask,
   HIT,
   hintFor,
+  BASE_COLOURS,
+  BASE_KINDS,
+  colourOf,
+  COLOUR_PAIRS,
   KINDS,
+  LOOK_SILHOUETTES,
+  silhouetteOf,
   LEVEL1_SECOND,
   LEVELS,
   LOOKS,
@@ -39,6 +45,7 @@ import {
   type Board,
 } from './logic';
 import { SHAPES } from './shapes';
+import { VOICE } from './voice';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -198,6 +205,7 @@ describe('Pile Match rules', () => {
     const keys = (id: number) => SHAPES[id].map(key);
     for (const plan of PLANS) expect(new Set(keys(plan.id)).size).toBe(SHAPES[plan.id].length);
     expect(keys(9)).toEqual(keys(7));
+    expect(keys(10)).toEqual(keys(5));
     for (const [a, b] of [
       [1, 3],
       [2, 4],
@@ -287,7 +295,7 @@ describe('Pile Match rules', () => {
       4,
       true,
     ]);
-    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 5, max: 9 });
+    expect(rangeFor(LEVELS, 'school')).toEqual({ min: 5, max: 10 });
     const rng = new Rng(9);
     for (let s = 0; s < 40; s++) {
       const b = makeBoard(9, rng);
@@ -435,7 +443,7 @@ describe('Pile Match rules', () => {
       expect([0, 1].map((z) => cells.filter((c) => c.z === z).length)).toEqual([4, 2]);
     expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([1, 2, 3, 11, 4]);
     expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([3, 11, 4, 5, 6]);
-    expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([5, 6, 7, 8, 9]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([5, 6, 7, 8, 9, 10]);
     expect(stepLevel(3, 1, rangeFor(LEVELS, 'preschool'))).toBe(11);
     expect(stepLevel(11, 1, rangeFor(LEVELS, 'prek'))).toBe(4);
     expect(stepLevel(4, -1, rangeFor(LEVELS, 'prek'))).toBe(11);
@@ -447,8 +455,99 @@ describe('Pile Match rules', () => {
     expect(planFor(9).name).toBe('A smaller tray');
   });
 
+  it('every kind has its outline, colour and both voice lines; the first ten keep their names', () => {
+    expect(KINDS.slice(0, 8)).toEqual([
+      'shell',
+      'acorn',
+      'apple',
+      'star',
+      'leaf',
+      'duck',
+      'flower',
+      'mushroom',
+    ]);
+    expect(KINDS.slice(8, 10)).toEqual(['feather', 'sock']);
+    expect(new Set(KINDS).size).toBe(KINDS.length);
+    expect(new Set(BASE_COLOURS).size).toBe(BASE_KINDS.length);
+    KINDS.forEach((name, k) => {
+      expect(silhouetteOf(k)).toBeLessThan(BASE_KINDS.length);
+      expect(colourOf(k)).toBeTruthy();
+      if (k < BASE_KINDS.length) expect([silhouetteOf(k), colourOf(k)]).toEqual([k, BASE_COLOURS[k]]);
+      else expect(name).toBe(`${colourOf(k)}-${BASE_KINDS[silhouetteOf(k)]}`);
+      expect(VOICE).toHaveProperty([`pile.find.${name}`]);
+      expect(VOICE).toHaveProperty([`pile.this-is.${name}`]);
+    });
+  });
+
+  it('below level 10 no two kinds on a board share a colour or an outline', () => {
+    const rng = new Rng(31);
+    const seen = new Set<number>();
+    for (const plan of PLANS.filter((p) => !p.lookAlike))
+      for (let s = 0; s < 80; s++) {
+        const kinds = [...new Set(makeBoard(plan.id, rng).kinds)];
+        kinds.forEach((k) => seen.add(k));
+        expect(kinds.every((k) => k < BASE_KINDS.length)).toBe(true);
+        expect(new Set(kinds.map(colourOf)).size).toBe(kinds.length);
+        expect(new Set(kinds.map(silhouetteOf)).size).toBe(kinds.length);
+      }
+    // The feather and the sock turn up on ordinary heaps.
+    expect([...seen].sort((a, b) => a - b)).toEqual(BASE_KINDS.map((_, k) => k));
+  });
+
+  it('level 10 is a 2 × 2 of outline × colour from the safe pairs, after 9 in school', () => {
+    const p = planFor(10);
+    expect([p.name, p.pieces, p.kinds, p.layers, p.tray, p.asked, p.count, p.freePlay, p.lookAlike]).toEqual([
+      'Look closely',
+      12,
+      4,
+      2,
+      5,
+      false,
+      false,
+      false,
+      true,
+    ]);
+    expect(PLANS.filter((q) => q.lookAlike).map((q) => q.id)).toEqual([10]);
+    const pairs = COLOUR_PAIRS.map((q) => [...q].sort().join());
+    expect(pairs).not.toContain(['green', 'red'].join());
+    const rng = new Rng(41);
+    const silhouettes = new Set<number>(),
+      colours = new Set<string>();
+    for (let s = 0; s < 200; s++) {
+      const b = makeBoard(10, rng);
+      const kinds = [...new Set(b.kinds)];
+      expect(kinds.length).toBe(4);
+      const shapes = [...new Set(kinds.map(silhouetteOf))],
+        hues = [...new Set(kinds.map(colourOf))];
+      expect(shapes.length).toBe(2);
+      expect(hues.length).toBe(2);
+      expect(pairs).toContain([...hues].sort().join());
+      // Every outline comes in both colours, so each kind differs from exactly two others in one feature.
+      for (const a of kinds) {
+        expect(LOOK_SILHOUETTES as readonly number[]).toContain(silhouetteOf(a));
+        const one = kinds.filter(
+          (b) => (silhouetteOf(a) === silhouetteOf(b)) !== (colourOf(a) === colourOf(b)),
+        );
+        expect(one.length).toBe(2);
+      }
+      shapes.forEach((x) => silhouettes.add(x));
+      hues.forEach((x) => colours.add(x));
+    }
+    expect(silhouettes.size).toBe(LOOK_SILHOUETTES.length);
+    expect(colours.size).toBe(4);
+    // A five-place tray with four kinds can fill, so a refusal can happen and be named.
+    let full = false;
+    for (let s = 0; s < 40 && !full; s++) {
+      const b = makeBoard(10, rng);
+      full = wander(b, 5, rng, 60).some((m) => trayTotal(b, m) === 5);
+    }
+    expect(full).toBe(true);
+    expect(stepLevel(9, 1, rangeFor(LEVELS, 'school'))).toBe(10);
+    expect(planFor(12).id).toBe(11);
+  });
+
   it('plans: preschool to school ladder names', () => {
-    expect(PLANS.map((p) => p.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 11]);
+    expect(PLANS.map((p) => p.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
     expect(planFor(8).pieces).toBe(24);
     expect(SHAPES[8][0].filter((c) => c.z === 0).length).toBe(15);
   });

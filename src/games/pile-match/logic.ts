@@ -1,3 +1,4 @@
+import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { SHAPES } from './shapes';
@@ -16,15 +17,69 @@ export interface Board {
   route: readonly number[];
 }
 
-/** Each kind has its own silhouette and its own colour, so finding one is a single-feature search. */
-export const KINDS = ['shell', 'acorn', 'apple', 'star', 'leaf', 'duck', 'flower', 'mushroom'] as const;
-export type KindName = (typeof KINDS)[number];
-const APPLE = 2,
-  SHELL = 0,
+/** Each base kind has its own silhouette and its own colour, so finding one is a single-feature search. */
+export const BASE_KINDS = [
+  'shell',
+  'acorn',
+  'apple',
+  'star',
+  'leaf',
+  'duck',
+  'flower',
+  'mushroom',
+  'feather',
+  'sock',
+] as const;
+/** Each base kind's colour: no two share one. The feather and the sock, the washing line's windy-day losses, came last. */
+export const BASE_COLOURS: readonly ColorName[] = [
+  'pink',
+  'brown',
+  'red',
+  'orange',
+  'green',
+  'yellow',
+  'purple',
+  'teal',
+  'blue',
+  'white',
+];
+const SHELL = 0,
+  APPLE = 2,
+  STAR = 3,
   LEAF = 4,
-  DUCK = 5;
+  DUCK = 5,
+  MUSHROOM = 7,
+  SOCK = 9;
 /** Level 1 always asks for apples first; its second kind is one of these, from the seed. */
 export const LEVEL1_SECOND = [SHELL, DUCK, LEAF] as const;
+
+/**
+ * Level 10's look-alikes: a silhouette in one of two colours. Silhouettes whose art has no fixed accent colour (the
+ * duck's orange beak, the flower's yellow middle would vanish), and colour pairs kept apart for common colour
+ * blindness: yellow with blue, orange with purple, never red with green.
+ */
+export const LOOK_SILHOUETTES = [SHELL, STAR, MUSHROOM, SOCK] as const;
+export const LOOK_COLOURS = ['yellow', 'blue', 'orange', 'purple'] as const;
+export const COLOUR_PAIRS = [
+  ['yellow', 'blue'],
+  ['orange', 'purple'],
+] as const;
+/** Variants follow the base kinds, so saved kinds 0–9 keep their meaning: index 10 + silhouette slot × 4 + colour slot. */
+const VARIANTS = LOOK_SILHOUETTES.flatMap((s) => LOOK_COLOURS.map((c) => ({ silhouette: s, colour: c })));
+const variantIndex = (s: number, c: string) =>
+  BASE_KINDS.length + VARIANTS.findIndex((v) => v.silhouette === s && v.colour === c);
+
+/** Every kind by index: the base kinds, then level 10's variants named colour first ("yellow-star"). */
+export const KINDS: readonly string[] = [
+  ...BASE_KINDS,
+  ...VARIANTS.map((v) => `${v.colour}-${BASE_KINDS[v.silhouette]}`),
+];
+/** The base kind whose outline a kind is drawn with. */
+export const silhouetteOf = (kind: number) =>
+  kind < BASE_KINDS.length ? kind : VARIANTS[kind - BASE_KINDS.length].silhouette;
+/** A kind's palette colour. */
+export const colourOf = (kind: number): ColorName =>
+  kind < BASE_KINDS.length ? BASE_COLOURS[kind] : VARIANTS[kind - BASE_KINDS.length].colour;
 
 /** Where the heap blew down: the ground, its edge and the sky band behind the header. Levels 1–2 keep the meadow. */
 export const LOOKS = ['meadow', 'sand', 'autumn'] as const;
@@ -64,6 +119,8 @@ export interface PilePlan {
   count: boolean;
   /** Levels 3 and 11 are free play: two kinds never fill the tray, nothing is a miss and put-backs never bring a hint. */
   freePlay: boolean;
+  /** Level 10: two silhouettes in two colours, so a match must agree in both. */
+  lookAlike: boolean;
 }
 
 export const PLANS: readonly PilePlan[] = [
@@ -77,6 +134,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: true,
     count: false,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 2,
@@ -88,6 +146,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: true,
     count: false,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 3,
@@ -99,6 +158,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: false,
     freePlay: true,
+    lookAlike: false,
   },
   {
     id: 4,
@@ -110,6 +170,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: false,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 5,
@@ -121,6 +182,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: false,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 6,
@@ -132,6 +194,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: true,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 7,
@@ -143,6 +206,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: true,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 8,
@@ -154,6 +218,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: true,
     freePlay: false,
+    lookAlike: false,
   },
   {
     id: 9,
@@ -165,6 +230,19 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: true,
     freePlay: false,
+    lookAlike: false,
+  },
+  {
+    id: 10,
+    name: 'Look closely',
+    pieces: 12,
+    kinds: 4,
+    layers: 2,
+    tray: 5,
+    asked: false,
+    count: false,
+    freePlay: false,
+    lookAlike: true,
   },
   {
     id: 11,
@@ -176,6 +254,7 @@ export const PLANS: readonly PilePlan[] = [
     asked: false,
     count: false,
     freePlay: true,
+    lookAlike: false,
   },
 ];
 
@@ -185,12 +264,12 @@ export const ENTRY_LEVELS = [11] as const;
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 11, order: [1, 2, 3, 11, 4] },
   prek: { min: 3, max: 11, order: [3, 11, 4, 5, 6] },
-  school: { min: 5, max: 9 },
+  school: { min: 5, max: 10 },
 };
-/** The plan with this ID; an ID with no plan (10 is not built yet) clamps into levels 1–9. */
+/** The plan with this ID; an ID outside 1–11 clamps into it. */
 export const planFor = (level: number): PilePlan => {
-  const id = Math.floor(level);
-  return PLANS.find((p) => p.id === id) ?? PLANS[Math.max(0, Math.min(8, id - 1))];
+  const id = Math.max(1, Math.min(11, Math.floor(level)));
+  return PLANS.find((p) => p.id === id)!;
 };
 
 export const fullMask = (n: number) => (1 << n) - 1;
@@ -353,7 +432,14 @@ export function assign(cells: readonly Cell[], kinds: readonly number[], rng: Rn
   return { cells, kinds: out, route };
 }
 
-/** The round's heap. Level 1 always asks for apples first, then a seeded second kind. */
+/** Level 10's four kinds: two silhouettes, each in both colours of one pair. */
+export function lookAlikeKinds(rng: Rng): number[] {
+  const [a, b] = rng.shuffle([...LOOK_SILHOUETTES]);
+  const pair = rng.pick(COLOUR_PAIRS);
+  return [a, b].flatMap((s) => pair.map((c) => variantIndex(s, c)));
+}
+
+/** The round's heap. Level 1 always asks for apples first, then a seeded second kind; other levels draw base kinds. */
 export function makeBoard(level: number, rng: Rng): Board {
   const plan = planFor(level);
   const shapes = SHAPES[plan.id];
@@ -361,7 +447,9 @@ export function makeBoard(level: number, rng: Rng): Board {
   const kinds =
     plan.id === 1
       ? [APPLE, rng.pick(LEVEL1_SECOND)]
-      : rng.shuffle(KINDS.map((_, k) => k)).slice(0, plan.kinds);
+      : plan.lookAlike
+        ? lookAlikeKinds(rng)
+        : rng.shuffle(BASE_KINDS.map((_, k) => k)).slice(0, plan.kinds);
   return assign(cells, kinds, rng);
 }
 
