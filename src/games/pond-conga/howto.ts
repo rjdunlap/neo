@@ -4,10 +4,10 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Steer a line of ducklings to the duck food (peas, sweetcorn or oats), bite by bite.',
   steps: [
-    { to: 7, text: 'Touch the screen and lift to set the line off. It paddles on by itself.' },
+    { to: 7, text: 'Touch and lift to set the line off. It paddles on by itself.' },
     {
       to: 7,
-      text: 'Swipe anywhere on the screen the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.',
+      text: 'Swipe anywhere the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.',
     },
     {
       to: 6,
@@ -21,7 +21,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 8,
       to: 8,
-      text: 'Nothing moves until you do: each swipe, anywhere on the screen, takes one step that way, and a tap takes one step straight on. A swipe straight back does nothing.',
+      text: 'Nothing moves until you do: each swipe, anywhere, takes one step that way, and a tap takes one step straight on. A swipe straight back does nothing.',
     },
     {
       from: 8,
@@ -31,7 +31,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'Touch the screen and lift to set the line off. It paddles on by itself; swipe anywhere the way you want it to turn. A swipe straight back does nothing.',
+      text: 'Touch and lift to set the line off. It paddles on by itself; swipe anywhere to turn it. A swipe straight back does nothing.',
     },
     {
       from: 9,
