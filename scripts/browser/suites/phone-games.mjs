@@ -353,10 +353,10 @@ export function createSuite({ page, browser, errors, output, log, launch }) {
             smallest: targets.length ? Math.round(smallest) : null,
           };
         });
-        // A game that takes touches on the whole screen (a drag surface, a scene of moving things) has nothing to measure:
-        // its screenshot is the evidence.
+        // A game that takes touches on the whole screen (a drag surface, a scene of moving things), or on one board whose
+        // pieces are not objects of their own, has nothing to measure: its screenshot is the evidence.
         const verdict =
-          found.targets === 0
+          found.targets <= 1 || found.smallest > 250
             ? 'look'
             : found.bad === 0
               ? 'fits'
