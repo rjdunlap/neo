@@ -29,7 +29,7 @@
 
 **Starts as:** tap or drag a turtle along moss tiles: levels 1–3 (school) bloom every tile once and reach the pond last, with Undo and Start over; levels 4–7 (toddler to school) find the way through hedge mazes, walking back freely from a wrong branch
 
-**Grows into:** three coverage plans each at levels 1–3 (corridors, open patches, rocks); level 8, *a little patch*, five small boards (2 × 3 to 3 × 3) where a far tap is free; then six frozen hedge mazes per level 4–7, the last collecting the berry before the pond; exact-search and next-tile hints
+**Grows into:** three coverage plans each at levels 1–3 (corridors, open patches, rocks); level 8, *a little patch*, five small boards (2 × 3 to 3 × 3) where a far tap is free; then six frozen hedge mazes per level 4–7, level 7 collecting the berry before the pond; level 9, *two snacks*, six 4 × 7 mazes with two berries eaten in either order before the pond; exact-search and next-tile hints
 
 ## Design notes
 
