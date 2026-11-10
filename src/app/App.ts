@@ -29,6 +29,7 @@ import type { ExploreEntry } from '../content/explore';
 import { mixMemory } from './discovery';
 import { chooseTransition, frameAt, TRANSITION_SECONDS, type Box, type Transition } from './transition';
 import { ease } from '../engine/tween';
+import { markTiming } from '../engine/timing';
 
 /**
  * A game round played as one story request: at the story's level, coming home to the story's scene. Without a
@@ -194,6 +195,7 @@ export class App {
     if (!next.holdsMix()) mixMemory.end();
     this.unpause();
     this.blocker.eventMode = 'static'; // swallow taps mid-transition
+    markTiming('show');
     const old = this.scene;
     let picture: Sprite | null = null;
     let key: string | null = null;
@@ -213,6 +215,7 @@ export class App {
     // The old picture was drawn at the old scale; it keeps its size on the glass, and only a crossfade suits two areas.
     if (picture && reshaped) picture.scale.set(before.scale / this.view.scale);
     next.resize(this.view);
+    markTiming('init');
     this.root.addChild(next.root);
     this.refreshTurn();
     const how =
@@ -230,7 +233,9 @@ export class App {
     await new Promise<void>((done) => {
       this.moving = { how, t: 0, layer, picture, done };
       this.step(0);
+      this.pixi.ticker.addOnce(() => markTiming('frame'));
     });
+    markTiming('settled');
     this.blocker.eventMode = 'none';
     this.switching = false;
   }

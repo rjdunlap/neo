@@ -45,6 +45,8 @@ class Voice {
   private decoded = new Map<string, Promise<AudioBuffer>>();
   /** Clips that would not load or decode (a missing codec, say); those lines use device speech from then on. */
   private failed = new Set<string>();
+  /** Every line still pending: `stop()` and a new line end them all at once, so nothing waits out a cut line (U7 R4). */
+  private pending = new Set<() => void>();
 
   constructor() {
     if (!hasSpeech) return;
@@ -77,17 +79,16 @@ class Voice {
    */
   sayIn(id: LineId, preset: VoicePreset, vars?: LineVars): Promise<void> {
     const text = this.line(id, vars);
-    if (envMuted || !this.enabled)
-      return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
+    this.endAll();
+    if (envMuted || !this.enabled) return this.silent(text);
     this.cutClip();
     this.turn++;
     return this.device(text, preset);
   }
 
   speak(text: string): Promise<void> {
-    // Silenced: stay quiet but keep a spoken line's pacing so games that await it don't rush.
-    if (envMuted || !this.enabled)
-      return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
+    this.endAll();
+    if (envMuted || !this.enabled) return this.silent(text);
     this.cutClip();
     const turn = ++this.turn;
     const url = clipUrl(text);
@@ -99,12 +100,33 @@ class Voice {
     return this.device(text);
   }
 
+  /** Silenced: stay quiet but keep a spoken line's pacing so games that await it don't rush; a cut ends it at once. */
+  private silent(text: string): Promise<void> {
+    return new Promise((resolve) => {
+      const finish = () => {
+        window.clearTimeout(timer);
+        this.pending.delete(finish);
+        resolve();
+      };
+      const timer = window.setTimeout(finish, 600 + text.length * 45);
+      this.pending.add(finish);
+    });
+  }
+
+  /** Ends every pending line's promise: the one a new line cuts, or all of them on `stop()`. */
+  private endAll() {
+    const all = [...this.pending];
+    this.pending.clear();
+    for (const finish of all) finish();
+  }
+
   /** Plays a clip; any failure to load or decode speaks the line with device speech instead. */
   private playClip(text: string, url: string, ctx: AudioContext, turn: number): Promise<void> {
     return new Promise((resolve) => {
       let done = false;
       let timer = 0;
       const finish = () => {
+        this.pending.delete(finish);
         if (done) return;
         done = true;
         window.clearTimeout(timer);
@@ -115,6 +137,7 @@ class Voice {
       const fallBack = () => {
         if (done) return;
         if (turn !== this.turn) return finish();
+        this.pending.delete(finish);
         done = true;
         window.clearTimeout(timer);
         const spoken = this.device(text);
@@ -123,6 +146,7 @@ class Voice {
       };
       this.talking++;
       audio.duck(true);
+      this.pending.add(finish);
       timer = window.setTimeout(fallBack, CLIP_WAIT_MS);
       this.load(url, ctx).then((buffer) => {
         if (done) return;
@@ -184,9 +208,12 @@ class Voice {
       u.pitch = preset.pitch;
       u.volume = Math.min(1, audio.getVolume() * 1.1 * (preset.volume ?? 1));
       let done = false;
+      let timer = 0;
       const finish = () => {
+        this.pending.delete(finish);
         if (done) return;
         done = true;
+        window.clearTimeout(timer);
         this.talking--;
         if (this.talking <= 0) audio.duck(false);
         resolve();
@@ -194,17 +221,20 @@ class Voice {
       u.onend = finish;
       u.onerror = finish;
       // Some engines never fire `end`; don't let a game wait forever.
-      window.setTimeout(finish, 1500 + text.length * 90);
+      timer = window.setTimeout(finish, 1500 + text.length * 90);
       this.talking++;
       audio.duck(true);
+      this.pending.add(finish);
       speechSynthesis.speak(u);
     });
   }
 
+  /** Cuts whatever is speaking and ends every pending line's promise, a silenced line's included. */
   stop() {
     this.turn++;
     this.cutClip();
     if (hasSpeech) speechSynthesis.cancel();
+    this.endAll();
   }
 
   /** The voice in use, for the grown-ups' page; null when the device's default speaks or there is no speech. */
