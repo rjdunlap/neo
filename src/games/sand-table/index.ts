@@ -11,8 +11,15 @@ import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  MOVED,
+  MOVED_LINE,
   SAND,
   SAND_LINE,
+  answerPad,
+  breezeButton,
+  drawBreezeLines,
+  replayButton,
+  windmill,
   drawBucket,
   drawPail,
   flagArt,
@@ -25,8 +32,14 @@ import {
   LEVELS,
   COLS,
   GRAINS,
+  HOLLOW_HILL,
+  answer,
   apply,
   botStep,
+  breezeHint,
+  gainedBays,
+  liftedColumns,
+  puff,
   describeLandscape,
   describeSand,
   hintAction,
@@ -71,6 +84,30 @@ class SandTable implements Game {
   private spillSaid = false;
   private lastDrawnBucket = -1;
   private lastDrawnPail = -1;
+  // ---- Level 4 (the breeze) ----
+  private readonly breeze = breezeButton(130);
+  /** The Breeze button (level 4), in the flag's place. */
+  readonly breezeNode = this.breeze.node;
+  /** Replay (level 4), in the pail's place once the puff has run. */
+  readonly replayNode = replayButton(130);
+  /** Answer pads under the bays (level 4), shown after the puff. */
+  readonly padNodes: Container[] = [];
+  private readonly deco = windmill(70);
+  private readonly windLines = new Graphics();
+  /** The dashed outline of the tray before the puff, the moved-grain tint, the shimmer and the hint's dotted path. */
+  private readonly marks = new Graphics();
+  private readonly glow = new Graphics();
+  /** What the drawn sand eases toward while a puff plays; null means the model's heights. */
+  private target: number[] | null = null;
+  /** Bumped by each puff or Start again, so an older animation stops touching the tray. */
+  private run4 = 0;
+  /** A puff animation is playing. */
+  playing = false;
+  private spin = 0;
+  private gust = 0;
+  private shimmer = 0;
+  private glowPad: number | null = null;
+  private path: { x: number; y: number }[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -83,18 +120,48 @@ class SandTable implements Game {
     this.rim.eventMode = 'none';
     this.fx.eventMode = 'none';
     this.sparkle.eventMode = 'none';
-    ctx.stage.addChild(this.bg, this.table, this.surface, this.rim, this.bucket, this.fx, this.sparkle);
+    this.marks.eventMode = 'none';
+    this.glow.eventMode = 'none';
+    this.windLines.eventMode = 'none';
+    this.deco.node.eventMode = 'none';
+    ctx.stage.addChild(
+      this.bg,
+      this.table,
+      this.surface,
+      this.marks,
+      this.rim,
+      this.bucket,
+      this.fx,
+      this.sparkle,
+    );
+    const breezy = !!this.state.plan.breeze;
 
     this.state.plan.bays.forEach((_, b) => {
       const bay = new Container();
       bay.eventMode = 'static';
       onTap(bay, () => this.touchBay(b), { cooldown: 60 });
       this.bayNodes.push(bay);
-      const paddle = paddleArt(180, 100);
-      onTap(paddle, () => this.touchPaddle(b), { cooldown: 60 });
-      this.paddleNodes.push(paddle);
-      ctx.stage.addChild(bay, paddle);
+      ctx.stage.addChild(bay);
+      if (breezy) {
+        const pad = answerPad(180, 100);
+        onTap(pad, () => this.touchPad(b), { cooldown: 200 });
+        pad.visible = false;
+        this.padNodes.push(pad);
+        ctx.stage.addChild(pad);
+      } else {
+        const paddle = paddleArt(180, 100);
+        onTap(paddle, () => this.touchPaddle(b), { cooldown: 60 });
+        this.paddleNodes.push(paddle);
+        ctx.stage.addChild(paddle);
+      }
     });
+    if (breezy) {
+      ctx.stage.addChildAt(this.glow, ctx.stage.getChildIndex(this.marks));
+      ctx.stage.addChild(this.windLines, this.deco.node, this.breezeNode, this.replayNode);
+      onTap(this.breezeNode, () => this.touchBreeze(), { cooldown: 300 });
+      onTap(this.replayNode, () => this.touchReplay(), { cooldown: 300 });
+      this.replayNode.visible = false;
+    }
     onTap(this.pailNode, () => this.touchPail(), { cooldown: 120 });
     onTap(this.flagNode, () => this.touchFlag(), { cooldown: 300 });
     this.flagNode.visible = false;
@@ -110,6 +177,11 @@ class SandTable implements Game {
 
   start() {
     void this.ctx.instruct(`sand.instruct.${this.state.plan.level}` as 'sand.instruct.1');
+    if (this.state.wind)
+      void this.ctx.tw.wait(3.6).then(() => {
+        if (!this.gone && !this.finished && !this.state.puff)
+          void this.ctx.say(`sand.breeze.from-${this.state.wind}` as 'sand.breeze.from-left');
+      });
     if (this.state.invite)
       void this.ctx.tw.wait(3.2).then(() => {
         if (!this.gone && !this.finished)
@@ -148,9 +220,21 @@ class SandTable implements Game {
       bay.position.set(r.x + r.w / 2, r.y + r.h / 2);
       bay.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
       const p = l.paddles[b];
-      this.paddleNodes[b].position.set(p.x + p.w / 2, p.y + p.h / 2);
-      this.paddleNodes[b].scale.set(p.w / 180);
+      for (const n of [this.paddleNodes[b], this.padNodes[b]]) {
+        if (!n) continue;
+        n.position.set(p.x + p.w / 2, p.y + p.h / 2);
+        n.scale.set(p.w / 180);
+        n.hitArea = new Rectangle(-90, -50, 180, 100);
+      }
     });
+    this.breezeNode.position.set(l.flag.x + l.flag.w / 2, l.flag.y + l.flag.h / 2);
+    this.breezeNode.hitArea = new Rectangle(-l.flag.w / 2, -l.flag.h / 2, l.flag.w, l.flag.h);
+    this.replayNode.position.set(l.pail.x + l.pail.w / 2, l.pail.y + l.pail.h / 2);
+    this.replayNode.hitArea = new Rectangle(-l.pail.w / 2, -l.pail.h / 2, l.pail.w, l.pail.h);
+    if (this.state.wind) {
+      const left = this.state.wind === 'left';
+      this.deco.node.position.set(left ? t.x - 2 : t.x + t.w + 2, t.y - 40);
+    }
     this.pailNode.position.set(l.pail.x + l.pail.w / 2, l.pail.y + l.pail.h / 2);
     this.pailNode.hitArea = new Rectangle(-l.pail.w / 2, -l.pail.h / 2, l.pail.w, l.pail.h);
     this.flagNode.position.set(l.flag.x + l.flag.w / 2, l.flag.y + l.flag.h / 2);
@@ -199,22 +283,72 @@ class SandTable implements Game {
       .moveTo(t.x, t.y)
       .lineTo(t.x + t.w, t.y)
       .stroke({ width: 3, color: SAND_LINE, alpha: 0.35 });
+    if (this.state.plan.breeze) this.drawMarks();
+  }
+
+  /** Level 4's marks: the shimmering top grains before the puff; after it, the moved-grain tint, the dashed outline and any hint path. */
+  private drawMarks() {
+    const g = this.marks.clear();
+    const l = this.lay;
+    const p = this.state.puff;
+    if (!p) {
+      const a = 0.55 + 0.45 * Math.sin(this.shimmer * 6);
+      for (const c of liftedColumns(this.state.h, this.state.wind ?? 'left')) {
+        const x = this.colX(c);
+        const y = this.topY(this.disp[c]) + l.rowH * 0.45;
+        g.circle(x, y, 11).fill({ color: 0xfff3a0, alpha: a * 0.8 });
+        g.circle(x, y, 7).fill(SAND).stroke({ width: 2, color: MOVED_LINE, alpha: a });
+      }
+      return;
+    }
+    // where the sand grew keeps a different tint
+    for (let c = 0; c < COLS; c++) {
+      const grew = Math.min(this.disp[c], p.after[c]) - p.before[c];
+      if (grew > 0.05) {
+        const top = this.topY(this.disp[c]);
+        g.roundRect(this.colX(c) - l.colW / 2 + 3, top + 4, l.colW - 6, grew * l.rowH - 4, 8).fill({
+          color: MOVED,
+          alpha: 0.75,
+        });
+      }
+    }
+    // the surface from before, dashed
+    const pts = p.before.map((h, c) => ({ x: this.colX(c), y: this.topY(h) }));
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+      for (let k = 0; k < 3; k++) {
+        const t0 = k / 3;
+        const t1 = t0 + 0.2;
+        g.moveTo(a.x + (b.x - a.x) * t0, a.y + (b.y - a.y) * t0).lineTo(
+          a.x + (b.x - a.x) * t1,
+          a.y + (b.y - a.y) * t1,
+        );
+      }
+    }
+    g.stroke({ width: 4, color: wood.line, alpha: 0.8, cap: 'round' });
+    for (const d of this.path) g.circle(d.x, d.y, 5).fill(MOVED_LINE);
   }
 
   update(dt: number) {
     let moving = false;
     const k = Math.min(1, dt * 9);
+    const goal = this.target ?? this.state.h;
+    if (this.state.plan.breeze) {
+      moving = this.tickBreeze(dt) || moving;
+    }
     for (let c = 0; c < COLS; c++) {
-      const d = this.state.h[c] - this.disp[c];
+      const d = goal[c] - this.disp[c];
       if (Math.abs(d) > 0.004) {
         this.disp[c] += d * k;
         moving = true;
-      } else this.disp[c] = this.state.h[c];
+      } else this.disp[c] = goal[c];
     }
     if (moving) this.drawSurface();
     if (this.lastDrawnBucket !== this.state.bucket) {
       this.lastDrawnBucket = this.state.bucket;
-      drawBucket(this.bucketArt, this.state.bucket / GRAINS);
+      // level 4 has no pour: the bucket looks empty
+      drawBucket(this.bucketArt, this.state.plan.breeze ? 0 : this.state.bucket / GRAINS);
     }
     if (this.lastDrawnPail !== this.state.pail) {
       this.lastDrawnPail = this.state.pail;
@@ -223,7 +357,7 @@ class SandTable implements Game {
     }
     if (!this.finished) {
       this.idle += dt;
-      if (this.idle >= IDLE_SECONDS && this.state.bucket > 0) {
+      if (this.idle >= IDLE_SECONDS && this.state.bucket > 0 && !this.state.plan.breeze) {
         this.idle = 0;
         const bay = this.lay.bays[Math.floor(this.lay.bays.length / 2)];
         this.ctx.particles.burst(bay.x + bay.w / 2, this.lay.tray.y + this.lay.tray.h * 0.4, {
@@ -242,6 +376,7 @@ class SandTable implements Game {
 
   private touchBay(b: number) {
     if (this.finished) return;
+    if (this.state.plan.breeze) return this.touchTray4(b);
     this.run({ pour: b });
   }
 
@@ -425,6 +560,219 @@ class SandTable implements Game {
     if (!this.finished) void this.ctx.say('sand.first-heap');
   }
 
+  // ---- Level 4: the breeze ---------------------------------------------------------------------------------
+
+  /** Per frame at level 4: the windmill turns while the breeze blows, the lines fade, the top grains shimmer, a glow pulses. */
+  private tickBreeze(dt: number): boolean {
+    this.spin = Math.max(0, this.spin - dt * 1.2);
+    this.breeze.blades.rotation += dt * (0.4 + this.spin * 9);
+    this.deco.blades.rotation += dt * (0.3 + this.spin * 9);
+    this.gust = Math.max(0, this.gust - dt * 0.8);
+    const l = this.lay;
+    const left = this.state.wind !== 'right';
+    drawBreezeLines(
+      this.windLines,
+      left ? l.tray.x + 10 : l.tray.x + l.tray.w - 10,
+      l.tray.y + 20,
+      left ? 1 : -1,
+      0.25 + this.gust * 0.75,
+    );
+    this.glow.clear();
+    if (this.glowPad !== null) {
+      const p = l.paddles[this.glowPad];
+      const a = 0.45 + 0.3 * Math.sin(this.shimmer * 5);
+      this.glow.roundRect(p.x - 14, p.y - 14, p.w + 28, p.h + 28, 30).fill({ color: 0xfff3a0, alpha: a });
+    }
+    this.shimmer += dt;
+    return !this.state.puff;
+  }
+
+  private touchTray4(b: number) {
+    this.idle = 0;
+    if (!this.state.puff) {
+      this.wiggle([this.breezeNode]);
+      sfx.tick();
+      void this.ctx.say('sand.breeze.ready');
+      return;
+    }
+    if (this.playing) return;
+    const pad = this.padNodes[b];
+    this.ctx.tw.kill(pad.scale);
+    const s = pad.scale.x;
+    pad.scale.set(s * 1.12);
+    void this.ctx.tw.to(pad.scale, { x: s, y: s }, { duration: 0.35, ease: ease.outBack });
+    const p = this.lay.paddles[b];
+    this.ctx.particles.burst(p.x + p.w / 2, p.y + p.h / 2, {
+      kind: 'dot',
+      colors: [0xfff3a0, 0xffffff],
+      count: 10,
+      speed: [50, 120],
+      gravity: 0,
+      life: [0.4, 0.7],
+    });
+    void this.ctx.say('sand.choose-here');
+  }
+
+  private touchBreeze() {
+    if (this.finished || this.state.puff || this.playing) return;
+    this.idle = 0;
+    this.taken++;
+    const before = [...this.state.h];
+    puff(this.state);
+    this.breezeNode.visible = false;
+    void this.ctx.say('sand.breeze.first');
+    void this.playPuff(before, false).then((done) => {
+      if (!done || this.gone || this.finished) return;
+      this.replayNode.visible = true;
+      for (const pad of this.padNodes) {
+        pad.visible = true;
+        pad.scale.set(0.2);
+        void this.ctx.tw.to(
+          pad.scale,
+          { x: this.lay.paddles[0].w / 180, y: this.lay.paddles[0].w / 180 },
+          {
+            duration: 0.4,
+            ease: ease.outBack,
+          },
+        );
+      }
+      void this.ctx.instruct('sand.ask');
+    });
+  }
+
+  private touchReplay() {
+    if (this.finished || !this.state.puff || this.playing) return;
+    this.idle = 0;
+    void this.playPuff(this.state.puff.before, false);
+  }
+
+  /**
+   * Play the round's one puff from the tray before it: the top grains lift, hop low downwind one at a time (the most downwind
+   * first) and land with a pluck, then the settle slides. The model already holds the result; this only shows it.
+   * Resolves true when it played to the end.
+   */
+  private async playPuff(before: readonly number[], withPath: boolean): Promise<boolean> {
+    const p = this.state.puff;
+    if (!p) return false;
+    const token = ++this.run4;
+    const { tw } = this.ctx;
+    const live = () => !this.gone && token === this.run4;
+    this.playing = true;
+    this.path = [];
+    this.target = [...before];
+    for (let c = 0; c < COLS; c++) this.disp[c] = before[c];
+    this.drawSurface();
+    sfx.whoosh();
+    this.spin = 1;
+    this.gust = 1;
+    await tw.wait(0.35);
+    if (!live()) return false;
+    for (const c of p.lifted) this.target[c]--;
+    const hops = p.events.filter((e): e is Extract<SandEvent, { kind: 'hop' }> => e.kind === 'hop');
+    for (let i = 0; i < hops.length; i++) {
+      const e = hops[i];
+      const x0 = this.colX(e.from);
+      const y0 = this.topY(before[e.from]) + 4;
+      const x1 = this.colX(e.to);
+      const y1 = this.topY(this.target[e.to] + 1) + 4;
+      if (withPath && i === 0)
+        for (let k = 0; k <= 12; k++) {
+          const t = k / 12;
+          this.path.push({ x: x0 + (x1 - x0) * t, y: y0 + (y1 - y0) * t - Math.sin(t * Math.PI) * 40 });
+        }
+      await this.hop(x0, y0, x1, y1, withPath && i === 0 ? 1.1 : 0.55);
+      if (!live()) return false;
+      this.target[e.to]++;
+      sfx.pluck(2 + this.target[e.to], 0.22);
+      await tw.wait(0.12);
+      if (!live()) return false;
+    }
+    if (p.events.some((e) => e.kind === 'slide')) {
+      await tw.wait(0.25);
+      if (!live()) return false;
+      sfx.tick();
+    }
+    this.target = null;
+    await tw.wait(0.6);
+    if (!live()) return false;
+    this.playing = false;
+    this.drawSurface();
+    return true;
+  }
+
+  /** One grain hopping low along the surface. */
+  private async hop(x0: number, y0: number, x1: number, y1: number, seconds: number) {
+    const { tw } = this.ctx;
+    const g = grainDot();
+    g.tint = MOVED;
+    g.position.set(x0, y0);
+    this.fx.addChild(g);
+    void tw.to(g, { x: x1 }, { duration: seconds, ease: ease.inOutSine });
+    await tw.to(g, { y: Math.min(y0, y1) - 40 }, { duration: seconds * 0.45, ease: ease.outQuad });
+    if (this.gone) return;
+    await tw.to(g, { y: y1 }, { duration: seconds * 0.55, ease: ease.inQuad });
+    if (!this.gone && !g.destroyed) g.destroy();
+  }
+
+  private touchPad(b: number) {
+    if (this.finished || !this.state.puff) return;
+    this.idle = 0;
+    this.taken++;
+    const r = answer(this.state, b);
+    if (r.change === 'gained') {
+      void this.finale4();
+      return;
+    }
+    sfx.boing();
+    this.wiggle([this.padNodes[b]]);
+    void this.ctx.say(r.change === 'lost' ? 'sand.wrong.lost' : 'sand.wrong.same').then(() => {
+      if (r.glow && !this.gone && !this.finished) void this.ctx.say('sand.hint.glow');
+    });
+    if (r.glow) this.glowAnswer();
+  }
+
+  private gaining(): number {
+    const p = this.state.puff!;
+    return gainedBays(this.state.plan, p.before, p.after)[0];
+  }
+
+  private glowAnswer() {
+    this.glowPad = this.gaining();
+    const p = this.lay.paddles[this.glowPad];
+    this.ctx.particles.burst(p.x + p.w / 2, p.y, {
+      kind: 'dot',
+      colors: [0xfff3a0, 0xffffff],
+      count: 14,
+      speed: [60, 160],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
+  }
+
+  private async finale4() {
+    if (this.finished) return;
+    this.finished = true;
+    const { tw } = this.ctx;
+    [5, 6, 8].forEach((n, i) => void tw.wait(i * 0.1).then(() => !this.gone && sfx.pluck(n, 0.25)));
+    const p = this.lay.paddles[this.gaining()];
+    this.ctx.particles.burst(p.x + p.w / 2, p.y, {
+      kind: 'dot',
+      colors: [0xfff3a0, 0xffffff, MOVED],
+      count: 30,
+      speed: [120, 320],
+      gravity: 200,
+      life: [0.6, 1],
+    });
+    await this.ctx.say(this.state.hill === HOLLOW_HILL ? 'sand.right.hollow' : 'sand.right.lee');
+    if (this.gone) return;
+    this.ctx.pet.cheer();
+    sfx.tada();
+    await tw.wait(1.2);
+    if (this.gone) return;
+    const { misses, hints } = this.state.quiz;
+    this.ctx.finish({ misses, hints });
+  }
+
   // ---- Finish ---------------------------------------------------------------------------------------------------
 
   private async finale() {
@@ -478,6 +826,19 @@ class SandTable implements Game {
   /** The pause sheet's Show a hint: one useful action, really made, counting nothing. */
   askForHint() {
     if (this.finished) return;
+    if (this.state.plan.breeze) {
+      if (this.playing) return;
+      const h = breezeHint(this.state);
+      if (h === 'breeze') this.touchBreeze();
+      else if (h === 'path') {
+        void this.ctx.say('sand.hint.path');
+        void this.playPuff(this.state.puff!.before, true);
+      } else {
+        this.glowAnswer();
+        void this.ctx.say('sand.hint.glow');
+      }
+      return;
+    }
     const a = hintAction(this.state);
     const target =
       'pour' in a ? this.lay.bays[a.pour] : 'scoop' in a ? this.lay.paddles[a.scoop] : this.lay.pail;
@@ -496,6 +857,17 @@ class SandTable implements Game {
   restart() {
     if (this.finished) return;
     restart(this.state);
+    if (this.state.plan.breeze) {
+      // the authored hill and the Breeze button come back; misses and hints already counted stay
+      this.run4++;
+      this.playing = false;
+      this.target = null;
+      this.path = [];
+      this.glowPad = null;
+      this.breezeNode.visible = true;
+      this.replayNode.visible = false;
+      for (const pad of this.padNodes) pad.visible = false;
+    }
     for (let c = 0; c < COLS; c++) this.disp[c] = this.state.h[c];
     this.fx.removeChildren().forEach((c) => c.destroy());
     this.drawSurface();
@@ -505,6 +877,8 @@ class SandTable implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     const step = botStep(this.state, this.taken);
+    if ('breeze' in step) return { tap: { on: this.breezeNode } };
+    if ('answer' in step) return this.playing ? null : { tap: { on: this.padNodes[step.answer] } };
     if ('flag' in step) return this.state.flag ? { tap: { on: this.flagNode } } : null;
     if ('pour' in step) return { tap: { on: this.bayNodes[step.pour] } };
     if ('scoop' in step) return { tap: { on: this.paddleNodes[step.scoop] } };
@@ -546,7 +920,7 @@ export const sandTable: GameModule = {
   region: 'tinker-lab',
   challenge: 'space',
   skills: ['cause-and-effect', 'spatial', 'materials', 'making'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeSand,
   music: STYLES.paint,

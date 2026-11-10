@@ -158,3 +158,90 @@ export function sandPicture(heights: number[], shell: boolean): Container {
   }
   return c;
 }
+
+/** Level 4's moved-grain tint: where the blown sand landed keeps this colour until the round ends. */
+export const MOVED = swatch.orange.fill;
+export const MOVED_LINE = swatch.orange.line;
+
+/** A shell windmill: four shell-pink blades on a stick. `blades` turns while the breeze blows. */
+export function windmill(size: number): { node: Container; blades: Graphics } {
+  const node = new Container();
+  const r = size / 2;
+  const stick = new Graphics()
+    .moveTo(0, 0)
+    .lineTo(0, r * 1.05)
+    .stroke(stroke(wood.line, Math.max(3, size / 18)));
+  const blades = new Graphics();
+  const colors = [swatch.pink, swatch.yellow, swatch.pink, swatch.yellow];
+  colors.forEach((c, i) => {
+    const a = (i * Math.PI) / 2;
+    const tip = { x: Math.cos(a) * r * 0.9, y: Math.sin(a) * r * 0.9 };
+    const side = { x: Math.cos(a + 0.9) * r * 0.45, y: Math.sin(a + 0.9) * r * 0.45 };
+    blades.poly([0, 0, tip.x, tip.y, side.x, side.y]).fill(c.fill).stroke(stroke(c.line, 3));
+  });
+  blades
+    .circle(0, 0, Math.max(4, size / 14))
+    .fill(swatch.white.fill)
+    .stroke(stroke(wood.line, 3));
+  node.addChild(stick, blades);
+  return { node, blades };
+}
+
+/** The Breeze button: a shell windmill in a round white button (level 4, in the flag's place). */
+export function breezeButton(size: number): { node: Container; blades: Graphics } {
+  const c = new Container();
+  const r = size / 2;
+  c.addChild(new Graphics().circle(0, 0, r).fill(0xffffff).stroke(stroke(swatch.teal.line, 7)));
+  const w = windmill(size * 0.62);
+  w.node.position.set(0, -r * 0.12);
+  c.addChild(w.node);
+  return { node: c, blades: w.blades };
+}
+
+/** The Replay button: a round arrow in a white button (level 4, in the pail's place, once the breeze has blown). */
+export function replayButton(size: number): Container {
+  const c = new Container();
+  const r = size / 2;
+  c.addChild(new Graphics().circle(0, 0, r).fill(0xffffff).stroke(stroke(swatch.blue.line, 7)));
+  const g = new Graphics()
+    .arc(0, 0, r * 0.45, -Math.PI * 0.35, Math.PI * 1.35)
+    .stroke(stroke(swatch.blue.fill, 10));
+  const a = -Math.PI * 0.35;
+  const tx = Math.cos(a) * r * 0.45;
+  const ty = Math.sin(a) * r * 0.45;
+  g.poly([tx - 14, ty - 12, tx + 18, ty - 4, tx - 2, ty + 20])
+    .fill(swatch.blue.fill)
+    .stroke(stroke(swatch.blue.line, 3));
+  c.addChild(g);
+  return c;
+}
+
+/** An answer pad under a bay: a wooden board with a big arrow pointing up into the bay. */
+export function answerPad(w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(wood.light)
+    .stroke(stroke(wood.line));
+  g.moveTo(0, h / 2 - 18)
+    .lineTo(0, -h / 2 + 34)
+    .stroke(stroke(swatch.green.line, 12));
+  g.poly([0, -h / 2 + 12, -30, -h / 2 + 44, 30, -h / 2 + 44])
+    .fill(swatch.green.fill)
+    .stroke(stroke(swatch.green.line, 4));
+  c.addChild(g);
+  return c;
+}
+
+/** Breeze lines at the upwind wall: three soft waves, `dir` 1 blowing right, -1 blowing left. */
+export function drawBreezeLines(g: Graphics, x: number, y: number, dir: number, alpha: number) {
+  g.clear();
+  for (let i = 0; i < 3; i++) {
+    const yy = y + i * 34;
+    const x0 = x;
+    const x1 = x + dir * (70 + i * 14);
+    g.moveTo(x0, yy)
+      .quadraticCurveTo((x0 + x1) / 2, yy - 14, x1, yy)
+      .stroke({ width: 5, color: swatch.teal.line, alpha, cap: 'round' });
+  }
+}

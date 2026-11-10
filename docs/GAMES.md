@@ -398,7 +398,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Sand Table
 
-*lap–pre-K* · [Sand Table](games/sand-table.md)
+*lap–school* · [Sand Table](games/sand-table.md)
 
 ### Food Web Workshop
 

@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/sand-table; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sand-table` · **Land:** Rainbow Meadow · **Ages:** lap–pre-K · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sand-table` · **Land:** Rainbow Meadow · **Ages:** lap–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** cause-and-effect, spatial, materials, making
 
@@ -12,12 +12,14 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3 |
+| school | 3–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Pour and scoop one sand heap |
 | 2 | Build or lower two hills |
 | 3 | Shape a landscape and show it |
+| 4 | Watch the breeze and find where the sand landed |
 
 <!-- end generated -->
 
