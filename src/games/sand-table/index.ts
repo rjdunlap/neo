@@ -592,7 +592,7 @@ class SandTable implements Game {
       void this.ctx.say('sand.breeze.ready');
       return;
     }
-    if (this.playing) return;
+    if (this.playing) return void sfx.tick();
     const pad = this.padNodes[b];
     this.ctx.tw.kill(pad.scale);
     const s = pad.scale.x;
@@ -638,7 +638,8 @@ class SandTable implements Game {
   }
 
   private touchReplay() {
-    if (this.finished || !this.state.puff || this.playing) return;
+    if (this.finished || !this.state.puff) return;
+    if (this.playing) return void sfx.tick();
     this.idle = 0;
     void this.playPuff(this.state.puff.before, false);
   }
@@ -713,6 +714,8 @@ class SandTable implements Game {
 
   private touchPad(b: number) {
     if (this.finished || !this.state.puff) return;
+    // the grains are still moving: watching counts nothing, and the answer waits until they land
+    if (this.playing) return void sfx.tick();
     this.idle = 0;
     this.taken++;
     const r = answer(this.state, b);
@@ -723,7 +726,8 @@ class SandTable implements Game {
     sfx.boing();
     this.wiggle([this.padNodes[b]]);
     void this.ctx.say(r.change === 'lost' ? 'sand.wrong.lost' : 'sand.wrong.same').then(() => {
-      if (r.glow && !this.gone && !this.finished) void this.ctx.say('sand.hint.glow');
+      if (r.glow && !this.gone && !this.finished && this.glowPad !== null)
+        void this.ctx.say('sand.hint.glow');
     });
     if (r.glow) this.glowAnswer();
   }
