@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   BERRIES,
+  berriesOf,
   completion,
   deadEnd,
   flipBoard,
@@ -230,7 +231,7 @@ describe('Mossy Path level 8, a little patch', () => {
   });
   it('slots 8 after 6 for pre-K and school without changing any first level', () => {
     expect(LEVELS.prek?.order).toEqual([5, 6, 8]);
-    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 2, 3]);
+    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 9, 2, 3]);
     expect(LEVELS.toddler).toEqual({ min: 4, max: 4 });
     expect(LEVELS.preschool).toEqual({ min: 4, max: 5 });
   });
@@ -264,7 +265,7 @@ describe('Mossy Path looks', () => {
   });
 });
 
-const MAZE_LEVELS = [4, 5, 6, 7];
+const MAZE_LEVELS = [4, 5, 6, 7, 9];
 const FLIPS: [boolean, boolean][] = [
   [false, false],
   [true, false],
@@ -319,7 +320,7 @@ function goTo(b: Board, level: number, s0: MazeState, target: number): MazeState
   return s;
 }
 
-describe('Mossy Path levels 4-7 boards', () => {
+describe('Mossy Path levels 4-7 and 9 boards', () => {
   it('has open tiles forming a tree with distinct, open start, pond and berry, a leaf pond, and a size that keeps targets at 100 units', () => {
     for (const level of MAZE_LEVELS)
       for (const { b, label } of cases(level)) {
@@ -331,14 +332,15 @@ describe('Mossy Path levels 4-7 boards', () => {
           label,
         ).toBe(true);
         expect(edges, label).toBe(b.tiles.length - 1);
-        const special = [b.start, b.pond, ...(b.berry === undefined ? [] : [b.berry])];
+        const special = [b.start, b.pond, ...berriesOf(b)];
         expect(new Set(special).size, label).toBe(special.length);
         expect(
           special.every((t) => b.tiles.includes(t)),
           label,
         ).toBe(true);
         expect(neighbours(b, b.pond).length, label).toBe(1);
-        expect(b.berry !== undefined, label).toBe(level === 7);
+        expect(b.berry !== undefined, label).toBe(level === 7 || level === 9);
+        expect(b.berry2 !== undefined, label).toBe(level === 9);
         expect(b.rows, label).toBeLessThanOrEqual(4);
         expect(b.cols, label).toBeLessThanOrEqual(7);
         expect(Math.min(132, (768 - 330) / b.rows, (1024 - 320) / b.cols), label).toBeGreaterThanOrEqual(100);
@@ -438,7 +440,7 @@ describe('Mossy Path levels 4-7 boards', () => {
   });
 });
 
-describe('Mossy Path levels 4-7 moves', () => {
+describe('Mossy Path levels 4-7 and 9 moves', () => {
   it('steps forward, back, walks to earlier trail tiles and ignores far, hedge and own-tile taps', () => {
     for (const level of MAZE_LEVELS)
       for (const { b, label } of cases(level)) {
@@ -520,7 +522,7 @@ describe('Mossy Path levels 4-7 moves', () => {
   });
 });
 
-describe('Mossy Path levels 4-7 accounting', () => {
+describe('Mossy Path levels 4-7 and 9 accounting', () => {
   it('never produces a miss at levels 4 and 5, however she taps', () => {
     for (const level of [4, 5])
       for (const { b, label } of cases(level))
@@ -572,13 +574,13 @@ describe('Mossy Path levels 4-7 accounting', () => {
   });
 });
 
-describe('Mossy Path levels 4-7 nextToward', () => {
+describe('Mossy Path levels 4-7 and 9 nextToward', () => {
   it('moves adjacent and strictly closer to the goal from every open tile', () => {
     for (const level of MAZE_LEVELS)
       for (const { b, label } of cases(level)) {
-        for (const berry of level === 7 ? [false, true] : [false]) {
+        for (const berry of level >= 7 ? [false, true] : [false]) {
           const goal = goalOf(b, berry);
-          expect(goal, label).toBe(level === 7 && !berry ? b.berry : b.pond);
+          if (level !== 9) expect(goal, label).toBe(level === 7 && !berry ? b.berry : b.pond);
           for (const t of b.tiles) {
             if (t === goal) continue;
             const n = nextToward(b, t, goal);
@@ -594,14 +596,15 @@ describe('Mossy Path levels 4-7 nextToward', () => {
         let s = mazeStart(b),
           finished = false;
         for (let i = 0; i < b.tiles.length * 3 && !finished; i++) {
-          const r = mazeTouch(b, level, s, nextToward(b, s.path.at(-1)!, goalOf(b, s.berry)));
+          const here = s.path.at(-1)!;
+          const r = mazeTouch(b, level, s, nextToward(b, here, goalOf(b, s.berry, here, s.eaten)));
           expect(['forward', 'back'], label).toContain(r.move.kind);
           finished = r.move.kind === 'forward' && r.move.pond;
           s = r.state;
         }
         expect(finished, label).toBe(true);
         expect(s.misses, label).toBe(0);
-        expect(s.berry, label).toBe(level === 7);
+        expect(s.berry, label).toBe(level === 7 || level === 9);
         for (const t of b.tiles.filter((x) => deadEnd(b, x))) {
           // walk in (misses allowed), then follow the plan out and on to the pond
           let w = goTo(b, level, mazeStart(b), t);
@@ -610,7 +613,7 @@ describe('Mossy Path levels 4-7 nextToward', () => {
           const line = mainline(b);
           for (let i = 0; i < b.tiles.length * 3 && !done; i++) {
             const here = w.path.at(-1)!,
-              next = nextToward(b, here, goalOf(b, w.berry));
+              next = nextToward(b, here, goalOf(b, w.berry, here, w.eaten));
             const r = mazeTouch(b, level, w, next);
             if (!line.has(here)) expect(r.move, `${label} dead end ${t}`).toEqual({ kind: 'back' });
             done = r.move.kind === 'forward' && (r.move as { pond: boolean }).pond;
@@ -620,5 +623,87 @@ describe('Mossy Path levels 4-7 nextToward', () => {
           expect(w.misses, `${label} dead end ${t}`).toBe(missesIn);
         }
       }
+  });
+});
+
+describe('Mossy Path level 9, two snacks', () => {
+  it('puts each berry at the end of its own spur off the way to the pond, one nearer the start, with a wrong branch', () => {
+    expect(isMaze(9)).toBe(true);
+    expect(levelName(9)).toBe('Two snacks: both berries, then the pond');
+    for (const { b, label } of cases(9)) {
+      const route = routeBetween(b, b.start, b.pond),
+        berries = berriesOf(b),
+        branches = wrongBranches(b);
+      expect(berries, label).toHaveLength(2);
+      const spurs = berries.map((t) => routeBetween(b, b.start, t).filter((x) => !route.includes(x)));
+      for (const [i, t] of berries.entries()) {
+        expect(route.includes(t), label).toBe(false);
+        expect(neighbours(b, t), label).toHaveLength(1);
+        expect(spurs[i].includes(t), label).toBe(true);
+        expect(
+          branches.some((x) => x.tiles.includes(t) || spurs[i].includes(x.fork)),
+          label,
+        ).toBe(false);
+      }
+      expect(
+        spurs[0].some((t) => spurs[1].includes(t)),
+        label,
+      ).toBe(false);
+      expect(dist(b, b.start, berries[0]), label).not.toBe(dist(b, b.start, berries[1]));
+      expect(branches.length, label).toBeGreaterThan(0);
+    }
+  });
+  it('finishes with no misses eating the berries in either order', () => {
+    for (const { b, label } of cases(9))
+      for (const order of [berriesOf(b), [...berriesOf(b)].reverse()]) {
+        let s = goTo(b, 9, mazeStart(b), order[0]);
+        expect(s.eaten, label).toEqual([order[0]]);
+        expect(s.berry, label).toBe(false);
+        s = goTo(b, 9, s, order[1]);
+        expect(s.berry, label).toBe(true);
+        s = goTo(b, 9, s, routeBetween(b, b.start, b.pond).at(-2)!);
+        const fin = mazeTouch(b, 9, s, b.pond);
+        expect(fin.move.kind, label).toBe('forward');
+        expect((fin.move as { pond: boolean }).pond, label).toBe(true);
+        expect(fin.state.misses, label).toBe(0);
+      }
+  });
+  it('says how many berries are left as each is eaten', () => {
+    for (const { b, label } of cases(9)) {
+      const [first, second] = berriesOf(b);
+      const before = goTo(b, 9, mazeStart(b), routeBetween(b, b.start, first).at(-2)!);
+      const r1 = mazeTouch(b, 9, before, first);
+      expect(r1.move, label).toMatchObject({ kind: 'forward', berry: true, left: 1 });
+      const s = goTo(b, 9, r1.state, routeBetween(b, b.start, second).at(-2)!);
+      expect(mazeTouch(b, 9, s, second).move, label).toMatchObject({ kind: 'forward', berry: true, left: 0 });
+      expect(mazeRestart(b, r1.state).eaten, label).toEqual([]);
+      expect(mazeBack(r1.state).eaten, label).toEqual([first]);
+    }
+  });
+  it('refuses the pond with no berry or one berry, one miss per round', () => {
+    for (const { b, label } of cases(9)) {
+      const beforePond = routeBetween(b, b.start, b.pond).at(-2)!;
+      const r1 = mazeTouch(b, 9, goTo(b, 9, mazeStart(b), beforePond), b.pond);
+      expect(r1.move, label).toEqual({ kind: 'refuse', miss: true });
+      let s = goTo(b, 9, r1.state, berriesOf(b)[1]);
+      s = goTo(b, 9, s, beforePond);
+      const r2 = mazeTouch(b, 9, s, b.pond);
+      expect(r2.move, label).toEqual({ kind: 'refuse', miss: false });
+      expect(r2.state.misses, label).toBe(1);
+    }
+  });
+  it('aims the hint at the nearer uneaten berry, then the other, then the pond', () => {
+    for (const { b, label } of cases(9)) {
+      const berries = berriesOf(b);
+      for (const at of b.tiles) {
+        const d = berries.map((t) => dist(b, at, t)),
+          goal = goalOf(b, false, at, []);
+        expect(goal, `${label} from ${at}`).toBe(d[1] < d[0] ? berries[1] : berries[0]);
+        expect(goalOf(b, false, at, [berries[0]]), label).toBe(berries[1]);
+        expect(goalOf(b, false, at, [berries[1]]), label).toBe(berries[0]);
+        expect(goalOf(b, true, at, berries), label).toBe(b.pond);
+        if (at !== goal) expect(dist(b, nextToward(b, at, goal), goal), label).toBe(dist(b, at, goal) - 1);
+      }
+    }
   });
 });

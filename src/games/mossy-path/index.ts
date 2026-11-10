@@ -12,6 +12,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { FederatedPointerEvent } from 'pixi.js';
 import {
   LEVELS,
+  berriesOf,
   completion,
   countsMiss,
   goalOf,
@@ -40,6 +41,7 @@ const HEADINGS: Record<number, string> = {
   5: 'Walk the turtle to the pond',
   6: 'Find the way to the pond',
   7: 'Get the berry, then the pond',
+  9: 'Get both berries, then the pond',
 };
 
 function flower(g: Graphics, x: number, y: number, size: number, color: number) {
@@ -192,7 +194,13 @@ class MossyPath implements Game {
   }
   start() {
     void this.ctx.instruct(
-      !this.maze ? 'moss.go' : this.board.berry !== undefined ? 'moss.maze-berry' : 'moss.maze',
+      !this.maze
+        ? 'moss.go'
+        : this.board.berry2 !== undefined
+          ? 'moss.maze-berries'
+          : this.board.berry !== undefined
+            ? 'moss.maze-berry'
+            : 'moss.maze',
     );
   }
   private cellAt(global: { x: number; y: number }): number {
@@ -271,7 +279,7 @@ class MossyPath implements Game {
     }
     if (move.kind === 'refuse') {
       sfx.boing();
-      void this.ctx.say('moss.snack');
+      void this.ctx.say(this.board.berry2 !== undefined ? 'moss.snack-both' : 'moss.snack');
       this.pulseAt([this.board.pond]);
       if (move.miss) this.missed();
       this.draw();
@@ -291,7 +299,7 @@ class MossyPath implements Game {
       sfx.boing();
       void this.ctx.say('moss.stop');
       this.missed();
-    } else if (move.berry) void this.ctx.say('moss.berry');
+    } else if (move.berry) void this.ctx.say(move.left > 0 ? 'moss.berry-one' : 'moss.berry');
     else if (move.deadEnd && this.ctx.level === 5) {
       void this.ctx.say('moss.hedge');
       this.hinted = this.path[this.path.length - 2];
@@ -308,7 +316,8 @@ class MossyPath implements Game {
   }
   private mazeNext(): number {
     const s = this.maze_!;
-    return nextToward(this.board, s.path[s.path.length - 1], goalOf(this.board, s.berry));
+    const here = s.path[s.path.length - 1];
+    return nextToward(this.board, here, goalOf(this.board, s.berry, here, s.eaten));
   }
   choose(at: number) {
     if (this.maze) {
@@ -352,7 +361,7 @@ class MossyPath implements Game {
       if (this.walkTo >= 0) return;
       const next = this.mazeNext();
       if (next < 0) return;
-      const key = `${this.path.join(',')}${this.maze_!.berry ? '+' : ''}`;
+      const key = `${this.path.join(',')}+${this.maze_!.eaten.join(',')}`;
       if (!this.helped.has(key)) {
         this.helped.add(key);
         this.hints++;
@@ -473,7 +482,7 @@ class MossyPath implements Game {
         const [a, b] = PETALS[this.look.season];
         flower(g, -half * 0.6, half * 0.55, 9, a);
         flower(g, half * 0.55, -half * 0.5, 8, b);
-      } else if (this.maze && at === this.board.berry && !this.maze_!.berry) {
+      } else if (this.maze && berriesOf(this.board).includes(at) && !this.maze_!.eaten.includes(at)) {
         drawBerry(g, this.look.berry, 0, 6, half * 0.36);
       } else if (this.maze && this.pawed.has(at)) {
         // A faint paw print where the turtle has been: it means nothing to the rules.
@@ -498,10 +507,18 @@ class MossyPath implements Game {
       node.addChild(g);
       if (at === last) {
         node.addChild(turtleArt(this.cell * 0.72));
-        if (this.maze_?.berry) {
+        const carried = this.maze_?.eaten.length ?? 0;
+        if (carried) {
           const b = new Graphics();
           b.eventMode = 'none';
-          drawBerry(b, this.look.berry, 0, -this.cell * 0.2, this.cell * 0.1);
+          for (let i = 0; i < carried; i++)
+            drawBerry(
+              b,
+              this.look.berry,
+              (i - (carried - 1) / 2) * this.cell * 0.2,
+              -this.cell * 0.2,
+              this.cell * 0.1,
+            );
           node.addChild(b);
         }
       }
@@ -520,12 +537,19 @@ class MossyPath implements Game {
     this.berryBadge.clear();
     if (this.maze) {
       this.status.text = '';
-      if (this.board.berry !== undefined) {
-        const x = this.status.x,
-          y = this.status.y,
-          got = this.maze_!.berry;
-        drawBerry(this.berryBadge, this.look.berry, x, y, 16, !got);
-      }
+      // One badge slot per berry, filled once it is eaten.
+      const berries = berriesOf(this.board),
+        eaten = this.maze_!.eaten.length;
+      berries.forEach((_, i) =>
+        drawBerry(
+          this.berryBadge,
+          this.look.berry,
+          this.status.x + (i - (berries.length - 1) / 2) * 44,
+          this.status.y,
+          16,
+          i >= eaten,
+        ),
+      );
     } else {
       const blocked = !solved(this.board, this.path) && !completion(this.board, this.path);
       this.status.text = `${this.path.length} / ${this.board.tiles.length} bloomed · ${blocked ? 'Try Undo to change the trail' : 'Visit each tile once; pond last'}`;
