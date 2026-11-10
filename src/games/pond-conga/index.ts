@@ -79,7 +79,15 @@ interface Finger {
   x: number;
   y: number;
   moved?: boolean;
+  /** Where it came down. */
+  sx: number;
+  sy: number;
+  /** The farthest it has wandered from there, so a stroke too short or slanted to turn anything is not a tap either. */
+  travel: number;
 }
+
+/** A finger that wandered further than this without making a swipe was a stroke that missed, not a tap: it does nothing. */
+const TAP_SLOP = SWIPE / 3;
 
 /** One duckling facing right, filling about `size` units around (0, 0). The leader has a bigger head and a red bow. */
 function ducklingArt(size: number, leader: boolean): Container {
@@ -262,7 +270,8 @@ class PondConga implements Game {
   private readonly line = new Container();
   /** Touch play (every play outside the couch): a swipe on the pond turns the line and a touch sets off. Couch play drives the same pond with a controller. */
   touch: boolean;
-  /** Catches the swipes: the whole pond is one target, so the cells (which can be under 64 units wide) are never touched one by one. */
+  /** Catches the swipes: the whole screen is one target (sitting at the pond, so its coordinates are the pond's), so a thumb
+   * swipes in the empty space below the pond without covering the ducklings, and the cells are never touched one by one. */
   readonly tapLayer = new Graphics();
   readonly touchLayer = new Container();
   slots: Slot[] = [];
@@ -392,15 +401,17 @@ class PondConga implements Game {
     const p = this.pond,
       fit = pondTouchLayout(p.cols, p.rows, v.w, v.h, this.school);
     this.cell = fit.cell;
-    const w = p.cols * this.cell,
-      h = p.rows * this.cell;
     this.board.position.set(fit.x, fit.y);
     this.top.position.set(v.w / 2, 96);
     this.slots = fit.slots;
     this.note.position.set(v.w / 2, fit.noteY);
-    this.tapLayer.clear().rect(0, 0, w, h).fill({ color: 0xffffff, alpha: 0.001 });
-    this.tapLayer.hitArea = new Rectangle(0, 0, w, h);
+    const area = fit.swipe;
     this.tapLayer.position.copyFrom(this.board.position);
+    this.tapLayer
+      .clear()
+      .rect(area.x - fit.x, area.y - fit.y, area.w, area.h)
+      .fill({ color: 0xffffff, alpha: 0.001 });
+    this.tapLayer.hitArea = new Rectangle(area.x - fit.x, area.y - fit.y, area.w, area.h);
     for (const node of this.touchLayer.removeChildren()) node.destroy();
     this.slotNodes = this.slots.map((slot, k) => {
       const node = new Container();
@@ -652,11 +663,11 @@ class PondConga implements Game {
         ? 'Swipe, or tap beside the leader: one step each time'
         : !this.paced
           ? this.touch
-            ? 'Swipe for one step that way, or touch the pond for a step straight on'
+            ? 'Swipe anywhere for one step that way, or tap for a step straight on'
             : 'Press a direction for each step'
           : this.waiting
             ? this.touch
-              ? 'Touch the pond to set off, then swipe to turn'
+              ? 'Touch to set off, then swipe anywhere to turn'
               : 'Press a direction to set off'
             : '';
   }
@@ -867,7 +878,7 @@ class PondConga implements Game {
     const at = this.tapLayer.toLocal(e.global);
     if (!Number.isFinite(at.x) || !Number.isFinite(at.y)) return;
     // The newest finger is the one that steers, so a release that never arrived cannot leave an old one in charge.
-    this.finger = { id: e.pointerId, x: at.x, y: at.y };
+    this.finger = { id: e.pointerId, x: at.x, y: at.y, sx: at.x, sy: at.y, travel: 0 };
     this.ripple(e);
   }
 
@@ -877,6 +888,7 @@ class PondConga implements Game {
     if (!f || f.id !== e.pointerId || this.busy || this.finished || !this.pond) return;
     const at = this.tapLayer.toLocal(e.global);
     if (!Number.isFinite(at.x) || !Number.isFinite(at.y)) return;
+    f.travel = Math.max(f.travel, Math.hypot(at.x - f.sx, at.y - f.sy));
     if (!this.paced && f.moved) return;
     const dir = swipeDir(at.x - f.x, at.y - f.y);
     if (dir === null) return;
@@ -890,16 +902,20 @@ class PondConga implements Game {
   /** Lifting a finger that did not turn anything is a tap: it sets the line off straight ahead (a swipe sets it off already turned). */
   private fingerUp(e: FederatedPointerEvent) {
     if (this.finger?.id !== e.pointerId) return;
-    const moved = this.finger.moved;
+    const moved = this.finger.moved,
+      strayed = !moved && this.finger.travel > TAP_SLOP;
     this.finger = null;
-    if (this.busy || this.finished || !this.pond) return;
+    if (this.busy || this.finished || !this.pond || strayed) return;
     if (!moved && this.school) {
-      // School: a tap steps toward where it lands; on the leader or straight back it does nothing.
+      // School: a tap steps toward where it lands; on the leader or straight back it does nothing. Only a tap on the pond
+      // counts, since one far below it would always mean "down"; a swipe works anywhere.
       const at = this.tapLayer.toLocal(e.global),
         from = this.queue.at(-1) ?? this.state.heading;
       const lead = this.queue.length ? null : this.state.body[0];
+      const onPond =
+        at.x >= 0 && at.y >= 0 && at.x <= this.pond.cols * this.cell && at.y <= this.pond.rows * this.cell;
       const dir =
-        lead && Number.isFinite(at.x) && Number.isFinite(at.y)
+        lead && onPond && Number.isFinite(at.x) && Number.isFinite(at.y)
           ? tapToward(lead, at.x, at.y, this.cell, from)
           : null;
       if (dir !== null) this.press(dir);

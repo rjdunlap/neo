@@ -26,4 +26,14 @@ describe('Pond Conga on a phone held upright (chunk 31)', () => {
       });
     }
   });
+
+  it('steers by a swipe anywhere on the screen, so a thumb can swipe in the empty space below the pond', () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) {
+      PLANS.forEach((plan, i) => {
+        const fit = pondTouchLayout(plan.cols, plan.rows, v.w, v.h, i + 1 >= 10),
+          where = `${name} level ${i + 1}`;
+        expect(fit.swipe, where).toEqual({ x: 0, y: 0, w: v.w, h: v.h });
+      });
+    }
+  });
 });

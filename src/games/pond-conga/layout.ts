@@ -16,7 +16,9 @@ export interface Slot {
  * Touch layout: the pond under the tally with Hint and Start over beneath it, and a line of help under those. The pond is one
  * target for a swipe, so its cells may be under 64 units; the two buttons are always at least 64 across and tall. The home and
  * help buttons sit in the top-left corner, so the pond keeps to the right of them (a crumb must never hide behind one), or on a
- * tall view (an upright iPad or phone, chunk 31) goes below them. `x`, `y` are the pond's top-left corner.
+ * tall view (an upright iPad or phone, chunk 31) goes below them. `x`, `y` are the pond's top-left corner. `swipe` is where a
+ * swipe steers: the whole view, so on an upright phone a thumb swipes in the space below the pond (the round's own home, help
+ * and pet sit above the game and still take their taps, and Hint and Start over sit above the swipe area).
  */
 export function pondTouchLayout(cols: number, rows: number, w: number, h: number, school: boolean) {
   const btn = school ? SCHOOL_TOUCH : 76,
@@ -38,5 +40,5 @@ export function pondTouchLayout(cols: number, rows: number, w: number, h: number
     w: bw,
     h: btn,
   }));
-  return { cell, x, y, slots, noteY: by + btn + 28 };
+  return { cell, x, y, slots, noteY: by + btn + 28, swipe: { x: 0, y: 0, w, h } };
 }
