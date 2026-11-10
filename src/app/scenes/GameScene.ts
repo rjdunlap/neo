@@ -20,7 +20,8 @@ import { GAMES } from '../../games/registry';
 import { discoveryMemory, launchDiscovery, mixMemory, type MixRound } from '../discovery';
 import { mixReturn, mixStop, nextUp } from '../../content/mix';
 import { titleOf } from '../mix';
-import { dailySix, dayKey, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { dayKey, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { todaysSix } from '../daily-six';
 import { openPlaytestSheet, type PlaytestSheet } from '../../ui/playtest-sheet';
 import { allDoneArt, hopIcon, nextStopArt, StopTile } from '../../ui/mix';
 import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
@@ -33,7 +34,7 @@ import { RESULT_NAME_W, resultSpots } from '../result-layout';
 import { RESULT_NAMES } from '../../content/button-names';
 import { textBoost, type View } from '../../engine/view';
 import { pauseLabels, type PauseAction } from '../pause';
-import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
+import { tipFor, type Game, type GameContext, type GameModule, type RoundResult } from '../../games/types';
 import type { Band } from '../../progress/bands';
 import { nextLevelOffer, stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
@@ -269,7 +270,8 @@ export class GameScene extends Scene {
     music.play(this.mod.music);
     this.game?.start();
     const early = this.band === 'lap' || this.band === 'toddler';
-    if (early && store.data.settings.coplayHints && this.mod.coplayHint) this.showTip(this.mod.coplayHint);
+    const tip = early ? tipFor(this.mod, this.band) : undefined;
+    if (store.data.settings.coplayHints && tip) this.showTip(tip);
   }
 
   resize(view: View) {
@@ -897,13 +899,7 @@ export class GameScene extends Scene {
     if (!this.dailyRound || this.mixRound || !this.resultLayer) return null;
     const day = dayKey(new Date());
     const played = (id: string) => playedOn(store.data.games[id]?.history, day);
-    const picks = dailySix(
-      day,
-      store.data.profile.band,
-      GAMES,
-      (id) => store.data.games[id]?.pinned ?? null,
-      this.app.uprightPhone(),
-    );
+    const picks = todaysSix(day, this.app.uprightPhone());
     const live = () => this.liveResult() && !this.navigating && this.resultReady && !this.dailySheet;
     const next = nextOfSix(picks, this.mod.id, played);
     if (next) {

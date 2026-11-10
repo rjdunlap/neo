@@ -5,7 +5,7 @@ import { BANDS, playBand } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
 import { courseInfo } from '../couch/courses';
 import { couchGameById, GAMES, gameById, playsByTouch } from './registry';
-import { CHALLENGE_KINDS } from './types';
+import { CHALLENGE_KINDS, tipFor } from './types';
 import { FIRST_COURSE } from '../couch/courses';
 import { isSilent, silenced, STYLES } from '../audio/music';
 import { PLACES } from '../content/places';
@@ -544,5 +544,66 @@ describe('game registry', () => {
     expect(quiet.seed).toBe(STYLES.lullaby.seed);
     expect([quiet.lead, quiet.bass, quiet.pad, quiet.shaker]).toEqual(['none', false, false, false]);
     expect(STYLES.lullaby.volume).toBeGreaterThan(0.1);
+  });
+});
+
+describe('grown-up tips held to her band (U5a)', () => {
+  /** A lap tip never asks a one-year-old to name, say, count, tell, answer or take a speaking turn. */
+  const ASKS = [
+    'ask her',
+    'let her name',
+    'let her say',
+    'let her tell',
+    'have her',
+    'she names',
+    'she says',
+    'she counts',
+    'she tells',
+    'she answers',
+    'her turn to',
+  ];
+  /**
+   * Pending the U5b audit (docs/definitions/todays-six.md#tips-held-to-her-band-u5a-mechanism-u5b-audit): each tip here asks
+   * her a question at lap and is read one by one there, then gets a lap override or `false`. Shrink this list; never grow it.
+   */
+  const PENDING_U5B = [
+    'sink-float',
+    'puddle-lens',
+    'melt-freeze',
+    'fluffy-salon',
+    'scoop-shop',
+    'puzzle-pals',
+  ];
+
+  it('asks nothing of her at lap', () => {
+    for (const mod of GAMES.filter((m) => m.bands.includes('lap'))) {
+      const tip = tipFor(mod, 'lap') ?? '';
+      // `{name}` stands for her, so test it both ways.
+      const read = [tip.replace(/\{name\}/g, 'her'), tip.replace(/\{name\}/g, 'she')].map((t) =>
+        t.toLowerCase(),
+      );
+      const asks = ASKS.filter((a) => read.some((t) => t.includes(a)));
+      if (PENDING_U5B.includes(mod.id)) continue;
+      expect(asks, `${mod.id}: ${tip}`).toEqual([]);
+    }
+  });
+
+  it('keeps the pending list to games that still need the audit', () => {
+    for (const id of PENDING_U5B) {
+      const mod = gameById(id);
+      expect(mod?.bands, id).toContain('lap');
+      expect(mod?.coplayHintLap, id).toBeUndefined();
+    }
+  });
+
+  it('gives a lap tip only to games that list lap, and toddler always the shared tip', () => {
+    for (const mod of GAMES) {
+      if (mod.coplayHintLap !== undefined) expect(mod.bands, mod.id).toContain('lap');
+      expect(tipFor(mod, 'toddler')).toBe(mod.coplayHint);
+    }
+    const glue = gameById('word-glue')!;
+    expect(tipFor(glue, 'lap')).toBe(glue.coplayHintLap);
+    expect(tipFor({ coplayHint: 'a', coplayHintLap: false }, 'lap')).toBeUndefined();
+    expect(tipFor({ coplayHint: 'a' }, 'lap')).toBe('a');
   });
 });

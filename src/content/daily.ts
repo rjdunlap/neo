@@ -2,8 +2,8 @@ import { Rng } from '../engine/random';
 import { playsByTouch } from '../games/registry';
 import type { GameModule } from '../games/types';
 import { playBand, type Band } from '../progress/bands';
-import { levelsInOrder } from '../progress/difficulty';
-import type { RoundRecord } from '../progress/save';
+import { firstLevel, levelsInOrder } from '../progress/difficulty';
+import type { GameStats, RoundRecord } from '../progress/save';
 
 /**
  * Today's six (D10, docs/definitions/todays-six.md): six games chosen for the day from her band, each at a preset level from
@@ -78,6 +78,10 @@ export function hardLevels(mod: GameModule, band: Band): number[] {
  *
  * On a phone held upright (`upright`, chunk 31) the same pick runs over the upright-ready games first (`upright: true`), then
  * fills from the rest of the pool if fewer than six are ready; the seed is unchanged, so a sideways day is exactly as before.
+ *
+ * A game `fresh` names as new to her today (`newToday`, U5a) plays its band's first level (`firstLevel`, where an ordinary
+ * first launch starts) instead of the preset, at every child's band; a pin still wins, and a grown-up's six ignore it. The
+ * seed is untouched, so the games, their order and every other card's level are the same for everyone at a band on a day.
  */
 export function dailySix(
   day: string,
@@ -85,6 +89,7 @@ export function dailySix(
   games: readonly GameModule[],
   pinned: (id: string) => number | null = () => null,
   upright = false,
+  fresh: (id: string) => boolean = () => false,
 ): DailyPick[] {
   const rng = new Rng(daySeed(day, band));
   const pool = rng.shuffle([...dailyPool(band, games)]);
@@ -122,10 +127,12 @@ export function dailySix(
     // The preset is drawn for every pick, pinned or not, so one pin never reshuffles the other cards' levels.
     const preset = rng.pick(band === 'grownup' ? hardLevels(mod, at) : presetLevels(mod, at));
     const pin = pinned(mod.id);
+    const range = mod.levels(at);
+    const start = band !== 'grownup' && fresh(mod.id) ? firstLevel(range, mod.entryLevels) : preset;
     return {
       mod,
       band: at,
-      level: pin !== null && levelsInOrder(mod.levels(at)).includes(pin) ? pin : preset,
+      level: pin !== null && levelsInOrder(range).includes(pin) ? pin : start,
     };
   });
 }
@@ -134,6 +141,16 @@ export function dailySix(
 export function levelDots(pick: DailyPick): { at: number; of: number } {
   const order = levelsInOrder(pick.mod.levels(pick.band));
   return { at: Math.max(0, order.indexOf(pick.level)) + 1, of: order.length };
+}
+
+/**
+ * The game is new to her today: she had finished no round of it before `day`. History keeps only the last rounds, so the
+ * count of every round ever finished (`plays`) settles it: new when no stats, or when every counted round was today's. A
+ * round finished today does not end newness until tomorrow, so a card never changes level during the day.
+ */
+export function newToday(stats: Pick<GameStats, 'plays' | 'history'> | undefined, day: string): boolean {
+  if (!stats) return true;
+  return stats.plays === stats.history.filter((r) => dayKey(new Date(r.at)) === day).length;
 }
 
 /** She finished a round of this game on `day` (a round's record carries its time): the card shows a tick. */
