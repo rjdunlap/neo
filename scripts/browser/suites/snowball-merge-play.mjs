@@ -117,6 +117,47 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         [0, level === 4 ? 3 : 2],
       );
     }
+    {
+      // Level 5, the ice rock: it stays in its cell, snowballs stop beside it (said once, no miss), and the round finishes.
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      await launch('snowball-merge', 5);
+      await page.waitForTimeout(300);
+      const rock = await page.evaluate(() => neo.scene.game.board.indexOf(-1));
+      assert.ok(rock >= 0 && rock !== 4, 'level 5 has one ice rock away from the centre');
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(300);
+      let rocked = 0;
+      for (let guard = 0; guard < 40 && !(await page.evaluate(() => neo.scene.game.finished)); guard++) {
+        const d = await direction();
+        assert.ok(d);
+        const stops = await page.evaluate(async (d) => {
+          const { slide } = await import('/src/games/snowball-merge/logic.ts');
+          return slide(neo.scene.game.board, d).rocked;
+        }, d);
+        await press(d);
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.board.indexOf(-1)),
+          rock,
+          'the rock never moves',
+        );
+        if (stops && !rocked++) {
+          assert.equal(await page.evaluate(() => neo.scene.game.rockSaid), true, 'the rock line is said');
+          await screenshot('snowball-merge-5-portrait');
+        }
+      }
+      assert.ok(rocked >= 3, 'the route rests snowballs against the rock');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('snowball-merge');
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const r = kit.store.stats('snowball-merge').history.at(-1);
+          return [r.misses, r.hints];
+        }),
+        [0, 0],
+        'stopping at the rock is neither a miss nor help',
+      );
+    }
     await page.evaluate(() => neo.go.land('lantern-lake'));
     await scene('LandScene');
     await turnToGame('snowball-merge');
@@ -133,7 +174,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
     await page.waitForTimeout(350);
     assert.deepEqual(errors, []);
     log(
-      'Snowball Merge: first/last, inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed',
+      'Snowball Merge: levels 1, 4 and 5 (the ice rock stays put, said once, no miss), inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed',
     );
   }
 

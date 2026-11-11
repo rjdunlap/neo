@@ -5,22 +5,30 @@ export type Direction = 'left' | 'up' | 'right' | 'down';
 export const DIRECTIONS: readonly Direction[] = ['left', 'up', 'right', 'down'];
 export type Board = readonly number[];
 export const SIZE = 3;
+/** The ice rock (level 5): a cell that never moves and never joins. A line splits at it, and snowballs pack against it. */
+export const ROCK = -1;
 export const PLANS = [
   { target: 16, name: 'Make 16 · open snowfield', board: [2, 0, 2, 0, 4, 0, 4, 0, 4] },
   { target: 32, name: 'Make 32 · choose your pairs', board: [2, 4, 2, 4, 0, 4, 8, 0, 8] },
   { target: 64, name: 'Make 64 · make room first', board: [2, 4, 2, 8, 4, 8, 16, 4, 16] },
   { target: 128, name: 'Make 128 · the big snowball', board: [32, 32, 32, 16, 8, 2, 2, 4, 0] },
+  { target: 64, name: 'Make 64 · the ice rock', board: [16, ROCK, 8, 0, 16, 8, 4, 8, 4] },
 ] as const;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 5 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
-/** Read a row/column from its leading edge. Equal neighbours merge once per slide. */
+/**
+ * Read a row/column from its leading edge. Equal neighbours merge once per slide. An ice rock stays where it is and
+ * splits its line: each stretch between rocks and edges packs on its own, so snowballs behind a rock stop beside it.
+ * `rocked` says a snowball ended the slide resting against a rock.
+ */
 export function slide(board: Board, direction: Direction) {
   const out = Array<number>(SIZE * SIZE).fill(0);
   const motions: { from: number; to: number }[] = [];
-  let merges = 0;
+  let merges = 0,
+    rocked = false;
   for (let line = 0; line < SIZE; line++) {
     const indices = Array.from({ length: SIZE }, (_, k) => {
       if (direction === 'left') return line * SIZE + k;
@@ -28,24 +36,34 @@ export function slide(board: Board, direction: Direction) {
       if (direction === 'up') return k * SIZE + line;
       return (SIZE - 1 - k) * SIZE + line;
     });
-    const occupied = indices.filter((i) => board[i] > 0),
-      packed: number[] = [];
-    for (let k = 0; k < occupied.length; k++) {
-      const from = occupied[k],
-        to = indices[packed.length];
-      motions.push({ from, to });
-      if (board[from] === board[occupied[k + 1]]) {
-        motions.push({ from: occupied[k + 1], to });
-        packed.push(board[from] * 2);
-        k++;
-        merges++;
-      } else packed.push(board[from]);
+    const stretches: number[][] = [[]];
+    for (const i of indices) {
+      if (board[i] === ROCK) {
+        out[i] = ROCK;
+        stretches.push([]);
+      } else stretches.at(-1)!.push(i);
     }
-    indices.forEach((i, k) => {
-      out[i] = packed[k] ?? 0;
+    stretches.forEach((stretch, behindRock) => {
+      const occupied = stretch.filter((i) => board[i] > 0),
+        packed: number[] = [];
+      if (behindRock && occupied.length) rocked = true;
+      for (let k = 0; k < occupied.length; k++) {
+        const from = occupied[k],
+          to = stretch[packed.length];
+        motions.push({ from, to });
+        if (board[from] === board[occupied[k + 1]]) {
+          motions.push({ from: occupied[k + 1], to });
+          packed.push(board[from] * 2);
+          k++;
+          merges++;
+        } else packed.push(board[from]);
+      }
+      stretch.forEach((i, k) => {
+        out[i] = packed[k] ?? 0;
+      });
     });
   }
-  return { board: out, changed: out.some((v, i) => v !== board[i]), merges, motions };
+  return { board: out, changed: out.some((v, i) => v !== board[i]), merges, motions, rocked };
 }
 
 export const complete = (board: Board, target: number) =>
