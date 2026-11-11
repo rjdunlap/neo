@@ -53,7 +53,7 @@ The game's strength is that **the picture is the reward and the check**: every s
 
 Timers, mistake penalties, endless libraries, pinch-zoom and photo conversion are left out. Colour-by-number has no reasoning, so it is not a mode.
 
-**Long-term arc:** preschool copies one colour, then two (built) → pre-K mirrors a half (built) → school reads run numbers (built), mirrors across two lines (7) and copies at twice the size (8) → Picture Bytes (H6) and Mosaic border (AM7) through their study packets → Pixel Flipbook after its storage decision.
+**Long-term arc:** preschool copies one colour, then two (built) → pre-K mirrors a half (built) → school reads run numbers (built), mirrors across two lines (7) and copies at twice the size (8) → Picture Bytes (H6, now [defined](../definitions/picture-bytes.md) as levels 11–12) and Mosaic border (AM7) through their study packets → Pixel Flipbook after its storage decision.
 
 ## Experience and presentation
 
@@ -99,7 +99,7 @@ Each band's `BandLevels` entry carries its own `order` (`src/progress/difficulty
 - Bigger grids, pinch-zoom and grown-up nonograms: Picture Logic owns them.
 - Timers, mistake costs, a picture library to collect, ads and purchases.
 - Photo-to-pixel conversion; colour-by-number without reasoning.
-- **Picture Bytes** (H6), **Mosaic border / Mirror the emblem** (AM7) and **Pixel Flipbook** (MM7) are defined by their studies' own packets and take the next free level IDs then; level 7 is the plain geometry that *Mirror the emblem* would later dress.
+- **Picture Bytes** (H6, defined 2026-11-11 as levels 11–12: [definition](../definitions/picture-bytes.md)), **Mosaic border / Mirror the emblem** (AM7) and **Pixel Flipbook** (MM7) are defined by their studies' own packets and take the next free level IDs then; level 7 is the plain geometry that *Mirror the emblem* would later dress.
 
 ## Decisions for the developer
 
@@ -112,7 +112,9 @@ Each band's `BandLevels` entry carries its own `order` (`src/progress/difficulty
 2. **Built 2026-11-03 ([PR #1166](https://github.com/rjdunlap/neo/pull/1166)): Levels 7–8, both ways and twice as big (batch pixel-pictures 2).** Level 7 `mirror2` (six authored four-fold 6×6 pictures via `unfold`, two per round), level 8 `big` (five 3×3 models via `scaleUp`, 2×2 blocks); school range now 3–8. Original check: *Check:* new levels on an existing interaction: typecheck, rule tests, one browser play of level 8 (the new top) with one wrong square and the glow, a level-7 case in the same filtered run, `fingerdemo` at 7 and 8, one portrait screenshot of level 8. Stop after level 7 if the allowance cannot cover 8.
 3. **Built 2026-11-04 ([PR #1203](https://github.com/rjdunlap/neo/pull/1203)): Level 9, two colours, small (batch pixel-pictures 3).** Four 4×4 two-colour pictures (ladybird, carrot, apple, little chick; three per round), `order` preschool [1, 9, 2], pre-K [1, 9, 2, 3], school unchanged 3–8. Deviation: `entryLevels: [9]` was added (9 is an easy high-ID level, so a birthday or pin into school lands on 3, not 8; level 1 stays every younger band's first level), and the two-colour glow now also selects the glowing square's colour on levels 2 and 9. Open: whether a 3–4-year-old finds the colour pick natural (device check below). *Check:* typecheck, rule tests (order/entry), one browser play of level 9 and `fingerdemo` at 9.
 4. **Built 2026-11-04 ([PR #1212](https://github.com/rjdunlap/neo/pull/1212)): Level 10, my own picture (batch pixel-pictures 4).** A blank 5×5 with four paints (red, yellow, blue, green), a tap paints or empties, a green check Done (radius 60) appears at four squares; no misses or hints; the kept creation is the existing pixel picture (size 5), so `creations` was not run; the ghost finger draws a red heart. Open: whether a pre-K child finds Done and empty-on-tap natural (device check). *Check:* typecheck, unit tests, one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10, the `creations` suite filtered to Pixel Pictures only if the kept shape changes (it should not).
-5. *Gated:* Light the picture (decision 1); Picture Bytes, Mosaic border, Flipbook through their packets.
+5. **Defined 2026-11-11, not built: Level 11, ones and zeros (batch pixel-pictures 5).** Four bit cards, a free arrow and a check write one row of squares under a key card ([definition](../definitions/picture-bytes.md), [batch plan](../GAME-BATCHES.md#pixel-pictures-5-ones-and-zeros)); school order [3, 4, 5, 6, 7, 8, 11, 10]. *Check:* new-interaction tier, as in the [definition](../definitions/picture-bytes.md#slices-and-check-tier).
+6. **Defined 2026-11-11, not built: Level 12, a whole picture (batch pixel-pictures 6, after 5).** The same cards write a 4×4 picture row by row; school order [3, 4, 5, 6, 7, 8, 11, 12, 10]. *Check:* new-level tier.
+7. *Gated:* Light the picture (decision 1); Mosaic border and Flipbook through their packets.
 
 ## What was built in this session
 
