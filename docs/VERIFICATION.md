@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Music Mountain (docs only, PR #1512)
+
+**Changed:** the Music Mountain table (five games: `jelly-drums`, `sound-garden`, `puppet-stage`, `rhythm-neighbors`, `song-maker`) and its words-off list on the [toy-test page](definitions/toy-test-lap-openings.md); two READY lines (`rhythm-neighbors`, `song-maker`; `jelly-drums`, `sound-garden` and `puppet-stage` get none); the P4 line and progress counts (13 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code, not played or timed).
+
 ## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Bubble Beach (docs only, PR #1511)
 
 **Changed:** new [page](definitions/toy-test-lap-openings.md) (the five toy-test questions answered from the code for Bubble Beach's eight lap games, a words-off list, the other lap games listed by land); READY's P4 line and seven new lap-opening lines; a progress line under P4 in `docs/POK-POK.md`.

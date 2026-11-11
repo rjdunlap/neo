@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read, at `origin/main` `26b91ef3`, 2026-11-11. The other 49 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, and Music Mountain's five at `72ab89de`, both 2026-11-11. The other 44 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,12 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All eight games here set `touchDemo: true`.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All thirteen games read so far set `touchDemo: true`.
 - **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game, and it is not counted again under question 5.
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **No opening line holds input** in these eight: each starts its instruction with `void`.
+- **No opening line holds input** in the thirteen read so far: each starts its instruction with `void`.
+- **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
 
@@ -73,13 +74,49 @@ Seven games fail question 1 or 4. Each line is one bounded lap level or opening,
 - `tide-line`: a lap tap while the sea is still sliding back restarts the wave from the bottom, so the sea may jump down. Read from the formula, not seen.
 - `bounce-back`: whether the untouched lap paddle always reaches the ball in time is not established.
 
+## Music Mountain
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `jelly-drums` (10) | **Yes.** A layer over the whole screen sings the awake jelly nearest across the stage, with its note, a wobble and a floating note at once | **Yes.** The wake level counts nothing | **Yes.** One jelly at nearly twice its size, and the ghost finger taps it | **Yes.** This is the pattern: one jelly alone in the middle, and the others wake at her 6th, 10th, 14th and 18th touch, never on a timer | **Partly.** Every touch sings and the front row hops; there is no idle nudge on this level, and touches during the closing run up the scale are dropped silently |
+| `sound-garden` (8) | **Yes.** The whole screen but the two top corners and the pet's corner: the big friend sings on touch-down and squashes, and a new touch cuts in at once (no cooldown) | **Yes.** Play mode counts nothing | **Yes.** One friend fills the middle, and the ghost finger taps beside it | **Partly.** One big friend, and the next comes because she touched (every fourth touch); it takes the first one's place, so there is never more than one | **Partly.** The bird, frog and bell change their note from touch to touch; a touch on the friend and a touch on the grass get the same reply |
+| `puppet-stage` (1) | **Partly.** The whole stage opening between the curtains, from the curtain tops to the floor: a puppet rises under the finger with a pop and says hello. The curtains and the tassel answer too. Below the floor and outside the arch nothing does, which in portrait is nearly half the screen | **Yes.** Nothing is counted on this level | **Yes.** The ghost finger touches the floor three times, then drags a puppet; the stage starts empty, and all of it answers | **Partly.** An empty stage rather than one big thing, but every puppet comes because she touched, two at most, and nothing arrives on a timer. At lap the show bows by itself after six pops | **Yes.** A puppet follows a drag; a tap on a standing puppet gets a new line, then a note; a curtain closes both with a whoosh; the tassel rings and turns day to night |
+| `rhythm-neighbors` (7) | **No.** The tree answers (a knock, then a croak 0.45 s later) and the frog croaks with a ripple; the tree is the left part of the screen, and the pond, grass and sky do nothing | **Yes.** The knock level counts nothing; a frog tap is heard and not judged | **Partly.** The ghost finger knocks the tree. In the round, after six quiet seconds it is the frog that wiggles and croaks, and a tap on the frog does not move the round on; only the eight knocks do | **Partly.** A big tree and one big frog from the start; the frog answers only her knocks, and nothing new arrives | **Partly.** A frog tap croaks with a ripple; a ninth knock in the second before the ending song is dropped silently; the background is silent |
+| `song-maker` (1) | **No.** The twelve cells of the board answer (a note, a pop and a jelly lit at once); the board is at most 600 by 450 units, and the mountains around it and the board's edge do nothing | **Yes.** Free play: any song is welcome and nothing is counted | **Yes.** The ghost finger lights jellies one by one; every cell answers, though an unlit one shows only a small seed | **No.** Twelve small seeds from the start. Each jelly on the board is one she lit, but nothing new arrives, and the round ends after twelve taps | **Partly.** A second tap on a jelly sings and puts it out, and that tap counts toward the twelve; taps after the twelfth still sing; the background is silent |
+
+### What the table says
+
+- **Pass 1 and 4 well enough to leave alone:** `jelly-drums` (the pattern itself) and `sound-garden`, whose level 8 was built the same way with one friend at a time. Neither needs a line.
+- **Close enough to leave alone:** `puppet-stage`. Its first level was written for a touch that cannot be wrong, the touch field is the stage rather than the screen, and what she touches for arrives under her finger. It gets no line; the silent half of a portrait screen is noted below instead.
+- **Big target, not anywhere:** `rhythm-neighbors` and `song-maker`. In `rhythm-neighbors` the one idle invitation also points at the thing that does not move the round on.
+- **No lap player can be wrong in this land.** All five first levels count nothing.
+
+### Words-off list (P7)
+
+Music Mountain games whose first lap level plays with the voice off: `jelly-drums`, `sound-garden`, `puppet-stage`, `song-maker`. `rhythm-neighbors` is partly: the card shows the knock, and the round's own invitation shows the frog.
+
+The puppets' hellos in `puppet-stage` are speech (the device's voice, pitched), so with the voice off a puppet rises with a pop and says nothing; the level still plays.
+
+### Lines this land adds to READY
+
+Two games fail question 1 or 4, in the order they should be taken:
+
+1. `rhythm-neighbors`: at level 7 a touch anywhere knocks the tree, and the idle invitation is the tree's.
+2. `song-maker`: a lap level that answers anywhere and starts with one big spot on the loop.
+
+### Found while reading (not part of the five questions)
+
+- `rhythm-neighbors`: the comment on the idle wiggle calls it "an invitation"; at level 7 it invites a tap on the frog, which `play()` returns from before anything is counted.
+- `jelly-drums`: the spoken line at level 10 is the free-play line, "Tap the jellies to make music!", while one jelly stands; the card's line for the level says touch anywhere.
+- `puppet-stage`: `touchFloor` returns silently when no puppet is parked. Two can stand and a lowered one is parked only when its 0.3 s descent ends, so a third fast touch in a row inside that time could find none. Read from the code, not seen.
+- `song-maker`: a lap player's twelve taps include the ones that put a jelly out, so a round can end with few jellies lit; the tree house button needs two.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Music Mountain (5) | `jelly-drums`, `song-maker`, `sound-garden`, `rhythm-neighbors`, `puppet-stage` |
 | Painted Canyon (5) | `rainbow-fingers`, `fluffy-salon`, `stamp-studio`, `draw-the-pattern`, `gear-garden` |
 | Barnyard (6) | `peekaboo-barn`, `duckling-parade`, `roundup`, `egg-catch`, `animal-snack`, `sing-along-barn` |
 | Counting Cove (5) | `duck-pond`, `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump` |
@@ -89,4 +126,4 @@ One land per session, in this order, each adding its own table, words-off list a
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at the commit above: 8 read and 49 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 13 read and 44 to read, 57 in all.
