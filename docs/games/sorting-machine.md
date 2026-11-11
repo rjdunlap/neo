@@ -2,19 +2,22 @@
 
 <!-- generated: from src/games/sorting-machine; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `sorting-machine` · **Land:** Tinker Lab · **Ages:** school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `sorting-machine` · **Land:** Tinker Lab · **Ages:** school–grown-up · **Challenge:** logic · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** logic, rules, testing, systems
 
 | Band | Levels, easiest first |
 | --- | --- |
 | school | 1–3 |
+| grown-up | 3, 9, 8 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | See the signal |
 | 2 | Choose the sensor |
 | 3 | Both badges |
+| 8 | Festival Signals |
+| 9 | Fix the lantern |
 
 <!-- end generated -->
 

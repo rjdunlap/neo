@@ -4,18 +4,27 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Build the machine the sign asks for, then check it on every friend.',
   steps: [
-    'Tap a friend, then Send, and watch the sensor and the door.',
+    { from: 1, to: 3, text: 'Tap a friend, then Send, and watch the sensor and the door.' },
     { from: 1, to: 1, text: 'Send both friends, then tap the tick.' },
     { from: 2, to: 2, text: 'Tap the slot to choose the sensor.' },
     { from: 3, to: 3, text: 'Tap the slot to choose the gate that joins the two sensors.' },
-    { from: 2, to: 3, text: 'Check tries every friend at once.' },
+    { from: 8, to: 9, text: 'Tap a slot to choose its part and where its signals come from.' },
+    { from: 8, to: 9, text: "Tap a friend, then Send, and read each slot's star or ring." },
+    { from: 9, to: 9, text: 'The lantern listens to one slot: tap it to move its wire.' },
+    { from: 2, to: 9, text: 'Check tries every friend at once.' },
   ],
   finish: [
     { from: 1, to: 1, text: 'Both friends have been through the machine.' },
     { from: 2, to: 3, text: 'Every friend gets the answer the sign wants.' },
+    { from: 8, to: 9, text: "Every friend's lantern matches the sign." },
   ],
   note: [
     { from: 1, to: 1, text: 'This first look is a try-out, not a test. Sending is never counted.' },
     { from: 2, to: 3, text: 'Sending is never counted. A wrong Check only costs a gentle hint.' },
+    {
+      from: 8,
+      to: 9,
+      text: 'Trying friends is never counted. There are several right machines; any one that matches every row is right.',
+    },
   ],
 };

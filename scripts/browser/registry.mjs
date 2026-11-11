@@ -312,6 +312,7 @@ export const SUITES = [
   'meltfreeze',
   'moonwindow',
   'sortingmachine',
+  'festivalsignals',
   'gadgetbench',
   'playdateworkshop',
   'helperhouse',
@@ -476,6 +477,7 @@ export const ALL_SUITES = [
   'meltfreeze',
   'moonwindow',
   'sortingmachine',
+  'festivalsignals',
   'gadgetbench',
   'playdateworkshop',
   'helperhouse',
@@ -1052,6 +1054,7 @@ export async function runSuite(suite, fixture) {
     meltFreezePlay,
     moonWindowPlay,
     sortingMachinePlay,
+    festivalSignalsPlay,
     helperHousePlay,
     crosswordPlay,
     logicGridPlay,
@@ -1235,6 +1238,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'meltfreeze') await meltFreezePlay();
   if (suite === 'all' || suite === 'moonwindow') await moonWindowPlay();
   if (suite === 'all' || suite === 'sortingmachine') await sortingMachinePlay();
+  if (suite === 'all' || suite === 'festivalsignals') await festivalSignalsPlay();
   if (suite === 'all' || suite === 'gadgetbench') await gadgetBenchPlay();
   if (suite === 'all' || suite === 'playdateworkshop') await playdateWorkshopPlay();
   if (suite === 'all' || suite === 'helperhouse') await helperHousePlay();
