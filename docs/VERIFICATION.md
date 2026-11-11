@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — Spark AI Games reviewed (docs only)
+
+**Changed:** new [reference review](SPARK-AI-GAMES.md) of sparkaigames.com (202 browser mini games): the catalogue against the island's games and notebook, eight proposals (P1 a crossword of sums, P2 Reversi for two on one phone, P3 a Puddle Pipes ladder, P4 pair paths, P5 a turning shadow for TP6, P6 routes that run at once, P7 Ticket Booth, P8 a Shell Rows level), notes for existing games and rows, and what stays out; a pointer section in IDEAS.md; rows in the puzzle-pages and strategy-games studies; a note on TP6 in the theatre study. No READY line: each proposal needs a definition.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`. The review's own evidence: all 202 game pages read as text; thirteen games opened in headless Chrome at 390 by 844, eight of them to a first board (one solved).
+**Not run:** code checks (no code changed). Not established: anything past a first board, sound, Spark's solver and one-answer claims, its friend rooms and pass-and-play, and who makes it.
+
 ## 2026-11-10 — Sorting Machine level 3, Both badges (PR #1491)
 
 **Changed:** `sorting-machine` level 3 (school range 1–3): two fixed sensors, one gate slot with an and / or picker, per-pair voice lines, level-3 how-to steps; `helpFor` falls back to a telling friend when the machine is already right.
