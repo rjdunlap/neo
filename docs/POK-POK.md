@@ -111,7 +111,7 @@ About fifty games list the `lap` band. Pok Pok's rules reduce to five questions 
 
 **First slice:** a table in the [Quick Tricks dive](deep-dives/quick-tricks.md#similar-games) or a page of its own, one row per lap-band game with a yes or no to each question. **Then:** a game that fails 1 or 4 gets a lap level in the *One big jelly* shape when it next comes up for work, at the new-level tier. This is a rule audit, not a claim about a child.
 
-**Progress:** Bubble Beach's eight, Music Mountain's five, Painted Canyon's five, Barnyard's six, Counting Cove's five, Cozy Village's eight and Rainbow Meadow's six lap games are read (2026-11-11), 43 of 57, with four READY lines queued from Rainbow Meadow and 14 games to go, in [the toy-test page](definitions/toy-test-lap-openings.md); the rest go a land at a time.
+**Progress:** Bubble Beach's eight, Music Mountain's five, Painted Canyon's five, Barnyard's six, Counting Cove's five, Cozy Village's eight, Rainbow Meadow's six and Puzzle Peaks' two lap games are read (2026-11-11), 45 of 57, with two READY lines queued from Puzzle Peaks and 12 games to go, in [the toy-test page](definitions/toy-test-lap-openings.md); the rest go a land at a time.
 
 ### P5. Residents that carry on (a note for RW13 and RW14; M)
 
