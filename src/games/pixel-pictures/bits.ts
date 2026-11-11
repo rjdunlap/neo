@@ -293,7 +293,8 @@ export class BitsRound implements Game {
     this.draw();
     const slot = this.shelfSlot(this.finishedRows.length);
     const k = SHELF_PITCH / this.layout.pitch;
-    void this.ctx.say('pixel.bits.rowdone');
+    // The last row's line is the finale's.
+    if (this.index < this.rows.length - 1) void this.ctx.say('pixel.bits.rowdone');
     await Promise.all([
       this.ctx.tw.to(fly, { x: slot.x, y: slot.y }, { duration: 0.45 }),
       this.ctx.tw.to(fly.scale, { x: k, y: k }, { duration: 0.45 }),

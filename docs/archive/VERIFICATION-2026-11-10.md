@@ -192,3 +192,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** `number-trails` level 6 for pre-K (order 2, 3, 5, 6): one numeral traced three times with the guide fading (solid, dotted, start-only); a wander brings the solid trail back for the stroke; at most one hint per try; shared guide helpers in `src/learning/tracing/feedback.ts`; two voice lines; level-scoped how-to lines.
 **Ran:** typecheck; `npm test` (345 files, 6583 passed, 1 skipped; six new level-6 rule tests); `BROWSER_SUITE=numbertrails` (levels 1, 4, 3, 5 and 6: numeral 7 three times in portrait, one wander on the dotted try gave misses 1, hints 0 and the solid trail back, things only after the third try, sticker; dotted and start-only screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=6` (23.8 s).
 **Not run:** build (CI runs it; the only shared change is additive exports), other suites, offline.
+
+## 2026-11-10 — U7d, which lines hold (PR #1487)
+
+**Changed:** docs only. New page [never-swallow-a-tap-lines.md](../definitions/never-swallow-a-tap-lines.md) classifies the awaited spoken lines of the 25 upright-ready games (two cut, eight praise a finished board, the rest closing or held); the definition, READY (fix batch 1 and a queued line for the other 133 games), the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (no code changed). Nothing was played or timed: the classification is from reading the code.
