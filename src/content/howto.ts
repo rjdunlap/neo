@@ -81,6 +81,7 @@ import { HOW_TO as marketStallHowTo } from '../games/market-stall/howto.ts';
 import { HOW_TO as meadowPensHowTo } from '../games/meadow-pens/howto.ts';
 import { HOW_TO as measuringPostHowTo } from '../games/measuring-post/howto.ts';
 import { HOW_TO as meltFreezeHowTo } from '../games/melt-freeze/howto.ts';
+import { HOW_TO as memoryDeskHowTo } from '../games/memory-desk/howto.ts';
 import { HOW_TO as memoryMatchHowTo } from '../games/memory-match/howto.ts';
 import { HOW_TO as monsterMunchHowTo } from '../games/monster-munch/howto.ts';
 import { HOW_TO as moonWindowHowTo } from '../games/moon-window/howto.ts';
@@ -273,6 +274,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'meadow-pens': meadowPensHowTo,
   'measuring-post': measuringPostHowTo,
   'melt-freeze': meltFreezeHowTo,
+  'memory-desk': memoryDeskHowTo,
   'memory-match': memoryMatchHowTo,
   'monster-munch': monsterMunchHowTo,
   'moon-window': moonWindowHowTo,

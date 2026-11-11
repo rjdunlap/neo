@@ -511,6 +511,7 @@ describe('game registry', () => {
       'log-roll',
       'logic-grid',
       'marble-jump',
+      'memory-desk',
       'number-nook',
       'picture-logic',
       'pond-conga',

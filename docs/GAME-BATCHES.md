@@ -1830,6 +1830,8 @@ Proof: new-interaction tier as the [definition's slices and check tier](definiti
 
 ### memory-desk 1: Keep and show
 
+**Built 2026-11-11 ([PR #1507](https://github.com/rjdunlap/neo/pull/1507)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-11--memory-desk-level-1-keep-one-h8-batch-memory-desk-1-pr-1507); [build note](archive/COMPLETED-2026-10-09.md#memory-desk-level-1-keep-one-2026-11-11). Batch 2 follows. Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`memory-desk`, level 1 *Keep one*** (H8, [definition](definitions/memory-desk.md#the-model-logicts); a new game, new-game tier; school, Tinker Lab by default; range `{ min: 1, max: 1 }` until batch 2): a pictured tray, a drawer and a window; she puts a token on the tray, presses Keep to copy it into the drawer, swaps the tray, presses Show and sees the old token in the window, then Done; a try-out round on the ordinary adaptation rule with no Check, one sticker per round. [Slice H8](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
 
 Files expected: `src/games/memory-desk/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `src/content/lands.ts` and the content barrels (`node scripts/content-barrels.mjs`), a `scripts/browser-check.mjs` case, `docs/games/memory-desk.md`, and the README and `docs/GAMES.md` rows through `npm run game-docs`.

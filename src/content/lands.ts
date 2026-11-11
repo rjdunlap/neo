@@ -380,6 +380,7 @@ export const LANDS: readonly Land[] = [
       'far-lights',
       'circuit-garden',
       'measuring-post',
+      'memory-desk',
     ],
   },
   {
