@@ -47,6 +47,9 @@ import {
   type SnackRound,
 } from './logic';
 
+/** Seconds the bell rings on a right count before the next ask. */
+const BELL_BEAT = 0.4;
+
 const ANIMAL_WORDS: Partial<Record<CritterName, string>> = {
   cow: 'cow',
   bunny: 'bunny',
@@ -213,6 +216,11 @@ class AnimalSnack implements Game {
     }
     this.nextFall = this.clock + 3;
     this.resize(this.view);
+  }
+
+  /** The last ask of a who or count round: nothing follows it but the closing line. */
+  private get last() {
+    return this.index + 1 >= this.rounds.length;
   }
 
   get round() {
@@ -680,7 +688,13 @@ class AnimalSnack implements Game {
       this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
       await this.eat(f, node);
       node.destroy({ children: true });
-      await this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[FAVORITE[f.name]!] });
+      // The next ask follows the eating, not the line (U7 R4), and cuts it; only the last yum, with nothing to ask
+      // after it, is heard out before the closing line.
+      const yum = this.ctx.say('snack.yum', {
+        animal: ANIMAL_WORDS[f.name]!,
+        food: FOOD_WORDS[FAVORITE[f.name]!],
+      });
+      if (this.last) await yum;
       return void this.next();
     }
     this.miss(f, FAVORITE[want]!, this.round.by === 'sound' ? want : undefined);
@@ -784,7 +798,9 @@ class AnimalSnack implements Game {
       this.busy = true;
       this.glowing = null;
       sfx.bell(7, 0.3);
-      await this.ctx.say('snack.full', { animal: ANIMAL_WORDS[r.ask!]!, n: r.n! });
+      // The bell rings for a beat, then the next ask: the line never holds it (U7 R4), except before the closing line.
+      const full = this.ctx.say('snack.full', { animal: ANIMAL_WORDS[r.ask!]!, n: r.n! });
+      await (this.last ? full : this.ctx.tw.wait(BELL_BEAT));
       return void this.next();
     }
     this.busy = true;

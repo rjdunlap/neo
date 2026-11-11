@@ -60,3 +60,40 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** school level 9 (six frozen 4 × 7 mazes with two berries, either eating order, early pond refused once per round; `Board.berry2`, `berriesOf`, `MazeState.eaten`; voice `moss.maze-berries`, `moss.berry-one`, `moss.snack-both`; how-to level 8 capped, level 9 added).
 **Ran:** `npm run typecheck`; `npm test` (338 files, 6505 passed, 1 skipped; the first full run had one failure that did not reproduce on the immediate rerun, recorded as a one-off flake under load); `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=snacks` (farther berry first, early pond refused with 1 miss, portrait cells at least 100, finish, one sticker) PASS; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=9` PASS (school, 16.2 s); game-reviewer found no defects.
 **Not run:** other suites (the tier needed none).
+
+## 2026-11-10 — U5a, a first six she can start (PR #1467)
+
+**Changed:** a game new to her today plays its band's first level on its Today's six card (`newToday`, shared `firstLevel`; pin wins, grown-ups unchanged); one `todaysSix` helper for the page and the result's next tile; `GameModule.coplayHintLap` and `tipFor`, Word Glue's lap tip, a registry tip rule with six games on a `PENDING_U5B` list.
+**Ran:** `npm run typecheck`; `npm test` (339 files, 6,520 tests; registry test 38/38 after a small follow-up); `npm run build`; one headless 768 × 1024 flow at `http://localhost:5515/?daily` (`VITE_SPEECH=off`, fresh pre-K profile): six cards at first levels, one quick-tricks round, the next tile opened clock-tower at its first level, the same six back with quick-tricks ticked; one portrait screenshot (not committed); no console errors. A `game-reviewer` pass found nothing blocking.
+**Not run:** offline (no persistence or asset change), `world` (no route change), `phonefit`. The return to the page used `neo.go.daily()`, not the result's Back button.
+
+## 2026-11-10 — U5b, tips held to her band (PR #1468)
+
+**Changed:** 29 games have a `coplayHintLap` override so a lap profile's co-play tip has the grown-up talk while she taps, points or watches; toddler tips unchanged; the registry test's `PENDING_U5B` list removed and three phrases added to its ask list.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/registry.test.ts` (37 passed).
+**Not run:** browser play, build and full `npm test` (content tier; tips are text only). Whether the lap tips read well to a grown-up is a reading, not a test.
+
+## 2026-11-10 — U6 one way to browse defined (docs only)
+
+**Changed:** new [definition](../definitions/one-way-to-browse.md) of U6 in two slices (U6a the Arcade first, U6b the fold); READY, the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built).
+
+## 2026-11-10 — U7 never swallow a tap defined (docs only)
+
+**Changed:** new [definition](../definitions/never-swallow-a-tap.md) of U7 in four slices (U7a the phone's way in, U7b Day by Day and the held-line look, U7c the tablet root, U7d classify); READY, the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built).
+**Open:** the four slices.
+
+## 2026-11-10 — U8 the grown-ups' page speaks of the root defined (docs only)
+
+**Changed:** new [definition](../definitions/grownups-page.md) of U8 as one slice (U8a, the root's grown-ups' page); READY, the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built).
+
+## 2026-11-10 — U8a, the grown-ups' page speaks of the root (PR #1472)
+
+**Changed:** `openParentPanel` takes `{ app: 'root' | 'classic' }`; the root's page drops map, home spot, picnic and layout words, groups bands by age and omits Finding games; This week shows played or pinned games first with every game for her age in a closed, searchable fold; the dev button is now `kit.meetAll()`.
+**Ran:** typecheck; `npm test` (341 files, 6528 passed); `npm run build`; `BROWSER_SUITE=grownups` once, with a new root step at 390×844 (no map words, fold closed, search, pin from the fold, fold stays open) and the pause-sheet steps fixed to expect Leave (stale since the round Back and help change); screenshots checked.
+**Not run:** `lands` and `hatching-and-map` (classic text unchanged), `world` and offline (no route, persistence or asset change).

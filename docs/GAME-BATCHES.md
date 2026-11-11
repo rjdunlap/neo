@@ -1771,3 +1771,19 @@ Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (eve
 Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `path.ts` (new), `baskets.ts` (exported arrow and card helpers), `index.ts`, its `howto.ts`, its `voice.ts`, a `scripts/browser-check.mjs` case, `README.md` row, `docs/GAMES.md`.
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows-path.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a filtered scripted play: level 7 with one wrong part pad, a second for the glow and its hint, then the glowing pad and a sign tap; level 8 with an arrow at the range end and the path laid at 2; level 9 to its sticker; one portrait screenshot of level 9 with both signs; `fingerdemo` at 7, 8 and 9; one build). Stop point: levels 7 and 9 share the fixed path and pads and level 8's moving path is the separable part; if the allowance cannot cover all three, finish 7 and 9 (level 8 skipped through `order`) with a draft-PR checkpoint, and level 8 is then its own run.
+
+### sorting-machine 1: Both badges
+
+- **`sorting-machine`, level 3 *Both badges*** (H3, [definition](definitions/sorting-machine.md#the-model-logicts); extends the built game, new-interaction tier; school, range becomes `{ min: 1, max: 3 }`): `P` and `Q` sensors fixed, one gate slot (AND or OR) she chooses, three briefs (one per pair), Send, Check and the persistent per-fixture marks. [Slice H3](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
+
+Files expected: `src/games/sorting-machine/logic.ts`, `logic.test.ts`, `index.ts`, `howto.ts`, `voice.ts`, `docs/games/sorting-machine.md`.
+
+Proof: new-interaction tier as the [definition's check tier](definitions/sorting-machine.md#check-tier) sets it (typecheck, unit tests with registry, lands and how-to tests, one filtered scripted play of level 3 with a failed Check and a Help, one portrait screenshot, `fingerdemo` at 3, build because voice and how-to change).
+
+### sorting-machine 2: Festival Signals
+
+- **`sorting-machine`, levels 8–9 *Festival Signals* and *Fix the lantern*** (H5, [definition](definitions/festival-signals.md); new interaction, after batch 1; grown-up range `order: [3, 9, 8]`, school unchanged): a flat four-slot machine with an overview and a selected-slot inspector, a lantern that lights for exactly one of two badges, and at level 9 a repair with a movable lantern wire. [Slice H5](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
+
+Files expected: `src/games/sorting-machine/logic.ts`, `logic.test.ts` (and the checked-in accepted list), `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `docs/games/sorting-machine.md`.
+
+Proof: new-interaction tier as the [definition's slices and check tier](definitions/festival-signals.md#slices-and-check-tier) sets it (typecheck, unit tests with registry, lands and how-to tests, one filtered scripted play of levels 9 and 8 at the grown-up band with a failed Check and a Help, one upright screenshot at 390 × 844, `fingerdemo` at 8, build). If it grows past one session, level 8 ships first with `order: [3, 8]` and level 9 follows.

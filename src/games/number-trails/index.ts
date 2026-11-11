@@ -1,5 +1,6 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, RAINBOW, swatch } from '../../art/palette';
+import { pail } from '../../art/shore';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -15,8 +16,13 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { DIGITS } from './digits';
 import { drawThing } from './things';
 import {
+  CARD_H,
+  CARD_W,
   ENTRY_LEVELS,
   LEVELS,
+  askLayout,
+  cardHintDue,
+  cardsFor,
   THING_HIT,
   groupSize,
   planFor,
@@ -28,7 +34,8 @@ import {
   trailTolerance,
 } from './logic';
 
-type Phase = 'trace' | 'show' | 'wake' | 'done';
+/** Write how many (level 5) counts and chooses a card before the trace; the other levels start at the trace. */
+type Phase = 'count' | 'cards' | 'trace' | 'show' | 'wake' | 'done';
 
 /** A sleeping thing is tinted this pale blue, with a small z, until she wakes it. */
 const ASLEEP = 0xc5cdea;
@@ -82,6 +89,18 @@ class NumberTrails implements Game {
   private clock = 0;
   private readonly tolerance: number;
   private readonly strokes: readonly (readonly Point[])[];
+  /** Write how many: the three numeral cards, the things she has counted, wrong cards this round, and the right card's glow. */
+  private readonly asking: boolean;
+  private readonly choices: number[] = [];
+  private readonly cardRow = new Container();
+  private cards: Container[] = [];
+  private readonly counted = new Set<Container>();
+  private wrongCards = 0;
+  private glowing = false;
+  /** The pet is counting the group again after a wrong card. */
+  private recounting = false;
+  private readonly glow = new Graphics();
+  private basket: Graphics | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -92,7 +111,9 @@ class NumberTrails implements Game {
     this.arrangement = round.arrangement;
     this.strokes = DIGITS[String(this.n)];
     this.tolerance = trailTolerance(ctx.level);
-    ctx.stage.addChild(this.background, this.canvas, this.pile, this.heading);
+    this.asking = planFor(ctx.level).writeHowMany === true;
+    ctx.stage.addChild(this.background, this.canvas, this.pile, this.cardRow, this.glow, this.heading);
+    this.glow.eventMode = 'none';
     this.canvas.addChild(this.outline, this.ink, this.cue, this.beacon, this.firefly);
     this.firefly.addChild(
       new Graphics()
@@ -122,6 +143,150 @@ class NumberTrails implements Game {
       },
     });
     this.prepareStroke();
+    if (this.asking) this.prepareAsk();
+  }
+
+  /** Write how many: the group (or an empty basket for zero) waits to be counted; the numeral stays hidden until she picks it. */
+  private prepareAsk() {
+    this.choices.push(...cardsFor(this.n, this.ctx.rng));
+    this.phase = 'count';
+    this.canvas.visible = false;
+    this.handle.enabled = false;
+    this.heading.text = '?';
+    if (this.n === 0) {
+      this.basket = new Graphics();
+      pail(this.basket, 0, 60, swatch.blue);
+      this.pile.addChild(this.basket);
+      return;
+    }
+    this.things = Array.from({ length: this.n }, () => {
+      const t = drawThing(this.thing.id);
+      t.hitArea = new Circle(0, 0, THING_HIT);
+      onTap(t, () => this.countThing(t), { cooldown: 200 });
+      this.pile.addChild(t);
+      return t;
+    });
+  }
+
+  /** A counting tap: the next number, said aloud and written small above the thing. Never wrong; a second tap only bounces. */
+  private countThing(t: Container) {
+    if (this.phase !== 'count' || this.busy) return;
+    void this.ctx.tw
+      .to(t.scale, { x: 1.15, y: 1.15 }, { duration: 0.15, ease: ease.outBack })
+      .then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.15 }));
+    if (this.counted.has(t)) {
+      sfx.tick();
+      return;
+    }
+    this.counted.add(t);
+    const count = this.counted.size;
+    sfx.marimba((count - 1) % 8, 0.4);
+    const mark = label(`${count}`, 34, swatch.purple.line);
+    mark.position.set(0, -THING_HIT - 6);
+    mark.name = 'count';
+    t.addChild(mark);
+    void this.ctx.say('nt.count', { n: count });
+    if (count === this.n) void this.showCards();
+  }
+
+  /** Three numeral cards along the bottom: which one tells how many? */
+  private async showCards() {
+    this.busy = true;
+    await this.ctx.tw.wait(0.6);
+    this.phase = 'cards';
+    this.cards = this.choices.map((d) => {
+      const card = new Container();
+      card.addChild(tile(CARD_W, CARD_H, 'yellow'));
+      const art = numeralArt(d, 80, swatch.purple.fill);
+      art.position.set(-40, -56);
+      card.addChild(art);
+      card.hitArea = new Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
+      card.scale.set(0);
+      onTap(card, () => void this.choose(d, card), { cooldown: 250 });
+      this.cardRow.addChild(card);
+      void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+      return card;
+    });
+    this.placeAsk();
+    await this.ctx.tw.wait(0.3);
+    this.busy = false;
+    // Zero's own question (the basket) is already being asked.
+    if (this.n > 0) await this.ctx.instruct('nt.which', { things: this.thing.plural });
+  }
+
+  private async choose(d: number, card: Container) {
+    if (this.phase !== 'cards') return;
+    // During the pet's recount the right card still works (it cuts the recount short); another card only ticks.
+    if (this.recounting) {
+      if (d !== this.n) {
+        sfx.tick();
+        return;
+      }
+      this.recounting = false;
+    } else if (this.busy) return;
+    this.busy = true;
+    if (d === this.n) {
+      this.glowing = false;
+      this.glow.clear();
+      sfx.sparkle();
+      this.cards.forEach((c) => {
+        if (c !== card) void this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.25 });
+      });
+      await this.ctx.tw.to(card.scale, { x: 1.2, y: 1.2 }, { duration: 0.2, ease: ease.outBack });
+      await this.ctx.say('nt.count', { n: this.n });
+      await this.ctx.tw.wait(0.3);
+      this.cardRow.visible = false;
+      this.pile.visible = false;
+      this.canvas.visible = true;
+      this.phase = 'trace';
+      this.busy = false;
+      this.handle.enabled = true;
+      this.draw();
+      this.placeFirefly();
+      await this.ctx.instruct('nt.start', { n: this.n });
+      return;
+    }
+    // A wrong card: a gentle boing, then the pet counts the group again, touching each thing; the second glows the answer.
+    this.misses++;
+    this.wrongCards++;
+    if (cardHintDue(this.wrongCards)) {
+      this.hints++;
+      this.glowing = true;
+    }
+    sfx.boing();
+    const x = card.x;
+    await this.ctx.tw.to(card, { x: x - 12 }, { duration: 0.06 });
+    await this.ctx.tw.to(card, { x: x + 12 }, { duration: 0.08 });
+    await this.ctx.tw.to(card, { x }, { duration: 0.06 });
+    if (this.phase !== 'cards') return;
+    this.recounting = true;
+    if (this.n === 0) {
+      await this.ctx.say('nt.zero', { things: this.thing.plural });
+    } else {
+      await this.ctx.say('nt.recount');
+      for (const [i, t] of this.things.entries()) {
+        if (!this.recounting) return;
+        sfx.marimba(i % 8, 0.4);
+        void this.ctx.tw
+          .to(t.scale, { x: 1.2, y: 1.2 }, { duration: 0.15, ease: ease.outBack })
+          .then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.15 }));
+        await this.ctx.say('nt.count', { n: i + 1 });
+      }
+      if (!this.recounting) return;
+      await this.ctx.say('nt.made', { n: this.n, things: thingWord(this.thing, this.n) });
+    }
+    if (!this.recounting || this.phase !== 'cards') return;
+    this.recounting = false;
+    this.busy = false;
+  }
+
+  /** Lays the group (or the basket) and the cards out on the asking screen. */
+  private placeAsk() {
+    const { things, cards } = askLayout(this.view);
+    this.basket?.position.set(things.x + things.w / 2, things.y + things.h / 2);
+    const spots = spotsFor(this.arrangement, this.things.length, things);
+    if (spots) this.things.forEach((t, i) => t.position.set(spots[i].x, spots[i].y));
+    this.cards.forEach((c, i) => c.position.set(cards[i].x, cards[i].y));
   }
 
   private prepareStroke() {
@@ -230,6 +395,10 @@ class NumberTrails implements Game {
     const plan = planFor(this.ctx.level);
     const size = groupSize(this.n, plan.wakeThem);
     this.heading.text = `${this.n}`;
+    if (this.asking) {
+      await this.showWritten();
+      return;
+    }
     if (this.n === 0) {
       await this.ctx.say('nt.zero', { things: this.thing.plural });
       await this.ctx.tw.wait(1);
@@ -276,6 +445,28 @@ class NumberTrails implements Game {
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 
+  /** Write how many's ending: the group she counted comes back beside the numeral she wrote, all at once. */
+  private async showWritten() {
+    this.phase = 'show';
+    this.pile.visible = true;
+    const room = this.pileRect();
+    this.basket?.position.set(room.x + room.w / 2, room.y + room.h / 2);
+    const spots = spotsFor(this.arrangement, this.things.length, room);
+    this.things.forEach((t, i) => {
+      t.eventMode = 'none';
+      t.getChildByName('count')?.destroy();
+      if (spots) t.position.set(spots[i].x, spots[i].y);
+      t.scale.set(0);
+      void this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    });
+    sfx.sparkle();
+    if (this.n === 0) await this.ctx.say('nt.zero', { things: this.thing.plural });
+    else await this.ctx.say('nt.made', { n: this.n, things: thingWord(this.thing, this.n) });
+    await this.ctx.tw.wait(1);
+    this.phase = 'done';
+    this.ctx.finish({ misses: this.misses, hints: this.hints });
+  }
+
   private async wake(t: Container) {
     if (this.phase !== 'wake' || this.busy) return;
     if (this.awake.has(t)) return;
@@ -304,6 +495,7 @@ class NumberTrails implements Game {
   }
 
   private pileRect() {
+    if (this.phase === 'count' || this.phase === 'cards') return askLayout(this.view).things;
     const v = this.view;
     return { x: 150, y: 140, w: v.w - 190, h: v.h - 190 };
   }
@@ -387,19 +579,47 @@ class NumberTrails implements Game {
     this.heading.position.set(v.w / 2, 70);
     this.draw();
     this.placeFirefly();
-    if (this.things.length) {
+    if (this.phase === 'count' || this.phase === 'cards') this.placeAsk();
+    else if (this.things.length || this.basket) {
+      this.basket?.position.set(
+        this.pileRect().x + this.pileRect().w / 2,
+        this.pileRect().y + this.pileRect().h / 2,
+      );
       const spots = spotsFor(this.arrangement, this.things.length, this.pileRect());
       if (spots) this.things.forEach((t, i) => t.position.set(spots[i].x, spots[i].y));
     }
   }
 
   async start() {
-    void this.ctx.instruct('nt.start', { n: this.n });
+    if (!this.asking) {
+      void this.ctx.instruct('nt.start', { n: this.n });
+      return;
+    }
+    if (this.n === 0) {
+      void this.ctx.instruct('nt.basket', { things: this.thing.plural });
+      void this.showCards();
+      return;
+    }
+    void this.ctx.instruct('nt.how-many', { things: this.thing.plural });
   }
 
   update(dt: number) {
     this.clock += dt;
     this.beacon.clear();
+    this.glow.clear();
+    if (this.glowing && this.phase === 'cards') {
+      const card = this.cards[this.choices.indexOf(this.n)];
+      const pad = 12 + Math.sin(this.clock * 4) * 5;
+      this.glow
+        .roundRect(
+          card.x - CARD_W / 2 - pad,
+          card.y - CARD_H / 2 - pad,
+          CARD_W + 2 * pad,
+          CARD_H + 2 * pad,
+          26,
+        )
+        .stroke({ width: 8, color: swatch.yellow.line });
+    }
     if (this.phase !== 'trace' || this.busy) return;
     const lead = Math.min(
       this.points.length - 1,
@@ -416,6 +636,14 @@ class NumberTrails implements Game {
   }
 
   autotouch(): TouchIntent | null {
+    if (this.phase === 'count' && !this.busy) {
+      const next = this.things.find((t) => !this.counted.has(t));
+      return next ? { tap: { on: next } } : null;
+    }
+    if (this.phase === 'cards' && !this.busy) {
+      const right = this.cards[this.choices.indexOf(this.n)];
+      return right ? { tap: { on: right } } : null;
+    }
     if (this.phase === 'wake' && !this.busy) {
       const next = this.things.find((t) => !this.awake.has(t));
       return next ? { tap: { on: next } } : null;

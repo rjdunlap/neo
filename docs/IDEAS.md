@@ -70,6 +70,10 @@ The [puzzle-pages study](deep-dives/subjects/puzzle-pages.md) mapped the newspap
 | **Campsite** (Tents; PP6) | *Fun action:* pitch each critter's tent beside its own tree, no two touching, matching the row and column counts. *Skill:* adjacency and counting | 4×4 first; Tatham's generator needs no guessing | M |
 | **Silly Scene** (Highlights' *What's Wrong?*; PP7) | *Fun action:* tap the impossible thing (a fish in a tree) and the pet laughs and says why. *Skill:* what can and cannot be true | Authored scenes; preschool to school; check Not Always and Who Am I before a new game | S |
 
+## TotoLogic review (2026-11-10)
+
+[TotoLogic](TOTOLOGIC.md) (Synthix Technologies, 2026), a new Android suite of tap-and-choose activities for ages 3 to 8 behind a parent account, was reviewed from its site, store listing, policies and the three demo puzzles on its play-first sign-up page; the app itself was not installed, and no independent review exists. Its games add nothing the island lacks. Its first minute and its grown-up's view do: a visitor plays before anything is asked, the question is printed with a speaker beside it, a parent is told in words what was played, and an interrupted sitting is picked up. Six proposals, P1–P6: play first and set up after on a new phone, add a player with taps, the spoken question as a caption for readers, a plain sentence on This week from each game's `challenge` kind with one game not yet tried, a mix that survives a reload (a first slice for D5b), and tap-to-fill asked in the Rainbow Fingers dive. P1 to P3 need a definition and a decision each; none is on READY. Its timers, Focus Mode, star counter, paid worlds, emails, advert tracking and "brain" wording stay out. The unrelated Totologic programming blog gives one seed, a round maze board for Mossy Path.
+
 ## Design lessons
 
 ### What to borrow from JumpStart and Neopets

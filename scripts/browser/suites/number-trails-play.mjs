@@ -69,9 +69,90 @@ export function createSuite({ page, errors, log, scene, screenshot, launch, fini
       assert.equal(await page.evaluate(() => neo.scene.game.things.length), 0);
     }
     await finished('number-trails');
+    // Level 5, Write how many: count the group, two wrong cards (a miss each, the second glows the right one), the right card, then the trace.
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await launch('number-trails', 5);
+    const pickCard = (right) =>
+      page.evaluate(async (right) => {
+        const g = neo.scene.game;
+        if (!(await kit.until(() => g.phase === 'cards' && !g.busy, 20000))) throw new Error('No cards');
+        const i = right ? g.choices.indexOf(g.n) : g.choices.findIndex((d) => d !== g.n);
+        kit.tapOn(g.cards[i]);
+      }, right);
+    const countAll = () =>
+      page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!(await kit.until(() => !g.busy, 15000))) throw new Error('Count stuck');
+        for (const t of g.things) {
+          kit.tapOn(t);
+          await kit.sleep(300);
+        }
+      });
+    const five = await page.evaluate(() => ({
+      n: neo.scene.game.n,
+      phase: neo.scene.game.phase,
+      canvas: neo.scene.game.canvas.visible,
+      heading: neo.scene.game.heading.text,
+    }));
+    assert.equal(five.phase, 'count');
+    assert.equal(five.canvas, false, 'the numeral stays hidden while she counts');
+    assert.equal(five.heading, '?');
+    await countAll();
+    await pickCard(false);
+    await page.waitForTimeout(400);
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.glowing]),
+      [1, 0, false],
+    );
+    await pickCard(false);
+    await page.waitForTimeout(400);
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.glowing]),
+      [2, 1, true],
+    );
+    // The right card works mid-recount: it cuts the pet's count short.
+    await page.waitForFunction(() => neo.scene.game.recounting, null, { timeout: 10000 });
+    await screenshot('number-trails-5-glow');
+    await page.evaluate(() =>
+      kit.tapOn(neo.scene.game.cards[neo.scene.game.choices.indexOf(neo.scene.game.n)]),
+    );
+    await page.waitForFunction(() => neo.scene.game.phase === 'trace' && !neo.scene.game.busy, null, {
+      timeout: 15000,
+    });
+    assert.equal(await page.evaluate(() => neo.scene.game.canvas.visible), true);
+    await traceAll();
+    await page.waitForFunction(() => neo.scene.game.phase === 'done' || neo.scene.finished, null, {
+      timeout: 30000,
+    });
+    assert.equal(await page.evaluate(() => neo.scene.game.things.length), five.n);
+    await finished('number-trails');
+    // Level 5 with zero: an empty basket, the cards straight away (one of them 0), then the 0 traced. Relaunch until zero comes up.
+    let zero = false;
+    for (let tries = 0; tries < 40 && !zero; tries++) {
+      await launch('number-trails', 5);
+      zero = await page.evaluate(() => neo.scene.game.n === 0);
+    }
+    if (zero) {
+      assert.equal(
+        await page.evaluate(() => [neo.scene.game.things.length, neo.scene.game.choices.includes(0)].join()),
+        '0,true',
+      );
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(400);
+      await page.waitForFunction(() => neo.scene.game.phase === 'cards' && !neo.scene.game.busy, null, {
+        timeout: 20000,
+      });
+      await screenshot('number-trails-5-zero-portrait');
+      await pickCard(true);
+      await page.waitForFunction(() => neo.scene.game.phase === 'trace' && !neo.scene.game.busy, null, {
+        timeout: 15000,
+      });
+      await traceAll();
+      await finished('number-trails');
+    }
     assert.deepEqual(errors, []);
     log(
-      `Number Trails: levels 1, 4 (numeral ${first}) and 3 (numeral ${n}), two misses and a hint on wandering, the count and the waking, portrait and one sticker per round passed`,
+      `Number Trails: levels 1, 4 (numeral ${first}), 3 (numeral ${n}) and 5 (count ${five.n}, two wrong cards and the glow, ${zero ? 'and a zero round in portrait' : 'no zero drawn in 40 tries'}), two misses and a hint on wandering, the count and the waking, portrait and one sticker per round passed`,
     );
   }
 

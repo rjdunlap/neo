@@ -268,7 +268,19 @@ export function createSuite({
     });
     await tap('neo.scene.explore');
     await explore(null);
-    await tap("neo.scene.cards.find((c) => c.entry === 'arcade').node");
+    const pressed = await page.evaluate(() => {
+      const arcade = neo.scene.cards.find((c) => c.entry === 'arcade').node;
+      const favorites = neo.scene.cards.find((c) => c.entry === 'favorites').node;
+      kit.tapOn(arcade);
+      kit.tapOn(favorites);
+      return {
+        ring: !!arcade.getChildByLabel('chosen-ring'),
+        squashed: arcade.scale.y < 1,
+        otherAlpha: favorites.alpha,
+        otherScale: favorites.scale.y,
+      };
+    });
+    assert.deepEqual(pressed, { ring: true, squashed: true, otherAlpha: 0.6, otherScale: 1 });
     await scene('ArcadeScene');
     assert.equal(await page.evaluate(() => neo.scene.filter), 'mine');
     await tap('neo.scene.back');
