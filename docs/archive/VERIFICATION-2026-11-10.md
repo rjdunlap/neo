@@ -164,3 +164,13 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** new [reference review](../POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
+
+## 2026-11-10 — U7c, quicker taps on the tablet root (PR #1484)
+
+**Changed:** Home, Explore, Arcade, Library and creature play use `WayOut` for navigation. The first picture stays pressed with a white ring, the others dim, and its line can play through the change. The Friends nest opens after the shared beat with a cheer in place of the longer walk. Existing transition styles and route origins are preserved.
+
+**Measured:** three speech-off Chromium runs at 1024 × 768 (DPR 2) per route. Median tap to change start / first frame / settled was 945 / 1,051 / 1,987 ms before and 230 / 347 / 855 ms after for Home → Explore. Explore → Arcade was 1,309 / 1,441 / 2,031 ms before (lap profile) and 202 / 357 / 1,026 ms after (toddler profile). The Arcade's median settled time was 26 ms above the target. The timings include headless rendering and Vite dev serving.
+
+**Ran:** typecheck, lint, format, build, the U7 timing probe and a focused repeat with the final crossfades. The main `home` flow passed, including a press on Arcade followed immediately by Favorites that kept Arcade selected, and `HOME_ONLY=arcade` passed the spotlight, Play, and return flow. `npm test` passed 6,562 tests with 5 skipped and one timing failure in the unchanged Secret Code generator (256 ms against 250 ms). All 24 Secret Code tests passed in the isolated rerun.
+
+**Not run:** `world`, `phonefit`, other browser suites and offline.
