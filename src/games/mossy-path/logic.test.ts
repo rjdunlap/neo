@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  adjacent,
   BERRIES,
   berriesOf,
   completion,
@@ -10,6 +11,11 @@ import {
   pickLook,
   PLANS,
   PATCHES,
+  THICK,
+  bloomedCount,
+  needOf,
+  routeLength,
+  visitsOf,
   countsMiss,
   isMaze,
   LEVELS,
@@ -235,7 +241,7 @@ describe('Mossy Path level 8, a little patch', () => {
   });
   it('slots 8 after 6 for pre-K and school, and 10 after 2 for school, without changing any first level', () => {
     expect(LEVELS.prek?.order).toEqual([5, 6, 8]);
-    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 9, 2, 10, 3]);
+    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 9, 2, 10, 3, 11]);
     expect(LEVELS.toddler).toEqual({ min: 4, max: 4 });
     expect(LEVELS.preschool).toEqual({ min: 4, max: 5 });
   });
@@ -855,5 +861,158 @@ describe('Mossy Path level 10, plan then go', () => {
         const steps = planGo(b, 10, s, draw(b, s, hint.slice(1)));
         expect(steps.at(-1)!.state.misses, label).toBe(s.misses);
       }
+  });
+});
+
+/** The solver before level 11 (one visit per tile, memo `mask * 16 + at`), kept to prove levels 1–3 and 8 unchanged. */
+function oldCompletion(b: Board, path: readonly number[]): number[] | null {
+  if (path[0] !== b.start || new Set(path).size !== path.length) return null;
+  if (path.includes(b.pond) && (path.at(-1) !== b.pond || path.length !== b.tiles.length)) return null;
+  const failed = new Set<number>();
+  const search = (at: number, mask: number, length: number): number[] | null => {
+    if (length === b.tiles.length) return at === b.pond ? [] : null;
+    const key = mask * 16 + at;
+    if (failed.has(key)) return null;
+    for (const next of b.tiles) {
+      if (mask & (1 << next) || !adjacent(b, at, next) || (next === b.pond && length !== b.tiles.length - 1))
+        continue;
+      const tail = search(next, mask | (1 << next), length + 1);
+      if (tail) return [next, ...tail];
+    }
+    failed.add(key);
+    return null;
+  };
+  return search(path.at(-1)!, path.reduce((m, i) => m | (1 << i), 0), path.length);
+}
+/** Every legal prefix from the start (each a path `step` accepts). */
+function prefixes(b: Board): number[][] {
+  const out: number[][] = [];
+  const go = (path: number[]) => {
+    out.push(path);
+    for (const at of b.tiles) {
+      const next = step(b, path, at);
+      if (next) go(next);
+    }
+  };
+  go([b.start]);
+  return out;
+}
+
+describe('Mossy Path level 11, thick moss', () => {
+  it('gives levels 1–3 and 8 the same completions from every legal prefix as the old one-visit solver', () => {
+    for (const p of [...PLANS.flat(), ...PATCHES])
+      for (const [fx, fy, t] of SYMMETRIES.slice(0, 2)) {
+        const b = transformPlan(p, fx, fy, t);
+        expect(b.thick).toBeUndefined();
+        expect(routeLength(b)).toBe(b.tiles.length);
+        for (const path of prefixes(b)) expect(completion(b, path)).toEqual(oldCompletion(b, path));
+      }
+  });
+  it('has four boards, 3 × 4 or 4 × 4, tufts never the start or pond, each tuft with three moss sides', () => {
+    expect(THICK).toHaveLength(4);
+    expect(THICK.filter((p) => p.rows === 3 && p.cols === 4 && p.thick!.length === 1)).toHaveLength(2);
+    expect(
+      THICK.filter((p) => p.rows === 4 && p.cols === 4 && p.thick!.length === 2 && p.tiles.length === 15),
+    ).toHaveLength(2);
+    for (const [n, p] of THICK.entries())
+      for (const [fx, fy, t] of SYMMETRIES) {
+        const b = transformPlan(p, fx, fy, t),
+          label = `thick ${n} ${fx} ${fy} ${t}`;
+        expect(b.thick, label).toHaveLength(p.thick!.length);
+        for (const tuft of b.thick!) {
+          expect(b.tiles.includes(tuft), label).toBe(true);
+          expect(tuft !== b.start && tuft !== b.pond, label).toBe(true);
+          expect(neighbours(b, tuft).length, label).toBeGreaterThanOrEqual(3);
+          expect(needOf(b, tuft)).toBe(2);
+        }
+        expect(Math.min(132, (768 - 330) / b.rows, (1024 - 320) / b.cols), label).toBeGreaterThanOrEqual(100);
+      }
+  });
+  it('solves every board under every symmetry within 50 ms, and the bot finishes with no miss', () => {
+    for (const [n, p] of THICK.entries())
+      for (const [fx, fy, t] of SYMMETRIES) {
+        const b = transformPlan(p, fx, fy, t),
+          label = `thick ${n} ${fx} ${fy} ${t}`;
+        const t0 = performance.now(),
+          route = completion(b, [b.start]);
+        expect(performance.now() - t0, label).toBeLessThan(50);
+        expect(route, label).not.toBeNull();
+        expect(routeCount(b), label).toBe(routeCount(transformPlan(p, false, false, false)));
+        // The bot: follow helpFor's taps from the start; it never needs Undo and finishes with no miss.
+        let path = [b.start];
+        for (let guard = 0; guard < 20 && !solved(b, path); guard++) {
+          const help = helpFor(b, path)!;
+          expect(help.undo, label).toBe(0);
+          expect(moveError(b, path, help.next), label).toBeNull();
+          path = step(b, path, help.next)!;
+        }
+        expect(solved(b, path), label).toBe(true);
+        expect(path, label).toHaveLength(routeLength(b));
+        for (const tuft of b.thick!) expect(visitsOf(path, tuft), label).toBe(2);
+        expect(bloomedCount(b, path), label).toBe(b.tiles.length);
+      }
+  });
+  it('gives every board a real choice of complete routes', () => {
+    for (const p of THICK) expect(routeCount(transformPlan(p, false, false, false))).toBeGreaterThanOrEqual(2);
+  });
+  it('leads from any legal prefix to a completion: help undoes only what it must, then the route finishes', () => {
+    for (const [n, p] of THICK.entries()) {
+      const b = transformPlan(p, false, false, false);
+      for (const path of prefixes(b)) {
+        const help = helpFor(b, path),
+          label = `thick ${n} ${path.join(',')}`;
+        expect(help, label).not.toBeNull();
+        const kept = path.slice(0, path.length - help!.undo),
+          rest = completion(b, kept);
+        expect(rest, label).not.toBeNull();
+        expect(rest![0] ?? -1, label).toBe(help!.next);
+        if (help!.undo > 0) expect(completion(b, kept.concat(path[kept.length])), label).toBeNull();
+        expect(solved(b, [...kept, ...rest!]), label).toBe(true);
+      }
+    }
+  });
+  it('lets a tuft take a second visit, then refuses a third; a plain tile still takes one', () => {
+    // 0 1 2 3 / 4 5 6 7 / 8 9 10 11, tuft 5, pond 8.
+    const b = transformPlan(THICK[0], false, false, false);
+    expect(b.thick).toEqual([5]);
+    expect(moveError(b, [0, 1], 5)).toBeNull();
+    expect(moveError(b, [0, 1, 5, 6], 5)).toBeNull();
+    expect(moveError(b, [0, 1, 5, 6, 5, 4], 5)).toBe('visited');
+    expect(moveError(b, [0, 1, 5], 1)).toBe('visited');
+    expect(moveError(b, [0, 4], 8)).toBe('pond');
+    expect(moveError(b, [0, 1], 6)).toBe('far');
+    expect(validPath(b, [0, 1, 5, 6, 5])).toBe(true);
+    expect(validPath(b, [0, 1, 5, 6, 5, 4, 5])).toBe(false);
+    // The pond needs every tile and the tuft's second visit: 12 tiles, 13 steps.
+    expect(routeLength(b)).toBe(13);
+    expect(solved(b, [0, 1, 2, 3, 7, 6, 5, 4, 0])).toBe(false);
+    expect(solved(b, [0, 1, 2, 3, 7, 11, 10, 6, 5, 4, 8])).toBe(false);
+    const full = [0, 1, 2, 3, 7, 11, 10, 6, 5, 9, 5, 4, 8];
+    expect(solved(b, full)).toBe(true);
+    expect(bloomedCount(b, full.slice(0, 9))).toBe(8);
+    expect(bloomedCount(b, full.slice(0, 11))).toBe(10);
+    // A first visit to a tuft is never a miss.
+    expect(countsMiss(11, moveError(b, [0, 1], 5))).toBe(false);
+    expect(countsMiss(11, 'far')).toBe(true);
+  });
+  it('plays every board for some seed as coverage, and slots 11 last for school', () => {
+    expect(isMaze(11)).toBe(false);
+    expect(plansFor(11)).toBe(THICK);
+    expect(levelName(11)).toBe('Thick moss: some tiles need two visits');
+    expect(LEVELS.school).toMatchObject({ min: 1, max: 11 });
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const b = makeBoard(11, new Rng(seed));
+      expect(b).toEqual(makeBoard(11, new Rng(seed)));
+      const n = THICK.findIndex((p) =>
+        SYMMETRIES.some(([fx, fy, t]) => {
+          const z = transformPlan(p, fx, fy, t);
+          return sameBoard(z, b) && z.thick!.join() === b.thick!.join();
+        }),
+      );
+      expect(n, `seed ${seed}`).toBeGreaterThanOrEqual(0);
+      seen.add(n);
+    }
+    expect(seen.size).toBe(THICK.length);
   });
 });

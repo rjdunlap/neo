@@ -13,6 +13,7 @@ import type { FederatedPointerEvent } from 'pixi.js';
 import {
   LEVELS,
   berriesOf,
+  bloomedCount,
   completion,
   countsMiss,
   goalOf,
@@ -29,6 +30,7 @@ import {
   mazeStart,
   mazeTouch,
   moveError,
+  needOf,
   neighbours,
   nextToward,
   planGo,
@@ -36,6 +38,7 @@ import {
   routeBetween,
   solved,
   step,
+  visitsOf,
   type Look,
   type MazeMove,
   type MazeState,
@@ -159,11 +162,14 @@ class MossyPath implements Game {
   going: { state: MazeState; move: MazeMove }[] | null = null;
   private goClock = 0;
   private goMisses = 0;
+  /** Level 11: whether this round has said that thick moss needs a second visit. */
+  private toldThick = false;
   constructor(private readonly ctx: GameContext) {
     this.board = makeBoard(ctx.level, ctx.rng);
     this.look = pickLook(ctx.rng);
     this.path = [this.board.start];
     this.maze = isMaze(ctx.level);
+    if (this.board.thick?.length) this.heading.text = 'Cross the thick moss twice';
     this.planning = isPlanLevel(ctx.level);
     this.planLayer.eventMode = 'none';
     this.trail.eventMode = 'none';
@@ -218,7 +224,9 @@ class MossyPath implements Game {
   start() {
     void this.ctx.instruct(
       !this.maze
-        ? 'moss.go'
+        ? this.board.thick?.length
+          ? 'moss.thick-go'
+          : 'moss.go'
         : this.planning
           ? 'moss.plan'
           : this.board.berry2 !== undefined
@@ -484,6 +492,11 @@ class MossyPath implements Game {
         if (this.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       });
     } else if (!completion(this.board, this.path)) void this.ctx.say('moss.blocked');
+    else if (needOf(this.board, at) > 1 && visitsOf(this.path, at) === 1 && !this.toldThick) {
+      // Level 11: the first tuft she flattens each round says it needs a second visit.
+      this.toldThick = true;
+      void this.ctx.say('moss.thick');
+    }
   }
   private showHint(spoken: boolean) {
     if (!this.alive || this.finished) return;
@@ -632,10 +645,13 @@ class MossyPath implements Game {
         node.addChild(g);
         return;
       }
-      const visited = this.path.includes(at),
+      // Thick moss (level 11) blooms only on its second visit; after the first it lies flattened.
+      const visits = visitsOf(this.path, at),
+        thick = needOf(this.board, at) > 1,
+        visited = visits >= needOf(this.board, at),
         pond = at === this.board.pond;
       g.roundRect(-half, -half, half * 2, half * 2, 20)
-        .fill(pond ? swatch.blue.light : visited ? swatch.green.light : swatch.green.fill)
+        .fill(pond ? swatch.blue.light : visited || visits ? swatch.green.light : swatch.green.fill)
         .stroke({ width: 3, color: pond ? swatch.blue.line : swatch.green.line });
       if (pond) {
         g.ellipse(0, 0, half * 0.8, half * 0.65).fill(swatch.blue.fill);
@@ -645,6 +661,22 @@ class MossyPath implements Game {
         const [a, b] = PETALS[this.look.season];
         flower(g, -half * 0.6, half * 0.55, 9, a);
         flower(g, half * 0.55, -half * 0.5, 8, b);
+        if (thick) flower(g, 0, 0, 13, a);
+      } else if (thick && visits) {
+        // Flattened: the tall blades lie down, waiting for the second visit.
+        for (const y of [-half * 0.3, half * 0.05, half * 0.4])
+          g.moveTo(-half * 0.6, y + 6)
+            .quadraticCurveTo(0, y - 6, half * 0.6, y + 4)
+            .stroke({ width: 6, color: swatch.green.line, cap: 'round' });
+      } else if (thick) {
+        // A tall tuft, its blades reaching past the tile's middle: taller than plain moss, so it reads without colour.
+        for (const x of [-half * 0.5, -half * 0.17, half * 0.17, half * 0.5])
+          g.moveTo(x - 9, half * 0.6)
+            .lineTo(x, -half * 0.7)
+            .lineTo(x + 9, half * 0.6)
+            .closePath()
+            .fill(swatch.green.line)
+            .stroke({ width: 3, color: ink });
       } else if (this.maze && berriesOf(this.board).includes(at) && !this.maze_!.eaten.includes(at)) {
         drawBerry(g, this.look.berry, 0, 6, half * 0.36);
       } else if (this.maze && this.pawed.has(at)) {
@@ -716,7 +748,8 @@ class MossyPath implements Game {
       );
     } else {
       const blocked = !solved(this.board, this.path) && !completion(this.board, this.path);
-      this.status.text = `${this.path.length} / ${this.board.tiles.length} bloomed · ${blocked ? 'Try Undo to change the trail' : 'Visit each tile once; pond last'}`;
+      const rule = this.board.thick?.length ? 'Thick moss twice, the rest once; pond last' : 'Visit each tile once; pond last';
+      this.status.text = `${bloomedCount(this.board, this.path)} / ${this.board.tiles.length} bloomed · ${blocked ? 'Try Undo to change the trail' : rule}`;
     }
     this.buttonGlow.clear();
     if (this.hintActive && this.hinted < 0 && !this.planning)

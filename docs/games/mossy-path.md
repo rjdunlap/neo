@@ -11,7 +11,7 @@
 | toddler | 4 |
 | preschool | 4–5 |
 | pre-K | 5, 6, 8 |
-| school | 6, 8, 1, 7, 9, 2, 10, 3 |
+| school | 6, 8, 1, 7, 9, 2, 10, 3, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 8 | A little patch: bloom every tile |
 | 9 | Two snacks: both berries, then the pond |
 | 10 | Plan, then go: draw the way, then the turtle walks it |
+| 11 | Thick moss: some tiles need two visits |
 
 <!-- end generated -->
 
