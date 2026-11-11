@@ -25,6 +25,9 @@ import { BallPlay } from './ball-play';
  * at a round's end, and the ball has no score, sticker or end.
  */
 export class PlayScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31, shell slice 3). */
+  upright = true;
+  uprightArea = true;
   private readonly backdrop = homeBackdrop();
   readonly pet: Companion = this.track(makeCompanion());
   readonly toy = this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')));

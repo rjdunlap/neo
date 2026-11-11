@@ -22,6 +22,8 @@ export const BASKET = { w: 124, h: 120 };
 /** Kept clear: the bottom-left corner where a guide stands, and the island-games link's corner (CSS pixels over a scaled view, so generous). */
 export const GUIDE_CORNER = { w: 200, h: 200 };
 export const LINK_CORNER = { w: 300, h: 100 };
+/** Narrower than the wide design area: only the upright 768 × 1024 area (chunk 31) lays a scene out this narrow. */
+const NARROW = 1024;
 /** Home's top-right corner: the grown-ups' gear, with the island-games link below it until RW08's cutover. */
 export const GEAR_CORNER = { w: 300, h: 150 };
 /**
@@ -144,7 +146,12 @@ export const BED = { w: 180, h: 220, picture: 105 };
 export function playLayout(v: { w: number; h: number }): PlayLayout {
   const backdrop = backdropFit(v);
   const basket = { x: v.w - 50 - BASKET.w / 2, y: v.h - 50 - BASKET.h / 2 };
-  const stage = { x: Math.round(v.w * 0.36), y: v.h - 70, scale: 1.1 };
+  // The upright area (768 wide, chunk 31) has no room beside the guide corner: her friend stands further up the grass,
+  // above the corner, with the ball in front of it.
+  const stage =
+    v.w < NARROW
+      ? { x: Math.round(v.w / 2), y: v.h - 240, scale: 1.1 }
+      : { x: Math.round(v.w * 0.36), y: v.h - 70, scale: 1.1 };
   const top = BACK.y + BACK.r + 130;
   const plaque = { x: v.w - 50 - 80, y: top };
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
@@ -315,8 +322,12 @@ export function projectLayout(v: { w: number; h: number }, n: number): ProjectLa
   const step = PROJECT_CARD + 70;
   const left = basket.x + NEWCOMER_REACH + 40 + PROJECT_CARD / 2;
   const span = (n - 1) * step;
-  const cx = Math.max(left + span / 2, Math.min(v.w * 0.62, v.w - 40 - PROJECT_CARD / 2 - span / 2));
   const y = Math.round(Math.max(BACK.y + BACK.r + 40 + PROJECT_CARD / 2, v.h * 0.36));
+  // The upright area (768 wide) centres the cards across the page; the basket stands lower, under their Play arrows.
+  const cx =
+    v.w < NARROW
+      ? v.w / 2
+      : Math.max(left + span / 2, Math.min(v.w * 0.62, v.w - 40 - PROJECT_CARD / 2 - span / 2));
   const cards = Array.from({ length: n }, (_, i) => ({ x: Math.round(cx - span / 2 + i * step), y }));
   const plays = cards.map((c) => ({ x: c.x, y: c.y + PROJECT_CARD / 2 + 30 + PROJECT_PLAY_RADIUS }));
   return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, basket, cards, plays };

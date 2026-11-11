@@ -56,6 +56,9 @@ interface Card {
  * nothing is stored until a round finishes or the arrow is pressed.
  */
 export class ProjectScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31, shell slice 3). */
+  upright = true;
+  uprightArea = true;
   private readonly backdrop = homeBackdrop();
   private readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave());
   private readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave());

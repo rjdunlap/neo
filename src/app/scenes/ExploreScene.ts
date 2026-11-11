@@ -88,6 +88,9 @@ export type ExplorePage = 'places' | 'favorites';
  * mix's stops and its Explore come back to the entries.
  */
 export class ExploreScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31), Little surprises' sheet and Make my mix's table included. */
+  upright = true;
+  uprightArea = true;
   private readonly backdrop = homeBackdrop();
   readonly ids = exploreIds();
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
@@ -133,9 +136,6 @@ export class ExploreScene extends Scene {
           allGames(band, GAMES, LANDS).map((g) => g.id),
         );
     this.lead = !!this.mix?.mods;
-    // Laid out for a phone held upright as well (chunk 31), except where Little surprises leads: its sheet and Make my
-    // mix's table are drawn on the 1024 width, so that page keeps the turn prompt.
-    this.upright = this.uprightArea = !this.lead;
     this.page = clampPage(page, this.list.length);
     if (entry) exploreMemory.pages[entry] = this.page;
   }

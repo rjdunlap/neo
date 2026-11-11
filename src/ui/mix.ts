@@ -108,6 +108,72 @@ export function sheetTiles(count: number): { size: number; xs: number[] } {
   return { size, xs: Array.from({ length: count }, (_, i) => 512 + (i - (count - 1) / 2) * (size + gap)) };
 }
 
+/** Where the sheet puts its tiles, Skip under each, Play, Again mix and Home, and its panel, in view units. */
+export interface SheetPlaces {
+  size: number;
+  tiles: { x: number; y: number }[];
+  /** Skip's centre when that tile is next. */
+  skips: { x: number; y: number }[];
+  play: { x: number; y: number };
+  again: { x: number; y: number };
+  home: { x: number; y: number };
+  panel: { x: number; y: number; w: number; h: number };
+}
+
+/**
+ * The sheet's places for one to five stops. The wide area keeps one row centred on its 1024 width; the upright 768 × 1024
+ * area (chunk 31) wraps the tiles into rows of at most three (two and two for four), each row leaving room for Skip under
+ * its tiles, with the buttons below.
+ */
+export function sheetPlaces(count: number, view: { w: number; h: number }): SheetPlaces {
+  if (view.w >= 1024) {
+    const portrait = view.h > view.w;
+    const ox = (view.w - 1024) / 2;
+    const tileY = portrait ? 520 : 300,
+      skipY = portrait ? 690 : 470,
+      buttonY = portrait ? 900 : 640;
+    const { size, xs } = sheetTiles(count);
+    return {
+      size,
+      tiles: xs.map((x) => ({ x: ox + x, y: tileY })),
+      skips: xs.map((x) => ({ x: ox + x, y: skipY })),
+      play: { x: ox + 512, y: buttonY },
+      again: { x: ox + 372, y: buttonY },
+      home: { x: ox + 652, y: buttonY },
+      panel: { x: ox + 82, y: tileY - 160, w: 860, h: buttonY - tileY + 260 },
+    };
+  }
+  const perRow = count === 4 ? 2 : Math.min(3, count);
+  // The same sizes as the wide row, since a tile keeps its size when the phone turns.
+  const { size } = sheetTiles(count);
+  const gap = 30;
+  const pitch = size + SKIP_ROOM;
+  const mid = view.w / 2;
+  const top = 340;
+  const tiles: { x: number; y: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const row = Math.floor(i / perRow);
+    const inRow = Math.min(perRow, count - row * perRow);
+    const col = i - row * perRow;
+    tiles.push({ x: mid + (col - (inRow - 1) / 2) * (size + gap), y: top + row * pitch });
+  }
+  const skips = tiles.map((t) => ({ x: t.x, y: t.y + size / 2 + 15 + 56 }));
+  const last = tiles[tiles.length - 1].y;
+  const buttonY = last + size / 2 + 15 + 112 + 30 + 70;
+  return {
+    size,
+    tiles,
+    skips,
+    play: { x: mid, y: buttonY },
+    again: { x: mid - 140, y: buttonY },
+    home: { x: mid + 140, y: buttonY },
+    panel: { x: 20, y: top - size / 2 - 60, w: view.w - 40, h: buttonY + 100 - (top - size / 2 - 60) },
+  };
+}
+
+/** A row's pitch beyond its tiles on the upright sheet: Skip (112 across) under a tile, with a little air either side. */
+const SKIP_ROOM = 15 + 112 + 25;
+
 /** One stop on the sheet (220 across) or a stop card's row (100): bright when next or still to come, a sticker copy once played, dimmed with a hop once passed. */
 export class StopTile extends Container {
   private readonly face = new Container();
@@ -214,27 +280,23 @@ export class MixSheet extends Container {
   }
 
   layout(view: View) {
-    const portrait = view.h > view.w;
-    const ox = (view.w - 1024) / 2;
-    const tileY = portrait ? 520 : 300,
-      skipY = portrait ? 690 : 470,
-      buttonY = portrait ? 900 : 640;
+    const p = sheetPlaces(this.tiles.length, view);
     this.scrim.clear().rect(0, 0, view.w, view.h).fill({ color: wood.light, alpha: 0.85 });
     this.panel
       .clear()
-      .roundRect(ox + 82, tileY - 160, 860, buttonY - tileY + 260, 40)
+      .roundRect(p.panel.x, p.panel.y, p.panel.w, p.panel.h, 40)
       .fill({ color: 0xffffff, alpha: 0.7 });
     this.backButton.position.set(65, 65);
-    const xs = sheetTiles(this.tiles.length).xs.map((x) => ox + x);
-    this.tiles.forEach((t, i) => t.position.set(xs[i], tileY));
+    this.tiles.forEach((t, i) => t.position.set(p.tiles[i].x, p.tiles[i].y));
     const next = this.state ? nextUp(this.state) : null;
     const ending = next === null;
     this.playButton.visible = this.skipButton.visible = !ending;
     this.againButton.visible = this.homeButton.visible = ending;
-    this.playButton.position.set(ox + 512, buttonY);
-    this.skipButton.position.set(next === null ? ox + 512 : xs[next], skipY);
-    this.againButton.position.set(ox + 372, buttonY);
-    this.homeButton.position.set(ox + 652, buttonY);
+    this.playButton.position.set(p.play.x, p.play.y);
+    const skip = next === null ? p.play : p.skips[next];
+    this.skipButton.position.set(skip.x, skip.y);
+    this.againButton.position.set(p.again.x, p.again.y);
+    this.homeButton.position.set(p.home.x, p.home.y);
   }
 
   update(dt: number) {

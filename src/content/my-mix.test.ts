@@ -7,7 +7,8 @@ import { MixMemory } from '../app/discovery';
 import { gamesFor } from '../app/scenes/PlaceScene';
 import { Tweener } from '../engine/tween';
 import { inlineFits } from '../ui/howto-card';
-import { sheetTiles } from '../ui/mix';
+import { sheetPlaces, sheetTiles } from '../ui/mix';
+import { UPRIGHT_VIEWS } from '../games/upright-check';
 import { MixTable } from '../ui/mix-table';
 import {
   lineup,
@@ -169,6 +170,52 @@ describe('Make my mix: layouts never shrink a target', () => {
     { w: 1662, h: 768 },
     { w: 1024, h: 2100 },
   ].map((v) => ({ ...v, scale: 1 }));
+  /** Those, and a phone held upright on the 768 × 1024 area (chunk 31, shell slice 3). */
+  const WITH_UPRIGHT = [...VIEWS, ...Object.values(UPRIGHT_VIEWS)];
+  it('the sheet puts every tile, Skip under each, Back and the buttons inside the view, apart, in every view', () => {
+    type B = { what: string; x0: number; y0: number; x1: number; y1: number };
+    const box = (what: string, c: { x: number; y: number }, w: number): B => ({
+      what,
+      x0: c.x - w / 2,
+      y0: c.y - w / 2,
+      x1: c.x + w / 2,
+      y1: c.y + w / 2,
+    });
+    const apart = (a: B, b: B) => a.x1 <= b.x0 || b.x1 <= a.x0 || a.y1 <= b.y0 || b.y1 <= a.y0;
+    for (const view of WITH_UPRIGHT)
+      for (let n = 1; n <= MIX_MAX; n++) {
+        const p = sheetPlaces(n, view);
+        const where = `${n} at ${Math.round(view.w)}×${Math.round(view.h)}`;
+        expect(p.size, where).toBe(sheetTiles(n).size);
+        const tiles = p.tiles.map((t, i) => box(`tile ${i}`, t, p.size));
+        const back = box('back', { x: 65, y: 65 }, 100);
+        // Before the end: the tiles, Back, Play and Skip under whichever tile is next.
+        for (const [k, skip] of p.skips.entries()) {
+          const all = [...tiles, back, box('play', p.play, 140), box(`skip under ${k}`, skip, 112)];
+          for (const [i, b] of all.entries()) {
+            expect(
+              b.x0 >= 0 && b.y0 >= 0 && b.x1 <= view.w && b.y1 <= view.h,
+              `${b.what} inside, ${where}`,
+            ).toBe(true);
+            for (const c of all.slice(i + 1))
+              expect(apart(b, c), `${b.what} and ${c.what}, ${where}`).toBe(true);
+          }
+        }
+        // At the end: Again mix and Home instead.
+        const end = [...tiles, back, box('again', p.again, 140), box('home', p.home, 140)];
+        for (const [i, b] of end.entries()) {
+          expect(b.x1 <= view.w && b.y1 <= view.h, `${b.what} inside, ${where}`).toBe(true);
+          for (const c of end.slice(i + 1))
+            expect(apart(b, c), `${b.what} and ${c.what}, ${where}`).toBe(true);
+        }
+        // The panel holds the tiles and the buttons.
+        expect(p.panel.x >= 0 && p.panel.x + p.panel.w <= view.w, where).toBe(true);
+        expect(p.panel.y + p.panel.h, where).toBeGreaterThan(p.play.y + 70);
+      }
+    // The wide area keeps its one row; the upright area wraps five into three over two.
+    expect(new Set(sheetPlaces(5, VIEWS[0]).tiles.map((t) => t.y)).size).toBe(1);
+    expect(new Set(sheetPlaces(5, UPRIGHT_VIEWS.phone).tiles.map((t) => t.y)).size).toBe(2);
+  });
   it('the sheet holds one to five tiles at 150 or more, inside the design area, apart', () => {
     for (let n = 1; n <= MIX_MAX; n++) {
       const { size, xs } = sheetTiles(n);
@@ -185,7 +232,7 @@ describe('Make my mix: layouts never shrink a target', () => {
     // Its own row fits five on the portrait card beside Skip.
     expect(32 + 5 * 100 + 4 * 12).toBeLessThanOrEqual(760 - 32 - 112 - 24);
   });
-  it('the table puts every target inside the view, at least 100 across, none overlapping, at every count and in four views', () => {
+  it('the table puts every target inside the view, at least 100 across, none overlapping, at every count and in every view, upright included', () => {
     const mods = (ids: readonly string[]) => ids.map((id) => GAMES.find((m) => m.id === id)!);
     const pool = mods(
       mixPool(
@@ -194,7 +241,7 @@ describe('Make my mix: layouts never shrink a target', () => {
         GAMES,
       ),
     );
-    for (const view of VIEWS)
+    for (const view of WITH_UPRIGHT)
       for (let n = 1; n <= MIX_MAX; n++) {
         const table = new MixTable(new Tweener(), {
           hear() {},
