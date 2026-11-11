@@ -11,6 +11,7 @@ import {
   dayKey,
   hardLevels,
   levelDots,
+  levelLine,
   nextOfSix,
   presetLevels,
   playedOn,
@@ -330,5 +331,45 @@ describe('a first six she can start (U5a)', () => {
     // History holds only the last ten: ten today out of ten counted is new; ten today out of twelve is not.
     expect(newToday({ plays: 10, history: Array(10).fill(noon) }, today)).toBe(true);
     expect(newToday({ plays: 12, history: Array(10).fill(noon) }, today)).toBe(false);
+  });
+});
+
+describe("a card's level line", () => {
+  const upTo = (n: number) => (line: string) => line.length <= n;
+  const hatBand =
+    'Build a song: three friends (drum, tune and a low part) and a three-part song; start with the tune alone, end with everybody, the middle is hers; Check plays it through';
+
+  it('keeps a line that fits', () => {
+    expect(levelLine('Twin terraces · 24 tiles', upTo(40))).toBe('Twin terraces · 24 tiles');
+    expect(levelLine('', () => false)).toBe('');
+  });
+
+  it('cuts a long line at a clause before it cuts words', () => {
+    expect(levelLine(hatBand, upTo(150))).toBe(
+      'Build a song: three friends (drum, tune and a low part) and a three-part song; start with the tune alone, end with everybody, the middle is hers',
+    );
+    expect(levelLine(hatBand, upTo(90))).toBe(
+      'Build a song: three friends (drum, tune and a low part) and a three-part song',
+    );
+  });
+
+  it('cuts the first clause at a word, with an ellipsis and no loose punctuation', () => {
+    expect(levelLine(hatBand, upTo(40))).toBe('Build a song: three friends (drum, tune…');
+    expect(levelLine(hatBand, upTo(27))).toBe('Build a song: three…');
+    expect(levelLine(hatBand, upTo(14))).toBe('Build a song…');
+    expect(levelLine(hatBand, () => false)).toBe('Build…');
+  });
+
+  it("gives every daily game's every level a line that fits whatever fits", () => {
+    for (const mod of GAMES.filter(playsByTouch))
+      for (const band of mod.bands)
+        for (const level of levelsInOrder(mod.levels(band))) {
+          const full = mod.describeLevel(level);
+          const line = levelLine(full, upTo(60));
+          expect(line.length, `${mod.id} ${level}`).toBeGreaterThan(0);
+          if (full.split(/\s+/)[0].length < 60)
+            expect(line.length, `${mod.id} ${level}: ${line}`).toBeLessThanOrEqual(60);
+          expect(full.startsWith(line.replace(/…$/, '')), `${mod.id} ${level}: ${line}`).toBe(true);
+        }
   });
 });

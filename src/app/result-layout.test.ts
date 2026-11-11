@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeView, NO_INSETS } from '../engine/view';
 import { nameBelow, nameWidth, PILL, RESULT_NAMES } from '../content/button-names';
-import { RESULT_NAME_W, RESULT_RADIUS, resultSpots } from './result-layout';
+import { DAILY_NEXT, RESULT_NAME_W, RESULT_RADIUS, dailySpots, resultSpots } from './result-layout';
 
 const WIDE = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(1366, 768)];
 const UPRIGHT = [
@@ -83,6 +83,42 @@ describe("the result's layout", () => {
           }
         }
       }
+    }
+  });
+});
+
+describe("a daily round's next game and note pencil", () => {
+  it('stay in the top-left corner on a wide view', () => {
+    for (const v of WIDE) expect(dailySpots(v)).toEqual({ next: { x: 32, y: 24 }, note: { x: 82, y: 210 } });
+  });
+
+  it('puts the next game between Again and the way out on an upright phone, clear of every button, name and the pet', () => {
+    for (const v of UPRIGHT) {
+      const at = resultSpots(v, false);
+      const { next, note } = dailySpots(v);
+      const tile = { x0: next.x, x1: next.x + DAILY_NEXT.w, y0: next.y, y1: next.y + DAILY_NEXT.h };
+      const where = `at ${Math.round(v.w)}×${Math.round(v.h)}`;
+      expect((tile.x0 + tile.x1) / 2, where).toBeCloseTo(v.w / 2);
+      expect((tile.y0 + tile.y1) / 2, where).toBeCloseTo(at.again.y);
+      expect(tile.y1, where).toBeLessThanOrEqual(v.h - 300);
+      for (const k of ['again', 'next', 'home', 'heart', 'keep'] as const) {
+        const r = RESULT_RADIUS[k];
+        const dx = Math.max(tile.x0 - at[k].x, 0, at[k].x - tile.x1);
+        const dy = Math.max(tile.y0 - at[k].y, 0, at[k].y - tile.y1);
+        expect(Math.hypot(dx, dy), `${k} ${where}`).toBeGreaterThan(r + 10);
+        const name = {
+          x0: at[k].x - RESULT_NAME_W[k] / 2,
+          x1: at[k].x + RESULT_NAME_W[k] / 2,
+          y1: at[k].y + nameBelow(r),
+        };
+        const apart =
+          name.x1 <= tile.x0 || tile.x1 <= name.x0 || name.y1 <= tile.y0 || tile.y1 <= name.y1 - PILL.h;
+        expect(apart, `${k}'s name ${where}`).toBe(true);
+      }
+      // The pencil takes the corner the tile left: on screen, and far above the sticker and the heart.
+      expect(note.x - 50, where).toBeGreaterThanOrEqual(0);
+      expect(note.y - 50, where).toBeGreaterThanOrEqual(0);
+      expect(note.y + 50, where).toBeLessThan(at.keep.y - RESULT_RADIUS.keep);
     }
   });
 });

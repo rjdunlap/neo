@@ -31,7 +31,7 @@ import { nextSpot } from '../../couch/focus';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { RESULT_NAME_W, resultSpots } from '../result-layout';
+import { DAILY_NEXT, RESULT_NAME_W, dailySpots, resultSpots } from '../result-layout';
 import { RESULT_NAMES } from '../../content/button-names';
 import { textBoost, type View } from '../../engine/view';
 import { pauseLabels, type PauseAction } from '../pause';
@@ -582,14 +582,16 @@ export class GameScene extends Scene {
     const home = new RoundButton(icon, swatch.blue, 66, () =>
       this.leaveSaying(this.backLine(), () => this.goHome()),
     );
-    const house = from
-      ? new RoundButton(houseIcon(), swatch.white, 50, () =>
-          this.leaveSaying(
-            () => voice.say('nav.home'),
-            () => this.app.go.hub(),
-          ),
-        ).means('home')
-      : null;
+    // On a phone Home is Today's six, where Back from a daily round already goes: one way out, no house.
+    const house =
+      from && !(this.app.phoneOnly && this.origin && 'daily' in this.origin)
+        ? new RoundButton(houseIcon(), swatch.white, 50, () =>
+            this.leaveSaying(
+              () => voice.say('nav.home'),
+              () => this.app.go.hub(),
+            ),
+          ).means('home')
+        : null;
     if (root) home.means('back');
     return { home, house };
   }
@@ -926,8 +928,8 @@ export class GameScene extends Scene {
     const next = nextOfSix(picks, this.mod.id, played);
     if (next) {
       const tile = new DiscoveryTile(
-        288,
-        112,
+        DAILY_NEXT.w,
+        DAILY_NEXT.h,
         nextGameArt(next.mod, titleOf(next.mod)),
         () =>
           this.navigateResult(() =>
@@ -935,7 +937,6 @@ export class GameScene extends Scene {
           ),
         live,
       );
-      tile.position.set(32, 24);
       this.resultLayer.addChild(tile);
       this.dailyNext = tile;
     }
@@ -952,10 +953,10 @@ export class GameScene extends Scene {
           onClose: () => (this.dailySheet = null),
         });
       });
-      pencil.position.set(32 + 50, 160 + 50);
       this.resultLayer.addChild(pencil);
       this.dailyNote = pencil;
     }
+    this.layoutDaily(this.view);
     return next;
   }
 
@@ -1294,6 +1295,13 @@ export class GameScene extends Scene {
     a.house?.position.set(at.house.x, at.house.y);
     a.heart.position.set(at.heart.x, at.heart.y);
     a.keep?.position.set(at.keep.x, at.keep.y);
+    this.layoutDaily(view);
+  }
+
+  private layoutDaily(view: View) {
+    const at = dailySpots(view);
+    this.dailyNext?.position.set(at.next.x, at.next.y);
+    this.dailyNote?.position.set(at.note.x, at.note.y);
   }
 
   /** A small card for the grown-up, which fades after a few seconds or when tapped. */

@@ -4,7 +4,7 @@ import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { dayKey, levelDots, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
+import { dayKey, levelDots, levelLine, nextOfSix, playedOn, type DailyPick } from '../../content/daily';
 import { todaysSix } from '../daily-six';
 import { makeCompanion } from '../../creatures/companion';
 import { BACK } from '../../creatures/friends-layout';
@@ -305,7 +305,8 @@ export class DailyScene extends Scene {
     const size = Math.round(
       Math.max(MIN_CARD, Math.min(wide ? MAX_CARD : MAX_CARD_TALL, pitchX - 28, pitchY - under - 12)),
     );
-    const textW = Math.max(size, pitchX - 20);
+    // Names and level lines keep inside the cell, so two neighbours' plates stay 20 units apart.
+    const textW = Math.max(size, pitchX - 44);
     this.playAll.position.set(v.w - BACK.x, BACK.y);
     this.notes?.position.set(v.w - BACK.x, v.h - BACK.y);
     this.cards.forEach((c, i) => {
@@ -340,12 +341,16 @@ export class DailyScene extends Scene {
       const dotsW = of > 1 ? (of - 1) * gap + 2 * r : 2 * r;
       const level = node.getChildByLabel('level') as Text;
       level.y = dotsY + r + 6;
-      // A long level line keeps to two lines: it shrinks rather than pushing into the next row.
-      // A tall view draws it a third larger, in up to three lines.
+      // A long level line keeps to two lines at its full size (three on a tall view, drawn a third larger; one fewer under
+      // a name that wraps): it is cut at a clause or a word (`levelLine`) rather than shrunk until it cannot be read.
       const big = wide ? 1 : 1.35;
-      level.scale.set(1);
+      const lines = (wide ? 2 : 3) - (name.height / nameScale > 36 ? 1 : 0);
+      level.scale.set(big);
       level.style.wordWrapWidth = textW / big;
-      level.scale.set(level.text ? Math.min(big, (wide ? 40 : 76) / Math.max(level.height, 1)) : 1);
+      level.text = levelLine(this.grownUp ? c.pick.mod.describeLevel(c.pick.level) : '', (line) => {
+        level.text = line;
+        return level.height / big <= lines * 18 + 6;
+      });
       // One cream pill under the name and the level line, so both read over the backdrop.
       const pillW = Math.max(name.width, level.width, dotsW, 60) + 24;
       const pillH = level.y - name.y + (level.text ? level.height : -6) + 10;
