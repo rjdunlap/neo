@@ -678,6 +678,10 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 *school* · [Measuring Post](games/measuring-post.md)
 
+### Memory Desk
+
+*school* · [Memory Desk](games/memory-desk.md)
+
 ## Lantern Lake
 
 ### Snowball Merge

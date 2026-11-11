@@ -14,6 +14,7 @@ import { createSuite as createLens } from './suites/lens-play.mjs';
 import { createSuite as createMeltFreeze } from './suites/melt-freeze-play.mjs';
 import { createSuite as createMoonWindow } from './suites/moon-window-play.mjs';
 import { createSuite as createSortingMachine } from './suites/sorting-machine-play.mjs';
+import { createSuite as createMemoryDesk } from './suites/memory-desk-play.mjs';
 import { createSuite as createGadgetBench } from './suites/gadget-bench-play.mjs';
 import { createSuite as createPlaydateWorkshop } from './suites/playdate-workshop-play.mjs';
 import { createSuite as createHelperHouse } from './suites/helper-house-play.mjs';
@@ -312,6 +313,7 @@ export const SUITES = [
   'meltfreeze',
   'moonwindow',
   'sortingmachine',
+  'memorydesk',
   'festivalsignals',
   'gadgetbench',
   'playdateworkshop',
@@ -477,6 +479,7 @@ export const ALL_SUITES = [
   'meltfreeze',
   'moonwindow',
   'sortingmachine',
+  'memorydesk',
   'festivalsignals',
   'gadgetbench',
   'playdateworkshop',
@@ -836,6 +839,7 @@ export function createChecks(fixture) {
   install(createMeltFreeze(shared));
   install(createMoonWindow(shared));
   install(createSortingMachine(shared));
+  install(createMemoryDesk(shared));
   install(createGadgetBench(shared));
   install(createPlaydateWorkshop(shared));
   install(createHelperHouse(shared));
@@ -1054,6 +1058,7 @@ export async function runSuite(suite, fixture) {
     meltFreezePlay,
     moonWindowPlay,
     sortingMachinePlay,
+    memoryDeskPlay,
     festivalSignalsPlay,
     helperHousePlay,
     crosswordPlay,
@@ -1238,6 +1243,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'meltfreeze') await meltFreezePlay();
   if (suite === 'all' || suite === 'moonwindow') await moonWindowPlay();
   if (suite === 'all' || suite === 'sortingmachine') await sortingMachinePlay();
+  if (suite === 'all' || suite === 'memorydesk') await memoryDeskPlay();
   if (suite === 'all' || suite === 'festivalsignals') await festivalSignalsPlay();
   if (suite === 'all' || suite === 'gadgetbench') await gadgetBenchPlay();
   if (suite === 'all' || suite === 'playdateworkshop') await playdateWorkshopPlay();
