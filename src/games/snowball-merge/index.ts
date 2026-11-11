@@ -321,7 +321,8 @@ class SnowballMerge implements Game {
     }
     this.board = next.board;
     this.refresh();
-    this.assist('changed');
+    // A slide into a dead end lights Undo on its own and says so.
+    if (this.assist('changed') === 'undo') void this.ctx.say('snowball.stuck');
     if (joins.length) {
       for (const to of joins) {
         const p = this.ctx.particles.toLocal(this.balls.toGlobal(this.center(to)));
