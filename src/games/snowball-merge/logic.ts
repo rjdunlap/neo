@@ -161,7 +161,8 @@ export function nextHelp(help: Help, event: HelpEvent, route: readonly Direction
 export function sizeLook(value: number) {
   const step = Math.max(0, Math.log2(Math.max(2, value)) - 1);
   return {
-    color: value <= 4 ? 'blue' : value === 8 ? 'teal' : value === 16 ? 'purple' : value === 32 ? 'pink' : 'yellow',
+    color:
+      value <= 4 ? 'blue' : value === 8 ? 'teal' : value === 16 ? 'purple' : value === 32 ? 'pink' : 'yellow',
     radius: Math.min(42, 34 + step * 1.6),
     scarf: value >= 64,
   } as const;
