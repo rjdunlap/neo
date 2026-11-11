@@ -24,5 +24,8 @@ export const VOICE = {
   'moss.berry': ['Yum, a berry! Now to the pond.'],
   'moss.berry-one': ['One berry! Where is the other one?'],
   'moss.hint-maze': ['The gold tile is the way to go.'],
+  'moss.plan': ['Draw the way with your finger, then tap the turtle to go.'],
+  'moss.plan-more': ['The turtle waits here. Draw more of the way, then tap the turtle.'],
+  'moss.hint-plan': ['The gold paw prints show the way. Tap the turtle to go.'],
   'moss.done-maze': ['The turtle found the way to the pond!'],
 } satisfies Record<string, string[]>;

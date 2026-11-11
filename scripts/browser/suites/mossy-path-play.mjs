@@ -15,6 +15,10 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await mossySnacksPlay();
       return;
     }
+    if (process.env.MOSSY_ONLY === 'plan') {
+      await mossyPlanPlay();
+      return;
+    }
     for (const level of process.env.MOSSY_ONLY === 'navigation' ? [] : [1, 3]) {
       await launch('mossy-path', level);
       await page.waitForTimeout(350);
@@ -368,6 +372,78 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
     log(
       'Mossy Path 9: farther berry first, early pond refused once, both berries, finish and one sticker passed',
     );
+  }
+
+  /** Level 10: a short plan and a Go, a plan into a wrong branch (one miss), a Hint's gold prints, then the rest and finish. */
+  async function mossyPlanPlay() {
+    await launch('mossy-path', 10);
+    await page.waitForTimeout(350);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const routeFromTurtle = () =>
+      page.evaluate(async () => {
+        const L = await import('/src/games/mossy-path/logic.ts'),
+          g = neo.scene.game;
+        return L.routeBetween(g.board, g.path.at(-1), g.board.pond);
+      });
+    const goAndWait = async () => {
+      await tap(`neo.scene.game.nodes[${await page.evaluate(() => neo.scene.game.path.at(-1))}]`);
+      await page.waitForFunction(() => !neo.scene.game.going, null, { timeout: 8000 });
+      await page.waitForTimeout(200);
+    };
+    // A short plan: two prints, nothing moves until the turtle is tapped.
+    const route = await routeFromTurtle();
+    for (const at of route.slice(1, 3)) await tap(`neo.scene.game.nodes[${at}]`);
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.plan, neo.scene.game.path]), [
+      route.slice(0, 3),
+      [route[0]],
+    ]);
+    await goAndWait();
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.path, neo.scene.game.misses]), [
+      route.slice(0, 3),
+      0,
+    ]);
+    // A plan into the nearest wrong branch counts one miss, however deep it goes.
+    const wrong = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game,
+        b = g.board,
+        here = g.path.at(-1),
+        line = L.mainline(b);
+      const entries = b.tiles
+        .filter((t) => !line.has(t) && L.neighbours(b, t).some((n) => line.has(n)))
+        .sort((x, y) => L.routeBetween(b, here, x).length - L.routeBetween(b, here, y).length);
+      return L.routeBetween(b, here, entries[0]).slice(1);
+    });
+    for (const at of wrong) await tap(`neo.scene.game.nodes[${at}]`);
+    await goAndWait();
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a wrong branch counts once');
+    // Hint: three gold prints toward the pond, counted once.
+    await tap('neo.scene.game.hintButton');
+    const hint = await page.evaluate(() => [neo.scene.game.plan.length, neo.scene.game.hints]);
+    assert.ok(hint[0] >= 2 && hint[0] <= 4, 'the hint draws up to three prints');
+    assert.equal(hint[1], 1);
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(350);
+    assert.ok(
+      await page.evaluate(() => neo.scene.game.cell >= 100),
+      'portrait maze cells stay at least 100 units',
+    );
+    await screenshot('mossy-path-10-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(350);
+    // Draw on from the gold prints to the pond, then go.
+    const rest = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game;
+      return L.routeBetween(g.board, g.plan.at(-1), g.board.pond).slice(1);
+    });
+    for (const at of rest) await tap(`neo.scene.game.nodes[${at}]`);
+    assert.equal(await page.evaluate(() => neo.scene.game.plan.at(-1)), (await routeFromTurtle()).at(-1));
+    await goAndWait();
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);
+    await finished('mossy-path');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log('Mossy Path 10: short plan, wrong-branch plan (one miss), gold hint, finish and one sticker passed');
   }
 
   return { mossyPathPlay };

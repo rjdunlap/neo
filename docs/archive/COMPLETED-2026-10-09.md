@@ -10,7 +10,7 @@
 
 ### U3, round Back and help (2026-11-10)
 
-[PR #1462](https://github.com/rjdunlap/neo/pull/1462) makes the round’s Back and question mark respond to a tap. Paused → Leave takes the same return route as Back. See [verification](../VERIFICATION.md#2026-11-10--u3-round-back-and-help-pr-1462).
+[PR #1462](https://github.com/rjdunlap/neo/pull/1462) makes the round’s Back and question mark respond to a tap. Paused → Leave takes the same return route as Back. See [verification](VERIFICATION-2026-11-10.md#2026-11-10--u3-round-back-and-help-pr-1462).
 
 ### Lap and toddler upright games, batch 5 (chunk 31, 2026-11-09)
 
