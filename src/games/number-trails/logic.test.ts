@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor } from '../../progress/difficulty';
+import { firstLevel, landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   ARRANGEMENTS,
+  ENTRY_LEVELS,
+  FIRST_NUMBERS,
   LEVELS,
   MAX_THINGS,
   PLANS,
@@ -20,6 +23,7 @@ import {
   thingFor,
   thingSpots,
   thingWord,
+  trailTolerance,
 } from './logic';
 import { LOOKS, hintDue, pickLook, showTheWay, tuneStep } from '../../learning/tracing/feedback';
 import { sampleStroke } from '../../learning/tracing/strokes';
@@ -32,7 +36,7 @@ describe('number trails levels', () => {
     expect(planFor(99)).toBe(PLANS[PLANS.length - 1]);
   });
   it('ends each band inside the ladder and opens pre-K at the bigger numbers', () => {
-    expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 2 });
+    expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 4, order: [4, 1, 2] });
     expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 3 });
     for (const band of ['preschool', 'prek'] as const)
       expect(rangeFor(LEVELS, band).max).toBeLessThanOrEqual(PLANS.length);
@@ -51,6 +55,39 @@ describe('number trails levels', () => {
     expect(THINGS.every((t) => t.plural.endsWith('s'))).toBe(true);
     expect(THINGS.length).toBeGreaterThanOrEqual(8);
     expect(new Set(THINGS.map((t) => t.id)).size).toBe(THINGS.length);
+  });
+});
+
+describe('level 4, First numbers', () => {
+  it('draws only 1, 2, 3 and 7, each a single stroke, and every one of them', () => {
+    expect([...FIRST_NUMBERS]).toEqual([1, 2, 3, 7]);
+    for (const n of FIRST_NUMBERS) expect(DIGITS[n]).toHaveLength(1);
+    const rng = new Rng(11);
+    const drawn = new Set(Array.from({ length: 300 }, () => numeralFor(4, rng)));
+    expect([...drawn].sort()).toEqual([1, 2, 3, 7]);
+  });
+  it('lets the things appear by themselves, with the wide trail of level 1', () => {
+    expect(planFor(4).wakeThem).toBe(false);
+    expect(trailTolerance(4)).toBe(trailTolerance(1));
+    expect(trailTolerance(4)).toBeGreaterThan(trailTolerance(2));
+  });
+  it("opens preschool, steps up to 1 then 2, and lands a saved 4 on pre-K's first level", () => {
+    const pre = rangeFor(LEVELS, 'preschool'),
+      prek = rangeFor(LEVELS, 'prek');
+    expect(levelsInOrder(pre)).toEqual([4, 1, 2]);
+    expect(firstLevel(pre, ENTRY_LEVELS)).toBe(4);
+    expect(stepLevel(4, 1, pre)).toBe(1);
+    expect(stepLevel(1, -1, pre)).toBe(4);
+    expect(stepLevel(2, 1, pre)).toBe(2);
+    expect(landing(4, prek, ENTRY_LEVELS)).toBe(2);
+    expect(landing(4, pre, ENTRY_LEVELS)).toBe(4);
+  });
+  it('keeps levels 1 to 3 the same for a seed', () => {
+    expect(planFor(1).digits).toEqual([1, 2, 3, 4, 5]);
+    expect(planFor(2).digits).toHaveLength(10);
+    expect(planFor(3).wakeThem).toBe(true);
+    expect(trailTolerance(1)).toBe(0.1);
+    expect(trailTolerance(3)).toBe(0.085);
   });
 });
 

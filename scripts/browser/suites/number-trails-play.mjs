@@ -37,6 +37,17 @@ export function createSuite({ page, errors, log, scene, screenshot, launch, fini
       timeout: 30000,
     });
     await finished('number-trails');
+    // Level 4, First numbers: one of 1, 2, 3 or 7, finished in one drag, then that many things appear by themselves.
+    await launch('number-trails', 4);
+    const first = await page.evaluate(() => neo.scene.game.n);
+    assert.ok([1, 2, 3, 7].includes(first), `level 4 drew ${first}`);
+    await traceAll();
+    await page.waitForFunction(() => neo.scene.game.phase === 'done' || neo.scene.finished, null, {
+      timeout: 30000,
+    });
+    assert.equal(await page.evaluate(() => neo.scene.game.things.length), first);
+    await screenshot('number-trails-4');
+    await finished('number-trails');
     // Level 3: she wakes things from a bigger group (n of n + 3), one count per tap, and the round ends at n; portrait layout holds.
     await launch('number-trails', 3);
     await page.setViewportSize({ width: 768, height: 1024 });
@@ -60,7 +71,7 @@ export function createSuite({ page, errors, log, scene, screenshot, launch, fini
     await finished('number-trails');
     assert.deepEqual(errors, []);
     log(
-      `Number Trails: levels 1 and 3 (numeral ${n}), two misses and a hint on wandering, the count and the waking, portrait and one sticker per round passed`,
+      `Number Trails: levels 1, 4 (numeral ${first}) and 3 (numeral ${n}), two misses and a hint on wandering, the count and the waking, portrait and one sticker per round passed`,
     );
   }
 
