@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de` and Painted Canyon's five at `8d4acdf0`, all 2026-11-11. The other 39 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0` and Barnyard's six at `c891905a`, all 2026-11-11. The other 33 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,11 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All eighteen games read so far set `touchDemo: true`.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All twenty-four games read so far set `touchDemo: true`.
 - **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game, and it is not counted again under question 5.
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **No opening line holds input** in the eighteen read so far: each starts its instruction with `void`. One opening still holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
+- **No opening line holds input** in the twenty-four read so far: each starts its instruction with `void`. One opening still holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
 - **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
@@ -147,13 +147,53 @@ Three games fail question 1, in the order they should be taken:
 - `rainbow-fingers`: at lap the round ends only by a touch on the frame; nothing finishes it for her, and the frame sits in the top right corner of the page she is patting. Whether that ends rounds early is not established.
 - `gear-garden`: the panel's size comes from `gearLayout` and was not worked out for any view.
 
+## Barnyard
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `peekaboo-barn` (16) | **Yes.** A layer over the whole screen: any touch opens the one big house, with a wiggle and the animal's call at once | **Yes.** Free play: nothing is counted, and the house opening by itself is not a reveal | **Yes.** One house at one and a half times its size, and the ghost finger taps it; after six quiet seconds it opens by itself | **Yes.** One big house; each friend comes out because she touched, and a new one moves in when it hides. There is never more than the one house, as `sound-garden` has one friend | **Partly.** A touch while the friend is out wiggles the house and it calls again; a hold is one tap; touches in the second and a half after the sixth reveal are dropped silently |
+| `duckling-parade` (1) | **Partly.** A layer over the whole screen: touch-down puts a fading ring on the meadow and Mama Duck walks to it. Nothing sounds at the finger; the first sound is the quack when a duckling joins, and a touch on the sky is moved down onto the meadow | **Partly.** No miss is reachable (every duckling joins, and Mama leads the full line to the pond herself), but fifteen seconds without a duckling joining counts a hint, by waiting alone | **Yes.** The ghost finger taps a duckling and Mama walks there; the waiting ducklings glow after fifteen quiet seconds, and the pond glows when the line is full | **No.** Mama, three ducklings and the pond are all there at the start; her line grows as she walks, and nothing new arrives | **Partly.** A finger kept down leads Mama as a drag does; the newest finger takes over; touches while the ducklings hop into the pond are dropped silently |
+| `roundup` (1) | **Yes.** A tapped animal hops to its pen with a whoosh; a tap on the grass or a pen makes the nearest loose animal cheer and call; the pen's sign says who lives there | **Partly.** No miss is reachable, but waiting is counted: fifteen seconds without an animal going home counts a hint (the waiting ones glow), and at thirty the nearest trots home by itself as another, for each animal | **Yes.** Three animals and one pen; the ghost finger taps an animal, and a touch beside one makes it hop | **No.** Three animals and the pen from the start, and nothing new arrives. Level 10 already brings its animals out one at a time | **Yes.** The grass and the sign each have their own reply; a tap on an animal already in the pen, and any background tap while the last one is hopping home, get nothing |
+| `egg-catch` (1) | **No.** Only the four hens along the top answer (each about 170 units across; a pop on her own note, a cheer and an egg at once). The barn, the hay, the basket and everything else below the hens do nothing | **Yes.** No hen lays a white egg and the basket goes under the egg by itself, so the miss and the hint cannot be reached | **Partly.** The ghost finger taps a hen and any hen is right; in the round nothing glows or moves to invite a touch, and the spoken line is the only prompt | **No.** Four hens and the basket from the start; nothing new arrives | **No.** A tap on any hen while an egg falls (2.4 seconds) is dropped silently, each hen also waits 0.9 seconds between taps, and the basket and background are not touchable |
+| `animal-snack` (1) | **No.** The three animals answer (each circle about 230 units across; a snack appears and she munches it with bites, then her call); the meadow, sky and picnic spot do nothing | **Yes.** The munch level counts nothing | **Yes.** The ghost finger taps an animal and any animal is right; after six quiet seconds one squishes with a sparkle at its mouth | **No.** Three animals from the start; each snack comes because she touched, and no friend arrives or changes | **Partly.** A tap on an animal while another eats gets a squish and a tick; the six-second invitation goes round the three; the background is silent |
+| `sing-along-barn` (1) | **Yes.** A layer over the whole screen: every touch plays the song's next note, with a floating note at the finger and a bounce of the barn (a 90 ms gap is the only wait) | **Yes.** Singing counts nothing | **Yes.** The ghost finger taps; a row of beads shows where the song is, and the next one breathes | **Yes.** One big barn; a friend comes to its door for its verse because her taps carried the song there, and answers with its own call | **Partly.** Wherever a touch lands it is the next note, so the barn, the friend and the sky all reply alike; there is no idle invitation, and touches during the closing cheer are dropped silently |
+
+### What the table says
+
+- **Pass 1 and 4 well enough to leave alone:** `peekaboo-barn`, whose level 16 (*One door*) was built to this pattern, and `sing-along-barn`, where every touch anywhere is the next note.
+- **Answers anywhere, on a full field:** `roundup` (its grass and its sign each reply) and `duckling-parade` (the whole screen steers, without a sound). Both start with everything on screen.
+- **Big target, not anywhere:** `egg-catch` and `animal-snack`. `egg-catch` has the smallest field of the six, a row of hens along the top, and is the only one that drops a touch on its own target.
+- **Waiting is counted in two games.** No lap player can be wrong in this land, but `duckling-parade` and `roundup` count a hint when nothing has happened for fifteen seconds. They are the first two of the twenty-four read where doing nothing reaches the round's numbers.
+
+### Words-off list (P7)
+
+Barnyard games whose first lap level plays with the voice off: `peekaboo-barn`, `duckling-parade`, `roundup`, `animal-snack`, `sing-along-barn`. `egg-catch` is partly: the card shows the tap on a hen, and nothing in the round invites one.
+
+`sing-along-barn`'s song is notes, not speech, so it plays in full with the voice off; the words to sing are on the card for the grown-up. The animals' calls in all six are sounds, not the voice.
+
+### Lines this land adds to READY
+
+Four games fail question 1 or 4, in the order they should be taken:
+
+1. `egg-catch`: a lap level with one big hen; a touch anywhere has her lay.
+2. `animal-snack`: level 1, which only lap plays, opens with one big animal and a touch anywhere feeds it.
+3. `duckling-parade`: at lap a touch quacks, the ducklings come out one at a time, and waiting is not counted.
+4. `roundup`: at lap one animal at a time, and waiting is not counted. It passes question 1 already, so it is last.
+
+### Found while reading (not part of the five questions)
+
+- `duckling-parade`, `roundup`: the idle hint is counted at the lap level as it is at every other. `roundup`'s comment on the trot home says "Help, not her own move: it counts as a hint", which is the intent for older levels; at level 1 it means a lap player who only watches finishes with up to six hints. Lap's range in `duckling-parade` is the one level, so there the count cannot move her level; in `roundup` lap has two.
+- `peekaboo-barn`: the instruction at level 16 is the free-play line, "Who is hiding? Tap to find out!"; the card's line says touch anywhere.
+- `egg-catch`: `HEN_SHELLS` gives the four hens brown, speckled, blue-green and brown eggs, so the white-egg miss in `land` cannot be reached at level 1. Whether the basket (900 units a second) always arrives under a 2.4-second egg on a very wide view was read from the numbers, not seen.
+- `animal-snack`: level 1 is in lap's range only (`toddler` starts at 2), so a change to it reaches no other band.
+- `sing-along-barn`: how many touches the opening takes before the friend comes out depends on the seeded song and was not counted.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Barnyard (6) | `peekaboo-barn`, `duckling-parade`, `roundup`, `egg-catch`, `animal-snack`, `sing-along-barn` |
 | Counting Cove (5) | `duck-pond`, `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump` |
 | Cozy Village (8) | `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `stop-and-go`, `pet-says` |
 | Rainbow Meadow (6) | `shape-sorter`, `color-garden`, `dot-link`, `garden-grow`, `swing-pals`, `sand-table` |
@@ -161,4 +201,4 @@ One land per session, in this order, each adding its own table, words-off list a
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 18 read and 39 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 24 read and 33 to read, 57 in all.
