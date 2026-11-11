@@ -10,6 +10,8 @@ export interface Board {
   berry?: number;
   /** Level 9's second berry, on its own spur. */
   berry2?: number;
+  /** Level 11's thick moss: tiles the turtle must cross twice. Never the start or the pond. */
+  thick?: number[];
 }
 export interface Plan {
   rows: number;
@@ -17,6 +19,7 @@ export interface Plan {
   tiles: readonly number[];
   start: number;
   pond: number;
+  thick?: readonly number[];
 }
 const open = (rows: number, cols: number, rocks: readonly number[] = []) =>
   Array.from({ length: rows * cols }, (_, i) => i).filter((i) => !rocks.includes(i));
@@ -52,6 +55,19 @@ export const PATCHES: readonly Plan[] = [
   { rows: 3, cols: 3, tiles: open(3, 3, [2]), start: 0, pond: 5 },
   { rows: 3, cols: 3, tiles: open(3, 3), start: 0, pond: 2 },
 ];
+/**
+ * Level 11, *thick moss*: coverage where each tuft must be crossed twice, every other tile once, pond last. A 3 × 4
+ * patch with one tuft in the middle row, and 4 × 4 patches with one rock and two tufts. Each tuft has at least three
+ * moss neighbours, since crossing twice uses three or four of its sides. The grid is a checkerboard, so the pond's
+ * colour must match the route's length: these four have 10, 4, 11 and 11 complete routes from the start.
+ */
+export const THICK: readonly Plan[] = [
+  { rows: 3, cols: 4, tiles: open(3, 4), start: 0, pond: 8, thick: [5] },
+  { rows: 3, cols: 4, tiles: open(3, 4), start: 0, pond: 10, thick: [7] },
+  { rows: 4, cols: 4, tiles: open(4, 4, [6]), start: 0, pond: 15, thick: [9, 10] },
+  { rows: 4, cols: 4, tiles: open(4, 4, [5]), start: 1, pond: 3, thick: [6, 10] },
+];
+const THICK_NAME = 'Thick moss: some tiles need two visits';
 const PLAN_NAMES = [
   'A winding trail: bloom every tile',
   'An open patch: plan a route through every tile',
@@ -60,7 +76,8 @@ const PLAN_NAMES = [
 const PATCH_NAME = 'A little patch: bloom every tile';
 const planLevel = (level: number) => Math.max(0, Math.min(PLANS.length - 1, level - 1));
 /** The coverage plans a level draws from: level 8's little patches, otherwise levels 1–3's. */
-export const plansFor = (level: number): readonly Plan[] => (level === 8 ? PATCHES : PLANS[planLevel(level)]);
+export const plansFor = (level: number): readonly Plan[] =>
+  level === 8 ? PATCHES : level === 11 ? THICK : PLANS[planLevel(level)];
 export function makeBoard(level: number, rng: Rng): Board {
   if (isMaze(level)) return makeMaze(level, rng);
   const set = plansFor(level),
@@ -78,7 +95,14 @@ export function transformPlan(p: Plan, flipX: boolean, flipY: boolean, transpose
     const c = flipX ? p.cols - 1 - (i % p.cols) : i % p.cols;
     return transpose ? c * cols + r : r * cols + c;
   };
-  return { rows, cols, tiles: p.tiles.map(transform), start: transform(p.start), pond: transform(p.pond) };
+  return {
+    rows,
+    cols,
+    tiles: p.tiles.map(transform),
+    start: transform(p.start),
+    pond: transform(p.pond),
+    ...(p.thick?.length ? { thick: p.thick.map(transform) } : {}),
+  };
 }
 export function adjacent(b: Board, a: number, z: number): boolean {
   return (
@@ -86,10 +110,20 @@ export function adjacent(b: Board, a: number, z: number): boolean {
     Math.abs(Math.floor(a / b.cols) - Math.floor(z / b.cols)) + Math.abs((a % b.cols) - (z % b.cols)) === 1
   );
 }
+/** Visits a tile needs: two for thick moss, one otherwise. */
+export const needOf = (b: Board, at: number) => (b.thick?.includes(at) ? 2 : 1);
+/** How often the path has stood on a tile. */
+export const visitsOf = (path: readonly number[], at: number) =>
+  path.reduce((n, z) => n + (z === at ? 1 : 0), 0);
+/** Steps in a complete route, the start included: every tile once, each tuft once more. */
+export const routeLength = (b: Board) => b.tiles.length + (b.thick?.length ?? 0);
+/** Tiles that have had every visit they need: the ones that have bloomed. */
+export const bloomedCount = (b: Board, path: readonly number[]) =>
+  b.tiles.filter((at) => visitsOf(path, at) >= needOf(b, at)).length;
 export function moveError(b: Board, path: readonly number[], at: number): 'far' | 'visited' | 'pond' | null {
   if (!adjacent(b, path[path.length - 1], at)) return 'far';
-  if (path.includes(at)) return 'visited';
-  if (at === b.pond && path.length !== b.tiles.length - 1) return 'pond';
+  if (visitsOf(path, at) >= needOf(b, at)) return 'visited';
+  if (at === b.pond && path.length !== routeLength(b) - 1) return 'pond';
   return null;
 }
 /** Whether a refused coverage tap counts a miss: at level 8 a far tap is free (the tiles beside the turtle pulse). */
@@ -99,37 +133,53 @@ export function step(b: Board, path: readonly number[], at: number): number[] | 
   return moveError(b, path, at) ? null : [...path, at];
 }
 export const solved = (b: Board, path: readonly number[]) =>
-  validPath(b, path) && path.length === b.tiles.length && path.at(-1) === b.pond;
+  validPath(b, path) && path.length === routeLength(b) && path.at(-1) === b.pond;
 export function validPath(b: Board, path: readonly number[]): boolean {
   return (
     path[0] === b.start &&
-    new Set(path).size === path.length &&
-    path.every((at, i) => b.tiles.includes(at) && (i === 0 || adjacent(b, path[i - 1], at))) &&
-    (!path.includes(b.pond) || (path.at(-1) === b.pond && path.length === b.tiles.length))
+    path.every(
+      (at, i) =>
+        b.tiles.includes(at) &&
+        (i === 0 || adjacent(b, path[i - 1], at)) &&
+        visitsOf(path.slice(0, i + 1), at) <= needOf(b, at),
+    ) &&
+    (!path.includes(b.pond) || (path.at(-1) === b.pond && path.length === routeLength(b)))
   );
 }
-/** Exact completion from any legal prefix. Memoized failed states keep the 16-space search small. */
+/**
+ * Exact completion from any legal prefix. Each tile's visit count is 0, 1 or 2, held as two bitmasks (first visits and
+ * second visits); a failed state is memoized by both masks and the turtle's tile. Boards stay within 16 cells.
+ */
 export function completion(b: Board, path: readonly number[]): number[] | null {
   if (!validPath(b, path)) return null;
+  const cells = b.rows * b.cols,
+    total = routeLength(b),
+    need = new Map(b.tiles.map((at) => [at, needOf(b, at)]));
   const failed = new Set<number>();
-  const search = (at: number, mask: number, length: number): number[] | null => {
-    if (length === b.tiles.length) return at === b.pond ? [] : null;
-    const key = mask * 16 + at;
+  const search = (at: number, once: number, twice: number, length: number): number[] | null => {
+    if (length === total) return at === b.pond ? [] : null;
+    const key = (twice * 2 ** cells + once) * cells + at;
     if (failed.has(key)) return null;
     for (const next of b.tiles) {
-      if (mask & (1 << next) || !adjacent(b, at, next) || (next === b.pond && length !== b.tiles.length - 1))
+      const bit = 1 << next,
+        count = twice & bit ? 2 : once & bit ? 1 : 0;
+      if (count >= need.get(next)! || !adjacent(b, at, next) || (next === b.pond && length !== total - 1))
         continue;
-      const tail = search(next, mask | (1 << next), length + 1);
+      const tail = count
+        ? search(next, once, twice | bit, length + 1)
+        : search(next, once | bit, twice, length + 1);
       if (tail) return [next, ...tail];
     }
     failed.add(key);
     return null;
   };
-  return search(
-    path[path.length - 1],
-    path.reduce((m, i) => m | (1 << i), 0),
-    path.length,
-  );
+  let once = 0,
+    twice = 0;
+  for (const at of path) {
+    if (once & (1 << at)) twice |= 1 << at;
+    else once |= 1 << at;
+  }
+  return search(path[path.length - 1], once, twice, path.length);
 }
 /** A hint revises only as far as necessary; the UI performs each undo through its normal control. */
 export function helpFor(b: Board, path: readonly number[]): { undo: number; next: number } | null {
@@ -204,7 +254,7 @@ const MAZE_NAMES: Record<number, string> = {
   10: 'Plan, then go: draw the way, then the turtle walks it',
 };
 export const levelName = (level: number) =>
-  MAZE_NAMES[level] ?? (level === 8 ? PATCH_NAME : PLAN_NAMES[planLevel(level)]);
+  MAZE_NAMES[level] ?? (level === 8 ? PATCH_NAME : level === 11 ? THICK_NAME : PLAN_NAMES[planLevel(level)]);
 export function parseMaze(rows: readonly string[]): Board {
   const cols = rows[0].length,
     tiles: number[] = [];
@@ -481,5 +531,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 4, max: 4 },
   preschool: { min: 4, max: 5 },
   prek: { min: 5, max: 8, order: [5, 6, 8] },
-  school: { min: 1, max: 10, order: [6, 8, 1, 7, 9, 2, 10, 3] },
+  school: { min: 1, max: 11, order: [6, 8, 1, 7, 9, 2, 10, 3, 11] },
 };

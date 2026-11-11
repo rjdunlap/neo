@@ -54,3 +54,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** new `src/ui/idle-cue.ts` (`IdleCue`: first cue after 4 s of no touch, 0.8 s long, every 5 s until a touch; silent) with five unit tests. The hatch egg rocks about its tap tilt on the egg step; Welcome a New Friend's page hops the raised card (else the next step's card) about 18 units, reset by card taps, raise() and the basket tap and off during the ending. No reduced-motion setting exists, so none applied.
 **Tested:** `npm run typecheck`; `npm test` (339 files, 6,504 passed, 1 skipped); prettier check on the four files; `npm run build`; `BROWSER_SUITE=home HOME_ONLY=first-run` and `BROWSER_SUITE=welcome` passed; a one-off 390 × 844 Playwright probe sampled the egg rotation: 0 for about 4 s, then 0.094 rad, settling to 0.
 **Not run:** `world` (navigation unchanged), offline (no persistence, asset or navigation change); the card hop was not sampled in the browser, only the welcome suite ran through the scene.
+
+## 2026-11-10 — Mossy Path slice 3, level 9 Two snacks
+
+**Changed:** school level 9 (six frozen 4 × 7 mazes with two berries, either eating order, early pond refused once per round; `Board.berry2`, `berriesOf`, `MazeState.eaten`; voice `moss.maze-berries`, `moss.berry-one`, `moss.snack-both`; how-to level 8 capped, level 9 added).
+**Ran:** `npm run typecheck`; `npm test` (338 files, 6505 passed, 1 skipped; the first full run had one failure that did not reproduce on the immediate rerun, recorded as a one-off flake under load); `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=snacks` (farther berry first, early pond refused with 1 miss, portrait cells at least 100, finish, one sticker) PASS; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=9` PASS (school, 16.2 s); game-reviewer found no defects.
+**Not run:** other suites (the tier needed none).
