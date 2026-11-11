@@ -1,8 +1,9 @@
 import { clothPreview } from '../games/little-loom/art';
 import { Container, Graphics } from 'pixi.js';
-import { cream, swatch, wood, type ColorName } from '../art/palette';
+import { cream, swatch, wood } from '../art/palette';
 import { flower, musicNote } from '../art/shapes';
 import { music } from '../audio/music';
+import { pitchColor } from '../audio/notes';
 import { sfx } from '../audio/sfx';
 import { tuneBeats, type PictureCreation, type TuneCreation } from '../content/creations';
 import { stampArt } from '../games/stamp-studio/art';
@@ -110,8 +111,6 @@ export function pictureBoard(picture: PictureCreation | null): Container {
   return c;
 }
 
-const ROW_COLORS: ColorName[] = ['pink', 'orange', 'yellow', 'green', 'blue'];
-
 /**
  * The tune plaque: her song as a little grid of colored jellies, lit where a note sits, with a play triangle under
  * it. `lightColumn` shows the beat that is sounding while it plays.
@@ -176,7 +175,8 @@ export class TunePlaque extends Container {
     for (let r = 0; r < rows; r++) {
       for (let k = 0; k < cols; k++) {
         const on = this.tune.notes.some((n) => n.col === k && n.row === r);
-        const sw = swatch[ROW_COLORS[r % ROW_COLORS.length]];
+        // Row 0 is the top, highest row: red is the lowest note here as in the games.
+        const sw = swatch[pitchColor(rows - 1 - r, rows)];
         const x = x0 + k * cell;
         const y = y0 + r * cell;
         if (on)
