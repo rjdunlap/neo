@@ -791,7 +791,7 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 - **`rule-machine`, levels 1-2 (algebra-balance study slice AB1)** (a new game, one declared batch; pre-K 1, school 2; Puzzle Peaks, 13 games becoming 14, so the land now pages): creatures go into a hat machine and come out wearing a hat, and she taps what the fourth will look like from three pictures (level 1); then cars with counters go in and come out with one or two more, and she taps the count on the pads once two rows show; feeding is never a miss and a first wrong prediction on a new rule is free (level 2). [Definition](definitions/rule-machine.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/rule-machine.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Rule Machine with level 1 given a free wrong picture and then two wrong on the second prediction and the glow, level 2 to its sticker with one wrong pad after two rows, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Levels 3-4 are batch `rule-machine 2`; levels 5-8 need their own definitions.
+Proof: new-game tier, as the [definition's check tier](definitions/rule-machine.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Rule Machine with level 1 given a free wrong picture and then two wrong on the second prediction and the glow, level 2 to its sticker with one wrong pad after two rows, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Levels 3-4 are batch `rule-machine 2`; levels 5–6 are [defined](definitions/rule-machine-5-6.md) (batches `rule-machine 3` and `4`) and 7–8 need their own definition.
 
 ### rule-machine 2: The rule shelf and the covered machine
 
@@ -800,6 +800,22 @@ Proof: new-game tier, as the [definition's check tier](definitions/rule-machine.
 - **`rule-machine`, levels 3-4 (algebra-balance study slice AB1)** (after batch `rule-machine 1`; school range as the definition sets): name the machine's rule from a shelf of three cards after three rows (+2, +3, -1; level 3), then with the machine covered choose which cars to feed so the table tells the cards apart, with Peek as a requested hint, a trap car that tells nothing new and a ruled-out card counted gently (level 4). [Definition](definitions/rule-machine.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of level 3 with a wrong card and level 4 with a trap car first, a still-open card tap that counts nothing, a ruled-out card, Peek and the last prediction, one portrait screenshot of level 4, `fingerdemo` at levels 3 and 4, one build for the card and voice).
+
+### rule-machine 3: Backwards
+
+**Status: not built; defined 2026-11-11.**
+
+- **`rule-machine`, level 5 *Backwards* (algebra-balance study slice AB2)** (after batch `rule-machine 2`; school): the card hangs on the machine and a wanted car has already come out; she sends the car that went in, and a wrong car runs, is written into the table and counts one miss (counts stay 0–12). [Definition](definitions/rule-machine-5-6.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
+
+Proof: new-level tier, as the [definition's check tier](definitions/rule-machine-5-6.md#check-tier-for-the-builds) sets it (typecheck, level-5 rule tests with the registry and how-to tests, one filtered scripted play of level 5 to its sticker with two wrong cars on one wanted car and the glow, `fingerdemo` at level 5, one build for the voice and card).
+
+### rule-machine 4: Two machines
+
+**Status: not built; defined 2026-11-11.**
+
+- **`rule-machine`, level 6 *Two machines* (algebra-balance study slice AB2)** (after batch `rule-machine 3`; school): watch a pair of machines and predict the output on the pads, then build the watched pair reversed from a shelf of four cards for a wanted in → out; the first pair run per target is free. [Definition](definitions/rule-machine-5-6.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the definition sets it (typecheck, level-6 rule tests, one filtered play with a wrong pad, the watched order as the free first pair, a second pair that does not fit, the glow followed to a fitting pair and the sticker, one portrait screenshot of level 6 while building, `fingerdemo` at level 6, one build).
 
 ### puppet-stage 1: Pop up, make Bunny talk and say it like
 
