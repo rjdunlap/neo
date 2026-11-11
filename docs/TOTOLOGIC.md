@@ -2,6 +2,8 @@
 
 *Reference review · 2026-11-10 · `claude/totologic-research-d9185f`. Documents only: nothing was built. Proposals here are proposals until the developer or a dispatch takes one.*
 
+*Claimed 2026-11-11, `claude/totologic-played-review`: the app has now been played on an Android phone, and this page is being rewritten from that play (the screen table, the verdicts, P1–P6 and the "Not established" list), with its pointers in IDEAS, the Rainbow Fingers dive, the grown-ups' page definition and VERIFICATION.*
+
 **What it is.** [TotoLogic](https://totologic.com/) ("Play. Learn. Grow.") is an Android app for children of about 3 to 8, published on [Google Play](https://play.google.com/store/apps/details?id=com.synthix.totologic) by Synthix Technologies, which appears to be a Nairobi developer (its terms are under Kenyan law and it takes M-Pesa). It is a suite of short tap-and-choose activities in eleven categories (Memory, Visual, Logic, Math, Shapes, Patterns, Painting, Animals, World Around Us, Language, Brain Challenge), wrapped in a parent account with child profiles, a daily plan, sessions, progress emails and a paid plan. It is new: the listing shows "100+" downloads, no rating and no reviews, was last updated 2026-11-01, and the site's "What parents say" section is empty. There is no iOS version.
 
 **A namesake.** Searching the name mostly finds an unrelated [Totologic blog](https://totologic.blogspot.com/) (Cédric Jules, 2013–2015) on game programming. It is covered in [one short section](#the-other-totologic) at the end.
