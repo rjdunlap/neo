@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, and Music Mountain's five at `72ab89de`, both 2026-11-11. The other 44 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de` and Painted Canyon's five at `8d4acdf0`, all 2026-11-11. The other 39 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,11 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All thirteen games read so far set `touchDemo: true`.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All eighteen games read so far set `touchDemo: true`.
 - **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game, and it is not counted again under question 5.
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **No opening line holds input** in the thirteen read so far: each starts its instruction with `void`.
+- **No opening line holds input** in the eighteen read so far: each starts its instruction with `void`. One opening still holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
 - **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
@@ -111,13 +111,48 @@ Two games fail question 1 or 4, in the order they should be taken:
 - `puppet-stage`: `touchFloor` returns silently when no puppet is parked. Two can stand and a lowered one is parked only when its 0.3 s descent ends, so a third fast touch in a row inside that time could find none. Read from the code, not seen.
 - `song-maker`: a lap player's twelve taps include the ones that put a jelly out, so a round can end with few jellies lit; the tree house button needs two.
 
+## Painted Canyon
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `rainbow-fingers` (1) | **Yes.** The page is the whole screen but an 18-unit rim: touch-down lays paint under the finger with a bell, for several fingers at once (the shell's palm rule stops a fourth) | **Yes.** Free painting: any mark is welcome and nothing is counted | **Yes.** The ghost finger paints, and every part of the page answers; the frame that ends the round pops in with a sparkle and rocks | **Partly.** A blank page rather than one big thing, but every mark on it is hers. The frame comes after her fifth touch (or one touch and 25 seconds) and then waits without limit | **Yes.** A quick pat splats a flower, a hold leaves a blot, a drag paints a line that changes colour and rings a note as it climbs; after eight quiet seconds a blank spot sparkles and the pet wiggles |
+| `fluffy-salon` (6) | **Partly.** A field over the pet answers every touch: fur grows under the finger with a bell, and a touch off the fur (cape, chair, wall) gets a giggle and a wobble. Outside it, a strip 160 units wide on the left, 140 on the right and 130 along the bottom does nothing | **Yes.** Pat mode counts nothing | **Yes.** One pet with short fuzz and no buttons; the ghost finger strokes the fur. The mirror that ends the round wiggles, and the pet looks in it by itself after 20 quiet seconds | **Yes.** One big pet whose fur grows only where she touches; the shake and the big mirror come because the fur got fluffy, never on a timer | **Yes.** An off-fur touch has its own reply (the giggle); a drag strokes fur along its path; fur goes on growing after the shake |
+| `stamp-studio` (7) | **No.** The paper answers (a star 170 units across and a pop at once, no cooldown); it is the middle of the screen, about 674 by 478 units on the 1024 by 768 area, and the teal around it does nothing | **Yes.** Every picture finishes with nothing counted | **Yes.** The ghost finger pats the paper in eight places; the eighth pat finishes by itself | **Partly.** A blank sheet rather than one big thing, and every star is hers. A star button stands below it from the start, and a green arrow and a back arrow appear at her first pat | **Partly.** A pat on a star already there presses another over it; a hold or a drag is one pat; the back arrow takes her latest star away with only a tick; the background is silent |
+| `draw-the-pattern` (1) | **No.** The paper strip answers (a dot and a brush sound on touch-down, flowers and a bell on lifting); it is a band across the middle, about 850 by 250 units on the 1024 by 768 area, and the cream around it does nothing. Each strip also opens with 1.6 seconds of the pet's turn in which every touch is dropped | **Yes.** No touch is wrong at level 1; "Show a hint" only says the line again | **Yes.** The ghost finger draws a short wave on the paper, a crayon lies in its middle, and all of the strip answers | **Partly.** An empty strip and a small picture with three pale places rather than one big thing; every mark and flower is hers, and a strip joins the picture after her fourth touch, never on a timer | **Partly.** A pat is a dot and a drag is a line, and both grow flowers; a tap on the picture has the pet take its turn again; a second finger while one is down, and any touch while a strip flies to the picture, is dropped silently |
+| `gear-garden` (1) | **No.** The machine's panel answers anywhere on it (the handle presses in, a ratchet sounds, both gears and the bud turn), and so does the round arrow; the garden around them does nothing | **Partly.** Nothing is wrong and no miss is reachable, but the pause sheet's "Show a hint" turns the handle once and counts a hint | **Yes.** One machine, and the ghost finger taps it | **Partly.** One machine of a handle, two gears and a bud, with the round arrow beside it; her taps open the bud a step at a time, the fourth blooms it, and the next machine comes only then | **Partly.** Fast taps queue one more turn rather than vanish; the round arrow turns it the other way and still opens the bud; taps from the bloom until its spoken line ends are dropped silently |
+
+### What the table says
+
+- **Pass 1 and 4 well enough to leave alone:** `rainbow-fingers` (the whole page answers, and several fingers can paint at once) and `fluffy-salon`, whose level 6 was built for a pat that cannot be wrong. The salon's touch field stops short of the screen's sides and bottom; that is noted below rather than given a line.
+- **Big target, not anywhere:** `stamp-studio`, `draw-the-pattern` and `gear-garden`. Each has one clear thing to touch and a surround that says nothing back. `draw-the-pattern` has the smallest field of the five and is the only one that drops touches at the start.
+- **No lap player can be wrong in this land.** No first level can count a miss; the one counted hint is the pause sheet's in `gear-garden`.
+
+### Words-off list (P7)
+
+Painted Canyon games whose first lap level plays with the voice off: all five. Each shows its first move with the ghost finger and has one thing to touch; none needs the spoken line.
+
+### Lines this land adds to READY
+
+Three games fail question 1, in the order they should be taken:
+
+1. `draw-the-pattern`: at level 1 a touch anywhere draws, and a touch during the pet's turn is answered.
+2. `stamp-studio`: at level 7 a touch anywhere presses a star, with no arrows to end or undo it.
+3. `gear-garden`: at lap a touch anywhere turns the handle, and the pause sheet's hint is not counted.
+
+### Found while reading (not part of the five questions)
+
+- `stamp-studio`: at level 7 the green arrow shows from the first pat, so a touch on it ends the picture with fewer than eight stars, and the back arrow removes her latest star. The card's finish line for level 7 names only the eighth pat.
+- `draw-the-pattern`: between strips input is held through the strip's flight, a spoken line that is awaited, and the pet's turn again. How long that is with a slow voice is not established.
+- `fluffy-salon`: the touch field's width is the view's less 300 units, so on a narrow view the silent strips are a larger share of the screen. Not measured on a phone.
+- `rainbow-fingers`: at lap the round ends only by a touch on the frame; nothing finishes it for her, and the frame sits in the top right corner of the page she is patting. Whether that ends rounds early is not established.
+- `gear-garden`: the panel's size comes from `gearLayout` and was not worked out for any view.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Painted Canyon (5) | `rainbow-fingers`, `fluffy-salon`, `stamp-studio`, `draw-the-pattern`, `gear-garden` |
 | Barnyard (6) | `peekaboo-barn`, `duckling-parade`, `roundup`, `egg-catch`, `animal-snack`, `sing-along-barn` |
 | Counting Cove (5) | `duck-pond`, `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump` |
 | Cozy Village (8) | `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `stop-and-go`, `pet-says` |
@@ -126,4 +161,4 @@ One land per session, in this order, each adding its own table, words-off list a
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 13 read and 44 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 18 read and 39 to read, 57 in all.
