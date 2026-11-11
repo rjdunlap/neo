@@ -12,6 +12,7 @@ export const VOICE = {
   'snowball.stuck': [
     'These snowballs need a different plan. Try Undo, or Start over to bring the starting snowballs back.',
   ],
+  'snowball.rock': ['The ice rock never moves. Snowballs stop beside it.'],
   'snowball.restart': ['The starting snowballs are back. Try a new slide order.'],
   'snowball.done': ['One snowball with {target}! You brought them all together.'],
 } satisfies Record<string, string[]>;

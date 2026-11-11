@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–4 |
+| grown-up | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,6 +16,7 @@
 | 2 | Make 32 · choose your pairs |
 | 3 | Make 64 · make room first |
 | 4 | Make 128 · the big snowball |
+| 5 | Make 64 · the ice rock |
 
 <!-- end generated -->
 

@@ -10,10 +10,13 @@ import {
   NO_HELP,
   orbit,
   PLANS,
+  ROCK,
   sizeLook,
   slide,
   solve,
 } from './logic';
+
+const snow = (board: readonly number[]) => board.filter((v) => v > 0);
 
 describe('Snowball Merge', () => {
   it('packs holes before merging, and a merged snowball cannot merge twice in one slide', () => {
@@ -28,10 +31,10 @@ describe('Snowball Merge', () => {
         const before = [...plan.board],
           next = slide(before, d);
         expect(before).toEqual(plan.board);
-        expect(next.board.reduce((s, v) => s + v, 0)).toBe(plan.target);
-        expect(next.board.filter(Boolean).length).toBe(before.filter(Boolean).length - next.merges);
+        expect(snow(next.board).reduce((s, v) => s + v, 0)).toBe(plan.target);
+        expect(snow(next.board).length).toBe(snow(before).length - next.merges);
         expect(next.motions.map((m) => m.from).sort()).toEqual(
-          before.flatMap((v, i) => (v ? [i] : [])).sort(),
+          before.flatMap((v, i) => (v > 0 ? [i] : [])).sort(),
         );
         expect(next.motions.every((m) => m.to >= 0 && m.to < 9)).toBe(true);
       }
@@ -77,6 +80,7 @@ describe('Snowball Merge', () => {
       [5, 7],
       [7, 9],
       [10, 14],
+      [8, 11],
     ];
     expect(BOARDS).toHaveLength(PLANS.length);
     PLANS.forEach((plan, i) => {
@@ -87,8 +91,13 @@ describe('Snowball Merge', () => {
       let asymmetric = 0;
       for (const board of boards) {
         expect(board).toHaveLength(9);
-        expect(board.every((v) => v === 0 || (v >= 2 && Number.isInteger(Math.log2(v))))).toBe(true);
-        expect(board.reduce((s, v) => s + v, 0)).toBe(plan.target);
+        expect(board.every((v) => v === 0 || v === ROCK || (v >= 2 && Number.isInteger(Math.log2(v))))).toBe(
+          true,
+        );
+        // Only level 5 has an ice rock: exactly one, never in the centre, where most boards cannot finish.
+        expect(board.filter((v) => v === ROCK)).toHaveLength(i === 4 ? 1 : 0);
+        expect(board[4]).not.toBe(ROCK);
+        expect(snow(board).reduce((s, v) => s + v, 0)).toBe(plan.target);
         const route = solve(board, plan.target)!;
         expect(route.length).toBeGreaterThanOrEqual(bands[i][0]);
         expect(route.length).toBeLessThanOrEqual(bands[i][1]);
@@ -101,11 +110,64 @@ describe('Snowball Merge', () => {
       expect(asymmetric).toBeGreaterThanOrEqual(2);
     });
   });
-  it('level 1 can never strand her; every level 3 and 4 board can reach a dead end for Undo', () => {
+  it('level 1 can never strand her; every level 3, 4 and 5 board can reach a dead end for Undo', () => {
     for (const board of BOARDS[0]) expect(explore(board, 16).deadEnds).toBe(0);
     for (const board of BOARDS[2]) expect(explore(board, 64).deadEnds).toBeGreaterThan(0);
     for (const board of BOARDS[3]) expect(explore(board, 128).deadEnds).toBeGreaterThan(0);
+    for (const board of BOARDS[4]) expect(explore(board, 64).deadEnds).toBeGreaterThan(0);
     expect(explore(PLANS[1].board, 32)).toEqual({ states: 48, deadEnds: 12 });
+  });
+  it('the ice rock never moves or joins, splits its line, and stops the snowballs behind it', () => {
+    // Left: the 2s behind the rock stop beside it and join there; the 4 before it packs to the edge.
+    const row = slide([0, 4, ROCK, 2, 0, 2, 0, 0, 0], 'left');
+    expect(row.board.slice(0, 3)).toEqual([4, 0, ROCK]);
+    expect(row.board.slice(3)).toEqual([4, 0, 0, 0, 0, 0]);
+    // A rock between two equal snowballs keeps them apart in both directions along its line.
+    for (const d of ['left', 'right'] as const) {
+      const apart = slide([2, ROCK, 2, 0, 0, 0, 0, 0, 0], d);
+      expect(apart.changed).toBe(false);
+      expect(apart.merges).toBe(0);
+    }
+    // Down a column: the snowball above the rock rests on it, and says so; one below falls to the edge.
+    const column = slide([2, 0, 0, 0, 0, 0, ROCK, 0, 0], 'down');
+    expect(column.board).toEqual([0, 0, 0, 2, 0, 0, ROCK, 0, 0]);
+    expect(column.rocked).toBe(true);
+    expect(slide([ROCK, 0, 0, 2, 0, 0, 0, 0, 0], 'down').rocked).toBe(false);
+    expect(slide([2, 0, 2, 0, 0, 0, 0, 0, 0], 'left').rocked).toBe(false);
+    // Along every route a seeded level 5 round can take, the rock stays in its cell and the snow adds up.
+    for (let seed = 1; seed <= 40; seed++) {
+      const puzzle = makePuzzle(5, new Rng(seed), BOARDS[4]),
+        rock = puzzle.board.indexOf(ROCK);
+      expect(rock).toBeGreaterThanOrEqual(0);
+      let board: readonly number[] = puzzle.board,
+        rocked = 0;
+      for (const d of solve(board, puzzle.target)!) {
+        const step = slide(board, d);
+        if (step.rocked) rocked++;
+        board = step.board;
+        expect(board.indexOf(ROCK)).toBe(rock);
+        expect(board.filter((v) => v === ROCK)).toHaveLength(1);
+        expect(snow(board).reduce((s, v) => s + v, 0)).toBe(64);
+        expect(step.motions.every((m) => m.from !== rock && m.to !== rock)).toBe(true);
+      }
+      // The rock is part of the plan, not scenery: the shortest route rests snowballs against it.
+      expect(rocked).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it('leaves levels 1 to 4 as they were: no rock, the same plans and the same frozen boards', () => {
+    expect(PLANS.slice(0, 4).map((p) => [p.target, p.board.join(',')])).toEqual([
+      [16, '2,0,2,0,4,0,4,0,4'],
+      [32, '2,4,2,4,0,4,8,0,8'],
+      [64, '2,4,2,8,4,8,16,4,16'],
+      [128, '32,32,32,16,8,2,2,4,0'],
+    ]);
+    expect(BOARDS.slice(0, 4).map((level) => level.map((b) => b.join(',')).join(' '))).toEqual([
+      '2,0,2,0,4,0,4,0,4 4,4,4,4,0,0,0,0,0 8,2,0,2,0,0,2,2,0 0,2,8,0,2,2,0,0,2',
+      '2,4,2,4,0,4,8,0,8 2,8,2,2,16,0,0,0,2 2,2,4,2,0,4,0,16,2 8,4,0,4,2,8,0,4,2',
+      '2,4,2,8,4,8,16,4,16 4,8,2,8,4,32,4,2,0 8,8,4,16,8,0,4,8,8 4,16,0,4,0,2,32,2,4',
+      '32,32,32,16,8,2,2,4,0 16,32,8,0,16,16,32,0,8 4,16,16,16,32,4,8,32,0 0,8,16,16,16,32,8,0,32',
+    ]);
+    for (const level of BOARDS.slice(0, 4)) for (const b of level) expect(b).not.toContain(ROCK);
   });
   it('glows after two inert arrows in a row or at a dead end, counting each glow once', () => {
     const route = ['left', 'up'] as const;
