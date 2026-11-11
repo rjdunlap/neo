@@ -19,7 +19,6 @@ export const VOICE = {
   'far.instruct.order': ['Tap the lights from nearest to farthest, then pull the curtain!'],
   'far.right-farther': ["Yes! It looks dimmer, so it's farther away."],
   'far.wrong-farther': ["That one looks brighter, so it's nearer."],
-  'far.curtain': ["Let's lift the curtain!"],
   'far.order-right': ['Nearest to farthest!'],
   'far.order-first': ['The brightest one is nearest. Look again!'],
   'far.order-last': ['Which one looks dimmest? That one is farthest.'],
