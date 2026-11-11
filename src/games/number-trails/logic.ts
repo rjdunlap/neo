@@ -11,23 +11,52 @@ export interface TrailPlan {
   digits: readonly number[];
   /** After the trail, she wakes the things herself (counting as she taps) instead of watching them appear. */
   wakeThem: boolean;
+  /** How far the finger may stray from the trail, in writing boxes, before it counts as a wander: wider on the easy entries. */
+  tolerance: number;
   name: string;
 }
 
 const ONE_TO_FIVE = [1, 2, 3, 4, 5] as const;
 const ZERO_TO_NINE = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+/** The first numerals: each is one stroke from the top, with no lift and no loop back over itself. */
+export const FIRST_NUMBERS = [1, 2, 3, 7] as const;
 
 export const PLANS: readonly TrailPlan[] = [
-  { digits: ONE_TO_FIVE, wakeThem: false, name: 'Trace 1 to 5, then watch that many appear and count them' },
-  { digits: ZERO_TO_NINE, wakeThem: false, name: 'Trace 0 to 9, then watch that many appear and count them' },
+  {
+    digits: ONE_TO_FIVE,
+    wakeThem: false,
+    tolerance: 0.1,
+    name: 'Trace 1 to 5, then watch that many appear and count them',
+  },
+  {
+    digits: ZERO_TO_NINE,
+    wakeThem: false,
+    tolerance: 0.085,
+    name: 'Trace 0 to 9, then watch that many appear and count them',
+  },
   {
     digits: ZERO_TO_NINE,
     wakeThem: true,
+    tolerance: 0.085,
     name: 'Trace 0 to 9, then tap to wake exactly that many from a bigger group',
+  },
+  {
+    digits: FIRST_NUMBERS,
+    wakeThem: false,
+    tolerance: 0.1,
+    name: 'First numbers: trace 1, 2, 3 or 7 in one stroke, then watch that many appear',
   },
 ];
 
-export const LEVELS: BandLevels = { preschool: { min: 1, max: 2 }, prek: { min: 2, max: 3 } };
+/**
+ * Level 4 (First numbers) is an easy entry appended above the ladder: preschool plays 4, then 1, then 2, and `ENTRY_LEVELS`
+ * lands a saved 4 on pre-K's first level after a birthday. No ID is renumbered.
+ */
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 4, order: [4, 1, 2] },
+  prek: { min: 2, max: 3 },
+};
+export const ENTRY_LEVELS = [4] as const;
 
 export const planFor = (level: number): TrailPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
@@ -191,9 +220,7 @@ export const spotsFor = (arrangement: Arrangement, count: number, rect: Rect): S
   arrangedSpots(arrangement, count, rect) ?? thingSpots(count, rect);
 
 /** Misses and hints for a trail: one miss per drag that leaves the corridor; a hint at the second in a row on one stroke. */
-export function trailTolerance(level: number): number {
-  return Math.max(1, Math.floor(level)) <= 1 ? 0.1 : 0.085;
-}
+export const trailTolerance = (level: number): number => planFor(level).tolerance;
 
 /** The sticker's numeral for a seed, 0 to 9. */
 export const stickerDigit = (seed: number): number => Math.floor(Math.abs(seed)) % 10;

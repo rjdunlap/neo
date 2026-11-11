@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| preschool | 1–2 |
+| preschool | 4, 1, 2 |
 | pre-K | 2–3 |
 
 | Level | Plays like |
@@ -16,6 +16,7 @@
 | 1 | Trace 1 to 5, then watch that many appear and count them |
 | 2 | Trace 0 to 9, then watch that many appear and count them |
 | 3 | Trace 0 to 9, then tap to wake exactly that many from a bigger group |
+| 4 | First numbers: trace 1, 2, 3 or 7 in one stroke, then watch that many appear |
 
 <!-- end generated -->
 

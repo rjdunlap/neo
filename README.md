@@ -130,7 +130,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Picture Graph](docs/games/picture-graph.md) | pre-K–school | Counting Cove | 11 | count critters and build their bars, one block each |
 | [Lasso Loops](docs/games/lasso-loops.md) | preschool–school | Counting Cove | 6 | draw a loop around fireflies: they fly into a jar |
 | [Fill and Dump](docs/games/fill-dump.md) | lap–preschool | Counting Cove | 7 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |
-| [Number Trails](docs/games/number-trails.md) | preschool–pre-K | Counting Cove | 3 | follow a firefly along a numeral, starting at the green ring and arrow, then watch that many things pop up and count them |
+| [Number Trails](docs/games/number-trails.md) | preschool–pre-K | Counting Cove | 4 | follow a firefly along a numeral, starting at the green ring and arrow, then watch that many things pop up and count them |
 | [Fruit Sums](docs/games/fruit-sums.md) | school | Counting Cove | 7 | tap two numbered fruit (and, later, a plus or take-away leaf) and the check to make the number on the sign; any way that works counts, and the round asks for two different ways |
 | [Pile Match](docs/games/pile-match.md) | preschool–school | Counting Cove | 11 | tap a thing on top of a heap into a three-slot basket, asked for one kind at a time (apples, then shells); the covered ones wait dimmed |
 | [Ribbon Workshop](docs/games/ribbon-workshop.md) | school | Counting Cove | 3 | tap ribbon pieces (halves and quarters of one whole) onto a bench to match a gift tag's length, then bow it |

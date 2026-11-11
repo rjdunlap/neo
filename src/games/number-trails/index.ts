@@ -15,6 +15,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { DIGITS } from './digits';
 import { drawThing } from './things';
 import {
+  ENTRY_LEVELS,
   LEVELS,
   THING_HIT,
   groupSize,
@@ -469,6 +470,7 @@ export const numberTrails: GameModule = {
   skills: ['numerals', 'counting', 'fine-motor', 'writing'],
   bands: ['preschool', 'prek'],
   levels: (b) => rangeFor(LEVELS, b),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   coplayHint:
