@@ -19,6 +19,10 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await mossyPlanPlay();
       return;
     }
+    if (process.env.MOSSY_ONLY === 'thick') {
+      await mossyThickPlay();
+      return;
+    }
     for (const level of process.env.MOSSY_ONLY === 'navigation' ? [] : [1, 3]) {
       await launch('mossy-path', level);
       await page.waitForTimeout(350);
@@ -308,6 +312,61 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
     await finished('mossy-path');
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
     log('Mossy Path 8: free far tap, counted visited tap, finish and one sticker passed');
+  }
+
+  /** Level 11, thick moss: a free first visit to a tuft, one counted wrong tap, a hint, a portrait screenshot, a finish. */
+  async function mossyThickPlay() {
+    await launch('mossy-path', 11);
+    await page.waitForTimeout(350);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    // Walk the solver's route up to the first tuft.
+    const toTuft = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game,
+        route = L.completion(g.board, g.path);
+      return route.slice(0, route.findIndex((at) => g.board.thick.includes(at)) + 1);
+    });
+    for (const at of toTuft) await tap(`neo.scene.game.nodes[${at}]`);
+    const tuft = toTuft.at(-1);
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.path.at(-1)]),
+      [0, tuft],
+      'a first visit to thick moss is never a miss',
+    );
+    const wrong = await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game,
+        err = (at) => (at === g.path.at(-1) ? null : L.moveError(g.board, g.path, at));
+      return g.board.tiles.find((at) => err(at) === 'visited') ?? g.board.tiles.find((at) => err(at) === 'far');
+    });
+    await tap(`neo.scene.game.nodes[${wrong}]`);
+    assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a bloomed or far tap counts one miss');
+    await tap('neo.scene.game.hintButton');
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.hints, neo.scene.game.hinted >= 0]),
+      [1, true],
+      'Hint outlines a completing next step and counts once',
+    );
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(350);
+    assert.ok(
+      await page.evaluate(() => neo.scene.game.cell >= 100),
+      'portrait thick-moss cells stay at least 100 units',
+    );
+    await screenshot('mossy-path-11-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(350);
+    await page.evaluate(async () => {
+      const L = await import('/src/games/mossy-path/logic.ts'),
+        g = neo.scene.game;
+      for (const at of L.completion(g.board, g.path)) {
+        kit.tapOn(g.nodes[at]);
+        await kit.sleep(170);
+      }
+    });
+    await finished('mossy-path');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log('Mossy Path 11: free tuft visit, counted wrong tap, hint, portrait, finish and one sticker passed');
   }
 
   /** Level 9: the farther berry first, an early pond refused once, then the nearer berry and the pond. */

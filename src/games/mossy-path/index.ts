@@ -670,13 +670,15 @@ class MossyPath implements Game {
             .stroke({ width: 6, color: swatch.green.line, cap: 'round' });
       } else if (thick) {
         // A tall tuft, its blades reaching past the tile's middle: taller than plain moss, so it reads without colour.
-        for (const x of [-half * 0.5, -half * 0.17, half * 0.17, half * 0.5])
-          g.moveTo(x - 9, half * 0.6)
-            .lineTo(x, -half * 0.7)
-            .lineTo(x + 9, half * 0.6)
+        [-half * 0.5, -half * 0.17, half * 0.17, half * 0.5].forEach((x, k) => {
+          const lean = k % 2 ? 7 : -7;
+          g.moveTo(x - 11, half * 0.6)
+            .quadraticCurveTo(x - 7, 0, x + lean, -half * 0.7)
+            .quadraticCurveTo(x + 7, 0, x + 11, half * 0.6)
             .closePath()
             .fill(swatch.green.line)
-            .stroke({ width: 3, color: ink });
+            .stroke({ width: 2, color: swatch.green.line });
+        });
       } else if (this.maze && berriesOf(this.board).includes(at) && !this.maze_!.eaten.includes(at)) {
         drawBerry(g, this.look.berry, 0, 6, half * 0.36);
       } else if (this.maze && this.pawed.has(at)) {
