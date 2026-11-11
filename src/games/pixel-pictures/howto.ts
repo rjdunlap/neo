@@ -39,18 +39,24 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
-      to: 11,
+      to: 12,
       text: 'Each card says 1 or 0. A 1 fills a square and a 0 leaves it empty, reading left to right.',
     },
     {
       from: 11,
-      to: 11,
+      to: 12,
       text: 'Tap a card to flip it. The arrow shows the row the cards make; looking is never counted.',
     },
-    { from: 11, to: 11, text: 'Tap the green check when the row matches.' },
+    { from: 11, to: 12, text: 'Tap the green check when the row matches.' },
+    { from: 12, to: 12, text: 'Write the picture one row at a time, from the top.' },
   ],
   finish: [
     { from: 11, to: 11, text: 'Each row is finished by a right check; the round ends after three rows.' },
+    {
+      from: 12,
+      to: 12,
+      text: 'Each row is finished by a right check; the round ends after two pictures of four rows.',
+    },
     {
       to: 10,
       text: 'The round ends when the picture matches, or on My own picture when she taps the green check.',

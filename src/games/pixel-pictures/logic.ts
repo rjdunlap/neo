@@ -21,7 +21,9 @@ export type PixelMode =
   | 'big'
   | 'free'
   /** Level 11, ones and zeros: four cards write one row of squares (`bits.ts` plays it). */
-  | 'bitsRow';
+  | 'bitsRow'
+  /** Level 12, ones and zeros: the same four cards write a 4 by 4 picture one row at a time, top to bottom. */
+  | 'bitsPicture';
 
 export interface PixelPlan {
   mode: PixelMode;
@@ -98,14 +100,22 @@ export const PLANS: PixelPlan[] = [
     pictures: 3,
     name: 'Ones and zeros: flip four cards to write one row of squares',
   },
+  {
+    mode: 'bitsPicture',
+    size: 4,
+    colors: 1,
+    pictures: 2,
+    name: 'Ones and zeros, a whole picture: write each row with four cards',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   // Level 9 (two colors on the small grid) sits between 1 and 2; level 10 (my own picture, a free level) comes last.
   preschool: { min: 1, max: 9, order: [1, 9, 2] },
   prek: { min: 1, max: 10, order: [1, 9, 2, 3, 10] },
-  // Level 11 (ones and zeros) sits after 8, away from 4–6, so digits as a key and digits as counts are never neighbours.
-  school: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 8, 11, 10] },
+  // Levels 11 and 12 (ones and zeros) sit after 8, away from 4–6, so digits as a key and digits as counts are never
+  // neighbours.
+  school: { min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 11, 12, 10] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -230,6 +240,8 @@ export function picturesFor(plan: PixelPlan): Picture[] {
   return PICTURES[plan.size].filter((p) => {
     const n = colorsOf(p).length;
     if (plan.mode === 'copy') return plan.colors === 2 ? n === 2 : n === 1;
+    // A card says filled or empty, never which color, so a picture written in cards has one color.
+    if (plan.mode === 'bitsPicture') return n === 1;
     if (plan.mode === 'colorClues') return n === 2 && colorLineSolvable(p);
     if (plan.mode === 'mirror') return n === 1 && symmetric(p);
     // Logic puzzles only ask filled or empty, so any picture works if logic alone can solve it.
@@ -659,6 +671,12 @@ export function makeBitRows(rng: Rng, count = 3): BitRow[] {
     .map((bits, i) => ({ bits, color: colors[i % colors.length] }));
 }
 
+/** Level 12: a picture's rows as the cards write them, top row first, each in the picture's one color. */
+export const bitRowsOf = (p: Picture): BitRow[] => {
+  const color = colorsOf(p)[0] ?? 'b';
+  return encodePicture(p).map((bits) => ({ bits, color }));
+};
+
 /**
  * A press of the check. Right only when every card agrees. Otherwise one miss, however many cards differ, and `card` is
  * the leftmost that differs; every second failed check on a row is one hint: that card glows, or, if it is glowing
@@ -709,7 +727,13 @@ export interface BitsLayout {
   /** Center-to-center distance of the cards, and of the squares above them. */
   pitch: number;
   key: BitBox;
+  /** Level 11: the shelf of finished rows. Level 12: the little picture to write. */
   shelf: BitBox;
+  /** Level 12 only: the 4 by 4 preview board (never touched), its squares `boardCell` units, not below 64. */
+  board?: BitBox;
+  boardCell?: number;
+  /** Level 12 only: where a finished row's four digits sit, beside the board; `y` is the board's center. */
+  digits?: BitBox;
 }
 
 const CARD_W = 120;
@@ -718,15 +742,33 @@ const CARD_GAP = 16;
 const BIT_BUTTON = 120;
 const BIT_CELL = 110;
 const ASIDE_W = 264;
+const BOARD_MIN = 64;
+const BOARD_MAX = 100;
+const DIGITS_W = 110;
+/** The board sits this far left of the cards' center, so the digits beside it stay over the cards. */
+const BOARD_SHIFT = 40;
 
 /**
- * Where level 11's things sit, or null rather than shrink a card or button. Wide: the two strips above the cards at the
+ * Where level 11's and 12's things sit, or null rather than shrink a card or button. Wide: the two strips above the cards at the
  * center-left, the arrow and the check right of the cards, the key card and the shelf in a column above the buttons.
  * Upright: key card and shelf along the top, clear of Home; the strips, the cards, then the two buttons in the bottom
- * row, right of the pet's corner. A square always sits straight above its card.
+ * row, right of the pet's corner. On level 11 a square always sits straight above its card. Level 12 has the preview
+ * board where the two strips were (its squares as large as the height allows, 64 to 100 units, with the finished rows'
+ * digits at its right) and the picture to write where the shelf was.
  */
 export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayout | null {
-  if (level !== 11) return null;
+  if (level !== 11 && level !== 12) return null;
+  const picture = level === 12;
+  /** Level 12: the board and its digits, in the block of `blockH` units starting at `y`. */
+  const boardAt = (x0: number, y: number, cell: number) => {
+    const w = BIT_COUNT * cell;
+    const x = x0 + rowW / 2 - BOARD_SHIFT;
+    return {
+      board: { x, y: y + w / 2, w, h: w },
+      boardCell: cell,
+      digits: { x: x + w / 2 + 10 + DIGITS_W / 2, y: y + w / 2, w: DIGITS_W, h: w },
+    };
+  };
   const pitch = CARD_W + CARD_GAP;
   const rowW = BIT_COUNT * CARD_W + (BIT_COUNT - 1) * CARD_GAP;
   const strip = (x0: number, y: number): BitBox => ({ x: x0 + rowW / 2, y, w: rowW, h: BIT_CELL });
@@ -740,7 +782,11 @@ export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayo
   const button = (x: number, y: number): BitBox => ({ x, y, w: BIT_BUTTON, h: BIT_BUTTON });
   if (v.h > v.w) {
     const asideH = 180;
-    const stack = asideH + 40 + BIT_CELL + 40 + BIT_CELL + 50 + CARD_H + 40 + BIT_BUTTON;
+    const fixed = asideH + 40 + 50 + CARD_H + 40 + BIT_BUTTON;
+    const cell = Math.min(BOARD_MAX, Math.floor((v.h - 40 - fixed) / BIT_COUNT));
+    if (picture && cell < BOARD_MIN) return null;
+    const blockH = picture ? BIT_COUNT * cell : BIT_CELL + 40 + BIT_CELL;
+    const stack = fixed + blockH;
     const asideW = ASIDE_W * 2 + 26;
     if (v.w < 135 + asideW + 10 || v.h < stack + 40) return null;
     const top = Math.max(20, (v.h - stack) / 2);
@@ -748,7 +794,7 @@ export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayo
     const x0 = (v.w - rowW) / 2;
     const refY = top + asideH + 40 + BIT_CELL / 2;
     const ownY = refY + BIT_CELL + 40;
-    const cardY = ownY + BIT_CELL / 2 + 50 + CARD_H / 2;
+    const cardY = top + asideH + 40 + blockH + 50 + CARD_H / 2;
     const buttonY = cardY + CARD_H / 2 + 40 + BIT_BUTTON / 2;
     return {
       cards: cardsAt(x0, cardY),
@@ -760,16 +806,20 @@ export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayo
       pitch,
       key: { x: ax + ASIDE_W / 2, y: top + asideH / 2, w: ASIDE_W, h: asideH },
       shelf: { x: ax + ASIDE_W + 26 + ASIDE_W / 2, y: top + asideH / 2, w: ASIDE_W, h: asideH },
+      ...(picture ? boardAt(x0, top + asideH + 40, cell) : {}),
     };
   }
   const total = rowW + 40 + BIT_BUTTON + 24 + BIT_BUTTON;
-  const stack = BIT_CELL + 40 + BIT_CELL + 50 + CARD_H;
+  const cell = Math.min(BOARD_MAX, Math.floor((v.h - 60 - 50 - CARD_H) / BIT_COUNT));
+  if (picture && cell < BOARD_MIN) return null;
+  const blockH = picture ? BIT_COUNT * cell : BIT_CELL + 40 + BIT_CELL;
+  const stack = blockH + 50 + CARD_H;
   if (v.w < 170 + total + 20 || v.h < stack + 60) return null;
   const x0 = Math.max(170, (v.w - total) / 2);
   const top = (v.h - stack) / 2;
   const refY = top + BIT_CELL / 2;
   const ownY = refY + BIT_CELL + 40;
-  const cardY = ownY + BIT_CELL / 2 + 50 + CARD_H / 2;
+  const cardY = top + blockH + 50 + CARD_H / 2;
   const asideX = x0 + rowW + 40 + (BIT_BUTTON * 2 + 24) / 2;
   const asideH = (cardY - BIT_BUTTON / 2 - 30 - 24 - 20) / 2;
   return {
@@ -782,5 +832,6 @@ export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayo
     pitch,
     key: { x: asideX, y: 20 + asideH / 2, w: ASIDE_W, h: asideH },
     shelf: { x: asideX, y: 20 + asideH + 24 + asideH / 2, w: ASIDE_W, h: asideH },
+    ...(picture ? boardAt(x0, top, cell) : {}),
   };
 }

@@ -6,18 +6,24 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
+import type { PixelPictureCreation } from '../../content/creations';
 import type { Game, GameContext, TouchIntent } from '../types';
 import {
   BIT_COUNT,
   bitCheck,
+  bitRowsOf,
   bitsLayout,
   bitTouch,
   LETTERS,
   makeBitRows,
+  makePictures,
+  pixelsOf,
   planFor,
+  toGrid,
   type BitBox,
   type BitRow,
   type BitsLayout,
+  type Picture,
   type PixelPlan,
 } from './logic';
 
@@ -44,13 +50,20 @@ function decodeIcon(): Graphics {
 }
 
 /**
- * Pixel Pictures level 11, ones and zeros: four cards say 1 or 0, the arrow turns them into a row of squares (a 1 fills
- * a square, a 0 leaves it empty, left to right) and the check compares that row with the one to make. Flipping and
- * looking are free; only a check that does not match is a miss. The rules are in `logic.ts`.
+ * Pixel Pictures levels 11 and 12, ones and zeros: four cards say 1 or 0, the arrow turns them into a row of squares (a
+ * 1 fills a square, a 0 leaves it empty, left to right) and the check compares that row with the one to make. Flipping
+ * and looking are free; only a check that does not match is a miss. Level 11 makes three single rows; level 12 writes
+ * two little pictures a row at a time, top to bottom, on a preview board that is never touched, and each finished row
+ * stays there with its four digits beside it. The rules are in `logic.ts`.
  */
 export class BitsRound implements Game {
   readonly plan: PixelPlan;
+  /** Level 12: the pictures to write; empty on level 11. */
+  readonly pictures: Picture[];
+  /** Every row of the round in order (level 12: four for each picture, top row first). */
   readonly rows: BitRow[];
+  /** Level 12: rows of the picture in hand that are finished and stay on the board. */
+  kept = 0;
   /** What the four cards say, left to right. */
   bits: boolean[] = Array(BIT_COUNT).fill(false);
   /** How many squares of her strip the arrow has shown; `BIT_COUNT` once the strip says what the cards say. */
@@ -83,10 +96,14 @@ export class BitsRound implements Game {
   private clock = 0;
   /** Bumped by every flip and check, so a spoken hint does not follow a line she has already moved past. */
   private said = 0;
+  private lastCreation: PixelPictureCreation | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.rows = makeBitRows(ctx.rng, this.plan.pictures);
+    this.pictures = this.plan.mode === 'bitsPicture' ? makePictures(this.plan, ctx.rng) : [];
+    this.rows = this.pictures.length
+      ? this.pictures.flatMap(bitRowsOf)
+      : makeBitRows(ctx.rng, this.plan.pictures);
     this.layout = this.layoutFor(ctx.view);
     for (const g of [this.strips, this.aside, this.glow, this.flash]) g.eventMode = 'none';
     ctx.stage.addChild(this.strips, this.aside);
@@ -112,6 +129,26 @@ export class BitsRound implements Game {
 
   private get color() {
     return this.rows[Math.min(Math.max(this.index, 0), this.rows.length - 1)].color;
+  }
+
+  /** Level 12: whether the round writes whole pictures. */
+  get whole() {
+    return this.pictures.length > 0;
+  }
+
+  /** Level 12: the picture in hand and the row of it the cards are writing. */
+  get picture(): Picture | undefined {
+    return this.pictures[Math.floor(Math.min(Math.max(this.index, 0), this.rows.length - 1) / BIT_COUNT)];
+  }
+
+  /** Level 12: the index in `rows` of the top row of the picture in hand. */
+  private get firstRow() {
+    const i = Math.min(Math.max(this.index, 0), this.rows.length - 1);
+    return i - (i % BIT_COUNT);
+  }
+
+  get rowInHand() {
+    return Math.max(this.index, 0) % BIT_COUNT;
   }
 
   /** Whether her strip shows what the cards say now. */
@@ -172,7 +209,9 @@ export class BitsRound implements Game {
       else {
         // The first card that differs and its square in the row to make wobble once.
         this.cards[w.card].rotation = Math.sin(w.t * 26) * 0.1 * (1 - w.t / 0.7);
-        const s = this.squareAt(this.layout.ref, w.card);
+        const s = this.whole
+          ? this.modelSquare(w.card, this.rowInHand)
+          : this.squareAt(this.layout.ref, w.card);
         f.roundRect(s.x - s.w / 2, s.y - s.h / 2, s.w, s.h, 14).stroke({
           width: 8,
           color: swatch.orange.line,
@@ -209,10 +248,11 @@ export class BitsRound implements Game {
     this.run = null;
     this.fails = 0;
     this.glowing = null;
+    if (this.rowInHand === 0) this.kept = 0;
     this.buildAside();
     this.draw();
     this.busy = false;
-    if (this.index === 0) void this.ctx.instruct('pixel.bits.row');
+    if (this.index === 0) void this.ctx.instruct(this.whole ? 'pixel.bits.picture' : 'pixel.bits.row');
   }
 
   /** A tap on a card: it flips, and her strip clears, so the screen never shows a row the cards no longer say. */
@@ -274,6 +314,7 @@ export class BitsRound implements Game {
     this.glowing = null;
     this.said++;
     const row = this.rows[this.index];
+    if (this.whole) return void this.rowKept(row);
     sfx.bell(3 + this.index * 2, 0.25);
     this.ctx.pet.cheer();
     const from = this.layout.own;
@@ -304,15 +345,81 @@ export class BitsRound implements Game {
     this.next();
   }
 
+  /**
+   * Level 12: a right row stays on the board in its color with its four digits beside it, and the marker moves down a
+   * row. After the fourth row the picture is named, with all sixteen digits still beside it.
+   */
+  private async rowKept(row: BitRow) {
+    const picture = this.picture!;
+    const r = this.rowInHand;
+    const at = this.boardSquare(1.5, r);
+    sfx.bell(3 + r, 0.25);
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch[colorOf(row.color)].light],
+      count: 12,
+      speed: [120, 280],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
+    this.kept = r + 1;
+    this.shown = 0;
+    this.buildAside();
+    this.draw();
+    // An empty row is a real row: four zeros wrote it.
+    const line = row.bits.some(Boolean) ? 'pixel.bits.rowdone' : 'pixel.bits.emptyrow';
+    if (this.kept < BIT_COUNT) {
+      void this.ctx.say(line);
+      await this.ctx.tw.wait(0.5);
+      return this.next();
+    }
+    this.ctx.pet.cheer();
+    if (line === 'pixel.bits.emptyrow') await this.ctx.say(line);
+    await this.ctx.say('pixel.reveal', { name: picture.name });
+    this.lastCreation = { kind: 'picture', size: 4, pixels: pixelsOf(toGrid(picture)) };
+    await this.ctx.say('pixel.bits.same');
+    await this.ctx.tw.wait(0.6);
+    this.next();
+  }
+
   private async finale() {
     if (this.finished) return;
     this.finished = true;
     this.buildAside();
     this.draw();
     sfx.tada();
-    await this.ctx.say('pixel.bits.done');
+    await this.ctx.say(this.whole ? 'pixel.done' : 'pixel.bits.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, creation: this.lastCreation ?? undefined });
+  }
+
+  /** Level 12: square (`col`, `row`) of the preview board, by its center. */
+  private boardSquare(col: number, row: number): BitBox {
+    const b = this.layout.board!;
+    const cell = this.layout.boardCell!;
+    return {
+      x: b.x - b.w / 2 + (col + 0.5) * cell,
+      y: b.y - b.h / 2 + (row + 0.5) * cell,
+      w: cell,
+      h: cell,
+    };
+  }
+
+  /** Level 12: the size of a square of the little picture to write, which sits in the shelf's box. */
+  private get modelCell() {
+    const s = this.layout.shelf;
+    return Math.max(18, Math.min(36, Math.floor((s.h - 28) / BIT_COUNT)));
+  }
+
+  private modelSquare(col: number, row: number): BitBox {
+    const s = this.layout.shelf;
+    const m = this.modelCell;
+    return {
+      x: s.x + 14 + (col - (BIT_COUNT - 1) / 2) * m,
+      y: s.y + (row - (BIT_COUNT - 1) / 2) * m,
+      w: m,
+      h: m,
+    };
   }
 
   /** Square `i` of a strip: straight above card `i`. */
@@ -372,7 +479,9 @@ export class BitsRound implements Game {
       digit.position.set(key.x - 96 + size * 0.4, y);
       this.aside.addChild(digit);
     });
-    this.aside.addChild(panel(shelf));
+    const side = panel(shelf);
+    this.aside.addChild(side);
+    if (this.whole) return void this.buildModel(side);
     this.finishedRows.forEach((row, n) => {
       const slot = this.shelfSlot(n);
       const strip = this.miniStrip(row, SHELF_PITCH, SHELF_CELL);
@@ -383,9 +492,91 @@ export class BitsRound implements Game {
     });
   }
 
-  private draw() {
+  /**
+   * Level 12: the little picture to write, with an outline and an arrow on the row in hand, and beside the board the
+   * four digits of each row she has finished.
+   */
+  private buildModel(side: Graphics) {
+    const picture = this.picture;
+    if (!picture) return;
+    const m = this.modelCell;
+    toGrid(picture).forEach((row, y) =>
+      row.forEach((c, x) => {
+        const s = this.modelSquare(x, y);
+        side
+          .roundRect(s.x - m / 2 + 1, s.y - m / 2 + 1, m - 2, m - 2, 4)
+          .fill(c ? swatch[colorOf(c)].fill : EMPTY)
+          .stroke({ width: 1.5, color: c ? swatch[colorOf(c)].line : LINE });
+      }),
+    );
+    if (!this.finished && this.kept < BIT_COUNT) {
+      const first = this.modelSquare(0, this.rowInHand);
+      const left = first.x - m / 2;
+      side
+        .roundRect(left - 4, first.y - m / 2 - 3, BIT_COUNT * m + 8, m + 6, 6)
+        .stroke({ width: 4, color: ink })
+        .moveTo(left - 40, first.y)
+        .lineTo(left - 12, first.y)
+        .moveTo(left - 22, first.y - 9)
+        .lineTo(left - 12, first.y)
+        .lineTo(left - 22, first.y + 9)
+        .stroke({ width: 5, color: ink, cap: 'round', join: 'round' });
+    }
+    const d = this.layout.digits!;
+    const cell = this.layout.boardCell!;
+    const from = this.firstRow;
+    for (let r = 0; r < this.kept; r++) {
+      const digits = label(this.rows[from + r].bits.map((b) => (b ? '1' : '0')).join(''), cell * 0.42, ink);
+      digits.position.set(d.x, this.boardSquare(0, r).y);
+      this.aside.addChild(digits);
+    }
+  }
+
+  /** Level 12: the preview board. Finished rows in their color, the row in hand as the arrow has shown it. */
+  private drawBoard(g: Graphics) {
     const l = this.layout;
+    const b = l.board!;
+    const sw = swatch[colorOf(this.color)];
+    g.roundRect(b.x - b.w / 2 - 12, b.y - b.h / 2 - 12, b.w + 24, b.h + 24, 20)
+      .fill(cream)
+      .stroke({ width: 6, color: wood.line });
+    const from = this.firstRow;
+    const inHand = this.kept < BIT_COUNT && !this.finished;
+    for (let r = 0; r < BIT_COUNT; r++)
+      for (let i = 0; i < BIT_COUNT; i++) {
+        const o = this.boardSquare(i, r);
+        const done = r < this.kept;
+        const seen = inHand && r === this.rowInHand && i < this.shown;
+        const on = done ? this.rows[from + r].bits[i] : seen && this.bits[i];
+        g.roundRect(o.x - o.w / 2 + 3, o.y - o.h / 2 + 3, o.w - 6, o.h - 6, 10)
+          .fill(on ? sw.fill : done ? EMPTY : 0xffffff)
+          .stroke({ width: 2, color: on ? sw.line : LINE });
+        // A zero does something too: its square gets a hollow outline.
+        if (seen && !on)
+          g.roundRect(o.x - o.w / 2 + 14, o.y - o.h / 2 + 14, o.w - 28, o.h - 28, 8).stroke({
+            width: 5,
+            color: 0xb9bcc8,
+          });
+      }
+    if (inHand) {
+      const y = this.boardSquare(0, this.rowInHand).y;
+      g.roundRect(b.x - b.w / 2 - 4, y - l.boardCell! / 2 - 2, b.w + 8, l.boardCell! + 4, 12).stroke({
+        width: 5,
+        color: ink,
+      });
+    }
+  }
+
+  private draw() {
     const g = this.strips.clear();
+    if (this.whole) this.drawBoard(g);
+    else this.drawStrips(g);
+    this.drawCards();
+  }
+
+  /** Level 11: the row to make and her own row. */
+  private drawStrips(g: Graphics) {
+    const l = this.layout;
     const sw = swatch[colorOf(this.color)];
     const half = (BIT_COUNT * l.pitch - (l.pitch - l.cell)) / 2 + 12;
     for (const strip of [l.ref, l.own])
@@ -411,6 +602,11 @@ export class BitsRound implements Game {
           color: 0xb9bcc8,
         });
     }
+  }
+
+  private drawCards() {
+    const l = this.layout;
+    const sw = swatch[colorOf(this.color)];
     this.cards.forEach((_, i) => {
       const b = l.cards[i];
       const one = this.bits[i];
