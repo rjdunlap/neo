@@ -4,18 +4,19 @@ import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import { welcomeFriend } from '../../content/welcome';
 import { Companion, makeCompanion } from '../../creatures/companion';
 import { BASKET, BED, CORNER_RADIUS, playLayout } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
-import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
-import { RoundButton } from '../../ui/buttons';
+import { RoundButton, squash } from '../../ui/buttons';
 import { BOARD, PLAQUE, pictureBoard, singTune, TunePlaque } from '../../ui/creation-art';
 import { arrowIcon, houseIcon, libraryIcon, nestIcon } from '../../ui/icons';
 import { Scene } from '../Scene';
+import { WayOut } from '../leave';
 import { BallPlay } from './ball-play';
 
 /**
@@ -31,12 +32,12 @@ export class PlayScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly pet: Companion = this.track(makeCompanion());
   readonly toy = this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')));
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means(
-    'back',
-  );
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means(
-    'home',
-  );
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
+    this.leave(this.back, () => this.app.go.hub(), 'nav.back'),
+  ).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
+    this.leave(this.home, () => this.app.go.hub(), 'nav.home'),
+  ).means('home');
   readonly board = new Container();
   readonly plaque = new TunePlaque();
   readonly basket = new Container();
@@ -53,7 +54,11 @@ export class PlayScene extends Scene {
   private readonly bedName: string;
   /** The tune is playing (taps on the plaque wait until it ends). */
   singing = false;
-  private leaving = false;
+  private readonly out = new WayOut(
+    (seconds) => this.tw.wait(seconds),
+    () => this.app.scene === this,
+    this.root,
+  );
 
   constructor(...args: ConstructorParameters<typeof Scene>) {
     super(...args);
@@ -157,13 +162,17 @@ export class PlayScene extends Scene {
     art.eventMode = 'none';
     this.basket.addChild(new Graphics().ellipse(0, 34, 62, 14).fill({ color: 0x000000, alpha: 0.12 }), art);
     this.basket.hitArea = new Rectangle(-BASKET.w / 2, -BASKET.h / 2, BASKET.w, BASKET.h);
-    onTap(this.basket, () => void this.openFriends(), { cooldown: 500 });
+    onTap(this.basket, () => this.open(this.basket, () => this.app.go.friends(), 'room.friends'), {
+      cooldown: 500,
+    });
     const shelf = libraryIcon();
     shelf.scale.set(1.9);
     shelf.eventMode = 'none';
     this.books.addChild(shelf);
     this.books.hitArea = new Rectangle(-BASKET.w / 2, -BASKET.h / 2, BASKET.w, BASKET.h);
-    onTap(this.books, () => void this.openLibrary(), { cooldown: 500 });
+    onTap(this.books, () => this.open(this.books, () => this.app.go.library(), 'play.library'), {
+      cooldown: 500,
+    });
     this.ui.addChild(this.board, this.plaque, this.basket, this.books, this.back, this.home);
     if (this.bed) {
       this.buildBed(this.bed);
@@ -227,37 +236,29 @@ export class PlayScene extends Scene {
     this.singing = false;
   }
 
-  /** The books squish and her friend cheers, then the library opens. */
-  private async openLibrary() {
-    if (this.leaving) return;
-    this.leaving = true;
-    this.toy.frozen = true;
-    this.books.scale.set(0.9);
+  private open(node: Container, go: () => void, line: LineId) {
+    if (this.out.leaving) return;
+    squash(node);
     sfx.pop();
     this.pet.cheer();
-    await Promise.race([voice.say('play.library'), this.tw.wait(1)]);
-    if (this.app.scene !== this) return;
-    this.app.go.library();
+    this.leave(node, go, line);
   }
 
-  /** Her friend goes to see who is in the nest, then Friends opens. */
-  private async openFriends() {
-    if (this.leaving) return;
-    this.leaving = true;
-    this.toy.frozen = true;
-    this.basket.scale.set(0.9);
-    sfx.pop();
-    void voice.say('room.friends');
-    const to = { x: this.basket.x - 120, y: this.basket.y + 40 };
-    this.pet.scale.x = Math.abs(this.pet.scale.x) * (to.x >= this.pet.x ? 1 : -1);
-    this.pet.hop(0.8);
-    await this.tw.to(this.pet, to, {
-      duration: Math.min(0.9, 0.25 + Math.hypot(this.pet.x - to.x, this.pet.y - to.y) / 900),
-      ease: ease.inOutSine,
+  private leave(node: Container, go: () => void, line: LineId) {
+    const choices = [
+      this.back,
+      this.home,
+      this.board,
+      this.plaque,
+      this.basket,
+      this.books,
+      this.bed,
+      this.toy.ball,
+    ];
+    void this.out.take(node, choices, go, () => {
+      this.toy.frozen = true;
+      return voice.say(line);
     });
-    this.pet.cheer();
-    await this.tw.wait(0.5);
-    this.app.go.friends();
   }
 
   resize(v: View) {
@@ -271,7 +272,7 @@ export class PlayScene extends Scene {
     this.basket.position.set(l.basket.x, l.basket.y);
     this.books.position.set(l.books.x, l.books.y);
     this.bed?.position.set(l.bed.x, l.bed.y);
-    if (this.toy.throws === 0 && !this.leaving) this.pet.position.set(l.stage.x, l.stage.y);
+    if (this.toy.throws === 0 && !this.out.leaving) this.pet.position.set(l.stage.x, l.stage.y);
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);
     this.toy.place(l.floor, l.ball);
   }
