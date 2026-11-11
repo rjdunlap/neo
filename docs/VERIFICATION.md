@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — Festival Signals (H4) definition (docs only)
+
+**Changed:** new [definition](definitions/festival-signals.md) of Sorting Machine levels 8–9 (*Festival Signals*, *Fix the lantern*) in two build slices (H3 level 3, then H5 levels 8–9); the study, base definition, batch plans, READY and the study backlog point to it.
+**Ran:** a scratch script enumerated the proposed four-slot grammar (2,005,696 fillings): 24 accepted machines, all four parts long with the lantern on slot 4, eight of them keeping P OR Q in slot 1; `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built).
+
 ## 2026-11-10 — U7c, quicker taps on the tablet root (PR #1484)
 
 **Changed:** Home, Explore, Arcade, Library and creature play use `WayOut` for navigation. The first picture stays pressed with a white ring, the others dim, and its line can play through the change. The Friends nest opens after the shared beat with a cheer in place of the longer walk. Existing transition styles and route origins are preserved.
