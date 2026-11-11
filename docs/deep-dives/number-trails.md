@@ -107,7 +107,7 @@ Each is sized for one session. A slice that adds a level is built in level order
 3. **Check the digits against the HWT chart** (ready once the chart is opened; decided 2026-10-23). Tier: `digits.test.ts`, `fingerdemo` at 2; note sticker redraws.
 4. **Level 4, *First numbers*** (built 2026-11-10, PR #1479). Tier: typecheck, rule tests (draws, order, landing), browser play of 4 and `fingerdemo` at 4.
 5. **Level 5, *Write how many*** (built 2026-11-10, PR #1482). Tier: typecheck, unit tests, one scripted play (a ring of three, one wrong card, the glow, zero), one portrait screenshot.
-6. **Level 6, *Less help each time*** (ready; coordinate with Letter Trails level 9 if in flight). Tier: rule tests, one play of three tries with one wander, `fingerdemo` at 6, one screenshot of the dotted try.
+6. **Level 6, *Less help each time*** (in progress on `claude/number-trails-less-help`; coordinate with Letter Trails level 9 if in flight). Tier: rule tests, one play of three tries with one wander, `fingerdemo` at 6, one screenshot of the dotted try.
 7. **Level 7, *Ten, and some more*** (decision 1, then a layout probe).
 8. **Journal entries** (decision 2).
 
