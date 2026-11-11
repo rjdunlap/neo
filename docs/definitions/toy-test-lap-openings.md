@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a`, Counting Cove's five at `892834eb` and Cozy Village's eight at `7f12c562`, all 2026-11-11. The other 20 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a`, Counting Cove's five at `892834eb`, Cozy Village's eight at `7f12c562` and Rainbow Meadow's six at `bd67aa66`, all 2026-11-11. The other 14 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,11 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All thirty-seven games read so far set `touchDemo: true`.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All forty-three games read so far set `touchDemo: true`.
 - **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game that shows it, and it is not counted again under question 5. A game with a large pet of its own hides the corner one (four of Cozy Village's eight do; their rows say what repeats the instruction instead).
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **Two opening lines hold input** in the thirty-seven read so far: `duck-pond` and `teddy-doctor` wait for their first line before a touch counts (their rows). The other thirty-five open input before the line or without waiting for it. One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
+- **Two opening lines hold input** in the forty-three read so far: `duck-pond` and `teddy-doctor` wait for their first line before a touch counts (their rows). The other forty-one open input before the line or without waiting for it. One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
 - **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
@@ -283,15 +283,62 @@ The last two are the smallest changes and their targets are already the biggest 
 - `stop-and-go`: level 9 is in lap's `order` only, and its plan sits outside `PLANS`. The lamps sit low and centred, 240 units apart.
 - `pet-says`: level 13 is in lap's `order` only. A lap player who steps up goes to level 1, where a grown-up taps an arrow and the moves are done away from the screen.
 
+## Rainbow Meadow
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `shape-sorter` (9) | **Partly.** The wall and the floor answer: the nearest waiting circle wiggles, ticks and is named, and does not go in. The box (324 by 270 units) gulps and giggles. Only a touch on a piece (a touch circle 112 units across, drawn 96) puts one in | **Yes.** One round hole and three circles, so every piece fits; there is no idle hint and nothing is counted | **Yes.** Three red circles and a red-rimmed round hole; the ghost finger taps the next waiting piece. Nothing invites a touch after a quiet spell | **No.** The box and all three pieces are there from the start. Each piece shrinks into the box, and nothing arrives | **Partly.** Box, floor and wall each have a reply of their own, and a piece held for 0.4 seconds or more and let go away from the hole plops and floats home; a floor tap while the last piece flies in is silent, and so is everything through "All in!" and about two seconds after it |
+| `color-garden` (9) | **No.** Only the four fruit answer (each tap circle 120 units across: a tick, the color named and a hop into its own basket); the tree, the baskets and the garden behind them do nothing | **Yes.** A tapped fruit goes to its own color's basket; the boing and the hint belong to the dragging levels | **Yes.** Four fruit on a tree over two baskets; the ghost finger taps a fruit, and any fruit is right. Nothing invites a touch after a quiet spell | **No.** Four fruit, two baskets and the tree from the start, none of them big. The fruit leave the tree, and nothing arrives | **Partly.** A hold or a drag on a fruit is one tap; a fruit in flight or in its basket is silent, as are the tree, the baskets and the background, and nothing answers for about 2.3 seconds after the fourth fruit lands |
+| `dot-link` (1) | **No.** Only the twenty dots answer (each drawn 68 units across and caught within a circle of about 97); the gaps between them are silent, and the meadow around the 540 by 432 board has no handler | **Partly.** Every dot is right and nothing boings; after twelve quiet seconds two dots bob, and that is counted as one hint | **Yes.** A board of dots; the ghost finger taps one and any dot is right | **No.** Twenty small dots from the start. Each pop drops one replacement in from the top, so the board never grows | **Partly.** A hold or a drag is one pop; a tap during the half second of pop and refill is dropped, the gaps and the meadow are silent, and the only invitation is the counted bob |
+| `garden-grow` (8) | **Yes.** One layer over the whole view: a touch anywhere grows the flower one step, with a squash of the bed and a pop, a splash or a bell | **Yes.** Fifteen touches end the round with nothing counted; there is no boing and no idle hint | **Yes.** One bed of soil and an empty vase; the ghost finger taps the bed, and anywhere is right | **Yes.** One bed about 270 units wide that opens bare. Seed, sprout, leaves, bud and bloom each come from a touch, and the three finished flowers collect in the vase | **Partly.** A hold or a drag is one touch, and a fast second touch is not lost; nothing answers for about two seconds and the closing line after the fifteenth touch, and nothing invites a touch after a quiet spell |
+| `swing-pals` (1) | **Yes.** One layer covers the view below the top 130 units: a touch anywhere on it is the push (the mitten pops out, a whoosh, and the one swing goes a quarter of the way higher). Only the strip beside the shell's buttons does nothing | **Yes.** A tap is never a miss; the boing belongs to the hook levels, and there is no idle hint | **Yes.** One friend on one swing with a bell in front; the ghost finger taps the middle, and any spot is right. Nothing invites a touch after a quiet spell | **Partly.** One swing with one friend, and it climbs because she touched until the fourth push rings the bell. The bell is there from the start, and the three friends come one after another rather than gathering | **Partly.** A hold or a drag is one push; nothing answers while a friend's bell line is spoken, during the 1.4-second changeover or during the finale |
+| `sand-table` (1) | **No.** The tray answers (up to 860 units wide by 288, or 360 upright: a touch pours three grains from the bucket with a whoosh and a pluck for each) and so does the scoop paddle (180 by 100); the sky, the bucket and the wooden frame do nothing | **Yes.** An empty bucket or an empty scoop is answered without a boing or a count, and the six-second sparkle counts nothing | **Yes.** One tray of sand under a bucket; the ghost finger pours four times, scoops once and taps the flag, and after six quiet seconds the tray sparkles while the bucket has sand | **Partly.** One big tray, and the heap grows because she touched; the flag (130 units) arrives after her first grain and the pail after the first spill. The scoop paddle is there from the start | **Partly.** An empty bucket gets a knock, a wiggle of the paddle and a line, and an empty scoop still brushes; the background is silent, and every touch after the flag is dropped |
+
+### What the table says
+
+- **Pass 1 and 4:** `garden-grow`, the fourth of the forty-three read that answers yes to both, after `jelly-drums`, `peekaboo-barn` and `sing-along-barn`. Its level 8 is already the *One big jelly* shape: one bare bed, a touch anywhere is the move, and everything on the screen came from her touch.
+- **Passes 1 well enough to leave alone:** `swing-pals`, where a touch anywhere below the buttons is the push and the swing climbs because of it.
+- **Answers anywhere, but not with the move:** `shape-sorter`, as `mail-carrier` and `pet-kitchen` do. A touch on the floor or the wall wiggles and names the nearest circle; only a touch on a piece puts it in.
+- **One big thing, not anywhere:** `sand-table`. The tray is most of the screen and the heap is hers, and the round ends only by a tap on a 130-unit flag.
+- **Several small targets from the start:** `color-garden` (four fruit) and `dot-link` (twenty dots, the smallest targets in the land).
+- **One game counts something at lap:** `dot-link` counts a hint when she waits twelve seconds. Nobody can be wrong in this land.
+- **No opening line holds input here,** and the corner pet shows in all six.
+
+### Words-off list (P7)
+
+Rainbow Meadow games whose first lap level plays with the voice off: all six. Each shows its move on the card, and in each any target is right.
+
+What only the voice carries: "circle" (`shape-sorter`), the color words (`color-garden`), the friend's name and the bell (`swing-pals`), and "pour", "scoop" and the empty bucket's "scoop some sand back" (`sand-table`). In `dot-link` and `garden-grow` nothing is named during play; `garden-grow`'s stage words (seed, sprout, leaves, bud, bloom) are on the card only. With the voice off the play is whole and the naming is not there. `sand-table` is the one to watch: once the bucket is empty, the way on is to scoop or to tap the flag, and with the voice off only the knock and the paddle's wiggle say so.
+
+### Lines this land adds to READY
+
+Four games fail question 1 or 4, in the order they should be taken:
+
+1. `dot-link`: a lap level that opens with one big dot; a touch anywhere pops the nearest dot, more drop in because she popped, and waiting counts no hint.
+2. `color-garden`: at lap one big fruit on the tree; a touch anywhere sends it hopping to its basket, and the next fruit grows because she touched.
+3. `sand-table`: at lap a touch anywhere pours onto the one heap, the bucket does not run dry, and the round finishes without a tap on the flag.
+4. `shape-sorter`: at lap one big circle beside the box; a touch anywhere hops the nearest piece in, and the next rolls out because she touched.
+
+`shape-sorter` already answers a touch anywhere, so it is last. All four levels are also toddler's first, so each line is a lap-only level or a lap-only branch, and toddler's opening stays as it is. `garden-grow` and `swing-pals` get no line.
+
+### Found while reading (not part of the five questions)
+
+- **Four of the six open lap on toddler's first level.** `shape-sorter` 9, `color-garden` 9, `dot-link` 1 and `sand-table` 1 are first for toddler too, as is `swing-pals` 1; only `garden-grow` 8 is lap's alone. None of `shape-sorter`, `sand-table` or `swing-pals` reads `ctx.band`, so a lap player gets exactly toddler's level.
+- `shape-sorter`: a tap answers on release, since the hop is decided when the drag ends, and a still press of 0.4 seconds or more does not hop the piece in: it plops and floats home. The round cannot finish by floor, wall or box touches, or by long presses alone. Three comments in `index.ts` say "level 1" for the floor, wall and box replies, which run at every level that sets `everyTouch`, level 9 among them. The card's note for level 9 leaves out the far-drop plop that level 1's note has.
+- `color-garden`: the fruit sit 118 units apart with tap circles of 120, so neighbours overlap by 2 units. The two colors are dealt at random with one fruit of each guaranteed, so a round can be three and one.
+- `dot-link`: the idle hint is built for linking. At level 1 it lights two same-color neighbours and counts one hint; only a judged link clears it, and tap mode never judges, so the two places bob for the rest of the round whatever dots fall into them, and one hint at most is counted. The catch circle is about 97 units at full board scale, under the 100-unit rule, and the board shrinks on a small view. The card's goal line says "Link dots of the same color" at a level with no linking. The game's own `pointerdown` handler calls `palmOnGlass()`.
+- `garden-grow`: at stage 2 the splash drops fall from where the cloud would be, and at level 8 the cloud is hidden and not positioned, so they start at the top of the screen. A lap player who steps up goes to level 1, six beds where only the beds answer. A comment in `logic.ts` says levels 2–3 use the two-by-three grid; the grid levels are 7 and 9–11. Whether the full-view tap layer sits over the corner pet's own tap area was not established.
+- `swing-pals`: twelve pushes finish the round (three friends, four each), and any touch below the top strip counts. After a friend's fourth push and before the bell (about 0.75 seconds), a tap pops the mitten without a sound and without a push. The ground layer's own handler calls `palmOnGlass()`. After the session's first round the goal may be chimes, an apple or a nest, named only aloud.
+- `sand-table`: the round ends only by a tap on the flag (130 units, bottom right), and nothing points at it but its entrance bell and one line. Twelve pours empty the bucket (counted by re-running the pour rule, not by play); after that every pat on the tray gets the knock and "Scoop some sand back!", and the sparkle stops, since it needs sand in the bucket. So a child who only pats the sand never finishes, as in `weather-wardrobe`. The comment "Every tap answers: nothing waits and nothing is ignored" holds for the tray, the paddle and a filled pail only.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Rainbow Meadow (6) | `shape-sorter`, `color-garden`, `dot-link`, `garden-grow`, `swing-pals`, `sand-table` |
 | Puzzle Peaks (2) | `size-parade`, `puzzle-pals` |
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 37 read and 20 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 43 read and 14 to read, 57 in all.
