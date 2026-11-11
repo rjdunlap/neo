@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Painted Canyon (docs only, PR #1513)
+
+**Changed:** the Painted Canyon table (five games: `rainbow-fingers`, `fluffy-salon`, `stamp-studio`, `draw-the-pattern`, `gear-garden`) and its words-off list (all five) on the [toy-test page](definitions/toy-test-lap-openings.md); three READY lines (`draw-the-pattern`, `stamp-studio`, `gear-garden`; `rainbow-fingers` and `fluffy-salon` get none); the P4 line and progress counts (18 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code, not played or timed).
+
 ## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Music Mountain (docs only, PR #1512)
 
 **Changed:** the Music Mountain table (five games: `jelly-drums`, `sound-garden`, `puppet-stage`, `rhythm-neighbors`, `song-maker`) and its words-off list on the [toy-test page](definitions/toy-test-lap-openings.md); two READY lines (`rhythm-neighbors`, `song-maker`; `jelly-drums`, `sound-garden` and `puppet-stage` get none); the P4 line and progress counts (13 of 57 read).
