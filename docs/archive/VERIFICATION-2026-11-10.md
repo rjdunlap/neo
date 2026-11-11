@@ -60,3 +60,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** school level 9 (six frozen 4 × 7 mazes with two berries, either eating order, early pond refused once per round; `Board.berry2`, `berriesOf`, `MazeState.eaten`; voice `moss.maze-berries`, `moss.berry-one`, `moss.snack-both`; how-to level 8 capped, level 9 added).
 **Ran:** `npm run typecheck`; `npm test` (338 files, 6505 passed, 1 skipped; the first full run had one failure that did not reproduce on the immediate rerun, recorded as a one-off flake under load); `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=snacks` (farther berry first, early pond refused with 1 miss, portrait cells at least 100, finish, one sticker) PASS; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=9` PASS (school, 16.2 s); game-reviewer found no defects.
 **Not run:** other suites (the tier needed none).
+
+## 2026-11-10 — U5a, a first six she can start (PR #1467)
+
+**Changed:** a game new to her today plays its band's first level on its Today's six card (`newToday`, shared `firstLevel`; pin wins, grown-ups unchanged); one `todaysSix` helper for the page and the result's next tile; `GameModule.coplayHintLap` and `tipFor`, Word Glue's lap tip, a registry tip rule with six games on a `PENDING_U5B` list.
+**Ran:** `npm run typecheck`; `npm test` (339 files, 6,520 tests; registry test 38/38 after a small follow-up); `npm run build`; one headless 768 × 1024 flow at `http://localhost:5515/?daily` (`VITE_SPEECH=off`, fresh pre-K profile): six cards at first levels, one quick-tricks round, the next tile opened clock-tower at its first level, the same six back with quick-tricks ticked; one portrait screenshot (not committed); no console errors. A `game-reviewer` pass found nothing blocking.
+**Not run:** offline (no persistence or asset change), `world` (no route change), `phonefit`. The return to the page used `neo.go.daily()`, not the result's Back button.

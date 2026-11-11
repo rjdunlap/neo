@@ -40,6 +40,7 @@ import { namePill } from '../../ui/text';
 import type { App } from '../App';
 import type { Box } from '../transition';
 import { Scene } from '../Scene';
+import { WayOut } from '../leave';
 import { MixHost } from '../mix';
 import { mixSpotArt } from '../../ui/mix';
 import { LOCATIONS } from './LocationScene';
@@ -94,10 +95,10 @@ export class ExploreScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly ids = exploreIds();
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => (this.entry ? this.app.go.explore() : this.app.go.hub()), 'nav.back'),
+    this.leave(this.back, () => (this.entry ? this.app.go.explore() : this.app.go.hub()), 'nav.back'),
   ).means('back');
   readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => this.app.go.hub(), 'nav.home'),
+    this.leave(this.home, () => this.app.go.hub(), 'nav.home'),
   ).means('home');
   readonly prev = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
@@ -115,7 +116,11 @@ export class ExploreScene extends Scene {
   private readonly mixLost = () => this.cancelMix();
   page: number;
   private icons: HubIcon[] = [];
-  private leaving = false;
+  private readonly out = new WayOut(
+    (seconds) => this.tw.wait(seconds),
+    () => this.app.scene === this,
+    this.root,
+  );
 
   constructor(
     app: App,
@@ -176,8 +181,9 @@ export class ExploreScene extends Scene {
         name,
         (n) =>
           this.leave(
+            n,
             () => this.app.growFrom(n, () => this.app.go.land(visited)),
-            voice.say('result.back', { place: name }),
+            () => voice.say('result.back', { place: name }),
           ),
         EXPLORE_POSTCARD,
       );
@@ -190,7 +196,7 @@ export class ExploreScene extends Scene {
         ...EXPLORE_ENTRIES.map((entry) => ({
           kind: 'entry' as const,
           entry,
-          node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)),
+          node: this.card(entryArt(entry), ENTRY_NAMES[entry], (n) => this.open(entry, n)),
         })),
       ];
     else if (e === 'places')
@@ -198,7 +204,7 @@ export class ExploreScene extends Scene {
         kind: 'place',
         id,
         node: this.card(placeArt(id), landFor(id).name, (n) =>
-          this.leave(() => this.app.growFrom(n, () => this.app.go.land(id))),
+          this.leave(n, () => this.app.growFrom(n, () => this.app.go.land(id))),
         ),
       }));
     else if (!this.list.length)
@@ -209,8 +215,8 @@ export class ExploreScene extends Scene {
         {
           kind: 'entry',
           entry: 'arcade',
-          node: this.card(entryArt('arcade'), ENTRY_NAMES.arcade, () =>
-            this.leave(() => this.app.go.explore('arcade', 0, 'mine'), 'arcade.open'),
+          node: this.card(entryArt('arcade'), ENTRY_NAMES.arcade, (n) =>
+            this.leave(n, () => this.app.go.explore('arcade', 0, 'mine'), 'arcade.open'),
           ),
         },
       ];
@@ -242,7 +248,7 @@ export class ExploreScene extends Scene {
     onTap(
       node,
       () => {
-        if (this.leaving || this.covered) return;
+        if (this.out.leaving || this.covered) return;
         sfx.tick();
         squash(node);
         spring(node, 110);
@@ -263,7 +269,7 @@ export class ExploreScene extends Scene {
     node.eventMode = 'static';
     node.cursor = 'pointer';
     node.on('pointerdown', (e: FederatedPointerEvent) => {
-      if (this.leaving || this.covered || this.mixTouch !== null) return;
+      if (this.out.leaving || this.covered || this.mixTouch !== null) return;
       this.mixTouch = e.pointerId;
       sfx.tick();
       squash(node);
@@ -289,7 +295,7 @@ export class ExploreScene extends Scene {
 
   /**
    * A 150-unit cream card (or the larger postcard, `size`) in the shared finish (RW14 slice 7) with its picture and its
-   * name on a pill under it; it squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
+   * name on a pill under it; it squashes and acts on touch-down (`act` null: the caller handles touches).
    */
   private card(
     art: Container,
@@ -308,10 +314,9 @@ export class ExploreScene extends Scene {
       onTap(
         node,
         () => {
-          if (this.leaving || this.covered) return;
+          if (this.out.leaving || this.covered) return;
           sfx.tick();
           squash(node);
-          spring(node, 110);
           act(node);
         },
         { cooldown: 400 },
@@ -323,13 +328,14 @@ export class ExploreScene extends Scene {
    * An entry says its name, then opens where she last was in it this visit. Family play has no page of its own (U6b R8):
    * it says what it needs on the way straight to couch play, whose own menu shows the keys when no controller is there.
    */
-  private open(entry: ExploreEntry) {
+  private open(entry: ExploreEntry, node: Container) {
     if (entry === 'family') {
-      this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }), 'explore.family-pads');
+      this.leave(node, () => this.app.go.couch(false, { explore: 'family', page: 0 }), 'explore.family-pads');
       return;
     }
     const page = exploreMemory.pages[entry] ?? 0;
     this.leave(
+      node,
       () => this.app.go.explore(entry, page),
       entry === 'arcade' ? 'arcade.open' : `explore.${entry}`,
     );
@@ -338,12 +344,13 @@ export class ExploreScene extends Scene {
   /** A game says its title (or, outside her band, who it is for), then plays at the band nearest hers it has. */
   private launch(mod: GameModule, node: Container) {
     const age = ageOf(mod, store.data.profile.band);
-    const say =
+    const say = () =>
       age === 'hers'
         ? voice.say(mod.titleLine)
         : voice.say('explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' });
     const origin = { explore: 'favorites' as const, page: this.page };
     this.leave(
+      node,
       () => this.app.growFrom(node, () => this.app.go.game(mod.id, undefined, undefined, false, origin)),
       say,
     );
@@ -360,7 +367,7 @@ export class ExploreScene extends Scene {
 
   /** The arrows: a page back or on, here, saying how many pictures the new page has. */
   private turn(d: -1 | 1) {
-    if (this.leaving || this.covered) return;
+    if (this.out.leaving || this.covered) return;
     const pages = pageCount(this.list.length);
     const page = this.page + d;
     if (page < 0 || page >= pages) return;
@@ -372,14 +379,19 @@ export class ExploreScene extends Scene {
     void voice.say('explore.page', { n: this.cards.length });
   }
 
-  /** A short beat for the squish (or the line, up to a moment), then the way out; a second tap while leaving does nothing. */
-  private async leave(go: () => void, line?: LineId | Promise<void>) {
-    if (this.leaving || this.covered) return;
-    this.leaving = true;
-    const speech = typeof line === 'string' ? voice.say(line) : line;
-    await (speech ? Promise.race([speech, this.tw.wait(1.1)]) : this.tw.wait(0.2));
-    if (this.app.scene !== this) return;
-    go();
+  private leave(node: Container, go: () => void, line?: LineId | (() => Promise<void>)) {
+    if (this.covered) return;
+    if (this.mixTouch !== null) this.cancelMix();
+    const choices = [
+      this.back,
+      this.home,
+      this.prev,
+      this.next,
+      this.last?.node,
+      ...this.cards.map((c) => c.node),
+    ];
+    const say = typeof line === 'string' ? () => voice.say(line) : line;
+    void this.out.take(node, choices, go, say);
   }
 
   resize(v: View) {

@@ -94,13 +94,18 @@ for (const [shape, options] of Object.entries(shapes)) {
     await record(p, shape, 'chooser pick');
     await p.evaluate(() => kit.store.data.settings && (kit.store.data.settings.howToCards = false));
     if (shape === 'computer') {
-      // Home → Explore → the Arcade (U7c's screens, recorded here for the before).
+      // The tablet root's Home → Explore → the Arcade route.
       await p.waitForTimeout(600);
       await p.evaluate(() => neo.scene.constructor.name === 'HomeScene' || neo.go.hub());
       await p.waitForFunction(() => neo.scene.constructor.name === 'HomeScene' && !neo.switching);
       await p.waitForTimeout(600);
       await p.evaluate(() => kit.tapOn(neo.scene.explore));
-      await record(p, shape, 'Home → Explore').catch(() => console.log('skipped Home → Explore'));
+      await p.waitForFunction(() => neo.scene.constructor.name === 'ExploreScene');
+      await record(p, shape, 'Home → Explore');
+      await p.waitForTimeout(600);
+      await p.evaluate(() => kit.tapOn(neo.scene.cards.find((c) => c.entry === 'arcade').node));
+      await p.waitForFunction(() => neo.scene.constructor.name === 'ArcadeScene');
+      await record(p, shape, 'Explore → the Arcade');
       await p.waitForTimeout(600);
       await p.evaluate(() => neo.go.daily());
       await p.waitForFunction(() => neo.scene.constructor.name === 'DailyScene' && !neo.switching);

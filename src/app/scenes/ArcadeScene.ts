@@ -44,12 +44,13 @@ import type { GameModule, HubIcon } from '../../games/types';
 import { playBand } from '../../progress/bands';
 import { levelsInOrder } from '../../progress/difficulty';
 import { store } from '../../progress/store';
-import { RoundButton } from '../../ui/buttons';
+import { RoundButton, spring, squash } from '../../ui/buttons';
 import { againIcon, arcadeIcon, arrowIcon, houseIcon, playIcon, tilesIcon } from '../../ui/icons';
 import { fitArt } from '../../ui/origin-art';
 import { FONT, label } from '../../ui/text';
 import type { App } from '../App';
 import { Scene } from '../Scene';
+import { WayOut } from '../leave';
 
 const MUTED = 0x6b6b7b;
 /** Until she taps, the spotlight moves on after the demonstration finishes a round, or after this long. */
@@ -74,10 +75,20 @@ export interface ArcadeCard {
 export class ArcadeScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
-    this.sheet ? this.closeTopics() : this.leave(() => this.app.go.explore(), voice.say('nav.back')),
+    this.sheet
+      ? this.closeTopics()
+      : this.leave(
+          this.back,
+          () => this.app.go.explore(),
+          () => voice.say('nav.back'),
+        ),
   ).means('back');
   readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => this.app.go.hub(), voice.say('nav.home')),
+    this.leave(
+      this.home,
+      () => this.app.go.hub(),
+      () => voice.say('nav.home'),
+    ),
   ).means('home');
   readonly prev = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
@@ -85,7 +96,7 @@ export class ArcadeScene extends Scene {
     playIcon(),
     swatch.green,
     ARCADE_PLAY_RADIUS,
-    () => !this.sheet && this.spotlit && this.launch(this.spotlit),
+    () => !this.sheet && this.spotlit && this.launch(this.spotlit, this.play),
   );
   readonly topics = new Container();
   /** The window's frame, the demonstration (or a still picture) and the caption under it. */
@@ -138,7 +149,11 @@ export class ArcadeScene extends Scene {
   private chosen = false;
   private attract = 0;
   private seenRounds = 0;
-  private leaving = false;
+  private readonly out = new WayOut(
+    (seconds) => this.tw.wait(seconds),
+    () => this.app.scene === this,
+    this.root,
+  );
   private readonly youngest = store.data.profile.band === 'lap' || store.data.profile.band === 'toddler';
 
   /** `filter`: open on that filter from its first page (Today's six's button, an empty Favorites; U6b), remembered as hers. */
@@ -197,7 +212,7 @@ export class ArcadeScene extends Scene {
     onTap(
       this.topics,
       () => {
-        if (this.leaving) return;
+        if (this.out.leaving) return;
         sfx.tick();
         this.topics.scale.set(0.94);
         window.setTimeout(() => !this.topics.destroyed && this.topics.scale.set(1), 110);
@@ -333,11 +348,11 @@ export class ArcadeScene extends Scene {
     onTap(
       node,
       () => {
-        if (this.leaving || this.sheet) return;
+        if (this.out.leaving || this.sheet) return;
         sfx.tick();
-        node.scale.set(0.92);
-        window.setTimeout(() => !node.destroyed && node.scale.set(1), 110);
-        this.pick(mod);
+        squash(node);
+        if (this.spotlit !== mod) spring(node, 110);
+        this.pick(mod, node);
       },
       { cooldown: 300 },
     );
@@ -353,9 +368,9 @@ export class ArcadeScene extends Scene {
   }
 
   /** A tap on a card: the spotlit one starts; another is spotlit, and says its name (or who it is for). */
-  pick(mod: GameModule) {
+  private pick(mod: GameModule, node: Container) {
     if (this.spotlit === mod) {
-      this.launch(mod);
+      this.launch(mod, node);
       return;
     }
     this.chosen = true;
@@ -429,18 +444,20 @@ export class ArcadeScene extends Scene {
   }
 
   /** Start a game, saying its name first; Back from it comes to this page. */
-  private launch(mod: GameModule) {
+  private launch(mod: GameModule, node: Container) {
+    if (this.out.leaving) return;
     arcadeMemory.spotlight = mod.id;
     const origin = { explore: 'arcade' as const, page: this.page };
     this.leave(
+      node,
       () => this.app.go.game(mod.id, undefined, undefined, false, origin),
-      voice.say(...this.nameLine(mod)),
+      () => voice.say(...this.nameLine(mod)),
     );
   }
 
   /** The arrows: a page back or on. Before she has chosen, the spotlight follows to the new page's first card. */
   private turn(d: -1 | 1) {
-    if (this.leaving || this.sheet) return;
+    if (this.out.leaving || this.sheet) return;
     const page = this.page + d;
     if (page < 0 || page >= arcadePages(this.list.length, this.perPage)) return;
     this.page = page;
@@ -521,16 +538,22 @@ export class ArcadeScene extends Scene {
     void voice.say(this.list.length ? filterLine(filter) : 'arcade.empty');
   }
 
-  /** A short beat for the squish (or the line, up to a moment), then the way out; a second tap while leaving does nothing. */
-  private async leave(go: () => void, speech?: Promise<void>) {
-    if (this.leaving) return;
-    this.leaving = true;
-    await (speech ? Promise.race([speech, this.tw.wait(1.1)]) : this.tw.wait(0.2));
-    if (this.app.scene !== this) return;
-    go();
+  private leave(node: Container, go: () => void, say: () => Promise<void>) {
+    const choices = [
+      this.back,
+      this.home,
+      this.topics,
+      this.prev,
+      this.next,
+      this.play,
+      ...this.cards.map((c) => c.node),
+      ...(this.sheet?.tiles.map((tile) => tile.node) ?? []),
+    ];
+    void this.out.take(node, choices, go, say);
   }
 
   resize(v: View) {
+    if (this.out.leaving) return;
     this.layout = arcadeLayout(v);
     const perPage = this.layout.cards.length;
     if (perPage !== this.perPage) {
@@ -599,7 +622,7 @@ export class ArcadeScene extends Scene {
     super.update(dt);
     if (this.sheet) return;
     this.demo?.update(dt);
-    if (this.chosen || this.leaving || !this.spotlit || this.cards.length < 2 || this.youngest) return;
+    if (this.chosen || this.out.leaving || !this.spotlit || this.cards.length < 2 || this.youngest) return;
     // Attract mode: after a finished round, or a while, the spotlight moves to the next card on the page. Not at lap and
     // toddler, where RW03 asks for nothing that changes by itself (docs/rework/ARCADE.md#design; the developer's call).
     this.attract += dt;

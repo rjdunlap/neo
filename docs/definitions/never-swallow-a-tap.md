@@ -81,7 +81,12 @@ Each slice is one session. U7a can ship alone: it is the phone's part.
 - **Decided while building.** The tick rule needed to know whether the game answered: every `sfx` call now counts itself in `src/audio/sound-count.ts` (`soundCount`), so a game that answered the tap is never double-sounded. `nav-meaning.test.ts` was updated for the beat.
 - **Not built.** The large-pet games' star does not bob: a bob would move the star's attach points and drop targets, so the corner guide is the only talking look. Leftover for any game with a large pet, if a phone playtest shows the held line is unclear there.
 
-**Dependencies.** U7c edits the same root scenes as U6a (the Arcade), U6b (Explore, Home's routes) and phone-portrait shell slice 3 (creature play, the library, the Arcade); it waits until U6 has landed, and its session runs `scripts/overlap.sh` on those files first. U7a's `DailyScene` change is the `leave` helper and the card's tap only, which U6b (the All games button's target) does not touch, so U7a may go before or after U6. `classic/` is untouched: its map and menus are a separate shell and are not reached from a phone's root.
+### U7c as built (2026-11-10)
+
+- Home, Explore, the Arcade, the library and creature play take the first navigation tap through `WayOut`. The chosen picture stays squashed with a white ring, the other choices dim to 60%, and scene touches stop for the 0.2 s beat. The spoken line starts with the tap and can play through the change until the destination speaks.
+- Explore's existing grows into a location or a favorite carry the pressed picture into the transition. The other exits keep their crossfades. In creature play, tapping the Friends nest starts the pet's cheer and opens Friends on the beat. Arcade card previews, Topics, and Little surprises' tap and hold still act within their own screens.
+
+**Dependencies.** U7c edits the same root scenes as U6a (the Arcade), U6b (Explore, Home's routes) and phone-portrait shell slice 3 (creature play, the library, the Arcade). All three landed before U7c. U7a's `DailyScene` change is the `leave` helper and the card's tap only, which U6b (the All games button's target) does not touch, so U7a may go before or after U6. `classic/` is untouched: its map and menus are a separate shell and are not reached from a phone's root.
 
 ## Open decisions
 
