@@ -12,11 +12,12 @@ import { CORNER_RADIUS, EXPLORE_CARD, exploreGridLayout } from '../../creatures/
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
-import { RoundButton } from '../../ui/buttons';
+import { RoundButton, squash } from '../../ui/buttons';
 import { arrowIcon, houseIcon, journalIcon } from '../../ui/icons';
 import { fitArt } from '../../ui/origin-art';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
+import { WayOut } from '../leave';
 
 const ART: Record<LibraryBook, () => Container> = {
   journal: journalIcon,
@@ -42,14 +43,18 @@ export class LibraryScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly books = libraryBooks(store.data.profile.band);
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => this.app.go.room(), 'nav.back'),
+    this.leave(this.back, () => this.app.go.room(), 'nav.back'),
   ).means('back');
   readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
-    this.leave(() => this.app.go.hub(), 'nav.home'),
+    this.leave(this.home, () => this.app.go.hub(), 'nav.home'),
   ).means('home');
   /** The cards on screen, in order, so a script can find and press one. */
   readonly cards: { book: LibraryBook; node: Container }[] = [];
-  private leaving = false;
+  private readonly out = new WayOut(
+    (seconds) => this.tw.wait(seconds),
+    () => this.app.scene === this,
+    this.root,
+  );
 
   init() {
     this.content.addChild(this.backdrop);
@@ -80,31 +85,25 @@ export class LibraryScene extends Scene {
     onTap(
       node,
       () => {
-        if (this.leaving) return;
+        if (this.out.leaving) return;
         sfx.tick();
-        node.scale.set(0.9);
-        this.leave(
-          () =>
-            book === 'journal'
-              ? this.app.go.journal()
-              : book === 'windy'
-                ? this.app.go.picnic()
-                : this.app.go.woodland(),
-          LINES[book],
-        );
+        squash(node);
+        const go = () =>
+          book === 'journal'
+            ? this.app.go.journal()
+            : book === 'windy'
+              ? this.app.go.picnic()
+              : this.app.go.woodland();
+        this.leave(node, go, LINES[book]);
       },
       { cooldown: 400 },
     );
     return node;
   }
 
-  /** A short beat for the squish (or the line, up to a moment), then the way out; a second tap while leaving does nothing. */
-  private async leave(go: () => void, line?: LineId) {
-    if (this.leaving) return;
-    this.leaving = true;
-    await (line ? Promise.race([voice.say(line), this.tw.wait(1.1)]) : this.tw.wait(0.2));
-    if (this.app.scene !== this) return;
-    go();
+  private leave(node: Container, go: () => void, line: LineId) {
+    const choices = [this.back, this.home, ...this.cards.map((c) => c.node)];
+    void this.out.take(node, choices, go, () => voice.say(line));
   }
 
   resize(v: View) {

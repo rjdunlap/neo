@@ -19,6 +19,7 @@ import { gearButton } from '../../ui/grownups';
 import { basketIcon, meadowIcon, peopleIcon, playWithIcon, sixIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
+import { WayOut } from '../leave';
 import { BallPlay } from './ball-play';
 
 /** Lap and toddler get the ball right here; preschool and older get Play with {pet}, which opens creature play. */
@@ -40,26 +41,26 @@ export class HomeScene extends Scene {
   readonly young = youngHome();
   readonly pet: Companion = this.track(makeCompanion());
   readonly who = new RoundButton(peopleIcon(), swatch.white, CORNER_RADIUS, () =>
-    this.leave('home.who', () => this.app.go.start()),
+    this.leave(this.who, 'home.who', () => this.app.go.start()),
   ).named(HOME_NAMES.who, HOME_NAME_W.who);
   /** Welcome a New Friend (RW07): drawn while the project is open and hers, never empty. */
   readonly cont: RoundButton | null =
     !this.young && showsContinue(store.welcome, store.data.profile.band)
       ? new RoundButton(basketIcon(), swatch.orange, ACTION_RADIUS, () =>
-          this.leave('home.continue', () => this.app.go.project()),
+          this.leave(this.cont!, 'home.continue', () => this.app.go.project()),
         ).named(HOME_NAMES.continue, HOME_NAME_W.alone)
       : null;
   readonly play: RoundButton | null = this.young
     ? null
     : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () =>
-        this.leave('home.play', () => this.app.go.room()),
+        this.leave(this.play!, 'home.play', () => this.app.go.room()),
       ).named(playName(voice.pet), HOME_NAME_W.alone);
   readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () =>
-    this.leave('home.explore', () => this.app.go.explore()),
+    this.leave(this.explore, 'home.explore', () => this.app.go.explore()),
   ).named(HOME_NAMES.explore, HOME_NAME_W.pair);
   /** Today's six (D10): six games for the day at preset levels, for every band; its Back comes Home. */
   readonly daily = new RoundButton(sixIcon(), swatch.white, ACTION_RADIUS, () =>
-    this.leave('daily.go', () => this.app.go.daily()),
+    this.leave(this.daily, 'daily.go', () => this.app.go.daily()),
   ).named(HOME_NAMES.daily, HOME_NAME_W.pair);
   readonly toy: BallPlay | null = this.young
     ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')))
@@ -67,7 +68,7 @@ export class HomeScene extends Scene {
   /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
   private readonly gear = gearButton({
     onOpen: () => {
-      if (this.leaving) return;
+      if (this.out.leaving) return;
       voice.stop();
       openParentPanel(
         () => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()),
@@ -75,11 +76,17 @@ export class HomeScene extends Scene {
         { app: 'root' },
       );
     },
-    onShort: () => void voice.say('parent.ask'),
+    onShort: () => {
+      if (!this.out.leaving) void voice.say('parent.ask');
+    },
   });
   /** Her band went up since the world last saw her: a party, once. */
   readonly birthday = birthdayDue(store.data.world, store.data.profile.band);
-  private leaving = false;
+  private readonly out = new WayOut(
+    (seconds) => this.tw.wait(seconds),
+    () => this.app.scene === this,
+    this.root,
+  );
 
   constructor(app: App) {
     super(app);
@@ -100,15 +107,13 @@ export class HomeScene extends Scene {
     document.body.appendChild(this.gear.el);
   }
 
-  /** A picture's line, a hop, then the way out; a second tap while leaving does nothing. */
-  private async leave(line: LineId, go: () => void) {
-    if (this.leaving) return;
-    this.leaving = true;
-    this.gear.hide(true);
-    this.pet.cheer();
-    await Promise.race([voice.say(line), this.tw.wait(0.9)]);
-    if (this.app.scene !== this) return;
-    go();
+  private leave(node: RoundButton, line: LineId, go: () => void) {
+    const choices = [this.who, this.cont, this.play, this.explore, this.daily];
+    void this.out.take(node, choices, go, () => {
+      this.gear.hide(true);
+      this.pet.cheer();
+      return voice.say(line);
+    });
   }
 
   resize(v: View) {
