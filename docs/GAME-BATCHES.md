@@ -1867,7 +1867,7 @@ Proof: new-interaction tier (typecheck, unit tests, one filtered `tilepairs` pla
 
 ### tile-pairs 3: Tricky deals and the first lessons
 
-- **`tile-pairs`, harder deals and levels 10–11, then lesson puzzles 17–19** (dive slices 7 and 8, [dive](deep-dives/tile-pairs.md#build-slices-in-order); after batch 2 and level 7; grown-up): the deal dial's harder bands for levels 3–6; an offline `scripts/tile-pairs-pool.mjs` that freezes 24 tricky deals each for *Tricky twins* and *Tricky tower* (each clears, has a losing pair in its first three and passes the fair-trap check); then three designed lesson levels (*Open the most*, *Three free copies*, *Twins on twins*) frozen in `puzzles.ts` with mirror and picture permutation, a lesson line after the stuck line, and the band's `order` with its test.
+- **`tile-pairs`, harder deals and level 10, then lesson puzzles 17–19** (dive slices 7 and 8, [dive](deep-dives/tile-pairs.md#build-slices-in-order); after batch 2; grown-up): the deal dial's harder bands for levels 3–6; an offline `scripts/tile-pairs-pool.mjs` that freezes 24 tricky deals for *Tricky twins* (each clears, has a losing first pair and passes the fair-trap check); then three designed lesson levels (*Twins on twins*, *Three free copies*, *Crossed stacks*), found by the same script's placement search frozen in `puzzles.ts` with mirror and picture permutation, a lesson line after the stuck line, and the band's `order` with its test.
 
 Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `pools.ts`, `puzzles.ts`, `index.ts`, `voice.ts`, `howto.ts`, `scripts/tile-pairs-pool.mjs`, `docs/games/tile-pairs.md` and the dive's "What was built" section.
 

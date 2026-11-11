@@ -33,7 +33,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`tile-pairs`, batch 2, Peek under the stack** (after batch 1; new-interaction tier: typecheck, unit tests, one filtered `tilepairs` play at level 5 that peeks, pairs, takes a wrong answer and a hint, a portrait screenshot of the see-through view, `fingerdemo` only if the card's demonstrated action changes, `couchgames` filtered to Tile Pairs if a pad button is mapped, build): a Peek button fades the covering tiles so the pictures below show, uncounted; the two more looks may ride with it. [Dive](deep-dives/tile-pairs.md#build-slices-in-order), [batch plan](GAME-BATCHES.md#tile-pairs-2-peek-under-the-stack)
 
-- **`tile-pairs`, batch 3, tricky deals and the first lessons** (after batch 2 and level 7; typecheck, rule tests, filtered `tilepairs` plays of 10 and 19, a portrait screenshot, `fingerdemo` at 10 and 17, build): harder seeded deals, two frozen pools of tricky boards, and three designed lesson levels that each teach one Mahjong-solitaire habit. [Dive](deep-dives/tile-pairs.md#puzzle-challenges-designed-lessons-second-pass), [batch plan](GAME-BATCHES.md#tile-pairs-3-tricky-deals-and-the-first-lessons)
+- **`tile-pairs`, batch 3, tricky deals and the first lessons** (after batch 2; typecheck, rule tests, filtered `tilepairs` plays of 10 and 19, a portrait screenshot, `fingerdemo` at 10 and 17, build): harder seeded deals, a frozen pool of tricky boards, and three designed lesson levels that each teach one Mahjong-solitaire habit. [Dive](deep-dives/tile-pairs.md#puzzle-challenges-designed-lessons-second-pass), [batch plan](GAME-BATCHES.md#tile-pairs-3-tricky-deals-and-the-first-lessons)
 
 
 
