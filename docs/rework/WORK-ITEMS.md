@@ -220,6 +220,7 @@ RW09 is now defined ([packet](LEARNING-RECAP.md)); RW10–RW12 remain on the [st
 - Owned looks/toys/forms remain selectable. The book handles a larger collection through readable grouping rather than shrinking every tile.
 - Keep exploration, friendship/world progress and learning evidence distinct; ordinary learning/help stays accessible.
 - No global currency, random drop engine or real-time collection schedule is required for this slice.
+- **Put-down test** (added 2026-11-10 from the [Pok Pok review](../POK-POK.md#p6-the-put-down-test-for-unlock-goals-a-line-for-rw10-docs)): a goal's progress is shown in the collection book, which she opens by choice. The result screen never shows a goal as nearly full, never counts rounds still to go, and offers stopping as plainly as playing again.
 
 **Likely files:** collection content/rules and scene, adventure reward/goal integration. **Proof:** pure unlock/ownership tests, focused collection/project/return flow and applicable shell/save/navigation tier.
 

@@ -127,6 +127,7 @@ _Built 2026-10-23 ([PR #906](https://github.com/rjdunlap/neo/pull/906)): `App.sh
 
 - **Game scenes.** Illustrated surroundings for one game's own scene (Duck Pond's pond, behind the code-drawn water) after slice 6 is judged. It would be a queue row like R22, and the game's geometry stays code-drawn.
 - **Home at dusk.** `home-dusk-2` exists; the [RW06 default](HOME.md#decisions-defaults-the-build-uses) is day only.
+- **A stepped wobble.** One prop or one location's foreground gets an idle wobble that updates eight times a second rather than every frame, to see whether it reads as hand-made beside the mesh-rig creatures. Judged in a screenshot review; dropped if it reads as a low frame rate. No new art. From the [Pok Pok review](../POK-POK.md#p8-a-stepped-wobble-art-exploration-s-optional) (2026-11-10).
 - **"New" marks.** Sparkles on unplayed spots could start only after her first round in a location, so that they mean "new since you were here". This is a proposal; it changes no gate.
 
 ## Not established

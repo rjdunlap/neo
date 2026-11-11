@@ -59,7 +59,7 @@ Tinker Lab currently holds Habitat Helpers; Color Cove holds Garden Grow; Story 
 
 ## Similar games, apps and physical references
 
-Five opened digital references, plus two tabletop references. Progression describes each source's stated structure, not hands-on testing. Developer descriptions do not prove learning efficacy.
+Six opened digital references, plus two tabletop references. Progression describes each source's stated structure, not hands-on testing. Developer descriptions do not prove learning efficacy.
 
 | Reference and source | How depth grows | Borrow | Leave out / limit |
 | --- | --- | --- | --- |
@@ -70,6 +70,7 @@ Five opened digital references, plus two tabletop references. Progression descri
 | **Eco**, [official wiki about page](https://wiki.play.eco/en/Eco:About) | A shared world couples resource use, ecosystem consequences and civilization building | Make consequences inspectable and let people explain their plans together | Real server/network infrastructure, persistent exploitation, world catastrophe or obligations. About page gives no detailed level progression; main site returned no readable text |
 | **Ecosystem**, [Genius Games](https://www.geniusgames.org/collections/science-games/products/ecosystem-family-card-game-animals-ecology-habitats-biodiversity), tabletop | Draft and arrange organisms/environments into a network; spatial combinations change value | Several viable layouts and visible local relationships | Victory points, monoculture penalties and drafting competition. Publisher says 10+; not a developmental finding |
 | **EcoChains: Arctic Life**, [classroom quick guide](https://ecochainsgame.com/wp-content/uploads/2017/10/EcoChains-Arctic-Life-MS-Classroom-QuickGuide_0.pdf), tabletop | Add interconnected species cards and consider environmental changes | A physical network makes shared dependencies visible; compare before/after | Climate-loss pressure and competitive card rules; Arctic content would need its own accurate species set |
+| **Pok Pok Forest**, [MobileSyrup's account](https://mobilesyrup.com/2021/09/06/pok-pok-approach-ai-open-ended-creativity-spawns-new-forest-update/) ([Pok Pok review](../../POK-POK.md)) | No ladder: each bug has its own behaviour (eats when hungry, hides when scared, sticks in a web), rain changes the scene, and rocks, flowers and sticks can be moved | Creatures that carry on unprompted and react to what is placed near them, so a relationship is seen before it is named | Predation or a "circle of life" shown without words to the youngest; a press account of the developer's description, not played |
 
 **Unavailable leads:** PBS Feed the Dingo's educator page and toolkit both redirected to current Plum Landing videos; no original game rules were verified. The North Gulf of Alaska LTER food-web game and lesson PDF failed to load. Do not cite these as opened playable references. An unplugged equivalent for our eventual first slice is three to five drawn organism cards with paper arrows; compare the arrows with pictured feeding observations. This is an original model exercise, not a copy of EcoChains; any published nature/safety advice needs its named review.
 
