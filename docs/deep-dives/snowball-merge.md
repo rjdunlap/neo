@@ -104,7 +104,7 @@ Slices 1–4 go ahead regardless.
 
 ## Build slices, in order
 
-1. **Boards, looks, the join moment, the glow and a par line** (claimed 2026-11-10, branch `claude/snowball-merge-boards-looks`). The board generator script and four frozen boards per level; per-size colours and the join squash, puff and pop; three seeded field looks; the automatic glow at a dead end and after two inert arrows, counted once; the par line after finishing. Checks: existing-game change on the existing interaction: typecheck, rule tests (variants at least 12 per level, depth bands, level 1 has no reachable dead end, glow counted once), one filtered `BROWSER_SUITE=snowball` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot waits for the join); build only if shared files change.
+1. **Boards, looks, the join moment, the glow and a par line** (built 2026-11-10, PR #1483). The board generator script `scripts/snowball-merge-boards.ts` and four frozen boards per level; per-size colours and the join squash, puff and pop; three seeded field looks; the automatic glow at a dead end and after two inert arrows, counted once; the par line after finishing. Checks: existing-game change on the existing interaction: typecheck, rule tests (variants at least 12 per level, depth bands, level 1 has no reachable dead end, glow counted once), one filtered `BROWSER_SUITE=snowball` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot waits for the join); build only if shared files change.
 2. **Level 4 *Make 128*.** Frozen 3×3 boards at 128, range 1–4, the 128 look. Checks: new level on the existing interaction: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4. After slice 1.
 3. **Level 5 *The ice rock*.** The rock in `slide`, its art, voice line and how-to step; range 1–5. Checks: model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build.
 4. **Level 6 *Build a snowman*.** Goal kinds, the stacked finish, voice and how-to; range 1–6. Checks: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one overshoot and Undo, one portrait screenshot, `fingerdemo` at 6.
@@ -114,4 +114,10 @@ The school opening, couch course and swipes (decisions 1–3) are gated and stay
 
 ## What was built in this session
 
-Nothing: research and design only (ran `node scripts/check-links.mjs` and `git diff --check`).
+Design only at first (`check-links` and `git diff --check`). Slice 1 was built 2026-11-10 (PR #1483):
+
+- `scripts/snowball-merge-boards.ts` freezes four boards per level into `src/games/snowball-merge/boards.ts`, the authored plan first and the rest picked, turned and mirrored by seed. Route depth: level 1 3–4 with no reachable dead end, level 2 5–7, level 3 7–9 with a reachable dead end.
+- Per-size looks (2 and 4 blue, 8 teal, 16 purple, 32 pink, 64 yellow with a scarf stripe); the 128 snowman face is left for slice 2.
+- Join moment: squash over 0.06 s, a white puff, the doubled ball pops in at 1.15 and settles. Three seeded field looks: morning, dusk (stars) and flurry (slow flakes that never touch play).
+- Automatic glow: a slide into a dead end lights Undo and the pet says the stuck line; two inert arrows in a row light the route's next arrow. Each counts as one hint, once (`nextHelp` in `logic.ts`); asking while something glows counts nothing; Restart still counts as help.
+- Par line after finishing: "N slides · the shortest route is M", information only. `howto.ts` updated.
