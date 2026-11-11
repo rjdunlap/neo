@@ -8,7 +8,7 @@ A home-made iPad learning game in the spirit of JumpStart and Neopets: playful l
 
 What's in it:
 
-- **175 small games** in eleven themed lands on one island map, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
+- **176 small games** in eleven themed lands on one island map, each with spoken instructions, gentle hints, adaptive levels and one sticker per round.
 - **A pet** she hatches and names (at the root, on Home’s illustrated backdrop), a **sticker book**, and the pet's **treehouse**, where things she made hang on the wall and a discovery journal fills up.
 - **Two short stories** that connect three activities each: the Windy Picnic, and for early school the Woodland Picnic.
 - **Couch play** for two grown-ups with controllers or a keyboard on a computer: trips, face-offs and challenge courses, with its own save.
