@@ -11,6 +11,17 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
         },
         [fn.toString(), arg],
       );
+    /** Couch play ignores a press in its first 0.35 s (`age`), which slow headless frames stretch: wait it out, then leave. */
+    const backToStart = async () => {
+      await page.waitForFunction(
+        () => neo.scene.constructor.name === 'CouchScene' && neo.scene.age >= 0.35,
+        null,
+        {
+          timeout: 15000,
+        },
+      );
+      await page.getByRole('button', { name: 'Back to start', exact: true }).click();
+    };
     const cards = (n) =>
       page.waitForFunction(
         (n) =>
@@ -146,14 +157,14 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
         .dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 0 })),
     );
     await scene('CouchScene');
-    await page.getByRole('button', { name: 'Back to start', exact: true }).click();
+    await backToStart();
     await cards(1);
 
     // Someone old enough chooses a friend with no egg, and starts at the top band.
     await addPlayer('Robert', 3, 1980);
     await scene('HatchScene');
     assert.equal(await page.evaluate(() => neo.scene.step), 'color', 'from 13 there is no egg');
-    assert.deepEqual(await storeNow().then((s) => [s.name, s.band, s.n]), ['Robert', 'school', 2]);
+    assert.deepEqual(await storeNow().then((s) => [s.name, s.band, s.n]), ['Robert', 'grownup', 2]);
     const robertId = await page.evaluate(() => kit.store.activeId);
     assert.equal(
       await page.evaluate(async (id) => (await kit.store.peek(id)).profile.name, firstId),
@@ -190,7 +201,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     assert.equal((await storeNow()).id, firstId);
 
     // The card's own couch button is the same for a mouse.
-    await page.getByRole('button', { name: 'Back to start', exact: true }).click();
+    await backToStart();
     await cards(2);
     await page.locator('.chooser__couch').nth(1).click();
     await scene('CouchScene');
@@ -199,7 +210,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
       'Robert',
     );
     assert.equal((await storeNow()).id, robertId);
-    await page.getByRole('button', { name: 'Back to start', exact: true }).click();
+    await backToStart();
     await cards(2);
 
     // The grown-ups' page edits whoever is picked at the top, and puts back whoever was playing.
@@ -225,7 +236,7 @@ export function createSuite({ page, errors, log, ready, scene, pickFirst, screen
     await page.locator('[data-follow]').click();
     assert.equal(
       await page.evaluate(() => kit.store.data.profile.band),
-      'school',
+      'grownup',
       'following their age again',
     );
     await page.selectOption('#p-month', '');
