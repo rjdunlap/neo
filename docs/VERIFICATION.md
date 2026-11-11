@@ -18,6 +18,12 @@
 **Ran:** `npm run typecheck`; `npm test` (347 files, 6638 passed, 1 skipped; snowball-merge 17 rule tests, the map agreeing with `solve` on every reachable board of the 3×3 boards and the authored 4×4 one, a 1-in-7 sample of the other three; `upright-batch-4` for the 4×4 layout); `npm run build`; `BROWSER_SUITE=snowball SNOWBALL_LEVELS=7` (390 × 844: 16 cells, one glow counted as one hint, hints finish in the map's 13 slides, one sticker, 0 misses, 1 hint; portrait and landscape screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=snowball-merge FINGER_LEVELS=7` (15.3 s).
 **Not run:** the other `snowball` blocks (levels 1, 4, 5, 6, land launch; their hints now come from the map and only unit tests cover that), `uprightgames`, `world`, offline, couch suites. The harness viewport is not a touch phone, so the real upright layout is covered by the unit test only.
 
+## 2026-11-11 — Memory Desk (H8) definition (docs only, PR #1504)
+
+**Changed:** new [definition](definitions/memory-desk.md) of a proposed school game, Memory Desk, levels 1–3 (*Keep one*, *Open or shut*, *Fix the desk*), kept separate from Parcel Programs for those levels, in two build batches (memory-desk 1, then 2); the study, packet, ideas, batch plans, READY and the study backlog point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built).
+
 ## 2026-11-11 — Picture Bytes (H6) definition (docs only)
 
 **Changed:** new [definition](definitions/picture-bytes.md) of Pixel Pictures levels 11 *Ones and zeros* and 12 *A whole picture* in two build batches (pixel-pictures 5, then 6); the study, packet, batch plans, dive, READY and the study backlog point to it.
