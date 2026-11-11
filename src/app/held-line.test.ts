@@ -13,8 +13,8 @@ describe('HeldLines (U7 R5)', () => {
     const held = new HeldLines();
     const a = line();
     const b = line();
-    held.line(a.spoken);
-    held.line(b.spoken);
+    void held.line(a.spoken);
+    void held.line(b.spoken);
     expect(held.talking).toBe(true);
     a.end();
     await settle();
@@ -26,7 +26,7 @@ describe('HeldLines (U7 R5)', () => {
 
   it('ticks for a tap that did nothing while a line held the game', () => {
     const held = new HeldLines();
-    held.line(line().spoken);
+    void held.line(line().spoken);
     held.down(5);
     expect(held.frame(5)).toBe(false); // not lifted yet
     held.up();
@@ -36,12 +36,12 @@ describe('HeldLines (U7 R5)', () => {
 
   it('stays quiet when the tap made a sound or started a line', () => {
     const held = new HeldLines();
-    held.line(line().spoken);
+    void held.line(line().spoken);
     held.down(5);
     held.up();
     expect(held.frame(6)).toBe(false);
     held.down(6);
-    held.line(line().spoken);
+    void held.line(line().spoken);
     held.up();
     expect(held.frame(6)).toBe(false);
   });
@@ -52,7 +52,7 @@ describe('HeldLines (U7 R5)', () => {
     held.up();
     expect(held.frame(0)).toBe(false);
     const a = line();
-    held.line(a.spoken);
+    void held.line(a.spoken);
     held.down(0);
     held.cancel();
     held.up();
