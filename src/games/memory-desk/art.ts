@@ -325,11 +325,16 @@ export function turtleArt(on: boolean): Graphics {
   g.ellipse(-4, 0, 14, 9).stroke(line(sh.line, 3));
   g.circle(25, 0, 9).fill(swatch.green.light).stroke(line(swatch.green.line, 3));
   g.circle(28, -2, 2).fill(ink);
-  for (const x of [-20, 8]) g.roundRect(x, 12, 11, 9, 4).fill(swatch.green.light).stroke(line(swatch.green.line, 3));
+  for (const x of [-20, 8])
+    g.roundRect(x, 12, 11, 9, 4).fill(swatch.green.light).stroke(line(swatch.green.line, 3));
   return g;
 }
 
 /** Step: one arrow up to a stop bar, "run one". */
 export function stepArt(): Graphics {
-  return new Graphics().poly([-20, -22, 12, 0, -20, 22]).fill(0xffffff).roundRect(16, -22, 9, 44, 4).fill(0xffffff);
+  return new Graphics()
+    .poly([-20, -22, 12, 0, -20, 22])
+    .fill(0xffffff)
+    .roundRect(16, -22, 9, 44, 4)
+    .fill(0xffffff);
 }

@@ -120,7 +120,10 @@ export function createSuite({ page, launch, finished, screenshot }) {
       });
     const still = async () => {
       await page.waitForFunction(
-        () => neo.scene.finished || neo.scene.game.finished || (!neo.scene.game.busy && neo.scene.game.playTo === null),
+        () =>
+          neo.scene.finished ||
+          neo.scene.game.finished ||
+          (!neo.scene.game.busy && neo.scene.game.playTo === null),
         null,
         { timeout: 15000 },
       );
@@ -142,10 +145,18 @@ export function createSuite({ page, launch, finished, screenshot }) {
     let h = await hatch();
     assert.deepEqual(h.hatches, [false, false], 'both hatches start shut');
     assert.deepEqual(h.desk, [null, null, null], 'the desk starts empty');
-    assert.equal(await page.evaluate(() => neo.scene.game.brief.target), y, 'the first sign wants the second picture');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.brief.target),
+      y,
+      'the first sign wants the second picture',
+    );
     await press('checkButton');
     h = await hatch();
-    assert.deepEqual([h.tally, h.bi, h.pos], [[0, 0], 0, 0], 'an untouched Check is a nudge, not a miss or a run');
+    assert.deepEqual(
+      [h.tally, h.bi, h.pos],
+      [[0, 0], 0, 0],
+      'an untouched Check is a nudge, not a miss or a run',
+    );
 
     await press('hatchNodes[1]');
     await press('undoButton');
@@ -156,32 +167,58 @@ export function createSuite({ page, launch, finished, screenshot }) {
     await press('hatchNodes[0]');
     await press('stepButton');
     h = await hatch();
-    assert.deepEqual([h.pos, h.desk], [3, [x, x, x]], 'one Step: the picture arrives, goes in through the open hatch and shows');
+    assert.deepEqual(
+      [h.pos, h.desk],
+      [3, [x, x, x]],
+      'one Step: the picture arrives, goes in through the open hatch and shows',
+    );
     await press('stepButton');
     h = await hatch();
-    assert.deepEqual([h.pos, h.desk], [6, [y, x, x]], 'a shut hatch keeps the old one while the tray changes');
+    assert.deepEqual(
+      [h.pos, h.desk],
+      [6, [y, x, x]],
+      'a shut hatch keeps the old one while the tray changes',
+    );
     assert.deepEqual(h.tally, [0, 0], 'stepping is never counted');
 
     await press('checkButton');
     h = await hatch();
-    assert.deepEqual([h.tally, h.bi, h.glowing], [[1, 0], 0, false], 'a failed Check is one miss and no glow yet');
+    assert.deepEqual(
+      [h.tally, h.bi, h.glowing],
+      [[1, 0], 0, false],
+      'a failed Check is one miss and no glow yet',
+    );
     await press('checkButton');
     h = await hatch();
-    assert.deepEqual([h.tally, h.glowing], [[1, 0], false], 'the same hatches checked again are not a second miss');
+    assert.deepEqual(
+      [h.tally, h.glowing],
+      [[1, 0], false],
+      'the same hatches checked again are not a second miss',
+    );
     await press('hatchNodes[0]');
     h = await hatch();
     assert.equal(h.pos, 0, 'changing a hatch clears her run from that step on');
     await press('checkButton');
     h = await hatch();
-    assert.deepEqual([h.tally, h.glowing], [[2, 1], true], 'the second failed Check brings the glow and one hint');
+    assert.deepEqual(
+      [h.tally, h.glowing],
+      [[2, 1], true],
+      'the second failed Check brings the glow and one hint',
+    );
 
     await press('hatchNodes[1]');
     await press('checkButton');
-    await page.waitForFunction(() => neo.scene.game.bi === 1 && !neo.scene.game.busy, null, { timeout: 15000 });
+    await page.waitForFunction(() => neo.scene.game.bi === 1 && !neo.scene.game.busy, null, {
+      timeout: 15000,
+    });
     await page.waitForTimeout(450);
     h = await hatch();
     assert.deepEqual(h.hatches, [false, false], 'the second brief starts shut again');
-    assert.equal(await page.evaluate(() => neo.scene.game.brief.target), x, 'the second sign wants the first picture');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.brief.target),
+      x,
+      'the second sign wants the first picture',
+    );
     await press('hatchNodes[0]');
     await screenshot('memory-desk-level-2');
     await tapOn('neo.scene.game.checkButton');
@@ -212,11 +249,19 @@ export function createSuite({ page, launch, finished, screenshot }) {
       await help();
       h = await hatch();
       assert.deepEqual(h.hatches, b.preset, 'the first Help changes nothing');
-      assert.deepEqual([h.tally, h.glowing], [[0, 2 * bi + 1], true], 'the first Help is one hint and a glow');
+      assert.deepEqual(
+        [h.tally, h.glowing],
+        [[0, 2 * bi + 1], true],
+        'the first Help is one hint and a glow',
+      );
       assert.equal(h.pos, 3 * h.helpAt + 2, 'it stops at the write of the step it names');
       await help();
       h = await hatch();
-      assert.equal(h.hatches.filter((v, i) => v !== b.preset[i]).length, 1, 'the second Help sets that one hatch');
+      assert.equal(
+        h.hatches.filter((v, i) => v !== b.preset[i]).length,
+        1,
+        'the second Help sets that one hatch',
+      );
       assert.deepEqual(h.tally, [0, 2 * bi + 2], 'and is one more hint');
       if (bi === 0) {
         // Her run was cleared from the changed hatch on; Step runs the rest of the row.
@@ -232,7 +277,9 @@ export function createSuite({ page, launch, finished, screenshot }) {
         await page.waitForTimeout(400);
         await screenshot('memory-desk-level-3-landscape');
         await tapOn('neo.scene.game.checkButton');
-        await page.waitForFunction(() => neo.scene.game.bi === 1 && !neo.scene.game.busy, null, { timeout: 15000 });
+        await page.waitForFunction(() => neo.scene.game.bi === 1 && !neo.scene.game.busy, null, {
+          timeout: 15000,
+        });
         await page.waitForTimeout(450);
       }
     }

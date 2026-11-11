@@ -229,9 +229,17 @@ describe('Memory Desk levels 2–3: one step', () => {
       trace.forEach((t, i) => {
         const before = i ? trace[i - 1] : { stored: brief.initialStored, output: null };
         // Arrived: only the tray has changed.
-        expect(deskAt(brief, h, 3 * i + 1)).toEqual({ input: t.input, stored: before.stored, output: before.output });
+        expect(deskAt(brief, h, 3 * i + 1)).toEqual({
+          input: t.input,
+          stored: before.stored,
+          output: before.output,
+        });
         // Written: the drawer has changed (or held) and the window still shows the step before.
-        expect(deskAt(brief, h, 3 * i + 2)).toEqual({ input: t.input, stored: t.stored, output: before.output });
+        expect(deskAt(brief, h, 3 * i + 2)).toEqual({
+          input: t.input,
+          stored: t.stored,
+          output: before.output,
+        });
         expect(deskAt(brief, h, 3 * i + 3)).toEqual({ input: t.input, stored: t.stored, output: t.output });
       });
       expect(deskAt(brief, h, 9).output).toBe(output);
@@ -297,7 +305,8 @@ describe('Memory Desk levels 2–3: briefs and Check', () => {
     expect(new Set(briefsAt(2).map((b) => b.target)).size).toBe(TOKENS.length);
     expect(new Set(all.map(repairOf))).toEqual(new Set(['held', 'first', 'second']));
     // The kept token is wanted (every hatch shut is the only answer), or the first or second to arrive is.
-    for (const b of all.filter((b) => repairOf(b) === 'held')) expect(solutions(b)).toEqual([[false, false, false]]);
+    for (const b of all.filter((b) => repairOf(b) === 'held'))
+      expect(solutions(b)).toEqual([[false, false, false]]);
     expect(all.some((b) => b.target === b.queue[0])).toBe(true);
     expect(all.some((b) => b.target === b.queue[1])).toBe(true);
     expect(new Set(all.map((b) => String(b.preset))).size).toBeGreaterThan(3);
@@ -348,7 +357,13 @@ describe('Memory Desk levels 2–3: Help', () => {
 
 describe('Memory Desk levels 2–3: layout', () => {
   const hit = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const target = (what: string, r: Rect): Target => ({ what, x: r.x + r.w / 2, y: r.y + r.h / 2, w: r.w, h: r.h });
+  const target = (what: string, r: Rect): Target => ({
+    what,
+    x: r.x + r.w / 2,
+    y: r.y + r.h / 2,
+    w: r.w,
+    h: r.h,
+  });
   const views = {
     landscape: computeView(1024, 768),
     portrait: computeView(768, 1024),
@@ -357,39 +372,42 @@ describe('Memory Desk levels 2–3: layout', () => {
   };
   const cases = Object.entries(views).flatMap(([name, v]) => [2, 3].map((n) => [name, n, v] as const));
 
-  it.each(cases)('on %s with %i steps every part is full size, in view, apart and clear of the corners', (_, n, v) => {
-    const l = hatchLayout(n, v);
-    expect(l.stacked).toBe(v.h > v.w);
-    expect(l.scale).toBeGreaterThanOrEqual(1);
-    const panels = [l.tray, l.drawer, l.window];
-    for (const p of panels) expect(Math.min(p.w, p.h)).toBeGreaterThanOrEqual(140);
-    for (const row of [l.cards, l.hatches, l.presetTrace, l.trace]) expect(row).toHaveLength(n);
-    for (const h of l.hatches) expect(Math.min(h.w, h.h)).toBeGreaterThanOrEqual(110);
-    const pictures = [
-      ...panels.map((p, i) => target(['tray', 'drawer', 'window'][i], p)),
-      target('sign', l.sign),
-      ...l.cards.map((r, i) => target(`card ${i + 1}`, r)),
-      ...l.presetTrace.map((r, i) => target(`preset trace ${i + 1}`, r)),
-      ...l.trace.map((r, i) => target(`trace ${i + 1}`, r)),
-    ];
-    const targets = [
-      ...l.hatches.map((r, i) => target(`hatch ${i + 1}`, r)),
-      target('Step', l.step),
-      target('Slow', l.slow),
-      target('Undo', l.undo),
-      target('Check', l.check),
-    ];
-    expect(uprightProblems(v, targets)).toEqual([]);
-    // The pictures are not targets (some are small by design), but they stay in view, apart and off the chrome.
-    expect(uprightProblems(v, [...targets, ...pictures], 0)).toEqual([]);
-    const corners: Rect[] = [
-      { x: 0, y: 0, w: 130, h: 215 },
-      { x: 0, y: v.h - 170, w: 160, h: 170 },
-    ];
-    for (const t of [...targets, ...pictures])
-      for (const c of corners)
-        expect(hit({ x: t.x - t.w / 2, y: t.y - t.h / 2, w: t.w, h: t.h }, c), t.what).toBe(false);
-  });
+  it.each(cases)(
+    'on %s with %i steps every part is full size, in view, apart and clear of the corners',
+    (_, n, v) => {
+      const l = hatchLayout(n, v);
+      expect(l.stacked).toBe(v.h > v.w);
+      expect(l.scale).toBeGreaterThanOrEqual(1);
+      const panels = [l.tray, l.drawer, l.window];
+      for (const p of panels) expect(Math.min(p.w, p.h)).toBeGreaterThanOrEqual(140);
+      for (const row of [l.cards, l.hatches, l.presetTrace, l.trace]) expect(row).toHaveLength(n);
+      for (const h of l.hatches) expect(Math.min(h.w, h.h)).toBeGreaterThanOrEqual(110);
+      const pictures = [
+        ...panels.map((p, i) => target(['tray', 'drawer', 'window'][i], p)),
+        target('sign', l.sign),
+        ...l.cards.map((r, i) => target(`card ${i + 1}`, r)),
+        ...l.presetTrace.map((r, i) => target(`preset trace ${i + 1}`, r)),
+        ...l.trace.map((r, i) => target(`trace ${i + 1}`, r)),
+      ];
+      const targets = [
+        ...l.hatches.map((r, i) => target(`hatch ${i + 1}`, r)),
+        target('Step', l.step),
+        target('Slow', l.slow),
+        target('Undo', l.undo),
+        target('Check', l.check),
+      ];
+      expect(uprightProblems(v, targets)).toEqual([]);
+      // The pictures are not targets (some are small by design), but they stay in view, apart and off the chrome.
+      expect(uprightProblems(v, [...targets, ...pictures], 0)).toEqual([]);
+      const corners: Rect[] = [
+        { x: 0, y: 0, w: 130, h: 215 },
+        { x: 0, y: v.h - 170, w: 160, h: 170 },
+      ];
+      for (const t of [...targets, ...pictures])
+        for (const c of corners)
+          expect(hit({ x: t.x - t.w / 2, y: t.y - t.h / 2, w: t.w, h: t.h }, c), t.what).toBe(false);
+    },
+  );
 
   it('steps read left to right over the desk; an upright view stacks the panels and grows rather than shrinks', () => {
     const wide = hatchLayout(3, views.landscape);

@@ -17,7 +17,17 @@ import { hinted, newTally, tally } from '../../progress/coach';
 import { finish, RoundButton, spring, squash } from '../../ui/buttons';
 import { checkIcon, undoIcon } from '../../ui/icons';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { hatchArt, panelArt, signArt, slotArt, stepArt, tokenArt, traceArt, turtleArt, type PanelKind } from './art';
+import {
+  hatchArt,
+  panelArt,
+  signArt,
+  slotArt,
+  stepArt,
+  tokenArt,
+  traceArt,
+  turtleArt,
+  type PanelKind,
+} from './art';
 import {
   centre,
   deskAt,
@@ -108,7 +118,14 @@ export class HatchDesk implements Game {
     this.hatches = [...this.brief.preset];
     this.layout = hatchLayout(this.brief.queue.length, ctx.view);
     this.backdrop = new Backdrop(
-      { sky: [0xd9ecff, 0xfff6e0], hills: [0xc5e7a8, 0xa9e0d6], horizon: 0.62, clouds: 2, sun: false, seed: 412 },
+      {
+        sky: [0xd9ecff, 0xfff6e0],
+        hills: [0xc5e7a8, 0xa9e0d6],
+        horizon: 0.62,
+        clouds: 2,
+        sun: false,
+        seed: 412,
+      },
       ctx.view,
     );
     this.glow.eventMode = 'none';
@@ -166,7 +183,13 @@ export class HatchDesk implements Game {
 
   private announce() {
     const first: LineId =
-      this.brief.level >= 3 ? (this.bi ? 'md.next-desk' : 'md.instruct.3') : this.bi ? 'md.next-sign' : 'md.instruct.2';
+      this.brief.level >= 3
+        ? this.bi
+          ? 'md.next-desk'
+          : 'md.instruct.3'
+        : this.bi
+          ? 'md.next-sign'
+          : 'md.instruct.2';
     void this.sayAll([first, TOKEN_LINE[this.brief.target]], true);
   }
 
@@ -184,7 +207,10 @@ export class HatchDesk implements Game {
 
     brief.queue.forEach((token, i) => {
       const card = new Container();
-      card.addChild(finish({ w: STEP_CARD, h: STEP_CARD, corner: 18 }, swatch.white, cream), tokenArt(token, 24));
+      card.addChild(
+        finish({ w: STEP_CARD, h: STEP_CARD, corner: 18 }, swatch.white, cream),
+        tokenArt(token, 24),
+      );
       card.eventMode = 'none';
       this.place(centre(l.cards[i]), card);
     });
@@ -227,7 +253,9 @@ export class HatchDesk implements Game {
     }
 
     this.stepButton = new RoundButton(stepArt(), swatch.blue, HATCH_BUTTON_R, () => this.step());
-    this.slowButton = new RoundButton(turtleArt(this.slow), swatch.yellow, HATCH_BUTTON_R, () => this.toggleSlow());
+    this.slowButton = new RoundButton(turtleArt(this.slow), swatch.yellow, HATCH_BUTTON_R, () =>
+      this.toggleSlow(),
+    );
     this.undoButton = new RoundButton(undoIcon(), swatch.yellow, HATCH_BUTTON_R, () => this.undo());
     this.checkButton = new RoundButton(checkIcon(), swatch.green, HATCH_BUTTON_R, () => this.check());
     this.place(centre(l.step), this.stepButton);
@@ -455,8 +483,14 @@ export class HatchDesk implements Game {
       }
       this.busy = false;
       // What happened and what was wanted, never which hatch.
-      const ended: LineId[] = out === null ? ['md.check-fail.nothing'] : ['md.check-fail.ended', TOKEN_LINE[out]];
-      this.say(...ended, 'md.check-fail.wants', TOKEN_LINE[brief.target], ...(at !== null ? (['md.glow'] as const) : []));
+      const ended: LineId[] =
+        out === null ? ['md.check-fail.nothing'] : ['md.check-fail.ended', TOKEN_LINE[out]];
+      this.say(
+        ...ended,
+        'md.check-fail.wants',
+        TOKEN_LINE[brief.target],
+        ...(at !== null ? (['md.glow'] as const) : []),
+      );
       return;
     }
     const last = this.bi + 1 >= this.briefs.length;
@@ -467,7 +501,10 @@ export class HatchDesk implements Game {
     }
     for (const r of [this.layout.window, this.layout.sign]) {
       const at = centre(r);
-      this.ctx.particles.burst(at.x, at.y, { colors: [swatch.yellow.fill, swatch.teal.fill, 0xffffff], count: 10 });
+      this.ctx.particles.burst(at.x, at.y, {
+        colors: [swatch.yellow.fill, swatch.teal.fill, 0xffffff],
+        count: 10,
+      });
     }
     this.talk++;
     if (last) {
