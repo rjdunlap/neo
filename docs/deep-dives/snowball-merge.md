@@ -14,18 +14,19 @@ A grown-up taps one of four arrow buttons and every snowball on a 3×3 snowfield
 | 4 | Make 128 · the big snowball | grown-up | Three 32s: work out which one waits; shortest route 10 |
 | 5 | Make 64 · the ice rock | grown-up | A rock that never moves or joins: snowballs stop beside it, so choose which side a pair meets on; shortest route 11 |
 | 6 | Build a snowman · keep the 16s apart | grown-up | Three 16s on a board of 48: when to stop merging, because two 16s that meet join into a 32 and nothing unjoins; shortest route 8 |
+| 7 | Make 128 · a wider field | grown-up | The first 4×4 board, sixteen cells and 11–13 snowballs: the same planning over many more boards; shortest route 13 |
 
-`BandLevels`: `grownup 1–6`, no `order`, no `entryLevels`.
+`BandLevels`: `grownup 1–7`, no `order`, no `entryLevels`.
 
 **Content pools.** (Written before slice 1; levels 1–5 now have four frozen boards each in `boards.ts`.) One frozen board per level (`PLANS` in `logic.ts`). `makePuzzle` turns and mirrors it with the seeded RNG, but every plan board is mirror-symmetric, so the eight transforms collapse to **4 distinct boards per level**, and all four are the same puzzle turned around. The rule test's `variants.size >= 4` is met exactly. Counted for this dive with a port of `slide`/`solve`: level 1 reaches 33 states and **none** is a dead end (the round cannot go wrong); level 2 reaches 48 states, 12 of them dead ends; level 3 reaches 213, 26 dead ends.
 
-**Rules today.** An arrow that moves nothing boings and says `snowball.still`; it counts nothing (exploration). A slide that leaves no finishing route says `snowball.stuck` and the status line suggests Undo or Start over. Hint glows the first arrow of a shortest route from the *current* board (breadth-first `solve`, rerun on every `refresh`), or Undo at a dead end; a hint already glowing is counted once. Start over counts as a hint, since it is support. Undo is free and keeps up to 100 steps. The round finishes with `ctx.finish({ misses: 0, hints })`. The ghost-finger bot taps the solver's next arrow.
+**Rules today.** An arrow that moves nothing boings and says `snowball.still`; it counts nothing (exploration). A slide that leaves no finishing route says `snowball.stuck` and the status line suggests Undo or Start over. Hint glows the first arrow of a shortest route from the *current* board (read from the distance map the scene builds once per round, `routeMap`; it was a breadth-first `solve` rerun on every `refresh` until slice 5), or Undo at a dead end; a hint already glowing is counted once. Start over counts as a hint, since it is support. Undo is free and keeps up to 100 steps. The round finishes with `ctx.finish({ misses: 0, hints })`. The ghost-finger bot taps the solver's next arrow.
 
 **Known gaps.**
 - **No automatic glow.** `misses` is always 0 and nothing lights on its own: not after repeated inert arrows, not on a dead end. The rules for every activity ask for a glow after two misses; Log Roll's glow after two refused rolls is the precedent. Here the natural trigger is reaching a dead end (glow Undo) and, separately, two inert arrows in a row (glow the route's next arrow); the first counts as a hint only once, by the existing `hinted` guard.
 - **Two shades only.** Snowballs are blue below 16 and purple from 16 up, so 16, 32 and 64 look alike apart from the number; a 128 would too.
 - **Snowballs teleport on merge.** Both inputs tween to the target cell, then the board redraws: there is no join moment (a squash, a puff, the doubled ball growing).
-- **Fixed layout.** `cell = min(128, (v.h - 430) / 3)` and the arrow and button rows use fixed widths around the centre. Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches) owns the upright pass; any larger board should derive the cell from `SIZE` in the same place so that pass stays small.
+- **Fixed layout** (resolved in slice 5). Phone-upright [batch 4](../definitions/phone-portrait.md#game-batches) reworked the layout, and `snowballLayout(v, size)` now derives the cell from the board's side.
 - **Replay variety** is the four turned copies above.
 - **Person checks** are already listed in [DEVICE-CHECKS](../DEVICE-CHECKS.md) under "Recovered grown-up puzzles": real-iPad touch, speech, adult enjoyment and whether once-per-slide merges are understood.
 
@@ -103,7 +104,7 @@ None for the grown-up band: level 1 cannot go wrong and is already a gentle entr
 2. **A controller or couch course for Snowball Merge?** Lean: skip; couch play retires at Lands stage E, and a d-pad only duplicates the arrows.
 3. **Swipe on the field as well as the arrow buttons?** Lean: yes as an addition after a person says whether buttons feel slow; it follows the [input pitfalls](../DESIGN.md#input-and-rendering-pitfalls).
 
-Slices 1–4 go ahead regardless.
+Slices 1–5 are built; only these gated calls remain.
 
 ## Build slices, in order
 
@@ -111,9 +112,9 @@ Slices 1–4 go ahead regardless.
 2. **Level 4 *Make 128*** (built 2026-11-10, PR #1492). Frozen 3×3 boards at 128, range 1–4, the 128 look. Checks: new level on the existing interaction: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4. After slice 1.
 3. **Level 5 *The ice rock*** (built 2026-11-11, PR #1495). The rock in `slide`, its art, voice line and how-to step; range 1–5. Checks: model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build.
 4. **Level 6 *Build a snowman*** (built 2026-11-11, PR #1498). Goal kinds, the stacked finish, voice and how-to; range 1–6. Checks: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one overshoot and Undo, one portrait screenshot, `fingerdemo` at 6.
-5. **Level 7 *A wider field*** (claimed 2026-11-11, branch `claude/snowball-merge-wider-field`; after phone-upright batch 4 has reworked the layout): per-plan size and a cached distance map. Checks: shell-free new interaction tier: typecheck, unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 7, build.
+5. **Level 7 *A wider field*** (built 2026-11-11, PR #1501). Per-board size, the distance map and the 4×4 boards; range 1–7. Checks: shell-free new interaction tier: typecheck, unit tests, one scripted play of 7, one portrait screenshot, `fingerdemo` at 7, build.
 
-The school opening, couch course and swipes (decisions 1–3) are gated and stay out of the ready list.
+All five slices are built; the school opening, couch course and swipes (decisions 1–3) are gated and stay out of the ready list.
 
 ## What was built in this session
 
@@ -148,3 +149,11 @@ Slice 4, level 6 *Build a snowman* (PR #1498):
 - `index.ts`: title "Snowman: 16 + 16 + 16"; a join too many says `snowball.over` instead of `snowball.stuck`, the status line reads "One join too many: Undo takes it back.", and Undo lights on its own (one hint, as every dead end; never a miss). The finish rolls the three snowballs to the middle column and stacks them (drawn 1.15, 1 and 0.85 scale, coal eyes and a carrot on the top one), then `snowball.done.snowman` and one sticker.
 - `voice.ts` gains `snowball.go.snowman`, `snowball.over` and `snowball.done.snowman` (no pre-rendered clip yet; device speech is the fallback). `howto.ts`: step 2 and the finish line are level-scoped for level 6 (the card stays under the 840-character limit).
 - Rule tests (14 in all, 4 new): level 5 pinned as it was with one-snowball goals for levels 1–5; the snowman goal accepts exactly three 16s anywhere; `overshot` versus merely stuck, and every reachable overshot level-6 board is a dead end; every level 6 board offers the join too many along its shortest route and hints stop at the snowman. The `snowball` browser suite plays level 6 at 390 × 844 (one join too many, Undo lights and takes it back, exactly three 16s stacked in one column, one sticker, 0 misses, 1 hint).
+
+Slice 5, level 7 *A wider field* (PR #1501):
+
+- `logic.ts`: `sizeOf(board)` gives the field's side; `slide` and `transform` read it from the board. `routeMap(start, goal)` builds once every reachable board and its distance to a finish (absent means a dead end), `routeFrom(map, board)` reads a shortest route off it, and `explore` uses the map. `PLANS` gains level 7 "Make 128 · a wider field", authored 4×4 board [8,16,0,4,4,16,8,0,32,16,2,4,0,2,16,0] (shortest route 13); the grown-up range is 1–7.
+- `scripts/snowball-merge-boards.ts` gains a level-7 band: route 12–16, 11–13 snowballs, a reachable dead end. Three more 4×4 boards frozen (routes 15, 12, 12); levels 1–6 boards are unchanged.
+- `index.ts`: the scene builds the map once per round and reads hints from it instead of running `solve` on every refresh (all levels). `snowballLayout(v, size)` sizes cells from the board so both button rows fit under the field and above the corner guide (cell 128 at 1024×768 becomes 84.5 on the wide field, at least 120 on upright phone views); the wide field draws balls at cell/98 rather than cell/108.
+- `howto.ts` gains a level-7 step; the snowman step and finish are scoped to level 6. No new voice lines (`snowball.go` and `snowball.done` are reused).
+- Rule tests (17 in all): the distance map agrees with a fresh `solve` on every reachable board of every frozen 3×3 board and the authored 4×4 one, and on a 1-in-7 sample of the other three 4×4 boards; `upright-batch-4` checks the 4×4 layout at four upright views. The `snowball` browser suite gains a level-7 block and a `SNOWBALL_LEVELS` filter (16 cells, one self-lit glow counted as one hint, hints finish in the map's 13 slides, one sticker).

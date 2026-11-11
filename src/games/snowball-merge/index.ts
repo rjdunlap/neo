@@ -84,14 +84,14 @@ const FIELD_COLORS: Record<FieldLook, { ground: number; line: number; cell: numb
  */
 export function snowballLayout(v: View, size = SIZE) {
   const top = 155 + (v.h - 768) * 0.3;
-  // The last two limits only bite on the wider field: both button rows (250 units) must fit under it, above the corner
-  // guide (170 units) wherever the view is narrow enough for Undo to sit over the guide's column.
+  // The wider field alone takes two more limits, so levels 1 to 6 lay out exactly as before: both button rows (250
+  // units) must fit under it, above the corner guide (170 units) wherever the view is narrow enough for Undo to sit
+  // over the guide's column, and the field must fit across the view.
   const guide = v.w / 2 - 260 < 150 ? 170 : 0;
   const cell = Math.min(
     v.upright ? 160 : 128,
     (v.h - 430) / size,
-    (v.h - top - 250 - guide) / size,
-    (v.w - 60) / size,
+    ...(size > SIZE ? [(v.h - top - 250 - guide) / size, (v.w - 60) / size] : []),
   );
   const w = cell * size;
   const arrows = Object.fromEntries(
