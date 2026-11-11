@@ -198,3 +198,15 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** docs only. New page [never-swallow-a-tap-lines.md](../definitions/never-swallow-a-tap-lines.md) classifies the awaited spoken lines of the 25 upright-ready games (two cut, eight praise a finished board, the rest closing or held); the definition, READY (fix batch 1 and a queued line for the other 133 games), the UX review and the roadmap point to it.
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** typecheck, unit tests, build and browser suites (no code changed). Nothing was played or timed: the classification is from reading the code.
+
+## 2026-11-10 — U7 fix batch 1: `animal-snack` and `far-lights` right-answer lines no longer hold input (PR #1488)
+
+**Changed:** R4 of [never swallow a tap](../definitions/never-swallow-a-tap.md): `animal-snack` starts `snack.yum` and `snack.full` without holding the next ask (a 0.4 s bell beat on a count); `far-lights` serves its six right-answer lines through one helper that opens the next lights and input while the lesson line plays; the last ask or board and `far-lights` level 7 still wait for the line, and the voice line `far.curtain` is gone. One R4 timing assertion added to each of `far-lights-play` and `woods-batch`.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/far-lights src/games/animal-snack src/content` (278 passed, 1 skipped); `BROWSER_SUITE=farlights FAR_LEVELS=3,5,7` (played levels 1 and 3–8) and `BROWSER_SUITE=woods WOODS_ONLY=snack` (levels 1–5), headless, speech off; docs `node scripts/check-links.mjs`, `git diff --check`.
+**Not run:** `npm run build` locally (no shared file or asset changed; CI builds), `fingerdemo` (the ghost finger waits on `busy` and its timing is unchanged), full `npm test` locally (CI runs it), offline, `world`.
+
+## 2026-11-10 — Snowball Merge slice 1, boards, looks, glow and par line (PR #1483)
+
+**Changed:** `scripts/snowball-merge-boards.ts` freezes four boards per level into `boards.ts`; per-size looks, the join squash, puff and pop; three seeded field looks; the automatic glow at a dead end and after two inert arrows, counted once (`nextHelp`); the par line after finishing; `howto.ts`.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/snowball-merge` (8 passed: at least 12 variants per level, depth bands, level 1 no reachable dead end, glow counted once); generator rerun reproduces `boards.ts` byte for byte; `BROWSER_SUITE=snowball` (levels 1 and 3, the two-inert glow counted once, par line, portrait screenshot at level 3 in the dusk look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=snowball-merge FINGER_LEVELS=3` (9.6 s); docs `node scripts/check-links.mjs`, `git diff --check`.
+**Not run:** `npm run build` locally (no shared file changed; CI builds), offline, other suites.
