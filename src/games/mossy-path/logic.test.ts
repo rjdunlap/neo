@@ -882,7 +882,11 @@ function oldCompletion(b: Board, path: readonly number[]): number[] | null {
     failed.add(key);
     return null;
   };
-  return search(path.at(-1)!, path.reduce((m, i) => m | (1 << i), 0), path.length);
+  return search(
+    path.at(-1)!,
+    path.reduce((m, i) => m | (1 << i), 0),
+    path.length,
+  );
 }
 /** Every legal prefix from the start (each a path `step` accepts). */
 function prefixes(b: Board): number[][] {
@@ -953,7 +957,8 @@ describe('Mossy Path level 11, thick moss', () => {
       }
   });
   it('gives every board a real choice of complete routes', () => {
-    for (const p of THICK) expect(routeCount(transformPlan(p, false, false, false))).toBeGreaterThanOrEqual(2);
+    for (const p of THICK)
+      expect(routeCount(transformPlan(p, false, false, false))).toBeGreaterThanOrEqual(2);
   });
   it('leads from any legal prefix to a completion: help undoes only what it must, then the route finishes', () => {
     for (const [n, p] of THICK.entries()) {

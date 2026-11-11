@@ -113,7 +113,8 @@ export function adjacent(b: Board, a: number, z: number): boolean {
 /** Visits a tile needs: two for thick moss, one otherwise. */
 export const needOf = (b: Board, at: number) => (b.thick?.includes(at) ? 2 : 1);
 /** How often the path has stood on a tile. */
-export const visitsOf = (path: readonly number[], at: number) => path.reduce((n, z) => n + (z === at ? 1 : 0), 0);
+export const visitsOf = (path: readonly number[], at: number) =>
+  path.reduce((n, z) => n + (z === at ? 1 : 0), 0);
 /** Steps in a complete route, the start included: every tile once, each tuft once more. */
 export const routeLength = (b: Board) => b.tiles.length + (b.thick?.length ?? 0);
 /** Tiles that have had every visit they need: the ones that have bloomed. */
@@ -162,8 +163,11 @@ export function completion(b: Board, path: readonly number[]): number[] | null {
     for (const next of b.tiles) {
       const bit = 1 << next,
         count = twice & bit ? 2 : once & bit ? 1 : 0;
-      if (count >= need.get(next)! || !adjacent(b, at, next) || (next === b.pond && length !== total - 1)) continue;
-      const tail = count ? search(next, once, twice | bit, length + 1) : search(next, once | bit, twice, length + 1);
+      if (count >= need.get(next)! || !adjacent(b, at, next) || (next === b.pond && length !== total - 1))
+        continue;
+      const tail = count
+        ? search(next, once, twice | bit, length + 1)
+        : search(next, once | bit, twice, length + 1);
       if (tail) return [next, ...tail];
     }
     failed.add(key);

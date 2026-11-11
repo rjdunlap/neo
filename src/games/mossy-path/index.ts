@@ -750,7 +750,9 @@ class MossyPath implements Game {
       );
     } else {
       const blocked = !solved(this.board, this.path) && !completion(this.board, this.path);
-      const rule = this.board.thick?.length ? 'Thick moss twice, the rest once; pond last' : 'Visit each tile once; pond last';
+      const rule = this.board.thick?.length
+        ? 'Thick moss twice, the rest once; pond last'
+        : 'Visit each tile once; pond last';
       this.status.text = `${bloomedCount(this.board, this.path)} / ${this.board.tiles.length} bloomed · ${blocked ? 'Try Undo to change the trail' : rule}`;
     }
     this.buttonGlow.clear();

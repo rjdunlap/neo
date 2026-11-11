@@ -337,7 +337,9 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       const L = await import('/src/games/mossy-path/logic.ts'),
         g = neo.scene.game,
         err = (at) => (at === g.path.at(-1) ? null : L.moveError(g.board, g.path, at));
-      return g.board.tiles.find((at) => err(at) === 'visited') ?? g.board.tiles.find((at) => err(at) === 'far');
+      return (
+        g.board.tiles.find((at) => err(at) === 'visited') ?? g.board.tiles.find((at) => err(at) === 'far')
+      );
     });
     await tap(`neo.scene.game.nodes[${wrong}]`);
     assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a bloomed or far tap counts one miss');
