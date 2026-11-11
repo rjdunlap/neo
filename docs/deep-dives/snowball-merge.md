@@ -11,10 +11,12 @@ A grown-up taps one of four arrow buttons and every snowball on a 3×3 snowfield
 | 1 | Make 16 · open snowfield | grown-up | Any reasonable order works: 2, 2, 4, 4, 4 on an open board, shortest route 3 slides |
 | 2 | Make 32 · choose your pairs | grown-up | Which equal pairs to join first among 2s, 4s and 8s; shortest route 6 |
 | 3 | Make 64 · make room first | grown-up | A nearly full board (8 of 9 cells): open a space before the big ones can meet; shortest route 8 |
+| 4 | Make 128 · the big snowball | grown-up | Three 32s: work out which one waits; shortest route 10 |
+| 5 | Make 64 · the ice rock | grown-up | A rock that never moves or joins: snowballs stop beside it, so choose which side a pair meets on; shortest route 11 |
 
-`BandLevels`: `grownup 1–3`, no `order`, no `entryLevels`.
+`BandLevels`: `grownup 1–5`, no `order`, no `entryLevels`.
 
-**Content pools.** One frozen board per level (`PLANS` in `logic.ts`). `makePuzzle` turns and mirrors it with the seeded RNG, but every plan board is mirror-symmetric, so the eight transforms collapse to **4 distinct boards per level**, and all four are the same puzzle turned around. The rule test's `variants.size >= 4` is met exactly. Counted for this dive with a port of `slide`/`solve`: level 1 reaches 33 states and **none** is a dead end (the round cannot go wrong); level 2 reaches 48 states, 12 of them dead ends; level 3 reaches 213, 26 dead ends.
+**Content pools.** (Written before slice 1; levels 1–5 now have four frozen boards each in `boards.ts`.) One frozen board per level (`PLANS` in `logic.ts`). `makePuzzle` turns and mirrors it with the seeded RNG, but every plan board is mirror-symmetric, so the eight transforms collapse to **4 distinct boards per level**, and all four are the same puzzle turned around. The rule test's `variants.size >= 4` is met exactly. Counted for this dive with a port of `slide`/`solve`: level 1 reaches 33 states and **none** is a dead end (the round cannot go wrong); level 2 reaches 48 states, 12 of them dead ends; level 3 reaches 213, 26 dead ends.
 
 **Rules today.** An arrow that moves nothing boings and says `snowball.still`; it counts nothing (exploration). A slide that leaves no finishing route says `snowball.stuck` and the status line suggests Undo or Start over. Hint glows the first arrow of a shortest route from the *current* board (breadth-first `solve`, rerun on every `refresh`), or Undo at a dead end; a hint already glowing is counted once. Start over counts as a hint, since it is support. Undo is free and keeps up to 100 steps. The round finishes with `ctx.finish({ misses: 0, hints })`. The ghost-finger bot taps the solver's next arrow.
 
@@ -106,7 +108,7 @@ Slices 1–4 go ahead regardless.
 
 1. **Boards, looks, the join moment, the glow and a par line** (built 2026-11-10, PR #1483). The board generator script `scripts/snowball-merge-boards.ts` and four frozen boards per level; per-size colours and the join squash, puff and pop; three seeded field looks; the automatic glow at a dead end and after two inert arrows, counted once; the par line after finishing. Checks: existing-game change on the existing interaction: typecheck, rule tests (variants at least 12 per level, depth bands, level 1 has no reachable dead end, glow counted once), one filtered `BROWSER_SUITE=snowball` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot waits for the join); build only if shared files change.
 2. **Level 4 *Make 128*** (built 2026-11-10, PR #1492). Frozen 3×3 boards at 128, range 1–4, the 128 look. Checks: new level on the existing interaction: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4. After slice 1.
-3. **Level 5 *The ice rock*.** The rock in `slide`, its art, voice line and how-to step; range 1–5. Checks: model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build.
+3. **Level 5 *The ice rock*** (built 2026-11-11, PR #1495). The rock in `slide`, its art, voice line and how-to step; range 1–5. Checks: model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build.
 4. **Level 6 *Build a snowman*.** Goal kinds, the stacked finish, voice and how-to; range 1–6. Checks: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one overshoot and Undo, one portrait screenshot, `fingerdemo` at 6.
 5. **Level 7 *A wider field*** (after phone-upright batch 4 has reworked the layout): per-plan size and a cached distance map. Checks: shell-free new interaction tier: typecheck, unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 7, build.
 
@@ -127,3 +129,12 @@ Slice 2, level 4 *Make 128* (PR #1492):
 - `PLANS` gains level 4 "Make 128 · the big snowball", authored board [32,32,32,16,8,2,2,4,0] (shortest route 10); the grown-up range is 1–4.
 - `scripts/snowball-merge-boards.ts` gains a level-4 band (route 10–14, 7–8 snowballs, a reachable dead end, at least two 32s); three more frozen boards were generated, each route 10; levels 1–3 boards are unchanged.
 - The 128 is a white snowball with a scarf and two coal eyes; the radius step is 1.3 per doubling (was 1.6) so 128 still grows and fits the cell (64 is 40.5, 128 is 41.8). No voice or how-to change ({target} is spoken).
+
+Slice 3, level 5 *The ice rock* (PR #1495):
+
+- `logic.ts`: `ROCK = -1`, a cell that never moves and never joins. `slide` splits each row or column at a rock into stretches that pack on their own, so snowballs behind it stop beside it; it returns `rocked` when a snowball ends a slide resting against a rock. `PLANS` gains level 5 "Make 64 · the ice rock", authored board [16, ROCK, 8, 0, 16, 8, 4, 8, 4] (shortest route 11); the grown-up range is 1–5.
+- `scripts/snowball-merge-boards.ts` gains a level-5 band: route 8–11, 6–7 snowballs, a reachable dead end, one rock, and at least three slides of the shortest route that rest a snowball against it. Three more boards frozen (routes 8, 8 and 11; two edge rocks, one corner rock); levels 1–4 boards are unchanged byte for byte.
+- **Decision: the rock is never in the centre.** Sampling showed a centre rock leaves most boards unsolvable and the rest at 3–6 slides, too short for the band.
+- `index.ts`: the rock is a grey-blue ice block drawn with the field in `resize()`. The pet says `snowball.rock` ("The ice rock never moves. Snowballs stop beside it.") once per round, the first time a slide rests a snowball against it; stopping at the rock is no miss and no hint.
+- `howto.ts`: step 2 is level-scoped: levels 1–4 keep the old line; level 5 says the rock never moves or joins and to choose which side a pair meets on.
+- Rule tests (10): rock never moves or joins, a line splits at it, `rocked` only when a snowball rests against it, conservation along every seeded level-5 route, the shortest route rests on the rock at least 3 times, every level-5 board has a reachable dead end, one rock per board never in the centre, levels 1–4 plans and frozen boards pinned to their old values. The `snowball` browser suite gained a level-5 play at 390 × 844 (rock stays put on every slide, rock line said on the first slide against it, one sticker, 0 misses, 0 hints).

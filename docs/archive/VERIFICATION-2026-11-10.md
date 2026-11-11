@@ -134,3 +134,15 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** school level 10 (three frozen 4 × 7 mazes, draw the route as paw prints then tap the turtle to walk it; `planTouch`, `planGo`, `hintPlan`; voice `moss.plan`, `moss.plan-more`, `moss.hint-plan`; how-to, finish and note for level 10; school `order` 6, 8, 1, 7, 9, 2, 10, 3).
 **Ran:** `npm run typecheck`; `npm test` (345 files, 6555 passed, 1 skipped); `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=plan` (short plan and Go, wrong-branch plan with 1 miss, gold hint counted once, portrait 768 × 1024 cells at least 100, finish, one sticker) PASS; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=10` PASS (school, 10.1 s); game-reviewer found no blocking defects and one fix (a drift off the turtle keeps the plan) was applied, with rule tests and typecheck rerun after it.
 **Not run:** the browser paths after that fix (neither exercises it), `world`, offline and other suites (the tier needed none).
+
+## 2026-11-10 — Mossy Path slice 5, level 11 Thick moss
+
+**Changed:** school level 11 (four frozen boards with thick tufts crossed twice; `completion` rewritten with visit counts; `needOf`, `visitsOf`, `routeLength`, `bloomedCount`; tuft art by shape; voice `moss.thick`, `moss.thick-go`; how-to, finish and note for level 11; school `order` 6, 8, 1, 7, 9, 2, 10, 3, 11).
+**Ran:** `npm run typecheck`; `npm test` (346 files, 6568 passed, 1 skipped) before a last test-only change, then the game's rule tests (45) after widening the old-solver equivalence test to every legal prefix of every level 1–3 and 8 plan under all 8 symmetries; `npm run build`; `BROWSER_SUITE=mossypath MOSSY_ONLY=thick` PASS twice (free first tuft visit, one counted wrong tap, hint counted once, portrait 768 × 1024 cells at least 100, finish, one sticker; the second run after softening the tuft art, screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=11` PASS (school, 15.8 s); game-reviewer found no blocking defects.
+**Not run:** offline, `world` and other suites (the tier needed none); no phone-width (390 wide) screenshot (Mossy Path is not marked upright, so phones play it landscape).
+
+## 2026-11-10 — Number Trails level 4, First numbers (PR #1479)
+
+**Changed:** `number-trails` level 4 for preschool (1, 2, 3, 7 in one stroke each, a wide 0.1 trail, things appear by themselves; order 4, 1, 2; saved 4 lands on pre-K's level 2); level-scoped how-to lines; new rule tests.
+**Ran:** typecheck; `npm test` (345 files, 6551 passed, 1 skipped); `BROWSER_SUITE=numbertrails` (levels 1, 4, 3; level 4 drew 3, traced, three things, sticker; screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=4` (5.0 s).
+**Not run:** build (no shared files or assets changed), other suites, offline. Slice 3 (the HWT chart check) was not done: the chart is an image-only PDF.
