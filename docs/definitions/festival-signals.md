@@ -42,6 +42,7 @@ At level 9 the starting machine lights for three of the four friends: sending th
 
 - **`grownup`**: `{ min: 3, max: 9, order: [3, 9, 8] }`. Level 3 (*Both badges*, one gate) is the way into Send, Check and the marks; *Fix the lantern* (9) comes before *Festival Signals* (8) because it starts from a machine that is three-quarters right. This needs level 3 built (H3) first.
 - **`school`** stays `{ min: 1, max: 3 }` (after H3). Levels 8–9 join the school top only when rungs 4–7 (OR, NOT and composing two gates) are defined and built, as `order: [1, 2, 3, 4, 5, 6, 7, 9, 8]`. A school child is not sent from one gate straight to four.
+- **Plans by ID.** Today `planFor` indexes `PLANS` by position and `MAX_LEVEL = PLANS.length`; H5 keys plans by level ID so 8 and 9 never read as 4 and 5. Two shared checks in `src/content/howto.test.ts` (the card's level line, and the island demo's level) walk `min..max`, which would visit the unbuilt 4–7: H5 switches those two loops to `levelsInOrder`, as the file's other walk already does (a shared test, covered by H5's build and full unit run).
 - The game's `bands` become `['school', 'grownup']`. Its land stays Tinker Lab (one land per game); a grown-up already sees it there, and today plays its school range through `playBand`. Saved levels and pins keep their IDs; 4–7 stay reserved for the study's younger rungs.
 
 ## Screen and controls
