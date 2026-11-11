@@ -14,6 +14,7 @@ import type { PixelPictureCreation } from '../../content/creations';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { BitsRound } from './bits';
 import {
   LEVELS,
   canFinish,
@@ -56,6 +57,7 @@ const MISS_LINE: Record<PixelPlan['mode'], LineId> = {
   mirror2: 'pixel.notmirror2',
   big: 'pixel.notbig',
   free: 'pixel.notthere',
+  bitsRow: 'pixel.bits.differ.fill',
 };
 
 class PixelPictures implements Game {
@@ -577,10 +579,10 @@ export const pixelPictures: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint:
-    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it.',
+    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it. On Ones and zeros, one of you flips the cards and reads the ones and zeros aloud, the other says which squares will fill before the arrow is pressed; then swap.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
   hubIcon: () => new PixelIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new PixelPictures(ctx),
+  create: (ctx) => (planFor(ctx.level).mode === 'bitsRow' ? new BitsRound(ctx) : new PixelPictures(ctx)),
 };

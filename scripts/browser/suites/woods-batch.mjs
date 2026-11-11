@@ -21,6 +21,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'families',
           'word-end',
           'pixels',
+          'bits',
           'night',
           'snack',
           'beat',
@@ -1505,6 +1506,88 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           `Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`,
         );
       }
+
+    if (!only || only === 'bits') {
+      // Level 11, ones and zeros, on an upright phone: four cards, a free arrow and a check.
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('pixel-pictures', 11);
+      const read = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            bits: [...g.bits],
+            target: [...g.target],
+            glowing: g.glowing,
+            decoded: g.decoded,
+            shown: g.shown,
+          };
+        });
+      // The arrow's reading of the cards has finished (and, after a check, been judged).
+      const settled = async () => {
+        await page.waitForFunction(
+          () => neo.scene.finished || (!neo.scene.game.run && !neo.scene.game.busy),
+          null,
+          {
+            timeout: 20000,
+          },
+        );
+        await page.waitForTimeout(450);
+      };
+      const press = async (what) => {
+        await tap(`neo.scene.game.${what}`);
+        await settled();
+      };
+      const flip = async (i) => {
+        await tap(`neo.scene.game.cards[${i}]`);
+        await page.waitForTimeout(140);
+      };
+      const finishRow = async () => {
+        const { bits, target } = await read();
+        for (let i = 0; i < 4; i++) if (bits[i] !== target[i]) await flip(i);
+        // Looking is free: the arrow shows the row and counts nothing.
+        const before = await counts();
+        await press('arrow');
+        const seen = await read();
+        assert.ok(seen.decoded, 'the arrow shows the row the cards make');
+        assert.deepEqual(seen.bits, seen.target);
+        assert.deepEqual(await counts(), before, 'flips and the arrow are never misses');
+        await tap('neo.scene.game.check');
+      };
+      assert.equal(await page.evaluate(() => neo.scene.game.rows.length), 3);
+      // Row 1: two checks that do not match (every row has a filled square, so 0000 never matches), then the glow.
+      await idle(0);
+      const first = (await read()).target.indexOf(true);
+      await press('check');
+      assert.deepEqual(await counts(), [1, 0]);
+      assert.equal((await read()).glowing, null);
+      await press('check');
+      assert.deepEqual(await counts(), [2, 1]);
+      assert.equal((await read()).glowing, first, 'the first card that differs glows');
+      await screenshot('pixel-pictures-11-ones-and-zeros');
+      await flip(first);
+      const flipped = await read();
+      assert.equal(flipped.glowing, null, 'the glow goes when she flips its card');
+      assert.equal(flipped.shown, 0, 'a flip clears her row');
+      await finishRow();
+      // Row 2: a glow left alone is flipped for her on the next hint, and the check is still hers.
+      await idle(1);
+      const want = (await read()).target.indexOf(true);
+      for (let n = 0; n < 4; n++) await press('check');
+      assert.deepEqual(await counts(), [6, 3]);
+      const helped = await read();
+      assert.equal(helped.bits[want], true, 'the hint flipped the glowing card');
+      assert.equal(helped.glowing, null);
+      assert.equal(await page.evaluate(() => neo.scene.game.index), 1, 'help never ends a row');
+      await finishRow();
+      await idle(2);
+      await finishRow();
+      await finished('pixel-pictures');
+      assert.deepEqual(await score('pixel-pictures'), [6, 3]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Pixel Pictures 11 (ones and zeros): upright, failed checks as misses, the glowing card, a card flipped as help, free flips and arrow, three rows, saved score and sticker passed',
+      );
+    }
 
     if (!only || only === 'night')
       for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 10); level++) {
