@@ -1,6 +1,6 @@
 # Tile Pairs deep dive
 
-*ID `tile-pairs` · band grown-up · levels 1–6 on 2026-11-11 · session `claude/dive-tile-pairs` ([PR #1508](https://github.com/rjdunlap/neo/pull/1508))*
+*ID `tile-pairs` · band grown-up · levels 1–6 on 2026-11-11 · session `claude/dive-tile-pairs` ([PR #1508](https://github.com/rjdunlap/neo/pull/1508)); second pass on a longer ladder and puzzle challenges the same day, session `claude/tile-pairs-puzzle-research` ([PR #1516](https://github.com/rjdunlap/neo/pull/1516))*
 
 ## The game today
 
@@ -23,8 +23,20 @@ A grown-up clears a small layered stack of picture tiles by removing matching pa
 
 **Couch.** `COUCH_INFO['tile-pairs']`: stick between free tiles, bottom to choose, left to undo, hint and shuffle in the pause menu; face-off on identical seeded boards, lower undos plus shuffles wins. There is no frozen course.
 
+**Measured difficulty** (second pass; a copy of `logic.ts` run under Node outside the test runner, 40 seeds a level). A *losing pair* is a legal matching pair after which no clearing route is left. The *random-play clear rate* is the share of play-outs that clear when every turn takes a uniformly random legal pair: a crude stand-in for a player who does not plan, and so a measure of how much planning a deal asks for. "Seeded routes" deals each board along a randomised geometric route (what slice 1 proposes) instead of the fixed one.
+
+| Level | Covered at start | Matching pairs open at start | Losing first pairs today | Random play clears today | Seeded routes: median clear | Seeded routes: hardest of 40 | Seeded deals with a losing first pair |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 0 | 3 | 0 | 100% | 100% | 100% | 0 of 40 |
+| 2 | 4 | 12 | 0 | 100% | 98% | 40% | 3 of 40 |
+| 3 | 8 | 12.5 | 0 | 100% | 77% | 32% | 5 of 40 |
+| 4 | 6 | 8.4 | 0 | 100% | 82% | 37% | 4 of 40 |
+| 5 | 12 | 7.2 | 0 | 93% | 60% | 7% | 9 of 40 |
+| 6 | 10 | 12.3 | 0 | 83% | 75% | 22% | 1 of 40 |
+
 **Known gaps** (each read from the code on 2026-11-11, not from a playtest):
 
+- **Levels 1–4 cannot be lost, and no level has a losing first pair** (measured above). With today's fixed route every pair taken in any order clears levels 1–4, so the choices the level table names ("which two of four copies", "which end to open first") have no wrong answer yet, and Hint, Undo and the stuck line never come into play there. Only levels 5 and 6 can strand a careless player, and only late (about the ninth or tenth pair). The ladder's difficulty is in its deals, not its layouts: the same layouts dealt along seeded routes range from no planning at all to boards where most random play-outs strand.
 - **The same pairing every round.** The geometric search is deterministic, so a level's route is always the same list of position pairs, and the seed only decides which picture each route pair gets. At level 1 (six pairs, six pictures) the board is the same six pairs of positions every time with the pictures swapped round; at levels 2–6 the positions that share a picture are always unions of the same fixed pairs. A returning player can learn where a tile's partner sits.
 - **Covered tiles are invisible.** A raised tile is drawn 6 units up and across on a 108-unit face, so the tile beneath shows only a sliver of its edge and none of its picture. From level 2 on, 4, 8, 6, 12 and 10 of the tiles start hidden (levels 2–6). The solver and the hint see them; she cannot. Choosing "which two of four copies" is then partly a guess, and `tile-pairs.stuck` can announce a dead end that no visible information predicted. The learning purpose is planning, so this is the gap that matters most.
 - **A pair just vanishes.** Removal is one frame and a pop: nothing shows which tiles it freed, though that consequence is the thing to notice.
@@ -55,6 +67,13 @@ The rule is settled and good. What the game lacks is honesty about information, 
 
 A timer, a score, a tray that fills, daily streaks and rationed help all conflict with the project rules and are left out. The long-term arc stays inside the grown-up band: a handful of calm, always-solvable stacks whose difficulty is the depth of the plan, not the count of tiles.
 
+**Second pass: where "much more" comes from.** The measurements above change the order of the growth. Bigger stacks alone do not add puzzle: levels 3 and 4 have 24 tiles and no wrong move. Three sources of new challenge stand out, each kept untimed and always clearable:
+
+- **Deals chosen by a measured target.** Every level gets a band of random-play clear rate, and the round's deal is the first of a few seeded candidates inside it. This is the cheapest lever (about a millisecond a candidate) and it is also a correction slice 1 needs: seeded routes alone make level 5 much harder on average than today (median 60% against 93%) and leave level 1 unchanged.
+- **Designed puzzles that teach one idea each.** Random dealing almost never produces a board with one right opening (1 in 5,000 seeded deals on levels 2–6), so these are frozen, hand-made boards checked by the solver, as Ferry Jam's harbours are. They are the "puzzle challenges" proper: short, all-visible boards where the trap is the lesson.
+- **New geometry and rule variants** taken from the long history of the genre: half-step bricks, a wild family, lock tiles, three-alike rounds, and larger stacks once the mask is widened (measured feasible to 48 tiles).
+
+
 ## Experience and presentation
 
 **First action.** Tap a bright tile, then another bright tile with the same picture; level 1 has no layers, so the first pair needs no explanation beyond the bright and muted contrast. That already works.
@@ -78,6 +97,7 @@ A timer, a score, a tray that fills, daily streaks and rationed help all conflic
 ### Fresh content inside existing levels
 
 - **A different pairing each round.** Make the geometric route seeded: at each step choose among the free position pairs with `ctx.rng` instead of taking the first, keeping the guarantee that the route clears (a randomised depth-first search over the same memo, or building the route backwards). Layouts, tile counts and picture counts do not change. The test that freezes levels 1–3 by hash is replaced on purpose by property tests: the layouts are the same sets of positions as before, 100 seeds a level all clear, and across those seeds each level produces many distinct pairings (level 1 at least ten). Nothing saved refers to a board, and the couch face-off still deals both players the same board from one seed.
+- **A deal dial** (second pass). Each plan gains a target band for its random-play clear rate, and `makeBoard` deals up to 40 seeded-route candidates and keeps the first inside the band (the closest if none is), so the seed still decides the board and the face-off still shares it. Proposed bands, from the measured spreads: levels 1–2 at least 95%; levels 3–4 between 60% and 95%; levels 5–6 between 30% and 80%; new levels state their own. The measure is 60 seeded play-outs, about 1 ms a 24-tile candidate on a Mac (40 candidates for every level took 24–48 ms), so even the worst case is a fraction of a second on a phone, spent once before the board is drawn (not measured on a phone); a test asserts that 100 seeds a level land inside the band and that no level's candidate loop exhausts on more than 5 of them. This rides with slice 1, because seeding the route without it silently changes each level's difficulty.
 - **Looks.** Two more picture sets as above, each test-checked for six pictures that differ pairwise in shape and in colour.
 
 ### New levels on top
