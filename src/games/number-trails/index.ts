@@ -9,7 +9,16 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
-import { hintDue, offTrail, showTheWay, tuneStep, type Look } from '../../learning/tracing/feedback';
+import {
+  guideDots,
+  guideShown,
+  hintDue,
+  offTrail,
+  showTheWay,
+  tuneStep,
+  type Guide,
+  type Look,
+} from '../../learning/tracing/feedback';
 import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -25,6 +34,8 @@ import {
   cardsFor,
   THING_HIT,
   groupSize,
+  guidesFor,
+  hintCounts,
   planFor,
   roundFor,
   spotsFor,
@@ -62,6 +73,11 @@ class NumberTrails implements Game {
   /** The second wander on a stroke asks the firefly to show the way once she lets go. */
   private showPending = false;
   private phase: Phase = 'trace';
+  /** Less help each time: the guide each try shows, the try she is on, and the hints counted on it. */
+  private readonly guides: readonly Guide[];
+  private attempt = 0;
+  private tryHints = 0;
+  private readonly pips = new Graphics();
   private stroke = 0;
   private progress = 0;
   private points: Point[] = [];
@@ -112,7 +128,16 @@ class NumberTrails implements Game {
     this.strokes = DIGITS[String(this.n)];
     this.tolerance = trailTolerance(ctx.level);
     this.asking = planFor(ctx.level).writeHowMany === true;
-    ctx.stage.addChild(this.background, this.canvas, this.pile, this.cardRow, this.glow, this.heading);
+    this.guides = guidesFor(ctx.level);
+    ctx.stage.addChild(
+      this.background,
+      this.canvas,
+      this.pile,
+      this.cardRow,
+      this.glow,
+      this.heading,
+      this.pips,
+    );
     this.glow.eventMode = 'none';
     this.canvas.addChild(this.outline, this.ink, this.cue, this.beacon, this.firefly);
     this.firefly.addChild(
@@ -322,10 +347,11 @@ class NumberTrails implements Game {
       this.wrong++;
       sfx.boing();
       void this.ctx.say('nt.wrong');
-      if (hintDue(this.wrong)) {
+      if (hintCounts(this.ctx.level, this.wrong, this.tryHints)) {
         this.hints++;
-        this.showPending = true;
+        this.tryHints++;
       }
+      if (hintDue(this.wrong)) this.showPending = true;
     }
     this.progress = next;
     const fifth = tuneStep(next, this.points.length);
@@ -381,6 +407,18 @@ class NumberTrails implements Game {
       void this.ctx.instruct('nt.stroke');
       return;
     }
+    if (this.attempt < this.guides.length - 1) {
+      // The same numeral again with less of the trail shown: the ink clears and the firefly goes back to the start.
+      await this.ctx.tw.wait(0.5);
+      this.attempt++;
+      this.tryHints = 0;
+      this.stroke = 0;
+      this.busy = false;
+      this.prepareStroke();
+      void this.ctx.instruct(this.guides[this.attempt] === 'dotted' ? 'nt.dots' : 'nt.alone', { n: this.n });
+      return;
+    }
+    this.pips.clear();
     this.outline.clear();
     this.ink.clear();
     this.cue.clear();
@@ -530,18 +568,42 @@ class NumberTrails implements Game {
     }
   }
 
+  /** The guide on screen for the stroke she is on: the try's own, or the solid trail again once she has wandered. */
+  private guideNow(): Guide {
+    return guideShown(this.guides[this.attempt], this.wrong);
+  }
+
   private draw() {
     if (this.phase !== 'trace') return;
     this.outline.clear();
     this.ink.clear();
     this.cue.clear();
     this.strokes.forEach((stroke, i) => {
-      this.drawPath(this.outline, stroke, i === this.stroke ? swatch.purple.light : swatch.white.line, 28);
+      const color = i === this.stroke ? swatch.purple.light : swatch.white.line;
+      const guide = i === this.stroke ? this.guideNow() : this.guides[this.attempt];
+      if (guide === 'solid') this.drawPath(this.outline, stroke, color, 28);
+      else if (guide === 'dotted')
+        for (const p of guideDots(sampleStroke(stroke)))
+          this.outline
+            .circle(p[0] * this.size, p[1] * this.size, 8)
+            .fill(i === this.stroke ? { color: swatch.purple.fill, alpha: 0.55 } : color);
       if (i < this.stroke) this.drawInk(sampleStroke(stroke));
     });
+    this.drawPips();
     if (this.progress > 0) this.drawInk(this.points.slice(0, this.progress + 1));
     if (this.progress === 0) this.drawStart();
     this.heading.text = `${this.n}`;
+  }
+
+  /** Less help each time: three pips under the numeral, filled up to the try she is on. */
+  private drawPips() {
+    this.pips.clear();
+    if (this.guides.length < 2) return;
+    this.guides.forEach((_, i) => {
+      const x = this.view.w / 2 + (i - (this.guides.length - 1) / 2) * 34;
+      this.pips.circle(x, 124, 9).stroke({ width: 4, color: swatch.purple.line });
+      if (i <= this.attempt) this.pips.circle(x, 124, 9).fill(swatch.purple.fill);
+    });
   }
 
   /** A ring at the start and an arrow just ahead of it, pointing the way the stroke leaves. */
@@ -626,9 +688,11 @@ class NumberTrails implements Game {
       this.progress + 1 + Math.floor(((this.clock % 1.8) / 1.8) * 16),
     );
     const p = this.points[lead];
-    this.beacon
-      .circle(p[0] * this.size, p[1] * this.size, 12)
-      .fill({ color: swatch.yellow.fill, alpha: 0.7 });
+    // The dot that runs ahead is part of the trail: the start-only try hides it until she has wandered.
+    if (this.guideNow() !== 'start')
+      this.beacon
+        .circle(p[0] * this.size, p[1] * this.size, 12)
+        .fill({ color: swatch.yellow.fill, alpha: 0.7 });
     if (this.wrong >= 2)
       this.beacon
         .circle(this.firefly.x, this.firefly.y, 40 + Math.sin(this.clock * 4) * 5)

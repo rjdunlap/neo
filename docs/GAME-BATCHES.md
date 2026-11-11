@@ -1774,7 +1774,9 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/orchar
 
 ### sorting-machine 1: Both badges
 
-- **`sorting-machine`, level 3 *Both badges*** (H3, [definition](definitions/sorting-machine.md#the-model-logicts); extends the built game, new-interaction tier; school, range becomes `{ min: 1, max: 3 }`): `P` and `Q` sensors fixed, one gate slot (AND or OR) she chooses, three briefs (one per pair), Send, Check and the persistent per-fixture marks. [Slice H3](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
+Built 2026-11-10, [PR #1491](https://github.com/rjdunlap/neo/pull/1491). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
+- **`sorting-machine`, level 3 *Both badges*** (**built 2026-11-10, [PR #1491](https://github.com/rjdunlap/neo/pull/1491)**; H3, [definition](definitions/sorting-machine.md#the-model-logicts); extends the built game, new-interaction tier; school, range becomes `{ min: 1, max: 3 }`): `P` and `Q` sensors fixed, one gate slot (AND or OR) she chooses, three briefs (one per pair), Send, Check and the persistent per-fixture marks. [Slice H3](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
 
 Files expected: `src/games/sorting-machine/logic.ts`, `logic.test.ts`, `index.ts`, `howto.ts`, `voice.ts`, `docs/games/sorting-machine.md`.
 
@@ -1782,7 +1784,7 @@ Proof: new-interaction tier as the [definition's check tier](definitions/sorting
 
 ### sorting-machine 2: Festival Signals
 
-- **`sorting-machine`, levels 8–9 *Festival Signals* and *Fix the lantern*** (H5, [definition](definitions/festival-signals.md); new interaction, after batch 1; grown-up range `order: [3, 9, 8]`, school unchanged): a flat four-slot machine with an overview and a selected-slot inspector, a lantern that lights for exactly one of two badges, and at level 9 a repair with a movable lantern wire. [Slice H5](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
+- **`sorting-machine`, levels 8–9 *Festival Signals* and *Fix the lantern*** (H5, [definition](definitions/festival-signals.md); new interaction, batch 1 is built; grown-up range `order: [3, 9, 8]`, school unchanged): a flat four-slot machine with an overview and a selected-slot inspector, a lantern that lights for exactly one of two badges, and at level 9 a repair with a movable lantern wire. [Slice H5](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
 
 Files expected: `src/games/sorting-machine/logic.ts`, `logic.test.ts` (and the checked-in accepted list), `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `docs/games/sorting-machine.md`.
 
