@@ -23,8 +23,28 @@ describe('numeral strokes', () => {
       6: 1,
       7: 1,
       8: 1,
-      9: 2,
+      9: 1,
     });
+  });
+  it('follows the Handwriting Without Tears chart where it is specific', () => {
+    // 1 is a plain line down; 2, 3, 4, 5, 6 and 7 start in the top-left corner; 8 and 0 at the top centre; 9 in its own
+    // top-right corner. 4 is open: its first stroke turns a corner and never touches the top of the stem.
+    expect(DIGITS[1][0]).toHaveLength(2);
+    expect(DIGITS[1][0][0][0]).toBe(DIGITS[1][0][1][0]);
+    for (const d of [2, 3, 4, 5, 6, 7]) expect(DIGITS[d][0][0][0], `numeral ${d}`).toBeLessThan(0.3);
+    for (const d of [0, 8]) {
+      expect(DIGITS[d][0][0][0], `numeral ${d}`).toBeCloseTo(0.5, 5);
+      expect(DIGITS[d][0][0][1], `numeral ${d}`).toBeCloseTo(0, 5);
+      // Both set off to the left, the way an S or a C does.
+      expect(DIGITS[d][0][1][0], `numeral ${d}`).toBeLessThan(0.5);
+    }
+    expect(DIGITS[9][0][0][0]).toBeGreaterThan(0.7);
+    expect(DIGITS[9][0].at(-1)).toEqual([0.8, 1]);
+    const [corner, stem] = DIGITS[4];
+    expect(corner[0][0]).toBe(corner[1][0]);
+    expect(corner[1][1]).toBe(corner[2][1]);
+    expect(stem[0][1]).toBe(0);
+    expect(stem[0][0]).toBeGreaterThan(corner[0][0] + 0.3);
   });
   it('stays inside the writing box with checkpoints no more than a small step apart', () => {
     for (const strokes of Object.values(DIGITS))

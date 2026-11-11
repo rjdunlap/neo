@@ -394,7 +394,7 @@ describe('level 6, Less help each time', () => {
   it('counts at most one hint a try on a fading round, and one a stroke as before below it', () => {
     // Second wander on a stroke, nothing counted yet on this try: one hint.
     expect(hintCounts(6, 2, 0)).toBe(true);
-    // The second stroke of a 4, 5 or 9 on the same try: the firefly still shows the way (hintDue), but it is not counted.
+    // The second stroke of a 4 or 5 on the same try: the firefly still shows the way (hintDue), but it is not counted.
     expect(hintCounts(6, 2, 1)).toBe(false);
     expect(hintDue(2)).toBe(true);
     expect([1, 3, 4].some((wrong) => hintCounts(6, wrong, 0))).toBe(false);
