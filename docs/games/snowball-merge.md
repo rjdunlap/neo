@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–3 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Make 16 · open snowfield |
 | 2 | Make 32 · choose your pairs |
 | 3 | Make 64 · make room first |
+| 4 | Make 128 · the big snowball |
 
 <!-- end generated -->
 

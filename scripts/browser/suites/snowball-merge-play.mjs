@@ -9,7 +9,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       await tap(`neo.scene.game.arrows.${d}`);
       await idle();
     };
-    for (const level of [1, 3]) {
+    for (const level of [1, 4]) {
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await launch('snowball-merge', level);
       await page.waitForTimeout(300);
@@ -27,7 +27,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       assert.equal(await page.evaluate(() => neo.scene.game.slides), 1, 'inert presses add no slide');
       await tap('neo.scene.game.undoButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), initial);
-      if (level === 3) {
+      if (level === 4) {
         // Two inert arrows in a row light the route's next arrow on their own, counted as one hint.
         await press(await direction());
         const stuckArrow = await page.evaluate(async () => {
@@ -58,7 +58,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       await tap('neo.scene.game.hintButton');
       assert.equal(
         await page.evaluate(() => neo.scene.game.hints),
-        level === 3 ? 2 : 1,
+        level === 4 ? 2 : 1,
         'same hint is counted once',
       );
       await press(hint);
@@ -66,10 +66,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), initial);
       assert.equal(
         await page.evaluate(() => neo.scene.game.hints),
-        level === 3 ? 3 : 2,
+        level === 4 ? 3 : 2,
         'restart preserves support accounting',
       );
-      if (level === 3) {
+      if (level === 4) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         const boxes = await page.evaluate(() => {
@@ -95,10 +95,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
               'controls stay apart',
             );
           }
-        await screenshot('snowball-merge-3-portrait');
+        await screenshot('snowball-merge-4-portrait');
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(250);
-        await screenshot('snowball-merge-3-landscape');
+        await screenshot('snowball-merge-4-landscape');
       }
       for (let guard = 0; guard < 40 && !(await page.evaluate(() => neo.scene.game.finished)); guard++) {
         const d = await direction();
@@ -114,7 +114,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           const r = kit.store.stats('snowball-merge').history.at(-1);
           return [r.misses, r.hints];
         }),
-        [0, level === 3 ? 3 : 2],
+        [0, level === 4 ? 3 : 2],
       );
     }
     await page.evaluate(() => neo.go.land('lantern-lake'));
