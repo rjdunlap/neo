@@ -25,3 +25,7 @@
 ## Design notes
 
 Grown-up, Lantern Lake; touch only. Slide a finite 3×3 board so equal snowballs merge once per slide, making 16, 32 or 64 across three levels. No refill, clock or turn limit. Exact hints, Undo and restart support recovery; inert presses are free exploration, and a repeated visible hint counts once. Making the target completes the round for one sticker, including with help; ghost-finger demonstration included.
+
+**Boards and looks (2026-11-10).** `scripts/snowball-merge-boards.ts` freezes four boards per level into `boards.ts` (authored plan first, then picked, turned and mirrored by seed); route depth is 3–4 at level 1 with no reachable dead end, 5–7 at level 2 and 7–9 at level 3 with a reachable dead end. Sizes have their own colours (64 yellow with a scarf stripe). A join squashes the pair, puffs and pops the doubled ball. Each round gets one of three field looks: morning, dusk or flurry (flakes never touch play).
+
+**Automatic glow and par line.** A slide into a dead end lights Undo and the pet says the stuck line; two inert arrows in a row light the route's next arrow. Each counts as one hint, once; asking while something glows counts nothing, and Restart still counts as help. After finishing, the status reads "N slides · the shortest route is M", information only.
