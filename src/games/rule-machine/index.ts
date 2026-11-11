@@ -29,6 +29,7 @@ import {
   windowView,
   type MachineArt,
 } from './art';
+import { ChainGame } from './chain';
 import {
   CAR_W,
   CARD_H,
@@ -1228,11 +1229,11 @@ export const ruleMachine: GameModule = {
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,
   coplayHint:
-    'One of you sends things into the machine, the other says out loud what will come out before it runs.',
+    'One of you sends things into the machine, the other says out loud what will come out before it runs. With two machines, each of you hangs one card.',
   offScreen:
     'Guess my rule: one of you thinks of a rule ("I add two"), the other says numbers and hears what comes out, then guesses the rule. Then play it backwards: say what came out and ask what went in.',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
-  create: (ctx) => new RuleMachine(ctx),
+  create: (ctx) => (planFor(ctx.level).pair ? new ChainGame(ctx) : new RuleMachine(ctx)),
   touchDemo: true,
 };

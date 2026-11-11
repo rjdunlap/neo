@@ -34,6 +34,20 @@ import {
   backTray,
   backAnswers,
   direction,
+  CHAIN_TIMES,
+  CHAIN_ADDS,
+  chain,
+  chainOk,
+  chainCases,
+  caseOrder,
+  pairFor,
+  makeChainRound,
+  chainOptions,
+  fitting,
+  nextCard,
+  pairCounted,
+  spareCards,
+  type Slots,
   type Row,
   type LookMachine,
   type CountMachine,
@@ -47,7 +61,10 @@ const perm = (xs: number[], n: number) =>
 
 describe('plans', () => {
   it('level ranges and names', () => {
-    expect(LEVELS).toEqual({ prek: { min: 1, max: 1 }, school: { min: 2, max: 5 } });
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 1 }, school: { min: 2, max: 6 } });
+    expect(planFor(6)).toMatchObject({ level: 6, id: 'chain', pair: true, machines: 2 });
+    expect(planFor(6).name).toBe('Two machines: say what they make, then build a pair');
+    expect([1, 2, 3, 4, 5].every((l) => !planFor(l).pair)).toBe(true);
     expect(planFor(5)).toMatchObject({
       level: 5,
       id: 'back',
@@ -619,6 +636,201 @@ describe('level 5 backwards', () => {
     const card = HOW_TO['rule-machine'];
     expect(JSON.stringify(card.steps)).toContain('"from":5');
     expect(JSON.stringify(card.note)).toContain('"from":5');
+  });
+});
+
+describe('level 6 two machines', () => {
+  const within = (v: number) => v >= 1 && v <= 12;
+  const cases = chainCases();
+  it('chain runs the first rule, then the second', () => {
+    expect(chain(CHAIN_TIMES[0], CHAIN_ADDS[0], 3)).toEqual({ mid: 6, out: 7 });
+    expect(chain(CHAIN_ADDS[0], CHAIN_TIMES[0], 3)).toEqual({ mid: 4, out: 8 });
+  });
+  it('cases by enumeration: 51, within 1–12 both ways, a car to predict, and the two orders differ', () => {
+    expect(cases).toHaveLength(51);
+    // The one combination with no second car to predict is left out.
+    expect(cases.some((c) => !c.timesFirst && c.t.a === 3 && c.s.b === 3)).toBe(false);
+    expect(cases.some((c) => c.timesFirst && c.t.a === 2 && c.s.b === 1 && c.n === 5)).toBe(true);
+    for (const c of cases) {
+      const [first, second] = caseOrder(c);
+      const w = chain(first, second, c.n),
+        r = chain(second, first, c.n);
+      for (const v of [w.mid, w.out, r.mid, r.out]) expect(within(v)).toBe(true);
+      expect(w.out).not.toBe(r.out);
+      expect(spareCards(c.s, c.n, r.out).length).toBeGreaterThanOrEqual(2);
+    }
+  });
+  it('every pair of every case: predicted car, shelf, fitting and help', () => {
+    for (const c of cases)
+      for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+        const p = pairFor(c, new Rng(seed));
+        expect(p.m).not.toBe(p.n);
+        expect(chainOk(p.first, p.second, p.m)).toBe(true);
+        expect(p.watched).toBe(chain(p.first, p.second, p.n).out);
+        expect(p.target).toBe(chain(p.second, p.first, p.n).out);
+        // Pads: three distinct counts within 0–12, the right one where `right` says.
+        const o = chainOptions(p);
+        expect(new Set(o.values).size).toBe(3);
+        expect(o.values[o.right]).toBe(chain(p.first, p.second, p.m).out);
+        // Shelf: ×2, ×3 and two different add or take cards, the pair's own among them.
+        expect(p.shelf).toHaveLength(4);
+        expect(
+          p.shelf
+            .filter((r) => r.a > 1)
+            .map((r) => r.a)
+            .sort(),
+        ).toEqual([2, 3]);
+        const adds = p.shelf.filter((r) => r.a === 1);
+        expect(adds).toHaveLength(2);
+        expect(adds[0].b).not.toBe(adds[1].b);
+        expect(adds.some((r) => sameRule(r, c.s))).toBe(true);
+        expect(sameRule(p.shelf[p.reversed[0]], p.second)).toBe(true);
+        expect(sameRule(p.shelf[p.reversed[1]], p.first)).toBe(true);
+        // Fitting: the reversed pair, never the watched order, never two add or take cards; one to four pairs.
+        const fit = fitting(p.shelf, p.n, p.target);
+        const has = (i: number, j: number) => fit.some((f) => f[0] === i && f[1] === j);
+        expect(has(p.reversed[0], p.reversed[1])).toBe(true);
+        expect(has(p.reversed[1], p.reversed[0])).toBe(false);
+        expect(fit.length).toBeGreaterThanOrEqual(1);
+        expect(fit.length).toBeLessThanOrEqual(4);
+        for (const [i, j] of fit) {
+          expect(i).not.toBe(j);
+          expect(chain(p.shelf[i], p.shelf[j], p.n).out).toBe(p.target);
+          expect(p.shelf[i].a > 1 || p.shelf[j].a > 1).toBe(true);
+        }
+        // Whatever makes the target is in the list (no pair is judged wrong for its middle count).
+        for (let i = 0; i < 4; i++)
+          for (let j = 0; j < 4; j++)
+            if (i !== j && chain(p.shelf[i], p.shelf[j], p.n).out === p.target) expect(has(i, j)).toBe(true);
+        // Help: from every slot state, following nextCard reaches a fitting pair in at most four moves.
+        const states: Slots[] = [[null, null]];
+        for (let i = 0; i < 4; i++) {
+          states.push([i, null], [null, i]);
+          for (let j = 0; j < 4; j++) if (i !== j) states.push([i, j]);
+        }
+        for (const start of states) {
+          const slots: [number | null, number | null] = [start[0], start[1]];
+          let moves = 0;
+          for (;;) {
+            const mv = nextCard(p.shelf, slots, p.n, p.target, p.reversed);
+            if (!mv) break;
+            expect(++moves).toBeLessThanOrEqual(4);
+            if (mv.kind === 'lift') {
+              expect(slots[mv.slot]).not.toBeNull();
+              slots[mv.slot] = null;
+            } else {
+              expect(slots[mv.slot]).toBeNull();
+              expect(slots).not.toContain(mv.card);
+              slots[mv.slot] = mv.card;
+            }
+          }
+          expect(has(slots[0]!, slots[1]!)).toBe(true);
+        }
+        // From empty slots the help builds the watched pair reversed.
+        expect(nextCard(p.shelf, [null, null], p.n, p.target, p.reversed)).toEqual({
+          kind: 'place',
+          card: p.reversed[0],
+          slot: 0,
+        });
+      }
+  });
+  it('rounds over 300 seeds: two pairs, opposite orders, different add or take cards, deterministic', () => {
+    for (const seed of SEEDS) {
+      const round = makeChainRound(new Rng(seed));
+      expect(round).toEqual(makeChainRound(new Rng(seed)));
+      expect(round).toHaveLength(2);
+      const [a, b] = round;
+      expect(a.first.a > 1).not.toBe(b.first.a > 1);
+      const add = (p: (typeof round)[number]) => (p.first.a === 1 ? p.first : p.second).b;
+      expect(add(a)).not.toBe(add(b));
+      for (const p of round) {
+        expect(p.n).toBeGreaterThanOrEqual(1);
+        expect(p.n).toBeLessThanOrEqual(6);
+        expect(perm(p.padOrder, 3)).toBe(true);
+      }
+    }
+  });
+  it('accounting: a wrong pad counts, the first pair is free, the second counts, two light the glow, one hint per pair', () => {
+    expect(counted(planFor(6), 0)).toBe(true);
+    expect([0, 1, 2].map(pairCounted)).toEqual([false, true, true]);
+    const score = new Score();
+    for (let pair = 0; pair < 2; pair++) {
+      score.newMachine();
+      // The prediction: two wrong pads, then the right one.
+      expect(score.answer(false, counted(planFor(6), 0))).toBe('miss');
+      expect(score.answer(false, counted(planFor(6), 0))).toBe('glow');
+      expect(score.answer(true, true)).toBe('right');
+      // The build: the first pair run is free, then two counted; the glow adds no second hint on this pair.
+      score.newAsk();
+      let runs = 0;
+      expect(score.answer(false, pairCounted(runs++))).toBe('free');
+      expect(score.answer(false, pairCounted(runs++))).toBe('miss');
+      expect(score.answer(false, pairCounted(runs++))).toBe('glow');
+      expect(score.showMe()).toBe(false);
+      expect(score.answer(true, pairCounted(runs++))).toBe('right');
+    }
+    expect([score.misses, score.hints]).toEqual([8, 2]);
+  });
+  it('layout at the four views: hopper, slots, pads and shelf at least 100, on screen, clear of the pet, corners and each other', () => {
+    for (const view of VIEWS) {
+      const L = layout(view, 6);
+      expect(L.portrait).toBe(view.h > view.w);
+      expect(L.slots).toHaveLength(2);
+      expect(L.shelf).toHaveLength(4);
+      expect(L.slots[1].x - L.slots[0].x).toBe(230);
+      const inputs = [L.hopper, ...L.slots, ...L.pads, ...L.shelf];
+      for (const b of [...inputs, L.body, L.second!, L.chute, ...L.columns]) {
+        const r = rect(b);
+        expect(r.l).toBeGreaterThanOrEqual(0);
+        expect(r.t).toBeGreaterThanOrEqual(0);
+        expect(r.r).toBeLessThanOrEqual(view.w);
+        expect(r.b).toBeLessThanOrEqual(view.h);
+        expect(hits(b, 0, view.h - 170, 170, view.h)).toBe(false);
+        expect(hits(b, 0, 0, 120, 120)).toBe(false);
+        expect(hits(b, view.w - 120, 0, view.w, 120)).toBe(false);
+      }
+      for (const b of inputs) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+      }
+      // The pads and the shelf share the bottom row in turn; each set is clear of itself and of everything above.
+      for (const row of [L.pads, L.shelf]) {
+        const all = [L.hopper, ...L.slots, ...row];
+        for (let i = 0; i < all.length; i++)
+          for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j])).toBe(false);
+        for (const b of row)
+          for (const o of [L.body, L.second!, L.chute, ...L.columns]) expect(overlap(b, o)).toBe(false);
+      }
+      for (const c of L.columns)
+        for (const o of [L.body, L.second!, L.hopper, L.chute]) expect(overlap(c, o)).toBe(false);
+      // Each slot sits on its own body's front, and the output car (110 wide) stays on screen.
+      L.slots.forEach((sl, i) => {
+        const b = rect(i === 0 ? L.body : L.second!),
+          r = rect(sl);
+        expect(r.l >= b.l && r.r <= b.r && r.t >= b.t && r.b <= b.b).toBe(true);
+      });
+      expect(L.out.x + 55).toBeLessThanOrEqual(view.w);
+      expect(L.link!.x).toBe((L.slots[0].x + L.slots[1].x) / 2);
+    }
+  });
+  it('speech and the card: its lines exist, and the how-to card and the describeLevel line cover level 6', () => {
+    const script = SCRIPT as Record<string, readonly string[]>;
+    for (const k of [
+      'rm.instruct.6',
+      'rm.chain.step.plus',
+      'rm.chain.step.take',
+      'rm.chain.step.twice',
+      'rm.chain.step.three',
+      'rm.chain.went-in',
+      'rm.chain.goes-in',
+      'rm.chain.build',
+      'rm.chain.want',
+      'rm.chain.other-way',
+    ])
+      expect(script[k]?.[0]?.length, k).toBeGreaterThan(0);
+    const card = HOW_TO['rule-machine'];
+    expect(JSON.stringify(card.steps)).toContain('"from":6');
+    expect(JSON.stringify(card.note)).toContain('"from":6');
   });
 });
 

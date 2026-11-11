@@ -182,7 +182,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Penguin Slide](docs/games/penguin-slide.md) | preschool–school | Puzzle Peaks | 13 | tap the ice: the penguin slides until something stops it |
 | [Secret Code](docs/games/secret-code.md) | preschool–school | Puzzle Peaks | 12 | fill a door's slots with stones; each slot says yes or no |
 | [Mystery Grid](docs/games/logic-grid.md) | preschool–grown-up | Puzzle Peaks | 8 | tap a little grid of friends and places to yes and no from two picture clues, then say who has the missing pie |
-| [Rule Machine](docs/games/rule-machine.md) | pre-K–school | Puzzle Peaks | 5 | creatures walk into a hat machine and come out wearing a hat; tap the picture of what the next one will look like |
+| [Rule Machine](docs/games/rule-machine.md) | pre-K–school | Puzzle Peaks | 6 | creatures walk into a hat machine and come out wearing a hat; tap the picture of what the next one will look like |
 | [Garden Rows](docs/games/garden-rows.md) | preschool–school | Puzzle Peaks | 10 | plant a 3 by 3 flower bed so each row has one of every flower |
 | [Ferry Jam](docs/games/ferry-jam.md) | pre-K–school | Puzzle Peaks | 10 | drag boats along their lanes in a small harbor so the red ferry can reach the dock; nothing is a mistake, and undo is always there |
 | [Critter Crossing](docs/games/critter-crossing.md) | pre-K–school | Puzzle Peaks | 8 | critters line up at a bridge gate; at first its rule is on the sign, then it is a secret: try critters one at a time, watch who crosses and who waits, then guess the rule |

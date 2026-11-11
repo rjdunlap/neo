@@ -2,7 +2,23 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { Critter, CRITTERS, type CritterSpec } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
-import { BODY_H, BODY_W, CARD_H, CARD_W, CHUTE_W, HOPPER, PEEK, type NumRule, type Picture } from './logic';
+import {
+  BODY_H,
+  BODY_W,
+  CARD_H,
+  CARD_W,
+  CHUTE_W,
+  HOPPER,
+  MAX_COUNT,
+  PAIR_BODY,
+  PAIR_CHUTE,
+  PAIR_HOPPER,
+  PAIR_LINK,
+  PEEK,
+  SLOT,
+  type NumRule,
+  type Picture,
+} from './logic';
 
 const FONT = 'Nunito, sans-serif';
 
@@ -81,6 +97,13 @@ export function car(n: number, w: number): Container {
     .circle(w * 0.28, -12, 4)
     .fill(cream);
   c.addChild(g);
+  if (n > MAX_COUNT) {
+    // More than the car can show as counters (level 6's own pairs can overshoot): the numeral alone, larger.
+    const big = numeral(n, w * 0.4, wood.line);
+    big.position.set(0, -14 - h * 0.5);
+    c.addChild(big);
+    return c;
+  }
   const dots = counters(n, w * 0.055);
   dots.position.set(0, -h - 14 + h * 0.36);
   c.addChild(dots);
@@ -88,6 +111,72 @@ export function car(n: number, w: number): Container {
   t.position.set(0, -14 - h * 0.24);
   c.addChild(t);
   return c;
+}
+
+export interface PairArt {
+  node: Container;
+  /** The two machines' bodies, each centred on its own slot, so each can chug by itself. */
+  bodies: [Container, Container];
+}
+
+/**
+ * Level 6's two machines in a row, centred on the middle of the link: hopper, body, link, body, chute. Each body's
+ * front is an empty slot where its card hangs.
+ */
+export function pairMachine(): PairArt {
+  const node = new Container();
+  const g = new Graphics();
+  // The hopper and the chute are equally wide, so the link's middle is the middle of the whole row.
+  const x0 = -(PAIR_HOPPER + 2 * PAIR_BODY + PAIR_LINK + PAIR_CHUTE) / 2;
+  const hx = x0 + PAIR_HOPPER / 2;
+  const b1 = x0 + PAIR_HOPPER + PAIR_BODY / 2;
+  const b2 = b1 + PAIR_BODY + PAIR_LINK;
+  // Hopper: a funnel feeding the first body's left side.
+  g.poly([
+    hx - PAIR_HOPPER / 2,
+    -PAIR_HOPPER / 2 - 10,
+    hx + PAIR_HOPPER / 2,
+    -PAIR_HOPPER / 2 - 10,
+    hx + 26,
+    30,
+    hx - 26,
+    30,
+  ])
+    .fill(swatch.teal.fill)
+    .stroke({ width: 7, color: swatch.teal.line, join: 'round' });
+  g.rect(hx - 26, 20, 26 + PAIR_HOPPER / 2 + 6, 40)
+    .fill(swatch.teal.fill)
+    .stroke({ width: 6, color: swatch.teal.line });
+  // The link: a short belt the car stands on between the machines.
+  const lx = b1 + PAIR_BODY / 2;
+  g.roundRect(lx - 14, BODY_H / 2 - 14, PAIR_LINK + 28, 18, 9)
+    .fill(wood.light)
+    .stroke({ width: 5, color: wood.line });
+  // Chute: a slope down to the right.
+  const cx = b2 + PAIR_BODY / 2;
+  g.poly([cx - 6, 10, cx + PAIR_CHUTE, BODY_H / 2 - 30, cx + PAIR_CHUTE, BODY_H / 2 - 4, cx - 6, 50])
+    .fill(swatch.blue.fill)
+    .stroke({ width: 6, color: swatch.blue.line, join: 'round' });
+  node.addChild(g);
+  const body = (x: number) => {
+    const c = new Container();
+    c.position.set(x, 0);
+    c.addChild(
+      new Graphics()
+        .circle(0, -BODY_H / 2 - 6, 20)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 5, color: swatch.yellow.line })
+        .roundRect(-PAIR_BODY / 2, -BODY_H / 2, PAIR_BODY, BODY_H, 26)
+        .fill(swatch.orange.fill)
+        .stroke({ width: 8, color: swatch.orange.line })
+        .roundRect(-SLOT / 2 - 4, -SLOT / 2 - 4, SLOT + 8, SLOT + 8, 20)
+        .fill({ color: 0xffffff, alpha: 0.55 })
+        .stroke({ width: 4, color: swatch.orange.line }),
+    );
+    node.addChild(c);
+    return c;
+  };
+  return { node, bodies: [body(b1), body(b2)] };
 }
 
 export interface MachineArt {

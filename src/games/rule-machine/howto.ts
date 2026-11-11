@@ -17,6 +17,11 @@ export const HOW_TO: GameHowTo = {
       text: 'The machine is covered: choose cars that tell the three cards apart, tap the card, then tap how many the last car makes. The eye lifts the lid for one car.',
     },
     { from: 5, to: 5, text: 'A car has already come out: send in the car that made it.' },
+    {
+      from: 6,
+      to: 6,
+      text: 'Say what two machines in a row will make, then hang two cards to make the wanted car.',
+    },
   ],
   finish: 'The round ends after two machines; one sticker.',
   note: [
@@ -34,6 +39,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'A wrong car still goes through, so she can see what it makes; it counts as one miss. After two, the right car glows.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'The first pair she tries for a wanted car is never a mistake: the machines show what it makes. The same two cards the other way round make something different, which is the point.',
     },
   ],
 };

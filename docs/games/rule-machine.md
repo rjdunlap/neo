@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1 |
-| school | 2–5 |
+| school | 2–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 3 | What does it do? |
 | 4 | Covered machine |
 | 5 | Backwards: find the car that went in |
+| 6 | Two machines: say what they make, then build a pair |
 
 <!-- end generated -->
 
