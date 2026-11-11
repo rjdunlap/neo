@@ -53,7 +53,7 @@ The game's strength is that **the picture is the reward and the check**: every s
 
 Timers, mistake penalties, endless libraries, pinch-zoom and photo conversion are left out. Colour-by-number has no reasoning, so it is not a mode.
 
-**Long-term arc:** preschool copies one colour, then two (built) → pre-K mirrors a half (built) → school reads run numbers (built), mirrors across two lines (7) and copies at twice the size (8) → Picture Bytes (H6, now [defined](../definitions/picture-bytes.md) as levels 11–12) and Mosaic border (AM7) through their study packets → Pixel Flipbook after its storage decision.
+**Long-term arc:** preschool copies one colour, then two (built) → pre-K mirrors a half (built) → school reads run numbers (built), mirrors across two lines (7) and copies at twice the size (8) → Picture Bytes (H6, [defined](../definitions/picture-bytes.md) and built as levels 11–12) and Mosaic border (AM7) through their study packets → Pixel Flipbook after its storage decision.
 
 ## Experience and presentation
 
@@ -99,7 +99,7 @@ Each band's `BandLevels` entry carries its own `order` (`src/progress/difficulty
 - Bigger grids, pinch-zoom and grown-up nonograms: Picture Logic owns them.
 - Timers, mistake costs, a picture library to collect, ads and purchases.
 - Photo-to-pixel conversion; colour-by-number without reasoning.
-- **Picture Bytes** (H6, defined 2026-11-11 as levels 11–12: [definition](../definitions/picture-bytes.md)), **Mosaic border / Mirror the emblem** (AM7) and **Pixel Flipbook** (MM7) are defined by their studies' own packets and take the next free level IDs then; level 7 is the plain geometry that *Mirror the emblem* would later dress.
+- **Picture Bytes** (H6, defined 2026-11-11 and built as levels 11–12: [definition](../definitions/picture-bytes.md)), **Mosaic border / Mirror the emblem** (AM7) and **Pixel Flipbook** (MM7) are defined by their studies' own packets and take the next free level IDs then; level 7 is the plain geometry that *Mirror the emblem* would later dress.
 
 ## Decisions for the developer
 

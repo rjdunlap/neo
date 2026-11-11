@@ -210,3 +210,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** `scripts/snowball-merge-boards.ts` freezes four boards per level into `boards.ts`; per-size looks, the join squash, puff and pop; three seeded field looks; the automatic glow at a dead end and after two inert arrows, counted once (`nextHelp`); the par line after finishing; `howto.ts`.
 **Ran:** `npm run typecheck`; `npx vitest run src/games/snowball-merge` (8 passed: at least 12 variants per level, depth bands, level 1 no reachable dead end, glow counted once); generator rerun reproduces `boards.ts` byte for byte; `BROWSER_SUITE=snowball` (levels 1 and 3, the two-inert glow counted once, par line, portrait screenshot at level 3 in the dusk look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=snowball-merge FINGER_LEVELS=3` (9.6 s); docs `node scripts/check-links.mjs`, `git diff --check`.
 **Not run:** `npm run build` locally (no shared file changed; CI builds), offline, other suites.
+
+## 2026-11-10 — Snowball Merge slice 2, level 4 Make 128 (PR #1492)
+
+**Changed:** level 4 plan and grown-up range 1–4; `scripts/snowball-merge-boards.ts` level-4 band (route 10–14) and three more frozen boards; the 128 look (white, scarf, coal eyes) with a 1.3 radius step. Levels 1–3 boards unchanged; no voice or how-to change.
+**Ran:** `npm run typecheck`; rule tests (snowball-merge 8, with registry and upright-batch-4: 57 passed); `BROWSER_SUITE=snowball` (levels 1 and 4, inert presses, automatic glow, hint once, Undo/Restart, one portrait screenshot at level 4, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=snowball-merge FINGER_LEVELS=4` (11.9 s); docs checks.
+**Not run:** `npm run build` (no shared file or asset changed), offline, other suites; the finished 128 ball was not screenshotted (the screenshot is mid-round).

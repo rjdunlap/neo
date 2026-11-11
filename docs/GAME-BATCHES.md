@@ -988,6 +988,8 @@ Proof: new-interaction tier ([definition](definitions/picture-bytes.md#slices-an
 
 ### pixel-pictures 6: A whole picture
 
+**Built 2026-11-11 ([PR #1506](https://github.com/rjdunlap/neo/pull/1506)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-11--pixel-pictures-level-12-a-whole-picture-batch-pixel-pictures-6-pr-1506); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-12-a-whole-picture-2026-11-11). No longer eligible for dispatch. Scope retained for reference.
+
 - **`pixel-pictures`, level 12 A whole picture (after batch 5; [definition](definitions/picture-bytes.md))** (new level on the interaction batch 5 builds; school, order [3, 4, 5, 6, 7, 8, 11, 12, 10]): the same four cards write a 4×4 picture one row at a time, top to bottom, beside its model; a right row stays on the board with its digits, an empty row is a real case, and after the fourth row the existing reveal names the picture; two of five one-colour pictures per round; the kept creation is the existing 4×4 pixel shape. [Definition](definitions/picture-bytes.md#the-levels)
 
 Files expected: the same files as batch 5, plus the `woods` suite case only if it needs a level-12 branch.
