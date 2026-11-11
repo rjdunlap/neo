@@ -30,30 +30,59 @@ const SLOT_XS = [170, 316, 462, 608, 754];
 const POOL_XS = [220, 366, 512, 658, 804];
 /** How far below the row's centre a dragged stop must be let go to leave the lineup. */
 const OFF_ROW = 110;
+/** Slot and pool pitch on the upright area: a 130 tile and a 10 gap, five across 690 of its 768. */
+const NARROW_PITCH = 140;
 
-/** The table's places in the usable view: a landscape layout, or a tall one (with Play and Reset at the bottom) once the view has room. */
+/**
+ * The table's places in the usable view, in view units: a landscape layout, or a tall one (with Play and Reset at the
+ * bottom) once the view has room. The upright 768 × 1024 area (chunk 31) is always tall; it packs the slots and the pool
+ * 140 apart across its 768 width and puts the page arrows under the pool.
+ */
 export function tableLayout(view: View) {
   const ox = (view.w - 1024) / 2;
+  const across = (xs: readonly number[]) => xs.map((x) => ox + x);
+  if (view.w < 1024) {
+    const mid = view.w / 2;
+    const xs = [-2, -1, 0, 1, 2].map((k) => mid + k * NARROW_PITCH);
+    const bottom = view.h - 145;
+    const poolRows = [520, 680, 840];
+    const arrowsY = poolRows[2] + SLOT / 2 + 20 + 70;
+    return {
+      tall: true,
+      rowY: 260,
+      slotXs: xs,
+      poolXs: xs,
+      play: { x: mid, y: bottom },
+      poolRows,
+      prev: { x: mid - 160, y: arrowsY },
+      next: { x: mid + 160, y: arrowsY },
+      reset: { x: mid - 220, y: bottom },
+    };
+  }
   if (view.h >= 1300) {
     const bottom = view.h - 145;
     return {
       tall: true,
-      ox,
       rowY: 260,
-      play: { x: 512, y: bottom },
+      slotXs: across(SLOT_XS),
+      poolXs: across(POOL_XS),
+      play: { x: ox + 512, y: bottom },
       poolRows: [520, 680, 840],
-      arrowsY: 680,
-      reset: { x: 220, y: bottom },
+      prev: { x: ox + 60, y: 680 },
+      next: { x: ox + 964, y: 680 },
+      reset: { x: ox + 220, y: bottom },
     };
   }
   return {
     tall: false,
-    ox,
     rowY: 190,
-    play: { x: 905, y: 190 },
+    slotXs: across(SLOT_XS),
+    poolXs: across(POOL_XS),
+    play: { x: ox + 905, y: 190 },
     poolRows: [400, 560],
-    arrowsY: 480,
-    reset: { x: 512, y: 700 },
+    prev: { x: ox + 60, y: 480 },
+    next: { x: ox + 964, y: 480 },
+    reset: { x: ox + 512, y: 700 },
   };
 }
 export const perPage = (view: View) => tableLayout(view).poolRows.length * POOL_XS.length;
@@ -234,24 +263,28 @@ export class MixTable extends Container {
     if (this.view) this.layout(this.view);
   }
 
+  /** The five slots' centres in view units (the design area's before the first layout). */
+  private slotXs(): readonly number[] {
+    return this.view ? tableLayout(this.view).slotXs : SLOT_XS;
+  }
+
   /** The slot nearest a dragged stop's x, among the filled ones. */
   private nearest(x: number): number {
-    const ox = this.view ? tableLayout(this.view).ox : 0;
+    const xs = this.slotXs();
     let best = 0;
-    for (let i = 1; i < this.stops.length; i++)
-      if (Math.abs(ox + SLOT_XS[i] - x) < Math.abs(ox + SLOT_XS[best] - x)) best = i;
+    for (let i = 1; i < this.stops.length; i++) if (Math.abs(xs[i] - x) < Math.abs(xs[best] - x)) best = i;
     return best;
   }
 
   /** The other stops slide to leave a gap where the dragged one would land. */
   private makeRoom(from: number, x: number) {
-    const ox = this.view ? tableLayout(this.view).ox : 0;
+    const xs = this.slotXs();
     const to = this.nearest(x);
     let slot = 0;
     this.stops.forEach((s, i) => {
       if (i === from) return;
       if (slot === to) slot++;
-      s.x = ox + SLOT_XS[slot++];
+      s.x = xs[slot++];
     });
   }
 
@@ -277,9 +310,9 @@ export class MixTable extends Container {
   }
 
   private restoreSlots() {
-    const ox = this.view ? tableLayout(this.view).ox : 0;
+    const xs = this.slotXs();
     this.stops.forEach((s, i) => {
-      s.x = ox + SLOT_XS[i];
+      s.x = xs[i];
     });
   }
 
@@ -295,24 +328,24 @@ export class MixTable extends Container {
       this.buildPool();
     }
     const L = tableLayout(view);
-    const { ox, rowY } = L;
+    const { rowY, slotXs, poolXs } = L;
     this.scrim.clear().rect(0, 0, view.w, view.h).fill({ color: wood.light, alpha: 0.92 });
     const poolTop = L.poolRows[0] - SLOT / 2 - 20,
       poolBottom = L.poolRows[L.poolRows.length - 1] + SLOT / 2 + 20;
     this.panels
       .clear()
       .roundRect(
-        ox + SLOT_XS[0] - SLOT / 2 - 20,
+        slotXs[0] - SLOT / 2 - 20,
         rowY - SLOT / 2 - 20,
-        SLOT_XS[4] - SLOT_XS[0] + SLOT + 40,
+        slotXs[4] - slotXs[0] + SLOT + 40,
         SLOT + 40,
         32,
       )
       .fill({ color: 0xffffff, alpha: 0.8 })
       .roundRect(
-        ox + POOL_XS[0] - SLOT / 2 - 20,
+        poolXs[0] - SLOT / 2 - 20,
         poolTop,
-        POOL_XS[4] - POOL_XS[0] + SLOT + 40,
+        poolXs[4] - poolXs[0] + SLOT + 40,
         poolBottom - poolTop,
         32,
       )
@@ -320,7 +353,7 @@ export class MixTable extends Container {
     // Room for more: a faint dashed outline in each empty slot.
     this.outlines.clear();
     for (let i = this.stops.length; i < MIX_MAX; i++) {
-      const cx = ox + SLOT_XS[i],
+      const cx = slotXs[i],
         h = SLOT / 2 - 6;
       for (let k = -h; k < h; k += 20) {
         const e = Math.min(k + 10, h);
@@ -337,18 +370,18 @@ export class MixTable extends Container {
     }
     this.outlines.stroke({ width: 4, color: ink, alpha: 0.25, cap: 'round' });
     this.stops.forEach((s, i) => {
-      s.x = ox + SLOT_XS[i];
+      s.x = slotXs[i];
       s.handle.home = { x: s.x, y: rowY };
       if (i !== this.dragging) s.tile.position.set(s.x, rowY);
     });
-    this.poolTiles.forEach((t, i) => t.tile.position.set(ox + POOL_XS[i % 5], L.poolRows[Math.floor(i / 5)]));
+    this.poolTiles.forEach((t, i) => t.tile.position.set(poolXs[i % 5], L.poolRows[Math.floor(i / 5)]));
     this.backButton.position.set(65, 65);
-    this.playButton.position.set(ox + L.play.x, L.play.y);
-    this.resetButton.position.set(ox + L.reset.x, L.reset.y);
+    this.playButton.position.set(L.play.x, L.play.y);
+    this.resetButton.position.set(L.reset.x, L.reset.y);
     const paged = this.pageCount > 1;
     this.prevButton.visible = this.nextButton.visible = paged;
-    this.prevButton.position.set(ox + 60, L.arrowsY);
-    this.nextButton.position.set(ox + 964, L.arrowsY);
+    this.prevButton.position.set(L.prev.x, L.prev.y);
+    this.nextButton.position.set(L.next.x, L.next.y);
   }
 
   /** Every target as a box in view units, for the layout test and scripted checks. */

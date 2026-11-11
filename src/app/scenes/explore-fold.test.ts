@@ -97,8 +97,8 @@ describe('the fold (U6b)', () => {
       const s = keep(new ExploreScene(fakeApp() as never));
       s.init();
       expect(kinds(s), band).toEqual(['mix', 'places', 'favorites', 'arcade', 'family']);
-      // The mix's sheet and Make my mix's table are drawn on the 1024 width: this page keeps the turn prompt.
-      expect(s.upright, band).toBe(false);
+      // The mix's sheet and Make my mix's table have upright layouts too (chunk 31, shell slice 3).
+      expect(s.upright && s.uprightArea, band).toBe(true);
     }
   });
 

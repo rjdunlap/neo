@@ -36,6 +36,9 @@ const LINES: Record<LibraryBook, LineId> = {
  * come back here. Back returns to creature play, Home goes Home. Looking changes nothing.
  */
 export class LibraryScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31, shell slice 3): Explore's grid already has an upright form. */
+  upright = true;
+  uprightArea = true;
   private readonly backdrop = homeBackdrop();
   readonly books = libraryBooks(store.data.profile.band);
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>

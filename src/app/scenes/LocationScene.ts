@@ -84,6 +84,9 @@ export class LocationScene extends LandScene {
   readonly atHome: boolean;
   /** Opened at the root (with a Back to Places), where a visit is remembered for Explore's postcard. */
   private readonly opensAtRoot: boolean;
+  /** Laid out for a phone held upright as well (chunk 31, shell slice 3); the island's own lands at `classic/` stay sideways. */
+  upright = true;
+  uprightArea = true;
 
   /** `back`, at the root (RW08), turns the corner button into a Back arrow to Explore's Places; `page` opens a full land at that page (a game's origin). */
   constructor(app: App, id: LandId, back?: () => void, page?: number) {
