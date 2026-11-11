@@ -598,8 +598,11 @@ export class ChainGame implements Game {
   private dropCard(i: number, x: number, y: number): boolean {
     if (this.finished || this.phase !== 'build') return false;
     const at = this.slots.indexOf(i);
-    // A tap is judged from where the card was touched, so one caught mid-hop still counts as a tap.
-    if (Math.hypot(x - this.picked.x, y - this.picked.y) < 24)
+    // A tap is judged from where the card was touched, so one caught mid-hop still counts as a tap. A held card rides
+    // 40 units above the finger once it moves at all, so a slow or wobbly press lands that much higher: still a tap.
+    const dx = x - this.picked.x,
+      dy = y - this.picked.y;
+    if (Math.abs(dx) < 24 && dy < 24 && dy > -64)
       return at >= 0 ? this.liftCard(at as 0 | 1) : this.placeCard(i);
     const near = ([0, 1] as const)
       .map((s) => ({ s, d: Math.hypot(x - this.layoutNow.slots[s].x, y - this.layoutNow.slots[s].y) }))
@@ -614,8 +617,8 @@ export class ChainGame implements Game {
     return true;
   }
 
-  private placeCard(i: number): boolean {
-    const slot = this.slots.indexOf(null);
+  private placeCard(i: number, into?: 0 | 1): boolean {
+    const slot = into !== undefined && this.slots[into] === null ? into : this.slots.indexOf(null);
     if (slot < 0) return false;
     this.slots[slot] = i;
     this.settle();
@@ -744,7 +747,7 @@ export class ChainGame implements Game {
     }
     const mv = this.next!;
     if (mv.kind === 'lift') this.liftCard(mv.slot);
-    else this.placeCard(mv.card);
+    else this.placeCard(mv.card, mv.slot);
   }
 
   // ---- shell hooks ----
