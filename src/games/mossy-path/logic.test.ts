@@ -811,9 +811,14 @@ describe('Mossy Path level 10, plan then go', () => {
           s = steps.at(-1)!.state;
           const out = routeBetween(b, entry, fork).slice(1);
           const back = planGo(b, 10, s, draw(b, s, out));
-          expect(back.every((r) => r.move.kind === 'back'), label).toBe(true);
+          expect(
+            back.every((r) => r.move.kind === 'back'),
+            label,
+          ).toBe(true);
           s = back.at(-1)!.state;
-          expect(s.misses, `${label} round ${round}`).toBe(round === 1 ? entries.indexOf(entry) + 1 : entries.length);
+          expect(s.misses, `${label} round ${round}`).toBe(
+            round === 1 ? entries.indexOf(entry) + 1 : entries.length,
+          );
         }
       // Inside a branch that forks again, stepping deeper never counts a second miss.
       expect(s.branches.length, label).toBe(entries.length);

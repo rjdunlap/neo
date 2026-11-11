@@ -222,10 +222,10 @@ class MossyPath implements Game {
         : this.planning
           ? 'moss.plan'
           : this.board.berry2 !== undefined
-          ? 'moss.maze-berries'
-          : this.board.berry !== undefined
-            ? 'moss.maze-berry'
-            : 'moss.maze',
+            ? 'moss.maze-berries'
+            : this.board.berry !== undefined
+              ? 'moss.maze-berry'
+              : 'moss.maze',
     );
   }
   private cellAt(global: { x: number; y: number }): number {

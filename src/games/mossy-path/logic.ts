@@ -411,7 +411,12 @@ export type PlanEdit = 'add' | 'erase' | 'ignore' | 'far';
  * second-last tile erases the last print, a tile further away is 'far', and anything else is ignored. Drawing is never a
  * miss. A plan may run back along the trail: in a tree that is the way out of a branch.
  */
-export function planTouch(b: Board, s: MazeState, plan: readonly number[], at: number): { plan: number[]; edit: PlanEdit } {
+export function planTouch(
+  b: Board,
+  s: MazeState,
+  plan: readonly number[],
+  at: number,
+): { plan: number[]; edit: PlanEdit } {
   const here = s.path[s.path.length - 1],
     from = plan[0] === here ? [...plan] : [here],
     end = from[from.length - 1];
