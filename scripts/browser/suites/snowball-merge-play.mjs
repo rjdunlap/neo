@@ -158,6 +158,70 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         'stopping at the rock is neither a miss nor help',
       );
     }
+    {
+      // Level 6, the snowman: the goal is three 16s. One join too many (two 16s) is said, lights Undo once, and Undo
+      // takes it back; the round ends the moment only three 16s are left, stacked.
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      await launch('snowball-merge', 6);
+      await page.waitForTimeout(300);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(300);
+      assert.equal(await page.evaluate(() => neo.scene.game.title.text), 'Snowman: 16 + 16 + 16');
+      const tooFar = () =>
+        page.evaluate(async () => {
+          const { DIRECTIONS, slide, overshot } = await import('/src/games/snowball-merge/logic.ts');
+          const g = neo.scene.game;
+          return DIRECTIONS.find((d) => {
+            const next = slide(g.board, d);
+            return next.changed && overshot(next.board, g.puzzle.goal);
+          });
+        });
+      let overshoots = 0;
+      for (let guard = 0; guard < 40 && !(await page.evaluate(() => neo.scene.game.finished)); guard++) {
+        const wrong = overshoots ? null : await tooFar();
+        if (wrong) {
+          const kept = await page.evaluate(() => neo.scene.game.board.slice());
+          await press(wrong);
+          overshoots++;
+          assert.ok(await page.evaluate(() => neo.scene.game.board.includes(32)), 'two 16s joined into a 32');
+          assert.equal(await page.evaluate(() => neo.scene.game.finished), false);
+          assert.equal(await page.evaluate(() => neo.scene.game.route), null, 'nothing unjoins');
+          assert.equal(await page.evaluate(() => neo.scene.game.hinted), 'undo', 'Undo lights on its own');
+          assert.match(await page.evaluate(() => neo.scene.game.status.text), /One join too many/);
+          await screenshot('snowball-merge-6-portrait');
+          await tap('neo.scene.game.undoButton');
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.board), kept);
+          assert.equal(await page.evaluate(() => neo.scene.game.hinted), null);
+        }
+        const d = await direction();
+        assert.ok(d);
+        await press(d);
+      }
+      assert.equal(overshoots, 1, 'the route offers the join too many');
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.game.board.filter((v) => v > 0)),
+        [16, 16, 16],
+        'the round ends at exactly three 16s',
+      );
+      await page.waitForFunction(() => neo.scene.game.stacked);
+      const stack = await page.evaluate(() =>
+        [...neo.scene.game.nodes.values()].map((n) => [Math.round(n.x), Math.round(n.y)]),
+      );
+      assert.equal(new Set(stack.map((p) => p[0])).size, 1, 'the snowman stands in one column');
+      assert.equal(new Set(stack.map((p) => p[1])).size, 3, 'one snowball on top of the other');
+      await screenshot('snowball-merge-6-snowman');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('snowball-merge');
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const r = kit.store.stats('snowball-merge').history.at(-1);
+          return [r.misses, r.hints];
+        }),
+        [0, 1],
+        'the glow at the join too many counts as one hint, never a miss',
+      );
+    }
     await page.evaluate(() => neo.go.land('lantern-lake'));
     await scene('LandScene');
     await turnToGame('snowball-merge');
@@ -174,7 +238,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
     await page.waitForTimeout(350);
     assert.deepEqual(errors, []);
     log(
-      'Snowball Merge: levels 1, 4 and 5 (the ice rock stays put, said once, no miss), inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed',
+      'Snowball Merge: levels 1, 4, 5 (the ice rock stays put, said once, no miss) and 6 (the snowman: one join too many, Undo, three 16s stacked), inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed',
     );
   }
 

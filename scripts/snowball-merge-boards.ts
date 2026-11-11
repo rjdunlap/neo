@@ -7,12 +7,17 @@
  * level's depth band. Level 1 can never reach a dead end; levels 3 to 5 can; a level 4
  * board carries at least two 32s. A level 5 board has one ice rock away from the centre (a centre rock leaves most
  * boards unsolvable), and its shortest route rests a snowball against the rock at least three times. Every added
- * board is asymmetric (eight distinct turns), and no board is a turn of another.
+ * board is asymmetric (eight distinct turns), and no board is a turn of another. A level 6 board is solved to the
+ * snowman goal (three 16s) from that goal's own snowballs halved, and along its shortest route at least two slides on
+ * offer would join two 16s and overshoot it.
  */
 import { writeFileSync } from 'node:fs';
 import {
+  DIRECTIONS,
   explore,
+  goalOf,
   orbit,
+  overshot,
   PLANS,
   ROCK,
   slide,
@@ -38,6 +43,7 @@ export const BANDS = [
   { route: [7, 9], balls: [7, 8], deadEnds: 'some' },
   { route: [10, 14], balls: [7, 8], deadEnds: 'some', has: [32, 2] },
   { route: [8, 11], balls: [6, 7], deadEnds: 'some', rock: 3 },
+  { route: [6, 9], balls: [6, 7], deadEnds: 'some', tempt: 2 },
 ] as const satisfies readonly {
   route: readonly [number, number];
   balls: readonly [number, number];
@@ -46,11 +52,13 @@ export const BANDS = [
   has?: readonly [number, number];
   /** One ice rock on the board, and at least how many slides of the shortest route rest a snowball against it. */
   rock?: number;
+  /** A goal of several snowballs: at least how many slides offered along the shortest route would overshoot it. */
+  tempt?: number;
 }[];
 
-/** Halve a random snowball until there are `count`, then scatter them over the field. */
-function randomBoard(target: number, count: number, rock: boolean): number[] {
-  const values = [target];
+/** Halve a random snowball of the goal until there are `count`, then scatter them over the field. */
+function randomBoard(goal: readonly number[], count: number, rock: boolean): number[] {
+  const values = [...goal];
   while (values.length < count) {
     const splittable = values.map((v, i) => (v > 2 ? i : -1)).filter((i) => i >= 0);
     if (!splittable.length) break;
@@ -71,15 +79,20 @@ function randomBoard(target: number, count: number, rock: boolean): number[] {
 const out: Board[][] = [];
 PLANS.forEach((plan, index) => {
   const band = BANDS[index],
+    goal = goalOf(plan),
     boards: Board[] = [plan.board.slice()],
     taken = new Set(orbit(plan.board));
   for (let tries = 0; boards.length < 4; tries++) {
     if (tries > 200000) throw new Error(`level ${index + 1}: not enough boards`);
-    const board = randomBoard(plan.target, int(band.balls[0], band.balls[1]), 'rock' in band);
+    const board = randomBoard(
+      typeof goal === 'number' ? [goal] : goal,
+      int(band.balls[0], band.balls[1]),
+      'rock' in band,
+    );
     if ('has' in band && board.filter((v) => v === band.has[0]).length < band.has[1]) continue;
     const turns = orbit(board);
     if (turns.size < 8 || [...turns].some((k) => taken.has(k))) continue;
-    const route = solve(board, plan.target);
+    const route = solve(board, goal);
     if (!route || route.length < band.route[0] || route.length > band.route[1]) continue;
     if ('rock' in band) {
       let at: Board = board,
@@ -91,7 +104,19 @@ PLANS.forEach((plan, index) => {
       }
       if (rocked < band.rock) continue;
     }
-    const { deadEnds } = explore(board, plan.target);
+    if ('tempt' in band) {
+      let at: Board = board,
+        tempt = 0;
+      for (const direction of route) {
+        for (const other of DIRECTIONS) {
+          const step = slide(at, other);
+          if (step.changed && overshot(step.board, goal)) tempt++;
+        }
+        at = slide(at, direction).board;
+      }
+      if (tempt < band.tempt) continue;
+    }
+    const { deadEnds } = explore(board, goal);
     if ((band.deadEnds === 'none' && deadEnds > 0) || (band.deadEnds === 'some' && deadEnds === 0)) continue;
     for (const k of turns) taken.add(k);
     boards.push(board);

@@ -19,6 +19,7 @@ import {
   makePuzzle,
   nextHelp,
   NO_HELP,
+  overshot,
   PLANS,
   planFor,
   ROCK,
@@ -95,6 +96,14 @@ export function snowballLayout(v: View) {
   };
 }
 
+/** The stacked finish, base first: equal snowballs are drawn a little bigger below and smaller on top, so three 16s
+ * read as a snowman. `y` is in cells down the field. */
+const STACK = [
+  { y: 2.3, scale: 1.15 },
+  { y: 1.66, scale: 1 },
+  { y: 1.12, scale: 0.85 },
+];
+
 class SnowballMerge implements Game {
   readonly puzzle;
   board: number[];
@@ -118,6 +127,8 @@ class SnowballMerge implements Game {
   private readonly ground = new Graphics();
   private readonly rocks = new Graphics();
   private readonly balls = new Container();
+  /** Level 6: the round is over and its snowballs stand stacked as a snowman, biggest at the bottom. */
+  stacked = false;
   /** The ice rock's line is said once a round, the first time a snowball stops beside it. */
   rockSaid = false;
   private readonly sky = new Graphics();
@@ -137,7 +148,7 @@ class SnowballMerge implements Game {
   constructor(private readonly ctx: GameContext) {
     this.puzzle = makePuzzle(ctx.level, ctx.rng, BOARDS[PLANS.indexOf(planFor(ctx.level))]);
     this.board = this.puzzle.board.slice();
-    this.par = solve(this.puzzle.board, this.puzzle.target)?.length ?? 0;
+    this.par = solve(this.puzzle.board, this.puzzle.goal)?.length ?? 0;
     // Drawn after the puzzle, so a look never changes which board a seed gives.
     this.look = ctx.rng.pick(FIELD_LOOKS);
     for (let i = 0; i < 9; i++)
@@ -205,8 +216,17 @@ class SnowballMerge implements Game {
     return this.help.hinted !== before ? this.help.hinted : null;
   }
 
+  /** Level 6 asks for several snowballs (a snowman) instead of one. */
+  private get snowman() {
+    return typeof this.puzzle.goal === 'number' ? null : this.puzzle.goal;
+  }
+  /** A board that cannot finish: on the snowman level a join too many gets its own line, since Undo is the only way back. */
+  private get stuckLine() {
+    return overshot(this.board, this.puzzle.goal) ? 'snowball.over' : 'snowball.stuck';
+  }
   start() {
-    void this.ctx.instruct('snowball.go', { target: this.puzzle.target });
+    if (this.snowman) void this.ctx.instruct('snowball.go.snowman');
+    else void this.ctx.instruct('snowball.go', { target: this.puzzle.target });
   }
   private feedback(node: Container) {
     if (this.ctx.alive && !this.finished) {
@@ -301,14 +321,49 @@ class SnowballMerge implements Game {
       this.balls.addChild(node);
       this.nodes.set(i, node);
     });
+    if (!this.stacked) return;
+    // The snowman: biggest at the bottom, each drawn over the one below, coal eyes and a carrot on the top one.
+    const order = this.stackOrder();
+    order.forEach((i, k) => {
+      const node = this.nodes.get(i)!;
+      node.position.copyFrom(this.stackSpot(k));
+      node.scale.set((this.cell / 108) * STACK[Math.min(k, STACK.length - 1)].scale);
+      this.balls.addChild(node);
+    });
+    const r = sizeLook(this.board[order.at(-1)!]).radius;
+    bodyOf(this.nodes.get(order.at(-1)!)!).addChild(
+      new Graphics()
+        .circle(-r * 0.34, -r * 0.56, r * 0.09)
+        .circle(r * 0.34, -r * 0.56, r * 0.09)
+        .fill(ink)
+        .poly([r * 0.5, -r * 0.3, r * 1.05, -r * 0.16, r * 0.5, -r * 0.04])
+        .fill(swatch.orange.fill)
+        .stroke({ width: 2, color: swatch.orange.line, join: 'round' }),
+    );
+  }
+  /** The cells holding snowballs, biggest first: the order they stack in. */
+  private stackOrder() {
+    return this.board
+      .map((v, i) => [v, i])
+      .filter(([v]) => v > 0)
+      .sort((a, b) => b[0] - a[0] || a[1] - b[1])
+      .map(([, i]) => i);
+  }
+  /** Where the k-th snowball of the snowman stands (0 is the base), up the middle of the field. */
+  private stackSpot(k: number) {
+    return { x: this.cell * 1.5, y: this.cell * STACK[Math.min(k, STACK.length - 1)].y };
   }
   private refresh() {
-    this.route = solve(this.board, this.puzzle.target);
-    this.title.text = `Merge to ${this.puzzle.target}`;
-    this.status.text = complete(this.board, this.puzzle.target)
+    this.route = solve(this.board, this.puzzle.goal);
+    this.title.text = this.snowman
+      ? `Snowman: ${this.snowman.join(' + ')}`
+      : `Merge to ${this.puzzle.target}`;
+    this.status.text = complete(this.board, this.puzzle.goal)
       ? `${this.slides} slides · the shortest route is ${this.par}`
       : this.route === null
-        ? 'Try Undo or Start over to find a new route.'
+        ? overshot(this.board, this.puzzle.goal)
+          ? 'One join too many: Undo takes it back.'
+          : 'Try Undo or Start over to find a new route.'
         : `${this.board.filter((v) => v > 0).length} snowballs · ${this.slides} slides`;
     this.undoButton.alpha = this.history.length ? 1 : 0.55;
     this.drawBalls();
@@ -321,7 +376,7 @@ class SnowballMerge implements Game {
       // An inert arrow is exploration, never evidence of a wrong answer; a second in a row lights the way on.
       sfx.boing();
       const lit = this.assist('inert');
-      void this.ctx.say(lit ? (lit === 'undo' ? 'snowball.stuck' : `snowball.${lit}`) : 'snowball.still');
+      void this.ctx.say(lit ? (lit === 'undo' ? this.stuckLine : `snowball.${lit}`) : 'snowball.still');
       return;
     }
     this.busy = true;
@@ -354,7 +409,7 @@ class SnowballMerge implements Game {
     this.board = next.board;
     this.refresh();
     // A slide into a dead end lights Undo on its own and says so.
-    if (this.assist('changed') === 'undo') void this.ctx.say('snowball.stuck');
+    if (this.assist('changed') === 'undo') void this.ctx.say(this.stuckLine);
     else if (next.rocked && !this.rockSaid && this.route?.length) {
       // Stopping at the rock is how the level works, never a miss: name the rule once, the first time it shows.
       this.rockSaid = true;
@@ -382,12 +437,30 @@ class SnowballMerge implements Game {
       );
       if (!this.ctx.alive) return;
     }
-    this.busy = false;
-    if (complete(this.board, this.puzzle.target)) {
+    if (complete(this.board, this.puzzle.goal)) {
       this.finished = true;
-      await this.ctx.say('snowball.done', { target: this.puzzle.target });
+      if (this.snowman) {
+        // The stacked finish: the snowballs roll to the middle and stand on each other. Still busy, so a resize waits.
+        const order = this.stackOrder();
+        order.forEach((i) => this.balls.addChild(this.nodes.get(i)!));
+        await Promise.all(
+          order.map((i, k) =>
+            this.ctx.tw.to(this.nodes.get(i)!, this.stackSpot(k), { duration: 0.4, ease: ease.outBack }),
+          ),
+        );
+        if (!this.ctx.alive) return;
+        this.stacked = true;
+        this.drawBalls();
+        sfx.bell(5);
+      }
+      this.busy = false;
+      if (this.snowman) await this.ctx.say('snowball.done.snowman');
+      else await this.ctx.say('snowball.done', { target: this.puzzle.target });
       if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
-    } else if (this.route === null) void this.ctx.say('snowball.stuck');
+      return;
+    }
+    this.busy = false;
+    if (this.route === null) void this.ctx.say(this.stuckLine);
   }
 
   undo() {
@@ -415,7 +488,7 @@ class SnowballMerge implements Game {
   askForHint() {
     if (!this.ctx.alive || this.busy || this.finished || this.hinted) return;
     const lit = this.assist('ask');
-    if (lit === 'undo') void this.ctx.say('snowball.stuck');
+    if (lit === 'undo') void this.ctx.say(this.stuckLine);
     else if (lit) void this.ctx.say(`snowball.${lit}`);
   }
   autotouch(_dt: number): TouchIntent | null {

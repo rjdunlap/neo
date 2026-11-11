@@ -5,14 +5,17 @@ import {
   complete,
   DIRECTIONS,
   explore,
+  goalOf,
   makePuzzle,
   nextHelp,
   NO_HELP,
   orbit,
+  overshot,
   PLANS,
   ROCK,
   sizeLook,
   slide,
+  SNOWMAN,
   solve,
 } from './logic';
 
@@ -48,11 +51,11 @@ describe('Snowball Merge', () => {
         expect(puzzle).toEqual(makePuzzle(level, new Rng(seed), BOARDS[level - 1]));
         variants.add(puzzle.board.join(','));
         let board = puzzle.board,
-          route = solve(board, puzzle.target);
+          route = solve(board, puzzle.goal);
         expect(route).not.toBeNull();
         let remaining = route!.length;
-        while (!complete(board, puzzle.target)) {
-          route = solve(board, puzzle.target)!;
+        while (!complete(board, puzzle.goal)) {
+          route = solve(board, puzzle.goal)!;
           expect(route).toHaveLength(remaining);
           const step = slide(board, route[0]);
           expect(step.changed).toBe(true);
@@ -81,6 +84,7 @@ describe('Snowball Merge', () => {
       [7, 9],
       [10, 14],
       [8, 11],
+      [6, 9],
     ];
     expect(BOARDS).toHaveLength(PLANS.length);
     PLANS.forEach((plan, i) => {
@@ -98,7 +102,7 @@ describe('Snowball Merge', () => {
         expect(board.filter((v) => v === ROCK)).toHaveLength(i === 4 ? 1 : 0);
         expect(board[4]).not.toBe(ROCK);
         expect(snow(board).reduce((s, v) => s + v, 0)).toBe(plan.target);
-        const route = solve(board, plan.target)!;
+        const route = solve(board, goalOf(plan))!;
         expect(route.length).toBeGreaterThanOrEqual(bands[i][0]);
         expect(route.length).toBeLessThanOrEqual(bands[i][1]);
         const turns = orbit(board);
@@ -168,6 +172,92 @@ describe('Snowball Merge', () => {
       '32,32,32,16,8,2,2,4,0 16,32,8,0,16,16,32,0,8 4,16,16,16,32,4,8,32,0 0,8,16,16,16,32,8,0,32',
     ]);
     for (const level of BOARDS.slice(0, 4)) for (const b of level) expect(b).not.toContain(ROCK);
+  });
+  it('leaves level 5 as it was: the same plan, the same frozen boards and a one-snowball goal', () => {
+    expect([PLANS[4].target, PLANS[4].board.join(',')]).toEqual([64, '16,-1,8,0,16,8,4,8,4']);
+    expect(BOARDS[4].map((b) => b.join(',')).join(' ')).toBe(
+      '16,-1,8,0,16,8,4,8,4 16,4,0,-1,0,16,4,16,8 8,16,4,0,16,4,16,-1,0 16,8,2,4,0,16,-1,16,2',
+    );
+    for (const plan of PLANS.slice(0, 5)) expect(goalOf(plan)).toBe(plan.target);
+    for (let level = 1; level <= 5; level++)
+      expect(makePuzzle(level, new Rng(3), BOARDS[level - 1]).goal).toBe(PLANS[level - 1].target);
+  });
+  it('the snowman goal accepts exactly three 16s, wherever they sit', () => {
+    const z = Array(6).fill(0);
+    expect(goalOf(PLANS[5])).toEqual(SNOWMAN);
+    expect(SNOWMAN).toEqual([16, 16, 16]);
+    expect(SNOWMAN.reduce((s, v) => s + v, 0)).toBe(PLANS[5].target);
+    for (const board of [
+      [16, 16, 16, ...z],
+      [16, ...z, 16, 16],
+      [0, 16, 0, 0, 16, 0, 0, 16, 0],
+    ])
+      expect(complete(board, SNOWMAN)).toBe(true);
+    // Not yet (snow still to join), too far (two 16s joined), and the one-snowball finish of the other levels.
+    for (const board of [
+      [16, 16, 8, 8, ...z.slice(1)],
+      [32, 16, ...z, 0],
+      [32, 8, 8, ...z],
+      [16, 16, ...z, 0],
+    ])
+      expect(complete(board, SNOWMAN)).toBe(false);
+    expect(complete([16, 16, 16, ...z], 48)).toBe(false);
+    // A number goal is the old rule, unchanged.
+    expect(complete([64, ...z, 0, 0], 64)).toBe(true);
+  });
+  it('knows a join too many from a board that is merely stuck, and only on a snowman goal', () => {
+    const z = Array(6).fill(0);
+    expect(overshot([32, 16, ...z, 0], SNOWMAN)).toBe(true);
+    expect(overshot([32, 8, 4, 4, ...z.slice(1)], SNOWMAN)).toBe(true);
+    expect(overshot([16, 16, 16, ...z], SNOWMAN)).toBe(false);
+    // Fewer 16s than the snowman needs is not too far: smaller snow can still join up to them.
+    expect(overshot([16, 16, 8, 8, ...z.slice(1)], SNOWMAN)).toBe(false);
+    expect(overshot([8, 8, 8, 8, 8, 8, 0, 0, 0], SNOWMAN)).toBe(false);
+    // A goal of different sizes compares at the biggest size that differs; a one-snowball goal is never overshot.
+    expect(overshot([32, 32, ...z, 0], [32, 16, 16])).toBe(true);
+    expect(overshot([16, 16, 16, 16, ...z.slice(1)], [32, 16, 16])).toBe(false);
+    expect(overshot([64, ...z, 0, 0], 32)).toBe(false);
+    // Nothing unjoins: every overshot board a level 6 round can reach is a dead end, so Undo is the honest hint there.
+    for (const start of BOARDS[5]) {
+      const seen = new Set([start.join(',')]),
+        queue: (readonly number[])[] = [start];
+      let over = 0;
+      for (let head = 0; head < queue.length; head++) {
+        if (overshot(queue[head], SNOWMAN)) {
+          over++;
+          expect(solve(queue[head], SNOWMAN)).toBeNull();
+        }
+        for (const d of DIRECTIONS) {
+          const next = slide(queue[head], d);
+          if (next.changed && !seen.has(next.board.join(','))) {
+            seen.add(next.board.join(','));
+            queue.push(next.board);
+          }
+        }
+      }
+      expect(over).toBeGreaterThan(0);
+    }
+  });
+  it('every level 6 board offers the join too many along its shortest route, and its hints stop at the snowman', () => {
+    for (const start of BOARDS[5]) {
+      expect(start).not.toContain(ROCK);
+      expect(explore(start, SNOWMAN).deadEnds).toBeGreaterThan(0);
+      let board: readonly number[] = start,
+        tempt = 0;
+      for (const d of solve(start, SNOWMAN)!) {
+        expect(complete(board, SNOWMAN)).toBe(false);
+        for (const other of DIRECTIONS) {
+          const step = slide(board, other);
+          if (step.changed && overshot(step.board, SNOWMAN)) tempt++;
+        }
+        board = slide(board, d).board;
+        expect(overshot(board, SNOWMAN)).toBe(false);
+      }
+      expect(complete(board, SNOWMAN)).toBe(true);
+      expect(solve(board, SNOWMAN)).toEqual([]);
+      // At least one moment on the shortest route where a slide (either way along a line) would join two 16s.
+      expect(tempt).toBeGreaterThanOrEqual(2);
+    }
   });
   it('glows after two inert arrows in a row or at a dead end, counting each glow once', () => {
     const route = ['left', 'up'] as const;

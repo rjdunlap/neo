@@ -7,17 +7,32 @@ export type Board = readonly number[];
 export const SIZE = 3;
 /** The ice rock (level 5): a cell that never moves and never joins. A line splits at it, and snowballs pack against it. */
 export const ROCK = -1;
-export const PLANS = [
+/** What finishes a round: one snowball of this size, or (level 6) exactly these snowballs and no others. */
+export type Goal = number | readonly number[];
+/**
+ * Level 6's snowman: three 16s. Equal snowballs at the goal's biggest size are what make "when to stop" a real decision:
+ * two 16s that meet join into a 32, and nothing unjoins. (A 32 and a 16, or any goal of different sizes, can never be overshot.)
+ */
+export const SNOWMAN: readonly number[] = [16, 16, 16];
+export const PLANS: readonly { target: number; name: string; board: Board; goal?: readonly number[] }[] = [
   { target: 16, name: 'Make 16 · open snowfield', board: [2, 0, 2, 0, 4, 0, 4, 0, 4] },
   { target: 32, name: 'Make 32 · choose your pairs', board: [2, 4, 2, 4, 0, 4, 8, 0, 8] },
   { target: 64, name: 'Make 64 · make room first', board: [2, 4, 2, 8, 4, 8, 16, 4, 16] },
   { target: 128, name: 'Make 128 · the big snowball', board: [32, 32, 32, 16, 8, 2, 2, 4, 0] },
   { target: 64, name: 'Make 64 · the ice rock', board: [16, ROCK, 8, 0, 16, 8, 4, 8, 4] },
-] as const;
+  // The snowman: `target` is still the snow on the field; the round ends at three 16s, so two 16s joining overshoots.
+  {
+    target: 48,
+    goal: SNOWMAN,
+    name: 'Build a snowman · keep the 16s apart',
+    board: [4, 8, 2, 0, 2, 8, 16, 8, 0],
+  },
+];
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 5 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
+export const goalOf = (plan: { target: number; goal?: readonly number[] }): Goal => plan.goal ?? plan.target;
 
 /**
  * Read a row/column from its leading edge. Equal neighbours merge once per slide. An ice rock stays where it is and
@@ -66,11 +81,28 @@ export function slide(board: Board, direction: Direction) {
   return { board: out, changed: out.some((v, i) => v !== board[i]), merges, motions, rocked };
 }
 
-export const complete = (board: Board, target: number) =>
-  board.filter((v) => v > 0).length === 1 && board.includes(target);
+export function complete(board: Board, goal: Goal) {
+  const snow = board.filter((v) => v > 0);
+  if (typeof goal === 'number') return snow.length === 1 && snow[0] === goal;
+  const want = [...goal].sort((a, b) => a - b);
+  return snow.length === want.length && snow.sort((a, b) => a - b).every((v, i) => v === want[i]);
+}
+
+/**
+ * Past the snowman: nothing unjoins, so a round has gone too far once, at the biggest size where the field and the goal
+ * differ, the field holds more than the goal does (a 32, when the snowman is three 16s). Fewer there is fine: smaller snow can still
+ * join up to it. Only Undo comes back from it. Always false for a one-snowball goal.
+ */
+export function overshot(board: Board, goal: Goal) {
+  if (typeof goal === 'number') return false;
+  const count = (list: readonly number[], v: number) => list.filter((n) => n === v).length;
+  const sizes = [...new Set([...board.filter((v) => v > 0), ...goal])].sort((a, b) => b - a);
+  const differs = sizes.find((v) => count(board, v) !== count(goal, v));
+  return differs !== undefined && count(board, differs) > count(goal, differs);
+}
 
 /** Finite boards, no arrivals: breadth-first search gives a shortest route, or an honest dead end. */
-export function solve(board: Board, target: number): Direction[] | null {
+export function solve(board: Board, target: Goal): Direction[] | null {
   const nodes: { board: Board; parent: number; direction: Direction | null }[] = [
     { board, parent: -1, direction: null },
   ];
@@ -116,7 +148,7 @@ export function orbit(board: Board) {
 }
 
 /** Every board reachable by slides, and how many of them can no longer finish (dead ends for Undo). */
-export function explore(board: Board, target: number) {
+export function explore(board: Board, target: Goal) {
   const seen = new Map<string, Board>([[board.join(','), board]]),
     queue: Board[] = [board];
   for (let head = 0; head < queue.length; head++)
@@ -141,7 +173,11 @@ export function makePuzzle(level: number, rng: Rng, boards: readonly Board[]) {
     pick = rng.int(0, boards.length - 1),
     turns = rng.int(0, 3),
     reflect = rng.chance(0.5);
-  return { board: transform(boards[pick] ?? plan.board, turns, reflect), target: plan.target };
+  return {
+    board: transform(boards[pick] ?? plan.board, turns, reflect),
+    target: plan.target,
+    goal: goalOf(plan),
+  };
 }
 
 /** Which control glows, why, and how many glows counted as help. Pure so its accounting can be tested. */
