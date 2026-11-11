@@ -8,12 +8,13 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–2 |
+| school | 1–3 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | See the signal |
 | 2 | Choose the sensor |
+| 3 | Both badges |
 
 <!-- end generated -->
 

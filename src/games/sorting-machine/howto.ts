@@ -7,14 +7,15 @@ export const HOW_TO: GameHowTo = {
     'Tap a friend, then Send, and watch the sensor and the door.',
     { from: 1, to: 1, text: 'Send both friends, then tap the tick.' },
     { from: 2, to: 2, text: 'Tap the slot to choose the sensor.' },
-    { from: 2, to: 2, text: 'Check tries every friend at once.' },
+    { from: 3, to: 3, text: 'Tap the slot to choose the gate that joins the two sensors.' },
+    { from: 2, to: 3, text: 'Check tries every friend at once.' },
   ],
   finish: [
     { from: 1, to: 1, text: 'Both friends have been through the machine.' },
-    { from: 2, to: 2, text: 'Every friend gets the answer the sign wants.' },
+    { from: 2, to: 3, text: 'Every friend gets the answer the sign wants.' },
   ],
   note: [
     { from: 1, to: 1, text: 'This first look is a try-out, not a test. Sending is never counted.' },
-    { from: 2, to: 2, text: 'Sending is never counted. A wrong Check only costs a gentle hint.' },
+    { from: 2, to: 3, text: 'Sending is never counted. A wrong Check only costs a gentle hint.' },
   ],
 };
