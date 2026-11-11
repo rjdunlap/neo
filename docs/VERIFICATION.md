@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — Festival Signals (H4) definition (docs only)
+
+**Changed:** new [definition](definitions/festival-signals.md) of Sorting Machine levels 8–9 (*Festival Signals*, *Fix the lantern*) in two build slices (H3 level 3, then H5 levels 8–9); the study, base definition, batch plans, READY and the study backlog point to it.
+**Ran:** a scratch script enumerated the proposed four-slot grammar (2,005,696 fillings): 24 accepted machines, all four parts long with the lantern on slot 4, eight of them keeping P OR Q in slot 1; `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built).
+
 ## 2026-11-10 — Upright shell slice 3, the rest of the root's scenes (chunk 31, PR #1480)
 
 **Changed:** creature play, the library, the project pages, the locations and lap/toddler Explore (Little surprises' sheet, Make my mix's table) lay out on the 768 × 1024 area; `playLayout`, `projectLayout`, `sheetPlaces` and `tableLayout` take a narrow view; `LandScene`'s heading stays between Back and the book.
