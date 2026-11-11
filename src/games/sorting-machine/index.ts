@@ -284,7 +284,11 @@ class SortingMachine implements Game {
 
     // The sign.
     if (l.sign) {
-      const sign = signArt(this.level === 3 ? this.brief.props : this.askedProp, l.sign.w, l.sign.h);
+      const sign = signArt(
+        this.level === 3 ? (pairKey(this.brief).split('-') as [Prop, Prop]) : this.askedProp,
+        l.sign.w,
+        l.sign.h,
+      );
       sign.eventMode = 'none';
       sign.position.copyFrom(centre(l.sign));
       this.board.addChild(sign);
