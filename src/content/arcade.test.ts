@@ -8,14 +8,17 @@ import {
   arcadePage,
   arcadePages,
   clampArcadePage,
+  DEFAULT_FILTER,
   filterLine,
   filterName,
   forgetArcade,
   arcadeMemory,
   lastPlayed,
+  pageLabel,
   tagsFor,
   topicWord,
 } from './arcade';
+import { ageOf, allGames } from './explore';
 import { LANDS } from './lands';
 import { SCRIPT as LINES } from './voice-script';
 import { SUBJECTS } from './world';
@@ -36,8 +39,34 @@ describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
     }
   });
 
+  it("lists exactly her own age's games under For me, land by land, at every band (docs/definitions/one-way-to-browse.md R2)", () => {
+    for (const band of BANDS.map((b) => b.id)) {
+      const mine = arcadeList('mine', band, GAMES, LANDS, {}).map((g) => g.id);
+      const hers = GAMES.filter((g) => ageOf(g, band) === 'hers').map((g) => g.id);
+      expect([...mine].sort(), band).toEqual([...hers].sort());
+      // The same order All games uses, land by land.
+      expect(mine, band).toEqual(
+        allGames(band, GAMES, LANDS)
+          .map((g) => g.id)
+          .filter((id) => mine.includes(id)),
+      );
+      expect(mine.length, band).toBeGreaterThan(0);
+    }
+    // A grown-up's For me holds no game only little ones play.
+    const grown = arcadeList('mine', 'grownup', GAMES, LANDS, {});
+    expect(grown.every((g) => ageOf(g, 'grownup') === 'hers')).toBe(true);
+    expect(grown.length).toBeLessThan(GAMES.length);
+  });
+
+  it('offers For me first and opens on it', () => {
+    expect(arcadeFilters(GAMES).slice(0, 3)).toEqual(['mine', 'all', 'played']);
+    expect(DEFAULT_FILTER).toBe('mine');
+    expect(filterName('mine')).toBe('For me');
+    expect(filterLine('mine')).toBe('arcade.mine');
+  });
+
   it('splits All games into the subjects with nothing lost or doubled', () => {
-    const subjects = arcadeFilters(GAMES).filter((f) => f !== 'all' && f !== 'played');
+    const subjects = arcadeFilters(GAMES).filter((f) => f !== 'mine' && f !== 'all' && f !== 'played');
     expect(subjects.length).toBeGreaterThan(0);
     for (const band of BANDS.map((b) => b.id)) {
       const all = arcadeList('all', band, GAMES, LANDS, {}).map((g) => g.id);
@@ -95,10 +124,18 @@ describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
     expect(arcadePage([], 0, 6)).toEqual([]);
   });
 
+  it('counts the pages under the grid, and hides the count on a single page', () => {
+    expect(pageLabel(1, 13, 6)).toBe('2 of 3');
+    expect(pageLabel(0, 175, 4)).toBe('1 of 44');
+    expect(pageLabel(99, 13, 6)).toBe('3 of 3');
+    expect(pageLabel(0, 6, 6)).toBeNull();
+    expect(pageLabel(0, 0, 6)).toBeNull();
+  });
+
   it('forgets the filter and spotlight for a different player', () => {
     arcadeMemory.filter = 'played';
     arcadeMemory.spotlight = GAMES[0].id;
     forgetArcade();
-    expect(arcadeMemory).toEqual({ filter: 'all', spotlight: null });
+    expect(arcadeMemory).toEqual({ filter: 'mine', spotlight: null });
   });
 });

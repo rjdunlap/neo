@@ -1,6 +1,8 @@
 # One way to browse (U6, definition)
 
-*Status: defined 2026-11-10; nothing built. Docs only.*
+**Built:** U6a (PR #1474); to build U6b, read “Slices and check tier” (slice 2) and R1, R5–R8 under Requirements.
+
+*Status: defined 2026-11-10; U6a built 2026-11-10 (PR #1474: For me first and default, the page count, the Arcade upright); U6b, the fold, is not built. R4 deviated slightly: the upright area already fit four to six cards, so the spotlight was not shortened; the Topics sheet's 13 tiles fit with no paging by laying rows above the guide corner across the full width, and the arrows and count shift right when they sit as low as the guide corner.*
 
 From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#5-five-ways-to-browse-one-catalog-and-their-names-disagree), finding 5 and recommendation U6: Explore offers five ways into one catalog and their names disagree. The review asked to fold the All games card into the Arcade, add a "for my age" topic that opens first, show the page count, and say on an empty Favorites how the heart works. This page settles where that fold meets what All games does today.
 

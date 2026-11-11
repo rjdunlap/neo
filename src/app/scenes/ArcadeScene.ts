@@ -13,8 +13,10 @@ import {
   arcadePage,
   arcadePages,
   clampArcadePage,
+  DEFAULT_FILTER,
   filterLine,
   filterName,
+  pageLabel,
   tagsFor,
   type ArcadeFilter,
 } from '../../content/arcade';
@@ -27,11 +29,13 @@ import {
   ARCADE_CARD,
   ARCADE_PLAY_RADIUS,
   arcadeLayout,
+  PAGE_COUNT,
   TOPIC_TILE,
   TOPICS,
   topicsLayout,
   type ArcadeLayout,
 } from '../../creatures/arcade-layout';
+import { makeCompanion } from '../../creatures/companion';
 import { CORNER_RADIUS, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
@@ -61,9 +65,11 @@ export interface ArcadeCard {
  * The Arcade (docs/rework/ARCADE.md): every game in a paged grid of picture cards with their names and tags, and one large
  * spotlight window where the chosen game's own bot plays it (one at a time: the ghost fingers share a pointer and the drag
  * lock). Until she taps, the spotlight moves along the page like an arcade's attract mode. A first tap on a card spotlights
- * it and says its name; a second tap, or the green Play button, starts it. The Topics button opens picture tiles: All
- * games, Played before and each subject. A game keeps the origin `{ explore: 'arcade', page }`; the filter and the
- * spotlit game are remembered for the visit. Looking changes nothing; nothing here gates or is a round.
+ * it and says its name; a second tap, or the green Play button, starts it. The Topics button opens picture tiles: For
+ * me (her own age's games, where it opens), All games, Played before and each subject; a page count sits between the
+ * arrows (docs/definitions/one-way-to-browse.md, U6a). A game keeps the origin `{ explore: 'arcade', page }`; the filter
+ * and the spotlit game are remembered for the visit. Looking changes nothing; nothing here gates or is a round. Laid out
+ * on the upright area too, for a narrow tablet or a phone held upright.
  */
 export class ArcadeScene extends Scene {
   private readonly backdrop = homeBackdrop();
@@ -112,6 +118,9 @@ export class ArcadeScene extends Scene {
     },
   });
   private readonly empty = label('', 22, MUTED, '500');
+  /** "2 of 6" between the arrows; hidden when the list fits one page. Not a target. */
+  readonly count = new Container();
+  private readonly countText = label('', 22, MUTED, '600');
   /** The cards on this page, in reading order. */
   cards: ArcadeCard[] = [];
   /** The Topics sheet while it is open, with its tiles. */
@@ -134,7 +143,8 @@ export class ArcadeScene extends Scene {
 
   constructor(app: App, page = 0) {
     super(app);
-    this.filter = arcadeFilters(GAMES).includes(arcadeMemory.filter) ? arcadeMemory.filter : 'all';
+    this.upright = this.uprightArea = true;
+    this.filter = arcadeFilters(GAMES).includes(arcadeMemory.filter) ? arcadeMemory.filter : DEFAULT_FILTER;
     this.layout = arcadeLayout(this.view);
     this.perPage = this.layout.cards.length;
     this.list = this.listFor(this.filter);
@@ -161,6 +171,7 @@ export class ArcadeScene extends Scene {
       this.title,
       this.detail,
       this.empty,
+      this.count,
       this.topics,
       this.back,
       this.home,
@@ -169,6 +180,13 @@ export class ArcadeScene extends Scene {
       this.play,
     );
     for (const b of [this.prev, this.next]) b.children[1]?.scale.set(1.4);
+    this.count.addChild(
+      new Graphics()
+        .roundRect(-PAGE_COUNT.w / 2, -PAGE_COUNT.h / 2, PAGE_COUNT.w, PAGE_COUNT.h, PAGE_COUNT.h / 2)
+        .fill({ color: cream, alpha: 0.92 }),
+      this.countText,
+    );
+    this.count.eventMode = 'none';
     this.play.children[1]?.scale.set(1.5);
     onTap(
       this.topics,
@@ -208,6 +226,8 @@ export class ArcadeScene extends Scene {
   }
 
   private filterArt(f: ArcadeFilter): Container {
+    // For me: her own companion, dressed as Home draws it, small and still (a picture no other control uses).
+    if (f === 'mine') return makeCompanion();
     return f === 'all' ? tilesIcon() : f === 'played' ? againIcon(swatch.blue.line) : landmarkFor(f);
   }
 
@@ -226,6 +246,12 @@ export class ArcadeScene extends Scene {
     this.next.visible = this.page < pages - 1;
     this.empty.visible = this.list.length === 0;
     this.empty.text = this.list.length ? '' : 'Nothing here yet';
+    const count = pageLabel(this.page, this.list.length, this.perPage);
+    this.count.visible = !!count;
+    this.countText.text = count ?? '';
+    this.countText.scale.set(1);
+    if (this.countText.width > PAGE_COUNT.w - 20)
+      this.countText.scale.set((PAGE_COUNT.w - 20) / this.countText.width);
     for (const c of this.cards) this.ui.addChildAt(c.node, this.ui.getChildIndex(this.topics));
     this.ring();
     this.place();
@@ -529,6 +555,7 @@ export class ArcadeScene extends Scene {
     this.topics.position.set(l.topics.x, l.topics.y);
     this.prev.position.set(l.prev.x, l.prev.y);
     this.next.position.set(l.next.x, l.next.y);
+    this.count.position.set(l.count.x, l.count.y);
     this.play.position.set(l.play.x, l.play.y);
     const w = l.window.w;
     const h = (w * 3) / 4;

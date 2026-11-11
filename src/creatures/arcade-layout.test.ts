@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { arcadeFilters } from '../content/arcade';
 import { computeView } from '../engine/view';
+import { GAMES } from '../games/registry';
+import { UPRIGHT_VIEWS } from '../games/upright-check';
 import {
   ARCADE_CARD,
   ARCADE_CELL_H,
   ARCADE_PLAY_RADIUS,
   arcadeLayout,
+  PAGE_COUNT,
   TOPIC_TILE,
   TOPICS,
   topicsLayout,
@@ -19,6 +23,8 @@ const VIEWS = [
   computeView(844, 390),
   computeView(390, 844),
   computeView(1366, 768),
+  // A phone held upright lays the Arcade out on the 768 × 1024 area (docs/definitions/one-way-to-browse.md R4).
+  ...Object.values(UPRIGHT_VIEWS),
 ];
 
 interface Box {
@@ -75,6 +81,7 @@ describe('the Arcade layout', () => {
         disc(l.play, ARCADE_PLAY_RADIUS, 'play'),
         disc(l.prev, PAGE_ARROW_RADIUS, 'prev'),
         disc(l.next, PAGE_ARROW_RADIUS, 'next'),
+        rect(l.count, PAGE_COUNT.w, PAGE_COUNT.h, 'page count'),
         ...cells,
       ];
       const window: Box = {
@@ -121,10 +128,18 @@ describe('the Arcade layout', () => {
     }
   });
 
-  it('fits the Topics sheet twelve tiles with their names on screen, apart and clear of the guide corner and the top bar', () => {
+  it('lays out at least four cards on the upright area', () => {
+    for (const [k, v] of Object.entries(UPRIGHT_VIEWS)) {
+      const l = arcadeLayout(v);
+      expect(l.cols, k).toBeGreaterThanOrEqual(2);
+      expect(l.rows, k).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('fits the Topics sheet every tile with their names on screen, apart and clear of the guide corner and the top bar', () => {
     for (const v of VIEWS) {
       const where = `${Math.round(v.w)}×${Math.round(v.h)}`;
-      const tiles = topicsLayout(v, 12).map((t, i): Box => ({
+      const tiles = topicsLayout(v, arcadeFilters(GAMES).length).map((t, i): Box => ({
         x0: t.x - TOPIC_TILE / 2,
         y0: t.y - TOPIC_TILE / 2,
         x1: t.x + TOPIC_TILE / 2,
@@ -145,6 +160,7 @@ describe('the Arcade layout', () => {
         rect(l.topics, TOPICS.w, TOPICS.h, 'topics'),
       ];
       for (const b of tiles) {
+        expect(b.x0, `${b.what} ${where}`).toBeGreaterThanOrEqual(0);
         expect(b.x0, `${b.what} ${where}`).toBeGreaterThanOrEqual(0);
         expect(b.x1, `${b.what} ${where}`).toBeLessThanOrEqual(v.w);
         expect(b.y1, `${b.what} ${where}`).toBeLessThanOrEqual(v.h);

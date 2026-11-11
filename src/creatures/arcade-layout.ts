@@ -18,11 +18,15 @@ export const ARCADE_CARD = 150;
 /** The Topics button: a pill with the chosen filter's picture and name. */
 export const TOPICS = { w: 240, h: 100 };
 export const ARCADE_PLAY_RADIUS = 60;
+/** The page count ("2 of 6") between the arrows: a plain cream pill, not a target, clear of both arrows. */
+export const PAGE_COUNT = { w: 132, h: 44 };
 /** A card, its name (up to two lines) and its tag line under it. */
 export const ARCADE_CELL_H = 236;
 /** The least distance between two cards' centres across a row. */
 const MIN_PITCH = 158;
 const MAX_PITCH = 200;
+/** Each arrow's distance from the middle, leaving room for the page count between them. */
+const ARROW_SPREAD = 140;
 /** The top row's bottom edge; everything below starts here. */
 const TOP = 140;
 /** Room under the window for the name and the tag line, beside the Play button. */
@@ -45,6 +49,8 @@ export interface ArcadeLayout {
   rows: number;
   prev: Spot;
   next: Spot;
+  /** The page count's centre, between the arrows. */
+  count: Spot;
 }
 
 /** Cards on one page at this view. */
@@ -87,8 +93,11 @@ export function arcadeLayout(v: { w: number; h: number }): ArcadeLayout {
         x: Math.round(left + c * pitch),
         y: Math.round(grid.y0 + ARCADE_CARD / 2 + r * ARCADE_CELL_H),
       });
-  const mid = grid.x0 + gw / 2;
   const arrowY = grid.y0 + rows * ARCADE_CELL_H + PAGE_ARROW_RADIUS - 8;
+  // The arrows and the count under the grid's middle; moved right just enough to clear the guide corner when they sit
+  // as low as it (a tall view, where the grid keeps to the middle).
+  const low = arrowY + PAGE_ARROW_RADIUS > v.h - GUIDE_CORNER.h;
+  const mid = Math.max(grid.x0 + gw / 2, low ? GUIDE_CORNER.w + 8 + PAGE_ARROW_RADIUS + ARROW_SPREAD : 0);
   return {
     backdrop: backdropFit(v),
     back: { x: BACK.x, y: BACK.y },
@@ -100,30 +109,35 @@ export function arcadeLayout(v: { w: number; h: number }): ArcadeLayout {
     cards,
     cols,
     rows,
-    prev: { x: Math.round(mid - 140), y: Math.round(arrowY) },
-    next: { x: Math.round(mid + 140), y: Math.round(arrowY) },
+    prev: { x: Math.round(mid - ARROW_SPREAD), y: Math.round(arrowY) },
+    next: { x: Math.round(mid + ARROW_SPREAD), y: Math.round(arrowY) },
+    count: { x: Math.round(mid), y: Math.round(arrowY) },
   };
 }
 
 /** The Topics sheet's tiles: 150-unit pictures with their names, a row's pitch apart. */
 export const TOPIC_TILE = 150;
 const TOPIC_PITCH = { x: 184, y: 200 };
+/** A tile's name under it. */
+const TOPIC_NAME = 44;
 
 /**
- * The Topics sheet (docs/rework/ARCADE.md#design): `n` picture tiles in rows under the top bar, kept right of the guide
- * corner's column so the lowest row never sits under the guide, and as many to a row as fit.
+ * The Topics sheet (docs/rework/ARCADE.md#design): `n` picture tiles in rows under the top bar, as many to a row as fit.
+ * A row that ends above the guide corner uses the whole width; a lower one keeps right of the guide corner's column, so
+ * no tile sits under the guide (docs/definitions/one-way-to-browse.md R4: thirteen tiles on the upright area too).
  */
 export function topicsLayout(v: { w: number; h: number }, n: number): Spot[] {
-  const x0 = GUIDE_CORNER.w + 20;
-  const x1 = v.w - 40;
-  const cols = Math.max(1, Math.min(n, Math.floor((x1 - x0) / TOPIC_PITCH.x)));
   const top = TOP + 8 + TOPIC_TILE / 2;
+  const x1 = v.w - 40;
   const spots: Spot[] = [];
-  for (let i = 0; i < n; i++) {
-    const r = Math.floor(i / cols);
-    const inRow = Math.min(cols, n - r * cols);
+  for (let r = 0; spots.length < n; r++) {
+    const y = Math.round(top + r * TOPIC_PITCH.y);
+    const clear = y + TOPIC_TILE / 2 + TOPIC_NAME <= v.h - GUIDE_CORNER.h;
+    const x0 = clear ? 40 : GUIDE_CORNER.w + 20;
+    const cols = Math.max(1, Math.floor((x1 - x0) / TOPIC_PITCH.x));
+    const inRow = Math.min(cols, n - spots.length);
     const left = (x0 + x1) / 2 - ((inRow - 1) * TOPIC_PITCH.x) / 2;
-    spots.push({ x: Math.round(left + (i % cols) * TOPIC_PITCH.x), y: Math.round(top + r * TOPIC_PITCH.y) });
+    for (let c = 0; c < inRow; c++) spots.push({ x: Math.round(left + c * TOPIC_PITCH.x), y });
   }
   return spots;
 }
