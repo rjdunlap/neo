@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–6 |
+| grown-up | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 4 | Make 128 · the big snowball |
 | 5 | Make 64 · the ice rock |
 | 6 | Build a snowman · keep the 16s apart |
+| 7 | Make 128 · a wider field |
 
 <!-- end generated -->
 

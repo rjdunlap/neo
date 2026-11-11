@@ -9,7 +9,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       await tap(`neo.scene.game.arrows.${d}`);
       await idle();
     };
-    for (const level of [1, 4]) {
+    // SNOWBALL_LEVELS=7 (or 5,6) plays only those levels; unset plays them all and the land launch at the end.
+    const only = process.env.SNOWBALL_LEVELS?.split(',').map(Number);
+    const want = (level) => !only || only.includes(level);
+    for (const level of [1, 4].filter(want)) {
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await launch('snowball-merge', level);
       await page.waitForTimeout(300);
@@ -117,7 +120,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         [0, level === 4 ? 3 : 2],
       );
     }
-    {
+    if (want(5)) {
       // Level 5, the ice rock: it stays in its cell, snowballs stop beside it (said once, no miss), and the round finishes.
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await launch('snowball-merge', 5);
@@ -158,7 +161,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         'stopping at the rock is neither a miss nor help',
       );
     }
-    {
+    if (want(6)) {
       // Level 6, the snowman: the goal is three 16s. One join too many (two 16s) is said, lights Undo once, and Undo
       // takes it back; the round ends the moment only three 16s are left, stacked.
       const before = await page.evaluate(() => kit.store.data.stickers.length);
@@ -222,6 +225,109 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         'the glow at the join too many counts as one hint, never a miss',
       );
     }
+    if (want(7)) {
+      // Level 7, a wider field: sixteen cells by the same rules. Hints come from the distance map built once for the
+      // board; one glow lights on its own (Undo after a slide into a dead end, or the next arrow after two still
+      // arrows: one hint, never a miss), and the round ends
+      // at one 128 in exactly the map's slides.
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      await launch('snowball-merge', 7);
+      await page.waitForTimeout(300);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(300);
+      const g = await page.evaluate(() => {
+        const g = neo.scene.game;
+        return { cells: g.board.length, size: g.size, par: g.par, route: g.route.length, cell: g.cell };
+      });
+      assert.deepEqual([g.cells, g.size], [16, 4], 'the field is four cells a side');
+      assert.ok(g.par >= 12 && g.par <= 16 && g.route === g.par, 'the map gives the starting route');
+      const fits = await page.evaluate(() => {
+        const g = neo.scene.game,
+          w = g.cell * g.size;
+        const controls = [...Object.values(g.arrows), g.undoButton, g.hintButton, g.restartButton];
+        return (
+          g.field.x - 14 >= 0 &&
+          g.field.x + w + 14 <= neo.view.w &&
+          controls.every((n) => n.y + 50 <= neo.view.h && n.y - 50 >= g.field.y + w + 14)
+        );
+      });
+      assert.ok(fits, 'the wider field and both button rows fit, the buttons under the field');
+      assert.ok(g.cell >= 120, 'cells stay large on an upright phone');
+      const deadEnd = () =>
+        page.evaluate(async () => {
+          const { DIRECTIONS, slide } = await import('/src/games/snowball-merge/logic.ts');
+          const g = neo.scene.game;
+          return DIRECTIONS.find((d) => {
+            const next = slide(g.board, d);
+            return next.changed && !g.map.steps.has(next.board.join(','));
+          });
+        });
+      let strays = 0,
+        slides = 0;
+      for (let guard = 0; guard < 40 && !(await page.evaluate(() => neo.scene.game.finished)); guard++) {
+        const wrong = strays ? null : await deadEnd();
+        if (wrong) {
+          const kept = await page.evaluate(() => neo.scene.game.board.slice());
+          await press(wrong);
+          strays++;
+          assert.equal(await page.evaluate(() => neo.scene.game.route), null, 'a dead end has no route');
+          assert.equal(await page.evaluate(() => neo.scene.game.hinted), 'undo', 'Undo lights on its own');
+          await screenshot('snowball-merge-7-portrait');
+          await tap('neo.scene.game.undoButton');
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.board), kept);
+          assert.equal(await page.evaluate(() => neo.scene.game.hinted), null);
+        } else if (!strays && slides >= 3) {
+          // No dead end is one slide off this board's route: two still arrows in a row light the next arrow instead.
+          const still = await page.evaluate(async () => {
+            const { DIRECTIONS, slide } = await import('/src/games/snowball-merge/logic.ts');
+            return DIRECTIONS.find((d) => !slide(neo.scene.game.board, d).changed);
+          });
+          if (still) {
+            await press(still);
+            await press(still);
+            strays++;
+            assert.equal(await page.evaluate(() => neo.scene.game.hinted), await direction());
+            await screenshot('snowball-merge-7-portrait');
+          }
+        }
+        const left = await page.evaluate(() => neo.scene.game.route.length);
+        const d = await direction();
+        assert.ok(d);
+        await press(d);
+        slides++;
+        if (!(await page.evaluate(() => neo.scene.game.finished)))
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.route.length),
+            left - 1,
+            'each hinted slide is one closer',
+          );
+      }
+      assert.equal(
+        strays,
+        1,
+        'one glow lit on its own: Undo at a dead end, or the next arrow after two still arrows',
+      );
+      assert.equal(slides, g.par, 'the hints finish in the shortest route');
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.board.filter((v) => v > 0)), [128]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(250);
+      await screenshot('snowball-merge-7-landscape');
+      await finished('snowball-merge');
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const r = kit.store.stats('snowball-merge').history.at(-1);
+          return [r.misses, r.hints];
+        }),
+        [0, 1],
+        'the glow counts as one hint, never a miss',
+      );
+    }
+    if (only) {
+      assert.deepEqual(errors, []);
+      log(`Snowball Merge: level${only.length > 1 ? 's' : ''} ${only.join(', ')} passed (SNOWBALL_LEVELS)`);
+      return;
+    }
     await page.evaluate(() => neo.go.land('lantern-lake'));
     await scene('LandScene');
     await turnToGame('snowball-merge');
@@ -238,7 +344,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
     await page.waitForTimeout(350);
     assert.deepEqual(errors, []);
     log(
-      'Snowball Merge: levels 1, 4, 5 (the ice rock stays put, said once, no miss) and 6 (the snowman: one join too many, Undo, three 16s stacked), inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed',
+      'Snowball Merge: levels 1, 4, 5 (the ice rock stays put, said once, no miss) 6 (the snowman: one join too many, Undo, three 16s stacked) and 7 (the 4 × 4 field: one glow, the shortest route from the map), inert exploration, hint once, Undo/Restart, portrait controls, one sticker, land launch and leave during slide passed',
     );
   }
 

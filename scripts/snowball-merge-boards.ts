@@ -9,7 +9,8 @@
  * boards unsolvable), and its shortest route rests a snowball against the rock at least three times. Every added
  * board is asymmetric (eight distinct turns), and no board is a turn of another. A level 6 board is solved to the
  * snowman goal (three 16s) from that goal's own snowballs halved, and along its shortest route at least two slides on
- * offer would join two 16s and overshoot it.
+ * offer would join two 16s and overshoot it. A level 7 board has four cells a side (the side is read from the level's
+ * authored plan) and eleven to thirteen snowballs.
  */
 import { writeFileSync } from 'node:fs';
 import {
@@ -21,8 +22,8 @@ import {
   PLANS,
   ROCK,
   slide,
+  sizeOf,
   solve,
-  SIZE,
   type Board,
 } from '../src/games/snowball-merge/logic.ts';
 
@@ -44,6 +45,7 @@ export const BANDS = [
   { route: [10, 14], balls: [7, 8], deadEnds: 'some', has: [32, 2] },
   { route: [8, 11], balls: [6, 7], deadEnds: 'some', rock: 3 },
   { route: [6, 9], balls: [6, 7], deadEnds: 'some', tempt: 2 },
+  { route: [12, 16], balls: [11, 13], deadEnds: 'some' },
 ] as const satisfies readonly {
   route: readonly [number, number];
   balls: readonly [number, number];
@@ -57,7 +59,7 @@ export const BANDS = [
 }[];
 
 /** Halve a random snowball of the goal until there are `count`, then scatter them over the field. */
-function randomBoard(goal: readonly number[], count: number, rock: boolean): number[] {
+function randomBoard(goal: readonly number[], count: number, rock: boolean, SIZE: number): number[] {
   const values = [...goal];
   while (values.length < count) {
     const splittable = values.map((v, i) => (v > 2 ? i : -1)).filter((i) => i >= 0);
@@ -88,6 +90,7 @@ PLANS.forEach((plan, index) => {
       typeof goal === 'number' ? [goal] : goal,
       int(band.balls[0], band.balls[1]),
       'rock' in band,
+      sizeOf(plan.board),
     );
     if ('has' in band && board.filter((v) => v === band.has[0]).length < band.has[1]) continue;
     const turns = orbit(board);

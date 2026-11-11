@@ -71,18 +71,22 @@ describe.each(Object.entries(views))('Grown-up upright batch 4 on %s', (_, v) =>
     }
   });
 
-  it('Snowball Merge: the field, the arrow row and the buttons fit', () => {
-    const l = snowballLayout(v);
-    const w = l.cell * SIZE;
-    check(
-      v,
-      [
-        box('field', l.field.x - 14, l.field.y - 14, w + 28, w + 28),
-        ...Object.values(l.arrows).map((p) => square('arrow', p, 100)),
-        ...l.buttons.map((p) => ({ ...p, what: 'button', w: 160, h: 100 })),
-      ],
-      100,
-    );
-    expect(l.cell).toBe(160);
+  it('Snowball Merge: the field, the arrow row and the buttons fit, on the usual field and the wider one', () => {
+    for (const size of [SIZE, 4]) {
+      const l = snowballLayout(v, size);
+      const w = l.cell * size;
+      check(
+        v,
+        [
+          box('field', l.field.x - 14, l.field.y - 14, w + 28, w + 28),
+          ...Object.values(l.arrows).map((p) => square('arrow', p, 100)),
+          ...l.buttons.map((p) => ({ ...p, what: 'button', w: 160, h: 100 })),
+        ],
+        100,
+      );
+      // Level 7's sixteen cells share the same room: smaller cells, with both button rows still under the field.
+      if (size === SIZE) expect(l.cell).toBe(160);
+      else expect(l.cell).toBeGreaterThanOrEqual(120);
+    }
   });
 });

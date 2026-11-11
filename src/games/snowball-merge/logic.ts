@@ -4,7 +4,10 @@ import type { BandLevels } from '../../progress/difficulty';
 export type Direction = 'left' | 'up' | 'right' | 'down';
 export const DIRECTIONS: readonly Direction[] = ['left', 'up', 'right', 'down'];
 export type Board = readonly number[];
+/** The side of the usual field. Level 7's is wider: every rule reads the side from the board it is given (`sizeOf`). */
 export const SIZE = 3;
+/** A field is square, so its side is the root of its cell count: 3 for nine cells, 4 for sixteen. */
+export const sizeOf = (board: Board) => Math.round(Math.sqrt(board.length));
 /** The ice rock (level 5): a cell that never moves and never joins. A line splits at it, and snowballs pack against it. */
 export const ROCK = -1;
 /** What finishes a round: one snowball of this size, or (level 6) exactly these snowballs and no others. */
@@ -14,6 +17,8 @@ export type Goal = number | readonly number[];
  * two 16s that meet join into a 32, and nothing unjoins. (A 32 and a 16, or any goal of different sizes, can never be overshot.)
  */
 export const SNOWMAN: readonly number[] = [16, 16, 16];
+/** Level 7's authored board, four cells a side. */
+const WIDE_BOARD: Board = [8, 16, 0, 4, 4, 16, 8, 0, 32, 16, 2, 4, 0, 2, 16, 0];
 export const PLANS: readonly { target: number; name: string; board: Board; goal?: readonly number[] }[] = [
   { target: 16, name: 'Make 16 · open snowfield', board: [2, 0, 2, 0, 4, 0, 4, 0, 4] },
   { target: 32, name: 'Make 32 · choose your pairs', board: [2, 4, 2, 4, 0, 4, 8, 0, 8] },
@@ -27,9 +32,15 @@ export const PLANS: readonly { target: number; name: string; board: Board; goal?
     name: 'Build a snowman · keep the 16s apart',
     board: [4, 8, 2, 0, 2, 8, 16, 8, 0],
   },
+  // A wider field: the same rules on sixteen cells, so the plan is longer and there is more room to park a snowball.
+  {
+    target: 128,
+    name: 'Make 128 · a wider field',
+    board: WIDE_BOARD,
+  },
 ];
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const goalOf = (plan: { target: number; goal?: readonly number[] }): Goal => plan.goal ?? plan.target;
@@ -40,6 +51,7 @@ export const goalOf = (plan: { target: number; goal?: readonly number[] }): Goal
  * `rocked` says a snowball ended the slide resting against a rock.
  */
 export function slide(board: Board, direction: Direction) {
+  const SIZE = sizeOf(board);
   const out = Array<number>(SIZE * SIZE).fill(0);
   const motions: { from: number; to: number }[] = [];
   let merges = 0,
@@ -126,8 +138,9 @@ export function solve(board: Board, target: Goal): Direction[] | null {
   return null;
 }
 
-/** The eight turns and mirrors of a 3×3 board; each keeps the puzzle's rules and depth. */
+/** The eight turns and mirrors of a square board; each keeps the puzzle's rules and depth. */
 export function transform(board: Board, turns: number, reflect: boolean) {
+  const SIZE = sizeOf(board);
   const out = Array<number>(SIZE * SIZE).fill(0);
   board.forEach((v, i) => {
     let x = i % SIZE,
@@ -147,21 +160,76 @@ export function orbit(board: Board) {
   return out;
 }
 
+/**
+ * The distance map of one starting board, built once: every board slides can reach from it, and for each one that can
+ * still finish, how many slides its shortest finish takes. A board that is absent from `steps` is a dead end. The scene
+ * reads its hints from this instead of searching again after every slide, which a sixteen-cell field would feel.
+ */
+export interface RouteMap {
+  /** Slides to the nearest finish, by `board.join(',')`; only boards that can finish are listed. */
+  readonly steps: ReadonlyMap<string, number>;
+  /** Every board reachable from the start, finishable or not. */
+  readonly states: number;
+}
+export function routeMap(start: Board, goal: Goal): RouteMap {
+  const index = new Map<string, number>([[start.join(','), 0]]),
+    boards: Board[] = [start],
+    parents: number[][] = [[]];
+  for (let head = 0; head < boards.length; head++)
+    for (const direction of DIRECTIONS) {
+      const next = slide(boards[head], direction);
+      if (!next.changed) continue;
+      const key = next.board.join(',');
+      let at = index.get(key);
+      if (at === undefined) {
+        at = boards.length;
+        index.set(key, at);
+        boards.push(next.board);
+        parents.push([]);
+      }
+      parents[at].push(head);
+    }
+  // Backwards from every finished board, a slide at a time: the first visit is the shortest way home.
+  const steps = new Map<string, number>(),
+    queue: number[] = [],
+    dist = Array<number>(boards.length).fill(-1);
+  boards.forEach((board, i) => {
+    if (!complete(board, goal)) return;
+    dist[i] = 0;
+    queue.push(i);
+  });
+  for (let head = 0; head < queue.length; head++)
+    for (const parent of parents[queue[head]])
+      if (dist[parent] < 0) {
+        dist[parent] = dist[queue[head]] + 1;
+        queue.push(parent);
+      }
+  for (const [key, i] of index) if (dist[i] >= 0) steps.set(key, dist[i]);
+  return { steps, states: boards.length };
+}
+
+/** A shortest route from `board` read off the map (one step down at a time), or null at a dead end. */
+export function routeFrom(map: RouteMap, board: Board): Direction[] | null {
+  let left = map.steps.get(board.join(','));
+  if (left === undefined) return null;
+  const route: Direction[] = [];
+  while (left > 0) {
+    const direction = DIRECTIONS.find((d) => {
+      const next = slide(board, d);
+      return next.changed && map.steps.get(next.board.join(',')) === left! - 1;
+    });
+    if (!direction) return null;
+    route.push(direction);
+    board = slide(board, direction).board;
+    left--;
+  }
+  return route;
+}
+
 /** Every board reachable by slides, and how many of them can no longer finish (dead ends for Undo). */
 export function explore(board: Board, target: Goal) {
-  const seen = new Map<string, Board>([[board.join(','), board]]),
-    queue: Board[] = [board];
-  for (let head = 0; head < queue.length; head++)
-    for (const direction of DIRECTIONS) {
-      const next = slide(queue[head], direction);
-      const key = next.board.join(',');
-      if (next.changed && !seen.has(key)) {
-        seen.set(key, next.board);
-        queue.push(next.board);
-      }
-    }
-  const deadEnds = queue.filter((b) => solve(b, target) === null).length;
-  return { states: queue.length, deadEnds };
+  const map = routeMap(board, target);
+  return { states: map.states, deadEnds: map.states - map.steps.size };
 }
 
 /**
