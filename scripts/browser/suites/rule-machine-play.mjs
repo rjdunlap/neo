@@ -22,8 +22,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
-    // RM_LEVELS=3,4 plays only those levels (default all four).
-    const only = (process.env.RM_LEVELS ?? '1,2,3,4').split(',').map(Number);
+    // RM_LEVELS=3,4 plays only those levels (default all five).
+    const only = (process.env.RM_LEVELS ?? '1,2,3,4,5').split(',').map(Number);
 
     async function levelsOneTwo() {
       // Level 1 (pre-K): three walkers go through by themselves; the first prediction is free even when wrong, the second
@@ -249,9 +249,87 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
     }
 
+    // Level 5, portrait: each machine wears its card and a car has already come out. On the first wanted car two wrong
+    // cars run (two misses, each written into the table, the second lights the glow: one hint), then the glowing car;
+    // the other three wanted cars go straight. 2 misses, 1 hint.
+    async function levelFive() {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(600);
+      await launch('rule-machine', 5, 'Mia', 'school');
+      const feedOpen = async () => {
+        await until(() => neo.scene.finished || neo.scene.game.state.phase === 'feed');
+        await page.waitForTimeout(300);
+      };
+      for (let m = 0; m < 2; m++) {
+        for (let k = 0; k < 2; k++) {
+          await feedOpen();
+          let s = await state();
+          assert.deepEqual(
+            [s.machine, s.asked, s.tray.length],
+            [m, k, 5],
+            'a fresh tray of five for each wanted car',
+          );
+          assert.equal(apply(s.rule, s.tray[s.answerSlot]), s.wanted, 'the answer car makes the wanted car');
+          assert.equal(
+            s.tray.filter((n) => apply(s.rule, n) === s.wanted).length,
+            1,
+            'exactly one tray car is right',
+          );
+          if (m === 0 && k === 0) {
+            const wrong = [0, 1, 2, 3, 4].filter((i) => i !== s.answerSlot);
+            const rows = s.rows.length;
+            await feed(wrong[0]);
+            await until(
+              (n) => neo.scene.game.state.phase === 'feed' && neo.scene.game.state.rows.length > n,
+              rows,
+            );
+            await page.waitForTimeout(300);
+            s = await state();
+            assert.deepEqual(
+              [s.misses, s.hints, s.glowing, s.asked, s.fed.length],
+              [1, 0, false, 0, 1],
+              'a wrong car runs: one miss, a row in the table, the question stays open',
+            );
+            assert.equal(s.rows.at(-1).in, s.tray[wrong[0]], 'the wrong car is written into the table');
+            await feed(wrong[1]);
+            await until(
+              (n) => neo.scene.game.state.phase === 'feed' && neo.scene.game.state.rows.length > n,
+              rows + 1,
+            );
+            await page.waitForTimeout(300);
+            s = await state();
+            assert.deepEqual(
+              [s.misses, s.hints, s.glowing],
+              [2, 1, true],
+              'the second wrong car lights the glow on the right car: one hint',
+            );
+            await page.waitForTimeout(400);
+            await screenshot('rule-machine-5-portrait');
+          }
+          const before = s.rows.length;
+          await feed(s.answerSlot);
+          await until(
+            ([n, mm, kk]) =>
+              neo.scene.finished ||
+              neo.scene.game.state.machine > mm ||
+              (neo.scene.game.state.rows.length > n && neo.scene.game.state.asked > kk),
+            [before, m, k],
+          );
+        }
+      }
+      await finished('rule-machine');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      assert.deepEqual(await score(), [2, 1], 'level 5 saved 2 misses, 1 hint');
+      log(
+        'Rule Machine 5 portrait: two wrong cars on the first wanted car (2 misses, rows written, the glow, 1 hint), then four right cars; passed',
+      );
+    }
+
     if (only.includes(1) || only.includes(2)) await levelsOneTwo();
     if (only.includes(3)) await levelThree();
     if (only.includes(4)) await levelFour();
+    if (only.includes(5)) await levelFive();
     log(`Rule Machine ${only.join(', ')}: passed`);
   }
   return { ruleMachinePlay };

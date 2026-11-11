@@ -35,4 +35,11 @@ export const VOICE = {
   'rm.peek': ['The lid is up for the next car. Watch inside!'],
   'rm.look-table': ['Look at the table. What did the machine do each time?'],
   'rm.look-card': ['Look at the card on the machine.'],
+  'rm.instruct.5': ['The card says what the machine does. Find the car that went in.'],
+  'rm.back.ask': ['{n} came out. Which car went in?'],
+  'rm.back.want': ['{n} went in and {m} came out. We want {k}.'],
+  'rm.back.more': ['Try a car with more.'],
+  'rm.back.fewer': ['Try a car with fewer.'],
+  'rm.back.right': ['{n} went in and {m} came out!'],
+  'rm.card.take-two': ['Take two away!'],
 } satisfies Record<string, string[]>;

@@ -16,6 +16,7 @@ export const HOW_TO: GameHowTo = {
       to: 4,
       text: 'The machine is covered: choose cars that tell the three cards apart, tap the card, then tap how many the last car makes. The eye lifts the lid for one car.',
     },
+    { from: 5, to: 5, text: 'A car has already come out: send in the car that made it.' },
   ],
   finish: 'The round ends after two machines; one sticker.',
   note: [
@@ -28,6 +29,11 @@ export const HOW_TO: GameHowTo = {
       from: 4,
       to: 4,
       text: "Feeding any car is never a mistake. A card is only judged when the table can tell: while two cards still fit, a tap just asks for another car; a card the table rules out is one miss. The eye (Peek) and Show me are the machine's one hint.",
+    },
+    {
+      from: 5,
+      to: 5,
+      text: 'A wrong car still goes through, so she can see what it makes; it counts as one miss. After two, the right car glows.',
     },
   ],
 };
