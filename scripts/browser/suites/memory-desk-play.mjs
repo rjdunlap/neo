@@ -167,11 +167,15 @@ export function createSuite({ page, launch, finished, screenshot }) {
     assert.deepEqual([h.tally, h.bi, h.glowing], [[1, 0], 0, false], 'a failed Check is one miss and no glow yet');
     await press('checkButton');
     h = await hatch();
+    assert.deepEqual([h.tally, h.glowing], [[1, 0], false], 'the same hatches checked again are not a second miss');
+    await press('hatchNodes[0]');
+    h = await hatch();
+    assert.equal(h.pos, 0, 'changing a hatch clears her run from that step on');
+    await press('checkButton');
+    h = await hatch();
     assert.deepEqual([h.tally, h.glowing], [[2, 1], true], 'the second failed Check brings the glow and one hint');
 
     await press('hatchNodes[1]');
-    h = await hatch();
-    assert.equal(h.pos, 3, 'changing a hatch clears her run from that step on');
     await press('checkButton');
     await page.waitForFunction(() => neo.scene.game.bi === 1 && !neo.scene.game.busy, null, { timeout: 15000 });
     await page.waitForTimeout(450);

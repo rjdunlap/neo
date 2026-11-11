@@ -1840,6 +1840,8 @@ Proof: new-game tier as the [definition's check tier](definitions/memory-desk.md
 
 ### memory-desk 2: The hatch
 
+**Built 2026-11-11 ([PR #1510](https://github.com/rjdunlap/neo/pull/1510)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-11--memory-desk-levels-23-open-or-shut-and-fix-the-desk-h8-batch-memory-desk-2-pr-1510); [build note](archive/COMPLETED-2026-10-09.md#memory-desk-levels-2-3-open-or-shut-and-fix-the-desk-2026-11-11). Memory Desk levels 1–3 are all built. Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`memory-desk`, levels 2–3 *Open or shut* and *Fix the desk*** (H8, [definition](definitions/memory-desk.md#the-model-logicts); new interaction, after batch 1; range becomes `{ min: 1, max: 3 }`): at level 2 each step of a short queue has a hatch she opens or shuts, Step runs the queue and Check compares the window with the brief, with the first untouched Check a free look; at level 3 a desk with one wrong hatch starts with a stated token in the drawer and she finds and fixes it from two trace rows. [Slice H8](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
 
 Files expected: `src/games/memory-desk/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `docs/games/memory-desk.md` (Grows into line and notes) and its generated README and GAMES rows through `npm run game-docs`.

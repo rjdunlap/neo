@@ -20,7 +20,7 @@
 
 **Starts as:** put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window
 
-**Grows into:** level 1 only so far: a free try-out round with two pictures, Keep, Show, Undo and a tick that lights once the window has shown the kept token beside a different tray; nothing is counted as wrong
+**Grows into:** level 1 is a free try-out round (two pictures, Keep, Show, Undo and a tick that lights once the window has shown the kept token beside a different tray; nothing is counted as wrong); level 2 gives each step of a two-picture queue a hatch she opens or shuts so the desk ends on a named picture; level 3 starts with a kept token and hatches already set wrong, and she repairs them, seeing the failed run stay as a dim trace row above hers
 
 ## Design notes
 
@@ -34,4 +34,8 @@ Level 1 "Keep one": two of six pictured tokens (shell, leaf, star, acorn, feathe
 
 **Layout and words.** Tray, drawer and window read left to right in landscape and top to bottom on an upright phone, where the three panels stack rather than shrink; every target is at least 100 units and clear of the pet and corners (`deskLayout`, tested at the landscape, portrait and upright phone views). The spoken words are "Keep", "Show" and "this toy desk", matching the study's stored-copy sources; nothing claims this is how a real computer's memory works. The ghost finger plays a picture, Keep, the other picture, Show and the tick through the same taps.
 
-Levels 2–3 (a hatch per step that lets the new token in or keeps the old one) are [defined](../definitions/memory-desk.md#the-model-logicts) and not built.
+*Levels 2–3 · the hatch (`hatch.ts`, `HatchDesk`).* Each step of a short queue has a **hatch** (116-unit toggle) that either lets the new token in or keeps the old one; the desk's drawer shows what is kept. **Step** runs one step of her queue, **Slow** (the turtle) makes each Step tap do one part (arrive, write, read), **Undo** takes back a change and **Check** (the tick) runs all the steps whether or not she stepped. Panels pop in as a step arrives, writes and reads (no sliding copy); upright, they stack beside the button column under the step columns (`hatchLayout`, tested at six views with two and three steps).
+
+Level 2 "Open or shut": a queue of two pictures and two hatches that start shut; two briefs a round (end on the second picture, then on the first), with a "next" sign and desk line between them. Level 3 "Fix the desk": the drawer starts with a kept token, there are three steps and the hatches are preset and wrong; two different repairs a round (the sign wants the kept token, the first arrival or the second), with the preset's failed run left as a dim trace row above hers. The "held" repair uses the queue [a, b, a], so only all-shut passes.
+
+**Misses and help.** Check with no change is a nudge, not a miss. A failed Check after a hatch change is one miss, and the same wrong hatches checked again play again without a second miss; every second failed Check on a brief glows the hatch `helpFor` names and counts one hint. Help is one hint a press: the first runs slowly to that hatch's write with it glowing, the second sets it and points at Check. Check-fail speech is four short lines naming what ended up in the window and what the sign wants. The ghost finger sets the `helpFor` hatch, Steps the queue through at level 2 and Checks. Exposure accounting follows level 1: a clean round is not evidence she understands stored state.

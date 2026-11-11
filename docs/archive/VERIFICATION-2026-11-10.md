@@ -216,3 +216,21 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** level 4 plan and grown-up range 1–4; `scripts/snowball-merge-boards.ts` level-4 band (route 10–14) and three more frozen boards; the 128 look (white, scarf, coal eyes) with a 1.3 radius step. Levels 1–3 boards unchanged; no voice or how-to change.
 **Ran:** `npm run typecheck`; rule tests (snowball-merge 8, with registry and upright-batch-4: 57 passed); `BROWSER_SUITE=snowball` (levels 1 and 4, inert presses, automatic glow, hint once, Undo/Restart, one portrait screenshot at level 4, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=snowball-merge FINGER_LEVELS=4` (11.9 s); docs checks.
 **Not run:** `npm run build` (no shared file or asset changed), offline, other suites; the finished 128 ball was not screenshotted (the screenshot is mid-round).
+
+## 2026-11-10 — Sorting Machine level 3, Both badges (PR #1491)
+
+**Changed:** `sorting-machine` level 3 (school range 1–3): two fixed sensors, one gate slot with an and / or picker, per-pair voice lines, level-3 how-to steps; `helpFor` falls back to a telling friend when the machine is already right.
+**Ran:** typecheck; `npm test` (345 files, 6595 passed; `logic.test.ts` 40 tests incl. level-3 rules, seeds, help, ghost-finger plan, layouts at 1024×768 and 768×1024); `BROWSER_SUITE=sortingmachine` (levels 1–3: at 3 an empty-gate Check, a no-gate run, OR sent on two friends, a failed Check = one miss with two one-badge failures and both readings shown, Help twice, AND passes with 1 miss and 2 hints; portrait and landscape screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sorting-machine FINGER_LEVELS=3` (8.3 s); `npm run build`.
+**Not run:** other browser suites, offline.
+
+## 2026-11-10 — Spark AI Games reviewed (docs only)
+
+**Changed:** new [reference review](../SPARK-AI-GAMES.md) of sparkaigames.com (202 browser mini games): the catalogue against the island's games and notebook, eight proposals (P1 a crossword of sums, P2 Reversi for two on one phone, P3 a Puddle Pipes ladder, P4 pair paths, P5 a turning shadow for TP6, P6 routes that run at once, P7 Ticket Booth, P8 a Shell Rows level), notes for existing games and rows, and what stays out; a pointer section in IDEAS.md; rows in the puzzle-pages and strategy-games studies; a note on TP6 in the theatre study. No READY line: each proposal needs a definition.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`. The review's own evidence: all 202 game pages read as text; thirteen games opened in headless Chrome at 390 by 844, eight of them to a first board (one solved).
+**Not run:** code checks (no code changed). Not established: anything past a first board, sound, Spark's solver and one-answer claims, its friend rooms and pass-and-play, and who makes it.
+
+## 2026-11-10 — Number Trails slice 3, the digits follow the HWT chart (PR #1494)
+
+**Changed:** `number-trails/digits.ts` compared digit by digit with Handwriting Without Tears' Number Formation Chart (opened 2026-11-10); 1 (no flag), 4 (open form), 6, 8 and 9 (one stroke) changed, 0, 2, 3, 5 and 7 already agreed; saved stickers' numerals redraw. `digits.test.ts` gained a test of the chart's specifics.
+**Ran:** typecheck; `npx vitest run src/games/number-trails` (3 files, 43 tests); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=2` (8.7 s); a one-off render of all ten stroke tables compared with the chart by eye.
+**Not run:** the `numbertrails` scripted suite, build, world, offline, couch, full `npm test` (CI runs it on the PR).

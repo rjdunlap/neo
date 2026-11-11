@@ -62,6 +62,8 @@ export class HatchDesk implements Game {
   hatches: boolean[];
   /** Every hatch change in this brief, oldest first (the hatch's number); Undo takes the last one back. */
   changes: number[] = [];
+  /** Whether a hatch has changed since the last judged Check: the same wrong setting checked again is not a second miss. */
+  fresh = false;
   /** How far her run has got: three parts a step (arrive, write, read), so 0 to 3 × steps. */
   pos = 0;
   /** Where a run in progress stops, or null when the desk is still. */
@@ -75,7 +77,7 @@ export class HatchDesk implements Game {
   /** The hatch Help has shown and will set on its next press. */
   helpAt: number | null = null;
   /** The targets under a glowing ring, and for how much longer. */
-  glowing: { rects: Rect[]; left: number } | null = null;
+  glowing: { on: number | 'check'; left: number } | null = null;
   hintLabel = 'Help me';
 
   hatchNodes: Container[] = [];
@@ -292,8 +294,9 @@ export class HatchDesk implements Game {
     node.addChild(hatchArt(this.hatches[i], HATCH));
   }
 
-  private ring(rect: Rect, left = GLOW) {
-    this.glowing = { rects: [rect], left };
+  /** A glowing ring on a hatch (by number) or on Check; it follows the layout through a turn of the screen. */
+  private ring(on: number | 'check', left = GLOW) {
+    this.glowing = { on, left };
   }
 
   // ——— Running ———
@@ -360,7 +363,7 @@ export class HatchDesk implements Game {
     this.slow = !this.slow;
     const b = this.slowButton;
     if (b) {
-      b.removeChildAt(1).destroy();
+      b.removeChildAt(1).destroy({ children: true });
       b.addChild(turtleArt(this.slow));
     }
     this.say(this.slow ? 'md.slow.on' : 'md.slow.off');
@@ -372,6 +375,7 @@ export class HatchDesk implements Game {
     this.settle();
     this.hatches[i] = !this.hatches[i];
     this.changes.push(i);
+    this.fresh = true;
     this.changed(i);
     if (!line) this.helpAt = null;
     if (this.hatches[i]) sfx.pop(9);
@@ -393,6 +397,7 @@ export class HatchDesk implements Game {
     const i = this.changes.pop();
     if (i === undefined) return;
     this.hatches[i] = !this.hatches[i];
+    this.fresh = this.changes.length > 0;
     this.helpAt = null;
     this.changed(i);
   }
@@ -404,6 +409,7 @@ export class HatchDesk implements Game {
     this.after = null;
     this.hatches = [...this.brief.preset];
     this.changes = [];
+    this.fresh = false;
     this.pos = 0;
     this.helpAt = null;
     this.glowing = null;
@@ -434,13 +440,18 @@ export class HatchDesk implements Game {
     const out = run(brief, this.hatches).output;
     if (out !== brief.target) {
       sfx.boing();
-      this.tally.misses++;
-      this.briefMisses++;
+      // The same wrong hatches checked again play again, and are not a second miss.
+      const counted = this.fresh;
+      this.fresh = false;
+      if (counted) {
+        this.tally.misses++;
+        this.briefMisses++;
+      }
       this.helpAt = null;
-      const at = this.briefMisses % 2 === 0 ? helpFor(this.hatches, brief) : null;
+      const at = counted && this.briefMisses % 2 === 0 ? helpFor(this.hatches, brief) : null;
       if (at !== null) {
         hinted(this.tally);
-        this.ring(this.layout.hatches[at]);
+        this.ring(at);
       }
       this.busy = false;
       // What happened and what was wanted, never which hatch.
@@ -474,6 +485,8 @@ export class HatchDesk implements Game {
     this.bi++;
     this.hatches = [...this.brief.preset];
     this.changes = [];
+    this.fresh = false;
+    this.glowing = null;
     this.pos = 0;
     this.briefMisses = 0;
     this.helpAt = null;
@@ -492,7 +505,7 @@ export class HatchDesk implements Game {
     const at = helpFor(this.hatches, this.brief);
     if (at === null) {
       // The hatches already pass: pointing at Check is free.
-      this.ring(this.layout.check);
+      this.ring('check');
       this.say('md.help.check');
       return;
     }
@@ -502,14 +515,14 @@ export class HatchDesk implements Game {
       this.pos = 0;
       this.refresh();
       // The glow outlasts the slow run up to that hatch.
-      this.ring(this.layout.hatches[at], (3 * at + 2) * PACE.help + GLOW);
+      this.ring(at, (3 * at + 2) * PACE.help + GLOW);
       this.say('md.help.look');
       this.play(3 * at + 2, PACE.help, () => this.popIn('drawer'));
       return;
     }
     this.helpAt = null;
     this.toggle(at, this.hatches[at] ? 'md.help.set-shut' : 'md.help.set-open');
-    this.ring(this.layout.check);
+    this.ring('check');
   }
 
   update(dt: number) {
@@ -537,7 +550,8 @@ export class HatchDesk implements Game {
       return;
     }
     const m = 8 + 3 * Math.sin(this.clock * 6);
-    for (const r of g.rects)
+    const r: Rect | undefined = g.on === 'check' ? this.layout.check : this.layout.hatches[g.on];
+    if (r)
       this.glow
         .roundRect(r.x - m, r.y - m, r.w + 2 * m, r.h + 2 * m, 34 * this.layout.scale)
         .stroke({ width: 8, color: swatch.yellow.fill });
