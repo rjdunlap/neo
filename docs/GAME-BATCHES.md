@@ -1845,3 +1845,19 @@ Proof: new-game tier as the [definition's check tier](definitions/memory-desk.md
 Files expected: `src/games/memory-desk/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `docs/games/memory-desk.md` (Grows into line and notes) and its generated README and GAMES rows through `npm run game-docs`.
 
 Proof: new-interaction tier as the [definition's check tier](definitions/memory-desk.md#check-tier-for-the-builds) sets it (typecheck, the rule tests, one filtered play of level 2 with an untouched Check, a failed Check, a second for the glow and both briefs passed, and level 3 with a Help followed to the sticker; a portrait screenshot of level 3 with both trace rows; `fingerdemo` at 2 and 3; build).
+
+### tile-pairs 1: A fresh pairing and a visible uncovering
+
+- **`tile-pairs`, a different pairing each round and a pair that shows what it uncovers** (dive slice 1, [dive](deep-dives/tile-pairs.md#build-slices-in-order); existing-game tier; grown-up, levels 1–6 unchanged): make the route in `makeBoard` seeded so the same layout clears by a different pairing each round, with property tests replacing the frozen hash for levels 1–3 (same position sets, 100 seeds clear); a removed pair lifts and fades, the tiles it uncovers pulse, and the tally shows "pairs open".
+
+Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, `docs/games/tile-pairs.md` (Grows into line and notes) and the dive's "What was built" section.
+
+Proof: existing-game tier (typecheck, the rule tests, one filtered `tilepairs` play at level 3 with a portrait screenshot; no `fingerdemo`, since the bot's actions do not change; build only if a shared file changes).
+
+### tile-pairs 2: Peek under the stack
+
+- **`tile-pairs`, Peek** (dive slice 2, [dive](deep-dives/tile-pairs.md#build-slices-in-order); new interaction, after batch 1; dive slice 3 *Two more looks*, two seeded picture sets with the distinctness test, may ride with it if the session is small): a fourth button that fades every covering tile to a quarter strength so the pictures below show; tapping Peek or any tile returns to the solid view. It is information, not a hint: never counted and no effect on the face-off score. Gets a key, a couch control read from `COUCH_INFO` (a pause-menu entry beside Hint if no button is free), a how-to step and a voice line.
+
+Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, `voice.ts`, `howto.ts`, `src/couch/catalog.ts`, `docs/games/tile-pairs.md` and the dive's "What was built" section.
+
+Proof: new-interaction tier (typecheck, unit tests, one filtered `tilepairs` play at level 5 that peeks, pairs, takes one wrong answer and one hint, a portrait screenshot of the see-through view, `fingerdemo` only if the card's demonstrated action changes, `couchgames` filtered to Tile Pairs if a pad button is mapped, build; one screenshot per new look if slice 3 rides along).
