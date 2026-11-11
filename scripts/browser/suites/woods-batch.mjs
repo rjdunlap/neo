@@ -1918,7 +1918,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 assert.deepEqual(await counts(), [2, 1]);
                 await tapSnack();
               } else for (let k = 0; k < r.n; k++) await tapSnack();
-              await ring();
+              if (n === 0) {
+                // U7 R4: the right count's line never holds the next ask; it follows the bell's beat.
+                await tap('neo.scene.game.bell');
+                await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+                  timeout: 1200,
+                });
+              } else await ring();
             }
           }
         }

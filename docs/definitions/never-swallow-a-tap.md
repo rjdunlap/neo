@@ -89,7 +89,7 @@ Each slice is one session. U7a can ship alone: it is the phone's part.
 **Dependencies.** U7c edits the same root scenes as U6a (the Arcade), U6b (Explore, Home's routes) and phone-portrait shell slice 3 (creature play, the library, the Arcade). All three landed before U7c. U7a's `DailyScene` change is the `leave` helper and the card's tap only, which U6b (the All games button's target) does not touch, so U7a may go before or after U6. `classic/` is untouched: its map and menus are a separate shell and are not reached from a phone's root.
 ### U7d as classified (2026-11-10)
 
-- The 25 games ready for upright play were read ([the lines page](never-swallow-a-tap-lines.md)): two hold input on a line R4 forbids, `animal-snack` (`snack.yum` in *who* rounds, `snack.full`) and `far-lights` (six right-answer lines), and a [fix batch](never-swallow-a-tap-lines.md#fix-batches) is queued in READY.
+- The 25 games ready for upright play were read ([the lines page](never-swallow-a-tap-lines.md)): two hold input on a line R4 forbids, `animal-snack` (`snack.yum` in *who* rounds, `snack.full`) and `far-lights` (six right-answer lines), and [fix batch 1](never-swallow-a-tap-lines.md#fix-batches) is built (2026-11-10, PR #1488).
 - Eight games praise a finished board before the next one; that is an optional second batch that waits for a playtest note. Every other awaited line is a closing line or a proper hold.
 - The other 133 games are [listed, not read](never-swallow-a-tap-lines.md#the-other-games-candidates-not-read); nothing was played or timed.
 

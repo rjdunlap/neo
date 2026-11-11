@@ -83,6 +83,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         const p = g.pairs[g.index];
         kit.tapOn(g.windowLights[p.A < p.B ? 0 : 1]);
       });
+      // U7 R4: the right answer's line (2.4 s when muted) never holds the next lights; they follow the bob.
+      if (i === 0)
+        await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+          timeout: 1500,
+        });
     }
     await finished('far-lights');
     assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');

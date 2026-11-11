@@ -91,6 +91,8 @@ const authoredShown = new Set<number>();
 
 /** A note per stop, rising toward the window (pentatonic steps). */
 const stopNote = (s: Stop) => 9 - s;
+/** How long a light's hop takes (see `bob`): a right answer at levels 3 and 4 shows it before the next lights. */
+const BOB = 0.35;
 /** A light at a distance between stops (while it floats): how bright it looks. */
 const lookAt = (d: number) => GLOW / (d * d);
 
@@ -118,6 +120,8 @@ class FarLights implements Game {
   index = 0;
   finished = false;
   busy = false;
+  /** Lines said so far, so a right answer's instruction can tell whether anything followed its line. */
+  private spoken = 0;
   layout: FarLayout | null = null;
   /** Where each light rests in the strip, and the stop nearest it while it is dragged (what the window shows). */
   stops: Record<Lane, Stop> = { A: 4, B: 3 };
@@ -238,7 +242,43 @@ class FarLights implements Game {
   }
 
   private say(id: LineId) {
+    this.spoken++;
     return this.ctx.say(id);
+  }
+
+  /**
+   * A right answer (U7 R4): its line starts and never holds the next lights. They follow the motion (the bob, or the
+   * curtain's lift and a look behind it); she can answer while the line, which is the lesson, still plays, and the
+   * board's instruction waits for it to end, skipped if anything else has been said by then. The line is still waited
+   * for in two places, where nothing she could tap is held back by it: before the closing line, which would cut it,
+   * and at level 7, where the next board opens with its own narrated look.
+   */
+  private async right(line: LineId, motion: (ok: () => boolean) => Promise<unknown>) {
+    this.busy = true;
+    const e = this.epoch;
+    const ok = () => this.alive && e === this.epoch;
+    sfx.sparkle();
+    const lesson = this.say(line);
+    const spoken = this.spoken;
+    await motion(ok);
+    if (!ok()) return;
+    if (this.index + 1 >= this.total() || this.plan.level === 7) {
+      await lesson;
+      if (ok()) this.next();
+      return;
+    }
+    this.next(false);
+    const at = this.index;
+    await lesson;
+    if (ok() && at === this.index && spoken === this.spoken && !this.finished) this.instructNow();
+  }
+
+  /** The curtain lifts, then a look behind it before the next board. */
+  private liftAndLook(look: number) {
+    return async (ok: () => boolean) => {
+      await this.lift(this.epoch);
+      if (ok()) await this.ctx.tw.wait(look);
+    };
   }
 
   /** A short line while dragging, skipped while another is still being said. */
@@ -477,6 +517,7 @@ class FarLights implements Game {
     }
   }
 
+  /** A little hop, BOB seconds long. */
   private bob(c: Container) {
     const y = c.y;
     void this.ctx.tw.to(c, { y: y - 14 }, { duration: 0.15, ease: ease.outQuad }).then(() => {
@@ -589,13 +630,9 @@ class FarLights implements Game {
       void this.say('far.wrong-brighter');
       return;
     }
-    this.busy = true;
-    const e = this.epoch;
-    sfx.sparkle();
     const s = this.stripLights[lane];
     if (s) this.bob(s);
-    await this.say('far.right-brighter');
-    if (this.alive && e === this.epoch) this.next();
+    await this.right('far.right-brighter', () => this.ctx.tw.wait(BOB));
   }
 
   // ----- levels 5 and 6: behind the curtain -----
@@ -609,15 +646,7 @@ class FarLights implements Game {
       void this.say('far.wrong-farther');
       return;
     }
-    this.busy = true;
-    const e = this.epoch;
-    sfx.sparkle();
-    await this.say('far.right-farther');
-    if (!this.alive || e !== this.epoch) return;
-    await this.lift(e);
-    if (!this.alive || e !== this.epoch) return;
-    await this.ctx.tw.wait(1.4);
-    if (this.alive && e === this.epoch) this.next();
+    await this.right('far.right-farther', this.liftAndLook(1.4));
   }
 
   /** Level 6: a tap marks a light with the next dots, or clears its mark and every later one (free). */
@@ -650,23 +679,14 @@ class FarLights implements Game {
       void this.say(v === 0 ? 'far.order-first' : 'far.order-last');
       return;
     }
-    this.busy = true;
     t.glow.visible = false;
-    const e = this.epoch;
-    sfx.sparkle();
-    await this.say('far.order-right');
-    if (!this.alive || e !== this.epoch) return;
-    await this.lift(e);
-    if (!this.alive || e !== this.epoch) return;
-    await this.ctx.tw.wait(1.2);
-    if (this.alive && e === this.epoch) this.next();
+    await this.right('far.order-right', this.liftAndLook(1.2));
   }
 
-  /** The curtain lifts (0.6 s) on a soft rising run. */
+  /** The curtain lifts (0.6 s) on a soft rising run, under the right answer's line. */
   private async lift(e: number) {
     const c = this.curtain;
     if (!c) return;
-    void this.say('far.curtain');
     void (async () => {
       for (const step of [5, 6, 7, 8, 9]) {
         if (!this.alive || e !== this.epoch) return;
@@ -731,17 +751,9 @@ class FarLights implements Game {
 
   /** A right answer at levels 7–8: the farther light bobs, the curtain lifts on both glows' rays, then the next board. */
   private async reveal(lane: Lane, line: LineId) {
-    this.busy = true;
-    const e = this.epoch;
-    sfx.sparkle();
     const s = this.stripLights[lane];
     if (s) this.bob(s);
-    await this.say(line);
-    if (!this.alive || e !== this.epoch) return;
-    await this.lift(e);
-    if (!this.alive || e !== this.epoch) return;
-    await this.ctx.tw.wait(1.6);
-    if (this.alive && e === this.epoch) this.next();
+    await this.right(line, this.liftAndLook(1.6));
   }
 
   // ----- level 8: can't tell yet -----
@@ -833,31 +845,27 @@ class FarLights implements Game {
       void this.say(v === 'too-bright' ? 'far.too-bright' : 'far.too-dim');
       return;
     }
-    this.busy = true;
-    const e = this.epoch;
-    sfx.sparkle();
     for (const lane of LANES) if (this.stripLights[lane]) this.bob(this.stripLights[lane]!);
-    await this.say('far.same');
-    if (this.alive && e === this.epoch) this.next();
+    await this.right('far.same', () => this.ctx.tw.wait(BOB));
   }
 
-  private next() {
+  /** How many boards this round has. */
+  private total() {
+    const level = this.plan.level;
+    if (level === 3 || level === 5) return this.pairs.length;
+    if (level === 6) return this.orderBoards.length;
+    return level >= 7 ? this.strongBoards.length : this.boards.length;
+  }
+
+  /** The next board, or the finish. `instruct` is false while a right answer's line is still playing. */
+  private next(instruct = true) {
     this.index++;
     this.tally.next();
-    const level = this.plan.level;
-    const total =
-      level === 3 || level === 5
-        ? this.pairs.length
-        : level === 6
-          ? this.orderBoards.length
-          : level >= 7
-            ? this.strongBoards.length
-            : this.boards.length;
-    if (this.index >= total) return void this.finale();
+    if (this.index >= this.total()) return void this.finale();
     this.place();
     this.busy = false;
     this.build();
-    this.instructNow();
+    if (instruct) this.instructNow();
   }
 
   // ----- help, restart, finish -----
