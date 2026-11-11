@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0` and Barnyard's six at `c891905a`, all 2026-11-11. The other 33 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a` and Counting Cove's five at `892834eb`, all 2026-11-11. The other 28 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,11 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All twenty-four games read so far set `touchDemo: true`.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All twenty-nine games read so far set `touchDemo: true`.
 - **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game, and it is not counted again under question 5.
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **No opening line holds input** in the twenty-four read so far: each starts its instruction with `void`. One opening still holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
+- **One opening line holds input** in the twenty-nine read so far: `duck-pond` waits for its first line before a duck can be touched (its row). The other twenty-eight open input before or without waiting for the line (all but `little-helpers` start it with `void`, and that one clears `busy` first). One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
 - **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
@@ -188,17 +188,58 @@ Four games fail question 1 or 4, in the order they should be taken:
 - `animal-snack`: level 1 is in lap's range only (`toddler` starts at 2), so a change to it reaches no other band.
 - `sing-along-barn`: how many touches the opening takes before the friend comes out depends on the seeded song and was not counted.
 
+## Counting Cove
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `duck-pond` (12) | **No.** Only the five ducks answer (each circle 106 units across; a cheer, a quack and it swims off at once); the pond, the bank and the sky do nothing. The opening also holds her: the ducks swim in one after another for about three seconds and the first line is waited for, and a tap on a duck before then is dropped | **Yes.** Waving bye-bye counts nothing; the miss and the hint belong to the lily-pad levels | **Partly.** The ghost finger taps a duck and any duck is right; in the round nothing glows or moves to invite a touch, and the count down ("4 left") is only spoken | **No.** Five ducks from the start, and each touch takes one away; they all swim back by themselves after the last | **No.** A duck swimming off cannot be touched, the water is silent, and nothing answers while the ducks are called back, swim in and are counted |
+| `monster-munch` (9) | **No.** The big monster and the three big cookies answer (a tap on either feeds it: two munches, crumbs, a bigger belly and the count); the room around them does nothing | **Yes.** A tap can only feed; the boing and the glow belong to the dragging and number levels | **Yes.** The monster stands with its mouth open beside three cookies, the ghost finger taps a cookie, and the monster and every cookie are right | **Partly.** One big monster whose belly grows with each bite she gives; its three cookies are on the tray from the start, and the second monster and its cookies come after the burp, not on her touch | **Partly.** A tap on the monster while it burps gets a beam and a giggle; the background is silent and there is no idle invitation |
+| `little-helpers` (1) | **Yes.** A layer over the whole screen: a touch anywhere sends the nearest helper running to the thing with a pop, and one helper is enough to lift it | **Yes.** There is no whistle at this level, and nothing else is counted | **Yes.** One thing to carry and a crowd of helpers; the ghost finger taps the thing, and every touch sends a helper | **Partly.** One thing at a time, and the next drops in only after hers is carried home, so the basket fills because she touched; the seven helpers and the basket stand there from the start, and the thing is the smallest size | **Yes.** While a thing is being lifted or the next one drops in, a touch makes the nearest waiting helper hop and squeak; a tap on a waiting helper sends one |
+| `pet-kitchen` (10) | **Partly.** A layer over the whole counter: a touch away from a piece wiggles the nearest loose piece, without a sound and without dealing it. Only a touch on a piece (a tap circle of 75 units' radius) deals it, with a bell | **Yes.** No touch is wrong, and the round ends with nothing counted | **Yes.** Two or four pieces and two friends with plates; the ghost finger taps a piece, and after six quiet seconds a loose piece wiggles | **No.** The pieces, both friends and both plates are there from the start, and nothing new arrives. The round is two or four taps long | **Partly.** A tap on a dealt piece wiggles it and a tap on the counter wiggles the nearest loose one, both silent; nothing answers while the friends eat |
+| `fill-dump` (1) | **Partly.** The container and the grass (the lower half of the screen) answer: a full container tips out with a clunk and a run of bells, and afterwards any such touch scoops the nearest piece back in with a tick and a note. The sky around the container does nothing | **Yes.** The tip-out levels have no wrong move, and the six-second wiggle is not a hint | **Yes.** One container, and the ghost finger taps it; after six quiet seconds the container, or the next piece to scoop, wiggles | **Yes.** One big container; its three pieces hop out because she touched it, and go back in one touch at a time | **Partly.** The grass has its own rule (tip, or scoop the nearest piece); touches during the tip-out, about two seconds, are dropped silently |
+
+### What the table says
+
+- **Pass 1 and 4 well enough to leave alone:** `little-helpers`, the land's one game where a touch anywhere is the move, and `fill-dump`, where the container and half the screen answer and everything that happens comes from her touch.
+- **Big targets, not anywhere:** `monster-munch` (a very big monster and big cookies, and a belly that grows) and `duck-pond` (five ducks on a pond that says nothing back).
+- **Answers anywhere, but not with the move:** `pet-kitchen`. A touch on the counter wiggles a piece without a sound; only a touch on a piece deals it.
+- **Nobody can be wrong in this land,** and no waiting is counted: `pet-kitchen`'s and `fill-dump`'s six-second wiggles count nothing.
+- **`duck-pond` is the first of the twenty-nine read whose opening line holds input.**
+
+### Words-off list (P7)
+
+Counting Cove games whose first lap level plays with the voice off: `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump`. `duck-pond` is partly: the card shows the tap on a duck, and nothing in the round invites one.
+
+The number words are only spoken in three of them. `duck-pond` counts down, and `monster-munch` and `little-helpers` count up, in the voice alone: at these levels there is no sign, no tummy dots and no badge. With the voice off the play is whole and the counting is not there. `pet-kitchen`'s "one for you, one for me" is also only said, but the pieces going to each plate in turn show it.
+
+### Lines this land adds to READY
+
+Three games fail question 1 or 4, in the order they should be taken:
+
+1. `duck-pond`: a lap level with one big duck; a touch anywhere brings a friend in with a quack, and no opening holds her.
+2. `pet-kitchen`: at lap a touch anywhere deals a piece, and the pieces come one at a time.
+3. `monster-munch`: level 9, which only lap plays, feeds on a touch anywhere. Its targets are already the biggest in the land, so it is last.
+
+`little-helpers` and `fill-dump` get no line.
+
+### Found while reading (not part of the five questions)
+
+- `duck-pond`: at level 12 `nextRound` keeps `busy` set while the five ducks swim in (0.65 seconds each) and then awaits `ctx.instruct('duck.byeTap')`, so input opens only when the line has ended. Levels 1 and 2 await their line the same way. None of the other twenty-eight games read waits for its line before taking a touch. Level 12 is also toddler's first level, so a change to it in place reaches toddler.
+- `monster-munch`: level 9 is in lap's `order` only (toddler's `order` is 2, 3, 10, 4), so a change to it reaches no other band. A lap player who steps up goes to level 1, where the cookies and the belly are the ordinary size.
+- `little-helpers`: a touch on the field sends a helper at level 1 only (`fieldTouch`). At level 2, lap's other level, the same touch makes a helper wave and only a touch on the thing sends one, so two smooth rounds change what a touch anywhere does. The card for level 1 says "Tap anywhere"; the spoken line says "Tap it!".
+- `pet-kitchen`: whether the round has two pieces or four is drawn from the seed (`dealCut`), so some rounds end on her second touch. The counter's own `pointerdown` handler does not call `palmOnGlass()`; at this level it only wiggles a piece. Level 10 is toddler's first level too.
+- `fill-dump`: the grass is the lower half of the view and the container stands in the upper half, so most of the sky that does not answer is beside the container. Level 1 is also the first level at toddler and preschool.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Counting Cove (5) | `duck-pond`, `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump` |
 | Cozy Village (8) | `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `stop-and-go`, `pet-says` |
 | Rainbow Meadow (6) | `shape-sorter`, `color-garden`, `dot-link`, `garden-grow`, `swing-pals`, `sand-table` |
 | Puzzle Peaks (2) | `size-parade`, `puzzle-pals` |
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 24 read and 33 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 29 read and 28 to read, 57 in all.
