@@ -122,7 +122,7 @@ export interface SheetPlaces {
 
 /**
  * The sheet's places for one to five stops. The wide area keeps one row centred on its 1024 width; the upright 768 × 1024
- * area (chunk 31) wraps the tiles into rows of at most three (two and two for four), each row leaving room for Skip under
+ * area (chunk 31) wraps the tiles into rows of two (three over two for five), each row leaving room for Skip under
  * its tiles, with the buttons below.
  */
 export function sheetPlaces(count: number, view: { w: number; h: number }): SheetPlaces {
@@ -143,13 +143,17 @@ export function sheetPlaces(count: number, view: { w: number; h: number }): Shee
       panel: { x: ox + 82, y: tileY - 160, w: 860, h: buttonY - tileY + 260 },
     };
   }
-  const perRow = count === 4 ? 2 : Math.min(3, count);
+  // Two to a row up to four (220 or 190 across), three of the five 150 tiles.
+  const perRow = count === 5 ? 3 : Math.min(2, count);
   // The same sizes as the wide row, since a tile keeps its size when the phone turns.
   const { size } = sheetTiles(count);
   const gap = 30;
   const pitch = size + SKIP_ROOM;
   const mid = view.w / 2;
-  const top = 340;
+  const rows = Math.ceil(count / perRow);
+  // The block (tiles, Skip, the buttons) a little above the middle of the view, never under Back.
+  const block = rows * pitch + 30 + 140;
+  const top = Math.max(340, Math.round(view.h * 0.45 - block / 2 + size / 2));
   const tiles: { x: number; y: number }[] = [];
   for (let i = 0; i < count; i++) {
     const row = Math.floor(i / perRow);
