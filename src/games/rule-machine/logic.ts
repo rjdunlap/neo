@@ -3,8 +3,10 @@
  * Level 1 (pre-K) changes a creature's look; level 2 (school) adds one or two counters to a car; level 3 names the
  * machine's rule from a shelf of three cards; level 4 covers the machine, and she chooses cars so the table tells its
  * cards apart. Feeding is never a miss, and neither is a first guess about a new machine: only a prediction made once
- * the machine has shown its rule can count, and at level 4 a card is judged only when the table can tell.
- * Definition: docs/definitions/rule-machine.md.
+ * the machine has shown its rule can count, and at level 4 a card is judged only when the table can tell. Level 5 runs
+ * the rule backwards: the card hangs, a wanted car has come out, and she sends the car that went in; a wrong car runs
+ * and counts one miss.
+ * Definitions: docs/definitions/rule-machine.md and docs/definitions/rule-machine-5-6.md.
  */
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -62,7 +64,7 @@ export const MAX_COUNT = 12;
 export type Ask = 'look' | 'count';
 export interface Plan {
   level: number;
-  id: 'hats' | 'more' | 'what' | 'covered';
+  id: 'hats' | 'more' | 'what' | 'covered' | 'back';
   ask: Ask;
   name: string;
   /** Machines in a round. */
@@ -76,8 +78,10 @@ export interface Plan {
   /** The rule shelf: none (1–2), after `cardAfter` rows (3), or from the start beside a covered machine (4). */
   shelf: 'none' | 'after' | 'start';
   cardAfter: number;
-  /** Lights along the machine's top: the most rows a machine can make. */
+  /** Lights along the machine's top: the most rows a machine can make (level 5: the most they show). */
   lights: number;
+  /** Level 5: wanted cars on each machine (0 elsewhere). */
+  wanted: number;
 }
 
 const PLANS: readonly Plan[] = [
@@ -93,6 +97,7 @@ const PLANS: readonly Plan[] = [
     shelf: 'none',
     cardAfter: 0,
     lights: 5,
+    wanted: 0,
   },
   {
     level: 2,
@@ -106,6 +111,7 @@ const PLANS: readonly Plan[] = [
     shelf: 'none',
     cardAfter: 0,
     lights: 4,
+    wanted: 0,
   },
   {
     level: 3,
@@ -119,6 +125,7 @@ const PLANS: readonly Plan[] = [
     shelf: 'after',
     cardAfter: 3,
     lights: 4,
+    wanted: 0,
   },
   {
     level: 4,
@@ -132,13 +139,28 @@ const PLANS: readonly Plan[] = [
     shelf: 'start',
     cardAfter: 0,
     lights: 5,
+    wanted: 0,
+  },
+  {
+    level: 5,
+    id: 'back',
+    ask: 'count',
+    name: 'Backwards: find the car that went in',
+    machines: 2,
+    walkers: 0,
+    predictions: 0,
+    tray: 5,
+    shelf: 'none',
+    cardAfter: 0,
+    lights: 5,
+    wanted: 2,
   },
 ];
 
-/** Pre-K plays level 1 only; school plays 2–4 (5–8 append later without renumbering). */
+/** Pre-K plays level 1 only; school plays 2–5 (6–8 append later without renumbering). */
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 1 },
-  school: { min: 2, max: 4 },
+  school: { min: 2, max: 5 },
 };
 
 /** Level 3's shelf: two adds and a take-away never agree on any input, so every row breaks both wrong cards. */
@@ -155,6 +177,65 @@ export const COVERED_POOL: readonly NumRule[] = [
   { kind: 'num', a: 1, b: 4 },
 ];
 export const COVERED_TRAY: readonly number[] = [0, 1, 2, 3, 4];
+
+/** Level 5's pool: every rule is strictly increasing, so one count makes each output and a wrong car's output says which way to go. */
+export const BACK_POOL: readonly NumRule[] = [
+  { kind: 'num', a: 1, b: 2 },
+  { kind: 'num', a: 1, b: 3 },
+  { kind: 'num', a: 1, b: 4 },
+  { kind: 'num', a: 1, b: -1 },
+  { kind: 'num', a: 1, b: -2 },
+  { kind: 'num', a: 2, b: 0 },
+  { kind: 'num', a: 3, b: 0 },
+];
+
+/** The counts 0–12 whose output is also within 0–12, rising. */
+export function validInputs(rule: NumRule): number[] {
+  const out: number[] = [];
+  for (let n = 0; n <= MAX_COUNT; n++) {
+    const m = apply(rule, n);
+    if (m >= 0 && m <= MAX_COUNT) out.push(n);
+  }
+  return out;
+}
+
+/** Level 5: a car that has already come out, the count that went in, and the tray she chooses from. */
+export interface Wanted {
+  /** The count that went in (the one right tray car). */
+  answer: number;
+  /** The wanted car's count. */
+  out: number;
+  /** Five distinct valid inputs in rising order, the answer among them. */
+  tray: number[];
+}
+
+/**
+ * Level 5's tray: the answer; the car whose count is the wanted output itself when that is a valid input (the "it
+ * looks the same" trap); then the answer's nearest valid neighbours (one below, one above, two below, …) until five.
+ */
+export function backTray(rule: NumRule, answer: number): number[] {
+  const valid = validInputs(rule);
+  const tray = [answer];
+  const add = (n: number) => {
+    if (tray.length < 5 && valid.includes(n) && !tray.includes(n)) tray.push(n);
+  };
+  add(apply(rule, answer));
+  for (let d = 1; tray.length < 5 && d <= MAX_COUNT; d++) {
+    add(answer - d);
+    add(answer + d);
+  }
+  return tray.sort((a, b) => a - b);
+}
+
+/** The counts a wanted car can come from: valid, at least 1, with an output of at least 1. */
+export function backAnswers(rule: NumRule): number[] {
+  return validInputs(rule).filter((n) => n >= 1 && apply(rule, n) >= 1);
+}
+
+/** Which way the answer lies from a wrong car: its output is below the wanted one (`more`) or above it (`fewer`). */
+export function direction(rule: NumRule, car: number, wanted: number): 'more' | 'fewer' {
+  return apply(rule, car) < wanted ? 'more' : 'fewer';
+}
 
 export const sameRule = (p: NumRule, q: NumRule) => p.a === q.a && p.b === q.b;
 
@@ -227,6 +308,8 @@ export function planFor(level: number): Plan {
  */
 export function counted(plan: Plan, ask: number): boolean {
   if (plan.ask === 'look') return ask >= 1;
+  // Level 5: the card hangs from the start, so every wrong car counts.
+  if (plan.id === 'back') return true;
   // Level 4's one prediction comes after the card hangs on the machine: it counts whatever the rows.
   if (plan.shelf === 'start') return true;
   return ask >= 2;
@@ -245,8 +328,10 @@ export interface CountMachine {
   tray: number[];
   /** For each prediction, the seeded order of the pads [right, one below, one above]. */
   padOrders: number[][];
-  /** Levels 3–4: the rule shelf's three cards, in seeded order (the rule among them). Empty at 2. */
+  /** Levels 3–4: the rule shelf's three cards, in seeded order (the rule among them). Empty at 2 and 5. */
   shelf: NumRule[];
+  /** Level 5: the wanted cars in turn, each with its own tray (`tray` above is the first one's). */
+  wanted?: Wanted[];
 }
 export type Machine = LookMachine | CountMachine;
 
@@ -288,6 +373,16 @@ export function makeRound(level: number, rng: Rng): Machine[] {
       const waiting = pool.slice(plan.walkers, plan.walkers + plan.predictions);
       return { rule, walkers, waiting, pictures: waiting.map((c) => picturesFor(rule, c, rng)) };
     });
+  }
+  if (plan.id === 'back') {
+    return shuffle(rng, BACK_POOL.slice())
+      .slice(0, plan.machines)
+      .map((rule) => {
+        const wanted = shuffle(rng, backAnswers(rule))
+          .slice(0, plan.wanted)
+          .map((answer) => ({ answer, out: apply(rule, answer), tray: backTray(rule, answer) }));
+        return { rule, tray: wanted[0].tray.slice(), padOrders: [], shelf: [], wanted };
+      });
   }
   const padOrders = () => Array.from({ length: plan.predictions }, () => shuffle(rng, [0, 1, 2]));
   if (plan.shelf === 'after') {

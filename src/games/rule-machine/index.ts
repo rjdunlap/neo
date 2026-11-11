@@ -41,6 +41,7 @@ import {
   Score,
   apply,
   counted,
+  direction,
   isLook,
   judgeCard,
   lastCar,
@@ -61,6 +62,7 @@ import {
   type Picture,
   type Plan,
   type Row,
+  type Wanted,
 } from './logic';
 
 type Phase = 'walk' | 'feed' | 'predict' | 'card' | 'run' | 'between' | 'done';
@@ -74,6 +76,9 @@ function cardLine(r: NumRule) {
     : ({ name: 'rm.card.plus', would: 'rm.would.plus' } as const);
 }
 
+/** A card's spoken name (level 5's pool adds take two away). */
+const cardName = (r: NumRule) => (r.a === 1 && r.b === -2 ? ('rm.card.take-two' as const) : cardLine(r).name);
+
 /** A table column: what went in above an arrow above what came out. */
 interface Column {
   node: Container;
@@ -85,6 +90,8 @@ const LOOK_LINE = {
   big: 'rm.look.big',
   spots: 'rm.look.spots',
 } as const;
+/** Level 5: how far left of the wanted car a wrong car's output lands. */
+const BESIDE = 118;
 /** Height of a creature standing at the hopper or chute. */
 const STAND = 100;
 
@@ -134,10 +141,15 @@ class RuleMachine implements Game {
   /** The creature or car waiting at the hopper, and the output standing at the chute. */
   private waiting: Container | null = null;
   private output: Container | null = null;
+  private outBeside = false;
   private cars: Container[] = [];
   private drags: DragHandle[] = [];
   padNodes: Container[] = [];
   private columns: Column[] = [];
+  /** Level 5: the wanted car standing at the chute's end, its pulsing outline, and the table's open "? → wanted" column. */
+  private wantedNode: Container | null = null;
+  private wantedRing: Graphics | null = null;
+  private openColumn: Container | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -184,6 +196,18 @@ class RuleMachine implements Game {
   }
   get count(): CountMachine {
     return this.machine as CountMachine;
+  }
+  get back(): boolean {
+    return this.plan.id === 'back';
+  }
+  /** Level 5: the wanted car on the table now (null elsewhere and between machines). */
+  get wantedNow(): Wanted | null {
+    if (!this.back || isLook(this.machine)) return null;
+    return this.count.wanted?.[this.asked] ?? null;
+  }
+  /** The tray on screen: level 5 rolls a fresh one in for each wanted car. */
+  get trayNow(): number[] {
+    return isLook(this.machine) ? [] : (this.wantedNow?.tray ?? this.count.tray);
   }
   get isCounted(): boolean {
     return counted(this.plan, this.asked);
@@ -247,7 +271,9 @@ class RuleMachine implements Game {
       rows: this.rows.slice(),
       fed: this.fed.slice(),
       carSlot: this.carSlot,
-      tray: isLook(this.machine) ? [] : this.count.tray.slice(),
+      tray: this.trayNow.slice(),
+      wanted: this.wantedNow?.out ?? null,
+      answerSlot: this.wantedNow ? this.wantedNow.tray.indexOf(this.wantedNow.answer) : -1,
       options: o?.values ?? [],
       right: o?.right ?? -1,
       shelf: isLook(this.machine) ? [] : this.count.shelf.slice(),
@@ -274,8 +300,15 @@ class RuleMachine implements Game {
     this.drags = [];
     this.ctx.tw.kill(this.art.node);
     this.ctx.tw.kill(this.art.node.scale);
-    for (const c of [...this.cars, ...this.padNodes, ...this.shelfNodes, this.waiting, this.output])
-      if (c) {
+    for (const c of [
+      ...this.cars,
+      ...this.padNodes,
+      ...this.shelfNodes,
+      this.waiting,
+      this.output,
+      this.wantedNode,
+    ])
+      if (c && !c.destroyed) {
         this.ctx.tw.kill(c);
         this.ctx.tw.kill(c.scale);
       }
@@ -287,11 +320,22 @@ class RuleMachine implements Game {
     if (this.phase === 'card') return this.ctx.instruct('rm.which-card');
     // With the card on the machine, the last car is level 2's ask again.
     if (this.hung) return this.ctx.instruct('rm.instruct.2');
+    if (this.back) return this.instructBack();
     return this.ctx.instruct(
       this.plan.ask === 'look'
         ? 'rm.instruct.1'
         : `rm.instruct.${Math.min(4, Math.max(2, this.plan.level)) as 2 | 3 | 4}`,
     );
+  }
+
+  /** Level 5: the instruction, then the open question, unless she has already answered it. */
+  private async instructBack() {
+    const m = this.index,
+      ask = this.asked,
+      rows = this.rows.length;
+    await this.ctx.instruct('rm.instruct.5');
+    if (this.finished || m !== this.index || ask !== this.asked || rows !== this.rows.length) return;
+    if (this.phase === 'feed' && this.wantedNow) await this.ctx.say('rm.back.ask', { n: this.wantedNow.out });
   }
 
   // ---- building a machine ----
@@ -300,13 +344,20 @@ class RuleMachine implements Game {
     this.art.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
     const r = this.machine.rule;
     // Levels 3–4 keep the rule off the front until her card hangs there.
-    this.art.badge.addChild(
-      r.kind === 'look'
-        ? badge(r)
-        : this.plan.shelf !== 'none'
-          ? mysteryBadge()
-          : badge({ kind: 'num', b: r.b }),
-    );
+    if (r.kind === 'num' && this.back) {
+      // Level 5: the card hangs from the start, and speaks itself on a touch.
+      const hung = hungBadge(r);
+      hung.hitArea = new Rectangle(-80, -75, 160, 100);
+      onTap(hung, () => void this.ctx.say(cardName(r), { n: r.b }));
+      this.art.badge.addChild(hung);
+    } else
+      this.art.badge.addChild(
+        r.kind === 'look'
+          ? badge(r)
+          : this.plan.shelf !== 'none'
+            ? mysteryBadge()
+            : badge({ kind: 'num', b: r.b }),
+      );
     this.hung = false;
     this.peeking = false;
     this.circled = null;
@@ -322,33 +373,103 @@ class RuleMachine implements Game {
     this.score.newMachine();
     this.clearColumns();
     this.clearPads();
-    for (const d of this.drags) d.destroy();
-    this.drags = [];
-    this.trayLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.cars = [];
+    this.clearWanted();
     if (isLook(this.machine)) {
+      this.buildTray([]);
       this.phase = 'walk';
       this.bringCreature(this.machine.walkers[0]);
     } else {
       this.phase = 'feed';
-      this.count.tray.forEach((n, slot) => {
-        const node = car(n, CAR_W - 10);
-        node.hitArea = new Rectangle(-CAR_W / 2, -100, CAR_W, 110);
-        const drag = draggable(node, this.ctx.tw, {
-          onPick: () => sfx.tick(),
-          onDrop: (x, y) => this.dropCar(slot, x, y),
-        });
-        this.drags.push(drag);
-        this.cars.push(node);
-        this.trayLayer.addChild(node);
-      });
+      this.buildTray(this.trayNow);
+      if (this.back) this.showWanted();
     }
     this.drawLights();
     this.resize(this.ctx.view);
   }
 
+  /** The tray's cars, replacing any already there (level 5 rolls a fresh tray in for each wanted car). */
+  private buildTray(counts: readonly number[]) {
+    for (const d of this.drags) d.destroy();
+    this.drags = [];
+    for (const c of this.cars)
+      if (!c.destroyed) {
+        this.ctx.tw.kill(c);
+        this.ctx.tw.kill(c.scale);
+      }
+    this.trayLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.cars = [];
+    counts.forEach((n, slot) => {
+      const node = car(n, CAR_W - 10);
+      node.hitArea = new Rectangle(-CAR_W / 2, -100, CAR_W, 110);
+      const drag = draggable(node, this.ctx.tw, {
+        onPick: () => sfx.tick(),
+        onDrop: (x, y) => this.dropCar(slot, x, y),
+      });
+      this.drags.push(drag);
+      this.cars.push(node);
+      this.trayLayer.addChild(node);
+    });
+  }
+
+  private clearWanted() {
+    if (this.wantedNode && !this.wantedNode.destroyed) {
+      this.ctx.tw.kill(this.wantedNode);
+      this.ctx.tw.kill(this.wantedNode.scale);
+      this.wantedNode.destroy({ children: true });
+    }
+    this.wantedNode = null;
+    this.wantedRing = null;
+    this.openColumn?.destroy({ children: true });
+    this.openColumn = null;
+  }
+
+  /** Level 5: the wanted car stands outlined at the chute's end, and the table's open column reads "? → wanted". */
+  private showWanted() {
+    const w = this.wantedNow;
+    if (!w) return;
+    this.clearWanted();
+    const node = new Container();
+    const ring = new Graphics()
+      .roundRect(-CAR_W / 2 - 4, -104, CAR_W + 8, 116, 22)
+      .stroke({ width: 7, color: swatch.yellow.fill });
+    node.addChild(ring, car(w.out, CAR_W - 10));
+    node.eventMode = 'none';
+    node.position.set(this.layoutNow.out.x, this.layoutNow.out.y);
+    node.scale.set(0.6);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    this.actors.addChild(node);
+    this.wantedNode = node;
+    this.wantedRing = ring;
+    const col = new Container();
+    col.addChild(card(86, 146, swatch.yellow.line));
+    const q = numeral(0, 44);
+    q.text = '?';
+    q.position.set(0, -44);
+    const a = arrow(26);
+    a.position.set(0, -4);
+    const out = car(w.out, 70);
+    out.position.set(0, 56);
+    col.addChild(q, a, out);
+    this.openColumn = col;
+    this.tableLayer.addChild(col);
+    this.placeColumns();
+  }
+
+  /** Level 5: the next wanted car on this machine, with its fresh tray. */
+  private nextWanted() {
+    this.fed = [];
+    this.carSlot = null;
+    this.score.newAsk();
+    this.buildTray(this.trayNow);
+    this.showWanted();
+    this.phase = 'feed';
+    this.resize(this.ctx.view);
+    sfx.whoosh();
+    void this.ctx.say('rm.back.ask', { n: this.wantedNow!.out });
+  }
+
   private drawLights() {
-    drawLights(this.art.lights, this.rows.length, this.plan.lights);
+    drawLights(this.art.lights, Math.min(this.rows.length, this.plan.lights), this.plan.lights);
   }
 
   /** Levels 3–4: the three cards; shown at once beside the covered machine, after three rows at level 3. */
@@ -472,6 +593,10 @@ class RuleMachine implements Game {
       void this.runFed();
       return;
     }
+    if (this.back) {
+      void this.runBack();
+      return;
+    }
     this.trayLayer.visible = false;
     this.openQuestion();
   }
@@ -486,6 +611,62 @@ class RuleMachine implements Game {
     this.carSlot = null;
     this.phase = 'feed';
     if (this.open.length === 1) void this.ctx.say('rm.tap-card');
+  }
+
+  /**
+   * Level 5: the car she sent runs. The right one's output rolls onto the wanted outline and the "?" fills in; a wrong
+   * one is a miss, its output lands beside the wanted car and its row is written, and the tray keeps the rest.
+   */
+  private async runBack() {
+    this.phase = 'run';
+    const m = this.index;
+    const w = this.wantedNow!;
+    const rule = this.count.rule;
+    const n = w.tray[this.carSlot!];
+    const out = apply(rule, n);
+    const outcome = this.score.answer(n === w.answer, true);
+    this.idle = 0;
+    if (outcome === 'right') {
+      await this.run(n, out, { quiet: true });
+      if (this.finished || m !== this.index) return;
+      this.clearWanted();
+      this.placeColumns();
+      sfx.sparkle();
+      sfx.bell(9, 0.3);
+      await this.ctx.say('rm.back.right', { n, m: out });
+      if (this.finished || m !== this.index) return;
+      await this.ctx.tw.wait(0.4);
+      if (this.finished || m !== this.index) return;
+      this.asked++;
+      if (this.asked >= this.plan.wanted) {
+        await this.endMachine();
+        return;
+      }
+      this.rollAway();
+      this.nextWanted();
+      return;
+    }
+    await this.run(n, out, { quiet: true, beside: true });
+    if (this.finished || m !== this.index) return;
+    sfx.boing();
+    await this.ctx.say('rm.back.want', { n, m: out, k: w.out });
+    if (this.finished || m !== this.index) return;
+    this.rollAway();
+    this.carSlot = null;
+    this.phase = 'feed';
+    await this.ctx.say(direction(rule, n, w.out) === 'more' ? 'rm.back.more' : 'rm.back.fewer');
+    if (this.finished || m !== this.index || this.phase !== 'feed') return;
+    if (outcome === 'glow') await this.ctx.say('rm.help');
+  }
+
+  /** The output at the chute rolls off to the siding. */
+  private rollAway() {
+    const o = this.output;
+    if (!o) return;
+    this.output = null;
+    this.ctx.tw.kill(o);
+    this.ctx.tw.kill(o.scale);
+    void this.ctx.tw.to(o, { x: o.x + 120, alpha: 0 }, { duration: 0.3 }).then(() => this.dropActor(o));
   }
 
   // ---- the shelf ----
@@ -665,6 +846,8 @@ class RuleMachine implements Game {
   get helpMove(): { kind: 'pad' | 'card' | 'car'; i: number } | null {
     if (this.finished || this.busy) return null;
     if (this.phase === 'predict') return { kind: 'pad', i: this.options!.right };
+    const w = this.wantedNow;
+    if (w && this.phase === 'feed') return { kind: 'car', i: w.tray.indexOf(w.answer) };
     if (!this.cardOpen) return null;
     const s = this.settling;
     return s !== null ? { kind: 'car', i: s } : { kind: 'card', i: this.rightCard };
@@ -751,7 +934,11 @@ class RuleMachine implements Game {
   }
 
   /** The input drops into the hopper, the machine chugs, and the output lands at the chute's end; the table gains a row. */
-  private async run(input: Picture | number, out: Picture | number) {
+  private async run(
+    input: Picture | number,
+    out: Picture | number,
+    opts: { quiet?: boolean; beside?: boolean } = {},
+  ) {
     const m = this.index;
     const l = this.layoutNow;
     const t = this.reduce ? 0.6 : 1.2;
@@ -797,7 +984,9 @@ class RuleMachine implements Game {
     }
     const node = typeof out === 'number' ? car(out, CAR_W - 10) : creature(out, STAND);
     if (typeof out !== 'number') this.ctx.track(node as Critter);
-    node.position.set(l.out.x, l.out.y);
+    // Level 5: a wrong car's output lands on the chute beside the wanted car.
+    this.outBeside = !!opts.beside;
+    node.position.set(l.out.x - (opts.beside ? BESIDE : 0), l.out.y);
     node.scale.set(node.scale.x * 0.6);
     this.actors.addChild(node);
     this.output = node;
@@ -826,6 +1015,7 @@ class RuleMachine implements Game {
         if (!this.hung) this.peekNode.visible = true;
       }
     }
+    if (opts.quiet) return;
     if (typeof out === 'number') await this.ctx.say('rm.ran', { n: input as number, m: out });
     else if (out.look) await this.ctx.say(LOOK_LINE[out.look]);
   }
@@ -869,10 +1059,17 @@ class RuleMachine implements Game {
   // ---- shell hooks ----
 
   private placeColumns() {
+    // Level 5 can make more rows than the table has slots: the newest four show, then the open column.
+    const hidden = this.back ? Math.max(0, this.columns.length - (this.openColumn ? 4 : 5)) : 0;
     this.columns.forEach((c, i) => {
-      const b = this.layoutNow.columns[i];
+      c.node.visible = i >= hidden;
+      const b = this.layoutNow.columns[Math.max(0, i - hidden)];
       c.node.position.set(b.x, b.y);
     });
+    if (this.openColumn) {
+      const b = this.layoutNow.columns[this.columns.length - hidden];
+      this.openColumn.position.set(b.x, b.y);
+    }
   }
 
   private placePads() {
@@ -906,7 +1103,8 @@ class RuleMachine implements Game {
       this.waiting.position.set(l.waitAt.x, l.waitAt.y);
       this.waiting.alpha = 1;
     }
-    if (this.output) this.output.position.set(l.out.x, l.out.y);
+    if (this.output) this.output.position.set(l.out.x - (this.outBeside ? BESIDE : 0), l.out.y);
+    if (this.wantedNode) this.wantedNode.position.set(l.out.x, l.out.y);
   }
 
   update(dt: number) {
@@ -920,6 +1118,7 @@ class RuleMachine implements Game {
       }
     }
     this.glowRing.clear();
+    if (this.wantedRing) this.wantedRing.alpha = 0.65 + 0.35 * Math.sin(this.clock * 4);
     if (this.reveal !== null) {
       // The truth beside her pick: the right one ringed green, her other pick (if any) ringed softly.
       const r = this.layoutNow.pads[this.reveal];
@@ -966,6 +1165,10 @@ class RuleMachine implements Game {
       const s = this.settling;
       if (s === null) return { tap: { on: this.shelfNodes[this.rightCard] } };
       return { drag: { on: this.cars[s], y: -40 }, to: { on: this.hopperHit } };
+    }
+    if (this.phase === 'feed' && this.wantedNow) {
+      const w = this.wantedNow;
+      return { drag: { on: this.cars[w.tray.indexOf(w.answer)], y: -40 }, to: { on: this.hopperHit } };
     }
     if (this.phase === 'feed') {
       const slot = this.count.tray.findIndex((_, i) => !this.fed.includes(i));
@@ -1027,7 +1230,7 @@ export const ruleMachine: GameModule = {
   coplayHint:
     'One of you sends things into the machine, the other says out loud what will come out before it runs.',
   offScreen:
-    'Guess my rule: one of you thinks of a rule ("I add two"), the other says numbers and hears what comes out, then guesses the rule.',
+    'Guess my rule: one of you thinks of a rule ("I add two"), the other says numbers and hears what comes out, then guesses the rule. Then play it backwards: say what came out and ask what went in.',
   hubIcon: () => new WigglyIcon(icon()),
   sticker,
   create: (ctx) => new RuleMachine(ctx),

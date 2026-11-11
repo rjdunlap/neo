@@ -195,7 +195,7 @@ export function arrow(size: number): Graphics {
     .fill(ink);
 }
 
-/** A rule as a picture, centred on (0, 0) and about 34 high: a plus and new counters, a crossed-out counter, or one
+/** A rule as a picture, centred on (0, 0) and about 34 high: a plus and new counters, crossed-out counters, or one
  *  row of two becoming two or three rows. Never a symbol to read but the plus, and never an "=". */
 export function ruleIcon(rule: NumRule): Graphics {
   const g = new Graphics();
@@ -206,13 +206,19 @@ export function ruleIcon(rule: NumRule): Graphics {
       .fill(ink);
     for (let i = 0; i < rule.b; i++) newCounter(g, -w / 2 + 34 + i * 20, 0, 8);
   } else if (rule.a === 1) {
-    g.rect(-38, -3, 16, 6).fill(ink);
-    counter(g, 4, 0, 11);
-    g.moveTo(-10, -14)
-      .lineTo(18, 14)
-      .moveTo(18, -14)
-      .lineTo(-10, 14)
-      .stroke({ width: 5, color: ink, cap: 'round' });
+    // One crossed-out counter for each taken away (take one keeps its place; take two is two, side by side).
+    const k = Math.max(1, -rule.b);
+    const shift = (k - 1) * 17;
+    g.rect(-38 - shift, -3, 16, 6).fill(ink);
+    for (let i = 0; i < k; i++) {
+      const x = 4 - shift + i * 34;
+      counter(g, x, 0, 11);
+      g.moveTo(x - 14, -14)
+        .lineTo(x + 14, 14)
+        .moveTo(x + 14, -14)
+        .lineTo(x - 14, 14)
+        .stroke({ width: 5, color: ink, cap: 'round' });
+    }
   } else {
     const row = (x: number, y: number) => {
       counter(g, x - 6, y, 4.5);

@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1 |
-| school | 2–4 |
+| school | 2–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,6 +17,7 @@
 | 2 | One more goes in |
 | 3 | What does it do? |
 | 4 | Covered machine |
+| 5 | Backwards: find the car that went in |
 
 <!-- end generated -->
 

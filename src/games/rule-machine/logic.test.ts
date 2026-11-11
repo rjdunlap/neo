@@ -29,6 +29,11 @@ import {
   judgeCard,
   settlingCar,
   lastCar,
+  BACK_POOL,
+  validInputs,
+  backTray,
+  backAnswers,
+  direction,
   type Row,
   type LookMachine,
   type CountMachine,
@@ -42,7 +47,16 @@ const perm = (xs: number[], n: number) =>
 
 describe('plans', () => {
   it('level ranges and names', () => {
-    expect(LEVELS).toEqual({ prek: { min: 1, max: 1 }, school: { min: 2, max: 4 } });
+    expect(LEVELS).toEqual({ prek: { min: 1, max: 1 }, school: { min: 2, max: 5 } });
+    expect(planFor(5)).toMatchObject({
+      level: 5,
+      id: 'back',
+      wanted: 2,
+      tray: 5,
+      shelf: 'none',
+      machines: 2,
+    });
+    expect(planFor(5).name).toBe('Backwards: find the car that went in');
     expect([1, 2, 3, 4].map((l) => planFor(l).level)).toEqual([1, 2, 3, 4]);
     expect(planFor(3).id).toBe('what');
     expect(planFor(4).id).toBe('covered');
@@ -482,6 +496,130 @@ describe('layout', () => {
           }
       });
     }
+});
+
+describe('level 5 backwards', () => {
+  const within = (n: number) => n >= 0 && n <= MAX_COUNT;
+  it('every pool rule is strictly increasing on 0–12 and has at least five valid inputs', () => {
+    expect(BACK_POOL).toHaveLength(7);
+    for (const r of BACK_POOL) {
+      for (let n = 0; n < MAX_COUNT; n++) expect(apply(r, n + 1)).toBeGreaterThan(apply(r, n));
+      const v = validInputs(r);
+      expect(v.length).toBeGreaterThanOrEqual(5);
+      for (const n of v) expect(within(n) && within(apply(r, n))).toBe(true);
+    }
+    expect(validInputs({ kind: 'num', a: 1, b: 3 })).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(validInputs({ kind: 'num', a: 1, b: -2 })).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    expect(validInputs({ kind: 'num', a: 2, b: 0 })).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(validInputs({ kind: 'num', a: 3, b: 0 })).toEqual([0, 1, 2, 3, 4]);
+  });
+  it('every tray, by enumeration: five rising valid inputs, the answer, the look-alike car, one right car', () => {
+    for (const r of BACK_POOL) {
+      const valid = validInputs(r);
+      const answers = backAnswers(r);
+      expect(answers.length).toBeGreaterThanOrEqual(2);
+      for (const answer of answers) {
+        const out = apply(r, answer);
+        expect(answer).toBeGreaterThanOrEqual(1);
+        expect(out).toBeGreaterThanOrEqual(1);
+        const tray = backTray(r, answer);
+        expect(tray).toHaveLength(5);
+        expect(new Set(tray).size).toBe(5);
+        expect([...tray].sort((a, b) => a - b)).toEqual(tray);
+        for (const n of tray) expect(valid).toContain(n);
+        expect(tray).toContain(answer);
+        if (valid.includes(out)) expect(tray, `look-alike ${out}`).toContain(out);
+        expect(tray.filter((n) => apply(r, n) === out)).toEqual([answer]);
+      }
+    }
+    // The definition's examples: 11 came out of +3 has no 11 car; 5 came out of +3 has a 5 car.
+    expect(backTray({ kind: 'num', a: 1, b: 3 }, 8)).not.toContain(11);
+    expect(backTray({ kind: 'num', a: 1, b: 3 }, 2)).toContain(5);
+  });
+  it('direction points from every wrong tray car toward the answer', () => {
+    for (const r of BACK_POOL)
+      for (const answer of backAnswers(r)) {
+        const out = apply(r, answer);
+        for (const n of backTray(r, answer)) {
+          if (n === answer) continue;
+          expect(direction(r, n, out)).toBe(n < answer ? 'more' : 'fewer');
+        }
+      }
+  });
+  it('rounds over 300 seeds: two different rules, two wanted cars each with different answers, deterministic', () => {
+    const seen = new Set<string>();
+    for (const seed of SEEDS) {
+      const round = makeRound(5, new Rng(seed)) as CountMachine[];
+      expect(makeRound(5, new Rng(seed))).toEqual(round);
+      expect(round).toHaveLength(2);
+      expect(sameRule(round[0].rule, round[1].rule)).toBe(false);
+      for (const m of round) {
+        expect(isLook(m)).toBe(false);
+        expect(BACK_POOL.some((r) => sameRule(r, m.rule))).toBe(true);
+        seen.add(`${m.rule.a},${m.rule.b}`);
+        expect(m.shelf).toEqual([]);
+        expect(m.padOrders).toEqual([]);
+        const w = m.wanted!;
+        expect(w).toHaveLength(2);
+        expect(w[0].answer).not.toBe(w[1].answer);
+        expect(m.tray).toEqual(w[0].tray);
+        for (const q of w) {
+          expect(q.out).toBe(apply(m.rule, q.answer));
+          expect(q.tray).toEqual(backTray(m.rule, q.answer));
+          expect(backAnswers(m.rule)).toContain(q.answer);
+        }
+      }
+    }
+    expect(seen.size).toBe(BACK_POOL.length);
+  });
+  it('accounting: a wrong car counts from the first, two light the glow, one hint per machine, the round ends', () => {
+    expect(counted(planFor(5), 0)).toBe(true);
+    expect(counted(planFor(5), 1)).toBe(true);
+    for (const seed of SEEDS.slice(0, 60)) {
+      const round = makeRound(5, new Rng(seed)) as CountMachine[];
+      const score = new Score();
+      let wrongSent = 0;
+      for (const m of round) {
+        score.newMachine();
+        m.wanted!.forEach((w, ask) => {
+          score.newAsk();
+          // The worst child: every wrong car first, lowest to highest; the answer is then the only car left.
+          const wrong = w.tray.filter((n) => n !== w.answer);
+          expect(wrong).toHaveLength(4);
+          wrong.forEach((_, i) => {
+            const o = score.answer(false, counted(planFor(5), ask));
+            wrongSent++;
+            expect(o).toBe(i === 1 ? 'glow' : 'miss');
+          });
+          expect(score.glowing).toBe(true);
+          expect(score.answer(true, true)).toBe('right');
+          expect(score.glowing).toBe(false);
+        });
+      }
+      expect(score.misses).toBe(wrongSent);
+      expect(score.misses).toBe(16);
+      expect(score.hints).toBe(2);
+    }
+  });
+  it("layout: level 5 uses level 2's boxes", () => {
+    for (const view of VIEWS) expect(layout(view, 5)).toEqual(layout(view, 2));
+  });
+  it('speech and the card: its lines exist and every pool card has a spoken name', () => {
+    const script = SCRIPT as Record<string, readonly string[]>;
+    for (const k of [
+      'rm.instruct.5',
+      'rm.back.ask',
+      'rm.back.want',
+      'rm.back.more',
+      'rm.back.fewer',
+      'rm.back.right',
+      'rm.card.take-two',
+    ])
+      expect(script[k]?.[0]?.length, k).toBeGreaterThan(0);
+    const card = HOW_TO['rule-machine'];
+    expect(JSON.stringify(card.steps)).toContain('"from":5');
+    expect(JSON.stringify(card.note)).toContain('"from":5');
+  });
 });
 
 describe('wording guard', () => {
