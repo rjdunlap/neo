@@ -1825,3 +1825,19 @@ Built 2026-11-11, [PR #1497](https://github.com/rjdunlap/neo/pull/1497). Scope r
 Files expected: `src/games/sorting-machine/logic.ts`, `logic.test.ts` (and the checked-in accepted list), `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `docs/games/sorting-machine.md`.
 
 Proof: new-interaction tier as the [definition's slices and check tier](definitions/festival-signals.md#slices-and-check-tier) sets it (typecheck, unit tests with registry, lands and how-to tests, one filtered scripted play of levels 9 and 8 at the grown-up band with a failed Check and a Help, one upright screenshot at 390 × 844, `fingerdemo` at 8, build). If it grows past one session, level 8 ships first with `order: [3, 8]` and level 9 follows.
+
+### memory-desk 1: Keep and show
+
+- **`memory-desk`, level 1 *Keep one*** (H8, [definition](definitions/memory-desk.md#the-model-logicts); a new game, new-game tier; school, Tinker Lab by default; range `{ min: 1, max: 1 }` until batch 2): a pictured tray, a drawer and a window; she puts a token on the tray, presses Keep to copy it into the drawer, swaps the tray, presses Show and sees the old token in the window, then Done; a try-out round on the ordinary adaptation rule with no Check, one sticker per round. [Slice H8](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
+
+Files expected: `src/games/memory-desk/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `src/content/lands.ts` and the content barrels (`node scripts/content-barrels.mjs`), a `scripts/browser-check.mjs` case, `docs/games/memory-desk.md`, and the README and `docs/GAMES.md` rows through `npm run game-docs`.
+
+Proof: new-game tier as the [definition's check tier](definitions/memory-desk.md#check-tier-for-the-builds) sets it (typecheck, unit tests with registry, lands, how-to and off-screen tests, one filtered scripted play of level 1 with a dim Done, an empty Keep, the contrast, a requested Help and the sticker, one portrait screenshot, `fingerdemo` at 1, build because the registry, lands and voice change). Before the spoken lines merge, check "keep", "copy" and "toy desk" against the study's cited sources.
+
+### memory-desk 2: The hatch
+
+- **`memory-desk`, levels 2–3 *Open or shut* and *Fix the desk*** (H8, [definition](definitions/memory-desk.md#the-model-logicts); new interaction, after batch 1; range becomes `{ min: 1, max: 3 }`): at level 2 each step of a short queue has a hatch she opens or shuts, Step runs the queue and Check compares the window with the brief, with the first untouched Check a free look; at level 3 a desk with one wrong hatch starts with a stated token in the drawer and she finds and fixes it from two trace rows. [Slice H8](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
+
+Files expected: `src/games/memory-desk/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `voice.ts`, `howto.ts`, `docs/games/memory-desk.md` (Grows into line and notes) and its generated README and GAMES rows through `npm run game-docs`.
+
+Proof: new-interaction tier as the [definition's check tier](definitions/memory-desk.md#check-tier-for-the-builds) sets it (typecheck, the rule tests, one filtered play of level 2 with an untouched Check, a failed Check, a second for the glow and both briefs passed, and level 3 with a Help followed to the sticker; a portrait screenshot of level 3 with both trace rows; `fingerdemo` at 2 and 3; build).

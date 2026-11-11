@@ -1,0 +1,86 @@
+# Memory Desk, levels 1–3 (definition)
+
+Defined 2026-11-11 as slice H8 of the [how-computers-work study](../deep-dives/subjects/how-computers-work.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations)), [PR #1504](https://github.com/rjdunlap/neo/pull/1504). **Not built.** A proposed new game; identity, band, land and accounting use the leans the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions) settled for this study (a distinct game only as direct manipulation, school first, Tinker Lab by layout test, exploratory round on the ordinary rule, Check-only misses, the building session's source check for the wording). Every call in [Open decisions](#open-decisions) has a default the build can use. Two builds follow: [batch 1](../GAME-BATCHES.md#memory-desk-1-keep-and-show) (level 1, the new game) and [batch 2](../GAME-BATCHES.md#memory-desk-2-the-hatch) (levels 2–3).
+
+**Fun action and purpose:** put a pictured token on a tray, press **Keep** to drop a copy in the desk's drawer, swap the tray for something else, then press **Show** and watch the old token come up in the window. Learning goal: a machine has a **state** that is separate from what is coming in and what is going out; storing copies rather than moves, the stored copy holds while the input changes, and a write happens only when the machine is told to write. Later levels make the write depend on a hatch that is open or shut at each step. The stored token is always visible, so this is about the desk's memory and never a test of hers.
+
+## Overlap and reuse
+
+- **Parcel Programs** (proposed, undefined: [programming study](../deep-dives/subjects/programming.md#parcel-programs-one-rule-contrasting-inputs)) is the consolidation the study asked about. **Decision: Memory Desk stays a separate game for levels 1–3.** Every action here is a press on the device itself (tray, Keep, Show, a hatch); she never chooses, orders or reuses commands, and no setting has to work for more than the one queue in front of her. The line for later levels: a level where she arranges Keep/Show commands in a list, or one setting must pass several queues, is a Parcel Programs level and is not added here. Parcel Programs' *previous symbol* memory tile may point back to this game as its first look.
+- **Sorting Machine** and **Rule Machine** have no state: the same input always gives the same output. Here the same input can give a different output depending on what was kept. **Memory Match** tests her memory; this shows a machine's. **Circuit Garden** is current in a loop; nothing here is wired, and no latch is built from gates (a primitive register, as the study says).
+- Reuse `onTap` for every control, `RoundButton` (`src/ui/buttons.ts`) for Undo, Sorting Machine's patterns for a value token that is never colour alone, persistent result rows, a Slow toggle and a bot that finishes through the same taps. No new engine, save field or shared helper.
+
+## The model (`logic.ts`)
+
+- **Tokens** are six pictured things with distinct shapes: shell, leaf, star, acorn, feather, pebble. A brief uses two (levels 1–2) or three (level 3), seeded. A slot's value is a token or `empty` (drawn as a dotted outline, spoken "nothing").
+- **State** is `{ input, stored, output }`. **Initial and reset state: all three `empty`** at levels 1–2; level 3 starts with a stated token already in the drawer. Reset (Start again, in the pause sheet) returns to the brief's initial state and clears the trace.
+- **Level 1 actions** (each a pure function of the state):
+  - `setInput(t)`: `input = t`. Nothing else changes.
+  - `keep`: `stored = input`. A **copy**: the tray keeps its token. With an empty tray it does nothing and the pet says "Put something on the tray first".
+  - `show`: `output = stored`. A copy again: the drawer keeps its token. With an empty drawer the window shows `empty` and the pet says "Nothing is kept yet". Show never reads the tray.
+  - `contrastSeen(history)` is true once the history holds, in order, a `keep` with tray `X`, a `setInput(Y)` with `Y ≠ X`, and a `show` while `stored = X` and `input = Y`. That is the one contrast the round is for: the window shows `X` while the tray holds `Y`.
+- **Levels 2–3, the hatch.** A brief is `{ initialStored, queue, target, preset? }`. Tokens arrive on the tray in the fixed `queue` order, one per **step**. Each step has a **hatch** setting (`open` or `shut`) that is hers to set before running. One step is: the next token arrives (`input = queue[i]`), then the write (`stored = hatch[i] === 'open' ? input : stored`), then the read (`output = stored`). **Write before read** in the same step, always. `run(brief, hatches)` returns the full trace (input, hatch, stored-after and output per step) and the final output.
+- The final output is therefore the token of the last open step, or `initialStored` if every hatch is shut. `solutions(brief)` lists every hatch setting whose final output equals `target`; **Check accepts all of them**, not only an authored one.
+
+| Level | Name (`describeLevel`) | Machine | Sign (target) | Rounds |
+| --- | --- | --- | --- | --- |
+| 1 | Keep one | Tray with two tokens to choose from, Keep, Show, window | none; the window answers | one free round, Done after the contrast |
+| 2 | Open or shut | Drawer starts empty; a queue of two different tokens `[X, Y]`; two hatches, both starting shut | "The window should end on `Y`" first, then "…end on `X`" | two briefs per round, in that order |
+| 3 | Fix the desk | Drawer starts with a stated token; a queue of three tokens from three kinds; hatches preset and wrong | "The window should end on `T`" | two repairs per round |
+
+- **Level 2** has four settings per brief. For `Y`: `shut, open` and `open, open` pass. For `X`: only `open, shut` passes, which is the write-then-hold the level is for. `shut, shut` ends on `empty` and passes neither.
+- **Level 3** has eight settings. A brief is generated so that `target` is `initialStored` or in the queue, `target ≠ queue[2]` (opening everything never passes), the `preset` does not pass, and at least one solution is exactly one hatch away from the `preset`. The failed preset's trace stays on screen as a dimmed row above her own, so two traces can be compared step by step with every earlier value kept.
+- **Bands (`BandLevels`):** `school: { min: 1, max: 1 }` for batch 1, `{ min: 1, max: 3 }` once batch 2 ships. No `order`. No younger band (nothing earlier is observed) and no `grownup` range yet: the study's older conditional-write cases are a later definition.
+
+## Screen and controls
+
+- **Three panels, left to right in landscape and top to bottom in portrait:** the **tray** (what is coming in), the **drawer** (what is kept, drawn with a glass front so its token always shows), and the **window** (what comes out). Each panel is at least 140 × 140 units with its own picture label (an arrow in, a drawer, an arrow out), never colour alone. Everything sits clear of the bottom-left pet (start at `x = 150`) and the corner buttons.
+- **Level 1.** Two token cards (at least 110 × 110) sit beside the tray; tapping one puts it on the tray, replacing what was there. **Keep** and **Show** are the two large buttons (at least 120 × 100), drawn as an arrow from tray to drawer and an arrow from drawer to window. Each press is a short scene-owned tween with a pentatonic note from `src/audio/notes.ts`: a copy of the token slides across while the original stays put. A second press during a tween jumps to the settled picture. **Done** (a big tick, dim until `contrastSeen`) ends the round; a dim Done speaks the next thing to try ("Now put the other one on the tray", "Now press Show") and is not a miss. She may keep playing as long as she likes before Done.
+- **Levels 2–3.** The queue is a row of step cards above the desk, each showing its token and, under it, a **hatch** toggle (at least 110 × 110; an open lid with an arrow going in, or a shut lid with a bar, spoken "open" and "shut"). **Step** runs the next step, **Slow** (a turtle) makes each of arrive, write and read wait for another tap, and a finished run leaves its **trace row**: under each step, the drawer's token after that step and the window's. Changing a hatch clears her trace row from that step on (the dimmed preset row at level 3 never clears). **Check** runs the model on the current hatches whether or not she stepped. The sign is a picture of the window with the wanted token in it.
+- **Check.** Pass: the run plays through, the window and the sign pulse together, and the next brief or `ctx.finish` follows. Fail: a gentle boing, the run plays to the end and the pet says what happened and what was wanted, never which hatch ("The window ended on the leaf. The sign wants the shell."). A Check before any hatch has been changed is a nudge ("Open a hatch first" at level 2, "This desk is wrong. Change a hatch." at level 3) and not a miss.
+- **Undo** takes back the last hatch change or, at level 1, the last press. **Start again** is in the pause sheet. Neither counts.
+- **Speech:** `ctx.instruct` states the brief and the pet repeats it. The wording says "this toy desk" and "keeps", and never claims this is how a real computer's memory or disk works. Navigation never needs reading.
+- **Feel:** a calm existing music style (she is not making music). Code-drawn Pixi shapes and palette colours only. Decorations are `eventMode = 'none'`.
+
+## Accounting, help and finishing
+
+- **Never a miss:** anything at level 1; and at levels 2–3 any Step, hatch change, Slow, Undo, Start again, repeated instruction, untouched Check or opening the how-to.
+- **One miss:** a Check that fails after at least one hatch change, however far off it is.
+- **The two-miss glow:** at a brief's second miss, and every second miss after, the hatch `helpFor` names glows and `hints++` once.
+- **Requested Help** is one hint a press. Level 1: the next control toward the contrast hops (a token card, Keep, the other card, Show). Levels 2–3: `helpFor(hatches, brief)` names the lowest-numbered hatch that differs from the **nearest** solution (fewest changes); the first press runs the trace slowly and stops at that step with the drawer pulsing, the second sets that hatch and invites Check. Help never ends a brief; a Check does.
+- **Finish:** one ordinary sticker per round, with or without help, through `ctx.finish({ misses, hints })`. Nothing is filed: no creation, discovery or journal entry, and the desk keeps nothing between rounds or while she is away.
+- **Adaptation:** level 1 ends `misses: 0, hints: 0` unhelped and the unchanged shell rule applies. That is **exposure, not evidence** that she understands stored state; the how-to note and the grown-ups' wording say it is a first look. Levels 2–3 step up and down as usual.
+
+## Rule tests (`logic.test.ts`)
+
+- **Level 1:** `keep` and `show` copy and never empty their source; `keep` on an empty tray and `show` on an empty drawer change nothing but the stated slot; `show` never reads the tray; `contrastSeen` is false for every history without all three parts in order (Keep then Show with no change of tray, a change with nothing kept, a re-Keep of `Y` before Show) and true for the plain one.
+- **The transition table:** for every `(input, stored, hatch)` over two tokens and `empty`, one step gives `stored' = open ? input : stored` and `output = stored'`. Write precedes read at every step.
+- **Exhaustive solutions:** for every generated brief, `solutions` equals the brute-force set over all 4 or 8 settings; it is never empty; level 2's `X` brief has exactly one solution and its `Y` brief exactly two; at level 3 all-open and the preset never pass and some solution is one change from the preset.
+- **Check** depends only on the current hatches, not on whether or how far she stepped.
+- **Help:** from every setting of every brief, following `helpFor` strictly shortens the distance to the nearest solution and reaches one in at most as many presses as there are hatches.
+- **Seeds:** the same seed gives the same tokens, queue, target and preset; across seeds all six tokens appear and level 3 includes briefs whose target is the starting drawer token (every hatch shut) and briefs whose target arrives first or second.
+- **Layout:** `deskLayout(level, view)` at the four views the lands test uses: every target at least 100 units (token cards and hatches 110), nothing under the pet or corner buttons, portrait stacks rather than shrinks.
+- **Registry, lands, how-to and off-screen tests** pass with the new game (a card per built level; no "later levels" wording).
+
+## Ghost finger, how-to card, voice and registration
+
+- **Ghost finger:** `touchDemo: true` and `autotouch()` through the same taps. Level 1: tap the first card, Keep, tap the other card, Show, Done. Level 2: open the hatch `helpFor` would name, Step twice, Check. Level 3: change the one hatch nearest a solution, Check. It stands in for the scripted solve.
+- **How-to card** (`src/games/memory-desk/howto.ts`). Goal: "Keep something in the drawer and see that it stays." Steps: "Tap a picture to put it on the tray" and "Keep copies the tray into the drawer. Show copies the drawer into the window" `{ from: 1, to: 1 }`; "An open hatch lets the new one in. A shut hatch keeps the old one" and "Check runs every step" `{ from: 2, to: 3 }`; "One hatch is wrong. Find it" `{ from: 3, to: 3 }`. Finish: "The window shows what the sign asks for." Note: "Trying things is never counted. A wrong Check only costs a gentle hint." Level 1 note: "This first look is a try-out, not a test."
+- **Voice lines** under `md.*`: `intro`, `instruct.1`–`instruct.3`, `tray-first`, `nothing-kept`, `try-other`, `try-show`, `kept`, `shown`, `still-there` (said once when the contrast first appears: "The tray changed, and the drawer still has it."), `open`, `shut`, `untouched.2`, `untouched.3`, `check-pass`, `check-fail`, `help.*`, `done`. Token names come from one line each so device speech never fills a template.
+- **Registration:** ID `memory-desk`, name "Memory Desk", spoken title `game.memory-desk`, region and land **Tinker Lab** from the school band (the lands test proves the fit at build time). Skills `['systems', 'logic', 'testing']`. The hub icon is a drawer with a star behind glass. The sticker is a seeded token in a drawer. `challenge` as Sorting Machine's.
+- **Co-play:** one person changes the tray and the other says what the window will show before pressing Show. **Off-screen:** a box with a lid, a toy put in, a different toy held up, and "what is in the box?" No practical card is drafted.
+- **Couch:** none.
+
+## Check tier for the builds
+
+Batch 1 (level 1) is the new-game tier: typecheck, unit tests (the rule tests with registry, lands, how-to and off-screen tests), one filtered scripted play of level 1 (a dim Done, an empty Keep, the contrast, a requested Help, the sticker), one portrait screenshot, `fingerdemo` at 1, and `npm run build` because the registry, lands and voice change. Batch 2 (levels 2–3) is the new-interaction tier: typecheck, the rule tests, one filtered play (level 2 with an untouched Check, a failed Check, a second for the glow, both briefs passed; level 3 with a Help followed to the sticker), a portrait screenshot of level 3 with both trace rows, `fingerdemo` at 2 and 3, build. Before the spoken lines merge, the session checks "keep", "copy" and "toy desk" against the study's cited sources. Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`.
+
+## Open decisions
+
+Each has a default the build uses; none blocks batch 1.
+
+1. **Land.** Default: Tinker Lab, school only. Fallback if the lands test fails: Puzzle Peaks, then Treehouse.
+2. **Words.** Default: buttons are pictures, spoken "Keep" and "Show"; "store" and "recall" appear only in the grown-ups' description. The alternative is the technical pair on the card.
+3. **Level 1 and adaptation.** Default: the ordinary shell rule, described as exposure. No shell change is proposed.
+4. **Hatches start shut at level 2.** Default: yes, so the first thing she learns is that nothing is kept unless a hatch is open. The alternative (start open) makes the first brief pass untouched.
+5. **Older cases.** A `grownup` range (longer queues, a hatch driven by a condition on the arriving token) needs its own definition and the Parcel Programs line above checked again.
