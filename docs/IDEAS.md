@@ -70,13 +70,13 @@ The [puzzle-pages study](deep-dives/subjects/puzzle-pages.md) mapped the newspap
 | **Campsite** (Tents; PP6) | *Fun action:* pitch each critter's tent beside its own tree, no two touching, matching the row and column counts. *Skill:* adjacency and counting | 4×4 first; Tatham's generator needs no guessing | M |
 | **Silly Scene** (Highlights' *What's Wrong?*; PP7) | *Fun action:* tap the impossible thing (a fish in a tree) and the pet laughs and says why. *Skill:* what can and cannot be true | Authored scenes; preschool to school; check Not Always and Who Am I before a new game | S |
 
-## TotoLogic review (2026-11-10)
-
-[TotoLogic](TOTOLOGIC.md) (Synthix Technologies, 2026), a new Android suite of tap-and-choose activities for ages 3 to 8 behind a parent account, was reviewed from its site, store listing, policies and the three demo puzzles on its play-first sign-up page; the app itself was not installed, and no independent review exists. Its games add nothing the island lacks. Its first minute and its grown-up's view do: a visitor plays before anything is asked, the question is printed with a speaker beside it, a parent is told in words what was played, and an interrupted sitting is picked up. Six proposals, P1–P6: play first and set up after on a new phone, add a player with taps, the spoken question as a caption for readers, a plain sentence on This week from each game's `challenge` kind with one game not yet tried, a mix that survives a reload (a first slice for D5b), and tap-to-fill asked in the Rainbow Fingers dive. P1 to P3 need a definition and a decision each; none is on READY. Its timers, Focus Mode, star counter, paid worlds, emails, advert tracking and "brain" wording stay out. The unrelated Totologic programming blog gives one seed, a round maze board for Mossy Path.
-
 ## Pok Pok review (2026-11-10)
 
 [Pok Pok](POK-POK.md) (Pok Pok Inc., 2021), a subscription app of about twenty hand-drawn open-ended "toys" for ages 2 to 7 with no levels, text or speech, was reviewed from about thirty pages: its own posts and FAQ, the store listing, Apple's design feature, press and five reviews. The app was not installed, so nothing was seen or heard in use. It is the model for the island's youngest end (first touch answers, cannot go wrong, no words, easy to put down) and weakest where the island is strong (reviewers find it predictable and thin on persistence; since 2024 it has added goal-shaped number, phonics and coding toys at its families' request). Eight proposals, P1–P8: one rainbow for one pitch direction across Jelly Drums and Song Maker (red is low in one and high in the other today), a restaurant test and a tap-for-drag question for the phone playtest, a five-question toy test for every lap opening with Jelly Drums' *One big jelly* as the pattern, residents that carry on unprompted, a put-down line for RW10's goals, a words-off list for the family's languages, and a stepped wobble as an art trial. All eight were put on the backlog the same day at the developer's request: four lines in [READY](READY.md#pok-pok-review-2026-11-10), two phone playtest questions, a line in RW10 and one in RW14's later list. Rows were added to the programming, cooking, ecosystems and music studies. Its subscription, date-bound events, recorded audio, gibberish voice, wordless goal rounds and "Montessori" and calming claims stay out.
+
+## TotoLogic review (2026-11-10)
+
+[TotoLogic](TOTOLOGIC.md) (Synthix Technologies, 2026), a new Android suite of tap-and-choose activities for ages 3 to 8 behind a parent account, was reviewed from its site, store listing, policies and the three demo puzzles on its play-first sign-up page; the app itself was not installed, and no independent review exists. Its games add nothing the island lacks. Its first minute and its grown-up's view do: a visitor plays before anything is asked, the question is printed with a speaker beside it, a parent is told in words what was played, and an interrupted sitting is picked up. Six proposals, P1–P6: play first and set up after on a new phone, add a player with taps, the spoken question as a caption for readers, a plain sentence on This week from each game's `challenge` kind with one game not yet tried, a mix that survives a reload (a first slice for D5b), and tap-to-fill asked in the Rainbow Fingers dive. P1 to P3 need a definition and a decision each; none is on READY. Its timers, Focus Mode, star counter, paid worlds, emails, advert tracking and "brain" wording stay out. The unrelated Totologic programming blog gives one seed, a round maze board for Mossy Path.
 
 ## Spark AI Games review (2026-11-10)
 
@@ -545,7 +545,6 @@ Rows after the couch table's columns. **Home** says where it would live: *island
 | --- | --- | --- |
 | **Toss Across** (QBasic's Gorillas; **recalled**) | Lob a snowball or a fruit over a hill to a hungry friend, change the angle and power, see the last arc left on screen | The nostalgic part is learning from the last shot, which is iterative estimation. Throwing *at* a gorilla is out; feeding a friend is in. Two players alternate on the couch. A Bouncy Launch or Peg Garden mode first |
 | **Firefly Jar** | Fireflies drift toward a finger and scatter when she lifts her finger or taps the jar | A flocking toy for the lap band, with no goal: cause and effect only |
-
 
 **Set aside from this pass, with the reason:** Cookie Clicker and other endless idlers (offline earnings and resets; see Honey Hive for the finite form), Bloons, Kingdom Rush, Crush the Castle and GemCraft (combat or pressure), Alien Hominid and the Madness series (violence), Fancy Pants (lives, enemies and bosses; Hop Course already holds the platformer), Insaniquarium's tank wars (death and attack), Papa's-style diner games (time pressure; Scoop Shop and Market Stall cover the orders), hangman (a hanged figure; a kind word-guessing form would be a Word Monsters mode), and every daily streak or leaderboard.
 
@@ -1295,9 +1294,7 @@ Already in this notebook and still the right small lap picks: Brown Bear Parade,
 
 These were the nearest to buildable (Fill and Dump's sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#fill-and-dump-2026-10-10) when it was built). The other rows need the same treatment before they move to the roadmap.
 
-
 Number Trails' sketch moved to the [archive](archive/COMPLETED-2026-10-09.md#number-trails-first-slice-2026-10-13) when it was built.
-
 
 ### Research notes
 
