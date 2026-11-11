@@ -43,8 +43,7 @@ function* histories(n: number, prefix: Action[] = []): Generator<Action[]> {
 describe('Memory Desk level 1: the three actions', () => {
   it('putting a token on the tray changes only the tray', () => {
     for (const s of STATES)
-      for (const t of ['shell', 'leaf'] as const)
-        expect(setInput(s, t)).toEqual({ ...s, input: t });
+      for (const t of ['shell', 'leaf'] as const) expect(setInput(s, t)).toEqual({ ...s, input: t });
   });
 
   it('Keep copies the tray into the drawer and never empties the tray', () => {
@@ -191,8 +190,15 @@ describe('Memory Desk ladder', () => {
 });
 
 describe('Memory Desk layout', () => {
-  const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const target = (what: string, r: Rect): Target => ({ what, x: r.x + r.w / 2, y: r.y + r.h / 2, w: r.w, h: r.h });
+  const overlaps = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const target = (what: string, r: Rect): Target => ({
+    what,
+    x: r.x + r.w / 2,
+    y: r.y + r.h / 2,
+    w: r.w,
+    h: r.h,
+  });
   const views = {
     landscape: computeView(1024, 768),
     portrait: computeView(768, 1024),
@@ -200,36 +206,39 @@ describe('Memory Desk layout', () => {
     ...UPRIGHT_VIEWS,
   };
 
-  it.each(Object.entries(views))('on %s every part is full size, in view, apart and clear of the corners', (_, v) => {
-    const l = deskLayout(1, v);
-    expect(l.stacked).toBe(v.h > v.w);
-    const panels = [l.tray, l.drawer, l.window];
-    for (const p of panels) expect(Math.min(p.w, p.h)).toBeGreaterThanOrEqual(140);
-    for (const c of l.cards) expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(110);
-    for (const b of [l.keep, l.show]) {
-      expect(b.w).toBeGreaterThanOrEqual(120);
-      expect(b.h).toBeGreaterThanOrEqual(100);
-    }
-    const targets = [
-      target('card 1', l.cards[0]),
-      target('card 2', l.cards[1]),
-      target('Keep', l.keep),
-      target('Show', l.show),
-      target('Undo', l.undo),
-      target('Done', l.done),
-    ];
-    // The panels are pictures, not targets, but nothing may sit on them and they stay clear of the chrome too.
-    expect(
-      uprightProblems(v, [...targets, ...panels.map((p, i) => target(['tray', 'drawer', 'window'][i], p))]),
-    ).toEqual([]);
-    // Sorting Machine's wider corners (the home column 130 × 215, the guide 160 × 170).
-    const corners: Rect[] = [
-      { x: 0, y: 0, w: 130, h: 215 },
-      { x: 0, y: v.h - 170, w: 160, h: 170 },
-    ];
-    for (const r of [...panels, ...l.cards, l.keep, l.show, l.undo, l.done])
-      for (const c of corners) expect(overlaps(r, c)).toBe(false);
-  });
+  it.each(Object.entries(views))(
+    'on %s every part is full size, in view, apart and clear of the corners',
+    (_, v) => {
+      const l = deskLayout(1, v);
+      expect(l.stacked).toBe(v.h > v.w);
+      const panels = [l.tray, l.drawer, l.window];
+      for (const p of panels) expect(Math.min(p.w, p.h)).toBeGreaterThanOrEqual(140);
+      for (const c of l.cards) expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(110);
+      for (const b of [l.keep, l.show]) {
+        expect(b.w).toBeGreaterThanOrEqual(120);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+      }
+      const targets = [
+        target('card 1', l.cards[0]),
+        target('card 2', l.cards[1]),
+        target('Keep', l.keep),
+        target('Show', l.show),
+        target('Undo', l.undo),
+        target('Done', l.done),
+      ];
+      // The panels are pictures, not targets, but nothing may sit on them and they stay clear of the chrome too.
+      expect(
+        uprightProblems(v, [...targets, ...panels.map((p, i) => target(['tray', 'drawer', 'window'][i], p))]),
+      ).toEqual([]);
+      // Sorting Machine's wider corners (the home column 130 × 215, the guide 160 × 170).
+      const corners: Rect[] = [
+        { x: 0, y: 0, w: 130, h: 215 },
+        { x: 0, y: v.h - 170, w: 160, h: 170 },
+      ];
+      for (const r of [...panels, ...l.cards, l.keep, l.show, l.undo, l.done])
+        for (const c of corners) expect(overlaps(r, c)).toBe(false);
+    },
+  );
 
   it('grows the stack on a tall phone instead of leaving it small, and never shrinks it', () => {
     expect(deskLayout(1, views.landscape).scale).toBe(1);

@@ -105,7 +105,22 @@ export const slotArt = (slot: Slot, r = 40): Graphics => (slot === null ? emptyA
 export function fatArrow(len: number, color = ink): Graphics {
   const h = len * 0.2;
   return new Graphics()
-    .poly([-len / 2, -h, len * 0.1, -h, len * 0.1, -h * 2.2, len / 2, 0, len * 0.1, h * 2.2, len * 0.1, h, -len / 2, h])
+    .poly([
+      -len / 2,
+      -h,
+      len * 0.1,
+      -h,
+      len * 0.1,
+      -h * 2.2,
+      len / 2,
+      0,
+      len * 0.1,
+      h * 2.2,
+      len * 0.1,
+      h,
+      -len / 2,
+      h,
+    ])
     .fill(color);
 }
 
@@ -176,10 +191,7 @@ export function actionIcon(kind: 'keep' | 'show'): Container {
   const c = new Container();
   const mini = (k: PanelKind, x: number) => {
     const g = new Graphics();
-    if (k === 'tray')
-      g.roundRect(-16, 4, 32, 9, 4)
-        .fill(wood.fill)
-        .stroke(line(wood.line, 3));
+    if (k === 'tray') g.roundRect(-16, 4, 32, 9, 4).fill(wood.fill).stroke(line(wood.line, 3));
     else if (k === 'drawer')
       g.roundRect(-16, -13, 32, 26, 5)
         .fill(wood.fill)
@@ -190,7 +202,11 @@ export function actionIcon(kind: 'keep' | 'show'): Container {
     g.x = x;
     return g;
   };
-  c.addChild(mini(kind === 'keep' ? 'tray' : 'drawer', -42), fatArrow(36, ink), mini(kind === 'keep' ? 'drawer' : 'window', 42));
+  c.addChild(
+    mini(kind === 'keep' ? 'tray' : 'drawer', -42),
+    fatArrow(36, ink),
+    mini(kind === 'keep' ? 'drawer' : 'window', 42),
+  );
   return c;
 }
 

@@ -90,7 +90,8 @@ class MemoryDesk implements Game {
   undoButton: RoundButton | null = null;
   private holders: Partial<Record<PanelKind, Container>> = {};
   /** A copy on its way from one panel to the next. */
-  fly: { node: Container; from: { x: number; y: number }; to: { x: number; y: number }; t: number } | null = null;
+  fly: { node: Container; from: { x: number; y: number }; to: { x: number; y: number }; t: number } | null =
+    null;
   /** The control Help or a dim Done is pointing at, and for how much longer. */
   pointing: { node: Container; rect: Rect; left: number; y: number } | null = null;
   private said = { kept: false, shown: false, still: false };
@@ -100,7 +101,14 @@ class MemoryDesk implements Game {
     this.brief = briefFor(ctx.level, ctx.rng);
     this.layout = deskLayout(ctx.level, ctx.view);
     this.backdrop = new Backdrop(
-      { sky: [0xd9ecff, 0xfff6e0], hills: [0xc5e7a8, 0xa9e0d6], horizon: 0.62, clouds: 2, sun: false, seed: 412 },
+      {
+        sky: [0xd9ecff, 0xfff6e0],
+        hills: [0xc5e7a8, 0xa9e0d6],
+        horizon: 0.62,
+        clouds: 2,
+        sun: false,
+        seed: 412,
+      },
       ctx.view,
     );
     this.glow.eventMode = 'none';
@@ -382,7 +390,10 @@ class MemoryDesk implements Game {
       const f = this.fly;
       f.t = Math.min(1, f.t + dt / FLY);
       const k = ease.outQuad(f.t);
-      f.node.position.set(f.from.x + (f.to.x - f.from.x) * k, f.from.y + (f.to.y - f.from.y) * k - Math.sin(k * Math.PI) * 26 * this.layout.scale);
+      f.node.position.set(
+        f.from.x + (f.to.x - f.from.x) * k,
+        f.from.y + (f.to.y - f.from.y) * k - Math.sin(k * Math.PI) * 26 * this.layout.scale,
+      );
       if (f.t >= 1) this.settle();
     }
     this.glow.clear();

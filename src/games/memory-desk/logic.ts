@@ -63,7 +63,8 @@ export function replay(actions: readonly Action[], from: State = EMPTY): Event[]
   return out;
 }
 
-export const stateAfter = (history: readonly Event[], from: State = EMPTY): State => history.at(-1)?.after ?? from;
+export const stateAfter = (history: readonly Event[], from: State = EMPTY): State =>
+  history.at(-1)?.after ?? from;
 
 /**
  * The one contrast the round is for: the history holds, in order, a Keep with the tray on X, a change of the tray to a
