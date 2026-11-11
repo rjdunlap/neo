@@ -312,7 +312,7 @@ class TilePairs implements Game {
     if (this.touch || this.finished || !this.ctx.alive) return;
     this.touch = true;
     for (const b of [this.undoButton, this.hintButton, this.shuffleButton]) b.visible = true;
-    for (const n of this.nodes) n.eventMode = 'static';
+    for (const n of this.nodes) if (!this.leaving.has(n)) n.eventMode = 'static';
     this.draw();
   }
 

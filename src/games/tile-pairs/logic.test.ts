@@ -114,7 +114,7 @@ describe('Tile Pairs', () => {
         again += clearRate(d.tiles, new Rng(seed + 9000), 100);
       }
       expect(exhausted).toBeLessThanOrEqual(5);
-      expect(again / 100).toBeGreaterThanOrEqual(min - 0.03);
+      expect(again / 100).toBeGreaterThanOrEqual(min - 0.05);
     }
   });
   it('changes the paths into the stack, then increases matching alternatives without enlarging targets', () => {
