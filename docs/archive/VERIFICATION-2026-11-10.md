@@ -146,3 +146,21 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** `number-trails` level 4 for preschool (1, 2, 3, 7 in one stroke each, a wide 0.1 trail, things appear by themselves; order 4, 1, 2; saved 4 lands on pre-K's level 2); level-scoped how-to lines; new rule tests.
 **Ran:** typecheck; `npm test` (345 files, 6551 passed, 1 skipped); `BROWSER_SUITE=numbertrails` (levels 1, 4, 3; level 4 drew 3, traced, three things, sticker; screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=4` (5.0 s).
 **Not run:** build (no shared files or assets changed), other suites, offline. Slice 3 (the HWT chart check) was not done: the chart is an image-only PDF.
+
+## 2026-11-10 — Upright shell slice 3, the rest of the root's scenes (chunk 31, PR #1480)
+
+**Changed:** creature play, the library, the project pages, the locations and lap/toddler Explore (Little surprises' sheet, Make my mix's table) lay out on the 768 × 1024 area; `playLayout`, `projectLayout`, `sheetPlaces` and `tableLayout` take a narrow view; `LandScene`'s heading stays between Back and the book.
+**Ran:** typecheck; `npm test` (345 files, 6560 passed, 1 skipped; my-mix tests 15/15 re-run after a last sheet tweak); build; one scripted Chromium touch pass at 390 × 844 (toddler profile): creature play, library, a project page, Rainbow Meadow, toddler Explore, the mix table and the sheet each upright (768 wide), no turn prompt, one screenshot each, no page errors.
+**Not run:** `phonefit` and `home` browser suites (no scene they assert changed), `world` (no navigation change), offline (no persistence, manifest or asset change). The welcome ending page is proved by unit tests only, not shot.
+
+## 2026-11-10 — TotoLogic reviewed (docs only)
+
+**Changed:** new [reference review](../TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only its site, store listing, policies and three web demo puzzles were opened.
+
+## 2026-11-10 — Pok Pok reviewed (docs only)
+
+**Changed:** new [reference review](../POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
