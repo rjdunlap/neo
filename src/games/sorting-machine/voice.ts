@@ -65,4 +65,70 @@ export const VOICE = {
   'sm.help.installed': ['I put in the sensor the sign asks for. Tap Check to try every friend.'],
   'sm.help.send.both': ['Try this friend, and watch what each sensor reads.'],
   'sm.help.installed.gate': ['I put in the gate the sign asks for. Tap Check to try every friend.'],
+  // Festival Signals (levels 8–9): one line per pair wherever a badge is named, so device speech never fills a template.
+  'sm.fs.instruct.8.hat-whiskers': [
+    'Build a machine that lights the lantern for a friend with just one badge: a hat or whiskers, but not both. Tap a slot to choose its part.',
+  ],
+  'sm.fs.instruct.8.hat-boots': [
+    'Build a machine that lights the lantern for a friend with just one badge: a hat or boots, but not both. Tap a slot to choose its part.',
+  ],
+  'sm.fs.instruct.8.whiskers-boots': [
+    'Build a machine that lights the lantern for a friend with just one badge: whiskers or boots, but not both. Tap a slot to choose its part.',
+  ],
+  'sm.fs.instruct.9.hat-whiskers': [
+    'This lantern lights for a hat or whiskers, but it should rest when a friend has both. Try the friend with both, then fix the machine.',
+  ],
+  'sm.fs.instruct.9.hat-boots': [
+    'This lantern lights for a hat or boots, but it should rest when a friend has both. Try the friend with both, then fix the machine.',
+  ],
+  'sm.fs.instruct.9.whiskers-boots': [
+    'This lantern lights for whiskers or boots, but it should rest when a friend has both. Try the friend with both, then fix the machine.',
+  ],
+  'sm.fs.check-fail.00.hat-whiskers': [
+    'The friend with no badge lit the lantern, but the sign says it rests without a hat or whiskers.',
+  ],
+  'sm.fs.check-fail.01.hat-whiskers': [
+    'The friend with only whiskers left the lantern dark, but the sign says it lights for just whiskers.',
+  ],
+  'sm.fs.check-fail.10.hat-whiskers': [
+    'The friend with only a hat left the lantern dark, but the sign says it lights for just a hat.',
+  ],
+  'sm.fs.check-fail.11.hat-whiskers': [
+    'The friend with both a hat and whiskers lit the lantern, but the sign says it rests for both.',
+  ],
+  'sm.fs.check-fail.00.hat-boots': [
+    'The friend with no badge lit the lantern, but the sign says it rests without a hat or boots.',
+  ],
+  'sm.fs.check-fail.01.hat-boots': [
+    'The friend with only boots left the lantern dark, but the sign says it lights for just boots.',
+  ],
+  'sm.fs.check-fail.10.hat-boots': [
+    'The friend with only a hat left the lantern dark, but the sign says it lights for just a hat.',
+  ],
+  'sm.fs.check-fail.11.hat-boots': [
+    'The friend with both a hat and boots lit the lantern, but the sign says it rests for both.',
+  ],
+  'sm.fs.check-fail.00.whiskers-boots': [
+    'The friend with no badge lit the lantern, but the sign says it rests without whiskers or boots.',
+  ],
+  'sm.fs.check-fail.01.whiskers-boots': [
+    'The friend with only boots left the lantern dark, but the sign says it lights for just boots.',
+  ],
+  'sm.fs.check-fail.10.whiskers-boots': [
+    'The friend with only whiskers left the lantern dark, but the sign says it lights for just whiskers.',
+  ],
+  'sm.fs.check-fail.11.whiskers-boots': [
+    'The friend with both whiskers and boots lit the lantern, but the sign says it rests for both.',
+  ],
+  'sm.fs.empty-slot': ['This slot needs a part, and a signal for each of its inputs.'],
+  'sm.fs.off-path': ["That slot isn't wired to the lantern yet."],
+  'sm.fs.part.and': ['And: it says yes only when both of its signals say yes.'],
+  'sm.fs.part.or': ['Or: it says yes when either of its signals says yes.'],
+  'sm.fs.part.not': ['Not: it flips its signal. Yes becomes no, and no becomes yes.'],
+  'sm.fs.help.run': ['Watch this friend, and read each slot. The sign wants something else for this one.'],
+  'sm.fs.help.fixed': [
+    'I set one thing for you, and kept the rest of your machine. Send a friend to see what changed.',
+  ],
+  'sm.fs.help.check': ['Your machine matches the sign on every row. Tap Check.'],
+  'sm.fs.check-pass': ["Every friend's lantern matches the sign. The machine is right!"],
 } satisfies Record<string, string[]>;

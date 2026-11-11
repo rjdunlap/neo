@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 132 games, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 132 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -226,7 +226,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Welcome Ways](docs/games/welcome-ways.md) | toddler–school | Tinker Lab | 7 | drag a wooden part, or tap part then socket, and Try the same entrance with every visitor |
 | [Example Express](docs/games/example-express.md) | school | Tinker Lab | 2 | label parcel examples, test the fitted sorter and repair a surprising route |
 | [Moon Window](docs/games/moon-window.md) | lap–pre-K | Tinker Lab | 3 | lap–pre-K |
-| [Sorting Machine](docs/games/sorting-machine.md) | school | Tinker Lab | 3 | send pictured critters through a toy machine and watch its door, then pick the sensor a sign asks for and Check it on all four critters |
+| [Sorting Machine](docs/games/sorting-machine.md) | school–grown-up | Tinker Lab | 5 | send pictured critters through a toy machine and watch its door, then pick the sensor a sign asks for and Check it on all four critters; at the grown-up band, build or repair a four-part festival lantern machine |
 | [Water Road](docs/games/water-road.md) | toddler–school | Tinker Lab | 5 | tap and stones lift onto a wooden frame until the keystone chimes, then pull the frame and the pet walks through, the way builders once made arches; later, set piers so water runs downhill and raise arches over a valley |
 | [Drop's Journey](docs/games/drops-journey.md) | preschool–school | Tinker Lab | 3 | tap a picture card to send a water drop between the sea, a cloud, a river, snow on the mountain top and the ground |
 | [Rain Garden](docs/games/rain-garden.md) | toddler–school | Tinker Lab | 4 | toddler–school |

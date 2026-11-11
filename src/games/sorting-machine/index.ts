@@ -1,7 +1,7 @@
 /**
  * Sorting Machine: send a critter through a toy machine and watch a sensor read it and a door answer (level 1), then
  * choose the sensor a sign asks for and Check it on every friend (level 2), then the gate that joins two sensors
- * (level 3). Rules: ./logic.ts; definition:
+ * (level 3). Levels 8–9, the four-slot festival lantern, are ./festival.ts. Rules: ./logic.ts; definition:
  * docs/definitions/sorting-machine.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
@@ -37,8 +37,11 @@ import {
   turtleArt,
   valueToken,
 } from './art';
+import { FestivalSignals } from './festival';
+import { lanternArt } from './festival-art';
 import {
   LEVELS,
+  isFlat,
   briefFor,
   centre,
   check,
@@ -823,20 +826,28 @@ class MachineIcon extends WigglyIcon {
   }
 }
 
-/** A seeded door with a critter in it. */
+/** A seeded door with a critter in it, sometimes under a festival lantern. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  return stickerArt(rng.pick(SPECIES), rng.pick(COLORS), rng.pick(PROPS));
+  const art = stickerArt(rng.pick(SPECIES), rng.pick(COLORS), rng.pick(PROPS));
+  // Every other sticker hangs a lit festival lantern beside the door (levels 8–9).
+  if (seed % 2 === 0) {
+    const lantern = lanternArt(true, 54);
+    lantern.position.set(40, -150);
+    art.addChild(lantern);
+  }
+  return art;
 }
 
 export const sortingMachine: GameModule = {
   id: 'sorting-machine',
+  upright: true,
   name: 'Sorting Machine',
   titleLine: 'game.sorting-machine',
   region: 'tinker-lab',
   challenge: 'logic',
   skills: ['logic', 'rules', 'testing', 'systems'],
-  bands: ['school'],
+  bands: ['school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
@@ -847,5 +858,5 @@ export const sortingMachine: GameModule = {
   hubIcon: () => new MachineIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new SortingMachine(ctx),
+  create: (ctx) => (isFlat(ctx.level) ? new FestivalSignals(ctx) : new SortingMachine(ctx)),
 };

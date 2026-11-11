@@ -207,21 +207,31 @@ export interface Plan {
   name: string;
 }
 
+/** Plans by level ID. IDs 4–7 are reserved for the study's younger rungs, so 8 and 9 never read as 4 and 5. */
 const PLANS: readonly Plan[] = [
   { level: 1, name: 'See the signal' },
   { level: 2, name: 'Choose the sensor' },
   { level: 3, name: 'Both badges' },
+  { level: 8, name: 'Festival Signals' },
+  { level: 9, name: 'Fix the lantern' },
 ];
 
 export const LEVELS: BandLevels = {
   school: { min: 1, max: 3 },
+  // Fix the lantern (9) starts from a machine that is three-quarters right, so it comes before the empty one (8).
+  grownup: { min: 3, max: 9, order: [3, 9, 8] },
 };
 
-export const MAX_LEVEL = PLANS.length;
+export const MAX_LEVEL = Math.max(...PLANS.map((p) => p.level));
 
+/** A level's plan by its ID; an ID with no plan (the reserved 4–7) reads as the nearest built level below it. */
 export function planFor(level: number): Plan {
-  return PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
+  const id = Math.floor(level);
+  return [...PLANS].reverse().find((p) => p.level <= id) ?? PLANS[0];
 }
+
+/** Levels 8–9 are the flat four-slot machine (./flat.ts); 1–3 are the tree above. */
+export const isFlat = (level: number) => planFor(level).level >= 8;
 
 /** A cast of distinct species and colors. */
 function cast(rng: Rng, n: number): { species: CritterName; color: ColorName }[] {

@@ -644,7 +644,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Sorting Machine
 
-*school* · [Sorting Machine](games/sorting-machine.md)
+*school–grown-up* · [Sorting Machine](games/sorting-machine.md)
 
 ### Water Road
 

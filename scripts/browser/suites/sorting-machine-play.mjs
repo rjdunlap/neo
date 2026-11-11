@@ -219,5 +219,154 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'Sorting Machine 1 to 3: both doors and a free Done, an incomplete Check, a wrong sensor twice (glow), Help twice, portrait, passed; 3: an empty gate, or sent and failed, Help twice, and passed',
     );
   }
-  return { sortingMachinePlay };
+  /**
+   * Festival Signals (levels 8–9, the grown-up band): level 9's lantern lights wrongly for the both-badges friend; a failed
+   * Check, Help twice (a run, then one fix), the rest by taps with the wire left behind (a second failed Check and the glow),
+   * the wire moved, Undo and again, and passed. Level 8: an incomplete Check is free, the ghost finger's own taps build it.
+   */
+  async function festivalSignalsPlay() {
+    const score = () =>
+      page.evaluate(() => {
+        const r = kit.store.stats('sorting-machine').history.at(-1);
+        return [r.misses, r.hints];
+      });
+    const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+    const settle = async () => {
+      await page.waitForTimeout(250);
+      await page.waitForFunction(
+        () => neo.scene.finished || (!neo.scene.game.run && !neo.scene.game.busy),
+        null,
+        { timeout: 20000 },
+      );
+      await page.waitForTimeout(200);
+    };
+    const tapOn = async (expr) => {
+      await page.evaluate((expr) => kit.tapOn(Function(`return (${expr})`)()), expr);
+      await page.waitForTimeout(220);
+    };
+    const machine = () =>
+      page.evaluate(async () => {
+        const { encode } = await import('/src/games/sorting-machine/flat.ts');
+        return encode(neo.scene.game.machine);
+      });
+    const both = () =>
+      page.evaluate(() => neo.scene.game.brief.fixtures.findIndex((f) => f.p === 1 && f.q === 1));
+    const send = async () => {
+      await tapOn('neo.scene.game.sendButton');
+      await settle();
+    };
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+
+    await launch('sorting-machine', 9);
+    await settle();
+    assert.equal(
+      await page.evaluate(() => kit.store.entry.startBand),
+      'grownup',
+      'level 9 plays at the grown-up band',
+    );
+    assert.equal(
+      await machine(),
+      'OR(P,Q) - - - >1',
+      'level 9 opens three-quarters right, the lantern on slot 1',
+    );
+    const b = await both();
+    await tapOn(`neo.scene.game.cardNodes[${b}]`);
+    await send();
+    assert.equal(
+      await page.evaluate((b) => neo.scene.game.results[b], b),
+      true,
+      'the lantern lights for both badges',
+    );
+    assert.deepEqual(await tally(), [0, 0], 'sending is never counted');
+    await tapOn('neo.scene.game.checkButton');
+    await settle();
+    assert.deepEqual(await tally(), [1, 0], 'a complete machine that fails Check is one miss');
+    assert.deepEqual(
+      await page.evaluate(() => [...neo.scene.game.failing]),
+      [b],
+      'only the both-badges friend is marked',
+    );
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await settle();
+    assert.deepEqual(await tally(), [1, 1], 'Help first runs a friend the machine gets wrong');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.equal(await machine(), 'OR(P,Q) AND(P,Q) - - >1', 'the next Help fixes one slot and keeps hers');
+    assert.deepEqual(await tally(), [1, 2]);
+    // Slot 3: NOT of slot 2. Slot 4: AND of slots 1 and 3. Then Check with the wire still on slot 1.
+    await tapOn('neo.scene.game.slotNodes[2]');
+    await tapOn('neo.scene.game.partNodes[2]');
+    await tapOn('neo.scene.game.inputNodes[0][3]');
+    await tapOn('neo.scene.game.slotNodes[3]');
+    await tapOn('neo.scene.game.partNodes[0]');
+    await tapOn('neo.scene.game.inputNodes[0][2]');
+    await tapOn('neo.scene.game.inputNodes[1][4]');
+    assert.equal(await machine(), 'OR(P,Q) AND(P,Q) NOT(2) AND(1,3) >1');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(600);
+    await screenshot('festival-signals-9-portrait');
+    await tapOn('neo.scene.game.checkButton');
+    await settle();
+    assert.deepEqual(await tally(), [2, 3], 'the second miss lights the glow: one hint');
+    assert.equal(await page.evaluate(() => neo.scene.game.tally.glowing), true);
+    await tapOn('neo.scene.game.lanternNode');
+    await tapOn('neo.scene.game.wireNodes[3]');
+    assert.equal(await machine(), 'OR(P,Q) AND(P,Q) NOT(2) AND(1,3) >4', 'the lantern moves to slot 4');
+    await tapOn('neo.scene.game.undoButton');
+    assert.equal(await machine(), 'OR(P,Q) AND(P,Q) NOT(2) AND(1,3) >1', 'Undo takes the wire back');
+    await tapOn('neo.scene.game.wireNodes[3]');
+    await send();
+    assert.equal(
+      await page.evaluate((b) => neo.scene.game.results[b], b),
+      false,
+      'now the lantern rests for both',
+    );
+    await screenshot('festival-signals-9-portrait-sent');
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(300);
+    assert.deepEqual(await tally(), [2, 4], 'Help on a right machine says to Check, and is still a hint');
+    await tapOn('neo.scene.game.checkButton');
+    await finished('sorting-machine');
+    assert.deepEqual(await score(), [2, 4]);
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await launch('sorting-machine', 8);
+    await settle();
+    assert.equal(await machine(), '- - - - >4', 'level 8 opens empty, the lantern fixed to slot 4');
+    await tapOn('neo.scene.game.lanternNode');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.selection),
+      null,
+      'the lantern is not a socket at level 8',
+    );
+    await tapOn('neo.scene.game.checkButton');
+    assert.deepEqual(await tally(), [0, 0], 'an incomplete Check is free');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.selection),
+      3,
+      'and opens the first gap on the lantern path',
+    );
+    // The ghost finger's own taps, through the same nodes a player touches.
+    for (let i = 0; i < 40; i++) {
+      await settle();
+      if (await page.evaluate(() => neo.scene.finished === true)) break;
+      const tapped = await page.evaluate(() => {
+        const t = neo.scene.game.autotouch();
+        if (!t) return false;
+        kit.tapOn(t.tap.on);
+        return true;
+      });
+      assert.ok(tapped, 'the ghost finger always has a next tap');
+      await page.waitForTimeout(220);
+      if (i === 12) await screenshot('festival-signals-8-landscape');
+    }
+    await finished('sorting-machine');
+    assert.deepEqual(await score(), [0, 0], 'built by taps alone: nothing counted');
+    log(
+      'Festival Signals 9 and 8 (grown-up): a wrong lantern, a failed Check, Help (run, fix), taps, the wire left behind (glow), the wire moved, Undo, passed [2, 4]; 8: a free incomplete Check, the ghost finger builds it, passed [0, 0]',
+    );
+  }
+  return { sortingMachinePlay, festivalSignalsPlay };
 }

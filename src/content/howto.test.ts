@@ -58,8 +58,7 @@ describe('touch how-to cards', () => {
   it('adds the current level line from the game itself, for every supported level', () => {
     for (const g of GAMES) {
       for (const band of g.bands) {
-        const { min, max } = g.levels(band);
-        for (let level = min; level <= max; level++) {
+        for (const level of levelsInOrder(g.levels(band))) {
           const card = howToFor(g, level);
           expect(card?.level, `${g.id} level ${level}`).toBe(g.describeLevel(level));
           expect(card?.levelNumber).toBe(level);
@@ -268,8 +267,7 @@ describe('what the island card shows, by what she plays with', () => {
   it('plays her own level, so the window matches the "this level" line on the card, and never the couch\'s demo level', () => {
     for (const g of touch) {
       for (const band of g.bands) {
-        const { min, max } = g.levels(band);
-        for (let level = min; level <= max; level++) {
+        for (const level of levelsInOrder(g.levels(band))) {
           const demo = islandDemo(g, level, band, 'touch');
           expect(demo, `${g.id} level ${level}`).toMatchObject({ level, band });
           expect(howToFor(g, level)?.level).toBe(g.describeLevel(demo!.level));

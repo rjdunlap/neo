@@ -1,6 +1,8 @@
 # Festival Signals, Sorting Machine levels 8–9 (definition)
 
-Defined 2026-11-10 as slice H4 of the [how-computers-work study](../deep-dives/subjects/how-computers-work.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations), [the case](../deep-dives/subjects/how-computers-work.md#festival-signals-one-older-family-case)). Docs only; nothing here is built. It extends [Sorting Machine](sorting-machine.md) (levels 1–2 built, level 3 defined), keeping one game ID as decided on 2026-10-23. The study's younger rungs 4–7 (*Either badge*, *No hat needed*, *Hat, without whiskers*, *Same welcome, different machine*) keep their draft IDs and are **not** defined here.
+**Built:** levels 8–9 (2026-11-11, [PR #1497](https://github.com/rjdunlap/neo/pull/1497), slice H5); nothing further to build here; the deviations are in “Build notes” at the end.
+
+Defined 2026-11-10 as slice H4 of the [how-computers-work study](../deep-dives/subjects/how-computers-work.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations), [the case](../deep-dives/subjects/how-computers-work.md#festival-signals-one-older-family-case)). Built 2026-11-11 (see the line above and [Build notes](#build-notes)). It extends [Sorting Machine](sorting-machine.md) (levels 1–2 built, level 3 defined), keeping one game ID as decided on 2026-10-23. The study's younger rungs 4–7 (*Either badge*, *No hat needed*, *Hat, without whiskers*, *Same welcome, different machine*) keep their draft IDs and are **not** defined here.
 
 **Fun action and purpose:** build a small four-part machine that lights the festival lantern for a friend wearing **just one** of two badges, test it on any friend, then check it on all four. Learning goal: a rule that sounds simple ("one or the other, but not both") is built from smaller parts (OR, AND, NOT) whose signals can be read one at a time; a machine is right only when it is right for every row, so one lucky test is not enough, and a nearly-right machine is repaired by finding the row it gets wrong. For an older school child or a grown-up it is a complete design puzzle; the shortest machine, speed and the number of tests never matter.
 
@@ -69,12 +71,12 @@ The stage, Send, Slow, Check, Undo and Help work as at levels 2–3 ([screen and
 
 - **Grammar:** only forward inputs can be chosen; every filling is acyclic; `evaluateFlat` is `incomplete` for any empty slot or input on the lantern's path and ignores slots off it.
 - **The accepted set:** enumerating every filling of the four slots (and, at level 9, the wire) finds exactly 24 accepted machines for each pair, all four parts long, all with the lantern on `s4`, equal to the checked-in list; `check` accepts each and nothing else. No three-part machine passes.
-- **Distinguishable:** `P OR Q` (level 9's start) fails on exactly row `11`; `P AND Q` fails on `01` and `10`; so one test of the right friend tells each nearly-right machine apart from the sign.
+- **Distinguishable:** `P OR Q` (level 9's start) fails on exactly row `11`; `P AND Q` fails on `01`, `10` and `11`; so one test of the right friend tells each nearly-right machine apart from the sign.
 - **Check:** order-independent over shuffled fixtures, evaluates untried rows, `incomplete` before `fail`, one failing submission is one miss.
 - **Help:** from every machine reachable from level 9's start by up to two changes, and from a sample of 2,000 seeded fillings at level 8, repeated presses reach an accepted machine in at most four fixes (five at level 9, counting the wire), never undoing a slot that already agrees with `nearest`; the first press always selects a friend the machine gets wrong (or the first empty path slot).
 - **Seeds:** the same seed gives the same pair, fixture order and cast; three seeds cover the three pairs at each level.
 - **Bands:** `levelsInOrder(rangeFor(LEVELS, 'grownup'))` is `[3, 9, 8]`; the school range is unchanged; `describeLevel` covers 8 and 9.
-- **Layout:** `machineLayout(8, v)` and `(9, v)` at every lands-test view and `UPRIGHT_VIEWS`: every target at least 100 units (pickers 110), inside the view, clear of the pet and corner buttons.
+- **Layout:** `flatLayout(view)` (one layout for both levels; as built) at every lands-test view and `UPRIGHT_VIEWS`: every target at least 100 units (pickers 110), inside the view, clear of the pet and corner buttons.
 
 ## Ghost finger, how-to card, voice and registration
 
@@ -100,3 +102,14 @@ Each has a default the build uses.
 2. **School top.** Default: levels 8–9 join school only after rungs 4–7 are built. The alternative (8–9 for school after 3) is rejected here as too large a step.
 3. **Lantern socket at level 8.** Default: fixed to `s4` (every accepted machine ends there). A socket at both levels would be more uniform but adds a control with only one right setting.
 4. **Review.** The base definition's CS-educator read of spoken lines and the card covers these lines too; the building session's source check stands in under the [October 23 rules](../archive/DECISIONS-2026-10-23.md#standing-rules).
+
+## Build notes
+
+Built 2026-11-11 ([PR #1497](https://github.com/rjdunlap/neo/pull/1497)); deviations from the plan above.
+
+- **Files.** `src/games/sorting-machine/flat.ts` (rules, `nearest`, Help, the ghost-finger plan `nextFlatMove`, `flatLayout`), `festival.ts` (scene), `festival-art.ts`, `accepted.ts` (the 24 accepted machines, re-derived by `flat-enumerate.ts` over all 2,005,696 fillings in `flat.test.ts`). Plans are keyed by level ID (4–7 reserved); `LEVELS.grownup = { min: 3, max: 9, order: [3, 9, 8] }`, school stays 1–3.
+- **Layout.** One `flatLayout(view)` serves both levels; wide puts the overview along the top, friends two by two at the left and the inspector at the right. The sign's wanted lantern sits on a small board beside each friend on its card, with the last result under it.
+- **Help and Send.** Help's first press, while the path has a gap, opens the first empty slot's inspector; an incomplete Send does the same. `sm.fs.off-path` is spoken only when she opens a filled slot off the lantern's path while the path itself is complete.
+- **Rule tests.** From level 9's start and everything within two changes (201 machines) Help reaches a right machine in at most 5 fixes; 2,000 seeded level-8 fillings in at most 4.
+- **Upright.** The game is now `upright: true`; levels 1–3 already fit (new `upright.test.ts`). Sticker: every other sticker hangs a lit lantern.
+- **Voice.** The new lines fall back to device speech (no clips rendered).
