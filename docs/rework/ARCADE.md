@@ -21,7 +21,7 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 
 ## Design
 
-**Where it lives.** At the root, the Arcade is a fifth Explore entry beside Places, Favorites, All games and Family play. It is another way to look at the same catalog, so nothing gates and nothing is hidden by band: every game is there, hers first, with an age tag on the others (which still play at `playBand`, as All games does). It is not a new land and changes no game. `classic/` keeps its map.
+**Where it lives.** At the root, the Arcade is an Explore entry beside Places, Favorites and Family play (it replaced All games). It is another way to look at the same catalog, so nothing gates and nothing is hidden by band: every game is there, hers first, with an age tag on the others (which still play at `playBand`, as All games does). It is not a new land and changes no game. `classic/` keeps its map.
 
 **One spotlight, still cards.** Every bot demonstration (`Demo`, the how-to card's window) plays the real game, and two cannot run at once: the drag helper keeps one app-wide "one thing moves at a time" lock and every ghost finger uses the same pointer ID (`GHOST_POINTER`). That matches the research anyway. So:
 

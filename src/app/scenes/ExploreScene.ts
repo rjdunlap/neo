@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
-import { landmarkFor, Signpost } from '../../art/lands';
+import { landmarkFor } from '../../art/lands';
 import { cream, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { locationCard } from '../../art/locations';
@@ -13,7 +13,6 @@ import {
   EXPLORE_ENTRIES,
   exploreMemory,
   favoriteGames,
-  hasOthers,
   pageCount,
   pageOf,
   type ExploreEntry,
@@ -35,7 +34,7 @@ import { GAMES } from '../../games/registry';
 import type { GameModule, HubIcon } from '../../games/types';
 import { store } from '../../progress/store';
 import { finish, RoundButton, spring, squash } from '../../ui/buttons';
-import { arrowIcon, houseIcon } from '../../ui/icons';
+import { arrowIcon, heartIcon, houseIcon } from '../../ui/icons';
 import { ENTRY_NAMES, entryArt, fitArt } from '../../ui/origin-art';
 import { namePill } from '../../ui/text';
 import type { App } from '../App';
@@ -71,19 +70,22 @@ export type ExploreCard =
   | { kind: 'entry'; entry: ExploreEntry; node: Container }
   | { kind: 'place'; id: LandId; node: Container }
   | { kind: 'game'; mod: GameModule; node: Container }
-  | { kind: 'signpost'; node: Container }
-  | { kind: 'family'; node: Container }
+  | { kind: 'heart'; node: Container }
   | { kind: 'mix'; node: Container };
 
+/** The pages Explore draws itself: the Arcade is its own scene, and Family play goes straight to couch play (U6b). */
+export type ExplorePage = 'places' | 'favorites';
+
 /**
- * Explore at the root (RW08 slice 1, docs/rework/RW08-CUTOVER.md#slice-1-explores-four-entries). With no entry it shows
- * four pictures: Places, Favorites, All games and Family play. Places is RW13's picker of the eleven locations;
- * Favorites her hearted games, newest first; All games every game for her age and younger, land by land, with an Other
- * ages signpost as the last card; Family play one card to couch play (a controller or keyboard). Games come four to a
- * page with arrows that move only when pressed. A game keeps an `{ explore }` origin, so the result's Back returns to the
- * same page. Back goes up one level, Home goes Home. Looking changes nothing; nothing here gates or is a round.
- * At lap and toddler, Little surprises' picnic blanket leads All games' first page (RW08 slice 2): a tap starts the mix,
- * a grown-up's hold opens Make my mix, and the mix's stops and its Explore come back to that page.
+ * Explore at the root (RW08 slice 1, docs/rework/RW08-CUTOVER.md#slice-1-explores-four-entries; folded by U6b,
+ * docs/definitions/one-way-to-browse.md). With no entry it shows four pictures: Places, Favorites, Arcade and Family play.
+ * Places is RW13's picker of the eleven locations; Favorites her hearted games, newest first, four to a page with arrows
+ * that move only when pressed (empty, the result's heart shows how to fill it, beside the Arcade); the Arcade is the one
+ * place to browse every game (its own scene); Family play goes straight to couch play (a controller or keyboard). A game
+ * keeps an `{ explore }` origin, so the result's Back returns to the same page. Back goes up one level, Home goes Home.
+ * Looking changes nothing; nothing here gates or is a round. At lap and toddler, Little surprises' picnic blanket stands
+ * first among the entries (RW08 slice 2, U6b R5): a tap starts the mix, a grown-up's hold opens Make my mix, and the
+ * mix's stops and its Explore come back to the entries.
  */
 export class ExploreScene extends Scene {
   private readonly backdrop = homeBackdrop();
@@ -100,10 +102,9 @@ export class ExploreScene extends Scene {
   cards: ExploreCard[] = [];
   /** The last place she visited, as a postcard above the entries (RW14 slice 8), or null before her first visit. */
   last: { id: LandId; node: Container } | null = null;
-  /** The list a browse entry pages through (Favorites, All games), and whether it ends with the signpost. */
+  /** The list Favorites pages through. */
   readonly list: GameModule[];
-  private readonly signpost: boolean;
-  /** Little surprises on All games' first page (her own games, lap and toddler), or null. */
+  /** Little surprises first among the entries (her own games, lap and toddler), or null. */
   readonly mix: MixHost | null;
   private readonly lead: boolean;
   /** The finger on the mix card, until it lifts. */
@@ -115,37 +116,28 @@ export class ExploreScene extends Scene {
 
   constructor(
     app: App,
-    readonly entry: ExploreEntry | null = null,
+    readonly entry: ExplorePage | null = null,
     page = 0,
-    readonly others = false,
   ) {
     super(app);
     const band = store.data.profile.band;
-    this.list =
-      entry === 'favorites'
-        ? favoriteGames(store.favorites, GAMES)
-        : entry === 'all'
-          ? allGames(band, GAMES, LANDS, others)
-          : [];
-    this.signpost = entry === 'all' && hasOthers(band, GAMES, LANDS);
-    this.mix =
-      entry === 'all' && !others
-        ? new MixHost(
-            app,
-            band,
-            this.ui,
-            () => this.view,
-            this.tw,
-            this.list.map((g) => g.id),
-          )
-        : null;
+    this.list = entry === 'favorites' ? favoriteGames(store.favorites, GAMES) : [];
+    this.mix = entry
+      ? null
+      : new MixHost(
+          app,
+          band,
+          this.ui,
+          () => this.view,
+          this.tw,
+          allGames(band, GAMES, LANDS).map((g) => g.id),
+        );
     this.lead = !!this.mix?.mods;
     // Laid out for a phone held upright as well (chunk 31), except where Little surprises leads: its sheet and Make my
     // mix's table are drawn on the 1024 width, so that page keeps the turn prompt.
     this.upright = this.uprightArea = !this.lead;
-    this.page = clampPage(page, this.list.length, this.signpost, this.lead);
+    this.page = clampPage(page, this.list.length);
     if (entry) exploreMemory.pages[entry] = this.page;
-    if (entry === 'all') exploreMemory.others = others;
   }
 
   init() {
@@ -193,11 +185,14 @@ export class ExploreScene extends Scene {
       this.ui.addChild(node);
     }
     if (!e)
-      this.cards = EXPLORE_ENTRIES.map((entry) => ({
-        kind: 'entry',
-        entry,
-        node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)),
-      }));
+      this.cards = [
+        ...(this.lead ? [{ kind: 'mix' as const, node: this.mixCard() }] : []),
+        ...EXPLORE_ENTRIES.map((entry) => ({
+          kind: 'entry' as const,
+          entry,
+          node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)),
+        })),
+      ];
     else if (e === 'places')
       this.cards = this.ids.map((id) => ({
         kind: 'place',
@@ -206,48 +201,57 @@ export class ExploreScene extends Scene {
           this.leave(() => this.app.growFrom(n, () => this.app.go.land(id))),
         ),
       }));
-    else if (e === 'family')
+    else if (!this.list.length)
+      // No hearts yet (U6b R7): the result's heart, large, says how Favorites fills (speech may be off), beside the
+      // Arcade, which opens on her own games.
       this.cards = [
+        { kind: 'heart', node: this.heartPicture() },
         {
-          kind: 'family',
-          node: this.card(entryArt('family'), ENTRY_NAMES.family, () =>
-            this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 })),
+          kind: 'entry',
+          entry: 'arcade',
+          node: this.card(entryArt('arcade'), ENTRY_NAMES.arcade, () =>
+            this.leave(() => this.app.go.explore('arcade', 0, 'mine'), 'arcade.open'),
           ),
         },
       ];
-    else if (e === 'favorites' && !this.list.length)
-      this.cards = [
-        {
-          kind: 'entry',
-          entry: 'all',
-          node: this.card(entryArt('all'), ENTRY_NAMES.all, () => this.open('all')),
-        },
-      ];
-    else {
-      this.cards = pageOf(this.list, this.page, this.signpost, this.lead).map((c) => {
-        if ('mix' in c) return { kind: 'mix', node: this.mixCard() };
-        if ('signpost' in c) {
-          const sign = new Signpost();
-          sign.point(this.others);
-          return {
-            kind: 'signpost',
-            node: this.card(sign, this.others ? 'Your games' : 'Other ages', () => this.turnSign()),
-          };
-        }
-        const icon = this.track(c.game.hubIcon());
+    else
+      this.cards = pageOf(this.list, this.page).map((game) => {
+        const icon = this.track(game.hubIcon());
         this.icons.push(icon);
-        return {
-          kind: 'game',
-          mod: c.game,
-          node: this.card(icon, c.game.name, (n) => this.launch(c.game, n)),
-        };
+        return { kind: 'game', mod: game, node: this.card(icon, game.name, (n) => this.launch(game, n)) };
       });
-    }
-    const pages =
-      e === 'favorites' || e === 'all' ? pageCount(this.list.length, this.signpost, this.lead) : 1;
+    const pages = e === 'favorites' ? pageCount(this.list.length) : 1;
     this.prev.visible = this.page > 0;
     this.next.visible = this.page < pages - 1;
     this.ui.addChild(...this.cards.map((c) => c.node));
+  }
+
+  /**
+   * The result's heart as it first shows beside the sticker (outlined), large over the line that says what to do with it.
+   * A picture, not a way anywhere: a tap says the empty page's line again.
+   */
+  private heartPicture(): Container {
+    const node = new Container();
+    // A soft cream disc so the outline reads over the backdrop; round, not the cards' finish, so it is not mistaken for one.
+    const disc = new Graphics().circle(0, 0, EXPLORE_CARD / 2).fill({ color: cream, alpha: 0.85 });
+    const heart = fitArt(heartIcon(swatch.pink.line, false), EXPLORE_CARD - 50);
+    const words = namePill('Tap the heart after a game');
+    words.y = EXPLORE_CARD / 2 + 26;
+    node.addChild(disc, heart, words);
+    node.hitArea = new Rectangle(-EXPLORE_CARD / 2, -EXPLORE_CARD / 2, EXPLORE_CARD, EXPLORE_CARD);
+    onTap(
+      node,
+      () => {
+        if (this.leaving || this.covered) return;
+        sfx.tick();
+        squash(node);
+        spring(node, 110);
+        voice.stop();
+        void voice.say('explore.no-favorites');
+      },
+      { cooldown: 400 },
+    );
+    return node;
   }
 
   /**
@@ -315,11 +319,18 @@ export class ExploreScene extends Scene {
     return node;
   }
 
-  /** An entry says its name, then opens where she last was in it this visit. */
+  /**
+   * An entry says its name, then opens where she last was in it this visit. Family play has no page of its own (U6b R8):
+   * it says what it needs on the way straight to couch play, whose own menu shows the keys when no controller is there.
+   */
   private open(entry: ExploreEntry) {
+    if (entry === 'family') {
+      this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }), 'explore.family-pads');
+      return;
+    }
     const page = exploreMemory.pages[entry] ?? 0;
     this.leave(
-      () => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined),
+      () => this.app.go.explore(entry, page),
       entry === 'arcade' ? 'arcade.open' : `explore.${entry}`,
     );
   }
@@ -331,12 +342,7 @@ export class ExploreScene extends Scene {
       age === 'hers'
         ? voice.say(mod.titleLine)
         : voice.say('explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' });
-    const entry = this.entry as 'favorites' | 'all';
-    const origin = {
-      explore: entry,
-      page: this.page,
-      ...(entry === 'all' && this.others ? { others: true } : {}),
-    };
+    const origin = { explore: 'favorites' as const, page: this.page };
     this.leave(
       () => this.app.growFrom(node, () => this.app.go.game(mod.id, undefined, undefined, false, origin)),
       say,
@@ -352,19 +358,10 @@ export class ExploreScene extends Scene {
     return card ? this.app.boxOf(card.node) : null;
   }
 
-  /** The signpost turns All games between hers and the other ages, from the first page. */
-  private turnSign() {
-    sfx.whoosh();
-    this.leave(
-      () => this.app.go.explore('all', 0, !this.others),
-      this.others ? 'explore.mine' : 'explore.others',
-    );
-  }
-
   /** The arrows: a page back or on, here, saying how many pictures the new page has. */
   private turn(d: -1 | 1) {
     if (this.leaving || this.covered) return;
-    const pages = pageCount(this.list.length, this.signpost, this.lead);
+    const pages = pageCount(this.list.length);
     const page = this.page + d;
     if (page < 0 || page >= pages) return;
     this.page = page;
@@ -431,11 +428,9 @@ export class ExploreScene extends Scene {
       ? 'explore.pick'
       : e === 'places'
         ? 'explore.where'
-        : e === 'family'
-          ? 'explore.family-pads'
-          : e === 'favorites' && !this.list.length
-            ? 'explore.no-favorites'
-            : null;
+        : !this.list.length
+          ? 'explore.no-favorites'
+          : null;
     if (line && !this.covered) void voice.say(line);
   }
 }

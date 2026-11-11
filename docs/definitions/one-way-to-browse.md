@@ -1,8 +1,8 @@
 # One way to browse (U6, definition)
 
-**Built:** U6a (PR #1474); to build U6b, read “Slices and check tier” (slice 2) and R1, R5–R8 under Requirements.
+**Built:** U6a (PR #1474) and U6b (PR #1475); nothing left to build here.
 
-*Status: defined 2026-11-10; U6a built 2026-11-10 (PR #1474: For me first and default, the page count, the Arcade upright); U6b, the fold, is not built. R4 deviated slightly: the upright area already fit four to six cards, so the spotlight was not shortened; the Topics sheet's 13 tiles fit with no paging by laying rows above the guide corner across the full width, and the arrows and count shift right when they sit as low as the guide corner.*
+*Status: defined 2026-11-10; U6a built 2026-11-10 (PR #1474: For me first and default, the page count, the Arcade upright); U6b, the fold, built 2026-11-10 (PR #1475: Explore's entries are Places, Favorites, Arcade and Family play; Little surprises first among them at lap and toddler; the empty Favorites heart; Family play straight to couch). R1 deviated: four entries lay out in one row in landscape (two by two upright), as Favorites' pages of four already do, not two over two; five with the mix stay three over two. Couch play's Back from Family play opens Explore's entries. The voice lines `explore.others` and `explore.mine` are unused but kept, since the rendered clip manifest covers them; R8's topic-pictures row stays out. R4 deviated slightly: the upright area already fit four to six cards, so the spotlight was not shortened; the Topics sheet's 13 tiles fit with no paging by laying rows above the guide corner across the full width, and the arrows and count shift right when they sit as low as the guide corner.*
 
 From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#5-five-ways-to-browse-one-catalog-and-their-names-disagree), finding 5 and recommendation U6: Explore offers five ways into one catalog and their names disagree. The review asked to fold the All games card into the Arcade, add a "for my age" topic that opens first, show the page count, and say on an empty Favorites how the heart works. This page settles where that fold meets what All games does today.
 
