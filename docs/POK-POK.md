@@ -111,6 +111,8 @@ About fifty games list the `lap` band. Pok Pok's rules reduce to five questions 
 
 **First slice:** a table in the [Quick Tricks dive](deep-dives/quick-tricks.md#similar-games) or a page of its own, one row per lap-band game with a yes or no to each question. **Then:** a game that fails 1 or 4 gets a lap level in the *One big jelly* shape when it next comes up for work, at the new-level tier. This is a rule audit, not a claim about a child.
 
+**Progress:** Bubble Beach's eight lap games are read (2026-11-11) in [the toy-test page](definitions/toy-test-lap-openings.md), which counts 57 lap games in all; the rest go a land at a time.
+
 ### P5. Residents that carry on (a note for RW13 and RW14; M)
 
 Forest's creatures "don't just freeze and wait": they wander, eat, hide, and react to what is dragged near them. The rework's residents ([slice 2](rework/POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home)) stand with an idle motion, a poke reaction and a hello, and her friend at home fetches the one ball ([creature play](rework/HOME.md#creature-play-and-home)). A pilot on **one** resident in one location: two or three marked spots it walks or flies between on its own, one thing in the scene it uses when it gets there (Tote at a rock pool, Trill at a chime), and a turn of the head toward her last touch. Rules it must keep: nothing is hungry, nothing is owed, nothing changes while she is away, and its touch circle still clears every spot and the signpost. Judged by eye from a short capture; if it reads as alive, the other residents follow as content.
