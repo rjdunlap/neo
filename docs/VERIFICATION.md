@@ -2,7 +2,7 @@
 
 ## 2026-11-10 — Pok Pok reviewed (docs only)
 
-**Changed:** new [reference review](POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated).
+**Changed:** new [reference review](POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
 

@@ -70,6 +70,8 @@ No independent study of the app was found. Its claims about calm, regulation and
 
 Ordered by the current focus: the first three bear on the phone playtest the developer and their wife are doing now; the rest are for the youngest band and the rework and can wait.
 
+**Queued 2026-11-10** (the developer asked for them to go on the backlog): P1, P4 (with P7 as one of its columns), P3's definition and P5's pilot are lines in [READY](READY.md#pok-pok-review-2026-11-10); P2's and P3's questions are in the [phone playtest list](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now); P6 is an acceptance line in [RW10](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals); P8 is in [RW14's later list](rework/POLISH.md#later-not-sliced-yet).
+
 ### P1. One rainbow, one direction (code, S)
 
 Pok Pok's Musical Blobs keeps a rule a child can learn without being told: blue is always C. The island's two melodic games share a rainbow but not a direction. In [Jelly Drums](games/jelly-drums.md) red is the big low jelly and blue the little high one (`COLORS` and `STEPS` in `src/games/jelly-drums/index.ts`: "Big jelly, low note: C D E G A"). In [Song Maker](games/song-maker.md) `ROW_COLORS` runs red to blue from the top row, which is the high row, under a comment that says it matches the jelly drums. So red is the lowest note in one and the highest in the other.
@@ -92,7 +94,7 @@ Pok Pok shipped Phonics as a drag toy and within eleven weeks had enlarged the p
 
 > Which drags were awkward with a thumb, and would tapping the piece and then the place have been easier?
 
-If two notes name drags, write one definition for a shared "tap the piece, then tap the place" path beside `src/engine/drag.ts`, so a drag game gains it without its own pointer code. Two places have already asked for it one game at a time: [Tangram Town's dive](deep-dives/tangram-town.md) (a tap-to-place variant for the youngest) and the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-asked-in-the-rainbow-fingers-dive-docs-only-s) (tap to fill). It needs a decision on how a tapped piece shows it is held, so it is not on READY.
+If two notes name drags, write one definition for a shared "tap the piece, then tap the place" path beside `src/engine/drag.ts`, so a drag game gains it without its own pointer code. Two places have already asked for it one game at a time: [Tangram Town's dive](deep-dives/tangram-town.md) (a tap-to-place variant for the youngest) and the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-asked-in-the-rainbow-fingers-dive-docs-only-s) (tap to fill). How a tapped piece shows it is held is the open design point; the definition that settles it is queued in READY.
 
 ### P4. The toy test for lap openings (docs, S; then one game at a time)
 
