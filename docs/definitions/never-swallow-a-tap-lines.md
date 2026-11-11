@@ -1,6 +1,6 @@
 # Never swallow a tap: which lines hold (U7d, classification)
 
-*Status: the 25 games ready for upright play (the pool a phone's Today's six draws from first) are classified, read at `origin/main` `a3ac3b70`, 2026-11-10. The other 133 games with an awaited line are listed as candidates, not read. Docs only: nothing here is built.*
+*Status: the 25 games ready for upright play (the pool a phone's Today's six draws from first) are classified, read at `origin/main` `a3ac3b70`, 2026-11-10. The other 133 games with an awaited line are listed as candidates, not read. Fix batch 1 is built (2026-11-10); batch 2 is not.*
 
 This is [R4](never-swallow-a-tap.md#r4-a-tapped-name-never-holds-input)'s list: per game, the spoken lines the game **awaits**, sorted by whether R4 lets them hold input. The rule is R4's: a line that names or answers what she just tapped never holds input; an instruction, a hint after a miss and a step's spoken result may.
 
@@ -25,8 +25,8 @@ Six await no line at all: `bubble-pop`, `log-roll`, `marble-jump`, `sing-along-b
 
 | Game | Cut | Between boards | Closing | Held |
 | --- | --- | --- | --- | --- |
-| `animal-snack` | `snack.yum` after a right friend in *who* rounds (the next ask waits; the feeding rounds already start it with `void`); `snack.full` after the bell on the right count | | `snack.done` | `snack.toomany`, `snack.more` (hints after a miss) |
-| `far-lights` | The right answer's line with `busy` set before the next lights: `far.right-brighter`, `far.right-farther`, `far.order-right`, `far.same`, and `far.right-strong`, `far.right-step` through `reveal`. *They carry the lesson ("That one's nearer, so it looks brighter!"), so the fix lets the line play over the next lights rather than dropping it* | | `far.done` | `far.not-bigger` (the walk's result); `far.strong-look`, `far.same-now` (the demonstration's narration) |
+| `animal-snack` | *Fixed (batch 1):* `snack.yum` after a right friend in *who* rounds; `snack.full` after the bell on the right count | | `snack.done` | `snack.toomany`, `snack.more` (hints after a miss) |
+| `far-lights` | *Fixed (batch 1):* the right answer's line with `busy` set before the next lights: `far.right-brighter`, `far.right-farther`, `far.order-right`, `far.same`, and `far.right-strong`, `far.right-step` through `reveal`. *They carry the lesson ("That one's nearer, so it looks brighter!"), so the fix lets the line play over the next lights rather than dropping it* | | `far.done` | `far.not-bigger` (the walk's result); `far.strong-look`, `far.same-now` (the demonstration's narration) |
 | `block-garden` | | `block-garden.done` | (the last garden's `block-garden.done`) | `block-garden.two-lines` (after the instruction, input open) |
 | `island-bridges` | | `bridges.joined` | `bridges.done`, `bridges.done-school` | |
 | `lantern-lights` | | `lantern.lit` | `lantern.done` | `lantern.pads` (after the instruction) |
@@ -40,13 +40,15 @@ Six await no line at all: `bubble-pop`, `log-roll`, `marble-jump`, `sing-along-b
 | `species-comeback` | | | `comeback.done` | `comeback.intro` (the story's opening, pairing already open); `comeback.hatched` (a result) |
 | `brain-break`, `gem-swap`, `tile-pairs`, `snowball-merge` | | | `brain.done`, `gem-swap.done`, `tile-pairs.done`, `snowball.done` | |
 
-**What it comes to.** Two of the 25 hold input on a line R4 says must not: `animal-snack` and `far-lights`. Eight praise a finished board before showing the next. Every other awaited line is a closing line or a proper hold. Day by Day, the pilot, is built ([U7b](never-swallow-a-tap.md#u7b-as-built-2026-11-10)) and is not upright-ready.
+**What it comes to.** Two of the 25 held input on a line R4 says must not, `animal-snack` and `far-lights`; both are fixed (batch 1). Eight praise a finished board before showing the next. Every other awaited line is a closing line or a proper hold. Day by Day, the pilot, is built ([U7b](never-swallow-a-tap.md#u7b-as-built-2026-11-10)) and is not upright-ready.
 
 ## Fix batches
 
-Each is the existing-game bug-fix tier (typecheck, the game's rule tests, one filtered regression play; `fingerdemo` only if the bot's timing changes), and has a line in [READY](../READY.md).
+Each is the existing-game bug-fix tier (typecheck, the game's rule tests, one filtered regression play; `fingerdemo` only if the bot's timing changes), ; batch 1 is built, batch 2 waits for a playtest note.
 
-1. **`animal-snack` and `far-lights`, the cut lines.** The right answer's line starts and the next ask or the next lights follow at once (after the existing eat or lift motion, not after the line). The next ask's own line cuts the confirmation, as any new line does; in `far-lights`, where the confirmation is the lesson, the next lights are shown and input opens while it plays. Hints and results stay held.
+1. **`animal-snack` and `far-lights`, the cut lines (built 2026-11-10, PR #1488).** The right answer's line starts and the next ask or the next lights follow at once (after the existing eat or lift motion, not after the line). The next ask's own line cuts the confirmation, as any new line does; in `far-lights`, where the confirmation is the lesson, the next lights are shown and input opens while it plays. Hints and results stay held.
+
+   *As built.* `animal-snack`: in *who* rounds `snack.yum` starts after the eating and the next ask follows at once; on a right count the bell rings, a 0.4 s beat passes (`BELL_BEAT`) and the next ask follows. `far-lights`: one helper, `right(line, motion)`, serves all six right-answer lines; the next lights follow the motion (a 0.35 s bob at levels 3–4; the curtain's 0.6 s lift plus the existing look at levels 5, 6 and 8), input opens while the lesson line plays, and the board's instruction is said when the lesson ends, skipped if a hint or wrong-answer line came meanwhile. Departures from the plan: (1) on the last ask or board the line is still heard out, because nothing is held back and the closing line would cut it; (2) `far-lights` level 7 still waits for the line (in parallel with the lift and look), since its next board opens with its own held opening look that would cut it; (3) the voice line `far.curtain` is removed, because saying it at the lift would cut the lesson line. Each browser suite gained one R4 assertion (`far-lights-play`: next pair live within 1.5 s of the right tap at level 3; `woods-batch`: Animal Snack's next ask live within 1.2 s of the bell).
 2. **Between boards, optional.** In the eight games above, the next board's fade starts as the praise starts, so the praise plays over the 0.3 s change. Worth doing only if a phone playtest finds the pause between boards slow: the praise is also the beat in which she looks at the finished board (`picture-logic` adds a 1.2 s look on purpose), so this batch waits for a [playtest note](../OBSERVATIONS.md) rather than being built on the rule alone.
 
 ## The other games: candidates, not read

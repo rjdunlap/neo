@@ -690,7 +690,10 @@ class AnimalSnack implements Game {
       node.destroy({ children: true });
       // The next ask follows the eating, not the line (U7 R4), and cuts it; only the last yum, with nothing to ask
       // after it, is heard out before the closing line.
-      const yum = this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[FAVORITE[f.name]!] });
+      const yum = this.ctx.say('snack.yum', {
+        animal: ANIMAL_WORDS[f.name]!,
+        food: FOOD_WORDS[FAVORITE[f.name]!],
+      });
       if (this.last) await yum;
       return void this.next();
     }
