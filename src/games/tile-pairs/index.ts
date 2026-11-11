@@ -18,6 +18,7 @@ import {
   freeTiles,
   fullMask,
   makeBoard,
+  pairs,
   planFor,
   present,
   removePair,
@@ -77,6 +78,8 @@ class TilePairs implements Game {
   private botWait = 0.6;
   private route: Pair[] | null = null;
   private sinceMatch = 0;
+  /** Removed tiles still lifting away: drawn until their fade ends, never tappable. */
+  private readonly leaving = new Set<Container>();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -106,7 +109,11 @@ class TilePairs implements Game {
     return { tiles: this.tiles.map((t) => ({ ...t })), mask: this.mask };
   }
   private rebuild() {
-    for (const node of this.nodes) node.destroy({ children: true });
+    for (const node of this.nodes) {
+      this.settle(node);
+      node.destroy({ children: true });
+    }
+    this.leaving.clear();
     this.nodes = this.tiles.map((t, i) => {
       const c = tileArt(t.kind);
       c.hitArea = new Rectangle(-54, -54, 108, 108);
@@ -140,11 +147,14 @@ class TilePairs implements Game {
   }
   private draw() {
     this.nodes.forEach((n, i) => {
+      if (this.leaving.has(n)) return;
       n.visible = present(this.mask, i);
       n.alpha = free(this.tiles, this.mask, i) ? 1 : 0.58;
     });
     const remaining = this.tiles.filter((_, i) => present(this.mask, i)).length;
-    this.tally.text = `${remaining} tiles · ${this.undos} undos · ${this.shuffles} shuffles`;
+    // "Pairs open" is the consequence to watch: what the last pair uncovered shows up here as new choices.
+    const open = pairs(this.tiles, this.mask).length;
+    this.tally.text = `${remaining} tiles · ${open} ${open === 1 ? 'pair' : 'pairs'} open · ${this.undos} undos · ${this.shuffles} shuffles`;
     this.help.text =
       this.route === null
         ? 'No clearing route · Undo or Shuffle keeps you playing'
@@ -190,15 +200,44 @@ class TilePairs implements Game {
       return;
     }
     this.history.push(this.snapshot());
+    const wasFree = new Set(freeTiles(this.tiles, this.mask));
     this.mask = removePair(this.mask, [a, i]);
     this.hinted = null;
     this.sinceMatch = 0;
     this.route = solve(this.tiles, this.mask);
-    this.cursor = freeTiles(this.tiles, this.mask)[0] ?? 0;
+    const nowFree = freeTiles(this.tiles, this.mask);
+    this.cursor = nowFree[0] ?? 0;
     sfx.pop(3);
+    for (const k of [a, i]) this.liftAway(this.nodes[k]);
     this.draw();
+    for (const k of nowFree) if (!wasFree.has(k)) this.pulse(this.nodes[k]);
     if (!this.mask) void this.complete();
     else if (!this.route) void this.ctx.say('tile-pairs.stuck');
+  }
+  /** Stop a tile's own animations (their promises never resolve) and put its size back. */
+  private settle(node: Container) {
+    this.ctx.tw.kill(node);
+    this.ctx.tw.kill(node.scale);
+    node.scale.set(1);
+  }
+  /** A removed tile lifts and fades instead of vanishing, so the eye is on the spot it opens. */
+  private liftAway(node: Container) {
+    this.settle(node);
+    this.leaving.add(node);
+    node.eventMode = 'none';
+    this.board.addChild(node);
+    void this.ctx.tw.to(node.scale, { x: 1.1, y: 1.1 }, { duration: 0.3 });
+    void this.ctx.tw.to(node, { y: node.y - 30, alpha: 0 }, { duration: 0.3 }).then(() => {
+      if (!this.leaving.delete(node)) return;
+      node.visible = false;
+    });
+  }
+  /** A tile the pair just freed (uncovered, or a side opened) swells once as it brightens. */
+  private pulse(node: Container) {
+    this.settle(node);
+    void this.ctx.tw
+      .to(node.scale, { x: 1.14, y: 1.14 }, { duration: 0.16, delay: 0.12 })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.24 }));
   }
   private undo() {
     if (this.busy || this.finished || !this.ctx.alive) return;
