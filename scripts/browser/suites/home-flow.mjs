@@ -216,7 +216,7 @@ export function createSuite({
     await tap('neo.scene.home');
     await scene('HomeScene');
     await page.waitForTimeout(400);
-    // RW08: Explore's four entries → Places → Counting Cove → its Back → Places → Back → Explore → Back → Home.
+    // RW08, U6b: Explore's four entries → Places → Counting Cove → its Back → Places → Back → Explore → Back → Home.
     const explore = (entry, at = 0) =>
       page.waitForFunction(
         ({ entry, at }) =>
@@ -231,7 +231,6 @@ export function createSuite({
     assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.entry)), [
       'places',
       'favorites',
-      'all',
       'arcade',
       'family',
     ]);
@@ -260,20 +259,31 @@ export function createSuite({
     await scene('HomeScene');
     assert.equal(await page.evaluate(() => document.querySelector('.classic-link')?.hidden), false);
     await page.waitForTimeout(400);
-    // All games, page 2 → a game → its result → Back to All games (the same page) → Home.
-    await page.evaluate(() => {
+    // U6b: the Arcade entry opens the Arcade on For me. Favorites, page 2 → a game → its result → Back to Favorites
+    // (the same page) → Home.
+    await page.evaluate(async () => {
       kit.store.data.settings.howToCards = false;
+      const { forgetArcade } = await import('/src/content/arcade.ts');
+      forgetArcade();
     });
     await tap('neo.scene.explore');
     await explore(null);
-    await tap('neo.scene.cards[2].node');
-    await explore('all', 0);
+    await tap("neo.scene.cards.find((c) => c.entry === 'arcade').node");
+    await scene('ArcadeScene');
+    assert.equal(await page.evaluate(() => neo.scene.filter), 'mine');
+    await tap('neo.scene.back');
+    await explore(null);
     const index = await page.evaluate(async () => {
-      const { allGames } = await import('/src/content/explore.ts');
       const { GAMES } = await import('/src/games/registry.ts');
-      const { LANDS } = await import('/src/content/lands.ts');
-      return allGames(kit.store.data.profile.band, GAMES, LANDS).map((g) => g.id);
+      const ids = GAMES.filter((g) => g.bands.includes('preschool'))
+        .slice(0, 6)
+        .map((g) => g.id);
+      // Hearts are kept newest last; Favorites shows them newest first.
+      kit.store.data.favorites = [...ids].reverse();
+      return ids;
     });
+    await tap("neo.scene.cards.find((c) => c.entry === 'favorites').node");
+    await explore('favorites', 0);
     assert.equal(
       await page.evaluate(() => [neo.scene.prev.visible, neo.scene.next.visible].join()),
       'false,true',
@@ -286,25 +296,25 @@ export function createSuite({
         neo.scene.prev.visible,
         neo.scene.cards.map((c) => c.mod?.id),
       ]),
-      [1, true, index.slice(4, 8)],
+      [1, true, index.slice(4, 6)],
     );
-    await screenshot('explore-all-page2');
+    await screenshot('explore-favorites-page2');
     await tap('neo.scene.cards[0].node');
     await page.waitForFunction(
       (id) => neo.scene.constructor.name === 'GameScene' && !neo.switching && neo.scene.mod.id === id,
       index[4],
       { timeout: 20000 },
     );
-    assert.deepEqual(await page.evaluate(() => neo.scene.origin), { explore: 'all', page: 1 });
+    assert.deepEqual(await page.evaluate(() => neo.scene.origin), { explore: 'favorites', page: 1 });
     await page.waitForTimeout(600);
     await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
     await page.waitForFunction(() => !!neo.scene.after?.house, null, { timeout: 20000 });
     await page.waitForTimeout(600);
     const [hx, bx] = await page.evaluate(() => [neo.scene.after.house.x, neo.scene.after.home.x]);
     assert.ok(Math.abs(hx - bx) >= 120, 'Back and Home stand at least 120 apart');
-    await screenshot('result-back-to-all');
+    await screenshot('result-back-to-favorites');
     await tap('neo.scene.after.home');
-    await explore('all', 1);
+    await explore('favorites', 1);
     await tap('neo.scene.home');
     await scene('HomeScene');
     // Favorites, newest first: an older kids' game says so and plays at its own band; nothing re-pins.
@@ -333,17 +343,34 @@ export function createSuite({
       { explore: 'favorites', page: 0 },
     ]);
     assert.equal(await page.evaluate((id) => kit.store.stats(id).pinned ?? null, older), pinned);
-    // No favorites: one big All games card.
-    await page.evaluate(() => {
-      kit.store.data.favorites = [];
-      neo.go.explore('favorites');
+    // No favorites (U6b R7): the result's heart, large, says how; the Arcade beside it opens on For me.
+    for (const size of [
+      { width: 1024, height: 768 },
+      { width: 768, height: 1024 },
+    ]) {
+      await page.setViewportSize(size);
+      await page.evaluate(async () => {
+        const { forgetArcade } = await import('/src/content/arcade.ts');
+        forgetArcade();
+        kit.store.data.favorites = [];
+        neo.go.explore('favorites');
+      });
+      await explore('favorites', 0);
+      await page.waitForTimeout(400);
+      assert.deepEqual(
+        await page.evaluate(() => neo.scene.cards.map((c) => c.kind + ':' + (c.entry ?? ''))),
+        ['heart:', 'entry:arcade'],
+      );
+      await screenshot(size.width < size.height ? 'explore-no-favorites-portrait' : 'explore-no-favorites');
+    }
+    await page.evaluate(async () => {
+      const { arcadeMemory } = await import('/src/content/arcade.ts');
+      arcadeMemory.filter = 'all';
     });
-    await explore('favorites', 0);
-    assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.kind + ':' + (c.entry ?? ''))), [
-      'entry:all',
-    ]);
-    await screenshot('explore-no-favorites');
-    // Family play → couch play → leave → back to Explore's Family play, in both orientations.
+    await tap('neo.scene.cards[1].node');
+    await scene('ArcadeScene');
+    assert.equal(await page.evaluate(() => neo.scene.filter), 'mine');
+    // Family play (U6b R8) → straight to couch play → leave → back to Explore's entries, in both orientations.
     for (const size of [
       { width: 1024, height: 768 },
       { width: 768, height: 1024 },
@@ -352,13 +379,11 @@ export function createSuite({
       await page.evaluate(() => neo.go.explore());
       await explore(null);
       await tap("neo.scene.cards.find((c) => c.entry === 'family').node");
-      await explore('family', 0);
-      if (size.width < size.height) await screenshot('explore-family-portrait');
-      await tap('neo.scene.cards[0].node');
       await scene('CouchScene');
       await page.waitForTimeout(500);
+      if (size.width < size.height) await screenshot('explore-family-portrait');
       await page.evaluate(() => neo.scene.leave());
-      await explore('family', 0);
+      await explore(null);
     }
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
@@ -378,17 +403,21 @@ export function createSuite({
     await page.waitForFunction(() => neo.scene.toy.fetches === 1, null, { timeout: 8000 });
     await screenshot('home-toddler');
     assert.equal(await page.evaluate(() => neo.scene.birthday), false, 'the birthday is thrown once');
-    // RW08 slice 2: at lap, Little surprises leads All games' first page; a stop's Home comes back there with the sheet, and its Back ends the mix.
+    // RW08 slice 2, U6b R5: at lap, Little surprises stands first among Explore's entries; a stop's Home comes back
+    // there with the sheet, and its Back ends the mix.
     await page.evaluate(() => {
       kit.store.data.profile.band = 'lap';
-      neo.go.explore('all', 0);
+      neo.go.explore();
     });
-    await explore('all', 0);
-    assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.kind).slice(0, 2)), [
+    await explore(null);
+    assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.entry ?? c.kind)), [
       'mix',
-      'game',
+      'places',
+      'favorites',
+      'arcade',
+      'family',
     ]);
-    await screenshot('explore-all-mix');
+    await screenshot('explore-mix');
     await tap('neo.scene.cards[0].node');
     await page.waitForFunction(() => !!neo.scene.mix?.sheet, null, { timeout: 5000 });
     await tap('neo.scene.mix.sheet.playButton');
@@ -402,7 +431,7 @@ export function createSuite({
       { place: 'lap' },
     ]);
     await page.evaluate(() => neo.scene.leave());
-    await explore('all', 0);
+    await explore(null);
     await page.waitForFunction(() => !!neo.scene.mix?.sheet, null, { timeout: 5000 });
     await tap('neo.scene.mix.sheet.backButton');
     assert.deepEqual(
@@ -434,7 +463,7 @@ export function createSuite({
     await scene('ChooserScene');
     assert.equal(errors.length, 0, errors.join('\n'));
     log(
-      'Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore entries → Places → Counting Cove → Back chain, All games page 2 → game → Back to All games (same page) → Home, Favorites older launch and empty, Family play → couch → Explore both orientations, second profile; RW08 slice 2: birthday once, the gear, books → library → journal → Back, a Windy blanket step at the root → Back → library, Little surprises on All games page 1 → stop → Home → sheet → Back',
+      'Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore four entries → Places → Counting Cove → Back chain, Arcade on For me, Favorites page 2 → game → Back to Favorites (same page) → Home, Favorites older launch, empty Favorites heart + Arcade on For me both orientations, Family play → couch → Explore entries both orientations, second profile; RW08 slice 2: birthday once, the gear, books → library → journal → Back, a Windy blanket step at the root → Back → library, Little surprises first among the Explore entries → stop → Home → sheet → Back',
     );
   }
 

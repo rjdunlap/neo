@@ -232,10 +232,12 @@ export class ExploreScene extends Scene {
    */
   private heartPicture(): Container {
     const node = new Container();
-    const heart = fitArt(heartIcon(swatch.pink.line, false), EXPLORE_CARD - 20);
+    // A soft cream disc so the outline reads over the backdrop; round, not the cards' finish, so it is not mistaken for one.
+    const disc = new Graphics().circle(0, 0, EXPLORE_CARD / 2).fill({ color: cream, alpha: 0.85 });
+    const heart = fitArt(heartIcon(swatch.pink.line, false), EXPLORE_CARD - 50);
     const words = namePill('Tap the heart after a game');
     words.y = EXPLORE_CARD / 2 + 26;
-    node.addChild(heart, words);
+    node.addChild(disc, heart, words);
     node.hitArea = new Rectangle(-EXPLORE_CARD / 2, -EXPLORE_CARD / 2, EXPLORE_CARD, EXPLORE_CARD);
     onTap(
       node,
