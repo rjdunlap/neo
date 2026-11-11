@@ -1,6 +1,6 @@
 # Never swallow a tap (U7, definition)
 
-*Status: defined 2026-11-10. U7a built 2026-11-10 ([what it did](#u7a-as-built-2026-11-10)); U7b–U7d not built.*
+*Status: defined 2026-11-10. U7a and U7b built 2026-11-10 ([U7a](#u7a-as-built-2026-11-10), [U7b](#u7b-as-built-2026-11-10)); U7c–U7d not built.*
 
 From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#8-taps-are-dropped-and-screens-are-slow-to-answer), finding 8 and recommendation U7: a tap that does nothing, or a screen that takes seconds to answer, reads to a child as "it's broken" and to a grown-up as "it froze". The review asked for two things: let a second tap interrupt a spoken name, and show the pressed picture as chosen while a screen changes. This page settles what each means in the code, and adds the measurement the slow screens need first.
 
@@ -70,7 +70,16 @@ Each slice is one session. U7a can ship alone: it is the phone's part.
 - **Built.** `voice.stop()` and a new line end every pending line (R4's shell part). Today's six goes through `WayOut` (`src/app/leave.ts`) with `chosen` (`src/ui/buttons.ts`): the pressed card or button stays pressed with a white ring, the others dim to 60%, and the screen changes after a 0.2 s beat (R2, R3). The chooser waits the same beat.
 - **Decided while building.** A Today's six card no longer says the game's name: the game says it as it opens, and the six's line would be cut after a syllable. The chooser keeps its giggle but drops its spoken greeting (`start.hi`) for the same reason, since the next screen's first line follows within half a second. The chooser keeps its own chosen look: the card pops and the others fade to 25%, stronger than 60%.
 - **Not built, by measurement.** The chooser's cards before every save is read (R3's last point): with six players its cards showed 62–87 ms after its first screen, so there was nothing to gain, and its `chooser.test.ts` rule test is unwritten. If a real phone shows a slow chooser, it comes back.
-- **Left for U7b.** The result's Back (`GameScene.leaveSaying`) still waits up to 1.1 s for its line. That is about 1.2–1.4 s from tap to change, on every phone round.
+- **Left for U7b (built, below).** The result's Back (`GameScene.leaveSaying`) still waits up to 1.1 s for its line. That is about 1.2–1.4 s from tap to change, on every phone round.
+
+### U7b as built (2026-11-10)
+
+- **Measured.** `scripts/tap-timing.mjs` medians (speech off, three runs), before → after, a result → Today's six. Phone 390×844: the change starts 1235 → 329 ms, settled 1567 → 697 ms. Computer 1024×768: the change starts 1356 → 443 ms, first frame 1358 → 445 ms, settled 1900 → 1025 ms. Today's six → a game is unchanged (about 183–208 ms). Numbers in the [verification entry](../VERIFICATION.md#2026-11-10--u7b-the-phones-rounds-never-hold-a-tap).
+- **Built (R4 pilot).** Day by Day's card pick (`choose`) no longer awaits `week.name`: `busy` clears as the line starts, so the arrow or another card acts at once and cuts the name. `week.record`, the instructions and the hints still hold.
+- **Built (R5).** `src/app/held-line.ts` (`HeldLines`) follows every line a game starts through `ctx.say`, `ctx.instruct` and `ctx.sayIn` in `GameScene`. While one is pending the corner guide bobs (`Companion.talking`, eased in and out, added to the hop). A board tap (not the guide, Back or help; not on the how-to card or the result) during a pending line gets `sfx.tick` on the next frame, but only if the tap made no sound and started no line.
+- **Built (the result's Back).** `GameScene.leaveSaying` (the result's Back, the in-round Back and Home, the how-to card's Back) starts its word and changes screen after `LEAVE_BEAT` (0.2 s, `src/app/leave.ts`) on a guarded window timer, not the scene tweens, which stand still under the how-to card.
+- **Decided while building.** The tick rule needed to know whether the game answered: every `sfx` call now counts itself in `src/audio/sound-count.ts` (`soundCount`), so a game that answered the tap is never double-sounded. `nav-meaning.test.ts` was updated for the beat.
+- **Not built.** The large-pet games' star does not bob: a bob would move the star's attach points and drop targets, so the corner guide is the only talking look. Leftover for any game with a large pet, if a phone playtest shows the held line is unclear there.
 
 **Dependencies.** U7c edits the same root scenes as U6a (the Arcade), U6b (Explore, Home's routes) and phone-portrait shell slice 3 (creature play, the library, the Arcade); it waits until U6 has landed, and its session runs `scripts/overlap.sh` on those files first. U7a's `DailyScene` change is the `leave` helper and the card's tap only, which U6b (the All games button's target) does not touch, so U7a may go before or after U6. `classic/` is untouched: its map and menus are a separate shell and are not reached from a phone's root.
 
