@@ -1830,7 +1830,7 @@ Proof: new-interaction tier as the [definition's slices and check tier](definiti
 
 ### memory-desk 1: Keep and show
 
-**Built 2026-11-11 ([PR #1507](https://github.com/rjdunlap/neo/pull/1507)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-11--memory-desk-level-1-keep-one-h8-batch-memory-desk-1-pr-1507); [build note](archive/COMPLETED-2026-10-09.md#memory-desk-level-1-keep-one-2026-11-11). Batch 2 follows. Scope retained for dependency references; this batch is no longer eligible for dispatch.
+**Built 2026-11-11 ([PR #1507](https://github.com/rjdunlap/neo/pull/1507)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-11.md#2026-11-11--memory-desk-level-1-keep-one-h8-batch-memory-desk-1-pr-1507); [build note](archive/COMPLETED-2026-10-09.md#memory-desk-level-1-keep-one-2026-11-11). Batch 2 follows. Scope retained for dependency references; this batch is no longer eligible for dispatch.
 
 - **`memory-desk`, level 1 *Keep one*** (H8, [definition](definitions/memory-desk.md#the-model-logicts); a new game, new-game tier; school, Tinker Lab by default; range `{ min: 1, max: 1 }` until batch 2): a pictured tray, a drawer and a window; she puts a token on the tray, presses Keep to copy it into the drawer, swaps the tray, presses Show and sees the old token in the window, then Done; a try-out round on the ordinary adaptation rule with no Check, one sticker per round. [Slice H8](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
 
@@ -1840,7 +1840,7 @@ Proof: new-game tier as the [definition's check tier](definitions/memory-desk.md
 
 ### memory-desk 2: The hatch
 
-**Built 2026-11-11 ([PR #1510](https://github.com/rjdunlap/neo/pull/1510)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-11--memory-desk-levels-23-open-or-shut-and-fix-the-desk-h8-batch-memory-desk-2-pr-1510); [build note](archive/COMPLETED-2026-10-09.md#memory-desk-levels-2-3-open-or-shut-and-fix-the-desk-2026-11-11). Memory Desk levels 1–3 are all built. Scope retained for dependency references; this batch is no longer eligible for dispatch.
+**Built 2026-11-11 ([PR #1510](https://github.com/rjdunlap/neo/pull/1510)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-11.md#2026-11-11--memory-desk-levels-23-open-or-shut-and-fix-the-desk-h8-batch-memory-desk-2-pr-1510); [build note](archive/COMPLETED-2026-10-09.md#memory-desk-levels-2-3-open-or-shut-and-fix-the-desk-2026-11-11). Memory Desk levels 1–3 are all built. Scope retained for dependency references; this batch is no longer eligible for dispatch.
 
 - **`memory-desk`, levels 2–3 *Open or shut* and *Fix the desk*** (H8, [definition](definitions/memory-desk.md#the-model-logicts); new interaction, after batch 1 (built); range becomes `{ min: 1, max: 3 }`): at level 2 each step of a short queue has a hatch she opens or shuts, Step runs the queue and Check compares the window with the brief, with the first untouched Check a free look; at level 3 a desk with one wrong hatch starts with a stated token in the drawer and she finds and fixes it from two trace rows. [Slice H8](deep-dives/subjects/how-computers-work.md#build-slices-in-order)
 
@@ -1860,12 +1860,15 @@ Proof: existing-game tier (typecheck, the rule tests, one filtered `tilepairs` p
 
 ### tile-pairs 2: Peek under the stack
 
-- **`tile-pairs`, Peek** (dive slice 2, [dive](deep-dives/tile-pairs.md#build-slices-in-order); new interaction, after batch 1; dive slice 3 *Two more looks*, two seeded picture sets with the distinctness test, may ride with it if the session is small): a fourth button that fades every covering tile to a quarter strength so the pictures below show; tapping Peek or any tile returns to the solid view. It is information, not a hint: never counted and no effect on the face-off score. Gets a key, a couch control read from `COUCH_INFO` (a pause-menu entry beside Hint if no button is free), a how-to step and a voice line.
+**Built 2026-11-11 ([PR #1525](https://github.com/rjdunlap/neo/pull/1525)).** Dive slice 2. See the [verification entry](VERIFICATION.md#2026-11-11--tile-pairs-slice-2-peek-under-the-stack-pr-1525) and [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-batch-2-peek-under-the-stack-2026-11-11).
 
-Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, `voice.ts`, `howto.ts`, `src/couch/catalog.ts`, `docs/games/tile-pairs.md` and the dive's "What was built" section.
+### tile-pairs: Two more looks and Tall tower
 
-Proof: new-interaction tier (typecheck, unit tests, one filtered `tilepairs` play at level 5 that peeks, pairs, takes one wrong answer and one hint, a portrait screenshot of the see-through view, `fingerdemo` only if the card's demonstrated action changes, `couchgames` filtered to Tile Pairs if a pad button is mapped, build; one screenshot per new look if slice 3 rides along).
+- **`tile-pairs`, two seeded picture sets and level 7 *Tall tower*** (dive slices 3–4, [dive](deep-dives/tile-pairs.md#build-slices-in-order), after Peek, grown-up). Choose each round's look from the seed. Test that each set's pictures have distinct silhouettes. Add a solvable 24-tile stack with four layers and supported raised tiles, keeping the choices about which pair opens the tower.
 
+Files expected include `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, the game page and the dive.
+
+Proof includes typecheck, rule and registry tests, one filtered `tilepairs` play and `fingerdemo` at level 7, plus one screenshot per new look. Check the tower geometry upright and sideways.
 
 ### tile-pairs 3: Tricky deals and the first lessons
 

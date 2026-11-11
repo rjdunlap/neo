@@ -67,6 +67,21 @@ export const planFor = (level: number) =>
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
 
+/** Multi-layer stacks of remaining tiles, each ordered from bottom to top. */
+export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
+  const stacks = new Map<string, number[]>();
+  tiles.forEach(({ x, y }, i) => {
+    if (!present(mask, i)) return;
+    const key = `${x},${y}`;
+    const stack = stacks.get(key);
+    if (stack) stack.push(i);
+    else stacks.set(key, [i]);
+  });
+  return [...stacks.values()]
+    .filter((stack) => stack.length > 1)
+    .map((stack) => stack.sort((a, b) => tiles[a].z - tiles[b].z));
+}
+
 /** A tile needs a clear top and at least one open horizontal side on its own layer. */
 export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
   if (!present(mask, i)) return false;

@@ -23,13 +23,15 @@
 
 **Starts as:** remove matching tiles with a clear top and an open left or right side
 
-**Grows into:** six solvable layouts (12/20/24 tiles, then a 24-tile bridge, twin terraces and crown with more matching choices), each cleared by a different seeded pairing every round; a removed pair lifts away and the tiles it frees pulse; Undo, a clearing-route Hint, and Shuffle into open rows; touch and controller demos; no clock or loss screen
+**Grows into:** six solvable layouts (12/20/24 tiles, then a 24-tile bridge, twin terraces and crown with more matching choices), each cleared by a different seeded pairing every round; a removed pair lifts away and the tiles it frees pulse; Undo, a clearing-route Hint, Shuffle into open rows, and Peek at covered pictures; touch and controller demos; no clock or loss screen
 
 ## Design notes
 
-On an upright phone the three controls sit above the guide, below the full-width tile stacks.
+On an upright phone, Undo, Hint, Shuffle and Peek sit above the guide and below the full-width tile stacks.
 
 *Spatial matching and planning, after Mahjong solitaire.* Tap two tiles with the same picture to remove them. Each must have a clear top and an open left or right side on its layer; bright tiles are free, muted tiles are blocked. Pictures differ by both shape and color. Tap a selected tile again to cancel it. Touch answers on press; on the couch, the stick or D-pad moves between free tiles and the bottom button selects.
+
+**Peek.** The Peek button, P key or top controller button opens a view of every remaining picture. Tile bodies with another tile beneath them fade to quarter opacity. The pictures in each stack sit side by side, from the bottom tile on the left to the top tile on the right. Press the same control again or choose any tile to close Peek. A tile press that closes Peek leaves the current selection alone. Looking leaves all counters and the face-off score alone.
 
 **Ladder.** Level 1 has twelve tiles in three open rows; 2 has twenty with a raised central square; 3 has twenty-four across three layers, with four copies of each picture allowing alternative pair choices. Level 4 stretches the stack into a six-column bridge with a raised middle row; 5 splits the raised tiles into twin terraces with five pictures (some appear six times); 6 cuts the bottom corners into a crown, with two raised rows and six copies of each of four pictures. Levels 4–6 keep twenty-four tiles and the same target size; choosing which copy to pair changes the paths into the stack. Every board is assigned along a geometric clearing route that the seed chooses, so one layout clears by a different pairing each round (the positions are fixed, the partners are not); each level deals up to 40 such routes and keeps the first whose measured random-play clear rate sits in that level's band (levels 1–4 95–100%, level 5 85–100%, level 6 75–100%), else the closest, from the one seed, so a seed still gives one board and the couch face-off shares it. Shuffle still lays the remainder in open rows. A memoized exhaustive solver checks the remaining stack, so a Hint outlines a pair that leads to clearing, rather than merely any matching pair. A legal pair can leave no clearing route; the game explains this and keeps Undo and Shuffle available.
 

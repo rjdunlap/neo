@@ -227,6 +227,8 @@ export class GameScene extends Scene {
       { listening: () => !this.app.paused && !isParentPanelOpen() },
     );
 
+    this.keys.peekEnabled = () => !!this.game?.togglePeek && !this.finished && !this.helpCard;
+
     // Every time a game is opened it explains itself on a card (with a demonstration where there is a bot), and the round waits for Play.
     const card = shouldExplain({
       enabled: store.data.settings.howToCards,
@@ -369,6 +371,10 @@ export class GameScene extends Scene {
       else if (intro && (lead.direction === 0 || lead.direction === 2))
         this.stepIntroLevel(lead.direction === 0 ? 1 : -1);
       else if (!intro && keys.players.some((p) => p.action || p.back || p.undo)) this.closeHelp();
+      return;
+    }
+    if (this.game?.togglePeek && keys.players.some((p) => p.top)) {
+      this.game.togglePeek();
       return;
     }
     if (pressed(keys)) this.keyed = true;

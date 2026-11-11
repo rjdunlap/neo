@@ -10,6 +10,7 @@ import {
   layout,
   makeBoard,
   pairs,
+  peekStacks,
   planFor,
   present,
   removePair,
@@ -31,6 +32,18 @@ describe('Tile Pairs', () => {
     expect(freeTiles(tiles, 7)).toEqual([0, 2]);
     expect(free(tiles, 5, 1)).toBe(false);
     expect(freeTiles(tiles, 5)).toEqual([0, 2]);
+  });
+  it('lists only remaining stacks in bottom-to-top order for Peek', () => {
+    const tiles = [
+      { x: 0, y: 0, z: 0, kind: 0 },
+      { x: 0, y: 0, z: 1, kind: 1 },
+      { x: 0, y: 0, z: 2, kind: 2 },
+      { x: 1, y: 0, z: 1, kind: 2 },
+    ];
+    expect(peekStacks(tiles, fullMask(tiles))).toEqual([[0, 1, 2]]);
+    expect(peekStacks(tiles, 0b1101)).toEqual([[0, 2]]);
+    expect(peekStacks(tiles, 0b1100)).toEqual([]);
+    expect(peekStacks([tiles[2], tiles[0], tiles[1]], 0b111)).toEqual([[1, 2, 0]]);
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));

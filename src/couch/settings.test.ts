@@ -109,7 +109,7 @@ describe('couch settings', () => {
 
   it('gives every control row of every couch game a keyboard equivalent to show on a laptop', () => {
     for (const info of Object.values(COUCH_INFO))
-      for (const row of info.controls) expect(row.keys.trim().length).toBeGreaterThan(2);
+      for (const row of info.controls) expect(row.keys.trim()).toMatch(/^(?:[A-Z]|.{3,})$/);
   });
 });
 

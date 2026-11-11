@@ -296,6 +296,8 @@ export interface Game {
    * A hint shown marks a challenge run as helped for good, the same as the games whose help arrives by itself.
    */
   askForHint?(): void;
+  /** Optional look under a stack, available without changing the round's input mode. */
+  togglePeek?(): void;
   /** Explicit island pause label for requested help on a level outside the couch/grown-up catalog. */
   hintLabel?: string;
   start(): void;
