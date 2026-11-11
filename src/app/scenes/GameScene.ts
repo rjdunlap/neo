@@ -1,5 +1,5 @@
 import { Lifetime } from '../../engine/lifetime';
-import { Circle, Container, Graphics, Text } from 'pixi.js';
+import { Circle, Container, Graphics, Point, Text } from 'pixi.js';
 import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
@@ -7,6 +7,7 @@ import { stickerize } from '../../art/sticker';
 import { audio } from '../../audio/engine';
 import { isSilent, music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { soundCount } from '../../audio/sound-count';
 import { voice, type LineVars } from '../../audio/voice';
 import { cleanCreation, type Creation } from '../../content/creations';
 import { entryById, type JournalEntry } from '../../content/journal';
@@ -59,6 +60,8 @@ import { goToOrigin } from '../origin';
 import { ResultBackdrop, resultPlace } from './result-backdrop';
 import { isParentPanelOpen } from '../../parent/panel';
 import { Scene } from '../Scene';
+import { HeldLines } from '../held-line';
+import { LEAVE_BEAT } from '../leave';
 
 /**
  * Hosts one round of a minigame and owns everything around it:
@@ -122,7 +125,10 @@ export class GameScene extends Scene {
   private resultSpeech: Promise<void> = Promise.resolve();
   private readonly touchUp = () => {
     this.returningTouch = false;
+    this.held.up();
   };
+  /** The game's lines in flight, for the guide's talking look and the tick a held tap gets (U7 R5). */
+  private readonly held = new HeldLines();
   private level = 1;
   private seconds = 0;
   private finished = false;
@@ -132,7 +138,10 @@ export class GameScene extends Scene {
   private readonly inputInUse = new InputInUse();
   /** A key or button has been pressed since the round began (or since the last touch): the Enter that pressed Play does not count. */
   private keyed = false;
-  private readonly touchDown = () => {
+  private readonly touchDown = (e: PointerEvent) => {
+    if (this.game && !this.finished && !this.helpCard && !this.navigating && !this.onShellButton(e))
+      this.held.down(soundCount.n);
+    else this.held.cancel();
     if (this.inputInUse.kind === 'controller') this.returningTouch = true;
     this.inputInUse.touched();
     if (this.keyed && !this.finished) this.game?.touchReturned?.();
@@ -256,10 +265,10 @@ export class GameScene extends Scene {
       untrack: (o) => this.untrack(o),
       instruct: (id, vars) => {
         this.instruction = { id, vars };
-        return this.whileHere(voice.say(id, vars));
+        return this.whileHere(this.held.line(voice.say(id, vars)));
       },
-      say: (id, vars) => this.whileHere(voice.say(id, vars)),
-      sayIn: (id, preset, vars) => this.whileHere(voice.sayIn(id, preset, vars)),
+      say: (id, vars) => this.whileHere(this.held.line(voice.say(id, vars))),
+      sayIn: (id, preset, vars) => this.whileHere(this.held.line(voice.sayIn(id, preset, vars))),
       finish: (result) => this.finish(result),
     };
     return (this.game = this.mod.create(ctx));
@@ -327,6 +336,9 @@ export class GameScene extends Scene {
       this.stopRow = !this.stopRow;
       this.helpCard.layout(this.view);
     }
+    // While one of the game's lines plays the guide bobs, and a board tap that did nothing meanwhile gets a soft tick (U7 R5).
+    this.pet.talking = this.held.talking && !this.finished;
+    if (this.held.frame(soundCount.n) && !this.finished && !this.helpCard) sfx.tick();
     // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
     if (this.helpCard) {
       this.helpCard.update(dt);
@@ -416,6 +428,13 @@ export class GameScene extends Scene {
    * Speech finishes on its own timer, so a game waiting for a line could carry on after she has left and
    * touch destroyed objects. Once the scene is gone the wait never ends, just like its tweens.
    */
+  /** Whether a touch-down lands on the round's own buttons or the guide, which are not the board. */
+  private onShellButton(e: PointerEvent): boolean {
+    const at = new Point();
+    this.app.renderer.events.mapPositionToPoint(at, e.clientX, e.clientY);
+    return [this.pet, this.home, this.help].some((b) => b.visible && b.getBounds().containsPoint(at.x, at.y));
+  }
+
   private whileHere(spoken: Promise<void>): Promise<void> {
     return new Promise((resolve) => void spoken.then(() => !this.gone && resolve()));
   }
@@ -576,16 +595,19 @@ export class GameScene extends Scene {
   }
 
   /**
-   * Leaves by `run` after a spoken label (the root's Back and Home, RW14 slice 3), waiting for the word up to a moment; a
-   * second press while it speaks does nothing. Without a label it leaves at once.
+   * Leaves by `run` with a spoken label (the root's Back and Home, RW14 slice 3): the word starts and the screen changes
+   * after the squash's beat (`LEAVE_BEAT`), as the root's own screens do; a second press meanwhile does nothing. Without a
+   * label it leaves at once.
    */
   private leaveSaying(say: (() => Promise<void>) | null, run: () => void) {
     if (!say) return this.navigateResult(run);
     this.navigateResult(() => {
-      const moment = new Promise<void>((done) => window.setTimeout(done, 1100));
-      void Promise.race([say(), moment]).then(() => {
+      // The word plays on over the change (U7b, R3): the screen leaves after the squash's beat, not after the word.
+      // A timer, not the scene's tweens: those stand still while the how-to card is open, and the card's Back leaves this way.
+      void say();
+      window.setTimeout(() => {
         if (!this.gone && this.app.scene === this) run();
-      });
+      }, LEAVE_BEAT * 1000);
     });
   }
 

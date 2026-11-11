@@ -395,8 +395,9 @@ class DayByDay implements Game {
       this.selected = n;
       this.confirm.alpha = 1;
       sfx.pop(4 + n);
-      await this.ctx.say('week.name', { day: DAYS[n] });
+      // The name never holds input (U7 R4): the arrow, or another card, acts at once and cuts it.
       this.busy = false;
+      void this.ctx.say('week.name', { day: DAYS[n] });
       return;
     }
     if (n !== this.answer) {

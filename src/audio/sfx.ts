@@ -1,6 +1,7 @@
 import { audio } from './engine';
 import { bell, marimba, noise, pluck, tone, voiced } from './instruments';
 import { midiToHz, stepHz } from './notes';
+import { soundCount } from './sound-count';
 
 export type AnimalSound = 'cluck' | 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
 
@@ -364,3 +365,12 @@ export const sfx = {
     tone(o.ctx, o.dest, 'sawtooth', hz * 1.05, o.t + 0.13, 0.16, 0.005, 0.11, hz * 0.78);
   },
 };
+
+// Every effect counts itself as it starts (`soundCount`), so the round can tell a tap that made a sound from one that did not.
+for (const key of Object.keys(sfx) as (keyof typeof sfx)[]) {
+  const play = sfx[key] as (...args: unknown[]) => void;
+  (sfx as Record<string, unknown>)[key] = (...args: unknown[]) => {
+    soundCount.n++;
+    play(...args);
+  };
+}
