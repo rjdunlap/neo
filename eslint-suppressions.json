@@ -1,19 +1,4 @@
 {
-  "src/app/scenes/ArcadeScene.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    }
-  },
-  "src/app/scenes/ExploreScene.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 3
-    }
-  },
-  "src/app/scenes/LibraryScene.ts": {
-    "@typescript-eslint/no-floating-promises": {
-      "count": 1
-    }
-  },
   "src/games/bubble-pop/index.ts": {
     "@typescript-eslint/no-floating-promises": {
       "count": 1
