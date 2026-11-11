@@ -55,7 +55,7 @@ No general scripting system, online code execution, text editor or new project s
 
 ## Similar games, apps and unplugged play
 
-Six digital precedents with opened first-party descriptions. The progression column separates described growth from any unverified level order. None was played; adaptation exclusions are our choices, not allegations about every product.
+Seven digital precedents with opened first-party descriptions. The progression column separates described growth from any unverified level order. None was played; adaptation exclusions are our choices, not allegations about every product.
 
 | Reference | How play grows | Borrow | Leave out / source limit |
 | --- | --- | --- | --- |
@@ -66,6 +66,7 @@ Six digital precedents with opened first-party descriptions. The progression col
 | [7 Billion Humans](https://tomorrowcorporation.com/7billionhumans) | Many workers execute one language; publisher describes 60+ puzzles and hint/skip support, without a detailed concept order | One rule tested in different local situations; accessible help | Swarms, concurrency hazards and workplace pressure. Shared-program variety can be explored sequentially before parallel simulation |
 | [Opus Magnum](https://www.zachtronics.com/opus-magnum/) | Open-ended machine solutions, optional compactness/speed comparison and an editor | A completed program's animated output is worth watching; more than one solution | Weapon fiction, competitive comparisons, public sharing and the large machinery palette. No exact introductory ladder is established by the page |
 | Physical/unplugged: [Kidbots](https://www.csunplugged.org/en/topics/kidbots/) | Plan, code, act as interpreter, test and revise; age-grouped activities | Meaningful author/interpreter/tester roles and an observable trace | Blindfolds, races or physical instruction invented for a toddler. Our optional table-based card remains a later reviewed parent-tool packet |
+| [Pok Pok Code Factory](https://playpokpok.com/blog/new-toy-code-factory/) (2026; [Pok Pok review](../../POK-POK.md)) | No levels described: workers already walk their paths, new "director" buttons arrive during play, and the factory gets busier | Editing a program **while it runs**, with no Run button; a mess (oil, rubbish) as an optional problem rather than a failure | A busy screen of small parts and a toy with no goal at all for the school band. Read from the developer's post only; not played |
 
 Code.org Course B opened only navigation/footer text; Kodable and Cargo-Bot developer pages failed. Their mechanics are **not** evidence in this study. Prior notebook comparisons remain historical, not retroactively verified here.
 

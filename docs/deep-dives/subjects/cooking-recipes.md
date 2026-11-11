@@ -41,7 +41,7 @@ Checked [GAMES](../../GAMES.md#pet-kitchen), the [candidate notebook](../../IDEA
 
 ## Similar games, apps and physical play
 
-Five digital precedents, all with opened first-party descriptions. These describe mechanics and the breadth of activities, not tested developmental ladders. “Leave out” is our adaptation boundary; no source's assets, characters or recipes are copied.
+Six digital precedents, all with opened first-party descriptions. These describe mechanics and the breadth of activities, not tested developmental ladders. “Leave out” is our adaptation boundary; no source's assets, characters or recipes are copied.
 
 | Reference / source | How play grows in the description | Borrow | Leave out / uncertainty |
 | --- | --- | --- | --- |
@@ -51,6 +51,7 @@ Five digital precedents, all with opened first-party descriptions. These describ
 | [Overcooked! All You Can Eat](https://www.team17.com/games/overcooked-all-you-can-eat) | Many kitchens, cooperative work and practice/assist options; assist includes longer timers and slower order expiry | Distinct cooperating jobs and visible handoffs | Round timers, expiring orders, frantic scheduling. Its assist description still includes timing; it is not evidence of an untimed curriculum |
 | [20th Century Food Court in Last Call BBS](https://www.zachtronics.com/last-call-bbs/) | Build food-producing factories; developer emphasizes speed. Exact puzzle ladder not described on this page | Adults can enjoy reasoning about a production process and revising a design | Factory throughput, programming infrastructure and the compilation's unrelated mature themes. Picnic Pantry is a smaller finite selection puzzle, not an adaptation of its factory mechanics |
 | **Physical equivalent:** original picture cards and large pretend bowls | Choose a toy dish, enact mixing/layering, let a partner reproduce it; older players choose two cards using a fixed pictured pantry | Shared explanation and a result someone else can interpret, informed by the [NAEYC classroom account](https://www.naeyc.org/resources/pubs/tyc/spring2023/cooking-with-three-year-olds) | Food tasting, small loose ingredients or real tool/heat instructions are not specified. A future printed activity needs age/material and food-safety review |
+| [Pok Pok Cooking](https://playpokpok.com/blog/new-toy-cooking/) (2025; [Pok Pok review](../../POK-POK.md)) | No ladder: any ingredient in any tool; guests show a craving but may eat anything or push the dish away, and another guest may try it | The absurd dish gets an answer (it grew from children making turkey smoothies); a refusal is a guest's taste, not a wrong answer | Hot appliances and knives as free playthings, and endless guests. Read from the developer's post only; not played |
 
 ## An answer for every audience
 

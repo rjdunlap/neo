@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — Pok Pok reviewed (docs only)
+
+**Changed:** new [reference review](POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated).
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
+
 ## 2026-11-10 — U7 fix batch 1: `animal-snack` and `far-lights` right-answer lines no longer hold input (PR #1488)
 
 **Changed:** R4 of [never swallow a tap](definitions/never-swallow-a-tap.md): `animal-snack` starts `snack.yum` and `snack.full` without holding the next ask (a 0.4 s bell beat on a count); `far-lights` serves its six right-answer lines through one helper that opens the next lights and input while the lesson line plays; the last ask or board and `far-lights` level 7 still wait for the line, and the voice line `far.curtain` is gone. One R4 timing assertion added to each of `far-lights-play` and `woods-batch`.

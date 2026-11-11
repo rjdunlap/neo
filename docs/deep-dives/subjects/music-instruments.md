@@ -60,7 +60,7 @@ A later Hat Band variation could hold an original four-note theme constant while
 
 ## Similar games, tools and unplugged play
 
-Eight digital precedents, from opened first-party descriptions. These are feature comparisons; progression means how choices expand, not a verified age ladder. No reference was played or heard in this session.
+Nine digital precedents, from opened first-party descriptions. These are feature comparisons; progression means how choices expand, not a verified age ladder. No reference was played or heard in this session.
 
 | Reference | Kind and growth | Borrow | Leave out / evidence limit |
 | --- | --- | --- | --- |
@@ -72,6 +72,7 @@ Eight digital precedents, from opened first-party descriptions. These are featur
 | [Learning Synths publisher overview](https://www.ableton.com/en/blog/learn-synthesis-in-your-browser/) | Sound-design playground with lessons from the basics | Hear one parameter's effect before combining controls | Full synth panel and unsupported exact lesson mechanics. Direct app/lesson fetches were fallback text |
 | [Blob Opera](https://artsandculture.google.com/experiment/blob-opera/AAHWrq360NcGbw?hl=en) | Drag-driven pitch/vowels with four responding synthesized voices | Expressive shape-to-sound response; hear a change immediately | Machine learning, singer recordings/training data and unsnapped pitch. Sing Higher already holds the island's simple pitch-drag idea |
 | [Carnegie Hall Orchestra Map](https://orchestramap.carnegiehall.org/?active=conductor&mapType=instruments) | Interactive seating/listening map, instruments and families | See which player makes a sound; listen before naming | This is an exploratory map, not a verified game ladder. Its recordings are references, not importable island assets |
+| [Pok Pok Musical Blobs and Sequencer](https://developer.apple.com/news/?id=5bcex7xf) ([Pok Pok review](../../POK-POK.md)) | Open toys: shapes dragged on a canvas sound when they collide; the Sequencer layers instruments with tempo, pitch and volume | One meaning per colour and shape (blue is always C; a circle is a sine wave); nothing sounds unless she starts it; a pattern still reads with the sound off | Recorded sounds (the island synthesizes) and a toy with no bounded round. Read from Apple's feature and the developer's posts; not heard |
 
 **Unplugged equivalent:** Carnegie Hall's [Be the Conductor activity](https://www.carnegiehall.org/Education/Programs/Link-Up/New-York-City/Instrument-Families) alternates leader and ensemble, with signals for musical expression. Adapt the role exchange and opportunity to change a performance; do not require formal baton patterns or publish practical movement instructions before review. NAEYC's family examples support shared singing/pattern play. A family supplies its own familiar music; we do not need to reproduce a copyrighted song or instruct a toddler to build a small-parts instrument.
 
