@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — U7d, which lines hold (PR #1487)
+
+**Changed:** docs only. New page [never-swallow-a-tap-lines.md](definitions/never-swallow-a-tap-lines.md) classifies the awaited spoken lines of the 25 upright-ready games (two cut, eight praise a finished board, the rest closing or held); the definition, READY (fix batch 1 and a queued line for the other 133 games), the UX review and the roadmap point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (no code changed). Nothing was played or timed: the classification is from reading the code.
+
 ## 2026-11-10 — Number Trails level 5, Write how many (PR #1482)
 
 **Changed:** `number-trails` level 5 for pre-K (order 2, 3, 5): count a group of 0–9 (an empty pail for zero), pick the numeral card that tells how many (count, neighbour, a reversal-prone digit), then trace it; a wrong card is a miss with a recount, the second glows the right card (one hint); four voice lines, level-scoped how-to lines, the bot counts, picks and traces.
