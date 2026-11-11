@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-11 — TotoLogic reviewed again after playing it (docs only, PR #1523)
+
+**Changed:** [TOTOLOGIC.md](TOTOLOGIC.md) rewritten from play: the screen table and a table of what each category holds, the verdicts, P1–P5 each with an "after play" note (P3, the caption for readers, now first), P6 (tap to fill) withdrawn as a misread screenshot, and three new proposals (P7 say why after a right answer, P8 a drawn total on Market Stall's counter, P9 a read-through of how drag games count a miss); its pointers in IDEAS, the grown-ups' page definition, the Rainbow Fingers row (corrected), new rows in the Market Stall and Pattern Train dives, the tap-then-place lines in POK-POK and READY, and one sound-off clause on the phone playtest list.
+**Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built). TotoLogic 1.0.0 (14) was played on the developer's Android phone by the assistant over USB, with the phone muted and speech transcribed by software; no child played, and the island's side of each comparison was read from the code at `origin/main` `353daaba`, not played.
+
 ## 2026-11-11 — Tile Pairs slice 1, a fresh pairing and a visible uncovering (PR #1522)
 
 **Changed:** `tile-pairs` `logic.ts` (`seededRoute`, a per-level `clear` band and `deal` over up to 40 seeded routes at 60 play-outs each), `logic.test.ts` (the frozen hash test for levels 1–3 replaced by property tests) and `index.ts` (a pair lifts and fades, freed tiles pulse, "pairs open" in the tally); no shared file, voice, how-to, level table or couch change.
