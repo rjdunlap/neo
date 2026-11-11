@@ -71,7 +71,7 @@ describe('level 4, First numbers', () => {
     expect(trailTolerance(4)).toBe(trailTolerance(1));
     expect(trailTolerance(4)).toBeGreaterThan(trailTolerance(2));
   });
-  it('opens preschool, steps up to 1 then 2, and lands a saved 4 on pre-K\'s first level', () => {
+  it("opens preschool, steps up to 1 then 2, and lands a saved 4 on pre-K's first level", () => {
     const pre = rangeFor(LEVELS, 'preschool'),
       prek = rangeFor(LEVELS, 'prek');
     expect(levelsInOrder(pre)).toEqual([4, 1, 2]);
