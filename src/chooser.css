@@ -195,3 +195,139 @@
   color: #b3261e;
   font-weight: 600;
 }
+
+/* A phone held upright (--u is 1 there, so these are CSS pixels): the title on one line below the sun and the gear, one
+   large card (two across once there are two players), and Add a player as a row so it stays on the screen. Spare height
+   goes one part above and two below, so the cards sit where a thumb reaches. */
+@media (max-width: 599px) and (orientation: portrait) {
+  .chooser {
+    padding-top: calc(100px + var(--safe-top));
+    padding-bottom: calc(20px + var(--safe-bottom));
+  }
+
+  .chooser::before,
+  .chooser::after {
+    content: '';
+    flex: 1 0 0;
+  }
+
+  .chooser::after {
+    flex-grow: 2;
+  }
+
+  .chooser__title {
+    font-size: min(52px, 12.5vw);
+    white-space: nowrap;
+    -webkit-text-stroke-width: 6px;
+  }
+
+  .chooser__ask {
+    margin: 2px 0 16px;
+    font-size: 28px;
+  }
+
+  .chooser__cards {
+    grid-template-columns: minmax(0, 240px);
+    gap: 14px;
+  }
+
+  .chooser__cards--many {
+    grid-template-columns: repeat(2, minmax(0, 190px));
+  }
+
+  .chooser__cards--many .chooser__play {
+    min-height: 196px;
+    font-size: 26px;
+  }
+
+  .chooser__cards--many .chooser__play canvas {
+    width: 124px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .chooser__cards--many .chooser__couch {
+    gap: 6px;
+    min-height: 76px;
+    font-size: 16px;
+  }
+
+  .chooser__cards--many .chooser__couch svg {
+    width: 36px;
+    height: 24px;
+  }
+
+  .chooser__add {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 12px;
+    min-height: 88px;
+    font-size: 22px;
+    white-space: nowrap;
+  }
+
+  .chooser__plus {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    font-size: 34px;
+  }
+}
+
+/* A phone held sideways: a short heading, and cards short enough that a whole card and its couch button show. */
+@media (max-height: 599px) and (orientation: landscape) {
+  .chooser {
+    padding-top: calc(10px + var(--safe-top));
+    padding-bottom: calc(12px + var(--safe-bottom));
+  }
+
+  .chooser__title {
+    font-size: 36px;
+    -webkit-text-stroke-width: 6px;
+  }
+
+  .chooser__ask {
+    margin: 0 0 10px;
+    font-size: 22px;
+    -webkit-text-stroke-width: 5px;
+  }
+
+  .chooser__cards {
+    grid-template-columns: repeat(auto-fit, 184px);
+    gap: 14px;
+  }
+
+  .chooser__play {
+    min-height: 152px;
+    padding: 10px 8px 6px;
+    gap: 2px;
+    font-size: 24px;
+  }
+
+  .chooser__play canvas {
+    width: 104px;
+    height: 104px;
+  }
+
+  .chooser__couch {
+    min-height: 64px;
+    font-size: 17px;
+  }
+
+  .chooser__couch svg {
+    width: 36px;
+    height: 24px;
+  }
+
+  .chooser__add {
+    min-height: 152px;
+    font-size: 22px;
+  }
+
+  .chooser__plus {
+    width: 64px;
+    height: 64px;
+    font-size: 44px;
+  }
+}

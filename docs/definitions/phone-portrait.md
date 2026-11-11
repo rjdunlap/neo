@@ -42,7 +42,7 @@ Built 2026-11-05: `computeView(..., upright)`, `Scene.uprightArea`, `GameModule.
 
 The developer, 2026-11-09: the developer and their wife will playtest the six each day on their phones, and the rest of the experience is archived on a phone. Built in one PR:
 
-- **A phone is the six.** `phoneSized` (`src/engine/view.ts`: a touch screen whose shorter side is under 600 CSS pixels, held either way) makes `App.phoneOnly` true at the root; the hub route then opens `DailyScene` instead of Home, the six page's Back goes to "Who's playing?", and its All games button is not drawn. Home, Explore, creature play and the island at `classic/` stay on tablets and computers; nothing is deleted. A round's house on a phone comes back to the six.
+- **A phone is the six.** `phoneSized` (`src/engine/view.ts`: a touch screen whose shorter side is under 600 CSS pixels, held either way) makes `App.phoneOnly` true at the root; the hub route then opens `DailyScene` instead of Home, the six page's Back goes to "Who's playing?", and its All games button is not drawn. Home, Explore, creature play and the island at `classic/` stay on tablets and computers; nothing is deleted. A daily round's result on a phone has one way out, Back to the six, and no house (phone polish, 2026-11-11).
 - **First run upright.** `HatchScene` sets `uprightArea` and lays out from `hatchLayout` (choices centered across the plate, the go button under them, the grown-up's name field below), and `App.refreshTurn` no longer shows the prompt before the first scene exists.
 - **The six page upright.** A tall view uses the whole width (two columns, cards up to 300 units, a larger name and level line) and keeps a strip under the cards for the pet; a turn of the phone re-picks the six and redraws the turn badges.
 - **Play all.** A green play button opens the first card not yet played today; a daily round's result shows the next unplayed card in the discovery rectangle (`nextOfSix` in `src/content/daily.ts`), so the set is one tap per game. With all six played the way out returns to the page and its flourish.
@@ -50,6 +50,14 @@ The developer, 2026-11-09: the developer and their wife will playtest the six ea
 - **Shortcut.** The root manifest has a Today's six shortcut (`./?daily`) for tablets, where Home is still the root.
 
 Shell slices 2 (built) and 3 now matter only on tablets and computers that are narrow enough to be asked to turn (none today), so the game batches come first.
+
+### Phone polish: the way in, the six's level lines and the result (built 2026-11-11)
+
+**Built:** 2026-11-11 (PR #1496), from a walk of the phone's four screens at 390 × 844, 844 × 390, 360 × 640 and 320 × 568 in Chrome.
+
+- **"Who's playing?"** (`src/chooser.css`, two media queries; `--u` is 1 on a phone). Upright: the title is one line below the sun and the gear, one large card (two across from two players, `chooser__cards--many`), and Add a player is a row under the cards so it stays on the screen; spare height goes one part above and two below. Sideways: a short heading and cards about 220 px tall, so a whole card and its Couch play show; `ChooserScene.resize` stands a smaller sun beside the heading.
+- **The six's level lines.** A grown-up card's level line keeps its full size and is cut at a clause, then at a word with an ellipsis (`levelLine` in `src/content/daily.ts`, tested over every touch game's every level), to two lines on a wide view and three on a tall one; names and lines wrap inside the cell, so neighbouring plates stay apart. The whole description is still on the how-to card and the grown-ups' page.
+- **A daily round's result.** `dailySpots` (`src/app/result-layout.ts`) puts the next game's tile between Again and Back on a tall view, where a thumb is, with the note pencil in the top-left corner; a wide view is unchanged. On a phone the house is not drawn for a daily round: it went to the same six as Back.
 
 ### Shell slice 2: the rest of the root (built 2026-11-10)
 

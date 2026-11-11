@@ -214,6 +214,26 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         return c.scrollWidth - c.clientWidth;
       });
       assert.ok(overflow <= 1, 'the chooser does not scroll sideways on a phone');
+      // The title keeps to one line below the sun and the gear, and Add a player is a row that stays on the screen.
+      const way = await p.evaluate(() => {
+        const title = document.querySelector('.chooser__title');
+        const add = document.querySelector('.chooser__add').getBoundingClientRect();
+        return {
+          lines: Math.round(
+            title.getBoundingClientRect().height / parseFloat(getComputedStyle(title).lineHeight),
+          ),
+          top: title.getBoundingClientRect().top,
+          addBottom: add.bottom,
+          addHeight: add.height,
+          tall: innerHeight,
+        };
+      });
+      assert.equal(way.lines, 1, "the chooser's title is one line on a phone");
+      assert.ok(way.top >= 96, `the title starts below the sun and the gear (${way.top})`);
+      assert.ok(
+        way.addBottom <= way.tall && way.addHeight >= 80,
+        `Add a player is on the screen (${JSON.stringify(way)})`,
+      );
       assert.ok(
         (await p.locator('.chooser__couch').first().boundingBox()).height >= 100,
         'the couch button on a card is at least 100 units tall',
@@ -377,8 +397,30 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       // They arrive once the buttons have (`resultReady`), which slow headless frames can push past the wait above.
       await p.waitForFunction(() => neo.scene.resultReady, null, { timeout: 15000 });
       assert.deepEqual(
-        await p.evaluate(() => ({ next: !!neo.scene.dailyNext, note: !!neo.scene.dailyNote })),
-        { next: true, note: true },
+        await p.evaluate(() => ({
+          next: !!neo.scene.dailyNext,
+          note: !!neo.scene.dailyNote,
+          house: !!neo.scene.after.house,
+        })),
+        { next: true, note: true, house: false },
+        'a phone result: the next game, the note pencil, and one way out (Home would be the same six)',
+      );
+      // Upright, the next game sits in the thumb's row, between Again and Back.
+      const row = await p.evaluate(() => {
+        const box = (o) => {
+          const r = o.getBounds();
+          return { x0: r.minX, x1: r.maxX, y: (r.minY + r.maxY) / 2 };
+        };
+        const a = neo.scene.after;
+        return {
+          next: box(neo.scene.dailyNext),
+          again: box(a.again.children[0]),
+          home: box(a.home.children[0]),
+        };
+      });
+      assert.ok(
+        row.again.x1 < row.next.x0 && row.next.x1 < row.home.x0 && Math.abs(row.next.y - row.again.y) < 20,
+        `the next game is between Again and Back (${JSON.stringify(row)})`,
       );
       await p.evaluate(() => neo.scene.dailyNote.press());
       await p.locator('.playtest [data-rate="good"]').tap();

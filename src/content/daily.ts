@@ -144,6 +144,28 @@ export function levelDots(pick: DailyPick): { at: number; of: number } {
 }
 
 /**
+ * A grown-up card's level line, short enough to read at full size: the whole line when it `fits` (the caller measures the
+ * drawn text), else its leading clauses (cut at a semicolon), else the first clause's leading words and an ellipsis.
+ */
+export function levelLine(text: string, fits: (line: string) => boolean): string {
+  if (!text || fits(text)) return text;
+  const clauses = text.split(/;\s*/);
+  for (let n = clauses.length - 1; n >= 1; n--) {
+    const line = clauses.slice(0, n).join('; ');
+    if (fits(line)) return line;
+  }
+  const words = clauses[0].split(/\s+/);
+  for (let n = words.length - 1; n > 1; n--) {
+    const line = `${words
+      .slice(0, n)
+      .join(' ')
+      .replace(/[\s,:·(–-]+$/, '')}…`;
+    if (fits(line)) return line;
+  }
+  return `${words[0]}…`;
+}
+
+/**
  * The game is new to her today: she had finished no round of it before `day`. History keeps only the last rounds, so the
  * count of every round ever finished (`plays`) settles it: new when no stats, or when every counted round was today's. A
  * round finished today does not end newness until tomorrow, so a card never changes level during the day.
