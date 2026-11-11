@@ -811,7 +811,7 @@ Proof: new-level tier, as the [definition's check tier](definitions/rule-machine
 
 ### rule-machine 4: Two machines
 
-**Status: not built; defined 2026-11-11.**
+**Status: built 2026-11-11, [PR #1505](https://github.com/rjdunlap/neo/pull/1505).**
 
 - **`rule-machine`, level 6 *Two machines* (algebra-balance study slice AB2)** (after batch `rule-machine 3`; school): watch a pair of machines and predict the output on the pads, then build the watched pair reversed from a shelf of four cards for a wanted in → out; the first pair run per target is free. [Definition](definitions/rule-machine-5-6.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 

@@ -22,8 +22,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
-    // RM_LEVELS=3,4 plays only those levels (default all five).
-    const only = (process.env.RM_LEVELS ?? '1,2,3,4,5').split(',').map(Number);
+    // RM_LEVELS=3,4 plays only those levels (default all six).
+    const only = (process.env.RM_LEVELS ?? '1,2,3,4,5,6').split(',').map(Number);
 
     async function levelsOneTwo() {
       // Level 1 (pre-K): three walkers go through by themselves; the first prediction is free even when wrong, the second
@@ -326,10 +326,118 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
     }
 
+    // Level 6, portrait: two machines in a row. On the first pair: a wrong pad (one miss, the car stops on the link),
+    // the right pad, then the build: the watched order first (free), a second pair that does not fit (one miss), a
+    // third (a miss and the glow: one hint), then the glow followed to a fitting pair. The second pair goes straight.
+    // 3 misses, 1 hint.
+    async function levelSix() {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(600);
+      await launch('rule-machine', 6, 'Mia', 'school');
+      const phase = async (p) => {
+        await until((p) => neo.scene.finished || neo.scene.game.state.phase === p, p);
+        await page.waitForTimeout(350);
+      };
+      const tapShelfCard = async (i) => {
+        await page.evaluate((i) => kit.tapOn(neo.scene.game.cardNodes[i]), i);
+        await page.waitForTimeout(350);
+      };
+      const ran = async (n) => {
+        await until((n) => neo.scene.game.state.phase === 'build' && neo.scene.game.state.runs === n, n);
+        await page.waitForTimeout(350);
+      };
+      const fits = (s, i, j) => s.fitting.some((f) => f[0] === i && f[1] === j);
+      for (let pair = 0; pair < 2; pair++) {
+        await phase('watch');
+        let s = await state();
+        assert.deepEqual([s.machine, s.rows.length], [pair, 0], 'a new pair starts with an empty table');
+        await page.evaluate(() => kit.tapOn(neo.scene.game.hopperHit));
+        await phase('predict');
+        s = await state();
+        assert.deepEqual(s.rows, [{ in: s.n, out: s.watched }], 'the watched car is the first row');
+        assert.equal(
+          s.options[s.right],
+          apply(s.second, apply(s.first, s.m)),
+          'the right pad is what the two machines make',
+        );
+        assert.notEqual(s.watched, s.target, 'the other order makes something else');
+        if (pair === 0) {
+          await tapPad(wrongOf(s));
+          await until(() => neo.scene.game.state.phase === 'predict' && neo.scene.game.state.held);
+          await page.waitForTimeout(300);
+          s = await state();
+          assert.deepEqual(
+            [s.misses, s.hints, s.rows.length],
+            [1, 0, 1],
+            'a wrong pad: one miss, the car waits on the link, the pads stay',
+          );
+        }
+        await tapPad(s.right);
+        await phase('build');
+        s = await state();
+        assert.deepEqual([s.rows.length, s.slots, s.runs], [2, [null, null], 0], 'the shelf comes down');
+        assert.equal(s.shelf.length, 4);
+        assert.ok(fits(s, s.reversed[0], s.reversed[1]), 'the watched pair reversed fits');
+        if (pair === 0) {
+          const [w0, w1] = [s.reversed[1], s.reversed[0]];
+          assert.ok(!fits(s, w0, w1), 'the watched order does not fit');
+          await tapShelfCard(w0);
+          await tapShelfCard(w1);
+          await ran(1);
+          s = await state();
+          assert.deepEqual(
+            [s.misses, s.hints, s.slots, s.rows.at(-1).out],
+            [1, 0, [w0, w1], s.watched],
+            'the first pair run is free, stays in its slots, and its row is written',
+          );
+          // A second pair that does not fit: another second card if one does not fit, else the same one again.
+          const other = [0, 1, 2, 3].find((c) => c !== w0 && c !== w1 && !fits(s, w0, c)) ?? w1;
+          await tapShelfCard(w1);
+          s = await state();
+          assert.deepEqual(s.slots, [w0, null], 'a tapped slot card goes back to the shelf');
+          await tapShelfCard(other);
+          await ran(2);
+          s = await state();
+          assert.deepEqual(
+            [s.misses, s.hints, s.glowing],
+            [2, 0, false],
+            'the second pair run counts one miss',
+          );
+          await tapShelfCard(other);
+          await tapShelfCard(other);
+          await ran(3);
+          s = await state();
+          assert.deepEqual(
+            [s.misses, s.hints, s.glowing],
+            [3, 1, true],
+            'the third lights the glow: one hint',
+          );
+          assert.deepEqual(s.next, { kind: 'lift', slot: 1 }, 'the glow starts on the second slot');
+          await page.waitForTimeout(400);
+          await screenshot('rule-machine-6-portrait');
+        }
+        // Follow the help to a fitting pair.
+        for (let k = 0; k < 4; k++) {
+          s = await state();
+          if (s.phase !== 'build' || !s.next) break;
+          await tapShelfCard(s.next.kind === 'lift' ? s.slots[s.next.slot] : s.next.card);
+        }
+        await until((p) => neo.scene.finished || neo.scene.game.state.machine > p, pair);
+      }
+      await finished('rule-machine');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      assert.deepEqual(await score(), [3, 1], 'level 6 saved 3 misses, 1 hint');
+      log(
+        'Rule Machine 6 portrait: a wrong pad (1 miss), the watched order free, two more pairs (2 misses, the glow, 1 hint), the help followed to a fitting pair, then a straight pair; passed',
+      );
+    }
+
     if (only.includes(1) || only.includes(2)) await levelsOneTwo();
     if (only.includes(3)) await levelThree();
     if (only.includes(4)) await levelFour();
     if (only.includes(5)) await levelFive();
+    if (only.includes(6)) await levelSix();
     log(`Rule Machine ${only.join(', ')}: passed`);
   }
   return { ruleMachinePlay };

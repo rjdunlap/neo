@@ -5,7 +5,8 @@
  * cards apart. Feeding is never a miss, and neither is a first guess about a new machine: only a prediction made once
  * the machine has shown its rule can count, and at level 4 a card is judged only when the table can tell. Level 5 runs
  * the rule backwards: the card hangs, a wanted car has come out, and she sends the car that went in; a wrong car runs
- * and counts one miss.
+ * and counts one miss. Level 6 stands two machines in a row: she says what the pair makes, then builds the watched
+ * pair the other way round for a wanted in → out; the first pair she runs for a target is free.
  * Definitions: docs/definitions/rule-machine.md and docs/definitions/rule-machine-5-6.md.
  */
 import type { Rng } from '../../engine/random';
@@ -64,7 +65,7 @@ export const MAX_COUNT = 12;
 export type Ask = 'look' | 'count';
 export interface Plan {
   level: number;
-  id: 'hats' | 'more' | 'what' | 'covered' | 'back';
+  id: 'hats' | 'more' | 'what' | 'covered' | 'back' | 'chain';
   ask: Ask;
   name: string;
   /** Machines in a round. */
@@ -82,6 +83,8 @@ export interface Plan {
   lights: number;
   /** Level 5: wanted cars on each machine (0 elsewhere). */
   wanted: number;
+  /** Level 6: two machines in a row, each wearing one card (a round is two pairs; `ChainGame` plays it). */
+  pair: boolean;
 }
 
 const PLANS: readonly Plan[] = [
@@ -98,6 +101,7 @@ const PLANS: readonly Plan[] = [
     cardAfter: 0,
     lights: 5,
     wanted: 0,
+    pair: false,
   },
   {
     level: 2,
@@ -112,6 +116,7 @@ const PLANS: readonly Plan[] = [
     cardAfter: 0,
     lights: 4,
     wanted: 0,
+    pair: false,
   },
   {
     level: 3,
@@ -126,6 +131,7 @@ const PLANS: readonly Plan[] = [
     cardAfter: 3,
     lights: 4,
     wanted: 0,
+    pair: false,
   },
   {
     level: 4,
@@ -140,6 +146,7 @@ const PLANS: readonly Plan[] = [
     cardAfter: 0,
     lights: 5,
     wanted: 0,
+    pair: false,
   },
   {
     level: 5,
@@ -154,13 +161,29 @@ const PLANS: readonly Plan[] = [
     cardAfter: 0,
     lights: 5,
     wanted: 2,
+    pair: false,
+  },
+  {
+    level: 6,
+    id: 'chain',
+    ask: 'count',
+    name: 'Two machines: say what they make, then build a pair',
+    machines: 2,
+    walkers: 0,
+    predictions: 1,
+    tray: 0,
+    shelf: 'none',
+    cardAfter: 0,
+    lights: 0,
+    wanted: 0,
+    pair: true,
   },
 ];
 
-/** Pre-K plays level 1 only; school plays 2–5 (6–8 append later without renumbering). */
+/** Pre-K plays level 1 only; school plays 2–6 (7–8 append later without renumbering). */
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 1 },
-  school: { min: 2, max: 5 },
+  school: { min: 2, max: 6 },
 };
 
 /** Level 3's shelf: two adds and a take-away never agree on any input, so every row breaks both wrong cards. */
@@ -310,6 +333,8 @@ export function counted(plan: Plan, ask: number): boolean {
   if (plan.ask === 'look') return ask >= 1;
   // Level 5: the card hangs from the start, so every wrong car counts.
   if (plan.id === 'back') return true;
+  // Level 6's pads: both cards hang, and one car has already gone through.
+  if (plan.id === 'chain') return true;
   // Level 4's one prediction comes after the card hangs on the machine: it counts whatever the rows.
   if (plan.shelf === 'start') return true;
   return ask >= 2;
@@ -412,6 +437,167 @@ export function makeRound(level: number, rng: Rng): Machine[] {
     padOrders: padOrders(),
     shelf: [],
   }));
+}
+
+// ---- level 6: two machines in a row ----
+
+export const CHAIN_TIMES: readonly NumRule[] = [
+  { kind: 'num', a: 2, b: 0 },
+  { kind: 'num', a: 3, b: 0 },
+];
+export const CHAIN_ADDS: readonly NumRule[] = [
+  { kind: 'num', a: 1, b: 1 },
+  { kind: 'num', a: 1, b: 2 },
+  { kind: 'num', a: 1, b: 3 },
+  { kind: 'num', a: 1, b: -1 },
+];
+/** Level 6's cars. */
+export const CHAIN_CARS: readonly number[] = [1, 2, 3, 4, 5, 6];
+
+/** A car through two machines in a row: what stands on the link, and what comes out. */
+export function chain(first: NumRule, second: NumRule, n: number): { mid: number; out: number } {
+  const mid = apply(first, n);
+  return { mid, out: apply(second, mid) };
+}
+
+const shown = (v: number) => v >= 1 && v <= MAX_COUNT;
+/** Whether a car keeps its middle count and its output within 1–12 through this pair. */
+export function chainOk(first: NumRule, second: NumRule, n: number): boolean {
+  const c = chain(first, second, n);
+  return shown(c.mid) && shown(c.out);
+}
+/** The other cars that could be predicted on a pair once `n` has been watched. */
+export function predictable(first: NumRule, second: NumRule, n: number): number[] {
+  return CHAIN_CARS.filter((m) => m !== n && chainOk(first, second, m));
+}
+
+/** A times card, an add or take card, which goes first, and the watched car. */
+export interface ChainCase {
+  t: NumRule;
+  s: NumRule;
+  timesFirst: boolean;
+  n: number;
+}
+export const caseOrder = (c: ChainCase): [NumRule, NumRule] => (c.timesFirst ? [c.t, c.s] : [c.s, c.t]);
+
+/** Every case: the watched order and the reversed order both stay within 1–12 on `n`, and another car can be predicted. */
+export function chainCases(): ChainCase[] {
+  const out: ChainCase[] = [];
+  for (const t of CHAIN_TIMES)
+    for (const s of CHAIN_ADDS)
+      for (const timesFirst of [true, false])
+        for (const n of CHAIN_CARS) {
+          const c = { t, s, timesFirst, n };
+          const [first, second] = caseOrder(c);
+          if (chainOk(first, second, n) && chainOk(second, first, n) && predictable(first, second, n).length)
+            out.push(c);
+        }
+  return out;
+}
+
+/** The add or take cards that can be the shelf's fourth: with the pair's own they do not make the target by themselves. */
+export function spareCards(s: NumRule, n: number, target: number): NumRule[] {
+  return CHAIN_ADDS.filter((x) => x.b !== s.b && x.b + s.b !== target - n);
+}
+
+/** One pair of a level-6 round. */
+export interface ChainPair {
+  /** The watched order. */
+  first: NumRule;
+  second: NumRule;
+  /** The watched car, and the car she predicts. */
+  n: number;
+  m: number;
+  /** What the watched order made of `n`. */
+  watched: number;
+  /** The build's wanted output for `n`: what the reversed order makes. */
+  target: number;
+  /** The seeded order of the pads [right, one below, one above]. */
+  padOrder: number[];
+  /** Four cards in seeded order: ×2, ×3, the pair's add or take card and one other. */
+  shelf: NumRule[];
+  /** The reversed pair as shelf indices [first slot, second slot]. */
+  reversed: [number, number];
+}
+
+export function pairFor(c: ChainCase, rng: Rng): ChainPair {
+  const [first, second] = caseOrder(c);
+  const ms = predictable(first, second, c.n);
+  const m = ms[rng.int(0, ms.length - 1)];
+  const watched = chain(first, second, c.n).out;
+  const target = chain(second, first, c.n).out;
+  const spares = spareCards(c.s, c.n, target);
+  const shelf = shuffle(rng, [...CHAIN_TIMES, c.s, spares[rng.int(0, spares.length - 1)]]);
+  const at = (r: NumRule) => shelf.findIndex((x) => sameRule(x, r));
+  return {
+    first,
+    second,
+    n: c.n,
+    m,
+    watched,
+    target,
+    padOrder: shuffle(rng, [0, 1, 2]),
+    shelf,
+    reversed: [at(second), at(first)],
+  };
+}
+
+/** A level-6 round: two pairs in opposite orders with different add or take cards. */
+export function makeChainRound(rng: Rng): ChainPair[] {
+  const cases = chainCases();
+  const timesFirst = rng.int(0, 1) === 0;
+  const pick = (xs: ChainCase[]) => xs[rng.int(0, xs.length - 1)];
+  const a = pick(cases.filter((c) => c.timesFirst === timesFirst));
+  const b = pick(cases.filter((c) => c.timesFirst !== timesFirst && c.s.b !== a.s.b));
+  return [pairFor(a, rng), pairFor(b, rng)];
+}
+
+/** The prediction's pads, in order, and which is right. */
+export function chainOptions(p: ChainPair): { values: number[]; right: number } {
+  return { values: pads(chain(p.first, p.second, p.m).out, p.padOrder), right: p.padOrder.indexOf(0) };
+}
+
+/** Every ordered pair of two different shelf cards (as shelf indices) that turns `n` into `out` with the middle count within 0–12. */
+export function fitting(shelf: readonly NumRule[], n: number, out: number): [number, number][] {
+  const pairs: [number, number][] = [];
+  shelf.forEach((p, i) =>
+    shelf.forEach((q, j) => {
+      if (i === j) return;
+      const c = chain(p, q, n);
+      if (c.out === out && c.mid >= 0 && c.mid <= MAX_COUNT) pairs.push([i, j]);
+    }),
+  );
+  return pairs;
+}
+
+/** Level 6's build: the first pair run for a target is free; each later one that does not make it counts. */
+export function pairCounted(runs: number): boolean {
+  return runs >= 1;
+}
+
+export type Slots = readonly [number | null, number | null];
+export type CardMove = { kind: 'lift'; slot: 0 | 1 } | { kind: 'place'; card: number; slot: 0 | 1 };
+
+/**
+ * The build's helpful move (the hint and the bot). If the placed cards cannot be completed to a fitting pair, the placed
+ * card to lift (the second slot's first); otherwise the card for the first empty slot, from the `prefer`red pair (the
+ * watched pair reversed) when the placed cards allow it. Null when the slots already hold a fitting pair.
+ */
+export function nextCard(
+  shelf: readonly NumRule[],
+  slots: Slots,
+  n: number,
+  out: number,
+  prefer?: readonly [number, number],
+): CardMove | null {
+  const open = fitting(shelf, n, out).filter(
+    (p) => (slots[0] === null || slots[0] === p[0]) && (slots[1] === null || slots[1] === p[1]),
+  );
+  if (slots[0] !== null && slots[1] !== null) return open.length ? null : { kind: 'lift', slot: 1 };
+  if (!open.length) return { kind: 'lift', slot: slots[1] !== null ? 1 : 0 };
+  const pick = (prefer && open.find((p) => p[0] === prefer[0] && p[1] === prefer[1])) ?? open[0];
+  const slot = slots[0] === null ? 0 : 1;
+  return { kind: 'place', card: pick[slot], slot };
 }
 
 export const isLook = (m: Machine): m is LookMachine => m.rule.kind === 'look';
@@ -530,11 +716,67 @@ export interface Layout {
   shelf: Box[];
   /** Level 4: the Peek eye on the covered machine's front. */
   peek: Box;
+  /** Level 6: the second machine's body (`body` is the first), the card slot on each front, and where the car pauses between them. */
+  second: Box | null;
+  slots: Box[];
+  link: Pt | null;
 }
 
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
+export const PAIR_HOPPER = 130,
+  PAIR_BODY = 160,
+  PAIR_LINK = 70,
+  PAIR_CHUTE = 130,
+  SLOT = 120,
+  SHELF4_GAP = 16;
+
+/** Level 6: table, the pair (hopper, body, link, body, chute: 650 across), then one bottom row for the pads or the shelf of four. */
+function chainLayout(view: { w: number; h: number }): Layout {
+  const { w, h } = view;
+  const portrait = h > w;
+  const cx = w / 2;
+  const span = 5 * COL_W + 4 * COL_GAP;
+  const tableY = portrait ? 230 : 95 + COL_H / 2;
+  const machineY = tableY + COL_H / 2 + (portrait ? 90 : 20) + BODY_H / 2;
+  const rowY = machineY + BODY_H / 2 + (portrait ? 120 + CAR_H / 2 : 30 + 75);
+  const columns = Array.from({ length: 5 }, (_, i) =>
+    box(cx - span / 2 + COL_W / 2 + i * (COL_W + COL_GAP), tableY, COL_W, COL_H),
+  );
+  const mx = cx - (PAIR_HOPPER + 2 * PAIR_BODY + PAIR_LINK + PAIR_CHUTE) / 2;
+  const hopper = box(mx + PAIR_HOPPER / 2, machineY - 10, PAIR_HOPPER, PAIR_HOPPER);
+  const body = box(mx + PAIR_HOPPER + PAIR_BODY / 2, machineY, PAIR_BODY, BODY_H);
+  const second = box(body.x + PAIR_BODY + PAIR_LINK, machineY, PAIR_BODY, BODY_H);
+  const chute = box(second.x + PAIR_BODY / 2 + PAIR_CHUTE / 2, machineY + 20, PAIR_CHUTE, BODY_H - 40);
+  const shelfW = 4 * CARD_W + 3 * SHELF4_GAP;
+  const left = portrait ? cx - shelfW / 2 : Math.max(190, cx - shelfW / 2);
+  const rowCx = left + shelfW / 2;
+  const padsW = 3 * PAD + 2 * PAD_GAP;
+  return {
+    portrait,
+    columns,
+    hopper,
+    body,
+    chute,
+    second,
+    slots: [box(body.x, machineY, SLOT, SLOT), box(second.x, machineY, SLOT, SLOT)],
+    link: { x: body.x + PAIR_BODY / 2 + PAIR_LINK / 2, y: machineY + BODY_H / 2 - 12 },
+    pads: Array.from({ length: 3 }, (_, i) =>
+      box(rowCx - padsW / 2 + PAD / 2 + i * (PAD + PAD_GAP), rowY, PAD, PAD),
+    ),
+    shelf: Array.from({ length: 4 }, (_, i) =>
+      box(left + CARD_W / 2 + i * (CARD_W + SHELF4_GAP), rowY, CARD_W, CARD_H),
+    ),
+    tray: [],
+    peek: box(body.x, body.y, PEEK, PEEK),
+    waitAt: { x: hopper.x, y: hopper.y + 10 },
+    // The output stands wholly on the chute, so it stays on a 700-wide screen.
+    out: { x: chute.x + 10, y: machineY + BODY_H / 2 - 4 },
+  };
+}
+
 export function layout(view: { w: number; h: number }, level: number): Layout {
+  if (planFor(level).pair) return chainLayout(view);
   const { w, h } = view;
   const portrait = h > w;
   const cx = w / 2;
@@ -590,6 +832,9 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
     tray,
     shelf,
     peek: box(body.x, body.y - 6, PEEK, PEEK),
+    second: null,
+    slots: [],
+    link: null,
     // Waiting things stand in the hopper's mouth (below the table); outputs land at the chute's far end.
     waitAt: { x: hopper.x, y: hopper.y + 10 },
     out: { x: chute.x + CHUTE_W / 2, y: machineY + BODY_H / 2 - 4 },
