@@ -150,9 +150,71 @@ export function createSuite({ page, errors, log, scene, screenshot, launch, fini
       await traceAll();
       await finished('number-trails');
     }
+    // Level 6, Less help each time: one numeral three times in portrait (solid, dotted, start only); a wander on the
+    // dotted try is one miss and brings the solid trail back for that stroke; the things come once, after the third try.
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await launch('number-trails', 6);
+    await page.waitForTimeout(400);
+    const traceTry = (attempt) =>
+      page.evaluate(async (attempt) => {
+        const g = neo.scene.game;
+        let steps = 0;
+        while (g.phase === 'trace' && g.attempt === attempt && steps++ < 40) {
+          if (!(await kit.until(() => !g.busy || g.phase !== 'trace', 18000)))
+            throw new Error('Number Trails transition stuck');
+          if (g.phase !== 'trace' || g.attempt !== attempt) break;
+          const points = g.points.slice(g.progress).map(([x, y]) => {
+            const p = g.canvas.toGlobal({ x: x * g.size, y: y * g.size });
+            return [p.x, p.y];
+          });
+          await kit.drag(points, 1, 10);
+          await kit.sleep(250);
+        }
+      }, attempt);
+    const onTry = (attempt) =>
+      page.waitForFunction(
+        (attempt) =>
+          neo.scene.game.attempt === attempt && neo.scene.game.phase === 'trace' && !neo.scene.game.busy,
+        attempt,
+        { timeout: 20000 },
+      );
+    const six = await page.evaluate(() => ({ n: neo.scene.game.n, guides: [...neo.scene.game.guides] }));
+    assert.deepEqual(six.guides, ['solid', 'dotted', 'start']);
+    const corridor = await page.evaluate(() => neo.scene.game.tolerance);
+    await traceTry(0);
+    await onTry(1);
+    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'dotted');
+    await screenshot('number-trails-6-dotted-portrait');
+    await page.evaluate(async () => {
+      const p = neo.scene.game.firefly.getGlobalPosition();
+      await kit.drag(kit.line([p.x, p.y], [neo.view.w * neo.view.scale - 10, 15], 30));
+      await kit.sleep(250);
+    });
+    assert.deepEqual(
+      await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.guideNow()]),
+      [1, 0, 'solid'],
+    );
+    await traceTry(1);
+    await onTry(2);
+    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'start');
+    assert.equal(await page.evaluate(() => neo.scene.game.tolerance), corridor);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.things.length),
+      0,
+      'no things before the third try',
+    );
+    await screenshot('number-trails-6-start-portrait');
+    await traceTry(2);
+    await page.waitForFunction(() => neo.scene.game.phase === 'done' || neo.scene.finished, null, {
+      timeout: 30000,
+    });
+    assert.equal(await page.evaluate(() => neo.scene.game.things.length), six.n);
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 0]);
+    await finished('number-trails');
+    await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, []);
     log(
-      `Number Trails: levels 1, 4 (numeral ${first}), 3 (numeral ${n}) and 5 (count ${five.n}, two wrong cards and the glow, ${zero ? 'and a zero round in portrait' : 'no zero drawn in 40 tries'}), two misses and a hint on wandering, the count and the waking, portrait and one sticker per round passed`,
+      `Number Trails: levels 1, 4 (numeral ${first}), 3 (numeral ${n}) and 5 (count ${five.n}, two wrong cards and the glow, ${zero ? 'and a zero round in portrait' : 'no zero drawn in 40 tries'}) and 6 (numeral ${six.n} three times, one wander on the dotted try), two misses and a hint on wandering, the count and the waking, portrait and one sticker per round passed`,
     );
   }
 

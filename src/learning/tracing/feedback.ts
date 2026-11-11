@@ -34,3 +34,18 @@ export function tuneStep(progress: number, length: number): number {
 export const LOOKS = ['teal', 'rainbow', 'glitter', 'sand'] as const;
 export type Look = (typeof LOOKS)[number];
 export const pickLook = (rng: Rng): Look => rng.pick([...LOOKS]);
+
+/**
+ * Less help each time: one glyph is traced three times, with a solid trail, then dots, then only the start ring and
+ * arrow. A guide is only what is drawn: the checkpoints, corridor, direction and stroke order are the same on every try.
+ */
+export const GUIDES = ['solid', 'dotted', 'start'] as const;
+export type Guide = (typeof GUIDES)[number];
+
+/** A wandering drag brings the solid trail back for the stroke she is on; the next stroke fades again. */
+export const guideShown = (guide: Guide, wanders: number): Guide => (wanders > 0 ? 'solid' : guide);
+
+/** The dotted guide's dots: every `every`th checkpoint of a sampled stroke, and always its end. */
+export function guideDots(points: readonly Point[], every = 3): Point[] {
+  return points.filter((_, i) => i % every === 0 || i === points.length - 1);
+}

@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
-import { pickLook, type Look } from '../../learning/tracing/feedback';
+import { GUIDES, hintDue, pickLook, type Guide, type Look } from '../../learning/tracing/feedback';
 
 /**
  * Number Trails: follow the firefly along a numeral, then meet that many things. The rules that a test can hold the
@@ -13,6 +13,8 @@ export interface TrailPlan {
   wakeThem: boolean;
   /** Write how many: she counts a group first, taps the numeral card that tells how many, then traces it. */
   writeHowMany?: true;
+  /** Less help each time: the numeral is traced three times, the trail solid, then dotted, then only its start. */
+  fading?: true;
   /** How far the finger may stray from the trail, in writing boxes, before it counts as a wander: wider on the easy entries. */
   tolerance: number;
   name: string;
@@ -55,6 +57,13 @@ export const PLANS: readonly TrailPlan[] = [
     tolerance: 0.085,
     name: 'Write how many: count a group of 0 to 9, tap the numeral that tells how many, then trace it',
   },
+  {
+    digits: ZERO_TO_NINE,
+    wakeThem: false,
+    fading: true,
+    tolerance: 0.085,
+    name: 'Less help each time: trace one numeral three times, with a solid trail, then dots, then only the start',
+  },
 ];
 
 /**
@@ -63,12 +72,24 @@ export const PLANS: readonly TrailPlan[] = [
  */
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 4, order: [4, 1, 2] },
-  prek: { min: 2, max: 5, order: [2, 3, 5] },
+  prek: { min: 2, max: 6, order: [2, 3, 5, 6] },
 };
 export const ENTRY_LEVELS = [4] as const;
 
 export const planFor = (level: number): TrailPlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
+
+/** The guide each try of a round shows: one solid try, or level 6's three with less help each time. */
+const ONE_TRY = ['solid'] as const;
+export const guidesFor = (level: number): readonly Guide[] => (planFor(level).fading ? GUIDES : ONE_TRY);
+
+/**
+ * Whether the second wander on a stroke counts a hint. The firefly shows the way every time it is due; on a fading round
+ * only the first one in a try is counted, so three tries of a two-stroke numeral count at most three hints.
+ */
+export const TRY_HINTS = 1;
+export const hintCounts = (level: number, wrongOnStroke: number, hintsThisTry: number): boolean =>
+  hintDue(wrongOnStroke) && (!planFor(level).fading || hintsThisTry < TRY_HINTS);
 
 /** The numeral this round draws. */
 export const numeralFor = (level: number, rng: Rng): number => rng.pick(planFor(level).digits);

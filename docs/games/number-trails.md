@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 4, 1, 2 |
-| pre-K | 2, 3, 5 |
+| pre-K | 2, 3, 5, 6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 3 | Trace 0 to 9, then tap to wake exactly that many from a bigger group |
 | 4 | First numbers: trace 1, 2, 3 or 7 in one stroke, then watch that many appear |
 | 5 | Write how many: count a group of 0 to 9, tap the numeral that tells how many, then trace it |
+| 6 | Less help each time: trace one numeral three times, with a solid trail, then dots, then only the start |
 
 <!-- end generated -->
 

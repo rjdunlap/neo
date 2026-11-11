@@ -23,6 +23,8 @@ import {
   THING_GAP,
   THING_HIT,
   groupSize,
+  guidesFor,
+  hintCounts,
   numeralFor,
   planFor,
   roundFor,
@@ -32,7 +34,16 @@ import {
   thingWord,
   trailTolerance,
 } from './logic';
-import { LOOKS, hintDue, pickLook, showTheWay, tuneStep } from '../../learning/tracing/feedback';
+import {
+  GUIDES,
+  LOOKS,
+  guideDots,
+  guideShown,
+  hintDue,
+  pickLook,
+  showTheWay,
+  tuneStep,
+} from '../../learning/tracing/feedback';
 import { sampleStroke } from '../../learning/tracing/strokes';
 import { DIGITS } from './digits';
 
@@ -44,7 +55,7 @@ describe('number trails levels', () => {
   });
   it('ends each band inside the ladder and opens pre-K at the bigger numbers', () => {
     expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 4, order: [4, 1, 2] });
-    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 5, order: [2, 3, 5] });
+    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 6, order: [2, 3, 5, 6] });
     for (const band of ['preschool', 'prek'] as const)
       expect(rangeFor(LEVELS, band).max).toBeLessThanOrEqual(PLANS.length);
   });
@@ -102,7 +113,7 @@ describe('level 5, Write how many', () => {
   it('is a pre-K level after 3 that draws 0 to 9 and asks before the trace', () => {
     const prek = rangeFor(LEVELS, 'prek'),
       pre = rangeFor(LEVELS, 'preschool');
-    expect(levelsInOrder(prek)).toEqual([2, 3, 5]);
+    expect(levelsInOrder(prek)).toEqual([2, 3, 5, 6]);
     expect(stepLevel(3, 1, prek)).toBe(5);
     expect(stepLevel(5, -1, prek)).toBe(3);
     expect(levelsInOrder(pre)).not.toContain(5);
@@ -328,5 +339,69 @@ describe('number trails hint, looks and tune', () => {
         steps.slice(1).forEach((s, i) => expect(s - steps[i]).toBeGreaterThanOrEqual(0));
         expect(new Set(steps).size).toBe(5);
       }
+  });
+});
+
+describe('level 6, Less help each time', () => {
+  it("is pre-K's last level, after 5, drawing 0 to 9 with the usual trail and things that appear by themselves", () => {
+    const plan = planFor(6);
+    expect(plan.fading).toBe(true);
+    expect(plan.wakeThem).toBe(false);
+    expect(plan.writeHowMany).toBeUndefined();
+    expect(plan.tolerance).toBe(trailTolerance(2));
+    const prek = rangeFor(LEVELS, 'prek');
+    expect(levelsInOrder(prek)).toEqual([2, 3, 5, 6]);
+    expect(stepLevel(5, 1, prek)).toBe(6);
+    expect(stepLevel(6, 1, prek)).toBe(6);
+    expect(stepLevel(6, -1, prek)).toBe(5);
+    const rng = new Rng(11);
+    expect(new Set(Array.from({ length: 400 }, () => numeralFor(6, rng))).size).toBe(10);
+  });
+  it('traces one numeral three times, solid then dotted then only the start, and once on every other level', () => {
+    expect(guidesFor(6)).toEqual(['solid', 'dotted', 'start']);
+    expect(guidesFor(6)).toBe(GUIDES);
+    for (const level of [1, 2, 3, 4, 5]) expect(guidesFor(level)).toEqual(['solid']);
+  });
+  it('keeps levels 1 to 5 the same round for a seed, and level 6 the round level 2 would draw', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      expect(roundFor(6, new Rng(seed))).toEqual(roundFor(2, new Rng(seed)));
+      for (const level of [1, 2, 3, 4, 5]) expect(planFor(level).fading).toBeUndefined();
+    }
+  });
+  it('brings the solid trail back for a stroke once she wanders on it, and only then', () => {
+    for (const guide of GUIDES) {
+      expect(guideShown(guide, 0)).toBe(guide);
+      for (const wanders of [1, 2, 5]) expect(guideShown(guide, wanders)).toBe('solid');
+    }
+  });
+  it('dots every numeral stroke from its start to its end, closer together than the trail is wide', () => {
+    for (const strokes of Object.values(DIGITS))
+      for (const stroke of strokes) {
+        const points = sampleStroke(stroke),
+          dots = guideDots(points);
+        expect(dots[0]).toBe(points[0]);
+        expect(dots[dots.length - 1]).toBe(points[points.length - 1]);
+        expect(dots.length).toBeLessThan(points.length);
+        dots
+          .slice(1)
+          .forEach((d, i) =>
+            expect(Math.hypot(d[0] - dots[i][0], d[1] - dots[i][1])).toBeLessThanOrEqual(
+              2 * trailTolerance(6),
+            ),
+          );
+      }
+  });
+  it('counts at most one hint a try on a fading round, and one a stroke as before below it', () => {
+    // Second wander on a stroke, nothing counted yet on this try: one hint.
+    expect(hintCounts(6, 2, 0)).toBe(true);
+    // The second stroke of a 4, 5 or 9 on the same try: the firefly still shows the way (hintDue), but it is not counted.
+    expect(hintCounts(6, 2, 1)).toBe(false);
+    expect(hintDue(2)).toBe(true);
+    expect([1, 3, 4].some((wrong) => hintCounts(6, wrong, 0))).toBe(false);
+    for (const level of [1, 2, 3, 4, 5]) {
+      expect(hintCounts(level, 2, 0)).toBe(true);
+      expect(hintCounts(level, 2, 1)).toBe(true);
+      expect(hintCounts(level, 1, 0)).toBe(false);
+    }
   });
 });
