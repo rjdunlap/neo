@@ -1,6 +1,6 @@
 # Never swallow a tap (U7, definition)
 
-*Status: defined 2026-11-10. U7a and U7b built 2026-11-10 ([U7a](#u7a-as-built-2026-11-10), [U7b](#u7b-as-built-2026-11-10)); U7c–U7d not built.*
+*Status: defined 2026-11-10. U7a–U7c built 2026-11-10 ([U7a](#u7a-as-built-2026-11-10), [U7b](#u7b-as-built-2026-11-10), [U7c](#u7c-as-built-2026-11-10)); U7d classified for the games ready for upright play 2026-11-10 ([the lines page](never-swallow-a-tap-lines.md)); the other games' reading is queued.*
 
 From the [adversarial UX review](../UX-REVIEW-2026-11-09.md#8-taps-are-dropped-and-screens-are-slow-to-answer), finding 8 and recommendation U7: a tap that does nothing, or a screen that takes seconds to answer, reads to a child as "it's broken" and to a grown-up as "it froze". The review asked for two things: let a second tap interrupt a spoken name, and show the pressed picture as chosen while a screen changes. This page settles what each means in the code, and adds the measurement the slow screens need first.
 
@@ -60,7 +60,7 @@ While a game holds input for an instruction or a hint, the corner guide (her fri
 1. **U7a, the shell and the phone's way in** (shell tier): R1, R2, R3 for the chooser and Today's six, and R4's shell part (`voice.stop`). Files: `src/audio/voice.ts` and its test, `src/ui/buttons.ts`, `src/app/App.ts` (marks; the snapshot only if R1 points there), `src/app/scenes/DailyScene.ts`, `src/app/scenes/ChooserScene.ts` and `src/app/chooser.test.ts`. Checks: typecheck, unit tests, build, the R1 probe before and after, `BROWSER_SUITE=phonefit` (the upright root pass: Today's six to a round and back) and `BROWSER_SUITE=profiles` (the chooser). No `world`: no route changes. No offline check: persistence and assets do not change.
 2. **U7b, Day by Day and the held-line look** (existing-game bug fix plus shell): R4's pilot and R5. Files: `src/games/day-by-day/index.ts`, `src/app/scenes/GameScene.ts` (the guide's talking look and the wait tick), `src/creatures/companion.ts` (the bob). Checks: typecheck, unit tests, `BROWSER_SUITE=week WEEK_LEVELS=1,4` (a tap on the arrow during the name), and `fingerdemo` at Day by Day's first and last levels only if the bot's timing changes. Build, since `GameScene` is shared.
 3. **U7c, the tablet root** (shell tier, after U6a and U6b): R2 and R3 for Home, Explore, the Arcade, the library and creature play. Files: those scenes' `leave` helpers (`HomeScene`, `ExploreScene`, `ArcadeScene`, `LibraryScene`, `PlayScene`). Checks: typecheck, unit tests, build, the R1 probe, `BROWSER_SUITE=home` (its main flow walks every one of these screens). No `world` unless a route changes.
-4. **U7d, classify the rest** (docs only): R4's list of awaited name lines per game, written into this page or a short table beside it, and a READY line per game batch that holds any.
+4. **U7d, classify the rest** (docs only; [first pass written](never-swallow-a-tap-lines.md)): R4's list of awaited name lines per game, written into this page or a short table beside it, and a READY line per game batch that holds any.
 
 Each slice is one session. U7a can ship alone: it is the phone's part.
 
@@ -87,6 +87,11 @@ Each slice is one session. U7a can ship alone: it is the phone's part.
 - Explore's existing grows into a location or a favorite carry the pressed picture into the transition. The other exits keep their crossfades. In creature play, tapping the Friends nest starts the pet's cheer and opens Friends on the beat. Arcade card previews, Topics, and Little surprises' tap and hold still act within their own screens.
 
 **Dependencies.** U7c edits the same root scenes as U6a (the Arcade), U6b (Explore, Home's routes) and phone-portrait shell slice 3 (creature play, the library, the Arcade). All three landed before U7c. U7a's `DailyScene` change is the `leave` helper and the card's tap only, which U6b (the All games button's target) does not touch, so U7a may go before or after U6. `classic/` is untouched: its map and menus are a separate shell and are not reached from a phone's root.
+### U7d as classified (2026-11-10)
+
+- The 25 games ready for upright play were read ([the lines page](never-swallow-a-tap-lines.md)): two hold input on a line R4 forbids, `animal-snack` (`snack.yum` in *who* rounds, `snack.full`) and `far-lights` (six right-answer lines), and a [fix batch](never-swallow-a-tap-lines.md#fix-batches) is queued in READY.
+- Eight games praise a finished board before the next one; that is an optional second batch that waits for a playtest note. Every other awaited line is a closing line or a proper hold.
+- The other 133 games are [listed, not read](never-swallow-a-tap-lines.md#the-other-games-candidates-not-read); nothing was played or timed.
 
 ## Open decisions
 
