@@ -13,10 +13,14 @@ import {
   overshot,
   PLANS,
   ROCK,
+  routeFrom,
+  routeMap,
   sizeLook,
+  sizeOf,
   slide,
   SNOWMAN,
   solve,
+  transform,
 } from './logic';
 
 const snow = (board: readonly number[]) => board.filter((v) => v > 0);
@@ -39,7 +43,7 @@ describe('Snowball Merge', () => {
         expect(next.motions.map((m) => m.from).sort()).toEqual(
           before.flatMap((v, i) => (v > 0 ? [i] : [])).sort(),
         );
-        expect(next.motions.every((m) => m.to >= 0 && m.to < 9)).toBe(true);
+        expect(next.motions.every((m) => m.to >= 0 && m.to < before.length)).toBe(true);
       }
     expect(slide([2, 0, 0, 0, 0, 0, 0, 0, 0], 'left').changed).toBe(false);
   });
@@ -85,6 +89,7 @@ describe('Snowball Merge', () => {
       [10, 14],
       [8, 11],
       [6, 9],
+      [12, 16],
     ];
     expect(BOARDS).toHaveLength(PLANS.length);
     PLANS.forEach((plan, i) => {
@@ -94,13 +99,14 @@ describe('Snowball Merge', () => {
       const seen = new Set<string>();
       let asymmetric = 0;
       for (const board of boards) {
-        expect(board).toHaveLength(9);
+        // Level 7's field is four cells a side; every other level's is three.
+        expect(board).toHaveLength(i === 6 ? 16 : 9);
         expect(board.every((v) => v === 0 || v === ROCK || (v >= 2 && Number.isInteger(Math.log2(v))))).toBe(
           true,
         );
         // Only level 5 has an ice rock: exactly one, never in the centre, where most boards cannot finish.
         expect(board.filter((v) => v === ROCK)).toHaveLength(i === 4 ? 1 : 0);
-        expect(board[4]).not.toBe(ROCK);
+        if (i === 4) expect(board[4]).not.toBe(ROCK);
         expect(snow(board).reduce((s, v) => s + v, 0)).toBe(plan.target);
         const route = solve(board, goalOf(plan))!;
         expect(route.length).toBeGreaterThanOrEqual(bands[i][0]);
@@ -258,6 +264,82 @@ describe('Snowball Merge', () => {
       // At least one moment on the shortest route where a slide (either way along a line) would join two 16s.
       expect(tempt).toBeGreaterThanOrEqual(2);
     }
+  });
+  it('slides a wider field by the same rules, reading the side from the board', () => {
+    expect(sizeOf(PLANS[0].board)).toBe(3);
+    expect(sizeOf(PLANS[6].board)).toBe(4);
+    // The four slide cases of the first test, one line longer.
+    expect(slide([2, 0, 2, 2, 2, 2, 4, 4, 0, 0, 0, 0, 4, 4, 4, 4], 'left').board).toEqual([
+      4, 2, 0, 0, 4, 8, 0, 0, 0, 0, 0, 0, 8, 8, 0, 0,
+    ]);
+    expect(slide([2, 2, 2, 0, ...Array(12).fill(0)], 'right').board.slice(0, 4)).toEqual([0, 0, 2, 4]);
+    const column = (values: number[]) => values.flatMap((v) => [v, 0, 0, 0]);
+    expect(slide(column([2, 0, 2, 4]), 'up').board).toEqual(column([4, 4, 0, 0]));
+    expect(slide(column([2, 0, 2, 4]), 'down').board).toEqual(column([0, 0, 4, 4]));
+    // A rock splits a four-cell line too.
+    expect(slide([2, ROCK, 0, 2, ...Array(12).fill(0)], 'left').board.slice(0, 4)).toEqual([2, ROCK, 2, 0]);
+    // Turning and mirroring a 4 × 4 board keeps its snow, and four quarter turns come home.
+    const wide = PLANS[6].board;
+    expect(orbit(wide).size).toBe(8);
+    let turned: readonly number[] = wide;
+    for (let t = 0; t < 4; t++) turned = transform(turned, 1, false);
+    expect(turned).toEqual(wide);
+    expect([...transform(wide, 1, true)].sort()).toEqual([...wide].sort());
+    // A slide one way and its mirror image agree, on both field sizes.
+    for (const plan of [PLANS[2], PLANS[6]]) {
+      const mirrored = slide(transform(plan.board, 0, true), 'right').board;
+      expect(transform(slide(plan.board, 'left').board, 0, true)).toEqual(mirrored);
+    }
+  });
+  it('level 7 is a 4 × 4 field of 128 with no rock, a one-snowball goal, and levels 1 to 6 as they were', () => {
+    expect([PLANS[6].target, goalOf(PLANS[6]), PLANS[6].board.length]).toEqual([128, 128, 16]);
+    for (const board of BOARDS[6]) {
+      expect(board).not.toContain(ROCK);
+      expect(snow(board).length).toBeGreaterThanOrEqual(11);
+      expect(explore(board, 128).deadEnds).toBeGreaterThan(0);
+    }
+    expect(PLANS.slice(0, 6).every((p) => p.board.length === 9)).toBe(true);
+    expect([PLANS[5].target, PLANS[5].board.join(',')]).toEqual([48, '4,8,2,0,2,8,16,8,0']);
+    expect(BOARDS[5].map((b) => b.join(',')).join(' ')).toBe(
+      '4,8,2,0,2,8,16,8,0 2,4,2,0,16,16,4,0,4 2,8,16,0,4,0,8,2,8 8,2,8,2,0,16,0,8,4',
+    );
+  });
+  it('the distance map built once per board is exact: every reachable board agrees with a fresh search', () => {
+    PLANS.forEach((plan, i) => {
+      const goal = goalOf(plan);
+      // Every board of the 3 × 3 levels; on the wider field the authored one in full and a sample of the others.
+      BOARDS[i].forEach((start, b) => {
+        const map = routeMap(start, goal),
+          seen = new Set([start.join(',')]),
+          queue: (readonly number[])[] = [start];
+        for (let head = 0; head < queue.length; head++)
+          for (const d of DIRECTIONS) {
+            const next = slide(queue[head], d);
+            if (next.changed && !seen.has(next.board.join(','))) {
+              seen.add(next.board.join(','));
+              queue.push(next.board);
+            }
+          }
+        expect(map.states).toBe(queue.length);
+        const stride = i === 6 && b > 0 ? 7 : 1;
+        for (let k = 0; k < queue.length; k += stride) {
+          const board = queue[k],
+            route = solve(board, goal),
+            mapped = routeFrom(map, board);
+          expect(map.steps.get(board.join(','))).toBe(route?.length);
+          expect(mapped?.length).toBe(route?.length);
+          if (!mapped) continue;
+          // The mapped route is a real one: it only makes slides that move something and ends finished.
+          let at = board;
+          for (const d of mapped) {
+            const step = slide(at, d);
+            expect(step.changed).toBe(true);
+            at = step.board;
+          }
+          expect(complete(at, goal)).toBe(true);
+        }
+      });
+    });
   });
   it('glows after two inert arrows in a row or at a dead end, counting each glow once', () => {
     const route = ['left', 'up'] as const;

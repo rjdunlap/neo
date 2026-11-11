@@ -23,14 +23,17 @@ import {
   PLANS,
   planFor,
   ROCK,
+  routeFrom,
+  routeMap,
   SIZE,
   sizeLook,
+  sizeOf,
   slide,
-  solve,
   type Direction,
   type FieldLook,
   type Help,
   type HelpEvent,
+  type RouteMap,
 } from './logic';
 
 const ARROWS = { left: '←', up: '↑', right: '→', down: '↓' };
@@ -76,12 +79,21 @@ const FIELD_COLORS: Record<FieldLook, { ground: number; line: number; cell: numb
 /**
  * Where the field and its buttons go: the field's top-left corner and cell, the 100-unit arrows in one row under it (which
  * keeps every button apart and clear of the corner pet, in both orientations) and the 160 × 100 Undo, Hint and Start over
- * row under them. An upright phone (chunk 31) has the width for 160-unit cells.
+ * row under them. An upright phone (chunk 31) has the width for 160-unit cells. `size` is the field's side in cells:
+ * level 7's wider field (4) shares the same room, so its cells are smaller and both button rows still fit under it.
  */
-export function snowballLayout(v: View) {
-  const cell = Math.min(v.upright ? 160 : 128, (v.h - 430) / SIZE);
-  const top = 155 + (v.h - 768) * 0.3,
-    w = cell * SIZE;
+export function snowballLayout(v: View, size = SIZE) {
+  const top = 155 + (v.h - 768) * 0.3;
+  // The wider field alone takes two more limits, so levels 1 to 6 lay out exactly as before: both button rows (250
+  // units) must fit under it, above the corner guide (170 units) wherever the view is narrow enough for Undo to sit
+  // over the guide's column, and the field must fit across the view.
+  const guide = v.w / 2 - 260 < 150 ? 170 : 0;
+  const cell = Math.min(
+    v.upright ? 160 : 128,
+    (v.h - 430) / size,
+    ...(size > SIZE ? [(v.h - top - 250 - guide) / size, (v.w - 60) / size] : []),
+  );
+  const w = cell * size;
   const arrows = Object.fromEntries(
     (['left', 'up', 'down', 'right'] as Direction[]).map((d, i) => [
       d,
@@ -113,6 +125,10 @@ class SnowballMerge implements Game {
   slides = 0;
   /** The shortest route from the starting board, shown beside her slide count after the finish as information only. */
   readonly par: number;
+  /** The field's side in cells: 3, or 4 on level 7. */
+  readonly size: number;
+  /** Every board this round can reach and how far each is from a finish, built once; hints read it after each slide. */
+  private readonly map: RouteMap;
   readonly look: FieldLook;
   busy = false;
   finished = false;
@@ -148,7 +164,9 @@ class SnowballMerge implements Game {
   constructor(private readonly ctx: GameContext) {
     this.puzzle = makePuzzle(ctx.level, ctx.rng, BOARDS[PLANS.indexOf(planFor(ctx.level))]);
     this.board = this.puzzle.board.slice();
-    this.par = solve(this.puzzle.board, this.puzzle.goal)?.length ?? 0;
+    this.size = sizeOf(this.puzzle.board);
+    this.map = routeMap(this.puzzle.board, this.puzzle.goal);
+    this.par = this.map.steps.get(this.puzzle.board.join(',')) ?? 0;
     // Drawn after the puzzle, so a look never changes which board a seed gives.
     this.look = ctx.rng.pick(FIELD_LOOKS);
     for (let i = 0; i < 9; i++)
@@ -234,15 +252,20 @@ class SnowballMerge implements Game {
       this.flash = 0.18;
     }
   }
+  /** Snowballs are drawn for a 108-unit cell. The wider field's smaller cells get a slightly fuller ball (98), so its
+   * numbers stay readable; the largest ball's 1.15 pop still stays inside its cell. */
+  private get ballScale() {
+    return this.cell / (this.size > SIZE ? 98 : 108);
+  }
   private center(i: number) {
-    return { x: ((i % SIZE) + 0.5) * this.cell, y: (Math.floor(i / SIZE) + 0.5) * this.cell };
+    return { x: ((i % this.size) + 0.5) * this.cell, y: (Math.floor(i / this.size) + 0.5) * this.cell };
   }
 
   resize(v: View) {
-    const l = snowballLayout(v);
+    const l = snowballLayout(v, this.size);
     this.cell = l.cell;
     const top = l.field.y,
-      w = this.cell * SIZE;
+      w = this.cell * this.size;
     this.field.position.copyFrom(l.field);
     this.title.position.set(v.w / 2, top - 70);
     this.status.position.set(v.w / 2, top - 40);
@@ -252,7 +275,7 @@ class SnowballMerge implements Game {
       .roundRect(-14, -14, w + 28, w + 28, 24)
       .fill(colors.ground)
       .stroke({ width: 5, color: colors.line });
-    for (let i = 0; i < SIZE * SIZE; i++) {
+    for (let i = 0; i < this.size * this.size; i++) {
       const p = this.center(i);
       this.ground
         .roundRect(p.x - this.cell / 2 + 5, p.y - this.cell / 2 + 5, this.cell - 10, this.cell - 10, 14)
@@ -305,7 +328,7 @@ class SnowballMerge implements Game {
       b.position.copyFrom(l.buttons[i]),
     );
     // Nodes remain the same during a tween; scale and its final position follow the new view.
-    for (const node of this.nodes.values()) node.scale.set(this.cell / 108);
+    for (const node of this.nodes.values()) node.scale.set(this.ballScale);
     if (!this.busy) this.drawBalls();
   }
 
@@ -316,7 +339,7 @@ class SnowballMerge implements Game {
       if (value <= 0) return;
       const node = snowball(value),
         p = this.center(i);
-      node.scale.set(this.cell / 108);
+      node.scale.set(this.ballScale);
       node.position.set(p.x, p.y);
       this.balls.addChild(node);
       this.nodes.set(i, node);
@@ -327,7 +350,7 @@ class SnowballMerge implements Game {
     order.forEach((i, k) => {
       const node = this.nodes.get(i)!;
       node.position.copyFrom(this.stackSpot(k));
-      node.scale.set((this.cell / 108) * STACK[Math.min(k, STACK.length - 1)].scale);
+      node.scale.set(this.ballScale * STACK[Math.min(k, STACK.length - 1)].scale);
       this.balls.addChild(node);
     });
     const r = sizeLook(this.board[order.at(-1)!]).radius;
@@ -351,10 +374,10 @@ class SnowballMerge implements Game {
   }
   /** Where the k-th snowball of the snowman stands (0 is the base), up the middle of the field. */
   private stackSpot(k: number) {
-    return { x: this.cell * 1.5, y: this.cell * STACK[Math.min(k, STACK.length - 1)].y };
+    return { x: (this.cell * this.size) / 2, y: this.cell * STACK[Math.min(k, STACK.length - 1)].y };
   }
   private refresh() {
-    this.route = solve(this.board, this.puzzle.goal);
+    this.route = routeFrom(this.map, this.board);
     this.title.text = this.snowman
       ? `Snowman: ${this.snowman.join(' + ')}`
       : `Merge to ${this.puzzle.target}`;
@@ -500,7 +523,7 @@ class SnowballMerge implements Game {
     this.clock += dt;
     this.flash -= dt;
     if (this.flakeSpots.length) {
-      const w = this.cell * SIZE,
+      const w = this.cell * this.size,
         f = this.flakes.clear();
       for (const flake of this.flakeSpots) {
         flake.y = (flake.y + flake.speed * dt) % 1;
@@ -569,7 +592,7 @@ export const snowballMerge: GameModule = {
   music: STYLES.lullaby,
   coplayHint: 'Predict which pair will join before pressing an arrow. Compare two possible slide orders.',
   offScreen:
-    'Put numbered counters in a three-by-three grid. Slide a row toward an edge and replace equal neighbours with their doubled number.',
+    'Put numbered counters in a three-by-three grid (four-by-four for a longer plan). Slide a row toward an edge and replace equal neighbours with their doubled number.',
   hubIcon: () => {
     const c = sticker(143);
     c.y = -90;
