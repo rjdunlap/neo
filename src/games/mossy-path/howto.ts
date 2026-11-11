@@ -32,6 +32,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Tap or slide along the moss. Collect both berries, in either order, then reach the pond.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'Slide from the turtle to draw dotted paw prints along the moss, then tap the turtle: it walks the whole plan. Sliding back erases the last print; Undo erases one too.',
+    },
+    {
       from: 8,
       to: 8,
       text: 'Undo takes back one step; Start over restores the same patch. Hint outlines a completing next step, or Undo until a route is possible.',
@@ -47,6 +52,7 @@ export const HOW_TO: GameHowTo = {
       text: 'Visiting every tile and reaching the pond finishes the round, including with help.',
     },
     { from: 9, to: 9, text: 'Reaching the pond with both berries finishes the round, including with help.' },
+    { from: 10, to: 10, text: 'A plan that reaches the pond finishes the round, including with help.' },
   ],
   note: [
     {
@@ -77,6 +83,11 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'Each wrong branch counts one miss a round, and so does the first try at the pond before both berries. A berry spur is never wrong, and either berry may come first. Two misses without progress light the way toward the nearer berry and count a hint. Walking back is free.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'Drawing is free. A plan that walks into a wrong branch counts one miss per branch a round; a short plan just stops and waits. Hint draws the next three prints in gold and counts once per trail. Planning back out of a branch is free.',
     },
   ],
 };

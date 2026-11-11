@@ -19,6 +19,10 @@ import {
   transformPlan,
   goalOf,
   helpFor,
+  hintPlan,
+  isPlanLevel,
+  planGo,
+  planTouch,
   makeBoard,
   mainline,
   MAZES,
@@ -229,9 +233,9 @@ describe('Mossy Path level 8, a little patch', () => {
     expect(moveError(b, [0, 3, 4], 3)).toBe('visited');
     expect(moveError(b, [0, 3, 4], 5)).toBe('pond');
   });
-  it('slots 8 after 6 for pre-K and school without changing any first level', () => {
+  it('slots 8 after 6 for pre-K and school, and 10 after 2 for school, without changing any first level', () => {
     expect(LEVELS.prek?.order).toEqual([5, 6, 8]);
-    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 9, 2, 3]);
+    expect(LEVELS.school?.order).toEqual([6, 8, 1, 7, 9, 2, 10, 3]);
     expect(LEVELS.toddler).toEqual({ min: 4, max: 4 });
     expect(LEVELS.preschool).toEqual({ min: 4, max: 5 });
   });
@@ -265,7 +269,7 @@ describe('Mossy Path looks', () => {
   });
 });
 
-const MAZE_LEVELS = [4, 5, 6, 7, 9];
+const MAZE_LEVELS = [4, 5, 6, 7, 9, 10];
 const FLIPS: [boolean, boolean][] = [
   [false, false],
   [true, false],
@@ -401,11 +405,27 @@ describe('Mossy Path levels 4-7 and 9 boards', () => {
           expect(route.indexOf(berryFork), label).toBeLessThan(route.length - 1);
           expect(dist(b, b.start, berry), label).toBeLessThan(dist(b, b.start, b.pond));
         }
+        if (level === 10) {
+          expect(branches.length, label).toBeGreaterThanOrEqual(2);
+          expect(
+            branches.every((x) => depth(b, x) <= 2),
+            label,
+          ).toBe(true);
+          expect(
+            branches.some((x) => depth(b, x) === 2),
+            label,
+          ).toBe(true);
+          expect(
+            branches.some((x) => x.tiles.some((t) => neighbours(b, t).length >= 3)),
+            label,
+          ).toBe(true);
+        }
       }
   });
-  it('has six authored mazes per level, each reached by some seed', () => {
+  it('has six authored mazes per level (three at level 10), each reached by some seed', () => {
     for (const level of MAZE_LEVELS) {
-      expect(MAZES[level], `level ${level}`).toHaveLength(6);
+      const count = level === 10 ? 3 : 6;
+      expect(MAZES[level], `level ${level}`).toHaveLength(count);
       const authored = MAZES[level].map((r) => parseMaze(r)),
         seen = new Set<number>();
       for (let seed = 1; seed <= 300; seed++) {
@@ -416,7 +436,7 @@ describe('Mossy Path levels 4-7 and 9 boards', () => {
           ),
         );
       }
-      expect([...seen].sort(), `level ${level}`).toEqual([0, 1, 2, 3, 4, 5]);
+      expect([...seen].sort(), `level ${level}`).toEqual([...Array(count).keys()]);
     }
   });
   it('picks an authored board, flipped but never transposed, and is reproducible per seed', () => {
@@ -705,5 +725,130 @@ describe('Mossy Path level 9, two snacks', () => {
         if (at !== goal) expect(dist(b, nextToward(b, at, goal), goal), label).toBe(dist(b, at, goal) - 1);
       }
     }
+  });
+});
+
+describe('Mossy Path level 10, plan then go', () => {
+  /** Draw `tiles` one touch at a time from the turtle, as a slide would. */
+  const draw = (b: Board, s: MazeState, tiles: readonly number[]) =>
+    tiles.reduce((plan, t) => planTouch(b, s, plan, t).plan, [s.path.at(-1)!]);
+  const simple = (b: Board, plan: readonly number[]) =>
+    new Set(plan).size === plan.length && plan.every((t, i) => i === 0 || adjacent(b, plan[i - 1], t));
+  const adjacent = (b: Board, a: number, z: number) => neighbours(b, a).includes(z);
+  it('is a maze level only for school, after 2 and before 3', () => {
+    expect(isMaze(10)).toBe(true);
+    expect(isPlanLevel(10)).toBe(true);
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9]) expect(isPlanLevel(level)).toBe(false);
+    expect(levelName(10)).toMatch(/^Plan, then go/);
+  });
+  it('adds a print beside the plan end, erases on the second-last tile, and ignores or flags anything else', () => {
+    for (const { b, label } of cases(10)) {
+      const s = mazeStart(b),
+        route = routeBetween(b, b.start, b.pond);
+      let plan = [b.start];
+      for (const t of route.slice(1, 3)) {
+        const r = planTouch(b, s, plan, t);
+        expect(r.edit, label).toBe('add');
+        plan = r.plan;
+      }
+      expect(plan, label).toEqual(route.slice(0, 3));
+      expect(planTouch(b, s, plan, route[1]), label).toEqual({ plan: route.slice(0, 2), edit: 'erase' });
+      expect(planTouch(b, s, plan, route[2]).edit, label).toBe('ignore');
+      expect(planTouch(b, s, plan, route[0]).edit, label).toBe('ignore');
+      const hedge = Array.from({ length: b.rows * b.cols }, (_, i) => i).find((i) => !b.tiles.includes(i))!;
+      expect(planTouch(b, s, plan, hedge).edit, label).toBe('ignore');
+      const far = b.tiles.find((t) => !plan.includes(t) && !adjacent(b, plan.at(-1)!, t))!;
+      expect(planTouch(b, s, plan, far), label).toEqual({ plan, edit: 'far' });
+      // A stale plan (not starting at the turtle) restarts from the turtle.
+      expect(planTouch(b, s, [route[1]], route[1]).plan, label).toEqual([b.start, route[1]]);
+    }
+  });
+  it('keeps every drawn plan a simple path from the turtle, whatever she touches', () => {
+    for (const { b, label } of cases(10))
+      for (let seed = 1; seed <= 20; seed++) {
+        const rng = new Rng(seed),
+          s = mazeStart(b);
+        let plan = [b.start];
+        for (let i = 0; i < 40; i++) {
+          plan = planTouch(b, s, plan, b.tiles[rng.int(0, b.tiles.length - 1)]).plan;
+          expect(plan[0], label).toBe(b.start);
+          expect(simple(b, plan), `${label} seed ${seed}`).toBe(true);
+        }
+      }
+  });
+  it('walks a plan along the route to the pond with no misses, and the bot (one trace, one Go) finishes', () => {
+    for (const { b, label } of cases(10)) {
+      const s = mazeStart(b),
+        plan = draw(b, s, routeBetween(b, b.start, b.pond).slice(1)),
+        steps = planGo(b, 10, s, plan);
+      expect(steps.length, label).toBe(plan.length - 1);
+      const last = steps.at(-1)!;
+      expect(last.move.kind === 'forward' && last.move.pond, label).toBe(true);
+      expect(last.state.misses, label).toBe(0);
+      expect(last.state.path, label).toEqual(plan);
+    }
+  });
+  it('stops a short plan where it ends, and counts a wrong branch once per round however often a plan enters it', () => {
+    for (const { b, label } of cases(10)) {
+      const route = routeBetween(b, b.start, b.pond);
+      // A short plan on the route: no miss, the turtle waits at its end.
+      let s = mazeStart(b);
+      let steps = planGo(b, 10, s, draw(b, s, route.slice(1, 3)));
+      s = steps.at(-1)!.state;
+      expect(s.path, label).toEqual(route.slice(0, 3));
+      expect(s.misses, label).toBe(0);
+      // Into each wrong branch and back out, twice: one miss per branch, and back steps are free.
+      const line = mainline(b);
+      const entries = b.tiles.filter((t) => !line.has(t) && neighbours(b, t).some((n) => line.has(n)));
+      s = mazeStart(b);
+      for (const round of [1, 2])
+        for (const entry of entries) {
+          const fork = neighbours(b, entry).find((n) => line.has(n))!;
+          const here = s.path.at(-1)!;
+          const there = [...routeBetween(b, here, fork).slice(1), entry];
+          steps = planGo(b, 10, s, draw(b, s, there));
+          expect(steps.length, `${label} round ${round}`).toBe(there.length);
+          s = steps.at(-1)!.state;
+          const out = routeBetween(b, entry, fork).slice(1);
+          const back = planGo(b, 10, s, draw(b, s, out));
+          expect(back.every((r) => r.move.kind === 'back'), label).toBe(true);
+          s = back.at(-1)!.state;
+          expect(s.misses, `${label} round ${round}`).toBe(round === 1 ? entries.indexOf(entry) + 1 : entries.length);
+        }
+      // Inside a branch that forks again, stepping deeper never counts a second miss.
+      expect(s.branches.length, label).toBe(entries.length);
+    }
+  });
+  it('plans out of a branch by walking back along the trail, every step back free', () => {
+    for (const { b, label } of cases(10))
+      for (const t of b.tiles.filter((x) => deadEnd(b, x))) {
+        let s = mazeStart(b);
+        s = planGo(b, 10, s, draw(b, s, routeBetween(b, b.start, t).slice(1))).at(-1)!.state;
+        const misses = s.misses;
+        const plan = draw(b, s, routeBetween(b, t, b.pond).slice(1));
+        expect(simple(b, plan), label).toBe(true);
+        const steps = planGo(b, 10, s, plan);
+        expect(steps.at(-1)!.move, label).toMatchObject({ kind: 'forward', pond: true });
+        expect(steps.at(-1)!.state.misses, label).toBe(misses);
+      }
+  });
+  it('refuses to walk a plan that does not start at the turtle', () => {
+    const b = parseMaze(MAZES[10][0]);
+    const s = mazeStart(b);
+    expect(planGo(b, 10, s, [routeBetween(b, b.start, b.pond)[1]])).toEqual([]);
+  });
+  it('hints the next three tiles toward the pond from wherever the turtle stands, leading out of a branch first', () => {
+    for (const { b, label } of cases(10))
+      for (const t of b.tiles.filter((x) => x !== b.pond)) {
+        const s = goTo(b, 10, mazeStart(b), t),
+          hint = hintPlan(b, s);
+        expect(hint[0], label).toBe(t);
+        expect(hint.length, label).toBe(Math.min(4, dist(b, t, b.pond) + 1));
+        expect(simple(b, hint), label).toBe(true);
+        hint.slice(1).forEach((h, i) => expect(dist(b, h, b.pond), label).toBe(dist(b, t, b.pond) - i - 1));
+        // Following the hint never adds a miss.
+        const steps = planGo(b, 10, s, draw(b, s, hint.slice(1)));
+        expect(steps.at(-1)!.state.misses, label).toBe(s.misses);
+      }
   });
 });

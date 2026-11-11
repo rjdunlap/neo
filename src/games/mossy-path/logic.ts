@@ -141,9 +141,11 @@ export function helpFor(b: Board, path: readonly number[]): { undo: number; next
   return null;
 }
 
-/* Levels 4–7 and 9, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
-export const isMaze = (level: number) => (level >= 4 && level <= 7) || level === 9;
-/** Frozen boards (six per level), rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
+/* Levels 4–7, 9 and 10, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
+export const isMaze = (level: number) => (level >= 4 && level <= 7) || level === 9 || level === 10;
+/** Level 10, *plan, then go*: she draws the way first and the turtle walks it when she taps it. */
+export const isPlanLevel = (level: number) => level === 10;
+/** Frozen boards (six per level; three at level 10), rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
 export const MAZES: Record<number, readonly (readonly string[])[]> = {
   4: [
     ['S....', '####.', 'P....'],
@@ -186,6 +188,12 @@ export const MAZES: Record<number, readonly (readonly string[])[]> = {
     ['B.#.#B#', '#.#...#', '#...#.#', 'S.#.#.P'],
     ['S.....#', '#.#.#.B', 'B.#.###', '##....P'],
   ],
+  // No berry; dead ends up to two tiles deep, and one wrong branch forks again inside.
+  10: [
+    ['S...#.#', '###.#.#', '#.....#', '##.##.P'],
+    ['...#..P', '.#.#.##', 'S#.....', '##.##.#'],
+    ['#..S..#', '..##.##', '#...#.#', '###...P'],
+  ],
 };
 const MAZE_NAMES: Record<number, string> = {
   4: 'Follow the moss: one winding path to the pond',
@@ -193,6 +201,7 @@ const MAZE_NAMES: Record<number, string> = {
   6: 'Look before you go: dead ends one step deep',
   7: 'Snack on the way: get the berry, then the pond',
   9: 'Two snacks: both berries, then the pond',
+  10: 'Plan, then go: draw the way, then the turtle walks it',
 };
 export const levelName = (level: number) =>
   MAZE_NAMES[level] ?? (level === 8 ? PATCH_NAME : PLAN_NAMES[planLevel(level)]);
@@ -395,6 +404,51 @@ export function mazeTouch(
   };
 }
 
+/* Level 10's plan: dotted paw prints drawn from the turtle before it moves. The plan's first tile is always the turtle's. */
+export type PlanEdit = 'add' | 'erase' | 'ignore' | 'far';
+/**
+ * A touch while drawing the plan: a tile beside the plan's end that is not already in it adds a print, the plan's
+ * second-last tile erases the last print, a tile further away is 'far', and anything else is ignored. Drawing is never a
+ * miss. A plan may run back along the trail: in a tree that is the way out of a branch.
+ */
+export function planTouch(b: Board, s: MazeState, plan: readonly number[], at: number): { plan: number[]; edit: PlanEdit } {
+  const here = s.path[s.path.length - 1],
+    from = plan[0] === here ? [...plan] : [here],
+    end = from[from.length - 1];
+  if (at === end || !b.tiles.includes(at)) return { plan: from, edit: 'ignore' };
+  if (from.length > 1 && at === from[from.length - 2]) return { plan: from.slice(0, -1), edit: 'erase' };
+  if (from.includes(at)) return { plan: from, edit: 'ignore' };
+  if (!adjacent(b, end, at)) return { plan: from, edit: 'far' };
+  return { plan: [...from, at], edit: 'add' };
+}
+/**
+ * Go: the turtle walks the plan one tile at a time, each step judged as a maze touch (a back step is free, a wrong
+ * branch counts once per branch per round). Returns every step in order, for the scene to play at a steady pace.
+ */
+export function planGo(
+  b: Board,
+  level: number,
+  s: MazeState,
+  plan: readonly number[],
+): { state: MazeState; move: MazeMove }[] {
+  const steps: { state: MazeState; move: MazeMove }[] = [];
+  if (plan[0] !== s.path[s.path.length - 1]) return steps;
+  let cur = s;
+  for (const at of plan.slice(1)) {
+    const r = mazeTouch(b, level, cur, at);
+    if (r.move.kind !== 'forward' && r.move.kind !== 'back') break;
+    steps.push(r);
+    cur = r.state;
+    if (r.move.kind === 'forward' && r.move.pond) break;
+  }
+  return steps;
+}
+/** Level 10's Hint: the turtle's tile and the next `n` tiles toward the pond (out of a branch first), as gold prints. */
+export function hintPlan(b: Board, s: MazeState, n = 3): number[] {
+  const here = s.path[s.path.length - 1];
+  return routeBetween(b, here, b.pond).slice(0, n + 1);
+}
+
 /* A seeded look for the round: the moss season and the berry kind. Neither changes a rule; drawn once per board. */
 export const SEASONS = ['spring', 'autumn', 'snow'] as const;
 export const BERRIES = ['red', 'blue', 'strawberry'] as const;
@@ -422,5 +476,5 @@ export const LEVELS: BandLevels = {
   toddler: { min: 4, max: 4 },
   preschool: { min: 4, max: 5 },
   prek: { min: 5, max: 8, order: [5, 6, 8] },
-  school: { min: 1, max: 9, order: [6, 8, 1, 7, 9, 2, 3] },
+  school: { min: 1, max: 10, order: [6, 8, 1, 7, 9, 2, 10, 3] },
 };
