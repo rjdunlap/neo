@@ -11,6 +11,13 @@ import {
   PLANS,
   SPARE,
   arrangedSpots,
+  askLayout,
+  cardHintDue,
+  cardsFor,
+  CARD_H,
+  CARD_W,
+  GUIDE_CLEAR,
+  REVERSED_OFTEN,
   spotsFor,
   THINGS,
   THING_GAP,
@@ -37,7 +44,7 @@ describe('number trails levels', () => {
   });
   it('ends each band inside the ladder and opens pre-K at the bigger numbers', () => {
     expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 4, order: [4, 1, 2] });
-    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 3 });
+    expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 5, order: [2, 3, 5] });
     for (const band of ['preschool', 'prek'] as const)
       expect(rangeFor(LEVELS, band).max).toBeLessThanOrEqual(PLANS.length);
   });
@@ -88,6 +95,80 @@ describe('level 4, First numbers', () => {
     expect(planFor(3).wakeThem).toBe(true);
     expect(trailTolerance(1)).toBe(0.1);
     expect(trailTolerance(3)).toBe(0.085);
+  });
+});
+
+describe('level 5, Write how many', () => {
+  it('is a pre-K level after 3 that draws 0 to 9 and asks before the trace', () => {
+    const prek = rangeFor(LEVELS, 'prek'),
+      pre = rangeFor(LEVELS, 'preschool');
+    expect(levelsInOrder(prek)).toEqual([2, 3, 5]);
+    expect(stepLevel(3, 1, prek)).toBe(5);
+    expect(stepLevel(5, -1, prek)).toBe(3);
+    expect(levelsInOrder(pre)).not.toContain(5);
+    expect(planFor(5).writeHowMany).toBe(true);
+    expect(planFor(5).wakeThem).toBe(false);
+    expect(planFor(5).digits).toHaveLength(10);
+    expect([1, 2, 3, 4].some((l) => planFor(l).writeHowMany)).toBe(false);
+  });
+  it("still lands a saved 4 on pre-K's first level now that 4 sits inside pre-K's span", () => {
+    expect(landing(4, rangeFor(LEVELS, 'prek'), ENTRY_LEVELS)).toBe(2);
+    expect(landing(5, rangeFor(LEVELS, 'prek'), ENTRY_LEVELS)).toBe(5);
+  });
+  it('puts the count among three distinct cards exactly once, with a neighbour, all 0 to 9', () => {
+    const rng = new Rng(21);
+    const places = new Set<number>();
+    for (let i = 0; i < 400; i++) {
+      const n = i % 10,
+        cards = cardsFor(n, rng);
+      expect(cards).toHaveLength(3);
+      expect(new Set(cards).size).toBe(3);
+      expect(cards.filter((c) => c === n)).toHaveLength(1);
+      expect(cards.every((c) => Number.isInteger(c) && c >= 0 && c <= 9)).toBe(true);
+      expect(cards.some((c) => Math.abs(c - n) === 1)).toBe(true);
+      expect(cards.some((c) => c !== n && (REVERSED_OFTEN as readonly number[]).includes(c))).toBe(true);
+      places.add(cards.indexOf(n));
+    }
+    expect(places.size).toBe(3);
+  });
+  it('keeps the round the same for a seed when the cards are drawn after it', () => {
+    const a = new Rng(5),
+      b = new Rng(5);
+    const round = roundFor(5, a);
+    cardsFor(round.n, a);
+    expect(roundFor(5, b)).toEqual(round);
+  });
+  it('glows the right card at the second wrong one, once', () => {
+    expect([1, 2, 3, 4].map(cardHintDue)).toEqual([false, true, false, false]);
+  });
+  it('lays out every group of 0 to 9 above three cards that are big, apart, inside the view and clear of the guide', () => {
+    const views = [
+      [1024, 768],
+      [768, 1024],
+      [1366, 1024],
+      [1180, 820],
+      [1662, 768],
+    ];
+    expect(Math.min(CARD_W, CARD_H)).toBeGreaterThanOrEqual(100);
+    for (const [w, h] of views) {
+      const { things, cards } = askLayout({ w, h });
+      for (const [i, c] of cards.entries()) {
+        expect(c.x - CARD_W / 2).toBeGreaterThanOrEqual(GUIDE_CLEAR);
+        expect(c.x + CARD_W / 2).toBeLessThanOrEqual(w);
+        expect(c.y + CARD_H / 2).toBeLessThanOrEqual(h);
+        expect(c.y - CARD_H / 2).toBeGreaterThanOrEqual(things.y + things.h);
+        for (const d of cards.slice(i + 1)) expect(Math.abs(d.x - c.x)).toBeGreaterThanOrEqual(CARD_W + 20);
+      }
+      for (let count = 0; count <= 9; count++)
+        for (const arrangement of ARRANGEMENTS) {
+          const spots = spotsFor(arrangement, count, things);
+          expect(spots, `${count} in ${arrangement} at ${w}x${h}`).not.toBeNull();
+          for (const s of spots!) {
+            expect(s.x - THING_HIT).toBeGreaterThanOrEqual(things.x - 1e-9);
+            expect(s.y + THING_HIT).toBeLessThanOrEqual(things.y + things.h + 1e-9);
+          }
+        }
+    }
   });
 });
 
