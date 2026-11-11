@@ -3,43 +3,69 @@ import { ink, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
+import { ease } from '../../engine/tween';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { BOARDS } from './boards';
 import {
   LEVELS,
   complete,
   DIRECTIONS,
+  FIELD_LOOKS,
   makePuzzle,
+  nextHelp,
+  NO_HELP,
+  PLANS,
   planFor,
   SIZE,
+  sizeLook,
   slide,
   solve,
   type Direction,
+  type FieldLook,
+  type Help,
+  type HelpEvent,
 } from './logic';
 
 const ARROWS = { left: '←', up: '↑', right: '→', down: '↓' };
 
-function snowball(value: number, radius: number) {
+/** A snowball in its size's look. The drawing sits in one inner container, so a join can squash and pop it without
+ * fighting the outer node's scale, which follows the cell size. */
+function snowball(value: number, radius = sizeLook(value).radius) {
   const c = new Container(),
-    shade = value >= 16 ? swatch.purple : swatch.blue;
-  c.eventMode = 'none';
-  c.addChild(
-    new Graphics()
-      .circle(0, 4, radius)
-      .fill(shade.line)
-      .circle(0, 0, radius)
-      .fill(shade.light)
-      .stroke({ width: 3, color: shade.line })
-      .ellipse(-radius * 0.3, -radius * 0.35, radius * 0.28, radius * 0.16)
-      .fill(swatch.white.fill),
-  );
-  c.addChild(label(String(value), radius * 0.8, ink));
+    body = new Container(),
+    look = sizeLook(value),
+    shade = swatch[look.color];
+  c.eventMode = body.eventMode = 'none';
+  const g = new Graphics()
+    .circle(0, 4, radius)
+    .fill(shade.line)
+    .circle(0, 0, radius)
+    .fill(shade.light)
+    .stroke({ width: 3, color: shade.line })
+    .ellipse(-radius * 0.3, -radius * 0.35, radius * 0.28, radius * 0.16)
+    .fill(swatch.white.fill);
+  if (look.scarf)
+    g.roundRect(-radius * 0.68, radius * 0.48, radius * 1.36, radius * 0.2, radius * 0.1)
+      .fill(swatch.red.fill)
+      .roundRect(radius * 0.25, radius * 0.55, radius * 0.2, radius * 0.45, radius * 0.08)
+      .fill(swatch.red.line);
+  body.addChild(g, label(String(value), radius * 0.8, ink));
+  c.addChild(body);
   return c;
 }
+const bodyOf = (node: Container) => node.children[0] as Container;
+
+/** How each seeded field look colours the snowfield; dusk adds stars, a flurry adds slow flakes that never touch play. */
+const FIELD_COLORS: Record<FieldLook, { ground: number; line: number; cell: number }> = {
+  morning: { ground: swatch.blue.light, line: swatch.blue.line, cell: swatch.white.light },
+  dusk: { ground: swatch.purple.light, line: swatch.purple.line, cell: swatch.blue.light },
+  flurry: { ground: swatch.teal.light, line: swatch.teal.line, cell: swatch.white.fill },
+};
 
 /**
  * Where the field and its buttons go: the field's top-left corner and cell, the 100-unit arrows in one row under it (which
@@ -68,10 +94,12 @@ class SnowballMerge implements Game {
   readonly puzzle;
   board: number[];
   route: Direction[] | null = null;
-  hinted: Direction | 'undo' | null = null;
+  help: Help = NO_HELP;
   misses = 0;
-  hints = 0;
   slides = 0;
+  /** The shortest route from the starting board, shown beside her slide count after the finish as information only. */
+  readonly par: number;
+  readonly look: FieldLook;
   busy = false;
   finished = false;
   readonly arrows = Object.fromEntries(DIRECTIONS.map((d) => [d, new Container()])) as Record<
@@ -84,6 +112,10 @@ class SnowballMerge implements Game {
   readonly field = new Container();
   private readonly ground = new Graphics();
   private readonly balls = new Container();
+  private readonly sky = new Graphics();
+  private readonly flakes = new Graphics();
+  private readonly starSpots: { x: number; y: number; r: number }[] = [];
+  private readonly flakeSpots: { x: number; y: number; r: number; speed: number }[] = [];
   private readonly glow = new Graphics();
   private readonly title = label('', 36);
   private readonly status = label('', 24, ink, '500');
@@ -95,11 +127,33 @@ class SnowballMerge implements Game {
   private flash = 0;
 
   constructor(private readonly ctx: GameContext) {
-    this.puzzle = makePuzzle(ctx.level, ctx.rng);
+    this.puzzle = makePuzzle(ctx.level, ctx.rng, BOARDS[PLANS.indexOf(planFor(ctx.level))]);
     this.board = this.puzzle.board.slice();
-    for (const part of [this.field, this.ground, this.balls, this.glow, this.title, this.status])
+    this.par = solve(this.puzzle.board, this.puzzle.target)?.length ?? 0;
+    // Drawn after the puzzle, so a look never changes which board a seed gives.
+    this.look = ctx.rng.pick(FIELD_LOOKS);
+    for (let i = 0; i < 9; i++)
+      this.starSpots.push({ x: ctx.rng.range(0, 1), y: ctx.rng.range(0, 1), r: ctx.rng.range(4, 7) });
+    if (this.look === 'flurry')
+      for (let i = 0; i < 14; i++)
+        this.flakeSpots.push({
+          x: ctx.rng.range(0, 1),
+          y: ctx.rng.range(0, 1),
+          r: ctx.rng.range(2.5, 5),
+          speed: ctx.rng.range(0.03, 0.07),
+        });
+    for (const part of [
+      this.field,
+      this.ground,
+      this.balls,
+      this.sky,
+      this.flakes,
+      this.glow,
+      this.title,
+      this.status,
+    ])
       part.eventMode = 'none';
-    this.field.addChild(this.ground, this.balls);
+    this.field.addChild(this.sky, this.ground, this.flakes, this.balls);
     ctx.stage.addChild(this.field, this.title, this.status);
     for (const d of DIRECTIONS) {
       const node = this.arrows[d];
@@ -130,6 +184,18 @@ class SnowballMerge implements Game {
     this.refresh();
   }
 
+  get hinted() {
+    return this.help.hinted;
+  }
+  get hints() {
+    return this.help.hints;
+  }
+  private assist(event: HelpEvent) {
+    const before = this.help.hinted;
+    this.help = nextHelp(this.help, event, this.route);
+    return this.help.hinted !== before ? this.help.hinted : null;
+  }
+
   start() {
     void this.ctx.instruct('snowball.go', { target: this.puzzle.target });
   }
@@ -151,17 +217,37 @@ class SnowballMerge implements Game {
     this.field.position.copyFrom(l.field);
     this.title.position.set(v.w / 2, top - 70);
     this.status.position.set(v.w / 2, top - 40);
+    const colors = FIELD_COLORS[this.look];
     this.ground
       .clear()
       .roundRect(-14, -14, w + 28, w + 28, 24)
-      .fill(swatch.blue.light)
-      .stroke({ width: 5, color: swatch.blue.line });
+      .fill(colors.ground)
+      .stroke({ width: 5, color: colors.line });
     for (let i = 0; i < SIZE * SIZE; i++) {
       const p = this.center(i);
       this.ground
         .roundRect(p.x - this.cell / 2 + 5, p.y - this.cell / 2 + 5, this.cell - 10, this.cell - 10, 14)
-        .fill(swatch.white.light);
+        .fill(colors.cell);
     }
+    // Dusk: a few drawn stars in the margins beside the field.
+    this.sky.clear();
+    if (this.look === 'dusk')
+      this.starSpots.forEach((star, i) => {
+        const x = i % 2 ? w + 30 + star.x * 30 : -30 - star.x * 30,
+          y = star.y * w,
+          r = star.r;
+        this.sky
+          .moveTo(x, y - r * 2)
+          .lineTo(x + r * 0.5, y - r * 0.5)
+          .lineTo(x + r * 2, y)
+          .lineTo(x + r * 0.5, y + r * 0.5)
+          .lineTo(x, y + r * 2)
+          .lineTo(x - r * 0.5, y + r * 0.5)
+          .lineTo(x - r * 2, y)
+          .lineTo(x - r * 0.5, y - r * 0.5)
+          .closePath()
+          .fill(swatch.yellow.fill);
+      });
     DIRECTIONS.forEach((d) => this.arrows[d].position.copyFrom(l.arrows[d]));
     [this.undoButton, this.hintButton, this.restartButton].forEach((b, i) =>
       b.position.copyFrom(l.buttons[i]),
@@ -176,7 +262,7 @@ class SnowballMerge implements Game {
     this.nodes.clear();
     this.board.forEach((value, i) => {
       if (!value) return;
-      const node = snowball(value, 42),
+      const node = snowball(value),
         p = this.center(i);
       node.scale.set(this.cell / 108);
       node.position.set(p.x, p.y);
@@ -187,8 +273,9 @@ class SnowballMerge implements Game {
   private refresh() {
     this.route = solve(this.board, this.puzzle.target);
     this.title.text = `Merge to ${this.puzzle.target}`;
-    this.status.text =
-      this.route === null
+    this.status.text = complete(this.board, this.puzzle.target)
+      ? `${this.slides} slides · the shortest route is ${this.par}`
+      : this.route === null
         ? 'Try Undo or Start over to find a new route.'
         : `${this.board.filter((v) => v > 0).length} snowballs · ${this.slides} slides`;
     this.undoButton.alpha = this.history.length ? 1 : 0.55;
@@ -199,18 +286,22 @@ class SnowballMerge implements Game {
     if (!this.ctx.alive || this.busy || this.finished) return;
     const next = slide(this.board, direction);
     if (!next.changed) {
-      // An inert arrow is exploration, never evidence of a wrong answer.
+      // An inert arrow is exploration, never evidence of a wrong answer; a second in a row lights the way on.
       sfx.boing();
-      void this.ctx.say('snowball.still');
+      const lit = this.assist('inert');
+      void this.ctx.say(lit ? (lit === 'undo' ? 'snowball.stuck' : `snowball.${lit}`) : 'snowball.still');
       return;
     }
     this.busy = true;
-    this.hinted = null;
     this.history.push(this.board.slice());
     if (this.history.length > 100) this.history.shift();
     this.slides++;
     if (next.merges) sfx.bell(2 + next.merges);
     else sfx.marimba(1);
+    // Cells two snowballs arrive in: they squash into each other, then the doubled ball pops in with a puff.
+    const joins = [...new Set(next.motions.map((m) => m.to))].filter(
+      (to) => next.motions.filter((m) => m.to === to).length === 2,
+    );
     await Promise.all(
       next.motions.map((m) => {
         const node = this.nodes.get(m.from)!;
@@ -218,9 +309,43 @@ class SnowballMerge implements Game {
       }),
     );
     if (!this.ctx.alive) return;
+    if (joins.length) {
+      await Promise.all(
+        next.motions
+          .filter((m) => joins.includes(m.to))
+          .map((m) =>
+            this.ctx.tw.to(bodyOf(this.nodes.get(m.from)!).scale, { x: 1.18, y: 0.8 }, { duration: 0.06 }),
+          ),
+      );
+      if (!this.ctx.alive) return;
+    }
     this.board = next.board;
-    this.busy = false;
     this.refresh();
+    // A slide into a dead end lights Undo on its own and says so.
+    if (this.assist('changed') === 'undo') void this.ctx.say('snowball.stuck');
+    if (joins.length) {
+      for (const to of joins) {
+        const p = this.ctx.particles.toLocal(this.balls.toGlobal(this.center(to)));
+        this.ctx.particles.burst(p.x, p.y, {
+          kind: 'dot',
+          colors: [swatch.white.fill, swatch.blue.light],
+          count: 7,
+          speed: [40, 110],
+          gravity: -30,
+          size: [0.18, 0.32],
+          life: [0.35, 0.6],
+        });
+      }
+      await Promise.all(
+        joins.map((to) => {
+          const body = bodyOf(this.nodes.get(to)!);
+          body.scale.set(1.15);
+          return this.ctx.tw.to(body.scale, { x: 1, y: 1 }, { duration: 0.16, ease: ease.outBack });
+        }),
+      );
+      if (!this.ctx.alive) return;
+    }
+    this.busy = false;
     if (complete(this.board, this.puzzle.target)) {
       this.finished = true;
       await this.ctx.say('snowball.done', { target: this.puzzle.target });
@@ -231,8 +356,8 @@ class SnowballMerge implements Game {
   undo() {
     if (!this.ctx.alive || this.busy || this.finished || !this.history.length) return;
     this.board = this.history.pop()!;
-    this.hinted = null;
     this.refresh();
+    this.assist('changed');
   }
   restart() {
     if (
@@ -244,18 +369,17 @@ class SnowballMerge implements Game {
       return;
     this.board = this.puzzle.board.slice();
     this.history = [];
-    this.hinted = null;
-    // Restart is support, so a supported completion cannot appear as independent mastery.
-    this.hints++;
     this.refresh();
+    this.assist('changed');
+    // Restart is support, so a supported completion cannot appear as independent mastery.
+    this.help = { ...this.help, hints: this.help.hints + 1 };
     void this.ctx.say('snowball.restart');
   }
   askForHint() {
     if (!this.ctx.alive || this.busy || this.finished || this.hinted) return;
-    this.hinted = this.route?.[0] ?? 'undo';
-    this.hints++;
-    if (this.hinted === 'undo') void this.ctx.say('snowball.stuck');
-    else void this.ctx.say(`snowball.${this.hinted}`);
+    const lit = this.assist('ask');
+    if (lit === 'undo') void this.ctx.say('snowball.stuck');
+    else if (lit) void this.ctx.say(`snowball.${lit}`);
   }
   autotouch(_dt: number): TouchIntent | null {
     if (!this.ctx.alive || this.busy || this.finished) return null;
@@ -265,6 +389,16 @@ class SnowballMerge implements Game {
   update(dt: number) {
     this.clock += dt;
     this.flash -= dt;
+    if (this.flakeSpots.length) {
+      const w = this.cell * SIZE,
+        f = this.flakes.clear();
+      for (const flake of this.flakeSpots) {
+        flake.y = (flake.y + flake.speed * dt) % 1;
+        const x = (flake.x + Math.sin(this.clock * 0.6 + flake.r) * 0.02) * (w + 20) - 10;
+        f.circle(x, flake.y * (w + 20) - 10, flake.r);
+      }
+      f.fill({ color: swatch.white.fill, alpha: 0.85 });
+    }
     const g = this.glow.clear();
     if (!this.ctx.alive || this.finished) return;
     const ring = (node: Container, w: number, color: number) =>

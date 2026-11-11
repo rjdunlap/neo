@@ -27,17 +27,46 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       assert.equal(await page.evaluate(() => neo.scene.game.slides), 1, 'inert presses add no slide');
       await tap('neo.scene.game.undoButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), initial);
+      if (level === 3) {
+        // Two inert arrows in a row light the route's next arrow on their own, counted as one hint.
+        await press(await direction());
+        const stuckArrow = await page.evaluate(async () => {
+          const { DIRECTIONS, slide } = await import('/src/games/snowball-merge/logic.ts');
+          return DIRECTIONS.find((d) => !slide(neo.scene.game.board, d).changed);
+        });
+        assert.ok(stuckArrow, 'a compacted edge offers an inert press');
+        await press(stuckArrow);
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.hinted),
+          null,
+          'one inert press lights nothing',
+        );
+        await press(stuckArrow);
+        assert.equal(await page.evaluate(() => neo.scene.game.hinted), await direction());
+        await press(stuckArrow);
+        assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'the glow counts once');
+        await tap('neo.scene.game.undoButton');
+        assert.equal(await page.evaluate(() => neo.scene.game.hinted), null);
+        assert.equal(
+          await page.evaluate(() => ['morning', 'dusk', 'flurry'].includes(neo.scene.game.look)),
+          true,
+        );
+      }
       await tap('neo.scene.game.hintButton');
       const hint = await page.evaluate(() => neo.scene.game.hinted);
       assert.equal(hint, await direction());
       await tap('neo.scene.game.hintButton');
-      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'same hint is counted once');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.hints),
+        level === 3 ? 2 : 1,
+        'same hint is counted once',
+      );
       await press(hint);
       await tap('neo.scene.game.restartButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), initial);
       assert.equal(
         await page.evaluate(() => neo.scene.game.hints),
-        2,
+        level === 3 ? 3 : 2,
         'restart preserves support accounting',
       );
       if (level === 3) {
@@ -76,6 +105,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         assert.ok(d);
         await press(d);
       }
+      const status = await page.evaluate(() => neo.scene.game.status.text);
+      assert.match(status, /shortest route is \d+/, 'the par line shows after the finish');
       await finished('snowball-merge');
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
       assert.deepEqual(
@@ -83,7 +114,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           const r = kit.store.stats('snowball-merge').history.at(-1);
           return [r.misses, r.hints];
         }),
-        [0, 2],
+        [0, level === 3 ? 3 : 2],
       );
     }
     await page.evaluate(() => neo.go.land('lantern-lake'));
