@@ -54,6 +54,10 @@ function snowball(value: number, radius = sizeLook(value).radius) {
       .fill(swatch.red.fill)
       .roundRect(radius * 0.25, radius * 0.55, radius * 0.2, radius * 0.45, radius * 0.08)
       .fill(swatch.red.line);
+  if (look.face)
+    g.circle(-radius * 0.34, -radius * 0.56, radius * 0.09)
+      .circle(radius * 0.34, -radius * 0.56, radius * 0.09)
+      .fill(ink);
   body.addChild(g, label(String(value), radius * 0.8, ink));
   c.addChild(body);
   return c;

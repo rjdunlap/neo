@@ -116,3 +116,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** new Arcade filter For me (games for her band; first Topics tile and the default), a page count pill ("2 of 6", hidden on one page), and the Arcade set `upright` with Topics rows laid above the guide corner across the full width.
 **Ran:** typecheck; `npm test` (341 files, 6532 passed, 1 skipped); `npm run build`; `BROWSER_SUITE=home HOME_ONLY=arcade` once, now asserting For me on arrival, the count, 13 tiles with For me first and a touch phone at 390×844 with no turn prompt; screenshots checked at 1024×768, 768×1024 and 390×844 (grid and Topics).
 **Not run:** `world` (no route change), offline (no persistence or asset change).
+
+## 2026-11-10 — U6b, the fold (PR #1475)
+
+**Changed:** Explore's entries are Places, Favorites, Arcade and Family play (All games and the Other ages signpost gone); `go.explore`'s third argument is now an Arcade filter; Little surprises is the first card on the entries page at lap and toddler; the empty Favorites shows a large heart and opens the Arcade on For me; Family play goes straight to couch play, whose Back opens the entries.
+**Ran:** typecheck; `npm test` (344 files, 6543 passed, 1 skipped; new `explore-fold` tests); `npm run build`; `BROWSER_SUITE=home` main flow PASS (four entries, Places chain, Arcade on For me, Favorites page 2 and Back, empty heart in both orientations, Family play to couch and back, Little surprises first at lap); `BROWSER_SUITE=world`: PASS (both checks, every band and orientation).
+**Not run:** `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` (plays the mix from the classic island, untouched; the root's mix is in the home flow), offline (no persistence or asset change).

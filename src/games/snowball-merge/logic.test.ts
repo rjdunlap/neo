@@ -38,7 +38,7 @@ describe('Snowball Merge', () => {
     expect(slide([2, 0, 0, 0, 0, 0, 0, 0, 0], 'left').changed).toBe(false);
   });
   it('makes reproducible solvable variants at every level and every hint leads to completion', () => {
-    for (let level = 1; level <= 3; level++) {
+    for (let level = 1; level <= PLANS.length; level++) {
       const variants = new Set<string>();
       for (let seed = 1; seed <= 240; seed++) {
         const puzzle = makePuzzle(level, new Rng(seed), BOARDS[level - 1]);
@@ -76,6 +76,7 @@ describe('Snowball Merge', () => {
       [3, 4],
       [5, 7],
       [7, 9],
+      [10, 14],
     ];
     expect(BOARDS).toHaveLength(PLANS.length);
     PLANS.forEach((plan, i) => {
@@ -100,9 +101,10 @@ describe('Snowball Merge', () => {
       expect(asymmetric).toBeGreaterThanOrEqual(2);
     });
   });
-  it('level 1 can never strand her; every level 3 board can reach a dead end for Undo', () => {
+  it('level 1 can never strand her; every level 3 and 4 board can reach a dead end for Undo', () => {
     for (const board of BOARDS[0]) expect(explore(board, 16).deadEnds).toBe(0);
     for (const board of BOARDS[2]) expect(explore(board, 64).deadEnds).toBeGreaterThan(0);
+    for (const board of BOARDS[3]) expect(explore(board, 128).deadEnds).toBeGreaterThan(0);
     expect(explore(PLANS[1].board, 32)).toEqual({ states: 48, deadEnds: 12 });
   });
   it('glows after two inert arrows in a row or at a dead end, counting each glow once', () => {
@@ -132,13 +134,15 @@ describe('Snowball Merge', () => {
     expect(nextHelp(NO_HELP, 'ask', null).hinted).toBe('undo');
   });
   it('gives each size its own look, growing but never past the cell', () => {
-    const colors = [2, 4, 8, 16, 32, 64].map((v) => sizeLook(v).color);
-    expect(new Set(colors.slice(1)).size).toBe(5);
-    for (let v = 2; v <= 64; v *= 2) {
+    const colors = [2, 4, 8, 16, 32, 64, 128].map((v) => sizeLook(v).color);
+    expect(new Set(colors.slice(1)).size).toBe(6);
+    for (let v = 2; v <= 128; v *= 2) {
       expect(sizeLook(v).radius).toBeLessThanOrEqual(42);
       if (v > 2) expect(sizeLook(v).radius).toBeGreaterThan(sizeLook(v / 2).radius);
     }
     // At its 1.15 pop the largest ball still sits inside the 98-unit inset cell (108 drawn units per cell).
-    expect(sizeLook(64).radius * 1.15).toBeLessThanOrEqual(49);
+    expect(sizeLook(128).radius * 1.15).toBeLessThanOrEqual(49);
+    // Only the 128 wears the snowman's coal eyes.
+    expect([2, 4, 8, 16, 32, 64, 128].filter((v) => sizeLook(v).face)).toEqual([128]);
   });
 });

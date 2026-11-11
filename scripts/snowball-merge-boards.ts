@@ -4,7 +4,8 @@
  * committed; logic.test.ts checks every board in it, so regenerating only changes which boards are frozen.
  *
  * Per level: the authored plan first, then three more boards summing to the target whose shortest route sits in the
- * level's depth band. Level 1 can never reach a dead end; level 3 can. Every added board is asymmetric (eight distinct
+ * level's depth band. Level 1 can never reach a dead end; levels 3 and 4 can; a level 4
+ * board carries at least two 32s. Every added board is asymmetric (eight distinct
  * turns), and no board is a turn of another.
  */
 import { writeFileSync } from 'node:fs';
@@ -25,7 +26,14 @@ export const BANDS = [
   { route: [3, 4], balls: [4, 5], deadEnds: 'none' },
   { route: [5, 7], balls: [6, 7], deadEnds: 'any' },
   { route: [7, 9], balls: [7, 8], deadEnds: 'some' },
-] as const;
+  { route: [10, 14], balls: [7, 8], deadEnds: 'some', has: [32, 2] },
+] as const satisfies readonly {
+  route: readonly [number, number];
+  balls: readonly [number, number];
+  deadEnds: 'none' | 'any' | 'some';
+  /** A snowball size the board must carry, and at least how many. */
+  has?: readonly [number, number];
+}[];
 
 /** Halve a random snowball until there are `count`, then scatter them over the field. */
 function randomBoard(target: number, count: number): number[] {
@@ -50,6 +58,7 @@ PLANS.forEach((plan, index) => {
   for (let tries = 0; boards.length < 4; tries++) {
     if (tries > 200000) throw new Error(`level ${index + 1}: not enough boards`);
     const board = randomBoard(plan.target, int(band.balls[0], band.balls[1]));
+    if ('has' in band && board.filter((v) => v === band.has[0]).length < band.has[1]) continue;
     const turns = orbit(board);
     if (turns.size < 8 || [...turns].some((k) => taken.has(k))) continue;
     const route = solve(board, plan.target);
