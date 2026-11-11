@@ -226,7 +226,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Welcome Ways](docs/games/welcome-ways.md) | toddler–school | Tinker Lab | 7 | drag a wooden part, or tap part then socket, and Try the same entrance with every visitor |
 | [Example Express](docs/games/example-express.md) | school | Tinker Lab | 2 | label parcel examples, test the fitted sorter and repair a surprising route |
 | [Moon Window](docs/games/moon-window.md) | lap–pre-K | Tinker Lab | 3 | lap–pre-K |
-| [Sorting Machine](docs/games/sorting-machine.md) | school | Tinker Lab | 2 | send pictured critters through a toy machine and watch its door, then pick the sensor a sign asks for and Check it on all four critters |
+| [Sorting Machine](docs/games/sorting-machine.md) | school | Tinker Lab | 3 | send pictured critters through a toy machine and watch its door, then pick the sensor a sign asks for and Check it on all four critters |
 | [Water Road](docs/games/water-road.md) | toddler–school | Tinker Lab | 5 | tap and stones lift onto a wooden frame until the keystone chimes, then pull the frame and the pet walks through, the way builders once made arches; later, set piers so water runs downhill and raise arches over a valley |
 | [Drop's Journey](docs/games/drops-journey.md) | preschool–school | Tinker Lab | 3 | tap a picture card to send a water drop between the sea, a cloud, a river, snow on the mountain top and the ground |
 | [Rain Garden](docs/games/rain-garden.md) | toddler–school | Tinker Lab | 4 | toddler–school |

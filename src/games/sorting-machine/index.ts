@@ -1,6 +1,7 @@
 /**
  * Sorting Machine: send a critter through a toy machine and watch a sensor read it and a door answer (level 1), then
- * choose the sensor a sign asks for and Check it on every friend (level 2). Rules: ./logic.ts; definition:
+ * choose the sensor a sign asks for and Check it on every friend (level 2), then the gate that joins two sensors
+ * (level 3). Rules: ./logic.ts; definition:
  * docs/definitions/sorting-machine.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
@@ -26,6 +27,7 @@ import {
   doorMark,
   failBadge,
   fixtureCritter,
+  gateTile,
   iconArt,
   propPicture,
   sendArt,
@@ -40,10 +42,13 @@ import {
   briefFor,
   centre,
   check,
+  choicesFor,
   evaluate,
+  has,
   helpFor,
   machineLayout,
   nextMove,
+  pairKey,
   planFor,
   PROPS,
   setSlot,
@@ -55,6 +60,7 @@ import {
   type Brief,
   type MachineLayout,
   type Node,
+  type Op,
   type Prop,
   type Pt,
   type Value,
@@ -111,6 +117,8 @@ class SortingMachine implements Game {
   private pickerLayer: Container | null = null;
   private door: Door | null = null;
   private token: Container | null = null;
+  /** Level 3: each fixed sensor's own reading, under it. */
+  sensorTokens: Container[] = [];
   private sensorAt: Pt = { x: 0, y: 0 };
   private doorAt: Pt = { x: 0, y: 0 };
   sendButton: Container | null = null;
@@ -150,8 +158,15 @@ class SortingMachine implements Game {
     return t.kind === 'sensor' && t.prop ? t.prop : this.brief.props[0];
   }
 
+  /** What the slot's picker offers: sensors at level 2, the two gates at level 3. */
+  get choices(): (Prop | Op)[] {
+    const s = slots(this.graph)[0];
+    return s ? choicesFor(this.brief, s) : [];
+  }
+
   private instruction(): LineId {
     if (this.level === 1) return 'sm.instruct.1';
+    if (this.level === 3) return `sm.instruct.both.${pairKey(this.brief)}` as LineId;
     return `sm.instruct.${this.askedProp}` as LineId;
   }
 
@@ -186,6 +201,7 @@ class SortingMachine implements Game {
     this.marks = [];
     this.badges = [];
     this.pickNodes = [];
+    this.sensorTokens = [];
     this.slotNode = this.pickerLayer = this.door = this.token = null;
     this.sendButton = this.checkButton = this.doneButton = this.undoButton = this.slowButton = null;
     this.glow.removeFromParent();
@@ -208,13 +224,36 @@ class SortingMachine implements Game {
     this.sensorAt = sc;
     const slot = new Container();
     const s = slots(this.graph)[0];
-    const value = this.level === 1 ? this.brief.props[0] : ((s?.value as Prop | null) ?? null);
-    slot.addChild(slotFrame(slotRect.w, value === null));
-    if (value !== null) {
-      const pic = propPicture(value, slotRect.w * 0.62);
-      pic.eventMode = 'none';
-      slot.addChild(pic);
+    // Level 3: the two fixed sensors above the gate slot, a wire from each into the gate and one on to the door.
+    if (l.sensors.length) {
+      const wires = new Graphics();
+      const wire = { width: 6, color: 0x8a93a6, cap: 'round' as const, join: 'round' as const };
+      l.sensors.forEach((r, i) => {
+        const c = centre(r);
+        wires
+          .moveTo(c.x, r.y + r.h)
+          .lineTo(c.x, slotRect.y - 14)
+          .lineTo(sc.x + (i ? 30 : -30), slotRect.y)
+          .stroke(wire);
+        const sensor = new Container();
+        sensor.addChild(slotFrame(r.w, false), propPicture(this.brief.props[i], r.w * 0.62));
+        sensor.position.set(c.x, c.y);
+        const reading = new Container();
+        reading.position.set(c.x, r.y + r.h + 28);
+        reading.visible = false;
+        machine.addChild(sensor);
+        this.sensorTokens.push(reading);
+      });
+      wires
+        .moveTo(sc.x, slotRect.y + slotRect.h)
+        .lineTo(sc.x, l.door.y)
+        .stroke(wire);
+      machine.addChildAt(wires, 1);
+      machine.addChild(...this.sensorTokens);
     }
+    const value = this.level === 1 ? this.brief.props[0] : (s?.value ?? null);
+    slot.addChild(slotFrame(slotRect.w, value === null));
+    if (value !== null) slot.addChild(this.part(value, slotRect.w));
     slot.position.set(sc.x, sc.y);
     if (this.level >= 2) {
       slot.hitArea = new Rectangle(
@@ -245,7 +284,11 @@ class SortingMachine implements Game {
 
     // The sign.
     if (l.sign) {
-      const sign = signArt(this.askedProp, l.sign.w, l.sign.h);
+      const sign = signArt(
+        this.level === 3 ? (pairKey(this.brief).split('-') as [Prop, Prop]) : this.askedProp,
+        l.sign.w,
+        l.sign.h,
+      );
       sign.eventMode = 'none';
       sign.position.copyFrom(centre(l.sign));
       this.board.addChild(sign);
@@ -321,6 +364,13 @@ class SortingMachine implements Game {
     this.board.addChild(this.pickerLayer);
     if (this.pickerOpen) this.openPicker();
     this.redraw();
+  }
+
+  /** A part's picture for the slot or a picker tile: a property's toy, or a gate with its word. */
+  private part(value: Prop | Op, size: number): Container {
+    const pic = value === 'AND' || value === 'OR' ? gateTile(value, size) : propPicture(value, size * 0.62);
+    pic.eventMode = 'none';
+    return pic;
   }
 
   private cabinet(w: number, h: number): Container {
@@ -439,6 +489,7 @@ class SortingMachine implements Game {
     };
     this.busy = true;
     if (this.token) this.token.visible = false;
+    for (const t of this.sensorTokens) t.visible = false;
     this.door?.setOpen(0);
     sfx.pluck(2);
   }
@@ -447,6 +498,7 @@ class SortingMachine implements Game {
   private settle() {
     const r = this.run;
     if (!r) return;
+    this.showSensorTokens(r.fixture);
     this.showToken(r.value);
     this.door?.setOpen(r.value === true ? 1 : 0);
     this.critters[r.fixture].position.copyFrom(this.home(r.fixture));
@@ -460,9 +512,23 @@ class SortingMachine implements Game {
     this.sent[r.fixture] = true;
     if (r.value !== 'incomplete') this.results[r.fixture] = r.value;
     this.redraw();
-    if (r.value === 'incomplete') void this.ctx.say('sm.pick-first');
+    if (r.value === 'incomplete') void this.ctx.say(this.pickFirst);
     else if (this.level === 1) void this.ctx.say(r.value ? 'sm.door-open' : 'sm.door-shut');
     if (this.relayout) this.build();
+  }
+
+  private get pickFirst(): LineId {
+    return this.level === 3 ? 'sm.pick-gate-first' : 'sm.pick-first';
+  }
+
+  /** Level 3: what each fixed sensor read for this friend, under the sensor. */
+  private showSensorTokens(fixture: number) {
+    const f = this.brief.fixtures[fixture];
+    this.sensorTokens.forEach((t, i) => {
+      for (const c of t.removeChildren()) c.destroy();
+      t.addChild(valueToken(has(f, this.brief, this.brief.props[i]), 20));
+      t.visible = true;
+    });
   }
 
   private showToken(v: Value) {
@@ -493,13 +559,17 @@ class SortingMachine implements Game {
         r.from.y + (to.y - r.from.y) * e - Math.sin(k * Math.PI) * 40,
       );
     } else if (r.phase === 1) {
-      if (r.t === dt || !this.token?.visible) {
+      // Level 3 reads both sensors first; the gate's answer follows half a stage later.
+      if (this.sensorTokens.length && !this.sensorTokens[0].visible) {
+        this.showSensorTokens(r.fixture);
+        sfx.pluck(4);
+      }
+      if ((!this.sensorTokens.length || k >= 0.5) && !this.token?.visible) {
         this.showToken(r.value);
         sfx.pluck(r.value === true ? 6 : r.value === false ? 3 : 1);
-        if (this.slow)
-          void this.ctx.say(
-            r.value === true ? 'sm.value-true' : r.value === false ? 'sm.value-false' : 'sm.value-incomplete',
-          );
+        const kind = this.level === 3 ? 'gate' : 'value';
+        const what = r.value === true ? 'true' : r.value === false ? 'false' : 'incomplete';
+        if (this.slow) void this.ctx.say(`sm.${kind}-${what}` as LineId);
       }
       this.token?.scale.set(1 + 0.25 * Math.sin(k * Math.PI));
     } else if (r.phase === 2) {
@@ -549,13 +619,13 @@ class SortingMachine implements Game {
     for (const c of this.pickerLayer.removeChildren()) c.destroy({ children: true });
     this.pickNodes = [];
     sfx.pop(8);
-    this.brief.candidates.forEach((prop, i) => {
+    this.choices.forEach((choice, i) => {
       const r = l.picks[i];
       const n = new Container();
-      n.addChild(finish({ w: r.w, h: r.h, corner: 22 }, swatch.white, cream), propPicture(prop, r.w * 0.62));
+      n.addChild(finish({ w: r.w, h: r.h, corner: 22 }, swatch.white, cream), this.part(choice, r.w));
       n.position.copyFrom(centre(r));
       n.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
-      onTap(n, () => this.pick(prop), { cooldown: 250 });
+      onTap(n, () => this.pick(choice), { cooldown: 250 });
       this.pickerLayer!.addChild(n);
       this.pickNodes.push(n);
     });
@@ -567,14 +637,14 @@ class SortingMachine implements Game {
     if (this.pickerLayer) for (const c of this.pickerLayer.removeChildren()) c.destroy({ children: true });
   }
 
-  pick(prop: Prop) {
+  pick(choice: Prop | Op) {
     if (this.finished || this.busy || this.run) return;
     this.history.push(this.graph);
-    this.graph = setSlot(this.graph, 0, prop);
+    this.graph = setSlot(this.graph, 0, choice);
     this.closePicker();
     sfx.tick();
     this.afterChange();
-    void this.ctx.say('sm.picked');
+    void this.ctx.say(choice === 'AND' ? 'sm.picked.and' : choice === 'OR' ? 'sm.picked.or' : 'sm.picked');
   }
 
   undo() {
@@ -609,7 +679,7 @@ class SortingMachine implements Game {
     if (this.finished || this.busy || this.run || this.level < 2) return;
     const v = check(this.graph, this.brief);
     if (v.status === 'incomplete') {
-      void this.ctx.say('sm.pick-first');
+      void this.ctx.say(this.pickFirst);
       void this.pulseSlot();
       return;
     }
@@ -620,7 +690,8 @@ class SortingMachine implements Game {
     sfx.boing();
     this.tally.miss();
     this.failing = new Set(v.rows);
-    void this.ctx.say(`sm.check-fail.${this.askedProp}` as LineId);
+    const asked = this.level === 3 ? `both.${pairKey(this.brief)}` : this.askedProp;
+    void this.ctx.say(`sm.check-fail.${asked}` as LineId);
     this.selected = v.rows[0];
     this.redraw();
     this.startRun(v.rows[0]);
@@ -690,7 +761,7 @@ class SortingMachine implements Game {
 
   hintLabel = 'Help me';
 
-  /** The pet's Help: one hint a press. Level 1 hops the unsent friend; level 2 runs a telling friend, then installs the sensor. */
+  /** The pet's Help: one hint a press. Level 1 hops the unsent friend; levels 2–3 run a telling friend, then install the part. */
   askForHint() {
     if (this.finished || this.busy || this.run) return;
     const presses = this.tally.help();
@@ -707,7 +778,7 @@ class SortingMachine implements Game {
     if (h.kind === 'run') {
       this.selected = h.fixture;
       this.redraw();
-      void this.ctx.say('sm.help.send');
+      void this.ctx.say(this.level === 3 ? 'sm.help.send.both' : 'sm.help.send');
       this.startRun(h.fixture);
       return;
     }
@@ -715,7 +786,7 @@ class SortingMachine implements Game {
     this.graph = h.graph;
     this.closePicker();
     this.afterChange();
-    void this.ctx.say('sm.help.installed');
+    void this.ctx.say(this.level === 3 ? 'sm.help.installed.gate' : 'sm.help.installed');
   }
 
   update(dt: number) {
@@ -738,7 +809,7 @@ class SortingMachine implements Game {
     }
     if ('pick' in m) {
       if (!this.pickerOpen) return this.slotNode ? { tap: { on: this.slotNode }, pause: 0.4 } : null;
-      const i = this.brief.candidates.indexOf(m.pick);
+      const i = this.choices.indexOf(m.pick);
       return this.pickNodes[i] ? { tap: { on: this.pickNodes[i] } } : null;
     }
     if ('check' in m) return this.checkButton ? { tap: { on: this.checkButton } } : null;

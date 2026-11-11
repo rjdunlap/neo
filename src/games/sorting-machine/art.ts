@@ -3,6 +3,7 @@ import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood, type ColorName } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
+import { label } from '../../ui/text';
 import type { Fixture, Op, Prop, Value } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -127,7 +128,7 @@ export function propPicture(prop: Prop, size = 80): Container {
   return c;
 }
 
-/** A gate's picture (level 3 later): two arms joining (AND) or either arm (OR). Kept with the pictures so the slot art is complete. */
+/** A gate's picture: two arms joining at a solid knot (AND) or at an open ring either arm can pass (OR). */
 export function gatePicture(op: Op, size = 80): Graphics {
   const g = new Graphics();
   const s = size / 100;
@@ -144,6 +145,17 @@ export function gatePicture(op: Op, size = 80): Graphics {
       .stroke(line(ink, 5));
   else g.circle(0, 0, 10 * s).fill(ink);
   return g;
+}
+
+/** A gate with its word under it, for the slot and the picker: the picture alone is abstract, so it never stands alone. */
+export function gateTile(op: Op, size: number): Container {
+  const c = new Container();
+  const pic = gatePicture(op, size * 0.52);
+  pic.y = -size * 0.12;
+  const word = label(op === 'AND' ? 'and' : 'or', Math.round(size * 0.22), ink);
+  word.y = size * 0.3;
+  c.addChild(pic, word);
+  return c;
 }
 
 // ——— Machine parts ———
@@ -301,8 +313,11 @@ export function cardArt(w: number, h: number, lit = false): Graphics {
   return g;
 }
 
-/** The sign: a wooden board on a post with the property and an open arch. */
-export function signArt(prop: Prop, w: number, h: number): Container {
+/**
+ * The sign: a wooden board on a post with the property and an open arch. Two properties (level 3) are joined by the word
+ * "and", on one row when the board is wide and above the arch when it is narrow.
+ */
+export function signArt(asked: Prop | [Prop, Prop], w: number, h: number): Container {
   const c = new Container();
   const g = new Graphics();
   g.roundRect(-10, h / 2 - 30, 20, 30, 4)
@@ -313,19 +328,42 @@ export function signArt(prop: Prop, w: number, h: number): Container {
     .stroke(line(wood.line, 6));
   g.roundRect(-w / 2 + 12, -h / 2 + 12, w - 24, h - 54, 12).fill(cream);
   c.addChild(g);
-  const pic = propPicture(prop, Math.min(w, h) * 0.5);
-  pic.position.set(-w * 0.2, -16);
   const arrow = new Graphics()
-    .moveTo(-14, -16)
-    .lineTo(10, -16)
-    .moveTo(0, -26)
-    .lineTo(12, -16)
-    .lineTo(0, -6)
+    .moveTo(-14, 0)
+    .lineTo(10, 0)
+    .moveTo(0, -10)
+    .lineTo(12, 0)
+    .lineTo(0, 10)
     .stroke(line(ink, 5));
-  arrow.position.set(w * 0.07, 0);
-  const mark = doorMark(true, 54);
-  mark.position.set(w * 0.27, -10);
-  c.addChild(pic, arrow, mark);
+  if (typeof asked === 'string') {
+    const pic = propPicture(asked, Math.min(w, h) * 0.5);
+    pic.position.set(-w * 0.2, -16);
+    arrow.position.set(w * 0.07, -16);
+    const mark = doorMark(true, 54);
+    mark.position.set(w * 0.27, -10);
+    c.addChild(pic, arrow, mark);
+    return c;
+  }
+  const mid = -15;
+  const row = w >= 360;
+  const size = row ? 70 : 58;
+  const y = row ? mid : mid - 44;
+  const x0 = row ? -110 : 0;
+  const a = propPicture(asked[0], size);
+  a.position.set(x0 - 62, y);
+  const and = label('and', 24, ink);
+  and.position.set(x0, y);
+  const b = propPicture(asked[1], size);
+  b.position.set(x0 + 62, y);
+  const mark = doorMark(true, row ? 54 : 46);
+  if (row) {
+    arrow.position.set(70, mid);
+    mark.position.set(140, mid + 6);
+  } else {
+    arrow.position.set(-30, mid + 46);
+    mark.position.set(26, mid + 48);
+  }
+  c.addChild(a, and, b, arrow, mark);
   return c;
 }
 

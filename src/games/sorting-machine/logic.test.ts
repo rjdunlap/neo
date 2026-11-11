@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
+  LEVELS,
+  OPS,
   PAIRS,
   PROPS,
   TUPLES,
@@ -9,6 +11,7 @@ import {
   briefFor,
   candidateGraphs,
   check,
+  choicesFor,
   complete,
   corners,
   evaluate,
@@ -17,6 +20,9 @@ import {
   machineLayout,
   nextMove,
   overlaps,
+  pairKey,
+  planFor,
+  wanted,
   setSlot,
   slots,
   solutions,
@@ -247,7 +253,7 @@ describe('slots', () => {
 
 describe('layout', () => {
   const views = [computeView(1024, 768), computeView(768, 1024)];
-  for (const level of [1, 2]) {
+  for (const level of [1, 2, 3]) {
     for (const v of views) {
       it(`level ${level} at ${v.w}x${v.h} has full-size, non-overlapping, in-view parts`, () => {
         const l = machineLayout(level, v);
@@ -258,7 +264,17 @@ describe('layout', () => {
           expect(f.h).toBeGreaterThanOrEqual(140);
         }
         expect(l.fixtures).toHaveLength(level === 1 ? 2 : 4);
-        if (level === 2) {
+        expect(l.sensors).toHaveLength(level === 3 ? 2 : 0);
+        for (const r of l.sensors) {
+          // Inside the cabinet, above the gate slot and clear of each other.
+          expect(r.x).toBeGreaterThanOrEqual(l.machine.x);
+          expect(r.x + r.w).toBeLessThanOrEqual(l.machine.x + l.machine.w);
+          expect(r.y + r.h).toBeLessThan(l.slot!.y);
+        }
+        if (level === 3) expect(overlaps(l.sensors[0], l.sensors[1])).toBe(false);
+        expect(l.door.y + l.door.h).toBeLessThanOrEqual(l.machine.y + l.machine.h);
+        if (l.slot) expect(l.door.y).toBeGreaterThanOrEqual(l.slot.y + l.slot.h);
+        if (level >= 2) {
           expect(l.slot!.w).toBeGreaterThanOrEqual(110);
           expect(l.slot!.h).toBeGreaterThanOrEqual(110);
           expect(l.picks).toHaveLength(2);
@@ -310,4 +326,110 @@ describe('layout', () => {
       } else expect(l).toBeNull();
     });
   }
+});
+
+describe('level 3, Both badges', () => {
+  const briefs = SEEDS.map((seed) => briefFor(3, new Rng(seed)));
+  const mixed = (f: Fixture) => f.p !== f.q;
+
+  it('is the top of the school ladder, named Both badges', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 3 });
+    expect(planFor(3).name).toBe('Both badges');
+    expect(planFor(2).name).toBe('Choose the sensor');
+  });
+
+  it('has two fixed sensors and one empty gate slot offering AND and OR', () => {
+    for (const b of briefs) {
+      expect(b.level).toBe(3);
+      const list = slots(b.graph);
+      expect(list).toEqual([{ index: 0, kind: 'gate', value: null }]);
+      expect(choicesFor(b, list[0])).toEqual([...OPS]);
+      expect(b.graph.kind).toBe('gate');
+      if (b.graph.kind !== 'gate') continue;
+      expect(b.graph.a).toEqual({ kind: 'sensor', prop: b.props[0], fixed: true });
+      expect(b.graph.b).toEqual({ kind: 'sensor', prop: b.props[1], fixed: true });
+      expect(b.props[0]).not.toBe(b.props[1]);
+    }
+  });
+
+  it('has one fixture per tuple with a distinct cast, and an empty gate reads incomplete for all of them', () => {
+    for (const b of briefs) {
+      expect(b.fixtures.map((f) => `${f.p}${f.q}`).sort()).toEqual(['00', '01', '10', '11']);
+      expect(new Set(b.fixtures.map((f) => f.species)).size).toBe(4);
+      expect(new Set(b.fixtures.map((f) => f.color)).size).toBe(4);
+      for (const f of b.fixtures) expect(evaluate(b.graph, f, b)).toBe('incomplete');
+      expect(check(b.graph, b)).toEqual({ status: 'incomplete', slot: 0 });
+    }
+  });
+
+  it('the sign wants only the friend with both; AND is the one solution and OR fails exactly the mixed friends', () => {
+    for (const b of briefs) {
+      expect(b.fixtures.filter((f) => wanted(f, b)).map((f) => [f.p, f.q])).toEqual([[1, 1]]);
+      const sols = solutions(b);
+      expect(sols).toHaveLength(1);
+      expect(slots(sols[0])[0].value).toBe('AND');
+      expect(check(setSlot(b.graph, 0, 'AND'), b)).toEqual({ status: 'pass' });
+      const v = check(setSlot(b.graph, 0, 'OR'), b);
+      expect(v.status).toBe('fail');
+      if (v.status !== 'fail') continue;
+      expect(v.rows).toHaveLength(2);
+      expect(v.rows.every((i) => mixed(b.fixtures[i]))).toBe(true);
+      expect(v.rows).toEqual([...v.rows].sort((x, y) => x - y));
+    }
+  });
+
+  it('covers all three pairs, both sensor orders and many fixture orders across seeds; a seed repeats', () => {
+    expect(new Set(briefs.map(pairKey))).toEqual(new Set(PAIRS.map((p) => p.join('-'))));
+    expect(new Set(briefs.map((b) => b.props.join('-'))).size).toBe(6);
+    expect(new Set(briefs.map((b) => b.fixtures.map((f) => `${f.p}${f.q}`).join(' '))).size).toBeGreaterThan(
+      12,
+    );
+    expect(briefFor(3, new Rng(77))).toEqual(briefFor(3, new Rng(77)));
+  });
+
+  it('levels 1 and 2 draw the same briefs as before level 3 existed (first seeds pinned by shape)', () => {
+    for (const seed of SEEDS.slice(0, 40)) {
+      const two = briefFor(2, new Rng(seed));
+      expect(two.level).toBe(2);
+      expect(slots(two.graph)).toEqual([{ index: 0, kind: 'sensor', value: null }]);
+      expect(two.candidates).toEqual(two.props);
+      expect(briefFor(1, new Rng(seed)).fixtures).toHaveLength(2);
+    }
+  });
+
+  it('help runs a mixed friend from the empty, the wrong and the right gate, then installs AND, which passes', () => {
+    for (const b of briefs.slice(0, 60)) {
+      for (const g of [b.graph, setSlot(b.graph, 0, 'OR'), setSlot(b.graph, 0, 'AND')]) {
+        const first = helpFor(g, b, 1);
+        expect(first.kind).toBe('run');
+        if (first.kind === 'run') expect(mixed(b.fixtures[first.fixture])).toBe(true);
+        const second = helpFor(g, b, 2);
+        expect(second.kind).toBe('install');
+        if (second.kind === 'install') {
+          expect(slots(second.graph)[0].value).toBe('AND');
+          expect(check(second.graph, b).status).toBe('pass');
+        }
+      }
+    }
+  });
+
+  it('the ghost finger sends the friend help would pick, chooses AND, then checks', () => {
+    for (const b of briefs.slice(0, 60)) {
+      const none = b.fixtures.map(() => false);
+      const m1 = nextMove(b, b.graph, none);
+      const h = helpFor(b.graph, b, 1);
+      expect(m1).toEqual({ send: h.kind === 'run' ? h.fixture : -1 });
+      const sent = none.map((_, i) => 'send' in m1 && i === m1.send);
+      expect(nextMove(b, b.graph, sent)).toEqual({ pick: 'AND' });
+      expect(nextMove(b, setSlot(b.graph, 0, 'AND'), sent)).toEqual({ check: true });
+    }
+  });
+
+  it('a failed Check of a complete gate is one miss whatever the failing rows; the second lights the glow once', () => {
+    const t = new Tally();
+    expect(t.miss()).toBe(false);
+    expect([t.misses, t.hints]).toEqual([1, 0]);
+    expect(t.miss()).toBe(true);
+    expect([t.misses, t.hints, t.glowing]).toEqual([2, 1, true]);
+  });
 });

@@ -53,6 +53,7 @@ export interface Fixture {
 }
 
 export type Op = 'AND' | 'OR';
+export const OPS: readonly Op[] = ['AND', 'OR'];
 /**
  * A machine: a sensor reads one property (an empty slot reads nothing yet; a `fixed` sensor is part of the machine,
  * not a slot), a gate combines two readings. A slot is a sensor without `fixed`, or a gate.
@@ -74,6 +75,17 @@ export interface Brief {
   graph: Node;
   /** What a sensor slot may hold. */
   candidates: Prop[];
+}
+
+/** The brief's two properties in `PAIRS` order, whichever sensor is drawn first: "hat-whiskers". */
+export function pairKey(brief: Brief): string {
+  const pair = PAIRS.find((p) => p.includes(brief.props[0]) && p.includes(brief.props[1]));
+  return (pair ?? brief.props).join('-');
+}
+
+/** What a slot's picker offers: the brief's sensors, or the two gates. */
+export function choicesFor(brief: Brief, slot: Slot): (Prop | Op)[] {
+  return slot.kind === 'sensor' ? [...brief.candidates] : [...OPS];
 }
 
 /** Whether a fixture has a property. A property outside the brief is never worn. */
@@ -162,7 +174,7 @@ export function candidateGraphs(brief: Brief): Node[] {
   const list = slots(brief.graph);
   let graphs: Node[] = [brief.graph];
   for (const s of list) {
-    const choices: (Prop | Op)[] = s.kind === 'sensor' ? brief.candidates : ['AND', 'OR'];
+    const choices = choicesFor(brief, s);
     graphs = graphs.flatMap((g) => choices.map((c) => setSlot(g, s.index, c)));
   }
   return graphs;
@@ -181,9 +193,9 @@ export type Help = { kind: 'run'; fixture: number } | { kind: 'install'; graph: 
  */
 export function helpFor(graph: Node, brief: Brief, presses: number): Help {
   if (presses >= 2) return { kind: 'install', graph: solutions(brief)[0] ?? graph };
-  const wrongs = complete(graph)
-    ? [graph]
-    : candidateGraphs(brief).filter((g) => check(g, brief).status !== 'pass');
+  const failing = (g: Node) => check(g, brief).status !== 'pass';
+  // A complete machine that is already right has no wrong friend of its own: show one a wrong part would get wrong.
+  const wrongs = complete(graph) && failing(graph) ? [graph] : candidateGraphs(brief).filter(failing);
   const i = brief.fixtures.findIndex((f) => wrongs.some((g) => evaluate(g, f, brief) !== wanted(f, brief)));
   return { kind: 'run', fixture: Math.max(0, i) };
 }
@@ -198,10 +210,11 @@ export interface Plan {
 const PLANS: readonly Plan[] = [
   { level: 1, name: 'See the signal' },
   { level: 2, name: 'Choose the sensor' },
+  { level: 3, name: 'Both badges' },
 ];
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 2 },
+  school: { min: 1, max: 3 },
 };
 
 export const MAX_LEVEL = PLANS.length;
@@ -235,6 +248,26 @@ export function briefFor(level: number, rng: Rng): Brief {
       fixtures: tuples.map(([a, b], i) => ({ p: a, q: b, ...who[i] })),
       target: sensor,
       graph: sensor,
+      candidates: [],
+    };
+  }
+  if (plan.level === 3) {
+    // Both sensors are part of the machine; the one slot is the gate that joins them. The sign always asks for both.
+    const [p, q] = rng.shuffle([...rng.pick(PAIRS)]);
+    const tuples = rng.shuffle([...TUPLES]);
+    const who = cast(rng, 4);
+    const gate = (op: Op | null): Node => ({
+      kind: 'gate',
+      op,
+      a: { kind: 'sensor', prop: p, fixed: true },
+      b: { kind: 'sensor', prop: q, fixed: true },
+    });
+    return {
+      level: 3,
+      props: [p, q],
+      fixtures: tuples.map(([a, b], i) => ({ p: a, q: b, ...who[i] })),
+      target: gate('AND'),
+      graph: gate(null),
       candidates: [],
     };
   }
@@ -286,7 +319,7 @@ export class Tally implements CoachTally {
 
 // ——— The ghost finger ———
 
-export type Move = { send: number } | { pick: Prop } | { check: true } | { done: true };
+export type Move = { send: number } | { pick: Prop | Op } | { check: true } | { done: true };
 
 /**
  * What a capable child does next: send a telling friend (the one help would pick), fill the slot, Check; at level 1
@@ -305,7 +338,7 @@ export function nextMove(brief: Brief, graph: Node, sent: readonly boolean[]): M
   if (empty) {
     const right = solutions(brief)[0];
     const v = right ? slots(right)[empty.index].value : null;
-    return { pick: (v ?? brief.candidates[0]) as Prop };
+    return { pick: v ?? choicesFor(brief, empty)[0] };
   }
   return { check: true };
 }
@@ -339,6 +372,8 @@ export function corners(v: View): Rect[] {
 
 export const CARD = { w: 130, h: 150 };
 export const SLOT = 116;
+/** A fixed sensor's picture at level 3. */
+export const SENSOR = 84;
 export const PICK = 116;
 export const SEND = { w: 160, h: 104 };
 export const BUTTON_R = 56;
@@ -347,8 +382,10 @@ const M = 20;
 
 export interface MachineLayout {
   fixtures: Rect[];
-  /** The machine's box; the slot (level 2) sits in its top half and the door in its bottom half. */
+  /** The machine's box; the slot (levels 2–3) sits above the door. */
   machine: Rect;
+  /** Level 3's two fixed sensors, above the gate slot; they are pictures, not targets. */
+  sensors: Rect[];
   slot: Rect | null;
   door: Rect;
   sign: Rect | null;
@@ -370,6 +407,8 @@ const button = (cx: number, cy: number, r = BUTTON_R): Rect => ({ x: cx - r, y: 
 export function machineLayout(level: number, v: View): MachineLayout | null {
   const n = level === 1 ? 2 : 4;
   const withSign = level >= 2;
+  const gate = level >= 3;
+  const boxH = gate ? 480 : 380;
   const wide = v.w >= v.h;
   const fixtures: Rect[] = [];
   let machine: Rect;
@@ -396,7 +435,7 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     const signW = withSign ? 220 : 0;
     const mx = stageRight + M + 10;
     const mw = v.w - M - signW - (withSign ? M : 0) - mx;
-    machine = { x: mx, y: top, w: Math.max(240, mw), h: 380 };
+    machine = { x: mx, y: top, w: Math.max(240, mw), h: boxH };
     if (withSign) sign = { x: v.w - M - signW, y: top, w: signW, h: 240 };
     const by = v.h - M - SEND.h / 2;
     send = { x: machine.x + machine.w / 2 - SEND.w / 2, y: by - SEND.h / 2, w: SEND.w, h: SEND.h };
@@ -433,16 +472,16 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     }
     send = { x: slow.x - 24 - SEND.w, y: by - SEND.h / 2, w: SEND.w, h: SEND.h };
   }
+  const mid = machine.x + machine.w / 2;
+  const sensors: Rect[] = gate
+    ? [-1, 1].map((side) => ({ x: mid + side * 60 - SENSOR / 2, y: machine.y + 20, w: SENSOR, h: SENSOR }))
+    : [];
   const slot: Rect | null = withSign
-    ? { x: machine.x + machine.w / 2 - SLOT / 2, y: machine.y + 24, w: SLOT, h: SLOT }
+    ? { x: mid - SLOT / 2, y: machine.y + (gate ? 164 : 24), w: SLOT, h: SLOT }
     : null;
-  const doorTop = slot ? slot.y + slot.h + 36 : machine.y + 70;
-  const door: Rect = {
-    x: machine.x + machine.w / 2 - 80,
-    y: doorTop,
-    w: 160,
-    h: Math.max(150, machine.y + machine.h - 16 - doorTop),
-  };
+  const doorTop = slot ? slot.y + slot.h + (gate ? 20 : 36) : machine.y + 70;
+  const doorH = Math.max(150, machine.y + machine.h - 16 - doorTop);
+  const door: Rect = { x: mid - 80, y: doorTop, w: 160, h: gate ? Math.min(220, doorH) : doorH };
   const picks: Rect[] = [];
   if (slot) {
     const c = centre(slot);
@@ -460,9 +499,9 @@ export function machineLayout(level: number, v: View): MachineLayout | null {
     ...(done ? [done] : []),
     ...(undo ? [undo] : []),
   ];
-  if (machine.h < 300) return null;
+  if (machine.h < (gate ? boxH : 300)) return null;
   if (!parts.every((p) => inside(p, v))) return null;
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
-  return { fixtures, machine, slot, door, sign, send, check, done, slow, undo, picks };
+  return { fixtures, machine, sensors, slot, door, sign, send, check, done, slow, undo, picks };
 }
