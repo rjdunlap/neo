@@ -1850,7 +1850,7 @@ Proof: new-interaction tier as the [definition's check tier](definitions/memory-
 
 ### tile-pairs 1: A fresh pairing and a visible uncovering
 
-- **`tile-pairs`, a different pairing each round and a pair that shows what it uncovers** (dive slice 1, [dive](deep-dives/tile-pairs.md#build-slices-in-order); existing-game tier; grown-up, levels 1–6 unchanged): make the route in `makeBoard` seeded so the same layout clears by a different pairing each round, with property tests replacing the frozen hash for levels 1–3 (same position sets, 100 seeds clear); a removed pair lifts and fades, the tiles it uncovers pulse, and the tally shows "pairs open".
+- **`tile-pairs`, a different pairing each round and a pair that shows what it uncovers** (dive slice 1, [dive](deep-dives/tile-pairs.md#build-slices-in-order); existing-game tier; grown-up, levels 1–6 unchanged): make the route in `makeBoard` seeded so the same layout clears by a different pairing each round, with property tests replacing the frozen hash for levels 1–3 (same position sets, 100 seeds clear), and choose each deal from seeded candidates inside a random-play clear-rate band that keeps today's measured difficulty (the [deal dial](deep-dives/tile-pairs.md#fresh-content-inside-existing-levels); without it seeded routes make level 5 much harder); a removed pair lifts and fades, the tiles it uncovers pulse, and the tally shows "pairs open".
 
 Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, `docs/games/tile-pairs.md` (Grows into line and notes) and the dive's "What was built" section.
 
@@ -1863,3 +1863,12 @@ Proof: existing-game tier (typecheck, the rule tests, one filtered `tilepairs` p
 Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, `voice.ts`, `howto.ts`, `src/couch/catalog.ts`, `docs/games/tile-pairs.md` and the dive's "What was built" section.
 
 Proof: new-interaction tier (typecheck, unit tests, one filtered `tilepairs` play at level 5 that peeks, pairs, takes one wrong answer and one hint, a portrait screenshot of the see-through view, `fingerdemo` only if the card's demonstrated action changes, `couchgames` filtered to Tile Pairs if a pad button is mapped, build; one screenshot per new look if slice 3 rides along).
+
+
+### tile-pairs 3: Tricky deals and the first lessons
+
+- **`tile-pairs`, harder deals and levels 10–11, then lesson puzzles 17–19** (dive slices 7 and 8, [dive](deep-dives/tile-pairs.md#build-slices-in-order); after batch 2 and level 7; grown-up): the deal dial's harder bands for levels 3–6; an offline `scripts/tile-pairs-pool.mjs` that freezes 24 tricky deals each for *Tricky twins* and *Tricky tower* (each clears, has a losing pair in its first three and passes the fair-trap check); then three designed lesson levels (*Open the most*, *Three free copies*, *Twins on twins*) frozen in `puzzles.ts` with mirror and picture permutation, a lesson line after the stuck line, and the band's `order` with its test.
+
+Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `pools.ts`, `puzzles.ts`, `index.ts`, `voice.ts`, `howto.ts`, `scripts/tile-pairs-pool.mjs`, `docs/games/tile-pairs.md` and the dive's "What was built" section.
+
+Proof: typecheck, rule tests (bands, pools, fair-trap, each lesson board's property under mirror and permutation, `order`), one filtered `tilepairs` play of 10 and one of 19 that takes the losing pair, hears the lesson and undoes, a portrait screenshot, `fingerdemo` at 10 and 17, build (voice changes). If the session is large, slice 8 goes to its own batch.
