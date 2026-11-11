@@ -111,7 +111,7 @@ Slices 1–4 go ahead regardless.
 2. **Level 4 *Make 128*** (built 2026-11-10, PR #1492). Frozen 3×3 boards at 128, range 1–4, the 128 look. Checks: new level on the existing interaction: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4. After slice 1.
 3. **Level 5 *The ice rock*** (built 2026-11-11, PR #1495). The rock in `slide`, its art, voice line and how-to step; range 1–5. Checks: model change: typecheck, rule tests with levels 1–4 unchanged, one browser play of 5 with one slide against the rock, one portrait screenshot, `fingerdemo` at 5, build.
 4. **Level 6 *Build a snowman*** (built 2026-11-11, PR #1498). Goal kinds, the stacked finish, voice and how-to; range 1–6. Checks: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one overshoot and Undo, one portrait screenshot, `fingerdemo` at 6.
-5. **Level 7 *A wider field*** (after phone-upright batch 4 has reworked the layout): per-plan size and a cached distance map. Checks: shell-free new interaction tier: typecheck, unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 7, build.
+5. **Level 7 *A wider field*** (claimed 2026-11-11, branch `claude/snowball-merge-wider-field`; after phone-upright batch 4 has reworked the layout): per-plan size and a cached distance map. Checks: shell-free new interaction tier: typecheck, unit tests, one scripted play, one portrait screenshot, `fingerdemo` at 7, build.
 
 The school opening, couch course and swipes (decisions 1–3) are gated and stay out of the ready list.
 
