@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CRITTERS } from '../art/critter';
 import { computeView } from '../engine/view';
 import { GAMES } from '../games/registry';
+import { UPRIGHT_VIEWS } from '../games/upright-check';
 import { BANDS, bandRank, lowestBand, playBand, type Band } from '../progress/bands';
 import {
   clampLandPage,
@@ -34,6 +35,11 @@ const VIEWS = {
   portrait: computeView(768, 1024),
   phone: computeView(844, 390),
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+};
+/** Those, and a phone held upright on the 768 × 1024 area, where a location at the root lays out (chunk 31, shell slice 3). */
+const WITH_UPRIGHT = {
+  ...VIEWS,
+  ...Object.fromEntries(Object.entries(UPRIGHT_VIEWS).map(([k, v]) => [`upright ${k}`, v])),
 };
 /** The backdrops' ground line, as a land scene computes it. */
 const groundOf = (h: number) => h * 0.4;
@@ -160,7 +166,7 @@ describe("a host's suggestion", () => {
 
 describe("a land's layout", () => {
   it('fits every page of every land, at every band, both ways of looking, on one screen with large separate targets', () => {
-    for (const [name, view] of Object.entries(VIEWS)) {
+    for (const [name, view] of Object.entries(WITH_UPRIGHT)) {
       for (const land of LANDS) {
         for (const band of bands as Band[]) {
           const mine = visibleIn(land, band, GAMES);

@@ -13,6 +13,7 @@ import {
 } from '../../content/lands';
 import { Resident, RESIDENTS } from '../../creatures/resident';
 import { computeView } from '../../engine/view';
+import { UPRIGHT_VIEWS } from '../../games/upright-check';
 import { hostScale } from './LandScene';
 import { meadowKeepOut } from './meadow';
 
@@ -29,6 +30,8 @@ export const VIEWS = {
   portrait: computeView(768, 1024),
   phone: computeView(844, 390),
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  // A phone held upright lays a location out on the 768 × 1024 area (chunk 31, shell slice 3).
+  ...Object.fromEntries(Object.entries(UPRIGHT_VIEWS).map(([k, v]) => [`upright ${k}`, v])),
 };
 
 /** Which arrows a page can show: none (a land that fits), on only (a first page), both (a middle page), back only (a last page). */

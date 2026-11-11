@@ -233,7 +233,7 @@ describe('the creature play layout', () => {
 
   it('fits Back, Home, the ball, the picture, the tune, the basket and the books apart, with Back and Home at least 120 apart', () => {
     expect(HOME_BUTTON.x - BACK.x).toBeGreaterThanOrEqual(120);
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       const l = playLayout(v);
       const where = `${v.w}×${v.h}`;
       const buttons = [
@@ -358,7 +358,7 @@ describe('the welcome project page layout', () => {
   it('fits Back, Home, the newcomer and every step card with its Play arrow apart, clear of the corners', () => {
     expect(PROJECT_CARD).toBeGreaterThanOrEqual(150);
     expect(PROJECT_PLAY_RADIUS * 2).toBeGreaterThanOrEqual(120);
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       for (const n of [2, 3]) {
         const l = projectLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
@@ -381,7 +381,7 @@ describe('the welcome project page layout', () => {
 describe('the welcome ending layout (RW07 slice 3)', () => {
   it('fits Back, Home, the newcomer, three 120-unit names and the arrow apart, with the picture, plates and companion clear of them', () => {
     expect(NAME_BUTTON.h).toBeGreaterThanOrEqual(120);
-    for (const v of VIEWS) {
+    for (const v of WITH_UPRIGHT) {
       const l = endingLayout(v);
       const where = `${v.w}×${v.h}`;
       const targets = [

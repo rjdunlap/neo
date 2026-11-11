@@ -334,7 +334,14 @@ export class LandScene extends Scene {
     this.home.position.set(65, 65);
     this.house?.position.set(HOUSE_X, 65);
     this.book.position.set(v.w - 65, 65);
-    this.heading.position.set(v.w / 2, 65);
+    // Centred, but kept between the house (or Back) and the book, shrinking only where a narrow view needs it (a
+    // location on a phone held upright is 768 wide); a wide view's heading is unchanged.
+    const left = (this.house ? HOUSE_X : 65) + 50 + 12;
+    const right = v.w - 65 - 50 - 12;
+    const natural = this.heading.width / this.heading.scale.x;
+    this.heading.scale.set(Math.min(1, (right - left) / Math.max(1, natural)));
+    const half = this.heading.width / 2;
+    this.heading.position.set(Math.min(Math.max(v.w / 2, left + half), right - half), 65);
     this.pip.position.set(92, v.h - 12);
     if (!layout) return;
     if (this.scenery && this.drawScenery) this.drawScenery(this.scenery, layout, v, this.backdrop.groundY);
