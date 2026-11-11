@@ -18,6 +18,8 @@ export class WayOut {
     private readonly wait: (seconds: number) => Promise<void>,
     /** Whether the scene is still the one on screen when the beat ends. */
     private readonly here: () => boolean,
+    /** The scene layer, when all of its touches should stop during the beat. */
+    private readonly root?: Container,
   ) {}
 
   async take(
@@ -28,6 +30,7 @@ export class WayOut {
   ): Promise<void> {
     if (this.leaving) return;
     this.leaving = true;
+    if (this.root) this.root.interactiveChildren = false;
     chosen(node, others);
     void say?.();
     await this.wait(LEAVE_BEAT);
