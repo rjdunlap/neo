@@ -203,6 +203,7 @@ export class CouchScene extends Scene {
       () => this.unlock(),
       () => this.pause('Window left — ready when you are.'),
     );
+    this.input.peekEnabled = () => this.screen === 'game' && !this.settled && !!this.game?.togglePeek;
     const selected = this.couch.data.party?.selected;
     // The island opened a controller-only puzzle here: say what it needs, in case the tap came from a finger.
     if (this.origin && typeof this.play === 'string' && handoff?.id !== this.play)
@@ -1094,7 +1095,8 @@ export class CouchScene extends Scene {
     );
     head.append(this.iconCanvas(mod), title);
     const place = this.place();
-    this.pad = mod.typing ? typingKeyboardArt() : padArt(place);
+    const peek = info.controls.some((row) => row.parts.includes('top'));
+    this.pad = mod.typing ? typingKeyboardArt() : padArt(place, peek);
     const list = node('ul', '', 'couch-rows');
     this.rows = info.controls.map((row) => {
       const li = node('li');
@@ -1784,7 +1786,8 @@ export class CouchScene extends Scene {
     }
     if (this.settled) return;
     super.update(dt);
-    this.game?.control?.(input, dt);
+    if (this.game?.togglePeek && input.players.some((p) => p.top)) this.game.togglePeek();
+    else this.game?.control?.(input, dt);
     this.game?.update(dt);
   }
 

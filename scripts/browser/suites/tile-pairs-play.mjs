@@ -1,6 +1,60 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, turnToGame, launch, finished }) {
+  async function checkPeek(tapTile, state, initial) {
+    const device = await page.context().newCDPSession(page);
+    await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForFunction(() => neo.view.upright === true);
+    await tap('neo.scene.game.peekButton');
+    const alpha = await page.evaluate(async () => {
+      const { peekStacks } = await import('/src/games/tile-pairs/logic.ts');
+      const g = neo.scene.game;
+      const stacks = peekStacks(g.tiles, g.mask);
+      const covering = new Set(stacks.flatMap((stack) => stack.slice(1)));
+      return {
+        covering: [...covering].map((i) => g.nodes[i].alpha),
+        underneath: g.nodes.filter((_, i) => !covering.has(i)).map((n) => n.alpha),
+        pictures: stacks.map((stack) =>
+          stack.map((i) => {
+            const picture = g.peekPictures.children[i];
+            const { minX, maxX } = picture.getBounds();
+            return { minX, maxX, visible: picture.visible && !g.nodes[i].picture.visible };
+          }),
+        ),
+      };
+    });
+    assert.ok(alpha.covering.length > 0);
+    assert.ok(alpha.covering.every((a) => a === 0.25));
+    assert.ok(alpha.underneath.every((a) => a === 1));
+    assert.ok(
+      alpha.pictures.some((stack) => stack.length === 3),
+      'the portrait check includes a three-layer stack',
+    );
+    for (const stack of alpha.pictures) {
+      assert.ok(stack.every((p) => p.visible));
+      for (let i = 1; i < stack.length; i++) {
+        assert.ok(stack[i - 1].maxX < stack[i].minX, 'pictures in a stack are readable separately');
+      }
+    }
+    assert.deepEqual(await state(), initial, 'looking leaves play and counters alone');
+    await screenshot('tile-pairs-5-peek-portrait');
+
+    await page.keyboard.press('p', { delay: 120 });
+    assert.equal(await page.evaluate(() => neo.scene.game.peeking), false, 'P closes the touch view');
+    assert.equal(await page.evaluate(() => neo.scene.game.peekButton.visible), true);
+    await page.keyboard.press('p', { delay: 120 });
+    await page.waitForFunction(() => neo.scene.game.peeking);
+    await tapTile(await page.evaluate(() => neo.scene.game.cursor));
+    assert.equal(await page.evaluate(() => neo.scene.game.peeking), false, 'a tile tap closes Peek');
+    assert.deepEqual(await state(), initial, 'the closing tap does not select or score');
+
+    await device.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+    await device.detach();
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(200);
+  }
+
   /** Tile Pairs: real taps through first/last stacks, revision, support, resize, reward and return route. */
   async function tilePairsPlay() {
     const tapTile = async (i) => {
@@ -28,7 +82,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       await page.waitForTimeout(500);
       const initial = await state();
       assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24][level - 1]);
-      if (level >= 3) {
+      if (level === 5) await checkPeek(tapTile, state, initial);
+      else if (level >= 3) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         const geometry = await page.evaluate(async () => {

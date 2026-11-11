@@ -30,6 +30,7 @@ export function pressed(input: CouchControls): Set<PadPart> {
     }
     if (p.action) on.add('bottom');
     if (p.undo) on.add('left');
+    if (p.top) on.add('top');
     if (p.pause) on.add('start');
   }
   return on;

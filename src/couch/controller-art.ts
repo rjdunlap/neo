@@ -28,7 +28,7 @@ function diamond(
   cy: number,
   gap: number,
   r: number,
-  which: 'bottom' | 'left' | null,
+  which: 'bottom' | 'left' | 'top' | null,
   cls: string,
 ): SVGGElement {
   const spots = {
@@ -51,7 +51,7 @@ export interface ControllerArt {
 }
 
 /** A controller drawn in code, in the layout of a Pro Controller. Parts light up when `light` names them. */
-export function controllerArt(): ControllerArt {
+export function controllerArt(peek = false): ControllerArt {
   const parts = new Map<PadPart, SVGElement[]>();
   const mark = <T extends SVGElement>(part: PadPart, el: T): T => {
     el.dataset.part = part;
@@ -72,7 +72,7 @@ export function controllerArt(): ControllerArt {
     svg('g', {}, ring(250, 148, 26, 'part dim'), ring(250, 148, 15, 'part dim')),
     mark('bottom', svg('g', {}, ring(302, 112, 15, 'part'))),
     mark('left', svg('g', {}, ring(274, 84, 15, 'part'))),
-    ring(302, 56, 15, 'part dim'),
+    peek ? mark('top', ring(302, 56, 15, 'part')) : ring(302, 56, 15, 'part dim'),
     ring(330, 84, 15, 'part dim'),
     ring(186, 62, 8, 'part dim'),
     mark('start', plus(214, 62, 9, 5, 'part')),
@@ -113,6 +113,7 @@ const KEY_NAMES: Record<PadPart, string> = {
   dpad: '← ↑ ↓ →',
   bottom: 'Enter',
   left: 'Backspace',
+  top: 'P',
   start: 'Esc',
 };
 /** The name on the key cap that stands for a controller part. */
@@ -120,7 +121,7 @@ export const keyName = (part: PadPart): string => KEY_NAMES[part];
 const isArrows = (part: PadPart) => part === 'stick' || part === 'dpad';
 
 /** A keyboard drawn in code, with the same lighting as the controller diagram: the arrow keys, Enter, Backspace and Esc. */
-export function keyboardArt(): ControllerArt {
+export function keyboardArt(peek = false): ControllerArt {
   const key = (x: number, y: number, w: number, h: number, label: string, size = 22) =>
     svg(
       'g',
@@ -147,6 +148,7 @@ export function keyboardArt(): ControllerArt {
   );
   const enter = svg('g', {}, key(250, 108, 128, 50, 'Enter', 20));
   const back = svg('g', {}, key(250, 28, 128, 50, 'Backspace', 18));
+  const peekKey = key(118, 28, 56, 50, 'P');
   const esc = svg('g', {}, key(22, 28, 74, 50, 'Esc', 20));
   const el = svg(
     'svg',
@@ -157,10 +159,12 @@ export function keyboardArt(): ControllerArt {
     back,
     esc,
   );
+  if (peek) el.append(peekKey);
   const lit = new Map<SVGElement, (on: ReadonlySet<PadPart>) => boolean>([
     [arrows, (on) => on.has('stick') || on.has('dpad')],
     [enter, (on) => on.has('bottom')],
     [back, (on) => on.has('left')],
+    [peekKey, (on) => on.has('top')],
     [esc, (on) => on.has('start')],
   ]);
   return {
@@ -172,8 +176,8 @@ export function keyboardArt(): ControllerArt {
 }
 
 /** The diagram for what she is playing with: a controller, or a keyboard. */
-export const padArt = (place: 'tv' | 'laptop'): ControllerArt =>
-  place === 'tv' ? controllerArt() : keyboardArt();
+export const padArt = (place: 'tv' | 'laptop', peek = false): ControllerArt =>
+  place === 'tv' ? controllerArt(peek) : keyboardArt(peek);
 
 /** Key caps for a row: the stick and the d-pad are one set of keys, so they show once. */
 export function keycaps(parts: PadPart[]): HTMLElement {

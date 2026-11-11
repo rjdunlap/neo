@@ -6,6 +6,7 @@ export interface PlayerControls {
   direction: number;
   action: boolean;
   undo: boolean;
+  top: boolean;
   pause: boolean;
   back: boolean;
   active: boolean;
@@ -31,6 +32,7 @@ export const neutral = (): PlayerControls => ({
   direction: -1,
   action: false,
   undo: false,
+  top: false,
   pause: false,
   back: false,
   active: false,
@@ -118,6 +120,7 @@ export class ControllerSampler {
         direction: direction(x, y),
         action: held(0) || (slot === 0 && (keys.has('Enter') || keys.has('Space'))),
         undo: held(2) || (slot === 0 && keys.has('Backspace')),
+        top: held(3) || (slot === 0 && keys.has('KeyP')),
         pause: held(9) || (slot === 0 && keys.has('Escape')),
         back: held(1),
         active: !!p || slot === 0 || this.keyboardTwo,
@@ -135,6 +138,7 @@ export class ControllerSampler {
         direction: raw.direction !== prev.direction ? raw.direction : -1,
         action: raw.action && !prev.action,
         undo: raw.undo && !prev.undo,
+        top: raw.top && !prev.top,
         pause: raw.pause && !prev.pause,
         back: raw.back && !prev.back,
       };
@@ -165,6 +169,8 @@ export class CouchInput {
   private readonly listening: () => boolean;
   private readonly codes: ReadonlySet<string>;
   private typedKeys: string[] = [];
+  /** The P shortcut belongs only to a round with a Peek action. */
+  peekEnabled: () => boolean = () => false;
   /**
    * The game in play types (Pond Typing): any one-character key arrives in `typed` as well as, for Space, its usual press.
    * W and S are letters then, not the second player's paddles. A held key repeats nothing.
@@ -182,7 +188,7 @@ export class CouchInput {
       this.unlock();
       return;
     }
-    if (!this.codes.has(e.code)) return;
+    if (!this.codes.has(e.code) && !(e.code === 'KeyP' && this.peekEnabled())) return;
     e.preventDefault();
     this.keys.add(e.code);
     this.unlock();

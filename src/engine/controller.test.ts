@@ -65,6 +65,15 @@ describe('controller semantics', () => {
       undo: true,
     });
   });
+  it('maps the top button and P to a single press edge', () => {
+    const s = new ControllerSampler();
+    s.sample([pad(0)], keys());
+    expect(s.sample([pad(0, [3])], keys()).players[0].top).toBe(true);
+    expect(s.sample([pad(0, [3])], keys()).players[0].top).toBe(false);
+    s.sample([pad(0)], keys());
+    expect(s.sample([pad(0)], keys('KeyP')).players[0].top).toBe(true);
+    expect(s.sample([pad(0)], keys('KeyP')).players[0].top).toBe(false);
+  });
   it('keeps player two on the pink paddle when player one disconnects, then reconnects', () => {
     const s = new ControllerSampler();
     s.sample([pad(3), pad(7)], keys());
