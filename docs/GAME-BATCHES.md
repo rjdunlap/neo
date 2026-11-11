@@ -978,7 +978,7 @@ Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cann
 
 ### pixel-pictures 5: Ones and zeros
 
-**Built 2026-11-11 ([PR #1503](https://github.com/rjdunlap/neo/pull/1503)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-11--pixel-pictures-level-11-ones-and-zeros-h7-batch-pixel-pictures-5-pr-1503); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-11-ones-and-zeros-2026-11-11). Level 12 follows as batch 6.
+**Built 2026-11-11 ([PR #1503](https://github.com/rjdunlap/neo/pull/1503)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-11.md#2026-11-11--pixel-pictures-level-11-ones-and-zeros-h7-batch-pixel-pictures-5-pr-1503); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-11-ones-and-zeros-2026-11-11). Level 12 follows as batch 6.
 
 - **`pixel-pictures`, level 11 Ones and zeros (H7 of the how-computers-work study; [definition](definitions/picture-bytes.md), after the built batch 4)** (new interaction on an existing game; school, after 8 and before the free level 10, so the order becomes [3, 4, 5, 6, 7, 8, 11, 10]): four large bit cards flip between 0 and 1, a free arrow shows the row they make, and a check compares it with a reference row under a key card (1 filled, 0 empty, left to right); three seeded rows per round, a failed check is one miss, every second one is a hint that glows the first differing card, one ordinary sticker, no creation; adds `bitsLayout`, a `coplayHint` sentence and a ghost finger that flips the needed cards, presses the arrow, then the check. [Definition](definitions/picture-bytes.md#the-levels), [dive](deep-dives/pixel-pictures.md#build-slices-in-order)
 
