@@ -166,6 +166,6 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Number Nook | `number-nook` | G | 3 | 7 | designed; slices 1–6 built through level 7, The fifteen; the school opening and couch course await decisions | `claude/dive-number-nook` ([PR #1370](https://github.com/rjdunlap/neo/pull/1370)) | [number-nook.md](number-nook.md) |
 | Pyramid Solitaire | `pyramid-solitaire` | G | 3 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Snowball Merge | `snowball-merge` | G | 5 | 7 | designed (slices 1–2 built 2026-11-10, slices 3–5 2026-11-11; school opening, couch and swipe need decisions) | `claude/snowball-merge-dive` ([PR #1447](https://github.com/rjdunlap/neo/pull/1447)) | [snowball-merge.md](snowball-merge.md) |
-| Tile Pairs | `tile-pairs` | G | 6 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Tile Pairs | `tile-pairs` | G | 6 | 7 | dive in progress (claimed 2026-11-11, branch `claude/dive-tile-pairs`: `docs/deep-dives/tile-pairs.md`, tracker, backlog and READY rows; docs only) | — | — |
 
 The six grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, Word Search, Pond Conga and Island Bridges) are island games for the `grownup` band (G) in Lantern Lake as of 2026-10-13, so they are in this table. All six support island touch; a deep dive extends their existing interactions and ladder.
