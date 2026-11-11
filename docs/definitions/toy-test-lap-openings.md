@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a`, Counting Cove's five at `892834eb`, Cozy Village's eight at `7f12c562` and Rainbow Meadow's six at `bd67aa66`, all 2026-11-11. The other 14 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a`, Counting Cove's five at `892834eb`, Cozy Village's eight at `7f12c562` Rainbow Meadow's six at `bd67aa66` and Puzzle Peaks' two at `d4fbbb71`, all 2026-11-11. The other 12 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,11 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All forty-three games read so far set `touchDemo: true`.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All forty-five games read so far set `touchDemo: true`.
 - **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game that shows it, and it is not counted again under question 5. A game with a large pet of its own hides the corner one (four of Cozy Village's eight do; their rows say what repeats the instruction instead).
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **Two opening lines hold input** in the forty-three read so far: `duck-pond` and `teddy-doctor` wait for their first line before a touch counts (their rows). The other forty-one open input before the line or without waiting for it. One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
+- **Two opening lines hold input** in the forty-five read so far: `duck-pond` and `teddy-doctor` wait for their first line before a touch counts (their rows). The other forty-three open input before the line or without waiting for it. One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
 - **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
@@ -331,14 +331,47 @@ Four games fail question 1 or 4, in the order they should be taken:
 - `swing-pals`: twelve pushes finish the round (three friends, four each), and any touch below the top strip counts. After a friend's fourth push and before the bell (about 0.75 seconds), a tap pops the mitten without a sound and without a push. The ground layer's own handler calls `palmOnGlass()`. After the session's first round the goal may be chimes, an apple or a nest, named only aloud.
 - `sand-table`: the round ends only by a tap on the flag (130 units, bottom right), and nothing points at it but its entrance bell and one line. Twelve pours empty the bucket (counted by re-running the pour rule, not by play); after that every pat on the tray gets the knock and "Scoop some sand back!", and the sparkle stops, since it needs sand in the bucket. So a child who only pats the sand never finishes, as in `weather-wardrobe`. The comment "Every tap answers: nothing waits and nothing is ignored" holds for the tray, the paddle and a filled pail only.
 
+## Puzzle Peaks
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `size-parade` (16) | **Partly.** The sky and the ground (one layer over the whole view) answer: a touch makes the friend hop, and at most once every three seconds a tick and the instruction again. Only a touch on the friend (a target 154 by 190 units at the littlest size, about 345 by 404 at the biggest) grows it | **Yes.** Every tap on the friend is a size step with its word; there is no boing, no idle hint and nothing counted | **Yes.** One friend on the grass; the ghost finger taps it, and it is the only thing to touch. Nothing invites a touch after a quiet spell | **Partly.** One friend, standing taller at its littlest (about 161 units) than a row friend at its biggest, that grows because she touched; it shrinks again in each cycle of four taps, and nothing arrives | **Partly.** The sky and the ground make the friend hop; a hold or a drag is one tap; nothing answers from the twelfth tap through "What a big little friend!" and the 1.5 seconds after it |
+| `puzzle-pals` (1) | **No.** Only the one waiting piece answers (a tick and a lift on touch-down; about 130 by 178 units in the tray at most). The teal background, the tray, the frame and the half already in place have no handler | **Yes.** One empty place, so a tap hops the piece home and any drop over the frame is its own place; a drop elsewhere floats back. There is no idle hint | **Yes.** Half a picture in the frame over a faint copy of the whole, and one piece in the tray; the ghost finger carries it to its place, though a tap is enough | **No.** One move: the round ends when the one piece goes in, and the finished picture comes alive. Nothing arrives because she touched, and the piece is small in the tray | **Partly.** A piece let go within 30 units of where it was picked up hops home, so a hold is a tap, answered on release; a drag off the frame floats back without a sound; the background and the placed half are silent, and nothing answers while the picture comes alive |
+
+### What the table says
+
+- **Close to the shape:** `size-parade`. Level 16, which only lap plays, is one big friend that grows because she touched, and a touch beside it makes it hop; only a touch on the friend is the move.
+- **One small piece, one move:** `puzzle-pals`. Level 1 is a single tap or carry, and the round is over; nothing on the screen but the piece answers.
+- **Nobody can be wrong at the first lap level,** and no waiting is counted in either game. `puzzle-pals`' second lap level can count a miss (below).
+- **No opening line holds input here,** and the corner pet shows in both.
+
+### Words-off list (P7)
+
+Puzzle Peaks games whose first lap level plays with the voice off: both. Each has one thing to touch and the card shows it.
+
+What only the voice carries: the size words (bigger, biggest, smaller, littlest) in `size-parade`, and the picture's name in `puzzle-pals` ("You made …!"). With the voice off the play is whole and the naming is not there. `puzzle-pals`' opening line says "Drag" at a level where a tap is enough.
+
+### Lines this land adds to READY
+
+Two games, in the order they should be taken:
+
+1. `puzzle-pals`: a lap level that opens with one big piece beside the frame; a touch anywhere hops it into its place, and the next piece of a two- or three-piece picture comes out because she touched.
+2. `size-parade`: at level 16 a touch anywhere grows the friend, as a touch on it does. Level 16 is lap's alone, so no band branch is needed, and it is close to the shape already, so it is last.
+
+`size-parade` passes neither question outright rather than failing one, and gets its line because the change is small and the level is already the shape.
+
+### Found while reading (not part of the five questions)
+
+- `size-parade`: lap's range is 9 to 16 in the order 16, 9, so level 16 is lap's alone (toddler's order starts at 9). A lap player who steps up goes to level 9, *Big one, little one*, where the first wrong friend in a row is free and the second glows the asked one and counts a hint. Twelve taps end the round (three cycles of bigger, biggest, smaller, littlest), and three circles at the top fill as each cycle finishes. The friend's target grows with it and never shrinks below a row friend's. A fast run of taps is not dropped: each tap is a step.
+- `puzzle-pals`: lap is levels 1 and 2. At level 2 (two halves, nothing in place) a tap still hops a piece home, but a carry dropped on the other half's place is a boing and a counted miss, and a second one glows a piece and counts a hint, at lap as at every band. The ghost finger carries the piece at level 1 where the card says a tap is enough, and the opening line says "Drag each piece onto the picture where it matches!" The tray piece's touch target depends on the board's scale and is under 100 units on a small view. The whole round at level 1 is one move.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Puzzle Peaks (2) | `size-parade`, `puzzle-pals` |
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 43 read and 14 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 45 read and 12 to read, 57 in all.
