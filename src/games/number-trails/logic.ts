@@ -140,7 +140,10 @@ export const GUIDE_CLEAR = 200;
  * Write how many lays out the group above a row of three cards along the bottom, the row to the right of the corner guide.
  * `things` is the room for the group; `cards` are the cards' centres.
  */
-export function askLayout(view: { w: number; h: number }): { things: Rect; cards: { x: number; y: number }[] } {
+export function askLayout(view: { w: number; h: number }): {
+  things: Rect;
+  cards: { x: number; y: number }[];
+} {
   const y = view.h - 30 - CARD_H / 2;
   const left = GUIDE_CLEAR + 10,
     right = view.w - 40;

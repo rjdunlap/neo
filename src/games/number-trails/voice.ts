@@ -7,5 +7,9 @@ export const VOICE = {
   'nt.count': ['{n}!'],
   'nt.made': ['{n} {things}!', 'That is {n} {things}!'],
   'nt.zero': ['Zero! There are no {things}.'],
+  'nt.how-many': ['How many {things}? Tap each one to count them.'],
+  'nt.basket': ['How many {things} are in the basket?'],
+  'nt.which': ['Which number tells how many {things}? Tap it!'],
+  'nt.recount': ['Let us count them again together.'],
   'nt.wake': ['Wake up {n} {things}! Count as you tap.'],
 } satisfies Record<string, string[]>;
