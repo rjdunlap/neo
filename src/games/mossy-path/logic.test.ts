@@ -901,7 +901,7 @@ function prefixes(b: Board): number[][] {
 describe('Mossy Path level 11, thick moss', () => {
   it('gives levels 1–3 and 8 the same completions from every legal prefix as the old one-visit solver', () => {
     for (const p of [...PLANS.flat(), ...PATCHES])
-      for (const [fx, fy, t] of SYMMETRIES.slice(0, 2)) {
+      for (const [fx, fy, t] of SYMMETRIES) {
         const b = transformPlan(p, fx, fy, t);
         expect(b.thick).toBeUndefined();
         expect(routeLength(b)).toBe(b.tiles.length);
