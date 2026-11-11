@@ -1,6 +1,6 @@
 # The toy test for lap openings (P4, the audit)
 
-*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a` and Counting Cove's five at `892834eb`, all 2026-11-11. The other 28 games that list `lap` are listed by land below, not read.*
+*Status: Bubble Beach's eight lap-band games are read at `origin/main` `26b91ef3`, Music Mountain's five at `72ab89de`, Painted Canyon's five at `8d4acdf0`, Barnyard's six at `c891905a`, Counting Cove's five at `892834eb` and Cozy Village's eight at `7f12c562`, all 2026-11-11. The other 20 games that list `lap` are listed by land below, not read.*
 
 This is [P4](../POK-POK.md#p4-the-toy-test-for-lap-openings-docs-s-then-one-game-at-a-time)'s table: for each game that lists the `lap` band, five questions asked of the first level a lap player gets. It is a rule audit read from the code. It is not a claim about a child, and nothing here was played or timed.
 
@@ -24,11 +24,11 @@ A game that fails question 1 or 4 gets a line in [READY](../READY.md) for a lap 
 
 Read once in `src/app/scenes/GameScene.ts`, `src/app/held-line.ts` and `src/engine/input.ts`; the rows below do not repeat it.
 
-- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All twenty-nine games read so far set `touchDemo: true`.
-- **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game, and it is not counted again under question 5.
+- **A card first.** With how-to cards on, the card and its ghost-finger demonstration open before the round, and the round waits for Play. Her first touch of the *game* therefore follows a grown-up's press. All thirty-seven games read so far set `touchDemo: true`.
+- **The corner pet answers.** A tap on it pokes it, giggles and repeats the instruction. That is a reply to one silly use in every game that shows it, and it is not counted again under question 5. A game with a large pet of its own hides the corner one (four of Cozy Village's eight do; their rows say what repeats the instruction instead).
 - **A dead tap is mostly silent.** A board tap that made no sound gets a soft tick only while one of the game's lines is still pending. Otherwise the shell adds nothing.
 - **A whole palm is ignored.** More than three pointers down is palm rejection, for `onTap` and for every game's own handlers that call `palmOnGlass()`. A flat-hand swat with four or more contacts does nothing in any game. *This cuts against question 1 at exactly this age and is the same in all 57 games; it is noted here once rather than failed per row.*
-- **One opening line holds input** in the twenty-nine read so far: `duck-pond` waits for its first line before a duck can be touched (its row). The other twenty-eight open input before or without waiting for the line (all but `little-helpers` start it with `void`, and that one clears `busy` first). One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
+- **Two opening lines hold input** in the thirty-seven read so far: `duck-pond` and `teddy-doctor` wait for their first line before a touch counts (their rows). The other thirty-five open input before the line or without waiting for it. One more opening holds input without a line: `draw-the-pattern` begins every strip with the pet's turn (its row).
 - **A tap answers on touch-down.** `onTap` fires when the finger lands, so a hold, or a drag where a tap is meant, is one tap in every game that uses it. The rows say so only where a game does something more.
 
 ## Bubble Beach
@@ -230,16 +230,68 @@ Three games fail question 1 or 4, in the order they should be taken:
 - `pet-kitchen`: whether the round has two pieces or four is drawn from the seed (`dealCut`), so some rounds end on her second touch. The counter's own `pointerdown` handler does not call `palmOnGlass()`; at this level it only wiggles a piece. Level 10 is toddler's first level too.
 - `fill-dump`: the grass is the lower half of the view and the container stands in the upper half, so most of the sky that does not answer is beside the container. Level 1 is also the first level at toddler and preschool.
 
+## Cozy Village
+
+| Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
+| --- | --- | --- | --- | --- | --- |
+| `splish-splash` (9) | **Yes.** One layer over the whole screen: a pat anywhere takes a third off the nearest patch of mud, with a squeak, bubbles at the finger and a squish of the pet. Only the rubber duck (110 units across) does something else: it repeats the instruction | **Yes.** Pat mode has no part to get wrong; the miss and the seven-second hint belong to the named-part levels | **Yes.** One muddy pet in a tub; the ghost finger pats a patch, and after six quiet seconds the next patch sparkles | **Partly.** One big pet, and every change comes from her pat; the patches of mud are all there from the start and fade away, and nothing arrives | **Partly.** A hold or a rub is one pat, and the duck answers; once the last patch is clean a touch does nothing for the rinse and the two seconds after it |
+| `feelings-faces` (9) | **No.** Only the big pet answers (a circle at least 300 units across; each tap shows the next feeling with its sound, a hop and its picture); the room around it does nothing | **Yes.** Six taps end the round with nothing counted | **Yes.** One big pet alone on the screen, and the ghost finger taps it; the feeling words are only spoken, and the faces and their pictures show without them | **Partly.** One big pet alone; every face, rain cloud and heart comes from her touch, and nothing stays or adds up | **Partly.** No tap on the pet is dropped during the round, and a sad pet's next tap is a hug; the room is silent, nothing invites a touch after a quiet spell, and the pet does not answer for about three seconds after the sixth tap |
+| `weather-wardrobe` (1) | **Yes.** The sky changes the weather and the pet dresses for it, the grass splashes, crunches, scatters leaves or grows a flower where she touched, the pet giggles and a worn thing wiggles and is named | **Yes.** Seven taps on the sky end the round with nothing counted | **Yes.** The ghost finger taps the sky, and every part of the screen answers; the weather and clothes words are only spoken | **Partly.** One big pet; the weather and its clothes arrive because she touched the sky, and are swapped for the next rather than added | **Yes.** Sky, grass, pet and clothes each answer in their own way. Only the last two seconds, after the seventh sky tap, are silent |
+| `scoop-shop` (10) | **No.** The four tubs answer (each tap circle 144 units across; one scoop flies to the cone), the customer giggles and asks again, and the cone wobbles without a sound; the shop around them does nothing | **Yes.** Any flavor is right and one scoop is the order; the boing belongs to the other levels | **Yes.** A customer, an empty cone and four tubs; the ghost finger taps a tub and any tub is right | **No.** Four tubs, a customer and a cone from the start, none of them big. Each customer eats and leaves after her one scoop, and the next walks in | **Partly.** A tub tapped while a scoop flies or a customer walks in squashes, pops and wobbles; the shop is silent and nothing invites a touch |
+| `mail-carrier` (1) | **Partly.** A layer over the whole screen: a touch off the houses wiggles the letter and waves the nearest mailbox's flag, without a sound and without posting. Only a touch on a house (a circle 220 units across) posts the letter | **Yes.** Every mailbox is right, and the six-second invitation counts nothing | **Yes.** A letter and four houses; the ghost finger taps a house, and after six quiet seconds the nearest flag waves | **No.** Four houses, the cart and the letter are there from the start. A new letter comes out of the bag after each one she posts, six in all, and the street stays the same | **Partly.** The street has its own silent reply (the wiggle and the flag); a touch while the cart rolls or a neighbor says thank you waves a flag at most |
+| `teddy-doctor` (1) | **No.** Only the patient answers (about 440 by 490 units: the nearest boo-boo gets a bandage with a giggle); the room does nothing. The opening also holds her: each of the two patients hops in and the first line is waited for, and a tap on the patient before it ends is dropped | **Yes.** A tap can only bandage; the boing belongs to the dragging and named-part levels | **Yes.** One big patient with three boo-boos; the ghost finger taps it, and anywhere on it is right | **Partly.** One big patient at a time, and the bandages go on and stay because she touched; the three boo-boos are there from the start, and the second patient comes after the first is better | **Partly.** A tap on a bandaged place goes to the nearest boo-boo that is left, so no tap on the patient is wasted during the round; the room is silent, and nothing answers during the opening line or while the patient says thank you |
+| `stop-and-go` (9) | **No.** The two lamps (each drawn 160 units across, with a touch circle of 184) and the car answer; the road and the sky do nothing | **Yes.** Either lamp and the car count toward the eight touches, and nothing else is counted | **Yes.** A green lamp with a play triangle and a red lamp with a stop bar; the ghost finger taps the one the car is not obeying, and the car goes or brakes | **No.** Two lamps and one car from the start, and nothing arrives; the round is eight touches long | **Partly.** The same lamp twice still rings and counts, and the car toots; the road is silent and nothing invites a touch |
+| `pet-says` (13) | **No.** Only the big pet answers (its body and a margin around it; each pat brings the next of five moves, named aloud); the meadow does nothing | **Yes.** There is no arrow and nothing to copy on the screen; five pats end the round | **Yes.** One big pet, and the ghost finger pats it; after ten quiet seconds the pet squishes. The move words are only spoken | **Partly.** One big pet alone; every move comes from her pat, and nothing arrives or stays | **Partly.** A pat during a move squishes the pet and is not saved up; the meadow is silent |
+
+### What the table says
+
+- **Pass 1 and 4 well enough to leave alone:** `splish-splash`, where a pat anywhere is the move, and `weather-wardrobe`, the land's one game where every part of the screen has a reply of its own.
+- **One big pet, not anywhere:** `feelings-faces` and `pet-says` are already a single big friend that answers every touch on it; only the space around the pet is silent. `teddy-doctor` is the same shape with an opening that holds her.
+- **Answers anywhere, but not with the move:** `mail-carrier`, as `pet-kitchen` does in Counting Cove. A touch on the street waves a flag without a sound; only a touch on a house posts.
+- **Several small targets from the start:** `scoop-shop` (four tubs) and `stop-and-go` (two lamps). Both levels are played by lap only.
+- **Nobody can be wrong in this land,** and no waiting is counted: the sparkle in `splish-splash`, the flag in `mail-carrier` and the squish in `pet-says` count nothing.
+- **`teddy-doctor` is the second of the thirty-seven read whose opening line holds input,** after `duck-pond`.
+
+### Words-off list (P7)
+
+Cozy Village games whose first lap level plays with the voice off: all eight. Each shows its move on the card and has one obvious thing, or everything, to touch.
+
+What only the voice carries: the feeling words (`feelings-faces`), the weather and clothes words (`weather-wardrobe`), the body-part words (`splish-splash` and `teddy-doctor`), the move words (`pet-says`), "green" and "red" in the opening line (`stop-and-go`; its lamps also carry a shape) and the count of the one scoop (`scoop-shop`). With the voice off the play is whole and the naming is not there. `feelings-faces` and `pet-says` suggest making the face or the move together, which a grown-up can do in any language.
+
+### Lines this land adds to READY
+
+Six games fail question 1 or 4, in the order they should be taken:
+
+1. `teddy-doctor`: input opens before the first line, and at lap a touch anywhere bandages the nearest boo-boo.
+2. `scoop-shop`: level 10 opens with one big tub; a touch anywhere scoops, and the other flavors arrive as she serves.
+3. `stop-and-go`: level 9 becomes one big lamp; a touch anywhere turns it, green to go and red to stop.
+4. `mail-carrier`: at lap a touch off the houses posts to the nearest mailbox, with a sound.
+5. `feelings-faces`: at level 9 a touch anywhere is the poke.
+6. `pet-says`: at level 13 a touch anywhere is the pat.
+
+The last two are the smallest changes and their targets are already the biggest in the land, so they are last. `splish-splash` and `weather-wardrobe` get no line.
+
+### Found while reading (not part of the five questions)
+
+- **The corner pet is hidden in four of the eight.** `splish-splash`, `feelings-faces`, `weather-wardrobe` and `pet-says` set `ctx.pet.visible = false` for a large pet of their own. The instruction is repeated by the rubber duck in `splish-splash` and by a tap on the pet in `weather-wardrobe`; in `feelings-faces` level 9 and `pet-says` level 13 a tap on the pet is the move, so nothing on the screen repeats the instruction (in `pet-says` the pet asks again by itself after ten quiet seconds).
+- `splish-splash`: the scrub layer uses its own `pointerdown` handler and does not call `palmOnGlass()`, so here a flat hand is not rejected: each contact that lands is a pat. That suits this level; it is noted because the shell section above says otherwise. How many patches there are depends on the pet's species (`STAR`), and each takes three pats. Level 9 is in lap's `order` only.
+- `feelings-faces`: level 9 is in lap's `order` only. The cycle is fixed (happy, surprised, sleepy, sad, the hug, surprised), so every round is the same six taps.
+- `weather-wardrobe`: level 1 is also the first level at toddler. The round needs seven sky taps; touches on the grass, the pet and the clothes answer and do not move it on, so a child who only pats the grass never finishes, and nothing invites a touch on the sky after a quiet spell.
+- `scoop-shop`: level 10 is in lap's `order` only. `busy` starts true and is cleared when each customer has walked in (about 0.7 seconds), before the order is spoken; a tub tapped earlier still pops and wobbles.
+- `mail-carrier`: the street layer's own `pointerdown` handler does not call `palmOnGlass()`; at this level it only waves a flag. `nearestHouse` already finds the mailbox nearest a touch, for the flag. Level 1 is also toddler's first level, so a change to it in place reaches toddler.
+- `teddy-doctor`: `next` sets `busy`, waits half a second and then awaits `ctx.instruct('doctor.play')` for each of the two patients, so input opens only when the line has ended. The card for level 1 says "Tap the patient anywhere"; the spoken line says "Tap them", the boo-boos. Level 1 is also toddler's first level.
+- `stop-and-go`: level 9 is in lap's `order` only, and its plan sits outside `PLANS`. The lamps sit low and centred, 240 units apart.
+- `pet-says`: level 13 is in lap's `order` only. A lap player who steps up goes to level 1, where a grown-up taps an arrow and the moves are done away from the screen.
+
 ## The other lands (not read)
 
 One land per session, in this order, each adding its own table, words-off list and READY lines:
 
 | Land | Lap-band games |
 | --- | --- |
-| Cozy Village (8) | `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `stop-and-go`, `pet-says` |
 | Rainbow Meadow (6) | `shape-sorter`, `color-garden`, `dot-link`, `garden-grow`, `swing-pals`, `sand-table` |
 | Puzzle Peaks (2) | `size-parade`, `puzzle-pals` |
 | Story Grove (6) | `word-monsters`, `photo-safari`, `goodnight-room`, `opposites`, `attic-finds`, `word-glue` |
 | Tinker Lab (6) | `bouncy-launch`, `seesaw-balance`, `block-tower`, `moon-window`, `vine-snip`, `far-lights` |
 
-Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 29 read and 28 to read, 57 in all.
+Lantern Lake has no lap-band game. Counted from each game's `bands` at `26b91ef3`: 37 read and 20 to read, 57 in all.
