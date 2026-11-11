@@ -56,6 +56,7 @@ Standards are curriculum destinations, not gates, and none shows that a game tea
 | Story Time Chess ([review](https://www.meeplemountain.com/reviews/story-time-chess/), search summary) | Chess taught through stories, 3+ | Each piece's character and move, mini games, strategy in later books | A character for each piece; one move rule at a time | A three-year-old moving pieces correctly (a parent review says not yet) |
 | ChessKid / chess puzzle apps (recalled, not opened) | App, puzzles graded by rating | Mate in one, then two | Puzzles taken from a game, not whole games | Ratings, streaks, leaderboards, timed puzzle rush |
 | Dots and boxes (recalled) | Paper, two players | Boxes, then chains, then the double-cross | A grown-up's game with the child, on paper | Its scoring race for the young bands |
+| Spark AI Games' board shelf ([reviewed 2026-11-10](../../SPARK-AI-GAMES.md): how-to pages read; only the Reversi and Gomoku title screens opened) | Free browser portal; 35 board and card games | A ladder of robot opponents by named level, puzzles taken from positions, then whole games | *Pass & Play* on one screen for two people; Reversi as a first two-player board (P2); a three-in-a-row where only each player's last three marks stay, so no ties (P8) | Online rooms, ranks, coins, staking card games |
 | Unplugged: Nim with spoons or pebbles, mancala in an egg carton, noughts and crosses on a steamy window | Off screen | Grown-up and child invent the rules together | The family card | — |
 
 ## What fits

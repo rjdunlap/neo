@@ -1,16 +1,22 @@
 # Puddle Island verification
 
-## 2026-11-10 — Pok Pok reviewed (docs only)
+## 2026-11-10 — Spark AI Games reviewed (docs only)
 
-**Changed:** new [reference review](POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
-**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
-**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
+**Changed:** new [reference review](SPARK-AI-GAMES.md) of sparkaigames.com (202 browser mini games): the catalogue against the island's games and notebook, eight proposals (P1 a crossword of sums, P2 Reversi for two on one phone, P3 a Puddle Pipes ladder, P4 pair paths, P5 a turning shadow for TP6, P6 routes that run at once, P7 Ticket Booth, P8 a Shell Rows level), notes for existing games and rows, and what stays out; a pointer section in IDEAS.md; rows in the puzzle-pages and strategy-games studies; a note on TP6 in the theatre study. No READY line: each proposal needs a definition.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`. The review's own evidence: all 202 game pages read as text; thirteen games opened in headless Chrome at 390 by 844, eight of them to a first board (one solved).
+**Not run:** code checks (no code changed). Not established: anything past a first board, sound, Spark's solver and one-answer claims, its friend rooms and pass-and-play, and who makes it.
 
 ## 2026-11-10 — Sorting Machine level 3, Both badges (PR #1491)
 
 **Changed:** `sorting-machine` level 3 (school range 1–3): two fixed sensors, one gate slot with an and / or picker, per-pair voice lines, level-3 how-to steps; `helpFor` falls back to a telling friend when the machine is already right.
 **Ran:** typecheck; `npm test` (345 files, 6595 passed; `logic.test.ts` 40 tests incl. level-3 rules, seeds, help, ghost-finger plan, layouts at 1024×768 and 768×1024); `BROWSER_SUITE=sortingmachine` (levels 1–3: at 3 an empty-gate Check, a no-gate run, OR sent on two friends, a failed Check = one miss with two one-badge failures and both readings shown, Help twice, AND passes with 1 miss and 2 hints; portrait and landscape screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sorting-machine FINGER_LEVELS=3` (8.3 s); `npm run build`.
 **Not run:** other browser suites, offline.
+
+## 2026-11-10 — Snowball Merge slice 2, level 4 Make 128 (PR #1492)
+
+**Changed:** level 4 plan and grown-up range 1–4; `scripts/snowball-merge-boards.ts` level-4 band (route 10–14) and three more frozen boards; the 128 look (white, scarf, coal eyes) with a 1.3 radius step. Levels 1–3 boards unchanged; no voice or how-to change.
+**Ran:** `npm run typecheck`; rule tests (snowball-merge 8, with registry and upright-batch-4: 57 passed); `BROWSER_SUITE=snowball` (levels 1 and 4, inert presses, automatic glow, hint once, Undo/Restart, one portrait screenshot at level 4, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=snowball-merge FINGER_LEVELS=4` (11.9 s); docs checks.
+**Not run:** `npm run build` (no shared file or asset changed), offline, other suites; the finished 128 ball was not screenshotted (the screenshot is mid-round).
 
 ## 2026-11-10 — Snowball Merge slice 1, boards, looks, glow and par line (PR #1483)
 
@@ -58,6 +64,12 @@
 
 **Not run:** `world`, `phonefit`, other browser suites and offline.
 
+## 2026-11-10 — Pok Pok reviewed (docs only)
+
+**Changed:** new [reference review](POK-POK.md) of the Pok Pok children's app against the island's rules, with eight proposals (P1–P8); a pointer in IDEAS and one row each in the programming, cooking, ecosystems and music studies' similar-games tables (their counts updated). The proposals were then put on the backlog at the developer's request: a Pok Pok group of four lines in READY (P1, P4, P3's definition, P5's pilot), two questions added to the phone playtest list (P2, P3), a put-down acceptance line in RW10 (P6) and a stepped-wobble note in RW14's later list (P8).
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only public pages were read, so its sound, motion and feel are unknown. P1's finding (red is the low note in Jelly Drums and the high row in Song Maker) was read from the two games' source, not played.
+
 ## 2026-11-10 — TotoLogic reviewed (docs only)
 
 **Changed:** new [reference review](TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
@@ -93,12 +105,6 @@
 **Changed:** test files only. `phonefit` now waits for `neo.scene.resultReady` before reading the next of the six and the pencil (the result shows them after the buttons' 0.45 s tween, which slow headless frames stretched past the fixed 900 ms wait; not an app bug), and its last step reads the first lap game without `upright: true` from `src/games/*/index.ts` instead of naming `bubble-pop`, which has turned upright. `profiles` expects band `grownup` for an adult born in 1980 (two asserts) and waits for `neo.scene.age >= 0.35` before clicking the couch "Back to start" (CouchScene ignores presses before that).
 **Ran:** `BROWSER_SUITE=phonefit` passed (about 15 s) and `BROWSER_SUITE=profiles` passed (about a minute), on the dev server at port 5569 with `VITE_SPEECH=off`, headless Playwright.
 **Not run:** typecheck, unit tests and build (no app code changed; CI runs `npm test` and the build), `phone`, `world`, offline.
-
-## 2026-11-10 — U6b, the fold (PR #1475)
-
-**Changed:** Explore's entries are Places, Favorites, Arcade and Family play (All games and the Other ages signpost gone); `go.explore`'s third argument is now an Arcade filter; Little surprises is the first card on the entries page at lap and toddler; the empty Favorites shows a large heart and opens the Arcade on For me; Family play goes straight to couch play, whose Back opens the entries.
-**Ran:** typecheck; `npm test` (344 files, 6543 passed, 1 skipped; new `explore-fold` tests); `npm run build`; `BROWSER_SUITE=home` main flow PASS (four entries, Places chain, Arcade on For me, Favorites page 2 and Back, empty heart in both orientations, Family play to couch and back, Little surprises first at lap); `BROWSER_SUITE=world`: PASS (both checks, every band and orientation).
-**Not run:** `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` (plays the mix from the classic island, untouched; the root's mix is in the home flow), offline (no persistence or asset change).
 
 ## Coverage summary
 
@@ -220,7 +226,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | None recorded |
 | `marblejump`, `fingerdemo` (`marble-jump`) | 2026-11-09 (slice 4: `marblejump` levels 1, 2, 6, 7, 8 and 9, level 9 at 1024×768 and 768×1024; `fingerdemo` level 9; typecheck, 331 files, build); 2026-10-14 invalid jump and hint recovery | Marble Jump slice 4 entry / [PR #1428](https://github.com/rjdunlap/neo/pull/1428) | Offline not run; the landing sparkle is skipped when a jump is interrupted |
 | `logroll`, `fingerdemo` (`log-roll`) | 2026-11-08: levels 6–7, moss refusal, lying/standing switch, bridge Undo/reset, hint accounting and one sticker each; portrait review and clean demos 11.5/17.4 s; typecheck, 14 rules, 329 unit files, build | [Moss and bridge, PR #1429](archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-soft-moss-and-the-stone-bridge-pr-1429) | Earlier levels 1/4/5 and Tinker Lab launch evidence retained in [slice 3](archive/VERIFICATION-2026-11-08.md#2026-11-08--log-roll-slice-3-level-5-lay-it-in-the-cradle-pr-1416) |
-| `snowball` (`snowball-merge`) | 2026-11-10: slice 1 (frozen boards, looks, join moment, automatic glow counted once, par line): rule tests, levels 1/3 play, portrait at level 3 and `fingerdemo` at 3 passed | [Entry](#2026-11-10--snowball-merge-slice-1-boards-looks-glow-and-par-line-pr-1483) | Build, offline not run |
+| `snowball` (`snowball-merge`) | 2026-11-10: slice 2 (level 4 Make 128): rule tests, levels 1/4 play, portrait at level 4 and `fingerdemo` at 4 passed; slice 1 (frozen boards, looks, glow counted once, par line) at levels 1/3 | [Entry](#2026-11-10--snowball-merge-slice-2-level-4-make-128-pr-1492) | Build, offline not run |
 | Subject research docs | 2026-10-25: world languages; opened curriculum/developmental/product sources with access limits, adjacent-study/audience/gate/manual review, links/anchors and diff check | [World languages entry](archive/VERIFICATION-2026-10-25.md#2026-10-25--world-languages-subject-research-docs-only) | Research/proposals only; no translations, reference play, device acceptance, learning or tween/parent appeal evidence. Portuguese family review/device and later-language/mode/cultural gates remain; earlier subject evidence retained in dated archives |
 | Critter Crossing level 7 (`critter-crossing`) | 2026-10-15: bank shelf: typecheck, 19 game tests, `fingerdemo` at levels 6 and 7 (27.8 s, 21.4 s), landscape and portrait shelf screenshots at level 5 ([entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-bank-shelf)); earlier: typecheck, 1026 game/content tests, `fingerdemo` at level 7 (21.7 s), one portrait scripted play (free same-answer tries, hint glow, splitter) | [Critter Crossing level 7 entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-level-7-settle-it) | landscape screenshot, how-to demo by eye, build, offline and device speech not run; level 6 entry: [archive](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--critter-crossing-level-6-either-one) |
 | Peekaboo Barn content and cover support (`originals`, `fingerdemo`) | 2026-10-19: feelings in free play (levels 1–2): typecheck, 102 focused tests, `fingerdemo` clean at level 1 (17.1 s), probe of each feeling and a portrait screenshot ([entry](archive/VERIFICATION-2026-10-19.md#2026-10-19--peekaboo-barn-animals-who-name-how-they-feel)); 2026-10-15: level 16 One door, typecheck, 1279 tests, `originals` peekaboo 16,2 and a clean 18.8 s level-16 demo ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--peekaboo-barn-level-16-one-door)); 2026-10-14: bedroom typecheck, 87 rules/content tests and one portrait screenshot (covers only) passed; earlier beach 92 tests and a landscape screenshot, garden typecheck, 8 rules/18 how-to tests and portrait all-animal/all-cover out/peek review passed; prior unchanged levels 1/5/8 play, rewards/reload and clean demos retained | [Bedroom verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-bedroom-scene) / [Beach verification](archive/VERIFICATION-2026-10-14.md#2026-10-14--peekaboo-barn-beach-scene) / [Garden verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-garden-scene) / [PR #298](https://github.com/rjdunlap/neo/pull/298); [interaction verification](archive/VERIFICATION-2026-10-07-13.md#2026-10-14--peekaboo-barn-cover-support) | Bedroom, beach and garden full play/build/offline/fingerdemo not rerun; bedroom animals not screenshotted per cover, beach portrait not reviewed |

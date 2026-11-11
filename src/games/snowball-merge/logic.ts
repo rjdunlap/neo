@@ -9,9 +9,10 @@ export const PLANS = [
   { target: 16, name: 'Make 16 · open snowfield', board: [2, 0, 2, 0, 4, 0, 4, 0, 4] },
   { target: 32, name: 'Make 32 · choose your pairs', board: [2, 4, 2, 4, 0, 4, 8, 0, 8] },
   { target: 64, name: 'Make 64 · make room first', board: [2, 4, 2, 8, 4, 8, 16, 4, 16] },
+  { target: 128, name: 'Make 128 · the big snowball', board: [32, 32, 32, 16, 8, 2, 2, 4, 0] },
 ] as const;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
@@ -157,14 +158,26 @@ export function nextHelp(help: Help, event: HelpEvent, route: readonly Direction
   return { hinted: 'undo', inert: 0, hints: help.hints + 1 };
 }
 
-/** Each size's look: radius grows a little with each doubling, capped so the number and the ball fit the cell. */
+/** Each size's look: radius grows a little with each doubling, capped so the number and the ball fit the cell.
+ * The 128 is the big white snowball with a snowman's coal eyes. */
 export function sizeLook(value: number) {
   const step = Math.max(0, Math.log2(Math.max(2, value)) - 1);
   return {
     color:
-      value <= 4 ? 'blue' : value === 8 ? 'teal' : value === 16 ? 'purple' : value === 32 ? 'pink' : 'yellow',
-    radius: Math.min(42, 34 + step * 1.6),
+      value <= 4
+        ? 'blue'
+        : value === 8
+          ? 'teal'
+          : value === 16
+            ? 'purple'
+            : value === 32
+              ? 'pink'
+              : value === 64
+                ? 'yellow'
+                : 'white',
+    radius: Math.min(42, 34 + step * 1.3),
     scarf: value >= 64,
+    face: value >= 128,
   } as const;
 }
 
