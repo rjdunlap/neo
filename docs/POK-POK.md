@@ -97,7 +97,7 @@ Pok Pok shipped Phonics as a drag toy and within eleven weeks had enlarged the p
 
 > Which drags were awkward with a thumb, and would tapping the piece and then the place have been easier?
 
-If two notes name drags, write one definition for a shared "tap the piece, then tap the place" path beside `src/engine/drag.ts`, so a drag game gains it without its own pointer code. Two places have already asked for it one game at a time: [Tangram Town's dive](deep-dives/tangram-town.md) (a tap-to-place variant for the youngest) and the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-asked-in-the-rainbow-fingers-dive-docs-only-s) (tap to fill). How a tapped piece shows it is held is the open design point; the definition that settles it is queued in READY.
+**Defined 2026-11-11:** [tap the piece, then the place](definitions/tap-then-place.md) gives `src/engine/drag.ts` one opt-in `tapToPlace` path (Hat Band's hand-rolled tap is the precedent; [Tangram Town's dive](deep-dives/tangram-town.md) and the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-asked-in-the-rainbow-fingers-dive-docs-only-s) had asked game by game; tap-to-fill stays with Rainbow Fingers). Three slices are in READY: P3a the engine path with Hat Band moved onto it, P3b Block Garden, P3c Tangram Town's levels 1–3.
 
 ### P4. The toy test for lap openings (docs, S; then one game at a time)
 
