@@ -542,6 +542,8 @@ export class FestivalSignals implements Game {
 
   private toggleSlow() {
     this.slow = !this.slow;
+    // Turning Slow off lets a resting run carry on, so nothing looks stuck.
+    if (!this.slow && this.run?.waiting) this.run.waiting = false;
     sfx.tick();
     this.drawSlow();
   }
