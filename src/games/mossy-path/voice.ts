@@ -4,6 +4,10 @@ export const VOICE = {
   'moss.go': [
     'Help the turtle bloom every moss tile. Tap a tile beside the turtle to take one step. Visit each tile once, and reach the blue pond last. Undo takes back a step.',
   ],
+  'moss.thick-go': [
+    'Help the turtle bloom every moss tile. The tall, thick moss needs the turtle to walk over it twice. Every other tile once, and the blue pond last.',
+  ],
+  'moss.thick': ['Thick moss! The turtle walks over it twice.'],
   'moss.far': ['Take one step to a tile beside the turtle. We cannot jump across the patch.'],
   'moss.visited': ['That tile has already bloomed. Try a fresh moss tile, or Undo to change the trail.'],
   'moss.pond': ['The pond comes last. Bloom the other moss tiles first.'],

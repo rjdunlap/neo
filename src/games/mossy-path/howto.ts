@@ -37,6 +37,10 @@ export const HOW_TO: GameHowTo = {
       text: 'Slide from the turtle to draw dotted paw prints along the moss, then tap the turtle: it walks the whole plan. Sliding back erases the last print; Undo erases one too.',
     },
     {
+      from: 11,
+      text: 'Tap a tile beside the turtle to take one step. Tall thick moss flattens on the first visit and blooms on the second; every other tile blooms once. Reach the pond last. Undo takes back one step; Start over restores the same patch.',
+    },
+    {
       from: 8,
       to: 8,
       text: 'Undo takes back one step; Start over restores the same patch. Hint outlines a completing next step, or Undo until a route is possible.',
@@ -53,6 +57,10 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 9, to: 9, text: 'Reaching the pond with both berries finishes the round, including with help.' },
     { from: 10, to: 10, text: 'A plan that reaches the pond finishes the round, including with help.' },
+    {
+      from: 11,
+      text: 'Blooming every tile, the thick moss twice, and reaching the pond finishes the round, including with help.',
+    },
   ],
   note: [
     {
@@ -88,6 +96,10 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'Drawing is free. A plan that walks into a wrong branch counts one miss per branch a round; a short plan just stops and waits. Hint draws the next three prints in gold and counts once per trail. Planning back out of a branch is free.',
+    },
+    {
+      from: 11,
+      text: 'A first visit to thick moss is never a miss. Far, bloomed-tile and early-pond taps count a miss; two consecutive misses show help. Hint outlines a completing next step, or glows Undo until a route is possible. Undo and Start over preserve misses and hints.',
     },
   ],
 };
