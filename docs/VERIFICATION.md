@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-11 — Picture Bytes (H6) definition (docs only)
+
+**Changed:** new [definition](definitions/picture-bytes.md) of Pixel Pictures levels 11 *Ones and zeros* and 12 *A whole picture* in two build batches (pixel-pictures 5, then 6); the study, packet, batch plans, dive, READY and the study backlog point to it.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`; the definition's `levelsInOrder` helper and the `woods` suite's Pixel Pictures case were confirmed present in the source.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built).
+
 ## 2026-11-11 — Rule Machine levels 5–6 (AB2) definition (docs only, PR #1499)
 
 **Changed:** new [definition](definitions/rule-machine-5-6.md) of Rule Machine level 5 *Backwards* and level 6 *Two machines* in two build batches (rule-machine 3, then 4); the study, packet, batch plans, READY, study backlog and roadmap point to it.
@@ -83,12 +89,6 @@
 **Changed:** `number-trails` level 5 for pre-K (order 2, 3, 5): count a group of 0–9 (an empty pail for zero), pick the numeral card that tells how many (count, neighbour, a reversal-prone digit), then trace it; a wrong card is a miss with a recount, the second glows the right card (one hint); four voice lines, level-scoped how-to lines, the bot counts, picks and traces.
 **Ran:** typecheck; `npm test` (345 files, 6556 passed, 1 skipped; 8 failures outside this game: `lint-config` needs `eslint`, missing from this worktree's install, and seven search/timing tests in other games that all pass when re-run alone); `BROWSER_SUITE=numbertrails` (levels 1, 4, 3 and 5: count of 8, two wrong cards giving misses 2 and hints 1 with the glow, the right card tapped mid-recount, the trace, sticker; a zero round in portrait; screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=5` (11.6 s); `game-reviewer` read the diff (two gaps fixed: the right card now works during the recount, zero shows its cards at once).
 **Not run:** build (no shared files or assets changed), other suites, offline.
-
-## 2026-11-10 — Festival Signals (H4) definition (docs only)
-
-**Changed:** new [definition](definitions/festival-signals.md) of Sorting Machine levels 8–9 (*Festival Signals*, *Fix the lantern*) in two build slices (H3 level 3, then H5 levels 8–9); the study, base definition, batch plans, READY and the study backlog point to it.
-**Ran:** a scratch script enumerated the proposed four-slot grammar (2,005,696 fillings): 24 accepted machines, all four parts long with the lantern on slot 4, eight of them keeping P OR Q in slot 1; `node scripts/check-links.mjs`; `git diff --check`.
-**Not run:** typecheck, unit tests, build and browser suites (nothing built).
 
 ## Coverage summary
 

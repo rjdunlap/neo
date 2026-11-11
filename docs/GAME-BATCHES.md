@@ -976,6 +976,22 @@ Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`
 
 Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes.
 
+### pixel-pictures 5: Ones and zeros
+
+- **`pixel-pictures`, level 11 Ones and zeros (H7 of the how-computers-work study; [definition](definitions/picture-bytes.md), after the built batch 4)** (new interaction on an existing game; school, after 8 and before the free level 10, so the order becomes [3, 4, 5, 6, 7, 8, 11, 10]): four large bit cards flip between 0 and 1, a free arrow shows the row they make, and a check compares it with a reference row under a key card (1 filled, 0 empty, left to right); three seeded rows per round, a failed check is one miss, every second one is a hint that glows the first differing card, one ordinary sticker, no creation; adds `bitsLayout`, a `coplayHint` sentence and a ghost finger that flips the needed cards, presses the arrow, then the check. [Definition](definitions/picture-bytes.md#the-levels), [dive](deep-dives/pixel-pictures.md#build-slices-in-order)
+
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `voice.ts`, `howto.ts`, `docs/games/pixel-pictures.md`.
+
+Proof: new-interaction tier ([definition](definitions/picture-bytes.md#slices-and-check-tier)): typecheck; unit tests (the rule tests, with the registry, lands and how-to tests); one filtered scripted play of level 11 to its sticker with one failed check and the glow (the `woods` suite's Pixel Pictures cases); one upright screenshot at 390 × 844; `fingerdemo` at 11; `npm run build`, since voice, how-to and the level table change.
+
+### pixel-pictures 6: A whole picture
+
+- **`pixel-pictures`, level 12 A whole picture (after batch 5; [definition](definitions/picture-bytes.md))** (new level on the interaction batch 5 builds; school, order [3, 4, 5, 6, 7, 8, 11, 12, 10]): the same four cards write a 4×4 picture one row at a time, top to bottom, beside its model; a right row stays on the board with its digits, an empty row is a real case, and after the fourth row the existing reveal names the picture; two of five one-colour pictures per round; the kept creation is the existing 4×4 pixel shape. [Definition](definitions/picture-bytes.md#the-levels)
+
+Files expected: the same files as batch 5, plus the `woods` suite case only if it needs a level-12 branch.
+
+Proof: new-level tier: typecheck, the rule tests, one browser play of level 12 with an empty row and a kept picture, `fingerdemo` at 12.
+
 ### ferry-jam 1: Fair hints and fuller harbors
 
 **Built 2026-11-02 ([PR #1127](https://github.com/rjdunlap/neo/pull/1127)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-02.md#2026-11-02--ferry-jam-fair-hints-and-fuller-harbors-ferry-jam-batch-1); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-fair-hints-and-fuller-harbors-ferry-jam-1-2026-11-02). No longer eligible for dispatch. Scope retained for reference.

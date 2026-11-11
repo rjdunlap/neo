@@ -174,3 +174,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Ran:** typecheck, lint, format, build, the U7 timing probe and a focused repeat with the final crossfades. The main `home` flow passed, including a press on Arcade followed immediately by Favorites that kept Arcade selected, and `HOME_ONLY=arcade` passed the spotlight, Play, and return flow. `npm test` passed 6,562 tests with 5 skipped and one timing failure in the unchanged Secret Code generator (256 ms against 250 ms). All 24 Secret Code tests passed in the isolated rerun.
 
 **Not run:** `world`, `phonefit`, other browser suites and offline.
+
+## 2026-11-10 — Festival Signals (H4) definition (docs only)
+
+**Changed:** new [definition](../definitions/festival-signals.md) of Sorting Machine levels 8–9 (*Festival Signals*, *Fix the lantern*) in two build slices (H3 level 3, then H5 levels 8–9); the study, base definition, batch plans, READY and the study backlog point to it.
+**Ran:** a scratch script enumerated the proposed four-slot grammar (2,005,696 fillings): 24 accepted machines, all four parts long with the lantern on slot 4, eight of them keeping P OR Q in slot 1; `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built).
