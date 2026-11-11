@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-10 — TotoLogic reviewed (docs only)
+
+**Changed:** new [reference review](TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only its site, store listing, policies and three web demo puzzles were opened.
+
 ## 2026-11-10 — Upright shell slice 3, the rest of the root's scenes (chunk 31, PR #1480)
 
 **Changed:** creature play, the library, the project pages, the locations and lap/toddler Explore (Little surprises' sheet, Make my mix's table) lay out on the 768 × 1024 area; `playLayout`, `projectLayout`, `sheetPlaces` and `tableLayout` take a narrow view; `LandScene`'s heading stays between Back and the book.

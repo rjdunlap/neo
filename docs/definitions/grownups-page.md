@@ -80,6 +80,8 @@ One session; nothing else is needed for it.
 
 The rest of finding 10 is not this page's: a grown-up colouring and naming a friend before playing (the add-player flow), the classic door on Home with no label, and couch play's four names (U6b sends Family play straight to couch). Each goes to its own line if real play shows it matters.
 
+**Reference (2026-11-10):** the [TotoLogic review](../TOTOLOGIC.md#p4-this-week-says-what-the-games-asked-and-names-one-not-tried-panel-s) proposes one addition to This week (P4): a plain sentence built from each played game's `challenge` kind, and one game of a kind not played this week. Its P1 and P2 are about the add-player flow left out above. Proposals only.
+
 ## Open decisions
 
 None blocking. Decided here: the page follows the app that opened it rather than having one wording for both, because classic still has the map, the home spots and the picnic; and the development seed moves to the console rather than a hidden toggle, so a grown-up never sees it.
