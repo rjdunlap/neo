@@ -251,6 +251,13 @@ export class Companion extends Container implements CompanionRig {
   private restingMood: Mood = 'happy';
   private moodLeft = 0;
   private hopY = 0;
+  /**
+   * The corner guide's talking look (U7 R5): while true it bobs gently on its feet, easing in and out, so a held line
+   * shows it is holding. GameScene sets it while one of the game's lines plays.
+   */
+  talking = false;
+  private talkAmt = 0;
+  private talkT = 0;
   private hopV = 0;
   private squash = 0;
   private squashV = 0;
@@ -438,7 +445,10 @@ export class Companion extends Container implements CompanionRig {
       rock = this.wiggleT >= 0.5 ? 0 : 0.14 * Math.sin((this.wiggleT / 0.5) * Math.PI * 4);
       if (this.wiggleT >= 0.5) this.wiggleT = -1;
     }
-    this.body.y = this.hopY;
+    this.talkAmt += Math.max(-dt * 5, Math.min(dt * 5, (this.talking ? 1 : 0) - this.talkAmt));
+    this.talkT = this.talkAmt > 0 ? this.talkT + dt : 0;
+    const bob = -16 * this.talkAmt * Math.abs(Math.sin(this.talkT * Math.PI * 2.4));
+    this.body.y = this.hopY + bob;
     this.body.rotation = rock;
     this.body.scale.set((1 + s) * turn, 1 - s);
     this.rig.update(dt);

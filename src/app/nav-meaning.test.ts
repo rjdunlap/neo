@@ -18,6 +18,7 @@ import { sceneFixture } from '../test-support/scenes';
 import { ExploreScene } from './scenes/ExploreScene';
 import { GameScene } from './scenes/GameScene';
 import { HOUSE_X } from './scenes/LandScene';
+import { LEAVE_BEAT } from './leave';
 import { LibraryScene } from './scenes/LibraryScene';
 import { LocationScene } from './scenes/LocationScene';
 import { PlayScene } from './scenes/PlayScene';
@@ -76,8 +77,9 @@ async function walk(
     app.scene = scene;
     const b = buttons(scene)[i];
     b.press();
+    // 20 ms a step: a round's Back leaves on a real timer after the squash's beat (U7b, `LEAVE_BEAT`).
     for (let t = 0; t < 12 && !ROUTES.some((r) => app.go[r].mock.calls.length); t++) {
-      await new Promise((r) => setTimeout(r, 0));
+      await new Promise((r) => setTimeout(r, 20));
       scene.tw?.update(0.2);
     }
     const called = ROUTES.filter((r) => app.go[r].mock.calls.length);
@@ -218,6 +220,10 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
     app.scene = s;
     (s as unknown as { backFromIntro(): void }).backFromIntro();
     await new Promise((r) => setTimeout(r, 0));
+    // The word starts at once and the screen changes after the beat, not after the word (U7b, R3).
+    expect(voice.say).toHaveBeenCalledWith('result.back', { place: 'Counting Cove' });
+    expect(app.go.land).not.toHaveBeenCalled();
+    await new Promise((r) => setTimeout(r, LEAVE_BEAT * 1000 + 50));
     expect(app.go.land).toHaveBeenCalledWith('counting-cove', undefined);
     expect(app.go.hub).not.toHaveBeenCalled();
     expect(voice.say).toHaveBeenCalledWith('result.back', { place: 'Counting Cove' });
