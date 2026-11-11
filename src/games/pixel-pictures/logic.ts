@@ -12,7 +12,16 @@ import type { BandLevels } from '../../progress/difficulty';
  * Pictures are authored as rows of characters: '.' is empty, letters are palette colors. Two-color logic pictures are
  * accepted only if their colored numbers alone solve them (`colorLineSolvable`).
  */
-export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues' | 'mirror2' | 'big' | 'free';
+export type PixelMode =
+  | 'copy'
+  | 'mirror'
+  | 'clues'
+  | 'colorClues'
+  | 'mirror2'
+  | 'big'
+  | 'free'
+  /** Level 11, ones and zeros: four cards write one row of squares (`bits.ts` plays it). */
+  | 'bitsRow';
 
 export interface PixelPlan {
   mode: PixelMode;
@@ -82,13 +91,21 @@ export const PLANS: PixelPlan[] = [
     name: 'Two colors, small: pick a color, then copy a 4 by 4 picture',
   },
   { mode: 'free', size: 5, colors: 1, pictures: 1, name: 'My own picture: color any squares, then tap Done' },
+  {
+    mode: 'bitsRow',
+    size: 4,
+    colors: 1,
+    pictures: 3,
+    name: 'Ones and zeros: flip four cards to write one row of squares',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   // Level 9 (two colors on the small grid) sits between 1 and 2; level 10 (my own picture, a free level) comes last.
   preschool: { min: 1, max: 9, order: [1, 9, 2] },
   prek: { min: 1, max: 10, order: [1, 9, 2, 3, 10] },
-  school: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 8, 10] },
+  // Level 11 (ones and zeros) sits after 8, away from 4–6, so digits as a key and digits as counts are never neighbours.
+  school: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 8, 11, 10] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -209,7 +226,7 @@ export const colorsOf = (p: Picture) => [...new Set(p.rows.join('').replace(/\./
 export function picturesFor(plan: PixelPlan): Picture[] {
   if (plan.mode === 'mirror2') return FOURFOLD;
   if (plan.mode === 'big') return MODELS.map((m) => scaleUp(m, 2));
-  if (plan.mode === 'free') return [];
+  if (plan.mode === 'free' || plan.mode === 'bitsRow') return [];
   return PICTURES[plan.size].filter((p) => {
     const n = colorsOf(p).length;
     if (plan.mode === 'copy') return plan.colors === 2 ? n === 2 : n === 1;
@@ -592,4 +609,178 @@ export function freeTouch(
       if (!isFilled(have) && want !== '.') return want === color ? { cell: { x, y } } : { color: want };
     }
   return canFinish(filled) ? 'done' : null;
+}
+
+// ── Level 11, ones and zeros ────────────────────────────────────────────────────────────────────────────────────────
+// One key, shown on a card for the whole round: a 1 is a filled square and a 0 an empty one, read left to right, so the
+// first card is the row's left square. It is this toy's own key; nothing here is arithmetic.
+
+/** Cards in a row, and squares in the row they write. */
+export const BIT_COUNT = 4;
+
+/** A picture row as cards: '.' is 0 (false), any color letter is 1 (true), left to right. */
+export const encodeRow = (row: string): boolean[] => row.split('').map((c) => c !== '.');
+
+/** The row the cards say, in one color: card `i` is column `i`. */
+export const decodeRow = (bits: readonly boolean[], color: string): string =>
+  bits.map((b) => (b ? color : '.')).join('');
+
+/** A picture as rows of cards, top row first. */
+export const encodePicture = (p: Picture): boolean[][] => p.rows.map(encodeRow);
+
+/** The picture rows of cards say, top row first, in one color. */
+export const decodePicture = (bits: readonly (readonly boolean[])[], color: string, name = ''): Picture => ({
+  name,
+  rows: bits.map((row) => decodeRow(row, color)),
+});
+
+/** The leftmost card that differs from the row wanted, or null when all agree. */
+export function firstDiffer(bits: readonly boolean[], target: readonly boolean[]): number | null {
+  const i = target.findIndex((t, k) => t !== !!bits[k]);
+  return i < 0 ? null : i;
+}
+
+/** The copy levels' one-color paints, for a level-11 row. */
+export const BIT_COLORS = ['r', 'g', 'y', 'b', 'u'] as const;
+export interface BitRow {
+  bits: boolean[];
+  color: string;
+}
+
+/** Level 11's round: three different rows of the 15 that fill at least one square (the cards already say 0000). */
+export function makeBitRows(rng: Rng, count = 3): BitRow[] {
+  const all = Array.from({ length: 2 ** BIT_COUNT - 1 }, (_, k) =>
+    Array.from({ length: BIT_COUNT }, (_, i) => (((k + 1) >> (BIT_COUNT - 1 - i)) & 1) === 1),
+  );
+  const colors = rng.shuffle([...BIT_COLORS]);
+  return rng
+    .shuffle(all)
+    .slice(0, count)
+    .map((bits, i) => ({ bits, color: colors[i % colors.length] }));
+}
+
+/**
+ * A press of the check. Right only when every card agrees. Otherwise one miss, however many cards differ, and `card` is
+ * the leftmost that differs; every second failed check on a row is one hint: that card glows, or, if it is glowing
+ * already (`glowing`) and she has left it, it is flipped for her. `fails` counts this row's failed checks before this one.
+ */
+export function bitCheck(
+  bits: readonly boolean[],
+  target: readonly boolean[],
+  fails: number,
+  glowing: number | null,
+): { ok: true } | { ok: false; card: number; wants: boolean; hint: 'glow' | 'set' | null } {
+  const card = firstDiffer(bits, target);
+  if (card === null) return { ok: true };
+  const hint = (fails + 1) % 2 ? null : glowing === card ? 'set' : 'glow';
+  return { ok: false, card, wants: target[card], hint };
+}
+
+/**
+ * The ghost finger on a row: flip the cards that differ, left to right, then press the arrow to see the row, then the
+ * check. `shown` is whether her strip shows what the cards say now. It never makes a failing check.
+ */
+export function bitTouch(
+  bits: readonly boolean[],
+  target: readonly boolean[],
+  shown: boolean,
+): { card: number } | 'arrow' | 'check' {
+  const card = firstDiffer(bits, target);
+  if (card !== null) return { card };
+  return shown ? 'check' : 'arrow';
+}
+
+/** A rectangle by its center, in view units. */
+export interface BitBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface BitsLayout {
+  /** The four cards, left to right. */
+  cards: BitBox[];
+  arrow: BitBox;
+  check: BitBox;
+  /** The row to make and her own row: four squares of `cell` units, each square above its card. */
+  ref: BitBox;
+  own: BitBox;
+  cell: number;
+  /** Center-to-center distance of the cards, and of the squares above them. */
+  pitch: number;
+  key: BitBox;
+  shelf: BitBox;
+}
+
+const CARD_W = 120;
+const CARD_H = 140;
+const CARD_GAP = 16;
+const BIT_BUTTON = 120;
+const BIT_CELL = 110;
+const ASIDE_W = 264;
+
+/**
+ * Where level 11's things sit, or null rather than shrink a card or button. Wide: the two strips above the cards at the
+ * center-left, the arrow and the check right of the cards, the key card and the shelf in a column above the buttons.
+ * Upright: key card and shelf along the top, clear of Home; the strips, the cards, then the two buttons in the bottom
+ * row, right of the pet's corner. A square always sits straight above its card.
+ */
+export function bitsLayout(level: number, v: { w: number; h: number }): BitsLayout | null {
+  if (level !== 11) return null;
+  const pitch = CARD_W + CARD_GAP;
+  const rowW = BIT_COUNT * CARD_W + (BIT_COUNT - 1) * CARD_GAP;
+  const strip = (x0: number, y: number): BitBox => ({ x: x0 + rowW / 2, y, w: rowW, h: BIT_CELL });
+  const cardsAt = (x0: number, y: number): BitBox[] =>
+    Array.from({ length: BIT_COUNT }, (_, i) => ({
+      x: x0 + CARD_W / 2 + i * pitch,
+      y,
+      w: CARD_W,
+      h: CARD_H,
+    }));
+  const button = (x: number, y: number): BitBox => ({ x, y, w: BIT_BUTTON, h: BIT_BUTTON });
+  if (v.h > v.w) {
+    const asideH = 180;
+    const stack = asideH + 40 + BIT_CELL + 40 + BIT_CELL + 50 + CARD_H + 40 + BIT_BUTTON;
+    const asideW = ASIDE_W * 2 + 26;
+    if (v.w < 135 + asideW + 10 || v.h < stack + 40) return null;
+    const top = Math.max(20, (v.h - stack) / 2);
+    const ax = Math.max(135, (v.w - asideW) / 2);
+    const x0 = (v.w - rowW) / 2;
+    const refY = top + asideH + 40 + BIT_CELL / 2;
+    const ownY = refY + BIT_CELL + 40;
+    const cardY = ownY + BIT_CELL / 2 + 50 + CARD_H / 2;
+    const buttonY = cardY + CARD_H / 2 + 40 + BIT_BUTTON / 2;
+    return {
+      cards: cardsAt(x0, cardY),
+      arrow: button(v.w / 2 - 84, buttonY),
+      check: button(v.w / 2 + 84, buttonY),
+      ref: strip(x0, refY),
+      own: strip(x0, ownY),
+      cell: BIT_CELL,
+      pitch,
+      key: { x: ax + ASIDE_W / 2, y: top + asideH / 2, w: ASIDE_W, h: asideH },
+      shelf: { x: ax + ASIDE_W + 26 + ASIDE_W / 2, y: top + asideH / 2, w: ASIDE_W, h: asideH },
+    };
+  }
+  const total = rowW + 40 + BIT_BUTTON + 24 + BIT_BUTTON;
+  const stack = BIT_CELL + 40 + BIT_CELL + 50 + CARD_H;
+  if (v.w < 170 + total + 20 || v.h < stack + 60) return null;
+  const x0 = Math.max(170, (v.w - total) / 2);
+  const top = (v.h - stack) / 2;
+  const refY = top + BIT_CELL / 2;
+  const ownY = refY + BIT_CELL + 40;
+  const cardY = ownY + BIT_CELL / 2 + 50 + CARD_H / 2;
+  const asideX = x0 + rowW + 40 + (BIT_BUTTON * 2 + 24) / 2;
+  const asideH = (cardY - BIT_BUTTON / 2 - 30 - 24 - 20) / 2;
+  return {
+    cards: cardsAt(x0, cardY),
+    arrow: button(x0 + rowW + 40 + BIT_BUTTON / 2, cardY),
+    check: button(x0 + rowW + 40 + BIT_BUTTON + 24 + BIT_BUTTON / 2, cardY),
+    ref: strip(x0, refY),
+    own: strip(x0, ownY),
+    cell: BIT_CELL,
+    pitch,
+    key: { x: asideX, y: 20 + asideH / 2, w: ASIDE_W, h: asideH },
+    shelf: { x: asideX, y: 20 + asideH + 24 + asideH / 2, w: ASIDE_W, h: asideH },
+  };
 }

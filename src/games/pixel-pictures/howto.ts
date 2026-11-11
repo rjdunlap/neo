@@ -37,6 +37,23 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Make any picture: pick one of four colors and tap squares; tap a colored square again to clear it. Nothing is wrong here. The green check appears after four squares.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Each card says 1 or 0. A 1 fills a square and a 0 leaves it empty, reading left to right.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'Tap a card to flip it. The arrow shows the row the cards make; looking is never counted.',
+    },
+    { from: 11, to: 11, text: 'Tap the green check when the row matches.' },
   ],
-  finish: 'The round ends when the picture matches, or on My own picture when she taps the green check.',
+  finish: [
+    { from: 11, to: 11, text: 'Each row is finished by a right check; the round ends after three rows.' },
+    {
+      to: 10,
+      text: 'The round ends when the picture matches, or on My own picture when she taps the green check.',
+    },
+  ],
 };

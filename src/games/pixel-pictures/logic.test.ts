@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { computeView } from '../../engine/view';
+import { uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 import {
+  BIT_COUNT,
+  bitCheck,
+  bitsLayout,
+  bitTouch,
+  decodePicture,
+  decodeRow,
+  encodePicture,
+  encodeRow,
+  firstDiffer,
+  LEVELS,
+  makeBitRows,
   blank,
   canFinish,
   clues,
@@ -50,8 +63,8 @@ describe('Pixel Pictures', () => {
   });
 
   it('every level has enough pictures that fit it', () => {
-    // Level 10 is a free design on an empty board; it has no pictures to copy.
-    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+    // Level 10 is a free design on an empty board; it has no pictures to copy. Level 11 draws rows, not pictures.
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'bitsRow')) {
       const fit = picturesFor(plan);
       // Strictly more than a round shows, so one round can differ from the next.
       expect(fit.length, plan.name).toBeGreaterThan(plan.pictures);
@@ -349,7 +362,7 @@ describe('Pixel Pictures', () => {
     expect(picturesFor(plan).map((p) => p.name)).toContain('a ladybird');
     // Level 1 stays one color on the same grid.
     for (const p of picturesFor(planFor(1))) expect(colorsOf(p), p.name).toHaveLength(1);
-    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3, 10], school: [3, 4, 5, 6, 7, 8, 10] };
+    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3, 10], school: [3, 4, 5, 6, 7, 8, 11, 10] };
     for (const [band, order] of Object.entries(orders) as [keyof typeof orders, number[]][]) {
       const range = pixelPictures.levels(band);
       expect(levelsInOrder(range), band).toEqual(order);
@@ -393,7 +406,8 @@ describe('Pixel Pictures', () => {
     ]);
     // A free round is last in each order, so stepping up never passes it.
     expect(stepLevel(10, 1, pixelPictures.levels('school'))).toBe(10);
-    expect(stepLevel(8, 1, pixelPictures.levels('school'))).toBe(10);
+    expect(stepLevel(8, 1, pixelPictures.levels('school'))).toBe(11);
+    expect(stepLevel(11, 1, pixelPictures.levels('school'))).toBe(10);
   });
 
   it('the ghost finger draws the heart on level 10, clearing stray squares, then presses Done', () => {
@@ -419,3 +433,199 @@ describe('Pixel Pictures', () => {
     }
   });
 });
+
+describe('Pixel Pictures level 11, ones and zeros', () => {
+  const ALL = Array.from({ length: 16 }, (_, k) => [8, 4, 2, 1].map((m) => (k & m) !== 0));
+  const digits = (bits: boolean[]) => bits.map((b) => (b ? '1' : '0')).join('');
+  const one = PICTURES[4].filter((p) => colorsOf(p).length === 1);
+
+  it('a row and its cards round-trip, the empty and the full row included', () => {
+    expect(new Set(ALL.map(digits)).size).toBe(16);
+    for (const b of ALL) {
+      expect(encodeRow(decodeRow(b, 'r'))).toEqual(b);
+      expect(decodeRow(b, 'r')).toHaveLength(BIT_COUNT);
+    }
+    expect(decodeRow([false, false, false, false], 'r')).toBe('....');
+    expect(decodeRow([true, true, true, true], 'g')).toBe('gggg');
+    expect(one).toHaveLength(5);
+    for (const p of one) expect(decodePicture(encodePicture(p), colorsOf(p)[0], p.name)).toEqual(p);
+  });
+
+  it('the key reads left to right and top to bottom, digit for digit', () => {
+    const table: Record<string, string[]> = {
+      'a heart': ['1010', '1111', '1111', '0110'],
+      'a little tree': ['0110', '1111', '0110', '0110'],
+      'a smile': ['1001', '0000', '1001', '0110'],
+      'a boat': ['0100', '0110', '1111', '0110'],
+      'a plus': ['0100', '1110', '0100', '0000'],
+    };
+    for (const p of one) expect(encodePicture(p).map(digits), p.name).toEqual(table[p.name]);
+    // Card i is column i, and row j the jth group of four: reversing either changes an asymmetric picture.
+    const boat = one.find((p) => p.name === 'a boat')!;
+    const bits = encodePicture(boat);
+    expect(
+      decodePicture(
+        bits.map((r) => [...r].reverse()),
+        'b',
+        boat.name,
+      ),
+    ).not.toEqual(boat);
+    expect(decodePicture([...bits].reverse(), 'b', boat.name)).not.toEqual(boat);
+    expect(encodeRow('.b..')).toEqual([false, true, false, false]);
+  });
+
+  it('the check passes only when all four cards agree, and a failed check is one miss whatever differs', () => {
+    for (const bits of ALL)
+      for (const target of ALL) {
+        const r = bitCheck(bits, target, 0, null);
+        expect(r.ok).toBe(digits(bits) === digits(target));
+        if (!r.ok) {
+          // The card named is the leftmost that differs, with what its square wants; a first failure is no hint.
+          expect(bits.slice(0, r.card)).toEqual(target.slice(0, r.card));
+          expect(bits[r.card]).not.toBe(target[r.card]);
+          expect(r.wants).toBe(target[r.card]);
+          expect(r.hint).toBeNull();
+        }
+      }
+    // 0000 against an empty row passes with no flip.
+    expect(bitCheck([false, false, false, false], encodeRow('....'), 0, null)).toEqual({ ok: true });
+  });
+
+  it('every second failed check is a hint: the first differing card glows, and a glow left alone is flipped', () => {
+    const bits = [false, false, false, false];
+    const target = [false, true, false, true];
+    expect(bitCheck(bits, target, 0, null)).toMatchObject({ ok: false, card: 1, hint: null });
+    expect(bitCheck(bits, target, 1, null)).toMatchObject({ ok: false, card: 1, hint: 'glow' });
+    expect(bitCheck(bits, target, 2, 1)).toMatchObject({ ok: false, card: 1, hint: null });
+    expect(bitCheck(bits, target, 3, 1)).toMatchObject({ ok: false, card: 1, wants: true, hint: 'set' });
+    // She flipped the glowing card: the next hint glows the next card that differs.
+    expect(bitCheck([false, true, false, false], target, 3, null)).toMatchObject({ card: 3, hint: 'glow' });
+  });
+
+  it('help leads somewhere: following the first differing card reaches any row in at most four flips', () => {
+    for (const start of ALL)
+      for (const target of ALL) {
+        const bits = [...start];
+        let flips = 0;
+        for (let card = firstDiffer(bits, target); card !== null; card = firstDiffer(bits, target)) {
+          // It never touches a card that already agrees.
+          expect(bits[card]).not.toBe(target[card]);
+          bits[card] = !bits[card];
+          expect(++flips).toBeLessThanOrEqual(BIT_COUNT);
+        }
+        expect(bits).toEqual(target);
+      }
+  });
+
+  it('the ghost finger flips only the cards the row needs, left to right, then the arrow, then the check', () => {
+    for (const target of ALL) {
+      const bits = [false, false, false, false];
+      let shown = false;
+      const moves: string[] = [];
+      for (let step = 0; step < 10; step++) {
+        const move = bitTouch(bits, target, shown);
+        if (move === 'check') {
+          // It never makes a failing check.
+          expect(bitCheck(bits, target, 0, null).ok).toBe(true);
+          moves.push('check');
+          break;
+        }
+        if (move === 'arrow') {
+          shown = true;
+          moves.push('arrow');
+        } else {
+          bits[move.card] = !bits[move.card];
+          shown = false;
+          moves.push(String(move.card));
+        }
+      }
+      const needed = target.flatMap((t, i) => (t ? [String(i)] : []));
+      expect(moves, digits(target)).toEqual([...needed, 'arrow', 'check']);
+    }
+  });
+
+  it('a round is three different seeded rows, never 0000, each in a one-color paint', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rows = makeBitRows(new Rng(seed));
+      expect(rows).toEqual(makeBitRows(new Rng(seed)));
+      expect(rows).toHaveLength(3);
+      expect(new Set(rows.map((r) => digits(r.bits))).size).toBe(3);
+      for (const r of rows) {
+        expect(r.bits).toHaveLength(BIT_COUNT);
+        expect(r.bits.some(Boolean)).toBe(true);
+        expect(Object.keys(LETTERS_USED)).toContain(r.color);
+      }
+    }
+    // Every one of the 15 rows can come up.
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++)
+      for (const r of makeBitRows(new Rng(seed))) seen.add(digits(r.bits));
+    expect(seen.size).toBe(15);
+  });
+
+  it('level 11 joins school after 8 and before the free level; the other levels and bands are as they were', async () => {
+    const { pixelPictures } = await import('./index');
+    const { landing, levelsInOrder } = await import('../../progress/difficulty');
+    expect(levelsInOrder(pixelPictures.levels('school'))).toEqual([3, 4, 5, 6, 7, 8, 11, 10]);
+    expect(LEVELS.preschool).toEqual({ min: 1, max: 9, order: [1, 9, 2] });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 10, order: [1, 9, 2, 3, 10] });
+    expect(planFor(11)).toMatchObject({ mode: 'bitsRow', size: 4, colors: 1, pictures: 3 });
+    expect(pixelPictures.describeLevel!(11)).toMatch(/^Ones and zeros/);
+    // Levels 1–10 keep their plans.
+    expect(PLANS.slice(0, 10).map((p) => [p.mode, p.size, p.colors, p.pictures])).toEqual([
+      ['copy', 4, 1, 3],
+      ['copy', 5, 2, 3],
+      ['mirror', 6, 1, 2],
+      ['clues', 5, 1, 2],
+      ['clues', 6, 1, 2],
+      ['colorClues', 6, 2, 2],
+      ['mirror2', 6, 1, 2],
+      ['big', 6, 1, 2],
+      ['copy', 4, 2, 3],
+      ['free', 5, 1, 1],
+    ]);
+    expect(PLANS[9].name).toMatch(/^My own picture/);
+    expect(pixelPictures.entryLevels).toEqual([9]);
+    expect(landing(9, pixelPictures.levels('school'), pixelPictures.entryLevels)).toBe(3);
+  });
+
+  it('the cards and buttons keep their size and clear the corners at every view, upright views included', () => {
+    const views = {
+      landscape: computeView(1024, 768),
+      portrait: computeView(768, 1024),
+      phone: computeView(844, 390),
+      notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+      ...UPRIGHT_VIEWS,
+    };
+    for (const [name, v] of Object.entries(views)) {
+      const l = bitsLayout(11, v);
+      expect(l, name).not.toBeNull();
+      if (!l) continue;
+      const targets = [
+        ...l.cards.map((c, i) => ({ what: `card ${i + 1}`, ...c })),
+        { what: 'the arrow', ...l.arrow },
+        { what: 'the check', ...l.check },
+      ];
+      expect(uprightProblems(v, targets), name).toEqual([]);
+      for (const c of l.cards) expect([c.w, c.h]).toEqual([120, 140]);
+      // Left to right, and each square straight above its card.
+      l.cards.forEach((c, i) => {
+        if (i) expect(c.x - l.cards[i - 1].x).toBe(l.pitch);
+      });
+      expect(l.cell).toBeGreaterThanOrEqual(100);
+      // The drawn parts stay inside the view and off the targets, the corner buttons and the pet.
+      const drawn = [
+        { what: 'the row to make', ...l.ref },
+        { what: 'her row', ...l.own },
+        { what: 'the key card', ...l.key },
+        { what: 'the shelf', ...l.shelf },
+      ];
+      expect(uprightProblems(v, [...drawn, ...targets], 0), name).toEqual([]);
+    }
+    // Too small a view gets no layout rather than smaller cards.
+    expect(bitsLayout(11, { w: 600, h: 500 })).toBeNull();
+    expect(bitsLayout(11, { w: 600, h: 1000 })).toBeNull();
+  });
+});
+
+const LETTERS_USED = { r: 1, g: 1, y: 1, b: 1, u: 1 };
