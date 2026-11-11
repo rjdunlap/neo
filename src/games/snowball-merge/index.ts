@@ -21,6 +21,7 @@ import {
   NO_HELP,
   PLANS,
   planFor,
+  ROCK,
   SIZE,
   sizeLook,
   slide,
@@ -115,7 +116,10 @@ class SnowballMerge implements Game {
   readonly restartButton = new Container();
   readonly field = new Container();
   private readonly ground = new Graphics();
+  private readonly rocks = new Graphics();
   private readonly balls = new Container();
+  /** The ice rock's line is said once a round, the first time a snowball stops beside it. */
+  rockSaid = false;
   private readonly sky = new Graphics();
   private readonly flakes = new Graphics();
   private readonly starSpots: { x: number; y: number; r: number }[] = [];
@@ -149,6 +153,7 @@ class SnowballMerge implements Game {
     for (const part of [
       this.field,
       this.ground,
+      this.rocks,
       this.balls,
       this.sky,
       this.flakes,
@@ -157,7 +162,7 @@ class SnowballMerge implements Game {
       this.status,
     ])
       part.eventMode = 'none';
-    this.field.addChild(this.sky, this.ground, this.flakes, this.balls);
+    this.field.addChild(this.sky, this.ground, this.rocks, this.flakes, this.balls);
     ctx.stage.addChild(this.field, this.title, this.status);
     for (const d of DIRECTIONS) {
       const node = this.arrows[d];
@@ -233,6 +238,29 @@ class SnowballMerge implements Game {
         .roundRect(p.x - this.cell / 2 + 5, p.y - this.cell / 2 + 5, this.cell - 10, this.cell - 10, 14)
         .fill(colors.cell);
     }
+    // The ice rock (level 5): a grey-blue block frozen into its cell. It never moves, so it is drawn with the field.
+    this.rocks.clear();
+    this.puzzle.board.forEach((value, i) => {
+      if (value !== ROCK) return;
+      const p = this.center(i),
+        r = this.cell * 0.4;
+      this.rocks
+        .poly(
+          [-0.95, 0.75, -0.8, -0.25, -0.3, -0.9, 0.45, -0.8, 0.95, -0.1, 0.85, 0.75].map(
+            (n, k) => (k % 2 ? p.y : p.x) + n * r,
+          ),
+        )
+        .fill(swatch.white.line)
+        .stroke({ width: 4, color: swatch.blue.line, join: 'round' })
+        .poly(
+          [-0.8, -0.25, -0.3, -0.9, 0.45, -0.8, 0.1, -0.15, -0.35, 0.05].map(
+            (n, k) => (k % 2 ? p.y : p.x) + n * r,
+          ),
+        )
+        .fill(swatch.blue.light)
+        .poly([0.45, -0.8, 0.95, -0.1, 0.35, 0.3, 0.1, -0.15].map((n, k) => (k % 2 ? p.y : p.x) + n * r))
+        .fill({ color: swatch.white.fill, alpha: 0.55 });
+    });
     // Dusk: a few drawn stars in the margins beside the field.
     this.sky.clear();
     if (this.look === 'dusk')
@@ -265,7 +293,7 @@ class SnowballMerge implements Game {
     for (const node of this.balls.removeChildren()) node.destroy({ children: true });
     this.nodes.clear();
     this.board.forEach((value, i) => {
-      if (!value) return;
+      if (value <= 0) return;
       const node = snowball(value),
         p = this.center(i);
       node.scale.set(this.cell / 108);
@@ -327,6 +355,11 @@ class SnowballMerge implements Game {
     this.refresh();
     // A slide into a dead end lights Undo on its own and says so.
     if (this.assist('changed') === 'undo') void this.ctx.say('snowball.stuck');
+    else if (next.rocked && !this.rockSaid && this.route?.length) {
+      // Stopping at the rock is how the level works, never a miss: name the rule once, the first time it shows.
+      this.rockSaid = true;
+      void this.ctx.say('snowball.rock');
+    }
     if (joins.length) {
       for (const to of joins) {
         const p = this.ctx.particles.toLocal(this.balls.toGlobal(this.center(to)));

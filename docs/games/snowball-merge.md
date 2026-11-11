@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–4 |
+| grown-up | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,19 +16,22 @@
 | 2 | Make 32 · choose your pairs |
 | 3 | Make 64 · make room first |
 | 4 | Make 128 · the big snowball |
+| 5 | Make 64 · the ice rock |
 
 <!-- end generated -->
 
 **Starts as:** slide equal numbered snowballs together to make the pictured target
 
-**Grows into:** three finite 3×3 boards making 16/32/64; exact hints, Undo, restart and ghost finger; touch only, in Lantern Lake
+**Grows into:** finite 3×3 boards making 16/32/64/128, then an ice rock that never moves and stops snowballs beside it; exact hints, Undo, restart and ghost finger; touch only, in Lantern Lake
 
 ## Design notes
 
-Grown-up, Lantern Lake; touch only. Slide a finite 3×3 board so equal snowballs merge once per slide, making 16, 32, 64 or 128 across four levels. No refill, clock or turn limit. Exact hints, Undo and restart support recovery; inert presses are free exploration, and a repeated visible hint counts once. Making the target completes the round for one sticker, including with help; ghost-finger demonstration included.
+Grown-up, Lantern Lake; touch only. Slide a finite 3×3 board so equal snowballs merge once per slide, making 16, 32, 64 or 128 across five levels. No refill, clock or turn limit. Exact hints, Undo and restart support recovery; inert presses are free exploration, and a repeated visible hint counts once. Making the target completes the round for one sticker, including with help; ghost-finger demonstration included.
 
 **Boards and looks (2026-11-10).** `scripts/snowball-merge-boards.ts` freezes four boards per level into `boards.ts` (authored plan first, then picked, turned and mirrored by seed); route depth is 3–4 at level 1 with no reachable dead end, 5–7 at level 2 and 7–9 at level 3 with a reachable dead end. Sizes have their own colours (64 yellow with a scarf stripe). A join squashes the pair, puffs and pops the doubled ball. Each round gets one of three field looks: morning, dusk or flurry (flakes never touch play).
 
 **Level 4, Make 128 (2026-11-10).** Three 32s sit on the board and the player works out which one waits; the route is 10–14 slides with a reachable dead end. The 128 is a white snowball with a scarf and two coal eyes; the radius step is 1.3 per doubling so it still fits the cell.
 
 **Automatic glow and par line.** A slide into a dead end lights Undo and the pet says the stuck line; two inert arrows in a row light the route's next arrow. Each counts as one hint, once; asking while something glows counts nothing, and Restart still counts as help. After finishing, the status reads "N slides · the shortest route is M", information only.
+
+**Level 5, the ice rock (2026-11-11).** A grey-blue rock holds one cell and never moves or joins; a row or column splits at it, so snowballs behind it stop beside it and the player chooses which side a pair meets on. Boards run 8–11 slides with a reachable dead end and the rock never in the centre (a centre rock leaves most boards unsolvable). The pet says the rock line once per round, the first time a slide rests a snowball against it; that is no miss and no hint. Levels 1–4 are unchanged.
