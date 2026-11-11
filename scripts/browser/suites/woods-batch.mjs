@@ -22,6 +22,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'word-end',
           'pixels',
           'bits',
+          'bits12',
           'night',
           'snack',
           'beat',
@@ -1586,6 +1587,116 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Pixel Pictures 11 (ones and zeros): upright, failed checks as misses, the glowing card, a card flipped as help, free flips and arrow, three rows, saved score and sticker passed',
+      );
+    }
+
+    if (!only || only === 'bits12') {
+      // Level 12, a whole picture, on an upright phone: the same four cards write two pictures a row at a time.
+      await page.setViewportSize({ width: 390, height: 844 });
+      // Two of five pictures are drawn; relaunch until one has an empty row (a smile or a plus), a real case to check.
+      for (let tries = 0; tries < 12; tries++) {
+        await launch('pixel-pictures', 12);
+        if (await page.evaluate(() => neo.scene.game.rows.some((r) => !r.bits.some(Boolean)))) break;
+      }
+      const read = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            bits: [...g.bits],
+            target: [...g.target],
+            glowing: g.glowing,
+            decoded: g.decoded,
+            kept: g.kept,
+            index: g.index,
+          };
+        });
+      const settled = async () => {
+        await page.waitForFunction(
+          () => neo.scene.finished || (!neo.scene.game.run && !neo.scene.game.busy),
+          null,
+          { timeout: 20000 },
+        );
+        await page.waitForTimeout(450);
+      };
+      const press = async (what) => {
+        await tap(`neo.scene.game.${what}`);
+        await settled();
+      };
+      const flip = async (i) => {
+        await tap(`neo.scene.game.cards[${i}]`);
+        await page.waitForTimeout(140);
+      };
+      const shape = await page.evaluate(() => ({
+        rows: neo.scene.game.rows.length,
+        names: neo.scene.game.pictures.map((p) => p.name),
+        empties: neo.scene.game.rows.map((r) => !r.bits.some(Boolean)),
+      }));
+      assert.equal(shape.rows, 8);
+      assert.equal(new Set(shape.names).size, 2);
+      assert.ok(shape.empties.includes(true), 'this round has an empty row');
+      let failed = false;
+      let emptyChecked = 0;
+      for (let n = 0; n < 8; n++) {
+        await idle(n);
+        const start = await read();
+        assert.deepEqual(start.bits, [false, false, false, false], 'the cards start at 0000 for every row');
+        assert.equal(start.kept, n % 4, 'finished rows stay on the board and the marker moves down');
+        if (shape.empties[n]) {
+          // An empty row is right as the cards stand: she checks it without a flip, and it is no miss.
+          const before = await counts();
+          await tap('neo.scene.game.check');
+          await page.waitForFunction((n) => neo.scene.game.index > n || neo.scene.game.kept === 4, n, {
+            timeout: 20000,
+          });
+          assert.deepEqual(await counts(), before, 'an empty row checked as it stands is right');
+          emptyChecked++;
+          continue;
+        }
+        if (!failed) {
+          // Two checks that do not match on the first row with a filled square: two misses, then the glow.
+          failed = true;
+          const first = start.target.indexOf(true);
+          await press('check');
+          assert.deepEqual(await counts(), [1, 0]);
+          await press('check');
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.equal((await read()).glowing, first, 'the first card that differs glows');
+          assert.equal((await read()).index, n, 'help never ends a row');
+          await screenshot('pixel-pictures-12-whole-picture');
+        }
+        const { bits, target } = await read();
+        for (let i = 0; i < 4; i++) if (bits[i] !== target[i]) await flip(i);
+        const before = await counts();
+        await press('arrow');
+        assert.ok((await read()).decoded, 'the arrow shows the row on the board');
+        assert.deepEqual(await counts(), before, 'flips and the arrow are never misses');
+        await tap('neo.scene.game.check');
+        if (n % 4 === 3)
+          await page.waitForFunction(() => neo.scene.game.kept === 4, null, { timeout: 20000 });
+      }
+      assert.ok(emptyChecked >= 1);
+      await finished('pixel-pictures');
+      assert.deepEqual(await score('pixel-pictures'), [2, 1]);
+      // The last finished picture is offered for the treehouse and kept only when she says so.
+      await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 25000 });
+      await page.waitForTimeout(700);
+      assert.ok(
+        await page.evaluate(() => !!neo.scene.after.keep),
+        'the written picture is offered for the treehouse',
+      );
+      const last = await page.evaluate(
+        () => neo.scene.game.pictures[1].rows.join('').replace(/\./g, '').length,
+      );
+      await tap('neo.scene.after.keep');
+      await page.waitForTimeout(300);
+      const keptPicture = await page.evaluate(() =>
+        JSON.parse(JSON.stringify(kit.store.data.creations.picture.current)),
+      );
+      assert.equal(keptPicture.size, 4);
+      assert.equal(keptPicture.pixels.length, last, 'the kept picture is the last one she wrote');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Pixel Pictures 12 (a whole picture): upright, two pictures of four rows, an empty row checked as it stands, failed checks as misses, the glowing card, saved score, sticker and a kept picture passed',
       );
     }
 

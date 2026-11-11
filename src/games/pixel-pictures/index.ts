@@ -58,6 +58,7 @@ const MISS_LINE: Record<PixelPlan['mode'], LineId> = {
   big: 'pixel.notbig',
   free: 'pixel.notthere',
   bitsRow: 'pixel.bits.differ.fill',
+  bitsPicture: 'pixel.bits.differ.fill',
 };
 
 class PixelPictures implements Game {
@@ -584,5 +585,5 @@ export const pixelPictures: GameModule = {
   hubIcon: () => new PixelIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => (planFor(ctx.level).mode === 'bitsRow' ? new BitsRound(ctx) : new PixelPictures(ctx)),
+  create: (ctx) => (planFor(ctx.level).mode.startsWith('bits') ? new BitsRound(ctx) : new PixelPictures(ctx)),
 };

@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1, 9, 2 |
 | pre-K | 1, 9, 2, 3, 10 |
-| school | 3, 4, 5, 6, 7, 8, 11, 10 |
+| school | 3, 4, 5, 6, 7, 8, 11, 12, 10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 9 | Two colors, small: pick a color, then copy a 4 by 4 picture |
 | 10 | My own picture: color any squares, then tap Done |
 | 11 | Ones and zeros: flip four cards to write one row of squares |
+| 12 | Ones and zeros, a whole picture: write each row with four cards |
 
 <!-- end generated -->
 

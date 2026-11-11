@@ -4,6 +4,7 @@ import { computeView } from '../../engine/view';
 import { uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 import {
   BIT_COUNT,
+  bitRowsOf,
   bitCheck,
   bitsLayout,
   bitTouch,
@@ -64,7 +65,7 @@ describe('Pixel Pictures', () => {
 
   it('every level has enough pictures that fit it', () => {
     // Level 10 is a free design on an empty board; it has no pictures to copy. Level 11 draws rows, not pictures.
-    for (const plan of PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'bitsRow')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'free' && !p.mode.startsWith('bits'))) {
       const fit = picturesFor(plan);
       // Strictly more than a round shows, so one round can differ from the next.
       expect(fit.length, plan.name).toBeGreaterThan(plan.pictures);
@@ -362,7 +363,7 @@ describe('Pixel Pictures', () => {
     expect(picturesFor(plan).map((p) => p.name)).toContain('a ladybird');
     // Level 1 stays one color on the same grid.
     for (const p of picturesFor(planFor(1))) expect(colorsOf(p), p.name).toHaveLength(1);
-    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3, 10], school: [3, 4, 5, 6, 7, 8, 11, 10] };
+    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3, 10], school: [3, 4, 5, 6, 7, 8, 11, 12, 10] };
     for (const [band, order] of Object.entries(orders) as [keyof typeof orders, number[]][]) {
       const range = pixelPictures.levels(band);
       expect(levelsInOrder(range), band).toEqual(order);
@@ -407,7 +408,8 @@ describe('Pixel Pictures', () => {
     // A free round is last in each order, so stepping up never passes it.
     expect(stepLevel(10, 1, pixelPictures.levels('school'))).toBe(10);
     expect(stepLevel(8, 1, pixelPictures.levels('school'))).toBe(11);
-    expect(stepLevel(11, 1, pixelPictures.levels('school'))).toBe(10);
+    expect(stepLevel(11, 1, pixelPictures.levels('school'))).toBe(12);
+    expect(stepLevel(12, 1, pixelPictures.levels('school'))).toBe(10);
   });
 
   it('the ghost finger draws the heart on level 10, clearing stray squares, then presses Done', () => {
@@ -563,14 +565,16 @@ describe('Pixel Pictures level 11, ones and zeros', () => {
     expect(seen.size).toBe(15);
   });
 
-  it('level 11 joins school after 8 and before the free level; the other levels and bands are as they were', async () => {
+  it('levels 11 and 12 join school after 8 and before the free level; the other levels and bands are as they were', async () => {
     const { pixelPictures } = await import('./index');
     const { landing, levelsInOrder } = await import('../../progress/difficulty');
-    expect(levelsInOrder(pixelPictures.levels('school'))).toEqual([3, 4, 5, 6, 7, 8, 11, 10]);
+    expect(levelsInOrder(pixelPictures.levels('school'))).toEqual([3, 4, 5, 6, 7, 8, 11, 12, 10]);
     expect(LEVELS.preschool).toEqual({ min: 1, max: 9, order: [1, 9, 2] });
     expect(LEVELS.prek).toEqual({ min: 1, max: 10, order: [1, 9, 2, 3, 10] });
     expect(planFor(11)).toMatchObject({ mode: 'bitsRow', size: 4, colors: 1, pictures: 3 });
+    expect(planFor(12)).toMatchObject({ mode: 'bitsPicture', size: 4, colors: 1, pictures: 2 });
     expect(pixelPictures.describeLevel!(11)).toMatch(/^Ones and zeros/);
+    expect(pixelPictures.describeLevel!(12)).toMatch(/^Ones and zeros, a whole picture/);
     // Levels 1–10 keep their plans.
     expect(PLANS.slice(0, 10).map((p) => [p.mode, p.size, p.colors, p.pictures])).toEqual([
       ['copy', 4, 1, 3],
@@ -625,6 +629,93 @@ describe('Pixel Pictures level 11, ones and zeros', () => {
     // Too small a view gets no layout rather than smaller cards.
     expect(bitsLayout(11, { w: 600, h: 500 })).toBeNull();
     expect(bitsLayout(11, { w: 600, h: 1000 })).toBeNull();
+  });
+
+  it('level 12 draws two different one-color 4 by 4 pictures of the five, the same for the same seed', () => {
+    const plan = planFor(12);
+    expect(picturesFor(plan).map((p) => p.name)).toEqual([
+      'a heart',
+      'a little tree',
+      'a smile',
+      'a boat',
+      'a plus',
+    ]);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const pictures = makePictures(plan, new Rng(seed));
+      expect(pictures).toEqual(makePictures(plan, new Rng(seed)));
+      expect(pictures).toHaveLength(2);
+      expect(pictures[0].name).not.toBe(pictures[1].name);
+      for (const p of pictures) {
+        expect(p.rows.map((r) => r.length)).toEqual([4, 4, 4, 4]);
+        expect(colorsOf(p)).toHaveLength(1);
+        seen.add(p.name);
+      }
+    }
+    expect(seen.size).toBe(5);
+  });
+
+  it('a picture is written as its rows, top to bottom, in its one color, and the rows give the picture back', () => {
+    for (const p of picturesFor(planFor(12))) {
+      const rows = bitRowsOf(p);
+      expect(rows.map((r) => r.bits)).toEqual(encodePicture(p));
+      expect(new Set(rows.map((r) => r.color))).toEqual(new Set(colorsOf(p)));
+      expect(
+        decodePicture(
+          rows.map((r) => r.bits),
+          rows[0].color,
+          p.name,
+        ),
+      ).toEqual(p);
+    }
+    // An empty picture row is a real case: the cards already say it, and the ghost finger only looks and checks.
+    const smile = bitRowsOf(PICTURES[4].find((p) => p.name === 'a smile')!);
+    expect(digits(smile[1].bits)).toBe('0000');
+    expect(bitCheck([false, false, false, false], smile[1].bits, 0, null)).toEqual({ ok: true });
+    expect(bitTouch([false, false, false, false], smile[1].bits, false)).toBe('arrow');
+    expect(bitTouch([false, false, false, false], smile[1].bits, true)).toBe('check');
+    const plus = bitRowsOf(PICTURES[4].find((p) => p.name === 'a plus')!);
+    expect(digits(plus[3].bits)).toBe('0000');
+  });
+
+  it('level 12 keeps the cards and buttons their size, and its preview board readable, at every view', () => {
+    const views = {
+      landscape: computeView(1024, 768),
+      portrait: computeView(768, 1024),
+      phone: computeView(844, 390),
+      notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+      ...UPRIGHT_VIEWS,
+    };
+    for (const [name, v] of Object.entries(views)) {
+      const l = bitsLayout(12, v);
+      expect(l, name).not.toBeNull();
+      if (!l) continue;
+      const targets = [
+        ...l.cards.map((c, i) => ({ what: `card ${i + 1}`, ...c })),
+        { what: 'the arrow', ...l.arrow },
+        { what: 'the check', ...l.check },
+      ];
+      expect(uprightProblems(v, targets), name).toEqual([]);
+      for (const c of l.cards) expect([c.w, c.h]).toEqual([120, 140]);
+      l.cards.forEach((c, i) => {
+        if (i) expect(c.x - l.cards[i - 1].x).toBe(l.pitch);
+      });
+      // The board is a preview, never touched: its squares may be under 100 units, but not under 64.
+      expect(l.boardCell, name).toBeGreaterThanOrEqual(64);
+      expect(l.boardCell, name).toBeLessThanOrEqual(100);
+      expect([l.board!.w, l.board!.h]).toEqual([4 * l.boardCell!, 4 * l.boardCell!]);
+      const drawn = [
+        { what: 'the board', ...l.board! },
+        { what: 'the digits', ...l.digits! },
+        { what: 'the key card', ...l.key },
+        { what: 'the picture to write', ...l.shelf },
+      ];
+      expect(uprightProblems(v, [...drawn, ...targets], 0), name).toEqual([]);
+    }
+    expect(bitsLayout(12, { w: 600, h: 500 })).toBeNull();
+    expect(bitsLayout(12, { w: 600, h: 1000 })).toBeNull();
+    expect(bitsLayout(11, computeView(1024, 768))!.board).toBeUndefined();
+    expect(bitsLayout(13, computeView(1024, 768))).toBeNull();
   });
 });
 

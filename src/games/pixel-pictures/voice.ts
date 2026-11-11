@@ -28,11 +28,16 @@ export const VOICE = {
   'pixel.bits.row': [
     'Each card says one or zero. One fills a square, zero leaves it empty. Flip the cards to make this row, press the arrow to see it, then tap the check.',
   ],
+  'pixel.bits.picture': [
+    'Now a whole picture, one row at a time. Flip the cards for the row with the arrow beside it.',
+  ],
   'pixel.bits.differ.fill': ['This square is filled, so its card should say one.'],
   'pixel.bits.differ.empty': ['This square is empty, so its card should say zero.'],
   'pixel.bits.hint': ['Try the glowing card.'],
   'pixel.bits.set': ['I flipped that card. Now tap the check.'],
   'pixel.bits.rowdone': ['The cards and the squares say the same row!', 'That row matches!'],
+  'pixel.bits.emptyrow': ['Four zeros make an empty row.'],
+  'pixel.bits.same': ['Sixteen ones and zeros, and the same picture.'],
   'pixel.bits.done': ['Four cards, one row. Any row can be written that way!'],
   'pixel.mine': ['What a picture! You made that.', 'Look what you made!'],
 } satisfies Record<string, string[]>;
