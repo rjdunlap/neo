@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Bubble Beach (docs only, PR #1511)
+
+**Changed:** new [page](definitions/toy-test-lap-openings.md) (the five toy-test questions answered from the code for Bubble Beach's eight lap games, a words-off list, the other lap games listed by land); READY's P4 line and seven new lap-opening lines; a progress line under P4 in `docs/POK-POK.md`.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the eight games were read, not played or timed).
+
 ## 2026-11-11 — Pok Pok P1, one rainbow one direction (Song Maker, Jelly Drums, tune plaque; PR #1509)
 
 **Changed:** `PITCH_COLORS` and `pitchColor(rank, count)` in `src/audio/notes.ts` (red lowest, blue highest); Song Maker's rows and hub icon now run red at the bottom to blue at the top; Jelly Drums (unchanged on screen) and the treehouse tune plaque read the same table. A kept tune stores rows and columns, so saves are unaffected. Sound Garden and Beat Builder are not pitch-coloured and were left alone. `notes.test.ts` checks the direction for 3, 4 and 5 pitches and that the three users keep no table of their own.
