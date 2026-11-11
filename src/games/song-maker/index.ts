@@ -3,6 +3,7 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
+import { pitchColor } from '../../audio/notes';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { store } from '../../progress/store';
@@ -25,10 +26,8 @@ import {
   type SongPlan,
 } from './logic';
 
-/** Row colors, top (high) to bottom (low), matching the jelly drums' rainbow. */
-const ROW_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
-const rowColor = (row: number, rows: number) =>
-  ROW_COLORS[Math.round((row * (ROW_COLORS.length - 1)) / Math.max(1, rows - 1))];
+/** Row 0 is the top, highest row; the bottom, lowest row is red, as the big low jelly is in Jelly Drums. */
+const rowColor = (row: number, rows: number) => pitchColor(rows - 1 - row, rows);
 const FALLBACK_BPM = 92;
 // Session-only, keyed by the loaded profile's save. Replaced/reset saves start fresh; demos never consume it.
 const recentMotifs = new WeakMap<object, string[]>();
@@ -417,7 +416,7 @@ function boardArt(seed = 3): Container {
     .stroke({ width: 6, color: swatch.purple.line });
   for (let col = 0; col < 4; col++) {
     const row = rng.int(0, 2);
-    const sw = swatch[ROW_COLORS[row * 2]];
+    const sw = swatch[rowColor(row, 3)];
     g.circle(-60 + col * 40, -118 + row * 38, 15)
       .fill(sw.fill)
       .stroke({ width: 3, color: sw.line });

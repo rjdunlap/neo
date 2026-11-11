@@ -1,9 +1,10 @@
 import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
-import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
+import { RAINBOW, swatch, wood } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
+import { PITCH_COLORS, pitchColor } from '../../audio/notes';
 import { sfx, type AnimalSound } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -29,8 +30,8 @@ import {
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
-/** Big jelly, low note: C D E G A from left to right. */
-const COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
+/** Big jelly, low note: C D E G A from left to right, in the one rainbow every pitched colour uses. */
+const COLORS = PITCH_COLORS;
 const STEPS = [0, 1, 2, 3, 4];
 const BULBS = 8;
 
@@ -448,7 +449,8 @@ class JellyStand extends Container {
       .stroke({ width: 6, color: wood.line })
       .rect(-146, 12, 292, 20)
       .fill(wood.line);
-    this.jellies = (['red', 'yellow', 'blue'] as ColorName[]).map((c, i) => {
+    this.jellies = [0, 1, 2].map((i) => {
+      const c = pitchColor(i, 3);
       const hw = 54 - i * 7;
       const j = new Jelly(c, hw, hw * 1.55);
       j.position.set(-98 + i * 98, -10);

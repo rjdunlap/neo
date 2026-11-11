@@ -70,15 +70,18 @@ No independent study of the app was found. Its claims about calm, regulation and
 
 Ordered by the current focus: the first three bear on the phone playtest the developer and their wife are doing now; the rest are for the youngest band and the rework and can wait.
 
-**Queued 2026-11-10** (the developer asked for them to go on the backlog): P1, P4 (with P7 as one of its columns), P3's definition and P5's pilot are lines in [READY](READY.md#pok-pok-review-2026-11-10); P2's and P3's questions are in the [phone playtest list](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now); P6 is an acceptance line in [RW10](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals); P8 is in [RW14's later list](rework/POLISH.md#later-not-sliced-yet).
+**Queued 2026-11-10** (the developer asked for them to go on the backlog): P1 (built 2026-11-11, PR #1509), P4 (with P7 as one of its columns), P3's definition and P5's pilot are lines in [READY](READY.md#pok-pok-review-2026-11-10); P2's and P3's questions are in the [phone playtest list](DEVICE-CHECKS.md#what-the-phone-playtest-can-answer-now); P6 is an acceptance line in [RW10](rework/WORK-ITEMS.md#rw10-collection-book-and-chosen-unlock-goals); P8 is in [RW14's later list](rework/POLISH.md#later-not-sliced-yet).
 
 ### P1. One rainbow, one direction (code, S)
+
+*Built 2026-11-11, PR #1509.*
 
 Pok Pok's Musical Blobs keeps a rule a child can learn without being told: blue is always C. The island's two melodic games share a rainbow but not a direction. In [Jelly Drums](games/jelly-drums.md) red is the big low jelly and blue the little high one (`COLORS` and `STEPS` in `src/games/jelly-drums/index.ts`: "Big jelly, low note: C D E G A"). In [Song Maker](games/song-maker.md) `ROW_COLORS` runs red to blue from the top row, which is the high row, under a comment that says it matches the jelly drums. So red is the lowest note in one and the highest in the other.
 
 - **Change:** reverse Song Maker's row colours so red is its lowest row, and keep the colour-for-step table in one place (beside the steps in `src/audio/notes.ts`) with a test that both games read it.
 - **Tier:** existing-game fix: typecheck, Song Maker's rule tests, one filtered play; `fingerdemo` only if the demonstrated row changes colour on the card.
-- **Not checked:** whether a kept tune in the treehouse stores rows or colours (rows would be unaffected), and what the other music games ([Sound Garden](games/sound-garden.md), Beat Builder's three drum rows) do. Song Maker's top-down rainbow may have been chosen because a rainbow reads that way; if so this is the developer's call, and the recommendation is still one meaning per colour.
+- **Built:** `PITCH_COLORS` and `pitchColor(rank, count)` in `src/audio/notes.ts` (red lowest, blue highest; fewer than five pitches spread over the whole rainbow); Song Maker's bottom row is red, Jelly Drums and the treehouse tune plaque read the same table, and a test holds the direction and that no game keeps its own table.
+- **Checked:** a kept tune stores rows and columns, not colours, so saved tunes needed no change. Sound Garden colours by creature art, not pitch, and Beat Builder's three rows are unpitched drum rows, so neither changed.
 
 ### P2. The restaurant test (a phone playtest question; docs, S)
 
@@ -142,7 +145,7 @@ The subscription, trial and lifetime price; events that arrive and leave by date
 - **Whether any of it works as claimed.** No independent study was found. "Easy to put down" rests on a handful of parent reviews, one of which disagrees, and a "90% of parents find their kid calmer" figure on a listing site has no source.
 - **The current toy list and dates.** Six at launch and seventeen in June 2024 are reported; the store text names about twenty. The blog dates Code Factory to February 2026 while the store's version notes show it in the spring; a Geometry toy has a blog post that was not read.
 - **How the newer toys score mistakes.** Number Journey's and Phonics' posts describe right answers and say nothing of wrong ones.
-- **P1's wider claim.** Only Jelly Drums' and Song Maker's colour tables were read; the other music games were not.
+- **P1's wider claim.** Answered when it was built: Sound Garden and Beat Builder do not colour by pitch (see P1); no other music game was read.
 
 ## Sources
 
