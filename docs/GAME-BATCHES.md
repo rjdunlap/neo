@@ -803,7 +803,7 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### rule-machine 3: Backwards
 
-**Status: not built; defined 2026-11-11.**
+**Status: built 2026-11-11, [PR #1502](https://github.com/rjdunlap/neo/pull/1502).**
 
 - **`rule-machine`, level 5 *Backwards* (algebra-balance study slice AB2)** (after batch `rule-machine 2`; school): the card hangs on the machine and a wanted car has already come out; she sends the car that went in, and a wrong car runs, is written into the table and counts one miss (counts stay 0–12). [Definition](definitions/rule-machine-5-6.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 
