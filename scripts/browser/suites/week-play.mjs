@@ -250,8 +250,43 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         `Day by Day ${level}: card naming, real placing/weather taps, retries, hint, seven records, tally revision and saved sticker passed`,
       );
     }
+    // U7b (docs/definitions/never-swallow-a-tap.md R4, R5): a card's name never holds input. The arrow tapped while the
+    // name is still being said places the day at once; the guide bobs while the line plays; the weather's record still holds.
     await launch('day-by-day', levels.at(-1));
     await wait();
+    if (await page.evaluate(() => neo.scene.game.phase === 'day')) {
+      await tap('neo.scene.game.choices.find(p => p.n === neo.scene.game.answer).node');
+      const naming = await page.evaluate(async () => {
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        return {
+          busy: neo.scene.game.busy,
+          talking: neo.scene.pet.talking,
+          selected: neo.scene.game.selected,
+        };
+      });
+      assert.equal(naming.busy, false, 'the name does not hold input');
+      assert.equal(naming.talking, true, 'the guide bobs while the name is said');
+      await tap('neo.scene.game.confirm');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.phase),
+        'weather',
+        'the arrow placed the day during the name',
+      );
+      await wait();
+      await tap('neo.scene.game.choices.find(p => p.n === neo.scene.game.answer).node');
+      assert.equal(await page.evaluate(() => neo.scene.game.busy), true, "the day's record still holds");
+      // A tap the held record keeps from doing anything gets one soft tick (R5) and changes nothing.
+      const sounds = () =>
+        page.evaluate(async () => (await import('/src/audio/sound-count.ts')).soundCount.n);
+      const heard = await sounds();
+      await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node');
+      assert.equal((await sounds()) - heard, 1, 'a held tap ticks once');
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'a held tap is not a miss');
+      await wait();
+      log(
+        'Day by Day: the arrow during the name places the day at once, the guide bobs, the record holds and a held tap ticks (U7b)',
+      );
+    }
     await tap('neo.scene.game.choices[0].node');
     await page.evaluate(() => neo.go.land('cozy-village'));
     await scene('LandScene');
