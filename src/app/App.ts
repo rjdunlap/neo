@@ -26,6 +26,7 @@ import type { PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
 import type { ExploreEntry } from '../content/explore';
+import type { ArcadeFilter } from '../content/arcade';
 import { mixMemory } from './discovery';
 import { chooseTransition, frameAt, TRANSITION_SECONDS, type Box, type Transition } from './transition';
 import { ease } from '../engine/tween';
@@ -50,7 +51,7 @@ export type Origin =
   | { place: Band }
   | { journal: true }
   | { library: true }
-  | { explore: ExploreEntry; page: number; others?: boolean }
+  | { explore: ExploreEntry; page: number }
   | { daily: true };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
@@ -73,10 +74,13 @@ export interface Routes {
    */
   land(id: LandId, page?: number): void;
   /**
-   * Explore at the root (RW08): with no entry, its four entries (Places, Favorites, All games, Family play); with one,
-   * that entry at `page` (All games showing the other ages with `others`). The island has no Explore and goes to the map.
+   * Explore at the root (RW08, U6b): with no entry, its entries (Places, Favorites, Arcade, Family play, and Little
+   * surprises first at lap and toddler); with one, that entry at `page`. The Arcade opens on `filter` from its first page
+   * when one is given (Today's six's button and an empty Favorites), else on the filter she last chose. Family play has
+   * no page of its own (it goes straight to couch play), so it opens the entries. The island has no Explore and goes to
+   * the map.
    */
-  explore(entry?: ExploreEntry, page?: number, others?: boolean): void;
+  explore(entry?: ExploreEntry, page?: number, filter?: ArcadeFilter): void;
   /** The home spot for an age band: every game for that age and younger along one path. */
   place(band: Band): void;
   /** The new friend's egg; `quick` skips the egg for someone old enough to choose a friend straight away. */

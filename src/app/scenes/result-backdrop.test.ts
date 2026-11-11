@@ -17,7 +17,7 @@ describe('resultPlace', () => {
 
   it('stands a round from anywhere but a location at home', () => {
     expect(resultPlace(undefined, root)).toBe('home');
-    expect(resultPlace({ explore: 'all', page: 0 }, root)).toBe('home');
+    expect(resultPlace({ explore: 'arcade', page: 0 }, root)).toBe('home');
     expect(resultPlace({ library: true }, root)).toBe('home');
     expect(resultPlace({ place: 'preschool' }, root)).toBe('home');
   });

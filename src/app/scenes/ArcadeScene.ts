@@ -141,9 +141,15 @@ export class ArcadeScene extends Scene {
   private leaving = false;
   private readonly youngest = store.data.profile.band === 'lap' || store.data.profile.band === 'toddler';
 
-  constructor(app: App, page = 0) {
+  /** `filter`: open on that filter from its first page (Today's six's button, an empty Favorites; U6b), remembered as hers. */
+  constructor(app: App, page = 0, filter?: ArcadeFilter) {
     super(app);
     this.upright = this.uprightArea = true;
+    if (filter) {
+      arcadeMemory.filter = filter;
+      arcadeMemory.spotlight = null;
+      page = 0;
+    }
     this.filter = arcadeFilters(GAMES).includes(arcadeMemory.filter) ? arcadeMemory.filter : DEFAULT_FILTER;
     this.layout = arcadeLayout(this.view);
     this.perPage = this.layout.cards.length;

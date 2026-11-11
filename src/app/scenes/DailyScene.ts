@@ -71,7 +71,7 @@ export class DailyScene extends Scene {
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () =>
     this.leave(
       this.all,
-      () => this.app.go.explore('all', 0, false),
+      () => this.app.go.explore('arcade', 0, 'all'),
       () => voice.say('explore.all'),
     ),
   );

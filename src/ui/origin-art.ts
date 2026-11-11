@@ -4,22 +4,12 @@ import { swatch } from '../art/palette';
 import type { Origin } from '../app/App';
 import type { ExploreEntry } from '../content/explore';
 import { landFor } from '../content/lands';
-import {
-  arcadeIcon,
-  arrowIcon,
-  heartIcon,
-  libraryIcon,
-  meadowIcon,
-  padIcon,
-  sixIcon,
-  tilesIcon,
-} from './icons';
+import { arcadeIcon, arrowIcon, heartIcon, libraryIcon, meadowIcon, padIcon, sixIcon } from './icons';
 
 /** Explore's entries at the root (RW08): the name under each card, and its picture (about 60 units across). */
 export const ENTRY_NAMES: Record<ExploreEntry, string> = {
   places: 'Places',
   favorites: 'Favorites',
-  all: 'All games',
   arcade: 'Arcade',
   family: 'Family play',
 };
@@ -30,8 +20,6 @@ export function entryArt(entry: ExploreEntry): Container {
       return meadowIcon();
     case 'favorites':
       return heartIcon(swatch.pink.fill, true);
-    case 'all':
-      return tilesIcon();
     case 'arcade':
       return arcadeIcon();
     case 'family':
@@ -60,8 +48,9 @@ export function originArt(origin: Origin | undefined): { picture: Container; pla
     return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
   if (origin && 'library' in origin) return { picture: libraryIcon(), place: 'the library' };
   if (origin && 'daily' in origin) return { picture: sixIcon(), place: "today's six" };
-  // At the root a home spot is All games' first page (`placeAtRoot`), where Little surprises' stops come back to.
-  if (origin && 'place' in origin) return { picture: entryArt('all'), place: ENTRY_NAMES.all };
+  // At the root a home spot is Explore's entries (`placeAtRoot`, U6b), where Little surprises' stops come back to: Home's
+  // Explore picture and name.
+  if (origin && 'place' in origin) return { picture: meadowIcon(), place: 'Explore' };
   return null;
 }
 
@@ -85,7 +74,7 @@ export type Meaning = 'home' | 'back';
 
 /**
  * A back arrow for a `radius` button at the root: beside the picture of the place it returns to where `originArt` names
- * one, alone otherwise (a story's or project's page, a mix's next stop, All games for a game with no origin).
+ * one, alone otherwise (a story's or project's page, a mix's next stop).
  */
 export function backArt(origin: Origin | undefined, radius: number, color = 0xffffff): Container {
   const from = originArt(origin);

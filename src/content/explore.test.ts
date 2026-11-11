@@ -5,17 +5,24 @@ import {
   ageOf,
   allGames,
   clampPage,
+  EXPLORE_ENTRIES,
   favoriteGames,
   forgetExplore,
   exploreMemory,
-  hasOthers,
   PAGE_SIZE,
   pageCount,
   pageOf,
 } from './explore';
 import { LANDS } from './lands';
 
-describe('All games', () => {
+describe('Explore entries (U6b)', () => {
+  it('are Places, Favorites, Arcade and Family play: the Arcade is the one place to browse every game', () => {
+    expect([...EXPLORE_ENTRIES]).toEqual(['places', 'favorites', 'arcade', 'family']);
+    expect(EXPLORE_ENTRIES).not.toContain('all' as never);
+  });
+});
+
+describe('her games', () => {
   it('lists every registered game exactly once across hers and the other ages, at every band', () => {
     for (const { id: band } of BANDS) {
       const ids = [...allGames(band, GAMES, LANDS), ...allGames(band, GAMES, LANDS, true)].map((g) => g.id);
@@ -28,11 +35,6 @@ describe('All games', () => {
     const list = allGames('school', GAMES, LANDS).map((g) => g.id);
     const expected = LANDS.flatMap((l) => l.games).filter((id) => list.includes(id));
     expect(list).toEqual(expected);
-  });
-
-  it('has an Other ages signpost below grown-up and none at grown-up, where nothing is older', () => {
-    expect(hasOthers('lap', GAMES, LANDS)).toBe(true);
-    expect(hasOthers('grownup', GAMES, LANDS)).toBe(false);
   });
 });
 
@@ -60,70 +62,28 @@ describe('Favorites', () => {
 });
 
 describe('pages', () => {
-  it('holds at most four cards a page, the signpost last on the last page', () => {
+  it('holds at most four games a page, every game once and no empty page but for an empty list', () => {
     for (let n = 0; n <= 13; n++) {
-      for (const sign of [false, true]) {
-        const items = Array.from({ length: n }, (_, i) => i);
-        const pages = pageCount(n, sign);
-        const all = Array.from({ length: pages }, (_, p) => pageOf(items, p, sign));
-        for (const page of all) expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
-        expect(
-          all
-            .flat()
-            .filter((c) => 'game' in c)
-            .map((c) => ('game' in c ? c.game : -1)),
-        ).toEqual(items);
-        if (sign) expect(all.at(-1)!.at(-1)).toEqual({ signpost: true });
-        // No empty page except for an empty list.
-        if (n + (sign ? 1 : 0) > 0) for (const page of all) expect(page.length).toBeGreaterThan(0);
-      }
+      const items = Array.from({ length: n }, (_, i) => i);
+      const all = Array.from({ length: pageCount(n) }, (_, p) => pageOf(items, p));
+      for (const page of all) expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
+      expect(all.flat()).toEqual(items);
+      if (n > 0) for (const page of all) expect(page.length).toBeGreaterThan(0);
     }
-    // Four games and a signpost: the signpost has a page of its own.
-    expect(pageCount(4, true)).toBe(2);
-    expect(pageOf([1, 2, 3, 4], 1, true)).toEqual([{ signpost: true }]);
-  });
-
-  it('leads the first page with the mix when asked, every game still once and four cards a page (RW08 slice 2)', () => {
-    for (let n = 0; n <= 13; n++) {
-      for (const sign of [false, true]) {
-        const items = Array.from({ length: n }, (_, i) => i);
-        const pages = pageCount(n, sign, true);
-        const all = Array.from({ length: pages }, (_, p) => pageOf(items, p, sign, true));
-        expect(all[0][0]).toEqual({ mix: true });
-        expect(all.flat().filter((c) => 'mix' in c)).toHaveLength(1);
-        for (const page of all) expect(page.length).toBeGreaterThan(0);
-        for (const page of all) expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
-        expect(
-          all
-            .flat()
-            .filter((c) => 'game' in c)
-            .map((c) => ('game' in c ? c.game : -1)),
-        ).toEqual(items);
-        if (sign) expect(all.at(-1)!.at(-1)).toEqual({ signpost: true });
-      }
-    }
-    // The mix and three games fill the first page; the fourth game moves on.
-    expect(pageOf([1, 2, 3, 4], 0, false, true)).toEqual([
-      { mix: true },
-      { game: 1 },
-      { game: 2 },
-      { game: 3 },
-    ]);
-    expect(pageCount(4, false, true)).toBe(2);
-    expect(clampPage(9, 3, false, true)).toBe(0);
+    expect(pageCount(4)).toBe(1);
+    expect(pageCount(5)).toBe(2);
   });
 
   it('clamps a remembered page into range (a heart taken back can shorten the list)', () => {
     expect(clampPage(5, 6)).toBe(1);
     expect(clampPage(-2, 6)).toBe(0);
     expect(clampPage(Number.NaN, 6)).toBe(0);
-    expect(pageOf([1, 2, 3, 4, 5], 9)).toEqual([{ game: 5 }]);
+    expect(pageOf([1, 2, 3, 4, 5], 9)).toEqual([5]);
   });
 
   it('forgets the visit for a new player', () => {
-    exploreMemory.pages.all = 2;
-    exploreMemory.others = true;
+    exploreMemory.pages.favorites = 2;
     forgetExplore();
-    expect(exploreMemory).toEqual({ pages: {}, others: false });
+    expect(exploreMemory).toEqual({ pages: {} });
   });
 });
