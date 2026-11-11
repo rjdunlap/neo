@@ -1,5 +1,24 @@
 import { createTestContext } from '../../test-browser.mjs';
 import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+
+/**
+ * A lap game not yet upright-ready, read from the source so the check does not go stale as games turn upright (it named
+ * Bubble Pop until that game turned upright).
+ */
+function sidewaysLapGame() {
+  const root = new URL('../../../src/games/', import.meta.url);
+  for (const id of readdirSync(root).sort()) {
+    let src;
+    try {
+      src = readFileSync(new URL(`${id}/index.ts`, root), 'utf8');
+    } catch {
+      continue;
+    }
+    if (!/\bupright:\s*true/.test(src) && /bands:\s*\[[^\]]*'lap'/.test(src)) return id;
+  }
+  return null;
+}
 
 export function createSuite({ page, browser, errors, output, islandUrl, log, scene, tap, screenshot }) {
   /**
@@ -355,6 +374,8 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
       );
       assert.deepEqual(off, [], "the result's buttons stay on an upright screen");
       // The result offers the next of the six, and a grown-up the note pencil; the pencil's sheet saves a reaction.
+      // They arrive once the buttons have (`resultReady`), which slow headless frames can push past the wait above.
+      await p.waitForFunction(() => neo.scene.resultReady, null, { timeout: 15000 });
       assert.deepEqual(
         await p.evaluate(() => ({ next: !!neo.scene.dailyNext, note: !!neo.scene.dailyNote })),
         { next: true, note: true },
@@ -386,13 +407,15 @@ export function createSuite({ page, browser, errors, output, islandUrl, log, sce
         'back on the six, the card has its tick',
       );
       // A game that is not upright-ready yet keeps the prompt, and the view stays on the wide area.
-      await p.evaluate(() => neo.go.game('bubble-pop', 'lap'));
+      const sideways = sidewaysLapGame();
+      assert.ok(sideways, 'some lap game is not yet upright-ready');
+      await p.evaluate((g) => neo.go.game(g, 'lap'), sideways);
       await at('GameScene');
       await p.waitForTimeout(400);
       assert.deepEqual(
         await asked(),
         { turning: true, upright: false, w: 1024, scene: 'GameScene' },
-        'a game not yet upright-ready keeps the turn prompt',
+        `a game not yet upright-ready (${sideways}) keeps the turn prompt`,
       );
     } finally {
       await phone.close();
