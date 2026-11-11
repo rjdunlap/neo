@@ -8,11 +8,13 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1 |
+| school | 1–3 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Keep one |
+| 2 | Open or shut |
+| 3 | Fix the desk |
 
 <!-- end generated -->
 

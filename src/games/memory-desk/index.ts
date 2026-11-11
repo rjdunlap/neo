@@ -1,7 +1,7 @@
 /**
  * Memory Desk: a toy desk with a tray, a drawer and a window. Level 1, *Keep one*: tap a picture onto the tray, Keep
  * copies it into the drawer, change the tray, and Show copies the drawer into the window: the kept one, not the new one.
- * A free try-out round; nothing is ever wrong. Rules: ./logic.ts; definition: docs/definitions/memory-desk.md.
+ * A free try-out round; nothing is ever wrong. Levels 2–3, the hatch, are ./hatch.ts. Rules: ./logic.ts; definition: docs/definitions/memory-desk.md.
  */
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch } from '../../art/palette';
@@ -19,6 +19,7 @@ import { finish, RoundButton, spring, squash } from '../../ui/buttons';
 import { checkIcon, undoIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { HatchDesk, TOKEN_LINE } from './hatch';
 import { actionIcon, iconArt, panelArt, slotArt, stickerArt, tokenArt, type PanelKind } from './art';
 import {
   ACTION,
@@ -42,7 +43,6 @@ import {
   type Move,
   type Rect,
   type State,
-  type Token,
 } from './logic';
 
 const FLY = 0.45;
@@ -51,14 +51,6 @@ const POINT = 1.8;
 const SLOT_DY = 12;
 const SLOTS: readonly PanelKind[] = ['tray', 'drawer', 'window'];
 const KEY: Record<PanelKind, keyof State> = { tray: 'input', drawer: 'stored', window: 'output' };
-const TOKEN_LINE: Record<Token, LineId> = {
-  shell: 'md.token.shell',
-  leaf: 'md.token.leaf',
-  star: 'md.token.star',
-  acorn: 'md.token.acorn',
-  feather: 'md.token.feather',
-  pebble: 'md.token.pebble',
-};
 type Step = 'card' | 'keep' | 'other' | 'show';
 /** What a dim Done says (try) and what Help says (help) for the next control toward the contrast. */
 const NUDGE: Record<'try' | 'help', Record<Step, LineId>> = {
@@ -439,5 +431,5 @@ export const game: GameModule = {
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker,
-  create: (ctx) => new MemoryDesk(ctx),
+  create: (ctx) => (ctx.level >= 2 ? new HatchDesk(ctx) : new MemoryDesk(ctx)),
 };

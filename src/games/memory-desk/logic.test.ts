@@ -4,22 +4,35 @@ import { computeView } from '../../engine/view';
 import { uprightProblems, UPRIGHT_VIEWS, type Target } from '../upright-check';
 import {
   actionFor,
+  allSettings,
   apply,
   briefFor,
   contrastSeen,
+  deskAt,
   deskLayout,
   describeLevel,
+  distance,
   EMPTY,
+  hatchBriefs,
+  hatchLayout,
+  helpFor,
   keep,
   LEVELS,
+  nearestSolution,
   nextMove,
+  passes,
+  repairOf,
   replay,
+  run,
   setInput,
   show,
+  solutions,
   stateAfter,
+  step,
   TOKENS,
   type Action,
   type Brief,
+  type HatchBrief,
   type Rect,
   type Slot,
   type State,
@@ -182,10 +195,226 @@ describe('Memory Desk level 1: briefs, help and the ghost finger', () => {
   });
 });
 
+const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
+const briefsAt = (level: number): HatchBrief[] => SEEDS.flatMap((seed) => hatchBriefs(level, new Rng(seed)));
+
+describe('Memory Desk levels 2–3: one step', () => {
+  it('writes the arriving token only through an open hatch, and the window reads the drawer after the write', () => {
+    for (const stored of SLOTS)
+      for (const input of ['shell', 'leaf'] as const)
+        for (const open of [true, false]) {
+          const after = step(stored, input, open);
+          expect(after.stored).toBe(open ? input : stored);
+          expect(after.output).toBe(after.stored);
+        }
+  });
+
+  it('a run keeps every step, and ends on the last open step or on what the drawer started with', () => {
+    for (const brief of [...briefsAt(2), ...briefsAt(3)])
+      for (const h of allSettings(brief.queue.length)) {
+        const { trace, output } = run(brief, h);
+        expect(trace.map((t) => t.input)).toEqual(brief.queue);
+        expect(trace.map((t) => t.open)).toEqual(h);
+        for (const t of trace) expect(t.output).toBe(t.stored);
+        const last = h.lastIndexOf(true);
+        expect(output).toBe(last < 0 ? brief.initialStored : brief.queue[last]);
+      }
+  });
+
+  it('the desk part by part: arrive, then write, then read, ending where the run ends', () => {
+    const brief = hatchBriefs(3, new Rng(7))[0];
+    for (const h of allSettings(3)) {
+      const { trace, output } = run(brief, h);
+      expect(deskAt(brief, h, 0)).toEqual({ input: null, stored: brief.initialStored, output: null });
+      trace.forEach((t, i) => {
+        const before = i ? trace[i - 1] : { stored: brief.initialStored, output: null };
+        // Arrived: only the tray has changed.
+        expect(deskAt(brief, h, 3 * i + 1)).toEqual({ input: t.input, stored: before.stored, output: before.output });
+        // Written: the drawer has changed (or held) and the window still shows the step before.
+        expect(deskAt(brief, h, 3 * i + 2)).toEqual({ input: t.input, stored: t.stored, output: before.output });
+        expect(deskAt(brief, h, 3 * i + 3)).toEqual({ input: t.input, stored: t.stored, output: t.output });
+      });
+      expect(deskAt(brief, h, 9).output).toBe(output);
+    }
+  });
+});
+
+describe('Memory Desk levels 2–3: briefs and Check', () => {
+  it('level 2 asks for the second picture and then the first, from an empty drawer and shut hatches', () => {
+    for (const seed of SEEDS) {
+      const [a, b] = hatchBriefs(2, new Rng(seed));
+      expect(a.queue).toHaveLength(2);
+      expect(a.queue[0]).not.toBe(a.queue[1]);
+      expect(b.queue).toEqual(a.queue);
+      expect([a.target, b.target]).toEqual([a.queue[1], a.queue[0]]);
+      for (const brief of [a, b]) {
+        expect(brief.initialStored).toBeNull();
+        expect(brief.preset).toEqual([false, false]);
+        expect(passes(brief, brief.preset)).toBe(false);
+      }
+      expect(solutions(a)).toEqual([
+        [false, true],
+        [true, true],
+      ]);
+      // Write, then hold: the one setting the level is for.
+      expect(solutions(b)).toEqual([[true, false]]);
+    }
+  });
+
+  it('level 3 is two different repairs: three steps, a kept token, a wrong preset one hatch from an answer', () => {
+    for (const seed of SEEDS) {
+      const briefs = hatchBriefs(3, new Rng(seed));
+      expect(briefs).toHaveLength(2);
+      expect(repairOf(briefs[0])).not.toBe(repairOf(briefs[1]));
+      for (const brief of briefs) {
+        expect(brief.queue).toHaveLength(3);
+        expect(brief.initialStored).not.toBeNull();
+        expect(new Set([brief.initialStored, ...brief.queue]).size).toBe(3);
+        expect([brief.initialStored, ...brief.queue]).toContain(brief.target);
+        expect(brief.target).not.toBe(brief.queue[2]);
+        expect(passes(brief, [true, true, true])).toBe(false);
+        expect(passes(brief, brief.preset)).toBe(false);
+        expect(Math.min(...solutions(brief).map((s) => distance(s, brief.preset)))).toBe(1);
+      }
+    }
+  });
+
+  it('solutions are exactly the settings that pass, by brute force, and there is always one', () => {
+    for (const brief of [...briefsAt(2), ...briefsAt(3)]) {
+      const brute = allSettings(brief.queue.length).filter((h) => run(brief, h).output === brief.target);
+      expect(solutions(brief)).toEqual(brute);
+      expect(brute.length).toBeGreaterThan(0);
+    }
+    expect(allSettings(2)).toHaveLength(4);
+    expect(new Set(allSettings(3).map(String)).size).toBe(8);
+  });
+
+  it('the same seed gives the same briefs; across seeds every token and every kind of repair appears', () => {
+    for (const level of [2, 3])
+      expect(hatchBriefs(level, new Rng(11))).toEqual(hatchBriefs(level, new Rng(11)));
+    const all = briefsAt(3);
+    expect(new Set(all.flatMap((b) => b.queue)).size).toBe(TOKENS.length);
+    expect(new Set(briefsAt(2).map((b) => b.target)).size).toBe(TOKENS.length);
+    expect(new Set(all.map(repairOf))).toEqual(new Set(['held', 'first', 'second']));
+    // The kept token is wanted (every hatch shut is the only answer), or the first or second to arrive is.
+    for (const b of all.filter((b) => repairOf(b) === 'held')) expect(solutions(b)).toEqual([[false, false, false]]);
+    expect(all.some((b) => b.target === b.queue[0])).toBe(true);
+    expect(all.some((b) => b.target === b.queue[1])).toBe(true);
+    expect(new Set(all.map((b) => String(b.preset))).size).toBeGreaterThan(3);
+  });
+});
+
+describe('Memory Desk levels 2–3: Help', () => {
+  it('names the lowest hatch that differs from the nearest answer, and nothing once the setting passes', () => {
+    for (const brief of [...briefsAt(2).slice(0, 40), ...briefsAt(3).slice(0, 120)])
+      for (const h of allSettings(brief.queue.length)) {
+        const at = helpFor(h, brief);
+        if (passes(brief, h)) {
+          expect(at).toBeNull();
+          continue;
+        }
+        const near = nearestSolution(h, brief);
+        expect(distance(h, near)).toBe(Math.min(...solutions(brief).map((s) => distance(s, h))));
+        expect(at).toBe(near.findIndex((v, i) => v !== h[i]));
+      }
+  });
+
+  it('from every setting, following it gets one hatch nearer each press and passes within as many presses as hatches', () => {
+    for (const brief of [...briefsAt(2).slice(0, 40), ...briefsAt(3).slice(0, 120)])
+      for (const start of allSettings(brief.queue.length)) {
+        const h = [...start];
+        const far = (x: boolean[]) => Math.min(...solutions(brief).map((s) => distance(s, x)));
+        let presses = 0;
+        for (let at = helpFor(h, brief); at !== null; at = helpFor(h, brief)) {
+          const before = far(h);
+          h[at] = !h[at];
+          expect(far(h)).toBe(before - 1);
+          presses++;
+        }
+        expect(passes(brief, h)).toBe(true);
+        expect(presses).toBeLessThanOrEqual(brief.queue.length);
+      }
+  });
+
+  it('a level 3 desk is one Help-named hatch from passing', () => {
+    for (const brief of briefsAt(3)) {
+      const h = [...brief.preset];
+      const at = helpFor(h, brief)!;
+      h[at] = !h[at];
+      expect(passes(brief, h)).toBe(true);
+    }
+  });
+});
+
+describe('Memory Desk levels 2–3: layout', () => {
+  const hit = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const target = (what: string, r: Rect): Target => ({ what, x: r.x + r.w / 2, y: r.y + r.h / 2, w: r.w, h: r.h });
+  const views = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    'wide phone': computeView(844, 390),
+    ...UPRIGHT_VIEWS,
+  };
+  const cases = Object.entries(views).flatMap(([name, v]) => [2, 3].map((n) => [name, n, v] as const));
+
+  it.each(cases)('on %s with %i steps every part is full size, in view, apart and clear of the corners', (_, n, v) => {
+    const l = hatchLayout(n, v);
+    expect(l.stacked).toBe(v.h > v.w);
+    expect(l.scale).toBeGreaterThanOrEqual(1);
+    const panels = [l.tray, l.drawer, l.window];
+    for (const p of panels) expect(Math.min(p.w, p.h)).toBeGreaterThanOrEqual(140);
+    for (const row of [l.cards, l.hatches, l.presetTrace, l.trace]) expect(row).toHaveLength(n);
+    for (const h of l.hatches) expect(Math.min(h.w, h.h)).toBeGreaterThanOrEqual(110);
+    const pictures = [
+      ...panels.map((p, i) => target(['tray', 'drawer', 'window'][i], p)),
+      target('sign', l.sign),
+      ...l.cards.map((r, i) => target(`card ${i + 1}`, r)),
+      ...l.presetTrace.map((r, i) => target(`preset trace ${i + 1}`, r)),
+      ...l.trace.map((r, i) => target(`trace ${i + 1}`, r)),
+    ];
+    const targets = [
+      ...l.hatches.map((r, i) => target(`hatch ${i + 1}`, r)),
+      target('Step', l.step),
+      target('Slow', l.slow),
+      target('Undo', l.undo),
+      target('Check', l.check),
+    ];
+    expect(uprightProblems(v, targets)).toEqual([]);
+    // The pictures are not targets (some are small by design), but they stay in view, apart and off the chrome.
+    expect(uprightProblems(v, [...targets, ...pictures], 0)).toEqual([]);
+    const corners: Rect[] = [
+      { x: 0, y: 0, w: 130, h: 215 },
+      { x: 0, y: v.h - 170, w: 160, h: 170 },
+    ];
+    for (const t of [...targets, ...pictures])
+      for (const c of corners)
+        expect(hit({ x: t.x - t.w / 2, y: t.y - t.h / 2, w: t.w, h: t.h }, c), t.what).toBe(false);
+  });
+
+  it('steps read left to right over the desk; an upright view stacks the panels and grows rather than shrinks', () => {
+    const wide = hatchLayout(3, views.landscape);
+    expect(wide.scale).toBe(1);
+    expect(wide.tray.x).toBeLessThan(wide.drawer.x);
+    expect(wide.drawer.x).toBeLessThan(wide.window.x);
+    const tall = hatchLayout(3, UPRIGHT_VIEWS.phone);
+    expect(tall.scale).toBeGreaterThan(1.3);
+    expect(tall.tray.y).toBeLessThan(tall.drawer.y);
+    expect(tall.drawer.y).toBeLessThan(tall.window.y);
+    for (const l of [wide, tall])
+      l.hatches.forEach((h, i) => {
+        if (i) expect(h.x).toBeGreaterThan(l.hatches[i - 1].x);
+        expect(l.cards[i].y).toBeLessThan(h.y);
+        expect(h.y).toBeLessThan(l.presetTrace[i].y);
+        expect(l.presetTrace[i].y).toBeLessThan(l.trace[i].y);
+        expect(l.trace[i].y + l.trace[i].h).toBeLessThanOrEqual(l.tray.y);
+      });
+  });
+});
+
 describe('Memory Desk ladder', () => {
-  it('is one school level with a name', () => {
-    expect(LEVELS).toEqual({ school: { min: 1, max: 1 } });
-    expect(describeLevel(1)).toBe('Keep one');
+  it('is three school levels, each with a name', () => {
+    expect(LEVELS).toEqual({ school: { min: 1, max: 3 } });
+    expect([1, 2, 3].map(describeLevel)).toEqual(['Keep one', 'Open or shut', 'Fix the desk']);
   });
 });
 

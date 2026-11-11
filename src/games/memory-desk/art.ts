@@ -235,3 +235,101 @@ export function stickerArt(token: Token): Container {
   c.addChild(p);
   return c;
 }
+
+/**
+ * A hatch, `size` square and centred on (0, 0): a little box whose lid is up with an arrow going in (open) or flat
+ * with a bar across it (shut). The lid's shape tells the two apart, not the colour.
+ */
+export function hatchArt(open: boolean, size: number): Container {
+  const c = new Container();
+  const s = size / 2;
+  const sw = open ? swatch.green : swatch.orange;
+  const g = new Graphics();
+  g.ellipse(0, s + 4, s * 0.8, 10).fill({ color: shadow, alpha: 0.2 });
+  g.roundRect(-s, -s, size, size, 22).fill(sw.light).stroke(line(sw.line, 6));
+  // The box the token drops into.
+  g.roundRect(-s + 22, 4, size - 44, s - 20, 10)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 5));
+  if (open) {
+    // The lid, swung up on its hinge at the left.
+    g.moveTo(-s + 22, 2)
+      .lineTo(-s + 40, -s + 16)
+      .stroke(line(wood.line, 10));
+    const a = fatArrow(40, swatch.green.line);
+    a.rotation = Math.PI / 2;
+    a.position.set(8, -18);
+    c.addChild(g, a);
+  } else {
+    g.roundRect(-s + 16, -8, size - 32, 16, 8)
+      .fill(wood.light)
+      .stroke(line(wood.line, 5));
+    // The bar: nothing goes in.
+    g.roundRect(-s + 26, -34, size - 52, 14, 7).fill(ink);
+    c.addChild(g);
+  }
+  return c;
+}
+
+/**
+ * One step's two results, `w` wide and centred on (0, 0): the drawer's token after the step in a little drawer, and the
+ * window's in a little window. Not yet run: two empty frames.
+ */
+export function traceArt(cell: { stored: Slot; output: Slot } | null, w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const bw = w / 2 - 6;
+  const x = w / 4;
+  g.roundRect(-x - bw / 2, -h / 2 + 2, bw, h - 4, 8)
+    .fill(cell ? GLASS.fill : cream)
+    .stroke(line(wood.line, 4));
+  g.roundRect(-9 - x, h / 2 - 9, 18, 5, 2).fill(wood.line);
+  g.roundRect(x - bw / 2, -h / 2 + 2, bw, h - 4, 8)
+    .fill(cream)
+    .stroke(line(swatch.teal.line, 4));
+  c.addChild(g);
+  if (cell) {
+    const a = slotArt(cell.stored, 13);
+    a.position.set(-x, -3);
+    const b = slotArt(cell.output, 13);
+    b.position.set(x, 0);
+    c.addChild(a, b);
+  }
+  c.eventMode = 'none';
+  return c;
+}
+
+/** The sign: a picture of the window with the wanted token in it, under a little flag pin. */
+export function signArt(token: Token, size: number): Container {
+  const c = new Container();
+  const s = size / 2;
+  const g = new Graphics();
+  g.roundRect(-s, -s, size, size, 20).fill(swatch.yellow.light).stroke(line(ink, 6));
+  g.roundRect(-s + 16, -s + 16, size - 32, size - 32, 12)
+    .fill(cream)
+    .stroke(line(swatch.teal.line, 5));
+  const t = tokenArt(token, size * 0.24);
+  // A star-shaped pin at the corner marks this as the one that is wanted.
+  const pin = new Graphics().poly(starPoints(15, 7)).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
+  pin.position.set(s - 8, -s + 8);
+  c.addChild(g, t, pin);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** A turtle for the Slow toggle: a filled shell when Slow is on. */
+export function turtleArt(on: boolean): Graphics {
+  const g = new Graphics();
+  const sh = on ? swatch.green : swatch.white;
+  g.ellipse(-4, 2, 26, 17).fill(sh.fill).stroke(line(sh.line, 4));
+  g.ellipse(-4, 0, 14, 9).stroke(line(sh.line, 3));
+  g.circle(25, 0, 9).fill(swatch.green.light).stroke(line(swatch.green.line, 3));
+  g.circle(28, -2, 2).fill(ink);
+  for (const x of [-20, 8]) g.roundRect(x, 12, 11, 9, 4).fill(swatch.green.light).stroke(line(swatch.green.line, 3));
+  return g;
+}
+
+/** Step: one arrow up to a stop bar, "run one". */
+export function stepArt(): Graphics {
+  return new Graphics().poly([-20, -22, 12, 0, -20, 22]).fill(0xffffff).roundRect(16, -22, 9, 44, 4).fill(0xffffff);
+}

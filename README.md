@@ -235,7 +235,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Far Lights](docs/games/far-lights.md) | lap–school | Tinker Lab | 8 | lap–school (levels 1–8) |
 | [Circuit Garden](docs/games/circuit-garden.md) | pre-K–school | Tinker Lab | 3 | pre-K–school |
 | [Measuring Post](docs/games/measuring-post.md) | school | Tinker Lab | 4 | school |
-| [Memory Desk](docs/games/memory-desk.md) | school | Tinker Lab | 1 | put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window |
+| [Memory Desk](docs/games/memory-desk.md) | school | Tinker Lab | 3 | put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window |
 
 <!-- end generated -->
 
