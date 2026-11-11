@@ -93,15 +93,16 @@ async function boot() {
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),
       project: (from) => void app.show(new ProjectScene(app, from)),
-      // The Arcade is Explore's fifth entry with its own scene (docs/rework/ARCADE.md).
-      explore: (entry, page, others) =>
+      // The Arcade is an Explore entry with its own scene (docs/rework/ARCADE.md); Family play has no page of its own
+      // (U6b), so couch play's Back to it opens the entries.
+      explore: (entry, page, filter) =>
         void app.show(
           entry === 'arcade'
-            ? new ArcadeScene(app, page ?? 0)
-            : new ExploreScene(app, entry ?? null, page ?? 0, others ?? false),
+            ? new ArcadeScene(app, page ?? 0, filter)
+            : new ExploreScene(app, entry === 'family' ? null : (entry ?? null), page ?? 0),
         ),
       land: atRoot,
-      // No age places at the root (RW08 slice 2): Little surprises' stops, its Explore and a game with no origin come back to All games.
+      // No age places at the root (RW08 slice 2): Little surprises' stops, its Explore and a game with no origin come back to Explore's entries (U6b).
       place: () => placeAtRoot(app.go),
     });
     app.go.start();

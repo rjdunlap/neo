@@ -37,17 +37,17 @@ describe('goToOrigin', () => {
     expect(a.land).toHaveBeenCalledWith('tinker-lab', 1);
   });
 
-  it('returns to the Explore page a game was opened from, the other ages still turned (RW08)', () => {
+  it('returns to the Explore page a game was opened from (RW08)', () => {
     const fallback = vi.fn();
     const a = routes();
-    goToOrigin(a, { explore: 'all', page: 2, others: true }, fallback);
-    expect(a.explore).toHaveBeenCalledWith('all', 2, true);
+    goToOrigin(a, { explore: 'arcade', page: 2 }, fallback);
+    expect(a.explore).toHaveBeenCalledWith('arcade', 2);
     const b = routes();
     goToOrigin(b, { explore: 'favorites', page: 0 }, fallback);
-    expect(b.explore).toHaveBeenCalledWith('favorites', 0, undefined);
+    expect(b.explore).toHaveBeenCalledWith('favorites', 0);
     const c = routes();
     goToOrigin(c, { explore: 'family', page: 0 }, fallback);
-    expect(c.explore).toHaveBeenCalledWith('family', 0, undefined);
+    expect(c.explore).toHaveBeenCalledWith('family', 0);
     expect(fallback).not.toHaveBeenCalled();
   });
 
@@ -59,10 +59,10 @@ describe('goToOrigin', () => {
     expect(go.land).not.toHaveBeenCalled();
   });
 
-  it("sends the root's home spot, where the mix lives, to All games' first page of her own games (RW08 slice 2)", () => {
+  it("sends the root's home spot, where the mix lives, to Explore's entries (RW08 slice 2, U6b)", () => {
     const go = routes();
     placeAtRoot(go);
-    expect(go.explore).toHaveBeenCalledWith('all', 0, false);
+    expect(go.explore).toHaveBeenCalledWith();
     expect(go.place).not.toHaveBeenCalled();
   });
 });

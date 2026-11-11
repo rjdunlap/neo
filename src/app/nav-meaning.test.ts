@@ -120,7 +120,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
 
   it('Explore and each of its pages: the house goes Home, Back goes up one level', async () => {
     expectOneMeaning(await walk((app) => keep(new ExploreScene(app as never))), { route: 'hub' });
-    for (const entry of ['places', 'favorites', 'all', 'family'] as const) {
+    for (const entry of ['places', 'favorites'] as const) {
       const calls = await walk((app) => keep(new ExploreScene(app as never, entry)));
       expect(calls.map((c) => c.meaning).sort()).toEqual(['back', 'home']);
       expectOneMeaning(calls, { route: 'explore', args: [] });
@@ -173,7 +173,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
     const mod = gameById('bubble-pop')!;
     for (const [origin, route, args] of [
       [{ land: 'bubble-beach' }, 'land', ['bubble-beach', undefined]],
-      [{ explore: 'all', page: 1, others: false }, 'explore', ['all', 1, false]],
+      [{ explore: 'favorites', page: 1 }, 'explore', ['favorites', 1]],
       [{ library: true }, 'library', []],
     ] as [Origin, string, unknown[]][]) {
       const calls = await walk(
@@ -199,7 +199,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
     expect(voice.say).toHaveBeenCalledWith('result.back', { place: 'Counting Cove' });
     expectOneMeaning(await walk(result({ explore: 'favorites', page: 0 }), ways), {
       route: 'explore',
-      args: ['favorites', 0, undefined],
+      args: ['favorites', 0],
     });
     // No origin: Back to All games (`placeAtRoot` through `go.place`), and no house that would mean anything else.
     expect(await walk(result(), ways)).toEqual([{ meaning: 'back', route: 'place', args: ['preschool'] }]);
@@ -233,5 +233,23 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
     expect(s.resultWayOut().home.meaning).toBeNull();
     expect(s.resultWayOut().house).toBeNull();
     expect((s as unknown as { home: Pressable }).home.meaning).toBeNull();
+  });
+});
+
+describe('the fold (U6b, docs/definitions/one-way-to-browse.md)', () => {
+  it("Today's six's button opens the Arcade on All games, and the Arcade opens on the filter it is given", async () => {
+    const { DailyScene } = await import('./scenes/DailyScene');
+    const { arcadeMemory } = await import('../content/arcade');
+    const calls = await walk(
+      (app) => keep(new DailyScene(Object.assign(app, { uprightPhone: () => false }) as never)),
+      (s) => [(s as unknown as { all: Pressable }).all],
+    );
+    expect(calls.map(({ route, args }) => ({ route, args }))).toEqual([
+      { route: 'explore', args: ['arcade', 0, 'all'] },
+    ]);
+    arcadeMemory.filter = 'mine';
+    arcadeMemory.spotlight = 'bubble-pop';
+    const a = keep(new ArcadeScene(fakeApp() as never, 3, 'all'));
+    expect([a.filter, a.page, arcadeMemory.filter, arcadeMemory.spotlight]).toEqual(['all', 0, 'all', null]);
   });
 });
