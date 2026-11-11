@@ -48,3 +48,9 @@ Not run: `npm run build`, `fingerdemo`, the `numbertrails` suite, a device. Loca
 **Changed:** the touch swipe layer covers the whole view (`pondTouchLayout` returns `swipe`); a stroke that strays past `SWIPE / 3` without a swipe is not a tap; a school tap-toward counts only on the pond; help line and how-to card say "swipe anywhere".
 **Ran:** `npm run typecheck`; pond-conga and `src/content` tests (24 files, 245 passed); a 390 × 844 Chromium probe at `http://localhost:5191` on level 8 (a swipe below the pond stepped down, a 12 px slant did nothing, a tap below stepped on; home, help, pet and Hint won their hit tests); `BROWSER_SUITE=congatouch` passed (its help-line check now reads "Touch to set off").
 **Not run:** `fingerdemo` (bot unchanged), build (no shared files), `couchgames` (couch input unchanged).
+
+## 2026-11-10 — U4, show what to touch when it is quiet (UX review, PR #1464)
+
+**Changed:** new `src/ui/idle-cue.ts` (`IdleCue`: first cue after 4 s of no touch, 0.8 s long, every 5 s until a touch; silent) with five unit tests. The hatch egg rocks about its tap tilt on the egg step; Welcome a New Friend's page hops the raised card (else the next step's card) about 18 units, reset by card taps, raise() and the basket tap and off during the ending. No reduced-motion setting exists, so none applied.
+**Tested:** `npm run typecheck`; `npm test` (339 files, 6,504 passed, 1 skipped); prettier check on the four files; `npm run build`; `BROWSER_SUITE=home HOME_ONLY=first-run` and `BROWSER_SUITE=welcome` passed; a one-off 390 × 844 Playwright probe sampled the egg rotation: 0 for about 4 s, then 0.094 rad, settling to 0.
+**Not run:** `world` (navigation unchanged), offline (no persistence, asset or navigation change); the card hop was not sampled in the browser, only the welcome suite ran through the scene.
