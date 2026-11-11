@@ -265,6 +265,8 @@ class MossyPath implements Game {
       if (this.going || this.finished) return;
       if (this.goArmed) {
         this.goArmed = false;
+        // Only a slide onto a tile beside the turtle starts a fresh plan; any other drift keeps the drawn plan.
+        if (!neighbours(this.board, this.path.at(-1)!).includes(cell)) return;
         this.plan = [];
         this.goldPrints.clear();
       }
