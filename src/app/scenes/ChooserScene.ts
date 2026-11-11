@@ -141,6 +141,11 @@ export class ChooserScene extends Scene {
 
   resize(v: View) {
     this.backdrop.resize(v);
+    // A phone on its side has a short heading (`chooser.css`): the sun sits smaller beside it, clear of the cards.
+    const sun = this.backdrop.sun;
+    const short = v.w > v.h && v.h * v.scale < 600;
+    sun?.scale.set(short ? 0.8 : 1);
+    if (short) sun?.position.set(v.w / 2 - 170 / v.scale, 50 / v.scale);
   }
 
   private readonly onKeyDown = (e: KeyboardEvent) => {
@@ -176,7 +181,10 @@ export class ChooserScene extends Scene {
     this.cards.replaceChildren();
     this.buttons = [];
 
-    for (const { entry, save } of items.filter((i) => !isBlankProfile(i.save, i.entry))) {
+    const shown = items.filter((i) => !isBlankProfile(i.save, i.entry));
+    // Two or more players stand two across on an upright phone (`chooser.css`); one keeps the large card.
+    this.cards.classList.toggle('chooser__cards--many', shown.length > 1);
+    for (const { entry, save } of shown) {
       const name = cardName(save);
       const card = el('div', 'chooser__card');
       card.dataset.id = entry.id;

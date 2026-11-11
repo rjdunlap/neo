@@ -47,3 +47,20 @@ export function resultSpots(v: Pick<View, 'w' | 'h'>, withHouse = true): ResultS
     keep: { x: cx - 195, y: v.h * 0.33 },
   };
 }
+
+/** A daily round's "next game" tile (`GameScene.showDailyNext`). */
+export const DAILY_NEXT = { w: 288, h: 112 } as const;
+
+/**
+ * Where a daily round's result puts the next of the six (its top-left corner) and the grown-up's note pencil (its
+ * centre). A wide view keeps them in the top-left corner, the pencil under the tile: the celebrating pet fills the middle
+ * of the bottom row. A tall view (a phone held upright) has the pet far below the row, so the tile goes between Again and
+ * the way out, where a thumb is, and the pencil takes the corner.
+ */
+export function dailySpots(v: Pick<View, 'w' | 'h'>): { next: Spot; note: Spot } {
+  if (v.h < v.w * 1.5) return { next: { x: 32, y: 24 }, note: { x: 82, y: 210 } };
+  return {
+    next: { x: v.w / 2 - DAILY_NEXT.w / 2, y: v.h * 0.72 - DAILY_NEXT.h / 2 },
+    note: { x: 82, y: 74 },
+  };
+}
