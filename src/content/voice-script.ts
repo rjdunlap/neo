@@ -80,6 +80,7 @@ import { VOICE as marketStallVoice } from '../games/market-stall/voice.ts';
 import { VOICE as meadowPensVoice } from '../games/meadow-pens/voice.ts';
 import { VOICE as measuringPostVoice } from '../games/measuring-post/voice.ts';
 import { VOICE as meltFreezeVoice } from '../games/melt-freeze/voice.ts';
+import { VOICE as memoryDeskVoice } from '../games/memory-desk/voice.ts';
 import { VOICE as memoryMatchVoice } from '../games/memory-match/voice.ts';
 import { VOICE as monsterMunchVoice } from '../games/monster-munch/voice.ts';
 import { VOICE as moonWindowVoice } from '../games/moon-window/voice.ts';
@@ -668,6 +669,7 @@ export const SCRIPT = {
   ...meadowPensVoice,
   ...measuringPostVoice,
   ...meltFreezeVoice,
+  ...memoryDeskVoice,
   ...memoryMatchVoice,
   ...monsterMunchVoice,
   ...moonWindowVoice,

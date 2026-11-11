@@ -1,0 +1,28 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.memory-desk': ['Memory Desk!'],
+  'md.instruct.1': [
+    'This toy desk keeps a copy. Put a picture on the tray and tap Keep. Then change the tray, and tap Show!',
+  ],
+  'md.token.shell': ['A shell.'],
+  'md.token.leaf': ['A leaf.'],
+  'md.token.star': ['A star.'],
+  'md.token.acorn': ['An acorn.'],
+  'md.token.feather': ['A feather.'],
+  'md.token.pebble': ['A pebble.'],
+  'md.tray-first': ['Put something on the tray first.'],
+  'md.nothing-kept': ['Nothing is kept yet.'],
+  'md.try-card': ['Tap a picture to put it on the tray.'],
+  'md.try-keep': ['Now tap Keep.'],
+  'md.try-other': ['Now put the other one on the tray.'],
+  'md.try-show': ['Now press Show.'],
+  'md.kept': ['Kept! The drawer has a copy, and the tray still has its own.'],
+  'md.shown': ['The window shows a copy of what the drawer keeps.'],
+  'md.still-there': ['The tray changed, and the drawer still has it.'],
+  'md.help.card': ['Try this picture. Tap it to put it on the tray.'],
+  'md.help.keep': ['Try Keep. It copies the tray into the drawer.'],
+  'md.help.other': ['Try the other picture, so the tray changes.'],
+  'md.help.show': ['Try Show. It copies the drawer into the window.'],
+  'md.help.done': ['You saw it! Tap the tick when you are ready.'],
+  'md.done': ['The toy desk kept its copy while the tray changed. Nice looking!'],
+};
