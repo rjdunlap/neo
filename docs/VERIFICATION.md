@@ -1,10 +1,10 @@
 # Puddle Island verification
 
-## 2026-11-10 — TotoLogic reviewed (docs only)
+## 2026-11-10 — Festival Signals (H4) definition (docs only)
 
-**Changed:** new [reference review](TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
-**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
-**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only its site, store listing, policies and three web demo puzzles were opened.
+**Changed:** new [definition](definitions/festival-signals.md) of Sorting Machine levels 8–9 (*Festival Signals*, *Fix the lantern*) in two build slices (H3 level 3, then H5 levels 8–9); the study, base definition, batch plans, READY and the study backlog point to it.
+**Ran:** a scratch script enumerated the proposed four-slot grammar (2,005,696 fillings): 24 accepted machines, all four parts long with the lantern on slot 4, eight of them keeping P OR Q in slot 1; `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built).
 
 ## 2026-11-10 — U7c, quicker taps on the tablet root (PR #1484)
 
@@ -15,6 +15,12 @@
 **Ran:** typecheck, lint, format, build, the U7 timing probe and a focused repeat with the final crossfades. The main `home` flow passed, including a press on Arcade followed immediately by Favorites that kept Arcade selected, and `HOME_ONLY=arcade` passed the spotlight, Play, and return flow. `npm test` passed 6,562 tests with 5 skipped and one timing failure in the unchanged Secret Code generator (256 ms against 250 ms). All 24 Secret Code tests passed in the isolated rerun.
 
 **Not run:** `world`, `phonefit`, other browser suites and offline.
+
+## 2026-11-10 — TotoLogic reviewed (docs only)
+
+**Changed:** new [reference review](TOTOLOGIC.md) of the TotoLogic children's app against the island's rules, with six proposals (P1–P6) and a short section on the unrelated Totologic blog; a pointer in IDEAS, a reference note in the grown-ups' page definition and a row in the Rainbow Fingers dive's similar-games table.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** code checks (docs only; nothing built). The app itself was not installed or played: only its site, store listing, policies and three web demo puzzles were opened.
 
 ## 2026-11-10 — Upright shell slice 3, the rest of the root's scenes (chunk 31, PR #1480)
 
