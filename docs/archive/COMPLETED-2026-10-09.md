@@ -3329,4 +3329,4 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 ## Tile Pairs batch 2, Peek under the stack (2026-11-11)
 
-[PR #1525](https://github.com/rjdunlap/neo/pull/1525), `codex/tile-pairs-peek`, dive slice 2. Peek fades the covering tile bodies to quarter opacity and arranges each stack's pictures side by side in layer order. The touch button, P and top controller button all toggle it. Choosing a tile closes the view and preserves selection, counters and score. The new picture sets are queued with Tall tower. See the [verification entry](../VERIFICATION.md#2026-11-11--tile-pairs-slice-2-peek-under-the-stack-pr-1525).
+[PR #1525](https://github.com/rjdunlap/neo/pull/1525), `codex/tile-pairs-peek`, dive slice 2. Peek fades the covering tile bodies to quarter opacity and arranges each stack's pictures side by side in layer order. The touch button, P and top controller button all toggle it. Choosing a tile closes the view and preserves selection, counters and score. The new picture sets are queued with Tall tower. See the [verification entry](VERIFICATION-2026-11-11.md#2026-11-11--tile-pairs-slice-2-peek-under-the-stack-pr-1525).
