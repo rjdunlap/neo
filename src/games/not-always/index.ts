@@ -17,6 +17,8 @@ import {
   LEVELS,
   makeRound,
   MEND_H,
+  breakers,
+  isTrue,
   MEND_W,
   notAlwaysLayout,
   Play,
@@ -24,6 +26,7 @@ import {
   SIGN_H,
   SIGN_W,
   STAMP,
+  trueMend,
   type Claim,
   type Outcome,
   type Phase,
@@ -67,6 +70,14 @@ class NotAlways implements Game {
   private mendNodes: Container[] = [];
   private sign: Container | null = null;
   private reading = 0;
+  /**
+   * The next claim's read-out (or level 3's mended signs read out), waiting behind the last answer's lines (U7 R4);
+   * `askGen` drops a stale wait.
+   */
+  unasked = false;
+  private askGen = 0;
+  /** Bumped by anything she does, so a chained line (`breaks`, then `oops`) never starts over her newer one. */
+  private chain = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -146,6 +157,8 @@ class NotAlways implements Game {
     sfx.tick();
     this.friend.poke();
     if (this.busy) return;
+    this.chain++;
+    if (this.askNow()) return;
     if (this.play.phase === 'mend') void this.readMends();
     else void this.ctx.say(claimLine(this.play.current));
   }
@@ -155,9 +168,19 @@ class NotAlways implements Game {
   private async tapCard(i: number) {
     const card = this.cards[i];
     if (this.busy || this.finished) return;
+    this.chain++;
     if (this.play.phase === 'mend') {
       sfx.tick();
+      this.askNow();
       return void this.nod(card);
+    }
+    if (this.unasked) {
+      // A tap before she has heard the claim: a card that breaks it goes ahead; another hears the claim, not a miss.
+      if (!breakers(this.play.round.cards, this.play.current).includes(i)) {
+        void this.lift(card);
+        return void this.askNow();
+      }
+      this.dropAsk();
     }
     // Touch-down: the card lifts and the friend leans to look.
     void this.lift(card);
@@ -183,12 +206,14 @@ class NotAlways implements Game {
     this.friend.poke();
     this.showSign(claim, 'not-all');
     sfx.pop(9);
-    await this.ctx.say(`notalways.breaks.${claim.attr}` as LineId);
-    if (!this.alive) return;
-    this.friend.cheer();
-    await this.ctx.say('notalways.oops');
-    if (!this.alive) return;
-    await this.next(out.next);
+    // The lesson and the friend's oops start as one sequence, and the next claim follows with input open (U7 R4).
+    const chain = ++this.chain;
+    const said = this.ctx.say(`notalways.breaks.${claim.attr}` as LineId).then(() => {
+      if (!this.alive || chain !== this.chain) return;
+      this.friend.cheer();
+      return this.ctx.say('notalways.oops');
+    });
+    await this.next(out.next, said);
   }
 
   private async pressStamp() {
@@ -196,6 +221,12 @@ class NotAlways implements Game {
     const s = this.stamp;
     s.scale.set(0.9);
     void this.ctx.tw.to(s.scale, { x: 1, y: 1 }, { duration: 0.25 });
+    this.chain++;
+    if (this.unasked) {
+      // The stamp before she has heard the claim: on a true claim it goes ahead; otherwise she hears the claim, not a miss.
+      if (!isTrue(this.play.round.cards, this.play.current)) return void this.askNow();
+      this.dropAsk();
+    }
     const out = this.play.stamp();
     if (out.kind === 'every') {
       this.busy = true;
@@ -205,9 +236,7 @@ class NotAlways implements Game {
       m.scale.set(1.4);
       void this.ctx.tw.to(m.scale, { x: 1, y: 1 }, { duration: 0.25 });
       for (const c of this.cards) c.critter.hop(0.4);
-      await this.ctx.say('notalways.every');
-      if (!this.alive) return;
-      return void this.next(out.next);
+      return void this.next(out.next, this.ctx.say('notalways.every'));
     }
     if (out.kind === 'miss') {
       sfx.boing();
@@ -222,15 +251,19 @@ class NotAlways implements Game {
     const node = this.mendNodes[j];
     node.scale.set(0.94);
     void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 });
+    this.chain++;
+    if (this.unasked) {
+      // A sign chosen before the friend has read them out: the true one goes ahead; another hears them read, not a miss.
+      if (j !== trueMend(this.play.round.cards, this.play.options)) return void this.askNow();
+      this.dropAsk();
+    }
     const out = this.play.chooseMend(j);
     if (out.kind === 'mended') {
       this.busy = true;
       sfx.marimba(9);
       this.showSign(option);
       this.friend.cheer();
-      await this.ctx.say('notalways.mend.right');
-      if (!this.alive) return;
-      return void this.next(out.next);
+      return void this.next(out.next, this.ctx.say('notalways.mend.right'));
     }
     if (out.kind === 'miss' && out.card !== null) {
       sfx.boing();
@@ -243,26 +276,59 @@ class NotAlways implements Game {
     }
   }
 
-  /** After a claim or a mend: the mended signs, the next claim, or the end of the round. */
-  private async next(phase: Phase) {
+  /**
+   * After a claim or a mend: the mended signs, the next claim, or the end of the round. With `said` (the answer's lines,
+   * still playing), the next claim or the mended signs show after the beat with input open, and their read-out waits for
+   * the lines, her first tap or the guide (U7 R4); the round's last lines are heard out.
+   */
+  private async next(phase: Phase, said?: Promise<unknown>) {
+    this.dropAsk();
+    if (phase === 'done' && said) await said;
     await this.ctx.tw.wait(0.4);
     if (!this.alive) return;
     for (const c of this.cards) c.ring.visible = false;
     this.clearMends();
     if (phase === 'done') return void this.finale();
-    if (phase === 'mend') {
-      this.showMends();
-      this.busy = false;
-      return void this.readMends();
-    }
-    this.showSign(this.play.current);
-    sfx.pop(7);
-    if (this.sign) {
-      this.sign.rotation = -0.25;
-      void this.ctx.tw.to(this.sign, { rotation: 0 }, { duration: 0.4 });
+    if (phase === 'mend') this.showMends();
+    else {
+      this.showSign(this.play.current);
+      sfx.pop(7);
+      if (this.sign) {
+        this.sign.rotation = -0.25;
+        void this.ctx.tw.to(this.sign, { rotation: 0 }, { duration: 0.4 });
+      }
     }
     this.busy = false;
-    void this.ctx.instruct(claimLine(this.play.current));
+    if (!said) return void this.readOut();
+    this.unasked = true;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** The claim, or at level 3's mend the mended signs, read out. */
+  private readOut() {
+    if (this.play.phase === 'mend') void this.readMends();
+    else void this.ctx.instruct(claimLine(this.play.current));
+  }
+
+  /** Says the waiting read-out, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    this.readOut();
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next claim waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   // The mended signs (level 3) ------------------------------------------------------------------------------------
@@ -411,7 +477,7 @@ class NotAlways implements Game {
 
   /** The ghost finger: tap what answers the claim (the first breaker or the stamp), then at level 3 the true mended sign. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked) return null;
     const n = this.targetNode();
     return n ? { tap: { on: n }, pause: 1.2 } : null;
   }

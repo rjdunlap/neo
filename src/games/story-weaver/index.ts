@@ -425,9 +425,17 @@ class StoryWeaver implements Game {
     }
   }
 
+  /** Her next touch stops a page reading that plays with input open: the words all show, none still lighting (U7 R4). */
+  private stopLighting() {
+    if (!this.words.length || this.lit >= this.words.length - 1) return;
+    this.lit = this.words.length - 1;
+    this.words.forEach((w) => (w.alpha = 1));
+  }
+
   private async tapSlot(slot: Slot) {
     const r = this.round;
     if (this.busy || this.finished) return;
+    this.stopLighting();
     const placed = r.story[slot.part as 'who'];
     if (placed) {
       sfx.pop(3);
@@ -446,6 +454,7 @@ class StoryWeaver implements Game {
   private async tapTile(t: Tile) {
     const r = this.round;
     if (this.busy || this.finished) return;
+    this.stopLighting();
     const part = r.active;
     if (this.selected !== t.id) {
       // The first touch says the tile and dips it; a second touch places it.
@@ -477,9 +486,16 @@ class StoryWeaver implements Game {
       // A page that just opened says its first choice.
       if (res.pageDone && r.active === 'try') await this.ctx.say('weaver.next.try', { who: this.who() });
     } else {
-      await this.readAloud(
+      const reading = this.readAloud(
         pageText(r.story, PAGE_PARTS[2].includes(part) ? 2 : PAGE_PARTS[3].includes(part) ? 3 : 1),
       );
+      if (!res.answered && !res.storyDone) {
+        // The page is read back to her with input open (U7 R4): her next tile cuts it and starts its own page's reading.
+        this.refresh();
+        this.busy = false;
+        return;
+      }
+      await reading;
       if (res.answered) {
         await this.ctx.say('weaver.owl.thanks');
         this.owlHop();

@@ -165,6 +165,9 @@ class ReadDo implements Game {
   private readonly glow = new Graphics();
   private readonly backdrop: Backdrop;
   private view: View;
+  /** The next sign's instruction, waiting behind the last right picture's line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -223,12 +226,32 @@ class ReadDo implements Game {
       .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
   autotouch(): TouchIntent | null {
-    return this.busy || this.finished || !this.task
+    return this.busy || this.finished || this.unasked || !this.task
       ? null
       : { tap: { on: this.choices[answerIndex(this.task)].node } };
   }
-  private async next() {
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.instruct('read.instruction');
+    return true;
+  }
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+  /** The guide was tapped while the next sign's instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+  /**
+   * The next sign. With `said` (the last right picture's line, still playing), it opens with input open and its
+   * instruction waits for the line, her first tap or the guide (U7 R4).
+   */
+  private async next(said?: Promise<unknown>) {
     if (!this.alive) return;
+    this.dropAsk();
     this.busy = true;
     this.index++;
     this.wrongs = 0;
@@ -254,6 +277,8 @@ class ReadDo implements Game {
       node.hitArea = new Rectangle(-54, -50, 108, 100);
       onTap(node, () => {
         if (this.busy || this.finished) return;
+        // Reading the sign herself: the waiting instruction is not needed.
+        this.dropAsk();
         sfx.pop(2);
         void this.ctx.say(WORD_LINES[word]);
         void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => {
@@ -277,6 +302,15 @@ class ReadDo implements Game {
       this.ctx.stage.addChild(node);
     }
     this.resize(this.view);
+    if (said) {
+      this.unasked = true;
+      this.busy = false;
+      const gen = this.askGen;
+      void said.then(() => {
+        if (gen === this.askGen) this.askNow();
+      });
+      return;
+    }
     await this.ctx.instruct('read.instruction');
     if (this.alive) this.busy = false;
   }
@@ -291,6 +325,7 @@ class ReadDo implements Game {
   }
   private async readSign() {
     if (this.busy || this.finished) return;
+    this.dropAsk();
     this.busy = true;
     sfx.pop(2);
     await this.speakWords(this.task.words, true);
@@ -301,9 +336,14 @@ class ReadDo implements Game {
   }
   private async choose(tile: Tile) {
     if (this.busy || this.finished) return;
+    const right = matches(this.task, tile.choice);
+    if (this.unasked) {
+      // A tap before she has heard the instruction: a right picture goes ahead; another says the instruction, not a miss.
+      if (!right) return void this.askNow();
+      this.dropAsk();
+    }
     this.busy = true;
     tile.bg.tint = swatch.yellow.light;
-    const right = matches(this.task, tile.choice);
     if (right) sfx.sparkle();
     else {
       sfx.boing();
@@ -315,7 +355,13 @@ class ReadDo implements Game {
     tile.bg.tint = swatch.white.fill;
     if (right) {
       this.ctx.pet.cheer();
-      await this.ctx.say('read.meaning', { words: this.task.words.join(' ') });
+      const said = this.ctx.say('read.meaning', { words: this.task.words.join(' ') });
+      // The line starts and the next sign follows the beat with input open (U7 R4); the last sign's line is heard out.
+      if (this.index + 1 < this.tasks.length) {
+        await this.ctx.tw.wait(0.4);
+        return void this.next(said);
+      }
+      await said;
       await this.ctx.tw.wait(0.4);
       await this.next();
     } else {
@@ -409,6 +455,9 @@ class SignDo implements Game {
   private readonly glow = new Graphics();
   private readonly backdrop: Backdrop;
   private view: View;
+  /** The next sign's instruction, waiting behind the last sign's `read.ready` (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -452,6 +501,7 @@ class SignDo implements Game {
     this.stop.hitArea = new Rectangle(-50, -50, 100, 100);
     this.drag = draggable(this.stop, ctx.tw, {
       onPick: () => {
+        this.dropAsk();
         this.picked = { x: this.stop.x, y: this.stop.y, placed: this.marks.stop };
         sfx.pop(4);
         if (!this.marks.stop) void ctx.say('read.stamp');
@@ -517,11 +567,26 @@ class SignDo implements Game {
       .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.sign) return null;
+    if (this.busy || this.finished || this.unasked || !this.sign) return null;
     const gap = missing(this.step, this.marks);
     if (gap === 'cap') return { tap: { on: this.words[0] } };
     if (gap === 'stop') return { drag: { on: this.stop }, to: { on: this.socket } };
     return { tap: { on: this.send } };
+  }
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.instruct(STEP_LINES[this.step]);
+    return true;
+  }
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+  /** The guide was tapped while the next sign's instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
   askForHint() {
     if (this.finished || !this.sign || this.hinted) return;
@@ -534,13 +599,19 @@ class SignDo implements Game {
   }
   private async free(run: () => Promise<void>) {
     if (this.busy || this.finished) return;
+    this.dropAsk();
     this.lock(true);
     sfx.pop(2);
     await run();
     if (this.alive) this.lock(false);
   }
-  private async next() {
+  /**
+   * The next sign. With `said` (the last sign's `read.ready`, still playing), it opens with input open and its instruction
+   * waits for the line, her first tap or the guide (U7 R4).
+   */
+  private async next(said?: Promise<unknown>) {
     if (!this.alive) return;
+    this.dropAsk();
     this.lock(true);
     this.index++;
     this.wrongs = 0;
@@ -563,6 +634,8 @@ class SignDo implements Game {
       node.hitArea = new Rectangle(-54, -50, 108, 100);
       onTap(node, () => {
         if (this.busy || this.finished) return;
+        // Working on the sign herself: the waiting instruction is not needed.
+        this.dropAsk();
         sfx.pop(2);
         if (i === 0 && this.step !== 'stop') {
           this.marks.capital = !this.marks.capital;
@@ -584,6 +657,15 @@ class SignDo implements Game {
     // Level 4 prints the stop already; only level 5 and 6 hand her the stamp.
     this.stop.eventMode = this.step === 'cap' ? 'none' : 'static';
     this.resize(this.view);
+    if (said) {
+      this.unasked = true;
+      this.lock(false);
+      const gen = this.askGen;
+      void said.then(() => {
+        if (gen === this.askGen) this.askNow();
+      });
+      return;
+    }
     await this.ctx.instruct(STEP_LINES[this.step]);
     if (this.alive) this.lock(false);
   }
@@ -637,9 +719,12 @@ class SignDo implements Game {
   }
   private async sendSign() {
     if (this.busy || this.finished) return;
+    const gap = missing(this.step, this.marks);
+    // Send before she has heard what this sign needs: the instruction, not a miss.
+    if (gap && this.askNow()) return;
+    this.dropAsk();
     this.lock(true);
     this.selected = false;
-    const gap = missing(this.step, this.marks);
     if (!gap) {
       sfx.sparkle();
       await this.speakSign();
@@ -647,7 +732,13 @@ class SignDo implements Game {
       await this.perform();
       if (!this.alive) return;
       this.ctx.pet.cheer();
-      await this.ctx.say('read.ready', { words: printed(this.sign, { ...this.marks, stop: false }) });
+      const said = this.ctx.say('read.ready', { words: printed(this.sign, { ...this.marks, stop: false }) });
+      // The lesson starts and the next sign follows the beat with input open (U7 R4); the last sign's line is heard out.
+      if (this.index + 1 < this.signs.length) {
+        await this.ctx.tw.wait(0.4);
+        return void this.next(said);
+      }
+      await said;
       await this.ctx.tw.wait(0.4);
       await this.next();
       return;
@@ -743,6 +834,9 @@ class MakeDo implements Game {
   /** Where the finger went down and where it is now, in stage units: a short travel is a tap that says the word. */
   private finger = { x: 0, y: 0, travel: 0 };
   private critters: Critter[] = [];
+  /** The next sign's opening (levels 8–9: the broken sign acted out) and instruction, waiting behind `read.make.yes` (U7 R4). */
+  unasked = false;
+  private askGen = 0;
   private L: SignLayout;
   private readonly glow = new Graphics();
   private readonly backdrop: Backdrop;
@@ -785,7 +879,7 @@ class MakeDo implements Game {
     onTap(this.the, () => this.hear('read.the', this.the));
     onTap(this.stop, () => this.hear('read.stamp', this.stop));
     onTap(this.card, () => {
-      if (!this.busy && !this.finished) {
+      if (!this.busy && !this.finished && !this.touched()) {
         sfx.pop(2);
         void ctx.say('read.make.wish');
       }
@@ -897,7 +991,8 @@ class MakeDo implements Game {
     return this.tiles.find((t) => t.word === word)!;
   }
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.round || this.tiles.some((t) => t.drag.dragging)) return null;
+    if (this.busy || this.finished || this.unasked || !this.round || this.tiles.some((t) => t.drag.dragging))
+      return null;
     const hint = hintFor(this.sign, this.round, this.level);
     const [target, onto] = this.hintTargets(hint);
     if (hint.kind === 'send') return { tap: { on: this.send } };
@@ -912,8 +1007,35 @@ class MakeDo implements Game {
     this.busy = on;
     for (const t of this.tiles) t.drag.enabled = !on;
   }
+  /** Says the waiting opening and instruction, if there are any. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.opening().then(() => {
+      if (this.alive && !this.finished) this.lock(false);
+    });
+    return true;
+  }
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+  /**
+   * A touch while the next sign's opening waits. At level 7 she is making the sign already, so the instruction is dropped;
+   * at levels 8–9 she has not yet seen what is wrong with it, so the broken sign is acted out now and the touch does nothing else.
+   */
+  private touched() {
+    if (!this.unasked) return false;
+    if (this.level >= 8) return this.askNow();
+    this.dropAsk();
+    return false;
+  }
+  /** The guide was tapped while the next sign's instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
   private hear(line: LineId, node: Container) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.touched()) return;
     sfx.pop(2);
     void this.ctx.say(line);
     void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => {
@@ -921,14 +1043,19 @@ class MakeDo implements Game {
     });
   }
   private async free(run: () => Promise<void>) {
-    if (this.busy || this.finished || this.tiles.some((t) => t.drag.dragging)) return;
+    if (this.busy || this.finished || this.tiles.some((t) => t.drag.dragging) || this.touched()) return;
     this.lock(true);
     sfx.pop(2);
     await run();
     if (this.alive) this.lock(false);
   }
-  private async next() {
+  /**
+   * The next wish or broken sign. With `said` (the last sign's `read.make.yes`, still playing), it opens with input open
+   * and its opening and instruction wait for the line, her first touch or the guide (U7 R4).
+   */
+  private async next(said?: Promise<unknown>) {
     if (!this.alive) return;
+    this.dropAsk();
     this.lock(true);
     this.index++;
     this.wrongs = 0;
@@ -952,6 +1079,8 @@ class MakeDo implements Game {
       const tile: MakeTile = { word, node, slot, drag: undefined as unknown as DragHandle };
       tile.drag = draggable(node, this.ctx.tw, {
         onPick: () => {
+          // At levels 8–9 a pick before the broken sign was shown shows it; the tile then goes home unchanged.
+          this.touched();
           this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.gapMark));
           sfx.pop(4);
         },
@@ -989,6 +1118,21 @@ class MakeDo implements Game {
     this.sign = 'start' in this.round ? [...(this.round.start as SlotWord[])] : [];
     this.cast();
     this.resize(this.view);
+    if (said) {
+      this.unasked = true;
+      this.lock(false);
+      const gen = this.askGen;
+      void said.then(() => {
+        if (gen === this.askGen) this.askNow();
+      });
+      return;
+    }
+    await this.opening();
+    if (this.alive) this.lock(false);
+  }
+  /** The sign's opening, with input locked: at levels 8–9 the broken sign acted out, then the instruction. */
+  private async opening() {
+    this.lock(true);
     if (this.level >= 8) {
       // The broken sign acts itself out first, as Show it would: she sees what is wrong before she is asked to fix it.
       await this.ctx.say('read.mend.watch');
@@ -999,7 +1143,6 @@ class MakeDo implements Game {
       if (!this.alive) return;
     }
     await this.ctx.instruct(this.instruction);
-    if (this.alive) this.lock(false);
   }
   /** Puts the stage's animals in their places: one in the middle, or the big one left and the small one right. */
   private cast() {
@@ -1141,6 +1284,10 @@ class MakeDo implements Game {
   }
   private async sendSign() {
     if (this.busy || this.finished || this.tiles.some((t) => t.drag.dragging)) return;
+    if (!this.sign.length || this.level >= 8) {
+      // Before the opening was heard (or with nothing to judge): the opening or the instruction, never a miss.
+      if (this.askNow()) return;
+    } else this.dropAsk();
     if (!this.sign.length) {
       // Nothing to judge yet: the instruction again, never a miss.
       this.lock(true);
@@ -1158,7 +1305,13 @@ class MakeDo implements Game {
     if (sameAct(outcome, this.round.wish)) {
       sfx.sparkle();
       this.ctx.pet.cheer();
-      await this.ctx.say('read.make.yes', { words });
+      const said = this.ctx.say('read.make.yes', { words });
+      // The line starts and the next wish or sign follows the beat with input open (U7 R4); the last line is heard out.
+      if (this.index + 1 < this.wishes.length) {
+        await this.ctx.tw.wait(0.4);
+        return void this.next(said);
+      }
+      await said;
       await this.ctx.tw.wait(0.4);
       await this.next();
       return;
