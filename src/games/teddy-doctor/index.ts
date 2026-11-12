@@ -644,11 +644,16 @@ class TeddyDoctor implements Game {
       this.busy = false;
       return;
     }
-    await this.check(want);
+    // The step's result never holds the next tool (U7 R4): the line starts, the card ticks and the tools open, the
+    // line playing over her next pick. Only the patient's last step is heard out, before the hop-off.
+    const { line } = await this.check(want);
     this.step++;
     this.done.push(want);
     this.drawCard();
-    if (this.step >= r.steps.length) return this.better();
+    if (this.step >= r.steps.length) {
+      await line;
+      return this.better();
+    }
     this.busy = false;
   }
 
@@ -697,14 +702,18 @@ class TeddyDoctor implements Game {
     sfx.squish();
   }
 
-  /** Stethoscope, thermometer, flashlight, scale or height chart: a little show, then it comes back off. */
-  private async check(tool: Check) {
+  /**
+   * Stethoscope, thermometer, flashlight, scale or height chart: a little show, then it comes back off when its line
+   * ends (or the next line cuts it). Resolves as the line starts; `line` is the line itself.
+   */
+  private async check(tool: Check): Promise<{ line: Promise<void> }> {
     const part = CHECK_PART[tool];
     const at = this.partAt(part);
     const shown = toolArt(tool);
     shown.position.set(at.x, at.y);
     shown.scale.set(0.8);
     this.ctx.stage.addChild(shown);
+    let spoken: Promise<void>;
     if (tool === 'stethoscope') {
       for (let k = 0; k < 2; k++) {
         sfx.drum();
@@ -718,27 +727,30 @@ class TeddyDoctor implements Game {
         });
         await this.ctx.tw.wait(0.35);
       }
-      await this.ctx.say('doctor.heart');
+      spoken = this.ctx.say('doctor.heart');
     } else if (tool === 'thermometer') {
       sfx.bell(10, 0.25);
       await this.ctx.tw.wait(0.3);
       sfx.bell(10, 0.25);
-      await this.ctx.say('doctor.temp');
+      spoken = this.ctx.say('doctor.temp');
     } else if (tool === 'flashlight') {
       sfx.sparkle();
-      await this.ctx.say('doctor.ears');
+      spoken = this.ctx.say('doctor.ears');
     } else if (tool === 'scale') {
       shown.visible = false;
-      await this.weigh();
+      ({ spoken } = await this.weigh());
     } else {
       shown.visible = false;
-      await this.measure();
+      ({ spoken } = await this.measure());
     }
-    shown.destroy({ children: true });
+    void spoken.then(() => {
+      if (!shown.destroyed) shown.destroy({ children: true });
+    });
+    return { line: spoken };
   }
 
   /** The patient hops onto the scale at its feet, and the needle swings round from nothing to just right. */
-  private async weigh() {
+  private async weigh(): Promise<{ spoken: Promise<void> }> {
     const show = new Container();
     const needle = new Graphics().moveTo(0, 0).lineTo(0, -24).stroke(line(swatch.red.line, 5));
     needle.position.set(0, -12);
@@ -754,12 +766,15 @@ class TeddyDoctor implements Game {
       sfx.tick();
       await this.ctx.tw.wait(0.2);
     }
-    await this.ctx.say('doctor.weigh');
-    show.destroy({ children: true });
+    const spoken = this.ctx.say('doctor.weigh');
+    void spoken.then(() => {
+      if (!show.destroyed) show.destroy({ children: true });
+    });
+    return { spoken };
   }
 
   /** A striped chart slides up behind the patient, and a star pops on the top of its head. */
-  private async measure() {
+  private async measure(): Promise<{ spoken: Promise<void> }> {
     const p = this.patient!;
     // The top of the head (or a bunny's ears), from the drawing itself, and the chart a little taller than that.
     const top = this.ctx.stage.toLocal({ x: 0, y: p.getBounds().minY }).y;
@@ -791,9 +806,12 @@ class TeddyDoctor implements Game {
     sfx.sparkle();
     // Standing still and proud: a hop here would lift the head off the star.
     p.setMood('happy', 1.5);
-    await this.ctx.say('doctor.tall');
-    chart.destroy();
-    mark.destroy();
+    const spoken = this.ctx.say('doctor.tall');
+    void spoken.then(() => {
+      if (!chart.destroyed) chart.destroy();
+      if (!mark.destroyed) mark.destroy();
+    });
+    return { spoken };
   }
 
   /** The check-up card: the steps as pictures, the current one ringed. Told check-ups keep it face down. */

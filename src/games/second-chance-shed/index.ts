@@ -53,6 +53,10 @@ class SecondChanceShed implements Game {
   private clock = 0;
   private restartAsked = false;
   private mendNamed = false;
+  /** The last right drop's made line, still playing as the next thing rolls in (U7 R4). */
+  private lesson: Promise<void> | null = null;
+  /** The thing on the cart has been dropped on a place or hinted, so its name is no longer news. */
+  private dropped = false;
   private view: View;
   private layoutNow: ShedLayout;
   private readonly backdrop: Backdrop;
@@ -145,6 +149,7 @@ class SecondChanceShed implements Game {
   /** The next used thing rolls in on the cart and says its name. */
   private async bringItem() {
     this.busy = true;
+    this.dropped = false;
     this.tally.nextItem(this.index);
     const id = this.round.items[this.index];
     const node = itemArt(id);
@@ -166,6 +171,11 @@ class SecondChanceShed implements Game {
     drag.enabled = true;
     this.busy = false;
     if (this.restartAsked) return this.restart();
+    // The thing says its name after the last made line, unless she has already dropped it somewhere.
+    const lesson = this.lesson;
+    this.lesson = null;
+    if (lesson) await lesson;
+    if (!this.alive || this.item?.node !== node || this.dropped) return;
     if (ITEMS[id].place === 'mend' && !this.mendNamed) {
       this.mendNamed = true;
       void this.ctx.say('shed.arrive.mend');
@@ -191,6 +201,7 @@ class SecondChanceShed implements Game {
     if (this.busy || this.finished || !this.item) return false;
     const at = placeAt(this.layoutNow, x, y);
     const verdict = judge(this.item.id, at);
+    if (verdict !== 'none') this.dropped = true;
     if (verdict === 'none') {
       // Back to the cart, never counted; at the first level the bin wiggles to show where food goes.
       if (!this.plan.counts) void this.shake(this.nodeOf('worm'));
@@ -237,9 +248,14 @@ class SecondChanceShed implements Game {
     item.node.destroy({ children: true });
     this.item = null;
     this.ctx.pet.cheer();
-    await this.consequence(place, item.id);
+    const { line } = await this.consequence(place, item.id);
     if (!this.alive) return;
     this.index++;
+    // The made line never holds the shed (U7 R4): it is the lesson, so it plays over the next thing's arrival, and the
+    // next thing says its name once it ends. Only the last thing's line is heard out, before the finale.
+    if (this.index >= this.round.items.length) await line;
+    if (!this.alive) return;
+    this.lesson = line;
     if (this.restartAsked && this.index < this.round.items.length) {
       this.busy = false;
       return this.restart();
@@ -266,8 +282,11 @@ class SecondChanceShed implements Game {
     }
   }
 
-  /** The place plays what it made: a sprout joins the pot, the other things pop up over the place and fade. */
-  private async consequence(place: Place, id: ItemId, line = true) {
+  /**
+   * The place plays what it made: a sprout joins the pot, the other things pop up over the place and fade. Resolves as
+   * the made line starts; `line` is the line itself.
+   */
+  private async consequence(place: Place, id: ItemId, say = true): Promise<{ line: Promise<void> }> {
     const made = ITEMS[id].consequence;
     void this.sound(place);
     void this.breathe(this.nodeOf(place), 1.1);
@@ -290,9 +309,11 @@ class SecondChanceShed implements Game {
         await this.ctx.tw.to(m, { x: at.x + 60 }, { duration: 0.5, ease: ease.inOutSine });
       if (made === 'flutter' && this.alive)
         await this.ctx.tw.to(m, { y: m.y - 50 }, { duration: 0.5, ease: ease.inOutSine });
-      void this.fadeOut(m, line ? 1.6 : 0.6);
+      void this.fadeOut(m, say ? 1.6 : 0.6);
     }
-    if (line && this.alive) await this.ctx.say(`shed.made.${made}` as 'shed.made.sprout');
+    return {
+      line: say && this.alive ? this.ctx.say(`shed.made.${made}` as 'shed.made.sprout') : Promise.resolve(),
+    };
   }
 
   private async fadeOut(n: Container, after: number) {
@@ -332,6 +353,7 @@ class SecondChanceShed implements Game {
   askForHint() {
     if (this.busy || this.finished || !this.item || this.item.drag.dragging) return;
     if (this.tally.ask() === 'glow') {
+      this.dropped = true;
       void this.ctx.say('shed.hint-glow');
       return;
     }
