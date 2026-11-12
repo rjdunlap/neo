@@ -292,6 +292,8 @@ class SeesawBalance implements Game {
   /** Level 15's `measure-pumpkin`, waiting behind `seesaw.guessed` (U7 R4); `askGen` drops a stale wait. */
   unasked = false;
   private askGen = 0;
+  /** The waiting instruction has not been said: a move of hers stops it being said by itself, but the guide still says it. */
+  private unsaid = false;
   /** Balance rules the child has actually watched after changing a tray. */
   readonly observations = new Set<BalanceObservation>();
   /** How far the plank leans now, and how fast it is turning. */
@@ -779,33 +781,33 @@ class SeesawBalance implements Game {
     await this.ctx.tw.wait(0.4);
     const animal = this.animalOf(r);
     const mode = this.plan.mode;
-    if (mode === 'predict') await this.ctx.instruct('seesaw.predict');
-    else if (mode === 'bounce') await this.ctx.instruct('seesaw.bounce');
+    if (mode === 'predict') await this.instructLine('seesaw.predict');
+    else if (mode === 'bounce') await this.instructLine('seesaw.bounce');
     else if (mode === 'compare')
-      await this.ctx.instruct(r.asked === 'heavier' ? 'seesaw.ask-heavy' : 'seesaw.ask-light');
-    else if (mode === 'up') await this.ctx.instruct('seesaw.up', { animal });
-    else if (mode === 'heavy') await this.ctx.instruct('seesaw.heavy', { animal });
-    else if (mode === 'level') await this.ctx.instruct('seesaw.level');
+      await this.instructLine(r.asked === 'heavier' ? 'seesaw.ask-heavy' : 'seesaw.ask-light');
+    else if (mode === 'up') await this.instructLine('seesaw.up', { animal });
+    else if (mode === 'heavy') await this.instructLine('seesaw.heavy', { animal });
+    else if (mode === 'level') await this.instructLine('seesaw.level');
     else if (mode === 'guess') {
-      await this.ctx.instruct('seesaw.guess');
+      await this.instructLine('seesaw.guess');
       this.showPads();
       return;
-    } else if (mode === 'sort') await this.ctx.instruct('seesaw.sort');
+    } else if (mode === 'sort') await this.instructLine('seesaw.sort');
     else if (mode === 'difference')
-      await this.ctx.instruct('seesaw.difference', { heavy: total(r.fixed), light: total(r.across ?? []) });
-    else if (mode === 'heaviest') await this.ctx.instruct('seesaw.heaviest');
-    else if (mode === 'parts') await this.ctx.instruct('seesaw.parts', { n: r.answer });
+      await this.instructLine('seesaw.difference', { heavy: total(r.fixed), light: total(r.across ?? []) });
+    else if (mode === 'heaviest') await this.instructLine('seesaw.heaviest');
+    else if (mode === 'parts') await this.instructLine('seesaw.parts', { n: r.answer });
     else if (mode === 'same')
-      await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
-    else if (mode === 'share') await this.ctx.instruct('seesaw.share');
+      await this.instructLine(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
+    else if (mode === 'share') await this.instructLine('seesaw.share');
     else if (mode === 'pair') {
       const square = r.fixed.find((t) => t.shape === 'square')!;
       if (reading) {
-        await this.ctx.instruct('seesaw.pair-first');
+        await this.instructLine('seesaw.pair-first');
         return this.showPads();
       }
-      await this.ctx.instruct('seesaw.pair', { n: square.weight });
-    } else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.twins' : 'seesaw.mystery');
+      await this.instructLine('seesaw.pair', { n: square.weight });
+    } else await this.instructLine(this.plan.boxes === 2 ? 'seesaw.twins' : 'seesaw.mystery');
     this.busy = false;
   }
 
@@ -867,7 +869,7 @@ class SeesawBalance implements Game {
       heavy: Math.max(left, right),
       light: Math.min(left, right),
     });
-    await this.ctx.instruct('seesaw.predict-continue');
+    await this.instructLine('seesaw.predict-continue');
     this.continueButton.visible = true;
     this.busy = false;
   }
@@ -878,7 +880,7 @@ class SeesawBalance implements Game {
     if (side === this.round.fixedSide) {
       this.items[0].critter?.poke();
       sfx.tick();
-      void this.ctx.instruct('seesaw.bounce');
+      void this.instructLine('seesaw.bounce');
       return;
     }
     this.busy = true;
@@ -956,8 +958,6 @@ class SeesawBalance implements Game {
       if (slot >= 0) return this.toShelf(item, slot);
     }
     if (mode === 'guess' && this.round.prediction === undefined) return false;
-    // Her first block needs no instruction: its own sounds and count take the waiting one's place.
-    this.dropAsk();
     if (mode === 'heaviest' && this.overWagon(x, y)) return this.toWagon(item);
     // Levels 1 and 2: a tap on a friend on the grass hops it to the empty tray.
     const tapped =
@@ -996,6 +996,8 @@ class SeesawBalance implements Game {
     item.side = side;
     this.settle(item);
     this.observeBalance();
+    // Her first block needs no instruction: its own sounds and count take the waiting one's place.
+    this.quietAsk();
     sfx.clunk();
     void this.placed(item, side);
     return true;
@@ -1209,13 +1211,13 @@ class SeesawBalance implements Game {
     }
     // How heavy is the box? The blocks tell us.
     this.hintItem = null;
-    if (this.plan.mode === 'guess') await this.ctx.instruct('seesaw.pumpkin-answer');
-    else if (this.plan.mode === 'difference') await this.ctx.instruct('seesaw.difference-answer');
-    else if (this.plan.mode === 'same') await this.ctx.instruct('seesaw.alone');
-    else if (this.plan.mode === 'pair') await this.ctx.instruct('seesaw.round-alone');
-    else if (this.plan.mode === 'share') await this.ctx.instruct('seesaw.share-answer');
+    if (this.plan.mode === 'guess') await this.instructLine('seesaw.pumpkin-answer');
+    else if (this.plan.mode === 'difference') await this.instructLine('seesaw.difference-answer');
+    else if (this.plan.mode === 'same') await this.instructLine('seesaw.alone');
+    else if (this.plan.mode === 'pair') await this.instructLine('seesaw.round-alone');
+    else if (this.plan.mode === 'share') await this.instructLine('seesaw.share-answer');
     else
-      await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', {
+      await this.instructLine(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', {
         n: total(this.round.fixed),
       });
     this.showPads();
@@ -1243,15 +1245,27 @@ class SeesawBalance implements Game {
 
   /** Says the waiting instruction, if there is one. */
   private askNow() {
-    if (!this.unasked || this.finished) return false;
+    if (!this.unsaid || this.finished) return false;
     this.dropAsk();
-    void this.ctx.instruct('seesaw.measure-pumpkin');
+    void this.instructLine('seesaw.measure-pumpkin');
     return true;
   }
 
   private dropAsk() {
+    this.quietAsk();
+    this.unsaid = false;
+  }
+
+  /** Her move takes the waiting instruction's place: it is no longer said by itself, but the guide still says it. */
+  private quietAsk() {
     this.unasked = false;
     this.askGen++;
+  }
+
+  /** Speaks an instruction, which becomes the one the guide repeats. */
+  private instructLine(...args: Parameters<GameContext['instruct']>) {
+    this.dropAsk();
+    return this.ctx.instruct(...args);
   }
 
   /** The guide was tapped while the instruction waits behind her guess's echo: say it, not the one before it. */
@@ -1272,6 +1286,7 @@ class SeesawBalance implements Game {
       const said = this.ctx.say('seesaw.guessed', { guess: pad.value });
       this.busy = false;
       this.unasked = true;
+      this.unsaid = true;
       const gen = this.askGen;
       void said.then(() => {
         if (gen === this.askGen) this.askNow();

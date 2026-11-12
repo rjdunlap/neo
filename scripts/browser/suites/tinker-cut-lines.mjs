@@ -302,6 +302,9 @@ export function createSuite({ page, launch, finished, log }) {
             await kit.drag(kit.line([p.x, p.y], [q.x, q.y + 40], 20));
             await kit.sleep(150);
             out.push({ early: { misses: g.misses, waiting: g.unasked || !item.side } });
+            // The guide still says this round's instruction, not the guess prompt before it.
+            const said = g.sayWaitingAsk();
+            out.push({ guide: said && neo.scene.instruction?.id === 'seesaw.measure-pumpkin', waiting: g.unasked });
           }
           for (let k = 0; k < 40 && g.index === n && !g.finished; k++) {
             await kit.until(() => !g.busy || g.index !== n || g.finished, 20000);
@@ -323,7 +326,7 @@ export function createSuite({ page, launch, finished, log }) {
       await finished('seesaw-balance');
       assert.deepEqual(await score('seesaw-balance'), [0, 0]);
       log(
-        `Seesaw Balance 15 R4: blocks open ${opens} ms into a 4 s guessed, measure-pumpkin waiting; the guide said it; her first block went on and dropped it`,
+        `Seesaw Balance 15 R4: blocks open ${opens} ms into a 4 s guessed, measure-pumpkin waiting; the guide said it; her first block went on and quieted it, the guide still saying it`,
       );
     }
   }
