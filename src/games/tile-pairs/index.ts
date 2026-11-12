@@ -33,7 +33,7 @@ import {
 } from './logic';
 
 const SHAPE_ART: readonly string[] = [...SHAPES, ...MORE_SHAPES];
-/** One picture about 64 units across, in its look's colour; a container so Peek can scale it. */
+/** One picture 64–72 units across, in its look's colour; a container so Peek can scale it. */
 function pictureArt(kind: number, look = 0) {
   const { art, color } = LOOKS[look][kind];
   const c = new Container();
@@ -44,9 +44,9 @@ function pictureArt(kind: number, look = 0) {
         .stroke({ width: 4, color: swatch[color].line }),
     );
   else {
-    // Props are drawn about 100 units across.
+    // Props are drawn about 100–120 units across; this brings the widest to the star's 72.
     const p = prop(art as PropKind, color);
-    p.scale.set(0.6);
+    p.scale.set(0.58);
     c.addChild(p);
   }
   return c;
@@ -204,7 +204,8 @@ class TilePairs implements Game {
           base.x + (col - (per - 1) / 2) * spacing,
           base.y + (row - (rows - 1) / 2) * spacing,
         );
-        picture.scale.set(Math.min(0.75, (spacing - 4) / 64));
+        // Pictures reach about 72 units across (the star's points), so neighbours keep a gap.
+        picture.scale.set(Math.min(0.75, (spacing - 4) / 72));
         picture.visible = true;
       });
     }
@@ -215,7 +216,7 @@ class TilePairs implements Game {
     this.help.text = this.peeking
       ? stacks.length
         ? stacks.some((stack) => stack.length > 3)
-          ? 'Each stack reads from bottom to top, left to right, row by row'
+          ? 'Stacks read from the bottom, left to right, row by row'
           : 'Each stack reads from bottom to top, left to right'
         : 'All remaining pictures are visible'
       : this.route === null
