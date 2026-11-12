@@ -57,8 +57,6 @@ const DOUBLE_HAND = 0.29;
 
 /** Finger travel below this is a tap on a bead (select it, or link to the selected one), not a carry. */
 const PRESS_TRAVEL = 15;
-/** A finished tray's hop (up 0.18 s, down 0.22 s). */
-const HOP_TIME = 0.4;
 
 class BondBeads implements Game {
   readonly plan: Plan;
@@ -608,14 +606,14 @@ class BondBeads implements Game {
         count: 6,
       });
     this.ctx.pet.cheer();
-    for (const n of this.beadNodes) void this.hop(n);
+    const hops = this.beadNodes.map((n) => this.hop(n));
     const s = this.steps[this.index];
     if (s.twoWays && !this.first) {
       // Level 4, the first shape: keep the beads as they are and ask for the other shape from the same beads.
       // `bondbeads.match` plays while the same beads open again for the other shape, after the beads' hop (U7 R4).
       const made = this.bench.matched();
       const said = this.ctx.say('bondbeads.match');
-      await this.ctx.tw.wait(HOP_TIME);
+      await Promise.all(hops);
       if (!this.alive || epoch !== this.epoch) return;
       this.first = made ? made[0] : null;
       const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
@@ -679,8 +677,8 @@ class BondBeads implements Game {
 
   private async hop(n: Container) {
     const y = n.y;
-    await this.ctx.tw.to(n, { y: y - 24 }, { duration: HOP_TIME * 0.45, ease: ease.outBack });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n, { y }, { duration: HOP_TIME * 0.55 });
+    await this.ctx.tw.to(n, { y: y - 24 }, { duration: 0.18, ease: ease.outBack });
+    if (this.alive && !n.destroyed) await this.ctx.tw.to(n, { y }, { duration: 0.22 });
   }
 
   private async finale() {
@@ -722,7 +720,9 @@ class BondBeads implements Game {
 
   /** The ghost finger: carry a bead to the one the next link needs, tap a link that has to go, then (levels 2–4) Check. */
   autotouch(): TouchIntent | null {
-    if (this.finished || this.busy || this.drags.some((d) => d.dragging) || !this.layoutNow) return null;
+    // Level 4: the ghost finger waits for the other shape's ask, so a demonstration hears it.
+    if (this.finished || this.busy || this.unasked || this.drags.some((d) => d.dragging) || !this.layoutNow)
+      return null;
     const m = nextMove(this.bench);
     if (!m) return null;
     if ('check' in m) return this.checkButton ? { tap: { on: this.checkButton } } : null;
