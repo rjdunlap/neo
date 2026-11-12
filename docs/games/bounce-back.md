@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 12, 1 |
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–6 |
@@ -27,6 +27,7 @@
 | 9 | Bounce the ball to three colors in the order the pet calls (2 times) |
 | 10 | Count a rally by twos to 20 |
 | 11 | Count a rally by fives to 50 |
+| 12 | Touch anywhere and the huge paddle goes to the ball |
 
 <!-- end generated -->
 

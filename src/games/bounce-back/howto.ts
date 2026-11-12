@@ -39,7 +39,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: 'Slide the paddle under the ball and count by fives out loud with the pet: 5, 10, 15.',
+    },
+    {
+      from: 12,
+      text: 'Touch anywhere on the table: the huge paddle goes to the ball by itself, and a touch hurries it there.',
     },
   ],
   finish: [
@@ -67,12 +72,18 @@ export const HOW_TO: GameHowTo = {
       text: 'The round ends after two calls of three colors. Another color is just a new try at the same one.',
     },
     { from: 10, to: 10, text: "The round ends at 20, after ten bounces; the pet's bounces count too." },
-    { from: 11, text: "The round ends at 50, after ten bounces; the pet's bounces count too." },
+    { from: 11, to: 11, text: "The round ends at 50, after ten bounces; the pet's bounces count too." },
+    {
+      from: 12,
+      text: "The round ends at three bounces; the pet's bounces count too. A ball that gets by just comes back: nothing here is a miss.",
+    },
   ],
   note: [
     { to: 5, text: 'The pet takes the left paddle if no grown-up joins.' },
+    { from: 12, text: 'The pet takes the left paddle and sends the ball gently back.' },
     {
       from: 6,
+      to: 11,
       text: 'The pet is not a rival to beat: its paddle is slow, a good shot always gets by it, and a loss still finishes with a sticker.',
     },
   ],

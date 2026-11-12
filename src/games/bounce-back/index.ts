@@ -3,6 +3,7 @@ import { ink, swatch } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { stepFromUnit } from '../../audio/notes';
 import type { CompanionRig } from '../../creatures/companion';
 import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -30,6 +31,9 @@ import {
   paddleForLanding,
   paddleTarget,
   planFor,
+  countsMiss,
+  PAT_LEVEL,
+  patPaddleSpeed,
   predictY,
   reachableZones,
   versusMisses,
@@ -131,6 +135,8 @@ class BounceBack implements Game {
   leftIdle = 99;
   /** Whether the child is touching their paddle right now. */
   childTouch = false;
+  /** On the lap level, whether the ghost finger has already tapped for this ball's approach. */
+  private demoTapped = false;
 
   private readonly table = new Graphics();
   private readonly court: Court;
@@ -212,6 +218,12 @@ class BounceBack implements Game {
   autotouch(): TouchIntent | null {
     const b = this.box;
     if (this.finished || this.ball.vx <= 0) return null;
+    // The lap level: one tap anywhere on the table, once the ball is on its way, and the paddle hurries to it.
+    if (this.plan.mode === 'pat') {
+      if (this.demoTapped || this.ball.x < (b.x0 + b.x1) / 2 - 80) return null;
+      this.demoTapped = true;
+      return { tap: { on: this.touch, x: b.x0 + (b.x1 - b.x0) * 0.35, y: b.y0 + (b.y1 - b.y0) * 0.7 }, pause: 0.6 };
+    }
     const arrive = predictY(
       this.ball.x,
       this.ball.y,
@@ -322,6 +334,12 @@ class BounceBack implements Game {
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
       if (palmOnGlass()) return;
       const p = ctx.stage.toLocal(e.global);
+      // The lap level: a touch anywhere is hers, and it rings where the finger is.
+      if (this.plan.mode === 'pat') {
+        this.fingers.set(e.pointerId, 'right');
+        this.patFeedback(p.x, p.y);
+        return;
+      }
       const side = p.x < (this.box.x0 + this.box.x1) / 2 ? 'left' : 'right';
       // The left side is for a grown-up only on the play-together level.
       if (side === 'left' && this.plan.mode !== 'together' && !this.versus) return;
@@ -337,12 +355,27 @@ class BounceBack implements Game {
     this.touch.on('pointerupoutside', up);
   }
 
+  /** A touch on the lap level: a note pitched by where the finger is, and a puff of sparkles under it. */
+  private patFeedback(x: number, y: number) {
+    const b = this.box;
+    sfx.pop(stepFromUnit(1 - (y - b.y0) / Math.max(1, b.y1 - b.y0), 5, 8));
+    this.ctx.particles.burst(x, y, {
+      colors: [0xffffff, swatch.blue.light, swatch.yellow.fill],
+      count: 12,
+      speed: [120, 260],
+      gravity: 0,
+      size: [0.25, 0.5],
+      life: [0.3, 0.6],
+    });
+  }
+
   private paddleLength() {
     return this.plan.paddle;
   }
 
   start() {
     const line = {
+      pat: 'bounce.pat',
       solo: 'bounce.solo',
       rally: 'bounce.rally',
       together: 'bounce.together',
@@ -387,7 +420,7 @@ class BounceBack implements Game {
 
   private point(e: FederatedPointerEvent) {
     const side = this.fingers.get(e.pointerId);
-    if (!side) return;
+    if (!side || this.plan.mode === 'pat') return;
     const p = this.ctx.stage.toLocal(e.global);
     this.targets[side] = p.y;
     if (side === 'left') this.leftIdle = 0;
@@ -403,6 +436,7 @@ class BounceBack implements Game {
     this.serving = 1.1;
     this.volley = 0;
     this.wantZone = -1;
+    this.demoTapped = false;
     if (this.plan.mode === 'stars') this.placeStar();
   }
 
@@ -473,7 +507,7 @@ class BounceBack implements Game {
             )
           : (b.y0 + b.y1) / 2;
     }
-    // At lap, the child's paddle drifts to help when nobody is touching it.
+    // On level 1, the child's paddle drifts to help when nobody is touching it.
     if (this.plan.mode === 'solo' && !this.childTouch && this.ball.vx > 0) {
       this.targets.right = predictY(
         this.ball.x,
@@ -485,9 +519,17 @@ class BounceBack implements Game {
         b.y1 - BALL_R,
       );
     }
+    // The lap level: her paddle always goes to the ball (where it will arrive, or along with it on its way to the pet); a touch hurries it.
+    if (this.plan.mode === 'pat')
+      this.targets.right =
+        this.ball.vx > 0
+          ? predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, f.right, b.y0 + BALL_R, b.y1 - BALL_R)
+          : this.ball.y;
     for (const side of ['left', 'right'] as const) {
       const max =
-        side === 'left' && this.petPlays()
+        side === 'right' && this.plan.mode === 'pat'
+          ? patPaddleSpeed(this.childTouch)
+          : side === 'left' && this.petPlays()
           ? isGoalMode(this.plan.mode)
             ? keeperSpeed(this.plan.keeper!, this.aim(this.plan.speed))
             : PET_SPEED
@@ -569,6 +611,8 @@ class BounceBack implements Game {
     if (side === 'left' && isZoneMode(this.plan.mode)) return this.landed();
     if (this.versus) return this.duelGoal(side);
     if (isGoalMode(this.plan.mode)) return this.goal(side);
+    // The lap level: the ball just comes back, with no boing, no "Whoops!" and nothing counted.
+    if (!countsMiss(this.plan.mode)) return this.serve();
     sfx.boing();
     if (side === 'right') {
       this.misses++;
@@ -907,6 +951,7 @@ export const bounceBack: GameModule = {
   skills: ['tracking', 'hand-eye', 'turn-taking', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [PAT_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Take the pink paddle on the left and play with {name}! Count the bounces out loud.',
