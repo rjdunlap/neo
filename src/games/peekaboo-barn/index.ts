@@ -705,10 +705,11 @@ class PeekabooBarn implements Game {
       this.busy = false;
       return;
     }
+    const at = this.done;
     this.unasked = true;
     this.busy = false;
     await after;
-    this.askNow();
+    if (this.done === at) this.askNow();
   }
 
   /** Everybody out for a bow. */
