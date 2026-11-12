@@ -22,6 +22,32 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
 
     // Level 1: the bellows, one Replay, then the basket.
     await launch('seed-travelers', 1, 'Mia', 'preschool');
+    // U7 R4: an arrival's line never holds her next tap. `seeds.arrived.breeze` is stretched to at least 4 s here, so
+    // the bellows and basket opening sooner shows the line no longer gates them.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      const instruct = g.ctx.instruct.bind(g.ctx);
+      g.heardLines = [];
+      g.finishAt = [];
+      g.ctx.instruct = (id, vars) => {
+        if (id === 'seeds.finish') g.finishAt.push(performance.now());
+        return instruct(id, vars);
+      };
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        if (id !== 'seeds.arrived.breeze') return line;
+        const rec = { at: performance.now() };
+        g.heardLines.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (!g.busy) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
     await idle();
     assert.equal(
       await page.evaluate(() => neo.scene.game.basket.visible),
@@ -43,6 +69,18 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'the replay delivers again',
     );
     await page.waitForFunction(() => neo.scene.game.basket.visible, null, { timeout: 4000 });
+    const heard = await page.evaluate(() => neo.scene.game.heardLines.map((r) => Math.round(r.opens ?? -1)));
+    if (heard.length !== 2 || heard.some((ms) => ms < 0 || ms > 500))
+      throw new Error(`R4: an arrival's line held the bellows: ${JSON.stringify(heard)}`);
+    // The first arrival's line was cut by the Replay, so "Tap the basket" waits for the Replay's arrival line.
+    await page.waitForFunction(() => neo.scene.game.finishAt.length === 1, null, { timeout: 8000 });
+    const finishAfter = await page.evaluate(
+      () => neo.scene.game.finishAt[0] - neo.scene.game.heardLines[1].at,
+    );
+    assert.ok(finishAfter >= 3900, `seeds.finish waited for the arrival line (${Math.round(finishAfter)} ms)`);
+    log(
+      `Seed Travelers 1 R4: the bellows opened ${heard.join(', ')} ms into the stretched arrival; "Tap the basket" ${Math.round(finishAfter)} ms after the last`,
+    );
     await page.evaluate(() => kit.tapOn(neo.scene.game.basket));
     await finished('seed-travelers');
     assert.deepEqual(await score(), [0, 0], 'level 1 saved 0 misses, 0 hints');

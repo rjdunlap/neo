@@ -106,6 +106,8 @@ class MeadowPens implements Game {
   private friend: Critter | null = null;
   private readonly companion: CompanionRig;
   private readonly onCancel = () => this.endStroke();
+  /** The next friend's spoken request, waiting behind the last friend's thanks (U7 R4), or null. */
+  private unasked: (() => unknown) | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -230,8 +232,10 @@ class MeadowPens implements Game {
 
   // ----- tasks -----
 
-  private async nextTask() {
+  /** The next friend walks in. `line` is the last friend's thanks, still playing over the walk (U7 R4). */
+  private async nextTask(line?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = null;
     this.index++;
     if (this.index >= this.tasks.length) return this.finale();
     this.tally.next();
@@ -252,13 +256,36 @@ class MeadowPens implements Game {
       if (!this.alive) return;
     }
     if (this.task.kind === 'field') {
+      // The field's ask and its demonstration counts are held, so they wait for the thanks to end.
+      if (line) await line;
+      if (!this.alive) return;
       await this.ctx.say('meadow.field-ask');
       if (!this.alive) return;
       await this.startField();
       return;
     }
     this.busy = false;
-    void this.askAloud();
+    if (!line) return void this.askAloud();
+    // The request waits for the thanks, or is said at her first touch on the meadow or by the guide.
+    this.unasked = () => this.askAloud();
+    const at = this.index;
+    void line.then(() => {
+      if (this.alive && this.index === at) this.askNow();
+    });
+  }
+
+  /** Says the friend's request if it is still waiting behind the last friend's thanks. */
+  private askNow() {
+    const say = this.unasked;
+    if (!say || this.finished) return false;
+    this.unasked = null;
+    void say();
+    return true;
+  }
+
+  /** The guide was tapped while the request waits: say this friend's, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private askAloud() {
@@ -272,6 +299,7 @@ class MeadowPens implements Game {
   /** A tap on the friend or the bubble: the request again, free. */
   private replay() {
     if (this.finished || this.index < 0) return;
+    this.unasked = null;
     this.friend?.poke();
     void this.askAloud();
   }
@@ -345,6 +373,7 @@ class MeadowPens implements Game {
     const p = this.local(e);
     const cell = cellAt(this.lay, p.x, p.y);
     if (cell === null) return;
+    this.askNow();
     if (this.task.kind === 'field') return this.tapField(cell);
     this.pointer = e.pointerId;
     this.stroke = this.painted.includes(cell) ? 'lift' : 'paint';
@@ -482,6 +511,8 @@ class MeadowPens implements Game {
 
   private async ring() {
     if (this.busy || this.finished || this.task?.kind !== 'pen') return;
+    // A ring before the request is heard is judged, and its counts take the request's place.
+    this.unasked = null;
     this.endStroke();
     sfx.bell(10, 0.35);
     void this.ctx.tw.to(this.bell, { rotation: 0.25 }, { duration: 0.08 }).then(() => {
@@ -596,11 +627,15 @@ class MeadowPens implements Game {
       gravity: 0,
       life: [0.5, 0.9],
     });
-    await this.ctx.say(this.task.kind === 'field' ? 'meadow.field-in' : 'meadow.in');
-    if (!this.alive) return;
+    // The thanks starts and the next friend walks in after the short look (U7 R4); the last friend's is heard out.
+    const line = this.ctx.say(this.task.kind === 'field' ? 'meadow.field-in' : 'meadow.in');
+    if (this.index === this.tasks.length - 1) {
+      await line;
+      if (!this.alive) return;
+    }
     await this.ctx.tw.wait(0.6);
     if (!this.alive) return;
-    void this.nextTask();
+    void this.nextTask(line);
   }
 
   // ----- level 2: fields and cards -----
@@ -722,6 +757,7 @@ class MeadowPens implements Game {
   askForHint() {
     if (this.busy || this.finished || !this.task) return;
     this.tally.glow();
+    this.unasked = null;
     if (this.task.kind === 'field') {
       void this.ctx.say('meadow.hint-card');
       return;
@@ -744,7 +780,7 @@ class MeadowPens implements Game {
 
   /** The ghost finger: paint the pen a square at a time and ring; at level 2, tap the right card. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.task || this.pointer !== null) return null;
+    if (this.busy || this.finished || !this.task || this.pointer !== null || this.unasked) return null;
     if (this.task.kind === 'field') {
       const card = this.cards.find((c) => c.value === this.field.right);
       return this.cardsLive && card ? { tap: { on: card } } : null;

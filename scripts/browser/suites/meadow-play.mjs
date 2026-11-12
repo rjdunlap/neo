@@ -1,6 +1,38 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished }) {
+  /**
+   * U7 R4: a friend's thanks never holds the next friend or question. `meadow.in` and `meadow.field-in` are stretched
+   * to at least 4 s, so input opening on the next task sooner shows the line no longer gates it.
+   */
+  const stretchThanks = () =>
+    page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.heardLines = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        if (id !== 'meadow.in' && id !== 'meadow.field-in') return line;
+        const rec = { at: performance.now(), from: g.index, last: g.index === g.tasks.length - 1 };
+        g.heardLines.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (!g.busy && g.index > rec.from) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
+  /** The ms from each thanks (but the last, heard out before the finale) to the next task's open input. */
+  const thanksOpens = async (label, limit) => {
+    const heard = await page.evaluate(() =>
+      neo.scene.game.heardLines.filter((r) => !r.last).map((r) => Math.round(r.opens ?? -1)),
+    );
+    if (!heard.length || heard.some((ms) => ms < 0 || ms > limit))
+      throw new Error(`R4: ${label}'s thanks held the next task: ${JSON.stringify(heard)}`);
+    log(`${label} R4: the next task opened ${heard.join(', ')} ms into the stretched thanks`);
+  };
   /** Meadow Pens: level 1 with an empty ring (uncounted), a three-square pen for four (a miss), a requested hint and the supported finish; level 2 with one wrong card (the row-by-row fill); level 3 with a straight six (the wrong fence), a requested hint and a portrait screenshot; every other pen by real taps on the ghost finger's path. */
   async function meadowPlay() {
     if (process.env.MEADOW_LEVELS) {
@@ -57,6 +89,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       kit.store.data.settings.howToCards = false;
     });
     await launch('meadow-pens', 1);
+    await stretchThanks();
     await settle();
     await ring();
     assert.deepEqual(await tally(), [0, 0], 'an empty ring is free');
@@ -86,6 +119,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       timeout: 20000,
     });
     await playOut();
+    // The 0.6 s look and the next friend's walk-in, not the 4 s line.
+    await thanksOpens('Meadow Pens 1', 2000);
     await finished('meadow-pens');
     assert.deepEqual(await score(), [1, 1]);
     await launch('meadow-pens', 2);
@@ -185,9 +220,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await choose(true);
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(300);
+      await stretchThanks();
       for (let q = 2; q < 5; q++) {
         await choose();
       }
+      // The 0.4 s look, not the 4 s line.
+      await thanksOpens(`Meadow Pens ${level}`, 1000);
       await finished('meadow-pens');
       assert.deepEqual(
         await page.evaluate(() => {
