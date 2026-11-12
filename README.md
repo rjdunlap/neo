@@ -77,7 +77,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | --- | --- | --- | --- | --- |
 | [Bubble Pop](docs/games/bubble-pop.md) | lap–school | Bubble Beach | 15 | pop anything (or tap anywhere to pop the nearest) |
 | [Peg Garden](docs/games/peg-garden.md) | lap–pre-K | Bubble Beach | 8 | tap the top and a pearl tumbles through flower pegs on a seeded board and backdrop, then rolls into a shell tray |
-| [Bounce Back](docs/games/bounce-back.md) | lap–school | Bubble Beach | 11 | bounce a slow ball back to the pet with a huge paddle |
+| [Bounce Back](docs/games/bounce-back.md) | lap–school | Bubble Beach | 12 | touch anywhere and a huge paddle goes to a slow ball (lap, level 12), then bounce a slow ball back to the pet with a huge paddle |
 | [Bumper Garden](docs/games/bumper-garden.md) | lap–pre-K | Bubble Beach | 8 | tap to launch a ladybug through flower bumpers |
 | [Sink or Float](docs/games/sink-float.md) | lap–school | Bubble Beach | 9 | drop things in the water and watch |
 | [Domino Run](docs/games/domino-run.md) | toddler–school | Bubble Beach | 11 | stand dominoes from a tray in a lane's gaps and tap the green starter; the line clacks down to the bell |
