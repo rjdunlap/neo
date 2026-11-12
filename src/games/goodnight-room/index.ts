@@ -3,11 +3,13 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
+import type { LineVars } from '../../audio/voice';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -226,6 +228,9 @@ class GoodnightRoom implements Game {
   private glowing: Sleeper | null = null;
   private clock = 0;
   private stars = 0;
+  /** The next request's ask, waiting behind the last goodnight (U7 R4), or null; `askGen` drops a stale wait. */
+  private unasked: { id: LineId; vars?: LineVars } | null = null;
+  private askGen = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -431,7 +436,7 @@ class GoodnightRoom implements Game {
 
   /** The ghost finger on the how-to card: say goodnight to each friend, or to the one named and then the next. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked) return null;
     if (this.arrow.visible) return { tap: { on: this.arrow } };
     const asleep = new Set(this.sleepers.filter((s) => s.asleep).map((s) => s.thing));
     const thing = thingToTap(
@@ -448,7 +453,7 @@ class GoodnightRoom implements Game {
 
   destroy() {}
 
-  private async next() {
+  private async next(said?: Promise<unknown>) {
     this.busy = true;
     this.index++;
     this.step = 0;
@@ -468,6 +473,8 @@ class GoodnightRoom implements Game {
     }
     const r = this.requests[this.index];
     if (!r) {
+      // The last goodnight is heard out before the others settle.
+      await said;
       // Friends left settle together; an exception round keeps its night-light awake.
       for (const s of this.sleepers.filter(
         (x) => !x.asleep && (this.plan.mode !== 'except' || !isLight(x.thing)),
@@ -477,16 +484,42 @@ class GoodnightRoom implements Game {
     }
     this.busy = false;
     if (this.plan.mode === 'except')
-      return this.ctx.instruct('night.except', { light: NAMES[this.friends.find(isLight)!] });
-    if (this.plan.mode === 'named') return this.ctx.instruct('night.named', { who: NAMES[r[0]] });
-    if (this.plan.mode === 'color') return this.ctx.instruct('night.color', { color: this.color! });
-    if (this.plan.mode === 'animals') return this.ctx.instruct('night.animals');
+      return this.ask('night.except', { light: NAMES[this.friends.find(isLight)!] }, said);
+    if (this.plan.mode === 'named') return this.ask('night.named', { who: NAMES[r[0]] }, said);
+    if (this.plan.mode === 'color') return this.ask('night.color', { color: this.color! }, said);
+    if (this.plan.mode === 'animals') return this.ask('night.animals', undefined, said);
     if (this.plan.mode === 'lightLast')
-      return this.ctx.instruct('night.lightLast', { light: NAMES[r[r.length - 1]] });
-    return this.ctx.instruct('night.two', { a: NAMES[r[0]], b: NAMES[r[1]] });
+      return this.ask('night.lightLast', { light: NAMES[r[r.length - 1]] }, said);
+    return this.ask('night.two', { a: NAMES[r[0]], b: NAMES[r[1]] }, said);
   }
 
-  private async goodnight(s: Sleeper, speak = true) {
+  /** Says a request now, or when the goodnight before it ends if that is still playing (U7 R4). */
+  private ask(id: LineId, vars: LineVars | undefined, said?: Promise<unknown>) {
+    if (!said) return void this.ctx.instruct(id, vars);
+    this.unasked = { id, vars };
+    const gen = ++this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting request, if there is one. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    this.askGen++;
+    void this.ctx.instruct(ask.id, ask.vars);
+    return true;
+  }
+
+  /** The guide was tapped while the next request waits: say it, not the request before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /** Settles a friend; with `speak`, starts its goodnight and returns the line, which nothing has to wait for. */
+  private goodnight(s: Sleeper, speak = true): Promise<void> {
     s.sleep();
     sfx.bell(noteFor(s.thing, this.setting), 0.25);
     this.stars =
@@ -499,15 +532,14 @@ class GoodnightRoom implements Game {
     z.position.set(b.x + b.width * 0.7, b.y + 10);
     this.ctx.stage.addChild(z);
     void this.ctx.tw.to(z, { y: z.y - 70, alpha: 0 }, { duration: 1.4 }).then(() => z.destroy());
-    if (speak) {
-      this.drawCount();
-      if (this.plan.mode === 'count')
-        await this.ctx.say('night.counted', {
-          n: this.sleepers.filter((x) => x.asleep).length,
-          who: NAMES[s.thing],
-        });
-      else await this.ctx.say('night.goodnight', { who: NAMES[s.thing] });
-    }
+    if (!speak) return Promise.resolve();
+    this.drawCount();
+    if (this.plan.mode === 'count')
+      return this.ctx.say('night.counted', {
+        n: this.sleepers.filter((x) => x.asleep).length,
+        who: NAMES[s.thing],
+      });
+    return this.ctx.say('night.goodnight', { who: NAMES[s.thing] });
   }
 
   private async tap(s: Sleeper) {
@@ -520,21 +552,24 @@ class GoodnightRoom implements Game {
     if (this.plan.mode === 'count') {
       const asleep = new Set(this.sleepers.filter((x) => x.asleep).map((x) => x.thing));
       if (!acceptsTap(this.plan, [], this.step, asleep, s.thing, this.targetCount)) return;
-      this.busy = true;
-      await this.goodnight(s);
+      // The count starts and her next tap cuts it as a running count; the tally keeps the total (U7 R4).
+      const said = this.goodnight(s);
       if (this.sleepers.filter((x) => x.asleep).length === this.targetCount) {
+        this.busy = true;
+        await said;
         await this.ctx.say('night.countDone', { n: this.targetCount });
         await this.ctx.tw.wait(1.2);
         for (const other of this.sleepers.filter((x) => !x.asleep)) await this.goodnight(other, false);
         return void this.finale();
       }
-      this.busy = false;
       return;
     }
     if (this.plan.mode === 'all' || this.plan.mode === 'tour') {
+      // The goodnight starts and the next friend is open at once; the room's last one is heard out (U7 R4).
+      const said = this.goodnight(s);
+      if (!this.sleepers.every((x) => x.asleep)) return;
       this.busy = true;
-      await this.goodnight(s);
-      if (!this.sleepers.every((x) => x.asleep)) return void (this.busy = false);
+      await said;
       if (this.stop + 1 >= this.tour.length) return void this.finale();
       // Everyone here is asleep: the big arrow leads on to the next room.
       this.arrow.visible = true;
@@ -550,6 +585,7 @@ class GoodnightRoom implements Game {
       new Set(this.sleepers.filter((x) => x.asleep).map((x) => x.thing)),
       this.friends,
     )!;
+    const waiting = this.unasked !== null;
     if (
       acceptsTap(
         this.plan,
@@ -559,15 +595,22 @@ class GoodnightRoom implements Game {
         s.thing,
       )
     ) {
-      this.busy = true;
+      const pending = this.unasked;
+      this.unasked = null;
+      this.askGen++;
       this.glowing = null;
       this.wrongs = 0;
-      await this.goodnight(s);
+      // The goodnight starts and the next tap or request opens at once (U7 R4).
+      const said = this.goodnight(s);
       this.step++;
-      if (this.step >= r.length) return void this.next();
-      this.busy = false;
+      // A tap that finishes the request answers it: a waiting ask is not said after all.
+      if (this.step >= r.length) return void this.next(said);
+      // One that does not (the first of two, say) leaves the ask waiting, now behind this goodnight.
+      if (pending) this.ask(pending.id, pending.vars, said);
       return;
     }
+    // A tap before she has heard the request is not a mistake: the request is said now.
+    if (waiting) return void this.askNow();
     this.busy = true;
     this.misses++;
     this.wrongs++;
