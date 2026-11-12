@@ -89,3 +89,9 @@
 **Changed:** new [dive](../deep-dives/tile-pairs.md) (seeded pairing, Peek, two more looks, levels 7–9, three decisions); the tracker, study backlog, READY and batch plans (tile-pairs 1 and 2) point to it.
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the game was read, not played).
+
+## 2026-11-11 — Pok Pok P1, one rainbow one direction (Song Maker, Jelly Drums, tune plaque; PR #1509)
+
+**Changed:** `PITCH_COLORS` and `pitchColor(rank, count)` in `src/audio/notes.ts` (red lowest, blue highest); Song Maker's rows and hub icon now run red at the bottom to blue at the top; Jelly Drums (unchanged on screen) and the treehouse tune plaque read the same table. A kept tune stores rows and columns, so saves are unaffected. Sound Garden and Beat Builder are not pitch-coloured and were left alone. `notes.test.ts` checks the direction for 3, 4 and 5 pitches and that the three users keep no table of their own.
+**Ran:** `npm run typecheck`; `npm test`; `BROWSER_SUITE=fourth FOURTH_ONLY=song` (Song Maker levels 1–7; a level-5 screenshot shows blue top row to red bottom row on the board and the card); `BROWSER_SUITE=fingerdemo FINGER_ONLY=song-maker` (levels 1 and 7); `npm run build` (shared files changed). Chrome automation only.
+**Not run:** offline, `world`, `creations-room` (the plaque's colours were not looked at in a browser), any Jelly Drums play (no on-screen change).

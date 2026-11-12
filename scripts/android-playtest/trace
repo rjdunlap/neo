@@ -1,0 +1,12 @@
+#!/bin/zsh
+# trace <x1> <y1> <x2> <y2> ... : one continuous touch through the points (half-size coordinates), six steps per leg.
+# For tracing a letter or a shape, where a swipe's single straight line is not enough.
+pts=("$@"); cmd="input motionevent DOWN $((pts[1]*2)) $((pts[2]*2));"
+px=$pts[1]; py=$pts[2]
+for ((i=3;i<=$#pts;i+=2)); do
+  x=$pts[i]; y=$pts[i+1]
+  for s in 1 2 3 4 5 6; do cmd+=" input motionevent MOVE $(( (px+(x-px)*s/6)*2 )) $(( (py+(y-py)*s/6)*2 ));"; done
+  px=$x; py=$y
+done
+cmd+=" input motionevent UP $((px*2)) $((py*2))"
+adb shell "$cmd"

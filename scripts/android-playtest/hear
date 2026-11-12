@@ -1,0 +1,17 @@
+#!/bin/zsh
+# hear <name> [seconds] [x y] : record what the phone plays for some seconds and print a transcript.
+# The phone can stay muted: the sound is captured digitally, never through the speaker. With x y (half-size
+# coordinates) it taps there 1.6 s in, for an app's "say it again" button; REPLAY_TAP="x y" sets that as the default.
+# The transcript is software's guess (whisper): quote it as machine-transcribed, never as heard.
+D=${PLAYTEST_DIR:-/tmp/playtest}; mkdir -p $D/audio
+M=${WHISPER_MODEL:-$D/models/ggml-small.en.bin}
+n=$1; secs=${2:-6}; tx=${3:-${REPLAY_TAP%% *}}; ty=${4:-${REPLAY_TAP##* }}
+f=$D/audio/$n.wav
+rm -f $f
+scrcpy --no-video --no-playback --no-control --no-window --audio-source=playback --audio-codec=raw --record-format=wav --record=$f --time-limit=$secs >$D/audio/$n.log 2>&1 &
+sleep 1.6
+[[ -n $tx && $tx != 0 ]] && adb shell input tap $(( tx * 2 )) $(( ty * 2 ))
+wait
+ffmpeg -y -loglevel error -i $f -ar 16000 -ac 1 $D/audio/$n.16k.wav
+whisper-cli -m $M -f $D/audio/$n.16k.wav -nt -np 2>/dev/null | tr -s '\n ' ' '
+echo

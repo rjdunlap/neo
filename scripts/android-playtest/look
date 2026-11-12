@@ -1,0 +1,6 @@
+#!/bin/zsh
+# look <name> [seconds] : ask the app to repeat its question (REPLAY_TAP) and transcribe it, then ui and shot.
+export PATH=${0:A:h}:$PATH
+echo "Q:$(hear $1-q ${2:-6})"
+ui
+shot $1

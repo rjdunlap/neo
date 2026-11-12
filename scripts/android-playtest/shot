@@ -1,0 +1,9 @@
+#!/bin/zsh
+# shot <name> : full-size PNG and a half-size JPG (the one to look at) in $PLAYTEST_DIR/shots; prints the JPG's path.
+# Every other tool takes coordinates as read off that half-size picture.
+D=${PLAYTEST_DIR:-/tmp/playtest}; mkdir -p $D/shots
+n=$1
+adb exec-out screencap -p > $D/shots/$n.png
+w=$(sips -g pixelWidth $D/shots/$n.png | awk '/pixelWidth/{print $2}'); h=$(sips -g pixelHeight $D/shots/$n.png | awk '/pixelHeight/{print $2}')
+sips -s format jpeg -s formatOptions 70 -Z $(( (w > h ? w : h) / 2 )) $D/shots/$n.png --out $D/shots/$n.jpg >/dev/null 2>&1
+echo $D/shots/$n.jpg
