@@ -39,6 +39,13 @@ export class WeatherWindow implements Game {
   hinted = false;
   private wrongs = 0;
   private clock = 0;
+  /**
+   * The second question's ask, waiting behind the first question's `window.evidence` (U7 R4): said when the line ends,
+   * at her first tap (which then does nothing else, since the question is only spoken) or by the guide.
+   */
+  private unasked: (() => Promise<void>) | null = null;
+  /** A tab's, record's or summary's line: it holds no input, but the ghost finger lets it be heard before its next tap. */
+  private playing: Promise<void> | null = null;
   private view: View;
   private readonly backdrop;
   private readonly heading = label('Weather Window · two pretend weeks', 29);
@@ -80,13 +87,13 @@ export class WeatherWindow implements Game {
     for (let i = 0; i < 2; i++) {
       const tab = new Container();
       tab.hitArea = new Rectangle(-80, -50, 160, 100);
-      onTap(tab, () => void this.browse(i));
+      onTap(tab, () => this.browse(i));
       this.tabs.push(tab);
     }
     for (let i = 0; i < 7; i++) {
       const node = new Container();
       node.hitArea = new Rectangle(-54, -56, 108, 112);
-      onTap(node, () => void this.replayRecord(i));
+      onTap(node, () => this.replayRecord(i));
       this.records.push(node);
     }
     for (const n of [this.heading, this.caption, this.note, this.glow]) n.eventMode = 'none';
@@ -110,6 +117,24 @@ export class WeatherWindow implements Game {
   }
   destroy() {
     this.finished = true;
+  }
+  /** The guide was tapped while the next ask waits: say that ask, not the last question's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+  private hear(line: Promise<void>) {
+    this.playing = line;
+    void line.then(() => {
+      if (this.playing === line) this.playing = null;
+    });
+  }
+  /** Says the ask if it is still waiting behind a line; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    void ask();
+    return true;
   }
   resize(view: View) {
     this.view = view;
@@ -195,7 +220,7 @@ export class WeatherWindow implements Game {
       for (const child of n.children) child.eventMode = 'none';
     });
   }
-  private async ask() {
+  private async ask(after?: Promise<unknown>) {
     this.busy = true;
     this.selected = null;
     this.wrongs = 0;
@@ -232,58 +257,71 @@ export class WeatherWindow implements Game {
       picture.position.set(-112, -38);
       n.addChild(tile(290, 140, 'white'), a, picture, text);
       for (const child of n.children) child.eventMode = 'none';
-      onTap(n, () => void this.choose(i));
+      onTap(n, () => this.choose(i));
       this.choices.push({ n: i, node: n });
       this.ctx.stage.addChild(n);
     });
     this.confirm.alpha = 0.45;
     this.ctx.stage.addChild(this.glow);
     this.resize(this.view);
-    await this.ctx.instruct(this.question === 0 ? 'window.rain' : 'window.sun');
+    const line = this.question === 0 ? 'window.rain' : 'window.sun';
+    if (after) {
+      // The board is dealt with input open; the ask (an instruction, holding input while said) waits for the line.
+      const run = async () => {
+        this.busy = true;
+        await this.ctx.instruct(line);
+        this.busy = false;
+      };
+      this.unasked = run;
+      this.busy = false;
+      void after.then(() => {
+        if (this.unasked === run) this.askNow();
+      });
+      return;
+    }
+    await this.ctx.instruct(line);
     this.busy = false;
   }
   private async replayQuestion() {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.askNow()) return;
     this.busy = true;
     sfx.pop(4);
     await this.ctx.instruct(this.question === 0 ? 'window.rain' : 'window.sun');
     this.busy = false;
   }
-  private async browse(page: number) {
-    if (this.busy || this.finished) return;
-    this.busy = true;
+  // A tab's, a record's and a summary's names never hold input (U7 R4): the page, mark or pick is already shown,
+  // and her next tap cuts the line.
+  private browse(page: number) {
+    if (this.busy || this.finished || this.askNow()) return;
     this.page = page;
     this.browsed.add(page);
     this.drawPage();
     sfx.pop(4 + page);
-    await this.ctx.say('window.page', { week: page === 0 ? 'A' : 'B' });
-    this.busy = false;
+    this.hear(this.ctx.say('window.page', { week: page === 0 ? 'A' : 'B' }));
   }
-  private async replayRecord(day: number) {
-    if (this.busy || this.finished) return;
-    this.busy = true;
+  private replayRecord(day: number) {
+    if (this.busy || this.finished || this.askNow()) return;
     this.marks[this.page] = toggleMark(this.marks[this.page], day, 7);
     this.seen.add(`${this.page}:${day}`);
     this.drawPage();
     sfx.pop(4 + day);
-    await this.ctx.say('window.record', {
-      week: this.page === 0 ? 'A' : 'B',
-      day: DAYS[day],
-      weather: WEATHER[this.round.weeks[this.page][day]],
-    });
-    this.busy = false;
+    this.hear(
+      this.ctx.say('window.record', {
+        week: this.page === 0 ? 'A' : 'B',
+        day: DAYS[day],
+        weather: WEATHER[this.round.weeks[this.page][day]],
+      }),
+    );
   }
-  private async choose(i: number) {
-    if (this.busy || this.finished) return;
-    this.busy = true;
+  private choose(i: number) {
+    if (this.busy || this.finished || this.askNow()) return;
     this.selected = i;
     this.confirm.alpha = 1;
     sfx.pop(4 + i);
-    await this.speakSummary(this.current.choices[i]);
-    this.busy = false;
+    this.hear(this.speakSummary(this.current.choices[i]));
   }
   private async submit() {
-    if (this.busy || this.finished || this.selected === null) return;
+    if (this.busy || this.finished || this.askNow() || this.selected === null) return;
     this.busy = true;
     const [a, b] = this.round.weeks.map((w) => weatherCount(w, this.current.weather));
     const vars = { a, b, weather: WEATHER[this.current.weather] };
@@ -301,13 +339,17 @@ export class WeatherWindow implements Game {
       return;
     }
     sfx.sparkle();
-    await this.ctx.say('window.evidence', vars);
-    this.question++;
-    if (this.question < 2) {
-      await this.ask();
+    // The first question's evidence is the lesson, so it plays over the second question's board (U7 R4); the second's
+    // is heard out before the closing line.
+    const line = this.ctx.say('window.evidence', vars);
+    if (this.question === 0) {
+      this.question++;
+      void this.ask(line);
       return;
     }
     this.finished = true;
+    await line;
+    this.question++;
     this.confirm.visible = false;
     this.choices.forEach((p) => (p.node.visible = false));
     this.caption.text = 'We compared two pretend weeks!';
@@ -316,7 +358,7 @@ export class WeatherWindow implements Game {
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked || this.playing) return null;
     const day = this.round.weeks[this.page].findIndex(
       (w, i) => w === this.current.weather && !this.seen.has(`${this.page}:${i}`),
     );

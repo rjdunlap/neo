@@ -175,3 +175,21 @@
 **Ran.** At base `18b1c19c` plus the feature diff, `npm run typecheck`, `npm run build`, `npm run format:check`, lint, `npm run game-docs`, and `npm test` passed (6,717 tests, five skipped). Against `GAME_URL=http://localhost:5195`, `BROWSER_SUITE=tilepairs TILE_LEVELS=5` passed (Peek, P, closing tap, pair, mismatch, hint and round finish). Reviewed the 390 × 844 emulated portrait screenshot. `BROWSER_SUITE=couchgames COUCH_ONLY=tile-pairs` passed (top button and P toggle, counters preserved). Reviewed the laptop how-to screenshot.
 
 **Not run.** `fingerdemo` and offline checks. Demonstrated actions, assets, persistence and navigation were unchanged.
+
+## 2026-11-11 — Pok Pok P3, tap the piece then the place: a definition (docs only, PR #1521)
+
+**Changed:** new [definition](../definitions/tap-then-place.md) (opt-in `tapToPlace` for `draggable()`, eight requirements, rule tests, three slices); the P3 section of POK-POK; READY (the P3 line became P3a in Next ten; P3b and P3c queued under the Pok Pok review).
+**Ran:** `node scripts/check-links.mjs` and `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the definition was written from the code at `origin/main` `d80b14e9`).
+
+## 2026-11-11 — Phone playtest tools kept (scripts and docs, PR #1527)
+
+**Changed:** the eleven zsh helpers that played TotoLogic over USB, now in `scripts/android-playtest/` with their working folder and speech model set by `PLAYTEST_DIR` and `WHISPER_MODEL`; a [session guide section](../SESSION-GUIDE.md#playing-an-app-on-the-developers-android-phone) with setup, the tools and the rules that go with them; a routing line for reviews of other games.
+**Ran:** `zsh -n` on each; `shot`, `ui`, `tap`, `swipe`, `trace` and `findcolor` against a stand-in `adb` and a saved screenshot; `node scripts/check-links.mjs` and `git diff --check`.
+**Not run:** the edited copies against the phone (it was unplugged; the originals ran all day on 2026-11-11), so `hear`, `look`, `act`, `both` and `vid` are syntax-checked only. No app code changed: no typecheck, unit tests, build or browser suites locally.
+
+## 2026-11-11 — Pok Pok P3a, the tap-then-place engine path, Hat Band moved onto it
+
+**Changed:** `src/engine/drag.ts` (opt-in `tapToPlace`, `onCancel`, `TAP_TRAVEL`, `heldPlace()`, `cancelHeld()`, handle `held`/`placing`/`tapped`/`cancel()`), `src/engine/input.ts` (`onTap` `place`), `GameScene` and `App` (a hold ends when a card, the pause sheet or a pad takes the round), Hat Band onto the engine path.
+**Ran:** `npm run typecheck`; `npm test` (348 files, 6731 passed, 1 skipped; `src/engine/drag.test.ts` 17 tests: the definition's seven assertions plus the root/ground listener, the function-valued option and `onCancel`); `npm run build` (436 precache entries); `BROWSER_SUITE=hatband HAT_LEVELS=1,3` (level 1 landscape: Done on the empty stage cancels a hold and still reminds, drag onto a friend, tap-hold lifts at the rack place, a second tap or a tap on empty ground puts it down and it returns, tap hat then friend puts it on, gate, bow, one sticker; level 3 portrait: tap-place both, replace, a held hat swaps in on a tap on a worn hat, a tap on a worn hat takes it off, both stars, bow, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=hat-band` (levels 1 and 4 finished). Chrome automation only.
+**Not run:** `couchgames` (Hat Band's pad path untouched), `world`, offline (no persistence, assets or navigation change), level 4 of the `hatband` suite (Build a song untouched).

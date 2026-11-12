@@ -3,7 +3,71 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
   async function weekPlay() {
     const levels = (process.env.WEEK_LEVELS || '1,3').split(',').map(Number);
-    const wait = () => page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy);
+    // Also waits out an ask held behind a lesson line and a replayed line (U7 R4: neither holds input), so the scripted
+    // taps below answer a spoken question and keep the old pacing.
+    const wait = () =>
+      page.waitForFunction(
+        () =>
+          neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.unasked && !neo.scene.game.playing),
+      );
+    // U7 R4: lesson lines never hold the next question. Lines matching `pattern` are stretched to at least 4 s; each
+    // records how soon the next question opened (input clear, `opened(g, before)` true) and when its ask was said.
+    const stretch = (pattern, opened) =>
+      page.evaluate(
+        ({ pattern, opened }) => {
+          const g = neo.scene.game;
+          const test = new RegExp(pattern);
+          const isOpen = new Function('g', 'before', `return (${opened})(g, before)`);
+          const say = g.ctx.say.bind(g.ctx);
+          const instruct = g.ctx.instruct.bind(g.ctx);
+          g.r4 = [];
+          g.ctx.instruct = (id, vars) => {
+            const rec = g.r4.at(-1);
+            if (rec && rec.asked === undefined) rec.asked = performance.now() - rec.at;
+            return instruct(id, vars);
+          };
+          g.ctx.say = (id, vars) => {
+            const line = say(id, vars);
+            if (!test.test(String(id))) return line;
+            const before = { question: g.question, phase: g.phase };
+            const rec = { id: String(id), at: performance.now() };
+            g.r4.push(rec);
+            const watch = () => {
+              if (rec.opens !== undefined) return;
+              if (g.finished || (!g.busy && isOpen(g, before))) rec.opens = performance.now() - rec.at;
+              else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+            };
+            void Promise.resolve().then(watch);
+            return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+          };
+        },
+        { pattern, opened: opened.toString() },
+      );
+    const r4 = async (what) => {
+      const recs = await page.evaluate(() =>
+        neo.scene.game.r4.map((r) => ({
+          id: r.id,
+          opens: Math.round(r.opens ?? -1),
+          asked: Math.round(r.asked ?? -1),
+        })),
+      );
+      const early = recs.filter((r) => r.asked >= 0);
+      if (!early.length || early.some((r) => r.opens < 0 || r.opens > 1500))
+        throw new Error(`R4: ${what} held the next question: ${JSON.stringify(recs)}`);
+      // The bot waits for the ask, so each ask comes after its line, never cutting it.
+      if (early.some((r) => r.asked < 3900))
+        throw new Error(`R4: the next ask cut ${what}: ${JSON.stringify(recs)}`);
+      return recs;
+    };
+    // A tap that only names or replays something never holds input.
+    const opensAtOnce = async (target, what) => {
+      await tap(target);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.busy),
+        false,
+        `R4: ${what} holds input while it is said`,
+      );
+    };
     const gesture = () =>
       page.evaluate(() => {
         const intent = neo.scene.game.autotouch();
@@ -22,9 +86,17 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         // No choice selected: confirm is inert. Listening to the wrong summary is free.
         await tap('neo.scene.game.confirm');
         await wait();
-        await tap('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node');
+        await opensAtOnce(
+          'neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node',
+          'a summary',
+        );
         await wait();
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+        await opensAtOnce('neo.scene.game.tabs[1]', "a tab's page");
+        await opensAtOnce('neo.scene.game.records[3]', 'a record');
+        await opensAtOnce('neo.scene.game.records[3]', 'a record');
+        await opensAtOnce('neo.scene.game.tabs[0]', "a tab's page");
+        await wait();
         // Every observation is available on its own full-size page; marking/unmarking never changes evidence.
         for (let week = 0; week < 2; week++) {
           await tap(`neo.scene.game.tabs[${week}]`);
@@ -63,8 +135,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         await page.waitForTimeout(180);
         await tap('neo.scene.game.choices[neo.scene.game.answer].node');
         await wait();
+        await stretch('^window\\.evidence$', (g, before) => g.question > before.question);
         await tap('neo.scene.game.confirm');
         await wait();
+        const evidence = await r4('the first evidence line');
+        log(`Day by Day 6 R4: the second question opened ${evidence[0].opens} ms into window.evidence`);
         assert.deepEqual(
           await page.evaluate(() => [
             neo.scene.game.question,
@@ -167,6 +242,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]),
         [2, 1, true],
       );
+      if (level >= 2 && level <= 5)
+        await stretch(
+          '^week\\.(tomorrow|yesterday)(any)?yes$',
+          (g, before) => g.question > before.question || g.phase !== before.phase,
+        );
       let checkedWeather = false,
         checkedTally = false,
         checkedWrap = false;
@@ -197,7 +277,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         if (phase === 'tally' && !checkedTally) {
           checkedTally = true;
           const weekBefore = await page.evaluate(() => [...neo.scene.game.week]);
-          await tap('neo.scene.game.records[0]');
+          await opensAtOnce('neo.scene.game.records[0]', 'a replayed record');
           await wait();
           assert.deepEqual(await page.evaluate(() => neo.scene.game.marks), [0]);
           await tap('neo.scene.game.records[0]');
@@ -245,6 +325,12 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       );
       if (level === 3 || level === 5) assert.ok(checkedTally, 'read the weather tally');
       if (level === 2) assert.ok(checkedWrap, 'inspect the week turn in portrait');
+      if (level >= 2 && level <= 5) {
+        const yes = await r4('a relative yes line');
+        log(
+          `Day by Day ${level} R4: the next question opened ${yes.map((r) => r.opens).join(', ')} ms into a yes line`,
+        );
+      }
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         `Day by Day ${level}: card naming, real placing/weather taps, retries, hint, seven records, tally revision and saved sticker passed`,
