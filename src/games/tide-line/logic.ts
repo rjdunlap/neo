@@ -74,6 +74,23 @@ export const UP = 0.6;
 export const DOWN = 0.1;
 export const CYCLES = 2;
 
+/** The lap band's sent wave: this long up the sand and back, peaking at `LAP_PEAK` halfway. */
+export const LAP_WAVE = 3.2;
+export const LAP_PEAK = 0.8;
+
+/**
+ * The sea's height `t` seconds into a lap wave that set off from height `from` (the sea may still be sliding back from a
+ * pull when she taps): it rises smoothly from where the water is, never snapping down first, then falls to the low edge.
+ */
+export function lapWaveH(t: number, from = 0): number {
+  const half = LAP_WAVE / 2;
+  const peak = Math.max(from, LAP_PEAK);
+  if (t <= 0) return from;
+  if (t < half) return from + ((peak - from) * (1 - Math.cos((Math.PI * t) / half))) / 2;
+  const k = Math.min(1, (t - half) / half);
+  return (peak * (1 + Math.cos(Math.PI * k))) / 2;
+}
+
 /** Counts full in-and-out cycles of the water from its height each frame. */
 export class CycleCounter {
   cycles = 0;
@@ -227,6 +244,9 @@ export function seaGrab(view: View, crestY: number): Box {
   const top = crestY - CREST_BAND / 2;
   return { x: PET.w, y: top, w: view.w - PET.w, h: view.h - top };
 }
+
+/** The lap band's touch area: the whole screen, sand and sky as well as the sea (the shell's pet and corner buttons sit above it). */
+export const lapGrab = (view: View): Box => ({ x: 0, y: 0, w: view.w, h: view.h });
 
 /** The ghost finger's (and the pet's carry) spot for a pail: the middle of the dry sand above the line, clear of others. */
 export function drySpot(
