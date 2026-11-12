@@ -46,6 +46,11 @@ const SHAPE_LINES = {
   rectangle: 'tangram.rectangle',
   hull: 'tangram.trapezoid',
 } as const satisfies Record<Shape, LineId>;
+/**
+ * Through this level a tray piece can also be placed by two taps: tap it (it is held, breathing, in the tray), then tap its
+ * shadow. A thumb on an upright phone hides the place it drags to, and these are the two-shape pictures the youngest play.
+ */
+const TAP_PLACE_TO = 3;
 interface Choice {
   piece: Piece;
   node: Container;
@@ -124,6 +129,7 @@ class TangramTown implements Game {
       ctx.stage.addChild(node);
       const c: Choice = { piece, node, art, drag: null!, placed: false, named: false };
       c.drag = draggable(node, ctx.tw, {
+        tapToPlace: () => ctx.level <= TAP_PLACE_TO && !this.done && !c.placed,
         onPick: () => {
           this.selected = c;
           sfx.tick();
@@ -147,6 +153,8 @@ class TangramTown implements Game {
             this.filled[target] = true;
             c.placed = true;
             c.drag.enabled = false;
+            // A placed piece takes no more touches, so a tap on the next shadow is never caught by its neighbour's circle.
+            node.eventMode = 'none';
             const t = this.plan.targets[target];
             c.drag.home = { x: this.board.x + t.x, y: this.board.y + t.y };
             node.position.set(c.drag.home.x, c.drag.home.y);
