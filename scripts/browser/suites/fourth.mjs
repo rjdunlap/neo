@@ -188,7 +188,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     // FOURTH_ONLY=sink-fresh plays levels 4 and 6 on rounds that hold one of the fresh things, with a portrait of the tank.
     const fresh = { 4: ['feather', 'marble'], 6: ['log', 'ice', 'paperclip'] };
     if (!only || only === 'sink' || only === 'sink7' || only === 'sink-fresh')
-      for (const level of only === 'sink7' ? [7] : only === 'sink-fresh' ? [4, 6] : [1, 2, 3, 4, 5, 6, 7]) {
+      for (const level of only === 'sink7'
+        ? [7]
+        : only === 'sink-fresh'
+          ? [4, 6]
+          : (process.env.SINK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7])) {
         for (let tries = 0; ; tries++) {
           await launch('sink-float', level);
           await page.waitForTimeout(700);
@@ -231,9 +235,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             for (let k = 0; k < g.items.length; k++) {
               await kit.until(() => g.guessing || g.finished, 20000);
               if (g.finished) break;
+              const t0 = performance.now();
               kit.tapOn(g.floatButton);
               await kit.sleep(300);
               await kit.until(() => g.guessing || g.finished || g.current > k, 20000);
+              // U7 R4: the reaction to her guess (2.4 s when muted) never holds the next thing. The splash (up to
+              // about 2 s), the water's own line (2.4 s, held) and a 0.4 s beat; with the reaction awaited, 7 s.
+              const took = performance.now() - t0;
+              if (k === 0 && took > 5600)
+                throw new Error(`the next thing waited ${Math.round(took)} ms after a guess`);
             }
             return;
           }

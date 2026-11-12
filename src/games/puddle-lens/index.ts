@@ -393,12 +393,47 @@ class PuddleLens implements Game {
           : this.greens.length;
   }
 
+  /** Counts every line started, so a line that waited behind another can tell whether anything was said meanwhile. */
+  private spoken = 0;
+
   private instruct(id: LineId, vars?: LineVars) {
+    this.spoken++;
     return this.ctx.instruct(id, vars);
   }
 
   private say(id: LineId, vars?: LineVars) {
+    this.spoken++;
     return this.ctx.say(id, vars);
+  }
+
+  /**
+   * A right answer (U7 R4): its line, already started, never holds the next drop or question. The next view follows a
+   * short beat and she can answer while the line, which is the lesson, still plays; `ask` (the instruction said again)
+   * waits for it to end and is skipped if anything else has been said by then. On the last
+   * ask the line is heard out, because the closing line would cut it.
+   */
+  private async right(
+    lesson: Promise<unknown>,
+    beat: number,
+    last: boolean,
+    next: () => void,
+    ask: () => void,
+  ) {
+    const e = this.epoch;
+    const ok = () => this.alive && e === this.epoch && !this.finished;
+    const spoken = this.spoken;
+    if (last) {
+      await lesson;
+      await this.ctx.tw.wait(beat);
+      if (ok()) void this.finale();
+      return;
+    }
+    await this.ctx.tw.wait(beat);
+    if (!ok()) return;
+    next();
+    const at = this.index;
+    await lesson;
+    if (ok() && at === this.index && spoken === this.spoken) ask();
   }
 
   // ----- building -----
@@ -927,7 +962,6 @@ class PuddleLens implements Game {
       return void this.say(v.line);
     }
     this.busy = true;
-    const e = this.epoch;
     sfx.sparkle();
     this.ctx.pet.cheer();
     const node = swimmer !== null ? this.swimmerNodes[this.stop - 1]?.[swimmer] : null;
@@ -935,13 +969,17 @@ class PuddleLens implements Game {
       void this.ctx.tw.to(node.scale, { x: 1.25, y: 1.25 }, { duration: 0.18 }).then(() => {
         if (!node.destroyed) void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18 });
       });
-    await this.say(v.line);
-    await this.ctx.tw.wait(0.6);
-    if (!this.alive || e !== this.epoch) return;
-    this.index++;
-    this.tally.next();
-    if (this.index >= this.drops.length) return void this.finale();
-    this.nextView();
+    await this.right(
+      this.say(v.line),
+      0.6,
+      this.index + 1 >= this.drops.length,
+      () => {
+        this.index++;
+        this.tally.next();
+        this.nextView();
+      },
+      () => this.askAgain(),
+    );
   }
 
   /** The next drop or question: the dial goes back to the eyes and the slide changes (level 3) or stays (level 4). */
@@ -953,14 +991,20 @@ class PuddleLens implements Game {
     this.build();
     sfx.whoosh();
     this.busy = false;
-    if (this.plan.level === 4) void this.askQuestion();
+  }
+
+  /** The instruction said again for the view just shown. */
+  private askAgain() {
     const again = INSTRUCT[this.plan.level];
     if (again) void this.instruct(again);
   }
 
   // ----- levels 5–8: answers and trays -----
 
-  /** A press says the answer's name first (no reading needed), then the answer is judged. */
+  /**
+   * A press starts the answer's name (no reading needed) and is judged at once (U7 R4: a tapped name never holds
+   * input), so the verdict's line cuts the name as any new line does.
+   */
   private async choose(kind: Choice) {
     if (this.busy || this.finished) return;
     const level = this.plan.level;
@@ -969,10 +1013,7 @@ class PuddleLens implements Game {
     const w = this.wall;
     const g = this.green;
     if (this.deciding === null) return;
-    this.busy = true;
-    const e = this.epoch;
-    await this.say(CHOICE_NAME[kind]);
-    if (!this.alive || e !== this.epoch) return;
+    void this.say(CHOICE_NAME[kind]);
     const v =
       level === 5
         ? judgeLife(d!.pair, d!.ringed, this.stop, kind as LifeAnswer)
@@ -981,27 +1022,30 @@ class PuddleLens implements Game {
           : level === 7
             ? judgeWall(w!, this.stop, kind as WallAnswer)
             : judgeGreen(g!, this.stop, kind as GreenAnswer);
-    if (v.result === 'free') {
-      this.settle();
-      return void this.say(v.line);
-    }
+    if (v.result === 'free') return void this.say(v.line);
     if (v.result === 'miss') {
       this.tally.miss();
       sfx.boing();
-      this.settle();
       return void this.say(v.line);
     }
+    this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
     if (level === 6) void this.slideInto(kind as CellClass);
-    await this.say(v.line);
-    await this.ctx.tw.wait(0.6);
-    if (!this.alive || e !== this.epoch) return;
-    if (level === 6) this.sorted[kind as CellClass].push(s!);
-    this.index++;
-    this.tally.next();
-    if (this.index >= this.rounds) return void this.finale();
-    this.nextView();
+    const last = this.index + 1 >= this.rounds;
+    if (level === 6 && last) this.sorted[kind as CellClass].push(s!);
+    await this.right(
+      this.say(v.line),
+      0.6,
+      last,
+      () => {
+        if (level === 6) this.sorted[kind as CellClass].push(s!);
+        this.index++;
+        this.tally.next();
+        this.nextView();
+      },
+      () => this.askAgain(),
+    );
   }
 
   /** Level 6: the slide slides from the lens into its tray. */
@@ -1037,17 +1081,21 @@ class PuddleLens implements Game {
       return void this.say(v === 'too-small' ? 'lens.too-small' : 'lens.too-close', { thing: q.thing });
     }
     this.busy = true;
-    const e = this.epoch;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.say('lens.just-right', { what: q.what });
-    await this.ctx.tw.wait(0.5);
-    if (!this.alive || e !== this.epoch) return;
-    this.index++;
-    this.tally.next();
-    if (this.index >= this.questions.length) return void this.finale();
-    this.settle();
-    void this.askQuestion();
+    await this.right(
+      this.say('lens.just-right', { what: q.what }),
+      0.5,
+      this.index + 1 >= this.questions.length,
+      () => {
+        this.index++;
+        this.tally.next();
+        this.settle();
+        // The question is only spoken, so it follows the beat at once and cuts what is left of "There … !".
+        void this.askQuestion();
+      },
+      () => {},
+    );
   }
 
   // ----- help, restart, finish -----
