@@ -527,7 +527,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 
 `scripts/abandon-cards.mjs` is not a suite: it opens each ghost-finger game's card and leaves it at a random moment (by the map, Back or Play), over and over, and fails on any page error; it found a rare fault where a game's `await` is ready in the frame its objects are destroyed (`GAME_URL=… GAME_ONLY=id,id ROUNDS=n`).
 
-Two Node-only docs scripts: `node scripts/check-links.mjs` checks every relative Markdown link and anchor in README, AGENTS and `docs/`, and `node scripts/archive-verification.mjs` (`--before=YYYY-MM-DD`, `--keep=N`, `--dry-run`) rotates older dated entries out of [the verification log](docs/VERIFICATION.md) into `docs/archive/VERIFICATION-<date>.md` and repoints their links.
+Two Node-only docs scripts: `node scripts/check-links.mjs` checks every relative Markdown link and anchor in README, AGENTS and `docs/`, and `node scripts/verification.mjs new "Title (PR #n)"` writes a dated check entry as its own file in `docs/verification/` (`latest [n]` lists the newest); [the verification log](docs/VERIFICATION.md) keeps only the coverage summary.
 
 `scripts/voice-clips/` is a separate npm package (kokoro-js) that CI never installs: on a Mac, `cd scripts/voice-clips && npm ci && node render.mjs` renders the chosen slot-free voice lines to `src/audio/clips/*.m4a` and `src/content/voice-clips.json`; the app plays a clip when one exists and falls back to device speech.
 
