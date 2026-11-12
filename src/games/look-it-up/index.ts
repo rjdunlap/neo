@@ -368,10 +368,16 @@ class LookItUp implements Game {
 
   /** Says the visitor's ask that is still waiting behind the last fact, as she touches before the fact has ended. */
   private askNow() {
-    if (!this.unasked || !this.alive || this.finished) return;
+    if (!this.unasked || !this.alive || this.finished) return false;
     this.unasked = false;
     this.asking++;
     void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) }).finally(() => this.asking--);
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say this visitor's ask, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** The next visitor. After a helped one, `after` is its fact: the visitor walks in at once and asks when it ends. */

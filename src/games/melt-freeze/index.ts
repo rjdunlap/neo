@@ -345,6 +345,13 @@ class MeltFreeze implements Game {
     );
   }
 
+  /** The guide was tapped while the ask waits: say this request, not the last one's. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished) return false;
+    this.askRequest();
+    return true;
+  }
+
   private async makeTap(tool: Tool) {
     const round = this.round!;
     const t = this.things[0];

@@ -501,6 +501,13 @@ class FruitSlice implements Game {
     void this.ctx.instruct(this.instructLine() as LineId, this.instructVars());
   }
 
+  /** The guide was tapped while the ask waits: say this sign's ask, not the last one's. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished) return false;
+    this.sayAsk();
+    return true;
+  }
+
   /* -------------------------------------------------------------------------------------------- */
   /* Tossing                                                                                        */
   /* -------------------------------------------------------------------------------------------- */
