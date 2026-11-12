@@ -6,7 +6,14 @@ export const HOW_TO: GameHowTo = {
   steps: [
     'Tap two tiles with the same picture. Each needs a clear top and an open left or right side. Bright tiles are free.',
     'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
-    'Tap Peek to see the pictures in each stack, bottom to top from left to right. Tap Peek or a tile to close. Looking is free.',
+    {
+      text: 'Tap Peek to see the pictures in each stack, bottom to top from left to right. Tap Peek or a tile to close. Looking is free.',
+      to: 6,
+    },
+    {
+      text: 'Tap Peek to see the pictures in each stack, bottom to top from left to right; a four-tile stack reads in two rows. Tap Peek or a tile to close. Looking is free.',
+      from: 7,
+    },
     'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
   ],
   finish: 'The round ends when all tiles are gone, with one sticker even when you use help.',

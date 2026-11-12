@@ -1,3 +1,4 @@
+import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
@@ -10,7 +11,8 @@ export interface Tile {
 export type Pair = [number, number];
 /**
  * `clear` is the deal dial: the band a deal's random-play clear rate must fall in (see `clearRate`).
- * These bands keep the difficulty each level had when every board shared one fixed route.
+ * Levels 1–6 keep the difficulty each had when every board shared one fixed route; level 7, built after Peek,
+ * states its own.
  */
 export const PLANS = [
   { name: 'Open rows · 12 tiles', cols: 4, rows: 3, layers: 1, layout: 'square', kinds: 6, clear: [0.95, 1] },
@@ -59,9 +61,58 @@ export const PLANS = [
     kinds: 4,
     clear: [0.75, 1],
   },
+  {
+    name: 'Tall tower · four layers',
+    cols: 4,
+    rows: 3,
+    layers: 4,
+    layout: 'tower',
+    kinds: 6,
+    // Measured on seeded routes (100 seeds, Mac): random play clears 11–98%, median 57%, and a third of deals
+    // have a first pair that leaves no route. The band keeps the middle, so a choice matters without a trap deal.
+    clear: [0.45, 0.9],
+  },
 ] as const;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+/**
+ * A look is the set of six pictures a round deals, chosen by the round's seed and fixed for the round. Within a
+ * look every picture differs from the others in outline and in colour (test-checked); `art` names a shape from
+ * `src/art/shapes.ts` or a prop from `src/art/props.ts`, mapped to a drawing in the scene. Look 0 is the
+ * original set, which stickers and the hub icon keep.
+ */
+export const LOOKS = [
+  [
+    { art: 'circle', color: 'red' },
+    { art: 'square', color: 'orange' },
+    { art: 'triangle', color: 'yellow' },
+    { art: 'star', color: 'green' },
+    { art: 'heart', color: 'blue' },
+    { art: 'hexagon', color: 'purple' },
+  ],
+  // The five later shapes and the star, whose points stand apart from all five at tile size.
+  [
+    { art: 'oval', color: 'teal' },
+    { art: 'rectangle', color: 'pink' },
+    { art: 'diamond', color: 'yellow' },
+    { art: 'pentagon', color: 'purple' },
+    { art: 'trapezoid', color: 'brown' },
+    { art: 'star', color: 'red' },
+  ],
+  // Island things: a round fruit, a heart-shaped one, a curved one, a pear, a ribbed fan and a cluster.
+  [
+    { art: 'strawberry', color: 'red' },
+    { art: 'orange', color: 'orange' },
+    { art: 'banana', color: 'yellow' },
+    { art: 'pear', color: 'green' },
+    { art: 'shell', color: 'blue' },
+    { art: 'grapes', color: 'purple' },
+  ],
+] as const satisfies readonly (readonly { art: string; color: ColorName }[])[];
+export type Look = (typeof LOOKS)[number];
+/** The round's look, drawn from the round's rng after the board is dealt so a seed's board is unchanged. */
+export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
+
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
@@ -188,6 +239,11 @@ export function layout(level: number): Tile[] {
   } else if (plan.layout === 'twins') {
     for (let y = 0; y < 2; y++) for (const x of [0, 1, 4, 5]) add(x, y, 1);
     for (let y = 0; y < 2; y++) for (const x of [1, 4]) add(x, y, 2);
+  } else if (plan.layout === 'tower') {
+    // A 2 × 3 block, a 2 × 2 on that and two on top: most of the stack starts covered.
+    for (let y = 0; y < 3; y++) for (const x of [1, 2]) add(x, y, 1);
+    for (let y = 1; y < 3; y++) for (const x of [1, 2]) add(x, y, 2);
+    for (const x of [1, 2]) add(x, 1, 3);
   } else {
     for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
     for (const x of [2, 3]) add(x, 1, 2);
