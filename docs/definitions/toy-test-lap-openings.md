@@ -65,7 +65,7 @@ Seven games fail question 1 or 4. Each line is one bounded lap level or opening,
 4. `tide-line`: at lap a touch anywhere sends the wave, and the card shows the tap.
 5. `melt-freeze`: level 5 opens with one big ice cube. A touch anywhere on the playfield warms it, and the snowflake appears after it melts. *Built 2026-11-12 (PR #1574).*
 6. `puddle-lens`: at lap a touch anywhere swells the lens, and her touch brings the next thing.
-7. `bumper-garden`: one big flower first; the rest wake as she launches.
+7. `bumper-garden`: one big flower first; the rest wake as she launches. *Built 2026-11-12 (PR #1577).*
 
 ### Found while reading (not part of the five questions)
 
