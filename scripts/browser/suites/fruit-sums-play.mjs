@@ -32,6 +32,38 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       if (way.op) await tap(`kit.tapOn(neo.scene.game.leaves.get('${way.op}'))`);
       await tap('kit.tapOn(neo.scene.game.check)');
     };
+    // U7 R4: a found way's line starts, and the boxes clear with input open before it ends ("another way" waits behind it).
+    const hookR4 = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game,
+          say = g.ctx.say.bind(g.ctx);
+        window.sumsR4 = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          if (/^fsums\.right\d?$/.test(String(id))) {
+            const at = g.found.length,
+              t = performance.now(),
+              o = { last: g.finished };
+            sumsR4.push(o);
+            void line.then(() => (o.ends = performance.now() - t));
+            void kit
+              .until(() => g.finished || (!g.busy && g.found.length === at), 8000)
+              .then(() => ((o.opens = performance.now() - t), (o.last ||= g.finished)));
+          }
+          return line;
+        };
+      });
+    const checkR4 = async (level) => {
+      const opens = (await page.evaluate(() => sumsR4)).filter((o) => !o.last);
+      assert.ok(opens.length >= 1, `R4: ${opens.length} ways timed`);
+      assert.ok(
+        opens.every((o) => o.opens < o.ends),
+        `R4: the tree waited for the found way's line (${opens.map((o) => `${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+      );
+      log(
+        `Fruit Sums ${level}: R4, boxes clear ${opens.map((o) => Math.round(o.opens)).join(', ')} ms after the way's line`,
+      );
+    };
     // FROM_LEVEL=4 starts at level 4; FROM_LEVEL=7 plays only the newest level.
     const from = Number(process.env.FROM_LEVEL ?? 1);
     if (from <= 3) await levelsOneToThree();
@@ -48,6 +80,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       // Level 1: a check before anything is picked says so and is no miss; two wrong totals earn two misses and one hint with a glowing fruit;
       // the same sum the other way round is the same way (no miss); a second, different way ends the round with one sticker.
       await launch('fruit-sums', 1);
+      await hookR4();
       await tap('kit.tapOn(neo.scene.game.check)');
       await landed();
       assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
@@ -97,6 +130,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       assert.ok(second, 'a second way exists');
       await build({ a: second.a, b: second.b });
       await finished('fruit-sums');
+      await checkR4(1);
       // Level 3: a take away is built with the leaf; portrait layout holds, shown in the cove sunset look (relaunched until the round picks it).
       await page.setViewportSize({ width: 768, height: 1024 });
       for (let i = 0; i < 15; i++) {
@@ -165,6 +199,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       // leaves the tree, and the round ends with one sticker once the tree is empty.
       await page.setViewportSize({ width: 768, height: 1024 });
       await launch('fruit-sums', 5);
+      await hookR4();
       await landed();
       const t5 = await page.evaluate(() => [
         neo.scene.game.target,
@@ -207,6 +242,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         }
       }
       await finished('fruit-sums');
+      await checkR4(5);
       log(`Fruit Sums level 5: make ${t5[0]}, tray ${t5[1].join(',')}, cleared in three pairs`);
     }
 

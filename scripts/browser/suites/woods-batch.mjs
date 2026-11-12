@@ -906,6 +906,26 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
+        // U7 R4: a right answer's line starts and the next question opens before it ends (its ask waits behind it).
+        await page.evaluate(() => {
+          const g = neo.scene.game,
+            say = g.ctx.say.bind(g.ctx);
+          window.hopR4 = [];
+          g.ctx.say = (id, vars) => {
+            const line = say(id, vars);
+            if (['hop.yay', 'hop.frac.also', 'hop.frac.same'].includes(String(id))) {
+              const at = g.index,
+                t = performance.now(),
+                o = { id, last: at + 1 >= g.questions.length };
+              hopR4.push(o);
+              void line.then(() => (o.ends = performance.now() - t));
+              void kit
+                .until(() => g.finished || (g.index > at && !g.busy), 8000)
+                .then(() => (o.opens = performance.now() - t));
+            }
+            return line;
+          };
+        });
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         if (mode === 'gap' || mode === 'make-ten' || mode === 'back-ten') {
           await page.evaluate(async () => {
@@ -1009,6 +1029,16 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           if (mode === 'frac-match' && n > 0) await answer(true);
           await answer(true);
         }
+        await finished('frog-hop');
+        const hopOpens = (await page.evaluate(() => hopR4)).filter((o) => !o.last);
+        assert.ok(hopOpens.length >= 3, `R4: ${hopOpens.length} right answers timed`);
+        assert.ok(
+          hopOpens.every((o) => o.opens < o.ends),
+          `R4: the next question waited for the right answer's line (${hopOpens.map((o) => `${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+        );
+        log(
+          `Frog Hop ${level}: R4, next question open ${hopOpens.map((o) => Math.round(o.opens)).join(', ')} ms after ${hopOpens[0].id} started`,
+        );
         await finished('frog-hop');
         assert.deepEqual(await score('frog-hop'), [
           mode === 'make-ten' || mode === 'back-ten' ? 4 : mode === 'frac-match' ? 3 : 2,
