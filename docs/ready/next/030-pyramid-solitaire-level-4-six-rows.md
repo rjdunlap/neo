@@ -1,0 +1,1 @@
+**`pyramid-solitaire`, level 4 *Six rows*** (after slices 1–2; dive slice 3, new-level tier: typecheck, rule and registry tests, the layout test at six rows, one browser play of level 4, `fingerdemo` at 4): a six-row pyramid on the existing interaction, with the corner index already in place. [Dive](../../deep-dives/pyramid-solitaire.md#build-slices-in-order)
