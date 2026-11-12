@@ -131,3 +131,9 @@
 **Changed:** the Cozy Village table (eight games: `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `stop-and-go`, `pet-says`) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); six READY lines (`teddy-doctor`, `scoop-shop`, `stop-and-go`, `mail-carrier`, `feelings-faces`, `pet-says`); the P4 line and progress counts (37 of 57 read).
 **Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the eight games were read from the code at `origin/main` `7f12c562`, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Rainbow Meadow (docs only, PR #1518)
+
+**Changed:** the Rainbow Meadow table (six games: `shape-sorter`, `color-garden`, `dot-link`, `garden-grow`, `swing-pals`, `sand-table`) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); four READY lines (`dot-link`, `color-garden`, `sand-table`, `shape-sorter`; `garden-grow` and `swing-pals` need none); the P4 line and progress counts (43 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code at `origin/main` `bd67aa66`, not played or timed; the readings were done by six parallel reader agents and key claims spot-checked against the code).
