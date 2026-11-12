@@ -427,7 +427,7 @@ class SenseDetective implements Game {
   private async investigate(channel: Channel) {
     if (this.busy || this.finished) return;
     // Level 4's ear is what the waiting `instruct-narrow` asks for, so it needs no instruction.
-    if (channel === 'sound') this.dropAsk();
+    if (channel === 'sound' && this.instructId === 'sense.instruct-narrow') this.dropAsk();
     const obs = observe(this.hidden, channel);
     if (channel === 'sound') {
       void this.shakeParcel();
@@ -935,9 +935,9 @@ class SenseDetective implements Game {
   /** Start again: the same seeded round with the clues cleared; misses and hints keep counting. */
   restart() {
     if (this.finished) return;
-    this.dropAsk();
     if (this.setLevel || this.tellLevel) {
       if (this.busy) return;
+      this.dropAsk();
       this.clearClues();
       if (this.tellLevel) this.resetTell();
       this.parcelIndex = 0;

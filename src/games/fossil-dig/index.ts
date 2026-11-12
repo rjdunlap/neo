@@ -724,7 +724,7 @@ class FossilDig implements Game {
     if (r === 'ignored') return;
     if (r === 'early') {
       this.wiggle(card.node);
-      void this.ctx.say(this.stepLine());
+      if (!this.askNow()) void this.ctx.say(this.stepLine());
       return;
     }
     sfx.pop(r === 'placed' ? 9 : 5);
@@ -756,7 +756,7 @@ class FossilDig implements Game {
     if (r === 'ignored') return;
     if (r === 'early') {
       this.wiggle(this.checkBtn);
-      void this.ctx.say(this.stepLine());
+      if (!this.askNow()) void this.ctx.say(this.stepLine());
       return;
     }
     if (r === 'empty') {
