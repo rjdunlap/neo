@@ -476,7 +476,8 @@ class PuddleLens implements Game {
     if (level === 1 && this.lap) {
       // At lap the whole screen is the lens's button: a touch anywhere answers as a touch on the lens does.
       const anywhere = new Container();
-      anywhere.hitArea = new Rectangle(0, 0, this.view.w, this.view.h);
+      // Larger than any screen, so a rotation while the lens is swollen (the rebuild waits for her touch) still answers everywhere.
+      anywhere.hitArea = new Rectangle(-10000, -10000, 20000, 20000);
       onTap(anywhere, () => this.lapTouch(), { cooldown: 200 });
       this.board.addChild(anywhere);
     }

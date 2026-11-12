@@ -161,8 +161,12 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.waitForTimeout(3000);
     s = await state();
     assert.ok(s.swollen && s.index === 0, 'the swollen lens waits for her touch, not a timer');
+    // Turned to portrait while swollen (the rebuild waits): the new far corner still answers.
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
     await tapOutside();
     await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 5000 });
+    await page.setViewportSize({ width: 1024, height: 768 });
     await settle();
     await page.evaluate(() => neo.scene.game.askForHint());
     await page.waitForFunction(() => neo.scene.game.swollen, null, { timeout: 5000 });
