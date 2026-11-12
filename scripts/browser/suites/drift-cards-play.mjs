@@ -95,7 +95,9 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       null,
       { timeout: 30000, polling: 50 },
     );
-    await page.waitForFunction(() => neo.scene.game.index === 2 && !neo.scene.game.busy, null, { timeout: 800 });
+    await page.waitForFunction(() => neo.scene.game.index === 2 && !neo.scene.game.busy, null, {
+      timeout: 800,
+    });
     await settle();
     s = await state();
     assert.deepEqual([s.index, s.misses, s.hints], [2, 2, 1], 'the right beach drops card 2');

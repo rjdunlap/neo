@@ -267,7 +267,9 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     // U7 R4: "Yes! In, out, in, out!" (2.4 s when muted) never holds the next strip. The card's glide (0.5 s) and the
     // look at the finished strip (0.6 s) come to 1.1 s; with the line awaited it was 2.9 s.
     await tapCard('low');
-    await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, { timeout: 2000 });
+    await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+      timeout: 2000,
+    });
     t = await st4();
     assert.equal(t.index, 1, 'the right card finishes the first strip');
     await page.evaluate(() => {
