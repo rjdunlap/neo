@@ -12,6 +12,8 @@ import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
+import type { LineVars } from '../../audio/voice';
+import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -260,6 +262,12 @@ class RampRace implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /**
+   * The next question's, pair's or case's instruction, waiting behind the last right answer's lesson line (U7 R4); `askGen`
+   * drops a stale wait.
+   */
+  waiting: { id: LineId; vars?: LineVars } | null = null;
+  private askGen = 0;
   stars: number[] = [];
   questions: FairQuestion[] = [];
   /** Trial Shelf: each pair's first height, the cards so far, the paw she placed (in marks) and where the pair is. */
@@ -441,7 +449,7 @@ class RampRace implements Game {
 
   /** The ghost finger: change the ramp (and the floor where it can change) to what the question needs, then press go. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.waiting) return null;
     const move = rampTouch(
       this.plan,
       this.lanes.map((l) => l.setup),
@@ -521,7 +529,12 @@ class RampRace implements Game {
     this.sign.addChild(g);
   }
 
-  private async next() {
+  /**
+   * The next star, question, pair or case. With `said` (the last right answer's line, still playing), it opens with input
+   * open and its instruction waits for the line, her first touch or the guide (U7 R4); the round's last line is heard out.
+   */
+  private async next(said?: Promise<unknown>) {
+    this.dropAsk();
     this.busy = true;
     this.index++;
     this.wrongs = 0;
@@ -537,7 +550,10 @@ class RampRace implements Game {
           : mode === 'shelf'
             ? this.shelfStarts.length
             : this.stars.length;
-    if (mode !== 'explore' && this.index >= total) return void this.finale();
+    if (mode !== 'explore' && this.index >= total) {
+      if (said) await said;
+      return void this.finale();
+    }
     if (mode === 'shelf') {
       // A fresh pair: the ramp at its start height, no cards, a blue car.
       this.lanes[0].setup = { height: this.shelfStarts[this.index], floor: 'wood' };
@@ -557,21 +573,52 @@ class RampRace implements Game {
       this.events[this.index] = [];
       this.sign.visible = true;
     }
-    if (mode === 'tell') return void this.startCase();
+    if (mode === 'tell') return void this.startCase(said);
     this.resize(this.view);
     this.drawSign();
     this.busy = false;
     if (mode === 'explore') return this.index === 0 ? this.ctx.instruct('ramp.explore') : undefined;
-    if (mode === 'shelf') return this.ctx.instruct('ramp.shelf');
+    if (mode === 'shelf') return this.ask('ramp.shelf', said);
     if (mode === 'change')
-      return this.ctx.instruct(
+      return this.ask(
         this.questions[this.index].compare === 'floor' ? 'ramp.change.floor' : 'ramp.change.height',
+        said,
       );
     if (mode === 'fair')
-      return this.ctx.instruct(
+      return this.ask(
         this.questions[this.index].compare === 'floor' ? 'ramp.fair.floor' : 'ramp.fair.height',
+        said,
       );
     if (this.index === 0) return this.ctx.instruct(mode === 'height' ? 'ramp.height' : 'ramp.both');
+  }
+
+  /** The instruction, said now, or with `said` waiting for that line to end (U7 R4). */
+  private ask(id: LineId, said?: Promise<unknown>) {
+    if (!said) return void this.ctx.instruct(id);
+    this.waiting = { id };
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting instruction, if there is one. A touch while it waits hears it and does nothing else. */
+  private askNow() {
+    const w = this.waiting;
+    if (!w || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.instruct(w.id, w.vars);
+    return true;
+  }
+
+  private dropAsk() {
+    this.waiting = null;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** A locked control is a free nudge; while reading, all lane controls are inert. */
@@ -586,7 +633,7 @@ class RampRace implements Game {
   }
 
   private cycleHeight(l: Lane) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.askNow()) return;
     if (this.changeLocked(l)) return;
     if (this.plan.mode === 'shelf') {
       // Locked until the first card lands, so every pair really starts at 2 or 4; inert while the cards ask.
@@ -604,7 +651,8 @@ class RampRace implements Game {
     if (
       this.busy ||
       this.finished ||
-      ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')
+      ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask') ||
+      this.askNow()
     )
       return;
     if (this.changeLocked(l)) return;
@@ -623,6 +671,8 @@ class RampRace implements Game {
       ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')
     )
       return;
+    // Go before she has heard the question: the question, never a roll to judge.
+    if (this.askNow()) return;
     this.busy = true;
     const mode = this.plan.mode;
     if (mode === 'tell') return void this.tellGo();
@@ -650,8 +700,8 @@ class RampRace implements Game {
         gravity: 0,
         life: [0.5, 0.9],
       });
-      await this.ctx.say('ramp.yay');
-      return void this.next();
+      // The line starts and the same lane opens for the next star at once (U7 R4); the last star's is heard out.
+      return void this.next(this.ctx.say('ramp.yay'));
     }
     this.misses++;
     this.wrongs++;
@@ -725,11 +775,12 @@ class RampRace implements Game {
         : winner.setup.height === Math.max(a.setup.height, b.setup.height)
           ? 'taller ramp'
           : 'shorter ramp';
-    await this.ctx.say('ramp.fairyay', { what });
+    // The lesson starts and the next question follows the beat, the lesson playing over it (U7 R4).
+    const said = this.ctx.say('ramp.fairyay', { what });
     await this.ctx.tw.wait(0.4);
     // Back to the same start for the next question.
     for (const l of this.lanes) l.setup = { height: 3, floor: 'wood' };
-    return void this.next();
+    return void this.next(said);
   }
 
   /** Log an event for this pair (or tell step, the newest list); misses and hints are always the lists' `tally`. */
@@ -784,7 +835,7 @@ class RampRace implements Game {
 
   /** A guess is free: a paw where she tapped, moved by the next tap, before or past the blue flag. */
   private placeGuess(x: number) {
-    if (this.busy || this.finished || this.phase !== 'change' || !this.records[0]) return;
+    if (this.busy || this.finished || this.phase !== 'change' || !this.records[0] || this.askNow()) return;
     const l = this.lanes[0];
     const at = Math.max(0, Math.min(MAX_DISTANCE, (x - l.rampEnd) / l.unit));
     this.guess = { side: sideOf(at, this.records[0].stop), at };
@@ -801,6 +852,7 @@ class RampRace implements Game {
     const right = farther(a, b);
     const card = this.cards[i];
     if (i === right) {
+      let said: Promise<void>;
       this.count('free');
       sfx.sparkle();
       this.ctx.pet.cheer();
@@ -820,8 +872,9 @@ class RampRace implements Game {
             : winner.height === Math.max(a.setup.height, b.setup.height)
               ? 'taller ramp'
               : 'shorter ramp';
-        await this.ctx.say('ramp.fairyay', { what });
-      } else await this.ctx.say('ramp.shelf.yay', { what: 'taller' });
+        said = this.ctx.say('ramp.fairyay', { what });
+      } else said = this.ctx.say('ramp.shelf.yay', { what: 'taller' });
+      // The lesson plays over the cards' exit and the next pair (U7 R4).
       this.badge.visible = false;
       await Promise.all(
         this.cards.splice(0).map(async (c) => {
@@ -829,7 +882,7 @@ class RampRace implements Game {
           c.destroy({ children: true });
         }),
       );
-      return void this.next();
+      return void this.next(said);
     }
     this.count('wrong-card');
     sfx.boing();
@@ -967,7 +1020,7 @@ class RampRace implements Game {
   }
 
   /** What can we tell?: a case starts with both cards sliding onto the shelf and replaying once, the lanes hidden. */
-  private async startCase() {
+  private async startCase(said?: Promise<unknown>) {
     const c = this.tellCases[this.index];
     this.records = [recordOf(c.a), recordOf(c.b)];
     this.resize(this.view);
@@ -976,7 +1029,7 @@ class RampRace implements Game {
     await Promise.all([this.slideCard(0), this.slideCard(1)]);
     await Promise.all(this.cards.map((card, k) => this.replayCard(card, this.records[k])));
     this.busy = false;
-    void this.ctx.instruct('ramp.tell.ask');
+    this.ask('ramp.tell.ask', said);
   }
 
   /** A claim step: its own events list and help, the tiles up and the lanes hidden and inert. */
@@ -994,7 +1047,7 @@ class RampRace implements Game {
 
   /** Touching a tile selects it and speaks its claim; free. */
   private selectClaim(claim: Claim) {
-    if (this.busy || this.finished || this.step !== 'claim') return;
+    if (this.busy || this.finished || this.step !== 'claim' || this.askNow()) return;
     this.claim = claim;
     this.count('free');
     sfx.tick();
@@ -1004,7 +1057,7 @@ class RampRace implements Game {
 
   /** A card replays its roll; free, and only while she reads the cards. */
   private async replayTellCard(i: 0 | 1) {
-    if (this.busy || this.finished || this.step !== 'claim' || !this.cards[i]) return;
+    if (this.busy || this.finished || this.step !== 'claim' || !this.cards[i] || this.askNow()) return;
     this.busy = true;
     this.count('free');
     await this.replayCard(this.cards[i], this.records[i]);
@@ -1058,16 +1111,18 @@ class RampRace implements Game {
       return void this.openRepair();
     }
     const end = tellConclusion(ra.setup, rb.setup)!;
-    await (end.line === 'floor'
-      ? this.ctx.say('ramp.tell.floor', { floor: end.floor })
-      : this.ctx.say('ramp.tell.height', { what: end.what }));
+    // The conclusion starts and plays over the cards' exit and the next case (U7 R4).
+    const said =
+      end.line === 'floor'
+        ? this.ctx.say('ramp.tell.floor', { floor: end.floor })
+        : this.ctx.say('ramp.tell.height', { what: end.what });
     await Promise.all(
       this.cards.splice(0).map(async (c) => {
         await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
         c.destroy({ children: true });
       }),
     );
-    return void this.next();
+    return void this.next(said);
   }
 
   /** A repair step: the tiles hide, lane A shows card A's setup (locked) and lane B starts at card B's. */

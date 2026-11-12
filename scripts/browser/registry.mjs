@@ -11,6 +11,7 @@ import { createSuite as createMovieNight } from './suites/movie-night-play.mjs';
 import { createSuite as createWelcomeWays } from './suites/welcome-ways-play.mjs';
 import { createSuite as createHatBand } from './suites/hat-band-play.mjs';
 import { createSuite as createGroveCutLines } from './suites/grove-cut-lines.mjs';
+import { createSuite as createTinkerCutLines } from './suites/tinker-cut-lines.mjs';
 import { createSuite as createGroveCutLines20 } from './suites/grove-cut-lines-20.mjs';
 import { createSuite as createLens } from './suites/lens-play.mjs';
 import { createSuite as createMeltFreeze } from './suites/melt-freeze-play.mjs';
@@ -362,6 +363,7 @@ export const SUITES = [
   'grovecutlines20',
   'raingarden',
   'sensedetective',
+  'tinkercutlines',
   'storyweaver',
   'sandtable',
   'adventurewalk',
@@ -530,6 +532,7 @@ export const ALL_SUITES = [
   'grovecutlines20',
   'raingarden',
   'sensedetective',
+  'tinkercutlines',
   'storyweaver',
   'sandtable',
   'adventurewalk',
@@ -891,6 +894,7 @@ export function createChecks(fixture) {
   install(createMovieNight(shared));
   install(createWelcomeWays(shared));
   install(createHatBand(shared));
+  install(createTinkerCutLines(shared));
   install(createGroveCutLines(shared));
   install(createGroveCutLines20(shared));
   return checks;
@@ -1024,6 +1028,7 @@ export async function runSuite(suite, fixture) {
     adventureWalkPlay,
     sandTablePlay,
     senseDetectivePlay,
+    tinkerCutLines,
     shedPlay,
     shedPlanPlay,
     shedPicnicPlay,
@@ -1308,6 +1313,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'grovecutlines') await groveCutLines();
   if (suite === 'all' || suite === 'grovecutlines20') await groveCutLines20();
   if (suite === 'all' || suite === 'sensedetective') await senseDetectivePlay();
+  if (suite === 'all' || suite === 'tinkercutlines') await tinkerCutLines();
   if (suite === 'all' || suite === 'storyweaver') await storyWeaverPlay();
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
   if (suite === 'all' || suite === 'adventurewalk') await adventureWalkPlay();

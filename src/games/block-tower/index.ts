@@ -96,6 +96,9 @@ class BlockTower implements Game {
   misses = 0;
   hints = 0;
   busy = true;
+  /** Level 2's knock instruction, waiting behind the friend's `tower.as-tall` (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   finished = false;
   /** The child's tower, bottom first. */
   stack: Container[] = [];
@@ -322,7 +325,7 @@ class BlockTower implements Game {
 
   /** The ghost finger on the how-to card: stack by tapping, ring the bell at the target, pick the tower that stands, or carry blocks out to the star. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.rounds[this.index]) return null;
+    if (this.busy || this.finished || this.unasked || !this.rounds[this.index]) return null;
     switch (this.plan.mode) {
       case 'tumble':
       case 'friend':
@@ -559,14 +562,18 @@ class BlockTower implements Game {
     if (this.stack.length >= r.target) {
       this.full = true;
       this.busy = true;
-      void this.ctx.tw.wait(0.4).then(async () => {
-        if (this.plan.mode === 'friend') {
-          this.friend?.cheer();
-          sfx.giggle();
-          await this.ctx.say('tower.as-tall', { friend: r.friend! });
-        }
+      void this.ctx.tw.wait(0.4).then(() => {
         this.busy = false;
-        await this.ctx.instruct('tower.knock');
+        if (this.plan.mode !== 'friend') return void this.ctx.instruct('tower.knock');
+        // The friend's line starts and her knock opens at once (U7 R4); the knock's ask waits for the line, her knock or the guide.
+        this.friend?.cheer();
+        sfx.giggle();
+        const said = this.ctx.say('tower.as-tall', { friend: r.friend! });
+        this.unasked = true;
+        const gen = this.askGen;
+        void said.then(() => {
+          if (gen === this.askGen) this.askNow();
+        });
       });
     }
   }
@@ -605,8 +612,28 @@ class BlockTower implements Game {
       .then(() => b.destroy());
   }
 
+  /** Says the waiting knock instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.instruct('tower.knock');
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the knock instruction waits behind the friend's line: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
   /** A big, giggly tumble. */
   private async knock() {
+    // Her knock needs no instruction: its crash takes the waiting one's place.
+    this.dropAsk();
     this.busy = true;
     sfx.rumble();
     sfx.giggle();
