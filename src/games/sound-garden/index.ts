@@ -44,6 +44,9 @@ import { rangeFor } from '../../progress/difficulty';
 
 type Kind = 'bird' | 'frog' | 'bunny' | 'turtle' | 'up' | 'down' | 'same' | 'bell' | 'woodpecker' | 'drum';
 
+/** A right tile's one-word name ("High!") gets this long before the next question's tiles and ask cut it (U7 R4). */
+const NAME_BEAT = 0.6;
+
 const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
 
 /** The garden's singers and the answer pictures, all code-drawn. */
@@ -637,8 +640,17 @@ class SoundGarden implements Game {
         gravity: 0,
         life: [0.5, 0.9],
       });
-      await this.ctx.say(`sg.${q.answer}` as LineId);
-      await this.ctx.say('praise');
+      // The name never holds the next question (U7 R4): it starts, the next tiles pop in after a short beat, and the
+      // next ask cuts what is left of it. `praise` is dropped there, since the ask would cut it unheard. On the last
+      // question both are heard out, because the closing line would cut them.
+      if (this.index + 1 >= this.questions.length) {
+        await this.ctx.say(`sg.${q.answer}` as LineId);
+        await this.ctx.say('praise');
+      } else {
+        void this.ctx.say(`sg.${q.answer}` as LineId);
+        await this.ctx.tw.wait(NAME_BEAT);
+      }
+      if (this.finished) return;
       await this.next();
       return;
     }
@@ -694,7 +706,10 @@ class SoundGarden implements Game {
         life: [0.5, 0.9],
       });
       await this.wakeTree();
-      await this.ctx.say('sg.echoyes');
+      // `sg.echoyes` plays over the next rhythm's knocks (U7 R4); after the last rhythm it is heard out.
+      if (this.rhythms[this.index + 1]) void this.ctx.say('sg.echoyes');
+      else await this.ctx.say('sg.echoyes');
+      if (this.finished) return;
       await this.next();
       return;
     }

@@ -10,7 +10,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const state = () => page.evaluate(() => neo.scene.game.state);
     const settle = async () => {
       await page.waitForTimeout(250);
-      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 40000 });
+      await page.waitForFunction(
+        () => neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.freeTrying),
+        null,
+        { timeout: 40000 },
+      );
       await page.waitForTimeout(150);
     };
     const tapFloor = async (k) => {
@@ -131,7 +135,10 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       [2, 1, wanted],
       'the second miss glows the asked puppet: one hint',
     );
-    await tapPuppet(wanted);
+    // U7 R4: the right puppet's reply never holds the next ask: the ask follows the 0.3 s beat (it opened after the
+    // whole reply, about 1.6 s muted, before).
+    await page.evaluate((p) => kit.tapOn(neo.scene.game.puppetNodes.get(p), 0, -60), wanted);
+    await page.waitForFunction(() => neo.scene.game.askIndex === 1, null, { timeout: 900 });
     await settle();
     s = await state();
     assert.equal(s.askIndex, 1, 'the asked puppet talked and the next ask is open');
@@ -166,6 +173,15 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     s = await state();
     assert.deepEqual([s.standing.length, s.freeTried, s.ask], [1, false, s.asks[0]]);
     assert.equal(s.spoken.at(-1).id, s.line, 'the puppet said its line');
+    // U7 R4: a free tap on the puppet says its line with input open.
+    await tapPuppet(s.puppets[0]);
+    s = await state();
+    assert.equal(s.busy, false, 'a free tap on the puppet holds no input');
+    assert.equal(s.spoken.at(-1).id, s.line, 'and the puppet said its line again');
+    // The free first try holds no input either: a second bubble during it is another free try, never judged.
+    await tapBubble('tiny');
+    s = await state();
+    assert.deepEqual([s.busy, s.freeTrying, s.misses], [false, true, 0], 'the free try leaves input open');
     await tapBubble('big');
     await settle();
     s = await state();
@@ -205,7 +221,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const state = () => page.evaluate(() => neo.scene.game.state);
     const settle = async () => {
       await page.waitForTimeout(250);
-      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 40000 });
+      await page.waitForFunction(
+        () => neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.freeTrying),
+        null,
+        { timeout: 40000 },
+      );
       await page.waitForTimeout(150);
     };
     // Bring a puppet up from its peek (or walk it) to a mark of the place (0 left, 1 right), with a real drag.
