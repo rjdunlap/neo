@@ -91,7 +91,8 @@ Each slice is one session. U7a can ship alone: it is the phone's part.
 
 - The 25 games ready for upright play were read ([the lines page](never-swallow-a-tap-lines.md)): two hold input on a line R4 forbids, `animal-snack` (`snack.yum` in *who* rounds, `snack.full`) and `far-lights` (six right-answer lines), and [fix batch 1](never-swallow-a-tap-lines.md#fix-batches) is built (2026-11-10, PR #1488).
 - Eight games praise a finished board before the next one; that is an optional second batch that waits for a playtest note. Every other awaited line is a closing line or a proper hold.
-- The other 133 games are [listed, not read](never-swallow-a-tap-lines.md#the-other-games-candidates-not-read); nothing was played or timed.
+- Bubble Beach's 13 other games were read 2026-11-11 ([their rows](never-swallow-a-tap-lines.md#bubble-beach)): seven hold a cut line, and [fix batches 3 and 4](never-swallow-a-tap-lines.md#fix-batches) are ready to build.
+- The other 120 games are [listed, not read](never-swallow-a-tap-lines.md#the-other-games-candidates-not-read); nothing was played or timed.
 
 ## Open decisions
 
