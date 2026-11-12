@@ -63,6 +63,9 @@ class WordGlue implements Game {
   readonly hintLabel = 'Show a hint';
   cards: CardNode[] = [];
   busy = true;
+  /** The next ask's line, waiting behind `wordglue.join` (U7 R4); `askGen` drops a stale wait. */
+  private unasked: (() => void) | null = null;
+  private askGen = 0;
   finished = false;
 
   private readonly backdrop: Backdrop;
@@ -164,7 +167,7 @@ class WordGlue implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.cards.some((c) => c.handle?.dragging)) return null;
+    if (this.busy || this.finished || this.unasked || this.cards.some((c) => c.handle?.dragging)) return null;
     const pair = hintFor(this.s);
     const ask = currentAsk(this.s);
     if (!pair || !ask) return null;
@@ -219,6 +222,8 @@ class WordGlue implements Game {
 
   private doRestart() {
     this.restartWanted = false;
+    this.unasked = null;
+    this.askGen++;
     restartState(this.s);
     for (const th of this.shelf) th.made.node.destroy({ children: true });
     this.shelf = [];
@@ -228,7 +233,7 @@ class WordGlue implements Game {
   }
 
   /** Lay out the ask in play: new pictures pop in (level 3 keeps its head's pictures between its two asks). */
-  private async present(first = false) {
+  private async present(first = false, said?: Promise<unknown>) {
     const ask = currentAsk(this.s);
     if (!ask) return;
     this.busy = true;
@@ -260,14 +265,38 @@ class WordGlue implements Game {
     this.busy = false;
     this.relayout();
     if (this.restartWanted) return this.doRestart();
-    if (this.level === 1) {
-      if (first) void this.ctx.instruct('wordglue.instruct.stick');
-    } else if (this.level === 2) {
-      void this.ctx.instruct('wordglue.instruct.make', { word: ask.entry.word });
-    } else {
-      this.hop(this.cardOf(ask.entry.first));
-      void this.ctx.instruct('wordglue.ask', { head: ask.entry.second });
-    }
+    const say = () => {
+      if (this.level === 1) {
+        if (first) void this.ctx.instruct('wordglue.instruct.stick');
+      } else if (this.level === 2) {
+        void this.ctx.instruct('wordglue.instruct.make', { word: ask.entry.word });
+      } else {
+        this.hop(this.cardOf(ask.entry.first));
+        void this.ctx.instruct('wordglue.ask', { head: ask.entry.second });
+      }
+    };
+    if (!said || this.level === 1) return say();
+    // The ask waits for the join, or is said at her first touch or by the guide.
+    this.unasked = say;
+    const gen = ++this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting ask, if there is one. */
+  private askNow() {
+    const say = this.unasked;
+    if (!say || this.finished || this.dead) return false;
+    this.unasked = null;
+    this.askGen++;
+    say();
+    return true;
+  }
+
+  /** The guide was tapped while the next ask waits: say it, not the ask before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private makeCard(key: string): CardNode {
@@ -291,6 +320,8 @@ class WordGlue implements Game {
   private touch(key: string) {
     if (this.finished) return;
     sfx.pop(6);
+    // Her first touch before the ask is heard says the ask, not the picture's word.
+    if (this.askNow()) return;
     const ask = currentAsk(this.s);
     if (this.level === 3 && ask && key === ask.entry.first)
       void this.ctx.say('wordglue.ask', { head: ask.entry.second });
@@ -440,7 +471,13 @@ class WordGlue implements Game {
     });
     const made = this.show(entry);
     this.bubble.visible = false;
-    await this.ctx.say('wordglue.join', { first: entry.first, second: entry.second, word: entry.word });
+    const said = this.ctx.say('wordglue.join', {
+      first: entry.first,
+      second: entry.second,
+      word: entry.word,
+    });
+    // The last ask's join is heard out; any other plays over the shelf flight and the next ask (U7 R4).
+    if (this.s.done) await said;
     if (this.dead) return;
     await this.ctx.tw.wait(0.5);
     if (this.dead) return;
@@ -468,7 +505,7 @@ class WordGlue implements Game {
       if (c.handle) c.handle.enabled = true;
     });
     if (this.s.done) return void this.celebrate();
-    await this.present();
+    await this.present(false, said);
   }
 
   private async celebrate() {
