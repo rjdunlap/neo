@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, turnToGame, launch, finished }) {
-  async function checkPeek(tapTile, state, initial) {
+  async function checkPeek(tapTile, state, initial, level) {
     const device = await page.context().newCDPSession(page);
     await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
     await page.setViewportSize({ width: 390, height: 844 });
@@ -18,8 +18,15 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         pictures: stacks.map((stack) =>
           stack.map((i) => {
             const picture = g.peekPictures.children[i];
-            const { minX, maxX } = picture.getBounds();
-            return { minX, maxX, visible: picture.visible && !g.nodes[i].picture.visible };
+            const { minX, maxX, minY, maxY } = picture.getBounds();
+            return {
+              minX,
+              maxX,
+              minY,
+              maxY,
+              units: (maxX - minX) / neo.view.scale,
+              visible: picture.visible && !g.nodes[i].picture.visible,
+            };
           }),
         ),
       };
@@ -27,18 +34,28 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
     assert.ok(alpha.covering.length > 0);
     assert.ok(alpha.covering.every((a) => a === 0.25));
     assert.ok(alpha.underneath.every((a) => a === 1));
+    const deepest = level === 7 ? 4 : 3;
     assert.ok(
-      alpha.pictures.some((stack) => stack.length === 3),
-      'the portrait check includes a three-layer stack',
+      alpha.pictures.some((stack) => stack.length === deepest),
+      `the portrait check includes a ${deepest}-layer stack`,
     );
     for (const stack of alpha.pictures) {
       assert.ok(stack.every((p) => p.visible));
-      for (let i = 1; i < stack.length; i++) {
-        assert.ok(stack[i - 1].maxX < stack[i].minX, 'pictures in a stack are readable separately');
-      }
+      // Pictures in a stack never overlap (a four-deep stack reads in two rows), so each is readable separately.
+      for (let i = 0; i < stack.length; i++)
+        for (let j = i + 1; j < stack.length; j++) {
+          const [a, b] = [stack[i], stack[j]];
+          const apart = a.maxX < b.minX || b.maxX < a.minX || a.maxY < b.minY || b.maxY < a.minY;
+          assert.ok(apart, 'pictures in a stack are readable separately');
+        }
+      if (stack.length === 4)
+        assert.ok(
+          stack.every((p) => p.units >= 30),
+          'four-deep pictures stay large',
+        );
     }
     assert.deepEqual(await state(), initial, 'looking leaves play and counters alone');
-    await screenshot('tile-pairs-5-peek-portrait');
+    await screenshot(`tile-pairs-${level}-peek-portrait`);
 
     await page.keyboard.press('p', { delay: 120 });
     assert.equal(await page.evaluate(() => neo.scene.game.peeking), false, 'P closes the touch view');
@@ -81,9 +98,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       await launch('tile-pairs', level);
       await page.waitForTimeout(500);
       const initial = await state();
-      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24][level - 1]);
-      if (level === 5) await checkPeek(tapTile, state, initial);
-      else if (level >= 3) {
+      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24][level - 1]);
+      if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
+      if (level >= 3 && level !== 5) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         const geometry = await page.evaluate(async () => {
@@ -181,6 +198,25 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         [2, 2],
       );
       log(`Tile Pairs ${level}: mismatch, hint, undo, shuffle, resize and one sticker passed`);
+    }
+    // Each round deals one of three looks by its seed: relaunch until both new looks have shown, one portrait each.
+    if (process.env.TILE_LOOKS !== 'off') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const shown = new Set();
+      for (let n = 0; n < 16 && shown.size < 2; n++) {
+        await launch('tile-pairs', 3);
+        await page.waitForTimeout(400);
+        const look = await page.evaluate(() => neo.scene.game.look);
+        if (look === 0 || shown.has(look)) continue;
+        shown.add(look);
+        const kinds = await page.evaluate(() => neo.scene.game.tiles.map((t) => t.kind));
+        assert.equal(new Set(kinds).size, 6);
+        await screenshot(`tile-pairs-look-${look}-portrait`);
+      }
+      assert.equal(shown.size, 2, 'both new looks are dealt within a few rounds');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(200);
+      log('Tile Pairs: both new looks dealt and captured');
     }
     // The actual Lantern Lake tile launches the game and Home returns to that land.
     await page.evaluate(() => {

@@ -1,6 +1,7 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { cream, ink, RAINBOW, swatch } from '../../art/palette';
-import { shapePath, SHAPES } from '../../art/shapes';
+import { cream, ink, swatch } from '../../art/palette';
+import { prop, type PropKind } from '../../art/props';
+import { shapePath, SHAPES, MORE_SHAPES, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { nextSpot, routeStep } from '../../couch/focus';
@@ -14,12 +15,14 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  LOOKS,
   free,
   freeTiles,
   fullMask,
   makeBoard,
   pairs,
   peekStacks,
+  pickLook,
   planFor,
   present,
   removePair,
@@ -29,14 +32,28 @@ import {
   type Tile,
 } from './logic';
 
-function pictureArt(kind: number) {
-  return shapePath(new Graphics(), SHAPES[kind], 30)
-    .fill(swatch[RAINBOW[kind]].fill)
-    .stroke({ width: 4, color: swatch[RAINBOW[kind]].line });
+const SHAPE_ART: readonly string[] = [...SHAPES, ...MORE_SHAPES];
+/** One picture 64–72 units across, in its look's colour; a container so Peek can scale it. */
+function pictureArt(kind: number, look = 0) {
+  const { art, color } = LOOKS[look][kind];
+  const c = new Container();
+  if (SHAPE_ART.includes(art))
+    c.addChild(
+      shapePath(new Graphics(), art as ShapeKind, 30)
+        .fill(swatch[color].fill)
+        .stroke({ width: 4, color: swatch[color].line }),
+    );
+  else {
+    // Props are drawn about 100–120 units across; this brings the widest to the star's 72.
+    const p = prop(art as PropKind, color);
+    p.scale.set(0.58);
+    c.addChild(p);
+  }
+  return c;
 }
 
 /** Pictures differ by shape as well as color. The raised edge makes a covered tile read as a stack. */
-function tileArt(kind: number) {
+function tileArt(kind: number, look = 0) {
   const c = new Container();
   c.addChild(new Graphics().roundRect(-50, -48, 108, 108, 14).fill(swatch.brown.line));
   c.addChild(
@@ -45,7 +62,7 @@ function tileArt(kind: number) {
       .fill(cream)
       .stroke({ width: 3, color: swatch.brown.fill }),
   );
-  const picture = pictureArt(kind);
+  const picture = pictureArt(kind, look);
   c.addChild(picture);
   return Object.assign(c, { picture });
 }
@@ -74,7 +91,9 @@ class TilePairs implements Game {
   private readonly peekLabel = label('Peek', 24);
   private peeking = false;
   nodes: ReturnType<typeof tileArt>[] = [];
-  private readonly peekPictures = new Container<Graphics>();
+  private readonly peekPictures = new Container<Container>();
+  /** The round's picture set, chosen once by the seed; undo and shuffle keep it. */
+  private readonly look: number;
   private history: Snapshot[] = [];
   private readonly ring = new Graphics();
   private readonly tally = label('', 30);
@@ -94,6 +113,7 @@ class TilePairs implements Game {
     this.view = ctx.view;
     this.touch = !ctx.couch;
     this.tiles = makeBoard(ctx.level, ctx.rng);
+    this.look = pickLook(ctx.rng);
     this.mask = fullMask(this.tiles);
     this.ring.eventMode = this.tally.eventMode = this.help.eventMode = 'none';
     this.peekPictures.eventMode = 'none';
@@ -126,7 +146,7 @@ class TilePairs implements Game {
     }
     this.leaving.clear();
     this.nodes = this.tiles.map((t, i) => {
-      const c = tileArt(t.kind);
+      const c = tileArt(t.kind, this.look);
       c.hitArea = new Rectangle(-54, -54, 108, 108);
       onTap(
         c,
@@ -139,8 +159,8 @@ class TilePairs implements Game {
       this.board.addChild(c);
       return c;
     });
-    for (const picture of this.peekPictures.removeChildren()) picture.destroy();
-    for (const { kind } of this.tiles) this.peekPictures.addChild(pictureArt(kind));
+    for (const picture of this.peekPictures.removeChildren()) picture.destroy({ children: true });
+    for (const { kind } of this.tiles) this.peekPictures.addChild(pictureArt(kind, this.look));
     this.route = solve(this.tiles, this.mask);
     this.cursor = freeTiles(this.tiles, this.mask)[0] ?? 0;
     this.resize(this.view);
@@ -171,12 +191,21 @@ class TilePairs implements Game {
     for (const picture of this.peekPictures.children) picture.visible = false;
     for (const stack of stacks) {
       const base = this.nodes[stack[0]];
-      const spacing = 96 / stack.length;
+      // The tower's four-deep stacks read in two rows, so each picture stays large enough to tell apart.
+      const rows = stack.length > 3 ? 2 : 1,
+        per = Math.ceil(stack.length / rows),
+        spacing = 96 / per;
       stack.forEach((i, depth) => {
         this.nodes[i].picture.visible = false;
         const picture = this.peekPictures.children[i];
-        picture.position.set(base.x + (depth - (stack.length - 1) / 2) * spacing, base.y);
-        picture.scale.set(Math.min(0.75, (spacing - 4) / 64));
+        const col = depth % per,
+          row = Math.floor(depth / per);
+        picture.position.set(
+          base.x + (col - (per - 1) / 2) * spacing,
+          base.y + (row - (rows - 1) / 2) * spacing,
+        );
+        // Pictures reach about 72 units across (the star's points), so neighbours keep a gap.
+        picture.scale.set(Math.min(0.75, (spacing - 4) / 72));
         picture.visible = true;
       });
     }
@@ -186,7 +215,9 @@ class TilePairs implements Game {
     this.tally.text = `${remaining} tiles · ${open} ${open === 1 ? 'pair' : 'pairs'} open · ${this.undos} undos · ${this.shuffles} shuffles`;
     this.help.text = this.peeking
       ? stacks.length
-        ? 'Each stack reads from bottom to top, left to right'
+        ? stacks.some((stack) => stack.length > 3)
+          ? 'Stacks read from the bottom, left to right, row by row'
+          : 'Each stack reads from bottom to top, left to right'
         : 'All remaining pictures are visible'
       : this.route === null
         ? 'No clearing route · Undo or Shuffle keeps you playing'
