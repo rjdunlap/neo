@@ -91,6 +91,9 @@ class PondTyping implements Game {
   private layout = typingLayout(1024, 768);
   private allDone = false;
   private bubbleY = 0;
+  /** The next bubble's word, waiting behind the popped one's `pt.said` (U7 R4); `readGen` drops a stale wait. */
+  private unread = false;
+  private readGen = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.level = typingLevel(ctx.level);
@@ -154,6 +157,20 @@ class PondTyping implements Game {
 
   private readTarget() {
     void this.ctx.say('pt.said', { word: this.typist.text });
+  }
+
+  /** Reads the waiting word, if there is one. */
+  private readNow() {
+    if (!this.unread || this.finished) return false;
+    this.unread = false;
+    this.readGen++;
+    this.readTarget();
+    return true;
+  }
+
+  /** The guide was tapped while the next word waits: read it. */
+  sayWaitingAsk() {
+    return this.readNow();
   }
 
   resize(view: View) {
@@ -274,6 +291,11 @@ class PondTyping implements Game {
   private press(key: string) {
     const r = this.typist.press(key);
     if (r.kind === 'ignored') return;
+    // Her first key drops the waiting word: the bubble shows it, and her key's own sound and line take its place.
+    if (this.unread) {
+      this.unread = false;
+      this.readGen++;
+    }
     if (r.kind === 'edit') {
       if (this.typist.hints) this.helped();
       this.draw();
@@ -337,18 +359,27 @@ class PondTyping implements Game {
     });
     await this.ctx.tw.to(this.bubble.scale, { x: 1.2, y: 1.2 }, { duration: 0.1 });
     this.bubble.alpha = 0;
-    if (word.length > 1) await this.ctx.say('pt.said', { word });
-    this.bubble.scale.set(0.3);
+    // The last bubble's word is heard out; any other plays over the refill and the next bubble (U7 R4).
+    const said = word.length > 1 ? this.ctx.say('pt.said', { word }) : null;
     if (roundDone) {
+      if (said) await said;
+      this.bubble.scale.set(0.3);
       await this.pondDone();
       return;
     }
+    this.bubble.scale.set(0.3);
     this.draw();
     this.bubble.alpha = 1;
     await this.ctx.tw.to(this.bubble.scale, { x: 1, y: 1 }, { duration: 0.25 });
     this.busy = false;
-    this.readTarget();
     this.report();
+    if (!said) return this.readTarget();
+    // The next word waits for the popped one, or is dropped at her first key, or read by the guide.
+    this.unread = true;
+    const gen = ++this.readGen;
+    void said.then(() => {
+      if (gen === this.readGen) this.readNow();
+    });
   }
 
   private async pondDone() {
@@ -420,7 +451,7 @@ class PondTyping implements Game {
   /** The demonstration types the key the bubble shows; once a round it slips on one key, so the free first miss shows. */
   autoplay(dt: number): CouchControls {
     const out = idle();
-    if (this.busy || this.finished) return out;
+    if (this.busy || this.finished || this.unread) return out;
     this.botWait -= dt;
     if (this.botWait > 0) return out;
     this.botWait = 0.1;

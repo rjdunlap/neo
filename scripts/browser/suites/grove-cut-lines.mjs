@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 
 /**
- * U7d fix batch 19 (R4): in `goodnight-room`, `opposites` and `word-monsters` a tapped friend's, card's or monster's
- * line never holds the next tap. Each line is stretched to at least 4 s in the page, so the next friend, card or
- * question opening sooner shows the line no longer gates it; the round's last line is still heard out.
- * GROVE_ONLY=night|opp|monsters plays one game.
+ * U7d fix batches 19 and 21 (R4): in `goodnight-room`, `opposites` and `word-monsters` a tapped friend's, card's or
+ * monster's line, and in `pond-typing`, `word-glue` and `owl-walk` a typed word's, joined pair's or flipped card's
+ * line, never holds the next tap. Each line is stretched to at least 4 s in the page, so the next friend, card,
+ * question, bubble, ask or stone tap opening sooner shows the line no longer gates it; the round's last line is
+ * still heard out. GROVE_ONLY=night|opp|monsters|pond|glue|owl plays one game.
  */
-export function createSuite({ page, launch, finished, screenshot, log }) {
+export function createSuite({ page, launch, finished, screenshot, log, ready, chooserEnter, errors }) {
   async function groveCutLines() {
     const only = process.env.GROVE_ONLY;
     const score = (id) =>
@@ -275,6 +276,196 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
           .join(
             ', ',
           )} ms into a 4 s sound, its ask waiting; an early tap said it (no miss); the guide said it; the last heard out`,
+      );
+    }
+    if (!only || only === 'pond') {
+      // Level 3 (words and phrases), a couch game: a typed word's `pt.said` starts and the next bubble opens at once.
+      await page.evaluate(() =>
+        localStorage.setItem(
+          'neo.couch.v1',
+          JSON.stringify({
+            version: 2,
+            trips: 30,
+            stickers: {},
+            seen: ['pond-typing'],
+            party: {
+              seed: 4242,
+              mode: 'together',
+              reroll: 0,
+              turn: null,
+              selected: 'pond-typing',
+              rounds: [],
+            },
+          }),
+        ),
+      );
+      await page.reload();
+      await ready();
+      await chooserEnter();
+      await page.waitForFunction(() => neo.scene.screen === 'menu');
+      await page.evaluate(async () => {
+        const info = (await import('/src/couch/catalog.ts')).COUCH_INFO['pond-typing'];
+        info.level = () => 3;
+        // A laptop with its keyboard: the typing game is offered there, not on a TV.
+        neo.scene.couch.data.settings.place = 'laptop';
+        neo.scene.couch.data.party.selected = 'pond-typing';
+        neo.scene.couch.save();
+      });
+      await page.waitForTimeout(450);
+      await page.getByRole('button', { name: /^Resume /, exact: false }).click();
+      await page.waitForFunction(() => !neo.switching && ['intro', 'game'].includes(neo.scene.screen));
+      if ((await page.evaluate(() => neo.scene.screen)) === 'intro') {
+        await page.waitForTimeout(450);
+        await page.getByRole('button', { name: 'Play', exact: true }).click();
+      }
+      await page.waitForFunction(
+        () => !neo.switching && neo.scene.screen === 'game' && neo.scene.game?.typist,
+      );
+      await stretch(['pt.said']);
+      const pops = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const out = [];
+        const n = g.ponds[0].length;
+        for (let b = 0; b < n; b++) {
+          await kit.until(() => g.typist.bubble === b && !g.busy, 15000);
+          if (b === 1) {
+            // Her first key while the next word waits drops it (the bubble shows the word).
+            g.press(g.typist.wanted);
+            out.push({ early: { waiting: g.unread } });
+          }
+          if (b === 2) out.push({ guide: g.sayWaitingAsk(), waiting: g.unread });
+          await kit.sleep(200);
+          let t0 = 0;
+          while (g.typist.bubble === b && !g.finished) {
+            t0 = performance.now();
+            g.press(g.typist.wanted);
+            await kit.sleep(20);
+          }
+          if (b === n - 1) {
+            await kit.until(() => g.finished, 20000);
+            out.push({ last: performance.now() - t0 });
+          } else {
+            await kit.until(() => g.typist.bubble === b + 1 && !g.busy, 15000);
+            out.push({ b, open: performance.now() - t0, waiting: g.unread });
+          }
+        }
+        return { out, misses: g.typist.misses };
+      });
+      for (const o of pops.out) {
+        if (o.open !== undefined && !(o.open < 1000 && o.waiting))
+          throw new Error(`R4: a typed word's line held the next bubble: ${JSON.stringify(pops)}`);
+        if (o.early && o.early.waiting) throw new Error(`R4: her first key left the word waiting`);
+        if (o.guide !== undefined && (!o.guide || o.waiting))
+          throw new Error(`R4: the guide did not read the waiting word`);
+        if (o.last !== undefined && o.last < 4000)
+          throw new Error(`R4: the last word was cut: ${JSON.stringify(pops)}`);
+      }
+      assert.equal(pops.misses, 0);
+      assert.equal(errors.length, 0, errors.join('\n'));
+      log(
+        `Pond Typing 3 R4: next bubble open ${pops.out
+          .filter((o) => o.open !== undefined)
+          .map((o) => Math.round(o.open))
+          .join(
+            ', ',
+          )} ms into a 4 s word, its read waiting; her first key dropped it; the guide read it; the last heard out`,
+      );
+    }
+
+    if (!only || only === 'glue') {
+      // Level 2 (make the word): `wordglue.join` starts and the shelf flight and the next ask follow at once.
+      await launch('word-glue', 2);
+      await stretch(['wordglue.join']);
+      const asks = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const card = (k) => g.cards.find((c) => c.key === k).node;
+        const out = [];
+        const n = g.s.round.asks.length;
+        for (let a = 0; a < n; a++) {
+          await kit.until(() => g.s.index === a && !g.busy, 15000);
+          if (a === 1) {
+            // Her first touch while the ask waits says the ask, not the picture's word.
+            kit.tapOn(g.cards[0].node);
+            await kit.sleep(150);
+            out.push({ early: { waiting: !!g.unasked, misses: g.s.misses } });
+          }
+          if (a === 2) out.push({ guide: g.sayWaitingAsk(), waiting: !!g.unasked });
+          await kit.sleep(300);
+          const ask = g.s.round.asks[a].entry;
+          await kit.dragTo(card(ask.first), card(ask.second).getGlobalPosition());
+          const t0 = performance.now();
+          if (a === n - 1) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.push({ last: performance.now() - t0 });
+          } else {
+            await kit.until(() => g.s.index === a + 1 && !g.busy, 15000);
+            out.push({ a, open: performance.now() - t0, waiting: !!g.unasked });
+          }
+        }
+        return out;
+      });
+      for (const o of asks) {
+        if (o.open !== undefined && !(o.open < 4000 && o.waiting))
+          throw new Error(`R4: a join held the next ask: ${JSON.stringify(asks)}`);
+        if (o.early && (o.early.waiting || o.early.misses !== 0))
+          throw new Error(`R4: her first touch left the ask unsaid: ${JSON.stringify(asks)}`);
+        if (o.guide !== undefined && (!o.guide || o.waiting))
+          throw new Error(`R4: the guide did not say the waiting ask`);
+        if (o.last !== undefined && o.last < 4000)
+          throw new Error(`R4: the last join was cut: ${JSON.stringify(asks)}`);
+      }
+      await finished('word-glue');
+      assert.deepEqual(await score('word-glue'), [0, 0]);
+      log(
+        `Word Glue 2 R4: next ask open ${asks
+          .filter((o) => o.open !== undefined)
+          .map((o) => Math.round(o.open))
+          .join(
+            ', ',
+          )} ms into a 4 s join, its ask waiting; her first touch said it; the guide said it; the last heard out`,
+      );
+    }
+
+    if (!only || only === 'owl') {
+      // Level 1 (one owl): her card's `owl.color` starts and the stone tap opens at once.
+      await launch('owl-walk', 1);
+      await stretch(['owl.color']);
+      const turns = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const out = [];
+        for (let t = 0; t < 20 && !g.finished; t++) {
+          await kit.until(() => g.finished || (!g.busy && !g.card && g.turn === 'child'), 15000);
+          if (g.finished) break;
+          const t0 = performance.now();
+          kit.tapOn(g.deck);
+          await kit.until(() => !g.busy && g.card, 15000);
+          const open = performance.now() - t0;
+          const waiting = !!g.unasked;
+          // Where she would tap, read past the waiting instruction.
+          const u = g.unasked;
+          g.unasked = null;
+          const intent = g.autotouch();
+          g.unasked = u;
+          let guide;
+          if (t % 2 === 0) guide = g.sayWaitingAsk();
+          kit.tapOn(intent.tap.on, intent.tap.x ?? 0, intent.tap.y ?? 0);
+          await kit.sleep(100);
+          out.push({ t, open, waiting, guide, after: !!g.unasked });
+          await kit.until(() => g.finished || !g.card, 15000);
+        }
+        await kit.until(() => neo.scene.finished, 30000);
+        return { out, misses: g.misses };
+      });
+      for (const o of turns.out) {
+        if (!(o.open < 1000 && o.waiting) || o.after || (o.guide !== undefined && !o.guide))
+          throw new Error(`R4: a card's colour held the stone tap: ${JSON.stringify(turns)}`);
+      }
+      await finished('owl-walk');
+      assert.deepEqual(await score('owl-walk'), [0, 0]);
+      log(
+        `Owl Walk 1 R4: ${turns.out.length} cards, stone tap open ${turns.out
+          .map((o) => Math.round(o.open))
+          .join(', ')} ms into a 4 s colour, its instruction waiting; the guide said it; her tap dropped it`,
       );
     }
   }
