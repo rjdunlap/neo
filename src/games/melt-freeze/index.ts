@@ -11,6 +11,7 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawTable, ghostArt, iconArt, puddleArt, snowArt, solidArt, sunArt, targetArt } from './art';
 import {
+  LAP_LEVEL,
   LEVELS,
   MakeRound,
   meltPlan,
@@ -19,6 +20,7 @@ import {
   sayAfter,
   step,
   SUBSTANCES,
+  TAPS_TO_MELT,
   tableLayout,
   thingsFor,
   toolFor,
@@ -76,6 +78,8 @@ class MeltFreeze implements Game {
   private readonly background = new Graphics();
   private readonly table = new Graphics();
   private readonly glow = new Graphics();
+  private readonly playfield = new Container();
+  private warmth = 0;
   readonly sunButton = new Container();
   readonly snowButton = new Container();
   private readonly pulse = { sun: 0, snow: 0 };
@@ -94,7 +98,7 @@ class MeltFreeze implements Game {
     const authored = !!ctx.demo || !authoredShown.has(ctx.level);
     authoredShown.add(ctx.level);
     ctx.stage.addChild(this.background, this.table);
-    if (this.plan.mode === 'watch') this.show(['ice']);
+    if (this.plan.mode === 'watch' || this.plan.mode === 'tap') this.show(['ice']);
     else if (this.plan.mode === 'turn') {
       this.turnThings = thingsFor(ctx.rng, authored);
       this.show([this.turnThings[0]]);
@@ -110,10 +114,17 @@ class MeltFreeze implements Game {
       this.trays = traysFor(ctx.rng, authored);
       this.show(this.trays[0]);
     }
+    if (this.plan.mode === 'tap') {
+      this.playfield.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
+      onTap(this.playfield, () => this.warmIce(), { cooldown: 60 });
+      ctx.stage.addChild(this.playfield);
+      this.snowButton.visible = false;
+    }
     for (const [button, art, tool] of [
       [this.sunButton, sunArt(), 'sun'],
       [this.snowButton, snowArt(), 'snow'],
     ] as const) {
+      if (this.plan.mode === 'tap' && tool === 'sun') continue;
       art.scale.set(1.15);
       button.addChild(tile(150, 150), art);
       button.hitArea = new Rectangle(-80, -80, 160, 160);
@@ -146,7 +157,7 @@ class MeltFreeze implements Game {
         warmed: false,
       };
       this.pose(thing);
-      onTap(node, () => this.wiggle(thing));
+      if (this.plan.mode !== 'tap') onTap(node, () => this.wiggle(thing));
       this.things.push(thing);
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.table) + 1);
     }
@@ -166,7 +177,8 @@ class MeltFreeze implements Game {
   }
 
   start() {
-    if (this.plan.mode === 'watch') void this.ctx.instruct('meltfreeze.instruct.watch');
+    if (this.plan.mode === 'tap') void this.ctx.instruct('meltfreeze.instruct.tap');
+    else if (this.plan.mode === 'watch') void this.ctx.instruct('meltfreeze.instruct.watch');
     else if (this.plan.mode === 'turn') void this.ctx.instruct('meltfreeze.instruct.both');
     else if (this.plan.mode === 'make') this.askRequest();
     else void this.ctx.instruct('meltfreeze.instruct.tray');
@@ -179,6 +191,10 @@ class MeltFreeze implements Game {
       tap: { on: tool === 'sun' ? this.sunButton : this.snowButton },
     });
     switch (this.plan.mode) {
+      case 'tap':
+        return this.snowButton.visible
+          ? tap('snow')
+          : { tap: { on: this.things[0].node, y: -40 }, receiver: this.playfield };
       case 'watch':
         return !this.seenMelt ? tap('sun') : !this.seenFreeze ? tap('snow') : null;
       case 'turn': {
@@ -191,6 +207,24 @@ class MeltFreeze implements Game {
       case 'tray':
         return !this.used.has('sun') ? tap('sun') : !this.used.has('snow') ? tap('snow') : null;
     }
+  }
+
+  private async warmIce() {
+    if (this.busy || this.finished || this.snowButton.visible) {
+      sfx.tick();
+      return;
+    }
+    sfx.pop(4 + this.warmth * 2);
+    const ice = this.things[0];
+    this.warmth++;
+    ice.solid.scale.y = 1 - this.warmth * 0.1;
+    if (this.warmth < TAPS_TO_MELT) return;
+
+    this.busy = true;
+    await this.apply(ice, 'sun');
+    this.snowButton.visible = true;
+    this.busy = false;
+    void this.ctx.instruct('meltfreeze.instruct.snow');
   }
 
   private wiggle(t: Thing) {
@@ -213,6 +247,8 @@ class MeltFreeze implements Game {
     if (this.busy) return;
     this.rest = 0;
     switch (this.plan.mode) {
+      case 'tap':
+        return void this.freezeLapIce();
       case 'watch':
         return void this.watchTap(tool);
       case 'turn':
@@ -222,6 +258,12 @@ class MeltFreeze implements Game {
       case 'tray':
         return void this.trayTap(tool);
     }
+  }
+
+  private async freezeLapIce() {
+    this.busy = true;
+    await this.apply(this.things[0], 'snow');
+    void this.end();
   }
 
   /** One thing takes a step; a change is animated and spoken, a no-change only spoken. Resolves when the table is still again. */
@@ -496,6 +538,11 @@ class MeltFreeze implements Game {
   restart() {
     if (this.finished || this.busy) return;
     this.setGlow(null);
+    if (this.plan.mode === 'tap') {
+      this.warmth = 0;
+      this.snowButton.visible = false;
+      this.start();
+    }
     if (this.plan.mode === 'watch') {
       this.seenMelt = this.seenFreeze = false;
       this.sunStreak = 0;
@@ -523,6 +570,7 @@ class MeltFreeze implements Game {
   resize(v: View) {
     this.view = v;
     this.layout = tableLayout(v, this.things.length);
+    if (this.plan.mode === 'tap') this.playfield.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
     this.place();
   }
@@ -539,12 +587,15 @@ class MeltFreeze implements Game {
     drawTable(this.table, L.table);
     this.things.forEach((t, i) => {
       if (this.ctx.tw.busy(t.node)) return;
-      const k = L.thing / 100;
+      const k = this.plan.mode === 'tap' ? 2.8 : L.thing / 100;
       t.node.scale.set(k);
-      t.node.position.set(L.spots[i].x, L.spots[i].y + 40 * k);
+      t.node.position.set(L.spots[i].x, L.spots[i].y + 40 * (L.thing / 100));
     });
     this.sunButton.position.set(L.sun.x + L.sun.w / 2, L.sun.y + L.sun.h / 2);
     this.snowButton.position.set(L.snow.x + L.snow.w / 2, L.snow.y + L.snow.h / 2);
+    if (this.plan.mode === 'tap' && v.h > v.w) {
+      this.snowButton.position.set(L.spots[0].x, L.table.y + L.table.h + 110);
+    }
     this.card.position.set(L.card.x + L.card.w / 2, L.card.y + L.card.h / 2);
     this.drawGlow();
   }
@@ -579,6 +630,8 @@ class MeltFreeze implements Game {
 
   destroy() {
     this.cardArt?.destroy({ children: true });
+    if (this.plan.mode !== 'tap') this.playfield.destroy();
+    else this.sunButton.destroy();
   }
 }
 
@@ -591,10 +644,11 @@ export const meltFreeze: GameModule = {
   skills: ['states-of-matter', 'cause-and-effect', 'observation'],
   bands: ['lap', 'toddler', 'preschool'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [LAP_LEVEL],
   describeLevel: (l) => meltPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Ask {name} what the sun did, then what the snowflake did.',
-  coplayHintLap: 'Tell {name} what happened: "The sun melted it! The snowflake froze it!"',
+  coplayHintLap: 'Tell {name} what happened: "The ice melted! The snowflake froze it again!"',
   offScreen: 'Put an ice cube on a plate by a window and watch it with her. Say what is happening.',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,

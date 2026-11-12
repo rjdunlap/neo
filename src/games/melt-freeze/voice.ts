@@ -1,6 +1,8 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.melt-freeze': ['Melt and freeze!'],
+  'meltfreeze.instruct.tap': ['Tap to warm the ice!'],
+  'meltfreeze.instruct.snow': ['Tap the snowflake!'],
   'meltfreeze.instruct.watch': ['Tap the sun!'],
   'meltfreeze.instruct.both': ['Tap the sun. Tap the snowflake!'],
   'meltfreeze.instruct.make.melt': ['Make the {thing} melt!'],

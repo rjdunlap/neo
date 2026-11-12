@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import {
   ALL_SUBSTANCES,
   CHANGERS,
+  LAP_LEVEL,
+  LEVELS,
   MakeRound,
   melts,
   meltPlan,
@@ -62,11 +65,15 @@ describe('the substance table', () => {
 });
 
 describe('rounds', () => {
-  it('has four levels with distinct grown-up descriptions', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['watch', 'turn', 'make', 'tray']);
-    expect(new Set(PLANS.map((p) => p.name)).size).toBe(4);
+  it('adds the tap opening before the existing lap levels without renumbering any plans', () => {
+    expect(PLANS.map((p) => p.mode)).toEqual(['watch', 'turn', 'make', 'tray', 'tap']);
+    expect(new Set(PLANS.map((p) => p.name)).size).toBe(5);
     expect(meltPlan(0)).toBe(PLANS[0]);
-    expect(meltPlan(9)).toBe(PLANS[3]);
+    expect(meltPlan(LAP_LEVEL).mode).toBe('tap');
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([LAP_LEVEL, 1, 2]);
+    expect(firstLevel(LEVELS.lap!)).toBe(LAP_LEVEL);
+    expect(landing(LAP_LEVEL, LEVELS.toddler!, [LAP_LEVEL])).toBe(1);
+    expect(landing(2, LEVELS.lap!, [LAP_LEVEL])).toBe(2);
   });
 
   it('level 2 draws three distinct things with one that melts and one that stays, the authored first being ice, butter, stone', () => {

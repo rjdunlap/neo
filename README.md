@@ -86,7 +86,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Lost Layers](docs/games/lost-layers.md) | school | Bubble Beach | 2 | drag Shell Cove's broken rock pieces beside Gull Cliff's six layers until the fossil twins go green and no wavy line is squeezed, stamp each fit as a story card, then claim a story or Can't tell |
 | [Sea Lift](docs/games/sea-lift.md) | school | Bubble Beach | 5 | tap the stop a friend asks for on a glass lift whose zero is the water line: three up, two below the water; the lift rides there and the friend counts it out |
 | [Puddle Lens](docs/games/puddle-lens.md) | lap–school | Bubble Beach | 8 | tap the big lens and a leaf, a drop and a pinch of sand each swell into view; slide a hand lens over three things beside a same-size paw; turn a four-stop dial on a drop until swimmers appear; then set the dial to just the view a question needs |
-| [Melt and Freeze](docs/games/melt-freeze.md) | lap–preschool | Bubble Beach | 4 | lap–preschool |
+| [Melt and Freeze](docs/games/melt-freeze.md) | lap–preschool | Bubble Beach | 5 | one big ice cube at lap. Three touches anywhere on the playfield shrink it into a puddle, then the snowflake appears to freeze it again. |
 | [Tide Line](docs/games/tide-line.md) | lap–pre-K | Bubble Beach | 4 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
 | [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 10 | free play on five notes (lap starts with one big jelly that wakes its friends) |

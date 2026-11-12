@@ -49,7 +49,10 @@ export function sayAfter(s: Substance, before: State, tool: Tool): LineId {
   return tool === 'sun' ? 'meltfreeze.already.melted' : 'meltfreeze.already.hard';
 }
 
-export type Mode = 'watch' | 'turn' | 'make' | 'tray';
+export type Mode = 'watch' | 'turn' | 'make' | 'tray' | 'tap';
+
+export const LAP_LEVEL = 5;
+export const TAPS_TO_MELT = 3;
 
 export interface Plan {
   mode: Mode;
@@ -67,6 +70,7 @@ export const PLANS: Plan[] = [
   },
   { mode: 'make', name: 'Make it…: three request cards, each asking for the sun or the snowflake' },
   { mode: 'tray', name: 'Some do, some don’t: warm and cool a tray of four things together' },
+  { mode: 'tap', name: 'One big ice cube: tap anywhere to melt it, then tap the snowflake to freeze it' },
 ];
 
 export const meltPlan = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -276,7 +280,7 @@ export const overlaps = (a: Box, b: Box) =>
 export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET.w, h: PET.h });
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  lap: { min: 1, max: LAP_LEVEL, order: [LAP_LEVEL, 1, 2] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 3, max: 4 },
 };
