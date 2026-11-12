@@ -107,12 +107,17 @@ interface Card {
   node: Container;
 }
 
+/** A finished strip is looked at this long before the next one replaces it. */
+const STRIP_BEAT = 0.6;
+
 class TideLine implements Game {
   readonly plan: Plan;
   misses = 0;
   hints = 0;
   busy = false;
   finished = false;
+  /** Level 4: taps and hints so far, so a line that waited behind another can tell whether she has acted since. */
+  private acted = 0;
   /** The sea's height on the sand. */
   readonly sea = { h: 0 };
 
@@ -719,6 +724,7 @@ class TideLine implements Game {
   private tapCard(card: Card) {
     const turn = this.strip;
     if (this.busy || this.finished || !turn || this.ctx.tw.busy(card.node)) return;
+    this.acted++;
     // Touch-down: the card lifts.
     card.node.scale.set(1.06);
     const out = turn.tap(card.kind);
@@ -751,21 +757,29 @@ class TideLine implements Game {
     card.node.scale.set(1);
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('tl.right');
+    // The lesson line never holds the next strip (U7 R4): after a look at the finished strip the next one is shown
+    // and its cards open while the line plays; "Here's another day" follows the lesson unless she has acted by then.
+    // On the last strip the line is heard out, because the closing line would cut it.
+    const lesson = this.ctx.say('tl.right');
+    if (this.index + 1 >= STRIPS) await lesson;
+    else await this.ctx.tw.wait(STRIP_BEAT);
     if (this.finished) return;
     this.index++;
     if (this.index >= STRIPS) return void this.end();
     this.strips.push(new StripTurn(makeStrip(this.ctx.rng)));
     this.buildStrip();
     this.layoutAll();
-    void this.ctx.say('tl.next-strip');
     this.busy = false;
+    const acted = this.acted;
+    await lesson;
+    if (!this.finished && acted === this.acted) void this.ctx.say('tl.next-strip');
   }
 
   /** Show me: the right card glows; asked again while it glows, the pet taps it. One hint a strip. */
   private stripHint() {
     const turn = this.strip;
     if (this.finished || !turn || this.busy) return;
+    this.acted++;
     const what = turn.ask();
     this.hints = this.strips.filter((t) => t.hint).length;
     this.drawGlow();

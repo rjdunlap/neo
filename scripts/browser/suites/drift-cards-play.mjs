@@ -89,6 +89,13 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'the second miss glows the south beach: one hint',
     );
     await tapBeach('S');
+    // U7 R4: "Found by …" (2.4 s when muted) never holds the next card: it is held as soon as this one is found.
+    await page.waitForFunction(
+      () => [...neo.scene.game.friends.values()].reduce((n, f) => n + f.found, 0) === 2,
+      null,
+      { timeout: 30000, polling: 50 },
+    );
+    await page.waitForFunction(() => neo.scene.game.index === 2 && !neo.scene.game.busy, null, { timeout: 800 });
     await settle();
     s = await state();
     assert.deepEqual([s.index, s.misses, s.hints], [2, 2, 1], 'the right beach drops card 2');

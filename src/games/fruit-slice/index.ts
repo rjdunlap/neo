@@ -110,6 +110,8 @@ const MOOD_SKY: Record<Mood, BackdropStyle> = {
 };
 /** The fruit art is drawn about 100 across; this makes it about 110. */
 const ART = 1.1;
+/** Level 7: a cut board's halves reach the bowl (about 0.7 s) before the next board replaces it. */
+const LINE_BEAT = 0.7;
 /** Seconds between the columns' first tosses, so fruit arrive one after another. */
 const STAGGER = 1.3;
 const TRAIL_LIFE = 0.3;
@@ -193,6 +195,8 @@ class FruitSlice implements Game {
   hints = 0;
   finished = false;
   busy = true;
+  /** Level 7: the board's instruction has not been spoken yet (it waits behind "Yes! One line through …", U7 R4). */
+  private unasked = false;
 
   private signs: Sign[];
   private boards: Board[] = [];
@@ -466,7 +470,7 @@ class FruitSlice implements Game {
     return { n: s ? s.rows[0].n : 0 };
   }
 
-  private async begin() {
+  private async begin(after?: Promise<unknown>) {
     this.busy = true;
     this.signMisses = 0;
     this.glow = null;
@@ -482,7 +486,19 @@ class FruitSlice implements Game {
     }
     this.drawSign();
     this.busy = false;
-    await this.ctx.instruct(this.instructLine() as LineId, this.instructVars());
+    if (after) {
+      // The sign shows the number already; the spoken instruction waits for the line before it, or for her next line.
+      this.unasked = true;
+      await after;
+    }
+    if (after && !this.unasked) return;
+    this.sayAsk();
+  }
+
+  private sayAsk() {
+    this.unasked = false;
+    if (this.finished) return;
+    void this.ctx.instruct(this.instructLine() as LineId, this.instructVars());
   }
 
   /* -------------------------------------------------------------------------------------------- */
@@ -706,6 +722,8 @@ class FruitSlice implements Game {
     const angle = Math.atan2(b.y - a.y, b.x - a.x);
     if (this.plan.mode === 'cover') return this.coverLine(hit, angle);
     if (this.plan.mode === 'line') {
+      // A line drawn before the instruction was spoken: it becomes the instruction now, and the verdict cuts it.
+      if (this.unasked) this.sayAsk();
       const want = this.board!.n;
       if (hit.length !== want) {
         for (const s of hit) s.wobble = 0.6;
@@ -1068,6 +1086,7 @@ class FruitSlice implements Game {
       this.glow = { kind: 'line', line: l };
     } else this.glow = { kind: 'fruit' };
     this.hints++;
+    if (this.unasked) this.sayAsk();
     const g = this.glow.kind;
     void this.say(
       g === 'line'
@@ -1295,7 +1314,17 @@ class FruitSlice implements Game {
     this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', { n: this.board!.n });
+    const yes = this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', { n: this.board!.n });
+    if (this.plan.mode === 'line' && this.index + 1 < this.boards.length) {
+      // Level 7 (U7 R4): the line never holds the next board. The halves land, the next board arrives and can be
+      // cut while "Yes! One line through …" plays, and the instruction follows it.
+      await this.ctx.tw.wait(LINE_BEAT);
+      if (this.finished) return;
+      this.index++;
+      return void this.begin(yes);
+    }
+    // The last board's line is heard out, because the closing line would cut it; level 9's praise holds (batch 2).
+    await yes;
     // Level 9 empties the bowl for the next board: let the last halves land first.
     if (this.plan.mode === 'cover') await this.ctx.tw.wait(0.8);
     this.index++;
