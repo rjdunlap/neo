@@ -218,6 +218,9 @@ class Inchworm implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** The next measure's instruction, waiting behind the last one's right-answer line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
 
   private readonly backdrop: Backdrop;
   private readonly ruler = new Graphics();
@@ -364,7 +367,7 @@ class Inchworm implements Game {
 
   /** Lay the next worm end to end, or tap the reading once the measuring is complete. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.m) return null;
+    if (this.busy || this.finished || this.unasked || !this.m) return null;
     const move = measureTouch(
       this.m,
       this.plan.mode,
@@ -408,7 +411,9 @@ class Inchworm implements Game {
     return this.x0() + (r.start + r.worms * r.size) * this.u + (r.size * this.u) / 2;
   }
 
-  private async next() {
+  /** The next thing to measure; with `after`, its instruction waits for that line (the last answer's), her first touch or the guide. */
+  private async next(after?: Promise<void>) {
+    this.dropAsk();
     this.busy = true;
     this.index++;
     this.wrongs = 0;
@@ -456,6 +461,17 @@ class Inchworm implements Game {
     else this.fillBucket();
     this.resize(v);
     this.busy = false;
+    if (!after) return this.instruct();
+    this.unasked = true;
+    const gen = this.askGen;
+    void after.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** The measure's instruction. */
+  private instruct() {
+    const m = this.m;
     const what = THING_WORDS[m.thing];
     if (this.plan.mode === 'hop') return this.ctx.instruct('worm.hop', { what });
     if (this.plan.mode === 'slide') return this.ctx.instruct('worm.slide', { what });
@@ -473,6 +489,24 @@ class Inchworm implements Game {
       return this.ctx.instruct('worm.compare', { a: what, b: THING_WORDS[m.other!.thing] });
     if (this.plan.mode === 'units') return this.ctx.instruct('worm.big', { what });
     return this.ctx.instruct(this.index === 0 ? 'worm.lay' : 'worm.again', { what });
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.instruct();
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the instruction waits behind the measurement: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** Longer than the ruler: a short ruler (0 to its length) waiting below the thing, with a touch area at least 320 wide and 120 tall. */
@@ -539,6 +573,8 @@ class Inchworm implements Game {
     if (this.busy || this.finished || !r || !s || r.worms >= 2) return false;
     const at = this.slotSpot(slideSlots(this.m)[r.worms])!;
     if (Math.abs(x - at.x) > this.u || Math.abs(y - at.y) > 70) return false;
+    // Her move needs no instruction: its own lines take the waiting one's place.
+    this.dropAsk();
     r.worms++;
     s.drag.home = at;
     sfx.pop(4 + r.worms);
@@ -587,6 +623,7 @@ class Inchworm implements Game {
     const r = this.rows[0];
     const worm = this.hopper;
     if (this.busy || this.finished || !r || !worm || r.worms >= r.length) return;
+    this.dropAsk();
     this.busy = true;
     r.worms++;
     sfx.pop(3 + r.worms);
@@ -758,7 +795,8 @@ class Inchworm implements Game {
       }
       return false;
     }
-    // Snap end to end: no gaps, no overlaps.
+    // Snap end to end: no gaps, no overlaps. Her move needs no instruction: its count takes the waiting one's place.
+    this.dropAsk();
     this.bucket.splice(this.bucket.indexOf(item), 1);
     item.drag.destroy();
     this.ctx.tw.kill(item.node.scale);
@@ -838,20 +876,28 @@ class Inchworm implements Game {
 
   private async answer(n: number) {
     if (this.busy || this.finished) return;
+    // A ruler level's pads show with the thing: a pad tap before its question is heard says the question, and is not judged.
+    if (this.askNow()) return;
     const m = this.m;
     if (n === answerOf(m, this.plan.mode)) {
       this.busy = true;
       this.hinting = false;
       sfx.sparkle();
       this.ctx.pet.cheer();
-      if (this.plan.mode === 'compare' || this.plan.mode === 'rulerdiff') await this.ctx.say('worm.yay');
-      else if (this.plan.mode === 'units')
-        await this.ctx.say('worm.samestick', { what: THING_WORDS[m.thing] });
-      else if (this.plan.mode === 'rulersum') await this.ctx.say('worm.together', { n });
-      else if (this.plan.mode === 'hop')
-        await this.ctx.say('worm.hoplong', { what: THING_WORDS[m.thing], n });
-      else await this.ctx.say('worm.long', { what: THING_WORDS[m.thing], n: m.length });
-      return void this.next();
+      const said =
+        this.plan.mode === 'compare' || this.plan.mode === 'rulerdiff'
+          ? this.ctx.say('worm.yay')
+          : this.plan.mode === 'units'
+            ? this.ctx.say('worm.samestick', { what: THING_WORDS[m.thing] })
+            : this.plan.mode === 'rulersum'
+              ? this.ctx.say('worm.together', { n })
+              : this.plan.mode === 'hop'
+                ? this.ctx.say('worm.hoplong', { what: THING_WORDS[m.thing], n })
+                : this.ctx.say('worm.long', { what: THING_WORDS[m.thing], n: m.length });
+      // The last measure's line is heard out before the finale; otherwise the next thing follows at once and the
+      // measurement plays over its instruction, which waits for the line (U7 R4).
+      if (this.index + 1 >= this.measures.length) await said;
+      return void this.next(said);
     }
     this.busy = true;
     this.misses++;
@@ -902,6 +948,7 @@ class Inchworm implements Game {
 
   private async finale() {
     if (this.finished) return;
+    this.dropAsk();
     this.finished = true;
     sfx.tada();
     await this.ctx.say('worm.done');

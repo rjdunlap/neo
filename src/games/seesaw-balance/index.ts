@@ -289,6 +289,9 @@ class SeesawBalance implements Game {
   wrongs = 0;
   busy = true;
   finished = false;
+  /** Level 15's `measure-pumpkin`, waiting behind `seesaw.guessed` (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   /** Balance rules the child has actually watched after changing a tray. */
   readonly observations = new Set<BalanceObservation>();
   /** How far the plank leans now, and how fast it is turning. */
@@ -609,7 +612,7 @@ class SeesawBalance implements Game {
 
   /** Use the real drags to compare, balance, or take equal things away, then tap the box's weight. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.round) return null;
+    if (this.busy || this.finished || this.unasked || !this.round) return null;
     if (this.plan.mode === 'predict' && this.released) return { tap: { on: this.continueButton } };
     for (const item of this.items) if (item.side) this.demoTested.add(item);
     const demoItems = this.items.map((item) => ({
@@ -733,6 +736,7 @@ class SeesawBalance implements Game {
   // ----- rounds -----
 
   private async nextRound() {
+    this.dropAsk();
     this.index++;
     this.wrongs = 0;
     this.busy = true;
@@ -952,6 +956,8 @@ class SeesawBalance implements Game {
       if (slot >= 0) return this.toShelf(item, slot);
     }
     if (mode === 'guess' && this.round.prediction === undefined) return false;
+    // Her first block needs no instruction: its own sounds and count take the waiting one's place.
+    this.dropAsk();
     if (mode === 'heaviest' && this.overWagon(x, y)) return this.toWagon(item);
     // Levels 1 and 2: a tap on a friend on the grass hops it to the empty tray.
     const tapped =
@@ -1235,6 +1241,24 @@ class SeesawBalance implements Game {
     this.busy = false;
   }
 
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.instruct('seesaw.measure-pumpkin');
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the instruction waits behind her guess's echo: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
   private async answer(pad: Pad) {
     if (this.busy || this.finished || !this.pads.length) return;
     this.busy = true;
@@ -1243,9 +1267,15 @@ class SeesawBalance implements Game {
       this.guessSign.text = `Guess: ${pad.value}`;
       this.clearPads();
       for (const item of this.items) if (item.drag) item.drag.enabled = true;
-      await this.ctx.say('seesaw.guessed', { guess: pad.value });
-      await this.ctx.instruct('seesaw.measure-pumpkin');
+      // The echo of her guess starts and her blocks go on at once, the sign keeping the guess; the instruction waits
+      // for the line, her first block or the guide (U7 R4).
+      const said = this.ctx.say('seesaw.guessed', { guess: pad.value });
       this.busy = false;
+      this.unasked = true;
+      const gen = this.askGen;
+      void said.then(() => {
+        if (gen === this.askGen) this.askNow();
+      });
       return;
     }
     // Level 11 names only the box being weighed: the square box on the reading, the round box after.
@@ -1389,6 +1419,7 @@ class SeesawBalance implements Game {
   }
 
   private async finale() {
+    this.dropAsk();
     this.finished = true;
     const colors = RAINBOW.map((c) => swatch[c].fill);
     this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
