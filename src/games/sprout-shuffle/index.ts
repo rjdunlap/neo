@@ -88,6 +88,9 @@ class SproutShuffle implements Game {
   finished = false;
   private alive = true;
   private clock = 0;
+  /** The bud fan's instruction, waiting behind the sprout's look (U7 R4), or null; `askGen` drops a stale wait. */
+  private unasked: LineId | null = null;
+  private askGen = 0;
   private view: View;
 
   private readonly backdrop: Backdrop;
@@ -172,6 +175,7 @@ class SproutShuffle implements Game {
   /** A tap on the meadow: the current instruction again. */
   private repeat() {
     if (this.finished || this.busy) return;
+    this.dropAsk();
     void this.ctx.instruct(this.lastInstruction);
   }
 
@@ -286,6 +290,7 @@ class SproutShuffle implements Game {
       return true;
     }
     if (this.round.phase === 'fan' && buildingBud(this.round) !== null && tapped) {
+      this.dropAsk();
       this.buildWith(tile);
       return true;
     }
@@ -336,14 +341,45 @@ class SproutShuffle implements Game {
       colors: [swatch[this.setup.colors[0]].fill, swatch[this.setup.colors[1]].fill, 0xffffff],
       count: 10,
     });
-    await this.ctx.say(look === 'spotted' ? 'sprout.spotted' : 'sprout.plain');
-    if (!this.alive) return;
-    this.showFan();
+    // The look starts and the bud fan opens at once (U7 R4); the fan's instruction waits for the look.
+    this.showFan(this.ctx.say(look === 'spotted' ? 'sprout.spotted' : 'sprout.plain'));
+  }
+
+  /** Says the fan's instruction now, or when the sprout's look ends if it is still playing. */
+  private ask(id: LineId, said?: Promise<unknown>) {
+    if (!said) return this.instruct(id);
+    this.lastInstruction = id;
+    this.unasked = id;
+    const gen = ++this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    const id = this.unasked;
+    if (!id || this.finished || !this.alive) return false;
+    this.unasked = null;
+    this.askGen++;
+    this.instruct(id);
+    return true;
+  }
+
+  /** Her tap on a bud or a tray answers the waiting instruction: it is not said after all. */
+  private dropAsk() {
+    this.unasked = null;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the fan's instruction waits: say it, not the give instruction before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   // ——— The bud fan ———
 
-  private showFan() {
+  private showFan(said?: Promise<unknown>) {
     this.round = { ...this.round, phase: 'fan' };
     this.fan.visible = true;
     for (const [i, b] of this.buds.entries()) {
@@ -359,15 +395,16 @@ class SproutShuffle implements Game {
     }
     this.busy = false;
     if (this.setup.build.length === 0) {
-      this.instruct('sprout.fan');
+      this.ask('sprout.fan', said);
     } else {
       for (const t of this.tiles) t.handle.enabled = true;
-      this.instruct(this.claims ? 'sprout.build-all' : 'sprout.fill-bud');
+      this.ask(this.claims ? 'sprout.build-all' : 'sprout.fill-bud', said);
     }
   }
 
   private budTapped(i: number) {
     if (this.finished || this.busy || this.round.phase === 'give') return;
+    this.dropAsk();
     if (this.round.opened[i]) {
       void this.replay(i);
       return;
@@ -766,7 +803,7 @@ class SproutShuffle implements Game {
 
   /** The ghost finger: a copy from each plant, every bud (or the missing bud's two tiles), the right cards, then the leaf. */
   autotouch(): TouchIntent | null {
-    if (this.finished || this.busy) return null;
+    if (this.finished || this.busy || this.unasked) return null;
     const step = nextStep(this.round);
     if (!step) return null;
     if ('give' in step)

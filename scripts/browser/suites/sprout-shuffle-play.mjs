@@ -40,6 +40,37 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
+    // U7 R4: the sprout's look never holds the bud fan. `sprout.spotted` and `sprout.plain` are stretched to at least
+    // 4 s, so the fan opening sooner shows the line no longer gates it; the fan's instruction waits for the look.
+    const stretchLook = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        const say = g.ctx.say.bind(g.ctx);
+        g.heardLines = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          if (id !== 'sprout.spotted' && id !== 'sprout.plain') return line;
+          const rec = { at: performance.now() };
+          g.heardLines.push(rec);
+          const watch = () => {
+            if (rec.opens !== undefined) return;
+            if (!g.busy && g.round.phase === 'fan') {
+              rec.opens = performance.now() - rec.at;
+              rec.waiting = g.unasked;
+            } else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+          };
+          void Promise.resolve().then(watch);
+          return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+        };
+      });
+    const lookHeard = async (label) => {
+      const recs = await page.evaluate(() => neo.scene.game.heardLines);
+      if (recs.length !== 1 || !(recs[0].opens <= 1000) || !recs[0].waiting)
+        throw new Error(`R4: ${label}'s look held the bud fan: ${JSON.stringify(recs)}`);
+      log(
+        `Sprout Shuffle ${label} R4: the fan opened ${Math.round(recs[0].opens)} ms into the look, ${recs[0].waiting} waiting`,
+      );
+    };
     // SPROUT_LEVELS=5 plays level 5 alone; by default every level plays.
     const only = (process.env.SPROUT_LEVELS ?? '1,2,3,4,5').split(',').map(Number);
     let s;
@@ -73,9 +104,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await tapTile(0, 0);
       s = await state();
       assert.deepEqual(s.slots, [0, null], 'the other copy of the same plant swaps in, for free');
+      await stretchLook();
       await tapTile(1, 0);
       await page.waitForFunction(() => neo.scene.game.round.phase === 'fan', null, { timeout: 15000 });
       await settle();
+      await lookHeard('level 1');
       s = await state();
       assert.deepEqual(
         [s.slots, s.opened],
@@ -96,10 +129,12 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       s = await state();
       assert.equal(s.opened.filter(Boolean).length, 3, 'level 2 opens with three buds open');
       assert.equal(s.opened[s.missing], false, 'and the seeded missing bud closed');
+      await stretchLook();
       await tapTile(0, 0);
       await tapTile(1, 1);
       await page.waitForFunction(() => neo.scene.game.round.phase === 'fan', null, { timeout: 15000 });
       await settle();
+      await lookHeard('level 2');
       const route = await page.evaluate(
         () => neo.scene.game.setup.routes[neo.scene.game.setup.build[0]].from,
       );
