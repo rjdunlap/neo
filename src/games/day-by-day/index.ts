@@ -486,10 +486,10 @@ class DayByDay implements Game {
       );
       if (this.question === 0) {
         this.question++;
-        this.askRelative(line);
+        void this.askRelative(line);
       } else if (this.plan.tally) {
         this.question++;
-        this.askTally(line);
+        void this.askTally(line);
       } else {
         await line;
         this.question++;
