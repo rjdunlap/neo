@@ -167,6 +167,8 @@ class LassoLoops implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** The next ask, waiting behind a count's or a guess's line (U7 R4): said when the line ends or the guide is tapped. */
+  private unasked: (() => void) | null = null;
   /** The latest loop, in stage coordinates, for checks. */
   lastLoop: Point[] = [];
   readonly sky = new Graphics();
@@ -378,13 +380,18 @@ class LassoLoops implements Game {
   private async chooseGuess(card: GuessCard) {
     if (this.busy || this.finished) return;
     this.busy = true;
+    this.unasked = null;
     const first = this.guessPhase === 'first';
     const kept = card.value === this.guess;
     this.guess = card.value;
     sfx.bell(6, 0.2);
     await this.ctx.tw.to(card.scale, { x: 0.9, y: 0.9 }, { duration: 0.08 });
     await this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.12 });
-    await this.ctx.say(first ? 'lasso.guessed' : kept ? 'lasso.keep' : 'lasso.changed', { g: this.guess });
+    // Her estimate's reaction never holds the board (U7 R4): the card flies to the sign while it plays, the loops open,
+    // and the next instruction waits for the line.
+    const line = this.ctx.say(first ? 'lasso.guessed' : kept ? 'lasso.keep' : 'lasso.changed', {
+      g: this.guess,
+    });
     await Promise.all(
       this.guessCards.map((c) =>
         c === card
@@ -399,8 +406,29 @@ class LassoLoops implements Game {
     this.guessPhase = first ? 'benchmark' : 'count';
     this.jars.forEach((j, i) => (j.visible = !first || i === 0));
     this.markJar();
-    await this.ctx.instruct(first ? 'lasso.benchmark' : 'lasso.tens');
     this.busy = false;
+    void this.askAfter(line, () => void this.ctx.instruct(first ? 'lasso.benchmark' : 'lasso.tens'));
+  }
+
+  /** The ask waits for `line`, unless she has answered it (a judged loop or card) or the guide said it first. */
+  private async askAfter(line: Promise<unknown>, ask: () => void) {
+    this.unasked = ask;
+    await line;
+    if (this.unasked === ask) this.askNow();
+  }
+
+  /** Says the waiting ask, if any; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    ask();
+    return true;
+  }
+
+  /** The guide was tapped while the next ask waits: say that ask, not the last one. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** The jar to fill next glows (except on the free level, where any loop fills the next jar). */
@@ -472,6 +500,8 @@ class LassoLoops implements Game {
     const jar = this.jar;
     if (!jar) return;
     if (!got.length) return void this.ctx.say('lasso.empty');
+    // A judged loop answers the waiting ask.
+    this.unasked = null;
     if (this.plan.mode !== 'free' && got.length !== jar.want) return this.wrongLoop(got, jar.want);
     await this.catch(got, jar);
   }
@@ -531,21 +561,32 @@ class LassoLoops implements Game {
     sfx.pop(9);
     jar.setTag(String(got.length));
     jar.glow.visible = false;
-    await this.ctx.say('count', { n: got.length });
+    // The count is the lesson, so it plays over her next loop (U7 R4) rather than holding the board; only the last jar's
+    // is heard out, before what follows would cut it.
+    const line = this.ctx.say('count', { n: got.length });
     this.index++;
     if (this.guessPhase === 'benchmark') {
       this.guessPhase = 'revise';
       this.showGuesses();
-      await this.ctx.instruct('lasso.change', { g: this.guess! });
       this.busy = false;
+      void this.askAfter(line, () => void this.ctx.instruct('lasso.change', { g: this.guess! }));
       return;
     }
-    if (this.plan.mode === 'free') {
-      if (!this.free.length || this.index >= this.jars.length) return this.finale();
-    } else if (this.index >= this.jars.length) return this.allFull();
-    else if (this.plan.mode === 'exact') void this.ctx.instruct('lasso.exact', { n: this.jar!.want });
+    if (
+      this.plan.mode === 'free'
+        ? !this.free.length || this.index >= this.jars.length
+        : this.index >= this.jars.length
+    ) {
+      await line;
+      if (this.finished) return;
+      return this.plan.mode === 'free' ? this.finale() : this.allFull();
+    }
     this.markJar();
     this.busy = false;
+    if (this.plan.mode === 'exact') {
+      const n = this.jar!.want;
+      void this.askAfter(line, () => void this.ctx.instruct('lasso.exact', { n }));
+    }
   }
 
   /** Every jar is full: the ones go to the leaf (or the extras fly home), then the question. */

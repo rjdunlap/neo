@@ -814,6 +814,26 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await portrait(true);
         await screenshot('fill-dump-6-portrait');
         await portrait(false);
+        // U7 R4: a right basket's line starts, and the fresh pair opens before it ends (the next request waits behind it).
+        await page.evaluate(() => {
+          const g = neo.scene.game,
+            say = g.ctx.say.bind(g.ctx);
+          window.fillR4 = [];
+          g.ctx.say = (id, vars) => {
+            const line = say(id, vars);
+            if (id === 'fill.pair.out' || id === 'fill.pair.in') {
+              const at = g.state.round,
+                t = performance.now(),
+                o = { last: g.state.done };
+              fillR4.push(o);
+              void line.then(() => (o.ends = performance.now() - t));
+              void kit
+                .until(() => g.finished || (!g.busy && g.state.round === at), 8000)
+                .then(() => (o.opens = performance.now() - t));
+            }
+            return line;
+          };
+        });
         await page.evaluate(async () => {
           const g = neo.scene.game;
           const idle = () => kit.until(() => !g.busy, 8000);
@@ -830,6 +850,17 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         });
         await finished('fill-dump');
         assert.deepEqual(await score('fill-dump'), [2, 1]);
+        const fillOpens = (await page.evaluate(() => fillR4)).filter((o) => !o.last);
+        assert.ok(fillOpens.length >= 2, `R4: ${fillOpens.length} baskets timed`);
+        // The bot's next tap says the waiting request, which cuts the line, so the yardstick is the shortest line's muted
+        // length ("Filled up!": 600 + 10 × 45 = 1050 ms) rather than when it ended.
+        assert.ok(
+          fillOpens.every((o) => o.opens < 1000),
+          `R4: the pair waited for the basket's line (${fillOpens.map((o) => `${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+        );
+        log(
+          `Fill and Dump 6: R4, the fresh pair opens ${fillOpens.map((o) => Math.round(o.opens)).join(', ')} ms into the line`,
+        );
         log(
           'Fill and Dump 6: free grass, two wrong baskets, one glow hint, four alternating requests and one sticker passed',
         );

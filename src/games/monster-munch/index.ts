@@ -70,6 +70,8 @@ class MonsterMunch implements Game {
   misses = 0;
   hints = 0;
   busy = false;
+  /** The pads' ask, waiting behind `munch.fair` (U7 R4): said when the line ends, at her first pad tap, or by the guide. */
+  private unasked: (() => void) | null = null;
   done = false;
 
   private readonly background = new Graphics();
@@ -133,6 +135,27 @@ class MonsterMunch implements Game {
 
   private instruct(id: LineId, vars?: LineVars) {
     return this.ctx.instruct(id, vars);
+  }
+
+  /** The ask waits for `line`, unless a pad tap or the guide said it first, or the pads are gone. */
+  private async askAfter(line: Promise<unknown>, ask: () => void) {
+    this.unasked = ask;
+    await line;
+    if (this.unasked === ask) this.askNow();
+  }
+
+  /** Says the waiting ask, if any; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.done) return false;
+    this.unasked = null;
+    ask();
+    return true;
+  }
+
+  /** The guide was tapped while the pads' ask waits: say that ask, not the instruction before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   // Setting up a round ------------------------------------------------------
@@ -231,13 +254,14 @@ class MonsterMunch implements Game {
   }
 
   /** A call reserves a whole share. An insufficient call is a free, reversible experiment. */
-  private async callFriend() {
+  private callFriend() {
     if (this.busy || this.done || this.pads.length || !this.cave.visible) return;
-    this.busy = true;
+    // The cave's lines never hold the table (U7 R4): the friend sits down, or the visitor peeks out, and input reopens
+    // at once while the line plays; the visitor fades back inside when its line ends.
     if (canCallFriend(this.table())) {
       this.addMonster(this.looks[this.monsters.length]);
       this.resize(this.view);
-      await this.ctx.say('munch.friend-hi');
+      void this.ctx.say('munch.friend-hi');
     } else {
       const visitor = new Monster(monsterLooks(1, this.ctx.rng)[0]);
       visitor.showTummy = false;
@@ -246,11 +270,11 @@ class MonsterMunch implements Game {
       visitor.scale.set(0.38);
       visitor.position.set(this.cave.x, this.cave.y - 65);
       this.ctx.stage.addChild(visitor);
-      await this.ctx.say('munch.not-enough');
-      await this.ctx.tw.to(visitor, { alpha: 0 }, { duration: 0.35 });
-      visitor.destroy({ children: true });
+      void this.ctx
+        .say('munch.not-enough')
+        .then(() => this.ctx.tw.to(visitor, { alpha: 0 }, { duration: 0.35 }))
+        .then(() => visitor.destroy({ children: true }));
     }
-    this.busy = false;
     this.drawGlow();
   }
 
@@ -467,11 +491,12 @@ class MonsterMunch implements Game {
     if (back.every((o) => FOODS.every((f) => o[f] === 0))) {
       this.monsters.forEach((m) => m.beam(2));
       sfx.sparkle();
-      await this.ctx.say('munch.fair');
+      // Her fair share's confirmation never holds the pads (U7 R4): they appear with it, and their ask waits for it.
+      const line = this.ctx.say('munch.fair');
       this.asking = 'each';
       this.showPads(r.want[this.kind]);
-      void this.instruct('munch.each-how', this.kindVars);
       this.busy = false;
+      void this.askAfter(line, () => void this.instruct('munch.each-how', this.kindVars));
       return;
     }
     this.mistake(null, this.plan.mode === 'sharekind' ? 'munch.unfair-kinds' : 'munch.unfair', this.kindVars);
@@ -527,11 +552,12 @@ class MonsterMunch implements Game {
     if (even && left < this.monsters.length) {
       this.monsters.forEach((m) => m.beam(2));
       sfx.sparkle();
-      await this.ctx.say('munch.fair');
+      // Her fair share's confirmation never holds the pads (U7 R4): they appear with it, and their ask waits for it.
+      const line = this.ctx.say('munch.fair');
       this.asking = 'each';
       this.showPads(r.want[this.kind]);
-      void this.instruct('munch.each-how', this.kindVars);
       this.busy = false;
+      void this.askAfter(line, () => void this.instruct('munch.each-how', this.kindVars));
       return;
     }
     if (even) {
@@ -596,6 +622,7 @@ class MonsterMunch implements Game {
 
   private pick(value: number, answer: number) {
     if (this.busy || this.done) return;
+    this.askNow();
     if (value !== answer) {
       const left = this.asking === 'left';
       const id = this.asking === 'friends' ? 'munch.friends-no' : left ? 'munch.left-no' : 'munch.each-no';
