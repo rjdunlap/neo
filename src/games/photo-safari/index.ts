@@ -325,6 +325,8 @@ class PhotoSafari implements Game {
   /** The next scene's ask, waiting behind the last photo's lines (U7 R4); `askGen` drops a stale wait and chained lines. */
   unasked = false;
   private askGen = 0;
+  /** Stops a photo's chained lines: bumped when an ask is said or another photo's lines start, not by her early answer. */
+  private lineGen = 0;
 
   private readonly backdrop: Backdrop;
   /** The backdrop's places and animals together: what a whole-meadow photo shows. */
@@ -651,7 +653,7 @@ class PhotoSafari implements Game {
     if (this.destroyed) return;
     this.busy = true;
     this.unasked = false;
-    // Lines chained behind the last photo keep this generation; a scene without them drops any stale wait.
+    // The last photo's lines (`said`) carry the wait; a scene without them drops any stale one.
     if (!said) this.askGen++;
     this.wrongs = 0;
     this.wanted.removeFromParent();
@@ -701,11 +703,12 @@ class PhotoSafari implements Game {
   private askNow() {
     if (!this.unasked || this.finished) return false;
     this.dropAsk();
+    this.lineGen++;
     void this.ask();
     return true;
   }
 
-  /** Her answer came before the ask: it is not said, and lines chained behind the last photo stop. */
+  /** Her answer came before the ask: it is not said (the last photo's chained lines play on). */
   private dropAsk() {
     this.unasked = false;
     this.askGen++;
@@ -891,8 +894,8 @@ class PhotoSafari implements Game {
     const last = this.photos + 1 >= this.plan.photos;
     if (!last) {
       // The photo's lines start with the polaroid and the next scene follows it, its ask waiting for them (U7 R4).
-      const gen = this.askGen;
-      const more = () => gen === this.askGen && !this.destroyed;
+      const gen = ++this.lineGen;
+      const more = () => gen === this.lineGen && !this.destroyed;
       // This scene's change and friend, read now: the next scene replaces them while the click plays.
       const what = this.plan.mode === 'changed' ? changeLine(this.scene!) : null;
       // The friend who asked hops now, before the next scene's friend takes its place.
