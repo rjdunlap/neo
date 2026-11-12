@@ -14,6 +14,9 @@ import {
   FRIEND_SOUND,
   FRIENDS,
   inReach,
+  openingBubble,
+  roomFor,
+  spawnBox,
   isRight,
   meant,
   nearestShown,
@@ -333,6 +336,43 @@ describe("pop anywhere (level 15, lap's first level)", () => {
         for (const other of shown) expect(d(pick)).toBeLessThanOrEqual(d(other));
       }
     }
+  });
+
+  it('opens with one large bubble already in reach, bigger than any that rises, clear of the left column and top bar', () => {
+    for (const [w, h] of [
+      [1024, 768],
+      [768, 1024],
+      [1366, 768],
+    ]) {
+      const o = openingBubble(plan, w, h);
+      expect(inReach(at(o.x, o.y, { r: o.r }), w, h)).toBe(true);
+      expect(o.r).toBeGreaterThan(plan.radius[1]);
+      expect(o.x - o.r).toBeGreaterThanOrEqual(150);
+      expect(o.y - o.r).toBeGreaterThanOrEqual(130);
+      expect(o.x + o.r).toBeLessThanOrEqual(w - 50);
+      expect(o.y + o.r).toBeLessThanOrEqual(h - 60);
+      // With it standing, every touch on the screen pops something.
+      expect(nearestShown([at(o.x, o.y, { r: o.r })], { x: 0, y: h })).toBeTruthy();
+    }
+  });
+
+  it('lets bubbles rise in only after her pops, one more per pop up to the most, and every other level fills at once', () => {
+    expect(roomFor(plan, 0)).toBe(1); // the opening bubble alone
+    expect(roomFor(plan, 1)).toBe(2);
+    expect(roomFor(plan, 2)).toBe(3);
+    expect(roomFor(plan, 3)).toBe(plan.most);
+    expect(roomFor(plan, 50)).toBe(plan.most);
+    for (const level of [1, 2, 4, 7, 10, 14]) expect(roomFor(planFor(level), 0)).toBe(planFor(level).most);
+  });
+
+  it('starts a rising bubble already in reach, so a touch after a pop never meets an empty screen', () => {
+    for (const r of plan.radius) {
+      const box = spawnBox(1024, 768, r, false, true);
+      expect(inReach(at(box.x[0], box.y[0], { r }), 1024, 768)).toBe(true);
+    }
+    // Other free levels still rise in from below the screen.
+    const below = spawnBox(1024, 768, 80, false);
+    expect(inReach(at(below.x[0], below.y[0], { r: 80 }), 1024, 768)).toBe(false);
   });
 
   it('does nothing when no bubble is showing', () => {

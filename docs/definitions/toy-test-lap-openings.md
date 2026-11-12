@@ -60,7 +60,7 @@ Bubble Beach games whose first lap level plays with the voice off: `bubble-pop`,
 Seven games fail question 1 or 4. Each line is one bounded lap level or opening, in the order they should be taken:
 
 1. `bounce-back`: a lap level that cannot miss and answers anywhere.
-2. `bubble-pop`: level 15 opens with one big bubble already on screen.
+2. `bubble-pop`: level 15 opens with one big bubble already on screen. *Built 2026-11-12 (PR #1564).*
 3. `sink-float`: one big thing over the water; a touch anywhere drops it.
 4. `tide-line`: at lap a touch anywhere sends the wave, and the card shows the tap.
 5. `melt-freeze`: one big ice cube; a touch anywhere warms it.
@@ -69,7 +69,7 @@ Seven games fail question 1 or 4. Each line is one bounded lap level or opening,
 
 ### Found while reading (not part of the five questions)
 
-- `bubble-pop`: `inReach`'s comment says a bubble rising in from below "counts as soon as it shows"; the code waits until its middle is half a radius on screen. The level's comment says a "flat palm" pops; four or more contacts are ignored (shell, above).
+- `bubble-pop` (both comments fixed 2026-11-12, PR #1564; the opening bubble landed with it): `inReach`'s comment says a bubble rising in from below "counts as soon as it shows"; the code waits until its middle is half a radius on screen. The level's comment says a "flat palm" pops; four or more contacts are ignored (shell, above).
 - `peg-garden`: the spoken line says to tap "on the big flowers"; the code accepts a touch anywhere, as the card says.
 - `tide-line`: a lap tap while the sea is still sliding back restarts the wave from the bottom, so the sea may jump down. Read from the formula, not seen.
 - `bounce-back`: whether the untouched lap paddle always reaches the ball in time is not established.
