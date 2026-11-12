@@ -125,3 +125,9 @@
 **Changed:** the Counting Cove table (five games: `duck-pond`, `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump`) and its words-off list (four voice-off, `duck-pond` partly) on the [toy-test page](../definitions/toy-test-lap-openings.md); three READY lines (`duck-pond`, `pet-kitchen`, `monster-munch`; `little-helpers` and `fill-dump` get none); the P4 line and progress counts (29 of 57 read).
 **Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code at `origin/main` `892834eb`, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Cozy Village (docs only, PR #1517)
+
+**Changed:** the Cozy Village table (eight games: `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `stop-and-go`, `pet-says`) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); six READY lines (`teddy-doctor`, `scoop-shop`, `stop-and-go`, `mail-carrier`, `feelings-faces`, `pet-says`); the P4 line and progress counts (37 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the eight games were read from the code at `origin/main` `7f12c562`, not played or timed).
