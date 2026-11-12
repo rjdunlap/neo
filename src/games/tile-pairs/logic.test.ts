@@ -248,8 +248,9 @@ describe('Tile Pairs', () => {
     const seen = new Set<number>();
     for (let seed = 1; seed <= 30; seed++) {
       const rng = new Rng(seed);
-      makeBoard(1, rng);
+      const board = makeBoard(1, rng);
       const look = pickLook(rng);
+      expect(board).toEqual(makeBoard(1, new Rng(seed)));
       expect(look).toBeGreaterThanOrEqual(0);
       expect(look).toBeLessThan(LOOKS.length);
       seen.add(look);
