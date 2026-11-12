@@ -1672,7 +1672,8 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           return ok();
         };
         // Untouched: her paddle drifts to the ball and bounces it.
-        if (!(await wait(() => g.rally >= 1, 15000))) throw new Error('Untouched lap paddle never met the ball');
+        if (!(await wait(() => g.rally >= 1, 15000)))
+          throw new Error('Untouched lap paddle never met the ball');
         // A ball that gets by: no miss, no hint, a new serve.
         await wait(() => g.ball.vx > 0, 8000);
         g.ball.x = b.x1 - 27;
@@ -1699,7 +1700,9 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         return [r.misses, r.hints];
       });
       assert.deepEqual(r, [0, 0], 'bounce 12 score');
-      log(`Bounce Back 12 (pat): untouched paddle met the ball, far-left touch hurried it, a ball by came back uncounted (rally ${lap.rally})`);
+      log(
+        `Bounce Back 12 (pat): untouched paddle met the ball, far-left touch hurried it, a ball by came back uncounted (rally ${lap.rally})`,
+      );
     }
 
     // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.

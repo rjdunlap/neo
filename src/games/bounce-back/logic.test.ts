@@ -315,7 +315,7 @@ describe('Bounce Back', () => {
     }
   });
 
-  it("brings the lap paddle to the ball untouched, from a serve on any screen, and a touch only hurries it", () => {
+  it('brings the lap paddle to the ball untouched, from a serve on any screen, and a touch only hurries it', () => {
     const plan = planFor(PAT_LEVEL);
     // Once on the ball's line, the drifting paddle outruns the ball's sideways speed at the steepest bounce, so it stays there.
     expect(patPaddleSpeed(false)).toBeGreaterThan(plan.speed * Math.sin(0.85));
@@ -326,7 +326,15 @@ describe('Bounce Back', () => {
       const midX = (180 + w - 40) / 2;
       const midY = (90 + h - 40) / 2;
       for (let a = -0.4; a <= 0.4001; a += 0.05) {
-        const arrive = predictY(midX, midY, Math.cos(a) * plan.speed, Math.sin(a) * plan.speed, g.faceX, g.top, g.bottom);
+        const arrive = predictY(
+          midX,
+          midY,
+          Math.cos(a) * plan.speed,
+          Math.sin(a) * plan.speed,
+          g.faceX,
+          g.top,
+          g.bottom,
+        );
         const paddleAt = Math.max(g.low, Math.min(g.high, midY));
         expect(patDriftReaches(Math.abs(arrive - paddleAt), g.faceX - midX, plan)).toBe(true);
       }

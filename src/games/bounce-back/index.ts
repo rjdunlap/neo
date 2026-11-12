@@ -222,7 +222,10 @@ class BounceBack implements Game {
     if (this.plan.mode === 'pat') {
       if (this.demoTapped || this.ball.x < (b.x0 + b.x1) / 2 - 80) return null;
       this.demoTapped = true;
-      return { tap: { on: this.touch, x: b.x0 + (b.x1 - b.x0) * 0.35, y: b.y0 + (b.y1 - b.y0) * 0.7 }, pause: 0.6 };
+      return {
+        tap: { on: this.touch, x: b.x0 + (b.x1 - b.x0) * 0.35, y: b.y0 + (b.y1 - b.y0) * 0.7 },
+        pause: 0.6,
+      };
     }
     const arrive = predictY(
       this.ball.x,
@@ -524,19 +527,27 @@ class BounceBack implements Game {
     if (this.plan.mode === 'pat')
       this.targets.right =
         this.ball.vx > 0
-          ? predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, f.right, b.y0 + BALL_R, b.y1 - BALL_R)
+          ? predictY(
+              this.ball.x,
+              this.ball.y,
+              this.ball.vx,
+              this.ball.vy,
+              f.right,
+              b.y0 + BALL_R,
+              b.y1 - BALL_R,
+            )
           : this.ball.y;
     for (const side of ['left', 'right'] as const) {
       const max =
         side === 'right' && this.plan.mode === 'pat'
           ? patPaddleSpeed(this.childTouch)
           : side === 'left' && this.petPlays()
-          ? isGoalMode(this.plan.mode)
-            ? keeperSpeed(this.plan.keeper!, this.aim(this.plan.speed))
-            : PET_SPEED
-          : this.plan.mode === 'solo' && !this.childTouch
-            ? 220
-            : 2400;
+            ? isGoalMode(this.plan.mode)
+              ? keeperSpeed(this.plan.keeper!, this.aim(this.plan.speed))
+              : PET_SPEED
+            : this.plan.mode === 'solo' && !this.childTouch
+              ? 220
+              : 2400;
       const d = this.targets[side] - this.paddles[side];
       this.paddles[side] += Math.sign(d) * Math.min(Math.abs(d), max * dt);
       this.paddles[side] = Math.max(b.y0 + half, Math.min(b.y1 - half, this.paddles[side]));
