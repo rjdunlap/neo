@@ -126,7 +126,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Log Roll (`log-roll`) | designed 2026-11-07 ([dive](deep-dives/log-roll.md): slices 1–5 ready; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Marble Jump (`marble-jump`) | designed 2026-11-07 ([dive](deep-dives/marble-jump.md): slices 1–4 built; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Number Nook (`number-nook`) | designed 2026-11-07 ([dive](deep-dives/number-nook.md): slices 1–6 built through level 7; the school opening and couch course await decisions); wave 7 | [Tracker](deep-dives/README.md#tracker) |
-| Pyramid Solitaire (`pyramid-solitaire`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Pyramid Solitaire (`pyramid-solitaire`) | designed 2026-11-11 ([dive](deep-dives/pyramid-solitaire.md): slices 1–2 queued); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Snowball Merge (`snowball-merge`) | designed 2026-11-09, wave 7; slices 1–5 built (2026-11-10 to 11-11); school opening, couch and swipe need decisions | [Dive](deep-dives/snowball-merge.md), [tracker](deep-dives/README.md#tracker) |
 | Tile Pairs (`tile-pairs`) | designed 2026-11-11 ([dive](deep-dives/tile-pairs.md): slices 1–2 built, slices 3–4 queued); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Pixel Pictures (`pixel-pictures`) | designed | [Dive](deep-dives/pixel-pictures.md) |

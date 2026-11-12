@@ -1877,3 +1877,11 @@ Proof includes typecheck, rule and registry tests, one filtered `tilepairs` play
 Files expected: `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `pools.ts`, `puzzles.ts`, `index.ts`, `voice.ts`, `howto.ts`, `scripts/tile-pairs-pool.mjs`, `docs/games/tile-pairs.md` and the dive's "What was built" section.
 
 Proof: typecheck, rule tests (bands, pools, fair-trap, each lesson board's property under mirror and permutation, `order`), one filtered `tilepairs` play of 10 and one of 19 that takes the losing pair, hears the lesson and undoes, a portrait screenshot, `fingerdemo` at 10 and 17, build (voice changes). If the session is large, slice 8 goes to its own batch.
+
+### pyramid-solitaire 1: Deals that ask for a plan
+
+- **`pyramid-solitaire`, deals that ask for a plan and a pair that shows what it uncovers** (dive slices 1–2, [dive](deep-dives/pyramid-solitaire.md#build-slices-in-order); existing-game tier; grown-up, levels 1–3 unchanged): a deal dial that draws up to 40 seeded candidates and keeps the first whose exact random-play clear rate is in the level's band (level 1 at least 95%, level 2 from 50% to under 95%, level 3 40–80%); level 1 is exactly two pairs and two kings with at most one unforced king elsewhere, and no rank appears more than four times, with property tests over 200 seeds a level. Then the lift-and-fade removal, the uncovering pulse and tone, "pairs open" in the status line and a corner index on every card.
+
+Files expected: `src/games/pyramid-solitaire/logic.ts`, `logic.test.ts`, `index.ts`, `howto.ts`, `docs/games/pyramid-solitaire.md` (Grows into line and notes) and the dive's "What was built" section.
+
+Proof: existing-game tier (typecheck, the rule tests, one filtered `BROWSER_SUITE=pyramid` play at level 3 with a portrait and a landscape screenshot; no `fingerdemo`, since the bot's actions do not change; build only if a shared file changes).
