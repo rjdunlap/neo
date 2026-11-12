@@ -296,6 +296,11 @@ export interface Game {
    * A hint shown marks a challenge run as helped for good, the same as the games whose help arrives by itself.
    */
   askForHint?(): void;
+  /**
+   * The guide was tapped. A game whose next ask waits behind a right answer's line (U7 R4) says that ask now and
+   * returns true, so the guide does not repeat the previous question's instruction.
+   */
+  sayWaitingAsk?(): boolean;
   /** Optional look under a stack, available without changing the round's input mode. */
   togglePeek?(): void;
   /** Explicit island pause label for requested help on a level outside the couch/grown-up catalog. */

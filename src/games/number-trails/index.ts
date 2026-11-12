@@ -102,6 +102,8 @@ class NumberTrails implements Game {
   private hints = 0;
   private wrong = 0;
   private missedDrag = false;
+  /** `nt.start` waits behind the right card's count (U7 R4), or is said at her first stroke. */
+  private unasked = false;
   private clock = 0;
   private readonly tolerance: number;
   private readonly strokes: readonly (readonly Point[])[];
@@ -156,6 +158,7 @@ class NumberTrails implements Game {
     this.handle = draggable(this.firefly, ctx.tw, {
       lift: 0,
       onPick: () => {
+        this.askNow();
         this.previous = this.points[this.progress];
         this.missedDrag = false;
         sfx.bell(7, 0.15);
@@ -258,7 +261,9 @@ class NumberTrails implements Game {
         if (c !== card) void this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.25 });
       });
       await this.ctx.tw.to(card.scale, { x: 1.2, y: 1.2 }, { duration: 0.2, ease: ease.outBack });
-      await this.ctx.say('nt.count', { n: this.n });
+      // The card's count never holds the tracing (U7 R4): it starts, the 0.3 s beat and the tracing follow at once, and
+      // `nt.start` waits for the count or her first stroke.
+      const line = this.ctx.say('nt.count', { n: this.n });
       await this.ctx.tw.wait(0.3);
       this.cardRow.visible = false;
       this.pile.visible = false;
@@ -268,7 +273,9 @@ class NumberTrails implements Game {
       this.handle.enabled = true;
       this.draw();
       this.placeFirefly();
-      await this.ctx.instruct('nt.start', { n: this.n });
+      this.unasked = true;
+      await line;
+      this.askNow();
       return;
     }
     // A wrong card: a gentle boing, then the pet counts the group again, touching each thing; the second glows the answer.
@@ -303,6 +310,19 @@ class NumberTrails implements Game {
     if (!this.recounting || this.phase !== 'cards') return;
     this.recounting = false;
     this.busy = false;
+  }
+
+  /** Says `nt.start` if it is still waiting behind the right card's count. */
+  private askNow() {
+    if (!this.unasked || this.phase !== 'trace') return false;
+    this.unasked = false;
+    void this.ctx.instruct('nt.start', { n: this.n });
+    return true;
+  }
+
+  /** The guide was tapped while `nt.start` waits: say it, not the cards' `nt.which`. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** Lays the group (or the basket) and the cards out on the asking screen. */
@@ -369,6 +389,7 @@ class NumberTrails implements Game {
   private async showWay() {
     this.showPending = false;
     if (this.busy || this.phase !== 'trace') return;
+    this.askNow();
     this.busy = true;
     this.handle.enabled = false;
     const path = showTheWay(this.points, this.progress);

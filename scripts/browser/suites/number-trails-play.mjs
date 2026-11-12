@@ -113,12 +113,19 @@ export function createSuite({ page, errors, log, scene, screenshot, launch, fini
     // The right card works mid-recount: it cuts the pet's count short.
     await page.waitForFunction(() => neo.scene.game.recounting, null, { timeout: 10000 });
     await screenshot('number-trails-5-glow');
-    await page.evaluate(() =>
-      kit.tapOn(neo.scene.game.cards[neo.scene.game.choices.indexOf(neo.scene.game.n)]),
-    );
-    await page.waitForFunction(() => neo.scene.game.phase === 'trace' && !neo.scene.game.busy, null, {
-      timeout: 15000,
+    // U7 R4: the card's count starts and the tracing opens after the 0.5 s grow and beat, with `nt.start` still waiting.
+    const r4 = await page.evaluate(async () => {
+      const g = neo.scene.game,
+        t = performance.now();
+      kit.tapOn(g.cards[g.choices.indexOf(g.n)]);
+      await kit.until(() => g.phase === 'trace' && !g.busy, 15000);
+      return { ms: performance.now() - t, waiting: g.unasked };
     });
+    assert.ok(
+      r4.ms < 900 && r4.waiting,
+      `R4: the tracing waited for the card's count (${Math.round(r4.ms)} ms)`,
+    );
+    log(`Number Trails 5: R4, tracing open ${Math.round(r4.ms)} ms after the right card, nt.start waiting`);
     assert.equal(await page.evaluate(() => neo.scene.game.canvas.visible), true);
     await traceAll();
     await page.waitForFunction(() => neo.scene.game.phase === 'done' || neo.scene.finished, null, {

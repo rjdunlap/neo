@@ -156,6 +156,8 @@ class FruitSums implements Game {
   readonly landed: boolean[] = [];
   busy = false;
   finished = false;
+  /** The tree's "another way" ask, waiting behind a found way's line (U7 R4), or said at her first touch. */
+  private unasked = false;
   misses = 0;
   hints = 0;
   private sumMisses = 0;
@@ -345,6 +347,7 @@ class FruitSums implements Game {
 
   private tapTile(i: number) {
     if (this.busy || this.finished || !this.landed[i] || this.gone[i]) return;
+    this.askNow();
     if (this.slotA === i) this.slotA = null;
     else if (this.slotB === i) this.slotB = null;
     else if (this.slotC === i) this.slotC = null;
@@ -359,6 +362,7 @@ class FruitSums implements Game {
 
   private tapLeaf(op: Op) {
     if (this.busy || this.finished) return;
+    this.askNow();
     this.op = this.op === op ? null : op;
     if (this.op) {
       sfx.bell(LEAF_STEP[this.op], 0.3);
@@ -405,6 +409,7 @@ class FruitSums implements Game {
 
   private tapCheck() {
     if (this.busy || this.finished) return;
+    this.askNow();
     if (this.three) return this.checkThree();
     if (this.slotA === null || this.slotB === null || this.op === null) {
       sfx.pop(3);
@@ -523,7 +528,7 @@ class FruitSums implements Game {
       gravity: 300,
       life: [0.5, 0.9],
     });
-    await this.ctx.say(
+    const line = this.ctx.say(
       this.signSum
         ? 'fsums.right4'
         : this.clear
@@ -534,6 +539,8 @@ class FruitSums implements Game {
       words,
     );
     if (this.found.length >= waysNeeded(this.plan)) {
+      // The last way's line is heard out, because the closing line would cut it.
+      await line;
       this.finished = true;
       await this.ctx.say(
         this.signSum ? 'fsums.done4' : this.clear ? 'fsums.done5' : this.three ? 'fsums.done6' : 'fsums.done',
@@ -543,13 +550,33 @@ class FruitSums implements Game {
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
-    await this.ctx.tw.wait(0.5);
+    // The found way's line never holds the tree (U7 R4): after the fruit's hop (or the flight to the basket) the boxes
+    // clear and input reopens while it plays; the found sentence stays on screen, and the "another way" ask waits for the
+    // line, or is said at her first touch.
+    await this.ctx.tw.wait(this.clear ? 0.45 : 0.34);
+    if (this.finished) return;
     this.clearSlots();
     this.sumMisses = 0;
-    if (this.signSum) await this.ctx.instruct('fsums.again4', this.signWords());
-    else if (this.clear) await this.ctx.instruct('fsums.again5', { n: this.target });
-    else await this.ctx.instruct('fsums.again', { n: this.target });
     this.busy = false;
+    const at = this.found.length;
+    this.unasked = true;
+    await line;
+    if (this.found.length === at) this.askNow();
+  }
+
+  /** Says the "another way" ask if it is still waiting behind a found way's line. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.unasked = false;
+    if (this.signSum) void this.ctx.instruct('fsums.again4', this.signWords());
+    else if (this.clear) void this.ctx.instruct('fsums.again5', { n: this.target });
+    else void this.ctx.instruct('fsums.again', { n: this.target });
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say "another way" now rather than the tree's first ask. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** "7 + 5 = 12" for a found way, rebuilt from its key; at level 4 "7 + 5 = 6 + 4", at level 6 "2 + 3 + 7 = 12", or "3 × 4 = 12". */

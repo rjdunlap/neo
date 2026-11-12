@@ -86,6 +86,8 @@ class FrogHop implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** The next question's spoken ask, waiting behind the last right answer's line (U7 R4), or said at her first tap. */
+  private unasked: (() => unknown) | null = null;
 
   private readonly backdrop: Backdrop;
   private readonly row = new Container();
@@ -313,8 +315,13 @@ class FrogHop implements Game {
     return slot < 0 ? null : { tap: { on: this.spots[slot] } };
   }
 
-  private async next() {
+  /**
+   * On to the next question. A right answer's line never holds it (U7 R4): the frog's leap and the next question's sign
+   * follow at once with input open, and the spoken ask waits for the line, or is said at her first tap.
+   */
+  private async next(line?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = null;
     this.index++;
     this.wrongs = 0;
     this.helped = false;
@@ -329,7 +336,7 @@ class FrogHop implements Game {
     const q = this.q;
     if (q.lo !== this.lo) await this.slideWindow(q.lo);
     if (this.at !== q.start) await this.leap(q.start);
-    if (isFrac(mode)) return this.askFrac();
+    if (isFrac(mode)) return this.askFrac(line);
     const k = Math.abs(q.hops);
     this.setSign(
       mode === 'find'
@@ -346,16 +353,43 @@ class FrogHop implements Game {
     this.focus =
       mode === 'gap' || splitsAtTen(mode) ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
-    if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
-    if (mode === 'next') return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
-    if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
-    if (splitsAtTen(mode))
-      return this.ctx.instruct(mode === 'make-ten' ? 'hop.ten' : 'hop.backten', { n: q.start, k });
-    return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
+    this.ask(() => {
+      if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
+      if (mode === 'next')
+        return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
+      if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
+      if (splitsAtTen(mode))
+        return this.ctx.instruct(mode === 'make-ten' ? 'hop.ten' : 'hop.backten', { n: q.start, k });
+      return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
+    }, line);
+  }
+
+  /** Says the question's ask now, or when the last right answer's line ends if one is still playing. */
+  private ask(say: () => unknown, line?: Promise<unknown>) {
+    if (!line) return void say();
+    this.unasked = say;
+    const at = this.index;
+    void line.then(() => {
+      if (this.index === at) this.askNow();
+    });
+  }
+
+  /** Says the question's ask if it is still waiting behind the last right answer's line. */
+  private askNow() {
+    const say = this.unasked;
+    if (!say || this.finished) return false;
+    this.unasked = null;
+    void say();
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say this question's ask, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** A fraction question: the sum of the start and the hops on the sign (the start left out at 0), then the spoken ask. */
-  private askFrac() {
+  private askFrac(line?: Promise<unknown>) {
     const q = this.q;
     this.markPads();
     const terms = Array.from({ length: q.count! }, () => sizeName(q.jump!));
@@ -363,8 +397,13 @@ class FrogHop implements Game {
     this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
     const hops = hopPhrase(q.jump!, q.count!);
-    if (this.plan.mode === 'frac-match') return this.ctx.instruct('hop.frac.match', { hops });
-    return this.ctx.instruct('hop.frac', { where: fracWords(q.start), hops });
+    this.ask(
+      () =>
+        this.plan.mode === 'frac-match'
+          ? this.ctx.instruct('hop.frac.match', { hops })
+          : this.ctx.instruct('hop.frac', { where: fracWords(q.start), hops }),
+      line,
+    );
   }
 
   /** The long line: slide the pads so the start and the answer are both in view. */
@@ -434,6 +473,7 @@ class FrogHop implements Game {
 
   private async tapPad(n: number) {
     if (this.busy || this.finished) return;
+    this.askNow();
     if (this.cardStage()) {
       this.inertTaps++;
       sfx.squeak();
@@ -453,6 +493,7 @@ class FrogHop implements Game {
 
   private async tapCard(n: number) {
     if (this.busy || this.finished) return;
+    this.askNow();
     if (this.plan.mode === 'gap' && n === answerOf('gap', this.q)) return void this.right();
     if (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge' && n === this.q.toTen)
       return void this.bridgeTen();
@@ -533,20 +574,23 @@ class FrogHop implements Game {
     });
     this.ctx.pet.cheer();
     const quarters = quarterName(q.target);
+    let line: Promise<unknown>;
     if (mode === 'frac-match') {
       const first = hopsWords(q.jump!, q.count!);
-      await this.ctx.say('hop.frac.same', {
+      line = this.ctx.say('hop.frac.same', {
         first: first[0].toUpperCase() + first.slice(1),
         second: hopsWords(q.jump2!, q.answer2!),
         name: fracWords(q.target),
       });
     } else if (mode === 'frac-hop' && quarters && q.jump === 1)
-      await this.ctx.say('hop.frac.also', {
+      line = this.ctx.say('hop.frac.also', {
         quarters: quarters[0].toUpperCase() + quarters.slice(1),
         name: fracWords(q.target),
       });
-    else await this.ctx.say('hop.yay');
-    await this.next();
+    else line = this.ctx.say('hop.yay');
+    // The last question's line is heard out, because the closing line would cut it.
+    if (this.index + 1 >= this.questions.length) await line;
+    await this.next(line);
   }
 
   private async miss(n: number) {
