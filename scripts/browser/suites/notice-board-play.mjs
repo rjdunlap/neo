@@ -111,7 +111,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       null,
       { timeout: 20000 },
     );
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(1200);
     await screenshot('notice-board-2-portrait');
     await nextPoster(1);
     s = await state();
@@ -126,6 +126,33 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     // Level 3 (school): a free friend tap, the wrong basket for the apple-tree decoy (a miss), then the right one.
     await launch('notice-board', 3, 'Mia', 'school');
     await ready();
+    // U7 R4: the right answer's line (here `tell` or `sell`) never holds the board. Each is stretched to at least 4 s, so
+    // the next poster opening sooner shows the line no longer gates it; the next poster is read only when the line
+    // ends (or not at all, when she answers first), and the last poster's line is heard out before `done`.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.lessons = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        const prev = g.lessons.at(-1);
+        const key = String(id);
+        if (prev && prev.read === undefined && key.startsWith('noticeboard.poster.'))
+          prev.read = performance.now() - prev.at;
+        if (prev && prev.done === undefined && key === 'noticeboard.done')
+          prev.done = performance.now() - prev.at;
+        if (key !== 'noticeboard.tell' && key !== 'noticeboard.sell') return line;
+        const rec = { at: performance.now(), last: g.play.done };
+        g.lessons.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (g.finished || !g.busy) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
     s = await state();
     assert.equal(s.purpose, 'tell', 'the authored decoy, my apple tree, is telling');
     await tapFriend(0);
@@ -139,6 +166,25 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await nextPoster(1);
     await finishRest('notice-board');
     assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
+    const lessons = await page.evaluate(() =>
+      neo.scene.game.lessons.map((r) => ({
+        last: r.last,
+        opens: Math.round(r.opens ?? -1),
+        read: Math.round(r.read ?? -1),
+        done: Math.round(r.done ?? -1),
+      })),
+    );
+    const early = lessons.filter((r) => !r.last);
+    // The fold (0.6 s) and the existing 0.5 + 0.4 s beat come before the next poster; the 4 s line no longer does.
+    if (!early.length || early.some((r) => r.opens < 0 || r.opens > 2200))
+      throw new Error(`R4: a right answer's line held the next poster: ${JSON.stringify(lessons)}`);
+    if (early.some((r) => r.read >= 0 && r.read < 3900))
+      throw new Error(`R4: the next poster's reading cut the lesson: ${JSON.stringify(lessons)}`);
+    if (lessons.filter((r) => r.last).some((r) => r.done < 3900))
+      throw new Error(`R4: the last poster's line was not heard out: ${JSON.stringify(lessons)}`);
+    log(
+      `Notice Board 3 R4: the next poster opened ${early.map((r) => r.opens).join(', ')} ms into its lesson`,
+    );
     log(
       'Notice Board 1–3: pre-K level 1 two wrong badges and the glow then the maker (2/1); portrait level 2 the heard-it friend then the witness through a stretched and a true poster (1/0); level 3 a free friend tap, the wrong basket then the right one (1/0); passed',
     );

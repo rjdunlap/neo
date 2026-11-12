@@ -78,6 +78,8 @@ class NoticeBoard implements Game {
   readonly baskets: BasketNode[] = [];
   private poster: Container | null = null;
   private reading = 0;
+  /** The next poster's reading waits behind the last right answer's line (U7 R4). */
+  private unread = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -195,7 +197,20 @@ class NoticeBoard implements Game {
   private reread() {
     if (this.busy || this.finished || this.play.done) return;
     sfx.tick();
+    if (!this.readNow()) void this.read();
+  }
+
+  /** Reads the poster if its reading still waits behind a line; true when it did. */
+  private readNow() {
+    if (!this.unread || this.finished) return false;
+    this.unread = false;
     void this.read();
+    return true;
+  }
+
+  /** The guide was tapped while the poster's reading waits: read this poster, not the last instruction. */
+  sayWaitingAsk() {
+    return this.readNow();
   }
 
   // Answers --------------------------------------------------------------------------------------------------------
@@ -213,8 +228,12 @@ class NoticeBoard implements Game {
     if (out.kind === 'free') {
       sfx.tick();
       k.cheer();
+      // A free tap while the poster's reading waits reads it now.
+      this.readNow();
       return;
     }
+    // A judged tap before the poster was read stands (the stamp, the bubbles and the poster are on screen); the reading is dropped.
+    this.unread = false;
     if (out.kind === 'right') return void this.settle(out, i);
     sfx.boing();
     let line: string;
@@ -231,6 +250,8 @@ class NoticeBoard implements Game {
     b.node.scale.set(1.06);
     void this.ctx.tw.to(b.node.scale, { x: 1, y: 1 }, { duration: 0.2 });
     const out = this.play.tapBasket(purpose);
+    if (out.kind === 'free') return void this.readNow();
+    this.unread = false;
     if (out.kind === 'right') return void this.settle(out, null);
     if (out.kind !== 'miss') return;
     sfx.boing();
@@ -252,7 +273,11 @@ class NoticeBoard implements Game {
   private async settle(out: Extract<Outcome, { kind: 'right' }>, slot: number | null) {
     this.busy = true;
     this.reading++;
+    this.unread = false;
     const item = out.item;
+    // The right answer's line is the lesson (why it was made, true or stretched, tell or sell): it starts, the pin, the
+    // photo or the fold follow at once, and it plays over the next poster (U7 R4). Only the last poster's is heard out.
+    let lesson: Promise<void> = Promise.resolve();
     const L = this.layout();
     sfx.marimba(7);
     if (this.plan.mode === 'witness') {
@@ -275,7 +300,7 @@ class NoticeBoard implements Game {
       photo.scale.set(1);
       if (item.truth === 'true') {
         sfx.pop(9);
-        await this.ctx.say('noticeboard.true');
+        lesson = this.ctx.say('noticeboard.true');
       } else {
         await this.ctx.say(`noticeboard.stretched.${item.poster.topic}` as LineId);
         if (!this.alive) return;
@@ -284,7 +309,7 @@ class NoticeBoard implements Game {
         label.rotation = -0.08;
         this.poster?.addChild(label);
         sfx.pop(9);
-        await this.ctx.say(`noticeboard.label.${item.poster.topic}` as LineId);
+        lesson = this.ctx.say(`noticeboard.label.${item.poster.topic}` as LineId);
       }
     } else {
       // The maker hops and presses their face-pin into the poster.
@@ -295,10 +320,9 @@ class NoticeBoard implements Game {
       this.poster?.addChild(pin);
       void this.ctx.tw.to(pin.scale, { x: 1, y: 1 }, { duration: 0.25 });
       sfx.pop(9);
-      if (this.plan.mode === 'maker') await this.ctx.say(`noticeboard.why.${item.poster.id}` as LineId);
+      if (this.plan.mode === 'maker') lesson = this.ctx.say(`noticeboard.why.${item.poster.id}` as LineId);
       else {
-        await this.ctx.say(`noticeboard.${item.poster.purpose}` as LineId);
-        if (!this.alive) return;
+        lesson = this.ctx.say(`noticeboard.${item.poster.purpose}` as LineId);
         // The poster folds and drops into its basket.
         const b = this.baskets.find((x) => x.purpose === item.poster.purpose)!;
         const p = this.poster;
@@ -313,7 +337,11 @@ class NoticeBoard implements Game {
     if (!this.alive) return;
     await this.ctx.tw.wait(0.5);
     if (!this.alive) return;
-    if (out.done) return void this.finale();
+    if (out.done) {
+      await lesson;
+      if (!this.alive) return;
+      return void this.finale();
+    }
     this.photoHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.seat(this.play.item);
     sfx.pop(7);
@@ -324,7 +352,12 @@ class NoticeBoard implements Game {
     await this.ctx.tw.wait(0.4);
     if (!this.alive) return;
     this.busy = false;
-    void this.read();
+    // The new poster is read when the lesson ends, or at once if she taps it or the guide first.
+    this.unread = true;
+    const next = this.play.item;
+    void lesson.then(() => {
+      if (this.alive && this.play.item === next) this.readNow();
+    });
   }
 
   // Help -----------------------------------------------------------------------------------------------------------
@@ -332,8 +365,10 @@ class NoticeBoard implements Game {
   /** The pause sheet's Show me: the same glow as two misses, counted once per poster; asked again it re-reads the poster. */
   askForHint() {
     if (this.busy || this.finished || this.play.done) return;
-    if (this.play.requestHint()) void this.ctx.say('noticeboard.hint');
-    else this.reread();
+    if (this.play.requestHint()) {
+      this.unread = false;
+      void this.ctx.say('noticeboard.hint');
+    } else this.reread();
   }
 
   targetNode(): Container | null {
@@ -417,7 +452,8 @@ class NoticeBoard implements Game {
 
   /** The ghost finger: tap the answer (the maker, the witness or the basket). */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    // The demo waits for the lesson and the poster's reading, as a child hearing them would.
+    if (this.busy || this.finished || this.unread) return null;
     const n = this.targetNode();
     return n ? { tap: { on: n }, pause: 1.4 } : null;
   }

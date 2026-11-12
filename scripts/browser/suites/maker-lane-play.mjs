@@ -72,12 +72,49 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await tapStall(2);
     s = await state();
     assert.deepEqual([s.misses, s.form], [0, 'sheep'], 'a maker who is not waving: free, nothing changes');
+    // U7 R4: a maker's step line never holds the lane. Each `makerlane.make.*` is stretched to at least 4 s here, so the
+    // lane opening sooner shows the line no longer gates it; a bundle's last step is still heard out before `forpet`.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.makeLines = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        const prev = g.makeLines.at(-1);
+        if (String(id) === 'makerlane.forpet' && prev && prev.forpet === undefined)
+          prev.forpet = performance.now() - prev.at;
+        if (!String(id).startsWith('makerlane.make.')) return line;
+        const rec = { id: String(id), at: performance.now() };
+        g.makeLines.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (g.finished || !g.busy) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
     await tapStall(0);
     await ready();
     s = await state();
     assert.equal(s.form, 'fleece', 'the shearer gives lumpy fleece');
     await finishRest('maker-lane');
     assert.deepEqual(await score(), [0, 0], 'level 1 saved 0 misses, 0 hints');
+    const made = await page.evaluate(() =>
+      neo.scene.game.makeLines.map((r) => ({
+        id: r.id,
+        opens: Math.round(r.opens ?? -1),
+        forpet: Math.round(r.forpet ?? -1),
+      })),
+    );
+    const steps = made.filter((r) => r.forpet < 0);
+    const lasts = made.filter((r) => r.forpet >= 0);
+    if (!steps.length || steps.some((r) => r.opens < 0 || r.opens > 1500))
+      throw new Error(`R4: a step line held the lane: ${JSON.stringify(made)}`);
+    if (!lasts.length || lasts.some((r) => r.forpet < 3900))
+      throw new Error(`R4: a bundle's last step was not heard out: ${JSON.stringify(made)}`);
+    log(`Maker Lane 1 R4: the lane opened ${steps.map((r) => r.opens).join(', ')} ms into a step line`);
 
     // Level 2 (preschool), portrait: two makers who cannot use the fleece yet (two misses, bubbles, the glow and one hint),
     // then the right makers.

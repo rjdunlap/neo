@@ -73,6 +73,8 @@ class MakerLane implements Game {
   askForHint?: () => void;
   /** While a maker works or a replay runs: touches wait, never counted. */
   busy = true;
+  /** A step's line is still playing over the open lane; only the ghost finger waits for it (U7 R4). */
+  private stepLine = 0;
   private alive = true;
   private finished = false;
   private view: View;
@@ -328,20 +330,32 @@ class MakerLane implements Game {
         st.bubble.destroy({ children: true });
         st.bubble = null;
       }
-    await this.ctx.say(`makerlane.make.${out.maker.chain}.${out.maker.step}` as LineId);
+    const line = this.ctx.say(`makerlane.make.${out.maker.chain}.${out.maker.step}` as LineId);
+    if (!out.finished) {
+      // A step's line never holds the lane (U7 R4): the new form is already drawn, so the maker hangs their work and
+      // the bundle can go on to the next maker at once, whose own line cuts this one.
+      this.hang(i, out.to);
+      this.release();
+      if (this.drag) this.drag.enabled = true;
+      const n = ++this.stepLine;
+      void line.then(() => {
+        if (this.stepLine === n) this.stepLine = 0;
+      });
+      return;
+    }
+    // A bundle's last step is heard out before its flight to the pet.
+    await line;
     if (!this.alive) return;
     // Done with their step: the maker steps aside and hangs their work on the stall.
     this.hang(i, out.to);
-    if (out.finished) {
-      await this.toPet();
+    await this.toPet();
+    if (!this.alive) return;
+    if (out.done) return void this.finale();
+    this.setUp();
+    sfx.pop(7);
+    if (this.level === 2) {
+      await this.ctx.say(this.harvestLine());
       if (!this.alive) return;
-      if (out.done) return void this.finale();
-      this.setUp();
-      sfx.pop(7);
-      if (this.level === 2) {
-        await this.ctx.say(this.harvestLine());
-        if (!this.alive) return;
-      }
     }
     this.release();
     if (this.drag) this.drag.enabled = true;
@@ -681,7 +695,8 @@ class MakerLane implements Game {
 
   /** The ghost finger: tap the waving stall (level 1), drag the bundle to the maker who can use it (2), tap the right card (3). */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    // The demo hears a step's line out, as a child watching it would.
+    if (this.busy || this.finished || this.stepLine) return null;
     const n = this.targetNode();
     if (!n) return null;
     if (this.level === 2) {
