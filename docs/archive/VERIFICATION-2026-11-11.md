@@ -101,3 +101,27 @@
 **Changed:** new [page](../definitions/toy-test-lap-openings.md) (the five toy-test questions answered from the code for Bubble Beach's eight lap games, a words-off list, the other lap games listed by land); READY's P4 line and seven new lap-opening lines; a progress line under P4 in `docs/POK-POK.md`.
 **Ran:** `node scripts/check-links.mjs`; `git diff --check`.
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the eight games were read, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Music Mountain (docs only, PR #1512)
+
+**Changed:** the Music Mountain table (five games: `jelly-drums`, `sound-garden`, `puppet-stage`, `rhythm-neighbors`, `song-maker`) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); two READY lines (`rhythm-neighbors`, `song-maker`; `jelly-drums`, `sound-garden` and `puppet-stage` get none); the P4 line and progress counts (13 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Painted Canyon (docs only, PR #1513)
+
+**Changed:** the Painted Canyon table (five games: `rainbow-fingers`, `fluffy-salon`, `stamp-studio`, `draw-the-pattern`, `gear-garden`) and its words-off list (all five) on the [toy-test page](../definitions/toy-test-lap-openings.md); three READY lines (`draw-the-pattern`, `stamp-studio`, `gear-garden`; `rainbow-fingers` and `fluffy-salon` get none); the P4 line and progress counts (18 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Barnyard (docs only, PR #1514)
+
+**Changed:** the Barnyard table (six games: `peekaboo-barn`, `duckling-parade`, `roundup`, `egg-catch`, `animal-snack`, `sing-along-barn`) and its words-off list (five, `egg-catch` partly) on the [toy-test page](../definitions/toy-test-lap-openings.md); four READY lines (`egg-catch`, `animal-snack`, `duckling-parade`, `roundup`; `peekaboo-barn` and `sing-along-barn` get none); the P4 line and progress counts (24 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Counting Cove (docs only, PR #1515)
+
+**Changed:** the Counting Cove table (five games: `duck-pond`, `monster-munch`, `little-helpers`, `pet-kitchen`, `fill-dump`) and its words-off list (four voice-off, `duck-pond` partly) on the [toy-test page](../definitions/toy-test-lap-openings.md); three READY lines (`duck-pond`, `pet-kitchen`, `monster-munch`; `little-helpers` and `fill-dump` get none); the P4 line and progress counts (29 of 57 read).
+**Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code at `origin/main` `892834eb`, not played or timed).
