@@ -199,7 +199,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
       if (k === 0) {
         await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.phase === 'rest', null, {
-          timeout: 4000,
+          timeout: 2500,
         });
         open = await page.evaluate(() => performance.now() - window.__munch[0]);
       }
