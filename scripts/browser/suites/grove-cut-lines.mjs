@@ -81,6 +81,37 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
           )} ms into a 4 s goodnight, its ask waiting; an early tap said it (no miss); the guide said it; the last heard out`,
       );
 
+      // Level 4 (two in order): a first tap while the next request waits keeps it waiting, behind its own goodnight.
+      await launch('goodnight-room', 4);
+      await stretch(['night.goodnight']);
+      const two = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const tapThing = (thing) => {
+          const b = g.sleepers.find((s) => s.thing === thing).getBounds();
+          kit.tap(b.x + b.width / 2, b.y + b.height / 2);
+        };
+        const out = [];
+        for (let n = 0; n < g.requests.length; n++) {
+          const r = g.requests[n];
+          await kit.until(() => g.index === n && !g.busy, 15000);
+          await kit.sleep(350);
+          tapThing(r[0]);
+          await kit.sleep(350);
+          if (n === 1) out.push({ step: g.step, waiting: !!g.unasked, guide: g.sayWaitingAsk() });
+          tapThing(r[1]);
+          await kit.until(() => neo.scene.finished || (g.index === n + 1 && !g.busy), 20000);
+        }
+        await kit.until(() => neo.scene.finished, 20000);
+        return { out, misses: g.misses };
+      });
+      if (!(two.out[0]?.step === 1 && two.out[0].waiting && two.out[0].guide) || two.misses !== 0)
+        throw new Error(`R4: a first-of-two tap dropped the waiting request: ${JSON.stringify(two)}`);
+      await finished('goodnight-room');
+      assert.deepEqual(await score('goodnight-room'), [0, 0]);
+      log(
+        'Goodnight Room 4 R4: a first-of-two tap kept the next request waiting; the guide said it; no misses',
+      );
+
       // Level 7 (count): her taps cut the running count; the tally keeps the total.
       await launch('goodnight-room', 7);
       await stretch(['night.counted']);

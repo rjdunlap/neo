@@ -595,7 +595,7 @@ class GoodnightRoom implements Game {
         s.thing,
       )
     ) {
-      // Her tap answers the waiting request: it is not said after all.
+      const pending = this.unasked;
       this.unasked = null;
       this.askGen++;
       this.glowing = null;
@@ -603,7 +603,10 @@ class GoodnightRoom implements Game {
       // The goodnight starts and the next tap or request opens at once (U7 R4).
       const said = this.goodnight(s);
       this.step++;
+      // A tap that finishes the request answers it: a waiting ask is not said after all.
       if (this.step >= r.length) return void this.next(said);
+      // One that does not (the first of two, say) leaves the ask waiting, now behind this goodnight.
+      if (pending) this.ask(pending.id, pending.vars, said);
       return;
     }
     // A tap before she has heard the request is not a mistake: the request is said now.
