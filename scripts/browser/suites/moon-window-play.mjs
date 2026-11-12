@@ -10,7 +10,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const tally = () => page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]);
     const settle = async () => {
       await page.waitForTimeout(250);
-      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForFunction(
+        () => neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.unasked),
+        null,
+        { timeout: 20000 },
+      );
       await page.waitForTimeout(200);
     };
     const card = async (i) => {

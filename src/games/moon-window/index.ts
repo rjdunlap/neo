@@ -68,6 +68,9 @@ class MoonWindow implements Game {
   hints = 0;
   busy = false;
   finished = false;
+  /** Levels 2–3: the next board's request, waiting behind the right card's line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   /** Level 1: the views of this round and how many have been seen (the first is on screen from the start). */
   views: number[] = [];
   shown = 1;
@@ -159,7 +162,7 @@ class MoonWindow implements Game {
 
   /** The ghost finger: Later, with one free replay of the first thumbnail after the second view; the right card on a board. */
   autotouch(): TouchIntent | null {
-    if (this.finished || this.busy) return null;
+    if (this.finished || this.busy || this.unasked) return null;
     if (this.plan.mode === 'look') {
       if (this.shown === 2 && !this.demoReplayed) {
         this.demoReplayed = true;
@@ -249,6 +252,7 @@ class MoonWindow implements Game {
   }
 
   private askRequest() {
+    this.dropAsk();
     if (!this.round || this.round.finished) return;
     const b = this.round.board;
     void this.ctx.instruct(
@@ -269,6 +273,11 @@ class MoonWindow implements Game {
         .to(card.node.scale, { x: 1.08, y: 1.08 }, { duration: 0.1 })
         .then(() => this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
     if (this.busy) return;
+    if (this.unasked) {
+      // The board's request is not heard yet: the right card goes ahead; any other says the request (never a miss).
+      if (this.round.finished || i !== this.round.hintFor()) return void this.askRequest();
+      this.dropAsk();
+    }
     const out = this.round.tap(i);
     this.misses = this.round.misses;
     this.hints = this.round.hints;
@@ -311,6 +320,7 @@ class MoonWindow implements Game {
   private async right(i: 0 | 1) {
     const card = this.cards[i];
     const w = center(this.layout.window);
+    let said: Promise<void>;
     this.glow.clear();
     sfx.bell(9, 0.3);
     this.ctx.pet.cheer();
@@ -328,7 +338,8 @@ class MoonWindow implements Game {
         gravity: -20,
         life: [0.5, 0.9],
       });
-      await this.ctx.say('moonwindow.right');
+      // The line starts and the next board follows it at once (U7 R4).
+      said = this.ctx.say('moonwindow.right');
       await this.ctx.tw.to(card.node, { alpha: 0 }, { duration: 0.2 });
       card.node.position.set(home.x, home.y);
       card.node.scale.set(1);
@@ -341,10 +352,16 @@ class MoonWindow implements Game {
         gravity: -20,
         life: [0.5, 0.9],
       });
-      await this.ctx.say(viewLine(card.k));
+      // The tapped card's amount plays over the next board and its request.
+      said = this.ctx.say(viewLine(card.k));
+    }
+    if (this.round!.finished) {
+      // The last board's line is heard out before the round ends.
+      await said;
+      await this.ctx.tw.wait(0.3);
+      return void this.end();
     }
     await this.ctx.tw.wait(0.3);
-    if (this.round!.finished) return void this.end();
     // The next board slides in.
     for (const c of this.cards) c.node.alpha = 0;
     this.showBoard();
@@ -363,12 +380,30 @@ class MoonWindow implements Game {
       ),
     );
     this.busy = false;
+    // The request waits for the line, the guide or her first tap.
+    this.unasked = true;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen && this.unasked && !this.finished) this.askRequest();
+    });
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next board's request waits behind the right card's line: say it. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished) return false;
     this.askRequest();
+    return true;
   }
 
   /** Show a hint from the pause sheet: the right card glows; one counted hint per board, none once it already glows. */
   private hint() {
     if (this.finished || this.busy || !this.round || this.round.finished) return;
+    this.dropAsk();
     this.round.ask();
     this.hints = this.round.hints;
     this.drawGlow();
@@ -415,6 +450,7 @@ class MoonWindow implements Game {
     } else {
       this.round!.restart();
       this.showBoard();
+      if (this.unasked) this.askRequest();
     }
     this.place();
   }
