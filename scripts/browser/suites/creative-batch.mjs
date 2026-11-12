@@ -703,7 +703,141 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           `Rhythm Neighbors ${level}: calls, replies, retries, guided timing, saved round and sticker passed`,
         );
       }
-    if (!only || only === 'tangram')
+    // Level 1 on an upright phone, by taps (P3c): a tapped tray piece is held at home, a second tap on it or a tap on the
+    // other piece is free, a tap on the wrong shadow is the same miss a drag gets, the yellow button lets a held piece go
+    // and still helps, and both pieces are placed by tap-then-tap. TANGRAM_TAP=only runs this part alone; TANGRAM_TAP=skip leaves it out.
+    const tangramTap = process.env.TANGRAM_TAP;
+    if (tangramTap !== undefined) selectValue(tangramTap, ['only', 'skip'], 'TANGRAM_TAP');
+    if ((!only || only === 'tangram') && tangramTap !== 'skip' && (tangramTap === 'only' || fromLevel <= 1)) {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('tangram-town', 1);
+      await page.waitForTimeout(350);
+      const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+      const state = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            held: g.pieces.map((c) => c.drag.held),
+            home: g.pieces.map((c) => Math.hypot(c.node.x - c.drag.home.x, c.node.y - c.drag.home.y) < 2),
+            placed: g.pieces.map((c) => c.placed),
+            selected: g.pieces.indexOf(g.selected),
+            score: [g.misses, g.hints],
+          };
+        });
+      const tapPiece = async (i) => {
+        await page.evaluate((i) => kit.tapOn(neo.scene.game.pieces[i].node), i);
+        await page.waitForTimeout(350);
+      };
+      /** Tap the middle of target `k`'s shadow: no lift, the tapped point is the piece's middle. */
+      const tapShadow = async (k) => {
+        await page.evaluate((k) => {
+          const g = neo.scene.game,
+            t = g.plan.targets[k],
+            p = g.board.toGlobal({ x: t.x, y: t.y });
+          kit.tap(p.x, p.y);
+        }, k);
+        await page.waitForTimeout(700);
+      };
+      const fits = await page.evaluate(async () => {
+        const g = neo.scene.game,
+          { hintFor } = await import('/src/games/tangram-town/logic.ts');
+        return g.pieces.map((c) => hintFor(c.piece, g.plan.targets, g.filled));
+      });
+      await tapPiece(0);
+      let s = await state();
+      assert.deepEqual(
+        [s.held, s.home[0], s.selected, s.score],
+        [[true, false], true, 0, [0, 0]],
+        'a tapped piece is held at home',
+      );
+      await screenshot('tangram-town-1-phone-held');
+      await tapPiece(0);
+      s = await state();
+      assert.deepEqual(
+        [s.held, s.score],
+        [
+          [false, false],
+          [0, 0],
+        ],
+        'a tap on the held piece lets it go, free',
+      );
+      await tapPiece(0);
+      await tapPiece(1);
+      s = await state();
+      assert.deepEqual(
+        [s.held, s.selected, s.score],
+        [[false, true], 1, [0, 0]],
+        'a tap on the other piece switches to it',
+      );
+      // The yellow button never waits behind a held piece: the hold ends and the help is given in the same touch.
+      await tapPiece(0);
+      await tap('neo.scene.game.help');
+      await page.waitForTimeout(350);
+      s = await state();
+      assert.deepEqual(
+        [s.held, s.score],
+        [
+          [false, false],
+          [0, 1],
+        ],
+        'the yellow button lets go and helps',
+      );
+      // The wrong shadow refuses the tapped piece as it refuses a dragged one: a miss, and the piece floats home.
+      if (fits[0] !== fits[1]) {
+        await tapPiece(0);
+        await tapShadow(fits[1]);
+        await page.waitForTimeout(500);
+        s = await state();
+        assert.deepEqual(
+          [s.held, s.placed, s.home[0], s.score],
+          [[false, false], [false, false], true, [1, 1]],
+          'the wrong shadow is a miss and the piece goes home',
+        );
+      }
+      const missed = fits[0] !== fits[1] ? 1 : 0;
+      // A tap on empty ground is no answer: the piece glides there and floats home, free.
+      await tapPiece(0);
+      await page.evaluate(() => {
+        const p = neo.scene.game.board.toGlobal({ x: 0, y: 400 });
+        kit.tap(p.x, p.y);
+      });
+      await page.waitForTimeout(1000);
+      s = await state();
+      assert.deepEqual(
+        [s.held, s.placed, s.home[0], s.score],
+        [[false, false], [false, false], true, [missed, 1]],
+        'empty ground is free',
+      );
+      // The second shadow is tapped beside the first placed piece: its touch circle must not catch the tap.
+      for (const i of [0, 1]) {
+        await tapPiece(i);
+        await tapShadow(
+          await page.evaluate(async (i) => {
+            const g = neo.scene.game,
+              { hintFor } = await import('/src/games/tangram-town/logic.ts');
+            return hintFor(g.pieces[i].piece, g.plan.targets, g.filled);
+          }, i),
+        );
+        s = await state();
+        if (i === 0)
+          assert.deepEqual(
+            [s.held, s.placed],
+            [
+              [false, false],
+              [true, false],
+            ],
+            'tap-then-tap places a piece',
+          );
+      }
+      await finished('tangram-town');
+      assert.deepEqual(await score('tangram-town'), [missed, 1]);
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Tangram Town 1 on a phone by taps: hold, let go, switch, help, wrong shadow, empty ground, both placed and one sticker passed',
+      );
+    }
+    if ((!only || only === 'tangram') && tangramTap !== 'only')
       for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
         await launch('tangram-town', level);
         if (level === 8) {

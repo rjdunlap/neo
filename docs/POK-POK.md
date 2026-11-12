@@ -97,7 +97,7 @@ Pok Pok shipped Phonics as a drag toy and within eleven weeks had enlarged the p
 
 > Which drags were awkward with a thumb, and would tapping the piece and then the place have been easier?
 
-**Defined 2026-11-11:** [tap the piece, then the place](definitions/tap-then-place.md) gives `src/engine/drag.ts` one opt-in `tapToPlace` path (Hat Band's hand-rolled tap is the precedent; [Tangram Town's dive](deep-dives/tangram-town.md) had asked for its own game; the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-withdrawn) withdrew its tap-to-fill reading once the app was played on 2026-11-11, and gives a plainer example instead: that app's first activity is a drag-only sort where a tap on a piece does nothing and no drag is shown). Three slices are in READY: P3a the engine path with Hat Band moved onto it (built 2026-11-11), P3b Block Garden (built 2026-11-11), P3c Tangram Town's levels 1–3 (next).
+**Defined 2026-11-11:** [tap the piece, then the place](definitions/tap-then-place.md) gives `src/engine/drag.ts` one opt-in `tapToPlace` path (Hat Band's hand-rolled tap is the precedent; [Tangram Town's dive](deep-dives/tangram-town.md) had asked for its own game; the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-withdrawn) withdrew its tap-to-fill reading once the app was played on 2026-11-11, and gives a plainer example instead: that app's first activity is a drag-only sort where a tap on a piece does nothing and no drag is shown). Three slices are in READY: P3a the engine path with Hat Band moved onto it (built 2026-11-11), P3b Block Garden (built 2026-11-11), P3c Tangram Town's levels 1–3 (built 2026-11-11).
 
 ### P4. The toy test for lap openings (docs, S; then one game at a time)
 
