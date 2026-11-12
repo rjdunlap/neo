@@ -602,7 +602,7 @@ class RampRace implements Game {
     });
   }
 
-  /** Says the waiting instruction, if there is one. A touch while it waits hears it and does nothing else. */
+  /** Says the waiting instruction, if there is one. A free touch while it waits hears it and goes on; Go hears it instead of rolling. */
   private askNow() {
     const w = this.waiting;
     if (!w || this.finished) return false;
@@ -633,7 +633,9 @@ class RampRace implements Game {
   }
 
   private cycleHeight(l: Lane) {
-    if (this.busy || this.finished || this.askNow()) return;
+    if (this.busy || this.finished) return;
+    // A change before she has heard the question: she hears it now, and the change still happens.
+    this.askNow();
     if (this.changeLocked(l)) return;
     if (this.plan.mode === 'shelf') {
       // Locked until the first card lands, so every pair really starts at 2 or 4; inert while the cards ask.
@@ -651,10 +653,10 @@ class RampRace implements Game {
     if (
       this.busy ||
       this.finished ||
-      ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask') ||
-      this.askNow()
+      ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')
     )
       return;
+    this.askNow();
     if (this.changeLocked(l)) return;
     if (this.plan.mode === 'height' || this.plan.mode === 'explore' || this.plan.mode === 'shelf')
       return void this.ctx.say('ramp.woodonly');
@@ -835,7 +837,8 @@ class RampRace implements Game {
 
   /** A guess is free: a paw where she tapped, moved by the next tap, before or past the blue flag. */
   private placeGuess(x: number) {
-    if (this.busy || this.finished || this.phase !== 'change' || !this.records[0] || this.askNow()) return;
+    if (this.busy || this.finished || this.phase !== 'change' || !this.records[0]) return;
+    this.askNow();
     const l = this.lanes[0];
     const at = Math.max(0, Math.min(MAX_DISTANCE, (x - l.rampEnd) / l.unit));
     this.guess = { side: sideOf(at, this.records[0].stop), at };
@@ -1047,17 +1050,20 @@ class RampRace implements Game {
 
   /** Touching a tile selects it and speaks its claim; free. */
   private selectClaim(claim: Claim) {
-    if (this.busy || this.finished || this.step !== 'claim' || this.askNow()) return;
+    if (this.busy || this.finished || this.step !== 'claim') return;
+    // Chosen before she has heard the question: it is chosen, and she hears the question in place of its name.
+    const asked = this.askNow();
     this.claim = claim;
     this.count('free');
     sfx.tick();
     this.drawTiles();
-    void this.ctx.say(`ramp.claim.${claim}`);
+    if (!asked) void this.ctx.say(`ramp.claim.${claim}`);
   }
 
   /** A card replays its roll; free, and only while she reads the cards. */
   private async replayTellCard(i: 0 | 1) {
-    if (this.busy || this.finished || this.step !== 'claim' || !this.cards[i] || this.askNow()) return;
+    if (this.busy || this.finished || this.step !== 'claim' || !this.cards[i]) return;
+    this.askNow();
     this.busy = true;
     this.count('free');
     await this.replayCard(this.cards[i], this.records[i]);
