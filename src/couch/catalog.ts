@@ -3,7 +3,7 @@ import type { Band } from '../progress/bands';
 import type { CouchId } from './party';
 
 /** Controller parts, named by position: Nintendo's printed letters differ from the browser's standard layout. */
-export type PadPart = 'stick' | 'dpad' | 'bottom' | 'left' | 'start';
+export type PadPart = 'stick' | 'dpad' | 'bottom' | 'left' | 'top' | 'start';
 
 export interface ControlRow {
   parts: PadPart[];
@@ -76,6 +76,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
       { parts: STICK, text: 'Move between free tiles.', keys: 'Arrow keys' },
       { parts: ['bottom'], text: 'Choose a tile, then its match. Choose it again to cancel.', keys: 'Enter' },
       { parts: ['left'], text: 'Undo the last pair or shuffle. Each undo counts.', keys: 'Backspace' },
+      { parts: ['top'], text: 'Peek under the stack. Press again or choose a tile to close.', keys: 'P' },
       {
         parts: ['start'],
         text: 'Pause menu: show a hint or shuffle the remaining pictures into open rows. Shuffle counts as help.',

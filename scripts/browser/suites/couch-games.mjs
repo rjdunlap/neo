@@ -85,6 +85,37 @@ export function createSuite({
       await page.getByRole('button', { name: 'Play', exact: true }).click();
       await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'game');
       await page.waitForTimeout(450);
+      if (id === 'tile-pairs') {
+        const state = () =>
+          page.evaluate(() => {
+            const { mask, selected, hints, undos, shuffles } = neo.scene.game;
+            return { mask, selected, hints, undos, shuffles };
+          });
+        const beforePeek = await state();
+        const padButton = (pressed) =>
+          page.evaluate((down) => {
+            window.couchPads = [
+              {
+                index: 0,
+                mapping: 'standard',
+                connected: true,
+                axes: [0, 0],
+                buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: i === 3 && down })),
+              },
+            ];
+          }, pressed);
+        await padButton(false);
+        await page.waitForTimeout(150);
+        await padButton(true);
+        await page.waitForFunction(() => neo.scene.game.peeking);
+        await page.waitForTimeout(180);
+        assert.equal(await page.evaluate(() => neo.scene.game.peeking), true, 'holding top toggles once');
+        await padButton(false);
+        await page.waitForTimeout(150);
+        await page.keyboard.press('p', { delay: 120 });
+        assert.equal(await page.evaluate(() => neo.scene.game.peeking), false, 'P toggles Peek on the couch');
+        assert.deepEqual(await state(), beforePeek, 'Peek leaves the board and score counters alone');
+      }
       await page.evaluate(async () => {
         const g = neo.scene.game;
         let last = performance.now();

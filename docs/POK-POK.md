@@ -97,7 +97,7 @@ Pok Pok shipped Phonics as a drag toy and within eleven weeks had enlarged the p
 
 > Which drags were awkward with a thumb, and would tapping the piece and then the place have been easier?
 
-**Defined 2026-11-11:** [tap the piece, then the place](definitions/tap-then-place.md) gives `src/engine/drag.ts` one opt-in `tapToPlace` path (Hat Band's hand-rolled tap is the precedent; [Tangram Town's dive](deep-dives/tangram-town.md) and the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-asked-in-the-rainbow-fingers-dive-docs-only-s) had asked game by game; tap-to-fill stays with Rainbow Fingers). Three slices are in READY: P3a the engine path with Hat Band moved onto it, P3b Block Garden, P3c Tangram Town's levels 1–3.
+**Defined 2026-11-11:** [tap the piece, then the place](definitions/tap-then-place.md) gives `src/engine/drag.ts` one opt-in `tapToPlace` path (Hat Band's hand-rolled tap is the precedent; [Tangram Town's dive](deep-dives/tangram-town.md) had asked for its own game; the [TotoLogic review](TOTOLOGIC.md#p6-tap-to-fill-withdrawn) withdrew its tap-to-fill reading once the app was played on 2026-11-11, and gives a plainer example instead: that app's first activity is a drag-only sort where a tap on a piece does nothing and no drag is shown). Three slices are in READY: P3a the engine path with Hat Band moved onto it, P3b Block Garden, P3c Tangram Town's levels 1–3.
 
 ### P4. The toy test for lap openings (docs, S; then one game at a time)
 
@@ -111,7 +111,7 @@ About fifty games list the `lap` band. Pok Pok's rules reduce to five questions 
 
 **First slice:** a table in the [Quick Tricks dive](deep-dives/quick-tricks.md#similar-games) or a page of its own, one row per lap-band game with a yes or no to each question. **Then:** a game that fails 1 or 4 gets a lap level in the *One big jelly* shape when it next comes up for work, at the new-level tier. This is a rule audit, not a claim about a child.
 
-**Progress:** Bubble Beach's eight, Music Mountain's five, Painted Canyon's five, Barnyard's six, Counting Cove's five, Cozy Village's eight, Rainbow Meadow's six and Puzzle Peaks' two lap games are read (2026-11-11), 45 of 57, with two READY lines queued from Puzzle Peaks and 12 games to go, in [the toy-test page](definitions/toy-test-lap-openings.md); the rest go a land at a time.
+**Progress:** all ten lands are read (2026-11-11), 57 of 57 lap games, in [the toy-test page](definitions/toy-test-lap-openings.md), with their words-off lists (P7); the audit is done and five READY lines were queued from Tinker Lab (after the ones from the other lands). What remains is the queued lap-opening lines, one game per session.
 
 ### P5. Residents that carry on (a note for RW13 and RW14; M)
 

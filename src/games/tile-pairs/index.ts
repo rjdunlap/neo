@@ -18,6 +18,8 @@ import {
   freeTiles,
   fullMask,
   makeBoard,
+  pairs,
+  peekStacks,
   planFor,
   present,
   removePair,
@@ -27,8 +29,14 @@ import {
   type Tile,
 } from './logic';
 
+function pictureArt(kind: number) {
+  return shapePath(new Graphics(), SHAPES[kind], 30)
+    .fill(swatch[RAINBOW[kind]].fill)
+    .stroke({ width: 4, color: swatch[RAINBOW[kind]].line });
+}
+
 /** Pictures differ by shape as well as color. The raised edge makes a covered tile read as a stack. */
-function tileArt(kind: number): Container {
+function tileArt(kind: number) {
   const c = new Container();
   c.addChild(new Graphics().roundRect(-50, -48, 108, 108, 14).fill(swatch.brown.line));
   c.addChild(
@@ -37,12 +45,9 @@ function tileArt(kind: number): Container {
       .fill(cream)
       .stroke({ width: 3, color: swatch.brown.fill }),
   );
-  const picture = new Graphics();
-  shapePath(picture, SHAPES[kind], 30)
-    .fill(swatch[RAINBOW[kind]].fill)
-    .stroke({ width: 4, color: swatch[RAINBOW[kind]].line });
+  const picture = pictureArt(kind);
   c.addChild(picture);
-  return c;
+  return Object.assign(c, { picture });
 }
 interface Snapshot {
   tiles: Tile[];
@@ -65,7 +70,11 @@ class TilePairs implements Game {
   readonly undoButton = new Container();
   readonly hintButton = new Container();
   readonly shuffleButton = new Container();
-  nodes: Container[] = [];
+  readonly peekButton = new Container();
+  private readonly peekLabel = label('Peek', 24);
+  private peeking = false;
+  nodes: ReturnType<typeof tileArt>[] = [];
+  private readonly peekPictures = new Container<Graphics>();
   private history: Snapshot[] = [];
   private readonly ring = new Graphics();
   private readonly tally = label('', 30);
@@ -74,9 +83,12 @@ class TilePairs implements Game {
   /** Touch layout (buttons, tappable tiles) until a key or pad is used; couch play never has it. */
   private touch: boolean;
   private view: View;
+  private readonly buttons = [this.undoButton, this.hintButton, this.shuffleButton, this.peekButton];
   private botWait = 0.6;
   private route: Pair[] | null = null;
   private sinceMatch = 0;
+  /** Removed tiles still lifting away: drawn until their fade ends, never tappable. */
+  private readonly leaving = new Set<Container>();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -84,13 +96,15 @@ class TilePairs implements Game {
     this.tiles = makeBoard(ctx.level, ctx.rng);
     this.mask = fullMask(this.tiles);
     this.ring.eventMode = this.tally.eventMode = this.help.eventMode = 'none';
-    ctx.stage.addChild(this.board, this.ring, this.tally, this.help);
+    this.peekPictures.eventMode = 'none';
+    ctx.stage.addChild(this.board, this.peekPictures, this.ring, this.tally, this.help);
     for (const [node, text, act] of [
-      [this.undoButton, 'Undo ↶', () => this.undo()],
-      [this.hintButton, 'Hint ◇', () => this.askForHint()],
-      [this.shuffleButton, 'Shuffle ↺', () => this.restart()],
+      [this.undoButton, label('Undo ↶', 24), () => this.undo()],
+      [this.hintButton, label('Hint ◇', 24), () => this.askForHint()],
+      [this.shuffleButton, label('Shuffle ↺', 24), () => this.restart()],
+      [this.peekButton, this.peekLabel, () => this.togglePeek()],
     ] as const) {
-      node.addChild(tile(160, 100, 'purple'), label(text, 24));
+      node.addChild(tile(160, 100, 'purple'), text);
       node.hitArea = new Rectangle(-80, -50, 160, 100);
       node.visible = this.touch;
       onTap(node, act);
@@ -106,7 +120,11 @@ class TilePairs implements Game {
     return { tiles: this.tiles.map((t) => ({ ...t })), mask: this.mask };
   }
   private rebuild() {
-    for (const node of this.nodes) node.destroy({ children: true });
+    for (const node of this.nodes) {
+      this.settle(node);
+      node.destroy({ children: true });
+    }
+    this.leaving.clear();
     this.nodes = this.tiles.map((t, i) => {
       const c = tileArt(t.kind);
       c.hitArea = new Rectangle(-54, -54, 108, 108);
@@ -121,6 +139,8 @@ class TilePairs implements Game {
       this.board.addChild(c);
       return c;
     });
+    for (const picture of this.peekPictures.removeChildren()) picture.destroy();
+    for (const { kind } of this.tiles) this.peekPictures.addChild(pictureArt(kind));
     this.route = solve(this.tiles, this.mask);
     this.cursor = freeTiles(this.tiles, this.mask)[0] ?? 0;
     this.resize(this.view);
@@ -130,23 +150,45 @@ class TilePairs implements Game {
     this.view = v;
     const frame = tilePairsLayout(v, this.tiles);
     this.board.position.copyFrom(frame.board);
+    this.peekPictures.position.copyFrom(frame.board);
     this.nodes.forEach((n, i) => n.position.copyFrom(frame.tiles[i]));
     this.tally.position.set(v.w / 2, 66);
     this.help.position.set(v.w / 2, 104);
-    [this.undoButton, this.hintButton, this.shuffleButton].forEach((n, i) =>
-      n.position.copyFrom(frame.buttons[i]),
-    );
+    this.buttons.forEach((n, i) => n.position.copyFrom(frame.buttons[i]));
     this.draw();
   }
   private draw() {
+    const stacks = this.peeking ? peekStacks(this.tiles, this.mask) : [];
+    const covering = new Set(stacks.flatMap((stack) => stack.slice(1)));
+    this.peekLabel.text = this.peeking ? 'Close peek' : 'Peek';
     this.nodes.forEach((n, i) => {
+      if (this.leaving.has(n)) return;
       n.visible = present(this.mask, i);
-      n.alpha = free(this.tiles, this.mask, i) ? 1 : 0.58;
+      n.alpha = this.peeking ? (covering.has(i) ? 0.25 : 1) : free(this.tiles, this.mask, i) ? 1 : 0.58;
+      n.picture.visible = true;
     });
+    this.peekPictures.visible = this.peeking;
+    for (const picture of this.peekPictures.children) picture.visible = false;
+    for (const stack of stacks) {
+      const base = this.nodes[stack[0]];
+      const spacing = 96 / stack.length;
+      stack.forEach((i, depth) => {
+        this.nodes[i].picture.visible = false;
+        const picture = this.peekPictures.children[i];
+        picture.position.set(base.x + (depth - (stack.length - 1) / 2) * spacing, base.y);
+        picture.scale.set(Math.min(0.75, (spacing - 4) / 64));
+        picture.visible = true;
+      });
+    }
     const remaining = this.tiles.filter((_, i) => present(this.mask, i)).length;
-    this.tally.text = `${remaining} tiles · ${this.undos} undos · ${this.shuffles} shuffles`;
-    this.help.text =
-      this.route === null
+    // "Pairs open" is the consequence to watch: what the last pair uncovered shows up here as new choices.
+    const open = pairs(this.tiles, this.mask).length;
+    this.tally.text = `${remaining} tiles · ${open} ${open === 1 ? 'pair' : 'pairs'} open · ${this.undos} undos · ${this.shuffles} shuffles`;
+    this.help.text = this.peeking
+      ? stacks.length
+        ? 'Each stack reads from bottom to top, left to right'
+        : 'All remaining pictures are visible'
+      : this.route === null
         ? 'No clearing route · Undo or Shuffle keeps you playing'
         : 'Clear the top · open a left or right side';
     const g = this.ring.clear();
@@ -155,12 +197,24 @@ class TilePairs implements Game {
       const n = this.nodes[i];
       g.roundRect(this.board.x + n.x - 51, this.board.y + n.y - 51, 102, 102, 12).stroke({ width, color });
     };
+    for (const i of covering) outline(i, swatch.brown.fill, 2);
     if (!this.touch && !this.finished) outline(this.cursor, ink, 4);
     if (this.selected !== null) outline(this.selected, swatch.blue.line, 7);
     for (const i of this.hinted ?? []) outline(i, swatch.orange.line, 7);
   }
+  togglePeek() {
+    if (this.busy || this.finished || !this.ctx.alive) return;
+    this.peeking = !this.peeking;
+    sfx.tick();
+    this.draw();
+    if (this.peeking) void this.ctx.say('tile-pairs.peek');
+  }
   private choose(i: number) {
     if (this.busy || this.finished || !this.ctx.alive || !present(this.mask, i)) return;
+    if (this.peeking) {
+      this.togglePeek();
+      return;
+    }
     if (!free(this.tiles, this.mask, i)) {
       sfx.squeak();
       void this.ctx.say('tile-pairs.blocked');
@@ -190,18 +244,48 @@ class TilePairs implements Game {
       return;
     }
     this.history.push(this.snapshot());
+    const wasFree = new Set(freeTiles(this.tiles, this.mask));
     this.mask = removePair(this.mask, [a, i]);
     this.hinted = null;
     this.sinceMatch = 0;
     this.route = solve(this.tiles, this.mask);
-    this.cursor = freeTiles(this.tiles, this.mask)[0] ?? 0;
+    const nowFree = freeTiles(this.tiles, this.mask);
+    this.cursor = nowFree[0] ?? 0;
     sfx.pop(3);
+    for (const k of [a, i]) this.liftAway(this.nodes[k]);
     this.draw();
+    for (const k of nowFree) if (!wasFree.has(k)) this.pulse(this.nodes[k]);
     if (!this.mask) void this.complete();
     else if (!this.route) void this.ctx.say('tile-pairs.stuck');
   }
+  /** Stop a tile's own animations (their promises never resolve) and put its size back. */
+  private settle(node: Container) {
+    this.ctx.tw.kill(node);
+    this.ctx.tw.kill(node.scale);
+    node.scale.set(1);
+  }
+  /** A removed tile lifts and fades instead of vanishing, so the eye is on the spot it opens. */
+  private liftAway(node: Container) {
+    this.settle(node);
+    this.leaving.add(node);
+    node.eventMode = 'none';
+    this.board.addChild(node);
+    void this.ctx.tw.to(node.scale, { x: 1.1, y: 1.1 }, { duration: 0.3 });
+    void this.ctx.tw.to(node, { y: node.y - 30, alpha: 0 }, { duration: 0.3 }).then(() => {
+      if (!this.leaving.delete(node)) return;
+      node.visible = false;
+    });
+  }
+  /** A tile the pair just freed (uncovered, or a side opened) swells once as it brightens. */
+  private pulse(node: Container) {
+    this.settle(node);
+    void this.ctx.tw
+      .to(node.scale, { x: 1.14, y: 1.14 }, { duration: 0.16, delay: 0.12 })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.24 }));
+  }
   private undo() {
     if (this.busy || this.finished || !this.ctx.alive) return;
+    this.peeking = false;
     const last = this.history.pop();
     if (!last) {
       this.selected = null;
@@ -223,6 +307,7 @@ class TilePairs implements Game {
     if (!this.route) this.restart();
     const pair = this.route?.[0];
     if (!pair || this.hinted) return;
+    this.peeking = false;
     this.hints++;
     this.hinted = pair;
     this.selected = null;
@@ -234,6 +319,7 @@ class TilePairs implements Game {
   restart() {
     if (this.busy || this.finished || !this.ctx.alive) return;
     this.history.push(this.snapshot());
+    this.peeking = false;
     this.tiles = reshuffle(this.tiles, this.mask, this.ctx.rng);
     this.mask = fullMask(this.tiles);
     this.shuffles++;
@@ -263,7 +349,7 @@ class TilePairs implements Game {
   private useController() {
     if (!this.touch) return;
     this.touch = false;
-    for (const b of [this.undoButton, this.hintButton, this.shuffleButton]) b.visible = false;
+    for (const b of this.buttons) b.visible = false;
     for (const n of this.nodes) n.eventMode = 'none';
     this.draw();
   }
@@ -272,8 +358,8 @@ class TilePairs implements Game {
   touchReturned() {
     if (this.touch || this.finished || !this.ctx.alive) return;
     this.touch = true;
-    for (const b of [this.undoButton, this.hintButton, this.shuffleButton]) b.visible = true;
-    for (const n of this.nodes) n.eventMode = 'static';
+    for (const b of this.buttons) b.visible = true;
+    for (const n of this.nodes) if (!this.leaving.has(n)) n.eventMode = 'static';
     this.draw();
   }
 
@@ -347,7 +433,7 @@ export function tilePairsLayout(v: View, tiles: readonly Tile[]) {
   return {
     board: { x: v.w / 2 - (cols - 1) * 60, y: (v.h - 110) / 2 - (rows - 1) * 58 },
     tiles: tiles.map((t) => ({ x: t.x * 120 + t.z * 6, y: t.y * 116 - t.z * 6 })),
-    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 180, y: v.h - (v.upright ? 230 : 70) })),
+    buttons: [-1.5, -0.5, 0.5, 1.5].map((i) => ({ x: v.w / 2 + i * 180, y: v.h - (v.upright ? 230 : 70) })),
   };
 }
 

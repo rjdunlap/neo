@@ -8,13 +8,57 @@ export interface Tile {
   kind: number;
 }
 export type Pair = [number, number];
+/**
+ * `clear` is the deal dial: the band a deal's random-play clear rate must fall in (see `clearRate`).
+ * These bands keep the difficulty each level had when every board shared one fixed route.
+ */
 export const PLANS = [
-  { name: 'Open rows · 12 tiles', cols: 4, rows: 3, layers: 1, layout: 'square', kinds: 6 },
-  { name: 'A raised square · 20 tiles', cols: 4, rows: 4, layers: 2, layout: 'square', kinds: 6 },
-  { name: 'Three layers · 24 tiles', cols: 4, rows: 4, layers: 3, layout: 'square', kinds: 6 },
-  { name: 'Long bridge · 24 tiles', cols: 6, rows: 3, layers: 3, layout: 'bridge', kinds: 6 },
-  { name: 'Twin terraces · 24 tiles', cols: 6, rows: 2, layers: 3, layout: 'twins', kinds: 5 },
-  { name: 'Crown · 24 tiles, six of each picture', cols: 6, rows: 3, layers: 3, layout: 'crown', kinds: 4 },
+  { name: 'Open rows · 12 tiles', cols: 4, rows: 3, layers: 1, layout: 'square', kinds: 6, clear: [0.95, 1] },
+  {
+    name: 'A raised square · 20 tiles',
+    cols: 4,
+    rows: 4,
+    layers: 2,
+    layout: 'square',
+    kinds: 6,
+    clear: [0.95, 1],
+  },
+  {
+    name: 'Three layers · 24 tiles',
+    cols: 4,
+    rows: 4,
+    layers: 3,
+    layout: 'square',
+    kinds: 6,
+    clear: [0.95, 1],
+  },
+  {
+    name: 'Long bridge · 24 tiles',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'bridge',
+    kinds: 6,
+    clear: [0.95, 1],
+  },
+  {
+    name: 'Twin terraces · 24 tiles',
+    cols: 6,
+    rows: 2,
+    layers: 3,
+    layout: 'twins',
+    kinds: 5,
+    clear: [0.85, 1],
+  },
+  {
+    name: 'Crown · 24 tiles, six of each picture',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'crown',
+    kinds: 4,
+    clear: [0.75, 1],
+  },
 ] as const;
 
 export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
@@ -22,6 +66,21 @@ export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
+
+/** Multi-layer stacks of remaining tiles, each ordered from bottom to top. */
+export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
+  const stacks = new Map<string, number[]>();
+  tiles.forEach(({ x, y }, i) => {
+    if (!present(mask, i)) return;
+    const key = `${x},${y}`;
+    const stack = stacks.get(key);
+    if (stack) stack.push(i);
+    else stacks.set(key, [i]);
+  });
+  return [...stacks.values()]
+    .filter((stack) => stack.length > 1)
+    .map((stack) => stack.sort((a, b) => tiles[a].z - tiles[b].z));
+}
 
 /** A tile needs a clear top and at least one open horizontal side on its own layer. */
 export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
@@ -66,15 +125,51 @@ export function solve(tiles: readonly Tile[], mask = fullMask(tiles), geometryOn
   return visit(mask);
 }
 
-/** Assign complete symbol pairs along a known geometric clearing route, so generation never rerolls. */
-function assign(tiles: Tile[], symbols: number[], rng: Rng): Tile[] {
-  const route = solve(tiles, fullMask(tiles), true);
+/**
+ * A geometric clearing route chosen by the seed: the same search as `solve`, trying the free position pairs
+ * in a shuffled order at every step, so one layout clears by a different pairing each round.
+ */
+export function seededRoute(tiles: readonly Tile[], rng: Rng): Pair[] | null {
+  const dead = new Set<number>();
+  function visit(m: number): Pair[] | null {
+    if (!m) return [];
+    if (dead.has(m)) return null;
+    for (const pair of rng.shuffle(pairs(tiles, m, true))) {
+      const tail = visit(removePair(m, pair));
+      if (tail) return [pair, ...tail];
+    }
+    dead.add(m);
+    return null;
+  }
+  return visit(fullMask(tiles));
+}
+/** Put complete symbol pairs on a geometric clearing route, so generation never rerolls for solvability. */
+function assign(tiles: Tile[], symbols: number[], rng: Rng, route: Pair[] | null): Tile[] {
   if (!route || route.length !== symbols.length) throw new Error('Tile Pairs layout cannot clear');
   rng.shuffle(symbols);
   for (let k = 0; k < route.length; k++) for (const i of route[k]) tiles[i].kind = symbols[k];
   return tiles;
 }
-export function makeBoard(level: number, rng: Rng): Tile[] {
+export const PLAYOUTS = 60;
+/**
+ * The share of play-outs that clear when every turn takes a uniformly random matching pair: a stand-in for
+ * a player who does not plan, and so a measure of how much planning a deal asks for.
+ */
+export function clearRate(tiles: readonly Tile[], rng: Rng, playouts = PLAYOUTS): number {
+  let cleared = 0;
+  for (let n = 0; n < playouts; n++) {
+    let mask = fullMask(tiles);
+    for (;;) {
+      const open = pairs(tiles, mask);
+      if (!open.length) break;
+      mask = removePair(mask, rng.pick(open));
+    }
+    if (!mask) cleared++;
+  }
+  return cleared / playouts;
+}
+/** The level's layout: positions only, the same for every seed. */
+export function layout(level: number): Tile[] {
   const plan = planFor(level),
     tiles: Tile[] = [];
   const add = (x: number, y: number, z: number) => tiles.push({ x, y, z, kind: 0 });
@@ -97,10 +192,40 @@ export function makeBoard(level: number, rng: Rng): Tile[] {
     for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
     for (const x of [2, 3]) add(x, 1, 2);
   }
-  // More repeated pictures deepen the choice of which matching pair to remove, without adding tiles.
-  const symbols = Array.from({ length: tiles.length / 2 }, (_, i) => i % plan.kinds);
-  return assign(tiles, symbols, rng);
+  return tiles;
 }
+export const CANDIDATES = 40;
+export interface Deal {
+  tiles: Tile[];
+  /** The kept candidate's measured random-play clear rate. */
+  rate: number;
+  /** Candidates dealt. */
+  tries: number;
+  /** False only when every candidate missed the band and the closest was kept. */
+  inBand: boolean;
+}
+/**
+ * Deal the level along seeded routes until one lands in the plan's clear-rate band (the closest if none
+ * does). Everything draws from `rng`, so one seed still gives one board and a face-off still shares it.
+ */
+export function deal(level: number, rng: Rng): Deal {
+  const plan = planFor(level),
+    [min, max] = plan.clear;
+  let best: Deal | null = null,
+    miss = Infinity;
+  for (let tries = 1; tries <= CANDIDATES; tries++) {
+    const tiles = layout(level);
+    // More repeated pictures deepen the choice of which matching pair to remove, without adding tiles.
+    const symbols = Array.from({ length: tiles.length / 2 }, (_, i) => i % plan.kinds);
+    assign(tiles, symbols, rng, seededRoute(tiles, rng));
+    const rate = clearRate(tiles, rng),
+      off = Math.max(min - rate, rate - max, 0);
+    if (!off) return { tiles, rate, tries, inBand: true };
+    if (off < miss) [best, miss] = [{ tiles, rate, tries: CANDIDATES, inBand: false }, off];
+  }
+  return best!;
+}
+export const makeBoard = (level: number, rng: Rng): Tile[] => deal(level, rng).tiles;
 
 /** Recovery keeps exactly the remaining pictures, laid in open rows. Even a stranded tower can be rescued. */
 export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[] {
@@ -119,5 +244,6 @@ export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[
     z: 0,
     kind: 0,
   }));
-  return assign(out, symbols, rng);
+  // Recovery stays on the first route: open rows that pair off without planning.
+  return assign(out, symbols, rng, solve(out, fullMask(out), true));
 }

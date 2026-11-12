@@ -1,15 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  CANDIDATES,
+  clearRate,
+  deal,
   free,
   freeTiles,
   fullMask,
+  layout,
   makeBoard,
   pairs,
+  peekStacks,
   planFor,
   present,
   removePair,
   reshuffle,
+  seededRoute,
   solve,
   type Tile,
 } from './logic';
@@ -26,6 +32,18 @@ describe('Tile Pairs', () => {
     expect(freeTiles(tiles, 7)).toEqual([0, 2]);
     expect(free(tiles, 5, 1)).toBe(false);
     expect(freeTiles(tiles, 5)).toEqual([0, 2]);
+  });
+  it('lists only remaining stacks in bottom-to-top order for Peek', () => {
+    const tiles = [
+      { x: 0, y: 0, z: 0, kind: 0 },
+      { x: 0, y: 0, z: 1, kind: 1 },
+      { x: 0, y: 0, z: 2, kind: 2 },
+      { x: 1, y: 0, z: 1, kind: 2 },
+    ];
+    expect(peekStacks(tiles, fullMask(tiles))).toEqual([[0, 1, 2]]);
+    expect(peekStacks(tiles, 0b1101)).toEqual([[0, 2]]);
+    expect(peekStacks(tiles, 0b1100)).toEqual([]);
+    expect(peekStacks([tiles[2], tiles[0], tiles[1]], 0b111)).toEqual([[1, 2, 0]]);
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
@@ -48,17 +66,68 @@ describe('Tile Pairs', () => {
       }
     expect(makeBoard(3, new Rng(1))).not.toEqual(makeBoard(3, new Rng(2)));
   });
-  it('preserves the original three layouts and seeded picture assignments', async () => {
-    const hashes = [
-      '49222a3cc8e9f757e0a2a03408767978602c57539b2b31248c5a218c46cbfcdf',
-      '5b55a7769400cafd4187186faea73dc87b567f49bbf046a1e00077b42850b820',
-      '9a836602198362989fc55488d39b260668f4331f9de8ba01246f96b8b0347e64',
-    ];
-    for (let level = 1; level <= 3; level++) {
-      const data = [1, 40, 4242].map((seed) => makeBoard(level, new Rng(seed)));
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(data)));
-      const hash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
-      expect(hash).toBe(hashes[level - 1]);
+  it('keeps the original three layouts as the same sets of positions', () => {
+    const square = (z: number) => [1, 2].flatMap((y) => [1, 2].map((x) => `${x},${y},${z}`));
+    const base = (cols: number, rows: number) =>
+      Array.from({ length: cols * rows }, (_, i) => `${i % cols},${Math.floor(i / cols)},0`);
+    const expected = [base(4, 3), [...base(4, 4), ...square(1)], [...base(4, 4), ...square(1), ...square(2)]];
+    for (let level = 1; level <= 3; level++)
+      for (const tiles of [layout(level), makeBoard(level, new Rng(7)), makeBoard(level, new Rng(4242))])
+        expect(tiles.map((t) => `${t.x},${t.y},${t.z}`).sort()).toEqual([...expected[level - 1]].sort());
+  });
+  it('clears each layout by a different seeded pairing each round', () => {
+    for (let level = 1; level <= 6; level++) {
+      const tiles = layout(level),
+        seen = new Set<string>();
+      for (let seed = 1; seed <= 100; seed++) {
+        const route = seededRoute(tiles, new Rng(seed))!;
+        expect(route).toEqual(seededRoute(tiles, new Rng(seed)));
+        expect(route).toHaveLength(tiles.length / 2);
+        // Every step takes two tiles that are free by position, and the route empties the stack.
+        let mask = fullMask(tiles);
+        for (const pair of route) {
+          expect(pairs(tiles, mask, true)).toContainEqual(pair);
+          mask = removePair(mask, pair);
+        }
+        expect(mask).toBe(0);
+        seen.add(JSON.stringify(route.map(([a, b]) => [a, b]).sort((p, q) => p[0] - q[0])));
+      }
+      expect(seen.size).toBeGreaterThanOrEqual(level === 1 ? 10 : 50);
+    }
+    // The dealt board follows suit: level 1's six pictures sit on different position pairs from seed to seed.
+    const partners = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const board = makeBoard(1, new Rng(seed));
+      partners.add(board.map((t, i) => board.findIndex((u, j) => j !== i && u.kind === t.kind)).join());
+    }
+    expect(partners.size).toBeGreaterThanOrEqual(10);
+  });
+  it("deals inside each level's random-play clear-rate band, so a fresh pairing is no harder", () => {
+    expect(clearRate([], new Rng(1))).toBe(1);
+    const trap: Tile[] = [0, 1, 2, 1, 2, 0].map((kind, x) => ({ x, y: 0, z: 0, kind }));
+    expect(clearRate(trap, new Rng(1))).toBe(0);
+    for (let level = 1; level <= 6; level++) {
+      const [min, max] = planFor(level).clear;
+      expect(min).toBe(level <= 4 ? 0.95 : level === 5 ? 0.85 : 0.75);
+      let exhausted = 0,
+        again = 0;
+      for (let seed = 1; seed <= 100; seed++) {
+        const d = deal(level, new Rng(seed));
+        expect(d.tiles).toEqual(makeBoard(level, new Rng(seed)));
+        expect(d.tries).toBeGreaterThanOrEqual(1);
+        expect(d.tries).toBeLessThanOrEqual(CANDIDATES);
+        if (d.inBand) {
+          expect(d.rate).toBeGreaterThanOrEqual(min);
+          expect(d.rate).toBeLessThanOrEqual(max);
+        } else {
+          expect(d.tries).toBe(CANDIDATES);
+          exhausted++;
+        }
+        // An independent measure of the kept board, so the dial is not only agreeing with itself.
+        again += clearRate(d.tiles, new Rng(seed + 9000), 100);
+      }
+      expect(exhausted).toBeLessThanOrEqual(5);
+      expect(again / 100).toBeGreaterThanOrEqual(min - 0.05);
     }
   });
   it('changes the paths into the stack, then increases matching alternatives without enlarging targets', () => {

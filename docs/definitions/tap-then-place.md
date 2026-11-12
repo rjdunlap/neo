@@ -77,7 +77,7 @@ The card keeps demonstrating the drag wherever a level's action is a drag (the [
 
 Later games take it one at a time, when a playtest note names their drag or their dive asks; a game whose still tap means something (the five above) takes it only after its dive decides which meaning wins.
 
-**Not this path:** Rainbow Fingers asked for tap-to-fill on its coloring pages ([TotoLogic P6](../TOTOLOGIC.md#p6-tap-to-fill-asked-in-the-rainbow-fingers-dive-docs-only-s)), which is a fill tool beside a brush, not a piece carried to a place. It stays a question for the [Rainbow Fingers dive](../deep-dives/rainbow-fingers.md).
+**Not this path:** tap-to-fill on a coloring page is a fill tool beside a brush, not a piece carried to a place. The TotoLogic review first asked the Rainbow Fingers dive to consider it and withdrew that once the app was played ([P6](../TOTOLOGIC.md#p6-tap-to-fill-withdrawn)); if a phone-width coloring page ever asks, it is a question for the [Rainbow Fingers dive](../deep-dives/rainbow-fingers.md), not for this path.
 
 ## Defaults (no open decisions)
 
