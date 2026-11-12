@@ -73,6 +73,9 @@ class BondBeads implements Game {
   layoutNow: BeadLayout | null = null;
   /** What the glow or a pulse points at, refreshed after every change. */
   help: Help | null = null;
+  /** Level 4: `bondbeads.other` waiting behind the first shape's line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   private alive = true;
   private epoch = 0;
   private clock = 0;
@@ -407,6 +410,7 @@ class BondBeads implements Game {
     const tapped = this.press.bead === i && this.press.travel < PRESS_TRAVEL;
     this.press.bead = -1;
     if (!l || this.busy || this.finished) return false;
+    this.dropAsk();
     if (tapped) {
       this.tapBead(i);
       return false;
@@ -481,6 +485,7 @@ class BondBeads implements Game {
 
   /** After a link, a break or an undo: redraw, then a finished tray (level 1) or a stuck one. */
   private changed() {
+    this.dropAsk();
     this.redraw();
     if (this.checks) return;
     if (this.bench.done) {
@@ -500,6 +505,7 @@ class BondBeads implements Game {
   /** Levels 2–4's Check. */
   check() {
     if (this.busy || this.finished || !this.checks) return;
+    this.dropAsk();
     const v = this.tally.check(this.bench);
     if (v === 'match') {
       void this.stepDone();
@@ -600,12 +606,14 @@ class BondBeads implements Game {
         count: 6,
       });
     this.ctx.pet.cheer();
-    for (const n of this.beadNodes) void this.hop(n);
+    const hops = this.beadNodes.map((n) => this.hop(n));
     const s = this.steps[this.index];
     if (s.twoWays && !this.first) {
       // Level 4, the first shape: keep the beads as they are and ask for the other shape from the same beads.
+      // `bondbeads.match` plays while the same beads open again for the other shape, after the beads' hop (U7 R4).
       const made = this.bench.matched();
-      await this.ctx.say('bondbeads.match');
+      const said = this.ctx.say('bondbeads.match');
+      await Promise.all(hops);
       if (!this.alive || epoch !== this.epoch) return;
       this.first = made ? made[0] : null;
       const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
@@ -620,7 +628,12 @@ class BondBeads implements Game {
       this.selected = null;
       this.busy = false;
       this.build();
-      void this.ctx.say('bondbeads.other');
+      // The other shape's ask waits for the line, the guide or her first touch, which drops it: she is building.
+      this.unasked = true;
+      const gen = ++this.askGen;
+      void said.then(() => {
+        if (gen === this.askGen && this.unasked && this.alive && !this.finished) this.sayWaitingAsk();
+      });
       return;
     }
     await this.ctx.say(this.stepLine());
@@ -647,6 +660,19 @@ class BondBeads implements Game {
       default:
         return 'bondbeads.held';
     }
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the other shape's ask waits behind the first shape's line: say it. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.say('bondbeads.other');
+    return true;
   }
 
   private async hop(n: Container) {
@@ -678,6 +704,7 @@ class BondBeads implements Game {
   /** The pause sheet's Show a hint: at levels 2–4 the glow (one hint per card); at level 1 a free pulse, never counted. */
   askForHint() {
     if (this.busy || this.finished || !this.help) return;
+    this.dropAsk();
     if (this.checks) {
       this.tally.ask();
       void this.ctx.say('bondbeads.hint');
@@ -693,7 +720,9 @@ class BondBeads implements Game {
 
   /** The ghost finger: carry a bead to the one the next link needs, tap a link that has to go, then (levels 2–4) Check. */
   autotouch(): TouchIntent | null {
-    if (this.finished || this.busy || this.drags.some((d) => d.dragging) || !this.layoutNow) return null;
+    // Level 4: the ghost finger waits for the other shape's ask, so a demonstration hears it.
+    if (this.finished || this.busy || this.unasked || this.drags.some((d) => d.dragging) || !this.layoutNow)
+      return null;
     const m = nextMove(this.bench);
     if (!m) return null;
     if ('check' in m) return this.checkButton ? { tap: { on: this.checkButton } } : null;
