@@ -1,6 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { at, covers, exposed, fullMask, makePuzzle, moves, present, remove, solver } from './logic';
+import {
+  CANDIDATES,
+  PACK_LIMIT,
+  at,
+  bandDistance,
+  clearRate,
+  covers,
+  dealCandidate,
+  exposed,
+  fullMask,
+  makePuzzle,
+  moves,
+  planFor,
+  present,
+  remove,
+  solver,
+} from './logic';
 
 describe('Pyramid Solitaire', () => {
   it('requires both covering cards to leave and never wraps rows', () => {
@@ -67,5 +83,60 @@ describe('Pyramid Solitaire', () => {
       return false;
     };
     for (let mask = 0; mask <= fullMask(3); mask++) expect(solve(mask) !== null).toBe(reachable(mask));
+  });
+  it('the deal dial lands each level in its band over 200 seeds, every deal from one rng clearing', () => {
+    for (let level = 1; level <= 3; level++) {
+      let inBand = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const p = makePuzzle(level, new Rng(seed)),
+          rate = clearRate(p);
+        expect(p.rows).toBe(planFor(level).rows);
+        expect(solver(p)(fullMask(p.rows))).not.toBeNull();
+        if (bandDistance(level, rate) === 0) inBand++;
+        // The fallback keeps the closest candidate, never a deal far outside the band.
+        expect(bandDistance(level, rate)).toBeLessThan(0.1);
+      }
+      // Measured: no round at three to seven rows ran out of its candidates.
+      expect(inBand).toBeGreaterThanOrEqual(198);
+    }
+  });
+  it('bands mean what the levels promise: level 1 cannot go wrong, levels 2 and 3 can', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      expect(clearRate(makePuzzle(1, new Rng(seed)))).toBeGreaterThanOrEqual(0.95);
+      const two = clearRate(makePuzzle(2, new Rng(seed)));
+      expect(two).toBeGreaterThanOrEqual(0.5);
+      expect(two).toBeLessThan(0.95);
+      const three = clearRate(makePuzzle(3, new Rng(seed)));
+      expect(three).toBeGreaterThanOrEqual(0.4);
+      expect(three).toBeLessThanOrEqual(0.8);
+    }
+    expect(CANDIDATES).toBe(40);
+  });
+  it('clearRate is exact on hand-made deals', () => {
+    // One way to clear, one dead: [3,4] then kings clear; [3,5] strands the 7.
+    expect(clearRate({ rows: 3, ranks: [13, 13, 13, 6, 7, 7] })).toBe(0);
+    expect(clearRate({ rows: 1, ranks: [13] })).toBe(1);
+    // The 6 pairs with either 7: lifting it with the left 7 opens the other 6 and clears; with the right 7 strands a 7.
+    const p = { rows: 3, ranks: [13, 6, 13, 6, 7, 7] };
+    expect(clearRate(p)).toBe(0.5);
+    expect(clearRate(p, 0)).toBe(1);
+  });
+  it('level 1 is two pairs and two kings; levels 2-3 add at most one king by chance; a rank never passes a pack', () => {
+    for (let level = 1; level <= 3; level++)
+      for (let seed = 1; seed <= 200; seed++) {
+        const c = dealCandidate(level, new Rng(seed)),
+          kings = c.puzzle.ranks.filter((r) => r === 13).length;
+        expect(kings).toBe(c.forcedKings + c.chanceKings);
+        expect(c.chanceKings).toBeLessThanOrEqual(level === 1 ? 0 : 1);
+        expect(c.puzzle.ranks[0]).toBe(13);
+        if (level === 1) {
+          expect(kings).toBe(2);
+          expect(c.puzzle.ranks.filter((r) => r !== 13)).toHaveLength(4);
+        }
+        const p = makePuzzle(level, new Rng(seed));
+        for (let r = 1; r <= 13; r++)
+          expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
+        if (level === 1) expect(p.ranks.filter((r) => r === 13)).toHaveLength(2);
+      }
   });
 });

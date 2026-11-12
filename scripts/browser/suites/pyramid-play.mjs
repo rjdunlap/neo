@@ -39,7 +39,20 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'visible hint is counted once');
       const hinted = await page.evaluate(() => [...neo.scene.game.hinted]);
       for (const i of hinted) await tap(`neo.scene.game.nodes[${i}]`);
+      assert.match(
+        await page.evaluate(() => neo.scene.game.status.text),
+        /(pairs? open|a king can go alone|Undo or Hint)/,
+        'the status line counts what is open after a removal',
+      );
       await tap('neo.scene.game.undoButton');
+      assert.ok(
+        await page.evaluate(
+          () =>
+            neo.scene.game.leaving.size === 0 &&
+            neo.scene.game.nodes.every((n) => n.scale.x === 1 && n.alpha >= 0.6),
+        ),
+        'Undo settles a lift mid-fade',
+      );
       assert.equal(await page.evaluate(() => neo.scene.game.mask), initial);
       for (const i of hinted) await tap(`neo.scene.game.nodes[${i}]`);
       await tap('neo.scene.game.againButton');
