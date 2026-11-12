@@ -1,6 +1,6 @@
 # Sink or Float deep dive
 
-*ID `sink-float` · bands lap, toddler, preschool, pre-K, school · levels 1–7 on 2026-11-01 · session `claude/dive-sink-or-float`, [PR #1101](https://github.com/rjdunlap/neo/pull/1101)*
+*ID `sink-float` · bands lap, toddler, preschool, pre-K, school · levels 1–7 on 2026-11-01, lap level 12 built 2026-11-12 · session `claude/dive-sink-or-float`, [PR #1101](https://github.com/rjdunlap/neo/pull/1101)*
 
 ## The game today
 
@@ -16,7 +16,7 @@ Things arc into a water tank: floaters bob at the surface, sinkers drift down tr
 | 6 | `guess`, 6 with surprises, unscored | pre-K, school | Float or sink for surprising things |
 | 7 | `shape`, *Make it float*, two clay experiments | school | Flat, boat or leaky boat ([definition](../definitions/make-it-float.md)) |
 
-`levels()` is a plain min/max function (lap 1–2, toddler 2–4, preschool 3–5, pre-K 4–6, school 5–7); there is no `order` or `entryLevels`.
+`levels()` is a plain min/max function (lap 1–2, toddler 2–4, preschool 3–5, pre-K 4–6, school 5–7); lap plays `order` [12, 1, 2] with `entryLevels: [12]` since level 12 (built 2026-11-12); other bands have neither.
 
 **Content pools.** `THINGS` holds fourteen: obvious floaters duck, boat, ball and feather; obvious sinkers rock, key and marble; surprises leaf, apple, log and ice cube (float), coin, spoon and paper clip (sink). `thingsFor` takes `min(count, pool)` from the filtered pool: levels 1–4 draw five of the seven obvious things (so rounds vary, with both kinds present), levels 5–6 draw six of all fourteen. `thingWord` gives "ice cube" and "paper clip" for the `sink.guess` slot and the journal. Level 7 draws three shape tiles in a seeded order and two of five clay colours.
 
@@ -77,7 +77,7 @@ Avoid crayons, buttons, sponges that soak, open cups and fruit that varies (grap
 
 ### New levels on top
 
-IDs 8 (Garden Raft) and 11 (Build a Boat) are reserved; 9 is the first to build. `SINK_PLANS` is a positional array clamped by level, so level 9 cannot ship before 8 without converting the plans to a table keyed by level ID and moving the bands to `order` (`order` lists only built IDs). That conversion belongs to level 9's slice.
+IDs 8 (Garden Raft) and 11 (Build a Boat) are reserved (12 is the lap entry level, built 2026-11-12; 9 was the first built). `SINK_PLANS` is a positional array clamped by level, so level 9 cannot ship before 8 without converting the plans to a table keyed by level ID and moving the bands to `order` (`order` lists only built IDs). That conversion belongs to level 9's slice.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -88,7 +88,7 @@ IDs 8 (Garden Raft) and 11 (Build a Boat) are reserved; 9 is the first to build.
 
 ### Younger-band openings
 
-None needed: lap already plays 1–2. The fresh things reach lap and toddler through levels 1–4.
+**Built 2026-11-12 (PR #1572):** level 12, one big thing over the water, a touch anywhere drops it (lap `order` [12, 1, 2], `entryLevels: [12]`; mode `hold`, no misses or hints). The fresh things reach lap and toddler through levels 1–4.
 
 ### Easier entries and levels between existing ones
 
@@ -111,6 +111,7 @@ None new. Garden Raft keeps level ID 8 as decided 2026-10-23; this dive builds l
 3. **Define Sink or Float 10 *Salty or fresh*** (**defined 2026-11-05**, [definition](../definitions/salty-or-fresh.md)): the stated model and its how-to note, the two-tank portrait layout, the egg, part 2's accounting and hint, the check tier.
 3a. **Level 10 *Salty or fresh*** (**built 2026-11-05**, branch `claude/sink-float-salty-or-fresh`, PR #1285; batch sink-float 3, after batch 2; new-interaction tier: typecheck, unit tests including the registry, lands, how-to and voice tests, one play of school level 10 through part 1, two wrong tanks on one egg question, the duck question, to the sticker, one portrait and one landscape screenshot, `fingerdemo` at 10, one direct `control()` call for the two-tank ring, one build; no `couchgames`).
 4. **Define Sink or Float 11 *How much can it carry?*** (docs only), after engineering's Garden Raft definition: one load and waterline model shared with level 8.
+4a. **Level 12 *One big thing*** (**built 2026-11-12**, branch `claude/sink-float-lap`, PR #1572; new-level tier, lap entry level from the toy-test lap audit).
 5. Garden Raft (level 8) stays engineering design's slice 3.
 
 ## What was built in this session

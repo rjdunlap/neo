@@ -8,7 +8,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`sink-float`, a lap level with one big thing** (new-level tier: typecheck, the rule tests, one browser play of the lap level, `fingerdemo` at it): one large thing held over the water; a touch anywhere drops it with a sound at once, and the next thing arrives because she touched; a touch on the water splashes.
 - **`tide-line`, a touch anywhere sends the wave at lap** (existing-game tier, with `fingerdemo` at lap since the demonstrated action changes): at lap, sand and sky send the wave as the sea does, a tap during a wave gets an answer, the card's ghost finger shows the tap, and the lap line says "tap" rather than "pull". Check the wave's start height when a tap lands while the sea slides back.
 - **`melt-freeze`, a lap level with one big ice cube** (new-level tier: typecheck, the rule tests, one browser play of the lap level, `fingerdemo` at it): one big cube and no tools; a touch anywhere warms it with a sound, it melts after a few touches, and the snowflake arrives only then to freeze it again.
 - **`puddle-lens`, a touch anywhere swells the lens at lap** (existing-game tier, one filtered play of level 1 at lap): at lap, a touch outside the lens swells it too, a touch while it moves gets a sound, the next thing comes on her touch rather than a timer, and the pause sheet's hint is not counted.

@@ -79,7 +79,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Peg Garden](docs/games/peg-garden.md) | lap–pre-K | Bubble Beach | 8 | tap the top and a pearl tumbles through flower pegs on a seeded board and backdrop, then rolls into a shell tray |
 | [Bounce Back](docs/games/bounce-back.md) | lap–school | Bubble Beach | 12 | touch anywhere and a huge paddle goes to a slow ball (lap, level 12), then bounce a slow ball back to the pet with a huge paddle |
 | [Bumper Garden](docs/games/bumper-garden.md) | lap–pre-K | Bubble Beach | 8 | tap to launch a ladybug through flower bumpers |
-| [Sink or Float](docs/games/sink-float.md) | lap–school | Bubble Beach | 9 | drop things in the water and watch |
+| [Sink or Float](docs/games/sink-float.md) | lap–school | Bubble Beach | 10 | (lap, level 12) one big thing over the water that a touch anywhere drops in, then drop things in the water and watch |
 | [Domino Run](docs/games/domino-run.md) | toddler–school | Bubble Beach | 11 | stand dominoes from a tray in a lane's gaps and tap the green starter; the line clacks down to the bell |
 | [Fruit Slice](docs/games/fruit-slice.md) | toddler–school | Bubble Beach | 11 | touch a fruit hanging at the top of its slow arc and it splits |
 | [Puddle Gobble](docs/games/puddle-gobble.md) | toddler–school | Bubble Beach | 12 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
