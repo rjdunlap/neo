@@ -143,3 +143,9 @@
 **Changed:** the Puzzle Peaks table (two games: `size-parade` level 16, `puzzle-pals` level 1) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); two READY lines (`puzzle-pals`, `size-parade`); the P4 line and progress counts (45 of 57 read).
 **Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the two games were read from the code at `origin/main` `d4fbbb71`, not played or timed).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Story Grove (docs only, PR #1520)
+
+**Changed:** the Story Grove table (six games: `word-monsters` 1, `photo-safari` 1, `goodnight-room` 1, `opposites` 1, `attic-finds` 3, `word-glue` 1) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); six READY lines (`goodnight-room`, `photo-safari`, `word-monsters`, `word-glue`, `opposites`, `attic-finds`); the P4 line and progress counts (51 of 57 read).
+**Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code at `origin/main` `d80b14e9`, not played or timed).
