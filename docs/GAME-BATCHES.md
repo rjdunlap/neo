@@ -1864,6 +1864,8 @@ Proof: existing-game tier (typecheck, the rule tests, one filtered `tilepairs` p
 
 ### tile-pairs: Two more looks and Tall tower
 
+**Built 2026-11-12 ([PR #1569](https://github.com/rjdunlap/neo/pull/1569)).** Dive slices 3–4. See the [verification entry](VERIFICATION.md#2026-11-12--tile-pairs-slices-34-two-more-looks-and-tall-tower-pr-1569) and [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-batch-two-more-looks-and-tall-tower-2026-11-12).
+
 - **`tile-pairs`, two seeded picture sets and level 7 *Tall tower*** (dive slices 3–4, [dive](deep-dives/tile-pairs.md#build-slices-in-order), after Peek, grown-up). Choose each round's look from the seed. Test that each set's pictures have distinct silhouettes. Add a solvable 24-tile stack with four layers and supported raised tiles, keeping the choices about which pair opens the tower.
 
 Files expected include `src/games/tile-pairs/logic.ts`, `logic.test.ts`, `index.ts`, the game page and the dive.
