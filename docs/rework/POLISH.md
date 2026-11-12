@@ -50,6 +50,8 @@ _Built 2026-10-23 ([PR #898](https://github.com/rjdunlap/neo/pull/898)): the six
 - **Done when:** each of the six shows its illustrated resident at every band and in four views; the resident's touch circle (at least 100 across) and idle motion clear every spot, the signpost, the guide corner and the heading; no location shows her species twice; `npm run build` reports the new precache total.
 - **Check tier:** shell (assets and a shared scene). Typecheck, unit tests, build, one filtered root probe of arrive → poke the resident → launch → return for one of the six, in both orientations, and the offline check (new assets).
 
+_Follow-up, built 2026-11-11 ([PR #1535](https://github.com/rjdunlap/neo/pull/1535), [P5 pilot](../POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m)): Trill, the Music Mountain resident, walks to a wind chime and back on its own and turns toward her last touch (`src/creatures/wander.ts`); the other five stay standing until a phone look says it reads as alive._
+
 ### Slice 3: one meaning per button
 
 _Built 2026-10-23 ([PR #899](https://github.com/rjdunlap/neo/pull/899)): at the root every house goes Home and every leaving control is a back arrow with its origin's picture, in rounds, how-to cards, results and locations; root Back and Home speak their label on press; `src/app/nav-meaning.test.ts` walks each marked button. Not done: location keep-out rects were not widened for the new house. [Build note](../archive/COMPLETED-2026-10-09.md#rw14-slice-3-one-meaning-per-button-2026-10-23)._
