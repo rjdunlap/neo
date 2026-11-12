@@ -1,6 +1,6 @@
 # Puddle Island verification
 
-## 2026-11-11 — Phone playtest tools kept (scripts and docs, PR #TBD)
+## 2026-11-11 — Phone playtest tools kept (scripts and docs, PR #1527)
 
 **Changed:** the eleven zsh helpers that played TotoLogic over USB, now in `scripts/android-playtest/` with their working folder and speech model set by `PLAYTEST_DIR` and `WHISPER_MODEL`; a [session guide section](SESSION-GUIDE.md#playing-an-app-on-the-developers-android-phone) with setup, the tools and the rules that go with them; a routing line for reviews of other games.
 **Ran:** `zsh -n` on each; `shot`, `ui`, `tap`, `swipe`, `trace` and `findcolor` against a stand-in `adb` and a saved screenshot; `node scripts/check-links.mjs` and `git diff --check`.
