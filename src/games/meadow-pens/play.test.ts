@@ -119,17 +119,21 @@ describe('Meadow Pens fixed-field input and accounting', () => {
     g.destroy();
   });
 
-  it('a two-part counting target highlights its first square synchronously before count speech', async () => {
+  it('a two-part counting target highlights its first square synchronously before count speech, input open (U7 R4)', async () => {
     const { g, tap, settle, hold, blocked, flush, release } = make(5);
     await settle();
     const state = g as unknown as { highlight: number[] };
     hold.add('count');
     tap(g.partTargets[1]);
     expect(state.highlight).toEqual([g.task.parts[1][0]]);
-    expect(g.busy).toBe(true);
+    expect(g.busy).toBe(false);
     expect([g.tally.misses, g.tally.hints]).toEqual([0, 0]);
     await flush();
     expect(blocked.has('count')).toBe(true);
+    // A tap on the other part takes over the count still playing.
+    tap(g.partTargets[0]);
+    expect(state.highlight).toEqual([g.task.parts[0][0]]);
+    expect(g.autotouch()).toBeNull();
     release('count');
     await settle();
     expect(g.index).toBe(0);
@@ -142,17 +146,22 @@ describe('Meadow Pens fixed-field input and accounting', () => {
       await settle();
       say.mockClear();
       const completion = level === 4 ? 'meadow.in' : 'meadow.field-in';
+      const ask = level === 4 ? 'meadow.ask4.fence' : 'meadow.ask5';
       const cells = [...g.task.parts.flat()];
+      const state = g as unknown as { painted: Set<number>; gateOpen: number };
       hold.add(completion);
       tap(card(true));
-      await flush();
-      expect(blocked.has(completion)).toBe(true);
-      expect(say.mock.calls.map(([line]) => line)).toEqual([completion]);
-      const state = g as unknown as { painted: Set<number>; gateOpen: number };
       expect(state.gateOpen).toBe(1);
       expect(state.painted).toEqual(new Set(cells));
+      await flush();
+      // U7 R4: the thanks never holds the next question. It opens with input live; its ask waits for the line.
+      expect(blocked.has(completion)).toBe(true);
+      expect(say.mock.calls.map(([line]) => line)).toEqual([completion]);
+      expect([g.index, g.busy, state.gateOpen]).toEqual([1, false, 0]);
+      expect(g.autotouch()).toBeNull();
       release(completion);
       await settle();
+      expect(say.mock.calls.map(([line]) => line)).toEqual([completion, ask]);
       expect(g.index).toBe(1);
       g.askForHint();
       await settle();
@@ -209,13 +218,13 @@ describe('Meadow Pens fixed-field input and accounting', () => {
       await settle();
       const task = g.task;
       tap(g.partTargets[0]);
-      expect(g.busy).toBe(true);
-      // Input while a count is playing cannot answer or add a miss.
-      tap(card(false));
+      expect(g.busy).toBe(false);
       await settle();
       expect(g.index).toBe(0);
       expect(g.task).toBe(task);
       expect([g.tally.misses, g.tally.hints]).toEqual([0, 0]);
+      // U7 R4: a card tapped while a count plays takes over and is judged; taps during its explanation are held.
+      tap(g.partTargets[1]);
       const wrong = card(false);
       tap(wrong);
       tap(wrong);

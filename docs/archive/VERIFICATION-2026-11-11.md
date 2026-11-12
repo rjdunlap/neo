@@ -205,3 +205,10 @@
 **Changed:** `src/games/tangram-town/index.ts` (tray pieces at levels 1–3 set `tapToPlace` as a function; a still tap holds the piece at its tray home, the next tap on a shadow places it from the tapped point; the turn and help buttons end the hold; a placed piece is `eventMode 'none'`), `scripts/browser/suites/creative-batch.mjs` (a `TANGRAM_TAP=only|skip` part).
 **Ran:** `npm run typecheck`; `npx vitest run src/games/tangram-town src/engine/drag.test.ts` (31 tests); `BROWSER_SUITE=creative CREATIVE_ONLY=tangram TANGRAM_TAP=only` (level 1 at 390×844 by taps: hold, let go, switch, help button, one wrong shadow = one miss, empty ground free, both pieces placed, [1 miss, 1 hint], one sticker; screenshot `tangram-town-1-phone-held`); `TANGRAM_TAP=skip TO_LEVEL=3` (the drag plays of levels 1–3). Chrome automation only.
 **Not run:** the full unit suite locally (CI runs it), `npm run build` (no shared files or assets changed), `fingerdemo` (card and bot unchanged), couch, offline, levels 4–8 browser plays. The placed-piece `eventMode` change was not shown to fail without it.
+
+## 2026-11-11 — Pyramid Solitaire deep dive (docs only, PR #1530)
+
+**Changed:** research and design only: `docs/deep-dives/pyramid-solitaire.md`, the tracker and backlog rows, READY, GAME-BATCHES and IDEAS. No code changed.
+**Measured:** the dive's figures came from a Node 26 script kept outside the repository that imports the game's `logic.ts` and `random.ts` unchanged (1,000 seeds a level; 200–500 for the candidate variants; 300 rounds a level for the dial bands).
+**Ran:** `node scripts/check-links.mjs` and `git diff --check`.
+**Not run:** typecheck, unit tests, build and every browser suite (docs-only tier).
