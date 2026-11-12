@@ -4137,9 +4137,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const onRuler = mode.startsWith('ruler') || mode === 'broken';
         const settle = async () => {
           await page.waitForTimeout(250);
-          await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
-            timeout: 20000,
-          });
+          // After a right answer the next measure opens at once and its instruction waits for the line (U7 R4).
+          await page.waitForFunction(
+            () => (!neo.scene.game.busy && !neo.scene.game.unasked) || neo.scene.finished,
+            null,
+            { timeout: 20000 },
+          );
           await page.waitForTimeout(250);
         };
         // Drag a worm from the bucket onto a row (it rides above the finger, so aim just below the row).

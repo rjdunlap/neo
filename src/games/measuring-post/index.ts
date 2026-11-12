@@ -238,6 +238,9 @@ class MeasuringPost implements Game {
   private clock = 0;
   private started = false;
   private alive = true;
+  /** The next task's question, waiting behind the last one's right-answer line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   private glowAt: { p: Pt; w: number; h: number } | null = null;
   private drawnKey = '';
   layout!: Layout;
@@ -337,6 +340,12 @@ class MeasuringPost implements Game {
     if (this.phase !== 'tool' && this.phase !== 'wrong') return;
     const task = this.current;
     const pad = this.toolPads.get(tool)!;
+    // A tool tap before the next question is heard says the question, and is not judged.
+    if (this.unasked) {
+      this.press(pad);
+      this.askNow();
+      return;
+    }
     if (toolAnswers(task, tool)) {
       this.press(pad);
       sfx.pop(7);
@@ -375,9 +384,7 @@ class MeasuringPost implements Game {
       this.glowAt = null;
       this.phase = 'sending';
       this.redraw();
-      void Promise.all([this.ctx.say(`measure.right.${task.ask}` as LineId), this.ctx.tw.wait(0.8)]).then(
-        () => this.alive && this.next(),
-      );
+      this.lesson(this.ctx.say(`measure.right.${task.ask}` as LineId));
       return;
     }
     sfx.boing();
@@ -411,16 +418,43 @@ class MeasuringPost implements Game {
       this.glowAt = null;
       this.phase = 'sending';
       this.redraw();
-      void Promise.all([
-        this.ctx.say(`measure.right3.${task.attribute}` as LineId),
-        this.ctx.tw.wait(0.8),
-      ]).then(() => this.alive && this.next());
+      this.lesson(this.ctx.say(`measure.right3.${task.attribute}` as LineId));
       return;
     }
     sfx.boing();
     this.shake(pad);
     this.miss('answer');
     void this.ctx.say(this.compareHint());
+  }
+
+  /**
+   * A right row or compare pad's line carries the lesson: the next task follows the 0.8 s settle alone and the line
+   * plays over it, its question waiting for the line, her first tool tap, Replay or the guide (U7 R4). The last task's
+   * line is still heard out before the finish.
+   */
+  private lesson(said: Promise<void>) {
+    const last = this.task + 1 >= this.tasks.length;
+    void Promise.all([last ? said : undefined, this.ctx.tw.wait(0.8)]).then(() => {
+      if (this.alive) this.next(last ? undefined : said);
+    });
+  }
+
+  /** Says the waiting question, if there is one. */
+  private askNow() {
+    if (!this.unasked || !this.alive) return false;
+    this.dropAsk();
+    this.askQuestion();
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the question waits behind the lesson line: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private compareHint(): LineId {
@@ -483,7 +517,8 @@ class MeasuringPost implements Game {
     void this.ctx.tw.wait(0.5).then(() => this.alive && this.next());
   }
 
-  private next() {
+  private next(after?: Promise<void>) {
+    this.dropAsk();
     if (this.task + 1 >= this.tasks.length) {
       this.phase = 'done';
       this.redraw();
@@ -508,7 +543,12 @@ class MeasuringPost implements Game {
       this.rolling = false;
     }
     this.redraw();
-    this.askQuestion();
+    if (!after) return this.askQuestion();
+    this.unasked = true;
+    const gen = this.askGen;
+    void after.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
   }
 
   private askQuestion() {
@@ -575,6 +615,8 @@ class MeasuringPost implements Game {
   help() {
     const step = this.step;
     if (!step) return;
+    // The hint names what the question asks, so it takes the waiting question's place.
+    this.dropAsk();
     const task = this.current;
     if (step === 'send') {
       this.glowUseful('send');
@@ -619,6 +661,7 @@ class MeasuringPost implements Game {
   }
 
   replay() {
+    if (this.askNow()) return;
     const task = this.current;
     if (this.phase === 'tool' || this.phase === 'wrong') this.askQuestion();
     else if (this.phase === 'send' && this.plan.mode === 'table')
@@ -1183,7 +1226,7 @@ class MeasuringPost implements Game {
    * 3) the little units for both and then the longer, heavier or fuller one, or the same.
    */
   autotouch(): TouchIntent | null {
-    if (!this.started) return null;
+    if (!this.started || this.unasked) return null;
     if (this.phase === 'tool') return { tap: { on: this.toolPads.get(TOOL_FOR[this.current.attribute])! } };
     if (this.phase === 'send') return { tap: { on: this.sendButton } };
     if (this.phase === 'unit') return { tap: { on: this.unitPads.get('little')! } };
