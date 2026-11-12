@@ -304,7 +304,10 @@ export function createSuite({ page, launch, finished, log }) {
             out.push({ early: { misses: g.misses, waiting: g.unasked || !item.side } });
             // The guide still says this round's instruction, not the guess prompt before it.
             const said = g.sayWaitingAsk();
-            out.push({ guide: said && neo.scene.instruction?.id === 'seesaw.measure-pumpkin', waiting: g.unasked });
+            out.push({
+              guide: said && neo.scene.instruction?.id === 'seesaw.measure-pumpkin',
+              waiting: g.unasked,
+            });
           }
           for (let k = 0; k < 40 && g.index === n && !g.finished; k++) {
             await kit.until(() => !g.busy || g.index !== n || g.finished, 20000);
