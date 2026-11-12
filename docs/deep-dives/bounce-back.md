@@ -88,6 +88,7 @@ Scoring a goal against an opponent is welcome here. Keep the rest of the rules: 
 
 ### Younger-band openings
 
+- **Lap, level 12 (built 2026-11-12, PR #1568):** a stable ID above the ladder, first in lap's `order` (`[12, 1]`), mode `pat`: touch anywhere and the huge paddle goes to the ball, a ball that gets past comes back with no miss. This is the lap form of "Pat the ball" below (the paddle still exists, but a touch anywhere sends it).
 - **Lap and toddler, level 1**: a slower serve (about 180 units/s) and a paddle of 340, so the ball almost always touches; the drift help already exists.
 - **Roll-it variant (off screen)**: roll a soft ball between a grown-up and the child; the how-to already suggests it.
 - A "Keepy Uppy" floaty mode (IDEAS) would overlap this game's rally; fold it in as the slowest speed with a wobble, not a new game.
@@ -95,7 +96,7 @@ Scoring a goal against an opponent is welcome here. Keep the rest of the rules: 
 ### Levels below level 1 (waiting on the level-order decisions)
 
 - **Follow the ball**: the ball rolls across and she only watches; the pet cheers when she touches it.
-- **Pat the ball**: any touch near the ball sends it back, no paddle.
+- **Pat the ball**: any touch near the ball sends it back, no paddle. (The lap level 12 covers the lap case with the paddle going to the ball.)
 
 ### Left out on purpose
 
@@ -137,3 +138,5 @@ Level 9, colors in order (school), followed on `codex/bounce-back-colors-in-orde
 Slice 4 followed on `codex/bounce-back-pet-lob`: on the play-together and count rallies the pet holds its paddle a little off the ball (up to 0.3 of half the paddle, about 0.26 rad) so the return is not always straight (`petLob`, with a rule test). Typecheck, the game's unit tests and `BATCH_ONLY=bounce` (1–8) passed.
 
 Slice 3 followed on `codex/bounce-back-courts`: three courts (pond, beach, snow) picked from the round's seeded generator, each with its own ball (smiling ball, beach ball, duckling that quacks on her bounces). Look and sound only; the sticker still draws the original ball. Typecheck, the game's unit tests and `BATCH_ONLY=bounce` passed; the pond and snow courts were seen in screenshots, the beach court was not.
+
+The lap level 12 followed on `claude/bounce-back-lap` (PR #1568): see Younger-band openings. Typecheck, the unit suite, the game's rule tests (lap order, no-miss rule, drift reaches the ball at six view sizes), a `BATCH_ONLY=bounce BOUNCE_FROM=12` section and `FINGER_LEVELS=12` passed.
