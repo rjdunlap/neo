@@ -76,6 +76,12 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     st = await state();
     assert.deepEqual([st.hints, st.hinted], [1, true], 'Show a hint glows once and counts once');
     await screenshot('sea-lift-1');
+    // U7 R4: the duck's thanks (2.4 s when muted) never holds the next friend. The ride up (0.75 s), the hop, the fade
+    // and the glide back to the water come to about 2.3 s; with the line awaited it was 4.7 s.
+    await tapStop(3);
+    await page.waitForFunction(() => neo.scene.game.state.index === 1 && !neo.scene.game.busy, null, {
+      timeout: 3300,
+    });
     await playOut(n);
     st = await state();
     assert.deepEqual([st.misses, st.hints], [1, 1]);

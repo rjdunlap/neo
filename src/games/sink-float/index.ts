@@ -58,6 +58,9 @@ interface Wet {
   rest: number;
 }
 
+/** A guess's reaction is given this long before the next thing's ask cuts it. */
+const GUESS_BEAT = 0.4;
+
 class SinkFloat implements Game {
   readonly plan: SinkPlan;
   readonly items: Item[] = [];
@@ -368,13 +371,14 @@ class SinkFloat implements Game {
     void this.splash(item).then(async () => {
       const result = item.floats;
       await this.ctx.say(result ? 'sink.floats' : 'sink.sinks');
-      if (result === floatsGuess) {
-        this.ctx.pet.cheer();
-        await this.ctx.say('sink.right');
-      } else {
-        sfx.sparkle();
-        await this.ctx.say('sink.surprise');
-      }
+      if (result === floatsGuess) this.ctx.pet.cheer();
+      else sfx.sparkle();
+      // The reaction to her guess never holds the next thing (U7 R4): it starts, and after a short beat the next
+      // thing's ask cuts what is left of it. It is heard out where something held follows it anyway: the pair's
+      // rule, or the closing line.
+      const reaction = this.ctx.say(result === floatsGuess ? 'sink.right' : 'sink.surprise');
+      if (item.pair || this.current + 1 >= this.items.length) await reaction;
+      else await this.ctx.tw.wait(GUESS_BEAT);
       // Big and small: the stuff's rule, whichever way the guess went. Size never changed it.
       if (item.pair) await this.ctx.say(PAIRS[item.pair.kind].line);
       this.current++;
