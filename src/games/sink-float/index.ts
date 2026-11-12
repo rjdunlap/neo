@@ -118,6 +118,8 @@ class SinkFloat implements Game {
   hintLabel?: string;
   // One big thing (the lap level): the thing held over the water, and the layer that takes a touch anywhere.
   holding: Item | null = null;
+  /** Things dropped and not yet settled in the water. */
+  private falling = 0;
   private readonly catcher = new Container();
   private held = { x: 0, y: 0 };
 
@@ -283,18 +285,19 @@ class SinkFloat implements Game {
    * splashes under the finger, and a touch anywhere else while the next thing is on its way gets a pop and a puff of bubbles.
    */
   private touchAnywhere(e: FederatedPointerEvent) {
-    if (this.finished) return;
     const p = this.ctx.stage.toLocal(e.global);
     const t = this.tank;
     const onWater = p.x >= t.l && p.x <= t.r && p.y >= t.surface - 10 && p.y <= t.bottom;
     if (onWater) this.splashAt(p.x, p.y);
-    const item = this.holding;
+    const item = this.finished ? null : this.holding;
     if (item) {
       this.holding = null;
       item.done = true;
+      this.falling++;
       sfx.whoosh();
       void this.splash(item, () => this.hold()).then(() => {
-        if (this.items.every((i) => i.done)) void this.end();
+        // The round ends once every thing is in and nothing is still on its way down.
+        if (--this.falling === 0 && this.items.every((i) => i.done)) void this.end();
       });
     } else if (!onWater) {
       sfx.pop(6);
