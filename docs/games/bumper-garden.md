@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 10, 1 |
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3, 4, 6, 8, 5, 9 |
@@ -23,6 +23,7 @@
 | 6 | Count on from a number between 2 and 6: three or four flowers in order |
 | 8 | Bloom every flower that is not the color asked for; those ones are asleep |
 | 9 | Count back to 1 from a starting number between 5 and 8 |
+| 10 | One big flower: touch anywhere to launch the ladybug; another flower wakes at each launch |
 
 <!-- end generated -->
 

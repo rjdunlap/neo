@@ -348,12 +348,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
     const bumperLevels =
       process.env.BUMPER_LEVELS?.split(',').map(Number) ??
-      [1, 2, 3, 4, 5, 6, 8, 9].filter((l) => l >= Number(process.env.FROM_LEVEL || 1));
+      [1, 2, 3, 4, 5, 6, 8, 9, 10].filter((l) => l >= Number(process.env.FROM_LEVEL || 1));
     const bumperTables = process.env.BUMPER_TABLES?.split(',') ?? [null];
     for (const table of bumperTables)
       for (const level of !only || only === 'bumper' ? bumperLevels : []) {
-        if (level === 1 || level === 5 || level === 8 || level === 9)
-          await page.setViewportSize({ width: 768, height: 1024 });
+        if (level === 1 || level === 5 || level === 8 || level === 9 || level === 10)
+          await page.setViewportSize(level === 10 ? { width: 390, height: 844 } : { width: 768, height: 1024 });
         if (table)
           await page.evaluate(
             async ({ table, level }) => {
@@ -380,7 +380,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await launch('bumper-garden', level);
         if (table) assert.equal(await page.evaluate(() => neo.scene.game.table), table);
         await page.waitForTimeout(level === 8 ? 2000 : 400);
-        if (table || level === 6 || level === 8 || level === 9)
+        if (table || level === 6 || level === 8 || level === 9 || level === 10)
           await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
         if (level === 8)
           await page.evaluate(() => {
@@ -425,6 +425,32 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             else kit.tap(innerWidth - 150, innerHeight * 0.45);
           };
           const t0 = performance.now();
+          if (g.plan.grow) {
+            // Level 10, the lap opening: one big flower alone; a touch anywhere (here a far corner) launches; the
+            // ladybug waits for her and the flowers wake one at a launch, never on a timer.
+            const shown = () => g.flowers.filter((f) => f.visible).length;
+            if (g.awake !== 1 || shown() !== 1 || g.state !== 'held')
+              throw new Error(`Bumper 10: opened with ${shown()} flowers, state ${g.state}`);
+            await kit.sleep(2500);
+            if (g.state !== 'held' || g.launches !== 0 || shown() !== 1)
+              throw new Error('Bumper 10: the ladybug or a flower moved without a touch');
+            kit.tap(innerWidth - 20, innerHeight - 20);
+            if (g.state !== 'flying' || g.launches !== 1) throw new Error('Bumper 10: a corner touch did not launch');
+            if (!(await kit.until(() => g.flowers[0].bloomed, 4000)))
+              throw new Error('Bumper 10: the first launch missed the big flower');
+            while (!g.finished && performance.now() - t0 < 120000) {
+              if (g.state === 'held') {
+                const before = g.awake;
+                await kit.sleep(1500);
+                if (g.awake !== before || g.state !== 'held') throw new Error('Bumper 10: a flower woke on a timer');
+                kit.tap(30, innerHeight * 0.2);
+                if (g.awake !== Math.min(6, Math.max(1, g.launches)) || shown() !== g.awake)
+                  throw new Error(`Bumper 10: ${g.awake} awake after ${g.launches} launches`);
+              }
+              await kit.sleep(100);
+            }
+            return { launches: g.launches, awake: g.awake };
+          }
           if (g.plan.mode === 'spring') {
             while (!g.finished && performance.now() - t0 < 120000) {
               if (g.state === 'held') {
@@ -464,7 +490,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             );
           return { launches: g.launches, misses: g.misses, hints: g.hints };
         });
-        if (level !== 6 && level !== 8 && level !== 9) await screenshot(`bumper-garden-${level}`);
+        if (level !== 6 && level !== 8 && level !== 9 && level !== 10) await screenshot(`bumper-garden-${level}`);
         await finished('bumper-garden');
         const r = await score('bumper-garden');
         if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
@@ -473,7 +499,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints,
             `bumper ${level} score ${r}`,
           );
-        if (level === 1 || level === 5 || level === 8 || level === 9)
+        if (level === 1 || level === 5 || level === 8 || level === 9 || level === 10)
           await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Bumper Garden ${table ?? 'random'} ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`,

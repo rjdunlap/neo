@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.bumper-garden': ['Bumper garden!'],
   'bumper.spring': ['Tap to send the ladybug up! Watch the flowers bloom.'],
+  'bumper.grow': ['Touch anywhere! Send the ladybug up to the big flower.'],
   'bumper.bloom': ['Tap this side or that side to flip the ladybug back up. Make every flower bloom!'],
   'bumper.color': ['Bloom the {color} flowers!'],
   'bumper.not': ['Bloom every flower that is not {color}! Shh, the {color} ones are sleeping.'],

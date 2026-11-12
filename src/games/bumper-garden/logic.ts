@@ -21,6 +21,8 @@ export interface BumperPlan {
   descend?: boolean;
   /** Color levels: bloom every flower that is NOT the asked color; the asked ones fall asleep. `goal` is how many sleep. */
   not?: boolean;
+  /** The lap opening: one big flower stands alone, and the others wake one at a launch (`GROW_SPOTS`). */
+  grow?: boolean;
 }
 
 /** ID 7 remains reserved for the pattern slice. */
@@ -49,6 +51,13 @@ export const PLANS: Record<number, BumperPlan> = {
     start: 3,
     name: 'Count on from a number between 2 and 6: three or four flowers in order',
   },
+  10: {
+    mode: 'spring',
+    grow: true,
+    bumpers: 6,
+    goal: 6,
+    name: 'One big flower: touch anywhere to launch the ladybug; another flower wakes at each launch',
+  },
   9: {
     mode: 'order',
     bumpers: 8,
@@ -59,8 +68,14 @@ export const PLANS: Record<number, BumperPlan> = {
   },
 };
 
+/**
+ * The lap entry level: one big flower, any touch launches, and the other flowers wake as she launches. A stable ID above the
+ * ladder that the lap band plays first (`order`), so no saved level is renumbered; 7 stays reserved.
+ */
+export const GROW_LEVEL = 10;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: GROW_LEVEL, order: [GROW_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 9, order: [3, 4, 6, 8, 5, 9] },
@@ -159,10 +174,30 @@ export function funnel(): Peg[] {
 export interface Bumper {
   x: number;
   y: number;
+  /** Its size for bumping; the default is `TABLE.bumper`. */
+  r?: number;
   /** A color index, or a number to hit in order. */
   color: number;
   number: number | null;
 }
+
+/** The lap opening's garden, the same on every table: the big flower first, in the middle, then the others in the order they wake. */
+export const GROW_BIG = 72;
+export const GROW_SPOTS: readonly { x: number; y: number }[] = [
+  { x: 300, y: 250 },
+  { x: 110, y: 130 },
+  { x: 490, y: 130 },
+  { x: 100, y: 380 },
+  { x: 500, y: 380 },
+  { x: 300, y: 70 },
+];
+/** How far a lap launch leans: every launch in this spread bumps the big flower. */
+export const GROW_SPREAD = 0.2;
+/** Where a flower that has not woken yet keeps its bumper: off the table, so the ladybug never meets it. */
+export const ASLEEP = { x: -9999, y: -9999 };
+/** How many flowers are awake after `launches` launches: the big one, then one more at each launch after the first. */
+export const awakeAfter = (plan: BumperPlan, launches: number): number =>
+  plan.grow ? Math.min(plan.bumpers, Math.max(1, launches)) : plan.bumpers;
 
 /** Whether a flower of this color (0 is the asked one) is wanted on a color level: the asked color, or on a "not" level every other. */
 export const wantsColor = (plan: BumperPlan, color: number): boolean =>
@@ -170,6 +205,13 @@ export const wantsColor = (plan: BumperPlan, color: number): boolean =>
 
 /** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0); on a "not" level those are the sleepy ones, fewer than each other color. */
 export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow'): Bumper[] {
+  if (plan.grow)
+    return GROW_SPOTS.slice(0, plan.bumpers).map((s, i) => ({
+      ...s,
+      ...(i === 0 ? { r: GROW_BIG } : {}),
+      color: i % 3,
+      number: null,
+    }));
   const spots = rng.shuffle([...TABLE_SPOTS[table]]).slice(0, plan.bumpers);
   const numbers = orderNumbers(plan);
   return spots.map((s, i) => {
@@ -179,17 +221,25 @@ export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow
   });
 }
 
-/** The world for physics: flowers first (so hit indexes match bumpers), then hedges, then flippers at rest. */
+/**
+ * The world for physics: flowers first (so hit indexes match bumpers), then hedges, then flippers at rest. Only the first
+ * `awake` flowers are on the table; the rest wait at `ASLEEP` until `wakeFlower` puts them in place.
+ */
 export function makeWorld(
   bumpers: readonly Bumper[],
   flippers: Record<FlipperSide, number> = { left: FLIPPER.rest, right: FLIPPER.rest },
+  awake = bumpers.length,
 ): BallWorld {
   const flipperPegs = (['left', 'right'] as FlipperSide[]).flatMap((side) =>
     flipperPoints(side, flippers[side]).map((p) => ({ ...p, r: 12 })),
   );
   return {
     pegs: [
-      ...bumpers.map((b) => ({ x: b.x, y: b.y, r: TABLE.bumper, kick: TABLE.kick })),
+      ...bumpers.map((b, i) => ({
+        ...(i < awake ? { x: b.x, y: b.y } : ASLEEP),
+        r: b.r ?? TABLE.bumper,
+        kick: TABLE.kick,
+      })),
       ...funnel(),
       ...flipperPegs,
     ],
@@ -199,6 +249,11 @@ export function makeWorld(
     gravity: TABLE.gravity,
     bounce: TABLE.bounce,
   };
+}
+
+/** Put a sleeping flower's bumper in its place on the table. */
+export function wakeFlower(world: BallWorld, bumpers: readonly Bumper[], i: number) {
+  Object.assign(world.pegs[i], { x: bumpers[i].x, y: bumpers[i].y });
 }
 
 /** A launch from the pot: angle 0 is straight up, positive leans right. */
