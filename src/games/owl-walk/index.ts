@@ -124,6 +124,9 @@ class OwlWalk implements Game {
   misses = 0;
   hints = 0;
   busy = true;
+  /** Her card's instruction, waiting behind its `owl.color` (U7 R4); `askGen` drops a stale wait. */
+  private unasked: (() => Promise<void>) | null = null;
+  private askGen = 0;
   finished = false;
 
   private readonly backdrop: Backdrop;
@@ -311,7 +314,7 @@ class OwlWalk implements Game {
 
   /** The ghost finger: flip a card, pick the owl (on the levels that ask), then tap the stone it hops to, or the nest. The pet's turns play themselves. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.turn !== 'child') return null;
+    if (this.busy || this.finished || this.unasked || this.turn !== 'child') return null;
     if (!this.card) return { tap: { on: this.deck } };
     const spots = this.owls.map((o) => o.spot);
     const asks = this.plan.mode === 'choose' || this.plan.mode === 'farthest';
@@ -381,23 +384,52 @@ class OwlWalk implements Game {
     this.shown.addChild(face);
     await this.ctx.tw.to(face.scale, { x: 1 }, { duration: 0.25, ease: ease.outBack });
     sfx.pop(7);
-    await this.ctx.say('owl.color', { color });
+    const said = this.ctx.say('owl.color', { color });
+    // The pet's own colour is heard out: its turn is a demonstration.
+    if (who === 'pet') {
+      await said;
+      this.drawPreviews();
+      if (this.plan.twinkle) this.twinkle(movers[0]);
+      return;
+    }
+    // Hers starts as the card turns, and the previews and her stone tap open at once (U7 R4); the face shows the colour.
     this.drawPreviews();
     if (this.plan.twinkle) this.twinkle(movers[0]);
-    if (who === 'pet') return;
     this.busy = false;
     // One owl left walking: there is nothing to pick.
     if ((this.plan.mode === 'choose' || this.plan.mode === 'farthest') && movers.length === 1)
       this.select(movers[0], false);
-    const i = this.actorOwl();
-    if (i === null) {
-      if (!this.told) {
-        this.told = true;
-        void this.ctx.instruct('owl.pick-owl', { color });
+    // What to do with the card waits for its colour, is dropped at her first tap, or is said by the guide.
+    this.unasked = async () => {
+      const i = this.actorOwl();
+      if (i === null) {
+        if (!this.told) {
+          this.told = true;
+          await this.ctx.instruct('owl.pick-owl', { color });
+        }
+        return;
       }
-      return;
-    }
-    await this.announce(i);
+      await this.announce(i);
+    };
+    const gen = ++this.askGen;
+    await said;
+    if (gen === this.askGen) await this.askNow();
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    const say = this.unasked;
+    if (!say || this.finished || !this.card) return Promise.resolve(false);
+    this.unasked = null;
+    this.askGen++;
+    return say().then(() => true);
+  }
+
+  /** The guide was tapped while her card's instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished || !this.card) return false;
+    void this.askNow();
+    return true;
   }
 
   /** What to do with this card: the stone to find, or, when none is left ahead, the nest. */
@@ -468,6 +500,9 @@ class OwlWalk implements Game {
         .then(() => this.ctx.tw.to(this.deck.scale, { x: 1, y: 1 }, { duration: 0.12 }));
       return;
     }
+    // Her first tap drops the instruction still waiting behind the colour: her tap's own line takes its place.
+    this.unasked = null;
+    this.askGen++;
     if (hit.kind === 'owl') void this.pickOwl(hit.i);
     else void this.tapStone(hit.kind === 'stone' ? hit.i : 'nest');
   }
