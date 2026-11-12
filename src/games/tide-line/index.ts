@@ -49,6 +49,9 @@ import {
   reach,
   ROUNDS,
   seaGrab,
+  lapGrab,
+  lapWaveH,
+  LAP_WAVE,
   seaReach,
   shoreLayout,
   SIZES,
@@ -123,12 +126,12 @@ class TideLine implements Game {
 
   // Level 1.
   readonly counter = new CycleCounter();
-  private grab: { id: number; peak: number; y0: number; moved: boolean } | null = null;
+  private grab: { id: number; peak: number; x0: number; y0: number; moved: boolean } | null = null;
   private target = 0;
   /** After a release, the sea slides back from `from` over `BACK` seconds. */
   private back: { from: number; t: number } | null = null;
   /** The lap band's tap: one whole wave sent up the sand and back. */
-  private auto: { t: number } | null = null;
+  private auto: { t: number; from: number } | null = null;
   private gullCalled = false;
   private anemoneSaid = false;
   private saidIn = false;
@@ -231,7 +234,9 @@ class TideLine implements Game {
     const mode = this.plan.mode;
     void this.ctx.instruct(
       mode === 'wave'
-        ? 'tl.instruct.1'
+        ? this.lap
+          ? 'tl.instruct.1.lap'
+          : 'tl.instruct.1'
         : mode === 'pail'
           ? 'tl.instruct.2'
           : mode === 'line'
@@ -249,12 +254,9 @@ class TideLine implements Game {
     node.hitArea = new Rectangle(-55, -80, 110, 100);
     const c: Critter = { kind, h, node, art, open: 0, wet: false };
     this.drawCritter(c);
-    // A poke: the anemone pulls in, the others wobble. Never counted.
-    onTap(node, () => {
-      sfx.tick();
-      if (kind === 'anemone') c.open = 0;
-      this.wobble(c);
-    });
+    // A poke: the anemone pulls in, the others wobble. Never counted. (At lap the whole screen sends the wave, so a
+    // touch on a creature reaches the sea and pokes it from there.)
+    onTap(node, () => this.poke(c));
     this.critters.push(c);
     this.critterLayer.addChild(node);
   }
@@ -273,6 +275,25 @@ class TideLine implements Game {
     }
   }
 
+  private poke(c: Critter) {
+    sfx.tick();
+    if (c.kind === 'anemone') c.open = 0;
+    this.wobble(c);
+  }
+
+  /** At lap, the creature under a touch, if any. */
+  private critterAt(x: number, y: number): Critter | undefined {
+    return this.critters.find((c) => {
+      const b = c.node.getBounds();
+      const p = this.ctx.stage.toGlobal({ x, y });
+      return p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
+    });
+  }
+
+  private get lap() {
+    return this.ctx.band === 'lap';
+  }
+
   private wobble(c: Critter) {
     if (this.ctx.tw.busy(c.node)) return;
     void this.ctx.tw
@@ -281,10 +302,14 @@ class TideLine implements Game {
   }
 
   private readonly onDown = (e: FederatedPointerEvent) => {
-    // A wave already sent runs its course (a lap child's second tap does not snap it back).
-    if (this.finished || this.grab || this.auto || palmOnGlass()) return;
+    if (this.finished || this.grab || palmOnGlass()) return;
     const p = this.ctx.stage.toLocal(e.global);
-    this.grab = { id: e.pointerId, peak: this.sea.h, y0: p.y, moved: false };
+    if (this.auto) {
+      // A wave already sent runs its course (a second tap does not snap it back), but the touch still gets an answer.
+      this.answerTouch(p.x, p.y);
+      return;
+    }
+    this.grab = { id: e.pointerId, peak: this.sea.h, x0: p.x, y0: p.y, moved: false };
     this.auto = null;
     this.back = null;
     this.target = this.sea.h;
@@ -306,6 +331,8 @@ class TideLine implements Game {
     if (!grab || e.pointerId !== grab.id) return;
     const p = this.ctx.stage.toLocal(e.global);
     if (Math.abs(p.y - grab.y0) > 12) grab.moved = true;
+    // At lap a touch on the sky or the sand is a tap, so the sea follows the finger only once it really moves.
+    if (this.lap && !grab.moved) return;
     this.target = Math.max(0, Math.min(0.95, hAt(this.L, p.y)));
   };
 
@@ -314,15 +341,34 @@ class TideLine implements Game {
     if (!grab || e.pointerId !== grab.id) return;
     this.grab = null;
     if (this.finished) return;
-    // Lap: a tap on the sea sends one whole wave up the sand.
-    if (this.ctx.band === 'lap' && !grab.moved && grab.peak < UP) {
-      this.auto = { t: 0 };
+    // Lap: a tap anywhere sends one whole wave up the sand, from wherever the water is (it may still be sliding back).
+    if (this.lap && !grab.moved) {
+      const c = this.critterAt(grab.x0, grab.y0);
+      if (c) this.poke(c);
+      this.auto = { t: 0, from: this.sea.h };
+      this.back = null;
       sfx.wave(true);
       return;
     }
     this.back = { from: this.sea.h, t: 0 };
     if (this.sea.h > 0.25) sfx.wave(false);
   };
+
+  /** A touch while a sent wave runs: a splash and foam where she touched, and a poke for a creature there. Never counted. */
+  private answerTouch(x: number, y: number) {
+    const c = this.critterAt(x, y);
+    if (c) this.poke(c);
+    else sfx.splash();
+    this.ctx.particles.burst(x, y, {
+      colors: [0xffffff, swatch.blue.light],
+      count: 6,
+      speed: [40, 120],
+      gravity: 300,
+      angle: -Math.PI / 2,
+      spread: 1,
+      size: [0.25, 0.45],
+    });
+  }
 
   private waveFrame(dt: number) {
     const before = this.sea.h;
@@ -331,8 +377,8 @@ class TideLine implements Game {
       this.grab.peak = Math.max(this.grab.peak, this.sea.h);
     } else if (this.auto) {
       this.auto.t += dt;
-      const T = 3.2;
-      this.sea.h = (0.8 * (1 - Math.cos((2 * Math.PI * Math.min(this.auto.t, T)) / T))) / 2;
+      const T = LAP_WAVE;
+      this.sea.h = lapWaveH(this.auto.t, this.auto.from);
       if (this.auto.t >= T) this.auto = null;
       else if (this.auto.t > T / 2 && this.auto.t - dt <= T / 2) sfx.wave(false);
     } else if (this.back) {
@@ -797,6 +843,8 @@ class TideLine implements Game {
     if (this.plan.mode === 'wave') {
       if (this.grab || this.auto || this.sea.h > 0.05) return null;
       const x = this.view.w * 0.6;
+      // At lap the finger shows a tap on the dry sand: a touch anywhere sends the wave.
+      if (this.lap) return { tap: { on: this.seaHit, x, y: yAt(this.L, 0.75) }, pause: 0.6 };
       const crest = yAt(this.L, this.sea.h) + 20;
       return {
         trace: { on: this.seaHit, x, y: crest },
@@ -980,7 +1028,7 @@ class TideLine implements Game {
     for (let x = 30; x <= v.w + 30; x += 30) g.lineTo(x, y + swell(x));
     g.stroke({ color: 0xffffff, width: this.grab ? 12 : 7, cap: 'round', alpha: 0.95 });
     if (this.plan.mode === 'wave') {
-      const r = seaGrab(v, y);
+      const r = this.lap ? lapGrab(v) : seaGrab(v, y);
       this.seaHit.hitArea = new Rectangle(r.x, r.y, r.w, r.h);
     }
   }
@@ -1026,7 +1074,7 @@ export const tideLine: GameModule = {
   describeLevel: (l) => tidePlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'One of you is the sea and pulls the wave; the other says "in!" and "out!" before it turns.',
-  coplayHintLap: 'Say "in!" and "out!" as the wave turns, and let {name} pull it.',
+  coplayHintLap: 'Say "in!" and "out!" as the wave turns, and let {name} tap to send it.',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker: (seed) => iconArt(seed),

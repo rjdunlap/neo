@@ -7,7 +7,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 1,
       to: 1,
-      text: 'Pull the wave up the sand and let it go; on a lap, a tap on the sea sends one wave.',
+      text: 'Pull the wave up the sand and let it go; on a lap, a tap anywhere (sea, sand or sky) sends one whole wave, and a tap while it runs gets a splash.',
     },
     { from: 2, to: 2, text: 'Put the pail above the seaweed line; then the sea comes in.' },
     {
