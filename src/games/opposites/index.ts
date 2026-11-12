@@ -500,7 +500,11 @@ class Opposites implements Game {
       this.busy = true;
       const to: Card = { ...c.card, side: (1 - c.card.side) as 0 | 1 };
       await this.flip(c, to);
-      await Promise.all([this.act(c), this.ctx.say('opp.word', { word: word(to) })]);
+      // The word starts with the act; the next card comes after the act and the 0.5 s, its word cutting this one
+      // (U7 R4). The last card's word is heard out.
+      const said = this.ctx.say('opp.word', { word: word(to) });
+      await this.act(c);
+      if (this.index + 1 >= this.rounds.length) await said;
       await this.ctx.tw.wait(0.5);
       return void this.next();
     }
@@ -564,7 +568,9 @@ class Opposites implements Game {
     for (const c of cs) this.drawCard(c, true);
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('opp.yay');
+    // The praise starts and the next question follows the 0.3 s beat (U7 R4); the last one is heard out.
+    const said = this.ctx.say('opp.yay');
+    if (this.index + 1 >= this.rounds.length) await said;
     await this.ctx.tw.wait(0.3);
     await this.next();
   }
