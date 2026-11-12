@@ -163,7 +163,22 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         { timeout: 15000 },
       );
     }
-    // The second line: both fruits fed by the solved plan.
+    // The second line: both fruits fed by the solved plan. U7d batch 26 (R4): `vine-snip.munch` is stretched to 4 s, and
+    // the first fed fruit's line no longer holds the other fruit; the line's last munch is still heard out.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      window.__starts = {};
+      window.__munch = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        window.__starts[id] = performance.now();
+        if (id !== 'vine-snip.munch') return line;
+        window.__munch.push(performance.now());
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
+    let open = null;
     for (const k of [0, 1]) {
       await page.waitForFunction(
         () => neo.scene.game.index === 1 && !neo.scene.game.busy && neo.scene.game.phase === 'rest',
@@ -182,11 +197,20 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         k,
         { timeout: 15000 },
       );
+      if (k === 0) {
+        await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.phase === 'rest', null, {
+          timeout: 2500,
+        });
+        open = await page.evaluate(() => performance.now() - window.__munch[0]);
+      }
     }
     await finished('vine-snip');
+    const heard = await page.evaluate(() => window.__starts['vine-snip.done'] - window.__munch.at(-1));
+    assert.ok(open < 1500, `R4: the first fed fruit's munch held the other fruit (${Math.round(open)} ms)`);
+    assert.ok(heard >= 3900, `R4: the line's last munch was cut (${Math.round(heard)} ms)`);
     assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
     log(
-      'Vine Snip 1, 3, 4 and 5: level 1 three taps anywhere fed every friend 0/0; level 3 portrait, a snip at the far turnaround missed, a requested hint glowed the arc, then three timed snips fed every friend 1/1; level 4 portrait three vines with the keep glow; level 5 a wrong-side keep missed, Grow back was free, both lines fed 1/0; passed',
+      `Vine Snip 1, 3, 4 and 5: level 1 three taps anywhere fed every friend 0/0; level 3 portrait, a snip at the far turnaround missed, a requested hint glowed the arc, then three timed snips fed every friend 1/1; level 4 portrait three vines with the keep glow; level 5 a wrong-side keep missed, Grow back was free, both lines fed 1/0; R4 the other fruit open ${Math.round(open)} ms into a 4 s munch, the last munch heard out; passed`,
     );
   }
   return { vineSnipPlay };
