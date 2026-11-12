@@ -282,7 +282,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (id === 'peek.yes' && g.done < g.plan.goal) {
             const t = performance.now();
             void kit
-              .until(() => !g.busy && g.unasked, 8000)
+              .until(() => !g.busy, 8000)
               .then(() => peekR4.push(performance.now() - t))
               .catch(() => peekR4.push(Infinity));
           }

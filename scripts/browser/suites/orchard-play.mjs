@@ -77,7 +77,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         }));
         if (state.turned) turnedCounts.push(state.o.rows * state.o.columns);
         if (!state.busy) await gesture();
-        await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy);
+        // Count lines play with input open (U7 R4); the ghost finger lets them finish, so wait for them too.
+        await page.waitForFunction(
+          () => neo.scene.finished || (!neo.scene.game.busy && neo.scene.game.speaking === 0),
+        );
         await page.waitForTimeout(150);
       }
       await finished('orchard-rows');
