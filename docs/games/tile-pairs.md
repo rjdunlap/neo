@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–6 |
+| grown-up | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 4 | Long bridge · 24 tiles |
 | 5 | Twin terraces · 24 tiles |
 | 6 | Crown · 24 tiles, six of each picture |
+| 7 | Tall tower · four layers |
 
 <!-- end generated -->
 

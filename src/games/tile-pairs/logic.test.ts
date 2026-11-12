@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { swatch } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import {
   CANDIDATES,
+  LEVELS,
+  LOOKS,
+  pickLook,
   clearRate,
   deal,
   free,
@@ -47,12 +51,13 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(6));
-    for (let level = 1; level <= 6; level++)
+    expect(planFor(99)).toBe(planFor(7));
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 7 });
+    for (let level = 1; level <= 7; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         expect(tiles).toEqual(makeBoard(level, new Rng(seed)));
-        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24][level - 1]);
+        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24][level - 1]);
         expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(tiles.length);
         const route = solve(tiles)!;
         expect(route).not.toBeNull();
@@ -76,7 +81,7 @@ describe('Tile Pairs', () => {
         expect(tiles.map((t) => `${t.x},${t.y},${t.z}`).sort()).toEqual([...expected[level - 1]].sort());
   });
   it('clears each layout by a different seeded pairing each round', () => {
-    for (let level = 1; level <= 6; level++) {
+    for (let level = 1; level <= 7; level++) {
       const tiles = layout(level),
         seen = new Set<string>();
       for (let seed = 1; seed <= 100; seed++) {
@@ -106,9 +111,9 @@ describe('Tile Pairs', () => {
     expect(clearRate([], new Rng(1))).toBe(1);
     const trap: Tile[] = [0, 1, 2, 1, 2, 0].map((kind, x) => ({ x, y: 0, z: 0, kind }));
     expect(clearRate(trap, new Rng(1))).toBe(0);
-    for (let level = 1; level <= 6; level++) {
+    for (let level = 1; level <= 7; level++) {
       const [min, max] = planFor(level).clear;
-      expect(min).toBe(level <= 4 ? 0.95 : level === 5 ? 0.85 : 0.75);
+      expect(min).toBe([0.95, 0.95, 0.95, 0.95, 0.85, 0.75, 0.45][level - 1]);
       let exhausted = 0,
         again = 0;
       for (let seed = 1; seed <= 100; seed++) {
@@ -198,5 +203,57 @@ describe('Tile Pairs', () => {
     expect(solve(snapshot.tiles, snapshot.mask)).toHaveLength(12);
     expect(reshuffle(tiles, 0, new Rng(1))).toEqual([]);
     expect(solve([])).toEqual([]);
+  });
+  it('builds a four-layer tower where most tiles start covered and the first pair can matter', () => {
+    const tiles = layout(7);
+    expect([0, 1, 2, 3].map((z) => tiles.filter((t) => t.z === z).length)).toEqual([12, 6, 4, 2]);
+    expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(24);
+    // Every raised tile rests on one directly below it.
+    for (const tile of tiles.filter((t) => t.z > 0))
+      expect(tiles.some((t) => t.x === tile.x && t.y === tile.y && t.z === tile.z - 1)).toBe(true);
+    const covered = tiles.filter((a) => tiles.some((b) => b.x === a.x && b.y === a.y && b.z > a.z));
+    expect(covered.length).toBeGreaterThanOrEqual(10);
+    // Peek has a four-deep stack to show.
+    expect(Math.max(...peekStacks(tiles, fullMask(tiles)).map((s) => s.length))).toBe(4);
+    let losing = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const board = makeBoard(7, new Rng(seed)),
+        full = fullMask(board);
+      expect(new Set(board.map((t) => t.kind)).size).toBe(6);
+      for (let kind = 0; kind < 6; kind++) expect(board.filter((t) => t.kind === kind)).toHaveLength(4);
+      if (pairs(board, full).some((p) => solve(board, removePair(full, p)) === null)) losing++;
+    }
+    // Some legal first pair on some seed leaves no route, so the choice is real.
+    expect(losing).toBeGreaterThan(0);
+    // Levels 1–6 keep their layouts.
+    for (let level = 1; level <= 6; level++) expect(layout(level).every((t) => t.z <= 2)).toBe(true);
+  });
+  it('deals one of three looks by seed, each with six pictures distinct in outline and colour', () => {
+    expect(LOOKS).toHaveLength(3);
+    const rgb = (hex: number) => [hex >> 16, (hex >> 8) & 255, hex & 255];
+    for (const look of LOOKS) {
+      expect(look).toHaveLength(6);
+      expect(new Set(look.map((p) => p.art)).size).toBe(6);
+      expect(new Set(look.map((p) => p.color)).size).toBe(6);
+      // Colours far enough apart to tell at a glance (the original set's closest pair, orange and yellow, is 61).
+      for (let i = 0; i < 6; i++)
+        for (let j = i + 1; j < 6; j++) {
+          const [a, b] = [rgb(swatch[look[i].color].fill), rgb(swatch[look[j].color].fill)];
+          expect(Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])).toBeGreaterThanOrEqual(60);
+        }
+    }
+    // Look 0 is the original rainbow set that stickers keep.
+    expect(LOOKS[0].map((p) => p.color)).toEqual(['red', 'orange', 'yellow', 'green', 'blue', 'purple']);
+    // The look is the seed's; every look turns up over a few seeds and the board does not depend on it.
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 30; seed++) {
+      const rng = new Rng(seed);
+      makeBoard(1, rng);
+      const look = pickLook(rng);
+      expect(look).toBeGreaterThanOrEqual(0);
+      expect(look).toBeLessThan(LOOKS.length);
+      seen.add(look);
+    }
+    expect(seen.size).toBe(3);
   });
 });

@@ -290,7 +290,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 3 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
 | [Number Nook](docs/games/number-nook.md) | Lantern Lake | 7 | tap a numbered tile beside the gap to put a 2 by 2 board in row order |
 | [Gem Swap](docs/games/gem-swap.md) | Lantern Lake | 8 | swap occupied neighbours to make matching lines of three and clear a finite tray |
-| [Tile Pairs](docs/games/tile-pairs.md) | Lantern Lake | 6 | remove matching tiles with a clear top and an open left or right side |
+| [Tile Pairs](docs/games/tile-pairs.md) | Lantern Lake | 7 | remove matching tiles with a clear top and an open left or right side |
 | [Lantern Lights](docs/games/lantern-lights.md) | Lantern Lake | 9 | a 3 by 3 pond of paper lanterns: press one to flip it and its four neighbours, and light them all (at the school band, about 7 and up, it plays levels 1–2, the 3 by 3 ponds, in 100-unit cells and buttons with no gate; `lantern.stuck-school` nudges toward Hint once a pond) |
 | [Sudoku Garden](docs/games/sudoku-garden.md) | Lantern Lake | 10 | a 4 by 4 bed to start, then 6 by 6 beds with a few numbers to find: tap a square, then a number (or Marks, Erase, Hint, Start over); a controller plays it too |
 | [Picture Logic](docs/games/picture-logic.md) | Lantern Lake | 7 | a picture (5 by 5 to start, up to 15 by 15) found from the run numbers beside its rows and columns: touch a square, or drag along a row or column, to fill (Fill, Cross and Slide are tools, Fill becoming two colour pots on level 6; Hint and Start over are buttons); a controller holds the fill button |
