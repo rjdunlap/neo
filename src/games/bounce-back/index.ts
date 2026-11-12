@@ -353,6 +353,7 @@ class BounceBack implements Game {
     const up = (e: { pointerId: number }) => this.fingers.delete(e.pointerId);
     this.touch.on('pointerup', up);
     this.touch.on('pointerupoutside', up);
+    this.touch.on('pointercancel', up);
   }
 
   /** A touch on the lap level: a note pitched by where the finger is, and a puff of sparkles under it. */
