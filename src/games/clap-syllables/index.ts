@@ -92,6 +92,9 @@ class ClapSyllables implements Game {
   claps = 0;
   /** The beats are showing and each clap lights one (clap along, and a try she needed help with). */
   guided = false;
+  /** The next word's ask, waiting behind the last word's count (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
 
   private readonly backdrop: Backdrop;
   private readonly board = new Container();
@@ -142,7 +145,7 @@ class ClapSyllables implements Game {
     this.pad.hitArea = new Circle(0, 0, 104);
     onTap(this.pad, () => this.clap(), { cooldown: 90 });
     this.pad.visible = this.plan.mode === 'along' || this.plan.mode === 'solo';
-    this.replay = new RoundButton(handsArt(60), swatch.white, 52, () => void this.again());
+    this.replay = new RoundButton(handsArt(60), swatch.white, 52, () => void (this.askNow() || this.again()));
     this.replay.visible = this.plan.mode === 'match' || this.plan.mode === 'compare';
     ctx.stage.addChild(this.backdrop, this.board, this.caption, this.glow, this.pad, this.replay);
   }
@@ -190,6 +193,8 @@ class ClapSyllables implements Game {
         .arc(0, 0, 112, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2)
         .stroke({ width: 12, color: swatch.green.line, cap: 'round' });
     if (this.busy || this.finished) return;
+    // The ask is coming when the count ends: no nudge before it.
+    if (this.unasked) this.idle = 0;
     const mode = this.plan.mode;
     if (mode === 'solo' && !this.guided && this.claps > 0 && this.clock - this.lastClap > PAUSE)
       void this.judge();
@@ -205,7 +210,8 @@ class ClapSyllables implements Game {
    * before the last beat), carry each picture to the hoop for its beats, or tap the picture with as many beats as were played.
    */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.index < 0 || this.index >= this.questions.length) return null;
+    if (this.busy || this.finished || this.unasked || this.index < 0 || this.index >= this.questions.length)
+      return null;
     switch (this.plan.mode) {
       case 'along':
       case 'solo':
@@ -262,8 +268,14 @@ class ClapSyllables implements Game {
     this.glowing = null;
   }
 
-  private async next(first = false) {
+  /**
+   * The next word or pictures. With `said` (the last word's count, still playing), the board opens at once and its ask
+   * waits for the count, her first clap or tap, or the guide (U7 R4).
+   */
+  private async next(first = false, said?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = false;
+    this.askGen++;
     this.index++;
     this.wrongs = 0;
     this.claps = 0;
@@ -283,6 +295,7 @@ class ClapSyllables implements Game {
         card.node.scale.set(0);
         await this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
         if (first) await this.ctx.instruct(INSTRUCTION[this.plan.mode]);
+        if (said) return this.askLater(said);
         await this.ctx.say('clap.word', { word: q.words[0].word });
         if (this.guided) await this.demo(q.words[0]);
         break;
@@ -298,12 +311,14 @@ class ClapSyllables implements Game {
         this.layout();
         await this.ctx.tw.wait(0.4);
         if (first) await this.ctx.instruct(INSTRUCTION.match);
+        if (said) return this.askLater(said);
         await this.playClaps(q.target!);
         break;
       case 'compare':
         this.buildMatch(q);
         this.layout();
         await this.ctx.tw.wait(0.4);
+        if (said) return this.askLater(said);
         await this.comparePrompt();
         break;
       case 'train':
@@ -320,6 +335,55 @@ class ClapSyllables implements Game {
         break;
     }
     this.busy = false;
+  }
+
+  /** Opens the board with its ask waiting for `said`. */
+  private askLater(said: Promise<unknown>) {
+    this.unasked = true;
+    this.busy = false;
+    const gen = ++this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /**
+   * Says the waiting ask, if there is one: the word (and the pet's claps when clapping along), the claps to match, or the
+   * comparison. `byClap`: she has started clapping the word already, so only its name is said and her claps count.
+   */
+  private askNow(byClap = false) {
+    if (!this.unasked || this.finished) return false;
+    this.unasked = false;
+    this.askGen++;
+    const q = this.q;
+    switch (this.plan.mode) {
+      case 'along':
+      case 'solo':
+        if (byClap) {
+          void this.ctx.say('clap.word', { word: q.words[0].word });
+          break;
+        }
+        this.busy = true;
+        void this.ctx
+          .say('clap.word', { word: q.words[0].word })
+          .then(() => (this.guided ? this.demo(q.words[0]) : undefined))
+          .then(() => {
+            if (!this.finished) this.busy = false;
+          });
+        break;
+      case 'match':
+        void this.playClaps(q.target!);
+        break;
+      case 'compare':
+        void this.comparePrompt();
+        break;
+    }
+    return true;
+  }
+
+  /** The guide was tapped while the next ask waits: say it, not the ask before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** A picture on a card. */
@@ -405,6 +469,8 @@ class ClapSyllables implements Game {
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
     if (mode !== 'along' && mode !== 'solo') return;
+    // Her first clap before the word was named: name it now, and the clap counts.
+    this.askNow(true);
     this.idle = 0;
     this.lastClap = this.clock;
     sfx.clap();
@@ -471,7 +537,13 @@ class ClapSyllables implements Game {
       .to(card.scale, { x: 1.1, y: 1.1 }, { duration: 0.2 })
       .then(() => this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.25 }));
     this.caption.text = word.parts.join(' · ');
-    await this.ctx.say('clap.count', { word: word.word, count: clapsWord(syllables(word)) });
+    const said = this.ctx.say('clap.count', { word: word.word, count: clapsWord(syllables(word)) });
+    // The count starts and the next word comes after 0.5 s, its ask waiting for the count (U7 R4); the last is heard out.
+    if (this.index + 1 < this.questions.length) {
+      await this.ctx.tw.wait(0.5);
+      return void this.next(false, said);
+    }
+    await said;
     await this.ctx.tw.wait(0.5);
     void this.next();
   }
@@ -596,6 +668,8 @@ class ClapSyllables implements Game {
 
   private async pick(card: Card) {
     if (this.busy || this.finished) return;
+    // A tap before she has heard the claps or the comparison is not a mistake: the ask is said now.
+    if (this.askNow()) return;
     const n = syllables(card.word);
     const q = this.q;
     if (n !== q.target) {
@@ -630,7 +704,12 @@ class ClapSyllables implements Game {
       life: [0.5, 0.9],
     });
     void this.ctx.tw.to(card.node.scale, { x: 1.12, y: 1.12 }, { duration: 0.2 });
-    await this.ctx.say('clap.count', { word: card.word.word, count: clapsWord(n) });
+    const said = this.ctx.say('clap.count', { word: card.word.word, count: clapsWord(n) });
+    if (this.index + 1 < this.questions.length) {
+      await this.ctx.tw.wait(0.5);
+      return void this.next(false, said);
+    }
+    await said;
     await this.ctx.tw.wait(0.5);
     void this.next();
   }

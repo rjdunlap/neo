@@ -11,6 +11,7 @@ import { createSuite as createMovieNight } from './suites/movie-night-play.mjs';
 import { createSuite as createWelcomeWays } from './suites/welcome-ways-play.mjs';
 import { createSuite as createHatBand } from './suites/hat-band-play.mjs';
 import { createSuite as createGroveCutLines } from './suites/grove-cut-lines.mjs';
+import { createSuite as createGroveCutLines20 } from './suites/grove-cut-lines-20.mjs';
 import { createSuite as createLens } from './suites/lens-play.mjs';
 import { createSuite as createMeltFreeze } from './suites/melt-freeze-play.mjs';
 import { createSuite as createMoonWindow } from './suites/moon-window-play.mjs';
@@ -358,6 +359,7 @@ export const SUITES = [
   'welcomeways',
   'hatband',
   'grovecutlines',
+  'grovecutlines20',
   'raingarden',
   'sensedetective',
   'storyweaver',
@@ -525,6 +527,7 @@ export const ALL_SUITES = [
   'welcomeways',
   'hatband',
   'grovecutlines',
+  'grovecutlines20',
   'raingarden',
   'sensedetective',
   'storyweaver',
@@ -889,6 +892,7 @@ export function createChecks(fixture) {
   install(createWelcomeWays(shared));
   install(createHatBand(shared));
   install(createGroveCutLines(shared));
+  install(createGroveCutLines20(shared));
   return checks;
 }
 
@@ -1038,6 +1042,7 @@ export async function runSuite(suite, fixture) {
     welcomeWaysPlay,
     hatBandPlay,
     groveCutLines,
+    groveCutLines20,
     whoAmIPlay,
     lookItUpPlay,
     fingerDemos,
@@ -1301,6 +1306,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'welcomeways') await welcomeWaysPlay();
   if (suite === 'all' || suite === 'hatband') await hatBandPlay();
   if (suite === 'all' || suite === 'grovecutlines') await groveCutLines();
+  if (suite === 'all' || suite === 'grovecutlines20') await groveCutLines20();
   if (suite === 'all' || suite === 'sensedetective') await senseDetectivePlay();
   if (suite === 'all' || suite === 'storyweaver') await storyWeaverPlay();
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
