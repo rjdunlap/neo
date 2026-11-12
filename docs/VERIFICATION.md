@@ -6,6 +6,12 @@
 **Ran:** `npm run typecheck`; `npm test` (348 files, 6731 passed, 1 skipped; `src/engine/drag.test.ts` 17 tests: the definition's seven assertions plus the root/ground listener, the function-valued option and `onCancel`); `npm run build` (436 precache entries); `BROWSER_SUITE=hatband HAT_LEVELS=1,3` (level 1 landscape: Done on the empty stage cancels a hold and still reminds, drag onto a friend, tap-hold lifts at the rack place, a second tap or a tap on empty ground puts it down and it returns, tap hat then friend puts it on, gate, bow, one sticker; level 3 portrait: tap-place both, replace, a held hat swaps in on a tap on a worn hat, a tap on a worn hat takes it off, both stars, bow, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=hat-band` (levels 1 and 4 finished). Chrome automation only.
 **Not run:** `couchgames` (Hat Band's pad path untouched), `world`, offline (no persistence, assets or navigation change), level 4 of the `hatband` suite (Build a song untouched).
 
+## 2026-11-11 — Phone playtest tools kept (scripts and docs, PR #1527)
+
+**Changed:** the eleven zsh helpers that played TotoLogic over USB, now in `scripts/android-playtest/` with their working folder and speech model set by `PLAYTEST_DIR` and `WHISPER_MODEL`; a [session guide section](SESSION-GUIDE.md#playing-an-app-on-the-developers-android-phone) with setup, the tools and the rules that go with them; a routing line for reviews of other games.
+**Ran:** `zsh -n` on each; `shot`, `ui`, `tap`, `swipe`, `trace` and `findcolor` against a stand-in `adb` and a saved screenshot; `node scripts/check-links.mjs` and `git diff --check`.
+**Not run:** the edited copies against the phone (it was unplugged; the originals ran all day on 2026-11-11), so `hear`, `look`, `act`, `both` and `vid` are syntax-checked only. No app code changed: no typecheck, unit tests, build or browser suites locally.
+
 ## 2026-11-11 — Pok Pok P3, tap the piece then the place: a definition (docs only, PR #1521)
 
 **Changed:** new [definition](definitions/tap-then-place.md) (opt-in `tapToPlace` for `draggable()`, eight requirements, rule tests, three slices); the P3 section of POK-POK; READY (the P3 line became P3a in Next ten; P3b and P3c queued under the Pok Pok review).
@@ -85,12 +91,6 @@
 **Changed:** the Music Mountain table (five games: `jelly-drums`, `sound-garden`, `puppet-stage`, `rhythm-neighbors`, `song-maker`) and its words-off list on the [toy-test page](definitions/toy-test-lap-openings.md); two READY lines (`rhythm-neighbors`, `song-maker`; `jelly-drums`, `sound-garden` and `puppet-stage` get none); the P4 line and progress counts (13 of 57 read).
 **Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the five games were read from the code, not played or timed).
-
-## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Bubble Beach (docs only, PR #1511)
-
-**Changed:** new [page](definitions/toy-test-lap-openings.md) (the five toy-test questions answered from the code for Bubble Beach's eight lap games, a words-off list, the other lap games listed by land); READY's P4 line and seven new lap-opening lines; a progress line under P4 in `docs/POK-POK.md`.
-**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
-**Not run:** typecheck, unit tests, build and browser suites (nothing built; the eight games were read, not played or timed).
 
 ## Coverage summary
 
