@@ -1,6 +1,35 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, launch, finished, screenshot, log }) {
+  /** U7 R4: times `ids` from their start to when input opens (`!busy`) and to the line's end. */
+  const timeLines = (ids) =>
+    page.evaluate((ids) => {
+      const g = neo.scene.game,
+        say = g.ctx.say.bind(g.ctx);
+      window.spinR4 = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        if (ids.includes(id)) {
+          const t = performance.now(),
+            o = { id };
+          spinR4.push(o);
+          void line.then(() => (o.ends = performance.now() - t));
+          void kit.until(() => g.finished || !g.busy, 8000).then(() => (o.opens = performance.now() - t));
+        }
+        return line;
+      };
+    }, ids);
+  const assertTimed = async (name, least) => {
+    const timed = await page.evaluate(() => spinR4);
+    assert.ok(timed.length >= least, `R4: ${timed.length} ${name} lines timed`);
+    const late = timed.filter((o) => o.ends !== undefined && o.opens >= o.ends && o.ends > 300);
+    assert.equal(
+      late.length,
+      0,
+      `R4: input waited for a line (${late.map((o) => `${o.id} ${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+    );
+    log(`${name}: R4, ${timed.map((o) => `${o.id} opens ${Math.round(o.opens)} ms`).join(', ')}`);
+  };
   async function spinnerFairPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -49,6 +78,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.waitForTimeout(600);
     await launch('spinner-fair', 3, 'Mia', 'school');
     await settle();
+    await timeLines(['sf.picked']);
     s = await state();
     assert.equal(s.phase, 'pick');
     const fav = (w) => w.filter((k) => k === s.favourite).length;
@@ -90,6 +120,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(400);
     assert.deepEqual(await score(), [2, 1], 'level 3 saved 2 misses, 1 hint');
+    await assertTimed('Spinner Fair 3', 2);
     log(
       'Spinner Fair 1 and 3: six spins (0/0); portrait level 3 two wrong picks (2/1, the glow), the better spinner and ten spins, the second pick straight; passed',
     );
@@ -106,9 +137,14 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const state = () => page.evaluate(() => neo.scene.game.state);
     const settle = async () => {
       await page.waitForTimeout(200);
+      // The race's or even-up's ask, held back by a right answer's line (U7 R4), is waited for too.
       await page.waitForFunction(
         () =>
-          neo.scene.finished || (!neo.scene.game.spinning && !neo.scene.game.busy && !neo.scene.game.rebuild),
+          neo.scene.finished ||
+          (!neo.scene.game.spinning &&
+            !neo.scene.game.busy &&
+            !neo.scene.game.rebuild &&
+            !neo.scene.game.unasked),
         null,
         { timeout: 40000 },
       );
@@ -179,6 +215,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.waitForTimeout(600);
     await launch('spinner-fair', 5, 'Mia', 'school');
     await settle();
+    await timeLines(['sf.fair', 'sf.unfair', 'sf.even-now']);
     s = await state();
     assert.equal(s.phase, 'ask');
     assert.equal(s.fair, false, 'race 1 starts unfair');
@@ -235,6 +272,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(400);
     assert.deepEqual(await score(), [2, 1], 'level 5 saved 2 misses, 1 hint');
+    await assertTimed('Spinner Fair 5', 3);
     log(
       'Spinner Fair 4–5: a face on the wrong spinner (1/0) then all three; portrait level 5 wrong fair, uneven Check (2/1, the glow), wedges both ways, the race, second race straight; passed',
     );

@@ -3823,13 +3823,38 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const per = await page.evaluate(() => neo.scene.game.plan.per);
         const prebuilt = mode === 'read' || mode === 'scaleread';
+        // Waits for input and for the next question's ask, which a right answer's line holds back (U7 R4).
         const settle = async () => {
           await page.waitForTimeout(250);
-          await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
-            timeout: 20000,
-          });
+          await page.waitForFunction(
+            () => (!neo.scene.game.busy && !neo.scene.game.unasked) || neo.scene.finished,
+            null,
+            { timeout: 20000 },
+          );
           await page.waitForTimeout(250);
         };
+        // U7 R4: a right answer's or a built graph's line starts, and the next question on the same graph opens before it ends.
+        await page.evaluate(() => {
+          const g = neo.scene.game,
+            say = g.ctx.say.bind(g.ctx);
+          window.graphR4 = [];
+          g.ctx.say = (id, vars) => {
+            const line = say(id, vars);
+            if (id === 'graph.yay' || id === 'graph.built' || /^graph\.claim\..*yay$/.test(id)) {
+              const t = performance.now(),
+                o = { id, at: g.index };
+              graphR4.push(o);
+              void line.then(() => (o.ends = performance.now() - t));
+              void kit
+                .until(() => g.finished || !g.busy, 8000)
+                .then(() => {
+                  o.opens = performance.now() - t;
+                  o.same = !g.finished && g.index === o.at;
+                });
+            }
+            return line;
+          };
+        });
         // Tap just above a bar to add a block.
         const add = async (i) => {
           await page.evaluate((i) => {
@@ -3947,6 +3972,19 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           }
         }
         await finished('picture-graph');
+        const graphTimed = await page.evaluate(() => graphR4.filter((o) => o.same));
+        if (level >= 2) {
+          assert.ok(graphTimed.length >= 1, `R4: ${graphTimed.length} Picture Graph lines timed`);
+          const late = graphTimed.filter((o) => o.ends !== undefined && o.opens >= o.ends && o.ends > 300);
+          assert.equal(
+            late.length,
+            0,
+            `R4: a question waited for a line (${late.map((o) => `${o.id} ${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+          );
+          log(
+            `Picture Graph ${level}: R4, ${graphTimed.map((o) => `${o.id} opens ${Math.round(o.opens)} ms`).join(', ')}`,
+          );
+        }
         assert.deepEqual(await score('picture-graph'), level === 7 ? [4, 2] : [2, 1]);
         log(
           `Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`,

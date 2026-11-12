@@ -167,3 +167,11 @@
 **Changed:** [TOTOLOGIC.md](../TOTOLOGIC.md) rewritten from play: the screen table and a table of what each category holds, the verdicts, P1–P5 each with an "after play" note (P3, the caption for readers, now first), P6 (tap to fill) withdrawn as a misread screenshot, and three new proposals (P7 say why after a right answer, P8 a drawn total on Market Stall's counter, P9 a read-through of how drag games count a miss); its pointers in IDEAS, the grown-ups' page definition, the Rainbow Fingers row (corrected), new rows in the Market Stall and Pattern Train dives, the tap-then-place lines in POK-POK and READY, and one sound-off clause on the phone playtest list.
 **Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built). TotoLogic 1.0.0 (14) was played on the developer's Android phone by the assistant over USB, with the phone muted and speech transcribed by software; no child played, and the island's side of each comparison was read from the code at `origin/main` `353daaba`, not played.
+
+## 2026-11-11 — Tile Pairs slice 2, Peek under the stack (PR #1525)
+
+**Changed.** Peek fades covering tile bodies and shows every picture in a stack in layer order. The touch button, P and top controller button toggle it. Choosing a tile closes Peek and preserves the selection and counters. How-to and voice explain the view.
+
+**Ran.** At base `18b1c19c` plus the feature diff, `npm run typecheck`, `npm run build`, `npm run format:check`, lint, `npm run game-docs`, and `npm test` passed (6,717 tests, five skipped). Against `GAME_URL=http://localhost:5195`, `BROWSER_SUITE=tilepairs TILE_LEVELS=5` passed (Peek, P, closing tap, pair, mismatch, hint and round finish). Reviewed the 390 × 844 emulated portrait screenshot. `BROWSER_SUITE=couchgames COUCH_ONLY=tile-pairs` passed (top button and P toggle, counters preserved). Reviewed the laptop how-to screenshot.
+
+**Not run.** `fingerdemo` and offline checks. Demonstrated actions, assets, persistence and navigation were unchanged.

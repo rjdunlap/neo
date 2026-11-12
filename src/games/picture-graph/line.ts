@@ -66,6 +66,8 @@ export class LineUp implements Game {
   questions: Question[] = [];
   q = 0;
   index = -1;
+  /** The next question's ask, waiting behind `graph.line.lined` or a right answer's line (U7 R4). */
+  private unasked: (() => unknown) | null = null;
   misses = 0;
   hints = 0;
   busy = true;
@@ -163,7 +165,8 @@ export class LineUp implements Game {
 
   /** The ghost finger: each thing on the sand in turn (quick taps, they belong together), then the row or the number. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.shore) return null;
+    // The finger answers after hearing the question, as she would.
+    if (this.busy || this.finished || !this.shore || this.unasked) return null;
     const move = lineMove(
       this.things.map((t) => t.placed),
       this.questions[this.q],
@@ -179,6 +182,7 @@ export class LineUp implements Game {
 
   private async next() {
     this.busy = true;
+    this.unasked = null;
     this.index++;
     this.wrongs = 0;
     this.hint = false;
@@ -274,20 +278,51 @@ export class LineUp implements Game {
     await this.ctx.tw.wait(0.4);
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('graph.line.lined');
+    // The questions on the rows she just lined up never wait for the praise (U7 R4): they open with it.
+    const line = this.ctx.say('graph.line.lined');
     this.questions = lineQuestions(this.shore, this.ctx.rng);
     this.busy = false;
-    return this.askNext();
+    return this.askNext(line);
   }
 
-  private askNext(): Promise<void> | void {
+  /**
+   * The next question's pads at once, and its ask: now, or, behind `after`, when that line ends or at her first tap
+   * (not judged, since the question is only spoken), whichever comes first.
+   */
+  private askNext(after?: Promise<unknown>): Promise<void> | void {
     this.hint = false;
     this.wrongs = 0;
+    this.unasked = null;
     this.clearPads();
     const q = this.questions[this.q];
     if (!q) return void this.next();
-    if (q.ask === 'most') return this.ctx.instruct('graph.line.most');
-    if (q.ask !== 'more') return;
+    const ask = this.board(q);
+    if (!ask) return;
+    if (!after) return ask();
+    this.unasked = ask;
+    void after.then(() => {
+      if (this.unasked === ask) this.askNow();
+    });
+  }
+
+  /** Says the question's ask if it is still waiting behind a line; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    void ask();
+    return true;
+  }
+
+  /** The guide was tapped while the next question's ask waits: say that ask, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /** Lays out a question's pads and returns its spoken ask. */
+  private board(q: Question): (() => Promise<void> | void) | null {
+    if (q.ask === 'most') return () => this.ctx.instruct('graph.line.most');
+    if (q.ask !== 'more') return null;
     for (const n of choicesFor(q.answer, this.ctx.rng, 1, this.shore.counts[q.a])) {
       const node = new Container();
       node.addChild(tile(116, 104, 'white'), label(String(n), 46, ink));
@@ -297,7 +332,7 @@ export class LineUp implements Game {
       this.ctx.stage.addChild(node);
     }
     this.resize(this.view);
-    return this.ctx.instruct('graph.more', { a: this.name(q.a), b: this.name(q.b) });
+    return () => this.ctx.instruct('graph.more', { a: this.name(q.a), b: this.name(q.b) });
   }
 
   private name(i: number) {
@@ -312,6 +347,7 @@ export class LineUp implements Game {
   private async tapRow(i: number) {
     const q = this.questions[this.q];
     if (this.busy || this.finished || !q || q.ask !== 'most') return;
+    if (this.askNow()) return;
     if (i === q.answer) return this.right();
     return this.wrong(null);
   }
@@ -319,6 +355,7 @@ export class LineUp implements Game {
   private async answerNumber(n: number) {
     const q = this.questions[this.q];
     if (this.busy || this.finished || !q || q.ask !== 'more') return;
+    if (this.askNow()) return;
     if (n === q.answer) return this.right();
     return this.wrong(n === this.shore.counts[q.a] ? 'taller' : null);
   }
@@ -343,11 +380,17 @@ export class LineUp implements Game {
     this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('graph.yay');
+    const line = this.ctx.say('graph.yay');
     this.q++;
+    if (this.q >= this.questions.length) {
+      // The shore's last answer is praised before the next shore or the closing line.
+      await line;
+      this.busy = false;
+      return void this.next();
+    }
+    // Another question on the same rows never waits for the praise (U7 R4).
     this.busy = false;
-    if (this.q >= this.questions.length) return void this.next();
-    return this.askNext();
+    return this.askNext(line);
   }
 
   private async finale() {

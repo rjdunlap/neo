@@ -187,6 +187,23 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       // second way and finish the round.
       await launch('paint-mixer', 4, 'Mia', 'school');
       await settle();
+      // U7 R4: the first way's `pm.one-way` starts, and the bucket opens for the second way before it ends.
+      await page.evaluate(() => {
+        const g = neo.scene.game,
+          say = g.ctx.say.bind(g.ctx);
+        window.paintR4 = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          if (id === 'pm.one-way') {
+            const t = performance.now(),
+              o = { id };
+            paintR4.push(o);
+            void line.then(() => (o.ends = performance.now() - t));
+            void kit.until(() => g.finished || !g.busy, 8000).then(() => (o.opens = performance.now() - t));
+          }
+          return line;
+        };
+      });
       s = await state();
       f = await full();
       assert.equal(f.size, null, 'no line at level 4');
@@ -207,6 +224,14 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await button('check');
       await finished('paint-mixer');
       assert.deepEqual(await score(), [0, 0], 'level 4 saved 0 misses, 0 hints');
+      const paintTimed = await page.evaluate(() => paintR4);
+      assert.equal(paintTimed.length, 1, 'R4: pm.one-way timed once');
+      const [one] = paintTimed;
+      assert.ok(
+        one.ends > 300 && one.opens < one.ends,
+        `R4: the bucket opened at ${Math.round(one.opens)} ms, the line ended at ${Math.round(one.ends)} ms`,
+      );
+      log(`Paint Mixer 4: R4, pm.one-way opens ${Math.round(one.opens)} ms, ends ${Math.round(one.ends)} ms`);
       log(
         'Paint Mixer 3–4: stray pot, one row more the same way (no miss), a stray Check (1/0), the table filling to the line, portrait second bucket; level 4 one row then the same amount (no miss) then two rows (0/0); passed',
       );

@@ -1860,7 +1860,7 @@ Proof: existing-game tier (typecheck, the rule tests, one filtered `tilepairs` p
 
 ### tile-pairs 2: Peek under the stack
 
-**Built 2026-11-11 ([PR #1525](https://github.com/rjdunlap/neo/pull/1525)).** Dive slice 2. See the [verification entry](VERIFICATION.md#2026-11-11--tile-pairs-slice-2-peek-under-the-stack-pr-1525) and [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-batch-2-peek-under-the-stack-2026-11-11).
+**Built 2026-11-11 ([PR #1525](https://github.com/rjdunlap/neo/pull/1525)).** Dive slice 2. See the [verification entry](archive/VERIFICATION-2026-11-11.md#2026-11-11--tile-pairs-slice-2-peek-under-the-stack-pr-1525) and [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-batch-2-peek-under-the-stack-2026-11-11).
 
 ### tile-pairs: Two more looks and Tall tower
 

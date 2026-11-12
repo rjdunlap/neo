@@ -90,6 +90,8 @@ class PaintMixer implements Game {
   hinted = false;
   busy = false;
   finished = false;
+  /** Level 4's "a different amount" ask, waiting behind `pm.one-way` (U7 R4): said when it ends, at her first pour or button, or by the guide. */
+  private unasked: (() => void) | null = null;
   /** The ghost pour is running (a second Help after the glow). */
   pouring = false;
   readonly potNodes = new Map<Pot, Container>();
@@ -190,7 +192,8 @@ class PaintMixer implements Game {
   private async instruct() {
     const turn = this.turn;
     await this.ctx.instruct(`pm.instruct.${this.plan.level}` as 'pm.instruct.1');
-    if (this.finished || turn !== this.turn || this.plan.level < 3) return;
+    // A match cuts the instruction short: its recipe line then waits for another time rather than cut `pm.one-way`.
+    if (this.finished || this.busy || turn !== this.turn || this.plan.level < 3) return;
     await this.forEvery();
   }
 
@@ -260,6 +263,8 @@ class PaintMixer implements Game {
 
   private pour(pot: Pot, ghost = false) {
     if (this.busy || this.finished || (this.pouring && !ghost)) return;
+    // Nothing is judged before Check, so her pour goes on while the ask is said.
+    if (!ghost) this.askNow();
     const node = this.potNodes.get(pot)!;
     this.ctx.tw.kill(node.scale);
     node.scale.set(1.08, 0.9);
@@ -307,6 +312,7 @@ class PaintMixer implements Game {
 
   private tapButton(kind: Button) {
     if (this.busy || this.finished || this.pouring) return;
+    this.askNow();
     const n = this.buttons.get(kind)!;
     this.ctx.tw.kill(n.scale);
     n.scale.set(0.92);
@@ -412,6 +418,20 @@ class PaintMixer implements Game {
     return true;
   }
 
+  /** Says level 4's waiting ask, if any; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    ask();
+    return true;
+  }
+
+  /** The guide was tapped while level 4's second ask waits: say it, not the level's first instruction. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
   readonly hintLabel = 'Show me';
 
   /** Asked-for help: the glow (one hint for the bucket); asked again, the ghost pours the rest and Check glows. */
@@ -480,20 +500,24 @@ class PaintMixer implements Game {
     // Level 5: a matched bucket (her pour or the ghost's) files its recipe on the journal's paint shelf at round end.
     const recipe = recipeOf(this.sample);
     if (recipe && !this.matched.includes(recipe.name)) this.matched.push(recipe.name);
-    await this.ctx.say(firstWay ? 'pm.one-way' : 'pm.match', { colour: mixName(this.sample) });
-    if (this.finished) return;
     if (firstWay) {
       // Level 4's first way is kept as a star over its column; the bucket empties by itself and the same jar asks again.
+      // `pm.one-way` never holds the bucket (U7 R4): it opens with the line, and the ask waits for the line's end.
+      const line = this.ctx.say('pm.one-way', { colour: mixName(this.sample) });
       this.done = multipleOf(this.sample, this.counts);
       await this.ctx.tw.wait(0.4);
       if (this.finished) return;
       this.nextTurn();
       this.refresh();
-      await this.ctx.say('pm.different-amount');
-      if (this.finished) return;
       this.busy = false;
+      const ask = () => void this.ctx.say('pm.different-amount');
+      this.unasked = ask;
+      await line;
+      if (this.unasked === ask) this.askNow();
       return;
     }
+    await this.ctx.say('pm.match', { colour: mixName(this.sample) });
+    if (this.finished) return;
     if (this.bucketIndex + 1 >= this.samples.length) {
       this.finished = true;
       await this.ctx.say(this.plan.kind === 'any' ? 'pm.two-ways' : 'pm.done');
@@ -569,7 +593,8 @@ class PaintMixer implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.pouring) return null;
+    // The finger pours after the ask is heard, as she would.
+    if (this.busy || this.finished || this.pouring || this.unasked) return null;
     if (this.flights.children.length > 0) return null;
     return {
       tap: { on: this.glowTarget(glowFor(this.plan, this.sample, this.drops, this.done)) },
