@@ -17,7 +17,10 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   aimFor,
+  awakeAfter,
   CATCH_Y,
+  GROW_LEVEL,
+  GROW_SPREAD,
   FLIPPER,
   funnel,
   kickBall,
@@ -34,6 +37,7 @@ import {
   STEP,
   swingFlippers,
   TABLE,
+  wakeFlower,
   type Bumper,
   type BumperPlan,
   type FlipperSide,
@@ -86,6 +90,8 @@ class Flower extends Container {
       this.head.addChild(n);
     }
     this.ripple.eventMode = 'none';
+    // The lap opening's big flower is the same flower drawn larger.
+    this.scale.set((bumper.r ?? TABLE.bumper) / TABLE.bumper);
     this.snore.position.set(30, -44);
     this.snore.visible = false;
     this.addChild(this.ripple, this.head, this.snore);
@@ -105,6 +111,8 @@ class Flower extends Container {
     const sw = this.sleepy
       ? { fill: 0xc4c4cc, line: swatch[this.color].line, light: swatch.white.light }
       : swatch[this.color];
+    // The lap opening's big flower is in full color from the start, so it stands out on every table before it blooms.
+    const full = this.bloomed || (this.bumper.r ?? TABLE.bumper) > TABLE.bumper;
     const g = this.petals.clear();
     const open = this.bloomed ? 1 : 0.62;
     if (this.table === 'pond') {
@@ -113,7 +121,7 @@ class Flower extends Container {
       g.moveTo(0, 0)
         .arc(0, 0, r, -0.5, Math.PI * 2 - 0.85)
         .closePath()
-        .fill(this.bloomed ? sw.fill : sw.light)
+        .fill(full ? sw.fill : sw.light)
         .stroke(line(sw.line, 4));
       for (const a of [1, 2.5, 4])
         g.moveTo(0, 0)
@@ -129,7 +137,7 @@ class Flower extends Container {
           Math.sin((i * Math.PI) / 3) * radius,
         ]).flat();
       g.poly(hex(r))
-        .fill(this.bloomed ? sw.fill : sw.light)
+        .fill(full ? sw.fill : sw.light)
         .stroke(line(sw.line, 4));
       g.poly(hex(r - 8)).stroke(line(sw.line, 2));
       return;
@@ -137,7 +145,7 @@ class Flower extends Container {
     for (let i = 0; i < 6; i++) {
       const a = (i * Math.PI) / 3;
       g.circle(Math.cos(a) * 24 * open, Math.sin(a) * 24 * open, this.bloomed ? 18 : 15)
-        .fill(this.bloomed ? sw.fill : sw.light)
+        .fill(full ? sw.fill : sw.light)
         .stroke(line(sw.line, 4));
     }
   }
@@ -213,6 +221,8 @@ class BumperGarden implements Game {
   finished = false;
   /** Order levels: the number to bump next. */
   next = 1;
+  /** How many flowers are awake: all of them, except on the lap opening, where they wake one at a launch. */
+  awake: number;
   readonly target: ColorName;
   readonly board = new Container();
   readonly flippers: Record<FlipperSide, { node: Graphics; angle: number; upFor: number }>;
@@ -246,11 +256,15 @@ class BumperGarden implements Game {
     this.table = pickTable(ctx.rng);
     this.bumpers = makeBumpers(this.plan, ctx.rng, this.table);
     const colors = ctx.rng.shuffle([...FLOWER_COLORS]);
+    // The lap opening's big flower is never yellow on the yellow hive bed.
+    if (this.plan.grow && this.table === 'hive' && colors[0] === 'yellow') colors.push(colors.shift()!);
     this.target = colors[0];
     this.flowers = this.bumpers.map((b) =>
       ctx.track(new Flower(b, colors[b.color % colors.length], this.table)),
     );
-    this.world = makeWorld(this.bumpers);
+    this.awake = awakeAfter(this.plan, 0);
+    this.world = makeWorld(this.bumpers, undefined, this.awake);
+    this.flowers.forEach((f, i) => (f.visible = i < this.awake));
     this.ball = { x: LAUNCH.x, y: LAUNCH.y, vx: 0, vy: 0, r: TABLE.ball };
 
     // The garden bed, hedges steering down to the flippers, and the pot that catches the ladybug.
@@ -334,7 +348,8 @@ class BumperGarden implements Game {
 
   start() {
     const p = this.plan;
-    if (p.mode === 'spring') void this.ctx.instruct('bumper.spring');
+    if (p.grow) void this.ctx.instruct('bumper.grow');
+    else if (p.mode === 'spring') void this.ctx.instruct('bumper.spring');
     else if (p.mode === 'bloom') void this.ctx.instruct('bumper.bloom');
     else if (p.not) {
       void this.ctx.instruct('bumper.not', { color: this.target });
@@ -355,9 +370,13 @@ class BumperGarden implements Game {
 
   resize(v: View) {
     this.view = v;
-    const s = Math.min((v.h - 40) / TABLE.h, (v.w - 340) / TABLE.w, 1.15);
+    // The lap opening shows no flipper buttons (a touch anywhere still flips), so its table can use the width a phone has.
+    const [margin, most] = this.plan.grow ? [40, 1.6] : [340, 1.15];
+    const s = Math.min((v.h - 40) / TABLE.h, (v.w - margin) / TABLE.w, most);
     this.board.scale.set(s);
-    this.board.position.set((v.w - TABLE.w * s) / 2, 20);
+    // The lap opening's table sits in the middle of a tall phone, clear of the home button above it.
+    const top = this.plan.grow ? Math.max(20, (v.h - TABLE.h * s) / 2) : 20;
+    this.board.position.set((v.w - TABLE.w * s) / 2, top);
     this.input.hitArea = new Rectangle(0, 0, v.w, v.h);
     for (const side of ['left', 'right'] as FlipperSide[]) {
       const g = this.sides[side].clear();
@@ -367,6 +386,7 @@ class BumperGarden implements Game {
         .lineTo(side === 'left' ? 22 : -22, 26)
         .stroke(line(swatch.green.line, 9));
       g.position.set(side === 'left' ? 110 : v.w - 110, v.h * 0.48);
+      g.visible = !this.plan.grow;
     }
   }
 
@@ -478,12 +498,25 @@ class BumperGarden implements Game {
   }
 
   private launch() {
-    const angle = this.hinting ? this.aim() : this.ctx.rng.range(-LAUNCH.spread, LAUNCH.spread);
+    const spread = this.plan.grow ? GROW_SPREAD : LAUNCH.spread;
+    const angle = this.hinting ? this.aim() : this.ctx.rng.range(-spread, spread);
     Object.assign(this.ball, { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(angle) });
     this.state = 'flying';
     this.progressed = false;
     this.launches++;
     sfx.whoosh();
+    while (this.awake < awakeAfter(this.plan, this.launches)) this.wake(this.awake++);
+  }
+
+  /** The lap opening: a sleeping flower pops up in its place because she launched, with a chime of its own. */
+  private wake(i: number) {
+    const f = this.flowers[i];
+    wakeFlower(this.world, this.bumpers, i);
+    f.visible = true;
+    f.scale.set(0.2);
+    void this.ctx.tw.to(f.scale, { x: 1, y: 1 }, { duration: 0.35 });
+    f.hit();
+    this.chime(stepFromUnit(1 - f.y / TABLE.h, 4, 11), 0.22);
   }
 
   /** A launch aimed at what is wanted now (a hint), or anywhere if no aim works. */
@@ -495,7 +528,7 @@ class BumperGarden implements Game {
   /** Whether bumping this flower is progress right now. */
   wanted(i: number): boolean {
     const f = this.flowers[i];
-    if (f.bloomed) return false;
+    if (f.bloomed || i >= this.awake) return false;
     if (this.plan.mode === 'color') return wantsColor(this.plan, f.bumper.color);
     if (this.plan.mode === 'order') return f.bumper.number === this.next;
     return true;
@@ -537,7 +570,7 @@ class BumperGarden implements Game {
       if (this.holdFor <= 0) this.launch();
       if (this.plan.mode === 'spring' && this.idle > 8) {
         this.idle = 0;
-        void this.ctx.instruct('bumper.spring');
+        void this.ctx.instruct(this.plan.grow ? 'bumper.grow' : 'bumper.spring');
       }
     }
     this.ballNode.position.set(this.ball.x, this.ball.y);
@@ -748,6 +781,7 @@ export const bumperGarden: GameModule = {
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [GROW_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "flip!" together, and count each flower as it blooms.',

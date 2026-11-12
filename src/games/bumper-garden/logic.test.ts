@@ -24,6 +24,12 @@ import {
   STEP,
   swingFlippers,
   TABLE,
+  ASLEEP,
+  awakeAfter,
+  GROW_BIG,
+  GROW_LEVEL,
+  GROW_SPREAD,
+  wakeFlower,
 } from './logic';
 import { bumperGarden } from './index';
 import { levelsInOrder, nextLevelOffer, stepLevel } from '../../progress/difficulty';
@@ -93,7 +99,9 @@ describe('Bumper Garden', () => {
           for (const a of bumpers)
             for (const b of bumpers)
               if (a !== b)
-                expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(TABLE.bumper * 2 + TABLE.ball * 2);
+                expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(
+                  (a.r ?? TABLE.bumper) + (b.r ?? TABLE.bumper) + TABLE.ball * 2,
+                );
           if (plan.mode === 'color') expect(bumpers.filter((b) => b.color === 0)).toHaveLength(plan.goal);
           if (plan.mode === 'order') {
             const numbers = bumpers
@@ -104,6 +112,56 @@ describe('Bumper Garden', () => {
           }
         }
       }
+  });
+
+  it('opens the lap band with one big flower (10), then level 1, and plays 10 at no other band', () => {
+    expect(levelsInOrder(bumperGarden.levels('lap'))).toEqual([GROW_LEVEL, 1]);
+    for (const band of ['toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(bumperGarden.levels(band)), band).not.toContain(GROW_LEVEL);
+    const plan = planFor(GROW_LEVEL);
+    expect(plan).toMatchObject({ mode: 'spring', grow: true });
+    // The big one alone, then one more at each launch after the first, all six awake by the last launch.
+    expect([0, 1, 2, 3, 4, 5, 6, 7].map((n) => awakeAfter(plan, n))).toEqual([1, 1, 2, 3, 4, 5, 6, 6]);
+    expect(awakeAfter(plan, plan.goal)).toBe(plan.bumpers);
+    for (const level of [1, 2, 5]) expect(awakeAfter(planFor(level), 0)).toBe(planFor(level).bumpers);
+  });
+
+  it.each(TABLE_IDS)(
+    'sends every lap launch on %s to the big flower, and the ladybug always comes home',
+    (table) => {
+      const plan = planFor(GROW_LEVEL);
+      const bumpers = makeBumpers(plan, new Rng(1), table);
+      expect(bumpers[0].r).toBe(GROW_BIG);
+      expect(bumpers[0].r).toBeGreaterThan(TABLE.bumper * 1.5);
+      for (let awake = 1; awake <= plan.bumpers; awake++) {
+        const world = makeWorld(bumpers, undefined, awake);
+        for (let a = -GROW_SPREAD; a <= GROW_SPREAD + 1e-9; a += 0.02) {
+          const result = simulate(
+            { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(a), r: TABLE.ball },
+            world,
+            CATCH_Y,
+            40,
+            STEP,
+          );
+          const flowers = result.hits.filter((i) => i < bumpers.length);
+          // A flower still asleep is never met; while the big one is alone, every launch bumps it.
+          expect(Math.max(-1, ...flowers), `awake ${awake} angle ${a.toFixed(2)}`).toBeLessThan(awake);
+          if (awake === 1) expect(flowers, `angle ${a.toFixed(2)}`).toContain(0);
+          expect(result.landed.y + TABLE.ball, `awake ${awake} angle ${a.toFixed(2)}`).toBeGreaterThanOrEqual(
+            CATCH_Y,
+          );
+        }
+      }
+    },
+  );
+
+  it('wakes a sleeping flower into its own place on the table', () => {
+    const bumpers = makeBumpers(planFor(GROW_LEVEL), new Rng(1));
+    const world = makeWorld(bumpers, undefined, 1);
+    expect(world.pegs[3]).toMatchObject(ASLEEP);
+    wakeFlower(world, bumpers, 3);
+    expect(world.pegs[3]).toMatchObject({ x: bumpers[3].x, y: bumpers[3].y, r: TABLE.bumper });
+    expect(world.pegs[0]).toMatchObject({ x: bumpers[0].x, y: bumpers[0].y, r: GROW_BIG });
   });
 
   it('keeps the original number rounds and saved IDs, inserting only the built new levels in the pre-K ladder', () => {

@@ -1,0 +1,7 @@
+# 2026-11-12 — bumper-garden level 10: one big flower at lap (PR #1577)
+
+**Changed:** Level 10 is lap's entry level (lap plays [10, 1]; `entryLevels: [10]`; ID 7 stays reserved). One big flower stands alone; any touch launches the ladybug, each launch after the first wakes another flower with a chime, and the round ends after six launches with nothing counted. The side flipper buttons are hidden and the table scales to 1.6 on this level only. New line `bumper.grow`; how-to rows for level 10.
+
+**Ran:** Typecheck; `npx vitest run src/games/bumper-garden src/games/registry.test.ts src/content` (23 files, 268 passed, including the new lap-order, wake-count, big-flower-bump and sleeping-flower rules); `BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=10` with `BUMPER_TABLES=hive,meadow` at 390×844 (one flower at Play, nothing moved in 2.5 s, a far-corner touch launched, no flower woke while held, wake count followed launches, score [0,0], sticker); portrait screenshots on both tables reviewed (the first pass looked pale and small: fixed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bumper-garden FINGER_LEVELS=10 FINGER_BAND=lap` passed in 55.3 s. Forcing a table in the `next` helper fails on the first run after an edit (Vite hot reload gives the test another module copy); a rerun passes.
+
+**Not run:** Full `npm test`, build (no shared files or assets changed), offline. The review noted the larger table may overlap the corner pet on a portrait tablet; visual only.

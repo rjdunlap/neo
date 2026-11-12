@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { NAME, lines, nextDir, numberFor, root, slug } from './ready.mjs';
+import { NAME, lines, nextDir, numberFor, relink, root, slug } from './ready.mjs';
 
 describe("READY's Next ten", () => {
   it('holds no list lines in docs/READY.md, where neighbouring lines would conflict', () => {
@@ -40,5 +40,13 @@ describe("READY's Next ten", () => {
       'tile-pairs-level-8-flower-friends',
     );
     expect(lines()).toEqual([...lines()].sort());
+  });
+
+  it("adjusts a READY.md line's links for the files' folder", () => {
+    expect(
+      relink('[dive](deep-dives/x.md#a), [here](#queued), [web](https://x.org), [done](../../GAMES.md)'),
+    ).toBe(
+      '[dive](../../deep-dives/x.md#a), [here](../../READY.md#queued), [web](https://x.org), [done](../../GAMES.md)',
+    );
   });
 });

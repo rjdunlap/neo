@@ -4,7 +4,8 @@
 //   node scripts/ready.mjs add "**`game`, what** (tier): …"  # a new line after the last one (refill)
 //   node scripts/ready.mjs add --before=020 "…"             # a new line ahead of 020 (a playtest fix under the phone lines)
 // Landing a line: `git rm` its file. Claiming one: edit its own file. Order is the file number (010, 020, …);
-// links inside a file are relative to docs/ready/next/ (so `../../deep-dives/x.md`).
+// links inside a file are relative to docs/ready/next/ (so `../../deep-dives/x.md`); `add` takes a line written as in
+// READY.md and adjusts its links.
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +30,17 @@ export function slug(line) {
     out = out ? `${out}-${w}` : w;
   }
   return out || 'line';
+}
+
+/**
+ * A line copied from READY.md (links relative to docs/) with its links made relative to docs/ready/next/; links that
+ * already climb out (`../../…`) or leave the site are kept.
+ */
+export function relink(line) {
+  return line.replace(/\]\(([^)\s]+)\)/g, (all, url) => {
+    if (/^(https?:|mailto:|\.\.\/\.\.\/)/.test(url)) return all;
+    return `](../../${url.startsWith('#') ? 'READY.md' + url : url})`;
+  });
 }
 
 /** The lines' files in pick order. */
@@ -72,7 +84,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     mkdirSync(nextDir, { recursive: true });
     const n = numberFor(lines(), before === undefined ? undefined : Number(before));
     const path = join(nextDir, `${String(n).padStart(3, '0')}-${slug(text)}.md`);
-    writeFileSync(path, text + '\n');
+    writeFileSync(path, relink(text) + '\n');
     console.log(path);
   } else {
     console.error('usage: node scripts/ready.mjs [list] | add [--before=NNN] "line"');
