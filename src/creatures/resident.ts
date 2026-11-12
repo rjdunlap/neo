@@ -18,11 +18,13 @@ export interface ResidentSpec {
   line: LineId;
   /** Its rig at this scale takes about a host's room; `lift` raises a species whose (0, 0) is not its feet (Lumen floats). */
   fit: { scale: number; lift: number };
+  /** P5: it carries on (walks between marked stops, uses a thing, turns toward her last touch). Only the pilot's species has it. */
+  carriesOn?: true;
 }
 
 export const RESIDENTS: Record<CastId, ResidentSpec> = {
   tote: { land: 'bubble-beach', line: 'resident.tote', fit: { scale: 0.95, lift: 0 } },
-  trill: { land: 'music-mountain', line: 'resident.trill', fit: { scale: 0.9, lift: 0 } },
+  trill: { land: 'music-mountain', line: 'resident.trill', fit: { scale: 0.9, lift: 0 }, carriesOn: true },
   dapple: { land: 'treehouse', line: 'resident.dapple', fit: { scale: 0.9, lift: 0 } },
   bramble: { land: 'cozy-village', line: 'resident.bramble', fit: { scale: 1.2, lift: 0 } },
   mossback: { land: 'tinker-lab', line: 'resident.mossback', fit: { scale: 0.88, lift: 0 } },
@@ -65,7 +67,28 @@ export class Resident extends Container {
       y: Math.min(t.y * fit.scale - fit.lift, TOUCH_BELOW - r - 10),
       r,
     };
+    this.dx = dx;
+    this.touchX = this.touch.x;
     this.addChild(this.rig);
+  }
+
+  private readonly dx: number;
+  private readonly touchX: number;
+  /** +1 faces right, the way every cast rig's art faces; -1 mirrors it about its feet. */
+  facing: 1 | -1 = 1;
+
+  /**
+   * Turns to face `dir`: the picture mirrors about the feet (its middle stays over them), and the touch circle with it,
+   * including `hit`, the circle the land screen holds, which moves in place so its key ring follows too.
+   */
+  face(dir: 1 | -1, hit?: Circle) {
+    if (dir === this.facing) return;
+    this.facing = dir;
+    const fit = RESIDENTS[this.species].fit;
+    this.rig.scale.x = dir * fit.scale;
+    this.rig.position.x = dir * this.dx;
+    this.touch.x = dir * this.touchX;
+    if (hit) hit.x = this.touch.x;
   }
 
   /** A body-centred hit circle, `grow` units larger than the body. */
@@ -80,6 +103,13 @@ export class Resident extends Container {
 
   update(dt: number) {
     this.rig.update(dt);
+  }
+
+  /** What it and its touch circle (grown 10, either way round) cover round its feet, in host units: for a stop's clearance. */
+  static footprint(species: CastId): { side: number; up: number; down: number } {
+    const { w, h } = Resident.size(species);
+    const fit = RESIDENTS[species].fit;
+    return { side: Math.max((w / 2) * 1.1, TOUCH_SIDE), up: Math.max(h + fit.lift, 250), down: TOUCH_BELOW };
   }
 
   /** The art's size in this container's units, for a layout check. */

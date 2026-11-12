@@ -133,7 +133,7 @@ export class LandScene extends Scene {
   readonly nextArrow = new PageArrow(1);
   readonly host: Container;
   readonly hostCritter: LandHost['critter'];
-  private readonly hostHit: Circle;
+  protected readonly hostHit: Circle;
   readonly sign: Signpost | null;
   /** The game the host suggested last, if any. */
   suggested: string | null = null;
@@ -145,7 +145,7 @@ export class LandScene extends Scene {
   /** Greeting notes advance on scene time, so leaving or pausing cannot leave a timer behind. */
   private motifStep = -1;
   private motifTime = 0;
-  private readonly field = new Container();
+  protected readonly field = new Container();
   private readonly glow = new Graphics();
   private glowLeft = 0;
   readonly pip = makeCompanion();

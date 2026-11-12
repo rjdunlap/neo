@@ -1,19 +1,23 @@
 import { Companion, makeCompanion } from '../../creatures/companion';
 import { RESIDENTS, Resident } from '../../creatures/resident';
+import { Wanderer, wanderKeepOut, wanderRoute } from '../../creatures/wander';
+import { Rng } from '../../engine/random';
+import { sfx } from '../../audio/sfx';
+import { meadowKeepOut } from './meadow';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { SPECIES, type SpeciesId } from '../../creatures/species';
 import { castArt, type CastId } from '../../art/creatures/cast';
 import { pictureSprite } from '../../art/locations';
 import { store } from '../../progress/store';
 import type { LineId } from '../../content/voice-script';
 import type { LandId, LandLayout } from '../../content/lands';
-import type { Graphics } from 'pixi.js';
 import { ENTRY_NAMES, entryArt, fittedBack } from '../../ui/origin-art';
-import { ink } from '../../art/palette';
+import { ink, swatch, wood } from '../../art/palette';
 import { voice } from '../../audio/voice';
 import type { BackdropStyle } from '../../art/scenery';
 import type { View } from '../../engine/view';
 import type { App } from '../App';
-import { LandScene, type LandHost } from './LandScene';
+import { hostScale, LandScene, type LandHost } from './LandScene';
 import { drawBeach } from './beach';
 import { drawCanyon } from './canyon';
 import { drawCove } from './cove';
@@ -82,6 +86,12 @@ export class LocationScene extends LandScene {
   readonly resident: Companion | Resident | null;
   /** Whether her own friend stands here as the resident, so the corner guide hides. */
   readonly atHome: boolean;
+  /** P5: a resident that carries on walks its route on its own (null for the rest). */
+  readonly wanderer: Wanderer | null = null;
+  private chime: Graphics | null = null;
+  private chimeSway = 0;
+  private notes = 0;
+  private readonly pad = new Container();
   /** Opened at the root (with a Back to Places), where a visit is remembered for Explore's postcard. */
   private readonly opensAtRoot: boolean;
   /** Laid out for a phone held upright as well (chunk 31, shell slice 3); the island's own lands at `classic/` stay sideways. */
@@ -141,15 +151,120 @@ export class LocationScene extends LandScene {
         : {}),
     });
     this.resident = resident;
+    const placed = resident as Companion | Resident | null;
+    if (placed instanceof Resident && RESIDENTS[placed.species].carriesOn) {
+      this.wanderer = new Wanderer(new Rng(), () => this.useChime());
+    }
     this.atHome = atHome;
     this.opensAtRoot = !!back;
   }
 
   init() {
     super.init();
+    if (this.wanderer) {
+      // Any touch on the screen turns the resident toward it: a pad under everything catches the ones that miss.
+      this.pad.eventMode = 'static';
+      this.content.addChildAt(this.pad, 0);
+      this.root.eventMode = 'static';
+      this.root.on('pointerdown', (e: FederatedPointerEvent) =>
+        this.wanderer?.look(this.field.toLocal(e.global).x),
+      );
+      this.chime = new Graphics();
+      this.content.addChildAt(this.chime, this.content.getChildIndex(this.field));
+    }
     // Explore opens with this place's postcard next time (RW14 slice 8).
     if (this.opensAtRoot) store.visitPlace(this.id);
     // Her friend is the resident here: one of her, not two.
     if (this.atHome) this.pip.visible = false;
+  }
+
+  resize(v: View) {
+    super.resize(v);
+    const walker = this.wanderer;
+    const res = this.resident;
+    const layout = this.layout;
+    this.pad.hitArea = new Rectangle(0, 0, v.w, v.h);
+    if (!walker || !(res instanceof Resident) || !layout) return;
+    // Home, and where free ground allows a stop or two; a full land screen leaves it standing at home.
+    const s = hostScale(layout.box);
+    const route = wanderRoute(
+      layout,
+      v,
+      wanderKeepOut(layout, meadowKeepOut(layout, v)),
+      Resident.footprint(res.species),
+      s,
+    );
+    walker.setRoute(route);
+    this.drawChime(route[1] ?? null, s);
+    this.placeResident();
+  }
+
+  update(dt: number) {
+    super.update(dt);
+    const walker = this.wanderer;
+    if (!walker) return;
+    walker.update(dt);
+    this.placeResident();
+    if (this.chime) {
+      this.chimeSway = Math.max(0, this.chimeSway - dt);
+      this.chime.rotation = Math.sin(this.chimeSway * 14) * 0.07 * Math.min(1, this.chimeSway);
+    }
+    if (this.notes > 0 && (this.notesIn -= dt) <= 0) {
+      this.notesIn = 0.2;
+      // Three bells up the land's pentatonic range, each softer than a game's own sound.
+      sfx.bell(this.land.music.range[0] + (3 - this.notes) * 2, 0.16);
+      this.notes--;
+    }
+  }
+
+  private notesIn = 0;
+
+  /** Where the walker is, as the host's place, facing and touch circle. */
+  private placeResident() {
+    const walker = this.wanderer;
+    const res = this.resident;
+    if (!walker || !(res instanceof Resident)) return;
+    this.host.position.set(walker.x, walker.y);
+    res.face(walker.facing, this.hostHit);
+  }
+
+  /** It reached the chime: it flutters, the chime sways and rings three notes. */
+  private useChime() {
+    this.resident?.poke();
+    this.chimeSway = 1.6;
+    this.notes = 3;
+    this.notesIn = 0.15;
+  }
+
+  /** The wind chime at the first stop, drawn in host units behind where the resident stands (none where there is no stop). */
+  private drawChime(stop: { x: number; y: number } | null, s: number) {
+    const g = this.chime;
+    if (!g) return;
+    g.clear();
+    g.visible = !!stop;
+    if (!stop) return;
+    g.position.set(stop.x, stop.y);
+    g.scale.set(s);
+    // Pivots at the bar so the whole chime sways from it.
+    const top = -250;
+    g.pivot.set(0, top);
+    g.position.set(stop.x, stop.y + top * s);
+    g.roundRect(-70, top - 8, 140, 16, 8)
+      .fill(wood.fill)
+      .stroke({ width: 3, color: wood.line });
+    const tubes = [
+      [-50, 70, swatch.teal],
+      [-17, 100, swatch.blue],
+      [17, 82, swatch.purple],
+      [50, 62, swatch.pink],
+    ] as const;
+    for (const [x, len, c] of tubes) {
+      g.moveTo(x, top + 8)
+        .lineTo(x, top + 34)
+        .stroke({ width: 3, color: wood.line });
+      g.roundRect(x - 9, top + 34, 18, len, 6)
+        .fill(c.fill)
+        .stroke({ width: 3, color: c.line });
+    }
   }
 }
