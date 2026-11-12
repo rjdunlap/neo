@@ -3558,6 +3558,28 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           });
           await page.waitForTimeout(300);
         };
+        if (level === 1)
+          // U7 R4: a right find's line never holds the next find. `map.found` is stretched to at least 4 s here, so the
+          // next find opening sooner shows the line no longer gates it; the last find's line is still heard out.
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            const say = g.ctx.say.bind(g.ctx);
+            g.foundLines = [];
+            g.ctx.say = (id, vars) => {
+              const line = say(id, vars);
+              if (id !== 'map.found') return line;
+              const index = g.index;
+              const rec = { at: performance.now(), last: index === g.finds.length - 1 };
+              g.foundLines.push(rec);
+              const watch = () => {
+                if (rec.opens !== undefined) return;
+                if (g.finished || (g.index !== index && !g.busy)) rec.opens = performance.now() - rec.at;
+                else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+              };
+              void Promise.resolve().then(watch);
+              return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+            };
+          });
         for (let n = 0; n < 4; n++) {
           await idle(n);
           const { col, row, size } = await page.evaluate(() => ({
@@ -3587,6 +3609,19 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         await finished('treasure-map');
         assert.deepEqual(await score('treasure-map'), [2, 1]);
+        if (level === 1) {
+          const found = await page.evaluate(() =>
+            neo.scene.game.foundLines.map((r) => ({ last: r.last, opens: Math.round(r.opens ?? -1) })),
+          );
+          const early = found.filter((r) => !r.last);
+          if (early.length !== 3 || early.some((r) => r.opens < 0 || r.opens > 1500))
+            throw new Error(`R4: a right find's line held the next find: ${JSON.stringify(found)}`);
+          if (found.filter((r) => r.last).some((r) => r.opens >= 0 && r.opens < 3900))
+            throw new Error(`R4: the last find's line was not heard out: ${JSON.stringify(found)}`);
+          log(
+            `Treasure Map 1 R4: the next find opened ${early.map((r) => r.opens).join(', ')} ms into its line`,
+          );
+        }
         log(
           `Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, ${mode === 'clues' ? 'two landmark lines glowing, ' : mode === 'steps' ? 'the first leg glowing, ' : 'glowing column and row, '}${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`,
         );
@@ -3710,7 +3745,23 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             [1, 0],
             'a second tap on a crossed-out square repeats the reason, not a second miss',
           );
-          await dig(plan.a);
+          // U7 R4: a re-dig's `map.faragain` (stretched to 4 s here) is read with input open, never holding the hunt.
+          const reread = await page.evaluate(async (s) => {
+            const g = neo.scene.game;
+            const say = g.ctx.say;
+            g.ctx.say = (id, vars) => {
+              const line = say.call(g.ctx, id, vars);
+              return id === 'map.faragain'
+                ? Promise.all([line, kit.sleep(4000)]).then(() => undefined)
+                : line;
+            };
+            const p = g.grid.toGlobal(g.cellAt(s));
+            kit.tap(p.x, p.y);
+            await kit.sleep(300);
+            g.ctx.say = say;
+            return g.busy;
+          }, plan.a);
+          assert.equal(reread, false, "R4: a re-dig's distance line held the hunt");
           assert.deepEqual(await counts(), [1, 0], 'digging a dug square again only repeats its distance');
           await dig(plan.out[1]);
           assert.deepEqual(await counts(), [2, 1], 'the second ruled-out dig lights what still fits');

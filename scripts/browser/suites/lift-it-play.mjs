@@ -320,6 +320,26 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     // Level 4 upright: deliver one parcel, then the replay button hauls it again with the knots counted, changing nothing.
     await launch('lift-it', 4);
     await idle();
+    // U7 R4: her guess's echo never holds the pull. `lift-it.guess-heard` is stretched to at least 4 s here, so the
+    // cards clearing and the handle freeing sooner shows the line no longer gates them.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.heardLines = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        if (id !== 'lift-it.guess-heard') return line;
+        const rec = { at: performance.now() };
+        g.heardLines.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (!g.busy && !g.question) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
     n = await page.evaluate(() => kit.store.data.stickers.length);
     assert.equal(
       await page.evaluate(() => neo.scene.game.replayButton.visible),
@@ -327,6 +347,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       'no replay before a parcel',
     );
     for (let guard = 0; guard < 80 && (await state()).line === 0; guard++) await step();
+    const heard = await page.evaluate(() => neo.scene.game.heardLines.map((r) => Math.round(r.opens ?? -1)));
+    if (!heard.length || heard.some((ms) => ms < 0 || ms > 1000))
+      throw new Error(`R4: the guess's echo held the pull: ${JSON.stringify(heard)}`);
+    log(`Lift It 4 R4: the handle was free ${heard.join(', ')} ms into the guess's echo`);
     await idle();
     await page.waitForTimeout(300);
     const before = await state();

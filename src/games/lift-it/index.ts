@@ -355,6 +355,8 @@ class LiftIt implements Game {
   answeredFor: Rig | null = null;
   question: Question | null = null;
   guess: number | null = null;
+  /** Level 4: "now pull" waits behind her guess's echo (U7 R4), and is dropped once she pulls or the question changes. */
+  private pullWaits = false;
   t = 0;
   /** The last delivered parcel's line and wheels (from level 3 the replay button hauls it again), and whether it is replaying. */
   last: { line: Line; hooks: Hooks; tiedToCrate: boolean; ons: (HookId | null)[] } | null = null;
@@ -577,6 +579,7 @@ class LiftIt implements Game {
     this.glowCounted = false;
     this.answeredFor = null;
     this.guess = null;
+    this.pullWaits = false;
     this.helperLeft = 0;
     this.layoutAll();
     this.busy = false;
@@ -822,6 +825,7 @@ class LiftIt implements Game {
 
   private rigChanged() {
     this.answeredFor = null;
+    this.pullWaits = false;
     if (this.glowRig && this.rig === this.glowRig) this.glowRig = null;
     if (this.rig !== 'direct' || !this.plan.request) {
       this.handle.scale.set(1.2);
@@ -845,6 +849,7 @@ class LiftIt implements Game {
       this.tug(rig);
       return;
     }
+    this.pullWaits = false;
     this.grab = { id: e.pointerId, from: this.ctx.stage.toLocal(e.global), best: 0, haul: can };
     this.knotArt.scale.set(1.15);
     sfx.squeak(4);
@@ -927,6 +932,7 @@ class LiftIt implements Game {
 
   private showQuestion(q: Question) {
     this.question = q;
+    this.pullWaits = false;
     this.clearCards();
     const bg = new Graphics();
     bg.eventMode = 'none';
@@ -998,8 +1004,17 @@ class LiftIt implements Game {
     sfx.pop(6);
     const l = this.cur;
     if (q.kind === 'guess') {
+      // An echo of her free pick never holds the pull (U7 R4): the cards clear and the handle is free while it plays,
+      // and "now pull" waits for it, or is dropped when she pulls first.
       this.guess = v;
-      await this.ctx.say('lift-it.guess-heard', { n: v });
+      const heard = this.ctx.say('lift-it.guess-heard', { n: v });
+      this.clearCards();
+      this.question = null;
+      this.answeredFor = q.rig;
+      this.pullWaits = true;
+      this.busy = false;
+      void heard.then(() => this.sayPull());
+      return;
     } else if (v === q.answer) {
       sfx.bell(7, 0.3);
       this.drawCards(v);
@@ -1033,6 +1048,19 @@ class LiftIt implements Game {
       void this.ctx.say('lift-it.now-pull');
     }
     this.busy = false;
+  }
+
+  /** Says level 4's waiting "now pull", once. */
+  private sayPull() {
+    if (!this.pullWaits || this.finished || this.destroyed) return false;
+    this.pullWaits = false;
+    void this.ctx.say('lift-it.now-pull');
+    return true;
+  }
+
+  /** The guide was tapped while "now pull" waits behind her guess's echo: say it now. */
+  sayWaitingAsk() {
+    return this.sayPull();
   }
 
   /* Replay (level 3 up) -------------------------------------------------------------------------- */
@@ -1427,7 +1455,7 @@ class LiftIt implements Game {
   /* Bot ------------------------------------------------------------------------------------------- */
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.grab) return null;
+    if (this.busy || this.finished || this.grab || this.pullWaits) return null;
     const q = this.question;
     if (q) {
       const c = this.cards.find((c) => c.value === q.answer) ?? this.cards[0];
