@@ -10,6 +10,8 @@ import {
   CycleCounter,
   DOWN,
   HIGHS,
+  LAP_PEAK,
+  LAP_WAVE,
   LineRound,
   PAIL,
   PET,
@@ -43,6 +45,8 @@ import {
   hAt,
   highFor,
   isDry,
+  lapGrab,
+  lapWaveH,
   overlaps,
   pailBox,
   petCorner,
@@ -99,6 +103,43 @@ describe('the sea', () => {
       expect(c.cycles).toBe(k);
     }
     expect(done).toBe(3);
+  });
+
+  it('a lap wave starts where the water is, peaks, comes back down and counts one cycle', () => {
+    for (const from of [0, 0.3, 0.7, 0.95]) {
+      const c = new CycleCounter();
+      if (from > UP) c.feed(from);
+      let prev = lapWaveH(0, from);
+      expect(prev, `starts at ${from}`).toBeCloseTo(from, 9);
+      let top = prev;
+      for (let i = 1; i <= 320; i++) {
+        const h = lapWaveH((i / 320) * LAP_WAVE, from);
+        // Smooth: no frame jumps (no snap down to the low edge when she taps a sliding sea).
+        expect(Math.abs(h - prev), `from ${from} step ${i}`).toBeLessThan(0.02);
+        top = Math.max(top, h);
+        prev = h;
+        c.feed(h);
+      }
+      expect(top).toBeGreaterThanOrEqual(LAP_PEAK - 1e-9);
+      expect(prev).toBeCloseTo(0, 9);
+      expect(c.cycles, `from ${from}`).toBe(1);
+    }
+    // From the low edge it is the original whole wave.
+    for (const t of [0.4, 1.6, 2.4]) {
+      expect(lapWaveH(t)).toBeCloseTo((LAP_PEAK * (1 - Math.cos((2 * Math.PI * t) / LAP_WAVE))) / 2, 9);
+    }
+  });
+
+  it('the lap touch area is the whole screen in every view', () => {
+    for (const [w, h] of [
+      [1024, 768],
+      [768, 1024],
+      [390, 844],
+      [844, 390],
+    ]) {
+      const view = computeView(w, h);
+      expect(lapGrab(view)).toEqual({ x: 0, y: 0, w: view.w, h: view.h });
+    }
   });
 
   it('ignores jitter around UP that never falls below DOWN', () => {
