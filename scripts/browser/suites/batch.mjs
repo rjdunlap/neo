@@ -1643,6 +1643,68 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       );
     }
 
+    // Bounce Back 12 (lap): the paddle meets the ball untouched, a touch anywhere (even the far left) hurries it, and a ball that gets
+    // by just comes back: nothing is counted. BOUNCE_FROM=12 plays only this.
+    if (!only || only === 'bounce') {
+      await launch('bounce-back', 12);
+      await page.waitForTimeout(600);
+      const lap = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (g.plan.mode !== 'pat') throw new Error(`Bounce Back 12 is ${g.plan.mode}`);
+        const canvas = document.querySelector('canvas');
+        const touch = (type, x, y) =>
+          canvas.dispatchEvent(
+            new PointerEvent(type, {
+              clientX: x,
+              clientY: y,
+              pointerId: 31,
+              pointerType: 'touch',
+              isPrimary: true,
+              bubbles: true,
+              cancelable: true,
+              buttons: type === 'pointerup' ? 0 : 1,
+            }),
+          );
+        const b = g.box;
+        const wait = async (ok, ms) => {
+          const t0 = performance.now();
+          while (!ok() && performance.now() - t0 < ms) await kit.sleep(30);
+          return ok();
+        };
+        // Untouched: her paddle drifts to the ball and bounces it.
+        if (!(await wait(() => g.rally >= 1, 15000)))
+          throw new Error('Untouched lap paddle never met the ball');
+        // A ball that gets by: no miss, no hint, a new serve.
+        await wait(() => g.ball.vx > 0, 8000);
+        g.ball.x = b.x1 - 27;
+        g.ball.y = b.y0 + 30;
+        await kit.sleep(100);
+        const after = { misses: g.misses, hints: g.hints, hinting: g.hinting, serving: g.serving > 0 };
+        // A touch at the far left of the table is hers and hurries the paddle.
+        await wait(() => g.ball.vx > 0, 8000);
+        const p = g.touch.parent.toGlobal({ x: b.x0 + 30, y: b.y1 - 30 });
+        touch('pointerdown', p.x, p.y);
+        await kit.sleep(60);
+        const touching = g.childTouch;
+        await wait(() => g.finished, 30000);
+        touch('pointerup', p.x, p.y);
+        return { after, touching, finished: g.finished, rally: g.rally };
+      });
+      if (lap.after.misses || lap.after.hints || lap.after.hinting || !lap.after.serving)
+        throw new Error(`Bounce Back 12: a ball past the paddle counted ${JSON.stringify(lap.after)}`);
+      if (!lap.touching) throw new Error('Bounce Back 12: a far-left touch was not hers');
+      await screenshot('bounce-back-12');
+      await finished('bounce-back');
+      const r = await page.evaluate(() => {
+        const r = kit.store.stats('bounce-back').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(r, [0, 0], 'bounce 12 score');
+      log(
+        `Bounce Back 12 (pat): untouched paddle met the ball, far-left touch hurried it, a ball by came back uncounted (rally ${lap.rally})`,
+      );
+    }
+
     // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.
     // Level 11 (Find my buddy): a line that is not the wiggling pair shakes and stays (one miss); `DOTS_LEVELS=11` plays only it.
     const dotLevels = process.env.DOTS_LEVELS
