@@ -541,6 +541,8 @@ class CutAlong implements Game {
 
   private drag: Drag | null = null;
   private busy = true;
+  /** The next sheet is open but its instruction waits behind the last piece's line (U7 R4), or is said at her first touch. */
+  private unasked = false;
   private finished = false;
   private misses = 0;
   private hints = 0;
@@ -603,7 +605,14 @@ class CutAlong implements Game {
     this.layer.on('pointerupoutside', (e) => this.up(e));
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
     this.ctx.listen(window, 'pointercancel', this.cancel, { capture: true });
-    onTap(this.picture, () => void this.ctx.instruct(this.instructLine()), { cooldown: 600 });
+    onTap(
+      this.picture,
+      () => {
+        this.unasked = false;
+        void this.ctx.instruct(this.instructLine());
+      },
+      { cooldown: 600 },
+    );
     ctx.stage.addChild(this.back, this.paper, this.picture, this.flyers, this.layer, this.hand);
     this.nextSheet();
     this.resize(ctx.view);
@@ -854,6 +863,7 @@ class CutAlong implements Game {
 
   private down(e: FederatedPointerEvent) {
     if (this.busy || this.finished || this.drag || palmOnGlass()) return;
+    this.askNow();
     const p = this.local(e);
     this.lastEvent = this.clock;
     if (this.plan.mode === 'snip') {
@@ -1066,18 +1076,35 @@ class CutAlong implements Game {
     this.owned.push({ piece: h.piece, ...at });
     this.drawPicture();
     sfx.pop(7);
-    await this.ctx.say(pieceLine(this.theme, h.piece) as LineId);
-    this.nextPiece();
+    void this.nextPiece(this.ctx.say(pieceLine(this.theme, h.piece) as LineId));
   }
 
-  /** On to the next sheet, or the end of the round. */
-  private nextPiece() {
+  /**
+   * On to the next sheet, or the end of the round. The piece's line never holds the next sheet (U7 R4): the sheet opens as
+   * the line starts, and its instruction is said when the line ends, or at her first touch if she is quicker. The last
+   * piece's line is heard out, because the closing line would cut it.
+   */
+  private async nextPiece(line: Promise<unknown>) {
     this.index++;
-    if (this.index >= this.pieceCount) return void this.finish();
+    if (this.index >= this.pieceCount) {
+      await line;
+      return void this.finish();
+    }
     this.nextSheet();
     this.busy = false;
     this.placeScissors();
+    const at = this.index;
+    this.unasked = true;
+    await line;
+    if (this.index === at) this.askNow();
+  }
+
+  /** Says the sheet's instruction if it is still waiting behind the piece's line. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.unasked = false;
     void this.ctx.instruct(this.instructLine());
+    return true;
   }
 
   private snipMark(p: Point): boolean {
@@ -1268,8 +1295,7 @@ class CutAlong implements Game {
     }
     this.drawPicture();
     sfx.pop(7);
-    await this.ctx.say(pieceLine(this.theme, this.slots[flying[0].slot].piece) as LineId);
-    this.nextPiece();
+    void this.nextPiece(this.ctx.say(pieceLine(this.theme, this.slots[flying[0].slot].piece) as LineId));
   }
 
   private async finish() {
@@ -1375,8 +1401,9 @@ class CutAlong implements Game {
   askForHint() {
     if (this.held && !this.finished) return void this.ctx.say('cut.place');
     if (this.busy || this.finished) return;
+    const asked = this.askNow();
     if (this.plan.mode === 'snip' || !countsStrays(this.level) || this.choosing)
-      return void this.ctx.say(this.instructLine());
+      return void (asked || this.ctx.say(this.instructLine()));
     if (!this.glow) {
       this.glow = true;
       this.hints++;
