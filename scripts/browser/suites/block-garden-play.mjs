@@ -163,6 +163,143 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         return;
       }
     }
+    // Level 12 on an upright phone, by taps (P3b): a tapped tray piece is held in its slot, a second tap on it or a tap on another
+    // piece is free, a tap where it cannot go is refused as the same miss a drag gets, and every piece is planted by tap-then-tap.
+    // GARDEN_LEVELS=tap runs this part alone.
+    if (!process.env.GARDEN_LEVELS || process.env.GARDEN_LEVELS === 'tap') {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('block-garden', 12);
+      await idle();
+      const stickersTap = await page.evaluate(() => kit.store.data.stickers.length);
+      const slotOf = (piece) =>
+        page.evaluate((piece) => {
+          const g = neo.scene.game,
+            i = g.slots.findIndex((s) => s.piece === piece),
+            slot = g.slots[i],
+            at = slot.carrier.toGlobal({ x: 0, y: 0 });
+          return {
+            x: at.x,
+            y: at.y,
+            held: slot.handle.held,
+            carrying: g.carrying === i,
+            small: slot.art.scale.x < 0.99,
+            home: Math.hypot(slot.carrier.x - slot.handle.home.x, slot.carrier.y - slot.handle.home.y) < 2,
+          };
+        }, piece);
+      const tapPiece = async (piece) => {
+        const at = await slotOf(piece);
+        await page.evaluate(({ x, y }) => kit.tap(x, y), at);
+        await page.waitForTimeout(350);
+      };
+      /** Tap the bed where the piece's middle would be with its top-left square at (r, c): no lift, the tapped point is its middle. */
+      const tapBed = async (piece, r, c) => {
+        const at = await page.evaluate(
+          async ({ piece, r, c }) => {
+            const { SHAPES } = await import('/src/games/block-garden/logic.ts');
+            const g = neo.scene.game,
+              s = SHAPES[g.garden.pieces[piece]],
+              lay = g.lay;
+            return g.root.toGlobal({
+              x: lay.x + (c + s.w / 2) * lay.cell,
+              y: lay.y + (r + s.h / 2) * lay.cell,
+            });
+          },
+          { piece, r, c },
+        );
+        await page.evaluate(({ x, y }) => kit.tap(x, y), at);
+        await page.waitForTimeout(600);
+      };
+      const tray = await page.evaluate(async () => {
+        const L = await import('/src/games/block-garden/logic.ts'),
+          g = neo.scene.game;
+        return L.trayNow(g.garden, g.state.used);
+      });
+      // A tap holds the piece in its own slot at the tray's size; a second tap on it lets it go, free.
+      await tapPiece(tray[0]);
+      let held = await slotOf(tray[0]);
+      assert.deepEqual(
+        [held.held, held.carrying, held.small, held.home],
+        [true, true, true, true],
+        'a tapped piece is held in its slot',
+      );
+      await screenshot('block-garden-12-phone-held');
+      await tapPiece(tray[0]);
+      held = await slotOf(tray[0]);
+      assert.deepEqual([held.held, held.carrying], [false, false], 'a tap on the held piece lets it go');
+      // A tap on another piece switches to it.
+      if (tray.length > 1) {
+        await tapPiece(tray[0]);
+        await tapPiece(tray[1]);
+        assert.deepEqual(
+          [(await slotOf(tray[0])).held, (await slotOf(tray[1])).held],
+          [false, true],
+          'a tap on another piece switches to it',
+        );
+        await tapPiece(tray[1]);
+      }
+      let stTap = await state();
+      assert.deepEqual([stTap.misses, stTap.used], [0, 0], 'holding, letting go and switching are free');
+      // One wrong place: where the piece cannot go (no room, or the snail's line), the same miss a drag there gets.
+      const wrong =
+        (await refusedSpot()) ??
+        (await page.evaluate(async () => {
+          const L = await import('/src/games/block-garden/logic.ts'),
+            g = neo.scene.game;
+          for (const piece of L.trayNow(g.garden, g.state.used)) {
+            const id = g.garden.pieces[piece];
+            const a = L.anchors(g.state.bed, id).find((at) => !L.allowed(g.state.bed, id, at));
+            if (a) return { piece, r: a.r, c: a.c };
+          }
+          return null;
+        }));
+      assert.ok(wrong, 'level 12 has a place a tray piece cannot go');
+      await tapPiece(wrong.piece);
+      await tapBed(wrong.piece, wrong.r, wrong.c);
+      await page.waitForTimeout(400);
+      stTap = await state();
+      assert.deepEqual([stTap.misses, stTap.used], [1, 0], 'a tap on a wrong place is refused as one miss');
+      held = await slotOf(wrong.piece);
+      assert.deepEqual(
+        [held.held, held.carrying, held.home],
+        [false, false, true],
+        'the refused piece is back in its slot',
+      );
+      // Every piece planted by tap-then-tap along the solver's way.
+      for (let guard = 0; guard < 60 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+        await idle();
+        if (await page.evaluate(() => neo.scene.finished)) break;
+        const p = await page.evaluate(async () => {
+          const L = await import('/src/games/block-garden/logic.ts'),
+            g = neo.scene.game;
+          if (g.busy) return null;
+          const h = L.hintPlacement(g.garden, g.state, g.history);
+          return h.kind === 'plan' ? h.placement : null;
+        });
+        if (!p) {
+          await page.waitForTimeout(250);
+          continue;
+        }
+        const before = (await state()).used;
+        await tapPiece(p.piece);
+        await tapBed(p.piece, p.r, p.c);
+        await idle();
+        if (guard === 0)
+          assert.notEqual((await state()).used, before, 'a tap on the bed plants the held piece');
+      }
+      await page.waitForFunction(() => neo.scene.finished, null, { timeout: 20000 });
+      stTap = await state();
+      assert.deepEqual([stTap.misses, stTap.hints], [1, 0]);
+      await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickersTap, {
+        timeout: 15000,
+      });
+      assert.deepEqual(errors, [], 'page errors');
+      if (process.env.GARDEN_LEVELS === 'tap') {
+        log(
+          'Block Garden level 12 on an upright phone by taps: a held piece in its slot, let go and switched for free, one wrong place (one miss), every piece planted by tap-then-tap, one sticker',
+        );
+        return;
+      }
+    }
     // Level 10 (school, between 5 and 6), upright: the next tray shows faded under the tray; a tap on a faded piece wiggles it and
     // is never a miss; a refused drop is one miss; planted by drags, one sticker. GARDEN_LEVELS=10 runs this part alone.
     await page.setViewportSize({ width: 768, height: 1024 });
