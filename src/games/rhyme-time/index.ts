@@ -136,6 +136,9 @@ class RhymeTime implements Game {
   misses = 0;
   hints = 0;
   busy = true;
+  /** The next question's instruction, waiting behind the last right answer's line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   finished = false;
   /** Pair levels: the first card chosen. */
   picked: Card | null = null;
@@ -247,7 +250,7 @@ class RhymeTime implements Game {
 
   /** The ghost finger on the how-to card: the rhyming picture, the odd one out, or the pair, one card and then the other. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked) return null;
     const t = this.tray;
     if (t) {
       const card = this.cards.find((c) => c.placed === undefined);
@@ -275,8 +278,47 @@ class RhymeTime implements Game {
     for (const c of this.cards) c.drag?.destroy();
   }
 
-  private async next() {
+  /** Questions, riddles or trays in the round. */
+  private get total() {
+    return this.trays?.length ?? (this.riddles ?? this.questions).length;
+  }
+
+  /**
+   * After a right answer: the line starts and, after the beat (and the answer's own motion), the next question comes with
+   * input open, its instruction waiting for the line (U7 R4). The round's last line is heard out.
+   */
+  private async onward(said: Promise<unknown>, beat: number, motion?: Promise<unknown>) {
+    if (this.index + 1 < this.total) {
+      // A killed tween never resolves, so the motion's wait is capped.
+      await Promise.all([this.ctx.tw.wait(beat), motion && Promise.race([motion, this.ctx.tw.wait(1.6)])]);
+      return this.next(said);
+    }
+    await said;
+    await this.ctx.tw.wait(beat);
+    return this.next();
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ask();
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  private async next(said?: Promise<unknown>) {
     this.busy = true;
+    this.dropAsk();
     this.index++;
     this.wrongs = 0;
     this.glowing = null;
@@ -287,8 +329,7 @@ class RhymeTime implements Game {
     this.chipGlow = false;
     this.basketGlow = null;
     this.basketMisses.clear();
-    if (this.index >= (this.trays?.length ?? (this.riddles ?? this.questions).length))
-      return void this.finale();
+    if (this.index >= this.total) return void this.finale();
     for (const b of this.baskets.splice(0)) {
       this.ctx.tw.kill(b.node.scale);
       b.node.destroy({ children: true });
@@ -349,7 +390,13 @@ class RhymeTime implements Game {
     this.resize(this.view);
     await this.ctx.tw.wait(0.4);
     this.setBusy(false);
-    await this.ask();
+    if (!said) return void (await this.ask());
+    // The instruction waits for the last answer's line, or is said at her first tap or by the guide.
+    this.unasked = true;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
   }
 
   /** Busy holds the pictures still too, so nothing is picked up while the pet is speaking feedback. */
@@ -396,6 +443,18 @@ class RhymeTime implements Game {
     if (this.busy || this.finished) return;
     const q = this.q;
     sfx.pop(5);
+    if (this.unasked) {
+      // A tap before she has heard the instruction: a right answer goes ahead; anything else says the instruction, not a miss.
+      if (this.plan.mode === 'pair') {
+        this.picked = c;
+        this.drawCard(c, true);
+        return void this.askNow();
+      }
+      const r = this.riddle;
+      const right = r ? this.plan.mode !== 'make' && c.word === r.answer : q.answer.includes(c.word);
+      if (!right) return void this.askNow();
+      this.dropAsk();
+    }
     if (this.riddle) return void this.tapRiddle(c, this.riddle);
     if (this.plan.mode === 'pair') {
       if (!this.picked) {
@@ -454,11 +513,14 @@ class RhymeTime implements Game {
         .then(() => this.ctx.tw.to(c.node, { y: c.node.y + 30 }, { duration: 0.2, ease: ease.inQuad }));
     }
     const q = this.q;
-    if (this.plan.mode === 'match') await this.ctx.say('rhyme.yes', { a: q.prompt!, b: a.word });
-    else if (this.plan.mode === 'pair') await this.ctx.say('rhyme.yes', { a: a.word, b: b!.word });
-    else await this.ctx.say('rhyme.oddyes', { word: a.word });
-    await this.ctx.tw.wait(0.3);
-    await this.next();
+    const said =
+      this.plan.mode === 'match'
+        ? this.ctx.say('rhyme.yes', { a: q.prompt!, b: a.word })
+        : this.plan.mode === 'pair'
+          ? this.ctx.say('rhyme.yes', { a: a.word, b: b!.word })
+          : this.ctx.say('rhyme.oddyes', { word: a.word });
+    // The bounce (0.38 s) fits inside the beat.
+    await this.onward(said, 0.3);
   }
 
   // Silly pairs (level 8) ----------------------------------------------------------
@@ -541,10 +603,10 @@ class RhymeTime implements Game {
     }
     sfx.sparkle();
     this.ctx.pet.cheer();
-    void this.actScene(place);
-    await this.ctx.say('rhyme.sceneYes', { rider: c.word, prep: scene.prep, place });
-    await this.ctx.tw.wait(0.4);
-    await this.next();
+    const acted = this.actScene(place);
+    const said = this.ctx.say('rhyme.sceneYes', { rider: c.word, prep: scene.prep, place });
+    // The place finishes its act (the truck's drive) before the next scene replaces it.
+    await this.onward(said, 0.4, acted);
   }
 
   private async actScene(place: string) {
@@ -643,8 +705,13 @@ class RhymeTime implements Game {
     void tw.to(c.node.scale, { x: 0.5, y: 0.5 }, { duration: 0.3 });
     await tw.to(c.node, this.slotPoint(b, c.slot), { duration: 0.3, ease: ease.outBack });
     void this.bounce(b.node);
-    await this.ctx.say('rhyme.yes', { a: b.key, b: c.word });
-    if (this.cards.every((x) => x.placed !== undefined)) return void this.sing();
+    const said = this.ctx.say('rhyme.yes', { a: b.key, b: c.word });
+    if (this.cards.every((x) => x.placed !== undefined)) {
+      // The tray's last picture: its line is heard out before the baskets sing.
+      await said;
+      return void this.sing();
+    }
+    // The other pictures can be carried while the line plays (U7 R4); her next drop's line cuts it.
     this.setBusy(false);
   }
 
@@ -700,14 +767,13 @@ class RhymeTime implements Game {
       sfx.sparkle();
       this.ctx.pet.cheer();
       this.drawCard(c, true);
-      void this.act(c, r.tag);
-      await this.ctx.say('rhyme.riddleYes', {
+      const acted = this.act(c, r.tag);
+      const said = this.ctx.say('rhyme.riddleYes', {
         answer: r.answer,
         sound: r.clueWord,
         clue: inSentence(clue.clue),
       });
-      await this.ctx.tw.wait(0.3);
-      return void this.next();
+      return void this.onward(said, 0.3, acted);
     }
     this.busy = true;
     this.misses++;
@@ -812,12 +878,14 @@ class RhymeTime implements Game {
   private pickChip(c: Chip) {
     if (this.busy || this.finished) return;
     sfx.pop(c.sound ? 6 : 8);
+    // Her first chip before the instruction was heard: it is chosen, and the instruction is said in place of its name.
+    const asked = this.askNow();
     if (c.sound) {
       this.sound = c.sound;
-      void this.ctx.say('rhyme.chipSound', { word: c.sound });
+      if (!asked) void this.ctx.say('rhyme.chipSound', { word: c.sound });
     } else if (c.tag) {
       this.tag = c.tag;
-      void this.ctx.say('rhyme.chipMeaning', { clue: TAGS[c.tag].clue });
+      if (!asked) void this.ctx.say('rhyme.chipMeaning', { clue: TAGS[c.tag].clue });
     }
     this.drawChips();
   }
@@ -826,6 +894,7 @@ class RhymeTime implements Game {
   private async guess() {
     const r = this.riddle;
     if (this.busy || this.finished || !r) return;
+    if (this.askNow()) return;
     if (!this.sound || !this.tag) return void this.ctx.say('rhyme.makeBoth');
     this.busy = true;
     const found = guessFor(r, this.sound, this.tag);
@@ -834,14 +903,13 @@ class RhymeTime implements Game {
       sfx.sparkle();
       this.ctx.pet.cheer();
       this.drawCard(card, true);
-      void this.act(card, r.tag);
-      await this.ctx.say('rhyme.makeGuess', {
+      const acted = this.act(card, r.tag);
+      const said = this.ctx.say('rhyme.makeGuess', {
         sound: r.clueWord,
         clue: inSentence(TAGS[r.tag].clue),
         answer: r.answer,
       });
-      await this.ctx.tw.wait(0.3);
-      return void this.next();
+      return void this.onward(said, 0.3, acted);
     }
     this.tries++;
     if (card) {

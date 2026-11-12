@@ -322,6 +322,9 @@ class PhotoSafari implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** The next scene's ask, waiting behind the last photo's lines (U7 R4); `askGen` drops a stale wait and chained lines. */
+  unasked = false;
+  private askGen = 0;
 
   private readonly backdrop: Backdrop;
   /** The backdrop's places and animals together: what a whole-meadow photo shows. */
@@ -477,7 +480,7 @@ class PhotoSafari implements Game {
 
   /** The ghost finger on the how-to card: photograph the animal that was asked for, or each animal in turn. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.scene) return null;
+    if (this.busy || this.finished || this.unasked || !this.scene) return null;
     if (this.isTell) {
       const missing = fewestChips(this.scene).find((c) => !this.chosen.some((k) => sameChip(k, c)));
       const on = missing ? this.chips.find((c) => sameChip(c.chip, missing)) : this.tellButton;
@@ -640,9 +643,16 @@ class PhotoSafari implements Game {
     this.textures.length = 0;
   }
 
-  private async nextScene() {
+  /**
+   * The next scene. With `said` (the last photo's lines, still playing), the animals come in and input opens at once, the
+   * scene's ask waiting for the lines, her first snap or the guide (U7 R4).
+   */
+  private async nextScene(said?: Promise<unknown>) {
     if (this.destroyed) return;
     this.busy = true;
+    this.unasked = false;
+    // Lines chained behind the last photo keep this generation; a scene without them drops any stale wait.
+    if (!said) this.askGen++;
     this.wrongs = 0;
     this.wanted.removeFromParent();
     for (const a of this.actors) a.destroy({ children: true });
@@ -660,7 +670,7 @@ class PhotoSafari implements Game {
         onTap(a, () => {
           if (!this.busy && !this.finished) {
             a.critter.hop();
-            void this.ctx.say('safari.tell-tap');
+            if (!this.askNow()) void this.ctx.say('safari.tell-tap');
           }
         });
       else if (this.sharedPlaces) a.eventMode = 'none';
@@ -674,13 +684,45 @@ class PhotoSafari implements Game {
     if (this.sharedPlaces) this.resize(this.view);
     await this.ctx.tw.wait(0.4);
     this.busy = false;
-    const t = this.target;
     if (this.plan.mode === 'changed') {
       this.phase = 'look';
       this.cameraButton.visible = true;
+    } else if (this.plan.mode === 'true') this.phase = 'find';
+    // Level 1 asks only once, before the first photo: nothing waits.
+    if (!said || (this.plan.mode === 'snap' && this.photos > 0)) return this.ask();
+    this.unasked = true;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting ask, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ask();
+    return true;
+  }
+
+  /** Her answer came before the ask: it is not said, and lines chained behind the last photo stop. */
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next ask waits: say it, not the ask before it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /** The scene's spoken ask. */
+  private async ask() {
+    if (!this.scene || this.finished) return;
+    const t = this.target;
+    if (this.plan.mode === 'changed') {
       await this.ctx.instruct('safari.meadow');
     } else if (this.plan.mode === 'true') {
-      this.phase = 'find';
       await this.ctx.instruct('safari.claim', {
         claim: request('true', this.scene),
         animal: this.target!.sighting.animal,
@@ -707,7 +749,8 @@ class PhotoSafari implements Game {
         this.chosen = toggleChip(this.chosen, chip);
         card.scale.set(0.94);
         void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.15 });
-        void this.ctx.say('safari.chip', { what: chipPhrase([chip]) });
+        // Her first chip before the ask was heard: it is chosen, and the ask is said in place of its words.
+        if (!this.askNow()) void this.ctx.say('safari.chip', { what: chipPhrase([chip]) });
         this.layoutChips();
       });
       this.tray.addChild(card);
@@ -756,6 +799,7 @@ class PhotoSafari implements Game {
 
   private async tell() {
     if (this.busy || this.finished || !this.scene) return;
+    if (this.askNow()) return;
     this.tellButton.scale.set(1.08);
     void this.ctx.tw.to(this.tellButton.scale, { x: 1, y: 1 }, { duration: 0.18 });
     const judged = judgeTell(this.chosen, this.scene);
@@ -813,6 +857,11 @@ class PhotoSafari implements Game {
     if (this.phase === 'judge') return;
     const t = this.target;
     const right = this.plan.mode === 'snap' || a === t;
+    // A snap before she has heard the ask: the right animal goes ahead; any other says the ask, not a miss.
+    if (this.unasked) {
+      if (!right) return void this.askNow();
+      this.dropAsk();
+    }
     // Click! Every tap takes a picture; only the asked-for one goes in the album.
     sfx.tick();
     sfx.whoosh();
@@ -839,6 +888,25 @@ class PhotoSafari implements Game {
     a.glow.visible = false;
     this.photographed.add(a.sighting.action);
     if (this.plan.mode === 'true') return void this.holdUp(a);
+    const last = this.photos + 1 >= this.plan.photos;
+    if (!last) {
+      // The photo's lines start with the polaroid and the next scene follows it, its ask waiting for them (U7 R4).
+      const gen = this.askGen;
+      const more = () => gen === this.askGen && !this.destroyed;
+      // This scene's change and friend, read now: the next scene replaces them while the click plays.
+      const what = this.plan.mode === 'changed' ? changeLine(this.scene!) : null;
+      // The friend who asked hops now, before the next scene's friend takes its place.
+      if (this.isTell) this.friend?.hop();
+      const said = this.ctx.say('safari.click').then(() => {
+        if (!more()) return;
+        if (what) return this.ctx.say('safari.was', { what });
+        if (this.isTell) return this.ctx.say('safari.thanks');
+      });
+      await this.polaroid(a);
+      this.photos++;
+      return void this.nextScene(said);
+    }
+    // The last photo's lines are heard out.
     await this.polaroid(a);
     this.photos++;
     await this.ctx.say('safari.click');
@@ -891,6 +959,8 @@ class PhotoSafari implements Game {
   /** What changed?: the whole meadow is photographed and pinned up, then one friend changes behind a puff. */
   private async photographMeadow() {
     if (this.busy || this.finished || this.phase !== 'look' || !this.scene) return;
+    // The meadow photo before its ask was heard: taking it is the answer.
+    this.dropAsk();
     this.busy = true;
     this.cameraButton.visible = false;
     sfx.tick();
@@ -1021,7 +1091,10 @@ class PhotoSafari implements Game {
       b.visible = false;
       (b.children[0] as Graphics).visible = false;
     }
-    await this.ctx.say(this.scene.truthy ? 'safari.true' : 'safari.false', { shows });
+    const said = this.ctx.say(this.scene.truthy ? 'safari.true' : 'safari.false', { shows });
+    const last = this.photos + 1 >= this.plan.photos;
+    // The judgement carries the lesson: it plays over the album tween and the next scene (U7 R4); the last is heard out.
+    if (last) await said;
     if (this.destroyed) return;
     const card = this.held;
     this.held = null;
@@ -1030,6 +1103,7 @@ class PhotoSafari implements Game {
       this.ctx.tw.to(card.scale, { x: 0.38, y: 0.38 }, { duration: 0.6 }),
     ]);
     this.photos++;
+    if (!last) return void this.nextScene(said);
     await this.ctx.say('praise');
     await this.nextScene();
   }
