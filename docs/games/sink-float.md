@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1–2 |
+| lap | 12, 1, 2 |
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 4, 5, 9, 6 |
@@ -25,6 +25,7 @@
 | 7 | Make the clay float: change its shape and test it |
 | 9 | Big and small: watch the big one, guess the small one of the same stuff, then test it |
 | 10 | Salty or fresh: compare two tanks, then test to find the salty one |
+| 12 | One big thing over the water: touch anywhere to drop it in |
 
 <!-- end generated -->
 

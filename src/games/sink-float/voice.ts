@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.sink-float': ['Sink or float!'],
 
+  'sink.hold': ['Touch anywhere to drop it in the water! Splash!'],
   'sink.drop': ['Tap something to drop it in the water! Splash!'],
   'sink.floats': ['It floats!', 'It floats on top!'],
   'sink.sinks': ['It sinks!', 'Down, down, it sinks!'],

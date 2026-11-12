@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -18,6 +18,7 @@ import {
   ALL_SHAPES,
   CLAY_SHAPES,
   floats,
+  HOLD_LEVEL,
   PAIRS,
   pairsFor,
   shapesFor,
@@ -60,6 +61,8 @@ interface Wet {
 
 /** A guess's reaction is given this long before the next thing's ask cuts it. */
 const GUESS_BEAT = 0.4;
+/** The lap level's held thing is drawn this big over the water; in the water it shrinks to the others' size. */
+const HELD_SIZE = 2.6;
 
 class SinkFloat implements Game {
   readonly plan: SinkPlan;
@@ -113,11 +116,21 @@ class SinkFloat implements Game {
   private sameWeight: Container | null = null;
   askForHint?: () => void;
   hintLabel?: string;
+  // One big thing (the lap level): the thing held over the water, and the layer that takes a touch anywhere.
+  holding: Item | null = null;
+  private readonly catcher = new Container();
+  private held = { x: 0, y: 0 };
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = sinkPlan(ctx.level);
     ctx.stage.addChild(this.background, this.tankBack, this.tray, this.baskets);
+    if (this.plan.mode === 'hold') {
+      // Behind everything else, so a touch on the held thing, the water, the tank or the sky all land here.
+      this.catcher.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
+      onTap(this.catcher, (e) => this.touchAnywhere(e), { cooldown: 60 });
+      ctx.stage.addChildAt(this.catcher, 1);
+    }
     if (this.plan.mode === 'shape') this.buildClay();
     for (const thing of this.plan.mode === 'shape' || this.plan.mode === 'pair'
       ? []
@@ -139,6 +152,7 @@ class SinkFloat implements Game {
           onPick: () => sfx.tick(),
           onDrop: (x, y) => this.sort(item, x, y),
         });
+      else if (this.plan.mode === 'hold') node.visible = false;
       else if (this.plan.mode !== 'guess') onTap(node, () => this.tapDrop(item));
       this.items.push(item);
       ctx.stage.addChild(node);
@@ -208,7 +222,10 @@ class SinkFloat implements Game {
   }
 
   start() {
-    if (this.plan.mode === 'shape') void this.nextExperiment();
+    if (this.plan.mode === 'hold') {
+      void this.ctx.instruct('sink.hold');
+      this.hold();
+    } else if (this.plan.mode === 'shape') void this.nextExperiment();
     else if (this.guessMode) void this.nextGuess();
     else void this.ctx.instruct(this.plan.mode === 'sort' ? 'sink.sort' : 'sink.drop');
   }
@@ -220,6 +237,8 @@ class SinkFloat implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.plan.mode === 'shape') return this.choosing ? { tap: { on: this.tileFor('boat').node } } : null;
+    if (this.plan.mode === 'hold')
+      return this.holding ? { tap: { on: this.holding.node }, receiver: this.catcher } : null;
     if (this.guessMode) {
       if (!this.guessing) return null;
       return { tap: { on: this.items[this.current].floats ? this.floatButton : this.sinkButton } };
@@ -244,8 +263,84 @@ class SinkFloat implements Game {
     });
   }
 
-  /** Arcs a thing over the tank and into the water; floaters bob, sinkers drift to the bottom. */
-  private async splash(item: Item) {
+  // One big thing (the lap level) ---------------------------------------------------------
+
+  /** The next thing grows in over the water and waits there, swaying, for as long as she likes. */
+  private hold() {
+    const item = this.items.find((i) => !i.done && i !== this.holding);
+    if (!item || this.finished) return;
+    this.holding = item;
+    const node = item.node;
+    node.visible = true;
+    node.position.set(this.held.x, this.held.y);
+    node.scale.set(0);
+    sfx.pop(9);
+    void this.ctx.tw.to(node.scale, { x: HELD_SIZE, y: HELD_SIZE }, { duration: 0.35, ease: ease.outBack });
+  }
+
+  /**
+   * Every touch answers at once, wherever it lands: a thing waiting over the water drops in with a whoosh, a touch on the water
+   * splashes under the finger, and a touch anywhere else while the next thing is on its way gets a pop and a puff of bubbles.
+   */
+  private touchAnywhere(e: FederatedPointerEvent) {
+    if (this.finished) return;
+    const p = this.ctx.stage.toLocal(e.global);
+    const t = this.tank;
+    const onWater = p.x >= t.l && p.x <= t.r && p.y >= t.surface - 10 && p.y <= t.bottom;
+    if (onWater) this.splashAt(p.x, p.y);
+    const item = this.holding;
+    if (item) {
+      this.holding = null;
+      item.done = true;
+      sfx.whoosh();
+      void this.splash(item, () => this.hold()).then(() => {
+        if (this.items.every((i) => i.done)) void this.end();
+      });
+    } else if (!onWater) {
+      sfx.pop(6);
+      this.ctx.particles.burst(p.x, p.y, {
+        kind: 'ring',
+        colors: [swatch.white.fill, swatch.blue.light],
+        count: 5,
+        speed: [30, 90],
+        gravity: -80,
+        life: [0.5, 0.8],
+      });
+    }
+  }
+
+  /** A touch on the water: a splash under the finger, and the floaters bob. */
+  private splashAt(x: number, y: number) {
+    sfx.splash();
+    const t = this.tank;
+    this.ctx.particles.burst(x, t.surface, {
+      colors: [swatch.blue.fill, swatch.blue.light],
+      count: 8,
+      speed: [100, 220],
+      gravity: 700,
+      angle: -Math.PI / 2,
+      spread: 1.2,
+      size: [0.25, 0.4],
+    });
+    if (y > t.surface + 30)
+      this.ctx.particles.burst(x, y, {
+        kind: 'ring',
+        colors: [swatch.white.fill],
+        count: 4,
+        speed: [20, 50],
+        gravity: -120,
+        angle: -Math.PI / 2,
+        spread: 0.6,
+        life: [0.6, 1],
+      });
+    for (const w of this.wet) if (w.floats && w.settled) w.phase += 1.2;
+  }
+
+  /**
+   * Arcs a thing over the tank and into the water (the lap level's held thing falls straight in and shrinks to size); floaters
+   * bob, sinkers drift to the bottom. `onWater` runs as it meets the water.
+   */
+  private async splash(item: Item, onWater?: () => void) {
     const t = this.tank;
     const tw = this.ctx.tw;
     // Big and small files no discoveries: the big things already have their pages, and a pair adds nothing.
@@ -256,9 +351,16 @@ class SinkFloat implements Game {
     const node = item.node;
     this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.tankFront));
     tw.kill(node);
-    await tw.to(node, { x, y: t.top - 70 }, { duration: 0.45, ease: ease.outQuad });
-    await tw.to(node, { y: t.surface }, { duration: 0.25, ease: ease.inQuad });
+    if (this.plan.mode === 'hold') {
+      tw.kill(node.scale);
+      void tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.inQuad });
+      await tw.to(node, { x, y: t.surface, rotation: 0 }, { duration: 0.4, ease: ease.inQuad });
+    } else {
+      await tw.to(node, { x, y: t.top - 70 }, { duration: 0.45, ease: ease.outQuad });
+      await tw.to(node, { y: t.surface }, { duration: 0.25, ease: ease.inQuad });
+    }
     sfx.splash();
+    onWater?.();
     this.ctx.particles.burst(x, t.surface, {
       colors: [swatch.blue.fill, swatch.blue.light],
       count: 14,
@@ -658,7 +760,11 @@ class SinkFloat implements Game {
     const shaping = this.plan.mode === 'shape';
     const l = 190;
     const r = sorting || guessing || shaping ? v.w * 0.72 : v.w - 60;
-    this.tank = { l, r, top: 150, surface: 230, bottom: counter };
+    // The lap level holds one big thing above the water, so its tank sits lower to leave the sky for it.
+    const top = this.plan.mode === 'hold' ? Math.max(300, v.h * 0.4) : 150;
+    this.tank = { l, r, top, surface: top + 80, bottom: counter };
+    this.held = { x: (l + r) / 2, y: (top + 110) / 2 + 10 };
+    this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
     const t = this.tank;
     this.tankBack
       .clear()
@@ -690,7 +796,9 @@ class SinkFloat implements Game {
     const waiting = this.items.filter((i) => !i.done);
     this.tray.clear();
     if (shaping) this.layoutClay(v);
-    else if (!guessing) {
+    else if (this.plan.mode === 'hold') {
+      if (this.holding) this.holding.node.position.set(this.held.x, this.held.y);
+    } else if (!guessing) {
       this.tray.roundRect(160, v.h - 150, v.w - 190, 136, 30).fill({ color: swatch.white.fill, alpha: 0.6 });
       const xs = spread(waiting.length, 180, v.w - 40, 140);
       waiting.forEach((item, i) => {
@@ -844,6 +952,11 @@ class SinkFloat implements Game {
       const b = this.pick === 0 ? this.floatButton : this.sinkButton;
       ring.roundRect(b.x - 92, b.y - 82, 184, 164, 30).stroke({ width: 8, color: swatch.teal.line });
     }
+    if (this.holding) {
+      // The held thing sways gently while it waits; nothing drops it but her touch.
+      this.holding.node.y = this.held.y + Math.sin(this.clock * 2) * 6;
+      this.holding.node.rotation = Math.sin(this.clock * 1.4) * 0.1;
+    }
     for (const w of this.wet) {
       if (!w.settled || !w.floats) continue;
       w.node.y = this.tank.surface - 8 + Math.sin(this.clock * 2.4 + w.phase) * 4;
@@ -853,6 +966,7 @@ class SinkFloat implements Game {
 
   destroy() {
     for (const i of this.items) i.drag?.destroy();
+    this.catcher.removeAllListeners();
   }
 }
 
@@ -887,6 +1001,7 @@ export const sinkFloat: GameModule = {
   skills: ['science', 'prediction', 'sorting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(SINK_LEVELS, b),
+  entryLevels: [HOLD_LEVEL],
   describeLevel: (l) => sinkPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Before each splash, ask {name}: will it float or sink? Every guess is a good guess.',
