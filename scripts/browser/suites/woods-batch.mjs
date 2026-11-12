@@ -45,6 +45,23 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         ],
         'WOODS_ONLY',
       );
+    // R4: stretching one confirmation makes it possible to check that the next move opens during it.
+    const stretchFeedback = (prefix) =>
+      page.evaluate((prefix) => {
+        const g = neo.scene.game;
+        const say = g.ctx.say.bind(g.ctx);
+        g.stretched = 'waiting';
+        g.ctx.say = (line, vars) => {
+          const spoken = say(line, vars);
+          if (!line.startsWith(prefix) || g.stretched !== 'waiting') return spoken;
+          g.stretched = 'playing';
+          return Promise.all([spoken, kit.sleep(4000)]).then(() => {
+            g.stretched = 'done';
+          });
+        };
+      }, prefix);
+    const feedbackStillPlaying = async (move) =>
+      assert.equal(await page.evaluate(() => neo.scene.game.stretched), 'playing', move);
     const fromLevel = Number(process.env.FROM_LEVEL || 1);
     const score = (id) =>
       page.evaluate((id) => {
@@ -230,7 +247,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await guess(false);
           assert.deepEqual(await counts(), [0, 0], 'a wrong prediction is never a miss');
           assert.equal(await page.evaluate(() => neo.scene.game.step), 1, 'the slide still went');
+          await stretchFeedback('slide.predict.right');
           await guess(true);
+          await feedbackStillPlaying('the next penguin prediction opens during the right line');
           await guess(true);
           await idle(1);
           for (let k = 0; k < 3; k++) await guess(true);
@@ -482,7 +501,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'peek')
-      for (let level = fromLevel; level <= 5; level++) {
+      for (let level = fromLevel; level <= Math.min(5, Number(process.env.TO_LEVEL || 5)); level++) {
         // Level 5 plays in portrait, where the four-picture card is tightest.
         if (level === 5) await page.setViewportSize({ width: 768, height: 1024 });
         await launch('peekaround-island', level);
@@ -541,7 +560,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 ) < 20,
                 'the hint rings the friend once in view',
               );
+            if (n === 0) await stretchFeedback('around.found');
             await tap('neo.scene.game.friends.find((f) => f.name === neo.scene.game.hider).node');
+            if (n === 0) {
+              await idle(1);
+              await feedbackStillPlaying('the next Peekaround scene opens during the right line');
+            }
           }
         } else {
           // Drag each waiting friend to a spot that fits its direction (the first, twice to a wrong spot).
@@ -588,6 +612,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 first = false;
               }
               await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+              if (level === 5 && k === 0 && name === names.at(-1)) await stretchFeedback('around.placed');
               await dropAt(name, true);
             }
             if (level === 5) {
@@ -597,6 +622,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 null,
                 { timeout: 20000 },
               );
+              if (k === 0) await feedbackStillPlaying('the guess cards open during the placement line');
               await screenshot(`peekaround-5-guess-${k + 1}-portrait`);
               // The card's pictures never overlap and stay clear of the corner buttons.
               const xs = await page.evaluate(() =>
