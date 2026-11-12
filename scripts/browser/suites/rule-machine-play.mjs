@@ -18,6 +18,23 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.evaluate((i) => kit.tapOn(neo.scene.game.padNodes[i]), i);
       await page.waitForTimeout(250);
     };
+    // R4: verify the tray or pads open while the spoken result is still pending.
+    const stretchFeedback = (prefix) =>
+      page.evaluate((prefix) => {
+        const g = neo.scene.game;
+        const say = g.ctx.say.bind(g.ctx);
+        g.stretched = 'waiting';
+        g.ctx.say = (id, vars) => {
+          const spoken = say(id, vars);
+          if (!id.startsWith(prefix) || g.stretched !== 'waiting') return spoken;
+          g.stretched = 'playing';
+          return Promise.all([spoken, kit.sleep(4000)]).then(() => {
+            g.stretched = 'done';
+          });
+        };
+      }, prefix);
+    const feedbackStillPlaying = async (move) =>
+      assert.equal(await page.evaluate(() => neo.scene.game.stretched), 'playing', move);
     const wrongOf = (s) => [0, 1, 2].find((i) => i !== s.right);
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
@@ -164,10 +181,12 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
           );
           await screenshot('rule-machine-3-shelf');
         }
+        if (m === 0) await stretchFeedback('rm.card.');
         await tapCard(s.rightCard);
         s = await state();
         assert.equal(s.hung, true, 'the right card hangs on the machine');
         await until(() => neo.scene.game.state.phase === 'feed');
+        if (m === 0) await feedbackStillPlaying('the tray opens during the card name');
         s = await state();
         await feed(unfed(s)[0]);
         await askOpen();
@@ -233,8 +252,10 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         await page.waitForTimeout(250);
         s = await state();
         assert.deepEqual([s.open, s.peeking], [1, false], 'one card left; the lid is back down');
+        if (m === 0) await stretchFeedback('rm.card.');
         await tapCard(s.rightCard);
         await askOpen();
+        if (m === 0) await feedbackStillPlaying('the pads open during the card name');
         s = await state();
         assert.deepEqual([s.hung, s.counted], [true, true], 'the card hangs; the last prediction counts');
         await tapPad(s.right);
@@ -307,6 +328,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
             await screenshot('rule-machine-5-portrait');
           }
           const before = s.rows.length;
+          if (m === 0 && k === 0) await stretchFeedback('rm.back.right');
           await feed(s.answerSlot);
           await until(
             ([n, mm, kk]) =>
@@ -315,6 +337,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
               (neo.scene.game.state.rows.length > n && neo.scene.game.state.asked > kk),
             [before, m, k],
           );
+          if (m === 0 && k === 0) await feedbackStillPlaying('the next wanted car opens during the result');
         }
       }
       await finished('rule-machine');

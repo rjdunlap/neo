@@ -270,6 +270,7 @@ class PeekaroundIsland implements Game {
   private readonly boat: Graphics | null = null;
   /** Level 8: the bird's-view cloud and birds while they drift. */
   private readonly flyover = new Container();
+  private waitingAsk: (() => Promise<void>) | null = null;
   /** Level 5: waiting for her guess of who will be in front after the half turn. */
   private predicting: ((name: CritterName) => void) | null = null;
 
@@ -428,7 +429,7 @@ class PeekaroundIsland implements Game {
 
   // Scenes --------------------------------------------------------------------------------
 
-  private async next() {
+  private async next(feedback?: Promise<void>) {
     this.busy = true;
     this.index++;
     this.wrongs = 0;
@@ -440,9 +441,9 @@ class PeekaroundIsland implements Game {
     }
     if (this.index >= this.plan.rounds) return void this.finale();
     await this.clearIsland();
-    if (mode === 'see') return this.seeScene();
-    if (mode === 'view') return this.viewScene();
-    if (mode === 'sky') return this.skyScene();
+    if (mode === 'see') return this.seeScene(feedback);
+    if (mode === 'view') return this.viewScene(feedback);
+    if (mode === 'sky') return this.skyScene(feedback);
     const scene = makeScene(this.plan, this.ctx.rng, this.hider ?? undefined);
     this.hider = scene.friends[scene.hider];
     scene.friends.forEach((name, i) => {
@@ -456,6 +457,35 @@ class PeekaroundIsland implements Game {
     if (mode === 'find') return this.ctx.instruct('around.find');
     if (mode === 'named') return this.ctx.instruct('around.named', { who: this.hider });
     return this.ctx.instruct('around.who');
+  }
+
+  /** Keep the next activity open while the previous scene's explanation plays. */
+  private async openAsk(ask: () => Promise<void>, feedback?: Promise<void>, intro?: () => Promise<void>) {
+    if (!feedback) {
+      if (intro) await intro();
+      this.busy = false;
+      return ask();
+    }
+    this.waitingAsk = ask;
+    this.busy = false;
+    await feedback;
+    if (this.waitingAsk !== ask || !this.ctx.alive) return;
+    if (intro) await intro();
+    if (this.waitingAsk === ask && this.ctx.alive) this.sayWaitingAsk();
+  }
+
+  sayWaitingAsk() {
+    const ask = this.waitingAsk;
+    if (!ask) return false;
+    this.waitingAsk = null;
+    void ask();
+    return true;
+  }
+
+  private async afterScene(feedback: Promise<void>, keepLesson = false) {
+    if (this.index + 1 >= this.plan.rounds) await feedback;
+    await this.ctx.tw.wait(0.4);
+    return this.next(keepLesson ? feedback : undefined);
   }
 
   private addFriend(name: CritterName, spot: number): Friend {
@@ -539,7 +569,10 @@ class PeekaroundIsland implements Game {
     f.node.poke();
     sfx.animal(VOICE[f.name]);
     const mode = this.plan.mode;
-    if (mode === 'see') return void this.seeTap(f);
+    if (mode === 'see') {
+      this.waitingAsk = null;
+      return void this.seeTap(f);
+    }
     if (mode !== 'find' && mode !== 'named') return;
     if (f.name === this.hider) return void this.found(f);
     // Named: a friend in plain sight is not the one asked for.
@@ -564,9 +597,7 @@ class PeekaroundIsland implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say('around.found', { who: f.name });
-    await this.ctx.tw.wait(0.4);
-    await this.next();
+    return this.afterScene(this.ctx.say('around.found', { who: f.name }));
   }
 
   // Who is hiding -------------------------------------------------------------------------
@@ -594,6 +625,7 @@ class PeekaroundIsland implements Game {
 
   private async pick(name: CritterName) {
     if (this.busy || this.finished) return;
+    this.waitingAsk = null;
     const tile = this.tiles.find((t) => t.name === name)!;
     tile.node.scale.set(0.9);
     void this.ctx.tw.to(tile.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
@@ -629,7 +661,7 @@ class PeekaroundIsland implements Game {
   // Who can't see it --------------------------------------------------------------------
 
   /** A picture on one spot and friends round it: the one across the tree cannot see it. */
-  private async seeScene() {
+  private async seeScene(feedback?: Promise<void>) {
     if (!this.sceneOrder.length) this.sceneOrder = seeFacings(this.ctx.rng);
     const scene = makeSeeScene(this.sceneOrder[this.index], this.ctx.rng, this.hider ?? undefined);
     this.hider = scene.friends[scene.blocked];
@@ -646,9 +678,11 @@ class PeekaroundIsland implements Game {
     });
     await this.ctx.tw.wait(0.5);
     // Behind the tree from her side: she cannot see it either.
-    if (scene.picture === 2) await this.ctx.say('around.see.hidden');
-    this.busy = false;
-    return this.ctx.instruct('around.see');
+    return this.openAsk(
+      () => this.ctx.instruct('around.see'),
+      feedback,
+      scene.picture === 2 ? () => this.ctx.say('around.see.hidden') : undefined,
+    );
   }
 
   /** Turn the island so the tapped friend is in front: her view becomes theirs. */
@@ -681,15 +715,13 @@ class PeekaroundIsland implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say('around.see.cant');
-    await this.ctx.tw.wait(0.4);
-    await this.next();
+    return this.afterScene(this.ctx.say('around.see.cant'), true);
   }
 
   // What does the duck see ---------------------------------------------------------------
 
   /** Three friends round the tree, one named, and a picture card from each friend's side. */
-  private async viewScene() {
+  private async viewScene(feedback?: Promise<void>) {
     if (!this.sceneOrder.length) this.sceneOrder = viewFacings(this.ctx.rng);
     const scene = makeViewScene(this.sceneOrder[this.index], this.ctx.rng, this.hider ?? undefined);
     this.hider = scene.friends[scene.viewer];
@@ -700,8 +732,8 @@ class PeekaroundIsland implements Game {
     });
     this.buildViews();
     await this.ctx.tw.wait(0.5);
-    this.busy = false;
-    return this.ctx.instruct('around.view', { who: this.hider });
+    const who = scene.friends[scene.viewer];
+    return this.openAsk(() => this.ctx.instruct('around.view', { who }), feedback);
   }
 
   private buildViews() {
@@ -760,15 +792,13 @@ class PeekaroundIsland implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say('around.view.right', { who: name });
-    await this.ctx.tw.wait(0.4);
-    await this.next();
+    return this.afterScene(this.ctx.say('around.view.right', { who: name }), true);
   }
 
   // From the sky --------------------------------------------------------------------------
 
   /** Friends round the tree, one maybe hidden behind it, and three maps of the island from the sky. */
-  private async skyScene() {
+  private async skyScene(feedback?: Promise<void>) {
     const scene = makeSkyScene(this.index, this.ctx.rng, this.hider ?? undefined);
     this.sky = scene;
     const hidden = scene.hidden === null ? null : scene.friends[scene.hidden];
@@ -788,13 +818,16 @@ class PeekaroundIsland implements Game {
     }
     this.resize(this.view);
     await this.ctx.tw.wait(0.5);
-    if (hidden) await this.ctx.say('around.sky.hidden', { who: hidden });
-    this.busy = false;
-    return this.ctx.instruct('around.sky');
+    return this.openAsk(
+      () => this.ctx.instruct('around.sky'),
+      feedback,
+      hidden ? () => this.ctx.say('around.sky.hidden', { who: hidden }) : undefined,
+    );
   }
 
   private async skyPick(kind: SkyKind) {
     if (this.busy || this.finished || !this.sky) return;
+    this.waitingAsk = null;
     const scene = this.sky;
     const card = this.maps.find((m) => m.kind === kind)!;
     card.node.scale.set(0.9);
@@ -812,9 +845,7 @@ class PeekaroundIsland implements Game {
       }
       this.birdsView();
       this.ctx.pet.cheer();
-      await this.ctx.say('around.sky.right');
-      await this.ctx.tw.wait(0.4);
-      return this.next();
+      return this.afterScene(this.ctx.say('around.sky.right'), true);
     }
     // A wrong card counts once; tapped again, it just says why again.
     if (!card.tried) {
@@ -987,11 +1018,12 @@ class PeekaroundIsland implements Game {
     if (this.friends.some((x) => x.want))
       return void this.ctx.say(line, { who: f.name, where: WHERE_WORDS[where] });
     this.busy = true;
-    await this.ctx.say(line, { who: f.name, where: WHERE_WORDS[where] });
+    const feedback = this.ctx.say(line, { who: f.name, where: WHERE_WORDS[where] });
     if (this.plan.mode === 'two') {
       // Before looking from the other side, she guesses who will be in front: the one behind comes round.
       const coming = frontAfterHalfTurn(this.friends, this.turns);
-      const guess = coming ? await this.predict() : null;
+      if (!coming) await feedback;
+      const guess = coming ? await this.predict(feedback) : null;
       await this.ctx.say('around.otherside');
       await this.turn(2);
       this.busy = true;
@@ -1001,6 +1033,8 @@ class PeekaroundIsland implements Game {
         if (guess && guess !== front.name) await this.ctx.say('around.cameround');
         await this.ctx.say('around.now', { who: front.name, where: WHERE_WORDS.front });
       }
+    } else if (this.friends.every((friend) => friend.spot >= 0)) {
+      await feedback;
     }
     this.placeShore();
     await this.ctx.tw.wait(0.3);
@@ -1008,11 +1042,10 @@ class PeekaroundIsland implements Game {
   }
 
   /** A picture card of the friends on the island: tap who will be in front once the island turns around. */
-  private async predict(): Promise<CritterName> {
+  private async predict(feedback: Promise<void>): Promise<CritterName> {
     this.buildCard(this.friends.filter((f) => f.spot >= 0).map((f) => f.name));
     const guess = new Promise<CritterName>((resolve) => (this.predicting = resolve));
-    this.busy = false;
-    void this.ctx.instruct('around.predict');
+    void this.openAsk(() => this.ctx.instruct('around.predict'), feedback);
     const name = await guess;
     this.clearCard();
     return name;

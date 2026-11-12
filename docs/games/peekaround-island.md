@@ -32,6 +32,8 @@
 
 ## Design notes
 
+A correct find or placement starts its confirmation as the next scene or friend gets ready. At level 5 the guess cards open while the placement is named. At levels 6–8 the next scene opens while the previous explanation plays. The guide can say the current question early.
+
 *After Captain Toad: Treasure Tracker and Fez.* A round island seen from the side, with a big round tree in the middle and four friend spots a quarter turn apart. Turning is drawn, not 3D: each spot's angle projects onto an ellipse, depth sets scale and draw order, and anything behind the tree's crown is hidden and cannot be tapped. Flowers between the spots make each quarter turn visible. "In front of", "behind" and "next to" are always from the child's side, so turning changes them (`logic.ts` `whereIs`).
 
 - Levels 1–2 show arrow buttons; tapping the tree also turns it. Level 1 finds whoever hides behind the tree. Level 2 finds a named friend while two others stand in plain sight; tapping one of them is a miss. Two misses ring the arrows while the asked-for friend is hidden, and ring that friend once it is in view (it says "There is the duck! Tap the duck."); the ring follows if she turns after the hint.

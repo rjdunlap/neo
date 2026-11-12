@@ -673,7 +673,8 @@ class PenguinSlide implements Game {
         gravity: 0,
         life: [0.4, 0.8],
       });
-      await this.ctx.say('slide.predict.right');
+      const feedback = this.ctx.say('slide.predict.right');
+      if (this.step + 1 >= this.shown.length) await feedback;
     } else {
       const stop = stopper(this.puzzle, to, dir);
       if (stop.kind === 'rock') {
