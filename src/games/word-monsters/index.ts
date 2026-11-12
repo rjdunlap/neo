@@ -180,6 +180,9 @@ class WordMonsters implements Game {
   private picture: Container | null = null;
   private view: View;
   private wrongs = 0;
+  /** The next question's ask, waiting behind the right monster's sound (U7 R4); `askGen` drops a stale wait. */
+  private unasked: Question | null = null;
+  private askGen = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -243,7 +246,7 @@ class WordMonsters implements Game {
   autotouch(): TouchIntent | null {
     // Free play never starts a question, so its monsters belong to the first.
     const q = this.question ?? (this.plan.mode === 'play' ? this.questions[0] : undefined);
-    if (this.busy || this.finished || !q) return null;
+    if (this.busy || this.finished || this.unasked || !q) return null;
     const m = nextMonster(
       this.plan,
       q,
@@ -309,7 +312,7 @@ class WordMonsters implements Game {
 
   // Questions ----------------------------------------------------------------------------
 
-  private async next() {
+  private async next(said?: Promise<unknown>) {
     this.busy = true;
     this.index++;
     this.wrongs = 0;
@@ -338,7 +341,28 @@ class WordMonsters implements Game {
     if (this.plan.mode === 'end') this.filled = 2;
     await this.ctx.tw.wait(0.4);
     this.busy = false;
-    await this.ask(q);
+    if (!said) return void (await this.ask(q));
+    // The ask waits for the last sound, or is said at her first tap or by the guide.
+    this.unasked = q;
+    const gen = ++this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting ask, if there is one. */
+  private askNow() {
+    const q = this.unasked;
+    if (!q || this.finished) return false;
+    this.unasked = null;
+    this.askGen++;
+    void this.ask(q);
+    return true;
+  }
+
+  /** The guide was tapped while the next ask waits: say it, not the ask before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** Word families: the ending's monsters already stand in the last slots. */
@@ -402,7 +426,10 @@ class WordMonsters implements Game {
       return;
     }
     const q = this.question!;
+    const waiting = this.unasked !== null;
     if (m.letter === q.answer) {
+      this.unasked = null;
+      this.askGen++;
       this.busy = true;
       m.glow.visible = false;
       sfx.sparkle();
@@ -414,11 +441,20 @@ class WordMonsters implements Game {
         gravity: 0,
         life: [0.5, 0.9],
       });
-      await this.ctx.say(soundLine(m.letter));
+      const said = this.ctx.say(soundLine(m.letter));
+      if (this.index + 1 < this.questions.length) {
+        // The sound starts and the next question's monsters come at once, its ask waiting for the sound (U7 R4).
+        await this.next(said);
+        return;
+      }
+      // The last question's sound and praise are heard out.
+      await said;
       await this.ctx.say('praise');
       await this.next();
       return;
     }
+    // A tap before she has heard the ask is not a mistake: the ask is said now.
+    if (waiting) return void this.askNow();
     this.wrong(m);
   }
 
