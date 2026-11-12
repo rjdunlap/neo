@@ -77,7 +77,10 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const finishAfter = await page.evaluate(
       () => neo.scene.game.finishAt[0] - neo.scene.game.heardLines[1].at,
     );
-    assert.ok(finishAfter >= 3900, `seeds.finish waited for the arrival line (${Math.round(finishAfter)} ms)`);
+    assert.ok(
+      finishAfter >= 3900,
+      `seeds.finish waited for the arrival line (${Math.round(finishAfter)} ms)`,
+    );
     log(
       `Seed Travelers 1 R4: the bellows opened ${heard.join(', ')} ms into the stretched arrival; "Tap the basket" ${Math.round(finishAfter)} ms after the last`,
     );
