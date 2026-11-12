@@ -57,7 +57,13 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => neo.scene.game.askForHint());
     await page.waitForTimeout(300);
     assert.deepEqual(await tally(), [1, 1], 'a second hint on the same request counts nothing more');
-    await tool('sun');
+    // U7 R4: "Same thing, just changed!" (2.4 s when muted) never holds the next request. The melt (about 1.3 s), the
+    // exit and the next thing's arrival (0.85 s) come to about 2.2 s; with the line awaited it was about 4.6 s.
+    await page.evaluate(() => kit.tapOn(neo.scene.game.sunButton));
+    await page.waitForFunction(() => neo.scene.game.round.index === 1 && !neo.scene.game.busy, null, {
+      timeout: 3400,
+    });
+    await settle();
     assert.equal(await page.evaluate(() => neo.scene.game.round.index), 1, 'the ice request is met');
     await tool('snow');
     await tool('sun');

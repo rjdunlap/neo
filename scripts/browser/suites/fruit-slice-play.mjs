@@ -149,6 +149,12 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await page.waitForTimeout(500);
       await screenshot('fruit-slice-7-portrait');
       n = await page.evaluate(() => kit.store.data.stickers.length);
+      // U7 R4: "Yes! One line through …" (2.4 s when muted) never holds the next board: it arrives once the halves
+      // land (0.7 s) and can be cut at once; with the line awaited it was 2.4 s.
+      await drawSolution();
+      await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+        timeout: 1300,
+      });
       for (let guard = 0; guard < 8 && !(await page.evaluate(() => neo.scene.finished)); guard++)
         await drawSolution();
       await sticker(n);

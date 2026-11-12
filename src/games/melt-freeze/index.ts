@@ -54,6 +54,8 @@ class MeltFreeze implements Game {
   hints = 0;
   busy = false;
   finished = false;
+  /** Level 3: the request on the table has not been spoken yet (it waits behind the lesson line, U7 R4). */
+  private unasked = false;
   /** Level 1: both changes seen once each ends the round. */
   seenMelt = false;
   seenFreeze = false;
@@ -335,6 +337,7 @@ class MeltFreeze implements Game {
   }
 
   private askRequest() {
+    this.unasked = false;
     const r = this.round!.request;
     void this.ctx.instruct(
       r.to === 'melted' ? 'meltfreeze.instruct.make.melt' : 'meltfreeze.instruct.make.hard',
@@ -346,6 +349,8 @@ class MeltFreeze implements Game {
     const round = this.round!;
     const t = this.things[0];
     const r = round.request;
+    // A tap before the request was spoken: the request becomes the instruction now, and the tool's own line cuts it.
+    if (this.unasked) this.askRequest();
     const out = round.tap(tool);
     this.misses = round.misses;
     this.hints = round.hints;
@@ -374,8 +379,14 @@ class MeltFreeze implements Game {
     if (!out.done) return void (this.busy = false);
     this.setGlow(null);
     this.ctx.pet.cheer();
-    await this.ctx.say('meltfreeze.same');
-    if (round.finished) return void this.end();
+    // The lesson line never holds the next request (U7 R4): it plays over the thing's exit and the next thing's
+    // arrival, the tools open as soon as that thing stands, and the request is spoken when the lesson ends (or as
+    // she taps, if she is quicker). On the last request it is heard out, because the closing line would cut it.
+    const lesson = this.ctx.say('meltfreeze.same');
+    if (round.finished) {
+      await lesson;
+      return void this.end();
+    }
     await this.ctx.tw.to(t.node, { x: -200, alpha: 0 }, { duration: 0.4, ease: ease.inQuad });
     this.show([round.request.thing], round.request.from);
     const next = this.things[0];
@@ -383,12 +394,15 @@ class MeltFreeze implements Game {
     this.showCard();
     await this.ctx.tw.to(next.node, { x: this.layout.spots[0].x }, { duration: 0.45, ease: ease.outBack });
     this.busy = false;
-    this.askRequest();
+    this.unasked = true;
+    await lesson;
+    if (this.unasked && !this.finished) this.askRequest();
   }
 
   /** Show a hint, from the pause sheet: the right tool glows and the clue is spoken; one counted hint per request. */
   private hint() {
     if (this.finished || !this.round || this.round.finished) return;
+    if (this.unasked) this.askRequest();
     const { hint } = this.round.ask();
     this.hints = this.round.hints;
     this.setGlow(toolFor(this.round.request));

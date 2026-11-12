@@ -91,6 +91,8 @@ class DriftCards implements Game {
   readonly level: number;
   finished = false;
   busy = false;
+  /** Level 2: the friend's ask is shown but not spoken yet (it waits behind "Found by …", U7 R4). */
+  private unasked = false;
   index = 0;
   turns: Turn[] = [];
   /** Misses and hints from before a Start again. */
@@ -424,41 +426,61 @@ class DriftCards implements Game {
       return;
     }
     f.found++;
+    // "Found by …" never holds the next card or sea (U7 R4): it starts, the next card is held or the next sea shown
+    // at once, and at level 2 the friend's ask is spoken when it ends. On the last card it is heard out, because
+    // the closing line would cut it. The free first drop's line is a result with what to do next time, so it holds.
+    let landed: Promise<unknown> | undefined;
     if (why === 'first') await this.ctx.say('drift.first');
-    else await this.ctx.say('drift.landed', { friend: FRIEND[d.beach], beach: BEACH_NAME[d.beach] });
+    else {
+      landed = this.ctx.say('drift.landed', { friend: FRIEND[d.beach], beach: BEACH_NAME[d.beach] });
+      if (this.index + 1 >= this.turns.length) await landed;
+    }
     if (this.finished) return;
     this.index++;
     if (this.index >= this.turns.length) return void this.end();
     if (this.plan.mode === 'predict') this.holdCard();
-    else this.nextSea();
+    else this.nextSea(landed);
     this.busy = false;
     this.drawGlow();
   }
 
   // Level 2: send it to a friend ----------------------------------------------------------------------
 
-  private askFriend() {
+  private askFriend(after?: Promise<unknown>) {
     const req = this.request;
     if (!req || this.finished) return;
     for (const f of this.friends.values()) f.ask.visible = f.beach === req.ask;
     this.drawAsk();
+    if (!after) return this.sayAsk();
+    // The ask is on the sand already; its line waits for the one before it, or for her first pick.
+    this.unasked = true;
+    void after.then(() => {
+      if (this.unasked) this.sayAsk();
+    });
+  }
+
+  private sayAsk() {
+    const req = this.request;
+    this.unasked = false;
+    if (!req || this.finished) return;
     void this.ctx.instruct('drift.instruct.2', { friend: FRIEND[req.ask] });
   }
 
-  private nextSea() {
+  private nextSea(after?: Promise<unknown>) {
     const req = this.request;
     if (!req) return;
     this.sea = req.sea;
     this.demoStep = -1;
     this.clearTrace();
     this.drawSea();
-    this.askFriend();
+    this.askFriend(after);
   }
 
   private pickBoat(col: number) {
     const turn = this.turn;
     const req = this.request;
     if (this.finished || this.busy || !turn || !req) return;
+    if (this.unasked) this.sayAsk();
     this.press(this.boatOf(col).node);
     const right = boatsFor(this.sea, this.plan.boats, req.ask).includes(col);
     turn.choose(right);
