@@ -1244,6 +1244,44 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         : Array.from({ length: 8 - fromLevel }, (_, i) => i + fromLevel)) {
         await launch('clock-tower', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+        // U7 R4: a right answer's line (`clock.yay`, `clock.itis`, level 6's example) never holds the tower. Each is
+        // stretched to at least 6 s of game time (the chime and sweep run on game time too, so a slow headless frame rate
+        // cannot blur them), and the next task must open before the line ends; its instruction is still said (at the
+        // line's end or at her first touch), and the last task's line is heard out.
+        await page.evaluate(() => {
+          const g = neo.scene.game;
+          const say = g.ctx.say.bind(g.ctx);
+          const instruct = g.ctx.instruct.bind(g.ctx);
+          g.rightLines = [];
+          const asked = () => {
+            const prev = g.rightLines.at(-1);
+            if (prev && prev.asked === undefined) prev.asked = performance.now() - prev.at;
+          };
+          g.ctx.instruct = (id, vars) => {
+            asked();
+            return instruct(id, vars);
+          };
+          g.ctx.say = (id, vars) => {
+            const line = say(id, vars);
+            const key = String(id);
+            const prev = g.rightLines.at(-1);
+            if (key === 'clock.done' && prev && prev.done === undefined)
+              prev.done = performance.now() - prev.at;
+            if (key !== 'clock.yay' && key !== 'clock.itis' && key !== 'clock.later.example') return line;
+            const index = g.index;
+            const rec = { id: key, at: performance.now(), last: index + 1 >= g.tasks.length };
+            g.rightLines.push(rec);
+            const watch = () => {
+              if (rec.opens !== undefined) return;
+              if (g.finished || (!g.busy && g.index > index)) rec.opens = performance.now() - rec.at;
+              else if (performance.now() - rec.at < 20000) requestAnimationFrame(watch);
+            };
+            void Promise.resolve().then(watch);
+            return Promise.all([line, g.ctx.tw.wait(6)]).then(() => {
+              rec.ended = performance.now() - rec.at;
+            });
+          };
+        });
         const settle = async () => {
           await page.waitForTimeout(250);
           await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, {
@@ -1385,6 +1423,28 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         await finished('clock-tower');
         assert.deepEqual(await score('clock-tower'), [2, 1]);
+        const rights = await page.evaluate(() =>
+          neo.scene.game.rightLines.map((r) => ({
+            id: r.id,
+            last: r.last,
+            opens: Math.round(r.opens ?? -1),
+            ended: Math.round(r.ended ?? -1),
+            asked: Math.round(r.asked ?? -1),
+            done: Math.round(r.done ?? -1),
+          })),
+        );
+        const early = rights.filter((r) => !r.last);
+        // Level 6's example starts with its 0.8 s sweep and the chime rings over it, so its next task opens later, but
+        // still well before the line ends.
+        if (early.length !== 3 || early.some((r) => r.opens < 0 || r.ended < 0 || r.opens > r.ended - 1000))
+          throw new Error(`R4: a right answer's line held the next task: ${JSON.stringify(rights)}`);
+        if (early.some((r) => r.asked < 0))
+          throw new Error(`R4: a waiting instruction was never said: ${JSON.stringify(rights)}`);
+        if (rights.filter((r) => r.last).some((r) => r.done < r.ended))
+          throw new Error(`R4: the last task's line was not heard out: ${JSON.stringify(rights)}`);
+        log(
+          `Clock Tower ${level} R4: the next task opened ${early.map((r) => `${r.opens}/${r.ended}`).join(', ')} ms into the line`,
+        );
         log(
           `Clock Tower ${level} (${mode}): ${mode === 'read' ? 'visible appointment times, free replay, picture choices' : 'hands turned and snapped'}, two misses, one hint, saved score and sticker passed`,
         );

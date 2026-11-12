@@ -328,20 +328,28 @@ class MakerLane implements Game {
         st.bubble.destroy({ children: true });
         st.bubble = null;
       }
-    await this.ctx.say(`makerlane.make.${out.maker.chain}.${out.maker.step}` as LineId);
+    const line = this.ctx.say(`makerlane.make.${out.maker.chain}.${out.maker.step}` as LineId);
+    if (!out.finished) {
+      // A step's line never holds the lane (U7 R4): the new form is already drawn, so the maker hangs their work and
+      // the bundle can go on to the next maker at once, whose own line cuts this one.
+      this.hang(i, out.to);
+      this.release();
+      if (this.drag) this.drag.enabled = true;
+      return;
+    }
+    // A bundle's last step is heard out before its flight to the pet.
+    await line;
     if (!this.alive) return;
     // Done with their step: the maker steps aside and hangs their work on the stall.
     this.hang(i, out.to);
-    if (out.finished) {
-      await this.toPet();
+    await this.toPet();
+    if (!this.alive) return;
+    if (out.done) return void this.finale();
+    this.setUp();
+    sfx.pop(7);
+    if (this.level === 2) {
+      await this.ctx.say(this.harvestLine());
       if (!this.alive) return;
-      if (out.done) return void this.finale();
-      this.setUp();
-      sfx.pop(7);
-      if (this.level === 2) {
-        await this.ctx.say(this.harvestLine());
-        if (!this.alive) return;
-      }
     }
     this.release();
     if (this.drag) this.drag.enabled = true;
