@@ -64,6 +64,12 @@ export function createSuite({ page, log, screenshot, launch, finished }) {
       assert.equal((await state()).performing, false);
       const drum = hatOf(s.rack, 'drum'),
         tune = hatOf(s.rack, 'tune');
+      // A button that is not a place ends a hold and still acts (Done on the empty stage: its reminder, nothing counted).
+      await tap(`neo.scene.game.hats.get('${tune}')`);
+      assert.equal((await state()).selected, tune);
+      await tap('neo.scene.game.done');
+      s = await state();
+      assert.deepEqual([s.selected, s.performing, s.worn], [null, false, [null, null]]);
       // Drag the drum hat onto the first friend: worn at once, heard at the next beat.
       await page.evaluate(async (id) => {
         const g = neo.scene.game;
@@ -72,6 +78,31 @@ export function createSuite({ page, log, screenshot, launch, finished }) {
       await page.waitForTimeout(300);
       assert.equal((await state()).worn[0], drum);
       await settled();
+      // Tap the tune hat: the drag engine holds it (it breathes on the rack). A second tap on it puts it back.
+      const hold = () =>
+        page.evaluate((id) => {
+          const p = neo.scene.game.hats.get(id);
+          return [p.handle.held, Math.round(p.x), Math.round(p.y), p.scale.x > 1.1];
+        }, tune);
+      const rest = await hold();
+      await tap(`neo.scene.game.hats.get('${tune}')`);
+      assert.equal((await state()).selected, tune);
+      assert.deepEqual(
+        await hold(),
+        [true, rest[1], rest[2], true],
+        'a held hat waits at its rack place, lifted',
+      );
+      await tap(`neo.scene.game.hats.get('${tune}')`);
+      assert.equal((await state()).selected, null, 'a tap on the held hat puts it down');
+      // A tap on empty ground puts the hat down there, and Hat Band sends it back to the rack.
+      await tap(`neo.scene.game.hats.get('${tune}')`);
+      await page.evaluate(() => kit.tap(6, innerHeight / 2));
+      await page.waitForTimeout(700);
+      s = await state();
+      assert.deepEqual(
+        [s.selected, s.worn[1], ...(await hold()).slice(0, 3)],
+        [null, null, false, rest[1], rest[2]],
+      );
       // Tap the tune hat, then tap the second friend.
       await tap(`neo.scene.game.hats.get('${tune}')`);
       assert.equal((await state()).selected, tune);
@@ -79,9 +110,10 @@ export function createSuite({ page, log, screenshot, launch, finished }) {
         const g = neo.scene.game;
         kit.tapOn(g.spots[1], 80, 200);
       });
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(500);
       s = await state();
       assert.deepEqual(s.worn, [drum, tune]);
+      assert.equal(s.selected, null);
       // An early Done while the new part is still joining: nothing happens but a reminder.
       await tap('neo.scene.game.done');
       assert.equal((await state()).performing, false);
@@ -106,7 +138,7 @@ export function createSuite({ page, log, screenshot, launch, finished }) {
       const place = async (hat, friend) => {
         await tap(`neo.scene.game.hats.get('${hat}')`);
         await page.evaluate((f) => kit.tapOn(neo.scene.game.spots[f], 80, 200), friend);
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(500);
       };
       await place(drums[0], 0);
       await place(tunes[0], 1);
@@ -114,6 +146,15 @@ export function createSuite({ page, log, screenshot, launch, finished }) {
       await place(tunes[1], 1);
       s = await state();
       assert.deepEqual(s.worn, [drums[0], tunes[1]]);
+      // A held hat swaps in when the tap lands on the hat a friend is wearing, and a tap on a worn hat takes it off.
+      await tap(`neo.scene.game.hats.get('${tunes[0]}')`);
+      await tap(`neo.scene.game.hats.get('${tunes[1]}')`);
+      await page.waitForTimeout(300);
+      assert.deepEqual((await state()).worn, [drums[0], tunes[0]]);
+      await tap(`neo.scene.game.hats.get('${tunes[0]}')`);
+      assert.deepEqual((await state()).worn, [drums[0], null]);
+      await place(tunes[1], 1);
+      assert.deepEqual((await state()).worn, [drums[0], tunes[1]]);
       await settled();
       assert.ok((await state()).alpha < 1, 'level 3 waits for each friend alone');
       // Each friend alone with the star, then together.

@@ -54,6 +54,14 @@ export interface TapOptions {
   cooldown?: number;
   /** A circular hit area, usually bigger than the drawing. */
   radius?: number;
+  /** A place a tapped-then-held piece can be put (`tapToPlace` in `drag.ts`): the piece goes down at the touch, then `fn` runs. */
+  place?: boolean;
+}
+
+/** `drag.ts` listens here, so a tap on any button ends or uses a hold without this module importing it back. */
+let tapWatcher: ((e: FederatedPointerEvent, place: boolean) => void) | null = null;
+export function watchTaps(fn: (e: FederatedPointerEvent, place: boolean) => void) {
+  tapWatcher = fn;
 }
 
 /** Fires on touch-down rather than release, so a poke answers instantly. */
@@ -68,6 +76,7 @@ export function onTap(obj: Container, fn: (e: FederatedPointerEvent) => void, op
     if (now - last < cooldown || palmOnGlass()) return;
     last = now;
     markTiming('tap');
+    tapWatcher?.(e, opts.place === true);
     fn(e);
   });
 }

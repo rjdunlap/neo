@@ -3,6 +3,7 @@ import { cream } from '../art/palette';
 import { initTextures } from '../art/textures';
 import { audio } from '../audio/engine';
 import { voice } from '../audio/voice';
+import { cancelHeld } from '../engine/drag';
 import { trackPointers } from '../engine/input';
 import {
   clampInsets,
@@ -424,6 +425,8 @@ export class App {
 
   private pause() {
     this.paused = true;
+    // The pause sheet covers the round: a piece held by a tap goes back first.
+    cancelHeld();
     voice.stop();
     this.syncSleep();
     this.padSheet = new PadSheet();
