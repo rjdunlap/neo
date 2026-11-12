@@ -195,6 +195,26 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.evaluate(async () => {
         const g = neo.scene.game;
         const { CURE, CHECK_PART, allowedChecks } = await import('/src/games/teddy-doctor/logic.ts');
+        // U7 R4: a check-up step's result never holds the next tool. Each step line is stretched to at least 4 s here,
+        // so the tools opening sooner (for every step but a patient's last) shows the line no longer gates them.
+        const say = g.ctx.say.bind(g.ctx);
+        g.stepLines = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          if (!/^doctor\.(heart|temp|ears|weigh|tall)$/.test(String(id))) return line;
+          const index = g.index,
+            step = g.step;
+          const rec = { at: performance.now(), last: step + 1 >= g.round.steps.length };
+          g.stepLines.push(rec);
+          const watch = () => {
+            if (rec.opens !== undefined) return;
+            if (g.finished || g.index !== index || (!g.busy && g.step > step))
+              rec.opens = performance.now() - rec.at;
+            else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+          };
+          void Promise.resolve().then(watch);
+          return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+        };
         const idle = () => kit.until(() => (!g.busy && g.patient) || g.finished, 15000);
         // A tool rides 40 above the finger, so aim the finger just below the body part.
         const use = async (tool, part) => {
@@ -299,6 +319,19 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await kit.until(() => g.index > r || g.finished, 15000);
         }
       });
+      const stepLines = await page.evaluate(() =>
+        neo.scene.game.stepLines.map((r) => ({ last: r.last, opens: Math.round(r.opens ?? -1) })),
+      );
+      if (['card', 'told', 'rules'].includes(mode)) {
+        const early = stepLines.filter((r) => !r.last);
+        if (!early.length || early.some((r) => r.opens < 0 || r.opens > 1500))
+          throw new Error(`R4: a check-up step's line held the next tool: ${JSON.stringify(stepLines)}`);
+        if (stepLines.filter((r) => r.last).some((r) => r.opens < 3900))
+          throw new Error(`R4: a patient's last step was not heard out: ${JSON.stringify(stepLines)}`);
+        log(
+          `Teddy Doctor ${level} R4: the next tool opened ${early.map((r) => r.opens).join(', ')} ms into a step's line`,
+        );
+      }
       await screenshot(`teddy-doctor-${level}`);
       await finished('teddy-doctor');
       assert.deepEqual(

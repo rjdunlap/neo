@@ -285,12 +285,46 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     const rooms2 = await page.evaluate(() =>
       neo.scene.game.ruinBrief.rooms.map((r) => ({ room: r.room, cell: r.cell })),
     );
+    // U7 R4: a settled label's deciding clue and `kh.was.*` never hold the ruin. The settling clue (said with the ruin
+    // busy) is stretched to at least 4 s here, so the labels opening sooner shows the line no longer gates them; the
+    // ruin's last label is still heard out.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.clueLines = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        if (!String(id).startsWith('kh.clue.') || !g.busy) return line;
+        const ruin = g.ruinIndex,
+          n = g.ruin.settled.length;
+        const rec = { at: performance.now(), last: n >= g.ruinBrief.rooms.length };
+        g.clueLines.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (g.finished || g.ruinIndex !== ruin || !g.busy) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
     for (const r of rooms2) {
       await dragTo(label(r.room), ruinCell(r.cell), 60, 60);
       await settle();
     }
     await finished('keep-house');
     assert.deepEqual(await score(), [2, 1], 'level 5 saved two misses and one hint');
+    const clues = await page.evaluate(() =>
+      neo.scene.game.clueLines.map((r) => ({ last: r.last, opens: Math.round(r.opens ?? -1) })),
+    );
+    const early = clues.filter((r) => !r.last);
+    if (early.length !== 3 || early.some((r) => r.opens < 0 || r.opens > 1500))
+      throw new Error(`R4: a settled label's clue held the ruin: ${JSON.stringify(clues)}`);
+    if (clues.filter((r) => r.last).some((r) => r.opens >= 0 && r.opens < 3900))
+      throw new Error(`R4: the ruin's last label was not heard out: ${JSON.stringify(clues)}`);
+    log(
+      `Keep House 5 R4: the labels opened ${early.map((r) => r.opens).join(', ')} ms into a settled label's clue`,
+    );
 
     // Level 6: the first lord built the other way, Keep it twice (one hint, no miss); the second lord built the fitting way.
     await launch('keep-house', 6, 'Mia', 'school');

@@ -1218,19 +1218,37 @@ class KeepHouse implements Game {
     this.walkLayer.addChild(who);
     void this.ctx.tw.to(who, { alpha: 1 }, { duration: 0.25 });
     AT_WORK_SOUND[RUIN_FIGURE[room]]();
-    await this.ctx.say(`kh.clue.${decidingClueOf(this.ruinBrief, room)}` as LineId);
+    const clue = `kh.clue.${decidingClueOf(this.ruinBrief, room)}` as LineId;
+    if (!ruinDone(this.ruinBrief, this.ruin)) {
+      // The clue and the name never hold the ruin (U7 R4): they are the reason, so they play over her next label. The
+      // labels open as the clue starts; picking one, a look or a wrong drop cuts the pair, and the figure fades after.
+      const token = this.lookToken;
+      void this.ctx
+        .say(clue)
+        .then(() =>
+          this.live(epoch) && token === this.lookToken ? this.ctx.say(`kh.was.${room}` as LineId) : undefined,
+        )
+        .then(() =>
+          this.live(epoch) && !who.destroyed
+            ? this.ctx.tw.to(who, { alpha: 0 }, { duration: 0.4 })
+            : undefined,
+        )
+        .then(() => {
+          if (!who.destroyed) who.destroy({ children: true });
+        });
+      this.busy = false;
+      this.redrawRuin();
+      if (this.relayout) this.build();
+      return;
+    }
+    // The ruin's last label is heard out, before the household comes back.
+    await this.ctx.say(clue);
     if (!this.live(epoch)) return;
     await this.ctx.say(`kh.was.${room}` as LineId);
     if (!this.live(epoch)) return;
     await this.ctx.tw.to(who, { alpha: 0 }, { duration: 0.4 });
     if (!this.live(epoch)) return;
     who.destroy({ children: true });
-    if (!ruinDone(this.ruinBrief, this.ruin)) {
-      this.busy = false;
-      this.redrawRuin();
-      if (this.relayout) this.build();
-      return;
-    }
     // The household walks back into every room for a moment, then the ruin is quiet again.
     for (const [i, step] of BELL_STEPS.entries())
       void this.ctx.tw.wait(i * 0.25).then(() => {

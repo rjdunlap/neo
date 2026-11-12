@@ -74,9 +74,49 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await screenshot('second-chance-shed-4-portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(300);
+    // U7 R4: a right drop's made line never holds the shed. Each `shed.made.*` is stretched to at least 4 s here, so the
+    // next thing opening sooner shows the line no longer gates it; that thing's name waits for the line to end.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      g.madeLines = [];
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        const rec0 = g.madeLines.at(-1);
+        if (/^shed\.(item|arrive)\./.test(String(id)) && rec0 && rec0.named === undefined)
+          rec0.named = performance.now() - rec0.at;
+        if (!String(id).startsWith('shed.made.')) return line;
+        const index = g.index;
+        const rec = { at: performance.now(), last: index + 1 >= g.round.items.length };
+        g.madeLines.push(rec);
+        const watch = () => {
+          if (rec.opens !== undefined) return;
+          if (g.finished || (!g.busy && g.item && g.index > index)) rec.opens = performance.now() - rec.at;
+          else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+        };
+        void Promise.resolve().then(watch);
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+    });
     await playOut();
     await finished('second-chance-shed');
     assert.deepEqual(await score(), [1, 1]);
+    const made = await page.evaluate(() =>
+      neo.scene.game.madeLines.map((r) => ({
+        last: r.last,
+        opens: Math.round(r.opens ?? -1),
+        named: Math.round(r.named ?? -1),
+      })),
+    );
+    const early = made.filter((r) => !r.last);
+    if (!early.length || early.some((r) => r.opens < 0 || r.opens > 1500))
+      throw new Error(`R4: a made line held the next thing: ${JSON.stringify(made)}`);
+    // A name said at all comes after the made line (the suite drops at once, so most are skipped as no longer news).
+    if (early.some((r) => r.named >= 0 && r.named < 3900))
+      throw new Error(`R4: the next thing's name cut the made line: ${JSON.stringify(made)}`);
+    log(
+      `Second Chance Shed 4 R4: the next thing opened ${early.map((r) => r.opens).join(', ')} ms into a made line`,
+    );
     log(
       'Second Chance Shed 1 and 4: empty-yard drop uncounted, worms fed, wrong place miss, requested glow hint, portrait, saved score passed',
     );
