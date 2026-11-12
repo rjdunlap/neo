@@ -161,3 +161,9 @@
 **Changed:** the Tinker Lab table (six games: `bouncy-launch` 1, `seesaw-balance` 12, `block-tower` 1, `moon-window` 1, `vine-snip` 1, `far-lights` 1), its words-off list and a closing "Every land is read" section on the [toy-test page](../definitions/toy-test-lap-openings.md); five READY lines (`far-lights`, `bouncy-launch`, `moon-window`, `seesaw-balance`, `vine-snip`); the P4 line left Next ten and the progress count is 57 of 57, so the audit is done.
 **Ran:** `node scripts/check-links.mjs` and `git diff --check`.
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code at `origin/main` `353daaba`, not played or timed).
+
+## 2026-11-11 — TotoLogic reviewed again after playing it (docs only, PR #1523)
+
+**Changed:** [TOTOLOGIC.md](../TOTOLOGIC.md) rewritten from play: the screen table and a table of what each category holds, the verdicts, P1–P5 each with an "after play" note (P3, the caption for readers, now first), P6 (tap to fill) withdrawn as a misread screenshot, and three new proposals (P7 say why after a right answer, P8 a drawn total on Market Stall's counter, P9 a read-through of how drag games count a miss); its pointers in IDEAS, the grown-ups' page definition, the Rainbow Fingers row (corrected), new rows in the Market Stall and Pattern Train dives, the tap-then-place lines in POK-POK and READY, and one sound-off clause on the phone playtest list.
+**Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built). TotoLogic 1.0.0 (14) was played on the developer's Android phone by the assistant over USB, with the phone muted and speech transcribed by software; no child played, and the island's side of each comparison was read from the code at `origin/main` `353daaba`, not played.
