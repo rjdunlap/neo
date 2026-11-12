@@ -137,3 +137,9 @@
 **Changed:** the Rainbow Meadow table (six games: `shape-sorter`, `color-garden`, `dot-link`, `garden-grow`, `swing-pals`, `sand-table`) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); four READY lines (`dot-link`, `color-garden`, `sand-table`, `shape-sorter`; `garden-grow` and `swing-pals` need none); the P4 line and progress counts (43 of 57 read).
 **Ran:** `node scripts/check-links.mjs` (links ok); `git diff --check` (clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code at `origin/main` `bd67aa66`, not played or timed; the readings were done by six parallel reader agents and key claims spot-checked against the code).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Puzzle Peaks (docs only, PR #1519)
+
+**Changed:** the Puzzle Peaks table (two games: `size-parade` level 16, `puzzle-pals` level 1) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); two READY lines (`puzzle-pals`, `size-parade`); the P4 line and progress counts (45 of 57 read).
+**Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the two games were read from the code at `origin/main` `d4fbbb71`, not played or timed).

@@ -886,6 +886,10 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             if (!(await kit.until(() => g.treeAwake, 8000)))
               throw new Error('The echoed rhythm did not wake the tree');
             if (g.rhythmHint.alpha > 0.01) throw new Error('Dots did not fade after the first tap');
+            // U7 R4: `sg.echoyes` never holds the next rhythm. The tree's line (about 2.7 s muted) and its flourish come to
+            // about 3.4 s; with "Tap tap! Just like the woodpecker!" awaited too it was about 5.5 s.
+            if (q < g.rhythms.length - 1 && !(await kit.until(() => g.index > q, 4300)))
+              throw new Error('R4: the next rhythm waited for sg.echoyes');
             await kit.until(() => g.index > q || g.finished, 15000);
           }
           return;
@@ -907,6 +911,10 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             await ready();
           }
           kit.tapOn(right);
+          // U7 R4: the right tile's name never holds the next question: it follows a 0.6 s beat. With the name and
+          // `praise` awaited (about 0.8 s and 1.1 s muted) it was about 2 s.
+          if (q < g.questions.length - 1 && !(await kit.until(() => g.index > q, 1200)))
+            throw new Error('R4: the next question waited for the name and praise');
           await kit.until(() => g.index > q || g.finished, 15000);
         }
       });

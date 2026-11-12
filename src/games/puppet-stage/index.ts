@@ -94,6 +94,12 @@ class PuppetStage implements Game {
   busy = false;
   finished = false;
   freeTried = false;
+  /** Level 3: the free first try is playing and no ask has been said yet, so another bubble is another free try (U7 R4). */
+  freeTrying = false;
+  private freeTry = 0;
+  /** Each puppet's latest line, so a line cut by that puppet's next one leaves its mouth to the new line. */
+  private readonly speakSeq = new Map<Puppet, number>();
+  private waySeq = 0;
   bowShown = false;
   curtainsClosed = false;
   night = false;
@@ -269,6 +275,7 @@ class PuppetStage implements Game {
       busy: this.busy,
       finished: this.finished,
       freeTried: this.freeTried,
+      freeTrying: this.freeTrying,
       curtainsClosed: this.curtainsClosed,
       night: this.night,
       spoken: this.spoken.slice(),
@@ -441,8 +448,10 @@ class PuppetStage implements Game {
     if (this.spoken.length > 8) this.spoken.shift();
     const c = this.critterOf(p);
     c.setMood('sing');
+    const seq = (this.speakSeq.get(p) ?? 0) + 1;
+    this.speakSeq.set(p, seq);
     return this.ctx.sayIn(id, preset).then(() => {
-      if (!this.finished && c.currentMood === 'sing') c.setMood('happy');
+      if (!this.finished && this.speakSeq.get(p) === seq && c.currentMood === 'sing') c.setMood('happy');
     });
   }
 
@@ -522,12 +531,9 @@ class PuppetStage implements Game {
     if (this.busy) return;
     const ask = this.ask;
     if (this.plan.level === 3 || !ask) {
-      // Free: the puppet talks the ordinary way.
+      // Free: the puppet talks the ordinary way, with input open (U7 R4): another tap cuts it and talks again.
       this.bob(p);
-      this.busy = true;
-      void this.speakAs(p, this.plan.level === 3 ? this.plan.line! : `ps.talk.${p}`).then(() => {
-        this.busy = false;
-      });
+      void this.speakAs(p, this.plan.level === 3 ? this.plan.line! : `ps.talk.${p}`);
       return;
     }
     const verdict = answer(ask, p, this.plan.puppets);
@@ -541,11 +547,16 @@ class PuppetStage implements Game {
     this.ctx.tw.kill(b.scale);
     b.scale.set(1.12);
     void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
-    if (!this.freeTried) {
+    if (!this.freeTried || this.freeTrying) {
+      // The free first try, with input open (U7 R4): another bubble is another free try and cuts it, and the first
+      // ask follows the latest try's line, so no tap is judged against an ask she has not heard.
       this.freeTried = true;
-      this.busy = true;
+      this.freeTrying = true;
+      const n = ++this.freeTry;
       void this.playWay(way).then(() => {
-        if (!this.finished) void this.askNext(0);
+        if (this.finished || n !== this.freeTry) return;
+        this.freeTrying = false;
+        void this.askNext(0);
       });
       return;
     }
@@ -564,8 +575,9 @@ class PuppetStage implements Game {
     this.ctx.tw.kill(node.scale);
     void this.ctx.tw.to(node.scale, { x: look.scale, y: look.scale }, { duration: 0.25, ease: ease.outBack });
     if (way === 'sleepy') sfx.yawn();
+    const seq = ++this.waySeq;
     await this.speakAs(p, this.plan.line!, WAY_VOICE[way]);
-    if (this.finished) return;
+    if (this.finished || seq !== this.waySeq) return;
     this.critterOf(p).setMood(look.mood, 0.8);
     void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
   }
@@ -598,11 +610,13 @@ class PuppetStage implements Game {
     this.glow = null;
     const index = this.askIndex;
     this.clap();
-    if ((WAYS as readonly string[]).includes(target)) await this.playWay(target as Way);
-    else {
-      this.bob(target as Puppet);
-      await this.speakAs(target as Puppet, `ps.talk.${target as Puppet}`);
-    }
+    const reply = (WAYS as readonly string[]).includes(target)
+      ? this.playWay(target as Way)
+      : (this.bob(target as Puppet), this.speakAs(target as Puppet, `ps.talk.${target as Puppet}`));
+    // The reply never holds the next ask (U7 R4): it starts, and after the 0.3 s beat the next ask, which is only
+    // spoken, cuts it; input stays closed until that ask so no tap is judged against one she has not heard. The last
+    // ask's reply is heard out before the bow.
+    if (index + 1 >= this.plan.asks.length) await reply;
     if (this.finished) return;
     await this.ctx.tw.wait(0.3);
     if (this.finished) return;
@@ -1151,6 +1165,7 @@ class PuppetStage implements Game {
     }
     if (this.story) return this.storyTouch();
     const ask = this.ask;
+    if (this.freeTrying) return null;
     if (this.plan.level === 3 && !this.freeTried)
       return { tap: { on: this.bubbleNodes.get('sleepy')! }, pause: 0.8 };
     if (!ask) return null;
