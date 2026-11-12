@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1–2 |
+| lap | 12, 1, 2 |
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 4, 5, 9, 6 |
@@ -25,10 +25,11 @@
 | 7 | Make the clay float: change its shape and test it |
 | 9 | Big and small: watch the big one, guess the small one of the same stuff, then test it |
 | 10 | Salty or fresh: compare two tanks, then test to find the salty one |
+| 12 | One big thing over the water: touch anywhere to drop it in |
 
 <!-- end generated -->
 
-**Starts as:** drop things in the water and watch
+**Starts as:** (lap, level 12) one big thing over the water that a touch anywhere drops in, then drop things in the water and watch
 
 **Grows into:** guess and test, sort into baskets, fourteen things (a feather, a marble, a log, an ice cube, a paper clip among them) with surprises like a floating apple, (pre-K and school, level 9) guessing the small one after watching the big one, (school, level 7) squashing clay into a boat that floats, and (school, level 10) telling a salty tank from a fresh one by how high a duck and an egg sit
 
@@ -43,5 +44,7 @@ Things arc into a water tank; floaters bob and sinkers drift down trailing bubbl
 **Level 9, Big and small** (pre-K and school; pre-K plays 4, 5, 9, 6 and school 5, 6, 9, 7 through `order`; level ID 8 stays reserved for Garden Raft, and `SINK_PLANS` is a table keyed by level ID). Three pairs of one stuff at two sizes in seeded order: a log and a twig (wood floats), a rock and a pebble (stone sinks), a big and a little ball (a ball full of air floats). The pair sits on the right shelf, big above small. The big one goes in alone ("Watch the big log!"), then she taps float or sink for the small one; it is tested, then "You guessed it" or "Surprise", then always the material line ("Big or small, wood floats"). Only the pair under test is in the tank; the last pair fades out. Guesses are never misses, so misses and hints are always 0, and nothing is filed in the journal. The twig and pebble have their own art (`smallArt`); the little ball is the ball at a smaller scale (sizes 1.3/0.75, ball 1.4/0.6, at least 1.6 times apart). Couch control and the bot work through the guess buttons.
 
 **Level 10, Salty or fresh** (school only; order 5, 6, 9, 7, 10; code in `salt.ts`, model in `logic.ts`: `SALT_DEPTHS`, `floatsIn`, `saltRoundFor`). Two tanks, one with a salt shaker beside it that she shakes in. Part 1 is unscored: the same duck goes in both and sits higher in the salty one (its dashed plain-water mark rides above the surface there), then an egg sinks in the plain tank and floats in the salty one. Part 2 asks four scored questions, "which tank has the salt?", with the egg and the duck; a wrong tank plays its evidence line ("Salt water holds things up higher"), counts one miss per look (further wrong taps while the line plays count nothing), and two misses glow the right tank for a hint if the same question is still open. Taps before the eggs settle are ignored; a light water wash tints what sits under the surface. Touch and `control()` (two-tank ring). The how-to note carries the model; the off-screen raw-egg safety sentence was left out (the card is at its 840-character limit) and waits on the dive's band-keyed `offScreenFor` work. Fifteen `sink.salt-*` voice lines.
+
+**Level 12, One big thing** (lap entry level; lap plays 12, 1, 2 through `order` and `entryLevels: [12]`; IDs 8 and 11 stay reserved; mode `hold`, `HOLD_LEVEL`). One big thing (scale 2.6) waits over a lowered tank, swaying, and never drops by itself. A full-screen catcher (`onTap`, touch-down) drops it at once with a whoosh wherever she touches; it falls straight in and shrinks. The next of five familiar things (always some floaters and some sinkers) grows in only when the dropped one meets the water, so nothing waits on her. A touch on the water splashes under the finger; a touch off the water while nothing is held, or after the round, gets a pop and bubbles. Nothing is counted (misses and hints 0); discoveries are filed as in levels 1–2. Voice line `sink.hold`; the how-to card has lines from level 12.
 
 **A guess never holds the next thing (U7 fix batch 3, 2026-11-11).** `sink.right` or `sink.surprise` starts and, after a 0.4 s beat, the next thing appears and its ask cuts the reaction. The water's own line (`sink.floats`, `sink.sinks`) and the pair's rule stay held, and the reaction is still heard out for a big-and-small pair's item (the held rule line follows it and would cut it) and on the last thing. At level 9 `sink.salt-right` plays over the lift-out and the shaker's exit, and is heard out after the last question.

@@ -9,6 +9,7 @@ import {
   CLAY_SHAPES,
   floats,
   floatsIn,
+  HOLD_LEVEL,
   SALT_DEPTHS,
   saltRoundFor,
   PAIRS,
@@ -107,15 +108,41 @@ describe('Sink or Float', () => {
   });
 
   it('keys the plans by level ID: 7 is the shape experiment, 8 stays reserved for Garden Raft, 9 is Big and small', () => {
-    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 9, 10]);
+    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 9, 10, 12]);
     expect(sinkPlan(7).mode).toBe('shape');
     expect(sinkPlan(9).mode).toBe('pair');
     expect(sinkPlan(10).mode).toBe('salt');
     for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair|salt/);
     // An unbuilt or out-of-range ID falls to the nearest built one below it.
     expect(sinkPlan(8)).toBe(sinkPlan(7));
-    expect(sinkPlan(99)).toBe(sinkPlan(10));
+    expect(sinkPlan(11)).toBe(sinkPlan(10));
+    expect(sinkPlan(99)).toBe(sinkPlan(12));
     expect(sinkPlan(0)).toBe(sinkPlan(1));
+  });
+
+  it('opens the lap band with one big thing at a time (12), then the tray levels, and plays 12 at no other band', () => {
+    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'lap'))).toEqual([HOLD_LEVEL, 1, 2]);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(rangeFor(SINK_LEVELS, band)), band).not.toContain(HOLD_LEVEL);
+    expect(sinkPlan(HOLD_LEVEL).mode).toBe('hold');
+    expect(sinkPlan(HOLD_LEVEL).surprises).toBe(false);
+  });
+
+  it('holds five familiar things at the lap level, always some that float and some that sink', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const things = thingsFor(sinkPlan(HOLD_LEVEL), new Rng(seed));
+      expect(things).toHaveLength(5);
+      expect(new Set(things).size).toBe(5);
+      expect(
+        things.every((t) => THINGS[t].obvious),
+        `seed ${seed}`,
+      ).toBe(true);
+      expect(things.some(floats), `seed ${seed}`).toBe(true);
+      expect(
+        things.some((t) => !floats(t)),
+        `seed ${seed}`,
+      ).toBe(true);
+    }
   });
 
   it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and never plays the reserved 8', () => {

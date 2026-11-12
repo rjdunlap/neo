@@ -26,14 +26,26 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Then a tank gets salt in secret: tap the egg or duck to test, and tap the tank that has the salt.',
     },
+    {
+      from: 12,
+      text: 'Touch anywhere: the big thing over the water drops in. A touch on the water splashes.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when every thing has been dropped (or sorted).' },
     { from: 7, to: 7, text: 'The round ends when the clay has floated as a boat twice, once for each lump.' },
     { from: 9, to: 9, text: 'The round ends when three pairs (wood, stone and a ball) have both gone in.' },
     { from: 10, to: 10, text: 'The round ends when she has found the salty tank four times.' },
+    {
+      from: 12,
+      text: 'The round ends when five things have gone in. The next one comes only after her touch drops the last.',
+    },
   ],
   note: [
+    {
+      from: 12,
+      text: 'Nothing here can be wrong and nothing is counted. Each thing she watches go into the water is added to her discovery journal in the treehouse.',
+    },
     {
       from: 3,
       to: 3,

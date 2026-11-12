@@ -36,7 +36,7 @@ export const thingWord = (t: Thing) => WORDS[t] ?? t;
 /** The basket or button that is right for a thing (the how-to card's ghost finger sorts and guesses with it). */
 export const rightBasket = (t: Thing): 'float' | 'sink' => (floats(t) ? 'float' : 'sink');
 
-export type SinkMode = 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair' | 'salt';
+export type SinkMode = 'hold' | 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair' | 'salt';
 
 export interface SinkPlan {
   mode: SinkMode;
@@ -81,11 +81,23 @@ export const SINK_PLANS: Record<number, SinkPlan> = {
     surprises: false,
     name: 'Salty or fresh: compare two tanks, then test to find the salty one',
   },
+  12: {
+    mode: 'hold',
+    count: 5,
+    surprises: false,
+    name: 'One big thing over the water: touch anywhere to drop it in',
+  },
 };
+
+/**
+ * The lap entry level: one big thing held over the water at a time, and a touch anywhere drops it. A stable ID above the
+ * ladder that the lap band plays first (`order`), so no saved level is renumbered; 11 stays reserved for Build a Boat.
+ */
+export const HOLD_LEVEL = 12;
 export const SINK_IDS = Object.keys(SINK_PLANS).map(Number);
 
 export const SINK_LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  lap: { min: 1, max: HOLD_LEVEL, order: [HOLD_LEVEL, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
   prek: { min: 4, max: 9, order: [4, 5, 9, 6] },

@@ -61,7 +61,7 @@ Seven games fail question 1 or 4. Each line is one bounded lap level or opening,
 
 1. `bounce-back`: a lap level that cannot miss and answers anywhere.
 2. `bubble-pop`: level 15 opens with one big bubble already on screen. *Built 2026-11-12 (PR #1564).*
-3. `sink-float`: one big thing over the water; a touch anywhere drops it.
+3. `sink-float`: one big thing over the water; a touch anywhere drops it. *Built 2026-11-12 (PR #1572).*
 4. `tide-line`: at lap a touch anywhere sends the wave, and the card shows the tap.
 5. `melt-freeze`: one big ice cube; a touch anywhere warms it.
 6. `puddle-lens`: at lap a touch anywhere swells the lens, and her touch brings the next thing.

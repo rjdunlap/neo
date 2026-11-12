@@ -204,6 +204,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           }
           if (tries > 12) throw new Error(`no fresh thing at level ${level}`);
         }
+        if (level === 12) {
+          // The lap level (SINK_LEVELS=12): a portrait of the one big thing waiting over the water.
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(500);
+          await screenshot('sink-float-12-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(300);
+        }
         const boatAt = await page.evaluate(async () => {
           const g = neo.scene.game;
           if (g.plan.mode === 'shape') {
@@ -224,6 +232,33 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             x: neo.view.w * 0.87,
             y: (f ? neo.view.h * 0.3 : neo.view.h * 0.56) + 40,
           });
+          if (g.plan.mode === 'hold') {
+            // Level 12, the lap level: one big thing waits over the water; a touch anywhere drops it at once, a touch on the
+            // water splashes, and the next thing comes only because she touched.
+            const at = (x, y) => {
+              const p = g.ctx.stage.toGlobal({ x, y });
+              kit.tap(p.x, p.y);
+            };
+            if (!(await kit.until(() => g.holding, 5000))) throw new Error('nothing held over the water');
+            const first = g.holding;
+            await kit.sleep(2500);
+            if (g.holding !== first || first.done) throw new Error('the held thing dropped by itself');
+            at(neo.view.w * 0.5, neo.view.h * 0.9);
+            if (!first.done || g.holding)
+              throw new Error('a touch on the counter did not drop the held thing');
+            const t = g.tank;
+            at((t.l + t.r) / 2, (t.surface + t.bottom) / 2);
+            if (g.items.filter((i) => i.done).length !== 1)
+              throw new Error('a touch on the water dropped another thing');
+            if (!(await kit.until(() => g.holding && g.holding !== first, 3000)))
+              throw new Error('the next thing never came after her drop');
+            for (let k = 1; k < g.items.length; k++) {
+              if (!(await kit.until(() => g.holding, 3000))) throw new Error(`thing ${k + 1} never came`);
+              at(neo.view.w * 0.5, neo.view.h * 0.9);
+              await kit.sleep(250);
+            }
+            return;
+          }
           if (g.plan.mode === 'drop' || g.plan.mode === 'say') {
             for (const i of [...g.items]) {
               kit.tapOn(i.node);
