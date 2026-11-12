@@ -413,6 +413,8 @@ class PeekabooBarn implements Game {
   private lastFeeling: Feeling | null = null;
   /** The next question's ask, waiting behind the last find's `peek.yes` (U7 R4), or said at her first tap. */
   private unasked = false;
+  /** The waiting ask is being spoken: the ghost finger lets it finish, as it did when the ask held input. */
+  private asking = 0;
   private readonly input = new Container();
 
   constructor(private readonly ctx: GameContext) {
@@ -542,7 +544,7 @@ class PeekabooBarn implements Game {
 
   /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.unasked) return null;
+    if (this.busy || this.finished || this.unasked || this.asking > 0) return null;
     const i = spotToTap(
       this.plan,
       this.spots.map((s) => s.pose),
@@ -664,7 +666,8 @@ class PeekabooBarn implements Game {
   private askNow() {
     if (!this.unasked || this.finished) return;
     this.unasked = false;
-    void this.ctx.instruct('peek.where', { animal: this.target! });
+    this.asking++;
+    void this.ctx.instruct('peek.where', { animal: this.target! }).finally(() => this.asking--);
   }
 
   /** The next question. After a right find, `after` is its `peek.yes`: the places open at once and the ask waits for it. */

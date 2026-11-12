@@ -31,10 +31,14 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(400);
     await screenshot('look-it-up-3-portrait');
+    const r4 = [];
     for (let n = 0; n < 3; n++) {
-      await page.waitForFunction((n) => neo.scene.game.index === n && !neo.scene.game.busy, n, {
-        timeout: 25000,
-      });
+      // The ask waits behind the last visitor's fact (U7 R4); a touch before it only says the ask, so wait for it.
+      await page.waitForFunction(
+        (n) => neo.scene.game.index === n && !neo.scene.game.busy && !neo.scene.game.unasked,
+        n,
+        { timeout: 25000 },
+      );
       await page.waitForTimeout(200);
       if (n === 0) {
         // Two different wrong pictures: two misses, then the glow (one hint).
@@ -64,10 +68,20 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
             h.row,
           );
         else {
-          await page.evaluate(
-            (p) => kit.tapOn(neo.scene.game.choices.find((c) => c.picture === p).node),
-            h.picture,
-          );
+          // U7 R4: the right picture's fact starts as the visitor eats or goes, and the next visitor walks in at once.
+          const ms = await page.evaluate(async (p) => {
+            const g = neo.scene.game,
+              at = g.index,
+              t = performance.now();
+            kit.tapOn(g.choices.find((c) => c.picture === p).node);
+            if (at + 1 >= g.round.visits.length) return null;
+            await kit.until(() => g.index > at && !g.busy, 8000);
+            return performance.now() - t;
+          }, h.picture);
+          if (ms !== null) {
+            r4.push(Math.round(ms));
+            assert.ok(ms < 1800, `R4: the next visitor waited for the fact (${Math.round(ms)} ms)`);
+          }
           break;
         }
         await page.waitForTimeout(350);
@@ -76,6 +90,8 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     }
     await finished('look-it-up');
     assert.deepEqual(await score(), [2, 1]);
+    assert.equal(r4.length, 2, 'R4: two visitors timed');
+    log(`Look It Up 3: R4, next visitor open ${r4.join(', ')} ms after the right picture's tap`);
     await page.setViewportSize({ width: 1024, height: 768 });
     log(
       'Look It Up 1 and 3: labels touched, tab and row found, two wrong pictures then the glow hint, portrait, saved score and sticker passed',

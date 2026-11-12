@@ -346,7 +346,7 @@ class OrchardRows implements Game {
       await yes;
       if (this.finished || this.index !== index || !this.turnUnasked) return;
       this.turnUnasked = false;
-      await this.ctx.instruct('orchard.turn');
+      await this.talk(this.ctx.instruct('orchard.turn'));
       return;
     }
     await this.ctx.say(this.turned ? 'orchard.same' : 'orchard.yes', praise);

@@ -104,6 +104,8 @@ class LookItUp implements Game {
   private alive = true;
   /** The visitor's ask, waiting behind the last visitor's fact (U7 R4): said when the fact ends, or at her first touch. */
   private unasked = false;
+  /** The waiting ask is being spoken: the ghost finger lets it finish, as it did when the ask held input. */
+  private asking = 0;
   private clock = 0;
   private attempts = 0;
   private hinted = false;
@@ -368,7 +370,8 @@ class LookItUp implements Game {
   private askNow() {
     if (!this.unasked || !this.alive || this.finished) return;
     this.unasked = false;
-    void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) });
+    this.asking++;
+    void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) }).finally(() => this.asking--);
   }
 
   /** The next visitor. After a helped one, `after` is its fact: the visitor walks in at once and asks when it ends. */
@@ -574,7 +577,7 @@ class LookItUp implements Game {
 
   /** The ghost finger: turn to the visitor's page, touch the asked row at level 3, then carry the right picture to the visitor. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.unasked || this.index < 0) return null;
+    if (this.busy || this.finished || this.unasked || this.asking > 0 || this.index < 0) return null;
     const move = lookTouch(this.round, {
       visitor: this.index,
       open: this.open,

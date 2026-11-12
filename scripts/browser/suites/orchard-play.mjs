@@ -19,6 +19,27 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     for (const level of levels) {
       await launch('orchard-rows', level);
       await page.waitForFunction(() => !neo.scene.game.busy);
+      // U7 R4: a row's count (but the last) and the right total before the turn leave input open as they start.
+      await page.evaluate(() => {
+        const g = neo.scene.game,
+          say = g.ctx.say.bind(g.ctx);
+        window.orchardR4 = [];
+        g.ctx.say = (id, vars) => {
+          const last =
+            id === 'orchard.planted'
+              ? g.planted.length === g.orchard.rows
+              : id === 'orchard.counted'
+                ? g.phase !== 'count' || g.counted.length === g.oriented.rows
+                : id !== 'orchard.yes' || g.plan.mode === 'plant' || g.turned;
+          const p = say(id, vars);
+          // Checked once the calling code has run on (the turn shows just after its line starts).
+          if (!last)
+            queueMicrotask(() =>
+              orchardR4.push({ id, open: !g.busy && (id !== 'orchard.yes' || g.rotate.visible) }),
+            );
+          return p;
+        };
+      });
       // Planting and counting are free exploration; only number choices are answers.
       if (level !== 3) {
         while (await page.evaluate(() => neo.scene.game.phase !== 'answer')) {
@@ -68,6 +89,18 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         [2, 1],
       );
       if (level > 1) assert.ok(turnedCounts.length > 0, 'columns were counted');
+      const r4 = await page.evaluate(() => orchardR4);
+      assert.ok(r4.length >= 2, `R4: ${r4.length} lines checked`);
+      assert.ok(
+        r4.every((o) => o.open),
+        `R4: a line held input: ${JSON.stringify(r4.filter((o) => !o.open))}`,
+      );
+      if (level > 1)
+        assert.ok(
+          r4.some((o) => o.id === 'orchard.yes'),
+          'R4: the turn was checked',
+        );
+      log(`Orchard Rows ${level}: R4, ${r4.length} count and praise lines started with input open`);
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         `Orchard Rows ${level}: real taps, replay, two misses/one hint, supported completion and one sticker passed`,
@@ -279,7 +312,17 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         s = await st();
         assert.deepEqual([s.misses, s.hints, s.glowing], [2, 1, true], 'a second lights the glow: one hint');
         await screenshot('orchard-rows-7-glow');
-        await press(`neo.scene.game.pads[neo.scene.game.choices.indexOf((${answer})())]`);
+        // U7 R4: the part's right answer starts its line and the next question's pads open at once.
+        const ms = await page.evaluate(async (src) => {
+          const g = neo.scene.game,
+            t = performance.now();
+          kit.tapOn(g.pads[g.choices.indexOf((0, eval)(`(${src})`)())]);
+          await kit.until(() => g.state.question === 1 && !g.busy && g.choices.length > 0, 5000);
+          return performance.now() - t;
+        }, answer.toString());
+        assert.ok(ms < 700, `R4: the next question's pads waited for the part's line (${Math.round(ms)} ms)`);
+        log(`Orchard Rows 7: R4, next question's pads open ${Math.round(ms)} ms after the right part`);
+        await idle();
         s = await st();
         assert.deepEqual([s.question, s.glowing], [1, false], 'the glowing pad answers the part');
         await press('neo.scene.game.signs[0]');
