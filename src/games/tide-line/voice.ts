@@ -4,6 +4,7 @@ export const VOICE = {
 
   // Melt and Freeze: a sun that warms, a snowflake that cools, and the same thing either way.
   'tl.instruct.1': ['Pull the sea up the sand, then let it go!'],
+  'tl.instruct.1.lap': ['Tap anywhere, and in comes the sea!'],
   'tl.instruct.2': ["Put the pail where the sea won't reach. Look for the seaweed line!"],
   'tl.in': ['In comes the sea!'],
   'tl.out': ['Out goes the sea!'],

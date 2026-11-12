@@ -76,11 +76,59 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
 
+    // Level 1 (lap): a tap on the sky sends a whole wave; a tap while it runs gets an answer and does not restart it;
+    // a tap while a pulled sea slides back starts the next wave from where the water is.
+    let s;
+    await launch('tide-line', 1, 'Mia', 'lap');
+    await page.waitForTimeout(800);
+    const tapAt = (fx, fy) =>
+      page.evaluate(
+        ({ fx, fy }) => {
+          const g = neo.scene.game;
+          const p = g.board.toGlobal({ x: g.view.w * fx, y: g.view.h * fy });
+          kit.tap(p.x, p.y);
+        },
+        { fx, fy },
+      );
+    await tapAt(0.55, 0.18);
+    await page.waitForTimeout(700);
+    s = await state();
+    assert.ok(s.sea > 0.15, `a tap on the sky sends the wave (${s.sea.toFixed(2)})`);
+    const before = s.sea;
+    await tapAt(0.7, 0.3);
+    await page.waitForTimeout(150);
+    s = await state();
+    assert.ok(
+      s.sea >= before,
+      `a tap during the wave does not snap it back (${before.toFixed(2)} -> ${s.sea.toFixed(2)})`,
+    );
+    await page.waitForFunction(
+      () => neo.scene.game.counter.cycles === 1 && neo.scene.game.sea.h < 0.05,
+      null,
+      {
+        timeout: 8000,
+      },
+    );
+    // A pull, then a tap while the sea slides back down.
+    await pull(0.5);
+    await page.waitForTimeout(250);
+    const sliding = (await state()).sea;
+    await tapAt(0.5, 0.2);
+    await page.waitForTimeout(60);
+    s = await state();
+    assert.ok(
+      s.sea > sliding - 0.08,
+      `a tap on a sliding sea starts the wave from the water (${sliding.toFixed(2)} -> ${s.sea.toFixed(2)})`,
+    );
+    await finished('tide-line');
+    assert.deepEqual(await score(), [0, 0], 'lap level 1 counts nothing');
+    await screenshot('tide-line-1-lap');
+
     // Level 1 (toddler): two pulls up the sand, each let go, are the two cycles; nothing is counted.
     await launch('tide-line', 1, 'Mia', 'toddler');
     await page.waitForTimeout(800);
     await pull(0.9);
-    let s = await state();
+    s = await state();
     assert.ok(s.sea > 0.6, `the sea follows the finger up the sand (${s.sea.toFixed(2)})`);
     await page.waitForFunction(() => neo.scene.game.sea.h < 0.05, null, { timeout: 5000 });
     s = await state();
@@ -124,7 +172,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.waitForTimeout(400);
     assert.deepEqual(await score(), [2, 1], 'level 2 saved 2 misses, 1 hint');
     log(
-      'Tide Line 1–2: two pulls finish level 1 (0/0); level 2 floats twice (fetched, then the glow), a dry pail in portrait and a second dry pail (2/1); passed',
+      'Tide Line 1–2: lap taps on sky, mid-wave and a sliding sea send whole waves (0/0); two pulls finish level 1 (0/0); level 2 floats twice (fetched, then the glow), a dry pail in portrait and a second dry pail (2/1); passed',
     );
   }
   async function tideLine34Play() {
