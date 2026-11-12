@@ -1,0 +1,5 @@
+# 2026-11-12 — bounce-back level 12: a lap level that cannot miss (PR #1568)
+
+**Changed:** `bounce-back` level 12 (mode `pat`, first at lap: `order` [12, 1], `entryLevels` [12]): the paddle always drifts to the ball, a touch anywhere (even the left half) hurries it with a pop and a sparkle, and a ball that gets past comes back with no boing, "Whoops!", miss or hint. New `bounce.pat` line and level-scoped how-to lines; fingers are released on pointercancel.
+**Ran:** `npm run typecheck`; `npm test` (349 files, 6745 passed, 1 skipped); the game's rule tests (15; lap order, the no-miss rule, drift reaches the ball from a serve at six view sizes); `BROWSER_SUITE=batch BATCH_ONLY=bounce BOUNCE_FROM=12` (untouched paddle met the ball, a forced ball past counted no miss or hint and re-served, a far-left touch was hers, round finished 0 misses 0 hints with a sticker; 1024x768 screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bounce-back FINGER_LEVELS=12`. All passed; game-reviewer found no defects.
+**Not run:** `npm run build` (no shared files or assets), a portrait screenshot, offline. `bounce.pat` has no rendered clip (device speech fallback).

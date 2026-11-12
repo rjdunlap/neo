@@ -688,6 +688,16 @@ export const greenDriftAt = (phase: number, t: number) => ({
 
 // ----- help -----
 
+/**
+ * Level 1 at lap: what a touch anywhere does. Swollen, it shrinks and the next thing comes (her touch, not a timer,
+ * moves on); while the lens is still moving it only gets a sound; otherwise it swells the lens.
+ */
+export type LapTouch = 'swell' | 'shrink' | 'sound';
+export function lapLensTouch(s: { swollen: boolean; moving: boolean }): LapTouch {
+  if (s.swollen) return 'shrink';
+  return s.moving ? 'sound' : 'swell';
+}
+
 export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'turn'; stop: Stop };
 
 /**

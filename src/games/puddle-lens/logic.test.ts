@@ -13,6 +13,7 @@ import {
   dropsFor,
   FEATURES,
   helpFor,
+  lapLensTouch,
   judgeSwimmers,
   judgeView,
   lensLayout,
@@ -360,5 +361,18 @@ describe('layout', () => {
       x: t.x + t.w / 2,
       y: t.y + t.h / 2,
     });
+  });
+});
+
+describe('level 1 at lap: a touch anywhere', () => {
+  it('swells a still lens, shrinks a swollen one (the next thing waits for her touch), and only sounds while it moves', () => {
+    expect(lapLensTouch({ swollen: false, moving: false })).toBe('swell');
+    expect(lapLensTouch({ swollen: true, moving: false })).toBe('shrink');
+    expect(lapLensTouch({ swollen: false, moving: true })).toBe('sound');
+  });
+  it('every touch gets an answer: no state leaves a touch unanswered', () => {
+    for (const swollen of [false, true])
+      for (const moving of [false, true])
+        expect(['swell', 'shrink', 'sound']).toContain(lapLensTouch({ swollen, moving }));
   });
 });
