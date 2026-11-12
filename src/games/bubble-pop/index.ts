@@ -144,7 +144,9 @@ class BubblePop implements Game {
       const alive = this.bubbles.filter((b) => !b.popped).length;
       // Pop anywhere: once she has popped, a screen with nothing to pop gets a bubble at once.
       if (p.anywhere && alive === 0) this.spawnIn = 0;
-      if (this.spawnIn <= 0 && alive < roomFor(p, this.scored)) {
+      // Pop anywhere places its opening bubble in start(); nothing rises before it.
+      const ready = !p.anywhere || this.opening || this.scored > 0;
+      if (ready && this.spawnIn <= 0 && alive < roomFor(p, this.scored)) {
         this.spawn();
         this.spawnIn = this.ctx.rng.range(0.35, 0.9);
       }

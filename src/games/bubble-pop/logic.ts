@@ -83,7 +83,8 @@ export const PLANS: BubblePlan[] = [
   { mode: 'count', goal: 6, speed: 38, most: 6, colors: 0, radius: [58, 70], start: [2, 7] },
   { mode: 'count', goal: 10, speed: 40, most: 10, colors: 0, radius: [52, 62], start: [5, 10], steps: [-1] },
   { mode: 'count', goal: 5, speed: 40, most: 5, colors: 0, radius: [58, 70], start: [1, 3], steps: [10, 5] },
-  // Below level 1, for lap: a swat or a flat palm anywhere pops the nearest bubble. Big, slow and few, so what pops is plain.
+  // Below level 1, for lap: a swat anywhere pops the nearest bubble (a flat palm of four or more contacts is palm
+  // rejection and does nothing). Big, slow and few, so what pops is plain.
   { mode: 'free', goal: 8, speed: 42, most: 4, colors: 0, radius: [96, 118], anywhere: true },
 ];
 
