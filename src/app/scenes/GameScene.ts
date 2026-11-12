@@ -207,6 +207,7 @@ export class GameScene extends Scene {
     onTap(this.pet, () => {
       this.pet.poke();
       sfx.giggle();
+      if (this.game?.sayWaitingAsk?.()) return;
       if (this.instruction) void voice.say(this.instruction.id, this.instruction.vars);
     });
     this.pet.hitArea = new Circle(0, -125, 170);

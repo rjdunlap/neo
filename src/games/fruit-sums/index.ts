@@ -566,11 +566,17 @@ class FruitSums implements Game {
 
   /** Says the "another way" ask if it is still waiting behind a found way's line. */
   private askNow() {
-    if (!this.unasked || this.finished) return;
+    if (!this.unasked || this.finished) return false;
     this.unasked = false;
     if (this.signSum) void this.ctx.instruct('fsums.again4', this.signWords());
     else if (this.clear) void this.ctx.instruct('fsums.again5', { n: this.target });
     else void this.ctx.instruct('fsums.again', { n: this.target });
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say "another way" now rather than the tree's first ask. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** "7 + 5 = 12" for a found way, rebuilt from its key; at level 4 "7 + 5 = 6 + 4", at level 6 "2 + 3 + 7 = 12", or "3 × 4 = 12". */

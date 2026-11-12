@@ -314,9 +314,15 @@ class NumberTrails implements Game {
 
   /** Says `nt.start` if it is still waiting behind the right card's count. */
   private askNow() {
-    if (!this.unasked || this.phase !== 'trace') return;
+    if (!this.unasked || this.phase !== 'trace') return false;
     this.unasked = false;
     void this.ctx.instruct('nt.start', { n: this.n });
+    return true;
+  }
+
+  /** The guide was tapped while `nt.start` waits: say it, not the cards' `nt.which`. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** Lays the group (or the basket) and the cards out on the asking screen. */

@@ -377,9 +377,15 @@ class FrogHop implements Game {
   /** Says the question's ask if it is still waiting behind the last right answer's line. */
   private askNow() {
     const say = this.unasked;
-    if (!say || this.finished) return;
+    if (!say || this.finished) return false;
     this.unasked = null;
     void say();
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say this question's ask, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** A fraction question: the sum of the start and the hops on the sign (the start left out at 0), then the spoken ask. */

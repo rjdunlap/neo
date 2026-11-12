@@ -921,7 +921,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               void line.then(() => (o.ends = performance.now() - t));
               void kit
                 .until(() => g.finished || (g.index > at && !g.busy), 8000)
-                .then(() => (o.opens = performance.now() - t));
+                .then(() => {
+                  o.opens = performance.now() - t;
+                  // The second right answer: a tap on the guide while the ask waits says this question's ask.
+                  if (hopR4.length !== 2 || o.last || g.finished) return;
+                  const waiting = !!g.unasked;
+                  kit.tapOn(neo.scene.pet);
+                  o.pet = { waiting, said: !g.unasked, index: g.index };
+                });
             }
             return line;
           };
@@ -1036,6 +1043,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           hopOpens.every((o) => o.opens < o.ends),
           `R4: the next question waited for the right answer's line (${hopOpens.map((o) => `${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
         );
+        const pet = (await page.evaluate(() => hopR4)).find((o) => o.pet)?.pet;
+        assert.ok(pet?.waiting && pet.said, `R4: a guide tap says the waiting ask (${JSON.stringify(pet)})`);
         log(
           `Frog Hop ${level}: R4, next question open ${hopOpens.map((o) => Math.round(o.opens)).join(', ')} ms after ${hopOpens[0].id} started`,
         );
