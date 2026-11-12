@@ -14,6 +14,7 @@ import {
   exposed,
   fullMask,
   makePuzzle,
+  moves,
   present,
   rankName,
   remove,
@@ -29,7 +30,15 @@ function cardArt(rank: number, color: ColorName = 'teal'): Container {
   face.y = -10;
   const value = label(rank >= 11 || rank === 1 ? `= ${rank}` : '', 19, ink);
   value.y = 29;
-  c.addChild(face, value);
+  // The corner index keeps the rank and its value readable however much of the card the next row covers.
+  const corner = label(rankName(rank), 18, swatch[color].line);
+  corner.position.set(-33, -34);
+  c.addChild(face, value, corner);
+  if (rank >= 11 || rank === 1) {
+    const cornerValue = label(String(rank), 13, ink, '500');
+    cornerValue.position.set(-33, -17);
+    c.addChild(cornerValue);
+  }
   c.eventMode = 'none';
   return c;
 }
@@ -48,6 +57,9 @@ class PyramidSolitaire implements Game {
   finished = false;
   private rejected = 0;
   private history: number[] = [];
+  /** Removed cards still lifting away: drawn until their fade ends, never tappable. */
+  private readonly leaving = new Set<Container>();
+  private spots: { x: number; y: number }[] = [];
   private readonly ground = new Graphics();
   private readonly glow = new Graphics();
   private readonly heading = label('Make 13 · clear the pyramid', 34, ink);
@@ -125,17 +137,27 @@ class PyramidSolitaire implements Game {
   }
   private take(move: Removal) {
     this.history.push(this.mask);
+    const wasOpen = this.openCards();
     this.mask = remove(this.mask, move);
     this.selected = -1;
     this.hinted = null;
     this.rejected = 0;
     sfx.pop(3);
-    this.draw();
     const target = this.nodes[move[0]];
     this.ctx.particles.burst(target.x, target.y, {
       kind: 'star',
       colors: [swatch.yellow.fill, swatch.teal.fill],
       count: 10,
+    });
+    const middle = move.reduce((x, i) => x + this.nodes[i].x, 0) / move.length;
+    for (const i of move) this.liftAway(this.nodes[i], middle);
+    this.draw();
+    // What the removal uncovered is the consequence to notice: each newly open card swells once, with one soft
+    // pentatonic step per card, so opening two sounds fuller than opening none.
+    const opened = this.openCards().filter((i) => !wasOpen.includes(i));
+    opened.forEach((i, k) => {
+      this.pulse(this.nodes[i]);
+      sfx.bell(5 + 2 * k, 0.14);
     });
     if (!this.mask) {
       this.finished = true;
@@ -145,6 +167,45 @@ class PyramidSolitaire implements Game {
       });
     } else if (!this.solve(this.mask)) void this.ctx.say('pyramid.blocked');
   }
+  private openCards() {
+    return this.puzzle.ranks.map((_, i) => i).filter((i) => exposed(this.puzzle, this.mask, i));
+  }
+  /** Stop a card's own animations (their promises never resolve) and put it back in its place. */
+  private settle(node: Container, i: number) {
+    this.ctx.tw.kill(node);
+    this.ctx.tw.kill(node.scale);
+    node.scale.set(1);
+    node.alpha = 1;
+    if (this.spots[i]) node.position.copyFrom(this.spots[i]);
+  }
+  /** A lifted card rises, drifts toward its partner and fades instead of vanishing. */
+  private liftAway(node: Container, middle: number) {
+    this.settle(node, this.nodes.indexOf(node));
+    this.leaving.add(node);
+    node.eventMode = 'none';
+    void this.ctx.tw.to(node.scale, { x: 1.08, y: 1.08 }, { duration: 0.3 });
+    void this.ctx.tw
+      .to(node, { y: node.y - 30, x: node.x + (middle - node.x) * 0.3, alpha: 0 }, { duration: 0.3 })
+      .then(() => {
+        if (!this.leaving.delete(node)) return;
+        node.visible = false;
+      });
+  }
+  /** A card the removal just uncovered swells once as it brightens. */
+  private pulse(node: Container) {
+    this.settle(node, this.nodes.indexOf(node));
+    void this.ctx.tw
+      .to(node.scale, { x: 1.14, y: 1.14 }, { duration: 0.16, delay: 0.12 })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.24 }));
+  }
+  /** Undo and Start over bring cards back mid-fade: stop every lift and pulse first. */
+  private settleAll() {
+    this.leaving.clear();
+    this.nodes.forEach((node, i) => {
+      this.settle(node, i);
+      node.eventMode = 'static';
+    });
+  }
   askForHint() {
     if (!this.ctx.alive || this.finished || this.hinted) return;
     let route = this.solve(this.mask);
@@ -153,6 +214,7 @@ class PyramidSolitaire implements Game {
       this.mask = this.history.pop()!;
       route = this.solve(this.mask);
     }
+    if (recovered) this.settleAll();
     this.hinted = route?.[0] ?? null;
     if (!this.hinted) return;
     this.selected = -1;
@@ -168,6 +230,7 @@ class PyramidSolitaire implements Game {
     if (!this.ctx.alive || this.finished) return;
     const before = this.history.pop();
     if (before !== undefined) this.mask = before;
+    this.settleAll();
     this.selected = -1;
     this.hinted = null;
     this.rejected = 0;
@@ -178,6 +241,7 @@ class PyramidSolitaire implements Game {
     if (!this.ctx.alive || this.finished) return;
     this.mask = fullMask(this.puzzle.rows);
     this.history = [];
+    this.settleAll();
     this.selected = -1;
     this.hinted = null;
     this.rejected = 0;
@@ -185,11 +249,10 @@ class PyramidSolitaire implements Game {
     void this.ctx.say('pyramid.restart');
   }
   private draw() {
-    this.status.text = this.solve(this.mask)
-      ? 'Bright outlines show the cards you can lift.'
-      : 'Try Undo or Hint to revise this route.';
+    this.status.text = this.solve(this.mask) ? this.openLine() : 'Try Undo or Hint to revise this route.';
     this.glow.clear();
     this.nodes.forEach((c, i) => {
+      if (this.leaving.has(c)) return;
       c.visible = present(this.mask, i);
       c.alpha = exposed(this.puzzle, this.mask, i) ? 1 : 0.6;
       if (!c.visible) return;
@@ -204,6 +267,13 @@ class PyramidSolitaire implements Game {
     });
     this.hintButton.alpha = this.hinted ? 0.7 : 1;
   }
+  /** What a planner watches: how many pairs the bright cards make now, and whether a king can go alone. */
+  private openLine() {
+    const open = moves(this.puzzle, this.mask),
+      pairs = open.filter((m) => m.length === 2).length,
+      king = open.some((m) => m.length === 1);
+    return `${pairs} ${pairs === 1 ? 'pair' : 'pairs'} open${king ? ' · a king can go alone' : ''}`;
+  }
   resize(v: View) {
     const l = pyramidLayout(v, this.puzzle.rows);
     this.ground.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
@@ -212,7 +282,10 @@ class PyramidSolitaire implements Game {
       .fill({ color: cream, alpha: 0.7 });
     this.heading.position.set(v.w / 2, 107);
     this.guide.position.set(v.w / 2, 148);
-    this.nodes.forEach((n, i) => n.position.copyFrom(l.cards[i]));
+    this.spots = l.cards;
+    this.nodes.forEach((n, i) => {
+      if (!this.leaving.has(n)) n.position.copyFrom(l.cards[i]);
+    });
     this.status.position.copyFrom(l.status);
     [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.copyFrom(l.buttons[i]));
     this.draw();

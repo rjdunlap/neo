@@ -6,11 +6,20 @@ export interface Puzzle {
   rows: number;
   ranks: number[];
 }
+/**
+ * Each plan's band for the deal dial: the exact chance that someone lifting a uniformly random legal removal every turn
+ * clears the pyramid (`clearRate`). Level 1 stays a round that cannot go wrong; level 2 has a copy choice that matters;
+ * level 3 has several. Bands measured 2026-11-11 (docs/deep-dives/pyramid-solitaire.md, "A deal dial").
+ */
 export const PLANS = [
-  { rows: 3, name: 'Six face-up cards: complements to thirteen' },
-  { rows: 4, name: 'Ten cards: uncover the next pair' },
-  { rows: 5, name: 'Fifteen cards: plan through five rows' },
+  { rows: 3, name: 'Six face-up cards: complements to thirteen', band: { min: 0.95, max: 1 } },
+  { rows: 4, name: 'Ten cards: uncover the next pair', band: { min: 0.5, max: 0.95, below: true } },
+  { rows: 5, name: 'Fifteen cards: plan through five rows', band: { min: 0.4, max: 0.8 } },
 ] as const;
+/** Candidate deals the dial draws before it keeps the one closest to the band. */
+export const CANDIDATES = 40;
+/** A real pack: no rank more than four times, so the paper version deals as shown and counting a rank is true. */
+export const PACK_LIMIT = 4;
 
 export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(2, level - 1))];
@@ -59,26 +68,96 @@ export function solver(p: Puzzle) {
   };
   return solve;
 }
-/** Assign complements along a legal seeded clearing order; no stock or hidden information. */
-export function makePuzzle(level: number, rng: Rng): Puzzle {
+/**
+ * Exact chance of clearing when every turn takes a uniformly random legal removal: a stand-in for a player who does not
+ * plan. The same memoised walk over remaining-card masks as `solver` (at most 39 positions at five rows).
+ */
+export function clearRate(p: Puzzle, mask = fullMask(p.rows)): number {
+  const memo = new Map<number, number>();
+  const walk = (m: number): number => {
+    if (m === 0) return 1;
+    const cached = memo.get(m);
+    if (cached !== undefined) return cached;
+    const options = moves(p, m);
+    const rate = options.length
+      ? options.reduce((sum, move) => sum + walk(remove(m, move)), 0) / options.length
+      : 0;
+    memo.set(m, rate);
+    return rate;
+  };
+  return walk(mask);
+}
+export interface Candidate {
+  puzzle: Puzzle;
+  /** Kings the clearing order forced (a lone open card, always including the top) and kings added by chance. */
+  forcedKings: number;
+  chanceKings: number;
+}
+/**
+ * One candidate: assign complements along a legal seeded clearing order, so every deal clears; no stock or hidden
+ * information. A king goes where the order forces one (a lone open card) plus at most one by chance, and a pair's rank is
+ * drawn only from ranks that would not deal a fifth of either rank. Level 1 adds no chance king, so its six cards are
+ * always two pairs and two kings.
+ */
+export function dealCandidate(level: number, rng: Rng): Candidate {
   const rows = planFor(level).rows,
-    p = { rows, ranks: Array<number>(countFor(rows)).fill(0) };
-  let mask = fullMask(rows);
+    p = { rows, ranks: Array<number>(countFor(rows)).fill(0) },
+    used = Array<number>(14).fill(0);
+  let mask = fullMask(rows),
+    forcedKings = 0,
+    chanceKings = 0;
   while (mask) {
     const free = rng.shuffle(p.ranks.map((_, i) => i).filter((i) => exposed(p, mask, i)));
     const a = free[0];
-    if (free.length === 1 || rng.chance(0.15)) {
+    const forced = free.length === 1;
+    // Level 1 never adds one: on three rows the forced kings alone always come to two (the top, and one lone open card).
+    const chance = !forced && level > 1 && chanceKings === 0 && used[13] < PACK_LIMIT && rng.chance(0.15);
+    if (forced || chance) {
       p.ranks[a] = 13;
+      used[13]++;
+      if (forced) forcedKings++;
+      else chanceKings++;
       mask = remove(mask, [a]);
     } else {
       const b = free[1],
-        rank = rng.int(1, 12);
+        open = Array.from({ length: 12 }, (_, k) => k + 1).filter(
+          (r) => used[r] < PACK_LIMIT && used[13 - r] < PACK_LIMIT,
+        ),
+        rank = rng.pick(open);
       p.ranks[a] = rank;
       p.ranks[b] = 13 - rank;
+      used[rank]++;
+      used[13 - rank]++;
       mask = remove(mask, [a, b]);
     }
   }
-  return p;
+  return { puzzle: p, forcedKings, chanceKings };
+}
+/** How far a clear rate sits outside the plan's band (0 inside it). */
+export function bandDistance(level: number, rate: number): number {
+  const band = planFor(level).band;
+  const top = 'below' in band && band.below ? band.max - 1e-9 : band.max;
+  return rate < band.min ? band.min - rate : rate > top ? rate - top : 0;
+}
+/**
+ * The deal dial: draw up to `CANDIDATES` seeded candidates from the round's one rng and keep the first whose clear rate
+ * is in the level's band, or the closest if none is, so a seed still gives exactly one deal. A candidate with a fifth king
+ * (forced by the order) is not a pack and is skipped.
+ */
+export function makePuzzle(level: number, rng: Rng): Puzzle {
+  let best: Puzzle | null = null,
+    bestDistance = Infinity;
+  // Kings are forced by the clearing order, so a rare deep deal forces a fifth; it is skipped, not counted, and drawing
+  // stops at a bound that a pack-legal deal always reaches first in practice.
+  for (let k = 0, tries = 0; (k < CANDIDATES || !best) && tries < 10 * CANDIDATES; tries++) {
+    const { puzzle } = dealCandidate(level, rng);
+    if (puzzle.ranks.filter((r) => r === 13).length > PACK_LIMIT) continue;
+    k++;
+    const distance = bandDistance(level, clearRate(puzzle));
+    if (distance === 0) return puzzle;
+    if (distance < bestDistance) [best, bestDistance] = [puzzle, distance];
+  }
+  return best ?? dealCandidate(level, rng).puzzle;
 }
 export const rankName = (rank: number) =>
   rank === 1 ? 'A' : rank === 11 ? 'J' : rank === 12 ? 'Q' : rank === 13 ? 'K' : String(rank);
