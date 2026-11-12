@@ -165,7 +165,28 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await screenshot('bond-beads-4-portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.waitForTimeout(500);
-    // Play the first shape out and see the card fade it before the second.
+    // Play the first shape out and see the card fade it before the second. U7d batch 26 (R4): `bondbeads.match` is
+    // stretched to 4 s and the same beads open for the other shape within the hop, `bondbeads.other` waiting.
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      const say = g.ctx.say.bind(g.ctx);
+      window.__said = 0;
+      window.__open = null;
+      window.__starts = {};
+      g.ctx.say = (id, vars) => {
+        const line = say(id, vars);
+        window.__starts[id] = performance.now();
+        if (id !== 'bondbeads.match') return line;
+        window.__said = performance.now();
+        return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+      };
+      const watch = () => {
+        if (neo.scene.game !== g) return;
+        if (g.first && !g.busy) window.__open = { at: performance.now() - window.__said, waiting: g.unasked };
+        else requestAnimationFrame(watch);
+      };
+      watch();
+    });
     for (let i = 0; i < 20; i++) {
       await settle();
       if (await page.evaluate(() => !!neo.scene.game.first)) break;
@@ -185,12 +206,32 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       'after the first shape matches, the set goes on to the other shape',
     );
     assert.ok((await links()) > 0, 'the beads keep their links into the second shape');
+    const open = await page.evaluate(() => window.__open);
+    assert.ok(
+      open && open.at < 1000 && open.waiting,
+      `R4: the first shape's line held the beads: ${JSON.stringify(open)}`,
+    );
+    // Her first touch while the other shape's ask waits drops it, and counts nothing.
+    pair = await freePair();
+    if (pair) await carry(pair[0], pair[1]);
+    else await tapLink();
+    const early = await page.evaluate(() => ({
+      waiting: neo.scene.game.unasked,
+      said: !!window.__starts['bondbeads.other'],
+    }));
+    assert.deepEqual(
+      early,
+      { waiting: false, said: false },
+      'R4: an early touch drops the waiting ask unsaid',
+    );
+    assert.deepEqual(await tally(), [1, 1], 'an early touch is never a miss');
+    await page.evaluate(() => neo.scene.game.undo());
     await screenshot('bond-beads-4-second');
     await playOut();
     await finished('bond-beads');
     assert.deepEqual(await score(), [1, 1]);
     log(
-      'Bond Beads 1–4: drag link, tap break, Undo, Start again, tap-tap link, trays held; two misses, repeat Check ignored, glow hint, cards matched; level 3 opening shapes, miss, Start again, rebuilt; level 4 seven beads, miss, hint, portrait, first shape faded, both ways passed',
+      'Bond Beads 1–4: drag link, tap break, Undo, Start again, tap-tap link, trays held; two misses, repeat Check ignored, glow hint, cards matched; level 3 opening shapes, miss, Start again, rebuilt; level 4 seven beads, miss, hint, portrait, first shape faded, R4 beads open within the hop of a 4 s match line with the ask waiting and dropped by an early touch, both ways passed',
     );
   }
 

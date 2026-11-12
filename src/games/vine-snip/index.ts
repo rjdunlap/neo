@@ -574,14 +574,16 @@ class VineSnip implements Game {
       gravity: 0,
       life: [0.4, 0.8],
     });
+    if (this.hangs.some((x) => x !== h && x.phase !== 'fed')) {
+      // Level 5, the line's first fed fruit: its line plays while the other fruit can be snipped (U7 R4).
+      h.phase = 'fed';
+      void this.say('vine-snip.munch', this.vars(h));
+      return;
+    }
     this.busy = true;
     await this.say('vine-snip.munch', this.vars(h));
     if (this.finished) return;
     h.phase = 'fed';
-    if (this.hangs.some((x) => x.phase !== 'fed')) {
-      this.busy = false;
-      return;
-    }
     this.index++;
     if (this.index >= this.lines.length) return void this.finale();
     await this.begin();

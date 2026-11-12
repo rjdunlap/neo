@@ -57,6 +57,8 @@ const DOUBLE_HAND = 0.29;
 
 /** Finger travel below this is a tap on a bead (select it, or link to the selected one), not a carry. */
 const PRESS_TRAVEL = 15;
+/** A finished tray's hop (up 0.18 s, down 0.22 s). */
+const HOP_TIME = 0.4;
 
 class BondBeads implements Game {
   readonly plan: Plan;
@@ -73,6 +75,9 @@ class BondBeads implements Game {
   layoutNow: BeadLayout | null = null;
   /** What the glow or a pulse points at, refreshed after every change. */
   help: Help | null = null;
+  /** Level 4: `bondbeads.other` waiting behind the first shape's line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   private alive = true;
   private epoch = 0;
   private clock = 0;
@@ -407,6 +412,7 @@ class BondBeads implements Game {
     const tapped = this.press.bead === i && this.press.travel < PRESS_TRAVEL;
     this.press.bead = -1;
     if (!l || this.busy || this.finished) return false;
+    this.dropAsk();
     if (tapped) {
       this.tapBead(i);
       return false;
@@ -481,6 +487,7 @@ class BondBeads implements Game {
 
   /** After a link, a break or an undo: redraw, then a finished tray (level 1) or a stuck one. */
   private changed() {
+    this.dropAsk();
     this.redraw();
     if (this.checks) return;
     if (this.bench.done) {
@@ -500,6 +507,7 @@ class BondBeads implements Game {
   /** Levels 2–4's Check. */
   check() {
     if (this.busy || this.finished || !this.checks) return;
+    this.dropAsk();
     const v = this.tally.check(this.bench);
     if (v === 'match') {
       void this.stepDone();
@@ -604,8 +612,10 @@ class BondBeads implements Game {
     const s = this.steps[this.index];
     if (s.twoWays && !this.first) {
       // Level 4, the first shape: keep the beads as they are and ask for the other shape from the same beads.
+      // `bondbeads.match` plays while the same beads open again for the other shape, after the beads' hop (U7 R4).
       const made = this.bench.matched();
-      await this.ctx.say('bondbeads.match');
+      const said = this.ctx.say('bondbeads.match');
+      await this.ctx.tw.wait(HOP_TIME);
       if (!this.alive || epoch !== this.epoch) return;
       this.first = made ? made[0] : null;
       const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
@@ -620,7 +630,12 @@ class BondBeads implements Game {
       this.selected = null;
       this.busy = false;
       this.build();
-      void this.ctx.say('bondbeads.other');
+      // The other shape's ask waits for the line, the guide or her first touch, which drops it: she is building.
+      this.unasked = true;
+      const gen = ++this.askGen;
+      void said.then(() => {
+        if (gen === this.askGen && this.unasked && this.alive && !this.finished) this.sayWaitingAsk();
+      });
       return;
     }
     await this.ctx.say(this.stepLine());
@@ -649,10 +664,23 @@ class BondBeads implements Game {
     }
   }
 
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the other shape's ask waits behind the first shape's line: say it. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished) return false;
+    this.dropAsk();
+    void this.ctx.say('bondbeads.other');
+    return true;
+  }
+
   private async hop(n: Container) {
     const y = n.y;
-    await this.ctx.tw.to(n, { y: y - 24 }, { duration: 0.18, ease: ease.outBack });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n, { y }, { duration: 0.22 });
+    await this.ctx.tw.to(n, { y: y - 24 }, { duration: HOP_TIME * 0.45, ease: ease.outBack });
+    if (this.alive && !n.destroyed) await this.ctx.tw.to(n, { y }, { duration: HOP_TIME * 0.55 });
   }
 
   private async finale() {
@@ -678,6 +706,7 @@ class BondBeads implements Game {
   /** The pause sheet's Show a hint: at levels 2–4 the glow (one hint per card); at level 1 a free pulse, never counted. */
   askForHint() {
     if (this.busy || this.finished || !this.help) return;
+    this.dropAsk();
     if (this.checks) {
       this.tally.ask();
       void this.ctx.say('bondbeads.hint');
