@@ -353,10 +353,13 @@ export class SaltTanks implements Game {
     this.shaker.rotation = 0;
     this.shaker.scale.set(0);
     void this.ctx.tw.to(this.shaker.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
-    await this.ctx.say('sink.salt-right');
+    // U7 R4: the line starts and plays over the lift-out and the shaker's exit; the last one is heard out before the end.
+    const lesson = this.ctx.say('sink.salt-right');
     await this.liftOut();
     this.shakerAt = 'away';
     await this.ctx.tw.to(this.shaker, this.shakerAway(), { duration: 0.4, ease: ease.inQuad });
+    if (this.question + 1 >= this.round.questions.length) await lesson;
+    if (this.finished) return;
     this.busy = false;
     this.nextQuestion(this.question + 1);
   }

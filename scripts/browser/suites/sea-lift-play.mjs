@@ -76,6 +76,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     st = await state();
     assert.deepEqual([st.hints, st.hinted], [1, true], 'Show a hint glows once and counts once');
     await screenshot('sea-lift-1');
+    // U7 R4: the friend's thanks (2.4 s when muted) never holds the fade or the next ask.
+    await tapStop(3);
+    const t0 = Date.now();
+    await page.waitForFunction(() => neo.scene.game.state.index === 1 && !neo.scene.game.busy, null, {
+      timeout: 3800,
+    });
+    log('sea-lift level 1 next ask live after ' + (Date.now() - t0) + ' ms');
     await playOut(n);
     st = await state();
     assert.deepEqual([st.misses, st.hints], [1, 1]);

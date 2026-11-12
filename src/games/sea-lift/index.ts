@@ -44,6 +44,8 @@ import {
 } from './logic';
 
 const STEP_SECONDS = 0.25;
+/** The hop is 0.28 s; the friend fades after it, not after the line (U7 R4). */
+const HOP_BEAT = 0.3;
 const FISH: Swatch[] = [swatch.orange, swatch.pink, swatch.purple, swatch.yellow];
 /** Levels whose authored first round has been played this session; the demonstration always opens on it and uses none up. */
 const authoredShown = new Set<LevelId>();
@@ -786,6 +788,9 @@ class SeaLift implements Game {
     await this.ride(stop, gen);
     if (!this.live(gen)) return;
     this.ctx.pet.cheer();
+    // U7 R4: the friend's thanks starts and never holds the fade or the next ask; the last one is heard out before the
+    // closing line.
+    let lesson: Promise<unknown> | undefined;
     if (it.kind === 'ride') {
       const rider = this.riders.children[0] as Container | undefined;
       if (rider) {
@@ -795,7 +800,8 @@ class SeaLift implements Game {
         rider.scale.set(1);
         this.hop(rider);
       }
-      await this.ctx.say('sealift.at', { where: stopName(stop, true) });
+      lesson = this.ctx.say('sealift.at', { where: stopName(stop, true) });
+      await this.ctx.tw.wait(HOP_BEAT);
       if (!this.live(gen)) return;
       if (rider) await this.ctx.tw.to(rider, { alpha: 0 }, { duration: 0.4 });
       if (!this.live(gen)) return;
@@ -813,7 +819,8 @@ class SeaLift implements Game {
         this.hop(rider);
       }
       if (other) this.hop(other.node);
-      await this.ctx.say('sealift.howfar.right', { n: word(howFarAnswer(it.howfar)) });
+      lesson = this.ctx.say('sealift.howfar.right', { n: word(howFarAnswer(it.howfar)) });
+      await this.ctx.tw.wait(HOP_BEAT);
       if (!this.live(gen)) return;
       await Promise.all(
         [rider, other?.node]
@@ -831,7 +838,8 @@ class SeaLift implements Game {
       await this.ctx.tw.to(twin, { alpha: 1 }, { duration: 0.25 });
       if (!this.live(gen)) return;
       this.hop(twin);
-      await this.ctx.say('sealift.twin.right');
+      lesson = this.ctx.say('sealift.twin.right');
+      await this.ctx.tw.wait(HOP_BEAT);
       if (!this.live(gen)) return;
       await this.ctx.tw.to(twin, { alpha: 0 }, { duration: 0.4 });
       if (!this.live(gen)) return;
@@ -847,8 +855,7 @@ class SeaLift implements Game {
         this.busy = false;
         return;
       }
-      await this.ctx.say('sealift.aboard');
-      if (!this.live(gen)) return;
+      lesson = this.ctx.say('sealift.aboard');
       for (const r of this.riders.children) this.hop(r as Container);
       await this.ctx.tw.wait(0.6);
       if (!this.live(gen)) return;
@@ -856,6 +863,8 @@ class SeaLift implements Game {
     }
     if (!this.live(gen)) return;
     if (this.state.done) {
+      await lesson;
+      if (!this.live(gen)) return;
       this.finish();
       return;
     }

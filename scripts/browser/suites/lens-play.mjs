@@ -219,8 +219,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await turn(3);
     await choose(1);
     assert.deepEqual(await tally(), [1, 0], 'not alive for the swimmer at stop 3: a miss');
-    await choose(0);
-    await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 8000 });
+    // U7 R4: neither the pressed name nor the right answer's line (2.4 s each when muted) holds the next drop.
+    await page.evaluate(() => kit.tapOn(neo.scene.game.choiceButtons[0]));
+    await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, {
+      timeout: 2000,
+    });
     await settle();
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.waitForTimeout(800);

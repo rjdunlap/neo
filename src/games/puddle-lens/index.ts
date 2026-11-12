@@ -397,7 +397,11 @@ class PuddleLens implements Game {
     return this.ctx.instruct(id, vars);
   }
 
+  /** How many lines have been started; a held instruction is skipped if another line came while it waited. */
+  private spoken = 0;
+
   private say(id: LineId, vars?: LineVars) {
+    this.spoken++;
     return this.ctx.say(id, vars);
   }
 
@@ -935,17 +939,33 @@ class PuddleLens implements Game {
       void this.ctx.tw.to(node.scale, { x: 1.25, y: 1.25 }, { duration: 0.18 }).then(() => {
         if (!node.destroyed) void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18 });
       });
-    await this.say(v.line);
+    // U7 R4: the lesson line starts and never holds the next drop; the instruction said again waits for it.
+    const lesson = this.say(v.line);
     await this.ctx.tw.wait(0.6);
     if (!this.alive || e !== this.epoch) return;
     this.index++;
     this.tally.next();
-    if (this.index >= this.drops.length) return void this.finale();
-    this.nextView();
+    if (this.index >= this.drops.length) {
+      await lesson;
+      if (this.alive && e === this.epoch) void this.finale();
+      return;
+    }
+    this.nextView(lesson);
   }
 
   /** The next drop or question: the dial goes back to the eyes and the slide changes (level 3) or stays (level 4). */
-  private nextView() {
+  private nextView(lesson?: Promise<unknown>) {
+    const e = this.epoch;
+    const spoken = this.spoken;
+    const at = this.index;
+    /** Runs `ask` once the lesson line has ended, unless anything else was said or the round moved on meanwhile. */
+    const afterLesson = (ask: () => unknown) => {
+      if (!lesson) return void ask();
+      void lesson.then(() => {
+        if (this.alive && e === this.epoch && at === this.index && spoken === this.spoken && !this.finished)
+          ask();
+      });
+    };
     this.turnId++;
     this.stop = firstStop(this.plan.level);
     this.movingSaid = false;
@@ -953,9 +973,9 @@ class PuddleLens implements Game {
     this.build();
     sfx.whoosh();
     this.busy = false;
-    if (this.plan.level === 4) void this.askQuestion();
+    if (this.plan.level === 4) afterLesson(() => this.askQuestion());
     const again = INSTRUCT[this.plan.level];
-    if (again) void this.instruct(again);
+    if (again) afterLesson(() => this.instruct(again));
   }
 
   // ----- levels 5–8: answers and trays -----
@@ -971,8 +991,8 @@ class PuddleLens implements Game {
     if (this.deciding === null) return;
     this.busy = true;
     const e = this.epoch;
-    await this.say(CHOICE_NAME[kind]);
-    if (!this.alive || e !== this.epoch) return;
+    // The name starts and the answer is judged at once: the verdict's line cuts the name, as any new line does.
+    void this.say(CHOICE_NAME[kind]);
     const v =
       level === 5
         ? judgeLife(d!.pair, d!.ringed, this.stop, kind as LifeAnswer)
@@ -994,14 +1014,18 @@ class PuddleLens implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     if (level === 6) void this.slideInto(kind as CellClass);
-    await this.say(v.line);
+    const lesson = this.say(v.line);
     await this.ctx.tw.wait(0.6);
     if (!this.alive || e !== this.epoch) return;
     if (level === 6) this.sorted[kind as CellClass].push(s!);
     this.index++;
     this.tally.next();
-    if (this.index >= this.rounds) return void this.finale();
-    this.nextView();
+    if (this.index >= this.rounds) {
+      await lesson;
+      if (this.alive && e === this.epoch) void this.finale();
+      return;
+    }
+    this.nextView(lesson);
   }
 
   /** Level 6: the slide slides from the lens into its tray. */
@@ -1040,14 +1064,23 @@ class PuddleLens implements Game {
     const e = this.epoch;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.say('lens.just-right', { what: q.what });
+    const lesson = this.say('lens.just-right', { what: q.what });
+    const spoken = this.spoken;
     await this.ctx.tw.wait(0.5);
     if (!this.alive || e !== this.epoch) return;
     this.index++;
     this.tally.next();
-    if (this.index >= this.questions.length) return void this.finale();
+    if (this.index >= this.questions.length) {
+      await lesson;
+      if (this.alive && e === this.epoch) void this.finale();
+      return;
+    }
     this.settle();
-    void this.askQuestion();
+    const at = this.index;
+    void lesson.then(() => {
+      if (this.alive && e === this.epoch && at === this.index && spoken === this.spoken && !this.finished)
+        void this.askQuestion();
+    });
   }
 
   // ----- help, restart, finish -----

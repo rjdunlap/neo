@@ -368,15 +368,21 @@ class SinkFloat implements Game {
     void this.splash(item).then(async () => {
       const result = item.floats;
       await this.ctx.say(result ? 'sink.floats' : 'sink.sinks');
+      let reaction: Promise<unknown>;
       if (result === floatsGuess) {
         this.ctx.pet.cheer();
-        await this.ctx.say('sink.right');
+        reaction = this.ctx.say('sink.right');
       } else {
         sfx.sparkle();
-        await this.ctx.say('sink.surprise');
+        reaction = this.ctx.say('sink.surprise');
       }
-      // Big and small: the stuff's rule, whichever way the guess went. Size never changed it.
-      if (item.pair) await this.ctx.say(PAIRS[item.pair.kind].line);
+      // U7 R4: the reaction starts and the next thing follows at once, except where the pair's rule comes next (it would
+      // cut the reaction) and after the last thing (the closing line would).
+      const last = this.current + 1 >= this.items.length;
+      if (item.pair) {
+        await reaction;
+        await this.ctx.say(PAIRS[item.pair.kind].line);
+      } else if (last) await reaction;
       this.current++;
       this.resize(this.view);
       void this.nextGuess();
