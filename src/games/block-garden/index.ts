@@ -263,6 +263,10 @@ interface Slot {
   handle: DragHandle;
   /** The piece in this slot now, or null when it is empty. */
   piece: number | null;
+  /** The carried piece rides its lift above the finger; false once a tap holds it in its slot, so a put-down has no lift to undo. */
+  lifted: boolean;
+  /** Stops the carry's own finger-following. */
+  letGo: (() => void) | null;
 }
 
 /** At level 10, a faded piece of the next tray: a tap or a try to lift it wiggles it and says it comes next. */
@@ -533,10 +537,14 @@ class BlockGarden implements Game {
     this.root.addChild(carrier);
     const handle = draggable(carrier, this.ctx.tw, {
       lift: 0,
+      // Tap the piece, then the place: a thumb on an upright phone hides the bed it drags over.
+      tapToPlace: () => this.hold(i),
+      // A hold that ends without a place (the piece tapped again, another piece, a button): back to its slot, free.
+      onCancel: () => this.home(this.slots[i]),
       onPick: () => this.pick(i),
       onDrop: () => this.drop(i),
     });
-    return { carrier, art, handle, piece: null };
+    return { carrier, art, handle, piece: null, lifted: false, letGo: null };
   }
 
   private placeSlot(s: Slot, i: number) {
@@ -572,19 +580,39 @@ class BlockGarden implements Game {
     // Ride above the finger by the piece's own height, so its bottom edge stays 40 above it.
     const lift = this.liftFor(slot.piece);
     slot.carrier.y -= lift;
+    slot.lifted = true;
     this.grab(slot, lift);
+  }
+
+  /** A still tap on a tray piece: it waits in its slot at the tray's size (the drag engine makes it breathe) until a tap on the bed says where it goes. */
+  private hold(i: number): boolean {
+    const slot = this.slots[i];
+    if (this.carrying !== i || this.cancelled || this.busy || this.finished || slot.piece === null)
+      return false;
+    slot.letGo?.();
+    slot.lifted = false;
+    this.shadow = null;
+    this.ctx.tw.kill(slot.art.scale);
+    const tray = TRAY_CELL / this.lay.cell;
+    void this.ctx.tw.to(slot.art.scale, { x: tray, y: tray }, { duration: 0.15 });
+    return true;
   }
 
   /** The drag helper centres a grabbed thing on the finger plus its grab offset; nudge that offset up by the piece's lift. */
   private grab(slot: Slot, lift: number) {
     const c = slot.carrier;
+    slot.letGo?.();
+    const letGo = () => {
+      c.off('globalpointermove', onMove);
+      if (slot.letGo === letGo) slot.letGo = null;
+    };
     const onMove = (e: { global: { x: number; y: number } }) => {
-      if (this.carrying === null || this.slots[this.carrying] !== slot)
-        return void c.off('globalpointermove', onMove);
+      if (this.carrying === null || this.slots[this.carrying] !== slot) return letGo();
       const p = this.root.toLocal(e.global);
       c.position.set(p.x, p.y - lift);
       this.carry(this.slots.indexOf(slot));
     };
+    slot.letGo = letGo;
     c.on('globalpointermove', onMove);
   }
 
@@ -615,9 +643,10 @@ class BlockGarden implements Game {
     this.shadow = null;
     const over = this.overBed(slot.carrier.x, slot.carrier.y);
     // The finger rides `lift` below the piece: let go inside its own slot and the piece just goes back, free.
+    // A piece put down by a tap has no lift: the tapped point is its middle.
     const r = this.lay.slots[i];
     const fx = slot.carrier.x,
-      fy = slot.carrier.y + this.liftFor(slot.piece);
+      fy = slot.carrier.y + (slot.lifted ? this.liftFor(slot.piece) : 0);
     const inSlot = fx >= r.x && fx <= r.x + r.w && fy >= r.y && fy <= r.y + r.h;
     if (cancelled || inSlot || this.busy || this.finished) return (this.home(slot), true);
     if (shadow) {
@@ -638,6 +667,8 @@ class BlockGarden implements Game {
   private home(slot: Slot) {
     this.carrying = null;
     this.shadow = null;
+    slot.lifted = false;
+    slot.letGo?.();
     const i = this.slots.indexOf(slot);
     const r = this.lay.slots[i];
     this.ctx.tw.kill(slot.carrier);
