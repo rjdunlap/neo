@@ -70,7 +70,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       const first = g.sayWaitingAsk();
       return { waiting, first, after: g.unasked, again: g.sayWaitingAsk() };
     });
-    assert.deepEqual(guide, { waiting: true, first: true, after: false, again: false }, 'R4: the guide says the waiting request');
+    assert.deepEqual(
+      guide,
+      { waiting: true, first: true, after: false, again: false },
+      'R4: the guide says the waiting request',
+    );
     await settle();
     assert.equal(await page.evaluate(() => neo.scene.game.round.index), 1, 'the ice request is met');
     await tool('snow');
