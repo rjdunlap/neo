@@ -25,6 +25,77 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
 
+    // Level 5: the lap opening, with real canvas touches on the background and the ice.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await launch('melt-freeze', 5);
+    const lap = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          warmth: g.warmth,
+          busy: g.busy,
+          snow: g.snowButton.visible,
+          sun: !!g.sunButton.parent,
+          ice: g.things.map((t) => [t.id, t.state]),
+        };
+      });
+    const tapLap = (target) =>
+      page.evaluate((target) => {
+        const g = neo.scene.game;
+        if (target === 'ice') {
+          const p = g.things[0].node.toGlobal({ x: 0, y: -40 });
+          kit.tap(p.x, p.y);
+        } else {
+          const p = g.ctx.stage.toGlobal({ x: g.view.w * 0.85, y: g.view.h * target });
+          kit.tap(p.x, p.y);
+        }
+      }, target);
+    await page.waitForTimeout(1600);
+    assert.deepEqual(await lap(), {
+      warmth: 0,
+      busy: false,
+      snow: false,
+      sun: false,
+      ice: [['ice', 'solid']],
+    });
+    await screenshot('melt-freeze-5-portrait');
+    await tapLap(0.23);
+    assert.equal((await lap()).warmth, 1, 'a touch above the table warms the ice');
+    await page.waitForTimeout(120);
+    await tapLap('ice');
+    assert.deepEqual(await lap(), {
+      warmth: 2,
+      busy: false,
+      snow: false,
+      sun: false,
+      ice: [['ice', 'solid']],
+    });
+    await page.waitForTimeout(120);
+    await tapLap(0.85);
+    assert.deepEqual(await lap(), {
+      warmth: 3,
+      busy: true,
+      snow: false,
+      sun: false,
+      ice: [['ice', 'melted']],
+    });
+    await page.waitForTimeout(120);
+    await tapLap(0.23);
+    assert.equal((await lap()).snow, false, 'the snowflake waits until the melt animation ends');
+    await settle();
+    assert.equal((await lap()).snow, true);
+    await tapLap(0.23);
+    assert.deepEqual(await state(), ['melted'], 'a background tap leaves the puddle melted');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.snowButton));
+    assert.deepEqual(await state(), ['solid'], 'the snowflake freezes the puddle');
+    await finished('melt-freeze');
+    assert.deepEqual(await score(), [0, 0]);
+    log(
+      'Melt and Freeze 5: portrait playfield taps melt the cube, then the snowflake freezes it for a sticker',
+    );
+    if (process.env.MELT_LAP === '1') return;
+    await page.setViewportSize({ width: 1024, height: 768 });
+
     // Level 1: the ice cube; a repeated sun is a no-change, never counted.
     await launch('melt-freeze', 1);
     await settle();

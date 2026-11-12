@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Melt and Freeze opens with one big ice cube (2026-11-12)
+
+[PR #1574](https://github.com/rjdunlap/neo/pull/1574) adds level 5 as the first lap level. Three playfield taps melt the cube, then the snowflake appears to freeze it again. [Game notes](../games/melt-freeze.md) and [verification](../VERIFICATION.md#2026-11-12--melt-freeze-level-5-one-big-ice-cube-pr-1574).
+
 ### U5a, a first six she can start (2026-11-10)
 
 [PR #1467](https://github.com/rjdunlap/neo/pull/1467): a game new to her today (`newToday` in `src/content/daily.ts`) plays its band's first level in play order through a shared `firstLevel` in `src/progress/difficulty.ts` (also used by `Store.levelFor`); a pin still wins and a grown-up's six ignore it. One helper, `todaysSix(day, upright)` in `src/app/daily-six.ts`, builds the six for `DailyScene` and `GameScene.showDailyNext`. `GameModule.coplayHintLap` with `tipFor(mod, band)` holds a tip to her band; Word Glue has a lap tip. The six games that still asked at lap were fixed in U5b. See [verification](../VERIFICATION.md) (the entry is in the live file).
