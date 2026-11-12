@@ -379,6 +379,30 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         )
           await launch('lasso-loops', level);
         if (level >= 4) await page.setViewportSize({ width: 768, height: 1024 });
+        // U7 R4: a lassoed jar's count and a guess card's reaction start, and the loops (or the cards) open before the
+        // line ends; only the last jar's count is heard out.
+        await page.evaluate(() => {
+          const g = neo.scene.game,
+            say = g.ctx.say.bind(g.ctx);
+          window.lassoR4 = [];
+          g.ctx.say = (id, vars) => {
+            const line = say(id, vars);
+            if (id === 'count' || /^lasso\.(guessed|keep|changed)$/.test(String(id))) {
+              const t = performance.now(),
+                o = { id: String(id), last: false };
+              lassoR4.push(o);
+              if (id === 'count')
+                queueMicrotask(
+                  () =>
+                    (o.last =
+                      g.index >= g.jars.length || (g.plan.mode === 'free' && !g.free.length) || g.finished),
+                );
+              void line.then(() => (o.ends = performance.now() - t));
+              void kit.until(() => g.finished || !g.busy, 8000).then(() => (o.opens = performance.now() - t));
+            }
+            return line;
+          };
+        });
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
         if (level === 6) {
           assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 6 });
@@ -461,6 +485,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         await finished('lasso-loops');
         assert.deepEqual(await score('lasso-loops'), level === 1 ? [0, 0] : level === 2 ? [2, 1] : [3, 1]);
+        const lassoOpens = (await page.evaluate(() => lassoR4)).filter((o) => !o.last);
+        assert.ok(lassoOpens.length >= (level === 6 ? 3 : 1), `R4: ${lassoOpens.length} lines timed`);
+        assert.ok(
+          lassoOpens.every((o) => o.opens < o.ends),
+          `R4: the board waited for a line (${lassoOpens.map((o) => `${o.id} ${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+        );
+        log(
+          `Lasso Loops ${level}: R4, ${lassoOpens.map((o) => `${o.id} opens ${Math.round(o.opens)} ms`).join(', ')}`,
+        );
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Lasso Loops ${level}: loops drawn around fireflies${level > 1 ? ', wrong-sized loops explained, ringed hint' : ''}${level >= 3 ? ', how-many question with a counted miss' : ''}, saved score and sticker passed`,

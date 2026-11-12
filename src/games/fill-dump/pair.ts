@@ -49,6 +49,8 @@ export class PairGame implements Game {
   /** Fruit are tweening: a resize waits for them to stop rather than kill a tween a chain is awaiting. */
   private moving = false;
   private stale = false;
+  /** The next request's ask, waiting behind the last basket's line (U7 R4): said when the line ends, or at her first touch. */
+  private unasked = false;
 
   constructor(private readonly ctx: GameContext) {
     this.state = startPair(ctx.rng);
@@ -193,6 +195,8 @@ export class PairGame implements Game {
     const b = this.baskets[side];
     b.squish();
     sfx.tick();
+    // The request is only spoken, so a touch before she has heard it says it rather than being judged.
+    if (this.askNow()) return;
     const ev = pairTap(this.state, side);
     if (ev.kind === 'ignored') return;
     if (ev.kind === 'wrong') {
@@ -205,12 +209,16 @@ export class PairGame implements Game {
     this.glow = null;
     this.halo.visible = false;
     this.moving = true;
-    void (ev.ask === 'tip' ? this.tip(side) : this.fill(side)).then(() => {
-      if (this.gone) return;
+    void (ev.ask === 'tip' ? this.tip(side) : this.fill(side)).then(async (said) => {
+      if (this.gone || !said) return;
+      const { line } = said;
       this.shown.acted = ev.ask;
-      if (ev.done) this.still();
-      if (ev.done) void this.finale();
-      else void this.next();
+      if (ev.done) {
+        this.still();
+        // The last basket's line is heard out, because the closing line would cut it.
+        await line;
+        if (!this.gone) void this.finale();
+      } else void this.next(line);
     });
   }
 
@@ -232,7 +240,7 @@ export class PairGame implements Game {
   }
 
   /** The full basket leans out and its fruit tumble onto the grass in front of it. */
-  private async tip(side: 0 | 1) {
+  private async tip(side: 0 | 1): Promise<{ line: Promise<unknown> } | undefined> {
     const { tw } = this.ctx;
     this.busy = true;
     const b = this.baskets[side];
@@ -248,11 +256,12 @@ export class PairGame implements Game {
     await Promise.all(landed);
     await tw.to(b, { lean: 0 }, { duration: 0.3, ease: ease.outBack });
     if (this.gone) return;
-    await this.ctx.say('fill.pair.out');
+    // Wrapped, so the async function hands back the playing line rather than waiting for it.
+    return { line: this.ctx.say('fill.pair.out') };
   }
 
   /** The pile hops, one fruit at a time, into the empty basket. */
-  private async fill(side: 0 | 1) {
+  private async fill(side: 0 | 1): Promise<{ line: Promise<unknown> } | undefined> {
     const { tw } = this.ctx;
     this.busy = true;
     for (let k = 0; k < PAIR_FRUIT; k++) {
@@ -262,11 +271,14 @@ export class PairGame implements Game {
       this.baskets[side].squish();
       await tw.wait(0.05);
     }
-    await this.ctx.say('fill.pair.in');
+    return { line: this.ctx.say('fill.pair.in') };
   }
 
-  /** The fruit fade, a fresh pair is dealt, and the next request is asked. */
-  private async next() {
+  /**
+   * The fruit fade, a fresh pair is dealt, and the next request is asked. The basket's line never holds the board
+   * (U7 R4): the fade starts with it, input reopens on the fresh pair, and the ask waits for the line or her first touch.
+   */
+  private async next(line?: Promise<unknown>) {
     const { tw } = this.ctx;
     await Promise.all(this.fruit.map((view) => tw.to(view, { alpha: 0 }, { duration: 0.25 })));
     if (this.gone) return;
@@ -277,9 +289,26 @@ export class PairGame implements Game {
       void tw.to(view.scale, { x: s, y: s }, { duration: 0.3, ease: ease.outBack });
     }
     await tw.wait(0.3);
+    if (this.gone) return;
     this.still();
     this.busy = false;
+    const at = this.state.round;
+    this.unasked = true;
+    await line;
+    if (this.state.round === at) this.askNow();
+  }
+
+  /** Says the next request if it is still waiting behind a basket's line; true when it did. */
+  private askNow() {
+    if (!this.unasked || this.finished || this.gone) return false;
+    this.unasked = false;
     this.ask();
+    return true;
+  }
+
+  /** The guide was tapped while the request waits: say this request, not the last one. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private async finale() {

@@ -131,6 +131,23 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
       }
+      // U7 R4: the cave's lines and a fair share's `munch.fair` start, and the table (or the pads) opens before they end.
+      await page.evaluate(() => {
+        const g = neo.scene.game,
+          say = g.ctx.say.bind(g.ctx);
+        window.munchR4 = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          if (id === 'munch.friend-hi' || id === 'munch.not-enough' || id === 'munch.fair') {
+            const t = performance.now(),
+              o = { id };
+            munchR4.push(o);
+            void line.then(() => (o.ends = performance.now() - t));
+            void kit.until(() => g.done || !g.busy, 8000).then(() => (o.opens = performance.now() - t));
+          }
+          return line;
+        };
+      });
       await page.evaluate(feedHelpers);
       await page.waitForTimeout(700);
       if ([1, 3, 6, 7, 9, 10].includes(level)) await screenshot(`monster-munch-${level}`);
@@ -372,6 +389,20 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
       await playing;
       if (level === 12) await screenshot('monster-munch-12-finished');
       await finished('monster-munch');
+      const munchTimed = await page.evaluate(() => munchR4);
+      if ([7, 8, 11, 12].includes(level)) {
+        assert.ok(munchTimed.length >= 1, `R4: ${munchTimed.length} Monster Munch lines timed`);
+        // A line cut short by the next one (a quick second call) ends early, so it is timed only when it ran on.
+        const late = munchTimed.filter((o) => o.ends !== undefined && o.opens >= o.ends && o.ends > 300);
+        assert.equal(
+          late.length,
+          0,
+          `R4: the table waited for a line (${late.map((o) => `${o.id} ${Math.round(o.opens)}/${Math.round(o.ends)}`).join(', ')} ms)`,
+        );
+        log(
+          `Monster Munch ${level}: R4, ${munchTimed.map((o) => `${o.id} opens ${Math.round(o.opens)} ms`).join(', ')}`,
+        );
+      }
       assert.deepEqual(
         await page.evaluate(() => {
           const r = kit.store.stats('monster-munch').history.at(-1);
