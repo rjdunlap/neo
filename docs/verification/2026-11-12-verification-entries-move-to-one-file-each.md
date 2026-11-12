@@ -1,0 +1,5 @@
+# 2026-11-12 — Verification entries move to one file each (PR #1576)
+
+**Changed:** dated verification entries now live one per file in `docs/verification/` (`node scripts/verification.mjs new "Title (PR #n)"`, `latest [n]`); `docs/VERIFICATION.md` keeps only the coverage summary, and `scripts/verification.test.mjs` fails `npm test` if a dated entry is added there. The 18 live entries moved to files and their 30 links were rewritten; `scripts/archive-verification.mjs` is retired; `scripts/overlap.sh` leaves entry files out of its PR file lists. AGENTS.md, the session guide, the README and `docs-keeper` describe the new place. Why: over 133 PRs (2026-11-09 to 12), replaying the catch-up merges gave about 108 conflicted files, 46 of them `VERIFICATION.md`, every session adding its entry at the same spot.
+**Ran:** `npx vitest run scripts src/content` (31 files, 282 passed, 1 skipped); `node scripts/check-links.mjs`; `npm run format:check`; `git diff --check`; `node scripts/verification.mjs latest 3` and `new` (this file).
+**Not run:** full `npm test` and `npm run build` locally (CI runs both; no game code changed); browser suites (nothing they cover changed).
