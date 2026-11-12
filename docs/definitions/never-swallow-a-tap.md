@@ -60,7 +60,7 @@ While a game holds input for an instruction or a hint, the corner guide (her fri
 1. **U7a, the shell and the phone's way in** (shell tier): R1, R2, R3 for the chooser and Today's six, and R4's shell part (`voice.stop`). Files: `src/audio/voice.ts` and its test, `src/ui/buttons.ts`, `src/app/App.ts` (marks; the snapshot only if R1 points there), `src/app/scenes/DailyScene.ts`, `src/app/scenes/ChooserScene.ts` and `src/app/chooser.test.ts`. Checks: typecheck, unit tests, build, the R1 probe before and after, `BROWSER_SUITE=phonefit` (the upright root pass: Today's six to a round and back) and `BROWSER_SUITE=profiles` (the chooser). No `world`: no route changes. No offline check: persistence and assets do not change.
 2. **U7b, Day by Day and the held-line look** (existing-game bug fix plus shell): R4's pilot and R5. Files: `src/games/day-by-day/index.ts`, `src/app/scenes/GameScene.ts` (the guide's talking look and the wait tick), `src/creatures/companion.ts` (the bob). Checks: typecheck, unit tests, `BROWSER_SUITE=week WEEK_LEVELS=1,4` (a tap on the arrow during the name), and `fingerdemo` at Day by Day's first and last levels only if the bot's timing changes. Build, since `GameScene` is shared.
 3. **U7c, the tablet root** (shell tier, after U6a and U6b): R2 and R3 for Home, Explore, the Arcade, the library and creature play. Files: those scenes' `leave` helpers (`HomeScene`, `ExploreScene`, `ArcadeScene`, `LibraryScene`, `PlayScene`). Checks: typecheck, unit tests, build, the R1 probe, `BROWSER_SUITE=home` (its main flow walks every one of these screens). No `world` unless a route changes.
-4. **U7d, classify the rest** (docs only; [first pass written](never-swallow-a-tap-lines.md)): R4's list of awaited name lines per game, written into this page or a short table beside it, and a READY line per game batch that holds any.
+4. **U7d, classify the rest** (docs only; [done 2026-11-12](never-swallow-a-tap-lines.md), every land read): R4's list of awaited name lines per game, written into this page or a short table beside it, and a READY line per game batch that holds any.
 
 Each slice is one session. U7a can ship alone: it is the phone's part.
 
@@ -92,7 +92,7 @@ Each slice is one session. U7a can ship alone: it is the phone's part.
 - The 25 games ready for upright play were read ([the lines page](never-swallow-a-tap-lines.md)): two hold input on a line R4 forbids, `animal-snack` (`snack.yum` in *who* rounds, `snack.full`) and `far-lights` (six right-answer lines), and [fix batch 1](never-swallow-a-tap-lines.md#fix-batches) is built (2026-11-10, PR #1488).
 - Eight games praise a finished board before the next one; that is an optional second batch that waits for a playtest note. Every other awaited line is a closing line or a proper hold.
 - Bubble Beach's 13 other games were read 2026-11-11 ([their rows](never-swallow-a-tap-lines.md#bubble-beach)): seven hold a cut line; [fix batch 3](never-swallow-a-tap-lines.md#fix-batches) is built (2026-11-11, PR #1532) and so is batch 4 (2026-11-11, PR #1534).
-- The other 120 games are [listed, not read](never-swallow-a-tap-lines.md#the-other-games-candidates-not-read); nothing was played or timed.
+- The other 120 games were classified a land at a time, finishing with Tinker Lab on 2026-11-12 ([the reading](never-swallow-a-tap-lines.md), fix batches 5 to 26); nothing was played or timed.
 
 ## Open decisions
 
