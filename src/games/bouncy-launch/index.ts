@@ -114,6 +114,12 @@ class BouncyLaunch implements Game {
   flying = false;
   finished = false;
   hinting = false;
+  /**
+   * The next shot's instruction, waiting behind the last right landing's line (U7 R4): said when the line ends, at her
+   * first pull or key, or by the guide; `askGen` drops a stale wait.
+   */
+  unasked = false;
+  private askGen = 0;
   /** Landing distances produced by deliberate pulls (the tap-only level has none). */
   readonly observedPulls: number[] = [];
 
@@ -191,7 +197,8 @@ class BouncyLaunch implements Game {
     const out = idle();
     this.botWait -= dt;
     const target = this.targets[this.shot];
-    if (this.flying || this.finished || this.grab || this.botWait > 0 || target === undefined) return out;
+    if (this.flying || this.finished || this.grab || this.unasked || this.botWait > 0 || target === undefined)
+      return out;
     const gap = cloudAt(this.plan, target) - this.controllerPower;
     out.players[0].active = true;
     if (Math.abs(gap) > 0.015) out.players[0].x = Math.max(-1, Math.min(1, gap / (Math.max(dt, 1e-3) * 0.5)));
@@ -207,7 +214,7 @@ class BouncyLaunch implements Game {
    * back and down by the pull that lands where it should (on the cloud, or nearer or farther than last time), and let go.
    */
   autotouch(): TouchIntent | null {
-    if (this.flying || this.finished || this.grab) return null;
+    if (this.flying || this.finished || this.grab || this.unasked) return null;
     if (this.plan.mode === 'planet') {
       const pair = this.pairs[this.shot];
       return this.planetPhase === 'choose' && pair
@@ -240,6 +247,8 @@ class BouncyLaunch implements Game {
     if (this.plan.mode === 'planet' || this.plan.mode === 'between') return;
     if (this.flying || this.finished || this.grab) return;
     const p = input.players.find((p) => p.x || p.y || p.action);
+    // A key before she has heard where this shot should land: she hears it now, and the key still moves the spring.
+    if (p) this.askNow();
     if (!p) {
       // The first key on the island (GameScene passes control() only after a real press) shows the spring at once.
       if (!this.stick) {
@@ -412,6 +421,8 @@ class BouncyLaunch implements Game {
       this.pet.eventMode = 'static';
       this.pet.on('pointerdown', (e: FederatedPointerEvent) => {
         if (this.flying || this.finished || this.grab || palmOnGlass()) return;
+        // A pull before she has heard where this shot should land: she hears it now, and the pull goes on.
+        this.askNow();
         this.grab = { id: e.pointerId, from: this.ctx.stage.toLocal(e.global) };
         this.rawPull = 0;
         this.wobble = 0.35;
@@ -599,8 +610,8 @@ class BouncyLaunch implements Game {
     this.friend.poke();
   }
 
-  /** The friend eats the snack the pet brought: a cheer, a few sparkles and a thank you. */
-  private async feed() {
+  /** The friend eats the snack the pet brought: a cheer, a few sparkles and a thank you, returned still playing (U7 R4). */
+  private feed() {
     this.pet.cheer();
     this.friend?.cheer();
     sfx.sparkle();
@@ -615,9 +626,10 @@ class BouncyLaunch implements Game {
       });
     if (this.snack)
       void this.ctx.tw.to(this.snack.scale, { x: 0, y: 0 }, { duration: 0.4, ease: ease.outBack });
-    await this.ctx.say('launch.fed', { friend: this.friendName });
+    const said = this.ctx.say('launch.fed', { friend: this.friendName });
     this.lastFlight = undefined;
     this.drawHistory();
+    return said;
   }
 
   private landX(f: number) {
@@ -682,19 +694,49 @@ class BouncyLaunch implements Game {
     this.star.position.set(this.landX(cloudAt(this.plan, t)), this.strip.y - 110);
   }
 
-  private instruct(id: LineId, vars?: LineVars) {
+  /** The shot's instruction, said now, or with `said` (the last landing's line) waiting for it to end (U7 R4). */
+  private instruct(id: LineId, vars?: LineVars, said?: Promise<unknown>) {
     this.instruction = { id, vars };
-    return this.ctx.instruct(id, vars);
+    if (!said) return this.ctx.instruct(id, vars);
+    this.unasked = true;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished || !this.instruction) return false;
+    this.dropAsk();
+    void this.ctx.instruct(this.instruction.id, this.instruction.vars);
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next shot's instruction waits: say it, not the one before it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private repeatInstruction() {
     if (!this.instruction || this.flying || this.finished || this.grab) return;
     this.pet.poke();
     sfx.giggle();
+    if (this.askNow()) return;
     void this.ctx.say(this.instruction.id, this.instruction.vars);
   }
 
-  private async askShot() {
+  /**
+   * The next shot: the star, friend or shown pull move at once. With `said` (the last landing's line, still playing), its
+   * instruction waits for the line, her first pull or the guide (U7 R4).
+   */
+  private async askShot(said?: Promise<unknown>) {
+    this.dropAsk();
     this.wrongs = 0;
     this.drawHistory();
     this.hinting = this.plan.mode === 'free';
@@ -718,21 +760,21 @@ class BouncyLaunch implements Game {
         if (this.shot === 0) await this.instruct('launch.pull');
         return;
       case 'star':
-        return this.instruct('launch.star');
+        return this.instruct('launch.star', undefined, said);
       case 'nearfar':
-        return this.instruct(this.targets[this.shot] === 0 ? 'launch.near' : 'launch.far');
+        return this.instruct(this.targets[this.shot] === 0 ? 'launch.near' : 'launch.far', undefined, said);
       case 'number':
-        return this.instruct('launch.number', { n: this.targets[this.shot] + 1 });
+        return this.instruct('launch.number', { n: this.targets[this.shot] + 1 }, said);
       case 'compare':
-        if (this.last === undefined) return this.instruct('launch.pull');
+        if (this.last === undefined) return this.instruct('launch.pull', undefined, said);
         this.ask = nextAsk(this.last);
-        return this.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer');
+        return this.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer', undefined, said);
       case 'predict':
-        return this.instruct('launch.predict');
+        return this.instruct('launch.predict', undefined, said);
       case 'between':
         return this.betweenRound();
       case 'friend':
-        return this.instruct('launch.feed', { friend: this.friendName });
+        return this.instruct('launch.feed', { friend: this.friendName }, said);
     }
   }
 
@@ -784,6 +826,8 @@ class BouncyLaunch implements Game {
       (this.plan.mode === 'between' && this.betweenStep < 2)
     )
       return;
+    // A free pick: her prediction's own line takes the waiting instruction's place.
+    this.dropAsk();
     this.prediction = pad;
     const x = this.landX(padAt(pad));
     this.predictionRing
@@ -979,11 +1023,13 @@ class BouncyLaunch implements Game {
       this.plan.mode === 'predict' || this.plan.mode === 'between'
         ? this.prediction === this.targets[this.shot]
         : undefined;
+    // A right landing's line starts and the hop back and the next shot follow at once (U7 R4).
+    let said: Promise<unknown> | undefined;
     if (verdict === 'yes') {
       if (this.plan.mode === 'friend') {
-        await this.feed();
+        said = this.feed();
       } else if (this.plan.mode === 'predict') {
-        await this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', {
+        said = this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', {
           n: (this.targets[this.shot] ?? 0) + 1,
         });
       } else if (this.plan.mode === 'between') {
@@ -1003,7 +1049,7 @@ class BouncyLaunch implements Game {
           gravity: 0,
           life: [0.6, 1],
         });
-        if (!this.course) await this.ctx.say('praise');
+        if (!this.course) said = this.ctx.say('praise');
       } else {
         this.pet.cheer();
       }
@@ -1030,6 +1076,13 @@ class BouncyLaunch implements Game {
       }
     }
     this.drawHistory();
+    const goal = this.course
+      ? this.targets.length
+      : this.plan.mode === 'compare'
+        ? this.plan.shots + 1
+        : this.plan.shots;
+    // The last shot's line is heard out (still flying, so nothing launches) before the closing line.
+    if (said && this.shot >= goal) await said;
     // Hop back onto the spring (still squashed to the last power on a stick, so a retry is a nudge away).
     await tw.to(this.pet, { x: this.seat.x, y: this.restingY() }, { duration: 0.7, ease: ease.outBack });
     // A finger may have come back during the hop.
@@ -1037,13 +1090,8 @@ class BouncyLaunch implements Game {
     this.flying = false;
     if (this.stick) this.squash();
     else this.drawSpring();
-    const goal = this.course
-      ? this.targets.length
-      : this.plan.mode === 'compare'
-        ? this.plan.shots + 1
-        : this.plan.shots;
     if (this.shot >= goal) return void this.finale();
-    if (verdict === 'yes') await this.askShot();
+    if (verdict === 'yes') await this.askShot(said);
   }
 
   /** Hand a course's numbers to the shell. `finished` means the cloud was just landed on, so none of its launches are "in progress". */
