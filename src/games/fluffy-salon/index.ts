@@ -559,9 +559,15 @@ class FluffySalon implements Game {
   /** Says a request that is still waiting behind the love line, as she starts on it before the line has ended. */
   private askNow() {
     const ask = this.unasked;
-    if (!ask || this.finished) return;
+    if (!ask || this.finished) return false;
     this.unasked = null;
     void this.instruct(ask.id, ask.vars);
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say this request, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private repeatInstruction() {

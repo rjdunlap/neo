@@ -466,6 +466,13 @@ class DriftCards implements Game {
     void this.ctx.instruct('drift.instruct.2', { friend: FRIEND[req.ask] });
   }
 
+  /** The guide was tapped while the ask waits: say this friend's ask, not the last one's. */
+  sayWaitingAsk() {
+    if (!this.unasked || this.finished) return false;
+    this.sayAsk();
+    return true;
+  }
+
   private nextSea(after?: Promise<unknown>) {
     const req = this.request;
     if (!req) return;
