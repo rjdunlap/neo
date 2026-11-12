@@ -3316,7 +3316,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 ## Pok Pok P1, one rainbow one direction (2026-11-11)
 
-`PITCH_COLORS` and `pitchColor(rank, count)` in `src/audio/notes.ts` are the one pitch-colour table: Song Maker's bottom row is now red, Jelly Drums and the treehouse tune plaque read it too, and a test holds the direction. Kept tunes store rows, so saves were unaffected; Sound Garden and Beat Builder are not pitch-coloured. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-11--pok-pok-p1-one-rainbow-one-direction-song-maker-jelly-drums-tune-plaque-pr-1509).
+`PITCH_COLORS` and `pitchColor(rank, count)` in `src/audio/notes.ts` are the one pitch-colour table: Song Maker's bottom row is now red, Jelly Drums and the treehouse tune plaque read it too, and a test holds the direction. Kept tunes store rows, so saves were unaffected; Sound Garden and Beat Builder are not pitch-coloured. Checks are in [VERIFICATION](VERIFICATION-2026-11-11.md#2026-11-11--pok-pok-p1-one-rainbow-one-direction-song-maker-jelly-drums-tune-plaque-pr-1509).
 
 ## Memory Desk levels 2-3, Open or shut and Fix the desk (2026-11-11)
 

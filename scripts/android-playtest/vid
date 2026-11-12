@@ -1,0 +1,13 @@
+#!/bin/zsh
+# vid <name> <seconds> [command...] : record the screen, running the command 1 s in; writes half-size frames,
+# two a second, to $PLAYTEST_DIR/shots/<name>/ and lists them.
+D=${PLAYTEST_DIR:-/tmp/playtest}; mkdir -p $D/shots/$1
+n=$1; secs=$2; shift 2
+adb shell screenrecord --time-limit $secs --bit-rate 4000000 /sdcard/playtest-$n.mp4 &
+sleep 1
+[[ $# -gt 0 ]] && "$@"
+wait
+adb pull /sdcard/playtest-$n.mp4 $D/shots/$n.mp4 >/dev/null 2>&1
+adb shell rm /sdcard/playtest-$n.mp4
+ffmpeg -y -loglevel error -i $D/shots/$n.mp4 -vf "fps=2,scale=iw/2:-1" $D/shots/$n/f%02d.jpg
+ls $D/shots/$n | tr '\n' ' '

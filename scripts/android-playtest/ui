@@ -1,0 +1,16 @@
+#!/bin/zsh
+# ui : compact list of what the screen says it holds (the accessibility tree): class, * if clickable, centre and size
+# in half-size coordinates, text and label. Set UI_HIDE to a regular expression to drop lines (decorations, the header).
+# An app that labels nothing (a canvas game) prints little; use shot and findcolor there.
+adb shell uiautomator dump /sdcard/playtest-ui.xml >/dev/null 2>&1; adb shell cat /sdcard/playtest-ui.xml | python3 -I -c "
+import sys,re,html
+x=sys.stdin.read()
+for m in re.finditer(r'<node[^>]*?>',x):
+    s=m.group(0)
+    g=lambda k: (re.search(r'\\b'+k+r'=\"([^\"]*)\"',s) or re.search('()',s)).group(1)
+    t=html.unescape(g('text')); d=html.unescape(g('content-desc')).replace('\n',' | '); c=g('clickable')
+    if t or d or c=='true':
+        b=[int(v)//2 for v in re.findall(r'\d+',g('bounds'))]
+        print(g('class').split('.')[-1][:10].ljust(10), ('*' if c=='true' else ' '), 'c=(%d,%d)'%((b[0]+b[2])//2,(b[1]+b[3])//2), 'wh=%dx%d'%(b[2]-b[0],b[3]-b[1]), repr(t) if t else '', repr(d))
+" | { if [[ -n $UI_HIDE ]]; then grep -v -E "$UI_HIDE"; else cat; fi }
+adb shell rm -f /sdcard/playtest-ui.xml

@@ -1,0 +1,22 @@
+#!/bin/zsh
+# both <name> <seconds> [command...] : record sound and screen together, running the command 1.7 s in.
+# Prints the transcript, the ui list and a final shot, and makes a contact sheet (1.5 frames a second) of the video:
+# for anything that moves or answers faster than a screenshot can catch.
+export PATH=${0:A:h}:$PATH
+D=${PLAYTEST_DIR:-/tmp/playtest}; mkdir -p $D/shots $D/audio
+M=${WHISPER_MODEL:-$D/models/ggml-small.en.bin}
+n=$1; secs=$2; shift 2
+f=$D/audio/$n.wav; rm -f $f
+scrcpy --no-video --no-playback --no-control --no-window --audio-source=playback --audio-codec=raw --record-format=wav --record=$f --time-limit=$secs >$D/audio/$n.log 2>&1 &
+adb shell screenrecord --time-limit $secs --bit-rate 4000000 /sdcard/playtest-$n.mp4 &
+sleep 1.7
+[[ $# -gt 0 ]] && "$@"
+wait
+adb pull /sdcard/playtest-$n.mp4 $D/shots/$n.mp4 >/dev/null 2>&1
+adb shell rm /sdcard/playtest-$n.mp4
+ffmpeg -y -loglevel error -i $f -ar 16000 -ac 1 $D/audio/$n.16k.wav
+print -n "HEARD: "; whisper-cli -m $M -f $D/audio/$n.16k.wav -nt -np 2>/dev/null | tr -s '\n ' ' '; echo
+ffmpeg -y -loglevel error -i $D/shots/$n.mp4 -vf "fps=1.5,scale=404:-1,tile=4x5" -frames:v 1 $D/shots/$n-sheet.jpg
+ui
+shot $n
+echo $D/shots/$n-sheet.jpg
