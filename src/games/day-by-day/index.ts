@@ -484,11 +484,15 @@ class DayByDay implements Game {
         `week.${direction === 1 ? 'tomorrow' : 'yesterday'}${this.ctx.level >= ANCHOR_LEVEL ? 'anyyes' : 'yes'}`,
         { day: DAYS[this.answer], today: DAYS[today] },
       );
-      this.question++;
-      if (this.question < 2) this.askRelative(line);
-      else if (this.plan.tally) this.askTally(line);
-      else {
+      if (this.question === 0) {
+        this.question++;
+        this.askRelative(line);
+      } else if (this.plan.tally) {
+        this.question++;
+        this.askTally(line);
+      } else {
         await line;
+        this.question++;
         await this.done();
       }
       return;
