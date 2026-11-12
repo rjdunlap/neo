@@ -187,7 +187,9 @@ class TilePairs implements Game {
     this.rebuild();
   }
   start() {
-    void this.ctx.instruct(this.touch ? 'tile-pairs.go' : 'couch.how.tile-pairs');
+    void this.ctx.instruct(
+      this.touch ? (this.flowers ? 'tile-pairs.go-flowers' : 'tile-pairs.go') : 'couch.how.tile-pairs',
+    );
   }
 
   private snapshot(): Snapshot {
