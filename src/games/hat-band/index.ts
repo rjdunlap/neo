@@ -53,30 +53,8 @@ class HatPiece extends Container {
   readonly glow = new Graphics();
   readonly hintGlow = new Graphics();
   handle!: DragHandle;
-  /** How far the finger has travelled since it went down, in the stage's units: a tap barely moves it. */
-  travel = 0;
-  private downAt: { x: number; y: number } | null = null;
-  constructor(
-    readonly id: HatId,
-    stage: Container,
-  ) {
+  constructor(readonly id: HatId) {
     super();
-    // Judge a tap by the finger, not the hat: the drag lifts the hat 40 units above the finger as soon as it moves.
-    this.on('pointerdown', (e) => {
-      this.downAt = stage.toLocal(e.global);
-      this.travel = 0;
-    });
-    this.on('globalpointermove', (e) => {
-      if (!this.downAt) return;
-      const p = stage.toLocal(e.global);
-      this.travel = Math.max(this.travel, Math.hypot(p.x - this.downAt.x, p.y - this.downAt.y));
-    });
-    this.on('pointerup', () => {
-      this.downAt = null;
-    });
-    this.on('pointerupoutside', () => {
-      this.downAt = null;
-    });
     this.glow
       .roundRect(-HAT / 2 - 6, -HAT / 2 - 6, HAT + 12, HAT + 12, 30)
       .fill({ color: 0xfff3a0, alpha: 0.95 })
@@ -126,8 +104,11 @@ class HatBand implements Game {
   readonly plan: Plan;
   readonly round: Round;
   band: Band = newBand();
-  /** The hat lifted by a tap, waiting for a friend to be tapped. */
-  selected: HatId | null = null;
+  /** The hat lifted by a tap (the drag engine holds it), waiting for a friend to be tapped or on its way to one. */
+  get selected(): HatId | null {
+    for (const [id, piece] of this.hats) if (piece.handle.held || piece.handle.placing) return id;
+    return null;
+  }
   /** True once the instruction has been spoken: until then the hats stay put, so speech never competes with the band. */
   ready = false;
   /** Done was pressed at the gate: the band plays one more bar and bows; nothing else responds. */
@@ -169,7 +150,8 @@ class HatBand implements Game {
     for (const f of this.friends) ctx.track(f.critter);
     this.spots = ([0, 1] as Friend[]).map((i) => {
       const spot = new Container();
-      onTap(spot, () => this.tapFriend(i), { cooldown: 150 });
+      // A place: a hat held by a tap goes on the friend tapped.
+      onTap(spot, () => this.tapFriend(i), { cooldown: 150, place: true });
       return spot;
     });
     ctx.stage.addChild(this.backdrop, this.stage, this.rackBoard, ...this.friends, ...this.spots);
@@ -183,8 +165,10 @@ class HatBand implements Game {
     this.done = new RoundButton(checkArt(), swatch.green, 60, () => this.tapDone());
     ctx.stage.addChild(this.done);
     for (const id of this.round.rack) {
-      const piece = new HatPiece(id, ctx.stage);
+      const piece = new HatPiece(id);
       piece.handle = draggable(piece, ctx.tw, {
+        // A rack hat is lifted by a tap and put on by the next; a tap on a worn hat takes it off.
+        tapToPlace: () => this.open && !this.band.worn.includes(id),
         onPick: () => this.pick(piece),
         onDrop: (x, y) => this.drop(piece, x, y),
       });
@@ -275,6 +259,11 @@ class HatBand implements Game {
       const h = this.home(id);
       piece.handle.home = { x: h.x, y: h.y };
       if (piece.handle.dragging) continue;
+      if (piece.handle.held) {
+        // Held by a tap: it waits at its (new) home and keeps breathing.
+        piece.position.set(h.x, h.y);
+        continue;
+      }
       if (animate) {
         void this.ctx.tw.to(piece, { x: h.x, y: h.y }, { duration: 0.3 });
         void this.ctx.tw.to(piece.scale, { x: h.scale, y: h.scale }, { duration: 0.3 });
@@ -309,37 +298,20 @@ class HatBand implements Game {
   private drop(piece: HatPiece, x: number, y: number): boolean {
     const id = piece.id;
     const wornBy = this.band.worn.indexOf(id);
-    const tapped = piece.travel < 24;
     if (!this.open) {
       this.placeHats(true);
       return true;
     }
-    if (tapped) {
-      if (wornBy >= 0 && this.selected && this.selected !== id) {
-        // A hat lifted from the rack, then a tap on a worn hat: swap it in.
-        this.put(wornBy as Friend, this.selected);
-      } else if (wornBy >= 0) {
-        this.change(takeOff(this.band, wornBy as Friend));
-        this.selected = null;
-      } else {
-        // Tap a rack hat to lift it; tap it again to put it down.
-        this.selected = this.selected === id ? null : id;
-      }
-    } else {
-      const to = this.friendAt(x, y);
-      if (to !== null) this.put(to, id);
-      else {
-        if (wornBy >= 0) this.change(takeOff(this.band, wornBy as Friend));
-        this.selected = null;
-      }
-    }
+    // A drag, a tapped put-down and a cancelled hold all arrive here; only a still tap on a worn hat is its own thing.
+    const to = piece.handle.tapped ? null : this.friendAt(x, y);
+    if (to !== null) this.put(to, id);
+    else if (wornBy >= 0) this.change(takeOff(this.band, wornBy as Friend));
     this.placeHats(true);
     return true;
   }
 
   private put(friend: Friend, hat: HatId) {
     this.change(wear(this.band, friend, hat));
-    this.selected = null;
     const f = this.friends[friend];
     f.critter.cheer();
   }
@@ -358,10 +330,7 @@ class HatBand implements Game {
     void this.ctx.tw
       .to(f.critter, { y: -14 }, { duration: 0.08 })
       .then(() => this.ctx.tw.to(f.critter, { y: 0 }, { duration: 0.16 }));
-    if (this.selected) {
-      this.put(i, this.selected);
-      this.placeHats(true);
-    }
+    // This spot is a place: the engine has already sent a held hat gliding here, and it lands through `drop`.
   }
 
   tapStar(i: Friend) {
@@ -392,7 +361,6 @@ class HatBand implements Game {
       return;
     }
     this.clearHint();
-    this.selected = null;
     this.performing = true;
     for (const p of this.hats.values()) p.handle.enabled = false;
     this.encoreFrom = this.band.played;
@@ -448,8 +416,11 @@ class HatBand implements Game {
 
   private draw() {
     const b = this.band;
+    const holding = [...this.hats.values()].some((p) => p.handle.held);
     for (const [id, piece] of this.hats) {
-      piece.glow.visible = piece.handle.dragging || this.selected === id;
+      piece.glow.visible = piece.handle.dragging || piece.handle.held;
+      // While a hat is held, a tap on a worn hat reaches the friend under it, so the held hat swaps in.
+      piece.eventMode = holding && b.worn.includes(id) ? 'none' : 'static';
       piece.hintGlow.visible = this.hintHat === id;
       // A worn hat dims with its friend under the other's spotlight (below); on the rack it is always bright.
       piece.alpha = 1;

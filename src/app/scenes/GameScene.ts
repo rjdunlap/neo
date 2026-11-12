@@ -28,6 +28,7 @@ import { allDoneArt, hopIcon, nextStopArt, StopTile } from '../../ui/mix';
 import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
 import { nextSpot } from '../../couch/focus';
+import { cancelHeld } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -144,7 +145,11 @@ export class GameScene extends Scene {
     else this.held.cancel();
     if (this.inputInUse.kind === 'controller') this.returningTouch = true;
     this.inputInUse.touched();
-    if (this.keyed && !this.finished) this.game?.touchReturned?.();
+    if (this.keyed && !this.finished) {
+      // A piece held by a tap before the pad took over is put back, whatever the game.
+      cancelHeld();
+      this.game?.touchReturned?.();
+    }
     this.keyed = false;
     this.ring.visible = false;
   };
@@ -473,6 +478,8 @@ export class GameScene extends Scene {
     if (this.helpCard || this.finished) return;
     const info = howToFor(this.mod, this.level);
     if (!info) return;
+    // The card covers the round: a piece held by a tap goes back first.
+    cancelHeld();
     const card = new HowToPanel(info, () => this.closeHelp());
     card.layout(this.view);
     this.helpCard = card;

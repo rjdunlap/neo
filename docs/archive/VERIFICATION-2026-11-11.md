@@ -95,3 +95,9 @@
 **Changed:** `PITCH_COLORS` and `pitchColor(rank, count)` in `src/audio/notes.ts` (red lowest, blue highest); Song Maker's rows and hub icon now run red at the bottom to blue at the top; Jelly Drums (unchanged on screen) and the treehouse tune plaque read the same table. A kept tune stores rows and columns, so saves are unaffected. Sound Garden and Beat Builder are not pitch-coloured and were left alone. `notes.test.ts` checks the direction for 3, 4 and 5 pitches and that the three users keep no table of their own.
 **Ran:** `npm run typecheck`; `npm test`; `BROWSER_SUITE=fourth FOURTH_ONLY=song` (Song Maker levels 1–7; a level-5 screenshot shows blue top row to red bottom row on the board and the card); `BROWSER_SUITE=fingerdemo FINGER_ONLY=song-maker` (levels 1 and 7); `npm run build` (shared files changed). Chrome automation only.
 **Not run:** offline, `world`, `creations-room` (the plaque's colours were not looked at in a browser), any Jelly Drums play (no on-screen change).
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Bubble Beach (docs only, PR #1511)
+
+**Changed:** new [page](../definitions/toy-test-lap-openings.md) (the five toy-test questions answered from the code for Bubble Beach's eight lap games, a words-off list, the other lap games listed by land); READY's P4 line and seven new lap-opening lines; a progress line under P4 in `docs/POK-POK.md`.
+**Ran:** `node scripts/check-links.mjs`; `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the eight games were read, not played or timed).
