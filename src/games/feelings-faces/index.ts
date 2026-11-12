@@ -120,6 +120,13 @@ class FeelingsFaces implements Game {
   private shiver = 0;
   private snowIn = 0;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /**
+   * The next question's ask, waiting behind a right answer's line (U7 R4): said when the line ends, at her first tap
+   * (which is not judged, since several questions are only spoken) or by the guide.
+   */
+  private unasked: (() => unknown) | null = null;
+  /** While `ask()` deals a question whose ask waits behind a line, `instruct` keeps the ask here rather than saying it. */
+  private holdAsk: Promise<unknown> | null = null;
   /** The big pet's growth over the pip's scale, so a long, low friend fills the pip's space (as in Pet Says). */
   private grow = 1;
   /** The big pet's middle, and its right edge, in its own units: the river and glider stand off its origin. */
@@ -146,10 +153,13 @@ class FeelingsFaces implements Game {
         onTap(critter, () => {
           if (this.plan.mode === 'ask') {
             critter.hop(0.3);
+            // Asking the friend is what the waiting ask asks for, so the wish answers both.
+            this.unasked = null;
             if (!this.busy && !this.done) this.revealWish();
           } else if (this.plan.mode === 'perspective') {
             critter.hop(0.3);
-            if (!this.busy && this.instruction) void ctx.say(this.instruction.id, this.instruction.vars);
+            if (this.busy || this.askNow()) return;
+            if (this.instruction) void ctx.say(this.instruction.id, this.instruction.vars);
           } else this.choose(friend.feeling, critter);
         });
         this.friends.push(friend);
@@ -193,8 +203,37 @@ class FeelingsFaces implements Game {
   }
 
   private instruct(id: LineId, vars?: LineVars) {
+    this.unasked = null;
+    const after = this.holdAsk;
+    if (after) {
+      // The question's board is dealt; its ask waits for the right answer's line, or her first tap.
+      this.holdAsk = null;
+      const ask = () => {
+        this.instruction = { id, vars };
+        return this.ctx.instruct(id, vars);
+      };
+      this.unasked = ask;
+      void after.then(() => {
+        if (this.unasked === ask) this.askNow();
+      });
+      return;
+    }
     this.instruction = { id, vars };
     return this.ctx.instruct(id, vars);
+  }
+
+  /** Says the question's ask if it is still waiting behind a line; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.done) return false;
+    this.unasked = null;
+    void ask();
+    return true;
+  }
+
+  /** The guide was tapped while the next question's ask waits: say that ask, not the last question's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   // Free play -------------------------------------------------------------
@@ -220,7 +259,8 @@ class FeelingsFaces implements Game {
     if (this.plan.mode === 'poke') return this.poke(pet);
     if (this.plan.mode !== 'play') {
       pet.poke();
-      if (this.instruction && !this.busy) void this.ctx.say(this.instruction.id, this.instruction.vars);
+      if (this.busy || this.askNow()) return;
+      if (this.instruction) void this.ctx.say(this.instruction.id, this.instruction.vars);
       return;
     }
     if (this.done) return;
@@ -290,8 +330,11 @@ class FeelingsFaces implements Game {
     return this.questions[this.q];
   }
 
-  private async ask() {
+  /** Deals the question's board; behind `after` (a right answer's line), its spoken ask waits for the line or her tap. */
+  private async ask(after?: Promise<unknown>) {
     const q = this.question;
+    this.unasked = null;
+    this.holdAsk = after ?? null;
     this.wrong = 0;
     this.busy = true;
     this.clearOptions();
@@ -400,6 +443,7 @@ class FeelingsFaces implements Game {
         this.instruct('feel.friend', { feeling: q.answer });
         break;
     }
+    this.holdAsk = null;
     this.resize(this.view);
     this.busy = false;
   }
@@ -456,6 +500,8 @@ class FeelingsFaces implements Game {
 
   private choose(value: string, node: Container) {
     if (this.busy || this.done) return;
+    // A tap before the question was heard says the question; it is not an answer.
+    if (this.askNow()) return;
     const q = this.question;
     if (this.plan.mode === 'ask' && !this.asked) return;
     if (value !== q.answer) {
@@ -510,10 +556,24 @@ class FeelingsFaces implements Game {
     this.wrong = 0;
     this.drawGlow();
     sfx.bell(5 + this.q, 0.3);
-    void this.right(value, node).then(() => this.next());
+    void this.right(value, node).then(async ({ line }) => {
+      // The next question never waits for the line (U7 R4): after the 0.5 s beat its board opens with it and its ask
+      // waits. The last question's line is heard out, and so is one before a happening, whose own narration would
+      // cut it at once (levels 6, 8 and 11's new happening).
+      const following = this.questions[this.q + 1];
+      const hold =
+        !following ||
+        this.plan.mode === 'why' ||
+        this.plan.mode === 'care' ||
+        (this.plan.mode === 'perspective' && following.friend === 0);
+      if (hold) await line;
+      await this.ctx.tw.wait(0.5);
+      this.next(hold ? undefined : line);
+    });
   }
 
-  private async right(value: string, node: Container) {
+  /** The right answer's motion, then its line, started and returned (wrapped, so awaiting the motion never awaits the line). */
+  private async right(value: string, node: Container): Promise<{ line: Promise<unknown> }> {
     const pet = this.pet;
     switch (this.plan.mode) {
       case 'ask': {
@@ -527,21 +587,18 @@ class FeelingsFaces implements Game {
         if (value === 'game') friend.hop(0.5);
         if (value === 'hug') this.hearts(friend.x, friend.y - 110);
         this.resize(this.view);
-        await this.ctx.say(`feel.received-${value as Wish}`, { friend: this.friendName() });
-        break;
+        return { line: this.ctx.say(`feel.received-${value as Wish}`, { friend: this.friendName() }) };
       }
       case 'perspective': {
         const f = this.friends[this.question.friend!];
         f.critter.hop(0.6);
         feelingSound(f.feeling);
-        await this.ctx.say('feel.friend-yes', { feeling: value });
-        break;
+        return { line: this.ctx.say('feel.friend-yes', { feeling: value }) };
       }
       case 'clue':
         this.clearProps();
         await this.playEvent(value as ClueEvent);
-        await this.ctx.say(`feel.${EVENTS[value as ClueEvent]}`);
-        break;
+        return { line: this.ctx.say(`feel.${EVENTS[value as ClueEvent]}`) };
       case 'mirror':
       case 'name':
       case 'why':
@@ -549,8 +606,7 @@ class FeelingsFaces implements Game {
         pet!.hop(0.6);
         feelingSound(value as Feeling);
         this.feelingBurst(value as Feeling);
-        await this.ctx.say(`feel.${value as Feeling}`);
-        break;
+        return { line: this.ctx.say(`feel.${value as Feeling}`) };
       case 'help':
       case 'care': {
         // The helper floats over to the pet, and the need goes away.
@@ -569,8 +625,7 @@ class FeelingsFaces implements Game {
             count: 18,
             speed: [120, 300],
           });
-        await this.ctx.say('feel.helped');
-        break;
+        return { line: this.ctx.say('feel.helped') };
       }
       case 'friends': {
         const friend = this.friends.find((f) => f.critter === node)!;
@@ -580,18 +635,17 @@ class FeelingsFaces implements Game {
           this.hearts(friend.critter.x, friend.critter.y - 110);
           friend.critter.setMood('happy');
         }
-        await this.ctx.say('feel.friend-yes', { feeling: value });
-        break;
+        return { line: this.ctx.say('feel.friend-yes', { feeling: value }) };
       }
     }
-    await this.ctx.tw.wait(0.5);
+    return { line: Promise.resolve() };
   }
 
-  private next() {
+  private next(after?: Promise<unknown>) {
     if (this.plan.mode !== 'perspective' || this.question.friend === 1) this.clearProps();
     this.q++;
     if (this.q < this.questions.length) {
-      void this.ask();
+      void this.ask(after);
       return;
     }
     this.done = true;
@@ -1138,7 +1192,8 @@ class FeelingsFaces implements Game {
       const bubble = this.options.find((o) => o.value === bubbleToTap(this.tried, this.taps));
       return bubble ? { tap: { on: bubble.node } } : null;
     }
-    if (this.busy || !this.question) return null;
+    // The finger answers after hearing the question, as she would.
+    if (this.busy || !this.question || this.unasked) return null;
     if (this.plan.mode === 'ask' && !this.asked)
       return { tap: { on: this.friends[this.q % 4].critter, x: 0, y: -150 } };
     const at = choiceToTap(this.question);

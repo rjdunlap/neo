@@ -256,6 +256,13 @@ class MailCarrier implements Game {
   /** Seconds since the last touch, for level 1's invitation. */
   private idle = 0;
   private wiggling = false;
+  /**
+   * The next letter's ask, waiting behind a right post's lines (U7 R4): said when they end or by the guide, and dropped
+   * when she posts first (the envelope shows the address).
+   */
+  private unasked: (() => unknown) | null = null;
+  /** Bumped by every post and spoken ask, so a right post's chained thanks never plays over what came next. */
+  private lineSerial = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -414,9 +421,10 @@ class MailCarrier implements Game {
 
   destroy() {}
 
-  /** The next letter comes out of the bag. */
-  private async next() {
+  /** The next letter comes out of the bag; behind `after` (a right post's lines) its ask waits for them. */
+  private async next(after?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = null;
     this.idle = 0;
     this.index++;
     this.wrongs = 0;
@@ -427,25 +435,50 @@ class MailCarrier implements Game {
     this.envelope.scale.set(0);
     await this.ctx.tw.to(this.envelope.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     this.busy = false;
+    const ask = this.askFor(to);
+    if (!ask) return;
+    if (!after) return ask();
+    this.unasked = ask;
+    void after.then(() => {
+      if (this.unasked === ask) this.askNow();
+    });
+  }
+
+  /** Says the next letter's ask if it is still waiting behind a line; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    this.lineSerial++;
+    void ask();
+    return true;
+  }
+
+  /** The guide was tapped while the next letter's ask waits: say that ask, not the last letter's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /** The letter's spoken ask, or null when it has none (level 1 after its first letter). */
+  private askFor(to: HouseView): (() => Promise<void> | void) | null {
     const { number: n, door: color } = to.house;
     switch (this.plan.mode) {
       case 'drop':
-        if (this.index === 0) await this.ctx.instruct('mail.drop');
-        return;
+        return this.index === 0 ? () => this.ctx.instruct('mail.drop') : null;
       case 'color':
-        return this.ctx.instruct('mail.color', { color });
+        return () => this.ctx.instruct('mail.color', { color });
       case 'numeral':
-        return this.ctx.instruct('mail.numeral', { n });
+        return () => this.ctx.instruct('mail.numeral', { n });
       case 'sides':
-        return this.ctx.instruct('mail.side-for', { n });
+        return () => this.ctx.instruct('mail.side-for', { n });
       case 'teen':
-        return this.ctx.instruct('mail.teen-for', { word: teenSpoken(n).word });
+        return () => this.ctx.instruct('mail.teen-for', { word: teenSpoken(n).word });
       case 'tool':
-        return this.ctx.instruct('mail.tool', { tool: TOOL_NAME[to.house.tool!] });
+        return () => this.ctx.instruct('mail.tool', { tool: TOOL_NAME[to.house.tool!] });
       case 'help':
-        return this.ctx.instruct('mail.help');
+        return () => this.ctx.instruct('mail.help');
       default:
-        return this.ctx.instruct('mail.count');
+        return () => this.ctx.instruct('mail.count');
     }
   }
 
@@ -497,6 +530,9 @@ class MailCarrier implements Game {
     const to = this.letter;
     if (!to || this.busy || this.finished) return;
     this.busy = true;
+    // A post before the next ask was heard is judged: the envelope shows the address. The waiting ask is dropped.
+    this.unasked = null;
+    this.lineSerial++;
     const h = this.houses[i];
     const tw = this.ctx.tw;
     // The letter drops into the pet's cart, the cart rolls to the mailbox, and the letter hops in.
@@ -539,18 +575,28 @@ class MailCarrier implements Game {
         size: [0.3, 0.45],
       });
       const n = h.house.number;
-      if (countsAloud(this.plan.mode)) await this.ctx.say('mail.counted', { counted: countedAloud(n), n });
-      else if (this.plan.mode === 'numeral') await this.ctx.say('mail.number', { n });
-      else if (this.plan.mode === 'teen') await this.ctx.say('mail.teen', teenSpoken(n));
+      // The house's line and the thanks never hold the street (U7 R4): the next envelope grows as they start, its ask
+      // waits for them, and the counted and teen lines play over her next post. The last letter's are heard out.
+      const serial = this.lineSerial;
+      let said: Promise<unknown> | undefined;
+      if (countsAloud(this.plan.mode)) said = this.ctx.say('mail.counted', { counted: countedAloud(n), n });
+      else if (this.plan.mode === 'numeral') said = this.ctx.say('mail.number', { n });
+      else if (this.plan.mode === 'teen') said = this.ctx.say('mail.teen', teenSpoken(n));
       else if (this.plan.mode === 'help') {
         const id = h.house.helper!;
         this.helped.add(id);
         this.popTool(h);
-        await this.ctx.say('mail.help-fixed', helpFixed(id));
+        said = this.ctx.say('mail.help-fixed', helpFixed(id));
       }
-      await this.ctx.say('mail.thanks');
-      await this.next();
-      return;
+      const lines = (async () => {
+        if (said) await said;
+        if (serial === this.lineSerial && !this.finished) await this.ctx.say('mail.thanks');
+      })();
+      if (this.letters[this.index + 1] === undefined) {
+        await lines;
+        return void this.next();
+      }
+      return void this.next(lines);
     }
     // Not for this house: the letter comes politely back.
     this.misses++;
