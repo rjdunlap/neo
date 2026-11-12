@@ -266,6 +266,8 @@ class FluffySalon implements Game {
   /** Free play's mirror has been offered aloud. */
   private invited = false;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** A request on the card that has not been spoken yet: it waits behind the love line (U7 R4), or is said at her first touch. */
+  private unasked: { id: LineId; vars?: LineVars } | null = null;
   /** Pat the fluff: the floof has happened and the big mirror is up; the seconds since, before the pet looks by itself. */
   private floofed = false;
   private sinceFloof = 0;
@@ -295,6 +297,7 @@ class FluffySalon implements Game {
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
       if (palmOnGlass() || this.busy || this.finished) return;
       this.pointer = e.pointerId;
+      this.askNow();
       // A touch that lands off the fur (the cape, the chair, the pet's body) is answered too: a giggle and a wobble.
       if (!this.work1(e) && this.clock - this.lastPat > 0.4) {
         this.lastPat = this.clock;
@@ -553,8 +556,18 @@ class FluffySalon implements Game {
     return this.ctx.instruct(id, vars);
   }
 
+  /** Says a request that is still waiting behind the love line, as she starts on it before the line has ended. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return;
+    this.unasked = null;
+    void this.instruct(ask.id, ask.vars);
+  }
+
   private repeatInstruction() {
-    if (!this.instruction || this.busy || this.finished) return;
+    if (this.busy || this.finished) return;
+    if (this.unasked) return this.askNow();
+    if (!this.instruction) return;
     this.pet.poke(true);
     sfx.giggle();
     void this.ctx.say(this.instruction.id, this.instruction.vars);
@@ -567,6 +580,8 @@ class FluffySalon implements Game {
     if (quiet) return;
     this.chosen = true;
     sfx.pop(6);
+    // A tool picked before the request was spoken: the request becomes the instruction now, and the tool's name cuts it.
+    this.askNow();
     void this.ctx.say(
       HAIR_COLORS.includes(tool as ColorName)
         ? (`color.${tool}` as `color.${ColorName}`)
@@ -623,9 +638,11 @@ class FluffySalon implements Game {
 
   // Requests ------------------------------------------------------------------------------
 
-  private async nextRequest() {
+  /** The next request. After a met one, `after` is its love line: the request opens at once and is spoken when the line ends. */
+  private async nextRequest(after?: Promise<unknown>) {
     this.busy = true;
     this.pointer = null;
+    this.unasked = null;
     this.request++;
     this.wrongs = 0;
     this.named.clear();
@@ -644,11 +661,17 @@ class FluffySalon implements Game {
     this.mirror.visible = !selfChecks(this.plan.mode);
     this.busy = false;
     const look = describe(r.look);
-    if (this.plan.mode === 'reverse' && this.request === 1)
-      return void (await this.instruct('salon.actually', { look }));
-    await (this.who
-      ? this.instruct('salon.want-friend', { who: this.who, look })
-      : this.instruct('salon.want', { look }));
+    const ask: { id: LineId; vars: LineVars } =
+      this.plan.mode === 'reverse' && this.request === 1
+        ? { id: 'salon.actually', vars: { look } }
+        : this.who
+          ? { id: 'salon.want-friend', vars: { who: this.who, look } }
+          : { id: 'salon.want', vars: { look } };
+    if (!after) return void (await this.instruct(ask.id, ask.vars));
+    const at = this.request;
+    this.unasked = ask;
+    await after;
+    if (this.request === at) this.askNow();
   }
 
   /** A little picture of the asked-for style, using the same fur drawing. */
@@ -703,7 +726,9 @@ class FluffySalon implements Game {
     const look = this.look;
     if (!look) return;
     this.busy = true;
-    await (this.who ? this.ctx.say('salon.check-friend', { who: this.who }) : this.ctx.say('salon.check'));
+    this.askNow();
+    // The pressed mirror's line starts and the style is judged at once: the verdict's line cuts it (U7 R4).
+    void (this.who ? this.ctx.say('salon.check-friend', { who: this.who }) : this.ctx.say('salon.check'));
     const fix = needs(look, this.strands);
     if (fix === null) {
       this.busy = false;
@@ -745,9 +770,13 @@ class FluffySalon implements Game {
       gravity: -40,
       size: [0.35, 0.5],
     });
-    await (this.who ? this.ctx.say('salon.love-friend', { who: this.who }) : this.ctx.say('salon.love'));
+    // The love line never holds the next request (U7 R4): it plays over the 0.6 s look and the next card, which opens
+    // at once; the request is spoken when the line ends. The last request's line is heard out before the closing line.
+    const love = this.who ? this.ctx.say('salon.love-friend', { who: this.who }) : this.ctx.say('salon.love');
+    const last = this.request + 1 >= this.requests.length;
+    if (last) await love;
     await this.ctx.tw.wait(0.6);
-    await this.nextRequest();
+    await this.nextRequest(last ? undefined : love);
   }
 
   private async finale() {
@@ -799,6 +828,8 @@ class SalonPair implements Game {
   hints = 0;
   busy = false;
   finished = false;
+  /** Level 9: the second customer is chosen but not yet asked; the ask waits behind the first one's love line (U7 R4). */
+  unasked = false;
   private pointer: number | null = null;
   private sweeps = 0;
   private lastSound = 0;
@@ -874,6 +905,7 @@ class SalonPair implements Game {
         return;
       }
       this.pointer = e.pointerId;
+      if (this.unasked) this.speak(i, true);
       if (!this.workAt(e)) {
         this.seats[i].pet.poke(true);
         sfx.giggle();
@@ -949,6 +981,7 @@ class SalonPair implements Game {
   }
   private speak(i: number, instruction = false) {
     if (this.busy || this.finished) return;
+    if (!this.seats[i].done) this.unasked = false;
     this.seats[i].pet.poke(true);
     const line: LineId =
       this.plan.mode === 'compare'
@@ -1148,16 +1181,24 @@ class SalonPair implements Game {
     s.pet.cheer();
     sfx.sparkle();
     this.paintFrames();
-    await this.ctx.say('salon.love-friend', { who: s.who });
-    if (this.destroyed) return;
+    const love = this.ctx.say('salon.love-friend', { who: s.who });
     if (this.plan.mode === 'compare' || this.seats.every((s) => s.done)) {
+      await love;
+      if (this.destroyed) return;
       this.finished = true;
       await this.ctx.tw.wait(0.6);
       if (!this.destroyed) this.ctx.finish({ misses: this.misses, hints: this.hints });
     } else {
+      // The second customer is chosen as the first one's line starts (U7 R4), and asks when it ends or as she starts.
       this.busy = false;
       this.select(this.seats.findIndex((s) => !s.done));
-      this.speak(this.selected, true);
+      this.unasked = true;
+      await love;
+      if (!this.destroyed && this.unasked)
+        this.speak(
+          this.seats.findIndex((s) => !s.done),
+          true,
+        );
     }
   }
   autotouch(): TouchIntent | null {

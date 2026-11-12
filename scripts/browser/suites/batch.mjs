@@ -504,7 +504,13 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             }
             if (g.finished || kit.store.data.stickers.length !== salonBatchRewards)
               throw new Error('Reward before the last mirror');
-            await check();
+            if (r < g.requests.length - 1) {
+              // U7 R4: neither `salon.check` nor `salon.love` holds the next request: it opens after the 0.6 s look.
+              // With both lines awaited (about 1.5 s and 1 s muted) it was about 3 s.
+              kit.tapOn(g.mirror);
+              if (!(await kit.until(() => g.request === r + 1 && !g.busy, 1300)))
+                throw new Error('R4: the next request waited for salon.check and salon.love');
+            } else await check();
           }
           if (!g.finished || (level === 12 && !reversal)) throw new Error('Did not complete both stages');
         }, level);
@@ -608,7 +614,12 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
               throw new Error(`Unmet pair request ${i}: ${needs(look, seat.strands)}`);
             if (i === first && JSON.stringify(g.seats[1 - first].strands) !== untouched)
               throw new Error('A stroke edited the other customer');
-            await check();
+            if (level === 9 && i === first) {
+              // U7 R4: the second customer is chosen as the first one's `salon.love-friend` starts (was about 1 s later).
+              kit.tapOn(g.mirror);
+              if (!(await kit.until(() => g.selected !== first && !g.busy, 500)))
+                throw new Error('R4: the second customer waited for salon.love-friend');
+            } else await check();
             if (!seat.done) throw new Error('Mirror did not accept its own completed request');
             if (level === 9 && i === 1 && g.finished) throw new Error('Finished before both customers');
           }

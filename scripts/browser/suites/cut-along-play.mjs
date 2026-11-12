@@ -58,6 +58,22 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await launch('cut-along', 1);
       await idle();
       n = await stickers();
+      // U7 R4: each piece's line starts as it lands and times how long until the next sheet is open.
+      await page.evaluate(() => {
+        const g = neo.scene.game,
+          say = g.ctx.say.bind(g.ctx);
+        window.cutR4 = [];
+        g.ctx.say = (id, vars) => {
+          if (String(id).startsWith('cut.piece.')) {
+            const at = g.index,
+              t = performance.now();
+            void kit
+              .until(() => g.finished || (g.index > at && !g.busy), 4000)
+              .then(() => cutR4.push({ ms: performance.now() - t, last: g.finished }));
+          }
+          return say(id, vars);
+        };
+      });
       for (let guard = 0; guard < 20 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
         await idle();
         const p = await page.evaluate(() => {
@@ -75,6 +91,16 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await sticker(n);
       st = await state();
       assert.deepEqual([st.misses, st.hints], [0, 0], 'level 1 has no misses or hints');
+      // With the piece's line awaited (about 1.5 s muted) the next sheet opened after it.
+      const opens = (await page.evaluate(() => cutR4)).filter((o) => !o.last);
+      assert.ok(opens.length >= 2, `R4: ${opens.length} pieces timed`);
+      assert.ok(
+        opens.every((o) => o.ms < 400),
+        `R4: the next sheet waited for the piece's line (${opens.map((o) => Math.round(o.ms)).join(', ')} ms)`,
+      );
+      log(
+        `Cut Along 1: R4, next sheet open ${opens.map((o) => Math.round(o.ms)).join(', ')} ms after its line`,
+      );
       played.push('level 1 by taps');
     }
 

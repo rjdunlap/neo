@@ -63,6 +63,22 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await launch('draw-the-pattern', 1);
       await idle();
       n = await stickers();
+      // U7 R4: each strip's line starts as it rolls into the picture and times how long until the next strip is open.
+      await page.evaluate(() => {
+        const g = neo.scene.game,
+          say = g.ctx.say.bind(g.ctx);
+        window.drawR4 = [];
+        g.ctx.say = (id, vars) => {
+          if (String(id).startsWith('draw.picture.')) {
+            const at = g.index,
+              t = performance.now();
+            void kit
+              .until(() => g.finished || (g.index > at && !g.busy), 6000)
+              .then(() => drawR4.push({ ms: performance.now() - t, last: g.finished }));
+          }
+          return say(id, vars);
+        };
+      });
       for (let guard = 0; guard < 20 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
         await idle();
         if (await done()) break;
@@ -79,6 +95,16 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await sticker(n);
       st = await state();
       assert.deepEqual([st.misses, st.hints], [0, 0], 'level 1 has no misses or hints');
+      // The unroll and the pet's 1.6 s marks come to about 2 s; with the strip's line awaited first it was about 3.5 s.
+      const opens = (await page.evaluate(() => drawR4)).filter((o) => !o.last);
+      assert.ok(opens.length >= 2, `R4: ${opens.length} strips timed`);
+      assert.ok(
+        opens.every((o) => o.ms < 2600),
+        `R4: the next strip waited for the strip's line (${opens.map((o) => Math.round(o.ms)).join(', ')} ms)`,
+      );
+      log(
+        `Draw the Pattern 1: R4, next strip open ${opens.map((o) => Math.round(o.ms)).join(', ')} ms after its line`,
+      );
     }
 
     if (!only || only.includes(3)) {

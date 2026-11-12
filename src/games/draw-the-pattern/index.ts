@@ -1212,9 +1212,14 @@ class DrawThePattern implements Game {
     void this.ctx.tw
       .to(this.picture.scale, { x: 1.06, y: 1.06 }, { duration: 0.2, ease: ease.outBack })
       .then(() => this.ctx.tw.to(this.picture.scale, { x: 1, y: 1 }, { duration: 0.2 }));
-    await this.ctx.say(`draw.picture.${this.strip.piece}` as LineId);
+    // The strip's name never holds the next strip (U7 R4): the next strip unrolls and the pet's silent demonstration
+    // plays over the line (at levels 7–8 its spoken units cut it, as a next ask does). The last strip's is heard out.
+    const line = this.ctx.say(`draw.picture.${this.strip.piece}` as LineId);
     this.index++;
-    if (this.index >= this.strips.length) return void this.finish();
+    if (this.index >= this.strips.length) {
+      await line;
+      return void this.finish();
+    }
     this.nextStrip();
     await this.ctx.tw.to(this.paper.scale, { y: 1 }, { duration: 0.35, ease: ease.outQuad });
     await this.petDraws();
