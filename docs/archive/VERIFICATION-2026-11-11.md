@@ -212,3 +212,9 @@
 **Measured:** the dive's figures came from a Node 26 script kept outside the repository that imports the game's `logic.ts` and `random.ts` unchanged (1,000 seeds a level; 200–500 for the candidate variants; 300 rounds a level for the dial bands).
 **Ran:** `node scripts/check-links.mjs` and `git diff --check`.
 **Not run:** typecheck, unit tests, build and every browser suite (docs-only tier).
+
+## 2026-11-11 — U7d fix batch 3: puddle-lens, sea-lift and sink-float never hold a tap on a right answer's line (PR #1532)
+
+**Changed:** `puddle-lens` (pressed names and right-answer lines, levels 3–8), `sea-lift` (the thanks, `sealift.aboard`) and `sink-float` (`sink.right`, `sink.surprise`, `sink.salt-right`) start the line and move on instead of awaiting it; each browser suite gained one R4 assertion (`lens` level 5: next drop within 1.5 s; `sealift` level 1: next ask within 3.3 s, was about 4.7 s; `fourth` sink level 3: next thing within 5.6 s, was about 7 s), and `fourth.mjs` gained a `SINK_LEVELS` filter.
+**Ran (Chromium headless, speech off):** `npm run typecheck`; the three games' rule tests (5 files, 169 tests); `BROWSER_SUITE=sealift`; `BROWSER_SUITE=fourth FOURTH_ONLY=sink SINK_LEVELS=3`; `BROWSER_SUITE=lens` (levels 1, 4, 5, 6, 7, 8). All passed.
+**Not run:** `fingerdemo` (no bot's timing code changed), build (no shared file changed; CI builds), the full unit suite locally (CI runs it), Sink or Float level 9 in a browser (no suite plays the salt level; one awaited line moved). Nothing was timed with real speech.

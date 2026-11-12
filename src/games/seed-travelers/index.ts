@@ -74,6 +74,10 @@ class SeedTravelers implements Game {
   private alive = true;
   private view: View;
   private epoch = 0;
+  /** Bumped by every line and trip, so `seeds.finish` waits for a line that was heard out (U7 R4). */
+  private cue = 0;
+  /** Level 1's "Tap the basket" waits behind the first arrival's line, or the next line she hears out. */
+  private finishWaiting = false;
   private critterKind: Furry;
   private clock = 0;
   private readonly world = new Container();
@@ -376,6 +380,7 @@ class SeedTravelers implements Game {
 
   private async run(trip: Trip) {
     this.busy = true;
+    this.cue++;
     this.shown = trip;
     this.anim.t = 0;
     this.anim.back = trip.replay ? 0 : 1;
@@ -391,12 +396,14 @@ class SeedTravelers implements Game {
       sfx.whoosh();
       await this.ctx.tw.to(this.anim, { t: 1 }, { duration: trip.arrived ? 2.2 : 1.4 });
       if (!ok()) return;
-      await this.landed();
+      const { said, held } = this.landed();
+      if (held) await said;
+      if (!ok()) return;
     } else {
       sfx.pop(8);
       await this.ctx.tw.to(this.anim, { t: FUR.drop }, { duration: 2.6 });
       if (!ok()) return;
-      const said = this.landed(false);
+      const { said, held } = this.landed();
       await this.ctx.tw.to(this.anim, { t: FUR.exit }, { duration: 0.8 });
       if (!ok()) return;
       // A new furry friend strolls in from the left.
@@ -409,7 +416,7 @@ class SeedTravelers implements Game {
       this.makeCritter();
       await this.ctx.tw.to(this.anim, { t: 1 }, { duration: 1.1 });
       if (!ok()) return;
-      await said;
+      if (held) await said;
       if (!ok()) return;
     }
     this.shown = null;
@@ -417,11 +424,15 @@ class SeedTravelers implements Game {
     if (this.state.done) void this.finale();
   }
 
-  /** The seed has arrived or stayed: record it, say why, and (at level 1, the first time) bring out the basket. */
-  private async landed(wait = true) {
+  /**
+   * The seed has arrived or stayed: record it, say why, and (at level 1, the first time) bring out the basket. The
+   * line is `held` only when a seed stayed (the why her next try builds on) or it is the round's last arrival; any
+   * other arrival plays over her next choice (U7 R4).
+   */
+  private landed(): { said: Promise<unknown>; held: boolean } {
     const first = !this.state.arrivedOnce;
     const t = this.state.land();
-    if (!t) return;
+    if (!t) return { said: Promise.resolve(), held: false };
     if (this.level === 3) this.refreshBoard();
     if (t.arrived) void this.rise();
     const line: LineId = t.arrived
@@ -432,13 +443,26 @@ class SeedTravelers implements Game {
         ? 'seeds.stayed.breeze'
         : 'seeds.stayed.fur';
     if (!t.arrived) sfx.squish();
-    const e = this.epoch;
-    const said = this.say(line).then(() => {
-      if (this.alive && e === this.epoch && this.level === 1 && first && t.arrived)
-        void this.ctx.instruct('seeds.finish');
-    });
-    if (wait) await said;
-    return said;
+    if (this.level === 1 && first && t.arrived) this.finishWaiting = true;
+    return { said: this.say(line), held: !t.arrived || this.state.done };
+  }
+
+  /** Says level 1's "Tap the basket" once a line has been heard out with nothing said or started after it. */
+  private finishAfter(cue: number) {
+    if (cue !== this.cue || this.busy) return;
+    this.sayFinish();
+  }
+
+  private sayFinish() {
+    if (!this.alive || this.finished || !this.finishWaiting) return false;
+    this.finishWaiting = false;
+    void this.ctx.instruct('seeds.finish');
+    return true;
+  }
+
+  /** The guide was tapped while "Tap the basket" waits behind a line: say it now. */
+  sayWaitingAsk() {
+    return !this.busy && this.sayFinish();
   }
 
   private refreshBoard() {
@@ -481,7 +505,10 @@ class SeedTravelers implements Game {
   }
 
   private say(id: LineId) {
-    return this.ctx.say(id);
+    const cue = ++this.cue;
+    const said = this.ctx.say(id);
+    if (this.finishWaiting) void said.then(() => this.finishAfter(cue));
+    return said;
   }
 
   // ----- help, restart, finish -----
@@ -498,6 +525,8 @@ class SeedTravelers implements Game {
   restart() {
     if (this.finished) return;
     this.epoch++;
+    this.cue++;
+    this.finishWaiting = false;
     this.ctx.tw.kill(this.anim);
     this.anim.t = 0;
     this.anim.back = 1;

@@ -124,6 +124,10 @@ export class FixedMeadow implements Game {
   cards: (Card | ChoiceCard)[] = [];
   partTargets: Container[] = [];
   private finishSent = false;
+  /** A free count of one part is playing; input stays open and a new tap takes over (U7 R4). */
+  private counting = false;
+  /** The next question's spoken ask, waiting behind the last question's line (U7 R4), or null. */
+  private unasked: (() => unknown) | null = null;
   constructor(
     private readonly ctx: GameContext,
     authored = true,
@@ -217,6 +221,36 @@ export class FixedMeadow implements Game {
         await this.ctx.say(line);
       }
     }
+  }
+  /** Says the question's ask now, or when the last question's line ends if one is still playing. */
+  private askAfter(line: Promise<unknown>) {
+    this.unasked = () => this.ask();
+    const at = this.index;
+    void line.then(() => {
+      if (this.index === at && this.alive) this.askNow();
+    });
+  }
+  /** Says the ask if it is still waiting behind the last question's line. */
+  private askNow() {
+    const say = this.unasked;
+    if (!say || this.finished) return false;
+    this.unasked = null;
+    void say();
+    return true;
+  }
+  /** The guide was tapped while the ask waits: say this question's, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+  /** A new tap takes over a free count still playing: its ticks stop and its highlight clears. */
+  private takeOver() {
+    this.epoch++;
+    this.unasked = null;
+    if (!this.counting) return;
+    this.counting = false;
+    this.highlight = [];
+    this.litEdge = -1;
+    this.redraw();
   }
   private clear(c: Container) {
     c.removeChildren().forEach((n) => n.destroy({ children: true }));
@@ -465,8 +499,10 @@ export class FixedMeadow implements Game {
       }
     }
   }
+  /** A tapped part's name and count start with input open: a tap on the other part or a card takes over (U7 R4). */
   private async countOne(p: number) {
-    this.busy = true;
+    this.takeOver();
+    this.counting = true;
     const token = this.epoch;
     this.highlight = [this.task.parts[p][0]];
     if (this.task.kind === 'compare' && this.task.material === 'fence') {
@@ -476,15 +512,17 @@ export class FixedMeadow implements Game {
     this.redraw();
     sfx.pop(5);
     await this.countPart(p);
-    if (this.valid(token)) this.busy = false;
+    if (this.valid(token)) this.counting = false;
   }
   private async replayQuestion() {
+    this.takeOver();
     this.busy = true;
     const token = this.epoch;
     await this.ask(true);
     if (this.valid(token)) this.busy = false;
   }
   private async countAll() {
+    this.takeOver();
     this.busy = true;
     const token = this.epoch;
     await this.ask(true);
@@ -494,6 +532,8 @@ export class FixedMeadow implements Game {
   }
   private async pickCard(card: Card | ChoiceCard) {
     if (this.busy || this.finished || !this.alive) return;
+    // A card judged before the ask is heard drops the ask; a count still playing stops (U7 R4).
+    this.takeOver();
     this.busy = true;
     const token = this.epoch;
     card.scale.set(0.94);
@@ -540,8 +580,13 @@ export class FixedMeadow implements Game {
     const spot = centre(cellRect(this.lay, part[Math.floor(part.length / 2)]));
     await this.ctx.tw.to(this.friend, { x: spot.x, y: spot.y + 40 }, { duration: 0.4 });
     if (!this.valid(token)) return;
-    await this.ctx.say(t.kind === 'compare' ? 'meadow.in' : 'meadow.field-in');
-    if (!this.valid(token)) return;
+    // The thanks starts and the next question opens after the short look, its ask waiting for the line (U7 R4).
+    // The last question's thanks is heard out before the finale.
+    const line = this.ctx.say(t.kind === 'compare' ? 'meadow.in' : 'meadow.field-in');
+    if (this.index === this.tasks.length - 1) {
+      await line;
+      if (!this.valid(token)) return;
+    }
     await this.ctx.tw.wait(0.4);
     if (!this.valid(token)) return;
     if (this.index === this.tasks.length - 1) return this.finale();
@@ -550,8 +595,8 @@ export class FixedMeadow implements Game {
     this.tally.next();
     this.gateOpen = 0;
     this.build();
-    await this.ask();
-    if (this.alive) this.busy = false;
+    this.busy = false;
+    this.askAfter(line);
   }
   private async finale() {
     this.finished = true;
@@ -582,6 +627,7 @@ export class FixedMeadow implements Game {
   askForHint() {
     if (this.busy || this.finished || !this.alive) return;
     this.tally.glow();
+    this.takeOver();
     this.busy = true;
     const token = this.epoch;
     void this.explanation().then(async () => {
@@ -593,7 +639,7 @@ export class FixedMeadow implements Game {
   restart() {
     if (this.busy || this.finished || !this.alive) return;
     // Keep the fixed task, help, totals and index. Only the free fill/count starts afresh.
-    this.epoch++;
+    this.takeOver();
     this.painted.clear();
     if (this.task.kind === 'compare') this.task.parts.flat().forEach((c) => this.painted.add(c));
     this.highlight = [];
@@ -602,7 +648,7 @@ export class FixedMeadow implements Game {
     void this.replayQuestion();
   }
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.counting || this.unasked) return null;
     if (this.botPart < 2) {
       const p = this.botPart++;
       const r = centre(cellRect(this.lay, this.task.parts[p][0]));
