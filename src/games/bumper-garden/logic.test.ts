@@ -126,31 +126,34 @@ describe('Bumper Garden', () => {
     for (const level of [1, 2, 5]) expect(awakeAfter(planFor(level), 0)).toBe(planFor(level).bumpers);
   });
 
-  it.each(TABLE_IDS)('sends every lap launch on %s to the big flower, and the ladybug always comes home', (table) => {
-    const plan = planFor(GROW_LEVEL);
-    const bumpers = makeBumpers(plan, new Rng(1), table);
-    expect(bumpers[0].r).toBe(GROW_BIG);
-    expect(bumpers[0].r).toBeGreaterThan(TABLE.bumper * 1.5);
-    for (let awake = 1; awake <= plan.bumpers; awake++) {
-      const world = makeWorld(bumpers, undefined, awake);
-      for (let a = -GROW_SPREAD; a <= GROW_SPREAD + 1e-9; a += 0.02) {
-        const result = simulate(
-          { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(a), r: TABLE.ball },
-          world,
-          CATCH_Y,
-          40,
-          STEP,
-        );
-        const flowers = result.hits.filter((i) => i < bumpers.length);
-        // A flower still asleep is never met; while the big one is alone, every launch bumps it.
-        expect(Math.max(-1, ...flowers), `awake ${awake} angle ${a.toFixed(2)}`).toBeLessThan(awake);
-        if (awake === 1) expect(flowers, `angle ${a.toFixed(2)}`).toContain(0);
-        expect(result.landed.y + TABLE.ball, `awake ${awake} angle ${a.toFixed(2)}`).toBeGreaterThanOrEqual(
-          CATCH_Y,
-        );
+  it.each(TABLE_IDS)(
+    'sends every lap launch on %s to the big flower, and the ladybug always comes home',
+    (table) => {
+      const plan = planFor(GROW_LEVEL);
+      const bumpers = makeBumpers(plan, new Rng(1), table);
+      expect(bumpers[0].r).toBe(GROW_BIG);
+      expect(bumpers[0].r).toBeGreaterThan(TABLE.bumper * 1.5);
+      for (let awake = 1; awake <= plan.bumpers; awake++) {
+        const world = makeWorld(bumpers, undefined, awake);
+        for (let a = -GROW_SPREAD; a <= GROW_SPREAD + 1e-9; a += 0.02) {
+          const result = simulate(
+            { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(a), r: TABLE.ball },
+            world,
+            CATCH_Y,
+            40,
+            STEP,
+          );
+          const flowers = result.hits.filter((i) => i < bumpers.length);
+          // A flower still asleep is never met; while the big one is alone, every launch bumps it.
+          expect(Math.max(-1, ...flowers), `awake ${awake} angle ${a.toFixed(2)}`).toBeLessThan(awake);
+          if (awake === 1) expect(flowers, `angle ${a.toFixed(2)}`).toContain(0);
+          expect(result.landed.y + TABLE.ball, `awake ${awake} angle ${a.toFixed(2)}`).toBeGreaterThanOrEqual(
+            CATCH_Y,
+          );
+        }
       }
-    }
-  });
+    },
+  );
 
   it('wakes a sleeping flower into its own place on the table', () => {
     const bumpers = makeBumpers(planFor(GROW_LEVEL), new Rng(1));
