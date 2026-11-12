@@ -1,0 +1,1 @@
+**`bumper-garden`, a lap level with one big flower** (new-level tier: typecheck, the rule tests, one browser play of the lap level, `fingerdemo` at it): one big flower and the ladybug; any touch launches, and the other flowers wake as she launches. It passes question 1 already, so it is last.

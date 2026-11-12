@@ -1,0 +1,1 @@
+**`puddle-lens`, a touch anywhere swells the lens at lap** (existing-game tier, one filtered play of level 1 at lap): at lap, a touch outside the lens swells it too, a touch while it moves gets a sound, the next thing comes on her touch rather than a timer, and the pause sheet's hint is not counted.
