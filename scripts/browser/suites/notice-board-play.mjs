@@ -111,7 +111,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       null,
       { timeout: 20000 },
     );
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1200);
     await screenshot('notice-board-2-portrait');
     await nextPoster(1);
     s = await state();

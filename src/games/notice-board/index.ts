@@ -217,8 +217,6 @@ class NoticeBoard implements Game {
 
   private async tapFriend(i: number) {
     if (this.busy || this.finished) return;
-    // A tap before the poster was read is judged (the stamp, the bubbles and the poster are on screen); the reading is dropped.
-    this.unread = false;
     const slot = this.slots[i];
     const f = this.play.item.bench[i];
     const k = this.critters.get(f.name)!;
@@ -230,8 +228,12 @@ class NoticeBoard implements Game {
     if (out.kind === 'free') {
       sfx.tick();
       k.cheer();
+      // A free tap while the poster's reading waits reads it now.
+      this.readNow();
       return;
     }
+    // A judged tap before the poster was read stands (the stamp, the bubbles and the poster are on screen); the reading is dropped.
+    this.unread = false;
     if (out.kind === 'right') return void this.settle(out, i);
     sfx.boing();
     let line: string;
@@ -244,11 +246,12 @@ class NoticeBoard implements Game {
 
   private async tapBasket(purpose: Purpose) {
     if (this.busy || this.finished) return;
-    this.unread = false;
     const b = this.baskets.find((x) => x.purpose === purpose)!;
     b.node.scale.set(1.06);
     void this.ctx.tw.to(b.node.scale, { x: 1, y: 1 }, { duration: 0.2 });
     const out = this.play.tapBasket(purpose);
+    if (out.kind === 'free') return void this.readNow();
+    this.unread = false;
     if (out.kind === 'right') return void this.settle(out, null);
     if (out.kind !== 'miss') return;
     sfx.boing();

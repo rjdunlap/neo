@@ -73,6 +73,8 @@ class MakerLane implements Game {
   askForHint?: () => void;
   /** While a maker works or a replay runs: touches wait, never counted. */
   busy = true;
+  /** A step's line is still playing over the open lane; only the ghost finger waits for it (U7 R4). */
+  private stepLine = 0;
   private alive = true;
   private finished = false;
   private view: View;
@@ -335,6 +337,10 @@ class MakerLane implements Game {
       this.hang(i, out.to);
       this.release();
       if (this.drag) this.drag.enabled = true;
+      const n = ++this.stepLine;
+      void line.then(() => {
+        if (this.stepLine === n) this.stepLine = 0;
+      });
       return;
     }
     // A bundle's last step is heard out before its flight to the pet.
@@ -689,7 +695,8 @@ class MakerLane implements Game {
 
   /** The ghost finger: tap the waving stall (level 1), drag the bundle to the maker who can use it (2), tap the right card (3). */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    // The demo hears a step's line out, as a child watching it would.
+    if (this.busy || this.finished || this.stepLine) return null;
     const n = this.targetNode();
     if (!n) return null;
     if (this.level === 2) {
