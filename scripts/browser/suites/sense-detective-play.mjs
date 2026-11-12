@@ -11,7 +11,11 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       });
     const settle = async () => {
       await page.waitForTimeout(300);
-      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 });
+      await page.waitForFunction(
+        () => neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.unasked),
+        null,
+        { timeout: 25000 },
+      );
       await page.waitForTimeout(250);
     };
     const tapCard = async (own) => {
@@ -97,9 +101,13 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     );
     await tapToy(fit[1]);
     await tapNode('checkBtn');
-    await page.waitForFunction(() => neo.scene.game.parcelIndex === 1 && !neo.scene.game.busy, null, {
-      timeout: 25000,
-    });
+    await page.waitForFunction(
+      () => neo.scene.game.parcelIndex === 1 && !neo.scene.game.busy && !neo.scene.game.unasked,
+      null,
+      {
+        timeout: 25000,
+      },
+    );
     assert.equal(
       await page.evaluate(() => neo.scene.game.record.length),
       0,
@@ -153,7 +161,11 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       });
     const settle = async () => {
       await page.waitForTimeout(300);
-      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 });
+      await page.waitForFunction(
+        () => neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.unasked),
+        null,
+        { timeout: 25000 },
+      );
       await page.waitForTimeout(250);
     };
     const tapNode = async (name) => {
@@ -199,9 +211,13 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.equal(await misses(), 1, 'the eye is a miss');
     await tapSense('sound');
     await tapNode('checkBtn');
-    await page.waitForFunction(() => neo.scene.game.parcelIndex === 1 && !neo.scene.game.busy, null, {
-      timeout: 25000,
-    });
+    await page.waitForFunction(
+      () => neo.scene.game.parcelIndex === 1 && !neo.scene.game.busy && !neo.scene.game.unasked,
+      null,
+      {
+        timeout: 25000,
+      },
+    );
     assert.equal(
       await page.evaluate(() => neo.scene.game.stage),
       'answer',
