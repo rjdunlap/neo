@@ -7,7 +7,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     // taps below answer a spoken question and keep the old pacing.
     const wait = () =>
       page.waitForFunction(
-        () => neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.unasked && !neo.scene.game.playing),
+        () =>
+          neo.scene.finished || (!neo.scene.game.busy && !neo.scene.game.unasked && !neo.scene.game.playing),
       );
     // U7 R4: lesson lines never hold the next question. Lines matching `pattern` are stretched to at least 4 s; each
     // records how soon the next question opened (input clear, `opened(g, before)` true) and when its ask was said.
@@ -85,7 +86,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         // No choice selected: confirm is inert. Listening to the wrong summary is free.
         await tap('neo.scene.game.confirm');
         await wait();
-        await opensAtOnce('neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node', 'a summary');
+        await opensAtOnce(
+          'neo.scene.game.choices.find(p => p.n !== neo.scene.game.answer).node',
+          'a summary',
+        );
         await wait();
         assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
         await opensAtOnce('neo.scene.game.tabs[1]', "a tab's page");
@@ -239,8 +243,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         [2, 1, true],
       );
       if (level >= 2 && level <= 5)
-        await stretch('^week\\.(tomorrow|yesterday)(any)?yes$', (g, before) =>
-          g.question > before.question || g.phase !== before.phase,
+        await stretch(
+          '^week\\.(tomorrow|yesterday)(any)?yes$',
+          (g, before) => g.question > before.question || g.phase !== before.phase,
         );
       let checkedWeather = false,
         checkedTally = false,
@@ -322,7 +327,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       if (level === 2) assert.ok(checkedWrap, 'inspect the week turn in portrait');
       if (level >= 2 && level <= 5) {
         const yes = await r4('a relative yes line');
-        log(`Day by Day ${level} R4: the next question opened ${yes.map((r) => r.opens).join(', ')} ms into a yes line`);
+        log(
+          `Day by Day ${level} R4: the next question opened ${yes.map((r) => r.opens).join(', ')} ms into a yes line`,
+        );
       }
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
