@@ -1,0 +1,165 @@
+# Pyramid Solitaire deep dive
+
+*ID `pyramid-solitaire` · band grown-up · levels 1–3 on 2026-11-11 · session `claude/dive-pyramid-solitaire` ([PR #1530](https://github.com/rjdunlap/neo/pull/1530))*
+
+## The game today
+
+A grown-up clears a small pyramid of face-up cards by lifting pairs that add to thirteen; a king is thirteen by itself. A card can be lifted only when both cards lying on it (the two below it in the next row) have gone; open cards are bright with a teal outline and covered ones are dimmed. Tap one open card, then its partner; tap the chosen card again to put it back. Nothing is timed and nothing is lost: Undo takes back a removal, Start over brings back the same deal, and Hint outlines the next removal on a clearing route, first stepping back to the nearest position that can still clear if the route is dead. The purpose is **complements to thirteen and planning**: which removal uncovers the card the next pair needs. It was built on 2026-10-13 from [its definition](../definitions/pyramid-solitaire.md) ([build note](../archive/COMPLETED-2026-10-09.md#pyramid-solitaire-first-slice-2026-10-13)), lives in Lantern Lake (`challenge: 'numbers'`), is upright-ready on a phone ([PR #1454](https://github.com/rjdunlap/neo/pull/1454)) and has a ghost-finger demonstration that plays the solver's route.
+
+| Level | Plan name | Bands whose window includes it | What she decides |
+| --- | --- | --- | --- |
+| 1 | Six face-up cards: complements to thirteen | grown-up | Which two open cards make thirteen, on three rows |
+| 2 | Ten cards: uncover the next pair | grown-up | Which pair to lift so the row above opens, on four rows |
+| 3 | Fifteen cards: plan through five rows | grown-up | Which of two copies of a rank to spend, on five rows |
+
+`BandLevels`: `grownup 1–3`, no `order`, no `entryLevels`.
+
+**What a round draws from.** There is no frozen pool. `makePuzzle` walks a seeded clearing order backwards from a full pyramid: it shuffles the open cards, and either makes the first a king (when it is the only open card, or on a 15% chance) or gives the first two a random rank from 1 to 12 and its complement. Every deal therefore clears. A deal lives in a 32-bit mask (`1 << cards`), and `solver` is an exact memoised search over the remaining-card masks; a five-row pyramid reaches at most 39 distinct positions, so it is instant. There is no stock, no waste pile and no 52-card deck.
+
+**Rules today.** A mismatched open pair removes nothing, boings, shows the sum (`6 + 5 = 11. Look for 13.`), says what the first card needs and counts a miss; two in a row show a counted hint. A covered card ticks and explains itself and is not a miss. After each removal the scene re-solves what is left: when no route remains it says so at once (`pyramid.blocked`) and the status line points at Undo and Hint. `finish` reports misses and hints; Undo and Start over are free.
+
+**Couch.** Not in the couch catalog and no frozen course; the scene is touch and mouse only.
+
+**Measured** (a Node 26 script outside the repository that imports `logic.ts` and `random.ts` unchanged; 1,000 seeds a level; it reproduces `makePuzzle`'s deal for the same seed). A *dead end* is a position reached by legal removals from which no order clears the rest. The *random-play clear rate* is the exact probability of clearing when every turn takes a uniformly random legal removal: a stand-in for a player who does not plan.
+
+| Level | Cards | Kings (average) | Pairs (average) | Removals open at the start | Deals with any dead end | Deals with a losing first removal | Random play clears (median) | Random play clears (worst tenth of deals) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 6 | 2.3 | 1.9 | 1.6 | 8% | 8% | 100% | 100% |
+| 2 | 10 | 2.5 | 3.7 | 2.2 | 15% | 6% | 100% | 50% |
+| 3 | 15 | 2.9 | 6.0 | 2.8 | 42% | 15% | 100% | 50% |
+
+**Known gaps** (each read from the code or measured on 2026-11-11, not from a playtest):
+
+- **Most deals cannot be lost.** At every level the median deal clears whatever she lifts. Only 8%, 15% and 42% of deals (levels 1–3) hold a dead end at all, so on most rounds "plan through five rows" asks for no plan, and Undo, the blocked line and the hint's recovery never come into play. The ladder's difficulty is in which deal the seed happens to give, not in the level.
+- **The top card is always a king**, in every deal at every level (1,000 of 1,000). This is not a generator slip: with no stock, the top card opens only when every other card has gone, so nothing is left to pair it with. The round always ends on a lone king tap with no arithmetic in it.
+- **Level 1 is mostly kings.** Six cards hold an even number of kings and at least two; the 15% chance adds more, so the average first round is 2.3 kings and fewer than two pairs, and some are four kings and one pair. The game's skill is complements, and its first round shows about two.
+- **The ranks are not a deck.** Nothing limits a rank to four cards: 3% of level 2 deals and 18% of level 3 deals hold five or more of one rank. The off-screen suggestion (paper cards) cannot be dealt from a real pack as shown, and counting how many of a rank are left, a habit every strategy guide teaches, is unreliable.
+- **A pair just vanishes.** Removal is one frame, a pop and a star burst at the first card. The cards it opened only change from 60% to full opacity and gain an outline; nothing draws the eye to what was uncovered, which is the consequence to notice.
+- **Covered face cards lose their value in landscape.** `pyramidLayout` uses a 74.5-unit row gap for five rows on the 768-unit-high landscape area, so the next row hides everything below the middle of a covered card, including the `= 11` under a J. The rank letter stays visible and the guide line at the top repeats the values, so it is a legibility gap rather than a blocker; upright rows are 104 units apart and hide nothing. (Computed from the layout, not seen on a device.)
+- **A short ladder.** Three levels, the largest a little over half a real pyramid.
+
+## Similar games
+
+| Game | Kind | How its progression grows | What to borrow | What to leave out |
+| --- | --- | --- | --- | --- |
+| Pyramid, the card solitaire ([history and solver figures](https://solitairelaboratory.com/pyramidgiza.html), Michael Keller) | The original: 28 cards in seven overlapping rows, a 24-card face-down stock turned once | It does not grow; it is one deal. First printed in the United States in 1927–28; early books put a win at about 1 in 50 | The seven-row shape as the top of this ladder; kings alone; the name | The hidden stock: a solver that sees the stock clears all 52 cards on about 6–7% of deals in one pass ([100 million deals](https://solitairewinrates.com/Pyramid.html)), and a person who cannot see it does worse. About a third of random pyramids are blocked before a card is played |
+| Par Pyramid (Morehead and Mott-Smith, 1949; described in the same article) | Three passes through the stock, scored 50, 35 or 20 by the pass that clears the pyramid | Score against a par over several deals | Nothing | Score and par |
+| Tut's Tomb (Microsoft Entertainment Pack, 1990; same article) | Stock dealt three at a time, only the pyramid need clear | None | Confirmation that "clear the pyramid" alone is a fair goal | Dealing by threes hides most of the stock |
+| [Giza](https://solitairelaboratory.com/pyramidgiza.html) (Michael Keller, 1998; [PySol's rules](https://pysolfc.sourceforge.io/doc/rules/giza.html)) | The fully open form: the 24 spare cards lie face up in eight columns of three, and only the front card of each column is free | None; Keller tried four rows of six (blocked too often) and settled on three rows of eight | **All information visible**, which is what this game already chose; spare cards in short columns as the next kind of cover | Random deals: a solver wins 36.5% of 10 million. Fifty-two cards at this target size |
+| Overlap discards (an option in Solitaire Virtuoso; measured in the same article and [table](https://solitairewinrates.com/Pyramid.html)) | A rule option: lift a card together with the card under it when nothing else covers that card | Raises the open-stock win rate from 66.9% to 83.2% and nearly halves blocked deals | One new decision without a new control (level 5) | — |
+| Microsoft Solitaire Collection's Pyramid ([listing](https://apps.microsoft.com/detail/9wzdncrdlxmg), [overview](https://www.giantbomb.com/microsoft-solitaire-collection/3030-39318)) | The mainstream phone and PC version | Boards cleared in a run add to a score; daily challenges set goals such as clearing a number of cards within a number of deals; monthly badges | Nothing | Score runs, daily challenges, badges, adverts |
+| Classroom *Pyramid* and *Make Ten* ([Math Geek Mama](https://mathgeekmama.com/pyramid-fun-and-easy-math-card-game/), [Manitoba Education's Make Ten](https://www.edu.gov.mb.ca/k12/cur/math/games/make_ten_k.pdf)) | The same game with face cards removed: pairs make ten, a ten goes alone; six rows, for kindergarten to grade 3 | Teachers change the target (bonds to 9, 8, 7) and the number of rows, and ask "what goes with six to make ten?" | A target of ten as a school-band opening (a decision below); a smaller target as a gentler first round | "Lowest total left wins" scoring and racing |
+| [Semicolon's *Winning at Pyramid*](https://semicolon.com/Solitaire/Articles/Pyramid.html) | A strategy article | — | Its habits, which become the lesson deals: do not leave half a pair lying on the other half; count how many of a rank are left before spending one; take middle cards before edge cards, since they lie on two | Its stock advice |
+| Tile Pairs ([its dive](tile-pairs.md)) | This island's other remove-pairs-under-covers game | A deal dial, designed lessons, then bigger stacks | The dial, the uncovering pulse and the lesson-deal method, already designed and partly built there | — |
+
+**On strategy, and what can actually lose.** Lifting cards only ever opens others, so a pair that is open stays open until one of its cards is spent elsewhere, and the order of removals cannot decide the outcome by itself. With every rank visible and no stock, the only choice that can lose is **which copy of a rank goes with which partner**: spend the open 6 on the wrong 7 and the buried 7 has nothing left. That is the same result the Tile Pairs dive reached, and it is why a deal with one card of each needed rank can never go wrong. The guides' order habits (kings first, middle before edge) matter when a stock hides cards; here they are ways of seeing the copy choice sooner.
+
+**On blocked deals.** Keller's article counts about one random pyramid in three as blocked, the commonest cause being a card that lies under all four cards of its complementary rank. Dealing backwards along a clearing order (as `makePuzzle` does) is what makes every deal here fair, and any new level keeps it.
+
+**Learning references.** Pairs that make a total are number bonds: ten in kindergarten and grade 1 (the classroom sources above), and for a grown-up the same recall at thirteen, with planning as the real task. Nothing here is a school claim for the grown-up band.
+
+## What makes sense here
+
+The rule and the help are good, and open information was the right first choice. What the game lacks is a deal that needs the plan its level names, a first round that is about pairs rather than kings, a visible consequence, and a ladder that goes somewhere. In order of value:
+
+1. **Choose deals by a measured target**, so each level asks for about the planning its name promises. The measure is exact and costs microseconds at these sizes.
+2. **Make the first round two honest pairs**, and keep the ranks to a real pack so the paper version and counting both work.
+3. **Show what a pair uncovers.**
+4. **Then grow**: a sixth row, a rule that lets the top card be something other than a king, spare cards beside the pyramid, and the classic seven rows.
+
+A hidden stock is the one classic feature deliberately not on that list: it turns a planning puzzle into luck with a 6–7% ceiling, and every level here stays fully visible and always clearable. A score, par, daily challenges and timed runs conflict with the project rules. The long-term arc stays in the grown-up band: a few calm, always-clearable pyramids whose difficulty is the depth of the copy choice, ending at a real seven-row pyramid from a real pack; a make-ten opening for the school band is possible and is a decision.
+
+## Experience and presentation
+
+**First action.** Tap a bright card, then the bright card that makes thirteen with it. Level 1 can be attempted from the heading and the bright outlines alone; with two pairs and two kings (slice 1) the first round shows both halves of the rule.
+
+**What should feel good and does not yet.** Touch-down already outlines the chosen card in purple and ticks. A lifted pair should rise about 30 units, drift together and fade over about 0.3 s, untappable while leaving, as Tile Pairs' pairs now do; each card it opened then brightens with a short pulse and one soft pentatonic step per card opened (`src/audio/notes.ts`), so opening two cards sounds fuller than opening none. The status line can count what a planner watches: "3 pairs open".
+
+**Cards that read when overlapped.** Give each card a small corner index (the rank, and `11`/`12`/`1` under a J, Q or A) in its top-left corner, drawn with the existing `label` and palette. A covered card then shows its rank and value however much the next row hides, which landscape needs today at level 3 and every taller pyramid needs in both orientations.
+
+**What varies on replay without changing the rule.** The deal (already seeded). A seeded card back tint for covered cards from the palette is a cheap second look; nothing else is needed.
+
+**Reasoning apart from reading, memory and motor skill.** No reading is needed to play; the guide line and status line are extra, and every rank is visible, so there is no memory load. Cards stay 100 units. The arithmetic is deliberately not done for her: the miss line names the partner only after a wrong pair.
+
+**Supported completion and stopping.** Unchanged: Hint and Undo always lead to a clear pyramid and one sticker; a round is one to three minutes and nothing is kept between rounds.
+
+**Two people.** One names a card and the other finds its partner, or one plays and the other says which card a pair will open before it goes (the existing co-play line). Solo play needs nothing else.
+
+**Needs a person, not a bot** (questions for whoever next plays it on a phone; none gates a slice): whether hearing the rank and prompt on every first tap is welcome or chatter for a grown-up; whether being told at once that a route is dead helps or spoils finding it; and whether level 3 after slice 1 feels like planning or like trial and Undo.
+
+## Proposed ladder
+
+### Fresh content inside existing levels
+
+- **A deal dial.** Each plan gains a band for its random-play clear rate, and `makePuzzle` deals up to 40 seeded candidates and keeps the first inside the band (the closest if none is), all drawn from the round's one rng so a seed still gives one deal. Bands: level 1 at least 95% (about 91% of candidates qualify: it stays a round that cannot go wrong); level 2 below 95% but at least 50% (so one copy choice matters; 18% of candidates, about six tried a round); level 3 between 40% and 80% (32% of candidates, about three tried). Measured with the pack limit over 300 rounds a level, no round at three to seven rows ran out of its 40 candidates. The measure is the exact probability, computed by the same memoised walk as the solver (at most 39 positions at five rows, 146 at seven), so no sampling and no phone cost. A test asserts that 200 seeds a level land in band or within the fallback, and that every deal still clears.
+- **Two honest pairs first.** Kings only where the structure forces them, plus at most one more: level 1 becomes exactly two pairs and two kings (six cards need an even number of kings and at least the top one), and levels 2–3 hold the forced kings plus at most one by chance. A test asserts the counts.
+- **A real pack.** At most four of any rank, by redrawing the rank when a fifth would be dealt. Measured on five to seven rows it does not change difficulty (dead-end share 42%, 66% and 87% against 42%, 64% and 83% without). The paper version then works from a real pack, and "how many 6s are left?" has a true answer. Voice and how-to wording drop "no conventional deck restriction".
+- **The uncovering pulse and corner index** described above.
+
+### New levels on top
+
+IDs are appended; levels 1–3 keep their meaning. The grown-up range grows to `1–8` with no `order` until the lesson deals (below).
+
+| Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 4 | *Six rows · 21 cards* | grown-up | A six-row pyramid from a real pack; dial 30–75% (median undialled deal 75%, 64% hold a dead end) | Which copy to spend when two or three are open at once, over a longer route | As today | 200 seeds clear and land in band; at most four of a rank; at most 71 positions | `rows: 6` in `PLANS`; upright the pyramid is 680 of 768 units wide and the buttons end at 1,005 of 1,024, so the row gap drops to about 96; landscape rows are 60 units apart, so it follows the corner index |
+| 5 | *Lift the cover* | grown-up | Five rows. A new rule: an open card may be lifted **with the card under it**, when it is the only card still lying on that one and the two make thirteen | Whether to spend a card on the one beneath it or save it; the top card need no longer be a king | Tapping a covered card after choosing the one card that lies on it lifts both when they make thirteen; otherwise the covered-card line as today. A wrong sum is a miss as today | `moves` includes a cover pair only when one cover remains and it is the chosen card; levels 1–4 produce none; 200 seeds clear; on at least a third of seeds the top card is not a king; some seed needs a cover lift on every clearing route | The generator's backward walk gains the cover-pair step; one voice line and a level-scoped how-to step; the bot taps the cover pair when the route has one. A covered card becomes a real target on this level, so its visible strip must be at least 64 units: upright only needs no change, landscape uses the side-button layout of level 7. Undialled, the rule alone makes deals easier (dead-end share 19% against 42%), so the dial band is 40–80% as level 3 |
+| 6 | *The shelf* | grown-up | Five rows and a shelf of five open spare cards, 20 cards, all to be cleared | Whether a pyramid card's partner comes from the pyramid or the shelf: the shelf is where copies are saved or wasted | As today; a shelf card is always open | Shelf cards have no covers; 200 seeds clear in band (40–80%; undialled median 85%, 60% hold a dead end); at most 483 positions; the top card is paired with a shelf card on some seeds | A generalised cover list (`covers` per card, not per row) that levels 1–5 reproduce exactly; the shelf lies under the pyramid upright and in a column beside it in landscape; `pyramidLayout` and its test in both orientations |
+| 7 | *The classic pyramid · seven rows* | grown-up | Twenty-eight cards from one pack, no stock; strict rule (no cover lift). Dial 30–70% (undialled median 50%, 87% hold a dead end) | A long plan with several copy choices open at once | As today | 200 seeds clear in band; at most four of a rank; `fullMask(7)` is exact (28 bits); at most 146 positions | Upright the cards sit 108 apart (748 of 768) with rows about 88 apart on the 1,024 area; in landscape the three buttons move beside the pyramid so rows are at least 64 apart. A layout test checks every open card is fully visible and every covered strip is at least 64 units, in both orientations |
+| 8 | *Three columns* | grown-up | Five rows and three columns of two spare cards (21 cards); only the front card of a column is open, after Giza | Which column to dig into, since a spare card can itself be covered | As today; a back card explains its cover like a pyramid card | Column covers are one card deep; 200 seeds clear in band (30–70%; undialled median 75%, 79% hold a dead end); at most 325 positions | Uses level 6's cover list; columns stand beside the pyramid; six rows with four columns of two (29 cards, 1,549 positions) is the largest board the 32-bit mask allows (30 cards) and is left for a later level |
+
+### Lesson deals
+
+Designed puzzles that teach one copy choice each. Random dealing produces a five-row deal with **one** safe first removal among several about 1 time in 50 (2% of 1,000 seeds; 3% at four rows), so an offline script can search seeds for the property instead of hand-placing ranks, and freeze the finds in a `pools.ts`, as Tile Pairs plans to.
+
+| Level | Name | The lesson | A rule test asserts |
+| --- | --- | --- | --- |
+| 9 | *One way in* | Four rows: three or more removals are open and exactly one keeps the pyramid clearable. After a losing removal the blocked line is followed by one sentence naming the card that lost its partner | Every frozen deal clears, has at least three opening removals and exactly one safe one; the named card is right; the pool has at least 24 deals |
+| 10 | *Count the copies* | Five rows: two open copies of a rank and two partners, one of them buried under the other copy's only partner. Spending the easy pair first loses | Every frozen deal has that shape; the losing pair is legal at the start; the lesson line names the buried card |
+
+They are placed with `order` (9 after level 2, 10 after level 3), so each habit arrives before the board that needs it; that is a decision below, with appended-at-the-top as the alternative.
+
+### Younger-band openings
+
+**Make ten** for the school band (about 6–8): the same pyramid with ranks 1–9, pairs that make ten and a ten alone, three then four rows, as classrooms play it from kindergarten to grade 3. It would be two appended levels (11 *Make ten · six cards*, 12 *Make ten · ten cards*) declared as the school band's `entryLevels`, with a `target` on the plan, the miss and number lines taking the target as a slot, and no J/Q/K guide. The rule code is one constant away. It is not built by default: the game is a grown-up game in the grown-up age place's land, Fruit Sums and Number Nook already serve bonds to ten, and opening a band is the developer's call (decision 1).
+
+### Easier entries and levels between existing ones
+
+None beyond the lesson deals' placement. With slice 1, level 1 is two pairs and two kings that cannot go wrong, which is already the gentlest honest start.
+
+### Left out on purpose
+
+- **A hidden stock and waste pile**, in any form (one pass, Par's three passes, Tut's Tomb's threes): hidden cards make the plan a guess, and even perfect knowledge clears about 7% of one-pass deals.
+- **Score, par, boards-cleared runs, daily challenges and badges.**
+- **Random deals.** A third of random pyramids are blocked outright; every deal stays built along a clearing order.
+- **Full 52-card Giza.** It needs a mask wider than 32 bits, and 52 cards at 100 units do not fit a phone without shrinking or scrolling. Level 8 is its idea at 21 cards.
+- **Automatic removal of obvious pairs or kings**: Keller notes it loses wins, and here the tap is the play.
+- **A controller cursor and a frozen couch course** (the [ideas row](../IDEAS.md) proposed both): couch play retires at Lands stage E, and the phone is the current focus (decision 3).
+- **A saved unfinished deal.** A round is a few minutes; nothing waits.
+
+## Decisions for the developer
+
+1. **Open a make-ten opening to the school band?** Default: no; the two levels stay designed and unbuilt.
+2. **Lesson deals placed by `order`, or appended at the top?** Default: by `order` (9 after 2, 10 after 3), as the Tile Pairs dive leans.
+3. **Couch registration or a frozen course?** Default: no.
+4. **Tell her at once when a route is dead?** Today the blocked line speaks immediately. A quieter version changes only the status line and lets Hint explain. Default: keep today's behaviour until a playtest note says otherwise.
+5. **A board past 30 cards** (six rows with a longer shelf, or Giza's eight columns)? Default: no; it needs a wider mask and a scrolling or smaller board.
+
+None of these blocks a slice below.
+
+## Build slices, in order
+
+1. **Deals that ask for a plan.** The dial with levels 1–3's bands, two honest pairs at level 1 with capped kings, and at most four of a rank; `logic.ts` and its tests, plus the how-to note and page wording about a pack. Rules tier: typecheck and the game's rule tests (deal properties over 200 seeds a level; the solver tests unchanged). The plan names, level table and bot do not change, so no browser play.
+2. **A pair that shows what it uncovers, and cards that read when overlapped.** The lift-and-fade, the uncovering pulse and tone, "pairs open" in the status line, the corner index. Existing-game tier: typecheck, the rule tests, one filtered `pyramid` play at level 3 with a portrait and a landscape screenshot; no `fingerdemo` (the bot's taps do not change); build only if a shared file changes.
+3. **Level 4 *Six rows*.** New level on the existing interaction: typecheck, rule and registry tests, the layout test at six rows, one browser play of 4, `fingerdemo` at 4. After slice 2 (the index).
+4. **Level 5 *Lift the cover*.** A rule change with a new tap meaning: typecheck, rule tests with levels 1–4 unchanged, one filtered `pyramid` play of 5 with a cover lift, a wrong sum and a hint, a portrait screenshot, `fingerdemo` at 5, build (voice and how-to change).
+5. **Level 6 *The shelf*.** The generalised cover list and the shelf layout: typecheck, rule tests (levels 1–5 deal identically from the same seeds), the layout test in both orientations, one browser play of 6 with a screenshot in each orientation, `fingerdemo` at 6.
+6. **Level 7 *The classic pyramid*.** New level with the side-button landscape layout: typecheck, rule and layout tests, one browser play of 7 in each orientation, `fingerdemo` at 7.
+7. **Level 8 *Three columns*.** As slice 5 without the shared work.
+8. **Lesson deals, levels 9–10.** The offline search script, `pools.ts`, the lesson line, `order` with its test: typecheck, rule tests (each frozen deal's property), one filtered play of 9 that takes a losing removal, hears the lesson and undoes, `fingerdemo` at 9, build (voice changes).
+
+Slices 1 and 2 are queued together as [Deals that ask for a plan](../GAME-BATCHES.md#pyramid-solitaire-1-deals-that-ask-for-a-plan). Slices 3–8 follow in order as each lands. The five decisions stay out of the ready list.
+
+## What was built in this session
+
+Nothing: research and design only. The game's code, tests, page, definition and how-to card were read; no game was run in a browser. The measurements came from a Node 26 script kept outside the repository that imports `logic.ts` and `random.ts` unchanged and a generalised copy of the generator and search (checked to give `makePuzzle`'s deal for the same seed): 1,000 seeds a level for rows three to six, 200 for seven rows, 500 for the pack limit, cover-lift and shelf variants, 100–500 for the column variants, with the exact random-play probability, dead-end and losing-first-removal counts, king and rank counts, and positions reached. The dial's bands were tried over 300 rounds a level. Timings were from a Mac, not a phone, and every search finished in under 2 ms. The reference figures are from the pages linked above, read on 2026-11-11. Checks: links (`node scripts/check-links.mjs`) and `git diff --check`.

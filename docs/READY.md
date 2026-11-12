@@ -8,11 +8,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Game research: Pyramid Solitaire** (`pyramid-solitaire`, docs only; built from a definition, no dive yet, the last game without one; [tracker](deep-dives/README.md#tracker), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)): write its dive (ladder, decisions, build slices) and queue the first unblocked batch.
 - **U7d (the rest)**: classify the other 133 games' awaited lines, a land at a time (docs only; [the candidates](definitions/never-swallow-a-tap-lines.md#the-other-games-candidates-not-read)): each session reads one land's games and adds rows, plus a fix-batch line above for any game that holds a cut line.
 - **P5, a resident that carries on: a pilot** (rework; shell tier, as [RW14 slice 2](rework/POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home) was: typecheck, unit tests, build, one filtered root probe in both orientations; no new art, so no offline check): one resident in one location (`src/creatures/resident.ts`, `LocationScene`) walks or flies between two or three marked spots on its own, uses one thing in the scene when it arrives, and turns toward her last touch. Nothing is hungry, owed or changed while she is away, and its touch circle still clears every spot, the signpost, the guide corner and the heading at each stop (the location's test checks every stop). Judged from a short capture before any other resident follows. [P5](POK-POK.md#p5-residents-that-carry-on-a-note-for-rw13-and-rw14-m)
 - **`bounce-back`, a lap level that cannot miss** (new-level tier: typecheck, the rule tests, one browser play of the lap level, `fingerdemo` at it): the only Bubble Beach game where a lap player can be wrong, and where touching turns the paddle's help off. One huge paddle that a touch anywhere on the screen brings to the ball with a sound at the finger; a ball that gets past comes back without a boing, a "Whoops!" or a counted miss; lap plays it first.
 - **`tile-pairs`, Two more looks and level 7 *Tall tower*** (dive slices 3–4, new-level tier, after Peek; typecheck, rule and registry tests, one filtered `tilepairs` play and `fingerdemo` at 7, one screenshot per new look): deal two additional seeded picture sets that stay distinct by shape, then build a four-layer tower that uses Peek. [Dive](deep-dives/tile-pairs.md#build-slices-in-order), [batch plan](GAME-BATCHES.md#tile-pairs-two-more-looks-and-tall-tower)
+- **`pyramid-solitaire`, deals that ask for a plan, and a pair that shows what it uncovers** (dive slices 1–2, existing-game tier: typecheck, the rule tests, one filtered `pyramid` play at level 3 with a portrait and a landscape screenshot; no `fingerdemo`; build only if a shared file changes): most deals today cannot be lost and level 1 is mostly kings; choose each deal by a measured band, make level 1 two pairs and two kings, keep ranks to a real pack, then show what a lifted pair uncovers and give cards a corner index. [Dive](deep-dives/pyramid-solitaire.md#build-slices-in-order), [batch plan](GAME-BATCHES.md#pyramid-solitaire-1-deals-that-ask-for-a-plan)
 
 ## Queued
 
@@ -109,7 +109,7 @@ Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 
 ### Game research (docs only)
 
-Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains.
+Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains. Every game now has a dive (Pyramid Solitaire's, 2026-11-11, was the last).
 
 
 ## Blocked work (not routine picks)
