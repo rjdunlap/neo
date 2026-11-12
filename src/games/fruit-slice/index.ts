@@ -1314,7 +1314,9 @@ class FruitSlice implements Game {
     this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    const yes = this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', { n: this.board!.n });
+    const yes = this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', {
+      n: this.board!.n,
+    });
     if (this.plan.mode === 'line' && this.index + 1 < this.boards.length) {
       // Level 7 (U7 R4): the line never holds the next board. The halves land, the next board arrives and can be
       // cut while "Yes! One line through …" plays, and the instruction follows it.
