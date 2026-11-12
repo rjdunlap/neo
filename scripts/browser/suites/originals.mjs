@@ -273,7 +273,21 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           }
           return;
         }
-        const ready = () => kit.until(() => !g.busy || g.finished, 15000);
+        // The next ask waits behind a right find's line (U7 R4); a tap before it only says the ask, so wait for it.
+        const ready = () => kit.until(() => (!g.busy && !g.unasked) || g.finished, 15000);
+        // U7 R4: from a right find's line to the next question's places being open, at the find levels.
+        const say = g.ctx.say.bind(g.ctx);
+        window.peekR4 = [];
+        g.ctx.say = (id, vars) => {
+          if (id === 'peek.yes' && g.done < g.plan.goal) {
+            const t = performance.now();
+            void kit
+              .until(() => !g.busy, 8000)
+              .then(() => peekR4.push(performance.now() - t))
+              .catch(() => peekR4.push(Infinity));
+          }
+          return say(id, vars);
+        };
         for (let q = 0; q < g.plan.goal; q++) {
           await ready();
           if (q === 0) {
@@ -291,6 +305,18 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           await kit.until(() => g.done > before, 3000);
         }
       });
+      if (mode === 'find') {
+        const opens = await page.evaluate(() => window.peekR4 ?? []);
+        assert.ok(opens.length >= 2, `R4: ${opens.length} finds timed`);
+        // The look, the hiding and the deal take about 1.6–2 s; the line and the ask awaited would add 2 s or more.
+        assert.ok(
+          opens.every((ms) => ms < 2600),
+          `R4: the next question waited for the find's line (${opens.map(Math.round).join(', ')} ms)`,
+        );
+        log(
+          `Peekaboo Barn ${level}: R4, next places open ${opens.map(Math.round).join(', ')} ms after peek.yes`,
+        );
+      }
       await screenshot(`peekaboo-barn-${level}`);
       await finished('peekaboo-barn');
       assert.deepEqual(

@@ -57,6 +57,8 @@ export class PathOrchard implements Game {
   busy = true;
   finished = false;
   speaking = 0;
+  /** The next question's spoken ask, waiting behind a part's right answer (U7 R4), or said at her first press. */
+  unasked = false;
   /** The pads for the current question. */
   choices: number[] = [];
   readonly pads: Container[] = [];
@@ -241,8 +243,12 @@ export class PathOrchard implements Game {
     return q === 0 ? 'orchard.pathten' : 'orchard.pathones';
   }
 
-  /** New pads for the current question, and its spoken instruction. */
-  private async ask() {
+  /**
+   * New pads for the current question, and its spoken instruction. After a part's right answer, `after` is its line:
+   * the pads show at once and the question is spoken when the line ends, or at her first press.
+   */
+  private async ask(after?: Promise<void>) {
+    this.unasked = false;
     this.choices = pathChoices(
       answerOf(this.state),
       QUESTIONS[this.state.question],
@@ -253,7 +259,19 @@ export class PathOrchard implements Game {
     this.drawPads();
     this.drawSigns();
     this.showControls();
-    await this.talk(this.ctx.instruct(this.questionLine()));
+    if (!after) return void (await this.talk(this.ctx.instruct(this.questionLine())));
+    const q = this.state.question;
+    this.unasked = true;
+    this.busy = false;
+    await after;
+    if (this.state.question === q) this.askNow();
+  }
+
+  /** Says the question that is still waiting behind the last part's line. */
+  private askNow() {
+    if (!this.unasked || this.finished) return;
+    this.unasked = false;
+    void this.talk(this.ctx.instruct(this.questionLine()));
   }
 
   private press(a: PathAction, node: Container) {
@@ -261,6 +279,8 @@ export class PathOrchard implements Game {
     // Touch-down feedback even while a line is playing.
     this.pressed = { node, at: this.clock };
     if (this.busy) return;
+    // A press before the question was spoken says it and is not judged: no miss for a question she has not heard.
+    if (this.unasked) return this.askNow();
     void this.act(a, node);
   }
 
@@ -335,11 +355,11 @@ export class PathOrchard implements Game {
       const rows = rowsOf(this.level, t, part),
         each = unitOf(this.level, t, part);
       this.lit = { part, at: this.clock, rows, played: 0 };
-      await this.talk(
+      // A part's right answer never holds the next question (U7 R4): its pads show as the line starts.
+      const line = this.talk(
         this.ctx.say(rows === 1 ? 'orchard.partone' : 'orchard.yes', { rows, each, total: rows * each }),
       );
-      if (!this.finished) await this.ask();
-      if (!this.finished) this.busy = false;
+      await this.ask(line);
       return;
     }
     this.drawHeading(true);

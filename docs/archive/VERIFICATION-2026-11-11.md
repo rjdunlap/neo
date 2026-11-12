@@ -155,3 +155,9 @@
 **Changed:** `tile-pairs` `logic.ts` (`seededRoute`, a per-level `clear` band and `deal` over up to 40 seeded routes at 60 play-outs each), `logic.test.ts` (the frozen hash test for levels 1–3 replaced by property tests) and `index.ts` (a pair lifts and fades, freed tiles pulse, "pairs open" in the tally); no shared file, voice, how-to, level table or couch change.
 **Ran:** `npm run typecheck`; `npx vitest run src/games/tile-pairs` (9 passed); `BROWSER_SUITE=tilepairs TILE_LEVELS=3` (mismatch, hint, undo, shuffle, resize, one sticker, return to Lantern Lake) with the portrait screenshot read for the tally. Measured over seeds 1–100 a level on a Mac: kept boards re-measure at 100/99/97/96/87/82% over 200 play-outs, at most 3 exhausted candidate lists, worst deal 24 ms.
 **Not run:** `fingerdemo` (the bot's actions do not change), `npm run build` (no shared file or asset changed; CI builds), couch suites, offline. The lift and pulse are transient and were not captured in a still.
+
+## 2026-11-11 — Pok Pok P4, the toy test for lap openings: Tinker Lab (docs only, PR #1524)
+
+**Changed:** the Tinker Lab table (six games: `bouncy-launch` 1, `seesaw-balance` 12, `block-tower` 1, `moon-window` 1, `vine-snip` 1, `far-lights` 1), its words-off list and a closing "Every land is read" section on the [toy-test page](../definitions/toy-test-lap-openings.md); five READY lines (`far-lights`, `bouncy-launch`, `moon-window`, `seesaw-balance`, `vine-snip`); the P4 line left Next ten and the progress count is 57 of 57, so the audit is done.
+**Ran:** `node scripts/check-links.mjs` and `git diff --check`.
+**Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code at `origin/main` `353daaba`, not played or timed).
