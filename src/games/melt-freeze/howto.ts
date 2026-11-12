@@ -7,11 +7,13 @@ export const HOW_TO: GameHowTo = {
     { to: 2, text: 'Tap the sun to warm the thing, and the snowflake to cool it.' },
     { from: 3, to: 3, text: 'Make the thing the way the card shows: choose the sun or the snowflake.' },
     { from: 4, to: 4, text: 'Warm and cool the whole tray and see which things change.' },
+    { from: 5, to: 5, text: 'Tap anywhere a few times to melt the ice. Then tap the snowflake.' },
   ],
   finish: [
     { to: 2, text: 'She has seen the thing melt and go hard again.' },
     { from: 3, to: 3, text: 'The thing is the way the card shows, three times.' },
     { from: 4, to: 4, text: 'Both tools used on each of two trays.' },
+    { from: 5, to: 5, text: 'The ice melts and freezes again.' },
   ],
   note: [
     { to: 2, text: 'Nothing here counts as a mistake.' },
@@ -25,5 +27,6 @@ export const HOW_TO: GameHowTo = {
       to: 4,
       text: 'Nothing here counts as a mistake. Each thing she watches melt on the tray is added to her discovery journal in the treehouse.',
     },
+    { from: 5, to: 5, text: 'There are no mistakes to count. Let her tap at her own pace.' },
   ],
 };
