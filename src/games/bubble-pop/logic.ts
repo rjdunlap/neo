@@ -178,15 +178,40 @@ export interface DemoBubble extends Reachable {
  * Where a new bubble of radius `r` may start in a `w` × `h` view: a still one (count and bonds) anywhere right of Home, "?"
  * and the guide and below the sign, a rising one just below the bottom edge, right of the guide's column. Ranges of its middle.
  */
-export function spawnBox(w: number, h: number, r: number, still: boolean) {
+export function spawnBox(w: number, h: number, r: number, still: boolean, anywhere = false) {
+  // Pop anywhere: a rising bubble starts already in reach (its middle half a radius up), so a touch never meets an empty screen.
+  const rise = anywhere ? h - r / 2 : h + r + 10;
   return still
     ? { x: [150 + r, w - 50 - r], y: [130 + r, h - 60 - r] }
-    : { x: [130 + r, w - 40 - r], y: [h + r + 10, h + r + 10] };
+    : { x: [130 + r, w - 40 - r], y: [rise, rise] };
 }
 
-/** Whether a bubble's middle is comfortably on the screen (half its radius in), so a finger can reach it. A bubble rising in from below counts as soon as it shows. */
+/**
+ * Whether a bubble's middle is comfortably on the screen, at least half its radius in from every edge, so a finger can
+ * reach it. A bubble rising in from below counts only once its middle is half a radius above the bottom edge, not as soon
+ * as its top shows.
+ */
 export const inReach = (b: Reachable, w: number, h: number) =>
   b.x >= b.r / 2 && b.x <= w - b.r / 2 && b.y >= b.r / 2 && b.y <= h - b.r / 2;
+
+/**
+ * Pop anywhere: the one large bubble already standing when Play is pressed, so her first touch anywhere pops something.
+ * Bigger than any rising bubble, in the middle of the space right of Home, "?" and the guide and below the top bar, and
+ * shrunk only as far as needed to fit there.
+ */
+export function openingBubble(plan: BubblePlan, w: number, h: number) {
+  const fit = Math.min((w - 200) / 2, (h - 190) / 2);
+  const r = Math.max(plan.radius[1], Math.min(Math.round(plan.radius[1] * 1.3), fit));
+  return { x: (150 + w - 50) / 2, y: (130 + h - 60) / 2, r };
+}
+
+/**
+ * How many bubbles may be on the screen after `pops` pops. Pop anywhere starts with the opening bubble alone and lets one
+ * more rise in for each pop, up to the plan's most, so more arrive because she touched and none on a timer into an empty
+ * screen. Every other level fills to its most from the start.
+ */
+export const roomFor = (plan: BubblePlan, pops: number) =>
+  plan.anywhere ? Math.min(plan.most, 1 + pops) : plan.most;
 
 /**
  * The bubble a capable player taps next, for the how-to card's ghost finger: anything in free play, one of the

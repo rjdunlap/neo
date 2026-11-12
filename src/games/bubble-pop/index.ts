@@ -28,6 +28,8 @@ import {
   isRight,
   meant,
   nearestShown,
+  openingBubble,
+  roomFor,
   planFor,
   spawnBox,
   spawnTarget,
@@ -46,6 +48,8 @@ class BubblePop implements Game {
   /** Pop anywhere: a whole-screen layer, last in the stage, that takes the touch instead of the bubbles. */
   private readonly catcher: Container | null = null;
   private bubbles: Bubble[] = [];
+  /** Pop anywhere: the large bubble standing still when Play is pressed, until it is popped. */
+  private opening: Bubble | null = null;
   private view: View;
   private phase: 'play' | 'finale' | 'done' = 'play';
   private spawnIn = 0.2;
@@ -98,6 +102,7 @@ class BubblePop implements Game {
   start() {
     const p = this.plan;
     if (p.mode === 'free') void this.ctx.instruct(p.anywhere ? 'bubble.anywhere' : 'bubble.free');
+    if (p.anywhere) this.opening = this.spawn(undefined, 0, openingBubble(p, this.view.w, this.view.h));
     if (p.mode === 'color') void this.ctx.instruct('bubble.color', { color: this.target! });
     if (p.mode === 'count') {
       const step = this.run.length > 1 ? this.run[1] - this.run[0] : 1;
@@ -120,6 +125,10 @@ class BubblePop implements Game {
     this.backdrop.resize(view);
     this.sign?.resize(view);
     if (this.catcher) this.catcher.hitArea = new Rectangle(0, 0, view.w, view.h);
+    if (this.opening) {
+      const o = openingBubble(this.plan, view.w, view.h);
+      this.opening.position.set(o.x, o.y);
+    }
   }
 
   /** Count mode: the number to find next. */
@@ -133,7 +142,9 @@ class BubblePop implements Game {
     if (this.phase === 'play' && !staysPut(p.mode)) {
       this.spawnIn -= dt;
       const alive = this.bubbles.filter((b) => !b.popped).length;
-      if (this.spawnIn <= 0 && alive < p.most) {
+      // Pop anywhere: once she has popped, a screen with nothing to pop gets a bubble at once.
+      if (p.anywhere && alive === 0) this.spawnIn = 0;
+      if (this.spawnIn <= 0 && alive < roomFor(p, this.scored)) {
         this.spawn();
         this.spawnIn = this.ctx.rng.range(0.35, 0.9);
       }
@@ -150,7 +161,7 @@ class BubblePop implements Game {
     for (const b of [...this.bubbles]) {
       if (b.popped) continue;
       b.update(dt);
-      if (b === this.held) continue;
+      if (b === this.held || b === this.opening) continue;
       if (b.rainbow || staysPut(p.mode)) {
         this.drift(b, dt);
       } else {
@@ -181,11 +192,12 @@ class BubblePop implements Game {
     this.bubbles = [];
   }
 
-  private spawn(number?: number, index = (number ?? 1) - 1) {
+  /** A new bubble: rising in from below (or drifting, for count and bonds), or `standing` still at a given place and size. */
+  private spawn(number?: number, index = (number ?? 1) - 1, standing?: { x: number; y: number; r: number }) {
     const { rng } = this.ctx;
     const p = this.plan;
     const v = this.view;
-    const r = rng.range(p.radius[0], p.radius[1]);
+    const r = standing?.r ?? rng.range(p.radius[0], p.radius[1]);
     let color: ColorName | null = null;
     if (p.mode === 'color') {
       const targetShowing = this.bubbles.some((b) => !b.popped && b.color === this.target);
@@ -202,8 +214,11 @@ class BubblePop implements Game {
       dots: showsDots(this.ctx.level),
       rim: LOOKS[this.backdrop.scene].rim,
     });
-    const at = spawnBox(v.w, v.h, r, staysPut(p.mode));
-    if (staysPut(p.mode)) {
+    const at = spawnBox(v.w, v.h, r, staysPut(p.mode), p.anywhere);
+    if (standing) {
+      b.position.set(standing.x, standing.y);
+      b.vx = b.vy = 0;
+    } else if (staysPut(p.mode)) {
       b.position.set(rng.range(at.x[0], at.x[1]), rng.range(at.y[0], at.y[1]));
       const a = rng.range(0, Math.PI * 2);
       b.vx = Math.cos(a) * p.speed;
@@ -211,6 +226,11 @@ class BubblePop implements Game {
     } else {
       b.position.set(rng.range(at.x[0], at.x[1]), at.y[0]);
       b.vy = -p.speed * rng.range(0.8, 1.25);
+      if (p.anywhere) {
+        // It starts half on the screen, so it swells in rather than appearing at full size.
+        b.scale.set(0.5);
+        void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+      }
     }
     if (p.anywhere) b.eventMode = 'none';
     else
@@ -218,6 +238,7 @@ class BubblePop implements Game {
     this.layer.addChild(b);
     this.bubbles.push(b);
     this.spawned++;
+    return b;
   }
 
   /** Floats about inside the screen, bouncing off the edges. */
@@ -357,6 +378,7 @@ class BubblePop implements Game {
 
   private pop(b: Bubble) {
     b.popped = true;
+    this.ctx.tw.kill(b.scale); // a pop-anywhere bubble may still be swelling in
     const tint = b.color ? swatch[b.color].fill : 0x9fd8ff;
     this.ctx.particles.burst(b.x, b.y, {
       colors: [tint, 0xffffff],
@@ -397,6 +419,7 @@ class BubblePop implements Game {
   }
 
   private remove(b: Bubble) {
+    if (b === this.opening) this.opening = null;
     this.bubbles = this.bubbles.filter((o) => o !== b);
     b.destroy({ children: true });
   }
