@@ -981,7 +981,7 @@ class SalonPair implements Game {
   }
   private speak(i: number, instruction = false) {
     if (this.busy || this.finished) return;
-    this.unasked = false;
+    if (!this.seats[i].done) this.unasked = false;
     this.seats[i].pet.poke(true);
     const line: LineId =
       this.plan.mode === 'compare'
@@ -1194,7 +1194,11 @@ class SalonPair implements Game {
       this.select(this.seats.findIndex((s) => !s.done));
       this.unasked = true;
       await love;
-      if (!this.destroyed && this.unasked) this.speak(this.selected, true);
+      if (!this.destroyed && this.unasked)
+        this.speak(
+          this.seats.findIndex((s) => !s.done),
+          true,
+        );
     }
   }
   autotouch(): TouchIntent | null {
