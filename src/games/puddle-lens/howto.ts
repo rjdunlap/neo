@@ -4,7 +4,11 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Look closer and closer with a lens.',
   steps: [
-    { from: 1, to: 1, text: 'Tap the lens; each thing looks bigger, then goes back.' },
+    {
+      from: 1,
+      to: 1,
+      text: 'Tap the lens; each thing looks bigger, then goes back. On a lap, a touch anywhere swells the lens, and her next touch brings the next thing.',
+    },
     { from: 2, to: 2, text: 'Drag the lens over all three things; the paw outside it stays the same size.' },
     {
       from: 3,

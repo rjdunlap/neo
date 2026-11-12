@@ -50,6 +50,7 @@ import {
   dropsFor,
   GLASS_R,
   helpFor,
+  lapLensTouch,
   judgeSwimmers,
   judgeView,
   lensLayout,
@@ -114,7 +115,7 @@ const authoredShown = new Set<number>();
 
 /** How much bigger the level-2 glass shows the table. */
 const GLASS_ZOOM = 2;
-/** Level 1: seconds a swell holds before it shrinks back by itself. */
+/** Level 1: seconds a swell holds before it shrinks back by itself (not at lap, where her next touch moves on). */
 const HOLD = 2;
 /** Level 5: drop units to art units at each stop (nothing separate shows at stop 1, where the view is the whole drop). */
 const LIFE_SCALE = [30, 100, ART_R, dropScale(4)];
@@ -472,6 +473,14 @@ class PuddleLens implements Game {
   private buildLens(l: LensLayout) {
     const level = this.plan.level;
     const { x, y, r } = l.lens;
+    if (level === 1 && this.lap) {
+      // At lap the whole screen is the lens's button: a touch anywhere answers as a touch on the lens does.
+      const anywhere = new Container();
+      // Larger than any screen, so a rotation while the lens is swollen (the rebuild waits for her touch) still answers everywhere.
+      anywhere.hitArea = new Rectangle(-10000, -10000, 20000, 20000);
+      onTap(anywhere, () => this.lapTouch(), { cooldown: 200 });
+      this.board.addChild(anywhere);
+    }
     // The puddle-side table the slide lies on.
     const table = new Graphics()
       .roundRect(x - r - 60, y + r * 0.55, r * 2 + 120, r * 0.7, 30)
@@ -735,7 +744,7 @@ class PuddleLens implements Game {
       if (b.glow.visible) b.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 6);
     }
     if (this.finished || !this.alive) return;
-    if (this.plan.level === 1 && this.swollen) {
+    if (this.plan.level === 1 && this.swollen && !this.lap) {
       this.holdLeft -= dt;
       if (this.holdLeft <= 0) void this.shrink();
     }
@@ -811,6 +820,7 @@ class PuddleLens implements Game {
   private tapLens(at: { x: number; y: number }) {
     if (this.finished) return;
     const level = this.plan.level;
+    if (level === 1 && this.lap) return this.lapTouch();
     if (level === 1) {
       if (this.swollen) return void this.shrink();
       if (!this.busy) void this.swell();
@@ -823,6 +833,19 @@ class PuddleLens implements Game {
         spot,
       );
     }
+  }
+
+  private get lap() {
+    return this.ctx.band === 'lap';
+  }
+
+  /** Level 1 at lap: a touch on the lens or anywhere else (`lapLensTouch` says what it does). */
+  private lapTouch() {
+    if (this.finished) return;
+    const act = lapLensTouch({ swollen: this.swollen, moving: this.busy && !this.swollen });
+    if (act === 'shrink') void this.shrink();
+    else if (act === 'swell') void this.swell();
+    else sfx.pop(7);
   }
 
   private async swell() {
@@ -1115,7 +1138,8 @@ class PuddleLens implements Game {
       green: this.green,
     });
     if (!help) return;
-    this.tally.hint();
+    // At lap the pause sheet's hint is a grown-up showing her, not her needing help, so it is not counted.
+    if (!this.lap) this.tally.hint();
     if (level >= 5 && help.do === 'turn') return void this.hintLook(help.stop);
     void this.say('lens.hint');
     if (help.do === 'tap-lens') {
@@ -1192,6 +1216,9 @@ class PuddleLens implements Game {
   // ----- the ghost finger -----
 
   autotouch(): TouchIntent | null {
+    // At lap the swollen lens waits for her touch, so the ghost finger shows that touch too.
+    if (this.plan.level === 1 && this.lap && this.swollen && !this.finished && this.lensHit)
+      return { tap: { on: this.lensHit }, pause: 1.2 };
     if (this.finished || this.busy || !this.layout) return null;
     const level = this.plan.level;
     if (level === 1) return this.swollen || !this.lensHit ? null : { tap: { on: this.lensHit } };
@@ -1273,7 +1300,8 @@ export const puddleLens: GameModule = {
   touchDemo: true,
   coplayHint:
     'Slide and lens: ask {name} for a view ("show me the little boxes!"), then check it together. At the plant-or-animal slides, guess first: before each turn of the dial, both of you say plant, animal or can\'t tell yet.',
-  coplayHintLap: 'Say what you see as {name} slides the lens: "Look, little boxes!" Point at it together.',
+  coplayHintLap:
+    'Say what you see each time {name} touches and the lens swells: "Look, little boxes!" Point at it together.',
   offScreen:
     'Look at a leaf with just your eyes. What would a lens show? Then look at a leaf and a piece of lettuce: which bends, and which stays stiff? Plants are stiff because of their walls.',
   hubIcon: () => new LensIcon(),
