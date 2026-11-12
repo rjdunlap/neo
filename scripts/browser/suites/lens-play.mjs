@@ -46,7 +46,10 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(800);
     };
-    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels.
+    // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels; LENS_LEVELS=lap only the lap level.
+    const onlyLap = process.env.LENS_LEVELS === 'lap';
+    if (!process.env.LENS_LEVELS || onlyLap) await lap();
+    if (onlyLap) return;
     const only = (process.env.LENS_LEVELS ?? '').split(',').filter(Boolean).map(Number);
     if (!only.length || only.some((l) => l <= 6)) await early();
     // Level 7: plant cells, animal cells, can't tell yet; the wall is the clue.
@@ -119,6 +122,64 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       );
     }
   }
+  // Level 1 at lap: a touch anywhere swells the lens, a touch while it moves changes nothing, the next thing waits for
+  // her touch (no timer), and the pause sheet's hint is not counted.
+  async function lap() {
+    const settle = async () => {
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(200);
+    };
+    const state = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return { swollen: g.swollen, busy: g.busy, index: g.index, hints: g.tally.hints };
+      });
+    // A corner far from the lens (top right), checked to be outside it.
+    const tapOutside = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        const { x, y, r } = g.layout.lens;
+        const at = { x: g.view.w - 40, y: 40 };
+        if (Math.hypot(at.x - x, at.y - y) <= r) throw new Error('the corner is inside the lens');
+        const p = g.board.toGlobal(at);
+        kit.tap(p.x, p.y);
+      });
+    await page.evaluate(() => {
+      kit.store.data.settings.howToCards = false;
+    });
+    await launch('puddle-lens', 1, 'Mia', 'lap');
+    await settle();
+    await tapOutside();
+    await page.waitForTimeout(300);
+    let s = await state();
+    assert.ok(s.busy && !s.swollen, 'a touch outside the lens starts the swell');
+    await tapOutside();
+    await page.waitForFunction(() => neo.scene.game.swollen, null, { timeout: 5000 });
+    s = await state();
+    assert.equal(s.index, 0, 'a touch while the lens moves does not skip ahead');
+    await page.waitForTimeout(3000);
+    s = await state();
+    assert.ok(s.swollen && s.index === 0, 'the swollen lens waits for her touch, not a timer');
+    await tapOutside();
+    await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 5000 });
+    await settle();
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForFunction(() => neo.scene.game.swollen, null, { timeout: 5000 });
+    assert.equal((await state()).hints, 0, "at lap the pause sheet's hint is not counted");
+    await screenshot('puddle-lens-1-lap');
+    // The ghost finger finishes the round: on the lens, both to swell and to bring the next thing.
+    for (let i = 0; i < 20 && !(await page.evaluate(() => neo.scene.finished)); i++) {
+      await page.evaluate(() => {
+        const t = neo.scene.game.autotouch();
+        if (t) kit.tapOn(t.tap.on);
+      });
+      await page.waitForTimeout(700);
+    }
+    await finished('puddle-lens');
+    const r = await page.evaluate(() => kit.store.stats('puddle-lens').history.at(-1));
+    assert.deepEqual([r.misses, r.hints], [0, 0], 'lap level 1 counts nothing');
+  }
   async function early() {
     const score = () =>
       page.evaluate(() => {
@@ -140,7 +201,8 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await page.evaluate(() => kit.tapOn(neo.scene.game.answer));
       await page.waitForTimeout(300);
     };
-    await launch('puddle-lens', 1);
+    // Toddler's level 1: a tap on the lens; the swell shrinks back by itself (or on a second tap).
+    await launch('puddle-lens', 1, 'Mia', 'toddler');
     await settle();
     for (let i = 0; i < 3; i++) {
       await page.evaluate(() => kit.tapOn(neo.scene.game.lensHit));
