@@ -1001,20 +1001,38 @@ class ScoopShop implements Game {
     this.cone = null;
     critter.cheer();
     sfx.tada();
-    await this.ctx.say((top && YUM[top]) || 'scoop.yum');
-    await tw.to(critter, { x: this.view.w + 200 }, { duration: 0.9, ease: ease.inOutSine });
+    // The thanks never holds the shop (U7 R4): the walk-off and the next customer follow as it starts, and the next
+    // order cuts it. Only the round's last customer is heard out, before the closing line.
+    const line = this.ctx.say((top && YUM[top]) || 'scoop.yum');
+    critter.eventMode = 'none';
+    if (two) {
+      // Level 7: the other cone is chosen for her, free, and opens as the line starts; both friends fed ends the round.
+      const next = coneAfterServe(
+        this.pair.map((s) => s.served),
+        this.customerIndex,
+      );
+      if (next >= 0) {
+        this.choose(next);
+        this.busy = false;
+        await this.walkOff(critter);
+        return;
+      }
+      await line;
+      await this.walkOff(critter);
+      return void this.end();
+    }
+    if (this.customerIndex + 1 >= (this.plan.mode === 'customer' ? this.choices.length : this.orders.length))
+      await line;
+    await this.walkOff(critter);
+    this.customer = null;
+    return void this.nextCustomer();
+  }
+
+  /** A fed customer waves off to the right and leaves the shop. */
+  private async walkOff(critter: Critter) {
+    await this.ctx.tw.to(critter, { x: this.view.w + 200 }, { duration: 0.9, ease: ease.inOutSine });
     this.ctx.untrack(critter);
     critter.destroy({ children: true });
-    this.customer = null;
-    if (!two) return void this.nextCustomer();
-    // Level 7: the other cone is chosen for her, free; both friends fed ends the round.
-    const next = coneAfterServe(
-      this.pair.map((s) => s.served),
-      this.customerIndex,
-    );
-    if (next < 0) return void this.end();
-    this.choose(next);
-    this.busy = false;
   }
 
   private async end() {

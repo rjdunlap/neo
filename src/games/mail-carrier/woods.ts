@@ -196,6 +196,12 @@ export class WoodsMail implements Game {
   selectedKey: number | null = null;
   busy = true;
   finished = false;
+  /**
+   * The next letter's or key row's ask, waiting behind a thanks or a filled row's line (U7 R4): said when the line ends
+   * or by the guide. Her tap drops it and is judged, since the letters show who they are for; on the clue level the
+   * letter is a "?", so her first tap says the clue instead.
+   */
+  private unasked: (() => unknown) | null = null;
 
   /** Optional comparison is part of this bag, never another scored delivery. */
   comparing = false;
@@ -407,6 +413,8 @@ export class WoodsMail implements Game {
   /** The ghost finger: tap the house of the letter's neighbor; on the route level plan each stop in letter order, then the walk button. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
+    // The clue is only spoken: the finger waits to hear it, as she would.
+    if (this.unasked && this.plan.mode === 'clue') return null;
     if (this.buildingKey) {
       const row =
         this.selectedKey === null
@@ -512,8 +520,10 @@ export class WoodsMail implements Game {
     return this.trips[this.index];
   }
 
-  private async next() {
+  /** The next trip's letters; behind `after` (the last stop's thanks) the ask waits for it. */
+  private async next(after?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = null;
     this.index++;
     this.comparing = false;
     this.firstCount = null;
@@ -542,24 +552,67 @@ export class WoodsMail implements Game {
     sfx.whoosh();
     await this.ctx.tw.to(this.letters.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     this.busy = false;
-    const who = (i: number) => this.woods[i].resident;
-    if (this.plan.mode === 'clue') {
-      await this.speakClue();
-    } else if (this.plan.mode === 'compare') {
-      await this.ctx.instruct('mail.any-order', {
-        first: who(trip[0]),
-        second: who(trip[1]),
-        third: who(trip[2]),
-      });
-    } else if (this.plan.mode === 'map' || this.plan.mode === 'key') {
-      if (this.index === 0) await this.ctx.instruct('mail.map', { animal: who(trip[0]) });
-      else await this.ctx.instruct('mail.map-for', { animal: who(trip[0]) });
-    } else if (this.plan.mode === 'shorter') {
-      await this.ctx.instruct('mail.shorter-for', { animal: who(trip[0]) });
-    } else {
-      if (this.index === 0) await this.ctx.say('mail.route');
-      await this.ctx.instruct('mail.route-for', { first: who(trip[0]), second: who(trip[1]) });
+    const ask = async () => {
+      const who = (i: number) => this.woods[i].resident;
+      if (this.plan.mode === 'clue') {
+        await this.speakClue();
+      } else if (this.plan.mode === 'compare') {
+        await this.ctx.instruct('mail.any-order', {
+          first: who(trip[0]),
+          second: who(trip[1]),
+          third: who(trip[2]),
+        });
+      } else if (this.plan.mode === 'map' || this.plan.mode === 'key') {
+        if (this.index === 0) await this.ctx.instruct('mail.map', { animal: who(trip[0]) });
+        else await this.ctx.instruct('mail.map-for', { animal: who(trip[0]) });
+      } else if (this.plan.mode === 'shorter') {
+        await this.ctx.instruct('mail.shorter-for', { animal: who(trip[0]) });
+      } else {
+        if (this.index === 0) await this.ctx.say('mail.route');
+        await this.ctx.instruct('mail.route-for', { first: who(trip[0]), second: who(trip[1]) });
+      }
+    };
+    if (!after) return ask();
+    this.waitToAsk(ask, after);
+  }
+
+  /** Keeps `ask` until `after` ends (or her tap or the guide says or drops it). */
+  private waitToAsk(ask: () => unknown, after: Promise<unknown>) {
+    this.unasked = ask;
+    void after.then(() => {
+      if (this.unasked === ask) this.askNow();
+    });
+  }
+
+  /** Says the waiting ask, if any; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    void ask();
+    return true;
+  }
+
+  /** The guide was tapped while an ask waits: say that ask, not the last one. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /** A tap while an ask waits: on the clue level it says the clue (true: the tap is not judged); elsewhere the ask is dropped. */
+  private heard() {
+    if (!this.unasked) return false;
+    if (this.plan.mode === 'clue') return this.askNow();
+    this.unasked = null;
+    return false;
+  }
+
+  /** After a delivery: the next trip opens as the thanks starts; the round's last thanks is heard out. */
+  private async onward(line: Promise<unknown>) {
+    if (this.trips[this.index + 1] === undefined) {
+      await line;
+      return this.next();
     }
+    return this.next(line);
   }
 
   private speakClue() {
@@ -608,6 +661,7 @@ export class WoodsMail implements Game {
 
   private tapHouse(i: number) {
     if (this.busy || this.finished) return;
+    if (this.heard()) return;
     if (this.buildingKey) return void this.pairKey(i);
     const trip = this.trip;
     if (!trip || this.choosingComparison) return;
@@ -619,6 +673,7 @@ export class WoodsMail implements Game {
 
   private tapKey(house: number) {
     if (this.busy || this.finished) return;
+    if (this.heard()) return;
     const row = this.key.find((r) => r.house === house)!;
     const pair = this.woods[house];
     if (!this.buildingKey || row.filled) {
@@ -666,8 +721,10 @@ export class WoodsMail implements Game {
     this.selectedKey = null;
     this.wrongs = 0;
     sfx.pop(8);
-    await this.ctx.say('mail.key-make-filled', { animal: this.woods[house].resident, sign });
+    const filled = this.ctx.say('mail.key-make-filled', { animal: this.woods[house].resident, sign });
     if (this.key.every((r) => r.filled)) {
+      // The finished key is heard out before the letters (between boards).
+      await filled;
       this.buildingKey = false;
       this.houses.forEach((h) => {
         h.resident.visible = false;
@@ -675,8 +732,9 @@ export class WoodsMail implements Game {
       await this.ctx.say('mail.key-make-ready');
       return this.next();
     }
+    // The other rows open as the line starts (U7 R4); the ask for the next row waits for it, or her next row.
     this.busy = false;
-    await this.ctx.instruct('mail.key-make-next');
+    this.waitToAsk(() => this.ctx.instruct('mail.key-make-next'), filled);
   }
 
   private async chooseShorterHouse(index: number, target: number) {
@@ -755,7 +813,7 @@ export class WoodsMail implements Game {
       );
       await this.walkTo(short.slice(i - 1, i + 1), 0.32 * (edge?.[2] ?? 1));
     }
-    await this.welcome(this.shorterHouse);
+    const { line } = await this.welcome(this.shorterHouse);
     await this.walkTo(walk(HOUSE_NODES[this.shorterHouse], POST_OFFICE), 0.12);
     this.routeChoicesLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.routeChoiceButtons.length = 0;
@@ -767,7 +825,7 @@ export class WoodsMail implements Game {
     });
     this.preview.clear();
     this.busy = false;
-    await this.next();
+    await this.onward(line);
   }
 
   private createRouteChoiceButtons() {
@@ -825,9 +883,9 @@ export class WoodsMail implements Game {
     }
     this.busy = true;
     await this.walkTo([...walk(POST_OFFICE, HOUSE_NODES[i])]);
-    await this.welcome(i);
+    const { line } = await this.welcome(i);
     await this.walkTo(walk(HOUSE_NODES[i], POST_OFFICE), 0.12);
-    await this.next();
+    await this.onward(line);
   }
 
   /** Route level: tap houses in letter order to plan; tap a planned house to take it (and later stops) out. */
@@ -909,14 +967,16 @@ export class WoodsMail implements Game {
     this.go.visible = false;
     if (this.plan.mode === 'compare') return this.walkComparison();
     let at = POST_OFFICE;
+    // Each stop's thanks plays over the walk to the next stop (U7 R4); the last one's over the walk home.
+    let line: Promise<unknown> = Promise.resolve();
     for (const i of this.planned) {
       await this.walkTo(walk(at, HOUSE_NODES[i]));
       at = HOUSE_NODES[i];
-      await this.welcome(i);
+      ({ line } = await this.welcome(i));
       this.houses[i].setFlag(null);
     }
     await this.walkTo(walk(at, POST_OFFICE), 0.12);
-    await this.next();
+    await this.onward(line);
   }
 
   private createCompareButtons() {
@@ -979,6 +1039,7 @@ export class WoodsMail implements Game {
   private async walkComparison() {
     const path = comparisonRoute(this.planned);
     let stones = 0;
+    let thanks: Promise<unknown> = Promise.resolve();
     this.stoneCount.text = this.comparing ? `First: ${this.firstCount} · Now: 0` : '0 stones';
     for (let j = 1; j < path.length; j++) {
       await this.walkTo(path.slice(j - 1, j + 1), 0.32);
@@ -988,7 +1049,8 @@ export class WoodsMail implements Game {
         : `${stones} stones`;
       const house = HOUSE_NODES.indexOf(path[j]);
       if (house >= 0) {
-        if (!this.comparing) await this.welcome(house);
+        // Each thanks plays over the walk on (U7 R4).
+        if (!this.comparing) ({ line: thanks } = await this.welcome(house));
         this.houses[house].setFlag(null);
       }
     }
@@ -1001,6 +1063,8 @@ export class WoodsMail implements Game {
       return this.next();
     }
     this.firstCount = count;
+    // The count is a result the choice builds on: the last stop's thanks is heard first.
+    await thanks;
     await this.ctx.say('mail.any-order-count', { n: count });
     this.keyCard.visible = false;
     this.key.forEach((r) => {
@@ -1026,7 +1090,8 @@ export class WoodsMail implements Game {
     this.walking = false;
   }
 
-  private async welcome(i: number) {
+  /** The house's welcome; its thanks is started and returned (wrapped, so awaiting the peek never awaits the line). */
+  private async welcome(i: number): Promise<{ line: Promise<unknown> }> {
     const h = this.houses[i];
     sfx.pop(8);
     await h.peek(this.ctx.tw, true);
@@ -1040,9 +1105,12 @@ export class WoodsMail implements Game {
       gravity: -40,
       size: [0.3, 0.45],
     });
-    await this.ctx.say('mail.thanks');
-    h.resident.visible = false;
-    h.glow.visible = false;
+    const line = this.ctx.say('mail.thanks');
+    void line.then(() => {
+      h.resident.visible = false;
+      h.glow.visible = false;
+    });
+    return { line };
   }
 
   private async finale() {

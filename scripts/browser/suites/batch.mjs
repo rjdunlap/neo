@@ -7,7 +7,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     if (only !== undefined)
       selectValue(
         only,
-        ['monsters', 'pegs', 'salon', 'garden', 'helpers', 'eggs', 'safari', 'bounce'],
+        ['monsters', 'pegs', 'salon', 'garden', 'helpers', 'eggs', 'mail', 'safari', 'bounce'],
         'BATCH_ONLY',
       );
     // Word Monsters: sounds, finding letters, first sounds and building words by dragging.
@@ -1354,8 +1354,24 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           }
           kit.tapOn(g.plan.mode === 'drop' ? g.houses[q % g.houses.length] : right, 0, -60);
           await kit.until(() => g.index > q || g.finished, 15000);
+          // U7 R4: the next envelope opens while the house's line and the thanks play, its ask waiting (the next
+          // post, tapped at once, is judged and drops it).
+          if (q < g.letters.length - 1 && g.plan.mode !== 'drop') {
+            const tapped = performance.now();
+            await kit.until(() => !g.busy, 3000);
+            if (g.busy || !g.unasked)
+              throw new Error(`R4: mail letter ${q + 2} opened without a waiting ask`);
+            window.mailR4 = [...(window.mailR4 ?? []), Math.round(performance.now() - tapped)];
+          }
         }
       });
+      const mailR4 = await page.evaluate(() => {
+        const t = window.mailR4 ?? [];
+        window.mailR4 = [];
+        return t.length;
+      });
+      if (mode !== 'drop')
+        assert.equal(mailR4, 4, `R4: mail ${level} next envelopes opened with their ask waiting`);
       await screenshot(`mail-carrier-${level}`);
       await finished('mail-carrier');
       const r = await page.evaluate(() => {

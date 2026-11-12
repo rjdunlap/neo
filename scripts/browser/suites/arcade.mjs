@@ -329,6 +329,27 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
       await page.evaluate(async () => {
         const g = neo.scene.game;
+        // U7 R4: a fed customer's thanks never holds the shop. Each `scoop.yum*` is stretched to at least 4 s here, so
+        // the next customer (or level 7's other cone) opening sooner shows the line no longer gates it.
+        const say = g.ctx.say.bind(g.ctx);
+        g.yums = [];
+        g.ctx.say = (id, vars) => {
+          const line = say(id, vars);
+          if (!String(id).startsWith('scoop.yum')) return line;
+          const rec = { at: performance.now() };
+          const index = g.customerIndex;
+          g.yums.push(rec);
+          // Checked as the serve continues after the line starts, then every frame (the suite scoops on at once).
+          const open = () =>
+            g.finished || (!g.busy && g.cone && (g.plan.mode === 'two' || g.customerIndex > index));
+          const watch = () => {
+            if (rec.opens !== undefined) return;
+            if (open()) rec.opens = performance.now() - rec.at;
+            else if (performance.now() - rec.at < 10000) requestAnimationFrame(watch);
+          };
+          void Promise.resolve().then(watch);
+          return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
+        };
         if (g.plan.mode === 'customer') {
           if ([...g.tubs.values()].some((t) => t.visible)) throw new Error('Customer match exposed tubs');
           for (let c = 0; c < 3; c++) {
@@ -512,6 +533,12 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
           await kit.until(() => g.customerIndex > c || g.finished, 15000);
         }
       });
+      const yums = await page.evaluate(() => neo.scene.game.yums.map((r) => Math.round(r.opens ?? -1)));
+      const early = yums.slice(0, -1);
+      assert.ok(
+        early.length > 0 && early.every((t) => t >= 0 && t < 2500),
+        `R4: scoop ${level} next customer opened ${early.join(', ')} ms into a 4 s thanks`,
+      );
       await screenshot(`scoop-shop-${level}`);
       await finished('scoop-shop');
       const r = await page.evaluate(() => {

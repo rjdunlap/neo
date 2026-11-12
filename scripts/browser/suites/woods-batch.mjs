@@ -4623,6 +4623,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               ),
               true,
             );
+            // U7 R4: the other rows open as the filled row's line starts; the ask for the next row waits for it.
+            if (k < rows.length - 1)
+              assert.ok(
+                await page.evaluate(() => !!neo.scene.game.unasked),
+                `R4: key row ${k + 2} open while row ${k + 1}'s line plays`,
+              );
           }
           assert.equal(await page.evaluate(() => neo.scene.game.buildingKey), false);
           assert.equal(trips, 2);
@@ -4731,6 +4737,24 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         for (let n = 0; n < trips; n++) {
           await idle(n);
           const trip = await page.evaluate(() => [...neo.scene.game.trip]);
+          if (n > 0 && (level === 6 || level === 13)) {
+            // U7 R4: the next letter opens while the last stop's thanks plays, its ask waiting.
+            assert.ok(
+              await page.evaluate(() => !!neo.scene.game.unasked),
+              `R4: mail ${level} letter ${n + 1} opened with its ask waiting`,
+            );
+            if (level === 13) {
+              // The letter is a "?": a house tapped before the clue was heard says the clue and is not judged.
+              const before = await counts();
+              await house((trip[0] + 1) % 5);
+              assert.deepEqual(
+                await page.evaluate(() => [neo.scene.game.index, !!neo.scene.game.unasked]),
+                [n, false],
+                'R4: an early tap says the clue',
+              );
+              assert.deepEqual(await counts(), before, 'R4: the early tap is not judged');
+            }
+          }
           if (n === 0 && level === 13) {
             await page.evaluate(() => kit.tapOn(neo.scene.game.office, -35, -40));
             assert.deepEqual(await counts(), [0, 0], 'Hazel replay is free');
