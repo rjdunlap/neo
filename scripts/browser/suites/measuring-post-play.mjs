@@ -7,7 +7,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
         const r = kit.store.stats('measuring-post').history.at(-1);
         return [r.misses, r.hints];
       });
-    const phase = (p) => page.waitForFunction((p) => neo.scene.game?.phase === p, p, { timeout: 12000 });
+    // A task's tool phase, with its question heard: after a right row or compare pad the question waits for the lesson line (U7 R4).
+    const phase = (p) =>
+      page.waitForFunction((p) => neo.scene.game?.phase === p && !neo.scene.game.unasked, p, {
+        timeout: 12000,
+      });
     const right = () =>
       page.evaluate(() => {
         const g = neo.scene.game;
