@@ -118,6 +118,8 @@ export class BasketOrchard implements Game {
   /** The range-end press: the arrow wobbles, a soft tick, nothing counted. */
   private arrowWobble: { node: Container; at: number } | null = null;
   private lineAt = Infinity;
+  /** Counts Plant and claim presses, so a lesson line chained after an earlier one never cuts a newer one's. */
+  private commits = 0;
   private pressed: { node: Container; at: number } | null = null;
 
   constructor(private readonly ctx: GameContext) {
@@ -284,6 +286,7 @@ export class BasketOrchard implements Game {
 
   private async commit(a: Action) {
     this.busy = true;
+    const at = ++this.commits;
     this.lineAt = Infinity;
     this.snapDeal();
     const n = this.n ?? 0;
@@ -304,11 +307,21 @@ export class BasketOrchard implements Game {
         );
         return;
       }
+      case 'newshape': {
+        // Level 5: a new shape's lines never hold the next try (U7 R4). `orchard.yes` and `orchard.newshape` play as one
+        // sequence while the arrows are live, so she can deal the next shape at once; the deal's own line waits for them.
+        const yes = this.grow(before.rows, n);
+        void this.talk(
+          yes.then(() =>
+            this.finished || this.commits !== at ? undefined : this.ctx.say('orchard.newshape'),
+          ),
+        );
+        this.drawFrames();
+        break;
+      }
       case 'planted':
-      case 'newshape':
       case 'everydone': {
         await this.grow(before.rows, n);
-        if (outcome === 'newshape') await this.talk(this.ctx.say('orchard.newshape'));
         this.drawFrames();
         if (outcome === 'everydone') {
           await this.talk(this.ctx.say('orchard.everydone', { n }));

@@ -411,6 +411,8 @@ class PeekabooBarn implements Game {
   private idle = 0;
   private nudgeCount = 0;
   private lastFeeling: Feeling | null = null;
+  /** The next question's ask, waiting behind the last find's `peek.yes` (U7 R4), or said at her first tap. */
+  private unasked = false;
   private readonly input = new Container();
 
   constructor(private readonly ctx: GameContext) {
@@ -540,7 +542,7 @@ class PeekabooBarn implements Game {
 
   /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked) return null;
     const i = spotToTap(
       this.plan,
       this.spots.map((s) => s.pose),
@@ -573,6 +575,11 @@ class PeekabooBarn implements Game {
   private async tapped(spot: Spot) {
     if (this.busy || this.finished) return;
     this.idle = 0;
+    // A tap before the ask was spoken says the ask and is not judged: no miss for a question she has not heard.
+    if (this.unasked) {
+      spot.wiggle();
+      return this.askNow();
+    }
     spot.wiggle();
     if (this.plan.mode === 'free') return this.freeTap(spot);
     if (spot.pose === 'out') return;
@@ -584,12 +591,16 @@ class PeekabooBarn implements Game {
       this.say(spot.animal);
       this.ctx.pet.cheer();
       this.done++;
-      await this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] });
+      // The find's line never holds the next question (U7 R4): the look, the hiding and the next deal play over it, and
+      // the next ask waits for it or her first tap. The last find's line is heard out before the finale.
+      const yes = this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] });
+      const last = this.done >= this.plan.goal;
+      if (last) await yes;
       await this.ctx.tw.wait(0.6);
       await Promise.all(this.spots.map((s) => s.go('hidden')));
       await this.ctx.tw.wait(0.3);
-      if (this.done >= this.plan.goal) void this.finale();
-      else void this.question();
+      if (last) void this.finale();
+      else void this.question(yes);
       return;
     }
 
@@ -649,8 +660,17 @@ class PeekabooBarn implements Game {
     spot.setAnimal(newcomer(this.ctx.rng, taken));
   }
 
-  private async question() {
+  /** Says the ask that is still waiting behind the last find's line, as she taps before it has ended. */
+  private askNow() {
+    if (!this.unasked || this.finished) return;
+    this.unasked = false;
+    void this.ctx.instruct('peek.where', { animal: this.target! });
+  }
+
+  /** The next question. After a right find, `after` is its `peek.yes`: the places open at once and the ask waits for it. */
+  private async question(after?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = false;
     this.missesThisQuestion = 0;
     this.dealAnimals();
     const present = this.spots.map((s) => s.animal);
@@ -662,7 +682,11 @@ class PeekabooBarn implements Game {
         await this.ctx.tw.wait(0.15);
       }
     } else {
-      // Show and tell, then everyone hides.
+      // Show and tell, then everyone hides. The show is a hold she watches, and its own line would cut the find's, so
+      // it waits for the find's line (as far-lights' level 7 does).
+      if (after) await after;
+      if (this.finished) return;
+      after = undefined;
       void this.ctx.say('peek.look');
       for (const s of this.spots) {
         void s.go('out');
@@ -673,8 +697,15 @@ class PeekabooBarn implements Game {
       await Promise.all(this.spots.map((s) => s.go('hidden')));
     }
     await this.ctx.tw.wait(0.3);
-    await this.ctx.instruct('peek.where', { animal: this.target });
+    if (!after) {
+      await this.ctx.instruct('peek.where', { animal: this.target });
+      this.busy = false;
+      return;
+    }
+    this.unasked = true;
     this.busy = false;
+    await after;
+    this.askNow();
   }
 
   /** Everybody out for a bow. */

@@ -102,6 +102,8 @@ class LookItUp implements Game {
   rowSeen = false;
   private done = new Set<AnimalId>();
   private alive = true;
+  /** The visitor's ask, waiting behind the last visitor's fact (U7 R4): said when the fact ends, or at her first touch. */
+  private unasked = false;
   private clock = 0;
   private attempts = 0;
   private hinted = false;
@@ -309,6 +311,8 @@ class LookItUp implements Game {
     this.touched = new Set();
     this.drawPage();
     if (!speak) return;
+    // A touch before the visitor has asked: the page turns, and the ask is what she hears.
+    if (this.unasked) return this.askNow();
     if (this.mode === 'page') void this.ctx.say('lookitup.say', { text: ANIMALS[id].rows.eats.line });
     else void this.ctx.say('lookitup.say', { text: ANIMALS[id].title });
   }
@@ -327,6 +331,7 @@ class LookItUp implements Game {
       return;
     }
     if (this.visit && row.kind === this.visit.row) this.rowSeen = true;
+    if (this.unasked) return this.askNow();
     void this.ctx.say('lookitup.say', { text: row.line });
   }
 
@@ -359,9 +364,18 @@ class LookItUp implements Game {
     void this.ctx.say('lookitup.say', { text: ANIMALS[nextPage].title });
   }
 
-  private async next() {
+  /** Says the visitor's ask that is still waiting behind the last fact, as she touches before the fact has ended. */
+  private askNow() {
+    if (!this.unasked || !this.alive || this.finished) return;
+    this.unasked = false;
+    void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) });
+  }
+
+  /** The next visitor. After a helped one, `after` is its fact: the visitor walks in at once and asks when it ends. */
+  private async next(after?: Promise<unknown>) {
     if (!this.alive) return;
     this.busy = true;
+    this.unasked = false;
     this.index++;
     this.attempts = 0;
     this.hinted = false;
@@ -384,7 +398,9 @@ class LookItUp implements Game {
     onTap(
       holder,
       () => {
-        if (!this.busy && !this.finished) void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) });
+        if (this.busy || this.finished) return;
+        if (this.unasked) return this.askNow();
+        void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) });
       },
       { cooldown: 500 },
     );
@@ -419,8 +435,16 @@ class LookItUp implements Game {
     });
     await this.ctx.tw.to(holder, { alpha: 1 }, { duration: 0.3 });
     if (!this.alive) return;
-    await this.ctx.instruct('lookitup.ask', { text: askOf(visit) });
+    if (!after) {
+      await this.ctx.instruct('lookitup.ask', { text: askOf(visit) });
+      this.busy = false;
+      return;
+    }
+    const at = this.index;
+    this.unasked = true;
     this.busy = false;
+    await after;
+    if (this.index === at) this.askNow();
   }
 
   private clearScene() {
@@ -435,6 +459,11 @@ class LookItUp implements Game {
   /** A pick up and drop. A drop that barely moved is a tap; a drop near the visitor is a choice; anything else is ignored. */
   private dropped(c: Choice, x: number, y: number): boolean {
     if (this.busy || this.finished || !this.visitorNode) return false;
+    // A pick before the visitor has asked says the ask and is not judged: no miss for a question she has not heard.
+    if (this.unasked) {
+      this.askNow();
+      return false;
+    }
     const moved = Math.hypot(x - c.drag.home.x, y - c.drag.home.y);
     const v = this.visitorNode;
     const near = nearestPoint([{ x: v.x, y: v.y - 95 }], x, y, 200) >= 0;
@@ -499,10 +528,11 @@ class LookItUp implements Game {
     await this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
     if (!this.alive) return;
     const c = this.choices.find((x) => x.picture === pictureOf(visit))!;
-    void this.resolve(c, true);
+    void this.resolve(c, true, true);
   }
 
-  private async resolve(c: Choice, _right: boolean) {
+  /** A right picture reaches the visitor. `read` is set when the supported finish has just read the row aloud: it is said once. */
+  private async resolve(c: Choice, _right: boolean, read = false) {
     const visit = this.visit;
     const v = this.visitorNode!;
     this.glowOn = false;
@@ -527,15 +557,24 @@ class LookItUp implements Game {
       gravity: 200,
       size: [0.2, 0.35],
     });
-    await this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
-    if (!this.alive) return;
+    // The fact never holds the next visitor (U7 R4): it starts as the visitor eats or goes, and the next one walks in at
+    // once and asks when it ends. The last visitor's fact is heard out before the closing line.
     this.done.add(visit.animal);
-    void this.next();
+    const last = this.index + 1 >= this.round.visits.length;
+    const fact = read
+      ? Promise.resolve()
+      : this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
+    if (last) {
+      await fact;
+      if (!this.alive) return;
+      return void this.next();
+    }
+    void this.next(fact);
   }
 
   /** The ghost finger: turn to the visitor's page, touch the asked row at level 3, then carry the right picture to the visitor. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.index < 0) return null;
+    if (this.busy || this.finished || this.unasked || this.index < 0) return null;
     const move = lookTouch(this.round, {
       visitor: this.index,
       open: this.open,

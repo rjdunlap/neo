@@ -54,6 +54,10 @@ class OrchardRows implements Game {
   private readonly sentence = label('', 26);
   private view: View;
   private clock = 0;
+  /** A count or praise line is playing with input open (U7 R4); the ghost finger lets it finish. */
+  private speaking = 0;
+  /** Levels 2–3: the turn's ask, waiting behind `orchard.yes`; her first press of the turn button drops it. */
+  private turnUnasked = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -95,7 +99,7 @@ class OrchardRows implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.speaking > 0) return null;
     if (this.phase === 'turn') return { tap: { on: this.rotate } };
     if (this.phase === 'missing' || this.phase === 'answer') {
       const p = this.pads.find((p) => p.n === this.answer);
@@ -133,8 +137,15 @@ class OrchardRows implements Game {
         .stroke({ width: 6 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
 
+  /** Says a line without holding input, counting it so the ghost finger waits for it. */
+  private talk(p: Promise<void>): Promise<void> {
+    this.speaking++;
+    return p.finally(() => this.speaking--);
+  }
+
   private async next() {
     this.busy = true;
+    this.turnUnasked = false;
     this.index++;
     if (this.index === this.orchards.length) {
       this.finished = true;
@@ -210,20 +221,29 @@ class OrchardRows implements Game {
     });
   }
 
+  /**
+   * A tapped row's line is a running skip count (U7 R4): it starts with input open, so her next row's line cuts it and
+   * the sentence on screen keeps the total. The last row's line is heard out before the next ask.
+   */
   private async tapRow(row: number) {
     if (this.busy || this.finished || !['plant', 'count', 'answer'].includes(this.phase)) return;
-    this.busy = true;
     if (this.phase === 'plant') {
       if (!this.planted.includes(row)) {
         this.planted.push(row);
         sfx.pop(5 + row);
         this.drawRows();
       }
-      await this.ctx.say('orchard.planted', {
-        each: this.orchard.columns,
-        total: this.planted.length * this.orchard.columns,
-      });
-      if (this.planted.length === this.orchard.rows) await this.beginCount();
+      const line = this.talk(
+        this.ctx.say('orchard.planted', {
+          each: this.orchard.columns,
+          total: this.planted.length * this.orchard.columns,
+        }),
+      );
+      if (this.planted.length < this.orchard.rows) return;
+      this.busy = true;
+      await line;
+      if (this.finished) return;
+      await this.beginCount();
     } else {
       // Replaying any row is support, not a mistake or an extra count.
       if (this.phase === 'count') this.counted = countGroup(this.counted, row, this.oriented);
@@ -232,16 +252,20 @@ class OrchardRows implements Game {
       const subtotal = this.counted.length * this.oriented.columns;
       this.sentence.text =
         Array(this.counted.length).fill(this.oriented.columns).join(' + ') + ` = ${subtotal}`;
-      await this.ctx.say('orchard.counted', {
-        group: this.turned ? 'column' : 'row',
-        each: this.oriented.columns,
-        total: subtotal,
-      });
-      if (this.phase === 'count' && this.counted.length === this.oriented.rows) {
-        this.phase = 'answer';
-        this.ask(total(this.orchard));
-        await this.ctx.instruct('orchard.total');
-      }
+      const line = this.talk(
+        this.ctx.say('orchard.counted', {
+          group: this.turned ? 'column' : 'row',
+          each: this.oriented.columns,
+          total: subtotal,
+        }),
+      );
+      if (this.phase !== 'count' || this.counted.length < this.oriented.rows) return;
+      this.busy = true;
+      this.phase = 'answer';
+      await line;
+      if (this.finished) return;
+      this.ask(total(this.orchard));
+      await this.ctx.instruct('orchard.total');
     }
     this.busy = false;
   }
@@ -309,22 +333,30 @@ class OrchardRows implements Game {
       this.busy = false;
       return;
     }
-    await this.ctx.say(this.turned ? 'orchard.same' : 'orchard.yes', {
-      total: total(this.orchard),
-      rows: this.orchard.rows,
-      each: this.orchard.columns,
-    });
+    const praise = { total: total(this.orchard), rows: this.orchard.rows, each: this.orchard.columns };
     if (this.plan.mode !== 'plant' && !this.turned) {
+      // The right total never holds the turn (U7 R4): the button shows as `orchard.yes` starts, and `orchard.turn`
+      // follows the line, or is dropped if she presses the button first (the turn's own count instruction follows).
+      const index = this.index;
+      const yes = this.talk(this.ctx.say('orchard.yes', praise));
       this.phase = 'turn';
       this.rotate.visible = true;
-      await this.ctx.instruct('orchard.turn');
+      this.turnUnasked = true;
       this.busy = false;
-    } else await this.next();
+      await yes;
+      if (this.finished || this.index !== index || !this.turnUnasked) return;
+      this.turnUnasked = false;
+      await this.ctx.instruct('orchard.turn');
+      return;
+    }
+    await this.ctx.say(this.turned ? 'orchard.same' : 'orchard.yes', praise);
+    await this.next();
   }
 
   private async rotateOrchard() {
     if (this.busy || this.finished || this.phase !== 'turn') return;
     this.busy = true;
+    this.turnUnasked = false;
     this.turned = true;
     this.rotate.visible = false;
     this.oriented = turn(this.orchard);
