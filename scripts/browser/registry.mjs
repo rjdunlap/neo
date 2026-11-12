@@ -13,6 +13,7 @@ import { createSuite as createHatBand } from './suites/hat-band-play.mjs';
 import { createSuite as createGroveCutLines } from './suites/grove-cut-lines.mjs';
 import { createSuite as createTinkerCutLines } from './suites/tinker-cut-lines.mjs';
 import { createSuite as createGroveCutLines20 } from './suites/grove-cut-lines-20.mjs';
+import { createSuite as createGroveCutLines22 } from './suites/grove-cut-lines-22.mjs';
 import { createSuite as createLens } from './suites/lens-play.mjs';
 import { createSuite as createMeltFreeze } from './suites/melt-freeze-play.mjs';
 import { createSuite as createMoonWindow } from './suites/moon-window-play.mjs';
@@ -361,6 +362,7 @@ export const SUITES = [
   'hatband',
   'grovecutlines',
   'grovecutlines20',
+  'grovecutlines22',
   'raingarden',
   'sensedetective',
   'tinkercutlines',
@@ -530,6 +532,7 @@ export const ALL_SUITES = [
   'hatband',
   'grovecutlines',
   'grovecutlines20',
+  'grovecutlines22',
   'raingarden',
   'sensedetective',
   'tinkercutlines',
@@ -897,6 +900,7 @@ export function createChecks(fixture) {
   install(createTinkerCutLines(shared));
   install(createGroveCutLines(shared));
   install(createGroveCutLines20(shared));
+  install(createGroveCutLines22(shared));
   return checks;
 }
 
@@ -1048,6 +1052,7 @@ export async function runSuite(suite, fixture) {
     hatBandPlay,
     groveCutLines,
     groveCutLines20,
+    groveCutLines22,
     whoAmIPlay,
     lookItUpPlay,
     fingerDemos,
@@ -1312,6 +1317,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'hatband') await hatBandPlay();
   if (suite === 'all' || suite === 'grovecutlines') await groveCutLines();
   if (suite === 'all' || suite === 'grovecutlines20') await groveCutLines20();
+  if (suite === 'all' || suite === 'grovecutlines22') await groveCutLines22();
   if (suite === 'all' || suite === 'sensedetective') await senseDetectivePlay();
   if (suite === 'all' || suite === 'tinkercutlines') await tinkerCutLines();
   if (suite === 'all' || suite === 'storyweaver') await storyWeaverPlay();
