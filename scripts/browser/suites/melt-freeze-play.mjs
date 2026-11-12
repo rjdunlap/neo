@@ -63,6 +63,18 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.waitForFunction(() => neo.scene.game.round.index === 1 && !neo.scene.game.busy, null, {
       timeout: 3400,
     });
+    // A guide tap while the lesson still plays says the waiting ice request, not the last one; a second says nothing new.
+    const guide = await page.evaluate(() => {
+      const g = neo.scene.game;
+      const waiting = g.unasked;
+      const first = g.sayWaitingAsk();
+      return { waiting, first, after: g.unasked, again: g.sayWaitingAsk() };
+    });
+    assert.deepEqual(
+      guide,
+      { waiting: true, first: true, after: false, again: false },
+      'R4: the guide says the waiting request',
+    );
     await settle();
     assert.equal(await page.evaluate(() => neo.scene.game.round.index), 1, 'the ice request is met');
     await tool('snow');

@@ -664,10 +664,16 @@ class PeekabooBarn implements Game {
 
   /** Says the ask that is still waiting behind the last find's line, as she taps before it has ended. */
   private askNow() {
-    if (!this.unasked || this.finished) return;
+    if (!this.unasked || this.finished) return false;
     this.unasked = false;
     this.asking++;
     void this.ctx.instruct('peek.where', { animal: this.target! }).finally(() => this.asking--);
+    return true;
+  }
+
+  /** The guide was tapped while the ask waits: say this question's ask, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** The next question. After a right find, `after` is its `peek.yes`: the places open at once and the ask waits for it. */

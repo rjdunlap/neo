@@ -1107,6 +1107,11 @@ class CutAlong implements Game {
     return true;
   }
 
+  /** The guide was tapped while the ask waits: say this sheet's instruction, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
   private snipMark(p: Point): boolean {
     const i = markAt(this.marks, this.snipped, p, this.s);
     if (i === null) return false;
