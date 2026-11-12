@@ -39,3 +39,5 @@
 Each round's parchment takes one of three tints and a corner doodle (compass, sun or ship), cosmetic only.
 
 **On the couch.** Grown-ups play levels 2 to 5 (levels 6 to 11 are touch only) with a controller: the stick, D-pad or arrow keys move a teal ring one square at a time (up is the next row up, since row 1 is at the bottom), and the bottom button digs, or places the thing, on the ringed square; on the steps level the ring starts where the pet stands. Touch taps and the ring share one dig. The score is wrong digs (lower wins), so a face-off gives each player a fresh seeded map; a bot walks the ring across the columns, then the rows, and digs.
+
+**A right find never holds the next one (U7 fix batch 15, 2026-11-12).** `map.found`, `map.placed`, `map.slid` or `map.mirrored` starts and, after a short look at what was found, the next find is set up with input open; its spoken instruction waits for the line and is said at her first dig or card tap, or by the guide. Level 7's `map.faragain` starts with input open, so her next dig cuts it. The last find's line is still heard out.
