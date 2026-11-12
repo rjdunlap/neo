@@ -5,6 +5,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * There's no score: bounces are counted together toward a goal.
  */
 export type BounceMode =
+  | 'pat'
   | 'solo'
   | 'rally'
   | 'together'
@@ -82,10 +83,20 @@ export const PLANS: BouncePlan[] = [
   },
   { mode: 'skip', goal: 10, step: 2, speed: 340, paddle: 200, name: 'Count a rally by twos to 20' },
   { mode: 'skip', goal: 10, step: 5, speed: 340, paddle: 200, name: 'Count a rally by fives to 50' },
+  {
+    mode: 'pat',
+    goal: 3,
+    speed: 180,
+    paddle: 340,
+    name: 'Touch anywhere and the huge paddle goes to the ball',
+  },
 ];
 
+/** The lap entry level: a stable ID above the ladder that the lap band plays first (`order`), so no saved level is renumbered. */
+export const PAT_LEVEL = 12;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: PAT_LEVEL, order: [PAT_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
@@ -128,6 +139,22 @@ export type ZoneName = (typeof ZONES)[number];
 /** Which zone a ball reaching the wall at `y` is in (the wall from `top` to `bottom`, in equal thirds). */
 export const zoneOf = (y: number, top: number, bottom: number): number =>
   Math.max(0, Math.min(ZONES.length - 1, Math.floor(((y - top) / (bottom - top)) * ZONES.length)));
+
+/**
+ * Whether a ball past her paddle counts as a miss (with a boing, a "Whoops!" and the hint's count). On the lap level it never does:
+ * the ball just comes back, so a lap player cannot be wrong.
+ */
+export const countsMiss = (m: BounceMode) => m !== 'pat';
+
+/** Her paddle's top speed toward the ball on the lap level: it always drifts to help, and a touch anywhere hurries it there. */
+export const patPaddleSpeed = (touching: boolean) => (touching ? 1400 : 260);
+
+/**
+ * Whether the lap level's drifting paddle, starting `gap` from where the ball will arrive, gets there before a ball `distance`
+ * away does, untouched. The table is laid out so this holds from a serve on any screen (see the rule test).
+ */
+export const patDriftReaches = (gap: number, distance: number, plan: BouncePlan) =>
+  Math.max(0, gap - plan.paddle / 2) / patPaddleSpeed(false) <= distance / plan.speed;
 
 export const isGoalMode = (m: BounceMode) => m === 'goal' || m === 'versus';
 
