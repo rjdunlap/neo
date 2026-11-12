@@ -1,0 +1,6 @@
+# 2026-11-12 — tile-pairs slices 3–4: two more looks and Tall tower (PR #1569)
+
+**Changed:** `tile-pairs` gains three seeded picture looks (the original, oval/rectangle/diamond/pentagon/trapezoid/star, and six island props) dealt after the board so seeds keep their boards, and level 7 *Tall tower* (four layers, 24 tiles, clear band [0.45, 0.9]). Peek shows a four-deep stack as a 2 × 2 grid and scales pictures to 72 units; the how-to's Peek step is level-scoped; the `tilepairs` suite gained level 7 checks and a looks step.
+**Ran:** `npm run typecheck`; full `npm test` (349 files, 6,745 passed) before the review fixes, then `npx vitest run src/games/tile-pairs src/content` (215 passed); `npm run game-docs`; `BROWSER_SUITE=tilepairs TILE_LEVELS=3,7` (level 7 first failed on a real Peek overlap, fixed), then `TILE_LEVELS=7` (mismatch, hint, undo, shuffle, resize, one sticker, both new looks captured, return to Lantern Lake) and `TILE_LEVELS=5 TILE_LOOKS=off` after the sizing change; `BROWSER_SUITE=fingerdemo FINGER_ONLY=tile-pairs FINGER_LEVELS=7` (30.3 s). Screenshots read: level 7 Peek portrait (390×844) and both new looks.
+**Measured:** the clear-rate band on seeded-route candidates over 100 seeds on a Mac, not a phone: 11–98%, median 57%; mean deal 0.6 ms.
+**Not run:** `npm run build` (no shared file or asset changed), couch suites, offline, `world`.
