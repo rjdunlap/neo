@@ -2,7 +2,7 @@
 
 ### Melt and Freeze opens with one big ice cube (2026-11-12)
 
-[PR #1574](https://github.com/rjdunlap/neo/pull/1574) adds level 5 as the first lap level. Three playfield taps melt the cube, then the snowflake appears to freeze it again. [Game notes](../games/melt-freeze.md) and [verification](../VERIFICATION.md#2026-11-12--melt-freeze-level-5-one-big-ice-cube-pr-1574).
+[PR #1574](https://github.com/rjdunlap/neo/pull/1574) adds level 5 as the first lap level. Three playfield taps melt the cube, then the snowflake appears to freeze it again. [Game notes](../games/melt-freeze.md) and [verification](../verification/2026-11-12-melt-freeze-level-5-one-big-ice-cube.md).
 
 ### U5a, a first six she can start (2026-11-10)
 
@@ -3337,7 +3337,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 ## Tile Pairs batch, two more looks and Tall tower (2026-11-12)
 
-[PR #1569](https://github.com/rjdunlap/neo/pull/1569), `claude/tile-pairs-looks-tower`, dive slices 3–4. Three seeded looks (`LOOKS`, picked by `pickLook(ctx.rng)` after `makeBoard`, so every seed keeps its board): the original six shapes, then oval, rectangle, diamond, pentagon, trapezoid and star in new colours, then six island props (strawberry, orange, banana, pear, shell, grapes). The look is fixed for the round; stickers and the hub icon keep the first. Level 7 *Tall tower · four layers* is a 4 × 3 base, 2 × 3, 2 × 2 and two on top (12 tiles start covered), six pictures four times each, clear band [0.45, 0.9]; measured over 100 seeds on a Mac, random play cleared 11–98% of candidates (median 57%) and about a third had a first pair that left no route. Peek shows a four-deep stack as a 2 × 2 grid, and all Peek pictures are now scaled to 72 units because the star's points touched a neighbour at 64. The how-to's Peek step is scoped to levels up to 6 and from 7. Checks: typecheck, `src/games/tile-pairs` and `src/content` tests, filtered `tilepairs` plays at levels 3, 5 and 7, `fingerdemo` at 7; see the [verification entry](../VERIFICATION.md#2026-11-12--tile-pairs-slices-34-two-more-looks-and-tall-tower-pr-1569).
+[PR #1569](https://github.com/rjdunlap/neo/pull/1569), `claude/tile-pairs-looks-tower`, dive slices 3–4. Three seeded looks (`LOOKS`, picked by `pickLook(ctx.rng)` after `makeBoard`, so every seed keeps its board): the original six shapes, then oval, rectangle, diamond, pentagon, trapezoid and star in new colours, then six island props (strawberry, orange, banana, pear, shell, grapes). The look is fixed for the round; stickers and the hub icon keep the first. Level 7 *Tall tower · four layers* is a 4 × 3 base, 2 × 3, 2 × 2 and two on top (12 tiles start covered), six pictures four times each, clear band [0.45, 0.9]; measured over 100 seeds on a Mac, random play cleared 11–98% of candidates (median 57%) and about a third had a first pair that left no route. Peek shows a four-deep stack as a 2 × 2 grid, and all Peek pictures are now scaled to 72 units because the star's points touched a neighbour at 64. The how-to's Peek step is scoped to levels up to 6 and from 7. Checks: typecheck, `src/games/tile-pairs` and `src/content` tests, filtered `tilepairs` plays at levels 3, 5 and 7, `fingerdemo` at 7; see the [verification entry](../verification/2026-11-12-tile-pairs-slices-3-4-two-more-looks-and-tall-tower.md).
 
 ## Pyramid Solitaire batch 1, deals that ask for a plan (2026-11-12)
 

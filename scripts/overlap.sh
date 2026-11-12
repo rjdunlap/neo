@@ -11,7 +11,7 @@ git fetch --prune -q origin || echo "fetch failed"
 echo "behind origin/main: $(git rev-list --count HEAD..origin/main), ahead: $(git rev-list --count origin/main..HEAD)"
 terms=("$@")
 prs="$(gh pr list --state open --limit 100 --json number,headRefName,title,files \
-  --jq '.[]|"#\(.number) \(.headRefName) | \(.title) | \([.files[].path]|map(select(test("^(docs/(ROADMAP|VERIFICATION|GAMES)|README)")|not))|.[0:6]|join(" "))"' 2>/dev/null)"
+  --jq '.[]|"#\(.number) \(.headRefName) | \(.title) | \([.files[].path]|map(select(test("^(docs/(ROADMAP|VERIFICATION|GAMES|verification/)|README)")|not))|.[0:6]|join(" "))"' 2>/dev/null)"
 wts="$(git worktree list | sed "s|$HOME/git/neo/||;s|$HOME/.codex/worktrees/||")"
 unmerged="$(git branch -r --no-merged origin/main | sed 's/^ *//' | grep -v 'origin/HEAD')"
 if [ ${#terms[@]} -eq 0 ]; then

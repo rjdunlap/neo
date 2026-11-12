@@ -1,0 +1,5 @@
+# 2026-11-12 — bubble-pop level 15 opens with one big bubble (PR #1564)
+
+**Changed:** `bubble-pop` level 15 (Pop anywhere): `openingBubble` stands still on screen at Play (nothing rises before `start()` places it) (radius 153, right of Home, the question mark and the guide, below the top bar); `roomFor` lets one more bubble be on screen per pop, up to four; rising bubbles in this mode start in reach and swell in; `inReach`'s and the level's palm comments corrected. No change to plans, levels, voice, card or bot.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/bubble-pop` (35 passed, three new rule tests at 1024x768, 768x1024 and 1366x768); one scripted level 15 play at lap (an uncommitted ad-hoc script on the browser fixture; a 768x1024 viewport, not a phone, then landscape: one bubble at Play, still one after 2.5 s, a first touch in the far corner popped it, never more than min(4, 1 + pops), 13 taps, 0 misses, 0 hints, a sticker; the 768x1024 screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=15` passed.
+**Not run:** full `npm test` (CI runs it), `npm run build` (no shared files or assets).

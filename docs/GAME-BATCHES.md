@@ -1864,7 +1864,7 @@ Proof: existing-game tier (typecheck, the rule tests, one filtered `tilepairs` p
 
 ### tile-pairs: Two more looks and Tall tower
 
-**Built 2026-11-12 ([PR #1569](https://github.com/rjdunlap/neo/pull/1569)).** Dive slices 3–4. See the [verification entry](VERIFICATION.md#2026-11-12--tile-pairs-slices-34-two-more-looks-and-tall-tower-pr-1569) and [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-batch-two-more-looks-and-tall-tower-2026-11-12).
+**Built 2026-11-12 ([PR #1569](https://github.com/rjdunlap/neo/pull/1569)).** Dive slices 3–4. See the [verification entry](verification/2026-11-12-tile-pairs-slices-3-4-two-more-looks-and-tall-tower.md) and [build note](archive/COMPLETED-2026-10-09.md#tile-pairs-batch-two-more-looks-and-tall-tower-2026-11-12).
 
 - **`tile-pairs`, two seeded picture sets and level 7 *Tall tower*** (dive slices 3–4, [dive](deep-dives/tile-pairs.md#build-slices-in-order), after Peek, grown-up). Choose each round's look from the seed. Test that each set's pictures have distinct silhouettes. Add a solvable 24-tile stack with four layers and supported raised tiles, keeping the choices about which pair opens the tower.
 
@@ -1882,7 +1882,7 @@ Proof: typecheck, rule tests (bands, pools, fair-trap, each lesson board's prope
 
 ### pyramid-solitaire 1: Deals that ask for a plan
 
-**Built 2026-11-12 ([PR #1570](https://github.com/rjdunlap/neo/pull/1570)).** Dive slices 1–2. See the [verification entry](VERIFICATION.md#2026-11-12--pyramid-solitaire-slices-12-deals-that-ask-for-a-plan-pr-1570).
+**Built 2026-11-12 ([PR #1570](https://github.com/rjdunlap/neo/pull/1570)).** Dive slices 1–2. See the [verification entry](verification/2026-11-12-pyramid-solitaire-slices-1-2-deals-that-ask-for-a-plan.md).
 
 - **`pyramid-solitaire`, deals that ask for a plan and a pair that shows what it uncovers** (dive slices 1–2, [dive](deep-dives/pyramid-solitaire.md#build-slices-in-order); existing-game tier; grown-up, levels 1–3 unchanged): a deal dial that draws up to 40 seeded candidates and keeps the first whose exact random-play clear rate is in the level's band (level 1 at least 95%, level 2 from 50% to under 95%, level 3 40–80%); level 1 is exactly two pairs and two kings with at most one unforced king elsewhere, and no rank appears more than four times, with property tests over 200 seeds a level. Then the lift-and-fade removal, the uncovering pulse and tone, "pairs open" in the status line and a corner index on every card.
 

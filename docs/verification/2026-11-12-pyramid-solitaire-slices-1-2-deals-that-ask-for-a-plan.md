@@ -1,0 +1,6 @@
+# 2026-11-12 — pyramid-solitaire slices 1–2: deals that ask for a plan (PR #1570)
+
+**Changed:** `pyramid-solitaire` chooses each deal by a measured clear-rate band (`dealCandidate`, `clearRate`), keeps kings to forced ones plus at most one by chance, caps a rank at four, and makes level 1 two pairs and two kings; a lifted pair fades, uncovered cards pulse with a bell step, the status line counts pairs open, and every card has a corner index. Four new rule tests; the `pyramid` suite gained a pairs-open assertion and one that no card is left lifting after Undo (taps wait past the fade, so Undo during a fade is not exercised).
+**Ran:** `npm run typecheck`; full `npm test` (349 files, 6,751 passed, 1 skipped; it first caught the how-to card at five steps and too long, fixed); `npm run game-docs`; `BROWSER_SUITE=pyramid` on a fresh Vite (VITE_SPEECH=off): levels 1 and 3, mismatch, hint, undo, start over, dead-end recovery, land launch, one sticker. Portrait and landscape screenshots at level 3 read.
+**Measured:** 1,000 seeds a level on a Mac, not a phone: average clear rate 1.000 / 0.561 / 0.554 (levels 1–3), under 0.04 ms a deal.
+**Not run:** `fingerdemo` (the bot is unchanged), `npm run build` (no shared file changed).
