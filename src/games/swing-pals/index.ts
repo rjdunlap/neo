@@ -390,6 +390,10 @@ class SwingPals implements Game {
   private readonly hookTargets: HookTarget[] = [];
   private readonly glow = new Graphics();
   private destroyed = false;
+  /** Bumped by her next tap, so a right answer's lesson lines stop rather than talk over what she does next (U7 R4). */
+  private lessonGen = 0;
+  /** Level 8: the next pair's request, waiting behind the last pair's line (U7 R4), or null. */
+  private unasked: LineId | null = null;
   private giggledAt = -10;
   private lookT = 0;
   private match = false;
@@ -600,7 +604,7 @@ class SwingPals implements Game {
       const l = this.pairLine;
       this.rigs = [new Rig(l.petHook, l.petFriend, cols[0]), new Rig(l.hook, l.friend, cols[1])];
       for (const r of this.rigs) r.L = ropeOf(this.layout, r.hook);
-      if (this.plan.requests && this.line > 0) void this.ctx.instruct(REQUEST_LINE[l.request ?? 'together']);
+      if (this.plan.requests && this.line > 0) this.ask(REQUEST_LINE[l.request ?? 'together']);
       this.tried.clear();
       this.apart = 0;
       this.glowHook = null;
@@ -617,8 +621,13 @@ class SwingPals implements Game {
     this.busy = false;
   }
 
-  private async nextLine() {
+  /**
+   * On to the next pair or race. A right answer's line (`said`) never holds it (U7 R4): the friends hop off while it
+   * plays and the next pair comes in with input open. The round's last line is heard out before the finale.
+   */
+  private async nextLine(said?: Promise<unknown>) {
     this.busy = true;
+    this.lineSaid = said ?? null;
     await this.ctx.tw.wait(0.6);
     if (this.destroyed) return;
     for (const r of this.rigs) {
@@ -629,10 +638,43 @@ class SwingPals implements Game {
     if (this.destroyed) return;
     this.line++;
     if (this.line >= this.round.lines.length) {
+      if (said) await said;
+      if (this.destroyed) return;
       void this.finale();
       return;
     }
     this.buildLine();
+    this.lineSaid = null;
+  }
+
+  /** The line a right answer started, while the next pair is being built, so its request can wait for it. */
+  private lineSaid: Promise<unknown> | null = null;
+
+  /** Says level 8's request now, or when the last pair's line ends if one is still playing. */
+  private ask(id: LineId) {
+    const said = this.lineSaid;
+    if (!said) return void this.ctx.instruct(id);
+    this.unasked = id;
+    const at = this.line;
+    const gen = this.lessonGen;
+    void said.then(() => {
+      if (this.line === at && this.lessonGen === gen) this.askNow();
+    });
+  }
+
+  /** Says the waiting request, if there is one. */
+  private askNow() {
+    const id = this.unasked;
+    if (!id || this.finished || this.destroyed) return false;
+    this.unasked = null;
+    void this.ctx.instruct(id);
+    return true;
+  }
+
+  /** The guide was tapped while the request waits: say this pair's, not the last one's. */
+  sayWaitingAsk() {
+    this.lessonGen++;
+    return this.askNow();
   }
 
   /* Layout ---------------------------------------------------------------------------------------- */
@@ -919,6 +961,9 @@ class SwingPals implements Game {
   async chooseHook(hook: Hook) {
     if (this.busy || this.finished || this.plan.mode !== 'together') return;
     this.busy = true;
+    this.lessonGen++;
+    // A request still waiting behind the last pair's line is said now, in place of "Ready, go!".
+    const asked = this.askNow();
     const her = this.rigs[1];
     const pet = this.rigs[0];
     const target = this.hookTargets.find((h) => h.hook === hook);
@@ -952,7 +997,7 @@ class SwingPals implements Game {
     this.hold.k = 0;
     pet.held = 0;
     her.held = 0;
-    void this.ctx.say('swing-pals.ready-go');
+    if (!asked) void this.ctx.say('swing-pals.ready-go');
     await this.ctx.tw.to(this.hold, { k: 1 }, { duration: 0.9, ease: ease.inOutSine });
     if (this.destroyed) return;
     pet.A = l.petHeight * bell;
@@ -1000,9 +1045,8 @@ class SwingPals implements Game {
               : this.plan.id === 6
                 ? 'swing-pals.big-same'
                 : 'swing-pals.together';
-      await this.ctx.say(extra);
-      if (this.destroyed) return;
-      await this.nextLine();
+      // The rope lesson starts and plays over the next pair (U7 R4).
+      await this.nextLine(this.ctx.say(extra));
       return;
     }
     const free = hook === l.hook && !this.tried.has(hook);
@@ -1033,6 +1077,7 @@ class SwingPals implements Game {
   async chooseFriend(i: number) {
     if (this.busy || this.finished || this.round.kind !== 'predict' || this.guess !== null) return;
     this.busy = true;
+    this.lessonGen++;
     this.guess = i;
     const race = this.race;
     const first = firstBack(race),
@@ -1086,16 +1131,23 @@ class SwingPals implements Game {
       sfx.tada();
       this.ctx.pet.cheer();
       this.rigs[first].critter.hop(0.8);
-      await this.ctx.say('swing-pals.first-yes');
-    } else await this.ctx.say('swing-pals.first-named', { friend: NAMES[race.friends[first]] });
-    if (this.destroyed) return;
-    await this.ctx.say('swing-pals.first-quick');
-    if (this.destroyed) return;
-    if (raceTempts(race)) await this.ctx.say('swing-pals.first-same');
-    if (this.destroyed) return;
+    }
     this.marker.visible = false;
     this.hintLit = false;
-    await this.nextLine();
+    // Her guess's reaction and the rope lesson start, and the next race comes in while they play (U7 R4).
+    await this.nextLine(this.raceLines(i === first, race));
+  }
+
+  /** Level 7's lines after a race; her next guess or the guide stops the rest. */
+  private async raceLines(right: boolean, race: Race) {
+    const gen = this.lessonGen;
+    const on = () => !this.destroyed && this.lessonGen === gen;
+    if (right) await this.ctx.say('swing-pals.first-yes');
+    else await this.ctx.say('swing-pals.first-named', { friend: NAMES[race.friends[firstBack(race)]] });
+    if (!on()) return;
+    await this.ctx.say('swing-pals.first-quick');
+    if (!on()) return;
+    if (raceTempts(race)) await this.ctx.say('swing-pals.first-same');
   }
 
   private showGlow() {
@@ -1110,6 +1162,7 @@ class SwingPals implements Game {
 
   askForHint() {
     if (this.finished) return;
+    this.lessonGen++;
     if (this.plan.mode === 'push') {
       if (this.busy || nextToPush(this.swings) < 0) {
         void this.ctx.say('swing-pals.hint-push');
