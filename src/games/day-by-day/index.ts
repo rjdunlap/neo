@@ -73,6 +73,13 @@ class DayByDay implements Game {
   hinted = false;
   private wrongs = 0;
   private clock = 0;
+  /**
+   * The next relative question's or the tally's ask, waiting behind a right relative's yes line (U7 R4): said when the
+   * line ends, at her first tap (which then does nothing else, since the question is only spoken) or by the guide.
+   */
+  private unasked: (() => Promise<void>) | null = null;
+  /** A replayed record's line: it holds no input, but the ghost finger lets it be heard before its next tap. */
+  private playing: Promise<void> | null = null;
   private view: View;
   private readonly backdrop: Backdrop;
   private readonly garden = new Container();
@@ -126,7 +133,7 @@ class DayByDay implements Game {
     for (let i = 0; i < 7; i++) {
       const node = new Container();
       node.hitArea = new Rectangle(-54, -56, 108, 112);
-      onTap(node, () => void this.replay(i));
+      onTap(node, () => this.replay(i));
       this.records.push(node);
     }
     for (const node of [
@@ -162,6 +169,41 @@ class DayByDay implements Game {
   }
   destroy() {
     this.finished = true;
+  }
+
+  /** The guide was tapped while the next ask waits: say that ask, not the last question's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  private hear(line: Promise<void>) {
+    this.playing = line;
+    void line.then(() => {
+      if (this.playing === line) this.playing = null;
+    });
+  }
+
+  /** Says the ask if it is still waiting behind a line; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    void ask();
+    return true;
+  }
+
+  /** Deals with input open; the ask (an instruction, so it holds input while said) waits for `line` or her first tap. */
+  private holdAsk(line: Promise<unknown>, ask: () => Promise<void>) {
+    const run = async () => {
+      this.busy = true;
+      await ask();
+      this.busy = false;
+    };
+    this.unasked = run;
+    this.busy = false;
+    void line.then(() => {
+      if (this.unasked === run) this.askNow();
+    });
   }
 
   resize(view: View) {
@@ -264,7 +306,7 @@ class DayByDay implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked || this.playing) return null;
     if (this.phase === 'day' || this.phase === 'relative') {
       if (this.selected === this.answer) return { tap: { on: this.confirm } };
     }
@@ -389,7 +431,7 @@ class DayByDay implements Game {
   }
 
   private async choose(n: number) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.askNow()) return;
     this.busy = true;
     if (this.phase === 'day' || this.phase === 'relative') {
       this.selected = n;
@@ -426,8 +468,8 @@ class DayByDay implements Game {
   }
 
   private async place() {
-    if (this.busy || this.finished || this.selected === null || !['day', 'relative'].includes(this.phase))
-      return;
+    if (this.busy || this.finished || this.askNow()) return;
+    if (this.selected === null || !['day', 'relative'].includes(this.phase)) return;
     this.busy = true;
     if (this.selected !== this.answer) {
       await this.miss();
@@ -436,14 +478,19 @@ class DayByDay implements Game {
     sfx.sparkle();
     if (this.phase === 'relative') {
       const { today, direction } = this.relatives[this.question];
-      await this.ctx.say(
+      // The yes line carries the wrap-round lesson, so it plays over the next question's cards (U7 R4); the last
+      // question's line is still heard out before the closing line.
+      const line = this.ctx.say(
         `week.${direction === 1 ? 'tomorrow' : 'yesterday'}${this.ctx.level >= ANCHOR_LEVEL ? 'anyyes' : 'yes'}`,
         { day: DAYS[this.answer], today: DAYS[today] },
       );
       this.question++;
-      if (this.question < 2) await this.askRelative();
-      else if (this.plan.tally) await this.askTally();
-      else await this.done();
+      if (this.question < 2) this.askRelative(line);
+      else if (this.plan.tally) this.askTally(line);
+      else {
+        await line;
+        await this.done();
+      }
       return;
     }
     this.placement = {
@@ -462,7 +509,7 @@ class DayByDay implements Game {
     this.busy = false;
   }
 
-  private async askRelative() {
+  private async askRelative(after?: Promise<unknown>) {
     this.busy = true;
     this.phase = 'relative';
     const { today, direction } = this.relatives[this.question];
@@ -473,13 +520,16 @@ class DayByDay implements Game {
       ? 'Tomorrow is the next day. Yesterday is the day before. Tap records to listen.'
       : 'The week repeats: Sunday → Monday. Tap records to listen.';
     this.buildChoices(choicesFor(this.answer, this.ctx.rng, 'day'), 'day');
-    await this.ctx.instruct(`week.${direction === 1 ? 'tomorrow' : 'yesterday'}${any ? 'any' : ''}`, {
-      day: DAYS[today],
-    });
+    const ask = () =>
+      this.ctx.instruct(`week.${direction === 1 ? 'tomorrow' : 'yesterday'}${any ? 'any' : ''}`, {
+        day: DAYS[today],
+      });
+    if (after) return this.holdAsk(after, ask);
+    await ask();
     this.busy = false;
   }
 
-  private async askTally() {
+  private async askTally(after?: Promise<unknown>) {
     this.busy = true;
     this.phase = 'tally';
     this.answer = weatherCount(this.week, this.tallyWeather);
@@ -490,27 +540,29 @@ class DayByDay implements Game {
         ? 'Count the outlined suns. Tap records to mark or unmark; choose the total.'
         : 'Tap records to mark or unmark them. Choose the total.';
     this.buildChoices(choicesFor(this.answer, this.ctx.rng, 'number'), 'number');
-    await this.ctx.instruct(
-      this.ctx.level === COUNT_LEVEL
-        ? 'week.countrecord'
-        : this.ctx.level === WEATHER_COUNT_LEVEL
-          ? 'week.weathertally'
-          : 'week.tally',
-      { weather: WEATHER[this.tallyWeather] },
-    );
+    const ask = () =>
+      this.ctx.instruct(
+        this.ctx.level === COUNT_LEVEL
+          ? 'week.countrecord'
+          : this.ctx.level === WEATHER_COUNT_LEVEL
+            ? 'week.weathertally'
+            : 'week.tally',
+        { weather: WEATHER[this.tallyWeather] },
+      );
+    if (after) return this.holdAsk(after, ask);
+    await ask();
     this.busy = false;
   }
 
-  private async replay(day: number) {
-    if (this.busy || this.finished || day >= this.recorded) return;
-    this.busy = true;
+  private replay(day: number) {
+    if (this.busy || this.finished || day >= this.recorded || this.askNow()) return;
     if (this.phase === 'tally') {
       this.marks = toggleMark(this.marks, day, this.recorded);
       this.drawRecords();
     }
     sfx.pop(4 + day);
-    await this.ctx.say('week.record', { day: DAYS[day], weather: WEATHER[this.week[day]] });
-    this.busy = false;
+    // A replayed record never holds input (U7 R4): the mark is already drawn, and her next tap cuts the line.
+    this.hear(this.ctx.say('week.record', { day: DAYS[day], weather: WEATHER[this.week[day]] }));
   }
 
   private async miss() {
