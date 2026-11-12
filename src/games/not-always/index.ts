@@ -26,6 +26,7 @@ import {
   SIGN_H,
   SIGN_W,
   STAMP,
+  trueMend,
   type Claim,
   type Outcome,
   type Phase,
@@ -251,8 +252,11 @@ class NotAlways implements Game {
     node.scale.set(0.94);
     void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 });
     this.chain++;
-    // A sign chosen before the friend has read them out: they are read now, and nothing is judged.
-    if (this.askNow()) return;
+    if (this.unasked) {
+      // A sign chosen before the friend has read them out: the true one goes ahead; another hears them read, not a miss.
+      if (j !== trueMend(this.play.round.cards, this.play.options)) return void this.askNow();
+      this.dropAsk();
+    }
     const out = this.play.chooseMend(j);
     if (out.kind === 'mended') {
       this.busy = true;
