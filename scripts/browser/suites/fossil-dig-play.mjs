@@ -18,9 +18,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         };
       });
     const idle = () =>
-      page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, {
-        timeout: 20000,
-      });
+      page.waitForFunction(
+        () => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy && !neo.scene.game.unasked),
+        null,
+        {
+          timeout: 20000,
+        },
+      );
     const sticker = (n) =>
       page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, n, { timeout: 30000 });
     const tapNode = (expr) =>

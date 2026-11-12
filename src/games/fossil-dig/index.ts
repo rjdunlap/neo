@@ -45,6 +45,7 @@ import {
   STONE_H,
   STONE_W,
   tapFlag,
+  whereAnswer,
   type DigLayout,
   type DigState,
   type FlagId,
@@ -196,6 +197,9 @@ class FossilDig implements Game {
   readonly hintLabel = 'Show a hint';
   state: DigState;
   busy = true;
+  /** The next step's instruction, waiting behind `found` or `where-recorded` (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
   finished = false;
   /** What the magnifier shows, if open: the print, or a reference leaf. */
   open: 'print' | LeafId | null = null;
@@ -625,11 +629,37 @@ class FossilDig implements Game {
     sfx.marimba(9, 0.15);
     this.wave = 3;
     this.addTrace(this.printTrace, leafOutline(this.find), swatch.yellow.fill);
-    const epoch = this.epoch;
-    await this.ctx.say('fossil-dig.found');
-    if (this.destroyed || epoch !== this.epoch) return;
+    // The lesson starts and the flags open at once (U7 R4); `instruct-where` is chained after it.
     this.busy = false;
-    if (stepOf(this.state) === 'where') void this.ctx.instruct('fossil-dig.instruct-where');
+    this.waitAsk(this.ctx.say('fossil-dig.found'));
+  }
+
+  /** The step's instruction waits behind `said`, said when it ends unless something said it or dropped it first. */
+  private waitAsk(said: Promise<void>) {
+    this.dropAsk();
+    this.unasked = true;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished || this.destroyed) return false;
+    this.dropAsk();
+    void this.ctx.instruct(this.stepLine());
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next step's instruction waits behind a line: say it. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /* Where ------------------------------------------------------------------------------------------ */
@@ -638,6 +668,12 @@ class FossilDig implements Game {
     if (this.busy || this.finished) return;
     const flag = FLAGS[site];
     const node = this.flagNodes[site];
+    // A flag tapped before the instruction is heard: the right one goes ahead; another says the instruction (never a miss).
+    if (this.unasked && stepOf(this.state) === 'where' && flag.id !== whereAnswer(this.round)) {
+      this.wiggle(node);
+      this.askNow();
+      return;
+    }
     const r = tapFlag(this.state, flag.id);
     if (r === 'ignored') return;
     if (r === 'early') {
@@ -647,17 +683,14 @@ class FossilDig implements Game {
     }
     this.closeMag();
     if (r === 'right') {
+      this.dropAsk();
       sfx.knock();
       sfx.clunk();
       this.drawSlots();
       this.whereArt.scale.set(1.5);
       void this.ctx.tw.to(this.whereArt.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
-      this.busy = true;
-      const epoch = this.epoch;
-      await this.ctx.say('fossil-dig.where-recorded', { flag: flag.name });
-      if (this.destroyed || epoch !== this.epoch) return;
-      this.busy = false;
-      void this.ctx.instruct(this.plan.id === 1 ? 'fossil-dig.instruct-shape' : 'fossil-dig.instruct-edge');
+      // The record starts and the like cards open at once (U7 R4); the shape or edge instruction waits for it.
+      this.waitAsk(this.ctx.say('fossil-dig.where-recorded', { flag: flag.name }));
       return;
     }
     sfx.boing();
@@ -691,7 +724,7 @@ class FossilDig implements Game {
     if (r === 'ignored') return;
     if (r === 'early') {
       this.wiggle(card.node);
-      void this.ctx.say(this.stepLine());
+      if (!this.askNow()) void this.ctx.say(this.stepLine());
       return;
     }
     sfx.pop(r === 'placed' ? 9 : 5);
@@ -712,12 +745,18 @@ class FossilDig implements Game {
 
   private async pressCheck() {
     if (this.busy || this.finished) return;
+    // Check before the instruction is heard says it and is not judged.
+    if (this.unasked && stepOf(this.state) === 'like') {
+      this.wiggle(this.checkBtn);
+      this.askNow();
+      return;
+    }
     const chosen = this.state.like;
     const r = check(this.state);
     if (r === 'ignored') return;
     if (r === 'early') {
       this.wiggle(this.checkBtn);
-      void this.ctx.say(this.stepLine());
+      if (!this.askNow()) void this.ctx.say(this.stepLine());
       return;
     }
     if (r === 'empty') {
@@ -840,8 +879,8 @@ class FossilDig implements Game {
       this.mag.scale.set(0.6);
       void this.ctx.tw.to(this.mag.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
       sfx.pop(8);
-      // Level 1 asks about the shape, so the edge is only said where it decides.
-      if (this.plan.id === 2)
+      // Level 1 asks about the shape, so the edge is only said where it decides; never over a waiting instruction's line.
+      if (this.plan.id === 2 && !this.unasked)
         void this.ctx.say(
           leafOf(leaf).margin === 'toothed' ? 'fossil-dig.edge-toothed' : 'fossil-dig.edge-smooth',
         );
@@ -867,6 +906,8 @@ class FossilDig implements Game {
 
   askForHint() {
     if (this.finished) return;
+    // The hint's own line takes the waiting instruction's place.
+    if (stepOf(this.state) !== 'brush') this.dropAsk();
     if (stepOf(this.state) === 'brush') {
       void this.ctx.say('fossil-dig.instruct-brush');
       return;
@@ -880,6 +921,7 @@ class FossilDig implements Game {
     this.banked.misses += this.state.misses;
     this.banked.hints += this.state.hints;
     this.epoch++;
+    this.dropAsk();
     this.state = digState(this.round);
     this.brushing.clear();
     this.wave = 0;
@@ -971,7 +1013,7 @@ class FossilDig implements Game {
   /* Bot ------------------------------------------------------------------------------------------- */
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.brushing.size) return null;
+    if (this.busy || this.finished || this.unasked || this.brushing.size) return null;
     const s = this.state,
       step = stepOf(s);
     if (step === 'brush') {

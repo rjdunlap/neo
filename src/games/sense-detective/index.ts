@@ -116,6 +116,10 @@ class SenseDetective implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** Levels 4–5: the next instruction, waiting behind a right step's line (U7 R4); `askGen` drops a stale wait. */
+  unasked = false;
+  private askGen = 0;
+  private askVars: Record<string, string> | undefined;
   private alive = true;
   private clock = 0;
   private lastKey: string | null = null;
@@ -422,6 +426,8 @@ class SenseDetective implements Game {
   /** Look or Listen: reveals the hidden toy's observation. Replays never cost anything. */
   private async investigate(channel: Channel) {
     if (this.busy || this.finished) return;
+    // Level 4's ear is what the waiting `instruct-narrow` asks for, so it needs no instruction.
+    if (channel === 'sound' && this.instructId === 'sense.instruct-narrow') this.dropAsk();
     const obs = observe(this.hidden, channel);
     if (channel === 'sound') {
       void this.shakeParcel();
@@ -513,6 +519,8 @@ class SenseDetective implements Game {
     for (const c of this.choiceCards) c.ring.visible = c.ch === a;
     sfx.pop(3);
     void this.squish(a === 'cant-tell' ? this.cantTellCard : this.choiceCards.find((c) => c.ch === a)!.node);
+    // A first choice before the question is heard says the question in place of the card's name.
+    if (this.askNow()) return;
     await this.ctx.say(
       a === 'cant-tell' ? 'sense.card.cant-tell' : a === 'view' ? 'sense.card.look' : 'sense.card.listen',
     );
@@ -563,8 +571,8 @@ class SenseDetective implements Game {
       });
     } else if (v.kind === 'cant-tell') {
       sfx.pop(4);
-      await this.ctx.say('sense.cant-tell-right');
-      if (!this.alive) return;
+      // The line starts and stage B's cards open at once (U7 R4); its question waits for the line, the guide or her first tap.
+      const said = this.ctx.say('sense.cant-tell-right');
       this.stage = 'sense';
       // Stage B starts unhelped; a hint earned in stage A has already counted.
       this.glowOn = false;
@@ -575,7 +583,7 @@ class SenseDetective implements Game {
         void this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       }
       this.instructId = 'sense.what-would';
-      await this.ctx.instruct(this.instructId, this.pair(v.left));
+      this.waitAsk(said, this.pair(v.left));
     } else {
       const glow = this.tally.miss(setKey(this.parcelIndex, 0, [this.answer as string], this.record));
       this.sync();
@@ -642,6 +650,36 @@ class SenseDetective implements Game {
     void this.parcelFound(left);
   }
 
+  /** The instruction waits behind `said`, said when it ends unless something said it or dropped it first. */
+  private waitAsk(said: Promise<void>, vars?: Record<string, string>) {
+    this.dropAsk();
+    this.unasked = true;
+    this.askVars = vars;
+    const gen = this.askGen;
+    void said.then(() => {
+      if (gen === this.askGen) this.askNow();
+    });
+  }
+
+  /** Says the waiting instruction, if there is one. */
+  private askNow() {
+    if (!this.unasked || this.finished || !this.alive) return false;
+    const vars = this.askVars;
+    this.dropAsk();
+    void this.ctx.instruct(this.instructId, vars);
+    return true;
+  }
+
+  private dropAsk() {
+    this.unasked = false;
+    this.askGen++;
+  }
+
+  /** The guide was tapped while the next instruction waits behind a right step's line: say it. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
   private sync() {
     this.misses = this.tally.misses;
     this.hints = this.tally.hints;
@@ -687,10 +725,9 @@ class SenseDetective implements Game {
       void this.ctx.tw
         .to(this.listenBtn.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack })
         .then(() => this.bob(this.listenBtn));
-      await this.ctx.say('sense.so-far', this.pair(v.left));
-      if (!this.alive) return;
+      // The set plays over her next tap (U7 R4); `instruct-narrow` waits for the line, the guide or her first tap.
       this.instructId = 'sense.instruct-narrow';
-      await this.ctx.instruct(this.instructId);
+      this.waitAsk(this.ctx.say('sense.so-far', this.pair(v.left)));
     } else {
       const glow = this.tally.miss(setKey(this.parcelIndex, narrowing ? 0 : 1, this.chosen, this.record));
       this.sync();
@@ -805,6 +842,8 @@ class SenseDetective implements Game {
 
   private async press() {
     if (this.busy || this.finished) return;
+    // The tick before the instruction is heard says it and is not judged (never a miss).
+    if (this.askNow()) return;
     if (this.setLevel) return this.pressSet();
     if (this.tellLevel) return this.pressTell();
     if (!this.selected) {
@@ -853,6 +892,8 @@ class SenseDetective implements Game {
   /** The pause sheet's Show a hint: run the deciding investigation first if it has not been made, then glow the possible card. */
   askForHint() {
     if (this.busy || this.finished) return;
+    // A waiting instruction is said first; the hint's glow follows as before.
+    this.askNow();
     if (this.tellLevel) {
       // Look first if she has not, then glow the answer this stage needs; once per parcel, then the instruction again.
       if (this.tally.hinted) {
@@ -896,6 +937,7 @@ class SenseDetective implements Game {
     if (this.finished) return;
     if (this.setLevel || this.tellLevel) {
       if (this.busy) return;
+      this.dropAsk();
       this.clearClues();
       if (this.tellLevel) this.resetTell();
       this.parcelIndex = 0;
@@ -953,7 +995,7 @@ class SenseDetective implements Game {
 
   /** The ghost finger: look first, listen when the look is not enough, taste the choices, then pick the possible toy and press the tick. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || this.unasked) return null;
     if (this.tellLevel) {
       const m = tellTouch(this.round, this.record, this.stage, this.answer);
       if ('investigate' in m) return { tap: { on: this.lookBtn } };

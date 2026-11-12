@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
  * `seesaw-balance` a right answer's line never holds the next shot, question, knock, measure, task or blocks. The lines are stretched to at least 4 s in the page (and each line's start recorded), so the
  * next board opening sooner shows the line no longer gates it; its ask waits (said by the guide, or at her first touch),
  * and the round's last line is still heard out before the closing line. TINKER_ONLY=launch|ramp|tower|inch|post|seesaw
- * plays one game.
+ * plays one game. Batch 25 adds `moon-window`, `sense-detective` and `fossil-dig` (TINKER_ONLY=moon|sense|fossil).
  */
 export function createSuite({ page, launch, finished, log }) {
   async function tinkerCutLines() {
@@ -330,6 +330,137 @@ export function createSuite({ page, launch, finished, log }) {
       assert.deepEqual(await score('seesaw-balance'), [0, 0]);
       log(
         `Seesaw Balance 15 R4: blocks open ${opens} ms into a 4 s guessed, measure-pumpkin waiting; the guide said it; her first block went on and quieted it, the guide still saying it`,
+      );
+    }
+
+    if (!only || only === 'moon') {
+      // Level 2's `moonwindow.right` and level 3's view line follow every right card but the last; level 2 tries an early
+      // wrong card on the second board, level 3 the guide.
+      for (const [level, line] of [
+        [2, 'moonwindow.right'],
+        [3, 'moonwindow.view'],
+      ]) {
+        await launch('moon-window', level);
+        await stretch(
+          level === 2 ? [line] : ['none', 'slice', 'half', 'most', 'full'].map((a) => `${line}.${a}`),
+        );
+        const out = await page.evaluate(async (level) => {
+          const g = neo.scene.game;
+          const out = [];
+          const total = g.round.boards.length;
+          for (let n = 0; n < total; n++) {
+            await kit.until(() => g.round.index === n && !g.busy, 20000);
+            if (n > 0) out.push({ n, open: performance.now() - window.__said, waiting: g.unasked });
+            if (n === 1 && level === 3) out.push({ guide: g.sayWaitingAsk(), waiting: g.unasked });
+            if (n === 1 && level === 2) {
+              // The wrong card before the request is heard: the request is said, never a miss.
+              kit.tapOn(g.cards[1 - g.round.hintFor()].node);
+              await kit.sleep(150);
+              out.push({ early: { misses: g.misses, waiting: g.unasked } });
+            }
+            if (n > 1) await kit.until(() => !g.unasked, 6000);
+            kit.tapOn(g.cards[g.round.hintFor()].node);
+            if (n === total - 1) {
+              await kit.until(() => neo.scene.finished, 30000);
+              out.push({ last: window.__starts['moonwindow.done'] - window.__said });
+            } else await kit.until(() => g.round.index === n + 1, 20000);
+          }
+          return out;
+        }, level);
+        const opens = check(`Moon Window ${level}`, out, 1500);
+        await finished('moon-window');
+        assert.deepEqual(await score('moon-window'), [0, 0]);
+        log(
+          `Moon Window ${level} R4: next cards open ${opens} ms into a 4 s right-card line, the request waiting; ${level === 2 ? 'an early wrong card said it (no miss)' : 'the guide said it'}; the last heard out before moonwindow.done`,
+        );
+      }
+    }
+
+    if (!only || only === 'sense') {
+      // Level 4's `so-far` and level 5's `cant-tell-right`: the next step opens as the line starts, its instruction waiting.
+      for (const [level, line] of [
+        [4, 'sense.so-far'],
+        [5, 'sense.cant-tell-right'],
+      ]) {
+        await launch('sense-detective', level);
+        await stretch([line]);
+        const out = await page.evaluate(async (level) => {
+          const g = neo.scene.game;
+          const out = [];
+          let seen = 0;
+          let k = 0;
+          for (let guard = 0; guard < 300 && !neo.scene.finished && !g.finished; guard++) {
+            if (window.__said && window.__said !== seen && !g.busy) {
+              seen = window.__said;
+              out.push({ n: k, open: performance.now() - seen, waiting: g.unasked });
+              if (k === 0 && level === 5) out.push({ guide: g.sayWaitingAsk(), waiting: g.unasked });
+              else if (k === 0) {
+                // The green tick before the instruction is heard says it and is not judged.
+                const before = g.misses;
+                kit.tapOn(g.checkBtn);
+                await kit.sleep(150);
+                out.push({ early: { misses: g.misses - before, waiting: g.unasked } });
+              } else await kit.until(() => !g.unasked, 6000);
+              k++;
+            }
+            const t = g.autotouch();
+            if (t) {
+              kit.tapOn(t.tap.on);
+              await kit.sleep(300);
+            } else await kit.sleep(100);
+          }
+          return out;
+        }, level);
+        if (!out.some((o) => o.open !== undefined))
+          throw new Error(`R4: Sense Detective ${level}: ${line} never played: ${JSON.stringify(out)}`);
+        const opens = check(`Sense Detective ${level}`, out, 600);
+        await finished('sense-detective');
+        assert.deepEqual(await score('sense-detective'), [0, 0]);
+        log(
+          `Sense Detective ${level} R4: next step open ${opens} ms into a 4 s ${line}, its instruction waiting; ${level === 5 ? 'the guide said it' : 'an early tick said it (not judged)'}`,
+        );
+      }
+    }
+
+    if (!only || only === 'fossil') {
+      // Level 1: `found` as her brushing uncovers the print, then a right flag's `where-recorded`.
+      await launch('fossil-dig', 1);
+      await stretch(['fossil-dig.found', 'fossil-dig.where-recorded']);
+      const out = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const out = [];
+        let seen = 0;
+        let k = 0;
+        for (let guard = 0; guard < 400 && !neo.scene.finished && !g.finished; guard++) {
+          if (window.__said && window.__said !== seen && !g.busy) {
+            seen = window.__said;
+            out.push({ n: k, open: performance.now() - seen, waiting: g.unasked });
+            if (k === 0) {
+              // A wrong flag before `instruct-where` is heard says it, never a miss.
+              await kit.until(() => g.brushing.size === 0, 4000);
+              const right = g.round.site;
+              kit.tapOn(g.flagNodes[(right + 1) % 3]);
+              await kit.sleep(150);
+              out.push({ early: { misses: g.misses, waiting: g.unasked } });
+            } else out.push({ guide: g.sayWaitingAsk(), waiting: g.unasked });
+            k++;
+          }
+          const t = g.autotouch();
+          if (t) {
+            const p = t.tap.on.toGlobal({ x: t.tap.x ?? 0, y: t.tap.y ?? 0 });
+            kit.tap(p.x, p.y);
+            await kit.sleep(250);
+          } else await kit.sleep(100);
+        }
+        return out;
+      });
+      if (out.filter((o) => o.open !== undefined).length !== 2)
+        throw new Error(`R4: Fossil Dig: found and where-recorded did not both play: ${JSON.stringify(out)}`);
+      const opens = check('Fossil Dig', out, 600);
+      await finished('fossil-dig');
+      assert.deepEqual(await score('fossil-dig'), [0, 0]);
+      log(
+        `Fossil Dig 1 R4: flags open ${opens.split(', ')[0]} ms into a 4 s found and the like cards ${opens.split(', ')[1]} ms into a 4 s where-recorded, each instruction waiting; an early wrong flag said it (no miss); the guide said the other`,
       );
     }
   }
