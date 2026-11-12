@@ -70,6 +70,11 @@ export class RaceGame implements Game {
   spinning = false;
   busy = false;
   finished = false;
+  /**
+   * The race's or the even-up's ask, waiting behind `sf.fair`, `sf.unfair` or `sf.even-now` (U7 R4): said when the
+   * line ends, at her first touch on the wheel or a button, or by the guide.
+   */
+  private unasked: (() => void) | null = null;
   art!: SpinnerArt;
   pieces: Piece[] = [];
   racerNodes: Container[] = [];
@@ -260,7 +265,11 @@ export class RaceGame implements Game {
       p.drag = draggable(w.node, this.ctx.tw, {
         lift: 0,
         keepGrab: true,
-        onPick: () => sfx.pop(5),
+        onPick: () => {
+          sfx.pop(5);
+          // The wedge goes on moving while the waiting ask is said.
+          this.askNow();
+        },
         onDrop: (x, y) => this.dropWedge(p, x, y),
       });
       return p;
@@ -282,6 +291,8 @@ export class RaceGame implements Game {
     n.scale.set(1.08);
     void this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
     if (this.busy || this.spinning) return;
+    // A button before the ask is heard says the ask rather than being judged.
+    if (this.askNow()) return;
     if (b === 'check') {
       void this.check();
       return;
@@ -313,20 +324,44 @@ export class RaceGame implements Game {
     this.busy = true;
     this.glowing = false;
     sfx.sparkle();
-    const set = this.setIndex;
+    // Her answer's line never holds the wheel (U7 R4): the race or the even-up opens with it, and its ask waits.
     if (fair) {
-      await this.ctx.say('sf.fair');
-      if (this.finished || set !== this.setIndex) return;
-      this.toRace();
+      this.toRace(this.ctx.say('sf.fair'));
       return;
     }
     const [n, m] = this.racers.map((k) => String(countOf(this.wheel, k)));
-    await this.ctx.say('sf.unfair', { kind: NAME_OF[this.racers[0]], other: NAME_OF[this.racers[1]], n, m });
-    if (this.finished || set !== this.setIndex) return;
+    const line = this.ctx.say('sf.unfair', {
+      kind: NAME_OF[this.racers[0]],
+      other: NAME_OF[this.racers[1]],
+      n,
+      m,
+    });
     this.phase = 'even';
     this.busy = false;
     this.syncDrags();
-    void this.instruct();
+    void this.askAfter(line);
+  }
+
+  /** The phase's ask waits for `line`, unless her touch or the guide said it first, or the set moved on. */
+  private async askAfter(line: Promise<unknown>) {
+    const ask = () => void this.instruct();
+    this.unasked = ask;
+    await line;
+    if (this.unasked === ask) this.askNow();
+  }
+
+  /** Says the waiting ask, if any; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    ask();
+    return true;
+  }
+
+  /** The guide was tapped while the race's or even-up's ask waits: say that ask, not the fair-or-unfair question. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   /** A wedge let go: on the other racer it changes owner (the wheel re-sorts); anywhere else it goes back. Never counted. */
@@ -398,17 +433,16 @@ export class RaceGame implements Game {
     this.glowing = false;
     this.syncDrags();
     sfx.sparkle();
-    const set = this.setIndex;
-    await this.ctx.say('sf.even-now');
-    if (this.finished || set !== this.setIndex) return;
-    this.toRace();
+    this.toRace(this.ctx.say('sf.even-now'));
   }
 
-  private toRace() {
+  /** The race opens at once; its ask waits behind `after` (the fair line), if any. */
+  private toRace(after?: Promise<unknown>) {
     this.phase = 'race';
     this.busy = false;
     this.syncDrags();
-    void this.instruct();
+    if (after) void this.askAfter(after);
+    else void this.instruct();
   }
 
   private async hearWrong(line: 'sf.count-wedges' | 'sf.uneven', vars: Record<string, string>) {
@@ -474,6 +508,8 @@ export class RaceGame implements Game {
     node.rotation = 0.03;
     void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic });
     if (this.busy || this.spinning) return;
+    // A spin is never judged, so it goes on while the waiting ask is said.
+    this.askNow();
     void this.doSpin();
   }
 
@@ -533,6 +569,7 @@ export class RaceGame implements Game {
     }
     await this.ctx.tw.wait(0.4);
     if (this.finished) return;
+    this.unasked = null;
     this.setIndex++;
     this.wheel = this.set.wheels[0];
     this.results = [];
@@ -639,6 +676,8 @@ export class RaceGame implements Game {
       this.busy ||
       this.finished ||
       this.spinning ||
+      // The finger moves after the ask is heard, as she would.
+      this.unasked ||
       this.rebuild ||
       this.pieces.some((p) => p.drag.dragging)
     )

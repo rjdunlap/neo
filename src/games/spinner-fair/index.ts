@@ -55,6 +55,8 @@ class SpinnerFair implements Game {
   spinning = false;
   busy = false;
   finished = false;
+  /** Level 3's "spin it ten times", waiting behind `sf.picked` (U7 R4): said when it ends, at her first spin, or by the guide. */
+  private unasked: (() => void) | null = null;
   /** Level 3: the spinner she picked (0 or 1), once picked. */
   picked: number | null = null;
   spinners: SpinnerArt[] = [];
@@ -250,6 +252,8 @@ class SpinnerFair implements Game {
       void this.ctx.say('sf.no-more-spins');
       return;
     }
+    // A spin is never judged, so it goes on while the waiting ask is said.
+    this.askNow();
     void this.doSpin();
   }
 
@@ -371,6 +375,9 @@ class SpinnerFair implements Game {
     this.glowing = false;
     this.picked = i;
     sfx.bell(7, 0.3);
+    // Her right pick's line never holds the wheel (U7 R4): it starts now, the wheel opens once it has moved over, and
+    // the ask to spin waits for the line.
+    const line = this.ctx.say('sf.picked', { kind: NAME_OF[this.set.favourite!] });
     const other = this.spinners[1 - i].node;
     other.eventMode = 'none';
     void this.ctx.tw.to(other, { alpha: 0 }, { duration: 0.35, ease: ease.outQuad }).then(() => {
@@ -392,10 +399,25 @@ class SpinnerFair implements Game {
     );
     await this.ctx.tw.to(node, { x: l.spinner.x, y: l.spinner.y }, { duration: 0.45, ease: ease.outQuad });
     if (this.finished) return;
-    await this.ctx.say('sf.picked', { kind: NAME_OF[this.set.favourite!] });
-    if (this.finished) return;
     this.busy = false;
-    void this.instruct();
+    const ask = () => void this.instruct();
+    this.unasked = ask;
+    await line;
+    if (this.unasked === ask) this.askNow();
+  }
+
+  /** Says the waiting ask to spin, if any; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    ask();
+    return true;
+  }
+
+  /** The guide was tapped while the ask to spin waits: say it, not the pick's question. */
+  sayWaitingAsk() {
+    return this.askNow();
   }
 
   private async hearWrong(line: 'sf.count-blocks' | 'sf.more-of', vars: Record<string, string> = {}) {
@@ -552,7 +574,8 @@ class SpinnerFair implements Game {
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.spinning) return null;
+    // The finger spins after the ask is heard, as she would.
+    if (this.busy || this.finished || this.spinning || this.unasked) return null;
     if (this.phase === 'spin') return { tap: { on: this.main.node }, pause: 0.3 };
     if (this.phase === 'ask') return { tap: { on: this.columns[tallest(this.counts)[0]], y: -BAR_H / 2 } };
     return { tap: { on: this.spinners[this.set.better!].node } };

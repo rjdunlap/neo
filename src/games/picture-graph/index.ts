@@ -154,6 +154,11 @@ class PictureGraph implements Game {
   finished = false;
   questions: Question[] = [];
   q = 0;
+  /**
+   * The next question's ask, waiting behind a right answer's or a built graph's line (U7 R4): said when the line ends,
+   * at her first answering tap (which is not judged, since the question is only spoken) or by the guide.
+   */
+  private unasked: (() => unknown) | null = null;
   readonly columns: Container[] = [];
   readonly pads: { n: number; node: Container }[] = [];
   readonly check: RoundButton;
@@ -301,7 +306,8 @@ class PictureGraph implements Game {
    * each question by its column or its number.
    */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.graph) return null;
+    // The finger answers after hearing the question, as she would.
+    if (this.busy || this.finished || !this.graph || this.unasked) return null;
     const move =
       this.phase === 'tally'
         ? tallyMove(this.graph, this.tallies)
@@ -364,6 +370,7 @@ class PictureGraph implements Game {
 
   private async next() {
     this.busy = true;
+    this.unasked = null;
     this.index++;
     this.wrongs = 0;
     this.hint = null;
@@ -548,6 +555,7 @@ class PictureGraph implements Game {
 
   private tapColumn(i: number, e: FederatedPointerEvent) {
     if (this.busy || this.finished) return;
+    if (this.askNow()) return;
     // Answering "which one?" questions: tap a column.
     const q = this.questions[this.q];
     if (q && (q.ask === 'most' || q.ask === 'fewest' || q.ask === 'same')) return void this.answerColumn(i);
@@ -613,13 +621,20 @@ class PictureGraph implements Game {
       this.hint = null;
       sfx.sparkle();
       this.ctx.pet.cheer();
-      await this.ctx.say('graph.built');
+      const line = this.ctx.say('graph.built');
       this.wrongs = 0;
       this.questions = questionsFor(this.plan, this.graph, this.ctx.rng);
+      if (!this.questions.length) {
+        // Level 1: the built graph is praised before the next meadow (between boards).
+        await line;
+        this.check.visible = false;
+        this.busy = false;
+        return void this.next();
+      }
+      // Questions on the graph she just built never wait for its praise (U7 R4): they open with it.
       this.check.visible = false;
       this.busy = false;
-      if (!this.questions.length) return void this.next();
-      return this.askNext();
+      return this.askNext(line);
     }
     this.busy = true;
     this.misses++;
@@ -635,26 +650,56 @@ class PictureGraph implements Game {
     this.busy = false;
   }
 
-  private askNext(): Promise<void> | void {
+  /**
+   * The next question's board (its pads or claim card) at once, and its ask: now, or, behind `after` (a right answer's
+   * or a built graph's line), when that line ends or at her first tap, whichever comes first.
+   */
+  private askNext(after?: Promise<unknown>): Promise<void> | void {
     this.hint = null;
     this.wrongs = 0;
     this.firstSame = null;
+    this.unasked = null;
     this.clearPads();
     const q = this.questions.length ? this.questions[this.q] : undefined;
     if (!q && prebuilt(this.plan)) {
       this.questions = questionsFor(this.plan, this.graph, this.ctx.rng);
-      return this.askNext();
+      return this.askNext(after);
     }
     if (!q) return void this.next();
+    const ask = this.board(q);
+    if (!after) return ask();
+    this.unasked = ask;
+    void after.then(() => {
+      if (this.unasked === ask) this.askNow();
+    });
+  }
+
+  /** Says the question's ask if it is still waiting behind a line; true when it did. */
+  private askNow() {
+    const ask = this.unasked;
+    if (!ask || this.finished) return false;
+    this.unasked = null;
+    void ask();
+    return true;
+  }
+
+  /** The guide was tapped while the next question's ask waits: say that ask, not the last question's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /** Lays out a question's pads or claim card and returns its spoken ask. */
+  private board(q: Question): () => Promise<void> | void {
     const name = (i: number) => NAMES[this.graph.kinds[i]]!;
     if (q.ask === 'claim') {
       this.lit = [];
       this.stampHint = null;
       this.showClaim(q.claim);
       const c = q.claim;
-      if (c.say === 'more') return this.ctx.instruct('graph.claim.more', { a: name(c.a), b: name(c.b) });
-      if (c.say === 'most') return this.ctx.instruct('graph.claim.most', { a: name(c.a) });
-      return this.ctx.instruct(`graph.claim.${c.about}`, { a: name(c.a) });
+      if (c.say === 'more')
+        return () => this.ctx.instruct('graph.claim.more', { a: name(c.a), b: name(c.b) });
+      if (c.say === 'most') return () => this.ctx.instruct('graph.claim.most', { a: name(c.a) });
+      return () => this.ctx.instruct(`graph.claim.${c.about}`, { a: name(c.a) });
     }
     if (q.ask === 'more' || q.ask === 'total') {
       for (const n of choicesFor(
@@ -672,15 +717,15 @@ class PictureGraph implements Game {
       }
       this.resize(this.view);
     }
-    if (q.ask === 'most') return this.ctx.instruct('graph.most');
-    if (q.ask === 'fewest') return this.ctx.instruct('graph.fewest');
-    if (q.ask === 'same') return this.ctx.instruct('graph.same');
-    if (q.ask === 'total') return this.ctx.instruct(this.plan.per > 1 ? 'graph.totalpairs' : 'graph.total');
-    if (q.ask === 'more')
-      return this.ctx.instruct(this.plan.per > 1 ? `graph.more${keyed(this.plan.per)}` : 'graph.more', {
-        a: name(q.a),
-        b: name(q.b),
-      });
+    if (q.ask === 'most') return () => this.ctx.instruct('graph.most');
+    if (q.ask === 'fewest') return () => this.ctx.instruct('graph.fewest');
+    if (q.ask === 'same') return () => this.ctx.instruct('graph.same');
+    if (q.ask === 'total')
+      return () => this.ctx.instruct(this.plan.per > 1 ? 'graph.totalpairs' : 'graph.total');
+    if (q.ask !== 'more') return () => undefined;
+    const words = { a: name(q.a), b: name(q.b) };
+    return () =>
+      this.ctx.instruct(this.plan.per > 1 ? `graph.more${keyed(this.plan.per)}` : 'graph.more', words);
   }
 
   private clearPads() {
@@ -746,6 +791,7 @@ class PictureGraph implements Game {
   private async answerStamp(stamp: Stamp) {
     const q = this.questions[this.q];
     if (this.busy || this.finished || q?.ask !== 'claim') return;
+    if (this.askNow()) return;
     const why = stampWhy(q.claim, stamp);
     if (why === 'right') return void this.right();
     this.busy = true;
@@ -789,6 +835,7 @@ class PictureGraph implements Game {
 
   private async answerNumber(n: number) {
     if (this.busy || this.finished) return;
+    if (this.askNow()) return;
     const q = this.questions[this.q] as Extract<Question, { ask: 'more' | 'total' }>;
     if (n === q.answer) return void this.right();
     // Reading the number of blocks and forgetting the key, or the taller bar instead of the difference, each gets its own gentle explanation.
@@ -830,11 +877,17 @@ class PictureGraph implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     const q = this.questions[this.q];
-    await this.ctx.say(q?.ask === 'claim' ? `graph.claim.${q.claim.answer}yay` : 'graph.yay');
+    const line = this.ctx.say(q?.ask === 'claim' ? `graph.claim.${q.claim.answer}yay` : 'graph.yay');
     this.q++;
+    if (this.q >= this.questions.length) {
+      // The graph's last answer is praised before the next graph or the closing line.
+      await line;
+      this.busy = false;
+      return void this.next();
+    }
+    // Another question on the same graph never waits for the praise (U7 R4): its board opens with it.
     this.busy = false;
-    if (this.q >= this.questions.length) return void this.next();
-    return this.askNext();
+    return this.askNext(line);
   }
 
   private async finale() {
