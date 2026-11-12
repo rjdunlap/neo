@@ -149,3 +149,9 @@
 **Changed:** the Story Grove table (six games: `word-monsters` 1, `photo-safari` 1, `goodnight-room` 1, `opposites` 1, `attic-finds` 3, `word-glue` 1) and its words-off list on the [toy-test page](../definitions/toy-test-lap-openings.md); six READY lines (`goodnight-room`, `photo-safari`, `word-monsters`, `word-glue`, `opposites`, `attic-finds`); the P4 line and progress counts (51 of 57 read).
 **Ran:** `node scripts/check-links.mjs` and `git diff --check` (links ok; diff check clean).
 **Not run:** typecheck, unit tests, build and browser suites (nothing built; the six games were read from the code at `origin/main` `d80b14e9`, not played or timed).
+
+## 2026-11-11 — Tile Pairs slice 1, a fresh pairing and a visible uncovering (PR #1522)
+
+**Changed:** `tile-pairs` `logic.ts` (`seededRoute`, a per-level `clear` band and `deal` over up to 40 seeded routes at 60 play-outs each), `logic.test.ts` (the frozen hash test for levels 1–3 replaced by property tests) and `index.ts` (a pair lifts and fades, freed tiles pulse, "pairs open" in the tally); no shared file, voice, how-to, level table or couch change.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/tile-pairs` (9 passed); `BROWSER_SUITE=tilepairs TILE_LEVELS=3` (mismatch, hint, undo, shuffle, resize, one sticker, return to Lantern Lake) with the portrait screenshot read for the tally. Measured over seeds 1–100 a level on a Mac: kept boards re-measure at 100/99/97/96/87/82% over 200 play-outs, at most 3 exhausted candidate lists, worst deal 24 ms.
+**Not run:** `fingerdemo` (the bot's actions do not change), `npm run build` (no shared file or asset changed; CI builds), couch suites, offline. The lift and pulse are transient and were not captured in a still.
