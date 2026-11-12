@@ -127,6 +127,8 @@ class RuleMachine implements Game {
   private layoutNow: Layout;
   private clock = 0;
   private idle = 0;
+  private waitingAsk: (() => Promise<void>) | null = null;
+  private speechTurn = 0;
   private readonly backdrop: Backdrop;
   private readonly art: MachineArt;
   private readonly tableLayer = new Container();
@@ -315,6 +317,27 @@ class RuleMachine implements Game {
       }
   }
 
+  private askAfter(say: () => Promise<void>, feedback?: Promise<void>) {
+    if (!feedback) return void say();
+    this.waitingAsk = say;
+    void feedback.then(() => {
+      if (this.ctx.alive && this.waitingAsk === say) this.sayWaitingAsk();
+    });
+  }
+
+  private takeOverSpeech() {
+    this.waitingAsk = null;
+    this.speechTurn++;
+  }
+
+  sayWaitingAsk() {
+    const ask = this.waitingAsk;
+    if (!ask) return false;
+    this.takeOverSpeech();
+    void ask();
+    return true;
+  }
+
   private instruct() {
     if (this.phase === 'predict')
       return this.ctx.instruct(this.plan.ask === 'look' ? 'rm.what-look' : 'rm.how-many');
@@ -457,7 +480,7 @@ class RuleMachine implements Game {
   }
 
   /** Level 5: the next wanted car on this machine, with its fresh tray. */
-  private nextWanted() {
+  private nextWanted(feedback: Promise<void>) {
     this.fed = [];
     this.carSlot = null;
     this.score.newAsk();
@@ -466,7 +489,8 @@ class RuleMachine implements Game {
     this.phase = 'feed';
     this.resize(this.ctx.view);
     sfx.whoosh();
-    void this.ctx.say('rm.back.ask', { n: this.wantedNow!.out });
+    const n = this.wantedNow!.out;
+    this.askAfter(() => this.ctx.say('rm.back.ask', { n }), feedback);
   }
 
   private drawLights() {
@@ -566,11 +590,12 @@ class RuleMachine implements Game {
     const nearHopper = Math.hypot(x - h.x, y - h.y) <= 160;
     const tapped = Math.hypot(x - home.x, y - (home.y + 50)) < 24;
     if (!nearHopper && !tapped) return false;
+    this.takeOverSpeech();
     void this.feedCar(slot);
     return true;
   }
 
-  private async feedCar(slot: number) {
+  private async feedCar(slot: number, feedback?: Promise<void>) {
     this.phase = 'between';
     this.carSlot = slot;
     this.fed.push(slot);
@@ -599,7 +624,7 @@ class RuleMachine implements Game {
       return;
     }
     this.trayLayer.visible = false;
-    this.openQuestion();
+    this.openQuestion(feedback);
   }
 
   /** Level 4 before the card: a fed car just runs (feeding is never judged), and she feeds again or taps a card. */
@@ -634,7 +659,8 @@ class RuleMachine implements Game {
       this.placeColumns();
       sfx.sparkle();
       sfx.bell(9, 0.3);
-      await this.ctx.say('rm.back.right', { n, m: out });
+      const feedback = this.ctx.say('rm.back.right', { n, m: out });
+      if (this.asked + 1 >= this.plan.wanted) await feedback;
       if (this.finished || m !== this.index) return;
       await this.ctx.tw.wait(0.4);
       if (this.finished || m !== this.index) return;
@@ -644,7 +670,7 @@ class RuleMachine implements Game {
         return;
       }
       this.rollAway();
-      this.nextWanted();
+      this.nextWanted(feedback);
       return;
     }
     await this.run(n, out, { quiet: true, beside: true });
@@ -730,24 +756,26 @@ class RuleMachine implements Game {
     sfx.bell(9, 0.3);
     sfx.bell(11, 0.25);
     const line = cardLine(rule);
-    await this.ctx.say(line.name, { n: rule.b });
-    if (this.finished || m !== this.index) return;
-    await this.ctx.say('rm.hangs');
-    if (this.finished || m !== this.index) return;
+    const turn = this.speechTurn;
+    const feedback = this.ctx.say(line.name, { n: rule.b }).then(() => {
+      if (this.ctx.alive && m === this.index && turn === this.speechTurn) return this.ctx.say('rm.hangs');
+    });
     if (this.plan.shelf === 'after') {
       this.trayLayer.visible = true;
       this.phase = 'feed';
-      void this.ctx.say('rm.send');
+      this.askAfter(() => this.ctx.say('rm.send'), feedback);
       return;
     }
     const slot = lastCar(this.count.tray, this.fed);
     if (slot === null) {
+      await feedback;
+      if (this.finished || m !== this.index) return;
       await this.endMachine();
       return;
     }
     // The last car is chosen for her (the lowest still on the tray): she predicts it with the card on the machine.
     this.asked = 0;
-    void this.feedCar(slot);
+    void this.feedCar(slot, feedback);
   }
 
   private tapPeek() {
@@ -761,12 +789,12 @@ class RuleMachine implements Game {
     void this.ctx.say('rm.peek');
   }
 
-  private openQuestion() {
+  private openQuestion(feedback?: Promise<void>) {
     this.phase = 'predict';
     this.chosen = null;
     this.score.newAsk();
     this.buildPads();
-    void this.instruct();
+    this.askAfter(() => this.instruct(), feedback);
   }
 
   private buildPads() {
@@ -798,6 +826,7 @@ class RuleMachine implements Game {
 
   private tapPad(i: number) {
     if (this.finished || this.phase !== 'predict') return;
+    this.takeOverSpeech();
     const node = this.padNodes[i];
     this.ctx.tw.kill(node.scale);
     node.scale.set(0.92);
@@ -859,9 +888,10 @@ class RuleMachine implements Game {
     if (this.finished || this.busy) return;
     const move = this.helpMove;
     if (!move) {
-      void this.instruct();
+      if (!this.sayWaitingAsk()) void this.instruct();
       return;
     }
+    this.takeOverSpeech();
     if (this.score.showMe()) {
       void this.ctx.say('rm.help');
       return;
