@@ -249,6 +249,8 @@ function roadStrip(h: number): Graphics {
 }
 
 const SAND = 0xe8c98a;
+/** A short look at the found chest, thing, twin or raft before the next find clears or joins it (U7 R4). */
+const FOUND_BEAT = 0.5;
 
 /** A small number tile as on level 6's card. */
 function countTile(n: number): Container {
@@ -314,6 +316,8 @@ class TreasureMap implements Game {
   private wrongs = 0;
   private hinting = false;
   private clock = 0;
+  /** The next find's spoken instruction, waiting behind the last find's line (U7 R4), or null. */
+  private unasked: (() => unknown) | null = null;
   // Couch play: a ring over the square a press would dig, moved one square at a time.
   private cursor: Square = { col: 0, row: 0 };
   private couchOn = false;
@@ -614,7 +618,7 @@ class TreasureMap implements Game {
 
   /** The ghost finger digs in the middle of the square asked for, once the last dig has finished. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.find) return null;
+    if (this.busy || this.finished || !this.find || this.unasked) return null;
     if (this.plan.mode === 'write') {
       const want = cardFor(this.find);
       const c = this.card;
@@ -672,7 +676,7 @@ class TreasureMap implements Game {
     const out = idle();
     out.players[0].active = true;
     this.botWait -= dt;
-    if (this.busy || this.finished || !this.find || this.botWait > 0) return out;
+    if (this.busy || this.finished || !this.find || this.unasked || this.botWait > 0) return out;
     const want = this.find.square;
     const c = this.cursor;
     if (want.col !== c.col) out.players[0].direction = want.col > c.col ? 0 : 2;
@@ -688,8 +692,13 @@ class TreasureMap implements Game {
 
   destroy() {}
 
-  private async next() {
+  /**
+   * On to the next find. A right find's line never holds it (U7 R4): the next find is set up at once with input open,
+   * and its spoken instruction waits for the line, or is said at her first dig, card or tile.
+   */
+  private async next(line?: Promise<unknown>) {
     this.busy = true;
+    this.unasked = null;
     this.index++;
     this.wrongs = 0;
     this.hinting = false;
@@ -719,44 +728,86 @@ class TreasureMap implements Game {
     this.drawOutlines();
     this.busy = false;
     const mode = this.plan.mode;
-    if (mode === 'river') {
-      if (this.index === 0) await this.ctx.say('map.riverintro');
-      return this.ctx.instruct('map.river', { across: acrossWords(f.square), updown: upDownWords(f.square) });
+    this.ask(async () => {
+      if (mode === 'river') {
+        if (this.index === 0) await this.ctx.say('map.riverintro');
+        return this.ctx.instruct('map.river', {
+          across: acrossWords(f.square),
+          updown: upDownWords(f.square),
+        });
+      }
+      if (mode === 'mirror')
+        return this.ctx.instruct('map.mirror', {
+          thing: f.thing!,
+          across: acrossWords(f.stands!),
+          updown: upDownWords(f.stands!),
+          line: f.across!,
+        });
+      if (mode === 'line')
+        return f.line!.axis === 'col'
+          ? this.ctx.instruct('map.linecol', { color: this.headers.cols[f.line!.at] })
+          : this.ctx.instruct('map.linerow', { pic: this.headers.rows[f.line!.at] });
+      if (mode === 'pictures')
+        return this.ctx.instruct('map.pictures', {
+          pic: this.headers.rows[f.square.row],
+          color: this.headers.cols[f.square.col],
+        });
+      if (mode === 'letters')
+        return this.ctx.instruct('map.letters', {
+          sq: name(f.square),
+          col: String.fromCharCode(65 + f.square.col),
+          row: f.square.row + 1,
+        });
+      if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
+      if (mode === 'write') return this.ctx.instruct('map.write');
+      if (mode === 'far') return this.ctx.instruct('map.far');
+      if (mode === 'slide') return this.ctx.instruct('map.slide', { dirs: slideWords(f.right!, f.up!) });
+      if (mode === 'clues')
+        return this.ctx.instruct('map.clues', {
+          first: clueDirection(f.clues![0]),
+          firstThing: f.clues![0].thing,
+          second: clueDirection(f.clues![1]),
+          secondThing: f.clues![1].thing,
+        });
+      return this.ctx.instruct('map.steps', { dirs: directions(f) });
+    }, line);
+  }
+
+  /** Says the find's instruction now, or when the last find's line ends if one is still playing. */
+  private ask(say: () => unknown, line?: Promise<unknown>) {
+    if (!line) return void say();
+    this.unasked = say;
+    const at = this.index;
+    void line.then(() => {
+      if (this.index === at) this.askNow();
+    });
+  }
+
+  /** Says the find's instruction if it is still waiting behind the last find's line. */
+  private askNow() {
+    const say = this.unasked;
+    if (!say || this.finished) return false;
+    this.unasked = null;
+    void say();
+    return true;
+  }
+
+  /** The guide was tapped while the instruction waits: say this find's, not the last one's. */
+  sayWaitingAsk() {
+    return this.askNow();
+  }
+
+  /**
+   * A right find's line starts and the next find follows at once, after a short look at what was found (U7 R4); the
+   * next dig cuts the line as any new line does. The last find's line is heard out before the finale.
+   */
+  private async onward(line: Promise<unknown>) {
+    if (this.index >= this.finds.length - 1) {
+      await line;
+      return this.next();
     }
-    if (mode === 'mirror')
-      return this.ctx.instruct('map.mirror', {
-        thing: f.thing!,
-        across: acrossWords(f.stands!),
-        updown: upDownWords(f.stands!),
-        line: f.across!,
-      });
-    if (mode === 'line')
-      return f.line!.axis === 'col'
-        ? this.ctx.instruct('map.linecol', { color: this.headers.cols[f.line!.at] })
-        : this.ctx.instruct('map.linerow', { pic: this.headers.rows[f.line!.at] });
-    if (mode === 'pictures')
-      return this.ctx.instruct('map.pictures', {
-        pic: this.headers.rows[f.square.row],
-        color: this.headers.cols[f.square.col],
-      });
-    if (mode === 'letters')
-      return this.ctx.instruct('map.letters', {
-        sq: name(f.square),
-        col: String.fromCharCode(65 + f.square.col),
-        row: f.square.row + 1,
-      });
-    if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
-    if (mode === 'write') return this.ctx.instruct('map.write');
-    if (mode === 'far') return this.ctx.instruct('map.far');
-    if (mode === 'slide') return this.ctx.instruct('map.slide', { dirs: slideWords(f.right!, f.up!) });
-    if (mode === 'clues')
-      return this.ctx.instruct('map.clues', {
-        first: clueDirection(f.clues![0]),
-        firstThing: f.clues![0].thing,
-        second: clueDirection(f.clues![1]),
-        secondThing: f.clues![1].thing,
-      });
-    return this.ctx.instruct('map.steps', { dirs: directions(f) });
+    await this.ctx.tw.wait(FOUND_BEAT);
+    return this.next(line);
   }
 
   private drawLandmarks(f: Find) {
@@ -918,6 +969,7 @@ class TreasureMap implements Game {
   /** A dig at a square, from a finger or the couch's ring. */
   private async dig(guess: Square) {
     if (this.busy || this.finished) return;
+    this.askNow();
     if (this.plan.mode === 'far') return this.digFar(guess);
     if (this.plan.mode === 'line') return this.digLine(guess);
     if (this.crossed) return this.digCrossed(guess);
@@ -1010,8 +1062,7 @@ class TreasureMap implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say('map.mirrored');
-    await this.next();
+    await this.onward(this.ctx.say('map.mirrored'));
   }
 
   /** Level 9's dig: any square in the line asked for is right; a dig elsewhere names the line it was in. */
@@ -1050,13 +1101,16 @@ class TreasureMap implements Game {
   private async digFar(guess: Square) {
     const f = this.find;
     if (compare(guess, f.square) === 'right') return void this.found();
-    this.busy = true;
     const again = dugAt(guess, this.digs);
-    const against = again ? null : ruledOutBy(guess, this.digs);
     if (again) {
+      // A re-dig re-reads what the square said, with input open: her next dig cuts it as a running read (U7 R4).
       sfx.tick();
-      await this.ctx.say('map.faragain', { steps: stepsWord(again.said) });
-    } else if (!against) {
+      void this.ctx.say('map.faragain', { steps: stepsWord(again.said) });
+      return;
+    }
+    this.busy = true;
+    const against = ruledOutBy(guess, this.digs);
+    if (!against) {
       const said = distance(guess, f.square);
       this.digs.push({ square: guess, said });
       this.drawStack(guess, said);
@@ -1174,8 +1228,7 @@ class TreasureMap implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say(this.plan.mode === 'place' ? 'map.placed' : 'map.found');
-    await this.next();
+    await this.onward(this.ctx.say(this.plan.mode === 'place' ? 'map.placed' : 'map.found'));
   }
 
   /** Level 8: the flag's square is right. A flag waits there, and the question moves to the outline cards. */
@@ -1197,6 +1250,7 @@ class TreasureMap implements Game {
   /** Level 8's cards: the slid raft is right; a turned-over or wrongly slid one is a miss that says why, once. */
   private async pickOutline(i: number) {
     if (this.busy || this.finished || this.plan.mode !== 'slide' || this.part !== 'cards') return;
+    this.askNow();
     const f = this.find;
     const o = f.outlines![i];
     const card = this.outlineCards[i];
@@ -1254,8 +1308,7 @@ class TreasureMap implements Game {
       life: [0.5, 0.9],
     });
     this.ctx.pet.cheer();
-    await this.ctx.say('map.slid');
-    await this.next();
+    await this.onward(this.ctx.say('map.slid'));
   }
 
   /** Level 8's three outline cards beside the map, in a column as tall as the map. */
@@ -1382,6 +1435,7 @@ class TreasureMap implements Game {
   /** A tap on a card tile: a count steps 1, 2, 3; an arrow turns; Go walks the card. Changing the card is free. */
   private pressTile(kind: TileKind) {
     if (this.busy || this.finished || this.plan.mode !== 'write') return;
+    this.askNow();
     const tile = this.tiles.get(kind)!;
     squash(tile);
     spring(tile, 90);
