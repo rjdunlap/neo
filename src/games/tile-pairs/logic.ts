@@ -72,7 +72,26 @@ export const PLANS = [
     // have a first pair that leaves no route. The band keeps the middle, so a choice matters without a trap deal.
     clear: [0.45, 0.9],
   },
+  {
+    name: 'Flower friends · any two flowers pair',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'crown',
+    kinds: 5,
+    // Four flower tiles, each drawn differently, that pair with one another: four tiles, six possible pairs.
+    flowers: 4,
+    clear: [0.45, 0.9],
+  },
 ] as const;
+
+/** Flower kinds come after a look's six pictures: `FLOWER + n` is the nth of the four flower drawings. */
+export const FLOWER = 6;
+export const FLOWER_ART = 4;
+export const isFlower = (kind: number) => kind >= FLOWER;
+/** Two tiles pair when they show the same picture, or when both are flowers. Symmetric. */
+export const matches = (a: number, b: number) => a === b || (isFlower(a) && isFlower(b));
+export const flowersIn = (plan: (typeof PLANS)[number]): number => ('flowers' in plan ? plan.flowers : 0);
 
 /**
  * A look is the set of six pictures a round deals, chosen by the round's seed and fixed for the round. Within a
@@ -112,7 +131,7 @@ export type Look = (typeof LOOKS)[number];
 /** The round's look, drawn from the round's rng after the board is dealt so a seed's board is unchanged. */
 export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
@@ -156,7 +175,8 @@ export function pairs(tiles: readonly Tile[], mask: number, geometryOnly = false
   const open = freeTiles(tiles, mask),
     out: Pair[] = [];
   open.forEach((a, i) => {
-    for (const b of open.slice(i + 1)) if (geometryOnly || tiles[a].kind === tiles[b].kind) out.push([a, b]);
+    for (const b of open.slice(i + 1))
+      if (geometryOnly || matches(tiles[a].kind, tiles[b].kind)) out.push([a, b]);
   });
   return out;
 }
@@ -194,11 +214,24 @@ export function seededRoute(tiles: readonly Tile[], rng: Rng): Pair[] | null {
   }
   return visit(fullMask(tiles));
 }
-/** Put complete symbol pairs on a geometric clearing route, so generation never rerolls for solvability. */
-function assign(tiles: Tile[], symbols: number[], rng: Rng, route: Pair[] | null): Tile[] {
+/** A route symbol that stands for two flower tiles, drawn from the flowers still to place. */
+const FLOWER_PAIR = -1;
+/**
+ * Put complete symbol pairs on a geometric clearing route, so generation never rerolls for solvability. A
+ * `FLOWER_PAIR` symbol puts two of `flowers` (distinct flower kinds, shuffled) on its route pair.
+ */
+function assign(
+  tiles: Tile[],
+  symbols: number[],
+  rng: Rng,
+  route: Pair[] | null,
+  flowers: number[] = [],
+): Tile[] {
   if (!route || route.length !== symbols.length) throw new Error('Tile Pairs layout cannot clear');
   rng.shuffle(symbols);
-  for (let k = 0; k < route.length; k++) for (const i of route[k]) tiles[i].kind = symbols[k];
+  const left = rng.shuffle([...flowers]);
+  for (let k = 0; k < route.length; k++)
+    for (const i of route[k]) tiles[i].kind = symbols[k] === FLOWER_PAIR ? left.pop()! : symbols[k];
   return tiles;
 }
 export const PLAYOUTS = 60;
@@ -272,8 +305,11 @@ export function deal(level: number, rng: Rng): Deal {
   for (let tries = 1; tries <= CANDIDATES; tries++) {
     const tiles = layout(level);
     // More repeated pictures deepen the choice of which matching pair to remove, without adding tiles.
-    const symbols = Array.from({ length: tiles.length / 2 }, (_, i) => i % plan.kinds);
-    assign(tiles, symbols, rng, seededRoute(tiles, rng));
+    const flowers = flowersIn(plan),
+      symbols = Array.from({ length: tiles.length / 2 - flowers / 2 }, (_, i) => i % plan.kinds);
+    for (let n = 0; n < flowers / 2; n++) symbols.push(FLOWER_PAIR);
+    const kinds = Array.from({ length: flowers }, (_, n) => FLOWER + (n % FLOWER_ART));
+    assign(tiles, symbols, rng, seededRoute(tiles, rng), kinds);
     const rate = clearRate(tiles, rng),
       off = Math.max(min - rate, rate - max, 0);
     if (!off) return { tiles, rate, tries, inBand: true };
@@ -283,17 +319,25 @@ export function deal(level: number, rng: Rng): Deal {
 }
 export const makeBoard = (level: number, rng: Rng): Tile[] => deal(level, rng).tiles;
 
-/** Recovery keeps exactly the remaining pictures, laid in open rows. Even a stranded tower can be rescued. */
+/**
+ * Recovery keeps exactly the remaining pictures, laid in open rows. Even a stranded tower can be rescued. Flowers
+ * count as one family, so the remaining flowers (always an even number) stay in twos.
+ */
 export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[] {
-  const counts = new Map<number, number>();
+  const counts = new Map<number, number>(),
+    flowers: number[] = [];
   tiles.forEach((t, i) => {
-    if (present(mask, i)) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
+    if (!present(mask, i)) return;
+    if (isFlower(t.kind)) flowers.push(t.kind);
+    else counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
   });
+  if (flowers.length % 2) throw new Error('Remaining flowers must come in pairs');
   const symbols: number[] = [];
   for (const [kind, count] of counts) {
     if (count % 2) throw new Error('Remaining pictures must come in pairs');
     for (let i = 0; i < count / 2; i++) symbols.push(kind);
   }
+  for (let n = 0; n < flowers.length / 2; n++) symbols.push(FLOWER_PAIR);
   const out = Array.from({ length: symbols.length * 2 }, (_, i) => ({
     x: i % 6,
     y: Math.floor(i / 6),
@@ -301,5 +345,5 @@ export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[
     kind: 0,
   }));
   // Recovery stays on the first route: open rows that pair off without planning.
-  return assign(out, symbols, rng, solve(out, fullMask(out), true));
+  return assign(out, symbols, rng, solve(out, fullMask(out), true), flowers);
 }

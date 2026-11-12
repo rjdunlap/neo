@@ -4,7 +4,14 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Clear the stack by removing matching pairs.',
   steps: [
-    'Tap two tiles with the same picture. Each needs a clear top and an open left or right side. Bright tiles are free.',
+    {
+      text: 'Tap two tiles with the same picture. Each needs a clear top and an open left or right side. Bright tiles are free.',
+      to: 7,
+    },
+    {
+      text: 'Tap two tiles with the same picture, or any two flowers. Each needs a clear top and an open left or right side.',
+      from: 8,
+    },
     'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
     {
       text: 'Tap Peek to see the pictures in each stack, bottom to top from left to right. Tap Peek or a tile to close. Looking is free.',

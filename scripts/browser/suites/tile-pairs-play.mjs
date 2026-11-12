@@ -97,9 +97,29 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await launch('tile-pairs', level);
       await page.waitForTimeout(500);
+      // Level 8's wrong answer needs a free flower beside another picture; a few deals start with none open.
+      for (let n = 0; level === 8 && n < 12; n++) {
+        const open = await page.evaluate(async () => {
+          const L = await import('/src/games/tile-pairs/logic.ts'),
+            g = neo.scene.game;
+          return L.freeTiles(g.tiles, g.mask).some((i) => L.isFlower(g.tiles[i].kind));
+        });
+        if (open) break;
+        await launch('tile-pairs', level);
+        await page.waitForTimeout(500);
+      }
       const initial = await state();
-      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24][level - 1]);
+      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24, 24][level - 1]);
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
+      if (level === 8) {
+        // Two different flowers pair: the flower family's first pair removes two tiles with different kinds.
+        const flowers = await page.evaluate(async () => {
+          const L = await import('/src/games/tile-pairs/logic.ts'),
+            g = neo.scene.game;
+          return g.tiles.filter((t) => L.isFlower(t.kind)).map((t) => t.kind);
+        });
+        assert.equal(new Set(flowers).size, 4, 'four different flower drawings');
+      }
       if (level >= 3 && level !== 5) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
@@ -125,14 +145,26 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(200);
       }
-      const mismatch = await page.evaluate(async () => {
+      // At level 8 the wrong answer is a flower with another picture, which gets the flower line.
+      const mismatch = await page.evaluate(async (level) => {
         const L = await import('/src/games/tile-pairs/logic.ts'),
           g = neo.scene.game,
           open = L.freeTiles(g.tiles, g.mask);
-        for (const a of open) for (const b of open) if (g.tiles[a].kind !== g.tiles[b].kind) return [a, b];
-        throw new Error('test needs two different free pictures');
-      });
+        g.said = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
+        for (const a of open)
+          for (const b of open)
+            if (!L.matches(g.tiles[a].kind, g.tiles[b].kind) && (level !== 8 || L.isFlower(g.tiles[a].kind)))
+              return [a, b];
+        throw new Error('test needs two free pictures that do not pair');
+      }, level);
       for (let n = 0; n < 2; n++) for (const i of mismatch) await tapTile(i);
+      if (level === 8)
+        assert.ok(
+          (await page.evaluate(() => neo.scene.game.said)).includes('tile-pairs.flowers'),
+          'a flower with another picture hears that flowers go with flowers',
+        );
       let s = await state();
       assert.equal(s.mask, initial.mask, 'a mismatch removes nothing');
       assert.equal(s.misses, 2);

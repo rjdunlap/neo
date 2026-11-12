@@ -8,8 +8,12 @@ import {
   pickLook,
   clearRate,
   deal,
+  FLOWER,
+  FLOWER_ART,
   free,
   freeTiles,
+  isFlower,
+  matches,
   fullMask,
   layout,
   makeBoard,
@@ -51,13 +55,13 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(7));
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 7 });
-    for (let level = 1; level <= 7; level++)
+    expect(planFor(99)).toBe(planFor(8));
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 8 });
+    for (let level = 1; level <= 8; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         expect(tiles).toEqual(makeBoard(level, new Rng(seed)));
-        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24][level - 1]);
+        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24, 24][level - 1]);
         expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(tiles.length);
         const route = solve(tiles)!;
         expect(route).not.toBeNull();
@@ -111,9 +115,9 @@ describe('Tile Pairs', () => {
     expect(clearRate([], new Rng(1))).toBe(1);
     const trap: Tile[] = [0, 1, 2, 1, 2, 0].map((kind, x) => ({ x, y: 0, z: 0, kind }));
     expect(clearRate(trap, new Rng(1))).toBe(0);
-    for (let level = 1; level <= 7; level++) {
+    for (let level = 1; level <= 8; level++) {
       const [min, max] = planFor(level).clear;
-      expect(min).toBe([0.95, 0.95, 0.95, 0.95, 0.85, 0.75, 0.45][level - 1]);
+      expect(min).toBe([0.95, 0.95, 0.95, 0.95, 0.85, 0.75, 0.45, 0.45][level - 1]);
       let exhausted = 0,
         again = 0;
       for (let seed = 1; seed <= 100; seed++) {
@@ -169,7 +173,7 @@ describe('Tile Pairs', () => {
     expect(solve(reshuffle(trap, fullMask(trap), new Rng(5)))).not.toBeNull();
   });
   it('can recover any played remainder without returning removed tiles or losing pictures', () => {
-    for (let level = 3; level <= 6; level++)
+    for (const level of [3, 4, 5, 6, 8])
       for (let seed = 1; seed <= 80; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         let mask = fullMask(tiles);
@@ -183,6 +187,9 @@ describe('Tile Pairs', () => {
             .sort();
           const rescued = reshuffle(tiles, mask, rng);
           expect(rescued.map((t) => t.kind).sort()).toEqual(before);
+          // Flowers stay in twos: every rescued flower is paired with another flower.
+          for (const [a, b] of solve(rescued)!)
+            expect(isFlower(rescued[a].kind)).toBe(isFlower(rescued[b].kind));
           expect(solve(rescued)).not.toBeNull();
           expect(rescued.every((t) => t.z === 0)).toBe(true);
           // Continue on the original stack to exercise unlucky alternatives too.
@@ -256,5 +263,38 @@ describe('Tile Pairs', () => {
       seen.add(look);
     }
     expect(seen.size).toBe(3);
+  });
+  it('pairs any two flowers at level 8, and each other picture only with itself', () => {
+    const kinds = [0, 1, 2, 3, 4, 5, ...Array.from({ length: FLOWER_ART }, (_, n) => FLOWER + n)];
+    for (const a of kinds)
+      for (const b of kinds) {
+        expect(matches(a, b)).toBe(matches(b, a));
+        expect(matches(a, b)).toBe(a === b || (a >= FLOWER && b >= FLOWER));
+      }
+    // Levels 1–7 deal no flowers.
+    for (let level = 1; level <= 7; level++)
+      for (let seed = 1; seed <= 40; seed++)
+        expect(makeBoard(level, new Rng(seed)).some((t) => isFlower(t.kind))).toBe(false);
+    let flowerRoutes = 0,
+      trapFlowerPairs = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const tiles = makeBoard(8, new Rng(seed));
+      expect(new Set(layout(8).map((t) => `${t.x},${t.y},${t.z}`))).toEqual(
+        new Set(layout(6).map((t) => `${t.x},${t.y},${t.z}`)),
+      );
+      // Four flowers, each a different drawing, and five other pictures, four of each.
+      const flowers = tiles.filter((t) => isFlower(t.kind)).map((t) => t.kind);
+      expect(flowers.sort()).toEqual(Array.from({ length: FLOWER_ART }, (_, n) => FLOWER + n));
+      for (let kind = 0; kind < 5; kind++) expect(tiles.filter((t) => t.kind === kind)).toHaveLength(4);
+      // The solver and hint use the flower rule: some route pairs two different flowers.
+      const route = solve(tiles)!;
+      if (route.some(([a, b]) => tiles[a].kind !== tiles[b].kind)) flowerRoutes++;
+      // Which two flowers go together can matter: some open flower pair leaves no route.
+      for (const pair of pairs(tiles, fullMask(tiles)))
+        if (isFlower(tiles[pair[0]].kind) && !solve(tiles, removePair(fullMask(tiles), pair)))
+          trapFlowerPairs++;
+    }
+    expect(flowerRoutes).toBeGreaterThan(50);
+    expect(trapFlowerPairs).toBeGreaterThan(0);
   });
 });

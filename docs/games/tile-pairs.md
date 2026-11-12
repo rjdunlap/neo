@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–7 |
+| grown-up | 1–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 5 | Twin terraces · 24 tiles |
 | 6 | Crown · 24 tiles, six of each picture |
 | 7 | Tall tower · four layers |
+| 8 | Flower friends · any two flowers pair |
 
 <!-- end generated -->
 
