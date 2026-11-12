@@ -71,3 +71,17 @@
 **Changed:** `meadow-pens` levels 4–5 (a right card's `meadow.in` or `field-in` starts and, after the 0.4 s look, the next question opens with input open, its ask waiting for the line or said by the guide via `sayWaitingAsk` or at a tap; a tapped part's count plays with input open and a tap elsewhere takes over via `takeOver()`) and levels 1–3 (the next friend walks in after the 0.6 s look, the pen request waiting the same way); `seed-travelers` (an arrival's line no longer holds input; `seeds.stayed.*` and the last arrival stay held; level 1's `seeds.finish` waits for a line heard out or the guide and never follows the finale). The last friend's, question's and arrival's lines are heard out.
 **Ran:** `npm run typecheck`; `npx vitest run src/games/meadow-pens src/games/seed-travelers` (119 passed; `play.test.ts` updated); headless on a `VITE_SPEECH=off` dev server `BROWSER_SUITE=seeds` (level 1 with `seeds.arrived.breeze` stretched to 4 s: bellows open 0, 0 ms in; "Tap the basket" 4004 ms after the last arrival) and `BROWSER_SUITE=meadow` (with `meadow.in`/`field-in` stretched to 4 s: level 1 next friend open 1226, 1250 ms in; level 4 419, 418 ms; level 5 423, 407 ms; last thanks heard out), both PASS.
 **Not run:** `fingerdemo` (bot waits for its own counts and the waiting ask as it waited on `busy`), build (no shared files or assets), full `npm test` (CI runs it), offline. Nothing was timed with real speech.
+
+## 2026-11-12 — U7d fix batch 17: swing-pals and sprout-shuffle never hold a tap on a cut line (PR #1557)
+
+**Changed:** `swing-pals` (right hooks at levels 4–6 and 8, level 7's guess reaction: the friends hop off and the next pair or race comes in with input open while the line plays; her tap, a hint or the guide stops level 7's chained lines; level 8's request waits for the line, her hook tap or the guide; the last line is heard out) and `sprout-shuffle` levels 1–3 (the look starts and the bud fan opens at once; the fan's instruction waits for the look, her first bud or tray tap, or the guide).
+**Ran:** `npm run typecheck`; vitest for swing-pals and sprout-shuffle (109 passed); `BROWSER_SUITE=swingpals` (new R4 assertion: lines stretched to 4 s, next pair or race open about 1.4 s in at levels 6, 7 and 8, level 8's request waiting); `BROWSER_SUITE=sproutshuffle SPROUT_LEVELS=1,2,3` (new R4 assertion: fan open 0 ms into the stretched look at levels 1 and 2, instruction waiting); `BROWSER_SUITE=fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=6,7,8` (the bot taps sooner now). All passed.
+**Not run:** `npm run build` (no shared files or assets), full `npm test` (CI runs it), other suites. Nothing was timed with real speech.
+
+## 2026-11-12 — U7d fix batch 18 in Puzzle Peaks (PR #1558)
+
+**Changed:** Peekaround Island levels 1–8, Penguin Slide level 11 and Rule Machine levels 3–5 open the next move during spoken feedback. The guide can say a waiting question in Peekaround Island and Rule Machine.
+
+**Ran:** `npm run typecheck`; 114 focused tests across the three games; `woods` with `WOODS_ONLY=peek` at levels 2 and 5 and `WOODS_ONLY=penguin` at level 11; `rulemachine` with `RM_LEVELS=3,4,5`. Each browser play asserted that the next move was available before a four-second test delay on its feedback expired. The `fingerdemo` suite completed Peekaround Island levels 5 and 8, Penguin Slide level 11 and Rule Machine level 5. Browser checks used the speech-off development server.
+
+**Not run locally:** full unit suite, production build or offline suite. Real speech timing was outside these checks.
