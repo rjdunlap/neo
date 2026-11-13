@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.word-glue': ['Word Glue!'],
   'wordglue.instruct.stick': ['Stick them together!'],
+  'wordglue.instruct.big': ['Touch anywhere to stick them together!'],
   'wordglue.instruct.make': ['Make a {word}!'],
   'wordglue.ask': ['I need a {head}!'],
   'wordglue.word': ['{word}!'],
