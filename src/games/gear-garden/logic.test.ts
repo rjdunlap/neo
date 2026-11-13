@@ -4,6 +4,9 @@ import { computeView } from '../../engine/view';
 import {
   BLOOM_TURNS,
   GearTally,
+  LEVELS,
+  PLANS,
+  planFor,
   Machine,
   PITCH,
   choiceLayout,
@@ -357,5 +360,20 @@ describe('layout', () => {
     expect(dropsInGap(l, board, c.x + 1.3 * l.r, c.y)).toBe(false);
     expect(dropsInGap(l, board, c.x, c.y + 1.3 * l.r)).toBe(false);
     expect(inputOf(board)).toBe(0);
+  });
+});
+
+describe("lap's touch anywhere", () => {
+  it('only the lap level turns from anywhere and counts no hint, and lap and toddler play only it', () => {
+    expect(PLANS.filter((p) => p.anywhere).map((p) => p.level)).toEqual([1]);
+    for (const band of ['lap', 'toddler'] as const) expect(planFor(LEVELS[band]!.max).anywhere).toBe(true);
+    for (const band of ['prek', 'school'] as const) expect(planFor(LEVELS[band]!.min).anywhere).toBe(false);
+  });
+
+  it("level 1's machines have no gap, so a turn from anywhere always reaches the flower", () => {
+    for (const s of roundFor(1, new Rng(5))) {
+      expect(s.kind).toBe('one');
+      if (s.kind === 'one') expect(gapOf(s.machine.board)).toBe(-1);
+    }
   });
 });

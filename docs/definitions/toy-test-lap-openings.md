@@ -137,7 +137,7 @@ Three games fail question 1, in the order they should be taken:
 
 1. `draw-the-pattern`: at level 1 a touch anywhere draws, and a touch during the pet's turn is answered. *Built 2026-11-12 (PR #1585): a touch off the paper draws at the nearest place on it, and a touch during the pet's turn or a strip's flight rings a bell and puffs stars without counting.*
 2. `stamp-studio`: at level 7 a touch anywhere presses a star, with no arrows to end or undo it. *Built 2026-11-12 (PR #1587): a pat on the teal around the paper presses a star at the nearest place on it, and at level 7 the star button, green arrow and back arrow are not shown.*
-3. `gear-garden`: at lap a touch anywhere turns the handle, and the pause sheet's hint is not counted.
+3. `gear-garden`: at lap a touch anywhere turns the handle, and the pause sheet's hint is not counted. *Built 2026-11-12 (PR #1588): a touch on the garden around the machine turns the handle like the panel; a touch while a flower blooms or during the finale rings a bell and puffs stars, counting nothing; at level 1 Show a hint turns the handle without counting a hint (levels 2–3 unchanged).*
 
 ### Found while reading (not part of the five questions)
 

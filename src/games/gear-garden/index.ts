@@ -120,6 +120,12 @@ class GearGarden implements Game {
     );
     for (const n of [this.glow, this.arrows]) n.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
+    // Lap's level: the garden around the machine turns the handle too (the panel and the round arrow sit above it).
+    if (this.plan.anywhere) {
+      this.backdrop.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
+      onTap(this.backdrop, (e) => this.pressTurn(1, e), { cooldown: 60 });
+      this.backdrop.cursor = 'default';
+    }
   }
 
   start() {
@@ -143,6 +149,7 @@ class GearGarden implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
+    if (this.plan.anywhere) this.backdrop.hitArea = new Rectangle(0, 0, v.w, v.h);
     // A turn, a gear flying in or a bloom finishes on the old layout first; the board is then rebuilt for the new view.
     if (this.anim || this.busy || this.finished) {
       this.relayout = true;
@@ -228,7 +235,7 @@ class GearGarden implements Game {
     panel.position.set(fc.x, fc.y);
     face.addChild(panel);
     face.hitArea = new Rectangle(l.face.x - 20, l.face.y - 20, l.face.w + 40, l.face.h + 40);
-    onTap(face, () => this.pressTurn(1), { cooldown: 60 });
+    onTap(face, (e) => this.pressTurn(1, e), { cooldown: 60 });
     this.board.addChild(face);
     this.face = face;
 
@@ -275,9 +282,9 @@ class GearGarden implements Game {
     back.hitArea = new Circle(0, 0, l.back.w / 2 + 6);
     onTap(
       back,
-      () => {
+      (e) => {
         void this.bounce(back);
-        this.pressTurn(-1);
+        this.pressTurn(-1, e);
       },
       { cooldown: 60 },
     );
@@ -407,8 +414,12 @@ class GearGarden implements Game {
   }
 
   /** A tap on the face or Turn-back: the handle presses in now, the turn plays (or waits for the one in progress). */
-  pressTurn(dir: 1 | -1) {
-    if (this.finished || this.busy || !this.machine || this.machine.bloomed) return;
+  pressTurn(dir: 1 | -1, e?: FederatedPointerEvent) {
+    if (this.finished || this.busy || !this.machine || this.machine.bloomed) {
+      // Lap's level: a touch while a flower blooms (or the garden waves) still rings, and nothing is counted.
+      if (this.plan.anywhere && e) this.heldTouch(e);
+      return;
+    }
     if (this.handle) this.handle.scale.set(0.9);
     if (this.anim) {
       this.queued = dir;
@@ -416,6 +427,25 @@ class GearGarden implements Game {
     }
     this.turn(dir);
   }
+
+  /** Lap's level, while the machine is not hers to turn: a bell and a puff of petals where she touched. */
+  private heldTouch(e: FederatedPointerEvent) {
+    if (this.clock - this.heldAt < 0.15) return;
+    this.heldAt = this.clock;
+    this.heldNote = (this.heldNote + 1) % 5;
+    sfx.bell(5 + this.heldNote, 0.1);
+    const at = this.ctx.stage.toLocal(e.global);
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'star',
+      colors: [swatch.pink.fill, swatch.yellow.fill],
+      count: 5,
+      speed: [40, 120],
+      gravity: -40,
+      size: [0.3, 0.45],
+    });
+  }
+  private heldAt = -1;
+  private heldNote = 0;
 
   private turn(dir: 1 | -1) {
     const m = this.machine!;
@@ -664,7 +694,8 @@ class GearGarden implements Game {
       void this.ctx.say('gears.instruct.choose');
       return;
     }
-    this.tally.asked();
+    // Lap's level: the handle turning by itself is a demonstration, not a hint.
+    if (!this.plan.anywhere) this.tally.asked();
     void this.ctx.say(help === 'place' ? 'gears.hint' : 'gears.instruct.turn');
     if (help === 'place') void this.autoPlace();
     else this.pressTurn(1);
