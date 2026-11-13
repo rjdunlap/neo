@@ -1,0 +1,6 @@
+# 2026-11-13 — pyramid-solitaire level 8 Three columns (PR #1603)
+
+**Changed:** `pyramid-solitaire` gains level 8: five rows and three columns of two spare cards (21 cards), only the front card of a column open, dial 30–70%; grown-up range 1–8. Levels 1–7 deal identically (new fingerprint test for levels 6–7). Sideways the columns stand beside the pyramid, upright under it; tapping a covered back card explains (no miss). New voice lines `pyramid.columns` and `pyramid.columnCovered`; level-scoped how-to step.
+**Ran:** `npx tsc --noEmit`; full `npm test` (351 files, 6815 tests passed, including the level-8 rule test and the upright and sideways layout tests in `upright-batch-3`); `npm run build` (voice changed); `BROWSER_SUITE=pyramid PYRAMID_LEVELS=8` headless (passed; portrait 768×1024 and landscape 1024×768 screenshots, a back-card tap checked); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pyramid-solitaire FINGER_LEVELS=8` (passed, 29.2 s).
+**Measured:** 300 seeds: undialled median clear rate 72%, 258 hold a dead end; dialled all 300 in band (median 50%), at most 300 positions (test bound 325), slowest deal under 1 ms.
+**Not run:** an upright phone screenshot in the browser (the harness context has no coarse pointer; the upright layout is covered by unit layout tests), offline, other suites.
