@@ -475,8 +475,9 @@ class SeesawBalance implements Game {
     this.wagon.position.set(v.w - 130, v.h - 30);
     for (const side of ['left', 'right'] as Side[]) {
       const target = this.bounceTargets[side];
-      target.position.set(side === 'left' ? 0 : v.w / 2, y - 260);
-      target.hitArea = new Rectangle(0, 0, v.w / 2, 370);
+      // Each half of the whole view, top to bottom: a pat anywhere on the empty side lifts the rider.
+      target.position.set(side === 'left' ? 0 : v.w / 2, 0);
+      target.hitArea = new Rectangle(0, 0, v.w / 2, v.h);
     }
     this.shelves.forEach((spot, i) => spot.position.set(v.w / 2 + (i - 1) * 180, v.h - 15));
     this.guessSign.position.set(v.w / 2, 150);
@@ -632,7 +633,8 @@ class SeesawBalance implements Game {
     if (!move) return null;
     if (move.kind === 'predict') return { tap: { on: this.predictionTargets[move.side] } };
     if (move.kind === 'tray')
-      return { tap: { on: this.bounceTargets[move.side], x: this.view.w / 4, y: 200 } };
+      // Just above the plank, where it has always tapped: the halves now reach the top, under the shell's banner.
+      return { tap: { on: this.bounceTargets[move.side], x: this.view.w / 4, y: this.pivot.y - 60 } };
     if (move.kind === 'friend') {
       const item = this.items[move.item];
       return { tap: { on: item.node, x: 0, y: -item.height / 2 } };
@@ -782,8 +784,12 @@ class SeesawBalance implements Game {
     const animal = this.animalOf(r);
     const mode = this.plan.mode;
     if (mode === 'predict') await this.instructLine('seesaw.predict');
-    else if (mode === 'bounce') await this.instructLine('seesaw.bounce');
-    else if (mode === 'compare')
+    else if (mode === 'bounce') {
+      // Input opens as the line starts, at every round: a touch before it finishes still lifts the rider.
+      this.busy = false;
+      void this.instructLine('seesaw.bounce');
+      return;
+    } else if (mode === 'compare')
       await this.instructLine(r.asked === 'heavier' ? 'seesaw.ask-heavy' : 'seesaw.ask-light');
     else if (mode === 'up') await this.instructLine('seesaw.up', { animal });
     else if (mode === 'heavy') await this.instructLine('seesaw.heavy', { animal });
@@ -874,7 +880,7 @@ class SeesawBalance implements Game {
     this.busy = false;
   }
 
-  /** Any touch on the empty half lifts the rider; touching the rider is free exploration. */
+  /** Any touch on the empty half of the view lifts the rider; touching the rider's half is free exploration. */
   private async bounce(side: Side) {
     if (this.busy || this.finished) return;
     if (side === this.round.fixedSide) {

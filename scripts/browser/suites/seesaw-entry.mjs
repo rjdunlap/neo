@@ -13,29 +13,50 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
         const g = neo.scene.game;
         const { other } = await import('/src/games/seesaw-balance/logic.ts');
         await kit.until(() => !g.busy, 10000);
-        const touch = (side) => {
+        // Touch points down each half: the middle, just below the shell's top banner, and near the bottom of the view.
+        const heights = [0.5, 0.22, 0.92, 0.5];
+        const touch = (side, at = 0.5) => {
           const target = g.bounceTargets[side];
-          const p = target.toGlobal({ x: neo.view.w / 4, y: 220 });
+          const p = target.toGlobal({ x: neo.view.w / 4, y: neo.view.h * at });
           kit.tap(p.x, p.y);
         };
         const size = g.bounceTargets.left.hitArea;
-        if (size.width < 100 || size.height < 100) throw new Error('Small bounce target');
+        if (size.width < neo.view.w / 2 || size.height < neo.view.h || g.bounceTargets.left.y !== 0)
+          throw new Error('Bounce targets do not cover the whole view');
         // The first rider is a duck; rider-half pokes never consume the round or adaptation.
         if (g.round.fixed[0].face !== 'duck') throw new Error('Missing first duck');
         touch(g.round.fixedSide);
         await kit.sleep(250);
         if (g.index !== 0 || g.misses || g.hints || g.items.some((i) => !i.fixed && i.side))
           throw new Error('Rider poke scored');
+        const opens = [];
         for (let r = 0; r < 4; r++) {
+          const start = performance.now();
           await kit.until(() => !g.busy, 10000);
+          opens.push(performance.now() - start);
           if (g.index !== r) throw new Error('Wrong bounce index');
           const side = other(g.round.fixedSide);
-          touch(side);
+          touch(side, heights[r]);
           // Touch-down feedback is immediate, before animation or speech.
-          if (!g.busy || !g.items.some((i) => !i.fixed && i.side === side))
-            throw new Error('Empty-half touch did not lift');
+          if (!g.busy || !g.items.some((i) => !i.fixed && i.side === side)) {
+            const p = g.bounceTargets[side].toGlobal({ x: neo.view.w / 4, y: neo.view.h * heights[r] });
+            const hit = g.ctx.renderer.events.rootBoundary.hitTest(p.x, p.y);
+            throw new Error(
+              `Empty-half touch did not lift in round ${r} at ${heights[r]} (${Math.round(p.x)},${Math.round(p.y)}, view ${neo.view.w}x${neo.view.h}): busy ${g.busy}, owner ${Object.keys(
+                neo.scene,
+              )
+                .filter((k) => {
+                  const o = neo.scene[k];
+                  for (let n = hit; n; n = n.parent) if (n === o) return true;
+                  return false;
+                })
+                .join('/')}`,
+            );
+          }
           await kit.until(() => g.index > r || g.finished, 12000);
         }
+        // Rounds 2-4 open within the 0.4 s pop-in, well before the instruction's muted pacing (over 2 s) ends.
+        if (opens.slice(1).some((ms) => ms > 1200)) throw new Error(`Input waited for the line: ${opens}`);
         return [g.misses, g.hints, g.observations.has('heavy-down')];
       });
       assert.deepEqual(result, [0, 0, true]);
@@ -102,7 +123,7 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
       [2, 1],
     );
     log(
-      'Seesaw 12 lap/toddler: four empty-half touches, free rider poke, saved 0/0; 13: heavier/lighter/heavier, two misses/one glow, supported finish saved 2/1; phone/tablet portrait targets >=100',
+      'Seesaw 12 lap/toddler: whole-view halves, four empty-half touches at top/middle/bottom while the line is spoken, free rider poke, saved 0/0; 13: heavier/lighter/heavier, two misses/one glow, supported finish saved 2/1; phone/tablet portrait targets >=100',
     );
     await page.setViewportSize({ width: 1024, height: 768 });
   }
