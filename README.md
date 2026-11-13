@@ -90,7 +90,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Tide Line](docs/games/tide-line.md) | lap–pre-K | Bubble Beach | 4 | pull the foam crest and the sea comes up the sand, let go and it eases back out |
 | [Drift Cards](docs/games/drift-cards.md) | school | Bubble Beach | 3 | numbered wooden cards ride the arrows of a pretend sea from boats at the harbour wall; touch the sea and a dotted line shows two cells of the current ahead |
 | [Jelly Drums](docs/games/jelly-drums.md) | lap–school | Music Mountain | 10 | free play on five notes (lap starts with one big jelly that wakes its friends) |
-| [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 7 | tap jellies on a looping beat |
+| [Song Maker](docs/games/song-maker.md) | lap–school | Music Mountain | 8 | tap jellies on a looping beat |
 | [Sound Garden](docs/games/sound-garden.md) | lap–pre-K | Music Mountain | 10 | one big singing friend (lap entry 8), then the garden |
 | [Rhythm Neighbors](docs/games/rhythm-neighbors.md) | lap–school | Music Mountain | 9 | tap a bird and a frog chorus; knock the tree and a frog answers (lap); knock your own call and the frog answers it with the gaps flipped (toddler, preschool) |
 | [Beat Builder](docs/games/beat-builder.md) | toddler–school | Music Mountain | 9 | tap squares on a beat grid in a woodland clearing (levels 1, 2, 4) or on a picnic blanket (3, 5); friends move with their instruments; the playhead loops; level 9 makes the first part return after a middle; level 8 makes a two-part piece; level 7 keeps the drum and moves the claps by ear; level 6 mends a copy with one wrong square against a model; 20 named authored phrases, distinct within a round; complete two-loop replay; glowing add/remove repairs |

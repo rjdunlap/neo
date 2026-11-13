@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1–2 |
+| lap | 8, 1, 2 |
 | toddler | 2–4 |
 | preschool | 4–6 |
 | pre-K | 5–7 |
@@ -23,6 +23,7 @@
 | 5 | Copy a 5-note song from a little card |
 | 6 | Continue a named song pattern: stairs, hops, zigzags, arches and leaps |
 | 7 | Listen, then find each note of a 4-note tune by ear |
+| 8 | One big jelly on a 4-beat loop; any touch lights the nearest, and more jellies wake |
 
 <!-- end generated -->
 

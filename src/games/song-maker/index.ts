@@ -14,6 +14,7 @@ import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  awakeSpots,
   beadToTap,
   key,
   makeSong,
@@ -21,6 +22,7 @@ import {
   ROW_STEPS,
   songLayout,
   songPlan,
+  wakeTouch,
   type Note,
   type Song,
   type SongPlan,
@@ -37,6 +39,10 @@ class Bead extends Container {
   lit = false;
   ghost = false;
   given = false;
+  /** Wake level: how big it stands; a lone jelly is big, then it settles to its cell as friends join. */
+  size = 1;
+  /** Wake level: an unlit spot is drawn as a sleeping jelly. */
+  sleepy = false;
   private readonly g = new Graphics();
   private bounce = 0;
   private bounceV = 0;
@@ -74,6 +80,17 @@ class Bead extends Container {
         g.moveTo(Math.cos(a) * r, Math.sin(a) * r).arc(0, 0, r, a, a + 0.36);
       }
       g.stroke({ width: 5, color: sw.fill, cap: 'round' });
+    } else if (this.sleepy) {
+      // Wake level: an awake spot not lit yet is a pale jelly with closed eyes, a whole target rather than a seed.
+      g.circle(0, 0, r).fill({ color: sw.light }).stroke({ width: 5, color: sw.fill });
+      for (const side of [-1, 1])
+        g.moveTo(side * r * 0.4, -r * 0.02).quadraticCurveTo(
+          side * r * 0.28,
+          r * 0.1,
+          side * r * 0.16,
+          -r * 0.02,
+        );
+      g.stroke({ width: 3, color: sw.line, cap: 'round' });
     } else {
       g.circle(0, 0, r * 0.32).fill({ color: sw.light });
     }
@@ -87,7 +104,7 @@ class Bead extends Container {
   update(dt: number) {
     this.bounceV += (-200 * this.bounce - 10 * this.bounceV) * dt;
     this.bounce += this.bounceV * dt;
-    this.scale.set(1 + this.bounce * 0.5, 1 - this.bounce * 0.3);
+    this.scale.set(this.size * (1 + this.bounce * 0.5), this.size * (1 - this.bounce * 0.3));
   }
 }
 
@@ -112,6 +129,7 @@ class SongMaker implements Game {
   private readonly card = new Container();
   readonly replay: RoundButton | null = null;
   private cell = 100;
+  private view: View | null = null;
   /** The grid's top-left corner. */
   private grid = { x0: 0, y0: 0 };
   private col = -1;
@@ -119,6 +137,9 @@ class SongMaker implements Game {
   private clock = 0;
   /** Free play: end at the next loop start once enough taps have been made. */
   private finishing = false;
+  /** Wake level: counted lights so far (putting a jelly out never takes one back), and the stage-wide touch layer. */
+  lights = 0;
+  readonly anywhere = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.plan = songPlan(ctx.level);
@@ -138,10 +159,19 @@ class SongMaker implements Game {
           bead.lit = bead.given = true;
           this.placed.add(key(note));
         }
-        onTap(bead, () => this.tap(bead), { cooldown: 150 });
+        if (this.plan.mode === 'wake') {
+          bead.eventMode = 'none';
+          bead.sleepy = true;
+        } else onTap(bead, () => this.tap(bead), { cooldown: 150 });
         this.beads.push(bead);
         ctx.stage.addChild(bead);
       }
+    }
+    if (this.plan.mode === 'wake') {
+      // Last on the stage, so a touch anywhere (board, mountains, sky) reaches it and lights the nearest spot.
+      onTap(this.anywhere, (e) => this.touchAnywhere(ctx.stage.toLocal(e.global)), { cooldown: 90 });
+      ctx.stage.addChild(this.anywhere);
+      this.wakeLayout();
     }
     if (this.plan.mode === 'listen') {
       this.replay = new RoundButton(replayArt(), swatch.yellow, 50, () => void this.playTune());
@@ -153,6 +183,9 @@ class SongMaker implements Game {
     switch (this.plan.mode) {
       case 'free':
         void this.ctx.instruct('song.free');
+        break;
+      case 'wake':
+        void this.ctx.instruct('song.wake');
         break;
       case 'ghost':
         void this.ctx.instruct('song.copy');
@@ -176,7 +209,10 @@ class SongMaker implements Game {
     if (this.done || this.listening) return null;
     const note = beadToTap(this.plan, this.song, this.placed);
     const bead = note && this.beads.find((b) => b.note.col === note.col && b.note.row === note.row);
-    return bead ? { tap: { on: bead }, pause: 0.15 } : null;
+    if (!bead) return null;
+    return this.plan.mode === 'wake'
+      ? { tap: { on: bead }, receiver: this.anywhere, pause: 0.15 }
+      : { tap: { on: bead }, pause: 0.15 };
   }
 
   private step(row: number) {
@@ -194,10 +230,27 @@ class SongMaker implements Game {
 
   // Tapping --------------------------------------------------------------------
 
+  /** Wake level: a touch anywhere lights the unlit awake spot nearest the finger; a touch on a lit jelly puts it out. */
+  private touchAnywhere(p: { x: number; y: number }) {
+    const awake = new Set(awakeSpots(this.lights).map(key));
+    const spots = this.beads
+      .filter((b) => awake.has(key(b.note)))
+      .map((b) => ({ note: b.note, x: b.x, y: b.y, lit: b.lit }));
+    const reach = (this.cell / 2) * Math.max(...this.beads.map((b) => b.size));
+    const t = wakeTouch(spots, p.x, p.y, reach);
+    const bead = t && this.beads.find((b) => key(b.note) === key(t.note));
+    if (!t || !bead) return;
+    if (t.act === 'sing' || this.done) {
+      this.sing(bead);
+      return;
+    }
+    this.tap(bead);
+  }
+
   private tap(bead: Bead) {
     this.sing(bead);
     if (this.done || bead.given) return;
-    if (this.plan.mode === 'free') {
+    if (this.plan.mode === 'free' || this.plan.mode === 'wake') {
       bead.lit = !bead.lit;
       if (bead.lit) this.placed.add(key(bead.note));
       else this.placed.delete(key(bead.note));
@@ -210,6 +263,15 @@ class SongMaker implements Game {
         gravity: -40,
         size: [0.5, 0.8],
       });
+      if (this.plan.mode === 'wake') {
+        // Only a light counts toward the round and wakes a friend; putting one out is free. Two must stay lit to finish.
+        if (!bead.lit) return;
+        const before = awakeSpots(this.lights).length;
+        this.lights++;
+        if (awakeSpots(this.lights).length > before) this.wakeUp();
+        if (this.lights >= this.plan.notes && this.placed.size >= 2) this.finishing = true;
+        return;
+      }
       if (++this.taps >= this.plan.notes) this.finishing = true;
       return;
     }
@@ -286,7 +348,7 @@ class SongMaker implements Game {
       });
     // A song she made on the free loop is hers to keep; a copied one is not.
     const creation =
-      this.plan.mode === 'free'
+      this.plan.mode === 'free' || this.plan.mode === 'wake'
         ? {
             kind: 'tune' as const,
             cols: this.plan.cols,
@@ -342,20 +404,51 @@ class SongMaker implements Game {
       .roundRect(x0 - 14, y0 - 14, w + 28, h + 28, 28)
       .fill(cream)
       .stroke({ width: 6, color: swatch.purple.line });
+    const awakeRows = new Set(awakeSpots(this.lights).map((n) => n.row));
     for (let row = 0; row < p.rows; row++)
-      b.rect(x0, y0 + this.cell * row + this.cell * 0.12, w, this.cell * 0.76).fill({
-        color: swatch[rowColor(row, p.rows)].light,
-        alpha: 0.45,
-      });
+      if (p.mode !== 'wake' || awakeRows.has(row))
+        b.rect(x0, y0 + this.cell * row + this.cell * 0.12, w, this.cell * 0.76).fill({
+          color: swatch[rowColor(row, p.rows)].light,
+          alpha: 0.45,
+        });
     for (const bead of this.beads) {
       bead.position.set(x0 + this.cell * (bead.note.col + 0.5), y0 + this.cell * (bead.note.row + 0.5));
       bead.draw(this.cell);
     }
     this.grid = { x0, y0 };
+    this.view = v;
+    this.anywhere.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
+    this.wakeLayout();
     this.drawCard(v);
     this.replay?.position.set(v.w - 70, v.h / 2);
     if (this.col >= 0) this.drawPlayhead(this.col);
     this.drawGlow();
+  }
+
+  /** Wake level: only awake spots show (no seeds); a lone first jelly stands big, and all settle to their cells once friends come. */
+  private wakeLayout() {
+    if (this.plan.mode !== 'wake') return;
+    const awake = new Set(awakeSpots(this.lights).map(key));
+    for (const b of this.beads) {
+      b.visible = awake.has(key(b.note));
+      b.size = awake.size === 1 ? 1.7 : 1;
+    }
+  }
+
+  private wakeUp() {
+    this.wakeLayout();
+    if (this.view) this.resize(this.view);
+    const newest = awakeSpots(this.lights).at(-1);
+    const bead = newest && this.beads.find((b) => key(b.note) === key(newest));
+    if (!bead) return;
+    bead.pop(0.8);
+    sfx.sparkle();
+    this.ctx.particles.burst(bead.x, bead.y, {
+      kind: 'star',
+      colors: [swatch[rowColor(bead.note.row, this.plan.rows)].fill],
+      count: 5,
+      speed: [60, 140],
+    });
   }
 
   private drawPlayhead(col: number) {
@@ -437,6 +530,7 @@ export const songMaker: GameModule = {
   skills: ['music', 'patterns', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [8],
   describeLevel: (l) => songPlan(l).name,
   music: silenced(STYLES.jelly),
   coplayHint:
