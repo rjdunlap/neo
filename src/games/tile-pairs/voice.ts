@@ -13,6 +13,15 @@ export const VOICE = {
   'tile-pairs.stuck': [
     'That choice left no clearing route. Undo can bring it back, or Shuffle lays the remaining tiles in open rows.',
   ],
+  'tile-pairs.lesson.twins': [
+    'The lesson: when a tile sits on a copy of its own picture, pair the top one first, with a free copy. Pairing the other two copies leaves the top one stuck on its own partner.',
+  ],
+  'tile-pairs.lesson.three': [
+    'The lesson: when three copies are free and the fourth is covered, one of the three will be its partner. Keep the copy that can still reach the covered one, and pair the other two.',
+  ],
+  'tile-pairs.lesson.crossed': [
+    'The lesson: when one picture sits on a second and the second sits on the first, take those stacks apart in turn. Pairing away the free copies first leaves each last copy buried under the other.',
+  ],
   'tile-pairs.peek': [
     'When tiles are stacked, their pictures run left to right, starting with the bottom tile. Choose a tile or press Peek again to close.',
   ],

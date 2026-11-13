@@ -10,7 +10,8 @@ import { planFor as pondPlan } from './lantern-lights/logic';
 import { controllerFrame } from './picture-logic';
 import { clueDepths, ORDER, poolFor, touchFrame } from './picture-logic/logic';
 import { tilePairsLayout } from './tile-pairs';
-import { makeBoard, PLANS as tilePlans } from './tile-pairs/logic';
+import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
+import { levelsInOrder } from '../progress/difficulty';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
 
 const views = { ...UPRIGHT_VIEWS, short: computeView(375, 601, NO_INSETS, true) };
@@ -80,7 +81,7 @@ describe.each(Object.entries(views))('Grown-up upright batch 2 on %s', (_, v) =>
   });
 
   it('Tile Pairs: every tile and button fit, including the six-column stacks', () => {
-    for (let level = 1; level <= tilePlans.length; level++) {
+    for (const level of levelsInOrder(tileLevels.grownup!)) {
       const tiles = makeBoard(level, new Rng(1));
       const l = tilePairsLayout(v, tiles);
       const controls = buttons(l.buttons, 160, 100);
