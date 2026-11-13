@@ -9,20 +9,23 @@ export interface Puzzle {
 /**
  * Each plan's band for the deal dial: the exact chance that someone lifting a uniformly random legal removal every turn
  * clears the pyramid (`clearRate`). Level 1 stays a round that cannot go wrong; level 2 has a copy choice that matters;
- * level 3 has several. Bands measured 2026-11-11 (docs/deep-dives/pyramid-solitaire.md, "A deal dial").
+ * level 3 has several, and level 4 keeps them over a longer route. Bands measured 2026-11-11 (docs/deep-dives/pyramid-solitaire.md, "A deal dial").
  */
 export const PLANS = [
   { rows: 3, name: 'Six face-up cards: complements to thirteen', band: { min: 0.95, max: 1 } },
   { rows: 4, name: 'Ten cards: uncover the next pair', band: { min: 0.5, max: 0.95, below: true } },
   { rows: 5, name: 'Fifteen cards: plan through five rows', band: { min: 0.4, max: 0.8 } },
+  // Six rows (measured 2026-11-12 over 300 seeds): undialled, the median candidate clears 59% of random play and 73% hold a
+  // dead end; dialled, every round lands in the band (median 50%) and reaches at most 61 positions.
+  { rows: 6, name: 'Twenty-one cards: spend copies over six rows', band: { min: 0.3, max: 0.75 } },
 ] as const;
 /** Candidate deals the dial draws before it keeps the one closest to the band. */
 export const CANDIDATES = 40;
 /** A real pack: no rank more than four times, so the paper version deals as shown and counting a rank is true. */
 export const PACK_LIMIT = 4;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(2, level - 1))];
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const countFor = (rows: number) => (rows * (rows + 1)) / 2;
 export const fullMask = (rows: number) => (1 << countFor(rows)) - 1;
 export const at = (row: number, col: number) => (row * (row + 1)) / 2 + col;
@@ -70,7 +73,7 @@ export function solver(p: Puzzle) {
 }
 /**
  * Exact chance of clearing when every turn takes a uniformly random legal removal: a stand-in for a player who does not
- * plan. The same memoised walk over remaining-card masks as `solver` (at most 39 positions at five rows).
+ * plan. The same memoised walk over remaining-card masks as `solver` (at most 39 positions at five rows, 71 at six).
  */
 export function clearRate(p: Puzzle, mask = fullMask(p.rows)): number {
   const memo = new Map<number, number>();

@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, turnToGame, launch, finished, next }) {
   /** Pyramid Solitaire: finite complement deals, revision, recovery and real card taps. */
   async function pyramidPlay() {
-    for (const level of [1, 3]) {
+    // PYRAMID_LEVELS=4 plays only the named levels and skips the shared recovery and land-launch tail.
+    const only = process.env.PYRAMID_LEVELS?.split(',').map(Number);
+    for (const level of only ?? [1, 3, 4]) {
       await launch('pyramid-solitaire', level);
       await page.waitForTimeout(350);
       let initial = await page.evaluate(() => neo.scene.game.mask);
@@ -58,7 +60,7 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await tap('neo.scene.game.againButton');
       assert.equal(await page.evaluate(() => neo.scene.game.mask), initial);
       assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
-      if (level === 3) {
+      if (level >= 3) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(350);
         assert.ok(
@@ -79,10 +81,10 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
           }),
           'portrait controls fit with grown-up target sizes',
         );
-        await screenshot('pyramid-solitaire-3-portrait');
+        await screenshot(`pyramid-solitaire-${level}-portrait`);
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(350);
-        await screenshot('pyramid-solitaire-3-landscape');
+        await screenshot(`pyramid-solitaire-${level}-landscape`);
       }
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await page.evaluate(async () => {
@@ -100,6 +102,7 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
       log(`Pyramid Solitaire ${level}: touch, hint, revision, one sticker passed`);
     }
+    if (only) return;
     // Find a legal dead end in an actual isolated round, without replacing game state.
     let recovery = null;
     for (let attempt = 0; !recovery && attempt < 12; attempt++) {

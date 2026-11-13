@@ -287,7 +287,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Log Roll](docs/games/log-roll.md) | Tinker Lab | 7 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 7 | slide equal numbered snowballs together to make the pictured target |
 | [Brain Break](docs/games/brain-break.md) | Lantern Lake | 6 | find and light 1 to 9 on a shuffled pond of numbered stones, then of stones showing sums and take-aways |
-| [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 3 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
+| [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 4 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
 | [Number Nook](docs/games/number-nook.md) | Lantern Lake | 7 | tap a numbered tile beside the gap to put a 2 by 2 board in row order |
 | [Gem Swap](docs/games/gem-swap.md) | Lantern Lake | 8 | swap occupied neighbours to make matching lines of three and clear a finite tray |
 | [Tile Pairs](docs/games/tile-pairs.md) | Lantern Lake | 8 | remove matching tiles with a clear top and an open left or right side |

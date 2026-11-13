@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–3 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Six face-up cards: complements to thirteen |
 | 2 | Ten cards: uncover the next pair |
 | 3 | Fifteen cards: plan through five rows |
+| 4 | Twenty-one cards: spend copies over six rows |
 
 <!-- end generated -->
 

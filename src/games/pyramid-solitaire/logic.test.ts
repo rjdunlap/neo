@@ -32,7 +32,7 @@ describe('Pyramid Solitaire', () => {
     expect(at(4, 4)).toBe(14);
   });
   it('every seeded deal has a legal clearing route with valid ranks and alternatives supported', () => {
-    for (let level = 1; level <= 3; level++)
+    for (let level = 1; level <= 4; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           solve = solver(p);
@@ -85,7 +85,7 @@ describe('Pyramid Solitaire', () => {
     for (let mask = 0; mask <= fullMask(3); mask++) expect(solve(mask) !== null).toBe(reachable(mask));
   });
   it('the deal dial lands each level in its band over 200 seeds, every deal from one rng clearing', () => {
-    for (let level = 1; level <= 3; level++) {
+    for (let level = 1; level <= 4; level++) {
       let inBand = 0;
       for (let seed = 1; seed <= 200; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
@@ -109,6 +109,9 @@ describe('Pyramid Solitaire', () => {
       const three = clearRate(makePuzzle(3, new Rng(seed)));
       expect(three).toBeGreaterThanOrEqual(0.4);
       expect(three).toBeLessThanOrEqual(0.8);
+      const four = clearRate(makePuzzle(4, new Rng(seed)));
+      expect(four).toBeGreaterThanOrEqual(0.3);
+      expect(four).toBeLessThanOrEqual(0.75);
     }
     expect(CANDIDATES).toBe(40);
   });
@@ -121,8 +124,8 @@ describe('Pyramid Solitaire', () => {
     expect(clearRate(p)).toBe(0.5);
     expect(clearRate(p, 0)).toBe(1);
   });
-  it('level 1 is two pairs and two kings; levels 2-3 add at most one king by chance; a rank never passes a pack', () => {
-    for (let level = 1; level <= 3; level++)
+  it('level 1 is two pairs and two kings; levels 2-4 add at most one king by chance; a rank never passes a pack', () => {
+    for (let level = 1; level <= 4; level++)
       for (let seed = 1; seed <= 200; seed++) {
         const c = dealCandidate(level, new Rng(seed)),
           kings = c.puzzle.ranks.filter((r) => r === 13).length;
@@ -138,5 +141,22 @@ describe('Pyramid Solitaire', () => {
           expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
         if (level === 1) expect(p.ranks.filter((r) => r === 13)).toHaveLength(2);
       }
+  });
+  it('level 4 is six rows of 21 cards in one 21-bit mask, reaching at most 71 positions', () => {
+    expect(planFor(4).rows).toBe(6);
+    expect(fullMask(6)).toBe(2 ** 21 - 1);
+    expect(planFor(9)).toBe(planFor(4));
+    for (let seed = 1; seed <= 100; seed++) {
+      const p = makePuzzle(4, new Rng(seed)),
+        seen = new Set<number>();
+      expect(p.ranks).toHaveLength(21);
+      const walk = (mask: number) => {
+        if (seen.has(mask)) return;
+        seen.add(mask);
+        for (const move of moves(p, mask)) walk(remove(mask, move));
+      };
+      walk(fullMask(6));
+      expect(seen.size).toBeLessThanOrEqual(71);
+    }
   });
 });
