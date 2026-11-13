@@ -2,7 +2,7 @@
 
 ### Animal Snack level 1 opens with one big animal (2026-11-12)
 
-Level 1 (lap only, so changed in place; the `oneBig` plan, munch mode) starts with one big animal (scale 1.1 against 0.6). A layer over the whole meadow has a touch anywhere feed the nearest animal at any distance; a touch while one eats or a friend walks in squishes with a tick and counts nothing. The second and third friends walk in from the right after the second and fourth snacks, each with its call, and six snacks finish the round. New line `snack.big` (device speech, no rendered clip). [Game notes](../games/animal-snack.md#design-notes) and [verification](../verification/2026-11-12-animal-snack-level-1-one-big-animal-at-lap.md).
+[PR #1592](https://github.com/rjdunlap/neo/pull/1592), `claude/animal-snack-lap-big-animal`: level 1 (lap only, so changed in place; the `oneBig` plan, munch mode) starts with one big animal (scale 1.1 against 0.6). A layer over the whole meadow has a touch anywhere feed the nearest animal at any distance; a touch while one eats or a friend walks in squishes with a tick and counts nothing. The second and third friends walk in from the right after the second and fourth snacks, each with its call, and six snacks finish the round. New line `snack.big` (device speech, no rendered clip). [Game notes](../games/animal-snack.md#design-notes) and [verification](../verification/2026-11-12-animal-snack-level-1-one-big-animal-at-lap.md).
 
 ### Egg Catch level 12, One big hen, first at lap (2026-11-12)
 
