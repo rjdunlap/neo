@@ -198,6 +198,50 @@ export class IdleNudge {
   }
 }
 
+/** Seconds without progress on a parts question before the asked-for splotches glow: a free reminder, never a hint. */
+export const GLOW_AFTER = 7;
+
+/** Misses on one question before the glow counts as that question's one hint. */
+export const MISSES_FOR_HINT = 2;
+
+/**
+ * Help on one parts question (decided 2026-10-23): seven quiet seconds light the glow for free; the second miss
+ * lights it and counts one hint. At most one hint per question; `ask` starts the next question.
+ */
+export class QuestionHelp {
+  private quiet = 0;
+  private missed = 0;
+  private glowed = false;
+  private counted = false;
+
+  ask() {
+    this.quiet = 0;
+    this.missed = 0;
+    this.glowed = false;
+    this.counted = false;
+  }
+
+  progress() {
+    this.quiet = 0;
+  }
+
+  /** True once per question, when the quiet time first passes GLOW_AFTER: light the glow, count nothing. */
+  tick(dt: number): boolean {
+    this.quiet += dt;
+    if (this.glowed || this.quiet <= GLOW_AFTER) return false;
+    this.glowed = true;
+    return true;
+  }
+
+  /** A counted miss. True when it is the one that lights the glow as this question's hint. */
+  miss(): boolean {
+    this.missed++;
+    if (this.counted || this.missed < MISSES_FOR_HINT) return false;
+    this.counted = this.glowed = true;
+    return true;
+  }
+}
+
 /** The part to scrub next: any muddy one when scrubbing freely, and otherwise the first the question allows. */
 export function nextToScrub(plan: Plan, index: number, clean: (p: Part) => boolean): Part | null {
   if (plan.mode !== 'parts') return plan.parts.find((p) => !clean(p)) ?? null;

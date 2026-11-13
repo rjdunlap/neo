@@ -117,7 +117,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     for (let level = 1; level <= 9 && (!only || only === 'bath'); level++) {
       await launch('splish-splash', level);
       await page.waitForTimeout(500);
-      const parts = await page.evaluate(async () => {
+      const parts = await page.evaluate(async (level) => {
         const g = neo.scene.game;
         if (g.plan.mode === 'pat') {
           // Pat the bubbles: touches far from the mud still wash the nearest patch.
@@ -140,6 +140,20 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
           if (g.misses !== 1) throw new Error('Wrong part not noticed');
           if (g.muds.find((m) => m.part === wrongPart).clean) throw new Error('Wrong part got washed');
+          const askedGlow = () =>
+            g.muds.some((m) => !m.clean && g.allowed().includes(m.part) && m.glow.visible);
+          if (level === 3) {
+            // A second miss on the same question (after the four-second nag gap) lights the asked-for glow as its one hint.
+            await kit.sleep(4200);
+            await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
+            if (g.misses !== 2 || g.hints !== 1 || !askedGlow())
+              throw new Error(`Second miss gave no hint: ${g.misses} ${g.hints} ${askedGlow()}`);
+          }
+          if (level === 4) {
+            // A quiet spell lights the asked-for glow for free.
+            await kit.sleep(7600);
+            if (!askedGlow() || g.hints !== 0) throw new Error(`Quiet glow: ${askedGlow()} ${g.hints}`);
+          }
         }
         for (let guard = 0; guard < 40 && !g.finished; guard++) {
           const next =
@@ -149,7 +163,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await kit.sleep(200);
         }
         return !!wrongPart;
-      });
+      }, level);
       if ([1, 6, 8, 9].includes(level)) await screenshot(`splish-splash-${level}`);
       await finished('splish-splash');
       const r = await page.evaluate(() => {
@@ -158,7 +172,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       });
       assert.deepEqual(
         r,
-        parts ? [1, 0] : [0, 0],
+        level === 3 ? [2, 1] : parts ? [1, 0] : [0, 0],
         `bath ${level} score (misses, hints): ${JSON.stringify(r)}`,
       );
       log(`Splish Splash ${level}: ${parts ? 'wrong part, ' : ''}every part washed, sticker passed`);

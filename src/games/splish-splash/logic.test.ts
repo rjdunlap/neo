@@ -5,8 +5,11 @@ import {
   askedParts,
   askedPhrase,
   cleanPhrase,
+  GLOW_AFTER,
   IdleNudge,
+  MISSES_FOR_HINT,
   MUD_BOX,
+  QuestionHelp,
   NAME_GAP,
   Namer,
   NUDGE_AFTER,
@@ -309,6 +312,53 @@ describe('Splish Splash', () => {
     idle.touch();
     for (let t = 0; t < 30; t += 1 / 60) if (idle.tick(1 / 60)) fired++;
     expect(fired).toBe(Math.floor(30 / NUDGE_AFTER));
+  });
+
+  it('lights the asked-for glow for free after a quiet spell, and counts a hint only on the second miss', () => {
+    const help = new QuestionHelp();
+    help.ask();
+    // A long pause on one question glows once and counts nothing.
+    let glows = 0;
+    for (let t = 0; t < 60; t += 1 / 60) if (help.tick(1 / 60)) glows++;
+    expect(glows).toBe(1);
+    // A child who scrubs a little now and then never waits long enough for the glow.
+    help.ask();
+    for (let t = 0, since = 0; t < 120; t += 1 / 60, since += 1 / 60) {
+      if (since > GLOW_AFTER - 0.5) {
+        help.progress();
+        since = 0;
+      }
+      expect(help.tick(1 / 60)).toBe(false);
+    }
+    // Misses: the first is only a miss; the second lights the glow as the one hint; later ones add no hint.
+    help.ask();
+    const hints = [1, 2, 3, 4, 5].map(() => help.miss());
+    expect(MISSES_FOR_HINT).toBe(2);
+    expect(hints).toEqual([false, true, false, false, false]);
+    // After that hint the quiet glow does not light again on this question.
+    for (let t = 0; t < 30; t += 1 / 60) expect(help.tick(1 / 60)).toBe(false);
+    // A free glow first still lets two misses count the hint; the next question starts afresh.
+    help.ask();
+    for (let t = 0; t <= GLOW_AFTER + 1; t += 1 / 60) help.tick(1 / 60);
+    expect([help.miss(), help.miss()]).toEqual([false, true]);
+    help.ask();
+    expect([help.miss(), help.miss()]).toEqual([false, true]);
+  });
+
+  it('a round of four questions paused on each counts no hints; two misses on each count one hint each', () => {
+    const help = new QuestionHelp();
+    let hints = 0;
+    for (let q = 0; q < 4; q++) {
+      help.ask();
+      for (let t = 0; t < 20; t += 1 / 60) help.tick(1 / 60);
+    }
+    expect(hints).toBe(0);
+    for (let q = 0; q < 4; q++) {
+      help.ask();
+      if (help.miss()) hints++;
+      if (help.miss()) hints++;
+    }
+    expect(hints).toBe(4);
   });
 
   it('gives the free levels a palm-sized brush and keeps the asked-for levels precise', () => {
