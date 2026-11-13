@@ -447,7 +447,7 @@ class Opposites implements Game {
   /** Where the `i`th flipped picture sits in the row along the bottom, clear of the corner pet. */
   private rowSpot(i: number) {
     const v = this.view;
-    const xs = spread(this.plan.rounds, 200, v.w - 120, 96);
+    const xs = spread(this.plan.rounds, 240, v.w - 120, 96);
     return { x: xs[i], y: v.h - 80 };
   }
 
