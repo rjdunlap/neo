@@ -4,8 +4,10 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Play with dry sand and see how it moves.',
   steps: [
-    { from: 1, to: 3, text: 'Tap the sand to pour a shower of grains.' },
-    { from: 1, to: 3, text: 'Tap a scoop to lift some sand back into the bucket.' },
+    { from: 1, to: 1, text: 'Tap the sand to pour a shower of grains. At lap age a tap anywhere pours.' },
+    { from: 2, to: 3, text: 'Tap the sand to pour a shower of grains.' },
+    { from: 1, to: 1, text: 'Tap a scoop to lift some sand back into the bucket. Lap age has no scoop.' },
+    { from: 2, to: 3, text: 'Tap a scoop to lift some sand back into the bucket.' },
     { from: 2, to: 3, text: 'Tap a side to choose where the sand goes.' },
     { from: 3, to: 3, text: 'Make it tall, flat or hilly, then tap the flag and watch the pet walk it.' },
     { from: 4, to: 4, text: 'Tap the breeze and watch the shimmering grains.' },
@@ -13,7 +15,12 @@ export const HOW_TO: GameHowTo = {
     { from: 4, to: 4, text: 'Tap under the part where the sand landed.' },
   ],
   finish: [
-    { from: 1, to: 2, text: 'Tap the flag whenever you like the sand.' },
+    {
+      from: 1,
+      to: 1,
+      text: 'Tap the flag whenever you like the sand. At lap age the round ends by itself after eight pours.',
+    },
+    { from: 2, to: 2, text: 'Tap the flag whenever you like the sand.' },
     { from: 3, to: 3, text: 'Tap the flag (Show) whenever you like the sand.' },
     { from: 4, to: 4, text: 'The round ends when she finds where it landed.' },
   ],

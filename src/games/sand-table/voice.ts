@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.sand-table': ['Sand table!'],
   'sand.instruct.1': ['Tap the sand table to pour! Tap the scoop to take some away.'],
+  'sand.instruct.lap': ['Tap anywhere to pour the sand!'],
   'sand.instruct.2': ['Tap a side to pour. Tap a scoop to take some away.'],
   'sand.instruct.3': ['Shape the sand any way you like. Tap the flag when you like it!'],
   'sand.invite.tall': ['Can you make one tall hill?'],
