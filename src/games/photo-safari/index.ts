@@ -727,6 +727,8 @@ class PhotoSafari implements Game {
     else await this.ctx.tw.wait(0.4);
     if (this.destroyed) return;
     this.busy = false;
+    // A turn of the phone during the walk-in: the big friend settles where the new view's middle is.
+    if (this.plan.big) this.layoutActors();
     if (this.plan.mode === 'changed') {
       this.phase = 'look';
       this.cameraButton.visible = true;
