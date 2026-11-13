@@ -119,7 +119,7 @@ Each has a default the build uses. None blocks it.
 
 1. **Adaptation.** Default: rounds report 0/0 and step a toddler from 3 to 4 after two rounds, as every free level does. Alternative: hold her at the level until a grown-up moves it, which needs a shared "do not adapt" rule that does not exist yet.
 2. **Preschool entry.** Default: preschool keeps level 1 only. Alternative: preschool `{ min: 1, max: 4, order: [4, 1] }` so a just-turned-three player starts by peeking inside.
-3. **Ending.** Default: Finish appears after three turns and only her tap ends the round. Alternative: also end by itself after 24 turns, as Jelly Drums' *One big jelly* does, for a lap player who never taps the picture.
+3. **Ending.** Default: Finish appears after three turns and only her tap ends the round. Alternative: also end by itself after 24 turns, as Jelly Drums' *One big jelly* does, for a lap player who never taps the picture. *Update 2026-11-13 (PR #1618): level 3 now ends by itself after the third half turn (no Finish picture); level 4 keeps its Finish tap.*
 4. **Anywhere at level 3.** Default: any touch in the attic turns the handle, so a swat works. Alternative: only the toy, which makes the handle's role clearer but leaves a lap player's off-target touches doing nothing.
 5. **Level 4's toy.** Default: the bird box only, with a front peek door. Alternative: the fish churn too, with a cloth cover over the jar (new art, and a second door rule).
 6. **Land.** Default: Story Grove, as levels 1–2. Alternative: the Treehouse, as the Attic Finds definition's decision 3 already offers; unchanged here.
