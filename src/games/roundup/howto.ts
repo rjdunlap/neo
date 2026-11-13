@@ -9,7 +9,7 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'Shoo the big pigs into the pen with the big picture and the little pigs into the pen with the little picture.',
     },
-    { to: 1, text: 'Tap an animal to hop it into the pen.' },
+    { to: 1, text: 'Tap an animal to hop it into the pen. At lap age the animals come out one at a time.' },
     {
       from: 2,
       to: 3,
