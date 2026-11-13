@@ -25,6 +25,7 @@ import {
   nearestFinger,
   followSpeed,
   inRect,
+  lapTap,
   leadGoal,
   makeHerd,
   PLACE,
@@ -135,10 +136,13 @@ class Roundup implements Game {
   private autoAnimal: Animal | null = null;
   /** Hold the loose herd while the pet counts the visible pen, so the remainder stays true. */
   private recounting = false;
+  /** Lap's tap level: one animal at a time, and waiting is never counted. */
+  private readonly lap: boolean;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.lap = lapTap(this.plan, ctx.band);
     this.herd = makeHerd(this.plan, ctx.rng);
     this.backdrop = new Backdrop(
       {
@@ -209,7 +213,7 @@ class Roundup implements Game {
       if (this.plan.mode === 'tap') {
         onTap(critter, () => void this.hopIn(a), { cooldown: 400 });
       }
-      if (this.plan.sequential && this.animals.length) {
+      if ((this.plan.sequential || this.lap) && this.animals.length) {
         a.state = 'waiting';
         critter.visible = false;
       }
@@ -542,9 +546,9 @@ class Roundup implements Game {
       ) {
         this.helped = true;
         const a = this.animals.find((x) => x.state === 'loose' && this.needs(x) >= 0);
-        // Help, not her own move: it counts as a hint.
+        // Help, not her own move: it counts as a hint (not at lap, where watching is fine).
         if (a) {
-          this.hints++;
+          if (!this.lap) this.hints++;
           void this.hopIn(a);
         }
       }
@@ -811,6 +815,19 @@ class Roundup implements Game {
       next.state = 'loose';
       next.critter.visible = true;
       this.busy = false;
+      if (this.lap) {
+        // Lap: the newcomer hops and sparkles so her eyes find it.
+        next.critter.hop(0.8);
+        sfx.pop(4);
+        this.ctx.particles.burst(next.critter.x, next.critter.y - 40, {
+          kind: 'star',
+          colors: [0xffffff, 0xfff3a0],
+          count: 10,
+          speed: [80, 200],
+          gravity: 0,
+          life: [0.5, 0.8],
+        });
+      }
       return;
     }
     if (p.pen.target !== undefined || this.herd.fair) void this.ctx.say('count', { n: p.inside });
@@ -951,7 +968,8 @@ class Roundup implements Game {
   }
 
   private showHint() {
-    this.hints++;
+    // Lap: the glow still shows, but waiting is not a hint.
+    if (!this.lap) this.hints++;
     this.wrongs = 0;
     this.hinting = true;
     if (this.plan.mode === 'size')

@@ -99,6 +99,12 @@ export const LEVELS: BandLevels = {
   prek: { min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 9, 12] },
 };
 
+/**
+ * Lap's tap level: one animal at a time (the `sequential` rule level 10 has), and the waiting glow
+ * and the trot home count no hint, since a lap player who only watches has done nothing wrong.
+ */
+export const lapTap = (plan: HerdPlan, band: string) => band === 'lap' && plan.mode === 'tap';
+
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = {

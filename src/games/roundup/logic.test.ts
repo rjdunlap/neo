@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   animalsFor,
+  lapTap,
   BEACON_S,
   sizeScale,
   emptierPen,
@@ -35,6 +36,14 @@ import {
 } from './logic';
 
 describe('Roundup', () => {
+  it("brings lap's tap level out one animal at a time without counting waiting, and only there", () => {
+    expect(lapTap(planFor(1), 'lap')).toBe(true);
+    expect(lapTap(planFor(1), 'toddler')).toBe(false);
+    // Lap's other level, come along, keeps its whole herd and its one drift hint.
+    expect(lapTap(planFor(11), 'lap')).toBe(false);
+    expect(planFor(1).sequential).toBeFalsy();
+  });
+
   it('Come along: one tap ahead carries the herd at least half a screen before the beacon fades', () => {
     expect(BEACON_S * FOLLOW_SPEED).toBeGreaterThanOrEqual(512);
     expect(BEACON_S).toBeLessThanOrEqual(5);
