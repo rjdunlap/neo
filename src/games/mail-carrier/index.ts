@@ -30,6 +30,7 @@ import {
   makeLetters,
   makeStreet,
   nearestHouse,
+  offHouseTouch,
   NEIGHBORS,
   planFor,
   shouldInvite,
@@ -289,7 +290,7 @@ class MailCarrier implements Game {
     const looks = houseLooks(this.street.length, ctx.rng);
     const mailbox = mailboxColor(this.street, ctx.rng);
     ctx.stage.addChild(this.backdrop, this.road);
-    // Level 1: a touch anywhere off a house still answers (free, never a miss or a hint).
+    // Level 1: a touch anywhere off a house still answers (free, never a miss or a hint); at lap it posts the letter.
     if (this.plan.mode === 'drop') {
       const anywhere = new Container();
       anywhere.hitArea = new Rectangle(-1e4, -1e4, 2e4, 2e4);
@@ -393,16 +394,20 @@ class MailCarrier implements Game {
     return Math.max(210, Math.min(this.ctx.view.w - 70, x));
   }
 
-  /** A touch off the houses at level 1: the envelope wiggles and the nearest mailbox's flag waves. */
+  /**
+   * A touch off the houses at level 1. At lap it posts the letter to the nearest mailbox, with the whoosh; otherwise
+   * (and at lap while a letter is on its way) the envelope wiggles and the nearest mailbox's flag waves.
+   */
   private offHouse(x: number) {
     this.idle = 0;
     if (this.finished) return;
-    void this.houses[
-      nearestHouse(
-        this.houses.map((h) => h.x),
-        x,
-      )
-    ]?.wave(this.ctx.tw);
+    const i = nearestHouse(
+      this.houses.map((h) => h.x),
+      x,
+    );
+    if (offHouseTouch(this.plan.mode, this.ctx.band) === 'post' && !this.busy && this.letter)
+      return void this.post(i);
+    void this.houses[i]?.wave(this.ctx.tw);
     if (this.busy || this.wiggling || this.envelope.scale.x < 0.5) return;
     this.wiggling = true;
     void (async () => {

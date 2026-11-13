@@ -1344,28 +1344,26 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           await kit.until(() => g.index === q && !g.busy, 15000);
           const right = g.letter;
           if (q === 0 && g.plan.mode === 'drop') {
-            // A touch off the houses answers for free: the envelope wiggles and a flag waves.
+            // At lap a touch off the houses posts the letter to the nearest mailbox, free.
             kit.tapOn(g.envelope, 0, -140);
-            let wiggled = false;
-            let waved = false;
-            await kit.until(() => {
-              wiggled ||= g.envelope.rotation !== 0;
-              waved ||= g.houses.some((h) => h.flag.rotation !== 0);
-              return wiggled && waved;
-            }, 1000);
-            if (!wiggled || !waved) throw new Error(`Mail off-house touch: wiggle ${wiggled}, wave ${waved}`);
-            if (
-              !(await kit.until(
-                () => g.envelope.rotation === 0 && g.houses.every((h) => h.flag.rotation === 0),
-                2000,
-              ))
-            )
-              throw new Error('Mail wave did not settle');
+            if (!(await kit.until(() => g.busy, 1000)))
+              throw new Error('Mail lap off-house touch did not post');
+            // A touch while the letter is on its way still answers: a flag waves.
+            await kit.sleep(150);
+            kit.tapOn(g.envelope, 0, -140);
+            if (!(await kit.until(() => g.houses.some((h) => h.flag.rotation !== 0), 1000)))
+              throw new Error('Mail touch while posting did not wave');
+            await kit.until(() => g.index > q || g.finished, 15000);
+            if (g.index !== 1) throw new Error(`Mail lap off-house post: index ${g.index}`);
+            if (g.misses || g.hints) throw new Error(`Mail free touches counted: ${g.misses} ${g.hints}`);
+            continue;
+          }
+          if (q === 1 && g.plan.mode === 'drop') {
             // Six quiet seconds bring the invitation back, with a wave.
+            await kit.until(() => g.houses.every((h) => h.flag.rotation === 0), 3000);
             g.idle = 6;
             if (!(await kit.until(() => g.houses.some((h) => h.flag.rotation !== 0), 1000)))
               throw new Error('Mail idle invitation did not wave');
-            if (g.misses || g.hints) throw new Error(`Mail free touches counted: ${g.misses} ${g.hints}`);
           }
           if (q === 0 && g.plan.mode !== 'drop') {
             const wrongs =

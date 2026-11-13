@@ -25,6 +25,7 @@ import {
   countsAloud,
   INVITE_AFTER,
   nearestHouse,
+  offHouseTouch,
   planFor,
   shouldInvite,
   HELPER,
@@ -72,6 +73,14 @@ describe('Mail Carrier', () => {
     expect(shouldInvite('drop', 9, false, true)).toBe(false);
     for (const mode of ['color', 'dots', 'numeral', 'count'] as const)
       expect(shouldInvite(mode, 60, false, false)).toBe(false);
+  });
+
+  it('posts on a touch off the houses at lap, waves at toddler, and answers nothing off level 1', () => {
+    expect(offHouseTouch('drop', 'lap')).toBe('post');
+    expect(offHouseTouch('drop', 'toddler')).toBe('wave');
+    expect(offHouseTouch('drop', 'preschool')).toBe('wave');
+    for (const plan of PLANS.filter((p) => p.mode !== 'drop'))
+      expect(offHouseTouch(plan.mode, 'lap')).toBeNull();
   });
 
   it('waves the mailbox nearest a touch off the houses', () => {
