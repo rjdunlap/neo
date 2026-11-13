@@ -86,7 +86,10 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
         // Wait for the round, and for its food to finish popping in.
         ready: async () => {
           await kit.until(() => !mm.g().busy || mm.g().done, 20000);
-          await kit.until(() => mm.g().snacks.every((s) => s.eatenBy || s.node.scale.x > 0.99), 5000);
+          await kit.until(
+            () => mm.g().snacks.every((s) => s.eatenBy || !s.node.visible || s.node.scale.x > 0.99),
+            5000,
+          );
         },
       };
     };
@@ -164,7 +167,27 @@ export function createSuite({ page, log, ready, scene, screenshot, launch, finis
             const round = g.round;
             sizes.push(g.snacks.length);
             const m = g.monsters[0];
-            if (mode === 'tap' || mode === 'big') {
+            if (mode === 'big') {
+              // Level 9 (lap): one cookie on the tray at a time, and a touch anywhere feeds it: the room, the monster
+              // and the cookie in turn. The next cookie comes only after each bite.
+              const shown = () => g.snacks.filter((s) => !s.eatenBy && s.node.visible).length;
+              const n = g.snacks.length;
+              for (let i = 0; i < n; i++) {
+                if (shown() !== 1) throw new Error(`Big bites tray shows ${shown()} before bite ${i + 1}`);
+                // Mid-height: for its first seconds the shell's tip card sits at the top centre and takes a touch there.
+                if (i % 3 === 0) kit.tap(innerWidth * (round ? 0.9 : 0.3), innerHeight * 0.45);
+                else if (i % 3 === 1) kit.tapOn(m, 0, -150 * m.scale.y * neo.view.scale);
+                else kit.tapOn(mm.free().node);
+                await kit.sleep(450);
+                if (m.eaten.length !== i + 1)
+                  throw new Error(`Big bites touch ${i + 1} fed ${m.eaten.length}`);
+              }
+              // A touch during the burp only gets a giggle.
+              kit.tap(innerWidth * 0.3, innerHeight * 0.45);
+              await kit.sleep(150);
+              if (m.eaten.length !== n || g.misses || g.hints)
+                throw new Error('A touch during the burp fed or counted');
+            } else if (mode === 'tap') {
               for (let i = 0; mm.free(); i++) {
                 if (i % 2) kit.tapOn(m, 0, -150 * m.scale.y * neo.view.scale);
                 else kit.tapOn(mm.free().node);
