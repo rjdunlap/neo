@@ -106,17 +106,28 @@ export const PLANS: readonly Plan[] = [
     name: 'More light',
     description: 'More light: tap the Moon that shows more, or less, light; three comparisons',
   },
+  {
+    level: 4,
+    mode: 'look',
+    name: 'Big window',
+    description: 'Big window: a touch anywhere turns the window to the Moon some days later, three times',
+  },
 ];
 
+/** Level 4, lap's opening before level 1 (after the ladder, so no saved level moves); toddler still starts at 1. */
+export const BIG_LEVEL = 4;
+/** Level 4 has no Later button: the whole view takes the touch, and the window is the big thing to look at. */
+export const isBig = (level: number) => level === BIG_LEVEL;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
 };
 export const moonPlan = (level: number): Plan => PLANS[Math.min(Math.max(level, 1), PLANS.length) - 1];
 
-/** Level 1: a start stop and three Later presses, four views in model order. */
+/** Levels 1 and 4: a start stop and three Later presses (or touches), four views in model order. */
 export const LOOK_PRESSES = 3;
 export function lookViews(start: number): number[] {
   return Array.from({ length: LOOK_PRESSES + 1 }, (_, i) => (start + i) % STOPS);
@@ -294,6 +305,9 @@ export const PET = { w: 230, h: 230 };
 export const CORNER = 120;
 const WINDOW = 340;
 const MOON_R = 90;
+/** Level 4's window and Moon: bigger, since the window is the thing to look at and nothing stands beside it. */
+const BIG_WINDOW = 440;
+const BIG_MOON_R = 120;
 const LATER = 160;
 const CARD = 220;
 const RIBBON = 120;
@@ -302,7 +316,7 @@ const RIBBON_GAP = 15;
 /** Where everything goes for a view; null if it cannot fit without shrinking (the test fails rather than the layout). */
 export function windowLayout(view: View, level: number): WindowLayout | null {
   const portrait = view.h > view.w;
-  const cardMoonR = level >= 3 ? MOON_R : 70;
+  const cardMoonR = moonPlan(level).mode === 'compare' ? MOON_R : 70;
   const ribbonY = view.h - 10 - RIBBON;
   const ribbon = Array.from({ length: LOOK_PRESSES + 1 }, (_, i) => ({
     x: PET.w + 20 + i * (RIBBON + RIBBON_GAP),
@@ -311,7 +325,22 @@ export function windowLayout(view: View, level: number): WindowLayout | null {
     h: RIBBON,
   }));
   let L: WindowLayout;
-  if (portrait) {
+  if (isBig(level)) {
+    // The window stands alone in the middle of the space above the row; no Later button, no cards.
+    const cx = view.w / 2;
+    const cy = portrait ? CORNER + BIG_WINDOW / 2 : Math.min(ribbonY - 20 - BIG_WINDOW / 2, view.h / 2 - 40);
+    const window = { x: cx - BIG_WINDOW / 2, y: cy - BIG_WINDOW / 2, w: BIG_WINDOW, h: BIG_WINDOW };
+    const off = { x: -1000, y: -1000, w: 0, h: 0 };
+    L = {
+      window,
+      moonR: BIG_MOON_R,
+      later: off,
+      cards: [off, off],
+      cardMoonR,
+      request: off,
+      ribbon,
+    };
+  } else if (portrait) {
     const cx = view.w / 2;
     const window = { x: cx - WINDOW / 2, y: CORNER - 60, w: WINDOW, h: WINDOW };
     const cardY = window.y + WINDOW + 190;
@@ -362,6 +391,7 @@ export function windowLayout(view: View, level: number): WindowLayout | null {
 /** The controls a level shows: the window and Later button with the ribbon (1), the cards (2), the cards and the request (3). */
 export function shownBoxes(L: WindowLayout, level: number): Box[] {
   const mode = moonPlan(level).mode;
+  if (isBig(level)) return [L.window, ...L.ribbon];
   if (mode === 'look') return [L.window, L.later, ...L.ribbon];
   if (mode === 'same') return [L.window, ...L.cards];
   return [L.window, ...L.cards, L.request];
