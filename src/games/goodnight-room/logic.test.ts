@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { firstLevel, levelsInOrder } from '../../progress/difficulty';
 import {
   acceptsTap,
+  BIG_LEVEL,
+  LEVELS,
   makeNight,
   makeRequests,
   makeTour,
@@ -23,6 +26,34 @@ import {
 } from './logic';
 
 describe('Goodnight Room', () => {
+  it('level 11 opens lap with one big sleepy friend at a time, every touch a goodnight; toddler still starts at 2', () => {
+    const plan = planFor(BIG_LEVEL);
+    expect(plan).toMatchObject({ mode: 'big', requests: 0, asleep: 0 });
+    expect(PLANS).toHaveLength(BIG_LEVEL);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1, 2]);
+    expect(firstLevel(LEVELS.lap!, [BIG_LEVEL])).toBe(BIG_LEVEL);
+    expect(firstLevel(LEVELS.toddler!, [BIG_LEVEL])).toBe(2);
+    for (const band of ['toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const night = makeNight(plan, rng);
+      // Everyone starts awake, so every touch tucks someone in.
+      expect(night.asleep).toEqual([]);
+      expect(night.targetCount).toBe(plan.things);
+      expect(makeRequests(plan, rng, night.room, night.color)).toEqual([]);
+      // Nothing can be a miss: each friend, in the order they tiptoe in, is right, and none twice.
+      const asleep = new Set<Thing>();
+      for (const want of night.room) {
+        expect(thingToTap(plan, undefined, 0, asleep, night.room)).toBe(want);
+        expect(acceptsTap(plan, [], 0, asleep, want)).toBe(true);
+        asleep.add(want);
+        expect(acceptsTap(plan, [], 0, asleep, want)).toBe(false);
+      }
+      expect(thingToTap(plan, undefined, 0, asleep, night.room)).toBeNull();
+    }
+  });
+
   it('gives every friend in a room its own note', () => {
     for (const room of ROOMS) {
       const steps = room.friends.map((t) => noteFor(t, room));
@@ -354,7 +385,7 @@ describe('Goodnight Room', () => {
         const { room, color, asleep: start } = makeNight(plan, rng);
         const rs = makeRequests(plan, rng, room, color);
         const asleep = new Set<Thing>(start);
-        if (plan.mode === 'all' || plan.mode === 'tour') {
+        if (plan.mode === 'all' || plan.mode === 'tour' || plan.mode === 'big') {
           const taps: Thing[] = [];
           for (
             let t = thingToTap(plan, undefined, 0, asleep, room);

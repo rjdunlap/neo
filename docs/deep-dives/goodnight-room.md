@@ -93,7 +93,7 @@ The **cost on level 5**, which a build must not forget: the how-to card's level-
 
 ### Younger-band openings
 
-**None to add.** The game already serves lap from level 1, which is the youngest band. The two choices that make level 1 easier or harder for a one-year-old are in the next section.
+**None to add.** The game already serves lap from level 1, which is the youngest band. *Lap since refined and built as level 11, One big sleepy friend (2026-11-13, PR #1613): one big friend, a touch anywhere tucks it in and the next tiptoes in, four friends; lap order `[11, 1, 2]`.* The two choices that make level 1 easier or harder for a one-year-old are in the next section.
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
