@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1–2 |
+| lap | 8, 1, 2 |
 | toddler | 2–4 |
 | preschool | 4–6 |
 | pre-K | 5–7 |
@@ -23,6 +23,7 @@
 | 5 | Six pieces with only an empty frame |
 | 6 | Nine pieces with only an empty frame |
 | 7 | Twelve pieces with only an empty frame |
+| 8 | One big piece at a time: a touch anywhere hops it into a two- or three-piece picture |
 
 <!-- end generated -->
 

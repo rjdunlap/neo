@@ -176,7 +176,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 16 | AB patterns |
 | [Memory Match](docs/games/memory-match.md) | preschool–school | Puzzle Peaks | 12 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
-| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 7 | tap or carry a piece to finish a two-piece picture |
+| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 8 | tap or carry a piece to finish a two-piece picture |
 | [Quick Tricks](docs/games/quick-tricks.md) | toddler–school | Puzzle Peaks | 9 | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle |
 | [Peekaround Island](docs/games/peekaround-island.md) | toddler–school | Puzzle Peaks | 8 | turn a little island to find who is hiding behind the tree |
 | [Penguin Slide](docs/games/penguin-slide.md) | preschool–school | Puzzle Peaks | 13 | tap the ice: the penguin slides until something stops it |
