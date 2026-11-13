@@ -362,6 +362,14 @@ class PetKitchen implements Game {
   private readonly bubble = new Container();
   private readonly dealCut: 2 | 4;
   private readonly tapDeal: boolean;
+  /**
+   * Lap's level 10: a touch anywhere on the counter deals, and the pieces come to the tray one at a time, each after
+   * the last was dealt (toddler's level 10 keeps every piece on the tray and the silent wiggle).
+   */
+  readonly lapDeal: boolean;
+  /** Lap: the friends are eating, so a touch only gets a munch. */
+  private eating = false;
+  private lastMunch = -Infinity;
   private readonly cutKinds: CutKind[] = [];
   /** Level 11: which side the small piece of the lopsided cut is on. */
   private readonly smallFirst: boolean;
@@ -403,6 +411,7 @@ class PetKitchen implements Game {
     this.kinds = fruitPair(ctx.rng);
     this.dealCut = dealCut(ctx.rng);
     this.tapDeal = this.plan.mode === 'deal';
+    this.lapDeal = this.tapDeal && ctx.band === 'lap';
     const lopsided = 'lopsided' in this.plan && this.plan.lopsided === true;
     this.smallFirst = lopsided ? ctx.rng.chance(0.5) : true;
     this.shapes = 'shapes' in this.plan && this.plan.shapes === true;
@@ -427,13 +436,17 @@ class PetKitchen implements Game {
     this.glow.eventMode = 'none';
     // Any touch on the counter counts as someone playing, so the cut buttons only bounce after real quiet.
     this.background.eventMode = 'static';
-    this.background.on('pointerdown', (e) => {
-      this.idle = 0;
-      if (this.tapDeal && !this.done) {
-        const at = ctx.stage.toLocal(e.global);
-        this.wiggleNearest(at.x, at.y);
-      }
-    });
+    if (this.lapDeal)
+      // Lap: the whole counter is the move. A touch deals the piece on the tray; while the friends eat it munches.
+      onTap(this.background, () => this.counterTouch(), { cooldown: 200 });
+    else
+      this.background.on('pointerdown', (e) => {
+        this.idle = 0;
+        if (this.tapDeal && !this.done) {
+          const at = ctx.stage.toLocal(e.global);
+          this.wiggleNearest(at.x, at.y);
+        }
+      });
     this.serve = new RoundButton(arrowIcon(1), swatch.green, 48, () => this.check());
     this.undo = new RoundButton(arrowIcon(-1), swatch.white, 48, () => {
       if (this.done) return;
@@ -684,6 +697,11 @@ class PetKitchen implements Game {
       if (this.tapDeal) {
         // The lap rung: no cut, no drag. Any touch on a piece deals it to the friend with fewer.
         onTap(node, () => this.deal(piece), { radius: 75 });
+        // Lap: only the first piece waits on the tray; each of the others comes after the one before it is dealt.
+        if (this.lapDeal && this.pieces.length) {
+          node.visible = false;
+          node.eventMode = 'none';
+        }
         this.pieces.push(piece);
         continue;
       }
@@ -730,13 +748,41 @@ class PetKitchen implements Game {
     piece.plate = dealTo(this.counts());
     sfx.bell(5 + piece.plate * 2, 0.3);
     this.layoutPieces(true);
+    if (this.lapDeal) this.bringNext();
     if (this.pieces.every((p) => p.plate >= 0)) {
       this.done = true;
+      this.eating = this.lapDeal;
       void this.eat()
-        .then(() => this.ctx.say('kitchen.done'))
+        .then(() => {
+          this.eating = false;
+          return this.ctx.say('kitchen.done');
+        })
         .then(() => this.ctx.tw.wait(0.4))
         .then(() => this.ctx.finish({ misses: 0, hints: 0, discoveries: this.discoveries() }));
     }
+  }
+  /** Lap: a touch on the counter deals the piece on the tray, and while the friends eat it gets a munch. */
+  private counterTouch() {
+    this.idle = 0;
+    if (this.done) {
+      if (this.eating && this.clock - this.lastMunch > 0.35) {
+        this.lastMunch = this.clock;
+        sfx.munch();
+      }
+      return;
+    }
+    const next = this.pieces.find((p) => p.plate < 0);
+    if (next) this.deal(next);
+  }
+  /** Lap: the next piece pops onto the tray (a scale pop, so a resize mid-pop leaves it where the tray is now). */
+  private bringNext() {
+    const next = this.pieces.find((p) => p.plate < 0);
+    if (!next || next.node.visible) return;
+    next.node.visible = true;
+    next.node.eventMode = 'static';
+    next.node.scale.set(0.2);
+    sfx.pop(9);
+    void this.ctx.tw.to(next.node.scale, { x: 1, y: 1 }, { duration: 0.22 });
   }
   private wiggle(f: Container) {
     this.ctx.tw.kill(f);
@@ -1143,7 +1189,9 @@ class PetKitchen implements Game {
         plate = this.plates[p.plate];
       const home =
         p.plate < 0
-          ? { x: xs[i % 4], y: v.h - 90 - Math.floor(i / 4) * 125 }
+          ? this.lapDeal
+            ? { x: (this.plates[0].x + this.plates[this.plates.length - 1].x) / 2, y: v.h - 110 }
+            : { x: xs[i % 4], y: v.h - 90 - Math.floor(i / 4) * 125 }
           : { x: plate.x + (slot % 2 ? dx : -dx), y: plate.y + (Math.floor(slot / 2) % 2 ? 30 : -24) };
       if (!p.drag) {
         if (animate && p.node.x + p.node.y !== 0 && (p.node.x !== home.x || p.node.y !== home.y))
