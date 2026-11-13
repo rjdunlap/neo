@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -72,16 +72,24 @@ class TrafficLight extends Container {
   }
 }
 
-/** One of the lap level's two huge lamps (160 across): a bright disc with a shape, so colour is not the only cue (play triangle, stop bar). */
+/**
+ * The lap level's one big lamp (240 across) on a short pole: a bright disc with a shape, so colour is not the only cue
+ * (play triangle on green, stop bar on red). It takes no touches itself: a touch anywhere turns it.
+ */
 class BigLamp extends Container {
-  constructor(readonly lamp: Lamp) {
+  lamp: Lamp = 'red';
+  readonly disc = new Graphics();
+  constructor() {
     super();
-    const sw = swatch[lamp];
-    const g = new Graphics().circle(0, 0, 80).fill(ink).circle(0, 0, 68).fill(sw.fill);
-    if (lamp === 'green') g.poly([-18, -30, -18, 30, 32, 0]).fill(0xffffff);
-    else g.roundRect(-26, -26, 52, 52, 10).fill(0xffffff);
-    this.addChild(g);
-    this.hitArea = new Circle(0, 0, 92);
+    this.addChild(new Graphics().rect(-10, 0, 20, 150).fill(0x6b778a), this.disc);
+    this.eventMode = 'none';
+    this.set('red');
+  }
+  set(lamp: Lamp) {
+    this.lamp = lamp;
+    const g = this.disc.clear().circle(0, 0, 120).fill(ink).circle(0, 0, 102).fill(swatch[lamp].fill);
+    if (lamp === 'green') g.poly([-27, -45, -27, 45, 48, 0]).fill(0xffffff);
+    else g.roundRect(-39, -39, 78, 78, 15).fill(0xffffff);
   }
 }
 
@@ -210,8 +218,9 @@ class StopAndGo implements Game {
   /** The crossing's second light, for the up-and-down road. */
   readonly light2 = new TrafficLight();
   readonly cars: Car[] = [];
-  /** Lap level: the green and red lamps, and whether the car is rolling. */
-  readonly lamps: BigLamp[] = [new BigLamp('green'), new BigLamp('red')];
+  /** Lap level: the one big lamp, the whole-screen layer a touch of which turns it, and whether the car is rolling. */
+  readonly lamp = new BigLamp();
+  readonly catcher = new Container();
   rolling = false;
   readonly step: RoundButton;
   /** Cars sent, steps taken, or cars through the crossing. */
@@ -271,15 +280,15 @@ class StopAndGo implements Game {
     this.glow.eventMode = 'none';
     this.step = new RoundButton(this.feet(), swatch.green, 64, () => void this.walk());
     this.step.visible = this.plan.mode === 'walk';
-    ctx.stage.addChild(this.backdrop, this.road, this.flag, this.carLayer);
+    ctx.stage.addChild(this.backdrop, this.road, this.flag, this.catcher, this.carLayer);
     onTap(this.light, () => this.tapLight(this.light), { cooldown: 300 });
     onTap(this.light2, () => this.tapLight(this.light2), { cooldown: 300 });
     this.light2.visible = this.crossMode || this.plan.mode === 'lanes';
     this.light.visible = this.plan.mode !== 'lamps';
-    for (const l of this.lamps) {
-      l.visible = this.plan.mode === 'lamps';
-      onTap(l, () => this.tapLamp(l.lamp), { cooldown: 300 });
-    }
+    this.lamp.visible = this.plan.mode === 'lamps';
+    // One big lamp: the whole screen is the move. The car sits above this layer, so a touch on it still toots.
+    if (this.plan.mode === 'lamps')
+      onTap(this.catcher, () => this.tapLamp(nextLamp(this.rolling)), { cooldown: 300 });
     if (this.plan.mode === 'walk') {
       this.pet = ctx.companion();
       this.pet.scale.set(0.5);
@@ -303,7 +312,7 @@ class StopAndGo implements Game {
         if (this.plan.mode === 'cross') car.road = i % 2 ? 'ns' : 'ew';
       }
     }
-    ctx.stage.addChild(this.light, this.light2, ...this.lamps, this.glow, this.step);
+    ctx.stage.addChild(this.light, this.light2, this.lamp, this.glow, this.step);
     if (this.crossMode) {
       this.light.set('red');
       this.light2.set('red');
@@ -430,9 +439,10 @@ class StopAndGo implements Game {
       this.light.position.set(v.w * 0.55, this.laneY('car') - 20);
       this.light2.position.set(v.w * 0.55, this.laneY('bike') - 20);
     }
-    // The lamps sit low and centred, clear of the pet in the bottom-left.
-    this.lamps[0].position.set(v.w / 2 + 120, v.h - 110);
-    this.lamps[1].position.set(v.w / 2 - 120, v.h - 110);
+    // The big lamp stands centred above the road, its pole down to the road's edge; the catcher covers the whole view.
+    this.lamp.position.set(v.w / 2, Math.max(150, y - 210));
+    this.lamp.children[0].height = Math.max(0, y - 60 - this.lamp.y);
+    this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.flag.clear();
     if (this.plan.mode === 'walk') {
       const fx = v.w - 110;
@@ -607,7 +617,7 @@ class StopAndGo implements Game {
       );
       return road ? { tap: spot(road === 'ew' ? this.light : this.light2) } : null;
     }
-    if (mode === 'lamps') return { tap: { on: this.lamps[nextLamp(this.rolling) === 'green' ? 0 : 1] } };
+    if (mode === 'lamps') return { tap: { on: this.lamp }, receiver: this.catcher };
     if (GO_TARGET[mode] === 'light') return { tap: spot(this.light) };
     const car = this.cars[0];
     const target = GO_TARGET[mode] === 'car' ? car : this.step;
@@ -630,11 +640,14 @@ class StopAndGo implements Game {
 
   // Lamps (lap) ---------------------------------------------------------------------------
 
-  /** Green sets the car going, red brakes it; each touch is one of the round's, whichever lamp. */
+  /** A touch turns the big lamp: green sets the car going, red brakes it; each touch is one of the round's. */
   private tapLamp(lamp: Lamp) {
     if (this.finished || this.busy) return;
     this.rolling = lampRolls(lamp);
     this.light.set(lamp);
+    this.lamp.set(lamp);
+    this.lamp.disc.scale.set(1.12);
+    void this.ctx.tw.to(this.lamp.disc.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
     sfx.bell(lamp === 'green' ? 9 : 4, 0.25);
     if (touchCounts('lamps', 'light')) this.done++;
     if (this.rolling) {
