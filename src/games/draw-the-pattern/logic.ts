@@ -730,6 +730,14 @@ export function lengthTo(points: readonly Point[], i: number): number {
 
 /** Level 1: a point inside the paper is a mark. */
 export const onPaper = (p: Point): boolean => p[0] >= 0 && p[0] <= STRIP_W && p[1] >= 0 && p[1] <= 1;
+/** How far inside the paper's edge a touch from off the paper lands, in strip units. */
+export const PAPER_INSET = 0.1;
+/** Level 1: a touch anywhere draws, so a point off the paper lands at the nearest place on it (just inside the edge). */
+export function toPaper(p: Point): Point {
+  if (onPaper(p)) return p;
+  const clamp = (v: number, hi: number) => Math.min(hi - PAPER_INSET, Math.max(PAPER_INSET, v));
+  return [clamp(p[0], STRIP_W), clamp(p[1], 1)];
+}
 
 /** The scratch plays every 22 logical units of drawing. */
 export const SCRATCH_EVERY = 22;

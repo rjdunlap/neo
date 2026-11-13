@@ -26,7 +26,7 @@ import {
   levelOf,
   markCount,
   nextDot,
-  onPaper,
+  toPaper,
   pathOf,
   planFor,
   stickerKind,
@@ -629,6 +629,8 @@ class DrawThePattern implements Game {
       this.picture,
       () => {
         if (!this.busy && !this.drag && !this.tapping && !this.finished) void this.petDraws();
+        // Level 1: a tap there while the pet is drawing still rings.
+        else if (this.busy && this.plan.mode === 'mark' && !this.finished) sfx.bell(5, 0.1);
       },
       { cooldown: 600 },
     );
@@ -952,12 +954,13 @@ class DrawThePattern implements Game {
   }
 
   private down(e: FederatedPointerEvent) {
+    // Level 1: a touch while the pet takes its turn or a strip flies to the picture is answered, never dropped.
+    if (this.busy && this.plan.mode === 'mark' && !this.finished && !palmOnGlass()) return this.heldTouch(e);
     if (this.busy || this.finished || this.drag || palmOnGlass()) return;
-    const p = this.local(e);
     this.lastEvent = this.clock;
     if (this.plan.mode === 'mark') {
-      if (!onPaper(p)) return;
-      // A touch on the paper draws at once: a pat is a dot.
+      // A touch anywhere draws at once, at the nearest place on the paper: a pat is a dot.
+      const p = toPaper(this.local(e));
       this.drag = {
         id: e.pointerId,
         prev: p,
@@ -973,6 +976,7 @@ class DrawThePattern implements Game {
       return;
     }
     // A touch on the crayon (or its ring) carries on; anywhere else the crayon wiggles to show where it is.
+    const p = this.local(e);
     const t = this.track;
     if (!t || this.tapping) return;
     const at = pathOf(t.stroke, t.order)[t.progress];
@@ -1006,17 +1010,18 @@ class DrawThePattern implements Game {
     if (!d || e.pointerId !== d.id || this.busy || this.finished) return;
     this.lastEvent = this.clock;
     const to = this.local(e);
-    d.outside = to[0] < -0.3 || to[0] > STRIP_W + 0.3 || to[1] < -0.4 || to[1] > 1.4;
     if (d.mark) {
-      if (!onPaper(to)) return;
-      const last = d.mark.at(-1)!,
-        step = Math.hypot(to[0] - last[0], to[1] - last[1]);
+      // Level 1's layer covers the screen, so the lift always arrives; off the paper the line runs along its edge.
+      const at = toPaper(to),
+        last = d.mark.at(-1)!,
+        step = Math.hypot(at[0] - last[0], at[1] - last[1]);
       if (step < 0.02) return;
-      d.mark.push(to);
+      d.mark.push(at);
       this.scratch(step);
       this.drawInk();
       return;
     }
+    d.outside = to[0] < -0.3 || to[0] > STRIP_W + 0.3 || to[1] < -0.4 || to[1] > 1.4;
     const t = this.track;
     if (!t || d.stopped) return;
     const before = t.progress,
@@ -1068,6 +1073,26 @@ class DrawThePattern implements Game {
     if (!d || e.pointerId !== d.id) return;
     this.release();
   }
+
+  /** Level 1, while the strip is not hers yet: a bell and a puff of stars where she touched. Nothing is counted. */
+  private heldTouch(e: FederatedPointerEvent) {
+    const now = this.clock;
+    if (now - this.heldAt < 0.15) return;
+    this.heldAt = now;
+    this.heldNote = (this.heldNote + 1) % 5;
+    sfx.bell(5 + this.heldNote, 0.1);
+    const at = this.ctx.stage.toLocal(e.global);
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'star',
+      colors: [swatch[this.crayonColor].fill, swatch.yellow.fill],
+      count: 5,
+      speed: [40, 120],
+      gravity: -40,
+      size: [0.3, 0.45],
+    });
+  }
+  private heldAt = -1;
+  private heldNote = 0;
 
   private readonly cancel = (e: PointerEvent) => {
     if (this.drag && e.pointerId === this.drag.id) this.release();
@@ -1267,7 +1292,14 @@ class DrawThePattern implements Game {
     this.picture.position.set(picture.x + picture.w / 2, picture.y + picture.h / 2);
     this.picture.pivot.set(picture.w / 2, picture.h / 2);
     this.picture.hitArea = new Rectangle(0, 0, picture.w, picture.h);
-    this.layer.hitArea = new Rectangle(strip.x - 40, strip.y - RING_R, strip.w + 80, strip.h + 2 * RING_R);
+    // Level 1: the whole screen draws except the picture, whose tap has the pet take its turn again.
+    this.layer.hitArea =
+      this.plan.mode === 'mark'
+        ? {
+            contains: (x: number, y: number) =>
+              !(x >= picture.x && x <= picture.x + picture.w && y >= picture.y && y <= picture.y + picture.h),
+          }
+        : new Rectangle(strip.x - 40, strip.y - RING_R, strip.w + 80, strip.h + 2 * RING_R);
     this.drawPaper();
     this.drawPicture();
   }
