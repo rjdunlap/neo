@@ -560,6 +560,8 @@ class AnimalSnack implements Game {
         ]);
       }),
     );
+    // A turn of the phone during the walk would leave the tweens' old-width places; settle on the current view.
+    this.resize(this.view);
     const voice = VOICE[name];
     if (voice) sfx.animal(voice);
     f.node.cheer();
