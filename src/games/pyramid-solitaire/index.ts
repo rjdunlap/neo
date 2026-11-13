@@ -380,9 +380,7 @@ export function pyramidLayout(v: View, rows: number, shelf = 0) {
     cards[countFor(rows) + k] = v.upright
       ? { x: v.w / 2 + (k - (shelf - 1) / 2) * 116, y: last }
       : { x: Math.min(v.w - 62, v.w / 2 + 360), y: 120 + k * 106 };
-  const status = side
-    ? { x: centre, y: v.h - 45 }
-    : { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
+  const status = side ? { x: centre, y: v.h - 45 } : { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
   const buttonY = v.upright ? status.y + 100 : v.h - 80;
   const columnX = centre - half - 12 - 82;
   return {
