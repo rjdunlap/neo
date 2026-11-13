@@ -30,7 +30,7 @@ export const PLANS = [
   // undialled the median candidate clears 18% of random play (285 hold a dead end; spending spares early is the usual
   // loss); dialled, all 300 land in the band (median 50%), the top leaves with a spare on 258, at most 248 positions,
   // slowest deal 7 ms.
-  { rows: 5, name: 'The shelf: five spare cards beside the pyramid', band: { min: 0.4, max: 0.8 }, shelf: 5 },
+  { rows: 5, name: 'The shelf: five open spare cards', band: { min: 0.4, max: 0.8 }, shelf: 5 },
 ] as const;
 /** How often the generator's backward walk takes a cover-lift step when one is open (level 5 only). */
 export const LIFT_CHANCE = 0.35;

@@ -17,7 +17,7 @@
 | 3 | Fifteen cards: plan through five rows |
 | 4 | Twenty-one cards: spend copies over six rows |
 | 5 | Lift the cover: a card with the one under it |
-| 6 | The shelf: five spare cards beside the pyramid |
+| 6 | The shelf: five open spare cards |
 
 <!-- end generated -->
 
