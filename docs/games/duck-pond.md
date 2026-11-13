@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 12, 1, 2 |
+| lap | 13, 12, 1, 2 |
 | toddler | 12, 1, 2, 3, 4, 5 |
 | preschool | 3–7 |
 | pre-K | 5–9 |
@@ -28,6 +28,7 @@
 | 10 | Make ten: how many more ducks fill the pond to 10? |
 | 11 | Part and whole: how many ducks hide under the bridge? |
 | 12 | Wave bye-bye as each of five ducks swims off, then count them back |
+| 13 | One big duck: a touch anywhere brings a friend, up to five |
 
 <!-- end generated -->
 

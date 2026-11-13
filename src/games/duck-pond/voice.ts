@@ -6,6 +6,8 @@ export const VOICE = {
   'duck.bye': ['Bye-bye, duck! {n} left.', 'Bye-bye! {n} left.'],
   'duck.byeTap': ['Tap a duck to wave bye-bye!'],
   'duck.byeAll': ['Bye-bye, last duck!'],
+  'duck.friends': ['Touch the pond to call a friend!'],
+  'duck.friendsAll': ['Five friends for the big duck!', 'Five friends! Quack, quack!'],
   'duck.callback': ['Quack, quack! Come back, ducks!'],
   'duck.total': ['{n} ducks!', '{n} ducks swimming!'],
   'duck.make': ['Put {n} in the pond!'],

@@ -380,6 +380,39 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           kit.tapOn(d, 0, -46);
           await kit.sleep(380);
         };
+        if (g.plan.mode === 'friends') {
+          // Lap's one big duck: nothing holds the first touch (not the line), a touch anywhere brings a friend, a touch
+          // during a swim-in brings the next, and after the fifth a touch only quacks. Nothing counts. (The pet's corner keeps
+          // its own touch, so the spots stay off the bottom-left.)
+          if (!g.bigDuck || g.swimmers.length) throw new Error('level 13 must start with only the big duck');
+          const spot = (i) =>
+            [
+              [60, neo.view.h * 0.2],
+              [neo.view.w - 60, neo.view.h * 0.9],
+              [neo.view.w / 2, neo.view.h * 0.15],
+              [neo.view.w * 0.3, neo.view.h * 0.85],
+              [neo.view.w * 0.75, neo.view.h * 0.35],
+            ][i];
+          for (let i = 0; i < 5; i++) {
+            const [x, y] = spot(i);
+            const at = g.touch.toGlobal({ x, y });
+            kit.tap(at.x, at.y);
+            await kit.sleep(i < 2 ? 1100 : 150);
+            if (g.friends !== i + 1 || g.swimmers.length !== i + 1)
+              throw new Error(`touch ${i + 1} brought ${g.friends} friends (${g.swimmers.length} swimming)`);
+            if (g.signText.text !== String(i + 1))
+              throw new Error(`the sign shows ${g.signText.text} after ${i + 1}`);
+          }
+          const q = g.quackAt;
+          const mid = g.touch.toGlobal({ x: neo.view.w / 2, y: neo.view.h * 0.5 });
+          kit.tap(mid.x, mid.y);
+          await kit.sleep(100);
+          if (g.friends !== 5 || g.quackAt === q)
+            throw new Error('a touch after the fifth must quack and bring no one');
+          await kit.until(() => g.finished, 20000);
+          if (g.misses || g.hints) throw new Error('nothing on level 13 may count');
+          return;
+        }
         for (let r = 0; r < g.plan.rounds; r++) {
           await ready();
           if (g.plan.mode === 'along') {
@@ -466,7 +499,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await finished('duck-pond');
       assert.deepEqual(
         await score('duck-pond'),
-        mode === 'along' || mode === 'make' || mode === 'bye' ? [0, 0] : [2, 1],
+        mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends' ? [0, 0] : [2, 1],
         `ducks ${level} score`,
       );
       if (level === 9 || level === duckTop) await portrait(false);

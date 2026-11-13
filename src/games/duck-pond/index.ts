@@ -1,4 +1,4 @@
-import { Container, Graphics, Circle } from 'pixi.js';
+import { Container, Graphics, Circle, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { IllustratedDuck } from '../../art/friends/duck';
 import { RAINBOW, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
@@ -12,6 +12,8 @@ import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  BIG_DUCK_SPOT,
+  FRIEND_SLOTS,
   HIDING_SLOTS,
   hidingRevealSlots,
   numberSentence,
@@ -32,6 +34,9 @@ import { rangeFor } from '../../progress/difficulty';
 const WATER = 0x7cc4f2;
 const WATER_EDGE = 0x5aa9e0;
 const LILY = { fill: 0x7cc463, line: 0x4a9a35 };
+
+/** Level 13's one big duck, well over twice the size of a friend (half of any duck is under its ripple). */
+const BIG_DUCK = 2.4;
 
 const plural = (n: number) => `${n} duck${n === 1 ? '' : 's'}`;
 
@@ -171,6 +176,14 @@ class DuckPond implements Game {
   private starts: number[] = [];
   private busy = true;
   private finished = false;
+  /** Level 13: the one big duck, and the layer over the whole screen whose touch brings her a friend. */
+  private bigDuck: Duck | null = null;
+  private readonly touch = new Container();
+  /** Level 13: friends called so far (the count), quiet time since the last touch, and when a spare touch last quacked. */
+  private friends = 0;
+  private idle = 0;
+  private quackAt = -1;
+  private clock = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -200,6 +213,18 @@ class DuckPond implements Game {
     // Ducks lower on the screen (nearer to us) draw in front.
     this.ducks.sortableChildren = true;
     ctx.stage.addChild(this.backdrop, this.pond, this.sign, this.bridge, this.ducks, this.padLayer);
+    if (this.plan.mode === 'friends') {
+      // Lap's level: the big duck is on the pond from the start, and a layer over the whole screen takes every touch.
+      const big = new Duck();
+      big.scale.set(BIG_DUCK);
+      big.eventMode = 'none';
+      big.setSwimming(true);
+      this.bigDuck = big;
+      this.ducks.addChild(big);
+      onTap(this.touch, (e) => this.anywhere(e), { cooldown: 60 });
+      this.touch.cursor = 'default';
+      ctx.stage.addChild(this.touch);
+    }
   }
 
   private get tw(): Tweener {
@@ -252,6 +277,11 @@ class DuckPond implements Game {
     this.sign.position.set(v.w / 2 + 380, 150);
     this.layoutBank();
     this.layoutPads();
+    this.touch.hitArea = new Rectangle(0, 0, v.w, v.h);
+    if (this.bigDuck) {
+      this.bigDuck.position.set(x + BIG_DUCK_SPOT[0], y + BIG_DUCK_SPOT[1]);
+      this.bigDuck.zIndex = this.bigDuck.y;
+    }
     this.swimmers.forEach((d, i) => {
       const slot = d.pondOffset ?? SLOTS[i];
       d.position.set(x + slot[0], y + slot[1]);
@@ -259,6 +289,16 @@ class DuckPond implements Game {
   }
 
   update(dt: number) {
+    this.clock += dt;
+    this.bigDuck?.update(dt);
+    // Level 13: while she has not touched for a while, the big duck hops, an invitation without words. It counts nothing.
+    if (this.bigDuck && !this.finished && this.friends < this.plan.max) {
+      this.idle += dt;
+      if (this.idle > 4) {
+        this.idle = 0;
+        this.bigDuck.critter.hop(0.5);
+      }
+    }
     for (const d of [...this.bank, ...this.swimmers]) d.update(dt);
     for (const p of this.pads) p.update(dt);
   }
@@ -275,6 +315,16 @@ class DuckPond implements Game {
       this.answer,
     );
     if (move === null) return null;
+    // Level 13: the finger touches the water or the grass well away from the big duck, to show that anywhere will do.
+    if (move === 'duck' && this.bigDuck)
+      return {
+        tap: {
+          on: this.touch,
+          x: this.view.w / 2 + (this.friends % 2 ? 1 : -1) * Math.min(300, this.view.w * 0.32),
+          y: this.view.h * 0.78,
+        },
+        pause: 0.4,
+      };
     if (move === 'duck')
       return {
         tap: {
@@ -431,6 +481,12 @@ class DuckPond implements Game {
       this.busy = false;
       return;
     }
+    if (p.mode === 'friends') {
+      // Nothing holds her: the first touch counts while the line is still being said.
+      this.busy = false;
+      void this.ctx.instruct('duck.friends');
+      return;
+    }
     if (p.mode === 'make') {
       this.want = rng.int(p.min, p.max);
       this.showSign(this.want, !!p.dots);
@@ -531,6 +587,55 @@ class DuckPond implements Game {
     await this.arrive(this.plan.max);
     await this.countAloud();
     await this.roundWon(this.plan.max, false);
+  }
+
+  /** Level 13: any touch has the big duck quack and brings the next friend swimming in, with the count; after the fifth, a touch gets a quack. */
+  private anywhere(e: FederatedPointerEvent) {
+    const big = this.bigDuck;
+    if (!big || this.finished) return;
+    this.idle = 0;
+    if (this.busy || this.friends >= this.plan.max) {
+      // A spare touch is answered, never ignored, and counts nothing.
+      if (this.clock - this.quackAt < 0.25) return;
+      this.quackAt = this.clock;
+      big.critter.cheer();
+      sfx.animal('quack');
+      const at = this.ctx.stage.toLocal(e.global);
+      this.ctx.particles.burst(at.x, at.y, {
+        colors: [0xffffff, 0xbfe6ff],
+        count: 6,
+        speed: [60, 160],
+        gravity: 400,
+        size: [0.2, 0.35],
+        life: [0.3, 0.5],
+      });
+      return;
+    }
+    const n = ++this.friends;
+    big.critter.cheer();
+    sfx.animal('quack');
+    this.showSign(n, true);
+    void this.ctx.say('count', { n });
+    const d = new Duck();
+    d.eventMode = 'none';
+    // Friends come from the side she did not just see one come from: left, right, left…
+    d.position.set(n % 2 ? -80 : this.view.w + 80, this.view.h * 0.62);
+    this.ducks.addChild(d);
+    const swum = this.swimIn(d, FRIEND_SLOTS[n - 1]);
+    if (n < this.plan.max) return;
+    this.busy = true;
+    void swum.then(() => this.allFriends());
+  }
+
+  /** Level 13: all five friends are in; everyone quacks, then the pond celebrates. */
+  private async allFriends() {
+    await this.tw.wait(0.5);
+    this.bigDuck?.critter.cheer();
+    this.quackChorus();
+    sfx.sparkle();
+    await this.ctx.say('duck.friendsAll');
+    await this.tw.wait(0.4);
+    void this.finale();
   }
 
   private async roundWon(n: number, announce = true) {
@@ -683,7 +788,7 @@ class DuckPond implements Game {
 
   private async finale() {
     this.finished = true;
-    await this.arrive(5);
+    if (this.plan.mode !== 'friends') await this.arrive(5);
     this.quackChorus();
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
@@ -775,6 +880,7 @@ export const duckPond: GameModule = {
     const p = planFor(level);
     if (p.mode === 'along') return `Count along as ${p.max} ducks hop in`;
     if (p.mode === 'bye') return 'Wave bye-bye as each of five ducks swims off, then count them back';
+    if (p.mode === 'friends') return 'One big duck: a touch anywhere brings a friend, up to five';
     if (p.mode === 'make')
       return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
     if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;
@@ -789,7 +895,7 @@ export const duckPond: GameModule = {
   coplayHintLap: 'Count out loud as {name} touches each duck: "one, two, three!"',
   offScreen: 'Line up toy ducks or spoons and count them together, touching each one.',
   hubIcon: () => new PondIcon(),
-  entryLevels: [12],
+  entryLevels: [12, 13],
   touchDemo: true,
   sticker,
   create: (ctx) => new DuckPond(ctx),

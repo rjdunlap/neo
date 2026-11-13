@@ -5,6 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Count ducks and put the right number in the pond.',
   steps: [
     {
+      from: 13,
+      to: 13,
+      text: 'Touch anywhere on the screen: the big duck quacks and a friend swims in, and the friends are counted, up to five.',
+    },
+    {
       from: 12,
       to: 12,
       text: 'Tap a duck on the pond to wave it bye-bye; it swims off and the pet counts down. When the last one has gone, they all swim back.',
@@ -29,12 +34,18 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish: [
+    { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
     { from: 12, to: 12, text: 'The round ends when the ducks have come back and been counted.' },
     { from: 1, to: 2, text: 'The round ends when all the ducks are in the pond.' },
     { from: 3, to: 5, text: 'The round ends when the right number of ducks is in the pond.' },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
   ],
   note: [
+    {
+      from: 13,
+      to: 13,
+      text: 'Nothing can go wrong and nothing waits: the first touch counts while the pet is still talking, a touch while a friend swims in brings the next, and a touch after the fifth gets a quack.',
+    },
     {
       from: 3,
       to: 4,
