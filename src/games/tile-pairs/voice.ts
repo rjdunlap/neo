@@ -22,6 +22,12 @@ export const VOICE = {
   'tile-pairs.lesson.crossed': [
     'The lesson: when one picture sits on a second and the second sits on the first, take those stacks apart in turn. Pairing away the free copies first leaves each last copy buried under the other.',
   ],
+  'tile-pairs.lesson.long': [
+    'The lesson: a flat row opens only from its ends. When the fourth copy is buried in a row, pair the copies at that row’s ends, and keep a copy from another row; it waits, free, for the last one.',
+  ],
+  'tile-pairs.lesson.ahead': [
+    'The lesson: a pair can look safe and still strand the board a few pairs later. Before choosing, look two pairs ahead and ask which tiles each choice will leave without a partner.',
+  ],
   'tile-pairs.peek': [
     'When tiles are stacked, their pictures run left to right, starting with the bottom tile. Choose a tile or press Peek again to close.',
   ],

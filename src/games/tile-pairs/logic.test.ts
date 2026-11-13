@@ -28,6 +28,7 @@ import {
   mirrorX,
   makeBoard,
   pairs,
+  pairsBeforeStranded,
   peekStacks,
   planFor,
   present,
@@ -71,8 +72,8 @@ describe('Tile Pairs', () => {
     expect(planFor(99)).toBe(planFor(10));
     expect(LEVELS.grownup).toEqual({
       min: 1,
-      max: 19,
-      order: [1, 2, 17, 3, 18, 4, 19, 5, 6, 7, 8, 9, 10],
+      max: 21,
+      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21],
     });
     for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
@@ -435,21 +436,27 @@ describe('Tile Pairs', () => {
       [17, 3],
       [18, 4],
       [19, 5],
+      [20, 6],
     ])
       expect(order.indexOf(lesson)).toBe(order.indexOf(before) - 1);
+    // Two pairs ahead comes last, before the boards it serves, which do not exist yet.
+    expect(order.at(-1)).toBe(21);
     for (const level of order) expect(planFor(level).name).toBeTruthy();
     expect(new Set(order.map((l) => planFor(l).name)).size).toBe(order.length);
     for (let level = 1; level <= 10; level++) expect(lessonFor(level)).toBeNull();
   });
-  it('deals levels 17–19 from designed boards that each teach their lesson, mirrored or renamed', () => {
-    for (const level of [17, 18, 19]) {
+  it('deals levels 17–21 from designed boards that each teach their lesson, mirrored or renamed', () => {
+    for (const level of Object.keys(PUZZLE_PLANS).map(Number)) {
       const plan = planFor(level),
         lesson = lessonFor(level)!,
         tiles = layout(level);
       expect(lesson).toBe('puzzle' in plan && plan.puzzle);
-      expect(tiles).toHaveLength(14);
+      const n = level === 21 ? 18 : 14;
+      expect(tiles).toHaveLength(n);
+      // Every lesson stack is at most three deep, so Peek reads it in one row.
+      expect(Math.max(...tiles.map((t) => t.z))).toBeLessThan(3);
       expect(tiles.map((t) => [t.x, t.y, t.z])).toEqual(SKETCHES[lesson]);
-      expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(14);
+      expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(n);
       for (const t of tiles.filter((t) => t.z > 0))
         expect(tiles.some((u) => u.x === t.x && u.y === t.y && u.z === t.z - 1)).toBe(true);
       // The sketch is symmetric under the mirror, so a mirrored board is the same lesson.
@@ -460,7 +467,7 @@ describe('Tile Pairs', () => {
       expect(boards.length).toBeLessThanOrEqual(8);
       expect(new Set(boards).size).toBe(boards.length);
       for (const kinds of boards) {
-        expect(kinds).toMatch(/^[0-3]{14}$/);
+        expect(kinds).toMatch(new RegExp(`^[0-3]{${n}}$`));
         const board = tiles.map((t, i) => ({ ...t, kind: Number(kinds[i]) }));
         expect(solve(board)).not.toBeNull();
         expect(lessonHolds(lesson, board)).toBe(true);
@@ -509,5 +516,44 @@ describe('Tile Pairs', () => {
     for (const other of losing) expect(solve(tiles, removePair(full, [top, other]))).not.toBeNull();
     // A board that is merely solvable is not a lesson.
     expect(lessonHolds('twins', makeBoard(1, new Rng(3)))).toBe(false);
+  });
+  it('The long row: nothing is covered, and the safe pair is the two row ends around the buried fourth copy', () => {
+    for (const kinds of PUZZLES.long) {
+      const tiles = layout(20).map((t, i) => ({ ...t, kind: Number(kinds[i]) })),
+        full = fullMask(tiles),
+        losing = losingFirstPairs(tiles),
+        k = tiles[losing[0][0]].kind,
+        open = freeTiles(tiles, full).filter((i) => tiles[i].kind === k),
+        fourth = tiles.findIndex((t, i) => t.kind === k && !open.includes(i));
+      expect(tiles.every((t) => t.z === 0)).toBe(true);
+      expect(open).toHaveLength(3);
+      // What the lesson line says: pair the copies at the ends of the fourth's row, keep the one from another row.
+      const inRow = open.filter((i) => tiles[i].y === tiles[fourth].y);
+      expect(inRow).toHaveLength(2);
+      expect(solve(tiles, removePair(full, [inRow[0], inRow[1]]))).not.toBeNull();
+      const kept = open.find((i) => !inRow.includes(i))!;
+      for (const i of inRow) expect(solve(tiles, removePair(full, [kept, i]))).toBeNull();
+    }
+    // A layered lesson board is not a long-row lesson.
+    const twins = layout(17).map((t, i) => ({ ...t, kind: Number(PUZZLES.twins[0][i]) }));
+    expect(lessonHolds('long', twins)).toBe(false);
+  });
+  it('Two pairs ahead: every losing first pair leaves at least two pairs before the board strands, and the trap is fair', () => {
+    for (const kinds of PUZZLES.ahead) {
+      const tiles = layout(21).map((t, i) => ({ ...t, kind: Number(kinds[i]) })),
+        full = fullMask(tiles),
+        losing = losingFirstPairs(tiles);
+      expect(losing.length).toBeGreaterThan(0);
+      for (const p of losing) {
+        const after = removePair(full, p);
+        expect(solve(tiles, after)).toBeNull();
+        expect(pairsBeforeStranded(tiles, after)).toBeGreaterThanOrEqual(2);
+        // Some pair is still open right after the choice, so the trap is not visible one pair out.
+        expect(pairs(tiles, after).length).toBeGreaterThan(0);
+      }
+      expect(fairTrap(tiles)).toBe(true);
+    }
+    // An emptied board never strands.
+    expect(pairsBeforeStranded(layout(21), 0)).toBe(Infinity);
   });
 });
