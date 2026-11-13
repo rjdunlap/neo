@@ -15,6 +15,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  BIG_LEVEL,
   acceptsTap,
   makeNight,
   makeRequests,
@@ -231,6 +232,10 @@ class GoodnightRoom implements Game {
   /** The next request's ask, waiting behind the last goodnight (U7 R4), or null; `askGen` drops a stale wait. */
   private unasked: { id: LineId; vars?: LineVars } | null = null;
   private askGen = 0;
+  /** Level 11: a layer over the whole room, so a touch anywhere tucks in the big friend. */
+  private readonly catcher = new Container();
+  /** Level 11: which friend is the big one in the middle; those before it sleep in their spots, those after wait. */
+  private bigAt = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -249,6 +254,10 @@ class GoodnightRoom implements Game {
     ctx.stage.addChild(this.room, this.sky, this.friendLayer);
     this.placeFriends(night.asleep);
     ctx.stage.addChild(this.dark, this.glow);
+    if (this.plan.mode === 'big') {
+      ctx.stage.addChild(this.catcher);
+      onTap(this.catcher, () => void this.tuck(), { cooldown: 300 });
+    }
     this.tally.eventMode = this.dots.eventMode = 'none';
     this.tally.visible = this.dots.visible = this.plan.mode === 'count';
     ctx.stage.addChild(this.tally, this.dots, this.curtain, this.arrow);
@@ -268,7 +277,11 @@ class GoodnightRoom implements Game {
     for (const thing of this.friends) {
       const s = new Sleeper(thing, this.plan.mode === 'color');
       if (asleep.includes(thing)) s.sleep();
-      onTap(s, () => void this.tap(s), { cooldown: 400 });
+      // Level 11: the catcher takes every touch; the friends waiting to tiptoe in stay out of sight.
+      if (this.plan.mode === 'big') {
+        s.eventMode = 'none';
+        s.visible = this.sleepers.length === 0;
+      } else onTap(s, () => void this.tap(s), { cooldown: 400 });
       this.ctx.track(s);
       this.sleepers.push(s);
       this.friendLayer.addChild(s);
@@ -355,11 +368,77 @@ class GoodnightRoom implements Game {
       const p = this.spot(s.thing);
       s.position.set(p.x, p.y);
     }
+    if (this.plan.mode === 'big') this.placeBig();
+    this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.drawDark();
     this.curtain.clear().rect(0, 0, v.w, v.h).fill(NIGHT);
     this.arrow.position.set(v.w * 0.5, v.h * 0.56);
     this.tally.position.set(v.w / 2, 65);
     this.dots.position.set(v.w / 2, 110);
+  }
+
+  /** Level 11: the big friend's size, fitting the tall lamp as well as a critter in the room. */
+  private bigScale(s: Sleeper) {
+    return Math.min(1.8, (this.view.h * 0.42) / (s.thing === 'lamp' ? 270 : 160));
+  }
+
+  /** Level 11: the middle of the room, where the big friend waits, its middle a little above the floor line. */
+  private bigSpot(s: Sleeper) {
+    return { x: this.view.w * 0.45, y: this.view.h * 0.5 - s.mid * this.bigScale(s) };
+  }
+
+  /** Level 11: friends tucked in sleep small in their spots, the big one stands in the middle, the rest wait. */
+  private placeBig() {
+    this.sleepers.forEach((s, i) => {
+      if (i < this.bigAt) return s.scale.set(1);
+      const p = this.bigSpot(s);
+      s.scale.set(this.bigScale(s));
+      s.position.set(i === this.bigAt ? p.x : this.view.w + 200, p.y);
+      s.visible = i === this.bigAt;
+    });
+    // The big friend stands in front of the friends already asleep.
+    const big = this.sleepers[this.bigAt];
+    if (big) this.friendLayer.addChild(big);
+  }
+
+  /**
+   * Level 11: a touch anywhere tucks in the big friend with its bell and goodnight; it settles small into its spot and the
+   * next friend tiptoes in because she touched. Nothing can be a miss; a touch while a friend walks in is not counted.
+   */
+  private async tuck() {
+    if (this.busy || this.finished) return;
+    const s = this.sleepers[this.bigAt];
+    if (!s || s.asleep) return;
+    this.busy = true;
+    const said = this.goodnight(s);
+    this.bigAt++;
+    const home = this.spot(s.thing);
+    const settle = Promise.all([
+      this.ctx.tw.to(s, { x: home.x, y: home.y }, { duration: 0.6 }),
+      this.ctx.tw.to(s.scale, { x: 1, y: 1 }, { duration: 0.6 }),
+    ]);
+    const next = this.sleepers[this.bigAt];
+    if (!next) {
+      await settle;
+      // The last goodnight is heard out before the lights go down.
+      await said;
+      return void this.finale();
+    }
+    const at = this.bigSpot(next);
+    next.scale.set(this.bigScale(next));
+    next.position.set(this.view.w + 200, at.y);
+    next.visible = true;
+    this.friendLayer.addChild(next);
+    // Tiptoe: a few small bobs on the way in.
+    const bob = (async () => {
+      for (let i = 0; i < 2; i++) {
+        await this.ctx.tw.to(next, { y: at.y - 18 }, { duration: 0.22 });
+        await this.ctx.tw.to(next, { y: at.y }, { duration: 0.22 });
+      }
+    })();
+    await Promise.all([settle, this.ctx.tw.to(next, { x: at.x }, { duration: 0.9 }), bob]);
+    this.placeBig();
+    this.busy = false;
   }
 
   private drawCount() {
@@ -437,6 +516,11 @@ class GoodnightRoom implements Game {
   /** The ghost finger on the how-to card: say goodnight to each friend, or to the one named and then the next. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked) return null;
+    // Level 11: a touch on the floor, off the friend, to show that anywhere works.
+    if (this.plan.mode === 'big')
+      return this.sleepers[this.bigAt]
+        ? { tap: { on: this.catcher, x: this.view.w * 0.15, y: this.view.h * 0.8 }, pause: 0.7 }
+        : null;
     if (this.arrow.visible) return { tap: { on: this.arrow } };
     const asleep = new Set(this.sleepers.filter((s) => s.asleep).map((s) => s.thing));
     const thing = thingToTap(
@@ -466,6 +550,10 @@ class GoodnightRoom implements Game {
     if (this.plan.mode === 'all') {
       this.busy = false;
       return this.ctx.instruct('night.all');
+    }
+    if (this.plan.mode === 'big') {
+      this.busy = false;
+      return this.ctx.instruct('night.big');
     }
     if (this.plan.mode === 'tour') {
       this.busy = false;
@@ -705,6 +793,7 @@ export const goodnightRoom: GameModule = {
   challenge: 'words',
   skills: ['words', 'listening', 'routines', 'cause-and-effect'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
+  entryLevels: [BIG_LEVEL],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,

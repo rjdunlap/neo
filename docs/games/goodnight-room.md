@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1–2 |
+| lap | 11, 1, 2 |
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 5–10 |
@@ -25,6 +25,7 @@
 | 8 | Say goodnight to the orange or brown friends, in any order |
 | 9 | Say goodnight to everyone except the lamp or lantern: keep a night-light awake |
 | 10 | Goodnight everywhere: follow the arrow through three rooms and say goodnight to everyone |
+| 11 | One big sleepy friend: a touch anywhere tucks it in, and the next friend tiptoes in (4 friends) |
 
 <!-- end generated -->
 

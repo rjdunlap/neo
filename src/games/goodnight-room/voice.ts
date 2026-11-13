@@ -1,6 +1,7 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.goodnight-room': ['Goodnight room!'],
+  'night.big': ['It is bedtime! Touch the room to tuck your friend in.'],
   'night.all': ['It is bedtime! Tap everyone to say goodnight.'],
   'night.goodnight': ['Goodnight, {who}!', 'Sleep tight, {who}!', 'Night night, {who}!'],
   'night.count': ['Say goodnight to {n} friends! You choose.'],

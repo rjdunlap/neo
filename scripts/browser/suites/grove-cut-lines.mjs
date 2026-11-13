@@ -148,6 +148,71 @@ export function createSuite({ page, launch, finished, screenshot, log, ready, ch
       );
     }
 
+    if (!only || only === 'night' || only === 'nightbig') {
+      // Level 11 (lap): one big sleepy friend; a touch anywhere (sky, floor, the friend, the window) tucks it in and the
+      // next tiptoes in at once, under a 4 s goodnight; nothing is a miss and the last goodnight is heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('goodnight-room', 11);
+      await stretch(['night.goodnight']);
+      await page.waitForTimeout(600);
+      await screenshot('goodnight-room-11-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (g.plan.mode !== 'big' || g.sleepers.length !== 4) throw new Error('Goodnight big deal');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.catcher.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.15),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => kit.tapOn(g.sleepers[g.bigAt], 0, g.sleepers[g.bigAt].mid),
+          () => at(v.w - 150, 140),
+        ];
+        const out = { opens: [], sizes: [], shown: [] };
+        for (let n = 0; n < 4; n++) {
+          await kit.until(() => !g.busy && g.bigAt === n, 15000);
+          await kit.sleep(250);
+          const s = g.sleepers[n];
+          const b = s.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.catcher.worldTransform.a);
+          out.shown.push(g.sleepers.filter((x) => x.visible && !x.asleep).length);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 3) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            await kit.until(() => g.bigAt === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+          }
+        }
+        out.asleep = g.sleepers.every((x) => x.asleep);
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 150)) throw new Error(`Big friend too small: ${JSON.stringify(big)}`);
+      if (big.shown.some((n) => n !== 1))
+        throw new Error(`More than one friend waits awake: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 2000))
+        throw new Error(`A goodnight held the next friend: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last goodnight was cut: ${JSON.stringify(big)}`);
+      if (!big.asleep || big.misses || big.hints)
+        throw new Error(`Goodnight big not free: ${JSON.stringify(big)}`);
+      await screenshot('goodnight-room-11-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('goodnight-room');
+      assert.deepEqual(await score('goodnight-room'), [0, 0]);
+      log(
+        `Goodnight Room 11: four big friends tucked in by touches on the sky, floor, friend and window, next in ${big.opens
+          .map(Math.round)
+          .join('/')} ms under 4 s goodnights, the last heard out, no misses`,
+      );
+    }
+
     if (!only || only === 'opp') {
       // Level 1 (switch): the next card comes after the act and 0.5 s, not after the word.
       await launch('opposites', 1);

@@ -5,6 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Listen, choose friends and say goodnight.',
   steps: [
     { to: 2, text: 'Tap each thing to say goodnight.' },
+    {
+      from: 11,
+      to: 11,
+      text: 'One big sleepy friend stands in the room. Touch anywhere: it is tucked in with a goodnight, and the next friend tiptoes in.',
+    },
     { from: 3, to: 3, text: 'Tap the thing that is named to say goodnight.' },
     { from: 4, to: 4, text: 'Tap the two things in the order they are named.' },
     { from: 5, to: 5, text: 'Tap the animals in any order. The lamp and clock settle together afterwards.' },
@@ -52,5 +57,6 @@ export const HOW_TO: GameHowTo = {
       text: 'Reaching the requested count finishes your goodnights. The other friends stay awake briefly, then settle together for the finale.',
     },
     { from: 10, to: 10, text: 'The round ends when all three rooms are asleep and the stars fill the sky.' },
+    { from: 11, to: 11, text: 'The round ends when all four friends are tucked in.' },
   ],
 };

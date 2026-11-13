@@ -353,7 +353,16 @@ describe('game registry', () => {
 
   it('opens Goodnight Room category, light-last, counting, color, exception and tour play without renumbering younger levels', () => {
     const game = gameById('goodnight-room')!;
-    expect(game.levels('lap')).toEqual({ min: 1, max: 2 });
+    // Lap opens with level 11's one big sleepy friend, then levels 1 and 2; no saved level or pin moves.
+    const lap = game.levels('lap');
+    expect(levelsInOrder(lap)).toEqual([11, 1, 2]);
+    expect(game.entryLevels).toEqual([11]);
+    expect(stepLevel(11, 1, lap)).toBe(1);
+    expect(stepLevel(1, -1, lap)).toBe(11);
+    for (const level of [1, 2, 11])
+      expect(nextLevel(landing(level, lap, game.entryLevels), [], lap)).toBe(level);
+    // A saved 11 carried into toddler (a birthday) starts toddler at its own first level.
+    expect(landing(11, game.levels('toddler'), game.entryLevels)).toBe(2);
     expect(game.levels('toddler')).toEqual({ min: 2, max: 4 });
     expect(game.levels('preschool')).toEqual({ min: 3, max: 5 });
     expect(game.levels('prek')).toEqual({ min: 5, max: 10 });
