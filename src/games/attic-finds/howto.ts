@@ -36,8 +36,9 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { from: 1, to: 2, text: 'Both things sit on the shelf.' },
+    { from: 3, to: 3, text: 'After three turns of the handle the toy goes onto the shelf by itself.' },
     {
-      from: 3,
+      from: 4,
       to: 4,
       text: 'After three turns of the handle a shelf picture appears; she taps it when she is ready, and the toy goes onto the shelf.',
     },
@@ -59,6 +60,11 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 3,
+      to: 3,
+      text: 'Every touch is play: nothing is ever counted as a miss or a hint, and the third turn ends the round, so patting anywhere is enough. Everything in the attic is made up for the island; nothing here is a real old thing.',
+    },
+    {
+      from: 4,
       to: 4,
       text: 'Every touch is play: nothing is ever counted as a miss or a hint, and the round ends only when she taps the shelf. Everything in the attic is made up for the island; nothing here is a real old thing.',
     },

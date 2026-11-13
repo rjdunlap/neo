@@ -1,1 +1,0 @@
-**`stop-and-go`, level 9 is one big lamp** (existing-game tier: typecheck, the rule tests, one filtered play of level 9, `fingerdemo` at 9): level 9 is lap only, so it changes in place: one big lamp, a touch anywhere turns it, green to go and red to stop, and the car still toots. [the table](../../definitions/toy-test-lap-openings.md#cozy-village)

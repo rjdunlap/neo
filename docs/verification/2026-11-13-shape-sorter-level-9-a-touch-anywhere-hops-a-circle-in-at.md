@@ -1,0 +1,5 @@
+# 2026-11-13 — Shape Sorter level 9, a touch anywhere hops a circle in at lap
+
+**Changed:** `shape-sorter` level 9 at lap only (toddler's level 9 unchanged): one big circle (1.35×, about 130 units across) waits beside the box, and a touch on the floor, wall or box, or any let-go of the circle however long held or far moved, hops it in; the next circle rolls in from the right edge because she touched and says "circle"; three circles finish the round and nothing counts as a miss. New line `shape.tap.lap`; the three "level 1" comments in `index.ts` and level 9's card note fixed.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/shape-sorter` (20 pass, one new lap test); `npx vitest run src/content src/games/registry` (240 pass); `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=9 npm run test:browser` passed at lap (box touch, wall touch, far let-go, score 0/0, portrait screenshot 768×1024) and at toddler.
+**Not run:** `fingerdemo` (the demonstrated action, a tap on the waiting piece, is unchanged), `npm run build` (no shared files or assets changed), full suites.

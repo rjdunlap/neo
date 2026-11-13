@@ -86,7 +86,7 @@ Left as inspiration only: scores, ratings, rarity, timers, a moving rail.
 Lap and toddler already have levels 1–2. Two candidates, both gated:
 
 - **A toddler action-only request** ("Who is sleeping?"), appended as a new ID between 2 and 3 with `order` and `entryLevels`, so the toddler window reaches it. Verbs are a toddler-age word class, but whether device speech and the animations make the action clear enough is a person check. **Decision 1** (toddler window), after a person check.
-- **A lap entry with fewer, bigger animals** (one or two, scale 0.7), only if watching her play level 1 shows three is too busy. **Person** check first.
+- **A lap entry with fewer, bigger animals** (one or two, scale 0.7), only if watching her play level 1 shows three is too busy. **Person** check first. *Built 2026-11-13 (PR #1614) as level 13, One big friend: one big friend, a touch anywhere photographs it, six different friends; lap order `[13, 1, 2]`.*
 
 ### Easier entries and levels between existing ones
 
@@ -115,6 +115,7 @@ Photo scoring and stars, rare animals, timers or moving rails, zoom precision, h
 7. **Built (toddler part): entry 12, Who is sleeping?**, same PR: three friends doing different toddler actions, the request naming only the doing word; toddler order [1, 2, 12] with `entryLevels` [12], other bands unchanged. **Still open: the lap entry with fewer animals** (person check first).
 8. **Built: Tell me which and Tell me both, levels 10–11 (SL1–2)**, [PR #827](https://github.com/rjdunlap/neo/pull/827); [scope and proof](../archive/COMPLETED-2026-10-09.md#photo-safari-batch-1-tell-me-which-and-tell-me-both-2026-10-22). School order was 4, 5, 6, 7, 10, 11, now 4–11 after slices 5–7.
 9. **Horizon:** Field Notes Detective, defined by [the life-science study's slice 3](subjects/life-science.md), not here.
+9. **Built: level 13, One big friend** (lap opening), [PR #1614](https://github.com/rjdunlap/neo/pull/1614), `claude/photo-safari-lap-big-friend`: an entry level first in lap's order `[13, 1, 2]`; one big friend in an open meadow, a touch anywhere takes its photo, the next friend walks in from the side, six different friends fill the album; no places drawn, nothing can be a miss, and a touch between photos hops the friend.
 
 ## What was built in this session
 

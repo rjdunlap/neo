@@ -215,6 +215,16 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           void Promise.resolve().then(watch);
           return Promise.all([line, kit.sleep(4000)]).then(() => undefined);
         };
+        // Level 1: the line is stretched to at least 4 s, so a touch while it plays shows the opening no longer holds her.
+        if (g.plan.mode === 'play') {
+          const instruct = g.ctx.instruct.bind(g.ctx);
+          g.ctx.instruct = (id, vars) => {
+            g.linePending = true;
+            return Promise.all([instruct(id, vars), kit.sleep(4000)]).then(() => {
+              g.linePending = false;
+            });
+          };
+        }
         const idle = () => kit.until(() => (!g.busy && g.patient) || g.finished, 15000);
         // A tool rides 40 above the finger, so aim the finger just below the body part.
         const use = async (tool, part) => {
@@ -273,6 +283,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               await kit.sleep(350);
               if (g.scrapes.length !== n - 1)
                 throw new Error(`Doctor far tap left ${g.scrapes.length} of ${n}`);
+            } else {
+              // Lap: the second patient's line is still playing, and a tap on the empty room bandages the nearest boo-boo.
+              await kit.until(() => g.linePending && g.patient?.scale.x > 0.9, 3000);
+              const n = g.scrapes.length;
+              kit.tap(g.view.w * 0.8, g.view.h * 0.85);
+              await kit.sleep(350);
+              if (!g.linePending) throw new Error('Doctor line ended before the room tap was checked');
+              if (g.scrapes.length !== n - 1)
+                throw new Error(`Doctor room tap left ${g.scrapes.length} of ${n}`);
             }
             for (const s of [...g.scrapes]) {
               kit.tapOn(s.node);

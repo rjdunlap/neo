@@ -1,7 +1,7 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.stop-and-go': ['Stop and go!'],
-  'go.lamps': ['Tap the green lamp and the car goes! Tap the red lamp and it stops.'],
+  'go.lamps': ['Touch anywhere! Green, the car goes. Red, it stops.'],
   'go.toy': ['Tap the traffic light! Green means go, red means stop.'],
   'go.send': ['When the light is green, tap the car to make it go. Red means wait!'],
   'go.walk': ['Red light, green light! Tap the feet to walk on green. On red, freeze!'],

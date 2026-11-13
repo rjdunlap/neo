@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
  * monster's line, and in `pond-typing`, `word-glue` and `owl-walk` a typed word's, joined pair's or flipped card's
  * line, never holds the next tap. Each line is stretched to at least 4 s in the page, so the next friend, card,
  * question, bubble, ask or stone tap opening sooner shows the line no longer gates it; the round's last line is
- * still heard out. GROVE_ONLY=night|opp|monsters|pond|glue|owl plays one game.
+ * still heard out. GROVE_ONLY=night|nightbig|safaribig|opp|oppbig|monsters|monstersbig|pond|glue|gluebig|owl plays one game.
  */
 export function createSuite({ page, launch, finished, screenshot, log, ready, chooserEnter, errors }) {
   async function groveCutLines() {
@@ -148,6 +148,148 @@ export function createSuite({ page, launch, finished, screenshot, log, ready, ch
       );
     }
 
+    if (!only || only === 'night' || only === 'nightbig') {
+      // Level 11 (lap): one big sleepy friend; a touch anywhere (sky, floor, the friend, the window) tucks it in and the
+      // next tiptoes in at once, under a 4 s goodnight; nothing is a miss and the last goodnight is heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('goodnight-room', 11);
+      await stretch(['night.goodnight']);
+      await page.waitForTimeout(600);
+      await screenshot('goodnight-room-11-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (g.plan.mode !== 'big' || g.sleepers.length !== 4) throw new Error('Goodnight big deal');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.catcher.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.15),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => kit.tapOn(g.sleepers[g.bigAt], 0, g.sleepers[g.bigAt].mid),
+          () => at(v.w - 150, 140),
+        ];
+        const out = { opens: [], sizes: [], shown: [] };
+        for (let n = 0; n < 4; n++) {
+          await kit.until(() => !g.busy && g.bigAt === n, 15000);
+          await kit.sleep(250);
+          const s = g.sleepers[n];
+          const b = s.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.catcher.worldTransform.a);
+          out.shown.push(g.sleepers.filter((x) => x.visible && !x.asleep).length);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 3) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            await kit.until(() => g.bigAt === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+          }
+        }
+        out.asleep = g.sleepers.every((x) => x.asleep);
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 150)) throw new Error(`Big friend too small: ${JSON.stringify(big)}`);
+      if (big.shown.some((n) => n !== 1))
+        throw new Error(`More than one friend waits awake: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 2000))
+        throw new Error(`A goodnight held the next friend: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last goodnight was cut: ${JSON.stringify(big)}`);
+      if (!big.asleep || big.misses || big.hints)
+        throw new Error(`Goodnight big not free: ${JSON.stringify(big)}`);
+      await screenshot('goodnight-room-11-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('goodnight-room');
+      assert.deepEqual(await score('goodnight-room'), [0, 0]);
+      log(
+        `Goodnight Room 11: four big friends tucked in by touches on the sky, floor, friend and window, next in ${big.opens
+          .map(Math.round)
+          .join('/')} ms under 4 s goodnights, the last heard out, no misses`,
+      );
+    }
+
+    if (!only || only === 'safaribig') {
+      // Photo Safari level 13 (lap): one big friend; a touch anywhere (sky, grass, the friend, beside it) takes its
+      // photo and the next friend walks in under a 4 s click line; a touch while it walks in only hops it; six
+      // different friends fill the album, nothing is a miss, and the last click is heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('photo-safari', 13);
+      await stretch(['safari.click']);
+      await page.waitForTimeout(600);
+      await screenshot('photo-safari-13-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.plan.big || g.plan.photos !== 6) throw new Error('Photo Safari big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.cast.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.15),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => at(g.actors[0].x, g.actors[0].y - 120),
+          () => at(v.w * 0.2, v.h * 0.6),
+          () => at(v.w * 0.9, v.h * 0.4),
+          () => at(v.w / 2, v.h * 0.3),
+        ];
+        const out = { opens: [], sizes: [], shown: [], animals: [], extra: [] };
+        for (let n = 0; n < 6; n++) {
+          await kit.until(() => !g.busy && g.photos === n && g.actors.length === 1, 15000);
+          await kit.sleep(250);
+          const a = g.actors[0];
+          const b = a.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.cast.worldTransform.a);
+          out.shown.push(g.actors.length);
+          out.animals.push(a.sighting.animal);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 5) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch while the photo flies and the next friend walks in takes no extra photo.
+            await kit.sleep(300);
+            at(v.w * 0.5, v.h * 0.85);
+            await kit.until(() => g.photos === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.photos);
+          }
+        }
+        out.cards = g.album.children.length;
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 200)) throw new Error(`Big friend too small: ${JSON.stringify(big)}`);
+      if (big.shown.some((n) => n !== 1)) throw new Error(`More than one friend: ${JSON.stringify(big)}`);
+      if (new Set(big.animals).size !== 6) throw new Error(`Friends repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((p, i) => p !== i + 1))
+        throw new Error(`A between touch took a photo: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 2500))
+        throw new Error(`The click held the next friend: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last click was cut: ${JSON.stringify(big)}`);
+      if (big.cards !== 6 || big.misses || big.hints)
+        throw new Error(`Photo Safari big not free: ${JSON.stringify(big)}`);
+      await screenshot('photo-safari-13-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('photo-safari');
+      assert.deepEqual(await score('photo-safari'), [0, 0]);
+      log(
+        `Photo Safari 13: six big friends photographed by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join(
+            '/',
+          )} ms under 4 s clicks, sizes ${big.sizes.map(Math.round).join('/')}, the last heard out, no misses`,
+      );
+    }
+
     if (!only || only === 'opp') {
       // Level 1 (switch): the next card comes after the act and 0.5 s, not after the word.
       await launch('opposites', 1);
@@ -278,6 +420,244 @@ export function createSuite({ page, launch, finished, screenshot, log, ready, ch
           )} ms into a 4 s sound, its ask waiting; an early tap said it (no miss); the guide said it; the last heard out`,
       );
     }
+    if (!only || only === 'oppbig') {
+      // Opposites level 6 (lap): one big card; a touch anywhere (sky, hills, the card, beside it) flips it under a 4 s
+      // word, a small copy joins the row along the bottom and the next card grows in; a touch while it flips or arrives
+      // only wiggles it; the eight lap pairs leave eight pictures, nothing is a miss, and the last word is heard out.
+      await page.setViewportSize({ width: 844, height: 390 });
+      await page.waitForTimeout(300);
+      await launch('opposites', 6);
+      await stretch(['opp.word']);
+      await page.waitForTimeout(600);
+      await screenshot('opposites-6-start-phone');
+      const play = page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.plan.big || g.plan.rounds !== 8) throw new Error('Opposites big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.catcher.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.2),
+          () => at(v.w * 0.85, v.h * 0.6),
+          () => at(g.cards[0].node.x, g.cards[0].node.y),
+          () => at(v.w * 0.25, v.h * 0.5),
+          () => at(v.w * 0.9, v.h * 0.15),
+          () => at(v.w / 2, v.h * 0.75),
+          () => at(v.w * 0.6, v.h * 0.1),
+          () => at(v.w * 0.15, v.h * 0.7),
+        ];
+        const out = { opens: [], sizes: [], concepts: [], extra: [], flipped: [] };
+        for (let n = 0; n < 8; n++) {
+          await kit.until(() => !g.busy && g.index === n && g.cards.length === 1, 15000);
+          await kit.sleep(250);
+          const c = g.cards[0];
+          const b = c.node.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.catcher.worldTransform.a);
+          out.concepts.push(c.card.concept);
+          const side = c.card.side;
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 7) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch while the card flips counts no extra card.
+            await kit.sleep(200);
+            at(v.w * 0.5, v.h * 0.9);
+            await kit.until(() => g.index === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.index);
+          }
+          out.flipped.push(g.row.children.length === n + 1 && side !== undefined);
+        }
+        out.row = g.row.children.map((p) => [Math.round(p.x), Math.round(p.y)]);
+        out.view = [Math.round(v.w), Math.round(v.h)];
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      // Midway, with five pictures in the row and the sixth card up.
+      await page.waitForFunction(() => neo.scene.game.index === 5 && !neo.scene.game.busy, null, {
+        timeout: 60000,
+      });
+      await screenshot('opposites-6-row-phone');
+      const big = await play;
+      if (big.sizes.some((s) => s < 250)) throw new Error(`Big card too small: ${JSON.stringify(big)}`);
+      if (new Set(big.concepts).size !== 8) throw new Error(`Pairs repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((t, i) => t !== i + 1))
+        throw new Error(`A between touch flipped a card: ${JSON.stringify(big)}`);
+      if (big.flipped.some((ok) => !ok))
+        throw new Error(`The row did not grow by one: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 3000))
+        throw new Error(`The word held the next card: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last word was cut: ${JSON.stringify(big)}`);
+      if (big.row.length !== 8 || big.misses || big.hints)
+        throw new Error(`Opposites big not free: ${JSON.stringify(big)}`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('opposites');
+      assert.deepEqual(await score('opposites'), [0, 0]);
+      log(
+        `Opposites 6: eight big cards flipped by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join('/')} ms under 4 s words, sizes ${big.sizes.map(Math.round).join('/')}, row ${JSON.stringify(
+          big.row,
+        )} in ${big.view.join('x')}, the last heard out, no misses`,
+      );
+    }
+
+    if (!only || only === 'monstersbig') {
+      // Word Monsters level 9 (lap): one big monster; a touch anywhere (sky, grass, the monster, beside it) makes it say
+      // its sound under a 4 s line, its picture stays on the shelf and the next monster wakes; a touch while it wakes
+      // only wiggles it; six different letters leave six pictures, nothing is a miss, and the last sound is heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('word-monsters', 9);
+      await stretch(['sound.*']);
+      await page.waitForTimeout(600);
+      await screenshot('word-monsters-9-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.plan.big || g.plan.rounds !== 6) throw new Error('Word Monsters big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.crowd.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.3),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => at(g.monsters[0].x, g.monsters[0].y),
+          () => at(v.w * 0.2, v.h * 0.6),
+          () => at(v.w * 0.9, v.h * 0.45),
+          () => at(v.w / 2, v.h * 0.35),
+        ];
+        const out = { opens: [], sizes: [], shown: [], letters: [], extra: [] };
+        for (let n = 0; n < 6; n++) {
+          await kit.until(() => !g.busy && g.taps === n && g.monsters.length === 1, 15000);
+          await kit.sleep(250);
+          const m = g.monsters[0];
+          const b = m.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.crowd.worldTransform.a);
+          out.shown.push(g.monsters.filter((x) => !x.destroyed).length);
+          out.letters.push(m.letter);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 5) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch while the picture flies and the next monster wakes counts no extra monster.
+            await kit.sleep(300);
+            at(v.w * 0.5, v.h * 0.85);
+            await kit.until(() => g.taps === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.taps);
+          }
+        }
+        out.pictures = g.shelf.children.length;
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 250)) throw new Error(`Big monster too small: ${JSON.stringify(big)}`);
+      if (big.shown.some((n) => n !== 1)) throw new Error(`More than one monster: ${JSON.stringify(big)}`);
+      if (new Set(big.letters).size !== 6) throw new Error(`Letters repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((t, i) => t !== i + 1))
+        throw new Error(`A between touch woke a monster: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 2500))
+        throw new Error(`The sound held the next monster: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last sound was cut: ${JSON.stringify(big)}`);
+      if (big.pictures !== 6 || big.misses || big.hints)
+        throw new Error(`Word Monsters big not free: ${JSON.stringify(big)}`);
+      await screenshot('word-monsters-9-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('word-monsters');
+      assert.deepEqual(await score('word-monsters'), [0, 0]);
+      log(
+        `Word Monsters 9: six big monsters woken by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join(
+            '/',
+          )} ms under 4 s sounds, sizes ${big.sizes.map(Math.round).join('/')}, six pictures kept, the last heard out, no misses`,
+      );
+    }
+
+    if (!only || only === 'gluebig') {
+      // Word Glue level 4 (lap): one big picture; a touch anywhere (sky, grass, the picture, beside it) flies its
+      // partner in under a 4 s join line, the new thing goes to the shelf and the next big picture rolls in; a touch
+      // during a join only hops the picture; five things on the shelf, nothing counted, and the last line heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('word-glue', 4);
+      await stretch(['wordglue.join']);
+      await page.waitForTimeout(600);
+      await screenshot('word-glue-4-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.big || g.s.round.asks.length !== 5) throw new Error('Word Glue big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.touchLayer.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.3),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => at(g.cards[0].node.x, g.cards[0].node.y),
+          () => at(v.w * 0.2, v.h * 0.6),
+          () => at(v.w / 2, v.h * 0.35),
+        ];
+        const out = { opens: [], sizes: [], words: [], extra: [] };
+        for (let n = 0; n < 5; n++) {
+          await kit.until(() => !g.busy && g.s.index === n, 15000);
+          await kit.sleep(250);
+          const b = g.cards[0].node.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.touchLayer.worldTransform.a);
+          out.words.push(g.s.round.asks[n].entry.word);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 4) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch during the join joins nothing more.
+            await kit.sleep(300);
+            at(v.w * 0.5, v.h * 0.85);
+            await kit.until(() => g.s.index === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.s.index);
+          }
+        }
+        out.shelf = g.shelf.length;
+        out.misses = g.s.misses;
+        out.hints = g.s.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 250)) throw new Error(`Big picture too small: ${JSON.stringify(big)}`);
+      if (new Set(big.words).size !== 5) throw new Error(`Things repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((t, i) => t !== i + 1))
+        throw new Error(`A between touch joined a picture: ${JSON.stringify(big)}`);
+      // The join itself takes about 2.2 s (fly in, show, shelf, roll in); under the 4 s line it must not wait for it.
+      if (big.opens.some((t) => t > 3500))
+        throw new Error(`The join line held the next picture: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last join was cut: ${JSON.stringify(big)}`);
+      if (big.shelf !== 5 || big.misses || big.hints)
+        throw new Error(`Word Glue big not free: ${JSON.stringify(big)}`);
+      await screenshot('word-glue-4-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('word-glue');
+      assert.deepEqual(await score('word-glue'), [0, 0]);
+      log(
+        `Word Glue 4: five big pictures joined by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join(
+            '/',
+          )} ms under 4 s join lines, sizes ${big.sizes.map(Math.round).join('/')}, five things on the shelf, the last heard out, nothing counted`,
+      );
+    }
+
     if (!only || only === 'pond') {
       // Level 3 (words and phrases), a couch game: a typed word's `pt.said` starts and the next bubble opens at once.
       await page.evaluate(() =>

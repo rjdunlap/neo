@@ -1,5 +1,6 @@
 import { MORE_SHAPES, SHAPES, type ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
+import type { Band } from '../../progress/bands';
 import type { BandLevels } from '../../progress/difficulty';
 
 /** Little, middle, big. */
@@ -35,6 +36,11 @@ export interface SorterPlan {
   everyTouch?: boolean;
   /** A short touch on a piece hops it into its hole by itself (a drag there works too). */
   tapIn?: boolean;
+  /**
+   * Level 9 at lap only: one big circle waits beside the box at a time, a touch anywhere (floor, wall, box or the circle,
+   * held as long as she likes) hops it in, and the next rolls out because she touched.
+   */
+  lap?: boolean;
   /** Pieces come a little bigger or smaller (0.85–1.15); any size of a kind fits its hole. */
   sizes?: boolean;
   /** One kind in three sizes, holes and pieces alike: the size is what to match. */
@@ -145,11 +151,21 @@ export const TAP_HOLD = 0.4;
  */
 export const TAP_REACH = 120;
 
-/** A piece let go away from every hole: at a tap-in level, a quick touch that barely moved it is a tap, and the piece hops in. */
+/**
+ * A piece let go away from every hole: at a tap-in level, a quick touch that barely moved it is a tap, and the piece hops in.
+ * At lap every let-go hops it in, however long it was held or far it went.
+ */
 export const tapsIn = (plan: SorterPlan, heldFor: number, moved: number) =>
-  !!plan.tapIn && heldFor < TAP_HOLD && moved < TAP_REACH;
+  !!plan.tapIn && (!!plan.lap || (heldFor < TAP_HOLD && moved < TAP_REACH));
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** How much bigger the one waiting circle is drawn at lap. */
+export const LAP_SCALE = 1.35;
+
+/** A level's plan; level 9 played at lap is its own branch (`lap`), and toddler's level 9 stays as it is. */
+export const planFor = (level: number, band?: Band): SorterPlan => {
+  const plan = PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  return band === 'lap' && plan.tapIn ? { ...plan, lap: true } : plan;
+};
 
 export const HOLE_R = 54;
 /** How close (in logical units) a dropped piece must be to a hole's middle. */

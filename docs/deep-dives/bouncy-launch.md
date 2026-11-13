@@ -186,6 +186,7 @@ These go on the roadmap's "Waiting on the developer" list as one row.
 8. **Lap's pull level** (decision 2) and the magnet tier (decision 4). *Tier: filtered lap play, one person check noted open.*
 9. **Level 11, Pick a spring.** Needs decision 3. *Tier: as slice 5.*
 10. Built 2026-10-16: **Level 12, Planet Hop**, school only. [Build record](../archive/COMPLETED-2026-10-09.md#bouncy-launch-12-planet-hop-2026-10-16).
+11. Built 2026-11-13: **Level 13, Flower meadow**, lap only and first in lap's order `[13, 1]`: a touch anywhere bounces the pet and each of five landings leaves a flower that stays; nothing counts. PR #1620.
 
 Every slice also updates the README row, the `GAMES.md` entry, the how-to card and the ghost-finger bot, and records a short VERIFICATION entry. The couch catalog and Cloud Hopper stay on level 3 and are untouched by levels 7–12.
 

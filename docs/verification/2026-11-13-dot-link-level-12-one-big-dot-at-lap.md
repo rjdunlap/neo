@@ -1,0 +1,5 @@
+# 2026-11-13 — Dot Link level 12, one big dot at lap (PR #1607)
+
+**Changed:** `dot-link` level 12 *One big dot*, appended (IDs 7–10 stay reserved) and first in lap's order `[12, 1]`, an entry level. A 3×3 board starts with one big dot (1.5×); a touch anywhere pops the nearest, a fresh dot grows in its place and one more place fills; eight pops finish, waiting counts no hint, a touch sparkles under the finger. Level 1's tap-mode idle bob now clears on the next pop; the card's goal line and a level-12 step were reworded; voice line `dots.big`. The `batch` suite's dots section is now selectable with `BATCH_ONLY=dots`.
+**Ran:** typecheck; `npm test` (351 files, 6819 tests); `BROWSER_SUITE=batch BATCH_ONLY=dots DOTS_LEVELS=1,12` passed (level 12 played with every other touch on the empty meadow; landscape 1024×768 screenshot `dot-link-12`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=12` finished in 9.7 s.
+**Not run:** `npm run build` (no shared files or assets changed), a portrait play, dots levels 2–6 and 11.

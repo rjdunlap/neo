@@ -29,16 +29,72 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await page.evaluate(() => {
       kit.store.data.settings.howToCards = false;
     });
-    // FAR_LEVELS=5,6 plays only the curtain levels; FAR_LEVELS=7,8 only strong and gentle.
+    // FAR_LEVELS=5,6 plays only the curtain levels; FAR_LEVELS=7,8 only strong and gentle; FAR_LEVELS=9 lap's big light.
     const only = (process.env.FAR_LEVELS ?? '').split(',').filter(Boolean).map(Number);
+    if (!only.length || only.includes(9)) await bigLight(score);
     if (!only.length || only.some((l) => l <= 4)) await early(score, idle, dragTo);
     if (!only.length || only.some((l) => l === 5 || l === 6)) await curtain(score, idle);
-    if (!only.length || only.some((l) => l >= 7)) await strong(score, idle);
+    if (!only.length || only.some((l) => l === 7 || l === 8)) await strong(score, idle);
+  }
+
+  async function bigLight(score) {
+    // Level 9 (lap) on a phone: one big light; touches anywhere (sky, corner, beside the light) float every awake light,
+    // a touch while they float is free, a second and a third light wake and stay, Show a hint counts nothing.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(400);
+    await launch('far-lights', 9, 'Mia', 'lap');
+    await page.waitForFunction(() => neo.scene.game?.layout, null, { timeout: 15000 });
+    await screenshot('far-lights-9-start-phone');
+    const out = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const v = g.view;
+      const at = (x, y) => {
+        const p = g.board.toGlobal({ x, y });
+        kit.tap(p.x, p.y);
+      };
+      const spots = [
+        [v.w * 0.9, v.h * 0.15],
+        [v.w * 0.3, v.h * 0.85],
+        [g.layout.spots[1].x, g.layout.spots[1].y],
+      ];
+      const res = { core: [], awake: [], visible: [], floats: [] };
+      const b = g.windowLights[1].getBounds();
+      res.core.push(Math.round(b.width / g.board.worldTransform.a));
+      g.askForHint();
+      for (let n = 0; n < 3; n++) {
+        await kit.until(() => !g.wake.floating, 15000);
+        await kit.sleep(300);
+        res.awake.push(g.wake.awake);
+        res.visible.push(g.windowLights.filter((w) => w.visible).length);
+        at(...spots[n]);
+        await kit.sleep(150);
+        at(v.w * 0.5, v.h * 0.5);
+        res.floats.push(g.wake.floats);
+      }
+      await kit.until(() => neo.scene.finished, 20000);
+      res.hints = g.tally.hints;
+      res.misses = g.tally.misses;
+      return res;
+    });
+    if (out.core[0] < 70) throw new Error(`Big light too small: ${JSON.stringify(out)}`);
+    assert.deepEqual(out.awake, [1, 2, 3], 'a light wakes after each float');
+    assert.deepEqual(out.visible, [1, 2, 3], 'woken lights stay');
+    assert.deepEqual(out.floats, [1, 2, 3], 'touches while floating are free');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await finished('far-lights');
+    assert.deepEqual(await score(), [0, 0], 'level 9 saved 0 misses, 0 hints');
+    log(
+      `Far Lights 9: core ${out.core[0]} units, touches in the sky, the corner and on the light floated ${out.floats.join('/')}, lights awake ${out.awake.join('/')}, a hint and between touches free, 0/0; passed`,
+    );
   }
 
   async function early(score, idle, dragTo) {
     // Level 1: three counted taps on the window lights, each after the last has drifted back.
     await launch('far-lights', 1, 'Mia', 'lap');
+    // Show a hint counts nothing at level 1 and spends none of her taps: it only pulses a light.
+    await page.waitForFunction(() => neo.scene.game?.layout, null, { timeout: 15000 });
+    await page.evaluate(() => neo.scene.game.askForHint());
+    assert.equal(await page.evaluate(() => neo.scene.game.taps.count), 0, 'a hint spends no tap');
     for (let i = 0; i < 3; i++) {
       await page.waitForFunction(
         () => {

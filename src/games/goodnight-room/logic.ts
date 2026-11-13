@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * out. Later the voice names who to say goodnight to, then two in order; at the top a big arrow tours three rooms.
  */
 export type NightMode =
-  'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count' | 'color' | 'except' | 'tour';
+  'all' | 'named' | 'two' | 'animals' | 'lightLast' | 'count' | 'color' | 'except' | 'tour' | 'big';
 
 export interface NightPlan {
   mode: NightMode;
@@ -67,10 +67,21 @@ export const PLANS: NightPlan[] = [
     asleep: 0,
     name: 'Goodnight everywhere: follow the arrow through three rooms and say goodnight to everyone',
   },
+  {
+    mode: 'big',
+    things: 4,
+    requests: 0,
+    asleep: 0,
+    name: 'One big sleepy friend: a touch anywhere tucks it in, and the next friend tiptoes in (4 friends)',
+  },
 ];
 
+/** Level 11, lap's opening before level 1: one big sleepy friend at a time, and a touch anywhere tucks it in. */
+export const BIG_LEVEL = 11;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  // Level 11, One big sleepy friend, opens lap before levels 1 and 2; toddler still starts at 2.
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
   prek: { min: 5, max: 10 },
@@ -265,7 +276,7 @@ export function makeRequests(
   room: readonly Thing[],
   color: string | null = null,
 ): Thing[][] {
-  if (plan.mode === 'all' || plan.mode === 'count' || plan.mode === 'tour') return [];
+  if (plan.mode === 'all' || plan.mode === 'count' || plan.mode === 'tour' || plan.mode === 'big') return [];
   if (plan.mode === 'color') return [room.filter((t) => COLORS[t].main === color)];
   if (plan.mode === 'except') return [room.filter((t) => !isLight(t))];
   if (plan.mode === 'animals') return [room.filter(isAnimal)];
@@ -290,7 +301,9 @@ export function thingToTap(
 ): Thing | null {
   if (plan.mode === 'count')
     return asleep.size < targetCount ? (room.find((t) => !asleep.has(t)) ?? null) : null;
-  if (plan.mode === 'all' || plan.mode === 'tour') return room.find((t) => !asleep.has(t)) ?? null;
+  // A big round tucks in the friends in the order they tiptoe in, so the next is always the first still awake.
+  if (plan.mode === 'all' || plan.mode === 'tour' || plan.mode === 'big')
+    return room.find((t) => !asleep.has(t)) ?? null;
   if (plan.mode === 'lightLast')
     return (
       request?.find(
@@ -319,6 +332,7 @@ export function acceptsTap(
   return (
     plan.mode === 'all' ||
     plan.mode === 'tour' ||
+    plan.mode === 'big' ||
     (plan.mode === 'animals' || plan.mode === 'color' || plan.mode === 'except'
       ? request.includes(thing)
       : request[step] === thing)

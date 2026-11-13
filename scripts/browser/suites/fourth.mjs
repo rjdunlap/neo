@@ -95,7 +95,61 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')
-      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7]) {
+      for (const level of process.env.PUZZLE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8]) {
+        if (level === 8) {
+          // Lap's first: one big piece out at a time; a touch on the background, the frame or a placed piece hops it in,
+          // and the next comes out. A far let-go hops it in too. Nothing counts.
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await launch('puzzle-pals', 8, 'Mia', 'lap');
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-8-lap-start-portrait');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const out = () => g.pieces.filter((p) => !p.placed && p.node.visible);
+            const n = g.pieces.length;
+            if (![2, 3].includes(n) || g.plan.rows !== 1 || out().length !== 1)
+              throw new Error(`Puzzle 8: one piece out of two or three (${n}, ${out().length})`);
+            const b = out()[0].node.getBounds();
+            if (b.width < 100 || b.height < 100)
+              throw new Error(`Puzzle 8: the piece is big (${b.width}x${b.height})`);
+            kit.tap(innerWidth * 0.92, innerHeight * 0.05 + 120);
+            await kit.sleep(900);
+            if (g.pieces.filter((p) => p.placed).length !== 1 || out().length !== 1)
+              throw new Error('Puzzle 8: a background touch hops it in and the next comes out');
+            if (n === 3) {
+              kit.tapOn(g.pieces.find((p) => p.placed).node, 0, 0);
+              await kit.sleep(900);
+              if (g.pieces.filter((p) => p.placed).length !== 2)
+                throw new Error('Puzzle 8: a touch on a placed piece hops the next in');
+            }
+            await kit.dragTo(out()[0].node, { x: 60, y: innerHeight - 60 }, 40);
+            await kit.sleep(900);
+            if (!g.pieces.every((p) => p.placed) || g.misses || g.hints)
+              throw new Error('Puzzle 8: a far let-go hops it in, free');
+          });
+          await page.waitForTimeout(900);
+          await finished('puzzle-pals');
+          const r8 = await page.evaluate(() => {
+            const r = kit.store.stats('puzzle-pals').history.at(-1);
+            return [r.misses, r.hints];
+          });
+          assert.deepEqual(r8, [0, 0], 'puzzle 8 score');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await launch('puzzle-pals', 8, 'Mia', 'lap');
+          await page.waitForTimeout(600);
+          await screenshot('puzzle-pals-8-lap-start-landscape');
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            kit.tapOn(g.board, 0, 0);
+            await kit.sleep(900);
+            if (g.pieces.filter((p) => p.placed).length !== 1)
+              throw new Error('Puzzle 8: a frame touch hops it in');
+          });
+          log(
+            'Puzzle Pals 8 (lap): one big piece, background, frame and placed-piece touches and a far let-go hop it in, nothing counts, sticker passed',
+          );
+          continue;
+        }
         await launch('puzzle-pals', level);
         await page.waitForTimeout(600);
         await page.evaluate(() => {

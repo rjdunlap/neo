@@ -7,14 +7,14 @@ import type { BandLevels } from '../../progress/difficulty';
  * new dots drop in from the top. Later levels ask for a color, a longer chain, or a closed
  * square (which clears every dot of that color).
  */
-export type DotMode = 'tap' | 'pair' | 'buddy' | 'color' | 'chain' | 'square';
+export type DotMode = 'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'chain' | 'square';
 
 export interface DotPlan {
   mode: DotMode;
   rows: number;
   cols: number;
   colors: number;
-  /** Pops (tap), links (pair), buddies joined (buddy), dots of the color, chains, or squares to finish. */
+  /** Pops (big, tap), links (pair), buddies joined (buddy), dots of the color, chains, or squares to finish. */
   goal: number;
   /** chain: how long a chain must be. */
   length?: number;
@@ -58,8 +58,12 @@ export const PLANS: DotPlan[] = [
 /** Level 11, the toddler entry before level 2: one pair of dots wiggles from the start, and only that pair links. */
 export const BUDDY_LEVEL = 11;
 
+/** Level 12, lap's opening before level 1: one big dot, and a touch anywhere pops the dot nearest her finger. */
+export const BIG_LEVEL = 12;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  // Level 12, One big dot, opens lap before level 1's board of twenty.
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
   toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
   preschool: { min: 2, max: 4 },
@@ -74,10 +78,50 @@ export const BUDDY: DotPlan = {
   name: 'Find my buddy: link the two wiggling dots',
 };
 
+export const BIG: DotPlan = {
+  mode: 'big',
+  rows: 3,
+  cols: 3,
+  colors: 3,
+  goal: 8,
+  name: 'One big dot: a touch anywhere pops it',
+};
+
+/** The order the big board's places fill: the middle first, then the sides, then the corners. */
+export const BIG_FILL: readonly Cell[] = [
+  { r: 1, c: 1 },
+  { r: 1, c: 0 },
+  { r: 1, c: 2 },
+  { r: 0, c: 1 },
+  { r: 2, c: 1 },
+  { r: 0, c: 0 },
+  { r: 2, c: 2 },
+  { r: 0, c: 2 },
+  { r: 2, c: 0 },
+];
+
+/** How many places hold a dot after `pops` pops: one to start, and each pop brings one more until the board is full. */
+export const bigShown = (pops: number) => Math.min(BIG_FILL.length, 1 + Math.max(0, pops));
+
+/** The place a pop brings in: the next unfilled place in `BIG_FILL`, or none once the board is full. */
+export const bigArrival = (pops: number): Cell | null => (pops < BIG_FILL.length ? BIG_FILL[pops] : null);
+
+/** The dot nearest a board point (`x`, `y` in cell units), at any distance: a touch anywhere is for some dot. */
+export function nearestCell(cells: readonly Cell[], x: number, y: number): Cell | null {
+  let best: Cell | null = null;
+  let d = Infinity;
+  for (const c of cells) {
+    const e = Math.hypot(c.c - x, c.r - y);
+    if (e < d) [best, d] = [c, e];
+  }
+  return best;
+}
+
 /** Every plan by level ID; 7–10 are kept for the levels the dive appends above 6. */
 export const LEVEL_PLANS: ReadonlyMap<number, DotPlan> = new Map([
   ...PLANS.map((p, i) => [i + 1, p] as const),
   [BUDDY_LEVEL, BUDDY],
+  [BIG_LEVEL, BIG],
 ]);
 
 export const planFor = (level: number) =>
@@ -254,6 +298,7 @@ export function demoMove(
   target?: ColorName,
   buddy?: readonly Cell[],
 ): Cell[] | null {
+  if (plan.mode === 'big') return [BIG_FILL[0]];
   if (plan.mode === 'tap') return [{ r: 0, c: 0 }];
   if (plan.mode === 'buddy') return buddy?.length === 2 ? [...buddy] : findLine(grid, 2);
   if (plan.mode === 'square') {

@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
+import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
+import { dotLink } from '.';
 import {
+  BIG,
+  BIG_FILL,
+  BIG_LEVEL,
+  bigArrival,
+  bigShown,
   BUDDY,
   BUDDY_LEVEL,
   buddyCounts,
@@ -13,7 +20,9 @@ import {
   ensureMove,
   findLine,
   findSquare,
+  LEVELS,
   makeGrid,
+  nearestCell,
   pairs,
   pickBuddy,
   planFor,
@@ -181,5 +190,52 @@ describe('Dot Link', () => {
     expect(planFor(1).mode).toBe('tap');
     expect(planFor(2).mode).toBe('pair');
     expect(planFor(6)).toBe(PLANS[5]);
+  });
+
+  it('opens lap with level 12, One big dot, and leaves every other band and saved level where it was', () => {
+    expect(planFor(BIG_LEVEL)).toBe(BIG);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1]);
+    expect(firstLevel(LEVELS.lap!, dotLink.entryLevels)).toBe(BIG_LEVEL);
+    expect(firstLevel(LEVELS.toddler!, dotLink.entryLevels)).toBe(1);
+    expect(levelsInOrder(LEVELS.toddler!)).not.toContain(BIG_LEVEL);
+    // A lap level carried into toddler (a birthday) starts toddler at its own easiest level, not above its top.
+    expect(dotLink.entryLevels).toContain(BIG_LEVEL);
+    expect(landing(BIG_LEVEL, LEVELS.toddler!, dotLink.entryLevels)).toBe(1);
+  });
+
+  it('starts the big board with one dot in the middle and brings one more per pop until all nine stand', () => {
+    expect(BIG_FILL[0]).toEqual({ r: 1, c: 1 });
+    // Every place on the 3×3 board, once each.
+    expect(new Set(BIG_FILL.map((c) => `${c.r},${c.c}`)).size).toBe(BIG.rows * BIG.cols);
+    expect(BIG_FILL.every((c) => c.r >= 0 && c.r < BIG.rows && c.c >= 0 && c.c < BIG.cols)).toBe(true);
+    expect(bigShown(0)).toBe(1);
+    for (let pops = 1; pops < BIG_FILL.length; pops++) {
+      expect(bigShown(pops)).toBe(bigShown(pops - 1) + 1);
+      // The place a pop brings is the one that makes the count, and was empty before.
+      expect(bigArrival(pops)).toEqual(BIG_FILL[bigShown(pops) - 1]);
+      expect(BIG_FILL.slice(0, bigShown(pops - 1))).not.toContainEqual(bigArrival(pops));
+    }
+    expect(bigShown(20)).toBe(9);
+    expect(bigArrival(BIG_FILL.length)).toBeNull();
+    // The round ends before the board is ever full of nothing: the goal is reached while dots still stand.
+    expect(BIG.goal).toBeLessThanOrEqual(BIG_FILL.length);
+  });
+
+  it('pops the standing dot nearest a touch anywhere, however far from it', () => {
+    const one = [{ r: 1, c: 1 }];
+    for (const [x, y] of [
+      [1, 1],
+      [-5, -5],
+      [9, 0],
+      [1.4, 3],
+    ])
+      expect(nearestCell(one, x, y)).toEqual({ r: 1, c: 1 });
+    const three = BIG_FILL.slice(0, 3);
+    expect(nearestCell(three, -2, 1)).toEqual({ r: 1, c: 0 });
+    expect(nearestCell(three, 4, 0.5)).toEqual({ r: 1, c: 2 });
+    expect(nearestCell([], 1, 1)).toBeNull();
+    // Big mode demonstrates on a real place.
+    const rng = new Rng(3);
+    expect(demoMove(BIG, ensureMove(BIG, makeGrid(BIG, rng, [R, B]), rng))).toEqual([BIG_FILL[0]]);
   });
 });

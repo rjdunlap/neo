@@ -526,18 +526,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             : [[n, undefined]],
       );
     for (const [level, shapeBand] of shapeRuns) {
-      const upright =
-        level === 8 ||
-        level === 11 ||
-        level === 12 ||
-        level === 14 ||
-        (level === 9 && shapeBand === 'toddler');
+      const upright = level === 8 || level === 11 || level === 12 || level === 14 || level === 9;
       if (upright) await portrait(true);
       await launch('shape-sorter', level, 'Mia', shapeBand);
       await page.waitForTimeout(400);
       const shapeStickers = await page.evaluate(() => kit.store.data.stickers.length);
       if (level === 12 || level === 14) await screenshot(`shape-sorter-${level}-start-portrait`);
-      if (level === 9 && shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
+      if (level === 9) await screenshot(`shape-sorter-9-${shapeBand}-start-portrait`);
       const holes = await page.evaluate(async () => {
         const g = neo.scene.game;
         // Pieces ride above the finger, so aim the finger just below the hole.
@@ -634,6 +629,28 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             );
             await kit.until(() => g.clueReady || g.finished, 10000);
           }
+          return g.box.holes.length;
+        }
+        if (g.plan.lap) {
+          // Lap: one big circle out at a time; a touch on the box, the floor or the wall, or a long drag let go far away,
+          // hops it in, and the next rolls out. Nothing counts.
+          const out = () => g.pieces.filter((p) => p.view.visible);
+          if (g.pieces.length !== 3 || out().length !== 1)
+            throw new Error('Shape 9 lap: one circle out of three');
+          kit.tapOn(g.box, 0, 40);
+          await kit.sleep(1100);
+          if (g.pieces.length !== 2 || out().length !== 1 || g.pieces[0].out !== 'waiting')
+            throw new Error(
+              `Shape 9 lap: a box touch puts it in and the next rolls out (${g.pieces.length})`,
+            );
+          kit.tap(innerWidth * 0.06, innerHeight * 0.3);
+          await kit.sleep(1100);
+          if (g.pieces.length !== 1) throw new Error('Shape 9 lap: a wall touch puts it in');
+          const p = g.pieces[0];
+          await kit.dragTo(p.view, g.box.toGlobal({ x: -g.box.w, y: g.box.lidH + 200 }), 40);
+          await kit.sleep(1100);
+          if (g.pieces.length || g.misses || g.hints)
+            throw new Error('Shape 9 lap: a far let-go puts it in, free');
           return g.box.holes.length;
         }
         if (g.plan.everyTouch) {
@@ -979,17 +996,60 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
     for (const level of !only || only === 'garden'
-      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9])
+      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
       : []) {
-      if (level === 6 || level === 9) await portrait(true);
+      if (level === 6 || level >= 9) await portrait(true);
       await launch('color-garden', level);
       await page.waitForTimeout(400);
       if (level === 9) {
         assert.equal(await page.evaluate(() => neo.scene.game.plan.tap), true, 'Level 9 is a tap entry');
         await screenshot('color-garden-9-portrait');
       }
+      if (level === 10) {
+        assert.equal(await page.evaluate(() => neo.scene.game.plan.big), true, 'Level 10 is one big fruit');
+        await screenshot('color-garden-10-portrait');
+      }
       const baskets = await page.evaluate(async () => {
         const g = neo.scene.game;
+        if (g.plan.big) {
+          // One big fruit shows; a touch on the sky, a basket, the tree or the grass hops it to its own basket, and the next grows.
+          const shown = () => g.items.filter((i) => i.view.visible);
+          if (g.items.length !== 6 || g.baskets.length !== 2 || shown().length !== 1)
+            throw new Error('Garden big deal');
+          const first = g.items[0];
+          await kit.sleep(400);
+          const r = first.view.getBounds();
+          // Logical size: global bounds over the stage's scale.
+          const size = Math.min(r.width, r.height) / g.catcher.worldTransform.a;
+          if (size < 150) throw new Error(`Big fruit too small: ${size}`);
+          const v = g.view;
+          const at = (x, y) => {
+            const p = g.catcher.toGlobal({ x, y });
+            kit.tap(p.x, p.y);
+          };
+          const spots = [
+            () => at(v.w * 0.85, 40),
+            () => kit.tapOn(g.baskets[1], 0, -40),
+            () => kit.tapOn(first.view, 0, 0),
+            () => at(v.w * 0.3, v.h * 0.7),
+          ];
+          const targets = g.items.map((i) => ({
+            view: i.view,
+            basket: g.baskets.find((b) => b.key === i.key),
+          }));
+          for (let n = 0; n < 6; n++) {
+            const before = g.items.length;
+            spots[n % spots.length]();
+            await kit.until(() => g.items.length === before - 1);
+            if (g.items.length && shown().length !== 1) throw new Error('The next fruit did not grow');
+            await kit.sleep(350);
+          }
+          await kit.until(() => g.sorted === 6);
+          if (g.misses || g.hints) throw new Error('Garden big is not free exploration');
+          for (const { view, basket } of targets)
+            if (view.parent !== basket.inside) throw new Error('Big fruit hopped to another color');
+          return 0;
+        }
         if (g.plan.tap) {
           if (g.items.length !== 4 || g.baskets.length !== 2) throw new Error('Garden tap deal');
           for (const i of g.items) {
@@ -1051,11 +1111,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await screenshot(`color-garden-${level}`);
       await finished('color-garden');
       assert.deepEqual(await score('color-garden'), baskets > 1 ? [2, 1] : [0, 0], `garden ${level} score`);
-      if (level === 6 || level === 9) await portrait(false);
+      if (level === 6 || level >= 9) await portrait(false);
       log(
-        level === 9
-          ? 'Color Garden 9: rapid taps, own baskets, inert repeated/basket taps, zero misses/hints, saved score and sticker passed'
-          : `Color Garden ${level}: dragging into baskets, crowded edges, wrong baskets, glow hint, saved score and sticker passed`,
+        level === 10
+          ? 'Color Garden 10: one big fruit, touches on sky, basket, tree and grass each hop it home, the next grows, zero misses/hints, saved score and sticker passed'
+          : level === 9
+            ? 'Color Garden 9: rapid taps, own baskets, inert repeated/basket taps, zero misses/hints, saved score and sticker passed'
+            : `Color Garden ${level}: dragging into baskets, crowded edges, wrong baskets, glow hint, saved score and sticker passed`,
       );
     }
 

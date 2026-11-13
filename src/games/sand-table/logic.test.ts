@@ -5,6 +5,7 @@ import {
   BATCH,
   COLS,
   GRAINS,
+  LAP_POURS,
   PLANS,
   RIM,
   answer,
@@ -25,6 +26,7 @@ import {
   restart,
   sandLayout,
   scoop,
+  lapDone,
   startState,
   sum,
   type Rect,
@@ -512,5 +514,48 @@ describe('Sand Table level 4: the breeze', () => {
       expect(step).toEqual({ answer: gainedBays(plan, r.before, r.after)[0] });
       expect(answer(s, (step as { answer: number }).answer).change).toBe('gained');
     }
+  });
+});
+
+describe('lap: a touch anywhere pours, and the round finishes after her pours', () => {
+  it('lap applies at level 1 only; toddler level 1 is unchanged', () => {
+    expect(startState(1, new Rng(1), true).lap).toBe(true);
+    expect(startState(1, new Rng(1)).lap).toBe(false);
+    expect(startState(2, new Rng(1), true).lap).toBe(false);
+    const t = startState(1, new Rng(1));
+    for (let k = 0; k < LAP_POURS + 2; k++) pour(t, 0);
+    expect(lapDone(t)).toBe(false);
+    expect(botStep(startState(1, new Rng(1)), 4)).toEqual({ scoop: 0 });
+  });
+
+  it('the bucket never runs dry before the round finishes, from every start, and the grains stay 48', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = startState(1, new Rng(seed), true);
+      let pours = 0;
+      while (!lapDone(s)) {
+        expect(botStep(s, pours)).toEqual({ pour: 0 });
+        const r = pour(s, 0);
+        pours++;
+        expect(r.kind).toBe('ok');
+        expect(r.moved).toBe(BATCH);
+        expect(s.bucket).toBeGreaterThan(0);
+        expect(sum(s.h) + s.bucket + s.pail).toBe(GRAINS);
+      }
+      expect(pours).toBe(LAP_POURS);
+      expect(botStep(s, pours)).toEqual({ flag: true });
+      // nothing spills at lap: the pail (and its line) never comes up
+      expect(s.pail).toBe(0);
+      expect(s.h.every((h) => h <= RIM)).toBe(true);
+    }
+  });
+
+  it('Start again refills the bucket and keeps the pours already made', () => {
+    const s = startState(1, new Rng(3), true);
+    for (let k = 0; k < 5; k++) pour(s, 0);
+    restart(s);
+    expect(s.pours).toBe(5);
+    expect(s.bucket).toBe(GRAINS - sum(s.start));
+    for (let k = 0; k < LAP_POURS - 5; k++) expect(pour(s, 0).kind).toBe('ok');
+    expect(lapDone(s)).toBe(true);
   });
 });

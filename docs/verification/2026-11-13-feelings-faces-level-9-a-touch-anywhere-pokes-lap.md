@@ -1,0 +1,5 @@
+# 2026-11-13 — feelings-faces level 9: a touch anywhere pokes (lap)
+
+**Changed:** `feelings-faces` level 9 (lap's order only), in place: a touch anywhere on the room background pokes, exactly as a touch on the pet does (next feeling in the fixed cycle, a sad pet's next touch is the hug, 300 ms cooldown). The dusk overlay and the decoration layer are now `eventMode: 'none'`, since a hit on the full-screen dusk Graphics stopped Pixi's hit search before anything below the pet; tappable happening props live in a separate layer, so no other level changes. The level 9 card says "Tap anywhere".
+**Ran:** `npm run typecheck`; vitest for `src/games/feelings-faces` and `src/content` (221 passed, 1 skipped); `BROWSER_SUITE=feelpoke` passed at portrait 768x1024 (six pokes, three of them on the empty room beside the pet, guarded to lie outside the pet's hit area; sticker recorded with 0 misses and 0 hints). The suite failed before the layer fix and passes after.
+**Not run:** `fingerdemo` (the ghost finger still taps the pet, so the demonstrated action is unchanged); a local `npm run build` (no shared files or assets changed); other suites.

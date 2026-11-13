@@ -4,6 +4,11 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'See how a light looks brighter when it is nearer.',
   steps: [
+    {
+      from: 9,
+      to: 9,
+      text: 'One big light. Touch anywhere: it floats close to the window and glows up, then drifts back, and another light wakes up. The next touch floats every awake light.',
+    },
     { from: 1, to: 1, text: 'Tap a light; it floats close to the window and glows up, then drifts back.' },
     { from: 2, to: 2, text: 'Drag each light along its path to the window.' },
     { from: 3, to: 3, text: 'Tap the light that looks brighter in the window.' },
@@ -22,6 +27,11 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'Press Both could fit, step to the side, then tap the light that moved less.' },
   ],
   finish: [
+    {
+      from: 9,
+      to: 9,
+      text: 'Three touches: the second and third lights wake, and the third touch ends the round.',
+    },
     { from: 1, to: 1, text: 'Three taps.' },
     { from: 2, to: 2, text: 'Both lights at the window.' },
     { from: 3, to: 3, text: 'Two pairs.' },
@@ -31,7 +41,17 @@ export const HOW_TO: GameHowTo = {
   ],
   note: [
     {
+      from: 9,
+      to: 9,
+      text: 'Every light here is the same; the halo shows how bright it looks, not how big it is. Nothing here is ever wrong: a touch while the lights float only rings. Show a hint makes the lights pulse and counts nothing. A toy model: real stars also differ in their own brightness.',
+    },
+    {
       from: 1,
+      to: 1,
+      text: 'Every light here is the same; the halo shows how bright it looks, not how big it is. Nothing here is ever wrong: this is for looking, not a sign of what she knows. Show a hint makes a light pulse and counts nothing. A toy model: real stars also differ in their own brightness.',
+    },
+    {
+      from: 2,
       to: 2,
       text: 'Every light here is the same; the halo shows how bright it looks, not how big it is. Nothing here is ever wrong: this is for looking, not a sign of what she knows. A toy model: real stars also differ in their own brightness.',
     },

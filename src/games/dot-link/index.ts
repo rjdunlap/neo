@@ -12,7 +12,11 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  BIG_LEVEL,
   BUDDY_LEVEL,
+  bigArrival,
+  bigShown,
+  BIG_FILL,
   buddyCounts,
   chainCounts,
   collapse,
@@ -23,9 +27,11 @@ import {
   findLine,
   findSquare,
   makeGrid,
+  nearestCell,
   pickBuddy,
   planFor,
   popped,
+  same,
   step,
   type Cell,
   type DotMark,
@@ -103,6 +109,9 @@ class DotLink implements Game {
   private hintCells: Cell[] = [];
   /** Buddy mode: the pair that wiggles from the start (not a hint) and the only line that links. */
   buddy: Cell[] = [];
+  /** Big mode: the dots standing on the board (a popping one has left it), and how much bigger each is drawn. */
+  standing: Cell[] = [];
+  private readonly dotScale: number;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -113,6 +122,8 @@ class DotLink implements Game {
       { sky: [0xfde2f0, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.82, clouds: 2, seed: 81 },
       ctx.view,
     );
+    this.dotScale = this.plan.mode === 'big' ? 1.5 : 1;
+    if (this.plan.mode === 'big') this.standing = BIG_FILL.slice(0, bigShown(0)).map((c) => ({ ...c }));
     this.board.addChild(this.lines, this.layer, this.touch);
     ctx.stage.addChild(this.backdrop, this.board);
     this.buildDots();
@@ -135,6 +146,8 @@ class DotLink implements Game {
   start() {
     const p = this.plan;
     switch (p.mode) {
+      case 'big':
+        return void this.ctx.instruct('dots.big');
       case 'tap':
         return void this.ctx.instruct('dots.tap');
       case 'pair':
@@ -168,6 +181,8 @@ class DotLink implements Game {
         const g = new Graphics();
         this.drawDot(g, color);
         g.position.copyFrom(this.pos({ r, c }));
+        // Big mode: only the standing dots show; the other places wait for the pops that bring them.
+        g.visible = this.plan.mode !== 'big' || this.isStanding({ r, c });
         this.layer.addChild(g);
         return g;
       }),
@@ -180,26 +195,42 @@ class DotLink implements Game {
     const h = (this.plan.rows - 1) * GAP;
     // The small buddy board grows so each dot's catch area stays well over 100 units for a toddler.
     const s = Math.min(
-      this.plan.mode === 'buddy' ? 1.4 : 1,
+      this.plan.mode === 'buddy' || this.plan.mode === 'big' ? 1.4 : 1,
       (v.h - 150) / (h + GAP),
       (v.w - 260) / (w + GAP),
     );
     this.board.scale.set(s);
     this.board.position.set(Math.max(190 + (GAP * s) / 2, (v.w - w * s) / 2), (v.h - h * s) / 2 + 20);
+    // Big mode: the whole view is the touch, in board units.
+    if (this.plan.mode === 'big')
+      this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
   }
 
   update(dt: number) {
     this.clock += dt;
-    if (!this.busy && !this.finished && !this.path.length && this.plan.mode !== 'buddy') {
+    // Buddy's pair wiggles from the start and big mode's dot is the whole invitation, so neither counts a waiting hint.
+    if (
+      !this.busy &&
+      !this.finished &&
+      !this.path.length &&
+      this.plan.mode !== 'buddy' &&
+      this.plan.mode !== 'big'
+    ) {
       this.idle += dt;
       if (this.idle > 12 && !this.hintCells.length) this.hint();
     }
     // Hinted dots bob gently.
+    const big = this.plan.mode === 'big';
     this.dots.forEach((row, r) =>
       row.forEach((g, c) => {
+        // Big mode: a popping dot shrinks by its own tween; an arriving one grows here and drops into its place.
+        if (big) {
+          if (!this.isStanding({ r, c })) return;
+          g.y += (r * GAP - g.y) * Math.min(1, dt * 10);
+        }
         const lit = [...this.hintCells, ...this.buddy].some((h) => h.r === r && h.c === c);
         const inPath = this.path.some((p) => p.r === r && p.c === c);
-        const k = inPath ? 1.15 : lit ? 1 + 0.12 * Math.abs(Math.sin(this.clock * 5)) : 1;
+        const k = this.dotScale * (inPath ? 1.15 : lit ? 1 + 0.12 * Math.abs(Math.sin(this.clock * 5)) : 1);
         g.scale.x += (k - g.scale.x) * Math.min(1, dt * 12);
         g.scale.y = g.scale.x;
       }),
@@ -208,6 +239,13 @@ class DotLink implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.path.length) return null;
+    if (this.plan.mode === 'big') {
+      // A touch beside the nearest dot, off it, to show that anywhere pops.
+      const cell = nearestCell(this.standing, 1, 1);
+      if (!cell) return null;
+      const { x, y } = this.pos(cell);
+      return { tap: { on: this.touch, x: x + GAP * 0.8, y: y + GAP * 0.9 }, pause: 0.12 };
+    }
     const move = demoMove(this.plan, this.grid, this.target, this.buddy);
     if (!move) return null;
     const spots = move.map((cell) => ({ on: this.touch, ...this.pos(cell) }));
@@ -229,12 +267,19 @@ class DotLink implements Game {
     return Math.hypot(p.x - c * GAP, p.y - r * GAP) < GAP * 0.45 ? { r, c } : null;
   }
 
+  private isStanding(cell: Cell) {
+    return this.standing.some((s) => same(s, cell));
+  }
+
   private down(e: FederatedPointerEvent) {
     if (this.busy || this.finished || palmOnGlass()) return;
+    if (this.plan.mode === 'big') return this.touchBig(e);
     const cell = this.cellAt(e);
     if (!cell) return;
     this.idle = 0;
     if (this.plan.mode === 'tap') {
+      // Tap mode never judges a line, so a pop is what puts the waiting bob away.
+      this.hintCells = [];
       void this.pop([cell], false);
       return;
     }
@@ -284,6 +329,59 @@ class DotLink implements Game {
     this.lines.clear();
     if (path.length < 2) return;
     void this.judge(path, loop);
+  }
+
+  /** Big mode: a touch anywhere sparkles under the finger and pops the standing dot nearest it. */
+  private touchBig(e: FederatedPointerEvent) {
+    if (this.progress >= this.plan.goal) return;
+    const at = this.ctx.stage.toLocal(e.global);
+    this.ctx.particles.burst(at.x, at.y, {
+      colors: [0xffffff, 0xfff3a0],
+      count: 4,
+      speed: [40, 110],
+      size: [0.2, 0.3],
+    });
+    const p = this.board.toLocal(e.global);
+    const cell = nearestCell(this.standing, p.x / GAP, p.y / GAP);
+    if (!cell) return void sfx.tick();
+    void this.popBig(cell);
+  }
+
+  /** Big mode: the dot pops, a fresh one grows in its place, and the pop brings one more dot until the board is full. */
+  private async popBig(cell: Cell) {
+    this.standing = this.standing.filter((s) => !same(s, cell));
+    const g = this.dots[cell.r][cell.c];
+    const at = this.ctx.stage.toLocal(this.board.toGlobal(g.position));
+    this.ctx.particles.burst(at.x, at.y, {
+      colors: [swatch[this.grid[cell.r][cell.c]].fill, 0xffffff],
+      count: 8,
+      speed: [80, 200],
+      gravity: 200,
+      size: [0.3, 0.5],
+    });
+    void this.ctx.tw.to(g.scale, { x: 0, y: 0 }, { duration: 0.18 });
+    this.progress++;
+    sfx.pop(4 + Math.min(8, this.progress));
+    const arrival = bigArrival(this.progress);
+    if (this.progress >= this.plan.goal) {
+      await this.ctx.tw.wait(0.22);
+      return void this.finale();
+    }
+    await this.ctx.tw.wait(0.22);
+    if (this.finished) return;
+    this.arrive(cell);
+    if (arrival && !this.isStanding(arrival)) this.arrive(arrival);
+  }
+
+  /** Big mode: a dot of a fresh color appears just above its place, small, and the frame loop grows and drops it in. */
+  private arrive(cell: Cell) {
+    this.grid[cell.r][cell.c] = this.ctx.rng.pick(this.palette);
+    const g = this.dots[cell.r][cell.c];
+    this.drawDot(g, this.grid[cell.r][cell.c]);
+    g.scale.set(0.2);
+    g.position.set(cell.c * GAP, cell.r * GAP - GAP * 0.6);
+    g.visible = true;
+    this.standing.push({ ...cell });
   }
 
   /** Buddy mode: wiggle a fresh pair after the board settles. */
@@ -474,6 +572,6 @@ export const dotLink: GameModule = {
   hubIcon: () => new DotsIcon(),
   sticker,
   touchDemo: true,
-  entryLevels: [BUDDY_LEVEL],
+  entryLevels: [BUDDY_LEVEL, BIG_LEVEL],
   create: (ctx) => new DotLink(ctx),
 };

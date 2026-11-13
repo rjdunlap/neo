@@ -3,6 +3,8 @@ export const VOICE = {
   // Far Lights: the same light looks brighter near the window and dimmer far away.
   'game.far-lights': ['Far lights!'],
   'far.instruct.glow': ['Tap a little light!'],
+  'far.instruct.big': ['Touch anywhere, and the light comes close!'],
+  'far.wake': ['Another light woke up!'],
   'far.instruct.closer': ['Bring the lights close to the window!'],
   'far.instruct.brighter': ['Which light looks brighter from the window? Tap it!'],
   'far.instruct.match': ['Move the light until both look the same, then press the check!'],

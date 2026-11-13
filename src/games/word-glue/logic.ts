@@ -191,10 +191,17 @@ export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Stick them: join the only pair to make a new thing' },
   { level: 2, name: 'What do they make? Find the two pictures that make the asked word' },
   { level: 3, name: 'Who is it for? Join the friend who needs the thing in the middle' },
+  {
+    level: 4,
+    name: 'One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things)',
+  },
 ];
 
+/** Level 4, lap's opening before level 1: one big picture at a time, and a touch anywhere joins it; toddler still starts at 1. */
+export const BIG_LEVEL = 4;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 3 },
@@ -267,7 +274,8 @@ const AUTHORED_1 = ['sunflower', 'doghouse', 'cupcake', 'beehive', 'sailboat'];
 /** A round at `level`. `authored` gives the definition's first round (the how-to card and demonstration open on it). */
 export function makeRound(level: number, rng: Rng, authored = false): Round {
   const plan = planFor(level);
-  if (plan.level === 1) {
+  // Level 4 joins level 1's pairs, one big picture at a time.
+  if (plan.level === 1 || plan.level === BIG_LEVEL) {
     const words = authored
       ? AUTHORED_1
       : [
@@ -401,11 +409,20 @@ export function drop(s: GlueState, a: string, b: string): Outcome {
   return { kind: 'wrong', made: makes(a, b), counted, glowed };
 }
 
-/** Show a hint: the right pictures glow, counted once per ask. Level 1 has nothing to get wrong and counts nothing. */
+/** Level 4: a touch anywhere joins the big picture with its partner. Returns the thing made and moves to the next ask. */
+export function bigJoin(s: GlueState): Compound | null {
+  const ask = currentAsk(s);
+  if (!ask || s.round.plan.level !== BIG_LEVEL) return null;
+  advance(s);
+  return ask.entry;
+}
+
+/** Show a hint: the right pictures glow, counted once per ask. Levels 1 and 4 have nothing to get wrong and count nothing. */
 export function applyHint(s: GlueState): [string, string] | null {
   const pair = hintFor(s);
   if (!pair) return null;
-  if (s.round.plan.level !== 1 && !s.glow) {
+  const free = s.round.plan.level === 1 || s.round.plan.level === BIG_LEVEL;
+  if (!free && !s.glow) {
     s.glow = true;
     s.hints++;
   }
@@ -439,6 +456,8 @@ export interface Pt {
 /** A picture card's side, and the made thing's size when it appears. */
 export const CARD = 150;
 export const MADE = 210;
+/** Level 4: the one big picture, and the thing it makes, at the table's centre. */
+export const BIG = 300;
 /** The shelf's things along the top. */
 export const SHELF = 84;
 /** How far from a picture's centre a drop still lands on it. */

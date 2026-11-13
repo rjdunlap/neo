@@ -41,6 +41,8 @@ import {
   type Rect,
   canFinish,
   finishLever,
+  finishOnTurn,
+  finishesItself,
   leverState,
   makeLeverRound,
   press,
@@ -352,6 +354,30 @@ describe('levels 3-4: the giant handle', () => {
     expect(press(s)).toBe(false);
     expect(s.turns).toBe(turns);
     expect(finishLever(s)).toBe(false);
+  });
+
+  it('finishes level 3 by itself on the third turn, dropping a queued touch; level 4 waits for its shelf picture', () => {
+    expect(finishesItself(lever)).toBe(true);
+    expect(finishesItself(peek)).toBe(false);
+    expect(PLANS.filter(finishesItself).map((p) => p.id)).toEqual([3]);
+    const s = leverState();
+    for (let i = 0; i < TURNS_TO_FINISH - 1; i++) {
+      turn(s);
+      expect(finishOnTurn(s, lever)).toBe(false);
+      expect(s.done).toBe(false);
+    }
+    // The last turn is under way and she touches again: the queued turn begins as the third ends, and is dropped.
+    expect(press(s)).toBe(true);
+    expect(press(s)).toBe(false);
+    expect(turnEnded(s)).toBe(true);
+    expect(finishOnTurn(s, lever)).toBe(true);
+    expect([s.turns, s.done, s.turning, s.queued]).toEqual([TURNS_TO_FINISH, true, false, false]);
+    expect(press(s)).toBe(false);
+    expect(finishOnTurn(s, lever)).toBe(false);
+    const p = leverState();
+    for (let i = 0; i < TURNS_TO_FINISH; i++) turn(p);
+    expect(finishOnTurn(p, peek)).toBe(false);
+    expect(canFinish(p)).toBe(true);
   });
 
   it('opens the door only at level 4, and the door never changes the turns', () => {

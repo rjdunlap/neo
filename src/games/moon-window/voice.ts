@@ -5,6 +5,7 @@ export const VOICE = {
   // Moon Window: a round window on the night sky, a Later button, cards that match and compare how much is lit.
   'moonwindow.intro': ['Look out of the window!'],
   'moonwindow.instruct.look': ['Press the button to see how the Moon looks later.'],
+  'moonwindow.instruct.big': ['Touch anywhere to see how the Moon looks later.'],
   'moonwindow.instruct.same': ['Which card looks the same as the window?'],
   'moonwindow.instruct.more': ['Which Moon shows more light?'],
   'moonwindow.instruct.less': ['Which Moon shows less light?'],

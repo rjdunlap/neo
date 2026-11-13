@@ -106,9 +106,15 @@ describe('game registry', () => {
     expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 5 });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
-    expect(g.levels('lap')).toEqual({ min: 1, max: 2 });
+    // Lap opens with level 13's one big friend, then levels 1 and 2; no saved level or pin moves.
+    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1, 2] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 12, order: [1, 2, 12] });
-    expect(g.entryLevels).toEqual([12]);
+    expect(g.entryLevels).toEqual([12, 13]);
+    expect(stepLevel(13, 1, g.levels('lap'))).toBe(1);
+    expect(stepLevel(1, -1, g.levels('lap'))).toBe(13);
+    // A saved 13 carried into toddler (a birthday) starts toddler at its own first level.
+    expect(landing(13, g.levels('toddler'), g.entryLevels)).toBe(1);
+    for (const level of [13, 1, 2]) expect(landing(level, g.levels('lap'), g.entryLevels)).toBe(level);
     // Younger players never hear a false claim: Is it true? (9) is in no band but school.
     for (const band of g.bands) expect(levelsInOrder(g.levels(band)).includes(9)).toBe(band === 'school');
     expect(stepLevel(2, 1, g.levels('toddler'))).toBe(12);
@@ -128,7 +134,7 @@ describe('game registry', () => {
     expect(g.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);
     expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 7, order: [3, 4, 7, 5] });
-    expect(g.levels('lap')).toEqual({ min: 1, max: 1 });
+    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
     for (const level of [4, 5, 7, 6, 9])
@@ -140,7 +146,7 @@ describe('game registry', () => {
 
   it('places Bouncy Launch Near or far (8) before the star level for toddler and preschool as an entry', () => {
     const g = gameById('bouncy-launch')!;
-    expect(g.entryLevels).toEqual([8]);
+    expect(g.entryLevels).toEqual([8, 13]);
     expect(stepLevel(2, 1, g.levels('toddler'))).toBe(8);
     expect(stepLevel(8, 1, g.levels('toddler'))).toBe(3);
     expect(stepLevel(2, 1, g.levels('preschool'))).toBe(8);
@@ -149,7 +155,7 @@ describe('game registry', () => {
     // A toddler or preschooler saved at 8 who has a birthday starts the older band at its easiest level, not its hardest.
     expect(landing(8, g.levels('prek'), g.entryLevels)).toBe(3);
     expect(landing(8, g.levels('school'), g.entryLevels)).toBe(4);
-    expect(landing(8, g.levels('lap'), g.entryLevels)).toBe(1);
+    expect(landing(8, g.levels('lap'), g.entryLevels)).toBe(13);
     for (const level of [1, 2, 3]) expect(landing(level, g.levels('toddler'), g.entryLevels)).toBe(level);
     for (const level of [2, 3, 4]) expect(landing(level, g.levels('preschool'), g.entryLevels)).toBe(level);
   });
@@ -182,11 +188,20 @@ describe('game registry', () => {
     }
   });
 
-  it('places Color Garden tap entry first without renumbering existing levels or pins', () => {
+  it('places Color Garden tap entries first without renumbering existing levels or pins', () => {
     const g = GAMES.find((g) => g.id === 'color-garden')!;
     expect(g.bands).toContain('lap');
-    expect(g.entryLevels).toEqual([9]);
-    expect(g.levels('lap').order).toEqual([9]);
+    expect(g.entryLevels).toEqual([9, 10]);
+    // Lap opens with level 10's one big fruit, then level 9's four.
+    const lap = g.levels('lap');
+    expect(levelsInOrder(lap)).toEqual([10, 9]);
+    expect(
+      nextLevel(
+        10,
+        [0, 1].map(() => ({ at: 0, level: 10, misses: 0, hints: 0, seconds: 1 })),
+        lap,
+      ),
+    ).toBe(9);
     const toddler = g.levels('toddler');
     expect(toddler.order).toEqual([9, 1, 2, 3, 4, 5]);
     expect(
@@ -199,6 +214,8 @@ describe('game registry', () => {
     for (const level of [1, 2, 3, 4, 5])
       expect(nextLevel(landing(level, toddler, g.entryLevels), [], toddler)).toBe(level);
     expect(landing(9, g.levels('preschool'), g.entryLevels)).toBe(3);
+    // A saved 10 carried into toddler (a birthday) starts toddler at its own first level.
+    expect(landing(10, toddler, g.entryLevels)).toBe(9);
     expect(g.levels('preschool')).toEqual({ min: 3, max: 8 });
     expect(g.levels('prek')).toEqual({ min: 4, max: 8 });
   });
@@ -342,7 +359,16 @@ describe('game registry', () => {
 
   it('opens Goodnight Room category, light-last, counting, color, exception and tour play without renumbering younger levels', () => {
     const game = gameById('goodnight-room')!;
-    expect(game.levels('lap')).toEqual({ min: 1, max: 2 });
+    // Lap opens with level 11's one big sleepy friend, then levels 1 and 2; no saved level or pin moves.
+    const lap = game.levels('lap');
+    expect(levelsInOrder(lap)).toEqual([11, 1, 2]);
+    expect(game.entryLevels).toEqual([11]);
+    expect(stepLevel(11, 1, lap)).toBe(1);
+    expect(stepLevel(1, -1, lap)).toBe(11);
+    for (const level of [1, 2, 11])
+      expect(nextLevel(landing(level, lap, game.entryLevels), [], lap)).toBe(level);
+    // A saved 11 carried into toddler (a birthday) starts toddler at its own first level.
+    expect(landing(11, game.levels('toddler'), game.entryLevels)).toBe(2);
     expect(game.levels('toddler')).toEqual({ min: 2, max: 4 });
     expect(game.levels('preschool')).toEqual({ min: 3, max: 5 });
     expect(game.levels('prek')).toEqual({ min: 5, max: 10 });

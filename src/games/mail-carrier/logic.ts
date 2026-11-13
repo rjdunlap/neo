@@ -2,6 +2,7 @@ import type { CritterName } from '../../art/critter';
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import type { Band } from '../../progress/bands';
 
 /**
  * Mail Carrier, after Paperboy: the pet delivers letters along a little street. A letter
@@ -435,6 +436,13 @@ export const INVITE_AFTER = 6;
 /** Level 1 invites (the instruction again, with a mailbox's flag waving) after six quiet seconds while a letter waits. */
 export const shouldInvite = (mode: MailMode, idle: number, busy: boolean, finished: boolean) =>
   mode === 'drop' && idle >= INVITE_AFTER && !busy && !finished;
+
+/**
+ * What a touch off the houses does at level 1: at lap it posts the letter to the nearest mailbox (P4, the toy test's
+ * Cozy Village table), at toddler it only waves that mailbox's flag. Other levels have no off-house answer.
+ */
+export const offHouseTouch = (mode: MailMode, band: Band): 'post' | 'wave' | null =>
+  mode !== 'drop' ? null : band === 'lap' ? 'post' : 'wave';
 
 /** The mailbox nearest a touch off the houses, by its x on the street. */
 export function nearestHouse(xs: readonly number[], x: number): number {

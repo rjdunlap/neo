@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.bouncy-launch': ['Bouncy launch!'],
   'launch.tap': ['Tap {pet} to bounce!'],
+  'launch.anywhere': ['Touch anywhere, and {pet} bounces!'],
   'launch.pull': ['Pull {pet} back, and let go!'],
   'launch.too-short': ['A bit more!'],
   'launch.wrong-way': ['Pull {pet} back, this way!'],

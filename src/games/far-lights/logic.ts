@@ -355,6 +355,38 @@ export class CloserWalk {
   }
 }
 
+/**
+ * Level 9 (lap's opening): one big light; a touch anywhere floats every awake light close. When they have drifted back a
+ * new light wakes (a second, then a third) and stays. Three counted touches finish; a touch while they float is free.
+ */
+export class WakeLights {
+  awake = 1;
+  floats = 0;
+  floating = false;
+  /** Returns whether this touch counts (and floats the awake lights). */
+  touch(): boolean {
+    if (this.floating || this.floats >= 3) return false;
+    this.floating = true;
+    this.floats++;
+    return true;
+  }
+  /** The lights have drifted back: returns the spot index that wakes now, or null (none left, or the round is done). */
+  back(): number | null {
+    this.floating = false;
+    if (this.floats >= 3 || this.awake >= 3) return null;
+    return WAKE_ORDER[this.awake++];
+  }
+  /** The window spots awake now, in waking order. */
+  get spots(): number[] {
+    return WAKE_ORDER.slice(0, this.awake);
+  }
+  get done() {
+    return this.floats >= 3 && !this.floating;
+  }
+}
+/** Level 9 wakes the middle spot first, then left, then right. */
+export const WAKE_ORDER = [1, 0, 2] as const;
+
 // ----- the round's tally -----
 
 /** Misses and hints, at most one hint per pair, board or tap, and the misses on the one in hand for the glow. */
@@ -402,6 +434,8 @@ export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export const TOUCH = 120;
 export const TOUCH_1 = 160;
+/** Level 9's big light: its core, 80 across (level 1's is 20); the halo still blooms to 220 across at the window. */
+export const BIG_CORE_R = 40;
 export const STOP_GAP = 120;
 export const LANE_H = 120;
 export const MIN_WINDOW = { w: 440, h: 300 };
@@ -497,7 +531,7 @@ export function farLayout(v: View, level: number): FarLayout | null {
   // On the narrow upright area (chunk 31) the strip and window run the full width below Home and "?", and the curtain's
   // tassel hangs just below the strip's right end, so four stops still fit 120 apart.
   const tall = v.upright === true;
-  if (level >= 2) {
+  if (level >= 2 && level !== BIG_LEVEL) {
     const sx = tall ? M : HOME_CORNER.w + M;
     strip = { x: sx, y: tall ? HOME_CORNER.h + M : M, w: v.w - sx - M, h: 2 * LANE_H + 20 };
     house = { x: strip.x, y: strip.y + 10, w: HOUSE_W, h: 2 * LANE_H };
@@ -524,12 +558,13 @@ export function farLayout(v: View, level: number): FarLayout | null {
       })()
     : { x: left, y: top, w: v.w - left - M, h: v.h - top - M };
   if (win.w < MIN_WINDOW.w || win.h < MIN_WINDOW.h) return null;
-  const touchR = (level === 1 ? TOUCH_1 : TOUCH) / 2;
+  const one = level === 1 || level === BIG_LEVEL;
+  const touchR = (one ? TOUCH_1 : TOUCH) / 2;
   // Level 8's left light steps 120 left with its halo still in the window: on the narrow upright window that moves the pair right a little.
   const cx = Math.max(win.x + win.w / 2, level === 8 ? win.x + 120 + HALO_MAX + 150 : 0);
   // Level 8 centres the lights in the room above its buttons, and keeps them 150 from the centre so a stop-1 light can step 120 left.
   const cy = level === 8 ? win.y + (win.h - BUTTON - 20) / 2 : win.y + win.h / 2 - (level === 4 ? 30 : 0);
-  const three = level === 1 || level === 6;
+  const three = one || level === 6;
   const half = three
     ? Math.min(240, (win.w - 2 * HALO_MAX) / 2)
     : level === 8
@@ -564,10 +599,10 @@ export function farLayout(v: View, level: number): FarLayout | null {
   // Every touch area inside the room, clear of the corners and of each other.
   const touches = [
     ...stripRings(l),
-    ...(level === 4 || level === 2 ? [] : windowRings(l)),
+    ...(level === 4 || level === 2 || level === BIG_LEVEL ? [] : windowRings(l)),
     ...(tassel ? [tassel] : []),
   ];
-  if (level === 1 && half < 200) return null;
+  if (one && half < 200) return null;
   if (level === 6 && half < 240) return null;
   if (touches.some((c) => !inside(ringBox(c), room) || corners(v).some((k) => ringHits(c, k)))) return null;
   if (touches.some((a, i) => touches.some((b, j) => i < j && ringsMeet(a, b)))) return null;
@@ -599,7 +634,7 @@ export function farLayout(v: View, level: number): FarLayout | null {
 // ----- plans -----
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -613,12 +648,19 @@ export const PLANS: readonly PlanInfo[] = [
   { level: 8, name: "Can't tell yet: both could fit, then step to the side" },
 ];
 
+/** Level 9, lap's opening before level 1 (after the ladder, so no saved level moves); toddler still starts at 1. */
+export const BIG_LEVEL = 9;
+export const BIG_PLAN: PlanInfo = {
+  level: BIG_LEVEL,
+  name: 'One big light: a touch anywhere floats it close, and a second and a third light wake',
+};
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
   school: { min: 4, max: 8 },
 };
 export const planFor = (level: number): PlanInfo =>
-  PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+  level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

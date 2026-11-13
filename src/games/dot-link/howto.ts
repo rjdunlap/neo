@@ -2,8 +2,13 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Link dots of the same color.',
+  goal: 'Pop dots, then link dots of the same color.',
   steps: [
+    {
+      from: 12,
+      to: 12,
+      text: 'One big dot to start. Touch anywhere: the dot nearest the finger pops, and each pop brings one more dot.',
+    },
     { to: 1, text: 'Tap a dot to pop it.' },
     { from: 2, to: 2, text: 'Drag from one dot to another of the same color to link them.' },
     {

@@ -18,6 +18,7 @@ import {
   LEVELS,
   atticLayout,
   canFinish,
+  finishOnTurn,
   CARD,
   check,
   CHECK_R,
@@ -750,9 +751,14 @@ class AtticFinds implements Game {
         const more = turnEnded(this.lever);
         sfx.pluck(up ? 11 : 6);
         if (up) sfx.pluck(8, 0.12);
-        this.speak(up ? 'attic-finds.up' : 'attic-finds.down');
-        if (canFinish(this.lever) && !this.finishBtn) this.showFinish();
-        if (more) this.beginHalf();
+        if (finishOnTurn(this.lever, this.plan)) {
+          // Level 3: the third half turn ends the round by itself, so a child who only pats the background finishes.
+          void this.finishByItself(up);
+        } else {
+          this.speak(up ? 'attic-finds.up' : 'attic-finds.down');
+          if (canFinish(this.lever) && !this.finishBtn) this.showFinish();
+          if (more) this.beginHalf();
+        }
       }
     } else {
       if (this.dipT > 0) this.dipT -= dt;
@@ -821,6 +827,24 @@ class AtticFinds implements Game {
 
   private async finishFree() {
     if (!finishLever(this.lever)) return;
+    await this.shelveToy();
+  }
+
+  /** Level 3: no shelf picture. She hears where the bird or fish went and sees it there, then the bell, the line and the shelf. */
+  private async finishByItself(up: boolean) {
+    this.busy = true;
+    this.speaking = true;
+    await Promise.all([
+      this.ctx.say(up ? 'attic-finds.up' : 'attic-finds.down', { mover: this.mover }),
+      this.ctx.tw.wait(0.9),
+    ]);
+    if (this.destroyed) return;
+    sfx.bell(9);
+    await this.shelveToy();
+  }
+
+  /** The toy rides onto the shelf and the round ends; the lever is already done. */
+  private async shelveToy() {
     this.busy = true;
     this.glow.clear();
     this.speaking = false;
@@ -1430,6 +1454,8 @@ class AtticFinds implements Game {
   restart() {
     if (this.finished) return;
     if (this.free) {
+      // Once the toy is on its way to the shelf (level 3 finishing itself, or Finish tapped), the round is already ending.
+      if (this.busy || this.lever.done) return;
       this.resetFree();
       return;
     }
@@ -1526,6 +1552,7 @@ class AtticFinds implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.free) {
+      // At level 3 the third turn finishes the round by itself (busy is set), so there is no Finish tap to show.
       if (this.busy || this.finished || this.lever.turning || this.halfT !== null) return null;
       const L = this.L,
         lv = this.lever;

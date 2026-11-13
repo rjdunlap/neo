@@ -8,6 +8,11 @@ export const HOW_TO: GameHowTo = {
       to: 1,
       text: 'Tap a picture to flip it to its opposite. Big and small friends step, fast and slow friends move, and the balloon rises or sinks.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: 'One big picture. Touch anywhere: it flips to its opposite and the word is said, then it joins the row along the bottom and the next picture comes. Say each word together.',
+    },
     { from: 2, to: 2, text: 'Tap the one that is named, like "the big one".' },
     { from: 3, to: 3, text: 'Look at the picture, then tap its opposite.' },
     { from: 4, to: 4, text: 'Tap a picture, then tap its opposite, to match all three pairs.' },
@@ -15,6 +20,7 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { to: 1, text: 'Flip eight pictures to finish the round.' },
+    { from: 6, to: 6, text: 'Eight pictures in the row finish the round.' },
     { from: 2, to: 2, text: 'Find five named pictures to finish the round.' },
     { from: 3, to: 3, text: 'Find four opposites to finish the round.' },
     { from: 4, to: 4, text: 'Match all three pairs on each of two boards to finish the round.' },

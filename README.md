@@ -145,7 +145,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Market Stall](docs/games/market-stall.md) | preschool–school | Cozy Village | 7 | count out shell coins at fruit, flower or balloon stalls |
 | [Clock Tower](docs/games/clock-tower.md) | pre-K–school | Cozy Village | 7 | turn the short hand to an o'clock time |
 | [Day by Day](docs/games/day-by-day.md) | pre-K–school | Cozy Village | 7 | place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden |
-| [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: two big lamps, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
+| [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: one big lamp, a touch anywhere turns it, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
 | [Pet Says](docs/games/pet-says.md) | lap–pre-K | Cozy Village | 6 | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) |
 | [Lemonade Stand](docs/games/lemonade-stand.md) | school | Cozy Village | 5 | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table |
 | [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 8 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
@@ -158,8 +158,8 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Notice Board](docs/games/notice-board.md) | pre-K–school | Cozy Village | 3 | island friends pin made-up picture posters to a village board; tap who made it, who saw it, or whether it tells or sells |
 | [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 3 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
-| [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 9 | tap four fruits into their own two color baskets |
-| [Dot Link](docs/games/dot-link.md) | lap–pre-K | Rainbow Meadow | 7 | tap dots to pop them |
+| [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 10 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
+| [Dot Link](docs/games/dot-link.md) | lap–pre-K | Rainbow Meadow | 8 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
 | [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 8 | fit two big shapes into a house, tree or boat |
 | [Garden Grow](docs/games/garden-grow.md) | lap–pre-K | Rainbow Meadow | 11 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |
@@ -168,7 +168,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Block Garden](docs/games/block-garden.md) | pre-K–grown-up | Rainbow Meadow | 12 | drag shaped seed pieces onto a garden bed; a full row or column blooms and empties, until every bud blooms; a faint shadow shows where a piece will land |
 | [Swing Pals](docs/games/swing-pals.md) | lap–school | Rainbow Meadow | 8 | tap to push a friend on a tree swing until its feet ring the bell in the leaves; a push never lowers it and the bell stays lit |
 | [Lift It](docs/games/lift-it.md) | preschool–school | Rainbow Meadow | 9 | drag the rope's end in strokes to haul a crate up to a friend on the tree's ledge; a crate that is held never slides back |
-| [Sand Table](docs/games/sand-table.md) | lap–school | Rainbow Meadow | 4 | tap the tray to pour dry sand into a heap, tap a scoop paddle to lift some back into the bucket, then plant the flag; level 2 adds a second bay, level 3 a pail for spills and a landscape to Show |
+| [Sand Table](docs/games/sand-table.md) | lap–school | Rainbow Meadow | 4 | tap the tray to pour dry sand into a heap, tap a scoop paddle to lift some back into the bucket, then plant the flag (at lap a touch anywhere pours and eight pours finish the round); level 2 adds a second bay, level 3 a pail for spills and a landscape to Show |
 | [Food Web Workshop](docs/games/food-web-workshop.md) | school | Rainbow Meadow | 3 | watch two picture cards replay what was seen eating what (a food symbol floats into the eater's mouth), drag a food's badge onto its eater to draw an arrow from food to eater, then press Show our web |
 | [Meadow Pens](docs/games/meadow-pens.md) | school | Rainbow Meadow | 5 | a friend asks for a pen: paint squares of grass on a meadow grid and the fence builds itself around the biggest connected group (other squares are flowers, a ring of grass round a hole is a pond), then ring the bell to check |
 | [Sprout Shuffle](docs/games/sprout-shuffle.md) | school | Rainbow Meadow | 8 | tap or drag one copy tile from each parent plant into a possible sprout, then open every bud |
@@ -176,7 +176,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Pattern Train](docs/games/pattern-train.md) | preschool–school | Puzzle Peaks | 16 | AB patterns |
 | [Memory Match](docs/games/memory-match.md) | preschool–school | Puzzle Peaks | 12 | four named picture cards, shape/friend/fruit decks and free replay |
 | [Size Parade](docs/games/size-parade.md) | lap–school | Puzzle Peaks | 17 | tap the bigger or smaller friend; tap one friend to make it grow and shrink; drag friends into a line |
-| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 7 | tap or carry a piece to finish a two-piece picture |
+| [Puzzle Pals](docs/games/puzzle-pals.md) | lap–school | Puzzle Peaks | 8 | at lap, one big piece beside the frame that a touch anywhere hops into place, then the next piece of a two- or three-strip picture; at toddler, tap or carry a piece to finish a two-piece picture |
 | [Quick Tricks](docs/games/quick-tricks.md) | toddler–school | Puzzle Peaks | 9 | a little show: hold a leaf over a bunny in the rain, find a sock's partner, stretch a bridge for a beetle |
 | [Peekaround Island](docs/games/peekaround-island.md) | toddler–school | Puzzle Peaks | 8 | turn a little island to find who is hiding behind the tree |
 | [Penguin Slide](docs/games/penguin-slide.md) | preschool–school | Puzzle Peaks | 13 | tap the ice: the penguin slides until something stops it |
@@ -190,11 +190,11 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Shell Rows](docs/games/shell-rows.md) | pre-K–school | Puzzle Peaks | 3 | she and the pet take turns setting shells and pebbles on a 3 by 3 grid in wet sand; one move from a match under way |
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 8 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
-| [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 8 | tap letter monsters to hear their sounds |
-| [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 12 | tap any animal to take its photo |
-| [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 10 | tap each friend to say goodnight until the room goes dark |
+| [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 9 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
+| [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 13 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
+| [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
-| [Opposites](docs/games/opposites.md) | lap–pre-K | Story Grove | 5 | tap a picture: it flips to its opposite (big, small; open, closed) |
+| [Opposites](docs/games/opposites.md) | lap–pre-K | Story Grove | 6 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |
 | [Clap the Syllables](docs/games/clap-syllables.md) | preschool–school | Story Grove | 8 | the pet claps the beats in a word ("but-ter-fly") with beads lighting up, and you clap along on big hands; preschool starts with two short words (level 9), then levels 1–2 |
 | [Read & Do](docs/games/read-do.md) | pre-K–school | Story Grove | 9 | read a color word (five colours) and choose a hat; tap words or the speaker for free spoken support |
 | [Owl Walk Home](docs/games/owl-walk.md) | toddler–pre-K | Story Grove | 4 | turn over a color card and tap the next stone of that color; the owl hops there, or home when none is left |
@@ -202,7 +202,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Trackway Tales](docs/games/trackway-tales.md) | school | Story Grove | 3 | tap a movement card's round Play to watch an invented gray mud walker replay it on a clear practice strip (drag the strip to scrub), tap the card onto the study board and Check: its prints slide onto the dried-mud strip and light green column by column until a mismatch flashes orange |
 | [Pond Typing](docs/games/pond-typing.md) | school | Story Grove | 6 | a keyboard-only couch game (a real or laptop keyboard): press the key on the bubble that waits |
 | [Crossword](docs/games/crossword.md) | pre-K–grown-up | Story Grove | 6 | drag letters into a little crossword of picture words; one letter can serve two words |
-| [Word Glue](docs/games/word-glue.md) | lap–school | Story Grove | 3 | tap or drag one picture onto another and they join into a third thing that comes alive (sun and flower, dog and house), the pet saying "sun… flower… sunflower!" |
+| [Word Glue](docs/games/word-glue.md) | lap–school | Story Grove | 4 | tap or drag one picture onto another and they join into a third thing that comes alive (sun and flower, dog and house), the pet saying "sun… flower… sunflower!" (lap opens one step earlier, on one big picture) |
 | [Story Weaver](docs/games/story-weaver.md) | school | Story Grove | 3 | build a little picture-book story out of tiles, hear the pet read it back with each word lighting, then answer an owl's question or choose a reason |
 | [River Tablets](docs/games/river-tablets.md) | preschool–school | Story Grove | 6 | press a clay record of real things and line it up against them one to one, the way people by the big rivers once did |
 | [Not Always](docs/games/not-always.md) | pre-K–school | Story Grove | 3 | a friend on a crate claims something about a row of picture cards; tap the card that breaks it |
@@ -210,7 +210,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–pre-K | Story Grove | 3 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
 | [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 14 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 7 | decorate matching shape outlines |
-| [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 10 | tap the pet and it boings onto a cloud |
+| [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 11 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
 | [Seesaw Balance](docs/games/seesaw-balance.md) | lap–school | Tinker Lab | 17 | touch the empty end to lift a little friend; tap who is heavier or lighter |
 | [Light Lab](docs/games/light-lab.md) | pre-K–school | Tinker Lab | 12 | tap mirrors to turn a sunbeam onto a sleeping flower |
 | [Ramp Race](docs/games/ramp-race.md) | pre-K–school | Tinker Lab | 7 | tap the ramp to make it taller and roll a toy car |
@@ -225,14 +225,14 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Bond Beads](docs/games/bond-beads.md) | school | Tinker Lab | 7 | drag one bead onto another to link hands, tap a link to break it, and hold every hand (any shape) with Undo and Start again |
 | [Welcome Ways](docs/games/welcome-ways.md) | toddler–school | Tinker Lab | 7 | drag a wooden part, or tap part then socket, and Try the same entrance with every visitor |
 | [Example Express](docs/games/example-express.md) | school | Tinker Lab | 2 | label parcel examples, test the fitted sorter and repair a surprising route |
-| [Moon Window](docs/games/moon-window.md) | lap–pre-K | Tinker Lab | 3 | lap–pre-K |
+| [Moon Window](docs/games/moon-window.md) | lap–pre-K | Tinker Lab | 4 | lap opens on a big window and a touch anywhere turns it to the Moon some days later (level 4); then look out of a round window at the Moon and press Later to see it some days on |
 | [Sorting Machine](docs/games/sorting-machine.md) | school–grown-up | Tinker Lab | 5 | send pictured critters through a toy machine and watch its door, then pick the sensor a sign asks for and Check it on all four critters; at the grown-up band, build or repair a four-part festival lantern machine |
 | [Water Road](docs/games/water-road.md) | toddler–school | Tinker Lab | 5 | tap and stones lift onto a wooden frame until the keystone chimes, then pull the frame and the pet walks through, the way builders once made arches; later, set piers so water runs downhill and raise arches over a valley |
 | [Drop's Journey](docs/games/drops-journey.md) | preschool–school | Tinker Lab | 3 | tap a picture card to send a water drop between the sea, a cloud, a river, snow on the mountain top and the ground |
 | [Rain Garden](docs/games/rain-garden.md) | toddler–school | Tinker Lab | 4 | toddler–school |
 | [Forecast Detective](docs/games/forecast-detective.md) | school | Tinker Lab | 2 | lift the flaps on a wind vane, two island postcards and a thermometer, then pick tomorrow's weather card and Check |
 | [Vine Snip](docs/games/vine-snip.md) | lap–school | Tinker Lab | 5 | tap a vine and the fruit falls or swings into a friend's mouth |
-| [Far Lights](docs/games/far-lights.md) | lap–school | Tinker Lab | 8 | lap–school (levels 1–8) |
+| [Far Lights](docs/games/far-lights.md) | lap–school | Tinker Lab | 9 | lap opens on one big light, a touch anywhere floats it close (level 9); then tap a light on a night lake and watch it glow in the window |
 | [Circuit Garden](docs/games/circuit-garden.md) | pre-K–school | Tinker Lab | 3 | pre-K–school |
 | [Measuring Post](docs/games/measuring-post.md) | school | Tinker Lab | 4 | school |
 | [Memory Desk](docs/games/memory-desk.md) | school | Tinker Lab | 3 | put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window |
@@ -287,7 +287,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | [Log Roll](docs/games/log-roll.md) | Tinker Lab | 7 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 7 | slide equal numbered snowballs together to make the pictured target |
 | [Brain Break](docs/games/brain-break.md) | Lantern Lake | 6 | find and light 1 to 9 on a shuffled pond of numbered stones, then of stones showing sums and take-aways |
-| [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 7 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
+| [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 8 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
 | [Number Nook](docs/games/number-nook.md) | Lantern Lake | 7 | tap a numbered tile beside the gap to put a 2 by 2 board in row order |
 | [Gem Swap](docs/games/gem-swap.md) | Lantern Lake | 8 | swap occupied neighbours to make matching lines of three and clear a finite tray |
 | [Tile Pairs](docs/games/tile-pairs.md) | Lantern Lake | 15 | remove matching tiles with a clear top and an open left or right side |

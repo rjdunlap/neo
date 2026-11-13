@@ -5,6 +5,12 @@ export const HOW_TO: GameHowTo = {
   goal: 'Meet the letter monsters and hear their sounds.',
   steps: [
     { to: 1, text: 'Tap a monster to hear its letter or sound.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'One big letter monster. Touch anywhere: it says its sound, its picture pops up to the top and stays, and the next monster wakes. Make each sound together.',
+    },
+    { from: 9, to: 9, text: 'Six monsters leave six pictures along the top.' },
     { from: 2, to: 2, text: 'Tap the monster whose letter was named.' },
     { from: 3, to: 3, text: 'Tap the monster whose letter makes the sound you hear.' },
     { from: 4, to: 4, text: 'Listen to the word, then tap the monster whose letter makes its first sound.' },

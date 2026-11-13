@@ -1,0 +1,5 @@
+# 2026-11-13 — Stop and Go level 9, one big lamp at lap
+
+**Changed:** `stop-and-go` level 9 (lap's order only), in place: the two 160-unit lamps are one big lamp (240 across) on a short pole above the road, starting red; a whole-screen layer under the car takes a touch anywhere and turns the lamp to the colour the car is not obeying (green: it goes; red: it stops), with a play triangle on green and a stop bar on red. A tap on the car still toots and counts; eight touches end the round and nothing is a miss or a hint. The ghost finger points at the lamp; the voice line is now "Touch anywhere! Green, the car goes. Red, it stops."
+**Ran:** `npm run typecheck`; stop-and-go rule tests (16) and full `npm test` (351 files, 6813 passed); `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=9` passed (touches on the sky, the lamp and the grass turn it, the car toots, 8 touches with no miss, saved score and sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=9 FINGER_BAND=lap` passed (12.1 s); one 1024x768 landscape screenshot looked right.
+**Not run:** a portrait screenshot; a local `npm run build` (CI runs it).

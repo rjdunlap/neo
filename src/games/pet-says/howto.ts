@@ -12,7 +12,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 13,
       to: 13,
-      text: 'Pat the pet. Each pat makes it do its next move: wave, clap, jump, wiggle, turn around. Do the move together if you like.',
+      text: 'Tap anywhere to pat the pet. Each pat makes it do its next move: wave, clap, jump, wiggle, turn around. Do the move together if you like.',
     },
     { to: 12, text: 'A grown-up taps the arrow to go on.' },
   ],

@@ -249,7 +249,7 @@ class SizeParade implements Game {
       this.hintsGlow,
       this.progress,
     );
-    // A tap on the sky or the ground is answered: every friend hops and the ask repeats. Drawings above it let taps through.
+    // A tap on the sky or the ground is answered: every friend hops and the ask repeats (at level 16 the one friend grows). Drawings above it let taps through.
     onTap(this.background, () => this.groundTap());
     if (this.plan.mode === 'hidden') {
       // The gate: a picture of a little gate on a card, tapped when she thinks the line is in order.
@@ -340,6 +340,11 @@ class SizeParade implements Game {
   }
   private groundTap() {
     if (this.busy || this.done) return;
+    // Level 16 (lap only): a touch anywhere is the move, so the sky and the ground grow the one friend as a touch on it does.
+    if (this.plan.mode === 'cycle') {
+      if (this.choices[0]) this.grow(this.choices[0]);
+      return;
+    }
     for (const c of [...this.choices, ...this.lineUp])
       if ((!c.placed || this.plan.mode === 'insert') && !c.drag?.dragging) this.hop(c.node);
     // A hand mashing the ground hops the friends every time but hears the ask once every few seconds.

@@ -1,0 +1,5 @@
+# 2026-11-13 — Size Parade level 16, a touch anywhere grows the friend at lap
+
+**Changed:** `size-parade` level 16 (lap's alone, *Big duck, little duck*): a touch on the sky or the ground grows the one friend a step with its size word, exactly as a touch on it does (same `grow`, no cooldown), instead of a hop and the instruction again. Twelve touches anywhere still end the round and nothing is counted. The how-to card's level 16 step and note say so; the generic sky/ground hop step is now scoped to levels 1–15 and 17. The `expansion` suite gained a level-16 branch.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/size-parade src/content` (22 files, 241 pass, 1 skipped); `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=16 npm run test:browser` passed (sky, ground and friend touches each one step in landscape 1024×768; nine more sky and ground touches in portrait 768×1024 reach 12 and finish; 0 misses, 0 hints; portrait screenshot).
+**Not run:** `fingerdemo` (the demonstrated action, a tap on the friend, is unchanged), `npm run build` (no shared files or assets changed), other expansion levels, full suites.

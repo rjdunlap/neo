@@ -201,6 +201,11 @@ class TeddyDoctor implements Game {
     this.plan = planFor(ctx.level);
     this.rounds = makeRounds(this.plan, ctx.rng);
     ctx.stage.addChild(this.room, this.card, this.glow, this.toolLayer);
+    // Lap, level 1: the whole room takes a tap, and the nearest boo-boo left gets the bandage.
+    if (this.plan.mode === 'play' && ctx.band === 'lap') {
+      this.room.eventMode = 'static';
+      onTap(this.room, (e) => void this.tapAt(e.global), { cooldown: 250 });
+    }
   }
 
   get round(): DoctorRound {
@@ -215,6 +220,7 @@ class TeddyDoctor implements Game {
     this.view = v;
     const floorY = v.h * 0.68;
     const g = this.room.clear();
+    if (this.room.eventMode === 'static') this.room.hitArea = new Rectangle(0, 0, v.w, v.h);
     g.rect(0, 0, v.w, floorY)
       .fill(cream)
       .rect(0, floorY - 120, v.w, 18)
@@ -379,11 +385,17 @@ class TeddyDoctor implements Game {
       this.ctx.stage.addChildAt(friend, this.ctx.stage.getChildIndex(this.glow));
       this.layoutPair();
     }
-    await this.ctx.tw.wait(0.5);
     const mode = this.plan.mode;
+    // Tapping a boo-boo needs no listening first, so its touches count while the patient hops in and the line plays.
+    if (mode === 'play') {
+      this.busy = false;
+      await this.ctx.tw.wait(0.5);
+      if (this.patient === p && this.scrapes.length) await this.ctx.instruct('doctor.play');
+      return;
+    }
+    await this.ctx.tw.wait(0.5);
     if (mode === 'choose') await this.ctx.instruct('doctor.choose');
     else if (mode === 'rules') await this.sayRules(true);
-    else if (mode === 'play') await this.ctx.instruct('doctor.play');
     else if (mode === 'part') await this.askPart();
     else if (mode === 'tool') {
       await this.ctx.say(`doctor.${r.ailment!}`, { part: r.part! });

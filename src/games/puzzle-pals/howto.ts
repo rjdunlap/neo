@@ -5,7 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Put a picture together.',
   steps: [
     { to: 2, text: 'Tap a piece and it hops into its place. Dragging it there works too.' },
-    { from: 3, text: 'Drag a piece to where it belongs and let go.' },
+    { from: 3, to: 7, text: 'Drag a piece to where it belongs and let go.' },
+    {
+      from: 8,
+      text: 'One big piece waits beside the frame. A touch anywhere hops it into its place, and the next piece comes out.',
+    },
     { to: 1, text: 'One half is already in place: fit the other half to finish the picture.' },
     { from: 2, to: 4, text: 'A faint picture under the frame shows where each piece goes.' },
     {

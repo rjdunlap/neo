@@ -6,6 +6,7 @@ import {
   at,
   bandDistance,
   clearRate,
+  columnOf,
   coverList,
   covers,
   dealCandidate,
@@ -48,7 +49,7 @@ describe('Pyramid Solitaire', () => {
     expect(at(4, 4)).toBe(14);
   });
   it('every seeded deal has a legal clearing route with valid ranks and alternatives supported', () => {
-    for (let level = 1; level <= 7; level++)
+    for (let level = 1; level <= 8; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           solve = solver(p);
@@ -107,7 +108,7 @@ describe('Pyramid Solitaire', () => {
     for (let mask = 0; mask <= fullMask(3); mask++) expect(solve(mask) !== null).toBe(reachable(mask));
   });
   it('the deal dial lands each level in its band over 200 seeds, every deal from one rng clearing', () => {
-    for (let level = 1; level <= 7; level++) {
+    for (let level = 1; level <= 8; level++) {
       let inBand = 0;
       for (let seed = 1; seed <= 200; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
@@ -118,7 +119,7 @@ describe('Pyramid Solitaire', () => {
         // The fallback keeps the closest candidate, never a deal far outside the band.
         expect(bandDistance(level, rate)).toBeLessThan(0.1);
       }
-      // Measured: no round at three to seven rows ran out of its candidates.
+      // Measured: no round at levels 1-8 ran out of its candidates.
       expect(inBand).toBeGreaterThanOrEqual(198);
     }
   });
@@ -173,7 +174,7 @@ describe('Pyramid Solitaire', () => {
   it('level 4 is six rows of 21 cards in one 21-bit mask, reaching at most 71 positions', () => {
     expect(planFor(4).rows).toBe(6);
     expect(fullMask(6)).toBe(2 ** 21 - 1);
-    expect(planFor(9)).toBe(planFor(7));
+    expect(planFor(9)).toBe(planFor(8));
     for (let seed = 1; seed <= 100; seed++) {
       const p = makePuzzle(4, new Rng(seed)),
         seen = new Set<number>();
@@ -277,6 +278,40 @@ describe('Pyramid Solitaire', () => {
       if (route.some((m) => m.includes(0) && m.some((i) => i >= 15))) topWithShelf++;
     }
     expect(topWithShelf).toBeGreaterThan(0);
+  });
+  it('levels 6-7 deal exactly as before the columns: the same ranks from the same seeds', () => {
+    // FNV-1a over seeds 1-200's ranks, recorded from origin/main before level 8 (2026-11-13).
+    const recorded = [303802877, 335546868];
+    for (const level of [6, 7]) {
+      let h = 2166136261;
+      for (let seed = 1; seed <= 200; seed++) {
+        const p = makePuzzle(level, new Rng(seed));
+        expect(p.columns).toBeUndefined();
+        for (const r of [...p.ranks, 0]) h = Math.imul(h ^ r, 16777619) >>> 0;
+      }
+      expect(h).toBe(recorded[level - 6]);
+    }
+  });
+  it('level 8 is five rows and three columns of two, only a front card open, a real pack, at most 325 positions', () => {
+    expect(planFor(8).rows).toBe(5);
+    for (let seed = 1; seed <= 200; seed++) {
+      const p = makePuzzle(8, new Rng(seed));
+      expect(p.ranks).toHaveLength(21);
+      expect(p.columns).toBe(3);
+      expect(p.shelf).toBeUndefined();
+      expect(p.lift).toBeUndefined();
+      expect(startMask(p)).toBe(2 ** 21 - 1);
+      // Back cards (15, 17, 19) lie under their front cards (16, 18, 20); the fronts are open at the start.
+      expect(coverList(p).slice(15)).toEqual([[16], [], [18], [], [20], []]);
+      for (const i of [15, 17, 19]) expect(exposed(p, startMask(p), i)).toBe(false);
+      for (const i of [16, 18, 20]) expect(exposed(p, startMask(p), i)).toBe(true);
+      expect(columnOf(p, 18)).toEqual({ column: 1, depth: 1 });
+      expect(columnOf(p, 3)).toBeNull();
+      for (let r = 1; r <= 13; r++)
+        expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
+      expect(bandDistance(8, clearRate(p))).toBe(0);
+      expect(positions(p)).toBeLessThanOrEqual(325);
+    }
   });
   it('level 7 is the classic pyramid: seven rows of 28 cards in one 28-bit mask, strict rule, a real pack, at most 146 positions', () => {
     expect(planFor(7).rows).toBe(7);

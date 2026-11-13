@@ -267,6 +267,19 @@ export function finishLever(s: LeverState): boolean {
   return true;
 }
 
+/** Level 3 needs no Finish tap: a child who only pats the background still finishes. Level 4 keeps its shelf picture. */
+export const finishesItself = (plan: Plan): boolean => plan.mode === 'lever';
+
+/**
+ * Called after `turnEnded`: at level 3 the half turn that reaches TURNS_TO_FINISH ends the round, and a half turn
+ * that a queued touch just began is dropped. Returns whether the round ended.
+ */
+export function finishOnTurn(s: LeverState, plan: Plan): boolean {
+  if (!finishesItself(plan) || !finishLever(s)) return false;
+  s.turning = false;
+  return true;
+}
+
 export interface LeverRound {
   object: ObjectId;
 }
