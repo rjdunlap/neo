@@ -265,7 +265,11 @@ class SongMaker implements Game {
       });
       if (this.plan.mode === 'wake') {
         // Only a light counts toward the round and wakes a friend; putting one out is free. Two must stay lit to finish.
-        if (!bead.lit) return;
+        if (!bead.lit) {
+          // Putting jellies out before the last loop comes round keeps the round going until two shine again.
+          if (this.placed.size < 2) this.finishing = false;
+          return;
+        }
         const before = awakeSpots(this.lights).length;
         this.lights++;
         if (awakeSpots(this.lights).length > before) this.wakeUp();
