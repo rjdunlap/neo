@@ -1,6 +1,6 @@
 # Duck Pond deep dive
 
-*ID `duck-pond` · bands lap, toddler, preschool, pre-K, school · levels 1–12 on 2026-10-15 · session `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114))*
+*ID `duck-pond` · bands lap, toddler, preschool, pre-K, school · levels 1–12 on 2026-10-15 (13 added 2026-11-13) · session `claude/roadmap-item-14-game-content-uh41js` ([PR 114](https://github.com/rjdunlap/neo/pull/114))*
 
 ## The game today
 
@@ -20,6 +20,7 @@ Ducks hop onto a pond with a bounce, a splash and a quack, and every number is c
 | 10 | `ten` starts 3–9 | 5 | school | some ducks swim; how many more make ten? The missing ducks then swim in and fill the ten places |
 | 11 | `hide` totals 5–10 | 5 | school | the sign gives the whole; some ducks vanish under a bridge; how many hide? |
 | 12 | `bye` five ducks, one song | 1 | lap, toddler | tap a duck to wave it off; the voice counts down; the mother calls and all swim back (built, slice 10) |
+| 13 | `friends` one big duck | 1 | lap | one big duck is on the pond; a touch anywhere has it quack and brings a friend swimming in, with the count spoken and on the sign with dots, up to five (built, slice 12) |
 
 Ranges (`LEVELS` in `index.ts`): lap 1–2, toddler 1–5, preschool 3–7, pre-K 5–9, school 8–11. Pads (`padValues`): the answer and two neighbours within ±2, clipped to 1–10, shuffled. A wrong pad wobbles and counts the answer aloud (counting on from the visible ducks at levels 10 and 11); a right one is counted aloud and the ducks quack.
 
@@ -168,6 +169,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 9. **Level 14, Every way** (decision 3; define first). Same tier plus a play of tapping a duck back.
 10. **Between and below level 1** (they wait on the level-order decisions): *Bye-bye ducks* is built as level 12 ([PR #334](https://github.com/rjdunlap/neo/pull/334), 2026-10-15; lap order 12, 1, 2; toddler 12 to 5), then then *Count the peekers* (after slice 4), then *Which pond has more?* (after slice 6).
 11. **Night pond, pairs, who was here first, fill to any number** (sketches; pairs after decision 4).
+12. **Level 13, One big duck, first at lap** (built; [PR #1596](https://github.com/rjdunlap/neo/pull/1596)). A lap level from [the toy test](../definitions/toy-test-lap-openings.md#counting-cove) appended to the ladder and first in lap's order (`[13, 12, 1, 2]`; `entryLevels` `[12, 13]`). It takes ids 12 and 13, so the planned school levels above (12 Doubles, 13 Ten and some more, 14 Every way) take the next free ids when built (ids are appended, never inserted). Tier: new level: typecheck, rule tests, one browser play of level 13, `fingerdemo` at 13.
 
 ## What was built in this session
 
