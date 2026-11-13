@@ -4,7 +4,10 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Look after the teddy patient.',
   steps: [
-    { to: 1, text: 'Tap the patient anywhere: the nearest boo-boo gets a bandage.' },
+    {
+      to: 1,
+      text: 'Tap the patient anywhere: the nearest boo-boo gets a bandage. For the littlest, a tap anywhere in the room does it too.',
+    },
     {
       from: 2,
       to: 2,
