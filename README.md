@@ -191,7 +191,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 8 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 8 | tap letter monsters to hear their sounds |
-| [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 13 | tap any animal to take its photo |
+| [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 13 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
 | [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
 | [Opposites](docs/games/opposites.md) | lap–pre-K | Story Grove | 5 | tap a picture: it flips to its opposite (big, small; open, closed) |
