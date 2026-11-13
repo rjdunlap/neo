@@ -1,0 +1,5 @@
+# 2026-11-13 — word-monsters level 9, One big monster at lap (PR #1615)
+
+**Changed:** `word-monsters` level 9 *One big monster*, first in lap's order `[9, 1]`, an entry level (a saved 9 carried into toddler starts at toddler's own level 1; school stays 5–8). One big monster (about 340 units) and a layer over the whole screen, so a touch anywhere makes it say its sound; its first-word picture pops out and stays on a shelf along the top and the next monster wakes; six different letters. Nothing can be a miss or a hint. New voice line `monster.big` and two how-to steps, game docs regenerated.
+**Ran:** `npm run typecheck` passed; `npm test` passed (351 files, 6828 tests); `BROWSER_SUITE=grovecutlines GROVE_ONLY=monstersbig` passed (portrait 768×1024; next monster open in 1459–1515 ms under 4 s stretched sounds; monster 336–363 units; six pictures kept; last sound heard out; 0 misses, 0 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-monsters FINGER_LEVELS=9 FINGER_BAND=lap` passed in 11.9 s.
+**Not run:** `npm run build` (no shared files or assets changed); other suites and the other word-monsters levels.

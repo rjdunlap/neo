@@ -190,7 +190,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Shell Rows](docs/games/shell-rows.md) | pre-K–school | Puzzle Peaks | 3 | she and the pet take turns setting shells and pebbles on a 3 by 3 grid in wet sand; one move from a match under way |
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 8 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
-| [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 9 | tap letter monsters to hear their sounds |
+| [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 9 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
 | [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 13 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
 | [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
