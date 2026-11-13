@@ -2,6 +2,8 @@
 export const VOICE = {
   'game.puzzle-pals': ['Puzzle Pals!'],
 
+  'puzzle.lap': ['Touch, and the piece hops into the picture!'],
+  'puzzle.tap': ['Tap a piece, and it hops onto the picture where it matches!'],
   'puzzle.ghost': ['Drag each piece onto the picture where it matches!'],
   'puzzle.start': ['Drag the pieces into the frame to make a picture!'],
   'puzzle.wrong': ['Hmm, that piece goes somewhere else. Look at its picture!'],
