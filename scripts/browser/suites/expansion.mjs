@@ -10,6 +10,55 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     for (const level of sizeLevels.filter(() => !only || only === 'size')) {
       if (process.env.SIZE_PORTRAIT) await page.setViewportSize({ width: 768, height: 1024 });
       await launch('size-parade', level);
+      if (level === 16) {
+        // Lap's one growing friend: a touch on the sky, the ground or the friend is the move, each a size step; twelve end the round, nothing counted.
+        // Sky and ground spots are fractions of the window, clear of the friend in the middle, the tip card at the top centre and the pet's corner.
+        await page.evaluate(async () => {
+          const spots = () => ({
+              sky: [innerWidth * 0.2, innerHeight * 0.3],
+              ground: [innerWidth * 0.82, innerHeight * 0.78],
+            }),
+            g = neo.scene.game;
+          await kit.until(() => !g.busy);
+          kit.tap(...spots().sky);
+          await kit.sleep(400);
+          if (g.taps !== 1) throw new Error('A sky touch did not grow the friend');
+          kit.tap(...spots().ground);
+          await kit.sleep(400);
+          if (g.taps !== 2) throw new Error('A ground touch did not grow the friend');
+          kit.tapOn(g.choices[0].node, 0, -60 * neo.view.scale);
+          await kit.sleep(400);
+          if (g.taps !== 3) throw new Error('A touch on the friend did not grow it');
+        });
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(300);
+        await screenshot('size-parade-portrait-16');
+        await page.evaluate(async () => {
+          const spots = () => ({
+              sky: [innerWidth * 0.2, innerHeight * 0.3],
+              ground: [innerWidth * 0.82, innerHeight * 0.78],
+            }),
+            g = neo.scene.game;
+          for (let i = 0; i < 9 && !g.done; i++) {
+            kit.tap(...spots()[i % 2 ? 'sky' : 'ground']);
+            await kit.sleep(350);
+          }
+          if (g.taps !== 12) throw new Error(`Portrait touches anywhere reached ${g.taps} of 12`);
+        });
+        await finished('size-parade');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('size-parade').history.at(-1);
+            return [r.misses, r.hints];
+          }),
+          [0, 0],
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        log(
+          'Size Parade 16: sky, ground and friend touches each grow the friend; twelve end the round, nothing counted',
+        );
+        continue;
+      }
       // A tap on the sky hops the friends and repeats the ask; a right friend on a later spot is told "This spot first!". Neither is a miss.
       await page.evaluate(async () => {
         const g = neo.scene.game;

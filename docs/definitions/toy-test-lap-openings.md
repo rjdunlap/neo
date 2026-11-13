@@ -335,12 +335,12 @@ Four games fail question 1 or 4, in the order they should be taken:
 
 | Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
 | --- | --- | --- | --- | --- | --- |
-| `size-parade` (16) | **Partly.** The sky and the ground (one layer over the whole view) answer: a touch makes the friend hop, and at most once every three seconds a tick and the instruction again. Only a touch on the friend (a target 154 by 190 units at the littlest size, about 345 by 404 at the biggest) grows it | **Yes.** Every tap on the friend is a size step with its word; there is no boing, no idle hint and nothing counted | **Yes.** One friend on the grass; the ghost finger taps it, and it is the only thing to touch. Nothing invites a touch after a quiet spell | **Partly.** One friend, standing taller at its littlest (about 161 units) than a row friend at its biggest, that grows because she touched; it shrinks again in each cycle of four taps, and nothing arrives | **Partly.** The sky and the ground make the friend hop; a hold or a drag is one tap; nothing answers from the twelfth tap through "What a big little friend!" and the 1.5 seconds after it |
+| `size-parade` (16) | **Yes (built 2026-11-13, PR #1612).** The sky and the ground (one layer over the whole view) grow the friend a step with its size word, exactly as a touch on it does (a target 154 by 190 units at the littlest size, about 345 by 404 at the biggest), with no cooldown | **Yes.** Every tap on the friend is a size step with its word; there is no boing, no idle hint and nothing counted | **Yes.** One friend on the grass; the ghost finger taps it, and it is the only thing to touch. Nothing invites a touch after a quiet spell | **Partly.** One friend, standing taller at its littlest (about 161 units) than a row friend at its biggest, that grows because she touched; it shrinks again in each cycle of four taps, and nothing arrives | **Yes (built 2026-11-13, PR #1612).** The sky and the ground grow the friend rather than hop it; a hold or a drag is one tap; nothing answers from the twelfth tap through "What a big little friend!" and the 1.5 seconds after it |
 | `puzzle-pals` (8) | **Yes (built 2026-11-13).** A touch anywhere hops the one big piece into its place: the piece, the frame, the background, a placed piece or any let-go of a drag. (Level 1, toddler's first, still answers only its piece) | **Yes.** Nothing at level 8 is a miss or a hint | **Yes.** One big piece beside the frame; the ghost finger taps it, and the picture's name is only spoken | **Yes.** One big piece at the frame's own size; the next piece of a two- or three-strip picture slides in from the right edge because she touched | **Partly.** Every touch hops the piece; nothing answers while the picture comes alive |
 
 ### What the table says
 
-- **Close to the shape:** `size-parade`. Level 16, which only lap plays, is one big friend that grows because she touched, and a touch beside it makes it hop; only a touch on the friend is the move.
+- **Close to the shape:** `size-parade`. Level 16, which only lap plays, is one big friend that grows because she touched, and a touch on the sky or the ground grows it too (built 2026-11-13, PR #1612).
 - **One small piece, one move:** `puzzle-pals` level 1 (toddler's first, and lap's after level 8). Level 8 (built 2026-11-13) is one big piece at a time.
 - **Nobody can be wrong at the first lap level,** and no waiting is counted in either game. `puzzle-pals`' second lap level can count a miss (below).
 - **No opening line holds input here,** and the corner pet shows in both.
@@ -356,7 +356,7 @@ What only the voice carries: the size words (bigger, biggest, smaller, littlest)
 Two games, in the order they should be taken:
 
 1. `puzzle-pals`: a lap level that opens with one big piece beside the frame; a touch anywhere hops it into its place, and the next piece of a two- or three-piece picture comes out because she touched. *Built 2026-11-13 as level 8.*
-2. `size-parade`: at level 16 a touch anywhere grows the friend, as a touch on it does. Level 16 is lap's alone, so no band branch is needed, and it is close to the shape already, so it is last.
+2. `size-parade` (built 2026-11-13): at level 16 a touch anywhere grows the friend, as a touch on it does. Level 16 is lap's alone, so no band branch is needed, and it is close to the shape already, so it is last.
 
 `size-parade` passes neither question outright rather than failing one, and gets its line because the change is small and the level is already the shape.
 
