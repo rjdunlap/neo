@@ -18,6 +18,11 @@ import {
   fromPool,
   fullMask,
   layout,
+  lessonFor,
+  lessonHolds,
+  fromPuzzles,
+  PUZZLE_PLANS,
+  SKETCHES,
   lookahead,
   losingFirstPairs,
   mirrorX,
@@ -33,6 +38,8 @@ import {
   type Tile,
 } from './logic';
 import { POOLS } from './pools';
+import { PUZZLES } from './puzzles';
+import { levelsInOrder } from '../../progress/difficulty';
 
 describe('Tile Pairs', () => {
   it('blocks covered tiles and tiles with both horizontal sides occupied', () => {
@@ -62,7 +69,11 @@ describe('Tile Pairs', () => {
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
     expect(planFor(99)).toBe(planFor(10));
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 10 });
+    expect(LEVELS.grownup).toEqual({
+      min: 1,
+      max: 19,
+      order: [1, 2, 17, 3, 18, 4, 19, 5, 6, 7, 8, 9, 10],
+    });
     for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
@@ -414,5 +425,89 @@ describe('Tile Pairs', () => {
     // Measured 2026-11-12: at most about 5,000 states over 300 play-outs (2.6 ms on a Mac).
     expect(worst).toBeLessThan(20000);
     expect(losing).toBeGreaterThan(0);
+  });
+  it('steps through every level once, keeping levels 1–10 in their order with each lesson before the board it serves', () => {
+    const order = levelsInOrder(LEVELS.grownup!);
+    expect(new Set(order).size).toBe(order.length);
+    expect(order.filter((l) => l <= 10)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(order.filter((l) => l > 10)).toEqual(Object.keys(PUZZLE_PLANS).map(Number));
+    for (const [lesson, before] of [
+      [17, 3],
+      [18, 4],
+      [19, 5],
+    ])
+      expect(order.indexOf(lesson)).toBe(order.indexOf(before) - 1);
+    for (const level of order) expect(planFor(level).name).toBeTruthy();
+    expect(new Set(order.map((l) => planFor(l).name)).size).toBe(order.length);
+    for (let level = 1; level <= 10; level++) expect(lessonFor(level)).toBeNull();
+  });
+  it('deals levels 17–19 from designed boards that each teach their lesson, mirrored or renamed', () => {
+    for (const level of [17, 18, 19]) {
+      const plan = planFor(level),
+        lesson = lessonFor(level)!,
+        tiles = layout(level);
+      expect(lesson).toBe('puzzle' in plan && plan.puzzle);
+      expect(tiles).toHaveLength(14);
+      expect(tiles.map((t) => [t.x, t.y, t.z])).toEqual(SKETCHES[lesson]);
+      expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(14);
+      for (const t of tiles.filter((t) => t.z > 0))
+        expect(tiles.some((u) => u.x === t.x && u.y === t.y && u.z === t.z - 1)).toBe(true);
+      // The sketch is symmetric under the mirror, so a mirrored board is the same lesson.
+      const keys = new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`));
+      for (const t of tiles) expect(keys.has(`${mirrorX(plan, t.x)},${t.y},${t.z}`)).toBe(true);
+      const boards = PUZZLES[lesson];
+      expect(boards.length).toBeGreaterThanOrEqual(6);
+      expect(boards.length).toBeLessThanOrEqual(8);
+      expect(new Set(boards).size).toBe(boards.length);
+      for (const kinds of boards) {
+        expect(kinds).toMatch(/^[0-3]{14}$/);
+        const board = tiles.map((t, i) => ({ ...t, kind: Number(kinds[i]) }));
+        expect(solve(board)).not.toBeNull();
+        expect(lessonHolds(lesson, board)).toBe(true);
+        // A lesson board does not pass for another lesson's habit by accident of its counts.
+        for (let k = 0; k < 4; k++) expect(board.filter((t) => t.kind === k).length % 2).toBe(0);
+      }
+      const seen = new Set<string>();
+      let mirrored = 0;
+      for (let seed = 1; seed <= 60; seed++) {
+        const d = deal(level, new Rng(seed));
+        expect(d.tiles).toEqual(makeBoard(level, new Rng(seed)));
+        expect(d.tiles).toEqual(fromPuzzles(level, new Rng(seed)));
+        expect(d.inBand).toBe(true);
+        expect(Math.max(...d.tiles.map((t) => t.kind))).toBeLessThan(6);
+        expect(lessonHolds(lesson, d.tiles)).toBe(true);
+        const plain = boards.some((kinds) => {
+          const names = new Map<number, string>();
+          return d.tiles.every((t, i) => {
+            const was = names.get(t.kind);
+            if (was === undefined) names.set(t.kind, kinds[i]);
+            return (was ?? kinds[i]) === kinds[i];
+          });
+        });
+        if (!plain) mirrored++;
+        seen.add(JSON.stringify(d.tiles.map((t) => t.kind)));
+      }
+      expect(mirrored).toBeGreaterThan(0);
+      expect(seen.size).toBeGreaterThanOrEqual(40);
+    }
+  });
+  it('tells the lessons apart: pairing the two free twins strands the stack, and the top twin is safe', () => {
+    // Level 17's first board: find its twin picture and check both choices directly.
+    const tiles = layout(17).map((t, i) => ({ ...t, kind: Number(PUZZLES.twins[0][i]) })),
+      full = fullMask(tiles),
+      [losing] = losingFirstPairs(tiles);
+    expect(losingFirstPairs(tiles)).toHaveLength(1);
+    const k = tiles[losing[0]].kind,
+      top = tiles.findIndex(
+        (t) =>
+          t.kind === k &&
+          t.z === 1 &&
+          tiles.some((u) => u.kind === k && u.x === t.x && u.y === t.y && u.z === 0),
+      );
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(solve(tiles, removePair(full, losing))).toBeNull();
+    for (const other of losing) expect(solve(tiles, removePair(full, [top, other]))).not.toBeNull();
+    // A board that is merely solvable is not a lesson.
+    expect(lessonHolds('twins', makeBoard(1, new Rng(3)))).toBe(false);
   });
 });

@@ -1,0 +1,34 @@
+// Written by scripts/tile-pairs-pool.mjs; do not edit by hand. Each string is one designed lesson board: the
+// picture (0–3) at each position of the lesson's sketch, in `layout()` order. `lessonHolds` holds for each.
+export const PUZZLES = {
+  twins: [
+    '01112201330033',
+    '01231132301300',
+    '01120230203332',
+    '01102300232112',
+    '01223220001113',
+    '00123031011222',
+    '01010231013332',
+    '01220230130332',
+  ],
+  three: [
+    '01211030233310',
+    '01213303023101',
+    '01112310322200',
+    '00112302323023',
+    '01112210303303',
+    '01100123033213',
+    '01011232022301',
+    '01122313021233',
+  ],
+  crossed: [
+    '00111232001232',
+    '01021231200132',
+    '00011120333321',
+    '00100231211232',
+    '01220301221103',
+    '01021230110232',
+    '01100233301132',
+    '01221300212103',
+  ],
+} as const satisfies Record<string, readonly string[]>;
