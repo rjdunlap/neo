@@ -8,7 +8,7 @@ She feeds farm friends their favorite foods. Cow, bunny, dog, cat, duck, pig and
 
 | Level | Plan | Round | Bands whose window includes it | What she decides |
 | --- | --- | --- | --- | --- |
-| 1 | munch, 3 animals | 6 taps | lap | nothing: any tap is right |
+| 1 | munch, one big animal then 3 (`oneBig`; built 2026-11-12) | 6 snacks | lap | nothing: a touch anywhere is right |
 | 2 | float, 3 animals | 6 snacks | lap, toddler | which snack to tap (every tap is right) |
 | 3 | who, 3 animals | 4 questions | toddler, preschool | which animal eats the food in the bubble |
 | 4 | match, 3 animals | 3 snacks, one round | toddler, preschool | which animal each dragged snack goes to |
@@ -109,7 +109,7 @@ Sketches, not levels: **the diet sort** (plant eaters, meat eaters, both) needs 
 
 ### Younger-band openings
 
-**None to add.** Lap is the lowest band and level 1 already has no miss. The pre-K and school windows above are the upward openings.
+**None to add.** Lap is the lowest band and level 1 already has no miss, and since 2026-11-12 it opens with one big animal that a touch anywhere feeds (the toy test's lap opening, in place rather than as the Open wide entry below). The pre-K and school windows above are the upward openings.
 
 ### Levels below level 1 (waiting on the level-order decisions)
 
@@ -156,7 +156,8 @@ Each is sized for one session. Slices that add a level are built in level order 
 7. **Level 8, Who eats it too?** (after slice 4 and decision 5). Same tier.
 8. **Levels 9–10, The menu board and The long menu** (they open the school window: `school` in `bands`, the same doc updates; decision 6). Same tier, plus a listen to the speech on a device.
 9. **The pet's turn** (ready after reading `pet.ts`) and the **below-level-1 entries** (they wait on decision 3; Open wide first, Taste test second).
-10. **Sketches:** the diet sort, thank-you gifts, wild friends, a week of snacks.
+10. **Level 1, one big animal** (built 2026-11-12, in place; see [the game page](../games/animal-snack.md#design-notes)). Lap-only level 1 now opens with one big animal and a touch anywhere feeds it; Open wide below stays a sketch for a drag.
+11. **Sketches:** the diet sort, thank-you gifts, wild friends, a week of snacks.
 
 ## What was built in this session
 

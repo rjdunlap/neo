@@ -112,7 +112,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Duckling Parade](docs/games/duckling-parade.md) | lap–school | Barnyard | 11 | tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind |
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 12 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
-| [Animal Snack](docs/games/animal-snack.md) | lap–preschool | Barnyard | 5 | tap an animal and it munches its favorite snack |
+| [Animal Snack](docs/games/animal-snack.md) | lap–preschool | Barnyard | 5 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
 | [Critter Sort](docs/games/critter-sort.md) | pre-K–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
 | [Sing-Along Barn](docs/games/sing-along-barn.md) | lap–pre-K | Barnyard | 8 | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, Twinkle, Twinkle, Little Star or The Wheels on the Bus (one per round); a friend comes out for the verse and answers |
 | [Orchard Rows](docs/games/orchard-rows.md) | school | Barnyard | 9 | plant equal rows and count by groups |
@@ -531,7 +531,7 @@ Two Node-only docs scripts: `node scripts/check-links.mjs` checks every relative
 
 `scripts/voice-clips/` is a separate npm package (kokoro-js) that CI never installs: on a Mac, `cd scripts/voice-clips && npm ci && node render.mjs` renders the chosen slot-free voice lines to `src/audio/clips/*.m4a` and `src/content/voice-clips.json`; the app plays a clip when one exists and falls back to device speech.
 
-`FROM_LEVEL=n` starts `next`, `creative`, `woods`, `shortlist` and `robot` at a later level; `TO_LEVEL=n` limits the robot, paint, salon, Tangram Town, Penguin Slide Goodnight Room or Critter Sort loop for a targeted level check (`WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` plays the two plant levels, with a portrait screenshot of 13).
+`FROM_LEVEL=n` starts `next`, `creative`, `woods`, `shortlist` and `robot` at a later level; `TO_LEVEL=n` limits the robot, paint, salon, Tangram Town, Penguin Slide Goodnight Room or Critter Sort loop for a targeted level check (`WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` plays the two plant levels, with a portrait screenshot of 13; `WOODS_ONLY=snack FROM_LEVEL=1 TO_LEVEL=1` plays Animal Snack's one big animal).
 
 `scripts/browser-check.mjs` dispatches through `scripts/browser/registry.mjs` and `runner.mjs`; `fixture.mjs` owns readiness, context cleanup and artifacts. Individual play-throughs live in `scripts/browser/suites/`. Importing the registry also syntax-checks every suite module.
 

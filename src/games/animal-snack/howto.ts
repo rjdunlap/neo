@@ -4,7 +4,10 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Feed the animals their favorite snacks.',
   steps: [
-    { to: 1, text: 'Tap an animal to hear it munch its snack.' },
+    {
+      to: 1,
+      text: 'Touch anywhere and the big animal munches its snack. A friend walks in after the second snack and another after the fourth; then a touch feeds the animal nearest it.',
+    },
     { from: 2, to: 2, text: 'Tap a snack and it floats to the animal who loves it.' },
     {
       from: 3,

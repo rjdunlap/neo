@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.animal-snack': ['Animal snack!'],
   'snack.munch': ['Who is hungry? Tap an animal to give it a snack!'],
+  'snack.big': ['Who is hungry? Touch anywhere to give a snack!'],
   'snack.float': ['Tap a snack, and it goes to the animal who loves it!'],
   'snack.match': ['Give each animal its favorite snack. Drag it to the one who eats it!'],
   'snack.who': ['Who eats {food}? Tap the animal!'],

@@ -2029,7 +2029,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= 5; level++) {
+      for (let level = fromLevel; level <= Math.min(5, Number(process.env.TO_LEVEL || 5)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -2153,7 +2153,68 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           ),
           `animal snack level ${level}: the animals are on screen`,
         );
-        if (mode === 'munch')
+        if (level === 1) {
+          // Lap's one big animal: a touch far from it (out of a tap's reach) feeds it; a touch while it eats only
+          // squishes; a friend walks in after the second and fourth snacks; then a touch on the meadow feeds the nearest.
+          const state = () =>
+            page.evaluate(() => {
+              const g = neo.scene.game;
+              return {
+                eaten: g.eatenCount,
+                friends: g.friends.length,
+                scale: g.friends[0].node.scale.x,
+                busy: g.busy,
+              };
+            });
+          assert.deepEqual(
+            [(await state()).friends, (await state()).scale > 0.9],
+            [1, true],
+            'level 1 starts with one big animal',
+          );
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForTimeout(300);
+          await screenshot('animal-snack-1-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(300);
+          const far = () =>
+            page.evaluate(() => {
+              const f = neo.scene.game.friends[0].node.getGlobalPosition();
+              const x = f.x > innerWidth / 2 ? f.x - 280 : f.x + 280;
+              kit.tap(x, innerHeight * 0.4);
+            });
+          await far();
+          await page.waitForTimeout(120);
+          assert.ok((await state()).busy, 'a touch far from the big animal feeds it');
+          await far();
+          await page.waitForTimeout(80);
+          await settle();
+          assert.deepEqual(
+            [(await state()).eaten, (await state()).friends],
+            [1, 1],
+            'a touch while it eats is not fed',
+          );
+          await far();
+          await settle();
+          assert.deepEqual(
+            [(await state()).eaten, (await state()).friends],
+            [2, 2],
+            'a friend walks in after two',
+          );
+          for (let k = 0; k < 2; k++) {
+            await page.evaluate((k) => {
+              const p = neo.scene.game.friends[k].node.getGlobalPosition();
+              kit.tap(p.x, Math.min(innerHeight - 20, p.y + 60));
+            }, k);
+            await settle();
+          }
+          assert.deepEqual(
+            [(await state()).eaten, (await state()).friends],
+            [4, 3],
+            'the third walks in after four',
+          );
+          for (let k = 0; k < 2; k++)
+            await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k + 1].name, k));
+        } else if (mode === 'munch')
           for (let k = 0; k < 6; k++)
             await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k % 3].name, k));
         else if (mode === 'float') {

@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Animal Snack level 1 opens with one big animal (2026-11-12)
+
+[PR #1592](https://github.com/rjdunlap/neo/pull/1592), `claude/animal-snack-lap-big-animal`: level 1 (lap only, so changed in place; the `oneBig` plan, munch mode) starts with one big animal (scale 1.1 against 0.6). A layer over the whole meadow has a touch anywhere feed the nearest animal at any distance; a touch while one eats or a friend walks in squishes with a tick and counts nothing. The second and third friends walk in from the right after the second and fourth snacks, each with its call, and six snacks finish the round. New line `snack.big` (device speech, no rendered clip). [Game notes](../games/animal-snack.md#design-notes) and [verification](../verification/2026-11-12-animal-snack-level-1-one-big-animal-at-lap.md).
+
 ### Egg Catch level 12, One big hen, first at lap (2026-11-12)
 
 [PR #1591](https://github.com/rjdunlap/neo/pull/1591) adds level 12 as lap's first level (lap order `[12, 1]`; `entryLevels` `[8, 9, 12]`, so a lap save at 12 starts toddler at its easiest level). One big hen stands on a straw nest; a touch anywhere has her lay at once with her note, and a touch while her egg falls gets a cluck, a squash and a puff of stars, counting nothing. The basket waits under her, so no miss or hint can be reached, and she breathes while ready. The other three hens flutter onto the shelf one per egg caught. [Game notes](../games/egg-catch.md#design-notes).
