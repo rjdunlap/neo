@@ -596,9 +596,10 @@ class DuckPond implements Game {
   /** Level 13: any touch has the big duck quack and brings the next friend swimming in, with the count; after the fifth, a touch gets a quack. */
   private anywhere(e: FederatedPointerEvent) {
     const big = this.bigDuck;
-    if (!big || this.finished) return;
+    if (!big) return;
     this.idle = 0;
-    if (this.busy || this.friends >= this.plan.max) {
+    // After the fifth (and through the confetti), a touch only quacks.
+    if (this.busy || this.finished || this.friends >= this.plan.max) {
       // A spare touch is answered, never ignored, and counts nothing.
       if (this.clock - this.quackAt < 0.25) return;
       this.quackAt = this.clock;
