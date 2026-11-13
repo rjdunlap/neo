@@ -409,7 +409,7 @@ export function pyramidLayout(v: View, rows: number, shelf = 0, columns = 0, dep
     : 225;
   // Sideways with the button column: the pyramid as centered as the column (182 units with its gap) leaves room for.
   const half = ((rows - 1) * dx) / 2 + 50;
-  const spread = (columns - 1) * 116 + 100,
+  const spread = (columns - 1) * COLUMN_DX + 100,
     group = 2 * half + COLUMN_GAP + spread;
   const centre = side
     ? Math.max(v.w / 2, SIDE_COLUMN + half)
@@ -424,7 +424,9 @@ export function pyramidLayout(v: View, rows: number, shelf = 0, columns = 0, dep
       cards[at(row, col)] = { x: centre + (col - row / 2) * dx, y: top + row * gapY };
   const last = top + (rows - 1) * gapY + shelfRow;
   const columnX = (c: number) =>
-    v.upright ? v.w / 2 + (c - (columns - 1) / 2) * 116 : centre + half + COLUMN_GAP + 50 + c * 116;
+    v.upright
+      ? v.w / 2 + (c - (columns - 1) / 2) * COLUMN_DX
+      : centre + half + COLUMN_GAP + 50 + c * COLUMN_DX;
   const columnY = v.upright ? last : top + ((rows - 1) * gapY - stack) / 2;
   for (let c = 0; c < columns; c++)
     for (let d = 0; d < depth; d++)
@@ -457,6 +459,8 @@ const SIDE_COLUMN = 188;
 /** Level 8: how far a column's front card stands below the card behind it, so the back card's strip (with its corner
  * index) stays a grown-up target. */
 export const COLUMN_STEP = 72;
+/** Level 8: columns stand this far apart (card centers), so each column's tray stands clear of the next. */
+const COLUMN_DX = 132;
 /** Level 8 sideways: the gap between the pyramid's widest row and the first column. */
 const COLUMN_GAP = 40;
 /** How far below the pyramid's last row the upright shelf row stands (card centers). */
