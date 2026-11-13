@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
+import { levelsInOrder } from '../../progress/difficulty';
 import {
+  dealPlan,
   dropSlot,
+  LEVELS,
+  ONE_AT_A_TIME_PIECES,
+  puzzlePlan,
   hintPiece,
   nextToPlace,
   outerSides,
@@ -164,5 +169,35 @@ describe('Puzzle Pals', () => {
     // A tap is judged where the piece was let go: it must still be within a finger's wobble of its tray spot.
     expect(TAP_HOP).toBeGreaterThan(10);
     expect(TAP_HOP).toBeLessThan(60);
+  });
+
+  it('level 8 is lap first: one big piece at a time, a two- or three-strip picture, and nowhere else on the ladder', () => {
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([8, 1, 2]);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(8);
+    // Only level 8 is one at a time, and only it draws from the RNG to pick its cut.
+    PUZZLE_PLANS.forEach((plan, i) => expect(!!plan.oneAtATime).toBe(i === 7));
+    for (let level = 1; level <= 7; level++) {
+      const a = new Rng(5);
+      expect(dealPlan(level, a)).toBe(puzzlePlan(level));
+      expect(a.next()).toBe(new Rng(5).next());
+    }
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const plan = dealPlan(8, new Rng(seed));
+      expect(plan.rows).toBe(1);
+      expect(ONE_AT_A_TIME_PIECES).toContain(plan.cols);
+      expect(plan.preplaced).toBe(0);
+      expect(plan.ghost).toBe(true);
+      seen.add(plan.cols);
+      // Every strip has its own place in the frame for the hop to land in.
+      const pieces = piecesFor(plan);
+      expect(new Set(pieces.map((p) => slotCenter(plan, p).x)).size).toBe(plan.cols);
+    }
+    expect([...seen].sort()).toEqual([2, 3]);
+    // The opening lines a lap player hears say touch or tap, not drag.
+    expect(SCRIPT['puzzle.lap'][0]).not.toMatch(/drag/i);
+    expect(SCRIPT['puzzle.tap'][0]).not.toMatch(/drag/i);
+    expect(tapHops(puzzlePlan(1)) && tapHops(puzzlePlan(2))).toBe(true);
   });
 });

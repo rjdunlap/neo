@@ -6,6 +6,11 @@ export interface PuzzlePlan {
   ghost: boolean;
   /** Pieces already in place when the round starts. */
   preplaced: number;
+  /**
+   * Level 8, lap's first: one big piece out beside the frame at a time; a touch anywhere (the piece, the frame, the
+   * background) hops it into its own place, and the next piece comes out because she touched. Nothing can be a miss.
+   */
+  oneAtATime?: boolean;
   name: string;
 }
 
@@ -17,7 +22,24 @@ export const PUZZLE_PLANS: PuzzlePlan[] = [
   { cols: 3, rows: 2, ghost: false, preplaced: 0, name: 'Six pieces with only an empty frame' },
   { cols: 3, rows: 3, ghost: false, preplaced: 0, name: 'Nine pieces with only an empty frame' },
   { cols: 4, rows: 3, ghost: false, preplaced: 0, name: 'Twelve pieces with only an empty frame' },
+  {
+    cols: 3,
+    rows: 1,
+    ghost: true,
+    preplaced: 0,
+    oneAtATime: true,
+    name: 'One big piece at a time: a touch anywhere hops it into a two- or three-piece picture',
+  },
 ];
+
+/** How many strips the one-at-a-time picture is cut into; each round picks one. */
+export const ONE_AT_A_TIME_PIECES = [2, 3] as const;
+
+/** The round's plan: the level's own, with the one-at-a-time picture cut into two or three strips by the seeded RNG. */
+export function dealPlan(level: number, rng: { pick<T>(items: readonly T[]): T }): PuzzlePlan {
+  const plan = puzzlePlan(level);
+  return plan.oneAtATime ? { ...plan, cols: rng.pick(ONE_AT_A_TIME_PIECES) } : plan;
+}
 
 export const puzzlePlan = (level: number) =>
   PUZZLE_PLANS[Math.max(0, Math.min(PUZZLE_PLANS.length - 1, level - 1))];
@@ -112,8 +134,9 @@ export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[])
   return pieces.find((p) => !p.placed);
 }
 
+/** Level 8 is lap's first; 1 and 2 follow. Nothing is renumbered: 8 is new at the end of the ladder. */
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
   prek: { min: 5, max: 7 },
