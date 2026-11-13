@@ -17,6 +17,16 @@ export type Move =
   | 'wiggle'
   | 'up'
   | 'down'
+  | 'peekaboo'
+  | 'patacake'
+  | 'tiptoe'
+  | 'march'
+  | 'frog'
+  | 'cat'
+  | 'duck'
+  | 'bird'
+  | 'tree'
+  | 'shake'
   | 'nose'
   | 'tummy'
   | 'ears'
@@ -24,7 +34,26 @@ export type Move =
   | 'toes';
 export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'pat';
 
-export const MOVES: Move[] = ['clap', 'stomp', 'wave', 'jump', 'spin', 'wiggle', 'up', 'down'];
+/**
+ * The moves in tiers (dive slice 3). Base is the first eight; social moves are the ones a one-year-old already plays
+ * (pat-a-cake, peekaboo); walking and animal moves need a body that can travel and pretend; calm moves wind down.
+ * The tiers partition every move the pet shows apart from the body words.
+ */
+export const TIERS = {
+  base: ['clap', 'stomp', 'wave', 'jump', 'spin', 'wiggle', 'up', 'down'],
+  social: ['peekaboo', 'patacake'],
+  walking: ['tiptoe', 'march'],
+  animal: ['frog', 'cat', 'duck', 'bird'],
+  calm: ['tree', 'shake'],
+} satisfies Record<string, Move[]>;
+export type Tier = keyof typeof TIERS;
+
+/** The first eight moves, the base tier. */
+export const MOVES: Move[] = TIERS.base;
+/** Every whole-body move, all tiers. */
+export const ALL_MOVES: Move[] = Object.values(TIERS).flat();
+/** Level 1 (and lap's copying) draws from base and social only, so a lap round never meets an animal move. */
+export const FIRST_POOL: Move[] = [...TIERS.base, ...TIERS.social];
 export const BODY: Move[] = ['nose', 'tummy', 'ears', 'head', 'toes'];
 
 /** Spoken names, for "clap, then stomp" and "Pip says: wave". */
@@ -37,6 +66,16 @@ export const MOVE_CUES = {
   wiggle: { word: 'wiggle', line: 'says.move.wiggle' },
   up: { word: 'reach up high', line: 'says.move.up' },
   down: { word: 'crouch down low', line: 'says.move.down' },
+  peekaboo: { word: 'play peekaboo', line: 'says.move.peekaboo' },
+  patacake: { word: 'pat-a-cake', line: 'says.move.patacake' },
+  tiptoe: { word: 'tiptoe', line: 'says.move.tiptoe' },
+  march: { word: 'march', line: 'says.move.march' },
+  frog: { word: 'hop like a frog', line: 'says.move.frog' },
+  cat: { word: 'stretch like a cat', line: 'says.move.cat' },
+  duck: { word: 'waddle like a duck', line: 'says.move.duck' },
+  bird: { word: 'flap like a bird', line: 'says.move.bird' },
+  tree: { word: 'sway like a tree', line: 'says.move.tree' },
+  shake: { word: 'shake it out', line: 'says.move.shake' },
   nose: { word: 'touch your nose', line: 'says.move.nose' },
   tummy: { word: 'pat your tummy', line: 'says.move.tummy' },
   ears: { word: 'touch your ears', line: 'says.move.ears' },
@@ -47,6 +86,26 @@ export const MOVE_CUES = {
 export const MOVE_WORDS = Object.fromEntries(
   Object.entries(MOVE_CUES).map(([id, cue]) => [id, cue.word]),
 ) as Record<Move, string>;
+
+/**
+ * Counts (level 3): the moves made of beats a child can count, and how many beats each does when no count is asked.
+ * A pair turn may ask for two or three of one of these ("stomp three times, then clap"); the pet then does exactly that
+ * many, counting aloud.
+ */
+export const BEATS = { clap: 3, stomp: 3, jump: 2, march: 4 } satisfies Partial<Record<Move, number>>;
+export type Countable = keyof typeof BEATS;
+export const isCountable = (m: Move): m is Countable => m in BEATS;
+export const MAX_COUNT = 5;
+
+/** How many beats the pet performs: the asked-for count, or the move's own number. */
+export const beatsFor = (m: Countable, count?: number) => count ?? BEATS[m];
+
+const COUNT_WORDS: Record<number, string> = { 2: 'two', 3: 'three', 4: 'four', 5: 'five' };
+
+/** The spoken name of a move in a turn: "stomp three times" when a count is asked, else the plain word. */
+export function cueWord(move: Move, count?: number): string {
+  return count ? `${MOVE_WORDS[move]} ${COUNT_WORDS[count]} times` : MOVE_WORDS[move];
+}
 
 interface Pt {
   x: number;
@@ -63,6 +122,8 @@ type Pair = { left: Pt; right: Pt };
 export interface SaysFrame {
   rest: Pair;
   targets: Record<'nose' | 'tummy' | 'ears' | 'head' | 'toes', Pair>;
+  /** Peekaboo: both mittens over the eyes (beside the nose where a friend's eyes are not marked). */
+  eyes: Pair;
   clap: Pair;
   up: Pair;
   down: Pair;
@@ -74,7 +135,7 @@ export interface SaysFrame {
 }
 
 export function saysFrame(
-  at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet') => readonly Pt[],
+  at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet' | 'eyes') => readonly Pt[],
   box: { x: number; y: number; width: number; height: number },
 ): SaysFrame {
   const cx = box.x + box.width / 2;
@@ -102,6 +163,7 @@ export function saysFrame(
       head: { left: rest.left, right: { x: head.x, y: head.y - 36 } },
       toes: pair(at('feet'), 40, { x: cx, y: floor }),
     },
+    eyes: pair(at('eyes'), 18, { x: nose.x, y: nose.y - 8 }),
     clap: { left: { x: cx - 20, y: y - 17 }, right: { x: cx + 20, y: y - 17 } },
     up: { left: { x: cx - 70, y: box.y - 50 }, right: { x: cx + 70, y: box.y - 50 } },
     down: { left: { x: box.x - 22, y: floor - 30 }, right: { x: right + 22, y: floor - 30 } },
@@ -127,9 +189,17 @@ export interface SaysPlan {
 }
 
 export const PLANS: SaysPlan[] = [
-  { mode: 'copy', turns: 6, name: 'Copy the pet: clap, stomp, wave, jump (a grown-up taps the arrow)' },
+  {
+    mode: 'copy',
+    turns: 6,
+    name: 'Copy the pet: clap, stomp, wave, jump, peekaboo, pat-a-cake (a grown-up taps the arrow)',
+  },
   { mode: 'body', turns: 5, name: 'Body words: touch your nose, pat your tummy, touch your toes' },
-  { mode: 'pairs', turns: 4, name: 'Two moves in order: "clap, then stomp"' },
+  {
+    mode: 'pairs',
+    turns: 4,
+    name: 'Two moves in order, sometimes counted: "stomp three times, then hop like a frog"',
+  },
   { mode: 'says', turns: 6, name: '"Pet says": move only when you hear the pet\'s name first' },
   { mode: 'freeze', turns: 4, name: 'Freeze dance: dance to the music, freeze when it stops' },
 ];
@@ -154,8 +224,8 @@ export const ENTRY_PLANS: Record<number, SaysPlan> = {
   },
 };
 
-/** The moves a pat brings out, easiest to watch first in the draw; pat-a-cake and peekaboo wait for the tiered moves. */
-export const PAT_MOVES: Move[] = ['wave', 'clap', 'jump', 'wiggle', 'spin'];
+/** The moves a pat brings out: the easiest to watch, and the two social games she already plays. */
+export const PAT_MOVES: Move[] = ['wave', 'clap', 'jump', 'wiggle', 'spin', 'peekaboo', 'patacake'];
 
 export const planFor = (level: number) =>
   ENTRY_PLANS[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -164,6 +234,8 @@ export interface Turn {
   moves: Move[];
   /** "Pet says" level: false is a trick, where the right thing to do is stay still. */
   says?: boolean;
+  /** Level 3: how many times to do each move, where one is asked (only countable moves, two or three). */
+  counts?: (number | undefined)[];
 }
 
 export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
@@ -176,7 +248,7 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
   };
   switch (plan.mode) {
     case 'copy':
-      return deck(MOVES)
+      return deck(FIRST_POOL)
         .slice(0, plan.turns)
         .map((m) => ({ moves: [m] }));
     case 'body':
@@ -185,8 +257,16 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         .slice(0, plan.turns)
         .map((m) => ({ moves: [m] }));
     case 'pairs': {
-      const d = deck(MOVES);
-      return Array.from({ length: plan.turns }, (_, i) => ({ moves: [d[2 * i], d[2 * i + 1]] }));
+      // Each turn asks for at most one count, on a move made of beats, and about half the turns ask for one.
+      const d = deck(ALL_MOVES);
+      return Array.from({ length: plan.turns }, (_, i) => {
+        const moves = [d[2 * i], d[2 * i + 1]];
+        const slots = moves.flatMap((m, k) => (isCountable(m) ? [k] : []));
+        if (!slots.length || !rng.chance(0.6)) return { moves };
+        const counts: (number | undefined)[] = [undefined, undefined];
+        counts[rng.pick(slots)] = rng.int(2, 3);
+        return { moves, counts };
+      });
     }
     case 'says': {
       // Two tricks, never first and never back to back, so the rule has a chance to settle in.
@@ -194,7 +274,7 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         const tricks = new Set([rng.int(1, plan.turns - 1), rng.int(1, plan.turns - 1)]);
         const list = [...tricks].sort((a, b) => a - b);
         if (list.length < 2 || list[1] - list[0] < 2) continue;
-        return deck([...MOVES, ...BODY])
+        return deck([...ALL_MOVES, ...BODY])
           .slice(0, plan.turns)
           .map((m, i) => ({ moves: [m], says: !tricks.has(i) }));
       }

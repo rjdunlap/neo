@@ -22,6 +22,8 @@ import {
   saysFrame,
   type SaysFrame,
   makeTurns,
+  beatsFor,
+  cueWord,
   MOVE_CUES,
   MOVE_WORDS,
   shouldNudge,
@@ -261,12 +263,14 @@ class PetSays implements Game {
         void this.ctx.instruct(MOVE_CUES[first].line);
         await this.perform(first);
         break;
-      case 'pairs':
-        await this.ctx.instruct('says.pair', { first: MOVE_WORDS[first], second: MOVE_WORDS[second] });
-        await this.perform(first);
+      case 'pairs': {
+        const [c1, c2] = turn.counts ?? [];
+        await this.ctx.instruct('says.pair', { first: cueWord(first, c1), second: cueWord(second, c2) });
+        await this.perform(first, c1);
         await this.ctx.tw.wait(0.3);
-        await this.perform(second);
+        await this.perform(second, c2);
         break;
+      }
       case 'says':
         // The pet moves either way, to tempt; the words decide whether we move too.
         await this.ctx.instruct(turn.says ? 'says.says' : 'says.trick', { move: MOVE_WORDS[first] });
@@ -359,17 +363,23 @@ class PetSays implements Game {
     );
   }
 
-  async perform(move: Move) {
+  /** The pet does a move. With a count (level 3) it does exactly that many beats and counts each one aloud. */
+  async perform(move: Move, count?: number) {
     const tw = this.ctx.tw;
     const pet = this.mover.pet;
     const f = this.frame;
+    const { left, right } = this.mover;
+    const beat = (k: number) => {
+      if (count) void this.ctx.say('count', { n: k + 1 });
+    };
     pet.setMood('happy', 2);
     switch (move) {
       case 'clap':
-        for (let k = 0; k < 3; k++) {
+        for (let k = 0; k < beatsFor(move, count); k++) {
           await this.hands(f.clap.left, f.clap.right, 0.13);
           sfx.knock();
-          await this.hands(this.frame.rest.left, this.frame.rest.right, 0.13);
+          beat(k);
+          await this.hands(this.frame.rest.left, this.frame.rest.right, count ? 0.3 : 0.13);
         }
         break;
       case 'wave':
@@ -381,19 +391,125 @@ class PetSays implements Game {
         }
         break;
       case 'stomp':
-        for (let k = 0; k < 3; k++) {
+        for (let k = 0; k < beatsFor(move, count); k++) {
           pet.hop(0.3);
           await tw.wait(0.26);
           sfx.drum();
-          await tw.wait(0.12);
+          beat(k);
+          await tw.wait(count ? 0.3 : 0.12);
         }
         break;
       case 'jump':
-        for (let k = 0; k < 2; k++) {
+        for (let k = 0; k < beatsFor(move, count); k++) {
           pet.hop(1.15);
           sfx.animal('hop');
+          beat(k);
           await tw.wait(0.6);
         }
+        break;
+      case 'march':
+        // Knees up in turn: one mitten lifts with each low hop and a drum.
+        for (let k = 0; k < beatsFor(move, count); k++) {
+          const up = k % 2 ? right : left;
+          const to = k % 2 ? f.rest.right : f.rest.left;
+          pet.hop(0.22);
+          sfx.drum(0.45);
+          beat(k);
+          await tw.to(up, { y: to.y - 40 }, { duration: 0.16 });
+          await tw.to(up, { y: to.y }, { duration: count ? 0.3 : 0.16 });
+        }
+        break;
+      case 'peekaboo':
+        await this.hands(f.eyes.left, f.eyes.right, 0.25);
+        sfx.squeak(7);
+        await tw.wait(0.8);
+        await this.hands(
+          { x: f.rest.left.x - 30, y: f.eyes.left.y - 20 },
+          { x: f.rest.right.x + 30, y: f.eyes.right.y - 20 },
+          0.16,
+        );
+        sfx.giggle();
+        await tw.wait(0.6);
+        break;
+      case 'patacake':
+        // The mittens meet, then cross over each other, three times.
+        for (let k = 0; k < 3; k++) {
+          await this.hands(f.clap.left, f.clap.right, 0.13);
+          sfx.clap();
+          await this.hands(
+            { x: f.clap.left.x + 24, y: f.clap.left.y + 22 },
+            { x: f.clap.right.x - 24, y: f.clap.right.y - 22 },
+            0.13,
+          );
+          sfx.knock();
+          await this.hands(f.rest.left, f.rest.right, 0.13);
+        }
+        break;
+      case 'tiptoe':
+        await this.stretch(1.08);
+        for (let k = 0; k < 4; k++) {
+          pet.hop(0.18);
+          sfx.pluck(12 + (k % 2), 0.12);
+          await tw.wait(0.32);
+        }
+        break;
+      case 'frog':
+        for (let k = 0; k < 2; k++) {
+          await Promise.all([this.hands(f.down.left, f.down.right, 0.2), this.stretch(0.75)]);
+          await tw.wait(0.15);
+          pet.hop(1.25);
+          sfx.croak();
+          await Promise.all([this.hands(f.up.left, f.up.right, 0.2), this.stretch(1.1)]);
+          await tw.wait(0.4);
+        }
+        break;
+      case 'cat':
+        sfx.yawn();
+        await Promise.all([this.hands(f.up.left, f.up.right, 0.5), this.stretch(1.15)]);
+        await tw.wait(0.9);
+        break;
+      case 'duck':
+        for (let k = 0; k < 4; k++) {
+          if (k % 2 === 0) sfx.animal('quack');
+          pet.hop(0.15);
+          await tw.to(this.mover, { rotation: k % 2 ? -0.1 : 0.1 }, { duration: 0.22 });
+        }
+        await tw.to(this.mover, { rotation: 0 }, { duration: 0.15 });
+        break;
+      case 'bird':
+        for (let k = 0; k < 4; k++) {
+          sfx.chirp(12 + (k % 2) * 2);
+          await this.hands(
+            { x: f.up.left.x - 40, y: f.up.left.y + 40 },
+            { x: f.up.right.x + 40, y: f.up.right.y + 40 },
+            0.12,
+          );
+          await this.hands(f.rest.left, f.rest.right, 0.12);
+        }
+        break;
+      case 'tree':
+        await this.hands(f.up.left, f.up.right, 0.3);
+        sfx.wave(true);
+        for (let k = 0; k < 2; k++) {
+          await tw.to(this.mover, { rotation: 0.1 }, { duration: 0.6, ease: ease.inOutSine });
+          await tw.to(this.mover, { rotation: -0.1 }, { duration: 0.6, ease: ease.inOutSine });
+        }
+        await tw.to(this.mover, { rotation: 0 }, { duration: 0.3, ease: ease.inOutSine });
+        break;
+      case 'shake':
+        sfx.shake();
+        for (let k = 0; k < 6; k++) {
+          const d = k % 2 ? -1 : 1;
+          await Promise.all([
+            tw.to(this.mover, { rotation: d * 0.06 }, { duration: 0.07 }),
+            this.hands(
+              { x: f.rest.left.x, y: f.rest.left.y + d * 14 },
+              { x: f.rest.right.x, y: f.rest.right.y - d * 14 },
+              0.07,
+            ),
+          ]);
+        }
+        await tw.to(this.mover, { rotation: 0 }, { duration: 0.1 });
         break;
       case 'spin': {
         sfx.whoosh();
@@ -450,6 +566,10 @@ class PetSays implements Game {
         sfx.squeak(6);
         await tw.wait(0.7);
         break;
+      default: {
+        const never: never = move;
+        throw new Error(`no performance for ${String(never)}`);
+      }
     }
     await this.rest();
   }
