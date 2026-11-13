@@ -526,18 +526,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             : [[n, undefined]],
       );
     for (const [level, shapeBand] of shapeRuns) {
-      const upright =
-        level === 8 ||
-        level === 11 ||
-        level === 12 ||
-        level === 14 ||
-        (level === 9 && shapeBand === 'toddler');
+      const upright = level === 8 || level === 11 || level === 12 || level === 14 || level === 9;
       if (upright) await portrait(true);
       await launch('shape-sorter', level, 'Mia', shapeBand);
       await page.waitForTimeout(400);
       const shapeStickers = await page.evaluate(() => kit.store.data.stickers.length);
       if (level === 12 || level === 14) await screenshot(`shape-sorter-${level}-start-portrait`);
-      if (level === 9 && shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
+      if (level === 9) await screenshot(`shape-sorter-9-${shapeBand}-start-portrait`);
       const holes = await page.evaluate(async () => {
         const g = neo.scene.game;
         // Pieces ride above the finger, so aim the finger just below the hole.
@@ -634,6 +629,28 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             );
             await kit.until(() => g.clueReady || g.finished, 10000);
           }
+          return g.box.holes.length;
+        }
+        if (g.plan.lap) {
+          // Lap: one big circle out at a time; a touch on the box, the floor or the wall, or a long drag let go far away,
+          // hops it in, and the next rolls out. Nothing counts.
+          const out = () => g.pieces.filter((p) => p.view.visible);
+          if (g.pieces.length !== 3 || out().length !== 1)
+            throw new Error('Shape 9 lap: one circle out of three');
+          kit.tapOn(g.box, 0, 40);
+          await kit.sleep(1100);
+          if (g.pieces.length !== 2 || out().length !== 1 || g.pieces[0].out !== 'waiting')
+            throw new Error(
+              `Shape 9 lap: a box touch puts it in and the next rolls out (${g.pieces.length})`,
+            );
+          kit.tap(innerWidth * 0.06, innerHeight * 0.3);
+          await kit.sleep(1100);
+          if (g.pieces.length !== 1) throw new Error('Shape 9 lap: a wall touch puts it in');
+          const p = g.pieces[0];
+          await kit.dragTo(p.view, g.box.toGlobal({ x: -g.box.w, y: g.box.lidH + 200 }), 40);
+          await kit.sleep(1100);
+          if (g.pieces.length || g.misses || g.hints)
+            throw new Error('Shape 9 lap: a far let-go puts it in, free');
           return g.box.holes.length;
         }
         if (g.plan.everyTouch) {

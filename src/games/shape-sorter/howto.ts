@@ -5,7 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Put each shape in the hole or mouth it fits.',
   steps: [
     { to: 8, text: 'Drag a shape to a hole and let go.' },
-    { from: 9, to: 9, text: 'Tap a shape and it hops into the hole by itself. Dragging it there works too.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'Tap a shape and it hops into the hole by itself. Dragging it there works too. At lap age one big circle waits beside the box, a touch anywhere puts it in, and the next rolls out.',
+    },
     { from: 10, to: 11, text: 'Drag a shape to a hole and let go.' },
     { to: 4, text: 'Each hole is the color of the shape that fits it.' },
     { from: 5, to: 5, text: 'The holes are plain, so match by shape alone.' },
@@ -51,7 +55,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'There is no wrong move here. A tap on the box makes it giggle, and a tap on the floor wiggles the nearest shape and names it.',
+      text: 'There is no wrong move here. A tap on the box makes it giggle, a tap on the floor wiggles the nearest shape and names it, and a shape let go far from the hole plops and slides home. At lap age every touch, held or quick, puts the circle in.',
     },
     {
       to: 1,

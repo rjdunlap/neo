@@ -38,6 +38,7 @@ import {
   turnOffset,
   turnStart,
   TAP_HOLD,
+  LAP_SCALE,
   type TurnKind,
   type HoleSpec,
   type Size,
@@ -86,6 +87,8 @@ interface Piece {
   turnMisses: number;
   tapStart: { x: number; y: number; pointerId: number; localX: number; localY: number } | null;
   tapMoved: boolean;
+  /** At lap: still to roll out (hidden off the side), or rolling out now; either way not yet waiting. */
+  out: 'later' | 'rolling' | 'waiting';
 }
 
 interface Hole extends HoleSpec {
@@ -286,13 +289,18 @@ class ShapeSorter implements Game {
   };
 
   constructor(private readonly ctx: GameContext) {
-    this.plan = planFor(ctx.level);
+    this.plan = planFor(ctx.level, ctx.band);
     const holes = dealHoles(ctx.rng, this.plan);
     this.box = ctx.track(new Box(this.plan, holes));
     this.layer.addChild(this.box);
     ctx.stage.addChild(this.bg, this.floor, this.layer);
-    // Level 1 answers every touch: the box giggles, and the floor or the wall wiggles the nearest piece and names it.
-    if (this.plan.everyTouch) {
+    // At lap (level 9) every touch on the floor, the wall or the box hops the waiting circle in.
+    if (this.plan.lap) {
+      onTap(this.box, () => this.lapTouch(), { cooldown: 250 });
+      for (const ground of [this.bg, this.floor]) onTap(ground, () => this.lapTouch(), { cooldown: 200 });
+    } else if (this.plan.everyTouch) {
+      // Levels that set everyTouch (1 and 9) answer every touch: the box giggles, and the floor or the wall wiggles the
+      // nearest piece and names it.
       onTap(this.box, () => this.tickle(), { cooldown: 250 });
       for (const ground of [this.bg, this.floor])
         onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
@@ -302,7 +310,8 @@ class ShapeSorter implements Game {
     const specs = pieceKinds(ctx.rng, this.plan, holes);
     if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, holes);
     const one = ctx.rng.pick(ONE_COLOR);
-    this.pieces = specs.map(({ kind, size, scale }) => {
+    this.pieces = specs.map(({ kind, size, scale: dealt }, i) => {
+      const scale = this.plan.lap ? LAP_SCALE : dealt;
       const view = new Container();
       view.addChild(drawPiece(kind, this.plan.sameColor ? one : SHAPE_COLOR[kind], scale));
       // However small it is drawn, the piece is at least 112 units to touch.
@@ -319,8 +328,11 @@ class ShapeSorter implements Game {
         turnMisses: 0,
         tapStart: null,
         tapMoved: false,
+        out: !this.plan.lap || i === 0 ? 'waiting' : 'later',
         drag: null!,
       };
+      // At lap only the first circle is out; the others wait out of sight to roll in one at a time.
+      view.visible = piece.out !== 'later';
       piece.drag = draggable(view, ctx.tw, {
         onPick: () => {
           piece.pickedAt = this.clock;
@@ -367,13 +379,15 @@ class ShapeSorter implements Game {
           ? 'shape.count.start'
           : this.plan.clue
             ? 'shape.find.start'
-            : this.plan.tapIn
-              ? 'shape.tap.start'
-              : this.plan.sized
-                ? 'shape.size.start'
-                : this.plan.turning
-                  ? 'shape.turn.start'
-                  : 'shape.start';
+            : this.plan.lap
+              ? 'shape.tap.lap'
+              : this.plan.tapIn
+                ? 'shape.tap.start'
+                : this.plan.sized
+                  ? 'shape.size.start'
+                  : this.plan.turning
+                    ? 'shape.turn.start'
+                    : 'shape.start';
     void this.ctx.instruct(first).then(() => {
       if (this.plan.clue) void this.askNextClue();
     });
@@ -392,6 +406,16 @@ class ShapeSorter implements Game {
     const boxTop = boxTopFor(v.h, this.box.lidH);
     this.box.position.set(v.w / 2, boxTop);
 
+    if (this.plan.lap) {
+      // One big circle on the floor beside the box; the next waits out of sight past the right edge.
+      const home = this.lapHome(v);
+      for (const p of this.pieces) {
+        if (p.drag.dragging) continue;
+        p.drag.home = p.out === 'later' ? { x: v.w + 140, y: home.y } : home;
+        if (p.out !== 'rolling') p.view.position.set(p.drag.home.x, p.drag.home.y);
+      }
+      return;
+    }
     // Waiting pieces sit on the floor, in one row or two.
     const waiting = this.pieces.filter((p) => !p.drag.dragging);
     const rows = waiting.length > 6 ? 2 : 1;
@@ -425,7 +449,7 @@ class ShapeSorter implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
     if (this.plan.tapIn) {
-      const next = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed);
+      const next = this.pieces.find((p) => p.out === 'waiting' && !p.drag.dragging && !p.view.destroyed);
       return next ? { tap: { on: next.view } } : null;
     }
     if (this.plan.clue && (!this.asked || !this.clueReady)) return null;
@@ -475,7 +499,7 @@ class ShapeSorter implements Game {
       }
     }
     if (!near) {
-      // Out of reach: the piece floats home. At level 1 that is answered too, with a plop and the box leaning to look.
+      // Out of reach: the piece floats home. Where every touch is answered (levels 1 and 9), with a plop and the box leaning to look.
       if (this.plan.everyTouch) {
         sfx.pop(5);
         this.box.lean(x - this.box.x);
@@ -540,14 +564,14 @@ class ShapeSorter implements Game {
     await this.ctx.tw.to(piece.view, { x }, { duration: 0.08 });
   }
 
-  /** A tap on the box at level 1: a gulp and a giggle. */
+  /** A tap on the box where every touch is answered (levels 1 and 9): a gulp and a giggle. */
   private tickle() {
     if (this.finished) return;
     this.box.gulp();
     sfx.giggle();
   }
 
-  /** A tap on the floor or the wall at level 1: the nearest waiting piece wiggles and says its name. */
+  /** A tap on the floor or the wall where every touch is answered (levels 1 and 9): the nearest waiting piece wiggles and says its name. */
   private nudge(at: { x: number; y: number }) {
     if (this.finished) return;
     const near = nearest(
@@ -561,10 +585,54 @@ class ShapeSorter implements Game {
     void this.ctx.say(`shape.${near.p.kind}`);
   }
 
+  /** Where the one waiting circle sits at lap: on the floor row, beside the box where there is room, else under it. */
+  private lapHome(v: View) {
+    const r = PIECE_R * LAP_SCALE;
+    return { x: Math.min(v.w - r - 30, v.w / 2 + this.box.w / 2 + r + 10), y: v.h - 100 };
+  }
+
+  /** At lap a touch on the floor, the wall or the box hops the waiting circle in; while the next rolls out, the box giggles. */
+  private lapTouch() {
+    if (this.finished) return;
+    const piece = this.pieces.find((p) => p.out === 'waiting' && !p.drag.dragging);
+    const hole = piece && holeFor(this.box.holes, piece);
+    if (!piece || !hole) {
+      this.tickle();
+      return;
+    }
+    void this.swallow(piece, this.box.x + hole.x, this.box.y + hole.y, true);
+  }
+
+  /** At lap, because she touched: the next circle rolls in from the right edge to its place beside the box. */
+  private async rollOut() {
+    const next = this.pieces.find((p) => p.out === 'later');
+    if (!next || this.finished) return;
+    next.out = 'rolling';
+    const v = next.view;
+    const home = this.lapHome(this.ctx.view);
+    next.drag.home = home;
+    v.position.set(this.ctx.view.w + PIECE_R * LAP_SCALE + 20, home.y);
+    v.rotation = 0;
+    v.visible = true;
+    // Not to be grabbed mid-roll: a touch meanwhile lands on the floor and the box giggles.
+    const mode = v.eventMode;
+    v.eventMode = 'none';
+    const turns = (v.x - home.x) / (PIECE_R * LAP_SCALE);
+    await this.ctx.tw.to(v, { x: home.x, rotation: -turns }, { duration: 0.7, ease: ease.outQuad });
+    if (v.destroyed || this.finished) return;
+    v.eventMode = mode;
+    v.rotation = 0;
+    v.position.set(next.drag.home.x, next.drag.home.y);
+    next.out = 'waiting';
+    sfx.tick();
+    void this.ctx.say(`shape.${next.kind}`);
+  }
+
   /** In it goes: snap to the hole (hopping up and over first after a tap), shrink down out of sight, and the box says thank you. */
   private async swallow(piece: Piece, x: number, y: number, hop = false) {
     piece.drag.destroy();
     this.pieces = this.pieces.filter((p) => p !== piece);
+    if (this.plan.lap) void this.rollOut();
     const v = piece.view;
     if (hop)
       await this.ctx.tw.to(

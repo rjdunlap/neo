@@ -27,6 +27,7 @@ import {
   startHelp,
   TAP_HOLD,
   TAP_REACH,
+  LAP_SCALE,
   tapsIn,
   planFor,
   sizeMiss,
@@ -440,5 +441,26 @@ describe('Shape Sorter', () => {
     for (const band of ['preschool', 'prek'] as const)
       expect(shapeSorter.levels(band).order).not.toContain(9);
     expect(shapeSorter.describeLevel(9)).toBe('tap a shape and it hops in');
+  });
+
+  it('level 9 at lap is its own branch: every let-go hops the circle in, and toddler and other levels are unchanged', () => {
+    const lap = planFor(9, 'lap');
+    expect(lap).toMatchObject({ holes: ['circle'], pieces: 3, everyTouch: true, tapIn: true, lap: true });
+    // No hold limit and no reach limit: a long press, a drag let go far away, a tap, all put it in.
+    expect(tapsIn(lap, PRESS, 0)).toBe(true);
+    expect(tapsIn(lap, TAP_HOLD * 10, 0)).toBe(true);
+    expect(tapsIn(lap, 30, TAP_REACH * 5)).toBe(true);
+    // Toddler's level 9 and every other level at lap keep their own plan, unchanged.
+    expect(planFor(9, 'toddler')).toBe(planFor(9));
+    expect(planFor(9).lap).toBeUndefined();
+    for (let level = 1; level <= PLANS.length; level++)
+      if (level !== 9) expect(planFor(level, 'lap')).toBe(planFor(level));
+    // The one big circle is still at least the 100-unit touch target and fits its one hole.
+    expect(LAP_SCALE).toBeGreaterThan(1);
+    expect(2 * 48 * LAP_SCALE).toBeGreaterThanOrEqual(100); // the piece radius is 48 in index.ts
+    const { holes } = holeLayout(lap, dealHoles(new Rng(1), lap));
+    for (let seed = 1; seed <= 50; seed++)
+      for (const p of pieceKinds(new Rng(seed), lap)) expect(holeFor(holes, p)?.kind).toBe('circle');
+    expect(SCRIPT['shape.tap.lap']?.length).toBeGreaterThan(0);
   });
 });
