@@ -1,0 +1,6 @@
+# 2026-11-12 — song-maker level 8: a lap level that answers anywhere (PR #1583)
+
+**Changed:** `song-maker` level 8 ("wake"), first in lap's order: one big jelly, a touch anywhere lights the nearest awake spot, spots wake as she lights them, a put-out is not counted, the round ends a loop after the twelfth light with at least two lit and keeps her tune; voice line `song.wake`; per-level how-to card.
+**Ran:** `npm run typecheck` clean; song-maker rule tests 13/13 and the how-to, registry and lands tests pass; `BROWSER_SUITE=fourth FOURTH_ONLY=song8` passed (one big jelly, a right-edge touch lights it, a touch on it puts it out uncounted, all 12 woke, sticker, misses and hints 0, landscape screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=song-maker FINGER_LEVELS=8 FINGER_BAND=lap` passed in 19.2 s.
+**Full `npm test`:** run under heavy machine load. The one real failure (the how-to card used the word "higher") was fixed. The other 8 were timing and timeout tests in untouched games: number-nook, secret-code, fluffy-salon and penguin-slide pass in isolation; block-topple and keep-house timed out at 60 s under load and were not rerun.
+**Not run:** build (no shared files or assets changed), portrait screenshot, offline. The put-out-below-two fix after review was checked by typecheck and rule tests only.
