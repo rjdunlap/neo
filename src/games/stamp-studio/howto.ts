@@ -4,7 +4,11 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Make a picture with stamps.',
   steps: [
-    { from: 7, to: 7, text: 'Pat the paper to press a big soft stamp. Pat as often as you like.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Pat the paper, or anywhere around it, to press a big soft stamp there. Pat as often as you like.',
+    },
     { from: 1, to: 1, text: 'Tap the paper to press the stamp shown.' },
     { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
     { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
@@ -12,7 +16,7 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'Pat the mud: the leaf presses its shape there. Pat as often as you like.' },
     { from: 9, to: 9, text: 'Tap the duck foot or the cat paw, then tap the mud to make its print.' },
     { to: 2, text: 'The back arrow removes the latest stamp.' },
-    { from: 7, to: 9, text: 'The back arrow removes the latest stamp or print.' },
+    { from: 8, to: 9, text: 'The back arrow removes the latest print.' },
     {
       from: 3,
       to: 6,
@@ -28,7 +32,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 7,
       to: 7,
-      text: 'The eighth pat finishes the picture by itself. After the round, the tree house button hangs it up.',
+      text: 'There are no arrows: the eighth pat finishes the picture by itself. After the round, the tree house button hangs it up.',
     },
     {
       from: 1,
