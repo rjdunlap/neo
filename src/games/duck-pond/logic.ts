@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye';
+export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -32,10 +32,12 @@ export const PLANS: DuckPlan[] = [
   { mode: 'hide', rounds: 5, min: 5, max: 10 },
   // Below level 1 (placed first for lap and toddler): five ducks wave bye-bye one at a time, then all swim back. One song is a round.
   { mode: 'bye', rounds: 1, min: 5, max: 5 },
+  // Lap's opening (placed first for lap only): one big duck on the pond; a touch anywhere brings a friend swimming in, up to five.
+  { mode: 'friends', rounds: 1, min: 5, max: 5 },
 ];
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 12, order: [12, 1, 2] },
+  lap: { min: 1, max: 13, order: [13, 12, 1, 2] },
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
@@ -79,6 +81,18 @@ export const SLOTS: [number, number][] = [
   [-180, 44],
   [180, 44],
   [0, 96],
+];
+
+/** Level 13: where the big duck floats, relative to the pond's middle (its feet; it stands much taller than that). */
+export const BIG_DUCK_SPOT: [number, number] = [0, -10];
+
+/** Level 13: where her five friends swim to, in the order they come, around the big duck and clear of it. */
+export const FRIEND_SLOTS: [number, number][] = [
+  [-250, -34],
+  [250, -34],
+  [-190, 70],
+  [190, 70],
+  [0, 100],
 ];
 
 /** Make mode: ducks waiting on the bank, always at least one more than asked for so stopping is a choice. */
@@ -128,6 +142,8 @@ export function duckMove(
   if (plan.mode === 'along') return bank > 0 ? 'duck' : null;
   if (plan.mode === 'make') return bank > 0 && swimming < want ? 'duck' : null;
   if (plan.mode === 'bye') return swimming > 0 ? 'duck' : null;
+  // One big duck: any touch brings the next friend, until all five are in.
+  if (plan.mode === 'friends') return swimming < plan.max ? 'duck' : null;
   const pad = pads.indexOf(answer);
   return pad >= 0 ? { pad } : null;
 }

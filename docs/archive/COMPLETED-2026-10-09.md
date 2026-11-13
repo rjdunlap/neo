@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Duck Pond level 13, One big duck, first at lap (2026-11-13)
+
+[PR #1596](https://github.com/rjdunlap/neo/pull/1596) adds level 13 (`friends`) as lap's first level (order `[13, 12, 1, 2]`; `entryLevels` `[12, 13]`). One big duck (2.4 times the size) is on the pond from the start; a touch anywhere has it quack and cheer and brings a friend swimming in from alternating sides, with the count spoken and on the sign with dots, up to five. Nothing holds the first touch, a touch during a swim-in brings the next, a touch after the fifth quacks with a splash, and after four quiet seconds the big duck hops, counting nothing. The round ends with a quack chorus, "Five friends…" and confetti; no miss or hint can be reached. [Game notes](../games/duck-pond.md#design-notes).
+
 ### Roundup level 1 at lap: one animal at a time (2026-11-12)
 
 [PR #1594](https://github.com/rjdunlap/neo/pull/1594), `claude/roundup-lap-one-at-a-time`: at lap, level 1 (tap mode) brings one animal out at a time (the `sequential` rule level 10 has); the next hops out with a sparkle 0.8 s after each goes home. The fifteen-second waiting glow and the thirty-second trot home still happen but count no hint at lap (`lapTap(plan, band)` in `logic.ts`). Toddler's level 1 is unchanged. The level 1 how-to step adds that at lap age the animals come out one at a time. [Game notes](../games/roundup.md#design-notes) and [verification](../verification/2026-11-12-roundup-level-1-at-lap-one-animal-at-a-time.md).

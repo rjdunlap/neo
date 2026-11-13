@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
+import { duckPond } from './index';
 import {
+  BIG_DUCK_SPOT,
+  FRIEND_SLOTS,
+  LEVELS,
+  planFor,
   HIDING_SLOTS,
   hidingRevealSlots,
   numberSentence,
@@ -144,6 +150,10 @@ describe('Duck Pond', () => {
           let swimming = 0;
           while (duckMove(plan, bank, swimming, 0, [], 0) === 'duck') (bank--, swimming++);
           expect(swimming).toBe(plan.max);
+        } else if (plan.mode === 'friends') {
+          let swimming = 0;
+          while (duckMove(plan, 0, swimming, 0, [], 0) === 'duck') swimming++;
+          expect(swimming).toBe(plan.max);
         } else if (plan.mode === 'bye') {
           let swimming = plan.max;
           while (duckMove(plan, 0, swimming, 0, [], 0) === 'duck') swimming--;
@@ -164,5 +174,57 @@ describe('Duck Pond', () => {
         }
       }
     }
+  });
+
+  it('level 13, one big duck, is appended to the ladder so levels 1–12 keep their plans', () => {
+    expect(PLANS).toHaveLength(13);
+    expect(PLANS.slice(0, 12).map((p) => p.mode)).toEqual([
+      'along',
+      'along',
+      'make',
+      'make',
+      'make',
+      'howmany',
+      'howmany',
+      'add',
+      'add',
+      'ten',
+      'hide',
+      'bye',
+    ]);
+    expect(planFor(13)).toMatchObject({ mode: 'friends', rounds: 1, max: 5 });
+  });
+
+  it('level 13 is lap’s first level, ahead of bye-bye ducks; no other band lists it', () => {
+    expect(levelsInOrder(LEVELS.lap!).slice(0, 4)).toEqual([13, 12, 1, 2]);
+    expect(firstLevel(LEVELS.lap!)).toBe(13);
+    expect(levelsInOrder(LEVELS.toddler!).slice(0, 2)).toEqual([12, 1]);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(13);
+  });
+
+  it('carried past a birthday, level 13 starts toddler at its easiest level, not its hardest', () => {
+    expect(duckPond.entryLevels).toContain(13);
+    expect(landing(13, LEVELS.toddler!, duckPond.entryLevels)).toBe(levelsInOrder(LEVELS.toddler!)[0]);
+  });
+
+  it('level 13 has a place on the pond for each of five friends, clear of each other and of the big duck', () => {
+    const plan = planFor(13);
+    expect(FRIEND_SLOTS).toHaveLength(plan.max);
+    for (const [i, [x, y]] of FRIEND_SLOTS.entries()) {
+      expect((x / 390) ** 2 + (y / 128) ** 2).toBeLessThan(1);
+      // The big duck's ripple is an ellipse 158 by 62 units around its spot, and a friend's is 66 by 26: they never overlap.
+      const [dx, dy] = [x - BIG_DUCK_SPOT[0], y - BIG_DUCK_SPOT[1]];
+      expect((dx / (158 + 66)) ** 2 + (dy / (62 + 26)) ** 2).toBeGreaterThanOrEqual(1);
+      for (const [xx, yy] of FRIEND_SLOTS.slice(i + 1))
+        expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(100);
+    }
+  });
+
+  it('level 13: every touch brings a friend until there are five, and then the ghost finger rests', () => {
+    const plan = planFor(13);
+    let swimming = 0;
+    while (duckMove(plan, 0, swimming, 0, [], 0) === 'duck') swimming++;
+    expect(swimming).toBe(5);
   });
 });
