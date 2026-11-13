@@ -145,7 +145,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Market Stall](docs/games/market-stall.md) | preschool–school | Cozy Village | 7 | count out shell coins at fruit, flower or balloon stalls |
 | [Clock Tower](docs/games/clock-tower.md) | pre-K–school | Cozy Village | 7 | turn the short hand to an o'clock time |
 | [Day by Day](docs/games/day-by-day.md) | pre-K–school | Cozy Village | 7 | place spoken weekday cards and stamp a pretend week of weather into a seeded flower garden |
-| [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: two big lamps, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
+| [Stop and Go](docs/games/stop-and-go.md) | lap–pre-K | Cozy Village | 7 | lap entry: one big lamp, a touch anywhere turns it, green drives a looping car and red stops it; then tap the traffic light: red stops the car, green makes it go (the car toots and hops when tapped too) |
 | [Pet Says](docs/games/pet-says.md) | lap–pre-K | Cozy Village | 6 | the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move) |
 | [Lemonade Stand](docs/games/lemonade-stand.md) | school | Cozy Village | 5 | read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table |
 | [Second Chance Shed](docs/games/second-chance-shed.md) | toddler–school | Cozy Village | 8 | drag each used thing from the cart to the place that gives it a second life, and watch that place make something |
