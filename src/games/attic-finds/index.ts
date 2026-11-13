@@ -18,6 +18,7 @@ import {
   LEVELS,
   atticLayout,
   canFinish,
+  finishOnTurn,
   CARD,
   check,
   CHECK_R,
@@ -750,9 +751,14 @@ class AtticFinds implements Game {
         const more = turnEnded(this.lever);
         sfx.pluck(up ? 11 : 6);
         if (up) sfx.pluck(8, 0.12);
-        this.speak(up ? 'attic-finds.up' : 'attic-finds.down');
-        if (canFinish(this.lever) && !this.finishBtn) this.showFinish();
-        if (more) this.beginHalf();
+        if (finishOnTurn(this.lever, this.plan)) {
+          // Level 3: the third half turn ends the round by itself, so a child who only pats the background finishes.
+          void this.finishByItself(up);
+        } else {
+          this.speak(up ? 'attic-finds.up' : 'attic-finds.down');
+          if (canFinish(this.lever) && !this.finishBtn) this.showFinish();
+          if (more) this.beginHalf();
+        }
       }
     } else {
       if (this.dipT > 0) this.dipT -= dt;
@@ -821,6 +827,24 @@ class AtticFinds implements Game {
 
   private async finishFree() {
     if (!finishLever(this.lever)) return;
+    await this.shelveToy();
+  }
+
+  /** Level 3: no shelf picture. She hears where the bird or fish went and sees it there, then the bell, the line and the shelf. */
+  private async finishByItself(up: boolean) {
+    this.busy = true;
+    this.speaking = true;
+    await Promise.all([
+      this.ctx.say(up ? 'attic-finds.up' : 'attic-finds.down', { mover: this.mover }),
+      this.ctx.tw.wait(0.9),
+    ]);
+    if (this.destroyed) return;
+    sfx.bell(9);
+    await this.shelveToy();
+  }
+
+  /** The toy rides onto the shelf and the round ends; the lever is already done. */
+  private async shelveToy() {
     this.busy = true;
     this.glow.clear();
     this.speaking = false;
@@ -1531,6 +1555,7 @@ class AtticFinds implements Game {
         lv = this.lever;
       if (canFinish(lv)) return this.finishBtn ? { tap: { on: this.finishBtn }, pause: 0.5 } : null;
       // Always at the handle, even at level 3 where anywhere works, so the demonstration shows what causes the motion.
+      // At level 3 the third turn finishes the round by itself (busy is set), so there is no Finish tap to show.
       const handle: TouchIntent = { tap: { on: this.bg, x: L.handle.x, y: L.handle.y }, pause: 0.5 };
       if (this.plan.mode === 'peek' && lv.turns >= 1 && !this.doorEver) {
         return { tap: { on: this.bg, x: L.door.x + L.door.w / 2, y: L.door.y + L.door.h / 2 }, pause: 0.8 };

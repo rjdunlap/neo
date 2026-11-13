@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch }) {
-  /** Attic Finds levels 3-4 by touch: fast taps on the giant handle queue one turn, Finish waits for the third turn, level 4's door opens and closes free, and Finish ends the round with no misses or hints; level 4 upright with the door open. */
+  /** Attic Finds levels 3-4 by touch: fast taps on the giant handle queue one turn, the third turn finishes level 3 by itself (a queued touch dropped), level 4's door opens and closes free, and Finish ends the round with no misses or hints; level 4 upright with the door open. */
   async function atticLeverPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -48,16 +48,17 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch 
     let st = await state();
     assert.equal(st.turns, 2, 'a run of fast touches makes one turn and one queued turn');
     assert.equal(st.finish, false, 'Finish is absent before the third turn');
-    await tapAt('g.L.handle');
+    // The third turn, with a touch queued behind it: the round finishes by itself, the queued turn is dropped, no Finish picture.
+    await tapAt('({ x: 120, y: 330 })');
+    await tapAt('({ x: 120, y: 330 })');
     await page.waitForTimeout(900);
     await settle();
     st = await state();
     assert.deepEqual(
-      [st.turns, st.finish, st.up],
-      [3, true, true],
-      'the third turn brings the Finish picture',
+      [st.turns, st.finish, st.up, st.busy],
+      [3, false, true, true],
+      'the third turn ends level 3 by itself, with no Finish picture and no fourth turn',
     );
-    await tapFinish();
     await sticker(n);
     assert.deepEqual(
       await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]),
@@ -102,7 +103,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch 
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Attic Finds levels 3-4: queued fast touches, Finish after three turns, the peek door free, upright with the door open',
+      'Attic Finds levels 3-4: queued fast touches, level 3 finishing itself on the third turn, the peek door free, upright with the door open',
     );
   }
 
