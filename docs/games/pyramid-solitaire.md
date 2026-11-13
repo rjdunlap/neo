@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–4 |
+| grown-up | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,6 +16,7 @@
 | 2 | Ten cards: uncover the next pair |
 | 3 | Fifteen cards: plan through five rows |
 | 4 | Twenty-one cards: spend copies over six rows |
+| 5 | Lift the cover: a card with the one under it |
 
 <!-- end generated -->
 

@@ -11,8 +11,10 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   at,
+  covers,
   exposed,
   fullMask,
+  liftable,
   makePuzzle,
   moves,
   present,
@@ -93,18 +95,24 @@ class PyramidSolitaire implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct('pyramid.go');
+    void this.ctx.instruct(this.puzzle.lift ? 'pyramid.lift' : 'pyramid.go');
   }
   choose(i: number) {
     if (!this.ctx.alive || this.finished || !present(this.mask, i)) return;
-    if (!exposed(this.puzzle, this.mask, i)) {
+    // Level 5: a covered card whose only remaining cover is the chosen card is a partner like an open one.
+    const coverPartner =
+      !!this.puzzle.lift && this.selected >= 0 && liftable(this.puzzle, this.mask, this.selected).includes(i);
+    if (!exposed(this.puzzle, this.mask, i) && !coverPartner) {
       sfx.tick();
-      this.status.text = 'Remove both cards directly below this one first.';
-      void this.ctx.say('pyramid.covered');
+      const oneLeft = !!this.puzzle.lift && covers(this.puzzle.rows, i).filter((k) => present(this.mask, k)).length === 1;
+      this.status.text = oneLeft
+        ? 'First choose the one card lying on this one. If they make 13, they lift together.'
+        : 'Remove both cards directly below this one first.';
+      void this.ctx.say(oneLeft ? 'pyramid.lift' : 'pyramid.covered');
       return;
     }
     const rank = this.puzzle.ranks[i];
-    if (rank === 13) {
+    if (rank === 13 && !coverPartner) {
       this.take([i]);
       return;
     }
@@ -265,6 +273,13 @@ class PyramidSolitaire implements Game {
             : null;
       if (color !== null) this.glow.roundRect(c.x - 49, c.y - 49, 98, 98, 16).stroke({ color, width: 5 });
     });
+    // Level 5: the covered card a chosen card could take with it is outlined too (what it is, not whether it sums).
+    if (this.puzzle.lift && this.selected >= 0)
+      for (const b of liftable(this.puzzle, this.mask, this.selected)) {
+        const c = this.nodes[b];
+        if (this.hinted?.includes(b)) continue;
+        this.glow.roundRect(c.x - 49, c.y - 49, 98, 98, 16).stroke({ color: swatch.purple.line, width: 3, alpha: 0.7 });
+      }
     this.hintButton.alpha = this.hinted ? 0.7 : 1;
   }
   /** What a planner watches: how many pairs the bright cards make now, and whether a king can go alone. */

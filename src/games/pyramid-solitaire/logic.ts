@@ -5,6 +5,8 @@ export type Removal = readonly number[];
 export interface Puzzle {
   rows: number;
   ranks: number[];
+  /** Level 5's cover lift: an open card may go with the one card under it when nothing else lies on that card. */
+  lift?: true;
 }
 /**
  * Each plan's band for the deal dial: the exact chance that someone lifting a uniformly random legal removal every turn
@@ -18,13 +20,19 @@ export const PLANS = [
   // Six rows (measured 2026-11-12 over 300 seeds): undialled, the median candidate clears 59% of random play and 73% hold a
   // dead end; dialled, every round lands in the band (median 50%) and reaches at most 61 positions.
   { rows: 6, name: 'Twenty-one cards: spend copies over six rows', band: { min: 0.3, max: 0.75 } },
+  // Five rows with the cover lift (measured 2026-11-12 over 300 seeds, LIFT_CHANCE 0.35): undialled the median candidate
+  // clears every random play, so the dial does the work; dialled, 298 land in the band (median 67%), the top card is not a
+  // king on 157, 290 cannot clear without a lift, at most 30 positions, slowest deal 5 ms.
+  { rows: 5, name: 'Lift the cover: a card with the one under it', band: { min: 0.4, max: 0.8 }, lift: true },
 ] as const;
+/** How often the generator's backward walk takes a cover-lift step when one is open (level 5 only). */
+export const LIFT_CHANCE = 0.35;
 /** Candidate deals the dial draws before it keeps the one closest to the band. */
 export const CANDIDATES = 40;
 /** A real pack: no rank more than four times, so the paper version deals as shown and counting a rank is true. */
 export const PACK_LIMIT = 4;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 5 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const countFor = (rows: number) => (rows * (rows + 1)) / 2;
 export const fullMask = (rows: number) => (1 << countFor(rows)) - 1;
@@ -41,15 +49,36 @@ export function covers(rows: number, i: number): number[] {
 export const exposed = (p: Puzzle, mask: number, i: number) =>
   i >= 0 && i < p.ranks.length && present(mask, i) && covers(p.rows, i).every((k) => !present(mask, k));
 export const remove = (mask: number, move: Removal) => move.reduce((m, i) => m & ~(1 << i), mask);
+/** The cards `i` lies on: one or two in the row above. */
+export function under(rows: number, i: number): number[] {
+  const out: number[] = [];
+  for (let row = 0; row < rows - 1; row++)
+    for (let col = 0; col <= row; col++) if (covers(rows, at(row, col)).includes(i)) out.push(at(row, col));
+  return out;
+}
+/** Cards present under open card `a` that `a` alone still lies on: the cards a cover lift could take with it. */
+export function liftable(p: Puzzle, mask: number, a: number): number[] {
+  if (!exposed(p, mask, a)) return [];
+  return under(p.rows, a).filter((b) => present(mask, b) && covers(p.rows, b).every((k) => k === a || !present(mask, k)));
+}
+/** Legal removals; on a lift level, cover pairs come after the open ones, always as `[open card, covered card]`. */
 export function moves(p: Puzzle, mask: number): Removal[] {
   const free = p.ranks.map((_, i) => i).filter((i) => exposed(p, mask, i));
-  return free.flatMap((a, k) =>
+  const open: Removal[] = free.flatMap((a, k) =>
     p.ranks[a] === 13
       ? [[a]]
       : free
           .slice(k + 1)
           .filter((b) => p.ranks[a] + p.ranks[b] === 13)
           .map((b) => [a, b]),
+  );
+  if (!p.lift) return open;
+  return open.concat(
+    free.flatMap((a) =>
+      liftable(p, mask, a)
+        .filter((b) => p.ranks[a] + p.ranks[b] === 13)
+        .map((b) => [a, b]),
+    ),
   );
 }
 /** Exact finite search: every move removes at least one card. Cache belongs to this deal. */
@@ -103,14 +132,33 @@ export interface Candidate {
  * always two pairs and two kings.
  */
 export function dealCandidate(level: number, rng: Rng): Candidate {
-  const rows = planFor(level).rows,
-    p = { rows, ranks: Array<number>(countFor(rows)).fill(0) },
+  const plan = planFor(level),
+    rows = plan.rows,
+    p: Puzzle = { rows, ranks: Array<number>(countFor(rows)).fill(0) },
     used = Array<number>(14).fill(0);
+  if ('lift' in plan) p.lift = true;
   let mask = fullMask(rows),
     forcedKings = 0,
     chanceKings = 0;
   while (mask) {
     const free = rng.shuffle(p.ranks.map((_, i) => i).filter((i) => exposed(p, mask, i)));
+    // Level 5: sometimes (and always instead of a forced king) the step lifts an open card with the one card under it.
+    // Every draw here sits behind the flag, so levels 1-4 deal exactly as before.
+    if (p.lift) {
+      const covered = free.flatMap((a) => liftable(p, mask, a).map((b) => [a, b] as const));
+      if (covered.length && (free.length === 1 || rng.chance(LIFT_CHANCE))) {
+        const [a, b] = rng.pick(covered);
+        const rank = rng.pick(
+          Array.from({ length: 12 }, (_, k) => k + 1).filter((r) => used[r] < PACK_LIMIT && used[13 - r] < PACK_LIMIT),
+        );
+        p.ranks[a] = rank;
+        p.ranks[b] = 13 - rank;
+        used[rank]++;
+        used[13 - rank]++;
+        mask = remove(mask, [a, b]);
+        continue;
+      }
+    }
     const a = free[0];
     const forced = free.length === 1;
     // Level 1 never adds one: on three rows the forced kings alone always come to two (the top, and one lone open card).

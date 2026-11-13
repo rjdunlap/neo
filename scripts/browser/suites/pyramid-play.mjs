@@ -5,7 +5,7 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
   async function pyramidPlay() {
     // PYRAMID_LEVELS=4 plays only the named levels and skips the shared recovery and land-launch tail.
     const only = process.env.PYRAMID_LEVELS?.split(',').map(Number);
-    for (const level of only ?? [1, 3, 4]) {
+    for (const level of only ?? [1, 3, 4, 5]) {
       await launch('pyramid-solitaire', level);
       await page.waitForTimeout(350);
       let initial = await page.evaluate(() => neo.scene.game.mask);
@@ -60,6 +60,40 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await tap('neo.scene.game.againButton');
       assert.equal(await page.evaluate(() => neo.scene.game.mask), initial);
       assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+      if (level === 5) {
+        // A wrong sum on a cover pair is a miss like any other; a right one lifts both (checked by the route below).
+        const coverWrong = await page.evaluate(async () => {
+          const L = await import('/src/games/pyramid-solitaire/logic.ts'),
+            g = neo.scene.game;
+          const find = () => {
+            for (const a of g.puzzle.ranks.map((_, i) => i))
+              for (const b of L.liftable(g.puzzle, g.mask, a))
+                if (g.puzzle.ranks[a] !== 13 && g.puzzle.ranks[a] + g.puzzle.ranks[b] !== 13) return [a, b];
+            return null;
+          };
+          // Walk the clearing route with real taps until a covered card sits under one open card with a wrong sum.
+          for (let guard = 0; guard < 12 && !find(); guard++) {
+            const move = g.solve(g.mask)?.[0];
+            if (!move || g.mask === 0) return null;
+            if (move.length === 2 && L.remove(g.mask, move) === 0) return null;
+            for (const i of move) {
+              kit.tapOn(g.nodes[i]);
+              await kit.sleep(170);
+            }
+          }
+          return find();
+        });
+        if (coverWrong) {
+          const misses = await page.evaluate(() => neo.scene.game.misses);
+          const mask = await page.evaluate(() => neo.scene.game.mask);
+          for (const i of coverWrong) await tap(`neo.scene.game.nodes[${i}]`);
+          assert.equal(await page.evaluate(() => neo.scene.game.misses), misses + 1, 'a wrong cover sum is a miss');
+          assert.equal(await page.evaluate(() => neo.scene.game.mask), mask);
+          log(`Pyramid Solitaire 5: wrong cover sum ${coverWrong} counted a miss`);
+          await tap('neo.scene.game.againButton');
+          assert.equal(await page.evaluate(() => neo.scene.game.mask), initial);
+        } else log('Pyramid Solitaire 5: no wrong cover pair open on this deal');
+      }
       if (level >= 3) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(350);
@@ -87,20 +121,27 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
         await screenshot(`pyramid-solitaire-${level}-landscape`);
       }
       const before = await page.evaluate(() => kit.store.data.stickers.length);
-      await page.evaluate(async () => {
-        const g = neo.scene.game;
+      const lifts = await page.evaluate(async () => {
+        const L = await import('/src/games/pyramid-solitaire/logic.ts'),
+          g = neo.scene.game;
+        let lifted = 0;
         for (let guard = 0; guard < 20 && !g.finished; guard++) {
           const move = g.solve(g.mask)?.[0];
           if (!move) throw new Error('Missing clearing route');
+          // A cover lift: the second card is still covered (by the first) when it is tapped.
+          if (move.length === 2 && !L.exposed(g.puzzle, g.mask, move[1])) lifted++;
           for (const i of move) {
             kit.tapOn(g.nodes[i]);
             await kit.sleep(170);
           }
         }
+        return lifted;
       });
+      if (level < 5) assert.equal(lifts, 0, 'levels 1-4 never lift a covered card');
       await finished('pyramid-solitaire');
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
-      log(`Pyramid Solitaire ${level}: touch, hint, revision, one sticker passed`);
+      if (level === 5) assert.ok(lifts > 0 || (await page.evaluate(() => neo.scene.game.puzzle.ranks[0] === 13)), 'a lift');
+      log(`Pyramid Solitaire ${level}: touch, hint, revision, ${lifts} cover lifts, one sticker passed`);
     }
     if (only) return;
     // Find a legal dead end in an actual isolated round, without replacing game state.
