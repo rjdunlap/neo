@@ -227,7 +227,8 @@ class VineSnip implements Game {
   askForHint() {
     if (this.finished || this.busy) return;
     if (!this.canSnip) return void this.say(this.instructLine(), this.vars());
-    this.hints++;
+    // Levels 1 and 2 count nothing against her, so the glow is free there, as the card says.
+    if (this.plan.counts) this.hints++;
     // A fruit swinging or hanging on a vine that cannot feed its friend grows its vines back first.
     if (this.keeps)
       for (const h of this.hangs)

@@ -75,7 +75,7 @@ export interface Plan {
   name: string;
   mode: Mode;
   lines: number;
-  /** Whether a missed drop counts. */ counts: boolean;
+  /** Whether a missed drop, or a grown-up's Show a hint, counts (levels 1 and 2: nothing she does can go wrong). */ counts: boolean;
 }
 
 const PLANS: Plan[] = [

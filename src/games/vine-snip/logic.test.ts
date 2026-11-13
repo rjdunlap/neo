@@ -72,7 +72,7 @@ describe('plans', () => {
     expect(planFor(9).level).toBe(MAX_LEVEL);
     expect(planFor(0).level).toBe(1);
   });
-  it('counts a missed drop only from level 3', () => {
+  it('counts a missed drop or a hint only from level 3', () => {
     expect(levels.map((l) => planFor(l).counts)).toEqual([false, false, true, true, true]);
   });
 });
