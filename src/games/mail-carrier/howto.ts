@@ -6,7 +6,7 @@ export const HOW_TO: GameHowTo = {
   steps: [
     {
       to: 1,
-      text: 'Tap any mailbox to post the letter. For a baby, a tap anywhere on the street posts it to the nearest mailbox.',
+      text: 'Tap any mailbox to post the letter. For a baby, a tap anywhere on the street posts it to the nearest mailbox; for a toddler, a tap off the houses just waves a flag.',
     },
     { from: 2, to: 2, text: 'Tap the mailbox whose door is the color of the letter.' },
     { from: 3, to: 3, text: 'Match the dots on the letter to the dots and number on a mailbox.' },
