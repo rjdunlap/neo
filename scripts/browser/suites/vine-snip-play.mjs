@@ -59,7 +59,11 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       if (i === 0) {
         await page.evaluate(() => neo.scene.game.askForHint());
         const h = await state();
-        assert.deepEqual([h.hints, h.glow], [0, true], 'Show a hint at level 1 glows the vine and counts nothing');
+        assert.deepEqual(
+          [h.hints, h.glow],
+          [0, true],
+          'Show a hint at level 1 glows the vine and counts nothing',
+        );
       }
       await tapStage({ x: s.fruit.x + 160, y: s.fruit.y + 60 });
       await fed(i);
