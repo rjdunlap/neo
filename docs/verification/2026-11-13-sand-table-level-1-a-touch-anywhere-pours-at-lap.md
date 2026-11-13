@@ -1,0 +1,5 @@
+# 2026-11-13 — Sand Table level 1, a touch anywhere pours at lap (PR #1609)
+
+**Changed:** `sand-table` level 1 at lap only (toddler's level 1 unchanged): a full-screen layer means a touch on the sky, bucket or frame pours onto the one heap; no scoop paddle or flag; the round finishes 0.9 s after the eighth pour (twelve would empty the bucket, so it never runs dry). New lap instruction line (no rendered clip; device speech fallback), how-to lines and a ghost finger that taps bucket, sky and sand. The `sandtable` suite names `toddler` for its old level-1 play and gains a lap play.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/sand-table src/games/registry.test.ts src/content` (23 files, 283 tests, sand-table 43 including 3 new lap tests); `BROWSER_SUITE=sandtable` passed (every touch pours, no paddle or flag, bucket never dry, finish after eight pours with 0 misses and 0 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sand-table FINGER_BAND=lap` passed (level 1 in 14.5 s, level 4 at school in 6.5 s).
+**Not run:** `npm run build` (no shared files or assets changed; CI builds), full `npm test` (CI runs it), voice clip render.

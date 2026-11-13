@@ -91,6 +91,12 @@ export type Wind = 'left' | 'right';
 /** The hill with a hollow downwind (index 1 of level 4's starts): its right line is the hollow one. */
 export const HOLLOW_HILL = 1;
 
+/**
+ * At lap (level 1 only, as `lap` in the state): a touch anywhere pours onto the one heap, and the round finishes after this
+ * many pours rather than by the flag. Twelve pours empty level 1's bucket, so eight leave it a third full: it never runs dry.
+ */
+export const LAP_POURS = 8;
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
@@ -130,9 +136,14 @@ export interface SandState {
   puff: BreezeResult | null;
   /** Level 4's round accounting, kept through Start again. */
   quiz: Quiz;
+  /** Lap's level 1: a touch anywhere pours, no scoop, and the round finishes after `LAP_POURS` pours. */
+  lap: boolean;
+  /** Pours that moved sand this round, kept through Start again (tries keep counting). */
+  pours: number;
 }
 
-export function startState(level: number, rng: Rng): SandState {
+/** `lap` (the band) applies at level 1 only, the one level lap plays; toddler's level 1 is unchanged. */
+export function startState(level: number, rng: Rng, lap = false): SandState {
   const plan = planFor(level);
   let wind: Wind | null = null;
   let hill = 0;
@@ -162,6 +173,8 @@ export function startState(level: number, rng: Rng): SandState {
     hill,
     puff: null,
     quiz: { misses: 0, hints: 0, glowCounted: false, pathCounted: false },
+    lap: lap && plan.level === 1,
+    pours: 0,
   };
 }
 
@@ -250,8 +263,12 @@ export function pour(s: SandState, bay: number): SandResult {
     moved++;
     settle(s, events);
   }
+  if (moved > 0) s.pours++;
   return done(s, events, moved);
 }
+
+/** Lap's round is over: enough pours made. Never true off lap. */
+export const lapDone = (s: SandState) => s.lap && s.pours >= LAP_POURS;
 
 /** A scoop under a bay: up to three grains from its tallest column (leftmost on a tie), settling after each. */
 export function scoop(s: SandState, bay: number): SandResult {
@@ -460,7 +477,8 @@ export type BotStep = SandAction | { flag: true } | { breeze: true } | { answer:
 
 /**
  * The ghost finger's short round, step by step from `taken` actions so far. Level 1: four pours, one scoop. Level 2: three on the
- * left, one on the right, one scoop on the left. Level 3 follows the invitation. Then the flag (or Show).
+ * left, one on the right, one scoop on the left. Level 3 follows the invitation. Then the flag (or Show). Lap only pours; its
+ * round then finishes by itself (`flag` here means only that it is over).
  */
 export function botStep(s: SandState, taken: number): BotStep {
   const lvl = s.plan.level;
@@ -468,6 +486,7 @@ export function botStep(s: SandState, taken: number): BotStep {
     if (!s.puff) return { breeze: true };
     return { answer: gainedBays(s.plan, s.puff.before, s.puff.after)[0] };
   }
+  if (s.lap) return lapDone(s) ? { flag: true } : { pour: 0 };
   if (lvl === 1) return taken < 4 ? { pour: 0 } : taken < 5 ? { scoop: 0 } : { flag: true };
   if (lvl === 2)
     return taken < 3 ? { pour: 0 } : taken < 4 ? { pour: 1 } : taken < 5 ? { scoop: 0 } : { flag: true };

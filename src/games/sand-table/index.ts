@@ -43,6 +43,7 @@ import {
   describeLandscape,
   describeSand,
   hintAction,
+  lapDone,
   restart,
   sandLayout,
   startState,
@@ -76,6 +77,8 @@ class SandTable implements Game {
   readonly flagNode = flagArt(130);
   private invitation: Container | null = null;
   private readonly sparkle = new Graphics();
+  /** Lap's level 1: the whole screen under the tray, so a touch on the sky, bucket or frame pours onto the one heap. */
+  readonly anywhere = new Container();
   finished = false;
   private gone = false;
   private idle = 0;
@@ -111,7 +114,7 @@ class SandTable implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.state = startState(ctx.level, ctx.rng);
+    this.state = startState(ctx.level, ctx.rng, ctx.band === 'lap');
     this.disp = [...this.state.h];
     this.speckles = Array.from({ length: 90 }, () => ({ x: ctx.rng.next(), y: ctx.rng.next() }));
     this.lay = sandLayout(this.view, this.state.plan.bays.length);
@@ -134,6 +137,13 @@ class SandTable implements Game {
       this.fx,
       this.sparkle,
     );
+    if (this.state.lap) {
+      // The drawings over it take no touches, so a tap on any of them reaches this layer; the bay (the tray) still sits above.
+      for (const d of [this.bg, this.table, this.surface, this.bucket]) d.eventMode = 'none';
+      this.anywhere.eventMode = 'static';
+      onTap(this.anywhere, () => this.touchBay(0), { cooldown: 60 });
+      ctx.stage.addChildAt(this.anywhere, 1);
+    }
     const breezy = !!this.state.plan.breeze;
 
     this.state.plan.bays.forEach((_, b) => {
@@ -151,6 +161,8 @@ class SandTable implements Game {
       } else {
         const paddle = paddleArt(180, 100);
         onTap(paddle, () => this.touchPaddle(b), { cooldown: 60 });
+        // lap has no scoop: every touch pours
+        paddle.visible = !this.state.lap;
         this.paddleNodes.push(paddle);
         ctx.stage.addChild(paddle);
       }
@@ -176,7 +188,9 @@ class SandTable implements Game {
   }
 
   start() {
-    void this.ctx.instruct(`sand.instruct.${this.state.plan.level}` as 'sand.instruct.1');
+    void this.ctx.instruct(
+      this.state.lap ? 'sand.instruct.lap' : (`sand.instruct.${this.state.plan.level}` as 'sand.instruct.1'),
+    );
     if (this.state.wind)
       void this.ctx.tw.wait(3.6).then(() => {
         if (!this.gone && !this.finished && !this.state.puff)
@@ -205,6 +219,7 @@ class SandTable implements Game {
     const l = this.lay;
     this.bg.width = v.w;
     this.bg.height = v.h;
+    this.anywhere.hitArea = new Rectangle(0, 0, v.w, v.h);
     const t = l.tray;
     this.table
       .clear()
@@ -401,6 +416,12 @@ class SandTable implements Game {
     if ('pour' in a) this.showPour(a.pour, r);
     else if ('scoop' in a) this.showScoop(a.scoop, r);
     else this.showPail(r);
+    if (this.state.lap) {
+      // no flag at lap: the first heap is still greeted, and the round finishes after her pours
+      if (this.state.flag && !wasUp) void this.ctx.say('sand.first-heap');
+      if (lapDone(this.state)) void this.finale(0.9);
+      return;
+    }
     if (this.state.flag && !wasUp) this.raiseFlag();
   }
 
@@ -776,11 +797,16 @@ class SandTable implements Game {
 
   // ---- Finish ---------------------------------------------------------------------------------------------------
 
-  private async finale() {
+  /** `settle`: seconds to let the last pour land first (lap's own finish). */
+  private async finale(settle = 0) {
     if (this.finished) return;
     this.finished = true;
     const { tw } = this.ctx;
     this.idle = 0;
+    if (settle > 0) {
+      await tw.wait(settle);
+      if (this.gone) return;
+    }
     if (this.state.plan.show) await this.walk();
     else {
       [4, 5, 6, 8, 9].forEach((s, i) => void tw.wait(i * 0.12).then(() => !this.gone && sfx.pluck(s, 0.25)));
@@ -880,6 +906,14 @@ class SandTable implements Game {
     const step = botStep(this.state, this.taken);
     if ('breeze' in step) return { tap: { on: this.breezeNode } };
     if ('answer' in step) return this.playing ? null : { tap: { on: this.padNodes[step.answer] } };
+    if (this.state.lap) {
+      if ('flag' in step) return null;
+      // anywhere: the bucket, the sky beside it, then the sand itself
+      const k = this.taken % 3;
+      if (k === 2) return { tap: { on: this.bayNodes[0] } };
+      const at = k === 0 ? this.lay.bucket : { x: this.view.w * 0.82, y: this.lay.bucket.y };
+      return { tap: { on: this.anywhere, x: at.x, y: at.y } };
+    }
     if ('flag' in step) return this.state.flag ? { tap: { on: this.flagNode } } : null;
     if ('pour' in step) return { tap: { on: this.bayNodes[step.pour] } };
     if ('scoop' in step) return { tap: { on: this.paddleNodes[step.scoop] } };

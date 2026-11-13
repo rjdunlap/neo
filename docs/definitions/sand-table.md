@@ -67,7 +67,7 @@ The level-3 authored trays, each with every neighbour within one: **flat** `1×1
 
 | Level | Name | Bands (default) | What she decides | Finish |
 | --- | --- | --- | --- | --- |
-| 1 | **Make a mound** | lap, toddler | Whether to pour more or scoop some away; one bay | The flag, after any change |
+| 1 | **Make a mound** (lap since 2026-11-13: touch anywhere, eight pours finish it) | lap, toddler | Whether to pour more or scoop some away; one bay | The flag, after any change |
 | 2 | **Two little hills** | toddler, preschool | Which side to build up or lower | The flag, after any change |
 | 3 | **A landscape to show** | preschool, pre-K | Where to make it tall, flat or hilly, from a seeded start and a pictured invitation | **Show:** the pet walks it, then the round finishes |
 
