@@ -83,6 +83,15 @@ export const PLANS = [
     flowers: 4,
     clear: [0.45, 0.9],
   },
+  {
+    name: 'Wide stack · 30 tiles',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'wide',
+    kinds: 6,
+    clear: [0.45, 0.9],
+  },
 ] as const;
 
 /** Flower kinds come after a look's six pictures: `FLOWER + n` is the nth of the four flower drawings. */
@@ -131,7 +140,7 @@ export type Look = (typeof LOOKS)[number];
 /** The round's look, drawn from the round's rng after the board is dealt so a seed's board is unchanged. */
 export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 9 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
@@ -180,10 +189,20 @@ export function pairs(tiles: readonly Tile[], mask: number, geometryOnly = false
   });
   return out;
 }
-/** Exhaustive memoized search on at most 24 tiles. Null means no clearing route, not merely no pair now. */
-export function solve(tiles: readonly Tile[], mask = fullMask(tiles), geometryOnly = false): Pair[] | null {
+/**
+ * Exhaustive memoized search on at most 30 tiles (the mask is a positive 32-bit integer up to 31; level 9's
+ * 30 tiles are the most it holds, and a test keeps every state's search under a node budget). Null means no
+ * clearing route, not merely no pair now. `stats.nodes` counts the states visited, for that budget.
+ */
+export function solve(
+  tiles: readonly Tile[],
+  mask = fullMask(tiles),
+  geometryOnly = false,
+  stats?: { nodes: number },
+): Pair[] | null {
   const dead = new Set<number>();
   function visit(m: number): Pair[] | null {
+    if (stats) stats.nodes++;
     if (!m) return [];
     if (dead.has(m)) return null;
     for (const pair of pairs(tiles, m, geometryOnly)) {
@@ -277,6 +296,10 @@ export function layout(level: number): Tile[] {
     for (let y = 0; y < 3; y++) for (const x of [1, 2]) add(x, y, 1);
     for (let y = 1; y < 3; y++) for (const x of [1, 2]) add(x, y, 2);
     for (const x of [1, 2]) add(x, 1, 3);
+  } else if (plan.layout === 'wide') {
+    // The whole 6 × 3 base, a 4 × 2 block raised on its back two rows and a 2 × 2 on that: 18 + 8 + 4 = 30.
+    for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
+    for (let y = 0; y < 2; y++) for (const x of [2, 3]) add(x, y, 2);
   } else {
     for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
     for (const x of [2, 3]) add(x, 1, 2);
@@ -319,6 +342,15 @@ export function deal(level: number, rng: Rng): Deal {
 }
 export const makeBoard = (level: number, rng: Rng): Tile[] => deal(level, rng).tiles;
 
+const RESHUFFLE_BASE = 24;
+const RAISED = [
+  { x: 1, y: 1 },
+  { x: 2, y: 1 },
+  { x: 3, y: 1 },
+  { x: 4, y: 1 },
+  { x: 2, y: 2 },
+  { x: 3, y: 2 },
+];
 /**
  * Recovery keeps exactly the remaining pictures, laid in open rows. Even a stranded tower can be rescued. Flowers
  * count as one family, so the remaining flowers (always an even number) stay in twos.
@@ -338,12 +370,13 @@ export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[
     for (let i = 0; i < count / 2; i++) symbols.push(kind);
   }
   for (let n = 0; n < flowers.length / 2; n++) symbols.push(FLOWER_PAIR);
-  const out = Array.from({ length: symbols.length * 2 }, (_, i) => ({
-    x: i % 6,
-    y: Math.floor(i / 6),
-    z: 0,
-    kind: 0,
-  }));
+  // At most four rows of six fit above the buttons in landscape, so past 24 tiles (level 9) the rest are raised
+  // on the middle of the rows; the route below still clears them.
+  const out = Array.from({ length: symbols.length * 2 }, (_, i) =>
+    i < RESHUFFLE_BASE
+      ? { x: i % 6, y: Math.floor(i / 6), z: 0, kind: 0 }
+      : { ...RAISED[i - RESHUFFLE_BASE], z: 1, kind: 0 },
+  );
   // Recovery stays on the first route: open rows that pair off without planning.
   return assign(out, symbols, rng, solve(out, fullMask(out), true), flowers);
 }

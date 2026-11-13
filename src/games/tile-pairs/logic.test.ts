@@ -55,13 +55,13 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(8));
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 8 });
-    for (let level = 1; level <= 8; level++)
+    expect(planFor(99)).toBe(planFor(9));
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 9 });
+    for (let level = 1; level <= 9; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         expect(tiles).toEqual(makeBoard(level, new Rng(seed)));
-        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24, 24][level - 1]);
+        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24, 24, 30][level - 1]);
         expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(tiles.length);
         const route = solve(tiles)!;
         expect(route).not.toBeNull();
@@ -115,9 +115,9 @@ describe('Tile Pairs', () => {
     expect(clearRate([], new Rng(1))).toBe(1);
     const trap: Tile[] = [0, 1, 2, 1, 2, 0].map((kind, x) => ({ x, y: 0, z: 0, kind }));
     expect(clearRate(trap, new Rng(1))).toBe(0);
-    for (let level = 1; level <= 8; level++) {
+    for (let level = 1; level <= 9; level++) {
       const [min, max] = planFor(level).clear;
-      expect(min).toBe([0.95, 0.95, 0.95, 0.95, 0.85, 0.75, 0.45, 0.45][level - 1]);
+      expect(min).toBe([0.95, 0.95, 0.95, 0.95, 0.85, 0.75, 0.45, 0.45, 0.45][level - 1]);
       let exhausted = 0,
         again = 0;
       for (let seed = 1; seed <= 100; seed++) {
@@ -173,7 +173,7 @@ describe('Tile Pairs', () => {
     expect(solve(reshuffle(trap, fullMask(trap), new Rng(5)))).not.toBeNull();
   });
   it('can recover any played remainder without returning removed tiles or losing pictures', () => {
-    for (const level of [3, 4, 5, 6, 8])
+    for (const level of [3, 4, 5, 6, 8, 9])
       for (let seed = 1; seed <= 80; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         let mask = fullMask(tiles);
@@ -191,10 +191,21 @@ describe('Tile Pairs', () => {
           for (const [a, b] of solve(rescued)!)
             expect(isFlower(rescued[a].kind)).toBe(isFlower(rescued[b].kind));
           expect(solve(rescued)).not.toBeNull();
-          expect(rescued.every((t) => t.z === 0)).toBe(true);
+          // Open rows, never more than four (all that fits above the buttons in landscape); past 24 tiles the
+          // rest are raised on supported places in the middle.
+          expect(rescued.every((t) => t.x < 6 && t.y < 4)).toBe(true);
+          expect(rescued.filter((t) => t.z === 0)).toHaveLength(Math.min(rescued.length, 24));
+          for (const tile of rescued.filter((t) => t.z > 0))
+            expect(rescued.some((t) => t.x === tile.x && t.y === tile.y && t.z === 0)).toBe(true);
+          expect(new Set(rescued.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(rescued.length);
           // Continue on the original stack to exercise unlucky alternatives too.
         }
       }
+    // A shuffle before any pair at level 9 lays all 30 out: 24 in four rows and 6 raised.
+    const wide = makeBoard(9, new Rng(3)),
+      all = reshuffle(wide, fullMask(wide), new Rng(4));
+    expect([0, 1].map((z) => all.filter((t) => t.z === z).length)).toEqual([24, 6]);
+    expect(solve(all)).not.toBeNull();
     const tower: Tile[] = [0, 1].map((z) => ({ x: 0, y: 0, z, kind: 2 }));
     expect(solve(tower)).toBeNull();
     expect(solve(reshuffle(tower, 3, new Rng(1)))).toEqual([[0, 1]]);
@@ -271,8 +282,8 @@ describe('Tile Pairs', () => {
         expect(matches(a, b)).toBe(matches(b, a));
         expect(matches(a, b)).toBe(a === b || (a >= FLOWER && b >= FLOWER));
       }
-    // Levels 1–7 deal no flowers.
-    for (let level = 1; level <= 7; level++)
+    // Levels 1–7 and 9 deal no flowers.
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 9])
       for (let seed = 1; seed <= 40; seed++)
         expect(makeBoard(level, new Rng(seed)).some((t) => isFlower(t.kind))).toBe(false);
     let flowerRoutes = 0,
@@ -296,5 +307,40 @@ describe('Tile Pairs', () => {
     }
     expect(flowerRoutes).toBeGreaterThan(50);
     expect(trapFlowerPairs).toBeGreaterThan(0);
+  });
+  it('stacks 30 tiles at level 9 with the mask still a positive 32-bit integer and the search under a budget', () => {
+    const tiles = layout(9);
+    expect([0, 1, 2].map((z) => tiles.filter((t) => t.z === z).length)).toEqual([18, 8, 4]);
+    expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(30);
+    // The same six columns and three rows as levels 4, 6 and 8, so the targets keep their size.
+    expect(tiles.every((t) => t.x >= 0 && t.x < 6 && t.y >= 0 && t.y < 3)).toBe(true);
+    for (const tile of tiles.filter((t) => t.z > 0))
+      expect(tiles.some((t) => t.x === tile.x && t.y === tile.y && t.z === tile.z - 1)).toBe(true);
+    const full = fullMask(tiles);
+    expect(full).toBe(2 ** 30 - 1);
+    expect(Number.isInteger(full) && full > 0 && (full | 0) === full).toBe(true);
+    let losing = 0,
+      worst = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed),
+        board = makeBoard(9, rng);
+      for (let kind = 0; kind < 6; kind++)
+        expect(board.filter((t) => t.kind === kind)).toHaveLength(kind < 3 ? 6 : 4);
+      if (pairs(board, full).some((p) => solve(board, removePair(full, p)) === null)) losing++;
+      // Random play to a dead end or a clear board: every state's exact search stays small enough for a phone.
+      let mask = full;
+      for (;;) {
+        const stats = { nodes: 0 };
+        solve(board, mask, false, stats);
+        worst = Math.max(worst, stats.nodes);
+        expect(mask).toBeGreaterThanOrEqual(0);
+        const open = pairs(board, mask);
+        if (!open.length) break;
+        mask = removePair(mask, rng.pick(open));
+      }
+    }
+    // Measured 2026-11-12: at most about 5,000 states over 300 play-outs (2.6 ms on a Mac).
+    expect(worst).toBeLessThan(20000);
+    expect(losing).toBeGreaterThan(0);
   });
 });

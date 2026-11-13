@@ -1,17 +1,20 @@
 import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
+const PAIR =
+  'Tap two tiles with the same picture. Each needs a clear top and an open left or right side. Bright tiles are free.';
+
 export const HOW_TO: GameHowTo = {
   goal: 'Clear the stack by removing matching pairs.',
   steps: [
-    {
-      text: 'Tap two tiles with the same picture. Each needs a clear top and an open left or right side. Bright tiles are free.',
-      to: 7,
-    },
+    { text: PAIR, to: 7 },
     {
       text: 'Tap two tiles with the same picture, or any two flowers. Each needs a clear top and an open left or right side.',
       from: 8,
+      to: 8,
     },
+    // Level 9's wide stack has no flowers.
+    { text: PAIR, from: 9 },
     'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
     {
       text: 'Tap Peek to see the pictures in each stack, bottom to top from left to right. Tap Peek or a tile to close. Looking is free.',
