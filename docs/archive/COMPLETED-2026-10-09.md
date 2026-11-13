@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Duckling Parade level 1 at lap: a touch quacks, ducklings come out one at a time (2026-11-12)
+
+[PR #1593](https://github.com/rjdunlap/neo/pull/1593), `claude/duckling-parade-lap-quack`: at lap only (level 1 is in lap's window alone, so it changed in place for that band), Mama quacks and hops at every touch-down anywhere, sky included (throttled 0.25 s, also while the ducklings hop into the pond before the finale). One duckling waits on the meadow at the start; each next one pops out (hop, pop, puff of stars) 0.6 s after the one before joins, at the first waiting spot more than 180 units from Mama (`nextToShow` in `logic.ts`, with rule tests). The fifteen-second glow still shows but at lap counts no hint. Toddler's level 1 is unchanged (all three out from the start, waiting counts a hint). The `arcade` suite's parade loop takes `PARADE_BAND` and accepts `ARCADE_ONLY=parade`. [Game notes](../games/duckling-parade.md#design-notes) and [verification](../verification/2026-11-12-duckling-parade-level-1-at-lap-a-touch-quacks.md).
+
 ### Animal Snack level 1 opens with one big animal (2026-11-12)
 
 [PR #1592](https://github.com/rjdunlap/neo/pull/1592), `claude/animal-snack-lap-big-animal`: level 1 (lap only, so changed in place; the `oneBig` plan, munch mode) starts with one big animal (scale 1.1 against 0.6). A layer over the whole meadow has a touch anywhere feed the nearest animal at any distance; a touch while one eats or a friend walks in squishes with a tick and counts nothing. The second and third friends walk in from the right after the second and fourth snacks, each with its call, and six snacks finish the round. New line `snack.big` (device speech, no rendered clip). [Game notes](../games/animal-snack.md#design-notes) and [verification](../verification/2026-11-12-animal-snack-level-1-one-big-animal-at-lap.md).
