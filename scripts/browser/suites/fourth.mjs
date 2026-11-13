@@ -7,7 +7,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     if (only !== undefined)
       selectValue(
         only,
-        ['song', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
+        ['song', 'song8', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'],
         'FOURTH_ONLY',
       );
     // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
@@ -51,6 +51,47 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         assert.deepEqual(r, level <= 2 ? [0, 0] : [2, 1], `song ${level} score`);
         log(`Song Maker ${level}: loop, mistakes, hint, saved round and sticker passed`);
       }
+
+    // Song Maker 8 (lap's first): one big jelly, a touch anywhere lights the nearest, friends wake, putting one out is free.
+    if (!only || only === 'song' || only === 'song8') {
+      await launch('song-maker', 8);
+      await page.waitForTimeout(600);
+      const r8 = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const shown = () => g.beads.filter((b) => b.visible).length;
+        const one = shown();
+        const W = innerWidth;
+        const H = innerHeight;
+        // A touch at the screen's right edge, off the board, lights the one big jelly.
+        kit.tap(W - 12, H * 0.6);
+        await kit.sleep(300);
+        const first = g.beads.find((b) => b.visible);
+        const litFirst = first.lit;
+        const afterOne = shown();
+        // A touch on the lit jelly puts it out and does not count; the next touch lights it again.
+        kit.tapOn(first);
+        await kit.sleep(300);
+        const out = !first.lit && g.lights === 1;
+        for (let i = 0; i < 40 && g.lights < 12; i++) {
+          kit.tap(W * (0.3 + ((i * 0.37) % 0.68)), H * (0.3 + ((i * 0.23) % 0.6)));
+          await kit.sleep(260);
+        }
+        return { one, litFirst, afterOne, out, lights: g.lights, shown: shown(), misses: g.misses };
+      });
+      assert.equal(r8.one, 1, 'one jelly to start');
+      assert.ok(r8.litFirst && r8.afterOne === 2 && r8.out, `song 8 anywhere ${JSON.stringify(r8)}`);
+      assert.ok(r8.lights >= 12 && r8.shown === 12, `song 8 woke all ${JSON.stringify(r8)}`);
+      await screenshot('song-maker-8');
+      await finished('song-maker');
+      const r = await page.evaluate(() => {
+        const r = kit.store.stats('song-maker').history.at(-1);
+        return [r.misses, r.hints];
+      });
+      assert.deepEqual(r, [0, 0], 'song 8 score');
+      log(
+        'Song Maker 8: one big jelly, touch anywhere, friends wake, a lit one put out free, sticker passed',
+      );
+    }
 
     // Puzzle Pals: exploring off the frame is free; a wrong place is a gentle miss.
     if (!only || only === 'puzzle')

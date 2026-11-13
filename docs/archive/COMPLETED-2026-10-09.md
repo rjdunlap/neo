@@ -3342,3 +3342,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Pyramid Solitaire batch 1, deals that ask for a plan (2026-11-12)
 
 [PR #1570](https://github.com/rjdunlap/neo/pull/1570), `claude/pyramid-plan-deals`, dive slices 1–2. A deal dial in `makePuzzle` (up to 40 seeded candidates, kept by exact random-play clear rate in the level's band), kings only where forced plus at most one by chance, at most four of a rank, level 1 always two pairs and two kings; a lifted pair fades, uncovered cards pulse with a bell step, the status line counts pairs open and every card has a corner index. Measurements and checks are in the [dive](../deep-dives/pyramid-solitaire.md#what-was-built-in-this-session).
+
+## `song-maker` level 8, a lap level that answers anywhere (2026-11-12)
+
+[PR #1583](https://github.com/rjdunlap/neo/pull/1583), `claude/song-maker-lap-anywhere` ([definition](../definitions/toy-test-lap-openings.md#music-mountain)). A new level at the end of the ladder and first in lap's `order` (`[8,1,2]`, `entryLevels: [8]`; no saved level or pin renumbered): one big sleeping jelly on a four-beat, three-row loop; a touch anywhere lights the nearest unlit awake spot with its note at once; spots wake as she lights them (low row first, then middle, then top); a touch on a lit jelly puts it out and is not counted; the round ends a loop after her twelfth light with at least two lit, and her tune can be kept from the tree house button. New voice line `song.wake`; the `fourth` browser suite takes `FOURTH_ONLY=song8`.

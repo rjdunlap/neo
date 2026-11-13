@@ -1,13 +1,13 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
-export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen';
+export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen' | 'wake';
 
 export interface SongPlan {
   mode: SongMode;
   cols: number;
   rows: number;
-  /** ghost and card: how many notes the song has. Free play: taps before the round ends. */
+  /** ghost and card: how many notes the song has. Free play: taps before the round ends. Wake: lights before it ends. */
   notes: number;
   name: string;
 }
@@ -32,6 +32,14 @@ export const SONG_PLANS: SongPlan[] = [
     name: 'Continue a named song pattern: stairs, hops, zigzags, arches and leaps',
   },
   { mode: 'listen', cols: 4, rows: 3, notes: 4, name: 'Listen, then find each note of a 4-note tune by ear' },
+  // Level 8, lap's first (see `order`): one big jelly, a touch anywhere lights the nearest, and friends wake as she lights them.
+  {
+    mode: 'wake',
+    cols: 4,
+    rows: 3,
+    notes: 12,
+    name: 'One big jelly on a 4-beat loop; any touch lights the nearest, and more jellies wake',
+  },
 ];
 
 export const songPlan = (level: number) =>
@@ -117,7 +125,7 @@ export interface Song {
 
 /** A song for one round. Every note has its own column, and a song never sits on a single pitch. */
 export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = []): Song {
-  if (plan.mode === 'free') return { notes: [], given: [] };
+  if (plan.mode === 'free' || plan.mode === 'wake') return { notes: [], given: [] };
   if (plan.mode === 'pattern') {
     const p = rng.pick(PATTERNS);
     const notes = Array.from({ length: plan.cols }, (_, col) => ({ col, row: p.rows[col % p.rows.length] }));
@@ -167,8 +175,44 @@ export function freeSong(plan: SongPlan): Note[] {
  * the pattern's next beat, or the tune heard), always a right one.
  */
 export function beadToTap(plan: SongPlan, song: Song, placed: ReadonlySet<string>): Note | null {
+  // Wake: the next spot in the order it wakes; the ghost finger only ever lights, so each one is awake by its turn.
+  if (plan.mode === 'wake') return awakeSpots(placed.size).find((n) => !placed.has(key(n))) ?? null;
   const notes = plan.mode === 'free' ? freeSong(plan) : song.notes;
   return notes.find((n) => !placed.has(key(n))) ?? null;
+}
+
+/**
+ * Wake level: the order the spots wake in, low row first (beat 1, then 3, then 2 and 4), then the middle row, then the top,
+ * and how many lights each waits for. Spot k wakes by light k, so an unlit awake spot is always there until all are lit.
+ */
+export const WAKE_ORDER: readonly Note[] = [2, 1, 0].flatMap((row) =>
+  [0, 2, 1, 3].map((col) => ({ col, row })),
+);
+export const WAKE_AT = [0, 1, 2, 2, 4, 4, 5, 5, 7, 7, 8, 8];
+
+/** The spots awake after `lights` counted lights. Putting a jelly out never takes one back, so the count only grows. */
+export const awakeSpots = (lights: number): Note[] => WAKE_ORDER.filter((_, k) => lights >= WAKE_AT[k]);
+
+/**
+ * What a touch at (x, y) does on the wake level, given where each awake spot sits and which are lit. A touch inside a lit
+ * jelly's own cell (within `reach`) puts it out, as on the other levels; any other touch lights the unlit awake spot nearest
+ * the finger. When every awake spot is lit, the nearest one just sings.
+ */
+export function wakeTouch(
+  spots: readonly { note: Note; x: number; y: number; lit: boolean }[],
+  x: number,
+  y: number,
+  reach: number,
+): { note: Note; act: 'light' | 'out' | 'sing' } | null {
+  const d = (s: { x: number; y: number }) => Math.hypot(s.x - x, s.y - y);
+  const nearest = (list: typeof spots) =>
+    list.reduce<(typeof spots)[number] | null>((best, s) => (!best || d(s) < d(best) ? s : best), null);
+  const near = nearest(spots);
+  if (!near) return null;
+  if (near.lit && Math.abs(near.x - x) <= reach && Math.abs(near.y - y) <= reach)
+    return { note: near.note, act: 'out' };
+  const unlit = nearest(spots.filter((s) => !s.lit));
+  return unlit ? { note: unlit.note, act: 'light' } : { note: near.note, act: 'sing' };
 }
 
 /** Where the grid sits in a view: its cell size and top-left corner. */
@@ -196,7 +240,8 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number }): SongLay
 }
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  // Level 8 (one big jelly that answers anywhere) is the easiest, so lap plays it first, then 1 and 2.
+  lap: { min: 1, max: 8, order: [8, 1, 2] },
   toddler: { min: 2, max: 4 },
   preschool: { min: 4, max: 6 },
   prek: { min: 5, max: 7 },

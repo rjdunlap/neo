@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  awakeSpots,
   beadToTap,
   freeSong,
   key,
@@ -12,12 +13,18 @@ import {
   SONG_PLANS,
   songPlan,
   songLayout,
+  LEVELS,
+  WAKE_AT,
+  WAKE_ORDER,
+  wakeTouch,
+  type Note,
 } from './logic';
+import { levelsInOrder } from '../../progress/difficulty';
 import { SCRIPT } from '../../content/voice-script';
 
 describe('Song Maker songs', () => {
   it('fit the grid, use one note per beat, and never sit on a single pitch', () => {
-    for (const plan of SONG_PLANS.filter((p) => p.mode !== 'free')) {
+    for (const plan of SONG_PLANS.filter((p) => p.mode !== 'free' && p.mode !== 'wake')) {
       expect(ROW_STEPS[plan.rows]).toHaveLength(plan.rows);
       for (let seed = 1; seed <= 300; seed++) {
         const song = makeSong(plan, new Rng(seed));
@@ -121,6 +128,84 @@ describe('Song Maker songs', () => {
     expect(seen.size).toBe(PATTERNS.length);
   });
 
+  describe('the lap wake level', () => {
+    const plan = songPlan(8);
+    const spots = (lights: number, lit: ReadonlySet<string>, cell = 120) =>
+      awakeSpots(lights).map((note) => ({
+        note,
+        x: cell * (note.col + 0.5),
+        y: cell * (note.row + 0.5),
+        lit: lit.has(key(note)),
+      }));
+
+    it("is level 8, lap's first, and starts with one jelly on the low row of a 4-beat loop", () => {
+      expect(plan.mode).toBe('wake');
+      expect(plan.cols).toBe(4);
+      expect(levelsInOrder(LEVELS.lap!)[0]).toBe(8);
+      expect(LEVELS.toddler!.max).toBeLessThan(8);
+      expect(awakeSpots(0)).toEqual([{ col: 0, row: plan.rows - 1 }]);
+      expect(SCRIPT['song.wake']?.length).toBeGreaterThan(0);
+    });
+
+    it('wakes every spot once, low row first, by the light whose turn it is, and only ever adds spots', () => {
+      expect(WAKE_ORDER).toHaveLength(plan.cols * plan.rows);
+      expect(new Set(WAKE_ORDER.map(key)).size).toBe(WAKE_ORDER.length);
+      WAKE_ORDER.slice(1).forEach((n, i) => expect(n.row).toBeLessThanOrEqual(WAKE_ORDER[i].row));
+      WAKE_AT.forEach((at, k) => expect(at).toBeLessThanOrEqual(k));
+      expect(plan.notes).toBeLessThanOrEqual(plan.cols * plan.rows);
+      for (let lights = 0; lights < 20; lights++) {
+        const now = awakeSpots(lights).map(key);
+        for (const k of awakeSpots(Math.max(0, lights - 1)).map(key)) expect(now).toContain(k);
+        // After k lights at most k spots can be lit, so one awake spot is still waiting until all twelve shine.
+        if (lights < WAKE_ORDER.length) expect(now.length).toBeGreaterThan(lights);
+      }
+    });
+
+    it('lights the nearest unlit spot from a touch anywhere, puts out a lit one only when touched on it, and never lights a lit one', () => {
+      const lit = new Set([key({ col: 0, row: 2 })]);
+      // A touch on the lit jelly's own cell puts it out.
+      expect(wakeTouch(spots(1, lit), 60, 300, 60)).toEqual({ note: { col: 0, row: 2 }, act: 'out' });
+      // A touch far off the board (the mountains, the sky) lights the unlit spot nearest to it.
+      expect(wakeTouch(spots(1, lit), 900, 700, 60)).toEqual({ note: { col: 2, row: 2 }, act: 'light' });
+      expect(wakeTouch(spots(1, lit), -400, -400, 60)?.act).toBe('light');
+      for (let lights = 0; lights < 12; lights++) {
+        const all = new Set(awakeSpots(lights).slice(0, lights).map(key));
+        for (const [x, y] of [
+          [0, 0],
+          [1000, 0],
+          [500, 500],
+          [-200, 900],
+          [240, 120],
+        ]) {
+          const t = wakeTouch(spots(lights, all), x, y, 60)!;
+          if (t.act === 'light') expect(all.has(key(t.note))).toBe(false);
+          if (t.act === 'out') expect(all.has(key(t.note))).toBe(true);
+          expect(t.act).not.toBe('sing');
+        }
+      }
+      // Everything lit: the nearest sings, off its cell.
+      const full = new Set(WAKE_ORDER.map(key));
+      expect(wakeTouch(spots(12, full), 2000, 2000, 60)?.act).toBe('sing');
+    });
+
+    it('lets the ghost finger light the spots in waking order, each awake on its turn and lit where it points', () => {
+      const placed = new Set<string>();
+      const order: Note[] = [];
+      for (
+        let n = beadToTap(plan, makeSong(plan, new Rng(1)), placed);
+        n;
+        n = beadToTap(plan, { notes: [], given: [] }, placed)
+      ) {
+        expect(awakeSpots(placed.size).map(key)).toContain(key(n));
+        const p = spots(placed.size, placed).find((s) => key(s.note) === key(n))!;
+        expect(wakeTouch(spots(placed.size, placed), p.x, p.y, 60)).toEqual({ note: n, act: 'light' });
+        placed.add(key(n));
+        order.push(n);
+      }
+      expect(order).toEqual([...WAKE_ORDER]);
+    });
+  });
+
   it('keeps higher rows higher in pitch', () => {
     for (const steps of Object.values(ROW_STEPS))
       steps.slice(1).forEach((s, i) => expect(s).toBeLessThan(steps[i]));
@@ -147,7 +232,7 @@ describe('Song Maker songs', () => {
           const placed = new Set(song.given.map(key));
           const mine: string[] = [];
           for (let n = beadToTap(plan, song, placed); n; n = beadToTap(plan, song, placed)) {
-            if (plan.mode !== 'free')
+            if (plan.mode !== 'free' && plan.mode !== 'wake')
               expect(song.notes.map(key), `${plan.name}: a right note`).toContain(key(n));
             expect(placed.has(key(n)), 'not tapped twice').toBe(false);
             mine.push(key(n));
@@ -155,7 +240,7 @@ describe('Song Maker songs', () => {
             expect(mine.length).toBeLessThanOrEqual(plan.cols * plan.rows);
           }
           expect(mine.length, plan.name).toBe(
-            plan.mode === 'free' ? plan.notes : song.notes.length - song.given.length,
+            plan.mode === 'free' || plan.mode === 'wake' ? plan.notes : song.notes.length - song.given.length,
           );
         }
       }
