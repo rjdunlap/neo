@@ -33,6 +33,7 @@ import {
   describe,
   makeScene,
   planFor,
+  bigFriends,
   request,
   nearestSighting,
   sightingPositions,
@@ -47,6 +48,8 @@ import {
 import { rangeFor } from '../../progress/difficulty';
 
 const SCALE = 0.5;
+/** Level 13's one big friend, about three times a meadow animal. */
+const BIG_SCALE = 1.7;
 
 /** One animal on the safari, doing its thing. */
 class Actor extends Container {
@@ -362,6 +365,8 @@ class PhotoSafari implements Game {
   private pinnedTexture: Texture | null = null;
   private held: Container | null = null;
   private truths: boolean[] = [];
+  /** Level 13: the six friends who walk in, one per photo. */
+  private bigCast: Sighting[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -377,6 +382,24 @@ class PhotoSafari implements Game {
       },
       ctx.view,
     );
+    if (this.plan.big) {
+      this.bigCast = bigFriends(ctx.rng, this.plan.photos);
+      // The whole meadow is the camera button: any touch photographs the one big friend.
+      onTap(
+        this.cast,
+        () => {
+          if (this.finished) return;
+          const friend = this.actors[0];
+          if (this.busy || !friend) {
+            // Between photos a touch still answers: the friend on its way gives a little hop.
+            friend?.critter.hop();
+            return;
+          }
+          void this.snap(friend);
+        },
+        { cooldown: 300 },
+      );
+    }
     if (this.sharedPlaces && !this.isTell) {
       onTap(
         this.cast,
@@ -494,6 +517,11 @@ class PhotoSafari implements Game {
       return { tap: { on }, receiver: on };
     }
     const animal = this.actors[animalToTap(this.scene, this.photos)];
+    // Level 13: the ghost finger touches the grass beside the big friend, since anywhere takes the photo.
+    if (this.plan.big)
+      return animal && !animal.destroyed
+        ? { tap: { on: this.cast, x: this.view.w * 0.2, y: this.ground() + 40 }, receiver: this.cast }
+        : null;
     return animal && !animal.destroyed
       ? { tap: { on: animal, y: -60 }, receiver: this.sharedPlaces ? this.cast : animal }
       : null;
@@ -513,7 +541,8 @@ class PhotoSafari implements Game {
     this.flash.clear().rect(0, 0, v.w, v.h).fill(0xffffff);
     this.drawSpots();
     this.layoutActors();
-    if (this.sharedPlaces && !this.isTell) this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
+    if (this.plan.big || (this.sharedPlaces && !this.isTell))
+      this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.album.position.set(180, 24);
     this.cameraButton.position.set(v.w / 2, v.h - 72);
     this.thumbs.forEach((b, i) => b.position.set(v.w / 2 + (i ? 95 : -95), v.h - 72));
@@ -527,6 +556,11 @@ class PhotoSafari implements Game {
   }
 
   private layoutActors() {
+    // Level 13's one big friend stands in the middle of the meadow (unless it is still walking in).
+    if (this.plan.big) {
+      for (const a of this.actors) if (!this.busy) a.position.set(this.view.w / 2, this.ground());
+      return;
+    }
     const positions = sightingPositions(
       this.actors.map((a) => a.sighting),
       this.view.w,
@@ -542,7 +576,9 @@ class PhotoSafari implements Game {
     this.fronts.removeChildren().forEach((c) => c.destroy());
     const y = this.ground();
     const at = (s: Spot) => this.spotPos(s).x;
-    const show = (s: Spot) => !this.sharedPlaces || this.scene?.sightings.some((a) => a.spot === s);
+    // The big meadow is open grass: no places, nothing to stand in front of the big friend.
+    const show = (s: Spot) =>
+      !this.plan.big && (!this.sharedPlaces || this.scene?.sightings.some((a) => a.spot === s));
     const back = new Graphics();
     // Tree: trunk and canopy, high enough to stand under.
     if (show('tree')) {
@@ -662,7 +698,9 @@ class PhotoSafari implements Game {
     this.phase = null;
     this.clearPinned();
     if (this.photos >= this.plan.photos) return void this.finale();
-    this.scene = makeScene(this.plan, this.ctx.rng, this.photos, this.truths[this.photos] ?? true);
+    this.scene = this.plan.big
+      ? { sightings: [this.bigCast[this.photos]], target: -1 }
+      : makeScene(this.plan, this.ctx.rng, this.photos, this.truths[this.photos] ?? true);
     // What changed? starts from the meadow as photographed; the change happens after the photo.
     const shown = this.scene.before ?? this.scene.sightings;
     this.actors = shown.map((s) => {
@@ -675,17 +713,22 @@ class PhotoSafari implements Game {
             if (!this.askNow()) void this.ctx.say('safari.tell-tap');
           }
         });
-      else if (this.sharedPlaces) a.eventMode = 'none';
+      else if (this.sharedPlaces || this.plan.big) a.eventMode = 'none';
       else onTap(a, () => void this.snap(a), { cooldown: 500 });
       this.cast.addChild(a);
+      if (this.plan.big) return a;
       a.scale.set(0);
       void this.ctx.tw.to(a.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       return a;
     });
     if (this.isTell) this.prepareTell();
     if (this.sharedPlaces) this.resize(this.view);
-    await this.ctx.tw.wait(0.4);
+    if (this.plan.big) await this.walkIn(this.actors[0]);
+    else await this.ctx.tw.wait(0.4);
+    if (this.destroyed) return;
     this.busy = false;
+    // A turn of the phone during the walk-in: the big friend settles where the new view's middle is.
+    if (this.plan.big) this.layoutActors();
     if (this.plan.mode === 'changed') {
       this.phase = 'look';
       this.cameraButton.visible = true;
@@ -735,11 +778,29 @@ class PhotoSafari implements Game {
     } else if (this.isTell) {
       await this.ctx.instruct('safari.tell');
     } else if (this.plan.mode === 'snap') {
-      if (this.photos === 0) await this.ctx.instruct('safari.snap');
+      if (this.photos === 0) await this.ctx.instruct(this.plan.big ? 'safari.big' : 'safari.snap');
     } else if (t) {
       await this.ctx.instruct(this.plan.mode === 'clues' ? 'safari.clues' : 'safari.ask', {
         what: request(this.plan.mode, this.scene!),
       });
+    }
+  }
+
+  /** Level 13: the next big friend walks in from alternate sides with little steps, because she touched. */
+  private async walkIn(a: Actor) {
+    const side = this.photos % 2 ? 1 : -1;
+    const to = this.view.w / 2;
+    a.scale.set(BIG_SCALE);
+    a.position.set(to + side * (this.view.w / 2 + 220), this.ground());
+    sfx.whoosh();
+    const steps = 3;
+    for (let i = 1; i <= steps && !this.destroyed && !a.destroyed; i++) {
+      a.critter.hop();
+      await this.ctx.tw.to(
+        a,
+        { x: to + side * (this.view.w / 2 + 220) * (1 - i / steps) },
+        { duration: 0.2, ease: i === steps ? ease.outBack : ease.inOutSine },
+      );
     }
   }
 
@@ -1196,7 +1257,7 @@ export const photoSafari: GameModule = {
   skills: ['vocabulary', 'verbs', 'positions', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [12],
+  entryLevels: [12, 13],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint:

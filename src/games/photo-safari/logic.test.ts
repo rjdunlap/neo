@@ -1,8 +1,12 @@
 import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { photoSafari } from './index';
-import { stepLevel } from '../../progress/difficulty';
+import { firstLevel, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
+  BIG_LEVEL,
+  BIG_PLAN,
+  LEVELS,
+  bigFriends,
   CHANGED_PLAN,
   TRUE_PLAN,
   WHO_DOING_PLAN,
@@ -41,6 +45,29 @@ import {
 } from './logic';
 
 group('Photo Safari', () => {
+  it('level 13 opens lap with one big friend per photo, six different friends, and any touch is right', () => {
+    expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
+    expect(BIG_PLAN).toMatchObject({ mode: 'snap', big: true, photos: 6, animals: 1 });
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1, 2]);
+    expect(firstLevel(LEVELS.lap!, [12, BIG_LEVEL])).toBe(BIG_LEVEL);
+    expect(firstLevel(LEVELS.toddler!, [12, BIG_LEVEL])).toBe(1);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    for (let seed = 1; seed <= 200; seed++) {
+      const friends = bigFriends(new Rng(seed));
+      expect(friends).toHaveLength(BIG_PLAN.photos);
+      // Six photos, six different friends, each doing something seen at a glance (nobody needs the pond).
+      expect(new Set(friends.map((f) => f.animal)).size).toBe(BIG_PLAN.photos);
+      for (const f of friends) expect(TODDLER_ACTIONS).toContain(f.action);
+      for (let round = 0; round < BIG_PLAN.photos; round++) {
+        const scene = makeScene(BIG_PLAN, new Rng(seed), round);
+        expect(scene.sightings).toHaveLength(1);
+        expect(scene.target).toBe(-1);
+        expect(animalToTap(scene, round)).toBe(0);
+      }
+    }
+  });
+
   it('always has exactly one animal matching the request, with distinct spots in the original modes', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {

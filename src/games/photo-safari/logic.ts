@@ -15,6 +15,8 @@ export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
 export interface SafariPlan {
   mode: SafariMode;
   tell?: 'which' | 'both';
+  /** Level 13, lap's opening: one big friend in the middle of the meadow, and a touch anywhere takes its photo. */
+  big?: boolean;
   photos: number;
   /** Animals on screen per request. */
   animals: number;
@@ -36,8 +38,18 @@ export const PLANS: SafariPlan[] = [
   },
 ];
 
+/** Level 13, lap's opening before levels 1 and 2: one big friend at a time; toddler still starts at 1. */
+export const BIG_LEVEL = 13;
+export const BIG_PLAN: SafariPlan = {
+  mode: 'snap',
+  big: true,
+  photos: 6,
+  animals: 1,
+  name: 'One big friend: a touch anywhere takes its photo, and the next friend walks in (6 photos)',
+};
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1, 2] },
   // "Who is sleeping?" (12) is the toddler step after naming; younger players never hear a false claim (9 is school only).
   toddler: { min: 1, max: 12, order: [1, 2, 12] },
   preschool: { min: 2, max: 4 },
@@ -90,6 +102,7 @@ const PLANS_BY_ID: Record<number, SafariPlan> = {
   10: TELL_WHICH_PLAN,
   11: TELL_BOTH_PLAN,
   [WHO_DOING_LEVEL]: WHO_DOING_PLAN,
+  [BIG_LEVEL]: BIG_PLAN,
 };
 export const planFor = (level: number) =>
   PLANS_BY_ID[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -128,6 +141,18 @@ export interface Scene {
 
 /** Actions a toddler can see at a glance, none tied to one place. */
 export const TODDLER_ACTIONS: Action[] = ['sleeping', 'eating', 'jumping', 'dancing'];
+/**
+ * A big round's friends, one per photo, all different: each does something a toddler sees at a glance and none needs the
+ * pond, since the big meadow draws no places.
+ */
+export function bigFriends(rng: Rng, photos = BIG_PLAN.photos): Sighting[] {
+  const animals = rng.shuffle([...ANIMALS]);
+  return Array.from({ length: photos }, (_, i) => ({
+    animal: animals[i % animals.length],
+    action: rng.pick(TODDLER_ACTIONS),
+    spot: 'rock' as Spot,
+  }));
+}
 /** Level 9 rounds: exactly two true claims and two false ones, in a seeded order. */
 export const claimTruths = (rng: Rng): boolean[] => rng.shuffle([true, true, false, false]);
 
@@ -161,6 +186,8 @@ export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolea
  * the action nor the place alone identifies the target; other modes use distinct spots.
  */
 export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true): Scene {
+  // One big friend and nothing to choose between: any touch photographs it.
+  if (plan.big) return { sightings: [bigFriends(rng, round + 1)[round]], target: -1 };
   if (plan.mode === 'act') {
     // Three different friends in three places, each doing something different: the doing word alone decides.
     const spots = rng.shuffle([...SPOTS]).slice(0, 3);

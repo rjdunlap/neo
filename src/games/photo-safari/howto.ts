@@ -5,6 +5,12 @@ export const HOW_TO: GameHowTo = {
   goal: 'Take the photos asked for: listen to a description, or tell the pet which animal to photograph.',
   steps: [
     { to: 1, text: 'Tap any animal to take its photo.' },
+    {
+      from: 13,
+      to: 13,
+      text: 'One big friend stands in the meadow. Touch anywhere: click, its photo flies to the album, and the next friend walks in. Say what each friend is doing.',
+    },
+    { from: 13, to: 13, text: 'Six photos, one of each friend, fill the album.' },
     { from: 2, to: 2, text: 'Listen for the animal named, then tap it to take its photo.' },
     {
       from: 3,

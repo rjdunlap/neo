@@ -11,6 +11,7 @@ export const VOICE = {
   'safari.tell-tap': ['You can see which one! Tell me with the picture words.'],
   'safari.thanks': ["Thank you! That's the one!", 'You told me just right!'],
   'safari.snap': ['Tap an animal to take its picture!'],
+  'safari.big': ['Touch anywhere to take a picture of your friend!'],
   'safari.clues': ['Use both clues! Take a picture of {what}!'],
   'safari.ask': ['Take a picture of {what}!'],
   'safari.thatis': ['That is {desc}!'],
