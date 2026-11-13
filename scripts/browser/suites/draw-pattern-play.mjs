@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Draw the Pattern by touch: level 1 by marks, two strays at 3 (a miss, then the glow), level 4's circle both ways, a level 5 portrait screenshot, a wrong candidate at 8, two strays at 9's rain and its finished picture. `DRAW_LEVELS=9` runs only level 9. */
+  /** Draw the Pattern by touch: level 1 by marks (one touch during the pet's turn, one off the paper), two strays at 3 (a miss, then the glow), level 4's circle both ways, a level 5 portrait screenshot, a wrong candidate at 8, two strays at 9's rain and its finished picture. `DRAW_LEVELS=9` runs only level 9. */
   async function drawPatternPlay() {
     const only = process.env.DRAW_LEVELS?.split(',').map(Number);
     const state = () =>
@@ -61,8 +61,53 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     if (!only || only.includes(1)) {
       // Level 1: four marks on each of three strips (a pat counts too); no misses or hints.
       await launch('draw-the-pattern', 1);
+      /** A screen point off the paper and off the picture: level 1's surround, which draws too (P4). */
+      const offPaper = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game;
+          for (const [x, y] of [
+            [1.7, 1.45],
+            [1.7, -0.45],
+            [-0.15, 0.5],
+            [3.55, 0.5],
+          ]) {
+            const p = g.paper.toGlobal({ x: x * g.s, y: y * g.s }),
+              l = g.layer.toLocal(p);
+            if (g.layer.hitArea.contains(l.x, l.y)) return [p.x, p.y];
+          }
+          return null;
+        });
+      // P4: a touch during the pet's turn rings rather than being dropped, and counts as nothing.
+      await page.waitForFunction(() => neo.scene.game?.busy, null, { timeout: 10000 });
+      {
+        const at = await offPaper();
+        assert.ok(at, 'level 1 has a surround off the paper and the picture');
+        await page.evaluate((at) => kit.tap(at[0], at[1]), at);
+        const held = await page.evaluate(() => ({
+          heldAt: neo.scene.game.heldAt,
+          lifts: neo.scene.game.lifts,
+          marks: neo.scene.game.marks.length,
+        }));
+        assert.ok(held.heldAt >= 0, "a touch during the pet's turn is answered");
+        assert.deepEqual(
+          [held.lifts, held.marks],
+          [0, 0],
+          "a touch during the pet's turn draws and counts nothing",
+        );
+      }
       await idle();
       n = await stickers();
+      // P4: a touch off the paper draws at the nearest place on it and counts as one of the four.
+      {
+        const at = await offPaper();
+        await page.evaluate((at) => kit.tap(at[0], at[1]), at);
+        await page.waitForTimeout(150);
+        const g = await page.evaluate(() => ({
+          lifts: neo.scene.game.lifts,
+          marks: neo.scene.game.marks.length,
+        }));
+        assert.deepEqual([g.lifts, g.marks], [1, 1], 'a touch off the paper makes a mark on it');
+      }
       // U7 R4: each strip's line starts as it rolls into the picture and times how long until the next strip is open.
       await page.evaluate(() => {
         const g = neo.scene.game,
