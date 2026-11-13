@@ -1,0 +1,5 @@
+# 2026-11-13 — Seesaw Balance level 12 touch areas cover the whole view (PR #1622)
+
+**Changed:** `seesaw-balance` level 12 (lap's only level, toddler's first): the two touch halves cover the whole view top to bottom (were a 370-unit band), and input opens as each of the four rounds' instruction line starts instead of after it is spoken. The rider's half still pokes the rider, free. The ghost finger taps the same point above the plank; the card step was reworded.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/seesaw-balance` (21 passed); `BROWSER_SUITE=seesawentry` passed: lap on a 390x844 phone in portrait and toddler in landscape, hit areas cover the whole view, empty-half touches at 50%, 22%, 92% and 50% of the view height all lift, rounds 2 to 4 open within 1.2 s (well before the muted line pacing ends), rider poke free, saved 0 misses and 0 hints, level 13 unchanged.
+**Not run:** `fingerdemo` (demonstrated action and point unchanged), build (no shared files), other suites. The `seesawentry` run predates a one-line autotouch change (demo point expressed relative to the pivot, same global point) which that suite does not exercise.
