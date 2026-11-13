@@ -68,7 +68,7 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
   });
 
   it('Pyramid Solitaire: every card and button fit at each level', () => {
-    for (const level of [1, 2, 3, 4]) {
+    for (const level of [1, 2, 3, 4, 5]) {
       const l = pyramidLayout(v, pyramidPlan(level).rows);
       check(v, [
         ...l.cards.map((p) => square('card', p, 100)),
@@ -110,7 +110,7 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
 describe('Pyramid Solitaire sideways', () => {
   it('six rows fit the 1024 × 768 area: cards inside, a covered strip with its corner index, buttons below the cards', () => {
     for (const v of [computeView(1024, 768), computeView(844, 390), computeView(1366, 1024)]) {
-      for (const level of [1, 2, 3, 4]) {
+      for (const level of [1, 2, 3, 4, 5]) {
         const rows = pyramidPlan(level).rows,
           l = pyramidLayout(v, rows);
         for (const c of l.cards) {
@@ -121,6 +121,8 @@ describe('Pyramid Solitaire sideways', () => {
         // The next row leaves at least the top of each covered card showing: its corner index sits 34 units above center.
         const gap = rows > 1 ? l.cards[1].y - l.cards[0].y : 104;
         expect(gap).toBeGreaterThanOrEqual(55);
+        // Level 5 makes a covered card a target (the cover lift): the strip above the next row is at least 64 units.
+        if (level === 5) expect(gap).toBeGreaterThanOrEqual(64);
         const bottom = Math.max(...l.cards.map((c) => c.y + 50));
         expect(bottom).toBeLessThanOrEqual(l.status.y - 12);
         for (const b of l.buttons) {
