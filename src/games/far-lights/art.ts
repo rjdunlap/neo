@@ -110,18 +110,22 @@ export class WindowLight extends Container {
   readonly ring: Graphics;
   /** How bright it looks now (animated). */
   shown = 0;
-  constructor(touchR: number) {
+  /** `coreR`: level 9's big light draws a bigger core (its halo blooms the same). */
+  constructor(touchR: number, coreR = CORE_R) {
     super();
-    this.core.circle(0, 0, CORE_R).fill(CORE);
-    this.ring = touchRing(CORE_R + 10);
+    this.core.circle(0, 0, coreR).fill(CORE);
+    this.ring = touchRing(coreR + 10);
     this.ring.alpha = 0;
     this.addChild(this.halo, this.core, this.ring);
     this.touchR = touchR;
+    // The big light keeps a soft glow around its core even far away; the bloom near the window grows from it.
+    this.minHalo = coreR > CORE_R ? coreR * 1.4 : 0;
   }
   readonly touchR: number;
+  private readonly minHalo: number;
   setLook(l: number) {
     this.shown = l;
-    const r = haloRadius(l);
+    const r = Math.max(haloRadius(l), this.minHalo);
     this.halo.clear();
     this.halo.circle(0, 0, r).fill({ color: GLOW, alpha: haloAlpha(l) * 0.55 });
     this.halo.circle(0, 0, r * 0.6).fill({ color: GLOW, alpha: haloAlpha(l) * 0.6 });

@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 9, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3–4 |
@@ -24,6 +24,7 @@
 | 6 | Near to far: put three lights in order |
 | 7 | Strong and gentle: which light is farther when both look the same? |
 | 8 | Can't tell yet: both could fit, then step to the side |
+| 9 | One big light: a touch anywhere floats it close, and a second and a third light wake |
 
 <!-- end generated -->
 
