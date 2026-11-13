@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { SCRIPT } from '../../content/voice-script';
+import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
+  BIG_CORE_R,
+  BIG_LEVEL,
+  BIG_PLAN,
+  LEVELS,
+  WAKE_ORDER,
+  WakeLights,
   boardsFor,
   brighterOf,
   CHECK,
@@ -604,4 +612,59 @@ describe('plans', () => {
     expect(planFor(5).name).toMatch(/curtain/);
     expect(planFor(6).name).toMatch(/order/);
   });
+});
+
+describe('level 9: one big light (lap)', () => {
+  it('opens lap before level 1; no other band reaches it; levels 1–8 unchanged', () => {
+    expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1]);
+    expect(stepLevel(BIG_LEVEL, 1, LEVELS.lap!)).toBe(1);
+    expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+    expect(SCRIPT['far.instruct.big']).toBeDefined();
+    expect(SCRIPT['far.wake']).toBeDefined();
+  });
+
+  it('three counted touches; touches while floating are free; a second and third light wake and stay', () => {
+    const w = new WakeLights();
+    expect(w.spots).toEqual([1]);
+    expect(w.touch()).toBe(true);
+    expect(w.touch()).toBe(false);
+    expect(w.back()).toBe(WAKE_ORDER[1]);
+    expect(w.spots).toEqual([1, 0]);
+    expect(w.done).toBe(false);
+    expect(w.touch()).toBe(true);
+    expect(w.back()).toBe(WAKE_ORDER[2]);
+    expect(w.spots).toEqual([1, 0, 2]);
+    expect(w.touch()).toBe(true);
+    expect(w.done).toBe(false);
+    expect(w.back()).toBeNull();
+    expect(w.done).toBe(true);
+    expect(w.touch()).toBe(false);
+    expect(w.floats).toBe(3);
+    expect(w.spots).toHaveLength(3);
+  });
+
+  const all = { ...views, upright: computeView(390, 844, undefined, true) };
+  for (const [name, v] of Object.entries(all))
+    it(`${name}: three spots, no strip, every bloomed halo and the big core inside the window, apart`, () => {
+      const l = farLayout(v, BIG_LEVEL);
+      expect(l).not.toBeNull();
+      if (!l) return;
+      expect(l.strip).toBeNull();
+      expect(l.spots).toHaveLength(3);
+      const halos = haloRings(l);
+      for (const h of halos) {
+        const b = ringBox(h);
+        expect(b.x >= l.window.x && b.y >= l.window.y).toBe(true);
+        expect(b.x + b.w <= l.window.x + l.window.w && b.y + b.h <= l.window.y + l.window.h).toBe(true);
+        expect(corners(v).some((k) => ringHits({ ...h, r: BIG_CORE_R }, k))).toBe(false);
+      }
+      for (const [i, a] of halos.entries())
+        for (const b of halos.slice(i + 1))
+          expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(a.r + b.r);
+      expect(BIG_CORE_R * 2).toBeGreaterThanOrEqual(4 * CORE_R);
+    });
 });

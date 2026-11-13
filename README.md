@@ -232,7 +232,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Rain Garden](docs/games/rain-garden.md) | toddler–school | Tinker Lab | 4 | toddler–school |
 | [Forecast Detective](docs/games/forecast-detective.md) | school | Tinker Lab | 2 | lift the flaps on a wind vane, two island postcards and a thermometer, then pick tomorrow's weather card and Check |
 | [Vine Snip](docs/games/vine-snip.md) | lap–school | Tinker Lab | 5 | tap a vine and the fruit falls or swings into a friend's mouth |
-| [Far Lights](docs/games/far-lights.md) | lap–school | Tinker Lab | 8 | lap–school (levels 1–8) |
+| [Far Lights](docs/games/far-lights.md) | lap–school | Tinker Lab | 9 | lap opens on one big light, a touch anywhere floats it close (level 9); then tap a light on a night lake and watch it glow in the window |
 | [Circuit Garden](docs/games/circuit-garden.md) | pre-K–school | Tinker Lab | 3 | pre-K–school |
 | [Measuring Post](docs/games/measuring-post.md) | school | Tinker Lab | 4 | school |
 | [Memory Desk](docs/games/memory-desk.md) | school | Tinker Lab | 3 | put a pictured token on a toy desk's tray, Keep a copy in the drawer, change the tray, and Show what the drawer kept in the window |

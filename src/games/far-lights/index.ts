@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { entryId } from '../../content/journal';
@@ -46,6 +46,9 @@ import {
   FarTally,
   GLOW,
   GlowTaps,
+  BIG_CORE_R,
+  BIG_LEVEL,
+  WakeLights,
   judgeBrighter,
   judgeFarther,
   judgeMatch,
@@ -86,6 +89,9 @@ const INSTRUCT: LineId[] = [
   'far.instruct.cant-tell',
 ];
 
+const instructFor = (level: number): LineId =>
+  level === BIG_LEVEL ? 'far.instruct.big' : INSTRUCT[level - 1];
+
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
 
@@ -116,6 +122,9 @@ class FarLights implements Game {
   stepButton: PictureButton | null = null;
   private shiftLines: Graphics[] = [];
   readonly taps = new GlowTaps();
+  /** Level 9: the awake lights, and the full-view layer that takes a touch anywhere. */
+  wake = new WakeLights();
+  readonly catcher = new Container();
   walk = new CloserWalk();
   index = 0;
   finished = false;
@@ -162,6 +171,7 @@ class FarLights implements Game {
     this.strongBoards = level === 7 || level === 8 ? strongBoardsFor(ctx.rng, level, authored) : [];
     this.place();
     ctx.stage.addChild(this.backdrop, this.board);
+    if (level === BIG_LEVEL) onTap(this.catcher, (e) => this.touchBig(e), { cooldown: 200 });
   }
 
   start() {
@@ -172,7 +182,7 @@ class FarLights implements Game {
   /** The board's instruction; level 7 first plays its opening look, then instructs. */
   private instructNow() {
     if (this.plan.level === 7) void this.openingLook(false);
-    else void this.ctx.instruct(INSTRUCT[this.plan.level - 1]);
+    else void this.ctx.instruct(instructFor(this.plan.level));
   }
 
   destroy() {
@@ -191,7 +201,8 @@ class FarLights implements Game {
   }
 
   update() {
-    if (this.plan.level === 1) this.windowLights.forEach((w, i) => w.setLook(lookAt(this.dist[i].d)));
+    if (this.plan.level === 1 || this.plan.level === BIG_LEVEL)
+      this.windowLights.forEach((w, i) => w.setLook(lookAt(this.dist[i].d)));
     else if (this.plan.level === 6) {
       // Past the last board (the finale) the lights keep the last board's looks.
       const b = this.orderBoards[Math.min(this.index, this.orderBoards.length - 1)];
@@ -294,7 +305,7 @@ class FarLights implements Game {
     this.relayout = false;
     for (const d of this.drags) d.destroy();
     this.drags = [];
-    for (const c of this.board.removeChildren()) c.destroy({ children: true });
+    for (const c of this.board.removeChildren()) if (c !== this.catcher) c.destroy({ children: true });
     this.stripLights = {};
     this.windowLights = [];
     this.glows = [];
@@ -322,18 +333,27 @@ class FarLights implements Game {
     this.board.addChild(windowArt(l.window));
     if (level === 8) this.buildStep(l);
 
-    const count = level === 1 || level === 6 ? 3 : 2;
+    const big = level === BIG_LEVEL;
+    const count = level === 1 || level === 6 || big ? 3 : 2;
     for (let i = 0; i < count; i++) {
-      const w = new WindowLight(l.touchR);
+      const w = new WindowLight(l.touchR, big ? BIG_CORE_R : undefined);
       w.position.set(l.spots[i].x, l.spots[i].y);
       this.board.addChild(w);
       this.windowLights.push(w);
-      if (level !== 2 && level !== 4) {
+      if (big) {
+        // Level 9's lights take no touch of their own: the catcher above answers everywhere, the lights included.
+        w.eventMode = 'none';
+        w.visible = this.wake.spots.includes(i);
+      } else if (level !== 2 && level !== 4) {
         w.hitArea = new Circle(0, 0, l.touchR);
         onTap(w, () => this.tapWindow(i), { cooldown: 200 });
       }
     }
     this.update();
+    if (big) {
+      this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
+      this.board.addChild(this.catcher);
+    }
 
     if (level === 6 && l.strip) {
       const b = this.orderBoards[this.index];
@@ -595,6 +615,80 @@ class FarLights implements Game {
       await this.ctx.tw.wait(1);
       if (this.alive && e === this.epoch) void this.finale();
     }
+  }
+
+  // ----- level 9: one big light -----
+
+  /**
+   * A touch anywhere: a ring where she touched and a soft note, always. A counted touch floats every awake light close
+   * (they glow up), they drift back, and then a new light wakes and stays; a touch while they float is free.
+   */
+  private touchBig(e: FederatedPointerEvent) {
+    if (this.finished) return;
+    const p = this.board.toLocal(e.global);
+    this.splash(p.x, p.y);
+    const awake = this.wake.spots;
+    for (const i of awake) {
+      const w = this.windowLights[i];
+      if (!w) continue;
+      w.ring.alpha = 1;
+      void this.ctx.tw.to(w.ring, { alpha: 0 }, { duration: 0.5 });
+    }
+    if (!this.wake.touch()) {
+      sfx.bell(5, 0.12);
+      return;
+    }
+    void this.floatAwake(awake);
+  }
+
+  /** The ring at the touch point (on the board, under nothing she can miss). */
+  private splash(x: number, y: number) {
+    const r = touchRing(46);
+    r.position.set(x, y);
+    r.eventMode = 'none';
+    this.board.addChild(r);
+    void this.ctx.tw.to(r.scale, { x: 1.6, y: 1.6 }, { duration: 0.5, ease: ease.outCubic });
+    void this.ctx.tw.to(r, { alpha: 0 }, { duration: 0.5 }).then(() => {
+      if (!r.destroyed) r.destroy();
+    });
+  }
+
+  private async floatAwake(spots: number[]) {
+    const e = this.epoch;
+    const ok = () => this.alive && e === this.epoch;
+    this.tally.next();
+    void this.notes(e);
+    await Promise.all(
+      spots.map((i) => this.ctx.tw.to(this.dist[i], { d: 1 }, { duration: 0.8, ease: ease.outCubic })),
+    );
+    if (!ok()) return;
+    void this.say('far.so-bright');
+    await this.ctx.tw.wait(1.5);
+    if (!ok()) return;
+    await Promise.all(
+      spots.map((i) => this.ctx.tw.to(this.dist[i], { d: 4 }, { duration: 1.2, ease: ease.inOutSine })),
+    );
+    if (!ok()) return;
+    const woke = this.wake.back();
+    if (woke !== null) return void this.wakeLight(woke);
+    if (this.wake.done) {
+      await this.ctx.tw.wait(1);
+      if (ok()) void this.finale();
+    }
+  }
+
+  /** A new light wakes in its window spot: it grows in on a soft rising pair of notes, and stays. */
+  private wakeLight(i: number) {
+    const w = this.windowLights[i];
+    if (!w) return;
+    w.visible = true;
+    w.scale.set(0.2);
+    w.alpha = 0;
+    sfx.bell(7, 0.18);
+    void this.ctx.tw.wait(0.18).then(() => sfx.bell(9, 0.18));
+    void this.ctx.tw.to(w.scale, { x: 1, y: 1 }, { duration: 0.6, ease: ease.outBack });
+    void this.ctx.tw.to(w, { alpha: 1 }, { duration: 0.4 });
+    void this.say('far.wake');
   }
 
   /** Three rising notes as a light floats close. */
@@ -877,13 +971,19 @@ class FarLights implements Game {
     const level = this.plan.level;
     const l = this.layout;
     if (level === 1) {
+      // Nothing here is ever wrong, so a hint counts nothing and spends none of her taps: it shows a light to touch.
       const free = [0, 1, 2].filter((i) => !this.taps.moving.has(i));
       if (!free.length || this.taps.count >= 3) return;
       const i = free.reduce((a, b) => (Math.abs(b - this.lastTouch) < Math.abs(a - this.lastTouch) ? b : a));
-      this.tally.hint();
       void this.say('far.hint');
       this.pulse(this.windowLights[i]);
-      void this.float(i);
+      return;
+    }
+    if (level === BIG_LEVEL) {
+      // Counts nothing: the awake lights pulse, and the instruction says a touch anywhere will do.
+      if (this.wake.floating || this.wake.done) return;
+      for (const i of this.wake.spots) this.pulse(this.windowLights[i]);
+      void this.ctx.instruct('far.instruct.big');
       return;
     }
     if (level === 3 || level === 5) {
@@ -969,6 +1069,7 @@ class FarLights implements Game {
     this.walk = new CloserWalk();
     this.taps.count = 0;
     this.taps.moving.clear();
+    this.wake = new WakeLights();
     for (const p of this.dist) {
       this.ctx.tw.kill(p);
       p.d = 4;
@@ -1008,6 +1109,16 @@ class FarLights implements Game {
     if (level === 1) {
       if (this.taps.moving.size || this.taps.count >= 3) return null;
       return { tap: { on: this.windowLights[this.taps.count % 3] } };
+    }
+    if (level === BIG_LEVEL) {
+      // Beside the light, low in the window: a touch anywhere will do.
+      if (this.wake.floating || this.wake.done) return null;
+      const s = l.spots[0];
+      return {
+        tap: { on: this.board, x: s.x, y: Math.min(l.window.y + l.window.h - 60, s.y + 150) },
+        receiver: this.catcher,
+        pause: 0.5,
+      };
     }
     if (level === 3 || level === 5)
       return this.lifted ? null : { tap: { on: this.windowLights[this.answerSpot()!] } };
@@ -1072,6 +1183,7 @@ export const farLights: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [BIG_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
