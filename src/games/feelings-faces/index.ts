@@ -140,6 +140,9 @@ class FeelingsFaces implements Game {
     this.plan = feelingPlan(ctx.level);
     this.questions = feelingRound(this.plan, ctx.rng);
     this.night.alpha = 0;
+    // The dusk and the decorations (a bowl, a rain cloud) take no touches: under the stage's static mode a hit on them
+    // would stop the search there, and level 9's touch anywhere would never reach the room. Tappable props go in `front`.
+    this.night.eventMode = this.props.eventMode = 'none';
     ctx.stage.addChild(this.background, this.night, this.props);
     if (this.plan.mode === 'friends' || this.plan.mode === 'perspective' || this.plan.mode === 'ask') {
       for (const name of this.plan.mode === 'ask'
@@ -182,6 +185,8 @@ class FeelingsFaces implements Game {
       pet.hitArea = new Circle(t.x, t.y, Math.max(150 / this.grow, t.r + 30));
       this.pet = pet;
       onTap(pet, () => this.tapPet());
+      // Level 9 (lap only): the whole room is the poke.
+      if (this.plan.mode === 'poke') onTap(this.background, () => this.poke(pet), { cooldown: 300 });
       ctx.stage.addChild(this.pet);
     }
     this.subject.eventMode = this.glow.eventMode = 'none';
