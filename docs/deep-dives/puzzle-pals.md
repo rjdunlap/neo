@@ -158,6 +158,8 @@ The level-order decision already has a row in [Waiting on the developer](../WAIT
 
 ## Build slices, in order
 
+**Built 2026-11-13 ([PR #1611](https://github.com/rjdunlap/neo/pull/1611)):** level 8, *One big piece at a time*, is lap's first (order 8, 1, 2): one big piece beside the frame, a touch anywhere hops it home, the next strip of a two- or three-strip picture slides in; no miss or hint ([lap-openings table](../definitions/toy-test-lap-openings.md#puzzle-peaks)).
+
 **Built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)):** `codex/puzzle-pals-visible-cues` completes slice 1's visible-detail fairness guard and scenery repair across all twelve scenes ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14); [checks](../archive/VERIFICATION-2026-10-07-13.md#2026-10-14--puzzle-pals-visible-cues-and-fairness)). Saved sticker/map drawings retain their original art. The local claim is `3808201`; publication was explicitly approved by the developer on 2026-10-14. The box lid stays a separate, person-check-dependent slice.
 
 Each is sized for one session. The slices that add a level are built in level order so saved IDs stay unbroken.

@@ -336,12 +336,12 @@ Four games fail question 1 or 4, in the order they should be taken:
 | Game (first lap level) | 1. Touch anywhere | 2. Cannot go wrong | 3. Voice off | 4. One big thing that grows | 5. Silly use answered |
 | --- | --- | --- | --- | --- | --- |
 | `size-parade` (16) | **Partly.** The sky and the ground (one layer over the whole view) answer: a touch makes the friend hop, and at most once every three seconds a tick and the instruction again. Only a touch on the friend (a target 154 by 190 units at the littlest size, about 345 by 404 at the biggest) grows it | **Yes.** Every tap on the friend is a size step with its word; there is no boing, no idle hint and nothing counted | **Yes.** One friend on the grass; the ghost finger taps it, and it is the only thing to touch. Nothing invites a touch after a quiet spell | **Partly.** One friend, standing taller at its littlest (about 161 units) than a row friend at its biggest, that grows because she touched; it shrinks again in each cycle of four taps, and nothing arrives | **Partly.** The sky and the ground make the friend hop; a hold or a drag is one tap; nothing answers from the twelfth tap through "What a big little friend!" and the 1.5 seconds after it |
-| `puzzle-pals` (1) | **No.** Only the one waiting piece answers (a tick and a lift on touch-down; about 130 by 178 units in the tray at most). The teal background, the tray, the frame and the half already in place have no handler | **Yes.** One empty place, so a tap hops the piece home and any drop over the frame is its own place; a drop elsewhere floats back. There is no idle hint | **Yes.** Half a picture in the frame over a faint copy of the whole, and one piece in the tray; the ghost finger carries it to its place, though a tap is enough | **No.** One move: the round ends when the one piece goes in, and the finished picture comes alive. Nothing arrives because she touched, and the piece is small in the tray | **Partly.** A piece let go within 30 units of where it was picked up hops home, so a hold is a tap, answered on release; a drag off the frame floats back without a sound; the background and the placed half are silent, and nothing answers while the picture comes alive |
+| `puzzle-pals` (8) | **Yes (built 2026-11-13).** A touch anywhere hops the one big piece into its place: the piece, the frame, the background, a placed piece or any let-go of a drag. (Level 1, toddler's first, still answers only its piece) | **Yes.** Nothing at level 8 is a miss or a hint | **Yes.** One big piece beside the frame; the ghost finger taps it, and the picture's name is only spoken | **Yes.** One big piece at the frame's own size; the next piece of a two- or three-strip picture slides in from the right edge because she touched | **Partly.** Every touch hops the piece; nothing answers while the picture comes alive |
 
 ### What the table says
 
 - **Close to the shape:** `size-parade`. Level 16, which only lap plays, is one big friend that grows because she touched, and a touch beside it makes it hop; only a touch on the friend is the move.
-- **One small piece, one move:** `puzzle-pals`. Level 1 is a single tap or carry, and the round is over; nothing on the screen but the piece answers.
+- **One small piece, one move:** `puzzle-pals` level 1 (toddler's first, and lap's after level 8). Level 8 (built 2026-11-13) is one big piece at a time.
 - **Nobody can be wrong at the first lap level,** and no waiting is counted in either game. `puzzle-pals`' second lap level can count a miss (below).
 - **No opening line holds input here,** and the corner pet shows in both.
 
@@ -349,13 +349,13 @@ Four games fail question 1 or 4, in the order they should be taken:
 
 Puzzle Peaks games whose first lap level plays with the voice off: both. Each has one thing to touch and the card shows it.
 
-What only the voice carries: the size words (bigger, biggest, smaller, littlest) in `size-parade`, and the picture's name in `puzzle-pals` ("You made …!"). With the voice off the play is whole and the naming is not there. `puzzle-pals`' opening line says "Drag" at a level where a tap is enough.
+What only the voice carries: the size words (bigger, biggest, smaller, littlest) in `size-parade`, and the picture's name in `puzzle-pals` ("You made …!"). With the voice off the play is whole and the naming is not there. `puzzle-pals`' opening line said "Drag" at a level where a tap is enough; it says tap at levels 1 and 2 since 2026-11-13.
 
 ### Lines this land adds to READY
 
 Two games, in the order they should be taken:
 
-1. `puzzle-pals`: a lap level that opens with one big piece beside the frame; a touch anywhere hops it into its place, and the next piece of a two- or three-piece picture comes out because she touched.
+1. `puzzle-pals`: a lap level that opens with one big piece beside the frame; a touch anywhere hops it into its place, and the next piece of a two- or three-piece picture comes out because she touched. *Built 2026-11-13 as level 8.*
 2. `size-parade`: at level 16 a touch anywhere grows the friend, as a touch on it does. Level 16 is lap's alone, so no band branch is needed, and it is close to the shape already, so it is last.
 
 `size-parade` passes neither question outright rather than failing one, and gets its line because the change is small and the level is already the shape.
@@ -363,7 +363,7 @@ Two games, in the order they should be taken:
 ### Found while reading (not part of the five questions)
 
 - `size-parade`: lap's range is 9 to 16 in the order 16, 9, so level 16 is lap's alone (toddler's order starts at 9). A lap player who steps up goes to level 9, *Big one, little one*, where the first wrong friend in a row is free and the second glows the asked one and counts a hint. Twelve taps end the round (three cycles of bigger, biggest, smaller, littlest), and three circles at the top fill as each cycle finishes. The friend's target grows with it and never shrinks below a row friend's. A fast run of taps is not dropped: each tap is a step.
-- `puzzle-pals`: lap is levels 1 and 2. At level 2 (two halves, nothing in place) a tap still hops a piece home, but a carry dropped on the other half's place is a boing and a counted miss, and a second one glows a piece and counts a hint, at lap as at every band. The ghost finger carries the piece at level 1 where the card says a tap is enough, and the opening line says "Drag each piece onto the picture where it matches!" The tray piece's touch target depends on the board's scale and is under 100 units on a small view. The whole round at level 1 is one move.
+- `puzzle-pals` (built 2026-11-13): level 8 is lap's first (`order` 8, 1, 2; `entryLevels` [8]). One big piece sits beside the frame (right of it sideways, under it upright); the seeded RNG picks a two- or three-strip picture, and a touch anywhere (piece, frame, background, placed piece, any let-go) hops it home and slides the next in from the right edge, with no miss or hint. Levels 1 and 2 are now toddler's; at level 2 a carry onto the other half's place still counts a miss. The opening line at levels 1 and 2 says "Tap a piece, and it hops onto the picture where it matches!" (`puzzle.lap`, `puzzle.tap`).
 
 ## Story Grove
 
