@@ -1,0 +1,5 @@
+# 2026-11-12 — tile-pairs slice 7: harder deals and level 10 Tricky twins (PR #1586)
+
+**Changed:** `tile-pairs` deal bands for levels 3–6 and level 10 *Tricky twins* from 24 frozen boards (`pools.ts`, `scripts/tile-pairs-pool.mjs`); `tilepairs` suite gains a level 10 block. Slice 8 not built.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/tile-pairs` (16 passed); `BROWSER_SUITE=tilepairs TILE_LEVELS=10` (losing first pair, no miss, `tile-pairs.stuck` line, undo, mismatch, hint, shuffle, resize, portrait screenshot, one sticker, return to Lantern Lake); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tile-pairs FINGER_LEVELS=10 FINGER_BAND=grownup` (33.5 s). Full `npm test`: 6776 passed, 8 failed, all timing-bound tests in other games (number-nook, penguin-slide, bolt-boards, block-garden, block-topple, fluffy-salon, keep-house, secret-code) on a Mac loaded by parallel sessions; no tile-pairs or registry failure; CI reruns it.
+**Not run:** `npm run build` (no shared file or asset changed), couch suites, offline.

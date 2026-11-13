@@ -109,8 +109,34 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         await page.waitForTimeout(500);
       }
       const initial = await state();
-      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24, 24, 30][level - 1]);
+      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1]);
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
+      if (level === 10) {
+        // A tricky deal: taking a losing first pair is a legal move (no miss), the stuck line follows, and Undo
+        // puts the board back before the choice.
+        const trap = await page.evaluate(async () => {
+          const L = await import('/src/games/tile-pairs/logic.ts'),
+            g = neo.scene.game;
+          g.said = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
+          return L.losingFirstPairs(g.tiles)[0];
+        });
+        assert.ok(trap, 'a level 10 deal has a losing first pair');
+        for (const i of trap) await tapTile(i);
+        await page.waitForTimeout(400);
+        const stuck = await state();
+        assert.notEqual(stuck.mask, initial.mask, 'the losing pair is taken');
+        assert.equal(stuck.misses, 0, 'a losing pair is not a miss');
+        assert.ok(
+          (await page.evaluate(() => neo.scene.game.said)).includes('tile-pairs.stuck'),
+          'the stuck line follows a losing pair',
+        );
+        await screenshot('tile-pairs-10-stuck');
+        await tap('neo.scene.game.undoButton');
+        assert.equal((await state()).mask, initial.mask, 'undo puts the board back before the choice');
+      }
+      const undos0 = (await state()).undos;
       if (level === 8) {
         // Two different flowers pair: the flower family's first pair removes two tiles with different kinds.
         const flowers = await page.evaluate(async () => {
@@ -178,7 +204,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       assert.notEqual(afterPair.mask, initial.mask);
       await tap('neo.scene.game.undoButton');
       assert.equal((await state()).mask, initial.mask);
-      assert.equal((await state()).undos, 1);
+      assert.equal((await state()).undos, undos0 + 1);
       // Selection cancellation and resize never move or remove a tile.
       await tapTile(pair[0]);
       assert.equal((await state()).selected, pair[0]);
@@ -220,7 +246,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       );
       await tap('neo.scene.game.undoButton');
       s = await state();
-      assert.equal(s.undos, 2);
+      assert.equal(s.undos, undos0 + 2);
       assert.equal(s.shuffles, 1);
       assert.equal(s.hints, 2);
       assert.deepEqual(s.tiles, remainder.tiles);
