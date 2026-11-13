@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -23,6 +23,7 @@ import {
 import {
   LEVELS,
   AMOUNT_WORDS,
+  isBig,
   amountOf,
   CardRound,
   center,
@@ -76,6 +77,10 @@ class MoonWindow implements Game {
   shown = 1;
   presses = LOOK_PRESSES;
   readonly thumbs: Container[] = [];
+  /** Level 4: the full-view layer under the window that takes a touch anywhere (the thumbnails stay above it). */
+  readonly catcher = new Container();
+  /** Level 4: the window's own squash after a touch, like Later's at level 1. */
+  private windowPulse = 0;
   private demoReplayed = false;
   /** Levels 2–3. */
   round: CardRound | null = null;
@@ -105,9 +110,14 @@ class MoonWindow implements Game {
     const authored = !!ctx.demo || !authoredShown.has(ctx.level);
     if (!ctx.demo) authoredShown.add(ctx.level);
     ctx.stage.addChild(this.wall);
-    this.shutter = shutterArt(WINDOW_D / 2);
+    if (isBig(ctx.level)) {
+      onTap(this.catcher, (e) => this.touchBig(e), { cooldown: 200 });
+      ctx.stage.addChild(this.catcher);
+    }
+    const windowD = isBig(ctx.level) ? this.layout.window.w : WINDOW_D;
+    this.shutter = shutterArt(windowD / 2);
     this.shutter.alpha = 0;
-    this.windowNode.addChild(windowArt(WINDOW_D, STARS), this.moonGlow, this.moon, this.shutter);
+    this.windowNode.addChild(windowArt(windowD, STARS), this.moonGlow, this.moon, this.shutter);
     this.windowNode.eventMode = 'none';
     ctx.stage.addChild(this.windowNode);
     this.glow.eventMode = 'none';
@@ -116,11 +126,13 @@ class MoonWindow implements Game {
       this.presses = ctx.demo ? 2 : LOOK_PRESSES;
       this.views = lookViews(lookStart(ctx.rng, authored)).slice(0, this.presses + 1);
       drawMoon(this.moon, this.views[0], this.layout.moonR);
-      const art = laterArt();
-      this.laterButton.addChild(tile(160, 160, 'blue'), art);
-      this.laterButton.hitArea = new Rectangle(-85, -85, 170, 170);
-      onTap(this.laterButton, () => this.press());
-      ctx.stage.addChild(this.laterButton);
+      if (!isBig(ctx.level)) {
+        const art = laterArt();
+        this.laterButton.addChild(tile(160, 160, 'blue'), art);
+        this.laterButton.hitArea = new Rectangle(-85, -85, 170, 170);
+        onTap(this.laterButton, () => this.press());
+        ctx.stage.addChild(this.laterButton);
+      }
       this.addThumb(this.views[0]);
       this.askForHint = () => this.nudge();
       this.hintLabel = 'Show a hint';
@@ -152,7 +164,10 @@ class MoonWindow implements Game {
   }
 
   start() {
-    if (this.plan.mode === 'look') {
+    if (isBig(this.ctx.level)) {
+      // Input is open from the start: a touch before the lines finish already turns the window.
+      void this.ctx.say('moonwindow.intro').then(() => this.ctx.instruct('moonwindow.instruct.big'));
+    } else if (this.plan.mode === 'look') {
       void this.ctx
         .say('moonwindow.intro')
         .then(() => this.ctx.say(viewLine(this.views[0])))
@@ -163,6 +178,16 @@ class MoonWindow implements Game {
   /** The ghost finger: Later, with one free replay of the first thumbnail after the second view; the right card on a board. */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.unasked) return null;
+    if (isBig(this.ctx.level)) {
+      // Low on the wall beside the window: a touch anywhere will do.
+      if (this.shown > this.presses) return null;
+      const w = this.layout.window;
+      return {
+        tap: { on: this.ctx.stage, x: w.x + w.w + 80, y: w.y + w.h - 60 },
+        receiver: this.catcher,
+        pause: 0.5,
+      };
+    }
     if (this.plan.mode === 'look') {
       if (this.shown === 2 && !this.demoReplayed) {
         this.demoReplayed = true;
@@ -184,6 +209,33 @@ class MoonWindow implements Game {
     if (this.busy || this.shown > this.presses) return;
     this.busy = true;
     void this.turn();
+  }
+
+  /**
+   * Level 4, a touch anywhere: a ring where she touched, a soft note and the window's squash, always (until the round
+   * ends). A touch while the window is still or the last view's lines play changes nothing more; otherwise it turns.
+   */
+  private touchBig(e: FederatedPointerEvent) {
+    if (this.finished) return;
+    const p = this.ctx.stage.toLocal(e.global);
+    this.splash(p.x, p.y);
+    this.windowPulse = 1;
+    if (this.busy || this.shown > this.presses) return void sfx.bell(5, 0.12);
+    sfx.tick();
+    this.busy = true;
+    void this.turn();
+  }
+
+  /** The ring at the touch point; it takes no touches of its own. */
+  private splash(x: number, y: number) {
+    const r = new Graphics().circle(0, 0, 46).stroke({ width: 6, color: swatch.white.fill, alpha: 0.9 });
+    r.position.set(x, y);
+    r.eventMode = 'none';
+    this.ctx.stage.addChild(r);
+    void this.ctx.tw.to(r.scale, { x: 1.6, y: 1.6 }, { duration: 0.5, ease: ease.outCubic });
+    void this.ctx.tw.to(r, { alpha: 0 }, { duration: 0.5 }).then(() => {
+      if (!r.destroyed) r.destroy();
+    });
   }
 
   private async turn() {
@@ -225,10 +277,12 @@ class MoonWindow implements Game {
     void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
   }
 
-  /** Show a hint at level 1: Later pulses, and nothing counts. */
+  /** Show a hint at levels 1 and 4: Later pulses (the window at level 4, with the instruction again), and nothing counts. */
   private nudge() {
     if (this.finished) return;
-    this.pulse = 1;
+    if (!isBig(this.ctx.level)) return void (this.pulse = 1);
+    this.windowPulse = 1;
+    void this.ctx.instruct('moonwindow.instruct.big');
   }
 
   // Levels 2–3: cards -------------------------------------------------------------------------------
@@ -468,6 +522,7 @@ class MoonWindow implements Game {
     drawWall(this.wall, this.view.w, this.view.h);
     const w = center(L.window);
     this.windowNode.position.set(w.x, w.y);
+    this.catcher.hitArea = new Rectangle(0, 0, this.view.w, this.view.h);
     const l = center(L.later);
     this.laterButton.position.set(l.x, l.y);
     const q = center(L.request);
@@ -491,6 +546,10 @@ class MoonWindow implements Game {
       this.pulse = Math.max(0, this.pulse - dt * 2.2);
       this.laterButton.scale.set(1 - 0.12 * Math.sin(this.pulse * Math.PI));
     } else this.laterButton.scale.set(1);
+    if (this.windowPulse > 0) {
+      this.windowPulse = Math.max(0, this.windowPulse - dt * 2.2);
+      this.windowNode.scale.set(1 - 0.05 * Math.sin(this.windowPulse * Math.PI));
+    } else this.windowNode.scale.set(1);
   }
 
   destroy() {
@@ -511,7 +570,7 @@ export const moonWindow: GameModule = {
   music: STYLES.lullaby,
   coplayHint: 'Before {name} presses, ask what the Moon will look like later. Then look together.',
   coplayHintLap:
-    'Before {name} presses, say what you think the Moon will look like later. Then look together.',
+    'Before {name} looks again, say what you think the Moon will look like later. Then look together.',
   offScreen: "Next time you see the Moon, say how much of it is lit. If you can't see it, that counts too.",
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,

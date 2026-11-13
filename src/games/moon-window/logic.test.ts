@@ -8,13 +8,16 @@ import {
   AUTHORED_COMPARE,
   AUTHORED_LOOK,
   AUTHORED_SAME,
+  BIG_LEVEL,
   CardRound,
   compareAnswer,
   compareBoards,
   CORNER,
   differsEnough,
   inside,
+  isBig,
   later,
+  LEVELS,
   lit,
   LOOK_PRESSES,
   lookStart,
@@ -134,9 +137,9 @@ describe('level 1, Look again', () => {
 
   it('has nothing to get wrong: the plan has no cards', () => {
     expect(moonPlan(1).mode).toBe('look');
-    expect(PLANS.map((p) => p.mode)).toEqual(['look', 'same', 'compare']);
+    expect(PLANS.map((p) => p.mode)).toEqual(['look', 'same', 'compare', 'look']);
     expect(moonPlan(0).level).toBe(1);
-    expect(moonPlan(9).level).toBe(3);
+    expect(moonPlan(9).level).toBe(4);
   });
 });
 
@@ -146,6 +149,42 @@ const checkPair = (cards: [number, number]) => {
   expect(Math.abs(lit(cards[0]) - lit(cards[1]))).toBeGreaterThanOrEqual(MIN_DIFFERENCE - 1e-9);
   expect(cards[1]).not.toBe(mirror(cards[0]));
 };
+
+describe('level 4, Big window (lap)', () => {
+  it("opens lap's ladder and no other band's: lap plays 4 then 1, toddler still starts at 1", () => {
+    expect(LEVELS.lap).toEqual({ min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] });
+    for (const band of ['toddler', 'preschool', 'prek'] as const) {
+      const r = LEVELS[band]!;
+      expect(r.max, band).toBeLessThan(BIG_LEVEL);
+    }
+    expect(LEVELS.toddler!.min).toBe(1);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('is a look round with nothing to get wrong: four views in model order, the authored one slice to full', () => {
+    expect(moonPlan(BIG_LEVEL).mode).toBe('look');
+    expect(moonPlan(BIG_LEVEL).level).toBe(BIG_LEVEL);
+    expect(lookViews(lookStart(new Rng(1), true))).toEqual([1, 2, 3, 4]);
+  });
+
+  it('shows only the window and the row, the window bigger than level 1, with no Later button among the boxes', () => {
+    for (const [name, view] of Object.entries(VIEWS)) {
+      const big = windowLayout(view, BIG_LEVEL)!;
+      const one = windowLayout(view, 1)!;
+      expect(big.window.w, name).toBeGreaterThan(one.window.w);
+      expect(big.moonR, name).toBeGreaterThan(one.moonR);
+      expect(big.moonR * 2 + 40).toBeLessThanOrEqual(big.window.w);
+      expect(shownBoxes(big, BIG_LEVEL)).toEqual([big.window, ...big.ribbon]);
+    }
+  });
+
+  it('speaks its own instruction, a touch anywhere, never a button', () => {
+    const line = SCRIPT['moonwindow.instruct.big'];
+    expect(line).toBeDefined();
+    expect(line.join(' ')).toMatch(/anywhere/);
+    expect(line.join(' ')).not.toMatch(/button|press/i);
+  });
+});
 
 describe('level 2, Same view', () => {
   it('lays two boards with different targets, one matching card and one that differs enough in lit amount, over 500 seeds', () => {
@@ -263,13 +302,15 @@ describe('accounting', () => {
 describe('the layout', () => {
   it('fits every control at size, without overlaps, clear of the corners and inside the view, at every level and view', () => {
     for (const [name, view] of Object.entries(VIEWS)) {
-      for (const level of [1, 2, 3]) {
+      for (const level of [1, 2, 3, 4]) {
         const L = windowLayout(view, level);
         expect(L, `${name} level ${level}`).not.toBeNull();
         if (!L) continue;
         expect(Math.min(L.window.w, L.window.h)).toBeGreaterThanOrEqual(300);
-        expect(Math.min(L.later.w, L.later.h)).toBeGreaterThanOrEqual(140);
-        for (const c of L.cards) expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(170);
+        if (!isBig(level)) {
+          expect(Math.min(L.later.w, L.later.h)).toBeGreaterThanOrEqual(140);
+          for (const c of L.cards) expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(170);
+        }
         for (const s of L.ribbon) expect(Math.min(s.w, s.h)).toBeGreaterThanOrEqual(110);
         expect(L.ribbon).toHaveLength(LOOK_PRESSES + 1);
         const boxes = shownBoxes(L, level);
@@ -287,7 +328,7 @@ describe('the layout', () => {
         // Both Moons at level 3 are drawn at one radius, the window's; level 2's cards are a little smaller.
         if (level === 3) expect(L.cardMoonR).toBe(L.moonR);
         else expect(L.cardMoonR).toBeLessThan(L.moonR);
-        expect(L.cardMoonR * 2 + 20).toBeLessThanOrEqual(L.cards[0].w);
+        if (!isBig(level)) expect(L.cardMoonR * 2 + 20).toBeLessThanOrEqual(L.cards[0].w);
       }
     }
   });

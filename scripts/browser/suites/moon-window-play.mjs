@@ -30,6 +30,66 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       kit.store.data.settings.howToCards = false;
     });
 
+    // Level 4 (lap) on a phone: the window is the big thing; touches on the sky corner, the wall and the window each turn
+    // it, a touch mid-turn is free, a thumbnail replays without turning, Show a hint counts nothing, then a sticker.
+    await page.setViewportSize({ width: 844, height: 390 });
+    await page.waitForTimeout(400);
+    await launch('moon-window', 4, 'Mia', 'lap');
+    await page.waitForFunction(() => neo.scene.game?.catcher, null, { timeout: 15000 });
+    await screenshot('moon-window-4-start-phone');
+    const lap = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const v = g.view;
+      const at = (x, y) => {
+        const p = g.ctx.stage.toGlobal({ x, y });
+        kit.tap(p.x, p.y);
+      };
+      const w = g.layout.window;
+      const res = { shown: [], busyTaps: [], thumbs: 0, later: g.laterButton.parent !== null, window: w.w };
+      g.askForHint();
+      const spots = [
+        [v.w - 180, 160],
+        [v.w * 0.15, v.h * 0.4],
+        [w.x + w.w / 2, w.y + w.h / 2],
+      ];
+      for (let n = 0; n < 3; n++) {
+        await kit.until(() => !g.busy, 15000);
+        await kit.sleep(300);
+        res.shown.push(g.shown);
+        if (n === 1) {
+          // A thumbnail answers with its line and does not turn the window.
+          const t = g.thumbs[0];
+          const p = t.toGlobal({ x: 0, y: 0 });
+          kit.tap(p.x, p.y);
+          await kit.sleep(300);
+          res.afterThumb = g.shown;
+        }
+        at(...spots[n]);
+        await kit.sleep(260);
+        res.midTurn = (res.midTurn ?? 0) + (g.busy ? 1 : 0);
+        at(v.w * 0.5, v.h * 0.9 - 200);
+        await kit.until(() => !g.busy, 15000);
+        res.busyTaps.push(g.shown);
+      }
+      res.thumbs = g.thumbs.length;
+      await kit.until(() => neo.scene.finished, 20000);
+      res.misses = g.misses;
+      res.hints = g.hints;
+      return res;
+    });
+    assert.equal(lap.later, false, 'no Later button at level 4');
+    assert.deepEqual(lap.shown, [1, 2, 3], 'each touch anywhere turned the window once');
+    assert.equal(lap.midTurn, 3, 'the second touch landed while the window was turning');
+    assert.deepEqual(lap.busyTaps, [2, 3, 4], 'a second touch while it turns is free');
+    assert.equal(lap.afterThumb, 2, 'a thumbnail replays without turning');
+    assert.equal(lap.thumbs, 4, 'four views in the row');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await finished('moon-window');
+    assert.deepEqual(await score(), [0, 0], 'level 4 saved 0 misses, 0 hints');
+    log(
+      `Moon Window 4 (lap): window ${lap.window} units, sky, wall and window touches each turned it, mid-turn taps free, a thumbnail replayed, 0/0; passed`,
+    );
+
     // Level 2: the authored boards; the thin slice is one miss, the half Moon fits; Show a hint on the second board counts once.
     await launch('moon-window', 2);
     await settle();

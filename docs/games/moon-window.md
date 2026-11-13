@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 4, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3 |
@@ -18,6 +18,7 @@
 | 1 | Look again: press Later three times and watch the Moon change |
 | 2 | Same view: tap the card that matches the Moon in the window, two boards |
 | 3 | More light: tap the Moon that shows more, or less, light; three comparisons |
+| 4 | Big window: a touch anywhere turns the window to the Moon some days later, three times |
 
 <!-- end generated -->
 
