@@ -56,6 +56,15 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
       await ready(i, 'rest');
       const s = await state();
       assert.equal(s.fruit.x > 0 && s.alive.length, 1, 'one vine at level 1');
+      if (i === 0) {
+        await page.evaluate(() => neo.scene.game.askForHint());
+        const h = await state();
+        assert.deepEqual(
+          [h.hints, h.glow],
+          [0, true],
+          'Show a hint at level 1 glows the vine and counts nothing',
+        );
+      }
       await tapStage({ x: s.fruit.x + 160, y: s.fruit.y + 60 });
       await fed(i);
     }
@@ -210,7 +219,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     assert.ok(heard >= 3900, `R4: the line's last munch was cut (${Math.round(heard)} ms)`);
     assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
     log(
-      `Vine Snip 1, 3, 4 and 5: level 1 three taps anywhere fed every friend 0/0; level 3 portrait, a snip at the far turnaround missed, a requested hint glowed the arc, then three timed snips fed every friend 1/1; level 4 portrait three vines with the keep glow; level 5 a wrong-side keep missed, Grow back was free, both lines fed 1/0; R4 the other fruit open ${Math.round(open)} ms into a 4 s munch, the last munch heard out; passed`,
+      `Vine Snip 1, 3, 4 and 5: level 1 a requested hint glowed the vine and counted nothing, three taps anywhere fed every friend 0/0; level 3 portrait, a snip at the far turnaround missed, a requested hint glowed the arc, then three timed snips fed every friend 1/1; level 4 portrait three vines with the keep glow; level 5 a wrong-side keep missed, Grow back was free, both lines fed 1/0; R4 the other fruit open ${Math.round(open)} ms into a 4 s munch, the last munch heard out; passed`,
     );
   }
   return { vineSnipPlay };
