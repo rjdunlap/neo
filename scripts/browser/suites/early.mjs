@@ -134,6 +134,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const wrongPart =
           g.plan.mode === 'parts' &&
           (g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p)));
+        if (level === 4) {
+          // A quiet spell lights the asked-for glow for free (before the wrong drag, so its nag gap still covers the scrubbing).
+          await kit.sleep(7600);
+          const lit = g.muds.some((m) => !m.clean && g.allowed().includes(m.part) && m.glow.visible);
+          if (!lit || g.hints !== 0 || g.misses !== 0)
+            throw new Error(`Quiet glow: ${lit} ${g.misses} ${g.hints}`);
+        }
         if (wrongPart) {
           // A short wiggle in the middle, so it can't reach a neighboring part that is allowed.
           const p = g.muds.find((m) => m.part === wrongPart).sprite.getGlobalPosition();
@@ -148,11 +155,6 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
             if (g.misses !== 2 || g.hints !== 1 || !askedGlow())
               throw new Error(`Second miss gave no hint: ${g.misses} ${g.hints} ${askedGlow()}`);
-          }
-          if (level === 4) {
-            // A quiet spell lights the asked-for glow for free.
-            await kit.sleep(7600);
-            if (!askedGlow() || g.hints !== 0) throw new Error(`Quiet glow: ${askedGlow()} ${g.hints}`);
           }
         }
         for (let guard = 0; guard < 40 && !g.finished; guard++) {
