@@ -508,7 +508,7 @@ const tileOn = (tiles: readonly Tile[], i: number) =>
   tiles.findIndex((t) => t.x === tiles[i].x && t.y === tiles[i].y && t.z === tiles[i].z + 1);
 const sameKind = (tiles: readonly Tile[], [a, b]: Pair) => tiles[a].kind === tiles[b].kind;
 /**
- * Whether a board teaches its lesson on the first move. All three need a clearing route and a first pair that
+ * Whether a board teaches its lesson on the first move. Every lesson needs a clearing route and a first pair that
  * leaves none; then:
  * - `twins`: one picture has a copy resting on another copy and its other two copies free, and the only losing
  *   first pair is those two free copies (pairing the top twin with either is safe).
@@ -516,8 +516,8 @@ const sameKind = (tiles: readonly Tile[], [a, b]: Pair) => tiles[a].kind === til
  *   three pairs among them is safe, and every losing first pair is one of the other two.
  * - `crossed`: a copy of one picture rests on a copy of a second and a copy of the second on a copy of the first,
  *   and every losing first pair is of one of those two pictures.
- * - `long`: one flat layer, so nothing is covered; one picture has at least three copies free, exactly one pair of
- *   them is safe, and every losing first pair is a pair of those copies.
+ * - `long`: one flat layer, so nothing is covered; one picture has three copies free and its fourth buried inside a
+ *   row, the only safe pair of the three is the two at that row's ends, and every losing first pair is among them.
  * - `ahead`: every losing first pair still leaves at least two pairs to take on every line before the board strands
  *   (`pairsBeforeStranded`), so the trap is not visible one pair out, and the fair-trap check passes.
  */
@@ -536,11 +536,17 @@ export function lessonHolds(lesson: Lesson, tiles: readonly Tile[]): boolean {
     if (tiles.some((t) => t.z > 0)) return false;
     const lost = new Set(losing.map(key));
     return kinds.some((k) => {
-      const free = copies(k).filter((i) => open.has(i));
-      if (free.length < 3) return false;
-      const among = free.flatMap((a, n) => free.slice(n + 1).map((b): Pair => [a, b]));
+      const all = copies(k),
+        free = all.filter((i) => open.has(i)),
+        buried = all.filter((i) => !open.has(i));
+      if (all.length !== 4 || free.length !== 3 || buried.length !== 1) return false;
+      const ends = free.filter((i) => tiles[i].y === tiles[buried[0]].y);
+      if (ends.length !== 2) return false;
+      const among = free.flatMap((a, n) => free.slice(n + 1).map((b): Pair => [a, b])),
+        safe = among.filter((p) => !lost.has(key(p)));
       return (
-        among.filter((p) => !lost.has(key(p))).length === 1 &&
+        safe.length === 1 &&
+        key(safe[0]) === key([ends[0], ends[1]]) &&
         losing.every((p) => free.includes(p[0]) && free.includes(p[1]))
       );
     });
