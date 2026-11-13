@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1–2 |
+| lap | 13, 1, 2 |
 | toddler | 1, 2, 12 |
 | preschool | 2–4 |
 | pre-K | 3–5 |
@@ -28,6 +28,7 @@
 | 10 | Tell me which: tap the one picture word only the sparkly animal has, then Tell |
 | 11 | Tell me both: every picture word fits two, so tell a doing word and a place word together |
 | 12 | Doing words only: "Who is sleeping?" |
+| 13 | One big friend: a touch anywhere takes its photo, and the next friend walks in (6 photos) |
 
 <!-- end generated -->
 

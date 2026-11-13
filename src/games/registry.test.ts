@@ -106,9 +106,15 @@ describe('game registry', () => {
     expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 5 });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
-    expect(g.levels('lap')).toEqual({ min: 1, max: 2 });
+    // Lap opens with level 13's one big friend, then levels 1 and 2; no saved level or pin moves.
+    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1, 2] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 12, order: [1, 2, 12] });
-    expect(g.entryLevels).toEqual([12]);
+    expect(g.entryLevels).toEqual([12, 13]);
+    expect(stepLevel(13, 1, g.levels('lap'))).toBe(1);
+    expect(stepLevel(1, -1, g.levels('lap'))).toBe(13);
+    // A saved 13 carried into toddler (a birthday) starts toddler at its own first level.
+    expect(landing(13, g.levels('toddler'), g.entryLevels)).toBe(1);
+    for (const level of [13, 1, 2]) expect(landing(level, g.levels('lap'), g.entryLevels)).toBe(level);
     // Younger players never hear a false claim: Is it true? (9) is in no band but school.
     for (const band of g.bands) expect(levelsInOrder(g.levels(band)).includes(9)).toBe(band === 'school');
     expect(stepLevel(2, 1, g.levels('toddler'))).toBe(12);

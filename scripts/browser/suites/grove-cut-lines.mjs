@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
  * monster's line, and in `pond-typing`, `word-glue` and `owl-walk` a typed word's, joined pair's or flipped card's
  * line, never holds the next tap. Each line is stretched to at least 4 s in the page, so the next friend, card,
  * question, bubble, ask or stone tap opening sooner shows the line no longer gates it; the round's last line is
- * still heard out. GROVE_ONLY=night|opp|monsters|pond|glue|owl plays one game.
+ * still heard out. GROVE_ONLY=night|nightbig|safaribig|opp|monsters|pond|glue|owl plays one game.
  */
 export function createSuite({ page, launch, finished, screenshot, log, ready, chooserEnter, errors }) {
   async function groveCutLines() {
@@ -210,6 +210,83 @@ export function createSuite({ page, launch, finished, screenshot, log, ready, ch
         `Goodnight Room 11: four big friends tucked in by touches on the sky, floor, friend and window, next in ${big.opens
           .map(Math.round)
           .join('/')} ms under 4 s goodnights, the last heard out, no misses`,
+      );
+    }
+
+    if (!only || only === 'safaribig') {
+      // Photo Safari level 13 (lap): one big friend; a touch anywhere (sky, grass, the friend, beside it) takes its
+      // photo and the next friend walks in under a 4 s click line; a touch while it walks in only hops it; six
+      // different friends fill the album, nothing is a miss, and the last click is heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('photo-safari', 13);
+      await stretch(['safari.click']);
+      await page.waitForTimeout(600);
+      await screenshot('photo-safari-13-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.plan.big || g.plan.photos !== 6) throw new Error('Photo Safari big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.cast.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.15),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => at(g.actors[0].x, g.actors[0].y - 120),
+          () => at(v.w * 0.2, v.h * 0.6),
+          () => at(v.w * 0.9, v.h * 0.4),
+          () => at(v.w / 2, v.h * 0.3),
+        ];
+        const out = { opens: [], sizes: [], shown: [], animals: [], extra: [] };
+        for (let n = 0; n < 6; n++) {
+          await kit.until(() => !g.busy && g.photos === n && g.actors.length === 1, 15000);
+          await kit.sleep(250);
+          const a = g.actors[0];
+          const b = a.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.cast.worldTransform.a);
+          out.shown.push(g.actors.length);
+          out.animals.push(a.sighting.animal);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 5) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch while the photo flies and the next friend walks in takes no extra photo.
+            await kit.sleep(300);
+            at(v.w * 0.5, v.h * 0.85);
+            await kit.until(() => g.photos === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.photos);
+          }
+        }
+        out.cards = g.album.children.length;
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 200)) throw new Error(`Big friend too small: ${JSON.stringify(big)}`);
+      if (big.shown.some((n) => n !== 1)) throw new Error(`More than one friend: ${JSON.stringify(big)}`);
+      if (new Set(big.animals).size !== 6) throw new Error(`Friends repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((p, i) => p !== i + 1))
+        throw new Error(`A between touch took a photo: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 2500))
+        throw new Error(`The click held the next friend: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last click was cut: ${JSON.stringify(big)}`);
+      if (big.cards !== 6 || big.misses || big.hints)
+        throw new Error(`Photo Safari big not free: ${JSON.stringify(big)}`);
+      await screenshot('photo-safari-13-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('photo-safari');
+      assert.deepEqual(await score('photo-safari'), [0, 0]);
+      log(
+        `Photo Safari 13: six big friends photographed by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join(
+            '/',
+          )} ms under 4 s clicks, sizes ${big.sizes.map(Math.round).join('/')}, the last heard out, no misses`,
       );
     }
 
