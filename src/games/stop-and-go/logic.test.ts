@@ -209,7 +209,7 @@ describe('Stop and Go: every touch answers', () => {
     for (const m of ['toy', 'send', 'cross'] as const) expect(doneLine(m)).toBe('go.done');
   });
 
-  it('lap level 9 is two lamps and a looping car where every touch counts and nothing can be missed', () => {
+  it('lap level 9 is one big lamp and a looping car where every touch counts and nothing can be missed', () => {
     const plan = planFor(LAMPS_LEVEL);
     expect(plan.mode).toBe('lamps');
     expect(plan.goal).toBe(8);
@@ -223,15 +223,19 @@ describe('Stop and Go: every touch answers', () => {
     expect(touchCounts('lamps', 'light')).toBe(true);
     expect(lampRolls('green')).toBe(true);
     expect(lampRolls('red')).toBe(false);
-    // A bot that always taps the other lamp shows both, and finishes in exactly the goal's touches.
+    // A touch anywhere turns the lamp: starting still, the first touch is green and each touch after it flips the car,
+    // so eight touches are four goes and four stops and the round ends with the car stopped.
     let rolling = false;
-    const seen = new Set<string>();
+    const lamps: string[] = [];
     for (let i = 0; i < plan.goal; i++) {
       const lamp = nextLamp(rolling);
-      seen.add(lamp);
+      lamps.push(lamp);
+      expect(lampRolls(lamp)).toBe(!rolling);
       rolling = lampRolls(lamp);
     }
-    expect([...seen].sort()).toEqual(['green', 'red']);
+    expect(lamps.slice(0, 2)).toEqual(['green', 'red']);
+    expect(lamps.filter((l) => l === 'green').length).toBe(plan.goal / 2);
+    expect(rolling).toBe(false);
   });
 });
 

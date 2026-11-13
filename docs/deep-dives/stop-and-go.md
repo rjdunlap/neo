@@ -99,7 +99,7 @@ Rework fit ([creature-world brief](../rework/README.md)): vehicles are a natural
 
 ### Younger-band openings
 
-- **Lap entry, level 9 *Go car, stop car*.** One car loops round an oval road without stopping on its own. Two huge lamps (each at least 150 across) sit low on screen: green makes it drive with puffs, red makes it brake with a squash and idle; tapping the car toots. No misses are possible; the round ends after 8 touches. Lap order `[9, 1]` and `entryLevels: [9]`, so a lap child saved at 9 who turns toddler starts at toddler's easiest level, 1, not the send level 2 where red is a miss. A rule test asserts the ladder's lap order and that every touch changes something. It is the toy level stripped to two states, the classic stop/go cause and effect a one-year-old can see.
+- **Lap entry, level 9 *Go car, stop car*.** One car loops round an oval road without stopping on its own. One big lamp (240 across, on a short pole above the road, starting red) takes a touch anywhere (a layer under the car) and turns to the colour the car is not obeying: green makes it drive with puffs, red makes it brake with a squash and idle; tapping the car toots (changed in place 2026-11-13). No misses are possible; the round ends after 8 touches. Lap order `[9, 1]` and `entryLevels: [9]`, so a lap child saved at 9 who turns toddler starts at toddler's easiest level, 1, not the send level 2 where red is a miss. A rule test asserts the ladder's lap order and that every touch changes something. It is the toy level stripped to two states, the classic stop/go cause and effect a one-year-old can see.
 
 ### Easier entries and levels between existing ones
 

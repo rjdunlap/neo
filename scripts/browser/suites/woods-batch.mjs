@@ -2638,23 +2638,42 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           page.waitForFunction((l) => neo.scene.game.light.light === l, l, { timeout: 15000 });
         await page.waitForTimeout(500);
         if (mode === 'lamps') {
-          // Lap level 9: green sets the looping car rolling, red brakes it, the car toots; eight touches and no miss.
+          // Lap level 9: one big lamp; a touch anywhere turns it (green sets the looping car rolling, red brakes it), the
+          // car toots; eight touches and no miss. Touches land on the sky, the lamp and the grass, not the top centre (the tip card).
           const rolling = () => page.evaluate(() => neo.scene.game.rolling);
-          await tap('neo.scene.game.lamps[0]');
+          const lampIs = () => page.evaluate(() => neo.scene.game.lamp.lamp);
+          const anywhere = (k) =>
+            page.evaluate((k) => {
+              const at = [
+                [0.88, 0.45],
+                [0.12, 0.3],
+                [0.7, 0.92],
+              ][k % 3];
+              kit.tap(innerWidth * at[0], innerHeight * at[1]);
+            }, k);
+          assert.equal(await lampIs(), 'red', 'the lamp starts red with the car still');
+          await anywhere(0);
           await page.waitForTimeout(500);
-          assert.equal(await rolling(), true, 'green sets the car going');
+          assert.equal(await rolling(), true, 'a touch on the sky turns it green and sets the car going');
+          assert.equal(await lampIs(), 'green');
           const x0 = await page.evaluate(() => neo.scene.game.cars[0].x);
           await page.waitForTimeout(400);
           assert.notEqual(await page.evaluate(() => neo.scene.game.cars[0].x), x0, 'the car moves on green');
-          await tap('neo.scene.game.lamps[1]');
+          await tap('neo.scene.game.lamp');
           await page.waitForTimeout(500);
-          assert.equal(await rolling(), false, 'red stops the car');
+          assert.equal(await rolling(), false, 'a touch on the lamp turns it red and stops the car');
+          assert.equal(await lampIs(), 'red');
           await tap('neo.scene.game.cars[0]');
           await page.waitForTimeout(350);
-          assert.equal(await page.evaluate(() => neo.scene.game.done), 3, 'both lamps and the car count');
+          assert.equal(await rolling(), false, 'the car toots and does not turn the lamp');
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.done),
+            3,
+            'the background, the lamp and the car count',
+          );
           await screenshot('stop-and-go-9');
           for (let k = 0; k < 5; k++) {
-            await tap(`neo.scene.game.lamps[${k % 2}]`);
+            await anywhere(k + 1);
             await page.waitForTimeout(350);
           }
         } else if (mode === 'toy') {
@@ -2774,7 +2793,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await finished('stop-and-go');
         assert.deepEqual(await score('stop-and-go'), mode === 'toy' || mode === 'lamps' ? [0, 0] : [2, 1]);
         log(
-          `Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'green and red lamps and the car, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`,
+          `Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'one big lamp turned by a touch anywhere (sky, lamp, grass) and the car tooting, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`,
         );
       }
 

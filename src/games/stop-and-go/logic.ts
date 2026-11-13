@@ -44,12 +44,12 @@ export const LEVELS: BandLevels = {
 /** The two crossing levels: the preset crossing (4) and the busy one where cars arrive (6). */
 export const isCross = (mode: GoMode) => mode === 'cross' || mode === 'busy';
 
-/** Lap's first level, 9 (the easiest, so it sits outside PLANS): two lamps, a looping car, nothing to get wrong. */
+/** Lap's first level, 9 (the easiest, so it sits outside PLANS): one big lamp, a looping car, nothing to get wrong. */
 export const LAMPS_LEVEL = 9;
 export const LAMPS_PLAN: GoPlan = {
   mode: 'lamps',
   goal: 8,
-  name: "Go car, stop car: tap the green lamp to make the car go and the red lamp to make it stop (lap's first level)",
+  name: "Go car, stop car: one big lamp, and a touch anywhere turns it: green, the car goes round; red, it stops (lap's first level)",
 };
 
 export const planFor = (level: number) =>
@@ -157,12 +157,12 @@ export const touchCounts = (mode: GoMode, answer: CarAnswer | 'light') =>
   (mode === 'toy' || mode === 'lamps') && (answer === 'light' || answer === 'drive' || answer === 'toot');
 
 /**
- * The lap level's two lamps: green sets the looping car going, red brakes it (and a second touch of the same lamp keeps
- * it so). Both lamps and the car answer every touch, so there is no miss.
+ * The lap level's one big lamp: green sets the looping car going, red brakes it. A touch anywhere turns it to the colour
+ * the car is not obeying (`nextLamp`), and a touch on the car toots, so every touch answers and there is no miss.
  */
 export type Lamp = 'green' | 'red';
 export const lampRolls = (lamp: Lamp) => lamp === 'green';
-/** The ghost finger's lamp: the one the car is not already obeying, so green and red both get shown. */
+/** What a touch anywhere turns the lamp to: the colour the car is not already obeying, so green and red take turns. */
 export const nextLamp = (rolling: boolean): Lamp => (rolling ? 'red' : 'green');
 
 /**

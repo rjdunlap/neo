@@ -7,7 +7,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'Tap the big green lamp to make the car go round, and the big red lamp to make it stop. Tapping the car makes it toot.',
+      text: 'Touch anywhere to turn the big lamp: green makes the car go round, red makes it stop. Tapping the car makes it toot.',
     },
     {
       from: 1,
@@ -37,7 +37,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'Every touch of a lamp or the car counts toward the round, so nothing can go wrong; the round ends after eight touches.',
+      text: 'Every touch counts toward the round, anywhere on the screen or on the car, so nothing can go wrong; the round ends after eight touches.',
     },
     {
       from: 2,
