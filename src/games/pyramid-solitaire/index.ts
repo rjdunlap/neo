@@ -100,15 +100,25 @@ class PyramidSolitaire implements Game {
   choose(i: number) {
     if (!this.ctx.alive || this.finished || !present(this.mask, i)) return;
     // Level 5: a covered card whose only remaining cover is the chosen card is a partner like an open one.
+    // A covered king can never pair, so tapping one stays the free covered-card tap.
     const coverPartner =
-      !!this.puzzle.lift && this.selected >= 0 && liftable(this.puzzle, this.mask, this.selected).includes(i);
+      !!this.puzzle.lift &&
+      this.selected >= 0 &&
+      this.puzzle.ranks[i] !== 13 &&
+      liftable(this.puzzle, this.mask, this.selected).includes(i);
     if (!exposed(this.puzzle, this.mask, i) && !coverPartner) {
       sfx.tick();
-      const oneLeft = !!this.puzzle.lift && covers(this.puzzle.rows, i).filter((k) => present(this.mask, k)).length === 1;
+      // The lift hint only when the one card left on it is open, so following it can work.
+      const left = covers(this.puzzle.rows, i).filter((k) => present(this.mask, k));
+      const oneLeft =
+        !!this.puzzle.lift &&
+        this.puzzle.ranks[i] !== 13 &&
+        left.length === 1 &&
+        exposed(this.puzzle, this.mask, left[0]);
       this.status.text = oneLeft
         ? 'First choose the one card lying on this one. If they make 13, they lift together.'
         : 'Remove both cards directly below this one first.';
-      void this.ctx.say(oneLeft ? 'pyramid.lift' : 'pyramid.covered');
+      void this.ctx.say(oneLeft ? 'pyramid.liftFirst' : 'pyramid.covered');
       return;
     }
     const rank = this.puzzle.ranks[i];
@@ -275,10 +285,14 @@ class PyramidSolitaire implements Game {
     });
     // Level 5: the covered card a chosen card could take with it is outlined too (what it is, not whether it sums).
     if (this.puzzle.lift && this.selected >= 0)
-      for (const b of liftable(this.puzzle, this.mask, this.selected)) {
+      for (const b of liftable(this.puzzle, this.mask, this.selected).filter(
+        (k) => this.puzzle.ranks[k] !== 13,
+      )) {
         const c = this.nodes[b];
         if (this.hinted?.includes(b)) continue;
-        this.glow.roundRect(c.x - 49, c.y - 49, 98, 98, 16).stroke({ color: swatch.purple.line, width: 3, alpha: 0.7 });
+        this.glow
+          .roundRect(c.x - 49, c.y - 49, 98, 98, 16)
+          .stroke({ color: swatch.purple.line, width: 3, alpha: 0.7 });
       }
     this.hintButton.alpha = this.hinted ? 0.7 : 1;
   }

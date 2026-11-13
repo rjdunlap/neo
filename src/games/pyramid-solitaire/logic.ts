@@ -59,7 +59,9 @@ export function under(rows: number, i: number): number[] {
 /** Cards present under open card `a` that `a` alone still lies on: the cards a cover lift could take with it. */
 export function liftable(p: Puzzle, mask: number, a: number): number[] {
   if (!exposed(p, mask, a)) return [];
-  return under(p.rows, a).filter((b) => present(mask, b) && covers(p.rows, b).every((k) => k === a || !present(mask, k)));
+  return under(p.rows, a).filter(
+    (b) => present(mask, b) && covers(p.rows, b).every((k) => k === a || !present(mask, k)),
+  );
 }
 /** Legal removals; on a lift level, cover pairs come after the open ones, always as `[open card, covered card]`. */
 export function moves(p: Puzzle, mask: number): Removal[] {
@@ -149,7 +151,9 @@ export function dealCandidate(level: number, rng: Rng): Candidate {
       if (covered.length && (free.length === 1 || rng.chance(LIFT_CHANCE))) {
         const [a, b] = rng.pick(covered);
         const rank = rng.pick(
-          Array.from({ length: 12 }, (_, k) => k + 1).filter((r) => used[r] < PACK_LIMIT && used[13 - r] < PACK_LIMIT),
+          Array.from({ length: 12 }, (_, k) => k + 1).filter(
+            (r) => used[r] < PACK_LIMIT && used[13 - r] < PACK_LIMIT,
+          ),
         );
         p.ranks[a] = rank;
         p.ranks[b] = 13 - rank;

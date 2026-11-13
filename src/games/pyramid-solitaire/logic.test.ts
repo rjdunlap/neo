@@ -46,7 +46,9 @@ describe('Pyramid Solitaire', () => {
           // A cover lift's second card is the one its open partner alone still lies on (level 5 only).
           expect(
             exposed(p, mask, move[0]) &&
-              (move.length === 1 || exposed(p, mask, move[1]) || (level === 5 && liftable(p, mask, move[0]).includes(move[1]))),
+              (move.length === 1 ||
+                exposed(p, mask, move[1]) ||
+                (level === 5 && liftable(p, mask, move[0]).includes(move[1]))),
           ).toBe(true);
           expect(new Set(move).size).toBe(move.length);
           expect(move.reduce((n, i) => n + p.ranks[i], 0)).toBe(13);
@@ -194,7 +196,8 @@ describe('Pyramid Solitaire', () => {
       const p = makePuzzle(5, new Rng(seed));
       expect(p.lift).toBe(true);
       expect(p.ranks).toHaveLength(15);
-      for (let r = 1; r <= 13; r++) expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
+      for (let r = 1; r <= 13; r++)
+        expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
       if (p.ranks[0] !== 13) notKing++;
       if (!solver({ rows: p.rows, ranks: p.ranks })(fullMask(5))) needLift++;
       const seen = new Set<number>();

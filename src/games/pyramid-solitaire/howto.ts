@@ -19,6 +19,9 @@ export const HOW_TO: GameHowTo = {
       text: 'A mismatched exposed pair counts one miss; two give a hint. Covered-card taps and legal experiments are free. Undo and Start over preserve misses and hints. Every deal comes from a real pack and clears; there is no stock.',
       to: 4,
     },
-    { text: 'A wrong sum counts one miss; two give a hint. Covered-card taps are free. Every deal clears.', from: 5 },
+    {
+      text: 'A wrong sum counts one miss; two give a hint. Covered-card taps are free. Every deal clears.',
+      from: 5,
+    },
   ],
 };

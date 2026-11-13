@@ -7,6 +7,7 @@ export const VOICE = {
   'pyramid.lift': [
     'Lift two open cards that add to thirteen, or a king alone. New: an open card can also lift with the one card under it, when nothing else lies on that card and the two make thirteen.',
   ],
+  'pyramid.liftFirst': ['First choose the one card lying on this one.'],
   'pyramid.number': ['{n}. Find an open card to make thirteen together.'],
   'pyramid.covered': ['First lift both cards directly below this one.'],
   'pyramid.miss': ['Those cards do not make thirteen. This first card needs {n}.'],
