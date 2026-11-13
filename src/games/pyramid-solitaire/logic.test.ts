@@ -10,6 +10,7 @@ import {
   dealCandidate,
   exposed,
   fullMask,
+  liftable,
   makePuzzle,
   moves,
   planFor,
@@ -32,7 +33,7 @@ describe('Pyramid Solitaire', () => {
     expect(at(4, 4)).toBe(14);
   });
   it('every seeded deal has a legal clearing route with valid ranks and alternatives supported', () => {
-    for (let level = 1; level <= 4; level++)
+    for (let level = 1; level <= 5; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           solve = solver(p);
@@ -42,7 +43,13 @@ describe('Pyramid Solitaire', () => {
         const route = solve(mask)!;
         expect(route).not.toBeNull();
         for (const move of route) {
-          expect(move.every((i) => exposed(p, mask, i))).toBe(true);
+          // A cover lift's second card is the one its open partner alone still lies on (level 5 only).
+          expect(
+            exposed(p, mask, move[0]) &&
+              (move.length === 1 ||
+                exposed(p, mask, move[1]) ||
+                (level === 5 && liftable(p, mask, move[0]).includes(move[1]))),
+          ).toBe(true);
           expect(new Set(move).size).toBe(move.length);
           expect(move.reduce((n, i) => n + p.ranks[i], 0)).toBe(13);
           const before = mask;
@@ -85,7 +92,7 @@ describe('Pyramid Solitaire', () => {
     for (let mask = 0; mask <= fullMask(3); mask++) expect(solve(mask) !== null).toBe(reachable(mask));
   });
   it('the deal dial lands each level in its band over 200 seeds, every deal from one rng clearing', () => {
-    for (let level = 1; level <= 4; level++) {
+    for (let level = 1; level <= 5; level++) {
       let inBand = 0;
       for (let seed = 1; seed <= 200; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
@@ -112,6 +119,9 @@ describe('Pyramid Solitaire', () => {
       const four = clearRate(makePuzzle(4, new Rng(seed)));
       expect(four).toBeGreaterThanOrEqual(0.3);
       expect(four).toBeLessThanOrEqual(0.75);
+      const five = clearRate(makePuzzle(5, new Rng(seed)));
+      expect(five).toBeGreaterThanOrEqual(0.4);
+      expect(five).toBeLessThanOrEqual(0.8);
     }
     expect(CANDIDATES).toBe(40);
   });
@@ -145,7 +155,7 @@ describe('Pyramid Solitaire', () => {
   it('level 4 is six rows of 21 cards in one 21-bit mask, reaching at most 71 positions', () => {
     expect(planFor(4).rows).toBe(6);
     expect(fullMask(6)).toBe(2 ** 21 - 1);
-    expect(planFor(9)).toBe(planFor(4));
+    expect(planFor(9)).toBe(planFor(5));
     for (let seed = 1; seed <= 100; seed++) {
       const p = makePuzzle(4, new Rng(seed)),
         seen = new Set<number>();
@@ -158,5 +168,49 @@ describe('Pyramid Solitaire', () => {
       walk(fullMask(6));
       expect(seen.size).toBeLessThanOrEqual(71);
     }
+  });
+  it('levels 1-4 never offer a cover lift; level 5 offers one only for the open card alone on it', () => {
+    // Rows: [0] / [1, 2] / [3, 4, 5]. With 2-5 gone, the 7 at 1 alone lies on the 6 at the top.
+    const strict = { rows: 3, ranks: [6, 7, 13, 13, 6, 13] };
+    const mask = remove(fullMask(3), [2, 3, 4, 5]);
+    expect(moves(strict, mask)).toEqual([]);
+    const lift = { ...strict, lift: true as const };
+    expect(liftable(lift, mask, 1)).toEqual([0]);
+    expect(moves(lift, mask)).toEqual([[1, 0]]);
+    expect(solver(lift)(mask)).toEqual([[1, 0]]);
+    expect(solver(strict)(mask)).toBeNull();
+    // With 2 still present the top has two covers: no lift.
+    expect(liftable(lift, remove(fullMask(3), [3, 4]), 1)).toEqual([]);
+    expect(moves(lift, remove(fullMask(3), [3, 4]))).toEqual([[5]]);
+    for (let level = 1; level <= 4; level++)
+      for (let seed = 1; seed <= 50; seed++) {
+        const p = makePuzzle(level, new Rng(seed));
+        expect(p.lift).toBeUndefined();
+      }
+  });
+  it('level 5 is five rows where the top need not be a king and some deals need a lift on every route', () => {
+    expect(planFor(5).rows).toBe(5);
+    let notKing = 0,
+      needLift = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const p = makePuzzle(5, new Rng(seed));
+      expect(p.lift).toBe(true);
+      expect(p.ranks).toHaveLength(15);
+      for (let r = 1; r <= 13; r++)
+        expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
+      if (p.ranks[0] !== 13) notKing++;
+      if (!solver({ rows: p.rows, ranks: p.ranks })(fullMask(5))) needLift++;
+      const seen = new Set<number>();
+      const walk = (mask: number) => {
+        if (seen.has(mask)) return;
+        seen.add(mask);
+        for (const move of moves(p, mask)) walk(remove(mask, move));
+      };
+      walk(fullMask(5));
+      // Measured at most 30 over 300 seeds.
+      expect(seen.size).toBeLessThanOrEqual(40);
+    }
+    expect(notKing).toBeGreaterThanOrEqual(200 / 3);
+    expect(needLift).toBeGreaterThan(0);
   });
 });
