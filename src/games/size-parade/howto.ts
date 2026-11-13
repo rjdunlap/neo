@@ -7,7 +7,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 16,
       to: 16,
-      text: 'Tap the one friend: each tap makes it a size bigger, then smaller again, and the pet says the size word.',
+      text: 'Tap the friend, the sky or the ground: each touch makes the one friend a size bigger, then smaller again, and the pet says the size word.',
     },
     { from: 9, to: 9, text: 'Tap the big one, then the little one, then the big one again, as asked.' },
     { to: 2, text: 'Tap the friend who is bigger or smaller, as asked.' },
@@ -48,7 +48,15 @@ export const HOW_TO: GameHowTo = {
       to: 15,
       text: 'Five friends of one size in five shades of one colour: drag them to the glowing spots darkest first, then the same five lightest first. The strip of colour at the top shows which way.',
     },
-    'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
+    {
+      to: 15,
+      text: 'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
+    },
+    {
+      from: 17,
+      to: 17,
+      text: 'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
+    },
   ],
   finish: [
     { from: 16, to: 16, text: 'The round ends after three rounds of growing and shrinking.' },
@@ -67,7 +75,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 16,
       to: 16,
-      text: 'Nothing is wrong here: every tap answers, and a tap beside the friend makes it hop.',
+      text: 'Nothing is wrong here: every touch, on the friend or anywhere around it, grows or shrinks it a step.',
     },
     {
       from: 9,
