@@ -5,3 +5,5 @@
 **Not run:** full `npm test` (CI runs it), build (no shared files or assets changed), offline, `world`.
 
 Coverage row: [`atticlever` and `fingerdemo` (`attic-finds`)](../VERIFICATION.md#coverage-summary).
+
+Review fix after the checks (`08c0812a`): Start again does nothing once the toy is on its way to the shelf; typecheck and the game's 68 tests re-run, the browser plays not re-run for it.
