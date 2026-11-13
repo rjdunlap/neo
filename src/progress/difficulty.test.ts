@@ -131,7 +131,7 @@ it('Egg Catch keeps toddler IDs ordered 1,8,2, with safe birthdays and pins outs
   for (const band of ['lap', 'preschool', 'prek', 'school'] as const) {
     const r = eggCatch.levels(band);
     expect(levelsInOrder(r)).not.toContain(8);
-    expect(landing(8, r, eggCatch.entryLevels)).toBe(r.min);
+    expect(landing(8, r, eggCatch.entryLevels)).toBe(levelsInOrder(r)[0]);
   }
 });
 

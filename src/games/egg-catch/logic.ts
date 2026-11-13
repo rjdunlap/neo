@@ -14,6 +14,8 @@ export interface EggPlan {
   mode: EggMode;
   /** A single fork before the full routing tree. */
   singleGate?: boolean;
+  /** Lap's level: one big hen lays at a touch anywhere, and the other hens come to the shelf as her eggs are caught. */
+  oneHen?: boolean;
   /** Eggs to catch (or route) to finish. */
   eggs: number;
   /** Seconds for an egg to fall the whole way (catch levels). */
@@ -59,10 +61,18 @@ export const PLANS: EggPlan[] = [
     fall: 0,
     name: 'Flip-flop gate: set a spring gate for brown then white with one arrangement',
   },
+  {
+    mode: 'tap',
+    oneHen: true,
+    eggs: 5,
+    fall: 1.8,
+    name: 'One big hen: a touch anywhere and she lays an egg into the basket',
+  },
 ];
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  // Level 12 (one big hen) is the easiest, so lap plays it first and then 1 (see `order`).
+  lap: { min: 1, max: 12, order: [12, 1] },
   toddler: { min: 1, max: 8, order: [1, 8, 2] },
   preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
   prek: { min: 3, max: 9, order: [3, 9, 4, 5] },
@@ -121,6 +131,10 @@ export function makeEggs(plan: EggPlan, rng: Rng, count = 30): Egg[] {
   }
   return out;
 }
+
+/** Level 12: how many hens sit on the shelf once `caught` eggs are in the basket. The big hen alone at first, then one more
+ * for each egg caught, until all four are there. */
+export const shelfHens = (caught: number) => Math.min(LANES, 1 + Math.max(0, caught));
 
 /** Catching: is the egg over the basket? Generous: the basket is wide and eggs are forgiving. */
 export const caught = (eggX: number, basketX: number, reach = 95) => Math.abs(eggX - basketX) <= reach;

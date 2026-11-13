@@ -37,7 +37,12 @@ import {
   HEN_SHELLS,
   HEN_NOTES,
   SHELL,
+  LEVELS,
+  planFor,
+  shelfHens,
 } from './logic';
+import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
+import { eggCatch } from './index';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -516,5 +521,51 @@ describe('Egg Catch far barn', () => {
         }
       }
     }
+  });
+});
+
+describe('Egg Catch level 12, one big hen (lap)', () => {
+  it('is appended to the ladder, so levels 1–11 keep their IDs and plans', () => {
+    expect(PLANS).toHaveLength(12);
+    expect(PLANS.slice(0, 11).map((p) => p.name)).toEqual([
+      'Tap a hen; her egg rolls into the basket',
+      'Slide the basket under falling eggs',
+      'Catch only the brown eggs; white ones hatch in the hay',
+      'Flip the gates so the egg rolls into the basket',
+      'Route brown eggs to the basket and white eggs to the nest',
+      'The gates are set: tap where the egg will land, then watch it roll',
+      'Set the gates once for two eggs: brown to the basket, white to the nest',
+      'Under the hen: tap a lane to hop under the clucking hen',
+      'One gate: point it toward the basket, then tap the green arrow',
+      'Fix the run: follow the dotted trace, repair one gate and roll again',
+      'Flip-flop gate: set a spring gate for brown then white with one arrangement',
+    ]);
+    expect(PLANS.slice(0, 11).some((p) => p.oneHen)).toBe(false);
+    expect(planFor(12)).toMatchObject({ mode: 'tap', oneHen: true, eggs: 5 });
+  });
+
+  it('is lap’s first level, then level 1; no other band lists it', () => {
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([12, 1]);
+    expect(firstLevel(LEVELS.lap!)).toBe(12);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(12);
+  });
+
+  it('carried past a birthday, level 12 starts the next band at its easiest level, not its hardest', () => {
+    expect(eggCatch.entryLevels).toContain(12);
+    expect(landing(12, LEVELS.toddler!, eggCatch.entryLevels)).toBe(levelsInOrder(LEVELS.toddler!)[0]);
+  });
+
+  it('her eggs are never white, so a lap player cannot reach a miss', () => {
+    for (let lane = 0; lane < LANES; lane++) expect(HEN_SHELLS[lane]).not.toBe('white');
+    expect(HEN_SHELLS[0]).toBe('brown');
+  });
+
+  it('the other hens come to the shelf one per egg caught, and all four are there by her last egg', () => {
+    expect(shelfHens(0)).toBe(1);
+    for (let k = 1; k <= planFor(12).eggs; k++)
+      expect(shelfHens(k)).toBe(Math.min(LANES, shelfHens(k - 1) + 1));
+    expect(shelfHens(planFor(12).eggs - 1)).toBe(LANES);
+    expect(shelfHens(99)).toBe(LANES);
   });
 });

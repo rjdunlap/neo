@@ -1059,10 +1059,10 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     }
 
     // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
-    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].filter(
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].filter(
       (n) =>
         n >= Number(process.env.FROM_LEVEL || 1) &&
-        n <= Number(process.env.TO_LEVEL || 11) &&
+        n <= Number(process.env.TO_LEVEL || 12) &&
         (!only || only === 'eggs'),
     )) {
       if (level >= 8) await page.setViewportSize({ width: 768, height: 1024 });
@@ -1160,6 +1160,37 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             kit.tap(p.x, p.y);
             await kit.until(() => g.caughtCount > i, 5000);
             if (g.caughtCount < 5 && g.callingLane === lane) throw new Error('calling hen repeated');
+          }
+          return;
+        }
+        if (g.plan.oneHen) {
+          // Lap's one big hen: a touch far from her lays at once; touches while the egg falls cluck and count nothing; the
+          // other hens come to the shelf one per egg caught.
+          const { shelfHens } = await import('/src/games/egg-catch/logic.ts');
+          const shown = () => g.hens.filter((h) => h.visible).length;
+          if (shown() !== 1) throw new Error('level 12 must start with the one big hen');
+          for (let i = 0; i < g.plan.eggs; i++) {
+            await kit.until(() => !g.falling.some((f) => !f.done), 8000);
+            await kit.sleep(300);
+            const far = g.touch.toGlobal({
+              x: i % 2 ? 60 : neo.view.w - 60,
+              y: neo.view.h * (i % 2 ? 0.45 : 0.62),
+            });
+            const n = g.falling.length;
+            kit.tap(far.x, far.y);
+            await kit.sleep(50);
+            if (g.falling.length !== n + 1) throw new Error('a touch anywhere must have her lay at once');
+            const at = g.cluckAt;
+            const mid = g.touch.toGlobal({ x: neo.view.w / 2, y: neo.view.h * 0.3 });
+            kit.tap(mid.x, mid.y);
+            await kit.sleep(80);
+            if (g.falling.length !== n + 1 || g.cluckAt === at)
+              throw new Error('a touch while the egg falls must cluck and not lay');
+            await kit.until(() => g.caughtCount > i || g.finished, 8000);
+            await kit.sleep(600);
+            if (shown() !== shelfHens(g.caughtCount))
+              throw new Error(`shelf hens ${shown()} after ${g.caughtCount}`);
+            if (g.misses || g.hints) throw new Error('nothing on level 12 may count');
           }
           return;
         }

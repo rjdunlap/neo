@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 12, 1 |
 | toddler | 1, 8, 2 |
 | preschool | 2, 3, 9, 4 |
 | pre-K | 3, 9, 4, 5 |
@@ -27,6 +27,7 @@
 | 9 | One gate: point it toward the basket, then tap the green arrow |
 | 10 | Fix the run: follow the dotted trace, repair one gate and roll again |
 | 11 | Flip-flop gate: set a spring gate for brown then white with one arrangement |
+| 12 | One big hen: a touch anywhere and she lays an egg into the basket |
 
 <!-- end generated -->
 
