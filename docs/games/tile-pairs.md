@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–9 |
+| grown-up | 1–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 7 | Tall tower · four layers |
 | 8 | Flower friends · any two flowers pair |
 | 9 | Wide stack · 30 tiles |
+| 10 | Tricky twins · a pair that strands a terrace |
 
 <!-- end generated -->
 

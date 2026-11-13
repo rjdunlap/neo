@@ -8,14 +8,19 @@ import {
   pickLook,
   clearRate,
   deal,
+  fairTrap,
   FLOWER,
   FLOWER_ART,
   free,
   freeTiles,
   isFlower,
   matches,
+  fromPool,
   fullMask,
   layout,
+  lookahead,
+  losingFirstPairs,
+  mirrorX,
   makeBoard,
   pairs,
   peekStacks,
@@ -27,6 +32,7 @@ import {
   solve,
   type Tile,
 } from './logic';
+import { POOLS } from './pools';
 
 describe('Tile Pairs', () => {
   it('blocks covered tiles and tiles with both horizontal sides occupied', () => {
@@ -55,13 +61,13 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(9));
-    expect(LEVELS.grownup).toEqual({ min: 1, max: 9 });
-    for (let level = 1; level <= 9; level++)
+    expect(planFor(99)).toBe(planFor(10));
+    expect(LEVELS.grownup).toEqual({ min: 1, max: 10 });
+    for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         expect(tiles).toEqual(makeBoard(level, new Rng(seed)));
-        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24, 24, 30][level - 1]);
+        expect(tiles.length).toBe([12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1]);
         expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(tiles.length);
         const route = solve(tiles)!;
         expect(route).not.toBeNull();
@@ -117,7 +123,20 @@ describe('Tile Pairs', () => {
     expect(clearRate(trap, new Rng(1))).toBe(0);
     for (let level = 1; level <= 9; level++) {
       const [min, max] = planFor(level).clear;
-      expect(min).toBe([0.95, 0.95, 0.95, 0.95, 0.85, 0.75, 0.45, 0.45, 0.45][level - 1]);
+      // Levels 3–6 moved to harder bands after Peek; 1–2 keep the fixed-route difficulty.
+      expect([min, max]).toEqual(
+        [
+          [0.95, 1],
+          [0.95, 1],
+          [0.6, 0.95],
+          [0.6, 0.95],
+          [0.3, 0.8],
+          [0.3, 0.8],
+          [0.45, 0.9],
+          [0.45, 0.9],
+          [0.45, 0.9],
+        ][level - 1],
+      );
       let exhausted = 0,
         again = 0;
       for (let seed = 1; seed <= 100; seed++) {
@@ -137,7 +156,60 @@ describe('Tile Pairs', () => {
       }
       expect(exhausted).toBeLessThanOrEqual(5);
       expect(again / 100).toBeGreaterThanOrEqual(min - 0.05);
+      expect(again / 100).toBeLessThanOrEqual(max + 0.05);
     }
+  });
+  it('deals level 10 from a frozen pool of tricky twin terraces, each with a losing first pair and a fair trap', () => {
+    const plan = planFor(10),
+      tiles = layout(10);
+    // The same twin terraces as level 5, symmetric under the mirror the pool uses.
+    expect(tiles).toEqual(layout(5));
+    const keys = new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`));
+    for (const t of tiles) expect(keys.has(`${mirrorX(plan, t.x)},${t.y},${t.z}`)).toBe(true);
+    const pool = POOLS.twins;
+    expect(pool).toHaveLength(24);
+    expect(new Set(pool).size).toBe(24);
+    for (const kinds of pool) {
+      expect(kinds).toMatch(/^[0-4]{24}$/);
+      // Level 5's counts: twelve pairs over five pictures, so two pictures have six tiles and three have four.
+      const counts = [0, 1, 2, 3, 4].map((k) => [...kinds].filter((c) => Number(c) === k).length);
+      expect(counts.sort()).toEqual([4, 4, 4, 6, 6]);
+      const board = tiles.map((t, i) => ({ ...t, kind: Number(kinds[i]) }));
+      expect(solve(board)).not.toBeNull();
+      expect(losingFirstPairs(board).length).toBeGreaterThan(0);
+      expect(fairTrap(board)).toBe(true);
+      expect(clearRate(board, new Rng(77), 200)).toBeLessThanOrEqual(plan.clear[1]);
+    }
+    // Mirroring and renaming keep every property, and the seed decides which board she gets.
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const d = deal(10, new Rng(seed));
+      expect(d.tiles).toEqual(makeBoard(10, new Rng(seed)));
+      expect(d.tiles).toEqual(fromPool(10, new Rng(seed)));
+      seen.add(JSON.stringify(d.tiles.map((t) => t.kind)));
+      if (seed <= 12) {
+        expect(losingFirstPairs(d.tiles).length).toBeGreaterThan(0);
+        expect(fairTrap(d.tiles)).toBe(true);
+      }
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(35);
+  });
+  it('rejects a trap that a careful two-pair look does not avoid', () => {
+    // Pairing the end ones first strands the middle, and nothing else is open: no route and no fair trap.
+    const strand: Tile[] = [0, 1, 2, 1, 2, 0].map((kind, x) => ({ x, y: 0, z: 0, kind }));
+    expect(solve(strand)).toBeNull();
+    expect(fairTrap(strand)).toBe(false);
+    const easy: Tile[] = [0, 1, 1, 0].map((kind, x) => ({ x, y: 0, z: 0, kind }));
+    expect(fairTrap(easy)).toBe(true);
+    expect(lookahead(easy, fullMask(easy), [0, 3])).toBe(Infinity);
+    // Some clearable level-5 deals still fail it: a clearing route exists, but the greedy look can miss it.
+    let unfair = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const board = makeBoard(5, new Rng(seed));
+      expect(solve(board)).not.toBeNull();
+      if (!fairTrap(board)) unfair++;
+    }
+    expect(unfair).toBeGreaterThan(0);
   });
   it('changes the paths into the stack, then increases matching alternatives without enlarging targets', () => {
     const boards = [4, 5, 6].map((level) => makeBoard(level, new Rng(51)));

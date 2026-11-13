@@ -1,6 +1,7 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import { POOLS } from './pools.ts';
 
 export interface Tile {
   x: number;
@@ -11,8 +12,9 @@ export interface Tile {
 export type Pair = [number, number];
 /**
  * `clear` is the deal dial: the band a deal's random-play clear rate must fall in (see `clearRate`).
- * Levels 1–6 keep the difficulty each had when every board shared one fixed route; level 7, built after Peek,
- * states its own.
+ * Levels 1–2 keep the difficulty each had when every board shared one fixed route; levels 3–6 moved to harder
+ * bands once Peek let her see why a choice went wrong (dive slice 7), and each later level states its own. A plan
+ * with a `pool` deals from frozen boards in `pools.ts` instead (see `deal`).
  */
 export const PLANS = [
   { name: 'Open rows · 12 tiles', cols: 4, rows: 3, layers: 1, layout: 'square', kinds: 6, clear: [0.95, 1] },
@@ -32,7 +34,8 @@ export const PLANS = [
     layers: 3,
     layout: 'square',
     kinds: 6,
-    clear: [0.95, 1],
+    // Measured (300 seeded candidates, Mac): 60% land in the band, so the dial never runs out of candidates.
+    clear: [0.6, 0.95],
   },
   {
     name: 'Long bridge · 24 tiles',
@@ -41,7 +44,7 @@ export const PLANS = [
     layers: 3,
     layout: 'bridge',
     kinds: 6,
-    clear: [0.95, 1],
+    clear: [0.6, 0.95],
   },
   {
     name: 'Twin terraces · 24 tiles',
@@ -50,7 +53,7 @@ export const PLANS = [
     layers: 3,
     layout: 'twins',
     kinds: 5,
-    clear: [0.85, 1],
+    clear: [0.3, 0.8],
   },
   {
     name: 'Crown · 24 tiles, six of each picture',
@@ -59,7 +62,7 @@ export const PLANS = [
     layers: 3,
     layout: 'crown',
     kinds: 4,
-    clear: [0.75, 1],
+    clear: [0.3, 0.8],
   },
   {
     name: 'Tall tower · four layers',
@@ -91,6 +94,18 @@ export const PLANS = [
     layout: 'wide',
     kinds: 6,
     clear: [0.45, 0.9],
+  },
+  {
+    name: 'Tricky twins · a pair that strands a terrace',
+    cols: 6,
+    rows: 2,
+    layers: 3,
+    layout: 'twins',
+    kinds: 5,
+    // Too few seeded deals meet this band to find one at runtime, so the boards are frozen in `pools.ts` by
+    // `scripts/tile-pairs-pool.mjs`: each clears, has a losing first pair and passes `fairTrap`.
+    pool: 'twins',
+    clear: [0, 0.35],
   },
 ] as const;
 
@@ -140,7 +155,7 @@ export type Look = (typeof LOOKS)[number];
 /** The round's look, drawn from the round's rng after the board is dealt so a seed's board is unchanged. */
 export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 9 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 10 } };
 export const planFor = (level: number) =>
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
@@ -323,6 +338,11 @@ export interface Deal {
 export function deal(level: number, rng: Rng): Deal {
   const plan = planFor(level),
     [min, max] = plan.clear;
+  if ('pool' in plan) {
+    const tiles = fromPool(level, rng),
+      rate = clearRate(tiles, rng);
+    return { tiles, rate, tries: 1, inBand: rate >= min && rate <= max };
+  }
   let best: Deal | null = null,
     miss = Infinity;
   for (let tries = 1; tries <= CANDIDATES; tries++) {
@@ -341,6 +361,69 @@ export function deal(level: number, rng: Rng): Deal {
   return best!;
 }
 export const makeBoard = (level: number, rng: Rng): Tile[] => deal(level, rng).tiles;
+
+/** Left-right mirror of a layout position, which every pooled layout is symmetric under (test-checked). */
+export const mirrorX = (plan: (typeof PLANS)[number], x: number) => plan.cols - 1 - x;
+/**
+ * A frozen board: the seed picks one of the pool's deals, may mirror it left to right and renames its pictures.
+ * Neither changes which pairs are free, so each keeps its losing first pair, its clear rate and its fair trap.
+ */
+export function fromPool(level: number, rng: Rng): Tile[] {
+  const plan = planFor(level);
+  if (!('pool' in plan)) throw new Error('Tile Pairs level has no pool');
+  const kinds = rng.pick(POOLS[plan.pool]),
+    mirror = rng.chance(0.5),
+    rename = rng.shuffle(Array.from({ length: plan.kinds }, (_, k) => k)),
+    tiles = layout(level),
+    at = new Map(tiles.map((t, i) => [`${t.x},${t.y},${t.z}`, i]));
+  return tiles.map((t) => {
+    const from = at.get(`${mirror ? mirrorX(plan, t.x) : t.x},${t.y},${t.z}`)!;
+    return { ...t, kind: rename[Number(kinds[from])] };
+  });
+}
+
+/** First pairs on the full board that leave no clearing route: the trap a tricky deal sets. */
+export function losingFirstPairs(tiles: readonly Tile[]): Pair[] {
+  const full = fullMask(tiles);
+  return pairs(tiles, full).filter((pair) => !solve(tiles, removePair(full, pair)));
+}
+/**
+ * How good a pair looks to a player who keeps the most pairs open, looking two pairs ahead: the most open pairs
+ * after it and one more pair (Infinity when the two empty the board, -1 when it leaves tiles and no pair).
+ */
+export function lookahead(tiles: readonly Tile[], mask: number, pair: Pair): number {
+  const after = removePair(mask, pair);
+  if (!after) return Infinity;
+  const next = pairs(tiles, after);
+  if (!next.length) return -1;
+  let best = 0;
+  for (const q of next) {
+    const two = removePair(after, q);
+    if (!two) return Infinity;
+    best = Math.max(best, pairs(tiles, two).length);
+  }
+  return best;
+}
+/**
+ * The fair-trap check (a frustration test turned into a rejection rule): a player who always takes a pair with
+ * the best `lookahead` clears the board, however they break ties. So a trap is one a careful look avoids, never
+ * one only luck or an exhaustive search gets past.
+ */
+export function fairTrap(tiles: readonly Tile[], mask = fullMask(tiles)): boolean {
+  const known = new Map<number, boolean>();
+  function clears(m: number): boolean {
+    if (!m) return true;
+    const seen = known.get(m);
+    if (seen !== undefined) return seen;
+    const open = pairs(tiles, m),
+      scores = open.map((p) => lookahead(tiles, m, p)),
+      top = Math.max(...scores);
+    const ok = open.length > 0 && open.every((p, i) => scores[i] < top || clears(removePair(m, p)));
+    known.set(m, ok);
+    return ok;
+  }
+  return clears(mask);
+}
 
 const RESHUFFLE_BASE = 24;
 const RAISED = [
