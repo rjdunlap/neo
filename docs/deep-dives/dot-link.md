@@ -69,7 +69,7 @@ Levels 7–10 are appended on top; nothing is renumbered.
 
 ### Younger-band openings
 
-- **Lap: one more entry.** Level 1 already works for lap (any tap pops). A better first lap level is a **big-dot** board (3×3, two colors, dots 1.5× larger) where every tap pops one; it is level 1 with a seeded `plan` change, so no new ID, and the `order` window stays as is.
+- **Lap: one more entry.** Level 1 already works for lap (any tap pops). A better first lap level is a **big-dot** board (3×3, two colors, dots 1.5× larger) where every tap pops one; *Built* instead as appended level 12 (*One big dot*, a touch anywhere pops the nearest dot, eight pops) with lap's order `[12, 1]` and `entryLevels` including 12, so level 1 stays toddler's first and no saved level moves; IDs 7–10 stay reserved above.
 - **Toddler: Find my buddy** (appended ID 11, placed with `order` before level 2, declared in `entryLevels`): a 3×3 board of two colors where exactly one adjacent same-color pair pulses; draw between them; any other drag wobbles. The pulse is the hint from the first second. Rule test: the pair exists, is adjacent, and nothing else is highlighted.
 
 ### Easier entries and levels between existing ones
