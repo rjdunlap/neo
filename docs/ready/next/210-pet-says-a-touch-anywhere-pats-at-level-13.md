@@ -1,1 +1,0 @@
-**`pet-says`, a touch anywhere pats at level 13** (existing-game tier: typecheck, the rule tests, one filtered play of level 13; `fingerdemo` only if the card's demonstrated action changes): level 13 is lap only, so it changes in place: a touch anywhere on the screen is the pat. [the table](../../definitions/toy-test-lap-openings.md#cozy-village)

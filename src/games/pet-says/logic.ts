@@ -144,13 +144,13 @@ export const LEVELS: BandLevels = {
 
 /**
  * Levels that sit apart from the numbered ladder (its IDs 6–12 are kept for the planned levels), placed by a band's `order`.
- * 13, Pat the pet, is lap's first: her touch on the pet is the cue, so there is no arrow and nothing to copy.
+ * 13, Pat the pet, is lap's first: her touch (on the pet or anywhere) is the cue, so there is no arrow and nothing to copy.
  */
 export const ENTRY_PLANS: Record<number, SaysPlan> = {
   13: {
     mode: 'pat',
     turns: 5,
-    name: 'Pat the pet: every touch on the pet makes it do the next move (no arrow)',
+    name: 'Pat the pet: a touch anywhere makes the pet do its next move (no arrow)',
   },
 };
 
