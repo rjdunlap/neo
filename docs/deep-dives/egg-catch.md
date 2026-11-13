@@ -1,6 +1,6 @@
 # Egg Catch deep dive
 
-*ID `egg-catch` · bands lap, toddler, preschool, pre-K, school · levels 1–11 on 2026-10-21 · session `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517))*
+*ID `egg-catch` · bands lap, toddler, preschool, pre-K, school · levels 1–11 on 2026-10-21 (12 added 2026-11-12) · session `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517))*
 
 ## The game today
 
@@ -88,7 +88,7 @@ Appended with stable IDs; built level 8 uses toddler order `[1, 8, 2]` and the e
 | 9 | **One gate** | preschool (order 2, 3, 9, 4), pre-K (order 3, 9, 4, 5) | One gate, two exits: the basket on one side, hay on the other. The egg waits; she flips the gate, then taps the arrow. 4 eggs | Which way the one gate points | A wrong way: boing, `egg.wrongway`, the egg hatches; after two misses the gate glows the needed way | The basket side never repeats three times running; one flip always suffices; the hint glows the needed direction | A two-exit board in `geo()`; reuses slice 1's arrow; bot as route |
 | 10 | **Fix the run** | school | The pet set the gates and rolled one egg; its path stays drawn as a dotted trace into the hay. She flips one gate and taps the arrow to roll again. 4 boards (brown to the basket, later boards white to the nest) | Which gate made the egg go wrong: debugging a visible trace | A rerun that misses counts one miss and keeps the board; after two, the first junction where the trace leaves the needed path glows | Every dealt board misses; exactly one single-gate flip fixes it, and that gate lies on the trace; the hint gate is it | Trace drawing (a dotted `Graphics` path); one voice line; bot flips the hint gate then the arrow |
 | 11 | **Flip-flop gate** | school | The top gate has a spring: it flips itself every time an egg passes. A brown egg then a white egg roll with one setting; brown to the basket, white to the nest | The starting direction of the flip-flop and the two lower gates, knowing the second egg goes the other way | A pair that misses counts one miss, keeps the board; after two, the needed starting directions glow, and the flip after egg one is shown with an arrow | `simulate` with the toggle: dealt boards are unsolved and have exactly one working start; basket and nest are on different branches | Spring gate art; two voice lines; reuses pair's arrow and bot shape |
-| 12 | **Sorting gate** (define) | school | A gate with a brown face and a white face reads each shell. Four mixed eggs roll in turn without her touching anything between them; she places the sorter at one junction and sets the plain gates once | Where a condition belongs in the route | To define: a rerun with a miss as in 10 | Every board has exactly one placement and setting that sorts all four | A placement interaction; a definition session first |
+| 13 | **Sorting gate** (define) | school | A gate with a brown face and a white face reads each shell. Four mixed eggs roll in turn without her touching anything between them; she places the sorter at one junction and sets the plain gates once | Where a condition belongs in the route | To define: a rerun with a miss as in 10 | Every board has exactly one placement and setting that sorts all four | A placement interaction; a definition session first |
 
 ### Younger-band openings
 
@@ -116,7 +116,7 @@ Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and p
 4. **Pitch and catch** two-finger co-play at levels 2–3 (and on the couch, the second controller chooses the hen). Lean: try it on touch first; it is a small mode.
 5. **Rework hooks**: a journal entry for egg colours by breed, and whether a finished basket's chicks can visit the creature home. Lean: only at round finish, after the rework's journal and collection items define the shape; never from a missed egg.
 
-Not developer decisions but gates: slice 8 waits on V2's person check; level 12 needs a definition session.
+Not developer decisions but gates: slice 8 waits on V2's person check; level 13 (Sorting gate) needs a definition session.
 
 ## Build slices, in order
 
@@ -132,7 +132,8 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 6. **Level 10, Fix the run** (built with slice 7; [PR #765](https://github.com/rjdunlap/neo/pull/765)). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
 7. **Level 11, Flip-flop gate** (built after slice 6 in the same batch; [PR #765](https://github.com/rjdunlap/neo/pull/765)). Same tier as slice 6.
 8. **Every touch answers at level 1** (after V2's person check). Tier: rule tests, a rapid-tap regression play at level 1, `fingerdemo` at 1.
-9. **Define level 12, Sorting gate** (docs only), then decisions 2–5.
+9. **Define level 13, Sorting gate** (docs only), then decisions 2–5.
+10. **Level 12, One big hen, first at lap** (built; [PR #1591](https://github.com/rjdunlap/neo/pull/1591)). A lap level from [the toy test](../definitions/toy-test-lap-openings.md#barnyard) placed first in lap's order, so the Sorting gate (slice 9) is now level 13. Tier: new level: typecheck, rule tests, one browser play of level 12, `fingerdemo` at 12.
 
 ## What was built in this session
 
