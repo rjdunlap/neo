@@ -25,6 +25,8 @@ import {
   DOT_COUNT,
   DOT_HIT,
   onPaper,
+  toPaper,
+  PAPER_INSET,
   pathOf,
   petCorner,
   planFor,
@@ -432,6 +434,28 @@ describe('Draw the Pattern ladder', () => {
     ] as Point[])
       expect(onPaper(p)).toBe(true);
     expect(onPaper([-0.1, 0.5])).toBe(false);
+  });
+
+  it('lands a level 1 touch from anywhere on the screen just inside the paper', () => {
+    const inside: Point = [1.2, 0.4];
+    expect(toPaper(inside)).toEqual(inside);
+    for (const p of [
+      [-3, -2],
+      [-0.5, 0.5],
+      [1.7, -4],
+      [9, 0.5],
+      [9, 9],
+      [1.7, 1.6],
+    ] as Point[]) {
+      const q = toPaper(p);
+      expect(onPaper(q)).toBe(true);
+      expect(q[0]).toBeGreaterThanOrEqual(PAPER_INSET);
+      expect(q[0]).toBeLessThanOrEqual(STRIP_W - PAPER_INSET);
+      expect(q[1]).toBeGreaterThanOrEqual(PAPER_INSET);
+      expect(q[1]).toBeLessThanOrEqual(1 - PAPER_INSET);
+    }
+    // The nearest place: a touch below the middle of the strip lands below its middle.
+    expect(toPaper([1.7, 1.6])).toEqual([1.7, 1 - PAPER_INSET]);
   });
 
   it('lights a hint stretch from where the crayon waits, forward', () => {

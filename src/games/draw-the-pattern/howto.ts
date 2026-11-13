@@ -4,7 +4,7 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Keep going with the line or pattern the pet starts, using one finger.',
   steps: [
-    { from: 1, to: 1, text: 'Draw anywhere on the paper. Four touches finish a strip.' },
+    { from: 1, to: 1, text: 'Touch anywhere and it draws on the paper. Four touches finish a strip.' },
     { from: 2, to: 9, text: 'Start on the green ring and follow the dashes to the end.' },
     { from: 2, to: 9, text: 'Lift any time; the crayon waits where you stopped.' },
     { from: 2, to: 2, text: 'Short lines start at the top and go down.' },
