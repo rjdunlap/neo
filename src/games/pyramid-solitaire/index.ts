@@ -347,34 +347,58 @@ class PyramidSolitaire implements Game {
 }
 /**
  * Card centers (100-unit squares), the status line and the three 164 × 100 buttons. Upright (chunk 31) the pyramid, status
- * and buttons stand together in the middle of the tall view, the buttons clear of the guide's corner.
+ * and buttons stand together in the middle of the tall view, the buttons clear of the guide's corner. Level 7's seven rows
+ * sit 108 apart across (748 of the 768-unit upright width), rows closing up to 64 apart on a short view; sideways, where rows over the buttons would fall under 64
+ * units apart, the buttons stand in a column left of the pyramid, under Home and above the guide, and the status line
+ * runs under the pyramid, so the rows are about 72 apart.
  */
 export function pyramidLayout(v: View, rows: number, shelf = 0) {
-  const gapY = v.upright ? 104 : Math.min(104, (v.h - 470) / (rows - 1));
+  const dx = rows >= 7 ? SEVEN_DX : 116;
+  // Levels 1-6 keep their layout (six rows sideways are 60 apart, carried by the corner index).
+  const side = !v.upright && rows >= 7 && (v.h - 470) / (rows - 1) < MIN_STRIP;
+  // Upright, seven rows close up (never under 64) so the buttons end above the guide's corner on a short phone.
+  const gapY = v.upright
+    ? rows >= 7
+      ? Math.min(104, Math.max(MIN_STRIP, Math.floor((v.h - 665) / (rows - 1))))
+      : 104
+    : side
+      ? Math.min(104, Math.floor((v.h - 45 - 12 - 275) / (rows - 1)))
+      : Math.min(104, (v.h - 470) / (rows - 1));
   // Level 6's shelf: upright a row of open cards under the pyramid; sideways a column at the right, from beside the heading
   // to above the status line, the pyramid moved left; status and buttons stay centered, right of the guide's corner.
   const shelfRow = v.upright && shelf ? SHELF_GAP : 0;
   const top = v.upright ? Math.max(225, Math.round((v.h - ((rows - 1) * gapY + shelfRow + 330)) / 2)) : 225;
-  const centre = v.upright || !shelf ? v.w / 2 : v.w / 2 - 60;
+  // Sideways with the button column: the pyramid as centered as the column (182 units with its gap) leaves room for.
+  const half = ((rows - 1) * dx) / 2 + 50;
+  const centre = side ? Math.max(v.w / 2, SIDE_COLUMN + half) : v.upright || !shelf ? v.w / 2 : v.w / 2 - 60;
   const cards: { x: number; y: number }[] = [];
   for (let row = 0; row < rows; row++)
     for (let col = 0; col <= row; col++)
-      cards[at(row, col)] = { x: centre + (col - row / 2) * 116, y: top + row * gapY };
+      cards[at(row, col)] = { x: centre + (col - row / 2) * dx, y: top + row * gapY };
   const last = top + (rows - 1) * gapY + shelfRow;
   for (let k = 0; k < shelf; k++)
     cards[countFor(rows) + k] = v.upright
       ? { x: v.w / 2 + (k - (shelf - 1) / 2) * 116, y: last }
       : { x: Math.min(v.w - 62, v.w / 2 + 360), y: 120 + k * 106 };
-  const status = { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
+  const status = side ? { x: centre, y: v.h - 45 } : { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
   const buttonY = v.upright ? status.y + 100 : v.h - 80;
+  const columnX = centre - half - 12 - 82;
   return {
     cards,
     status,
-    buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 190, y: buttonY })),
+    buttons: side
+      ? [-1, 0, 1].map((i) => ({ x: columnX, y: v.h / 2 + 20 + i * 114 }))
+      : [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 190, y: buttonY })),
     centre,
     middle: v.upright ? (top + buttonY) / 2 : v.h * 0.5,
   };
 }
+/** Level 7's spacing across: seven cards in 748 of the 768-unit upright width. */
+export const SEVEN_DX = 108;
+/** The least a covered card's strip may show (the grown-up target size), sideways too. */
+export const MIN_STRIP = 64;
+/** Sideways, the button column's right edge plus its gap from the pyramid: 12 + 164 + 12 units. */
+const SIDE_COLUMN = 188;
 /** How far below the pyramid's last row the upright shelf row stands (card centers). */
 export const SHELF_GAP = 116;
 

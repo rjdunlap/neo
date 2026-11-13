@@ -31,6 +31,8 @@ export const PLANS = [
   // loss); dialled, all 300 land in the band (median 50%), the top leaves with a spare on 258, at most 248 positions,
   // slowest deal 7 ms.
   { rows: 5, name: 'The shelf: five open spare cards', band: { min: 0.4, max: 0.8 }, shelf: 5 },
+  // The classic pyramid: seven rows, twenty-eight cards from one pack, no stock, strict rule (no cover lift).
+  { rows: 7, name: 'The classic pyramid: twenty-eight cards, seven rows', band: { min: 0.3, max: 0.7 } },
 ] as const;
 /** How often the generator's backward walk takes a cover-lift step when one is open (level 5 only). */
 export const LIFT_CHANCE = 0.35;
@@ -41,7 +43,7 @@ export const CANDIDATES = 40;
 /** A real pack: no rank more than four times, so the paper version deals as shown and counting a rank is true. */
 export const PACK_LIMIT = 4;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const countFor = (rows: number) => (rows * (rows + 1)) / 2;
 export const fullMask = (rows: number) => (1 << countFor(rows)) - 1;
