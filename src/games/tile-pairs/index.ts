@@ -162,7 +162,7 @@ class TilePairs implements Game {
   private readonly leaving = new Set<Container>();
   /** Level 8's flower family is in play, so the help line says any two flowers pair. */
   private readonly flowers: boolean;
-  /** A designed lesson level's habit, spoken after the stuck line (levels 17–19). */
+  /** A designed lesson level's habit, spoken after the stuck line (levels 17–21). */
   private readonly lesson: ReturnType<typeof lessonFor>;
 
   constructor(private readonly ctx: GameContext) {
