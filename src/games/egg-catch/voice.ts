@@ -4,6 +4,7 @@ export const VOICE = {
   'egg.lane': ['Tap under the clucking hen! The basket hops there to catch her egg.'],
   'egg.under': ['Here, under me! Tap under the clucking hen.'],
   'egg.tap': ['Tap a hen! Her egg rolls into the basket.'],
+  'egg.onehen': ['Touch anywhere, and the hen lays an egg!'],
   'egg.brown': ['Catch the brown eggs! Let the white eggs fall in the hay.'],
   'egg.onegate': ['Tap the gate to point toward the basket. Then tap the green arrow!'],
   'egg.route': ['Tap the gates so the egg rolls into the basket. Then tap the green arrow!'],

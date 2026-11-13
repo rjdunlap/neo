@@ -1,0 +1,6 @@
+# 2026-11-12 — Egg Catch level 12: one big hen at lap (PR #1591)
+
+**Changed:** `egg-catch` level 12, *One big hen*, first in lap's order (`[12, 1]`; `entryLevels` `[8, 9, 12]`): a touch anywhere has the big hen lay, a touch mid-fall clucks and counts nothing, the other hens come to the shelf as eggs are caught; new line `egg.onehen` (device speech, no rendered clip).
+**Ran:** `npm run typecheck` (pass); egg-catch rule tests (24 pass) and `difficulty.test.ts` (pass, one assertion updated: a toddler entry level carried into lap now lands on level 12, lap's first in order); `BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=12 TO_LEVEL=12` PASS at 768x1024 portrait (a touch far from the hen lays at once, a touch mid-fall clucks and lays nothing, shelf hens match `shelfHens` after each catch, score 0,0, sticker; screenshot `egg-catch-12`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=12` PASS (17.9 s).
+**Full `npm test`:** 10 failures: 1 real (the difficulty assertion above, fixed) and 9 timing tests under machine load in untouched games (block-garden, block-topple, bolt-boards, fluffy-salon, keep-house, number-nook, penguin-slide, secret-code), each passing when re-run alone.
+**Not run:** `npm run build` (no shared files or assets changed); other browser suites.

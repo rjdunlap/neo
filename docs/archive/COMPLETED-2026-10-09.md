@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Egg Catch level 12, One big hen, first at lap (2026-11-12)
+
+[PR #1591](https://github.com/rjdunlap/neo/pull/1591) adds level 12 as lap's first level (lap order `[12, 1]`; `entryLevels` `[8, 9, 12]`, so a lap save at 12 starts toddler at its easiest level). One big hen stands on a straw nest; a touch anywhere has her lay at once with her note, and a touch while her egg falls gets a cluck, a squash and a puff of stars, counting nothing. The basket waits under her, so no miss or hint can be reached, and she breathes while ready. The other three hens flutter onto the shelf one per egg caught. [Game notes](../games/egg-catch.md#design-notes).
+
 ### Melt and Freeze opens with one big ice cube (2026-11-12)
 
 [PR #1574](https://github.com/rjdunlap/neo/pull/1574) adds level 5 as the first lap level. Three playfield taps melt the cube, then the snowflake appears to freeze it again. [Game notes](../games/melt-freeze.md) and [verification](../verification/2026-11-12-melt-freeze-level-5-one-big-ice-cube.md).

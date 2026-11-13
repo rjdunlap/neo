@@ -25,6 +25,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Watch for the hen who fluffs up and clucks. Tap anywhere in her lane; the basket hops under her and she lays an egg.',
     },
     { to: 1, text: 'Tap a hen; her egg rolls into the basket.' },
+    {
+      from: 12,
+      to: 12,
+      text: 'Touch anywhere on the screen: the big hen lays an egg at once, and it rolls into the basket waiting under her.',
+    },
     { from: 2, to: 2, text: 'Slide the basket under every falling egg: brown, speckled or blue-green.' },
     { from: 3, to: 3, text: 'Slide the basket under the brown eggs only; white eggs hatch in the hay.' },
     { from: 4, to: 4, text: 'Tap the gates so the egg will roll into the basket, then tap the green arrow.' },
@@ -50,6 +55,11 @@ export const HOW_TO: GameHowTo = {
     { from: 9, to: 9, text: 'Route four eggs into the basket, then watch them hatch into chicks.' },
     { from: 8, to: 8, text: 'Catch five eggs, then watch the basket hatch into chicks.' },
     { to: 6, text: 'Gather or sort the eggs, then watch the basket hatch into a line of chicks.' },
+    {
+      from: 12,
+      to: 12,
+      text: 'Five eggs into the basket; another hen comes to the shelf with each one, then the basket hatches into chicks.',
+    },
     { from: 7, to: 7, text: 'Route three pairs correctly, then watch all six eggs hatch.' },
   ],
   note: [
@@ -77,6 +87,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'The gates lock while both eggs roll, one at a time. A missed pair stays for revision; two misses light the needed gate directions.',
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'Nothing can go wrong: the basket stays under her and every egg is caught. A touch while an egg falls gets a cluck, and the hen breathes while she is ready.',
     },
     { from: 2, to: 5, text: 'A missed egg only hatches in the hay.' },
     {
