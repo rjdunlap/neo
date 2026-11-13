@@ -265,7 +265,7 @@ Six games fail question 1 or 4, in the order they should be taken:
 1. `teddy-doctor`: input opens before the first line, and at lap a touch anywhere bandages the nearest boo-boo.
 2. `scoop-shop`: level 10 opens with one big tub; a touch anywhere scoops, and the other flavors arrive as she serves.
 3. `stop-and-go`: level 9 becomes one big lamp; a touch anywhere turns it, green to go and red to stop. *Built 2026-11-13.*
-4. `mail-carrier`: at lap a touch off the houses posts to the nearest mailbox, with a sound.
+4. `mail-carrier`: at lap a touch off the houses posts to the nearest mailbox, with a sound. *Built 2026-11-13 (PR #1604).*
 5. `feelings-faces`: at level 9 a touch anywhere is the poke.
 6. `pet-says`: at level 13 a touch anywhere is the pat.
 
@@ -278,7 +278,7 @@ The last two are the smallest changes and their targets are already the biggest 
 - `feelings-faces`: level 9 is in lap's `order` only. The cycle is fixed (happy, surprised, sleepy, sad, the hug, surprised), so every round is the same six taps.
 - `weather-wardrobe`: level 1 is also the first level at toddler. The round needs seven sky taps; touches on the grass, the pet and the clothes answer and do not move it on, so a child who only pats the grass never finishes, and nothing invites a touch on the sky after a quiet spell.
 - `scoop-shop`: level 10 is in lap's `order` only. `busy` starts true and is cleared when each customer has walked in (about 0.7 seconds), before the order is spoken; a tub tapped earlier still pops and wobbles.
-- `mail-carrier`: the street layer's own `pointerdown` handler does not call `palmOnGlass()`; at this level it only waves a flag. `nearestHouse` already finds the mailbox nearest a touch, for the flag. Level 1 is also toddler's first level, so a change to it in place reaches toddler.
+- `mail-carrier`: the street layer's own `pointerdown` handler does not call `palmOnGlass()`; at toddler's level 1 it only waves a flag, and at lap (built 2026-11-13) a touch off the houses posts instead (`offHouseTouch(mode, band)`). `nearestHouse` already finds the mailbox nearest a touch, for the flag. Level 1 is also toddler's first level, so a change to it in place reaches toddler.
 - `teddy-doctor`: `next` sets `busy`, waits half a second and then awaits `ctx.instruct('doctor.play')` for each of the two patients, so input opens only when the line has ended. The card for level 1 says "Tap the patient anywhere"; the spoken line says "Tap them", the boo-boos. Level 1 is also toddler's first level.
 - `stop-and-go`: level 9 is in lap's `order` only, and its plan sits outside `PLANS`. Level 9 is now one big lamp (240 across) on a short pole, centred above the road, with a whole-screen layer under the car that takes a touch anywhere (built 2026-11-13); a change to it reaches no other band.
 - `pet-says`: level 13 is in lap's `order` only. A lap player who steps up goes to level 1, where a grown-up taps an arrow and the moves are done away from the screen.
