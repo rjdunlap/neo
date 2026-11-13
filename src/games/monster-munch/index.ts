@@ -89,6 +89,13 @@ class MonsterMunch implements Game {
   private get foodScale() {
     return this.plan.mode === 'big' ? 1.4 : 1;
   }
+  /**
+   * Big bites (level 9, lap only): a touch anywhere feeds the monster, and the cookies come to the tray one at a time,
+   * each after the one before it is eaten.
+   */
+  get lapFeed() {
+    return this.plan.mode === 'big';
+  }
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -113,6 +120,8 @@ class MonsterMunch implements Game {
     this.cave = new RoundButton(door, swatch.purple, 60, () => this.callFriend());
     this.cave.visible = this.plan.mode === 'friends';
     ctx.stage.addChild(this.background, this.tray, this.sign, this.bell, this.cave, this.glow);
+    // Big bites: the whole room is the move. The tray and sign take no touches, so they fall through to it.
+    if (this.lapFeed) onTap(this.background, () => this.touchFeed(), { cooldown: 300 });
   }
 
   get current() {
@@ -184,11 +193,16 @@ class MonsterMunch implements Game {
         });
       }
       node.scale.set(0);
-      void ctx.tw.to(
-        node.scale,
-        { x: this.foodScale, y: this.foodScale },
-        { duration: 0.35, delay: 0.3 + i * 0.06, ease: ease.outBack },
-      );
+      if (this.lapFeed && i > 0) {
+        // Big bites: only the first cookie waits on the tray; each other comes after the one before it is eaten.
+        node.visible = false;
+        node.eventMode = 'none';
+      } else
+        void ctx.tw.to(
+          node.scale,
+          { x: this.foodScale, y: this.foodScale },
+          { duration: 0.35, delay: 0.3 + i * 0.06, ease: ease.outBack },
+        );
       this.snacks.push(snack);
       ctx.stage.addChild(node);
     });
@@ -236,18 +250,8 @@ class MonsterMunch implements Game {
     m.gape(true);
     m.alpha = 0;
     void this.ctx.tw.to(m, { alpha: 1 }, { duration: 0.4, delay });
-    onTap(m, () => {
-      // At the tapping level the big friendly monster is the easiest thing to reach, so tapping it feeds it too.
-      const next =
-        isTapMode(this.plan.mode) && !this.busy && !this.done
-          ? this.snacks.find((s) => !s.eatenBy)
-          : undefined;
-      if (next) this.feed(m, next);
-      else {
-        m.beam(0.6);
-        sfx.giggle();
-      }
-    });
+    // At the tapping levels the big friendly monster is the easiest thing to reach, so tapping it feeds it too.
+    onTap(m, () => this.touchFeed(m));
     m.hitArea = new Circle(0, -150, 140);
     this.monsters.push(m);
     this.ctx.stage.addChildAt(m, this.ctx.stage.getChildIndex(this.tray) + 1);
@@ -391,6 +395,32 @@ class MonsterMunch implements Game {
     return o;
   }
 
+  /** A tap on the monster (or, at big bites, anywhere) feeds it the next food; with nothing to feed it beams and giggles. */
+  private touchFeed(m: Monster | undefined = this.monsters[0]) {
+    if (!m) return;
+    const next =
+      isTapMode(this.plan.mode) && !this.busy && !this.done ? this.snacks.find((s) => !s.eatenBy) : undefined;
+    if (next) this.feed(m, next);
+    else {
+      m.beam(0.6);
+      sfx.giggle();
+    }
+  }
+
+  /** Big bites: the next cookie pops onto the tray. */
+  private bringNext() {
+    const next = this.snacks.find((s) => !s.eatenBy);
+    if (!next || next.node.visible) return;
+    next.node.visible = true;
+    next.node.eventMode = 'static';
+    sfx.pop(9);
+    void this.ctx.tw.to(
+      next.node.scale,
+      { x: this.foodScale, y: this.foodScale },
+      { duration: 0.25, ease: ease.outBack },
+    );
+  }
+
   private feed(monster: Monster, snack: Snack) {
     const { ctx } = this;
     snack.eatenBy = monster;
@@ -412,6 +442,7 @@ class MonsterMunch implements Game {
       size: [0.25, 0.4],
     });
     const left = this.snacks.filter((s) => !s.eatenBy).length;
+    if (this.lapFeed) this.bringNext();
     switch (this.plan.mode) {
       case 'tap':
       case 'big':
@@ -749,7 +780,8 @@ class MonsterMunch implements Game {
     this.snacks.forEach((s, i) => {
       const row = Math.floor(i / perRow);
       const inRow = Math.min(perRow, this.snacks.length - row * perRow);
-      const x = spread(inRow, 180, v.w - 50, this.plan.mode === 'big' ? 170 : 125)[i % perRow];
+      // Big bites: one cookie at a time, each in the middle of the tray.
+      const x = this.lapFeed ? (160 + v.w - 30) / 2 : spread(inRow, 180, v.w - 50, 125)[i % perRow];
       const y = rows === 2 ? trayTop + 62 + row * 100 : v.h - 90;
       if (s.drag) s.drag.home = { x, y };
       if (!s.eatenBy && !s.drag?.dragging) {
@@ -826,7 +858,7 @@ class MonsterMunch implements Game {
     if (this.busy || this.done || !this.monsters.length) return null;
     // Wait for the foods and the answer pads to finish popping in.
     if (
-      this.snacks.some((s) => !s.eatenBy && s.node.scale.x < 0.95) ||
+      this.snacks.some((s) => !s.eatenBy && s.node.visible && s.node.scale.x < 0.95) ||
       this.pads.some((p) => p.node.scale.x < 0.95)
     )
       return null;

@@ -7,7 +7,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'Tap a big cookie, or the monster, to feed it; its belly grows and it counts each bite aloud.',
+      text: 'Tap anywhere to feed the monster a big cookie; the cookies come one at a time, its belly grows and it counts each bite aloud.',
     },
     { from: 1, to: 1, text: 'Tap a cookie, or the monster, to feed it; it counts each bite aloud.' },
     { from: 2, to: 2, text: 'Drag a cookie to the monster, or tap it; it counts each bite aloud.' },
