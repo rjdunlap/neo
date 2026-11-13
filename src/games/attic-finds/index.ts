@@ -1454,6 +1454,8 @@ class AtticFinds implements Game {
   restart() {
     if (this.finished) return;
     if (this.free) {
+      // Once the toy is on its way to the shelf (level 3 finishing itself, or Finish tapped), the round is already ending.
+      if (this.busy || this.lever.done) return;
       this.resetFree();
       return;
     }
@@ -1550,12 +1552,12 @@ class AtticFinds implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.free) {
+      // At level 3 the third turn finishes the round by itself (busy is set), so there is no Finish tap to show.
       if (this.busy || this.finished || this.lever.turning || this.halfT !== null) return null;
       const L = this.L,
         lv = this.lever;
       if (canFinish(lv)) return this.finishBtn ? { tap: { on: this.finishBtn }, pause: 0.5 } : null;
       // Always at the handle, even at level 3 where anywhere works, so the demonstration shows what causes the motion.
-      // At level 3 the third turn finishes the round by itself (busy is set), so there is no Finish tap to show.
       const handle: TouchIntent = { tap: { on: this.bg, x: L.handle.x, y: L.handle.y }, pause: 0.5 };
       if (this.plan.mode === 'peek' && lv.turns >= 1 && !this.doorEver) {
         return { tap: { on: this.bg, x: L.door.x + L.door.w / 2, y: L.door.y + L.door.h / 2 }, pause: 0.8 };
