@@ -3346,3 +3346,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## `song-maker` level 8, a lap level that answers anywhere (2026-11-12)
 
 [PR #1583](https://github.com/rjdunlap/neo/pull/1583), `claude/song-maker-lap-anywhere` ([definition](../definitions/toy-test-lap-openings.md#music-mountain)). A new level at the end of the ladder and first in lap's `order` (`[8,1,2]`, `entryLevels: [8]`; no saved level or pin renumbered): one big sleeping jelly on a four-beat, three-row loop; a touch anywhere lights the nearest unlit awake spot with its note at once; spots wake as she lights them (low row first, then middle, then top); a touch on a lit jelly puts it out and is not counted; the round ends a loop after her twelfth light with at least two lit, and her tune can be kept from the tree house button. New voice line `song.wake`; the `fourth` browser suite takes `FOURTH_ONLY=song8`.
+
+## Tile Pairs batch 3, harder deals and Tricky twins (2026-11-12)
+
+[PR #1586](https://github.com/rjdunlap/neo/pull/1586), `claude/tile-pairs-tricky-twins`, dive slice 7 ([dive](../deep-dives/tile-pairs.md#what-was-built-in-this-session)). Deal bands for levels 3–4 [0.6, 0.95] and 5–6 [0.3, 0.8]; level 10 *Tricky twins* deals level 5's layout from 24 frozen boards (`pools.ts`, written by `scripts/tile-pairs-pool.mjs`), each with a losing first pair, random-play clear at most 30% and a passing fair-trap check; mirrored and renamed at play. Grown-up range 1–10, no `order`. Slice 8 (lesson levels 17–19) stays queued.
