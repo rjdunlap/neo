@@ -28,10 +28,13 @@ export const HOW_TO: GameHowTo = {
     // The lesson boards' stacks are at most three deep.
     { text: PEEK, from: 17 },
     {
-      text: 'Each of these short boards has one trap. If a pair leaves no way to finish, the lesson is spoken; Undo takes you back to the choice.',
+      text: 'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
+      to: 10,
+    },
+    {
+      text: 'Each short board has one trap. If a pair leaves no way to finish, its lesson is spoken; Undo goes back to the choice. Hint outlines a clearing pair.',
       from: 17,
     },
-    'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
   ],
   finish: 'The round ends when all tiles are gone, with one sticker even when you use help.',
   note: 'Undo and Shuffle are counted. Hint and Shuffle count as help. Exploring a blocked tile is free.',

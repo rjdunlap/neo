@@ -109,10 +109,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         await page.waitForTimeout(500);
       }
       const initial = await state();
-      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1]);
+      assert.equal(
+        initial.tiles.length,
+        level > 10 ? 14 : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1],
+      );
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
-      if (level === 10) {
-        // A tricky deal: taking a losing first pair is a legal move (no miss), the stuck line follows, and Undo
+      if (level === 10 || level > 10) {
+        // A tricky deal or a lesson board: taking a losing first pair is a legal move (no miss), the stuck line follows, and Undo
         // puts the board back before the choice.
         const trap = await page.evaluate(async () => {
           const L = await import('/src/games/tile-pairs/logic.ts'),
@@ -122,7 +125,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
           return L.losingFirstPairs(g.tiles)[0];
         });
-        assert.ok(trap, 'a level 10 deal has a losing first pair');
+        assert.ok(trap, `a level ${level} deal has a losing first pair`);
         for (const i of trap) await tapTile(i);
         await page.waitForTimeout(400);
         const stuck = await state();
@@ -132,7 +135,21 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           (await page.evaluate(() => neo.scene.game.said)).includes('tile-pairs.stuck'),
           'the stuck line follows a losing pair',
         );
-        await screenshot('tile-pairs-10-stuck');
+        if (level > 10) {
+          // A lesson board's lesson follows the stuck line once that line has finished.
+          await page.waitForFunction(
+            () => neo.scene.game.said.some((id) => id.startsWith('tile-pairs.lesson.')),
+            null,
+            {
+              timeout: 15000,
+            },
+          );
+          const said = await page.evaluate(() => neo.scene.game.said);
+          assert.ok(
+            said.indexOf('tile-pairs.stuck') < said.findIndex((id) => id.startsWith('tile-pairs.lesson.')),
+          );
+        }
+        await screenshot(`tile-pairs-${level}-stuck`);
         await tap('neo.scene.game.undoButton');
         assert.equal((await state()).mask, initial.mask, 'undo puts the board back before the choice');
       }
