@@ -142,7 +142,7 @@ They are ordinary levels on the ladder, reached by stepping up or by a pin, neve
 | 20 | *The long row* | 14 tiles on one flat layer: a row of eight over a row of six | At least three pairs of one picture are open and exactly one is safe; nothing is covered, so it needs no Peek |
 | 21 | *Two pairs ahead* | 18 tiles on three layers | A losing pair still leaves at least two pairs to take before the board strands; the fair-trap check passes |
 
-Proposed `order` for the grown-up band once all of them exist: 1, 2, 17, 3, 18, 4, 19, 5, 7, 20, 6, 8, 9, 10, 21, 11, 12, 13, 14, 15, 16. Levels 17–19 are built (slice 8, PR #1589); 20–21 are not. Levels arrive a few at a time, so each slice that adds one extends `order` and its test (every level appears once and the existing relative order is kept).
+Proposed `order` for the grown-up band once all of them exist: 1, 2, 17, 3, 18, 4, 19, 5, 7, 20, 6, 8, 9, 10, 21, 11, 12, 13, 14, 15, 16. Levels 17–19 are built (slice 8, PR #1589); 20–21 are claimed (slice 9, branch `claude/tile-pairs-lessons-20-21`). Levels arrive a few at a time, so each slice that adds one extends `order` and its test (every level appears once and the existing relative order is kept).
 
 ### Younger-band openings
 
