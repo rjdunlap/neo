@@ -4,7 +4,10 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Deliver letters to the right houses.',
   steps: [
-    { to: 1, text: 'Tap any mailbox to post the letter.' },
+    {
+      to: 1,
+      text: 'Tap any mailbox to post the letter. For a baby, a tap anywhere on the street posts it to the nearest mailbox.',
+    },
     { from: 2, to: 2, text: 'Tap the mailbox whose door is the color of the letter.' },
     { from: 3, to: 3, text: 'Match the dots on the letter to the dots and number on a mailbox.' },
     { from: 4, to: 4, text: 'Tap the house with the number on the letter.' },
