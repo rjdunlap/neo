@@ -32,7 +32,7 @@ export const HOW_TO: GameHowTo = {
       to: 10,
     },
     {
-      text: 'Each short board has one trap. If a pair leaves no way to finish, its lesson is spoken; Undo goes back to the choice. Hint outlines a clearing pair.',
+      text: 'Each short board has one trap. If a pair leaves no way to finish, its lesson is spoken; Undo goes back to the choice. Hint outlines a clearing pair; Shuffle lays the rest in open rows.',
       from: 17,
     },
   ],

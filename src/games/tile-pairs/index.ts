@@ -353,14 +353,17 @@ class TilePairs implements Game {
     else if (!this.route) this.stuck();
   }
   /**
-   * No route is left. On a lesson level the board's lesson follows the stuck line, unless an undo or shuffle has
-   * already moved on; taking the losing pair is a legal move, so nothing is counted.
+   * No route is left. On a lesson level, when the first pair taken left no route, the board's lesson follows the
+   * stuck line unless an undo or shuffle has already moved on; taking the losing pair is a legal move, so nothing is counted.
    */
   private stuck() {
     const mask = this.mask,
-      tiles = this.tiles;
+      tiles = this.tiles,
+      // The lesson describes the board's first choice (`lessonHolds`), so it follows only a dead end left by the
+      // first pair taken; a later dead end gets the stuck line alone.
+      firstPairTrap = fullMask(tiles) - mask === pairBits(tiles, mask);
     void this.ctx.say('tile-pairs.stuck').then(() => {
-      if (this.lesson && this.mask === mask && this.tiles === tiles)
+      if (this.lesson && firstPairTrap && this.mask === mask && this.tiles === tiles)
         void this.ctx.say(`tile-pairs.lesson.${this.lesson}`);
     });
   }
@@ -532,6 +535,13 @@ function sticker(seed: number) {
     c.addChild(t);
   }
   return c;
+}
+/** The bits of the tiles taken from the full board, when exactly two are gone (one pair); otherwise -1. */
+function pairBits(tiles: readonly Tile[], mask: number): number {
+  const gone = fullMask(tiles) & ~mask;
+  let n = 0;
+  for (let i = 0; i < tiles.length; i++) if (gone & (1 << i)) n++;
+  return n === 2 ? gone : -1;
 }
 export function tilePairsLayout(v: View, tiles: readonly Tile[]) {
   const cols = Math.max(...tiles.map((t) => t.x)) + 1;

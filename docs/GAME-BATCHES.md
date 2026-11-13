@@ -1874,7 +1874,7 @@ Proof includes typecheck, rule and registry tests, one filtered `tilepairs` play
 
 ### tile-pairs 3: Tricky deals and the first lessons
 
-**Partly built 2026-11-12 ([PR #1586](https://github.com/rjdunlap/neo/pull/1586)).** Dive slice 7 (harder deal bands for levels 3–6 and level 10 *Tricky twins* from a frozen pool of 24). See the [verification entry](verification/2026-11-12-tile-pairs-slice-7-harder-deals-and-level-10-tricky-twins.md). Slice 8, lesson puzzles 17–19, is the open part of the batch.
+**Partly built 2026-11-12 ([PR #1586](https://github.com/rjdunlap/neo/pull/1586)).** Dive slice 7 (harder deal bands for levels 3–6 and level 10 *Tricky twins* from a frozen pool of 24). See the [verification entry](verification/2026-11-12-tile-pairs-slice-7-harder-deals-and-level-10-tricky-twins.md). Slice 8, lesson puzzles 17–19, is built (2026-11-12, [PR #1589](https://github.com/rjdunlap/neo/pull/1589); [verification entry](verification/2026-11-12-tile-pairs-slice-8-lesson-puzzles-17-19.md)), which finishes the batch.
 
 - **`tile-pairs`, harder deals and level 10, then lesson puzzles 17–19** (dive slices 7 and 8, [dive](deep-dives/tile-pairs.md#build-slices-in-order); after batch 2; grown-up): the deal dial's harder bands for levels 3–6; an offline `scripts/tile-pairs-pool.mjs` that freezes 24 tricky deals for *Tricky twins* (each clears, has a losing first pair and passes the fair-trap check); then three designed lesson levels (*Twins on twins*, *Three free copies*, *Crossed stacks*), found by the same script's placement search frozen in `puzzles.ts` with mirror and picture permutation, a lesson line after the stuck line, and the band's `order` with its test.
 
