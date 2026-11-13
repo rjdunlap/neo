@@ -1,0 +1,1 @@
+**`gear-garden`, a touch anywhere turns the handle at lap** (existing-game tier, one filtered play of level 1 at lap): at lap a touch outside the machine's panel turns the handle too, a tap during the bloom gets a sound, and the pause sheet's "Show a hint" turns the handle without counting a hint. [the table](../../definitions/toy-test-lap-openings.md#painted-canyon)

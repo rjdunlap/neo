@@ -53,7 +53,7 @@ The long arc: lap and toddler make marks and connect dots; toddler and preschool
 
 ## Experience and presentation
 
-- **First unsupported action.** Level 1: any touch on the paper. A new dot-to-dot entry: tapping the glowing dot next to the crayon.
+- **First unsupported action.** Level 1: any touch on the paper (built 2026-11-12, PR #1585: any touch on the screen draws at the nearest place on the paper, and a touch during the pet's turn rings and puffs stars). A new dot-to-dot entry: tapping the glowing dot next to the crayon.
 - **Touch and consequence.** Touch-down puts the crayon under the finger with a soft scratch; each checkpoint climbs a pentatonic step (`tuneStep`); a finished strip squashes, rolls up and its piece appears in the picture with its spoken line. At dot-to-dot, the tap's dot pops and the crayon line draws itself to it with one rising note; the crayon then waits at that dot (the return to readiness).
 - **Variety on replay.** The new piece pools: the same zigzag makes mountains one round and the crocodile's teeth the next; the pet's paper and crayon colors already rotate. The rule never changes.
 - **Reasoning versus motor precision.** Levels 1–6 are motor imitation; level 5 adds memory of the shape (with stones as support); 7–8 are reasoning (which unit continues) carried out with a stroke. A wrong candidate at 7–8 is a reasoning miss; a stray is not counted as reasoning. A dot-to-dot tap on the wrong dot is not a miss: the right dot glows again.
