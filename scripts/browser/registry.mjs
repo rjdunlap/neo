@@ -48,6 +48,7 @@ import { createSuite as createRainGarden } from './suites/rain-garden-play.mjs';
 import { createSuite as createForecastDetective } from './suites/forecast-detective-play.mjs';
 import { createSuite as createVineSnip } from './suites/vine-snip-play.mjs';
 import { createSuite as createFarLights } from './suites/far-lights-play.mjs';
+import { createSuite as createBouncyLaunch } from './suites/bouncy-launch-play.mjs';
 import { createSuite as createCircuitGarden } from './suites/circuit-garden-play.mjs';
 import { createSuite as createMeasuringPost } from './suites/measuring-post-play.mjs';
 import { createSuite as createSeedTravelers } from './suites/seed-travelers-play.mjs';
@@ -347,6 +348,7 @@ export const SUITES = [
   'forecastdetective',
   'vinesnip',
   'farlights',
+  'bouncylaunch',
   'circuitgarden',
   'measuringpost',
   'seeds',
@@ -517,6 +519,7 @@ export const ALL_SUITES = [
   'forecastdetective',
   'vinesnip',
   'farlights',
+  'bouncylaunch',
   'circuitgarden',
   'measuringpost',
   'seeds',
@@ -881,6 +884,7 @@ export function createChecks(fixture) {
   install(createForecastDetective(shared));
   install(createVineSnip(shared));
   install(createFarLights(shared));
+  install(createBouncyLaunch(shared));
   install(createCircuitGarden(shared));
   install(createMeasuringPost(shared));
   install(createSeedTravelers(shared));
@@ -1110,6 +1114,7 @@ export async function runSuite(suite, fixture) {
     forecastDetectivePlay,
     vineSnipPlay,
     farLightsPlay,
+    bouncyLaunchPlay,
     circuitGardenPlay,
     measuringPostPlay,
     seedTravelersPlay,
@@ -1296,6 +1301,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'forecastdetective') await forecastDetectivePlay();
   if (suite === 'all' || suite === 'vinesnip') await vineSnipPlay();
   if (suite === 'all' || suite === 'farlights') await farLightsPlay();
+  if (suite === 'all' || suite === 'bouncylaunch') await bouncyLaunchPlay();
   if (suite === 'all' || suite === 'circuitgarden') await circuitGardenPlay();
   if (suite === 'all' || suite === 'measuringpost') await measuringPostPlay();
   if (suite === 'all' || suite === 'seeds') await seedTravelersPlay();

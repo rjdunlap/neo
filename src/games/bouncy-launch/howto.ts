@@ -5,6 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Launch the pet and see where it lands.',
   steps: [
     {
+      from: 13,
+      to: 13,
+      text: 'Touch anywhere: the pet bounces up and lands on the grass, and a flower pops up where it landed. The flowers stay.',
+    },
+    {
       from: 12,
       to: 12,
       text: 'Watch the home flight leave a numbered flag. With the same shown pull on the planet, tap before or past the flag, then watch the result.',
@@ -40,6 +45,7 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   finish: [
+    { from: 13, to: 13, text: 'The round ends after five landings: five flowers in the meadow.' },
     { from: 12, to: 12, text: 'The round ends after three home-and-planet pairs.' },
     { to: 2, text: 'The round ends after its launches.' },
     { from: 3, to: 5, text: 'The round ends when the pet lands where it was asked to.' },
@@ -53,6 +59,11 @@ export const HOW_TO: GameHowTo = {
     },
   ],
   note: [
+    {
+      from: 13,
+      to: 13,
+      text: 'Nothing here is ever wrong: a touch while the pet is in the air only rings and sparkles. There are no clouds and nothing is counted; this is for touching and watching, not a sign of what she knows.',
+    },
     {
       from: 12,
       to: 12,

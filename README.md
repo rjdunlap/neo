@@ -210,7 +210,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Playdate Workshop](docs/games/playdate-workshop.md) | preschool–pre-K | Story Grove | 3 | two critter friends say what they would like; give the one stamp pad to one, stamp, then pass it to the other |
 | [Robot Path](docs/games/robot-path.md) | preschool–school | Tinker Lab | 14 | one or two steps to a star |
 | [Bug Builder](docs/games/bug-builder.md) | toddler–school | Tinker Lab | 7 | decorate matching shape outlines |
-| [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 10 | tap the pet and it boings onto a cloud |
+| [Bouncy Launch](docs/games/bouncy-launch.md) | lap–school | Tinker Lab | 11 | lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud |
 | [Seesaw Balance](docs/games/seesaw-balance.md) | lap–school | Tinker Lab | 17 | touch the empty end to lift a little friend; tap who is heavier or lighter |
 | [Light Lab](docs/games/light-lab.md) | pre-K–school | Tinker Lab | 12 | tap mirrors to turn a sunbeam onto a sleeping flower |
 | [Ramp Race](docs/games/ramp-race.md) | pre-K–school | Tinker Lab | 7 | tap the ramp to make it taller and roll a toy car |

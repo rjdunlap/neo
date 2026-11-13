@@ -4,7 +4,7 @@ import type { CompanionRig } from '../../creatures/companion';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { prop } from '../../art/props';
-import { puffs, starPoints } from '../../art/shapes';
+import { flower, puffs, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineVars } from '../../audio/voice';
@@ -35,6 +35,8 @@ import {
   type PlanetPair,
   friendSpots,
   judge,
+  MEADOW_LEVEL,
+  meadowLandings,
   judgeFriend,
   MAX_PULL,
   MIN_PULL,
@@ -122,6 +124,12 @@ class BouncyLaunch implements Game {
   private askGen = 0;
   /** Landing distances produced by deliberate pulls (the tap-only level has none). */
   readonly observedPulls: number[] = [];
+  /** Level 13, the flower meadow: where each landing comes down, and the flowers left so far (as strip fractions). */
+  readonly landings: number[] = [];
+  readonly flowers: { f: number; art: Container }[] = [];
+  /** Level 13: the whole screen behind the pet bounces it. */
+  readonly meadowInput = new Container();
+  private readonly meadow = new Container();
 
   private readonly backdrop: Backdrop;
   private readonly spring = new Graphics();
@@ -222,6 +230,9 @@ class BouncyLaunch implements Game {
         : null;
     }
     if (this.plan.mode === 'tap') return { tap: { on: this.pet, x: this.pet.touch.x, y: this.pet.touch.y } };
+    // The flower meadow: a touch out in the sky, away from the pet, shows that anywhere bounces it.
+    if (this.plan.mode === 'meadow')
+      return { tap: { on: this.meadowInput, x: this.view.w * 0.62, y: this.view.h * 0.38 } };
     if (this.plan.mode === 'between' && this.betweenStep < 2) return null;
     if (this.plan.mode === 'predict' || this.plan.mode === 'between') {
       const target = this.targets[this.shot];
@@ -246,6 +257,11 @@ class BouncyLaunch implements Game {
     // Shown pulls only: a key never squashes the spring away from the pull on screen.
     if (this.plan.mode === 'planet' || this.plan.mode === 'between') return;
     if (this.flying || this.finished || this.grab) return;
+    // The flower meadow has no spring to squash: a press is a touch.
+    if (this.plan.mode === 'meadow') {
+      if (input.players.some((p) => p.action)) this.bounce();
+      return;
+    }
     const p = input.players.find((p) => p.x || p.y || p.action);
     // A key before she has heard where this shot should land: she hears it now, and the key still moves the spring.
     if (p) this.askNow();
@@ -320,6 +336,9 @@ class BouncyLaunch implements Game {
       } else if (this.plan.mode === 'between') {
         this.betweens = betweenTriples(ctx.rng, this.plan.shots);
         this.targets = this.betweens.map((t) => t.mid);
+      } else if (this.plan.mode === 'meadow') {
+        this.targets = [];
+        this.landings = meadowLandings(ctx.rng, this.plan.shots);
       } else this.targets = targets(this.plan, ctx.rng);
     }
     this.backdrop = new Backdrop(
@@ -358,10 +377,12 @@ class BouncyLaunch implements Game {
       this.flagNumbers.eventMode =
       this.lastArc.eventMode =
       this.compareRing.eventMode =
+      this.meadow.eventMode =
         'none';
     ctx.stage.addChild(
       this.backdrop,
       ...this.planetBackdrops,
+      this.meadow,
       this.planetArt,
       this.lastArc,
       this.flag,
@@ -383,7 +404,8 @@ class BouncyLaunch implements Game {
         pad.addChild(n);
       }
       this.pads.push(pad);
-      pad.visible = this.plan.mode !== 'friend' && this.plan.mode !== 'planet';
+      // The flower meadow has no clouds: the pet and the flowers it leaves are the only things on the grass.
+      pad.visible = this.plan.mode !== 'friend' && this.plan.mode !== 'planet' && this.plan.mode !== 'meadow';
       ctx.stage.addChild(pad);
       if (this.plan.mode === 'predict' || this.plan.mode === 'between')
         onTap(pad, () => void this.predict(i), { cooldown: 500 });
@@ -415,6 +437,11 @@ class BouncyLaunch implements Game {
     ctx.stage.addChild(this.star, this.spring, this.preview, this.replay, this.pet);
     if (this.plan.mode === 'tap') {
       onTap(this.pet, () => void this.launch(this.ctx.rng.range(0.15, 0.95)), { cooldown: 500 });
+    } else if (this.plan.mode === 'meadow') {
+      // A touch anywhere, the pet included, bounces it; the round button keeps the instruction above the screen layer.
+      ctx.stage.addChildAt(this.meadowInput, ctx.stage.getChildIndex(this.replay));
+      onTap(this.pet, (e) => this.bounce(this.ctx.stage.toLocal(e.global)), { cooldown: 300 });
+      onTap(this.meadowInput, (e) => this.bounce(this.ctx.stage.toLocal(e.global)), { cooldown: 300 });
     } else if (this.plan.mode !== 'predict' && this.plan.mode !== 'planet' && this.plan.mode !== 'between') {
       // A slingshot pull, not a drag-and-drop: the pet moves by however far the finger moves,
       // wherever on the pet it was grabbed (drag.ts would snap the pet onto the fingertip).
@@ -570,6 +597,8 @@ class BouncyLaunch implements Game {
     this.strip = { x0: 380, x1: v.w - 80, y: ground + 10 };
     this.replay.position.set(this.seat.x, this.strip.y - 8);
     this.pads.forEach((pad, i) => pad.position.set(this.landX(cloudAt(this.plan, i)), this.strip.y));
+    this.meadowInput.hitArea = new Rectangle(0, 0, v.w, v.h);
+    for (const { f, art } of this.flowers) art.position.set(this.landX(f), this.strip.y + 6);
     if (this.plan.mode === 'nearfar') {
       // As wide as the landing that counts (the cloud's window), and never narrower than a big target.
       const w = Math.max(140, 2 * NEAR_FAR_WINDOW * (this.strip.x1 - this.strip.x0));
@@ -755,6 +784,9 @@ class BouncyLaunch implements Game {
     switch (this.plan.mode) {
       case 'tap':
         if (this.shot === 0) await this.instruct('launch.tap');
+        return;
+      case 'meadow':
+        if (this.shot === 0) await this.instruct('launch.anywhere');
         return;
       case 'free':
         if (this.shot === 0) await this.instruct('launch.pull');
@@ -957,6 +989,7 @@ class BouncyLaunch implements Game {
     // Level 9's pulls are all shown ones, not hers, so they never file the observation.
     if (
       this.plan.mode !== 'tap' &&
+      this.plan.mode !== 'meadow' &&
       this.plan.mode !== 'planet' &&
       this.plan.mode !== 'between' &&
       !this.stick
@@ -1038,7 +1071,12 @@ class BouncyLaunch implements Game {
         await this.ctx.say(predicted ? 'launch.predicted' : 'launch.between-why', {
           n: this.targets[this.shot] + 1,
         });
-      } else if (!firstCompare && this.plan.mode !== 'tap' && this.plan.mode !== 'free') {
+      } else if (
+        !firstCompare &&
+        this.plan.mode !== 'tap' &&
+        this.plan.mode !== 'meadow' &&
+        this.plan.mode !== 'free'
+      ) {
         this.pet.cheer();
         sfx.sparkle();
         this.ctx.particles.burst(this.pet.x, this.pet.y - 100, {
@@ -1054,6 +1092,7 @@ class BouncyLaunch implements Game {
         this.pet.cheer();
       }
       this.last = f;
+      if (this.plan.mode === 'meadow') this.plantFlower(f);
       if (this.plan.mode === 'predict') this.predictionFlights.push(this.targets[this.shot]);
       this.drawFlag();
       this.shot++;
@@ -1112,7 +1151,12 @@ class BouncyLaunch implements Game {
   /** Previous flight in normalized strip coordinates, so a resize preserves the evidence. */
   private drawHistory() {
     const g = this.lastArc.clear();
-    if (this.lastFlight !== undefined && this.plan.mode !== 'tap' && !this.ctx.couch) {
+    if (
+      this.lastFlight !== undefined &&
+      this.plan.mode !== 'tap' &&
+      this.plan.mode !== 'meadow' &&
+      !this.ctx.couch
+    ) {
       const pts = this.arc(this.lastFlight);
       for (let i = 2; i < pts.length; i += 3)
         g.circle(pts[i].x, pts[i].y, 4).fill({ color: ink, alpha: 0.25 });
@@ -1174,6 +1218,52 @@ class BouncyLaunch implements Game {
         this.flagNumbers.addChild(n);
       }
     }
+  }
+
+  /**
+   * Level 13: a touch anywhere (or a press) bounces the pet to the next landing. A touch while it is in the air or hopping
+   * back rings free, with a few sparkles where she touched, and counts nothing.
+   */
+  bounce(at?: { x: number; y: number }) {
+    if (this.finished) return;
+    if (this.flying || this.shot >= this.landings.length) {
+      if (!at) return;
+      sfx.pop(this.ctx.rng.int(3, 9));
+      this.ctx.particles.burst(at.x, at.y, {
+        kind: 'star',
+        colors: [0xffffff, swatch.yellow.light],
+        count: 6,
+        speed: [60, 160],
+        gravity: 0,
+        life: [0.3, 0.6],
+      });
+      return;
+    }
+    void this.launch(this.landings[this.shot]);
+  }
+
+  /** Where the pet came down, a flower pops up and stays: the meadow fills because she touched. */
+  private plantFlower(f: number) {
+    const colors = ['pink', 'yellow', 'purple', 'red', 'blue'] as const;
+    const color = swatch[colors[this.flowers.length % colors.length]];
+    const art = new Container();
+    const stem = new Graphics()
+      .moveTo(0, 0)
+      .lineTo(0, -48)
+      .stroke({ width: 8, color: swatch.green.line, cap: 'round' })
+      .ellipse(14, -20, 14, 7)
+      .fill(swatch.green.fill)
+      .stroke({ width: 3, color: swatch.green.line });
+    const head = flower(new Graphics(), 30, color.fill, color.line);
+    head.y = -62;
+    art.addChild(stem, head);
+    art.eventMode = 'none';
+    art.position.set(this.landX(f), this.strip.y + 6);
+    art.scale.set(0.01);
+    this.meadow.addChild(art);
+    this.flowers.push({ f, art });
+    sfx.marimba(this.flowers.length + 2);
+    void this.ctx.tw.to(art.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
   }
 
   private async finale() {
@@ -1242,7 +1332,8 @@ export const bouncyLaunch: GameModule = {
   skills: ['cause-and-effect', 'measurement', 'numbers'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [NEAR_FAR_LEVEL],
+  // Level 13, the flower meadow, is lap's easy opening: carried into an older band it starts that band's first level.
+  entryLevels: [NEAR_FAR_LEVEL, MEADOW_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "pull... and let go!" together, then guess where {name}\'s pet will land.',
