@@ -192,6 +192,7 @@ class WordMonsters implements Game {
   /** Level 9: the monsters who wake, one per touch, and the pictures they leave on the shelf. */
   private bigQueue: string[] = [];
   private readonly shelf = new Container();
+  private flying: Container | null = null;
   private destroyed = false;
 
   constructor(private readonly ctx: GameContext) {
@@ -271,8 +272,20 @@ class WordMonsters implements Game {
     return { x: xs[i], y: Math.max(90, v.h * 0.14) };
   }
 
+  /** Level 9: a kept picture's scale, smaller when the shelf is narrow so six never overlap (a picture is about 220 wide). */
+  private shelfScale() {
+    const xs = spread(this.plan.rounds, 150, this.view.w - 150, 110);
+    return Math.min(SHELF_SCALE, ((xs[1] ?? 0) - xs[0] || 110) / 260);
+  }
+
   private layoutShelf() {
-    this.shelf.children.forEach((p, i) => p.position.copyFrom(this.shelfSpot(i)));
+    const k = this.shelfScale();
+    this.shelf.children.forEach((p, i) => {
+      // A picture still flying up is left to its tween.
+      if (p === this.flying) return;
+      p.position.copyFrom(this.shelfSpot(i));
+      p.scale.set(k);
+    });
   }
 
   private layoutMonsters() {
@@ -334,6 +347,7 @@ class WordMonsters implements Game {
   /** The next big monster pops up in the middle, wiggling awake, because she touched. */
   private wakeBig() {
     const letter = this.bigQueue[this.taps];
+    const woke = this.taps;
     if (!letter) return;
     const m = new Monster(letter, true, FURS[(this.taps * 3) % FURS.length]);
     m.eventMode = 'none';
@@ -345,7 +359,8 @@ class WordMonsters implements Game {
     void this.ctx.tw
       .to(m.scale, { x: BIG_SCALE, y: BIG_SCALE }, { duration: 0.4, ease: ease.outBack })
       .then(() => {
-        if (!m.destroyed) m.speak();
+        // A monster already touched has wiggled; only an untouched one wiggles awake.
+        if (!m.destroyed && this.taps === woke) m.speak();
       });
   }
 
@@ -362,7 +377,9 @@ class WordMonsters implements Game {
     const said = this.ctx.say(soundLine(m.letter));
     const p = letterPicture(m.letter.toUpperCase());
     const from = this.bigSpot();
-    p.position.set(from.x, from.y - BODY_R * BIG_SCALE - 120);
+    // Above the monster's head, but never above the shelf on a short view.
+    p.position.set(from.x, Math.max(this.shelfSpot(0).y + 110, from.y - BODY_R * BIG_SCALE - 120));
+    this.flying = p;
     p.scale.set(0);
     this.shelf.addChild(p);
     const to = this.shelfSpot(this.shelf.children.length - 1);
@@ -370,9 +387,11 @@ class WordMonsters implements Game {
     await this.ctx.tw.wait(0.25);
     if (this.destroyed) return;
     sfx.whoosh();
-    void this.ctx.tw.to(p.scale, { x: SHELF_SCALE, y: SHELF_SCALE }, { duration: 0.4 });
+    const k = this.shelfScale();
+    void this.ctx.tw.to(p.scale, { x: k, y: k }, { duration: 0.4 });
     await this.ctx.tw.to(p, { x: to.x, y: to.y }, { duration: 0.4, ease: ease.inOutSine });
     if (this.destroyed) return;
+    this.flying = null;
     this.layoutShelf();
     // The monster that spoke steps out to the side; the next wakes because she touched.
     const side = this.taps % 2 ? 1 : -1;
