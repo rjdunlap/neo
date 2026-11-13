@@ -119,7 +119,7 @@ const TWO_CONES: ScoopPlan = {
 const ANY_SCOOP: ScoopPlan = {
   mode: 'free',
   customers: 3,
-  flavors: 4,
+  flavors: 3,
   min: 1,
   max: 1,
   name: 'Any scoop: one tap, one scoop, one munch',
@@ -165,6 +165,23 @@ export const planFor = (level: number) =>
               : level === 11
                 ? MATCH_CUSTOMER
                 : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+/** Level 10, the lap opening: one big tub for the first customer, and one more flavor arrives with each next one. */
+export const LAP_OPENING = 10;
+export const BIG_TUB_SCALE = 1.6;
+export const tubsShown = (level: number, customerIndex: number, flavors: number) =>
+  level === LAP_OPENING ? Math.min(flavors, Math.max(1, customerIndex + 1)) : flavors;
+
+/** The shown tub nearest a touch anywhere in the shop (index into `points`); -1 when none is shown. */
+export function nearestTub(points: { x: number; y: number }[], x: number, y: number): number {
+  let best = -1;
+  let bestD = Infinity;
+  points.forEach((p, i) => {
+    const d = (p.x - x) ** 2 + (p.y - y) ** 2;
+    if (d < bestD) [best, bestD] = [i, d];
+  });
+  return best;
+}
 
 export interface CustomerChoice {
   pictures: [ColorName, ColorName];

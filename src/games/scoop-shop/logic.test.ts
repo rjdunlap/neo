@@ -3,6 +3,9 @@ import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import {
   CONE_HIT,
+  LAP_OPENING,
+  nearestTub,
+  tubsShown,
   coneAfterServe,
   FRIEND_HIT,
   FRIEND_SCALE,
@@ -133,6 +136,31 @@ describe('Scoop Shop', () => {
         expect(scoopToTake(plan, order, [], flavors)).toBe(flavors[0]);
       }
     }
+  });
+
+  it('opens the lap level with one tub and brings one more flavor per customer, every flavor shown by the last', () => {
+    const plan = planFor(LAP_OPENING);
+    expect([0, 1, 2].map((c) => tubsShown(LAP_OPENING, c, plan.flavors))).toEqual([1, 2, 3]);
+    // Every flavor arrives by the last customer, and no tub waits unseen.
+    expect(plan.flavors).toBe(plan.customers);
+    expect(tubsShown(LAP_OPENING, -1, plan.flavors)).toBe(1);
+    expect(tubsShown(LAP_OPENING, 9, plan.flavors)).toBe(plan.flavors);
+    // Every other level shows all its tubs from the start.
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13])
+      expect(tubsShown(level, 0, planFor(level).flavors)).toBe(planFor(level).flavors);
+  });
+
+  it('sends a touch anywhere to the nearest shown tub', () => {
+    const tubs = [
+      { x: 150, y: 900 },
+      { x: 290, y: 900 },
+      { x: 430, y: 900 },
+    ];
+    expect(nearestTub(tubs.slice(0, 1), 700, 50)).toBe(0);
+    expect(nearestTub(tubs, 10, 100)).toBe(0);
+    expect(nearestTub(tubs, 300, 400)).toBe(1);
+    expect(nearestTub(tubs, 900, 900)).toBe(2);
+    expect(nearestTub([], 0, 0)).toBe(-1);
   });
 
   it('offers exactly one matching picture, alternating sides and retaining the waiting customer', () => {

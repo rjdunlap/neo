@@ -14,6 +14,10 @@ import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  BIG_TUB_SCALE,
+  LAP_OPENING,
+  nearestTub,
+  tubsShown,
   complete,
   countSlots,
   scoopCounts,
@@ -202,6 +206,8 @@ class ScoopShop implements Game {
   finished = false;
 
   private readonly wall = new Sprite(gradientTexture(0xffe3ee, 0xfff4e3));
+  /** Level 10 (lap): the whole shop takes a touch, and it scoops from the nearest tub. */
+  private readonly floor = new Graphics();
   private readonly room = new Graphics();
   private readonly counter = new Graphics();
   private readonly people = new Container();
@@ -224,6 +230,17 @@ class ScoopShop implements Game {
   get hinted() {
     return this.support.glow;
   }
+  private get lap() {
+    return this.ctx.level === LAP_OPENING;
+  }
+  /** How many tubs stand on the counter: all of them, except at the lap opening, where one more arrives per customer. */
+  private get shown() {
+    return tubsShown(this.ctx.level, Math.max(0, this.customerIndex), this.flavors.length);
+  }
+  /** A tub's resting scale: the lap opening's single tub is big. */
+  private tubScale(n = this.shown) {
+    return this.lap && n === 1 ? BIG_TUB_SCALE : 1;
+  }
   private get revisedMemory() {
     return this.plan.mode === 'change' || this.plan.mode === 'topfirst';
   }
@@ -243,19 +260,16 @@ class ScoopShop implements Game {
     this.bubble.eventMode = 'none';
     this.ring.eventMode = 'none';
     this.mats.eventMode = 'none';
-    ctx.stage.addChild(
-      this.wall,
-      this.room,
-      this.people,
-      this.counter,
-      this.mats,
-      this.bubble,
-      this.tubGlow,
-      this.ring,
-    );
-    for (const color of this.flavors) {
+    ctx.stage.addChild(this.wall);
+    if (this.lap) {
+      onTap(this.floor, (e) => this.tapAnywhere(e.global), { cooldown: 200 });
+      this.floor.cursor = 'default';
+      ctx.stage.addChild(this.floor);
+    }
+    ctx.stage.addChild(this.room, this.people, this.counter, this.mats, this.bubble, this.tubGlow, this.ring);
+    for (const [i, color] of this.flavors.entries()) {
       const tub = tubArt(color);
-      tub.visible = this.plan.mode !== 'customer';
+      tub.visible = this.plan.mode !== 'customer' && i < this.shown;
       onTap(tub, () => this.tapTub(color), { radius: 72, cooldown: 200 });
       this.tubs.set(color, tub);
       ctx.stage.addChild(tub);
@@ -318,8 +332,8 @@ class ScoopShop implements Game {
         .stroke({ width: 4, color: side ? 0xd99a5a : 0x6aa3d6 });
       for (const x of [friend.x, cone.x]) m.circle(x, top + 47, 9).fill(side ? 0xd99a5a : 0x6aa3d6);
     });
-    const xs = spread(this.flavors.length, 150, v.w - 40, 140);
-    this.flavors.forEach((color, i) => this.tubs.get(color)!.position.set(xs[i], v.h - 70));
+    if (this.lap) this.floor.hitArea = new Rectangle(0, 0, v.w, v.h);
+    this.layoutTubs();
     this.guests.forEach((guest, side) =>
       guest?.position.set(this.view.w * (side ? 0.76 : 0.25), this.counterTop + 18),
     );
@@ -336,6 +350,62 @@ class ScoopShop implements Game {
     }
     const cs = this.customerSpot();
     this.bubble.position.set(cs.x + 220, Math.max(top - 190, 280));
+  }
+
+  /** Where each shown tub rests along the bottom of the counter. */
+  private tubSpots(n = this.shown) {
+    const v = this.view;
+    const xs = n === 1 && this.lap ? [v.w * 0.5] : spread(n, 150, v.w - 40, 140);
+    return xs.map((x) => ({ x, y: v.h - 70 }));
+  }
+
+  private layoutTubs() {
+    const n = this.shown;
+    const spots = this.tubSpots(n);
+    this.flavors.forEach((color, i) => {
+      const tub = this.tubs.get(color)!;
+      if (i >= n) return void (tub.visible = false);
+      this.ctx.tw.kill(tub);
+      this.ctx.tw.kill(tub.scale);
+      tub.position.copyFrom(spots[i]);
+      tub.scale.set(this.tubScale(n));
+    });
+  }
+
+  /** Lap opening: the next flavor's tub pops in and the big one settles small beside it, while the customer walks in. */
+  private arriveTub() {
+    const n = this.shown;
+    const tw = this.ctx.tw;
+    const spots = this.tubSpots(n);
+    const scale = this.tubScale(n);
+    this.flavors.slice(0, n).forEach((color, i) => {
+      const tub = this.tubs.get(color)!;
+      tw.kill(tub);
+      tw.kill(tub.scale);
+      tub.rotation = 0;
+      if (tub.visible) {
+        void tw.to(tub, { x: spots[i].x, y: spots[i].y }, { duration: 0.5, ease: ease.inOutSine });
+        void tw.to(tub.scale, { x: scale, y: scale }, { duration: 0.5, ease: ease.inOutSine });
+        return;
+      }
+      tub.visible = true;
+      tub.position.copyFrom(spots[i]);
+      tub.scale.set(0);
+      sfx.pop(5 + i);
+      void tw.to(tub.scale, { x: scale, y: scale }, { duration: 0.45, ease: ease.outBack });
+    });
+  }
+
+  /** Lap opening: a touch anywhere in the shop (or on the cone) is a tap on the nearest tub. */
+  private tapAnywhere(global: { x: number; y: number }) {
+    const shown = this.flavors.slice(0, this.shown);
+    const at = this.ctx.stage.toLocal(global);
+    const i = nearestTub(
+      shown.map((c) => this.tubs.get(c)!.position),
+      at.x,
+      at.y,
+    );
+    if (i >= 0) this.tapTub(shown[i]);
   }
 
   /** The window: the beach, a village street, or evening lanterns. Scenery only; it changes no rule. */
@@ -408,7 +478,10 @@ class ScoopShop implements Game {
       const want = nextNeeded(this.order, this.cone.colors);
       const tub = want && this.tubs.get(want);
       if (tub)
-        g.circle(tub.x, tub.y - 20, 80 + 5 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.75 });
+        g.circle(tub.x, tub.y - 20 * tub.scale.y, (80 + 5 * Math.sin(this.clock * 7)) * tub.scale.y).fill({
+          color: 0xfff3a0,
+          alpha: 0.75,
+        });
     }
   }
 
@@ -525,6 +598,7 @@ class ScoopShop implements Game {
     this.support = freshSupport();
     this.hidden = false;
     const tw = this.ctx.tw;
+    if (this.lap && this.customerIndex > 0) this.arriveTub();
 
     const critter = new Critter(CRITTERS[this.kinds[this.customerIndex % this.kinds.length]]);
     critter.scale.set(0.72);
@@ -544,7 +618,7 @@ class ScoopShop implements Game {
 
     const cone = new Cone(this.cones[this.customerIndex] ?? 'cone');
     for (let i = 0; i < (order.start ?? 0); i++) cone.add(order.scoops[0]);
-    onTap(cone, () => this.wobble(cone, 0.12), { cooldown: 300 });
+    onTap(cone, (e) => (this.lap ? this.tapAnywhere(e.global) : this.wobble(cone, 0.12)), { cooldown: 300 });
     cone.hitArea = new Rectangle(-55, -230, 110, 330);
     const cs = this.coneSpot();
     cone.position.set(cs.x, cs.y);
@@ -648,7 +722,7 @@ class ScoopShop implements Game {
         heart.position.set(40, -12);
         const mini = holderArt(this.cones[this.customerIndex], 0.5);
         mini.position.set(-10, -65);
-        const scoop = scoopArt('pink', 25);
+        const scoop = scoopArt(this.flavors[this.shown - 1], 25);
         scoop.position.set(-10, -78);
         this.bubble.addChild(mini, scoop);
       }
@@ -856,9 +930,10 @@ class ScoopShop implements Game {
   private tapTub(color: ColorName) {
     const tub = this.tubs.get(color)!;
     const tw = this.ctx.tw;
+    const base = this.tubScale();
     tw.kill(tub.scale);
-    tub.scale.set(1.08, 0.86);
-    void tw.to(tub.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
+    tub.scale.set(1.08 * base, 0.86 * base);
+    void tw.to(tub.scale, { x: base, y: base }, { duration: 0.3, ease: ease.outBack });
     if (this.busy || this.finished || !this.order || !this.cone) {
       sfx.pop(5 + this.flavors.indexOf(color));
       this.wobble(tub, 0.1);
@@ -894,7 +969,8 @@ class ScoopShop implements Game {
     const tub = this.tubs.get(color)!;
     const result = tryScoop(this.plan, order, cone.colors, color);
     const s = scoopArt(color);
-    s.position.set(tub.x, tub.y - 60);
+    const lift = 60 * this.tubScale();
+    s.position.set(tub.x, tub.y - lift);
     this.flying.addChild(s);
     sfx.pop(5 + this.flavors.indexOf(color));
     const spot = cone.toGlobal(cone.nextSpot());
@@ -938,7 +1014,7 @@ class ScoopShop implements Game {
       void this.ctx.say(line, { color, want });
     }
     if (glow && this.plan.start) void this.countOnHint(order, cone);
-    await tw.to(s, { x: tub.x, y: tub.y - 60 }, { duration: 0.5, ease: ease.outBack });
+    await tw.to(s, { x: tub.x, y: tub.y - lift }, { duration: 0.5, ease: ease.outBack });
     s.destroy();
     this.busy = false;
   }
@@ -1098,7 +1174,7 @@ export const scoopShop: GameModule = {
   music: STYLES.bubbles,
   coplayHint: 'Be the customer! Ask {name} for "pink, please!" and say thank you.',
   coplayHintLap:
-    'Be the customer! Point at the pink scoop, say "pink, please!", and say thank you for whatever {name} serves.',
+    'Be the customer! Point at the scoop in the picture, name its color, and say thank you for whatever {name} serves.',
   offScreen: {
     all: 'Play ice cream shop with colored pom-poms or blocks stacked in a cup.',
     // Under 3: no pom-poms (small parts).
