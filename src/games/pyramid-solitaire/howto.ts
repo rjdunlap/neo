@@ -8,6 +8,11 @@ export const HOW_TO: GameHowTo = {
     {
       text: 'Tap two exposed cards that add to 13 (A = 1, J = 11, Q = 12; K alone), or an exposed card then the card only it still lies on.',
       from: 5,
+      to: 5,
+    },
+    {
+      text: 'Tap two exposed cards that add to 13 (A = 1, J = 11, Q = 12; K alone). The five shelf cards are always exposed and are cleared too.',
+      from: 6,
     },
     'A card is exposed when both cards directly below it have gone. Each corner repeats the rank; the status line counts pairs open.',
     'Tap the selected card again to cancel. Undo restores a removal; Start over restores this same deal.',
