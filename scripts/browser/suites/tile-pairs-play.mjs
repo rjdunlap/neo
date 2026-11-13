@@ -109,7 +109,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         await page.waitForTimeout(500);
       }
       const initial = await state();
-      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24, 24][level - 1]);
+      assert.equal(initial.tiles.length, [12, 20, 24, 24, 24, 24, 24, 24, 30][level - 1]);
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
       if (level === 8) {
         // Two different flowers pair: the flower family's first pair removes two tiles with different kinds.
@@ -194,6 +194,23 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       s = await state();
       assert.equal(s.shuffles, 1);
       assert.equal(s.hints, 2);
+      if (level === 9) {
+        // Level 9's 28 shuffled tiles keep to four rows (four raised): every tile stays on screen and above the buttons.
+        const rows = await page.evaluate(() => {
+          const g = neo.scene.game,
+            top = g.undoButton.toGlobal({ x: 0, y: -50 }).y / neo.view.scale;
+          return g.nodes.map((n) => {
+            const a = n.toGlobal({ x: -54, y: -54 }),
+              b = n.toGlobal({ x: 54, y: 54 });
+            return { x0: a.x, y0: a.y, x1: b.x, y1: b.y, top, s: neo.view.scale, w: neo.view.w };
+          });
+        });
+        for (const r of rows) {
+          assert.ok(r.x0 >= 0 && r.y0 >= 0 && r.x1 / r.s <= r.w, 'a shuffled tile stays on screen');
+          assert.ok(r.y1 / r.s <= r.top, 'a shuffled tile stays above the buttons');
+        }
+        await screenshot('tile-pairs-9-shuffled');
+      }
       assert.deepEqual(
         s.tiles.map((t) => t.kind).sort(),
         remainder.tiles

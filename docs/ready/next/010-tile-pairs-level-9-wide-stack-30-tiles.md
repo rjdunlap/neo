@@ -1,1 +1,0 @@
-**`tile-pairs`, level 9 *Wide stack · 30 tiles*** (after level 8; dive slice 6, new-level tier: typecheck, rule tests with the node-budget test, one filtered `tilepairs` play of 9, `fingerdemo` at 9). [Dive](../../deep-dives/tile-pairs.md#build-slices-in-order)
