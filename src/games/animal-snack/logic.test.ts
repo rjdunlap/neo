@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  friendsAfter,
+  planFor,
+  LEVELS,
   BARN_ASPECT,
   BITE,
   BITE_SIZES,
@@ -312,5 +315,26 @@ describe('Animal Snack', () => {
     const wide = farBarnAt('orchard', 1365, 768, 3);
     expect(wide).not.toBeNull();
     expect(wide!.x).toBeGreaterThan(1365 / 2);
+  });
+
+  it("opens lap's level 1 with one big animal, and its friends walk in after the second and fourth snacks", () => {
+    const plan = planFor(1);
+    expect(plan.oneBig).toBe(true);
+    expect(plan.mode).toBe('munch');
+    expect(LEVELS.toddler!.min, 'level 1 is lap-only, so it changes in place').toBeGreaterThan(1);
+    expect([0, 1, 2, 3, 4, 5, 6].map((n) => friendsAfter(n))).toEqual([1, 1, 2, 2, 3, 3, 3]);
+    expect(friendsAfter(plan.rounds - 2, plan.animals), 'all three are there before the last snacks').toBe(plan.animals);
+    for (let level = 2; level <= 5; level++) expect(planFor(level).oneBig).toBeFalsy();
+  });
+
+  it('feeds the nearest animal from a touch anywhere, however far away', () => {
+    const bodies = [
+      { x: 300, y: 400 },
+      { x: 600, y: 400 },
+    ];
+    expect(nearestFriend(bodies, 20, 40), 'out of reach of a tap').toBe(-1);
+    expect(nearestFriend(bodies, 20, 40, Infinity)).toBe(0);
+    expect(nearestFriend(bodies, 1000, 900, Infinity)).toBe(1);
+    expect(nearestFriend([{ x: 300, y: 400 }], 1000, 0, Infinity), 'the big animal alone takes every touch').toBe(0);
   });
 });

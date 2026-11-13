@@ -14,7 +14,7 @@
 
 | Level | Plays like |
 | --- | --- |
-| 1 | Tap an animal: it says hello and munches its snack |
+| 1 | One big animal: a touch anywhere gives a snack, and two friends walk in |
 | 2 | Tap a snack: it floats to the animal who loves it |
 | 3 | Who eats grass? or Who says moo? Tap the animal |
 | 4 | Drag each snack to the animal who eats it |

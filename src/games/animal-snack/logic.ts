@@ -18,10 +18,18 @@ export interface SnackPlan {
   /** Taps ('munch', 'float'), questions ('who', 'count') or foods to hand out ('match'). */
   rounds: number;
   name: string;
+  /** Lap's opening: one big animal, a touch anywhere feeds, and the others walk in as she feeds (see `friendsAfter`). */
+  oneBig?: boolean;
 }
 
 export const PLANS: SnackPlan[] = [
-  { mode: 'munch', animals: 3, rounds: 6, name: 'Tap an animal: it says hello and munches its snack' },
+  {
+    mode: 'munch',
+    animals: 3,
+    rounds: 6,
+    oneBig: true,
+    name: 'One big animal: a touch anywhere gives a snack, and two friends walk in',
+  },
   { mode: 'float', animals: 3, rounds: 6, name: 'Tap a snack: it floats to the animal who loves it' },
   { mode: 'who', animals: 3, rounds: 4, name: 'Who eats grass? or Who says moo? Tap the animal' },
   { mode: 'match', animals: 3, rounds: 3, name: 'Drag each snack to the animal who eats it' },
@@ -59,10 +67,15 @@ export const FOOD_UNITS: Record<Food, { one: string; many: string }> = {
 };
 export const countedFood = (food: Food, n: number) => FOOD_UNITS[food][n === 1 ? 'one' : 'many'];
 
-/** Overlapping hit areas still select the closest body, within the same forgiving radius. */
-export function nearestFriend(points: { x: number; y: number }[], x: number, y: number): number {
+/** Overlapping hit areas still select the closest body, within the same forgiving radius (any distance for a touch anywhere). */
+export function nearestFriend(
+  points: { x: number; y: number }[],
+  x: number,
+  y: number,
+  within = 114,
+): number {
   let closest = -1;
-  let distance = 114;
+  let distance = within;
   points.forEach((p, i) => {
     const d = Math.hypot(p.x - x, p.y - y);
     if (d <= distance) {
@@ -72,6 +85,14 @@ export function nearestFriend(points: { x: number; y: number }[], x: number, y: 
   });
   return closest;
 }
+
+/**
+ * Lap's one big animal: how many friends stand on the meadow after `eaten` snacks. The second walks in after her second
+ * snack and the third after her fourth, so all three are there for the last two of six.
+ */
+export const friendsAfter = (eaten: number, animals = 3) => Math.min(animals, 1 + Math.floor(Math.max(0, eaten) / 2));
+/** The one big animal is drawn nearly twice the size of the others while it is alone, and eases down as they arrive. */
+export const BIG_SCALE = 1.1;
 
 /** An invitation in free play, never during eating or in a question, and never counted as help. */
 export const shouldNudge = (mode: SnackMode, idle: number, busy: boolean, finished: boolean) =>

@@ -24,6 +24,8 @@ import {
   countedFood,
   eaterOf,
   farBarnAt,
+  friendsAfter,
+  BIG_SCALE,
   FAVORITE,
   FOOD_WORDS,
   FRIEND_HIT,
@@ -171,6 +173,8 @@ class AnimalSnack implements Game {
   /** The feeding spot the snacks sit in: blanket, trough, tub or bowl. */
   private readonly spot = new Graphics();
   private readonly bubble = new Container();
+  /** Lap's level 1: a layer over the whole screen, under the animals, so a touch anywhere feeds the nearest. */
+  private readonly meadow = new Container();
   private readonly glow = new Graphics();
   private view: View;
   private wrongs = 0;
@@ -188,6 +192,8 @@ class AnimalSnack implements Game {
     this.glow.eventMode = 'none';
     this.decor.eventMode = 'none';
     this.spot.eventMode = 'none';
+    this.meadow.eventMode = this.plan.oneBig ? 'static' : 'none';
+    if (this.plan.oneBig) onTap(this.meadow, (e) => this.anywhere(e), { cooldown: 350 });
     // In a sound question the bubble is a speaker: tapping it plays the clue again (free, never a hint).
     onTap(
       this.bubble,
@@ -200,7 +206,7 @@ class AnimalSnack implements Game {
     this.bubble.eventMode = 'none';
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
     this.bell.visible = this.plan.mode === 'count';
-    ctx.stage.addChild(this.decor, this.spot, this.bubble, this.glow, this.bell);
+    ctx.stage.addChild(this.meadow, this.decor, this.spot, this.bubble, this.glow, this.bell);
     this.showScene(this.scene);
   }
 
@@ -236,8 +242,13 @@ class AnimalSnack implements Game {
     this.backdrop?.resize(v);
     this.drawDecor(v);
     this.drawSpot(v);
+    this.meadow.hitArea = new Rectangle(0, 0, v.w, v.h);
     const xs = friendXs(this.friends.length, v.w);
-    this.friends.forEach((f, i) => f.node.position.set(xs[i], friendFeet(v.h)));
+    const scale = this.plan.oneBig && this.friends.length === 1 ? BIG_SCALE : FRIEND_SCALE;
+    this.friends.forEach((f, i) => {
+      f.node.position.set(xs[i], friendFeet(v.h));
+      f.node.scale.set(scale);
+    });
     const loose = this.snacks.filter((s) => !s.eaten);
     const fx = snackXs(loose.length, v.w);
     loose.forEach((s, i) => {
@@ -484,11 +495,18 @@ class AnimalSnack implements Game {
       this.ctx.untrack(f.node);
       f.node.destroy({ children: true });
     }
-    for (const name of names) {
-      const node = new Critter(CRITTERS[name]);
-      node.scale.set(FRIEND_SCALE);
-      node.hitArea = new Circle(0, FRIEND_HIT.y, FRIEND_HIT.r);
-      const f: Friend = { name, node };
+    for (const name of names) this.friends.push(this.makeFriend(name));
+    // Animals made after the shell's resize (every round) would otherwise wait at the corner for a snack tray to place them.
+    this.resize(this.view);
+  }
+
+  private makeFriend(name: CritterName): Friend {
+    const node = new Critter(CRITTERS[name]);
+    node.scale.set(FRIEND_SCALE);
+    node.hitArea = new Circle(0, FRIEND_HIT.y, FRIEND_HIT.r);
+    const f: Friend = { name, node };
+    if (this.plan.oneBig) onTap(node, (e) => this.anywhere(e), { cooldown: 350 });
+    else
       onTap(
         node,
         (e) => {
@@ -506,12 +524,45 @@ class AnimalSnack implements Game {
         },
         { cooldown: 350 },
       );
-      this.ctx.track(node);
-      this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.spot));
-      this.friends.push(f);
-    }
-    // Animals made after the shell's resize (every round) would otherwise wait at the corner for a snack tray to place them.
-    this.resize(this.view);
+    this.ctx.track(node);
+    this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.spot));
+    return f;
+  }
+
+  /** Lap's level 1: a touch anywhere goes to the nearest animal on the meadow, however far away. */
+  private anywhere(e: { global: { x: number; y: number } }) {
+    if (this.finished || !this.friends.length) return;
+    this.idle = 0;
+    const p = this.ctx.stage.toLocal(e.global);
+    const i = nearestFriend(
+      this.friends.map((f) => ({ x: f.node.x, y: f.node.y + FRIEND_HIT.y * f.node.scale.y })),
+      p.x,
+      p.y,
+      Infinity,
+    );
+    if (i >= 0) void this.tapFriend(this.friends[i]);
+  }
+
+  /** The next friend walks in from the right edge with its call, and the big animal eases down to make room. */
+  private async walkIn(name: CritterName) {
+    const v = this.view;
+    const f = this.makeFriend(name);
+    f.node.position.set(v.w + 160, friendFeet(v.h));
+    this.friends.push(f);
+    const xs = friendXs(this.friends.length, v.w);
+    await Promise.all(
+      this.friends.map((g, i) => {
+        this.ctx.tw.kill(g.node);
+        this.ctx.tw.kill(g.node.scale);
+        return Promise.all([
+          this.ctx.tw.to(g.node, { x: xs[i] }, { duration: 0.9, ease: ease.inOutSine }),
+          this.ctx.tw.to(g.node.scale, { x: FRIEND_SCALE, y: FRIEND_SCALE }, { duration: 0.9 }),
+        ]);
+      }),
+    );
+    const voice = VOICE[name];
+    if (voice) sfx.animal(voice);
+    f.node.cheer();
   }
 
   /** Snacks at the feeding spot: tappable on the float and count levels, draggable for matching. */
@@ -546,11 +597,11 @@ class AnimalSnack implements Game {
     const mode = this.plan.mode;
     if (mode === 'munch' || mode === 'float' || mode === 'match') {
       if (this.index > 0) return void this.finale();
-      this.setFriends(this.round.animals);
+      this.setFriends(this.plan.oneBig ? this.round.animals.slice(0, 1) : this.round.animals);
       if (mode !== 'munch') this.refill();
       this.busy = false;
       return this.ctx.instruct(
-        mode === 'munch' ? 'snack.munch' : mode === 'float' ? 'snack.float' : 'snack.match',
+        this.plan.oneBig ? 'snack.big' : mode === 'munch' ? 'snack.munch' : mode === 'float' ? 'snack.float' : 'snack.match',
       );
     }
     if (this.index >= this.rounds.length) return void this.finale();
@@ -667,8 +718,10 @@ class AnimalSnack implements Game {
       node.destroy({ children: true });
       void this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[FAVORITE[f.name]!] });
       this.eatenCount++;
+      if (this.eatenCount >= this.plan.rounds) return void this.finale();
+      const want = friendsAfter(this.eatenCount, this.round.animals.length);
+      if (this.plan.oneBig && want > this.friends.length) await this.walkIn(this.round.animals[this.friends.length]);
       this.busy = false;
-      if (this.eatenCount >= this.plan.rounds) void this.finale();
       return;
     }
     if (mode !== 'who') {
