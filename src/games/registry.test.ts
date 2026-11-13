@@ -182,11 +182,20 @@ describe('game registry', () => {
     }
   });
 
-  it('places Color Garden tap entry first without renumbering existing levels or pins', () => {
+  it('places Color Garden tap entries first without renumbering existing levels or pins', () => {
     const g = GAMES.find((g) => g.id === 'color-garden')!;
     expect(g.bands).toContain('lap');
-    expect(g.entryLevels).toEqual([9]);
-    expect(g.levels('lap').order).toEqual([9]);
+    expect(g.entryLevels).toEqual([9, 10]);
+    // Lap opens with level 10's one big fruit, then level 9's four.
+    const lap = g.levels('lap');
+    expect(levelsInOrder(lap)).toEqual([10, 9]);
+    expect(
+      nextLevel(
+        10,
+        [0, 1].map(() => ({ at: 0, level: 10, misses: 0, hints: 0, seconds: 1 })),
+        lap,
+      ),
+    ).toBe(9);
     const toddler = g.levels('toddler');
     expect(toddler.order).toEqual([9, 1, 2, 3, 4, 5]);
     expect(
@@ -199,6 +208,8 @@ describe('game registry', () => {
     for (const level of [1, 2, 3, 4, 5])
       expect(nextLevel(landing(level, toddler, g.entryLevels), [], toddler)).toBe(level);
     expect(landing(9, g.levels('preschool'), g.entryLevels)).toBe(3);
+    // A saved 10 carried into toddler (a birthday) starts toddler at its own first level.
+    expect(landing(10, toddler, g.entryLevels)).toBe(9);
     expect(g.levels('preschool')).toEqual({ min: 3, max: 8 });
     expect(g.levels('prek')).toEqual({ min: 4, max: 8 });
   });

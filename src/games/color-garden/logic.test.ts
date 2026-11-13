@@ -3,9 +3,41 @@ import { FRUIT_FOR } from '../../art/props';
 import { RAINBOW } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, PLANS } from './logic';
+import {
+  basketAt,
+  basketWidth,
+  BIG_LEVEL,
+  deal,
+  DROP_ABOVE,
+  LEVELS,
+  nextToSort,
+  planFor,
+  PLANS,
+} from './logic';
+import { firstLevel, levelsInOrder } from '../../progress/difficulty';
 
 describe('Color Garden', () => {
+  it('level 10 opens lap with one big fruit at a time, the two colors taking turns; toddler still starts at 9', () => {
+    const plan = planFor(BIG_LEVEL);
+    expect(plan).toMatchObject({ big: true, tap: true, fruit: true, colors: 2 });
+    expect(firstLevel(LEVELS.lap!, [9, BIG_LEVEL])).toBe(BIG_LEVEL);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 9]);
+    expect(firstLevel(LEVELS.toddler!, [9, BIG_LEVEL])).toBe(9);
+    for (const band of ['toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    for (let seed = 1; seed <= 100; seed++) {
+      const { colors, items, kinds } = deal(new Rng(seed), plan);
+      expect(items).toHaveLength(plan.items);
+      for (let i = 1; i < items.length; i++) expect(items[i]).not.toBe(items[i - 1]);
+      for (const c of colors) expect(items.filter((i) => i === c)).toHaveLength(plan.items / 2);
+      // Each is the fruit that gives its color away.
+      items.forEach((c, i) => expect(kinds[i]).toBe(FRUIT_FOR[c as (typeof RAINBOW)[number]]));
+      // The ghost finger's order sends each to its own basket.
+      const baskets = colors.map((key) => ({ key }));
+      expect(nextToSort([{ key: items[0] }], baskets)?.basket.key).toBe(items[0]);
+    }
+  });
+
   it('gives every basket something to catch, and only things that belong in a basket', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 100; seed++) {

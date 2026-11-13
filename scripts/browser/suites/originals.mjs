@@ -979,17 +979,60 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
     for (const level of !only || only === 'garden'
-      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9])
+      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
       : []) {
-      if (level === 6 || level === 9) await portrait(true);
+      if (level === 6 || level >= 9) await portrait(true);
       await launch('color-garden', level);
       await page.waitForTimeout(400);
       if (level === 9) {
         assert.equal(await page.evaluate(() => neo.scene.game.plan.tap), true, 'Level 9 is a tap entry');
         await screenshot('color-garden-9-portrait');
       }
+      if (level === 10) {
+        assert.equal(await page.evaluate(() => neo.scene.game.plan.big), true, 'Level 10 is one big fruit');
+        await screenshot('color-garden-10-portrait');
+      }
       const baskets = await page.evaluate(async () => {
         const g = neo.scene.game;
+        if (g.plan.big) {
+          // One big fruit shows; a touch on the sky, a basket, the tree or the grass hops it to its own basket, and the next grows.
+          const shown = () => g.items.filter((i) => i.view.visible);
+          if (g.items.length !== 6 || g.baskets.length !== 2 || shown().length !== 1)
+            throw new Error('Garden big deal');
+          const first = g.items[0];
+          await kit.sleep(400);
+          const r = first.view.getBounds();
+          // Logical size: global bounds over the stage's scale.
+          const size = Math.min(r.width, r.height) / g.catcher.worldTransform.a;
+          if (size < 150) throw new Error(`Big fruit too small: ${size}`);
+          const v = g.view;
+          const at = (x, y) => {
+            const p = g.catcher.toGlobal({ x, y });
+            kit.tap(p.x, p.y);
+          };
+          const spots = [
+            () => at(v.w * 0.85, 40),
+            () => kit.tapOn(g.baskets[1], 0, -40),
+            () => kit.tapOn(first.view, 0, 0),
+            () => at(v.w * 0.3, v.h * 0.7),
+          ];
+          const targets = g.items.map((i) => ({
+            view: i.view,
+            basket: g.baskets.find((b) => b.key === i.key),
+          }));
+          for (let n = 0; n < 6; n++) {
+            const before = g.items.length;
+            spots[n % spots.length]();
+            await kit.until(() => g.items.length === before - 1);
+            if (g.items.length && shown().length !== 1) throw new Error('The next fruit did not grow');
+            await kit.sleep(350);
+          }
+          await kit.until(() => g.sorted === 6);
+          if (g.misses || g.hints) throw new Error('Garden big is not free exploration');
+          for (const { view, basket } of targets)
+            if (view.parent !== basket.inside) throw new Error('Big fruit hopped to another color');
+          return 0;
+        }
         if (g.plan.tap) {
           if (g.items.length !== 4 || g.baskets.length !== 2) throw new Error('Garden tap deal');
           for (const i of g.items) {
@@ -1051,11 +1094,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await screenshot(`color-garden-${level}`);
       await finished('color-garden');
       assert.deepEqual(await score('color-garden'), baskets > 1 ? [2, 1] : [0, 0], `garden ${level} score`);
-      if (level === 6 || level === 9) await portrait(false);
+      if (level === 6 || level >= 9) await portrait(false);
       log(
-        level === 9
-          ? 'Color Garden 9: rapid taps, own baskets, inert repeated/basket taps, zero misses/hints, saved score and sticker passed'
-          : `Color Garden ${level}: dragging into baskets, crowded edges, wrong baskets, glow hint, saved score and sticker passed`,
+        level === 10
+          ? 'Color Garden 10: one big fruit, touches on sky, basket, tree and grass each hop it home, the next grows, zero misses/hints, saved score and sticker passed'
+          : level === 9
+            ? 'Color Garden 9: rapid taps, own baskets, inert repeated/basket taps, zero misses/hints, saved score and sticker passed'
+            : `Color Garden ${level}: dragging into baskets, crowded edges, wrong baskets, glow hint, saved score and sticker passed`,
       );
     }
 

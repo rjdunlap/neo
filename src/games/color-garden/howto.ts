@@ -26,6 +26,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Tap any fruit. It hops into its own color basket and the pet names its color. Every choice works.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'One big fruit grows on the tree. Touch anywhere: it hops into its own color basket, the pet names its color, and the next fruit grows.',
+    },
   ],
   finish: 'The round ends when everything is in a basket.',
 };

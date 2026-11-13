@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.color-garden': ['The color garden!'],
 
+  'garden.big': ['Touch the garden! The fruit hops to its color basket!'],
   'garden.tap': ['Tap a fruit! It hops to its color basket!'],
   'garden.start': ['Put each one in the basket that matches!'],
   'garden.wrong': ['That one is {color}. Find the {color} basket!'],
