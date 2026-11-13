@@ -37,7 +37,7 @@ const BODY_R = 62;
 /** Level 9's one big monster, about 300 units across its fur. */
 const BIG_SCALE = 2.3;
 /** Level 9's kept pictures, small along the top. */
-const SHELF_SCALE = 0.24;
+const SHELF_SCALE = 0.3;
 
 const soundLine = (letter: string) => `sound.${letter}` as LineId;
 
