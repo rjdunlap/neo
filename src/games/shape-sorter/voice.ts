@@ -3,6 +3,7 @@ export const VOICE = {
   'game.shape-sorter': ['Shapes!'],
   'shape.start': ['Put the shapes in the box!'],
   'shape.tap.start': ['Tap a shape!', 'Tap a shape, in it goes!'],
+  'shape.tap.lap': ['Tap anywhere, in it goes!'],
   'shape.find.start': ['Listen to the clue, then put that shape in the box.'],
   'shape.find.clue.circle': ['Find the shape with no corners.'],
   'shape.find.clue.square': ['Find the shape with four equal sides.'],
