@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { SCRIPT } from '../../content/voice-script';
+import { bouncyLaunch } from './index';
+import { firstLevel, landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
+  LEVELS,
+  MEADOW_LEVEL,
+  MEADOW_PLAN,
+  MEADOW_RANGE,
+  meadowLandings,
   cloudAt,
   cloudCount,
   NEAR_FAR,
@@ -355,5 +363,53 @@ describe('Planet Hop, level 12', () => {
       for (let i = 0; i < PADS; i++)
         expect(judge(planFor(3), padAt(i), i, undefined, undefined, CLOUDS.padWidth)).toBe('yes');
     });
+  });
+});
+
+describe('level 13, the flower meadow (lap)', () => {
+  it('opens lap before level 1; no other band reaches it; the other levels keep their plans', () => {
+    expect(planFor(MEADOW_LEVEL)).toBe(MEADOW_PLAN);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([MEADOW_LEVEL, 1]);
+    expect(firstLevel(LEVELS.lap!)).toBe(MEADOW_LEVEL);
+    expect(stepLevel(MEADOW_LEVEL, 1, LEVELS.lap!)).toBe(1);
+    expect(stepLevel(MEADOW_LEVEL, -1, LEVELS.lap!)).toBe(MEADOW_LEVEL);
+    // An entry level: carried into an older band (a birthday) it starts that band's first level, not its hardest.
+    expect(bouncyLaunch.entryLevels).toContain(MEADOW_LEVEL);
+    for (const band of ['toddler', 'preschool'] as const)
+      expect(landing(MEADOW_LEVEL, LEVELS[band]!, bouncyLaunch.entryLevels)).toBe(
+        levelsInOrder(LEVELS[band]!)[0],
+      );
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(MEADOW_LEVEL);
+    for (let level = 1; level <= 6; level++) expect(planFor(level).mode).not.toBe('meadow');
+    expect(SCRIPT['launch.anywhere']).toBeDefined();
+  });
+
+  it('every landing is right and asks for no pull', () => {
+    for (const f of [0, 0.3, 0.97]) expect(judge(MEADOW_PLAN, f, 0)).toBe('yes');
+    expect(pullToTake(MEADOW_PLAN, 0, [])).toBe(0);
+  });
+
+  it('five landings on the grass, one in each fifth, so the flowers stand apart', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const spots = meadowLandings(new Rng(seed), MEADOW_PLAN.shots);
+      expect(spots).toHaveLength(MEADOW_PLAN.shots);
+      for (const f of spots) {
+        expect(f).toBeGreaterThanOrEqual(MEADOW_RANGE.min);
+        expect(f).toBeLessThanOrEqual(MEADOW_RANGE.max);
+      }
+      const sorted = spots.slice().sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i++) expect(sorted[i] - sorted[i - 1]).toBeGreaterThanOrEqual(0.1);
+    }
+    // Seeded: the same seed plants the same meadow, and the order differs between seeds.
+    expect(meadowLandings(new Rng(7))).toEqual(meadowLandings(new Rng(7)));
+    const orders = new Set(
+      Array.from({ length: 20 }, (_, s) =>
+        meadowLandings(new Rng(s + 1))
+          .map((f) => Math.floor(f * 5))
+          .join(),
+      ),
+    );
+    expect(orders.size).toBeGreaterThan(1);
   });
 });

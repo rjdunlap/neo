@@ -134,7 +134,7 @@ describe('game registry', () => {
     expect(g.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);
     expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 7, order: [3, 4, 7, 5] });
-    expect(g.levels('lap')).toEqual({ min: 1, max: 1 });
+    expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
     for (const level of [4, 5, 7, 6, 9])
@@ -146,7 +146,7 @@ describe('game registry', () => {
 
   it('places Bouncy Launch Near or far (8) before the star level for toddler and preschool as an entry', () => {
     const g = gameById('bouncy-launch')!;
-    expect(g.entryLevels).toEqual([8]);
+    expect(g.entryLevels).toEqual([8, 13]);
     expect(stepLevel(2, 1, g.levels('toddler'))).toBe(8);
     expect(stepLevel(8, 1, g.levels('toddler'))).toBe(3);
     expect(stepLevel(2, 1, g.levels('preschool'))).toBe(8);
@@ -155,7 +155,7 @@ describe('game registry', () => {
     // A toddler or preschooler saved at 8 who has a birthday starts the older band at its easiest level, not its hardest.
     expect(landing(8, g.levels('prek'), g.entryLevels)).toBe(3);
     expect(landing(8, g.levels('school'), g.entryLevels)).toBe(4);
-    expect(landing(8, g.levels('lap'), g.entryLevels)).toBe(1);
+    expect(landing(8, g.levels('lap'), g.entryLevels)).toBe(13);
     for (const level of [1, 2, 3]) expect(landing(level, g.levels('toddler'), g.entryLevels)).toBe(level);
     for (const level of [2, 3, 4]) expect(landing(level, g.levels('preschool'), g.entryLevels)).toBe(level);
   });

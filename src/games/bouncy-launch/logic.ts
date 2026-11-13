@@ -7,7 +7,17 @@ import type { BandLevels } from '../../progress/difficulty';
  * the ladder asks for a particular landing spot.
  */
 export type LaunchMode =
-  'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict' | 'friend' | 'planet' | 'between' | 'nearfar';
+  | 'tap'
+  | 'free'
+  | 'star'
+  | 'number'
+  | 'compare'
+  | 'predict'
+  | 'friend'
+  | 'planet'
+  | 'between'
+  | 'nearfar'
+  | 'meadow';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -25,8 +35,20 @@ export const PLANS: LaunchPlan[] = [
   { mode: 'predict', shots: 4, name: 'Watch a shown pull and predict which cloud the pet will reach' },
 ];
 
+/**
+ * Level 13, Flower meadow (lap's opening): a touch anywhere bounces the pet, and each landing leaves a flower, so the
+ * meadow fills because she touched. 13 is the next clear ID (10 and 11 are unused ids that fall back to level 1).
+ */
+export const MEADOW_LEVEL = 13;
+export const MEADOW_PLAN: LaunchPlan = {
+  mode: 'meadow',
+  shots: 5,
+  name: 'Touch anywhere: the pet bounces, and each landing leaves a flower',
+};
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  // Lap opens on the flower meadow, then the tap-the-spring level; no other band lists 13.
+  lap: { min: 1, max: MEADOW_LEVEL, order: [MEADOW_LEVEL, 1] },
   // Level 8, Near or far, is an easy entry: two big clouds before the star level's single small one.
   toddler: { min: 1, max: 8, order: [1, 2, 8, 3] },
   preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
@@ -70,6 +92,7 @@ const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([
   [NEAR_FAR_LEVEL, NEAR_FAR_PLAN],
   [BETWEEN_LEVEL, BETWEEN_PLAN],
   [PLANET_LEVEL, PLANET_PLAN],
+  [MEADOW_LEVEL, MEADOW_PLAN],
 ]);
 export const planFor = (level: number) => PLANS_BY_ID[level] ?? PLANS[0];
 
@@ -116,6 +139,22 @@ export function betweenTriples(rng: Rng, rounds = 3): BetweenTriple[] {
     const out = rng.shuffle(BETWEEN_TRIPLES.slice()).slice(0, rounds);
     if (out.every((t, i) => i === 0 || t.mid !== out[i - 1].mid)) return out;
   }
+}
+
+/** The flower meadow's landings stay on this stretch of grass. */
+export const MEADOW_RANGE = { min: 0.06, max: 0.96 } as const;
+
+/**
+ * Where the flower meadow's landings come down: one in each fifth of the grass (a little seeded jitter), in a seeded
+ * order, so the five flowers stand apart and the meadow fills from all over rather than in a row.
+ */
+export function meadowLandings(rng: Rng, shots = 5): number[] {
+  const w = (MEADOW_RANGE.max - MEADOW_RANGE.min) / shots;
+  const spots = Array.from({ length: shots }, (_, i) => {
+    const f = MEADOW_RANGE.min + (i + 0.5) * w + rng.range(-0.15, 0.15) * w;
+    return Math.round(f * 1000) / 1000;
+  });
+  return rng.shuffle(spots);
 }
 
 /** Landing clouds, numbered 1 to 5 from nearest to farthest. */
@@ -221,6 +260,7 @@ export function judge(
   // A prediction is an observation, rather than an accuracy test: every chosen answer gets to see its result.
   if (
     plan.mode === 'tap' ||
+    plan.mode === 'meadow' ||
     plan.mode === 'free' ||
     plan.mode === 'predict' ||
     plan.mode === 'planet' ||
@@ -257,6 +297,7 @@ export function pullToTake(
 ): number {
   switch (plan.mode) {
     case 'tap':
+    case 'meadow':
       return 0;
     case 'free':
       // Short, long, middle, longer: a bigger pull goes farther, so the pulls are seen to differ.
