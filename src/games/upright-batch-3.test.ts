@@ -68,12 +68,29 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
   });
 
   it('Pyramid Solitaire: every card and button fit at each level', () => {
-    for (const level of [1, 2, 3, 4, 5, 6]) {
+    for (const level of [1, 2, 3, 4, 5, 6, 7]) {
       const plan = pyramidPlan(level),
         shelf = 'shelf' in plan ? plan.shelf : 0,
         l = pyramidLayout(v, plan.rows, shelf);
       // Level 6's shelf row stands under the pyramid, its five open cards counted with the rest.
       expect(l.cards).toHaveLength((plan.rows * (plan.rows + 1)) / 2 + shelf);
+      if (level === 7) {
+        // Seven rows may close up on a short phone (94 apart there), so each row is checked as the strip it shows: a
+        // covered row its top `gap` units (at least 64), the open bottom row whole, card by card.
+        const gap = l.cards[1].y - l.cards[0].y;
+        expect(gap).toBeGreaterThanOrEqual(64);
+        const strips = Array.from({ length: 6 }, (_, row) => {
+          const first = l.cards[(row * (row + 1)) / 2],
+            end = l.cards[(row * (row + 1)) / 2 + row];
+          return box(`row ${row + 1}`, first.x - 50, first.y - 50, end.x - first.x + 100, gap);
+        });
+        check(v, [
+          ...strips,
+          ...l.cards.slice(21).map((p) => square('card', p, 100)),
+          ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
+        ]);
+        continue;
+      }
       check(v, [
         ...l.cards.map((p) => square('card', p, 100)),
         ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
@@ -114,7 +131,7 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
 describe('Pyramid Solitaire sideways', () => {
   it('six rows fit the 1024 × 768 area: cards inside, a covered strip with its corner index, buttons below the cards', () => {
     for (const v of [computeView(1024, 768), computeView(844, 390), computeView(1366, 1024)]) {
-      for (const level of [1, 2, 3, 4, 5, 6]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 7]) {
         const plan = pyramidPlan(level),
           rows = plan.rows,
           shelf = 'shelf' in plan ? plan.shelf : 0,
@@ -155,6 +172,23 @@ describe('Pyramid Solitaire sideways', () => {
         if (level === 5) expect(gap).toBeGreaterThanOrEqual(64);
         const bottom = Math.max(...l.cards.map((c) => c.y + 50));
         expect(bottom).toBeLessThanOrEqual(l.status.y - 12);
+        if (level === 7) {
+          // Seven rows: the buttons stand in a column left of the pyramid (under Home, above the guide), so the rows
+          // are at least 64 apart and every covered strip is a grown-up target.
+          expect(gap).toBeGreaterThanOrEqual(64);
+          const x0 = Math.min(...l.cards.map((c) => c.x)) - 50,
+            y0 = l.cards[0].y - 50;
+          check(v, [
+            box('pyramid', x0, y0, Math.max(...l.cards.map((c) => c.x)) + 50 - x0, bottom - y0),
+            ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
+          ]);
+          for (const b of l.buttons) expect(b.x + 82 + 12).toBeLessThanOrEqual(x0);
+          // The bottom row is open at the start: its seven cards stand whole, side by side.
+          const row = l.cards.slice(21);
+          for (let k = 1; k < row.length; k++) expect(row[k].x - row[k - 1].x).toBeGreaterThanOrEqual(100);
+          expect(l.status.y + 20).toBeLessThanOrEqual(v.h);
+          continue;
+        }
         for (const b of l.buttons) {
           expect(b.y - 50).toBeGreaterThan(l.status.y);
           expect(b.y + 50).toBeLessThanOrEqual(v.h);
@@ -162,5 +196,17 @@ describe('Pyramid Solitaire sideways', () => {
         }
       }
     }
+  });
+  it('seven rows upright on the 768 × 1024 area: inside it, cards side by side and covered strips at least 64', () => {
+    const v = computeView(768, 1024, NO_INSETS, true),
+      l = pyramidLayout(v, 7);
+    const gap = l.cards[1].y - l.cards[0].y;
+    expect(gap).toBeGreaterThanOrEqual(64);
+    expect(l.cards[2].x - l.cards[1].x).toBeGreaterThanOrEqual(100);
+    for (const c of l.cards) {
+      expect(c.x - 50).toBeGreaterThanOrEqual(0);
+      expect(c.x + 50).toBeLessThanOrEqual(v.w);
+    }
+    for (const b of l.buttons) expect(b.y + 50).toBeLessThanOrEqual(v.h);
   });
 });

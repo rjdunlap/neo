@@ -48,7 +48,7 @@ describe('Pyramid Solitaire', () => {
     expect(at(4, 4)).toBe(14);
   });
   it('every seeded deal has a legal clearing route with valid ranks and alternatives supported', () => {
-    for (let level = 1; level <= 6; level++)
+    for (let level = 1; level <= 7; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           solve = solver(p);
@@ -107,7 +107,7 @@ describe('Pyramid Solitaire', () => {
     for (let mask = 0; mask <= fullMask(3); mask++) expect(solve(mask) !== null).toBe(reachable(mask));
   });
   it('the deal dial lands each level in its band over 200 seeds, every deal from one rng clearing', () => {
-    for (let level = 1; level <= 6; level++) {
+    for (let level = 1; level <= 7; level++) {
       let inBand = 0;
       for (let seed = 1; seed <= 200; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
@@ -173,7 +173,7 @@ describe('Pyramid Solitaire', () => {
   it('level 4 is six rows of 21 cards in one 21-bit mask, reaching at most 71 positions', () => {
     expect(planFor(4).rows).toBe(6);
     expect(fullMask(6)).toBe(2 ** 21 - 1);
-    expect(planFor(9)).toBe(planFor(6));
+    expect(planFor(9)).toBe(planFor(7));
     for (let seed = 1; seed <= 100; seed++) {
       const p = makePuzzle(4, new Rng(seed)),
         seen = new Set<number>();
@@ -200,7 +200,7 @@ describe('Pyramid Solitaire', () => {
     // With 2 still present the top has two covers: no lift.
     expect(liftable(lift, remove(fullMask(3), [3, 4]), 1)).toEqual([]);
     expect(moves(lift, remove(fullMask(3), [3, 4]))).toEqual([[5]]);
-    for (const level of [1, 2, 3, 4, 6])
+    for (const level of [1, 2, 3, 4, 6, 7])
       for (let seed = 1; seed <= 50; seed++) {
         const p = makePuzzle(level, new Rng(seed));
         expect(p.lift).toBeUndefined();
@@ -277,5 +277,21 @@ describe('Pyramid Solitaire', () => {
       if (route.some((m) => m.includes(0) && m.some((i) => i >= 15))) topWithShelf++;
     }
     expect(topWithShelf).toBeGreaterThan(0);
+  });
+  it('level 7 is the classic pyramid: seven rows of 28 cards in one 28-bit mask, strict rule, a real pack, at most 146 positions', () => {
+    expect(planFor(7).rows).toBe(7);
+    expect(fullMask(7)).toBe(2 ** 28 - 1);
+    for (let seed = 1; seed <= 200; seed++) {
+      const p = makePuzzle(7, new Rng(seed));
+      expect(p.ranks).toHaveLength(28);
+      expect(p.lift).toBeUndefined();
+      expect(p.shelf).toBeUndefined();
+      expect(startMask(p)).toBe(fullMask(7));
+      for (let r = 1; r <= 13; r++)
+        expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
+      // No stock: the top card opens only when everything else has gone, so it is always a king.
+      expect(p.ranks[0]).toBe(13);
+      expect(positions(p)).toBeLessThanOrEqual(146);
+    }
   });
 });
