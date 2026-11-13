@@ -155,7 +155,7 @@ These are easier than levels that exist, or fall between them, so they are place
 Each is sized for one session. Slices that add a level are built in level order so saved ids stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (the `early` bath loop stops at level 8 and expects `[1, 0]` or `[0, 0]`), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).
 
 1. **Words and guards** (built 2026-10-17, branch `claude/splish-words-guards`). The bounded how-to lines and the generic test; the phrase table; naming the part as it goes clean; the free-play nudge; the larger brush on levels 1–2. Tier: typecheck, the game's rule tests and the how-to test; then `EARLY_ONLY=bath` once (it plays 1–8; one repeat is acceptable for the recorded level-5 flake).
-2. **Hint accounting** (decision 5). Tier: rule tests and the same `EARLY_ONLY=bath` run.
+2. **Hint accounting** (decision 5; claimed 2026-11-13, branch `claude/splish-splash-hint-rule`). Tier: rule tests and the same `EARLY_ONLY=bath` run.
 3. **Foam, the shake and bath toys** (ready). Tier: rule tests, one landscape and one portrait screenshot, `fingerdemo` at level 1.
 4. **Rooms and messes** (ready; a sub-slice per room if needed). Tier: rule tests including the contrast rule, one screenshot per room.
 5. **Friends in the tub** (decision 1; the pig first, then one slice for the rest). Tier: rule tests, a screenshot per friend, `fingerdemo` at levels 1 and 6.
