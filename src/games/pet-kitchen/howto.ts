@@ -70,7 +70,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 10,
       to: 10,
-      text: 'No touch is wrong here: a tap away from a piece just wiggles one, and the friends eat when the plates are equal.',
+      text: 'No touch is wrong here, and the friends eat when the plates are equal. For a baby, a tap anywhere deals the piece and the pieces come one at a time; for a toddler, a tap away from a piece just wiggles one.',
     },
     {
       to: 4,

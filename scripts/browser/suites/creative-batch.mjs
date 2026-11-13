@@ -344,7 +344,28 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await screenshot(`pet-kitchen-${level}-start`);
         await page.evaluate(async () => {
           const g = neo.scene.game;
-          if (g.plan.mode === 'deal') {
+          if (g.plan.mode === 'deal' && g.lapDeal) {
+            // Level 10 at lap: one piece on the tray at a time, and a touch anywhere on the counter deals it to the
+            // plate with fewer; the next piece comes only after it. A touch while the friends eat only munches.
+            const shown = () => g.pieces.filter((p) => p.plate < 0 && p.node.visible).length;
+            if (shown() !== 1) throw new Error(`Kitchen lap tray shows ${shown()}`);
+            const n = g.pieces.length;
+            for (let i = 0; i < n; i++) {
+              if (i === 1) kit.tapOn(g.pieces.find((p) => p.plate < 0).node);
+              else kit.tap(i % 2 ? neo.view.w - 60 : 60, neo.view.h * 0.3);
+              await kit.sleep(450);
+              const dealt = g.pieces.filter((p) => p.plate >= 0).length;
+              if (dealt !== i + 1) throw new Error(`Kitchen lap touch ${i + 1} dealt ${dealt}`);
+              if (i < n - 1 && shown() !== 1)
+                throw new Error(`Kitchen lap tray shows ${shown()} after ${i + 1}`);
+            }
+            const counts = g.counts();
+            if (counts[0] !== counts[1]) throw new Error(`Kitchen lap plates ${counts}`);
+            kit.tap(neo.view.w / 2, neo.view.h * 0.3);
+            await kit.sleep(150);
+            if (!g.done || g.misses !== 0 || g.hints !== 0)
+              throw new Error(`Kitchen lap deal ${g.done}/${g.misses}/${g.hints}`);
+          } else if (g.plan.mode === 'deal') {
             // Level 10: a touch off every piece wiggles one (free), then each tap deals a piece to the plate with fewer.
             kit.tap(40, neo.view.h * 0.2);
             await kit.sleep(300);
