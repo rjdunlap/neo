@@ -23,6 +23,7 @@ import {
 import {
   LEVELS,
   AMOUNT_WORDS,
+  BIG_LEVEL,
   isBig,
   amountOf,
   CardRound,
@@ -566,6 +567,7 @@ export const moonWindow: GameModule = {
   skills: ['observing', 'moon-appearance', 'matching', 'comparing'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => rangeFor(LEVELS, b),
+  entryLevels: [BIG_LEVEL],
   describeLevel: (l) => moonPlan(l).description,
   music: STYLES.lullaby,
   coplayHint: 'Before {name} presses, ask what the Moon will look like later. Then look together.',
