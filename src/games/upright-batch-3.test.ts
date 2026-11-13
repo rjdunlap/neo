@@ -68,8 +68,12 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
   });
 
   it('Pyramid Solitaire: every card and button fit at each level', () => {
-    for (const level of [1, 2, 3, 4, 5]) {
-      const l = pyramidLayout(v, pyramidPlan(level).rows);
+    for (const level of [1, 2, 3, 4, 5, 6]) {
+      const plan = pyramidPlan(level),
+        shelf = 'shelf' in plan ? plan.shelf : 0,
+        l = pyramidLayout(v, plan.rows, shelf);
+      // Level 6's shelf row stands under the pyramid, its five open cards counted with the rest.
+      expect(l.cards).toHaveLength((plan.rows * (plan.rows + 1)) / 2 + shelf);
       check(v, [
         ...l.cards.map((p) => square('card', p, 100)),
         ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
@@ -110,9 +114,35 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
 describe('Pyramid Solitaire sideways', () => {
   it('six rows fit the 1024 × 768 area: cards inside, a covered strip with its corner index, buttons below the cards', () => {
     for (const v of [computeView(1024, 768), computeView(844, 390), computeView(1366, 1024)]) {
-      for (const level of [1, 2, 3, 4, 5]) {
-        const rows = pyramidPlan(level).rows,
-          l = pyramidLayout(v, rows);
+      for (const level of [1, 2, 3, 4, 5, 6]) {
+        const plan = pyramidPlan(level),
+          rows = plan.rows,
+          shelf = 'shelf' in plan ? plan.shelf : 0,
+          l = pyramidLayout(v, rows, shelf);
+        // Level 6: the shelf's open cards stand whole, apart from the pyramid, the buttons and the round's chrome, and
+        // right of every button so the centered status line runs clear of them.
+        if (shelf) {
+          const spare = l.cards.slice(-shelf);
+          expect(spare).toHaveLength(5);
+          // Sideways the pyramid's rows overlap (a covered strip shows), so it is one box here.
+          const pyramid = l.cards.slice(0, -shelf),
+            x0 = Math.min(...pyramid.map((c) => c.x)) - 50,
+            y0 = Math.min(...pyramid.map((c) => c.y)) - 50;
+          check(v, [
+            box(
+              'pyramid',
+              x0,
+              y0,
+              Math.max(...pyramid.map((c) => c.x)) + 50 - x0,
+              Math.max(...pyramid.map((c) => c.y)) + 50 - y0,
+            ),
+            ...spare.map((p) => square('shelf card', p, 100)),
+            ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
+          ]);
+          for (const c of spare)
+            expect(c.x - 50).toBeGreaterThanOrEqual(Math.max(...l.buttons.map((b) => b.x + 82)) + 12);
+          expect(Math.min(...spare.map((c) => c.y - 50))).toBeGreaterThanOrEqual(60);
+        }
         for (const c of l.cards) {
           expect(c.x - 50).toBeGreaterThanOrEqual(0);
           expect(c.x + 50).toBeLessThanOrEqual(v.w);

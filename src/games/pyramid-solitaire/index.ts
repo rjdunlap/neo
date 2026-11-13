@@ -11,16 +11,18 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   at,
-  covers,
+  countFor,
+  coverList,
   exposed,
-  fullMask,
   liftable,
   makePuzzle,
   moves,
   present,
   rankName,
   remove,
+  shelfStart,
   solver,
+  startMask,
   planFor,
   type Removal,
 } from './logic';
@@ -69,7 +71,7 @@ class PyramidSolitaire implements Game {
   private readonly status = label('', 24, ink);
   constructor(private readonly ctx: GameContext) {
     this.puzzle = makePuzzle(ctx.level, ctx.rng);
-    this.mask = fullMask(this.puzzle.rows);
+    this.mask = startMask(this.puzzle);
     this.solve = solver(this.puzzle);
     for (const g of [this.ground, this.glow, this.heading, this.guide, this.status]) g.eventMode = 'none';
     ctx.stage.addChild(this.ground, this.heading, this.guide, this.status);
@@ -95,7 +97,9 @@ class PyramidSolitaire implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct(this.puzzle.lift ? 'pyramid.lift' : 'pyramid.go');
+    void this.ctx.instruct(
+      this.puzzle.lift ? 'pyramid.lift' : this.puzzle.shelf ? 'pyramid.shelf' : 'pyramid.go',
+    );
   }
   choose(i: number) {
     if (!this.ctx.alive || this.finished || !present(this.mask, i)) return;
@@ -109,7 +113,7 @@ class PyramidSolitaire implements Game {
     if (!exposed(this.puzzle, this.mask, i) && !coverPartner) {
       sfx.tick();
       // The lift hint only when the one card left on it is open, so following it can work.
-      const left = covers(this.puzzle.rows, i).filter((k) => present(this.mask, k));
+      const left = coverList(this.puzzle)[i].filter((k) => present(this.mask, k));
       const oneLeft =
         !!this.puzzle.lift &&
         this.puzzle.ranks[i] !== 13 &&
@@ -257,7 +261,7 @@ class PyramidSolitaire implements Game {
   }
   restart() {
     if (!this.ctx.alive || this.finished) return;
-    this.mask = fullMask(this.puzzle.rows);
+    this.mask = startMask(this.puzzle);
     this.history = [];
     this.settleAll();
     this.selected = -1;
@@ -304,11 +308,23 @@ class PyramidSolitaire implements Game {
     return `${pairs} ${pairs === 1 ? 'pair' : 'pairs'} open${king ? ' · a king can go alone' : ''}`;
   }
   resize(v: View) {
-    const l = pyramidLayout(v, this.puzzle.rows);
+    const l = pyramidLayout(v, this.puzzle.rows, this.puzzle.shelf ?? 0);
     this.ground.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
     this.ground
-      .ellipse(v.w / 2, l.middle, Math.min(380, v.w * 0.45), v.upright ? 330 : v.h * 0.34)
+      .ellipse(l.centre, l.middle, Math.min(380, v.w * 0.45), v.upright ? 330 : v.h * 0.34)
       .fill({ color: cream, alpha: 0.7 });
+    // Level 6: a wooden shelf the spare cards stand on, so they read as their own open row (or column, sideways).
+    const shelf = l.cards.slice(shelfStart(this.puzzle));
+    if (shelf.length) {
+      const xs = shelf.map((c) => c.x),
+        ys = shelf.map((c) => c.y),
+        left = Math.min(...xs) - 62,
+        top = Math.min(...ys) - 62;
+      this.ground
+        .roundRect(left, top, Math.max(...xs) + 62 - left, Math.max(...ys) + 62 - top, 20)
+        .fill(swatch.orange.light)
+        .stroke({ color: swatch.orange.line, width: 4 });
+    }
     this.heading.position.set(v.w / 2, 107);
     this.guide.position.set(v.w / 2, 148);
     this.spots = l.cards;
@@ -333,23 +349,34 @@ class PyramidSolitaire implements Game {
  * Card centers (100-unit squares), the status line and the three 164 × 100 buttons. Upright (chunk 31) the pyramid, status
  * and buttons stand together in the middle of the tall view, the buttons clear of the guide's corner.
  */
-export function pyramidLayout(v: View, rows: number) {
+export function pyramidLayout(v: View, rows: number, shelf = 0) {
   const gapY = v.upright ? 104 : Math.min(104, (v.h - 470) / (rows - 1));
-  const top = v.upright ? Math.max(225, Math.round((v.h - ((rows - 1) * gapY + 330)) / 2)) : 225;
+  // Level 6's shelf: upright a row of open cards under the pyramid; sideways a column at the right, from beside the heading
+  // to above the status line, the pyramid moved left; status and buttons stay centered, right of the guide's corner.
+  const shelfRow = v.upright && shelf ? SHELF_GAP : 0;
+  const top = v.upright ? Math.max(225, Math.round((v.h - ((rows - 1) * gapY + shelfRow + 330)) / 2)) : 225;
+  const centre = v.upright || !shelf ? v.w / 2 : v.w / 2 - 60;
   const cards: { x: number; y: number }[] = [];
   for (let row = 0; row < rows; row++)
     for (let col = 0; col <= row; col++)
-      cards[at(row, col)] = { x: v.w / 2 + (col - row / 2) * 116, y: top + row * gapY };
-  const last = top + (rows - 1) * gapY;
+      cards[at(row, col)] = { x: centre + (col - row / 2) * 116, y: top + row * gapY };
+  const last = top + (rows - 1) * gapY + shelfRow;
+  for (let k = 0; k < shelf; k++)
+    cards[countFor(rows) + k] = v.upright
+      ? { x: v.w / 2 + (k - (shelf - 1) / 2) * 116, y: last }
+      : { x: Math.min(v.w - 62, v.w / 2 + 360), y: 120 + k * 106 };
   const status = { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
   const buttonY = v.upright ? status.y + 100 : v.h - 80;
   return {
     cards,
     status,
     buttons: [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 190, y: buttonY })),
+    centre,
     middle: v.upright ? (top + buttonY) / 2 : v.h * 0.5,
   };
 }
+/** How far below the pyramid's last row the upright shelf row stands (card centers). */
+export const SHELF_GAP = 116;
 
 function icon(seed = 0): Container {
   const c = new Container();

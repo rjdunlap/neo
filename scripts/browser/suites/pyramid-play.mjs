@@ -146,7 +146,7 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
         }
         return lifted;
       });
-      if (level < 5) assert.equal(lifts, 0, 'levels 1-4 never lift a covered card');
+      if (level !== 5) assert.equal(lifts, 0, 'only level 5 lifts a covered card');
       await finished('pyramid-solitaire');
       assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
       if (level === 5)

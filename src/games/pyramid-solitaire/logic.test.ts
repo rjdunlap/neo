@@ -6,6 +6,7 @@ import {
   at,
   bandDistance,
   clearRate,
+  coverList,
   covers,
   dealCandidate,
   exposed,
@@ -16,8 +17,22 @@ import {
   planFor,
   present,
   remove,
+  shelfStart,
   solver,
+  startMask,
 } from './logic';
+
+/** Every position reachable from the full deal by legal removals. */
+function positions(p: Parameters<typeof moves>[0]) {
+  const seen = new Set<number>();
+  const walk = (mask: number) => {
+    if (seen.has(mask)) return;
+    seen.add(mask);
+    for (const move of moves(p, mask)) walk(remove(mask, move));
+  };
+  walk(startMask(p));
+  return seen.size;
+}
 
 describe('Pyramid Solitaire', () => {
   it('requires both covering cards to leave and never wraps rows', () => {
@@ -33,13 +48,13 @@ describe('Pyramid Solitaire', () => {
     expect(at(4, 4)).toBe(14);
   });
   it('every seeded deal has a legal clearing route with valid ranks and alternatives supported', () => {
-    for (let level = 1; level <= 5; level++)
+    for (let level = 1; level <= 6; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           solve = solver(p);
         expect(p).toEqual(makePuzzle(level, new Rng(seed)));
         expect(p.ranks.every((r) => Number.isInteger(r) && r >= 1 && r <= 13)).toBe(true);
-        let mask = fullMask(p.rows);
+        let mask = startMask(p);
         const route = solve(mask)!;
         expect(route).not.toBeNull();
         for (const move of route) {
@@ -58,8 +73,8 @@ describe('Pyramid Solitaire', () => {
           expect(move.every((i) => !present(mask, i))).toBe(true);
         }
         expect(mask).toBe(0);
-        for (const move of moves(p, fullMask(p.rows))) {
-          const after = remove(fullMask(p.rows), move),
+        for (const move of moves(p, startMask(p))) {
+          const after = remove(startMask(p), move),
             rest = solve(after);
           if (rest) expect(rest.reduce((m, step) => remove(m, step), after)).toBe(0);
         }
@@ -92,13 +107,13 @@ describe('Pyramid Solitaire', () => {
     for (let mask = 0; mask <= fullMask(3); mask++) expect(solve(mask) !== null).toBe(reachable(mask));
   });
   it('the deal dial lands each level in its band over 200 seeds, every deal from one rng clearing', () => {
-    for (let level = 1; level <= 5; level++) {
+    for (let level = 1; level <= 6; level++) {
       let inBand = 0;
       for (let seed = 1; seed <= 200; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           rate = clearRate(p);
         expect(p.rows).toBe(planFor(level).rows);
-        expect(solver(p)(fullMask(p.rows))).not.toBeNull();
+        expect(solver(p)(startMask(p))).not.toBeNull();
         if (bandDistance(level, rate) === 0) inBand++;
         // The fallback keeps the closest candidate, never a deal far outside the band.
         expect(bandDistance(level, rate)).toBeLessThan(0.1);
@@ -122,6 +137,9 @@ describe('Pyramid Solitaire', () => {
       const five = clearRate(makePuzzle(5, new Rng(seed)));
       expect(five).toBeGreaterThanOrEqual(0.4);
       expect(five).toBeLessThanOrEqual(0.8);
+      const six = clearRate(makePuzzle(6, new Rng(seed)));
+      expect(six).toBeGreaterThanOrEqual(0.4);
+      expect(six).toBeLessThanOrEqual(0.8);
     }
     expect(CANDIDATES).toBe(40);
   });
@@ -155,7 +173,7 @@ describe('Pyramid Solitaire', () => {
   it('level 4 is six rows of 21 cards in one 21-bit mask, reaching at most 71 positions', () => {
     expect(planFor(4).rows).toBe(6);
     expect(fullMask(6)).toBe(2 ** 21 - 1);
-    expect(planFor(9)).toBe(planFor(5));
+    expect(planFor(9)).toBe(planFor(6));
     for (let seed = 1; seed <= 100; seed++) {
       const p = makePuzzle(4, new Rng(seed)),
         seen = new Set<number>();
@@ -182,7 +200,7 @@ describe('Pyramid Solitaire', () => {
     // With 2 still present the top has two covers: no lift.
     expect(liftable(lift, remove(fullMask(3), [3, 4]), 1)).toEqual([]);
     expect(moves(lift, remove(fullMask(3), [3, 4]))).toEqual([[5]]);
-    for (let level = 1; level <= 4; level++)
+    for (const level of [1, 2, 3, 4, 6])
       for (let seed = 1; seed <= 50; seed++) {
         const p = makePuzzle(level, new Rng(seed));
         expect(p.lift).toBeUndefined();
@@ -212,5 +230,52 @@ describe('Pyramid Solitaire', () => {
     }
     expect(notKing).toBeGreaterThanOrEqual(200 / 3);
     expect(needLift).toBeGreaterThan(0);
+  });
+  it('levels 1-5 deal exactly as before the shelf: the same ranks from the same seeds', () => {
+    // FNV-1a over seeds 1-200's ranks, recorded from origin/main before level 6 (2026-11-12).
+    const recorded = [1654278629, 3490143395, 23608352, 313876289, 2613601815];
+    for (let level = 1; level <= 5; level++) {
+      let h = 2166136261;
+      for (let seed = 1; seed <= 200; seed++) {
+        const p = makePuzzle(level, new Rng(seed));
+        expect(p.shelf).toBeUndefined();
+        expect(startMask(p)).toBe(fullMask(p.rows));
+        for (const r of [...p.ranks, 0]) h = Math.imul(h ^ r, 16777619) >>> 0;
+      }
+      expect(h).toBe(recorded[level - 1]);
+    }
+  });
+  it('the cover list reproduces the pyramid rule card by card, and shelf cards lie under nothing', () => {
+    for (let rows = 1; rows <= 6; rows++) {
+      const p = { rows, ranks: Array<number>((rows * (rows + 1)) / 2).fill(1) };
+      expect(coverList(p)).toEqual(p.ranks.map((_, i) => covers(rows, i)));
+    }
+    const shelf = makePuzzle(6, new Rng(3));
+    expect(shelfStart(shelf)).toBe(15);
+    expect(coverList(shelf).slice(15)).toEqual([[], [], [], [], []]);
+    // No pyramid card lies on a shelf card, so every shelf card is open at the start.
+    expect(
+      coverList(shelf)
+        .flat()
+        .every((k) => k < 15),
+    ).toBe(true);
+    for (let i = 15; i < 20; i++) expect(exposed(shelf, startMask(shelf), i)).toBe(true);
+  });
+  it('level 6 is five rows and a shelf of five, from a real pack, reaching at most 483 positions', () => {
+    expect(planFor(6).rows).toBe(5);
+    let topWithShelf = 0;
+    for (let seed = 1; seed <= 200; seed++) {
+      const p = makePuzzle(6, new Rng(seed));
+      expect(p.ranks).toHaveLength(20);
+      expect(p.shelf).toBe(5);
+      expect(startMask(p)).toBe(2 ** 20 - 1);
+      for (let r = 1; r <= 13; r++)
+        expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
+      expect(positions(p)).toBeLessThanOrEqual(483);
+      // The top card can leave with a spare: some clearing route pairs it with a shelf card.
+      const route = solver(p)(startMask(p))!;
+      if (route.some((m) => m.includes(0) && m.some((i) => i >= 15))) topWithShelf++;
+    }
+    expect(topWithShelf).toBeGreaterThan(0);
   });
 });
