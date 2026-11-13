@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 6, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3–5 |
@@ -20,6 +20,7 @@
 | 3 | This one is hot: find its opposite among three |
 | 4 | Match three pairs of opposites |
 | 5 | Which two are opposites? One pair hides among five pictures |
+| 6 | One big card: a touch anywhere flips it to its opposite, and each flipped picture joins a row (8 cards) |
 
 <!-- end generated -->
 
