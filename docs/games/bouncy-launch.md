@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 13, 1 |
 | toddler | 1, 2, 8, 3 |
 | preschool | 2, 8, 3, 4 |
 | pre-K | 3, 4, 7, 5 |
@@ -26,6 +26,7 @@
 | 8 | Two big clouds: land on the near one or the far one |
 | 9 | Two shown pulls fly; predict where a pull between them lands |
 | 12 | The same pull on a light or a heavy planet: past the flag or before it? |
+| 13 | Touch anywhere: the pet bounces, and each landing leaves a flower |
 
 <!-- end generated -->
 
