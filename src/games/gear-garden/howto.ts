@@ -4,7 +4,7 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Make the flowers spin with a machine of gears.',
   steps: [
-    { from: 1, to: 1, text: 'Tap the machine to turn the handle; the gears turn the flower.' },
+    { from: 1, to: 1, text: 'Tap anywhere to turn the handle; the gears turn the flower.' },
     { from: 2, to: 2, text: 'Drag the loose gear into the gap, then tap to turn.' },
     { from: 3, to: 3, text: 'Pick one of two broken machines, put its gear in the gap and turn.' },
     'The round arrow turns it the other way.',
@@ -14,7 +14,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 1,
       to: 1,
-      text: 'Nothing here is ever wrong; Show a hint turns the handle once by itself and counts as a hint.',
+      text: 'Nothing here is ever wrong and nothing is counted: a tap while a flower blooms rings a bell, and Show a hint turns the handle once by itself.',
     },
     {
       from: 2,

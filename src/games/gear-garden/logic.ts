@@ -158,12 +158,14 @@ export type Step = { kind: 'one'; machine: MachineSpec } | { kind: 'choice'; pai
 export interface Plan {
   level: number;
   name: string;
+  /** Lap's level: a touch anywhere turns the handle, a touch during a bloom is answered, and Show a hint counts nothing. */
+  anywhere: boolean;
 }
 
 export const PLANS: readonly Plan[] = [
-  { level: 1, name: 'Turn a flower: tap two gears until the flower blooms' },
-  { level: 2, name: 'Bridge the gap: put the missing gear in, then turn' },
-  { level: 3, name: 'Two machines: pick one, mend it and see which way the flower turns' },
+  { level: 1, name: 'Turn a flower: tap two gears until the flower blooms', anywhere: true },
+  { level: 2, name: 'Bridge the gap: put the missing gear in, then turn', anywhere: false },
+  { level: 3, name: 'Two machines: pick one, mend it and see which way the flower turns', anywhere: false },
 ];
 
 export const LEVELS: BandLevels = {

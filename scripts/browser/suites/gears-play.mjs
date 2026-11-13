@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished }) {
-  /** Gear Garden: level 1 with a Turn-back and three blooms (0/0); level 3 opening B, a short drop that glides home, a requested hint (the gear goes in, one hint), a portrait screenshot of board B, then every case mended (0/1). */
+  /** Gear Garden: level 1 with a Turn-back, a tap on the garden, an uncounted Show a hint, a tap during the bloom and three blooms (0/0); level 3 opening B, a short drop that glides home, a requested hint (the gear goes in, one hint), a portrait screenshot of board B, then every case mended (0/1). */
   async function gearsPlay() {
     const score = () =>
       page.evaluate(() => {
@@ -73,6 +73,27 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       [2, 0],
       'Turn-back turns back and still counts',
     );
+    // Lap's level: a tap on the garden beside the machine turns it too.
+    await page.evaluate(() => kit.tap(40, window.innerHeight / 2));
+    await settle();
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.machine.progress),
+      3,
+      'a tap on the garden beside the machine turns the handle',
+    );
+    // Show a hint turns the handle once and counts nothing at lap; a tap during the bloom rings.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForFunction(() => neo.scene.game.busy, null, { timeout: 5000 });
+    await page.evaluate(() => kit.tap(40, window.innerHeight / 2));
+    assert.deepEqual(
+      await page.evaluate(() => [
+        neo.scene.game.machine.bloomed,
+        neo.scene.game.heldAt > 0,
+        neo.scene.game.tally.hints,
+      ]),
+      [true, true, 0],
+      'Show a hint blooms the flower without a hint, and a tap during the bloom is answered',
+    );
     await playOut();
     await finished('gear-garden');
     assert.deepEqual(await score(), [0, 0]);
@@ -118,7 +139,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     await finished('gear-garden');
     assert.deepEqual(await score(), [0, 1]);
     log(
-      'Gear Garden 1 and 3: face tap, Turn-back, blooms, B opened, short drop home, still flower, requested hint, portrait, saved score passed',
+      'Gear Garden 1 and 3: face tap, Turn-back, garden tap, uncounted hint, bloom tap, blooms, B opened, short drop home, still flower, requested hint, portrait, saved score passed',
     );
   }
 
