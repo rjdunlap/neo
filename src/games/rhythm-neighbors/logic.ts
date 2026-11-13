@@ -79,6 +79,10 @@ export const KNOCK_ANSWER = 0.45;
 export const TURN_EXCHANGES = 3;
 /** The knock times a frog answers, one croak per knock a beat later. */
 export const answerTimes = (knocks: number[]) => knocks.map((at) => at + KNOCK_ANSWER);
+/** Level 7: a knock counts (and gets its croak) while fewer than eight have; a later one still sounds, uncounted and unanswered. */
+export const knockCounts = (knocks: number) => knocks < KNOCKS;
+/** What the quiet-spell invitation moves: at level 7 the tree, since only knocks move that round on; elsewhere a frog. */
+export const idleInvites = (p: NeighborPlan): 'tree' | 'frog' => (p.knock ? 'tree' : 'frog');
 /** The ending song of level 7, which has no phrases of its own. */
 export const KNOCK_FINALE: Phrase = { call: ['S', 'S'], gaps: ['S', 'L'], voices: [0, 0, 0] };
 
@@ -145,7 +149,7 @@ export const REPLIES: Gap[][] = [...RHYTHMS, ['L', 'L'], ['S', 'L', 'L'], ['L', 
 export const CALLS: Gap[][] = [['S'], ['L'], ['S', 'S'], ['S', 'L'], ['L', 'S'], ['L', 'L']];
 /** Free play finishes by itself after this many frog taps. */
 export const FREE_TAPS = 8;
-/** Seconds without a touch before a frog wiggles at the free levels. */
+/** Seconds without a touch before the idle invitation at the free levels (a frog wiggles; at level 7 the tree knocks). */
 export const IDLE_WIGGLE = 6;
 /** A gap longer than this inside a reply is a thinking pause, not a rhythm: the reply starts over, never a miss (`judgeEcho` rejects such a gap). */
 export const PAUSE_SECONDS = 2.5;

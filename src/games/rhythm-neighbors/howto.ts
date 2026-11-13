@@ -5,7 +5,11 @@ export const HOW_TO: GameHowTo = {
   goal: 'Answer the woodpecker with frog sounds.',
   steps: [
     { to: 2, text: 'Tap the woodpecker to hear its call, then tap frogs to answer.' },
-    { from: 7, to: 7, text: 'Knock on the big tree. A frog answers every knock.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'Tap the big tree, or anywhere but the frog, to knock. A frog answers every knock.',
+    },
     { from: 8, to: 8, text: 'The woodpecker knocks. When the frog glows, tap it once to answer.' },
     {
       from: 9,
