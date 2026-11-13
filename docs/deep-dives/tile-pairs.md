@@ -182,7 +182,7 @@ None of these blocks a slice below.
 2. **Peek** (built). The see-through view, its button, its key and couch control, a how-to step and a voice line; uncounted. New-interaction tier: typecheck, unit tests, one filtered `tilepairs` play at level 5 that peeks, pairs, takes one wrong answer and one hint, a portrait screenshot of the see-through view, `fingerdemo` only if the card's demonstrated action changes, `couchgames` filtered to Tile Pairs if a pad button is mapped, build.
 3. **Two more looks** (built). Seeded picture sets with the distinctness test. Existing-game tier with one screenshot per new look. Queued with slice 4.
 4. **Level 7 *Tall tower · four layers*** (built). New level on the existing interaction: typecheck, rule and registry tests, one browser play of 7, `fingerdemo` at 7. After slice 2.
-5. **Level 8 *Flower friends*.** A rule change: typecheck, rule tests with levels 1–7 unchanged, one filtered play of 8 with a flower-and-other mismatch and a hint, a portrait screenshot, `fingerdemo` at 8, build (voice and how-to change).
+5. **Level 8 *Flower friends*** (built; four flower tiles in the crown pair with any other flower, clear band 0.45–0.9). A rule change: typecheck, rule tests with levels 1–7 unchanged, one filtered play of 8 with a flower-and-other mismatch and a hint, a portrait screenshot, `fingerdemo` at 8, build (voice and how-to change).
 6. **Level 9 *Wide stack · 30 tiles*.** New level on the existing interaction, with the node-budget test: typecheck, rule tests, one browser play of 9, `fingerdemo` at 9.
 
 7. **Harder deals after Peek, and level 10 *Tricky twins*** (second pass). The deal dial's harder bands for levels 3–6, the offline pool script and `pools.ts`, the fair-trap check. Existing interaction with a new level: typecheck, rule tests (bands, pool clears, fair-trap), one browser play of 10, `fingerdemo` at 10. After slice 2. Level 11 *Tricky tower* follows slice 4 as a pool-only addition.
@@ -193,7 +193,7 @@ None of these blocks a slice below.
 12. **Level 14 *Three alike*.** A new interaction: the new-interaction tier as slice 2.
 13. **Levels 15–16 big stacks.** The widened mask and node-budget tests; one browser play of 16 in each orientation.
 
-Slices 1–4 are built (below). Slices 7–8 remain queued as [batch 3](../GAME-BATCHES.md#tile-pairs-3-tricky-deals-and-the-first-lessons). The five decisions stay out of the ready list.
+Slices 1–5 are built (below). Slices 7–8 remain queued as [batch 3](../GAME-BATCHES.md#tile-pairs-3-tricky-deals-and-the-first-lessons). The five decisions stay out of the ready list.
 
 ## What was built in this session
 

@@ -1,7 +1,7 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { prop, type PropKind } from '../../art/props';
-import { shapePath, SHAPES, MORE_SHAPES, type ShapeKind } from '../../art/shapes';
+import { flower, shapePath, SHAPES, MORE_SHAPES, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { nextSpot, routeStep } from '../../couch/focus';
@@ -14,12 +14,16 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  FLOWER,
   LEVELS,
   LOOKS,
+  flowersIn,
   free,
   freeTiles,
   fullMask,
+  isFlower,
   makeBoard,
+  matches,
   pairs,
   peekStacks,
   pickLook,
@@ -33,10 +37,57 @@ import {
 } from './logic';
 
 const SHAPE_ART: readonly string[] = [...SHAPES, ...MORE_SHAPES];
+/**
+ * One of the four flower drawings inside the family's shared frame, a ring of pale pink petals: the frame says
+ * "a flower, so it pairs with any flower", and the four flowers differ in petal count, outline and colour.
+ */
+function flowerArt(n: number) {
+  const g = new Graphics();
+  for (let i = 0; i < 12; i++) {
+    const a = (i * Math.PI * 2) / 12;
+    g.circle(Math.cos(a) * 29, Math.sin(a) * 29, 8);
+  }
+  g.fill(swatch.pink.light).stroke({ width: 2, color: swatch.pink.line });
+  g.circle(0, 0, 27).fill(cream);
+  if (n === 0) flower(g, 25, swatch.red.fill, swatch.red.line);
+  else if (n === 1) {
+    // A daisy: ten thin white petals round a yellow middle.
+    for (const [width, color] of [
+      [11, swatch.white.line],
+      [7, swatch.white.fill],
+    ] as const)
+      for (let i = 0; i < 10; i++) {
+        const a = (i * Math.PI * 2) / 10;
+        g.moveTo(Math.cos(a) * 8, Math.sin(a) * 8)
+          .lineTo(Math.cos(a) * 21, Math.sin(a) * 21)
+          .stroke({ width, color, cap: 'round' });
+      }
+    g.circle(0, 0, 8).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+  } else if (n === 2) {
+    // A tulip: a three-pointed cup on a short stem.
+    g.moveTo(0, 6).lineTo(0, 24).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+    g.poly([-15, -18, -7, -9, 0, -21, 7, -9, 15, -18, 15, -2, 9, 8, -9, 8, -15, -2])
+      .fill(swatch.purple.fill)
+      .stroke({ width: 3, color: swatch.purple.line, join: 'round' });
+  } else {
+    // Four round petals in a cross, with a white middle.
+    for (let i = 0; i < 4; i++) {
+      const a = (i * Math.PI) / 2;
+      g.circle(Math.cos(a) * 12, Math.sin(a) * 12, 11);
+    }
+    g.fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
+    g.circle(0, 0, 7).fill(swatch.white.fill).stroke({ width: 2, color: swatch.blue.line });
+  }
+  return g;
+}
 /** One picture 64–72 units across, in its look's colour; a container so Peek can scale it. */
 function pictureArt(kind: number, look = 0) {
-  const { art, color } = LOOKS[look][kind];
   const c = new Container();
+  if (isFlower(kind)) {
+    c.addChild(flowerArt(kind - FLOWER));
+    return c;
+  }
+  const { art, color } = LOOKS[look][kind];
   if (SHAPE_ART.includes(art))
     c.addChild(
       shapePath(new Graphics(), art as ShapeKind, 30)
@@ -108,12 +159,15 @@ class TilePairs implements Game {
   private sinceMatch = 0;
   /** Removed tiles still lifting away: drawn until their fade ends, never tappable. */
   private readonly leaving = new Set<Container>();
+  /** Level 8's flower family is in play, so the help line says any two flowers pair. */
+  private readonly flowers: boolean;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.touch = !ctx.couch;
     this.tiles = makeBoard(ctx.level, ctx.rng);
     this.look = pickLook(ctx.rng);
+    this.flowers = flowersIn(planFor(ctx.level)) > 0;
     this.mask = fullMask(this.tiles);
     this.ring.eventMode = this.tally.eventMode = this.help.eventMode = 'none';
     this.peekPictures.eventMode = 'none';
@@ -133,7 +187,9 @@ class TilePairs implements Game {
     this.rebuild();
   }
   start() {
-    void this.ctx.instruct(this.touch ? 'tile-pairs.go' : 'couch.how.tile-pairs');
+    void this.ctx.instruct(
+      this.touch ? (this.flowers ? 'tile-pairs.go-flowers' : 'tile-pairs.go') : 'couch.how.tile-pairs',
+    );
   }
 
   private snapshot(): Snapshot {
@@ -221,7 +277,9 @@ class TilePairs implements Game {
         : 'All remaining pictures are visible'
       : this.route === null
         ? 'No clearing route · Undo or Shuffle keeps you playing'
-        : 'Clear the top · open a left or right side';
+        : this.flowers
+          ? 'Any two flowers pair · clear the top · open a side'
+          : 'Clear the top · open a left or right side';
     const g = this.ring.clear();
     const outline = (i: number, color: number, width: number) => {
       if (!present(this.mask, i)) return;
@@ -265,11 +323,12 @@ class TilePairs implements Game {
     }
     const a = this.selected;
     this.selected = null;
-    if (this.tiles[a].kind !== this.tiles[i].kind) {
+    if (!matches(this.tiles[a].kind, this.tiles[i].kind)) {
       this.misses++;
       this.sinceMatch++;
       sfx.boing();
-      void this.ctx.say('tile-pairs.mismatch');
+      const flowerMiss = isFlower(this.tiles[a].kind) || isFlower(this.tiles[i].kind);
+      void this.ctx.say(flowerMiss ? 'tile-pairs.flowers' : 'tile-pairs.mismatch');
       if (this.sinceMatch >= 2) this.askForHint();
       this.draw();
       return;

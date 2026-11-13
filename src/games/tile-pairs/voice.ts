@@ -4,8 +4,12 @@ export const VOICE = {
   'tile-pairs.go': [
     'Tap two tiles with the same picture. Their tops must be clear, and a left or right side must be open. Clear the stack!',
   ],
+  'tile-pairs.go-flowers': [
+    'Tap two tiles with the same picture, or any two flowers. Their tops must be clear, and a left or right side must be open. Clear the stack!',
+  ],
   'tile-pairs.blocked': ['That tile needs a clear top and an open left or right side. Try a bright tile.'],
   'tile-pairs.mismatch': ['Those pictures are different. Look for two that are the same.'],
+  'tile-pairs.flowers': ['Flowers go with flowers. Any two flowers make a pair, even different ones.'],
   'tile-pairs.stuck': [
     'That choice left no clearing route. Undo can bring it back, or Shuffle lays the remaining tiles in open rows.',
   ],
