@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
@@ -16,7 +16,9 @@ import { letterPicture } from '../../art/letter-pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  BIG_LEVEL,
   LEVELS,
+  bigLetters,
   fits,
   FIRST_WORDS,
   makeQuestions,
@@ -32,6 +34,10 @@ import { rangeFor } from '../../progress/difficulty';
 
 const FURS: ColorName[] = ['purple', 'teal', 'orange', 'pink', 'blue', 'green', 'red', 'yellow'];
 const BODY_R = 62;
+/** Level 9's one big monster, about 300 units across its fur. */
+const BIG_SCALE = 2.3;
+/** Level 9's kept pictures, small along the top. */
+const SHELF_SCALE = 0.3;
 
 const soundLine = (letter: string) => `sound.${letter}` as LineId;
 
@@ -183,6 +189,11 @@ class WordMonsters implements Game {
   /** The next question's ask, waiting behind the right monster's sound (U7 R4); `askGen` drops a stale wait. */
   private unasked: Question | null = null;
   private askGen = 0;
+  /** Level 9: the monsters who wake, one per touch, and the pictures they leave on the shelf. */
+  private bigQueue: string[] = [];
+  private readonly shelf = new Container();
+  private flying: Container | null = null;
+  private destroyed = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -193,7 +204,22 @@ class WordMonsters implements Game {
       ctx.view,
     );
     this.top.addChild(this.slots, this.slotLetters);
-    ctx.stage.addChild(this.backdrop, this.top, this.crowd);
+    ctx.stage.addChild(this.backdrop, this.top, this.crowd, this.shelf);
+    if (this.plan.big) {
+      this.bigQueue = bigLetters(ctx.rng, this.plan.rounds);
+      // The whole screen wakes the monster: any touch makes it say its sound.
+      onTap(
+        this.crowd,
+        () => {
+          if (this.finished) return;
+          const m = this.monsters[0];
+          // Between monsters a touch still answers: the one on screen wiggles.
+          if (this.busy || !m) return void m?.speak();
+          void this.bigTouch(m);
+        },
+        { cooldown: 300 },
+      );
+    }
   }
 
   get question(): Question | undefined {
@@ -210,6 +236,12 @@ class WordMonsters implements Game {
   }
 
   start() {
+    if (this.plan.big) {
+      this.wakeBig();
+      this.busy = false;
+      void this.ctx.instruct('monster.big');
+      return;
+    }
     if (this.plan.mode === 'play') {
       this.setMonsters(this.questions[0].monsters, true);
       this.busy = false;
@@ -223,11 +255,46 @@ class WordMonsters implements Game {
     this.view = v;
     this.backdrop.resize(v);
     this.top.position.set(v.w / 2, v.h * 0.3);
+    if (this.plan.big) this.crowd.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.layoutMonsters();
+    this.layoutShelf();
+  }
+
+  /** Level 9: where the big monster stands. */
+  private bigSpot() {
+    return { x: this.view.w / 2, y: this.view.h * 0.62 };
+  }
+
+  /** Level 9: where the `i`th kept picture sits along the top, clear of the corners. */
+  private shelfSpot(i: number) {
+    const v = this.view;
+    const xs = spread(this.plan.rounds, 150, v.w - 150, 110);
+    return { x: xs[i], y: Math.max(90, v.h * 0.14) };
+  }
+
+  /** Level 9: a kept picture's scale, smaller when the shelf is narrow so six never overlap (a picture is about 220 wide). */
+  private shelfScale() {
+    const xs = spread(this.plan.rounds, 150, this.view.w - 150, 110);
+    return Math.min(SHELF_SCALE, ((xs[1] ?? 0) - xs[0] || 110) / 260);
+  }
+
+  private layoutShelf() {
+    const k = this.shelfScale();
+    this.shelf.children.forEach((p, i) => {
+      // A picture still flying up is left to its tween.
+      if (p === this.flying) return;
+      p.position.copyFrom(this.shelfSpot(i));
+      p.scale.set(k);
+    });
   }
 
   private layoutMonsters() {
     const v = this.view;
+    if (this.plan.big) {
+      // Only the monster on screen is kept here; the one stepping away has already left the list.
+      for (const m of this.monsters) m.position.copyFrom(this.bigSpot());
+      return;
+    }
     for (const m of this.monsters) if (m.placed) m.position.copyFrom(this.slotAt(m.slot));
     const loose = this.monsters.filter((m) => !m.placed);
     const xs = spread(loose.length, 150, v.w - 40, 190);
@@ -245,6 +312,14 @@ class WordMonsters implements Game {
    */
   autotouch(): TouchIntent | null {
     // Free play never starts a question, so its monsters belong to the first.
+    // Level 9: the ghost finger touches the grass beside the big monster, since anywhere wakes it.
+    if (this.plan.big)
+      return this.busy || this.finished || !this.monsters[0]
+        ? null
+        : {
+            tap: { on: this.crowd, x: this.view.w * 0.18, y: this.view.h * 0.9 },
+            receiver: this.crowd,
+          };
     const q = this.question ?? (this.plan.mode === 'play' ? this.questions[0] : undefined);
     if (this.busy || this.finished || this.unasked || !q) return null;
     const m = nextMonster(
@@ -263,7 +338,79 @@ class WordMonsters implements Game {
   }
 
   destroy() {
+    this.destroyed = true;
     for (const m of this.monsters) m.drag?.destroy();
+  }
+
+  // Level 9: one big monster ---------------------------------------------------------------
+
+  /** The next big monster pops up in the middle, wiggling awake, because she touched. */
+  private wakeBig() {
+    const letter = this.bigQueue[this.taps];
+    const woke = this.taps;
+    if (!letter) return;
+    const m = new Monster(letter, true, FURS[(this.taps * 3) % FURS.length]);
+    m.eventMode = 'none';
+    this.ctx.track(m);
+    this.crowd.addChild(m);
+    this.monsters = [m];
+    m.position.copyFrom(this.bigSpot());
+    m.scale.set(0);
+    void this.ctx.tw
+      .to(m.scale, { x: BIG_SCALE, y: BIG_SCALE }, { duration: 0.4, ease: ease.outBack })
+      .then(() => {
+        // A monster already touched has wiggled; only an untouched one wiggles awake.
+        if (!m.destroyed && this.taps === woke) m.speak();
+      });
+  }
+
+  /**
+   * A touch anywhere: the big monster says its sound and its first-word picture pops out above it, then settles on the
+   * shelf along the top and stays; the monster steps away and the next one wakes. The sound never holds the next
+   * monster; the last is heard out before the finish.
+   */
+  private async bigTouch(m: Monster) {
+    this.busy = true;
+    this.taps++;
+    m.speak();
+    sfx.pop(4 + (m.letter.charCodeAt(0) % 6));
+    const said = this.ctx.say(soundLine(m.letter));
+    const p = letterPicture(m.letter.toUpperCase());
+    const from = this.bigSpot();
+    // Above the monster's head, but never above the shelf on a short view.
+    p.position.set(from.x, Math.max(this.shelfSpot(0).y + 110, from.y - BODY_R * BIG_SCALE - 120));
+    this.flying = p;
+    p.scale.set(0);
+    this.shelf.addChild(p);
+    const to = this.shelfSpot(this.shelf.children.length - 1);
+    await this.ctx.tw.to(p.scale, { x: 0.5, y: 0.5 }, { duration: 0.35, ease: ease.outBack });
+    await this.ctx.tw.wait(0.25);
+    if (this.destroyed) return;
+    sfx.whoosh();
+    const k = this.shelfScale();
+    void this.ctx.tw.to(p.scale, { x: k, y: k }, { duration: 0.4 });
+    await this.ctx.tw.to(p, { x: to.x, y: to.y }, { duration: 0.4, ease: ease.inOutSine });
+    if (this.destroyed) return;
+    this.flying = null;
+    this.layoutShelf();
+    // The monster that spoke steps out to the side; the next wakes because she touched.
+    const side = this.taps % 2 ? 1 : -1;
+    void this.ctx.tw
+      .to(m, { x: m.x + side * (this.view.w / 2 + 260) }, { duration: 0.35, ease: ease.inQuad })
+      .then(() => {
+        this.ctx.untrack(m);
+        m.destroy({ children: true });
+      });
+    if (this.taps >= this.plan.rounds) {
+      this.monsters = [];
+      await said;
+      if (!this.destroyed) void this.end();
+      return;
+    }
+    this.wakeBig();
+    await this.ctx.tw.wait(0.4);
+    if (this.destroyed || this.finished) return;
+    this.busy = false;
   }
 
   private setMonsters(letters: string[], both: boolean) {
@@ -615,6 +762,7 @@ export const wordMonsters: GameModule = {
   skills: ['letter-sounds', 'phonics', 'vocabulary'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [BIG_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,

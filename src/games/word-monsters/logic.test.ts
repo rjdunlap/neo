@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
+import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   ALPHABET,
+  BIG_LEVEL,
+  BIG_PLAN,
+  LEVELS,
+  bigLetters,
+  planFor,
   END_WORDS,
   fits,
   FIRST_WORDS,
@@ -17,6 +23,30 @@ import {
 } from './logic';
 
 describe('Word Monsters', () => {
+  it('level 9 opens lap with one big monster per touch, six different letters, each leaving a picture', () => {
+    expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
+    expect(BIG_PLAN).toMatchObject({ mode: 'play', big: true, rounds: 6, choices: 1 });
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1]);
+    expect(stepLevel(BIG_LEVEL, 1, LEVELS.lap!)).toBe(1);
+    // A saved 9 carried into toddler starts toddler at its own level 1; no other band reaches 9.
+    expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    // The ladder's levels 1–8 are unchanged.
+    expect(LEVELS.school).toEqual({ min: 5, max: PLANS.length });
+    for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+    expect(SCRIPT['monster.big']).toBeDefined();
+    for (let seed = 1; seed <= 200; seed++) {
+      const letters = bigLetters(new Rng(seed));
+      expect(letters).toHaveLength(BIG_PLAN.rounds);
+      expect(new Set(letters).size).toBe(BIG_PLAN.rounds);
+      for (const l of letters) {
+        expect(FIRST_WORDS[l], l).toBeDefined();
+        expect(SCRIPT[`sound.${l}` as keyof typeof SCRIPT], l).toBeDefined();
+      }
+    }
+  });
+
   it('has a spoken sound for every letter', () => {
     for (const l of ALPHABET) expect(SCRIPT[`sound.${l}` as keyof typeof SCRIPT], l).toBeDefined();
     expect(SCRIPT['monster.end']).toBeDefined();

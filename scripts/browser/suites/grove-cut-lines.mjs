@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
  * monster's line, and in `pond-typing`, `word-glue` and `owl-walk` a typed word's, joined pair's or flipped card's
  * line, never holds the next tap. Each line is stretched to at least 4 s in the page, so the next friend, card,
  * question, bubble, ask or stone tap opening sooner shows the line no longer gates it; the round's last line is
- * still heard out. GROVE_ONLY=night|nightbig|safaribig|opp|monsters|pond|glue|owl plays one game.
+ * still heard out. GROVE_ONLY=night|nightbig|safaribig|opp|monsters|monstersbig|pond|glue|owl plays one game.
  */
 export function createSuite({ page, launch, finished, screenshot, log, ready, chooserEnter, errors }) {
   async function groveCutLines() {
@@ -420,6 +420,83 @@ export function createSuite({ page, launch, finished, screenshot, log, ready, ch
           )} ms into a 4 s sound, its ask waiting; an early tap said it (no miss); the guide said it; the last heard out`,
       );
     }
+    if (!only || only === 'monstersbig') {
+      // Word Monsters level 9 (lap): one big monster; a touch anywhere (sky, grass, the monster, beside it) makes it say
+      // its sound under a 4 s line, its picture stays on the shelf and the next monster wakes; a touch while it wakes
+      // only wiggles it; six different letters leave six pictures, nothing is a miss, and the last sound is heard out.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('word-monsters', 9);
+      await stretch(['sound.*']);
+      await page.waitForTimeout(600);
+      await screenshot('word-monsters-9-start-portrait');
+      const big = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.plan.big || g.plan.rounds !== 6) throw new Error('Word Monsters big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.crowd.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.3),
+          () => at(v.w * 0.85, v.h * 0.92),
+          () => at(g.monsters[0].x, g.monsters[0].y),
+          () => at(v.w * 0.2, v.h * 0.6),
+          () => at(v.w * 0.9, v.h * 0.45),
+          () => at(v.w / 2, v.h * 0.35),
+        ];
+        const out = { opens: [], sizes: [], shown: [], letters: [], extra: [] };
+        for (let n = 0; n < 6; n++) {
+          await kit.until(() => !g.busy && g.taps === n && g.monsters.length === 1, 15000);
+          await kit.sleep(250);
+          const m = g.monsters[0];
+          const b = m.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.crowd.worldTransform.a);
+          out.shown.push(g.monsters.filter((x) => !x.destroyed).length);
+          out.letters.push(m.letter);
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 5) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch while the picture flies and the next monster wakes counts no extra monster.
+            await kit.sleep(300);
+            at(v.w * 0.5, v.h * 0.85);
+            await kit.until(() => g.taps === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.taps);
+          }
+        }
+        out.pictures = g.shelf.children.length;
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      if (big.sizes.some((s) => s < 250)) throw new Error(`Big monster too small: ${JSON.stringify(big)}`);
+      if (big.shown.some((n) => n !== 1)) throw new Error(`More than one monster: ${JSON.stringify(big)}`);
+      if (new Set(big.letters).size !== 6) throw new Error(`Letters repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((t, i) => t !== i + 1))
+        throw new Error(`A between touch woke a monster: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 2500))
+        throw new Error(`The sound held the next monster: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last sound was cut: ${JSON.stringify(big)}`);
+      if (big.pictures !== 6 || big.misses || big.hints)
+        throw new Error(`Word Monsters big not free: ${JSON.stringify(big)}`);
+      await screenshot('word-monsters-9-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('word-monsters');
+      assert.deepEqual(await score('word-monsters'), [0, 0]);
+      log(
+        `Word Monsters 9: six big monsters woken by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join(
+            '/',
+          )} ms under 4 s sounds, sizes ${big.sizes.map(Math.round).join('/')}, six pictures kept, the last heard out, no misses`,
+      );
+    }
+
     if (!only || only === 'pond') {
       // Level 3 (words and phrases), a couch game: a typed word's `pt.said` starts and the next bubble opens at once.
       await page.evaluate(() =>
