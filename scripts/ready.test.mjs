@@ -21,7 +21,7 @@ describe("READY's Next ten", () => {
 
   it('names every line file NNN-<slug>.md and gives it one bold-titled line', () => {
     const bad = [];
-    for (const f of readdirSync(nextDir)) {
+    for (const f of readdirSync(nextDir).filter((f) => !f.startsWith('.'))) {
       const text = NAME.test(f) ? readFileSync(join(nextDir, f), 'utf8').trim() : '';
       if (!text.startsWith('**') || text.includes('\n\n')) bad.push(f);
     }
