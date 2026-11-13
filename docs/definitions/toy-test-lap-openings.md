@@ -101,12 +101,12 @@ The puppets' hellos in `puppet-stage` are speech (the device's voice, pitched), 
 
 Two games fail question 1 or 4, in the order they should be taken:
 
-1. `rhythm-neighbors`: at level 7 a touch anywhere knocks the tree, and the idle invitation is the tree's.
+1. `rhythm-neighbors`: at level 7 a touch anywhere knocks the tree, and the idle invitation is the tree's. *Built 2026-11-12 (PR #1581): a touch on the pond, grass or sky knocks the tree at once, a knock after the eighth still sounds, and the six-second invitation knocks the tree; the table row above is the state before.*
 2. `song-maker`: a lap level that answers anywhere and starts with one big spot on the loop.
 
 ### Found while reading (not part of the five questions)
 
-- `rhythm-neighbors`: the comment on the idle wiggle calls it "an invitation"; at level 7 it invites a tap on the frog, which `play()` returns from before anything is counted.
+- `rhythm-neighbors` (fixed 2026-11-12, PR #1581: the level 7 invitation now knocks the tree): the comment on the idle wiggle calls it "an invitation"; at level 7 it invites a tap on the frog, which `play()` returns from before anything is counted.
 - `jelly-drums`: the spoken line at level 10 is the free-play line, "Tap the jellies to make music!", while one jelly stands; the card's line for the level says touch anywhere.
 - `puppet-stage`: `touchFloor` returns silently when no puppet is parked. Two can stand and a lowered one is parked only when its 0.3 s descent ends, so a third fast touch in a row inside that time could find none. Read from the code, not seen.
 - `song-maker`: a lap player's twelve taps include the ones that put a jelly out, so a round can end with few jellies lit; the tree house button needs two.

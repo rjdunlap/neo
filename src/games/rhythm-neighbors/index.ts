@@ -29,6 +29,8 @@ import {
   callEnded,
   callPhrase,
   finaleEvents,
+  idleInvites,
+  knockCounts,
   makePhrases,
   nextNote,
   planFor,
@@ -167,12 +169,12 @@ class RhythmNeighbors implements Game {
       this.bird.hitArea = new Circle(0, -30, 110);
     }
     onTap(this.bird, () => {
-      if (this.done) return;
-      this.touched();
       if (this.plan.knock) {
         this.knock();
         return;
       }
+      if (this.done) return;
+      this.touched();
       if (this.plan.call) {
         this.callKnock();
         return;
@@ -180,6 +182,8 @@ class RhythmNeighbors implements Game {
       this.bump(this.bird, 1.08);
       this.demonstrate();
     });
+    // Level 7: a touch on the pond, grass or sky knocks the tree too; the frog and the tree sit above this and keep their own taps.
+    if (this.plan.knock) onTap(this.bg, () => this.knock());
     for (let i = 0; i < this.plan.voices; i++) {
       const node = new Container();
       node.addChild(frog(i));
@@ -217,12 +221,16 @@ class RhythmNeighbors implements Game {
     this.lastTouch = this.clock;
     this.wiggled = false;
   }
-  /** Level 7: a knock anywhere on the tree gets exactly one croak a beat later; nothing is judged. */
+  /**
+   * Level 7: a touch on the tree or anywhere off the frog knocks at once and gets exactly one croak a beat later; nothing is
+   * judged. A knock after the eighth, while the ending waits or plays, still sounds and is neither counted nor answered.
+   */
   private knock() {
-    if (this.knocks >= KNOCKS) return;
+    if (this.done && !this.finale) return;
+    this.touched();
+    this.sound(-1);
+    if (!knockCounts(this.knocks)) return;
     this.knocks++;
-    sfx.knock();
-    this.bump(this.bird, 1.04);
     this.events.push({ at: this.clock + KNOCK_ANSWER, voice: 0, note: -1 });
     this.events.sort((a, b) => a.at - b.at);
     if (this.knocks === KNOCKS) void this.ctx.tw.wait(KNOCK_ANSWER + 0.5).then(() => this.finish());
@@ -514,7 +522,6 @@ class RhythmNeighbors implements Game {
     }
     while (this.ripples.length && this.ripples[0].t > 1.2) this.ripples.shift();
     this.pause();
-    // Free play: after a quiet spell a frog wiggles and croaks once, an invitation that is never a hint and never counted.
     if (this.plan.call && !this.busy && !this.done && callEnded(this.callTimes, this.clock))
       this.answerCall();
     if (
@@ -524,10 +531,15 @@ class RhythmNeighbors implements Game {
       !this.wiggled &&
       this.clock - this.lastTouch > IDLE_WIGGLE
     ) {
+      // After a quiet spell, an invitation that is never a hint and never counted: at level 7 the tree knocks and bumps (only
+      // knocks move that round on), elsewhere a frog wiggles and croaks once.
       this.wiggled = true;
-      this.wiggle = 0.6;
-      this.wiggleFrog = (this.wiggleFrog + 1) % this.frogs.length;
-      this.sound(this.wiggleFrog);
+      if (idleInvites(this.plan) === 'tree') this.sound(-1);
+      else {
+        this.wiggle = 0.6;
+        this.wiggleFrog = (this.wiggleFrog + 1) % this.frogs.length;
+        this.sound(this.wiggleFrog);
+      }
     }
     if (this.wiggle > 0) {
       this.wiggle = Math.max(0, this.wiggle - dt);

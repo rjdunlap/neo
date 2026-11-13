@@ -118,7 +118,15 @@ it('clears a reply at a thinking pause before the rhythm rule would call it wron
   expect(judgeEcho(['S'], [0, PAUSE_SECONDS + 0.01])).toBe(false);
 });
 
-import { KNOCKS, KNOCK_ANSWER, KNOCK_FINALE, TURN_EXCHANGES, answerTimes } from './logic';
+import {
+  KNOCKS,
+  KNOCK_ANSWER,
+  KNOCK_FINALE,
+  TURN_EXCHANGES,
+  answerTimes,
+  idleInvites,
+  knockCounts,
+} from './logic';
 it('level 7: every knock gets exactly one answer inside 0.6 s, and eight knocks finish', () => {
   expect(makePhrases(7, new Rng(1))).toEqual([]);
   const knocks = Array.from({ length: KNOCKS }, (_, i) => i * 0.3);
@@ -132,6 +140,13 @@ it('level 7: every knock gets exactly one answer inside 0.6 s, and eight knocks 
   expect(KNOCKS).toBe(8);
   expect(planFor(7).free).toBe(true);
   expect(finaleEvents(KNOCK_FINALE, 1, 0).end).toBeGreaterThanOrEqual(4);
+});
+it('level 7: eight knocks count, a later knock is heard and uncounted, and the idle invitation is the tree', () => {
+  const counted = Array.from({ length: KNOCKS + 3 }, (_, i) => knockCounts(i)).filter(Boolean);
+  expect(counted).toHaveLength(KNOCKS);
+  expect(knockCounts(KNOCKS)).toBe(false);
+  expect(idleInvites(planFor(7))).toBe('tree');
+  for (const l of [1, 2, 8, 9]) expect(idleInvites(planFor(l))).toBe('frog');
 });
 it('level 8: three different calls, each answered by a single frog tap with no timing or misses to judge', () => {
   for (let seed = 1; seed <= 100; seed++) {

@@ -591,19 +591,35 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!(await kit.until(() => !g.busy, 10000))) throw new Error('Rhythm still busy');
           };
           if (g.plan.knock) {
-            // Level 7: each knock on the tree gets exactly one croak; eight knocks end the round on their own.
-            let croaks = 0;
+            // Level 7: the quiet-spell invitation knocks the tree (not the frog); a frog tap croaks and counts nothing; a touch on
+            // the tree or on the sky off the frog knocks at once and gets exactly one croak; eight knocks end the round on their
+            // own, and a ninth while the ending waits still knocks, uncounted and unanswered.
+            let croaks = 0,
+              knocks = 0;
             const was = g.sound.bind(g);
             g.sound = (v) => {
               if (v === 0) croaks++;
+              if (v < 0) knocks++;
               was(v);
             };
+            await kit.sleep(6600);
+            if (knocks !== 1 || croaks !== 0 || g.knocks !== 0)
+              throw new Error(`Idle invitation ${knocks}/${croaks}/${g.knocks}`);
+            const sky = () => kit.tapOn(g.frogs[0], 0, -400);
+            kit.tapOn(g.frogs[0]);
+            await kit.sleep(250);
+            if (croaks !== 1 || g.knocks !== 0) throw new Error(`Frog tap ${croaks}/${g.knocks}`);
             for (let i = 0; i < 8; i++) {
-              kit.tapOn(g.bird);
+              const before = knocks;
+              if (i % 2) sky();
+              else kit.tapOn(g.bird);
+              if (knocks !== before + 1) throw new Error(`Touch ${i} did not knock at once`);
               await kit.sleep(250);
             }
+            sky();
+            if (knocks !== 10 || g.knocks !== 8) throw new Error(`Ninth knock ${knocks}/${g.knocks}`);
             if (!(await kit.until(() => g.done, 3000))) throw new Error('Eight knocks did not end the round');
-            if (croaks < 8 || g.misses !== 0 || g.hints !== 0)
+            if (croaks < 9 || g.misses !== 0 || g.hints !== 0)
               throw new Error(`Knock answers ${croaks}/${g.misses}/${g.hints}`);
             return;
           }
