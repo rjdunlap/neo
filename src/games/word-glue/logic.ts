@@ -456,6 +456,8 @@ export interface Pt {
 /** A picture card's side, and the made thing's size when it appears. */
 export const CARD = 150;
 export const MADE = 210;
+/** Level 4: the one big picture, and the thing it makes, at the table's centre. */
+export const BIG = 300;
 /** The shelf's things along the top. */
 export const SHELF = 84;
 /** How far from a picture's centre a drop still lands on it. */

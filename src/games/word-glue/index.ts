@@ -15,6 +15,7 @@ import { cardArt, iconArt, madeArt, partArt, type Made } from './art';
 import {
   LEVELS,
   applyHint,
+  BIG,
   BIG_LEVEL,
   bigJoin,
   canDrag,
@@ -43,8 +44,6 @@ import {
 const MADE_ART = 160;
 /** A tap at level 1 lifts the picture but barely moves it: a release this close to home is a tap. */
 const TAP_SLOP = 60;
-/** Level 4: the one big picture, and the thing it makes, are about 300 across. */
-const BIG = 300;
 
 /** Each level's authored first round leads its first round of a session (and every demonstration). */
 const authoredShown = new Set<number>();
@@ -231,7 +230,8 @@ class WordGlue implements Game {
     if (!pair) return;
     sfx.sparkle();
     if (this.level === 1 || this.big) this.hintPulse = 2.5;
-    void this.ctx.say('wordglue.hint');
+    // Level 4 has one picture on screen: the hint says what to do, touch anywhere.
+    void this.ctx.say(this.big ? 'wordglue.instruct.big' : 'wordglue.hint');
   }
 
   /* -------------------------------------------------------------------------------------------- */

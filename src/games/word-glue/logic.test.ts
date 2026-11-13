@@ -6,6 +6,7 @@ import { SCRIPT } from '../../content/voice-script';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   applyHint,
+  BIG,
   BIG_LEVEL,
   bigJoin,
   LEVELS,
@@ -328,6 +329,16 @@ describe('the table layout', () => {
   };
   const sq = (c: { x: number; y: number }, w: number) => ({ x: c.x - w / 2, y: c.y - w / 2, w, h: w });
   for (const [name, v] of Object.entries(VIEWS)) {
+    it(`${name}, level 4: the big picture is inside the view, below the shelf and clear of the corners`, () => {
+      const r = sq(tableCentre(v, 2), BIG);
+      const home = { x: 0, y: 0, w: 130, h: 230 };
+      expect(r.x).toBeGreaterThanOrEqual(0);
+      expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+      expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+      expect(overlaps(r, petCorner(v.h))).toBe(false);
+      expect(overlaps(r, home)).toBe(false);
+      for (const p of shelfLayout(v, 5)) expect(overlaps(sq(p, SHELF), r)).toBe(false);
+    });
     for (const n of [2, 3, 4]) {
       it(`${name}, ${n} pictures: big, inside the view, clear of the corners and apart`, () => {
         const pts = tableLayout(v, n);
