@@ -9,6 +9,9 @@ export interface Puzzle {
   lift?: true;
   /** Level 6's shelf: this many open spare cards after the pyramid's, none of them covered. */
   shelf?: number;
+  /** Level 8's spare columns (after Giza): this many columns of spare cards after the pyramid's, each card covered by the
+   * one in front of it, so only a column's front card is open. */
+  columns?: number;
 }
 /**
  * Each plan's band for the deal dial: the exact chance that someone lifting a uniformly random legal removal every turn
@@ -33,6 +36,17 @@ export const PLANS = [
   { rows: 5, name: 'The shelf: five open spare cards', band: { min: 0.4, max: 0.8 }, shelf: 5 },
   // The classic pyramid: seven rows, twenty-eight cards from one pack, no stock, strict rule (no cover lift).
   { rows: 7, name: 'The classic pyramid: twenty-eight cards, seven rows', band: { min: 0.3, max: 0.7 } },
+  // Five rows and three columns of two spare cards, strict rule: only a column's front card is open, after Giza. Measured
+  // 2026-11-13 over 300 seeds on the plain walk (no column step): undialled the median candidate clears 72% of random play
+  // and 258 hold a dead end; dialled, all 300 land in the band (median 50%), at most 300 positions, at most 3 kings,
+  // slowest deal under 1 ms.
+  {
+    rows: 5,
+    name: 'Three columns: dig into two-card spare columns',
+    band: { min: 0.3, max: 0.7 },
+    columns: 3,
+    depth: 2,
+  },
 ] as const;
 /** How often the generator's backward walk takes a cover-lift step when one is open (level 5 only). */
 export const LIFT_CHANCE = 0.35;
@@ -43,15 +57,22 @@ export const CANDIDATES = 40;
 /** A real pack: no rank more than four times, so the paper version deals as shown and counting a rank is true. */
 export const PACK_LIMIT = 4;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const countFor = (rows: number) => (rows * (rows + 1)) / 2;
 export const fullMask = (rows: number) => (1 << countFor(rows)) - 1;
 /** Every card of a deal, pyramid and shelf (the shelf's bits follow the pyramid's). */
 export const startMask = (p: Puzzle) => (1 << p.ranks.length) - 1;
-/** The first shelf card's index; a puzzle without a shelf has none. */
+/** The first spare card's index (shelf or columns); a puzzle without spares has none. */
 export const shelfStart = (p: Puzzle) => countFor(p.rows);
 export const at = (row: number, col: number) => (row * (row + 1)) / 2 + col;
+/** Level 8: a spare card's column and its place in it (0 at the back). */
+export function columnOf(p: Puzzle, i: number): { column: number; depth: number } | null {
+  if (!p.columns || i < shelfStart(p)) return null;
+  const depth = (p.ranks.length - shelfStart(p)) / p.columns,
+    j = i - shelfStart(p);
+  return { column: Math.floor(j / depth), depth: j % depth };
+}
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
 export function covers(rows: number, i: number): number[] {
   for (let row = 0; row < rows; row++)
@@ -64,12 +85,19 @@ export function covers(rows: number, i: number): number[] {
 const lists = new WeakMap<Puzzle, readonly (readonly number[])[]>();
 /**
  * The cards lying on each card, one list per card: the pyramid's two from the row below as `covers` gives them, a shelf
- * card's none. Levels 1-5 reproduce `covers` exactly; a later level's spare columns can cover a card the same way.
+ * card's none. Levels 1-5 reproduce `covers` exactly; level 8's column cards each lie under the next card in their column.
  */
 export function coverList(p: Puzzle): readonly (readonly number[])[] {
   let list = lists.get(p);
   if (!list) {
-    list = p.ranks.map((_, i) => (i < shelfStart(p) ? covers(p.rows, i) : []));
+    list = p.ranks.map((_, i) => {
+      if (i < shelfStart(p)) return covers(p.rows, i);
+      // Level 8: a column's card lies under the next one in the same column (back first, front last).
+      const place = columnOf(p, i);
+      if (!place) return [];
+      const depth = (p.ranks.length - shelfStart(p)) / p.columns!;
+      return place.depth < depth - 1 ? [i + 1] : [];
+    });
     lists.set(p, list);
   }
   return list;
@@ -163,12 +191,15 @@ export function dealCandidate(level: number, rng: Rng): Candidate {
   const plan = planFor(level),
     rows = plan.rows,
     shelf = 'shelf' in plan ? plan.shelf : 0,
-    p: Puzzle = { rows, ranks: Array<number>(countFor(rows) + shelf).fill(0) },
+    spares = 'columns' in plan ? plan.columns * plan.depth : shelf,
+    p: Puzzle = { rows, ranks: Array<number>(countFor(rows) + spares).fill(0) },
     used = Array<number>(14).fill(0);
   if ('lift' in plan) p.lift = true;
   // Level 6: the shelf's cards are open from the start, so the backward walk may pair any of them with a pyramid card
   // (the top included) or with each other; nothing else in the walk changes, so levels 1-5 deal exactly as before.
   if (shelf) p.shelf = shelf;
+  // Level 8: the plain walk below already follows the column covers through `exposed`; no draw changes for levels 1-7.
+  if ('columns' in plan) p.columns = plan.columns;
   let mask = startMask(p),
     forcedKings = 0,
     chanceKings = 0;
