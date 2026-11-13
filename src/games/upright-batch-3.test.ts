@@ -4,7 +4,7 @@ import { computeView, NO_INSETS, type View } from '../engine/view';
 import { gardenLayout, NEXT_H, PLANS as gardenPlans, SLOT, UNDO_R } from './block-garden/logic';
 import { caseLayout, slidingLayout } from './logic-grid';
 import { makeRound as makeCases, planFor as casePlan } from './logic-grid/logic';
-import { pyramidLayout } from './pyramid-solitaire';
+import { COLUMN_STEP, pyramidLayout } from './pyramid-solitaire';
 import { planFor as pyramidPlan } from './pyramid-solitaire/logic';
 import { comebackLayout } from './species-comeback';
 import { extend, hatch, makeRound as makeComeback, PLANS as comebackPlans } from './species-comeback/logic';
@@ -18,6 +18,20 @@ const box = (what: string, x: number, y: number, w: number, h: number): Target =
   w,
   h,
 });
+
+/** Pyramid rows as what they show: each covered row its top `gap` units, the open bottom row card by card. */
+function rowStrips(cards: { x: number; y: number }[], rows: number): Target[] {
+  const gap = cards[1].y - cards[0].y;
+  return Array.from({ length: rows }, (_, row) => {
+    const first = cards[(row * (row + 1)) / 2],
+      end = cards[(row * (row + 1)) / 2 + row];
+    return row < rows - 1
+      ? [box(`row ${row + 1}`, first.x - 50, first.y - 50, end.x - first.x + 100, gap)]
+      : cards
+          .slice((row * (row + 1)) / 2, (row * (row + 1)) / 2 + row + 1)
+          .map((p) => square('card', p, 100));
+  }).flat();
+}
 
 function check(v: View, targets: Target[], min = 64, px = 44) {
   expect(uprightProblems(v, targets, min)).toEqual([]);
@@ -68,10 +82,39 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
   });
 
   it('Pyramid Solitaire: every card and button fit at each level', () => {
-    for (const level of [1, 2, 3, 4, 5, 6, 7]) {
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8]) {
       const plan = pyramidPlan(level),
         shelf = 'shelf' in plan ? plan.shelf : 0,
-        l = pyramidLayout(v, plan.rows, shelf);
+        l =
+          'columns' in plan
+            ? pyramidLayout(v, plan.rows, 0, plan.columns, plan.depth)
+            : pyramidLayout(v, plan.rows, shelf);
+      if ('columns' in plan) {
+        // Level 8: three columns of two under the pyramid; a back card shows a COLUMN_STEP strip above its front card.
+        expect(l.cards).toHaveLength(21);
+        const columns = [0, 1, 2].map((c) => [l.cards[15 + 2 * c], l.cards[16 + 2 * c]]);
+        for (const [back, front] of columns) {
+          expect(front.x).toBe(back.x);
+          expect(front.y - back.y).toBe(COLUMN_STEP);
+        }
+        // Rows close up on a short phone (never under 64). A back card is a target only once its front card has gone,
+        // when it stands whole; covered, its 72-unit strip carries the corner index (36 px on the phone).
+        expect(l.cards[1].y - l.cards[0].y).toBeGreaterThanOrEqual(64);
+        check(
+          v,
+          [
+            ...rowStrips(l.cards, 5),
+            ...columns.flatMap(([back, front]) => [
+              box('back card', back.x - 50, back.y - 50, 100, COLUMN_STEP),
+              square('front card', front, 100),
+            ]),
+            ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
+          ],
+          64,
+          36,
+        );
+        continue;
+      }
       // Level 6's shelf row stands under the pyramid, its five open cards counted with the rest.
       expect(l.cards).toHaveLength((plan.rows * (plan.rows + 1)) / 2 + shelf);
       if (level === 7) {
@@ -131,11 +174,34 @@ describe.each(Object.entries(views))('Grown-up upright batch 3 on %s', (_, v) =>
 describe('Pyramid Solitaire sideways', () => {
   it('six rows fit the 1024 × 768 area: cards inside, a covered strip with its corner index, buttons below the cards', () => {
     for (const v of [computeView(1024, 768), computeView(844, 390), computeView(1366, 1024)]) {
-      for (const level of [1, 2, 3, 4, 5, 6, 7]) {
+      for (const level of [1, 2, 3, 4, 5, 6, 7, 8]) {
         const plan = pyramidPlan(level),
           rows = plan.rows,
           shelf = 'shelf' in plan ? plan.shelf : 0,
-          l = pyramidLayout(v, rows, shelf);
+          l =
+            'columns' in plan
+              ? pyramidLayout(v, rows, 0, plan.columns, plan.depth)
+              : pyramidLayout(v, rows, shelf);
+        if ('columns' in plan) {
+          // Level 8: the three columns stand beside the pyramid at the right, each back card's strip at least 64 units,
+          // clear of the pyramid, the buttons and the round's chrome, and above the status line.
+          const pyramid = l.cards.slice(0, 15);
+          const columns = [0, 1, 2].map((c) => [l.cards[15 + 2 * c], l.cards[16 + 2 * c]]);
+          check(v, [
+            ...rowStrips(pyramid, 5),
+            ...columns.flatMap(([back, front]) => [
+              box('back card', back.x - 50, back.y - 50, 100, COLUMN_STEP),
+              square('front card', front, 100),
+            ]),
+            ...l.buttons.map((p) => ({ ...p, what: 'button', w: 164, h: 100 })),
+          ]);
+          expect(COLUMN_STEP).toBeGreaterThanOrEqual(64);
+          for (const [, front] of columns) expect(front.y + 50).toBeLessThanOrEqual(l.status.y - 12);
+          for (const [back] of columns)
+            expect(back.x - 50).toBeGreaterThanOrEqual(Math.max(...pyramid.map((c) => c.x)) + 50);
+          for (const c of l.cards) expect(c.x + 50).toBeLessThanOrEqual(v.w);
+          continue;
+        }
         // Level 6: the shelf's open cards stand whole, apart from the pyramid, the buttons and the round's chrome, and
         // right of every button so the centered status line runs clear of them.
         if (shelf) {

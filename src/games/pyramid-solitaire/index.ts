@@ -11,6 +11,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   at,
+  columnOf,
   countFor,
   coverList,
   exposed,
@@ -98,7 +99,13 @@ class PyramidSolitaire implements Game {
   }
   start() {
     void this.ctx.instruct(
-      this.puzzle.lift ? 'pyramid.lift' : this.puzzle.shelf ? 'pyramid.shelf' : 'pyramid.go',
+      this.puzzle.lift
+        ? 'pyramid.lift'
+        : this.puzzle.shelf
+          ? 'pyramid.shelf'
+          : this.puzzle.columns
+            ? 'pyramid.columns'
+            : 'pyramid.go',
     );
   }
   choose(i: number) {
@@ -119,10 +126,16 @@ class PyramidSolitaire implements Game {
         this.puzzle.ranks[i] !== 13 &&
         left.length === 1 &&
         exposed(this.puzzle, this.mask, left[0]);
+      // Level 8: a column's back card has one card in front of it, not two below.
+      const inColumn = !!columnOf(this.puzzle, i);
       this.status.text = oneLeft
         ? 'First choose the one card lying on this one. If they make 13, they lift together.'
-        : 'Remove both cards directly below this one first.';
-      void this.ctx.say(oneLeft ? 'pyramid.liftFirst' : 'pyramid.covered');
+        : inColumn
+          ? 'Remove the card in front of this one first.'
+          : 'Remove both cards directly below this one first.';
+      void this.ctx.say(
+        oneLeft ? 'pyramid.liftFirst' : inColumn ? 'pyramid.columnCovered' : 'pyramid.covered',
+      );
       return;
     }
     const rank = this.puzzle.ranks[i];
@@ -308,14 +321,28 @@ class PyramidSolitaire implements Game {
     return `${pairs} ${pairs === 1 ? 'pair' : 'pairs'} open${king ? ' · a king can go alone' : ''}`;
   }
   resize(v: View) {
-    const l = pyramidLayout(v, this.puzzle.rows, this.puzzle.shelf ?? 0);
+    const spares = this.puzzle.ranks.length - shelfStart(this.puzzle),
+      columns = this.puzzle.columns ?? 0;
+    const l = pyramidLayout(
+      v,
+      this.puzzle.rows,
+      this.puzzle.shelf ?? 0,
+      columns,
+      columns ? spares / columns : 0,
+    );
     this.ground.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light);
     this.ground
       .ellipse(l.centre, l.middle, Math.min(380, v.w * 0.45), v.upright ? 330 : v.h * 0.34)
       .fill({ color: cream, alpha: 0.7 });
     // Level 6: a wooden shelf the spare cards stand on, so they read as their own open row (or column, sideways).
-    const shelf = l.cards.slice(shelfStart(this.puzzle));
-    if (shelf.length) {
+    // Level 8: one tray per column, so each column reads as its own short stack.
+    const spare = l.cards.slice(shelfStart(this.puzzle)),
+      trays = columns
+        ? Array.from({ length: columns }, (_, c) =>
+            spare.slice((c * spare.length) / columns, ((c + 1) * spare.length) / columns),
+          )
+        : [spare];
+    for (const shelf of trays.filter((t) => t.length)) {
       const xs = shelf.map((c) => c.x),
         ys = shelf.map((c) => c.y),
         left = Math.min(...xs) - 62,
@@ -352,42 +379,70 @@ class PyramidSolitaire implements Game {
  * units apart, the buttons stand in a column left of the pyramid, under Home and above the guide, and the status line
  * runs under the pyramid, so the rows are about 72 apart.
  */
-export function pyramidLayout(v: View, rows: number, shelf = 0) {
+export function pyramidLayout(v: View, rows: number, shelf = 0, columns = 0, depth = 0) {
   const dx = rows >= 7 ? SEVEN_DX : 116;
   // Levels 1-6 keep their layout (six rows sideways are 60 apart, carried by the corner index).
   const side = !v.upright && rows >= 7 && (v.h - 470) / (rows - 1) < MIN_STRIP;
-  // Upright, seven rows close up (never under 64) so the buttons end above the guide's corner on a short phone.
+  // Upright, seven rows (and level 8's five over its columns) close up, never under 64, so the buttons end above the
+  // guide's corner on a short phone.
   const gapY = v.upright
-    ? rows >= 7
-      ? Math.min(104, Math.max(MIN_STRIP, Math.floor((v.h - 665) / (rows - 1))))
+    ? rows >= 7 || columns
+      ? Math.min(
+          104,
+          Math.max(
+            MIN_STRIP,
+            Math.floor((v.h - 665 - (columns ? SHELF_GAP + (depth - 1) * COLUMN_STEP : 0)) / (rows - 1)),
+          ),
+        )
       : 104
     : side
       ? Math.min(104, Math.floor((v.h - 45 - 12 - 275) / (rows - 1)))
       : Math.min(104, (v.h - 470) / (rows - 1));
   // Level 6's shelf: upright a row of open cards under the pyramid; sideways a column at the right, from beside the heading
   // to above the status line, the pyramid moved left; status and buttons stay centered, right of the guide's corner.
-  const shelfRow = v.upright && shelf ? SHELF_GAP : 0;
-  const top = v.upright ? Math.max(225, Math.round((v.h - ((rows - 1) * gapY + shelfRow + 330)) / 2)) : 225;
+  // Level 8's columns: upright a row of columns under the pyramid (it cannot stand beside five rows in 768 units), each
+  // front card COLUMN_STEP below the card behind it; sideways the columns stand beside the pyramid at the right.
+  const stack = columns ? (depth - 1) * COLUMN_STEP : 0;
+  const shelfRow = v.upright && (shelf || columns) ? SHELF_GAP : 0;
+  const top = v.upright
+    ? Math.max(225, Math.round((v.h - ((rows - 1) * gapY + shelfRow + stack + 330)) / 2))
+    : 225;
   // Sideways with the button column: the pyramid as centered as the column (182 units with its gap) leaves room for.
   const half = ((rows - 1) * dx) / 2 + 50;
-  const centre = side ? Math.max(v.w / 2, SIDE_COLUMN + half) : v.upright || !shelf ? v.w / 2 : v.w / 2 - 60;
+  const spread = (columns - 1) * 116 + 100,
+    group = 2 * half + COLUMN_GAP + spread;
+  const centre = side
+    ? Math.max(v.w / 2, SIDE_COLUMN + half)
+    : v.upright || !(shelf || columns)
+      ? v.w / 2
+      : columns
+        ? (v.w - group) / 2 + half
+        : v.w / 2 - 60;
   const cards: { x: number; y: number }[] = [];
   for (let row = 0; row < rows; row++)
     for (let col = 0; col <= row; col++)
       cards[at(row, col)] = { x: centre + (col - row / 2) * dx, y: top + row * gapY };
   const last = top + (rows - 1) * gapY + shelfRow;
+  const columnX = (c: number) =>
+    v.upright ? v.w / 2 + (c - (columns - 1) / 2) * 116 : centre + half + COLUMN_GAP + 50 + c * 116;
+  const columnY = v.upright ? last : top + ((rows - 1) * gapY - stack) / 2;
+  for (let c = 0; c < columns; c++)
+    for (let d = 0; d < depth; d++)
+      cards[countFor(rows) + c * depth + d] = { x: columnX(c), y: columnY + d * COLUMN_STEP };
   for (let k = 0; k < shelf; k++)
     cards[countFor(rows) + k] = v.upright
       ? { x: v.w / 2 + (k - (shelf - 1) / 2) * 116, y: last }
       : { x: Math.min(v.w - 62, v.w / 2 + 360), y: 120 + k * 106 };
-  const status = side ? { x: centre, y: v.h - 45 } : { x: v.w / 2, y: v.upright ? last + 110 : v.h - 157 };
+  const status = side
+    ? { x: centre, y: v.h - 45 }
+    : { x: v.w / 2, y: v.upright ? last + stack + 110 : v.h - 157 };
   const buttonY = v.upright ? status.y + 100 : v.h - 80;
-  const columnX = centre - half - 12 - 82;
+  const buttonX = centre - half - 12 - 82;
   return {
     cards,
     status,
     buttons: side
-      ? [-1, 0, 1].map((i) => ({ x: columnX, y: v.h / 2 + 20 + i * 114 }))
+      ? [-1, 0, 1].map((i) => ({ x: buttonX, y: v.h / 2 + 20 + i * 114 }))
       : [-1, 0, 1].map((i) => ({ x: v.w / 2 + i * 190, y: buttonY })),
     centre,
     middle: v.upright ? (top + buttonY) / 2 : v.h * 0.5,
@@ -399,6 +454,11 @@ export const SEVEN_DX = 108;
 export const MIN_STRIP = 64;
 /** Sideways, the button column's right edge plus its gap from the pyramid: 12 + 164 + 12 units. */
 const SIDE_COLUMN = 188;
+/** Level 8: how far a column's front card stands below the card behind it, so the back card's strip (with its corner
+ * index) stays a grown-up target. */
+export const COLUMN_STEP = 72;
+/** Level 8 sideways: the gap between the pyramid's widest row and the first column. */
+const COLUMN_GAP = 40;
 /** How far below the pyramid's last row the upright shelf row stands (card centers). */
 export const SHELF_GAP = 116;
 

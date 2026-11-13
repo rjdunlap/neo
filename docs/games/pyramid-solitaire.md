@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–7 |
+| grown-up | 1–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 5 | Lift the cover: a card with the one under it |
 | 6 | The shelf: five open spare cards |
 | 7 | The classic pyramid: twenty-eight cards, seven rows |
+| 8 | Three columns: dig into two-card spare columns |
 
 <!-- end generated -->
 
