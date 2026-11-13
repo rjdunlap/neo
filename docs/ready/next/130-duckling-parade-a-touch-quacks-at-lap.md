@@ -1,1 +1,0 @@
-**`duckling-parade`, a touch quacks at lap** (existing-game tier, one filtered play of level 1 at lap): at lap Mama quacks at touch-down, one duckling waits at the start and the next comes out as each joins, and the fifteen-second glow still shows without counting a hint. Toddler's level 1 is unchanged. [the table](../../definitions/toy-test-lap-openings.md#barnyard)

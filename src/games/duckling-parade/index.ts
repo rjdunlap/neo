@@ -21,6 +21,7 @@ import {
   needed,
   nextInPattern,
   nextStop,
+  nextToShow,
   planFor,
   readyForPond,
   type Dressing,
@@ -43,7 +44,8 @@ interface Duckling {
   color: ColorName;
   critter: Critter;
   glow: Graphics;
-  state: 'loose' | 'line' | 'pond' | 'busy';
+  /** 'waiting': at lap, not out on the meadow yet (hidden); it comes out when the one before it joins. */
+  state: 'waiting' | 'loose' | 'line' | 'pond' | 'busy';
   /** Where it waits on the meadow, as fractions of the play area. */
   home: { fx: number; fy: number };
   /** No more fuss from this one until then (after saying "not me"). */
@@ -125,10 +127,16 @@ class DucklingParade implements Game {
   /** When the finger last set a destination, and when the duckling it picked joined: then the tap is spent. */
   private aimedAt = -1;
   private joinedAt = -1;
+  /** Lap: Mama quacks at every touch-down, the ducklings come out one at a time, and waiting is never counted. */
+  private readonly lap: boolean;
+  private lastQuack = -1;
+  /** Lap: when the next waiting duckling comes out (a little after the one before it joins), or never. */
+  private showAt = Infinity;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.lap = ctx.band === 'lap' && this.plan.mode === 'tap';
     this.round = makeRound(this.plan, ctx.rng);
     const spots = this.spots(this.round.ducklings.length, ctx.rng);
     const phases = this.round.ducklings.map(() => ctx.rng.range(0, 6));
@@ -181,11 +189,12 @@ class DucklingParade implements Game {
       const glow = new Graphics().ellipse(0, -4, 52, 22).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
       ctx.track(critter);
+      critter.visible = !this.lap;
       this.ducklings.push({
         color,
         critter,
         glow,
-        state: 'loose',
+        state: this.lap ? 'waiting' : 'loose',
         home: spots[i],
         calmUntil: 0,
         phase: phases[i],
@@ -275,6 +284,7 @@ class DucklingParade implements Game {
       this.mama.position.set(f.x0 + 160, f.y0 + (f.y1 - f.y0) * 0.35);
       this.target.x = this.mama.x;
       this.target.y = this.mama.y;
+      if (this.lap) this.showNext(false);
     }
     this.card.position.set(v.w / 2, 60);
     this.drawCard();
@@ -340,6 +350,7 @@ class DucklingParade implements Game {
   };
 
   private steer(e: FederatedPointerEvent, down: boolean) {
+    if (down && this.lap && !this.destroyed && !this.finished && !palmOnGlass()) this.quack();
     if (this.destroyed || this.busy || this.finished) return;
     if (down) {
       // The newest finger leads, so a lost pointerup can never leave Mama stuck.
@@ -359,6 +370,43 @@ class DucklingParade implements Game {
     this.destination.position.copyFrom(this.target);
   }
 
+  /** Lap: Mama answers a touch at once, wherever it lands (and while the ducklings hop into the pond). */
+  private quack() {
+    if (this.clock - this.lastQuack < 0.25) return;
+    this.lastQuack = this.clock;
+    sfx.animal('quack');
+    this.mama.hop(0.35);
+  }
+
+  /** Lap: the next waiting duckling pops out on the meadow, a walk away from Mama. */
+  private showNext(announce = true) {
+    this.showAt = Infinity;
+    const waiting = this.ducklings.flatMap((d, i) => (d.state === 'waiting' ? [i] : []));
+    const i = nextToShow(
+      this.ducklings.map((d) => this.spotAt(d.home)),
+      waiting,
+      this.mama,
+    );
+    if (i === undefined) return;
+    const d = this.ducklings[i];
+    d.state = 'loose';
+    d.critter.position.copyFrom(this.spotAt(d.home));
+    d.critter.visible = true;
+    // A moment to be seen before Mama can collect it.
+    d.calmUntil = this.clock + 0.5;
+    if (!announce) return;
+    d.critter.hop(0.8);
+    sfx.pop(4);
+    this.ctx.particles.burst(d.critter.x, d.critter.y - 20, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 10,
+      speed: [80, 200],
+      gravity: 0,
+      life: [0.5, 0.8],
+    });
+  }
+
   update(dt: number) {
     if (this.destroyed) return;
     this.destinationAge = Math.min(1, this.destinationAge + dt / 0.9);
@@ -366,6 +414,7 @@ class DucklingParade implements Game {
     this.destination.scale.set(1 + this.destinationAge * 0.3);
     this.destination.visible = this.destinationAge < 1;
     this.clock += dt;
+    if (this.clock >= this.showAt && !this.finished) this.showNext();
     this.walk(dt);
     this.follow(dt);
     if (!this.busy && !this.finished) {
@@ -476,6 +525,7 @@ class DucklingParade implements Game {
     this.line.push(d);
     this.sinceProgress = 0;
     this.hinting = false;
+    if (this.lap && this.ducklings.some((x) => x.state === 'waiting')) this.showAt = this.clock + 0.6;
     d.critter.hop(0.7);
     sfx.animal('quack');
     if (this.plan.mode === 'pattern') void this.ctx.say(`color.${d.color}`);
@@ -530,7 +580,8 @@ class DucklingParade implements Game {
   }
 
   private showHint() {
-    this.hints++;
+    // Lap: the glow still shows, but waiting is not a hint.
+    if (!this.lap) this.hints++;
     this.wrongs = 0;
     this.hinting = true;
   }

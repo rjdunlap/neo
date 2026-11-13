@@ -337,3 +337,21 @@ export function dressingAt(
     return { x: field.x0 + (field.x1 - field.x0) * d.t, y: horizon + (field.y0 - horizon) * 0.7 };
   return { x: pond.x + Math.cos(d.t) * (pond.rx + 34), y: pond.y + Math.sin(d.t) * (pond.ry + 26) };
 }
+
+/** At lap the ducklings come out one at a time: a new one does not appear closer to Mama than this, so she has a walk to make. */
+export const SHOW_CLEAR = 2 * JOIN_REACH;
+
+/**
+ * Lap: which waiting duckling comes out next. The first waiting one (in meadow order) whose spot is more than `clear` from
+ * Mama, so it does not join before she is led to it; when every waiting spot is that close, the one farthest from her.
+ * Undefined when none is waiting.
+ */
+export function nextToShow(
+  spots: readonly Pt[],
+  waiting: readonly number[],
+  mama: Pt,
+  clear = SHOW_CLEAR,
+): number | undefined {
+  const far = (i: number) => Math.hypot(spots[i].x - mama.x, spots[i].y - mama.y);
+  return waiting.find((i) => far(i) > clear) ?? [...waiting].sort((a, b) => far(b) - far(a))[0];
+}
