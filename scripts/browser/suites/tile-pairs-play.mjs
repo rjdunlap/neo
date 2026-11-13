@@ -111,7 +111,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       const initial = await state();
       assert.equal(
         initial.tiles.length,
-        level > 10 ? 14 : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1],
+        level === 21 ? 18 : level > 10 ? 14 : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1],
       );
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
       if (level === 10 || level > 10) {
@@ -135,6 +135,15 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           (await page.evaluate(() => neo.scene.game.said)).includes('tile-pairs.stuck'),
           'the stuck line follows a losing pair',
         );
+        if (level === 21) {
+          // Two pairs ahead: the losing pair hides its trap, so pairs are still open right after it.
+          const open = await page.evaluate(async () => {
+            const L = await import('/src/games/tile-pairs/logic.ts'),
+              g = neo.scene.game;
+            return L.pairs(g.tiles, g.mask).length;
+          });
+          assert.ok(open > 0, 'pairs are still open after the losing pair on Two pairs ahead');
+        }
         if (level > 10) {
           // A lesson board's lesson follows the stuck line once that line has finished.
           await page.waitForFunction(

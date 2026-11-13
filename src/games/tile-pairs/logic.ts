@@ -192,8 +192,28 @@ export const PUZZLE_PLANS = {
     puzzle: 'crossed',
     clear: [0, 1],
   },
+  20: {
+    name: 'The long row · a lesson',
+    cols: 6,
+    rows: 3,
+    layers: 1,
+    layout: 'lesson',
+    kinds: 4,
+    puzzle: 'long',
+    clear: [0, 1],
+  },
+  21: {
+    name: 'Two pairs ahead · a lesson',
+    cols: 5,
+    rows: 2,
+    layers: 3,
+    layout: 'lesson',
+    kinds: 4,
+    puzzle: 'ahead',
+    clear: [0, 1],
+  },
 } as const;
-export type Lesson = keyof typeof PUZZLES;
+export type Lesson = (typeof PUZZLE_PLANS)[keyof typeof PUZZLE_PLANS]['puzzle'];
 type Plan = (typeof PLANS)[number] | (typeof PUZZLE_PLANS)[keyof typeof PUZZLE_PLANS];
 /** Each lesson's sketch, positions as [x, y, z]; every one is symmetric under the left-right mirror (test-checked). */
 export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number])[]> = {
@@ -210,6 +230,19 @@ export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number
   ],
   // Three rows of four; two raised side by side on the middle row, so two stacks can cross.
   crossed: [...[0, 1, 2].flatMap((y) => [0, 1, 2, 3].map((x) => [x, y, 0] as const)), [1, 1, 1], [2, 1, 1]],
+  // One flat layer: a row of six between two rows of four (eight would not fit a phone held upright), so only the
+  // six row ends are free and nothing is covered.
+  long: [
+    ...[1, 2, 3, 4].map((x) => [x, 0, 0] as const),
+    ...[0, 1, 2, 3, 4, 5].map((x) => [x, 1, 0] as const),
+    ...[1, 2, 3, 4].map((x) => [x, 2, 0] as const),
+  ],
+  // Two rows of five, three raised on the middle of each and one on top of those: 18 tiles on three layers.
+  ahead: [
+    ...[0, 1].flatMap((y) => [0, 1, 2, 3, 4].map((x) => [x, y, 0] as const)),
+    ...[0, 1].flatMap((y) => [1, 2, 3].map((x) => [x, y, 1] as const)),
+    ...[0, 1].map((y) => [2, y, 2] as const),
+  ],
 };
 
 /**
@@ -217,7 +250,7 @@ export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number
  * order, kept to the levels that exist and to levels 1–10's own order).
  */
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 19, order: [1, 2, 17, 3, 18, 4, 19, 5, 6, 7, 8, 9, 10] },
+  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21] },
 };
 export const planFor = (level: number): Plan =>
   (PUZZLE_PLANS as Record<number, Plan>)[Math.floor(level)] ??
@@ -475,7 +508,7 @@ const tileOn = (tiles: readonly Tile[], i: number) =>
   tiles.findIndex((t) => t.x === tiles[i].x && t.y === tiles[i].y && t.z === tiles[i].z + 1);
 const sameKind = (tiles: readonly Tile[], [a, b]: Pair) => tiles[a].kind === tiles[b].kind;
 /**
- * Whether a board teaches its lesson on the first move. All three need a clearing route and a first pair that
+ * Whether a board teaches its lesson on the first move. Every lesson needs a clearing route and a first pair that
  * leaves none; then:
  * - `twins`: one picture has a copy resting on another copy and its other two copies free, and the only losing
  *   first pair is those two free copies (pairing the top twin with either is safe).
@@ -483,6 +516,10 @@ const sameKind = (tiles: readonly Tile[], [a, b]: Pair) => tiles[a].kind === til
  *   three pairs among them is safe, and every losing first pair is one of the other two.
  * - `crossed`: a copy of one picture rests on a copy of a second and a copy of the second on a copy of the first,
  *   and every losing first pair is of one of those two pictures.
+ * - `long`: one flat layer, so nothing is covered; one picture has three copies free and its fourth buried inside a
+ *   row, the only safe pair of the three is the two at that row's ends, and every losing first pair is among them.
+ * - `ahead`: every losing first pair still leaves at least two pairs to take on every line before the board strands
+ *   (`pairsBeforeStranded`), so the trap is not visible one pair out, and the fair-trap check passes.
  */
 export function lessonHolds(lesson: Lesson, tiles: readonly Tile[]): boolean {
   const full = fullMask(tiles);
@@ -493,6 +530,27 @@ export function lessonHolds(lesson: Lesson, tiles: readonly Tile[]): boolean {
     kinds = [...new Set(tiles.map((t) => t.kind))],
     copies = (k: number) => tiles.flatMap((t, i) => (t.kind === k ? [i] : [])),
     key = ([a, b]: Pair) => `${Math.min(a, b)},${Math.max(a, b)}`;
+  if (lesson === 'ahead')
+    return losing.every((p) => pairsBeforeStranded(tiles, removePair(full, p)) >= 2) && fairTrap(tiles);
+  if (lesson === 'long') {
+    if (tiles.some((t) => t.z > 0)) return false;
+    const lost = new Set(losing.map(key));
+    return kinds.some((k) => {
+      const all = copies(k),
+        free = all.filter((i) => open.has(i)),
+        buried = all.filter((i) => !open.has(i));
+      if (all.length !== 4 || free.length !== 3 || buried.length !== 1) return false;
+      const ends = free.filter((i) => tiles[i].y === tiles[buried[0]].y);
+      if (ends.length !== 2) return false;
+      const among = free.flatMap((a, n) => free.slice(n + 1).map((b): Pair => [a, b])),
+        safe = among.filter((p) => !lost.has(key(p)));
+      return (
+        safe.length === 1 &&
+        key(safe[0]) === key([ends[0], ends[1]]) &&
+        losing.every((p) => free.includes(p[0]) && free.includes(p[1]))
+      );
+    });
+  }
   if (lesson === 'crossed')
     return kinds.some((a) =>
       kinds.some((b) => {
@@ -529,6 +587,25 @@ export function lessonHolds(lesson: Lesson, tiles: readonly Tile[]): boolean {
       losing.every((p) => sameKind(tiles, p) && tiles[p[0]].kind === k)
     );
   });
+}
+
+/**
+ * The fewest pairs a player can take from `mask` before no pair is left (Infinity only when no line strands):
+ * how far ahead the trap a losing pair sets is hidden.
+ */
+export function pairsBeforeStranded(tiles: readonly Tile[], mask: number): number {
+  const known = new Map<number, number>();
+  function fewest(m: number): number {
+    if (!m) return Infinity;
+    const seen = known.get(m);
+    if (seen !== undefined) return seen;
+    const open = pairs(tiles, m);
+    let best = open.length ? Infinity : 0;
+    for (const p of open) best = Math.min(best, 1 + fewest(removePair(m, p)));
+    known.set(m, best);
+    return best;
+  }
+  return fewest(mask);
 }
 
 /** First pairs on the full board that leave no clearing route: the trap a tricky deal sets. */

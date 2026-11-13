@@ -6,7 +6,7 @@
 // Deals equal under the left-right mirror or a renaming of pictures count once. Too few seeded deals meet the band
 // (about 7% measured) to find one while she waits, which is why they are frozen.
 //
-// It also writes src/games/tile-pairs/puzzles.ts: the designed lesson boards of levels 17–19. Each lesson's sketch
+// It also writes src/games/tile-pairs/puzzles.ts: the designed lesson boards of levels 17–21. Each lesson's sketch
 // (`SKETCHES` in logic.ts) gets pictures placed as complete pairs on a seeded clearing route, so every one clears, and
 // a placement is kept only when `lessonHolds` says it teaches the lesson on the first move. Reproducible:
 //   node scripts/tile-pairs-pool.mjs
