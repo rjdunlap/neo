@@ -28,6 +28,7 @@ import {
   askedPhrase,
   cleanPhrase,
   IdleNudge,
+  QuestionHelp,
   MUD_H,
   MUD_W,
   Namer,
@@ -171,12 +172,12 @@ class SplishSplash implements Game {
   private lastNag = -10;
   private sinceProgress = 0;
   private bubbleIn = 0;
-  private hinted = false;
   private finished = false;
   /** The opening instruction is still being said: hold the parts' names until it ends. */
   private opening = true;
   private readonly namer = new Namer();
   private readonly idle = new IdleNudge();
+  private readonly help = new QuestionHelp();
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   private readonly lift = (e: { pointerId: number }) => {
     this.last.delete(e.pointerId);
@@ -292,13 +293,8 @@ class SplishSplash implements Game {
     this.foam.y = 2 * Math.sin(this.clock * 2);
     this.rubberDuck.rotation = 0.08 * Math.sin(this.clock * 1.6);
     if (this.plan.mode === 'parts' && !this.finished) {
-      this.sinceProgress += dt;
-      // Stuck for a while: light up the part we're asking for.
-      if (this.sinceProgress > 7 && !this.hinted) {
-        this.hinted = true;
-        this.hints++;
-        for (const m of this.muds) if (this.allowed().includes(m.part) && !m.clean) m.glow.visible = true;
-      }
+      // Quiet for a while: light up the part we're asking for, free (a hint counts only after two misses).
+      if (this.help.tick(dt)) this.glowAsked();
     }
     if (this.plan.mode === 'free' && !this.finished && this.idle.tick(dt)) {
       // Quiet for a while: the next muddy spot sparkles and the pet wiggles (an invitation, never a hint).
@@ -363,8 +359,7 @@ class SplishSplash implements Game {
   }
 
   private async askForPart() {
-    this.sinceProgress = 0;
-    this.hinted = false;
+    this.help.ask();
     const [a, b] = this.asked();
     if (!b) await this.instruct('bath.part', { part: askedPhrase([a]) });
     else
@@ -476,7 +471,7 @@ class SplishSplash implements Game {
       const mine = this.scrubbed.get(pointerId) ?? [];
       if (!mine.includes(m)) this.scrubbed.set(pointerId, [...mine, m]);
       const gone = m.scrub(l.x, l.y, this.eraser);
-      this.sinceProgress = 0;
+      this.help.progress();
       if (!parts) {
         m.glow.visible = false;
         this.nameAt(m.part);
@@ -486,10 +481,18 @@ class SplishSplash implements Game {
     return onPip;
   }
 
+  private glowAsked() {
+    for (const m of this.muds) if (this.allowed().includes(m.part) && !m.clean) m.glow.visible = true;
+  }
+
   private notThatPart(touched: Part) {
     if (this.clock - this.lastNag < 4) return;
     this.lastNag = this.clock;
     this.misses++;
+    if (this.help.miss()) {
+      this.hints++;
+      this.glowAsked();
+    }
     const [a, b] = this.asked();
     if (this.plan.ordered && touched === b)
       void this.ctx.say('bath.first', { a: askedPhrase([a]), b: askedPhrase([b]) });

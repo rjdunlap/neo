@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Splish Splash slice 2, hint accounting (2026-11-13)
+
+[PR #1624](https://github.com/rjdunlap/neo/pull/1624), `claude/splish-splash-hint-rule`, slice 2 of the [dive](../deep-dives/splish-splash.md#build-slices-in-order) (decision 5). On parts levels 3–8 the seven-second glow is free; the second counted miss on one question lights it and counts that question's one hint (`QuestionHelp`, `GLOW_AFTER = 7`, `MISSES_FOR_HINT = 2` in `logic.ts`; two new rule tests). A pausing toddler no longer steps down; `early` bath checks both at levels 3 and 4.
+
 ### Duck Pond level 13, One big duck, first at lap (2026-11-13)
 
 [PR #1596](https://github.com/rjdunlap/neo/pull/1596) adds level 13 (`friends`) as lap's first level (order `[13, 12, 1, 2]`; `entryLevels` `[12, 13]`). One big duck (2.4 times the size) is on the pond from the start; a touch anywhere has it quack and cheer and brings a friend swimming in from alternating sides, with the count spoken and on the sign with dots, up to five. Nothing holds the first touch, a touch during a swim-in brings the next, a touch after the fifth quacks with a splash, and after four quiet seconds the big duck hops, counting nothing. The round ends with a quack chorus, "Five friends…" and confetti; no miss or hint can be reached. [Game notes](../games/duck-pond.md#design-notes).
