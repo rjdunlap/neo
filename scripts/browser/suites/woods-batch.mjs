@@ -2159,7 +2159,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           const state = () =>
             page.evaluate(() => {
               const g = neo.scene.game;
-              return { eaten: g.eatenCount, friends: g.friends.length, scale: g.friends[0].node.scale.x, busy: g.busy };
+              return {
+                eaten: g.eatenCount,
+                friends: g.friends.length,
+                scale: g.friends[0].node.scale.x,
+                busy: g.busy,
+              };
             });
           assert.deepEqual(
             [(await state()).friends, (await state()).scale > 0.9],
@@ -2183,10 +2188,18 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await far();
           await page.waitForTimeout(80);
           await settle();
-          assert.deepEqual([(await state()).eaten, (await state()).friends], [1, 1], 'a touch while it eats is not fed');
+          assert.deepEqual(
+            [(await state()).eaten, (await state()).friends],
+            [1, 1],
+            'a touch while it eats is not fed',
+          );
           await far();
           await settle();
-          assert.deepEqual([(await state()).eaten, (await state()).friends], [2, 2], 'a friend walks in after two');
+          assert.deepEqual(
+            [(await state()).eaten, (await state()).friends],
+            [2, 2],
+            'a friend walks in after two',
+          );
           for (let k = 0; k < 2; k++) {
             await page.evaluate((k) => {
               const p = neo.scene.game.friends[k].node.getGlobalPosition();
@@ -2194,8 +2207,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             }, k);
             await settle();
           }
-          assert.deepEqual([(await state()).eaten, (await state()).friends], [4, 3], 'the third walks in after four');
-          for (let k = 0; k < 2; k++) await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k + 1].name, k));
+          assert.deepEqual(
+            [(await state()).eaten, (await state()).friends],
+            [4, 3],
+            'the third walks in after four',
+          );
+          for (let k = 0; k < 2; k++)
+            await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k + 1].name, k));
         } else if (mode === 'munch')
           for (let k = 0; k < 6; k++)
             await tapAnimal(await page.evaluate((k) => neo.scene.game.friends[k % 3].name, k));

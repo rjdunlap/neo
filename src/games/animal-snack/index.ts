@@ -603,7 +603,13 @@ class AnimalSnack implements Game {
       if (mode !== 'munch') this.refill();
       this.busy = false;
       return this.ctx.instruct(
-        this.plan.oneBig ? 'snack.big' : mode === 'munch' ? 'snack.munch' : mode === 'float' ? 'snack.float' : 'snack.match',
+        this.plan.oneBig
+          ? 'snack.big'
+          : mode === 'munch'
+            ? 'snack.munch'
+            : mode === 'float'
+              ? 'snack.float'
+              : 'snack.match',
       );
     }
     if (this.index >= this.rounds.length) return void this.finale();
@@ -722,7 +728,8 @@ class AnimalSnack implements Game {
       this.eatenCount++;
       if (this.eatenCount >= this.plan.rounds) return void this.finale();
       const want = friendsAfter(this.eatenCount, this.round.animals.length);
-      if (this.plan.oneBig && want > this.friends.length) await this.walkIn(this.round.animals[this.friends.length]);
+      if (this.plan.oneBig && want > this.friends.length)
+        await this.walkIn(this.round.animals[this.friends.length]);
       this.busy = false;
       return;
     }

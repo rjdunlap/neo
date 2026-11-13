@@ -323,7 +323,9 @@ describe('Animal Snack', () => {
     expect(plan.mode).toBe('munch');
     expect(LEVELS.toddler!.min, 'level 1 is lap-only, so it changes in place').toBeGreaterThan(1);
     expect([0, 1, 2, 3, 4, 5, 6].map((n) => friendsAfter(n))).toEqual([1, 1, 2, 2, 3, 3, 3]);
-    expect(friendsAfter(plan.rounds - 2, plan.animals), 'all three are there before the last snacks').toBe(plan.animals);
+    expect(friendsAfter(plan.rounds - 2, plan.animals), 'all three are there before the last snacks').toBe(
+      plan.animals,
+    );
     for (let level = 2; level <= 5; level++) expect(planFor(level).oneBig).toBeFalsy();
   });
 
@@ -335,6 +337,9 @@ describe('Animal Snack', () => {
     expect(nearestFriend(bodies, 20, 40), 'out of reach of a tap').toBe(-1);
     expect(nearestFriend(bodies, 20, 40, Infinity)).toBe(0);
     expect(nearestFriend(bodies, 1000, 900, Infinity)).toBe(1);
-    expect(nearestFriend([{ x: 300, y: 400 }], 1000, 0, Infinity), 'the big animal alone takes every touch').toBe(0);
+    expect(
+      nearestFriend([{ x: 300, y: 400 }], 1000, 0, Infinity),
+      'the big animal alone takes every touch',
+    ).toBe(0);
   });
 });

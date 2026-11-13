@@ -90,7 +90,8 @@ export function nearestFriend(
  * Lap's one big animal: how many friends stand on the meadow after `eaten` snacks. The second walks in after her second
  * snack and the third after her fourth, so all three are there for the last two of six.
  */
-export const friendsAfter = (eaten: number, animals = 3) => Math.min(animals, 1 + Math.floor(Math.max(0, eaten) / 2));
+export const friendsAfter = (eaten: number, animals = 3) =>
+  Math.min(animals, 1 + Math.floor(Math.max(0, eaten) / 2));
 /** The one big animal is drawn nearly twice the size of the others while it is alone, and eases down as they arrive. */
 export const BIG_SCALE = 1.1;
 
