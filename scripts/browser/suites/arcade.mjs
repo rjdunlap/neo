@@ -683,11 +683,12 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
       ? process.env.ARCADE_LEVELS?.split(',').map(Number)
       : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7, 8, 9, 12];
     // Come along plays twice: led by a finger at lap, then left alone at toddler so the drift brings the herd home.
+    // Level 1 plays twice too: one animal at a time at lap, the whole herd at toddler.
     const roundupPlays = roundupLevels.flatMap((level) =>
-      level === 11
+      level === 11 || level === 1
         ? [
-            [11, 'lap'],
-            [11, 'toddler'],
+            [level, 'lap'],
+            [level, 'toddler'],
           ]
         : [[level]],
     );
@@ -797,14 +798,30 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
           await kit.sleep(600);
           kit.tapOn(g.pens[0].sign);
           await kit.sleep(600);
-          if (g.misses || g.hints || g.animals.some((a) => a.state !== 'loose'))
+          if (g.misses || g.hints || g.animals.some((a) => a.state === 'penned' || a.state === 'hopping'))
             throw new Error(`Lap grass/sign tap: ${g.misses} ${g.hints}`);
-          // Layouts vary per round, so neighbours' tap circles can overlap: either one hopping home is right.
-          for (let k = 0; k < 8 && loose().length; k++) {
-            const n = loose().length;
-            kit.tapOn(loose()[0].critter, 0, -40);
-            await kit.until(() => loose().length < n && g.animals.every((a) => a.state !== 'hopping'), 4000);
+          if (g.ctx.band === 'lap') {
+            // Lap: one animal out at a time; the waiting glow and the trot home count no hint.
+            if (loose().length !== 1 || g.animals.filter((a) => a.critter.visible).length !== 1)
+              throw new Error(`Lap tap must start with one animal out: ${loose().length}`);
+            g.sinceProgress = 14.8;
+            if (!(await kit.until(() => loose()[0]?.glow.visible, 1500)))
+              throw new Error('Lap waiting glow missing');
+            g.sinceProgress = 29.8;
+            if (!(await kit.until(() => g.pens[0].inside === 1 && loose().length === 1, 4000)))
+              throw new Error('Lap trot home did not bring out the next animal');
+            if (g.hints || g.misses) throw new Error(`Lap waiting counted: ${g.hints} hints`);
           }
+          // Layouts vary per round, so neighbours' tap circles can overlap: either one hopping home is right.
+          for (let k = 0; k < 8 && !g.finished; k++) {
+            await kit.until(() => loose().length || g.finished, 3000);
+            if (g.finished || !loose().length) break;
+            const n = g.pens[0].inside;
+            kit.tapOn(loose()[0].critter, 0, -40);
+            await kit.until(() => g.pens[0].inside > n, 4000);
+          }
+          if (g.pens[0].inside !== g.animals.length || g.misses || (g.ctx.band === 'lap' && g.hints))
+            throw new Error(`Tap level finish: ${g.pens[0].inside}/${g.misses}/${g.hints}`);
         } else if (g.plan.mode === 'follow') {
           if (g.animals.length !== 3 || loose().length !== 3 || g.pens.length !== 1 || g.plan.gate !== 0.8)
             throw new Error('Come along must start with three loose animals and one wide pen');
