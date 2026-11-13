@@ -30,9 +30,9 @@
 
 <!-- end generated -->
 
-**Starts as:** tap the pet and it boings onto a cloud
+**Starts as:** lap opens on a touch anywhere that bounces the pet and leaves a flower where it lands (level 13); then tap the pet and it boings onto a cloud
 
-**Grows into:** short/wrong-way pulls reply without a miss; pull back farther to fly farther, toddler and preschool level 8, *Near or far*, aims at one of two big clouds (a star marks it) in five shots; land on the star cloud, then a numbered cloud, farther or nearer than last time, then predict a shown pull's cloud using numbered landing flags; school level 9, *Between two flights*, shows a short and a long pull planting numbered flags, then a pull halfway between them with both as faint rings, and she predicts its cloud (unscored); school level 12 compares the same shown pull on light/heavy toy planets, predicting before or past a home flag in three unscored pairs with requested help; pre-K and school also feed a bunny or duck standing on the grass, using the last flight's arc to correct the next pull; the last flight fades, and a compare miss shows the previous pull's radius
+**Grows into:** lap's own level 13 (five flowers); short/wrong-way pulls reply without a miss; pull back farther to fly farther, toddler and preschool level 8, *Near or far*, aims at one of two big clouds (a star marks it) in five shots; land on the star cloud, then a numbered cloud, farther or nearer than last time, then predict a shown pull's cloud using numbered landing flags; school level 9, *Between two flights*, shows a short and a long pull planting numbered flags, then a pull halfway between them with both as faint rings, and she predicts its cloud (unscored); school level 12 compares the same shown pull on light/heavy toy planets, predicting before or past a home flag in three unscored pairs with requested help; pre-K and school also feed a bunny or duck standing on the grass, using the last flight's arc to correct the next pull; the last flight fades, and a compare miss shows the previous pull's radius
 
 ## Design notes
 
@@ -44,3 +44,5 @@ School-only level 12, **Planet Hop**, shows three home flights with distinct fla
 
 
 **A landing's line never holds the next shot (U7 fix batch 23, 2026-11-12).** A right landing's `praise` (levels 3, 4, 5, 8), level 7's `launch.fed` and level 6's `launch.predicted`/`launch.revealed` start as the pet lands; the hop and the next shot follow at once. The shot's instruction waits for the line, the guide or her first pull (the pull goes on); a level 6 pad pick drops it. The last shot's line is heard out before the finish. Levels 9 and 12 and course play are unchanged. The ghost finger and couch demo bot wait for an instruction.
+
+**Level 13, Flower meadow (2026-11-13, PR #1620).** Lap-only, after the ladder (levels 1–12 unchanged) and first in lap's order (13, then 1); a saved 13 carried into an older band starts that band's first level. A touch anywhere on the screen, on the pet, or a controller press bounces the pet to the next of five seeded landings, one in each fifth of the grass (no clouds shown); each landing pops up a flower (pink, yellow, purple, red, blue, each with a pentatonic marimba note) that stays. A touch while the pet flies or hops back rings free (a pop and a few sparkles) and counts nothing; the round button still repeats the instruction ("Touch anywhere, and {pet} bounces!", `launch.anywhere`). Five landings finish the round. Nothing is ever a miss; there is no hint button and no journal observation.
