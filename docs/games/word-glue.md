@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 1 |
+| lap | 4, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3 |
@@ -19,6 +19,7 @@
 | 1 | Stick them: join the only pair to make a new thing |
 | 2 | What do they make? Find the two pictures that make the asked word |
 | 3 | Who is it for? Join the friend who needs the thing in the middle |
+| 4 | One big picture: a touch anywhere flies its partner in to stick on, and the new thing joins the shelf (5 things) |
 
 <!-- end generated -->
 

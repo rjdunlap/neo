@@ -15,6 +15,8 @@ import { cardArt, iconArt, madeArt, partArt, type Made } from './art';
 import {
   LEVELS,
   applyHint,
+  BIG_LEVEL,
+  bigJoin,
   canDrag,
   CARD,
   COMPOUNDS,
@@ -41,6 +43,8 @@ import {
 const MADE_ART = 160;
 /** A tap at level 1 lifts the picture but barely moves it: a release this close to home is a tap. */
 const TAP_SLOP = 60;
+/** Level 4: the one big picture, and the thing it makes, are about 300 across. */
+const BIG = 300;
 
 /** Each level's authored first round leads its first round of a session (and every demonstration). */
 const authoredShown = new Set<number>();
@@ -74,6 +78,8 @@ class WordGlue implements Game {
   private readonly madeLayer = new Container();
   private readonly shelfLayer = new Container();
   private readonly bubble = new Container();
+  /** Level 4: a layer over the whole view takes every touch. */
+  private readonly touchLayer = new Container();
   private readonly level: number;
   private view: View;
   private clock = 0;
@@ -114,6 +120,22 @@ class WordGlue implements Game {
       this.madeLayer,
       this.bubble,
     );
+    if (this.big) {
+      // The whole view joins the big picture: the cards take no touches of their own.
+      this.cardLayer.eventMode = 'none';
+      ctx.stage.addChild(this.touchLayer);
+      onTap(this.touchLayer, () => this.bigTouch(), { cooldown: 300 });
+    }
+  }
+
+  /** Level 4, lap's opening: one big picture, and a touch anywhere flies its partner in. */
+  get big() {
+    return this.level === BIG_LEVEL;
+  }
+
+  /** A card's full size: level 4's are big. */
+  private scaleOf() {
+    return this.big ? BIG / CARD : 1;
   }
 
   start() {
@@ -124,6 +146,7 @@ class WordGlue implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
+    this.touchLayer.hitArea = new Rectangle(0, 0, v.w, v.h);
     const pts = this.points();
     this.cards.forEach((c, i) => {
       if (c.handle) c.handle.home = { ...pts[i] };
@@ -167,6 +190,14 @@ class WordGlue implements Game {
   }
 
   autotouch(): TouchIntent | null {
+    // Level 4: the ghost finger touches the grass beside the big picture, since anywhere joins it.
+    if (this.big)
+      return this.busy || this.finished || !currentAsk(this.s)
+        ? null
+        : {
+            tap: { on: this.touchLayer, x: this.view.w * 0.18, y: this.view.h * 0.9 },
+            receiver: this.touchLayer,
+          };
     if (this.busy || this.finished || this.unasked || this.cards.some((c) => c.handle?.dragging)) return null;
     const pair = hintFor(this.s);
     const ask = currentAsk(this.s);
@@ -199,7 +230,7 @@ class WordGlue implements Game {
     const pair = applyHint(this.s);
     if (!pair) return;
     sfx.sparkle();
-    if (this.level === 1) this.hintPulse = 2.5;
+    if (this.level === 1 || this.big) this.hintPulse = 2.5;
     void this.ctx.say('wordglue.hint');
   }
 
@@ -217,6 +248,11 @@ class WordGlue implements Game {
   }
 
   private points(): Pt[] {
+    if (this.big) {
+      // The big picture in the middle; its partner waits off the right edge until a touch flies it in.
+      const c = tableCentre(this.view, 2);
+      return [c, { x: this.view.w + BIG, y: c.y }];
+    }
     return tableLayout(this.view, Math.max(2, this.cards.length));
   }
 
@@ -246,9 +282,19 @@ class WordGlue implements Game {
       }
       this.cards = ask.pictures.map((key) => this.makeCard(key));
       const pts = this.points();
+      const k = this.scaleOf();
       this.cards.forEach((c, i) => {
         c.node.position.set(pts[i].x, pts[i].y);
         if (c.handle) c.handle.home = { ...pts[i] };
+        if (this.big) {
+          c.node.scale.set(k);
+          if (i > 0) return;
+          // The next big picture rolls in from the left.
+          c.node.x = -BIG;
+          c.node.rotation = -Math.PI * 2;
+          void this.ctx.tw.to(c.node, { x: pts[0].x, rotation: 0 }, { duration: 0.45, ease: ease.outBack });
+          return;
+        }
         c.node.scale.set(0.2);
         void this.ctx.tw.to(
           c.node.scale,
@@ -266,7 +312,9 @@ class WordGlue implements Game {
     this.relayout();
     if (this.restartWanted) return this.doRestart();
     const say = () => {
-      if (this.level === 1) {
+      if (this.big) {
+        if (first) void this.ctx.instruct('wordglue.instruct.big');
+      } else if (this.level === 1) {
         if (first) void this.ctx.instruct('wordglue.instruct.stick');
       } else if (this.level === 2) {
         void this.ctx.instruct('wordglue.instruct.make', { word: ask.entry.word });
@@ -275,7 +323,7 @@ class WordGlue implements Game {
         void this.ctx.instruct('wordglue.ask', { head: ask.entry.second });
       }
     };
-    if (!said || this.level === 1) return say();
+    if (!said || this.level === 1 || this.big) return say();
     // The ask waits for the join, or is said at her first touch or by the guide.
     this.unasked = say;
     const gen = ++this.askGen;
@@ -303,6 +351,10 @@ class WordGlue implements Game {
     const node = cardArt(key, CARD);
     node.hitArea = new Rectangle(-CARD / 2, -CARD / 2, CARD, CARD);
     this.cardLayer.addChild(node);
+    if (this.big) {
+      node.eventMode = 'none';
+      return { key, node, handle: null };
+    }
     if (!canDrag(this.s, key)) {
       onTap(node, () => this.touch(key), { cooldown: 300 });
       return { key, node, handle: null };
@@ -362,15 +414,36 @@ class WordGlue implements Game {
     return false;
   }
 
+  /**
+   * Level 4: a touch anywhere flies the big picture's partner in to stick on; the join line plays over the shelf flight
+   * and the next big picture. While a join is under way a touch still answers: the big picture hops.
+   */
+  private bigTouch() {
+    if (this.finished || this.dead) return;
+    if (this.busy) {
+      const c = this.cards[0];
+      if (c?.node.visible && !this.showing) {
+        sfx.pop(6);
+        this.hop(c);
+      }
+      return;
+    }
+    const entry = bigJoin(this.s);
+    if (!entry) return;
+    sfx.pop(6);
+    void this.join(entry, null);
+  }
+
   private cardOf(key: string): CardNode | undefined {
     return this.cards.find((c) => c.key === key);
   }
 
   private hop(card: CardNode | undefined) {
     if (!card) return;
+    const k = this.scaleOf();
     this.ctx.tw.kill(card.node.scale);
-    card.node.scale.set(1.12, 0.9);
-    void this.ctx.tw.to(card.node.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+    card.node.scale.set(1.12 * k, 0.9 * k);
+    void this.ctx.tw.to(card.node.scale, { x: k, y: k }, { duration: 0.4, ease: ease.outBack });
   }
 
   /** Level 2: the pair wobbles, a soft boing, and the pet says the asked word and its parts. */
@@ -430,9 +503,10 @@ class WordGlue implements Game {
     made.node.scale.set(0.2);
     this.madeLayer.addChild(made.node);
     this.showing = { made, t: 0 };
+    const size = this.big ? BIG : MADE;
     void this.ctx.tw.to(
       made.node.scale,
-      { x: MADE / MADE_ART, y: MADE / MADE_ART },
+      { x: size / MADE_ART, y: size / MADE_ART },
       { duration: 0.35, ease: ease.outBack },
     );
     return made;
@@ -453,7 +527,8 @@ class WordGlue implements Game {
         return this.ctx.tw.to(
           c.node,
           { x: centre.x + (c === dragged ? 10 : 0), y: centre.y },
-          { duration: 0.25, ease: ease.inOutSine },
+          // Level 4's partner flies in from off the edge, so it takes a little longer.
+          { duration: this.big ? 0.45 : 0.25, ease: ease.inOutSine },
         );
       }),
     );
@@ -560,9 +635,10 @@ class WordGlue implements Game {
     const g = this.glow.clear();
     if (this.finished) return;
     const pulse = 7 + 2 * Math.sin(this.clock * 6);
+    const side = CARD * this.scaleOf();
     const ring = (c: CardNode | undefined, color: number, width: number) => {
       if (!c || !c.node.visible) return;
-      g.roundRect(c.node.x - CARD / 2 - 10, c.node.y - CARD / 2 - 10, CARD + 20, CARD + 20, 34).stroke({
+      g.roundRect(c.node.x - side / 2 - 10, c.node.y - side / 2 - 10, side + 20, side + 20, 34).stroke({
         width,
         color,
       });
@@ -599,6 +675,7 @@ export const wordGlue: GameModule = {
   skills: ['compound-words', 'vocabulary', 'word-meaning'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [BIG_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint:

@@ -4,10 +4,16 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Stick two pictures together to make a new thing, and hear the word they make.',
   steps: [
+    {
+      from: 4,
+      to: 4,
+      text: 'One big picture. Touch anywhere: its partner flies in to stick on, the new thing goes up to the shelf, and the next picture rolls in. Say both little words together.',
+    },
+    { from: 4, to: 4, text: 'Five pictures make five new things along the top.' },
     { from: 1, to: 1, text: 'Drag one picture onto the other, or tap one, and they join.' },
     { from: 2, to: 2, text: 'Listen for the word, then join the two pictures that make it.' },
     { from: 3, to: 3, text: 'A friend needs the thing in the middle; join that friend to it.' },
-    'Touch a picture to hear its word.',
+    { from: 1, to: 3, text: 'Touch a picture to hear its word.' },
   ],
   finish: 'Every pair is joined and its new thing has come alive.',
   note: [
@@ -15,6 +21,11 @@ export const HOW_TO: GameHowTo = {
       from: 1,
       to: 1,
       text: 'Every new word is two whole words she already knows. Nothing can go wrong here.',
+    },
+    {
+      from: 4,
+      to: 4,
+      text: 'Every new word is two whole words she already knows. Any touch is right, and Show a hint counts nothing.',
     },
     {
       from: 2,

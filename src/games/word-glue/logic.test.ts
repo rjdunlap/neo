@@ -2,8 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { overlaps, petCorner } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { SCRIPT } from '../../content/voice-script';
+import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   applyHint,
+  BIG_LEVEL,
+  bigJoin,
+  LEVELS,
+  PLANS,
+  planFor,
   canDrag,
   CARD,
   check,
@@ -39,6 +46,40 @@ const pairs = <T>(xs: readonly T[]): [T, T][] =>
   xs.flatMap((a, i) => xs.slice(i + 1).map((b) => [a, b] as [T, T]));
 
 describe('the compound table', () => {
+  it('level 4 opens lap with one big picture per touch, five distinct pairs, and nothing counted', () => {
+    expect(planFor(BIG_LEVEL).level).toBe(BIG_LEVEL);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1]);
+    expect(stepLevel(BIG_LEVEL, 1, LEVELS.lap!)).toBe(1);
+    // A saved 4 carried into toddler starts toddler at its own level 1; no other band reaches 4.
+    expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    // Levels 1–3 are unchanged.
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4]);
+    for (const level of [1, 2, 3]) expect(planFor(level).level).toBe(level);
+    expect(SCRIPT['wordglue.instruct.big']).toBeDefined();
+    expect(currentAsk(stateFor(BIG_LEVEL, 1, true))!.entry.word).toBe('sunflower');
+    for (const seed of SEEDS) {
+      const s = stateFor(BIG_LEVEL, seed);
+      const words = s.round.asks.map((a) => a.entry.word);
+      expect(new Set(words).size).toBe(5);
+      for (const a of s.round.asks) {
+        expect(a.entry.levels).toContain(1);
+        expect(a.pictures).toEqual([a.entry.first, a.entry.second]);
+      }
+      // Every touch makes the next thing; a hint glows and counts nothing.
+      for (const w of words) {
+        expect(applyHint(s)).not.toBeNull();
+        expect(bigJoin(s)!.word).toBe(w);
+      }
+      expect(s.done).toBe(true);
+      expect(bigJoin(s)).toBeNull();
+      expect([s.misses, s.hints]).toEqual([0, 0]);
+    }
+    // bigJoin does nothing on the other levels.
+    expect(bigJoin(stateFor(1, 1))).toBeNull();
+  });
+
   it('every word is its two parts said together, and no word is denied or opaque', () => {
     for (const c of COMPOUNDS) {
       expect(c.word).toBe(c.first + c.second);
