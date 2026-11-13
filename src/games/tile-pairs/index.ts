@@ -22,6 +22,7 @@ import {
   freeTiles,
   fullMask,
   isFlower,
+  lessonFor,
   makeBoard,
   matches,
   pairs,
@@ -161,6 +162,8 @@ class TilePairs implements Game {
   private readonly leaving = new Set<Container>();
   /** Level 8's flower family is in play, so the help line says any two flowers pair. */
   private readonly flowers: boolean;
+  /** A designed lesson level's habit, spoken after the stuck line (levels 17–19). */
+  private readonly lesson: ReturnType<typeof lessonFor>;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -168,6 +171,7 @@ class TilePairs implements Game {
     this.tiles = makeBoard(ctx.level, ctx.rng);
     this.look = pickLook(ctx.rng);
     this.flowers = flowersIn(planFor(ctx.level)) > 0;
+    this.lesson = lessonFor(ctx.level);
     this.mask = fullMask(this.tiles);
     this.ring.eventMode = this.tally.eventMode = this.help.eventMode = 'none';
     this.peekPictures.eventMode = 'none';
@@ -346,7 +350,22 @@ class TilePairs implements Game {
     this.draw();
     for (const k of nowFree) if (!wasFree.has(k)) this.pulse(this.nodes[k]);
     if (!this.mask) void this.complete();
-    else if (!this.route) void this.ctx.say('tile-pairs.stuck');
+    else if (!this.route) this.stuck();
+  }
+  /**
+   * No route is left. On a lesson level, when the first pair taken left no route, the board's lesson follows the
+   * stuck line unless an undo or shuffle has already moved on; taking the losing pair is a legal move, so nothing is counted.
+   */
+  private stuck() {
+    const mask = this.mask,
+      tiles = this.tiles,
+      // The lesson describes the board's first choice (`lessonHolds`), so it follows only a dead end left by the
+      // first pair taken; a later dead end gets the stuck line alone.
+      firstPairTrap = fullMask(tiles) - mask === pairBits(tiles, mask);
+    void this.ctx.say('tile-pairs.stuck').then(() => {
+      if (this.lesson && firstPairTrap && this.mask === mask && this.tiles === tiles)
+        void this.ctx.say(`tile-pairs.lesson.${this.lesson}`);
+    });
   }
   /** Stop a tile's own animations (their promises never resolve) and put its size back. */
   private settle(node: Container) {
@@ -516,6 +535,13 @@ function sticker(seed: number) {
     c.addChild(t);
   }
   return c;
+}
+/** The bits of the tiles taken from the full board, when exactly two are gone (one pair); otherwise -1. */
+function pairBits(tiles: readonly Tile[], mask: number): number {
+  const gone = fullMask(tiles) & ~mask;
+  let n = 0;
+  for (let i = 0; i < tiles.length; i++) if (gone & (1 << i)) n++;
+  return n === 2 ? gone : -1;
 }
 export function tilePairsLayout(v: View, tiles: readonly Tile[]) {
   const cols = Math.max(...tiles.map((t) => t.x)) + 1;

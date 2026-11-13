@@ -2,6 +2,7 @@ import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 import { POOLS } from './pools.ts';
+import { PUZZLES } from './puzzles.ts';
 
 export interface Tile {
   x: number;
@@ -115,7 +116,7 @@ export const FLOWER_ART = 4;
 export const isFlower = (kind: number) => kind >= FLOWER;
 /** Two tiles pair when they show the same picture, or when both are flowers. Symmetric. */
 export const matches = (a: number, b: number) => a === b || (isFlower(a) && isFlower(b));
-export const flowersIn = (plan: (typeof PLANS)[number]): number => ('flowers' in plan ? plan.flowers : 0);
+export const flowersIn = (plan: Plan): number => ('flowers' in plan ? plan.flowers : 0);
 
 /**
  * A look is the set of six pictures a round deals, chosen by the round's seed and fixed for the round. Within a
@@ -155,9 +156,77 @@ export type Look = (typeof LOOKS)[number];
 /** The round's look, drawn from the round's rng after the board is dealt so a seed's board is unchanged. */
 export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 10 } };
-export const planFor = (level: number) =>
+/**
+ * Designed lesson boards (dive: *Puzzle challenges*). Each is a small sketched layout whose frozen boards, found by
+ * `scripts/tile-pairs-pool.mjs` and kept in `puzzles.ts`, set one trap that is the lesson: a first pair that leaves
+ * no route (`lessonHolds`). IDs 11–16 are left for the second-pass levels the dive plans; they do not exist yet.
+ */
+export const PUZZLE_PLANS = {
+  17: {
+    name: 'Twins on twins · a lesson',
+    cols: 5,
+    rows: 2,
+    layers: 2,
+    layout: 'lesson',
+    kinds: 4,
+    puzzle: 'twins',
+    clear: [0, 1],
+  },
+  18: {
+    name: 'Three free copies · a lesson',
+    cols: 5,
+    rows: 2,
+    layers: 3,
+    layout: 'lesson',
+    kinds: 4,
+    puzzle: 'three',
+    clear: [0, 1],
+  },
+  19: {
+    name: 'Crossed stacks · a lesson',
+    cols: 4,
+    rows: 3,
+    layers: 2,
+    layout: 'lesson',
+    kinds: 4,
+    puzzle: 'crossed',
+    clear: [0, 1],
+  },
+} as const;
+export type Lesson = keyof typeof PUZZLES;
+type Plan = (typeof PLANS)[number] | (typeof PUZZLE_PLANS)[keyof typeof PUZZLE_PLANS];
+/** Each lesson's sketch, positions as [x, y, z]; every one is symmetric under the left-right mirror (test-checked). */
+export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number])[]> = {
+  // Two rows of five; a raised tile on the second and fourth of each row, each with a free side.
+  twins: [
+    ...[0, 1].flatMap((y) => [0, 1, 2, 3, 4].map((x) => [x, y, 0] as const)),
+    ...[0, 1].flatMap((y) => [1, 3].map((x) => [x, y, 1] as const)),
+  ],
+  // Two rows of five; three raised on the back row and one on the middle of those.
+  three: [
+    ...[0, 1].flatMap((y) => [0, 1, 2, 3, 4].map((x) => [x, y, 0] as const)),
+    ...[1, 2, 3].map((x) => [x, 1, 1] as const),
+    [2, 1, 2],
+  ],
+  // Three rows of four; two raised side by side on the middle row, so two stacks can cross.
+  crossed: [...[0, 1, 2].flatMap((y) => [0, 1, 2, 3].map((x) => [x, y, 0] as const)), [1, 1, 1], [2, 1, 1]],
+};
+
+/**
+ * Lessons sit just before the size or rule that needs them, so the band steps through `order` (dive: proposed
+ * order, kept to the levels that exist and to levels 1–10's own order).
+ */
+export const LEVELS: BandLevels = {
+  grownup: { min: 1, max: 19, order: [1, 2, 17, 3, 18, 4, 19, 5, 6, 7, 8, 9, 10] },
+};
+export const planFor = (level: number): Plan =>
+  (PUZZLE_PLANS as Record<number, Plan>)[Math.floor(level)] ??
   PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
+/** The lesson a level teaches, or null on an ordinary level. */
+export const lessonFor = (level: number): Lesson | null => {
+  const plan = planFor(level);
+  return 'puzzle' in plan ? plan.puzzle : null;
+};
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));
 
@@ -290,6 +359,7 @@ export function clearRate(tiles: readonly Tile[], rng: Rng, playouts = PLAYOUTS)
 export function layout(level: number): Tile[] {
   const plan = planFor(level),
     tiles: Tile[] = [];
+  if ('puzzle' in plan) return SKETCHES[plan.puzzle].map(([x, y, z]) => ({ x, y, z, kind: 0 }));
   const add = (x: number, y: number, z: number) => tiles.push({ x, y, z, kind: 0 });
   for (let y = 0; y < plan.rows; y++)
     for (let x = 0; x < plan.cols; x++) {
@@ -338,8 +408,8 @@ export interface Deal {
 export function deal(level: number, rng: Rng): Deal {
   const plan = planFor(level),
     [min, max] = plan.clear;
-  if ('pool' in plan) {
-    const tiles = fromPool(level, rng),
+  if ('pool' in plan || 'puzzle' in plan) {
+    const tiles = 'pool' in plan ? fromPool(level, rng) : fromPuzzles(level, rng),
       rate = clearRate(tiles, rng);
     return { tiles, rate, tries: 1, inBand: rate >= min && rate <= max };
   }
@@ -363,7 +433,7 @@ export function deal(level: number, rng: Rng): Deal {
 export const makeBoard = (level: number, rng: Rng): Tile[] => deal(level, rng).tiles;
 
 /** Left-right mirror of a layout position, which every pooled layout is symmetric under (test-checked). */
-export const mirrorX = (plan: (typeof PLANS)[number], x: number) => plan.cols - 1 - x;
+export const mirrorX = (plan: Plan, x: number) => plan.cols - 1 - x;
 /**
  * A frozen board: the seed picks one of the pool's deals, may mirror it left to right and renames its pictures.
  * Neither changes which pairs are free, so each keeps its losing first pair, its clear rate and its fair trap.
@@ -379,6 +449,85 @@ export function fromPool(level: number, rng: Rng): Tile[] {
   return tiles.map((t) => {
     const from = at.get(`${mirror ? mirrorX(plan, t.x) : t.x},${t.y},${t.z}`)!;
     return { ...t, kind: rename[Number(kinds[from])] };
+  });
+}
+
+/**
+ * A designed lesson board: the seed picks one of the lesson's boards, may mirror it left to right and gives its
+ * pictures any of the look's six. Neither changes which pairs are free, so each keeps its lesson (test-checked).
+ */
+export function fromPuzzles(level: number, rng: Rng): Tile[] {
+  const plan = planFor(level);
+  if (!('puzzle' in plan)) throw new Error('Tile Pairs level has no lesson boards');
+  const kinds = rng.pick(PUZZLES[plan.puzzle]),
+    mirror = rng.chance(0.5),
+    rename = rng.shuffle([0, 1, 2, 3, 4, 5]),
+    tiles = layout(level),
+    at = new Map(tiles.map((t, i) => [`${t.x},${t.y},${t.z}`, i]));
+  return tiles.map((t) => {
+    const from = at.get(`${mirror ? mirrorX(plan, t.x) : t.x},${t.y},${t.z}`)!;
+    return { ...t, kind: rename[Number(kinds[from])] };
+  });
+}
+
+/** The tile resting directly on tile `i`, or -1. */
+const tileOn = (tiles: readonly Tile[], i: number) =>
+  tiles.findIndex((t) => t.x === tiles[i].x && t.y === tiles[i].y && t.z === tiles[i].z + 1);
+const sameKind = (tiles: readonly Tile[], [a, b]: Pair) => tiles[a].kind === tiles[b].kind;
+/**
+ * Whether a board teaches its lesson on the first move. All three need a clearing route and a first pair that
+ * leaves none; then:
+ * - `twins`: one picture has a copy resting on another copy and its other two copies free, and the only losing
+ *   first pair is those two free copies (pairing the top twin with either is safe).
+ * - `three`: one picture has three copies free and its fourth covered by a different picture; exactly one of the
+ *   three pairs among them is safe, and every losing first pair is one of the other two.
+ * - `crossed`: a copy of one picture rests on a copy of a second and a copy of the second on a copy of the first,
+ *   and every losing first pair is of one of those two pictures.
+ */
+export function lessonHolds(lesson: Lesson, tiles: readonly Tile[]): boolean {
+  const full = fullMask(tiles);
+  if (!solve(tiles)) return false;
+  const losing = losingFirstPairs(tiles);
+  if (!losing.length) return false;
+  const open = new Set(freeTiles(tiles, full)),
+    kinds = [...new Set(tiles.map((t) => t.kind))],
+    copies = (k: number) => tiles.flatMap((t, i) => (t.kind === k ? [i] : [])),
+    key = ([a, b]: Pair) => `${Math.min(a, b)},${Math.max(a, b)}`;
+  if (lesson === 'crossed')
+    return kinds.some((a) =>
+      kinds.some((b) => {
+        if (a === b) return false;
+        const on = (top: number, under: number) =>
+          copies(under).some((i) => {
+            const j = tileOn(tiles, i);
+            return j >= 0 && tiles[j].kind === top;
+          });
+        return on(a, b) && on(b, a) && losing.every((p) => [a, b].includes(tiles[p[0]].kind));
+      }),
+    );
+  return kinds.some((k) => {
+    const all = copies(k),
+      free = all.filter((i) => open.has(i)),
+      covered = all.filter((i) => !open.has(i));
+    if (all.length !== 4 || free.length !== 3 || covered.length !== 1) return false;
+    const top = tileOn(tiles, covered[0]),
+      among: Pair[] = [
+        [free[0], free[1]],
+        [free[0], free[2]],
+        [free[1], free[2]],
+      ],
+      lost = new Set(losing.map(key));
+    if (lesson === 'twins') {
+      if (top < 0 || tiles[top].kind !== k) return false;
+      const others = free.filter((i) => i !== top);
+      return losing.length === 1 && key(losing[0]) === key([others[0], others[1]]);
+    }
+    if (top >= 0 && tiles[top].kind === k) return false;
+    return (
+      among.filter((p) => !lost.has(key(p))).length === 1 &&
+      losing.length === 2 &&
+      losing.every((p) => sameKind(tiles, p) && tiles[p[0]].kind === k)
+    );
   });
 }
 
