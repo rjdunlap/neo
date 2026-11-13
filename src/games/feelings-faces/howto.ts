@@ -14,7 +14,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'Tap the pet: each tap shows the next feeling and says its word. When it is sad, the next tap gives it a hug.',
+      text: 'Tap anywhere: each tap shows the next feeling on the pet and says its word. When it is sad, the next tap gives it a hug.',
     },
     { from: 9, to: 9, text: 'Make the face back, and say the word together.' },
     { from: 2, to: 6, text: 'Tap the pet to hear the question again.' },
