@@ -11,6 +11,16 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       let initial = await page.evaluate(() => neo.scene.game.mask);
       await tap('neo.scene.game.nodes[0]');
       assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'covered-card exploration is free');
+      if (level === 8) {
+        // A column's back card shows above its front card; tapping it explains its one cover, free.
+        await tap('neo.scene.game.nodes[15]');
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.status.text),
+          'Remove the card in front of this one first.',
+          'a back card explains its cover',
+        );
+        assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'a back-card tap is free');
+      }
       // Find a mismatched pair from the actual deal, using exposed non-kings only.
       const wrongPair = () =>
         page.evaluate(async () => {

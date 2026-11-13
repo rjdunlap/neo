@@ -10,6 +10,10 @@ export const VOICE = {
   'pyramid.shelf': [
     'Lift two open cards that add to thirteen, or a king alone. The five cards on the shelf are always open. Use them to help the pyramid, and save the ones it will need. Clear the shelf too.',
   ],
+  'pyramid.columns': [
+    'Lift two open cards that add to thirteen, or a king alone. The spare cards stand in three columns: only the front card of each is open, and lifting it opens the one behind. Clear the columns too.',
+  ],
+  'pyramid.columnCovered': ['First lift the card in front of this one.'],
   'pyramid.liftFirst': ['First choose the one card lying on this one.'],
   'pyramid.number': ['{n}. Find an open card to make thirteen together.'],
   'pyramid.covered': ['First lift both cards directly below this one.'],
