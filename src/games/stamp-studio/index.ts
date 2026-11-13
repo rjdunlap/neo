@@ -1,5 +1,5 @@
 import { rangeFor } from '../../progress/difficulty';
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Circle, Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -73,22 +73,23 @@ class StampStudio implements Game {
     this.selection.eventMode = 'none';
     this.bar.eventMode = 'none';
     ctx.stage.addChild(this.background, this.paper);
-    onTap(
-      this.sheet,
-      (e) => {
-        if (this.done) return;
-        const p = this.paper.toLocal(e.global);
-        if (this.stamps.length >= LIMIT) {
-          if (!this.fullSaid) {
-            this.fullSaid = true;
-            void ctx.say('stamp.full');
-          }
-          return;
+    const press = (e: FederatedPointerEvent) => {
+      if (this.done) return;
+      const p = this.paper.toLocal(e.global);
+      if (this.stamps.length >= LIMIT) {
+        if (!this.fullSaid) {
+          this.fullSaid = true;
+          void ctx.say('stamp.full');
         }
-        this.add(p.x, p.y);
-      },
-      { cooldown: this.plan.pat ? 0 : undefined },
-    ); // pats close together are all kept
+        return;
+      }
+      // `place` clamps, so a pat off the paper presses at the nearest place on it.
+      this.add(p.x, p.y);
+    };
+    // Pats close together are all kept.
+    onTap(this.sheet, press, { cooldown: this.plan.pat ? 0 : undefined });
+    // Pat the paper (lap): the teal around the paper presses a star too.
+    if (this.plan.pat) onTap(this.background, press, { cooldown: 0 });
     this.plan.kinds.forEach((kind) => {
       const b = new RoundButton(stampArt(kind, this.color, 33), swatch.white, 48, () => {
         if (this.done) return;
@@ -278,8 +279,10 @@ class StampStudio implements Game {
       this.selection
         .circle(this.selected.node.x, this.selected.node.y, 70)
         .stroke({ width: 5, color: swatch.yellow.line });
-    this.finish.visible = this.stamps.length > 0;
-    this.undo.visible = this.stamps.length > 0;
+    // Pat the paper: no star button and no arrows, so only the eighth pat ends the picture and nothing takes a star away.
+    this.finish.visible = !this.plan.pat && this.stamps.length > 0;
+    this.undo.visible = !this.plan.pat && this.stamps.length > 0;
+    this.choices.forEach((b) => (b.visible = !this.plan.pat));
     this.bin.visible = this.plan.move && !!this.selected;
     this.play.visible = !!this.plan.play && this.stamps.length > 0 && !this.done;
     if (this.stamps.length < 5) {

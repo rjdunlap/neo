@@ -136,12 +136,12 @@ Painted Canyon games whose first lap level plays with the voice off: all five. E
 Three games fail question 1, in the order they should be taken:
 
 1. `draw-the-pattern`: at level 1 a touch anywhere draws, and a touch during the pet's turn is answered. *Built 2026-11-12 (PR #1585): a touch off the paper draws at the nearest place on it, and a touch during the pet's turn or a strip's flight rings a bell and puffs stars without counting.*
-2. `stamp-studio`: at level 7 a touch anywhere presses a star, with no arrows to end or undo it.
+2. `stamp-studio`: at level 7 a touch anywhere presses a star, with no arrows to end or undo it. *Built 2026-11-12 (PR #1587): a pat on the teal around the paper presses a star at the nearest place on it, and at level 7 the star button, green arrow and back arrow are not shown.*
 3. `gear-garden`: at lap a touch anywhere turns the handle, and the pause sheet's hint is not counted.
 
 ### Found while reading (not part of the five questions)
 
-- `stamp-studio`: at level 7 the green arrow shows from the first pat, so a touch on it ends the picture with fewer than eight stars, and the back arrow removes her latest star. The card's finish line for level 7 names only the eighth pat.
+- `stamp-studio` (fixed 2026-11-12, PR #1587: level 7 shows no arrows, so only the eighth pat ends the picture): at level 7 the green arrow shows from the first pat, so a touch on it ends the picture with fewer than eight stars, and the back arrow removes her latest star. The card's finish line for level 7 names only the eighth pat.
 - `draw-the-pattern`: between strips input is held through the strip's flight, a spoken line that is awaited, and the pet's turn again. How long that is with a slow voice is not established.
 - `fluffy-salon`: the touch field's width is the view's less 300 units, so on a narrow view the silent strips are a larger share of the screen. Not measured on a phone.
 - `rainbow-fingers`: at lap the round ends only by a touch on the frame; nothing finishes it for her, and the frame sits in the top right corner of the page she is patting. Whether that ends rounds early is not established.

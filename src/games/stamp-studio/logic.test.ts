@@ -304,6 +304,28 @@ describe('seeded early stamp choices', () => {
     expect(SCRIPT['stamp.pats']).toBeTruthy();
     expect(howToFor(stampStudio, 7)!.steps.length).toBeGreaterThan(0);
   });
+  it('Pat the paper: a pat anywhere around the paper presses at the nearest place on it, and the card names no arrows', () => {
+    const w = 674,
+      h = 478;
+    for (const [x, y] of [
+      [-300, -200],
+      [w + 150, h / 2],
+      [w / 2, h + 400],
+      [-10, h + 10],
+    ]) {
+      const s = place(x, y, w, h);
+      for (const v of [s.x, s.y]) {
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(1);
+      }
+    }
+    // Nearest: a pat right of the middle lands on the right edge at the same height.
+    expect(place(w + 150, h / 2, w, h)).toEqual({ x: 1, y: 0.5 });
+    const card = howToFor(stampStudio, 7)!;
+    const text = [...card.steps, ...[card.finish].flat()].join(' ');
+    expect(text).toMatch(/anywhere/i);
+    expect(text).not.toMatch(/arrow removes|green arrow/i);
+  });
   it('plays the picture left to right, on the pentatonic scale, higher on the paper sounding higher, in at most 6 s', () => {
     const rng = new Rng(7);
     for (let n = 0; n <= LIMIT; n++) {

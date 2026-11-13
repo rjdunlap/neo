@@ -101,6 +101,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
     if ((!only || only === 'stamps') && stampAt(7)) {
       // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
+      // The teal around the paper presses too, at the nearest place on it, and no star button or arrow is shown.
       await launch('stamp-studio', 7);
       await page.evaluate(() => {
         if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40);
@@ -108,10 +109,26 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       await page.waitForTimeout(500);
       await page.evaluate(async () => {
         const g = neo.scene.game;
+        const off = [
+          [g.width / 2, g.height + 70],
+          [g.width + 40, g.height / 2],
+        ];
         for (let i = 0; i < 8; i++) {
-          const p = g.paper.toGlobal({ x: 80 + (i % 4) * 150, y: 120 + Math.floor(i / 4) * 200 });
+          const p = g.paper.toGlobal(
+            i < off.length
+              ? { x: off[i][0], y: off[i][1] }
+              : { x: 80 + (i % 4) * 150, y: 120 + Math.floor(i / 4) * 200 },
+          );
           kit.tap(p.x, p.y);
           await kit.sleep(i === 7 ? 150 : 60);
+          if (i < off.length && g.stamps.length !== i + 1)
+            throw new Error(`A pat off the paper (${off[i]}) pressed no star`);
+          if (i === 0) {
+            const s = g.stamps[0].data;
+            if (s.y !== 1) throw new Error(`A pat below the paper landed at y ${s.y}, not its bottom edge`);
+            if (g.finish.visible || g.undo.visible || g.choices.some((b) => b.visible))
+              throw new Error('Pat the paper shows an arrow or the star button');
+          }
           if (i === 6) {
             if (g.done) throw new Error('Finished before the eighth pat');
           }
