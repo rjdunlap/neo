@@ -21,7 +21,7 @@
 | 4 | Traffic helper: let one road go at a time at the crossing |
 | 5 | Whose light? A car lane and a bike lane each have their own light: send the front one whose own light is green |
 | 6 | Busy crossing: cars arrive one at a time on both roads; hand over one road at a time |
-| 9 | Go car, stop car: tap the green lamp to make the car go and the red lamp to make it stop (lap's first level) |
+| 9 | Go car, stop car: one big lamp, and a touch anywhere turns it: green, the car goes round; red, it stops (lap's first level) |
 
 <!-- end generated -->
 
