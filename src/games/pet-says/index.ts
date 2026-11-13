@@ -129,6 +129,8 @@ class PetSays implements Game {
     star.hitArea = star.touchArea(40);
     // A pat brings the next move, so a pat just after a move ends must not be swallowed.
     onTap(this.mover.pet, () => void this.again(), { cooldown: this.plan.mode === 'pat' ? 250 : 500 });
+    // Level 13 (lap only): a touch anywhere in the meadow is the pat, as a touch on the pet is.
+    if (this.plan.mode === 'pat') onTap(this.backdrop, () => void this.again(), { cooldown: 250 });
     this.next.visible = false;
     this.notes.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.notes, this.mover, this.next);
@@ -513,6 +515,8 @@ export const petSays: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
   coplayHint: 'Stand up and copy the pet with {name}, then tap the green arrow for the next move.',
+  // Lap opens on level 13, where her touch anywhere is the pat and there is no arrow; levels 1 and 2 keep the grown-up's arrow.
+  coplayHintLap: "Copy the pet's moves with {name}. When a green arrow shows, you tap it for the next move.",
   offScreen: 'Play Simon Says with family names: "Mama says touch your toes!" Freeze dance to any song.',
   hubIcon: () => new SaysIcon(),
   touchDemo: true,

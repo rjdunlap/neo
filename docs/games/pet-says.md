@@ -20,7 +20,7 @@
 | 3 | Two moves in order: "clap, then stomp" |
 | 4 | "Pet says": move only when you hear the pet's name first |
 | 5 | Freeze dance: dance to the music, freeze when it stops |
-| 13 | Pat the pet: every touch on the pet makes it do the next move (no arrow) |
+| 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->
 

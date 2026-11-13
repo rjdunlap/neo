@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   async function shortlistBatch() {
     const only = process.env.SHORTLIST_ONLY;
-    if (only !== undefined) selectValue(only, ['tower', 'lasso', 'says', 'owls'], 'SHORTLIST_ONLY');
+    if (only !== undefined) selectValue(only, ['tower', 'lasso', 'says', 'pat', 'owls'], 'SHORTLIST_ONLY');
     const fromLevel = Number(process.env.FROM_LEVEL || 1);
     const score = (id) =>
       page.evaluate((id) => {
@@ -564,6 +564,38 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           `Pet Says ${level} (${await page.evaluate(() => neo.scene.game.plan.mode)}): moves shown and repeated, grown-up arrow, saved round and sticker passed`,
         );
       }
+
+    if (!only || only === 'pat') {
+      // Level 13 Pat the pet (lap only), upright: no arrow; a pat on the pet or anywhere in the meadow brings the next move.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('pet-says', 13, 'Mia', 'lap');
+      await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      const side = [0.08, 0.92];
+      for (let n = 0; n < 5; n++) {
+        await page.waitForFunction((n) => !neo.scene.game.busy && neo.scene.game.patted === n, n, {
+          timeout: 30000,
+        });
+        await page.evaluate(
+          ({ n, x }) => {
+            const p = neo.scene.game.mover.pet;
+            if (n % 2 === 0) return kit.tapOn(p, p.touch.x, p.touch.y);
+            // Every other pat lands on the empty meadow beside the pet.
+            const at = { x: innerWidth * x, y: innerHeight * 0.45 },
+              local = p.toLocal(at);
+            if (p.hitArea.contains(local.x, local.y)) throw new Error('the meadow point is on the pet');
+            kit.tap(at.x, at.y);
+          },
+          { n, x: side[(n >> 1) % 2] },
+        );
+        await page.waitForFunction((n) => neo.scene.game.patted === n + 1, n, { timeout: 5000 });
+        assert.equal(await page.evaluate(() => neo.scene.game.next.visible), false, 'no arrow at level 13');
+        if (n === 1) await screenshot('pet-says-13-portrait');
+      }
+      await finished('pet-says');
+      assert.deepEqual(await score('pet-says'), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Pet Says 13 (pat): five pats (two on the meadow), no arrow, saved round and sticker passed');
+    }
 
     if (!only || only === 'owls')
       for (let level = fromLevel; level <= 4; level++) {
