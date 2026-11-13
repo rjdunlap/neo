@@ -10,6 +10,8 @@ import {
   makeRound,
   needed,
   nextStop,
+  nextToShow,
+  SHOW_CLEAR,
   PLANS,
   readyForPond,
   RIM_ARC,
@@ -227,5 +229,40 @@ describe('Duckling Parade', () => {
       }
     }
     expect([...seen].sort()).toEqual(['flowers', 'reeds']);
+  });
+});
+
+describe('Duckling Parade at lap: one duckling at a time', () => {
+  const spots = [
+    { x: 100, y: 300 },
+    { x: 500, y: 400 },
+    { x: 300, y: 650 },
+  ];
+  it('brings out the first waiting duckling that is not already beside Mama', () => {
+    expect(nextToShow(spots, [0, 1, 2], { x: 900, y: 300 })).toBe(0);
+    expect(nextToShow(spots, [0, 1, 2], { x: 120, y: 310 })).toBe(1);
+    expect(nextToShow(spots, [2], { x: 120, y: 310 })).toBe(2);
+  });
+  it('picks the farthest when every waiting spot is close, and nothing when none waits', () => {
+    expect(nextToShow(spots, [0, 1], { x: 150, y: 320 }, 1000)).toBe(1);
+    expect(nextToShow(spots, [], { x: 0, y: 0 })).toBeUndefined();
+  });
+  it('every lap round can bring each duckling out in turn, each a walk away from where Mama stood', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const pts = Array.from({ length: 3 }, () => ({ x: rng.range(60, 560), y: rng.range(280, 720) }));
+      let mama = { x: 220, y: 430 };
+      const waiting = [0, 1, 2];
+      const shown: number[] = [];
+      while (waiting.length) {
+        const i = nextToShow(pts, waiting, mama)!;
+        expect(waiting).toContain(i);
+        waiting.splice(waiting.indexOf(i), 1);
+        shown.push(i);
+        mama = pts[i];
+      }
+      expect(shown.sort()).toEqual([0, 1, 2]);
+      expect(SHOW_CLEAR).toBeGreaterThan(90);
+    }
   });
 });

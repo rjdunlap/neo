@@ -145,12 +145,12 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
       };
     });
     const only = process.env.ARCADE_ONLY;
-    if (only !== undefined) selectValue(only, ['scoop', 'roundup', 'launch'], 'ARCADE_ONLY');
+    if (only !== undefined) selectValue(only, ['parade', 'scoop', 'roundup', 'launch'], 'ARCADE_ONLY');
     const paradeLevels =
       process.env.ARCADE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 11 }, (_, i) => i + 1);
     for (const level of paradeLevels.filter((n) => n >= 1 && n <= 11)) {
       if (only && only !== 'parade') continue;
-      await launch('duckling-parade', level);
+      await launch('duckling-parade', level, 'Mia', process.env.PARADE_BAND || undefined);
       await page.waitForTimeout(500);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
       await page.evaluate(async () => {
@@ -213,7 +213,40 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
           await walkTo(g.mama.x, g.mama.y - 160);
         }
         if (g.plan.mode === 'tap') {
-          for (const d of [...g.ducklings]) if (d.state === 'loose') await fetchDuck(d);
+          if (g.ctx.band === 'lap') {
+            // Lap: one duckling out at a time, Mama quacks at touch-down anywhere, and waiting glows without a hint.
+            const shown = () => g.ducklings.filter((d) => d.state !== 'waiting').length;
+            if (loose().length !== 1 || shown() !== 1)
+              throw new Error(`Lap parade should open with one duckling out, not ${loose().length}`);
+            const { sfx } = await import('/src/audio/sfx.ts');
+            const sounds = [];
+            const animal = sfx.animal;
+            sfx.animal = (kind) => (sounds.push(kind), animal.call(sfx, kind));
+            const sky = g.mama.parent.toGlobal({ x: g.view.w * 0.5, y: g.view.h * 0.2 });
+            kit.tap(sky.x, sky.y);
+            await kit.sleep(100);
+            if (!sounds.includes('quack'))
+              throw new Error(
+                `A touch on the sky did not quack at lap (lastQuack ${g.lastQuack}, target ${Math.round(g.target.x)},${Math.round(g.target.y)}, sounds ${sounds}, at ${Math.round(sky.x)},${Math.round(sky.y)})`,
+              );
+            sfx.animal = animal;
+            await kit.until(() => Math.hypot(g.mama.x - g.target.x, g.mama.y - g.target.y) < 3, 8000);
+            await kit.until(() => g.ducklings.some((d) => d.glow.visible), 17000);
+            if (!g.ducklings.some((d) => d.glow.visible)) throw new Error('No waiting glow at lap');
+            if (g.hints !== 0) throw new Error(`Lap waiting counted ${g.hints} hints`);
+            for (let guard = 0; loose().length && guard < 6; guard++) {
+              const before = shown();
+              await fetchDuck(loose()[0]);
+              if (g.ducklings.some((d) => d.state === 'waiting')) {
+                if (!(await kit.until(() => shown() === before + 1 && loose().length === 1, 3000)))
+                  throw new Error('The next lap duckling did not come out');
+              }
+            }
+          } else {
+            if (g.ducklings.some((d) => d.state === 'waiting'))
+              throw new Error(`${g.ctx.band} parade should have every duckling out from the start`);
+            for (const d of [...g.ducklings]) if (d.state === 'loose') await fetchDuck(d);
+          }
           if (!(await kit.until(() => g.finished, 20000))) throw new Error('Lap parade never went home');
           return;
         }
