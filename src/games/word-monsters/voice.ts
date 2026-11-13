@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.word-monsters': ['Word monsters!'],
   'monster.play': ['Tap a letter monster to hear its sound!'],
+  'monster.big': ['Touch anywhere to wake the letter monster!'],
   'monster.find': ['Find {letter}!', 'Where is {letter}?'],
   'monster.who': ['Who says {sound}?'],
   'monster.first': ['{word} starts with {sound}. Who says {sound}?'],

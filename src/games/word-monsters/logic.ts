@@ -15,6 +15,8 @@ export interface MonsterPlan {
   /** Monsters to choose from. */
   choices: number;
   name: string;
+  /** Level 9, lap's opening: one big monster at a time, and a touch anywhere makes it say its sound. */
+  big?: boolean;
 }
 
 export const PLANS: MonsterPlan[] = [
@@ -43,12 +45,22 @@ export const PLANS: MonsterPlan[] = [
   },
 ];
 
+/** Level 9, lap's opening before level 1: one big monster at a time; toddler still starts at 1. */
+export const BIG_LEVEL = 9;
+export const BIG_PLAN: MonsterPlan = {
+  mode: 'play',
+  big: true,
+  rounds: 6,
+  choices: 1,
+  name: 'One big monster: a touch anywhere makes it say its sound, its picture stays, and the next monster wakes (6 monsters)',
+};
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: PLANS.length },
+  school: { min: 5, max: 8 },
 };
 
 /** Word families: the ending stays, the first sound changes. Each word's onset is a plain consonant sound. */
@@ -60,7 +72,8 @@ export const FAMILIES: Record<string, string[]> = {
   op: ['top', 'mop', 'hop', 'pop'],
 };
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -214,6 +227,11 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
     out.push({ answer, monsters: pickLetters(rng, plan.choices, [answer], pool) });
   }
   return out;
+}
+
+/** A big round's monsters, one per touch, all different, each with a first-word picture to keep. */
+export function bigLetters(rng: Rng, n = BIG_PLAN.rounds): string[] {
+  return rng.shuffle(Object.keys(FIRST_WORDS)).slice(0, n);
 }
 
 /** Building a word: may `letter` go into the next empty slot? Slots fill left to right. */
