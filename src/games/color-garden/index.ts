@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Rectangle } from 'pixi.js';
 import { prop, FRUIT_FOR } from '../../art/props';
 import { RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
@@ -13,6 +13,7 @@ import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  BIG_LEVEL,
   basketAt,
   basketWidth,
   deal,
@@ -42,6 +43,8 @@ const clothOf = (key: SortKey) =>
 const shadeOf = (key: SortKey) => (key === 'light-blue' ? 'light' : 'dark');
 
 const ITEM_SCALE = 0.78;
+/** Level 10's one big fruit on the tree. */
+const BIG_SCALE = 1.6;
 const BASKET = { fill: 0xd9a066, line: 0x9c6b3c, weave: 0xb9844f };
 
 interface Item {
@@ -149,6 +152,10 @@ class ColorGarden implements Game {
   private finished = false;
   private readonly rule?: Rule;
   private sign?: Container;
+  /** Level 10: a layer over the whole garden, so a touch anywhere hops the big fruit home. */
+  private readonly catcher = new Container();
+  /** Level 10: seconds since her last touch; the big fruit wiggles after a quiet spell (no hint is counted). */
+  private quiet = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -172,15 +179,23 @@ class ColorGarden implements Game {
     this.baskets = colors.map((c) => ctx.track(new Basket(c, basketWidth(this.plan))));
     ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, this.layer);
     if (this.sign) ctx.stage.addChild(this.sign);
+    if (this.plan.big) {
+      ctx.stage.addChild(this.catcher);
+      onTap(this.catcher, () => this.touchBig(), { cooldown: 300 });
+    }
 
     this.items = items.map((color, i) => {
       const shade = shadeLook(color);
       const kind = kinds[i];
       const view = prop(kind, shade ? shade.base : (looks?.[i] ?? (color as ColorName)));
       if (shade) view.tint = shade.tint;
-      view.scale.set(ITEM_SCALE);
+      view.scale.set(this.plan.big ? (i === 0 ? BIG_SCALE : 0) : ITEM_SCALE);
       const item: Item = { view, key: color, wrongs: 0, home: { x: 0, y: 0 } };
-      if (this.plan.tap) {
+      if (this.plan.big) {
+        // The catcher takes every touch; the fruit waiting behind the first stay hidden until a touch grows them.
+        view.eventMode = 'none';
+        view.visible = i === 0;
+      } else if (this.plan.tap) {
         onTap(
           view,
           () => {
@@ -244,15 +259,17 @@ class ColorGarden implements Game {
 
   start() {
     void this.ctx.instruct(
-      this.plan.tap
-        ? 'garden.tap'
-        : this.rule
-          ? this.rule === 'color'
-            ? 'garden.rule.color'
-            : 'garden.rule.kind'
-          : this.plan.shades
-            ? 'garden.shades'
-            : 'garden.start',
+      this.plan.big
+        ? 'garden.big'
+        : this.plan.tap
+          ? 'garden.tap'
+          : this.rule
+            ? this.rule === 'color'
+              ? 'garden.rule.color'
+              : 'garden.rule.kind'
+            : this.plan.shades
+              ? 'garden.shades'
+              : 'garden.start',
     );
   }
 
@@ -262,7 +279,7 @@ class ColorGarden implements Game {
     const cx = v.w / 2;
     const rows = this.plan.items > 6 ? 2 : 1;
     const perRow = Math.ceil(this.plan.items / rows);
-    const canopyW = Math.max(360, perRow * 118 + 100);
+    const canopyW = this.plan.big ? 420 : Math.max(360, perRow * 118 + 100);
     const t = this.tree.clear();
     t.roundRect(cx - 34, 200, 68, v.h * 0.62 - 180, 20)
       .fill(0x9c6b3c)
@@ -275,8 +292,19 @@ class ColorGarden implements Game {
     ]);
     puffs(t, canopy, 0x7cc463, 0x4e9e3a);
 
+    if (this.plan.big) {
+      // One big fruit in the middle of the canopy; the next grows in the same spot.
+      const home = { x: cx, y: 185 };
+      for (const item of this.items) {
+        item.home = home;
+        item.view.position.set(home.x, home.y);
+      }
+      t.circle(home.x, home.y, 50 * (BIG_SCALE / ITEM_SCALE)).fill({ color: 0xfffbe8, alpha: 0.8 });
+      this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
+    }
+
     // Fruit waiting on the tree.
-    const waiting = this.items.filter((i) => !i.drag?.dragging);
+    const waiting = this.plan.big ? [] : this.items.filter((i) => !i.drag?.dragging);
     waiting.forEach((item, i) => {
       const row = Math.floor(i / perRow);
       const xs = spread(
@@ -299,11 +327,45 @@ class ColorGarden implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    const big = this.plan.big ? this.items[0] : undefined;
+    if (big && !this.finished) {
+      // The fruit on the tree grows to full size (it starts at nothing when her touch brings it) and sways; after a quiet spell it wiggles.
+      this.quiet += dt;
+      const k = big.view.scale.x + (BIG_SCALE - big.view.scale.x) * Math.min(1, dt * 7);
+      big.view.scale.set(k);
+      big.view.rotation =
+        this.quiet > 6 && this.quiet % 3 < 0.8
+          ? 0.2 * Math.sin(this.clock * 14)
+          : 0.06 * Math.sin(this.clock * 2);
+    }
+  }
+
+  /** Level 10: any touch sends the big fruit hopping to its own basket with its color named, and the next one grows. */
+  private touchBig() {
+    const item = this.items[0];
+    const basket = item && nextToSort([item], this.baskets)?.basket;
+    if (!item || !basket || this.finished) return;
+    this.quiet = 0;
+    item.view.rotation = 0;
+    sfx.tick();
+    void this.ctx.say(`color.${item.key as ColorName}`);
+    void this.place(item, basket);
+    const next = this.items[0];
+    if (next) {
+      next.view.scale.set(0.1);
+      next.view.visible = true;
+      sfx.pop(9);
+    }
   }
 
   /** The ghost finger uses the round's own action: tap to hop, or drag to sort. */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
+    // Level 10: a touch on the grass, off the fruit, to show that anywhere works.
+    if (this.plan.big)
+      return this.items.length
+        ? { tap: { on: this.catcher, x: this.view.w * 0.3, y: this.view.h * 0.7 }, pause: 0.7 }
+        : null;
     const next = nextToSort(
       this.items.filter((i) => !i.drag?.dragging && !i.view.destroyed),
       this.baskets,
@@ -483,10 +545,11 @@ export const colorGarden: GameModule = {
   challenge: 'noticing',
   skills: ['colors', 'sorting', 'fine-motor'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  entryLevels: [9],
+  entryLevels: [9, BIG_LEVEL],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
+    if (p.big) return 'One big fruit: a touch anywhere hops it to its color basket, and the next one grows';
     if (p.tap) return 'Tap four fruits: each hops to its own color basket';
     if (p.colors === 1) return 'One basket: practice dragging';
     if (p.rule) return `Sort ${p.items} fruits and balloons by color or by kind, as the sign says`;

@@ -158,7 +158,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Notice Board](docs/games/notice-board.md) | pre-K–school | Cozy Village | 3 | island friends pin made-up picture posters to a village board; tap who made it, who saw it, or whether it tells or sells |
 | [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 3 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
-| [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 9 | tap four fruits into their own two color baskets |
+| [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 10 | tap four fruits into their own two color baskets |
 | [Dot Link](docs/games/dot-link.md) | lap–pre-K | Rainbow Meadow | 8 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
 | [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 8 | fit two big shapes into a house, tree or boat |
 | [Garden Grow](docs/games/garden-grow.md) | lap–pre-K | Rainbow Meadow | 11 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |

@@ -16,6 +16,8 @@ export interface GardenPlan {
   shades?: boolean;
   /** Fruit and balloons in two colors: a sign says whether this round sorts by color or by what each thing is. */
   rule?: boolean;
+  /** One big fruit on the tree at a time; a touch anywhere hops it home and the next grows. Lap only. */
+  big?: boolean;
 }
 
 export type Rule = 'color' | 'kind';
@@ -37,10 +39,15 @@ export const PLANS: GardenPlan[] = [
   { colors: 2, items: 8, fruit: false, shades: true },
   { colors: 2, items: 8, fruit: false, rule: true },
   { colors: 2, items: 4, fruit: true, tap: true },
+  { colors: 2, items: 6, fruit: true, tap: true, big: true },
 ];
 
+/** Level 10, lap's opening before level 9's four fruit: one big fruit, and a touch anywhere hops it to its basket. */
+export const BIG_LEVEL = 10;
+
 export const LEVELS: BandLevels = {
-  lap: { min: 9, max: 9, order: [9] },
+  // Level 10, One big fruit, opens lap before level 9; toddler still starts at 9.
+  lap: { min: 9, max: BIG_LEVEL, order: [BIG_LEVEL, 9] },
   toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 8 },
   prek: { min: 4, max: 8 },
@@ -78,6 +85,11 @@ export function deal(
     return { colors: keys, items, kinds: items.map((_, i) => (i % 2 ? 'balloon' : 'flower')) };
   }
   const colors = rng.shuffle([...RAINBOW]).slice(0, plan.colors);
+  // One big fruit at a time: the colors take turns, so each hop names a new color and lands in the other basket.
+  if (plan.big) {
+    const items = Array.from({ length: plan.items }, (_, i) => colors[i % colors.length]);
+    return { colors, items, kinds: kindsFor(rng, plan, items) };
+  }
   const items = [...colors];
   while (items.length < plan.items) items.push(rng.pick(colors));
   rng.shuffle(items);
