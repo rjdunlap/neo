@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Roundup level 1 at lap: one animal at a time (2026-11-12)
+
+[PR #1594](https://github.com/rjdunlap/neo/pull/1594), `claude/roundup-lap-one-at-a-time`: at lap, level 1 (tap mode) brings one animal out at a time (the `sequential` rule level 10 has); the next hops out with a sparkle 0.8 s after each goes home. The fifteen-second waiting glow and the thirty-second trot home still happen but count no hint at lap (`lapTap(plan, band)` in `logic.ts`). Toddler's level 1 is unchanged. The level 1 how-to step adds that at lap age the animals come out one at a time. [Game notes](../games/roundup.md#design-notes) and [verification](../verification/2026-11-12-roundup-level-1-at-lap-one-animal-at-a-time.md).
+
 ### Duckling Parade level 1 at lap: a touch quacks, ducklings come out one at a time (2026-11-12)
 
 [PR #1593](https://github.com/rjdunlap/neo/pull/1593), `claude/duckling-parade-lap-quack`: at lap only (level 1 is in lap's window alone, so it changed in place for that band), Mama quacks and hops at every touch-down anywhere, sky included (throttled 0.25 s, also while the ducklings hop into the pond before the finale). One duckling waits on the meadow at the start; each next one pops out (hop, pop, puff of stars) 0.6 s after the one before joins, at the first waiting spot more than 180 units from Mama (`nextToShow` in `logic.ts`, with rule tests). The fifteen-second glow still shows but at lap counts no hint. Toddler's level 1 is unchanged (all three out from the start, waiting counts a hint). The `arcade` suite's parade loop takes `PARADE_BAND` and accepts `ARCADE_ONLY=parade`. [Game notes](../games/duckling-parade.md#design-notes) and [verification](../verification/2026-11-12-duckling-parade-level-1-at-lap-a-touch-quacks.md).

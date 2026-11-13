@@ -14,7 +14,7 @@ Research and ideation only: nothing under `src/` changed. Roundup is the island'
 
 | Level | Mode | Bands whose window holds it | What she decides |
 | --- | --- | --- | --- |
-| 1 | `tap`, 3 animals of one kind | lap, toddler | Nothing can be wrong: which animal to tap next; a tapped animal hops in by itself |
+| 1 | `tap`, 3 animals of one kind | lap, toddler | Nothing can be wrong: which animal to tap next; a tapped animal hops in by itself. At lap since 2026-11-12 one animal comes out at a time and waiting counts no hint |
 | 2 | `shoo`, 3 animals | toddler, preschool | Where to put the finger so the animal moves toward the gate, not away from it |
 | 3 | `shoo`, 5 animals | toddler, preschool, pre-K | The same, with a bigger herd that scatters |
 | 4 | `sort`, 4 animals, two pens | preschool, pre-K | Which pen each animal belongs in (pigs to the mud, bunnies to the carrots) |
