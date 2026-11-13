@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
  * monster's line, and in `pond-typing`, `word-glue` and `owl-walk` a typed word's, joined pair's or flipped card's
  * line, never holds the next tap. Each line is stretched to at least 4 s in the page, so the next friend, card,
  * question, bubble, ask or stone tap opening sooner shows the line no longer gates it; the round's last line is
- * still heard out. GROVE_ONLY=night|nightbig|safaribig|opp|monsters|monstersbig|pond|glue|owl plays one game.
+ * still heard out. GROVE_ONLY=night|nightbig|safaribig|opp|oppbig|monsters|monstersbig|pond|glue|owl plays one game.
  */
 export function createSuite({ page, launch, finished, screenshot, log, ready, chooserEnter, errors }) {
   async function groveCutLines() {
@@ -420,6 +420,93 @@ export function createSuite({ page, launch, finished, screenshot, log, ready, ch
           )} ms into a 4 s sound, its ask waiting; an early tap said it (no miss); the guide said it; the last heard out`,
       );
     }
+    if (!only || only === 'oppbig') {
+      // Opposites level 6 (lap): one big card; a touch anywhere (sky, hills, the card, beside it) flips it under a 4 s
+      // word, a small copy joins the row along the bottom and the next card grows in; a touch while it flips or arrives
+      // only wiggles it; the eight lap pairs leave eight pictures, nothing is a miss, and the last word is heard out.
+      await page.setViewportSize({ width: 844, height: 390 });
+      await page.waitForTimeout(300);
+      await launch('opposites', 6);
+      await stretch(['opp.word']);
+      await page.waitForTimeout(600);
+      await screenshot('opposites-6-start-phone');
+      const play = page.evaluate(async () => {
+        const g = neo.scene.game;
+        if (!g.plan.big || g.plan.rounds !== 8) throw new Error('Opposites big plan');
+        const v = g.view;
+        const at = (x, y) => {
+          const p = g.catcher.toGlobal({ x, y });
+          kit.tap(p.x, p.y);
+        };
+        const spots = [
+          () => at(v.w * 0.1, v.h * 0.2),
+          () => at(v.w * 0.85, v.h * 0.6),
+          () => at(g.cards[0].node.x, g.cards[0].node.y),
+          () => at(v.w * 0.25, v.h * 0.5),
+          () => at(v.w * 0.9, v.h * 0.15),
+          () => at(v.w / 2, v.h * 0.75),
+          () => at(v.w * 0.6, v.h * 0.1),
+          () => at(v.w * 0.15, v.h * 0.7),
+        ];
+        const out = { opens: [], sizes: [], concepts: [], extra: [], flipped: [] };
+        for (let n = 0; n < 8; n++) {
+          await kit.until(() => !g.busy && g.index === n && g.cards.length === 1, 15000);
+          await kit.sleep(250);
+          const c = g.cards[0];
+          const b = c.node.getBounds();
+          out.sizes.push(Math.min(b.width, b.height) / g.catcher.worldTransform.a);
+          out.concepts.push(c.card.concept);
+          const side = c.card.side;
+          const t0 = performance.now();
+          spots[n]();
+          if (n === 7) {
+            await kit.until(() => neo.scene.finished, 20000);
+            out.last = performance.now() - t0;
+          } else {
+            // A second touch while the card flips counts no extra card.
+            await kit.sleep(200);
+            at(v.w * 0.5, v.h * 0.9);
+            await kit.until(() => g.index === n + 1 && !g.busy, 15000);
+            out.opens.push(performance.now() - t0);
+            out.extra.push(g.index);
+          }
+          out.flipped.push(g.row.children.length === n + 1 && side !== undefined);
+        }
+        out.row = g.row.children.map((p) => [Math.round(p.x), Math.round(p.y)]);
+        out.view = [Math.round(v.w), Math.round(v.h)];
+        out.misses = g.misses;
+        out.hints = g.hints;
+        return out;
+      });
+      // Midway, with five pictures in the row and the sixth card up.
+      await page.waitForFunction(() => neo.scene.game.index === 5 && !neo.scene.game.busy, null, {
+        timeout: 60000,
+      });
+      await screenshot('opposites-6-row-phone');
+      const big = await play;
+      if (big.sizes.some((s) => s < 250)) throw new Error(`Big card too small: ${JSON.stringify(big)}`);
+      if (new Set(big.concepts).size !== 8) throw new Error(`Pairs repeat: ${JSON.stringify(big)}`);
+      if (big.extra.some((t, i) => t !== i + 1))
+        throw new Error(`A between touch flipped a card: ${JSON.stringify(big)}`);
+      if (big.flipped.some((ok) => !ok))
+        throw new Error(`The row did not grow by one: ${JSON.stringify(big)}`);
+      if (big.opens.some((t) => t > 3000))
+        throw new Error(`The word held the next card: ${JSON.stringify(big)}`);
+      if (!(big.last >= 4000)) throw new Error(`The last word was cut: ${JSON.stringify(big)}`);
+      if (big.row.length !== 8 || big.misses || big.hints)
+        throw new Error(`Opposites big not free: ${JSON.stringify(big)}`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await finished('opposites');
+      assert.deepEqual(await score('opposites'), [0, 0]);
+      log(
+        `Opposites 6: eight big cards flipped by touches anywhere, next in ${big.opens
+          .map(Math.round)
+          .join('/')} ms under 4 s words, sizes ${big.sizes.map(Math.round).join('/')}, row ${JSON.stringify(
+          big.row,
+        )} in ${big.view.join('x')}, the last heard out, no misses`,
+      );
+    }
+
     if (!only || only === 'monstersbig') {
       // Word Monsters level 9 (lap): one big monster; a touch anywhere (sky, grass, the monster, beside it) makes it say
       // its sound under a 4 s line, its picture stays on the shelf and the next monster wakes; a touch while it wakes

@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { SCRIPT } from '../../content/voice-script';
+import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
+  BIG_LEVEL,
+  BIG_PLAN,
+  LEVELS,
+  planFor,
   CONCEPTS,
   CONCEPT_IDS,
   SUBJECTS,
@@ -14,6 +20,30 @@ import {
 } from './logic';
 
 describe('Opposites', () => {
+  it('level 6 opens lap with one big card: each of the eight lap pairs once, one card per touch', () => {
+    expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
+    expect(BIG_PLAN).toMatchObject({ level: 6, mode: 'switch', big: true, rounds: 8 });
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([BIG_LEVEL, 1]);
+    expect(stepLevel(BIG_LEVEL, 1, LEVELS.lap!)).toBe(1);
+    // A saved 6 carried into toddler starts toddler at its own level 1; no other band reaches 6.
+    expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
+    for (const band of ['toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
+    // The ladder's levels 1–5 are unchanged.
+    for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+    expect(SCRIPT['opp.big']).toBeDefined();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rounds = makeRounds(BIG_PLAN, new Rng(seed));
+      expect(rounds).toHaveLength(8);
+      for (const r of rounds) {
+        expect(r.cards).toHaveLength(1);
+        expect(r.ask).toBeUndefined();
+        expect(cardToTap(BIG_PLAN, r, [false], null)).toBe(0);
+      }
+      expect(rounds.map((r) => r.cards[0].concept).sort()).toEqual([...poolFor(1)].sort());
+    }
+  });
+
   it('keeps spoken words unique and the lap pool at its original eight pairs', () => {
     const words = CONCEPT_IDS.flatMap((c) => [...CONCEPTS[c].words]);
     expect(new Set(words).size).toBe(words.length);

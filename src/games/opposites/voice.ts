@@ -2,6 +2,7 @@
 export const VOICE = {
   'game.opposites': ['Opposites!'],
   'opp.switch': ['Tap the picture and it turns into its opposite!'],
+  'opp.big': ['Touch anywhere, and the picture turns into its opposite!'],
   'opp.word': ['{word}!'],
   'opp.find': ['Which one is {word}? Tap it!'],
   'opp.opposite': ['This one is {word}. Find the opposite!'],

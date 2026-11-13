@@ -13,6 +13,8 @@ export interface OppPlan {
   mode: OppMode;
   rounds: number;
   name: string;
+  /** Level 6, lap's opening: one big card, and a touch anywhere flips it; each flipped picture joins a row. */
+  big?: boolean;
 }
 
 export const PLANS: OppPlan[] = [
@@ -28,14 +30,25 @@ export const PLANS: OppPlan[] = [
   { level: 5, mode: 'spot', rounds: 3, name: 'Which two are opposites? One pair hides among five pictures' },
 ];
 
+/** Level 6, lap's opening before level 1 (after the ladder, so no saved level moves); toddler still starts at 1. */
+export const BIG_LEVEL = 6;
+export const BIG_PLAN: OppPlan = {
+  level: BIG_LEVEL,
+  mode: 'switch',
+  big: true,
+  rounds: 8,
+  name: 'One big card: a touch anywhere flips it to its opposite, and each flipped picture joins a row (8 cards)',
+};
+
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 5 },
 };
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
@@ -108,7 +121,8 @@ function differentFamilies(pool: readonly Concept[], rng: Rng, count: number, ex
 
 export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   const out: OppRound[] = [];
-  const pool = poolFor(plan.level);
+  // The big card keeps lap's original eight pairs.
+  const pool = poolFor(plan.big ? 1 : plan.level);
   const order = rng.shuffle([...pool]);
   for (let i = 0; i < plan.rounds; i++) {
     const concept = order[i % order.length];

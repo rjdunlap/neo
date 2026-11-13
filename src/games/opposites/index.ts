@@ -25,6 +25,11 @@ import {
   type OppRound,
 } from './logic';
 
+/** Level 6's one big card, about 290 units across. */
+const BIG_SCALE = 1.7;
+/** Level 6's flipped pictures, small in the row along the bottom (about 75 units across). */
+const ROW_SCALE = 0.44;
+
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
 export function picture(card: Card): Container {
   const c = new Container();
@@ -327,6 +332,13 @@ class Opposites implements Game {
   private wrongs = 0;
   private glowing: CardView | null = null;
   private clock = 0;
+  /** Level 6: the whole view takes every touch, and each flipped picture joins the row. */
+  private readonly catcher = new Container();
+  private readonly row = new Container();
+  /** Level 6: the picture flying to the row, which a resize leaves to finish its flight. */
+  private flying: Container | null = null;
+  private wiggling = false;
+  private destroyed = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -346,6 +358,14 @@ class Opposites implements Game {
     this.glow.eventMode = 'none';
     this.shown.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.shown, this.glow);
+    if (this.plan.big) {
+      // The whole screen flips the card: a touch beside it, on the sky or the hills counts the same.
+      this.catcher.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
+      this.row.eventMode = 'none';
+      ctx.stage.addChildAt(this.catcher, 1);
+      ctx.stage.addChild(this.row);
+      onTap(this.catcher, () => void this.bigTouch(), { cooldown: 300 });
+    }
   }
 
   get round() {
@@ -360,7 +380,11 @@ class Opposites implements Game {
     this.view = v;
     this.backdrop.resize(v);
     const mode = this.plan.mode;
-    if (mode === 'switch') this.cards.forEach((c) => c.node.position.set(v.w / 2, v.h * 0.5));
+    if (this.plan.big) {
+      this.catcher.hitArea = new Rectangle(0, 0, v.w, v.h);
+      this.cards.forEach((c) => c.node.position.copyFrom(this.bigSpot()));
+      this.layoutRow();
+    } else if (mode === 'switch') this.cards.forEach((c) => c.node.position.set(v.w / 2, v.h * 0.5));
     else if (mode === 'spot') {
       const top = spread(3, 200, v.w - 80, 230);
       const low = spread(2, 200, v.w - 80, 230);
@@ -387,9 +411,17 @@ class Opposites implements Game {
       });
   }
 
-  /** The ghost finger on the how-to card: tap the picture (it flips), the one named, the opposite, or each pair in turn. */
+  /**
+   * The ghost finger on the how-to card: tap the picture (it flips), the one named, the opposite, or each pair in turn. At
+   * level 6 it touches the grass beside the big card, since anywhere flips it.
+   */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
+    if (this.plan.big)
+      return {
+        tap: { on: this.catcher, x: this.view.w * 0.82, y: this.view.h * 0.6 },
+        receiver: this.catcher,
+      };
     const picked = this.picked ? this.cards.indexOf(this.picked) : null;
     const i = cardToTap(
       this.plan,
@@ -400,17 +432,96 @@ class Opposites implements Game {
     return i === null ? null : { tap: { on: this.cards[i].node } };
   }
 
-  destroy() {}
+  destroy() {
+    this.destroyed = true;
+  }
+
+  // Level 6: one big card -------------------------------------------------------------------
+
+  /** Where the big card stands: a little above the middle, leaving the bottom for the row. */
+  private bigSpot() {
+    return { x: this.view.w / 2, y: this.view.h * 0.42 };
+  }
+
+  /** Where the `i`th flipped picture sits in the row along the bottom, clear of the corner pet. */
+  private rowSpot(i: number) {
+    const v = this.view;
+    const xs = spread(this.plan.rounds, 200, v.w - 120, 96);
+    return { x: xs[i], y: v.h - 80 };
+  }
+
+  private layoutRow() {
+    this.row.children.forEach((p, i) => {
+      if (p !== this.flying) p.position.copyFrom(this.rowSpot(i));
+    });
+  }
+
+  /** A touch while the card is flipping, moving or arriving still answers: a soft pop, and the card wiggles if it is up. */
+  private async wiggle() {
+    const c = this.cards[0];
+    if (this.wiggling) return;
+    sfx.pop(3);
+    if (!c || !c.node.visible) return;
+    this.wiggling = true;
+    const node = c.node;
+    await this.ctx.tw.to(node, { rotation: 0.08 }, { duration: 0.08 });
+    await this.ctx.tw.to(node, { rotation: -0.06 }, { duration: 0.1 });
+    await this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.08 });
+    this.wiggling = false;
+  }
+
+  /**
+   * A touch anywhere: the big card flips to its opposite while the word is said and the picture acts it, then a small
+   * copy flies to the row along the bottom and stays, and the next card grows in. The last word is heard out.
+   */
+  private async bigTouch() {
+    if (this.finished) return;
+    const c = this.cards[0];
+    if (this.busy || !c) return void this.wiggle();
+    this.busy = true;
+    sfx.pop(5);
+    const to: Card = { ...c.card, side: (1 - c.card.side) as 0 | 1 };
+    await this.flip(c, to);
+    if (this.destroyed) return;
+    const said = this.ctx.say('opp.word', { word: word(to) });
+    await this.act(c);
+    if (this.destroyed) return;
+    const kept = new Container();
+    const bg = new Graphics();
+    kept.addChild(bg, picture(to));
+    this.drawCard({ card: to, node: kept, bg, done: true }, false);
+    kept.position.copyFrom(c.node.position);
+    kept.scale.set(c.node.scale.x);
+    kept.rotation = 0;
+    c.node.visible = false;
+    this.row.addChild(kept);
+    this.flying = kept;
+    const spot = this.rowSpot(this.row.children.length - 1);
+    sfx.whoosh();
+    void this.ctx.tw.to(kept.scale, { x: ROW_SCALE, y: ROW_SCALE }, { duration: 0.45, ease: ease.inOutSine });
+    await this.ctx.tw.to(kept, { x: spot.x, y: spot.y }, { duration: 0.45, ease: ease.inOutSine });
+    if (this.destroyed) return;
+    this.flying = null;
+    this.layoutRow();
+    sfx.pop(7);
+    if (this.index + 1 >= this.rounds.length) await said;
+    if (this.destroyed) return;
+    void this.next();
+  }
 
   private makeCard(card: Card, scale = 1): CardView {
     const node = new Container();
     const bg = new Graphics();
     node.addChild(bg, picture(card));
-    node.hitArea = new Rectangle(-90, -90, 180, 180);
     node.scale.set(scale);
     const view: CardView = { card, node, bg, done: false };
     this.drawCard(view, false);
-    onTap(node, () => void this.tap(view), { cooldown: 350 });
+    // Level 6's card takes no touch of its own: the catcher behind it answers everywhere, the card included.
+    if (this.plan.big) node.eventMode = 'none';
+    else {
+      node.hitArea = new Rectangle(-90, -90, 180, 180);
+      onTap(node, () => void this.tap(view), { cooldown: 350 });
+    }
     this.ctx.stage.addChild(node);
     return view;
   }
@@ -433,7 +544,8 @@ class Opposites implements Game {
     for (const c of this.cards.splice(0)) c.node.destroy({ children: true });
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
     const r = this.round;
-    for (const card of r.cards) this.cards.push(this.makeCard(card, this.plan.mode === 'switch' ? 1.7 : 1));
+    for (const card of r.cards)
+      this.cards.push(this.makeCard(card, this.plan.big ? BIG_SCALE : this.plan.mode === 'switch' ? 1.7 : 1));
     if (this.plan.mode === 'opposite') {
       const bubble = new Graphics()
         .roundRect(-95, -95, 190, 190, 40)
@@ -452,7 +564,7 @@ class Opposites implements Game {
     const mode = this.plan.mode;
     if (mode === 'switch')
       return this.index === 0
-        ? this.ctx.instruct('opp.switch')
+        ? this.ctx.instruct(this.plan.big ? 'opp.big' : 'opp.switch')
         : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
     if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
