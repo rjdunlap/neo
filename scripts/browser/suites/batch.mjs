@@ -7,7 +7,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     if (only !== undefined)
       selectValue(
         only,
-        ['monsters', 'pegs', 'salon', 'garden', 'helpers', 'eggs', 'mail', 'safari', 'bounce'],
+        ['monsters', 'pegs', 'salon', 'garden', 'helpers', 'eggs', 'mail', 'safari', 'bounce', 'dots'],
         'BATCH_ONLY',
       );
     // Word Monsters: sounds, finding letters, first sounds and building words by dragging.
@@ -1736,9 +1736,10 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
 
     // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.
     // Level 11 (Find my buddy): a line that is not the wiggling pair shakes and stays (one miss); `DOTS_LEVELS=11` plays only it.
+    // Level 12 (One big dot, lap): touches on the empty meadow pop the nearest dot and each pop brings one more.
     const dotLevels = process.env.DOTS_LEVELS
       ? process.env.DOTS_LEVELS.split(',').map(Number)
-      : [1, 2, 3, 4, 5, 6, 11];
+      : [1, 2, 3, 4, 5, 6, 11, 12];
     for (const level of dotLevels) {
       if (only && only !== 'dots') break;
       await launch('dot-link', level);
@@ -1780,6 +1781,31 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             await ready();
             await draw([...g.buddy]);
           }
+          return;
+        }
+        if (p.mode === 'big') {
+          // Level 12 (lap): one big dot to start; every other touch is on the empty meadow, far from any dot.
+          if (g.standing.length !== 1) throw new Error(`Big start: ${g.standing.length} dots`);
+          const meadow = [
+            [0.78, 0.9],
+            [0.94, 0.5],
+            [0.55, 0.95],
+            [0.92, 0.82],
+          ];
+          for (let i = 0; i < p.goal; i++) {
+            await kit.until(() => g.standing.length > 0, 4000);
+            const before = g.progress;
+            const [x, y] =
+              i % 2 === 0
+                ? [innerWidth * meadow[(i / 2) % 4][0], innerHeight * meadow[(i / 2) % 4][1]]
+                : at(g.standing[0]);
+            kit.tap(x, y);
+            await kit.until(() => g.progress === before + 1, 2000);
+            await kit.sleep(450);
+            if (!g.finished && g.standing.length !== Math.min(9, 1 + g.progress))
+              throw new Error(`Big board after ${g.progress} pops: ${g.standing.length} dots`);
+          }
+          if (g.hints || g.misses) throw new Error(`Big counted: ${g.misses} ${g.hints}`);
           return;
         }
         if (p.mode === 'tap') {
@@ -1825,7 +1851,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       });
       assert.deepEqual(
         r,
-        mode === 'tap' || mode === 'pair' ? [0, 0] : mode === 'buddy' ? [1, 0] : [2, 1],
+        mode === 'big' || mode === 'tap' || mode === 'pair' ? [0, 0] : mode === 'buddy' ? [1, 0] : [2, 1],
         `dots ${level} score`,
       );
       log(`Dot Link ${level} (${mode}): lines, pops, falls, mistakes, hint, saved score and sticker passed`);

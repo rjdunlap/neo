@@ -1,6 +1,7 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.dot-link': ['Dot link!'],
+  'dots.big': ['Touch anywhere to pop the big dot!'],
   'dots.tap': ['Tap the dots to pop them!'],
   'dots.pair': ['Draw a line between two dots of the same color!'],
   'dots.buddy': ['Find the two dots that wiggle. Draw a line from one buddy to the other!'],
