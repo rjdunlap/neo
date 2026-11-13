@@ -27,7 +27,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 12,
       to: 12,
-      text: 'Touch anywhere on the empty half of the plank to send a bigger friend hopping on and lift the rider. Touching the rider is free play.',
+      text: 'Touch anywhere on the empty side of the screen, even before the voice finishes, to send a bigger friend hopping on and lift the rider. Touching the rider is free play.',
     },
     {
       from: 13,
