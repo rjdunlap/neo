@@ -372,6 +372,10 @@ class DuckPond implements Game {
     this.bank = this.bank.filter((b) => b !== d);
     const { x, y } = this.pondCenter();
     await d.hopTo(x + slot[0], y + slot[1]);
+    if (d.destroyed) return;
+    // A resize during the hop (a phone turned) moved the pond: land on the slot where it is now.
+    const now = this.pondCenter();
+    d.position.set(now.x + slot[0], now.y + slot[1]);
     d.setSwimming(true);
     d.zIndex = d.y;
     sfx.splash();
