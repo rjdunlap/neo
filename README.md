@@ -192,7 +192,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 8 | tap letter monsters to hear their sounds |
 | [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 12 | tap any animal to take its photo |
-| [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark |
+| [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
 | [Opposites](docs/games/opposites.md) | lap–pre-K | Story Grove | 5 | tap a picture: it flips to its opposite (big, small; open, closed) |
 | [Clap the Syllables](docs/games/clap-syllables.md) | preschool–school | Story Grove | 8 | the pet claps the beats in a word ("but-ter-fly") with beads lighting up, and you clap along on big hands; preschool starts with two short words (level 9), then levels 1–2 |
