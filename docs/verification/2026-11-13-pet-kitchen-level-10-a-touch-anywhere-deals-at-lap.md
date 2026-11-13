@@ -1,0 +1,5 @@
+# 2026-11-13 — Pet Kitchen level 10, a touch anywhere deals at lap (PR #1597)
+
+**Changed:** `pet-kitchen` level 10 at lap only: a touch anywhere on the counter (`onTap`, palm rejection) deals the tray piece to the friend with fewer, with its bell; pieces come one at a time, the next popping in after each deal; a touch while the friends eat plays a munch. Toddler's level 10 is unchanged. The level 10 how-to note was updated; the `kitchen.deal` line was left as is (no clip re-render).
+**Ran:** typecheck; the pet-kitchen and content tests (229 passed, 1 skipped; content again after the how-to edit, 203 passed); `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen KITCHEN_LEVELS=10` passed twice in portrait (768×1024): one tray piece shown, each counter touch and one piece tap deals, plates equal, a touch while eating, score [0, 0]. The suite's level 10 case now checks the lap behaviour. The game-reviewer found no bugs.
+**Not run:** `npm run build` (no shared files or assets), `fingerdemo` (the demonstrated action, a ghost-finger tap on a piece, is unchanged), offline.
