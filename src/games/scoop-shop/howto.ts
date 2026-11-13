@@ -9,7 +9,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 10,
       to: 10,
-      text: 'Tap any tub: one scoop is enough. Each of three customers munches it straight away.',
+      text: 'Tap anywhere in the shop: the nearest tub scoops, and one scoop is enough. One big tub stands at the start, and a new flavor arrives with each of the three customers, who munch straight away.',
     },
     {
       from: 11,

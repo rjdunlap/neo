@@ -356,6 +356,17 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         await screenshot(`scoop-shop-${level}-portrait`);
+        if (level === 10) {
+          // The lap opening's one big tub on a phone, both ways round.
+          for (const [w, h, name] of [
+            [390, 844, 'phone-portrait'],
+            [844, 390, 'phone-landscape'],
+          ]) {
+            await page.setViewportSize({ width: w, height: h });
+            await page.waitForTimeout(300);
+            await screenshot(`scoop-shop-10-${name}`);
+          }
+        }
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(300);
       }
@@ -495,6 +506,19 @@ export function createSuite({ page, context, log, scene, tap, screenshot, launch
             kit.tapOn(g.customer, 0, -80);
             await kit.sleep(300);
             if (g.misses || g.hints) throw new Error(`Scoop customer tap counted: ${g.misses} ${g.hints}`);
+          }
+          if (g.ctx.level === 10) {
+            // Lap opening: one big tub, then one more flavor per customer; a touch on the bare wall scoops from the
+            // nearest tub, and the next customer's tub has arrived.
+            const shown = [...g.tubs.values()].filter((t) => t.visible).length;
+            if (shown !== c + 1) throw new Error(`Lap tubs shown for customer ${c}: ${shown}`);
+            if (c === 0 && g.tubs.get(g.flavors[0]).scale.x < 1.5) throw new Error('Lap tub not big');
+            const wall = g.ctx.stage.toGlobal({ x: g.view.w * 0.08, y: g.view.h * 0.6 - 140 });
+            kit.tap(wall.x, wall.y);
+            if (!(await kit.until(() => g.customerIndex > c || g.finished, 15000)))
+              throw new Error('Wall touch did not scoop');
+            if (g.misses || g.hints) throw new Error('Lap touch counted');
+            continue;
           }
           if (c === 0 && g.plan.mode === 'free' && g.plan.max > 1) {
             // A second tap while a scoop is in the air wobbles its tub and adds nothing.

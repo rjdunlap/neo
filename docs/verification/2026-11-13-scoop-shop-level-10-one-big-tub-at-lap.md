@@ -1,0 +1,5 @@
+# 2026-11-13 — Scoop Shop level 10, one big tub at lap
+
+**Changed:** `scoop-shop` level 10 (lap only) opens on one big tub (scale 1.6, centred); a touch anywhere in the shop, or on the cone, scoops from the nearest shown tub (`nearestTub`, `tubsShown`, `LAP_OPENING`, `BIG_TUB_SCALE`). One more flavor tub pops in with each of the three customers (three flavors, was four) and the big tub settles to normal size beside it. The order bubble shows the newest flavor, the lap co-play hint says to point at the scoop in the picture and name its color, and the level 10 how-to card is updated.
+**Ran:** `npm run typecheck` passed; `vitest src/games/scoop-shop` passed (24 tests); `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=10` passed (tubs shown per customer, the big first tub, a wall touch scooping with no miss; phone portrait 390x844 and landscape 844x390 screenshots at level 10); `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=10` passed in 12.8 s.
+**Not run:** `npm run build` (no shared files changed); other scoop-shop levels; offline.
