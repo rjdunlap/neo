@@ -252,6 +252,61 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       .map(Number)
       .filter(() => !only || only === 'bug')) {
       await launch('bug-builder', level);
+      if (level === 8) {
+        // Count the spots, on a phone held upright: one too many is no miss; two wrong checks bring the hint.
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(400);
+        await page.evaluate(async () => {
+          const g = neo.scene.game,
+            s = g.count,
+            stamp = g.choices[0];
+          const drop = async (i) => {
+            const p = g.places[i].getGlobalPosition();
+            await kit.dragTo(stamp.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+            await kit.sleep(500);
+          };
+          await kit.dragTo(stamp.node, { x: (neo.view.w * neo.view.scale) / 2, y: 110 });
+          await kit.sleep(500);
+          if (g.misses !== 0 || s.order.length !== 0) throw new Error('Outside drop counted');
+          for (let i = 0; i <= s.want; i++) await drop(i);
+          if (s.order.length !== s.want + 1 || s.overs !== 1)
+            throw new Error(`Stamped ${s.order.length} of ${s.want}`);
+          if (g.misses !== 0 || g.hints !== 0) throw new Error('One too many counted as a miss');
+          await drop(s.want); // a stamped place takes no second stamp
+          if (s.order.length !== s.want + 1) throw new Error('A stamped place took a second stamp');
+          for (let i = 0; i < 2; i++) {
+            kit.tapOn(g.check);
+            await kit.sleep(500);
+          }
+          if (g.misses !== 2 || g.hints !== 1 || g.done)
+            throw new Error(`Checks: ${g.misses} misses, ${g.hints} hints`);
+          if (g.glow.context.instructions.length === 0) throw new Error('The extra stamp should glow');
+        });
+        await screenshot('bug-builder-8-portrait');
+        await page.evaluate(async () => {
+          const g = neo.scene.game,
+            s = g.count;
+          kit.tapOn(g.places[s.want]);
+          await kit.sleep(500);
+          if (s.order.length !== s.want || g.done) throw new Error('Tapping a spot did not lift it off');
+          kit.tapOn(g.check);
+          await kit.sleep(300);
+          if (!g.done) throw new Error('The right number did not finish');
+        });
+        await finished('bug-builder');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('bug-builder').history.at(-1);
+            return [r.misses, r.hints];
+          }),
+          [2, 1],
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        log(
+          'Bug Builder 8: count, one too many, lift-off, wrong checks, hint, saved round and sticker passed',
+        );
+        continue;
+      }
       await page.evaluate(async () => {
         const g = neo.scene.game,
           target = g.targets[0],
