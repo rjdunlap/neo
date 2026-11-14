@@ -756,8 +756,8 @@ class PetSays implements Game {
         }
         break;
       case 'stomp':
-        // Low and heavy, squatting into each beat (tiptoe, its opposite, rises: `STOMP_TIPTOE_STRETCH`).
-        void this.stretch(STOMP_TIPTOE_STRETCH.stomp);
+        // On the opposite levels, low and heavy, squatting into each beat (tiptoe, its opposite, rises: `STOMP_TIPTOE_STRETCH`).
+        if (this.plan.mode === 'opposite') void this.stretch(STOMP_TIPTOE_STRETCH.stomp);
         for (let k = 0; k < beatsFor(move, count); k++) {
           pet.hop(0.3);
           await tw.wait(0.26);
