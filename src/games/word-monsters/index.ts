@@ -416,7 +416,8 @@ class WordMonsters implements Game {
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
     } else if (this.plan.mode === 'last' && q.word) {
-      this.showPicture(this.sayingPicture(q.word), 0.62);
+      // Larger than a building level's picture: there are no slots below it, and it is a thing to tap.
+      this.showPicture(this.sayingPicture(q.word), 0.9);
     } else {
       this.showPicture(null);
     }
