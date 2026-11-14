@@ -1,1 +1,0 @@
-**Dot Link slice 3, level 7 Two colors** (new-level tier: rule tests, one browser play of 7, `fingerdemo` at 7; pre-K): the sign shows a red dot with a number and a blue dot with a number and she pops that many of each on the 5×5 board; a wrong-color line pops but counts for nothing. [Dot Link dive, slice 3](../../deep-dives/dot-link.md#build-slices-in-order)

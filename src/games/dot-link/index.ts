@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { swatch, type ColorName } from '../../art/palette';
+import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { shapePath } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -8,6 +8,7 @@ import { palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -33,6 +34,8 @@ import {
   popped,
   same,
   step,
+  twoAdd,
+  twoNeed,
   type Cell,
   type DotMark,
   type DotPlan,
@@ -43,6 +46,10 @@ import { rangeFor } from '../../progress/difficulty';
 const GAP = 108;
 const DOT_R = 34;
 const MARK_R = 16;
+/** Two colors: the sign's width at the right of the board, and one color's chip on it. */
+const SIGN_W = 210;
+const CHIP_W = 190;
+const CHIP_H = 126;
 
 /** The mark inside a dot, about 2r across and centered. Call fill/stroke after. */
 function markPath(g: Graphics, mark: DotMark, r: number): Graphics {
@@ -86,7 +93,10 @@ function markPath(g: Graphics, mark: DotMark, r: number): Graphics {
 class DotLink implements Game {
   readonly plan: DotPlan;
   readonly palette: ColorName[];
-  readonly target: ColorName | undefined;
+  /** Two colors: the two colors the sign names, in order. */
+  readonly targets: ColorName[];
+  /** Two colors: how many of each named color have counted so far. */
+  have = [0, 0];
   grid: Grid;
   dots: Graphics[][] = [];
   path: Cell[] = [];
@@ -102,6 +112,7 @@ class DotLink implements Game {
   private readonly lines = new Graphics();
   private readonly layer = new Container();
   private readonly touch = new Container();
+  private readonly sign = new Container();
   private pointer: number | null = null;
   private wrongs = 0;
   private idle = 0;
@@ -116,7 +127,7 @@ class DotLink implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.palette = ctx.rng.shuffle([...DOT_COLORS]).slice(0, this.plan.colors);
-    this.target = this.plan.mode === 'color' ? this.palette[0] : undefined;
+    this.targets = this.plan.mode === 'two' ? this.palette.slice(0, 2) : [];
     this.grid = ensureMove(this.plan, makeGrid(this.plan, ctx.rng, this.palette), ctx.rng, this.target);
     this.backdrop = new Backdrop(
       { sky: [0xfde2f0, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.82, clouds: 2, seed: 81 },
@@ -125,7 +136,9 @@ class DotLink implements Game {
     this.dotScale = this.plan.mode === 'big' ? 1.5 : 1;
     if (this.plan.mode === 'big') this.standing = BIG_FILL.slice(0, bigShown(0)).map((c) => ({ ...c }));
     this.board.addChild(this.lines, this.layer, this.touch);
-    ctx.stage.addChild(this.backdrop, this.board);
+    ctx.stage.addChild(this.backdrop, this.board, this.sign);
+    this.sign.eventMode = 'none';
+    this.drawSign();
     this.buildDots();
     this.chooseBuddy();
 
@@ -143,6 +156,46 @@ class DotLink implements Game {
     );
   }
 
+  /** The color a line must be to count now: level 3's color, or two colors' first color still short of its number. */
+  get target(): ColorName | undefined {
+    if (this.plan.mode === 'color') return this.palette[0];
+    if (this.plan.mode === 'two') return this.targets[twoNeed(this.plan, this.have)];
+    return undefined;
+  }
+
+  /** Two colors: each named color's dot, its number, and a row of little dots that fill as hers pop. */
+  private drawSign() {
+    for (const n of this.sign.removeChildren()) n.destroy({ children: true });
+    const goals = this.plan.goals;
+    if (!goals) return;
+    goals.forEach((goal, i) => {
+      const color = this.targets[i];
+      const sw = swatch[color];
+      const full = this.have[i] >= goal;
+      const chip = new Container();
+      chip.y = (i - 0.5) * (CHIP_H + 16);
+      const back = new Graphics()
+        .roundRect(-CHIP_W / 2, -CHIP_H / 2, CHIP_W, CHIP_H, 24)
+        .fill(cream)
+        .stroke({ width: full ? 7 : 4, color: full ? sw.line : 0xd9cbb4 });
+      const dot = new Graphics();
+      this.drawDot(dot, color);
+      dot.position.set(-42, -20);
+      dot.scale.set(0.85);
+      const num = label(String(goal), 54, ink);
+      num.position.set(34, -18);
+      const pips = new Graphics();
+      const step = Math.min(26, (CHIP_W - 30) / goal);
+      for (let k = 0; k < goal; k++) {
+        const x = (k - (goal - 1) / 2) * step;
+        if (k < this.have[i]) pips.circle(x, 36, 9).fill(sw.fill).stroke({ width: 3, color: sw.line });
+        else pips.circle(x, 36, 9).stroke({ width: 3, color: sw.line, alpha: 0.45 });
+      }
+      chip.addChild(back, dot, num, pips);
+      this.sign.addChild(chip);
+    });
+  }
+
   start() {
     const p = this.plan;
     switch (p.mode) {
@@ -156,6 +209,13 @@ class DotLink implements Game {
         return void this.ctx.instruct('dots.buddy');
       case 'color':
         return void this.ctx.instruct('dots.color', { n: p.goal, color: this.target! });
+      case 'two':
+        return void this.ctx.instruct('dots.two', {
+          n: p.goals![0],
+          color: this.targets[0],
+          m: p.goals![1],
+          other: this.targets[1],
+        });
       case 'chain':
         return void this.ctx.instruct(p.exactLength ? 'dots.exact' : 'dots.chain', { n: p.length! });
       case 'square':
@@ -199,11 +259,18 @@ class DotLink implements Game {
       (v.h - 150) / (h + GAP),
       (v.w - 260) / (w + GAP),
     );
-    this.board.scale.set(s);
-    this.board.position.set(Math.max(190 + (GAP * s) / 2, (v.w - w * s) / 2), (v.h - h * s) / 2 + 20);
+    // Two colors: the sign stands at the right, and the board centers in the room left of it.
+    const sign = this.plan.mode === 'two' ? SIGN_W : 0;
+    const fit = Math.min(s, (v.w - 260 - sign) / (w + GAP));
+    this.board.scale.set(fit);
+    this.board.position.set(
+      Math.max(190 + (GAP * fit) / 2, (v.w - sign - w * fit) / 2),
+      (v.h - h * fit) / 2 + 20,
+    );
+    this.sign.position.set(v.w - SIGN_W / 2 - 10, v.h / 2 + 20);
     // Big mode: the whole view is the touch, in board units.
     if (this.plan.mode === 'big')
-      this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
+      this.touch.hitArea = new Rectangle(-this.board.x / fit, -this.board.y / fit, v.w / fit, v.h / fit);
   }
 
   update(dt: number) {
@@ -416,11 +483,17 @@ class DotLink implements Game {
     const color = this.grid[path[0].r][path[0].c];
     const p = this.plan;
     let counts = 0;
-    let line: 'dots.notthat' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
+    let line: 'dots.notthat' | 'dots.twofull' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
     if (p.mode === 'pair' || p.mode === 'buddy') counts = 1;
     else if (p.mode === 'color') {
       if (color === this.target) counts = loop ? popped(this.grid, path, true).length : path.length;
       else line = 'dots.notthat';
+    } else if (p.mode === 'two') {
+      // A line of a named color counts toward its own number; another color, or one already full, counts nothing.
+      const which = this.targets.indexOf(color);
+      counts = twoAdd(p, this.have, which, loop ? popped(this.grid, path, true).length : path.length);
+      if (counts) this.countTwo(which, counts);
+      else line = which >= 0 ? 'dots.twofull' : 'dots.notthat';
     } else if (p.mode === 'chain') {
       if (chainCounts(p, path.length, loop)) counts = 1;
       else line = p.exactLength ? 'dots.exact' : 'dots.longer';
@@ -463,7 +536,8 @@ class DotLink implements Game {
     this.progress += counts;
     if (this.plan.mode === 'color' && counts)
       void this.ctx.say('count', { n: Math.min(this.plan.goal, this.progress) });
-    else if (this.plan.mode !== 'color' && counts && this.plan.mode !== 'tap') void this.ctx.say('praise');
+    else if (this.plan.mode !== 'color' && this.plan.mode !== 'two' && counts && this.plan.mode !== 'tap')
+      void this.ctx.say('praise');
     await tw.wait(0.22);
     // Gravity: everything above falls into the gaps, new dots drop in from the top.
     const { grid, falls } = collapse(this.grid, gone, this.ctx.rng, this.palette);
@@ -480,6 +554,17 @@ class DotLink implements Game {
     this.chooseBuddy();
     this.busy = false;
     if (this.progress >= this.plan.goal && before < this.plan.goal) void this.finale();
+  }
+
+  /** Two colors: fill that color's little dots on the sign and say its count, or that it is full and what is left. */
+  private countTwo(which: number, n: number) {
+    this.have[which] += n;
+    this.drawSign();
+    const goals = this.plan.goals!;
+    const need = twoNeed(this.plan, this.have);
+    if (this.have[which] >= goals[which] && need >= 0)
+      void this.ctx.say('dots.twonext', { color: this.targets[which], other: this.targets[need] });
+    else void this.ctx.say('count', { n: this.have[which] });
   }
 
   /** Light up a move that would count right now. */
