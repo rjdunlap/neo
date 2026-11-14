@@ -36,6 +36,16 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Only the word is said. Say it slowly together, then build it in the boxes; one letter is a spare. Tap the boxes to hear the sounds, or the picture to hear the word.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: "Tap the wrong letter in the pet's word to lift it out. Drag the right letter into the empty box.",
+    },
+    {
+      from: 12,
+      to: 12,
+      text: 'Tap the speaker to hear what the pet built, or tap the picture to hear the word it meant.',
+    },
   ],
   finish: 'The round ends when the asked-for letters or word are found.',
   note: "Spoken letter sounds depend on the device's speech voice.",

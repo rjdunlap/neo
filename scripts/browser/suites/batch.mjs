@@ -21,7 +21,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-      if (mode === 'last' || mode === 'slow') {
+      if (mode === 'last' || mode === 'slow' || mode === 'repair') {
         // Played on a phone held upright, the focus of current playtests.
         const was = page.viewportSize();
         await page.setViewportSize({ width: 390, height: 844 });
@@ -37,6 +37,57 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         await screenshot(`word-monsters-${level}-portrait`);
         // The phone view stays for the play below; the next launch gets the old size back.
         if (was) restore.push(was);
+      }
+      if (mode === 'repair') {
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          for (let i = 0; i < g.questions.length; i++) {
+            await kit.until(() => g.index === i && !g.busy, 10000);
+            const { answer, repair } = g.question;
+            const wrong = g.monsters.find((m) => m.placed && m.slot === repair.slot);
+            const correct = g.monsters.find((m) => m.placed && m !== wrong);
+            if (i === 0) {
+              kit.tapOn(g.readWord);
+              if (g.misses || g.hints) throw new Error('Reading the pet word is free');
+              for (let tap = 0; tap < 3; tap++) {
+                kit.tapOn(correct);
+                await kit.sleep(450);
+                if (g.misses !== tap || g.hints !== Number(tap === 2) || !correct.placed)
+                  throw new Error(`Checking a correct letter: ${g.misses} misses, ${g.hints} hints`);
+              }
+              if (!wrong.glow.visible) throw new Error('The letter to lift should glow');
+            }
+            kit.tapOn(wrong);
+            await kit.sleep(300);
+            if (g.monsters.some((m) => m.placed && m.slot === repair.slot))
+              throw new Error('The wrong letter did not leave its slot');
+            const slot = g.slotAt(repair.slot);
+            const aim = (x) => g.top.parent.toGlobal({ x, y: slot.y + 40 });
+            const right = g.monsters.find((m) => !m.placed && m.letter === answer[repair.slot]);
+            if (i === 0) {
+              await kit.dragTo(right, aim(g.slotAt(correct.slot).x), 10);
+              await kit.sleep(450);
+              if (right.placed || g.misses !== 2) throw new Error('An occupied slot took the letter');
+              const spare = g.monsters.find((m) => !m.placed && m !== right);
+              await kit.dragTo(spare, aim(slot.x), 10);
+              await kit.sleep(450);
+              if (spare.placed || g.misses !== 3) throw new Error('A spare letter fit in the slot');
+            }
+            await kit.dragTo(right, aim(slot.x), 10);
+            if (!right.placed || right.slot !== repair.slot) throw new Error('The right letter did not fit');
+          }
+        });
+        await finished('word-monsters');
+        const score = await page.evaluate(() => {
+          const r = kit.store.stats('word-monsters').history.at(-1);
+          return [r.misses, r.hints];
+        });
+        assert.deepEqual(score, [3, 1]);
+        for (const size of restore.splice(0)) await page.setViewportSize(size);
+        log(
+          'Word Monsters 12: read-back, free first check, two misses and lift hint, three slot repairs, saved score and sticker passed',
+        );
+        continue;
       }
       await page.evaluate(async () => {
         const g = neo.scene.game;

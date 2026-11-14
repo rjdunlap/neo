@@ -3521,3 +3521,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Frog Hop scenes (2026-11-14)
 
 [PR #1665](https://github.com/rjdunlap/neo/pull/1665), `claude/frog-hop-scenes`, dive slice 6 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). Four scenes drawn per round after the questions (lily pond, brook stones, flower path, evening pond with fireflies); art only, with a pure `hopLayout` checked at four views and the card row moved clear of the guide corner. See the [verification entry](../verification/2026-11-14-frog-hop-scenes-brook-flower-path-evening.md).
+
+## Word Monsters level 12 Fix the pet’s word (2026-11-14)
+
+[PR #1666](https://github.com/rjdunlap/neo/pull/1666) completed slice 7 of the [Word Monsters dive](../deep-dives/word-monsters.md#build-slices-in-order). The player lifts one wrong letter from the pet’s word, then drags a replacement into its box. [Verification](../verification/2026-11-14-word-monsters-level-12-fix-the-pet-s-word.md).

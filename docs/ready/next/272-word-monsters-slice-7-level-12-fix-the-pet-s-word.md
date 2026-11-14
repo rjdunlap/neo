@@ -1,1 +1,0 @@
-**Word Monsters slice 7, level 12 Fix the pet's word** (new-levels tier: rule tests, a play at 12, `fingerdemo` at 12, one portrait screenshot): tap-to-lift and the pet's voice; the next free school level ID, no `order`. [Word Monsters dive, slice 7](../../deep-dives/word-monsters.md#build-slices-in-order)
