@@ -58,6 +58,16 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: "Tap the green arrow and watch the hop. The light bulb glows one ramp and its socket, and the spring's column when that ramp lands the marble on the spring.",
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Drag both loose ramps into round sockets. The yellow gate ramp is there only after the marble touches the little chime, so a ramp before the chime must send the marble to it.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'Tap the green arrow. If the marble reaches the gate first, it falls straight through and the pet says so. The light bulb glows one ramp, its socket and the chime.',
+    },
   ],
   finish: [
     { from: 7, to: 7, text: 'The round ends after both machines ring their bells.' },
@@ -65,6 +75,7 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 6, text: 'The round ends after both machines ring their bells.' },
     { from: 9, to: 9, text: 'The round ends after both machines send each marble to its own bell.' },
     { from: 10, to: 10, text: 'The round ends after both spring machines ring their bells.' },
+    { from: 11, to: 11, text: 'The round ends after both gate machines ring the chime and then the bell.' },
   ],
   note: [
     {

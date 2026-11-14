@@ -17,10 +17,12 @@ import {
   LEVELS,
   bounced,
   chainTouch,
+  gateMet,
   hintFor,
   makeBoards,
   planFor,
   predictedBell,
+  solutions,
   trace,
   traces,
   turnHint,
@@ -92,6 +94,29 @@ export function chainJournalPicture(): Container {
 }
 
 /** A bell; level 9 gives each marble its own bell, tinted its colour with that marble on its face. */
+/**
+ * Level 11's gate: a yellow frame with a little bell badge, the chime's colours, around a wooden ramp. The ramp is a
+ * faint outline while the gate is shut and turns solid when the chime opens it. Fixed, so it never takes a touch.
+ */
+export function gateArt(ramp: Ramp): Container {
+  const c = new Container();
+  const frame = new Graphics()
+    .roundRect(-54, -50, 108, 100, 26)
+    .fill({ color: swatch.yellow.light, alpha: 0.45 })
+    .stroke({ width: 6, color: swatch.yellow.line });
+  const inner = rampArt(ramp, false);
+  inner.label = 'gate-ramp';
+  inner.eventMode = 'none';
+  inner.alpha = GATE_SHUT;
+  const badge = bellArt(true);
+  badge.scale.set(0.5);
+  badge.position.set(-40, -40);
+  c.addChild(frame, inner, badge);
+  c.label = 'gate';
+  return c;
+}
+const GATE_SHUT = 0.22;
+
 function bellArt(small = false, marble?: { fill: number; line: number; light: number }): Container {
   const c = new Container();
   const s = small ? 0.72 : 1;
@@ -175,6 +200,9 @@ class ChainReaction implements Game {
   private readonly pickRing = new Graphics();
   private chimeBell: Container | null = null;
   private springNode: Container | null = null;
+  /** Level 11's gate and the ramp inside it, which shows only once the chime has opened it. */
+  private gateNode: Container | null = null;
+  private gateRamp: Container | null = null;
   /** A run this round bounced on the spring, so the journal may file what it showed. */
   private sawSpring = false;
   private hinted: { piece: number; socket: number } | null = null;
@@ -342,9 +370,11 @@ class ChainReaction implements Game {
               ? 'chain.two-start'
               : this.plan.spring
                 ? 'chain.spring-start'
-                : this.plan.chime
-                  ? 'chain.chime-start'
-                  : 'chain.start',
+                : this.plan.gate
+                  ? 'chain.gate-start'
+                  : this.plan.chime
+                    ? 'chain.chime-start'
+                    : 'chain.start',
       );
   }
 
@@ -488,6 +518,14 @@ class ChainReaction implements Game {
       this.springNode.eventMode = 'none';
       this.fixed.addChild(this.springNode);
     }
+    this.gateNode = this.gateRamp = null;
+    if (this.machine.gate) {
+      this.gateNode = gateArt(this.machine.gate.ramp);
+      this.gateNode.position.set(this.colX(this.machine.gate.col), this.rowY(this.machine.gate.row));
+      this.gateNode.eventMode = 'none';
+      this.gateRamp = this.gateNode.getChildByLabel('gate-ramp');
+      this.fixed.addChild(this.gateNode);
+    }
     this.goal.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.bellNodes.forEach((b) => b.node.destroy({ children: true }));
     this.bellNodes = [];
@@ -565,6 +603,14 @@ class ChainReaction implements Game {
       return;
     }
     if (!this.hinted || this.busy) return;
+    if (this.machine.gate && this.machine.chime) {
+      // Level 11's hint shows the chime's cell: the marble must touch it before the gate opens.
+      const c = this.machine.chime;
+      this.glow
+        .circle(this.colX(c.col) + 42, this.rowY(c.row) - 34, 44)
+        .fill({ color: swatch.yellow.light, alpha: 0.35 })
+        .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.85 });
+    }
     if (this.hintsSpring()) {
       // Level 10's hint also lights the spring's column when the ramp to place is the one that sends the marble onto it.
       const x = this.colX(this.machine.spring!.col);
@@ -611,7 +657,11 @@ class ChainReaction implements Game {
         ? 'chain.spring-hint'
         : this.machine.spring
           ? 'chain.spring-hint-bell'
-          : 'chain.hint',
+          : this.machine.gate
+            ? this.hintsChime()
+              ? 'chain.gate-hint'
+              : 'chain.gate-hint-bell'
+            : 'chain.hint',
     );
   }
 
@@ -646,11 +696,13 @@ class ChainReaction implements Game {
           : blue.success
             ? 'chain.two-red'
             : 'chain.two-both'
-        : !result.chime && this.machine.chime
-          ? 'chain.missed-chime'
-          : result.end < this.machine.target
-            ? 'chain.left'
-            : 'chain.right',
+        : this.machine.gate && gateMet(result) === 'shut'
+          ? 'chain.gate-shut'
+          : !result.chime && this.machine.chime
+            ? 'chain.missed-chime'
+            : result.end < this.machine.target
+              ? 'chain.left'
+              : 'chain.right',
     );
     await Promise.all(
       [this.marble, this.blueMarble]
@@ -658,6 +710,7 @@ class ChainReaction implements Game {
         .map((m) => this.ctx.tw.to(m, { y: bottom - 10 }, { duration: 0.15, ease: ease.outBack })),
     );
     this.marble.visible = this.blueMarble.visible = false;
+    this.setGate(false);
     this.parts.forEach((p) => {
       p.handle.enabled = true;
     });
@@ -705,6 +758,7 @@ class ChainReaction implements Game {
     for (const [m, result] of runs.entries()) await this.animate(result, m as Marble);
     this.drawTrail(runs);
     this.marble.visible = this.blueMarble.visible = false;
+    this.setGate(false);
     this.parts.forEach((p) => {
       p.handle.enabled = true;
     });
@@ -714,6 +768,7 @@ class ChainReaction implements Game {
   private async animate(result: Trace, which: Marble = 0) {
     const marble = which ? this.blueMarble : this.marble;
     if (!which) this.trail.clear();
+    this.setGate(false);
     marble.visible = true;
     marble.position.set(
       this.colX(which && this.machine.blue ? this.machine.blue.start : this.machine.start),
@@ -738,6 +793,8 @@ class ChainReaction implements Game {
           .to(bell, { rotation: 0.18 }, { duration: 0.1 })
           .then(() => this.ctx.tw.to(bell, { rotation: -0.12 }, { duration: 0.12 }))
           .then(() => this.ctx.tw.to(bell, { rotation: 0 }, { duration: 0.1 }));
+        // The chime opens the gate further down: its ramp slides in before the marble gets there.
+        if (this.gateNode) await this.openGate();
       }
       if (step.spring) await this.bounce(marble, step.col, step.row);
       if (step.ramp) {
@@ -763,6 +820,35 @@ class ChainReaction implements Game {
         .to(bell.scale, { x: 1.12, y: 1.12 }, { duration: 0.1 })
         .then(() => this.ctx.tw.to(bell.scale, { x: 1, y: 1 }, { duration: 0.12 }));
     }
+  }
+
+  /** Show the gate's ramp solid (open) or faint (shut). */
+  private setGate(open: boolean) {
+    if (this.gateRamp) this.gateRamp.alpha = open ? 1 : GATE_SHUT;
+  }
+
+  private async openGate() {
+    const gate = this.gateNode,
+      ramp = this.gateRamp;
+    if (!gate || !ramp) return;
+    sfx.sparkle();
+    void this.ctx.tw.to(ramp, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.to(gate.scale, { x: 1.12, y: 1.12 }, { duration: 0.12, ease: ease.outBack });
+    await this.ctx.tw.to(gate.scale, { x: 1, y: 1 }, { duration: 0.12 });
+  }
+
+  /** In a working design, the hinted ramp comes before the chime, so it is the one that takes the marble there. */
+  private hintsChime() {
+    const { chime } = this.machine;
+    const hinted = this.hinted;
+    if (!chime || !hinted) return false;
+    const cell = this.machine.sockets[hinted.socket];
+    const way = solutions(this.machine).find((w) => w.includes(hinted.socket));
+    if (!way) return false;
+    const steps = trace(this.machine, way).steps;
+    const at = steps.findIndex((st) => st.row === cell.row && st.col === cell.col);
+    const rang = steps.findIndex((st) => st.row === chime.row && st.col === chime.col);
+    return at >= 0 && rang >= 0 && at < rang;
   }
 
   /** The hinted socket is above the spring, so that ramp is the one that lands the marble on it. */

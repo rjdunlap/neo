@@ -54,4 +54,16 @@ export const VOICE = {
   'chain.spring-hint-bell': [
     'Try the glowing ramp in the glowing spot. After the spring, it sends the marble on to the bell.',
   ],
+  'chain.gate-start': [
+    'The little chime opens the yellow gate! Drag the ramps so the marble touches the chime first, then the gate ramp sends it on to the big bell. Tap the green arrow to try!',
+  ],
+  'chain.gate-shut': [
+    'The marble reached the yellow gate before the chime, so the gate stayed shut and it fell straight through. Send it to the little chime first!',
+  ],
+  'chain.gate-hint': [
+    'Try the glowing ramp in the glowing spot. It sends the marble to the little chime, and the chime opens the gate.',
+  ],
+  'chain.gate-hint-bell': [
+    'Try the glowing ramp in the glowing spot. After the chime and the gate, it sends the marble on to the bell.',
+  ],
 } satisfies Record<string, string[]>;
