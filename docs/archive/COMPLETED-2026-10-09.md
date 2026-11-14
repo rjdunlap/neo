@@ -3505,3 +3505,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Word Monsters level 11 Say it slowly (2026-11-14)
 
 [PR #1661](https://github.com/rjdunlap/neo/pull/1661), `claude/word-monsters-say-slowly`, slice 6 of the [dive](../deep-dives/word-monsters.md#build-slices-in-order). Mode `slow`: level 6's drag into three empty boxes with only the word said ("Make {word}! Say it slowly."). A picture tap says the word again, free; tapping the box row ripples each box and says its sound, one hint per word however often she taps; a wrong drop says who the monster is, and two misses glow the next monster. Words are every pictured word with one box per sound (no x, no repeated letter, no mirror pair), broader than level 6's list. School is now 5, 6, 7, 8, 10, 11.
+
+## Pet Says slice 8, level 9 A walk in the woods (2026-11-14)
+
+[PR #1663](https://github.com/rjdunlap/neo/pull/1663), `codex/pet-says-story-walk`. A seeded woods, beach or farm route has four stops with a landmark, spoken instruction and a move at each. The green arrow walks on and the last stop ends with a cheer. Tapping the pet replays the stop. The held orange button counts one hint per stop, and misses stay at zero. Pre-K now reaches 3–9 and school 6–9. [Game page](../games/pet-says.md), [verification](../verification/2026-11-14-pet-says-level-9-a-walk-in-the-woods.md).

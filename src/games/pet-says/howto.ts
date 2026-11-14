@@ -41,6 +41,11 @@ export const HOW_TO: GameHowTo = {
       text: 'More opposites, mostly moons: stomp or tiptoe, wiggle fast or slowly, clap loudly or softly, arms wide or a hug. Watch how the pet moves, then do it the other way.',
     },
     {
+      from: 9,
+      to: 9,
+      text: 'Act out four stops with the pet. Listen at each new place, then do the move together away from the screen.',
+    },
+    {
       from: 4,
       to: 4,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
@@ -52,7 +57,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 8,
-      to: 8,
+      to: 9,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
     },
     {

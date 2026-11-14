@@ -510,6 +510,99 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         level <= Math.min(saysTop, Number(process.env.TO_LEVEL || saysTop));
         level++
       ) {
+        if (level === 9) {
+          const seeds = await page.evaluate(async () => {
+            const { makeTurns, planFor, WALK_PLACES } = await import('/src/games/pet-says/logic.ts');
+            const { Rng } = await import('/src/engine/random.ts');
+            return WALK_PLACES.map((place) => {
+              const seed = Array.from({ length: 100 }, (_, i) => i + 1).find(
+                (seed) => makeTurns(planFor(9), new Rng(seed))[0].stop.place === place,
+              );
+              return { place, seed };
+            });
+          });
+          await page.setViewportSize({ width: 390, height: 844 });
+          for (const { place, seed } of seeds) {
+            assert.ok(seed, `seed for the ${place} walk`);
+            await page.evaluate((seed) => {
+              window.saysRandom = Math.random;
+              Math.random = () => seed / 2 ** 31;
+            }, seed);
+            try {
+              await launch('pet-says', level);
+            } finally {
+              await page.evaluate(() => {
+                Math.random = window.saysRandom;
+                delete window.saysRandom;
+              });
+            }
+            await idle(0);
+            assert.equal(await page.evaluate(() => neo.scene.game.turn.stop.place), place);
+            await screenshot(`pet-says-9-${place}-portrait`);
+            // Finish one full story. The other starts are for the portrait scenery check.
+            if (place !== 'woods') continue;
+            const landmark = () =>
+              page.evaluate(() => {
+                const g = neo.scene.game;
+                return [g.turn.stop.landmark, g.walkScenery.stop.landmark];
+              });
+            const initial = await page.evaluate(() => [
+              kit.store.stats('pet-says').history.length,
+              kit.store.data.stickers.length,
+            ]);
+            const replayPoint = await page.evaluate(() => {
+              const { x, y } = neo.scene.game.onceMore.getGlobalPosition();
+              return [x, y];
+            });
+            await tap('neo.scene.game.onceMore');
+            assert.deepEqual(await counts(), [0, 0], 'a quick tap does not ask for help');
+            for (let replay = 0; replay < 2; replay++) {
+              await page.mouse.move(...replayPoint);
+              await page.mouse.down();
+              await page.waitForFunction(() => neo.scene.game.busy);
+              await page.mouse.up();
+              await idle(0);
+              assert.deepEqual(await landmark(), ['bear', 'bear'], 'held replay stays at this stop');
+              assert.deepEqual(await counts(), [0, 1]);
+            }
+            await page.setViewportSize({ width: 844, height: 390 });
+            await page.waitForFunction(() => neo.view.w > neo.view.h);
+            await tap('neo.scene.game.next');
+            await idle(1);
+            assert.equal(
+              await page.evaluate(() => neo.scene.game.walkScenery.landmark.x),
+              await page.evaluate(() => neo.view.w * 0.73),
+              'the next stop uses the current orientation',
+            );
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.waitForFunction(() => neo.view.h > neo.view.w);
+            await page.evaluate(() => {
+              const pet = neo.scene.game.mover.pet;
+              const point = pet.toGlobal(pet.touch);
+              kit.tap(point.x, point.y);
+            });
+            await page.waitForFunction(() => neo.scene.game.busy);
+            await idle(1);
+            assert.deepEqual(await counts(), [0, 1], 'a pet tap replays without asking for help');
+            for (const [i, stop] of ['stream', 'hill', 'owl'].entries()) {
+              await idle(i + 1);
+              assert.deepEqual(await landmark(), [stop, stop]);
+              await tap('neo.scene.game.next');
+            }
+            await finished('pet-says');
+            assert.deepEqual(await score('pet-says'), [0, 1]);
+            assert.deepEqual(
+              await page.evaluate(() => [
+                kit.store.stats('pet-says').history.length,
+                kit.store.data.stickers.length,
+              ]),
+              initial.map((n) => n + 1),
+            );
+            log('Pet Says 9: four stops, free replay, one held replay hint and one sticker passed');
+          }
+          await page.setViewportSize({ width: 1024, height: 768 });
+          continue;
+        }
         // Nothing is judged: the pet moves, and a grown-up taps the arrow. Tapping the big pet shows the move again.
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });

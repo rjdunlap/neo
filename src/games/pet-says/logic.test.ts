@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { computeView, NO_INSETS } from '../../engine/view';
 import stickerSeeds from './sticker-seeds.json';
 import { SCRIPT } from '../../content/voice-script';
 import { bodyBox, restPoints } from '../../creatures/companion';
@@ -70,6 +71,9 @@ import {
   STOMP_TIPTOE_STRETCH,
   MORE_PAIRS_A_ROUND,
   MORE_SUN_TURNS,
+  WALK_PLACES,
+  WALKS,
+  walkLandmark,
 } from './logic';
 import { CONCEPTS } from '../opposites/logic';
 
@@ -371,6 +375,7 @@ describe("Pat the pet (level 13, lap's first level)", () => {
       'opposite',
       'quiet',
       'opposite',
+      'walk',
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
@@ -514,7 +519,7 @@ describe('Opposite day (level 6, dive slice 5)', () => {
     expect(plan.turns).toBe(6);
     expect(LEVELS.prek?.min).toBe(3);
     expect(LEVELS.school?.min).toBe(6);
-    expect(ONCE_MORE_MODES).toEqual(['says', 'opposite']);
+    expect(ONCE_MORE_MODES).toContain('opposite');
   });
 
   it('pairs each move with exactly one partner, and the partner of the partner is the move', () => {
@@ -660,8 +665,8 @@ describe('More opposites (level 8, dive slice 7)', () => {
     expect(plan.opposites).toBe('more');
     expect(plan.turns).toBe(6);
     expect(ONCE_MORE_MODES).toContain(plan.mode);
-    expect(LEVELS.prek).toEqual({ min: 3, max: 8 });
-    expect(LEVELS.school).toEqual({ min: 6, max: 8 });
+    expect(LEVELS.prek?.max).toBeGreaterThanOrEqual(8);
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(8);
     expect(planFor(6).opposites).toBe('first');
   });
 
@@ -759,5 +764,56 @@ describe('More opposites (level 8, dive slice 7)', () => {
   it('speaks its intro and every new move', () => {
     expect(SCRIPT['says.opp.more' as keyof typeof SCRIPT]).toBeDefined();
     for (const m of MANNER_MOVES) expect(SCRIPT[MOVE_CUES[m].line].length).toBeGreaterThan(0);
+  });
+});
+
+describe('A walk in the woods (level 9, dive slice 8)', () => {
+  const plan = planFor(9);
+
+  it('appends level 9 to both windows and offers replay', () => {
+    expect(plan.mode).toBe('walk');
+    expect(ONCE_MORE_MODES).toContain(plan.mode);
+    expect(LEVELS.prek).toEqual({ min: 3, max: 9 });
+    expect(LEVELS.school).toEqual({ min: 6, max: 9 });
+  });
+
+  it('deals a whole story with distinct moves and landmarks, an instruction at every stop and a cheer at the end', () => {
+    const seen = new Set();
+    const pool = [...TIERS.base, ...TIERS.walking, ...TIERS.animal];
+    for (let seed = 1; seed <= 300; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(makeTurns(plan, new Rng(seed))).toEqual(turns);
+      expect(turns).toHaveLength(4);
+      const place = turns[0].stop!.place;
+      seen.add(place);
+      expect(turns.map((t) => t.stop!.place)).toEqual(Array(4).fill(place));
+      expect(turns.map((t) => t.stop!.landmark)).toEqual(WALKS[place].map((stop) => stop.landmark));
+      expect(new Set(turns.map((t) => t.stop!.landmark)).size).toBe(4);
+      expect(new Set(turns.flatMap((t) => t.moves)).size).toBe(4);
+      for (const { moves, stop } of turns) {
+        expect(moves).toEqual([stop!.move]);
+        expect(pool).toContain(stop!.move);
+        expect(SCRIPT[stop!.line][0]).toBeTruthy();
+      }
+      expect(SCRIPT[turns[3].stop!.line][0]).toMatch(/Hooray!/);
+    }
+    expect([...seen].sort()).toEqual([...WALK_PLACES].sort());
+  });
+
+  it('keeps the focus of each backdrop inside the view and clear of the replay and arrow', () => {
+    for (const [w, h] of [
+      [390, 844],
+      [844, 390],
+      [768, 1024],
+      [1024, 768],
+    ]) {
+      const view = computeView(w, h, NO_INSETS, w < h);
+      const { x, y, scale } = walkLandmark(view);
+      // The tallest prop (a pine) and the widest (the hill) fit. Replay is above the arrow at the right.
+      expect(x + 174 * scale).toBeLessThan(view.w);
+      expect(y - 190 * scale).toBeGreaterThan(0);
+      expect(y + 62 * scale).toBeLessThan(view.h - 176);
+      expect(Math.hypot(x - (view.w - 110), y - (view.h - 260))).toBeGreaterThan(66);
+    }
   });
 });
