@@ -1,0 +1,1 @@
+**Bumper Garden slice 7, level 11 Make five** (new-levels tier: rule tests, one play, `fingerdemo`): a strip of five empty dots, flowers carrying 1–4 dots, new rule state and dot art; the dive's "level 10" is taken by the lap grow level, so use ID 11. [Bumper Garden dive, slice 7](../../deep-dives/bumper-garden.md#build-slices-in-order)
