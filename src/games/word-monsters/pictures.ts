@@ -28,12 +28,13 @@ function alone(c: Container): Container {
   return wrap;
 }
 
-/** Rhyme Time's pictures are drawn about 120 across; twice that matches these. */
-function rhyme(word: string): Container {
-  const p = rhymePicture(word);
-  p.scale.set(2);
-  return p;
+/** Another game's picture at `scale`, wrapped so the scene's own scaling keeps it (Rhyme Time's are about 120 across). */
+function scaled(p: Container, scale: number, y = 0): Container {
+  p.scale.set(scale);
+  p.y = y;
+  return alone(p);
 }
+const rhyme = (word: string) => scaled(rhymePicture(word), 2.1);
 
 function drawn(paint: (g: Graphics) => void): Container {
   const c = new Container();
@@ -53,8 +54,8 @@ const DRAW: Record<PictureWord, () => Container> = {
   bug: () => rhyme('bug'),
   mug: () => rhyme('mug'),
   rug: () => rhyme('rug'),
-  hen: () => typingPicture('hen'),
-  net: () => typingPicture('net'),
+  hen: () => scaled(typingPicture('hen'), 1.35),
+  net: () => scaled(typingPicture('net'), 1.5, 15),
   cup: () =>
     drawn((g) => {
       g.moveTo(-70, -60)
@@ -280,27 +281,32 @@ const DRAW: Record<PictureWord, () => Container> = {
   // A mop in a bucket.
   mop: () =>
     drawn((g) => {
-      g.moveTo(40, -130).lineTo(-10, 40).stroke(line(wood.fill, 14));
-      for (let i = -4; i <= 4; i++)
-        g.moveTo(-10, 30)
-          .quadraticCurveTo(-10 + i * 12, 70, -10 + i * 16, 100)
-          .stroke(line(swatch.white.light, 10));
-      g.poly([-130, 20, 120, 20, 95, 110, -105, 110]).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
-      g.moveTo(-130, 20).lineTo(120, 20).stroke(line(swatch.blue.line, 10));
+      // The bucket stands behind; the mop leans out of it with its strings on the floor in front.
+      g.poly([20, 20, 140, 20, 125, 110, 35, 110]).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.moveTo(15, 20).lineTo(145, 20).stroke(line(swatch.blue.line, 10));
+      g.moveTo(80, -130).lineTo(-50, 50).stroke(line(wood.fill, 14));
+      g.roundRect(-75, 35, 55, 26, 8).fill(wood.line);
+      for (let i = -5; i <= 5; i++)
+        g.moveTo(-48, 55)
+          .quadraticCurveTo(-48 + i * 10, 80, -48 + i * 15, 112)
+          .stroke(line(swatch.white.line, 13))
+          .moveTo(-48, 55)
+          .quadraticCurveTo(-48 + i * 10, 80, -48 + i * 15, 112)
+          .stroke(line(0xf4f6fa, 8));
     }),
   // A frog in mid-hop over a dotted arc.
   hop: () => {
     const c = drawn((g) => {
       for (let i = 0; i <= 8; i++) {
         const t = i / 8;
-        g.circle(-130 + 220 * t, 80 - 180 * t * (1 - t) * 1.2 * 2, 6);
+        g.circle(-120 + 240 * t, 90 - 4 * 150 * t * (1 - t), 8);
       }
-      g.fill(swatch.green.light);
+      g.fill(swatch.green.line);
       g.ellipse(-120, 95, 30, 9).fill(swatch.green.line).ellipse(110, 95, 30, 9).fill(swatch.green.line);
     });
     const frog = rhyme('frog');
-    frog.position.set(-10, -40);
-    frog.scale.set(1.6);
+    frog.scale.set(0.8);
+    frog.position.set(60, -45);
     c.addChild(frog);
     return c;
   },
