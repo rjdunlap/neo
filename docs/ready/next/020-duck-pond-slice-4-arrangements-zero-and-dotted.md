@@ -1,1 +1,0 @@
-**Duck Pond slice 4, arrangements, zero and dotted pads** (rule tests, a play at levels 6 and 7, one portrait screenshot of a scattered round): layouts of three kinds, zero rounds, pads 0–10 with dots at 6–7. [Duck Pond dive, slice 4](../../deep-dives/duck-pond.md#build-slices-in-order)
