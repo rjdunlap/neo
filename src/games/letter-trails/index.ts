@@ -262,7 +262,10 @@ class LetterTrails implements Game {
   /** What she hears: the word in lower case (so device speech says it, not its letters), or her name as it is written. */
   private get spoken() {
     return trailLevel(this.ctx.level) === NAME_LEVEL
-      ? this.ctx.childName.trim() || fullName(this.ctx.childName)
+      ? // A name with no Latin letter is traced and signed as PIP (`nameLetters`), so she hears Pip too.
+        /[a-z]/i.test(this.ctx.childName.normalize('NFD'))
+        ? this.ctx.childName.trim()
+        : 'Pip'
       : this.word.toLowerCase();
   }
 
@@ -294,7 +297,10 @@ class LetterTrails implements Game {
     void this.ctx.tw.to(p.scale, { x: scale, y: scale }, { duration: 0.4, ease: ease.outBack });
     for (const c of p.children) if (c instanceof Critter) c.cheer();
     sfx.sparkle();
-    void this.ctx.say(name ? 'trails.name' : 'trails.made', name ? { name: this.spoken } : { word: this.spoken });
+    void this.ctx.say(
+      name ? 'trails.name' : 'trails.made',
+      name ? { name: this.spoken } : { word: this.spoken },
+    );
     await this.ctx.tw.wait(2.8);
   }
 
@@ -311,6 +317,8 @@ class LetterTrails implements Game {
         .stroke({ width: 8, color: wood.line }),
     );
     const t = label(text, Math.min(96, ((w - 48) / text.length) * 1.45), swatch.purple.line);
+    // Wide capitals (M, W) can outgrow the estimate: shrink to the sign's inner width.
+    if (t.width > w - 48) t.scale.set((w - 48) / t.width);
     c.addChild(t);
     return c;
   }

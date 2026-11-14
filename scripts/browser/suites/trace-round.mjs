@@ -6,6 +6,14 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     const phone = level === 7;
     const landscape = page.viewportSize();
     if (phone) await page.setViewportSize({ width: 390, height: 844 });
+    try {
+      await playRound(level, name, wrong);
+    } finally {
+      if (phone) await page.setViewportSize(landscape);
+    }
+  }
+
+  async function playRound(level, name, wrong) {
     await launch('letter-trails', level, name);
     if (wrong) {
       await page.evaluate(async () => {
@@ -54,7 +62,8 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         return { word: g.word, traced: g.traced.size, picture: !!g.picture };
       });
       assert.ok(shown.picture, 'the word or name is shown at the end');
-      if (level === 8) assert.ok(shown.word.length <= 8, `a name is traced up to eight letters (${shown.word})`);
+      if (level === 8)
+        assert.ok(shown.word.length <= 8, `a name is traced up to eight letters (${shown.word})`);
       await page.waitForTimeout(400);
       await screenshot(`letter-trails-${level}-${shown.word}`);
     }
@@ -67,7 +76,6 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       await page.evaluate(() => kit.store.data.journal.found.some((id) => id.startsWith('letter-trails:'))),
       'a traced letter is filed in the journal',
     );
-    if (phone) await page.setViewportSize(landscape);
     log(`Letter Trails level ${level} (${name || 'single letter'}): tracing and reward passed`);
   }
 
