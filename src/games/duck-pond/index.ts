@@ -1025,6 +1025,10 @@ class DuckPond implements Game {
     if (this.plan.split) {
       const seats = splitSeats(3, 2);
       await this.arrive(5, seats.slots, seats);
+    } else if (this.plan.mode === 'teen') {
+      // The pond narrows back from the two ten-frames for five full-size ducks.
+      const seats = frameSeats(5);
+      await this.arrive(5, seats.slots, seats);
     } else if (this.plan.mode !== 'friends') await this.arrive(5);
     this.quackChorus();
     this.ctx.pet.cheer();
