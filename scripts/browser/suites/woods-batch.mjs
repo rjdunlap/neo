@@ -3954,8 +3954,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'opp')
-      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up.
-      for (const level of [1, 2, 3, 4, 5, 7, 8].filter((l) => l >= fromLevel)) {
+      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up, 9 school's Only the word.
+      for (const level of [1, 2, 3, 4, 5, 7, 8, 9].filter((l) => l >= fromLevel)) {
         await launch('opposites', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const card = async (i) => {
@@ -4054,7 +4054,39 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             }
             continue;
           }
-          if (n === 0) {
+          const hidden = await page.evaluate(() => !!neo.scene.game.plan.hidden);
+          if (hidden && n === 0) {
+            // Only the word: the bubble is a speaker (no picture yet); tapping it says the word again, never a miss.
+            assert.equal(
+              await page.evaluate(() => neo.scene.game.revealed),
+              false,
+              'the picture starts hidden',
+            );
+            await screenshot('opposites-9-speaker');
+            // The rest of the first round on a phone held upright.
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.waitForTimeout(600);
+            await tap('neo.scene.game.shown');
+            await page.waitForTimeout(300);
+            assert.deepEqual(await counts(), [0, 0]);
+            await card(others[0]);
+            await page.waitForTimeout(400);
+            // The first miss turns the speaker round to the asked word's own picture.
+            const shown = await page.evaluate(() => ({
+              revealed: neo.scene.game.revealed,
+              kids: neo.scene.game.shown.children.length,
+              scale: neo.scene.game.shown.scale.x,
+            }));
+            assert.equal(shown.revealed, true, 'the first miss reveals the picture');
+            assert.equal(shown.kids, 3, 'bubble, picture and the small speaker');
+            assert.ok(shown.scale > 0.95, 'the picture has turned round');
+            await screenshot('opposites-9-reveal-phone');
+            await card(others[others.length - 1]);
+            assert.deepEqual(await counts(), [2, 1]);
+            await screenshot('opposites-9-hint-phone');
+            await page.setViewportSize({ width: 1024, height: 768 });
+            await page.waitForTimeout(400);
+          } else if (n === 0) {
             await card(others[0]);
             await card(others[others.length - 1]);
             assert.deepEqual(await counts(), [2, 1]);

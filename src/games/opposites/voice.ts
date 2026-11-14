@@ -6,6 +6,7 @@ export const VOICE = {
   'opp.word': ['{word}!'],
   'opp.find': ['Which one is {word}? Tap it!'],
   'opp.opposite': ['This one is {word}. Find the opposite!'],
+  'opp.heard': ['{word}! Find the opposite of {word}!'],
   'opp.spot': ['Which two are opposites? Tap one, then its opposite.'],
   'opp.pairs': ['Find the opposites! Tap one, then its opposite.'],
   'opp.between': ['Which one is between {a} and {b}?'],

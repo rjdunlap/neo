@@ -510,7 +510,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Opposites
 
-*lap–pre-K* · [Opposites](games/opposites.md)
+*lap–school* · [Opposites](games/opposites.md)
 
 ### Clap the Syllables
 

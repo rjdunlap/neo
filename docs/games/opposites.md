@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/opposites; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `opposites` · **Land:** Story Grove · **Ages:** lap–pre-K · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `opposites` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** words, concepts, opposites, listening
 
@@ -12,6 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3, 4, 5, 7, 8 |
+| school | 8–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,12 +24,13 @@
 | 6 | One big card: a touch anywhere flips it to its opposite, and each flipped picture joins a row (8 cards) |
 | 7 | In between: three pictures (empty, half full, full); tap the one between the two ends |
 | 8 | Line them up: the same three shuffled; tap them in order from empty to full, then the other way |
+| 9 | Only the word: the pet says a word (its picture hidden behind a speaker); find its opposite among three |
 
 <!-- end generated -->
 
 **Starts as:** lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed)
 
-**Grows into:** twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; lap's own level 6, one big card; find the one named, find the opposite among three, match opposite pairs, spot the one pair among five (pre-K level 5); tap the one in between three pictures in true order (pre-K level 7)
+**Grows into:** twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; lap's own level 6, one big card; find the one named, find the opposite among three, match opposite pairs, spot the one pair among five (pre-K level 5); tap the one in between three pictures in true order (pre-K level 7); line three pictures up in order (pre-K level 8); hear a word and find its opposite with the picture hidden behind a speaker (school level 9)
 
 ## Design notes
 
@@ -41,3 +43,5 @@
 **Level 7, In between (2026-11-13, PR #1629).** Pre-K's top (order 3, 4, 5, 7). Four rounds, one per gradable word: a cup (full, half full, empty), a mug (hot, warm, cold), the sky (day, evening, night), a balloon (up, middle, down). The three cards stand in true order, the end named first on the left, and she taps the middle; level 8 shuffles them. An end is a miss with "That one is full. Which one is between full and empty?"; after two misses the ends light, then the middle glows (one hint). A right tap says "{word}! That one is in between." Cards draw up to 1.4x, sized so tap areas never overlap (about 1.06 on an upright phone). Never size, open/closed, on/off or awake/asleep.
 
 **Level 8, Line them up (2026-11-13, PR #1632).** Pre-K's top (order 3, 4, 5, 7, 8; pre-K only). Four rounds on the same gradable words as level 7 (cup, mug, sky, balloon; never size). The three cards are shuffled (never already in the asked order) in a top row, and she taps them from the end named first ("Tap them in order, from {a} to {b}!") to the other. Each in-turn tap lifts, slides into its place on a three-place line below and settles, its word said; the third names the whole line. The end named first alternates round by round (two each way). A tap out of turn is a miss ("Which one comes first? Start at {a}." or "Which one comes after {prev}?"); after two misses the next card in turn glows and the glow moves along (one hint a round). The line stays above the corner guide; cards draw up to 1.1x (about 1.04 on the 768-wide area).
+
+**Level 9, Only the word (2026-11-13).** Opens the school window (school 8–9; pre-K stays 3–8). The pet says "{word}! Find the opposite of {word}!" and the ask is a big speaker button with no picture; tapping it says the word again and is never a miss. Three cards: the opposite plus two from other families, drawn from all sixteen pairs. The first miss turns the speaker round to the asked word's own picture, with a small speaker left in its corner (still tappable); the opposite glows after two misses. Four rounds.

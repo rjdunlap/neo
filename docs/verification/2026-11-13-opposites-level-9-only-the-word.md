@@ -1,0 +1,6 @@
+# 2026-11-13 — Opposites level 9, Only the word
+
+**Changed:** `opposites` level 9 *Only the word*, opening the school window (school 8–9; pre-K stays 3–8): the pet says the word, the ask is a speaker button (replay, never a miss), three cards (the opposite plus two from other families); the first miss turns the speaker to the word's own picture, the opposite glows after two misses; four rounds.
+**Ran (2026-11-13):** typecheck; opposites rule tests with a new level-9 test (one opposite by spoken word, no same-family card, every word heard across seeds, bot taps the opposite, school window, first level 8), howto and registry tests; `BROWSER_SUITE=woods WOODS_ONLY=opp FROM_LEVEL=9` passed (speaker replay without a miss, reveal after the first miss, glow after two, saved [2,1], sticker; phone portrait 390x844 screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=opposites FINGER_LEVELS=9 FINGER_BAND=school` passed (6.6 s).
+**Full `npm test` locally:** opposites and docs pass; six timing-sensitive tests in untouched games (block-garden, fluffy-salon, keep-house, number-nook, penguin-slide, secret-code) failed under machine load (load average about 11) and pass alone: load flakes; CI runs the full suite.
+**Not run:** `npm run build` (no shared files or assets changed), offline, other suites.

@@ -5,7 +5,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * Opposites: pictures of concept words in pairs (big and small, open and closed). On the lap,
  * tap the picture and it flips to its opposite while the word is spoken. Then find the one named,
  * then find the opposite of a picture among others, then match the opposite pairs, then spot the one pair among five,
- * then find the one in between two ends (empty, half full, full), then line the three up from one end to the other.
+ * then find the one in between two ends (empty, half full, full), then line the three up from one end to the other,
+ * then find the opposite of a word heard with its picture hidden.
  */
 export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between' | 'order';
 
@@ -16,6 +17,8 @@ export interface OppPlan {
   name: string;
   /** Level 6, lap's opening: one big card, and a touch anywhere flips it; each flipped picture joins a row. */
   big?: boolean;
+  /** Level 9: the asked word is only heard; its picture hides behind a speaker until the first miss reveals it. */
+  hidden?: boolean;
 }
 
 export const PLANS: OppPlan[] = [
@@ -59,12 +62,24 @@ export const ORDER_PLAN: OppPlan = {
   name: 'Line them up: the same three shuffled; tap them in order from empty to full, then the other way',
 };
 
+/** Level 9, the school window's own level: the opposite of a word heard, its picture hidden behind a speaker button. */
+export const WORD_LEVEL = 9;
+export const WORD_PLAN: OppPlan = {
+  level: WORD_LEVEL,
+  mode: 'opposite',
+  hidden: true,
+  rounds: 4,
+  name: 'Only the word: the pet says a word (its picture hidden behind a speaker); find its opposite among three',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   // Level 6 is lap's opening, so pre-K steps from 5 straight to 7, then 8.
   prek: { min: 3, max: ORDER_LEVEL, order: [3, 4, 5, BETWEEN_LEVEL, ORDER_LEVEL] },
+  // School opens at Line them up, shared with pre-K's top, then hears the word alone.
+  school: { min: ORDER_LEVEL, max: WORD_LEVEL },
 };
 
 export const planFor = (level: number) =>
@@ -74,7 +89,9 @@ export const planFor = (level: number) =>
       ? BETWEEN_PLAN
       : level === ORDER_LEVEL
         ? ORDER_PLAN
-        : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+        : level === WORD_LEVEL
+          ? WORD_PLAN
+          : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
