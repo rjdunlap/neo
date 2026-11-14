@@ -490,3 +490,57 @@ export function dotLayout(n: number): { x: number; y: number }[] {
  */
 export const flowerOn = (mode: HopMode, n: number) =>
   !showsDots(mode) && !isFrac(mode) && n > 0 && n % 5 === 0;
+
+/**
+ * Scenes (dive slice 6): each round draws one place for the line. The lily pond, stepping stones in a brook, a flower path
+ * (the frog hops from bloom to bloom) and an evening pond with a moon and fireflies. Only the art changes: the pads, their
+ * numerals, hit areas and the layout are the same in every scene (`hopLayout` takes no scene), and the sticker stays the lily pad.
+ */
+export const SCENES = ['pond', 'brook', 'flowers', 'evening'] as const;
+export type HopScene = (typeof SCENES)[number];
+
+/** The round's scene, drawn after its questions so the questions a seed makes never change. */
+export const sceneFor = (rng: Rng): HopScene => rng.pick(SCENES);
+
+/** A pad's step along the line, and its tap box: the step wide, 140 tall round its centre. */
+export const PAD_STEP = 104;
+export const PAD_HIT = { w: PAD_STEP, h: 140 };
+/** A number card's tap box. */
+export const CARD_HIT = { w: 112, h: 116 };
+/** The sign's widest board (it widens to its sum) and its height. */
+export const SIGN = { w: 720, h: 92, y: 150 };
+
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface HopLayout {
+  /** The centre of the pad at each place in view, left to right. */
+  pads: { x: number; y: number }[];
+  /** The sign at its widest. */
+  sign: Box;
+  /** The number cards' centres, on the levels that use them. */
+  cards: { x: number; y: number }[];
+}
+
+/**
+ * Where the line, the sign and the number cards sit in a view. The card row starts right of the guide's corner
+ * (`corner`, the bottom-left square the pet stands in) and keeps its 124-unit step while it fits.
+ */
+export function hopLayout(view: { w: number; h: number }, mode: HopMode, corner = 200): HopLayout {
+  const y = view.h * (countsHops(mode) ? 0.56 : 0.62);
+  const x0 = (view.w - (WINDOW - 1) * PAD_STEP) / 2;
+  const pads = Array.from({ length: WINDOW }, (_, i) => ({ x: x0 + i * PAD_STEP, y }));
+  const sign = { x: view.w / 2 - SIGN.w / 2, y: SIGN.y - SIGN.h / 2, w: SIGN.w, h: SIGN.h };
+  const usesCards = countsHops(mode) || splitsAtTen(mode) || mode === 'frac-match';
+  const n = usesCards ? GAP_CARDS.length : 0;
+  const left = corner + 16 + CARD_HIT.w / 2;
+  const right = view.w - 24 - CARD_HIT.w / 2;
+  const step = Math.min(124, (right - left) / Math.max(1, n - 1));
+  const mid = (left + right) / 2;
+  const cards = Array.from({ length: n }, (_, i) => ({ x: mid + (i - (n - 1) / 2) * step, y: view.h - 90 }));
+  return { pads, sign, cards };
+}
