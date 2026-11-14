@@ -116,7 +116,7 @@ Optional basket speech remains undecided. The assigned slice explicitly chose th
 2. **Tap and it hops** (built 2026-10-15, stable level 9, `codex/color-tap-entry`, [PR #399](https://github.com/rjdunlap/neo/pull/399)): lap/toddler tap entry, two baskets, naming, `entryLevels`/`order`, scoped how-to and ghost finger. [Build note](../archive/COMPLETED-2026-10-09.md#color-garden-tap-and-it-hops-2026-10-15).
 3. **Level 8, Color or kind** (built 2026-10-15, `claude/color-garden-color-or-kind`, [PR #351](https://github.com/rjdunlap/neo/pull/351)): the rule sign, the two rules, voice lines, how-to. Same tier as above.
 4. **Level 11, Light, middle, dark** (built 2026-11-14, `claude/color-garden-light-middle-dark`, [PR #1664](https://github.com/rjdunlap/neo/pull/1664); written as "Level 9" before IDs 9 and 10 were taken): refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast. Stable level 11, the next free ID, pre-K top. [Build note](../archive/COMPLETED-2026-10-09.md#color-garden-level-11-light-middle-dark-2026-11-14).
-5. **Level 12, Two ways at once** (next free ID 12, pre-K top; written as "Level 10" before IDs were taken): the 2×2 layout and two-part hints. Last because it is the heaviest and needs the level 8 sign.
+5. **Level 12, Two ways at once** (claimed 2026-11-14, `claude/color-garden-two-ways`; next free ID 12, pre-K top; written as "Level 10" before IDs were taken): the 2×2 layout and two-part hints. Last because it is the heaviest and needs the level 8 sign.
 
 ## What was built in this session
 
