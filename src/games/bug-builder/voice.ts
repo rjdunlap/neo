@@ -17,4 +17,8 @@ export const VOICE = {
   'bug.countHintLift': ['Tap the glowing spot to take it off.'],
   'bug.countHintAdd': ['Put a shape on the glowing place.'],
   'bug.countHintCheck': ['Just right. Now tap the check!'],
+  'bug.kind': ['Give the bug {n} {kind}! Only {kind} count. Then tap the check.'],
+  'bug.kindWrong': ["That's a {color} {shape}. We wanted {kind}!"],
+  'bug.kindDone': ['{n} {kind}! Just right!', 'Yes, {n} {kind}! Hello, spotty bug!'],
+  'bug.kindHintAdd': ['The glowing one is {one}. Put it on the glowing place.'],
 } satisfies Record<string, string[]>;

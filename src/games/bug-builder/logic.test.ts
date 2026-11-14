@@ -12,6 +12,9 @@ import {
   countMove,
   countPlaceAt,
   countStamp,
+  fitsKind,
+  kindBoard,
+  kindWords,
   nextStamp,
   slotAt,
   SLOT_REACH,
@@ -192,9 +195,98 @@ describe('Bug Builder', () => {
 
     it('sits in preschool and pre-K, after the first mirror level, and never brings the later mirrors into preschool', () => {
       expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([2, 3, 4, 5, 8]);
-      expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([4, 5, 8, 6, 7]);
+      expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([4, 5, 8, 9, 6, 7]);
       expect(levelsInOrder(rangeFor(LEVELS, 'school'))).not.toContain(8);
       expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).not.toContain(8);
+    });
+  });
+  describe('level 9, Count a kind', () => {
+    const plan = BUG_PLANS[8];
+    const fresh = (seed: number) => kindBoard(plan, new Rng(seed));
+
+    it('asks for 2 to 4 of one color or one shape, with two stamps of that kind and two of others in the tray', () => {
+      expect(plan.mode).toBe('kind');
+      const wants = new Set<number>(),
+        attrs = new Set<string>();
+      for (let seed = 1; seed <= 120; seed++) {
+        const { state, tokens } = fresh(seed);
+        expect(state.places).toHaveLength(6);
+        expect(state.want).toBeGreaterThanOrEqual(2);
+        expect(state.want).toBeLessThanOrEqual(4);
+        expect(new Set(tokens).size).toBe(4);
+        // Every sign has stamps in the tray that satisfy it, and stamps that do not, so the kind is a real choice.
+        expect(tokens.filter((t) => fitsKind(state, t))).toHaveLength(2);
+        expect(tokens.filter((t) => !fitsKind(state, t))).toHaveLength(2);
+        wants.add(state.want);
+        attrs.add(state.kind!.attr);
+      }
+      expect([...wants].sort()).toEqual([2, 3, 4]);
+      expect([...attrs].sort()).toEqual(['color', 'shape']);
+    });
+
+    it('uses the same six places as the matching levels', () => {
+      const { state } = fresh(3);
+      expect(state.places).toEqual(board(BUG_PLANS[3], 3).map(({ x, y }) => ({ x, y })));
+    });
+
+    it('a stamp of the wrong kind is a miss that never lands, and a finished bug holds exactly the number, all of the kind', () => {
+      for (let seed = 1; seed <= 60; seed++) {
+        const { state, tokens } = fresh(seed);
+        const good = tokens.filter((t) => fitsKind(state, t)),
+          bad = tokens.filter((t) => !fitsKind(state, t));
+        expect(countStamp(state, 0, bad[0])).toEqual({ kind: 'wrongKind', token: bad[0], hint: false });
+        expect(state.placed[0]).toBeNull();
+        expect(countStamp(state, 0, bad[1])).toEqual({ kind: 'wrongKind', token: bad[1], hint: true });
+        // Either stamp of the kind counts, in any place.
+        for (let i = 0; i < state.want; i++) expect(countStamp(state, 5 - i, good[i % 2]).kind).toBe('stamp');
+        expect(countCheck(state)).toEqual({ kind: 'done' });
+        const on = state.placed.filter((t): t is number => t !== null);
+        expect(on).toHaveLength(state.want);
+        expect(on.every((t) => fitsKind(state, t))).toBe(true);
+      }
+    });
+
+    it('keeps one hint per round across wrong kinds, over-counts and wrong checks', () => {
+      const { state, tokens } = fresh(7);
+      const good = tokens.find((t) => fitsKind(state, t))!,
+        bad = tokens.find((t) => !fitsKind(state, t))!;
+      countStamp(state, 0, bad);
+      expect(countCheck(state)).toMatchObject({ kind: 'wrong', hint: false });
+      expect(countStamp(state, 0, bad)).toMatchObject({ hint: true });
+      expect(countCheck(state)).toMatchObject({ kind: 'wrong', hint: false });
+      for (let p = 0; p < 6; p++) countStamp(state, p, good);
+      expect(state.overs).toBe(6 - state.want);
+      expect(countMove(state)).toEqual({ lift: 5 });
+    });
+
+    it('the ghost finger stamps only the kind, exactly the number, then taps the check', () => {
+      for (let seed = 1; seed <= 50; seed++) {
+        const { state, tokens } = fresh(seed);
+        const stamp = tokens.find((t) => fitsKind(state, t))!;
+        let moves = 0;
+        for (let m = countMove(state); m && moves < 20; m = countMove(state), moves++) {
+          if ('stamp' in m) expect(countStamp(state, m.stamp, stamp).kind).toBe('stamp');
+          else if ('check' in m) expect(countCheck(state).kind).toBe('done');
+          else throw new Error('the bot never over-counts');
+        }
+        expect(moves).toBe(state.want + 1);
+        expect(state.wrongKinds + state.overs + state.wrongChecks).toBe(0);
+      }
+    });
+
+    it('says the kind in words for the sign and for one stamp', () => {
+      expect(kindWords({ attr: 'color', value: 'blue' })).toEqual({ many: 'blue spots', one: 'blue' });
+      expect(kindWords({ attr: 'shape', value: 'heart' })).toEqual({ many: 'hearts', one: 'a heart' });
+      for (let seed = 1; seed <= 60; seed++)
+        expect(kindWords(fresh(seed).state.kind!).many).not.toMatch(/undefined/);
+    });
+
+    it('sits only in pre-K, right after Count the spots', () => {
+      for (const band of ['toddler', 'preschool', 'school'] as const)
+        expect(levelsInOrder(rangeFor(LEVELS, band))).not.toContain(9);
+      // Level 8's boards stay what they were: a count board has no kind.
+      expect(countBoard(BUG_PLANS[7], new Rng(1)).state.kind).toBeNull();
+      expect(BUG_TOKENS.length).toBe(12);
     });
   });
 });

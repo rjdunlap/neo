@@ -18,6 +18,13 @@ export const BUG_PLANS = [
     colors: 3,
     name: 'Count the spots: give a bare bug the number on the sign',
   },
+  {
+    mode: 'kind',
+    rows: 3,
+    columns: 1,
+    colors: 4,
+    name: 'Count a kind: give the bug the number of spots of one color or one shape',
+  },
 ] as const;
 export type BugPlan = (typeof BUG_PLANS)[number];
 export interface BugToken {
@@ -124,6 +131,10 @@ export interface CountState {
   overs: number;
   /** Check taps with the wrong number on the bug (each a miss). */
   wrongChecks: number;
+  /** Level 9: the kind the sign asks for (one color or one shape); null on level 8, where any stamp counts. */
+  kind: KindWant | null;
+  /** Stamps of the wrong kind let go on the bug (each a miss; the stamp goes back to the tray). */
+  wrongKinds: number;
   /** The round's one hint has been given; from then on the glow shows the next useful move. */
   hinted: boolean;
   done: boolean;
@@ -142,6 +153,8 @@ export function countBoard(plan: BugPlan, rng: Rng): { state: CountState; tokens
       order: [],
       overs: 0,
       wrongChecks: 0,
+      kind: null,
+      wrongKinds: 0,
       hinted: false,
       done: false,
     },
@@ -155,19 +168,25 @@ export type CountEvent =
   /** A stamp landed; `n` is the count now. Past the sign's number it is `over`, which is still not a miss. */
   | { kind: 'stamp'; n: number; over: boolean; hint: boolean }
   | { kind: 'lift'; n: number }
+  /** Level 9: a stamp of the wrong kind, which goes back to the tray (a miss that names what was put). */
+  | { kind: 'wrongKind'; token: number; hint: boolean }
   | { kind: 'done' }
   /** The check with the wrong number: a miss, saying what the bug has against what the sign wants. */
   | { kind: 'wrong'; have: number; hint: boolean };
 
-/** The round's one hint comes with the second over-count or the second wrong check, whichever is first. */
+/** The round's one hint comes with the second over-count, wrong check or wrong kind, whichever is first. */
 function hintDue(s: CountState): boolean {
-  if (s.hinted || (s.overs < 2 && s.wrongChecks < 2)) return false;
+  if (s.hinted || (s.overs < 2 && s.wrongChecks < 2 && s.wrongKinds < 2)) return false;
   s.hinted = true;
   return true;
 }
 
 export function countStamp(s: CountState, place: number, token: number): CountEvent {
   if (s.done || place < 0 || place >= s.places.length || s.placed[place] !== null) return { kind: 'ignored' };
+  if (!fitsKind(s, token)) {
+    s.wrongKinds++;
+    return { kind: 'wrongKind', token, hint: hintDue(s) };
+  }
   s.placed[place] = token;
   s.order.push(place);
   const n = countHave(s);
@@ -215,10 +234,84 @@ export function countPlaceAt(s: CountState, x: number, y: number): number {
   return s.places.findIndex((p, i) => s.placed[i] === null && Math.hypot(x - p.x, y - p.y) < SLOT_REACH);
 }
 
+/**
+ * Level 9, Count a kind: the sign asks for a number of one color ("three blue spots") or one shape ("two hearts"). Only
+ * that kind counts; a stamp of another kind goes back to the tray. One attribute per sign, so two parts never contradict.
+ */
+export type KindWant = { attr: 'color'; value: ColorName } | { attr: 'shape'; value: ShapeKind };
+
+/** Whether a stamp counts on this board: any stamp on level 8, only the sign's kind on level 9. */
+export function fitsKind(s: Pick<CountState, 'kind'>, token: number): boolean {
+  const k = s.kind;
+  if (!k) return true;
+  const t = BUG_TOKENS[token];
+  return k.attr === 'color' ? t.color === k.value : t.shape === k.value;
+}
+
+/** The places of a bare bug, row by row with the left wing first: the same places the matching levels use. */
+export function bugPlaces(plan: BugPlan): { x: number; y: number }[] {
+  const places: { x: number; y: number }[] = [];
+  for (let row = 0; row < plan.rows; row++)
+    for (let col = 0; col < plan.columns; col++) {
+      const x = plan.columns === 1 ? 94 : 72 + col * 116;
+      const y = (row - (plan.rows - 1) / 2) * 116;
+      places.push({ x: -x, y }, { x, y });
+    }
+  return places;
+}
+
+/**
+ * A kind board: six open places, a sign for 2 to 4 of one color or one shape, and a tray of four stamps where two are
+ * that kind (so "any blue one" is a real choice) and two are not.
+ */
+export function kindBoard(plan: BugPlan, rng: Rng): { state: CountState; tokens: number[] } {
+  const attr = rng.pick(['color', 'shape'] as const);
+  // Only a kind with two stamps in the pool can fill a tray with two of it.
+  const values = [...new Set(BUG_TOKENS.map((t) => t[attr]))].filter(
+    (v) => BUG_TOKENS.filter((t) => t[attr] === v).length >= 2,
+  );
+  const value = rng.pick(values);
+  const all = BUG_TOKENS.map((_, i) => i);
+  const fits = rng.shuffle(all.filter((i) => BUG_TOKENS[i][attr] === value)).slice(0, 2);
+  const others = rng.shuffle(all.filter((i) => BUG_TOKENS[i][attr] !== value)).slice(0, plan.colors - 2);
+  const places = bugPlaces(plan);
+  return {
+    tokens: rng.shuffle([...fits, ...others]),
+    state: {
+      want: rng.int(2, 4),
+      places,
+      placed: places.map(() => null),
+      order: [],
+      overs: 0,
+      wrongChecks: 0,
+      kind: attr === 'color' ? { attr, value: value as ColorName } : { attr, value: value as ShapeKind },
+      wrongKinds: 0,
+      hinted: false,
+      done: false,
+    },
+  };
+}
+
+const SHAPE_PLURAL: Partial<Record<ShapeKind, string>> = {
+  circle: 'circles',
+  triangle: 'triangles',
+  square: 'squares',
+  heart: 'hearts',
+  star: 'stars',
+  hexagon: 'hexagons',
+};
+
+/** The kind in words: `many` for the sign ("blue spots", "hearts"), `one` for a single stamp ("blue", "a heart"). */
+export function kindWords(k: KindWant): { many: string; one: string } {
+  if (k.attr === 'color') return { many: `${k.value} spots`, one: k.value };
+  return { many: SHAPE_PLURAL[k.value] ?? `${k.value}s`, one: `a ${k.value}` };
+}
+
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   // Counting to five with a stop comes after copying; the mirror levels 6 and 7 stay out of preschool.
   preschool: { min: 2, max: 8, order: [2, 3, 4, 5, 8] },
-  prek: { min: 4, max: 8, order: [4, 5, 8, 6, 7] },
+  // Count a kind follows Count the spots in pre-K, before the bigger mirrors.
+  prek: { min: 4, max: 9, order: [4, 5, 8, 9, 6, 7] },
   school: { min: 6, max: 7 },
 };
