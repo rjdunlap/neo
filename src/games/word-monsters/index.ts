@@ -441,8 +441,8 @@ class WordMonsters implements Game {
   /** Level 10: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
   private sayingPicture(word: PictureWord) {
     const p = wordPicture(word);
-    // A generous square around the drawing (about 190 units across at its shown scale), so a near miss still counts.
-    p.hitArea = new Rectangle(-150, -150, 300, 300);
+    // A generous square around the drawing (about 215 units across at its shown scale), clear of the monster row on a short view, so a near miss still counts.
+    p.hitArea = new Rectangle(-120, -120, 240, 240);
     onTap(
       p,
       () => {
