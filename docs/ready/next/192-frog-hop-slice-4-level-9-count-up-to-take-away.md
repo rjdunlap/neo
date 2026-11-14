@@ -1,0 +1,1 @@
+**Frog Hop slice 4, level 9 Count up to take away** (new-levels tier: rule tests, one browser play of level 9, `fingerdemo` at it; the card set stays 1–6): `13 − 9` as the distance between two numbers; the frog stands on 9, a flag marks 13, and she taps the card for how many hops. [Frog Hop dive, slice 4](../../deep-dives/frog-hop.md#build-slices-in-order)
