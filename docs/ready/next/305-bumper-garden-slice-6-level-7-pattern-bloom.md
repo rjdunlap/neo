@@ -1,0 +1,1 @@
+**Bumper Garden slice 6, level 7 Pattern bloom** (new-levels tier: rule tests, one play, one portrait screenshot): a pattern strip with color-blind-safe marks; the next free level ID 7. [Bumper Garden dive, slice 6](../../deep-dives/bumper-garden.md#build-slices-in-order)

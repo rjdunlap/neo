@@ -109,6 +109,53 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       );
     }
     if (process.env.SING_ONLY === 'tunes') return tunesPlay();
+    // Itsy Bitsy's second line (dive slice 4): at level 6 upright the spider card sings "Down came the rain and washed
+    // the spider out" (fa from the score) before each friend climbs again. `SING_ONLY=itsy` runs only this part.
+    async function itsyPlay() {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+      await launch('sing-along-barn', 6);
+      await page.waitForTimeout(2000);
+      await page.evaluate(() => kit.tapOn(neo.scene.game.tuneCards[5]));
+      await page.waitForTimeout(1800);
+      assert.equal(await page.evaluate(() => neo.scene.game.tune.id), 'itsy');
+      await tapNotes(13);
+      await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 });
+      await page.waitForTimeout(600);
+      for (const [k, a] of ['pig', 'cat'].entries()) {
+        await page.evaluate((a) => kit.tapOn(neo.scene.game.friends.get(a), 0, -66), a);
+        await page.waitForTimeout(300);
+        if (k === 0) {
+          const song = await page.evaluate(() =>
+            neo.scene.game.song.map((n) => ({ s: n.syllable, a: n.answers, m: n.midi })),
+          );
+          assert.equal(song.length, 13 + 23, "the opening, then one friend's full verse");
+          assert.deepEqual(
+            song.slice(13, 23).map((n) => n.s),
+            ['Down', 'came', 'the', 'rain', 'and', 'washed', 'the', 'spi', 'der', 'out'],
+          );
+          assert.deepEqual(
+            song.slice(13, 23).map((n) => n.m - 60),
+            [4, 4, 5, 7, 7, 5, 4, 5, 7, 4],
+          );
+          assert.equal(song[0].m, 55, 'the pickup is the G below middle C');
+          await tapNotes(12);
+          await screenshot('sing-along-barn-6-itsy-rain-portrait');
+          await tapNotes(11);
+          await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 });
+          await page.waitForTimeout(600);
+        } else await tapNotes(23);
+      }
+      await finished('sing-along-barn');
+      assert.deepEqual(await roundResult(), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(300);
+      assert.deepEqual(errors, []);
+      log(
+        'Sing-Along Barn level 6 upright: the spider card chosen, "Down came the rain" sung with fa from the score before each of two friends climbs again, one sticker, no misses or hints',
+      );
+    }
+    if (process.env.SING_ONLY === 'itsy') return itsyPlay();
     // Level 7 *Finish the line* (batch sing-along-barn 2) at toddler, upright: the song stops before each friend's last word
     // and its picture waits by the door; mashing through the pause wobbles the picture, then a touch sings the word.
     // `SING_ONLY=finish` runs only this part.
