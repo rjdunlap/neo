@@ -12,7 +12,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Do the two moves in order, away from the screen: "stomp three times, then clap". The pet counts the beats.',
     },
     { from: 4, to: 4, text: "Move only when you hear the pet's name first, away from the screen." },
-    { from: 5, to: 5, text: 'Dance away from the screen while the music plays, and freeze when it stops.' },
+    {
+      from: 5,
+      to: 5,
+      text: 'Dance the way the pet dances while the music plays. When it stops, freeze like the statue the pet names: a tree, a star, a flamingo.',
+    },
     {
       from: 13,
       to: 13,

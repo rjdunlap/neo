@@ -19,7 +19,7 @@
 | 2 | Body words: touch your nose, pat your tummy, touch your toes |
 | 3 | Two moves in order, sometimes counted: "stomp three times, then hop like a frog" |
 | 4 | "Pet says": move only when you hear the pet's name first |
-| 5 | Freeze dance: dance to the music, freeze when it stops |
+| 5 | Freeze dance: four tunes to bounce, sway or dance like a robot to, then freeze like a tree or a flamingo |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->

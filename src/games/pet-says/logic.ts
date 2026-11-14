@@ -1,6 +1,8 @@
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import { cream, grass, swatch, wood } from '../../art/palette';
+import type { BackdropStyle } from '../../art/scenery';
 
 /**
  * Pet Says, after Simon Says and action songs: the big pet does a move with a sound, and the child copies it
@@ -129,7 +131,6 @@ export interface SaysFrame {
   down: Pair;
   /** Where the right mitten waves, and how far it swings. */
   wave: Pt;
-  freeze: Pair;
   /** How high the head pat knocks, above its target. */
   knock: number;
 }
@@ -168,7 +169,6 @@ export function saysFrame(
     up: { left: { x: cx - 70, y: box.y - 50 }, right: { x: cx + 70, y: box.y - 50 } },
     down: { left: { x: box.x - 22, y: floor - 30 }, right: { x: right + 22, y: floor - 30 } },
     wave: { x: right + 22, y: box.y + 40 },
-    freeze: { left: { x: box.x - 32, y: box.y + 50 }, right: { x: right + 12, y: floor - 60 } },
     knock: 14,
   };
 }
@@ -201,7 +201,11 @@ export const PLANS: SaysPlan[] = [
     name: 'Two moves in order, sometimes counted: "stomp three times, then hop like a frog"',
   },
   { mode: 'says', turns: 6, name: '"Pet says": move only when you hear the pet\'s name first' },
-  { mode: 'freeze', turns: 4, name: 'Freeze dance: dance to the music, freeze when it stops' },
+  {
+    mode: 'freeze',
+    turns: 4,
+    name: 'Freeze dance: four tunes to bounce, sway or dance like a robot to, then freeze like a tree or a flamingo',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -236,6 +240,8 @@ export interface Turn {
   says?: boolean;
   /** Level 3: how many times to do each move, where one is asked (only countable moves, two or three). */
   counts?: (number | undefined)[];
+  /** Level 5: the tune, how the pet dances to it, and the statue it freezes into. */
+  dance?: Dance;
 }
 
 export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
@@ -285,7 +291,7 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         .slice(0, plan.turns)
         .map((m) => ({ moves: [m] }));
     case 'freeze':
-      return Array.from({ length: plan.turns }, () => ({ moves: ['wiggle'] }));
+      return makeDances(plan.turns, rng).map((dance) => ({ moves: [], dance }));
   }
 }
 
@@ -296,3 +302,159 @@ export function danceSeconds(rng: Rng, last: number): number {
     if (s !== last) return s;
   }
 }
+
+// The freeze dance (dive slice 4) ---------------------------------------------------------------------
+
+/**
+ * Four tunes of different feel, in pentatonic scale steps for `sfx.marimba` (0 = middle C, 5 = the C above), each with
+ * its own beat. A step is a place on the five-note scale, so every note of every tune sounds good with the others.
+ */
+export const TUNES = {
+  bounce: { beat: 0.3, steps: [5, 7, 9, 7, 5, 4, 5, 7, 9, 10, 9, 7] },
+  sway: { beat: 0.46, steps: [5, 4, 2, 4, 5, 7, 5, 4, 2, 0, 2, 4] },
+  shimmy: { beat: 0.22, steps: [7, 9, 7, 9, 10, 9, 7, 5, 7, 9, 7, 5, 4, 5, 7, 9] },
+  march: { beat: 0.36, steps: [5, 5, 7, 5, 9, 9, 7, 5, 4, 4, 5, 7] },
+} satisfies Record<string, { beat: number; steps: number[] }>;
+export type Tune = keyof typeof TUNES;
+export const TUNE_IDS = Object.keys(TUNES) as Tune[];
+/** The lowest and highest scale steps a tune may use: the marimba's comfortable middle. */
+export const TUNE_RANGE = { low: 0, high: 12 };
+
+/** How the pet dances; each tune is danced in a style that suits its feel. */
+export type DanceStyle = 'bounce' | 'sway' | 'twirl' | 'shimmy' | 'robot';
+export const DANCE_STYLES: DanceStyle[] = ['bounce', 'sway', 'twirl', 'shimmy', 'robot'];
+export const STYLES_FOR: Record<Tune, DanceStyle[]> = {
+  bounce: ['bounce', 'twirl'],
+  sway: ['sway', 'twirl'],
+  shimmy: ['shimmy', 'robot'],
+  march: ['robot', 'bounce'],
+};
+
+/** The statue the pet strikes when the music stops: "Freeze like a tree!" She can copy it, or freeze any way at all. */
+export type Statue = 'tree' | 'icecream' | 'flamingo' | 'star' | 'teapot';
+export const STATUES: Statue[] = ['tree', 'icecream', 'flamingo', 'star', 'teapot'];
+
+export const STYLE_LINES = {
+  bounce: 'says.style.bounce',
+  sway: 'says.style.sway',
+  twirl: 'says.style.twirl',
+  shimmy: 'says.style.shimmy',
+  robot: 'says.style.robot',
+} satisfies Record<DanceStyle, LineId>;
+export const STATUE_LINES = {
+  tree: 'says.statue.tree',
+  icecream: 'says.statue.icecream',
+  flamingo: 'says.statue.flamingo',
+  star: 'says.statue.star',
+  teapot: 'says.statue.teapot',
+} satisfies Record<Statue, LineId>;
+
+export interface Dance {
+  tune: Tune;
+  style: DanceStyle;
+  statue: Statue;
+}
+
+/**
+ * A round's dances: every tune once in a new order (so two dances never share a tune), a style that suits each, never
+ * the same style twice running, and a different statue each time.
+ */
+export function makeDances(count: number, rng: Rng): Dance[] {
+  const tunes: Tune[] = [];
+  while (tunes.length < count) tunes.push(...rng.shuffle([...TUNE_IDS]));
+  const statues: Statue[] = [];
+  while (statues.length < count) statues.push(...rng.shuffle([...STATUES]));
+  const out: Dance[] = [];
+  for (let i = 0; i < count; i++) {
+    const tune = tunes[i];
+    const fits = STYLES_FOR[tune].filter((s) => s !== out[i - 1]?.style);
+    out.push({ tune, style: rng.pick(fits), statue: statues[i] });
+  }
+  return out;
+}
+
+/** Where the mittens go for each statue, from the friend's frame. */
+export function statuePose(statue: Statue, f: SaysFrame): Pair {
+  const cx = (f.up.left.x + f.up.right.x) / 2;
+  const top = f.targets.head.right;
+  switch (statue) {
+    case 'tree':
+      // Branches: both arms straight up.
+      return f.up;
+    case 'icecream':
+      // A scoop on top: the mittens meet over the head.
+      return { left: { x: cx - 22, y: top.y - 20 }, right: { x: cx + 22, y: top.y - 20 } };
+    case 'flamingo':
+      // One wing up high, the other tucked low: standing on one leg.
+      return { left: f.down.left, right: f.up.right };
+    case 'star':
+      // Arms wide at the sides.
+      return {
+        left: { x: f.rest.left.x - 50, y: f.rest.left.y - 40 },
+        right: { x: f.rest.right.x + 50, y: f.rest.right.y - 40 },
+      };
+    case 'teapot':
+      // A handle on the hip and a spout up and out.
+      return {
+        left: { x: f.rest.left.x + 18, y: f.rest.left.y + 10 },
+        right: { x: f.wave.x + 30, y: f.wave.y - 30 },
+      };
+  }
+}
+
+// Scenes (dive slice 4) -----------------------------------------------------------------------------
+
+/** The places the pet plays, one per round by seed. Nothing in a round depends on which. */
+export type Scene = 'meadow' | 'beach' | 'room' | 'snow' | 'evening';
+export const SCENES = {
+  meadow: {
+    sky: [swatch.blue.light, cream],
+    hills: [swatch.green.light, 0xc8ecb0, grass],
+    horizon: 0.62,
+    clouds: 3,
+    sun: true,
+    seed: 33,
+  },
+  beach: {
+    sky: [swatch.blue.light, swatch.teal.light],
+    hills: [swatch.teal.fill, swatch.blue.light, swatch.yellow.light],
+    horizon: 0.64,
+    clouds: 2,
+    sun: true,
+    seed: 41,
+  },
+  room: {
+    sky: [swatch.yellow.light, cream],
+    hills: [wood.light],
+    horizon: 0.66,
+    seed: 5,
+  },
+  snow: {
+    sky: [swatch.blue.light, swatch.white.light],
+    hills: [swatch.purple.light, swatch.white.light, swatch.white.fill],
+    horizon: 0.62,
+    clouds: 2,
+    seed: 17,
+  },
+  evening: {
+    sky: [swatch.purple.line, swatch.pink.light],
+    hills: [swatch.purple.fill, swatch.blue.line, swatch.green.line],
+    horizon: 0.64,
+    seed: 23,
+  },
+} satisfies Record<Scene, BackdropStyle>;
+export const SCENE_IDS = Object.keys(SCENES) as Scene[];
+/** A round's place: drawn after its turns, so a seed deals the same moves it always has. */
+export const pickScene = (rng: Rng): Scene => rng.pick(SCENE_IDS);
+
+/** What a scene adds over its sky and hills: stars and a moon, a window and a rug, or snowflakes. */
+export const SCENE_EXTRAS: Record<Scene, ('stars' | 'moon' | 'window' | 'rug' | 'flakes' | 'waves')[]> = {
+  meadow: [],
+  beach: ['waves'],
+  room: ['window', 'rug'],
+  snow: ['flakes'],
+  evening: ['stars', 'moon'],
+};
+
+/** The pet stands with its feet this far above the bottom of the view (`resize` in index.ts). */
+export const PET_FEET = 50;
