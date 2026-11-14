@@ -156,7 +156,7 @@ None of these blocks a slice below.
 5. **Done (PR #1590). Level 6 *The shelf*.** The generalised cover list and the shelf layout: typecheck, rule tests (levels 1–5 deal identically from the same seeds), the layout test in both orientations, one browser play of 6 with a screenshot in each orientation, `fingerdemo` at 6.
 6. **Done (PR #1598). Level 7 *The classic pyramid*.** New level with the side-button landscape layout: typecheck, rule and layout tests, one browser play of 7 in each orientation, `fingerdemo` at 7.
 7. **Done (PR #1603). Level 8 *Three columns*.** As slice 5 without the shared work.
-8. **Lesson deals, levels 9–10.** The offline search script, `pools.ts`, the lesson line, `order` with its test: typecheck, rule tests (each frozen deal's property), one filtered play of 9 that takes a losing removal, hears the lesson and undoes, `fingerdemo` at 9, build (voice changes).
+8. **Lesson deals, levels 9–10** (claimed, `claude/pyramid-lesson-deals`). The offline search script, `pools.ts`, the lesson line, `order` with its test: typecheck, rule tests (each frozen deal's property), one filtered play of 9 that takes a losing removal, hears the lesson and undoes, `fingerdemo` at 9, build (voice changes).
 
 Slices 1 and 2 landed together as [Deals that ask for a plan](../GAME-BATCHES.md#pyramid-solitaire-1-deals-that-ask-for-a-plan). Slice 3 landed as level 4 (PR #1580) slice 4 as level 5 (PR #1584) and slice 5 as level 6 (PR #1590) and slice 6 as level 7 (PR #1598) and slice 7 as level 8 (PR #1603). Slice 8 is next. The five decisions stay out of the ready list.
 
