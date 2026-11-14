@@ -128,6 +128,10 @@ class PetSays implements Game {
   readonly onceMore: HoldButton | null;
   /** Opposite day: the sun or the moon, at the top of the scene. */
   readonly sign = new Graphics();
+  /** Holds the sign at its size above the pet; the sign inside it flips. */
+  private readonly signBox = new Container();
+  /** The friend's height in its own units, to hang the sign above its head. */
+  private readonly tall: number;
   /** Opposite day: a moon turn's arrow first reveals the opposite, then goes on. */
   revealDue = false;
   /** Turns replayed with "once more", each counted once. */
@@ -173,6 +177,7 @@ class PetSays implements Game {
     const b = star.getLocalBounds();
     this.grow = petGrow(b);
     this.middle = b.x + b.width / 2;
+    this.tall = b.height;
     this.frame = saysFrame((p) => star.partPoints(p), star.bodyBounds());
     this.mover = new Mover(star, swatch[star.color as ColorName], this.frame.rest);
     // The mittens stay the pip's size however large the friend stands.
@@ -191,10 +196,11 @@ class PetSays implements Game {
         )
       : null;
     if (this.onceMore) this.onceMore.visible = false;
-    this.sign.eventMode = 'none';
-    this.sign.visible = this.plan.mode === 'opposite';
-    if (this.sign.visible) drawSign(this.sign, 'sun');
-    ctx.stage.addChild(this.backdrop, this.notes, this.mover, this.sign, this.next);
+    this.signBox.eventMode = 'none';
+    this.signBox.visible = this.plan.mode === 'opposite';
+    this.signBox.addChild(this.sign);
+    if (this.signBox.visible) drawSign(this.sign, 'sun');
+    ctx.stage.addChild(this.backdrop, this.notes, this.mover, this.signBox, this.next);
     if (this.onceMore) ctx.stage.addChild(this.onceMore);
     // The big pet is the star, so the corner guide steps out; tapping the big pet shows the move again.
     ctx.pet.visible = false;
@@ -217,8 +223,10 @@ class PetSays implements Game {
     this.next.position.set(v.w - 110, v.h - 110);
     // Above the arrow, so the bottom row stays clear of the pet on a phone held upright.
     this.onceMore?.position.set(v.w - 110, v.h - 260);
-    // Top middle, below the home and help buttons' row.
-    this.sign.position.set(v.w / 2, Math.min(130, Math.max(90, v.h * 0.12)));
+    // Big, just above the pet's head (clear of its raised mittens), so it reads as the pet's sign and not the sky's sun.
+    const k = Math.min(1.8, Math.max(1.2, v.w / 600));
+    this.signBox.scale.set(k);
+    this.signBox.position.set(v.w / 2, Math.max(70 * k + 20, v.h - PET_FEET - this.tall * s - 70 - 70 * k));
   }
 
   update(dt: number) {

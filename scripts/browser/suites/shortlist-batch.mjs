@@ -500,6 +500,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
       }
     }
+    const SAYS_SUN_TURNS = 2;
     const saysTop = await page.evaluate(
       async () => (await import('/src/games/pet-says/logic.ts')).PLANS.length,
     );
@@ -512,7 +513,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         // Nothing is judged: the pet moves, and a grown-up taps the arrow. Tapping the big pet shows the move again.
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
-        // Level 2 plays on a phone held upright, and listens for the chant's words (dive slice 2).
+        // Level 2 and Opposite day play on a phone held upright; level 2 listens for the chant's words (dive slice 2).
+        if (level === 6) await page.setViewportSize({ width: 390, height: 844 });
         if (level === 2) {
           await page.setViewportSize({ width: 390, height: 844 });
           await page.evaluate(() => {
@@ -669,11 +671,37 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             });
             await screenshot(`pet-says-${level}`);
           }
+          if (level === 6 && n === SAYS_SUN_TURNS) {
+            // The held "once more" replays the first moon turn and counts one hint, however often it is held.
+            for (let k = 0; k < 2; k++) {
+              await page.evaluate(() => neo.scene.game.onceMore.press());
+              await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, {
+                timeout: 40000,
+              });
+            }
+            assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'once more counts one hint a turn');
+            assert.equal(await page.evaluate(() => neo.scene.game.onceMore.visible), true);
+          }
+          const moon = level === 6 && (await page.evaluate(() => neo.scene.game.revealDue));
           await page.waitForTimeout(250);
           await tap('neo.scene.game.next');
+          if (moon) {
+            // A moon turn's arrow first shows the opposite, then goes on.
+            await page.waitForFunction(
+              (n) => {
+                const g = neo.scene.game;
+                return g.index === n && !g.busy && g.next.visible && !g.revealDue;
+              },
+              n,
+              { timeout: 40000 },
+            );
+            if (n === SAYS_SUN_TURNS) await screenshot('pet-says-6-moon-portrait');
+            await page.waitForTimeout(250);
+            await tap('neo.scene.game.next');
+          }
         }
         await finished('pet-says');
-        assert.deepEqual(await score('pet-says'), [0, 0]);
+        assert.deepEqual(await score('pet-says'), level === 6 ? [0, 1] : [0, 0]);
         assert.equal(await page.evaluate(() => neo.scene.pet.visible), false);
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
