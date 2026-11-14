@@ -61,6 +61,57 @@ export const THINGS: Thing[] = [
   { id: 'blueberry', color: 'blue', circles: [[0, 0, 82]] },
 ];
 
+/** What the voice calls each picture. A name never equals a color word, so no line can say "paint the orange orange". */
+export const THING_NAMES: Record<ThingId, string> = {
+  sun: 'sun',
+  apple: 'apple',
+  leaf: 'leaf',
+  pumpkin: 'pumpkin',
+  grapes: 'grapes',
+  blueberry: 'blueberry',
+};
+
+/**
+ * The colors a picture may honestly be painted when she has to remember it: the told answer first (its `color`), then real
+ * alternatives (apples and grapes come green too). Only the recall level takes an alternative; where the voice names the color,
+ * or a recipe, that color is the one asked for.
+ */
+export const ACCEPTS: Record<ThingId, ColorName[]> = {
+  sun: ['yellow'],
+  apple: ['red', 'green'],
+  leaf: ['green'],
+  pumpkin: ['orange'],
+  grapes: ['purple', 'green'],
+  blueberry: ['blue'],
+};
+
+/** Whether a dab of `color` paints `thing` on a page of this mode. */
+export function accepts(thing: Thing, mode: PaintMode, color: ColorName | null): boolean {
+  if (!color) return false;
+  return mode === 'recall' ? ACCEPTS[thing.id].includes(color) : color === thing.color;
+}
+
+/** The line the voice says when a picture is finished in an accepted color that is not the told one: "Green apples are real too!" */
+export const alsoLine = (thing: Thing, color: ColorName) => `paint.also.${thing.id}.${color}` as const;
+
+/**
+ * The rainbow name nearest a hue in degrees, as the free brush draws it (`hsl(h, 0.85, 0.62)`): red at 0 and again past 322,
+ * orange near 30, yellow near 58, green near 120, blue near 215 and purple near 280.
+ */
+export function hueName(h: number): ColorName {
+  const hue = ((h % 360) + 360) % 360;
+  if (hue < 15 || hue >= 322) return 'red';
+  if (hue < 44) return 'orange';
+  if (hue < 90) return 'yellow';
+  if (hue < 170) return 'green';
+  if (hue < 250) return 'blue';
+  return 'purple';
+}
+
+/** The free levels say the color of a finished stroke or a splat, at most this often (seconds). */
+export const ECHO_EVERY = 6;
+export const echoes = (mode: PaintMode) => mode === 'free' || mode === 'pots';
+
 /** free: rainbow painting. pots: pick a color. named: "paint the sun yellow". recall: "paint the sun" (what color is it?). mix: make the color from two pots. recall-mix: remember the color, then mix it. */
 export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix' | 'recall-mix';
 /** Both mixing pages pour primaries into a bowl instead of selecting a pot directly. */

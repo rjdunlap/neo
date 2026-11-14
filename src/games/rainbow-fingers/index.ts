@@ -20,6 +20,7 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { foldIcon, frameIcon } from '../../ui/icons';
+import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -41,6 +42,12 @@ import {
   nudges,
   paintStep,
   PAINTED,
+  THING_NAMES,
+  accepts,
+  alsoLine,
+  hueName,
+  ECHO_EVERY,
+  echoes,
   pickThings,
   planFor,
   POT_MARKS,
@@ -139,9 +146,9 @@ class Picture {
     return this.thing.circles.some(([cx, cy, r]) => Math.hypot(p.x - cx, p.y - cy) <= r + reach / this.scale);
   }
 
-  /** The neat solid fill, for baking into the painting when it's done. */
-  fill(): Graphics {
-    const sw = swatch[this.thing.color];
+  /** The neat solid fill in the color she finished it with, for baking into the painting when it's done. */
+  fill(color: ColorName): Graphics {
+    const sw = swatch[color];
     const g = new Graphics();
     for (const [cx, cy, r] of this.thing.circles) g.circle(cx, cy, r);
     g.fill(sw.fill);
@@ -271,8 +278,9 @@ interface Stroke {
   y: number;
   /** Each finger runs its own rainbow. */
   hue: number;
-  /** A picked color, or null for rainbow. */
+  /** A picked color, or null for rainbow, and its name. */
   color: number | null;
+  name: ColorName | null;
   travelled: number;
   startedAt: number;
   lastStep: number;
@@ -327,6 +335,9 @@ class RainbowFingers implements Game {
     return this.tally.hints;
   }
   private lastNag = -10;
+  /** The last time a free-level stroke or splat said its color, and whether the opening instruction is still being spoken. */
+  private lastEcho = -ECHO_EVERY;
+  private instructing = false;
   private sinceAsk = 0;
   /** The picked color, or null for rainbow. */
   private brush: number | null = null;
@@ -384,10 +395,24 @@ class RainbowFingers implements Game {
   }
 
   start() {
-    if (this.plan.mode === 'free') void this.ctx.instruct('paint.start');
-    else if (this.kind === 'fold') void this.ctx.instruct('paint.fold');
-    else if (this.plan.mode === 'pots') void this.ctx.instruct('paint.pots');
+    if (this.plan.mode === 'free') this.opening('paint.start');
+    else if (this.kind === 'fold') this.opening('paint.fold');
+    else if (this.plan.mode === 'pots') this.opening('paint.pots');
     else void this.ask();
+  }
+
+  /** The free levels' instruction; a color echo waits until it is said rather than cutting it off. */
+  private opening(line: 'paint.start' | 'paint.fold' | 'paint.pots') {
+    this.instructing = true;
+    void this.ctx.instruct(line).then(() => (this.instructing = false));
+  }
+
+  /** At the free levels, say the color just painted ("Orange!"), at most once every few seconds. */
+  private echo(color: ColorName) {
+    if (!echoes(this.plan.mode) || this.instructing || this.done || this.clock - this.lastEcho < ECHO_EVERY)
+      return;
+    this.lastEcho = this.clock;
+    void this.ctx.say(`color.${color}`);
   }
 
   private get picture(): Picture | undefined {
@@ -453,6 +478,8 @@ class RainbowFingers implements Game {
     this.setBrush(color === 'rainbow' ? null : color);
     this.raised = color;
     this.layoutPots(this.view);
+    // The pot just said its name, so the next stroke does not say it again straight away.
+    this.lastEcho = this.clock;
     void this.ctx.say(color === 'rainbow' ? 'paint.rainbow' : `color.${color}`);
   }
 
@@ -539,7 +566,8 @@ class RainbowFingers implements Game {
     void this.ctx.tw
       .to(pic.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.25, ease: ease.outBack })
       .then(() => this.ctx.tw.to(pic.node.scale, { x: s, y: s }, { duration: 0.3 }));
-    const { id: thing, color } = pic.thing;
+    const { color } = pic.thing;
+    const thing = THING_NAMES[pic.thing.id];
     if (this.plan.mode === 'mix') {
       const [a, b] = RECIPES[color]!;
       await this.ctx.instruct('paint.mix', { thing, color, a, b });
@@ -568,15 +596,17 @@ class RainbowFingers implements Game {
   private dab(x: number, y: number) {
     const pic = this.picture;
     if (!pic || pic.done || this.done || !pic.contains(x, y, BRUSH_RADIUS * 0.5)) return;
-    if (this.brushName === pic.thing.color) {
+    if (this.brushName && accepts(pic.thing, this.plan.mode, this.brushName)) {
       const p = pic.local(x, y);
       this.sinceAsk = 0;
-      if (pic.coverage.paint(p.x, p.y, (BRUSH_RADIUS + 6) / pic.scale) >= PAINTED) void this.painted(pic);
+      if (pic.coverage.paint(p.x, p.y, (BRUSH_RADIUS + 6) / pic.scale) >= PAINTED)
+        void this.painted(pic, this.brushName);
       return;
     }
     if (this.clock - this.lastNag < 4) return;
     this.lastNag = this.clock;
-    const { id: thing, color } = pic.thing;
+    const { color } = pic.thing;
+    const thing = THING_NAMES[pic.thing.id];
     if (!this.brushName) {
       void this.ctx.say(pours(this.plan.mode) ? 'paint.mixhow' : 'paint.pick', {
         color,
@@ -596,15 +626,15 @@ class RainbowFingers implements Game {
     return r ? { a: r[0], b: r[1] } : {};
   }
 
-  private async painted(pic: Picture) {
+  private async painted(pic: Picture, as: ColorName) {
     pic.done = true;
     this.glowing = [];
-    const fill = pic.fill();
+    const fill = pic.fill(as);
     if (this.rt) this.ctx.renderer.render({ container: fill, target: this.rt, clear: false });
     fill.destroy();
     this.ctx.particles.burst(pic.x, pic.y, {
       kind: 'star',
-      colors: [swatch[pic.thing.color].fill, 0xffffff, 0xfff3a0],
+      colors: [swatch[as].fill, 0xffffff, 0xfff3a0],
       count: 16,
       speed: [120, 300],
       gravity: 0,
@@ -613,7 +643,8 @@ class RainbowFingers implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     this.current++;
-    await this.ctx.say('praise');
+    if (as !== pic.thing.color) await this.ctx.say(alsoLine(pic.thing, as) as LineId);
+    else await this.ctx.say('paint.praise', { color: as, thing: THING_NAMES[pic.thing.id] });
     if (this.picture) await this.ask();
     else await this.ctx.say('paint.finished');
   }
@@ -798,7 +829,7 @@ class RainbowFingers implements Game {
   /** Press the paper closed: lift any strokes, then swing the right half over (`stepFold` runs it from `update`). */
   private fold() {
     if (this.done || this.folding || !this.rt) return;
-    for (const id of [...this.strokes.keys()]) this.lift(id);
+    for (const id of [...this.strokes.keys()]) this.lift(id, true);
     this.idle = 0;
     this.flush();
     // Folding again with nothing new is still a fold to watch, but only one that prints counts toward the frame.
@@ -919,6 +950,7 @@ class RainbowFingers implements Game {
       y: p.y,
       hue: this.hue,
       color: this.brush,
+      name: this.brushName,
       travelled: 0,
       startedAt: this.clock,
       lastStep: step,
@@ -974,13 +1006,15 @@ class RainbowFingers implements Game {
     }
   }
 
-  private lift(id: number) {
+  /** A finger came up. `quiet`: lifted by the fold, not by her, so it says nothing. */
+  private lift(id: number, quiet = false) {
     const s = this.strokes.get(id);
     if (!s) return;
     this.strokes.delete(id);
     this.idle = 0;
     const kind = touchKind(s.travelled, this.clock - s.startedAt);
-    if (kind === 'pat') this.bloom(s.x, s.y);
+    if (kind === 'pat') this.bloom(s.x, s.y, quiet);
+    else if (kind === 'drag' && !quiet) this.echo(s.name ?? hueName(s.hue));
     this.touches.push(kind);
   }
 
@@ -1044,8 +1078,9 @@ class RainbowFingers implements Game {
   }
 
   /** A quick tap grows a flower, which then becomes part of the painting. */
-  private bloom(x: number, y: number) {
+  private bloom(x: number, y: number, quiet = false) {
     const colorName = FLOWER_COLORS[Math.floor(Math.random() * FLOWER_COLORS.length)];
+    if (!quiet) this.echo(colorName);
     const color = swatch[colorName];
     this.recordMark({
       shape: 'flower',
@@ -1245,8 +1280,14 @@ export const rainbowFingers: GameModule = {
   },
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: "Guide {name}'s finger in big swoops, then let go and watch.",
-  offScreen: 'Finger-paint with yogurt and a drop of food coloring on the high-chair tray.',
+  coplayHint: 'Say each color as {name} paints it, then find something that color in the room.',
+  coplayHintLap: "Guide {name}'s finger in big swoops, then let go and watch.",
+  offScreen: {
+    all: 'Finger-paint with yogurt and a drop of food coloring on the high-chair tray.',
+    preschool: 'Go on a color hunt: find three red things in the house before you paint.',
+    prek: 'Squish two colors of play dough together and see what new color comes out.',
+    school: 'Put a spoonful of paint on one half of a sheet, fold it, press and open: a butterfly print.',
+  },
   hubIcon: () => new Easel(),
   sticker,
   create: (ctx) => new RainbowFingers(ctx),

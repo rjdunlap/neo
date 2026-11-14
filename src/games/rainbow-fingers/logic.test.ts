@@ -38,6 +38,14 @@ import {
   strokesCounted,
   THINGS,
   touchKind,
+  ACCEPTS,
+  accepts,
+  alsoLine,
+  ECHO_EVERY,
+  echoes,
+  hueName,
+  THING_NAMES,
+  type PaintMode,
   type PaintState,
   type Primary,
   type Touch,
@@ -46,6 +54,8 @@ import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
 import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
 import { computeView } from '../../engine/view';
+import { swatch } from '../../art/palette';
+import { VOICE } from './voice';
 
 describe('Rainbow Fingers', () => {
   it('pours in both mixing modes and directly selects paint in every other mode', () => {
@@ -464,6 +474,103 @@ describe('Rainbow Fingers', () => {
       };
       expect(paintStep(early)).toEqual({ do: 'fold' });
       expect(paintStep({ ...early, folded: true })).toEqual({ do: 'frame' });
+    });
+  });
+
+  describe('words and fairness', () => {
+    const colorWords = Object.keys(swatch);
+    const modes: PaintMode[] = ['named', 'recall', 'mix', 'recall-mix'];
+
+    it('names every picture, and no name is a color word', () => {
+      for (const t of THINGS) {
+        const name = THING_NAMES[t.id];
+        expect(name, t.id).toBeTruthy();
+        for (const word of name.split(' ')) expect(colorWords, `${t.id}: ${name}`).not.toContain(word);
+      }
+    });
+
+    it('the told answer is always the first accepted color, and every alternative is a real paint color', () => {
+      for (const t of THINGS) {
+        expect(ACCEPTS[t.id][0]).toBe(t.color);
+        expect(new Set(ACCEPTS[t.id]).size).toBe(ACCEPTS[t.id].length);
+        for (const c of ACCEPTS[t.id]) expect(colorWords).toContain(c);
+      }
+      expect(ACCEPTS.apple).toEqual(['red', 'green']);
+      expect(ACCEPTS.grapes).toEqual(['purple', 'green']);
+    });
+
+    it('an alternative paints without a miss only where she has to remember the color', () => {
+      for (const t of THINGS)
+        for (const c of ACCEPTS[t.id]) {
+          expect(accepts(t, 'recall', c), `${t.id} ${c}`).toBe(true);
+          // Where the voice names the color (or its recipe), only that color is asked for.
+          for (const mode of modes.filter((m) => m !== 'recall'))
+            expect(accepts(t, mode, c), `${mode} ${t.id} ${c}`).toBe(c === t.color);
+        }
+      for (const mode of modes) for (const t of THINGS) expect(accepts(t, mode, null)).toBe(false);
+      // Any other color is still the one wrong move.
+      const apple = THINGS.find((t) => t.id === 'apple')!;
+      expect(accepts(apple, 'recall', 'blue')).toBe(false);
+    });
+
+    it('every alternative has its own "real too" line, and the lines never name a slot', () => {
+      for (const t of THINGS)
+        for (const c of ACCEPTS[t.id].slice(1)) {
+          const lines = (VOICE as Record<string, string[]>)[alsoLine(t, c)];
+          expect(lines, alsoLine(t, c)).toBeDefined();
+          for (const line of lines) expect(line).not.toMatch(/\{/);
+        }
+    });
+
+    it('the bot paints only the told color, so its play never relies on an alternative', () => {
+      const apple = THINGS.find((t) => t.id === 'apple')!;
+      expect(
+        paintStep({
+          mode: 'recall',
+          strokes: 0,
+          brush: null,
+          poured: [],
+          picture: apple.color,
+          frame: false,
+        }),
+      ).toEqual({
+        do: 'pot',
+        pot: 'red',
+      });
+    });
+
+    it('the recalled mix never tells the color or the recipe', () => {
+      for (const line of VOICE['paint.remix']) {
+        for (const word of colorWords) expect(line.toLowerCase()).not.toContain(word);
+        expect(line).not.toMatch(/\{(color|a|b)\}/);
+      }
+    });
+
+    it('the opening, the finish, the page and the praise each have three wordings', () => {
+      for (const id of ['paint.start', 'paint.done', 'paint.finished', 'paint.praise'] as const)
+        expect(VOICE[id].length, id).toBeGreaterThanOrEqual(3);
+    });
+
+    it('a hue names all six rainbow colors, in rainbow order, around the wheel', () => {
+      const seen: ColorName[] = [];
+      for (let h = 0; h < 360; h += 0.5) {
+        const name = hueName(h);
+        if (seen[seen.length - 1] !== name) seen.push(name);
+      }
+      expect(seen).toEqual([...RAINBOW, 'red']);
+      expect(hueName(0)).toBe('red');
+      expect(hueName(360)).toBe('red');
+      expect(hueName(-30)).toBe('red');
+      expect(hueName(30)).toBe('orange');
+      expect(hueName(60)).toBe('yellow');
+      expect(hueName(120)).toBe('green');
+      expect(hueName(220)).toBe('blue');
+      expect(hueName(280)).toBe('purple');
+    });
+
+    it('only the free levels echo a color, and not every stroke', () => {
+      expect(PLANS.filter((p) => echoes(p.mode)).map((p) => p.mode)).toEqual(['free', 'pots']);
+      expect(ECHO_EVERY).toBeGreaterThanOrEqual(6);
     });
   });
 });
