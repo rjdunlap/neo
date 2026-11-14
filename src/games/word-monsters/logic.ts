@@ -6,7 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * that says its sound. The ladder goes from tapping to hear sounds, to finding a letter,
  * to matching first sounds, to building simple words sound by sound.
  */
-export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end' | 'last';
+export type MonsterMode =
+  'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end' | 'last' | 'slow';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -68,13 +69,25 @@ export const LAST_PLAN: MonsterPlan = {
   name: 'Last sounds: "what does cat end with?" Tap the monster for the last sound',
 };
 
+/**
+ * Level 11, Say it slowly: level 6's drag into three empty boxes, but only the word is said, never its sounds. She says it
+ * slowly herself; tapping the boxes says the sounds for her (a hint), tapping the picture says the word again (free).
+ */
+export const SLOW_LEVEL = 11;
+export const SLOW_PLAN: MonsterPlan = {
+  mode: 'slow',
+  rounds: 3,
+  choices: 4,
+  name: 'Say it slowly: build a pictured word from the word alone, with no sounds said and a spare letter',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
   // 9 is lap's big monster, so the school order skips it.
-  school: { min: 5, max: LAST_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL] },
+  school: { min: 5, max: SLOW_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL] },
 };
 
 /**
@@ -100,7 +113,9 @@ export const planFor = (level: number) =>
     ? BIG_PLAN
     : level === LAST_LEVEL
       ? LAST_PLAN
-      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+      : level === SLOW_LEVEL
+        ? SLOW_PLAN
+        : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -196,6 +211,20 @@ export type PictureWord = Word | (typeof END_WORDS)[number] | (typeof FAMILIES)[
 /** Level 10's words: every pictured word except those ending in x, whose "ks" is two sounds. */
 export const LAST_WORDS = PICTURE_WORDS.filter((w) => !w.endsWith('x'));
 
+/** Letters that are each other's mirror (b d p q, i l): a word holding two would ask her to tell them apart unheard. */
+const MIRRORS = ['bdpq', 'il'];
+
+/**
+ * Level 11's words: every pictured word with one box per sound, so no x ("ks" is two sounds) and no letter twice (pop),
+ * and no mirror pair inside a word.
+ */
+export const SLOW_WORDS = PICTURE_WORDS.filter(
+  (w) =>
+    !w.includes('x') &&
+    new Set(w).size === w.length &&
+    !MIRRORS.some((set) => w.split('').filter((l) => set.includes(l)).length > 1),
+);
+
 export interface Question {
   /** The letter asked for (find/who/first), or the word to build. */
   answer: string;
@@ -279,6 +308,13 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
     }
     return out;
   }
+  if (plan.mode === 'slow') {
+    // The spare comes from the plain-sound pool and never sounds like or looks like a needed letter.
+    for (const word of rng.shuffle([...SLOW_WORDS]).slice(0, plan.rounds)) {
+      out.push({ answer: word, monsters: pickLetters(rng, plan.choices, word.split(''), WHO_POOL) });
+    }
+    return out;
+  }
   if (plan.mode === 'build' || plan.mode === 'spell') {
     for (const word of rng.shuffle([...WORDS]).slice(0, plan.rounds)) {
       out.push({ answer: word, monsters: pickLetters(rng, plan.choices, word.split('')) });
@@ -322,7 +358,13 @@ export function nextMonster<M extends { letter: string; placed: boolean }>(
   taps: number,
 ): M | undefined {
   if (plan.mode === 'play') return monsters.length ? monsters[taps % monsters.length] : undefined;
-  if (plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end')
+  if (
+    plan.mode === 'build' ||
+    plan.mode === 'spell' ||
+    plan.mode === 'slow' ||
+    plan.mode === 'family' ||
+    plan.mode === 'end'
+  )
     return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
   return monsters.find((m) => m.letter === q.answer);
 }

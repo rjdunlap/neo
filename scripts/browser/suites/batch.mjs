@@ -10,7 +10,8 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         ['monsters', 'pegs', 'salon', 'garden', 'helpers', 'eggs', 'mail', 'safari', 'bounce', 'dots'],
         'BATCH_ONLY',
       );
-    // Word Monsters: sounds, finding letters, first sounds, building words by dragging, and (10) last sounds.
+    // Word Monsters: sounds, finding letters, first sounds, building words by dragging, (10) last sounds and (11) a word
+    // built from the word alone, where tapping the boxes says its sounds (one hint per word).
     // MONSTER_LEVELS=10 plays only the listed levels.
     const monsterLevels = process.env.MONSTER_LEVELS
       ? process.env.MONSTER_LEVELS.split(',').map(Number)
@@ -20,7 +21,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-      if (mode === 'last') {
+      if (mode === 'last' || mode === 'slow') {
         // Played on a phone held upright, the focus of current playtests.
         const was = page.viewportSize();
         await page.setViewportSize({ width: 390, height: 844 });
@@ -48,7 +49,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           }
           return;
         }
-        const building = g.plan.mode === 'build' || g.plan.mode === 'spell';
+        const building = g.plan.mode === 'build' || g.plan.mode === 'spell' || g.plan.mode === 'slow';
         for (let q = 0; q < g.questions.length; q++) {
           await kit.until(() => g.index === q && !g.busy, 10000);
           const question = g.question;
@@ -74,6 +75,18 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             if (g.misses !== 2 || g.hints !== 1 || !monster(want()).glow.visible)
               throw new Error(`Monster hint: ${g.misses} ${g.hints}`);
           }
+          if (q === 1 && g.plan.mode === 'slow') {
+            // Tapping the boxes says the word slowly: one hint for the word, however often she taps.
+            const before = g.hints;
+            // The last box, still empty: the row's own origin sits above the boxes.
+            const box = g.slots.toGlobal({ x: 150, y: 106 });
+            kit.tap(box.x, box.y);
+            await kit.sleep(900);
+            kit.tap(box.x, box.y);
+            await kit.sleep(900);
+            if (g.hints !== before + 1 || g.misses !== 2)
+              throw new Error(`Boxes hint: ${g.misses} ${g.hints}`);
+          }
           if (!building) {
             await act(monster(want()));
             continue;
@@ -87,7 +100,11 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         const r = kit.store.stats('word-monsters').history.at(-1);
         return [r.misses, r.hints];
       });
-      assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `monsters ${level} score`);
+      assert.deepEqual(
+        r,
+        mode === 'play' ? [0, 0] : mode === 'slow' ? [2, 2] : [2, 1],
+        `monsters ${level} score`,
+      );
       for (const size of restore.splice(0)) await page.setViewportSize(size);
       log(
         `Word Monsters ${level} (${mode}): sounds, choices, mistakes, hint, saved score and sticker passed`,

@@ -136,6 +136,10 @@ class WordMonsters implements Game {
   private readonly shelf = new Container();
   private flying: Container | null = null;
   private destroyed = false;
+  /** Level 11: the question whose sounds the boxes have already said, so repeat taps count one hint per word. */
+  private slowHinted: Question | null = null;
+  /** Level 11: the boxes are saying their sounds; another tap waits for them to finish. */
+  private slowSaying = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -146,6 +150,10 @@ class WordMonsters implements Game {
       ctx.view,
     );
     this.top.addChild(this.slots, this.slotLetters);
+    if (this.plan.mode === 'slow') {
+      // Level 11: tapping the boxes says the word slowly for her, sound by sound.
+      onTap(this.slots, () => void this.saySlowly(), { cooldown: 600 });
+    }
     ctx.stage.addChild(this.backdrop, this.top, this.crowd, this.shelf);
     if (this.plan.big) {
       this.bigQueue = bigLetters(ctx.rng, this.plan.rounds);
@@ -172,6 +180,7 @@ class WordMonsters implements Game {
     return (
       this.plan.mode === 'build' ||
       this.plan.mode === 'spell' ||
+      this.plan.mode === 'slow' ||
       this.plan.mode === 'family' ||
       this.plan.mode === 'end'
     );
@@ -410,7 +419,10 @@ class WordMonsters implements Game {
     if (!q) return void this.end();
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
-    if (this.building) {
+    if (this.plan.mode === 'slow') {
+      this.showPicture(this.sayingPicture(q.answer as PictureWord), 0.5, -110);
+      this.drawSlots(q.answer);
+    } else if (this.building) {
       this.showPicture(wordPicture(q.answer as PictureWord), 0.5, -110);
       this.drawSlots(q.answer);
     } else if (this.plan.mode === 'first') {
@@ -438,7 +450,7 @@ class WordMonsters implements Game {
     });
   }
 
-  /** Level 10: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
+  /** Levels 10 and 11: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
   private sayingPicture(word: PictureWord) {
     const p = wordPicture(word);
     // A generous square around the drawing (about 215 units across at its shown scale), clear of the monster row on a short view, so a near miss still counts.
@@ -518,6 +530,8 @@ class WordMonsters implements Game {
         return this.ctx.instruct('monster.first', { word: FIRST_WORDS[q.answer], sound });
       case 'last':
         return this.ctx.instruct('monster.last', { word: q.word ?? '' });
+      case 'slow':
+        return this.ctx.instruct('monster.slow', { word: q.answer });
       default:
         return this.ctx.instruct('monster.build', { word: q.answer, sounds: sounded(q.answer) });
     }
@@ -598,8 +612,50 @@ class WordMonsters implements Game {
     return { x: this.top.x + this.slotX(i), y: this.top.y + 106 };
   }
 
+  /**
+   * Level 11's hint: the boxes ripple one by one and each says its sound, so she hears the word said slowly. It counts
+   * one hint per word however often she taps; drags stay live while it speaks.
+   */
+  private async saySlowly() {
+    const q = this.question;
+    if (!q || this.busy || this.finished || this.destroyed || this.slowSaying) return;
+    if (this.askNow()) return;
+    if (this.slowHinted !== q) {
+      this.slowHinted = q;
+      this.hints++;
+    }
+    this.slowSaying = true;
+    for (let i = 0; i < q.answer.length; i++) {
+      // The word's own finish (the last drop) takes over the voice.
+      if (this.destroyed || this.busy || this.question !== q) break;
+      sfx.pop(3 + i);
+      this.ripple(i);
+      await this.ctx.say(soundLine(q.answer[i]));
+    }
+    this.slowSaying = false;
+  }
+
+  /** A brief ring over box `i`, so the sound she hears belongs to a place. */
+  private ripple(i: number) {
+    const ring = new Graphics()
+      .roundRect(-66, -66, 132, 132, 26)
+      .stroke({ width: 8, color: swatch.purple.light });
+    ring.position.set(this.slotX(i), 106);
+    this.top.addChild(ring);
+    void this.ctx.tw.to(ring.scale, { x: 1.18, y: 1.18 }, { duration: 0.35, ease: ease.outQuad });
+    void this.ctx.tw.to(ring, { alpha: 0 }, { duration: 0.35 }).then(() => ring.destroy());
+  }
+
   private drawSlots(word: string) {
     const g = this.slots.clear();
+    // Level 11's boxes are a thing to tap: a generous area over the whole row.
+    if (this.plan.mode === 'slow')
+      g.hitArea = new Rectangle(
+        this.slotX(0) - 80,
+        26,
+        this.slotX(word.length - 1) - this.slotX(0) + 160,
+        160,
+      );
     for (let i = 0; i < word.length; i++) {
       g.roundRect(this.slotX(i) - 66, 40, 132, 132, 26)
         .fill({ color: 0xffffff, alpha: 0.7 })
@@ -628,7 +684,10 @@ class WordMonsters implements Game {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      void this.ctx.say('monster.next', { sound: SOUNDS[q.answer[this.filled]] });
+      // Level 11 never says the sound the box wants: the monster says who it is, as a tap does on the finding levels.
+      if (this.plan.mode === 'slow')
+        void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: SOUNDS[m.letter] });
+      else void this.ctx.say('monster.next', { sound: SOUNDS[q.answer[this.filled]] });
       if (this.wrongs >= 2) this.hint();
       return false;
     }

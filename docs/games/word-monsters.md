@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5, 6, 7, 8, 10 |
+| school | 5, 6, 7, 8, 10, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,12 +26,13 @@
 | 8 | Change the end: keep the first two sounds and make cat, cap, can |
 | 9 | One big monster: a touch anywhere makes it say its sound, its picture stays, and the next monster wakes (6 monsters) |
 | 10 | Last sounds: "what does cat end with?" Tap the monster for the last sound |
+| 11 | Say it slowly: build a pictured word from the word alone, with no sounds said and a spare letter |
 
 <!-- end generated -->
 
 **Starts as:** tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster)
 
-**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?")
+**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), then saying a word slowly while she builds it (tap the boxes to hear each sound)
 
 ## Design notes
 
