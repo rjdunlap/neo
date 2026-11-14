@@ -1,1 +1,0 @@
-**Splish Splash slice 3, foam, the shake and bath toys** (rule tests, one landscape and one portrait screenshot, `fingerdemo` at level 1): the tub's foam turns white as she scrubs, a shake rinses, and bath toys sit in the tub; a visual layer with no new rule. [Splish Splash dive, slice 3](../../deep-dives/splish-splash.md#build-slices-in-order)
