@@ -270,8 +270,7 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
       ends.add(last);
       // About half the time the word's own first sound is a decoy, so she must listen past the start.
       const first = word[0];
-      const decoy =
-        first !== last && !lookalike(first, last) && !soundTwin(first, last) && rng.chance(0.5);
+      const decoy = first !== last && !lookalike(first, last) && !soundTwin(first, last) && rng.chance(0.5);
       out.push({
         answer: last,
         word,
