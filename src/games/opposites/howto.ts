@@ -20,7 +20,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 7,
       to: 7,
-      text: 'Three pictures of one word: two ends, like empty and full, and one in between. Tap the one in between. After two misses the three line up in order and the middle one glows.',
+      text: 'Three pictures of one word: two ends, like empty and full, and one in between. Tap the one in between. After two misses the two ends light up, then the middle one glows.',
     },
   ],
   finish: [

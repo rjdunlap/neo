@@ -10,7 +10,7 @@ export const VOICE = {
   'opp.pairs': ['Find the opposites! Tap one, then its opposite.'],
   'opp.between': ['Which one is between {a} and {b}?'],
   'opp.notbetween': ['That one is {what}. Which one is between {a} and {b}?'],
-  'opp.isbetween': ['Yes! {word} is in between.'],
+  'opp.isbetween': ['{word}! That one is in between.'],
   'opp.notfind': ['That one is {what}. Which one is {word}?'],
   'opp.notopp': ['{what} is not the opposite of {word}.'],
   'opp.notpair': ['{a} and {b} are not opposites.'],

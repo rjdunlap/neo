@@ -165,10 +165,10 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
     };
     if (plan.mode === 'switch') out.push({ cards: [card(concept, side)] });
     else if (plan.mode === 'between')
-      // Both ends and the middle, shuffled, so the middle is found by what it shows rather than where it stands.
+      // Both ends and the middle in their true order, the end named first on the left (level 8 shuffles them).
       out.push({
         ask: card(concept, side),
-        cards: rng.shuffle([card(concept, 0), { concept, side: 0, mid: true }, card(concept, 1)]),
+        cards: [card(concept, side), { concept, side: 0, mid: true }, card(concept, (1 - side) as 0 | 1)],
       });
     else if (plan.mode === 'find')
       out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, side) });

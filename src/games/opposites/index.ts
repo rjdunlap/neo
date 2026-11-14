@@ -15,7 +15,6 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   BIG_LEVEL,
   LEVELS,
-  degree,
   STICKER_CONCEPTS,
   cardToTap,
   makeRounds,
@@ -32,7 +31,7 @@ import {
 const BIG_SCALE = 1.7;
 /** Level 6's flipped pictures, small in the row along the bottom (about 75 units across). */
 const ROW_SCALE = 0.44;
-/** Level 7's three cards, larger in the open middle of the screen (about 240 units across, so bigger on a phone). */
+/** Level 7's three cards, larger in the open middle of the screen: up to about 240 units across. */
 const BETWEEN_SCALE = 1.4;
 
 /** Level 7's middle pictures: the same cup, mug, sky and balloon as the two sides, with the in-between amount. */
@@ -391,8 +390,6 @@ class Opposites implements Game {
   private flying: Container | null = null;
   private wiggling = false;
   private destroyed = false;
-  /** Level 7's hint: the three cards stand in their true order, the first-named end on the left. */
-  private lined = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -450,9 +447,9 @@ class Opposites implements Game {
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
     } else {
       const xs = this.rowXs();
-      this.cards.forEach((c, i) =>
-        c.node.position.set(xs[this.slot(c, i)], v.h * (mode === 'between' ? 0.56 : 0.64)),
-      );
+      this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (mode === 'between' ? 0.56 : 0.64)));
+      // Level 7's cards grow only as far as the row leaves room, so their tap areas never overlap (upright: about 1.06).
+      if (mode === 'between' && !this.busy) this.cards.forEach((c) => c.node.scale.set(this.betweenScale()));
     }
     this.shown.position.set(v.w / 2, Math.max(150, v.h * 0.26));
   }
@@ -495,36 +492,26 @@ class Opposites implements Game {
   }
 
   /** The row of cards' centers; level 7's larger cards use the whole width (they stand clear of the corner buttons). */
-  private rowXs() {
+  private rowXs(n = this.cards.length) {
     const v = this.view;
-    return this.plan.mode === 'between'
-      ? spread(this.cards.length, 80, v.w - 80, 330)
-      : spread(this.cards.length, 200, v.w - 80, 240);
+    return this.plan.mode === 'between' ? spread(n, 80, v.w - 80, 330) : spread(n, 200, v.w - 80, 240);
   }
 
-  /** Where a card stands in the row: its dealt place, or after level 7's hint its place on the word's line. */
-  private slot(c: CardView, i: number) {
-    return this.lined ? degree(c.card, this.round.ask!.side) : i;
+  /** Level 7's card scale: as large as BETWEEN_SCALE, but each 180-unit tap area keeps a gap to the next. */
+  private betweenScale() {
+    const xs = this.rowXs(3);
+    return Math.min(BETWEEN_SCALE, (xs[1] - xs[0] - 16) / 180);
   }
 
   /**
-   * Level 7's hint, after two misses: the two ends light up and the three slide into their true order (the end named
-   * first on the left), so the one in between stands between them; then it glows.
+   * Level 7's hint, after two misses: the two ends light up, then the one in between them glows. The cards already stand
+   * in their true order, so the middle is the one between the lit ends.
    */
-  private async lineUp() {
+  private async lightEnds() {
     this.busy = true;
     const ends = this.cards.filter((c) => !c.card.mid);
     for (const c of ends) this.drawCard(c, true);
-    await this.ctx.tw.wait(0.5);
-    if (this.destroyed) return;
-    this.lined = true;
-    const xs = this.rowXs();
-    sfx.whoosh();
-    await Promise.all(
-      this.cards.map((c, i) =>
-        this.ctx.tw.to(c.node, { x: xs[this.slot(c, i)] }, { duration: 0.5, ease: ease.inOutSine }),
-      ),
-    );
+    await this.ctx.tw.wait(0.8);
     if (this.destroyed) return;
     for (const c of ends) this.drawCard(c, false);
     this.busy = false;
@@ -634,7 +621,6 @@ class Opposites implements Game {
     this.wrongs = 0;
     this.glowing = null;
     this.picked = null;
-    this.lined = false;
     if (this.index >= this.rounds.length) return void this.finale();
     for (const c of this.cards.splice(0)) c.node.destroy({ children: true });
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -648,7 +634,7 @@ class Opposites implements Game {
             : this.plan.mode === 'switch'
               ? 1.7
               : this.plan.mode === 'between'
-                ? BETWEEN_SCALE
+                ? this.betweenScale()
                 : 1,
         ),
       );
@@ -735,7 +721,7 @@ class Opposites implements Game {
     if (mode === 'between')
       return void (c.card.mid
         ? this.right([c], word(c.card))
-        : this.wrong('opp.notbetween', { what: word(c.card), ...this.ends() }));
+        : this.wrong('opp.notbetween', { what: word(c.card), ...this.ends(c.card) }));
     if (mode === 'opposite')
       return void (opposites(c.card, r.ask!)
         ? this.right([c])
@@ -767,9 +753,9 @@ class Opposites implements Game {
   }
 
   /** Level 7's two ends, the one named first as `a`. */
-  private ends() {
-    const ask = this.round.ask!;
-    return { a: word(ask), b: word({ ...ask, side: (1 - ask.side) as 0 | 1 }) };
+  /** Level 7's two ends: the one named first as `a`, or the end she tapped ("That one is full. Between full and…"). */
+  private ends(first: Card = this.round.ask!) {
+    return { a: word(first), b: word({ ...first, side: (1 - first.side) as 0 | 1 }) };
   }
 
   private wrong(
@@ -785,7 +771,7 @@ class Opposites implements Game {
       const r = this.round;
       if (this.plan.mode === 'between') {
         this.glowing = this.cards.find((x) => x.card.mid)!;
-        void this.lineUp();
+        void this.lightEnds();
         return;
       }
       this.glowing =

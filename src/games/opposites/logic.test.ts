@@ -175,7 +175,7 @@ describe('Opposites', () => {
     expect(new Set(all).size).toBe(all.length);
     for (const line of ['opp.between', 'opp.notbetween', 'opp.isbetween'] as const)
       expect(SCRIPT[line]).toBeDefined();
-    const places = new Set<string>();
+    const lefts = new Set<number>();
     for (let seed = 1; seed <= 200; seed++) {
       const rounds = makeRounds(BETWEEN_PLAN, new Rng(seed));
       expect(rounds).toEqual(makeRounds(BETWEEN_PLAN, new Rng(seed)));
@@ -193,12 +193,15 @@ describe('Opposites', () => {
         for (const c of r.cards) expect(opposites(c, mids[0])).toBe(false);
         expect(r.cards.map((c) => degree(c, r.ask!.side)).sort()).toEqual([0, 1, 2]);
         expect(word(mids[0])).toBe(MIDDLES[r.ask!.concept as keyof typeof MIDDLES]);
-        places.add(String(r.cards.indexOf(mids[0])));
+        // In their true order, the end named first on the left: the middle stands between the ends.
+        expect(r.cards.map((c) => degree(c, r.ask!.side))).toEqual([0, 1, 2]);
+        expect(r.cards[0]).toEqual(r.ask);
+        lefts.add(r.ask!.side);
         const i = cardToTap(BETWEEN_PLAN, r, [false, false, false], null);
         expect(r.cards[i!].mid).toBe(true);
       }
     }
-    // Shuffled: the middle is found by its picture, not by always standing in the middle place.
-    expect([...places].sort()).toEqual(['0', '1', '2']);
+    // Either end can be named first and stand on the left (empty to full, or full to empty).
+    expect([...lefts].sort()).toEqual([0, 1]);
   });
 });

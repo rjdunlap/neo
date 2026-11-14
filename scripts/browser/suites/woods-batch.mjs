@@ -4031,10 +4031,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await card(others[others.length - 1]);
             assert.deepEqual(await counts(), [2, 1]);
             if (mode === 'between') {
-              // The hint lines the three up in true order: the glowing middle now stands between the two ends.
+              // The cards stand in true order: the glowing middle is the one between the two ends.
               const xs = await page.evaluate(() => neo.scene.game.cards.map((c) => c.node.x));
               const [lo, hi] = others.map((i) => xs[i]).sort((a, b) => a - b);
-              assert.ok(xs[right] > lo && xs[right] < hi, 'after the hint the middle stands between the ends');
+              assert.ok(xs[right] > lo && xs[right] < hi, 'the middle stands between the ends');
               await screenshot('opposites-7-hint');
             }
           }
