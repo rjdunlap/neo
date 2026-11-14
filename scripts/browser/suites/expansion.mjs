@@ -252,6 +252,58 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       .map(Number)
       .filter(() => !only || only === 'bug')) {
       await launch('bug-builder', level);
+      if (level === 9) {
+        // Count a kind, on a phone held upright: two wrong kinds are two misses and the hint; any stamp of the kind counts.
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(400);
+        await page.evaluate(async () => {
+          const g = neo.scene.game,
+            s = g.count,
+            right = g.stampFor(), // the first tray stamp of the sign's kind
+            drop = async (choice, i) => {
+              const p = g.places[i].getGlobalPosition();
+              await kit.dragTo(choice.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+              await kit.sleep(500);
+            };
+          // Find a stamp of another kind by trying: the tray's second stamp of the kind lands and is lifted off again.
+          let wrong = null;
+          for (const c of g.choices.filter((c) => c !== right)) {
+            await drop(c, 0);
+            if (s.wrongKinds > 0) {
+              wrong = c;
+              break;
+            }
+            kit.tapOn(g.places[0]);
+            await kit.sleep(400);
+          }
+          if (!wrong || s.order.length !== 0) throw new Error('A wrong kind landed, or none was in the tray');
+          await drop(wrong, 0);
+          if (g.misses !== 2 || g.hints !== 1)
+            throw new Error(`Wrong kinds: ${g.misses} misses, ${g.hints} hints`);
+          if (g.paletteGlow.context.instructions.length === 0)
+            throw new Error('A stamp of the kind should glow');
+          for (let i = 0; i < s.want; i++) await drop(right, i);
+          if (s.order.length !== s.want) throw new Error(`Stamped ${s.order.length} of ${s.want}`);
+        });
+        await screenshot('bug-builder-9-portrait');
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          kit.tapOn(g.check);
+          await kit.sleep(300);
+          if (!g.done) throw new Error('The right number of the kind did not finish');
+        });
+        await finished('bug-builder');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('bug-builder').history.at(-1);
+            return [r.misses, r.hints];
+          }),
+          [2, 1],
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        log('Bug Builder 9: wrong kinds, hint glow, the kind counted, saved round and sticker passed');
+        continue;
+      }
       if (level === 8) {
         // Count the spots, on a phone held upright: one too many is no miss; two wrong checks bring the hint.
         await page.setViewportSize({ width: 390, height: 844 });
