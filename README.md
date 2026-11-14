@@ -126,7 +126,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 12 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
 | [Little Helpers](docs/games/little-helpers.md) | lap–school | Counting Cove | 9 | tap a fruit and a helper carries it home |
 | [Pet Kitchen](docs/games/pet-kitchen.md) | lap–school | Counting Cove | 15 | tap pieces onto the plate with fewest (lap), cut a sandwich or pie in halves and share; friends eat the meal |
-| [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 10 | hop to a number on the lily pads |
+| [Frog Hop](docs/games/frog-hop.md) | preschool–school | Counting Cove | 11 | hop to a number on the lily pads |
 | [Picture Graph](docs/games/picture-graph.md) | pre-K–school | Counting Cove | 11 | count critters and build their bars, one block each |
 | [Lasso Loops](docs/games/lasso-loops.md) | preschool–school | Counting Cove | 6 | draw a loop around fireflies: they fly into a jar |
 | [Fill and Dump](docs/games/fill-dump.md) | lap–preschool | Counting Cove | 7 | tap the container or grass and the pieces tumble out with a chime each; tap it back in (levels 1–2); an idle wiggle invites the next touch |

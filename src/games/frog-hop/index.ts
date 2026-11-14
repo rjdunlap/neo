@@ -28,6 +28,7 @@ import {
   type HopPlan,
   type HopQuestion,
   splitsAtTen,
+  countsHops,
   isFrac,
   fracMiss,
   matchMiss,
@@ -203,7 +204,7 @@ class FrogHop implements Game {
     // Last in the row, so the marks fade with the pads when the long line slides.
     this.row.addChild(this.marks);
     this.markPads();
-    if (this.plan.mode === 'gap' || splitsAtTen(this.plan.mode) || this.plan.mode === 'frac-match') {
+    if (countsHops(this.plan.mode) || splitsAtTen(this.plan.mode) || this.plan.mode === 'frac-match') {
       for (const n of GAP_CARDS) {
         const node = new Container();
         node.addChild(tile(104, 110, 'white'), label(String(n), 52, ink));
@@ -255,7 +256,7 @@ class FrogHop implements Game {
   private cardStage() {
     const mode = this.plan.mode;
     return (
-      mode === 'gap' ||
+      countsHops(mode) ||
       (splitsAtTen(mode) && this.makeTenStage === 'bridge') ||
       (mode === 'frac-match' && this.matchStage === 'count')
     );
@@ -289,7 +290,7 @@ class FrogHop implements Game {
   }
 
   private padY() {
-    return this.view.h * (this.plan.mode === 'gap' ? 0.56 : 0.62);
+    return this.view.h * (countsHops(this.plan.mode) ? 0.56 : 0.62);
   }
 
   resize(v: View) {
@@ -407,6 +408,11 @@ class FrogHop implements Game {
     const q = this.q;
     if (q.lo !== this.lo) await this.slideWindow(q.lo);
     if (this.at !== q.start) await this.leap(q.start);
+    if (mode === 'count-up') {
+      // The flag marks the bigger number; the frog stands on the one taken away.
+      this.flag.position.set(this.padX(q.target), this.padY());
+      this.flag.visible = true;
+    }
     if (isFrac(mode)) return this.askFrac(line);
     const k = Math.abs(q.hops);
     this.setSign(
@@ -414,22 +420,25 @@ class FrogHop implements Game {
         ? String(q.target)
         : mode === 'gap'
           ? `${q.start} → ${q.target}`
-          : mode === 'make-ten'
-            ? `${q.start} + ${q.hops}`
-            : mode === 'back-ten'
-              ? `${q.start} − ${k}`
-              : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`,
+          : mode === 'count-up'
+            ? `${q.target} − ${q.start}`
+            : mode === 'make-ten'
+              ? `${q.start} + ${q.hops}`
+              : mode === 'back-ten'
+                ? `${q.start} − ${k}`
+                : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`,
       mode === 'find' ? q.target : 0,
     );
     // The ring starts where the frog sits (or on the first card), so choosing is a few steps along.
     this.focus =
-      mode === 'gap' || splitsAtTen(mode) ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
+      countsHops(mode) || splitsAtTen(mode) ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
     this.ask(() => {
       if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
       if (mode === 'next')
         return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
       if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
+      if (mode === 'count-up') return this.ctx.instruct('hop.countup', { n: q.start, m: q.target });
       if (splitsAtTen(mode))
         return this.ctx.instruct(mode === 'make-ten' ? 'hop.ten' : 'hop.backten', { n: q.start, k });
       return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
@@ -580,7 +589,7 @@ class FrogHop implements Game {
   private async tapCard(n: number) {
     if (this.busy || this.finished) return;
     this.askNow();
-    if (this.plan.mode === 'gap' && n === answerOf('gap', this.q)) return void this.right();
+    if (countsHops(this.plan.mode) && n === answerOf(this.plan.mode, this.q)) return void this.right();
     if (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge' && n === this.q.toTen)
       return void this.bridgeTen();
     if (this.plan.mode === 'frac-match' && n === this.q.answer2) return void this.right();
@@ -675,6 +684,8 @@ class FrogHop implements Game {
         name: fracWords(q.target),
       });
     else if (saysNumbers(mode)) line = this.ctx.say('hop.landed', { n: q.target });
+    else if (mode === 'count-up')
+      line = this.ctx.say('hop.countup.yay', { m: q.target, n: q.start, k: q.hops });
     else line = this.ctx.say('hop.yay');
     // The last question's line is heard out, because the closing line would cut it.
     if (this.index + 1 >= this.questions.length) await line;
@@ -699,7 +710,7 @@ class FrogHop implements Game {
     else {
       const card = this.cardStage();
       const start = splitsAtTen(mode) && this.makeTenStage === 'rest' ? 10 : q.start;
-      const answer = card ? (mode === 'gap' ? answerOf(mode, q) : q.toTen!) : q.target;
+      const answer = card ? (countsHops(mode) ? answerOf(mode, q) : q.toTen!) : q.target;
       const kind = missKind(start, answer, n, card);
       if (kind === 'forward' || kind === 'backward')
         await this.ctx.say(kind === 'forward' ? 'hop.wrong.forward' : 'hop.wrong.backward');

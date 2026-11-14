@@ -928,7 +928,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 
     if (!only || only === 'hop')
       for (const level of process.env.HOP_LEVELS?.split(',').map(Number) ||
-        Array.from({ length: Math.max(0, 11 - fromLevel) }, (_, i) => fromLevel + i)) {
+        Array.from({ length: Math.max(0, 12 - fromLevel) }, (_, i) => fromLevel + i)) {
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
@@ -942,7 +942,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           g.ctx.say = (id, vars) => {
             const line = say(id, vars);
             hopSaid.push({ id: String(id), n: vars?.n, tally: g.tallied });
-            if (['hop.yay', 'hop.landed', 'hop.frac.also', 'hop.frac.same'].includes(String(id))) {
+            if (
+              ['hop.yay', 'hop.landed', 'hop.frac.also', 'hop.frac.same', 'hop.countup.yay'].includes(
+                String(id),
+              )
+            ) {
               const at = g.index,
                 t = performance.now(),
                 o = { id, last: at + 1 >= g.questions.length };
@@ -963,7 +967,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           };
         });
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-        if (mode === 'gap' || mode === 'make-ten' || mode === 'back-ten') {
+        if (mode === 'gap' || mode === 'count-up' || mode === 'make-ten' || mode === 'back-ten') {
           await page.evaluate(async () => {
             const g = neo.scene.game;
             for (let i = 0; i < 2; i++) {
@@ -988,7 +992,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await page.evaluate((right) => {
             const g = neo.scene.game;
             const q = g.questions[g.index];
-            if (g.plan.mode === 'gap') {
+            if (g.plan.mode === 'gap' || g.plan.mode === 'count-up') {
               const n = Math.abs(q.hops);
               kit.tapOn(g.cards.find((c) => (right ? c.n === n : c.n !== n)).node);
               return;
@@ -1061,6 +1065,29 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await answer(false);
             assert.deepEqual(await counts(), [2, 1]);
             if (level >= 5) await screenshot(`frog-hop-${level}`);
+            if (mode === 'count-up') {
+              // Slice 4: the sign is the take-away, the frog stands on the smaller number and the flag on the bigger.
+              const shown = await page.evaluate(() => {
+                const g = neo.scene.game;
+                return {
+                  sign: g.signText.text,
+                  want: `${g.q.target} − ${g.q.start}`,
+                  flag: g.flag.visible && Math.abs(g.flag.x - g.padX(g.q.target)) < 1,
+                  frog: g.at === g.q.start,
+                  glow: g.glowing === g.cards.find((c) => c.n === g.q.hops).node,
+                };
+              });
+              assert.deepEqual(
+                shown,
+                { sign: shown.want, want: shown.want, flag: true, frog: true, glow: true },
+                'count up: take-away sign, flag on the bigger number, frog on the smaller, the right card glows',
+              );
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(250);
+              await screenshot(`frog-hop-${level}-phone-portrait`);
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(250);
+            }
           }
           if (mode === 'frac-match' && n > 0) await answer(true);
           await answer(true);

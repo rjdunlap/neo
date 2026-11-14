@@ -35,7 +35,12 @@ export const HOW_TO: GameHowTo = {
     { from: 9, to: 9, text: 'Hop quarters and halves: tap where the frog lands.' },
     {
       from: 10,
+      to: 10,
       text: 'Land on a lily, then choose how many hops of the other size reach it.',
+    },
+    {
+      from: 11,
+      text: 'The sign shows a take-away like 13 − 9. The frog stands on the number taken away and a flag marks the other: count the hops up to the flag, then tap that number card.',
     },
   ],
   finish: 'Answer five questions to bring the frog home.',

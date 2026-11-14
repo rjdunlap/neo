@@ -26,6 +26,9 @@ import {
   DOT_R,
   flowerOn,
   isFrac,
+  countsHops,
+  crossesTen,
+  COUNT_UP_CROSSINGS,
   type HopQuestion,
 } from './logic';
 
@@ -103,7 +106,7 @@ describe('Frog Hop', () => {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           const slot = answerSlot(plan.mode, q, q.lo);
           expect(slot, plan.name).toBeGreaterThanOrEqual(0);
-          if (plan.mode === 'gap') expect(GAP_CARDS[slot]).toBe(Math.abs(q.hops));
+          if (countsHops(plan.mode)) expect(GAP_CARDS[slot]).toBe(Math.abs(q.hops));
           else expect(q.lo + slot).toBe(q.target);
         }
       }
@@ -292,7 +295,8 @@ describe('Frog Hop, Fraction Landings', () => {
   });
 
   it('puts both levels at the top of school only, and the voice lines carry their slots', () => {
-    const fl = PLANS.length;
+    // Saved levels 9 and 10; Count up was appended after them as 11.
+    const fl = 10;
     expect(at('frac-match')).toBe(PLANS[fl - 1]);
     expect(at('frac-hop')).toBe(PLANS[fl - 2]);
     expect(frogHop.levels('prek').max).toBeLessThan(fl - 1);
@@ -343,6 +347,67 @@ describe('Frog Hop, Fraction Landings', () => {
         if (i < 2 || isFrac(plan.mode)) expect(flowers).toEqual([]);
         else expect(flowers).toEqual([5, 10, 15, 20].filter((n) => n <= plan.top));
       });
+    });
+  });
+
+  describe('Count up to take away (level 11)', () => {
+    const plan = PLANS.find((p) => p.mode === 'count-up')!;
+
+    it('is appended as level 11, after the fraction levels, so saved levels keep their numbers', () => {
+      expect(PLANS.indexOf(plan) + 1).toBe(11);
+      expect(PLANS.map((p) => p.mode).slice(0, 10)).toEqual([
+        'find',
+        'next',
+        'add',
+        'back',
+        'gap',
+        'big',
+        'make-ten',
+        'back-ten',
+        'frac-hop',
+        'frac-match',
+      ]);
+      expect(frogHop.levels('school').max).toBe(11);
+      expect(frogHop.describeLevel(11)).toContain('Count up');
+      expect(countsHops('count-up')).toBe(true);
+    });
+
+    it('asks a take-away from 11-20 with a difference a card shows, three of five crossing ten', () => {
+      const diffs = new Set<number>();
+      for (let seed = 1; seed <= 500; seed++) {
+        const qs = makeQuestions(plan, new Rng(seed));
+        expect(qs.filter(crossesTen)).toHaveLength(COUNT_UP_CROSSINGS);
+        qs.forEach((q, i) => {
+          expect(q.target).toBeGreaterThanOrEqual(11);
+          expect(q.target).toBeLessThanOrEqual(20);
+          expect(q.hops).toBe(q.target - q.start);
+          expect(GAP_CARDS).toContain(q.hops);
+          expect(q.hops).toBeLessThanOrEqual(6);
+          // The frog stands on the smaller number: counting up, not back.
+          expect(q.start).toBeLessThan(q.target);
+          if (!crossesTen(q)) expect(q.start).toBeGreaterThanOrEqual(10);
+          if (i > 0) expect(q.target).not.toBe(qs[i - 1].target);
+          diffs.add(q.hops);
+        });
+      }
+      expect([...diffs].sort()).toEqual([1, 2, 3, 4, 5, 6]);
+    });
+
+    it('is answered by the number card for the hops, which the ghost finger and couch ring find', () => {
+      for (let seed = 1; seed <= 100; seed++)
+        for (const q of makeQuestions(plan, new Rng(seed))) {
+          expect(answerOf('count-up', q)).toBe(q.hops);
+          expect(GAP_CARDS[answerSlot('count-up', q, q.lo)]).toBe(q.hops);
+        }
+    });
+
+    it('names counting the numbers instead of the hops as one too many', () => {
+      const q: HopQuestion = { start: 9, target: 13, hops: 4, lo: 6 };
+      expect(missKind(q.start, answerOf('count-up', q), 5, true)).toBe('one-more');
+      expect(missKind(q.start, answerOf('count-up', q), 3, true)).toBe('one-less');
+      expect(missKind(q.start, answerOf('count-up', q), 1, true)).toBe('count');
+      expect(SCRIPT['hop.countup'][0]).toContain('{n}');
+      expect(SCRIPT['hop.countup'][0]).toContain('{m}');
     });
   });
 });
