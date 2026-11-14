@@ -157,7 +157,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 1. **Words and guards** (built 2026-10-17, branch `claude/splish-words-guards`). The bounded how-to lines and the generic test; the phrase table; naming the part as it goes clean; the free-play nudge; the larger brush on levels 1–2. Tier: typecheck, the game's rule tests and the how-to test; then `EARLY_ONLY=bath` once (it plays 1–8; one repeat is acceptable for the recorded level-5 flake).
 2. **Hint accounting** (decision 5; built 2026-11-13, branch `claude/splish-splash-hint-rule`). Tier: rule tests and the same `EARLY_ONLY=bath` run.
 3. **Foam, the shake and bath toys** (built 2026-11-14, branch `claude/splish-splash-foam-toys`). Tier: rule tests, one landscape and one portrait screenshot, `fingerdemo` at level 1.
-4. **Rooms and messes** (ready; a sub-slice per room if needed). Tier: rule tests including the contrast rule, one screenshot per room.
+4. **Rooms and messes** (claimed 2026-11-14, branch `claude/splish-splash-rooms-messes`; a sub-slice per room if needed). Tier: rule tests including the contrast rule, one screenshot per room.
 5. **Friends in the tub** (decision 1; the pig first, then one slice for the rest). Tier: rule tests, a screenshot per friend, `fingerdemo` at levels 1 and 6.
 6. **Level 9, What do we hear with?** (decision 2). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at it.
 7. **Level 10, The picture card.** Same tier, plus a portrait screenshot of the card strip.
