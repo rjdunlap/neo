@@ -483,7 +483,7 @@ class DotLink implements Game {
     const color = this.grid[path[0].r][path[0].c];
     const p = this.plan;
     let counts = 0;
-    let line: 'dots.notthat' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
+    let line: 'dots.notthat' | 'dots.twofull' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
     if (p.mode === 'pair' || p.mode === 'buddy') counts = 1;
     else if (p.mode === 'color') {
       if (color === this.target) counts = loop ? popped(this.grid, path, true).length : path.length;
@@ -493,7 +493,7 @@ class DotLink implements Game {
       const which = this.targets.indexOf(color);
       counts = twoAdd(p, this.have, which, loop ? popped(this.grid, path, true).length : path.length);
       if (counts) this.countTwo(which, counts);
-      else line = 'dots.notthat';
+      else line = which >= 0 ? 'dots.twofull' : 'dots.notthat';
     } else if (p.mode === 'chain') {
       if (chainCounts(p, path.length, loop)) counts = 1;
       else line = p.exactLength ? 'dots.exact' : 'dots.longer';

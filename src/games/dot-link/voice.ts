@@ -9,6 +9,7 @@ export const VOICE = {
   'dots.color': ['Pop {n} {color} dots!'],
   'dots.two': ['Pop {n} {color} dots and {m} {other} dots!'],
   'dots.twonext': ['That is all the {color} dots! Now pop the {other} ones.'],
+  'dots.twofull': ['We have enough {wrong} dots! Pop the {color} ones.'],
   'dots.chain': ['Make a chain of {n} dots!'],
   'dots.exact': ['Make a line of exactly {n} dots!'],
   'dots.square': ['Make a square! Go all the way around four dots of one color.'],
