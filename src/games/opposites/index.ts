@@ -414,6 +414,8 @@ class Opposites implements Game {
   private destroyed = false;
   /** Level 9: the hidden picture has been shown, after this round's first miss. */
   revealed = false;
+  /** Level 9: the speaker is turning round to the picture. */
+  private revealing = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -925,19 +927,27 @@ class Opposites implements Game {
   private replay() {
     if (this.finished || !this.round?.ask) return;
     sfx.pop(3);
-    void this.ctx.tw.to(this.shown.scale, { x: 0.92, y: 0.92 }, { duration: 0.08 }).then(() => {
-      if (!this.destroyed)
-        void this.ctx.tw.to(this.shown.scale, { x: 1, y: 1 }, { duration: 0.15, ease: ease.outBack });
-    });
+    // No squash while the reveal turns the bubble round: the flip owns the scale then.
+    if (!this.revealing)
+      void this.ctx.tw.to(this.shown.scale, { x: 0.92, y: 0.92 }, { duration: 0.08 }).then(() => {
+        if (!this.destroyed && !this.revealing)
+          void this.ctx.tw.to(this.shown.scale, { x: 1, y: 1 }, { duration: 0.15, ease: ease.outBack });
+      });
     void this.ctx.say('opp.word', { word: word(this.round.ask) });
   }
 
   /** Level 9: the speaker turns round to the asked word's own picture, with a small speaker left in its corner. */
   private async reveal() {
     this.revealed = true;
+    this.revealing = true;
     const ask = this.round.ask!;
     await this.ctx.tw.to(this.shown.scale, { x: 0 }, { duration: 0.12 });
-    if (this.destroyed || this.round?.ask !== ask) return;
+    if (this.destroyed) return;
+    if (this.round?.ask !== ask) {
+      // The round moved on mid-flip: leave the next bubble at full size.
+      this.revealing = false;
+      return void this.shown.scale.set(1);
+    }
     this.shown.removeChildAt(1).destroy();
     const badge = new Container();
     badge.addChild(
@@ -948,7 +958,9 @@ class Opposites implements Game {
     badge.addChild(glyph);
     badge.position.set(76, 76);
     this.shown.addChild(picture(ask), badge);
+    this.shown.scale.y = 1;
     await this.ctx.tw.to(this.shown.scale, { x: 1 }, { duration: 0.18, ease: ease.outBack });
+    this.revealing = false;
   }
 
   /** A right answer; level 7 names the middle it found ("Yes! Warm is in between."). */
