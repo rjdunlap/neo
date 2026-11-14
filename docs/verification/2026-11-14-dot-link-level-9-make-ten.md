@@ -1,0 +1,5 @@
+# 2026-11-14 — Dot Link level 9, Make ten (PR #1646)
+
+**Changed:** `dot-link` level 9 *Make ten* (school window 8–9, pre-K window now 3–9): same-color lines fill a ten-frame on a big 10 sign to exactly ten; a line stops at what is left with "Only n more!" (one miss per line); `tenLine` hint and demo; 300-seed rule test (a counting line for every remainder 10..1, finishes on exactly ten). Review fix: a counting line never lights a second-miss glow, and a clean line resets the misses.
+**Ran:** typecheck; full `npm test` (all passed except the stale generated docs, fixed by `npm run game-docs`; 22 dot-link rule tests after the review fix); `BROWSER_SUITE=batch BATCH_ONLY=dots DOTS_LEVELS=9` on an upright 390×844 phone (idle glow hint, 3 + 2 + 2 + 2, a pair stopped at the last dot = one miss, frame holds exactly ten, score [1,1], sticker), passed and rerun after the review fix; `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=9` passed in 8.3 s (pre-K). Screenshot `test-results/browser/batch/dot-link-9-portrait.png` (not committed).
+**Not run:** `npm run build` (no shared files or assets changed), other dots levels (unchanged), offline.
