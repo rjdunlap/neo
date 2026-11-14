@@ -1,5 +1,5 @@
 // Writes src/games/tile-pairs/pools.ts: Tile Pairs' frozen tricky deals. Level 10 *Tricky twins* uses level 5's
-// twin terraces. Candidates are dealt as `deal` deals level 5 (complete pairs placed on a seeded clearing route, so
+// twin terraces and level 11 *Tricky tower* level 7's tower. Candidates are dealt as `deal` deals level 5 (complete pairs placed on a seeded clearing route, so
 // every one clears), then kept only when (1) random play clears at most 30% of 400 play-outs, leaving room under
 // the level's 35% band for a fresh measure, (2) some legal first pair leaves no clearing route, and (3) the fair-trap
 // check passes: a player who keeps the most pairs open looking two pairs ahead clears it however they break ties.
@@ -27,7 +27,10 @@ import {
 const PER_POOL = 24;
 const MAX_RATE = 0.3;
 const PLAYOUTS = 400;
-const POOLS = [{ name: 'twins', level: 10, dealtAs: 5 }];
+const POOLS = [
+  { name: 'twins', level: 10, dealtAs: 5 },
+  { name: 'tower', level: 11, dealtAs: 7 },
+];
 const PER_LESSON = 8;
 const MAX_TRIES = 200000;
 
@@ -107,7 +110,7 @@ const body = Object.entries(out)
   .join('\n');
 writeFileSync(
   new URL('../src/games/tile-pairs/pools.ts', import.meta.url),
-  `// Written by scripts/tile-pairs-pool.mjs; do not edit by hand. Each string is one frozen deal: the picture (0–4)
+  `// Written by scripts/tile-pairs-pool.mjs; do not edit by hand. Each string is one frozen deal: the picture (0–5)
 // at each position of the level's layout, in \`layout()\` order.
 export const POOLS = {
 ${body}

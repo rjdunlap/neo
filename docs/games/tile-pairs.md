@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21 |
+| grown-up | 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,8 @@
 | 8 | Flower friends · any two flowers pair |
 | 9 | Wide stack · 30 tiles |
 | 10 | Tricky twins · a pair that strands a terrace |
+| 11 | Tricky tower · a pair that buries a stack |
+| 12 | Short sides · tiles open above and below |
 | 17 | Twins on twins · a lesson |
 | 18 | Three free copies · a lesson |
 | 19 | Crossed stacks · a lesson |
@@ -32,7 +34,7 @@
 
 **Starts as:** remove matching tiles with a clear top and an open left or right side
 
-**Grows into:** ten solvable layouts (12/20/24 tiles, then a 24-tile bridge, twin terraces, a crown, a four-layer tall tower with more matching choices, a crown where any two of four different flowers pair, a 30-tile wide stack, and twin terraces dealt from frozen tricky boards where one pair strands a terrace), dealt in one of three picture looks by seed, each cleared by a different seeded pairing every round; a removed pair lifts away and the tiles it frees pulse; Undo, a clearing-route Hint, Shuffle into open rows, and Peek at covered pictures; touch and controller demos; no clock or loss screen
+**Grows into:** twelve solvable layouts (12/20/24 tiles, then a 24-tile bridge, twin terraces, a crown, a four-layer tall tower with more matching choices, a crown where any two of four different flowers pair, a 30-tile wide stack, and twin terraces dealt from frozen tricky boards where one pair strands a terrace or buries a stack, and a crown whose tiles are held in from above and below), dealt in one of three picture looks by seed, each cleared by a different seeded pairing every round; a removed pair lifts away and the tiles it frees pulse; Undo, a clearing-route Hint, Shuffle into open rows (or along the ends on level 12), and Peek at covered pictures; touch and controller demos; no clock or loss screen
 
 ## Design notes
 
@@ -47,6 +49,10 @@ On an upright phone, Undo, Hint, Shuffle and Peek sit above the guide and below 
 Level 9 *Wide stack · 30 tiles* fills the 6 × 3 base (18), raises a 4 × 2 block on rows 0–1 (8) and a 2 × 2 on that (4): 30 tiles of six pictures (three appear six times, three four times), no flowers. Its clear band is 0.45–0.9; over 100 seeds all deals land in band, raw seeded routes cleared 17–97% of the time (median 70%) and the worst deal took 24 ms on a Mac. `solve` counts its search nodes, and a test holds every state of random play-outs to a dead end under 20,000 nodes (worst measured about 5,000 states, 2.6 ms; levels 6–8 700–1,200). The board mask is 2^30−1, the most the present 32-bit mask holds. Some first pairs on some seeds leave no route, so Undo, Hint and Shuffle matter here.
 
 Level 10 *Tricky twins · a pair that strands a terrace* reuses level 5's twin-terrace layout, dealt from 24 frozen boards in `pools.ts` (written offline by `node scripts/tile-pairs-pool.mjs`, which kept 24 of 11,825 seeded deals). Each kept board clears; random play clears at most 30% of 400 play-outs (the level band is [0, 0.35]); some legal first pair leaves no route; and a "fair trap" check passes: a player who always takes a pair with the best two-pair lookahead (most open pairs after it and one more pair) clears it under every tie-break, so the trap is one she can plan around. At play the seed picks a board, may mirror it left to right (the layout is symmetric) and renames the pictures. The deal dial's bands for levels 3–6 are harder: levels 3–4 [0.6, 0.95], levels 5–6 [0.3, 0.8] (levels 1–2 stay [0.95, 1]; 7–9 [0.45, 0.9]); on a Mac 60%, 69%, 75% and 73% of candidates land in band for levels 3–6, so the 40-candidate dial does not run out. The grown-up range is 1–10 with no `order`. No new voice, how-to or couch change.
+
+Level 11 *Tricky tower · a pair that buries a stack* deals level 7's four-layer tower from 24 frozen boards in the `tower` pool of `pools.ts`, written by the same offline script (42 of 300 tower deals met the band): each clears, has a losing first pair and passes the fair-trap check, and the seed picks a board, may mirror it and renames the pictures.
+
+Level 12 *Short sides · tiles open above and below* keeps the crown's 24 tiles but a tile is held in by the tiles just above and below it on its layer (`Tile.open = 'ends'`) rather than left and right. Over 300 seeded routes random play clears 18–100%, median 75% (level 6: 72%), and 199 of 300 land in level 6's band [0.3, 0.8], which it keeps. A top-clear tile held above and below gets thin edge shadows and a tap on it says `tile-pairs.blocked-ends` with no miss; on the crown that appears only once the raised rows are lifted while the front and back rows stay. Known looseness: its Shuffle and stuck lines still say "open rows", though a shuffled board keeps the ends rule and stays clearable. The grown-up `order` appends 11 and 12 after 21; levels 1–10 and 17–21 deal as before (hash-pinned).
 
 **Lessons (levels 17–21).** *Twins on twins*, *Three free copies*, *Crossed stacks* and *The long row* are 14-tile boards and *Two pairs ahead* an 18-tile one, designed to teach one habit each, chosen offline by `scripts/tile-pairs-pool.mjs` (a placement search on a sketched layout, kept when the first move teaches the lesson; 8 boards each from 54, 1,826, 5,240, 29,478 and 176 placements) and frozen in `puzzles.ts`, dealt with mirror and renaming over the look's six pictures. Taking the losing pair is not a miss; after the stuck line a per-lesson line (`tile-pairs.lesson.twins|three|crossed|long|ahead`) is spoken when the first pair taken left no route, unless she has already undone or shuffled, and Undo puts her back before the choice. *The long row* is one flat layer, a row of six between two rows of four, so nothing is covered and only row ends are free. On *Two pairs ahead* every losing first pair still leaves at least two pairs on every line before the board strands, and the fair-trap check passes. The grown-up band's order is 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, so each lesson comes just before the board that needs it (21 last, before the bigger boards it will serve).
 **Looks.** Each round picks one of three picture sets from the seed, after the board is dealt, so a seed keeps the same board in every look. Look 1 is the six original shapes in rainbow colours; look 2 is oval, rectangle, diamond, pentagon, trapezoid and star in other colours; look 3 is six island props (strawberry, orange, banana, pear, shell, grapes). A test checks six distinct pictures and colours in each. The look stays through undo and shuffle; stickers and the hub icon keep look 1. Every board is assigned along a geometric clearing route that the seed chooses, so one layout clears by a different pairing each round (the positions are fixed, the partners are not); each level deals up to 40 such routes and keeps the first whose measured random-play clear rate sits in that level's band (levels 1–4 95–100%, level 5 85–100%, level 6 75–100%), else the closest, from the one seed, so a seed still gives one board and the couch face-off shares it. Shuffle still lays the remainder in open rows. A memoized exhaustive solver checks the remaining stack, so a Hint outlines a pair that leads to clearing, rather than merely any matching pair. A legal pair can leave no clearing route; the game explains this and keeps Undo and Shuffle available.

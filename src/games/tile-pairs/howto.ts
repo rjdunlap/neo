@@ -17,19 +17,25 @@ export const HOW_TO: GameHowTo = {
       to: 8,
     },
     // Level 9's wide stack has no flowers.
-    { text: PAIR, from: 9 },
+    { text: PAIR, from: 9, to: 11 },
+    {
+      text: 'Tap two tiles with the same picture. On this board a tile opens above or below, not left or right: it needs a clear top and an open edge above or below it. A dark edge shows what holds a tile in.',
+      from: 12,
+      to: 12,
+    },
+    { text: PAIR, from: 13 },
     'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
     { text: PEEK, to: 6 },
     {
       text: 'Tap Peek to see the pictures in each stack, bottom to top from left to right; a four-tile stack reads in two rows. Tap Peek or a tile to close. Looking is free.',
       from: 7,
-      to: 10,
+      to: 11,
     },
-    // The lesson boards' stacks are at most three deep.
-    { text: PEEK, from: 17 },
+    // Short sides' crown and the lesson boards' stacks are at most three deep.
+    { text: PEEK, from: 12 },
     {
       text: 'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
-      to: 10,
+      to: 16,
     },
     {
       text: 'Each short board has one trap. If a pair leaves no way to finish, its lesson is spoken; Undo goes back to the choice. Hint outlines a clearing pair; Shuffle lays the rest in open rows.',

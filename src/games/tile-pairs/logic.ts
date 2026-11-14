@@ -9,6 +9,11 @@ export interface Tile {
   y: number;
   z: number;
   kind: number;
+  /**
+   * Which neighbours on its layer can hold a tile in: absent, its left and right ones (the classic rule); `'ends'`,
+   * the ones just above and below it on the board (level 12, *Short sides*). Every tile of a board shares it.
+   */
+  open?: 'ends';
 }
 export type Pair = [number, number];
 /**
@@ -108,6 +113,31 @@ export const PLANS = [
     pool: 'twins',
     clear: [0, 0.35],
   },
+  {
+    name: 'Tricky tower · a pair that buries a stack',
+    cols: 4,
+    rows: 3,
+    layers: 4,
+    layout: 'tower',
+    kinds: 6,
+    // Level 7's tower from frozen deals, as level 10 is level 5's terraces: each clears, has a losing first pair
+    // and passes `fairTrap`.
+    pool: 'tower',
+    clear: [0, 0.35],
+  },
+  {
+    name: 'Short sides · tiles open above and below',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'crown',
+    kinds: 4,
+    // The crown as level 6 lays it out, read along the other axis (Kyodai's vertical variation): a tile is held in
+    // by the tiles just above and below it on its layer, not beside it. Measured (300 seeded routes, Mac): random
+    // play clears 18–100%, median 75% (level 6: median 72%), and 199 of 300 land in level 6's band, which it keeps.
+    open: 'ends',
+    clear: [0.3, 0.8],
+  },
 ] as const;
 
 /** Flower kinds come after a look's six pictures: `FLOWER + n` is the nth of the four flower drawings. */
@@ -159,7 +189,7 @@ export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 /**
  * Designed lesson boards (dive: *Puzzle challenges*). Each is a small sketched layout whose frozen boards, found by
  * `scripts/tile-pairs-pool.mjs` and kept in `puzzles.ts`, set one trap that is the lesson: a first pair that leaves
- * no route (`lessonHolds`). IDs 11–16 are left for the second-pass levels the dive plans; they do not exist yet.
+ * no route (`lessonHolds`). IDs 13–16 are left for the second-pass levels the dive plans; they do not exist yet.
  */
 export const PUZZLE_PLANS = {
   17: {
@@ -250,7 +280,7 @@ export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number
  * order, kept to the levels that exist and to levels 1–10's own order).
  */
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21] },
+  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12] },
 };
 export const planFor = (level: number): Plan =>
   (PUZZLE_PLANS as Record<number, Plan>)[Math.floor(level)] ??
@@ -278,21 +308,47 @@ export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
     .map((stack) => stack.sort((a, b) => tiles[a].z - tiles[b].z));
 }
 
-/** A tile needs a clear top and at least one open horizontal side on its own layer. */
+/** Whether the board's tiles open above and below (level 12) rather than left and right. */
+export const opensAtEnds = (tiles: readonly Tile[]) => tiles[0]?.open === 'ends';
+/**
+ * A tile needs a clear top and at least one open side on its own layer: left or right, or on an `'ends'` board
+ * above or below.
+ */
 export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
   if (!present(mask, i)) return false;
-  const a = tiles[i];
-  let left = false,
-    right = false;
+  const a = tiles[i],
+    ends = a.open === 'ends';
+  let before = false,
+    after = false;
   for (let j = 0; j < tiles.length; j++) {
     if (j === i || !present(mask, j)) continue;
     const b = tiles[j];
     if (a.x === b.x && a.y === b.y && b.z > a.z) return false;
-    if (a.y !== b.y || a.z !== b.z) continue;
-    if (b.x === a.x - 1) left = true;
-    if (b.x === a.x + 1) right = true;
+    if (a.z !== b.z) continue;
+    const [line, along] = ends ? [b.x === a.x, b.y - a.y] : [b.y === a.y, b.x - a.x];
+    if (!line) continue;
+    if (along === -1) before = true;
+    if (along === 1) after = true;
   }
-  return !left || !right;
+  return !before || !after;
+}
+/** Which of a blocked-in tile's open-axis neighbours are present, for the scene's edge shadows. */
+export function heldSides(
+  tiles: readonly Tile[],
+  mask: number,
+  i: number,
+): { before: boolean; after: boolean } {
+  const a = tiles[i],
+    ends = a.open === 'ends',
+    at = (d: number) =>
+      tiles.some(
+        (b, j) =>
+          j !== i &&
+          present(mask, j) &&
+          b.z === a.z &&
+          (ends ? b.x === a.x && b.y === a.y + d : b.y === a.y && b.x === a.x + d),
+      );
+  return { before: at(-1), after: at(1) };
 }
 export const freeTiles = (tiles: readonly Tile[], mask: number): number[] =>
   tiles.map((_, i) => i).filter((i) => free(tiles, mask, i));
@@ -422,6 +478,7 @@ export function layout(level: number): Tile[] {
     for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
     for (const x of [2, 3]) add(x, 1, 2);
   }
+  if ('open' in plan) for (const t of tiles) t.open = plan.open;
   return tiles;
 }
 export const CANDIDATES = 40;
@@ -681,11 +738,13 @@ export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[
   for (let n = 0; n < flowers.length / 2; n++) symbols.push(FLOWER_PAIR);
   // At most four rows of six fit above the buttons in landscape, so past 24 tiles (level 9) the rest are raised
   // on the middle of the rows; the route below still clears them.
-  const out = Array.from({ length: symbols.length * 2 }, (_, i) =>
+  const out: Tile[] = Array.from({ length: symbols.length * 2 }, (_, i) =>
     i < RESHUFFLE_BASE
       ? { x: i % 6, y: Math.floor(i / 6), z: 0, kind: 0 }
       : { ...RAISED[i - RESHUFFLE_BASE], z: 1, kind: 0 },
   );
+  // A short-sides board keeps its rule: the rows' columns then open from their ends, and the route still clears.
+  if (opensAtEnds(tiles)) for (const t of out) t.open = 'ends';
   // Recovery stays on the first route: open rows that pair off without planning.
   return assign(out, symbols, rng, solve(out, fullMask(out), true), flowers);
 }

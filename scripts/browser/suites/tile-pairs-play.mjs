@@ -111,10 +111,73 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       const initial = await state();
       assert.equal(
         initial.tiles.length,
-        level === 21 ? 18 : level > 10 ? 14 : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24][level - 1],
+        level === 21 ? 18 : level >= 17 ? 14 : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24][level - 1],
       );
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
-      if (level === 10 || level > 10) {
+      if (level === 12) {
+        // Short sides: a tile with a clear top, held in above and below, is blocked; the tap is free (no miss) and
+        // says which sides count, and a thin shadow marks its held edges. The full crown has none: it comes when the
+        // raised rows are lifted while the front and back rows stay, so matching pairs are taken in that spirit.
+        const find = () =>
+          page.evaluate(async () => {
+            const L = await import('/src/games/tile-pairs/logic.ts'),
+              g = neo.scene.game,
+              t = g.tiles,
+              m = g.mask,
+              held = (i) => L.heldSides(t, m, i).before && L.heldSides(t, m, i).after,
+              topClear = (i) =>
+                !t.some(
+                  (u, j) => j !== i && L.present(m, j) && u.x === t[i].x && u.y === t[i].y && u.z > t[i].z,
+                ),
+              i = t.findIndex((_, i) => L.present(m, i) && topClear(i) && held(i)),
+              outer = (k) => (t[k].z === 0 && t[k].y !== 1 ? 5 : 0),
+              next = L.pairs(t, m).sort(
+                (p, q) =>
+                  q.reduce((s, k) => s + t[k].z - outer(k), 0) - p.reduce((s, k) => s + t[k].z - outer(k), 0),
+              )[0];
+            return { i, next: next ?? null, shadows: g.ring.context.instructions.length };
+          });
+        let probe = await find(),
+          taken = 0;
+        for (; probe.i < 0 && probe.next && taken < 10; taken++) {
+          for (const i of probe.next) await tapTile(i);
+          await page.waitForTimeout(500);
+          probe = await find();
+        }
+        assert.ok(probe.i >= 0, 'the crown comes to a tile the short sides hold in');
+        await page.evaluate(() => {
+          const g = neo.scene.game;
+          g.said = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
+        });
+        assert.ok(probe.shadows > 0, 'held edges are drawn');
+        await tapTile(probe.i);
+        const after = await page.evaluate(() => ({
+          said: neo.scene.game.said,
+          misses: neo.scene.game.misses,
+        }));
+        assert.ok(
+          after.said.includes('tile-pairs.blocked-ends'),
+          'a held tile says left and right do not count',
+        );
+        assert.equal(after.misses, 0, 'exploring a blocked tile is free');
+        // A phone held upright (touch emulated, as Peek's check does) shows the held edges' shadows.
+        const device = await page.context().newCDPSession(page);
+        await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForFunction(() => neo.view.upright === true);
+        await page.waitForTimeout(300);
+        await screenshot('tile-pairs-12-short-sides-phone');
+        await device.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+        await device.detach();
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(200);
+        // Undo walks back to the dealt board, so the rest of the play starts where every level does.
+        for (let n = 0; n < taken; n++) await tap('neo.scene.game.undoButton');
+        assert.equal((await state()).mask, initial.mask, 'undo walks back to the dealt board');
+      }
+      if (level === 10 || level === 11 || level >= 17) {
         // A tricky deal or a lesson board: taking a losing first pair is a legal move (no miss), the stuck line follows, and Undo
         // puts the board back before the choice.
         const trap = await page.evaluate(async () => {
@@ -144,7 +207,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           });
           assert.ok(open > 0, 'pairs are still open after the losing pair on Two pairs ahead');
         }
-        if (level > 10) {
+        if (level >= 17) {
           // A lesson board's lesson follows the stuck line once that line has finished.
           await page.waitForFunction(
             () => neo.scene.game.said.some((id) => id.startsWith('tile-pairs.lesson.')),

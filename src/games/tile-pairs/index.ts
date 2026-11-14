@@ -21,10 +21,12 @@ import {
   free,
   freeTiles,
   fullMask,
+  heldSides,
   isFlower,
   lessonFor,
   makeBoard,
   matches,
+  opensAtEnds,
   pairs,
   peekStacks,
   pickLook,
@@ -192,7 +194,13 @@ class TilePairs implements Game {
   }
   start() {
     void this.ctx.instruct(
-      this.touch ? (this.flowers ? 'tile-pairs.go-flowers' : 'tile-pairs.go') : 'couch.how.tile-pairs',
+      this.touch
+        ? this.flowers
+          ? 'tile-pairs.go-flowers'
+          : opensAtEnds(this.tiles)
+            ? 'tile-pairs.go-ends'
+            : 'tile-pairs.go'
+        : 'couch.how.tile-pairs',
     );
   }
 
@@ -283,7 +291,9 @@ class TilePairs implements Game {
         ? 'No clearing route · Undo or Shuffle keeps you playing'
         : this.flowers
           ? 'Any two flowers pair · clear the top · open a side'
-          : 'Clear the top · open a left or right side';
+          : opensAtEnds(this.tiles)
+            ? 'Clear the top · open the edge above or below'
+            : 'Clear the top · open a left or right side';
     const g = this.ring.clear();
     const outline = (i: number, color: number, width: number) => {
       if (!present(this.mask, i)) return;
@@ -291,6 +301,20 @@ class TilePairs implements Game {
       g.roundRect(this.board.x + n.x - 51, this.board.y + n.y - 51, 102, 102, 12).stroke({ width, color });
     };
     for (const i of covering) outline(i, swatch.brown.fill, 2);
+    // Short sides: a tile held in only by the tiles above and below it gets a thin shadow on those two edges, so
+    // the axis that counts on this board shows where it blocks.
+    if (opensAtEnds(this.tiles) && !this.peeking)
+      this.tiles.forEach((_, i) => {
+        if (!present(this.mask, i) || this.leaving.has(this.nodes[i]) || free(this.tiles, this.mask, i))
+          return;
+        const held = heldSides(this.tiles, this.mask, i);
+        if (!held.before || !held.after) return;
+        const n = this.nodes[i],
+          x = this.board.x + n.x,
+          y = this.board.y + n.y;
+        for (const edge of [-1, 1])
+          g.roundRect(x - 40, y + edge * 47 - 4, 80, 8, 4).fill({ color: ink, alpha: 0.4 });
+      });
     if (!this.touch && !this.finished) outline(this.cursor, ink, 4);
     if (this.selected !== null) outline(this.selected, swatch.blue.line, 7);
     for (const i of this.hinted ?? []) outline(i, swatch.orange.line, 7);
@@ -310,7 +334,7 @@ class TilePairs implements Game {
     }
     if (!free(this.tiles, this.mask, i)) {
       sfx.squeak();
-      void this.ctx.say('tile-pairs.blocked');
+      void this.ctx.say(opensAtEnds(this.tiles) ? 'tile-pairs.blocked-ends' : 'tile-pairs.blocked');
       return;
     }
     this.cursor = i;
