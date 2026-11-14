@@ -23,6 +23,11 @@ export const HOW_TO: GameHowTo = {
     {
       text: 'Tap two exposed cards that add to 13 (A = 1, J = 11, Q = 12; K alone). In each spare column only the front card is exposed; clear the columns too.',
       from: 8,
+      to: 8,
+    },
+    {
+      text: 'Tap two exposed cards that add to 13 (A = 1, J = 11, Q = 12; K alone). One choice of copy keeps the deal clearable; a losing pair names the card left without a partner.',
+      from: 9,
     },
     'A card is exposed when both cards directly below it have gone. Each corner repeats the rank; the status line counts pairs open.',
     'Tap the selected card again to cancel. Undo restores a removal; Start over restores this same deal.',

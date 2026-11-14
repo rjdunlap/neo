@@ -16,6 +16,7 @@ import {
   coverList,
   exposed,
   liftable,
+  lessonCard,
   makePuzzle,
   moves,
   present,
@@ -25,6 +26,7 @@ import {
   solver,
   startMask,
   planFor,
+  rankWord,
   type Removal,
 } from './logic';
 
@@ -200,7 +202,22 @@ class PyramidSolitaire implements Game {
       void this.ctx.say('pyramid.done').then(() => {
         if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       });
-    } else if (!this.solve(this.mask)) void this.ctx.say('pyramid.blocked');
+    } else if (!this.solve(this.mask)) {
+      // Levels 9-10 (lesson deals): after the blocked line, one sentence names the card that lost its partner. Undo or a
+      // hint before it is spoken moves the mask, and then it stays quiet.
+      const stuck = 'lesson' in planFor(this.ctx.level) ? lessonCard(this.puzzle, this.mask) : null;
+      if (stuck === null) {
+        void this.ctx.say('pyramid.blocked');
+        return;
+      }
+      const rank = this.puzzle.ranks[stuck],
+        mask = this.mask;
+      this.status.text = `That ${rankName(rank)} lost its partner: every ${rankName(13 - rank)} left is under it. Try Undo.`;
+      void this.ctx.say('pyramid.blocked').then(() => {
+        if (!this.ctx.alive || this.mask !== mask) return;
+        void this.ctx.say('pyramid.lesson', { card: rankWord(rank), partner: rankWord(13 - rank) });
+      });
+    }
   }
   private openCards() {
     return this.puzzle.ranks.map((_, i) => i).filter((i) => exposed(this.puzzle, this.mask, i));

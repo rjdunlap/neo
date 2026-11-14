@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–8 |
+| grown-up | 1, 2, 9, 3, 10, 4, 5, 6, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,8 @@
 | 6 | The shelf: five open spare cards |
 | 7 | The classic pyramid: twenty-eight cards, seven rows |
 | 8 | Three columns: dig into two-card spare columns |
+| 9 | One way in: one safe first pair among three |
+| 10 | Count the copies: spend the copy that buries a partner |
 
 <!-- end generated -->
 
