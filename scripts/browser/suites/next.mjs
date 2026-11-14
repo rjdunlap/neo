@@ -367,13 +367,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
     const bumperLevels =
       process.env.BUMPER_LEVELS?.split(',').map(Number) ??
-      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter((l) => l >= Number(process.env.FROM_LEVEL || 1));
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].filter((l) => l >= Number(process.env.FROM_LEVEL || 1));
     const bumperTables = process.env.BUMPER_TABLES?.split(',') ?? [null];
     for (const table of bumperTables)
       for (const level of !only || only === 'bumper' ? bumperLevels : []) {
-        if (level === 1 || level === 5 || level === 7 || level === 8 || level === 9 || level === 10)
+        if (level === 1 || level === 5 || level >= 7)
           await page.setViewportSize(
-            level === 7 || level === 10 ? { width: 390, height: 844 } : { width: 768, height: 1024 },
+            level === 7 || level >= 10 ? { width: 390, height: 844 } : { width: 768, height: 1024 },
           );
         if (table)
           await page.evaluate(
@@ -401,8 +401,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await launch('bumper-garden', level);
         if (table) assert.equal(await page.evaluate(() => neo.scene.game.table), table);
         await page.waitForTimeout(level === 8 ? 2000 : 400);
-        if (table || level === 6 || level === 7 || level === 8 || level === 9 || level === 10)
-          await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
+        if (table || level >= 6) await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
         if (level === 8)
           await page.evaluate(() => {
             // Not this color: the asked color sleeps, is never wanted, and bumping one only chimes.
@@ -433,6 +432,42 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             g.bumped(right);
             if (g.step !== 1 || !g.flowers[right].bloomed)
               throw new Error('Bumper 7: the next color did not bloom');
+          });
+        if (level === 11)
+          await page.evaluate(() => {
+            // Make five: five empty slots; a flower with too many dots for the gap only chimes; a fitting one fills its dots.
+            const g = neo.scene.game;
+            if (g.plan.mode !== 'make' || g.numberStrip.children.length !== 5 || g.filled !== 0)
+              throw new Error('Bumper 11: strip or start mismatch');
+            const fit = g.flowers.findIndex((f, i) => g.wanted(i) && f.bumper.dots >= 2);
+            if (fit < 0) throw new Error('Bumper 11: no flower of 2+ dots fits an empty strip');
+            const dots = g.flowers[fit].bumper.dots;
+            g.bumped(fit);
+            if (g.filled !== dots || !g.flowers[fit].bloomed || g.parts.length !== 1)
+              throw new Error('Bumper 11: a fitting flower did not fill its dots');
+            const gap = 5 - g.filled;
+            const big = g.flowers.findIndex((f) => !f.bloomed && f.bumper.dots > gap);
+            if (big >= 0) {
+              if (!g.flowers[big].sleepy || g.wanted(big))
+                throw new Error('Bumper 11: a too-big flower is awake');
+              const before = { filled: g.filled, misses: g.misses, hints: g.hints };
+              g.bumped(big);
+              if (g.filled !== before.filled || g.misses !== before.misses || g.flowers[big].bloomed)
+                throw new Error('Bumper 11: a too-big flower changed progress');
+            }
+            if (!g.flowers.some((f, i) => g.wanted(i))) throw new Error('Bumper 11: nothing fits the gap');
+            // Bring the gap down to one, so few flowers fit and the hands-off launches below can miss them all.
+            for (;;) {
+              const left = 5 - (g.filled % 5);
+              const k = g.flowers
+                .map((f, i) => i)
+                .filter((i) => g.wanted(i) && g.flowers[i].bumper.dots < left)
+                .sort((a, b) => g.flowers[b].bumper.dots - g.flowers[a].bumper.dots)[0];
+              if (left <= 1 || k === undefined) break;
+              g.bumped(k);
+            }
+            if (!g.flowers.some((f, i) => g.wanted(i)))
+              throw new Error('Bumper 11: nothing fits the small gap');
           });
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const result = await page.evaluate(async () => {
@@ -505,7 +540,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.plan.mode !== 'bloom') {
             // Hands off, and each launch steered onto a path that (in simulation) blooms nothing wanted: two such
             // shots are gentle misses, and the second brings the glow and an aimed launch.
-            const { flight, launchVelocity, LAUNCH } = await import('/src/games/bumper-garden/logic.ts');
+            const { CATCH_Y, flight, launchVelocity, LAUNCH } =
+              await import('/src/games/bumper-garden/logic.ts');
             const miss = () => {
               for (let a = -0.42; a <= 0.42; a += 0.02)
                 if (!flight(g.world, a, 25).hits.some((i) => i < g.bumpers.length && g.wanted(i))) return a;
@@ -513,7 +549,10 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             };
             while (!g.finished && g.hints === 0 && performance.now() - t0 < 150000) {
               await kit.until(() => g.state === 'flying' || g.finished, 10000);
-              const a = miss();
+              // Make five: wherever the ladybug is, it drops straight into the pot (a launch that fills nothing).
+              if (g.plan.mode === 'make' && g.state === 'flying')
+                Object.assign(g.ball, { x: LAUNCH.x, y: CATCH_Y - g.ball.r - 2, vx: 0, vy: 60 });
+              const a = g.plan.mode === 'make' ? null : miss();
               if (a !== null && g.ball.y > LAUNCH.y - 40)
                 Object.assign(g.ball, { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(a) });
               await kit.until(() => g.state === 'held' || g.finished, 40000);
@@ -531,8 +570,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             );
           return { launches: g.launches, misses: g.misses, hints: g.hints };
         });
-        if (level !== 6 && level !== 7 && level !== 8 && level !== 9 && level !== 10)
-          await screenshot(`bumper-garden-${level}`);
+        if (level < 6) await screenshot(`bumper-garden-${level}`);
         await finished('bumper-garden');
         const r = await score('bumper-garden');
         if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
@@ -541,7 +579,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints,
             `bumper ${level} score ${r}`,
           );
-        if (level === 1 || level === 5 || level === 7 || level === 8 || level === 9 || level === 10)
+        if (level === 1 || level === 5 || level >= 7)
           await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Bumper Garden ${table ?? 'random'} ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`,
