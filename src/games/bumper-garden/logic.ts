@@ -123,7 +123,7 @@ export const gapAfter = (filled: number): number => MAKE_TARGET - (filled % MAKE
 /**
  * Make levels, when nothing waiting fits the gap: a new bunch grows. The waiting flower with the fewest dots (the first such)
  * regrows with exactly the gap's dots, so she is never stuck and never overfills. Null when the round is done or a flower
- * still fits. With at least `fives` fives' worth of dots on the table a waiting flower always exists.
+ * still fits (or none waits; `makeDots` sets out a spare five's worth of dots, and each regrow ends a five by itself).
  */
 export function regrowFor(
   dots: readonly number[],

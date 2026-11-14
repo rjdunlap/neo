@@ -71,19 +71,19 @@ function patternMark(g: Graphics, color: number, x: number, y: number, size: num
 const DOT_SPOTS: Record<number, [number, number][]> = {
   1: [[0, 0]],
   2: [
-    [-8, 0],
-    [8, 0],
+    [-9, 0],
+    [9, 0],
   ],
   3: [
-    [0, -8],
-    [-8, 6],
-    [8, 6],
+    [0, -9],
+    [-9, 7],
+    [9, 7],
   ],
   4: [
-    [-8, -8],
-    [8, -8],
-    [-8, 8],
-    [8, 8],
+    [-9, -9],
+    [9, -9],
+    [-9, 9],
+    [9, 9],
   ],
 };
 /** Spoken parts of a five: "three and two". */
@@ -151,7 +151,7 @@ class Flower extends Container {
   drawDots() {
     const g = this.dotMarks.clear();
     for (const [x, y] of DOT_SPOTS[this.bumper.dots ?? 1] ?? DOT_SPOTS[1])
-      g.circle(x, y, 6).fill(ink).stroke({ color: 0xffffff, width: 2 });
+      g.circle(x, y, 7).fill(ink).stroke({ color: 0xffffff, width: 2 });
   }
 
   /** Fall asleep (or wake up, at the finale): the same shape on every table, faded so it reads as "not now". */
@@ -283,6 +283,8 @@ class BumperGarden implements Game {
   filled = 0;
   /** Make levels: the strip's parts so far (dots and color), kept full for a moment after a five. */
   parts: { dots: number; color: ColorName }[] = [];
+  /** Make levels: counts blooms, so only the latest bloom's delayed line is spoken. */
+  private makeTurn = 0;
   /** How many flowers are awake: all of them, except on the lap opening, where they wake one at a launch. */
   awake: number;
   readonly target: ColorName;
@@ -842,9 +844,10 @@ class BumperGarden implements Game {
       this.settleMake();
     }
     if (this.done()) void this.finale();
-    else if (mode === 'make')
+    else if (mode === 'make') {
+      const turn = ++this.makeTurn;
       void this.ctx.tw.wait(madeFive ? 2.2 : 0.9).then(() => {
-        if (this.finished) return;
+        if (this.finished || turn !== this.makeTurn) return;
         if (madeFive) {
           // The full strip stays a moment, then empties for the next five (unless a part has already landed in it).
           if (this.parts.reduce((a, p) => a + p.dots, 0) >= MAKE_TARGET) this.parts = [];
@@ -852,7 +855,7 @@ class BumperGarden implements Game {
           void this.ctx.instruct('bumper.make-again');
         } else void this.ctx.instruct('bumper.need', { n: gapAfter(this.filled) });
       });
-    else if (mode === 'pattern')
+    } else if (mode === 'pattern')
       void this.ctx.tw.wait(0.9).then(() => {
         if (!this.finished) void this.ctx.instruct('bumper.next-color', { color: this.nextColor() });
       });
