@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 134 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 135 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -159,7 +159,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 3 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 10 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
-| [Dot Link](docs/games/dot-link.md) | lap–pre-K | Rainbow Meadow | 9 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
+| [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 10 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
 | [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 8 | fit two big shapes into a house, tree or boat |
 | [Garden Grow](docs/games/garden-grow.md) | lap–pre-K | Rainbow Meadow | 11 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |

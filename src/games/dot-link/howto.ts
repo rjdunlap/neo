@@ -33,6 +33,11 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'The sign shows two colors and a number for each: drag lines of either color until both rows of little dots are full. Another color pops but does not count.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'The sign shows a color pattern: drag one line through neighboring dots that follows it, starting on its first color, at least once through; make three. Any line pops, but one that breaks the pattern does not count.',
+    },
   ],
   finish: 'The round ends when the asked-for dots are cleared.',
 };

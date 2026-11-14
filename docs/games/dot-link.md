@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/dot-link; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `dot-link` · **Land:** Rainbow Meadow · **Ages:** lap–pre-K · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `dot-link` · **Land:** Rainbow Meadow · **Ages:** lap–school · **Challenge:** hands · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** colors, fine-motor, counting, planning
 
@@ -11,7 +11,8 @@
 | lap | 12, 1 |
 | toddler | 1, 11, 2 |
 | preschool | 2–4 |
-| pre-K | 3–7 |
+| pre-K | 3–8 |
+| school | 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +23,7 @@
 | 5 | Close a square to clear a whole color, twice |
 | 6 | Make three chains of exactly 5 dots |
 | 7 | Two colors: pop 6 of one color and 4 of another |
+| 8 | Same, different: draw three lines that follow the color pattern |
 | 11 | Find my buddy: link the two wiggling dots |
 | 12 | One big dot: a touch anywhere pops it |
 
