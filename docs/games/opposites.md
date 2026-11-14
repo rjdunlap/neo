@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/opposites; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `opposites` · **Land:** Story Grove · **Ages:** lap–pre-K · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `opposites` · **Land:** Story Grove · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** words, concepts, opposites, listening
 
@@ -12,6 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–3 |
 | pre-K | 3, 4, 5, 7, 8 |
+| school | 8–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +24,7 @@
 | 6 | One big card: a touch anywhere flips it to its opposite, and each flipped picture joins a row (8 cards) |
 | 7 | In between: three pictures (empty, half full, full); tap the one between the two ends |
 | 8 | Line them up: the same three shuffled; tap them in order from empty to full, then the other way |
+| 9 | Only the word: the pet says a word (its picture hidden behind a speaker); find its opposite among three |
 
 <!-- end generated -->
 

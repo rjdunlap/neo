@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 133 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 134 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -194,7 +194,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 13 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
 | [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
-| [Opposites](docs/games/opposites.md) | lap–pre-K | Story Grove | 8 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |
+| [Opposites](docs/games/opposites.md) | lap–school | Story Grove | 9 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |
 | [Clap the Syllables](docs/games/clap-syllables.md) | preschool–school | Story Grove | 8 | the pet claps the beats in a word ("but-ter-fly") with beads lighting up, and you clap along on big hands; preschool starts with two short words (level 9), then levels 1–2 |
 | [Read & Do](docs/games/read-do.md) | pre-K–school | Story Grove | 9 | read a color word (five colours) and choose a hat; tap words or the speaker for free spoken support |
 | [Owl Walk Home](docs/games/owl-walk.md) | toddler–pre-K | Story Grove | 4 | turn over a color card and tap the next stone of that color; the owl hops there, or home when none is left |

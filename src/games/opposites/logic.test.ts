@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
+import { firstLevel, landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   BETWEEN_LEVEL,
   BETWEEN_PLAN,
@@ -24,6 +24,8 @@ import {
   makeRounds,
   opposites,
   PLANS,
+  WORD_LEVEL,
+  WORD_PLAN,
   word,
 } from './logic';
 
@@ -264,5 +266,42 @@ describe('Opposites', () => {
     }
     // Every word is asked both ways across seeds (empty to full, and full to empty).
     expect(firsts.size).toBe(GRADABLE.length * 2);
+  });
+
+  it('level 9, Only the word: school opens at 8 and steps to 9; one opposite by its spoken word, no arguable card, and the bot taps it', () => {
+    expect(planFor(WORD_LEVEL)).toBe(WORD_PLAN);
+    expect(WORD_PLAN.mode).toBe('opposite');
+    expect(WORD_PLAN.hidden).toBe(true);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([ORDER_LEVEL, WORD_LEVEL]);
+    expect(stepLevel(ORDER_LEVEL, 1, LEVELS.school!)).toBe(WORD_LEVEL);
+    // A new school player starts at the window's start, Line them up, shared with pre-K's top.
+    expect(firstLevel(LEVELS.school!, [BIG_LEVEL])).toBe(ORDER_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(WORD_LEVEL);
+    // Only the word draws from every pair, so the heard word is never limited to the pictures she already knows.
+    expect(new Set(poolFor(WORD_LEVEL))).toEqual(new Set(CONCEPT_IDS));
+    const asked = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const r of makeRounds(WORD_PLAN, new Rng(seed))) {
+        const heard = word(r.ask!);
+        asked.add(heard);
+        const opposite = word({ ...r.ask!, side: (1 - r.ask!.side) as 0 | 1 });
+        // Heard alone, the word has one answer by its spoken word: exactly one card says the opposite.
+        expect(r.cards.filter((c) => word(c) === opposite)).toHaveLength(1);
+        expect(r.cards.filter((c) => opposites(c, r.ask!))).toHaveLength(1);
+        // No card shares the heard word's family (tall next to "small" would be arguable) or says the word itself.
+        const family = CONCEPTS[r.ask!.concept].family;
+        expect(r.cards.filter((c) => CONCEPTS[c.concept].family === family)).toHaveLength(1);
+        expect(r.cards.some((c) => word(c) === heard)).toBe(false);
+        // The picture revealed after the first miss is the ask's own: the same concept and side as the word heard.
+        expect(CONCEPTS[r.ask!.concept].words[r.ask!.side]).toBe(heard);
+        // The bot's tap is unchanged: the opposite, in one tap.
+        const i = cardToTap(WORD_PLAN, r, [false, false, false], null)!;
+        expect(opposites(r.cards[i], r.ask!)).toBe(true);
+      }
+    }
+    // Across seeds every word of every pair is heard.
+    expect(asked.size).toBe(CONCEPT_IDS.length * 2);
+    expect(SCRIPT['opp.heard']).toBeDefined();
   });
 });

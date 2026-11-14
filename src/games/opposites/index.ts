@@ -364,6 +364,19 @@ export function picture(card: Card): Container {
   return c;
 }
 
+/** Level 9's speaker: a cone and two sound waves, drawn in ink. */
+function speakerGlyph(): Graphics {
+  return new Graphics()
+    .poly([-22, -8, -10, -8, 4, -20, 4, 20, -10, 8, -22, 8])
+    .fill(ink)
+    .moveTo(12, -10)
+    .arc(8, 0, 14, -0.8, 0.8)
+    .stroke({ width: 4, color: ink, cap: 'round' })
+    .moveTo(16, -18)
+    .arc(8, 0, 24, -0.8, 0.8)
+    .stroke({ width: 4, color: ink, cap: 'round' });
+}
+
 interface CardView {
   card: Card;
   node: Container;
@@ -399,6 +412,8 @@ class Opposites implements Game {
   private flying: Container | null = null;
   private wiggling = false;
   private destroyed = false;
+  /** Level 9: the hidden picture has been shown, after this round's first miss. */
+  revealed = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -418,6 +433,12 @@ class Opposites implements Game {
     this.glow.eventMode = 'none';
     this.shown.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.shown, this.glow);
+    if (this.plan.hidden) {
+      // Level 9: the ask bubble is a speaker button; a tap says the word again.
+      this.shown.eventMode = 'static';
+      this.shown.hitArea = new Rectangle(-95, -95, 190, 190);
+      onTap(this.shown, () => this.replay(), { cooldown: 400 });
+    }
     if (this.plan.mode === 'order') {
       this.slots.eventMode = 'none';
       ctx.stage.addChildAt(this.slots, 1);
@@ -713,6 +734,7 @@ class Opposites implements Game {
     this.glowing = null;
     this.picked = null;
     this.lined = [];
+    this.revealed = false;
     if (this.index >= this.rounds.length) return void this.finale();
     for (const c of this.cards.splice(0)) c.node.destroy({ children: true });
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -737,7 +759,13 @@ class Opposites implements Game {
         .roundRect(-95, -95, 190, 190, 40)
         .fill(0xffffff)
         .stroke({ width: 6, color: swatch.purple.line });
-      this.shown.addChild(bubble, picture(r.ask!));
+      if (!this.plan.hidden) this.shown.addChild(bubble, picture(r.ask!));
+      else {
+        // Level 9: only the word; the picture waits behind a big speaker until the first miss.
+        const glyph = speakerGlyph();
+        glyph.scale.set(2.4);
+        this.shown.addChild(bubble, glyph);
+      }
     }
     this.resize(this.view);
     for (const c of this.cards) {
@@ -753,7 +781,8 @@ class Opposites implements Game {
         ? this.ctx.instruct(this.plan.big ? 'opp.big' : 'opp.switch')
         : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
-    if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
+    if (mode === 'opposite')
+      return this.ctx.instruct(this.plan.hidden ? 'opp.heard' : 'opp.opposite', { word: word(r.ask!) });
     if (mode === 'between') return this.ctx.instruct('opp.between', this.ends());
     if (mode === 'order') return this.ctx.instruct('opp.order', this.ends());
     return this.ctx.instruct(mode === 'spot' ? 'opp.spot' : 'opp.pairs');
@@ -868,6 +897,8 @@ class Opposites implements Game {
     this.wrongs++;
     sfx.boing();
     void this.ctx.say(line, vars);
+    // Level 9's hint is the picture, as in a flap book: the first miss turns the speaker round to show it.
+    if (this.plan.hidden && !this.revealed) void this.reveal();
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       const r = this.round;
@@ -888,6 +919,36 @@ class Opposites implements Game {
                 ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))!
                 : this.cards.find((x) => !x.done)!;
     }
+  }
+
+  /** Level 9: the speaker says the word again (before or after the picture shows). */
+  private replay() {
+    if (this.finished || !this.round?.ask) return;
+    sfx.pop(3);
+    void this.ctx.tw.to(this.shown.scale, { x: 0.92, y: 0.92 }, { duration: 0.08 }).then(() => {
+      if (!this.destroyed)
+        void this.ctx.tw.to(this.shown.scale, { x: 1, y: 1 }, { duration: 0.15, ease: ease.outBack });
+    });
+    void this.ctx.say('opp.word', { word: word(this.round.ask) });
+  }
+
+  /** Level 9: the speaker turns round to the asked word's own picture, with a small speaker left in its corner. */
+  private async reveal() {
+    this.revealed = true;
+    const ask = this.round.ask!;
+    await this.ctx.tw.to(this.shown.scale, { x: 0 }, { duration: 0.12 });
+    if (this.destroyed || this.round?.ask !== ask) return;
+    this.shown.removeChildAt(1).destroy();
+    const badge = new Container();
+    badge.addChild(
+      new Graphics().circle(0, 0, 24).fill(0xffffff).stroke({ width: 3, color: swatch.purple.line }),
+    );
+    const glyph = speakerGlyph();
+    glyph.scale.set(0.7);
+    badge.addChild(glyph);
+    badge.position.set(76, 76);
+    this.shown.addChild(picture(ask), badge);
+    await this.ctx.tw.to(this.shown.scale, { x: 1 }, { duration: 0.18, ease: ease.outBack });
   }
 
   /** A right answer; level 7 names the middle it found ("Yes! Warm is in between."). */
@@ -947,7 +1008,7 @@ export const oppositesGame: GameModule = {
   region: 'story-grove',
   challenge: 'words',
   skills: ['words', 'concepts', 'opposites', 'listening'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [BIG_LEVEL],
   describeLevel: (level) => planFor(level).name,

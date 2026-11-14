@@ -27,6 +27,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'The same three pictures, mixed up. Tap them in order, from one end to the other ("from empty to full"); each one slides into the line. Next time it goes the other way. After two misses the next one glows.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Listen: the word is said, but its picture hides behind a speaker. Tap the speaker to hear it again, then tap its opposite among three pictures. The first miss shows the hidden picture; after two misses the opposite glows.',
+    },
   ],
   finish: [
     { to: 1, text: 'Flip eight pictures to finish the round.' },
@@ -45,5 +50,6 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Line up four sets of three (cup, mug, sky, balloon), two each way, to finish the round.',
     },
+    { from: 9, to: 9, text: 'Find the opposite of four heard words to finish the round.' },
   ],
 };
