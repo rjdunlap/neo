@@ -431,7 +431,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               throw new Error('Bumper 7: an out-of-turn color changed progress');
             const right = g.flowers.findIndex((f, i) => g.wanted(i));
             g.bumped(right);
-            if (g.step !== 1 || !g.flowers[right].bloomed) throw new Error('Bumper 7: the next color did not bloom');
+            if (g.step !== 1 || !g.flowers[right].bloomed)
+              throw new Error('Bumper 7: the next color did not bloom');
           });
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const result = await page.evaluate(async () => {

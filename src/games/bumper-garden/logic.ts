@@ -227,7 +227,8 @@ export const wantsColor = (plan: BumperPlan, color: number): boolean =>
   plan.not ? color !== 0 : color === 0;
 
 /** The pattern level's run (planFor fills it; a bare plan falls back to A B). */
-export const patternOf = (plan: BumperPlan): number[] => plan.pattern ?? repeatUnit(PATTERN_UNITS[0], plan.goal);
+export const patternOf = (plan: BumperPlan): number[] =>
+  plan.pattern ?? repeatUnit(PATTERN_UNITS[0], plan.goal);
 
 /** The shortest unit the run repeats (the run is that unit over and over). */
 export function patternUnit(run: readonly number[]): number[] {

@@ -394,8 +394,7 @@ class BumperGarden implements Game {
       const unit = patternUnit(patternOf(p));
       const said = [...unit, ...unit].map((c) => this.colors[c]);
       void this.ctx.instruct('bumper.pattern', { pattern: said.join(', '), color: this.nextColor() });
-    }
-    else if (p.descend) void this.ctx.instruct('bumper.back', { n: this.next });
+    } else if (p.descend) void this.ctx.instruct('bumper.back', { n: this.next });
     else if (p.start) void this.ctx.instruct('bumper.start', { n: this.next });
     else void this.ctx.instruct('bumper.order', { n: this.next });
     this.holdFor = p.mode === 'spring' ? Infinity : 2.2;

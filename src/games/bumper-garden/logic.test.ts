@@ -405,19 +405,22 @@ describe('Bumper Garden', () => {
     }
   });
 
-  it.each(TABLE_IDS)('lets every Pattern bloom step on %s be aimed at, so the hint always leads somewhere', (table) => {
-    for (let seed = 1; seed <= 15; seed++) {
-      const rng = new Rng(seed);
-      const plan = planFor(7, rng);
-      const bumpers = makeBumpers(plan, rng, table);
-      const world = makeWorld(bumpers);
-      const bloomed = new Set<number>();
-      for (let step = 0; step < plan.goal; step++) {
-        const wanted = (i: number) => !bloomed.has(i) && wantsPattern(plan, step, bumpers[i].color);
-        expect(aimFor(world, bumpers.length, wanted), `seed ${seed} step ${step}`).not.toBeNull();
-        bloomed.add(bumpers.findIndex((_, i) => wanted(i)));
+  it.each(TABLE_IDS)(
+    'lets every Pattern bloom step on %s be aimed at, so the hint always leads somewhere',
+    (table) => {
+      for (let seed = 1; seed <= 15; seed++) {
+        const rng = new Rng(seed);
+        const plan = planFor(7, rng);
+        const bumpers = makeBumpers(plan, rng, table);
+        const world = makeWorld(bumpers);
+        const bloomed = new Set<number>();
+        for (let step = 0; step < plan.goal; step++) {
+          const wanted = (i: number) => !bloomed.has(i) && wantsPattern(plan, step, bumpers[i].color);
+          expect(aimFor(world, bumpers.length, wanted), `seed ${seed} step ${step}`).not.toBeNull();
+          bloomed.add(bumpers.findIndex((_, i) => wanted(i)));
+        }
+        expect(bloomed.size).toBe(plan.goal);
       }
-      expect(bloomed.size).toBe(plan.goal);
-    }
-  });
+    },
+  );
 });
