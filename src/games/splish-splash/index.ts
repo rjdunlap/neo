@@ -9,7 +9,8 @@ import {
   type Renderer,
 } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import type { CompanionRig } from '../../creatures/companion';
+import type { PetColor } from '../../content/world';
+import { FriendBather, type Bather } from './friend';
 import { ink, RAINBOW, swatch, wood } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { textures } from '../../art/textures';
@@ -36,7 +37,11 @@ import {
   nearMud,
   nextToScrub,
   PATS_PER_PATCH,
-  PHRASES,
+  phraseOf,
+  FRIEND,
+  pickBather,
+  type Friend,
+  type Words,
   planFor,
   planOn,
   reach,
@@ -188,7 +193,11 @@ class SplishSplash implements Game {
   private readonly backdrop = new Graphics();
   private readonly tubFront = new Graphics();
   private readonly foam = new Graphics();
-  private readonly pip: CompanionRig;
+  /** Who is in the tub: her companion, or (from level 3, about a quarter of rounds) a farm friend (slice 5). */
+  private readonly pip: Bather;
+  private readonly friend: Friend | null;
+  /** The bather's own part words: the pig's nose is its snout. */
+  private readonly words: Words;
   /** The brush, as a share of `SCRUB_R` in the star's own units: finger-sized on screen whatever the species' scale. */
   private readonly brush: number;
   /** How far the star sits up out of the water (down into it, for the floating glider), so its lowest splotch just clears the foam. */
@@ -229,13 +238,31 @@ class SplishSplash implements Game {
   };
 
   constructor(private readonly ctx: GameContext) {
-    this.pip = ctx.companion();
-    const star = STAR[this.pip.species];
-    // Only the parts this species is asked for (decided 2026-10-23): on a side-on face, the tummy and the head.
+    this.friend = pickBather(ctx.level, ctx.rng);
+    let star: { scale: number; mud: number; tummy: number; parts: readonly Part[] };
+    let points: (q: Part) => readonly { x: number; y: number }[];
+    let color: PetColor;
+    if (this.friend) {
+      const spec = FRIEND[this.friend];
+      const friend = new FriendBather(this.friend);
+      this.pip = friend;
+      star = spec;
+      points = (q) => spec.points[q];
+      color = spec.color;
+      this.words = spec.words;
+    } else {
+      const pet = ctx.companion();
+      this.pip = pet;
+      star = STAR[pet.species];
+      points = (q) => pet.partPoints(q);
+      color = pet.color;
+      this.words = {};
+    }
+    // Only the parts this bather is asked for (decided 2026-10-23): on a side-on face, the tummy and the head.
     this.plan = planOn(planFor(ctx.level), star.parts);
     if (this.plan.shuffle) this.plan = { ...this.plan, parts: ctx.rng.shuffle([...this.plan.parts]) };
     this.view = ctx.view;
-    const where = pickRoom(ctx.rng, this.pip.color);
+    const where = pickRoom(ctx.rng, color);
     this.room = where.room;
     this.messy = where.messy;
     this.wall = new Sprite(gradientTexture(...WALLS[this.room]));
@@ -250,14 +277,14 @@ class SplishSplash implements Game {
     this.brush = brushOn(star.scale, this.plan.brush ?? 1);
     // Each splotch rides its part (a leaf, an ear, the river's head as it rears), one on each of the part's points.
     for (const part of this.plan.parts) {
-      const spots = spotsOn([part], (q) => this.pip.partPoints(q), star);
+      const spots = spotsOn([part], points, star);
       this.pip.part(part).forEach((node, i) => {
         const mud = new Mud(part, 0, 0, spots[i].size, this.brush, where.mess, ctx.rng, ctx.renderer);
         node.addChild(mud.glow, mud.sprite, mud.foam);
         this.muds.push(mud);
       });
     }
-    const lowest = Math.max(...spotsOn(this.plan.parts, (q) => this.pip.partPoints(q), star).map((m) => m.y));
+    const lowest = Math.max(...spotsOn(this.plan.parts, points, star).map((m) => m.y));
     this.rise = lowest * star.scale - TUMMY_Y;
     this.rubberDuck.scale.set(0.24);
     // The bath is one big scrub surface. The duck stays above it as a generous replay target,
@@ -299,7 +326,8 @@ class SplishSplash implements Game {
   }
 
   start() {
-    if (this.plan.mode === 'parts') void this.askForPart();
+    if (this.friend) void this.greetFriend();
+    else if (this.plan.mode === 'parts') void this.askForPart();
     else
       void this.instruct(this.plan.mode === 'pat' ? 'bath.pat' : 'bath.free', { messy: this.messy }).then(
         () => (this.opening = false),
@@ -448,14 +476,24 @@ class SplishSplash implements Game {
       });
   }
 
-  private async askForPart() {
+  /** A friend in the tub says its sound and what it is covered in, then asks for its first part. */
+  private async greetFriend() {
+    const spec = FRIEND[this.friend!];
+    // The greeting is part of the first question: a miss while it plays counts toward that question's hint.
     this.help.ask();
+    sfx.animal(spec.sound);
+    await this.ctx.say('bath.friend', { friend: spec.name, messy: this.messy });
+    if (!this.finished) await this.askForPart(false);
+  }
+
+  private async askForPart(fresh = true) {
+    if (fresh) this.help.ask();
     const [a, b] = this.asked();
-    if (!b) await this.instruct('bath.part', { part: askedPhrase([a]) });
+    if (!b) await this.instruct('bath.part', { part: askedPhrase([a], this.words) });
     else
       await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', {
-        a: askedPhrase([a]),
-        b: askedPhrase([b]),
+        a: askedPhrase([a], this.words),
+        b: askedPhrase([b], this.words),
       });
   }
 
@@ -591,18 +629,18 @@ class SplishSplash implements Game {
     }
     const [a, b] = this.asked();
     if (this.plan.ordered && touched === b)
-      void this.ctx.say('bath.first', { a: askedPhrase([a]), b: askedPhrase([b]) });
+      void this.ctx.say('bath.first', { a: askedPhrase([a], this.words), b: askedPhrase([b], this.words) });
     else
-      void this.ctx.say(PHRASES[touched].plural ? 'bath.notthose' : 'bath.notthat', {
-        touched: PHRASES[touched].word,
-        part: askedPhrase(this.asked()),
+      void this.ctx.say(phraseOf(touched, this.words).plural ? 'bath.notthose' : 'bath.notthat', {
+        touched: phraseOf(touched, this.words).word,
+        part: askedPhrase(this.asked(), this.words),
       });
   }
 
   /** Free play and patting: say a part's name at its first touch, once a round, never over the opening or too soon after the last. */
   private nameAt(part: Part) {
     if (this.namer.touch(part, this.clock, this.opening))
-      void this.ctx.say('bath.named', { part: PHRASES[part].word });
+      void this.ctx.say('bath.named', { part: phraseOf(part, this.words).word });
   }
 
   private async cleaned(m: Mud) {
@@ -630,12 +668,12 @@ class SplishSplash implements Game {
       const done = this.asked();
       this.partIndex += done.length;
       sfx.sparkle();
-      await this.ctx.say('bath.cleanpart', { part: cleanPhrase(done) });
+      await this.ctx.say('bath.cleanpart', { part: cleanPhrase(done, this.words) });
       await this.askForPart();
     } else if (this.partClean(m.part)) {
       // Named as it goes clean; the next first-touch name waits a moment so this one is heard.
       this.namer.spoke(this.clock);
-      void this.ctx.say('bath.cleanpart', { part: PHRASES[m.part].word });
+      void this.ctx.say('bath.cleanpart', { part: phraseOf(m.part, this.words).word });
     }
   }
 
@@ -662,6 +700,7 @@ class SplishSplash implements Game {
     this.shakeT = 0;
     await this.ctx.tw.wait(SHAKE_FOR);
     this.pip.cheer();
+    if (this.friend) sfx.animal(FRIEND[this.friend].sound);
     void this.ctx.say('bath.clean');
     const colors = RAINBOW.map((c) => swatch[c].fill);
     const t = this.pip.touch;
