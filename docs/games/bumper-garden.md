@@ -11,7 +11,7 @@
 | lap | 10, 1 |
 | toddler | 1–2 |
 | preschool | 2–4 |
-| pre-K | 3, 4, 6, 7, 8, 5, 9 |
+| pre-K | 3, 4, 6, 7, 8, 5, 9, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 8 | Bloom every flower that is not the color asked for; those ones are asleep |
 | 9 | Count back to 1 from a starting number between 5 and 8 |
 | 10 | One big flower: touch anywhere to launch the ladybug; another flower wakes at each launch |
+| 11 | Make five: each flower fills its dots on the strip; bloom flowers that fill five dots exactly, twice |
 
 <!-- end generated -->
 

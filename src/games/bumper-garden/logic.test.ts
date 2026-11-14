@@ -36,6 +36,14 @@ import {
   patternOf,
   patternUnit,
   wantsPattern,
+  fitsGap,
+  gapAfter,
+  MAKE_DOTS,
+  MAKE_FALLBACK,
+  MAKE_TARGET,
+  makeDots,
+  regrowFor,
+  waysToFive,
 } from './logic';
 import { bumperGarden } from './index';
 import { levelsInOrder, nextLevelOffer, stepLevel } from '../../progress/difficulty';
@@ -174,14 +182,16 @@ describe('Bumper Garden', () => {
     expect(orderNumbers(planFor(4))).toEqual([1, 2, 3]);
     expect(orderNumbers(planFor(5))).toEqual([1, 2, 3, 4, 5]);
     const range = bumperGarden.levels('prek');
-    expect(levelsInOrder(range)).toEqual([3, 4, 6, 7, 8, 5, 9]);
+    expect(levelsInOrder(range)).toEqual([3, 4, 6, 7, 8, 5, 9, 11]);
     expect(nextLevelOffer(4, range)).toBe(6);
     expect(nextLevelOffer(6, range)).toBe(7);
     expect(nextLevelOffer(7, range)).toBe(8);
     expect(nextLevelOffer(8, range)).toBe(5);
     expect(nextLevelOffer(5, range)).toBe(9);
     expect(stepLevel(9, -1, range)).toBe(5);
-    expect(nextLevelOffer(9, range)).toBeNull();
+    expect(nextLevelOffer(9, range)).toBe(11);
+    expect(stepLevel(11, -1, range)).toBe(9);
+    expect(nextLevelOffer(11, range)).toBeNull();
     for (const id of [3, 4, 5, 7, 8]) expect(stepLevel(id, 0, range)).toBe(id);
     expect(levelsInOrder(bumperGarden.levels('preschool'))).toEqual([2, 3, 4]);
   });
@@ -420,6 +430,115 @@ describe('Bumper Garden', () => {
           bloomed.add(bumpers.findIndex((_, i) => wanted(i)));
         }
         expect(bloomed.size).toBe(plan.goal);
+      }
+    },
+  );
+
+  /**
+   * Every way a make round can go: from each bloomed set, bloom any waiting flower that fits the gap (or regrow when none
+   * does, as the game does), until the fives are made. Throws on an overfill or a dead end; returns the states seen.
+   */
+  function playEveryMakePath(start: readonly number[], fives: number): number {
+    const seen = new Set<string>();
+    const walk = (dots: number[], bloomed: boolean[], filled: number) => {
+      const key = `${dots}|${bloomed}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (filled >= fives * MAKE_TARGET) {
+        expect(filled).toBe(fives * MAKE_TARGET);
+        return;
+      }
+      const grow = regrowFor(dots, bloomed, filled, fives);
+      if (grow !== null) {
+        expect(bloomed[grow]).toBe(false);
+        dots = dots.slice();
+        dots[grow] = gapAfter(filled);
+      }
+      const gap = gapAfter(filled);
+      const fit = dots.map((_, i) => i).filter((i) => !bloomed[i] && fitsGap(gap, dots[i]));
+      expect(fit.length, `stuck at ${filled} with ${dots}`).toBeGreaterThan(0);
+      for (const i of fit) {
+        // A five never overfills: the strip ends exactly on five.
+        expect(gapAfter(filled) - dots[i]).toBeGreaterThanOrEqual(0);
+        const next = bloomed.slice();
+        next[i] = true;
+        walk(dots, next, filled + dots[i]);
+      }
+    };
+    walk(
+      start.slice(),
+      start.map(() => false),
+      0,
+    );
+    return seen.size;
+  }
+
+  it('sets out Make five rounds of 1–4 dots with at least two ways to make five and spare dots', () => {
+    const plan = planFor(11);
+    expect(plan).toMatchObject({ mode: 'make', goal: 2, bumpers: 8 });
+    expect(MAKE_TARGET).toBe(5);
+    const counts = new Set<number>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const seeded = planFor(11, rng);
+      const dots = seeded.dots!;
+      expect(dots).toHaveLength(plan.bumpers);
+      for (const d of dots) {
+        expect(d).toBeGreaterThanOrEqual(MAKE_DOTS.min);
+        expect(d).toBeLessThanOrEqual(MAKE_DOTS.max);
+        counts.add(d);
+      }
+      expect(waysToFive(dots).length).toBeGreaterThanOrEqual(2);
+      expect(dots.reduce((a, b) => a + b, 0)).toBeGreaterThanOrEqual((plan.goal + 1) * MAKE_TARGET);
+      const bumpers = makeBumpers(seeded, rng, pickTable(rng));
+      expect(bumpers.map((b) => b.dots)).toEqual(dots);
+    }
+    expect([...counts].sort()).toEqual([1, 2, 3, 4]);
+    expect(makeDots(undefined, 8, 2)).toEqual(MAKE_FALLBACK);
+  });
+
+  it('never leaves a Make five round stuck or overfilled, whatever order she blooms flowers in', () => {
+    for (const dots of [
+      MAKE_FALLBACK,
+      ...Array.from({ length: 12 }, (_, k) => planFor(11, new Rng(k + 1)).dots!),
+    ])
+      expect(playEveryMakePath(dots, 2)).toBeGreaterThan(2);
+    // A gap of 1 with only big flowers waiting: the smallest regrows to exactly 1.
+    expect(regrowFor([4, 4, 3, 1], [false, false, false, true], 4, 2)).toBe(2);
+    // A flower still fits, or the round is done: nothing regrows.
+    expect(regrowFor([4, 1, 3], [false, false, false], 4, 2)).toBeNull();
+    expect(regrowFor([4, 1, 3, 2], [true, true, true, true], 10, 2)).toBeNull();
+    // Too many dots never fit; zero never counts.
+    expect(fitsGap(2, 3)).toBe(false);
+    expect(fitsGap(2, 2)).toBe(true);
+    expect(fitsGap(2, 0)).toBe(false);
+    expect([0, 3, 5, 7].map(gapAfter)).toEqual([5, 2, 5, 3]);
+  });
+
+  it.each(TABLE_IDS)(
+    'lets the first Make five flowers on %s be aimed at, so the hint leads somewhere',
+    (table) => {
+      for (let seed = 1; seed <= 15; seed++) {
+        const rng = new Rng(seed);
+        const plan = planFor(11, rng);
+        const bumpers = makeBumpers(plan, rng, table);
+        const world = makeWorld(bumpers);
+        const bloomed = bumpers.map(() => false);
+        let filled = 0;
+        while (filled < plan.goal * MAKE_TARGET) {
+          const grow = regrowFor(
+            bumpers.map((b) => b.dots!),
+            bloomed,
+            filled,
+            plan.goal,
+          );
+          if (grow !== null) bumpers[grow].dots = gapAfter(filled);
+          const wanted = (i: number) => !bloomed[i] && fitsGap(gapAfter(filled), bumpers[i].dots!);
+          expect(aimFor(world, bumpers.length, wanted), `seed ${seed} filled ${filled}`).not.toBeNull();
+          const i = bumpers.findIndex((_, k) => wanted(k));
+          bloomed[i] = true;
+          filled += bumpers[i].dots!;
+        }
       }
     },
   );

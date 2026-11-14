@@ -9,6 +9,13 @@ export const VOICE = {
   'bumper.pattern': ['Follow the color pattern: {pattern}. Start with {color}!'],
   'bumper.next-color': ['Now {color}!'],
   'bumper.again-pattern': ['Almost! The pattern needs {color} next.'],
+  'bumper.make': [
+    'Fill the five dots! Each flower fills as many dots as it has. Find flowers that make five!',
+  ],
+  'bumper.need': ['{n} more to make five!'],
+  'bumper.made': ['{parts} make five!'],
+  'bumper.make-again': ['Another five! The dots are empty again.'],
+  'bumper.again-make': ['Almost! We need {n} more. The sleepy flowers have too many dots.'],
   'bumper.order': ['Bump the flowers in order. Find {n}!'],
   'bumper.start': ['Start at {n}! Bump the numbered flowers to count on, one more each time.'],
   'bumper.back': [
