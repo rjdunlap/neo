@@ -172,7 +172,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 
 2. **Every touch counts, pots, nudge** (built; the hint rule waits on decision 5). Gestures that count with a palm-sized splat, pots of 104 with marks and a two-row layout, the free-play nudge; the hint rule if decision 5 is yes. Tier: rule tests, `EARLY_ONLY=paint FROM_LEVEL=1 TO_LEVEL=2`, `fingerdemo` at level 1, one portrait screenshot of the pots with the pet.
 3. **Words and fairness** (built 2026-11-13; decision 4 for alternatives). The name table, accepted alternatives, color echo at levels 1–2, praise variants, co-play and off-screen lines. Tier: typecheck, rule tests and the how-to test.
-4. **Pictures, batch one: yellow and red** (banana, chick, lemon, strawberry, ladybug, cherries) and the new draw. Tier: rule tests, one landscape screenshot of the new art.
+4. **Pictures, batch one: yellow and red** (banana, chick, lemon, strawberry, ladybug, cherries) and the new draw. *Claimed 2026-11-13 by `claude/rainbow-fingers-yellow-red`.* Tier: rule tests, one landscape screenshot of the new art.
 5. **Pictures, batch two: green, blue and purple** (frog, turtle, broccoli, whale, puddle, plum, eggplant). Same tier.
 6. **Pictures, batch three: orange** (carrot, basketball) and level 7 as three pages only if decision 3 says so. Tier: rule tests, `fingerdemo` at level 7.
 7. **Fold-down-the-middle pages** (decision 6). Tier: rule tests, one screenshot, `fingerdemo` at level 1.
