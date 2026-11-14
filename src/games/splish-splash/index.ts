@@ -10,7 +10,7 @@ import {
 } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import type { CompanionRig } from '../../creatures/companion';
-import { RAINBOW, swatch } from '../../art/palette';
+import { ink, RAINBOW, swatch, wood } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
@@ -45,21 +45,29 @@ import {
   spotsOn,
   STAR,
   wrongTouches,
+  DUCK_AT,
+  DUCK_HIT,
+  FoamTrail,
+  TOY_AT,
+  TOY_HIT,
+  TOYS,
+  TUMMY_Y,
   type Part,
   type Plan,
+  type Toy,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
 /** A spot counts as clean when this much of it is gone; the last specks vanish on their own. */
 const CLEAN_ENOUGH = 0.75;
-/** The old pip's tummy splotch sat this far above the tub's line, just over the foam: every star sits with its lowest splotch there. */
-const TUMMY_Y = -86;
 
 /** One splotch of mud, drawn into its own texture so scrubbing can erase it bit by bit. */
 class Mud {
   readonly sprite: Sprite;
   readonly glow = new Graphics();
+  /** The white foam the brush leaves behind (slice 3): it stays until the shower pops it. */
+  readonly foam = new Graphics();
   clean = false;
   /** Pats taken in `pat` mode. */
   pats = 0;
@@ -68,6 +76,7 @@ class Mud {
   private readonly total: number;
   /** The scrub radius in this splotch's own texture units, so the brush feels the same size on small splotches. */
   private readonly reach: number;
+  private readonly trail: FoamTrail;
 
   constructor(
     readonly part: Part,
@@ -107,6 +116,7 @@ class Mud {
     }
     this.total = this.points.length;
     this.reach = reach(size, brush);
+    this.trail = new FoamTrail(this.reach);
 
     this.sprite = new Sprite(this.rt);
     this.sprite.anchor.set(0.5);
@@ -116,6 +126,25 @@ class Mud {
     this.glow.ellipse(0, 0, MUD_W * 0.62, MUD_H * 0.62).fill({ color: 0xfff3a0, alpha: 0.7 });
     this.glow.position.set(x, y);
     this.glow.visible = false;
+    this.foam.scale.set(size);
+    this.foam.position.set(x, y);
+  }
+
+  /** Leave a puff of foam at a sprite-local point, if none is there yet. */
+  lather(lx: number, ly: number) {
+    const puff = this.trail.lay(lx, ly);
+    if (!puff) return;
+    this.foam
+      .circle(puff.x, puff.y, puff.r)
+      .fill({ color: 0xffffff, alpha: 0.92 })
+      .stroke({ width: 3 / this.size, color: 0xbfe0f4 })
+      .circle(puff.x - puff.r * 0.3, puff.y - puff.r * 0.35, puff.r * 0.28)
+      .fill({ color: 0xeaf6fd });
+  }
+
+  /** Where the foam's puffs are, sprite-local, for the shower's pops. */
+  get puffs(): readonly { x: number; y: number }[] {
+    return this.trail.puffs;
   }
 
   /** True if (lx, ly), in sprite-local coordinates, is near enough to scrub. */
@@ -129,6 +158,7 @@ class Mud {
     const y = ly + MUD_H / 2;
     eraser.position.set(x, y);
     eraser.scale.set((this.reach * 2) / eraser.texture.width);
+    this.lather(lx, ly);
     this.renderer.render({ container: eraser, target: this.rt, clear: false });
     for (let i = this.points.length - 1; i >= 0; i--) {
       const p = this.points[i];
@@ -140,6 +170,7 @@ class Mud {
   destroy() {
     this.sprite.destroy();
     this.glow.destroy();
+    this.foam.destroy();
     this.rt.destroy(true);
   }
 }
@@ -156,6 +187,12 @@ class SplishSplash implements Game {
   /** How far the star sits up out of the water (down into it, for the floating glider), so its lowest splotch just clears the foam. */
   private readonly rise: number;
   private readonly rubberDuck = new Critter(CRITTERS.duck);
+  /** The second toy on the rim (slice 3): it squeaks and says its name; the duck stays the instruction replay. */
+  private readonly toyKind: Toy;
+  private readonly toy: Container;
+  private lastToyWord = -10;
+  /** Seconds into the shake dry after the rinse, or -1. */
+  private shakeT = -1;
   private readonly scrubZone = new Container();
   private readonly eraser = new Sprite();
   private readonly muds: Mud[] = [];
@@ -205,7 +242,7 @@ class SplishSplash implements Game {
       const spots = spotsOn([part], (q) => this.pip.partPoints(q), star);
       this.pip.part(part).forEach((node, i) => {
         const mud = new Mud(part, 0, 0, spots[i].size, this.brush, ctx.rng, ctx.renderer);
-        node.addChild(mud.glow, mud.sprite);
+        node.addChild(mud.glow, mud.sprite, mud.foam);
         this.muds.push(mud);
       });
     }
@@ -214,8 +251,12 @@ class SplishSplash implements Game {
     this.rubberDuck.scale.set(0.24);
     // The bath is one big scrub surface. The duck stays above it as a generous replay target,
     // so asking for the instruction never cleans mud or advances the round.
-    this.rubberDuck.hitArea = new Circle(0, -125, 230);
+    this.rubberDuck.hitArea = new Circle(0, (DUCK_HIT.y - DUCK_AT.y) / 0.24, DUCK_HIT.r / 0.24);
     onTap(this.rubberDuck, () => this.repeatInstruction(), { cooldown: 500 });
+    this.toyKind = ctx.rng.pick(TOYS);
+    this.toy = bathToy(this.toyKind);
+    this.toy.hitArea = new Circle(TOY_HIT.x - TOY_AT.x, TOY_HIT.y - TOY_AT.y, TOY_HIT.r);
+    onTap(this.toy, () => this.squeakToy(), { cooldown: 400 });
     ctx.track(this.pip);
     ctx.track(this.rubberDuck);
 
@@ -242,6 +283,7 @@ class SplishSplash implements Game {
       this.foam,
       this.scrubZone,
       this.rubberDuck,
+      this.toy,
     );
   }
 
@@ -285,13 +327,16 @@ class SplishSplash implements Game {
       .stroke({ width: 6, color: 0xb9c6d1 });
     t.roundRect(cx - 250, tubTop + 40, 500, 10, 5).fill({ color: swatch.blue.light, alpha: 0.7 });
     this.drawFoam(cx, tubTop);
-    this.rubberDuck.position.set(cx + 236, tubTop - 18);
+    this.rubberDuck.position.set(cx + DUCK_AT.x, tubTop + DUCK_AT.y);
+    this.toy.position.set(cx + TOY_AT.x, tubTop + TOY_AT.y);
   }
 
   update(dt: number) {
     this.clock += dt;
     this.foam.y = 2 * Math.sin(this.clock * 2);
     this.rubberDuck.rotation = 0.08 * Math.sin(this.clock * 1.6);
+    this.toy.rotation = 0.07 * Math.sin(this.clock * 1.3 + 1);
+    if (this.shakeT >= 0) this.shakeDry(dt);
     if (this.plan.mode === 'parts' && !this.finished) {
       // Quiet for a while: light up the part we're asking for, free (a hint counts only after two misses).
       if (this.help.tick(dt)) this.glowAsked();
@@ -356,6 +401,45 @@ class SplishSplash implements Game {
     this.rubberDuck.poke();
     sfx.squeak(9);
     void this.ctx.say(this.instruction.id, this.instruction.vars);
+  }
+
+  /** The rim toy: a squeak and a bob every tap, and its name now and then (never over itself). */
+  private squeakToy() {
+    sfx.squeak(10);
+    void this.ctx.tw.to(this.toy.scale, { x: 1.12, y: 0.9 }, { duration: 0.08 }).then(() => {
+      if (!this.toy.destroyed) void this.ctx.tw.to(this.toy.scale, { x: 1, y: 1 }, { duration: 0.18 });
+    });
+    if (this.finished || this.clock - this.lastToyWord < 2.5) return;
+    this.lastToyWord = this.clock;
+    void this.ctx.say('bath.toy', { toy: this.toyKind });
+  }
+
+  /** The pet shakes itself dry after the rinse: a quick side-to-side shiver, flinging droplets both ways. */
+  private shakeDry(dt: number) {
+    const before = this.shakeT;
+    this.shakeT += dt;
+    const t = this.shakeT;
+    if (t >= SHAKE_FOR) {
+      this.pip.rotation = 0;
+      this.shakeT = -1;
+      return;
+    }
+    this.pip.rotation = 0.13 * Math.sin(t * 34) * (1 - t / SHAKE_FOR);
+    // A spray of droplets each tenth of a second.
+    if (Math.floor(before * 10) === Math.floor(t * 10)) return;
+    const c = this.pip.touch;
+    const p = this.ctx.stage.toLocal(this.pip.toGlobal({ x: c.x, y: c.y }));
+    for (const side of [-1, 1])
+      this.ctx.particles.burst(p.x + side * c.r * 0.6, p.y, {
+        colors: [swatch.blue.light, 0xffffff],
+        count: 4,
+        angle: side < 0 ? Math.PI + 0.3 : -0.3,
+        spread: 0.7,
+        speed: [180, 320],
+        gravity: 700,
+        size: [0.2, 0.35],
+        life: [0.5, 0.8],
+      });
   }
 
   private async askForPart() {
@@ -425,6 +509,12 @@ class SplishSplash implements Game {
     this.nameAt(m.part);
     this.sinceProgress = 0;
     m.sprite.alpha = 1 - m.pats / PATS_PER_PATCH;
+    const [fx, fy] = [
+      [-20, -8],
+      [18, 6],
+      [0, 14],
+    ][(m.pats - 1) % 3];
+    m.lather(fx, fy);
     const p = this.ctx.stage.toLocal(e.global);
     this.ctx.particles.burst(p.x, p.y, {
       colors: [0xffffff, 0xd6eefa],
@@ -561,6 +651,10 @@ class SplishSplash implements Game {
       if (i === 0) sfx.splash();
       await this.ctx.tw.wait(0.12);
     }
+    await this.popFoam();
+    sfx.splash();
+    this.shakeT = 0;
+    await this.ctx.tw.wait(SHAKE_FOR);
     this.pip.cheer();
     void this.ctx.say('bath.clean');
     const colors = RAINBOW.map((c) => swatch[c].fill);
@@ -579,6 +673,30 @@ class SplishSplash implements Game {
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 
+  /** The shower rinses the foam off: each splotch's puffs pop in a little burst of bubbles, top to bottom. */
+  private async popFoam() {
+    const foamy = this.muds
+      .filter((m) => m.puffs.length > 0)
+      .sort((a, b) => a.foam.getGlobalPosition().y - b.foam.getGlobalPosition().y);
+    for (const m of foamy) {
+      for (const puff of m.puffs.filter((_, i) => i % 3 === 0)) {
+        const p = this.ctx.stage.toLocal(m.foam.toGlobal(puff));
+        this.ctx.particles.burst(p.x, p.y, {
+          colors: [0xffffff, 0xd6eefa],
+          count: 4,
+          speed: [40, 120],
+          gravity: -120,
+          size: [0.25, 0.5],
+          life: [0.4, 0.7],
+        });
+      }
+      sfx.squeak(11);
+      void this.ctx.tw.to(m.foam, { alpha: 0 }, { duration: 0.25 });
+      await this.ctx.tw.wait(0.12);
+    }
+    if (foamy.length) await this.ctx.tw.wait(0.2);
+  }
+
   private drawFoam(cx: number, tubTop: number) {
     const f = this.foam.clear();
     const rng = new Rng(5);
@@ -588,6 +706,56 @@ class SplishSplash implements Game {
     }
     f.fill(0xffffff).stroke({ width: 3, color: 0xd6eefa });
   }
+}
+
+/** How long the pet shakes itself dry, in seconds. */
+const SHAKE_FOR = 0.8;
+
+/** The second bath toy, sitting on the rim with its base at (0, 0), about 110 units across. */
+function bathToy(kind: Toy): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (kind === 'boat') {
+    g.poly([-55, -18, 55, -18, 36, 8, -36, 8])
+      .fill(swatch.red.fill)
+      .stroke({ width: 4, color: swatch.red.line })
+      .moveTo(0, -18)
+      .lineTo(0, -82)
+      .stroke({ width: 5, color: wood.line })
+      .poly([5, -78, 5, -24, 48, -24])
+      .fill(0xffffff)
+      .stroke({ width: 3, color: 0xb9c6d1 });
+  } else if (kind === 'fish') {
+    g.poly([30, -34, 62, -58, 62, -10])
+      .fill(swatch.orange.line)
+      .ellipse(-4, -34, 44, 28)
+      .fill(swatch.orange.fill)
+      .stroke({ width: 4, color: swatch.orange.line })
+      .moveTo(4, -56)
+      .quadraticCurveTo(14, -34, 4, -12)
+      .stroke({ width: 3, color: swatch.orange.line })
+      .circle(-26, -40, 6)
+      .fill(ink);
+  } else {
+    g.poly([40, -30, 66, -52, 66, -14])
+      .fill(swatch.blue.line)
+      .ellipse(-4, -30, 50, 32)
+      .fill(swatch.blue.fill)
+      .stroke({ width: 4, color: swatch.blue.line })
+      .ellipse(-12, -14, 34, 12)
+      .fill(swatch.blue.light)
+      .circle(-30, -38, 6)
+      .fill(ink)
+      .moveTo(-10, -62)
+      .lineTo(-10, -78)
+      .moveTo(-10, -70)
+      .lineTo(-22, -84)
+      .moveTo(-10, -70)
+      .lineTo(2, -84)
+      .stroke({ width: 4, color: swatch.blue.light });
+  }
+  c.addChild(g);
+  return c;
 }
 
 /** The hub's bathtub, foamy, with a rubber duck bobbing on the rim. */
