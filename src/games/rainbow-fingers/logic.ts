@@ -23,7 +23,9 @@ export type ThingId =
   | 'whale'
   | 'puddle'
   | 'plum'
-  | 'eggplant';
+  | 'eggplant'
+  | 'carrot'
+  | 'basketball';
 export type Circle = [x: number, y: number, r: number];
 
 /** A coloring-page picture: its true color and the circles whose union is the part to paint. */
@@ -215,6 +217,21 @@ export const THINGS: Thing[] = [
       [40, 44, 58],
     ],
   },
+  {
+    id: 'carrot',
+    color: 'orange',
+    // Wide at the top under its leaves, tapering to a point at the bottom.
+    circles: [
+      [0, -56, 52],
+      [0, -22, 48],
+      [0, 12, 41],
+      [0, 42, 33],
+      [0, 68, 25],
+      [0, 89, 18],
+      [0, 104, 12],
+    ],
+  },
+  { id: 'basketball', color: 'orange', circles: [[0, 0, 84]] },
 ];
 
 /**
@@ -247,6 +264,8 @@ export const THING_NAMES: Record<ThingId, string> = {
   puddle: 'puddle',
   plum: 'plum',
   eggplant: 'eggplant',
+  carrot: 'carrot',
+  basketball: 'basketball',
 };
 
 /**
@@ -274,6 +293,8 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
   puddle: ['blue'],
   plum: ['purple'],
   eggplant: ['purple'],
+  carrot: ['orange'],
+  basketball: ['orange'],
 };
 
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
