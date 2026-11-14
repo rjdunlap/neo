@@ -39,8 +39,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
     };
 
-    // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7, 8 and 9.
-    const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8,9').split(',').map(Number);
+    // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7, 8, 9 and 10.
+    const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8,9,10').split(',').map(Number);
     const tapBell = (col) =>
       page.evaluate(async (col) => {
         const g = neo.scene.game,
@@ -310,6 +310,114 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Chain Reaction 9: one-marble experiment is free with both trails, a counted hint, both machines ring both bells, one sticker, portrait fit passed',
+      );
+    }
+
+    if (chainLevels.includes(10)) {
+      const stickers = await page.evaluate(
+        () => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length,
+      );
+      await launch('chain-reaction', 10);
+      const machines = await page.evaluate(() => neo.scene.game.boards.length);
+      assert.equal(machines, 2);
+      for (let index = 0; index < machines; index++) {
+        await readyMachine(index);
+        assert.ok(
+          await page.evaluate(() => !!neo.scene.game.machine.spring && !!neo.scene.game.springNode),
+          'the machine has a spring',
+        );
+        if (index === 0) {
+          // A full placement that misses is a free experiment with a trail; a hint is counted and lights the spring column.
+          const wrong = await page.evaluate(async () => {
+            const g = neo.scene.game,
+              { works } = await import('/src/games/chain-reaction/logic.ts');
+            const n = g.machine.sockets.length;
+            for (let a = 0; a < n; a++)
+              for (let b = 0; b < n; b++) if (a !== b && !works(g.machine, [a, b])) return [a, b];
+            return null;
+          });
+          await arrange(wrong);
+          await tap('neo.scene.game.runButton');
+          await page.waitForFunction(() => neo.scene.game.busy, null, { timeout: 5000 });
+          await readyMachine(index);
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+          assert.ok(
+            await page.evaluate(() => neo.scene.game.trail.bounds.width > 0),
+            'the miss leaves its trail',
+          );
+          await tap('neo.scene.game.helpButton');
+          assert.deepEqual(
+            await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, !!neo.scene.game.hinted]),
+            [0, 1, true],
+          );
+          assert.ok(
+            await page.evaluate(() => {
+              const g = neo.scene.game,
+                b = g.glow.getLocalBounds();
+              return b.height > g.gap * g.machine.rows * 0.8;
+            }),
+            'the hint lights the spring column',
+          );
+          await screenshot('chain-reaction-10');
+        }
+        const solution = await page.evaluate(() => neo.scene.game.machine.solution.slice());
+        await arrange(solution);
+        if (index === 0) {
+          // Watch the hop: record where the marble is when the spring hands it to the skipped row.
+          await page.evaluate(() => {
+            const g = neo.scene.game,
+              bounce = g.bounce.bind(g);
+            window.__hops = [];
+            g.bounce = async (marble, col, row) => {
+              await bounce(marble, col, row);
+              window.__hops.push({ dx: marble.x - g.colX(col), dy: marble.y - (g.rowY(row + 1) - 15) });
+            };
+          });
+        }
+        await tap('neo.scene.game.runButton');
+        if (index === 0) {
+          await page.waitForFunction(() => window.__hops.length > 0, null, { timeout: 10000 });
+          const [hop] = await page.evaluate(() => window.__hops);
+          assert.ok(
+            Math.abs(hop.dx) > 40 && Math.abs(hop.dy) < 1,
+            `the marble hops out over the skipped row ${JSON.stringify(hop)}`,
+          );
+          await screenshot('chain-reaction-10-hop');
+        }
+        await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.index > index, index, {
+          timeout: 30000,
+        });
+      }
+      await finished('chain-reaction');
+      assert.deepEqual(await score(), [0, 1]);
+      assert.equal(
+        await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length),
+        stickers + 1,
+      );
+      assert.ok(
+        await page.evaluate(() => kit.store.data.journal.found.includes('chain-reaction:spring-skip')),
+        'the journal filed the spring',
+      );
+      await launch('chain-reaction', 10);
+      await readyMachine(0);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      assert.ok(
+        await page.evaluate(() => {
+          const g = neo.scene.game;
+          return [...g.parts.map((p) => p.node), g.runButton, g.helpButton, g.targetBell, g.springNode].every(
+            (node) => {
+              const b = node.getBounds();
+              return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight;
+            },
+          );
+        }),
+        'portrait spring, tray and controls fit',
+      );
+      await screenshot('chain-reaction-10-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Chain Reaction 10: a missed spring run is free with its trail, a counted hint lights the spring column, the marble hops over the skipped row, two machines, one sticker, journal entry, phone portrait fit passed',
       );
     }
 
