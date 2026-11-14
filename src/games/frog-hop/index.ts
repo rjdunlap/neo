@@ -427,8 +427,8 @@ class FrogHop implements Game {
             ? `${q.target} − ${q.start}`
             : mode === 'make-ten'
               ? `${q.start} + ${q.hops}`
-              : mode === 'back-ten' || mode === 'your-way'
-                ? `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`
+              : mode === 'back-ten'
+                ? `${q.start} − ${k}`
                 : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`,
       mode === 'find' ? q.target : 0,
     );

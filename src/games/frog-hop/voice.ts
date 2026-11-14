@@ -46,8 +46,8 @@ export const VOICE = {
   'hop.yourway.back': [
     'Start at {n}. Hop back {k}. You can stop at 10 on the way. Where will the frog land?',
   ],
-  'hop.yourway.stop': ['Ten! That is {a} hops. {k} hops in all. Tap where the frog lands!'],
-  'hop.yourway.stopback': ['Ten! That is {a} hops back. {k} hops back in all. Tap where the frog lands!'],
+  'hop.yourway.stop': ['Ten! {a} to ten, {k} in all. Tap where the frog lands!'],
+  'hop.yourway.stopback': ['Ten! {a} back to ten, {k} back in all. Tap where the frog lands!'],
   'hop.yourway.more': ['From 10, {n} more.'],
   'hop.yourway.split': ['{a} to ten, {n} more.'],
   'hop.yourway.yay': ['{m}! {n} plus {k} is {m}.'],

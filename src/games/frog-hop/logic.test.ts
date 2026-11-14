@@ -482,7 +482,11 @@ describe('Frog Hop, Fraction Landings', () => {
 
     it('gives the stop, the remainder and the split lines their slots', () => {
       expect(SCRIPT['hop.yourway'][0]).toContain('10');
-      expect(SCRIPT['hop.yourway.stop'][0]).toContain('{a}');
+      // No "1 hops": a start on 9 or 11 is one hop from ten, so the stop lines name no unit after {a}.
+      for (const id of ['hop.yourway.stop', 'hop.yourway.stopback'] as const) {
+        expect(SCRIPT[id][0]).toContain('{a}');
+        expect(SCRIPT[id][0]).not.toMatch(/\{a\} hops/);
+      }
       expect(SCRIPT['hop.yourway.more'][0]).toContain('{n}');
       expect(SCRIPT['hop.yourway.split'][0]).toMatch(/\{a\}.*\{n\}/);
       for (const id of ['hop.yourway.yay', 'hop.yourway.yayback'] as const)
