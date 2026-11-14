@@ -11,8 +11,8 @@
 | lap | 13, 1, 2 |
 | toddler | 1–3 |
 | preschool | 2–4 |
-| pre-K | 3–9 |
-| school | 6–9 |
+| pre-K | 3–10 |
+| school | 6–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,13 +25,14 @@
 | 7 | Quiet dance: dance while it is quiet, and freeze when the music plays (the freeze dance turned around) |
 | 8 | More opposites: stomp or tiptoe, wiggle fast or slowly, clap loudly or softly, arms wide or a hug (three pairs a round, mostly moons) |
 | 9 | A walk in the woods: act out four stops on a woodland, beach or farm adventure |
+| 10 | Sun or moon: listen for the sign on each of eight turns. Copy on the sun and do the opposite on the moon. |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->
 
 **Starts as:** the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move)
 
-**Grows into:** body words with visible part targets, two moves in order (some counted), "Pet says" (move only when you hear it), freeze dance, Opposite day (a sun means copy, a moon means do the opposite, and the pet shows the answer), Quiet dance (dance in the quiet, freeze when the music plays), More opposites (stomp or tiptoe, fast or slow, loud or soft, wide or a hug), and four-stop movement stories; a gentle arrow reminder and a held "once more" button for a grown-up
+**Grows into:** body words with visible part targets, two moves in order (some counted), "Pet says" (move only when you hear it), freeze dance, Opposite day (a sun means copy, a moon means do the opposite, and the pet shows the answer), Quiet dance (dance in the quiet, freeze when the music plays), More opposites (stomp or tiptoe, fast or slow, loud or soft, wide or a hug), four-stop movement stories, and Sun or moon (the rule changes during the round). A gentle arrow reminder and a held "once more" button support grown-up co-play.
 
 ## Design notes
 
@@ -41,6 +42,8 @@
 
 **Quiet dance (level 7, 2026-11-14).** Four dances, each a quiet stretch (3-7 s, the pet dances to a soft tick in its dance style) then a music stretch (2-4 s, the tune plays and the pet stops still where it is, a twirl caught mid-turn snapping to full width). "Music! Freeze!" is said whatever she does, so nothing is wrong and misses and hints stay 0. No stretch is as long as the one before it or the last of its kind, and a round is at most 40 s (a long frame is clamped so no stretch is skipped). When the song ends the pet holds still for the arrow; there is no once-more button. Pre-K 3-7 and school 6-7. Device speech for `says.quiet`, `says.quiet.go` and `says.music` is unchecked.
 
-**More opposites (level 8, 2026-11-14).** Six turns from six pairs: up/down and head/toes from level 6, plus stomp/tiptoe, fast/slow wiggle, loud/soft clap and arms wide/hug. A round draws three pairs and asks each twice, never the same pair twice in a row; it opens with one sun, then five moons. The six new moves sit outside the tiers, so only level 8 deals them, and each pair differs in one measured way (place, height, tempo or volume). On the opposite levels only, stomp squats low (0.88) against tiptoe's rise (1.08), and the clap sound takes a loudness scale. The held "once more" counts a hint here, as at 4 and 6; misses stay 0. Pre-K 3-8 and school 6-8. Device speech for `says.opp.more` is unchecked.
+**More opposites (level 8, 2026-11-14).** Six turns from six pairs: up/down and head/toes from level 6, plus stomp/tiptoe, fast/slow wiggle, loud/soft clap and arms wide/hug. A round draws three pairs and asks each twice, never the same pair twice in a row; it opens with one sun, then five moons. The six new moves sit outside the tiers and appear in levels 8 and 10. Each pair differs in one measured way (place, height, tempo or volume). On the opposite levels only, stomp squats low (0.88) against tiptoe's rise (1.08), and the clap sound takes a loudness scale. The held "once more" counts a hint here, as at 4 and 6; misses stay 0. Pre-K 3-8 and school 6-8. Device speech for `says.opp.more` is unchecked.
 
 **A walk in the woods (level 9, 2026-11-14).** The seed picks one route through the woods, along a beach or across a farm. At each of four stops the scenery changes and the pet names and performs a move to act out together. A grown-up taps the arrow to go on. Tapping the pet is free, while holding the orange button counts one hint per stop. Pre-K and school both reach level 9.
+
+**Sun or moon (level 10, 2026-11-14).** Over eight turns, the sign switches between sun (copy) and moon (do the opposite). The seed picks one of four sign patterns, all starting with two suns, and draws three of level 8’s six move pairs. The pet says the rule before it moves. On each moon turn, the first arrow tap shows the opposite and the next tap goes on. A pet tap repeats the turn for free. Holding the orange "once more" button counts one hint per turn. Pre-K reaches level 10 (3–10), and school reaches level 10 (6–10).

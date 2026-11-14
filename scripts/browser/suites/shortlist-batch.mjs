@@ -607,8 +607,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
         // Level 2 and Opposite day play on a phone held upright; level 2 listens for the chant's words (dive slice 2).
-        if (level === 6 || level === 7 || level === 8)
-          await page.setViewportSize({ width: 390, height: 844 });
+        if ([6, 7, 8, 10].includes(level)) await page.setViewportSize({ width: 390, height: 844 });
         if (level === 7)
           await page.evaluate(() => {
             const g = neo.scene.game;
@@ -625,7 +624,28 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             g.ctx.say = (id, slots) => (g.saidForCheck.push(id), say(id, slots));
           });
         }
+        if (level === 10) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            const { instruct } = g.ctx;
+            const perform = g.perform.bind(g);
+            let cue;
+            g.switchingCues = new Map();
+            g.ctx.instruct = async (id, slots) => {
+              await instruct(id, slots);
+              cue = id;
+            };
+            g.perform = (move, count) => {
+              if (!g.switchingCues.has(g.index)) {
+                g.switchingCues.set(g.index, { cue, sign: g.signShown });
+              }
+              cue = undefined;
+              return perform(move, count);
+            };
+          });
+        }
         const turns = await page.evaluate(() => neo.scene.game.turns.length);
+        if (level === 10) assert.equal(turns, 8);
         if (level === 3) {
           // Every tiered move performs and comes back to rest, and a counted move counts each beat aloud.
           await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, {
@@ -663,6 +683,18 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             n,
             { timeout: 40000 },
           );
+          if (level === 10 && n > 0) {
+            const { sign, seen } = await page.evaluate(() => {
+              const g = neo.scene.game;
+              return { sign: g.turn.sign, seen: g.switchingCues.get(g.index) };
+            });
+            assert.deepEqual(
+              seen,
+              { cue: `says.opp.${sign}`, sign },
+              'the sign and spoken rule precede the move',
+            );
+            if (n === 3) await screenshot('pet-says-10-portrait');
+          }
           if (level === 5 && n === 0) {
             // The freeze holds the named statue while the arrow shows (dive slice 4), on this round's scene.
             const held = await page.evaluate(async () => {
@@ -782,7 +814,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, {
               timeout: 40000,
             });
-            await screenshot(`pet-says-${level}`);
+            if (level !== 10) await screenshot(`pet-says-${level}`);
           }
           if (level === 6 && n === SAYS_SUN_TURNS) {
             // The held "once more" replays the first moon turn and counts one hint, however often it is held.
@@ -799,7 +831,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             );
             assert.equal(await page.evaluate(() => neo.scene.game.onceMore.visible), true);
           }
-          const moon = (level === 6 || level === 8) && (await page.evaluate(() => neo.scene.game.revealDue));
+          const moon = await page.evaluate(() => neo.scene.game.revealDue);
           await page.waitForTimeout(250);
           await tap('neo.scene.game.next');
           if (moon) {

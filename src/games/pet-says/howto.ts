@@ -46,6 +46,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Act out four stops with the pet. Listen at each new place, then do the move together away from the screen.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'Watch and listen for the sign on each of the eight turns. Copy the pet on a sun. Do the opposite on a moon. The sign changes during the round.',
+    },
+    {
       from: 4,
       to: 4,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
@@ -57,7 +62,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 8,
-      to: 9,
+      to: 10,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
     },
     {
@@ -65,7 +70,12 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'Tap anywhere to pat the pet. Each pat makes it do its next move: wave, clap, jump, peekaboo, pat-a-cake. Do the move together if you like.',
     },
-    { to: 12, text: 'A grown-up taps the arrow to go on.' },
+    { to: 9, text: 'A grown-up taps the arrow to go on.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'A grown-up taps the arrow to go on. On a moon turn the first tap shows the opposite and the next tap goes on.',
+    },
   ],
   finish: [
     { to: 12, text: 'The round ends after the last move.' },

@@ -363,7 +363,7 @@ describe('Pet Says', () => {
 describe("Pat the pet (level 13, lap's first level)", () => {
   const plan = planFor(13);
 
-  it('is its own level beside the numbered ladder, which does not change', () => {
+  it('keeps its own ID beside the numbered ladder', () => {
     expect(plan.mode).toBe('pat');
     expect(ENTRY_PLANS[13]).toBe(plan);
     expect(PLANS.map((p) => p.mode)).toEqual([
@@ -376,6 +376,7 @@ describe("Pat the pet (level 13, lap's first level)", () => {
       'quiet',
       'opposite',
       'walk',
+      'opposite',
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
@@ -770,11 +771,11 @@ describe('More opposites (level 8, dive slice 7)', () => {
 describe('A walk in the woods (level 9, dive slice 8)', () => {
   const plan = planFor(9);
 
-  it('appends level 9 to both windows and offers replay', () => {
+  it('keeps level 9 in both windows and offers replay', () => {
     expect(plan.mode).toBe('walk');
     expect(ONCE_MORE_MODES).toContain(plan.mode);
-    expect(LEVELS.prek).toEqual({ min: 3, max: 9 });
-    expect(LEVELS.school).toEqual({ min: 6, max: 9 });
+    expect(LEVELS.prek?.max).toBeGreaterThanOrEqual(9);
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(9);
   });
 
   it('deals a whole story with distinct moves and landmarks, an instruction at every stop and a cheer at the end', () => {
@@ -815,5 +816,52 @@ describe('A walk in the woods (level 9, dive slice 8)', () => {
       expect(y + 62 * scale).toBeLessThan(view.h - 176);
       expect(Math.hypot(x - (view.w - 110), y - (view.h - 260))).toBeGreaterThan(66);
     }
+  });
+});
+
+describe('Sun or moon (level 10, dive slice 9)', () => {
+  const plan = planFor(10);
+
+  it("extends both windows through level 10 and uses the opposite levels' replay", () => {
+    expect(plan.mode).toBe('opposite');
+    expect(plan.opposites).toBe('switching');
+    expect(ONCE_MORE_MODES).toContain(plan.mode);
+    expect(LEVELS.prek).toEqual({ min: 3, max: 10 });
+    expect(LEVELS.school?.min).toBe(6);
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(10);
+  });
+
+  it('opens with two suns, then switches at least twice with no four alike in a row', () => {
+    const patterns = new Set<string>();
+    for (let seed = 0; seed < 500; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(turns).toHaveLength(8);
+      expect(makeTurns(plan, new Rng(seed))).toEqual(turns);
+
+      const signs = turns.map((turn) => turn.sign);
+      expect(signs.slice(0, 2)).toEqual(['sun', 'sun']);
+      expect(signs.every((sign) => sign === 'sun' || sign === 'moon')).toBe(true);
+      expect(signs.filter((sign, i) => i > 0 && sign !== signs[i - 1]).length).toBeGreaterThanOrEqual(2);
+      expect(signs.join(' ')).not.toMatch(/(sun sun sun sun|moon moon moon moon)/);
+      patterns.add(signs.join(' '));
+    }
+    expect(patterns.size).toBeGreaterThan(1);
+  });
+
+  it('deals one move from the level 8 pairs per turn, never repeating a pair back to back', () => {
+    const seen = new Set();
+    for (let seed = 0; seed < 500; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      for (const [i, turn] of turns.entries()) {
+        expect(turn.moves).toHaveLength(1);
+        const move = turn.moves[0];
+        const pair = MORE_OPPOSITE_PAIRS.find((pair) => pair.includes(move));
+        expect(pair).toBeDefined();
+        if (turn.sign === 'moon') expect(pair).toContain(partnerOf(move));
+        if (i > 0) expect(pair).not.toContain(turns[i - 1].moves[0]);
+        seen.add(move);
+      }
+    }
+    expect(seen).toEqual(new Set(MORE_OPPOSITE_PAIRS.flat()));
   });
 });
