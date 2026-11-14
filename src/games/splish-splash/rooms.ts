@@ -26,13 +26,17 @@ export const TUBS: Record<Room, { fill: number; line: number; feet: boolean }> =
  */
 export function drawRoom(r: Graphics, room: Room, w: number, h: number, tubTop: number) {
   const cx = w / 2;
+  // High on a tall portrait wall, where the pet's head does not reach; under the top bar on a short one.
+  const sunY = Math.max(110, tubTop - 520);
+  // The props on the wall stand clear of the rim toy (about 100 units tall over the rim's left end).
+  const shelf = tubTop - 120;
   if (room === 'bathroom') {
     for (let x = 0; x < w; x += 64) r.moveTo(x, 0).lineTo(x, tubTop).stroke({ width: 2, color: 0xeaf6fd });
     for (let y = 0; y < tubTop; y += 64) r.moveTo(0, y).lineTo(w, y).stroke({ width: 2, color: 0xeaf6fd });
     r.rect(0, tubTop + 40, w, h).fill(0xf3e3c8);
   } else if (room === 'garden') {
     // A sun, a picket fence and the lawn; the hose runs in from the right to the shower head.
-    r.circle(cx - 230, 110, 44).fill(swatch.yellow.fill);
+    r.circle(cx - 230, sunY, 44).fill(swatch.yellow.fill);
     for (let x = 12; x < w; x += 46)
       r.poly([x, tubTop + 10, x, tubTop - 70, x + 15, tubTop - 88, x + 30, tubTop - 70, x + 30, tubTop + 10]);
     r.fill(0xffffff).stroke({ width: 3, color: 0xc9d6c0 });
@@ -51,26 +55,27 @@ export function drawRoom(r: Graphics, room: Room, w: number, h: number, tubTop: 
       .stroke({ width: 10, color: swatch.green.line });
   } else if (room === 'beach') {
     // Sky, the sea's edge and the sand, with a bucket and a shell on it.
-    r.circle(cx - 230, 100, 42).fill(swatch.yellow.fill);
+    r.circle(cx - 230, sunY, 42).fill(swatch.yellow.fill);
     r.rect(0, tubTop - 90, w, 60).fill(swatch.blue.fill);
     r.moveTo(0, tubTop - 90);
     for (let x = 0; x <= w; x += 40) r.quadraticCurveTo(x + 20, tubTop - 100, x + 40, tubTop - 90);
     r.stroke({ width: 5, color: 0xffffff });
     r.rect(0, tubTop - 30, w, h).fill(0xf3dca2);
-    const by = tubTop + 230;
-    r.poly([cx - 250, by - 60, cx - 170, by - 60, cx - 182, by, cx - 238, by])
+    // Beside the tub, not under it.
+    const by = tubTop + 110;
+    r.poly([cx - 400, by - 60, cx - 320, by - 60, cx - 332, by, cx - 388, by])
       .fill(swatch.red.fill)
       .stroke({ width: 4, color: swatch.red.line });
-    r.moveTo(cx - 246, by - 60)
-      .quadraticCurveTo(cx - 210, by - 110, cx - 174, by - 60)
+    r.moveTo(cx - 396, by - 60)
+      .quadraticCurveTo(cx - 360, by - 110, cx - 324, by - 60)
       .stroke({ width: 4, color: ink });
-    r.moveTo(cx + 170, by)
-      .lineTo(cx + 210, by - 50)
-      .lineTo(cx + 250, by)
+    r.moveTo(cx + 320, by)
+      .lineTo(cx + 360, by - 50)
+      .lineTo(cx + 400, by)
       .closePath()
       .fill(swatch.pink.light)
       .stroke({ width: 4, color: swatch.pink.line });
-    for (const dx of [-20, 0, 20]) r.moveTo(cx + 210, by - 46).lineTo(cx + 210 + dx, by - 2);
+    for (const dx of [-20, 0, 20]) r.moveTo(cx + 360, by - 46).lineTo(cx + 360 + dx, by - 2);
     r.stroke({ width: 3, color: swatch.pink.line });
   } else if (room === 'art') {
     // A wooden floor and an easel with a splashy painting.
@@ -78,7 +83,7 @@ export function drawRoom(r: Graphics, room: Room, w: number, h: number, tubTop: 
     for (let y = tubTop + 70; y < h; y += 36) r.moveTo(0, y).lineTo(w, y);
     r.stroke({ width: 2, color: wood.fill });
     const ex = cx - 220;
-    const ey = tubTop - 260;
+    const ey = shelf - 220;
     r.moveTo(ex - 50, ey + 220)
       .lineTo(ex, ey - 20)
       .lineTo(ex + 50, ey + 220)
@@ -98,7 +103,10 @@ export function drawRoom(r: Graphics, room: Room, w: number, h: number, tubTop: 
     r.fill({ color: 0xffffff, alpha: 0.7 });
     r.rect(0, tubTop + 40, w, h).fill(0xe8d6c0);
     const kx = cx - 220;
-    const ky = tubTop - 230;
+    const ky = shelf - 114;
+    r.roundRect(kx - 90, shelf, 180, 14, 6)
+      .fill(wood.fill)
+      .stroke({ width: 3, color: wood.line });
     r.roundRect(kx - 70, ky + 72, 140, 12, 6)
       .fill(0xffffff)
       .stroke({ width: 4, color: 0xb9c6d1 });
