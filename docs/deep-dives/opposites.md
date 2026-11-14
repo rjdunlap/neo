@@ -13,7 +13,7 @@ Pictures of concept words in pairs, drawn in code. On the lap she taps a picture
 | 3 | This one is hot: find its opposite among three (4 rounds) | `opposite` | preschool, pre-K (3–4) | the opposite among one right card and two from other concepts |
 | 4 | Match three pairs (2 rounds, six cards) | `pairs` | pre-K | tap one, then its opposite |
 
-Level windows are `LEVELS` in `index.ts`: lap 1–1, toddler 1–2, preschool 2–3, pre-K 3–4. There is **no school window**, so a school profile plays at pre-K's levels 3–4 through `playBand`.
+Level windows are `LEVELS` in `index.ts`: lap 1–1 (plus level 6), toddler 1–2, preschool 2–3, pre-K 3–8 (order 3, 4, 5, 7, 8), school 8–9 (level 9 opened the school window on 2026-11-13).
 
 **What a round draws from.** `CONCEPTS` is eight fixed pairs: big/small (a bear), happy/sad (a cat's mood), up/down (a balloon), open/closed (a box), full/empty (a glass), hot/cold (a mug, an ice cube), day/night, fast/slow (a bunny, a snail). Level 1 plays all eight once in a shuffled order with a random side. The levels above draw a concept and its random side, so the only variety is order, side and which two other concepts fill a level-3 round. Each concept has one picture per side; the size pair is always the bear. The sticker art picks one of four concepts (`sky`, `temp`, `cup`, `lid`).
 
@@ -106,7 +106,7 @@ Windows after this ladder: lap 1 (plus the built level 6, below) and toddler 1�
 
 **Built 2026-11-13:** level 6 *One big card*, lap only (PR #1617), from the lap-openings batch ([definition](../definitions/toy-test-lap-openings.md#story-grove)): after the ladder, first in lap's order `[6, 1]`, a saved 6 lands at toddler's 1. A touch anywhere flips one big card with its word; a small copy joins a row along the bottom; eight cards, no misses or hints. The proposed levels below (formerly 6–10) are now **7–11** so the next slice does not collide with it.
 
-**Built 2026-11-13:** level 7 *In between*, pre-K's top (PR #1629; pre-K order 3, 4, 5, 7), then level 8 *Line them up* (PR #1632; pre-K order 3, 4, 5, 7, 8; pre-K only). Levels 9–11 and the school window are not built; level 9 opens the school window.
+**Built 2026-11-13:** level 7 *In between*, pre-K's top (PR #1629; pre-K order 3, 4, 5, 7), then level 8 *Line them up* (PR #1632; pre-K order 3, 4, 5, 7, 8; pre-K only). Level 9 *Only the word* then opened the school window (school 8–9; below). Levels 10–11 are not built.
 
 ### Younger-band openings
 
@@ -152,7 +152,7 @@ Each is sized for one session. The slices that add a level are built in level or
 4. **A second batch of pairs** (built 2026-10-14, [PR #317](https://github.com/rjdunlap/neo/pull/317): sponge wet/dry, plate clean/dirty, book thick/thin and ball near/far, all `from` level 3 in families wet, clean, size and position, so levels 1–2 are unchanged and levels 3–4 draw from sixteen pairs; the sticker pool is unchanged; many/few stays unbuilt, overlapping Picture Graph): each at a `from` level.
 5. **Level 7, In between** (built 2026-11-13, [PR #1629](https://github.com/rjdunlap/neo/pull/1629)): third pictures for cup, temperature, sky and height.
 6. **Level 8, Line them up** (built 2026-11-13, [PR #1632](https://github.com/rjdunlap/neo/pull/1632); pre-K only, the school window opens at slice 7).
-7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11). **Claimed 2026-11-13, branch `claude/opposites-only-the-word`.**
+7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11). **Built 2026-11-13** (school window 8–9; see Slice 7 built below).
 8. **Level 10, Un- words** (decision 3; needs the device-speech check).
 9. **Level 11, Two answers** (ready after 8).
 10. **Doing words and sound cards** (sketch; needs a design pass).
@@ -175,3 +175,7 @@ Level 7, In between ([PR #1629](https://github.com/rjdunlap/neo/pull/1629)): a `
 ### Slice 6 built (2026-11-13)
 
 Level 8, Line them up ([PR #1632](https://github.com/rjdunlap/neo/pull/1632)): an `order` mode at pre-K's new top (order 3, 4, 5, 7, 8; no other band changed). Four rounds, one per gradable word (cup, mug, sky, balloon; never size): the level-7 three are shuffled (never already in the asked order) in a top row, and she taps them from the end named first ("Tap them in order, from {a} to {b}!") to the other. Each in-turn tap lifts, slides into its place on a three-place line below (pale places with arrows) and settles, its word said; the third names the whole line. The end named first alternates round by round (two each way, random starting parity). A tap out of turn is a miss ("Which one comes first? Start at {a}." or "Which one comes after {prev}?"); after two misses the next card in turn glows and the glow moves along (one hint a round). The line stays above the corner guide; cards scale up to 1.1 (about 1.04 on the 768-wide area). `inTurn` and a `cardToTap` case are in `logic.ts`. New voice lines `opp.order`, `opp.notfirst`, `opp.notnext`, `opp.lined` (template lines; no Kokoro clips rendered). **Design choice:** the school window is not opened here; level 8 is pre-K only, and slice 7 (level 9, Only the word) opens the school window (school 8–11) as the slice list says, so the table's "school (first)" for level 8 now lands at level 9. Typecheck, the opposites, content and registry tests, the `woods` case from level 8 and `fingerdemo` at level 8 passed ([entry](../verification/2026-11-13-opposites-level-8-line-them-up.md)). Next: slice 7, level 9, Only the word.
+
+### Slice 7 built (2026-11-13)
+
+Level 9, Only the word: an `opposite` mode with a hidden ask that opens the school window (school 8–9; pre-K stays 3–8, order 3, 4, 5, 7, 8; module bands now include school). The pet says "{word}! Find the opposite of {word}!" (`opp.heard`); the ask bubble is a big speaker button that replays the word and is never a miss. Three cards: the opposite plus two from other families, drawn from all sixteen pairs; four rounds. The first miss turns the speaker round to the asked word's own picture, with a small speaker badge left in its corner (still tappable); the opposite glows after two misses (one hint). Typecheck, the opposites rule tests (a new level-9 test: one opposite by spoken word, no same-family card, every word heard across seeds, the bot taps the opposite, the school window and first level 8), howto and registry tests, the `woods` case from level 9 (speaker replay without a miss, reveal, glow, saved [2,1], sticker; phone portrait screenshots) and `fingerdemo` at level 9 for school passed ([entry](../verification/2026-11-13-opposites-level-9-only-the-word.md)). Levels 10 (Un- words, needs the device-speech check) and 11 (Two answers) are not built.
