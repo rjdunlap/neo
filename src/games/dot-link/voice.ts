@@ -16,5 +16,7 @@ export const VOICE = {
   'dots.notthat': ["That's {wrong}! Pop the {color} dots."],
   'dots.longer': ['Longer! Try {n} in a row.'],
   'dots.around': ['Go all the way around to make a square!'],
+  'dots.pattern': ['Follow the colors: {colors}! Start on {first}.'],
+  'dots.follow': ['Follow the colors, starting on {first}: {colors}!'],
   'dots.done': ['Pop pop hooray!'],
 } satisfies Record<string, string[]>;

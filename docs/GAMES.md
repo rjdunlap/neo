@@ -362,7 +362,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Dot Link
 
-*lap–pre-K* · [Dot Link](games/dot-link.md)
+*lap–school* · [Dot Link](games/dot-link.md)
 
 ### Tangram Town
 
