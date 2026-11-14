@@ -509,6 +509,29 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
         const turns = await page.evaluate(() => neo.scene.game.turns.length);
+        if (level === 3) {
+          // Every tiered move performs and comes back to rest, and a counted move counts each beat aloud.
+          await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, {
+            timeout: 40000,
+          });
+          const moves = await page.evaluate(async () => {
+            const { ALL_MOVES, MOVES } = await import('/src/games/pet-says/logic.ts');
+            const g = neo.scene.game;
+            const said = [];
+            const say = g.ctx.say;
+            g.ctx.say = (id, slots) => (id === 'count' && said.push(slots.n), say(id, slots));
+            const fresh = ALL_MOVES.filter((m) => !MOVES.includes(m));
+            for (const m of fresh) await g.perform(m);
+            await g.perform('stomp', 2);
+            g.ctx.say = say;
+            const r = g.mover.right.position;
+            const rest = g.frame.rest.right;
+            return { fresh: fresh.length, said, home: Math.hypot(r.x - rest.x, r.y - rest.y) < 1 };
+          });
+          assert.equal(moves.fresh, 10, 'ten tiered moves');
+          assert.deepEqual(moves.said, [1, 2], 'stomp two times counts one, two');
+          assert.equal(moves.home, true, 'the mittens come back to rest');
+        }
         assert.equal(
           await page.evaluate(() => neo.scene.pet.visible),
           false,
