@@ -10,6 +10,8 @@ import {
   LAST_PLAN,
   LAST_WORDS,
   LEVELS,
+  REPAIR_LEVEL,
+  REPAIR_PLAN,
   SLOW_LEVEL,
   SLOW_PLAN,
   SLOW_WORDS,
@@ -43,8 +45,8 @@ describe('Word Monsters', () => {
     expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
-    // The ladder's levels 1–8 are unchanged; school adds 10 and 11 on top and skips lap's 9.
-    expect(levelsInOrder(LEVELS.school!)).toEqual([5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL]);
+    // The ladder's levels 1–8 are unchanged; school skips lap's 9.
+    expect(levelsInOrder(LEVELS.school!)).toEqual([5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(SCRIPT['monster.big']).toBeDefined();
     for (let seed = 1; seed <= 200; seed++) {
@@ -225,6 +227,30 @@ describe('Word Monsters', () => {
       }
     }
     expect(vowels.size).toBe(5);
+  });
+
+  it('repairs one sound per pictured word, with each position used once in a round', () => {
+    expect(planFor(REPAIR_LEVEL)).toBe(REPAIR_PLAN);
+    expect(stepLevel(SLOW_LEVEL, 1, LEVELS.school!)).toBe(REPAIR_LEVEL);
+    for (let seed = 1; seed <= 300; seed++) {
+      const questions = makeQuestions(REPAIR_PLAN, new Rng(seed));
+      expect(questions.map((q) => q.repair?.slot).sort()).toEqual([0, 1, 2]);
+      const words = new Set<string>();
+      for (const q of questions) {
+        const { word, slot } = q.repair!;
+        words.add(q.answer);
+        words.add(word);
+        expect(PICTURE_WORDS).toContain(q.answer);
+        expect(PICTURE_WORDS).toContain(word);
+        expect([...q.answer].flatMap((letter, i) => (letter === word[i] ? [] : [i]))).toEqual([slot]);
+        expect(soundTwin(q.answer[slot], word[slot])).toBe(false);
+        expect(q.monsters).toHaveLength(REPAIR_PLAN.choices);
+        expect(new Set(q.monsters).size).toBe(q.monsters.length);
+        expect(q.monsters.filter((letter) => fits(q.answer, slot, letter))).toEqual([q.answer[slot]]);
+        expect(q.monsters).not.toContain(word[slot]);
+      }
+      expect(words.size).toBe(6);
+    }
   });
 
   it('fills a word left to right, sound by sound', () => {

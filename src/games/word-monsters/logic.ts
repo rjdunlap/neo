@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * to matching first sounds, to building simple words sound by sound.
  */
 export type MonsterMode =
-  'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end' | 'last' | 'slow';
+  'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end' | 'last' | 'slow' | 'repair';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -81,13 +81,21 @@ export const SLOW_PLAN: MonsterPlan = {
   name: 'Say it slowly: build a pictured word from the word alone, with no sounds said and a spare letter',
 };
 
+export const REPAIR_LEVEL = 12;
+export const REPAIR_PLAN: MonsterPlan = {
+  mode: 'repair',
+  rounds: 3,
+  choices: 3,
+  name: "Fix the pet's word: tap out the wrong letter and put the right one in",
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
   // 9 is lap's big monster, so the school order skips it.
-  school: { min: 5, max: SLOW_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL] },
+  school: { min: 5, max: REPAIR_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL] },
 };
 
 /**
@@ -115,7 +123,9 @@ export const planFor = (level: number) =>
       ? LAST_PLAN
       : level === SLOW_LEVEL
         ? SLOW_PLAN
-        : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+        : level === REPAIR_LEVEL
+          ? REPAIR_PLAN
+          : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -225,6 +235,29 @@ export const SLOW_WORDS = PICTURE_WORDS.filter(
     !MIRRORS.some((set) => w.split('').filter((l) => set.includes(l)).length > 1),
 );
 
+// Each group changes a different slot. Both words have familiar pronunciations and existing pictures.
+// Keep the groups disjoint so a word only appears once in a round, even when the pair is reversed.
+const REPAIR_PAIRS: readonly (readonly (readonly [PictureWord, PictureWord])[])[] = [
+  [
+    ['hat', 'mat'],
+    ['hen', 'ten'],
+    ['net', 'pet'],
+    ['pig', 'wig'],
+  ],
+  [
+    ['map', 'mop'],
+    ['bag', 'bug'],
+    ['pen', 'pin'],
+    ['dog', 'dig'],
+  ],
+  [
+    ['cat', 'can'],
+    ['rug', 'run'],
+    ['bus', 'bun'],
+    ['hog', 'hop'],
+  ],
+];
+
 export interface Question {
   /** The letter asked for (find/who/first), or the word to build. */
   answer: string;
@@ -234,6 +267,8 @@ export interface Question {
   fixed?: string;
   /** Level 10: the pictured word whose last sound is the answer. */
   word?: PictureWord;
+  /** Level 12: the pet's word and the slot that needs replacing. */
+  repair?: { word: PictureWord; slot: number };
 }
 
 /** Pick `n` different letters including `must`, with no lookalikes among them. */
@@ -249,6 +284,19 @@ export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET
 
 export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   const out: Question[] = [];
+  if (plan.mode === 'repair') {
+    return rng.shuffle(
+      REPAIR_PAIRS.map((pairs, slot) => {
+        const [answer, word] = rng.shuffle([...rng.pick(pairs)]);
+        const pool = WHO_POOL.filter((letter) => letter !== word[slot] && !answer.includes(letter));
+        return {
+          answer,
+          repair: { word, slot },
+          monsters: pickLetters(rng, plan.choices, [answer[slot]], pool),
+        };
+      }),
+    );
+  }
   const pool =
     plan.mode === 'first'
       ? Object.keys(FIRST_WORDS)
@@ -363,7 +411,8 @@ export function nextMonster<M extends { letter: string; placed: boolean }>(
     plan.mode === 'spell' ||
     plan.mode === 'slow' ||
     plan.mode === 'family' ||
-    plan.mode === 'end'
+    plan.mode === 'end' ||
+    plan.mode === 'repair'
   )
     return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
   return monsters.find((m) => m.letter === q.answer);

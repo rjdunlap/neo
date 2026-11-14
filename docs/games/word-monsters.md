@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5, 6, 7, 8, 10, 11 |
+| school | 5, 6, 7, 8, 10, 11, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -27,12 +27,13 @@
 | 9 | One big monster: a touch anywhere makes it say its sound, its picture stays, and the next monster wakes (6 monsters) |
 | 10 | Last sounds: "what does cat end with?" Tap the monster for the last sound |
 | 11 | Say it slowly: build a pictured word from the word alone, with no sounds said and a spare letter |
+| 12 | Fix the pet's word: tap out the wrong letter and put the right one in |
 
 <!-- end generated -->
 
 **Starts as:** tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster)
 
-**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), then saying a word slowly while she builds it (tap the boxes to hear each sound)
+**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), say a word slowly while building it, then fix one letter in the pet’s word
 
 ## Design notes
 
@@ -43,3 +44,5 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 **Level 9, One big monster (lap's first, 2026-11-13).** One big monster (about 340 units across, wearing its letter, "Aa") stands in the middle; a layer over the whole screen takes every touch. A touch anywhere makes it say its sound, and its first-word picture (never named aloud) pops out above it and flies to a shelf along the top, where it stays; the monster steps aside and the next wakes. Six different letters, each with a first-word picture; a touch between monsters only wiggles the one on screen. The sound never holds the next monster (about 1.5 s); the last sound is heard out before the closing line. Nothing can be a miss or a hint. Lap's order is `[9, 1]` and the level is an entry level, so a saved 9 carried into toddler starts at toddler's level 1. The ghost finger touches the grass beside the monster.
 
 **A sound never holds the next question (U7 fix batch 19, 2026-11-12).** At levels 2–4 the right monster's sound starts (the praise is dropped) and the next question's monsters come after the existing beat; its ask waits for the sound, is said by the guide, and is dropped at a right tap, and a wrong tap before she has heard it is not a miss (the ask is said instead). The last sound and praise are heard out; the blend lesson at levels 5–8 is unchanged. The ghost finger waits for an ask.
+
+**Level 12, Fix the pet’s word.** The pet spells a different word that shares two letters with the pictured word, such as *pin* for *pen*. Tap the speaker to hear the pet’s spelling or the picture to hear its intended word. Tap out the wrong letter and drag the replacement into the empty box. The first check of a correct letter is free. After two misses the letter to lift glows. Each round visits the first, middle and last position in shuffled order.
