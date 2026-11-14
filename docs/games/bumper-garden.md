@@ -11,7 +11,7 @@
 | lap | 10, 1 |
 | toddler | 1–2 |
 | preschool | 2–4 |
-| pre-K | 3, 4, 6, 8, 5, 9 |
+| pre-K | 3, 4, 6, 7, 8, 5, 9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 4 | Bump flowers 1, 2, 3 in order |
 | 5 | Bump flowers 1 to 5 in order, with others in the way |
 | 6 | Count on from a number between 2 and 6: three or four flowers in order |
+| 7 | Pattern bloom: bloom flowers in the color pattern on the strip (AB, ABB or ABC), next color each time |
 | 8 | Bloom every flower that is not the color asked for; those ones are asleep |
 | 9 | Count back to 1 from a starting number between 5 and 8 |
 | 10 | One big flower: touch anywhere to launch the ladybug; another flower wakes at each launch |
