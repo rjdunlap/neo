@@ -106,7 +106,7 @@ Windows after this ladder: lap 1 (plus the built level 6, below) and toddler 1�
 
 **Built 2026-11-13:** level 6 *One big card*, lap only (PR #1617), from the lap-openings batch ([definition](../definitions/toy-test-lap-openings.md#story-grove)): after the ladder, first in lap's order `[6, 1]`, a saved 6 lands at toddler's 1. A touch anywhere flips one big card with its word; a small copy joins a row along the bottom; eight cards, no misses or hints. The proposed levels below (formerly 6–10) are now **7–11** so the next slice does not collide with it.
 
-**Built 2026-11-13:** level 7 *In between*, pre-K's top (PR #1629; pre-K order 3, 4, 5, 7). Levels 8–11 and the school window are not built.
+**Built 2026-11-13:** level 7 *In between*, pre-K's top (PR #1629; pre-K order 3, 4, 5, 7), then level 8 *Line them up* (PR #1632; pre-K order 3, 4, 5, 7, 8; pre-K only). Levels 9–11 and the school window are not built; level 9 opens the school window.
 
 ### Younger-band openings
 
@@ -151,8 +151,8 @@ Each is sized for one session. The slices that add a level are built in level or
 3. **Level 5, Which two?** (built 2026-10-15, PR #370; the band row becomes pre-K 3–5): the `spot` mode, bot, how-to step, browser loop, `fingerdemo`. Tier: new level on an existing interaction.
 4. **A second batch of pairs** (built 2026-10-14, [PR #317](https://github.com/rjdunlap/neo/pull/317): sponge wet/dry, plate clean/dirty, book thick/thin and ball near/far, all `from` level 3 in families wet, clean, size and position, so levels 1–2 are unchanged and levels 3–4 draw from sixteen pairs; the sticker pool is unchanged; many/few stays unbuilt, overlapping Picture Graph): each at a `from` level.
 5. **Level 7, In between** (built 2026-11-13, [PR #1629](https://github.com/rjdunlap/neo/pull/1629)): third pictures for cup, temperature, sky and height.
-6. **Level 8, Line them up** (claimed 2026-11-13, branch `claude/opposites-line-them-up`).
-7. **Level 9, Only the word** (decision 1; opens the school window).
+6. **Level 8, Line them up** (built 2026-11-13, [PR #1632](https://github.com/rjdunlap/neo/pull/1632); pre-K only, the school window opens at slice 7).
+7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11).
 8. **Level 10, Un- words** (decision 3; needs the device-speech check).
 9. **Level 11, Two answers** (ready after 8).
 10. **Doing words and sound cards** (sketch; needs a design pass).
@@ -171,3 +171,7 @@ Size pairs draw a bear, duck or bunny; mood pairs draw a cat, dog or pig. Both s
 ### Slice 5 built (2026-11-13)
 
 Level 7, In between ([PR #1629](https://github.com/rjdunlap/neo/pull/1629)): a `between` mode at pre-K's top (order 3, 4, 5, 7; level 6 is lap's opening). Four rounds, one per gradable word (cup full/half full/empty, mug hot/warm/cold, sky day/evening/night, balloon up/middle/down); three cards stand in true order, the end named first on the left, and she taps the middle. An end is a miss ("That one is full. Which one is between full and empty?"); after two misses the ends light and then the middle glows (one hint); a right tap says "{word}! That one is in between." Never size, open/closed, on/off or awake/asleep (`MIDDLES`, `GRADABLE`, `degree` in `logic.ts`). Cards draw up to 1.4x, sized from the row's room so tap areas never overlap. **Design choice:** level 7 keeps the true order so she sees the line; level 8, Line them up, shuffles it. New voice lines `opp.between`, `opp.notbetween`, `opp.isbetween` (template lines; no Kokoro clips rendered). Typecheck and the opposites and content tests passed; the `woods` case now reaches level 7 (two misses, one hint, saved [2,1], sticker) and `fingerdemo` plays it. Next: slice 6, level 8, Line them up.
+
+### Slice 6 built (2026-11-13)
+
+Level 8, Line them up ([PR #1632](https://github.com/rjdunlap/neo/pull/1632)): an `order` mode at pre-K's new top (order 3, 4, 5, 7, 8; no other band changed). Four rounds, one per gradable word (cup, mug, sky, balloon; never size): the level-7 three are shuffled (never already in the asked order) in a top row, and she taps them from the end named first ("Tap them in order, from {a} to {b}!") to the other. Each in-turn tap lifts, slides into its place on a three-place line below (pale places with arrows) and settles, its word said; the third names the whole line. The end named first alternates round by round (two each way, random starting parity). A tap out of turn is a miss ("Which one comes first? Start at {a}." or "Which one comes after {prev}?"); after two misses the next card in turn glows and the glow moves along (one hint a round). The line stays above the corner guide; cards scale up to 1.1 (about 1.04 on the 768-wide area). `inTurn` and a `cardToTap` case are in `logic.ts`. New voice lines `opp.order`, `opp.notfirst`, `opp.notnext`, `opp.lined` (template lines; no Kokoro clips rendered). **Design choice:** the school window is not opened here; level 8 is pre-K only, and slice 7 (level 9, Only the word) opens the school window (school 8–11) as the slice list says, so the table's "school (first)" for level 8 now lands at level 9. Typecheck, the opposites, content and registry tests, the `woods` case from level 8 and `fingerdemo` at level 8 passed ([entry](../verification/2026-11-13-opposites-level-8-line-them-up.md)). Next: slice 7, level 9, Only the word.
