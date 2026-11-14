@@ -31,6 +31,11 @@ export const HOW_TO: GameHowTo = {
       text: 'A sun means copy the pet. A moon means do the opposite: it reaches up high, so you crouch down low. After the arrow, the pet shows the opposite.',
     },
     {
+      from: 7,
+      to: 7,
+      text: 'Turned around: dance while it is quiet, and freeze when the music plays. The pet freezes too, and waits for the arrow when the song ends.',
+    },
+    {
       from: 4,
       to: 4,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',

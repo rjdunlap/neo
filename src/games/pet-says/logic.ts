@@ -39,7 +39,7 @@ export type Move =
   | 'cheeks'
   | 'shoulders'
   | 'chin';
-export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'pat';
+export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'quiet' | 'pat';
 
 /**
  * The moves in tiers (dive slice 3). Base is the first eight; social moves are the ones a one-year-old already plays
@@ -326,6 +326,11 @@ export const PLANS: SaysPlan[] = [
     turns: 6,
     name: 'Opposite day: a sun means copy the pet, a moon means do the opposite (reach up high, so crouch down low)',
   },
+  {
+    mode: 'quiet',
+    turns: 4,
+    name: 'Quiet dance: dance while it is quiet, and freeze when the music plays (the freeze dance turned around)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -373,6 +378,8 @@ export interface Turn {
   dance?: Dance;
   /** Opposite day: the sun means copy the move, the moon means do its partner (which the pet reveals after the arrow). */
   sign?: 'sun' | 'moon';
+  /** Quiet dance: the stretches of this dance, quiet (dance) then music (freeze); `dance` gives the tune and the style. */
+  segments?: Segment[];
 }
 
 // Opposite day (level 6, dive slice 5) -----------------------------------------------------------------
@@ -498,6 +505,10 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
       return makeDances(plan.turns, rng).map((dance) => ({ moves: [], dance }));
     case 'opposite':
       return oppositeTurns(plan.turns, rng);
+    case 'quiet': {
+      const dances = makeDances(plan.turns, rng);
+      return quietSegments(plan.turns, rng).map((segments, i) => ({ moves: [], dance: dances[i], segments }));
+    }
   }
 }
 
@@ -607,6 +618,56 @@ export function statuePose(statue: Statue, f: SaysFrame): Pair {
       };
   }
 }
+
+// Quiet dance (level 7, dive slice 6) -----------------------------------------------------------------
+
+/** A stretch of a quiet dance: in the `quiet` the pet dances to a soft tick; while the `music` plays it stands still. */
+export interface Segment {
+  kind: 'quiet' | 'music';
+  seconds: number;
+}
+export const QUIET_SECONDS = { min: 3, max: 7 };
+export const MUSIC_SECONDS = { min: 2, max: 4 };
+/** The most dancing (quiet and music together) a round holds, so a round stays short. */
+export const QUIET_ROUND_MAX = 40;
+
+/**
+ * Each dance is a quiet stretch and then a music stretch, so the round alternates quiet, music, quiet, music. The first
+ * quiet is at least three seconds (every quiet is), so the turned-around rule shows before the first freeze. No stretch is
+ * as long as the one just before it, nor as the last one of its kind, and the whole round is at most 40 seconds.
+ */
+export function quietSegments(dances: number, rng: Rng): Segment[][] {
+  for (;;) {
+    const flat: Segment[] = [];
+    const lastOf = { quiet: 0, music: 0 };
+    for (let i = 0; i < dances * 2; i++) {
+      const kind = i % 2 === 0 ? 'quiet' : 'music';
+      const span = kind === 'quiet' ? QUIET_SECONDS : MUSIC_SECONDS;
+      const before = flat[flat.length - 1]?.seconds;
+      const options = Array.from({ length: span.max - span.min + 1 }, (_, k) => span.min + k).filter(
+        (s) => s !== before && s !== lastOf[kind],
+      );
+      const seconds = rng.pick(options);
+      lastOf[kind] = seconds;
+      flat.push({ kind, seconds });
+    }
+    if (flat.reduce((t, s) => t + s.seconds, 0) <= QUIET_ROUND_MAX)
+      return Array.from({ length: dances }, (_, d) => flat.slice(2 * d, 2 * d + 2));
+  }
+}
+
+/** Which stretch is playing `elapsed` seconds into a dance: its index, or `segments.length` once all have played. */
+export function segmentAt(segments: Segment[], elapsed: number): number {
+  let end = 0;
+  for (let i = 0; i < segments.length; i++) {
+    end += segments[i].seconds;
+    if (elapsed < end) return i;
+  }
+  return segments.length;
+}
+
+/** The turned-around rule: the pet moves only in the quiet. */
+export const petDances = (kind: Segment['kind']) => kind === 'quiet';
 
 // Scenes (dive slice 4) -----------------------------------------------------------------------------
 

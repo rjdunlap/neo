@@ -11,6 +11,12 @@ import {
   stickerRecipe,
   BODY,
   danceSeconds,
+  MUSIC_SECONDS,
+  petDances,
+  QUIET_ROUND_MAX,
+  QUIET_SECONDS,
+  quietSegments,
+  segmentAt,
   ENTRY_PLANS,
   makeTurns,
   MOVE_WORDS,
@@ -346,7 +352,15 @@ describe("Pat the pet (level 13, lap's first level)", () => {
   it('is its own level beside the numbered ladder, which does not change', () => {
     expect(plan.mode).toBe('pat');
     expect(ENTRY_PLANS[13]).toBe(plan);
-    expect(PLANS.map((p) => p.mode)).toEqual(['copy', 'body', 'pairs', 'says', 'freeze', 'opposite']);
+    expect(PLANS.map((p) => p.mode)).toEqual([
+      'copy',
+      'body',
+      'pairs',
+      'says',
+      'freeze',
+      'opposite',
+      'quiet',
+    ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
 
@@ -487,8 +501,8 @@ describe('Opposite day (level 6, dive slice 5)', () => {
   it('is level 6, in the pre-K window and the start of the school window', () => {
     expect(plan.mode).toBe('opposite');
     expect(plan.turns).toBe(6);
-    expect(LEVELS.prek).toEqual({ min: 3, max: 6 });
-    expect(LEVELS.school).toEqual({ min: 6, max: 6 });
+    expect(LEVELS.prek?.min).toBe(3);
+    expect(LEVELS.school?.min).toBe(6);
     expect(ONCE_MORE_MODES).toEqual(['says', 'opposite']);
   });
 
@@ -549,6 +563,78 @@ describe('Opposite day (level 6, dive slice 5)', () => {
 
   it('speaks every Opposite day line', () => {
     for (const id of ['says.opp.intro', 'says.opp.sun', 'says.opp.flip', 'says.opp.moon', 'says.opp.reveal'])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+  });
+});
+
+describe('Quiet dance (level 7, dive slice 6)', () => {
+  const plan = planFor(7);
+
+  it('is level 7, and both the pre-K and the school windows reach it', () => {
+    expect(plan.mode).toBe('quiet');
+    expect(plan.turns).toBe(4);
+    expect(LEVELS.prek).toEqual({ min: 3, max: 7 });
+    expect(LEVELS.school).toEqual({ min: 6, max: 7 });
+    // Level 7 has only the arrow: no "once more", so it always counts 0 and 0 (decision 2).
+    expect(ONCE_MORE_MODES).not.toContain('quiet');
+  });
+
+  it('alternates quiet and music, quiet first and long enough for the rule to show, in at most 40 seconds', () => {
+    const seen = { quiet: new Set<number>(), music: new Set<number>() };
+    for (let seed = 0; seed < 500; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(turns).toHaveLength(4);
+      const flat = turns.flatMap((t) => {
+        expect(t.moves).toEqual([]);
+        expect(t.dance).toBeDefined();
+        expect(t.segments!.map((s) => s.kind)).toEqual(['quiet', 'music']);
+        return t.segments!;
+      });
+      flat.forEach((s, i) => expect(s.kind).toBe(i % 2 === 0 ? 'quiet' : 'music'));
+      expect(flat[0].kind).toBe('quiet');
+      expect(flat[0].seconds).toBeGreaterThanOrEqual(3);
+      for (const s of flat) {
+        const span = s.kind === 'quiet' ? QUIET_SECONDS : MUSIC_SECONDS;
+        expect(s.seconds).toBeGreaterThanOrEqual(span.min);
+        expect(s.seconds).toBeLessThanOrEqual(span.max);
+        seen[s.kind].add(s.seconds);
+      }
+      // No length back to back: not the stretch just before, nor the last stretch of the same kind.
+      flat.slice(1).forEach((s, i) => expect(s.seconds).not.toBe(flat[i].seconds));
+      flat.slice(2).forEach((s, i) => expect(s.seconds).not.toBe(flat[i].seconds));
+      expect(flat.reduce((t, s) => t + s.seconds, 0)).toBeLessThanOrEqual(QUIET_ROUND_MAX);
+    }
+    expect([...seen.quiet].sort()).toEqual([3, 4, 5, 6, 7]);
+    expect([...seen.music].sort()).toEqual([2, 3, 4]);
+    expect(MUSIC_SECONDS).toEqual({ min: 2, max: 4 });
+    expect(QUIET_SECONDS).toEqual({ min: 3, max: 7 });
+  });
+
+  it('keeps the pet still while the music plays, and dancing only in the quiet', () => {
+    expect(petDances('quiet')).toBe(true);
+    expect(petDances('music')).toBe(false);
+    const segments = quietSegments(1, new Rng(3))[0];
+    const [q, m] = segments.map((s) => s.seconds);
+    expect(segmentAt(segments, 0)).toBe(0);
+    expect(segmentAt(segments, q - 0.01)).toBe(0);
+    expect(segmentAt(segments, q)).toBe(1);
+    expect(segmentAt(segments, q + m - 0.01)).toBe(1);
+    expect(segmentAt(segments, q + m)).toBe(2);
+  });
+
+  it('gives every dance a tune and a style, as the freeze dance does', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const dances = makeTurns(plan, new Rng(seed)).map((t) => t.dance!);
+      expect(new Set(dances.map((d) => d.tune)).size).toBe(4);
+      dances.forEach((d, i) => {
+        expect(STYLES_FOR[d.tune]).toContain(d.style);
+        if (i) expect(d.style).not.toBe(dances[i - 1].style);
+      });
+    }
+  });
+
+  it('speaks every Quiet dance line', () => {
+    for (const id of ['says.quiet', 'says.quiet.go', 'says.music'])
       expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
   });
 });
