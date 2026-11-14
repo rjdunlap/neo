@@ -127,7 +127,7 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
 6. **Level 9, Two marbles.** Tier: rule tests and one play. (built 2026-10-21, branch `claude/chain-reaction-two-marbles`, [PR #715](https://github.com/rjdunlap/neo/pull/715)) A red and a blue marble on one 5x4 board; success needs both to ring their own bell; school order `[3, 4, 5, 6, 9]`. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-9-two-marbles-2026-10-21).
-7. **Level 10, Springboard.** Tier: rule tests, one play, `fingerdemo`.
+7. **Level 10, Springboard.** Tier: rule tests, one play, `fingerdemo`. (claimed 2026-11-14, branch `claude/chain-reaction-springboard`)
 8. **Level 11, The chime opens the gate.** Tier: the same.
 9. **A kept "My machine"** only after decision 4.
 
