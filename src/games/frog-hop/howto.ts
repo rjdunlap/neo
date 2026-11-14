@@ -40,7 +40,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 11,
+      to: 11,
       text: 'The sign shows a take-away like 13 − 9. The frog stands on the number taken away and a flag marks the other: count the hops up to the flag, then tap that number card.',
+    },
+    {
+      from: 12,
+      text: 'The sign shows a sum or take-away across 10. Tap the lily pad where the frog lands, or tap 10 first to stop there on the way, then tap the landing.',
     },
   ],
   finish: 'Answer five questions to bring the frog home.',

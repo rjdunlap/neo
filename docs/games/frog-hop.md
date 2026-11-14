@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–4 |
-| school | 3–11 |
+| school | 3–12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 9 | Quarter and half hops along one whole: where does the frog land? |
 | 10 | Two hop sizes, one lily: how many hops of the other size reach the same place? |
 | 11 | Count up to take away: 13 − 9 is the hops from 9 to 13. Choose a number card |
+| 12 | Over ten, your way: a sum or take-away across 10, with a stop at 10 if she chooses |
 
 <!-- end generated -->
 
