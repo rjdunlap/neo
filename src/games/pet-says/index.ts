@@ -45,6 +45,9 @@ import {
   wrongName,
   ONCE_MORE_MODES,
   partnerOf,
+  CLAP_LOUDNESS,
+  STOMP_TIPTOE_STRETCH,
+  WIGGLE_TEMPO,
   type Dance,
   type Segment,
   petDances,
@@ -468,7 +471,7 @@ class PetSays implements Game {
       await this.ctx.instruct(lines.pat);
       return;
     }
-    await this.ctx.say(lines[this.plan.mode]);
+    await this.ctx.say(this.plan.opposites === 'more' ? 'says.opp.more' : lines[this.plan.mode]);
     await this.advance(true);
   }
 
@@ -753,6 +756,8 @@ class PetSays implements Game {
         }
         break;
       case 'stomp':
+        // Low and heavy, squatting into each beat (tiptoe, its opposite, rises: `STOMP_TIPTOE_STRETCH`).
+        void this.stretch(STOMP_TIPTOE_STRETCH.stomp);
         for (let k = 0; k < beatsFor(move, count); k++) {
           pet.hop(0.3);
           await tw.wait(0.26);
@@ -808,7 +813,7 @@ class PetSays implements Game {
         }
         break;
       case 'tiptoe':
-        await this.stretch(1.08);
+        await this.stretch(STOMP_TIPTOE_STRETCH.tiptoe);
         for (let k = 0; k < 4; k++) {
           pet.hop(0.18);
           sfx.pluck(12 + (k % 2), 0.12);
@@ -885,6 +890,53 @@ class PetSays implements Game {
         for (let k = 0; k < 4; k++)
           await tw.to(this.mover, { rotation: k % 2 ? -0.14 : 0.14 }, { duration: 0.12 });
         await tw.to(this.mover, { rotation: 0 }, { duration: 0.12 });
+        break;
+      case 'fastwiggle':
+      case 'slowwiggle': {
+        const { sways, seconds } = WIGGLE_TEMPO[move];
+        if (move === 'fastwiggle') sfx.giggle();
+        for (let k = 0; k < sways; k++) {
+          if (move === 'slowwiggle') sfx.pluck(9 + (k % 2) * 2, 0.12);
+          await tw.to(
+            this.mover,
+            { rotation: k % 2 ? -0.16 : 0.16 },
+            { duration: seconds, ease: ease.inOutSine },
+          );
+        }
+        await tw.to(this.mover, { rotation: 0 }, { duration: seconds });
+        break;
+      }
+      case 'loudclap':
+      case 'softclap': {
+        // The soft clap barely parts the mittens and pats them together; the loud one swings wide.
+        const loud = move === 'loudclap';
+        const open = loud ? 46 : 8;
+        for (let k = 0; k < 3; k++) {
+          await this.hands(
+            { x: f.clap.left.x - open, y: f.clap.left.y - (loud ? 20 : 0) },
+            { x: f.clap.right.x + open, y: f.clap.right.y - (loud ? 20 : 0) },
+            loud ? 0.12 : 0.2,
+          );
+          await this.hands(f.clap.left, f.clap.right, loud ? 0.1 : 0.2);
+          sfx.clap(CLAP_LOUDNESS[move]);
+          if (loud) pet.hop(0.12);
+        }
+        await tw.wait(0.2);
+        break;
+      }
+      case 'wide':
+        sfx.whoosh();
+        await Promise.all([this.hands(f.wide.left, f.wide.right, 0.3), this.stretch(1.05)]);
+        await tw.wait(0.8);
+        break;
+      case 'hug':
+        sfx.squeak(5);
+        await Promise.all([this.hands(f.hug.left, f.hug.right, 0.35), this.stretch(0.95)]);
+        for (let k = 0; k < 2; k++) {
+          await tw.to(this.mover, { rotation: 0.06 }, { duration: 0.3, ease: ease.inOutSine });
+          await tw.to(this.mover, { rotation: -0.06 }, { duration: 0.3, ease: ease.inOutSine });
+        }
+        await tw.to(this.mover, { rotation: 0 }, { duration: 0.2 });
         break;
       case 'up':
         sfx.sparkle();

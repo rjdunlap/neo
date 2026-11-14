@@ -62,7 +62,16 @@ import {
   PARTNER,
   partnerOf,
   SUN_TURNS,
+  MANNER_MOVES,
+  MORE_OPPOSITE_PAIRS,
+  CONTRASTS,
+  WIGGLE_TEMPO,
+  CLAP_LOUDNESS,
+  STOMP_TIPTOE_STRETCH,
+  MORE_PAIRS_A_ROUND,
+  MORE_SUN_TURNS,
 } from './logic';
+import { CONCEPTS } from '../opposites/logic';
 
 describe('Pet Says', () => {
   it('pins the original sticker color and pose draw for seeds 0–99', () => {
@@ -74,13 +83,14 @@ describe('Pet Says', () => {
   });
 
   it('every move has a real move-only speech line and spoken words', () => {
-    for (const move of [...ALL_MOVES, ...BODY]) {
+    for (const move of [...ALL_MOVES, ...BODY, ...MANNER_MOVES]) {
       expect(MOVE_CUES[move].line).toBe(`says.move.${move}`);
       expect(SCRIPT[MOVE_CUES[move].line].length).toBeGreaterThan(0);
       expect(MOVE_CUES[move].word).toBe(MOVE_WORDS[move]);
     }
-    expect(new Set(Object.values(MOVE_CUES).map((c) => c.line)).size).toBe(ALL_MOVES.length + BODY.length);
-    expect(Object.keys(MOVE_CUES)).toHaveLength(ALL_MOVES.length + BODY.length);
+    const every = ALL_MOVES.length + BODY.length + MANNER_MOVES.length;
+    expect(new Set(Object.values(MOVE_CUES).map((c) => c.line)).size).toBe(every);
+    expect(Object.keys(MOVE_CUES)).toHaveLength(every);
   });
 
   it('puts the mittens on each species’ own parts, and on the floor where it has no feet', () => {
@@ -360,6 +370,7 @@ describe("Pat the pet (level 13, lap's first level)", () => {
       'freeze',
       'opposite',
       'quiet',
+      'opposite',
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
@@ -513,7 +524,7 @@ describe('Opposite day (level 6, dive slice 5)', () => {
       expect(partnerOf(m)).not.toBe(m);
       expect(partnerOf(partnerOf(m))).toBe(m);
     }
-    expect(Object.keys(PARTNER).sort()).toEqual([...moves].sort());
+    expect(OPPOSITE_PAIRS.flat().every((m) => PARTNER[m])).toBe(true);
     expect(() => partnerOf('clap')).toThrow();
   });
 
@@ -573,8 +584,10 @@ describe('Quiet dance (level 7, dive slice 6)', () => {
   it('is level 7, and both the pre-K and the school windows reach it', () => {
     expect(plan.mode).toBe('quiet');
     expect(plan.turns).toBe(4);
-    expect(LEVELS.prek).toEqual({ min: 3, max: 7 });
-    expect(LEVELS.school).toEqual({ min: 6, max: 7 });
+    expect(LEVELS.prek?.min).toBe(3);
+    expect(LEVELS.prek?.max).toBeGreaterThanOrEqual(7);
+    expect(LEVELS.school?.min).toBe(6);
+    expect(LEVELS.school?.max).toBeGreaterThanOrEqual(7);
     // Level 7 has only the arrow: no "once more", so it always counts 0 and 0 (decision 2).
     expect(ONCE_MORE_MODES).not.toContain('quiet');
   });
@@ -636,5 +649,115 @@ describe('Quiet dance (level 7, dive slice 6)', () => {
   it('speaks every Quiet dance line', () => {
     for (const id of ['says.quiet', 'says.quiet.go', 'says.music'])
       expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+  });
+});
+
+describe('More opposites (level 8, dive slice 7)', () => {
+  const plan = planFor(8);
+
+  it('is level 8, an opposite level with the held "once more", in both windows', () => {
+    expect(plan.mode).toBe('opposite');
+    expect(plan.opposites).toBe('more');
+    expect(plan.turns).toBe(6);
+    expect(ONCE_MORE_MODES).toContain(plan.mode);
+    expect(LEVELS.prek).toEqual({ min: 3, max: 8 });
+    expect(LEVELS.school).toEqual({ min: 6, max: 8 });
+    expect(planFor(6).opposites).toBe('first');
+  });
+
+  it('has six distinct pairs, no move in two of them, every partner the way back', () => {
+    expect(MORE_OPPOSITE_PAIRS).toHaveLength(6);
+    expect(CONTRASTS).toHaveLength(MORE_OPPOSITE_PAIRS.length);
+    const moves = MORE_OPPOSITE_PAIRS.flat();
+    expect(new Set(moves).size).toBe(moves.length);
+    expect(Object.keys(PARTNER).sort()).toEqual([...moves].sort());
+    for (const m of moves) expect(partnerOf(partnerOf(m))).toBe(m);
+    // Level 6's pairs are its first two, unchanged.
+    expect(MORE_OPPOSITE_PAIRS.slice(0, 2)).toEqual(OPPOSITE_PAIRS);
+    // The manner moves are only ever opposites: never in a tier another level draws from.
+    for (const m of MANNER_MOVES) {
+      expect(ALL_MOVES).not.toContain(m);
+      expect(moves).toContain(m);
+    }
+  });
+
+  it('draws three pairs a round, each twice, never the same pair twice in a row; one sun, then moons', () => {
+    const pairOf = (m: string) => MORE_OPPOSITE_PAIRS.findIndex((p) => p.includes(m as never));
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 500; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(turns).toHaveLength(6);
+      const pairs = turns.map((t) => pairOf(t.moves[0]));
+      expect(pairs.every((p) => p >= 0)).toBe(true);
+      expect(new Set(pairs).size).toBe(MORE_PAIRS_A_ROUND);
+      for (const p of new Set(pairs)) expect(pairs.filter((q) => q === p)).toHaveLength(2);
+      pairs.forEach((p, i) => i > 0 && expect(p, `seed ${seed}`).not.toBe(pairs[i - 1]));
+      turns.forEach((t, i) => expect(t.sign).toBe(i < MORE_SUN_TURNS ? 'sun' : 'moon'));
+      expect(turns.filter((t) => t.sign === 'moon').length).toBeGreaterThan(turns.length / 2);
+      for (const t of turns) seen.add(t.moves[0]);
+    }
+    expect(seen).toEqual(new Set(MORE_OPPOSITE_PAIRS.flat()));
+  });
+
+  it('shows the partners of each pair visibly apart: places, height, tempo or volume', () => {
+    MORE_OPPOSITE_PAIRS.forEach(([a, b], i) => {
+      const kind = CONTRASTS[i];
+      if (kind === 'tempo') {
+        const fast = WIGGLE_TEMPO[a as keyof typeof WIGGLE_TEMPO];
+        const slow = WIGGLE_TEMPO[b as keyof typeof WIGGLE_TEMPO];
+        expect(slow.seconds / fast.seconds).toBeGreaterThanOrEqual(3);
+        expect(slow.sways).toBeLessThan(fast.sways);
+      } else if (kind === 'volume') {
+        const loud = CLAP_LOUDNESS[a as keyof typeof CLAP_LOUDNESS];
+        const soft = CLAP_LOUDNESS[b as keyof typeof CLAP_LOUDNESS];
+        expect(loud / soft).toBeGreaterThanOrEqual(3);
+      } else if (kind === 'height') {
+        expect([a, b]).toEqual(['stomp', 'tiptoe']);
+        expect(STOMP_TIPTOE_STRETCH.tiptoe - STOMP_TIPTOE_STRETCH.stomp).toBeGreaterThanOrEqual(0.15);
+      } else {
+        for (const s of SPECIES_IDS) {
+          const box = bodyBox(s);
+          const f = saysFrame((p) => restPoints(s, p), box);
+          const g = petGrow(box);
+          const places = {
+            up: f.up,
+            down: f.down,
+            head: f.targets.head,
+            toes: f.targets.toes,
+            wide: f.wide,
+            hug: f.hug,
+          };
+          const pa = places[a as keyof typeof places];
+          const pb = places[b as keyof typeof places];
+          const travel =
+            Math.hypot(pa.left.x - pb.left.x, pa.left.y - pb.left.y) +
+            Math.hypot(pa.right.x - pb.right.x, pa.right.y - pb.right.y);
+          expect(travel * g, `${s} ${a} and ${b}`).toBeGreaterThanOrEqual(120);
+        }
+      }
+    });
+  });
+
+  it('crosses the mittens for the hug and opens them past the body for arms wide, on every friend', () => {
+    for (const s of SPECIES_IDS) {
+      const box = bodyBox(s);
+      const f = saysFrame((p) => restPoints(s, p), box);
+      expect(f.hug.left.x, s).toBeGreaterThan(f.hug.right.x);
+      expect(f.wide.left.x, s).toBeLessThan(box.x);
+      expect(f.wide.right.x, s).toBeGreaterThan(box.x + box.width);
+    }
+  });
+
+  it('shares its words with Opposites where a pair is the same idea', () => {
+    // Up and down is Opposites' height pair; fast and slow its speed pair. Same order, same words.
+    expect(MOVE_CUES.up.word).toContain(CONCEPTS.height.words[0]);
+    expect(MOVE_CUES.down.word).toContain(CONCEPTS.height.words[1]);
+    expect(MOVE_CUES.fastwiggle.word).toContain(CONCEPTS.speed.words[0]);
+    expect(MOVE_CUES.slowwiggle.word).toContain(CONCEPTS.speed.words[1]);
+  });
+
+  it('speaks its intro and every new move', () => {
+    expect(SCRIPT['says.opp.more' as keyof typeof SCRIPT]).toBeDefined();
+    for (const m of MANNER_MOVES) expect(SCRIPT[MOVE_CUES[m].line].length).toBeGreaterThan(0);
   });
 });

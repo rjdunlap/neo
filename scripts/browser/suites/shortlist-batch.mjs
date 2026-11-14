@@ -514,7 +514,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
         // Level 2 and Opposite day play on a phone held upright; level 2 listens for the chant's words (dive slice 2).
-        if (level === 6 || level === 7) await page.setViewportSize({ width: 390, height: 844 });
+        if (level === 6 || level === 7 || level === 8)
+          await page.setViewportSize({ width: 390, height: 844 });
         if (level === 7)
           await page.evaluate(() => {
             const g = neo.scene.game;
@@ -705,7 +706,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             );
             assert.equal(await page.evaluate(() => neo.scene.game.onceMore.visible), true);
           }
-          const moon = level === 6 && (await page.evaluate(() => neo.scene.game.revealDue));
+          const moon = (level === 6 || level === 8) && (await page.evaluate(() => neo.scene.game.revealDue));
           await page.waitForTimeout(250);
           await tap('neo.scene.game.next');
           if (moon) {
@@ -718,7 +719,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               n,
               { timeout: 40000 },
             );
-            if (n === SAYS_SUN_TURNS) {
+            // More opposites (level 8) has one sun: its first moon is the second turn.
+            if (level === 8 && n === 1) await screenshot('pet-says-8-moon-portrait');
+            if (level === 6 && n === SAYS_SUN_TURNS) {
               await screenshot('pet-says-6-moon-portrait');
               // A phone on its side: the sign and the once-more button stay clear of the pet.
               await page.setViewportSize({ width: 844, height: 390 });

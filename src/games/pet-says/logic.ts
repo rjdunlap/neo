@@ -38,7 +38,13 @@ export type Move =
   | 'mouth'
   | 'cheeks'
   | 'shoulders'
-  | 'chin';
+  | 'chin'
+  | 'fastwiggle'
+  | 'slowwiggle'
+  | 'loudclap'
+  | 'softclap'
+  | 'wide'
+  | 'hug';
 export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'quiet' | 'pat';
 
 /**
@@ -61,6 +67,18 @@ export const MOVES: Move[] = TIERS.base;
 export const ALL_MOVES: Move[] = Object.values(TIERS).flat();
 /** Level 1 (and lap's copying) draws from base and social only, so a lap round never meets an animal move. */
 export const FIRST_POOL: Move[] = [...TIERS.base, ...TIERS.social];
+/**
+ * Moves told apart by how they are done (More opposites, level 8): a wiggle fast or slow, a clap loud or soft, and arms
+ * wide or crossed in a hug. They are only ever dealt as opposites, so they sit outside the tiers.
+ */
+export const MANNER_MOVES = [
+  'fastwiggle',
+  'slowwiggle',
+  'loudclap',
+  'softclap',
+  'wide',
+  'hug',
+] as const satisfies readonly Move[];
 /** The ten body words (level 2): the first five, then five more each friend can show (dive slice 2). */
 export const BODY = [
   'nose',
@@ -165,6 +183,12 @@ export const MOVE_CUES = {
   cheeks: { word: 'pat your cheeks', line: 'says.move.cheeks' },
   shoulders: { word: 'touch your shoulders', line: 'says.move.shoulders' },
   chin: { word: 'hold your chin', line: 'says.move.chin' },
+  fastwiggle: { word: 'wiggle fast', line: 'says.move.fastwiggle' },
+  slowwiggle: { word: 'wiggle slowly', line: 'says.move.slowwiggle' },
+  loudclap: { word: 'clap loudly', line: 'says.move.loudclap' },
+  softclap: { word: 'clap softly', line: 'says.move.softclap' },
+  wide: { word: 'open your arms wide', line: 'says.move.wide' },
+  hug: { word: 'give yourself a hug', line: 'says.move.hug' },
 } satisfies Record<Move, { word: string; line: LineId }>;
 
 export const MOVE_WORDS = Object.fromEntries(
@@ -212,6 +236,10 @@ export interface SaysFrame {
   clap: Pair;
   up: Pair;
   down: Pair;
+  /** Arms open wide, out past the body's sides (More opposites). */
+  wide: Pair;
+  /** A hug: the mittens cross over the tummy, the left one to the right side and the right one to the left. */
+  hug: Pair;
   /** Where the right mitten waves, and how far it swings. */
   wave: Pt;
   /** How high the head pat knocks, above its target. */
@@ -271,6 +299,8 @@ export function saysFrame(
     clap: { left: { x: cx - 20, y: y - 17 }, right: { x: cx + 20, y: y - 17 } },
     up: { left: { x: cx - 70, y: box.y - 50 }, right: { x: cx + 70, y: box.y - 50 } },
     down: { left: { x: box.x - 22, y: floor - 30 }, right: { x: right + 22, y: floor - 30 } },
+    wide: { left: { x: box.x - 80, y: y - 24 }, right: { x: right + 80, y: y - 24 } },
+    hug: { left: { x: tummy.x + 26, y: tummy.y - 12 }, right: { x: tummy.x - 26, y: tummy.y + 4 } },
     wave: { x: right + 22, y: box.y + 40 },
     knock: 14,
   };
@@ -293,6 +323,8 @@ export interface SaysPlan {
   mode: SaysMode;
   turns: number;
   name: string;
+  /** Opposite levels: the pairs a round draws from (level 6 has its two; More opposites draws three of six). */
+  opposites?: 'first' | 'more';
 }
 
 export const PLANS: SaysPlan[] = [
@@ -324,12 +356,19 @@ export const PLANS: SaysPlan[] = [
   {
     mode: 'opposite',
     turns: 6,
+    opposites: 'first',
     name: 'Opposite day: a sun means copy the pet, a moon means do the opposite (reach up high, so crouch down low)',
   },
   {
     mode: 'quiet',
     turns: 4,
     name: 'Quiet dance: dance while it is quiet, and freeze when the music plays (the freeze dance turned around)',
+  },
+  {
+    mode: 'opposite',
+    turns: 6,
+    opposites: 'more',
+    name: 'More opposites: stomp or tiptoe, wiggle fast or slowly, clap loudly or softly, arms wide or a hug (three pairs a round, mostly moons)',
   },
 ];
 
@@ -389,8 +428,33 @@ export const OPPOSITE_PAIRS: [Move, Move][] = [
   ['up', 'down'],
   ['head', 'toes'],
 ];
+/**
+ * More opposites (level 8, dive slice 7): level 6's two pairs and four more, each pair told apart by where the mittens go
+ * (`wide`/`hug`), how tall the pet stands and what it sounds like (`stomp`/`tiptoe`), its tempo (the wiggles) or its
+ * volume (the claps): `CONTRASTS` says which, and a rule test measures it.
+ */
+export const MORE_OPPOSITE_PAIRS: [Move, Move][] = [
+  ...OPPOSITE_PAIRS,
+  ['stomp', 'tiptoe'],
+  ['fastwiggle', 'slowwiggle'],
+  ['loudclap', 'softclap'],
+  ['wide', 'hug'],
+];
+export const CONTRASTS = ['place', 'place', 'height', 'tempo', 'volume', 'place'] as const;
+/** The wiggles: how many sways and how long each takes. Slow is under half as many, each more than three times as long. */
+export const WIGGLE_TEMPO = {
+  fastwiggle: { sways: 8, seconds: 0.07 },
+  slowwiggle: { sways: 3, seconds: 0.45 },
+} as const;
+/** The claps: three each, the soft one at under a third of the loud one's volume, the mittens barely parting. */
+export const CLAP_LOUDNESS = { loudclap: 1.2, softclap: 0.3 } as const;
+/** How tall the pet stands for stomp and tiptoe (stomp squats into each beat; tiptoe rises). */
+export const STOMP_TIPTOE_STRETCH = { stomp: 0.88, tiptoe: 1.08 } as const;
+/** How many pairs a More opposites round draws. */
+export const MORE_PAIRS_A_ROUND = 3;
+
 export const PARTNER: Partial<Record<Move, Move>> = Object.fromEntries(
-  OPPOSITE_PAIRS.flatMap(([a, b]) => [
+  MORE_OPPOSITE_PAIRS.flatMap(([a, b]) => [
     [a, b],
     [b, a],
   ]),
@@ -402,6 +466,8 @@ export const partnerOf = (m: Move): Move => {
 };
 /** The first turns are suns, so copying is met before flipping. */
 export const SUN_TURNS = 2;
+/** More opposites opens with one sun, then moons: the rule is known from level 6, so moon turns are most of them. */
+export const MORE_SUN_TURNS = 1;
 
 /**
  * Six turns: two suns (copy me), then moons (do the opposite). Each turn draws from the other pair than the turn before,
@@ -413,6 +479,24 @@ export function oppositeTurns(turns: number, rng: Rng): Turn[] {
     pair = (pair + 1) % OPPOSITE_PAIRS.length;
     return { moves: [rng.pick(OPPOSITE_PAIRS[pair])], sign: i < SUN_TURNS ? 'sun' : 'moon' };
   });
+}
+
+/**
+ * More opposites: three of the six pairs, each asked twice in a six-turn round, never the same pair twice in a row; one
+ * sun, then moons. Which side of a pair is shown is drawn each turn, so a pair may come back as its own opposite.
+ */
+export function moreOppositeTurns(turns: number, rng: Rng): Turn[] {
+  const chosen = rng.shuffle(MORE_OPPOSITE_PAIRS.map((_, i) => i)).slice(0, MORE_PAIRS_A_ROUND);
+  const deck = Array.from({ length: turns }, (_, i) => chosen[i % chosen.length]);
+  let order = rng.shuffle([...deck]);
+  for (let tries = 0; order.some((p, i) => i > 0 && p === order[i - 1]); tries++) {
+    // Six cards, two of each of three: most shuffles already alternate; after a few tries, the plain cycle always does.
+    order = tries < 50 ? rng.shuffle([...deck]) : deck;
+  }
+  return order.map((pair, i) => ({
+    moves: [rng.pick(MORE_OPPOSITE_PAIRS[pair])],
+    sign: i < MORE_SUN_TURNS ? 'sun' : 'moon',
+  }));
 }
 
 /** The levels with the held "once more" button, where a replayed turn counts one hint (decision 2): the rule levels. */
@@ -504,7 +588,7 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
     case 'freeze':
       return makeDances(plan.turns, rng).map((dance) => ({ moves: [], dance }));
     case 'opposite':
-      return oppositeTurns(plan.turns, rng);
+      return plan.opposites === 'more' ? moreOppositeTurns(plan.turns, rng) : oppositeTurns(plan.turns, rng);
     case 'quiet': {
       const dances = makeDances(plan.turns, rng);
       return quietSegments(plan.turns, rng).map((segments, i) => ({ moves: [], dance: dances[i], segments }));
