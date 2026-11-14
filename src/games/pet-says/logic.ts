@@ -323,8 +323,8 @@ export interface SaysPlan {
   mode: SaysMode;
   turns: number;
   name: string;
-  /** Opposite levels: the pairs a round draws from (level 6 has its two; More opposites draws three of six). */
-  opposites?: 'first' | 'more';
+  /** Opposite levels: the move pool and when the sign changes. */
+  opposites?: 'first' | 'more' | 'switching';
 }
 
 export const PLANS: SaysPlan[] = [
@@ -374,6 +374,12 @@ export const PLANS: SaysPlan[] = [
     mode: 'walk',
     turns: 4,
     name: 'A walk in the woods: act out four stops on a woodland, beach or farm adventure',
+  },
+  {
+    mode: 'opposite',
+    turns: 8,
+    opposites: 'switching',
+    name: 'Sun or moon: listen for the sign on each of eight turns. Copy on the sun and do the opposite on the moon.',
   },
 ];
 
@@ -517,21 +523,32 @@ export function oppositeTurns(turns: number, rng: Rng): Turn[] {
   });
 }
 
-/**
- * More opposites: three of the six pairs, each asked twice in a six-turn round, never the same pair twice in a row; one
- * sun, then moons. Which side of a pair is shown is drawn each turn, so a pair may come back as its own opposite.
- */
-export function moreOppositeTurns(turns: number, rng: Rng): Turn[] {
+// Sun or moon starts with two copies before switching several times at different intervals.
+const sun = 'sun';
+const moon = 'moon';
+const SWITCHING_SIGNS = [
+  [sun, sun, moon, moon, sun, moon, sun, moon],
+  [sun, sun, moon, sun, sun, moon, moon, sun],
+  [sun, sun, sun, moon, sun, moon, moon, sun],
+  [sun, sun, moon, moon, moon, sun, sun, moon],
+] as const;
+
+/** Draw three pairs from level 8's pool, spread as evenly as possible with no adjacent turns from the same pair. */
+export function moreOppositeTurns(
+  turns: number,
+  rng: Rng,
+  signs?: readonly NonNullable<Turn['sign']>[],
+): Turn[] {
   const chosen = rng.shuffle(MORE_OPPOSITE_PAIRS.map((_, i) => i)).slice(0, MORE_PAIRS_A_ROUND);
   const deck = Array.from({ length: turns }, (_, i) => chosen[i % chosen.length]);
   let order = rng.shuffle([...deck]);
   for (let tries = 0; order.some((p, i) => i > 0 && p === order[i - 1]); tries++) {
-    // Six cards, two of each of three: most shuffles already alternate; after a few tries, the plain cycle always does.
+    // Most shuffles already alternate. The plain cycle always does.
     order = tries < 50 ? rng.shuffle([...deck]) : deck;
   }
   return order.map((pair, i) => ({
     moves: [rng.pick(MORE_OPPOSITE_PAIRS[pair])],
-    sign: i < MORE_SUN_TURNS ? 'sun' : 'moon',
+    sign: signs?.[i] ?? (i < MORE_SUN_TURNS ? sun : moon),
   }));
 }
 
@@ -624,7 +641,10 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
     case 'freeze':
       return makeDances(plan.turns, rng).map((dance) => ({ moves: [], dance }));
     case 'opposite':
-      return plan.opposites === 'more' ? moreOppositeTurns(plan.turns, rng) : oppositeTurns(plan.turns, rng);
+      if (plan.opposites === 'switching')
+        return moreOppositeTurns(plan.turns, rng, rng.pick(SWITCHING_SIGNS));
+      if (plan.opposites === 'more') return moreOppositeTurns(plan.turns, rng);
+      return oppositeTurns(plan.turns, rng);
     case 'quiet': {
       const dances = makeDances(plan.turns, rng);
       return quietSegments(plan.turns, rng).map((segments, i) => ({ moves: [], dance: dances[i], segments }));
