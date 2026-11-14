@@ -219,7 +219,7 @@ describe('game registry', () => {
     expect(landing(10, toddler, g.entryLevels)).toBe(9);
     expect(g.levels('preschool')).toEqual({ min: 3, max: 8 });
     // Pre-K climbs from 8 to 11, Light, middle, dark; a saved tap entry carried in starts at pre-K's own first level.
-    expect(levelsInOrder(g.levels('prek'))).toEqual([4, 5, 6, 7, 8, 11]);
+    expect(levelsInOrder(g.levels('prek'))).toEqual([4, 5, 6, 7, 8, 11, 12]);
     expect(landing(10, g.levels('prek'), g.entryLevels)).toBe(4);
   });
 

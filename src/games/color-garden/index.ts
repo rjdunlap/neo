@@ -16,6 +16,10 @@ import {
   BIG_LEVEL,
   basketAt,
   basketWidth,
+  bothOf,
+  gridBasketAt,
+  gridSpots,
+  mismatch,
   deal,
   DROP_ABOVE,
   nextToSort,
@@ -34,7 +38,12 @@ const kindOf = (key: SortKey) =>
   key === 'kind-fruit' ? 'fruit' : key === 'kind-balloon' ? 'balloon' : undefined;
 const kindIcon = (key: SortKey) => prop(key === 'kind-fruit' ? FRUIT_FOR.red! : 'balloon', 'red');
 const clothOf = (key: SortKey) =>
-  kindOf(key) ? KIND_CLOTH : (toneLook(key)?.cloth ?? swatch[key as ColorName]);
+  kindOf(key) ? KIND_CLOTH : (toneLook(key)?.cloth ?? swatch[bothOf(key)?.color ?? (key as ColorName)]);
+/** Level 12's basket picture: that basket's own fruit or a balloon of its color. */
+const bothIcon = (key: SortKey) => {
+  const { color, kind } = bothOf(key)!;
+  return prop(kind === 'fruit' ? FRUIT_FOR[color]! : 'balloon', color);
+};
 
 const ITEM_SCALE = 0.78;
 /** Level 10's one big fruit on the tree. */
@@ -98,6 +107,16 @@ class Basket extends Container {
       .stroke({ width: 4, color: sw.line });
     if (kindOf(key)) {
       const icon = kindIcon(key);
+      icon.scale.set(0.3);
+      icon.position.set(0, top + 52);
+      front.addChild(icon);
+    } else if (bothOf(key)) {
+      // Level 12: the color band carries a picture of what goes in, on a cream disc so a red apple still shows on red cloth.
+      front
+        .circle(0, top + 40, 30)
+        .fill(0xfffbe8)
+        .stroke({ width: 4, color: sw.line });
+      const icon = bothIcon(key);
       icon.scale.set(0.3);
       icon.position.set(0, top + 52);
       front.addChild(icon);
@@ -205,6 +224,8 @@ class ColorGarden implements Game {
         item.drag = draggable(view, ctx.tw, {
           onPick: () => {
             sfx.tick();
+            const both = bothOf(color);
+            if (both) return void ctx.say('garden.both.pick', both);
             void ctx.say(
               color === 'kind-fruit'
                 ? 'garden.is.fruit'
@@ -260,15 +281,17 @@ class ColorGarden implements Game {
         ? 'garden.big'
         : this.plan.tap
           ? 'garden.tap'
-          : this.rule
-            ? this.rule === 'color'
-              ? 'garden.rule.color'
-              : 'garden.rule.kind'
-            : this.plan.tones
-              ? 'garden.tones'
-              : this.plan.shades
-                ? 'garden.shades'
-                : 'garden.start',
+          : this.plan.both
+            ? 'garden.both'
+            : this.rule
+              ? this.rule === 'color'
+                ? 'garden.rule.color'
+                : 'garden.rule.kind'
+              : this.plan.tones
+                ? 'garden.tones'
+                : this.plan.shades
+                  ? 'garden.shades'
+                  : 'garden.start',
     );
   }
 
@@ -319,8 +342,14 @@ class ColorGarden implements Game {
       t.circle(item.home.x, item.home.y, 50).fill({ color: 0xfffbe8, alpha: 0.8 });
     });
 
-    const xs = spread(this.baskets.length, 150, v.w - 40, this.baskets[0].w + 30);
-    this.baskets.forEach((b, i) => b.position.set(xs[i], v.h - 26));
+    if (this.plan.both) {
+      // Level 12: a 2×2 grid, the fruit row behind the balloon row and each color a column.
+      const spots = gridSpots(v.w, v.h);
+      this.baskets.forEach((b, i) => b.position.set(spots[i].x, spots[i].y));
+    } else {
+      const xs = spread(this.baskets.length, 150, v.w - 40, this.baskets[0].w + 30);
+      this.baskets.forEach((b, i) => b.position.set(xs[i], v.h - 26));
+    }
     this.sign?.position.set(v.w - 110, 90);
   }
 
@@ -380,7 +409,7 @@ class ColorGarden implements Game {
   private drop(item: Item, x: number, y: number): boolean {
     if (this.finished) return false;
     // Anywhere over a basket (or just above it) counts.
-    const basket = basketAt(this.baskets, x, y);
+    const basket = (this.plan.both ? gridBasketAt : basketAt)(this.baskets, x, y);
     if (!basket) return false;
     if (basket.key === item.key) {
       void this.place(item, basket);
@@ -392,14 +421,17 @@ class ColorGarden implements Game {
     basket.nope();
     if (this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
-      void (kindOf(item.key)
-        ? this.ctx.say('garden.kind.wrong', { kind: kindOf(item.key)! })
-        : this.plan.tones
-          ? this.ctx.say('garden.tone.wrong', toneOf(item.key)!)
-          : this.ctx.say(
-              toneOf(item.key) ? 'garden.shade.wrong' : 'garden.wrong',
-              toneOf(item.key) ? { shade: toneOf(item.key)!.shade } : { color: item.key },
-            ));
+      const wrong = mismatch(item.key, basket.key);
+      void (wrong
+        ? this.ctx.say(`garden.both.${wrong}`, bothOf(item.key)!)
+        : kindOf(item.key)
+          ? this.ctx.say('garden.kind.wrong', { kind: kindOf(item.key)! })
+          : this.plan.tones
+            ? this.ctx.say('garden.tone.wrong', toneOf(item.key)!)
+            : this.ctx.say(
+                toneOf(item.key) ? 'garden.shade.wrong' : 'garden.wrong',
+                toneOf(item.key) ? { shade: toneOf(item.key)!.shade } : { color: item.key },
+              ));
     }
     if (item.wrongs === 2) {
       this.hints++;
@@ -553,6 +585,8 @@ export const colorGarden: GameModule = {
     if (p.big) return 'One big fruit: a touch anywhere hops it to its color basket, and the next one grows';
     if (p.tap) return 'Tap four fruits: each hops to its own color basket';
     if (p.colors === 1) return 'One basket: practice dragging';
+    if (p.both)
+      return `Sort ${p.items} fruits and balloons into a 2×2 grid of baskets by color and kind at once`;
     if (p.rule) return `Sort ${p.items} fruits and balloons by color or by kind, as the sign says`;
     if (p.tones) return `Sort ${p.items} balloons and flowers into light, middle and dark of one color`;
     if (p.shades) return `Sort ${p.items} balloons and flowers into light blue and dark blue`;
