@@ -4,7 +4,19 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type Primary = 'red' | 'yellow' | 'blue';
-export type ThingId = 'sun' | 'apple' | 'leaf' | 'pumpkin' | 'grapes' | 'blueberry';
+export type ThingId =
+  | 'sun'
+  | 'apple'
+  | 'leaf'
+  | 'pumpkin'
+  | 'grapes'
+  | 'blueberry'
+  | 'banana'
+  | 'chick'
+  | 'lemon'
+  | 'strawberry'
+  | 'ladybug'
+  | 'cherries';
 export type Circle = [x: number, y: number, r: number];
 
 /** A coloring-page picture: its true color and the circles whose union is the part to paint. */
@@ -59,7 +71,70 @@ export const THINGS: Thing[] = [
     ],
   },
   { id: 'blueberry', color: 'blue', circles: [[0, 0, 82]] },
+  {
+    id: 'banana',
+    color: 'yellow',
+    // A smile of circles, thickest in the middle.
+    circles: [
+      [-106, -34, 21],
+      [-85, -12, 27],
+      [-64, 4, 32],
+      [-43, 16, 35],
+      [-22, 24, 37],
+      [0, 26, 38],
+      [22, 24, 37],
+      [43, 16, 35],
+      [64, 4, 32],
+      [85, -12, 27],
+      [106, -34, 21],
+    ],
+  },
+  {
+    id: 'chick',
+    color: 'yellow',
+    circles: [
+      [-8, 30, 72],
+      [40, -52, 46],
+      [-74, 6, 24],
+    ],
+  },
+  {
+    id: 'lemon',
+    color: 'yellow',
+    circles: [
+      [-52, 0, 50],
+      [-28, 0, 60],
+      [0, 0, 66],
+      [28, 0, 60],
+      [52, 0, 50],
+      [-98, 0, 18],
+      [98, 0, 18],
+    ],
+  },
+  {
+    id: 'strawberry',
+    color: 'red',
+    circles: [
+      [-46, -30, 44],
+      [46, -30, 44],
+      [0, -6, 68],
+      [0, 44, 50],
+      [0, 84, 22],
+    ],
+  },
+  { id: 'ladybug', color: 'red', circles: [[0, 18, 82]] },
+  {
+    id: 'cherries',
+    color: 'red',
+    circles: [
+      [-50, 52, 48],
+      [50, 60, 48],
+    ],
+  },
 ];
+
+/** Every picture, outline included, fits the page's 280 by 270 slot around its centre (`layoutPictures` in `index.ts`). */
+export const SLOT = { w: 280, h: 270 };
 
 /** What the voice calls each picture. A name never equals a color word, so no line can say "paint the orange orange". */
 export const THING_NAMES: Record<ThingId, string> = {
@@ -69,6 +144,12 @@ export const THING_NAMES: Record<ThingId, string> = {
   pumpkin: 'pumpkin',
   grapes: 'grapes',
   blueberry: 'blueberry',
+  banana: 'banana',
+  chick: 'chick',
+  lemon: 'lemon',
+  strawberry: 'strawberry',
+  ladybug: 'ladybug',
+  cherries: 'cherries',
 };
 
 /**
@@ -83,6 +164,12 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
   pumpkin: ['orange'],
   grapes: ['purple', 'green'],
   blueberry: ['blue'],
+  banana: ['yellow'],
+  chick: ['yellow'],
+  lemon: ['yellow'],
+  strawberry: ['red'],
+  ladybug: ['red'],
+  cherries: ['red'],
 };
 
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
@@ -162,11 +249,15 @@ export function mix(a: Primary, b: Primary): ColorName {
   return a;
 }
 
-/** The pictures for one page. Mixing pages only use colors that need mixing. */
+/**
+ * The pictures for one page: first `count` different colors, then one picture of each, so a page never asks for two yellows and a
+ * color with more pictures is not drawn more often. Mixing pages only use colors that need mixing.
+ */
 export function pickThings(plan: PaintPlan, rng: Rng): Thing[] {
   if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
   const pool = plan.mode === 'mix' ? THINGS.filter((t) => RECIPES[t.color]) : THINGS;
-  return rng.shuffle([...pool]).slice(0, plan.count);
+  const colors = rng.shuffle([...new Set(pool.map((t) => t.color))]).slice(0, plan.count);
+  return colors.map((color) => rng.pick(pool.filter((t) => t.color === color)));
 }
 
 export function inside(circles: Circle[], x: number, y: number): boolean {

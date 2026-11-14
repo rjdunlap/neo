@@ -17,6 +17,7 @@ import {
   frameShows,
   inside,
   MARGIN,
+  SLOT,
   mix,
   NUDGE_AFTER,
   nudges,
@@ -85,6 +86,39 @@ describe('Rainbow Fingers', () => {
     const plan = PLANS.find((candidate) => candidate.mode === 'recall-mix')!;
     for (let seed = 1; seed <= 100; seed++) {
       expect(pickThings(plan, new Rng(seed))).toEqual([THINGS.find((thing) => thing.id === 'pumpkin')]);
+    }
+  });
+
+  it('has at least three pictures each of yellow and red, every one drawn on some page', () => {
+    for (const color of ['yellow', 'red'] as ColorName[])
+      expect(THINGS.filter((t) => t.color === color).length, color).toBeGreaterThanOrEqual(3);
+    expect(new Set(THINGS.map((t) => t.id)).size).toBe(THINGS.length);
+    const seen = new Set<string>();
+    const named = PLANS.find((p) => p.mode === 'named' && p.count === 3)!;
+    for (let seed = 1; seed <= 200; seed++) for (const t of pickThings(named, new Rng(seed))) seen.add(t.id);
+    expect([...seen].sort()).toEqual(THINGS.map((t) => t.id).sort());
+  });
+
+  it('draws colors before pictures, so a color with more pictures is not asked for more often', () => {
+    const named = PLANS.find((p) => p.mode === 'named' && p.count === 3)!;
+    const counts = new Map<ColorName, number>();
+    const seeds = 3000;
+    for (let seed = 1; seed <= seeds; seed++)
+      for (const t of pickThings(named, new Rng(seed))) counts.set(t.color, (counts.get(t.color) ?? 0) + 1);
+    const colors = new Set(THINGS.map((t) => t.color));
+    // Three of the six colors per page: each color on about half the pages, whether it has one picture or three.
+    for (const color of colors) expect(counts.get(color)! / seeds, color).toBeCloseTo(3 / colors.size, 1);
+  });
+
+  it('fits every picture, outline included, inside the page slot', () => {
+    const pad = 12;
+    for (const t of THINGS) {
+      const x0 = Math.min(...t.circles.map(([x, , r]) => x - r)) - pad;
+      const x1 = Math.max(...t.circles.map(([x, , r]) => x + r)) + pad;
+      const y0 = Math.min(...t.circles.map(([, y, r]) => y - r)) - pad;
+      const y1 = Math.max(...t.circles.map(([, y, r]) => y + r)) + pad;
+      expect(Math.max(-x0, x1), t.id).toBeLessThanOrEqual(SLOT.w / 2);
+      expect(Math.max(-y0, y1), t.id).toBeLessThanOrEqual(SLOT.h / 2);
     }
   });
 

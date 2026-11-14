@@ -7,7 +7,7 @@ import {
   type FederatedPointerEvent,
   type Renderer,
 } from 'pixi.js';
-import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
+import { RAINBOW, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { flower, starPoints } from '../../art/shapes';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
@@ -214,6 +214,93 @@ function decor(thing: Thing): Graphics {
         .fill(swatch.blue.line)
         .stroke({ ...line, width: 4 });
       g.ellipse(-34, -28, 16, 10).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+    case 'banana':
+      g.moveTo(-82, -14)
+        .quadraticCurveTo(0, 50, 82, -14)
+        .stroke({ ...line, width: 4 });
+      g.roundRect(98, -78, 14, 30, 5)
+        .fill(wood.fill)
+        .stroke({ ...line, width: 4 });
+      g.circle(-110, -46, 7).fill(wood.line);
+      break;
+    case 'chick':
+      g.circle(52, -62, 7).fill(ink);
+      g.poly([82, -60, 114, -48, 82, -36])
+        .fill(swatch.orange.fill)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(-44, 18)
+        .quadraticCurveTo(-8, 66, 34, 22)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(-28, 102)
+        .lineTo(-28, 124)
+        .moveTo(14, 102)
+        .lineTo(14, 124)
+        .stroke({ ...line, color: swatch.orange.line, width: 7 });
+      break;
+    case 'lemon':
+      g.moveTo(40, -60)
+        .quadraticCurveTo(70, -96, 104, -78)
+        .quadraticCurveTo(76, -54, 40, -60)
+        .fill(swatch.green.fill)
+        .stroke(line);
+      g.ellipse(-26, -28, 20, 9).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+    case 'strawberry':
+      for (const [x, y] of [
+        [-52, -12],
+        [-18, -24],
+        [18, -24],
+        [52, -12],
+        [-34, 20],
+        [0, 10],
+        [34, 20],
+        [-16, 52],
+        [16, 52],
+        [0, 82],
+      ])
+        g.ellipse(x, y, 4, 6).fill(swatch.yellow.line);
+      g.poly(starPoints(46, 18, 6).map((v, i) => v + (i % 2 ? -78 : 0)))
+        .fill(swatch.green.fill)
+        .stroke({ ...line, width: 4 });
+      break;
+    case 'ladybug':
+      g.moveTo(0, -60)
+        .lineTo(0, 100)
+        .stroke({ ...line, color: ink, width: 5 });
+      for (const [x, y] of [
+        [-42, -12],
+        [42, -12],
+        [-52, 40],
+        [52, 40],
+        [-24, 74],
+        [24, 74],
+      ])
+        g.circle(x, y, 13).fill(ink);
+      g.moveTo(-12, -84)
+        .lineTo(-30, -112)
+        .moveTo(12, -84)
+        .lineTo(30, -112)
+        .stroke({ ...line, color: ink, width: 5 });
+      g.circle(-30, -112, 6).fill(ink);
+      g.circle(30, -112, 6).fill(ink);
+      g.circle(0, -62, 30).fill(ink);
+      g.circle(-11, -68, 6).fill(0xffffff);
+      g.circle(11, -68, 6).fill(0xffffff);
+      break;
+    case 'cherries':
+      g.moveTo(-50, 6)
+        .quadraticCurveTo(-30, -56, 10, -98)
+        .moveTo(50, 14)
+        .quadraticCurveTo(40, -48, 10, -98)
+        .stroke({ ...line, color: wood.line, width: 7 });
+      g.moveTo(10, -98)
+        .quadraticCurveTo(50, -126, 82, -100)
+        .quadraticCurveTo(46, -82, 10, -98)
+        .fill(swatch.green.fill)
+        .stroke(line);
+      g.ellipse(-66, 34, 12, 7).fill({ color: 0xffffff, alpha: 0.5 });
+      g.ellipse(34, 42, 12, 7).fill({ color: 0xffffff, alpha: 0.5 });
       break;
   }
   return g;
