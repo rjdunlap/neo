@@ -18,6 +18,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 4, to: 5, text: 'Bump the numbered flowers in order.' },
     {
+      from: 7,
+      to: 7,
+      text: 'The strip at the top shows a color pattern. Bump a flower of the ringed color next; each color has its own mark (dot, triangle, square). The purple flowers are not in the pattern and only chime.',
+    },
+    {
       from: 6,
       to: 6,
       text: 'Start at the highlighted number in the strip. Bump each numbered flower to count on by one.',
@@ -33,6 +38,7 @@ export const HOW_TO: GameHowTo = {
     { from: 2, to: 2, text: 'The round ends when every flower has bloomed.' },
     { from: 3, to: 3, text: 'The round ends when all the flowers of that color have bloomed.' },
     { from: 4, to: 6, text: 'The round ends when the last numbered flower has bloomed.' },
+    { from: 7, to: 7, text: 'The round ends when the last color in the strip has bloomed.' },
     { from: 8, to: 8, text: 'The round ends when every awake flower has bloomed.' },
     { from: 10, text: 'The round ends after six launches, with six flowers awake.' },
     { from: 9, to: 9, text: 'The round ends when flower 1 blooms, after all the numbers before it.' },
@@ -51,7 +57,7 @@ export const HOW_TO: GameHowTo = {
       text: 'Nothing here can be wrong and nothing is counted. While the ladybug flies, a touch swings the flipper on that side.',
     },
     {
-      from: 8,
+      from: 7,
       to: 9,
       text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.',
     },

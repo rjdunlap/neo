@@ -8,7 +8,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * it back up. The ladder goes from launching for fun, to flipping until every flower blooms, to
  * blooming one color, then numbered flowers in order.
  */
-export type BumperMode = 'spring' | 'bloom' | 'color' | 'order';
+export type BumperMode = 'spring' | 'bloom' | 'color' | 'order' | 'pattern';
 
 export interface BumperPlan {
   mode: BumperMode;
@@ -23,9 +23,10 @@ export interface BumperPlan {
   not?: boolean;
   /** The lap opening: one big flower stands alone, and the others wake one at a launch (`GROW_SPOTS`). */
   grow?: boolean;
+  /** Pattern levels: the run of color indexes to bloom in turn (a unit repeated at least twice); `goal` is its length. */
+  pattern?: number[];
 }
 
-/** ID 7 remains reserved for the pattern slice. */
 export const PLANS: Record<number, BumperPlan> = {
   1: {
     mode: 'spring',
@@ -37,6 +38,12 @@ export const PLANS: Record<number, BumperPlan> = {
   3: { mode: 'color', bumpers: 7, goal: 3, name: 'Bloom the three flowers of one color' },
   4: { mode: 'order', bumpers: 6, goal: 3, name: 'Bump flowers 1, 2, 3 in order' },
   5: { mode: 'order', bumpers: 8, goal: 5, name: 'Bump flowers 1 to 5 in order, with others in the way' },
+  7: {
+    mode: 'pattern',
+    bumpers: 8,
+    goal: 6,
+    name: 'Pattern bloom: bloom flowers in the color pattern on the strip (AB, ABB or ABC), next color each time',
+  },
   8: {
     mode: 'color',
     not: true,
@@ -70,7 +77,7 @@ export const PLANS: Record<number, BumperPlan> = {
 
 /**
  * The lap entry level: one big flower, any touch launches, and the other flowers wake as she launches. A stable ID above the
- * ladder that the lap band plays first (`order`), so no saved level is renumbered; 7 stays reserved.
+ * ladder that the lap band plays first (`order`), so no saved level is renumbered.
  */
 export const GROW_LEVEL = 10;
 
@@ -78,11 +85,27 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: GROW_LEVEL, order: [GROW_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 9, order: [3, 4, 6, 8, 5, 9] },
+  prek: { min: 3, max: 9, order: [3, 4, 6, 7, 8, 5, 9] },
 };
+
+/** The repeating units of Pattern bloom, as color indexes: A B, A B B, A B C. */
+export const PATTERN_UNITS: readonly (readonly number[])[] = [
+  [0, 1],
+  [0, 1, 1],
+  [0, 1, 2],
+];
+/** The color index of the plain flowers, never in a pattern (the units use 0–2), drawn without a mark. */
+export const PATTERN_PLAIN = 3;
+/** How long a pattern run is: every unit fits whole at least twice (AB three times, ABB and ABC twice). */
+export const PATTERN_RUN = 6;
+/** A unit repeated to fill the run. */
+export const repeatUnit = (unit: readonly number[], length = PATTERN_RUN): number[] =>
+  Array.from({ length }, (_, i) => unit[i % unit.length]);
 
 export function planFor(level: number, rng?: Rng): BumperPlan {
   const plan = PLANS[level] ?? PLANS[1];
+  if (plan.mode === 'pattern')
+    return { ...plan, pattern: repeatUnit(rng ? rng.pick(PATTERN_UNITS) : PATTERN_UNITS[0], plan.goal) };
   if (level === 6 && rng) return { ...plan, start: rng.int(2, 6), goal: rng.int(3, 4) };
   if (level === 9 && rng) {
     const start = rng.int(5, 8);
@@ -203,6 +226,31 @@ export const awakeAfter = (plan: BumperPlan, launches: number): number =>
 export const wantsColor = (plan: BumperPlan, color: number): boolean =>
   plan.not ? color !== 0 : color === 0;
 
+/** The pattern level's run (planFor fills it; a bare plan falls back to A B). */
+export const patternOf = (plan: BumperPlan): number[] =>
+  plan.pattern ?? repeatUnit(PATTERN_UNITS[0], plan.goal);
+
+/** The shortest unit the run repeats (the run is that unit over and over). */
+export function patternUnit(run: readonly number[]): number[] {
+  for (let k = 1; k < run.length; k++) if (run.every((c, i) => c === run[i % k])) return run.slice(0, k);
+  return [...run];
+}
+
+/** Whether a flower of this color is the next one in the pattern, after `step` flowers of the run have bloomed. */
+export const wantsPattern = (plan: BumperPlan, step: number, color: number): boolean =>
+  patternOf(plan)[step] === color;
+
+/**
+ * A pattern round's colors: exactly as many flowers of each pattern color as the run needs, so every color is there for the
+ * whole run, then plain flowers of a color the pattern does not use.
+ */
+export function patternColors(plan: BumperPlan): number[] {
+  const run = patternOf(plan);
+  const decoy = PATTERN_PLAIN;
+  const needed = [...run].sort((a, b) => a - b);
+  return Array.from({ length: plan.bumpers }, (_, i) => needed[i] ?? decoy);
+}
+
 /** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0); on a "not" level those are the sleepy ones, fewer than each other color. */
 export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow'): Bumper[] {
   if (plan.grow)
@@ -214,7 +262,9 @@ export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow
     }));
   const spots = rng.shuffle([...TABLE_SPOTS[table]]).slice(0, plan.bumpers);
   const numbers = orderNumbers(plan);
+  const pattern = plan.mode === 'pattern' ? patternColors(plan) : [];
   return spots.map((s, i) => {
+    if (plan.mode === 'pattern') return { ...s, color: pattern[i], number: null };
     if (plan.mode === 'color') return { ...s, color: i < plan.goal ? 0 : 1 + (i % 2), number: null };
     if (plan.mode === 'order') return { ...s, color: i % 3, number: numbers[i] ?? null };
     return { ...s, color: i % 3, number: null };

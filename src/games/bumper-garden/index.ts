@@ -32,6 +32,9 @@ import {
   type TableId,
   wantsColor,
   orderNumbers,
+  patternOf,
+  patternUnit,
+  wantsPattern,
   planFlip,
   planFor,
   STEP,
@@ -46,6 +49,20 @@ import { rangeFor } from '../../progress/difficulty';
 
 /** Colors a flower can be; on color levels the first is the one to bloom. */
 const FLOWER_COLORS: ColorName[] = ['yellow', 'pink', 'blue', 'purple'];
+/** Pattern bloom's colors: the pattern draws from the first three (never pink beside purple), and the plain flowers are purple. */
+const PATTERN_COLORS: ColorName[] = ['yellow', 'blue', 'pink'];
+
+/**
+ * A mark for each pattern color, the same on the flower and the strip, so the pattern reads without telling colors apart:
+ * a dot, a triangle, a square. The plain flowers (index 3 and up) have none.
+ */
+function patternMark(g: Graphics, color: number, x: number, y: number, size: number) {
+  if (color === 0) g.circle(x, y, size * 0.8);
+  else if (color === 1) g.poly([x, y - size, x + size, y + size * 0.8, x - size, y + size * 0.8]);
+  else if (color === 2) g.rect(x - size * 0.8, y - size * 0.8, size * 1.6, size * 1.6);
+  else return g;
+  return g.fill(ink).stroke({ color: 0xffffff, width: 2 });
+}
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 /** A flip the ghost finger has planned: the step it belongs to (counted from the plan), how many steps have passed, whether the hand is over the button yet, and whether the step has come (and since when). */
@@ -75,6 +92,7 @@ class Flower extends Container {
     readonly bumper: Bumper,
     readonly color: ColorName,
     readonly table: TableId,
+    marked = false,
   ) {
     super();
     this.position.set(bumper.x, bumper.y);
@@ -84,6 +102,7 @@ class Flower extends Container {
       .fill(swatch.orange.fill)
       .stroke(line(swatch.orange.line, 4));
     this.head.addChild(center);
+    if (marked) this.head.addChild(patternMark(new Graphics(), bumper.color, 0, 0, 11));
     if (bumper.number !== null) {
       const n = label(String(bumper.number), 30, 0xffffff);
       n.style.stroke = { color: swatch.orange.line, width: 6, join: 'round' };
@@ -221,9 +240,13 @@ class BumperGarden implements Game {
   finished = false;
   /** Order levels: the number to bump next. */
   next = 1;
+  /** Pattern levels: how many flowers of the run have bloomed. */
+  step = 0;
   /** How many flowers are awake: all of them, except on the lap opening, where they wake one at a launch. */
   awake: number;
   readonly target: ColorName;
+  /** The round's colors by index (pattern levels speak and draw the strip from these). */
+  readonly colors: ColorName[];
   readonly board = new Container();
   readonly flippers: Record<FlipperSide, { node: Graphics; angle: number; upFor: number }>;
 
@@ -255,12 +278,16 @@ class BumperGarden implements Game {
     this.next = this.plan.start ?? 1;
     this.table = pickTable(ctx.rng);
     this.bumpers = makeBumpers(this.plan, ctx.rng, this.table);
-    const colors = ctx.rng.shuffle([...FLOWER_COLORS]);
+    const colors =
+      this.plan.mode === 'pattern'
+        ? [...ctx.rng.shuffle([...PATTERN_COLORS]), 'purple' as const]
+        : ctx.rng.shuffle([...FLOWER_COLORS]);
     // The lap opening's big flower is never yellow on the yellow hive bed.
     if (this.plan.grow && this.table === 'hive' && colors[0] === 'yellow') colors.push(colors.shift()!);
     this.target = colors[0];
+    this.colors = colors;
     this.flowers = this.bumpers.map((b) =>
-      ctx.track(new Flower(b, colors[b.color % colors.length], this.table)),
+      ctx.track(new Flower(b, colors[b.color % colors.length], this.table, this.plan.mode === 'pattern')),
     );
     this.awake = awakeAfter(this.plan, 0);
     this.world = makeWorld(this.bumpers, undefined, this.awake);
@@ -362,7 +389,12 @@ class BumperGarden implements Game {
         sfx.squish();
       });
     } else if (p.mode === 'color') void this.ctx.instruct('bumper.color', { color: this.target });
-    else if (p.descend) void this.ctx.instruct('bumper.back', { n: this.next });
+    else if (p.mode === 'pattern') {
+      // The pet says the pattern once through its unit twice ("yellow, blue, yellow, blue"), then the first color.
+      const unit = patternUnit(patternOf(p));
+      const said = [...unit, ...unit].map((c) => this.colors[c]);
+      void this.ctx.instruct('bumper.pattern', { pattern: said.join(', '), color: this.nextColor() });
+    } else if (p.descend) void this.ctx.instruct('bumper.back', { n: this.next });
     else if (p.start) void this.ctx.instruct('bumper.start', { n: this.next });
     else void this.ctx.instruct('bumper.order', { n: this.next });
     this.holdFor = p.mode === 'spring' ? Infinity : 2.2;
@@ -525,12 +557,18 @@ class BumperGarden implements Game {
     return a ?? this.ctx.rng.range(-LAUNCH.spread, LAUNCH.spread);
   }
 
+  /** Pattern levels: the color the pattern asks for next. */
+  private nextColor(): ColorName {
+    return this.colors[patternOf(this.plan)[this.step] ?? 0];
+  }
+
   /** Whether bumping this flower is progress right now. */
   wanted(i: number): boolean {
     const f = this.flowers[i];
     if (f.bloomed || i >= this.awake) return false;
     if (this.plan.mode === 'color') return wantsColor(this.plan, f.bumper.color);
     if (this.plan.mode === 'order') return f.bumper.number === this.next;
+    if (this.plan.mode === 'pattern') return wantsPattern(this.plan, this.step, f.bumper.color);
     return true;
   }
 
@@ -609,6 +647,7 @@ class BumperGarden implements Game {
 
   /** A pictured route through the new number sequences; the ring marks the number being asked for. */
   private drawNumberStrip() {
+    if (this.plan.mode === 'pattern') return this.drawPatternStrip();
     if (!this.plan.start) return;
     this.numberStrip.removeChildren().forEach((child) => child.destroy());
     const numbers = orderNumbers(this.plan);
@@ -631,6 +670,25 @@ class BumperGarden implements Game {
             .lineTo(x + 27, 44)
             .stroke(line(swatch.green.line, 3)),
         );
+    });
+  }
+
+  /** Pattern levels: the whole run as colored, marked dots; the next one ringed, the bloomed ones faded. */
+  private drawPatternStrip() {
+    this.numberStrip.removeChildren().forEach((child) => child.destroy());
+    const run = patternOf(this.plan);
+    const gap = 62;
+    run.forEach((c, i) => {
+      const x = TABLE.w / 2 + (i - (run.length - 1) / 2) * gap;
+      const sw = swatch[this.colors[c]];
+      const current = i === this.step && !this.finished;
+      const dot = new Graphics()
+        .circle(x, 40, current ? 26 : 22)
+        .fill(sw.fill)
+        .stroke({ color: current ? swatch.orange.line : sw.line, width: current ? 6 : 3 });
+      patternMark(dot, c, x, 40, 9);
+      dot.alpha = i < this.step ? 0.45 : 1;
+      this.numberStrip.addChild(dot);
     });
   }
 
@@ -674,7 +732,15 @@ class BumperGarden implements Game {
       this.next += this.plan.descend ? -1 : 1;
       this.drawNumberStrip();
     }
+    if (mode === 'pattern') {
+      this.step++;
+      this.drawNumberStrip();
+    }
     if (this.done()) void this.finale();
+    else if (mode === 'pattern')
+      void this.ctx.tw.wait(0.9).then(() => {
+        if (!this.finished) void this.ctx.instruct('bumper.next-color', { color: this.nextColor() });
+      });
     else if (mode === 'order')
       void this.ctx.tw.wait(0.9).then(() => {
         if (!this.finished) void this.ctx.instruct('bumper.next', { n: this.next });
@@ -685,6 +751,7 @@ class BumperGarden implements Game {
     const p = this.plan;
     if (p.mode === 'spring') return false;
     if (p.mode === 'order') return !orderNumbers(p).includes(this.next);
+    if (p.mode === 'pattern') return this.step >= patternOf(p).length;
     return this.flowers.every((f, i) => f.bloomed || !this.wanted(i));
   }
 
@@ -700,7 +767,7 @@ class BumperGarden implements Game {
       return;
     }
     this.holdFor = 1.2;
-    if ((mode === 'color' || mode === 'order') && !this.progressed) {
+    if ((mode === 'color' || mode === 'order' || mode === 'pattern') && !this.progressed) {
       this.misses++;
       this.wrongs++;
       if (this.wrongs === 2) {
@@ -709,6 +776,7 @@ class BumperGarden implements Game {
         void this.ctx.say('bumper.hint');
       } else if (this.plan.not) void this.ctx.say('bumper.again-not', { color: this.target });
       else if (mode === 'color') void this.ctx.say('bumper.again-color', { color: this.target });
+      else if (mode === 'pattern') void this.ctx.say('bumper.again-pattern', { color: this.nextColor() });
       else void this.ctx.say('bumper.again-order', { n: this.next });
     }
   }

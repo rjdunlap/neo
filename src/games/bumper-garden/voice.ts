@@ -6,6 +6,9 @@ export const VOICE = {
   'bumper.bloom': ['Tap this side or that side to flip the ladybug back up. Make every flower bloom!'],
   'bumper.color': ['Bloom the {color} flowers!'],
   'bumper.not': ['Bloom every flower that is not {color}! Shh, the {color} ones are sleeping.'],
+  'bumper.pattern': ['Follow the color pattern: {pattern}. Start with {color}!'],
+  'bumper.next-color': ['Now {color}!'],
+  'bumper.again-pattern': ['Almost! The pattern needs {color} next.'],
   'bumper.order': ['Bump the flowers in order. Find {n}!'],
   'bumper.start': ['Start at {n}! Bump the numbered flowers to count on, one more each time.'],
   'bumper.back': [

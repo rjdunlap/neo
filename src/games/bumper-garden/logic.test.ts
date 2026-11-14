@@ -30,6 +30,12 @@ import {
   GROW_LEVEL,
   GROW_SPREAD,
   wakeFlower,
+  PATTERN_UNITS,
+  PATTERN_PLAIN,
+  patternColors,
+  patternOf,
+  patternUnit,
+  wantsPattern,
 } from './logic';
 import { bumperGarden } from './index';
 import { levelsInOrder, nextLevelOffer, stepLevel } from '../../progress/difficulty';
@@ -168,14 +174,15 @@ describe('Bumper Garden', () => {
     expect(orderNumbers(planFor(4))).toEqual([1, 2, 3]);
     expect(orderNumbers(planFor(5))).toEqual([1, 2, 3, 4, 5]);
     const range = bumperGarden.levels('prek');
-    expect(levelsInOrder(range)).toEqual([3, 4, 6, 8, 5, 9]);
+    expect(levelsInOrder(range)).toEqual([3, 4, 6, 7, 8, 5, 9]);
     expect(nextLevelOffer(4, range)).toBe(6);
-    expect(nextLevelOffer(6, range)).toBe(8);
+    expect(nextLevelOffer(6, range)).toBe(7);
+    expect(nextLevelOffer(7, range)).toBe(8);
     expect(nextLevelOffer(8, range)).toBe(5);
     expect(nextLevelOffer(5, range)).toBe(9);
     expect(stepLevel(9, -1, range)).toBe(5);
     expect(nextLevelOffer(9, range)).toBeNull();
-    for (const id of [3, 4, 5, 8]) expect(stepLevel(id, 0, range)).toBe(id);
+    for (const id of [3, 4, 5, 7, 8]) expect(stepLevel(id, 0, range)).toBe(id);
     expect(levelsInOrder(bumperGarden.levels('preschool'))).toEqual([2, 3, 4]);
   });
 
@@ -357,5 +364,63 @@ describe('Bumper Garden', () => {
       expect(touchedOne / planned).toBeGreaterThan(0.4);
     },
     15000,
+  );
+
+  it('makes Pattern bloom runs from a repeating unit shown at least twice', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const plan = planFor(7, new Rng(seed));
+      expect(plan.mode).toBe('pattern');
+      const run = patternOf(plan);
+      expect(run).toHaveLength(plan.goal);
+      const unit = patternUnit(run);
+      seen.add(unit.join(''));
+      expect(PATTERN_UNITS.map((u) => u.join(''))).toContain(unit.join(''));
+      expect(run.length / unit.length).toBeGreaterThanOrEqual(2);
+      expect(run.length % unit.length).toBe(0);
+      // Two colors at least, starting with the first.
+      expect(run[0]).toBe(0);
+      expect(new Set(run).size).toBeGreaterThanOrEqual(2);
+    }
+    expect([...seen].sort()).toEqual(['01', '011', '012']);
+    // Without a seed the level still describes and plays as A B.
+    expect(patternOf(planFor(7))).toEqual([0, 1, 0, 1, 0, 1]);
+  });
+
+  it('sets out enough flowers of every pattern color for the whole run, and plain ones of another color', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const plan = planFor(7, new Rng(seed));
+      const run = patternOf(plan);
+      const colors = patternColors(plan);
+      expect(colors).toHaveLength(plan.bumpers);
+      for (const c of new Set(run))
+        expect(colors.filter((k) => k === c).length).toBe(run.filter((k) => k === c).length);
+      const plain = colors.filter((c) => !run.includes(c));
+      expect(plain).toHaveLength(plan.bumpers - run.length);
+      // Plain flowers share one color of their own, never one of the pattern's three.
+      expect(new Set(plain)).toEqual(new Set([PATTERN_PLAIN]));
+      // A plain flower is never the next color.
+      for (let step = 0; step < run.length; step++)
+        for (const c of plain) expect(wantsPattern(plan, step, c)).toBe(false);
+    }
+  });
+
+  it.each(TABLE_IDS)(
+    'lets every Pattern bloom step on %s be aimed at, so the hint always leads somewhere',
+    (table) => {
+      for (let seed = 1; seed <= 15; seed++) {
+        const rng = new Rng(seed);
+        const plan = planFor(7, rng);
+        const bumpers = makeBumpers(plan, rng, table);
+        const world = makeWorld(bumpers);
+        const bloomed = new Set<number>();
+        for (let step = 0; step < plan.goal; step++) {
+          const wanted = (i: number) => !bloomed.has(i) && wantsPattern(plan, step, bumpers[i].color);
+          expect(aimFor(world, bumpers.length, wanted), `seed ${seed} step ${step}`).not.toBeNull();
+          bloomed.add(bumpers.findIndex((_, i) => wanted(i)));
+        }
+        expect(bloomed.size).toBe(plan.goal);
+      }
+    },
   );
 });
