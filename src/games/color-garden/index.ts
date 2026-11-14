@@ -20,27 +20,21 @@ import {
   DROP_ABOVE,
   nextToSort,
   planFor,
+  toneLook,
+  toneOf,
   type GardenPlan,
   type Rule,
   type SortKey,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
-/** The two blues of level 7: multiplied tints over white and blue props, and the basket cloth to match. */
-const SHADE_LOOK = {
-  'light-blue': { base: 'white' as ColorName, tint: 0xa9d3ff, cloth: { fill: 0xa9d3ff, line: 0x6f9fd6 } },
-  'dark-blue': { base: 'blue' as ColorName, tint: 0x5a7fb5, cloth: { fill: 0x1c51b2, line: 0x143a80 } },
-};
-const shadeLook = (key: SortKey) =>
-  SHADE_LOOK[key as keyof typeof SHADE_LOOK] as (typeof SHADE_LOOK)[keyof typeof SHADE_LOOK] | undefined;
 /** Level 8's kind baskets: a plain cloth, with the thing itself on the band. */
 const KIND_CLOTH = { fill: 0xfff3d6, line: 0xc9a86a };
 const kindOf = (key: SortKey) =>
   key === 'kind-fruit' ? 'fruit' : key === 'kind-balloon' ? 'balloon' : undefined;
 const kindIcon = (key: SortKey) => prop(key === 'kind-fruit' ? FRUIT_FOR.red! : 'balloon', 'red');
 const clothOf = (key: SortKey) =>
-  kindOf(key) ? KIND_CLOTH : (shadeLook(key)?.cloth ?? swatch[key as ColorName]);
-const shadeOf = (key: SortKey) => (key === 'light-blue' ? 'light' : 'dark');
+  kindOf(key) ? KIND_CLOTH : (toneLook(key)?.cloth ?? swatch[key as ColorName]);
 
 const ITEM_SCALE = 0.78;
 /** Level 10's one big fruit on the tree. */
@@ -185,7 +179,7 @@ class ColorGarden implements Game {
     }
 
     this.items = items.map((color, i) => {
-      const shade = shadeLook(color);
+      const shade = toneLook(color);
       const kind = kinds[i];
       const view = prop(kind, shade ? shade.base : (looks?.[i] ?? (color as ColorName)));
       if (shade) view.tint = shade.tint;
@@ -216,11 +210,14 @@ class ColorGarden implements Game {
                 ? 'garden.is.fruit'
                 : color === 'kind-balloon'
                   ? 'garden.is.balloon'
-                  : shadeLook(color)
-                    ? color === 'light-blue'
-                      ? 'tone.light'
-                      : 'tone.dark'
-                    : `color.${color as ColorName}`,
+                  : this.plan.tones
+                    ? 'tone.any'
+                    : toneOf(color)
+                      ? color === 'light-blue'
+                        ? 'tone.light'
+                        : 'tone.dark'
+                      : `color.${color as ColorName}`,
+              toneOf(color) ?? {},
             );
           },
           onDrop: (x, y) => this.drop(item, x, y),
@@ -267,9 +264,11 @@ class ColorGarden implements Game {
             ? this.rule === 'color'
               ? 'garden.rule.color'
               : 'garden.rule.kind'
-            : this.plan.shades
-              ? 'garden.shades'
-              : 'garden.start',
+            : this.plan.tones
+              ? 'garden.tones'
+              : this.plan.shades
+                ? 'garden.shades'
+                : 'garden.start',
     );
   }
 
@@ -395,10 +394,12 @@ class ColorGarden implements Game {
       this.lastNag = this.clock;
       void (kindOf(item.key)
         ? this.ctx.say('garden.kind.wrong', { kind: kindOf(item.key)! })
-        : this.ctx.say(
-            shadeLook(item.key) ? 'garden.shade.wrong' : 'garden.wrong',
-            shadeLook(item.key) ? { shade: shadeOf(item.key) } : { color: item.key },
-          ));
+        : this.plan.tones
+          ? this.ctx.say('garden.tone.wrong', toneOf(item.key)!)
+          : this.ctx.say(
+              toneOf(item.key) ? 'garden.shade.wrong' : 'garden.wrong',
+              toneOf(item.key) ? { shade: toneOf(item.key)!.shade } : { color: item.key },
+            ));
     }
     if (item.wrongs === 2) {
       this.hints++;
@@ -553,6 +554,7 @@ export const colorGarden: GameModule = {
     if (p.tap) return 'Tap four fruits: each hops to its own color basket';
     if (p.colors === 1) return 'One basket: practice dragging';
     if (p.rule) return `Sort ${p.items} fruits and balloons by color or by kind, as the sign says`;
+    if (p.tones) return `Sort ${p.items} balloons and flowers into light, middle and dark of one color`;
     if (p.shades) return `Sort ${p.items} balloons and flowers into light blue and dark blue`;
     return `Sort ${p.items} ${p.fruit ? 'fruits' : p.mixed ? 'fruits, balloons and flowers' : 'balloons and flowers'} into ${p.colors} colors`;
   },

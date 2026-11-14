@@ -8,6 +8,8 @@ export const VOICE = {
   'garden.wrong': ['That one is {color}. Find the {color} basket!'],
   'garden.shades': ['Light blue or dark blue? Put each one in the basket that matches!'],
   'garden.shade.wrong': ['That one is {shade} blue. Find the {shade} blue basket!'],
+  'garden.tones': ['Light, middle or dark? Put each one in the basket that matches!'],
+  'garden.tone.wrong': ['That one is {shade} {hue}. Find the {shade} basket!'],
   'garden.rule.color': [
     'Look at the sign! Today we sort by color. Put each one in the basket that is its color!',
   ],
@@ -19,5 +21,6 @@ export const VOICE = {
   'garden.kind.wrong': ['That one is a {kind}. Look at the sign, and find the {kind} basket!'],
   'tone.light': ['Light blue!'],
   'tone.dark': ['Dark blue!'],
+  'tone.any': ['{shade} {hue}!'],
   'garden.done': ['All sorted! What a garden!'],
 } satisfies Record<string, string[]>;

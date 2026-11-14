@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FRUIT_FOR } from '../../art/props';
-import { RAINBOW } from '../../art/palette';
+import { RAINBOW, swatch } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
 import {
@@ -8,11 +8,18 @@ import {
   basketWidth,
   BIG_LEVEL,
   deal,
+  multiply,
   DROP_ABOVE,
   LEVELS,
   nextToSort,
   planFor,
   PLANS,
+  TONE_HUES,
+  TONES,
+  TONES_LEVEL,
+  toneLook,
+  toneOf,
+  type SortKey,
 } from './logic';
 import { firstLevel, levelsInOrder } from '../../progress/difficulty';
 
@@ -61,6 +68,93 @@ describe('Color Garden', () => {
       expect(items).toHaveLength(plan.items);
       for (const k of colors) expect(items).toContain(k);
     }
+  });
+
+  it('level 7 deals exactly as before the tone table (seed 7)', () => {
+    expect(deal(new Rng(7), PLANS[6])).toEqual({
+      colors: ['dark-blue', 'light-blue'],
+      items: [
+        'dark-blue',
+        'light-blue',
+        'dark-blue',
+        'dark-blue',
+        'dark-blue',
+        'light-blue',
+        'light-blue',
+        'light-blue',
+      ],
+      kinds: ['flower', 'balloon', 'flower', 'balloon', 'flower', 'balloon', 'flower', 'balloon'],
+    });
+    // Level 7's blues keep their look.
+    expect(toneLook('light-blue')).toEqual({
+      base: 'white',
+      tint: 0xa9d3ff,
+      cloth: { fill: 0xa9d3ff, line: 0x6f9fd6 },
+    });
+    expect(toneLook('dark-blue')?.tint).toBe(0x5a7fb5);
+    expect(toneLook('red')).toBeUndefined();
+    expect(toneLook('kind-fruit')).toBeUndefined();
+  });
+
+  it('level 11 sorts light, middle and dark of one color, each with something to catch, across all four colors', () => {
+    const plan = planFor(TONES_LEVEL);
+    expect(plan.tones).toBe(true);
+    const hues = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const { colors, items, kinds } = deal(new Rng(seed), plan);
+      expect(colors).toHaveLength(3);
+      const tones = colors.map((c) => toneOf(c)!);
+      expect(new Set(tones.map((t) => t.hue)).size).toBe(1);
+      expect(tones.map((t) => t.shade).sort()).toEqual([...TONES].sort());
+      hues.add(tones[0].hue);
+      expect(items).toHaveLength(plan.items);
+      for (const k of colors) expect(items).toContain(k);
+      for (const i of items) expect(colors).toContain(i);
+      // Each item has exactly one basket.
+      for (const i of items) expect(colors.filter((c) => c === i)).toHaveLength(1);
+      expect(new Set(kinds)).toEqual(new Set(['balloon', 'flower']));
+    }
+    expect([...hues].sort()).toEqual([...TONE_HUES].sort());
+  });
+
+  it('level 11 tones differ clearly in lightness, and each thing is nearest its own basket', () => {
+    const lum = (c: number) => {
+      const ch = [16, 8, 0].map((s) => {
+        const v = ((c >> s) & 255) / 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    };
+    const contrast = (a: number, b: number) =>
+      (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    for (const hue of TONE_HUES) {
+      const keys = TONES.map((t) => `${t}-${hue}` as SortKey);
+      const looks = keys.map((k) => toneLook(k)!);
+      // What a thing shows: its prop's fill multiplied by the tint.
+      const shown = looks.map((l) => multiply(swatch[l.base].fill, l.tint));
+      // Light, then middle, then dark, each step a clear minimum apart (WCAG contrast ratio).
+      for (let i = 0; i < 2; i++) {
+        expect(lum(shown[i]), `${hue} ${TONES[i]}`).toBeGreaterThan(lum(shown[i + 1]));
+        expect(
+          contrast(shown[i], shown[i + 1]),
+          `${hue} ${TONES[i]} to ${TONES[i + 1]}`,
+        ).toBeGreaterThanOrEqual(1.5);
+        expect(
+          contrast(looks[i].cloth.fill, looks[i + 1].cloth.fill),
+          `${hue} cloth ${i}`,
+        ).toBeGreaterThanOrEqual(1.5);
+      }
+      // Each thing's lightness is nearest its own basket's cloth.
+      shown.forEach((c, i) => {
+        const gaps = looks.map((l) => Math.abs(lum(l.cloth.fill) - lum(c)));
+        expect(gaps.indexOf(Math.min(...gaps)), `${hue} ${TONES[i]}`).toBe(i);
+      });
+    }
+  });
+
+  it('pre-K climbs to level 11 after 8, skipping the lap and toddler tap entries', () => {
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([4, 5, 6, 7, 8, TONES_LEVEL]);
+    expect(PLANS).toHaveLength(TONES_LEVEL);
   });
 
   it('level 6 mixes fruit, balloons and flowers in every round, each with a rainbow color of its own', () => {

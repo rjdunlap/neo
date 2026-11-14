@@ -1095,7 +1095,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
     for (const level of !only || only === 'garden'
-      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
       : []) {
       if (level === 6 || level >= 9) await portrait(true);
       await launch('color-garden', level);
@@ -1107,6 +1107,18 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       if (level === 10) {
         assert.equal(await page.evaluate(() => neo.scene.game.plan.big), true, 'Level 10 is one big fruit');
         await screenshot('color-garden-10-portrait');
+      }
+      if (level === 11) {
+        // Three baskets of one color: light, middle and dark, each with something to catch.
+        const tones = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return { tones: g.plan.tones, keys: g.baskets.map((b) => b.key), items: g.items.map((i) => i.key) };
+        });
+        assert.equal(tones.tones, true, 'Level 11 sorts tones');
+        assert.equal(new Set(tones.keys.map((k) => k.split('-')[1])).size, 1, `One color: ${tones.keys}`);
+        assert.deepEqual(tones.keys.map((k) => k.split('-')[0]).sort(), ['dark', 'light', 'middle']);
+        for (const k of tones.keys) assert.ok(tones.items.includes(k), `Something for ${k}`);
+        await screenshot('color-garden-11-portrait');
       }
       const baskets = await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -1234,7 +1246,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       'peekaboo-barn': 9,
       'duck-pond': 9,
       'shape-sorter': 8,
-      'color-garden': 9,
+      'color-garden': 10,
     };
     for (const [id, n] of saved) if (!only) assert.ok(n >= want[id], `${id} history after reload: ${n}`);
     log(`Original six: round history after reload ${saved.map(([id, n]) => `${id} ${n}`).join(', ')}`);

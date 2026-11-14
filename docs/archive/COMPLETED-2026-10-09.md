@@ -3513,3 +3513,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Pet Says slice 8, level 9 A walk in the woods (2026-11-14)
 
 [PR #1663](https://github.com/rjdunlap/neo/pull/1663), `codex/pet-says-story-walk`. A seeded woods, beach or farm route has four stops with a landmark, spoken instruction and a move at each. The green arrow walks on and the last stop ends with a cheer. Tapping the pet replays the stop. The held orange button counts one hint per stop, and misses stay at zero. Pre-K now reaches 3–9 and school 6–9. [Game page](../games/pet-says.md), [verification](../verification/2026-11-14-pet-says-level-9-a-walk-in-the-woods.md).
+
+## Color Garden level 11 Light, middle, dark (2026-11-14)
+
+[PR #1664](https://github.com/rjdunlap/neo/pull/1664), `claude/color-garden-light-middle-dark`, slice 4 of the [dive](../deep-dives/color-garden.md#build-slices-in-order) (written as "Level 9" before IDs 9 and 10 were taken). Stable level 11, pre-K top (order 4, 5, 6, 7, 8, 11): three baskets of one color's tones, nine balloons and flowers, `SHADE_LOOK` refactored to a palette table with the middle tone added; wrong drops name the shade and hue, glow after two. See the [verification entry](../verification/2026-11-14-color-garden-level-11-light-middle-dark.md).

@@ -31,6 +31,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'One big fruit grows on the tree. Touch anywhere: it hops into its own color basket, the pet names its color, and the next fruit grows.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Three baskets of one color: light, middle and dark. Drag each balloon and flower to the basket of its own shade; the middle one goes in the middle shade.',
+    },
   ],
   finish: 'The round ends when everything is in a basket.',
 };
