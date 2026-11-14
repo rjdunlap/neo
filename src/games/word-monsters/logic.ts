@@ -157,8 +157,8 @@ export const FIRST_WORDS: Record<string, string> = {
 
 /**
  * Three-letter words to build (levels 5-6), each sounded out letter by letter, with at least three for every short
- * vowel and many that start with a sound she can stretch (mmm-ap, nnn-et, rrr-ug). No word holds two lookalikes
- * (no bed, no lip), and each has a picture.
+ * vowel and many that start with a sound she can stretch (mmm-ap, nnn-et, rrr-ug). No word holds a mirror pair
+ * (b d p q, or i with l: no bed, no lip), and each has a picture.
  */
 export const WORDS = [
   ...['cat', 'hat', 'map', 'bag'],

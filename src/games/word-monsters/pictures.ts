@@ -215,7 +215,7 @@ const DRAW: Record<PictureWord, () => Container> = {
       }
       g.fill(swatch.yellow.light);
     }),
-  // A bunny running, with speed lines and dust behind it.
+  // A duck running (never the bunny that hugs), with speed lines and dust behind it.
   run: () => {
     const c = new Container();
     c.addChild(
@@ -233,9 +233,9 @@ const DRAW: Record<PictureWord, () => Container> = {
         );
       }),
     );
-    const bunny = critter('bunny', 0.9, 20, 110);
-    bunny.rotation = 0.12;
-    c.addChild(bunny);
+    const runner = critter('duck', 0.9, 20, 110);
+    runner.rotation = 0.12;
+    c.addChild(runner);
     return c;
   },
   // A soft bread bun with seeds on top.
