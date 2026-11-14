@@ -34,6 +34,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Watch a short shown pull and a long one each leave a numbered flag. Then a pull between them is shown: tap the cloud it will reach, then watch.',
     },
     {
+      from: 10,
+      to: 10,
+      text: 'Look at the shown pull, then tap the number on the 1 to 10 line where you think the pet will land, and watch. A yellow bar shows how far your number was from the landing.',
+    },
+    {
       from: 7,
       to: 7,
       text: 'A friend waits on the grass. Pull the pet back and let go to land beside the friend. The dotted path and the puff show the last flight, so pull a little more or less.',
@@ -51,6 +56,7 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 5, text: 'The round ends when the pet lands where it was asked to.' },
     { from: 6, to: 6, text: 'The round ends after each shown pull has flown.' },
     { from: 7, to: 7, text: 'The round ends when every friend has had a snack.' },
+    { from: 10, to: 10, text: 'The round ends after three shown pulls, one in each part of the line.' },
     { from: 9, to: 9, text: 'The round ends after three sets of short, long and between pulls.' },
     {
       from: 8,
@@ -85,6 +91,11 @@ export const HOW_TO: GameHowTo = {
       from: 9,
       to: 9,
       text: 'Predictions are not misses; a different guess hears why the pull between the two landed between the flags. Faint rings at the spring mark the two watched pulls.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'Estimates are never misses: the tap is the answer, so no pulling skill is needed, and she hears how far her number was from the landing. A tap anywhere above or below the line picks the nearest number. Numbered flags mark where each pull landed.',
     },
     {
       from: 7,
