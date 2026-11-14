@@ -36,6 +36,7 @@ export const VOICE = {
   'hop.frac.flag': ['Count the {size} hops from zero to the flag.'],
   'hop.frac.same-smaller': ['A {small} hop is shorter than a {big} hop, so it takes more hops.'],
   'hop.frac.same-bigger': ['A {big} hop is longer than a {small} hop, so it takes fewer hops.'],
+  'hop.landed': ['{n}! Ribbit!', '{n}! Splash!', 'On {n}! Hoppy day!'],
   'hop.yay': ['Ribbit! Right on!', 'Splash! You got it!', 'Hoppy day!'],
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
 } satisfies Record<string, string[]>;

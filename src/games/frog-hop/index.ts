@@ -39,9 +39,33 @@ import {
   sizeWord,
   hopsWords,
   hopPhrase,
+  saysNumbers,
+  showsDots,
+  dotLayout,
+  DOT_GAP,
+  DOT_R,
+  flowerOn,
 } from './logic';
 
 const STEP = 104;
+/** The first row of dots under a pad's numeral, clear of the numeral (y 44) and inside the pad's step. */
+const DOTS_Y = 82;
+
+/** Dots for a numeral, fives grouped (`dotLayout`), centred on (x, y). */
+function drawDots(g: Graphics, n: number, x: number, y: number) {
+  for (const d of dotLayout(n)) g.circle(x + d.x, y + d.y, DOT_R).fill(swatch.blue.fill);
+}
+
+/** A small code-drawn bloom at the front edge of a landmark pad: five petals round a yellow middle. */
+function drawFlower(g: Graphics, x: number, y: number) {
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    g.circle(x + Math.cos(a) * 9, y + Math.sin(a) * 9, 8)
+      .fill(swatch.pink.fill)
+      .stroke({ width: 2, color: swatch.pink.line });
+  }
+  g.circle(x, y, 6).fill(swatch.yellow.fill);
+}
 
 class Pad extends Container {
   readonly num: Text;
@@ -91,6 +115,12 @@ class FrogHop implements Game {
 
   private readonly backdrop: Backdrop;
   private readonly row = new Container();
+  /** Dots under the numerals and landmark flowers: the scene's own layer, so the sticker and icon pads never change. */
+  private readonly marks = new Graphics();
+  /** One dot over the frog for each hop on the levels that say the numbers. */
+  private readonly tally = new Graphics();
+  private tallied = 0;
+  private readonly signDots = new Graphics();
   private readonly sign = new Container();
   private readonly signBoard = new Graphics();
   private readonly signText: Text;
@@ -131,7 +161,10 @@ class FrogHop implements Game {
       ctx.view,
     );
     this.signText = label('', 46, ink);
-    this.sign.addChild(this.signBoard, this.signText);
+    this.sign.addChild(this.signBoard, this.signText, this.signDots);
+    this.marks.eventMode = 'none';
+    this.tally.eventMode = 'none';
+    this.signDots.eventMode = 'none';
     this.setSign('');
     this.glow.eventMode = 'none';
     this.frog.eventMode = 'none';
@@ -150,7 +183,16 @@ class FrogHop implements Game {
     whole.y = 30;
     this.bracket.addChild(this.bracketLine, whole);
     this.bracket.visible = isFrac(this.plan.mode);
-    ctx.stage.addChild(this.backdrop, this.sign, this.row, this.bracket, this.flag, this.frog, this.glow);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.sign,
+      this.row,
+      this.bracket,
+      this.flag,
+      this.frog,
+      this.tally,
+      this.glow,
+    );
     for (let i = 0; i < WINDOW; i++) {
       const pad = new Pad();
       pad.set(i);
@@ -158,6 +200,8 @@ class FrogHop implements Game {
       this.pads.push(pad);
       this.row.addChild(pad);
     }
+    // Last in the row, so the marks fade with the pads when the long line slides.
+    this.row.addChild(this.marks);
     this.markPads();
     if (this.plan.mode === 'gap' || splitsAtTen(this.plan.mode) || this.plan.mode === 'frac-match') {
       for (const n of GAP_CARDS) {
@@ -182,10 +226,18 @@ class FrogHop implements Game {
     void this.next();
   }
 
-  /** The sign widens to its sum, up to 720 units. */
-  private setSign(text: string) {
+  /** The sign widens to its sum, up to 720 units; on level 1 the number's dots sit beside it. */
+  private setSign(text: string, dots = 0) {
     this.signText.text = text;
-    const w = Math.min(720, Math.max(340, this.signText.width + 64));
+    const dotsW = dots === 0 ? 0 : (Math.min(5, dots) - 1) * DOT_GAP + 2 * DOT_R;
+    const gap = dots === 0 ? 0 : 28;
+    const w = Math.min(720, Math.max(340, this.signText.width + gap + dotsW + 64));
+    this.signText.x = -(gap + dotsW) / 2;
+    this.signDots.clear();
+    if (dots > 0) {
+      const x = this.signText.x + this.signText.width / 2 + gap + dotsW / 2;
+      drawDots(this.signDots, dots, x, dots > 5 ? -DOT_GAP / 2 : 0);
+    }
     this.signBoard
       .clear()
       .roundRect(-w / 2, -46, w, 92, 24)
@@ -216,6 +268,22 @@ class FrogHop implements Game {
       : answerSlot(this.plan.mode, this.q, this.lo, this.matchStage === 'count');
   }
 
+  /** Redraws the dots and flowers for the pads in view. */
+  private drawMarks() {
+    const g = this.marks.clear();
+    const mode = this.plan.mode;
+    for (const p of this.pads) {
+      if (showsDots(mode)) drawDots(g, p.n, p.x, p.y + DOTS_Y);
+      if (flowerOn(mode, p.n)) drawFlower(g, p.x - 40, p.y + 14);
+    }
+  }
+
+  /** Clears the hop tally over the frog. */
+  private clearTally() {
+    this.tallied = 0;
+    this.tally.clear();
+  }
+
   private padX(n: number) {
     return (this.view.w - (WINDOW - 1) * STEP) / 2 + (n - this.lo) * STEP;
   }
@@ -228,6 +296,7 @@ class FrogHop implements Game {
     this.view = v;
     this.backdrop.resize(v);
     this.pads.forEach((p, i) => p.position.set(this.padX(this.lo + i), this.padY()));
+    this.drawMarks();
     if (!this.frogMoving) this.frog.position.set(this.padX(this.at), this.padY() - 8);
     const x0 = this.padX(0);
     const x1 = this.padX(4);
@@ -250,6 +319,7 @@ class FrogHop implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    this.tally.position.set(this.frog.x, this.frog.y - 112);
     const g = this.glow.clear();
     if (this.glowing && !this.busy) {
       const p = this.glowing.getGlobalPosition();
@@ -332,6 +402,7 @@ class FrogHop implements Game {
     this.cards.forEach((c) => (c.node.visible = mode !== 'frac-match'));
     this.flag.visible = false;
     this.glowing = null;
+    this.clearTally();
     if (this.index >= this.questions.length) return void this.finale();
     const q = this.q;
     if (q.lo !== this.lo) await this.slideWindow(q.lo);
@@ -348,6 +419,7 @@ class FrogHop implements Game {
             : mode === 'back-ten'
               ? `${q.start} − ${k}`
               : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`,
+      mode === 'find' ? q.target : 0,
     );
     // The ring starts where the frog sits (or on the first card), so choosing is a few steps along.
     this.focus =
@@ -430,14 +502,18 @@ class FrogHop implements Game {
     sfx.splash();
   }
 
-  /** Pad by pad, counting each hop aloud. */
-  private async hopCount(to: number) {
+  /**
+   * Pad by pad, counting each hop aloud, or with `numerals` saying the pad it lands on and adding a tally dot over the
+   * frog, so the hop count and the numerals are both there (`landingNumbers` is the rule).
+   */
+  private async hopCount(to: number, numerals = false) {
     const dir = Math.sign(to - this.at);
     const y = this.padY() - 8;
     this.frogMoving = true;
     for (let k = 1; this.at !== to; k++) {
       const next = this.at + dir;
-      void this.ctx.say('count', { n: k });
+      void this.ctx.say('count', { n: numerals ? next : k });
+      if (numerals) this.addTally();
       sfx.pop(5 + k);
       void this.ctx.tw
         .to(this.frog, { y: y - 50 }, { duration: 0.16, ease: ease.outQuad })
@@ -448,6 +524,16 @@ class FrogHop implements Game {
       await this.ctx.tw.wait(0.35);
     }
     this.frogMoving = false;
+  }
+
+  /** One more tally dot over the frog, in a centred row. */
+  private addTally() {
+    this.tallied++;
+    const g = this.tally.clear();
+    for (let i = 0; i < this.tallied; i++)
+      g.circle((i - (this.tallied - 1) / 2) * 22, 0, 8)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line });
   }
 
   /** Fraction hops: each as long as its size, saying the landing names, or on the card stage counting the hops. */
@@ -561,8 +647,9 @@ class FrogHop implements Game {
     else {
       const hopStart = splitsAtTen(this.plan.mode) ? 10 : q.start;
       if (this.at !== hopStart) await this.leap(hopStart);
-      await this.hopCount(q.target);
+      await this.hopCount(q.target, saysNumbers(mode));
     }
+    sfx.croak();
     sfx.sparkle();
     this.ctx.particles.burst(this.frog.x, this.frog.y - 40, {
       kind: 'star',
@@ -587,6 +674,7 @@ class FrogHop implements Game {
         quarters: quarters[0].toUpperCase() + quarters.slice(1),
         name: fracWords(q.target),
       });
+    else if (saysNumbers(mode)) line = this.ctx.say('hop.landed', { n: q.target });
     else line = this.ctx.say('hop.yay');
     // The last question's line is heard out, because the closing line would cut it.
     if (this.index + 1 >= this.questions.length) await line;
@@ -631,9 +719,10 @@ class FrogHop implements Game {
         await this.leap(q.start);
       } else if (mode !== 'find' && mode !== 'next') {
         const shown = splitsAtTen(mode) && this.makeTenStage === 'bridge' ? 10 : q.target;
-        await this.hopCount(shown);
+        await this.hopCount(shown, saysNumbers(mode));
         await this.ctx.tw.wait(0.3);
         await this.leap(splitsAtTen(mode) && this.makeTenStage === 'rest' ? 10 : q.start);
+        this.clearTally();
       }
       this.glowing = this.cardStage()
         ? this.cards.find((c) => c.n === (splitsAtTen(mode) ? q.toTen : answerOf(mode, q)))!.node
