@@ -565,9 +565,9 @@ class ChainReaction implements Game {
       return;
     }
     if (!this.hinted || this.busy) return;
-    if (this.machine.spring) {
-      // Level 10's hint also lights the spring's column: the ramp to place sends the marble onto it.
-      const x = this.colX(this.machine.spring.col);
+    if (this.hintsSpring()) {
+      // Level 10's hint also lights the spring's column when the ramp to place is the one that sends the marble onto it.
+      const x = this.colX(this.machine.spring!.col);
       const bottom = this.top + (this.machine.rows + 1) * this.gap;
       this.glow
         .roundRect(x - 58, this.top - 10, 116, bottom - this.top - 20, 40)
@@ -606,7 +606,13 @@ class ChainReaction implements Game {
     this.hints++;
     this.drawGlow();
     sfx.sparkle();
-    void this.ctx.say(this.machine.spring ? 'chain.spring-hint' : 'chain.hint');
+    void this.ctx.say(
+      this.hintsSpring()
+        ? 'chain.spring-hint'
+        : this.machine.spring
+          ? 'chain.spring-hint-bell'
+          : 'chain.hint',
+    );
   }
 
   private async run() {
@@ -757,6 +763,12 @@ class ChainReaction implements Game {
         .to(bell.scale, { x: 1.12, y: 1.12 }, { duration: 0.1 })
         .then(() => this.ctx.tw.to(bell.scale, { x: 1, y: 1 }, { duration: 0.12 }));
     }
+  }
+
+  /** The hinted socket is above the spring, so that ramp is the one that lands the marble on it. */
+  private hintsSpring() {
+    const spring = this.machine.spring;
+    return !!spring && !!this.hinted && this.machine.sockets[this.hinted.socket].row < spring.row;
   }
 
   /** The spring squashes, then the marble hops out and over the next row's part, landing two rows down. */

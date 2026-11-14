@@ -56,7 +56,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 10,
       to: 10,
-      text: "Tap the green arrow and watch the hop. The light bulb glows one ramp, its socket and the spring's column.",
+      text: "Tap the green arrow and watch the hop. The light bulb glows one ramp and its socket, and the spring's column when that ramp lands the marble on the spring.",
     },
   ],
   finish: [

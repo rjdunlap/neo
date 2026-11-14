@@ -353,10 +353,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
           assert.ok(
             await page.evaluate(() => {
               const g = neo.scene.game,
-                b = g.glow.getLocalBounds();
-              return b.height > g.gap * g.machine.rows * 0.8;
+                b = g.glow.getLocalBounds(),
+                before = g.machine.sockets[g.hinted.socket].row < g.machine.spring.row;
+              return b.height > g.gap * g.machine.rows * 0.8 === before;
             }),
-            'the hint lights the spring column',
+            'the hint lights the spring column only for the ramp that lands the marble on it',
           );
           await screenshot('chain-reaction-10');
         }
@@ -417,7 +418,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await screenshot('chain-reaction-10-portrait');
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
-        'Chain Reaction 10: a missed spring run is free with its trail, a counted hint lights the spring column, the marble hops over the skipped row, two machines, one sticker, journal entry, phone portrait fit passed',
+        'Chain Reaction 10: a missed spring run is free with its trail, a counted hint (spring column lit only for the landing ramp), the marble hops over the skipped row, two machines, one sticker, journal entry, phone portrait fit passed',
       );
     }
 

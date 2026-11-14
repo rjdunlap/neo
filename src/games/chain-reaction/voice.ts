@@ -51,4 +51,7 @@ export const VOICE = {
   'chain.spring-hint': [
     'Try the glowing ramp in the glowing spot. It sends the marble onto the spring, and the spring bounces it over a row.',
   ],
+  'chain.spring-hint-bell': [
+    'Try the glowing ramp in the glowing spot. After the spring, it sends the marble on to the bell.',
+  ],
 } satisfies Record<string, string[]>;
