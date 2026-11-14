@@ -605,7 +605,12 @@ class DuckPond implements Game {
       const seats = splitSeats(sides.left, sides.right);
       await this.arrive(sides.left, seats.slots.slice(0, sides.left), seats);
       await this.arrive(sides.right, seats.slots.slice(sides.left), seats, true);
-      await this.ctx.instruct('duck.double', { a: sides.left, b: sides.right });
+      // Each side bobs as the line names it, so "this side" and "that side" point somewhere.
+      for (const d of this.swimmers.slice(0, sides.left)) d.critter.hop(0.5);
+      void this.tw.wait(1.2).then(() => {
+        for (const d of this.swimmers.slice(sides.left)) if (!d.destroyed) d.critter.hop(0.5);
+      });
+      await this.ctx.instruct('duck.double', { a: plural(sides.left), b: sides.right });
       this.showPads(this.answer);
       this.busy = false;
       return;
@@ -909,7 +914,11 @@ class DuckPond implements Game {
 
   private async finale() {
     this.finished = true;
-    if (this.plan.mode !== 'friends') await this.arrive(5);
+    // On the split pond the five finale ducks sit either side of the footbridge, never on it.
+    if (this.plan.split) {
+      const seats = splitSeats(3, 2);
+      await this.arrive(5, seats.slots, seats);
+    } else if (this.plan.mode !== 'friends') await this.arrive(5);
     this.quackChorus();
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
