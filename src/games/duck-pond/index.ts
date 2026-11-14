@@ -21,7 +21,14 @@ import {
   bankSize,
   duckMove,
   hidingPuzzle,
+  howManyAnswers,
+  layoutFor,
+  dotRows,
   padValues,
+  PAD_DOT_GAP,
+  PAD_DOT_R,
+  PAD_DOT_Y,
+  PAD_R,
   planFor,
   SLOTS,
   story,
@@ -118,17 +125,26 @@ class Pad extends Container {
   private shake = 0;
   private clock = 0;
 
-  constructor(value: number) {
+  /** `dots`: the pad also carries its number as dots in fives under a smaller numeral (levels 6–7), so she can match dots to ducks before she reads. */
+  constructor(value: number, dots = false) {
     super();
     this.value = value;
     const pad = new Graphics()
-      .circle(0, 0, 62)
+      .circle(0, 0, PAD_R)
       .fill(LILY.fill)
       .stroke({ width: 6, color: LILY.line })
       .poly([22, -30, 42, -58, 60, -26])
       .fill(WATER);
-    const n = label(String(value), 64, 0xffffff);
-    n.style.stroke = { color: LILY.line, width: 8, join: 'round' };
+    const n = label(String(value), dots ? 48 : 64, 0xffffff);
+    n.style.stroke = { color: LILY.line, width: dots ? 7 : 8, join: 'round' };
+    if (dots) {
+      n.y = value === 0 ? 0 : value > 5 ? -24 : -18;
+      for (const [x, y] of dotRows(value, PAD_DOT_GAP))
+        pad
+          .circle(x, PAD_DOT_Y + y, PAD_DOT_R)
+          .fill(swatch.yellow.fill)
+          .stroke({ width: 2, color: swatch.yellow.line });
+    }
     this.addChild(this.glowRing, pad, n);
     this.hitArea = new Circle(0, 0, 74);
   }
@@ -172,6 +188,10 @@ class DuckPond implements Game {
   private misses = 0;
   private hints = 0;
   private wrongThisRound = 0;
+  /** Levels 6–7: how many ducks each round shows (zero is an empty pond). */
+  private answers: number[] = [];
+  /** The layout this round's ducks were dealt (read by the browser check). */
+  layoutKind = 'none';
   /** Make-ten levels: how many ducks each round starts with. */
   private starts: number[] = [];
   private busy = true;
@@ -390,12 +410,12 @@ class DuckPond implements Game {
   }
 
   /** Ducks arriving from off-screen straight into the pond (no tapping needed). */
-  private async arrive(n: number) {
+  private async arrive(n: number, slots?: readonly [number, number][]) {
     for (let i = 0; i < n; i++) {
       const d = new Duck();
       d.position.set(-80, this.view.h * 0.62);
       this.ducks.addChild(d);
-      await this.swimIn(d);
+      await this.swimIn(d, slots?.[i]);
     }
   }
 
@@ -500,8 +520,18 @@ class DuckPond implements Game {
       return;
     }
     if (p.mode === 'howmany') {
-      this.answer = rng.int(p.min, p.max);
-      await this.arrive(this.answer);
+      if (p.layouts) {
+        // Levels 6–7: a dice face, two rows of five or a scatter, and sometimes an empty pond (never first).
+        if (!this.answers.length) this.answers = howManyAnswers(rng, p);
+        this.answer = this.answers.shift()!;
+        const { kind, slots } = layoutFor(rng, p, this.answer);
+        this.layoutKind = kind;
+        if (this.answer) await this.arrive(this.answer, slots);
+        else await this.tw.wait(0.8);
+      } else {
+        this.answer = rng.int(p.min, p.max);
+        await this.arrive(this.answer);
+      }
       await this.ctx.instruct('duck.howmany');
       this.showPads(this.answer);
       this.busy = false;
@@ -685,9 +715,9 @@ class DuckPond implements Game {
   }
 
   private showPads(answer: number) {
-    const values = padValues(this.ctx.rng, answer);
+    const values = padValues(this.ctx.rng, answer, this.plan.zero ? 0 : 1);
     this.pads = values.map((v) => {
-      const pad = new Pad(v);
+      const pad = new Pad(v, !!this.plan.padDots);
       onTap(pad, () => void this.tapPad(pad), { cooldown: 400 });
       pad.scale.set(0);
       this.padLayer.addChild(pad);
@@ -751,6 +781,12 @@ class DuckPond implements Game {
         this.clearPads();
         await this.roundWon(this.want, false);
         return;
+      } else if (this.answer === 0) {
+        // An empty pond: none is a number too.
+        await this.ctx.say('duck.none');
+        this.clearPads();
+        await this.roundWon(0, false);
+        return;
       } else {
         await this.countAloud();
         if (this.plan.mode === 'add' && this.pondStory) {
@@ -782,6 +818,8 @@ class DuckPond implements Game {
         await this.ctx.say('count', { n });
         await this.tw.wait(0.15);
       }
+    } else if (this.swimmers.length === 0) {
+      await this.ctx.say('duck.noneHere');
     } else {
       await this.ctx.say('duck.countus');
       await this.countAloud();
@@ -888,7 +926,10 @@ export const duckPond: GameModule = {
     if (p.mode === 'friends') return 'One big duck: a touch anywhere brings a friend, up to five';
     if (p.mode === 'make')
       return `Put ${p.min} to ${p.max} ducks in the pond${p.dots ? ' (number and dots)' : ' (number only)'}`;
-    if (p.mode === 'howmany') return `How many ducks? ${p.min} to ${p.max}`;
+    if (p.mode === 'howmany')
+      return p.zero
+        ? `How many ducks? 0 to ${p.max}, ${p.layouts?.includes('scatter') ? 'dice, rows or scattered' : 'dice or rows'}, dotted pads`
+        : `How many ducks? ${p.min} to ${p.max}`;
     if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
     if (p.mode === 'hide') return 'Part and whole: how many ducks hide under the bridge?';
     if (p.mode === 'add') return p.subtract ? 'Adding and taking away, up to 10' : 'Adding, up to 5';

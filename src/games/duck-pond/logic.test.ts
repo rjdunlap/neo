@@ -19,7 +19,18 @@ import {
   SLOTS,
   story,
 } from './logic';
-import { tenStarts } from './logic';
+import {
+  tenStarts,
+  layoutFor,
+  howManyAnswers,
+  countingOrder,
+  dotRows,
+  DUCK_GAP,
+  PAD_DOT_GAP,
+  PAD_DOT_R,
+  PAD_DOT_Y,
+  PAD_R,
+} from './logic';
 
 describe('Duck Pond', () => {
   it('preserves the historical duck count for sticker seeds 0–99', () => {
@@ -226,5 +237,96 @@ describe('Duck Pond', () => {
     let swimming = 0;
     while (duckMove(plan, 0, swimming, 0, [], 0) === 'duck') swimming++;
     expect(swimming).toBe(5);
+  });
+});
+
+describe('Duck Pond arrangements, zero and dotted pads (levels 6–7)', () => {
+  const six = planFor(6);
+  const seven = planFor(7);
+
+  it('deals every number a layout of exactly that many distinct places inside the pond, a duck apart', () => {
+    for (const plan of [six, seven])
+      for (let n = 0; n <= plan.max; n++)
+        for (let seed = 0; seed < 150; seed++) {
+          const { kind, slots } = layoutFor(new Rng(seed * 31 + n), plan, n);
+          expect(slots).toHaveLength(n);
+          if (n === 0) expect(kind).toBe('none');
+          else expect(plan.layouts).toContain(kind);
+          if (kind === 'dice') expect(n).toBeLessThanOrEqual(6);
+          for (const [i, [x, y]] of slots.entries()) {
+            expect((x / 390) ** 2 + (y / 128) ** 2).toBeLessThan(1);
+            for (const [xx, yy] of slots.slice(i + 1))
+              expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(DUCK_GAP);
+          }
+        }
+  });
+
+  it('uses dice and rows at level 6 and adds a real scatter at level 7, for every number up to 8', () => {
+    const kinds = (plan: typeof six, n: number) =>
+      new Set(Array.from({ length: 60 }, (_, s) => layoutFor(new Rng(s), plan, n).kind));
+    for (let n = 1; n <= 5; n++) expect([...kinds(six, n)].sort()).toEqual(['dice', 'rows']);
+    for (let n = 2; n <= 8; n++) expect(kinds(seven, n).has('scatter')).toBe(true);
+    expect(kinds(seven, 8).has('dice')).toBe(false);
+  });
+
+  it('counts in the layout’s own order: back row first, left to right, each duck once', () => {
+    for (let n = 1; n <= 8; n++)
+      for (let seed = 0; seed < 60; seed++) {
+        const { slots } = layoutFor(new Rng(seed), seven, n);
+        expect(countingOrder(slots)).toEqual(slots);
+        expect(new Set(slots.map(([x, y]) => `${x},${y}`)).size).toBe(n);
+      }
+    // Five and five fills the top row first.
+    const rows = layoutFor(new Rng(1), { ...six, layouts: ['rows'] }, 7).slots;
+    expect(rows.slice(0, 5).every(([, y]) => y === rows[0][1])).toBe(true);
+    expect(rows[5][1]).toBeGreaterThan(rows[0][1]);
+  });
+
+  it('has at most one empty pond in a level, never first, never two numbers alike running', () => {
+    let zeros = 0;
+    for (const plan of [six, seven])
+      for (let seed = 0; seed < 300; seed++) {
+        const a = howManyAnswers(new Rng(seed), plan);
+        expect(a).toHaveLength(plan.rounds);
+        expect(a[0]).not.toBe(0);
+        expect(a.filter((n) => n === 0).length).toBeLessThanOrEqual(1);
+        for (let i = 1; i < a.length; i++) expect(a[i]).not.toBe(a[i - 1]);
+        for (const n of a)
+          if (n) (expect(n).toBeGreaterThanOrEqual(plan.min), expect(n).toBeLessThanOrEqual(plan.max));
+        if (a.includes(0)) zeros++;
+      }
+    expect(zeros).toBeGreaterThan(200);
+    // A level without zero rounds never deals one.
+    for (let seed = 0; seed < 50; seed++)
+      expect(howManyAnswers(new Rng(seed), planFor(1)).includes(0)).toBe(false);
+  });
+
+  it('puts 0 on the pads only where a level has zero rounds, and 0 with 1 and 2 for an empty pond', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      expect([...padValues(new Rng(seed), 0, 0)].sort()).toEqual([0, 1, 2]);
+      for (let answer = 1; answer <= 10; answer++) {
+        const zeroLevel = padValues(new Rng(seed), answer, 0);
+        expect(zeroLevel).toContain(answer);
+        expect(new Set(zeroLevel).size).toBe(3);
+        expect(Math.min(...zeroLevel)).toBeGreaterThanOrEqual(0);
+        expect(Math.min(...padValues(new Rng(seed), answer))).toBeGreaterThanOrEqual(1);
+      }
+    }
+  });
+
+  it('gives each dotted pad exactly its number of dots, in fives, inside a pad over 100 across', () => {
+    expect(six.padDots && seven.padDots).toBe(true);
+    expect(planFor(8).padDots).toBeFalsy();
+    for (let n = 0; n <= 10; n++) {
+      const dots = dotRows(n, PAD_DOT_GAP);
+      expect(dots).toHaveLength(n);
+      expect(dots.filter(([, y]) => y === 0)).toHaveLength(Math.min(5, n));
+      for (const [x, y] of dots) expect(Math.hypot(x, PAD_DOT_Y + y) + PAD_DOT_R).toBeLessThanOrEqual(PAD_R);
+    }
+    expect(2 * PAD_R).toBeGreaterThanOrEqual(100);
+  });
+
+  it('a capable child still touches the pad with the answer, zero included', () => {
+    expect(duckMove(six, 0, 0, 0, [2, 0, 1], 0)).toEqual({ pad: 1 });
   });
 });
