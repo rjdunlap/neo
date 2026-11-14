@@ -1,1 +1,0 @@
-**Chain Reaction slice 8, level 11 The chime opens the gate** (new-levels tier: rule tests, one play, `fingerdemo` at 11): a gate ramp that exists only after the marble touches the chime. [Chain Reaction dive, slice 8](../../deep-dives/chain-reaction.md#build-slices-in-order)

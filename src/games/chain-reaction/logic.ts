@@ -34,6 +34,8 @@ export interface ChainPlan {
   two?: boolean;
   /** Level 10: a fixed spring bounces the marble over the row below it; a ramp under the spring is skipped. */
   spring?: boolean;
+  /** Level 11: a gate ramp that is there only after the marble has touched the chime. */
+  gate?: boolean;
 }
 
 export const PLANS: ChainPlan[] = [
@@ -138,13 +140,16 @@ export const TURN_PLAN: ChainPlan = {
 export const TWO_MARBLES = 9;
 /** Level 10, school: a spring part sends the marble two rows down, over the ramp below it. */
 export const SPRINGBOARD = 10;
+/** Level 11, school: the chime opens a gate ramp further down, so the chime must come first. */
+export const GATE = 11;
 
 export const LEVELS: BandLevels = {
   // Tap to turn and Which bell? are easy entries before the existing drag levels.
   prek: { min: 1, max: 8, order: [TAP_TO_TURN, WHICH_BELL, 1, 2, 3] },
   // Two marbles tops the school ladder after the chime machines; levels 7 and 8 stay pre-K entries.
   // Springboard follows Two marbles at the school top (the dive's "school 5-8" window is read as the top of the ladder).
-  school: { min: 3, max: SPRINGBOARD, order: [3, 4, 5, 6, TWO_MARBLES, SPRINGBOARD] },
+  // The chime gate follows Springboard at the school top.
+  school: { min: 3, max: GATE, order: [3, 4, 5, 6, TWO_MARBLES, SPRINGBOARD, GATE] },
 };
 export const TWO_PLAN: ChainPlan = {
   name: 'Two marbles: each one rings the bell of its own colour',
@@ -172,11 +177,25 @@ export const SPRING_PLAN: ChainPlan = {
   spring: true,
 };
 
+export const GATE_PLAN: ChainPlan = {
+  name: 'The chime opens the gate: touch the chime first, then the gate ramp sends the marble on',
+  cols: 5,
+  rows: 5,
+  fixed: 0,
+  loose: 2,
+  decoys: 4,
+  chime: true,
+  solutions: { min: 1, max: 2 },
+  machines: 2,
+  gate: true,
+};
+
 const SPECIAL: Record<number, ChainPlan> = {
   [TAP_TO_TURN]: TURN_PLAN,
   [WHICH_BELL]: PREDICT_PLAN,
   [TWO_MARBLES]: TWO_PLAN,
   [SPRINGBOARD]: SPRING_PLAN,
+  [GATE]: GATE_PLAN,
 };
 export const planFor = (level: number): ChainPlan =>
   SPECIAL[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -204,6 +223,8 @@ export interface ChainBoard {
   blue?: { start: number; target: number };
   /** Level 10's spring: a marble that reaches this cell skips the row below it (never on the first or last row). */
   spring?: Cell;
+  /** Level 11's gate: a ramp that is there only once the marble has touched the chime; shut, the marble falls straight. */
+  gate?: FixedRamp;
 }
 
 /** Which marble a trace follows: 0 is the red marble (every level), 1 the blue one at level 9. */
@@ -215,6 +236,8 @@ export interface TraceStep extends Cell {
   loose?: number;
   /** The marble bounced on the spring here; its next step is two rows down, in the same column. */
   spring?: boolean;
+  /** The marble reached the gate: open (the chime came first, so the gate ramp turned it) or shut (it fell straight). */
+  gate?: 'open' | 'shut';
 }
 
 export interface Trace {
@@ -246,6 +269,18 @@ export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = []
       continue;
     }
     if (board.chime && sameCell(at, board.chime)) chimed = true;
+    if (board.gate && sameCell(at, board.gate)) {
+      // A gate never shares the chime's cell, so `chimed` here means the chime came first.
+      if (chimed) {
+        steps.push({ ...at, ramp: board.gate.ramp, gate: 'open' });
+        col += delta(board.gate.ramp);
+        if (col < 0 || col >= board.cols) {
+          escaped = true;
+          break;
+        }
+      } else steps.push({ ...at, gate: 'shut' });
+      continue;
+    }
     const fixed = board.fixed.find((p) => sameCell(p, at));
     const turning = board.turn?.findIndex((p) => sameCell(p, at)) ?? -1;
     let ramp = fixed?.ramp;
@@ -415,6 +450,7 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
   if (plan.predict) return makePredictBoard(plan, plan.predict, rng);
   if (plan.two) return makeTwoBoard(plan, rng);
   if (plan.spring) return makeSpringBoard(plan, rng);
+  if (plan.gate) return makeGateBoard(plan, rng);
   for (let attempt = 0; attempt < 800; attempt++) {
     const rows = rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row));
     const looseRows = new Set(rows.slice(0, plan.loose));
@@ -544,6 +580,89 @@ function makeSpringBoard(plan: ChainPlan, rng: Rng): ChainBoard {
     // The spring is the point: every accepted design bounces on it, and none of them works without it.
     const springless = { ...board, spring: undefined };
     if (!ways.every((way) => bounced(trace(board, way)) && !works(springless, way))) continue;
+    board.solution = ways[0];
+    return board;
+  }
+  throw new Error(`could not make a Chain Reaction board for ${plan.name}`);
+}
+
+/** How a marble's way down met the gate, if it did. */
+export const gateMet = (t: Trace): 'open' | 'shut' | undefined => t.steps.find((step) => step.gate)?.gate;
+
+/**
+ * Level 11: the chime sits off the cup's straight drop, and a gate ramp waits on a lower row of the marble's way. One
+ * loose ramp before the chime moves the marble onto the chime's column; the other goes anywhere else on the way. Every
+ * accepted design touches the chime and then turns on the open gate, the same designs miss without the gate, and some
+ * full placement reaches the gate before the chime, so a shut gate is something she can see and fix.
+ */
+function makeGateBoard(plan: ChainPlan, rng: Rng): ChainBoard {
+  for (let attempt = 0; attempt < 800; attempt++) {
+    const chimeRow = rng.int(1, plan.rows - 3);
+    const gateRow = rng.int(chimeRow + 1, plan.rows - 1);
+    const before = rng.int(0, chimeRow - 1);
+    const rest = Array.from({ length: plan.rows }, (_, row) => row).filter(
+      (row) => row !== before && row !== chimeRow && row !== gateRow,
+    );
+    const looseRows = new Set([before, rng.pick(rest)]);
+    let col = rng.int(1, plan.cols - 2);
+    const start = col;
+    const loose: Ramp[] = [];
+    const correct: Cell[] = [];
+    let chime: Cell | undefined;
+    let gate: FixedRamp | undefined;
+    const side = (c: number): Ramp =>
+      c === 0 ? 'right' : c === plan.cols - 1 ? 'left' : rng.pick<Ramp>(['left', 'right']);
+    for (let row = 0; row < plan.rows; row++) {
+      if (row === chimeRow) {
+        chime = { row, col };
+        continue;
+      }
+      if (row === gateRow) {
+        gate = { row, col, ramp: side(col) };
+        col += delta(gate.ramp);
+        continue;
+      }
+      if (!looseRows.has(row)) continue;
+      const ramp = side(col);
+      loose.push(ramp);
+      correct.push({ row, col });
+      col += delta(ramp);
+    }
+    if (!chime || !gate || chime.col === start) continue;
+
+    const occupied = new Set([...correct, chime, gate].map(key));
+    const candidates = rng.shuffle(
+      Array.from({ length: plan.rows * plan.cols }, (_, i) => ({
+        row: Math.floor(i / plan.cols),
+        col: i % plan.cols,
+      })).filter((cell) => !occupied.has(key(cell))),
+    );
+    const sockets = [...correct, ...candidates.slice(0, plan.decoys)];
+    if (sockets.length < plan.loose + plan.decoys) continue;
+    rng.shuffle(sockets);
+    const solution = correct.map((cell) => sockets.findIndex((s) => sameCell(s, cell)));
+    const board: ChainBoard = {
+      cols: plan.cols,
+      rows: plan.rows,
+      start,
+      target: col,
+      fixed: [],
+      loose,
+      sockets,
+      solution,
+      chime,
+      gate,
+    };
+    const ways = solutions(board);
+    if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
+    if (!works(board, solution) || works(board, Array(loose.length).fill(null))) continue;
+    // The gate is the point: every accepted design opens it and turns on it, and none of them works without it.
+    const gateless = { ...board, gate: undefined };
+    if (!ways.every((way) => gateMet(trace(board, way)) === 'open' && !works(gateless, way))) continue;
+    // Some full placement reaches the gate before the chime, so the shut gate can be seen.
+    const all: Layout[] = [];
+    layouts(0, sockets.length, Array<number | null>(loose.length).fill(null), new Set(), all);
+    if (!all.some((layout) => gateMet(trace(board, layout)) === 'shut')) continue;
     board.solution = ways[0];
     return board;
   }

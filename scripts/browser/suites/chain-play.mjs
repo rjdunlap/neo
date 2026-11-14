@@ -39,8 +39,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
     };
 
-    // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7, 8, 9 and 10.
-    const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8,9,10').split(',').map(Number);
+    // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7, 8, 9, 10 and 11.
+    const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8,9,10,11').split(',').map(Number);
     const tapBell = (col) =>
       page.evaluate(async (col) => {
         const g = neo.scene.game,
@@ -419,6 +419,146 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
         'Chain Reaction 10: a missed spring run is free with its trail, a counted hint (spring column lit only for the landing ramp), the marble hops over the skipped row, two machines, one sticker, journal entry, phone portrait fit passed',
+      );
+    }
+
+    if (chainLevels.includes(11)) {
+      const stickers = await page.evaluate(
+        () => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length,
+      );
+      await launch('chain-reaction', 11);
+      const machines = await page.evaluate(() => neo.scene.game.boards.length);
+      assert.equal(machines, 2);
+      const gateAlpha = () => page.evaluate(() => neo.scene.game.gateRamp.alpha);
+      for (let index = 0; index < machines; index++) {
+        await readyMachine(index);
+        assert.ok(
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            return !!g.machine.gate && !!g.machine.chime && !!g.gateNode && g.gateRamp.alpha < 0.5;
+          }),
+          'the machine has a chime and a shut gate',
+        );
+        if (index === 0) {
+          // A full placement that reaches the gate before the chime: the gate stays shut, the marble falls straight, and
+          // the miss is a free experiment with a trail.
+          const wrong = await page.evaluate(async () => {
+            const g = neo.scene.game,
+              { trace, gateMet } = await import('/src/games/chain-reaction/logic.ts');
+            const n = g.machine.sockets.length;
+            for (let a = 0; a < n; a++)
+              for (let b = 0; b < n; b++)
+                if (a !== b && gateMet(trace(g.machine, [a, b])) === 'shut') return [a, b];
+            return null;
+          });
+          assert.ok(wrong, 'some placement reaches the gate before the chime');
+          await page.evaluate(() => {
+            const g = neo.scene.game,
+              say = g.ctx.say.bind(g.ctx);
+            window.__said = [];
+            g.ctx.say = (line, ...rest) => {
+              window.__said.push(line);
+              return say(line, ...rest);
+            };
+          });
+          await arrange(wrong);
+          await tap('neo.scene.game.runButton');
+          await page.waitForFunction(() => neo.scene.game.busy, null, { timeout: 5000 });
+          await readyMachine(index);
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0]);
+          assert.ok(
+            (await page.evaluate(() => window.__said)).includes('chain.gate-shut'),
+            'the pet says the gate stayed shut',
+          );
+          assert.ok(
+            await page.evaluate(() => neo.scene.game.trail.bounds.width > 0),
+            'the miss leaves its trail',
+          );
+          assert.ok((await gateAlpha()) < 0.5, 'the gate is still shut after the miss');
+          await tap('neo.scene.game.helpButton');
+          assert.deepEqual(
+            await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, !!neo.scene.game.hinted]),
+            [0, 1, true],
+          );
+          assert.ok(
+            (await page.evaluate(() => window.__said)).some((l) => l.startsWith('chain.gate-hint')),
+            'the hint names the chime and the gate',
+          );
+          assert.ok(
+            await page.evaluate(() => {
+              const g = neo.scene.game,
+                c = g.machine.chime,
+                b = g.glow.getLocalBounds(),
+                x = g.colX(c.col) + 42,
+                y = g.rowY(c.row) - 34;
+              const lit =
+                b.x <= x - 40 && b.x + b.width >= x + 40 && b.y <= y - 40 && b.y + b.height >= y + 40;
+              return lit === g.hintsChime();
+            }),
+            "the hint glows the chime's cell only for the ramp that takes the marble there",
+          );
+          await screenshot('chain-reaction-11');
+        }
+        const solution = await page.evaluate(() => neo.scene.game.machine.solution.slice());
+        await arrange(solution);
+        if (index === 0)
+          await page.evaluate(() => {
+            const g = neo.scene.game,
+              open = g.openGate.bind(g);
+            window.__opened = [];
+            g.openGate = async () => {
+              window.__opened.push(g.marble.y);
+              await open();
+            };
+          });
+        await tap('neo.scene.game.runButton');
+        if (index === 0) {
+          await page.waitForFunction(() => window.__opened.length > 0, null, { timeout: 10000 });
+          await page.waitForTimeout(400);
+          assert.ok((await gateAlpha()) > 0.9, 'the chime opened the gate');
+          assert.ok(
+            await page.evaluate(
+              () => window.__opened[0] < neo.scene.game.rowY(neo.scene.game.machine.gate.row),
+            ),
+            'the gate opens before the marble reaches it',
+          );
+          await screenshot('chain-reaction-11-open');
+        }
+        await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.index > index, index, {
+          timeout: 30000,
+        });
+      }
+      await finished('chain-reaction');
+      assert.deepEqual(await score(), [0, 1]);
+      assert.equal(
+        await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length),
+        stickers + 1,
+      );
+      await launch('chain-reaction', 11);
+      await readyMachine(0);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.waitForTimeout(600);
+      assert.ok(
+        await page.evaluate(() => {
+          const g = neo.scene.game;
+          return [
+            ...g.parts.map((p) => p.node),
+            g.runButton,
+            g.helpButton,
+            g.targetBell,
+            g.gateNode,
+            g.chimeBell,
+          ].every((node) => {
+            const b = node.getBounds();
+            return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight;
+          });
+        }),
+        'portrait gate, chime, tray and controls fit',
+      );
+      await screenshot('chain-reaction-11-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(
+        'Chain Reaction 11: a gate-first run stays shut, is free with its trail and is spoken, a counted hint glows the chime only for the ramp that leads there, the chime opens the gate before the marble reaches it, two machines, one sticker, phone portrait fit passed',
       );
     }
 

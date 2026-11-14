@@ -168,9 +168,9 @@ describe('game registry', () => {
     const prek = g.levels('prek'),
       school = g.levels('school');
     expect(prek.order).toEqual([7, 8, 1, 2, 3]);
-    // Levels 9 Two marbles and 10 Springboard top the school ladder through `order`, so school never steps into the pre-K
-    // entries 7 and 8.
-    expect(school).toEqual({ min: 3, max: 10, order: [3, 4, 5, 6, 9, 10] });
+    // Levels 9 Two marbles, 10 Springboard and 11 The chime opens the gate top the school ladder through `order`, so
+    // school never steps into the pre-K entries 7 and 8.
+    expect(school).toEqual({ min: 3, max: 11, order: [3, 4, 5, 6, 9, 10, 11] });
     expect(
       nextLevel(
         6,
@@ -191,6 +191,16 @@ describe('game registry', () => {
         school,
       ),
     ).toBe(10);
+    expect(
+      nextLevel(
+        10,
+        [
+          { level: 10, misses: 0, hints: 0 },
+          { level: 10, misses: 0, hints: 0 },
+        ] as never,
+        school,
+      ),
+    ).toBe(11);
     expect(nextLevel(0, [], prek)).toBe(7);
     expect(landing(7, school, g.entryLevels)).toBe(3);
     expect(landing(8, school, g.entryLevels)).toBe(3);

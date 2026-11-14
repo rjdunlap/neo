@@ -128,10 +128,12 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
 6. **Level 9, Two marbles.** Tier: rule tests and one play. (built 2026-10-21, branch `claude/chain-reaction-two-marbles`, [PR #715](https://github.com/rjdunlap/neo/pull/715)) A red and a blue marble on one 5x4 board; success needs both to ring their own bell; school order `[3, 4, 5, 6, 9]`. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-9-two-marbles-2026-10-21).
 7. **Level 10, Springboard.** Tier: rule tests, one play, `fingerdemo`. (built 2026-11-14, branch `claude/chain-reaction-springboard`, [PR #1669](https://github.com/rjdunlap/neo/pull/1669)) One fixed spring on a middle row bounces the marble over exactly the next row; school order `[3, 4, 5, 6, 9, 10]`. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-10-springboard-2026-11-14).
-8. **Level 11, The chime opens the gate.** Tier: the same.
+8. **Level 11, The chime opens the gate.** Tier: the same. (built 2026-11-14, branch `claude/chain-reaction-chime-gate`, [PR #1673](https://github.com/rjdunlap/neo/pull/1673)) A fixed gate ramp that the marble meets only after touching the chime; school order `[3, 4, 5, 6, 9, 10, 11]`. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-11-the-chime-opens-the-gate-2026-11-14).
 9. **A kept "My machine"** only after decision 4.
 
 ## What was built in this session
+
+**Slice 8, level 11 The chime opens the gate (built 2026-11-14, branch `claude/chain-reaction-chime-gate`, PR #1673).** See the slice list above and the [build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-11-the-chime-opens-the-gate-2026-11-14). Read as the school top, like levels 9 and 10; pre-K is unchanged.
 
 **Slice 7, level 10 Springboard (built 2026-11-14, branch `claude/chain-reaction-springboard`, PR #1669).** See the slice list above and the [build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-10-springboard-2026-11-14). The dive's "school 5–8" window was read as the school top, as at level 9; pre-K is unchanged.
 
