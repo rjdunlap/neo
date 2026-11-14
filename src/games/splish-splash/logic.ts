@@ -1,4 +1,6 @@
 import type { SpeciesId } from '../../creatures/species';
+import { swatch } from '../../art/palette';
+import type { PetColor } from '../../content/world';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type Part = 'tummy' | 'head' | 'cheeks' | 'ears' | 'nose';
@@ -335,3 +337,97 @@ export const TOY_HIT = { x: TOY_AT.x, y: TOY_AT.y - 30, r: 56 };
 /** The second bath toy, chosen by seed each round; the word is what it says. */
 export const TOYS = ['boat', 'fish', 'whale'] as const;
 export type Toy = (typeof TOYS)[number];
+
+/** Where the bath is, chosen by seed each round (slice 4): each room brings its own mess and its own opening word. */
+export const ROOMS = ['bathroom', 'garden', 'beach', 'art', 'kitchen'] as const;
+export type Room = (typeof ROOMS)[number];
+
+/** A mess's three shades: the blobs, the dark specks and the light specks. */
+export interface Mess {
+  fill: number;
+  dark: number;
+  light: number;
+}
+
+/** The art room's paint colours, the rainbow's six. */
+export const PAINT_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as const;
+export type Paint = (typeof PAINT_COLORS)[number];
+
+/** The paints of the art room: the deeper `line` shade of each rainbow colour, so paint reads on a pale highlight too. */
+export const PAINTS: Record<Paint, number> = {
+  red: 0xc23a40,
+  orange: 0xd9731a,
+  yellow: 0xd9a520,
+  green: 0x4a9a35,
+  blue: 0x2f78c9,
+  purple: 0x6c45c4,
+};
+
+/**
+ * Each room's mess and how the opening line says it ("{pet} is {messy}!"). The art room's paint is chosen per pet
+ * (`paintsFor`), so its `mess` is null here. The bathroom is the bath before slice 4: the same mud.
+ */
+export const ROOM_MESS: Record<Room, { mess: Mess | null; messy: string }> = {
+  bathroom: { mess: { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f }, messy: 'muddy' },
+  // Dark garden mud with blades of grass in it.
+  garden: { mess: { fill: 0x6e4a2a, dark: 0x3f8f2f, light: 0x2f6e22 }, messy: 'muddy and grassy' },
+  // Damp grey sand: dry yellow sand would vanish on a yellow or orange pet.
+  beach: { mess: { fill: 0xa8946e, dark: 0x8a7652, light: 0xb5a17a }, messy: 'sandy' },
+  art: { mess: null, messy: 'covered in paint' },
+  // Berry jam with chocolate cake crumbs.
+  kitchen: { mess: { fill: 0xa3214f, dark: 0x7a1638, light: 0x5a3a22 }, messy: 'sticky with jam' },
+};
+
+/** How far apart two colours look (the "redmean" weighted RGB distance, 0 to about 765). */
+export function colorDistance(a: number, b: number): number {
+  const [r1, g1, b1] = [(a >> 16) & 255, (a >> 8) & 255, a & 255];
+  const [r2, g2, b2] = [(b >> 16) & 255, (b >> 8) & 255, b & 255];
+  const rm = (r1 + r2) / 2;
+  return Math.sqrt(
+    (2 + rm / 256) * (r1 - r2) ** 2 + 4 * (g1 - g2) ** 2 + (2 + (255 - rm) / 256) * (b1 - b2) ** 2,
+  );
+}
+
+/** The least distance at which a mess shade reads on the pet: mud on a red pet is 186, damp sand on an orange one 142; red paint on a red pet (104) fails. */
+export const READS_AT = 130;
+
+/**
+ * Whether a mess shade reads on a pet of `color`, against both its `fill` and its pale `light`. The swatch stands in for
+ * the pet: the illustrated skin is hue-turned toward it (`recolor`), not filled with the exact swatch.
+ */
+export function readsOn(shade: number, color: PetColor): boolean {
+  const tone = swatch[color];
+  return colorDistance(shade, tone.fill) >= READS_AT && colorDistance(shade, tone.light) >= READS_AT;
+}
+
+/** `a` moved a share `t` of the way to `b`, channel by channel. */
+const mix = (a: number, b: number, t: number) =>
+  [16, 8, 0].reduce((out, s) => {
+    const ca = (a >> s) & 255;
+    return out | (Math.round(ca + (((b >> s) & 255) - ca) * t) << s);
+  }, 0);
+
+/** A paint mess in `paint`: the blobs, a deeper speck and a lighter one. */
+export function paintMess(paint: Paint): Mess {
+  const fill = PAINTS[paint];
+  return { fill, dark: mix(fill, 0x000000, 0.25), light: mix(fill, 0xffffff, 0.15) };
+}
+
+/** Whether every shade of a mess reads on a pet of `color`. */
+export const messReadsOn = (mess: Mess, color: PetColor) =>
+  [mess.fill, mess.dark, mess.light].every((shade) => readsOn(shade, color));
+
+/** The paints whose every shade reads on a pet of `color` (never its own colour, nor a near one). */
+export function paintsFor(color: PetColor): Paint[] {
+  return PAINT_COLORS.filter((c) => c !== color && messReadsOn(paintMess(c), color));
+}
+
+/** The round's room and its mess on a pet of `color`, drawn from `rng`: the room, then (in the art room) the paint. */
+export function pickRoom(
+  rng: { pick<T>(items: readonly T[]): T },
+  color: PetColor,
+): { room: Room; mess: Mess; messy: string } {
+  const room = rng.pick(ROOMS);
+  const { mess, messy } = ROOM_MESS[room];
+  return { room, mess: mess ?? paintMess(rng.pick(paintsFor(color))), messy };
+}
