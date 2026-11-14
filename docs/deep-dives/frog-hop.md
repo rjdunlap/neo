@@ -199,7 +199,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 4. **Level 9, Count up to take away** (built 2026-11-14, [PR #1656](https://github.com/rjdunlap/neo/pull/1656); appended as school level 11 `count-up`, see the build note below). Same tier; the card set stays 1–6.
 5. **Level 10, Over ten, your way** (built 2026-11-14, [PR #1659](https://github.com/rjdunlap/neo/pull/1659); appended as school level 12 `your-way`, see the build note below; decision 3, decided 2026-10-23: only 10 is a free stop). Same tier plus a play of stopping at ten and of landing directly.
 6. **Scenes** (brook, flower path, evening; shares Duck Pond's night art if built). Tier: rule tests for layout at four views, `BROWSER_SUITE=smoke` filtered to Frog Hop, one screenshot each.
-7. **Level 11, Hop by tens.** Stride and the tens line. Same tier, plus the label "100" at four views.
+7. **Level 11, Hop by tens** (claimed 2026-11-14, branch `claude/frog-hop-by-tens`; school level 13). Stride and the tens line. Same tier, plus the label "100" at four views.
 8. **The couch reaches 7–10** (after slices 3–5): the last stops play 7 then 8–10. Tier: `BROWSER_SUITE=couchgames` filtered to Frog Hop.
 9. **Between and below level 1** (they wait on the level-order decisions): *Hop along* first, then *Hop to the dots*, *Which pad lost its number?* and *Who is further along?*. The first two add `lap` and `toddler` to `bands`: update the README and roadmap counts, run `lands.test.ts` (every land fits one screen at every band) and add the new fit to the person checks.
 10. **Level 12, Big hops and little hops** (define first with a child). A prototype before the full slice.
