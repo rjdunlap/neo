@@ -195,7 +195,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 3. **Told, then asked** (decision 2; after the speech check). Fresh 4 and 9 (the pet reads it back). Tier: rule tests, a play at 7 and 8, `fingerdemo` at 8.
 4. **Level 9, Last sound** **Done (2026-11-14, [PR #1652](https://github.com/rjdunlap/neo/pull/1652), built as level 10).** (ready after slice 1; it can precede the speech check because only a miss plays a sound line). Tier: rule tests, one scripted play at 9 (one wrong monster, a hint), `fingerdemo` at 9.
 5. **Level 10, Blend it** (after slices 2 and 3; blocked on the speech check). A new interaction (cards). Tier: unit tests, **one** scripted play (first and last level, one wrong card, one hint) and one portrait screenshot.
-6. **Level 11, Say it slowly.** Level 6's interaction without the sound list. Tier: rule tests, a play at 11, `fingerdemo` at 11.
+6. **Level 11, Say it slowly** (claimed 2026-11-14, branch `claude/word-monsters-say-slowly`). Level 6's interaction without the sound list. Tier: rule tests, a play at 11, `fingerdemo` at 11.
 7. **Level 12, Fix the pet's word.** Tap-to-lift and the pet's voice. Same tier plus a portrait screenshot.
 8. **Level 13, Two letters, one sound** (decision 4). A team monster and the digraph pictures. Same tier plus a screenshot of the team at three views.
 9. **Level 14, Four sounds** (a four-slot row at four views).
