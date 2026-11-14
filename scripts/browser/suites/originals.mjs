@@ -549,6 +549,15 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (g.swimmers.some((d, i) => (i < left ? d.pondOffset[0] >= 0 : d.pondOffset[0] <= 0)))
               throw new Error('Doubles: a duck on the wrong side of the bridge');
           }
+          if (g.plan.mode === 'teen') {
+            // Level 15: a full ten in the left frame and the ones in the right; in all, then past ten, turn about.
+            const { ones, ask } = g.teen;
+            if (g.swimmers.length !== 10 + ones || ask !== (r % 2 ? 'ones' : 'total'))
+              throw new Error(`Teen round ${r}: ${g.swimmers.length} ducks, ${ask}, ones ${ones}`);
+            if (g.answer !== (ask === 'total' ? 10 + ones : ones)) throw new Error(`Teen answer ${g.answer}`);
+            if (g.swimmers.some((d, i) => (i < 10 ? d.pondOffset[0] >= 0 : d.pondOffset[0] <= 0)))
+              throw new Error('Teen: a duck in the wrong frame');
+          }
           if (g.plan.mode === 'hide' && g.swimmers.filter((d) => !d.critter.visible).length !== g.answer)
             throw new Error('Hidden count differs from answer');
           kit.tapOn(g.pads.find((p) => p.value === g.answer));
@@ -566,6 +575,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               )
             )
               throw new Error('Reveal left a duck under the bridge');
+          }
+          if (g.plan.mode === 'teen') {
+            const { numberSentence } = await import('/src/games/duck-pond/logic.ts');
+            const want = numberSentence(10, g.teen.ones);
+            await kit.until(() => g.sign.visible && g.signText.text === want, 30000);
           }
           if (g.plan.mode === 'double') {
             const { left, right } = g.sides;
