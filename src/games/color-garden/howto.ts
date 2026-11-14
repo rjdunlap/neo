@@ -36,6 +36,11 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Three baskets of one color: light, middle and dark. Drag each balloon and flower to the basket of its own shade; the middle one goes in the middle shade.',
     },
+    {
+      from: 12,
+      to: 12,
+      text: 'Four baskets in a square: each color has a fruit basket and a balloon basket, with a picture on each. Drag each fruit and balloon to the basket that matches both its color and what it is.',
+    },
   ],
   finish: 'The round ends when everything is in a basket.',
 };

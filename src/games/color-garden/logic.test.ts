@@ -7,6 +7,11 @@ import {
   basketAt,
   basketWidth,
   BIG_LEVEL,
+  BOTH_LEVEL,
+  bothOf,
+  gridBasketAt,
+  gridSpots,
+  mismatch,
   deal,
   multiply,
   DROP_ABOVE,
@@ -152,9 +157,11 @@ describe('Color Garden', () => {
     }
   });
 
-  it('pre-K climbs to level 11 after 8, skipping the lap and toddler tap entries', () => {
-    expect(levelsInOrder(LEVELS.prek!)).toEqual([4, 5, 6, 7, 8, TONES_LEVEL]);
-    expect(PLANS).toHaveLength(TONES_LEVEL);
+  it('pre-K climbs to level 11 after 8, then 12, skipping the lap and toddler tap entries', () => {
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([4, 5, 6, 7, 8, TONES_LEVEL, BOTH_LEVEL]);
+    expect(PLANS).toHaveLength(BOTH_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BOTH_LEVEL);
   });
 
   it('level 6 mixes fruit, balloons and flowers in every round, each with a rainbow color of its own', () => {
@@ -263,5 +270,87 @@ describe('Color Garden tap entry (stable level 9)', () => {
       }
     }
     for (let level = 1; level <= 8; level++) expect(planFor(level).tap).toBeUndefined();
+  });
+});
+
+describe('Color Garden level 12, Two ways at once', () => {
+  const plan = planFor(BOTH_LEVEL);
+
+  it('deals four baskets, two colors by fruit and balloon, with every pairing on the tree and one basket per thing', () => {
+    expect(plan).toMatchObject({ both: true, colors: 4, items: 10 });
+    const lefts = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const { colors, items, kinds, looks, rule } = deal(new Rng(seed), plan);
+      expect(rule).toBeUndefined();
+      expect(colors).toHaveLength(4);
+      const parts = colors.map((c) => bothOf(c)!);
+      // The grid: fruit at the back, balloons in front, and each column one color.
+      expect(parts.map((p) => p.kind)).toEqual(['fruit', 'fruit', 'balloon', 'balloon']);
+      expect(parts[0].color).toBe(parts[2].color);
+      expect(parts[1].color).toBe(parts[3].color);
+      expect(parts[0].color).not.toBe(parts[1].color);
+      lefts.add(parts[0].color);
+      expect(items).toHaveLength(plan.items);
+      for (const c of colors) expect(items).toContain(c);
+      items.forEach((key, i) => {
+        expect(colors.filter((c) => c === key)).toHaveLength(1);
+        const { color, kind } = bothOf(key)!;
+        // What she sees is what it is: a fruit of its own color, or a balloon of that color.
+        expect(looks![i]).toBe(color);
+        expect(kinds[i]).toBe(kind === 'fruit' ? FRUIT_FOR[color] : 'balloon');
+      });
+    }
+    expect([...lefts].sort()).toEqual([...RAINBOW].sort());
+  });
+
+  it('a wrong basket names exactly the property that does not match', () => {
+    const keys: SortKey[] = ['red-fruit', 'red-balloon', 'yellow-fruit', 'yellow-balloon'];
+    for (const a of keys)
+      for (const b of keys) {
+        const x = bothOf(a)!;
+        const y = bothOf(b)!;
+        const want =
+          x.color === y.color && x.kind === y.kind
+            ? undefined
+            : x.color === y.color
+              ? 'kind'
+              : x.kind === y.kind
+                ? 'color'
+                : 'both';
+        expect(mismatch(a, b), `${a} in ${b}`).toBe(want);
+      }
+    expect(bothOf('kind-fruit')).toBeUndefined();
+    expect(bothOf('light-blue')).toBeUndefined();
+    expect(bothOf('red')).toBeUndefined();
+    expect(mismatch('red', 'blue')).toBeUndefined();
+  });
+
+  it('the ghost finger drops into the right grid basket, and a drop on a front basket never lands in the one behind', () => {
+    for (const [vw, vh] of [
+      [1024, 768],
+      [768, 1024],
+      [1400, 768],
+    ]) {
+      const w = basketWidth(plan);
+      const baskets = gridSpots(vw, vh).map((p, i) => ({ ...p, w, i }));
+      // Neighbours stand apart: no two overlap sideways in a row, and the back row's base clears the front row's rim.
+      expect(baskets[1].x - baskets[0].x).toBeGreaterThan(w + 2 * 30);
+      expect(baskets[2].y - baskets[0].y).toBeGreaterThan(96);
+      for (const b of baskets) {
+        expect(gridBasketAt(baskets, b.x, b.y - DROP_ABOVE)).toBe(b);
+        // Over the basket's own body and band.
+        expect(gridBasketAt(baskets, b.x + w / 3, b.y - 20)).toBe(b);
+        expect(gridBasketAt(baskets, b.x - w / 3, b.y - 80)).toBe(b);
+      }
+      // Far up on the tree is no basket.
+      expect(gridBasketAt(baskets, baskets[0].x, 150)).toBeUndefined();
+      // Every grid item's ghost-finger move goes to its own basket.
+      const { colors, items } = deal(new Rng(7), plan);
+      const keyed = baskets.map((b, i) => ({ ...b, key: colors[i] }));
+      for (const key of items) {
+        const target = nextToSort([{ key }], keyed)!.basket;
+        expect(gridBasketAt(keyed, target.x, target.y - DROP_ABOVE)!.key).toBe(key);
+      }
+    }
   });
 });

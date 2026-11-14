@@ -3529,3 +3529,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Sing-Along Barn, Itsy Bitsy's second line (dive slice 4, 2026-11-14)
 
 [PR #1667](https://github.com/rjdunlap/neo/pull/1667), `claude/sing-along-itsy-second-line`, [dive slice 4](../deep-dives/sing-along-barn.md#build-slices-in-order). `logic.ts` gains the phrases `DOWN_CAME_THE_RAIN` (E E F G) and `WASHED_THE_SPIDER_OUT` (G F E F G E) with `semitones: true`, `itsy` joins `OWN_NOTES`, and `ITSY_FULL` (23-note verse per friend, still answering on "spout") is offered only at level 6 through `tunesFor`; other levels keep the short form. Source check against Wikipedia's score fixed the opening pickup (the G below, a rising fourth, not the G above) at every level. `describeLevel` and the level-6 how-to card updated; `sing-barn-play` gained `SING_ONLY=itsy`. See the [verification entry](../verification/2026-11-14-sing-along-barn-itsy-bitsy-s-second-line.md).
+
+## Color Garden level 12 Two ways at once (2026-11-14)
+
+[PR #1668](https://github.com/rjdunlap/neo/pull/1668), `claude/color-garden-two-ways`, slice 5 of the [dive](../deep-dives/color-garden.md#build-slices-in-order) (written as "Level 10" before IDs were taken). Stable level 12, pre-K top (order 4, 5, 6, 7, 8, 11, 12): four baskets in a 2×2 grid (two colors, fruit row behind, balloon row in front), 10 fruits and balloons, `gridBasketAt` 2D drop test, and wrong-basket lines naming only the mismatched property. See the [verification entry](../verification/2026-11-14-color-garden-level-12-two-ways-at-once.md).
