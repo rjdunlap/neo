@@ -1,12 +1,12 @@
 # Dot Link deep dive
 
-*ID `dot-link` · bands lap, toddler, preschool, pre-K, school · levels 1–6 on 2026-10-14, 7 built 2026-11-13, 8 built 2026-11-14 · session `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342))*
+*ID `dot-link` · bands lap, toddler, preschool, pre-K, school · levels 1–6 on 2026-10-14, 7 built 2026-11-13, 8 built 2026-11-14, 9 built 2026-11-14 · session `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342))*
 
 ## The game today
 
 She pops colored dots: tap one, drag a line through neighbors of one color, and new dots drop in from the top. Learning: color matching and fine-motor control first, then counting a chain, planning which line to draw, and a loop (a closed square clears a whole color). Source baseline: `origin/main` `c0992cd`; inspected `src/games/dot-link/` (`logic.ts`, `index.ts`, `logic.test.ts`), its [GAMES.md](../GAMES.md#dot-link) entry, its how-to card and voice lines (`dots.*`). No couch entry, no journal entry, no picnic step.
 
-Band windows (`LEVELS`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–8, school 8.
+Band windows (`LEVELS`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–9, school 8–9.
 
 | Level | Plan | Bands | What she decides |
 | --- | --- | --- | --- |
@@ -18,6 +18,7 @@ Band windows (`LEVELS`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–8, sch
 | 6 | Three chains of exactly 5 | pre-K | A line of five, not four or six |
 | 7 | Two colors: pop 6 of one color and 4 of another (5×5, 4 colors) | pre-K | Which color's line next; a color already full counts nothing more |
 | 8 | Same, different: three lines that follow a color pattern A B A B (5×5, 3 colors) | pre-K, school | Which neighbor's color comes next in the pattern; a line may keep repeating |
+| 9 | Make ten: build exactly 10 from several lines on a ten-frame (5×5, 4 colors) | pre-K, school | How many more to make ten; which line fits what is left |
 
 Content: colors are a seeded draw of 3–4 from five (red, blue, yellow, green, purple); boards are random with `ensureMove` repainting a row or a 2×2 when no counting move exists; refills are random. Misses: a line that pops but does not count (wrong color, too short or long, not closed) is one miss with a spoken hint (`dots.notthat`, `dots.longer`, `dots.around`, `dots.exact`); two in a row glow a real move, and so does twelve idle seconds (each glow counts one hint). Everything pops either way, so nothing is lost. Known gaps: no person check of the toddler drag yet (see [DEVICE-CHECKS](../DEVICE-CHECKS.md)); red and green are both in the palette and the dots differ only by color.
 
@@ -99,7 +100,7 @@ Both decided by the developer on 2026-10-14:
 2. **Level 11 Find my buddy** (built 2026-10-17; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-11-find-my-buddy-2026-10-17)). Readings: a full two-color 3×3 always has at least two same-color neighbor pairs, so "one pair" means exactly one pair lit (seeded `pickBuddy`), and the goal is 4 buddies (the dive gave none).
 3. **Level 7 Two colors** (built 2026-11-13; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-7-two-colors-2026-11-13)). The sign names two colors and a number each (6 and 4); a line of either color counts toward its own number, capped, so a loop may overshoot; another color, or one already full, pops but counts nothing.
 4. **Level 8 Same, different** (built 2026-11-14; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-8-same-different-2026-11-14)). A line follows the sign's pattern from its first color and is at least four long; a line drawn backward is a miss (the first dot's color is the decision); the school window opens here.
-5. **Level 9 Make ten** (the school window is decided).
+5. **Level 9 Make ten** (built 2026-11-14; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-9-make-ten-2026-11-14)). Readings: every same-color line adds its dots to a ten-frame on a big 10 sign, filled in the line's color (live preview while drawing); a line cannot grow past what is left, it stops with "Only 3 more!" (one miss per line, and the line still counts); with one left a single dot pops by a tap; loops do not close; the hint is an exact finishing line when the board has one, else the longest that fits. School window 8–9 and a stretch at the top of pre-K (3–9).
 6. **Level 10 Clear the garden** with the exact solver.
 7. **Boards with empty cells** and the anchors.
 

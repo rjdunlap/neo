@@ -33,6 +33,11 @@ import {
   PLANS,
   popped,
   step,
+  TEN,
+  tenCounts,
+  tenFits,
+  tenLeft,
+  tenLine,
   TWO,
   twoAdd,
   twoNeed,
@@ -249,8 +254,8 @@ describe('Dot Link', () => {
 
   it('plays level 8 as Same, different: pre-K top and the school window, a red-blue-red-blue sign of two of its colors', () => {
     expect(planFor(8)).toBe(PATTERN);
-    expect(levelsInOrder(LEVELS.prek!).at(-1)).toBe(8);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([8]);
+    expect(levelsInOrder(LEVELS.prek!)).toContain(8);
+    expect(levelsInOrder(LEVELS.school!)[0]).toBe(8);
     expect(dotLink.bands).toContain('school');
     // Every level any band can reach has its own plan, and nothing below 8 moved.
     for (const band of dotLink.bands)
@@ -342,6 +347,82 @@ describe('Dot Link', () => {
         ).toBe(true);
         grid = ensureMove(PATTERN, collapse(grid, move!, rng, palette).grid, rng, undefined, sign);
       }
+    }
+  });
+
+  it('plays level 9 as Make ten: the school window and a stretch at the top of pre-K', () => {
+    expect(planFor(9)).toBe(TEN);
+    expect(TEN).toMatchObject({ mode: 'ten', goal: 10 });
+    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9]);
+    expect(levelsInOrder(LEVELS.prek!).at(-1)).toBe(9);
+    expect(levelsInOrder(LEVELS.preschool!)).not.toContain(9);
+    expect(dotLink.describeLevel(9)).toMatch(/ten/i);
+    expect(planFor(8)).toBe(PATTERN);
+  });
+
+  it('stops a make-ten line at what is left, and lets one dot count only when one is left', () => {
+    expect(tenLeft(TEN, 0)).toBe(10);
+    expect(tenLeft(TEN, 7)).toBe(3);
+    expect(tenFits(3, 3)).toBe(true);
+    expect(tenFits(3, 4)).toBe(false);
+    expect(tenCounts(3, 2)).toBe(true);
+    expect(tenCounts(3, 3)).toBe(true);
+    expect(tenCounts(3, 4)).toBe(false);
+    expect(tenCounts(3, 1)).toBe(false);
+    expect(tenCounts(1, 1)).toBe(true);
+    expect(tenCounts(1, 2)).toBe(false);
+    // The sums the dive names all build ten.
+    for (const parts of [
+      [4, 3, 3],
+      [5, 5],
+      [2, 8],
+    ]) {
+      let have = 0;
+      for (const n of parts) {
+        expect(tenCounts(tenLeft(TEN, have), n)).toBe(true);
+        have += n;
+      }
+      expect(tenLeft(TEN, have)).toBe(0);
+    }
+    expect(tenLine([[R]], 0)).toBeNull();
+  });
+
+  it('suggests an exact finishing line when the board has one, else the longest that fits', () => {
+    const grid: Grid = [
+      [R, R, R, B],
+      [Y, Y, B, B],
+      [R, Y, Y, R],
+    ];
+    expect(tenLine(grid, 3)).toHaveLength(3);
+    expect(tenLine(grid, 10)!.length).toBe(4); // the yellow run is the longest line on the board
+    expect(tenLine(grid, 2)).toHaveLength(2);
+    expect(tenLine(grid, 1)).toHaveLength(1);
+  });
+
+  it('leaves a counting line for every remainder from 10 down, so every seeded make-ten round finishes on exactly ten', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const palette = rng.shuffle([...DOT_COLORS]).slice(0, TEN.colors);
+      let grid = ensureMove(TEN, makeGrid(TEN, rng, palette), rng);
+      // Every remainder from 10 to 2 has a counting line on this board, and 1 a single dot.
+      for (let left = 10; left >= 1; left--) {
+        const line = demoMove(TEN, grid, undefined, undefined, undefined, left);
+        expect(line, `seed ${seed} left ${left}`).not.toBeNull();
+        expect(tenCounts(left, line!.length)).toBe(true);
+      }
+      let have = 0;
+      let lines = 0;
+      while (tenLeft(TEN, have) > 0) {
+        const left = tenLeft(TEN, have);
+        const move = demoMove(TEN, grid, undefined, undefined, undefined, left)!;
+        expect(tenCounts(left, move.length), `seed ${seed}`).toBe(true);
+        for (let i = 1; i < move.length; i++) expect(step(grid, move.slice(0, i), move[i])).toBe('extend');
+        have += move.length;
+        grid = ensureMove(TEN, collapse(grid, move, rng, palette).grid, rng);
+        lines++;
+      }
+      expect(have).toBe(10);
+      expect(lines).toBeLessThanOrEqual(10);
     }
   });
 

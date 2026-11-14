@@ -38,6 +38,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'The sign shows a color pattern: drag one line through neighboring dots that follows it, starting on its first color, at least once through; make three. Any line pops, but one that breaks the pattern does not count.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'Make ten: every line of one color adds its dots to the ten-frame on the sign; build exactly 10 from several lines (4 + 3 + 3, 5 + 5). A line stops at what is left, and with one left a tap pops a single dot.',
+    },
   ],
   finish: 'The round ends when the asked-for dots are cleared.',
 };

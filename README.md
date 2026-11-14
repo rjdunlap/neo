@@ -159,7 +159,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Maker Lane](docs/games/maker-lane.md) | toddler–school | Cozy Village | 3 | carry a bundle along a lane of makers' stalls where it changes form (fleece to yarn to a scarf for the pet), or trace a finished thing back to where it began |
 | [Shape Sorter](docs/games/shape-sorter.md) | lap–pre-K | Rainbow Meadow | 14 | tap a shape and it hops in; one circle hole, every touch answered |
 | [Color Garden](docs/games/color-garden.md) | lap–pre-K | Rainbow Meadow | 10 | tap four fruits into their own two color baskets; lap opens with one big fruit, where a touch anywhere sends it hopping |
-| [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 10 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
+| [Dot Link](docs/games/dot-link.md) | lap–school | Rainbow Meadow | 11 | tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it |
 | [Tangram Town](docs/games/tangram-town.md) | toddler–school | Rainbow Meadow | 8 | fit two big shapes into a house, tree or boat |
 | [Garden Grow](docs/games/garden-grow.md) | lap–pre-K | Rainbow Meadow | 11 | tap the soil (or anywhere, on the big-bed lap level): a seed grows into a singing flower of five kinds |
 | [Treasure Map](docs/games/treasure-map.md) | preschool–school | Rainbow Meadow | 11 | dig anywhere in the named row or column (preschool), then where the apple row meets the red column |

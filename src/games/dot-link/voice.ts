@@ -18,5 +18,9 @@ export const VOICE = {
   'dots.around': ['Go all the way around to make a square!'],
   'dots.pattern': ['Follow the colors: {colors}! Start on {first}.'],
   'dots.follow': ['Follow the colors, starting on {first}: {colors}!'],
+  'dots.ten': ['Make ten! Each line adds its dots. Pop exactly ten.'],
+  'dots.tensofar': ['{n}! {left} more to make ten.'],
+  'dots.tenone': ['{n}! Just one more: tap a dot.'],
+  'dots.tenlimit': ['Only {n} more!'],
   'dots.done': ['Pop pop hooray!'],
 } satisfies Record<string, string[]>;

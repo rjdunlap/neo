@@ -37,6 +37,10 @@ import {
   popped,
   same,
   step,
+  tenCounts,
+  tenFits,
+  tenLeft,
+  tenLine,
   twoAdd,
   twoNeed,
   type Cell,
@@ -56,6 +60,9 @@ const CHIP_H = 126;
 /** Pattern: the space between the sign's dots, and the room the sign takes beside or above the board. */
 const PAT_STEP = 88;
 const PAT_ROOM = 150;
+/** Make ten: the space between the ten-frame's places, and the big 10's room on the sign. */
+const TEN_STEP = 42;
+const TEN_HEAD = 96;
 
 /** The mark inside a dot, about 2r across and centered. Call fill/stroke after. */
 function markPath(g: Graphics, mark: DotMark, r: number): Graphics {
@@ -105,6 +112,12 @@ class DotLink implements Game {
   have = [0, 0];
   /** Pattern: the sign's colors, in the order a line must follow them. */
   readonly pattern: ColorName[];
+  /** Make ten: the color of each dot counted so far, in order, for the ten-frame on the sign. */
+  tenFill: ColorName[] = [];
+  /** Make ten: the line being drawn has already been stopped at the limit (one spoken reminder and one miss). */
+  private tenStopped = false;
+  /** Make ten: how many places of the ten-frame show the line being drawn. */
+  private tenShown = 0;
   grid: Grid;
   dots: Graphics[][] = [];
   path: Cell[] = [];
@@ -185,6 +198,7 @@ class DotLink implements Game {
   private drawSign() {
     for (const n of this.sign.removeChildren()) n.destroy({ children: true });
     if (this.plan.mode === 'pattern') return this.drawPatternSign();
+    if (this.plan.mode === 'ten') return this.drawTenSign();
     const goals = this.plan.goals;
     if (!goals) return;
     goals.forEach((goal, i) => {
@@ -236,6 +250,55 @@ class DotLink implements Game {
     });
   }
 
+  /**
+   * Make ten: a big 10 and a ten-frame on a cream card. Counted dots fill the frame in their line's color, so 4 + 3 + 3
+   * shows as three runs; the line she is drawing shows faintly ahead of them. Above the board the frame lies in two
+   * rows of five beside the 10; at the right it stands in two columns under it.
+   */
+  private drawTenSign() {
+    const above = this.signAbove ?? false;
+    const frameW = (above ? 5 : 2) * TEN_STEP;
+    const frameH = (above ? 2 : 5) * TEN_STEP;
+    const w = above ? TEN_HEAD + frameW + 30 : 120;
+    const h = above ? 120 : TEN_HEAD + frameH + 30;
+    const done = this.tenFill.length >= this.plan.goal;
+    this.sign.addChild(
+      new Graphics()
+        .roundRect(-w / 2, -h / 2, w, h, 28)
+        .fill(cream)
+        .stroke({ width: done ? 7 : 4, color: done ? swatch.green.line : 0xd9cbb4 }),
+    );
+    const ten = label('10', 64, ink);
+    ten.position.set(above ? -w / 2 + 15 + TEN_HEAD / 2 : 0, above ? 0 : -h / 2 + 15 + TEN_HEAD / 2);
+    this.sign.addChild(ten);
+    const left = above ? -w / 2 + 15 + TEN_HEAD : -frameW / 2;
+    const top = above ? -frameH / 2 : -h / 2 + 15 + TEN_HEAD;
+    const live = this.path.length && !this.busy ? this.grid[this.path[0].r][this.path[0].c] : null;
+    const pips = new Graphics();
+    for (let k = 0; k < this.plan.goal; k++) {
+      // Fill along each row of five (above) or down each column of five (at the right).
+      const [col, row] = above ? [k % 5, Math.floor(k / 5)] : [Math.floor(k / 5), k % 5];
+      const x = left + (col + 0.5) * TEN_STEP;
+      const y = top + (row + 0.5) * TEN_STEP;
+      const had = this.tenFill[k];
+      if (had) pips.circle(x, y, 15).fill(swatch[had].fill).stroke({ width: 3, color: swatch[had].line });
+      else if (live && k < this.tenFill.length + this.tenShown)
+        pips
+          .circle(x, y, 15)
+          .fill({ color: swatch[live].fill, alpha: 0.4 })
+          .stroke({ width: 3, color: swatch[live].line });
+      else pips.circle(x, y, 15).stroke({ width: 3, color: 0xb9a888, alpha: 0.6 });
+    }
+    this.sign.addChild(pips);
+  }
+
+  /** Make ten: redraw the frame when the line being drawn changes length. */
+  private showTenLine() {
+    if (this.plan.mode !== 'ten' || this.tenShown === this.path.length) return;
+    this.tenShown = this.path.length;
+    this.drawSign();
+  }
+
   /** Pattern: the sign's colors as words for the spoken lines. */
   private patternWords() {
     return { colors: this.pattern.join(', '), first: this.pattern[0] };
@@ -267,6 +330,8 @@ class DotLink implements Game {
         return void this.ctx.instruct('dots.square');
       case 'pattern':
         return void this.ctx.instruct('dots.pattern', this.patternWords());
+      case 'ten':
+        return void this.ctx.instruct('dots.ten');
     }
   }
 
@@ -308,7 +373,7 @@ class DotLink implements Game {
     );
     // Two colors: the sign stands at the right, and the board centers in the room left of it. Pattern: the sign
     // goes along the long side, above the board in an upright view and at its right otherwise.
-    const pattern = this.plan.mode === 'pattern';
+    const pattern = this.plan.mode === 'pattern' || this.plan.mode === 'ten';
     const above = pattern && v.h > v.w;
     const sign = this.plan.mode === 'two' ? SIGN_W : pattern && !above ? PAT_ROOM : 0;
     const top = above ? PAT_ROOM : 0;
@@ -377,7 +442,7 @@ class DotLink implements Game {
       const { x, y } = this.pos(cell);
       return { tap: { on: this.touch, x: x + GAP * 0.8, y: y + GAP * 0.9 }, pause: 0.12 };
     }
-    const move = demoMove(this.plan, this.grid, this.target, this.buddy, this.pattern);
+    const move = demoMove(this.plan, this.grid, this.target, this.buddy, this.pattern, this.left);
     if (!move) return null;
     const spots = move.map((cell) => ({ on: this.touch, ...this.pos(cell) }));
     return move.length === 1
@@ -396,6 +461,11 @@ class DotLink implements Game {
     const r = Math.round(p.y / GAP);
     if (r < 0 || c < 0 || r >= this.plan.rows || c >= this.plan.cols) return null;
     return Math.hypot(p.x - c * GAP, p.y - r * GAP) < GAP * 0.45 ? { r, c } : null;
+  }
+
+  /** Make ten: how many dots are still needed. */
+  get left() {
+    return tenLeft(this.plan, this.progress);
   }
 
   private isStanding(cell: Cell) {
@@ -417,18 +487,32 @@ class DotLink implements Game {
     this.pointer = e.pointerId;
     this.path = [cell];
     this.loop = false;
+    this.tenStopped = false;
     sfx.pop(5);
     this.drawLine();
+    this.showTenLine();
   }
 
   private move(e: FederatedPointerEvent) {
     const cell = this.cellAt(e);
     if (!cell || this.loop) return;
     const result = step(this.grid, this.path, cell, this.plan.mode === 'pattern');
-    if (result === 'extend') {
+    const ten = this.plan.mode === 'ten';
+    if (ten && result === 'extend' && !tenFits(this.left, this.path.length + 1)) {
+      // Make ten: the line stops at what is left. Saying so once per line is the miss; the line still counts.
+      if (!this.tenStopped) {
+        this.tenStopped = true;
+        this.misses++;
+        this.wrongs++;
+        sfx.boing();
+        void this.ctx.say('dots.tenlimit', { n: this.left });
+      }
+    } else if (ten && result === 'loop') {
+      // A loop would pop a whole color, which is not a line of a chosen length: it simply does not close.
+    } else if (result === 'extend') {
       this.path.push(cell);
       sfx.pop(5 + Math.min(8, this.path.length));
-      if (this.plan.mode === 'chain') void this.ctx.say('count', { n: this.path.length });
+      if (this.plan.mode === 'chain' || ten) void this.ctx.say('count', { n: this.path.length });
     } else if (result === 'back') {
       this.path.pop();
       sfx.tick();
@@ -437,6 +521,7 @@ class DotLink implements Game {
       sfx.sparkle();
     }
     this.drawLine(e);
+    this.showTenLine();
   }
 
   private drawLine(e?: FederatedPointerEvent) {
@@ -468,7 +553,9 @@ class DotLink implements Game {
     this.path = [];
     this.loop = false;
     this.lines.clear();
-    if (path.length < 2) return;
+    this.showTenLine();
+    // Make ten: with one dot left, a single dot is a line.
+    if (path.length < 2 && !(this.plan.mode === 'ten' && tenCounts(this.left, path.length))) return;
     void this.judge(path, loop);
   }
 
@@ -581,8 +668,17 @@ class DotLink implements Game {
       const colors = path.map((c) => this.grid[c.r][c.c]);
       if (patternCounts(colors, this.pattern)) counts = 1;
       else line = 'dots.follow';
+    } else if (p.mode === 'ten') {
+      // Every line counts its dots: the limit already kept it from passing ten.
+      counts = tenCounts(this.left, path.length) ? path.length : 0;
+      if (counts) this.countTen(color, counts);
     }
-    if (line) {
+    if (p.mode === 'ten') {
+      // The miss, if any, was the stop at the limit while drawing, and the line still counts: a stopped line usually
+      // finishes the round, so no second-miss glow follows here (waiting still glows). A clean line resets the misses.
+      if (counts) this.hintCells = [];
+      if (counts && !this.tenStopped) this.wrongs = 0;
+    } else if (line) {
       this.misses++;
       this.wrongs++;
       sfx.boing();
@@ -622,12 +718,20 @@ class DotLink implements Game {
     this.progress += counts;
     if (this.plan.mode === 'color' && counts)
       void this.ctx.say('count', { n: Math.min(this.plan.goal, this.progress) });
-    else if (this.plan.mode !== 'color' && this.plan.mode !== 'two' && counts && this.plan.mode !== 'tap')
+    else if (
+      this.plan.mode !== 'color' &&
+      this.plan.mode !== 'two' &&
+      this.plan.mode !== 'ten' &&
+      counts &&
+      this.plan.mode !== 'tap'
+    )
       void this.ctx.say('praise');
     await tw.wait(0.22);
     // Gravity: everything above falls into the gaps, new dots drop in from the top.
     const { grid, falls } = collapse(this.grid, gone, this.ctx.rng, this.palette);
     this.grid = ensureMove(this.plan, grid, this.ctx.rng, this.target, this.pattern);
+    this.tenShown = 0;
+    if (this.plan.mode === 'ten') this.drawSign();
     // A glow lit before the pop moves to a move on the refilled board, so it never rests on dots that fell in.
     if (this.hintCells.length) this.hintCells = this.hintMove() ?? [];
     this.buildDots();
@@ -655,6 +759,16 @@ class DotLink implements Game {
     else void this.ctx.say('count', { n: this.have[which] });
   }
 
+  /** Make ten: fill that many places of the frame in the line's color, and say the total and what is left. */
+  private countTen(color: ColorName, n: number) {
+    for (let i = 0; i < n; i++) this.tenFill.push(color);
+    const total = this.tenFill.length;
+    const left = this.plan.goal - total;
+    this.drawSign();
+    if (left === 1) void this.ctx.say('dots.tenone', { n: total });
+    else if (left > 1) void this.ctx.say('dots.tensofar', { n: total, left });
+  }
+
   /** A move that would count right now on the board as it stands. */
   private hintMove() {
     const p = this.plan;
@@ -662,7 +776,9 @@ class DotLink implements Game {
       ? findSquare(this.grid)
       : p.mode === 'pattern'
         ? findPattern(this.grid, this.pattern)
-        : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
+        : p.mode === 'ten'
+          ? tenLine(this.grid, this.left)
+          : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
   }
 
   /** Light up a move that would count right now. */
