@@ -3,7 +3,15 @@ import { frogArt } from '../../art/animals';
 import { frogHop } from './index';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
+import { computeView } from '../../engine/view';
+import { GUIDE_CORNER } from '../../creatures/home-layout';
 import {
+  hopLayout,
+  sceneFor,
+  SCENES,
+  PAD_HIT,
+  CARD_HIT,
+  type Box,
   answerOf,
   answerSlot,
   GAP_CARDS,
@@ -570,5 +578,76 @@ describe('Frog Hop, Hop by tens (level 13)', () => {
       expect(SCRIPT[id][0]).toContain('one ten.');
       expect(SCRIPT[id][0]).not.toContain('{k}');
     }
+  });
+});
+
+describe('Scenes (slice 6)', () => {
+  // The four views slice 7 checked: the design area, an upright iPad, and a phone either way round (Frog Hop is not upright-ready).
+  const VIEWS = [
+    [1024, 768],
+    [768, 1024],
+    [390, 844],
+    [844, 390],
+  ].map(([w, h]) => computeView(w, h));
+  const overlap = (a: Box, b: Box) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const hit = (c: { x: number; y: number }, s: { w: number; h: number }): Box => ({
+    x: c.x - s.w / 2,
+    y: c.y - s.h / 2,
+    w: s.w,
+    h: s.h,
+  });
+
+  it('draws every scene over a hundred seeds, after the questions, so a seed makes the same questions as before', () => {
+    const seen = new Set<string>();
+    for (let s = 0; s < 100; s++) seen.add(sceneFor(new Rng(s)));
+    expect([...seen].sort()).toEqual([...SCENES].sort());
+    for (const plan of PLANS) {
+      const a = makeQuestions(plan, new Rng(5));
+      const rng = new Rng(5);
+      const b = makeQuestions(plan, rng);
+      sceneFor(rng);
+      expect(b).toEqual(a);
+    }
+  });
+
+  it('lays out every level in every scene at four views: pads, sign and cards on screen, apart, and clear of the pet', () => {
+    const pet: (v: { h: number }) => Box = (v) => ({
+      x: 0,
+      y: v.h - GUIDE_CORNER.h,
+      w: GUIDE_CORNER.w,
+      h: GUIDE_CORNER.h,
+    });
+    for (const v of VIEWS)
+      for (const plan of PLANS) {
+        // The layout takes no scene: a pad's place and hit area are the same in all four.
+        const l = hopLayout(v, plan.mode, GUIDE_CORNER.w);
+        const pads = l.pads.map((p) => hit(p, PAD_HIT));
+        const cards = l.cards.map((c) => hit(c, CARD_HIT));
+        const what = `${plan.mode} at ${Math.round(v.w)}×${Math.round(v.h)}`;
+        expect(pads.length, what).toBe(WINDOW);
+        expect(PAD_HIT.w, what).toBeGreaterThanOrEqual(100);
+        expect(Math.min(CARD_HIT.w, CARD_HIT.h), what).toBeGreaterThanOrEqual(100);
+        for (const b of [...pads, ...cards, l.sign]) {
+          expect(b.x, what).toBeGreaterThanOrEqual(0);
+          expect(b.y, what).toBeGreaterThanOrEqual(0);
+          expect(b.x + b.w, what).toBeLessThanOrEqual(v.w);
+          expect(b.y + b.h, what).toBeLessThanOrEqual(v.h);
+          expect(overlap(b, pet(v)), what).toBe(false);
+        }
+        for (const p of pads) {
+          expect(overlap(p, l.sign), what).toBe(false);
+          for (const c of cards) expect(overlap(p, c), what).toBe(false);
+        }
+        for (let i = 1; i < cards.length; i++) expect(overlap(cards[i - 1], cards[i]), what).toBe(false);
+        expect(cards.length, what).toBe(
+          countsHops(plan.mode) ||
+            plan.mode === 'make-ten' ||
+            plan.mode === 'back-ten' ||
+            plan.mode === 'frac-match'
+            ? GAP_CARDS.length
+            : 0,
+        );
+      }
   });
 });

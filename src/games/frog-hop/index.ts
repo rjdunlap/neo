@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
 import { frogArt } from '../../art/animals';
-import { ink, swatch, wood } from '../../art/palette';
+import { grass, ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -8,7 +8,7 @@ import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
@@ -48,9 +48,14 @@ import {
   flowerOn,
   TEN,
   padValue,
+  hopLayout,
+  sceneFor,
+  PAD_HIT,
+  CARD_HIT,
+  type HopScene,
+  type HopLayout,
 } from './logic';
-
-const STEP = 104;
+import { GUIDE_CORNER } from '../../creatures/home-layout';
 /** The first row of dots under a pad's numeral, clear of the numeral (y 44) and inside the pad's step. */
 const DOTS_Y = 82;
 
@@ -70,24 +75,91 @@ function drawFlower(g: Graphics, x: number, y: number) {
   g.circle(x, y, 6).fill(swatch.yellow.fill);
 }
 
+/** What the frog lands on in each scene, inside the lily pad's 96 × 56 oval. */
+function drawPad(g: Graphics, scene: HopScene) {
+  if (scene === 'brook') {
+    // A flat stepping stone with a lighter top and the brook lapping at its front.
+    g.ellipse(0, 0, 48, 28)
+      .fill(swatch.brown.light)
+      .stroke({ width: 5, color: swatch.brown.line })
+      .ellipse(-6, -6, 30, 14)
+      .fill(swatch.white.light)
+      .moveTo(-40, 22)
+      .quadraticCurveTo(-20, 30, 0, 24)
+      .quadraticCurveTo(20, 18, 40, 24)
+      .stroke({ width: 3, color: swatch.teal.line });
+  } else if (scene === 'flowers') {
+    // A white daisy, unlike the small pink landmark bloom on 5, 10, 15 and 20.
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      g.ellipse(Math.cos(a) * 30, Math.sin(a) * 15, 16, 11)
+        .fill(swatch.white.fill)
+        .stroke({ width: 3, color: swatch.white.line });
+    }
+    g.ellipse(0, 0, 18, 11).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
+  } else {
+    g.ellipse(0, 0, 48, 28)
+      .fill(swatch.green.light)
+      .stroke({ width: 5, color: swatch.green.line })
+      .moveTo(0, 0)
+      .lineTo(30, -16)
+      .stroke({ width: 4, color: swatch.green.line });
+  }
+}
+
+/** Each scene's sky and ground. The ground stays light in every scene, so the ink numerals and dots read on it. */
+const SKIES: Record<HopScene, ConstructorParameters<typeof Backdrop>[0]> = {
+  pond: {
+    sky: [0x8fd3f7, 0xe9f7ff],
+    hills: [0x7fd0e8, 0x5bb8d8, 0x4aa8c9],
+    horizon: 0.42,
+    clouds: 2,
+    sun: true,
+    seed: 61,
+  },
+  brook: {
+    sky: [0x8fd3f7, 0xe9f7ff],
+    hills: [swatch.green.light, swatch.green.fill, swatch.teal.light],
+    horizon: 0.42,
+    clouds: 2,
+    sun: true,
+    seed: 62,
+  },
+  flowers: {
+    sky: [0x8fd3f7, 0xe9f7ff],
+    hills: [swatch.teal.light, swatch.green.fill, grass],
+    horizon: 0.42,
+    clouds: 3,
+    sun: true,
+    seed: 63,
+  },
+  evening: {
+    sky: [swatch.purple.line, swatch.orange.light],
+    hills: [swatch.purple.fill, swatch.blue.line, swatch.purple.light],
+    horizon: 0.42,
+    seed: 64,
+  },
+};
+
+/** The evening's fireflies: a place in the sky as a fraction of the view, and a phase for their slow drift and glow. */
+const FIREFLIES = Array.from({ length: 8 }, (_, i) => ({
+  fx: 0.06 + i * 0.125,
+  fy: (i * 37) % 10,
+  phase: i * 1.7,
+}));
+
 class Pad extends Container {
   readonly num: Text;
   n = 0;
-  constructor() {
+  constructor(scene: HopScene = 'pond') {
     super();
-    this.addChild(
-      new Graphics()
-        .ellipse(0, 0, 48, 28)
-        .fill(swatch.green.light)
-        .stroke({ width: 5, color: swatch.green.line })
-        .moveTo(0, 0)
-        .lineTo(30, -16)
-        .stroke({ width: 4, color: swatch.green.line }),
-    );
+    const art = new Graphics();
+    drawPad(art, scene);
+    this.addChild(art);
     this.num = label('0', 34, ink);
     this.num.y = 44;
     this.addChild(this.num);
-    this.hitArea = new Rectangle(-STEP / 2, -70, STEP, 140);
+    this.hitArea = new Rectangle(-PAD_HIT.w / 2, -PAD_HIT.h / 2, PAD_HIT.w, PAD_HIT.h);
   }
   /** `n` is the pad's place on the line; `shown` is what it reads (on the tens line, ten times its place). */
   set(n: number, shown = n) {
@@ -118,6 +190,11 @@ class FrogHop implements Game {
   private unasked: (() => unknown) | null = null;
 
   private readonly backdrop: Backdrop;
+  /** The round's scene (slice 6): only the art differs, never a pad's place, numeral or hit area. */
+  readonly scene: HopScene;
+  /** The scene's own touches behind the line: ripples in the brook, grass on the path, the evening moon. */
+  private readonly sceneArt = new Graphics();
+  private readonly fireflies = new Graphics();
   private readonly row = new Container();
   /** Dots under the numerals and landmark flowers: the scene's own layer, so the sticker and icon pads never change. */
   private readonly marks = new Graphics();
@@ -152,18 +229,12 @@ class FrogHop implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.layout = hopLayout(ctx.view, this.plan.mode, GUIDE_CORNER.w);
     this.questions = makeQuestions(this.plan, ctx.rng);
-    this.backdrop = new Backdrop(
-      {
-        sky: [0x8fd3f7, 0xe9f7ff],
-        hills: [0x7fd0e8, 0x5bb8d8, 0x4aa8c9],
-        horizon: 0.42,
-        clouds: 2,
-        sun: true,
-        seed: 61,
-      },
-      ctx.view,
-    );
+    this.scene = sceneFor(ctx.rng);
+    this.backdrop = new Backdrop(SKIES[this.scene], ctx.view);
+    this.sceneArt.eventMode = 'none';
+    this.fireflies.eventMode = 'none';
     this.signText = label('', 46, ink);
     this.sign.addChild(this.signBoard, this.signText, this.signDots);
     this.marks.eventMode = 'none';
@@ -189,6 +260,8 @@ class FrogHop implements Game {
     this.bracket.visible = isFrac(this.plan.mode);
     ctx.stage.addChild(
       this.backdrop,
+      this.sceneArt,
+      this.fireflies,
       this.sign,
       this.row,
       this.bracket,
@@ -198,7 +271,7 @@ class FrogHop implements Game {
       this.glow,
     );
     for (let i = 0; i < WINDOW; i++) {
-      const pad = new Pad();
+      const pad = new Pad(this.scene);
       pad.set(i, padValue(this.plan, i));
       onTap(pad, () => void this.tapPad(pad.n), { cooldown: 250 });
       this.pads.push(pad);
@@ -211,7 +284,7 @@ class FrogHop implements Game {
       for (const n of GAP_CARDS) {
         const node = new Container();
         node.addChild(tile(104, 110, 'white'), label(String(n), 52, ink));
-        node.hitArea = new Rectangle(-56, -58, 112, 116);
+        node.hitArea = new Rectangle(-CARD_HIT.w / 2, -CARD_HIT.h / 2, CARD_HIT.w, CARD_HIT.h);
         onTap(node, () => void this.tapCard(n), { cooldown: 300 });
         this.cards.push({ n, node });
         ctx.stage.addChild(node);
@@ -290,17 +363,60 @@ class FrogHop implements Game {
     this.tally.clear();
   }
 
+  private layout: HopLayout;
+
   private padX(n: number) {
-    return (this.view.w - (WINDOW - 1) * STEP) / 2 + (n - this.lo) * STEP;
+    const [a, b] = this.layout.pads;
+    return a.x + (n - this.lo) * (b.x - a.x);
   }
 
   private padY() {
-    return this.view.h * (countsHops(this.plan.mode) ? 0.56 : 0.62);
+    return this.layout.pads[0].y;
+  }
+
+  /** The scene's still touches, laid out for the view: ripples in the brook, tufts on the flower path, the evening moon. */
+  private drawScene(v: View) {
+    const g = this.sceneArt.clear();
+    const y = this.padY();
+    if (this.scene === 'brook')
+      for (let i = 0; i < 6; i++) {
+        const x = ((i + 0.5) / 6) * v.w;
+        const yy = y + (i % 2 ? 140 : -96);
+        g.moveTo(x - 36, yy)
+          .quadraticCurveTo(x - 18, yy - 8, x, yy)
+          .quadraticCurveTo(x + 18, yy + 8, x + 36, yy)
+          .stroke({ width: 4, color: swatch.teal.fill });
+      }
+    else if (this.scene === 'flowers')
+      for (let i = 0; i < 10; i++) {
+        const x = ((i + 0.5) / 10) * v.w;
+        const yy = y + (i % 2 ? 150 : -100);
+        g.moveTo(x - 10, yy)
+          .lineTo(x - 14, yy - 16)
+          .moveTo(x, yy)
+          .lineTo(x, yy - 20)
+          .moveTo(x + 10, yy)
+          .lineTo(x + 14, yy - 16)
+          .stroke({ width: 4, color: swatch.green.line });
+      }
+    else if (this.scene === 'evening') {
+      // Out of the sign's band, above the line.
+      const mx = v.w - 90;
+      // Above the line in a short view as well.
+      const my = Math.min(262, y - 130);
+      g.circle(mx, my, 36).fill(swatch.yellow.light).stroke({ width: 4, color: swatch.yellow.line });
+      g.circle(mx - 10, my - 8, 6)
+        .fill(swatch.yellow.fill)
+        .circle(mx + 12, my + 10, 4)
+        .fill(swatch.yellow.fill);
+    }
   }
 
   resize(v: View) {
     this.view = v;
+    this.layout = hopLayout(v, this.plan.mode, GUIDE_CORNER.w);
     this.backdrop.resize(v);
+    this.drawScene(v);
     this.pads.forEach((p, i) => p.position.set(this.padX(this.lo + i), this.padY()));
     this.drawMarks();
     if (!this.frogMoving) this.frog.position.set(this.padX(this.at), this.padY() - 8);
@@ -316,15 +432,29 @@ class FrogHop implements Game {
       .lineTo(half, -14)
       .stroke({ width: 5, color: ink });
     if (this.q?.target !== undefined) this.flag.position.set(this.padX(this.q.target), this.padY());
-    this.sign.position.set(v.w / 2, 150);
-    const xs = spread(this.cards.length, 190, v.w - 110, 124);
-    this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h - 90));
+    this.sign.position.set(v.w / 2, this.layout.sign.y + this.layout.sign.h / 2);
+    this.cards.forEach((c, i) => c.node.position.set(this.layout.cards[i].x, this.layout.cards[i].y));
   }
 
   private frogMoving = false;
 
   update(dt: number) {
     this.clock += dt;
+    if (this.scene === 'evening') {
+      // Fireflies drift and glow in the sky between the sign and the line.
+      const f = this.fireflies.clear();
+      // Between the sign and the line; a view too short for that band shows none.
+      const top = this.layout.sign.y + this.layout.sign.h + 24,
+        bottom = this.padY() - 110;
+      for (const fly of bottom - top < 40 ? [] : FIREFLIES) {
+        const t = this.clock * 0.6 + fly.phase;
+        const x = fly.fx * this.view.w + 24 * Math.sin(t);
+        const y = top + ((bottom - top) * fly.fy) / 10 + 12 * Math.sin(t * 1.3);
+        const glow = 0.5 + 0.5 * Math.sin(t * 2);
+        f.circle(x, y, 12).fill({ color: swatch.yellow.light, alpha: 0.35 * glow });
+        f.circle(x, y, 5).fill({ color: swatch.yellow.fill, alpha: 0.6 + 0.4 * glow });
+      }
+    }
     this.tally.position.set(this.frog.x, this.frog.y - 112);
     const g = this.glow.clear();
     if (this.glowing && !this.busy) {
