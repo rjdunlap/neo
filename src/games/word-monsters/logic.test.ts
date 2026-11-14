@@ -6,6 +6,9 @@ import {
   ALPHABET,
   BIG_LEVEL,
   BIG_PLAN,
+  LAST_LEVEL,
+  LAST_PLAN,
+  LAST_WORDS,
   LEVELS,
   bigLetters,
   planFor,
@@ -22,6 +25,7 @@ import {
   sounded,
   WORDS,
   PICTURE_WORDS,
+  SOUNDS,
   RIMES,
 } from './logic';
 import { wordPicture } from './pictures';
@@ -36,8 +40,8 @@ describe('Word Monsters', () => {
     expect(landing(BIG_LEVEL, LEVELS.toddler!, [BIG_LEVEL])).toBe(1);
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
-    // The ladder's levels 1–8 are unchanged.
-    expect(LEVELS.school).toEqual({ min: 5, max: PLANS.length });
+    // The ladder's levels 1–8 are unchanged; school adds 10 on top and skips lap's 9.
+    expect(levelsInOrder(LEVELS.school!)).toEqual([5, 6, 7, 8, LAST_LEVEL]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(SCRIPT['monster.big']).toBeDefined();
     for (let seed = 1; seed <= 200; seed++) {
@@ -95,7 +99,7 @@ describe('Word Monsters', () => {
   });
 
   it('always offers the answer, never twice, and never next to a lookalike', () => {
-    for (const plan of PLANS) {
+    for (const plan of [...PLANS, LAST_PLAN]) {
       for (let seed = 1; seed <= 200; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         expect(qs).toHaveLength(plan.rounds);
@@ -130,7 +134,7 @@ describe('Word Monsters', () => {
 
   it('never offers two letters with the same sound, and keeps q and x out of "who says"', () => {
     expect(soundTwin('c', 'k')).toBe(true);
-    for (const plan of PLANS) {
+    for (const plan of [...PLANS, LAST_PLAN]) {
       for (let seed = 1; seed <= 200; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           for (const a of q.monsters)
@@ -142,6 +146,43 @@ describe('Word Monsters', () => {
     expect(WHO_POOL).not.toContain('q');
   });
 
+  it('level 10 asks for the last sound of a pictured word, with varied endings and the first sound sometimes a decoy', () => {
+    expect(planFor(LAST_LEVEL)).toBe(LAST_PLAN);
+    expect(LAST_PLAN).toMatchObject({ mode: 'last', choices: 3 });
+    expect(SCRIPT['monster.last']).toBeDefined();
+    // A saved 8 steps up to 10; lap's 9 carried into school starts school at its easiest, never at the big monster.
+    expect(stepLevel(8, 1, LEVELS.school!)).toBe(LAST_LEVEL);
+    expect(landing(BIG_LEVEL, LEVELS.school!, [BIG_LEVEL])).toBe(5);
+    for (const w of LAST_WORDS) {
+      expect(PICTURE_WORDS, w).toContain(w);
+      expect(w.endsWith('x'), w).toBe(false);
+    }
+    let firstDecoys = 0;
+    let questions = 0;
+    const ends = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(LAST_PLAN, new Rng(seed));
+      expect(qs).toHaveLength(LAST_PLAN.rounds);
+      expect(new Set(qs.map((q) => q.word)).size).toBe(qs.length);
+      for (const q of qs) {
+        questions++;
+        const word = q.word!;
+        expect(LAST_WORDS, word).toContain(word);
+        // The answer is the word's last letter, and only that monster says it.
+        expect(q.answer).toBe(word[word.length - 1]);
+        expect(q.monsters.filter((l) => SOUNDS[l] === SOUNDS[q.answer])).toEqual([q.answer]);
+        expect(new Set(q.monsters.map((l) => SOUNDS[l])).size).toBe(q.monsters.length);
+        expect(q.monsters.some((l) => 'qx'.includes(l))).toBe(false);
+        ends.add(q.answer);
+        if (word[0] !== q.answer && q.monsters.includes(word[0])) firstDecoys++;
+      }
+    }
+    // Endings beyond t, g, n and p turn up, and the word's first sound is a decoy in a fair share of questions.
+    expect(ends.size).toBeGreaterThanOrEqual(5);
+    expect(firstDecoys / questions).toBeGreaterThan(0.3);
+    expect(firstDecoys / questions).toBeLessThan(0.8);
+  });
+
   it('fills a word left to right, sound by sound', () => {
     expect(WORDS.every((w) => w.length === 3)).toBe(true);
     expect(fits('cat', 0, 'c')).toBe(true);
@@ -151,7 +192,7 @@ describe('Word Monsters', () => {
   });
 
   it('has a bot that plays every level with no wrong tap and no wrong drop (what the ghost finger plays)', () => {
-    for (const plan of PLANS) {
+    for (const plan of [...PLANS, LAST_PLAN]) {
       for (let seed = 1; seed <= 100; seed++) {
         const questions = makeQuestions(plan, new Rng(seed));
         if (plan.mode === 'play') {

@@ -415,6 +415,9 @@ class WordMonsters implements Game {
       this.drawSlots(q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
+    } else if (this.plan.mode === 'last' && q.word) {
+      // Larger than a building level's picture: there are no slots below it, and it is a thing to tap.
+      this.showPicture(this.sayingPicture(q.word), 0.9);
     } else {
       this.showPicture(null);
     }
@@ -433,6 +436,25 @@ class WordMonsters implements Game {
     void said.then(() => {
       if (gen === this.askGen) this.askNow();
     });
+  }
+
+  /** Level 10: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
+  private sayingPicture(word: PictureWord) {
+    const p = wordPicture(word);
+    // A generous square around the drawing (about 215 units across at its shown scale), clear of the monster row on a short view, so a near miss still counts.
+    p.hitArea = new Rectangle(-120, -120, 240, 240);
+    onTap(
+      p,
+      () => {
+        if (this.finished || this.picture !== p) return;
+        // Before the ask is heard, the tap asks it, which says the word too.
+        if (this.askNow()) return;
+        for (const c of p.children) if (c instanceof Critter) c.cheer();
+        void this.ctx.say('monster.blend', { word });
+      },
+      { cooldown: 600 },
+    );
+    return p;
   }
 
   /** Says the waiting ask, if there is one. */
@@ -494,6 +516,8 @@ class WordMonsters implements Game {
         return this.ctx.instruct('monster.who', { sound });
       case 'first':
         return this.ctx.instruct('monster.first', { word: FIRST_WORDS[q.answer], sound });
+      case 'last':
+        return this.ctx.instruct('monster.last', { word: q.word ?? '' });
       default:
         return this.ctx.instruct('monster.build', { word: q.answer, sounds: sounded(q.answer) });
     }

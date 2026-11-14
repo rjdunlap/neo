@@ -10,11 +10,33 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         ['monsters', 'pegs', 'salon', 'garden', 'helpers', 'eggs', 'mail', 'safari', 'bounce', 'dots'],
         'BATCH_ONLY',
       );
-    // Word Monsters: sounds, finding letters, first sounds and building words by dragging.
-    for (let level = 1; level <= 6 && (!only || only === 'monsters'); level++) {
+    // Word Monsters: sounds, finding letters, first sounds, building words by dragging, and (10) last sounds.
+    // MONSTER_LEVELS=10 plays only the listed levels.
+    const monsterLevels = process.env.MONSTER_LEVELS
+      ? process.env.MONSTER_LEVELS.split(',').map(Number)
+      : [1, 2, 3, 4, 5, 6];
+    const restore = [];
+    for (const level of !only || only === 'monsters' ? monsterLevels : []) {
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+      if (mode === 'last') {
+        // Played on a phone held upright, the focus of current playtests.
+        const was = page.viewportSize();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(400);
+        // Tapping the word's picture says the word again: never a miss or a hint.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => g.index === 0 && !g.busy && !g.unasked, 10000);
+          kit.tapOn(g.picture);
+          await kit.sleep(400);
+          if (g.misses !== 0 || g.hints !== 0) throw new Error('A picture tap counted as a miss');
+        });
+        await screenshot(`word-monsters-${level}-portrait`);
+        // The phone view stays for the play below; the next launch gets the old size back.
+        if (was) restore.push(was);
+      }
       await page.evaluate(async () => {
         const g = neo.scene.game;
         const ready = () => kit.until(() => !g.busy || g.finished, 10000);
@@ -66,6 +88,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         return [r.misses, r.hints];
       });
       assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `monsters ${level} score`);
+      for (const size of restore.splice(0)) await page.setViewportSize(size);
       log(
         `Word Monsters ${level} (${mode}): sounds, choices, mistakes, hint, saved score and sticker passed`,
       );

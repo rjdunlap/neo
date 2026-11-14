@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Word Monsters level 10 Last sound (2026-11-14)
+
+[PR #1652](https://github.com/rjdunlap/neo/pull/1652), `claude/word-monsters-last-sound`, slice 4 of the [dive](../deep-dives/word-monsters.md#build-slices-in-order). The plan's level 9 was built as ID 10 because lap's One big monster took 9; school is now `{min 5, max 10, order [5,6,7,8,10]}`. Mode `last`: a pictured word is said, three monsters, she taps the one for the word's last sound; four words a round, each ending in a different letter, from every pictured word except those ending in x; about half the questions carry the word's first sound as a decoy; no sound twins, no q or x. A picture tap says the word again, free; a wrong monster says its sound; two misses glow the answer (one hint). Later plan levels now take IDs 11 and up.
+
 ### Duck Pond level 14 Doubles and the hint rule (2026-11-14)
 
 [PR #1644](https://github.com/rjdunlap/neo/pull/1644), `claude/duck-pond-doubles`, slices 2 and 6 of the [dive](../deep-dives/duck-pond.md#build-slices-in-order). Doubles is appended as level 14 (ids 12 and 13 are the lap/toddler openings): mode `double`, plan rounds 5, 1–5, near 2, split. The footbridge splits the pond (`splitSeats`, full size); three rounds of equal sides then two near doubles, never the same total twice running (`doublesRounds`); the left side swims in from the left, the right from the right. A wrong pad says "4 on this side, and 4 more" and counts on across the bridge; a right one is counted aloud and the sign writes "4 + 4 = 8". Pads 1–10. The school window is 8–14 with order `[8, 9, 10, 11, 14]`; no saved level moves. Hint rule at every pad level (6–11, 14): the right pad glows from a question's second miss, and a question counts one hint however many more misses. Levels 15 (Ten and some more) and 16 (Every way) are the renumbered next slices.
