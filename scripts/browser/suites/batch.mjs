@@ -1737,9 +1737,10 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     // Dot Link: drag real lines through dots; wrong colors, short/long chains and open lines are gentle misses.
     // Level 11 (Find my buddy): a line that is not the wiggling pair shakes and stays (one miss); `DOTS_LEVELS=11` plays only it.
     // Level 12 (One big dot, lap): touches on the empty meadow pop the nearest dot and each pop brings one more.
+    // Level 7 (Two colors): lines of a color the sign does not name are the misses; both named counts fill and stop.
     const dotLevels = process.env.DOTS_LEVELS
       ? process.env.DOTS_LEVELS.split(',').map(Number)
-      : [1, 2, 3, 4, 5, 6, 11, 12];
+      : [1, 2, 3, 4, 5, 6, 7, 11, 12];
     for (const level of dotLevels) {
       if (only && only !== 'dots') break;
       await launch('dot-link', level);
@@ -1818,7 +1819,15 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           return;
         }
         // Two misses first where the level can have them.
-        if (p.mode !== 'pair') {
+        if (p.mode === 'two') {
+          // Lines of a color the sign does not name pop but count nothing; while none stands, a named line clears the way.
+          for (let guard = 0; guard < 12 && g.misses < 2; guard++) {
+            await ready();
+            const other = g.palette.find((c) => !g.targets.includes(c) && findLine(g.grid, 2, c));
+            await draw(findLine(g.grid, 2, other ?? g.target).slice(0, 2));
+          }
+          if (g.misses !== 2 || g.hints !== 1) throw new Error(`Two colors hint: ${g.misses} ${g.hints}`);
+        } else if (p.mode !== 'pair') {
           for (let k = 0; k < 2; k++) {
             const other =
               p.mode === 'color'
@@ -1838,10 +1847,13 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           }
           const want = p.mode === 'chain' ? p.length : 2;
           const line =
-            (p.mode === 'color' && (findLine(g.grid, 4, g.target) || findLine(g.grid, 3, g.target))) ||
+            ((p.mode === 'color' || p.mode === 'two') &&
+              (findLine(g.grid, 4, g.target) || findLine(g.grid, 3, g.target))) ||
             findLine(g.grid, want, g.target);
-          await draw(line.slice(0, Math.max(want, p.mode === 'color' ? line.length : want)));
+          await draw(line.slice(0, Math.max(want, p.mode === 'color' || p.mode === 'two' ? line.length : want)));
         }
+        if (p.mode === 'two' && JSON.stringify(g.have) !== JSON.stringify(p.goals))
+          throw new Error(`Two colors counts: ${g.have} of ${p.goals}`);
       });
       await screenshot(`dot-link-${level}`);
       await finished('dot-link');
