@@ -37,6 +37,9 @@ import {
   judge,
   MEADOW_LEVEL,
   meadowLandings,
+  nearestTick,
+  tickAt,
+  TICKS,
   judgeFriend,
   MAX_PULL,
   MIN_PULL,
@@ -130,6 +133,13 @@ class BouncyLaunch implements Game {
   /** Level 13: the whole screen behind the pet bounces it. */
   readonly meadowInput = new Container();
   private readonly meadow = new Container();
+  /** Level 10: the whole stretch over the number line takes the tap, routed to the nearest tick. */
+  readonly lineInput = new Container();
+  private readonly lineArt = new Graphics();
+  private readonly lineNumbers = new Container();
+  /** Level 10: where each shown pull landed (ticks), and the last shot's pick and landing, marked until the next pick. */
+  private readonly lineFlights: number[] = [];
+  private lineGap: { said: number; landed: number } | undefined;
 
   private readonly backdrop: Backdrop;
   private readonly spring = new Graphics();
@@ -203,6 +213,8 @@ class BouncyLaunch implements Game {
   /** The "watch me" demo: hold toward the next cloud's power, then press the launch button. */
   autoplay(dt: number): CouchControls {
     const out = idle();
+    // Level 10's pulls are shown ones: the demo waits on the ghost finger's tap, not a key.
+    if (this.plan.mode === 'line') return out;
     this.botWait -= dt;
     const target = this.targets[this.shot];
     if (this.flying || this.finished || this.grab || this.unasked || this.botWait > 0 || target === undefined)
@@ -234,6 +246,11 @@ class BouncyLaunch implements Game {
     if (this.plan.mode === 'meadow')
       return { tap: { on: this.meadowInput, x: this.view.w * 0.62, y: this.view.h * 0.38 } };
     if (this.plan.mode === 'between' && this.betweenStep < 2) return null;
+    if (this.plan.mode === 'line') {
+      const target = this.targets[this.shot];
+      if (target === undefined || this.prediction !== undefined) return null;
+      return { tap: { on: this.lineInput, x: this.landX(tickAt(target)), y: this.strip.y + 40 } };
+    }
     if (this.plan.mode === 'predict' || this.plan.mode === 'between') {
       const target = this.targets[this.shot];
       return target === undefined ? null : { tap: { on: this.pads[target] } };
@@ -255,7 +272,7 @@ class BouncyLaunch implements Game {
 
   control(input: CouchControls, dt: number) {
     // Shown pulls only: a key never squashes the spring away from the pull on screen.
-    if (this.plan.mode === 'planet' || this.plan.mode === 'between') return;
+    if (this.plan.mode === 'planet' || this.plan.mode === 'between' || this.plan.mode === 'line') return;
     if (this.flying || this.finished || this.grab) return;
     // The flower meadow has no spring to squash: a press is a touch.
     if (this.plan.mode === 'meadow') {
@@ -378,11 +395,15 @@ class BouncyLaunch implements Game {
       this.lastArc.eventMode =
       this.compareRing.eventMode =
       this.meadow.eventMode =
+      this.lineArt.eventMode =
+      this.lineNumbers.eventMode =
         'none';
     ctx.stage.addChild(
       this.backdrop,
       ...this.planetBackdrops,
       this.meadow,
+      this.lineArt,
+      this.lineNumbers,
       this.planetArt,
       this.lastArc,
       this.flag,
@@ -442,6 +463,11 @@ class BouncyLaunch implements Game {
       ctx.stage.addChildAt(this.meadowInput, ctx.stage.getChildIndex(this.replay));
       onTap(this.pet, (e) => this.bounce(this.ctx.stage.toLocal(e.global)), { cooldown: 300 });
       onTap(this.meadowInput, (e) => this.bounce(this.ctx.stage.toLocal(e.global)), { cooldown: 300 });
+    } else if (this.plan.mode === 'line') {
+      // Below the round button, so a tap at the spring still repeats the instruction.
+      ctx.stage.addChildAt(this.lineInput, ctx.stage.getChildIndex(this.replay));
+      onTap(this.lineInput, (e) => void this.pickTick(this.ctx.stage.toLocal(e.global).x), { cooldown: 500 });
+      onTap(this.pet, () => this.repeatInstruction(), { cooldown: 500 });
     } else if (this.plan.mode !== 'predict' && this.plan.mode !== 'planet' && this.plan.mode !== 'between') {
       // A slingshot pull, not a drag-and-drop: the pet moves by however far the finger moves,
       // wherever on the pet it was grabbed (drag.ts would snap the pet onto the fingertip).
@@ -598,6 +624,15 @@ class BouncyLaunch implements Game {
     this.replay.position.set(this.seat.x, this.strip.y - 8);
     this.pads.forEach((pad, i) => pad.position.set(this.landX(cloudAt(this.plan, i)), this.strip.y));
     this.meadowInput.hitArea = new Rectangle(0, 0, v.w, v.h);
+    // From well above the landings down to the bottom edge, and a little past each end of the line.
+    const top = this.strip.y - 230;
+    this.lineInput.hitArea = new Rectangle(
+      this.strip.x0 - 30,
+      top,
+      this.strip.x1 - this.strip.x0 + 60,
+      v.h - top,
+    );
+    this.drawLine();
     for (const { f, art } of this.flowers) art.position.set(this.landX(f), this.strip.y + 6);
     if (this.plan.mode === 'nearfar') {
       // As wide as the landing that counts (the cloud's window), and never narrower than a big target.
@@ -606,7 +641,12 @@ class BouncyLaunch implements Game {
       for (const pad of this.pads) pad.addChild(padArt(w));
     }
     if (!this.flying && !this.grab) {
-      if (this.plan.mode === 'predict' || this.plan.mode === 'planet' || this.plan.mode === 'between')
+      if (
+        this.plan.mode === 'predict' ||
+        this.plan.mode === 'planet' ||
+        this.plan.mode === 'between' ||
+        this.plan.mode === 'line'
+      )
         this.showPredictionPull();
       else this.pet.position.set(this.seat.x, this.restingY());
     }
@@ -771,7 +811,7 @@ class BouncyLaunch implements Game {
     this.hinting = this.plan.mode === 'free';
     this.placeStar();
     if (this.plan.mode === 'friend' && this.shot > 0) this.moveFriend();
-    if (this.plan.mode === 'predict') this.showPredictionPull();
+    if (this.plan.mode === 'predict' || this.plan.mode === 'line') this.showPredictionPull();
     if (this.course) {
       // The misses already made at this cloud (after a reload) count towards the hint.
       this.wrongs = this.tries;
@@ -803,6 +843,8 @@ class BouncyLaunch implements Game {
         return this.instruct(this.ask === 'farther' ? 'launch.farther' : 'launch.nearer', undefined, said);
       case 'predict':
         return this.instruct('launch.predict', undefined, said);
+      case 'line':
+        return this.instruct('launch.line', undefined, said);
       case 'between':
         return this.betweenRound();
       case 'friend':
@@ -839,7 +881,7 @@ class BouncyLaunch implements Game {
           ? between && padAt([between.low, between.high, between.mid][this.betweenStep])
           : target === undefined
             ? undefined
-            : padAt(target);
+            : cloudAt(this.plan, target);
     if (base === undefined) return;
     const pull = pullFor(base);
     const d = { x: -0.35, y: 0.94 };
@@ -869,6 +911,49 @@ class BouncyLaunch implements Game {
     sfx.pop(5);
     await this.ctx.say('launch.lets-see');
     if (!this.finished) void this.launch(padAt(this.targets[this.shot]));
+  }
+
+  /** Level 10: a tap over the number line picks its nearest tick; then the shown pull flies. Never a miss. */
+  async pickTick(x: number) {
+    if (this.plan.mode !== 'line' || this.flying || this.finished || this.prediction !== undefined) return;
+    const target = this.targets[this.shot];
+    if (target === undefined) return;
+    this.dropAsk();
+    this.prediction = nearestTick((x - this.strip.x0) / (this.strip.x1 - this.strip.x0));
+    this.lineGap = undefined;
+    this.drawLine();
+    sfx.pop(5);
+    await this.ctx.say('launch.lets-see');
+    if (!this.finished) void this.launch(tickAt(target));
+  }
+
+  /** Level 10's number line: ten ticks numbered 1 to 10, her pick ringed, and after a flight the gap from pick to landing. */
+  private drawLine() {
+    const g = this.lineArt.clear();
+    this.lineNumbers.removeChildren().forEach((c) => c.destroy());
+    if (this.plan.mode !== 'line') return;
+    const y = this.strip.y + 26;
+    const x = (i: number) => this.landX(tickAt(i));
+    g.moveTo(this.landX(0), y)
+      .lineTo(this.landX(1), y)
+      .stroke({ width: 8, color: ink, alpha: 0.75, cap: 'round' });
+    for (let i = 0; i < TICKS; i++)
+      g.moveTo(x(i), y - 16)
+        .lineTo(x(i), y + 16)
+        .stroke({ width: 6, color: ink, alpha: 0.75, cap: 'round' });
+    const pick = this.prediction ?? this.lineGap?.said;
+    if (this.lineGap && this.lineGap.said !== this.lineGap.landed)
+      g.moveTo(x(this.lineGap.said), y)
+        .lineTo(x(this.lineGap.landed), y)
+        .stroke({ width: 14, color: swatch.yellow.fill, alpha: 0.9, cap: 'round' });
+    if (pick !== undefined)
+      g.circle(x(pick), y + 50, 27).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.95 });
+    for (let i = 0; i < TICKS; i++) {
+      const n = label(String(i + 1), 34, ink);
+      n.anchor.set(0.5);
+      n.position.set(x(i), y + 50);
+      this.lineNumbers.addChild(n);
+    }
   }
 
   /** Between two flights: a short and a long shown pull fly and leave flags, then the pull between them waits for a pick. */
@@ -992,6 +1077,7 @@ class BouncyLaunch implements Game {
       this.plan.mode !== 'meadow' &&
       this.plan.mode !== 'planet' &&
       this.plan.mode !== 'between' &&
+      this.plan.mode !== 'line' &&
       !this.stick
     )
       this.observedPulls.push(f);
@@ -1065,6 +1151,18 @@ class BouncyLaunch implements Game {
         said = this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', {
           n: (this.targets[this.shot] ?? 0) + 1,
         });
+      } else if (this.plan.mode === 'line') {
+        const landed = this.targets[this.shot];
+        const pick = this.prediction ?? landed;
+        this.lineFlights.push(landed);
+        this.lineGap = { said: pick, landed };
+        this.prediction = undefined;
+        this.drawLine();
+        const gap = Math.abs(pick - landed);
+        said = this.ctx.say(
+          gap === 0 ? 'launch.line-yes' : gap === 1 ? 'launch.line-near' : 'launch.line-gap',
+          { said: pick + 1, n: landed + 1, gap },
+        );
       } else if (this.plan.mode === 'between') {
         this.betweenFlights.push(this.targets[this.shot]);
         this.drawFlag();
@@ -1196,9 +1294,11 @@ class BouncyLaunch implements Game {
           ? [...new Set(this.predictionFlights)].map(padAt)
           : this.plan.mode === 'between'
             ? this.betweenFlights.map(padAt)
-            : this.plan.mode === 'planet' && this.planetPhase !== 'home' && this.pairs[this.shot]
-              ? [this.pairs[this.shot].base]
-              : [];
+            : this.plan.mode === 'line'
+              ? [...new Set(this.lineFlights)].map(tickAt)
+              : this.plan.mode === 'planet' && this.planetPhase !== 'home' && this.pairs[this.shot]
+                ? [this.pairs[this.shot].base]
+                : [];
     for (const f of flights) {
       const x = this.landX(f),
         y = this.strip.y + 10;
@@ -1208,9 +1308,18 @@ class BouncyLaunch implements Game {
       g.poly([x, y - 90, x + 50, y - 74, x, y - 58])
         .fill(swatch.red.fill)
         .stroke({ width: 4, color: swatch.red.line, join: 'round' });
-      if (this.plan.mode === 'predict' || this.plan.mode === 'planet' || this.plan.mode === 'between') {
+      if (
+        this.plan.mode === 'predict' ||
+        this.plan.mode === 'planet' ||
+        this.plan.mode === 'between' ||
+        this.plan.mode === 'line'
+      ) {
         const n = label(
-          String(this.plan.mode === 'planet' ? this.shot + 1 : Math.round(f * PADS + 0.5)),
+          String(
+            this.plan.mode === 'planet'
+              ? this.shot + 1
+              : Math.round(f * (this.plan.mode === 'line' ? TICKS : PADS) + 0.5),
+          ),
           24,
           0xffffff,
         );

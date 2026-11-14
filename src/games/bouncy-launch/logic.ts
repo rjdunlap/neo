@@ -17,7 +17,8 @@ export type LaunchMode =
   | 'planet'
   | 'between'
   | 'nearfar'
-  | 'meadow';
+  | 'meadow'
+  | 'line';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -37,7 +38,7 @@ export const PLANS: LaunchPlan[] = [
 
 /**
  * Level 13, Flower meadow (lap's opening): a touch anywhere bounces the pet, and each landing leaves a flower, so the
- * meadow fills because she touched. 13 is the next clear ID (10 and 11 are unused ids that fall back to level 1).
+ * meadow fills because she touched. 13 was the next clear ID (11 is still unused and falls back to level 1).
  */
 export const MEADOW_LEVEL = 13;
 export const MEADOW_PLAN: LaunchPlan = {
@@ -54,8 +55,8 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
   // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
   prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
-  // Level 9, Between two flights, follows the single shown pull of level 6.
-  school: { min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] },
+  // Level 9, Between two flights, follows the single shown pull of level 6; level 10 puts a shown pull on a number line.
+  school: { min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12] },
 };
 
 /** Level 7, Feed the friend: the next free ID after the six first levels. */
@@ -86,11 +87,19 @@ export const NEAR_FAR_PLAN: LaunchPlan = {
   shots: 5,
   name: 'Two big clouds: land on the near one or the far one',
 };
+/** Level 10, Where on the line?: a shown pull, and she taps the number on a 1-10 line where she thinks it will land. */
+export const LINE_LEVEL = 10;
+export const LINE_PLAN: LaunchPlan = {
+  mode: 'line',
+  shots: 3,
+  name: 'A shown pull: tap the number on a 1 to 10 line where the pet will land, then see how close',
+};
 const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([
   ...PLANS.map((p, i) => [i + 1, p]),
   [FRIEND_LEVEL, FRIEND_PLAN],
   [NEAR_FAR_LEVEL, NEAR_FAR_PLAN],
   [BETWEEN_LEVEL, BETWEEN_PLAN],
+  [LINE_LEVEL, LINE_PLAN],
   [PLANET_LEVEL, PLANET_PLAN],
   [MEADOW_LEVEL, MEADOW_PLAN],
 ]);
@@ -138,6 +147,36 @@ export function betweenTriples(rng: Rng, rounds = 3): BetweenTriple[] {
   for (;;) {
     const out = rng.shuffle(BETWEEN_TRIPLES.slice()).slice(0, rounds);
     if (out.every((t, i) => i === 0 || t.mid !== out[i - 1].mid)) return out;
+  }
+}
+
+/** Level 10's number line: ten ticks, numbered 1 to 10, evenly along the landing strip. */
+export const TICKS = 10;
+/** Where tick `i` (0-based; it shows the number i + 1) sits, as a fraction along the strip. */
+export const tickAt = (i: number) => (i + 0.5) / TICKS;
+/**
+ * The tick nearest a point at fraction `f` along the strip, clamped to the line. The ticks are display marks only (ten
+ * across the strip are about 56 units apart); a tap anywhere over the line is routed to the nearest one.
+ */
+export const nearestTick = (f: number) => Math.max(0, Math.min(TICKS - 1, Math.round(f * TICKS - 0.5)));
+/** The line's thirds, as ticks: 1-3, 4-7 and 8-10. */
+export const LINE_THIRDS: readonly (readonly number[])[] = [
+  [0, 1, 2],
+  [3, 4, 5, 6],
+  [7, 8, 9],
+];
+
+/**
+ * Where level 10's shown pulls land, as ticks: one in each third of the line in a seeded order, and consecutive answers
+ * at least two apart, so no answer is "the same as last time, give or take".
+ */
+export function lineTargets(rng: Rng, shots = 3): number[] {
+  for (;;) {
+    const out = rng
+      .shuffle(LINE_THIRDS.slice())
+      .slice(0, shots)
+      .map((third) => rng.pick(third as number[]));
+    if (out.every((t, i) => i === 0 || Math.abs(t - out[i - 1]) >= 2)) return out;
   }
 }
 
@@ -205,12 +244,15 @@ export const NEAR_FAR = [0.2, 0.8] as const;
 export const NEAR_FAR_WINDOW = 0.2;
 
 /** How many landing clouds a plan draws. */
-export const cloudCount = (plan: LaunchPlan) => (plan.mode === 'nearfar' ? NEAR_FAR.length : PADS);
+export const cloudCount = (plan: LaunchPlan) =>
+  plan.mode === 'nearfar' ? NEAR_FAR.length : plan.mode === 'line' ? 0 : PADS;
 /** Where cloud `i` of a plan sits along the strip: the two big clouds at Near or far, the five numbered clouds otherwise. */
-export const cloudAt = (plan: LaunchPlan, i: number) => (plan.mode === 'nearfar' ? NEAR_FAR[i] : padAt(i));
+export const cloudAt = (plan: LaunchPlan, i: number) =>
+  plan.mode === 'nearfar' ? NEAR_FAR[i] : plan.mode === 'line' ? tickAt(i) : padAt(i);
 
 /** The pads to aim for, one per shot, never the same twice running (at Near or far, the two clouds take turns from a seeded start). */
 export function targets(plan: LaunchPlan, rng: Rng): number[] {
+  if (plan.mode === 'line') return lineTargets(rng, plan.shots);
   if (plan.mode === 'nearfar') {
     const first = rng.int(0, 1);
     return Array.from({ length: plan.shots }, (_, i) => (first + i) % 2);
@@ -264,7 +306,8 @@ export function judge(
     plan.mode === 'free' ||
     plan.mode === 'predict' ||
     plan.mode === 'planet' ||
-    plan.mode === 'between'
+    plan.mode === 'between' ||
+    plan.mode === 'line'
   )
     return 'yes';
   if (plan.mode === 'compare') {
@@ -318,5 +361,8 @@ export function pullToTake(
     case 'between':
       // The child does not pull at these levels; this is the fixed pull shown on screen (the middle one at level 9).
       return pullFor(padAt(targets[shot]));
+    case 'line':
+      // Level 10's shown pull, which lands on the centre of its tick.
+      return pullFor(tickAt(targets[shot]));
   }
 }
