@@ -302,6 +302,115 @@ function decor(thing: Thing): Graphics {
       g.ellipse(-66, 34, 12, 7).fill({ color: 0xffffff, alpha: 0.5 });
       g.ellipse(34, 42, 12, 7).fill({ color: 0xffffff, alpha: 0.5 });
       break;
+    case 'frog':
+      for (const x of [-46, 46]) {
+        g.circle(x, -42, 18)
+          .fill(0xffffff)
+          .stroke({ ...line, width: 4 });
+        g.circle(x + 3, -40, 9).fill(ink);
+      }
+      g.moveTo(-40, 30)
+        .quadraticCurveTo(0, 62, 40, 30)
+        .stroke({ ...line, width: 5 });
+      g.circle(-14, 8, 4).fill(ink);
+      g.circle(14, 8, 4).fill(ink);
+      break;
+    case 'turtle':
+      g.moveTo(-80, 24)
+        .lineTo(64, 24)
+        .stroke({ ...line, width: 4 });
+      g.poly([-8, -40, 22, -22, 22, 10, -8, 24, -38, 10, -38, -22]).stroke({ ...line, width: 4 });
+      g.moveTo(-8, -40)
+        .lineTo(-8, -70)
+        .moveTo(22, -22)
+        .lineTo(50, -40)
+        .moveTo(-38, -22)
+        .lineTo(-66, -40)
+        .stroke({ ...line, width: 4 });
+      g.circle(102, -12, 6).fill(ink);
+      g.moveTo(96, 8)
+        .quadraticCurveTo(106, 14, 114, 6)
+        .stroke({ ...line, width: 4 });
+      break;
+    case 'broccoli':
+      g.moveTo(-60, -44)
+        .quadraticCurveTo(-48, -58, -34, -48)
+        .moveTo(-12, -70)
+        .quadraticCurveTo(0, -84, 14, -72)
+        .moveTo(42, -46)
+        .quadraticCurveTo(56, -58, 68, -42)
+        .moveTo(-18, -16)
+        .quadraticCurveTo(0, -30, 18, -18)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(-10, 40)
+        .lineTo(-8, 94)
+        .moveTo(10, 40)
+        .lineTo(8, 94)
+        .stroke({ ...line, width: 4 });
+      break;
+    case 'whale':
+      g.circle(70, 8, 8).fill(ink);
+      g.moveTo(28, 46)
+        .quadraticCurveTo(68, 72, 108, 44)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(18, -54)
+        .lineTo(18, -84)
+        .moveTo(18, -76)
+        .quadraticCurveTo(0, -100, -18, -96)
+        .moveTo(18, -76)
+        .quadraticCurveTo(36, -100, 54, -96)
+        .stroke({ ...line, color: swatch.blue.line, width: 6 });
+      g.ellipse(-32, -16, 18, 9).fill({ color: 0xffffff, alpha: 0.5 });
+      // Two flukes, lightly tinted like the puddle's drops.
+      for (const [tx, ty] of [
+        [-136, -86],
+        [-80, -100],
+      ])
+        g.moveTo(-108, -58)
+          .quadraticCurveTo(tx - 8, ty + 26, tx, ty)
+          .quadraticCurveTo(tx + 24, ty + 10, -108, -58)
+          .fill(swatch.blue.light)
+          .stroke({ ...line, width: 5 });
+      break;
+    case 'puddle':
+      g.ellipse(0, 32, 44, 12).stroke({ ...line, width: 4 });
+      g.ellipse(0, 32, 18, 5).stroke({ ...line, width: 4 });
+      g.ellipse(-60, 22, 16, 6).fill({ color: 0xffffff, alpha: 0.5 });
+      // Two drops jumping out of the splash, outward from the middle.
+      for (const [x, y, lean] of [
+        [-40, -24, -1],
+        [44, -26, 1],
+      ])
+        g.moveTo(x + lean * 8, y - 18)
+          .quadraticCurveTo(x + 11, y + 2, x, y + 8)
+          .quadraticCurveTo(x - 11, y + 2, x + lean * 8, y - 18)
+          .fill(swatch.blue.light)
+          .stroke({ ...line, width: 4 });
+      break;
+    case 'plum':
+      g.moveTo(-6, -58)
+        .quadraticCurveTo(-30, 10, -4, 86)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(0, -60)
+        .quadraticCurveTo(2, -86, 14, -98)
+        .stroke({ ...line, color: wood.line, width: 9 });
+      g.moveTo(8, -82)
+        .quadraticCurveTo(46, -110, 70, -84)
+        .quadraticCurveTo(42, -66, 8, -82)
+        .fill(swatch.green.fill)
+        .stroke(line);
+      g.ellipse(32, -16, 18, 10).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+    case 'eggplant':
+      // A leafy cap with points hanging down over the top, and its stem.
+      g.roundRect(-72, -110, 16, 34, 6)
+        .fill(swatch.green.fill)
+        .stroke({ ...line, width: 4 });
+      g.poly([-100, -76, -24, -76, -34, -44, -50, -62, -62, -34, -74, -62, -90, -44])
+        .fill(swatch.green.fill)
+        .stroke({ ...line, width: 4 });
+      g.ellipse(-12, 0, 10, 26).fill({ color: 0xffffff, alpha: 0.45 });
+      break;
   }
   return g;
 }
