@@ -4,12 +4,12 @@ import { Backdrop } from '../../art/scenery';
 import { shapePath } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
-import { palmOnGlass } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
-import { WigglyIcon } from '../shared';
+import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
@@ -28,7 +28,15 @@ import {
   findLine,
   findPattern,
   findSquare,
+  gardenBit,
+  gardenFall,
+  gardenFalls,
+  gardenLeft,
+  gardenText,
   makeGrid,
+  parseGarden,
+  solveGarden,
+  type Garden,
   nearestCell,
   patternColors,
   patternCounts,
@@ -49,6 +57,7 @@ import {
   type Grid,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { GARDENS } from './gardens';
 
 const GAP = 108;
 const DOT_R = 34;
@@ -63,6 +72,14 @@ const PAT_ROOM = 150;
 /** Make ten: the space between the ten-frame's places, and the big 10's room on the sign. */
 const TEN_STEP = 42;
 const TEN_HEAD = 96;
+/** Clear the garden: the lines card and the Undo button, side by side above the board or stacked at its right. */
+const UNDO_W = 136;
+const UNDO_H = 100;
+/** Clear the garden: the lines card's size at the right of the board (it is wider and lower above it). */
+const CARD_W = 120;
+const CARD_H = 140;
+const CARD_ABOVE_W = 200;
+const CARD_ABOVE_H = 124;
 
 /** The mark inside a dot, about 2r across and centered. Call fill/stroke after. */
 function markPath(g: Graphics, mark: DotMark, r: number): Graphics {
@@ -119,6 +136,14 @@ class DotLink implements Game {
   /** Make ten: how many places of the ten-frame show the line being drawn. */
   private tenShown = 0;
   grid: Grid;
+  /** Clear the garden: the board as color places (null is a gap), the boards before each line for Undo, the lines
+   * drawn so far and the fewest that clear it (found once, from the exact solver). */
+  garden: Garden | null = null;
+  history: Garden[] = [];
+  linesUsed = 0;
+  fewest = 0;
+  readonly undoButton = new Container();
+  private readonly gardenHints = new Map<string, Cell[] | null>();
   dots: Graphics[][] = [];
   path: Cell[] = [];
   loop = false;
@@ -153,13 +178,15 @@ class DotLink implements Game {
     this.palette = ctx.rng.shuffle([...DOT_COLORS]).slice(0, this.plan.colors);
     this.targets = this.plan.mode === 'two' ? this.palette.slice(0, 2) : [];
     this.pattern = patternColors(this.plan, this.palette);
-    this.grid = ensureMove(
-      this.plan,
-      makeGrid(this.plan, ctx.rng, this.palette),
-      ctx.rng,
-      this.target,
-      this.pattern,
-    );
+    if (this.plan.mode === 'garden') {
+      // A frozen board in the round's colors; no other level makes this draw, so they deal exactly as before.
+      const { board, lines } = ctx.rng.pick(GARDENS);
+      this.garden = parseGarden(board);
+      this.fewest = lines;
+    }
+    this.grid = this.garden
+      ? this.gardenGrid()
+      : ensureMove(this.plan, makeGrid(this.plan, ctx.rng, this.palette), ctx.rng, this.target, this.pattern);
     this.backdrop = new Backdrop(
       { sky: [0xfde2f0, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.82, clouds: 2, seed: 81 },
       ctx.view,
@@ -168,6 +195,12 @@ class DotLink implements Game {
     if (this.plan.mode === 'big') this.standing = BIG_FILL.slice(0, bigShown(0)).map((c) => ({ ...c }));
     this.board.addChild(this.lines, this.layer, this.touch);
     ctx.stage.addChild(this.backdrop, this.board, this.sign);
+    if (this.garden) {
+      this.undoButton.addChild(tile(UNDO_W, UNDO_H, 'teal'), label('Undo ↶', 26, ink));
+      this.undoButton.hitArea = new Rectangle(-UNDO_W / 2, -UNDO_H / 2, UNDO_W, UNDO_H);
+      onTap(this.undoButton, () => this.undo());
+      ctx.stage.addChild(this.undoButton);
+    }
     this.sign.eventMode = 'none';
     this.drawSign();
     this.buildDots();
@@ -199,6 +232,7 @@ class DotLink implements Game {
     for (const n of this.sign.removeChildren()) n.destroy({ children: true });
     if (this.plan.mode === 'pattern') return this.drawPatternSign();
     if (this.plan.mode === 'ten') return this.drawTenSign();
+    if (this.plan.mode === 'garden') return this.drawGardenSign();
     const goals = this.plan.goals;
     if (!goals) return;
     goals.forEach((goal, i) => {
@@ -292,6 +326,65 @@ class DotLink implements Game {
     this.sign.addChild(pips);
   }
 
+  /**
+   * Clear the garden: a cream card counting the lines drawn. After clearing it shows the lines and the fewest that
+   * clear the board, with a gold star when they match; it is never a score and the sticker never depends on it.
+   */
+  private drawGardenSign() {
+    const above = this.signAbove ?? false;
+    const [w, h] = above ? [CARD_ABOVE_W, CARD_ABOVE_H] : [CARD_W, CARD_H];
+    const x = above ? -(UNDO_W + 12) / 2 : 0;
+    const y = above ? 0 : -(UNDO_H + 12) / 2;
+    const best = this.finished && this.linesUsed <= this.fewest;
+    // Undo is dimmed while there is no line to take back.
+    this.undoButton.alpha = this.history.length ? 1 : 0.5;
+    this.sign.addChild(
+      new Graphics()
+        .roundRect(x - w / 2, y - h / 2, w, h, 28)
+        .fill(cream)
+        .stroke({ width: best ? 7 : 4, color: best ? swatch.green.line : 0xd9cbb4 }),
+    );
+    const put = (text: string, size: number, dy: number) => {
+      const t = label(text, size, ink);
+      t.position.set(x, y + dy);
+      this.sign.addChild(t);
+    };
+    if (!this.finished) {
+      put('Lines', 24, -h / 2 + 26);
+      put(String(this.linesUsed), 56, 14);
+      return;
+    }
+    put(`${this.linesUsed} lines`, 26, -34);
+    put(`fewest ${this.fewest}`, 22, 0);
+    if (best) {
+      const star = shapePath(new Graphics(), 'star', 17)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line });
+      star.position.set(x, y + 36);
+      this.sign.addChild(star);
+    }
+  }
+
+  /** Clear the garden: the board in the round's colors, a gap as null. */
+  private gardenGrid(): Grid {
+    return this.garden!.map((row) => row.map((k) => (k === null ? null : this.palette[k]))) as Grid;
+  }
+
+  /** Clear the garden: take back the last line. Free, never a miss; the glow goes and the next wait finds a new one. */
+  private undo() {
+    if (!this.garden || this.busy || this.finished || this.path.length || !this.history.length)
+      return void sfx.tick();
+    this.garden = this.history.pop()!;
+    this.grid = this.gardenGrid();
+    this.linesUsed--;
+    this.progress = this.plan.goal - gardenLeft(this.garden);
+    this.hintCells = [];
+    this.idle = 0;
+    sfx.pop(4);
+    this.buildDots();
+    this.drawSign();
+  }
+
   /** Make ten: redraw the frame when the line being drawn changes length. */
   private showTenLine() {
     if (this.plan.mode !== 'ten' || this.tenShown === this.path.length) return;
@@ -332,6 +425,8 @@ class DotLink implements Game {
         return void this.ctx.instruct('dots.pattern', this.patternWords());
       case 'ten':
         return void this.ctx.instruct('dots.ten');
+      case 'garden':
+        return void this.ctx.instruct('dots.garden');
     }
   }
 
@@ -339,7 +434,9 @@ class DotLink implements Game {
     return { x: c.c * GAP, y: c.r * GAP };
   }
 
-  private drawDot(g: Graphics, color: ColorName) {
+  private drawDot(g: Graphics, color: ColorName | null) {
+    // Clear the garden: a gap has no dot.
+    if (color === null) return void g.clear();
     const sw = swatch[color];
     g.clear().circle(0, 0, DOT_R).fill(sw.fill).stroke({ width: 5, color: sw.line });
     g.circle(-19, -17, 6).fill({ color: 0xffffff, alpha: 0.5 });
@@ -354,7 +451,7 @@ class DotLink implements Game {
         this.drawDot(g, color);
         g.position.copyFrom(this.pos({ r, c }));
         // Big mode: only the standing dots show; the other places wait for the pops that bring them.
-        g.visible = this.plan.mode !== 'big' || this.isStanding({ r, c });
+        g.visible = (this.plan.mode !== 'big' || this.isStanding({ r, c })) && color !== null;
         this.layer.addChild(g);
         return g;
       }),
@@ -373,7 +470,7 @@ class DotLink implements Game {
     );
     // Two colors: the sign stands at the right, and the board centers in the room left of it. Pattern: the sign
     // goes along the long side, above the board in an upright view and at its right otherwise.
-    const pattern = this.plan.mode === 'pattern' || this.plan.mode === 'ten';
+    const pattern = this.plan.mode === 'pattern' || this.plan.mode === 'ten' || this.plan.mode === 'garden';
     const above = pattern && v.h > v.w;
     const sign = this.plan.mode === 'two' ? SIGN_W : pattern && !above ? PAT_ROOM : 0;
     const top = above ? PAT_ROOM : 0;
@@ -391,6 +488,12 @@ class DotLink implements Game {
       this.sign.position.set(this.board.x + (w * fit) / 2, this.board.y - (GAP * fit) / 2 - PAT_ROOM / 2);
     else if (pattern) this.sign.position.set(v.w - PAT_ROOM / 2 - 10, v.h / 2 + 20);
     else this.sign.position.set(v.w - SIGN_W / 2 - 10, v.h / 2 + 20);
+    // Clear the garden: Undo stands beside the lines card above the board, or under it at the right.
+    if (this.garden)
+      this.undoButton.position.set(
+        this.sign.x + (above ? (CARD_ABOVE_W + 12) / 2 : 0),
+        this.sign.y + (above ? 0 : (CARD_H + 12) / 2),
+      );
     // Big mode: the whole view is the touch, in board units.
     if (this.plan.mode === 'big')
       this.touch.hitArea = new Rectangle(-this.board.x / fit, -this.board.y / fit, v.w / fit, v.h / fit);
@@ -442,7 +545,9 @@ class DotLink implements Game {
       const { x, y } = this.pos(cell);
       return { tap: { on: this.touch, x: x + GAP * 0.8, y: y + GAP * 0.9 }, pause: 0.12 };
     }
-    const move = demoMove(this.plan, this.grid, this.target, this.buddy, this.pattern, this.left);
+    const move = this.garden
+      ? this.hintMove()
+      : demoMove(this.plan, this.grid, this.target, this.buddy, this.pattern, this.left);
     if (!move) return null;
     const spots = move.map((cell) => ({ on: this.touch, ...this.pos(cell) }));
     return move.length === 1
@@ -476,7 +581,7 @@ class DotLink implements Game {
     if (this.busy || this.finished || palmOnGlass()) return;
     if (this.plan.mode === 'big') return this.touchBig(e);
     const cell = this.cellAt(e);
-    if (!cell) return;
+    if (!cell || this.grid[cell.r][cell.c] === null) return;
     this.idle = 0;
     if (this.plan.mode === 'tap') {
       // Tap mode never judges a line, so a pop is what puts the waiting bob away.
@@ -555,7 +660,13 @@ class DotLink implements Game {
     this.lines.clear();
     this.showTenLine();
     // Make ten: with one dot left, a single dot is a line.
-    if (path.length < 2 && !(this.plan.mode === 'ten' && tenCounts(this.left, path.length))) return;
+    // Clear the garden: a tap pops a single dot, so every board clears.
+    if (
+      path.length < 2 &&
+      !(this.plan.mode === 'ten' && tenCounts(this.left, path.length)) &&
+      !(this.plan.mode === 'garden' && path.length === 1)
+    )
+      return;
     void this.judge(path, loop);
   }
 
@@ -715,21 +826,36 @@ class DotLink implements Game {
     sfx.pop(9);
     if (loop) sfx.tada();
     const before = this.progress;
-    this.progress += counts;
+    if (!this.garden) this.progress += counts;
     if (this.plan.mode === 'color' && counts)
       void this.ctx.say('count', { n: Math.min(this.plan.goal, this.progress) });
     else if (
       this.plan.mode !== 'color' &&
       this.plan.mode !== 'two' &&
       this.plan.mode !== 'ten' &&
+      this.plan.mode !== 'garden' &&
       counts &&
       this.plan.mode !== 'tap'
     )
       void this.ctx.say('praise');
     await tw.wait(0.22);
-    // Gravity: everything above falls into the gaps, new dots drop in from the top.
-    const { grid, falls } = collapse(this.grid, gone, this.ctx.rng, this.palette);
-    this.grid = ensureMove(this.plan, grid, this.ctx.rng, this.target, this.pattern);
+    // Gravity: everything above falls into the gaps, new dots drop in from the top (Clear the garden: none come).
+    let falls: { from: number; to: number; c: number }[];
+    if (this.garden) {
+      const cols = this.plan.cols,
+        mask = gone.reduce((m, c) => m | gardenBit(cols, c), 0);
+      this.history.push(this.garden);
+      falls = gardenFalls(this.garden, mask);
+      this.garden = gardenFall(this.garden, mask);
+      this.grid = this.gardenGrid();
+      this.linesUsed++;
+      this.progress = this.plan.goal - gardenLeft(this.garden);
+      this.drawSign();
+    } else {
+      const fell = collapse(this.grid, gone, this.ctx.rng, this.palette);
+      falls = fell.falls;
+      this.grid = ensureMove(this.plan, fell.grid, this.ctx.rng, this.target, this.pattern);
+    }
     this.tenShown = 0;
     if (this.plan.mode === 'ten') this.drawSign();
     // A glow lit before the pop moves to a move on the refilled board, so it never rests on dots that fell in.
@@ -772,6 +898,13 @@ class DotLink implements Game {
   /** A move that would count right now on the board as it stands. */
   private hintMove() {
     const p = this.plan;
+    if (this.garden) {
+      // The exact search takes a moment on a phone, so each board's first fewest line is kept once found.
+      const key = gardenText(this.garden);
+      if (!this.gardenHints.has(key))
+        this.gardenHints.set(key, solveGarden(this.garden).route[0]?.path ?? null);
+      return this.gardenHints.get(key)!;
+    }
     return p.mode === 'square'
       ? findSquare(this.grid)
       : p.mode === 'pattern'
@@ -806,7 +939,15 @@ class DotLink implements Game {
       gravity: 0,
       life: [0.8, 1.2],
     });
-    await this.ctx.say('dots.done');
+    if (this.garden) {
+      this.undoButton.visible = false;
+      // The fewest lines are shown and said after clearing, never as a score: the sticker never depends on them.
+      this.drawSign();
+      await this.ctx.say(this.linesUsed <= this.fewest ? 'dots.gardenbest' : 'dots.gardendone', {
+        n: this.linesUsed,
+        m: this.fewest,
+      });
+    } else await this.ctx.say('dots.done');
     await this.ctx.tw.wait(0.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }

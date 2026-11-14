@@ -3,6 +3,7 @@ import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { firstLevel, landing, levelsInOrder } from '../../progress/difficulty';
 import { dotLink } from '.';
+import { GARDENS } from './gardens';
 import {
   BIG,
   BIG_FILL,
@@ -21,7 +22,17 @@ import {
   findLine,
   findPattern,
   findSquare,
+  GARDEN,
+  gardenFall,
+  gardenFalls,
+  gardenLeft,
+  gardenLines,
+  greedyGarden,
   LEVELS,
+  parseGarden,
+  popcount,
+  solveGarden,
+  type Garden,
   makeGrid,
   nearestCell,
   pairs,
@@ -353,7 +364,7 @@ describe('Dot Link', () => {
   it('plays level 9 as Make ten: the school window and a stretch at the top of pre-K', () => {
     expect(planFor(9)).toBe(TEN);
     expect(TEN).toMatchObject({ mode: 'ten', goal: 10 });
-    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9, 10]);
     expect(levelsInOrder(LEVELS.prek!).at(-1)).toBe(9);
     expect(levelsInOrder(LEVELS.preschool!)).not.toContain(9);
     expect(dotLink.describeLevel(9)).toMatch(/ten/i);
@@ -477,5 +488,100 @@ describe('Dot Link', () => {
     // Big mode demonstrates on a real place.
     const rng = new Rng(3);
     expect(demoMove(BIG, ensureMove(BIG, makeGrid(BIG, rng, [R, B]), rng))).toEqual([BIG_FILL[0]]);
+  });
+});
+
+describe('level 10, Clear the garden', () => {
+  const apply = (g: Garden, lines: { mask: number }[]) => lines.reduce((b, l) => gardenFall(b, l.mask), g);
+
+  it('is school play at the top of its window; pre-K stops at 9', () => {
+    expect(planFor(10)).toBe(GARDEN);
+    expect(levelsInOrder(LEVELS.school!).at(-1)).toBe(10);
+    expect(levelsInOrder(LEVELS.prek!)).not.toContain(10);
+    expect(dotLink.describeLevel(10)).toMatch(/garden/i);
+  });
+
+  it('pops with gravity and no refill: the dots above fall and the gaps stay at the top', () => {
+    const g = parseGarden('abca/bcab/cabc/abca');
+    const mask = (1 << (3 * 4 + 1)) | (1 << (2 * 4 + 1)); // the two lowest dots of column 1
+    const after = gardenFall(g, mask);
+    expect(gardenLeft(after)).toBe(14);
+    expect(after.map((row) => row[1])).toEqual([null, null, 1, 2]); // b fell two rows, c fell two rows
+    expect(gardenFalls(g, mask)).toEqual([
+      { from: 1, to: 3, c: 1 },
+      { from: 0, to: 2, c: 1 },
+    ]);
+  });
+
+  it('offers a tap on any dot, every same-color line, and a loop wherever a line can close on itself', () => {
+    // A ring of a around a 2×2 of b: the ring closes a loop of twelve, and the middle is a square.
+    const ring = parseGarden('aaaa/abba/abba/aaaa');
+    const lines = gardenLines(ring);
+    expect(lines.filter((l) => popcount(l.mask) === 1)).toHaveLength(16);
+    const loops = lines.filter((l) => l.loop);
+    expect(loops.map((l) => popcount(l.mask)).sort((x, y) => x - y)).toEqual([4, 12]);
+    for (const l of loops) {
+      // A loop's path ends back on one of its own dots, at least four dots in, as `step` closes it.
+      const back = l.path.at(-1)!;
+      expect(l.path.slice(0, -2).some((c) => c.r === back.r && c.c === back.c)).toBe(true);
+      expect(l.path.length - 1).toBeGreaterThanOrEqual(4);
+    }
+    expect(solveGarden(ring).lines).toBe(2);
+    // Each line is a real drag: neighbors of one color, no dot twice before a loop closes.
+    for (const l of lines) {
+      const body = l.loop ? l.path.slice(0, -1) : l.path;
+      body.forEach((c, i) => {
+        expect(ring[c.r][c.c]).toBe(ring[body[0].r][body[0].c]);
+        if (i) expect(Math.abs(c.r - body[i - 1].r) + Math.abs(c.c - body[i - 1].c)).toBe(1);
+      });
+      expect(new Set(body.map((c) => `${c.r},${c.c}`)).size).toBe(body.length);
+    }
+  });
+
+  it('every frozen board: three colors on a full 4×4, the stored fewest lines, and a plan beats the longest line', () => {
+    expect(GARDENS.length).toBeGreaterThanOrEqual(24);
+    expect(new Set(GARDENS.map((b) => b.board)).size).toBe(GARDENS.length);
+    for (const { board, lines } of GARDENS) {
+      const g = parseGarden(board);
+      expect(g).toHaveLength(4);
+      expect(g.every((row) => row.length === 4 && row.every((k) => k !== null))).toBe(true);
+      expect(new Set(g.flat()).size).toBe(3);
+      const s = solveGarden(g);
+      expect(s.lines).toBe(lines);
+      expect(lines).toBeGreaterThanOrEqual(4);
+      expect(lines).toBeLessThanOrEqual(5);
+      // Bounded so a hint is quick on a phone.
+      expect(s.positions).toBeLessThanOrEqual(6000);
+      // A player who always draws the line that pops the most needs at least two more.
+      expect(greedyGarden(g)).toBeGreaterThanOrEqual(lines + 2);
+    }
+  });
+
+  it("the solver's route clears the board, each line legal where it is drawn, and every hint starts a fewest route", () => {
+    for (const { board, lines } of GARDENS.slice(0, 8)) {
+      let g = parseGarden(board);
+      const { route } = solveGarden(g);
+      expect(route).toHaveLength(lines);
+      for (let left = lines; left > 0; left--) {
+        // The hint is the first line of a fewest route from here; after it, one line fewer is still the fewest.
+        const hint = solveGarden(g).route[0];
+        expect(gardenLines(g).some((l) => l.mask === hint.mask)).toBe(true);
+        g = gardenFall(g, hint.mask);
+        expect(solveGarden(g).lines).toBe(left - 1);
+      }
+      expect(gardenLeft(g)).toBe(0);
+      expect(gardenLeft(apply(parseGarden(board), route))).toBe(0);
+    }
+  });
+
+  it('never a failure: from any position reached by any lines, the board still clears', () => {
+    const rng = new Rng(10);
+    for (const { board } of GARDENS) {
+      let g = parseGarden(board);
+      while (gardenLeft(g)) {
+        expect(solveGarden(g).lines).toBeGreaterThan(0);
+        g = gardenFall(g, rng.pick(gardenLines(g)).mask);
+      }
+    }
   });
 });

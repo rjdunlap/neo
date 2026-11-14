@@ -8,7 +8,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * square (which clears every dot of that color).
  */
 export type DotMode =
-  'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square' | 'pattern' | 'ten';
+  'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square' | 'pattern' | 'ten' | 'garden';
 
 export interface DotPlan {
   mode: DotMode;
@@ -98,6 +98,20 @@ export const TEN: DotPlan = {
   name: 'Make ten: lines of dots that add up to exactly 10',
 };
 
+/**
+ * Level 10, Clear the garden: a fixed 4×4 board of three colors and no refill. Popped dots leave gaps, the dots above
+ * fall, and nothing new drops in; she clears every dot in as few lines as she can. A tap pops a single dot, so every
+ * board clears and nothing is a failure; undo steps back one line. The fewest lines come from an exact solver.
+ */
+export const GARDEN: DotPlan = {
+  mode: 'garden',
+  rows: 4,
+  cols: 4,
+  colors: 3,
+  goal: 16,
+  name: 'Clear the garden: pop every dot in as few lines as you can',
+};
+
 /** Make ten: how many dots are still needed after `have`. */
 export const tenLeft = (plan: DotPlan, have: number) => Math.max(0, plan.goal - have);
 
@@ -136,8 +150,8 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 4 },
   // Level 9, Make ten, is school play and a stretch for pre-K at the top of its window.
   prek: { min: 3, max: 9 },
-  // Level 8, Same, different, opens the school window (decided 2026-10-14); 10 joins it when it is built.
-  school: { min: 8, max: 9 },
+  // Level 8, Same, different, opens the school window (decided 2026-10-14); 10, Clear the garden, tops it.
+  school: { min: 8, max: 10 },
 };
 export const BUDDY: DotPlan = {
   mode: 'buddy',
@@ -187,12 +201,13 @@ export function nearestCell(cells: readonly Cell[], x: number, y: number): Cell 
   return best;
 }
 
-/** Every plan by level ID; 10 is kept for the level the dive appends above 9. */
+/** Every plan by level ID. */
 export const LEVEL_PLANS: ReadonlyMap<number, DotPlan> = new Map([
   ...PLANS.map((p, i) => [i + 1, p] as const),
   [7, TWO],
   [8, PATTERN],
   [9, TEN],
+  [10, GARDEN],
   [BUDDY_LEVEL, BUDDY],
   [BIG_LEVEL, BIG],
 ]);
@@ -481,3 +496,163 @@ export function ensureMove(
   else for (let i = 0; i < Math.min(g[0].length, plan.length ?? 2); i++) g[r][i] = color;
   return g;
 }
+
+/** A garden board: a color index (0-2 into the round's palette) or null for a gap, row by row from the top. */
+export type Garden = (number | null)[][];
+
+/** One line she can draw: the dots in drawing order (a loop ends back on an earlier dot) and the dots it pops. */
+export interface GardenLine {
+  path: Cell[];
+  loop: boolean;
+  /** The popped dots as bits, row by row (bit `r * cols + c`). */
+  mask: number;
+}
+
+export const gardenBit = (cols: number, c: Cell) => 1 << (c.r * cols + c.c);
+
+/** A frozen board's letters (a, b, c by color, rows joined by '/') as a garden. */
+export const parseGarden = (s: string): Garden =>
+  s.split('/').map((row) => [...row].map((k) => (k === '.' ? null : 'abc'.indexOf(k))));
+
+export const gardenText = (g: Garden) =>
+  g.map((row) => row.map((k) => (k === null ? '.' : 'abc'[k])).join('')).join('/');
+
+export const gardenLeft = (g: Garden) => g.flat().filter((k) => k !== null).length;
+
+/**
+ * Every line she could draw on a garden, one per set of popped dots: each simple path through same-color neighbors
+ * (a single dot is a tap), and a loop wherever a line can come back to one of its own dots, as `step` allows, which
+ * pops every dot of that color. The first path found for a set is kept, so a hint and the demo have a real line.
+ */
+export function gardenLines(g: Garden): GardenLine[] {
+  const rows = g.length,
+    cols = g[0].length,
+    found = new Map<number, GardenLine>();
+  const colorMask = (k: number) => {
+    let m = 0;
+    g.forEach((row, r) => row.forEach((x, c) => x === k && (m |= gardenBit(cols, { r, c }))));
+    return m;
+  };
+  const dfs = (path: Cell[], mask: number) => {
+    if (!found.has(mask)) found.set(mask, { path: [...path], loop: false, mask });
+    const last = path[path.length - 1],
+      k = g[last.r][last.c];
+    for (const [dr, dc] of [
+      [0, 1],
+      [1, 0],
+      [0, -1],
+      [-1, 0],
+    ]) {
+      const n = { r: last.r + dr, c: last.c + dc };
+      if (n.r < 0 || n.c < 0 || n.r >= rows || n.c >= cols || g[n.r][n.c] !== k) continue;
+      if (mask & gardenBit(cols, n)) {
+        // Back onto an earlier dot (not the one just left) closes a loop: the whole color pops.
+        if (path.length >= 4 && !same(n, path[path.length - 2])) {
+          const all = colorMask(k!);
+          if (!found.has(all) || !found.get(all)!.loop)
+            found.set(all, { path: [...path, n], loop: true, mask: all });
+        }
+        continue;
+      }
+      path.push(n);
+      dfs(path, mask | gardenBit(cols, n));
+      path.pop();
+    }
+  };
+  g.forEach((row, r) =>
+    row.forEach((k, c) => {
+      if (k !== null) dfs([{ r, c }], gardenBit(cols, { r, c }));
+    }),
+  );
+  return [...found.values()];
+}
+
+/** Pop the dots in `mask`: the dots above fall into the gaps and nothing new comes in. */
+export function gardenFall(g: Garden, mask: number): Garden {
+  const rows = g.length,
+    cols = g[0].length;
+  const out: Garden = Array.from({ length: rows }, () => Array<number | null>(cols).fill(null));
+  for (let c = 0; c < cols; c++) {
+    let r = rows - 1;
+    for (let s = rows - 1; s >= 0; s--) {
+      const k = g[s][c];
+      if (k !== null && !(mask & gardenBit(cols, { r: s, c }))) out[r--][c] = k;
+    }
+  }
+  return out;
+}
+
+/** Where each dot that stays lands after a pop: from its row to its new row, by column. */
+export function gardenFalls(g: Garden, mask: number): { from: number; to: number; c: number }[] {
+  const rows = g.length,
+    cols = g[0].length,
+    out: { from: number; to: number; c: number }[] = [];
+  for (let c = 0; c < cols; c++) {
+    let r = rows - 1;
+    for (let s = rows - 1; s >= 0; s--)
+      if (g[s][c] !== null && !(mask & gardenBit(cols, { r: s, c }))) {
+        if (s !== r) out.push({ from: s, to: r, c });
+        r--;
+      }
+  }
+  return out;
+}
+
+export interface GardenSolution {
+  /** The fewest lines that clear the board. */
+  lines: number;
+  /** One fewest-lines route, line by line, each drawn on the board as it stands then. */
+  route: GardenLine[];
+  /** Board positions the search looked at. */
+  positions: number;
+}
+
+/** Exact fewest-lines search: breadth first by lines drawn, each board position looked at once. */
+export function solveGarden(start: Garden): GardenSolution {
+  const key = gardenText;
+  if (!gardenLeft(start)) return { lines: 0, route: [], positions: 1 };
+  const seen = new Map<string, { from: string | null; line: GardenLine | null }>([
+    [key(start), { from: null, line: null }],
+  ]);
+  let frontier = [start];
+  for (let depth = 1; frontier.length; depth++) {
+    const next: Garden[] = [];
+    for (const g of frontier)
+      for (const line of gardenLines(g)) {
+        const after = gardenFall(g, line.mask),
+          k = key(after);
+        if (seen.has(k)) continue;
+        seen.set(k, { from: key(g), line });
+        if (!gardenLeft(after)) {
+          const route: GardenLine[] = [];
+          for (let at: string | null = k; at !== null;) {
+            const step: { from: string | null; line: GardenLine | null } = seen.get(at)!;
+            if (step.line) route.unshift(step.line);
+            at = step.from;
+          }
+          return { lines: depth, route, positions: seen.size };
+        }
+        next.push(after);
+      }
+    frontier = next;
+  }
+  throw new Error('a garden always clears: a tap pops any dot');
+}
+
+/** Repeatedly draw the line that pops the most dots (a player who does not plan ahead), and count the lines. */
+export function greedyGarden(start: Garden): number {
+  let g = start,
+    n = 0;
+  while (gardenLeft(g)) {
+    const best = gardenLines(g).reduce((a, b) => (popcount(b.mask) > popcount(a.mask) ? b : a));
+    g = gardenFall(g, best.mask);
+    n++;
+  }
+  return n;
+}
+
+export const popcount = (m: number) => {
+  let n = 0;
+  for (; m; m &= m - 1) n++;
+  return n;
+};

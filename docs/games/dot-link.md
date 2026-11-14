@@ -12,7 +12,7 @@
 | toddler | 1, 11, 2 |
 | preschool | 2–4 |
 | pre-K | 3–9 |
-| school | 8–9 |
+| school | 8–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 7 | Two colors: pop 6 of one color and 4 of another |
 | 8 | Same, different: draw three lines that follow the color pattern |
 | 9 | Make ten: lines of dots that add up to exactly 10 |
+| 10 | Clear the garden: pop every dot in as few lines as you can |
 | 11 | Find my buddy: link the two wiggling dots |
 | 12 | One big dot: a touch anywhere pops it |
 
@@ -32,7 +33,7 @@
 
 **Starts as:** tap dots to pop them; lap opens with one big dot, where a touch anywhere pops it
 
-**Grows into:** join two dots of one color, pop one color, chains of four, close a square, then make chains of exactly five, pop two colors to their own numbers, and draw lines that follow a color pattern (the school window opens at level 8), then build exactly ten from several lines; toddlers can start at level 11, joining the one wiggling pair on a 3×3 board; lap opens at level 12, one big dot at a time
+**Grows into:** join two dots of one color, pop one color, chains of four, close a square, then make chains of exactly five, pop two colors to their own numbers, and draw lines that follow a color pattern (the school window opens at level 8), then build exactly ten from several lines and clear a frozen garden in as few lines as she can; toddlers can start at level 11, joining the one wiggling pair on a 3×3 board; lap opens at level 12, one big dot at a time
 
 ## Design notes
 
@@ -47,3 +48,5 @@
 **Level 8 (pre-K, school), Same, different:** a 5×5 board of three colors with a pictured color pattern (two of the round's colors, A B A B) on a sign: above the board when the view is upright, at its right otherwise. She draws one line through neighbors that follows the pattern in turn, starting on its first color and at least four long (it may keep repeating); while she draws, a pattern line crosses colors and never closes a loop, the sign's dot for the color needed next bobs and the line is colored piece by piece. Any line of two or more pops; one that breaks the pattern, is too short or starts on the second color counts one miss with `dots.follow` ("Follow the colors, starting on red: red, blue, red, blue!"). Three lines finish. Two misses (and twelve idle seconds) glow a real pattern line, and a glow lit before a pop moves to a move on the refilled board in every mode. `ensureMove` paints the sign along a row when none stands (300 seeded rounds finish in three lines, rule test). Reading: a line drawn backward (starting on the second color) is a miss, since the dive makes the first dot's color the decision. Pre-K window 3–8, and level 8 opens the school window (decided 2026-10-14); the how-to card has a level-8 step.
 
 **Level 9 (pre-K, school), Make ten:** a 5×5 board of four colors and a big 10 sign with a ten-frame (above the board when upright, at its right otherwise). Every same-color line adds its dots to the frame, filled in the line's color, with the line being drawn shown faintly ahead; she builds exactly ten from several lines (4 + 3 + 3, 5 + 5, 2 + 8). A line cannot grow past what is left: it stops there and says "Only 3 more!" (one miss per line, and the line still counts); with one left a single dot pops by a tap; loops do not close. Two misses and twelve idle seconds glow `tenLine`, an exact finishing line when the board has one, else the longest that fits (also the demo); a line that counts never lights a second-miss glow and a clean one resets the misses. 300 seeded rounds have a counting line for every remainder 10..1 and finish on exactly ten (rule test). School window 8–9 and a stretch at the top of pre-K (3–9); the how-to card has a level-9 step.
+
+**Level 10 (school), Clear the garden:** a frozen 4×4 board of three colors with no refill: popped dots leave gaps and the dots above fall. She clears every dot in as few lines as she can. A tap pops a single dot and counts as a line, so every board clears and nothing is a failure; a loop (any line that closes on one of its own dots, as `step` allows) pops every dot of that color. Undo (beside a Lines card, which stands above the board when upright and at its right otherwise) takes back a line, free and never a miss. There are 24 boards frozen by `scripts/dot-link-gardens.mjs`: an exact breadth-first solver gives the fewest lines (4 or 5), a player who always draws the line popping the most needs at least two more, and at most 6,000 positions are searched. Misses stay 0; the idle glow (12 s) is the hint, the first line of a fewest route from the board as it stands (Undo is dimmed with no line to take back). After clearing the card shows "N lines / fewest M" with a gold star when they match (`dots.gardenbest` or `dots.gardendone`), never a score. School window 8–10 (pre-K stays 3–9); the how-to card has a level-10 step.

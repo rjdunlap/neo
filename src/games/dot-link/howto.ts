@@ -43,6 +43,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Make ten: every line of one color adds its dots to the ten-frame on the sign; build exactly 10 from several lines (4 + 3 + 3, 5 + 5). A line stops at what is left, and with one left a tap pops a single dot.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'Clear the garden: a fixed board and no new dots. Pop every dot in as few lines as you can; a tap pops a single dot, a loop pops a whole color, and Undo takes back a line. At the end the card shows the lines used and the fewest that clear the board.',
+    },
   ],
   finish: 'The round ends when the asked-for dots are cleared.',
 };
