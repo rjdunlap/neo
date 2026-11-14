@@ -21,6 +21,59 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
         );
         assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'a back-card tap is free');
       }
+      if (level === 9 || level === 10) {
+        // A lesson deal: take a losing opening pair, hear the blocked line and the lesson naming the stranded card, Undo.
+        const lesson = await page.evaluate(async () => {
+          const L = await import('/src/games/pyramid-solitaire/logic.ts'),
+            g = neo.scene.game,
+            say = g.ctx.say;
+          g.heard = [];
+          g.ctx.say = (id, values) => {
+            g.heard.push({ id, values });
+            return say.call(g.ctx, id, values);
+          };
+          const move = L.openings(g.puzzle).losing[0],
+            stuck = L.lessonCard(g.puzzle, L.remove(g.mask, move));
+          return { move, card: L.rankWord(g.puzzle.ranks[stuck]) };
+        });
+        for (const i of lesson.move) await tap(`neo.scene.game.nodes[${i}]`);
+        await page.waitForFunction(() => neo.scene.game.heard.some((h) => h.id === 'pyramid.lesson'), null, {
+          timeout: 8000,
+        });
+        // The first tap speaks its number; the removal then speaks the blocked line and the lesson, in that order.
+        const heard = await page.evaluate(() =>
+          neo.scene.game.heard.filter((h) => h.id !== 'pyramid.number'),
+        );
+        assert.deepEqual(
+          heard.map((h) => h.id),
+          ['pyramid.blocked', 'pyramid.lesson'],
+          'the lesson follows the blocked line',
+        );
+        assert.equal(heard[1].values.card, lesson.card, 'the lesson names the stranded card');
+        assert.match(await page.evaluate(() => neo.scene.game.status.text), /The outlined .* covers every/);
+        assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'a losing pair is not a miss');
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(350);
+        assert.match(
+          await page.evaluate(() => neo.scene.game.status.text),
+          /The outlined .* covers every/,
+          'a redraw keeps the lesson',
+        );
+        await screenshot(`pyramid-solitaire-${level}-lesson-portrait`);
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(350);
+        await tap('neo.scene.game.undoButton');
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.mask),
+          initial,
+          'Undo takes the losing pair back',
+        );
+        assert.ok(
+          await page.evaluate(() => neo.scene.game.solve(neo.scene.game.mask)),
+          'the deal clears again',
+        );
+        log(`Pyramid Solitaire ${level}: a losing pair named the ${lesson.card} and Undo took it back`);
+      }
       // Find a mismatched pair from the actual deal, using exposed non-kings only.
       const wrongPair = () =>
         page.evaluate(async () => {

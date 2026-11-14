@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import { POOLS } from './pools.ts';
 
 export type Removal = readonly number[];
 export interface Puzzle {
@@ -47,6 +48,20 @@ export const PLANS = [
     columns: 3,
     depth: 2,
   },
+  // Lesson deals (levels 9-10): designed puzzles frozen in pools.ts by scripts/pyramid-lesson-search.mjs, each teaching one
+  // copy choice. They are dealt from the pool, not the dial, so the band is never read.
+  {
+    rows: 4,
+    name: 'One way in: one safe first pair among three',
+    band: { min: 0, max: 1 },
+    lesson: 'one-way',
+  },
+  {
+    rows: 5,
+    name: 'Count the copies: spend the copy that buries a partner',
+    band: { min: 0, max: 1 },
+    lesson: 'copies',
+  },
 ] as const;
 /** How often the generator's backward walk takes a cover-lift step when one is open (level 5 only). */
 export const LIFT_CHANCE = 0.35;
@@ -57,7 +72,8 @@ export const CANDIDATES = 40;
 /** A real pack: no rank more than four times, so the paper version deals as shown and counting a rank is true. */
 export const PACK_LIMIT = 4;
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
+/** Each lesson arrives before the board that needs it: one way in after level 2, count the copies after level 3. */
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 10, order: [1, 2, 9, 3, 10, 4, 5, 6, 7, 8] } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const countFor = (rows: number) => (rows * (rows + 1)) / 2;
 export const fullMask = (rows: number) => (1 << countFor(rows)) - 1;
@@ -289,6 +305,9 @@ export function bandDistance(level: number, rate: number): number {
  * (forced by the order) is not a pack and is skipped.
  */
 export function makePuzzle(level: number, rng: Rng): Puzzle {
+  const plan = planFor(level);
+  // Levels 9-10 deal a frozen lesson deal; levels 1-8 make no new draw, so they deal exactly as before.
+  if ('lesson' in plan) return decodeDeal(plan.rows, rng.pick(POOLS[plan.lesson]));
   let best: Puzzle | null = null,
     bestDistance = Infinity;
   // Kings are forced by the clearing order, so a rare deep deal forces a fifth; it is skipped, not counted, and drawing
@@ -303,5 +322,112 @@ export function makePuzzle(level: number, rng: Rng): Puzzle {
   }
   return best ?? dealCandidate(level, rng).puzzle;
 }
+/** A frozen deal's card letters, rank 1 to 13. */
+export const DEAL_LETTERS = 'A23456789TJQK';
+export const encodeDeal = (p: Puzzle) => p.ranks.map((r) => DEAL_LETTERS[r - 1]).join('');
+export const decodeDeal = (rows: number, deal: string): Puzzle => ({
+  rows,
+  ranks: [...deal].map((c) => DEAL_LETTERS.indexOf(c) + 1),
+});
+/** Every card `c` lies on, directly or through others: none of them can open while `c` is present. */
+export function buried(p: Puzzle, c: number): Set<number> {
+  const seen = new Set<number>(),
+    todo = under(p, c);
+  while (todo.length) {
+    const k = todo.pop()!;
+    if (!seen.has(k)) {
+      seen.add(k);
+      todo.push(...under(p, k));
+    }
+  }
+  return seen;
+}
+/**
+ * Cards that have lost their partner (strict rule): a present card other than a king for which every present card of the
+ * complement rank is buried under it, so the two can never be open together and the position cannot clear.
+ */
+export function stranded(p: Puzzle, mask: number): number[] {
+  return p.ranks.flatMap((rank, c) => {
+    if (rank === 13 || !present(mask, c)) return [];
+    const partners = p.ranks.flatMap((r, y) => (r === 13 - rank && present(mask, y) ? [y] : []));
+    const below = buried(p, c);
+    return partners.length && partners.every((y) => below.has(y)) ? [c] : [];
+  });
+}
+/** The card a lesson line names after a losing removal: the one stranded card, or null when none or several are. */
+export function lessonCard(p: Puzzle, mask: number): number | null {
+  const s = stranded(p, mask);
+  return s.length === 1 ? s[0] : null;
+}
+/** Opening removals that keep the deal clearable, and those that lose it. */
+export function openings(p: Puzzle) {
+  const solve = solver(p),
+    start = startMask(p),
+    all = moves(p, start);
+  return {
+    safe: all.filter((m) => solve(remove(start, m))),
+    losing: all.filter((m) => !solve(remove(start, m))),
+  };
+}
+/** Every losing opening leaves exactly one stranded card, so the lesson line always names the right one. */
+const lessonsNamed = (p: Puzzle) =>
+  openings(p).losing.every((m) => lessonCard(p, remove(startMask(p), m)) !== null);
+/**
+ * Level 9 *One way in*: a deal that clears, opens with three or more removals, all pairs (an open king is always safe,
+ * so it would be the answer every time), exactly one of them safe, and every losing one strands one named card.
+ */
+export function oneWayIn(p: Puzzle): boolean {
+  const start = startMask(p),
+    { safe, losing } = openings(p);
+  return (
+    !!solver(p)(start) &&
+    safe.length === 1 &&
+    safe.length + losing.length >= 3 &&
+    moves(p, start).every((m) => m.length === 2) &&
+    lessonsNamed(p)
+  );
+}
+export interface CopiesShape {
+  /** The open copy that buries the second partner: spend it first. */
+  keep: number;
+  /** The other open copy: pairing it with the easy partner loses. */
+  spend: number;
+  /** The open partner both copies could take. */
+  easy: number;
+  /** The covered partner, buried under `keep`. */
+  buriedPartner: number;
+}
+/**
+ * Level 10 *Count the copies*: a rank with exactly two copies, both open, and exactly two partners, one open (`easy`) and
+ * one covered and buried under one copy (`keep`) but not the other (`spend`). Spending the easy pair with `spend` first
+ * strands `keep` over the buried partner; pairing `keep` with `easy` is safe. The deal clears and every losing opening
+ * names its stranded card. Returns the first such rank's shape, or null.
+ */
+export function countTheCopies(p: Puzzle): CopiesShape | null {
+  const start = startMask(p),
+    solve = solver(p);
+  if (!solve(start) || !lessonsNamed(p)) return null;
+  for (let rank = 1; rank <= 12; rank++) {
+    const copies = p.ranks.flatMap((r, i) => (r === rank ? [i] : [])),
+      partners = p.ranks.flatMap((r, i) => (r === 13 - rank ? [i] : []));
+    if (copies.length !== 2 || partners.length !== 2 || !copies.every((i) => exposed(p, start, i))) continue;
+    const easy = partners.find((i) => exposed(p, start, i)),
+      hidden = partners.find((i) => !exposed(p, start, i));
+    if (easy === undefined || hidden === undefined) continue;
+    for (const [keep, spend] of [copies, [copies[1], copies[0]]]) {
+      if (!buried(p, keep).has(hidden) || buried(p, spend).has(hidden)) continue;
+      const lose = remove(start, [spend, easy]),
+        win = remove(start, [keep, easy]);
+      if (!solve(lose) && lessonCard(p, lose) === keep && solve(win))
+        return { keep, spend, easy, buriedPartner: hidden };
+    }
+  }
+  return null;
+}
+/** A rank as the lesson line says it. */
+export const rankWord = (rank: number) =>
+  ['ace', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'jack', 'queen', 'king'][
+    rank - 1
+  ];
 export const rankName = (rank: number) =>
   rank === 1 ? 'A' : rank === 11 ? 'J' : rank === 12 ? 'Q' : rank === 13 ? 'K' : String(rank);

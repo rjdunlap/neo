@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
+import { POOLS } from './pools';
 import {
+  LEVELS,
+  buried,
+  countTheCopies,
+  decodeDeal,
+  lessonCard,
+  oneWayIn,
+  openings,
+  rankWord,
+  stranded,
   CANDIDATES,
   PACK_LIMIT,
   at,
@@ -49,7 +60,7 @@ describe('Pyramid Solitaire', () => {
     expect(at(4, 4)).toBe(14);
   });
   it('every seeded deal has a legal clearing route with valid ranks and alternatives supported', () => {
-    for (let level = 1; level <= 8; level++)
+    for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(level, new Rng(seed)),
           solve = solver(p);
@@ -174,7 +185,7 @@ describe('Pyramid Solitaire', () => {
   it('level 4 is six rows of 21 cards in one 21-bit mask, reaching at most 71 positions', () => {
     expect(planFor(4).rows).toBe(6);
     expect(fullMask(6)).toBe(2 ** 21 - 1);
-    expect(planFor(9)).toBe(planFor(8));
+    expect(planFor(11)).toBe(planFor(10));
     for (let seed = 1; seed <= 100; seed++) {
       const p = makePuzzle(4, new Rng(seed)),
         seen = new Set<number>();
@@ -327,6 +338,106 @@ describe('Pyramid Solitaire', () => {
       // No stock: the top card opens only when everything else has gone, so it is always a king.
       expect(p.ranks[0]).toBe(13);
       expect(positions(p)).toBeLessThanOrEqual(146);
+    }
+  });
+  it('levels 1-8 deal exactly as before the lesson deals: the same ranks from the same seeds', () => {
+    // FNV-1a over seeds 1-200's ranks, recorded from origin/main before levels 9-10 (2026-11-13).
+    const recorded = [
+      1654278629, 3490143395, 23608352, 313876289, 2613601815, 303802877, 335546868, 1058698212,
+    ];
+    for (let level = 1; level <= 8; level++) {
+      let h = 2166136261;
+      for (let seed = 1; seed <= 200; seed++)
+        for (const r of [...makePuzzle(level, new Rng(seed)).ranks, 0]) h = Math.imul(h ^ r, 16777619) >>> 0;
+      expect(h).toBe(recorded[level - 1]);
+    }
+  });
+  it('places each lesson before the board that needs it: 9 after 2, 10 after 3', () => {
+    const range = rangeFor(LEVELS, 'grownup');
+    expect(levelsInOrder(range)).toEqual([1, 2, 9, 3, 10, 4, 5, 6, 7, 8]);
+    expect(planFor(9).rows).toBe(4);
+    expect(planFor(10).rows).toBe(5);
+  });
+  it('a stranded card has every partner left buried under it, so the position cannot clear', () => {
+    // Hand-made three-row deals checking the definition.
+    const p = decodeDeal(3, 'K2J3TJ');
+    // Row 1: 2 (1) and J (2); row 2: 3 (3), T (4), J (5). The 2 at 1 lies on 0; nothing lies under a bottom card.
+    expect([...buried(p, 4)].sort()).toEqual([0, 1, 2]);
+    // The J at 5 buries the J at 2 and the K; the 2 at 1 is buried under 3 and 4, not under 5.
+    expect(stranded(p, startMask(p))).toEqual([]);
+    const q = decodeDeal(3, 'K2K9J4');
+    // The J at 4 lies on both the 2 at 1 and the K at 2: its only partner is under it.
+    expect(stranded(q, startMask(q))).toEqual([4]);
+    expect(lessonCard(q, startMask(q))).toBe(4);
+    expect(solver(q)(startMask(q))).toBeNull();
+    expect(rankWord(1)).toBe('ace');
+    expect(rankWord(11)).toBe('jack');
+  });
+  it('level 9 deals from a pool of 24 one-way-in deals: three or more opening pairs, exactly one safe, each loss named', () => {
+    const pool = POOLS['one-way'];
+    expect(pool.length).toBeGreaterThanOrEqual(24);
+    expect(new Set(pool).size).toBe(pool.length);
+    for (const deal of pool) {
+      const p = decodeDeal(4, deal),
+        start = startMask(p);
+      expect(p.ranks).toHaveLength(10);
+      expect(oneWayIn(p)).toBe(true);
+      expect(solver(p)(start)).not.toBeNull();
+      const { safe, losing } = openings(p);
+      expect(safe).toHaveLength(1);
+      expect(safe.length + losing.length).toBeGreaterThanOrEqual(3);
+      expect(moves(p, start).every((m) => m.length === 2)).toBe(true);
+      for (let rank = 1; rank <= 13; rank++)
+        expect(p.ranks.filter((r) => r === rank).length).toBeLessThanOrEqual(PACK_LIMIT);
+      for (const m of losing) {
+        const after = remove(start, m),
+          named = lessonCard(p, after)!;
+        // The named card is present, not a king, and every partner left is buried under it: they can never meet.
+        expect(present(after, named)).toBe(true);
+        const partners = p.ranks.flatMap((r, i) =>
+          r === 13 - p.ranks[named] && present(after, i) ? [i] : [],
+        );
+        expect(partners.length).toBeGreaterThan(0);
+        expect(partners.every((i) => buried(p, named).has(i))).toBe(true);
+        expect(solver(p)(after)).toBeNull();
+      }
+    }
+    for (let seed = 1; seed <= 50; seed++)
+      expect(pool).toContain(
+        makePuzzle(9, new Rng(seed))
+          .ranks.map((r) => 'A23456789TJQK'[r - 1])
+          .join(''),
+      );
+  });
+  it('level 10 deals from a pool of 24 count-the-copies deals: spending the easy pair loses and names the buried card', () => {
+    const pool = POOLS.copies;
+    expect(pool.length).toBeGreaterThanOrEqual(24);
+    expect(new Set(pool).size).toBe(pool.length);
+    for (const deal of pool) {
+      const p = decodeDeal(5, deal),
+        start = startMask(p),
+        shape = countTheCopies(p)!;
+      expect(p.ranks).toHaveLength(15);
+      expect(shape).not.toBeNull();
+      const { keep, spend, easy, buriedPartner } = shape,
+        rank = p.ranks[keep];
+      // Two open copies, two partners: one open, one buried under the copy to keep and not under the other.
+      expect(p.ranks[spend]).toBe(rank);
+      expect(p.ranks.filter((r) => r === rank)).toHaveLength(2);
+      expect(p.ranks.filter((r) => r === 13 - rank)).toHaveLength(2);
+      expect([keep, spend, easy].every((i) => exposed(p, start, i))).toBe(true);
+      expect(exposed(p, start, buriedPartner)).toBe(false);
+      expect(buried(p, keep).has(buriedPartner)).toBe(true);
+      expect(buried(p, spend).has(buriedPartner)).toBe(false);
+      // The losing pair is legal at the start, loses, and the lesson names the copy over the buried partner.
+      expect(moves(p, start)).toContainEqual([Math.min(spend, easy), Math.max(spend, easy)]);
+      const lose = remove(start, [spend, easy]);
+      expect(solver(p)(lose)).toBeNull();
+      expect(lessonCard(p, lose)).toBe(keep);
+      expect(solver(p)(remove(start, [keep, easy]))).not.toBeNull();
+      for (const m of openings(p).losing) expect(lessonCard(p, remove(start, m))).not.toBeNull();
+      for (let r = 1; r <= 13; r++)
+        expect(p.ranks.filter((x) => x === r).length).toBeLessThanOrEqual(PACK_LIMIT);
     }
   });
 });

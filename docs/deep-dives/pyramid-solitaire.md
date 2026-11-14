@@ -12,7 +12,7 @@ A grown-up clears a small pyramid of face-up cards by lifting pairs that add to 
 | 2 | Ten cards: uncover the next pair | grown-up | Which pair to lift so the row above opens, on four rows |
 | 3 | Fifteen cards: plan through five rows | grown-up | Which of two copies of a rank to spend, on five rows |
 
-`BandLevels`: `grownup 1–3`, no `order`, no `entryLevels`. (Slices 3–7 have since added levels 4–8: six rows, lift the cover, the shelf, the classic seven-row pyramid and three columns, so the range is 1–8; this section describes the game before them.)
+`BandLevels`: `grownup 1–3`, no `order`, no `entryLevels`. (Slices 3–8 have since added levels 4–10: six rows, lift the cover, the shelf, the classic seven-row pyramid, three columns and the two lesson deals, so the range is 1–10 with an `order`; this section describes the game before them.)
 
 **What a round draws from.** There is no frozen pool. `makePuzzle` walks a seeded clearing order backwards from a full pyramid: it shuffles the open cards, and either makes the first a king (when it is the only open card, or on a 15% chance) or gives the first two a random rank from 1 to 12 and its complement. Every deal therefore clears. A deal lives in a 32-bit mask (`1 << cards`), and `solver` is an exact memoised search over the remaining-card masks; a five-row pyramid reaches at most 39 distinct positions, so it is instant. There is no stock, no waste pile and no 52-card deck.
 
@@ -98,7 +98,7 @@ A hidden stock is the one classic feature deliberately not on that list: it turn
 
 ### New levels on top
 
-IDs are appended; levels 1–3 keep their meaning. The grown-up range grows to `1–8` with no `order` until the lesson deals (below).
+IDs are appended; levels 1–3 keep their meaning. The grown-up range grows to `1–8`, then to `1–10` with an `order` once the lesson deals (below) land.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -110,14 +110,18 @@ IDs are appended; levels 1–3 keep their meaning. The grown-up range grows to `
 
 ### Lesson deals
 
-Designed puzzles that teach one copy choice each. Random dealing produces a five-row deal with **one** safe first removal among several about 1 time in 50 (2% of 1,000 seeds; 3% at four rows), so an offline script can search seeds for the property instead of hand-placing ranks, and freeze the finds in a `pools.ts`, as Tile Pairs plans to.
+**Built (slice 8, [PR #1637](https://github.com/rjdunlap/neo/pull/1637)).** Designed puzzles that teach one copy choice each. Random dealing rarely produces them (a five-row deal with one safe first removal among several about 1 time in 50), so `scripts/pyramid-lesson-search.mjs` (about 35 s, reproducible) searches seeds for the property and freezes the finds in `pools.ts`, as Tile Pairs does.
 
 | Level | Name | The lesson | A rule test asserts |
 | --- | --- | --- | --- |
-| 9 | *One way in* | Four rows: three or more removals are open and exactly one keeps the pyramid clearable. After a losing removal the blocked line is followed by one sentence naming the card that lost its partner | Every frozen deal clears, has at least three opening removals and exactly one safe one; the named card is right; the pool has at least 24 deals |
-| 10 | *Count the copies* | Five rows: two open copies of a rank and two partners, one of them buried under the other copy's only partner. Spending the easy pair first loses | Every frozen deal has that shape; the losing pair is legal at the start; the lesson line names the buried card |
+| 9 | *One way in* | Four rows, no open king: at least three opening pairs, exactly one of them safe, and every losing opening strands exactly one card. After a losing removal the blocked line is followed by one sentence naming the stranded card | Every frozen deal clears, has at least three opening pairs and exactly one safe one, and each losing opening strands exactly one card; 24 deals |
+| 10 | *Count the copies* | Five rows, formal shape `countTheCopies`: a rank with exactly two copies, both open, and exactly two partners, one open (easy) and one covered and buried under one copy (keep) but not the other (spend). Spend plus easy loses and strands keep; keep plus easy is safe | Every frozen deal has that shape, the losing pair is legal at the start and strands the keep card; 24 deals |
 
-They are placed with `order` (9 after level 2, 10 after level 3), so each habit arrives before the board that needs it; that is a decision below, with appended-at-the-top as the alternative.
+A card is **stranded** when it is a non-king whose every present partner lies (transitively) under it. On levels 9–10, after a losing removal, if exactly one card is stranded it gets a red outline, the status line reads "The outlined A covers every Q left: they can never pair. Try Undo." and, after `pyramid.blocked`, the line `pyramid.lesson` ("This {card} has lost its partner. It covers every {partner} left, so they can never pair.") is spoken (device speech, slotted). A mid-game dead end without exactly one stranded card gets only the blocked line. The outline survives a resize.
+
+**Shape count.** Only 16 level-9 shapes (a deal with its pairs renamed, or mirrored, counts once) appear in two million seeds, so at most two deals in a pool share a shape. Pool random-play clear rates: level 9 all 17%; level 10 25–50% (median 50%). Levels 1–8 deal identically (an FNV fingerprint test).
+
+They are placed with `order` `[1, 2, 9, 3, 10, 4, 5, 6, 7, 8]` (decision 2's default), so each habit arrives before the board that needs it.
 
 ### Younger-band openings
 
@@ -156,11 +160,13 @@ None of these blocks a slice below.
 5. **Done (PR #1590). Level 6 *The shelf*.** The generalised cover list and the shelf layout: typecheck, rule tests (levels 1–5 deal identically from the same seeds), the layout test in both orientations, one browser play of 6 with a screenshot in each orientation, `fingerdemo` at 6.
 6. **Done (PR #1598). Level 7 *The classic pyramid*.** New level with the side-button landscape layout: typecheck, rule and layout tests, one browser play of 7 in each orientation, `fingerdemo` at 7.
 7. **Done (PR #1603). Level 8 *Three columns*.** As slice 5 without the shared work.
-8. **Lesson deals, levels 9–10.** The offline search script, `pools.ts`, the lesson line, `order` with its test: typecheck, rule tests (each frozen deal's property), one filtered play of 9 that takes a losing removal, hears the lesson and undoes, `fingerdemo` at 9, build (voice changes).
+8. **Done (PR #1637). Lesson deals, levels 9–10.** The offline search script, `pools.ts`, the lesson line, `order` with its test: typecheck, rule tests (each frozen deal's property), one filtered play of 9 that takes a losing removal, hears the lesson and undoes, `fingerdemo` at 9, build (voice changes).
 
-Slices 1 and 2 landed together as [Deals that ask for a plan](../GAME-BATCHES.md#pyramid-solitaire-1-deals-that-ask-for-a-plan). Slice 3 landed as level 4 (PR #1580) slice 4 as level 5 (PR #1584) and slice 5 as level 6 (PR #1590) and slice 6 as level 7 (PR #1598) and slice 7 as level 8 (PR #1603). Slice 8 is next. The five decisions stay out of the ready list.
+Slices 1 and 2 landed together as [Deals that ask for a plan](../GAME-BATCHES.md#pyramid-solitaire-1-deals-that-ask-for-a-plan). Slice 3 landed as level 4 (PR #1580) slice 4 as level 5 (PR #1584) and slice 5 as level 6 (PR #1590) and slice 6 as level 7 (PR #1598) and slice 7 as level 8 (PR #1603). Slice 8 landed as levels 9–10 (PR #1637), the last slice. The five decisions stay out of the ready list.
 
 ## What was built in this session
+
+**Slice 8, levels 9–10 *One way in* and *Count the copies* ([PR #1637](https://github.com/rjdunlap/neo/pull/1637)).** `pools.ts` (24 deals a level) written by `scripts/pyramid-lesson-search.mjs`; level 9 has no open king, at least three opening pairs and exactly one safe, every losing opening stranding exactly one card; level 10 follows `countTheCopies` (see Lesson deals). Only 16 level-9 shapes appear in two million seeds, so a pool shares at most two deals a shape. `stranded` logic, the red outline, the status line and the `pyramid.lesson` voice line; the how-to level 8 step is capped `to: 8` and a new step starts at 9. Grown-up `order` `[1, 2, 9, 3, 10, 4, 5, 6, 7, 8]`; levels 1–8 deal identically (FNV test). The `pyramid` suite plays a losing opening, hears the blocked then the lesson line, resizes to portrait, undoes, then hint, revision and a clear.
 
 **Slice 7, level 8 *Three columns* ([PR #1603](https://github.com/rjdunlap/neo/pull/1603)).** An eighth plan (`rows: 5, columns: 3, depth: 2`, 21 cards, band 30–70%); the grown-up range is 1–8. `Puzzle.columns`; `coverList` makes each column card lie under the next (back 15/17/19 under front 16/18/20), and a new `columnOf` names the column. `dealCandidate`'s plain walk handles the columns through `exposed` with no new rng draws, so levels 1–7 deal identically (a new FNV fingerprint test covers levels 6–7; levels 1–5 had one). Measured over 300 seeds: undialled the median clears 72% of random play and 258 hold a dead end; dialled, all 300 in band (median 50%), at most 300 positions (test bound 325), at most 3 kings, slowest deal under 1 ms. Layout (`pyramidLayout(v, rows, shelf, columns, depth)`): sideways the three columns stand beside the pyramid at the right (group centred, columns 132 apart, each front card 72 below its back card); upright (phone) the columns stand in a row under the pyramid, a deliberate deviation from "beside the pyramid" because five rows plus three columns do not fit across 768 units, and the rows close up (never under 64) on a short phone. One orange tray per column. Tapping a covered back card says "Remove the card in front of this one first." (`pyramid.columnCovered`), no miss; the instruction is the new `pyramid.columns` line. How-to: the level-7 step is now level 7 only and a new step from 8 explains the spare columns. Levels 1–7 layouts are unchanged. Tests: levels 1–8 in the property and band tests, a level-8 rule test (21 cards, 21-bit mask, cover list, fronts open and backs covered, pack limit, in band, at most 325 positions over 200 seeds), `upright-batch-3` at level 8 on every upright view and sideways on 1024×768, 844×390, 1366×1024; the `pyramid` suite taps a back card at level 8. Checks: see the [verification entry](../verification/2026-11-13-pyramid-solitaire-level-8-three-columns.md).
 
