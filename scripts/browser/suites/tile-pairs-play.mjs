@@ -188,11 +188,16 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           neo.scene.game.tiles.findIndex((t) => t.z === 1 && t.x === 4.5),
         );
         assert.ok(brick >= 0, 'the wall has a half-step tile at the right end');
-        await tapTile(brick);
+        // 40 units left of its middle is inside the lower-left tile's hit area too, under the brick's face.
+        await page.evaluate((i) => {
+          const p = neo.scene.game.nodes[i].toGlobal({ x: -40, y: 0 });
+          kit.tap(p.x, p.y);
+        }, brick);
+        await page.waitForTimeout(130);
         assert.equal(
           (await state()).selected,
           brick,
-          'a tap on a raised brick reaches it, not the two below',
+          'a tap on a raised brick reaches it, not the tile below',
         );
         await tapTile(brick);
         assert.equal((await state()).selected, null);
