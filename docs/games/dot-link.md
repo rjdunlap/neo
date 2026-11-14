@@ -11,8 +11,8 @@
 | lap | 12, 1 |
 | toddler | 1, 11, 2 |
 | preschool | 2–4 |
-| pre-K | 3–8 |
-| school | 8 |
+| pre-K | 3–9 |
+| school | 8–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 6 | Make three chains of exactly 5 dots |
 | 7 | Two colors: pop 6 of one color and 4 of another |
 | 8 | Same, different: draw three lines that follow the color pattern |
+| 9 | Make ten: lines of dots that add up to exactly 10 |
 | 11 | Find my buddy: link the two wiggling dots |
 | 12 | One big dot: a touch anywhere pops it |
 

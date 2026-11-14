@@ -7,7 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * new dots drop in from the top. Later levels ask for a color, a longer chain, or a closed
  * square (which clears every dot of that color).
  */
-export type DotMode = 'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square' | 'pattern';
+export type DotMode =
+  'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square' | 'pattern' | 'ten';
 
 export interface DotPlan {
   mode: DotMode;
@@ -84,6 +85,43 @@ export const PATTERN: DotPlan = {
   name: 'Same, different: draw three lines that follow the color pattern',
 };
 
+/**
+ * Level 9, Make ten: every same-color line adds its dots to a counter, and she builds exactly ten from several lines
+ * (4 + 3 + 3, 5 + 5, 2 + 8). A line cannot grow past what is left, and with one left a single dot pops by a tap.
+ */
+export const TEN: DotPlan = {
+  mode: 'ten',
+  rows: 5,
+  cols: 5,
+  colors: 4,
+  goal: 10,
+  name: 'Make ten: lines of dots that add up to exactly 10',
+};
+
+/** Make ten: how many dots are still needed after `have`. */
+export const tenLeft = (plan: DotPlan, have: number) => Math.max(0, plan.goal - have);
+
+/** Make ten: whether a line may grow to `length` dots with `left` still needed (it stops at the limit). */
+export const tenFits = (left: number, length: number) => length <= left;
+
+/** Make ten: whether a finished line of `length` dots counts: one dot only when one is left, never past the limit. */
+export const tenCounts = (left: number, length: number) =>
+  length >= 1 && length <= left && (length >= 2 || left === 1);
+
+/**
+ * Make ten: a line to suggest with `left` still needed: one that finishes exactly when the board has it, else the
+ * longest that fits; a single dot when one is left. Lines are same-color neighbors, as everywhere else.
+ */
+export function tenLine(grid: Grid, left: number): Cell[] | null {
+  if (left <= 0) return null;
+  if (left === 1) return [{ r: 0, c: 0 }];
+  for (let k = Math.min(left, grid.length * grid[0].length); k >= 2; k--) {
+    const line = findLine(grid, k);
+    if (line) return line;
+  }
+  return null;
+}
+
 /** Level 11, the toddler entry before level 2: one pair of dots wiggles from the start, and only that pair links. */
 export const BUDDY_LEVEL = 11;
 
@@ -96,9 +134,10 @@ export const LEVELS: BandLevels = {
   // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
   toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 8 },
-  // Level 8, Same, different, opens the school window (decided 2026-10-14); 9 and 10 join it when they are built.
-  school: { min: 8, max: 8 },
+  // Level 9, Make ten, is school play and a stretch for pre-K at the top of its window.
+  prek: { min: 3, max: 9 },
+  // Level 8, Same, different, opens the school window (decided 2026-10-14); 10 joins it when it is built.
+  school: { min: 8, max: 9 },
 };
 export const BUDDY: DotPlan = {
   mode: 'buddy',
@@ -148,11 +187,12 @@ export function nearestCell(cells: readonly Cell[], x: number, y: number): Cell 
   return best;
 }
 
-/** Every plan by level ID; 9 and 10 are kept for the levels the dive appends above 8. */
+/** Every plan by level ID; 10 is kept for the level the dive appends above 9. */
 export const LEVEL_PLANS: ReadonlyMap<number, DotPlan> = new Map([
   ...PLANS.map((p, i) => [i + 1, p] as const),
   [7, TWO],
   [8, PATTERN],
+  [9, TEN],
   [BUDDY_LEVEL, BUDDY],
   [BIG_LEVEL, BIG],
 ]);
@@ -395,9 +435,11 @@ export function demoMove(
   target?: ColorName,
   buddy?: readonly Cell[],
   pattern?: readonly ColorName[],
+  left?: number,
 ): Cell[] | null {
   if (plan.mode === 'big') return [BIG_FILL[0]];
   if (plan.mode === 'pattern') return findPattern(grid, pattern ?? []);
+  if (plan.mode === 'ten') return tenLine(grid, left ?? plan.goal);
   if (plan.mode === 'tap') return [{ r: 0, c: 0 }];
   if (plan.mode === 'buddy') return buddy?.length === 2 ? [...buddy] : findLine(grid, 2);
   if (plan.mode === 'square') {
