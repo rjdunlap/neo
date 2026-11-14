@@ -31,6 +31,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'Listen to the pictured word, then tap the monster that says its last sound. Tap the picture to hear the word again.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Only the word is said. Say it slowly together, then build it in the boxes; one letter is a spare. Tap the boxes to hear the sounds, or the picture to hear the word.',
+    },
   ],
   finish: 'The round ends when the asked-for letters or word are found.',
   note: "Spoken letter sounds depend on the device's speech voice.",
