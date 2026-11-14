@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * new dots drop in from the top. Later levels ask for a color, a longer chain, or a closed
  * square (which clears every dot of that color).
  */
-export type DotMode = 'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square';
+export type DotMode = 'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square' | 'pattern';
 
 export interface DotPlan {
   mode: DotMode;
@@ -22,6 +22,8 @@ export interface DotPlan {
   length?: number;
   /** chain: only a line with exactly this many dots counts. */
   exactLength?: boolean;
+  /** pattern: the sign's colors as places in the round's palette (0, 1, 0, 1 is red, blue, red, blue). */
+  pattern?: readonly number[];
   name: string;
 }
 
@@ -68,6 +70,20 @@ export const TWO: DotPlan = {
   name: 'Two colors: pop 6 of one color and 4 of another',
 };
 
+/**
+ * Level 8, Same, different: the sign shows a color pattern and a line counts when it follows it, starting on the
+ * sign's first color, at least once through; it may go on repeating. Lines may cross colors while she draws.
+ */
+export const PATTERN: DotPlan = {
+  mode: 'pattern',
+  rows: 5,
+  cols: 5,
+  colors: 3,
+  goal: 3,
+  pattern: [0, 1, 0, 1],
+  name: 'Same, different: draw three lines that follow the color pattern',
+};
+
 /** Level 11, the toddler entry before level 2: one pair of dots wiggles from the start, and only that pair links. */
 export const BUDDY_LEVEL = 11;
 
@@ -80,7 +96,9 @@ export const LEVELS: BandLevels = {
   // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
   toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 7 },
+  prek: { min: 3, max: 8 },
+  // Level 8, Same, different, opens the school window (decided 2026-10-14); 9 and 10 join it when they are built.
+  school: { min: 8, max: 8 },
 };
 export const BUDDY: DotPlan = {
   mode: 'buddy',
@@ -130,10 +148,11 @@ export function nearestCell(cells: readonly Cell[], x: number, y: number): Cell 
   return best;
 }
 
-/** Every plan by level ID; 8–10 are kept for the levels the dive appends above 7. */
+/** Every plan by level ID; 9 and 10 are kept for the levels the dive appends above 8. */
 export const LEVEL_PLANS: ReadonlyMap<number, DotPlan> = new Map([
   ...PLANS.map((p, i) => [i + 1, p] as const),
   [7, TWO],
+  [8, PATTERN],
   [BUDDY_LEVEL, BUDDY],
   [BIG_LEVEL, BIG],
 ]);
@@ -153,6 +172,22 @@ export function twoNeed(plan: DotPlan, have: readonly number[]): number {
 export function twoAdd(plan: DotPlan, have: readonly number[], which: number, n: number): number {
   const goal = plan.goals?.[which];
   return goal === undefined ? 0 : Math.max(0, Math.min(n, goal - (have[which] ?? 0)));
+}
+
+/** Pattern: the sign's colors for a round's palette. */
+export const patternColors = (plan: DotPlan, palette: readonly ColorName[]): ColorName[] =>
+  (plan.pattern ?? []).map((i) => palette[i]);
+
+/**
+ * Pattern: a line counts when it starts on the sign's first color, follows the sign's colors in turn (going round
+ * again after the last), and is at least as long as the sign. A line of one color, a break, or one too short does not.
+ */
+export function patternCounts(colors: readonly ColorName[], pattern: readonly ColorName[]): boolean {
+  return (
+    pattern.length > 0 &&
+    colors.length >= pattern.length &&
+    colors.every((k, i) => k === pattern[i % pattern.length])
+  );
 }
 
 export function chainCounts(plan: DotPlan, length: number, loop: boolean): boolean {
@@ -190,12 +225,14 @@ export type StepResult = 'extend' | 'back' | 'loop' | 'no';
  * Dragging onto `next`: extend the line through a same-color neighbor, step back onto the
  * previous dot to undo, or close a loop by returning to a dot already in the line.
  */
-export function step(grid: Grid, path: Cell[], next: Cell): StepResult {
+export function step(grid: Grid, path: Cell[], next: Cell, anyColor = false): StepResult {
   const last = path[path.length - 1];
   if (!last || same(last, next) || !adjacent(last, next)) return 'no';
-  if (grid[next.r][next.c] !== grid[last.r][last.c]) return 'no';
+  // A pattern line crosses colors, so any neighbor extends it; it is judged when she lets go.
+  if (!anyColor && grid[next.r][next.c] !== grid[last.r][last.c]) return 'no';
   if (path.length >= 2 && same(path[path.length - 2], next)) return 'back';
-  if (path.some((p) => same(p, next))) return path.length >= 4 ? 'loop' : 'no';
+  // A pattern line never closes a loop: a loop pops a whole color, which is not the pattern.
+  if (path.some((p) => same(p, next))) return path.length >= 4 && !anyColor ? 'loop' : 'no';
   return 'extend';
 }
 
@@ -269,6 +306,38 @@ export function findLine(grid: Grid, min: number, color?: ColorName): Cell[] | n
   return null;
 }
 
+/** Pattern: a line of `pattern.length` dots through neighbors that follows the sign's colors from its first. */
+export function findPattern(grid: Grid, pattern: readonly ColorName[]): Cell[] | null {
+  if (!pattern.length) return null;
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const dfs = (path: Cell[]): Cell[] | null => {
+    if (path.length >= pattern.length) return path;
+    const last = path[path.length - 1];
+    const want = pattern[path.length % pattern.length];
+    for (const [dr, dc] of [
+      [0, 1],
+      [1, 0],
+      [0, -1],
+      [-1, 0],
+    ]) {
+      const n = { r: last.r + dr, c: last.c + dc };
+      if (n.r < 0 || n.c < 0 || n.r >= rows || n.c >= cols) continue;
+      if (path.some((p) => same(p, n)) || grid[n.r][n.c] !== want) continue;
+      const found = dfs([...path, n]);
+      if (found) return found;
+    }
+    return null;
+  };
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      if (grid[r][c] === pattern[0]) {
+        const found = dfs([{ r, c }]);
+        if (found) return found;
+      }
+  return null;
+}
+
 /** A 2×2 block of one color: walking around it closes a square. */
 export function findSquare(grid: Grid): Cell[] | null {
   for (let r = 0; r + 1 < grid.length; r++) {
@@ -325,8 +394,10 @@ export function demoMove(
   grid: Grid,
   target?: ColorName,
   buddy?: readonly Cell[],
+  pattern?: readonly ColorName[],
 ): Cell[] | null {
   if (plan.mode === 'big') return [BIG_FILL[0]];
+  if (plan.mode === 'pattern') return findPattern(grid, pattern ?? []);
   if (plan.mode === 'tap') return [{ r: 0, c: 0 }];
   if (plan.mode === 'buddy') return buddy?.length === 2 ? [...buddy] : findLine(grid, 2);
   if (plan.mode === 'square') {
@@ -341,14 +412,23 @@ export function demoMove(
 }
 
 /** Make sure the level's next move exists, repainting a few dots if it doesn't. */
-export function ensureMove(plan: DotPlan, grid: Grid, rng: Rng, target?: ColorName): Grid {
+export function ensureMove(
+  plan: DotPlan,
+  grid: Grid,
+  rng: Rng,
+  target?: ColorName,
+  pattern?: readonly ColorName[],
+): Grid {
   const g = grid.map((row) => [...row]);
-  const has = () => demoMove(plan, g, target);
+  const has = () => demoMove(plan, g, target, undefined, pattern);
   if (has()) return g;
   const r = rng.int(0, g.length - 2);
   const c = rng.int(0, g[0].length - 2);
   const color = target ?? g[r][c];
-  if (plan.mode === 'square')
+  // Pattern: paint the sign's colors along a row, from its left end.
+  if (plan.mode === 'pattern' && pattern?.length)
+    for (let i = 0; i < Math.min(g[0].length, pattern.length); i++) g[r][i] = pattern[i];
+  else if (plan.mode === 'square')
     for (const [dr, dc] of [
       [0, 0],
       [0, 1],

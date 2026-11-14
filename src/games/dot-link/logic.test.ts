@@ -19,11 +19,15 @@ import {
   DOT_MARKS,
   ensureMove,
   findLine,
+  findPattern,
   findSquare,
   LEVELS,
   makeGrid,
   nearestCell,
   pairs,
+  PATTERN,
+  patternColors,
+  patternCounts,
   pickBuddy,
   planFor,
   PLANS,
@@ -37,6 +41,7 @@ import {
 
 const R: ColorName = 'red';
 const B: ColorName = 'blue';
+const Y: ColorName = 'yellow';
 
 describe('Dot Link', () => {
   it('gives every dot color its own mark, so no two colors differ by hue alone', () => {
@@ -191,7 +196,7 @@ describe('Dot Link', () => {
 
   it('plays level 7 as Two colors: pre-K only, two named numbers that add to the goal and fit the board', () => {
     expect(planFor(7)).toBe(TWO);
-    expect(levelsInOrder(LEVELS.prek!).at(-1)).toBe(7);
+    expect(levelsInOrder(LEVELS.prek!)).toContain(7);
     expect(levelsInOrder(LEVELS.preschool!)).not.toContain(7);
     const [a, b] = TWO.goals!;
     expect(a + b).toBe(TWO.goal);
@@ -239,6 +244,104 @@ describe('Dot Link', () => {
       }
       expect(have).toEqual([...TWO.goals!]);
       expect(lines).toBeLessThanOrEqual(TWO.goal / 2);
+    }
+  });
+
+  it('plays level 8 as Same, different: pre-K top and the school window, a red-blue-red-blue sign of two of its colors', () => {
+    expect(planFor(8)).toBe(PATTERN);
+    expect(levelsInOrder(LEVELS.prek!).at(-1)).toBe(8);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([8]);
+    expect(dotLink.bands).toContain('school');
+    // Every level any band can reach has its own plan, and nothing below 8 moved.
+    for (const band of dotLink.bands)
+      for (const level of levelsInOrder(LEVELS[band]!))
+        expect(planFor(level).name).toBe(dotLink.describeLevel(level));
+    expect(planFor(7)).toBe(TWO);
+    const signs = patternColors(PATTERN, [Y, R, B]);
+    expect(signs).toEqual([Y, R, Y, R]);
+    expect(PATTERN.colors).toBeGreaterThan(2);
+    expect(PATTERN.pattern!.length).toBeLessThanOrEqual(PATTERN.cols);
+    expect(dotLink.describeLevel(8)).toMatch(/pattern/i);
+  });
+
+  it('counts a pattern line that starts on the first color and follows the sign at least once through', () => {
+    const sign = [R, B, R, B];
+    expect(patternCounts([R, B, R, B], sign)).toBe(true);
+    // It may keep going round the pattern.
+    expect(patternCounts([R, B, R, B, R], sign)).toBe(true);
+    expect(patternCounts([R, B, R, B, R, B], sign)).toBe(true);
+    // Too short, broken, one color, or started on the second color.
+    expect(patternCounts([R, B, R], sign)).toBe(false);
+    expect(patternCounts([R, B, B, R], sign)).toBe(false);
+    expect(patternCounts([R, R, R, R], sign)).toBe(false);
+    expect(patternCounts([B, R, B, R], sign)).toBe(false);
+    expect(patternCounts([R, B, R, B, B], sign)).toBe(false);
+    expect(patternCounts([R, B], [])).toBe(false);
+  });
+
+  it('lets a pattern line cross colors while drawing, step back, and never close a loop', () => {
+    const grid: Grid = [
+      [R, B, R],
+      [B, R, B],
+    ];
+    expect(step(grid, [{ r: 0, c: 0 }], { r: 0, c: 1 })).toBe('no');
+    expect(step(grid, [{ r: 0, c: 0 }], { r: 0, c: 1 }, true)).toBe('extend');
+    // Any neighbor extends a pattern line, even one that breaks the pattern: it is judged on letting go.
+    expect(
+      step(
+        grid,
+        [
+          { r: 0, c: 0 },
+          { r: 0, c: 1 },
+        ],
+        { r: 1, c: 1 },
+        true,
+      ),
+    ).toBe('extend');
+    expect(
+      step(
+        grid,
+        [
+          { r: 0, c: 0 },
+          { r: 0, c: 1 },
+        ],
+        { r: 0, c: 0 },
+        true,
+      ),
+    ).toBe('back');
+    expect(step(grid, [{ r: 0, c: 0 }], { r: 1, c: 1 }, true)).toBe('no');
+    const round = [
+      { r: 0, c: 0 },
+      { r: 0, c: 1 },
+      { r: 1, c: 1 },
+      { r: 1, c: 0 },
+    ];
+    expect(step(grid, round, { r: 0, c: 0 }, true)).toBe('no');
+  });
+
+  it('always leaves a pattern line to draw, so every seeded pattern round finishes in three lines', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const palette = rng.shuffle([...DOT_COLORS]).slice(0, PATTERN.colors);
+      const sign = patternColors(PATTERN, palette);
+      let grid = ensureMove(PATTERN, makeGrid(PATTERN, rng, palette), rng, undefined, sign);
+      for (let line = 0; line < PATTERN.goal; line++) {
+        const move = demoMove(PATTERN, grid, undefined, undefined, sign);
+        expect(move, `seed ${seed}`).not.toBeNull();
+        expect(findPattern(grid, sign)).toEqual(move);
+        // A real line: neighbors, no dot twice, and it follows the sign from its first color.
+        expect(
+          move!.slice(1).every((c, i) => Math.abs(c.r - move![i].r) + Math.abs(c.c - move![i].c) === 1),
+        ).toBe(true);
+        expect(new Set(move!.map((c) => `${c.r},${c.c}`)).size).toBe(move!.length);
+        expect(
+          patternCounts(
+            move!.map((c) => grid[c.r][c.c]),
+            sign,
+          ),
+        ).toBe(true);
+        grid = ensureMove(PATTERN, collapse(grid, move!, rng, palette).grid, rng, undefined, sign);
+      }
     }
   });
 

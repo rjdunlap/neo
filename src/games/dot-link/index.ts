@@ -26,9 +26,12 @@ import {
   DOT_MARKS,
   ensureMove,
   findLine,
+  findPattern,
   findSquare,
   makeGrid,
   nearestCell,
+  patternColors,
+  patternCounts,
   pickBuddy,
   planFor,
   popped,
@@ -50,6 +53,9 @@ const MARK_R = 16;
 const SIGN_W = 210;
 const CHIP_W = 190;
 const CHIP_H = 126;
+/** Pattern: the space between the sign's dots, and the room the sign takes beside or above the board. */
+const PAT_STEP = 88;
+const PAT_ROOM = 150;
 
 /** The mark inside a dot, about 2r across and centered. Call fill/stroke after. */
 function markPath(g: Graphics, mark: DotMark, r: number): Graphics {
@@ -97,6 +103,8 @@ class DotLink implements Game {
   readonly targets: ColorName[];
   /** Two colors: how many of each named color have counted so far. */
   have = [0, 0];
+  /** Pattern: the sign's colors, in the order a line must follow them. */
+  readonly pattern: ColorName[];
   grid: Grid;
   dots: Graphics[][] = [];
   path: Cell[] = [];
@@ -118,6 +126,9 @@ class DotLink implements Game {
   private idle = 0;
   private clock = 0;
   private hintCells: Cell[] = [];
+  /** Pattern: the sign's dots, and whether it stands above the board (upright view) rather than at its right. */
+  private signDots: Graphics[] = [];
+  private signAbove: boolean | null = null;
   /** Buddy mode: the pair that wiggles from the start (not a hint) and the only line that links. */
   buddy: Cell[] = [];
   /** Big mode: the dots standing on the board (a popping one has left it), and how much bigger each is drawn. */
@@ -128,7 +139,14 @@ class DotLink implements Game {
     this.plan = planFor(ctx.level);
     this.palette = ctx.rng.shuffle([...DOT_COLORS]).slice(0, this.plan.colors);
     this.targets = this.plan.mode === 'two' ? this.palette.slice(0, 2) : [];
-    this.grid = ensureMove(this.plan, makeGrid(this.plan, ctx.rng, this.palette), ctx.rng, this.target);
+    this.pattern = patternColors(this.plan, this.palette);
+    this.grid = ensureMove(
+      this.plan,
+      makeGrid(this.plan, ctx.rng, this.palette),
+      ctx.rng,
+      this.target,
+      this.pattern,
+    );
     this.backdrop = new Backdrop(
       { sky: [0xfde2f0, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.82, clouds: 2, seed: 81 },
       ctx.view,
@@ -166,6 +184,7 @@ class DotLink implements Game {
   /** Two colors: each named color's dot, its number, and a row of little dots that fill as hers pop. */
   private drawSign() {
     for (const n of this.sign.removeChildren()) n.destroy({ children: true });
+    if (this.plan.mode === 'pattern') return this.drawPatternSign();
     const goals = this.plan.goals;
     if (!goals) return;
     goals.forEach((goal, i) => {
@@ -196,6 +215,32 @@ class DotLink implements Game {
     });
   }
 
+  /** Pattern: the sign's colors in a row above the board, or down a column at its right, on a cream card. */
+  private drawPatternSign() {
+    const above = this.signAbove ?? false;
+    const n = this.pattern.length;
+    const long = n * PAT_STEP + 24;
+    const back = new Graphics()
+      .roundRect(above ? -long / 2 : -60, above ? -60 : -long / 2, above ? long : 120, above ? 120 : long, 28)
+      .fill(cream)
+      .stroke({ width: 4, color: 0xd9cbb4 });
+    this.sign.addChild(back);
+    this.signDots = this.pattern.map((color, i) => {
+      const dot = new Graphics();
+      this.drawDot(dot, color);
+      const at = (i - (n - 1) / 2) * PAT_STEP;
+      dot.position.set(above ? at : 0, above ? 0 : at);
+      dot.scale.set(0.95);
+      this.sign.addChild(dot);
+      return dot;
+    });
+  }
+
+  /** Pattern: the sign's colors as words for the spoken lines. */
+  private patternWords() {
+    return { colors: this.pattern.join(', '), first: this.pattern[0] };
+  }
+
   start() {
     const p = this.plan;
     switch (p.mode) {
@@ -220,6 +265,8 @@ class DotLink implements Game {
         return void this.ctx.instruct(p.exactLength ? 'dots.exact' : 'dots.chain', { n: p.length! });
       case 'square':
         return void this.ctx.instruct('dots.square');
+      case 'pattern':
+        return void this.ctx.instruct('dots.pattern', this.patternWords());
     }
   }
 
@@ -259,15 +306,26 @@ class DotLink implements Game {
       (v.h - 150) / (h + GAP),
       (v.w - 260) / (w + GAP),
     );
-    // Two colors: the sign stands at the right, and the board centers in the room left of it.
-    const sign = this.plan.mode === 'two' ? SIGN_W : 0;
-    const fit = Math.min(s, (v.w - 260 - sign) / (w + GAP));
+    // Two colors: the sign stands at the right, and the board centers in the room left of it. Pattern: the sign
+    // goes along the long side, above the board in an upright view and at its right otherwise.
+    const pattern = this.plan.mode === 'pattern';
+    const above = pattern && v.h > v.w;
+    const sign = this.plan.mode === 'two' ? SIGN_W : pattern && !above ? PAT_ROOM : 0;
+    const top = above ? PAT_ROOM : 0;
+    const fit = Math.min(s, (v.w - 260 - sign) / (w + GAP), (v.h - 150 - top) / (h + GAP));
     this.board.scale.set(fit);
     this.board.position.set(
       Math.max(190 + (GAP * fit) / 2, (v.w - sign - w * fit) / 2),
-      (v.h - h * fit) / 2 + 20,
+      (v.h - h * fit + top) / 2 + 20,
     );
-    this.sign.position.set(v.w - SIGN_W / 2 - 10, v.h / 2 + 20);
+    if (pattern && above !== this.signAbove) {
+      this.signAbove = above;
+      this.drawSign();
+    }
+    if (above)
+      this.sign.position.set(this.board.x + (w * fit) / 2, this.board.y - (GAP * fit) / 2 - PAT_ROOM / 2);
+    else if (pattern) this.sign.position.set(v.w - PAT_ROOM / 2 - 10, v.h / 2 + 20);
+    else this.sign.position.set(v.w - SIGN_W / 2 - 10, v.h / 2 + 20);
     // Big mode: the whole view is the touch, in board units.
     if (this.plan.mode === 'big')
       this.touch.hitArea = new Rectangle(-this.board.x / fit, -this.board.y / fit, v.w / fit, v.h / fit);
@@ -302,6 +360,12 @@ class DotLink implements Game {
         g.scale.y = g.scale.x;
       }),
     );
+    // Pattern: the sign's dot for the color a line needs next bobs, so she can follow along as she draws.
+    const next = this.path.length % Math.max(1, this.signDots.length);
+    this.signDots.forEach((g, i) => {
+      const k = 0.95 * (i === next && !this.finished ? 1 + 0.12 * Math.abs(Math.sin(this.clock * 4)) : 1);
+      g.scale.set(g.scale.x + (k - g.scale.x) * Math.min(1, dt * 12));
+    });
   }
 
   autotouch(): TouchIntent | null {
@@ -313,7 +377,7 @@ class DotLink implements Game {
       const { x, y } = this.pos(cell);
       return { tap: { on: this.touch, x: x + GAP * 0.8, y: y + GAP * 0.9 }, pause: 0.12 };
     }
-    const move = demoMove(this.plan, this.grid, this.target, this.buddy);
+    const move = demoMove(this.plan, this.grid, this.target, this.buddy, this.pattern);
     if (!move) return null;
     const spots = move.map((cell) => ({ on: this.touch, ...this.pos(cell) }));
     return move.length === 1
@@ -360,7 +424,7 @@ class DotLink implements Game {
   private move(e: FederatedPointerEvent) {
     const cell = this.cellAt(e);
     if (!cell || this.loop) return;
-    const result = step(this.grid, this.path, cell);
+    const result = step(this.grid, this.path, cell, this.plan.mode === 'pattern');
     if (result === 'extend') {
       this.path.push(cell);
       sfx.pop(5 + Math.min(8, this.path.length));
@@ -382,6 +446,16 @@ class DotLink implements Game {
     const pts = this.path.map((c) => this.pos(c));
     if (this.loop) pts.push(pts[0]);
     else if (e) pts.push(this.board.toLocal(e.global));
+    if (this.plan.mode === 'pattern') {
+      // A pattern line crosses colors: each piece takes the color of the dot it leaves.
+      for (let i = 1; i < pts.length; i++) {
+        const from = this.path[i - 1];
+        g.moveTo(pts[i - 1].x, pts[i - 1].y)
+          .lineTo(pts[i].x, pts[i].y)
+          .stroke({ width: 16, color: swatch[this.grid[from.r][from.c]].line, cap: 'round' });
+      }
+      return;
+    }
     g.moveTo(pts[0].x, pts[0].y);
     for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
     g.stroke({ width: 16, color: sw.line, cap: 'round', join: 'round' });
@@ -483,7 +557,9 @@ class DotLink implements Game {
     const color = this.grid[path[0].r][path[0].c];
     const p = this.plan;
     let counts = 0;
-    let line: 'dots.notthat' | 'dots.twofull' | 'dots.longer' | 'dots.around' | 'dots.exact' | null = null;
+    let line:
+      'dots.notthat' | 'dots.twofull' | 'dots.longer' | 'dots.around' | 'dots.exact' | 'dots.follow' | null =
+      null;
     if (p.mode === 'pair' || p.mode === 'buddy') counts = 1;
     else if (p.mode === 'color') {
       if (color === this.target) counts = loop ? popped(this.grid, path, true).length : path.length;
@@ -500,12 +576,22 @@ class DotLink implements Game {
     } else if (p.mode === 'square') {
       if (loop) counts = 1;
       else line = 'dots.around';
+    } else if (p.mode === 'pattern') {
+      // Any line pops; one that follows the sign from its first color counts.
+      const colors = path.map((c) => this.grid[c.r][c.c]);
+      if (patternCounts(colors, this.pattern)) counts = 1;
+      else line = 'dots.follow';
     }
     if (line) {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      void this.ctx.say(line, { wrong: color, color: this.target ?? color, n: p.length ?? 2 });
+      void this.ctx.say(line, {
+        wrong: color,
+        color: this.target ?? color,
+        n: p.length ?? 2,
+        ...this.patternWords(),
+      });
       if (this.wrongs >= 2) this.hint();
     } else {
       this.wrongs = 0;
@@ -541,7 +627,9 @@ class DotLink implements Game {
     await tw.wait(0.22);
     // Gravity: everything above falls into the gaps, new dots drop in from the top.
     const { grid, falls } = collapse(this.grid, gone, this.ctx.rng, this.palette);
-    this.grid = ensureMove(this.plan, grid, this.ctx.rng, this.target);
+    this.grid = ensureMove(this.plan, grid, this.ctx.rng, this.target, this.pattern);
+    // A glow lit before the pop moves to a move on the refilled board, so it never rests on dots that fell in.
+    if (this.hintCells.length) this.hintCells = this.hintMove() ?? [];
     this.buildDots();
     for (const f of falls) {
       const g = this.dots[f.to][f.c];
@@ -567,13 +655,19 @@ class DotLink implements Game {
     else void this.ctx.say('count', { n: this.have[which] });
   }
 
+  /** A move that would count right now on the board as it stands. */
+  private hintMove() {
+    const p = this.plan;
+    return p.mode === 'square'
+      ? findSquare(this.grid)
+      : p.mode === 'pattern'
+        ? findPattern(this.grid, this.pattern)
+        : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
+  }
+
   /** Light up a move that would count right now. */
   private hint() {
-    const p = this.plan;
-    const cells =
-      p.mode === 'square'
-        ? findSquare(this.grid)
-        : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
+    const cells = this.hintMove();
     if (!cells) return;
     this.hintCells = cells;
     this.hints++;
@@ -643,7 +737,7 @@ export const dotLink: GameModule = {
   region: 'rainbow-meadow',
   challenge: 'hands',
   skills: ['colors', 'fine-motor', 'counting', 'planning'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
