@@ -674,9 +674,10 @@ class DotLink implements Game {
       if (counts) this.countTen(color, counts);
     }
     if (p.mode === 'ten') {
-      // The miss, if any, was the stop at the limit while drawing; a counted line puts a waiting glow away.
+      // The miss, if any, was the stop at the limit while drawing, and the line still counts: a stopped line usually
+      // finishes the round, so no second-miss glow follows here (waiting still glows). A clean line resets the misses.
       if (counts) this.hintCells = [];
-      if (this.wrongs >= 2) this.hint();
+      if (counts && !this.tenStopped) this.wrongs = 0;
     } else if (line) {
       this.misses++;
       this.wrongs++;
