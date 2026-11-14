@@ -63,6 +63,13 @@ export const VOICE = {
   'says.statue.flamingo': ['Freeze like a flamingo, on one leg!'],
   'says.statue.star': ['Freeze like a star, arms out wide!'],
   'says.statue.teapot': ['Freeze like a teapot!'],
+  'says.opp.intro': [
+    'Opposite day! When you see the sun, copy {pet}. When you see the moon, do the opposite!',
+  ],
+  'says.opp.sun': ['Sun! Copy me: {move}!'],
+  'says.opp.flip': ['Here comes the moon! Now do the opposite of {pet}.'],
+  'says.opp.moon': ['Moon! {move}! Can you do the opposite?'],
+  'says.opp.reveal': ['The opposite is {move}. Like this!'],
   'says.pat': ['Pat {pet}! Give {pet} a pat, and see what {pet} does.'],
   'says.pat-again': ['Pat {pet}!'],
   'says.next': ['A grown-up can tap the green arrow for the next one.'],

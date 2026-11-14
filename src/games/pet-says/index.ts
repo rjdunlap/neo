@@ -13,8 +13,8 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
-import { RoundButton } from '../../ui/buttons';
-import { arrowIcon } from '../../ui/icons';
+import { HoldButton, RoundButton } from '../../ui/buttons';
+import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -43,6 +43,8 @@ import {
   CHANT_WORDS,
   petGrow,
   wrongName,
+  ONCE_MORE_MODES,
+  partnerOf,
   type Dance,
   type Scene,
   type Move,
@@ -87,6 +89,30 @@ const pipMover = (spec: CritterSpec) => {
   return new Mover(pet, pet.sw, PIP_REST);
 };
 
+/** Opposite day's sign: a sun on a sky disk (copy me), or a moon on a night disk (do the opposite). */
+function drawSign(g: Graphics, sign: 'sun' | 'moon') {
+  g.clear();
+  if (sign === 'sun') {
+    g.circle(0, 0, 58).fill(swatch.blue.light).stroke({ width: 6, color: swatch.yellow.line });
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      g.moveTo(Math.cos(a) * 30, Math.sin(a) * 30)
+        .lineTo(Math.cos(a) * 46, Math.sin(a) * 46)
+        .stroke({ width: 7, color: swatch.yellow.line, cap: 'round' });
+    }
+    g.circle(0, 0, 24).fill(swatch.yellow.fill);
+  } else {
+    g.circle(0, 0, 58).fill(swatch.purple.line).stroke({ width: 6, color: swatch.yellow.light });
+    g.circle(-4, 0, 32).fill(swatch.yellow.light);
+    g.circle(12, -10, 28).fill(swatch.purple.line);
+    g.star(26, 22, 5, 8, 3.5).fill(swatch.yellow.light);
+  }
+  return g;
+}
+
+/** How long the "once more" button is held before it replays the turn: long enough that a small hand's tap does nothing. */
+const ONCE_MORE_HOLD = 0.5;
+
 class PetSays implements Game {
   readonly plan: SaysPlan;
   readonly turns: Turn[];
@@ -98,6 +124,14 @@ class PetSays implements Game {
   /** The middle of the friend's picture, in its own units, so a long friend stands centred. */
   private readonly middle: number;
   readonly next = new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 62, () => void this.advance());
+  /** The rule levels' held "once more" button (decision 2): it replays the turn, and a turn replayed with it counts one hint. */
+  readonly onceMore: HoldButton | null;
+  /** Opposite day: the sun or the moon, at the top of the scene. */
+  readonly sign = new Graphics();
+  /** Opposite day: a moon turn's arrow first reveals the opposite, then goes on. */
+  revealDue = false;
+  /** Turns replayed with "once more", each counted once. */
+  private readonly replayed = new Set<number>();
   index = -1;
   misses = 0;
   hints = 0;
@@ -122,6 +156,10 @@ class PetSays implements Game {
   private danceLeft = 0;
   /** "Pet says": "do this" has been explained this round. */
   private thisTold = false;
+  /** Opposite day: the moon's rule has been said this round. */
+  private mooned = false;
+  /** Opposite day: which sign is showing. */
+  private signShown: 'sun' | 'moon' = 'sun';
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -147,7 +185,17 @@ class PetSays implements Game {
     if (this.plan.mode === 'pat') onTap(this.backdrop, () => void this.again(), { cooldown: 250 });
     this.next.visible = false;
     this.notes.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.notes, this.mover, this.next);
+    this.onceMore = ONCE_MORE_MODES.includes(this.plan.mode)
+      ? ctx.track(
+          new HoldButton(againIcon(0xffffff), swatch.orange, 52, ONCE_MORE_HOLD, () => void this.replay()),
+        )
+      : null;
+    if (this.onceMore) this.onceMore.visible = false;
+    this.sign.eventMode = 'none';
+    this.sign.visible = this.plan.mode === 'opposite';
+    if (this.sign.visible) drawSign(this.sign, 'sun');
+    ctx.stage.addChild(this.backdrop, this.notes, this.mover, this.sign, this.next);
+    if (this.onceMore) ctx.stage.addChild(this.onceMore);
     // The big pet is the star, so the corner guide steps out; tapping the big pet shows the move again.
     ctx.pet.visible = false;
   }
@@ -167,6 +215,10 @@ class PetSays implements Game {
     this.mover.scale.set(Math.sign(this.mover.scale.x || 1) * s, s);
     this.mover.position.set(v.w / 2 - this.middle * s, v.h - PET_FEET);
     this.next.position.set(v.w - 110, v.h - 110);
+    // Above the arrow, so the bottom row stays clear of the pet on a phone held upright.
+    this.onceMore?.position.set(v.w - 110, v.h - 260);
+    // Top middle, below the home and help buttons' row.
+    this.sign.position.set(v.w / 2, Math.min(130, Math.max(90, v.h * 0.12)));
   }
 
   update(dt: number) {
@@ -338,6 +390,7 @@ class PetSays implements Game {
       pairs: 'says.pairs',
       says: 'says.rule',
       freeze: 'says.freeze',
+      opposite: 'says.opp.intro',
       pat: 'says.pat',
     };
     if (this.plan.mode === 'pat') {
@@ -359,6 +412,8 @@ class PetSays implements Game {
     this.next.rotation = 0;
     this.ctx.tw.kill(this.next);
     this.next.visible = false;
+    this.hideOnceMore();
+    if (this.revealDue && !first) return this.reveal();
     if (this.plan.mode === 'freeze' && !first) this.unfreeze();
     this.index++;
     if (!this.turn) return this.finale();
@@ -382,7 +437,40 @@ class PetSays implements Game {
     this.next.rotation = 0;
     this.ctx.tw.kill(this.next);
     this.next.visible = false;
+    this.hideOnceMore();
     await this.show(this.turn);
+  }
+
+  /** The held "once more": the turn again, counted as one hint the first time for each turn. Never spoken as a failure. */
+  async replay() {
+    if (this.busy || this.finished || !this.turn) return;
+    if (!this.replayed.has(this.index)) {
+      this.replayed.add(this.index);
+      this.hints++;
+    }
+    await this.again();
+  }
+
+  private hideOnceMore() {
+    if (this.onceMore) this.onceMore.visible = false;
+  }
+
+  /** Opposite day, after the arrow on a moon turn: the pet shows the opposite, the grown-up's check. */
+  private async reveal() {
+    this.revealDue = false;
+    const shown = this.turn!.moves[0];
+    const opposite = partnerOf(shown);
+    await this.ctx.say('says.opp.reveal', { move: MOVE_WORDS[opposite] });
+    await this.perform(opposite);
+    this.ready();
+  }
+
+  /** Turns the sign over to the sun or the moon, with a flip. */
+  private async flipSign(to: 'sun' | 'moon') {
+    sfx.whoosh();
+    await this.ctx.tw.to(this.sign.scale, { x: 0 }, { duration: 0.18, ease: ease.inOutSine });
+    drawSign(this.sign, to);
+    await this.ctx.tw.to(this.sign.scale, { x: 1 }, { duration: 0.18, ease: ease.inOutSine });
   }
 
   private async show(turn: Turn) {
@@ -438,6 +526,24 @@ class PetSays implements Game {
         }
         break;
       }
+      case 'opposite': {
+        const sign = turn.sign ?? 'sun';
+        if (sign !== this.signShown) {
+          this.signShown = sign;
+          await this.flipSign(sign);
+        }
+        if (sign === 'moon' && !this.mooned) {
+          // The first moon: the new rule is said once.
+          this.mooned = true;
+          await this.ctx.say('says.opp.flip');
+        }
+        await this.ctx.instruct(sign === 'sun' ? 'says.opp.sun' : 'says.opp.moon', {
+          move: MOVE_WORDS[first],
+        });
+        await this.perform(first);
+        this.revealDue = sign === 'moon';
+        break;
+      }
       case 'pat':
         void this.ctx.say(MOVE_CUES[first].line);
         await this.perform(first);
@@ -465,6 +571,7 @@ class PetSays implements Game {
       if (this.patted >= this.plan.turns) void this.finale();
       return;
     }
+    if (this.onceMore && this.turn) this.onceMore.visible = true;
     this.next.visible = true;
     this.next.scale.set(0);
     void this.ctx.tw.to(this.next.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
@@ -858,7 +965,7 @@ export const petSays: GameModule = {
   region: 'cozy-village',
   challenge: 'words',
   skills: ['copying actions', 'body words', 'following directions', 'self-control'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [13],
   describeLevel: (level) => planFor(level).name,

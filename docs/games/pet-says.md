@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/pet-says; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `pet-says` · **Land:** Cozy Village · **Ages:** lap–pre-K · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `pet-says` · **Land:** Cozy Village · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** copying actions, body words, following directions, self-control
 
@@ -11,7 +11,8 @@
 | lap | 13, 1, 2 |
 | toddler | 1–3 |
 | preschool | 2–4 |
-| pre-K | 3–5 |
+| pre-K | 3–6 |
+| school | 6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +21,7 @@
 | 3 | Two moves in order, sometimes counted: "stomp three times, then hop like a frog" |
 | 4 | "Pet says": move only when you hear the pet's name first; later a wrong name, and "do this, do that" |
 | 5 | Freeze dance: four tunes to bounce, sway or dance like a robot to, then freeze like a tree or a flamingo |
+| 6 | Opposite day: a sun means copy the pet, a moon means do the opposite (reach up high, so crouch down low) |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->

@@ -26,6 +26,13 @@ export const HOW_TO: GameHowTo = {
       text: 'Dance the way the pet dances while the music plays. When it stops, freeze like the statue the pet names: a tree, a star, a flamingo.',
     },
     {
+      from: 6,
+      to: 6,
+      text: 'A sun means copy the pet. A moon means do the opposite: it reaches up high, so you crouch down low. After the arrow, the pet shows the opposite.',
+    },
+    { from: 4, to: 4, text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.' },
+    { from: 6, to: 6, text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.' },
+    {
       from: 13,
       to: 13,
       text: 'Tap anywhere to pat the pet. Each pat makes it do its next move: wave, clap, jump, peekaboo, pat-a-cake. Do the move together if you like.',
