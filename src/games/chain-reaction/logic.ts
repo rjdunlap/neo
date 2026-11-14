@@ -32,6 +32,8 @@ export interface ChainPlan {
   predict?: { bells: number; offPath: number };
   /** A blue marble shares the board with the red one; one placement must send each to its own bell. */
   two?: boolean;
+  /** Level 10: a fixed spring bounces the marble over the row below it; a ramp under the spring is skipped. */
+  spring?: boolean;
 }
 
 export const PLANS: ChainPlan[] = [
@@ -134,12 +136,15 @@ export const TURN_PLAN: ChainPlan = {
 
 /** Level 9, school: a red and a blue marble run the same machine, so each ramp is placed for both of them. */
 export const TWO_MARBLES = 9;
+/** Level 10, school: a spring part sends the marble two rows down, over the ramp below it. */
+export const SPRINGBOARD = 10;
 
 export const LEVELS: BandLevels = {
   // Tap to turn and Which bell? are easy entries before the existing drag levels.
   prek: { min: 1, max: 8, order: [TAP_TO_TURN, WHICH_BELL, 1, 2, 3] },
   // Two marbles tops the school ladder after the chime machines; levels 7 and 8 stay pre-K entries.
-  school: { min: 3, max: TWO_MARBLES, order: [3, 4, 5, 6, TWO_MARBLES] },
+  // Springboard follows Two marbles at the school top (the dive's "school 5-8" window is read as the top of the ladder).
+  school: { min: 3, max: SPRINGBOARD, order: [3, 4, 5, 6, TWO_MARBLES, SPRINGBOARD] },
 };
 export const TWO_PLAN: ChainPlan = {
   name: 'Two marbles: each one rings the bell of its own colour',
@@ -154,10 +159,24 @@ export const TWO_PLAN: ChainPlan = {
   two: true,
 };
 
+export const SPRING_PLAN: ChainPlan = {
+  name: 'Springboard: land the marble on the spring so it bounces over a row',
+  cols: 5,
+  rows: 5,
+  fixed: 0,
+  loose: 2,
+  decoys: 4,
+  chime: false,
+  solutions: { min: 1, max: 2 },
+  machines: 2,
+  spring: true,
+};
+
 const SPECIAL: Record<number, ChainPlan> = {
   [TAP_TO_TURN]: TURN_PLAN,
   [WHICH_BELL]: PREDICT_PLAN,
   [TWO_MARBLES]: TWO_PLAN,
+  [SPRINGBOARD]: SPRING_PLAN,
 };
 export const planFor = (level: number): ChainPlan =>
   SPECIAL[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -183,6 +202,8 @@ export interface ChainBoard {
   turn?: FixedRamp[];
   /** Level 9's blue marble: its own cup and its own bell on the same board. `start`/`target` above are the red marble's. */
   blue?: { start: number; target: number };
+  /** Level 10's spring: a marble that reaches this cell skips the row below it (never on the first or last row). */
+  spring?: Cell;
 }
 
 /** Which marble a trace follows: 0 is the red marble (every level), 1 the blue one at level 9. */
@@ -192,6 +213,8 @@ export interface TraceStep extends Cell {
   ramp?: Ramp;
   /** Which loose ramp was hit; fixed ramps omit this. */
   loose?: number;
+  /** The marble bounced on the spring here; its next step is two rows down, in the same column. */
+  spring?: boolean;
 }
 
 export interface Trace {
@@ -216,6 +239,12 @@ export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = []
   let escaped = false;
   for (let row = 0; row < board.rows; row++) {
     const at = { row, col };
+    if (board.spring && sameCell(at, board.spring)) {
+      // The spring skips exactly the next row: nothing there (ramp, socket or chime) touches the marble.
+      steps.push({ ...at, spring: true });
+      row++;
+      continue;
+    }
     if (board.chime && sameCell(at, board.chime)) chimed = true;
     const fixed = board.fixed.find((p) => sameCell(p, at));
     const turning = board.turn?.findIndex((p) => sameCell(p, at)) ?? -1;
@@ -385,6 +414,7 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
   }
   if (plan.predict) return makePredictBoard(plan, plan.predict, rng);
   if (plan.two) return makeTwoBoard(plan, rng);
+  if (plan.spring) return makeSpringBoard(plan, rng);
   for (let attempt = 0; attempt < 800; attempt++) {
     const rows = rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row));
     const looseRows = new Set(rows.slice(0, plan.loose));
@@ -441,6 +471,79 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
     if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
     // The stored layout must be one of the accepted ways, and taking every loose ramp away must not solve it.
     if (!works(board, solution) || works(board, Array(loose.length).fill(null))) continue;
+    board.solution = ways[0];
+    return board;
+  }
+  throw new Error(`could not make a Chain Reaction board for ${plan.name}`);
+}
+
+/** Whether a marble's way down bounced on the spring. */
+export const bounced = (t: Trace): boolean => t.steps.some((step) => step.spring);
+
+/**
+ * Level 10: a spring sits in the marble's way on a middle row, and a fixed ramp sits right under it, so the bounce is
+ * visible (that ramp is skipped). One loose ramp comes before the spring and moves the marble onto its column; the other
+ * comes after. Every accepted design bounces on the spring, and the same ramps without the spring would miss the bell.
+ */
+function makeSpringBoard(plan: ChainPlan, rng: Rng): ChainBoard {
+  for (let attempt = 0; attempt < 800; attempt++) {
+    const springRow = rng.int(1, plan.rows - 2);
+    const before = Array.from({ length: springRow }, (_, row) => row);
+    const after = Array.from({ length: plan.rows }, (_, row) => row).filter((row) => row > springRow + 1);
+    if (!after.length) continue;
+    const looseRows = new Set([rng.pick(before), rng.pick(after)]);
+    let col = rng.int(1, plan.cols - 2);
+    const start = col;
+    const fixed: FixedRamp[] = [];
+    const loose: Ramp[] = [];
+    const correct: Cell[] = [];
+    let spring: Cell | undefined;
+    const side = (c: number): Ramp =>
+      c === 0 ? 'right' : c === plan.cols - 1 ? 'left' : rng.pick<Ramp>(['left', 'right']);
+    for (let row = 0; row < plan.rows; row++) {
+      if (row === springRow) {
+        spring = { row, col };
+        // The hurdle under the spring: a ramp the bounce skips. Either way stays on the board.
+        fixed.push({ row: row + 1, col, ramp: side(col) });
+        row++;
+        continue;
+      }
+      if (!looseRows.has(row)) continue;
+      const ramp = side(col);
+      loose.push(ramp);
+      correct.push({ row, col });
+      col += delta(ramp);
+    }
+    if (!spring || spring.col === start || col === start) continue;
+
+    const occupied = new Set([...fixed, ...correct, spring].map(key));
+    const candidates = rng.shuffle(
+      Array.from({ length: plan.rows * plan.cols }, (_, i) => ({
+        row: Math.floor(i / plan.cols),
+        col: i % plan.cols,
+      })).filter((cell) => !occupied.has(key(cell))),
+    );
+    const sockets = [...correct, ...candidates.slice(0, plan.decoys)];
+    if (sockets.length < plan.loose + plan.decoys) continue;
+    rng.shuffle(sockets);
+    const solution = correct.map((cell) => sockets.findIndex((s) => sameCell(s, cell)));
+    const board: ChainBoard = {
+      cols: plan.cols,
+      rows: plan.rows,
+      start,
+      target: col,
+      fixed,
+      loose,
+      sockets,
+      solution,
+      spring,
+    };
+    const ways = solutions(board);
+    if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
+    if (!works(board, solution) || works(board, Array(loose.length).fill(null))) continue;
+    // The spring is the point: every accepted design bounces on it, and none of them works without it.
+    const springless = { ...board, spring: undefined };
+    if (!ways.every((way) => bounced(trace(board, way)) && !works(springless, way))) continue;
     board.solution = ways[0];
     return board;
   }

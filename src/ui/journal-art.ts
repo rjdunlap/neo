@@ -16,6 +16,7 @@ import type { BalanceObservation } from '../games/seesaw-balance/logic';
 import { meltJournalPicture } from '../games/melt-freeze/art';
 import { kitchenJournalPicture } from '../games/pet-kitchen/art';
 import { farJournalPicture } from '../games/far-lights/art';
+import { chainJournalPicture } from '../games/chain-reaction';
 import { paintJournalPicture } from '../games/paint-mixer/art';
 import type { ShelfColour } from '../games/paint-mixer/logic';
 import type { KitchenDiscovery } from '../games/pet-kitchen/logic';
@@ -53,6 +54,8 @@ export function entryPicture(entry: JournalEntry): Container {
       return paintJournalPicture(entry.key as ShelfColour);
     case 'far-lights':
       return farJournalPicture();
+    case 'chain-reaction':
+      return chainJournalPicture();
   }
 }
 

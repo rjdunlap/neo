@@ -9,7 +9,7 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 7, 8, 1, 2, 3 |
-| school | 3, 4, 5, 6, 9 |
+| school | 3, 4, 5, 6, 9, 10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 7 | Tap the coloured ramps to turn them so the marble rings the bell |
 | 8 | Which bell? Tap the bell the marble will ring, then run it |
 | 9 | Two marbles: each one rings the bell of its own colour |
+| 10 | Springboard: land the marble on the spring so it bounces over a row |
 
 <!-- end generated -->
 

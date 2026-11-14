@@ -61,8 +61,9 @@ describe('the entries', () => {
       'lilac',
     ]);
     expect(entriesOf('far-lights').map((e) => e.key)).toEqual(['strong-far']);
+    expect(entriesOf('chain-reaction').map((e) => e.key)).toEqual(['spring-skip']);
     expect(JOURNAL).toHaveLength(
-      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6 + 1,
+      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6 + 1 + 1,
     );
   });
 
@@ -150,6 +151,11 @@ describe('the entries', () => {
           expect(said, e.id).toContain('strong light far away');
           expect(said, e.id).toContain('gentle light close by');
           break;
+        case 'chain-reaction':
+          // Matches the rule in trace(): a spring skips exactly one row.
+          expect(said, e.id).toContain('over one row');
+          expect(said, e.id).toContain('skipped');
+          break;
       }
     }
   });
@@ -211,6 +217,9 @@ describe('the entries', () => {
       } else if (e.game === 'far-lights') {
         expect(find).toContain('strong light and a gentle light');
         expect(found).toContain('a strong light far away');
+      } else if (e.game === 'chain-reaction') {
+        expect(find).toContain('spring');
+        expect(found).toContain('over one row');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);

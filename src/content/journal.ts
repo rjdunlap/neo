@@ -27,7 +27,8 @@ export type JournalGame =
   | 'melt-freeze'
   | 'pet-kitchen'
   | 'paint-mixer'
-  | 'far-lights';
+  | 'far-lights'
+  | 'chain-reaction';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -314,6 +315,18 @@ export const JOURNAL: readonly JournalEntry[] = [
     source: {
       find: 'tell which light is farther when a strong light and a gentle light look the same',
       found: 'a strong light far away looked as bright as a gentle light close by',
+    },
+  },
+  // Chain Reaction, level 10 Springboard: a run bounced on the spring and skipped the ramp under it.
+  {
+    id: entryId('chain-reaction', 'spring-skip'),
+    game: 'chain-reaction',
+    key: 'spring-skip',
+    name: 'The spring skips a row',
+    line: 'journal.chain.spring',
+    source: {
+      find: 'send the marble onto the green spring and watch where it lands',
+      found: 'the spring bounced the marble over one row, past the ramp under it',
     },
   },
 ];

@@ -45,4 +45,10 @@ export const VOICE = {
     'Both marbles missed their bells. Follow the red and blue trails, move a ramp and try again!',
   ],
   'chain.two-rang': ['Ding, ding! Each marble rang its own bell!'],
+  'chain.spring-start': [
+    'This machine has a green spring! When the marble lands on it, it bounces over the next row. Drag the ramps so the marble lands on the spring, then tap the green arrow!',
+  ],
+  'chain.spring-hint': [
+    'Try the glowing ramp in the glowing spot. It sends the marble onto the spring, and the spring bounces it over a row.',
+  ],
 } satisfies Record<string, string[]>;

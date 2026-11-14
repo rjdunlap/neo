@@ -12,8 +12,10 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { entryId } from '../../content/journal';
 import {
   LEVELS,
+  bounced,
   chainTouch,
   hintFor,
   makeBoards,
@@ -48,6 +50,44 @@ export function rampArt(ramp: Ramp, loose = false): Container {
   g.circle(end, 25, 10).fill(swatch.blue.light).stroke({ width: 3, color: swatch.blue.line });
   c.addChild(g);
   c.hitArea = new Circle(0, 0, PART_R + 6);
+  return c;
+}
+
+/** Level 10's spring: a green pad on a coil in a wooden socket. Fixed, so it never takes a touch. */
+export function springArt(): Container {
+  const c = new Container();
+  const g = new Graphics()
+    .roundRect(-48, -44, 96, 88, 22)
+    .fill(wood.fill)
+    .stroke({ width: 6, color: wood.line });
+  const coil = new Graphics().moveTo(-22, 30);
+  [-22, 22, -22, 22, -22].forEach((x, i) => coil.lineTo(-x, 30 - (i + 1) * 10));
+  coil.stroke({ width: 7, color: ink, cap: 'round', join: 'round' });
+  const pad = new Graphics()
+    .roundRect(-34, -34, 68, 18, 9)
+    .fill(swatch.green.fill)
+    .stroke({ width: 4, color: swatch.green.line });
+  const base = new Graphics().roundRect(-30, 28, 60, 10, 5).fill(swatch.green.line);
+  c.addChild(g, base, coil, pad);
+  c.label = 'spring';
+  return c;
+}
+
+/** The journal's spring card: a marble hopping off the spring over a ramp. */
+export function chainJournalPicture(): Container {
+  const c = new Container();
+  const spring = springArt();
+  const ramp = rampArt('left', false);
+  ramp.position.set(0, 100);
+  const arc = new Graphics()
+    .moveTo(0, -40)
+    .quadraticCurveTo(80, -60, 70, 100)
+    .stroke({ width: 7, color: swatch.red.fill, alpha: 0.45, cap: 'round' });
+  const marble = new Graphics()
+    .circle(56, -50, 19)
+    .fill(swatch.red.fill)
+    .stroke({ width: 5, color: swatch.red.line });
+  c.addChild(ramp, spring, arc, marble);
   return c;
 }
 
@@ -134,6 +174,9 @@ class ChainReaction implements Game {
   private picked: number | null = null;
   private readonly pickRing = new Graphics();
   private chimeBell: Container | null = null;
+  private springNode: Container | null = null;
+  /** A run this round bounced on the spring, so the journal may file what it showed. */
+  private sawSpring = false;
   private hinted: { piece: number; socket: number } | null = null;
   private settled = false;
   /** Level 8's help: the start cup glows while the pet says to follow the marble's way down with a finger. */
@@ -297,9 +340,11 @@ class ChainReaction implements Game {
             ? 'chain.predict-start'
             : this.plan.two
               ? 'chain.two-start'
-              : this.plan.chime
-                ? 'chain.chime-start'
-                : 'chain.start',
+              : this.plan.spring
+                ? 'chain.spring-start'
+                : this.plan.chime
+                  ? 'chain.chime-start'
+                  : 'chain.start',
       );
   }
 
@@ -436,6 +481,13 @@ class ChainReaction implements Game {
       node.eventMode = 'none';
       this.fixed.addChild(node);
     }
+    this.springNode = null;
+    if (this.machine.spring) {
+      this.springNode = springArt();
+      this.springNode.position.set(this.colX(this.machine.spring.col), this.rowY(this.machine.spring.row));
+      this.springNode.eventMode = 'none';
+      this.fixed.addChild(this.springNode);
+    }
     this.goal.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.bellNodes.forEach((b) => b.node.destroy({ children: true }));
     this.bellNodes = [];
@@ -513,6 +565,15 @@ class ChainReaction implements Game {
       return;
     }
     if (!this.hinted || this.busy) return;
+    if (this.machine.spring) {
+      // Level 10's hint also lights the spring's column: the ramp to place sends the marble onto it.
+      const x = this.colX(this.machine.spring.col);
+      const bottom = this.top + (this.machine.rows + 1) * this.gap;
+      this.glow
+        .roundRect(x - 58, this.top - 10, 116, bottom - this.top - 20, 40)
+        .fill({ color: swatch.yellow.light, alpha: 0.35 })
+        .stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.7 });
+    }
     const socket = this.socketPosition(this.hinted.socket);
     const pulse = 62;
     this.glow.circle(socket.x, socket.y, pulse).stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.9 });
@@ -545,7 +606,7 @@ class ChainReaction implements Game {
     this.hints++;
     this.drawGlow();
     sfx.sparkle();
-    void this.ctx.say('chain.hint');
+    void this.ctx.say(this.machine.spring ? 'chain.spring-hint' : 'chain.hint');
   }
 
   private async run() {
@@ -563,6 +624,7 @@ class ChainReaction implements Game {
     });
     const results = traces(this.machine, this.placement, this.flipped);
     this.lastTraces = results;
+    if (results.some(bounced)) this.sawSpring = true;
     // Both marbles always run, one after the other, so a miss shows what each ramp did to each marble.
     for (const [m, result] of results.entries()) await this.animate(result, m as Marble);
     const bottom = this.top + (this.machine.rows + 1) * this.gap;
@@ -671,6 +733,7 @@ class ChainReaction implements Game {
           .then(() => this.ctx.tw.to(bell, { rotation: -0.12 }, { duration: 0.12 }))
           .then(() => this.ctx.tw.to(bell, { rotation: 0 }, { duration: 0.1 }));
       }
+      if (step.spring) await this.bounce(marble, step.col, step.row);
       if (step.ramp) {
         sfx.marimba(step.ramp === 'left' ? 4 : 8, 0.22);
         const next = step.col + (step.ramp === 'left' ? -1 : 1);
@@ -696,6 +759,29 @@ class ChainReaction implements Game {
     }
   }
 
+  /** The spring squashes, then the marble hops out and over the next row's part, landing two rows down. */
+  private async bounce(marble: Container, col: number, row: number) {
+    const spring = this.springNode;
+    if (spring) {
+      await this.ctx.tw.to(spring.scale, { y: 0.7 }, { duration: 0.08 });
+      void this.ctx.tw.to(spring.scale, { y: 1 }, { duration: 0.2, ease: ease.outBack });
+    }
+    sfx.pluck(9, 0.3);
+    await this.ctx.tw.to(
+      marble,
+      { x: this.colX(col) + this.hopSide(col), y: this.rowY(row + 1) - 15 },
+      { duration: 0.24, ease: ease.outQuad },
+    );
+    void this.ctx.tw
+      .to(marble.scale, { x: 1.3, y: 1.3 }, { duration: 0.12 })
+      .then(() => this.ctx.tw.to(marble.scale, { x: 1, y: 1 }, { duration: 0.12 }));
+  }
+
+  /** The hop swings half a column out (inward at the right wall) so it reads as going over the skipped part. */
+  private hopSide(col: number) {
+    return (col === this.machine.cols - 1 ? -1 : 1) * COL_GAP * 0.55;
+  }
+
   /** A faint path of each marble's last run in its own colour, kept until the next run so the two can be compared. */
   private drawTrail(results: Trace[]) {
     const bottom = this.top + (this.machine.rows + 1) * this.gap;
@@ -705,6 +791,8 @@ class ChainReaction implements Game {
       this.trail.moveTo(this.colX(start), this.top - 18);
       for (const step of result.steps) {
         this.trail.lineTo(this.colX(step.col), this.rowY(step.row) - 15);
+        if (step.spring)
+          this.trail.lineTo(this.colX(step.col) + this.hopSide(step.col), this.rowY(step.row + 1) - 15);
         if (step.ramp)
           this.trail.lineTo(
             this.colX(step.col + (step.ramp === 'left' ? -1 : 1)),
@@ -750,7 +838,11 @@ class ChainReaction implements Game {
     sfx.tada();
     await this.ctx.say('chain.done');
     await this.ctx.tw.wait(0.4);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({
+      misses: this.misses,
+      hints: this.hints,
+      discoveries: this.sawSpring ? [entryId('chain-reaction', 'spring-skip')] : undefined,
+    });
   }
 }
 
