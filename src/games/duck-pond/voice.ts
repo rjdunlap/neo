@@ -13,6 +13,8 @@ export const VOICE = {
   'duck.make': ['Put {n} in the pond!'],
   'duck.made': ["That's {n}!", 'Yes, {n}!'],
   'duck.howmany': ['How many ducks?', 'How many ducks are swimming?'],
+  'duck.none': ['None! No ducks at all!', 'Zero! The pond is empty!'],
+  'duck.noneHere': ['Look, no ducks here. Nothing to count!'],
   'duck.countus': ["Let's count together!"],
   'duck.more': ['{a} ducks are swimming. {b} more come!'],
   'duck.away': ['{a} ducks are swimming. {b} swim away!'],

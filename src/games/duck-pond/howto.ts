@@ -20,7 +20,11 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Tap ducks into the pond until the number asked for is there; they are counted aloud.',
     },
-    { from: 6, to: 7, text: 'Count the ducks, then tap the answer button with that number.' },
+    {
+      from: 6,
+      to: 7,
+      text: 'Count the ducks, then tap the lily pad with that number. Each pad shows its number as dots too, so she can match dots to ducks before she reads it.',
+    },
     {
       from: 8,
       to: 9,
@@ -50,6 +54,16 @@ export const HOW_TO: GameHowTo = {
       from: 3,
       to: 4,
       text: 'The dots beside a number are there to count; counting them aloud together helps.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: 'The ducks sit like a dice face or in two rows of five, and are counted back row first. Once in a while the pond is empty: the answer is 0.',
+    },
+    {
+      from: 7,
+      to: 7,
+      text: 'The ducks sit like a dice face, in two rows of five or scattered, and are counted back row first. Once in a while the pond is empty: the answer is 0.',
     },
     {
       from: 8,
