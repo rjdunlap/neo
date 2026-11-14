@@ -4,13 +4,13 @@
 
 **ID:** `bug-builder` · **Land:** Tinker Lab · **Ages:** toddler–school · **Challenge:** space · **Plays by:** touch · **Ghost finger:** yes
 
-**Skills:** spatial-reasoning, symmetry, visual-matching
+**Skills:** spatial-reasoning, symmetry, visual-matching, counting
 
 | Band | Levels, easiest first |
 | --- | --- |
 | toddler | 1–2 |
-| preschool | 2–5 |
-| pre-K | 4–7 |
+| preschool | 2, 3, 4, 5, 8 |
+| pre-K | 4, 5, 8, 6, 7 |
 | school | 6–7 |
 
 | Level | Plays like |
@@ -22,6 +22,7 @@
 | 5 | Mirror two spots onto the other wing |
 | 6 | Mirror three spots onto the other wing |
 | 7 | Mirror six spots, matching both shape and color |
+| 8 | Count the spots: give a bare bug the number on the sign |
 
 <!-- end generated -->
 

@@ -12,9 +12,15 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 5,
+      to: 7,
       text: 'Look at one wing, then drag matching shapes and colors across onto the other wing, like a mirror.',
+    },
+    {
+      from: 8,
+      text: 'Count the spots: drag any shape onto any place until the bug has the number on the sign, then tap the check. Tap a spot to take it off.',
     },
     { from: 5, to: 7, text: 'When the wings match, watch them fold across the middle and open together.' },
   ],
-  finish: 'The round ends when the bug matches what was asked for.',
+  finish:
+    'The round ends when the bug matches what was asked for, or has just the number of spots on the sign.',
 };
