@@ -16,9 +16,9 @@
 | Level | Plays like |
 | --- | --- |
 | 1 | Copy the pet: clap, stomp, wave, jump, peekaboo, pat-a-cake (a grown-up taps the arrow) |
-| 2 | Body words: touch your nose, pat your tummy, touch your toes |
+| 2 | Body words: point to your eyes, touch your shoulders, hold your chin; then the "head, shoulders, tummy, toes" chant |
 | 3 | Two moves in order, sometimes counted: "stomp three times, then hop like a frog" |
-| 4 | "Pet says": move only when you hear the pet's name first |
+| 4 | "Pet says": move only when you hear the pet's name first; later a wrong name, and "do this, do that" |
 | 5 | Freeze dance: four tunes to bounce, sway or dance like a robot to, then freeze like a tree or a flamingo |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 

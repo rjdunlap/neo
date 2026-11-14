@@ -41,6 +41,15 @@ import {
   TUNE_IDS,
   TUNE_RANGE,
   TUNES,
+  BODY_ZONE,
+  CHANT_LINES,
+  CHANT_STEPS,
+  CHANT_VERSES,
+  CHANT_WORDS,
+  CLASHES,
+  petGrow,
+  WRONG_NAMES,
+  wrongName,
 } from './logic';
 
 describe('Pet Says', () => {
@@ -114,7 +123,10 @@ describe('Pet Says', () => {
         expect(turns).toHaveLength(plan.turns);
         const flat = turns.flatMap((t) => t.moves);
         if (plan.mode !== 'freeze') flat.slice(1).forEach((m, i) => expect(m).not.toBe(flat[i]));
-        if (plan.mode === 'body') for (const t of turns) expect(BODY).toContain(t.moves[0]);
+        if (plan.mode === 'body') {
+          for (const t of turns.slice(0, -1)) expect(BODY).toContain(t.moves[0]);
+          expect(turns[turns.length - 1]).toEqual({ moves: [], chant: CHANT_VERSES });
+        }
         if (plan.mode === 'pairs') for (const t of turns) expect(t.moves).toHaveLength(2);
       }
   });
@@ -170,15 +182,133 @@ describe('Pet Says', () => {
     expect(cueWord('stomp')).toBe('stomp');
   });
 
-  it('starts "Pet says" with a real one, and spaces out the two tricks', () => {
+  it('starts "Pet says" with a real one, and spaces out two or three tricks, the first a plain one', () => {
     const plan = PLANS.find((p) => p.mode === 'says')!;
-    for (let seed = 1; seed <= 300; seed++) {
+    const seen = { counts: new Set<number>(), cues: new Set<string>() };
+    for (let seed = 1; seed <= 400; seed++) {
       const turns = makeTurns(plan, new Rng(seed));
       expect(turns[0].says).toBe(true);
+      expect(turns[0].cue).toBe('says');
       const tricks = turns.map((t, i) => (t.says ? -1 : i)).filter((i) => i >= 0);
-      expect(tricks).toHaveLength(2);
-      expect(tricks[1] - tricks[0]).toBeGreaterThanOrEqual(2);
+      expect([2, 3]).toContain(tricks.length);
+      seen.counts.add(tricks.length);
+      tricks.slice(1).forEach((t, k) => expect(t - tricks[k]).toBeGreaterThanOrEqual(2));
+      // Only "says" and "do this" mean move; the first trick is the plain one, and the other kinds come after it.
+      for (const t of turns) {
+        expect(t.says).toBe(t.cue === 'says' || t.cue === 'this');
+        seen.cues.add(t.cue!);
+        expect(t.who !== undefined).toBe(t.cue === 'name');
+      }
+      expect(turns[tricks[0]].cue).toBe('plain');
+      const cues = turns.map((t) => t.cue!);
+      for (const kind of ['name', 'that', 'this'] as const)
+        if (cues.includes(kind)) expect(cues.indexOf(kind)).toBeGreaterThan(tricks[0]);
+      // "Do that" only once a "do this" has shown what "do this" means.
+      if (cues.includes('that')) expect(cues.indexOf('this')).toBeGreaterThan(-1);
+      if (cues.includes('that')) expect(cues.indexOf('this')).toBeLessThan(cues.indexOf('that'));
+      if (cues.includes('this')) expect(cues).toContain('that');
     }
+    expect([...seen.counts].sort()).toEqual([2, 3]);
+    expect([...seen.cues].sort()).toEqual(['name', 'plain', 'says', 'that', 'this']);
+  });
+
+  it('never deals a move and a body word with the same mitten places in one round', () => {
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 300; seed++) {
+        const moves = new Set(makeTurns(plan, new Rng(seed)).flatMap((t) => t.moves));
+        for (const [a, b] of CLASHES) expect(moves.has(a) && moves.has(b), `${plan.mode} ${seed}`).toBe(false);
+      }
+  });
+
+  it('borrows a wrong name that is never the pet\'s or the child\'s', () => {
+    for (let start = 0; start < WRONG_NAMES.length; start++) {
+      expect(wrongName(start, ['Pip', 'Mia'])).toBe(WRONG_NAMES[start]);
+      for (const own of WRONG_NAMES) {
+        expect(wrongName(start, [own.toUpperCase(), 'Mia']).toLowerCase()).not.toBe(own.toLowerCase());
+        const other = WRONG_NAMES.find((n) => n !== own)!;
+        expect([own, other]).not.toContain(wrongName(start, [own, ` ${other.toLowerCase()} `]));
+      }
+    }
+  });
+
+  it('deals five of the ten body words, never two in a row from one zone, then the chant', () => {
+    expect(BODY).toHaveLength(10);
+    expect(new Set(BODY).size).toBe(10);
+    expect(Object.keys(BODY_ZONE).sort()).toEqual([...BODY].sort());
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const turns = makeTurns(planFor(2), new Rng(seed));
+      const words = turns.slice(0, -1).map((t) => t.moves[0] as (typeof BODY)[number]);
+      expect(words).toHaveLength(5);
+      expect(new Set(words).size).toBe(5);
+      words.slice(1).forEach((w, i) => expect(BODY_ZONE[w]).not.toBe(BODY_ZONE[words[i]]));
+      words.forEach((w) => seen.add(w));
+    }
+    expect(seen.size).toBe(10);
+  });
+
+  it('puts the ten body words on each friend, apart enough that the mittens show which part', () => {
+    for (const s of SPECIES_IDS) {
+      const box = bodyBox(s);
+      const f = saysFrame((p) => restPoints(s, p), box);
+      const g = petGrow(box);
+      // Mouth, chin and shoulders are not marked parts; they are placed from the nose, the neck and the body box, so
+      // this checks them against the box and the marked parts near them, not against the drawing itself.
+      const inside = (p: { x: number; y: number }, pad: number) =>
+        p.x >= box.x - pad && p.x <= box.x + box.width + pad && p.y >= box.y - pad && p.y <= box.y + box.height + pad;
+      for (const w of ['eyes', 'mouth', 'cheeks', 'shoulders', 'chin'] as const)
+        for (const p of [f.targets[w].left, f.targets[w].right])
+          if (p !== f.rest.left) expect(inside(p, 20), `${s} ${w}`).toBe(true);
+      const nose = restPoints(s, 'nose')[0];
+      expect(f.targets.mouth.right.y, s).toBeGreaterThan(nose.y);
+      expect(f.targets.chin.left.y, s).toBeGreaterThan(f.targets.mouth.right.y);
+      for (const cheek of restPoints(s, 'cheeks'))
+        expect(
+          Math.min(
+            Math.hypot(f.targets.cheeks.left.x - cheek.x, f.targets.cheeks.left.y - cheek.y),
+            Math.hypot(f.targets.cheeks.right.x - cheek.x, f.targets.cheeks.right.y - cheek.y),
+          ),
+          s,
+        ).toBeLessThanOrEqual(16);
+      for (const eye of restPoints(s, 'eyes'))
+        expect(
+          Math.min(Math.abs(f.targets.eyes.left.x - eye.x), Math.abs(f.targets.eyes.right.x - eye.x)),
+          s,
+        ).toBeLessThanOrEqual(35);
+      expect(f.targets.shoulders.left.x, s).toBeLessThan(f.targets.shoulders.right.x);
+      // Words from different zones (any two that can follow each other): the two mittens together travel at least 70
+      // units at pip size (the friend's units times its grow). Summed, because on the side-on glider the tummy sits just
+      // under the face and both mittens move a little rather than one a lot.
+      for (const a of BODY)
+        for (const b of BODY) {
+          if (BODY_ZONE[a] === BODY_ZONE[b]) continue;
+          const ta = f.targets[a];
+          const tb = f.targets[b];
+          const travel =
+            Math.hypot(ta.left.x - tb.left.x, ta.left.y - tb.left.y) +
+            Math.hypot(ta.right.x - tb.right.x, ta.right.y - tb.right.y);
+          expect(travel * g, `${s} ${a} to ${b}`).toBeGreaterThanOrEqual(70);
+        }
+    }
+  });
+
+  it('sings the chant one word quieter each verse, and touches every word every time', () => {
+    expect(CHANT_WORDS).toEqual(['head', 'shoulders', 'tummy', 'toes']);
+    for (const w of CHANT_WORDS) {
+      expect(BODY).toContain(w);
+      expect(SCRIPT[CHANT_LINES[w as keyof typeof CHANT_LINES]].length).toBeGreaterThan(0);
+    }
+    expect(CHANT_VERSES[0].every(Boolean)).toBe(true);
+    CHANT_VERSES.forEach((v) => expect(v).toHaveLength(CHANT_WORDS.length));
+    CHANT_VERSES.slice(1).forEach((v, k) => {
+      const sung = (x: boolean[]) => x.filter(Boolean).length;
+      expect(sung(v)).toBe(sung(CHANT_VERSES[k]) - 1);
+      // The words go quiet from the front: a word once quiet stays quiet.
+      v.forEach((on, i) => on && expect(CHANT_VERSES[k][i]).toBe(true));
+    });
+    expect(CHANT_VERSES[CHANT_VERSES.length - 1].some(Boolean)).toBe(false);
+    expect(CHANT_STEPS).toHaveLength(CHANT_WORDS.length);
+    for (const step of CHANT_STEPS) expect(Number.isInteger(step) && step >= TUNE_RANGE.low && step <= TUNE_RANGE.high).toBe(true);
   });
 
   it('dances for a few seconds before each freeze, never the same twice running', () => {

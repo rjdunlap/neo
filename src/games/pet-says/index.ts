@@ -6,6 +6,7 @@ import { Backdrop } from '../../art/scenery';
 import { musicNote } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { voice } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
@@ -37,6 +38,11 @@ import {
   statuePose,
   STYLE_LINES,
   TUNES,
+  CHANT_LINES,
+  CHANT_STEPS,
+  CHANT_WORDS,
+  petGrow,
+  wrongName,
   type Dance,
   type Scene,
   type Move,
@@ -114,6 +120,8 @@ class PetSays implements Game {
   private beat = 0;
   private beatIn = 0;
   private danceLeft = 0;
+  /** "Pet says": "do this" has been explained this round. */
+  private thisTold = false;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -125,7 +133,7 @@ class PetSays implements Game {
     this.backdrop.addChild(this.extras);
     const star = ctx.companion();
     const b = star.getLocalBounds();
-    this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 520 / b.width));
+    this.grow = petGrow(b);
     this.middle = b.x + b.width / 2;
     this.frame = saysFrame((p) => star.partPoints(p), star.bodyBounds());
     this.mover = new Mover(star, swatch[star.color as ColorName], this.frame.rest);
@@ -380,8 +388,15 @@ class PetSays implements Game {
   private async show(turn: Turn) {
     const [first, second] = turn.moves;
     switch (this.plan.mode) {
-      case 'copy':
       case 'body':
+        if (turn.chant) {
+          await this.chant(turn.chant);
+          break;
+        }
+        void this.ctx.instruct(MOVE_CUES[first].line);
+        await this.perform(first);
+        break;
+      case 'copy':
         void this.ctx.instruct(MOVE_CUES[first].line);
         await this.perform(first);
         break;
@@ -393,16 +408,26 @@ class PetSays implements Game {
         await this.perform(second, c2);
         break;
       }
-      case 'says':
+      case 'says': {
         // The pet moves either way, to tempt; the words decide whether we move too.
-        await this.ctx.instruct(turn.says ? 'says.says' : 'says.trick', { move: MOVE_WORDS[first] });
+        const cue = turn.cue ?? (turn.says ? 'says' : 'plain');
+        const move = MOVE_WORDS[first];
+        const who = wrongName(turn.who ?? 0, [voice.pet, this.ctx.childName]);
+        if (cue === 'this' && !this.thisTold) {
+          this.thisTold = true;
+          await this.ctx.say('says.this-rule');
+        }
+        const asks = { says: 'says.says', this: 'says.this', plain: 'says.trick', name: 'says.name', that: 'says.that' } as const;
+        await this.ctx.instruct(asks[cue], { move, who });
         await this.perform(first);
         if (!turn.says) {
           this.mover.pet.setMood('surprised', 1.5);
           sfx.giggle();
-          await this.ctx.say('says.tricked');
+          const reveals = { plain: 'says.tricked', name: 'says.tricked-name', that: 'says.tricked-that' } as const;
+          await this.ctx.say(reveals[cue as keyof typeof reveals], { who });
         }
         break;
+      }
       case 'pat':
         void this.ctx.say(MOVE_CUES[first].line);
         await this.perform(first);
@@ -702,9 +727,67 @@ class PetSays implements Game {
         sfx.squeak(6);
         await tw.wait(0.7);
         break;
+      case 'eyes':
+        await this.hands(f.targets.eyes.left, f.targets.eyes.right, 0.25);
+        sfx.sparkle();
+        pet.setMood('surprised', 0.8);
+        await tw.wait(0.8);
+        break;
+      case 'mouth':
+        await this.hands(f.targets.mouth.left, f.targets.mouth.right, 0.25);
+        sfx.pop(9);
+        await tw.wait(0.8);
+        break;
+      case 'cheeks': {
+        const { left: l, right: r } = f.targets.cheeks;
+        await this.hands(l, r, 0.25);
+        for (let k = 0; k < 2; k++) {
+          sfx.knock();
+          await this.hands({ x: l.x - 8, y: l.y }, { x: r.x + 8, y: r.y }, 0.1);
+          await this.hands(l, r, 0.1);
+        }
+        break;
+      }
+      case 'shoulders':
+        await this.hands(f.targets.shoulders.left, f.targets.shoulders.right, 0.25);
+        // A little shrug under the mittens.
+        sfx.drum();
+        await this.stretch(1.06);
+        await this.stretch(1);
+        await tw.wait(0.4);
+        break;
+      case 'chin':
+        await this.hands(f.targets.chin.left, f.targets.chin.right, 0.25);
+        sfx.squeak(7);
+        await tw.wait(0.8);
+        break;
       default: {
         const never: never = move;
         throw new Error(`no performance for ${String(never)}`);
+      }
+    }
+    await this.rest();
+  }
+
+  /**
+   * The chant: each verse touches head, shoulders, tummy and toes on a falling marimba step, singing the words the verse
+   * keeps; the last verse is touches alone. Paced by the scene's tweens, so it stops with the scene.
+   */
+  async chant(verses: boolean[][]) {
+    const tw = this.ctx.tw;
+    const t = this.frame.targets;
+    await this.ctx.instruct('says.chant');
+    for (let v = 0; v < verses.length; v++) {
+      if (v > 0) await this.ctx.say(v === verses.length - 1 ? 'says.chant.silent' : 'says.chant.quieter');
+      for (let i = 0; i < CHANT_WORDS.length; i++) {
+        const word = CHANT_WORDS[i];
+        sfx.marimba(CHANT_STEPS[i], 0.4);
+        if (verses[v][i]) void this.ctx.say(CHANT_LINES[word as keyof typeof CHANT_LINES]);
+        await Promise.all([
+          this.hands(t[word].left, t[word].right, 0.22),
+          word === 'toes' ? this.stretch(0.8) : this.stretch(1),
+        ]);
+        await tw.wait(0.45);
       }
     }
     await this.rest();
