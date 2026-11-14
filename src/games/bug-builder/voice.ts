@@ -8,4 +8,13 @@ export const VOICE = {
   'bug.hint': ['Try the {color} {shape} in the glowing spot.'],
   'bug.hintMirror': ['Look across the line at its friend.'],
   'bug.done': ['Hello, beautiful bug!'],
+  'bug.count': ['Give the bug {n} spots! Any shape, any place. Then tap the check.'],
+  'bug.counted': ['{n}!'],
+  'bug.over': ["That's {have}. We wanted {n}. Tap one to take it off."],
+  'bug.few': ['The bug has {have}. We need {n}! Put on another spot.'],
+  'bug.many': ['The bug has {have}. We need {n}! Tap one to take it off.'],
+  'bug.countDone': ['{n} spots! Just right!', 'Yes, {n} spots! Hello, spotty bug!'],
+  'bug.countHintLift': ['Tap the glowing spot to take it off.'],
+  'bug.countHintAdd': ['Put a shape on the glowing place.'],
+  'bug.countHintCheck': ['Just right. Now tap the check!'],
 } satisfies Record<string, string[]>;

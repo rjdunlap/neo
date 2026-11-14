@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { label } from '../../ui/text';
 import { cream, ink, swatch } from '../../art/palette';
 import { shapePath } from '../../art/shapes';
 import { BUG_TOKENS } from './logic';
@@ -66,4 +67,54 @@ export function bugSticker(seed = 0): Container {
   c.scale.set(0.52);
   c.y = -92;
   return c;
+}
+
+const SIGN_DOT = 15,
+  SIGN_GAP = 44;
+
+/**
+ * Level 8's count sign: the number asked for, written large over the same number of hollow dots, which fill as spots land
+ * on the bug; each spot past the number hangs below the card as a filled dot, so "one too many" shows without a word.
+ * Decoration only: it takes no touches.
+ */
+export class CountSign extends Container {
+  private readonly card = new Graphics();
+  private readonly dots = new Graphics();
+  readonly halfW: number;
+  readonly halfH: number;
+
+  constructor(private readonly want: number) {
+    super();
+    const cols = Math.min(3, want),
+      rows = Math.ceil(want / 3);
+    this.halfW = Math.max(70, (cols * SIGN_GAP) / 2 + 18);
+    this.halfH = (88 + rows * SIGN_GAP + 18) / 2;
+    this.card
+      .roundRect(-this.halfW, -this.halfH, this.halfW * 2, this.halfH * 2, 22)
+      .fill(cream)
+      .stroke({ width: 5, color: swatch.orange.line });
+    const numeral = label(String(want), 76, swatch.purple.line);
+    numeral.y = -this.halfH + 50;
+    this.addChild(this.card, numeral, this.dots);
+    this.eventMode = 'none';
+    this.show(0);
+  }
+
+  /** Redraw for the spots on the bug now. */
+  show(have: number) {
+    const d = this.dots.clear(),
+      top = -this.halfH + 88 + 18 + SIGN_GAP / 2 - 9;
+    for (let i = 0; i < this.want; i++) {
+      const row = Math.floor(i / 3),
+        inRow = Math.min(3, this.want - row * 3);
+      d.circle(((i % 3) - (inRow - 1) / 2) * SIGN_GAP, top + row * SIGN_GAP, SIGN_DOT);
+      if (i < have) d.fill(swatch.pink.fill).stroke({ width: 4, color: swatch.pink.line });
+      else d.fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.45 });
+    }
+    const extras = Math.max(0, have - this.want);
+    for (let i = 0; i < extras; i++)
+      d.circle((i - (extras - 1) / 2) * SIGN_GAP, this.halfH + SIGN_DOT + 12, SIGN_DOT)
+        .fill(swatch.pink.fill)
+        .stroke({ width: 4, color: swatch.pink.line });
+  }
 }

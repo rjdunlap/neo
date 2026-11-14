@@ -1,0 +1,1 @@
+**Bug Builder slice 4, level 9 Count a kind** (existing-interaction tier: rule tests and one filtered play): reuses the slice 3 count mode. [Bug Builder dive, slice 4](../../deep-dives/bug-builder.md#build-slices-in-order)
