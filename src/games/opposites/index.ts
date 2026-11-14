@@ -32,6 +32,8 @@ import {
 const BIG_SCALE = 1.7;
 /** Level 6's flipped pictures, small in the row along the bottom (about 75 units across). */
 const ROW_SCALE = 0.44;
+/** Level 7's three cards, larger in the open middle of the screen (about 240 units across, so bigger on a phone). */
+const BETWEEN_SCALE = 1.4;
 
 /** Level 7's middle pictures: the same cup, mug, sky and balloon as the two sides, with the in-between amount. */
 function middle(concept: Gradable): Container {
@@ -447,7 +449,7 @@ class Opposites implements Game {
       const xs = spread(3, 200, v.w - 80, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
     } else {
-      const xs = spread(this.cards.length, 200, v.w - 80, 240);
+      const xs = this.rowXs();
       this.cards.forEach((c, i) =>
         c.node.position.set(xs[this.slot(c, i)], v.h * (mode === 'between' ? 0.56 : 0.64)),
       );
@@ -458,11 +460,13 @@ class Opposites implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.glowing && !this.busy)
-      g.roundRect(this.glowing.node.x - 100, this.glowing.node.y - 100, 200, 200, 36).stroke({
+    if (this.glowing && !this.busy) {
+      const r = 100 * this.glowing.node.scale.y;
+      g.roundRect(this.glowing.node.x - r, this.glowing.node.y - r, 2 * r, 2 * r, 36).stroke({
         width: 7 + 2 * Math.sin(this.clock * 5),
         color: swatch.yellow.fill,
       });
+    }
   }
 
   /**
@@ -490,6 +494,14 @@ class Opposites implements Game {
     this.destroyed = true;
   }
 
+  /** The row of cards' centers; level 7's larger cards use the whole width (they stand clear of the corner buttons). */
+  private rowXs() {
+    const v = this.view;
+    return this.plan.mode === 'between'
+      ? spread(this.cards.length, 80, v.w - 80, 330)
+      : spread(this.cards.length, 200, v.w - 80, 240);
+  }
+
   /** Where a card stands in the row: its dealt place, or after level 7's hint its place on the word's line. */
   private slot(c: CardView, i: number) {
     return this.lined ? degree(c.card, this.round.ask!.side) : i;
@@ -506,7 +518,7 @@ class Opposites implements Game {
     await this.ctx.tw.wait(0.5);
     if (this.destroyed) return;
     this.lined = true;
-    const xs = spread(this.cards.length, 200, this.view.w - 80, 240);
+    const xs = this.rowXs();
     sfx.whoosh();
     await Promise.all(
       this.cards.map((c, i) =>
@@ -628,7 +640,18 @@ class Opposites implements Game {
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
     const r = this.round;
     for (const card of r.cards)
-      this.cards.push(this.makeCard(card, this.plan.big ? BIG_SCALE : this.plan.mode === 'switch' ? 1.7 : 1));
+      this.cards.push(
+        this.makeCard(
+          card,
+          this.plan.big
+            ? BIG_SCALE
+            : this.plan.mode === 'switch'
+              ? 1.7
+              : this.plan.mode === 'between'
+                ? BETWEEN_SCALE
+                : 1,
+        ),
+      );
     if (this.plan.mode === 'opposite') {
       const bubble = new Graphics()
         .roundRect(-95, -95, 190, 190, 40)
