@@ -594,16 +594,25 @@ function sticker(seed: number) {
 }
 /** The bits of the tiles taken from the full board, when exactly two are gone (one pair); otherwise -1. Lesson boards only. */
 function pairBits(tiles: readonly Tile[], mask: number): number {
-  const gone = fullMask(tiles) & ~mask;
+  // Counted with `present` and subtraction, since levels 15–16 hold more than 32 bits.
   let n = 0;
-  for (let i = 0; i < tiles.length; i++) if (gone & (1 << i)) n++;
-  return n === 2 ? gone : -1;
+  for (let i = 0; i < tiles.length; i++) if (!present(mask, i)) n++;
+  return n === 2 ? fullMask(tiles) - mask : -1;
 }
+/** Below the tally and the rule line under it: no tile face reaches above this. */
+const BOARD_TOP = 124;
 export function tilePairsLayout(v: View, tiles: readonly Tile[]) {
   const cols = Math.max(...tiles.map((t) => t.x)) + 1;
   const rows = Math.max(...tiles.map((t) => t.y)) + 1;
+  // A raised tile on the back row lifts 6 units a layer above it.
+  const lift = Math.max(0, ...tiles.filter((t) => t.y === 0).map((t) => t.z)) * 6;
   return {
-    board: { x: v.w / 2 - (cols - 1) * 60, y: (v.h - 110) / 2 - (rows - 1) * 58 },
+    // Centred above the buttons, but a four-row board in landscape (levels 15–16, a big shuffle) would reach the
+    // rule line, so it sits lower; three rows, and every board held upright, are where they always were.
+    board: {
+      x: v.w / 2 - (cols - 1) * 60,
+      y: Math.max((v.h - 110) / 2 - (rows - 1) * 58, BOARD_TOP + 54 + lift),
+    },
     tiles: tiles.map((t) => ({ x: t.x * 120 + t.z * 6, y: t.y * 116 - t.z * 6 })),
     buttons: [-1.5, -0.5, 0.5, 1.5].map((i) => ({ x: v.w / 2 + i * 180, y: v.h - (v.upright ? 230 : 70) })),
   };

@@ -167,6 +167,31 @@ export const PLANS = [
     take: 3,
     clear: [0.3, 0.8],
   },
+  {
+    name: 'Big stack · 36 tiles',
+    cols: 6,
+    rows: 4,
+    layers: 3,
+    layout: 'big',
+    kinds: 6,
+    // A 6 × 4 base, a 4 × 2 block on its middle rows and a 2 × 2 on that: 24 + 8 + 4. Past 32 tiles the mask is a
+    // plain number of up to 53 bits (see `present`). Measured (300 seeded routes, Mac): random play clears 25–100%,
+    // median 77%, and 252 of 300 land in levels 7, 9 and 13's band, which it keeps.
+    clear: [0.45, 0.9],
+  },
+  {
+    name: 'Great stack · 40 tiles',
+    cols: 6,
+    rows: 4,
+    layers: 3,
+    layout: 'great',
+    kinds: 6,
+    // Level 15's stack with its raised block reaching the front and back rows along the middle: 24 + 12 + 4. The dive
+    // planned five rows, but five do not fit between the tally and the buttons in landscape at full tile size; four
+    // do. The longest plan the exact search still proves quickly (a 48-tile board took seconds on one stranded
+    // state). Measured (300 seeded routes): random play clears 30–98%, median 78%, 267 of 300 in band.
+    clear: [0.45, 0.9],
+  },
 ] as const;
 
 /** Flower kinds come after a look's six pictures: `FLOWER + n` is the nth of the four flower drawings. */
@@ -218,7 +243,7 @@ export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 /**
  * Designed lesson boards (dive: *Puzzle challenges*). Each is a small sketched layout whose frozen boards, found by
  * `scripts/tile-pairs-pool.mjs` and kept in `puzzles.ts`, set one trap that is the lesson: a first pair that leaves
- * no route (`lessonHolds`). IDs 15–16 are left for the second-pass levels the dive plans; they do not exist yet.
+ * no route (`lessonHolds`). They take IDs 17–21, after the ordinary levels 1–16.
  */
 export const PUZZLE_PLANS = {
   17: {
@@ -309,7 +334,11 @@ export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number
  * order, kept to the levels that exist and to levels 1–10's own order).
  */
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13, 14] },
+  grownup: {
+    min: 1,
+    max: 21,
+    order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13, 14, 15, 16],
+  },
 };
 export const planFor = (level: number): Plan =>
   (PUZZLE_PLANS as Record<number, Plan>)[Math.floor(level)] ??
@@ -319,8 +348,15 @@ export const lessonFor = (level: number): Lesson | null => {
   const plan = planFor(level);
   return 'puzzle' in plan ? plan.puzzle : null;
 };
-export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
-export const present = (mask: number, i: number) => !!(mask & (1 << i));
+/**
+ * The remaining tiles as bits of a plain number. Up to 30 tiles it is the positive 32-bit integer it always was; levels
+ * 15–16 (36 and 40 tiles) go past 32 bits, which a double holds exactly up to 53. Bitwise `&` reads its operand modulo
+ * 2^32, so the low 32 bits are tested directly and higher ones on the quotient by 2^32.
+ */
+export const fullMask = (tiles: readonly Tile[]) => 2 ** tiles.length - 1;
+const HIGH = 2 ** 32;
+export const present = (mask: number, i: number) =>
+  i < 32 ? !!(mask & (1 << i)) : !!(Math.floor(mask / HIGH) & (1 << (i - 32)));
 
 /** Multi-layer stacks of remaining tiles, each ordered from bottom to top. */
 export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
@@ -386,7 +422,9 @@ export function heldSides(
 }
 export const freeTiles = (tiles: readonly Tile[], mask: number): number[] =>
   tiles.map((_, i) => i).filter((i) => free(tiles, mask, i));
-export const removePair = (mask: number, group: Pair) => group.reduce((m, i) => m & ~(1 << i), mask);
+/** The mask without a move's tiles; a tile already gone stays gone (subtraction, since `& ~` would cut past 32 bits). */
+export const removePair = (mask: number, group: Pair) =>
+  group.reduce((m, i) => (present(m, i) ? m - 2 ** i : m), mask);
 /**
  * Every move open now: free pairs that match, or on a three-alike board free sets of three showing one picture
  * (three alike pair no flowers). `geometryOnly` ignores pictures, for laying a route before they are placed.
@@ -411,8 +449,8 @@ export function pairs(tiles: readonly Tile[], mask: number, geometryOnly = false
   return out;
 }
 /**
- * Exhaustive memoized search on at most 30 tiles (the mask is a positive 32-bit integer up to 31; level 9's
- * 30 tiles are the most it holds, and a test keeps every state's search under a node budget). Null means no
+ * Exhaustive memoized search on at most 40 tiles (level 16; tests keep every state's search on levels 9, 15 and 16
+ * under a node budget, and a 48-tile board took seconds on one stranded state). Null means no
  * clearing route, not merely no pair now. `stats.nodes` counts the states visited, for that budget.
  */
 export function solve(
@@ -426,7 +464,13 @@ export function solve(
     if (stats) stats.nodes++;
     if (!m) return [];
     if (dead.has(m)) return null;
-    for (const pair of pairs(tiles, m, geometryOnly)) {
+    if (!geometryOnly && buried(tiles, m)) {
+      dead.add(m);
+      return null;
+    }
+    const open = pairs(tiles, m, geometryOnly),
+      safe = geometryOnly ? undefined : open.find((p) => allCopiesFree(tiles, m, p[0]));
+    for (const pair of safe ? [safe] : open) {
       const tail = visit(removePair(m, pair));
       if (tail) return [pair, ...tail];
     }
@@ -436,6 +480,38 @@ export function solve(
   return visit(mask);
 }
 
+/** Whether two tiles can be taken in one move: the same picture, or both flowers. */
+const alike = (a: number, b: number) => (isFlower(a) ? isFlower(b) : a === b);
+/**
+ * Whether some remaining tile lies on top of so many of its own picture's other copies that too few are left to take
+ * with it: they stay covered while it is there, so it can never be taken and the board cannot clear.
+ */
+function buried(tiles: readonly Tile[], mask: number): boolean {
+  const take = takeOf(tiles);
+  for (let i = 0; i < tiles.length; i++) {
+    if (!present(mask, i)) continue;
+    const a = tiles[i];
+    let partners = 0;
+    for (let j = 0; j < tiles.length && partners < take - 1; j++) {
+      if (j === i || !present(mask, j) || !alike(a.kind, tiles[j].kind)) continue;
+      const b = tiles[j];
+      if (!(a.z > b.z && overlaps(a, b))) partners++;
+    }
+    if (partners < take - 1) return true;
+  }
+  return false;
+}
+/**
+ * Whether every remaining tile that can go with tile `i` (its picture, or any flower for a flower) is free. Removing
+ * tiles never covers or hems in another, so those tiles stay free whatever else is taken: taking a move among them
+ * now cannot spoil a route, and `solve` tries only that move (the standard pruning that keeps 40 tiles quick).
+ */
+function allCopiesFree(tiles: readonly Tile[], mask: number, i: number): boolean {
+  const kind = tiles[i].kind;
+  for (let j = 0; j < tiles.length; j++)
+    if (j !== i && present(mask, j) && alike(kind, tiles[j].kind) && !free(tiles, mask, j)) return false;
+  return true;
+}
 /**
  * A geometric clearing route chosen by the seed: the same search as `solve`, trying the free position pairs
  * in a shuffled order at every step, so one layout clears by a different pairing each round.
@@ -529,6 +605,16 @@ export function layout(level: number): Tile[] {
     // No three straddling tiles can sit symmetrically on five, so the top row leans one half step to the left.
     for (let x = 0; x < 5; x++) add(x + 0.5, 1, 1);
     for (const x of [1, 2, 3]) add(x, 1, 2);
+  } else if (plan.layout === 'big') {
+    // A 4 × 2 block on the middle two of the four rows and a 2 × 2 on that: 24 + 8 + 4 = 36.
+    for (let y = 1; y <= 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
+    for (let y = 1; y <= 2; y++) for (const x of [2, 3]) add(x, y, 2);
+  } else if (plan.layout === 'great') {
+    // A raised cross, a 4 × 2 block on the middle rows with the middle two columns running front to back, and a 2 × 2
+    // on that: 24 + 12 + 4 = 40.
+    for (let y = 1; y <= 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
+    for (const y of [0, 3]) for (const x of [2, 3]) add(x, y, 1);
+    for (let y = 1; y <= 2; y++) for (const x of [2, 3]) add(x, y, 2);
   } else if (plan.layout === 'wide') {
     // The whole 6 × 3 base, a 4 × 2 block raised on its back two rows and a 2 × 2 on that: 18 + 8 + 4 = 30.
     for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);
@@ -769,6 +855,7 @@ export function fairTrap(tiles: readonly Tile[], mask = fullMask(tiles)): boolea
 }
 
 const RESHUFFLE_BASE = 24;
+// The first six keep level 9's recoveries as they were; the rest give a 36- or 40-tile remainder room (levels 15–16).
 const RAISED = [
   { x: 1, y: 1 },
   { x: 2, y: 1 },
@@ -776,6 +863,9 @@ const RAISED = [
   { x: 4, y: 1 },
   { x: 2, y: 2 },
   { x: 3, y: 2 },
+  { x: 1, y: 2 },
+  { x: 4, y: 2 },
+  ...[0, 3].flatMap((y) => [1, 2, 3, 4].map((x) => ({ x, y }))),
 ];
 /**
  * Recovery keeps exactly the remaining pictures, laid in open rows. Even a stranded tower can be rescued. Flowers
@@ -798,8 +888,8 @@ export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[
     for (let i = 0; i < count / take; i++) symbols.push(kind);
   }
   for (let n = 0; n < flowers.length / 2; n++) symbols.push(FLOWER_PAIR);
-  // At most four rows of six fit above the buttons in landscape, so past 24 tiles (level 9) the rest are raised
-  // on the middle of the rows; the route below still clears them.
+  // Four rows of six keep the targets clear of the buttons in landscape, so past 24 tiles (levels 9, 15 and 16) the
+  // rest are raised on the rows; the route below still clears them.
   // Three alike deal down the four rows in turn, so the rows stay even: a last row of three would hold its middle in.
   const out: Tile[] = Array.from({ length: symbols.length * take }, (_, i) =>
     take === 3
