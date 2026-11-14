@@ -37,7 +37,7 @@ export const HOW_TO: GameHowTo = {
   note: [
     {
       to: 2,
-      text: 'The pet names each part at its first touch and again when it is clean. After a quiet spell a muddy spot sparkles and the pet wiggles; that is an invitation, not help. The toy on the left rim squeaks and says its name; the duck repeats the request.',
+      text: 'The pet names each part at its first touch and again when it is clean. After a quiet spell a messy spot sparkles and the pet wiggles; that is an invitation, not help. The toy on the left rim squeaks and says its name; the duck repeats the request.',
     },
     {
       from: 3,
