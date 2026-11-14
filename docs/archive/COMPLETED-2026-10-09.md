@@ -3466,3 +3466,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Duck Pond level 15, Ten and some more (2026-11-14)
 
 [PR #1648](https://github.com/rjdunlap/neo/pull/1648), `claude/duck-pond-ten-and-more`, slice 8 of the [dive](../deep-dives/duck-pond.md#build-slices-in-order). A full ten pops onto the pond at once with one splash, then 1 to 9 ducks swim into a second ten-frame on the pond. Rounds alternate how many in all (pads 11 to 19) and how many on that side past ten (pads 1 to 9); a wrong pad counts on from ten or counts just the ones, the glow comes from the second miss, and a right answer writes "10 + 4 = 14". School window 8 to 15. See the [verification entry](../verification/2026-11-14-duck-pond-level-15-ten-and-some-more.md).
+
+## Word Monsters slice 2, words and pictures tranche 1 (2026-11-14)
+
+[PR #1649](https://github.com/rjdunlap/neo/pull/1649), `claude/word-monsters-words-pictures`, slice 2 of the [dive](../deep-dives/word-monsters.md#build-slices-in-order). `WORDS` (levels 5 and 6) grew from 7 to 19 words, three or four per short vowel, and `FAMILIES` (level 7) from 5 to 8 (new: `en`, `et`, `ug`). Every word a building level can ask for has a code-drawn picture in `pictures.ts` (a typed record, so a missing one fails typecheck); the level 7 sun now shows. `bed` and `lip` were left out (mirror and lookalike pairs; `web` and `wig` took their places) and five family words with no picture were removed. See the [verification entry](../verification/2026-11-14-word-monsters-words-and-pictures-tranche-1.md).
