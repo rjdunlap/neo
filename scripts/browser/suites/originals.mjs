@@ -1095,7 +1095,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Color Garden: fruit and balloons dragged into baskets, including the edge of a crowded basket.
     for (const level of !only || only === 'garden'
-      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+      ? (process.env.GARDEN_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
       : []) {
       if (level === 6 || level >= 9) await portrait(true);
       await launch('color-garden', level);
@@ -1119,6 +1119,27 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         assert.deepEqual(tones.keys.map((k) => k.split('-')[0]).sort(), ['dark', 'light', 'middle']);
         for (const k of tones.keys) assert.ok(tones.items.includes(k), `Something for ${k}`);
         await screenshot('color-garden-11-portrait');
+      }
+      if (level === 12) {
+        // A 2×2 grid: two colors as columns, the fruit row behind the balloon row, something for every basket.
+        const grid = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return {
+            both: g.plan.both,
+            keys: g.baskets.map((b) => b.key),
+            spots: g.baskets.map((b) => [Math.round(b.x), Math.round(b.y)]),
+            items: g.items.map((i) => i.key),
+          };
+        });
+        assert.equal(grid.both, true, 'Level 12 sorts two ways at once');
+        assert.deepEqual(
+          grid.keys.map((k) => k.split('-')[1]),
+          ['fruit', 'fruit', 'balloon', 'balloon'],
+        );
+        assert.equal(grid.spots[0][0], grid.spots[2][0], `Columns line up: ${grid.spots}`);
+        assert.ok(grid.spots[0][1] < grid.spots[2][1], 'The fruit row stands behind');
+        for (const k of grid.keys) assert.ok(grid.items.includes(k), `Something for ${k}`);
+        await screenshot('color-garden-12-portrait');
       }
       const baskets = await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -1195,7 +1216,10 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         const basketFor = (color) => g.baskets.find((b) => b.key === color);
         if (g.baskets.length > 1) {
           const item = g.items[0];
-          const wrong = g.baskets.find((b) => b.key !== item.key);
+          // Level 12: the basket of the same color in the other row, so a front drop must not land behind (or the reverse).
+          const wrong = g.plan.both
+            ? g.baskets.find((b) => b.key !== item.key && b.key.split('-')[0] === item.key.split('-')[0])
+            : g.baskets.find((b) => b.key !== item.key);
           await into(item, wrong);
           await into(item, wrong);
           if (g.misses !== 2 || g.hints !== 1 || !basketFor(item.key).glowing)

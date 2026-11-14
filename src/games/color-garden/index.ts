@@ -113,12 +113,12 @@ class Basket extends Container {
     } else if (bothOf(key)) {
       // Level 12: the color band carries a picture of what goes in, on a cream disc so a red apple still shows on red cloth.
       front
-        .circle(0, top + 40, 30)
+        .circle(0, top + 40, 34)
         .fill(0xfffbe8)
         .stroke({ width: 4, color: sw.line });
       const icon = bothIcon(key);
-      icon.scale.set(0.3);
-      icon.position.set(0, top + 52);
+      icon.scale.set(0.4);
+      icon.position.set(0, top + 50);
       front.addChild(icon);
     }
     this.inside.y = top + 6;
