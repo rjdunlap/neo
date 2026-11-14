@@ -628,6 +628,8 @@ class DotLink implements Game {
     // Gravity: everything above falls into the gaps, new dots drop in from the top.
     const { grid, falls } = collapse(this.grid, gone, this.ctx.rng, this.palette);
     this.grid = ensureMove(this.plan, grid, this.ctx.rng, this.target, this.pattern);
+    // A glow lit before the pop moves to a move on the refilled board, so it never rests on dots that fell in.
+    if (this.hintCells.length) this.hintCells = this.hintMove() ?? [];
     this.buildDots();
     for (const f of falls) {
       const g = this.dots[f.to][f.c];
@@ -653,15 +655,19 @@ class DotLink implements Game {
     else void this.ctx.say('count', { n: this.have[which] });
   }
 
+  /** A move that would count right now on the board as it stands. */
+  private hintMove() {
+    const p = this.plan;
+    return p.mode === 'square'
+      ? findSquare(this.grid)
+      : p.mode === 'pattern'
+        ? findPattern(this.grid, this.pattern)
+        : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
+  }
+
   /** Light up a move that would count right now. */
   private hint() {
-    const p = this.plan;
-    const cells =
-      p.mode === 'square'
-        ? findSquare(this.grid)
-        : p.mode === 'pattern'
-          ? findPattern(this.grid, this.pattern)
-          : findLine(this.grid, p.mode === 'chain' ? p.length! : 2, this.target);
+    const cells = this.hintMove();
     if (!cells) return;
     this.hintCells = cells;
     this.hints++;
