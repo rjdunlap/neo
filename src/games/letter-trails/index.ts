@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics } from 'pixi.js';
-import { cream, RAINBOW, swatch } from '../../art/palette';
+import { cream, RAINBOW, swatch, wood } from '../../art/palette';
 import { entryId } from '../../content/journal';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -18,7 +18,23 @@ import {
   type Point,
 } from '../../learning/tracing/strokes';
 import { rangeFor } from '../../progress/difficulty';
-import { LEVELS, PLANS, stickerLetter, trailLevel, trailTolerance, trailWord } from './logic';
+import {
+  fullName,
+  LEVELS,
+  NAME_LEVEL,
+  PLANS,
+  roundTally,
+  stickerLetter,
+  trailLevel,
+  trailTolerance,
+  trailWord,
+  WORD_LEVEL,
+  type ShortWord,
+} from './logic';
+import { wordPicture } from '../word-monsters/pictures';
+import { Critter } from '../../art/critter';
+import { ease } from '../../engine/tween';
+import type { Tally } from '../../progress/coach';
 import {
   hintDue,
   offTrail,
@@ -50,8 +66,8 @@ class LetterTrails implements Game {
   private size = 420;
   private busy = false;
   private done = false;
-  private misses = 0;
-  private hints = 0;
+  /** Each letter's misses and hints; a word or a name reports at most one of each per letter (`roundTally`). */
+  private readonly perLetter: Tally[];
   private wrong = 0;
   private missedDrag = false;
   private clock = 0;
@@ -64,6 +80,7 @@ class LetterTrails implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.word = trailWord(ctx.level, ctx.childName, ctx.rng);
+    this.perLetter = this.word.split('').map(() => ({ misses: 0, hints: 0 }));
     this.tolerance = trailTolerance(ctx.level);
     // Drawn after the word, so a look never changes which letter or word a seed gives.
     this.look = pickLook(ctx.rng);
@@ -131,12 +148,12 @@ class LetterTrails implements Game {
     const checkpoint = this.points[this.progress];
     if (next === this.progress && offTrail(to, checkpoint, this.tolerance) && !this.missedDrag) {
       this.missedDrag = true;
-      this.misses++;
+      this.perLetter[this.letterIndex].misses++;
       this.wrong++;
       sfx.boing();
       void this.ctx.say('trails.wrong');
       if (hintDue(this.wrong)) {
-        this.hints++;
+        this.perLetter[this.letterIndex].hints++;
         this.showPending = true;
       }
     }
@@ -199,21 +216,24 @@ class LetterTrails implements Game {
     this.beacon.clear();
     this.firefly.visible = false;
     this.traced.add(this.letter);
-    this.picture = letterPicture(this.letter);
-    this.picture.position.set(this.size / 2, this.size / 2);
-    this.picture.scale.set(Math.min(1.2, this.size / 330));
-    this.canvas.addChild(this.picture);
-    this.heading.text = `${this.letter} · ${WORDS[this.letter]}`;
-    void this.ctx.say('trails.picture', { letter: this.letter, word: WORDS[this.letter] });
-    await this.ctx.tw.wait(2.6);
-    this.picture.destroy({ children: true });
-    this.picture = null;
+    if (this.several) await this.flourish();
+    else {
+      this.picture = letterPicture(this.letter);
+      this.picture.position.set(this.size / 2, this.size / 2);
+      this.picture.scale.set(this.pictureScale);
+      this.canvas.addChild(this.picture);
+      this.heading.text = `${this.letter} · ${WORDS[this.letter]}`;
+      void this.ctx.say('trails.picture', { letter: this.letter, word: WORDS[this.letter] });
+      await this.ctx.tw.wait(2.6);
+      this.picture.destroy({ children: true });
+      this.picture = null;
+    }
     this.letterIndex++;
     if (this.letterIndex === this.word.length) {
+      if (this.several) await this.closing();
       this.done = true;
       this.ctx.finish({
-        misses: this.misses,
-        hints: this.hints,
+        ...roundTally(this.ctx.level, this.perLetter),
         discoveries: [...this.traced].map((l) => entryId('letter-trails', l)),
       });
       return;
@@ -222,6 +242,77 @@ class LetterTrails implements Game {
     this.busy = false;
     this.prepareStroke();
     void this.ctx.instruct('trails.start', { letter: this.letter });
+  }
+
+  /** Every miss and hint as it came (the browser suites read these); `ctx.finish` gets `roundTally`'s count. */
+  get misses() {
+    return this.perLetter.reduce((n, t) => n + t.misses, 0);
+  }
+  get hints() {
+    return this.perLetter.reduce((n, t) => n + t.hints, 0);
+  }
+
+  /** A word or a name: several letters, each a short flourish, and the whole thing shown at the end. */
+  private get several() {
+    return trailLevel(this.ctx.level) >= WORD_LEVEL;
+  }
+  private get pictureScale() {
+    return Math.min(1.2, this.size / 330);
+  }
+  /** What she hears: the word in lower case (so device speech says it, not its letters), or her name as it is written. */
+  private get spoken() {
+    return trailLevel(this.ctx.level) === NAME_LEVEL
+      ? this.ctx.childName.trim() || fullName(this.ctx.childName)
+      : this.word.toLowerCase();
+  }
+
+  /** Between the letters of a word or a name: the letter's picture pops up small and goes, unspoken, so the next letter comes soon. */
+  private async flourish() {
+    const p = letterPicture(this.letter);
+    p.position.set(this.size / 2, this.size / 2);
+    p.scale.set(0);
+    this.picture = p;
+    this.canvas.addChild(p);
+    const scale = this.pictureScale * 0.55;
+    await this.ctx.tw.to(p.scale, { x: scale, y: scale }, { duration: 0.3, ease: ease.outBack });
+    await this.ctx.tw.wait(0.45);
+    await this.ctx.tw.to(p.scale, { x: 0, y: 0 }, { duration: 0.2 });
+    p.destroy({ children: true });
+    this.picture = null;
+  }
+
+  /** The end of a word or a name: the word's own picture (the dog, the sun), or a sign with her whole name in print. */
+  private async closing() {
+    const name = trailLevel(this.ctx.level) === NAME_LEVEL;
+    const p = name ? this.nameSign() : wordPicture(this.word.toLowerCase() as ShortWord);
+    p.position.set(this.size / 2, this.size / 2);
+    p.scale.set(0);
+    this.picture = p;
+    this.canvas.addChild(p);
+    this.heading.text = name ? '' : this.word;
+    const scale = name ? 1 : this.pictureScale;
+    void this.ctx.tw.to(p.scale, { x: scale, y: scale }, { duration: 0.4, ease: ease.outBack });
+    for (const c of p.children) if (c instanceof Critter) c.cheer();
+    sfx.sparkle();
+    void this.ctx.say(name ? 'trails.name' : 'trails.made', name ? { name: this.spoken } : { word: this.spoken });
+    await this.ctx.tw.wait(2.8);
+  }
+
+  /** A wooden sign as wide as the canvas with her whole name, even past the eight letters she traced. */
+  private nameSign(): Container {
+    const c = new Container();
+    const text = fullName(this.ctx.childName);
+    const w = this.size,
+      h = Math.max(120, this.size * 0.36);
+    c.addChild(
+      new Graphics()
+        .roundRect(-w / 2, -h / 2, w, h, 22)
+        .fill(wood.light)
+        .stroke({ width: 8, color: wood.line }),
+    );
+    const t = label(text, Math.min(96, ((w - 48) / text.length) * 1.45), swatch.purple.line);
+    c.addChild(t);
+    return c;
   }
 
   private drawPath(g: Graphics, points: readonly Point[], color: number, width: number) {
@@ -305,7 +396,7 @@ class LetterTrails implements Game {
     if (this.picture) this.picture.position.set(this.size / 2, this.size / 2);
   }
   async start() {
-    if (trailLevel(this.ctx.level) >= 7) await this.ctx.say('trails.word', { word: this.word });
+    if (this.several) await this.ctx.say('trails.word', { word: this.spoken });
     void this.ctx.instruct('trails.start', { letter: this.letter });
   }
   update(dt: number) {

@@ -20,8 +20,8 @@
 | 4 | Follow rounded strokes |
 | 5 | Combine straight and rounded strokes |
 | 6 | Explore all 26 capitals |
-| 7 | Trace a short word: CAT, DOG, or SUN |
-| 8 | Trace the child’s name in capitals |
+| 7 | Trace a short word, then see its picture |
+| 8 | Trace the first eight letters of the child’s name |
 
 <!-- end generated -->
 
