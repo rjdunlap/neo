@@ -1,0 +1,1 @@
+**Bug Builder slice 5, level 10 Fold a friend** (new-levels tier: rule tests, one play and a portrait screenshot): the three-choice fold prediction, the fold animation and its lines. [Bug Builder dive, slice 5](../../deep-dives/bug-builder.md#build-slices-in-order)
