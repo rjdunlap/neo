@@ -1,1 +1,0 @@
-**Frog Hop slice 7, Hop by tens** (new-levels tier: rule tests, one play, `fingerdemo` at it, plus the label "100" at four views): stride and the tens line, appended on the next free school level ID (13 onward), no `order`. [Frog Hop dive, slice 7](../../deep-dives/frog-hop.md#build-slices-in-order)

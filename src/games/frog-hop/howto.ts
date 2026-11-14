@@ -45,7 +45,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 12,
+      to: 12,
       text: 'The sign shows a sum or take-away across 10. Tap the lily pad where the frog lands, or tap 10 first to stop there on the way, then tap the landing.',
+    },
+    {
+      from: 13,
+      text: 'The lily pads count by tens, 0 to 100. Start at the number shown and hop on or back the tens asked for: tap the lily pad where the frog lands.',
     },
   ],
   finish: 'Answer five questions to bring the frog home.',
