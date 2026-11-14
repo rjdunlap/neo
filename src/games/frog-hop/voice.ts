@@ -38,5 +38,9 @@ export const VOICE = {
   'hop.frac.same-bigger': ['A {big} hop is longer than a {small} hop, so it takes fewer hops.'],
   'hop.landed': ['{n}! Ribbit!', '{n}! Splash!', 'On {n}! Hoppy day!'],
   'hop.yay': ['Ribbit! Right on!', 'Splash! You got it!', 'Hoppy day!'],
+  'hop.countup': [
+    '{m} take away {n}. The frog is on {n}. How many hops to the flag on {m}? Tap a number card.',
+  ],
+  'hop.countup.yay': ['{k} hops! {m} take away {n} is {k}.'],
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
 } satisfies Record<string, string[]>;

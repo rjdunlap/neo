@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–4 |
-| school | 3–10 |
+| school | 3–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,12 +24,13 @@
 | 8 | Hop back to 10 first, then hop the rest of a take-away that crosses 10 |
 | 9 | Quarter and half hops along one whole: where does the frog land? |
 | 10 | Two hop sizes, one lily: how many hops of the other size reach the same place? |
+| 11 | Count up to take away: 13 − 9 is the hops from 9 to 13. Choose a number card |
 
 <!-- end generated -->
 
 **Starts as:** hop to a number on the lily pads
 
-**Grows into:** one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20, then splitting a shown sum or take-away across 10 with spoken support and one hint per question, then fractions as places on one whole (quarter and half hops, then two hop sizes to one lily) for ages 6–8
+**Grows into:** one more and one less, adding and taking away as hops, how many hops between two numbers, a line to 20, then splitting a shown sum or take-away across 10 with spoken support and one hint per question, then fractions as places on one whole (quarter and half hops, then two hop sizes to one lily), then take-away as the distance between two numbers (13 − 9 as the hops from 9 up to 13) for ages 6–8
 
 ## Design notes
 
@@ -38,5 +39,7 @@
 **Fraction Landings (levels 9–10, school only, skill `fractions`).** Level 9 `frac-hop` (quarter and half hops along one whole): the sign gives a start and a hop size, and she taps the pad where the frog lands; only 0, 1 and 2 are labelled, and answers can be mixed numbers. A wrong pad is a named miss (`fracMiss`), the one-whole bracket shows the size, and a hint counts once per question. Level 10 `frac-match` (two hop sizes, one lily): the frog lands with one size and plants a flag, goes back to zero, and she picks the card for how many hops of the other size reach the flag (the first question is always ½ × 2 → ¼). A wrong card (`matchMiss`) falls through to "Count the {size} hops from zero to the flag" (`hop.frac.flag`), then the usual two-miss glow. Both levels are appended to the school ladder (now 3–10, no `order`) and are not couch stops (the couch is unchanged). [Definition](../definitions/frog-hop-fraction-landings.md).
 
 **Say the numbers, dots and flowers (dive slice 2, 2026-11-14).** On levels 3, 4 and 6 a counted hop says the pad it lands on and a tally dot rises over the frog per hop; a right answer says `hop.landed` and the frog croaks. Levels 5, 7, 8 and the fraction levels keep counting 1, 2, 3. Levels 1–2 draw dots under each numeral (fives grouped) and level 1's sign shows the target's dots; landmark flowers sit on 5, 10, 15 and 20 from level 3, never on 0 or the fraction line. Dots and flowers are a scene layer, so the sticker, icon and hit areas are unchanged.
+
+**Count up to take away (level 11, school only, mode `count-up`).** The sign shows `13 − 9`; the frog stands on the smaller number, a flag marks the bigger, and she taps a number card 1–6 for the hops between. Big number 11–20, difference 1–6; three of five rounds cross ten, and no difference or flag repeats twice running. A wrong card names one too many (counting the starting pad) or one missing; two misses count the hops aloud and glow the card. The right answer says "4 hops! 13 take away 9 is 4."
 
 **A right answer never holds the next question (U7 fix batch 8, 2026-11-12).** At every level the right answer's line (`hop.yay`, level 9's `hop.frac.also`, level 10's `hop.frac.same`) starts and the next question follows at once: the frog's leap (and the window's slide) play over the line and input opens with the sign showing. The question's spoken ask (`hop.find` and the rest, `hop.frac`, `hop.frac.match`) waits for the line to end, or is said at her first pad or card tap; tapping the guide meanwhile says that waiting ask (`Game.sayWaitingAsk`), not the last question's. The fraction lines play over the next leap rather than being dropped. The last question's line is heard out before `hop.done`.

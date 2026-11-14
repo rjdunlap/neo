@@ -6,15 +6,29 @@ import type { BandLevels } from '../../progress/difficulty';
  * and taking away as hops along the line, then how many hops lie between two numbers, then a
  * longer line to 20, then splits a sum at ten, forward and back. Nine pads show at a time; on the long line the
  * view slides to fit. At the top of school the pads sit at quarters of a whole (Fraction Landings): hops of a quarter,
- * a half or a whole, then two hop sizes that reach the same lily.
+ * a half or a whole, then two hop sizes that reach the same lily. Last, count up to take away: `13 − 9` as the hops from 9 to
+ * the flag on 13.
  */
 export type HopMode =
-  'find' | 'next' | 'add' | 'back' | 'gap' | 'big' | 'make-ten' | 'back-ten' | 'frac-hop' | 'frac-match';
+  | 'find'
+  | 'next'
+  | 'add'
+  | 'back'
+  | 'gap'
+  | 'big'
+  | 'make-ten'
+  | 'back-ten'
+  | 'frac-hop'
+  | 'frac-match'
+  | 'count-up';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
 
 /** The two levels that split a trip at ten: a card for the hops to ten, then a pad for where the rest land. */
+/** The levels whose whole answer is a number card for the hops between two pads. */
+export const countsHops = (mode: HopMode) => mode === 'gap' || mode === 'count-up';
+
 export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
 
 export interface HopPlan {
@@ -70,6 +84,12 @@ export const PLANS: HopPlan[] = [
     questions: 5,
     name: 'Two hop sizes, one lily: how many hops of the other size reach the same place?',
   },
+  {
+    mode: 'count-up',
+    top: 20,
+    questions: 5,
+    name: 'Count up to take away: 13 − 9 is the hops from 9 to 13. Choose a number card',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -108,7 +128,7 @@ export interface HopQuestion {
 
 /** The answer a child gives: a pad, for 'gap' the number of hops, for Fraction Match the hops of the second size. */
 export const answerOf = (mode: HopMode, q: HopQuestion) =>
-  mode === 'gap' ? Math.abs(q.hops) : mode === 'frac-match' ? q.answer2! : q.target;
+  countsHops(mode) ? Math.abs(q.hops) : mode === 'frac-match' ? q.answer2! : q.target;
 
 /** Number cards offered on 'gap' levels. */
 export const GAP_CARDS = [1, 2, 3, 4, 5, 6];
@@ -119,7 +139,7 @@ export const GAP_CARDS = [1, 2, 3, 4, 5, 6];
  * answer is not on screen.
  */
 export function answerSlot(mode: HopMode, q: HopQuestion, lo: number, secondStage = false): number {
-  const card = mode === 'gap' || (mode === 'frac-match' && secondStage);
+  const card = countsHops(mode) || (mode === 'frac-match' && secondStage);
   const slot = card ? GAP_CARDS.indexOf(answerOf(mode, q)) : q.target - lo;
   return slot >= 0 && slot < (card ? GAP_CARDS.length : WINDOW) ? slot : -1;
 }
@@ -214,8 +234,13 @@ function windowFor(top: number, a: number, b: number, rng: Rng): number {
   return rng.int(min, Math.max(min, max));
 }
 
+/** Rounds of Count up that cross ten (the frog starts below 10 and the flag is past it); the rest stay in the teens. */
+export const COUNT_UP_CROSSINGS = 3;
+export const crossesTen = (q: HopQuestion) => q.start < 10 && q.target > 10;
+
 export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (isFrac(plan.mode)) return fracQuestions(plan, rng);
+  if (plan.mode === 'count-up') return countUpQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -264,6 +289,33 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
     }
     out.push(q);
     frog = q.target;
+  }
+  return out;
+}
+
+/**
+ * Count up to take away (dive slice 4): `big − small` with big 11–20 and a difference of 1–6, so a card answers it and
+ * both pads fit in view. The frog stands on the smaller number and a flag marks the bigger; the answer is the hops
+ * between. Three of the five cross ten (where counting up beats counting back); never the same difference twice running.
+ */
+function countUpQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const cross = new Set(rng.shuffle([0, 1, 2, 3, 4]).slice(0, COUNT_UP_CROSSINGS));
+  const out: HopQuestion[] = [];
+  for (let i = 0; i < plan.questions; i++) {
+    for (;;) {
+      const k = rng.int(1, 6);
+      // A crossing needs at least 2 hops (9 to 11).
+      if (cross.has(i) && k < 2) continue;
+      // Crossing: the frog starts at 9 or below and the flag is past 10. Otherwise both sit at 10 or above.
+      const target = cross.has(i) ? rng.int(11, Math.min(plan.top, 9 + k)) : rng.int(10 + k, plan.top);
+      const start = target - k;
+      const q: HopQuestion = { start, target, hops: k, lo: 0 };
+      q.lo = windowFor(plan.top, start, target, rng);
+      const prev = out[i - 1];
+      if (prev && (prev.hops === k || prev.target === target)) continue;
+      out.push(q);
+      break;
+    }
   }
   return out;
 }
