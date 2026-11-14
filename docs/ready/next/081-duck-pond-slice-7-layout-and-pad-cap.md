@@ -1,1 +1,0 @@
-**Duck Pond slice 7, layout and pad cap** (rule tests, one landscape and one portrait screenshot; school): a two-row-of-five layout for ten and twenty seats, pads 0–20 with two-digit numerals and a bridge-split left and right layout, the prerequisite for the next school levels. [Duck Pond dive, slice 7](../../deep-dives/duck-pond.md#build-slices-in-order)
