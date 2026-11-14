@@ -46,6 +46,9 @@ import {
   ONCE_MORE_MODES,
   partnerOf,
   type Dance,
+  type Segment,
+  petDances,
+  segmentAt,
   type Scene,
   type Move,
   type SaysPlan,
@@ -158,6 +161,9 @@ class PetSays implements Game {
   private beat = 0;
   private beatIn = 0;
   private danceLeft = 0;
+  /** Quiet dance: seconds into this dance, and which stretch is playing. */
+  private elapsed = 0;
+  private segment = -1;
   /** "Pet says": "do this" has been explained this round. */
   private thisTold = false;
   /** Opposite day: the moon's rule has been said this round. */
@@ -245,6 +251,7 @@ class PetSays implements Game {
         .then(() => this.ctx.tw.to(this.next, { rotation: 0 }, { duration: 0.3 }));
     }
     if (!this.dancing || !this.turn?.dance) return;
+    if (this.turn.segments) return this.quietBeat(dt, this.turn.dance, this.turn.segments);
     const dance = this.turn.dance;
     const tune = TUNES[dance.tune];
     this.danceLeft -= dt;
@@ -258,6 +265,54 @@ class PetSays implements Game {
       this.beat++;
     }
     if (this.danceLeft <= 0) void this.freeze();
+  }
+
+  /**
+   * Quiet dance (level 7): in the quiet the pet dances to a soft tick; when the music plays it stops where it is and
+   * stands still, and "Music! Freeze!" is said whatever she does. When the song ends the pet holds still for the arrow.
+   */
+  private quietBeat(dt: number, dance: Dance, segments: Segment[]) {
+    const tune = TUNES[dance.tune];
+    this.elapsed += dt;
+    const at = segmentAt(segments, this.elapsed);
+    if (at !== this.segment) {
+      this.segment = at;
+      this.beatIn = 0;
+      if (at >= segments.length) {
+        this.dancing = false;
+        this.ready();
+        return;
+      }
+      if (petDances(segments[at].kind)) {
+        this.mover.pet.alive = true;
+        this.mover.pet.setMood('happy');
+        void this.ctx.instruct('says.quiet.go');
+      } else {
+        this.stillHere();
+        void this.ctx.say('says.music');
+      }
+    }
+    this.beatIn -= dt;
+    if (this.beatIn > 0) return;
+    this.beatIn = tune.beat;
+    if (petDances(segments[at].kind)) {
+      sfx.tick();
+      this.danceBeat(dance, this.beat, tune.beat);
+    } else {
+      const step = tune.steps[this.beat % tune.steps.length];
+      sfx.marimba(step, 0.4);
+      if (this.beat % 2 === 0) this.floatNote(step);
+    }
+    this.beat++;
+  }
+
+  /** Stops the pet just where it is, mid-dance: no tween runs on, and it stops breathing and blinking. */
+  private stillHere() {
+    for (const o of [this.mover.left, this.mover.right, this.mover, this.mover.scale]) this.ctx.tw.kill(o);
+    this.mover.rotation = 0;
+    this.mover.pet.setMood('surprised');
+    this.mover.pet.alive = false;
+    sfx.squeak(9);
   }
 
   /** One beat of the pet's dance, in this dance's style. */
@@ -399,6 +454,7 @@ class PetSays implements Game {
       says: 'says.rule',
       freeze: 'says.freeze',
       opposite: 'says.opp.intro',
+      quiet: 'says.quiet',
       pat: 'says.pat',
     };
     if (this.plan.mode === 'pat') {
@@ -422,13 +478,13 @@ class PetSays implements Game {
     this.next.visible = false;
     this.hideOnceMore();
     if (this.revealDue && !first) return this.reveal();
-    if (this.plan.mode === 'freeze' && !first) this.unfreeze();
+    if ((this.plan.mode === 'freeze' || this.plan.mode === 'quiet') && !first) this.unfreeze();
     this.index++;
     if (!this.turn) return this.finale();
     await this.show(this.turn);
   }
 
-  /** Tapping the pet shows the move again (not during the freeze dance, where the arrow restarts the music). */
+  /** Tapping the pet shows the move again (not in a dance level, where the arrow starts the next dance). */
   private async again() {
     if (this.plan.mode === 'pat') {
       // A pat brings the next move; a pat during a move only squishes the pet, and is not saved up for later.
@@ -436,7 +492,13 @@ class PetSays implements Game {
       else await this.advance();
       return;
     }
-    if (this.busy || this.finished || !this.turn || this.plan.mode === 'freeze') {
+    if (
+      this.busy ||
+      this.finished ||
+      !this.turn ||
+      this.plan.mode === 'freeze' ||
+      this.plan.mode === 'quiet'
+    ) {
       this.mover.pet.poke(true);
       return;
     }
@@ -562,6 +624,16 @@ class PetSays implements Game {
         void this.ctx.instruct(STYLE_LINES[turn.dance!.style]);
         this.lastDance = danceSeconds(this.ctx.rng, this.lastDance);
         this.danceLeft = this.lastDance;
+        this.beatIn = 0;
+        this.beat = 0;
+        this.dancing = true;
+        return;
+      case 'quiet':
+        // The dance itself runs from `update`, stretch by stretch (`quietBeat`).
+        this.mover.pet.alive = true;
+        this.mover.pet.setMood('happy');
+        this.elapsed = 0;
+        this.segment = -1;
         this.beatIn = 0;
         this.beat = 0;
         this.dancing = true;

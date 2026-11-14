@@ -514,7 +514,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
         // Level 2 and Opposite day play on a phone held upright; level 2 listens for the chant's words (dive slice 2).
-        if (level === 6) await page.setViewportSize({ width: 390, height: 844 });
+        if (level === 6 || level === 7) await page.setViewportSize({ width: 390, height: 844 });
+        if (level === 7)
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            const say = g.ctx.say;
+            g.saidForCheck = [];
+            g.ctx.say = (id, slots) => (g.saidForCheck.push([id, g.mover.pet.alive]), say(id, slots));
+          });
         if (level === 2) {
           await page.setViewportSize({ width: 390, height: 844 });
           await page.evaluate(() => {
@@ -585,6 +592,18 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await page.waitForTimeout(300);
             await screenshot('pet-says-5-freeze-landscape');
             await page.setViewportSize({ width: 1024, height: 768 });
+          }
+          if (level === 7 && n === 0) {
+            // The freeze dance turned around (dive slice 6): "Music! Freeze!" comes with the pet already still, and it
+            // holds still for the arrow once the song ends.
+            const quiet = await page.evaluate(() => {
+              const g = neo.scene.game;
+              return { said: g.saidForCheck, alive: g.mover.pet.alive, segments: g.turn.segments };
+            });
+            assert.deepEqual(quiet.said, [['says.music', false]], 'the pet is still while the music plays');
+            assert.equal(quiet.alive, false, 'still for the arrow');
+            log(`Pet Says 7 first dance: ${JSON.stringify(quiet.segments)}`);
+            await screenshot('pet-says-7-portrait');
           }
           if (level === 4 && n === 0) {
             // Every kind of "Pet says" ask, shown once each: "do this" explains itself first, and each trick its own reveal.
@@ -660,7 +679,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           }
           if (n === 1) {
             await tap('neo.scene.game.mover.pet');
-            if (level !== 5)
+            if (level !== 5 && level !== 7)
               assert.equal(
                 await page.evaluate(() => neo.scene.game.next.visible),
                 false,

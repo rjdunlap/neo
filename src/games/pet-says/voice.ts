@@ -70,6 +70,11 @@ export const VOICE = {
   'says.opp.flip': ['Here comes the moon! Now do the opposite of {pet}.'],
   'says.opp.moon': ['Moon! {move}! Can you do the opposite?'],
   'says.opp.reveal': ['The opposite is {move}. Like this!'],
+  'says.quiet': [
+    'Quiet dance! This time it is the other way around. Dance when it is quiet. When the music plays, freeze!',
+  ],
+  'says.quiet.go': ['Shh, it is quiet. Dance!'],
+  'says.music': ['Music! Freeze!'],
   'says.pat': ['Pat {pet}! Give {pet} a pat, and see what {pet} does.'],
   'says.pat-again': ['Pat {pet}!'],
   'says.next': ['A grown-up can tap the green arrow for the next one.'],
