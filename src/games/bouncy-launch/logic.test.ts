@@ -5,6 +5,13 @@ import { bouncyLaunch } from './index';
 import { firstLevel, landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   LEVELS,
+  LINE_LEVEL,
+  LINE_PLAN,
+  LINE_THIRDS,
+  lineTargets,
+  nearestTick,
+  tickAt,
+  TICKS,
   MEADOW_LEVEL,
   MEADOW_PLAN,
   MEADOW_RANGE,
@@ -411,5 +418,58 @@ describe('level 13, the flower meadow (lap)', () => {
       ),
     );
     expect(orders.size).toBeGreaterThan(1);
+  });
+});
+
+describe('level 10, Where on the line?', () => {
+  it('is school only, after Between two flights and before Planet Hop', () => {
+    expect(planFor(LINE_LEVEL)).toBe(LINE_PLAN);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([4, 5, 7, 6, 9, LINE_LEVEL, 12]);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(LINE_LEVEL);
+    expect(bouncyLaunch.describeLevel(LINE_LEVEL)).toMatch(/1 to 10 line/);
+  });
+
+  it('draws no clouds and puts each answer on its tick', () => {
+    expect(cloudCount(LINE_PLAN)).toBe(0);
+    for (let i = 0; i < TICKS; i++) expect(cloudAt(LINE_PLAN, i)).toBe(tickAt(i));
+  });
+
+  it("each shown pull lands on its tick's centre, and the tick reads back", () => {
+    for (let i = 0; i < TICKS; i++) {
+      const f = reach(pullToTake(LINE_PLAN, 0, [i]));
+      expect(f).toBeCloseTo(tickAt(i), 9);
+      expect(nearestTick(f)).toBe(i);
+    }
+  });
+
+  it('routes any tap over the line to the nearest tick, clamped at both ends', () => {
+    expect(nearestTick(-0.3)).toBe(0);
+    expect(nearestTick(0)).toBe(0);
+    expect(nearestTick(1)).toBe(TICKS - 1);
+    expect(nearestTick(1.4)).toBe(TICKS - 1);
+    for (let i = 0; i < TICKS; i++) {
+      expect(nearestTick(tickAt(i) - 0.04)).toBe(i);
+      expect(nearestTick(tickAt(i) + 0.04)).toBe(i);
+    }
+  });
+
+  it('deals one answer in each third, consecutive answers at least two apart', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const t = lineTargets(new Rng(seed), LINE_PLAN.shots);
+      expect(t).toHaveLength(3);
+      for (const third of LINE_THIRDS) expect(t.filter((x) => third.includes(x))).toHaveLength(1);
+      for (let i = 1; i < t.length; i++) expect(Math.abs(t[i] - t[i - 1])).toBeGreaterThanOrEqual(2);
+      expect(targets(LINE_PLAN, new Rng(seed))).toEqual(t);
+    }
+  });
+
+  it('never counts a miss: the tap, not the pull, is the answer', () => {
+    for (let i = 0; i < TICKS; i++) for (const f of [0, 0.5, 1]) expect(judge(LINE_PLAN, f, i)).toBe('yes');
+  });
+
+  it('has its lines in the voice script', () => {
+    for (const id of ['launch.line', 'launch.line-yes', 'launch.line-near', 'launch.line-gap'])
+      expect(SCRIPT[id as keyof typeof SCRIPT]).toBeDefined();
   });
 });

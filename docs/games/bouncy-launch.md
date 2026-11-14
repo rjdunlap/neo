@@ -12,7 +12,7 @@
 | toddler | 1, 2, 8, 3 |
 | preschool | 2, 8, 3, 4 |
 | pre-K | 3, 4, 7, 5 |
-| school | 4, 5, 7, 6, 9, 12 |
+| school | 4, 5, 7, 6, 9, 10, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 7 | Bring a friend a snack, learning from the last flight |
 | 8 | Two big clouds: land on the near one or the far one |
 | 9 | Two shown pulls fly; predict where a pull between them lands |
+| 10 | A shown pull: tap the number on a 1 to 10 line where the pet will land, then see how close |
 | 12 | The same pull on a light or a heavy planet: past the flag or before it? |
 | 13 | Touch anywhere: the pet bounces, and each landing leaves a flower |
 
