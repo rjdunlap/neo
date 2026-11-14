@@ -546,6 +546,30 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             n,
             { timeout: 40000 },
           );
+          if (level === 5 && n === 0) {
+            // The freeze holds the named statue while the arrow shows (dive slice 4), on this round's scene.
+            const held = await page.evaluate(async () => {
+              const { statuePose } = await import('/src/games/pet-says/logic.ts');
+              const g = neo.scene.game;
+              await new Promise((r) => setTimeout(r, 900));
+              const pose = statuePose(g.turn.dance.statue, g.frame);
+              const off = (m, p) => Math.hypot(m.x - p.x, m.y - p.y);
+              return {
+                scene: g.scene,
+                dance: g.turn.dance,
+                off: Math.max(off(g.mover.left.position, pose.left), off(g.mover.right.position, pose.right)),
+              };
+            });
+            assert.ok(held.off < 1, `the ${held.dance.statue} statue holds until the arrow (${held.off})`);
+            log(`Pet Says 5 first dance: ${JSON.stringify(held.dance)} on the ${held.scene}`);
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.waitForTimeout(300);
+            await screenshot('pet-says-5-freeze-portrait');
+            await page.setViewportSize({ width: 844, height: 390 });
+            await page.waitForTimeout(300);
+            await screenshot('pet-says-5-freeze-landscape');
+            await page.setViewportSize({ width: 1024, height: 768 });
+          }
           if (level === 2 && n === 0) {
             await page.evaluate(() => neo.scene.game.update(10));
             assert.equal(

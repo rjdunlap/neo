@@ -201,7 +201,8 @@ class PetSays implements Game {
       void this.hands(l, r, Math.min(0.18, beat * 0.7));
     switch (dance.style) {
       case 'bounce':
-        pet.hop(0.45);
+        // A hop every other beat, as the first freeze dance did, so the bounce never jitters.
+        if (!odd) pet.hop(0.45);
         this.mover.rotation = (odd ? 1 : -1) * 0.08;
         move(
           { x: f.rest.left.x, y: f.rest.left.y - (odd ? 0 : 30) },
@@ -270,13 +271,13 @@ class PetSays implements Game {
           g.circle(Math.max(200, v.w * 0.8) + 24, 116, 46).fill({ color: swatch.purple.line, alpha: 0.9 });
           break;
         case 'window': {
+          // Top right, clear of the home and help buttons on the left.
           const w = Math.min(260, v.w * 0.3);
           const h = Math.min(200, ground * 0.45);
-          const x = Math.max(24, v.w * 0.2 - w / 2);
+          const x = Math.min(v.w - w - 36, v.w * 0.78 - w / 2);
           const y = Math.max(30, ground * 0.18);
           g.roundRect(x - 12, y - 12, w + 24, h + 24, 10).fill(wood.fill);
           g.rect(x, y, w, h).fill(swatch.blue.light);
-          g.circle(x + w * 0.3, y + h * 0.75, h * 0.5).fill({ color: swatch.green.light, alpha: 0.9 });
           g.rect(x + w / 2 - 5, y, 10, h).fill(wood.fill);
           g.rect(x, y + h / 2 - 5, w, 10).fill(wood.fill);
           break;
@@ -350,6 +351,7 @@ class PetSays implements Game {
     this.next.rotation = 0;
     this.ctx.tw.kill(this.next);
     this.next.visible = false;
+    if (this.plan.mode === 'freeze' && !first) this.unfreeze();
     this.index++;
     if (!this.turn) return this.finale();
     await this.show(this.turn);
@@ -454,12 +456,16 @@ class PetSays implements Game {
     this.mover.pet.alive = false;
     sfx.squeak(9);
     await this.ctx.instruct(STATUE_LINES[statue]);
-    await this.ctx.tw.wait(0.6);
+    // The statue holds until the arrow (`unfreeze`), so she has time to copy it.
+    this.ready();
+  }
+
+  /** The arrow after a freeze: the pet comes out of its statue, for the next dance or the cheer. */
+  private unfreeze() {
     this.mover.pet.alive = true;
     this.mover.pet.setMood('happy');
     this.mover.rotation = 0;
     void this.rest();
-    this.ready();
   }
 
   private floatNote(step: number) {
