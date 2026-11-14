@@ -173,7 +173,8 @@ describe('Opposites', () => {
     expect(GRADABLE.sort()).toEqual(['cup', 'height', 'sky', 'temp']);
     const all = [...CONCEPT_IDS.flatMap((c) => [...CONCEPTS[c].words]), ...Object.values(MIDDLES)];
     expect(new Set(all).size).toBe(all.length);
-    for (const line of ['opp.between', 'opp.notbetween', 'opp.isbetween'] as const) expect(SCRIPT[line]).toBeDefined();
+    for (const line of ['opp.between', 'opp.notbetween', 'opp.isbetween'] as const)
+      expect(SCRIPT[line]).toBeDefined();
     const places = new Set<string>();
     for (let seed = 1; seed <= 200; seed++) {
       const rounds = makeRounds(BETWEEN_PLAN, new Rng(seed));
