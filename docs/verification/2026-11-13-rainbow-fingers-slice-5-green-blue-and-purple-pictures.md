@@ -1,0 +1,5 @@
+# 2026-11-13 — Rainbow Fingers slice 5, green, blue and purple pictures (PR #1634)
+
+**Changed:** seven new coloring pictures (frog, turtle, broccoli, whale, puddle, plum, eggplant; 19 in all) with spoken names, and a named-only set (the puddle) that recall pages never deal.
+**Ran:** `npm run typecheck` (pass); the rainbow-fingers rule tests, 35 of 35 (2 new: recall never deals a named-only picture and still deals every color over 300 seeds, and a named-only picture accepts only its own color; the mix-pool and three-per-color tests extended); one scripted headless Playwright launch loop of level 4 at 1024x768 landscape on a private Vite with speech off, relaunched until all seven new pictures appeared, no page errors; screenshots reviewed (whale, puddle and eggplant reshaped after the first look and re-shot).
+**Not run:** browser suites (`early`, `fingerdemo`), `npm run build` (no shared files or assets changed), and full `npm test`. The slice's tier is rule tests and one landscape screenshot.

@@ -16,7 +16,14 @@ export type ThingId =
   | 'lemon'
   | 'strawberry'
   | 'ladybug'
-  | 'cherries';
+  | 'cherries'
+  | 'frog'
+  | 'turtle'
+  | 'broccoli'
+  | 'whale'
+  | 'puddle'
+  | 'plum'
+  | 'eggplant';
 export type Circle = [x: number, y: number, r: number];
 
 /** A coloring-page picture: its true color and the circles whose union is the part to paint. */
@@ -131,7 +138,90 @@ export const THINGS: Thing[] = [
       [50, 60, 48],
     ],
   },
+  {
+    id: 'frog',
+    color: 'green',
+    // A round body with two eye bumps on top.
+    circles: [
+      [0, 30, 76],
+      [-46, -40, 32],
+      [46, -40, 32],
+    ],
+  },
+  {
+    id: 'turtle',
+    color: 'green',
+    // A domed shell, a head out to the right and two feet below.
+    circles: [
+      [-8, 0, 72],
+      [92, -4, 28],
+      [-56, 66, 22],
+      [40, 66, 22],
+    ],
+  },
+  {
+    id: 'broccoli',
+    color: 'green',
+    // Bumpy florets on a thick stalk.
+    circles: [
+      [-52, -34, 44],
+      [0, -56, 48],
+      [52, -34, 44],
+      [0, -14, 48],
+      [0, 46, 30],
+      [0, 82, 28],
+    ],
+  },
+  {
+    id: 'whale',
+    color: 'blue',
+    // A big round body and a tail that tapers up at the left (the flukes are drawn on top).
+    circles: [
+      [-4, 22, 74],
+      [62, 28, 56],
+      [-76, 6, 28],
+      [-92, -16, 21],
+      [-102, -36, 16],
+      [-108, -52, 12],
+    ],
+  },
+  {
+    id: 'puddle',
+    color: 'blue',
+    // A wide, flat oval, like the banana a row of circles that is fattest in the middle.
+    circles: [
+      [-90, 30, 26],
+      [-72, 30, 31],
+      [-54, 30, 35],
+      [-36, 30, 37],
+      [-18, 30, 38],
+      [0, 30, 38],
+      [18, 30, 38],
+      [36, 30, 37],
+      [54, 30, 35],
+      [72, 30, 31],
+      [90, 30, 26],
+    ],
+  },
+  { id: 'plum', color: 'purple', circles: [[0, 14, 78]] },
+  {
+    id: 'eggplant',
+    color: 'purple',
+    // Narrow at the top left, fat at the bottom right.
+    circles: [
+      [-62, -52, 32],
+      [-32, -22, 44],
+      [6, 12, 56],
+      [40, 44, 58],
+    ],
+  },
 ];
+
+/**
+ * Pictures a page may name but never ask her to remember: a four-year-old would not give one color for a puddle, so recall pages
+ * leave it out and a named page says "Paint the puddle blue!".
+ */
+export const NAMED_ONLY: ReadonlySet<ThingId> = new Set<ThingId>(['puddle']);
 
 /** Every picture, outline included, fits the page's 280 by 270 slot around its centre (`layoutPictures` in `index.ts`). */
 export const SLOT = { w: 280, h: 270 };
@@ -150,6 +240,13 @@ export const THING_NAMES: Record<ThingId, string> = {
   strawberry: 'strawberry',
   ladybug: 'ladybug',
   cherries: 'cherries',
+  frog: 'frog',
+  turtle: 'turtle',
+  broccoli: 'broccoli',
+  whale: 'whale',
+  puddle: 'puddle',
+  plum: 'plum',
+  eggplant: 'eggplant',
 };
 
 /**
@@ -170,6 +267,13 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
   strawberry: ['red'],
   ladybug: ['red'],
   cherries: ['red'],
+  frog: ['green'],
+  turtle: ['green'],
+  broccoli: ['green'],
+  whale: ['blue'],
+  puddle: ['blue'],
+  plum: ['purple'],
+  eggplant: ['purple'],
 };
 
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
@@ -251,11 +355,13 @@ export function mix(a: Primary, b: Primary): ColorName {
 
 /**
  * The pictures for one page: first `count` different colors, then one picture of each, so a page never asks for two yellows and a
- * color with more pictures is not drawn more often. Mixing pages only use colors that need mixing.
+ * color with more pictures is not drawn more often. Mixing pages only use colors that need mixing; recall pages skip `NAMED_ONLY`.
  */
 export function pickThings(plan: PaintPlan, rng: Rng): Thing[] {
   if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
-  const pool = plan.mode === 'mix' ? THINGS.filter((t) => RECIPES[t.color]) : THINGS;
+  const pool = THINGS.filter((t) =>
+    plan.mode === 'mix' ? RECIPES[t.color] : plan.mode !== 'recall' || !NAMED_ONLY.has(t.id),
+  );
   const colors = rng.shuffle([...new Set(pool.map((t) => t.color))]).slice(0, plan.count);
   return colors.map((color) => rng.pick(pool.filter((t) => t.color === color)));
 }

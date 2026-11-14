@@ -1,0 +1,1 @@
+**Rainbow Fingers slice 6, pictures batch three: orange** (rule tests, one landscape screenshot of the new art): carrot and basketball, so every color has at least three; level 7 stays one page (decided 2026-10-23). [Rainbow Fingers dive, slice 6](../../deep-dives/rainbow-fingers.md#build-slices-in-order)

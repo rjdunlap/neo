@@ -17,6 +17,7 @@ import {
   frameShows,
   inside,
   MARGIN,
+  NAMED_ONLY,
   SLOT,
   mix,
   NUDGE_AFTER,
@@ -89,14 +90,45 @@ describe('Rainbow Fingers', () => {
     }
   });
 
-  it('has at least three pictures each of yellow and red, every one drawn on some page', () => {
-    for (const color of ['yellow', 'red'] as ColorName[])
+  it('has at least three pictures of every color but orange, every one drawn on some page', () => {
+    for (const color of ['yellow', 'red', 'green', 'blue', 'purple'] as ColorName[])
       expect(THINGS.filter((t) => t.color === color).length, color).toBeGreaterThanOrEqual(3);
     expect(new Set(THINGS.map((t) => t.id)).size).toBe(THINGS.length);
     const seen = new Set<string>();
     const named = PLANS.find((p) => p.mode === 'named' && p.count === 3)!;
     for (let seed = 1; seed <= 200; seed++) for (const t of pickThings(named, new Rng(seed))) seen.add(t.id);
     expect([...seen].sort()).toEqual(THINGS.map((t) => t.id).sort());
+  });
+
+  it('never asks her to remember a named-only picture, and still deals every color at recall', () => {
+    const recall = PLANS.find((p) => p.mode === 'recall')!;
+    const colors = new Set<ColorName>();
+    for (let seed = 1; seed <= 300; seed++)
+      for (const t of pickThings(recall, new Rng(seed))) {
+        expect(NAMED_ONLY.has(t.id), t.id).toBe(false);
+        colors.add(t.color);
+      }
+    expect(colors.size).toBe(new Set(THINGS.map((t) => t.color)).size);
+    for (const id of NAMED_ONLY) expect(ACCEPTS[id], id).toEqual([THINGS.find((t) => t.id === id)!.color]);
+  });
+
+  it('mixes from every picture of a mixed color, three or more for green and purple', () => {
+    const mixPlan = PLANS.find((p) => p.mode === 'mix')!;
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++)
+      for (const t of pickThings(mixPlan, new Rng(seed))) {
+        expect(RECIPES[t.color], t.id).toBeDefined();
+        seen.add(t.id);
+      }
+    expect([...seen].sort()).toEqual(
+      THINGS.filter((t) => RECIPES[t.color])
+        .map((t) => t.id)
+        .sort(),
+    );
+    for (const color of ['green', 'purple'] as ColorName[])
+      expect(
+        [...seen].filter((id) => THINGS.find((t) => t.id === id)!.color === color).length,
+      ).toBeGreaterThanOrEqual(3);
   });
 
   it('draws colors before pictures, so a color with more pictures is not asked for more often', () => {
