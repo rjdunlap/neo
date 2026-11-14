@@ -5,6 +5,9 @@ import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
   BETWEEN_LEVEL,
   BETWEEN_PLAN,
+  ORDER_LEVEL,
+  ORDER_PLAN,
+  inTurn,
   GRADABLE,
   MIDDLES,
   degree,
@@ -165,7 +168,7 @@ describe('Opposites', () => {
   it('level 7, In between: pre-K steps 5 to 7, only gradable words, one middle, and the bot taps it', () => {
     expect(planFor(BETWEEN_LEVEL)).toBe(BETWEEN_PLAN);
     expect(BETWEEN_PLAN).toMatchObject({ level: 7, mode: 'between', rounds: 4 });
-    expect(levelsInOrder(LEVELS.prek!)).toEqual([3, 4, 5, BETWEEN_LEVEL]);
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([3, 4, 5, BETWEEN_LEVEL, ORDER_LEVEL]);
     expect(stepLevel(5, 1, LEVELS.prek!)).toBe(BETWEEN_LEVEL);
     for (const band of ['lap', 'toddler', 'preschool'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BETWEEN_LEVEL);
@@ -203,5 +206,63 @@ describe('Opposites', () => {
     }
     // Either end can be named first and stand on the left (empty to full, or full to empty).
     expect([...lefts].sort()).toEqual([0, 1]);
+  });
+
+  it('level 8, Line them up: pre-K steps 7 to 8, the three shuffled, both directions fair, and only a prefix of the true order is accepted', () => {
+    expect(planFor(ORDER_LEVEL)).toBe(ORDER_PLAN);
+    expect(ORDER_PLAN).toMatchObject({ level: 8, mode: 'order', rounds: 4 });
+    expect(stepLevel(BETWEEN_LEVEL, 1, LEVELS.prek!)).toBe(ORDER_LEVEL);
+    expect(LEVELS.prek!.max).toBe(ORDER_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(ORDER_LEVEL);
+    for (const line of ['opp.order', 'opp.notfirst', 'opp.notnext', 'opp.lined'] as const)
+      expect(SCRIPT[line]).toBeDefined();
+    const firsts = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = makeRounds(ORDER_PLAN, new Rng(seed));
+      expect(rounds).toEqual(makeRounds(ORDER_PLAN, new Rng(seed)));
+      // Each gradable word once (never size); the end named first alternates, so two rounds each way.
+      expect(rounds.map((r) => r.ask!.concept).sort()).toEqual([...GRADABLE].sort());
+      expect(rounds.filter((r) => r.ask!.side === 0)).toHaveLength(2);
+      rounds.forEach((r, i) => i > 0 && expect(r.ask!.side).not.toBe(rounds[i - 1].ask!.side));
+      for (const r of rounds) {
+        firsts.add(`${r.ask!.concept}:${r.ask!.side}`);
+        expect(r.cards).toHaveLength(3);
+        expect(new Set(r.cards.map((c) => c.concept))).toEqual(new Set([r.ask!.concept]));
+        expect(r.cards.filter((c) => c.mid)).toHaveLength(1);
+        const degrees = r.cards.map((c) => degree(c, r.ask!.side));
+        expect([...degrees].sort()).toEqual([0, 1, 2]);
+        // Shuffled: never already standing in the asked order.
+        expect(degrees).not.toEqual([0, 1, 2]);
+        // Every tap sequence: accepted exactly while it follows the true order from the end named first.
+        const perms = [
+          [0, 1, 2],
+          [0, 2, 1],
+          [1, 0, 2],
+          [1, 2, 0],
+          [2, 0, 1],
+          [2, 1, 0],
+        ];
+        for (const seq of perms) {
+          let placed = 0;
+          for (const k of seq) {
+            const ok = inTurn(r, r.cards[k], placed);
+            expect(ok).toBe(degrees[k] === placed);
+            if (!ok) break;
+            placed++;
+          }
+        }
+        // The bot lines them up: fed back its own taps, it clears the round in three right taps.
+        const done = [false, false, false];
+        for (let step = 0; step < 3; step++) {
+          const i = cardToTap(ORDER_PLAN, r, done, null)!;
+          expect(inTurn(r, r.cards[i], step)).toBe(true);
+          done[i] = true;
+        }
+        expect(cardToTap(ORDER_PLAN, r, done, null)).toBeNull();
+      }
+    }
+    // Every word is asked both ways across seeds (empty to full, and full to empty).
+    expect(firsts.size).toBe(GRADABLE.length * 2);
   });
 });

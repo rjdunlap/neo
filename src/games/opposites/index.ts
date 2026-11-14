@@ -17,6 +17,7 @@ import {
   LEVELS,
   STICKER_CONCEPTS,
   cardToTap,
+  inTurn,
   makeRounds,
   opposites,
   planFor,
@@ -31,6 +32,11 @@ import {
 const BIG_SCALE = 1.7;
 /** Level 6's flipped pictures, small in the row along the bottom (about 75 units across). */
 const ROW_SCALE = 0.44;
+/** Level 8's cards: as large as the two rows leave room for (about 1.1 sideways, 1.04 upright). */
+const ORDER_SCALE = 1.1;
+/** The corner guide's square at the bottom left, which level 8's line stays above. */
+const GUIDE_CLEAR = 210;
+
 /** Level 7's three cards, larger in the open middle of the screen: up to about 240 units across. */
 const BETWEEN_SCALE = 1.4;
 
@@ -379,6 +385,9 @@ class Opposites implements Game {
   private readonly backdrop: Backdrop;
   private readonly shown = new Container();
   private readonly glow = new Graphics();
+  /** Level 8: the three places along the line, and the cards lined up in them so far. */
+  private readonly slots = new Graphics();
+  private lined: CardView[] = [];
   private view: View;
   private wrongs = 0;
   private glowing: CardView | null = null;
@@ -409,6 +418,10 @@ class Opposites implements Game {
     this.glow.eventMode = 'none';
     this.shown.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.shown, this.glow);
+    if (this.plan.mode === 'order') {
+      this.slots.eventMode = 'none';
+      ctx.stage.addChildAt(this.slots, 1);
+    }
     if (this.plan.big) {
       // The whole screen flips the card: a touch beside it, on the sky or the hills counts the same.
       this.catcher.hitArea = new Rectangle(0, 0, ctx.view.w, ctx.view.h);
@@ -442,6 +455,15 @@ class Opposites implements Game {
       this.cards.forEach((c, i) =>
         c.node.position.set(i < 3 ? top[i] : low[i - 3], i < 3 ? v.h * 0.36 : v.h * 0.72),
       );
+    } else if (mode === 'order') {
+      // Unplaced cards wait in the top row; lined-up ones stay in their places on the line.
+      const { s, top, line } = this.orderLayout();
+      this.cards.forEach((c, i) => {
+        const k = this.lined.indexOf(c);
+        c.node.position.set(k < 0 ? top.xs[i] : line.xs[k], k < 0 ? top.y : line.y);
+        if (!this.busy) c.node.scale.set(s);
+      });
+      this.drawSlots();
     } else if (mode === 'pairs') {
       const xs = spread(3, 200, v.w - 80, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
@@ -501,6 +523,75 @@ class Opposites implements Game {
   private betweenScale() {
     const xs = this.rowXs(3);
     return Math.min(BETWEEN_SCALE, (xs[1] - xs[0] - 16) / 180);
+  }
+
+  /**
+   * Level 8's two rows: the shuffled three across the top, and the line below, its places left to right from the end named
+   * first. The line sits low but its cards stay above the corner guide; the rows share their columns.
+   */
+  private orderLayout() {
+    const v = this.view;
+    const xs = spread(3, 80, v.w - 80, 330);
+    const s = Math.min(ORDER_SCALE, (xs[1] - xs[0] - 16) / 180);
+    const y = Math.min(v.h * 0.72, v.h - GUIDE_CLEAR - 90 * s);
+    return { s, top: { xs, y: v.h * 0.32 }, line: { xs, y } };
+  }
+
+  /** Level 8's line: three pale places with an arrow between each, pointing from the end named first. */
+  private drawSlots() {
+    const { s, line } = this.orderLayout();
+    const r = 85 * s;
+    const g = this.slots.clear();
+    for (const x of line.xs)
+      g.roundRect(x - r, line.y - r, 2 * r, 2 * r, 30 * s)
+        .fill({ color: 0xffffff, alpha: 0.35 })
+        .stroke({ width: 5, color: wood.line, alpha: 0.35 });
+    for (let k = 0; k < 2; k++) {
+      const x = (line.xs[k] + line.xs[k + 1]) / 2;
+      g.poly([x - 8, line.y - 14, x + 10, line.y, x - 8, line.y + 14]).fill({ color: wood.line, alpha: 0.5 });
+    }
+  }
+
+  /**
+   * Level 8: a card tapped in turn lifts, slides into its place on the line and settles, and its word is said. A glow (the
+   * hint) moves on to the next one. The third names the whole line, end to end ("Empty, half full, full!").
+   */
+  private async lineUp(c: CardView) {
+    this.busy = true;
+    c.done = true;
+    this.lined.push(c);
+    this.drawCard(c, true);
+    const k = this.lined.length - 1;
+    const last = k === 2;
+    if (!last) void this.ctx.say('opp.word', { word: word(c.card) });
+    const { s, line } = this.orderLayout();
+    sfx.whoosh();
+    await this.ctx.tw.to(c.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.1 });
+    if (this.destroyed) return;
+    await this.ctx.tw.to(c.node, { x: line.xs[k], y: line.y }, { duration: 0.35, ease: ease.inOutSine });
+    if (this.destroyed) return;
+    await this.ctx.tw.to(c.node.scale, { x: s, y: s }, { duration: 0.12, ease: ease.outBack });
+    if (this.destroyed) return;
+    sfx.pop(5 + k);
+    // Settle wherever a resize moved the line during the slide.
+    this.resize(this.view);
+    if (!last) {
+      if (this.glowing)
+        this.glowing =
+          this.cards.find((x) => !x.done && inTurn(this.round, x.card, this.lined.length)) ?? null;
+      this.busy = false;
+      return;
+    }
+    this.glowing = null;
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    const [a, m, b] = this.lined.map((x) => word(x.card));
+    // The whole line is heard out: the two ends named out loud, with the middle between them.
+    await this.ctx.say('opp.lined', { a, m, b });
+    if (this.destroyed) return;
+    await this.ctx.tw.wait(0.3);
+    if (this.destroyed) return;
+    await this.next();
   }
 
   /**
@@ -621,6 +712,7 @@ class Opposites implements Game {
     this.wrongs = 0;
     this.glowing = null;
     this.picked = null;
+    this.lined = [];
     if (this.index >= this.rounds.length) return void this.finale();
     for (const c of this.cards.splice(0)) c.node.destroy({ children: true });
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -635,7 +727,9 @@ class Opposites implements Game {
               ? 1.7
               : this.plan.mode === 'between'
                 ? this.betweenScale()
-                : 1,
+                : this.plan.mode === 'order'
+                  ? this.orderLayout().s
+                  : 1,
         ),
       );
     if (this.plan.mode === 'opposite') {
@@ -661,6 +755,7 @@ class Opposites implements Game {
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
     if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
     if (mode === 'between') return this.ctx.instruct('opp.between', this.ends());
+    if (mode === 'order') return this.ctx.instruct('opp.order', this.ends());
     return this.ctx.instruct(mode === 'spot' ? 'opp.spot' : 'opp.pairs');
   }
 
@@ -722,6 +817,14 @@ class Opposites implements Game {
       return void (c.card.mid
         ? this.right([c], word(c.card))
         : this.wrong('opp.notbetween', { what: word(c.card), ...this.ends(c.card) }));
+    if (mode === 'order') {
+      // In turn from the end named first; a tap out of turn asks which comes first, or which comes after the last one.
+      const placed = this.lined.length;
+      if (inTurn(r, c.card, placed)) return void this.lineUp(c);
+      return void (placed === 0
+        ? this.wrong('opp.notfirst', { a: word(r.ask!) })
+        : this.wrong('opp.notnext', { prev: word(this.lined[placed - 1].card) }));
+    }
     if (mode === 'opposite')
       return void (opposites(c.card, r.ask!)
         ? this.right([c])
@@ -752,14 +855,13 @@ class Opposites implements Game {
     this.wrong('opp.notpair', { a: word(a.card), b: word(c.card) });
   }
 
-  /** Level 7's two ends, the one named first as `a`. */
   /** Level 7's two ends: the one named first as `a`, or the end she tapped ("That one is full. Between full and…"). */
   private ends(first: Card = this.round.ask!) {
     return { a: word(first), b: word({ ...first, side: (1 - first.side) as 0 | 1 }) };
   }
 
   private wrong(
-    line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair' | 'opp.notbetween',
+    line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair' | 'opp.notbetween' | 'opp.notfirst' | 'opp.notnext',
     vars: Record<string, string>,
   ) {
     this.misses++;
@@ -774,14 +876,17 @@ class Opposites implements Game {
         void this.lightEnds();
         return;
       }
+      // Level 8: the next one in turn glows, and the glow moves along as she lines them up (one hint a round).
       this.glowing =
-        this.plan.mode === 'find'
-          ? this.cards.find((x) => word(x.card) === word(r.ask!))!
-          : this.plan.mode === 'opposite'
-            ? this.cards.find((x) => opposites(x.card, r.ask!))!
-            : this.plan.mode === 'spot'
-              ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))!
-              : this.cards.find((x) => !x.done)!;
+        this.plan.mode === 'order'
+          ? this.cards.find((x) => !x.done && inTurn(r, x.card, this.lined.length))!
+          : this.plan.mode === 'find'
+            ? this.cards.find((x) => word(x.card) === word(r.ask!))!
+            : this.plan.mode === 'opposite'
+              ? this.cards.find((x) => opposites(x.card, r.ask!))!
+              : this.plan.mode === 'spot'
+                ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))!
+                : this.cards.find((x) => !x.done)!;
     }
   }
 

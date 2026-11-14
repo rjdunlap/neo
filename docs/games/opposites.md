@@ -11,7 +11,7 @@
 | lap | 6, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
-| pre-K | 3, 4, 5, 7 |
+| pre-K | 3, 4, 5, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 5 | Which two are opposites? One pair hides among five pictures |
 | 6 | One big card: a touch anywhere flips it to its opposite, and each flipped picture joins a row (8 cards) |
 | 7 | In between: three pictures (empty, half full, full); tap the one between the two ends |
+| 8 | Line them up: the same three shuffled; tap them in order from empty to full, then the other way |
 
 <!-- end generated -->
 
@@ -37,4 +38,6 @@
 
 **Level 6, One big card (2026-11-13, PR #1617).** Lap-only, after the ladder and first in lap's order (6, then 1); a saved 6 lands at toddler's 1. One card (about 290 units); a layer over the whole view takes every touch: the card flips to its opposite with its word (size, speed and height act it), a small copy flies to a row along the bottom, clear of the corner pet, and stays, and the next card grows in. Eight cards, one per original pair; the last word is heard out. A touch while it flips, acts or arrives gets a soft pop and a wiggle. Nothing is a miss or a hint and there is no hint button.
 
-**Level 7, In between (2026-11-13, PR #1629).** Pre-K's top (order 3, 4, 5, 7). Four rounds, one per gradable word: a cup (full, half full, empty), a mug (hot, warm, cold), the sky (day, evening, night), a balloon (up, middle, down). The three cards stand in true order, the end named first on the left, and she taps the middle; level 8 will shuffle them. An end is a miss with "That one is full. Which one is between full and empty?"; after two misses the ends light, then the middle glows (one hint). A right tap says "{word}! That one is in between." Cards draw up to 1.4x, sized so tap areas never overlap (about 1.06 on an upright phone). Never size, open/closed, on/off or awake/asleep.
+**Level 7, In between (2026-11-13, PR #1629).** Pre-K's top (order 3, 4, 5, 7). Four rounds, one per gradable word: a cup (full, half full, empty), a mug (hot, warm, cold), the sky (day, evening, night), a balloon (up, middle, down). The three cards stand in true order, the end named first on the left, and she taps the middle; level 8 shuffles them. An end is a miss with "That one is full. Which one is between full and empty?"; after two misses the ends light, then the middle glows (one hint). A right tap says "{word}! That one is in between." Cards draw up to 1.4x, sized so tap areas never overlap (about 1.06 on an upright phone). Never size, open/closed, on/off or awake/asleep.
+
+**Level 8, Line them up (2026-11-13, PR #1632).** Pre-K's top (order 3, 4, 5, 7, 8; pre-K only). Four rounds on the same gradable words as level 7 (cup, mug, sky, balloon; never size). The three cards are shuffled (never already in the asked order) in a top row, and she taps them from the end named first ("Tap them in order, from {a} to {b}!") to the other. Each in-turn tap lifts, slides into its place on a three-place line below and settles, its word said; the third names the whole line. The end named first alternates round by round (two each way). A tap out of turn is a miss ("Which one comes first? Start at {a}." or "Which one comes after {prev}?"); after two misses the next card in turn glows and the glow moves along (one hint a round). The line stays above the corner guide; cards draw up to 1.1x (about 1.04 on the 768-wide area).
