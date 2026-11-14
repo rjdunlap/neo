@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Pet Says more moves, tiers and counts (2026-11-13)
+
+[PR #1625](https://github.com/rjdunlap/neo/pull/1625), `claude/pet-says-move-tiers`, slice 3 of the [dive](../deep-dives/pet-says.md#build-slices-in-order). Ten new moves in `TIERS` (`logic.ts`): social (peekaboo, pat-a-cake), walking (tiptoe, march), animal (hop like a frog, stretch like a cat, waddle like a duck, flap like a bird) and calm (sway like a tree, shake it out; the dive left these two in no tier, so a fifth tier keeps the tiers a partition of the 18 moves). Level 1 draws from base plus social only; levels 3 and 4 from all 18; level 13 gains peekaboo and pat-a-cake. At level 3, about 60% of pair turns ask for two or three beats of a move made of beats (clap, stomp, jump, march), said with the shared `count` line, never above five. "Manner" (a big jump, a little jump) is left for later. A new `eyes` pair serves peekaboo; ten new `says.move.*` lines use device speech. [Game notes](../games/pet-says.md#design-notes).
+
 ### Splish Splash slice 2, hint accounting (2026-11-13)
 
 [PR #1624](https://github.com/rjdunlap/neo/pull/1624), `claude/splish-splash-hint-rule`, slice 2 of the [dive](../deep-dives/splish-splash.md#build-slices-in-order) (decision 5). On parts levels 3–8 the seven-second glow is free; the second counted miss on one question lights it and counts that question's one hint (`QuestionHelp`, `GLOW_AFTER = 7`, `MISSES_FOR_HINT = 2` in `logic.ts`; two new rule tests). A pausing toddler no longer steps down; `early` bath checks both at levels 3 and 4.
