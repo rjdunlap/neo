@@ -1811,7 +1811,8 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           // Waiting glows the first line of a fewest route (the hint), and drawing it pops those dots for good.
           await kit.until(() => g.hints === 1 && g.hintCells.length > 0, 16000);
           await draw(g.hintCells);
-          if (g.linesUsed !== 1 || gardenLeft(g.garden) >= 16) throw new Error(`Garden hint line: ${g.linesUsed}`);
+          if (g.linesUsed !== 1 || gardenLeft(g.garden) >= 16)
+            throw new Error(`Garden hint line: ${g.linesUsed}`);
           // A tap pops one dot; Undo brings back the board before it.
           const before = JSON.stringify(g.garden);
           const lone = g.grid.flatMap((row, r) => row.map((k, c) => ({ r, c, k }))).find((d) => d.k !== null);
