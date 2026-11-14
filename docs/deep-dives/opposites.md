@@ -148,7 +148,7 @@ Each is sized for one session. The slices that add a level are built in level or
 2. **Same-subject variation and an acting flip** (built 2026-10-11, [PR 158](https://github.com/rjdunlap/neo/pull/158)): `who` on `Card`, per-side motion, optional sound. Tier: rule tests, one browser play, a portrait screenshot.
 3. **Level 5, Which two?** (built 2026-10-15, PR #370; the band row becomes pre-K 3–5): the `spot` mode, bot, how-to step, browser loop, `fingerdemo`. Tier: new level on an existing interaction.
 4. **A second batch of pairs** (built 2026-10-14, [PR #317](https://github.com/rjdunlap/neo/pull/317): sponge wet/dry, plate clean/dirty, book thick/thin and ball near/far, all `from` level 3 in families wet, clean, size and position, so levels 1–2 are unchanged and levels 3–4 draw from sixteen pairs; the sticker pool is unchanged; many/few stays unbuilt, overlapping Picture Graph): each at a `from` level.
-5. **Level 7, In between** (ready after 4): third pictures for cup, temperature, sky and height.
+5. **Level 7, In between** (claimed 2026-11-13, branch `claude/opposites-in-between`; files `src/games/opposites/*`, its game page): third pictures for cup, temperature, sky and height.
 6. **Level 8, Line them up** (ready after 5).
 7. **Level 9, Only the word** (decision 1; opens the school window).
 8. **Level 10, Un- words** (decision 3; needs the device-speech check).
