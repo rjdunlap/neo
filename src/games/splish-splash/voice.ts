@@ -12,5 +12,6 @@ export const VOICE = {
   'bath.first': ['First {a}! Then {b}.'],
   'bath.named': ['My {part}!'],
   'bath.cleanpart': ['Clean {part}!', 'Shiny clean {part}!'],
+  'bath.toy': ['A {toy}!', 'My {toy}! Squeak!'],
   'bath.clean': ['Squeaky clean!', 'All clean! Thank you!'],
 } satisfies Record<string, string[]>;

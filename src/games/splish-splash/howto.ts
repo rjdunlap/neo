@@ -19,19 +19,30 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'Wash the two body parts in the order the pet says: first one, then the other.' },
   ],
   finish: [
-    { to: 2, text: 'The round ends when the mud is all gone.' },
-    { from: 3, to: 8, text: 'The round ends when everything asked for is clean.' },
-    { from: 9, to: 9, text: 'The round ends when the mud is all gone.' },
-  ],
-  note: [
     {
       to: 2,
-      text: 'The pet names each part at its first touch and again when it is clean. After a quiet spell a muddy spot sparkles and the pet wiggles; that is an invitation, not help.',
+      text: 'The round ends when the mud is all gone: the shower pops the foam and the pet shakes dry.',
     },
     {
       from: 3,
       to: 8,
-      text: 'Washing the wrong part just makes the pet giggle and repeats the request. Each part is named when it is clean.',
+      text: 'The round ends when everything asked for is clean: the shower pops the foam and the pet shakes dry.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'The round ends when the mud is all gone: the shower pops the foam and the pet shakes dry.',
+    },
+  ],
+  note: [
+    {
+      to: 2,
+      text: 'The pet names each part at its first touch and again when it is clean. After a quiet spell a muddy spot sparkles and the pet wiggles; that is an invitation, not help. The toy on the left rim squeaks and says its name; the duck repeats the request.',
+    },
+    {
+      from: 3,
+      to: 8,
+      text: 'Washing the wrong part just makes the pet giggle and repeats the request. Each part is named when it is clean. The toy on the left rim squeaks and says its name; the duck repeats the request.',
     },
     { from: 9, to: 9, text: 'The pet names each part at its first pat and again when it is clean.' },
   ],

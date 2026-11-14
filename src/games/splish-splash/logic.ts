@@ -295,3 +295,43 @@ export function nearestIndex(points: { x: number; y: number }[], x: number, y: n
   });
   return best;
 }
+
+/** The least distance between two foam puffs, as a share of the brush's reach: a trail, not a pile. */
+export const FOAM_GAP = 0.7;
+/** The most foam puffs one splotch carries, so a long scrub never builds a heavy drawing. */
+export const FOAM_MAX = 24;
+
+/**
+ * The white foam trail scrubbing leaves on one splotch (slice 3), in its own texture units: a puff where the brush has been,
+ * never closer than `FOAM_GAP` reaches to another and never more than `FOAM_MAX`. Only looks; the shower pops it all.
+ */
+export class FoamTrail {
+  readonly puffs: { x: number; y: number }[] = [];
+
+  constructor(private readonly reach: number) {}
+
+  /** A puff to lay at (x, y), or null when one is already near or the splotch is full. */
+  lay(x: number, y: number): { x: number; y: number; r: number } | null {
+    if (this.puffs.length >= FOAM_MAX) return null;
+    const gap = FOAM_GAP * this.reach;
+    if (this.puffs.some((p) => Math.hypot(p.x - x, p.y - y) < gap)) return null;
+    this.puffs.push({ x, y });
+    return { x, y, r: 0.5 * this.reach };
+  }
+}
+
+/** The old pip's tummy splotch sat this far above the tub's line, just over the foam: every star sits with its lowest splotch there. */
+export const TUMMY_Y = -86;
+
+/**
+ * Where the rim's two toys sit, from the middle of the tub's top edge, and their tap circles (in stage units): the duck on the
+ * right repeats the instruction, the second toy on the left squeaks and says its name. Each circle is over 100 units across.
+ */
+export const DUCK_AT = { x: 236, y: -18 };
+export const TOY_AT = { x: -236, y: -18 };
+export const DUCK_HIT = { x: DUCK_AT.x, y: DUCK_AT.y - 30, r: 55 };
+export const TOY_HIT = { x: TOY_AT.x, y: TOY_AT.y - 30, r: 56 };
+
+/** The second bath toy, chosen by seed each round; the word is what it says. */
+export const TOYS = ['boat', 'fish', 'whale'] as const;
+export type Toy = (typeof TOYS)[number];

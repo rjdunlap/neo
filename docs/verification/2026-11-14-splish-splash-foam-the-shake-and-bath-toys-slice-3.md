@@ -1,0 +1,5 @@
+# 2026-11-14 — Splish Splash foam, the shake and bath toys, slice 3
+
+**Changed:** a foam trail where the brush has been, the foam pop and a 0.8 s shake-dry after the shower, and a second rim toy (boat, fish or whale) with the new `bath.toy` voice line. Visual layer: no rule, miss or hint change. Three new rule tests (foam spaced and capped; the toy's tap circle misses the duck and every splotch's scrub reach on every species and level; the toy line fills in).
+**Ran:** `npm run typecheck` clean; vitest `src/games/splish-splash src/content` 221 passed, 1 skipped; `BROWSER_SUITE=fingerdemo FINGER_ONLY=splish-splash FINGER_LEVELS=1` passed (10.0 s); a one-off Playwright probe on a phone viewport took portrait (390×844) and landscape (844×390) screenshots at level 3 with foam and the toy (fish, boat) and played level 1 to its sticker, sampling the foam pop and the shake, with no page errors. `game-reviewer` found no defects (minor: on a splotch with a large reach some pats add no new puff; the toy's name can talk over an instruction, as the duck replay already can).
+**Not run:** full `npm test`, build (no shared files or assets changed), `EARLY_ONLY=bath`.

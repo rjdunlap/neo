@@ -28,6 +28,16 @@ import {
   planOn,
   spotsOn,
   STAR,
+  DUCK_HIT,
+  FOAM_GAP,
+  FOAM_MAX,
+  FoamTrail,
+  MUD_H,
+  MUD_W,
+  reach,
+  TOY_HIT,
+  TOYS,
+  TUMMY_Y,
   type Part,
   type Plan,
   type Spot,
@@ -266,7 +276,8 @@ describe('Splish Splash', () => {
               /\{(part|a|b)\}/g,
               id === 'bath.cleanpart' || id === 'bath.named' ? PHRASES[p].word : askedPhrase([p]),
             )
-            .replace('{pet}', 'Pip');
+            .replace('{pet}', 'Pip')
+            .replace('{toy}', TOYS[0]);
           expect(filled, id).not.toMatch(/[{}]|my my/);
         }
   });
@@ -363,5 +374,74 @@ describe('Splish Splash', () => {
 
   it('gives the free levels a palm-sized brush and keeps the asked-for levels precise', () => {
     for (const plan of PLANS) expect(plan.brush ?? 1, plan.mode).toBe(plan.mode === 'free' ? 1.6 : 1);
+  });
+
+  it('lays a foam trail where the brush goes: spaced, capped, and over every splotch a scrub covers (slice 3)', () => {
+    for (const size of [0.3, 0.42, 0.62, 1])
+      for (const brush of [1, 1.6]) {
+        const r = reach(size, brush);
+        const trail = new FoamTrail(r);
+        const path = scrubPath(size, brush);
+        // Walk the scrub path in 10-unit steps, as a finger does.
+        for (let i = 1; i < path.length; i++) {
+          const [a, b] = [path[i - 1], path[i]];
+          const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 10));
+          for (let k = 0; k <= steps; k++)
+            trail.lay(a.x + ((b.x - a.x) * k) / steps, a.y + ((b.y - a.y) * k) / steps);
+        }
+        expect(trail.puffs.length).toBeGreaterThan(0);
+        expect(trail.puffs.length).toBeLessThanOrEqual(FOAM_MAX);
+        for (const p of trail.puffs) {
+          expect(Math.abs(p.x)).toBeLessThanOrEqual(MUD_W / 2 + r);
+          expect(Math.abs(p.y)).toBeLessThanOrEqual(MUD_H / 2 + r);
+          for (const q of trail.puffs)
+            if (p !== q) expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(FOAM_GAP * r);
+        }
+      }
+    // A finger rubbing on one spot lays one puff, not a pile.
+    const still = new FoamTrail(30);
+    for (let i = 0; i < 50; i++) still.lay(1, 1);
+    expect(still.puffs.length).toBe(1);
+    // However long she scrubs, a splotch never carries more than the cap.
+    const busy = new FoamTrail(1);
+    for (let x = -200; x < 200; x += 3) for (let y = -200; y < 200; y += 3) busy.lay(x, y);
+    expect(busy.puffs.length).toBe(FOAM_MAX);
+  });
+
+  it('puts the second toy on the rim where a tap on it never lands on the duck or on any mud (slice 3)', () => {
+    const overlap = (a: { x: number; y: number; r: number }, b: { x: number; y: number; r: number }) =>
+      Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r;
+    for (const hit of [TOY_HIT, DUCK_HIT]) expect(hit.r * 2).toBeGreaterThanOrEqual(100);
+    expect(overlap(TOY_HIT, DUCK_HIT)).toBe(false);
+    // Every splotch's scrub box, in stage units from the middle of the tub's top edge, on every species and level.
+    for (const species of SPECIES_IDS)
+      for (const plan of PLANS) {
+        const star = STAR[species];
+        const spots = spotsFor(species, plan);
+        if (!spots.length) continue;
+        const rise = Math.max(...spots.map((m) => m.y)) * star.scale - TUMMY_Y;
+        const brush = brushOn(star.scale, plan.brush ?? 1);
+        for (const m of spots) {
+          const half = {
+            x: (MUD_W / 2) * m.size + SCRUB_R * brush,
+            y: (MUD_H / 2) * m.size + SCRUB_R * brush,
+          };
+          const c = { x: m.x * star.scale, y: -4 - rise + m.y * star.scale };
+          const [hx, hy] = [half.x * star.scale, half.y * star.scale];
+          // Nearest point of the box to the toy's centre.
+          const nx = Math.max(c.x - hx, Math.min(TOY_HIT.x, c.x + hx));
+          const ny = Math.max(c.y - hy, Math.min(TOY_HIT.y, c.y + hy));
+          expect(Math.hypot(nx - TOY_HIT.x, ny - TOY_HIT.y), `${species} ${m.part}`).toBeGreaterThan(
+            TOY_HIT.r,
+          );
+        }
+      }
+  });
+
+  it('has a spoken line that names every bath toy', () => {
+    const lines = SCRIPT['bath.toy'];
+    expect(lines.length).toBeGreaterThan(0);
+    for (const line of lines) expect(line).toContain('{toy}');
+    expect(new Set(TOYS).size).toBe(TOYS.length);
   });
 });
