@@ -1765,12 +1765,14 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     // sign's second color are the misses; lines that follow the sign count, and the sign stands above the board.
     // Level 9 (Make ten) also plays upright: the idle glow is the hint; 3 + 2 + 2 + 2 leaves one, and a pair dragged
     // past it stops at its first dot (the miss), which counts on its own; the frame holds exactly ten.
+    // Level 10 (Clear the garden) plays upright: the idle glow is the hint and its line is drawn; a tap pops one dot and
+    // Undo brings it back; then the solver's fewest route clears the board with nothing refilling, and the card stars it.
     const dotLevels = process.env.DOTS_LEVELS
       ? process.env.DOTS_LEVELS.split(',').map(Number)
-      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12];
+      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     for (const level of dotLevels) {
       if (only && only !== 'dots') break;
-      const upright = level === 8 || level === 9;
+      const upright = level === 8 || level === 9 || level === 10;
       if (upright) await page.setViewportSize({ width: 390, height: 844 });
       await launch('dot-link', level);
       await page.waitForTimeout(600);
@@ -1799,6 +1801,43 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           await ready();
         };
         const p = g.plan;
+        if (p.mode === 'garden') {
+          const { solveGarden, gardenLeft } = await import('/src/games/dot-link/logic.ts');
+          const sign = g.sign.getBounds();
+          const board = g.board.getBounds();
+          const undo = g.undoButton.getBounds();
+          if (!(sign.bottom <= board.top && undo.bottom <= board.top))
+            throw new Error(`Garden card not above the board: ${sign.bottom} ${undo.bottom} ${board.top}`);
+          // Waiting glows the first line of a fewest route (the hint), and drawing it pops those dots for good.
+          await kit.until(() => g.hints === 1 && g.hintCells.length > 0, 16000);
+          await draw(g.hintCells);
+          if (g.linesUsed !== 1 || gardenLeft(g.garden) >= 16) throw new Error(`Garden hint line: ${g.linesUsed}`);
+          // A tap pops one dot; Undo brings back the board before it.
+          const before = JSON.stringify(g.garden);
+          const lone = g.grid.flatMap((row, r) => row.map((k, c) => ({ r, c, k }))).find((d) => d.k !== null);
+          kit.tap(...at(lone));
+          await kit.sleep(150);
+          await ready();
+          if (g.linesUsed !== 2 || gardenLeft(g.garden) !== gardenLeft(JSON.parse(before)) - 1)
+            throw new Error(`Garden tap: ${g.linesUsed}`);
+          const u = g.undoButton.getBounds();
+          kit.tap(u.x + u.width / 2, u.y + u.height / 2);
+          await kit.sleep(150);
+          if (g.linesUsed !== 1 || JSON.stringify(g.garden) !== before)
+            throw new Error(`Garden undo: ${g.linesUsed}`);
+          for (let guard = 0; guard < 12 && !g.finished; guard++) {
+            await ready();
+            const line = solveGarden(g.garden).route[0];
+            if (line.path.length === 1) {
+              kit.tap(...at(line.path[0]));
+              await kit.sleep(150);
+            } else await draw(line.path);
+          }
+          await kit.until(() => g.finished, 4000);
+          if (g.linesUsed !== g.fewest || g.misses !== 0 || gardenLeft(g.garden) !== 0)
+            throw new Error(`Garden lines: ${g.linesUsed} of ${g.fewest}, ${g.misses}`);
+          return;
+        }
         if (p.mode === 'ten') {
           const sign = g.sign.getBounds();
           const board = g.board.getBounds();
@@ -1937,7 +1976,9 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             ? [1, 0]
             : mode === 'ten'
               ? [1, 1]
-              : [2, 1],
+              : mode === 'garden'
+                ? [0, 1]
+                : [2, 1],
         `dots ${level} score`,
       );
       log(`Dot Link ${level} (${mode}): lines, pops, falls, mistakes, hint, saved score and sticker passed`);
