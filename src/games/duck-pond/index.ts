@@ -33,6 +33,9 @@ import {
   SLOTS,
   story,
   tenStarts,
+  doublesRounds,
+  splitSeats,
+  type DoublesRound,
   type DuckPlan,
   type PondStory,
   padSpot,
@@ -43,6 +46,7 @@ import {
   type Seating,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { HINT_AFTER } from '../../progress/coach';
 
 const WATER = 0x7cc4f2;
 const WATER_EDGE = 0x5aa9e0;
@@ -203,6 +207,9 @@ class DuckPond implements Game {
   layoutKind = 'none';
   /** Make-ten levels: how many ducks each round starts with. */
   private starts: number[] = [];
+  /** Level 14: the level's doubles rounds still to come, and this round's two sides. */
+  private doubles: DoublesRound[] = [];
+  sides: DoublesRound | null = null;
   private busy = true;
   private finished = false;
   /** Level 13: the one big duck, and the layer over the whole screen whose touch brings her a friend. */
@@ -446,6 +453,7 @@ class DuckPond implements Game {
     n: number,
     slots?: readonly [number, number][],
     seating?: Pick<Seating, 'scale' | 'pondRx'>,
+    fromRight = false,
   ) {
     if (seating && seating.pondRx !== this.pondRx) {
       this.pondRx = seating.pondRx;
@@ -454,7 +462,7 @@ class DuckPond implements Game {
     for (let i = 0; i < n; i++) {
       const d = new Duck();
       d.scale.set(seating?.scale ?? 1);
-      d.position.set(-80, this.view.h * 0.62);
+      d.position.set(fromRight ? this.view.w + 80 : -80, this.view.h * 0.62);
       this.ducks.addChild(d);
       await this.swimIn(d, slots?.[i]);
     }
@@ -584,6 +592,25 @@ class DuckPond implements Game {
       this.answer = 10 - a;
       await this.arrive(a);
       await this.ctx.instruct('duck.ten', { a });
+      this.showPads(this.answer);
+      this.busy = false;
+      return;
+    }
+    if (p.mode === 'double') {
+      // The left side swims in from the left, then the right side from the right, each side seated by the bridge.
+      if (!this.doubles.length) this.doubles = doublesRounds(rng, p);
+      const sides = this.doubles.shift()!;
+      this.sides = sides;
+      this.answer = sides.left + sides.right;
+      const seats = splitSeats(sides.left, sides.right);
+      await this.arrive(sides.left, seats.slots.slice(0, sides.left), seats);
+      await this.arrive(sides.right, seats.slots.slice(sides.left), seats, true);
+      // Each side bobs as the line names it, so "this side" and "that side" point somewhere.
+      for (const d of this.swimmers.slice(0, sides.left)) d.critter.hop(0.5);
+      void this.tw.wait(1.2).then(() => {
+        for (const d of this.swimmers.slice(sides.left)) if (!d.destroyed) d.critter.hop(0.5);
+      });
+      await this.ctx.instruct('duck.double', { a: plural(sides.left), b: sides.right });
       this.showPads(this.answer);
       this.busy = false;
       return;
@@ -837,6 +864,8 @@ class DuckPond implements Game {
           const { a, b, away } = this.pondStory;
           await this.showSentence(a, b, away);
         }
+        if (this.plan.mode === 'double' && this.sides)
+          await this.showSentence(this.sides.left, this.sides.right);
       }
       await this.tw.wait(0.2);
       this.clearPads();
@@ -862,20 +891,35 @@ class DuckPond implements Game {
         await this.ctx.say('count', { n });
         await this.tw.wait(0.15);
       }
+    } else if (this.plan.mode === 'double' && this.sides) {
+      // One side, then count on across the bridge: "4 on this side, and 4 more: 5, 6, 7, 8."
+      const { left, right } = this.sides;
+      for (const d of this.swimmers.slice(0, left)) d.critter.hop(0.5);
+      await this.ctx.say('duck.doubleCount', { a: left, b: right });
+      for (let i = left; i < this.swimmers.length; i++) {
+        this.swimmers[i].critter.hop(0.5);
+        sfx.bell(5 + (i % 5), 0.15);
+        await this.ctx.say('count', { n: i + 1 });
+      }
     } else if (this.swimmers.length === 0) {
       await this.ctx.say('duck.noneHere');
     } else {
       await this.ctx.say('duck.countus');
       await this.countAloud();
     }
-    if (this.wrongThisRound >= 2) this.hints++;
-    this.pads.find((p) => p.value === this.answer)?.glow(true);
+    // The right pad glows from the second miss on a question, and that question counts one hint, however many more misses.
+    if (this.wrongThisRound === HINT_AFTER) this.hints++;
+    if (this.wrongThisRound >= HINT_AFTER) this.pads.find((p) => p.value === this.answer)?.glow(true);
     this.busy = false;
   }
 
   private async finale() {
     this.finished = true;
-    if (this.plan.mode !== 'friends') await this.arrive(5);
+    // On the split pond the five finale ducks sit either side of the footbridge, never on it.
+    if (this.plan.split) {
+      const seats = splitSeats(3, 2);
+      await this.arrive(5, seats.slots, seats);
+    } else if (this.plan.mode !== 'friends') await this.arrive(5);
     this.quackChorus();
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
@@ -976,6 +1020,8 @@ export const duckPond: GameModule = {
         : `How many ducks? ${p.min} to ${p.max}`;
     if (p.mode === 'ten') return 'Make ten: how many more ducks fill the pond to 10?';
     if (p.mode === 'hide') return 'Part and whole: how many ducks hide under the bridge?';
+    if (p.mode === 'double')
+      return `Doubles: ${p.min} + ${p.min} to ${p.max} + ${p.max} across the bridge, then one more on a side; how many in all?`;
     if (p.mode === 'add') return p.subtract ? 'Adding and taking away, up to 10' : 'Adding, up to 5';
     const exhaustive: never = p.mode;
     return exhaustive;

@@ -24,6 +24,8 @@ export const VOICE = {
   'duck.ten': ['{a} ducks are swimming. How many more to make 10?'],
   'duck.counton': ["Let's count on from {a}, all the way to 10!"],
   'duck.tenmade': ['{a} and {b} make 10! A full pond!'],
+  'duck.double': ['{a} on this side. {b} on that side. How many in all?'],
+  'duck.doubleCount': ['{a} on this side, and {b} more.', '{a} here, and {b} more over there.'],
   'duck.hiding': ['There are {total} ducks altogether. I can see {visible}. How many are hiding?'],
   'duck.hidingCount': ['I can see {visible}. Let’s count on to {total}.'],
   'duck.hidingFound': ['{hidden} were hiding! {visible} and {hidden} make {total}!'],

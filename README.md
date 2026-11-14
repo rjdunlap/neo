@@ -122,7 +122,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Ready for Adventure](docs/games/ready-for-adventure.md) | toddler–pre-K | Barnyard | 3 | get pretend parade props ready (ribbon on the pole, beater with the drum), pack them in the bag and watch the companion pull them in a parade |
 | [Who Am I?](docs/games/who-am-i.md) | pre-K–school | Barnyard | 3 | a clue in words and a picture sign ("I have feathers"); level 1 taps the friend it fits, later levels turn over every friend the clue rules out until one jumps out |
 | [Timeline Trail](docs/games/timeline-trail.md) | preschool–school | Barnyard | 3 | hang pictures of one island place on the pet's clothesline between a long-ago post and a now post, then watch the place grow as a flipbook |
-| [Duck Pond](docs/games/duck-pond.md) | lap–school | Counting Cove | 13 | count along as illustrated ducks hop in |
+| [Duck Pond](docs/games/duck-pond.md) | lap–school | Counting Cove | 14 | count along as illustrated ducks hop in |
 | [Monster Munch](docs/games/monster-munch.md) | lap–school | Counting Cove | 12 | tap food (or the monster) into a hungry monster; five foods, five monster colours, three places |
 | [Little Helpers](docs/games/little-helpers.md) | lap–school | Counting Cove | 9 | tap a fruit and a helper carries it home |
 | [Pet Kitchen](docs/games/pet-kitchen.md) | lap–school | Counting Cove | 15 | tap pieces onto the plate with fewest (lap), cut a sandwich or pie in halves and share; friends eat the meal |
