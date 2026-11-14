@@ -464,6 +464,7 @@ export const SHARED = {
   'journal.seesaw.heavy': ['The side with more weight goes down, and the lighter side goes up.'],
   'journal.seesaw.equal': ['When both sides have the same weight, the seesaw stays level.'],
   'journal.neighbors.answer': ['The woodpecker knocked, and the frog answered. Taking turns makes a song.'],
+  'journal.chain.spring': ['The spring bounces the marble over one row, so the ramp under the spring is skipped.'],
   'journal.launch.pull': ['A bigger pull stretches the spring more and sends the pet farther.'],
   'journal.habitat.bunny': ['A bunny needs food to eat, water to drink, and shelter where it can hide and rest.'],
   'journal.habitat.duck': ['A duck needs food to eat, water to drink, and shelter where it can hide and rest.'],

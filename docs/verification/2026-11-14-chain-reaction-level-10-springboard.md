@@ -1,0 +1,5 @@
+# 2026-11-14 — Chain Reaction level 10 Springboard (PR #1669)
+
+**Changed:** `chain-reaction`: level 10 Springboard (fixed spring bounces the marble over exactly the next row, fixed hurdle ramp skipped, two loose ramps, 4 decoys, 5x5), school order now 3, 4, 5, 6, 9, 10; journal entry `chain-reaction:spring-skip`; how-to steps; registry test updated for the school ladder.
+**Ran:** typecheck; full `npm test` (passed; chain-reaction logic tests 17, 3 new: skip-exactly-one-row trace, 150-seed generator with exact enumeration and every design bouncing, 50-seed bot and hint); `BROWSER_SUITE=machines CHAIN_LEVELS=10` (free miss with trail, counted hint, hop observed, two machines, one sticker, journal entry, 390×844 portrait fit; rerun after a review fix, passed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=chain-reaction FINGER_LEVELS=10 FINGER_BAND=school` (23.3 s); `game-reviewer` found a hint-text issue, fixed.
+**Not run:** `npm run build` (no shared assets; CI runs it), offline, other levels' suites. Noted, not fixed: Chain Reaction is not upright-ready on phones (pre-existing, every level).

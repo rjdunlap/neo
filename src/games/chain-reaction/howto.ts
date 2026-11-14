@@ -48,12 +48,23 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'A ramp in the wrong socket can knock the other marble off course. Move a ramp, or tap the light bulb to glow one for the marble that missed.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'Drag both loose ramps into round sockets. A ramp before the green spring must send the marble onto it; the spring bounces it over the row below, so the wooden ramp there is skipped.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: "Tap the green arrow and watch the hop. The light bulb glows one ramp and its socket, and the spring's column when that ramp lands the marble on the spring.",
+    },
   ],
   finish: [
     { from: 7, to: 7, text: 'The round ends after both machines ring their bells.' },
     { from: 8, to: 8, text: 'The round ends after three machines have run, whichever bell each one rang.' },
     { from: 1, to: 6, text: 'The round ends after both machines ring their bells.' },
     { from: 9, to: 9, text: 'The round ends after both machines send each marble to its own bell.' },
+    { from: 10, to: 10, text: 'The round ends after both spring machines ring their bells.' },
   ],
   note: [
     {

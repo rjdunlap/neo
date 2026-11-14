@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  bounced,
   chainTouch,
+  LEVELS,
   hintFor,
   makeBoard,
   makeBoards,
@@ -11,6 +13,8 @@ import {
   PREDICT_PLAN,
   rampsMet,
   solutions,
+  SPRINGBOARD,
+  SPRING_PLAN,
   trace,
   traces,
   turnHint,
@@ -369,6 +373,98 @@ describe('Chain Reaction', () => {
         layout[move.piece] = move.socket;
       }
       expect(chainTouch(board, layout)).toEqual({ kind: 'run' });
+    }
+  });
+
+  it('the spring skips exactly the row below it: a ramp there is jumped, the next row counts again', () => {
+    const board = {
+      cols: 5,
+      rows: 5,
+      start: 2,
+      target: 3,
+      fixed: [
+        { row: 2, col: 2, ramp: 'left' as const },
+        { row: 3, col: 2, ramp: 'right' as const },
+      ],
+      loose: [],
+      sockets: [],
+      solution: [],
+      spring: { row: 1, col: 2 },
+    };
+    const t = trace(board, []);
+    expect(t.steps.map((st) => [st.row, st.col, !!st.spring])).toEqual([
+      [0, 2, false],
+      [1, 2, true],
+      [3, 2, false],
+      [4, 3, false],
+    ]);
+    expect(t.success).toBe(true);
+    // Without the spring, the ramp at row 2 sends it left and it misses.
+    expect(trace({ ...board, spring: undefined }, []).end).toBe(1);
+  });
+
+  it('level 10 machines put the spring on a middle row with a skipped ramp under it, and every design bounces', () => {
+    expect(planFor(SPRINGBOARD)).toBe(SPRING_PLAN);
+    expect(LEVELS.school?.order?.at(-1)).toBe(SPRINGBOARD);
+    expect(LEVELS.school?.max).toBe(SPRINGBOARD);
+    for (let seed = 0; seed < 150; seed++) {
+      const board = makeBoard(SPRING_PLAN, new Rng(seed * 31 + 7));
+      const spring = board.spring!;
+      expect(spring).toBeDefined();
+      // Never the first row (a loose ramp leads onto it) and never the last (there would be nothing to skip).
+      expect(spring.row).toBeGreaterThan(0);
+      expect(spring.row).toBeLessThan(board.rows - 1);
+      expect(spring.col).not.toBe(board.start);
+      expect(board.fixed.some((p) => p.row === spring.row + 1 && p.col === spring.col)).toBe(true);
+      expect(board.sockets.some((c) => c.row === spring.row && c.col === spring.col)).toBe(false);
+      expect(board.fixed.some((p) => p.row === spring.row && p.col === spring.col)).toBe(false);
+      expect(board.loose).toHaveLength(SPRING_PLAN.loose);
+      expect(board.sockets).toHaveLength(SPRING_PLAN.loose + SPRING_PLAN.decoys);
+
+      // Exact enumeration: every full placement is checked, and the distinct working designs are what solutions() says.
+      const working = new Set<string>();
+      for (let a = 0; a < board.sockets.length; a++)
+        for (let b = 0; b < board.sockets.length; b++) {
+          if (a === b) continue;
+          const layout = [a, b];
+          if (!works(board, layout)) continue;
+          working.add(
+            layout
+              .map((socket, piece) => `${socket}:${board.loose[piece]}`)
+              .sort()
+              .join('|'),
+          );
+          // Every working design lands on the spring, and the same ramps without it miss.
+          expect(bounced(trace(board, layout)), `seed ${seed}`).toBe(true);
+          expect(works({ ...board, spring: undefined }, layout)).toBe(false);
+        }
+      const ways = solutions(board);
+      expect(ways.length).toBe(working.size);
+      expect(ways.length).toBeGreaterThanOrEqual(SPRING_PLAN.solutions.min);
+      expect(ways.length).toBeLessThanOrEqual(SPRING_PLAN.solutions.max);
+      expect(works(board, [null, null])).toBe(false);
+    }
+  });
+
+  it('level 10 hints lead to a bouncing design and the bot finishes with a run', () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const board = makeBoard(SPRING_PLAN, new Rng(seed * 109 + SPRINGBOARD));
+      const layout: Layout = [null, null];
+      for (let step = 0; step < board.loose.length; step++) {
+        const move = chainTouch(board, layout);
+        expect(move?.kind).toBe('place');
+        if (move?.kind !== 'place') break;
+        layout[move.piece] = move.socket;
+      }
+      expect(bounced(trace(board, layout))).toBe(true);
+      expect(chainTouch(board, layout)).toEqual({ kind: 'run' });
+      // From a wrong full placement, the hint changes one ramp toward a working design.
+      const wrong = Array.from({ length: board.sockets.length }, (_, a) => a)
+        .flatMap((a) => Array.from({ length: board.sockets.length }, (_, b) => [a, b]))
+        .find(([a, b]) => a !== b && !works(board, [a, b]))!;
+      const hint = hintFor(board, wrong);
+      expect(hint).not.toBeNull();
+      expect(wrong[hint!.piece]).not.toBe(hint!.socket);
     }
   });
 });

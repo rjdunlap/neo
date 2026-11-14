@@ -217,7 +217,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Inchworm Measure](docs/games/inchworm.md) | pre-K–school | Tinker Lab | 10 | lay inchworms end to end along a leaf and count them |
 | [Block Tower](docs/games/block-tower.md) | lap–school | Tinker Lab | 6 | tap anywhere to stack six blocks, then knock down two towers |
 | [Block Topple](docs/games/block-topple.md) | preschool–school | Tinker Lab | 5 | pull a big springy sling back, let go, and a soft ball arcs into a block tower; the top tips onto a cushion and a bell rings |
-| [Chain Reaction](docs/games/chain-reaction.md) | pre-K–school | Tinker Lab | 9 | drag a loose ramp into a large socket, run the machine and watch the marble ring a bell |
+| [Chain Reaction](docs/games/chain-reaction.md) | pre-K–school | Tinker Lab | 10 | drag a loose ramp into a large socket, run the machine and watch the marble ring a bell |
 | [Shape Buddies](docs/games/shape-buddies.md) | preschool–school | Tinker Lab | 8 | reshape two paper friends (one friend at preschool), test a seed journey and plant it |
 | [Fossil Dig](docs/games/fossil-dig.md) | pre-K | Tinker Lab | 2 | rub the dust off a stone in one of three dig squares until a leaf print shows, tap the flag of the square it was found in, then tap the pinned reference leaf it matches and Check |
 | [Sense Detective](docs/games/sense-detective.md) | pre-K–school | Tinker Lab | 5 | choose Look (a peephole outline) or Listen (the parcel's sound and a matching picture) to find which toy is in the wrapped parcel, then pick its toy on the shelf and Check |
