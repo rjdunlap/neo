@@ -36,6 +36,12 @@ export const VOICE = {
   'says.move.cheeks': ['Pat your cheeks!'],
   'says.move.shoulders': ['Touch your shoulders!'],
   'says.move.chin': ['Hold your chin!'],
+  'says.move.fastwiggle': ['Wiggle fast!'],
+  'says.move.slowwiggle': ['Wiggle slowly, slowly.'],
+  'says.move.loudclap': ['Clap loudly!'],
+  'says.move.softclap': ['Clap softly. Shh.'],
+  'says.move.wide': ['Open your arms wide!'],
+  'says.move.hug': ['Give yourself a hug!'],
   'says.chant': ['Now a song! Sing it with me, and touch each one.'],
   'says.chant.head': ['Head!'],
   'says.chant.shoulders': ['Shoulders!'],
@@ -65,6 +71,9 @@ export const VOICE = {
   'says.statue.teapot': ['Freeze like a teapot!'],
   'says.opp.intro': [
     'Opposite day! When you see the sun, copy {pet}. When you see the moon, do the opposite!',
+  ],
+  'says.opp.more': [
+    'More opposites! Sun: copy {pet}. Moon: do the opposite. Watch how {pet} moves: fast or slow, loud or soft?',
   ],
   'says.opp.sun': ['Sun! Copy me: {move}!'],
   'says.opp.flip': ['Here comes the moon! Now do the opposite of {pet}.'],

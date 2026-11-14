@@ -36,6 +36,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Turned around: dance while it is quiet, and freeze when the music plays. The pet freezes too, and waits for the arrow when the song ends.',
     },
     {
+      from: 8,
+      to: 8,
+      text: 'More opposites, mostly moons: stomp or tiptoe, wiggle fast or slowly, clap loudly or softly, arms wide or a hug. Watch how the pet moves, then do it the other way.',
+    },
+    {
       from: 4,
       to: 4,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
@@ -43,6 +48,11 @@ export const HOW_TO: GameHowTo = {
     {
       from: 6,
       to: 6,
+      text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
+    },
+    {
+      from: 8,
+      to: 8,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
     },
     {

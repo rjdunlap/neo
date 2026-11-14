@@ -11,8 +11,8 @@
 | lap | 13, 1, 2 |
 | toddler | 1–3 |
 | preschool | 2–4 |
-| pre-K | 3–7 |
-| school | 6–7 |
+| pre-K | 3–8 |
+| school | 6–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,13 +23,14 @@
 | 5 | Freeze dance: four tunes to bounce, sway or dance like a robot to, then freeze like a tree or a flamingo |
 | 6 | Opposite day: a sun means copy the pet, a moon means do the opposite (reach up high, so crouch down low) |
 | 7 | Quiet dance: dance while it is quiet, and freeze when the music plays (the freeze dance turned around) |
+| 8 | More opposites: stomp or tiptoe, wiggle fast or slowly, clap loudly or softly, arms wide or a hug (three pairs a round, mostly moons) |
 | 13 | Pat the pet: a touch anywhere makes the pet do its next move (no arrow) |
 
 <!-- end generated -->
 
 **Starts as:** the pet claps, stomps and waves; copy it, and a grown-up taps the arrow (lap starts with Pat the pet: each pat on the pet brings its next move)
 
-**Grows into:** body words with visible part targets, two moves in order (some counted), "Pet says" (move only when you hear it), freeze dance, Opposite day (a sun means copy, a moon means do the opposite, and the pet shows the answer), Quiet dance (dance in the quiet, freeze when the music plays); a gentle arrow reminder and a held "once more" button for a grown-up
+**Grows into:** body words with visible part targets, two moves in order (some counted), "Pet says" (move only when you hear it), freeze dance, Opposite day (a sun means copy, a moon means do the opposite, and the pet shows the answer), Quiet dance (dance in the quiet, freeze when the music plays), More opposites (stomp or tiptoe, fast or slow, loud or soft, wide or a hug); a gentle arrow reminder and a held "once more" button for a grown-up
 
 ## Design notes
 
@@ -38,3 +39,5 @@
 **Opposite day (level 6, 2026-11-14).** Six turns: two suns (copy), then four moons (do the opposite) from the pairs up/down and head/toes; two turns in a row never come from the same pair, so the opposite revealed on one turn is never the next ask. On a moon turn the arrow first makes the pet show the opposite (the grown-up's check); nothing is detected and misses stay 0. The sun/moon sign flips at the first moon and hangs above the pet, clear of the scene's own sun. A held orange "once more" button above the arrow (0.5 s) is on levels 4 and 6: it replays the turn and counts one hint per turn, while the pet tap stays free. School has a 6-6 window beside pre-K 3-6. Device speech for the `says.opp.*` lines is unchecked.
 
 **Quiet dance (level 7, 2026-11-14).** Four dances, each a quiet stretch (3-7 s, the pet dances to a soft tick in its dance style) then a music stretch (2-4 s, the tune plays and the pet stops still where it is, a twirl caught mid-turn snapping to full width). "Music! Freeze!" is said whatever she does, so nothing is wrong and misses and hints stay 0. No stretch is as long as the one before it or the last of its kind, and a round is at most 40 s (a long frame is clamped so no stretch is skipped). When the song ends the pet holds still for the arrow; there is no once-more button. Pre-K 3-7 and school 6-7. Device speech for `says.quiet`, `says.quiet.go` and `says.music` is unchecked.
+
+**More opposites (level 8, 2026-11-14).** Six turns from six pairs: up/down and head/toes from level 6, plus stomp/tiptoe, fast/slow wiggle, loud/soft clap and arms wide/hug. A round draws three pairs and asks each twice, never the same pair twice in a row; it opens with one sun, then five moons. The six new moves sit outside the tiers, so only level 8 deals them, and each pair differs in one measured way (place, height, tempo or volume). On the opposite levels only, stomp squats low (0.88) against tiptoe's rise (1.08), and the clap sound takes a loudness scale. The held "once more" counts a hint here, as at 4 and 6; misses stay 0. Pre-K 3-8 and school 6-8. Device speech for `says.opp.more` is unchecked.
