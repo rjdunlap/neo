@@ -1,0 +1,28 @@
+// Written by scripts/dot-link-gardens.mjs; do not edit by hand. Level 10's boards, row by row from the top, colors a b c
+// (the round's three colors in its shuffled order); `lines` is the fewest that clear it, from the exact solver.
+export const GARDENS: readonly { board: string; lines: number }[] = [
+  { board: 'abcb/accb/bcbb/acaa', lines: 5 },
+  { board: 'aaba/acca/acba/aabc', lines: 4 },
+  { board: 'abcc/babc/cabc/baba', lines: 5 },
+  { board: 'abcb/babb/abba/abcb', lines: 4 },
+  { board: 'abbc/bacc/baac/cbcc', lines: 4 },
+  { board: 'abca/cbba/bcaa/ccac', lines: 4 },
+  { board: 'abaa/ccba/acab/accb', lines: 4 },
+  { board: 'abac/abcc/aabc/abab', lines: 5 },
+  { board: 'abba/cabc/cabc/aaca', lines: 4 },
+  { board: 'abaa/abac/abac/bccb', lines: 5 },
+  { board: 'abaa/bbcb/cabb/babb', lines: 4 },
+  { board: 'abaa/cbca/bcac/ccaa', lines: 4 },
+  { board: 'aaba/accc/acba/baba', lines: 4 },
+  { board: 'aaba/caba/ccbc/caac', lines: 5 },
+  { board: 'abab/abab/bbbc/bcab', lines: 5 },
+  { board: 'aaba/abcb/aaca/bbca', lines: 4 },
+  { board: 'abca/accc/abca/abcc', lines: 5 },
+  { board: 'abbb/aaca/babc/cacc', lines: 4 },
+  { board: 'abcb/cccc/bbcc/cabb', lines: 4 },
+  { board: 'abab/aaca/abaa/acbb', lines: 4 },
+  { board: 'aabc/aabb/ccca/bbca', lines: 4 },
+  { board: 'aabc/acbb/acbc/ccab', lines: 4 },
+  { board: 'aaba/bacc/aaaa/acac', lines: 4 },
+  { board: 'abbb/abcc/acbc/bcab', lines: 4 },
+];

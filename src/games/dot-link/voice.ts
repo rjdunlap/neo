@@ -22,5 +22,10 @@ export const VOICE = {
   'dots.tensofar': ['{n}! {left} more to make ten.'],
   'dots.tenone': ['{n}! Just one more: tap a dot.'],
   'dots.tenlimit': ['Only {n} more!'],
+  'dots.garden': [
+    'Clear the garden! Pop every dot. No new dots come, so plan your lines: the fewer, the better. A tap pops one dot.',
+  ],
+  'dots.gardenbest': ['The garden is clear in {n} lines. That is the fewest there is!'],
+  'dots.gardendone': ['The garden is clear in {n} lines! It can be done in {m}.'],
   'dots.done': ['Pop pop hooray!'],
 } satisfies Record<string, string[]>;
