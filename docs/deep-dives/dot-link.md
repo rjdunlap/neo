@@ -99,7 +99,7 @@ Both decided by the developer on 2026-10-14:
 2. **Level 11 Find my buddy** (built 2026-10-17; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-11-find-my-buddy-2026-10-17)). Readings: a full two-color 3×3 always has at least two same-color neighbor pairs, so "one pair" means exactly one pair lit (seeded `pickBuddy`), and the goal is 4 buddies (the dive gave none).
 3. **Level 7 Two colors** (built 2026-11-13; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-7-two-colors-2026-11-13)). The sign names two colors and a number each (6 and 4); a line of either color counts toward its own number, capped, so a loop may overshoot; another color, or one already full, pops but counts nothing.
 4. **Level 8 Same, different** (built 2026-11-14; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-8-same-different-2026-11-14)). A line follows the sign's pattern from its first color and is at least four long; a line drawn backward is a miss (the first dot's color is the decision); the school window opens here.
-5. **Level 9 Make ten** (the school window is decided).
+5. **Level 9 Make ten** (the school window is decided; claimed 2026-11-14 by `claude/dot-link-make-ten`).
 6. **Level 10 Clear the garden** with the exact solver.
 7. **Boards with empty cells** and the anchors.
 
