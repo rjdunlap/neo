@@ -1,7 +1,7 @@
 import { Circle, Container } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import type { CompanionRig } from '../../creatures/companion';
-import { FRIEND, type Friend, type Part } from './logic';
+import { FRIEND, friendPoints, type Friend, type Part } from './logic';
 
 /** What the bath needs of whoever is in the tub: her companion, or a friend (`FriendBather`). */
 export type Bather = Container &
@@ -13,7 +13,7 @@ export type Bather = Container &
 const WIGGLE_FOR = 0.5;
 
 /**
- * A farm friend in the tub (dive slice 5): a `Critter` with one container riding its body on each of its part points
+ * A friend in the tub (dive slice 5): a `Critter` with one container riding its body on each of its part points
  * (`FRIEND[kind].points`), so a splotch squashes and hops with it, and the companion's touch surface.
  */
 export class FriendBather extends Container implements Bather {
@@ -26,9 +26,8 @@ export class FriendBather extends Container implements Bather {
     super();
     this.critter = new Critter(CRITTERS[kind]);
     this.addChild(this.critter);
-    const points = FRIEND[kind].points;
-    for (const part of Object.keys(points) as Part[]) {
-      const nodes = points[part].map(({ x, y }) => {
+    for (const part of FRIEND[kind].parts) {
+      const nodes = friendPoints(kind, part).map(({ x, y }) => {
         const node = new Container();
         node.position.set(x, y);
         this.critter.attach(node);

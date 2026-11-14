@@ -25,6 +25,8 @@ export function createSuite({ page, errors, log, scene }) {
       kit.store.data.profile.name = 'Mia';
       kit.store.data.settings.howToCards = true;
     });
+    // BATH_FRIEND=duck puts that friend in Splish Splash's tub on naming levels (the dev server's hook), so the ghost finger is seen washing it.
+    if (process.env.BATH_FRIEND) await page.evaluate((f) => (window.bathFriend = f), process.env.BATH_FRIEND);
     for (const g of picked) {
       for (const { band, level } of g.plays) {
         await page.evaluate(

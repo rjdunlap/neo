@@ -1,6 +1,5 @@
 import type { SpeciesId } from '../../creatures/species';
-import { swatch } from '../../art/palette';
-import type { PetColor } from '../../content/world';
+import { swatch, type ColorName } from '../../art/palette';
 import type { BandLevels } from '../../progress/difficulty';
 import type { AnimalSound } from '../../audio/sfx';
 
@@ -161,19 +160,19 @@ export function cleanPhrase(parts: Part[], words: Words = {}): string {
 
 /**
  * Friends in the tub (dive slice 5, decision 1, decided 2026-10-23): from level 3, about a quarter of rounds, a farm
- * friend bathes in place of her pet. The pig comes first; the duck, dog, cow, bear, bunny and cat follow in one slice.
+ * friend bathes in place of her pet. The pig came first; the duck, dog, cow, bear, bunny and cat followed (slice 5b).
  */
-export const FRIENDS = ['pig'] as const;
+export const FRIENDS = ['pig', 'duck', 'dog', 'cow', 'bear', 'bunny', 'cat'] as const;
 export type Friend = (typeof FRIENDS)[number];
-/** The first level a friend may take the tub, and the share of rounds it does. */
+/** The first level a friend may take the tub, and the share of rounds it does (all the friends together). */
 export const FRIEND_FROM = 3;
 export const FRIEND_SHARE = 0.25;
 
 export interface FriendSpec {
   /** How the opening line names it: "Oink! The pig is muddy!" */
   name: string;
-  /** Its colour, for the messes' contrast rule (art room paints are filtered against it). */
-  color: PetColor;
+  /** Its colour, as its `Critter` is drawn: the messes' contrast rule and the art room's paints are read against it. */
+  color: ColorName;
   /** The sound it makes when it is clean. */
   sound: AnimalSound;
   /** Stage scale, splotch shares and the parts asked for, as `STAR`. */
@@ -183,12 +182,31 @@ export interface FriendSpec {
   parts: readonly Part[];
   /**
    * Where each part's splotches sit, in `Critter` units (feet at 0, about 250 tall), read from its drawing in
-   * `src/art/critter.ts` so a splotch lies on the part it names.
+   * `src/art/critter.ts` so a splotch lies on the part it names. Only the parts in `parts` are read.
    */
-  points: Record<Part, readonly { x: number; y: number }[]>;
-  /** Its own word for a part, read from its spec so a word is never false (the pig's snout). */
+  points: Partial<Record<Part, readonly { x: number; y: number }[]>>;
+  /** Its own word for a part, read from its spec so a word is never false (the pig's snout, the duck's bill and wings). */
   words: Words;
 }
+
+/** A pair of points, one each side. */
+const pair = (x: number, y: number) => [
+  { x: -x, y },
+  { x, y },
+];
+/** The blush ellipses either side of the face (the cat's and the bunny's whiskers lie over them). */
+const BLUSH = pair(74, -98);
+/** The pointy ears' triangles, the round ears' circles, the floppy flaps outside the body, the long ears above it. */
+const POINTY = pair(79, -238);
+const ROUND = pair(88, -240);
+const FLOPPY = pair(135, -181);
+const LONG = pair(48, -305);
+/** The little nose disc of the dog, bear, cat and bunny. */
+const NOSE = [{ x: 0, y: -106 }];
+/** The forehead, above the eyes (-142) and between the ears; low on the belly, under the mouth (-88). */
+const HEAD = [{ x: 0, y: -205 }];
+const TUMMY = [{ x: 0, y: -35 }];
+const ALL: readonly Part[] = ['tummy', 'head', 'cheeks', 'ears', 'nose'];
 
 export const FRIEND: Record<Friend, FriendSpec> = {
   pig: {
@@ -198,35 +216,118 @@ export const FRIEND: Record<Friend, FriendSpec> = {
     scale: 1.2,
     mud: 0.8,
     tummy: 0.7,
-    parts: ['tummy', 'head', 'cheeks', 'ears', 'nose'],
+    parts: ALL,
     points: {
       // Low on the round belly, well under the snout.
       tummy: [{ x: 0, y: -30 }],
       // The forehead between the ears, over the eyes (-142).
       head: [{ x: 0, y: -200 }],
-      // The blush ellipses either side of the snout.
-      cheeks: [
-        { x: -74, y: -98 },
-        { x: 74, y: -98 },
-      ],
-      // The middle of each pointy ear's triangle.
-      ears: [
-        { x: -79, y: -238 },
-        { x: 79, y: -238 },
-      ],
+      cheeks: BLUSH,
+      ears: POINTY,
       // The snout disc.
       nose: [{ x: 0, y: -100 }],
     },
     words: { nose: { word: 'snout', plural: false } },
   },
+  // No ears and no cheeks (the blush sits right beside the bill): its wings stand in the ears' place, the bill the nose's.
+  duck: {
+    name: 'duck',
+    color: 'yellow',
+    sound: 'quack',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ['tummy', 'head', 'ears', 'nose'],
+    points: {
+      // Lower than the others', clear of the wide bill's reach.
+      tummy: [{ x: 0, y: -24 }],
+      // Under the head tuft (-234).
+      head: HEAD,
+      // The part of each wing outside the body.
+      ears: pair(136, -84),
+      // The middle of the bill.
+      nose: [{ x: 0, y: -90 }],
+    },
+    words: { ears: { word: 'wings', plural: true }, nose: { word: 'bill', plural: false } },
+  },
+  dog: {
+    name: 'dog',
+    color: 'brown',
+    sound: 'woof',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ALL,
+    points: { tummy: TUMMY, head: HEAD, cheeks: BLUSH, ears: FLOPPY, nose: NOSE },
+    words: {},
+  },
+  // A muzzle and no belly: the muzzle reaches down to -22, so it has no cheeks and no tummy, and its nose is the muzzle.
+  cow: {
+    name: 'cow',
+    color: 'white',
+    sound: 'moo',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ['head', 'ears', 'nose'],
+    points: {
+      // Above its eyes (-150), clear of its dark spots and the tuft (-244).
+      head: [{ x: 0, y: -212 }],
+      ears: FLOPPY,
+      // The muzzle, between the nostrils.
+      nose: [{ x: 0, y: -72 }],
+    },
+    words: {},
+  },
+  bear: {
+    name: 'bear',
+    color: 'brown',
+    sound: 'growl',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ALL,
+    points: { tummy: TUMMY, head: HEAD, cheeks: BLUSH, ears: ROUND, nose: NOSE },
+    words: {},
+  },
+  bunny: {
+    name: 'bunny',
+    color: 'white',
+    sound: 'hop',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ALL,
+    points: { tummy: TUMMY, head: HEAD, cheeks: BLUSH, ears: LONG, nose: NOSE },
+    words: { cheeks: { word: 'whiskers', plural: true } },
+  },
+  cat: {
+    name: 'cat',
+    color: 'orange',
+    sound: 'meow',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ALL,
+    points: { tummy: TUMMY, head: HEAD, cheeks: BLUSH, ears: POINTY, nose: NOSE },
+    words: { cheeks: { word: 'whiskers', plural: true } },
+  },
 };
 
-/** Who bathes this round: a friend on a naming level from `FRIEND_FROM`, about a quarter of rounds; otherwise null (her pet). */
+/** A friend's points for one of its parts (none for a part it is not asked for). */
+export const friendPoints = (friend: Friend, part: Part) => FRIEND[friend].points[part] ?? [];
+
+/**
+ * Who bathes this round: a friend on a naming level from `FRIEND_FROM`, about a quarter of rounds; otherwise null (her
+ * pet). `only` (a development hook for the browser checks) puts that friend in the tub on every naming level.
+ */
 export function pickBather(
   level: number,
   rng: { next(): number; pick<T>(items: readonly T[]): T },
+  only?: Friend,
 ): Friend | null {
   if (level < FRIEND_FROM || planFor(level).mode !== 'parts') return null;
+  if (only) return only;
   return rng.next() < FRIEND_SHARE ? rng.pick(FRIENDS) : null;
 }
 
@@ -473,7 +574,7 @@ export const READS_AT = 130;
  * Whether a mess shade reads on a pet of `color`, against both its `fill` and its pale `light`. The swatch stands in for
  * the pet: the illustrated skin is hue-turned toward it (`recolor`), not filled with the exact swatch.
  */
-export function readsOn(shade: number, color: PetColor): boolean {
+export function readsOn(shade: number, color: ColorName): boolean {
   const tone = swatch[color];
   return colorDistance(shade, tone.fill) >= READS_AT && colorDistance(shade, tone.light) >= READS_AT;
 }
@@ -492,20 +593,30 @@ export function paintMess(paint: Paint): Mess {
 }
 
 /** Whether every shade of a mess reads on a pet of `color`. */
-export const messReadsOn = (mess: Mess, color: PetColor) =>
+export const messReadsOn = (mess: Mess, color: ColorName) =>
   [mess.fill, mess.dark, mess.light].every((shade) => readsOn(shade, color));
 
 /** The paints whose every shade reads on a pet of `color` (never its own colour, nor a near one). */
-export function paintsFor(color: PetColor): Paint[] {
+export function paintsFor(color: ColorName): Paint[] {
   return PAINT_COLORS.filter((c) => c !== color && messReadsOn(paintMess(c), color));
 }
 
-/** The round's room and its mess on a pet of `color`, drawn from `rng`: the room, then (in the art room) the paint. */
+/**
+ * The rooms whose mess reads on a bather of `color`: every room on every pet colour, but mud and damp sand are too near
+ * a brown friend's fur (the dog's and the bear's), so they bathe in the garden, the art room and the kitchen.
+ */
+export const roomsFor = (color: ColorName): Room[] =>
+  ROOMS.filter((r) => {
+    const mess = ROOM_MESS[r].mess;
+    return mess ? messReadsOn(mess, color) : paintsFor(color).length > 0;
+  });
+
+/** The round's room and its mess on a bather of `color`, drawn from `rng`: the room, then (in the art room) the paint. */
 export function pickRoom(
   rng: { pick<T>(items: readonly T[]): T },
-  color: PetColor,
+  color: ColorName,
 ): { room: Room; mess: Mess; messy: string } {
-  const room = rng.pick(ROOMS);
+  const room = rng.pick(roomsFor(color));
   const { mess, messy } = ROOM_MESS[room];
   return { room, mess: mess ?? paintMess(rng.pick(paintsFor(color))), messy };
 }
