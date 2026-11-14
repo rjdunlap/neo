@@ -504,7 +504,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       async () => (await import('/src/games/pet-says/logic.ts')).PLANS.length,
     );
     if (!only || only === 'says')
-      for (let level = fromLevel; level <= Math.min(saysTop, Number(process.env.TO_LEVEL || saysTop)); level++) {
+      for (
+        let level = fromLevel;
+        level <= Math.min(saysTop, Number(process.env.TO_LEVEL || saysTop));
+        level++
+      ) {
         // Nothing is judged: the pet moves, and a grown-up taps the arrow. Tapping the big pet shows the move again.
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
@@ -599,7 +603,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             });
             assert.deepEqual(
               heard.map(([id]) => id),
-              ['says.this-rule', 'says.this', 'says.that', 'says.tricked-that', 'says.name', 'says.tricked-name'],
+              [
+                'says.this-rule',
+                'says.this',
+                'says.that',
+                'says.tricked-that',
+                'says.name',
+                'says.tricked-name',
+              ],
             );
             assert.equal(heard[4][1], 'Bunny', 'the wrong name is borrowed');
           }

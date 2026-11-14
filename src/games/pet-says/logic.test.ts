@@ -200,6 +200,12 @@ describe('Pet Says', () => {
         expect(t.who !== undefined).toBe(t.cue === 'name');
       }
       expect(turns[tricks[0]].cue).toBe('plain');
+      const moves = turns.map((t) => t.moves[0]);
+      moves.slice(1).forEach((m, i) => {
+        const prev = moves[i];
+        if (m in BODY_ZONE && prev in BODY_ZONE)
+          expect(BODY_ZONE[m as keyof typeof BODY_ZONE]).not.toBe(BODY_ZONE[prev as keyof typeof BODY_ZONE]);
+      });
       const cues = turns.map((t) => t.cue!);
       for (const kind of ['name', 'that', 'this'] as const)
         if (cues.includes(kind)) expect(cues.indexOf(kind)).toBeGreaterThan(tricks[0]);
@@ -216,11 +222,12 @@ describe('Pet Says', () => {
     for (const plan of PLANS)
       for (let seed = 1; seed <= 300; seed++) {
         const moves = new Set(makeTurns(plan, new Rng(seed)).flatMap((t) => t.moves));
-        for (const [a, b] of CLASHES) expect(moves.has(a) && moves.has(b), `${plan.mode} ${seed}`).toBe(false);
+        for (const [a, b] of CLASHES)
+          expect(moves.has(a) && moves.has(b), `${plan.mode} ${seed}`).toBe(false);
       }
   });
 
-  it('borrows a wrong name that is never the pet\'s or the child\'s', () => {
+  it("borrows a wrong name that is never the pet's or the child's", () => {
     for (let start = 0; start < WRONG_NAMES.length; start++) {
       expect(wrongName(start, ['Pip', 'Mia'])).toBe(WRONG_NAMES[start]);
       for (const own of WRONG_NAMES) {
@@ -255,7 +262,10 @@ describe('Pet Says', () => {
       // Mouth, chin and shoulders are not marked parts; they are placed from the nose, the neck and the body box, so
       // this checks them against the box and the marked parts near them, not against the drawing itself.
       const inside = (p: { x: number; y: number }, pad: number) =>
-        p.x >= box.x - pad && p.x <= box.x + box.width + pad && p.y >= box.y - pad && p.y <= box.y + box.height + pad;
+        p.x >= box.x - pad &&
+        p.x <= box.x + box.width + pad &&
+        p.y >= box.y - pad &&
+        p.y <= box.y + box.height + pad;
       for (const w of ['eyes', 'mouth', 'cheeks', 'shoulders', 'chin'] as const)
         for (const p of [f.targets[w].left, f.targets[w].right])
           if (p !== f.rest.left) expect(inside(p, 20), `${s} ${w}`).toBe(true);
@@ -308,7 +318,8 @@ describe('Pet Says', () => {
     });
     expect(CHANT_VERSES[CHANT_VERSES.length - 1].some(Boolean)).toBe(false);
     expect(CHANT_STEPS).toHaveLength(CHANT_WORDS.length);
-    for (const step of CHANT_STEPS) expect(Number.isInteger(step) && step >= TUNE_RANGE.low && step <= TUNE_RANGE.high).toBe(true);
+    for (const step of CHANT_STEPS)
+      expect(Number.isInteger(step) && step >= TUNE_RANGE.low && step <= TUNE_RANGE.high).toBe(true);
   });
 
   it('dances for a few seconds before each freeze, never the same twice running', () => {

@@ -255,7 +255,10 @@ export function saysFrame(
       head: { left: rest.left, right: { x: head.x, y: head.y - 36 } },
       toes: pair(at('feet'), 40, { x: cx, y: floor }),
       // Pointing just outside each eye, so the eyes stay open (peekaboo covers them).
-      eyes: { left: { x: eyes.left.x - 16, y: eyes.left.y }, right: { x: eyes.right.x + 16, y: eyes.right.y } },
+      eyes: {
+        left: { x: eyes.left.x - 16, y: eyes.left.y },
+        right: { x: eyes.right.x + 16, y: eyes.right.y },
+      },
       mouth: { left: rest.left, right: mouth },
       cheeks: pair(at('cheeks'), 16, { x: nose.x, y: mouth.y }),
       shoulders: {
@@ -402,7 +405,9 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
       const count = rng.chance(0.3) ? 3 : 2;
       let tricks: number[];
       for (;;) {
-        tricks = [...new Set(Array.from({ length: count }, () => rng.int(1, plan.turns - 1)))].sort((a, b) => a - b);
+        tricks = [...new Set(Array.from({ length: count }, () => rng.int(1, plan.turns - 1)))].sort(
+          (a, b) => a - b,
+        );
         if (tricks.length === count && tricks.every((t, k) => k === 0 || t - tricks[k - 1] >= 2)) break;
       }
       const cues: SaysCue[] = Array.from({ length: plan.turns }, () => 'says');
@@ -418,14 +423,25 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         const drop = rng.pick(pair);
         pool = pool.filter((m) => m !== drop);
       }
-      return deck(pool)
-        .slice(0, plan.turns)
-        .map((m, i): Turn => {
-          const cue = cues[i];
-          const turn: Turn = { moves: [m], says: cue === 'says' || cue === 'this', cue };
-          if (cue === 'name') turn.who = rng.int(0, WRONG_NAMES.length - 1);
-          return turn;
-        });
+      // Body words here keep level 2's rule too: never two in a row from one zone.
+      const isWord = (m: Move): m is BodyWord => m in BODY_ZONE;
+      let dealt: Move[];
+      do dealt = deck(pool).slice(0, plan.turns);
+      while (
+        dealt.some(
+          (m, i) =>
+            i > 0 &&
+            isWord(m) &&
+            isWord(dealt[i - 1]) &&
+            BODY_ZONE[m] === BODY_ZONE[dealt[i - 1] as BodyWord],
+        )
+      );
+      return dealt.map((m, i): Turn => {
+        const cue = cues[i];
+        const turn: Turn = { moves: [m], says: cue === 'says' || cue === 'this', cue };
+        if (cue === 'name') turn.who = rng.int(0, WRONG_NAMES.length - 1);
+        return turn;
+      });
     }
     case 'pat':
       return rng

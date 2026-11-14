@@ -417,13 +417,23 @@ class PetSays implements Game {
           this.thisTold = true;
           await this.ctx.say('says.this-rule');
         }
-        const asks = { says: 'says.says', this: 'says.this', plain: 'says.trick', name: 'says.name', that: 'says.that' } as const;
+        const asks = {
+          says: 'says.says',
+          this: 'says.this',
+          plain: 'says.trick',
+          name: 'says.name',
+          that: 'says.that',
+        } as const;
         await this.ctx.instruct(asks[cue], { move, who });
         await this.perform(first);
         if (!turn.says) {
           this.mover.pet.setMood('surprised', 1.5);
           sfx.giggle();
-          const reveals = { plain: 'says.tricked', name: 'says.tricked-name', that: 'says.tricked-that' } as const;
+          const reveals = {
+            plain: 'says.tricked',
+            name: 'says.tricked-name',
+            that: 'says.tricked-that',
+          } as const;
           await this.ctx.say(reveals[cue as keyof typeof reveals], { who });
         }
         break;
