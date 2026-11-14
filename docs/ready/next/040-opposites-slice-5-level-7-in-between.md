@@ -1,0 +1,1 @@
+**Opposites slice 5, level 7, In between** (new-levels tier: rule tests, one browser play of level 7, `fingerdemo` at it, one portrait screenshot): third pictures for cup, temperature, sky and height. [Opposites dive, slice 5](../../deep-dives/opposites.md#build-slices-in-order)

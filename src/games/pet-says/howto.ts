@@ -6,13 +6,17 @@ export const HOW_TO: GameHowTo = {
   steps: [
     { to: 1, text: 'Watch the pet, then do the move yourself away from the screen.' },
     { from: 2, to: 2, text: 'Listen to the body word, then do it yourself away from the screen.' },
-    { from: 3, to: 3, text: 'Do the two moves in order, away from the screen: "clap, then stomp".' },
+    {
+      from: 3,
+      to: 3,
+      text: 'Do the two moves in order, away from the screen: "stomp three times, then clap". The pet counts the beats.',
+    },
     { from: 4, to: 4, text: "Move only when you hear the pet's name first, away from the screen." },
     { from: 5, to: 5, text: 'Dance away from the screen while the music plays, and freeze when it stops.' },
     {
       from: 13,
       to: 13,
-      text: 'Tap anywhere to pat the pet. Each pat makes it do its next move: wave, clap, jump, wiggle, turn around. Do the move together if you like.',
+      text: 'Tap anywhere to pat the pet. Each pat makes it do its next move: wave, clap, jump, peekaboo, pat-a-cake. Do the move together if you like.',
     },
     { to: 12, text: 'A grown-up taps the arrow to go on.' },
   ],

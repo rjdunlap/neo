@@ -1,0 +1,1 @@
+**Rainbow Fingers slice 3, words and fairness** (typecheck, rule tests and the how-to test): the name table, accepted alternatives (apple red or green, grapes purple or green, the dive's lean), color echo at levels 1–2, praise variants, co-play and off-screen lines. [Rainbow Fingers dive, slice 3](../../deep-dives/rainbow-fingers.md#build-slices-in-order)
