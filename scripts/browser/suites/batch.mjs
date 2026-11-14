@@ -1740,15 +1740,18 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     // Level 7 (Two colors): lines of a color the sign does not name are the misses; both named counts fill and stop.
     // Level 8 (Same, different) plays on an upright phone (390 × 844): one-color pairs and a line started on the
     // sign's second color are the misses; lines that follow the sign count, and the sign stands above the board.
+    // Level 9 (Make ten) also plays upright: the idle glow is the hint; 3 + 2 + 2 + 2 leaves one, and a pair dragged
+    // past it stops at its first dot (the miss), which counts on its own; the frame holds exactly ten.
     const dotLevels = process.env.DOTS_LEVELS
       ? process.env.DOTS_LEVELS.split(',').map(Number)
-      : [1, 2, 3, 4, 5, 6, 7, 8, 11, 12];
+      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12];
     for (const level of dotLevels) {
       if (only && only !== 'dots') break;
-      if (level === 8) await page.setViewportSize({ width: 390, height: 844 });
+      const upright = level === 8 || level === 9;
+      if (upright) await page.setViewportSize({ width: 390, height: 844 });
       await launch('dot-link', level);
       await page.waitForTimeout(600);
-      if (level === 8) await screenshot('dot-link-8-portrait');
+      if (upright) await screenshot(`dot-link-${level}-portrait`);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
       await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -1773,6 +1776,25 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           await ready();
         };
         const p = g.plan;
+        if (p.mode === 'ten') {
+          const sign = g.sign.getBounds();
+          const board = g.board.getBounds();
+          if (!(sign.bottom <= board.top))
+            throw new Error(`Ten sign not above the board: ${sign.bottom} ${board.top}`);
+          // Waiting glows a line (the hint).
+          await kit.until(() => g.hints === 1 && g.hintCells.length > 0, 16000);
+          await draw(findLine(g.grid, 3).slice(0, 3));
+          if (g.progress !== 3 || g.misses !== 0)
+            throw new Error(`Ten first line: ${g.progress} ${g.misses}`);
+          for (let guard = 0; guard < 12 && g.left > 1; guard++) await draw(findLine(g.grid, 2).slice(0, 2));
+          if (g.left !== 1 || g.misses !== 0) throw new Error(`Ten pairs: left ${g.left} ${g.misses}`);
+          // One left: a pair dragged past the limit stops at its first dot (the miss), and that one dot counts.
+          await draw(findLine(g.grid, 2).slice(0, 2));
+          await kit.until(() => g.finished, 4000);
+          if (g.misses !== 1 || g.tenFill.length !== 10 || g.progress !== 10)
+            throw new Error(`Ten frame: ${g.misses} ${g.tenFill.length} ${g.progress}`);
+          return;
+        }
         if (p.mode === 'buddy') {
           const same = (a, b) => a.r === b.r && a.c === b.c;
           const { pairs } = await import('/src/games/dot-link/logic.ts');
@@ -1879,14 +1901,20 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       });
       await screenshot(`dot-link-${level}`);
       await finished('dot-link');
-      if (level === 8) await page.setViewportSize({ width: 1024, height: 768 });
+      if (upright) await page.setViewportSize({ width: 1024, height: 768 });
       const r = await page.evaluate(() => {
         const r = kit.store.stats('dot-link').history.at(-1);
         return [r.misses, r.hints];
       });
       assert.deepEqual(
         r,
-        mode === 'big' || mode === 'tap' || mode === 'pair' ? [0, 0] : mode === 'buddy' ? [1, 0] : [2, 1],
+        mode === 'big' || mode === 'tap' || mode === 'pair'
+          ? [0, 0]
+          : mode === 'buddy'
+            ? [1, 0]
+            : mode === 'ten'
+              ? [1, 1]
+              : [2, 1],
         `dots ${level} score`,
       );
       log(`Dot Link ${level} (${mode}): lines, pops, falls, mistakes, hint, saved score and sticker passed`);
