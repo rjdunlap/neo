@@ -3383,6 +3383,10 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 [PR #1586](https://github.com/rjdunlap/neo/pull/1586), `claude/tile-pairs-tricky-twins`, dive slice 7 ([dive](../deep-dives/tile-pairs.md#what-was-built-in-this-session)). Deal bands for levels 3–4 [0.6, 0.95] and 5–6 [0.3, 0.8]; level 10 *Tricky twins* deals level 5's layout from 24 frozen boards (`pools.ts`, written by `scripts/tile-pairs-pool.mjs`), each with a losing first pair, random-play clear at most 30% and a passing fair-trap check; mirrored and renamed at play. Grown-up range 1–10, no `order`. Slice 8 (lesson levels 17–19) stays queued.
 
+## Tile Pairs level 13, Brick wall (2026-11-13)
+
+[PR #1636](https://github.com/rjdunlap/neo/pull/1636), `claude/tile-pairs-brick-wall`, dive slice 11 ([dive](../deep-dives/tile-pairs.md#build-slices-in-order)). Level 13 *Brick wall · half steps*: 26 tiles on half-step positions (five raised tiles each resting on two below, three more on those), `free()` by overlap with whole-step boards unchanged (tested), peek stacks keyed on the floor of x, blocked tiles greyed on half-step boards, how-to step; random play clears 8–100%, median 68%, band [0.45, 0.9]; the grown-up `order` ends 11, 12, 13.
+
 ## Tile Pairs lesson puzzles 20–21 (2026-11-13)
 
 [PR #1595](https://github.com/rjdunlap/neo/pull/1595), `claude/tile-pairs-lessons-20-21`, dive slice 9 ([dive](../deep-dives/tile-pairs.md#puzzle-challenges-designed-lessons-second-pass)). Level 20 *The long row* (14 tiles on one flat layer: a row of six between two rows of four, since eight columns do not fit a phone held upright; three free copies of one picture, exactly one safe pair) and level 21 *Two pairs ahead* (18 tiles on three layers; every losing first pair leaves at least two pairs on every line before the board strands, and the fair-trap check passes), 8 boards each from the placement search, frozen in `puzzles.ts`, with lesson lines `tile-pairs.lesson.long|ahead`. Order `[1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21]`. See the [verification entry](../verification/2026-11-13-tile-pairs-slice-9-lesson-puzzles-20-21.md).

@@ -23,7 +23,12 @@ export const HOW_TO: GameHowTo = {
       from: 12,
       to: 12,
     },
-    { text: PAIR, from: 13 },
+    {
+      text: 'Tap two tiles with the same picture. Each needs a clear top and an open left or right side. A raised brick sits across two tiles; both stay covered until it goes.',
+      from: 13,
+      to: 13,
+    },
+    { text: PAIR, from: 14 },
     'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
     { text: PEEK, to: 6 },
     {

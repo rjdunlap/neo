@@ -111,7 +111,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       const initial = await state();
       assert.equal(
         initial.tiles.length,
-        level === 21 ? 18 : level >= 17 ? 14 : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24][level - 1],
+        level === 21
+          ? 18
+          : level >= 17
+            ? 14
+            : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24, 26][level - 1],
       );
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
       if (level === 12) {
@@ -176,6 +180,47 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         // Undo walks back to the dealt board, so the rest of the play starts where every level does.
         for (let n = 0; n < taken; n++) await tap('neo.scene.game.undoButton');
         assert.equal((await state()).mask, initial.mask, 'undo walks back to the dealt board');
+      }
+      if (level === 13) {
+        // Brick wall: a half-step tile's face overlaps the two below it, and a tap on its middle (over their seam)
+        // reaches it, not them. The right-hand one starts free, so the tap selects it; a second tap cancels.
+        const brick = await page.evaluate(() =>
+          neo.scene.game.tiles.findIndex((t) => t.z === 1 && t.x === 4.5),
+        );
+        assert.ok(brick >= 0, 'the wall has a half-step tile at the right end');
+        // 40 units left of its middle is inside the lower-left tile's hit area too, under the brick's face.
+        await page.evaluate((i) => {
+          const p = neo.scene.game.nodes[i].toGlobal({ x: -40, y: 0 });
+          kit.tap(p.x, p.y);
+        }, brick);
+        await page.waitForTimeout(130);
+        assert.equal(
+          (await state()).selected,
+          brick,
+          'a tap on a raised brick reaches it, not the tile below',
+        );
+        await tapTile(brick);
+        assert.equal((await state()).selected, null);
+        // A phone held upright shows the whole wall with every free tile's target on screen.
+        const device = await page.context().newCDPSession(page);
+        await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForFunction(() => neo.view.upright === true);
+        await page.waitForTimeout(300);
+        const onScreen = await page.evaluate(() =>
+          neo.scene.game.nodes.every((n) => {
+            const a = n.toGlobal({ x: -54, y: -54 }),
+              b = n.toGlobal({ x: 54, y: 54 });
+            return a.x >= 0 && a.y >= 0 && b.x <= innerWidth && b.y <= innerHeight;
+          }),
+        );
+        assert.ok(onScreen, 'every brick is on a phone screen held upright');
+        await screenshot('tile-pairs-13-brick-wall-phone');
+        await device.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+        await device.detach();
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(200);
+        assert.deepEqual(await state(), initial, 'looking and cancelling leave the board alone');
       }
       if (level === 10 || level === 11 || level >= 17) {
         // A tricky deal or a lesson board: taking a losing first pair is a legal move (no miss), the stuck line follows, and Undo

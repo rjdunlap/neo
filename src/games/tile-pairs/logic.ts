@@ -5,6 +5,7 @@ import { POOLS } from './pools.ts';
 import { PUZZLES } from './puzzles.ts';
 
 export interface Tile {
+  /** Column; level 13's brick wall lays raised tiles on half steps, so a tile can rest on two below it. */
   x: number;
   y: number;
   z: number;
@@ -137,6 +138,18 @@ export const PLANS = [
     // play clears 18–100%, median 75% (level 6: median 72%), and 199 of 300 land in level 6's band, which it keeps.
     open: 'ends',
     clear: [0.3, 0.8],
+  },
+  {
+    name: 'Brick wall · half steps',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'brick',
+    kinds: 6,
+    // Raised tiles sit on half steps, each resting on two below it, so one tile holds down two and one pair can
+    // free four (the classic turtle is built this way). Measured (300 seeded routes, Mac): random play clears
+    // 8–100%, median 68%, and 204 of 300 land in levels 7 and 9's band, which it keeps.
+    clear: [0.45, 0.9],
   },
 ] as const;
 
@@ -280,7 +293,7 @@ export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number
  * order, kept to the levels that exist and to levels 1–10's own order).
  */
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12] },
+  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13] },
 };
 export const planFor = (level: number): Plan =>
   (PUZZLE_PLANS as Record<number, Plan>)[Math.floor(level)] ??
@@ -298,7 +311,8 @@ export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
   const stacks = new Map<string, number[]>();
   tiles.forEach(({ x, y }, i) => {
     if (!present(mask, i)) return;
-    const key = `${x},${y}`;
+    // A half-step tile (level 13) joins the stack under its left half, so every tile is in exactly one stack.
+    const key = `${Math.floor(x)},${Math.floor(y)}`;
     const stack = stacks.get(key);
     if (stack) stack.push(i);
     else stacks.set(key, [i]);
@@ -310,9 +324,11 @@ export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
 
 /** Whether the board's tiles open above and below (level 12) rather than left and right. */
 export const opensAtEnds = (tiles: readonly Tile[]) => tiles[0]?.open === 'ends';
+/** Whether tile `b` covers part of tile `a`'s face: within less than a whole step both ways. */
+const overlaps = (a: Tile, b: Tile) => Math.abs(a.x - b.x) < 1 && Math.abs(a.y - b.y) < 1;
 /**
- * A tile needs a clear top and at least one open side on its own layer: left or right, or on an `'ends'` board
- * above or below.
+ * A tile needs a clear top (no higher tile overlapping it, which on whole-step boards means one exactly above) and
+ * at least one open side on its own layer: left or right, or on an `'ends'` board above or below.
  */
 export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
   if (!present(mask, i)) return false;
@@ -323,9 +339,9 @@ export function free(tiles: readonly Tile[], mask: number, i: number): boolean {
   for (let j = 0; j < tiles.length; j++) {
     if (j === i || !present(mask, j)) continue;
     const b = tiles[j];
-    if (a.x === b.x && a.y === b.y && b.z > a.z) return false;
+    if (b.z > a.z && overlaps(a, b)) return false;
     if (a.z !== b.z) continue;
-    const [line, along] = ends ? [b.x === a.x, b.y - a.y] : [b.y === a.y, b.x - a.x];
+    const [line, along] = ends ? [Math.abs(b.x - a.x) < 1, b.y - a.y] : [Math.abs(b.y - a.y) < 1, b.x - a.x];
     if (!line) continue;
     if (along === -1) before = true;
     if (along === 1) after = true;
@@ -470,6 +486,11 @@ export function layout(level: number): Tile[] {
     for (let y = 0; y < 3; y++) for (const x of [1, 2]) add(x, y, 1);
     for (let y = 1; y < 3; y++) for (const x of [1, 2]) add(x, y, 2);
     for (const x of [1, 2]) add(x, 1, 3);
+  } else if (plan.layout === 'brick') {
+    // Five on the half steps of the middle row, each straddling two below, and three straddling those: 18 + 5 + 3.
+    // No three straddling tiles can sit symmetrically on five, so the top row leans one half step to the left.
+    for (let x = 0; x < 5; x++) add(x + 0.5, 1, 1);
+    for (const x of [1, 2, 3]) add(x, 1, 2);
   } else if (plan.layout === 'wide') {
     // The whole 6 × 3 base, a 4 × 2 block raised on its back two rows and a 2 × 2 on that: 18 + 8 + 4 = 30.
     for (let y = 0; y < 2; y++) for (let x = 1; x <= 4; x++) add(x, y, 1);

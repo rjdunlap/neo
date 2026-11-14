@@ -249,10 +249,15 @@ class TilePairs implements Game {
     const stacks = this.peeking ? peekStacks(this.tiles, this.mask) : [];
     const covering = new Set(stacks.flatMap((stack) => stack.slice(1)));
     this.peekLabel.text = this.peeking ? 'Close peek' : 'Peek';
+    const bricks = this.tiles.some((t) => !Number.isInteger(t.x));
     this.nodes.forEach((n, i) => {
       if (this.leaving.has(n)) return;
       n.visible = present(this.mask, i);
-      n.alpha = this.peeking ? (covering.has(i) ? 0.25 : 1) : free(this.tiles, this.mask, i) ? 1 : 0.58;
+      const open = free(this.tiles, this.mask, i);
+      // On half steps (level 13) a see-through blocked brick shows the pictures below through it, so a blocked
+      // tile there stays solid and is greyed instead.
+      n.alpha = this.peeking ? (covering.has(i) ? 0.25 : 1) : open || bricks ? 1 : 0.58;
+      n.tint = !this.peeking && bricks && !open ? swatch.white.line : swatch.white.fill;
       n.picture.visible = true;
     });
     this.peekPictures.visible = this.peeking;
