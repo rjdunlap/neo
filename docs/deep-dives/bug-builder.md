@@ -1,6 +1,6 @@
 # Bug Builder deep dive
 
-*ID `bug-builder` · bands toddler, preschool, pre-K, school · levels 1–7 on 2026-10-14 · session `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296))*
+*ID `bug-builder` · bands toddler, preschool, pre-K, school · levels 1–8 (level 8 built 2026-11-14; 1–7 as researched on 2026-10-14) · session `claude/bug-builder-deep-dive` ([PR #296](https://github.com/rjdunlap/neo/pull/296))*
 
 ## The game today
 
@@ -140,7 +140,7 @@ Add each to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the
 
 1. **Bigger pool, a fair board and a hint that points (rules; built 2026-10-15, branch `claude/bug-builder-pool-hint`).** The 12-token pool, the distinct-token rule, the copy-not-symmetric rule, and the model/partner glow on a miss. Check tier: typecheck and `logic.test.ts` only; the glow is small visual code, so one filtered play of levels 1 and 7 and one portrait screenshot (existing-game fix tier). Built with a 12-token pool, `pickTokens`, and the twin/model ring on the second miss; the portrait screenshot was not reviewed, and the one-hint-per-round accounting stays per spot (open).
 2. **Wing flutter and a fold finish for the mirror levels (feel; built 2026-10-15).** [PR #416](https://github.com/rjdunlap/neo/pull/416), branch `codex/bug-wing-flutter`, worker `01a142ae-a2cb-71e2-98b6-c0937479cdea`, dispatch `bug-flutter-20261016T030732Z`. Paired wings and stamps fold across the center and reopen during the existing finish wait; a faint model wing stays visible. Rules/accounting unchanged. Level-7 filtered play and portrait/fold screenshots passed and were reviewed; [build note](../archive/COMPLETED-2026-10-09.md#bug-builder-paired-wing-finish-2026-10-15).
-3. **Count the spots, level 8 (new interaction; claimed 2026-11-14, branch `claude/bug-builder-count-spots`).** Count sign, lift-off tap, bot, how-to, README and GAMES entries. Check: typecheck, rule tests, one scripted play (first level of the band, one over-count, one hint) and `fingerdemo` at it.
+3. **Count the spots, level 8 (new interaction; built 2026-11-14, [PR #1672](https://github.com/rjdunlap/neo/pull/1672), branch `claude/bug-builder-count-spots`).** A bare bug with six open places and a count sign (numeral plus dots, 2–5 by seed); any of three tray stamps in any place, the count said as each lands, tap a stamped place to lift it off, a check button. One too many is never a miss; a wrong check is. One hint per round (the second over-count or wrong check), then the glow shows the next useful move. Bot stamps the number and taps the check. Preschool order 2, 3, 4, 5, 8; pre-K 4, 5, 8, 6, 7. Decisions 2 built on its defaults; decision 5 stays open for levels 1–7. Check: typecheck, rule tests, one scripted play (first level of the band, one over-count, one hint) and `fingerdemo` at it.
 4. **Count a kind, level 9.** Reuses 3. Check: rule tests and one filtered play.
 5. **Fold a friend, level 10.** The three-choice prediction, the fold animation and its lines. Check: rule tests, one play and a portrait screenshot.
 6. **Mend the wing, level 11.** Tap-to-change interaction, bot, how-to. Check: as for a new interaction.

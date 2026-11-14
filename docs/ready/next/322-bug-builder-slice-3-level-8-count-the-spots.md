@@ -1,1 +1,0 @@
-**Bug Builder slice 3, level 8 Count the spots** (new-interaction tier: typecheck, rule tests, one scripted play with one over-count and a hint, `fingerdemo` at 8): a count sign and a bare bug; any stamp, any place. [Bug Builder dive, slice 3](../../deep-dives/bug-builder.md#build-slices-in-order)
