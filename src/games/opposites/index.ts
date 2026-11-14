@@ -15,6 +15,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   BIG_LEVEL,
   LEVELS,
+  degree,
   STICKER_CONCEPTS,
   cardToTap,
   makeRounds,
@@ -22,6 +23,7 @@ import {
   planFor,
   word,
   type Card,
+  type Gradable,
   type OppPlan,
   type OppRound,
 } from './logic';
@@ -31,8 +33,55 @@ const BIG_SCALE = 1.7;
 /** Level 6's flipped pictures, small in the row along the bottom (about 75 units across). */
 const ROW_SCALE = 0.44;
 
+/** Level 7's middle pictures: the same cup, mug, sky and balloon as the two sides, with the in-between amount. */
+function middle(concept: Gradable): Container {
+  const c = new Container();
+  const g = new Graphics();
+  switch (concept) {
+    case 'cup':
+      // The same glass, filled to half way.
+      g.moveTo(-36, -50)
+        .lineTo(36, -50)
+        .lineTo(28, 56)
+        .lineTo(-28, 56)
+        .closePath()
+        .fill({ color: 0xdff3ff, alpha: 0.6 })
+        .stroke({ width: 5, color: swatch.blue.line });
+      g.moveTo(-31, 12).lineTo(31, 12).lineTo(28, 54).lineTo(-28, 54).closePath().fill(swatch.orange.fill);
+      break;
+    case 'temp':
+      // Warm: the hot mug's shape in a softer orange, with one small curl of steam instead of three tall ones.
+      g.roundRect(-36, -14, 64, 64, 12)
+        .fill(swatch.orange.fill)
+        .stroke({ width: 4, color: swatch.orange.line });
+      g.moveTo(28, 0).bezierCurveTo(56, 0, 56, 34, 28, 34).stroke({ width: 8, color: swatch.orange.line });
+      g.moveTo(-4, -22).quadraticCurveTo(4, -32, -4, -42).stroke({ width: 5, color: 0xb9c6d1, cap: 'round' });
+      break;
+    case 'sky':
+      // Evening: a peach sky and the sun half down behind the hill.
+      g.roundRect(-64, -64, 128, 128, 18).fill(0xf6b38a);
+      g.circle(0, 30, 28).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
+      g.roundRect(-64, 30, 128, 34, 18).fill(0x7a5a8c).rect(-64, 30, 128, 14).fill(0x7a5a8c);
+      break;
+    case 'height':
+      // The same balloon and ground, held half way, with a level mark beside it instead of an arrow.
+      g.moveTo(0, 27).quadraticCurveTo(10, 44, 0, 60).stroke({ width: 3, color: ink, alpha: 0.6 });
+      g.ellipse(0, -3, 26, 32)
+        .fill(swatch.red.fill)
+        .stroke({ width: 4, color: swatch.red.line })
+        .ellipse(-8, -15, 6, 9)
+        .fill({ color: 0xffffff, alpha: 0.6 });
+      g.rect(-60, 60, 120, 6).fill(swatch.green.fill);
+      g.moveTo(38, -3).lineTo(58, -3).stroke({ width: 8, color: swatch.blue.fill, cap: 'round' });
+      break;
+  }
+  c.addChild(g);
+  return c;
+}
+
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
 export function picture(card: Card): Container {
+  if (card.mid) return middle(card.concept as Gradable);
   const c = new Container();
   const g = new Graphics();
   const side = card.side;
@@ -340,6 +389,8 @@ class Opposites implements Game {
   private flying: Container | null = null;
   private wiggling = false;
   private destroyed = false;
+  /** Level 7's hint: the three cards stand in their true order, the first-named end on the left. */
+  private lined = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -397,7 +448,9 @@ class Opposites implements Game {
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
     } else {
       const xs = spread(this.cards.length, 200, v.w - 80, 240);
-      this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * 0.64));
+      this.cards.forEach((c, i) =>
+        c.node.position.set(xs[this.slot(c, i)], v.h * (mode === 'between' ? 0.56 : 0.64)),
+      );
     }
     this.shown.position.set(v.w / 2, Math.max(150, v.h * 0.26));
   }
@@ -435,6 +488,34 @@ class Opposites implements Game {
 
   destroy() {
     this.destroyed = true;
+  }
+
+  /** Where a card stands in the row: its dealt place, or after level 7's hint its place on the word's line. */
+  private slot(c: CardView, i: number) {
+    return this.lined ? degree(c.card, this.round.ask!.side) : i;
+  }
+
+  /**
+   * Level 7's hint, after two misses: the two ends light up and the three slide into their true order (the end named
+   * first on the left), so the one in between stands between them; then it glows.
+   */
+  private async lineUp() {
+    this.busy = true;
+    const ends = this.cards.filter((c) => !c.card.mid);
+    for (const c of ends) this.drawCard(c, true);
+    await this.ctx.tw.wait(0.5);
+    if (this.destroyed) return;
+    this.lined = true;
+    const xs = spread(this.cards.length, 200, this.view.w - 80, 240);
+    sfx.whoosh();
+    await Promise.all(
+      this.cards.map((c, i) =>
+        this.ctx.tw.to(c.node, { x: xs[this.slot(c, i)] }, { duration: 0.5, ease: ease.inOutSine }),
+      ),
+    );
+    if (this.destroyed) return;
+    for (const c of ends) this.drawCard(c, false);
+    this.busy = false;
   }
 
   // Level 6: one big card -------------------------------------------------------------------
@@ -541,6 +622,7 @@ class Opposites implements Game {
     this.wrongs = 0;
     this.glowing = null;
     this.picked = null;
+    this.lined = false;
     if (this.index >= this.rounds.length) return void this.finale();
     for (const c of this.cards.splice(0)) c.node.destroy({ children: true });
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -569,6 +651,7 @@ class Opposites implements Game {
         : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
     if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
+    if (mode === 'between') return this.ctx.instruct('opp.between', this.ends());
     return this.ctx.instruct(mode === 'spot' ? 'opp.spot' : 'opp.pairs');
   }
 
@@ -626,6 +709,10 @@ class Opposites implements Game {
       return void (word(c.card) === word(r.ask!)
         ? this.right([c])
         : this.wrong('opp.notfind', { what: word(c.card), word: word(r.ask!) }));
+    if (mode === 'between')
+      return void (c.card.mid
+        ? this.right([c], word(c.card))
+        : this.wrong('opp.notbetween', { what: word(c.card), ...this.ends() }));
     if (mode === 'opposite')
       return void (opposites(c.card, r.ask!)
         ? this.right([c])
@@ -656,7 +743,16 @@ class Opposites implements Game {
     this.wrong('opp.notpair', { a: word(a.card), b: word(c.card) });
   }
 
-  private wrong(line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair', vars: Record<string, string>) {
+  /** Level 7's two ends, the one named first as `a`. */
+  private ends() {
+    const ask = this.round.ask!;
+    return { a: word(ask), b: word({ ...ask, side: (1 - ask.side) as 0 | 1 }) };
+  }
+
+  private wrong(
+    line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair' | 'opp.notbetween',
+    vars: Record<string, string>,
+  ) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
@@ -664,6 +760,11 @@ class Opposites implements Game {
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       const r = this.round;
+      if (this.plan.mode === 'between') {
+        this.glowing = this.cards.find((x) => x.card.mid)!;
+        void this.lineUp();
+        return;
+      }
       this.glowing =
         this.plan.mode === 'find'
           ? this.cards.find((x) => word(x.card) === word(r.ask!))!
@@ -675,14 +776,15 @@ class Opposites implements Game {
     }
   }
 
-  private async right(cs: CardView[]) {
+  /** A right answer; level 7 names the middle it found ("Yes! Warm is in between."). */
+  private async right(cs: CardView[], middle?: string) {
     this.busy = true;
     this.glowing = null;
     for (const c of cs) this.drawCard(c, true);
     sfx.sparkle();
     this.ctx.pet.cheer();
     // The praise starts and the next question follows the 0.3 s beat (U7 R4); the last one is heard out.
-    const said = this.ctx.say('opp.yay');
+    const said = middle ? this.ctx.say('opp.isbetween', { word: middle }) : this.ctx.say('opp.yay');
     if (this.index + 1 >= this.rounds.length) await said;
     await this.ctx.tw.wait(0.3);
     await this.next();

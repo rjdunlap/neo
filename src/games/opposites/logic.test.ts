@@ -3,6 +3,11 @@ import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import {
+  BETWEEN_LEVEL,
+  BETWEEN_PLAN,
+  GRADABLE,
+  MIDDLES,
+  degree,
   BIG_LEVEL,
   BIG_PLAN,
   LEVELS,
@@ -155,5 +160,44 @@ describe('Opposites', () => {
         }
       }
     }
+  });
+
+  it('level 7, In between: pre-K steps 5 to 7, only gradable words, one middle, and the bot taps it', () => {
+    expect(planFor(BETWEEN_LEVEL)).toBe(BETWEEN_PLAN);
+    expect(BETWEEN_PLAN).toMatchObject({ level: 7, mode: 'between', rounds: 4 });
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([3, 4, 5, BETWEEN_LEVEL]);
+    expect(stepLevel(5, 1, LEVELS.prek!)).toBe(BETWEEN_LEVEL);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(BETWEEN_LEVEL);
+    // Only words with a real middle; never size (Size Parade), open/closed, on/off or awake/asleep.
+    expect(GRADABLE.sort()).toEqual(['cup', 'height', 'sky', 'temp']);
+    const all = [...CONCEPT_IDS.flatMap((c) => [...CONCEPTS[c].words]), ...Object.values(MIDDLES)];
+    expect(new Set(all).size).toBe(all.length);
+    for (const line of ['opp.between', 'opp.notbetween', 'opp.isbetween'] as const) expect(SCRIPT[line]).toBeDefined();
+    const places = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rounds = makeRounds(BETWEEN_PLAN, new Rng(seed));
+      expect(rounds).toEqual(makeRounds(BETWEEN_PLAN, new Rng(seed)));
+      // Each gradable word once per round of four.
+      expect(rounds.map((r) => r.cards[0].concept).sort()).toEqual([...GRADABLE].sort());
+      for (const r of rounds) {
+        expect(r.cards).toHaveLength(3);
+        expect(new Set(r.cards.map((c) => c.concept))).toEqual(new Set([r.ask!.concept]));
+        expect(r.ask!.mid).toBeUndefined();
+        // Exactly one middle; the two ends are opposites, so the true order is end, middle, end.
+        const mids = r.cards.filter((c) => c.mid);
+        expect(mids).toHaveLength(1);
+        const ends = r.cards.filter((c) => !c.mid);
+        expect(opposites(ends[0], ends[1])).toBe(true);
+        for (const c of r.cards) expect(opposites(c, mids[0])).toBe(false);
+        expect(r.cards.map((c) => degree(c, r.ask!.side)).sort()).toEqual([0, 1, 2]);
+        expect(word(mids[0])).toBe(MIDDLES[r.ask!.concept as keyof typeof MIDDLES]);
+        places.add(String(r.cards.indexOf(mids[0])));
+        const i = cardToTap(BETWEEN_PLAN, r, [false, false, false], null);
+        expect(r.cards[i!].mid).toBe(true);
+      }
+    }
+    // Shuffled: the middle is found by its picture, not by always standing in the middle place.
+    expect([...places].sort()).toEqual(['0', '1', '2']);
   });
 });

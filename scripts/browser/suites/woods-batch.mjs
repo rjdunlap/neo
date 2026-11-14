@@ -3954,7 +3954,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'opp')
-      for (let level = fromLevel; level <= 5; level++) {
+      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between.
+      for (const level of [1, 2, 3, 4, 5, 7].filter((l) => l >= fromLevel)) {
         await launch('opposites', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const card = async (i) => {
@@ -3976,7 +3977,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const L = await import('/src/games/opposites/logic.ts');
             const g = neo.scene.game;
             const r = g.round;
-            const ok = (c) => (g.plan.mode === 'find' ? L.word(c) === L.word(r.ask) : L.opposites(c, r.ask));
+            const ok = (c) =>
+              g.plan.mode === 'find'
+                ? L.word(c) === L.word(r.ask)
+                : g.plan.mode === 'between'
+                  ? !!c.mid
+                  : L.opposites(c, r.ask);
             const idx = r.cards.map((c, i) => i);
             if (g.plan.mode === 'spot') {
               const pr = idx.filter((i) => idx.some((j) => j !== i && L.opposites(r.cards[i], r.cards[j])));
@@ -4024,6 +4030,13 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await card(others[0]);
             await card(others[others.length - 1]);
             assert.deepEqual(await counts(), [2, 1]);
+            if (mode === 'between') {
+              // The hint lines the three up in true order: the glowing middle now stands between the two ends.
+              const xs = await page.evaluate(() => neo.scene.game.cards.map((c) => c.node.x));
+              const [lo, hi] = others.map((i) => xs[i]).sort((a, b) => a - b);
+              assert.ok(xs[right] > lo && xs[right] < hi, 'after the hint the middle stands between the ends');
+              await screenshot('opposites-7-hint');
+            }
           }
           await card(right);
         }
