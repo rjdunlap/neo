@@ -4,6 +4,7 @@ export const VOICE = {
 
   'bath.free': ['{pet} is {messy}! Scrub scrub!'],
   'bath.pat': ['{pet} is {messy}! Pat pat pat!'],
+  'bath.friend': ['Look who is in the tub! The {friend} is {messy}!'],
   'bath.part': ['Wash {part}!', 'Now wash {part}!'],
   'bath.notthat': ["Hee hee! That's my {touched}! Wash {part}!"],
   'bath.notthose': ['Hee hee! Those are my {touched}! Wash {part}!'],

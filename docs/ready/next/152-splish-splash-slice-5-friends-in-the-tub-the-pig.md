@@ -1,1 +1,0 @@
-**Splish Splash slice 5, friends in the tub (the pig first)** (rule tests, a screenshot per friend, `fingerdemo` at levels 1 and 6; decision 1 decided yes 2026-10-23: from level 3, about a quarter of rounds): a pig bathes in place of the pet in some rounds. [Splish Splash dive, slice 5](../../deep-dives/splish-splash.md#build-slices-in-order)
