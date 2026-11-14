@@ -3954,8 +3954,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     }
 
     if (!only || only === 'opp')
-      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between.
-      for (const level of [1, 2, 3, 4, 5, 7].filter((l) => l >= fromLevel)) {
+      // Level 6 is lap's big card (grove-cut-lines plays it); level 7 is pre-K's In between, 8 Line them up.
+      for (const level of [1, 2, 3, 4, 5, 7, 8].filter((l) => l >= fromLevel)) {
         await launch('opposites', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const card = async (i) => {
@@ -3971,6 +3971,34 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await idle(n);
           if (mode === 'switch') {
             await card(0);
+            continue;
+          }
+          if (mode === 'order') {
+            // The cards in the order to tap them, from the end named first.
+            const inOrder = await page.evaluate(async () => {
+              const L = await import('/src/games/opposites/logic.ts');
+              const r = neo.scene.game.round;
+              return [0, 1, 2].map((d) => r.cards.findIndex((c) => L.degree(c, r.ask.side) === d));
+            });
+            if (n === 0) {
+              // Out of turn twice: the last one first, then the middle first (a miss each, the glow after two).
+              await card(inOrder[2]);
+              await card(inOrder[1]);
+              assert.deepEqual(await counts(), [2, 1]);
+              const glow = await page.evaluate(() => neo.scene.game.cards.indexOf(neo.scene.game.glowing));
+              assert.equal(glow, inOrder[0], 'the first one in turn glows');
+              await screenshot('opposites-8-hint');
+            }
+            for (const [k, i] of inOrder.entries()) {
+              await card(i);
+              if (n === 0 && k === 1) {
+                // A lined-up card stays in its place on the line, left of the next one.
+                const xs = await page.evaluate(() => neo.scene.game.cards.map((c) => [c.node.x, c.node.y]));
+                assert.ok(xs[inOrder[0]][0] < xs[inOrder[1]][0], 'the line runs left to right');
+                assert.equal(xs[inOrder[0]][1], xs[inOrder[1]][1], 'lined-up cards share the line');
+                await screenshot('opposites-8-line');
+              }
+            }
             continue;
           }
           const { right, others, pairs } = await page.evaluate(async () => {

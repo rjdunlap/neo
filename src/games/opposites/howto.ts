@@ -22,6 +22,11 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'Three pictures of one word: two ends, like empty and full, and one in between. Tap the one in between. After two misses the two ends light up, then the middle one glows.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'The same three pictures, mixed up. Tap them in order, from one end to the other ("from empty to full"); each one slides into the line. Next time it goes the other way. After two misses the next one glows.',
+    },
   ],
   finish: [
     { to: 1, text: 'Flip eight pictures to finish the round.' },
@@ -34,6 +39,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'Find the one in between on four boards (cup, mug, sky, balloon) to finish the round.',
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'Line up four sets of three (cup, mug, sky, balloon), two each way, to finish the round.',
     },
   ],
 };

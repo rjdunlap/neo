@@ -5,9 +5,9 @@ import type { BandLevels } from '../../progress/difficulty';
  * Opposites: pictures of concept words in pairs (big and small, open and closed). On the lap,
  * tap the picture and it flips to its opposite while the word is spoken. Then find the one named,
  * then find the opposite of a picture among others, then match the opposite pairs, then spot the one pair among five,
- * then find the one in between two ends (empty, half full, full).
+ * then find the one in between two ends (empty, half full, full), then line the three up from one end to the other.
  */
-export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between';
+export type OppMode = 'switch' | 'find' | 'opposite' | 'pairs' | 'spot' | 'between' | 'order';
 
 export interface OppPlan {
   level: number;
@@ -50,12 +50,21 @@ export const BETWEEN_PLAN: OppPlan = {
   name: 'In between: three pictures (empty, half full, full); tap the one between the two ends',
 };
 
+/** Level 8, pre-K's new top: the same three shuffled; she taps them in order from the end named first to the other. */
+export const ORDER_LEVEL = 8;
+export const ORDER_PLAN: OppPlan = {
+  level: ORDER_LEVEL,
+  mode: 'order',
+  rounds: 4,
+  name: 'Line them up: the same three shuffled; tap them in order from empty to full, then the other way',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
-  // Level 6 is lap's opening, so pre-K steps from 5 straight to 7.
-  prek: { min: 3, max: BETWEEN_LEVEL, order: [3, 4, 5, BETWEEN_LEVEL] },
+  // Level 6 is lap's opening, so pre-K steps from 5 straight to 7, then 8.
+  prek: { min: 3, max: ORDER_LEVEL, order: [3, 4, 5, BETWEEN_LEVEL, ORDER_LEVEL] },
 };
 
 export const planFor = (level: number) =>
@@ -63,7 +72,9 @@ export const planFor = (level: number) =>
     ? BIG_PLAN
     : level === BETWEEN_LEVEL
       ? BETWEEN_PLAN
-      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+      : level === ORDER_LEVEL
+        ? ORDER_PLAN
+        : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** Each concept has two sides; side 0 and side 1 are opposites. */
 export const CONCEPTS = {
@@ -117,7 +128,7 @@ export const degree = (c: Card, from: 0 | 1) => (c.mid ? 1 : c.side === from ? 0
 export interface OppRound {
   /** Cards on screen. */
   cards: Card[];
-  /** The card asked for (find), the card shown whose opposite is wanted (opposite), or the end named first (between). */
+  /** The card asked for (find), the card shown whose opposite is wanted (opposite), or the end named first (between, order). */
   ask?: Card;
 }
 
@@ -151,8 +162,11 @@ function differentFamilies(pool: readonly Concept[], rng: Rng, count: number, ex
 export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   const out: OppRound[] = [];
   // The big card keeps lap's original eight pairs.
-  const pool = plan.mode === 'between' ? GRADABLE : poolFor(plan.big ? 1 : plan.level);
+  const graded = plan.mode === 'between' || plan.mode === 'order';
+  const pool = graded ? GRADABLE : poolFor(plan.big ? 1 : plan.level);
   const order = rng.shuffle([...pool]);
+  // Level 8: the end named first alternates round by round, so both directions come up equally (2 and 2 in four rounds).
+  const parity = plan.mode === 'order' ? rng.int(0, 1) : 0;
   for (let i = 0; i < plan.rounds; i++) {
     const concept = order[i % order.length];
     const side = rng.int(0, 1) as 0 | 1;
@@ -170,7 +184,18 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
         ask: card(concept, side),
         cards: [card(concept, side), { concept, side: 0, mid: true }, card(concept, (1 - side) as 0 | 1)],
       });
-    else if (plan.mode === 'find')
+    else if (plan.mode === 'order') {
+      // The same three as level 7, shuffled so they never already stand in the asked order.
+      const from = ((i + parity) % 2) as 0 | 1;
+      const line = [
+        card(concept, from),
+        { concept, side: 0 as const, mid: true as const },
+        card(concept, (1 - from) as 0 | 1),
+      ];
+      let cards = rng.shuffle([...line]);
+      while (cards.every((c, k) => c === line[k])) cards = rng.shuffle([...line]);
+      out.push({ ask: card(concept, from), cards });
+    } else if (plan.mode === 'find')
       out.push({ cards: rng.shuffle([card(concept, 0), card(concept, 1)]), ask: card(concept, side) });
     else if (plan.mode === 'opposite') {
       // The opposite, plus two pictures from other concepts.
@@ -191,13 +216,18 @@ export function makeRounds(plan: OppPlan, rng: Rng): OppRound[] {
   return out;
 }
 
+/** Level 8: a tap is in turn when the card is the next one along the line from the end named first. */
+export const inTurn = (round: OppRound, card: Card, placed: number) =>
+  degree(card, round.ask!.side) === placed;
+
 export const opposites = (a: Card, b: Card) =>
   !a.mid && !b.mid && a.concept === b.concept && a.side !== b.side;
 
 /**
  * Which card a capable child taps next, by its place in the round's cards, or null when the round is waiting. Switch: the
  * one card. Find: the card named. Opposite: the card that is the opposite of the one shown. Pairs: the first card not yet
- * matched and then its opposite (`picked` is the one already chosen). Between: the middle. Always a right one.
+ * matched and then its opposite (`picked` is the one already chosen). Between: the middle. Order: the next one along the
+ * line from the end named first (`done` marks the ones already lined up). Always a right one.
  */
 export function cardToTap(
   plan: OppPlan,
@@ -218,6 +248,10 @@ export function cardToTap(
       return find((c) => opposites(c, round.ask!));
     case 'between':
       return find((c) => !!c.mid);
+    case 'order': {
+      const placed = done.filter(Boolean).length;
+      return find((c) => inTurn(round, c, placed));
+    }
     case 'spot':
       return picked === null
         ? find((c, k) => round.cards.some((o, j) => j !== k && opposites(o, c)))

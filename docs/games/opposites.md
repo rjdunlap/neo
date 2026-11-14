@@ -11,7 +11,7 @@
 | lap | 6, 1 |
 | toddler | 1–2 |
 | preschool | 2–3 |
-| pre-K | 3, 4, 5, 7 |
+| pre-K | 3, 4, 5, 7, 8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 5 | Which two are opposites? One pair hides among five pictures |
 | 6 | One big card: a touch anywhere flips it to its opposite, and each flipped picture joins a row (8 cards) |
 | 7 | In between: three pictures (empty, half full, full); tap the one between the two ends |
+| 8 | Line them up: the same three shuffled; tap them in order from empty to full, then the other way |
 
 <!-- end generated -->
 
