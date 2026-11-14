@@ -35,6 +35,10 @@ import {
   patternOf,
   patternUnit,
   wantsPattern,
+  fitsGap,
+  gapAfter,
+  MAKE_TARGET,
+  regrowFor,
   planFlip,
   planFor,
   STEP,
@@ -63,6 +67,27 @@ function patternMark(g: Graphics, color: number, x: number, y: number, size: num
   else return g;
   return g.fill(ink).stroke({ color: 0xffffff, width: 2 });
 }
+/** Make five: a flower's dots on its orange middle, like the face of a die (one to four). */
+const DOT_SPOTS: Record<number, [number, number][]> = {
+  1: [[0, 0]],
+  2: [
+    [-9, 0],
+    [9, 0],
+  ],
+  3: [
+    [0, -9],
+    [-9, 7],
+    [9, 7],
+  ],
+  4: [
+    [-9, -9],
+    [9, -9],
+    [-9, 9],
+    [9, 9],
+  ],
+};
+/** Spoken parts of a five: "three and two". */
+const NUMBER_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five'];
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
 /** A flip the ghost finger has planned: the step it belongs to (counted from the plan), how many steps have passed, whether the hand is over the button yet, and whether the step has come (and since when). */
@@ -87,6 +112,7 @@ class Flower extends Container {
   private bump = 0;
   private rippleAge = 1;
   private readonly ripple = new Graphics();
+  private readonly dotMarks = new Graphics();
 
   constructor(
     readonly bumper: Bumper,
@@ -103,6 +129,10 @@ class Flower extends Container {
       .stroke(line(swatch.orange.line, 4));
     this.head.addChild(center);
     if (marked) this.head.addChild(patternMark(new Graphics(), bumper.color, 0, 0, 11));
+    if (bumper.dots !== undefined) {
+      this.head.addChild(this.dotMarks);
+      this.drawDots();
+    }
     if (bumper.number !== null) {
       const n = label(String(bumper.number), 30, 0xffffff);
       n.style.stroke = { color: swatch.orange.line, width: 6, join: 'round' };
@@ -115,6 +145,13 @@ class Flower extends Container {
     this.snore.visible = false;
     this.addChild(this.ripple, this.head, this.snore);
     this.draw();
+  }
+
+  /** Make five: the dots it carries, redrawn when a new bunch grows. */
+  drawDots() {
+    const g = this.dotMarks.clear();
+    for (const [x, y] of DOT_SPOTS[this.bumper.dots ?? 1] ?? DOT_SPOTS[1])
+      g.circle(x, y, 7).fill(ink).stroke({ color: 0xffffff, width: 2 });
   }
 
   /** Fall asleep (or wake up, at the finale): the same shape on every table, faded so it reads as "not now". */
@@ -242,6 +279,12 @@ class BumperGarden implements Game {
   next = 1;
   /** Pattern levels: how many flowers of the run have bloomed. */
   step = 0;
+  /** Make levels: dots filled in all (a new strip of five each time one fills). */
+  filled = 0;
+  /** Make levels: the strip's parts so far (dots and color), kept full for a moment after a five. */
+  parts: { dots: number; color: ColorName }[] = [];
+  /** Make levels: counts blooms, so only the latest bloom's delayed line is spoken. */
+  private makeTurn = 0;
   /** How many flowers are awake: all of them, except on the lap opening, where they wake one at a launch. */
   awake: number;
   readonly target: ColorName;
@@ -389,6 +432,7 @@ class BumperGarden implements Game {
         sfx.squish();
       });
     } else if (p.mode === 'color') void this.ctx.instruct('bumper.color', { color: this.target });
+    else if (p.mode === 'make') void this.ctx.instruct('bumper.make');
     else if (p.mode === 'pattern') {
       // The pet says the pattern once through its unit twice ("yellow, blue, yellow, blue"), then the first color.
       const unit = patternUnit(patternOf(p));
@@ -569,6 +613,7 @@ class BumperGarden implements Game {
     if (this.plan.mode === 'color') return wantsColor(this.plan, f.bumper.color);
     if (this.plan.mode === 'order') return f.bumper.number === this.next;
     if (this.plan.mode === 'pattern') return wantsPattern(this.plan, this.step, f.bumper.color);
+    if (this.plan.mode === 'make') return fitsGap(gapAfter(this.filled), f.bumper.dots ?? 0);
     return true;
   }
 
@@ -648,6 +693,7 @@ class BumperGarden implements Game {
   /** A pictured route through the new number sequences; the ring marks the number being asked for. */
   private drawNumberStrip() {
     if (this.plan.mode === 'pattern') return this.drawPatternStrip();
+    if (this.plan.mode === 'make') return this.drawFiveStrip();
     if (!this.plan.start) return;
     this.numberStrip.removeChildren().forEach((child) => child.destroy());
     const numbers = orderNumbers(this.plan);
@@ -689,6 +735,50 @@ class BumperGarden implements Game {
       patternMark(dot, c, x, 40, 9);
       dot.alpha = i < this.step ? 0.45 : 1;
       this.numberStrip.addChild(dot);
+    });
+  }
+
+  /** Make levels: five slots, filled in each part's flower color, with the dots counted in them. */
+  private drawFiveStrip() {
+    this.numberStrip.removeChildren().forEach((child) => child.destroy());
+    const slots: (ColorName | null)[] = this.parts.flatMap((p) => Array<ColorName>(p.dots).fill(p.color));
+    const gap = 62;
+    for (let i = 0; i < MAKE_TARGET; i++) {
+      const x = TABLE.w / 2 + (i - (MAKE_TARGET - 1) / 2) * gap;
+      const c = slots[i] ?? null;
+      const dot = new Graphics()
+        .circle(x, 40, 24)
+        .fill(c ? swatch[c].fill : swatch.white.light)
+        .stroke({ color: c ? swatch[c].line : swatch.green.line, width: c ? 4 : 3 });
+      if (c) dot.circle(x, 40, 7).fill(ink);
+      this.numberStrip.addChild(dot);
+    }
+  }
+
+  /**
+   * Make levels, after each bloom: if nothing waiting fits the gap a new bunch grows (the smallest flower regrows with just
+   * the dots missing), then flowers with too many dots for the gap fall asleep and the rest wake.
+   */
+  private settleMake() {
+    const grow = regrowFor(
+      this.bumpers.map((b) => b.dots ?? 0),
+      this.flowers.map((f) => f.bloomed),
+      this.filled,
+      this.plan.goal,
+    );
+    if (grow !== null) {
+      const f = this.flowers[grow];
+      f.bumper.dots = gapAfter(this.filled);
+      f.drawDots();
+      f.scale.set(0.3);
+      void this.ctx.tw.to(f.scale, { x: 1, y: 1 }, { duration: 0.4 });
+      f.hit();
+      this.chime(stepFromUnit(1 - f.y / TABLE.h, 4, 11), 0.22);
+    }
+    this.flowers.forEach((f, i) => {
+      if (f.bloomed) return;
+      const awake = this.wanted(i);
+      if (f.sleepy === awake) f.sleep(!awake);
     });
   }
 
@@ -736,8 +826,36 @@ class BumperGarden implements Game {
       this.step++;
       this.drawNumberStrip();
     }
+    let madeFive = false;
+    if (mode === 'make') {
+      const dots = f.bumper.dots ?? 0;
+      // A full strip from the five before empties as the next part arrives.
+      if (this.parts.reduce((a, p) => a + p.dots, 0) >= MAKE_TARGET) this.parts = [];
+      this.parts.push({ dots, color: f.color });
+      this.filled += dots;
+      this.drawNumberStrip();
+      madeFive = this.filled % MAKE_TARGET === 0;
+      if (madeFive) {
+        const said = this.parts.map((p) => NUMBER_WORDS[p.dots]);
+        const parts =
+          said.length > 1 ? `${said.slice(0, -1).join(', ')} and ${said[said.length - 1]}` : said[0];
+        void this.ctx.say('bumper.made', { parts });
+      } else void this.ctx.say('count', { n: this.filled % MAKE_TARGET });
+      this.settleMake();
+    }
     if (this.done()) void this.finale();
-    else if (mode === 'pattern')
+    else if (mode === 'make') {
+      const turn = ++this.makeTurn;
+      void this.ctx.tw.wait(madeFive ? 2.2 : 0.9).then(() => {
+        if (this.finished || turn !== this.makeTurn) return;
+        if (madeFive) {
+          // The full strip stays a moment, then empties for the next five (unless a part has already landed in it).
+          if (this.parts.reduce((a, p) => a + p.dots, 0) >= MAKE_TARGET) this.parts = [];
+          this.drawNumberStrip();
+          void this.ctx.instruct('bumper.make-again');
+        } else void this.ctx.instruct('bumper.need', { n: gapAfter(this.filled) });
+      });
+    } else if (mode === 'pattern')
       void this.ctx.tw.wait(0.9).then(() => {
         if (!this.finished) void this.ctx.instruct('bumper.next-color', { color: this.nextColor() });
       });
@@ -752,6 +870,7 @@ class BumperGarden implements Game {
     if (p.mode === 'spring') return false;
     if (p.mode === 'order') return !orderNumbers(p).includes(this.next);
     if (p.mode === 'pattern') return this.step >= patternOf(p).length;
+    if (p.mode === 'make') return this.filled >= p.goal * MAKE_TARGET;
     return this.flowers.every((f, i) => f.bloomed || !this.wanted(i));
   }
 
@@ -767,7 +886,7 @@ class BumperGarden implements Game {
       return;
     }
     this.holdFor = 1.2;
-    if ((mode === 'color' || mode === 'order' || mode === 'pattern') && !this.progressed) {
+    if ((mode === 'color' || mode === 'order' || mode === 'pattern' || mode === 'make') && !this.progressed) {
       this.misses++;
       this.wrongs++;
       if (this.wrongs === 2) {
@@ -777,6 +896,7 @@ class BumperGarden implements Game {
       } else if (this.plan.not) void this.ctx.say('bumper.again-not', { color: this.target });
       else if (mode === 'color') void this.ctx.say('bumper.again-color', { color: this.target });
       else if (mode === 'pattern') void this.ctx.say('bumper.again-pattern', { color: this.nextColor() });
+      else if (mode === 'make') void this.ctx.say('bumper.again-make', { n: gapAfter(this.filled) });
       else void this.ctx.say('bumper.again-order', { n: this.next });
     }
   }

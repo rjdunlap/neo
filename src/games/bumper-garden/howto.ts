@@ -7,8 +7,10 @@ export const HOW_TO: GameHowTo = {
     { to: 1, text: 'Tap to send the ladybug up.' },
     {
       from: 10,
+      to: 10,
       text: 'Touch anywhere to send the ladybug up to the one big flower. Each launch after the first wakes another flower.',
     },
+    { from: 11, to: 11, text: 'Tap the left or right side of the screen to flip the ladybug back up.' },
     { from: 2, to: 9, text: 'Tap the left or right side of the screen to flip the ladybug back up.' },
     { from: 3, to: 3, text: 'Bump the flowers of the color asked for.' },
     {
@@ -21,6 +23,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 7,
       text: 'The strip at the top shows a color pattern. Bump a flower of the ringed color next; each color has its own mark (dot, triangle, square). The purple flowers are not in the pattern and only chime.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'The strip at the top has five empty dots. Each flower carries one to four dots and fills that many when it blooms. Flowers with more dots than are still empty fall asleep and only chime. If no flower fits, the smallest one regrows with just the dots missing.',
     },
     {
       from: 6,
@@ -40,7 +47,8 @@ export const HOW_TO: GameHowTo = {
     { from: 4, to: 6, text: 'The round ends when the last numbered flower has bloomed.' },
     { from: 7, to: 7, text: 'The round ends when the last color in the strip has bloomed.' },
     { from: 8, to: 8, text: 'The round ends when every awake flower has bloomed.' },
-    { from: 10, text: 'The round ends after six launches, with six flowers awake.' },
+    { from: 10, to: 10, text: 'The round ends after six launches, with six flowers awake.' },
+    { from: 11, to: 11, text: 'The round ends when the strip has been filled to five twice.' },
     { from: 9, to: 9, text: 'The round ends when flower 1 blooms, after all the numbers before it.' },
   ],
   note: [
@@ -54,7 +62,13 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
+      to: 10,
       text: 'Nothing here can be wrong and nothing is counted. While the ladybug flies, a touch swings the flipper on that side.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'A pulsing ring at a flipper tip shows when the falling ladybug is close enough to flip.',
     },
     {
       from: 7,

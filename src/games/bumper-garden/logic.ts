@@ -8,7 +8,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * it back up. The ladder goes from launching for fun, to flipping until every flower blooms, to
  * blooming one color, then numbered flowers in order.
  */
-export type BumperMode = 'spring' | 'bloom' | 'color' | 'order' | 'pattern';
+export type BumperMode = 'spring' | 'bloom' | 'color' | 'order' | 'pattern' | 'make';
 
 export interface BumperPlan {
   mode: BumperMode;
@@ -25,6 +25,8 @@ export interface BumperPlan {
   grow?: boolean;
   /** Pattern levels: the run of color indexes to bloom in turn (a unit repeated at least twice); `goal` is its length. */
   pattern?: number[];
+  /** Make levels: how many dots each flower carries (1–4), by flower index; `goal` is how many fives to make. */
+  dots?: number[];
 }
 
 export const PLANS: Record<number, BumperPlan> = {
@@ -65,6 +67,12 @@ export const PLANS: Record<number, BumperPlan> = {
     goal: 6,
     name: 'One big flower: touch anywhere to launch the ladybug; another flower wakes at each launch',
   },
+  11: {
+    mode: 'make',
+    bumpers: 8,
+    goal: 2,
+    name: 'Make five: each flower fills its dots on the strip; bloom flowers that fill five dots exactly, twice',
+  },
   9: {
     mode: 'order',
     bumpers: 8,
@@ -85,7 +93,7 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: GROW_LEVEL, order: [GROW_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 9, order: [3, 4, 6, 7, 8, 5, 9] },
+  prek: { min: 3, max: 11, order: [3, 4, 6, 7, 8, 5, 9, 11] },
 };
 
 /** The repeating units of Pattern bloom, as color indexes: A B, A B B, A B C. */
@@ -102,8 +110,63 @@ export const PATTERN_RUN = 6;
 export const repeatUnit = (unit: readonly number[], length = PATTERN_RUN): number[] =>
   Array.from({ length }, (_, i) => unit[i % unit.length]);
 
+/** Make five: the dots on the strip, the fewest and most dots a flower carries. */
+export const MAKE_TARGET = 5;
+export const MAKE_DOTS = { min: 1, max: 4 } as const;
+
+/** Make levels: a flower fits when its dots fit in the gap left on the strip, so a five can never be overfilled. */
+export const fitsGap = (gap: number, dots: number): boolean => dots >= 1 && dots <= gap;
+
+/** How many dots are still empty on the strip after `filled` dots in all (a new strip of five once one is full). */
+export const gapAfter = (filled: number): number => MAKE_TARGET - (filled % MAKE_TARGET);
+
+/**
+ * Make levels, when nothing waiting fits the gap: a new bunch grows. The waiting flower with the fewest dots (the first such)
+ * regrows with exactly the gap's dots, so she is never stuck and never overfills. Null when the round is done or a flower
+ * still fits (or none waits; `makeDots` sets out a spare five's worth of dots, and each regrow ends a five by itself).
+ */
+export function regrowFor(
+  dots: readonly number[],
+  bloomed: readonly boolean[],
+  filled: number,
+  fives: number,
+): number | null {
+  if (filled >= fives * MAKE_TARGET) return null;
+  const gap = gapAfter(filled);
+  const waiting = dots.map((_, i) => i).filter((i) => !bloomed[i]);
+  if (!waiting.length || waiting.some((i) => fitsGap(gap, dots[i]))) return null;
+  return waiting.reduce((best, i) => (dots[i] < dots[best] ? i : best));
+}
+
+/** The distinct ways the dots make one five from an empty strip (as sorted parts), for variety checks. */
+export function waysToFive(dots: readonly number[]): string[] {
+  const ways = new Set<string>();
+  const n = dots.length;
+  for (let mask = 1; mask < 1 << n; mask++) {
+    const parts = dots.filter((_, i) => mask & (1 << i));
+    if (parts.reduce((a, b) => a + b, 0) === MAKE_TARGET) ways.add([...parts].sort().join('+'));
+  }
+  return [...ways];
+}
+
+/**
+ * A make round's dots: seeded values 1–4, drawn again until there are at least two ways to make five from an empty strip (she
+ * chooses; a five is not just the one obvious pair) and dots for at least one more five than the round needs (spare flowers
+ * to pass over). The regrow (`regrowFor`) covers any path that runs short. A fixed set backs it up.
+ */
+export const MAKE_FALLBACK = [1, 4, 2, 3, 3, 2, 1, 4];
+export function makeDots(rng: Rng | undefined, n: number, fives: number): number[] {
+  for (let tries = 0; rng && tries < 200; tries++) {
+    const dots = Array.from({ length: n }, () => rng.int(MAKE_DOTS.min, MAKE_DOTS.max));
+    const total = dots.reduce((a, b) => a + b, 0);
+    if (waysToFive(dots).length >= 2 && total >= (fives + 1) * MAKE_TARGET) return dots;
+  }
+  return MAKE_FALLBACK.slice(0, n);
+}
+
 export function planFor(level: number, rng?: Rng): BumperPlan {
   const plan = PLANS[level] ?? PLANS[1];
+  if (plan.mode === 'make') return { ...plan, dots: makeDots(rng, plan.bumpers, plan.goal) };
   if (plan.mode === 'pattern')
     return { ...plan, pattern: repeatUnit(rng ? rng.pick(PATTERN_UNITS) : PATTERN_UNITS[0], plan.goal) };
   if (level === 6 && rng) return { ...plan, start: rng.int(2, 6), goal: rng.int(3, 4) };
@@ -202,6 +265,8 @@ export interface Bumper {
   /** A color index, or a number to hit in order. */
   color: number;
   number: number | null;
+  /** Make levels: how many dots it fills on the strip. */
+  dots?: number;
 }
 
 /** The lap opening's garden, the same on every table: the big flower first, in the middle, then the others in the order they wake. */
@@ -265,6 +330,7 @@ export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow
   const pattern = plan.mode === 'pattern' ? patternColors(plan) : [];
   return spots.map((s, i) => {
     if (plan.mode === 'pattern') return { ...s, color: pattern[i], number: null };
+    if (plan.mode === 'make') return { ...s, color: i % 3, number: null, dots: plan.dots?.[i] ?? 1 };
     if (plan.mode === 'color') return { ...s, color: i < plan.goal ? 0 : 1 + (i % 2), number: null };
     if (plan.mode === 'order') return { ...s, color: i % 3, number: numbers[i] ?? null };
     return { ...s, color: i % 3, number: null };
