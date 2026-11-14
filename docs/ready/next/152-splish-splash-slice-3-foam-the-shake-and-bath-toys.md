@@ -1,0 +1,1 @@
+**Splish Splash slice 3, foam, the shake and bath toys** (rule tests, one landscape and one portrait screenshot, `fingerdemo` at level 1): scrubbing leaves a foam trail, the shower pops it and the pet shakes dry; a second toy on the rim squeaks and says its name. [Splish Splash dive, slice 3](../../deep-dives/splish-splash.md#build-slices-in-order)

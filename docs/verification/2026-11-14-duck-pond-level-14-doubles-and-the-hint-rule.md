@@ -1,0 +1,5 @@
+# 2026-11-14 — Duck Pond level 14 Doubles and the hint rule (PR #1644)
+
+**Changed:** Duck Pond level 14 Doubles (school window 8–14, order [8, 9, 10, 11, 14]) and the hint rule (right pad glows from the second miss; one hint per question) at every pad level.
+**Ran:** typecheck; full `npm test` (6,924 passed, then only the stale game-docs block, regenerated); duck-pond and content unit tests after review fixes (235 passed); `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS=6,10,14` (6 and 10 assert no glow and no hint after one miss; 14: both sides, near doubles in the last two rounds, the sentence, score [2,1], sticker; rerun after the review fixes); `BROWSER_SUITE=fingerdemo FINGER_ONLY=duck-pond FINGER_LEVELS=14` in 65.8 s (before the review fixes); portrait screenshot `test-results/browser/originals/duck-pond-14-illustrated-portrait.png`. `game-reviewer` reviewed; fixes: singular "1 duck", the side cue, finale seats.
+**Not run:** build (no shared files or assets), offline, `world`, `fingerdemo` after the review fixes, device speech of the new lines.
