@@ -1,0 +1,5 @@
+# 2026-11-13 — Duck Pond slice 7: layout and pad cap (PR #1638)
+
+**Changed:** `duck-pond` seating and pad geometry only (no new level, no plan, how-to or description change): ten-frame seats for 11–20 on a widened pond, footbridge split seats for 1–8 a side, pad values up to 20 (`PAD_CAP`, plan field `padMax`; dots stay at 10 or fewer), and the pond and pad geometry moved to `logic.ts`. Existing levels' pad values and layouts matched a seeded dump (seeds 0–99).
+**Ran:** `npm run typecheck`; `npx vitest run src/games/duck-pond` (26 passed, 4 new: frame seats, split seats, pad cap, pad spots at landscape, iPad portrait, phone sideways and phone with notch); `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS= DUCK_SEATS=1` passed (19 ducks and pads 17/19/20 landscape; 8 + 8 split with pads portrait; both screenshots inspected).
+**Not run:** full `npm test`, `npm run build` (game files and a browser-suite script only), `fingerdemo` (bot unchanged), the default ducks level loop, offline.

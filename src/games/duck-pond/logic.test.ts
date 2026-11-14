@@ -30,7 +30,22 @@ import {
   PAD_DOT_R,
   PAD_DOT_Y,
   PAD_R,
+  FRAME_GAP,
+  FRAMES_APART,
+  FRAME_SCALE,
+  WIDE_POND_RX,
+  frameSeats,
+  PAD_CAP,
+  padRowY,
+  padSpot,
+  pondCenter,
+  POND_RX,
+  POND_RY,
+  splitSeats,
+  SPLIT_BRIDGE_HALF,
+  type Seating,
 } from './logic';
+import { computeView } from '../../engine/view';
 
 describe('Duck Pond', () => {
   it('preserves the historical duck count for sticker seeds 0–99', () => {
@@ -328,5 +343,119 @@ describe('Duck Pond arrangements, zero and dotted pads (levels 6–7)', () => {
 
   it('a capable child still touches the pad with the answer, zero included', () => {
     expect(duckMove(six, 0, 0, 0, [2, 0, 1], 0)).toEqual({ pad: 1 });
+  });
+});
+
+describe('Duck Pond layout and pad cap (slice 7)', () => {
+  // The views a sideways game lays out at: 4:3, an iPad held upright (not upright-ready, so 1024 wide), a phone on its side
+  // and the same phone with its notch and home bar.
+  const views = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    phone: computeView(844, 390),
+    notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  };
+  // A duck's touch circle at full size, about its feet: it is drawn within this.
+  const DUCK = { up: 46 + 72, down: 72 - 46, half: 72 };
+
+  /** Seats are distinct, inside the pond, `gap` apart, and the ducks drawn on them are on screen and clear of the pad row. */
+  const checkSeating = ({ slots, scale, pondRx }: Seating, n: number, gap: number) => {
+    expect(slots).toHaveLength(n);
+    expect(new Set(slots.map(([x, y]) => `${x},${y}`)).size).toBe(n);
+    for (const [i, [x, y]] of slots.entries()) {
+      // Inside the pond, with a duck's height of water above the top row's feet at its place (not on the rim).
+      expect((x / pondRx) ** 2 + ((y - 40 * scale) / POND_RY) ** 2).toBeLessThan(1);
+      for (const [xx, yy] of slots.slice(i + 1))
+        expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(gap);
+    }
+    for (const v of Object.values(views)) {
+      const c = pondCenter(v);
+      // The pond and its reeds (about 30 past the rim) fit across the view.
+      expect(c.x - (pondRx + 420 - POND_RX) - 10).toBeGreaterThan(0);
+      const padTop = padRowY(v) - PAD_R - 12;
+      for (const [x, y] of slots) {
+        expect(c.y + y + DUCK.down * scale).toBeLessThan(padTop);
+        expect(c.y + y - DUCK.up * scale).toBeGreaterThan(0);
+        expect(c.x + x - DUCK.half * scale).toBeGreaterThan(0);
+        expect(c.x + x + DUCK.half * scale).toBeLessThan(v.w);
+      }
+    }
+  };
+
+  it('seats up to ten in one frame of two rows of five, and twenty in two frames, the full ten first', () => {
+    for (let n = 0; n <= 10; n++) {
+      const s = frameSeats(n);
+      expect(s.scale).toBe(1);
+      checkSeating(s, n, DUCK_GAP);
+    }
+    // The ten-seat frame is the five-and-five layout levels 6–7 already deal.
+    expect(frameSeats(7).slots).toEqual(layoutFor(new Rng(1), { ...planFor(6), layouts: ['rows'] }, 7).slots);
+    for (let n = 11; n <= 20; n++) {
+      const s = frameSeats(n);
+      expect(s.scale).toBeLessThanOrEqual(FRAME_GAP / DUCK_GAP);
+      checkSeating(s, n, FRAME_GAP);
+      // The first ten are the left frame, full: five on top, five below, every one left of every later seat.
+      const ten = s.slots.slice(0, 10);
+      expect(ten.slice(0, 5).every(([, y]) => y === ten[0][1])).toBe(true);
+      expect(ten.slice(5).every(([, y]) => y > ten[0][1])).toBe(true);
+      const tenRight = Math.max(...ten.map(([x]) => x));
+      for (const [x] of s.slots.slice(10)) expect(x).toBeGreaterThanOrEqual(tenRight + FRAMES_APART);
+      expect(FRAMES_APART).toBeGreaterThanOrEqual(1.5 * FRAME_GAP);
+      expect(s.pondRx).toBe(WIDE_POND_RX);
+      // The ones fill their own frame the same way, top row first.
+      const ones = s.slots.slice(10);
+      expect(ones.slice(0, Math.min(5, ones.length)).every(([, y]) => y === ten[0][1])).toBe(true);
+    }
+    expect(frameSeats(25).slots).toHaveLength(20);
+  });
+
+  it('splits the pond at the bridge: mirror-image sides, every duck clear of the bridge, up to eight a side', () => {
+    for (let left = 1; left <= 8; left++)
+      for (let right = 1; right <= 8; right++) {
+        const s = splitSeats(left, right);
+        const small = Math.max(left, right) > 5;
+        expect(s.scale).toBe(small ? FRAME_SCALE : 1);
+        checkSeating(s, left + right, small ? FRAME_GAP : DUCK_GAP);
+        const l = s.slots.slice(0, left);
+        const r = s.slots.slice(left);
+        // Half a duck between every duck's feet and the bridge's edge.
+        for (const [x] of l) expect(-x - SPLIT_BRIDGE_HALF).toBeGreaterThanOrEqual(DUCK_GAP / 2);
+        for (const [x] of r) expect(x - SPLIT_BRIDGE_HALF).toBeGreaterThanOrEqual(DUCK_GAP / 2);
+        // Equal sides look equal: each right seat mirrors the left seat in the same place.
+        for (let i = 0; i < Math.min(left, right); i++) expect(r[i]).toEqual([-l[i][0], l[i][1]]);
+      }
+  });
+
+  it('keeps pads within ten by default and lets a level raise them to twenty, never past', () => {
+    expect(PAD_CAP).toBe(20);
+    for (let seed = 0; seed < 100; seed++) {
+      for (let answer = 1; answer <= 10; answer++)
+        expect(padValues(new Rng(seed), answer)).toEqual(padValues(new Rng(seed), answer, 1, 10));
+      for (let answer = 0; answer <= 20; answer++) {
+        const pads = padValues(new Rng(seed), answer, 0, 20);
+        expect(pads).toContain(answer);
+        expect(new Set(pads).size).toBe(3);
+        for (const p of pads) {
+          expect(p).toBeGreaterThanOrEqual(0);
+          expect(p).toBeLessThanOrEqual(20);
+          expect(Math.abs(p - answer)).toBeLessThanOrEqual(2);
+        }
+      }
+      expect(Math.max(...padValues(new Rng(seed), 20, 1, 99))).toBe(20);
+    }
+  });
+
+  it('lays three pads, two-digit numerals and all, a target apart and on screen at every view', () => {
+    expect(2 * PAD_R).toBeGreaterThanOrEqual(100);
+    for (const v of Object.values(views)) {
+      const spots = [0, 1, 2].map((i) => padSpot(v, i));
+      expect(spots[1].x).toBe(v.w / 2);
+      for (let i = 1; i < 3; i++) expect(spots[i].x - spots[i - 1].x).toBeGreaterThanOrEqual(2 * PAD_R + 40);
+      for (const s of spots) {
+        expect(s.x - PAD_R).toBeGreaterThan(0);
+        expect(s.x + PAD_R).toBeLessThan(v.w);
+        expect(s.y + PAD_R).toBeLessThanOrEqual(v.h);
+      }
+    }
   });
 });

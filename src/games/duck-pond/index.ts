@@ -35,6 +35,12 @@ import {
   tenStarts,
   type DuckPlan,
   type PondStory,
+  padSpot,
+  pondCenter,
+  POND_RX,
+  POND_RY,
+  SPLIT_BRIDGE_HALF,
+  type Seating,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -137,7 +143,8 @@ class Pad extends Container {
       .fill(WATER);
     const n = label(String(value), dots ? 48 : 64, 0xffffff);
     n.style.stroke = { color: LILY.line, width: dots ? 7 : 8, join: 'round' };
-    if (dots) {
+    // Dots are drawn up to ten (two rows of five); a level whose pads pass ten shows numerals only.
+    if (dots && value <= 10) {
       n.y = value === 0 ? 0 : value > 5 ? -24 : -18;
       for (const [x, y] of dotRows(value, PAD_DOT_GAP))
         pad
@@ -181,6 +188,8 @@ class DuckPond implements Game {
   private swimmers: Duck[] = [];
   private pads: Pad[] = [];
   private view: View;
+  /** Half the pond's width: `POND_RX`, or wider while a round seats twenty (`Seating.pondRx`). */
+  private pondRx = POND_RX;
   private round = 0;
   private want = 0;
   private answer = 0;
@@ -260,14 +269,17 @@ class DuckPond implements Game {
     this.backdrop.resize(v);
     const { x, y } = this.pondCenter();
     const g = this.pond.clear();
-    g.ellipse(x, y, 390, 128).fill(WATER).stroke({ width: 10, color: WATER_EDGE });
-    g.ellipse(x - 40, y - 20, 300, 80).fill({ color: 0xffffff, alpha: 0.12 });
+    // A round seating twenty widens the pond; its lily pads and reeds keep their places relative to the rim.
+    const rx = this.pondRx;
+    const k = rx / POND_RX;
+    g.ellipse(x, y, rx, POND_RY).fill(WATER).stroke({ width: 10, color: WATER_EDGE });
+    g.ellipse(x - 40 * k, y - 20, 300 * k, 80).fill({ color: 0xffffff, alpha: 0.12 });
     for (const [dx, dy, r] of [
       [-330, 50, 28],
       [310, 70, 24],
       [-280, -70, 20],
     ]) {
-      g.circle(x + dx, y + dy, r)
+      g.circle(x + dx * k, y + dy, r)
         .fill(LILY.fill)
         .stroke({ width: 4, color: LILY.line });
     }
@@ -277,23 +289,40 @@ class DuckPond implements Game {
       [405, 110],
       [420, 80],
     ]) {
-      g.moveTo(x + dx, y + 60)
-        .quadraticCurveTo(x + dx + 6, y + 60 - h / 2, x + dx - 4, y + 60 - h)
+      // Reeds stand just outside the rim, however wide the pond.
+      const rx0 = x + Math.sign(dx) * (rx + Math.abs(dx) - POND_RX);
+      g.moveTo(rx0, y + 60)
+        .quadraticCurveTo(rx0 + 6, y + 60 - h / 2, rx0 - 4, y + 60 - h)
         .stroke({ width: 7, color: 0x4a9a35, cap: 'round' });
-      g.ellipse(x + dx - 4, y + 60 - h, 7, 20).fill(0x8f6142);
+      g.ellipse(rx0 - 4, y + 60 - h, 7, 20).fill(0x8f6142);
     }
     const bridge = this.bridge.clear();
-    bridge.rect(x - 190, y - 58, 28, 138).fill(wood.line);
-    bridge.rect(x + 162, y - 58, 28, 138).fill(wood.line);
-    bridge
-      .roundRect(x - 220, y - 58, 440, 34, 8)
-      .fill(wood.fill)
-      .stroke({ width: 6, color: wood.line });
-    bridge
-      .roundRect(x - 220, y - 8, 440, 46, 8)
-      .fill(wood.fill)
-      .stroke({ width: 6, color: wood.line });
-    bridge.visible = this.plan.mode === 'hide';
+    if (this.plan.split) {
+      // A footbridge from the far bank to the near one, splitting the pond into a left and a right side.
+      const half = SPLIT_BRIDGE_HALF;
+      bridge
+        .roundRect(x - half, y - POND_RY - 14, half * 2, POND_RY * 2 + 28, 10)
+        .fill(wood.fill)
+        .stroke({ width: 6, color: wood.line });
+      for (let py = y - POND_RY + 20; py < y + POND_RY; py += 36)
+        bridge
+          .moveTo(x - half + 6, py)
+          .lineTo(x + half - 6, py)
+          .stroke({ width: 4, color: wood.line });
+    } else {
+      // Hiding ducks: the bridge spans the middle, seen from the front.
+      bridge.rect(x - 190, y - 58, 28, 138).fill(wood.line);
+      bridge.rect(x + 162, y - 58, 28, 138).fill(wood.line);
+      bridge
+        .roundRect(x - 220, y - 58, 440, 34, 8)
+        .fill(wood.fill)
+        .stroke({ width: 6, color: wood.line });
+      bridge
+        .roundRect(x - 220, y - 8, 440, 46, 8)
+        .fill(wood.fill)
+        .stroke({ width: 6, color: wood.line });
+    }
+    bridge.visible = this.plan.mode === 'hide' || !!this.plan.split;
     this.sign.position.set(v.w / 2 + 380, 150);
     this.layoutBank();
     this.layoutPads();
@@ -358,7 +387,7 @@ class DuckPond implements Game {
   destroy() {}
 
   private pondCenter() {
-    return { x: this.view.w / 2, y: this.view.h * 0.5 };
+    return pondCenter(this.view);
   }
 
   // ----- ducks coming and going -----
@@ -409,10 +438,22 @@ class DuckPond implements Game {
     });
   }
 
-  /** Ducks arriving from off-screen straight into the pond (no tapping needed). */
-  private async arrive(n: number, slots?: readonly [number, number][]) {
+  /**
+   * Ducks arriving from off-screen straight into the pond (no tapping needed). A `Seating`'s `scale` draws counted-only
+   * ducks smaller, and its `pondRx` widens the pond first (twenty seats).
+   */
+  private async arrive(
+    n: number,
+    slots?: readonly [number, number][],
+    seating?: Pick<Seating, 'scale' | 'pondRx'>,
+  ) {
+    if (seating && seating.pondRx !== this.pondRx) {
+      this.pondRx = seating.pondRx;
+      this.resize(this.view);
+    }
     for (let i = 0; i < n; i++) {
       const d = new Duck();
+      d.scale.set(seating?.scale ?? 1);
       d.position.set(-80, this.view.h * 0.62);
       this.ducks.addChild(d);
       await this.swimIn(d, slots?.[i]);
@@ -715,7 +756,7 @@ class DuckPond implements Game {
   }
 
   private showPads(answer: number) {
-    const values = padValues(this.ctx.rng, answer, this.plan.zero ? 0 : 1);
+    const values = padValues(this.ctx.rng, answer, this.plan.zero ? 0 : 1, this.plan.padMax);
     this.pads = values.map((v) => {
       const pad = new Pad(v, !!this.plan.padDots);
       onTap(pad, () => void this.tapPad(pad), { cooldown: 400 });
@@ -732,7 +773,10 @@ class DuckPond implements Game {
 
   private layoutPads() {
     const v = this.view;
-    this.pads.forEach((p, i) => p.position.set(v.w / 2 + (i - 1) * 190, v.h - 90));
+    this.pads.forEach((p, i) => {
+      const at = padSpot(v, i, this.pads.length);
+      p.position.set(at.x, at.y);
+    });
   }
 
   private clearPads() {
