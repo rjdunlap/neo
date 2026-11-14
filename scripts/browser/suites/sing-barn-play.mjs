@@ -129,12 +129,15 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
           const song = await page.evaluate(() =>
             neo.scene.game.song.map((n) => ({ s: n.syllable, a: n.answers, m: n.midi })),
           );
-          assert.equal(song.length, 13 + 23, 'the opening, then one friend\'s full verse');
+          assert.equal(song.length, 13 + 23, "the opening, then one friend's full verse");
           assert.deepEqual(
             song.slice(13, 23).map((n) => n.s),
             ['Down', 'came', 'the', 'rain', 'and', 'washed', 'the', 'spi', 'der', 'out'],
           );
-          assert.deepEqual(song.slice(13, 23).map((n) => n.m - 60), [4, 4, 5, 7, 7, 5, 4, 5, 7, 4]);
+          assert.deepEqual(
+            song.slice(13, 23).map((n) => n.m - 60),
+            [4, 4, 5, 7, 7, 5, 4, 5, 7, 4],
+          );
           assert.equal(song[0].m, 55, 'the pickup is the G below middle C');
           await tapNotes(12);
           await screenshot('sing-along-barn-6-itsy-rain-portrait');
