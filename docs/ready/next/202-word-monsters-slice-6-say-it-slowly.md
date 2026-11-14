@@ -1,0 +1,1 @@
+**Word Monsters slice 6, Say it slowly** (new-levels tier: rule tests, one browser play of the new level, `fingerdemo` at it; level 6's drag and slots without the sound list, and the next free ID is 11 because lap's level 9 and Last sound (10) are built; `order` places it, IDs are appended): [Word Monsters dive, slice 6](../../deep-dives/word-monsters.md#build-slices-in-order).

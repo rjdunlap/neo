@@ -1,1 +1,0 @@
-**Word Monsters slice 4, level 9 Last sound** (rule tests, one scripted play at 9 with one wrong monster and a hint, `fingerdemo` at 9; ready, it can precede the speech check because only a miss plays a sound line; the plan's level 9 needs renumbering because lap level 9 is built). [Word Monsters dive, slice 4](../../deep-dives/word-monsters.md#build-slices-in-order)
