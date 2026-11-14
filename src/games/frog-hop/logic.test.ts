@@ -31,6 +31,8 @@ import {
   COUNT_UP_CROSSINGS,
   TEN,
   YOUR_WAY_BACKS,
+  TENS_BACKS,
+  padValue,
   splitsAtTen,
   type HopQuestion,
 } from './logic';
@@ -309,8 +311,10 @@ describe('Frog Hop, Fraction Landings', () => {
   });
 
   describe('say the numbers, dots and flowers (dive slice 2)', () => {
-    it('says the numerals crossed, in order, ending on the target, one per hop, on levels 3, 4 and 6 only', () => {
-      expect(PLANS.filter((p) => saysNumbers(p.mode)).map((p) => PLANS.indexOf(p) + 1)).toEqual([3, 4, 6]);
+    it('says the numerals crossed, in order, ending on the target, one per hop, on levels 3, 4, 6 and 13 only', () => {
+      expect(PLANS.filter((p) => saysNumbers(p.mode)).map((p) => PLANS.indexOf(p) + 1)).toEqual([
+        3, 4, 6, 13,
+      ]);
       for (const plan of PLANS.filter((p) => saysNumbers(p.mode)))
         for (let seed = 1; seed <= 200; seed++)
           for (const q of makeQuestions(plan, new Rng(seed))) {
@@ -420,7 +424,7 @@ describe('Frog Hop, Fraction Landings', () => {
     it('is appended as level 12, after Count up, so saved levels keep their numbers', () => {
       expect(PLANS.indexOf(plan) + 1).toBe(12);
       expect(PLANS[10].mode).toBe('count-up');
-      expect(frogHop.levels('school')).toEqual({ min: 3, max: 12 });
+      expect(frogHop.levels('school').min).toBe(3);
       expect(frogHop.levels('prek')).toEqual({ min: 1, max: 4 });
       expect(frogHop.describeLevel(12)).toContain('your way');
       // No number cards: she taps pads, and the stop at 10 is optional rather than a stage.
@@ -492,5 +496,79 @@ describe('Frog Hop, Fraction Landings', () => {
       for (const id of ['hop.yourway.yay', 'hop.yourway.yayback'] as const)
         for (const slot of ['{n}', '{k}', '{m}']) expect(SCRIPT[id][0]).toContain(slot);
     });
+  });
+});
+
+describe('Frog Hop, Hop by tens (level 13)', () => {
+  const plan = PLANS.find((p) => p.mode === 'tens')!;
+
+  it('is the next free school level, appended without reordering, and says its landings', () => {
+    expect(PLANS.indexOf(plan) + 1).toBe(13);
+    expect(PLANS.length).toBe(13);
+    expect(frogHop.levels('school').max).toBe(13);
+    expect(frogHop.describeLevel(13)).toBe(plan.name);
+    expect(saysNumbers('tens')).toBe(true);
+    expect(countsHops('tens') || splitsAtTen('tens') || isFrac('tens')).toBe(false);
+  });
+
+  it('starts on 10 to 70 and hops 1 to 4 tens each way, landing on a multiple of ten from 0 to 100', () => {
+    const seen = { on: new Set<number>(), back: new Set<number>(), k: new Set<number>() };
+    for (let seed = 1; seed <= 400; seed++) {
+      const qs = makeQuestions(plan, new Rng(seed));
+      expect(qs[0].hops).toBeGreaterThan(0);
+      expect(qs.filter((q) => q.hops < 0)).toHaveLength(TENS_BACKS);
+      qs.forEach((q, i) => {
+        const start = padValue(plan, q.start);
+        const target = padValue(plan, q.target);
+        expect(start).toBeGreaterThanOrEqual(10);
+        expect(start).toBeLessThanOrEqual(70);
+        expect(target % 10).toBe(0);
+        expect(target).toBeGreaterThanOrEqual(0);
+        expect(target).toBeLessThanOrEqual(100);
+        expect(Math.abs(q.hops)).toBeGreaterThanOrEqual(1);
+        expect(Math.abs(q.hops)).toBeLessThanOrEqual(4);
+        (q.hops > 0 ? seen.on : seen.back).add(start);
+        seen.k.add(Math.abs(q.hops));
+        if (i > 0) expect(q.target).not.toBe(qs[i - 1].target);
+      });
+    }
+    expect([...seen.k].sort()).toEqual([1, 2, 3, 4]);
+    expect([...seen.on].sort((a, b) => a - b)).toEqual([10, 20, 30, 40, 50, 60, 70]);
+    expect([...seen.back].sort((a, b) => a - b)).toEqual([10, 20, 30, 40, 50, 60, 70]);
+  });
+
+  it('slides the line to show 100 at least once a round, and the pads in view read 0 to 100 by tens', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(plan, new Rng(seed));
+      expect(qs.some((q) => q.lo + WINDOW - 1 === plan.top)).toBe(true);
+      for (const q of qs) {
+        const shown = Array.from({ length: WINDOW }, (_, i) => padValue(plan, q.lo + i));
+        expect(shown[0]).toBe(q.lo * 10);
+        expect(shown.at(-1)).toBeLessThanOrEqual(100);
+        expect(shown.every((n, i) => i === 0 || n - shown[i - 1] === 10)).toBe(true);
+      }
+    }
+    // Other plans read their place: the stride is only the tens line's.
+    expect(padValue(PLANS[5], 17)).toBe(17);
+  });
+
+  it('names a wrong pad in pads of ten: the wrong side, then a pad off by one ten', () => {
+    // 30 + 20: 60 counts the starting pad, 40 misses a hop, 20 goes the wrong way.
+    const q: HopQuestion = { start: 3, target: 5, hops: 2, lo: 0 };
+    expect(q.lo + answerSlot('tens', q, q.lo)).toBe(5);
+    expect(missKind(q.start, q.target, 6, false)).toBe('one-more');
+    expect(missKind(q.start, q.target, 4, false)).toBe('one-less');
+    expect(missKind(q.start, q.target, 2, false)).toBe('forward');
+    // The counted hops say the tens: 40, 50.
+    expect(landingNumbers(q.start, q.target).map((n) => padValue(plan, n))).toEqual([40, 50]);
+  });
+
+  it('asks in tens, with no "1 tens"', () => {
+    for (const id of ['hop.tens', 'hop.tens.back'] as const)
+      expect(SCRIPT[id][0]).toMatch(/\{n\}.*\{k\} tens/);
+    for (const id of ['hop.tens.one', 'hop.tens.oneback'] as const) {
+      expect(SCRIPT[id][0]).toContain('one ten.');
+      expect(SCRIPT[id][0]).not.toContain('{k}');
+    }
   });
 });

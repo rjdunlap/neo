@@ -7,7 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * longer line to 20, then splits a sum at ten, forward and back. Nine pads show at a time; on the long line the
  * view slides to fit. At the top of school the pads sit at quarters of a whole (Fraction Landings): hops of a quarter,
  * a half or a whole, then two hop sizes that reach the same lily. Last, count up to take away: `13 − 9` as the hops from 9 to
- * the flag on 13. Then over ten, your way: `8 + 5` with no cards, where a stop on 10 is hers to choose.
+ * the flag on 13. Then over ten, your way: `8 + 5` with no cards, where a stop on 10 is hers to choose. Last, hop by tens:
+ * the pads count 0, 10, 20 … 100 and `30 + 20` is two hops of ten.
  */
 export type HopMode =
   | 'find'
@@ -21,7 +22,8 @@ export type HopMode =
   | 'frac-hop'
   | 'frac-match'
   | 'count-up'
-  | 'your-way';
+  | 'your-way'
+  | 'tens';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -43,6 +45,11 @@ export interface HopPlan {
   name: string;
   /** Ticks per whole on the fraction levels (4: quarters); whole-number plans leave it out. */
   unit?: number;
+  /**
+   * What one pad is worth on the tens line (10); other plans leave it out. Questions, windows and slots stay counted in
+   * pads (pad `i` reads `i × stride`), so only what is shown or said is multiplied.
+   */
+  stride?: number;
 }
 
 export const PLANS: HopPlan[] = [
@@ -100,7 +107,17 @@ export const PLANS: HopPlan[] = [
     questions: 5,
     name: 'Over ten, your way: a sum or take-away across 10, with a stop at 10 if she chooses',
   },
+  {
+    mode: 'tens',
+    top: 10,
+    stride: 10,
+    questions: 5,
+    name: 'Hop by tens: pads 0, 10, 20 … 100, start at 10 to 70 and hop 1 to 4 tens on or back',
+  },
 ];
+
+/** The number a pad shows and the frog says: its place on the line times the plan's stride. */
+export const padValue = (plan: HopPlan, n: number) => n * (plan.stride ?? 1);
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -252,6 +269,7 @@ export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (isFrac(plan.mode)) return fracQuestions(plan, rng);
   if (plan.mode === 'count-up') return countUpQuestions(plan, rng);
   if (plan.mode === 'your-way') return yourWayQuestions(plan, rng);
+  if (plan.mode === 'tens') return tensQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -362,6 +380,36 @@ function yourWayQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   return out;
 }
 
+/** Hop by tens: how many of the five go back; the first goes on. */
+export const TENS_BACKS = 2;
+
+/**
+ * Hop by tens (dive slice 7), in pads of ten: start on 10–70 (pads 1–7), hop 1–4 tens on or back, landing on 0–100. Two of
+ * the five go back, the first goes on; never the same landing twice running, and at least one question slides the line
+ * to show 100, so the end of the line is always seen.
+ */
+function tensQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  for (;;) {
+    const backs = new Set(rng.shuffle([1, 2, 3, 4]).slice(0, TENS_BACKS));
+    const out: HopQuestion[] = [];
+    for (let i = 0; i < plan.questions; i++) {
+      for (;;) {
+        const back = backs.has(i);
+        const k = rng.int(1, 4);
+        const start = back ? rng.int(Math.max(1, k), 7) : rng.int(1, Math.min(7, plan.top - k));
+        const hops = back ? -k : k;
+        const q: HopQuestion = { start, target: start + hops, hops, lo: 0 };
+        q.lo = windowFor(plan.top, start, q.target, rng);
+        const prev = out[i - 1];
+        if (prev && prev.target === q.target) continue;
+        out.push(q);
+        break;
+      }
+    }
+    if (out.some((q) => q.lo + WINDOW - 1 >= plan.top)) return out;
+  }
+}
+
 /** Distinguish a direction mistake from counting the starting pad as a hop. */
 export type HopMiss = 'correct' | 'forward' | 'backward' | 'one-more' | 'one-less' | 'count';
 export function missKind(start: number, answer: number, chosen: number, card: boolean): HopMiss {
@@ -405,11 +453,12 @@ export function hintCharge(wrongs: number, glowing: boolean, helped: boolean): n
 export const stickerNumber = (rng: Rng) => rng.int(1, 9);
 
 /**
- * Say the numbers (dive fresh 1): on the plain add and take-away levels (3, 4 and 6) a counted hop says the pad it lands
+ * Say the numbers (dive fresh 1): on the plain add and take-away levels (3, 4, 6 and the tens line, 13) a counted hop says the pad it lands
  * on ("5… 6… 7") and a tally dot rises over the frog for each hop. The levels whose answer is a count of hops (5, 7, 8 and
  * the fraction levels) keep counting "1, 2, 3".
  */
-export const saysNumbers = (mode: HopMode) => mode === 'add' || mode === 'back' || mode === 'big';
+export const saysNumbers = (mode: HopMode) =>
+  mode === 'add' || mode === 'back' || mode === 'big' || mode === 'tens';
 
 /** The numerals a counted hop says, in order: every pad after the start, ending on the target. */
 export function landingNumbers(start: number, target: number): number[] {

@@ -928,7 +928,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 
     if (!only || only === 'hop')
       for (const level of process.env.HOP_LEVELS?.split(',').map(Number) ||
-        Array.from({ length: Math.max(0, 13 - fromLevel) }, (_, i) => fromLevel + i)) {
+        Array.from({ length: Math.max(0, 14 - fromLevel) }, (_, i) => fromLevel + i)) {
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
@@ -938,7 +938,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             say = g.ctx.say.bind(g.ctx);
           window.hopR4 = [];
           window.hopSaid = [];
-          window.hopTargets = g.questions.map((q) => q.target);
+          window.hopTargets = g.questions.map((q) => q.target * (g.plan.stride ?? 1));
           g.ctx.say = (id, vars) => {
             const line = say(id, vars);
             hopSaid.push({ id: String(id), n: vars?.n, tally: g.tallied });
@@ -1141,7 +1141,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await answer(true);
         }
         await finished('frog-hop');
-        if (mode === 'add' || mode === 'back' || mode === 'big') {
+        if (mode === 'add' || mode === 'back' || mode === 'big' || mode === 'tens') {
           // Slice 2: the right answers say the pads crossed with a tally dot each, then name the landing.
           const said = await page.evaluate(() => hopSaid);
           const landed = said.filter((o) => o.id === 'hop.landed');
@@ -1185,6 +1185,57 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         log(
           `Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`,
         );
+        if (mode === 'tens') {
+          // Slice 7: the pads count by tens, the sign is in tens, and "100" reads on its pad at four views.
+          await launch('frog-hop', level);
+          await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
+          const first = await page.evaluate(() => {
+            const g = neo.scene.game;
+            return {
+              pads: g.pads.map((p) => p.num.text).join(','),
+              lo: g.lo,
+              sign: g.signText.text,
+              want: `${g.q.start * 10} + ${g.q.hops * 10}`,
+            };
+          });
+          assert.equal(first.sign, first.want, 'the sign is the sum in tens');
+          assert.equal(
+            first.pads,
+            Array.from({ length: 9 }, (_, i) => (first.lo + i) * 10).join(','),
+            'the pads read by tens',
+          );
+          // Slide the line to its end so 100 is in view, then check its label sits inside its pad's step.
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            g.busy = true;
+            await g.slideWindow(2);
+            g.busy = false;
+          });
+          for (const [w, h] of [
+            [1024, 768],
+            [768, 1024],
+            [390, 844],
+            [844, 390],
+          ]) {
+            await page.setViewportSize({ width: w, height: h });
+            await page.waitForTimeout(300);
+            const label = await page.evaluate(() => {
+              const g = neo.scene.game;
+              const p = g.pads.at(-1);
+              // Pads sit straight on the stage in view units, so the label's width and edge are in those units too.
+              return { text: p.num.text, w: p.num.width, right: p.x + p.num.width / 2, view: g.view.w };
+            });
+            assert.equal(label.text, '100');
+            assert.ok(label.w < 104, `"100" fits its pad's step at ${w}×${h} (${Math.round(label.w)} units)`);
+            assert.ok(label.right <= label.view, `"100" is on screen at ${w}×${h}`);
+            await screenshot(`frog-hop-${level}-hundred-${w}x${h}`);
+          }
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(250);
+          log(
+            `Frog Hop ${level}: pads by tens, the sum in tens on the sign, "100" fits and shows at four views`,
+          );
+        }
         if (mode === 'find' || mode === 'add' || mode === 'big') {
           await launch('frog-hop', level);
           await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);

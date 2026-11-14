@@ -47,6 +47,7 @@ import {
   DOT_R,
   flowerOn,
   TEN,
+  padValue,
 } from './logic';
 
 const STEP = 104;
@@ -88,9 +89,10 @@ class Pad extends Container {
     this.addChild(this.num);
     this.hitArea = new Rectangle(-STEP / 2, -70, STEP, 140);
   }
-  set(n: number) {
+  /** `n` is the pad's place on the line; `shown` is what it reads (on the tens line, ten times its place). */
+  set(n: number, shown = n) {
     this.n = n;
-    this.num.text = String(n);
+    this.num.text = String(shown);
   }
   /** Fraction levels: show a name (or nothing) under the pad without changing which tick it is. */
   mark(text: string) {
@@ -197,7 +199,7 @@ class FrogHop implements Game {
     );
     for (let i = 0; i < WINDOW; i++) {
       const pad = new Pad();
-      pad.set(i);
+      pad.set(i, padValue(this.plan, i));
       onTap(pad, () => void this.tapPad(pad.n), { cooldown: 250 });
       this.pads.push(pad);
       this.row.addChild(pad);
@@ -417,6 +419,7 @@ class FrogHop implements Game {
       this.flag.visible = true;
     }
     if (isFrac(mode)) return this.askFrac(line);
+    if (mode === 'tens') return this.askTens(line);
     const k = Math.abs(q.hops);
     this.setSign(
       mode === 'find'
@@ -474,6 +477,25 @@ class FrogHop implements Game {
     return this.askNow();
   }
 
+  /** Hop by tens: `30 + 20` on the sign, said as "hop two tens" (or "one ten"). */
+  private askTens(line?: Promise<unknown>) {
+    const q = this.q;
+    const k = Math.abs(q.hops);
+    const start = padValue(this.plan, q.start);
+    this.setSign(`${start} ${q.hops > 0 ? '+' : '−'} ${padValue(this.plan, k)}`);
+    this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
+    this.busy = false;
+    const id =
+      k === 1
+        ? q.hops > 0
+          ? 'hop.tens.one'
+          : 'hop.tens.oneback'
+        : q.hops > 0
+          ? 'hop.tens'
+          : 'hop.tens.back';
+    this.ask(() => this.ctx.instruct(id, { n: start, k }), line);
+  }
+
   /** A fraction question: the sum of the start and the hops on the sign (the start left out at 0), then the spoken ask. */
   private askFrac(line?: Promise<unknown>) {
     const q = this.q;
@@ -496,7 +518,7 @@ class FrogHop implements Game {
   private async slideWindow(lo: number) {
     await this.ctx.tw.to(this.row, { alpha: 0 }, { duration: 0.2 });
     this.lo = lo;
-    this.pads.forEach((p, i) => p.set(lo + i));
+    this.pads.forEach((p, i) => p.set(lo + i, padValue(this.plan, lo + i)));
     this.resize(this.view);
     await this.ctx.tw.to(this.row, { alpha: 1 }, { duration: 0.2 });
   }
@@ -526,7 +548,7 @@ class FrogHop implements Game {
     this.frogMoving = true;
     for (let k = 1; this.at !== to; k++) {
       const next = this.at + dir;
-      void this.ctx.say('count', { n: numerals ? next : k });
+      void this.ctx.say('count', { n: numerals ? padValue(this.plan, next) : k });
       if (numerals) this.addTally();
       sfx.pop(5 + k);
       void this.ctx.tw
@@ -710,7 +732,7 @@ class FrogHop implements Game {
         quarters: quarters[0].toUpperCase() + quarters.slice(1),
         name: fracWords(q.target),
       });
-    else if (saysNumbers(mode)) line = this.ctx.say('hop.landed', { n: q.target });
+    else if (saysNumbers(mode)) line = this.ctx.say('hop.landed', { n: padValue(this.plan, q.target) });
     else if (mode === 'count-up')
       line = this.ctx.say('hop.countup.yay', { m: q.target, n: q.start, k: q.hops });
     else if (mode === 'your-way')
@@ -750,7 +772,7 @@ class FrogHop implements Game {
         await this.ctx.say(kind === 'forward' ? 'hop.wrong.forward' : 'hop.wrong.backward');
       else if (kind === 'one-more' || kind === 'one-less')
         await this.ctx.say(kind === 'one-more' ? 'hop.wrong.one-more' : 'hop.wrong.one-less');
-      else await this.ctx.say('hop.wrong.count', { n: start });
+      else await this.ctx.say('hop.wrong.count', { n: padValue(this.plan, start) });
       // She stopped at 10 of her own choice: the remainder is still named.
       if (mode === 'your-way' && stopped) await this.ctx.say('hop.yourway.more', { n: q.remaining! });
     }
