@@ -26,6 +26,21 @@ import {
   isCountable,
   MAX_COUNT,
   TIERS,
+  DANCE_STYLES,
+  makeDances,
+  PET_FEET,
+  pickScene,
+  SCENE_EXTRAS,
+  SCENE_IDS,
+  SCENES,
+  STATUE_LINES,
+  STATUES,
+  statuePose,
+  STYLE_LINES,
+  STYLES_FOR,
+  TUNE_IDS,
+  TUNE_RANGE,
+  TUNES,
 } from './logic';
 
 describe('Pet Says', () => {
@@ -79,7 +94,7 @@ describe('Pet Says', () => {
       expect(f.rest.left.x, s).toBeLessThan(box.x);
       expect(f.rest.right.x, s).toBeGreaterThan(box.x + box.width);
       expect(f.up.left.y, s).toBeLessThan(box.y);
-      for (const pair of [f.rest, f.eyes, f.clap, f.up, f.down, f.freeze, ...Object.values(f.targets)])
+      for (const pair of [f.rest, f.eyes, f.clap, f.up, f.down, ...Object.values(f.targets)])
         for (const p of [pair.left, pair.right])
           expect(Number.isFinite(p.x) && Number.isFinite(p.y), s).toBe(true);
     }
@@ -204,5 +219,117 @@ describe("Pat the pet (level 13, lap's first level)", () => {
       }
       expect(turns.every((t) => t.says === undefined)).toBe(true);
     }
+  });
+});
+
+describe('Freeze dance variety (level 5, dive slice 4)', () => {
+  it("has four tunes of different feel, each on the five-note scale in the marimba's middle", () => {
+    expect(TUNE_IDS).toEqual(['bounce', 'sway', 'shimmy', 'march']);
+    expect(new Set(TUNE_IDS.map((t) => TUNES[t].beat)).size).toBe(4);
+    for (const t of TUNE_IDS) {
+      const { beat, steps } = TUNES[t];
+      expect(beat >= 0.2 && beat <= 0.5, t).toBe(true);
+      expect(steps.length, t).toBeGreaterThanOrEqual(8);
+      // A step is a place on the pentatonic scale (src/audio/notes.ts), so whole steps are always in the scale.
+      for (const step of steps) {
+        expect(Number.isInteger(step), t).toBe(true);
+        expect(step >= TUNE_RANGE.low && step <= TUNE_RANGE.high, t).toBe(true);
+      }
+    }
+    expect(new Set(TUNE_IDS.map((t) => TUNES[t].steps.join())).size).toBe(4);
+  });
+
+  it('deals four dances with four different tunes, a fitting style never twice running, and four statues', () => {
+    const seen = { styles: new Set<string>(), statues: new Set<string>() };
+    for (let seed = 1; seed <= 300; seed++) {
+      const turns = makeTurns(planFor(5), new Rng(seed));
+      expect(turns).toHaveLength(4);
+      const dances = turns.map((t) => t.dance!);
+      expect(new Set(dances.map((d) => d.tune)).size).toBe(4);
+      expect(new Set(dances.map((d) => d.statue)).size).toBe(4);
+      dances.forEach((d, i) => {
+        expect(STYLES_FOR[d.tune]).toContain(d.style);
+        if (i) expect(d.style).not.toBe(dances[i - 1].style);
+        seen.styles.add(d.style);
+        seen.statues.add(d.statue);
+      });
+      for (const level of [1, 2, 3, 4, 13])
+        for (const t of makeTurns(planFor(level), new Rng(seed))) expect(t.dance).toBeUndefined();
+    }
+    expect([...seen.styles].sort()).toEqual([...DANCE_STYLES].sort());
+    expect([...seen.statues].sort()).toEqual([...STATUES].sort());
+    // Longer rounds still never repeat a style back to back.
+    const long = makeDances(9, new Rng(3));
+    long.slice(1).forEach((d, i) => expect(d.style).not.toBe(long[i].style));
+  });
+
+  it('speaks every style and statue with its own line', () => {
+    for (const s of DANCE_STYLES) expect(SCRIPT[STYLE_LINES[s]].length).toBeGreaterThan(0);
+    for (const s of STATUES) {
+      expect(SCRIPT[STATUE_LINES[s]].length).toBeGreaterThan(0);
+      expect(SCRIPT[STATUE_LINES[s]][0]).toMatch(/^Freeze like a/);
+    }
+  });
+
+  it('gives each statue its own mitten places on every friend', () => {
+    for (const s of SPECIES_IDS) {
+      const f = saysFrame((p) => restPoints(s, p), bodyBox(s));
+      const poses = STATUES.map((st) => statuePose(st, f));
+      for (const pose of poses)
+        for (const p of [pose.left, pose.right])
+          expect(Number.isFinite(p.x) && Number.isFinite(p.y), s).toBe(true);
+      for (let i = 0; i < poses.length; i++)
+        for (let j = i + 1; j < poses.length; j++) {
+          const d = Math.max(
+            Math.hypot(poses[i].left.x - poses[j].left.x, poses[i].left.y - poses[j].left.y),
+            Math.hypot(poses[i].right.x - poses[j].right.x, poses[i].right.y - poses[j].right.y),
+          );
+          expect(d, `${s}: ${STATUES[i]} and ${STATUES[j]}`).toBeGreaterThanOrEqual(40);
+        }
+      // The tree reaches up; the ice cream meets over the head; the flamingo has one wing high and one low.
+      const [tree, icecream, flamingo] = poses;
+      expect(tree.left.y).toBeLessThan(bodyBox(s).y);
+      expect(icecream.right.x - icecream.left.x).toBeLessThan(60);
+      expect(flamingo.left.y).toBeGreaterThan(flamingo.right.y + 60);
+    }
+  });
+});
+
+describe('Scenes (dive slice 4)', () => {
+  const VIEWS = [
+    { w: 390, h: 844 },
+    { w: 844, h: 390 },
+    { w: 768, h: 1024 },
+    { w: 1366, h: 1024 },
+  ];
+
+  it('has five places, each a different sky, with ground under the pet and sky above it at four views', () => {
+    expect(SCENE_IDS).toEqual(['meadow', 'beach', 'room', 'snow', 'evening']);
+    expect(new Set(SCENE_IDS.map((s) => SCENES[s].sky.join())).size).toBe(5);
+    for (const s of SCENE_IDS) {
+      const style = SCENES[s];
+      expect(style.hills.length, s).toBeGreaterThan(0);
+      for (const v of VIEWS) {
+        const ground = v.h * style.horizon;
+        // The pet's feet stand on the ground, with room below the horizon, and the back hills leave sky above.
+        expect(ground, `${s} ${v.w}x${v.h}`).toBeLessThan(v.h - PET_FEET - 60);
+        expect(ground - (style.hills.length - 1) * 62 - 60, `${s} ${v.w}x${v.h}`).toBeGreaterThan(20);
+      }
+      expect(SCENE_EXTRAS[s]).toBeDefined();
+    }
+  });
+
+  it('picks a place by seed after the turns, so every place comes up and the moves are unchanged', () => {
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 100; seed++) {
+      const a = new Rng(seed);
+      const b = new Rng(seed);
+      const turns = makeTurns(planFor(1), a);
+      expect(makeTurns(planFor(1), b)).toEqual(turns);
+      const scene = pickScene(a);
+      expect(pickScene(b)).toBe(scene);
+      seen.add(scene);
+    }
+    expect(seen.size).toBe(5);
   });
 });

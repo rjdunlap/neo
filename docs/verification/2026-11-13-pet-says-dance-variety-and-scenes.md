@@ -1,0 +1,5 @@
+# 2026-11-13 — Pet Says dance variety and scenes (PR #1628)
+
+**Changed:** `pet-says` slice 4: level 5 dances each get a tune, a style and a named statue (held until the arrow); five scenes picked per round at every level, after the turns so seeds deal the same moves; ten `says.style.*` and `says.statue.*` lines (device speech); how-to step reworded.
+**Ran:** `npm run typecheck`; `npx vitest run src/games/pet-says src/content` (22 files, 221 tests); full `npm test` (344 of 351 files passed; the failures were timing tests in other games under machine load: block-garden, block-topple, fluffy-salon, keep-house, number-nook, penguin-slide, secret-code; a rerun of those files passed on a further rerun; CI reruns them); `BROWSER_SUITE=shortlist SHORTLIST_ONLY=says FROM_LEVEL=5` (held statue asserted while the arrow shows; evening, beach and meadow scenes; portrait and landscape screenshots of the freeze); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-says FINGER_LEVELS=5` passed.
+**Not run:** `npm run build` (no shared files or assets changed); offline; other suites.

@@ -1,1 +1,0 @@
-**Pet Says slice 4, dance variety and scenes** (rule tests, one landscape and one portrait screenshot of the freeze pose on a new scene, `fingerdemo` at level 5): more freeze-dance poses and scenes at level 5. [Pet Says dive, slice 4](../../deep-dives/pet-says.md#build-slices-in-order)
