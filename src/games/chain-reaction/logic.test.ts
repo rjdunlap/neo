@@ -3,6 +3,9 @@ import { Rng } from '../../engine/random';
 import {
   bounced,
   chainTouch,
+  GATE,
+  GATE_PLAN,
+  gateMet,
   LEVELS,
   hintFor,
   makeBoard,
@@ -405,8 +408,7 @@ describe('Chain Reaction', () => {
 
   it('level 10 machines put the spring on a middle row with a skipped ramp under it, and every design bounces', () => {
     expect(planFor(SPRINGBOARD)).toBe(SPRING_PLAN);
-    expect(LEVELS.school?.order?.at(-1)).toBe(SPRINGBOARD);
-    expect(LEVELS.school?.max).toBe(SPRINGBOARD);
+    expect(LEVELS.school?.order?.at(-2)).toBe(SPRINGBOARD);
     for (let seed = 0; seed < 150; seed++) {
       const board = makeBoard(SPRING_PLAN, new Rng(seed * 31 + 7));
       const spring = board.spring!;
@@ -465,6 +467,122 @@ describe('Chain Reaction', () => {
       const hint = hintFor(board, wrong);
       expect(hint).not.toBeNull();
       expect(wrong[hint!.piece]).not.toBe(hint!.socket);
+    }
+  });
+
+  it('the gate turns the marble only after the chime: chime first opens it, gate first leaves it shut', () => {
+    const board = {
+      cols: 5,
+      rows: 4,
+      start: 1,
+      target: 3,
+      fixed: [],
+      loose: ['right' as const],
+      sockets: [
+        { row: 0, col: 1 },
+        { row: 2, col: 1 },
+      ],
+      solution: [0],
+      chime: { row: 1, col: 2 },
+      gate: { row: 2, col: 2, ramp: 'right' as const },
+    };
+    // Chime first: the ramp at row 0 moves it under the chime, the chime opens the gate, and the gate sends it right.
+    const open = trace(board, [0]);
+    expect(open.steps.map((st) => [st.row, st.col, st.gate ?? null])).toEqual([
+      [0, 1, null],
+      [1, 2, null],
+      [2, 2, 'open'],
+      [3, 3, null],
+    ]);
+    expect(open.chime).toBe(true);
+    expect(open.success).toBe(true);
+    // Without the gate the same design falls straight past it and misses the bell.
+    expect(works({ ...board, gate: undefined }, [0])).toBe(false);
+    // A marble that reaches the gate cell without the chime falls straight through it.
+    const shut = trace({ ...board, start: 2, chime: { row: 3, col: 2 } }, [1]);
+    expect(gateMet(shut)).toBe('shut');
+    expect(shut.steps.find((st) => st.gate)?.ramp).toBeUndefined();
+    expect(shut.success).toBe(false);
+  });
+
+  it('level 11 machines put the chime above the gate, off the straight drop, and every design rings the chime first', () => {
+    expect(planFor(GATE)).toBe(GATE_PLAN);
+    expect(LEVELS.school?.order?.at(-1)).toBe(GATE);
+    expect(LEVELS.school?.max).toBe(GATE);
+    for (let seed = 0; seed < 150; seed++) {
+      const board = makeBoard(GATE_PLAN, new Rng(seed * 37 + 11));
+      const chime = board.chime!,
+        gate = board.gate!;
+      expect(chime).toBeDefined();
+      expect(gate).toBeDefined();
+      expect(chime.row).toBeLessThan(gate.row);
+      expect(chime.col).not.toBe(board.start);
+      expect(
+        board.sockets.some(
+          (c) => (c.row === gate.row && c.col === gate.col) || (c.row === chime.row && c.col === chime.col),
+        ),
+      ).toBe(false);
+      expect(board.loose).toHaveLength(GATE_PLAN.loose);
+      expect(board.sockets).toHaveLength(GATE_PLAN.loose + GATE_PLAN.decoys);
+
+      const working = new Set<string>();
+      let sawShut = false;
+      for (let a = 0; a < board.sockets.length; a++)
+        for (let b = 0; b < board.sockets.length; b++) {
+          if (a === b) continue;
+          const layout = [a, b];
+          const t = trace(board, layout);
+          if (gateMet(t) === 'shut') sawShut = true;
+          // An open gate always means the chime was touched first.
+          if (gateMet(t) === 'open') expect(t.chime).toBe(true);
+          if (!works(board, layout)) continue;
+          working.add(
+            layout
+              .map((socket, piece) => `${socket}:${board.loose[piece]}`)
+              .sort()
+              .join('|'),
+          );
+          // Every working design opens the gate and turns on it; the same ramps without the gate miss.
+          expect(gateMet(t), `seed ${seed}`).toBe('open');
+          expect(works({ ...board, gate: undefined }, layout)).toBe(false);
+        }
+      // Some placement reaches the gate before the chime, so a shut gate can be seen and fixed.
+      expect(sawShut, `seed ${seed}`).toBe(true);
+      const ways = solutions(board);
+      expect(ways.length).toBe(working.size);
+      expect(ways.length).toBeGreaterThanOrEqual(GATE_PLAN.solutions.min);
+      expect(ways.length).toBeLessThanOrEqual(GATE_PLAN.solutions.max);
+      expect(works(board, [null, null])).toBe(false);
+    }
+  });
+
+  it('level 11 hints lead to a design that opens the gate and the bot finishes with a run', () => {
+    for (let seed = 0; seed < 50; seed++) {
+      const board = makeBoard(GATE_PLAN, new Rng(seed * 113 + GATE));
+      const layout: Layout = [null, null];
+      for (let step = 0; step < board.loose.length; step++) {
+        const move = chainTouch(board, layout);
+        expect(move?.kind).toBe('place');
+        if (move?.kind !== 'place') break;
+        layout[move.piece] = move.socket;
+      }
+      expect(gateMet(trace(board, layout))).toBe('open');
+      expect(chainTouch(board, layout)).toEqual({ kind: 'run' });
+      // From every wrong full placement, repeated hints reach a working design.
+      for (let a = 0; a < board.sockets.length; a++)
+        for (let b = 0; b < board.sockets.length; b++) {
+          if (a === b || works(board, [a, b])) continue;
+          const wrong: Layout = [a, b];
+          for (let step = 0; step < 4 && !works(board, wrong); step++) {
+            const hint = hintFor(board, wrong)!;
+            expect(hint).not.toBeNull();
+            expect(wrong[hint.piece]).not.toBe(hint.socket);
+            const other = wrong.indexOf(hint.socket);
+            if (other >= 0) wrong[other] = null;
+            wrong[hint.piece] = hint.socket;
+          }
+          expect(works(board, wrong), `seed ${seed} ${a},${b}`).toBe(true);
+        }
     }
   });
 });
