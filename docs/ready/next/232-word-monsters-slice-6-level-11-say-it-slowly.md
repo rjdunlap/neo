@@ -1,1 +1,0 @@
-**Word Monsters slice 6, level 11 Say it slowly** (new-levels tier: rule tests, a play at 11, `fingerdemo` at 11): level 6's interaction without the sound list; the next free school level ID, no `order`. [Word Monsters dive, slice 6](../../deep-dives/word-monsters.md#build-slices-in-order)
