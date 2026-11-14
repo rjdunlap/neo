@@ -816,7 +816,7 @@ describe('Tile Pairs', () => {
           mask = removePair(mask, rng.pick(open));
         }
       }
-    // Measured 2026-11-14: about 9,000 states at worst over 200 play-outs (under 10 ms on a Mac). Without the
+    // Measured 2026-11-14: about 9,000 states at worst over 100 play-outs (under 10 ms on a Mac). Without the
     // pruning in `solve` the 40-tile board reached 2.3 million states (0.8 s) on one stranded state.
     expect(worst).toBeLessThan(50000);
   });

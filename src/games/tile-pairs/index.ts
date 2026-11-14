@@ -607,8 +607,8 @@ export function tilePairsLayout(v: View, tiles: readonly Tile[]) {
   // A raised tile on the back row lifts 6 units a layer above it.
   const lift = Math.max(0, ...tiles.filter((t) => t.y === 0).map((t) => t.z)) * 6;
   return {
-    // Centred above the buttons, but a four-row board in landscape (levels 15–16, a big shuffle) would reach the
-    // rule line, so it sits lower; three rows, and every board held upright, are where they always were.
+    // Centred above the buttons, but in landscape a four-row board (levels 2–3's square, 15–16 and a big shuffle)
+    // would reach the rule line, so it sits lower; three-row boards and every board held upright do not move.
     board: {
       x: v.w / 2 - (cols - 1) * 60,
       y: Math.max((v.h - 110) / 2 - (rows - 1) * 58, BOARD_TOP + 54 + lift),
