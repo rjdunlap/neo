@@ -138,6 +138,8 @@ class WordMonsters implements Game {
   private destroyed = false;
   /** Level 11: the question whose sounds the boxes have already said, so repeat taps count one hint per word. */
   private slowHinted: Question | null = null;
+  /** Level 11: the boxes are saying their sounds; another tap waits for them to finish. */
+  private slowSaying = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -616,18 +618,21 @@ class WordMonsters implements Game {
    */
   private async saySlowly() {
     const q = this.question;
-    if (!q || this.busy || this.finished || this.destroyed) return;
+    if (!q || this.busy || this.finished || this.destroyed || this.slowSaying) return;
     if (this.askNow()) return;
     if (this.slowHinted !== q) {
       this.slowHinted = q;
       this.hints++;
     }
+    this.slowSaying = true;
     for (let i = 0; i < q.answer.length; i++) {
-      if (this.destroyed || this.question !== q) return;
+      // The word's own finish (the last drop) takes over the voice.
+      if (this.destroyed || this.busy || this.question !== q) break;
       sfx.pop(3 + i);
       this.ripple(i);
       await this.ctx.say(soundLine(q.answer[i]));
     }
+    this.slowSaying = false;
   }
 
   /** A brief ring over box `i`, so the sound she hears belongs to a place. */
