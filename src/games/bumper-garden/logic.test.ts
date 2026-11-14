@@ -31,6 +31,7 @@ import {
   GROW_SPREAD,
   wakeFlower,
   PATTERN_UNITS,
+  PATTERN_PLAIN,
   patternColors,
   patternOf,
   patternUnit,
@@ -396,6 +397,8 @@ describe('Bumper Garden', () => {
         expect(colors.filter((k) => k === c).length).toBe(run.filter((k) => k === c).length);
       const plain = colors.filter((c) => !run.includes(c));
       expect(plain).toHaveLength(plan.bumpers - run.length);
+      // Plain flowers share one color of their own, never one of the pattern's three.
+      expect(new Set(plain)).toEqual(new Set([PATTERN_PLAIN]));
       // A plain flower is never the next color.
       for (let step = 0; step < run.length; step++)
         for (const c of plain) expect(wantsPattern(plan, step, c)).toBe(false);

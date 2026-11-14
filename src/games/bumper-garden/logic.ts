@@ -94,6 +94,8 @@ export const PATTERN_UNITS: readonly (readonly number[])[] = [
   [0, 1, 1],
   [0, 1, 2],
 ];
+/** The color index of the plain flowers, never in a pattern (the units use 0–2), drawn without a mark. */
+export const PATTERN_PLAIN = 3;
 /** How long a pattern run is: every unit fits whole at least twice (AB three times, ABB and ABC twice). */
 export const PATTERN_RUN = 6;
 /** A unit repeated to fill the run. */
@@ -243,7 +245,7 @@ export const wantsPattern = (plan: BumperPlan, step: number, color: number): boo
  */
 export function patternColors(plan: BumperPlan): number[] {
   const run = patternOf(plan);
-  const decoy = Math.max(...run) + 1;
+  const decoy = PATTERN_PLAIN;
   const needed = [...run].sort((a, b) => a - b);
   return Array.from({ length: plan.bumpers }, (_, i) => needed[i] ?? decoy);
 }

@@ -367,13 +367,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
     const bumperLevels =
       process.env.BUMPER_LEVELS?.split(',').map(Number) ??
-      [1, 2, 3, 4, 5, 6, 8, 9, 10].filter((l) => l >= Number(process.env.FROM_LEVEL || 1));
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter((l) => l >= Number(process.env.FROM_LEVEL || 1));
     const bumperTables = process.env.BUMPER_TABLES?.split(',') ?? [null];
     for (const table of bumperTables)
       for (const level of !only || only === 'bumper' ? bumperLevels : []) {
-        if (level === 1 || level === 5 || level === 8 || level === 9 || level === 10)
+        if (level === 1 || level === 5 || level === 7 || level === 8 || level === 9 || level === 10)
           await page.setViewportSize(
-            level === 10 ? { width: 390, height: 844 } : { width: 768, height: 1024 },
+            level === 7 || level === 10 ? { width: 390, height: 844 } : { width: 768, height: 1024 },
           );
         if (table)
           await page.evaluate(
@@ -401,7 +401,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await launch('bumper-garden', level);
         if (table) assert.equal(await page.evaluate(() => neo.scene.game.table), table);
         await page.waitForTimeout(level === 8 ? 2000 : 400);
-        if (table || level === 6 || level === 8 || level === 9 || level === 10)
+        if (table || level === 6 || level === 7 || level === 8 || level === 9 || level === 10)
           await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
         if (level === 8)
           await page.evaluate(() => {
@@ -415,6 +415,23 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             g.bumped(sleepy);
             if (g.flowers[sleepy].bloomed || g.misses !== before.misses || g.hints !== before.hints)
               throw new Error('Bumper 8: a sleepy bump changed progress');
+          });
+        if (level === 7)
+          await page.evaluate(async () => {
+            // Pattern bloom: the strip pictures the whole run, a plain or out-of-turn color only chimes.
+            const g = neo.scene.game;
+            const { patternOf } = await import('/src/games/bumper-garden/logic.ts');
+            const run = patternOf(g.plan);
+            if (g.plan.mode !== 'pattern' || g.numberStrip.children.length !== run.length || g.step !== 0)
+              throw new Error('Bumper 7: strip or start mismatch');
+            const wrong = g.flowers.findIndex((f) => f.bumper.color !== run[0]);
+            const before = { step: g.step, misses: g.misses, hints: g.hints };
+            g.bumped(wrong);
+            if (g.step !== before.step || g.misses !== before.misses || g.flowers[wrong].bloomed)
+              throw new Error('Bumper 7: an out-of-turn color changed progress');
+            const right = g.flowers.findIndex((f, i) => g.wanted(i));
+            g.bumped(right);
+            if (g.step !== 1 || !g.flowers[right].bloomed) throw new Error('Bumper 7: the next color did not bloom');
           });
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const result = await page.evaluate(async () => {
@@ -513,7 +530,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             );
           return { launches: g.launches, misses: g.misses, hints: g.hints };
         });
-        if (level !== 6 && level !== 8 && level !== 9 && level !== 10)
+        if (level !== 6 && level !== 7 && level !== 8 && level !== 9 && level !== 10)
           await screenshot(`bumper-garden-${level}`);
         await finished('bumper-garden');
         const r = await score('bumper-garden');
@@ -523,7 +540,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints,
             `bumper ${level} score ${r}`,
           );
-        if (level === 1 || level === 5 || level === 8 || level === 9 || level === 10)
+        if (level === 1 || level === 5 || level === 7 || level === 8 || level === 9 || level === 10)
           await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Bumper Garden ${table ?? 'random'} ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`,
