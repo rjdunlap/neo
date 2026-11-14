@@ -3517,3 +3517,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Color Garden level 11 Light, middle, dark (2026-11-14)
 
 [PR #1664](https://github.com/rjdunlap/neo/pull/1664), `claude/color-garden-light-middle-dark`, slice 4 of the [dive](../deep-dives/color-garden.md#build-slices-in-order) (written as "Level 9" before IDs 9 and 10 were taken). Stable level 11, pre-K top (order 4, 5, 6, 7, 8, 11): three baskets of one color's tones, nine balloons and flowers, `SHADE_LOOK` refactored to a palette table with the middle tone added; wrong drops name the shade and hue, glow after two. See the [verification entry](../verification/2026-11-14-color-garden-level-11-light-middle-dark.md).
+
+## Frog Hop scenes (2026-11-14)
+
+[PR #1665](https://github.com/rjdunlap/neo/pull/1665), `claude/frog-hop-scenes`, dive slice 6 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). Four scenes drawn per round after the questions (lily pond, brook stones, flower path, evening pond with fireflies); art only, with a pure `hopLayout` checked at four views and the card row moved clear of the guide corner. See the [verification entry](../verification/2026-11-14-frog-hop-scenes-brook-flower-path-evening.md).

@@ -402,10 +402,12 @@ class FrogHop implements Game {
     else if (this.scene === 'evening') {
       // Out of the sign's band, above the line.
       const mx = v.w - 90;
-      g.circle(mx, 262, 36).fill(swatch.yellow.light).stroke({ width: 4, color: swatch.yellow.line });
-      g.circle(mx - 10, 254, 6)
+      // Above the line in a short view as well.
+      const my = Math.min(262, y - 130);
+      g.circle(mx, my, 36).fill(swatch.yellow.light).stroke({ width: 4, color: swatch.yellow.line });
+      g.circle(mx - 10, my - 8, 6)
         .fill(swatch.yellow.fill)
-        .circle(mx + 12, 272, 4)
+        .circle(mx + 12, my + 10, 4)
         .fill(swatch.yellow.fill);
     }
   }
@@ -441,9 +443,10 @@ class FrogHop implements Game {
     if (this.scene === 'evening') {
       // Fireflies drift and glow in the sky between the sign and the line.
       const f = this.fireflies.clear();
-      const top = 220,
+      // Between the sign and the line; a view too short for that band shows none.
+      const top = this.layout.sign.y + this.layout.sign.h + 24,
         bottom = this.padY() - 110;
-      for (const fly of FIREFLIES) {
+      for (const fly of bottom - top < 40 ? [] : FIREFLIES) {
         const t = this.clock * 0.6 + fly.phase;
         const x = fly.fx * this.view.w + 24 * Math.sin(t);
         const y = top + ((bottom - top) * fly.fy) / 10 + 12 * Math.sin(t * 1.3);
