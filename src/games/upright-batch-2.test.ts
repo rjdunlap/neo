@@ -10,7 +10,7 @@ import { planFor as pondPlan } from './lantern-lights/logic';
 import { controllerFrame } from './picture-logic';
 import { clueDepths, ORDER, poolFor, touchFrame } from './picture-logic/logic';
 import { tilePairsLayout } from './tile-pairs';
-import { LEVELS as tileLevels, makeBoard } from './tile-pairs/logic';
+import { fullMask, LEVELS as tileLevels, makeBoard, reshuffle } from './tile-pairs/logic';
 import { levelsInOrder } from '../progress/difficulty';
 import { square, uprightProblems, UPRIGHT_VIEWS, type Target } from './upright-check';
 
@@ -109,6 +109,31 @@ describe.each(Object.entries(views))('Grown-up upright batch 2 on %s', (_, v) =>
       const cells = grid(l.board.x, l.board.y, n, n, l.cell);
       check(v, [...cells, ...buttons(l.buttons, 160, 100)]);
       check(v, [...cells, ...buttons([l.after[0]], 320, 100), ...buttons([l.after[1]], 220, 100)]);
+    }
+  });
+});
+
+describe('Tile Pairs held sideways', () => {
+  it('keeps every board, and the biggest shuffle, between the rule line and the buttons at full size', () => {
+    // An iPad's 4:3 is the shortest landscape (768 units high); a phone held sideways is wider, never shorter.
+    for (const v of [computeView(1024, 768, NO_INSETS, false), computeView(844, 390, NO_INSETS, false)]) {
+      expect(v.h).toBeGreaterThanOrEqual(768);
+      const boards = levelsInOrder(tileLevels.grownup!).map((level) => makeBoard(level, new Rng(1)));
+      const great = boards.find((b) => b.length === 40)!;
+      boards.push(reshuffle(great, fullMask(great), new Rng(2)));
+      for (const tiles of boards) {
+        const l = tilePairsLayout(v, tiles),
+          buttonTop = Math.min(...l.buttons.map((b) => b.y)) - 50;
+        for (const { x, y } of l.tiles) {
+          const cx = l.board.x + x,
+            cy = l.board.y + y;
+          // The tally sits at 66 and the rule line under it at 104.
+          expect(cy - 54).toBeGreaterThanOrEqual(118);
+          expect(cy + 54).toBeLessThanOrEqual(buttonTop);
+          expect(cx - 54).toBeGreaterThanOrEqual(0);
+          expect(cx + 54).toBeLessThanOrEqual(v.w);
+        }
+      }
     }
   });
 });

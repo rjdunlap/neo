@@ -1,1 +1,0 @@
-**Tile Pairs slice 13, levels 15–16 big stacks** (new-levels tier: typecheck, rule tests with the widened mask and node-budget checks, one browser play of 16 in each orientation, `fingerdemo` at 16; grown-up): boards of 36 and 40 tiles on six columns; the exact search stays fast with a widened mask. [Tile Pairs dive, slice 13](../../deep-dives/tile-pairs.md#build-slices-in-order)

@@ -72,11 +72,11 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(14));
+    expect(planFor(99)).toBe(planFor(16));
     expect(LEVELS.grownup).toEqual({
       min: 1,
       max: 21,
-      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13, 14],
+      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13, 14, 15, 16],
     });
     for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
@@ -493,9 +493,18 @@ describe('Tile Pairs', () => {
     );
     for (const c of boards13.join('|')) brick = Math.imul(brick ^ c.charCodeAt(0), 0x01000193) >>> 0;
     expect(brick.toString(16)).toBe('16720b90');
-    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20, 21])
+    // Level 14, pinned from origin/main before levels 15–16 widened the mask and pruned the search.
+    let three = 0x811c9dc5;
+    const boards14 = [1, 2, 3, 4, 5].map((seed) =>
+      makeBoard(14, new Rng(seed))
+        .map((t) => `${t.x}${t.y}${t.z}${t.kind}`)
+        .join(''),
+    );
+    for (const c of boards14.join('|')) three = Math.imul(three ^ c.charCodeAt(0), 0x01000193) >>> 0;
+    expect(three.toString(16)).toBe('2a4d26d');
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21])
       expect(takeOf(makeBoard(level, new Rng(1)))).toBe(2);
-    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21])
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21])
       expect(opensAtEnds(makeBoard(level, new Rng(1)))).toBe(false);
   });
   it('rejects a trap that a careful two-pair look does not avoid', () => {
@@ -549,8 +558,8 @@ describe('Tile Pairs', () => {
     expect(solve(reshuffle(trap, fullMask(trap), new Rng(5)))).not.toBeNull();
   });
   it('can recover any played remainder without returning removed tiles or losing pictures', () => {
-    for (const level of [3, 4, 5, 6, 8, 9])
-      for (let seed = 1; seed <= 80; seed++) {
+    for (const level of [3, 4, 5, 6, 8, 9, 15, 16])
+      for (let seed = 1; seed <= (level >= 15 ? 20 : 80); seed++) {
         const tiles = makeBoard(level, new Rng(seed));
         let mask = fullMask(tiles);
         const rng = new Rng(seed + 500);
@@ -571,6 +580,7 @@ describe('Tile Pairs', () => {
           // rest are raised on supported places in the middle.
           expect(rescued.every((t) => t.x < 6 && t.y < 4)).toBe(true);
           expect(rescued.filter((t) => t.z === 0)).toHaveLength(Math.min(rescued.length, 24));
+          expect(rescued.every((t) => Number.isInteger(t.x) && Number.isInteger(t.y))).toBe(true);
           for (const tile of rescued.filter((t) => t.z > 0))
             expect(rescued.some((t) => t.x === tile.x && t.y === tile.y && t.z === 0)).toBe(true);
           expect(new Set(rescued.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(rescued.length);
@@ -582,6 +592,12 @@ describe('Tile Pairs', () => {
       all = reshuffle(wide, fullMask(wide), new Rng(4));
     expect([0, 1].map((z) => all.filter((t) => t.z === z).length)).toEqual([24, 6]);
     expect(solve(all)).not.toBeNull();
+    // Level 16's whole 40 fits too: 24 in four rows and 16 raised, the first six where level 9's go.
+    const great = makeBoard(16, new Rng(3)),
+      every = reshuffle(great, fullMask(great), new Rng(4));
+    expect([0, 1].map((z) => every.filter((t) => t.z === z).length)).toEqual([24, 16]);
+    expect(new Set(every.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(40);
+    expect(solve(every)).not.toBeNull();
     const tower: Tile[] = [0, 1].map((z) => ({ x: 0, y: 0, z, kind: 2 }));
     expect(solve(tower)).toBeNull();
     expect(solve(reshuffle(tower, 3, new Rng(1)))).toEqual([[0, 1]]);
@@ -719,6 +735,126 @@ describe('Tile Pairs', () => {
     expect(worst).toBeLessThan(20000);
     expect(losing).toBeGreaterThan(0);
   });
+  it('holds 36 and 40 tiles in the mask: every bit reads back and a tile already gone stays gone', () => {
+    const tiles = layout(16),
+      full = fullMask(tiles);
+    expect(tiles).toHaveLength(40);
+    expect(full).toBe(2 ** 40 - 1);
+    expect(Number.isSafeInteger(full)).toBe(true);
+    for (let i = 0; i < 40; i++) {
+      expect(present(full, i)).toBe(true);
+      const without = removePair(full, [i]);
+      expect(without).toBe(full - 2 ** i);
+      for (let j = 0; j < 40; j += 7) expect(present(without, j)).toBe(j !== i);
+      expect(removePair(without, [i])).toBe(without);
+    }
+    expect(
+      removePair(
+        full,
+        tiles.map((_, i) => i),
+      ),
+    ).toBe(0);
+    expect(present(fullMask(layout(15)), 35)).toBe(true);
+    expect(present(fullMask(layout(15)), 36)).toBe(false);
+  });
+  it('stacks levels 15 and 16 on six columns, every raised tile supported', () => {
+    const big = layout(15),
+      great = layout(16);
+    expect([0, 1, 2].map((z) => big.filter((t) => t.z === z).length)).toEqual([24, 8, 4]);
+    expect([0, 1, 2].map((z) => great.filter((t) => t.z === z).length)).toEqual([24, 12, 4]);
+    // Level 16 is level 15 with four more raised tiles: four rows, since five do not fit above the buttons in landscape.
+    for (const t of big) expect(great).toContainEqual(t);
+    for (const [tiles, rows] of [
+      [big, 4],
+      [great, 4],
+    ] as const) {
+      expect(new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`)).size).toBe(tiles.length);
+      expect(tiles.every((t) => Number.isInteger(t.x) && t.x >= 0 && t.x < 6 && t.y >= 0 && t.y < rows)).toBe(
+        true,
+      );
+      for (const tile of tiles.filter((t) => t.z > 0))
+        expect(tiles.some((t) => t.x === tile.x && t.y === tile.y && t.z === tile.z - 1)).toBe(true);
+      // Symmetric left to right, so neither side is the easy one.
+      for (const t of tiles)
+        expect(tiles.some((u) => u.x === 5 - t.x && u.y === t.y && u.z === t.z)).toBe(true);
+    }
+  });
+  it('deals levels 15 and 16 in their band, and 100 seeds clear by legal moves', () => {
+    for (const level of [15, 16]) {
+      const [min, max] = planFor(level).clear;
+      for (let seed = 1; seed <= 100; seed++) {
+        const d = deal(level, new Rng(seed)),
+          tiles = d.tiles;
+        expect(d.inBand).toBe(true);
+        expect(d.rate).toBeGreaterThanOrEqual(min);
+        expect(d.rate).toBeLessThanOrEqual(max);
+        expect(tiles).toEqual(makeBoard(level, new Rng(seed)));
+        for (let kind = 0; kind < 6; kind++) expect(tiles.filter((t) => t.kind === kind).length % 2).toBe(0);
+        const route = solve(tiles)!;
+        let mask = fullMask(tiles);
+        for (const pair of route) {
+          expect(pairs(tiles, mask)).toContainEqual(pair);
+          mask = removePair(mask, pair);
+        }
+        expect(mask).toBe(0);
+      }
+    }
+  });
+  it('keeps the exact search under a budget on every state of 50 random play-outs at levels 15 and 16', () => {
+    let worst = 0;
+    for (const level of [15, 16])
+      for (let seed = 1; seed <= 50; seed++) {
+        const rng = new Rng(seed + 700),
+          board = makeBoard(level, new Rng(seed));
+        let mask = fullMask(board);
+        for (;;) {
+          const stats = { nodes: 0 };
+          solve(board, mask, false, stats);
+          worst = Math.max(worst, stats.nodes);
+          const open = pairs(board, mask);
+          if (!open.length) break;
+          mask = removePair(mask, rng.pick(open));
+        }
+      }
+    // Measured 2026-11-14: about 9,000 states at worst over 100 play-outs (under 10 ms on a Mac). Without the
+    // pruning in `solve` the 40-tile board reached 2.3 million states (0.8 s) on one stranded state.
+    expect(worst).toBeLessThan(50000);
+  });
+  it('prunes the exact search without changing which boards clear', () => {
+    // The plain search `solve` used before levels 15–16: every matching move, memoized dead states.
+    const plain = (tiles: readonly Tile[], mask: number) => {
+      const dead = new Set<number>();
+      const visit = (m: number): boolean => {
+        if (!m) return true;
+        if (dead.has(m)) return false;
+        if (pairs(tiles, m).some((p) => visit(removePair(m, p)))) return true;
+        dead.add(m);
+        return false;
+      };
+      return visit(mask);
+    };
+    let stranded = 0;
+    for (const level of [3, 5, 6, 7, 8, 10, 12, 13, 14, 15])
+      for (let seed = 1; seed <= 8; seed++) {
+        const rng = new Rng(seed + 900),
+          board = makeBoard(level, new Rng(seed));
+        let mask = fullMask(board);
+        for (;;) {
+          const route = solve(board, mask);
+          expect(route !== null).toBe(plain(board, mask));
+          if (!route) stranded++;
+          let m = mask;
+          for (const pair of route ?? []) {
+            expect(pairs(board, m)).toContainEqual(pair);
+            m = removePair(m, pair);
+          }
+          const open = pairs(board, mask);
+          if (!open.length) break;
+          mask = removePair(mask, rng.pick(open));
+        }
+      }
+    expect(stranded).toBeGreaterThan(20);
+  });
   it('steps through every level once, keeping levels 1–10 in their order with each lesson before the board it serves', () => {
     const order = levelsInOrder(LEVELS.grownup!);
     expect(new Set(order).size).toBe(order.length);
@@ -732,7 +868,7 @@ describe('Tile Pairs', () => {
     ])
       expect(order.indexOf(lesson)).toBe(order.indexOf(before) - 1);
     // Two pairs ahead comes after level 10, then the second-pass levels in the dive's proposed order.
-    expect(order.slice(-5)).toEqual([21, 11, 12, 13, 14]);
+    expect(order.slice(-7)).toEqual([21, 11, 12, 13, 14, 15, 16]);
     for (const level of order) expect(planFor(level).name).toBeTruthy();
     expect(new Set(order.map((l) => planFor(l).name)).size).toBe(order.length);
     for (let level = 1; level <= 10; level++) expect(lessonFor(level)).toBeNull();

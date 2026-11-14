@@ -115,8 +115,27 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           ? 18
           : level >= 17
             ? 14
-            : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24, 26, 24][level - 1],
+            : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24, 26, 24, 36, 40][level - 1],
       );
+      // Levels 15–16 stack four rows: in landscape every tile stays below the rule line and above the buttons, at full size.
+      if (level === 15 || level === 16) {
+        const fit = await page.evaluate(() => {
+          const g = neo.scene.game;
+          return g.nodes.map((n) => {
+            const p = n.toGlobal({ x: -54, y: -54 });
+            return { w: n.hitArea.width, top: p.y / neo.view.scale, bottom: p.y / neo.view.scale + 108 };
+          });
+        });
+        const h = await page.evaluate(() => neo.view.h);
+        for (const r of fit) {
+          assert.ok(r.w >= 100, 'a big-stack tile keeps its size');
+          assert.ok(
+            r.top >= 118 && r.bottom <= h - 120,
+            `a big-stack tile sits between the rule line and the buttons in landscape (${r.top}–${r.bottom} of ${h})`,
+          );
+        }
+        await screenshot(`tile-pairs-${level}-landscape`);
+      }
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
       if (level === 12) {
         // Short sides: a tile with a clear top, held in above and below, is blocked; the tap is free (no miss) and
@@ -408,8 +427,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       s = await state();
       assert.equal(s.shuffles, 1);
       assert.equal(s.hints, 2);
-      if (level === 9) {
-        // Level 9's 28 shuffled tiles keep to four rows (four raised): every tile stays on screen and above the buttons.
+      if (level === 9 || level === 15 || level === 16) {
+        // Shuffled tiles past 24 keep to four rows (the rest raised): every tile stays on screen and above the buttons.
         const rows = await page.evaluate(() => {
           const g = neo.scene.game,
             top = g.undoButton.toGlobal({ x: 0, y: -50 }).y / neo.view.scale;
@@ -423,12 +442,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           assert.ok(r.x0 >= 0 && r.y0 >= 0 && r.x1 / r.s <= r.w, 'a shuffled tile stays on screen');
           assert.ok(r.y1 / r.s <= r.top, 'a shuffled tile stays above the buttons');
         }
-        await screenshot('tile-pairs-9-shuffled');
+        await screenshot(`tile-pairs-${level}-shuffled`);
       }
       assert.deepEqual(
         s.tiles.map((t) => t.kind).sort(),
         remainder.tiles
-          .filter((_, i) => remainder.mask & (1 << i))
+          // Arithmetic, not `1 << i`: levels 15–16's masks pass 32 bits.
+          .filter((_, i) => Math.floor(remainder.mask / 2 ** i) % 2 === 1)
           .map((t) => t.kind)
           .sort(),
       );
