@@ -273,7 +273,8 @@ class PetSays implements Game {
    */
   private quietBeat(dt: number, dance: Dance, segments: Segment[]) {
     const tune = TUNES[dance.tune];
-    this.elapsed += dt;
+    // A long frame (a tab coming back) steps a little at a time, so no stretch, and no freeze, is skipped.
+    this.elapsed += Math.min(dt, 0.25);
     const at = segmentAt(segments, this.elapsed);
     if (at !== this.segment) {
       this.segment = at;
@@ -310,6 +311,9 @@ class PetSays implements Game {
   private stillHere() {
     for (const o of [this.mover.left, this.mover.right, this.mover, this.mover.scale]) this.ctx.tw.kill(o);
     this.mover.rotation = 0;
+    // A twirl caught mid-turn would stand squashed thin; face front at full width, as `freeze` does.
+    const s = Math.abs(this.mover.scale.y);
+    this.mover.scale.set(s, s);
     this.mover.pet.setMood('surprised');
     this.mover.pet.alive = false;
     sfx.squeak(9);
