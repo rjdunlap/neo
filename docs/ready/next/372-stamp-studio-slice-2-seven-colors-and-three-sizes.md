@@ -1,0 +1,1 @@
+**Stamp Studio slice 2, seven colors and three sizes** (new-levels tier: rule tests, one portrait screenshot and `fingerdemo` at level 3): red, orange and yellow join the colors, the size button cycles small, middle and big, and no two controls overlap at four views. [Stamp Studio dive, slice 2](../../deep-dives/stamp-studio.md#build-slices-in-order)
