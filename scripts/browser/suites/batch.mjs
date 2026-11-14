@@ -1850,7 +1850,9 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             ((p.mode === 'color' || p.mode === 'two') &&
               (findLine(g.grid, 4, g.target) || findLine(g.grid, 3, g.target))) ||
             findLine(g.grid, want, g.target);
-          await draw(line.slice(0, Math.max(want, p.mode === 'color' || p.mode === 'two' ? line.length : want)));
+          await draw(
+            line.slice(0, Math.max(want, p.mode === 'color' || p.mode === 'two' ? line.length : want)),
+          );
         }
         if (p.mode === 'two' && JSON.stringify(g.have) !== JSON.stringify(p.goals))
           throw new Error(`Two colors counts: ${g.have} of ${p.goals}`);
