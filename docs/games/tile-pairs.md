@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21 |
+| grown-up | 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,8 @@
 | 8 | Flower friends · any two flowers pair |
 | 9 | Wide stack · 30 tiles |
 | 10 | Tricky twins · a pair that strands a terrace |
+| 11 | Tricky tower · a pair that buries a stack |
+| 12 | Short sides · tiles open above and below |
 | 17 | Twins on twins · a lesson |
 | 18 | Three free copies · a lesson |
 | 19 | Crossed stacks · a lesson |

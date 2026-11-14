@@ -7,6 +7,12 @@ export const VOICE = {
   'tile-pairs.go-flowers': [
     'Tap two tiles with the same picture, or any two flowers. Their tops must be clear, and a left or right side must be open. Clear the stack!',
   ],
+  'tile-pairs.go-ends': [
+    'Tap two tiles with the same picture. On this board the sides that count are above and below: a tile needs a clear top, and an open edge above or below it. Clear the stack!',
+  ],
+  'tile-pairs.blocked-ends': [
+    'On this board, left and right do not count. That tile needs a clear top and an open edge above or below it. Try a bright tile.',
+  ],
   'tile-pairs.blocked': ['That tile needs a clear top and an open left or right side. Try a bright tile.'],
   'tile-pairs.mismatch': ['Those pictures are different. Look for two that are the same.'],
   'tile-pairs.flowers': ['Flowers go with flowers. Any two flowers make a pair, even different ones.'],

@@ -13,6 +13,7 @@ import {
   FLOWER_ART,
   free,
   freeTiles,
+  heldSides,
   isFlower,
   matches,
   fromPool,
@@ -27,6 +28,7 @@ import {
   losingFirstPairs,
   mirrorX,
   makeBoard,
+  opensAtEnds,
   pairs,
   pairsBeforeStranded,
   peekStacks,
@@ -69,11 +71,11 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(10));
+    expect(planFor(99)).toBe(planFor(12));
     expect(LEVELS.grownup).toEqual({
       min: 1,
       max: 21,
-      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21],
+      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12],
     });
     for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
@@ -205,6 +207,108 @@ describe('Tile Pairs', () => {
       }
     }
     expect(seen.size).toBeGreaterThanOrEqual(35);
+  });
+  it('deals level 11 from a frozen pool of tricky towers, each with a losing first pair and a fair trap', () => {
+    const plan = planFor(11),
+      tiles = layout(11);
+    // Level 7's tower, symmetric under the mirror the pool uses.
+    expect(tiles).toEqual(layout(7));
+    const keys = new Set(tiles.map((t) => `${t.x},${t.y},${t.z}`));
+    for (const t of tiles) expect(keys.has(`${mirrorX(plan, t.x)},${t.y},${t.z}`)).toBe(true);
+    const pool = POOLS.tower;
+    expect(pool).toHaveLength(24);
+    expect(new Set(pool).size).toBe(24);
+    for (const kinds of pool) {
+      expect(kinds).toMatch(/^[0-5]{24}$/);
+      // Level 7's counts: twelve pairs over six pictures, four tiles of each.
+      for (let k = 0; k < 6; k++) expect([...kinds].filter((c) => Number(c) === k)).toHaveLength(4);
+      const board = tiles.map((t, i) => ({ ...t, kind: Number(kinds[i]) }));
+      expect(solve(board)).not.toBeNull();
+      expect(losingFirstPairs(board).length).toBeGreaterThan(0);
+      expect(fairTrap(board)).toBe(true);
+      expect(clearRate(board, new Rng(77), 200)).toBeLessThanOrEqual(plan.clear[1]);
+    }
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const d = deal(11, new Rng(seed));
+      expect(d.tiles).toEqual(fromPool(11, new Rng(seed)));
+      seen.add(JSON.stringify(d.tiles.map((t) => t.kind)));
+      if (seed <= 8) {
+        expect(losingFirstPairs(d.tiles).length).toBeGreaterThan(0);
+        expect(fairTrap(d.tiles)).toBe(true);
+      }
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(35);
+  });
+  it('opens level 12 above and below: the classic rule read along the other axis', () => {
+    // A column of three on one layer: the middle is held in above and below, while left and right do not count.
+    const column: Tile[] = [0, 1, 2].map((y) => ({ x: 0, y, z: 0, kind: 0, open: 'ends' }));
+    expect(freeTiles(column, 0b111)).toEqual([0, 2]);
+    expect(heldSides(column, 0b111, 1)).toEqual({ before: true, after: true });
+    expect(free(column, 0b110, 1)).toBe(true);
+    const row: Tile[] = [0, 1, 2].map((x) => ({ x, y: 0, z: 0, kind: 0, open: 'ends' }));
+    expect(freeTiles(row, 0b111)).toEqual([0, 1, 2]);
+    // On every reachable state of the crown, `free` on the ends board equals `free` on the transposed classic board.
+    const tiles = layout(12),
+      transposed = tiles.map(({ x, y, z, kind }) => ({ x: y, y: x, z, kind }));
+    expect(opensAtEnds(tiles)).toBe(true);
+    expect(opensAtEnds(layout(6))).toBe(false);
+    expect(tiles.map(({ x, y, z }) => ({ x, y, z }))).toEqual(layout(6).map(({ x, y, z }) => ({ x, y, z })));
+    const rng = new Rng(12);
+    for (let n = 0; n < 200; n++) {
+      const mask = rng.int(0, fullMask(tiles));
+      for (let i = 0; i < tiles.length; i++) expect(free(tiles, mask, i)).toBe(free(transposed, mask, i));
+    }
+    // Some crown tiles change state: the axis is a real rule change, not a relabelling.
+    expect(freeTiles(tiles, fullMask(tiles))).not.toEqual(freeTiles(layout(6), fullMask(tiles)));
+  });
+  it('deals level 12 on the crown in its band, every board clearing by moves legal on the short sides', () => {
+    const [min, max] = planFor(12).clear;
+    let exhausted = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const d = deal(12, new Rng(seed)),
+        tiles = d.tiles;
+      expect(tiles).toEqual(makeBoard(12, new Rng(seed)));
+      expect(tiles).toHaveLength(24);
+      expect(tiles.every((t) => t.open === 'ends')).toBe(true);
+      for (let k = 0; k < 4; k++) expect(tiles.filter((t) => t.kind === k)).toHaveLength(6);
+      if (d.inBand) {
+        expect(d.rate).toBeGreaterThanOrEqual(min);
+        expect(d.rate).toBeLessThanOrEqual(max);
+      } else exhausted++;
+      const route = solve(tiles)!;
+      let mask = fullMask(tiles);
+      for (const pair of route) {
+        expect(pairs(tiles, mask)).toContainEqual(pair);
+        expect(pair.every((i) => free(tiles, mask, i))).toBe(true);
+        mask = removePair(mask, pair);
+      }
+      expect(mask).toBe(0);
+    }
+    expect(exhausted).toBeLessThanOrEqual(5);
+    // A shuffle keeps the board's rule, and its open rows still clear on it.
+    const board = makeBoard(12, new Rng(3)),
+      first = solve(board)![0],
+      shuffled = reshuffle(board, removePair(fullMask(board), first), new Rng(4));
+    expect(shuffled.every((t) => t.open === 'ends')).toBe(true);
+    expect(solve(shuffled)).not.toBeNull();
+  });
+  it('deals levels 1–10 and 17–21 exactly as before levels 11 and 12 were added', () => {
+    // Fingerprint of seeds 1–5 at each level, taken from the rules on origin/main before this change.
+    const boards: string[] = [];
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 17, 18, 19, 20, 21])
+      for (let seed = 1; seed <= 5; seed++)
+        boards.push(
+          makeBoard(level, new Rng(seed))
+            .map((t) => `${t.x}${t.y}${t.z}${t.kind}`)
+            .join(''),
+        );
+    // FNV-1a over the boards, so the pin is one short value.
+    let hash = 0x811c9dc5;
+    for (const c of boards.join('|')) hash = Math.imul(hash ^ c.charCodeAt(0), 0x01000193) >>> 0;
+    expect(hash.toString(16)).toBe('44db71e6');
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21])
+      expect(opensAtEnds(makeBoard(level, new Rng(1)))).toBe(false);
   });
   it('rejects a trap that a careful two-pair look does not avoid', () => {
     // Pairing the end ones first strands the middle, and nothing else is open: no route and no fair trap.
@@ -431,7 +535,7 @@ describe('Tile Pairs', () => {
     const order = levelsInOrder(LEVELS.grownup!);
     expect(new Set(order).size).toBe(order.length);
     expect(order.filter((l) => l <= 10)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    expect(order.filter((l) => l > 10)).toEqual(Object.keys(PUZZLE_PLANS).map(Number));
+    expect(order.filter((l) => l >= 17)).toEqual(Object.keys(PUZZLE_PLANS).map(Number));
     for (const [lesson, before] of [
       [17, 3],
       [18, 4],
@@ -439,8 +543,8 @@ describe('Tile Pairs', () => {
       [20, 6],
     ])
       expect(order.indexOf(lesson)).toBe(order.indexOf(before) - 1);
-    // Two pairs ahead comes last, before the boards it serves, which do not exist yet.
-    expect(order.at(-1)).toBe(21);
+    // Two pairs ahead comes after level 10, then the second-pass levels in the dive's proposed order.
+    expect(order.slice(-3)).toEqual([21, 11, 12]);
     for (const level of order) expect(planFor(level).name).toBeTruthy();
     expect(new Set(order.map((l) => planFor(l).name)).size).toBe(order.length);
     for (let level = 1; level <= 10; level++) expect(lessonFor(level)).toBeNull();
