@@ -52,5 +52,9 @@ export const VOICE = {
   'hop.yourway.split': ['{a} to ten, {n} more.'],
   'hop.yourway.yay': ['{m}! {n} plus {k} is {m}.'],
   'hop.yourway.yayback': ['{m}! {n} take away {k} is {m}.'],
+  'hop.tens': ['Start at {n}. Hop {k} tens. Where will the frog land?'],
+  'hop.tens.back': ['Start at {n}. Hop back {k} tens. Where will the frog land?'],
+  'hop.tens.one': ['Start at {n}. Hop one ten. Where will the frog land?'],
+  'hop.tens.oneback': ['Start at {n}. Hop back one ten. Where will the frog land?'],
   'hop.done': ['The frog hopped all the way home. Ribbit!'],
 } satisfies Record<string, string[]>;
