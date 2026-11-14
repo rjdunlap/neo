@@ -52,17 +52,20 @@ import {
   TOY_HIT,
   TOYS,
   TUMMY_Y,
+  pickRoom,
+  type Mess,
   type Part,
+  type Room,
   type Plan,
   type Toy,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
+import { drawRoom, TUBS, WALLS } from './rooms';
 
-const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
 /** A spot counts as clean when this much of it is gone; the last specks vanish on their own. */
 const CLEAN_ENOUGH = 0.75;
 
-/** One splotch of mud, drawn into its own texture so scrubbing can erase it bit by bit. */
+/** One splotch of the room's mess (mud, sand, paint or jam), drawn into its own texture so scrubbing can erase it bit by bit. */
 class Mud {
   readonly sprite: Sprite;
   readonly glow = new Graphics();
@@ -84,6 +87,7 @@ class Mud {
     y: number,
     readonly size: number,
     private readonly brush: number,
+    mess: Mess,
     rng: Rng,
     private readonly renderer: Renderer,
   ) {
@@ -95,14 +99,14 @@ class Mud {
     }));
     const g = new Graphics();
     for (const b of blobs) g.circle(b.x, b.y, b.r);
-    g.fill(MUD.fill);
+    g.fill(mess.fill);
     for (let i = 0; i < 7; i++)
       g.circle(MUD_W / 2 + rng.range(-36, 36), MUD_H / 2 + rng.range(-26, 26), rng.range(3, 7)).fill(
-        MUD.dark,
+        mess.dark,
       );
     for (let i = 0; i < 3; i++)
       g.circle(MUD_W / 2 + rng.range(-24, 24), MUD_H / 2 + rng.range(-18, 18), rng.range(3, 5)).fill(
-        MUD.light,
+        mess.light,
       );
     renderer.render({ container: g, target: this.rt, clear: true, clearColor: [0, 0, 0, 0] });
     g.destroy();
@@ -177,8 +181,11 @@ class Mud {
 
 class SplishSplash implements Game {
   private readonly plan: Plan;
-  private readonly wall = new Sprite(gradientTexture(0xd6eefa, 0xbfe0f4));
-  private readonly room = new Graphics();
+  /** Where the bath is this round (slice 4), and how the opening line says its mess. */
+  private readonly room: Room;
+  private readonly messy: string;
+  private readonly wall: Sprite;
+  private readonly backdrop = new Graphics();
   private readonly tubFront = new Graphics();
   private readonly foam = new Graphics();
   private readonly pip: CompanionRig;
@@ -228,6 +235,10 @@ class SplishSplash implements Game {
     this.plan = planOn(planFor(ctx.level), star.parts);
     if (this.plan.shuffle) this.plan = { ...this.plan, parts: ctx.rng.shuffle([...this.plan.parts]) };
     this.view = ctx.view;
+    const where = pickRoom(ctx.rng, this.pip.color);
+    this.room = where.room;
+    this.messy = where.messy;
+    this.wall = new Sprite(gradientTexture(...WALLS[this.room]));
     // The companion is the star of this one, so the corner guide steps out.
     ctx.pet.visible = false;
 
@@ -241,7 +252,7 @@ class SplishSplash implements Game {
     for (const part of this.plan.parts) {
       const spots = spotsOn([part], (q) => this.pip.partPoints(q), star);
       this.pip.part(part).forEach((node, i) => {
-        const mud = new Mud(part, 0, 0, spots[i].size, this.brush, ctx.rng, ctx.renderer);
+        const mud = new Mud(part, 0, 0, spots[i].size, this.brush, where.mess, ctx.rng, ctx.renderer);
         node.addChild(mud.glow, mud.sprite, mud.foam);
         this.muds.push(mud);
       });
@@ -277,7 +288,7 @@ class SplishSplash implements Game {
 
     ctx.stage.addChild(
       this.wall,
-      this.room,
+      this.backdrop,
       this.pip,
       this.tubFront,
       this.foam,
@@ -290,7 +301,7 @@ class SplishSplash implements Game {
   start() {
     if (this.plan.mode === 'parts') void this.askForPart();
     else
-      void this.instruct(this.plan.mode === 'pat' ? 'bath.pat' : 'bath.free').then(
+      void this.instruct(this.plan.mode === 'pat' ? 'bath.pat' : 'bath.free', { messy: this.messy }).then(
         () => (this.opening = false),
       );
   }
@@ -302,29 +313,23 @@ class SplishSplash implements Game {
     this.scrubZone.hitArea = new Rectangle(0, 0, v.w, v.h);
     const cx = v.w / 2;
     const tubTop = v.h * 0.66;
-    const r = this.room.clear();
-    for (let x = 0; x < v.w; x += 64) r.moveTo(x, 0).lineTo(x, tubTop).stroke({ width: 2, color: 0xeaf6fd });
-    for (let y = 0; y < tubTop; y += 64) r.moveTo(0, y).lineTo(v.w, y).stroke({ width: 2, color: 0xeaf6fd });
-    r.rect(0, tubTop + 40, v.w, v.h).fill(0xf3e3c8);
-    // Shower head, up top.
-    r.roundRect(cx + 150, 40, 14, 120, 6)
-      .fill(0xb9c6d1)
-      .roundRect(cx + 110, 150, 90, 26, 12)
-      .fill(0xb9c6d1);
+    drawRoom(this.backdrop.clear(), this.room, v.w, v.h, tubTop);
+    const tub = TUBS[this.room];
 
     // Sitting in the tub: feet and bottom hidden behind the rim, tummy just above the foam.
     this.pip.position.set(cx, tubTop - 4 - this.rise);
     const t = this.tubFront.clear();
-    t.circle(cx - 220, tubTop + 172, 20)
-      .circle(cx + 220, tubTop + 172, 20)
-      .fill(swatch.yellow.fill)
-      .stroke({ width: 4, color: swatch.yellow.line });
+    if (tub.feet)
+      t.circle(cx - 220, tubTop + 172, 20)
+        .circle(cx + 220, tubTop + 172, 20)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 4, color: swatch.yellow.line });
     t.roundRect(cx - 280, tubTop - 14, 560, 180, 70)
-      .fill(0xffffff)
-      .stroke({ width: 6, color: 0xb9c6d1 });
+      .fill(tub.fill)
+      .stroke({ width: 6, color: tub.line });
     t.roundRect(cx - 296, tubTop - 22, 592, 32, 16)
-      .fill(0xffffff)
-      .stroke({ width: 6, color: 0xb9c6d1 });
+      .fill(tub.fill)
+      .stroke({ width: 6, color: tub.line });
     t.roundRect(cx - 250, tubTop + 40, 500, 10, 5).fill({ color: swatch.blue.light, alpha: 0.7 });
     this.drawFoam(cx, tubTop);
     this.rubberDuck.position.set(cx + DUCK_AT.x, tubTop + DUCK_AT.y);
@@ -377,6 +382,7 @@ class SplishSplash implements Game {
   destroy() {
     for (const m of this.muds) m.destroy();
     this.eraser.destroy();
+    this.wall.texture.destroy(true);
   }
 
   private asked(): Part[] {
@@ -833,13 +839,13 @@ export const splishSplash: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
-    if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of mud off, nothing to aim';
+    if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of the mess off, nothing to aim';
     if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';
     if (p.pairs) return 'Two body parts at once: "wash my ears and my nose"';
     return p.shuffle
       ? `Wash ${p.parts.length} body parts in a different order each round`
       : p.mode === 'free'
-        ? 'Scrub all the mud off'
+        ? 'Scrub all the mess off'
         : `Wash one body part at a time: ${p.parts.join(', ')}`;
   },
   music: STYLES.paint,

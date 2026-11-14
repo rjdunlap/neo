@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
+import { swatch } from '../../art/palette';
+import { PET_COLORS } from '../../content/world';
+import { Rng } from '../../engine/random';
 import {
   allowedParts,
   askedParts,
@@ -28,6 +31,17 @@ import {
   planOn,
   spotsOn,
   STAR,
+  colorDistance,
+  messReadsOn,
+  paintMess,
+  paintsFor,
+  pickRoom,
+  readsOn,
+  PAINT_COLORS,
+  PAINTS,
+  READS_AT,
+  ROOM_MESS,
+  ROOMS,
   DUCK_HIT,
   FOAM_GAP,
   FOAM_MAX,
@@ -277,7 +291,8 @@ describe('Splish Splash', () => {
               id === 'bath.cleanpart' || id === 'bath.named' ? PHRASES[p].word : askedPhrase([p]),
             )
             .replace('{pet}', 'Pip')
-            .replace('{toy}', TOYS[0]);
+            .replace('{toy}', TOYS[0])
+            .replace('{messy}', ROOM_MESS.beach.messy);
           expect(filled, id).not.toMatch(/[{}]|my my/);
         }
   });
@@ -443,5 +458,56 @@ describe('Splish Splash', () => {
     expect(lines.length).toBeGreaterThan(0);
     for (const line of lines) expect(line).toContain('{toy}');
     expect(new Set(TOYS).size).toBe(TOYS.length);
+  });
+
+  it('gives every room a mess and an opening word that fits both opening lines', () => {
+    for (const room of ROOMS) {
+      const { messy } = ROOM_MESS[room];
+      expect(messy.length, room).toBeGreaterThan(0);
+      for (const id of ['bath.free', 'bath.pat'] as const)
+        for (const line of SCRIPT[id]) {
+          expect(line).toContain('{messy}');
+          expect(line.replace('{pet}', 'Pip').replace('{messy}', messy)).toMatch(/^Pip is [a-z ]+! /);
+        }
+    }
+    // Only the art room leaves its mess to the pet's colour.
+    expect(ROOMS.filter((r) => ROOM_MESS[r].mess === null)).toEqual(['art']);
+  });
+
+  it('keeps every shade of every mess readable on every pet colour (the contrast rule)', () => {
+    for (const room of ROOMS) {
+      const fixed = ROOM_MESS[room].mess;
+      for (const color of PET_COLORS)
+        if (fixed) expect(messReadsOn(fixed, color), `${room} on ${color}`).toBe(true);
+        else expect(paintsFor(color).length, `paints for ${color}`).toBeGreaterThanOrEqual(3);
+    }
+    // The rule bites: paint of the pet's own colour, and yellow paint on an orange pet, would not read.
+    expect(readsOn(PAINTS.red, 'red')).toBe(false);
+    expect(colorDistance(PAINTS.yellow, swatch.orange.fill)).toBeLessThan(READS_AT);
+    expect(paintsFor('orange')).not.toContain('yellow');
+    for (const color of PET_COLORS) {
+      expect(paintsFor(color)).not.toContain(color);
+      for (const paint of paintsFor(color)) expect(messReadsOn(paintMess(paint), color)).toBe(true);
+    }
+  });
+
+  it("draws the room (and the paint) from the round's seed, every room and paint reachable", () => {
+    for (const color of PET_COLORS) {
+      const rooms = new Set<string>();
+      const paints = new Set<number>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const a = pickRoom(new Rng(seed), color);
+        // The same seed draws the same room and mess.
+        expect(pickRoom(new Rng(seed), color)).toEqual(a);
+        rooms.add(a.room);
+        if (a.room === 'art') {
+          paints.add(a.mess.fill);
+          expect(PAINT_COLORS.filter((p) => PAINTS[p] === a.mess.fill)[0]).not.toBe(color);
+        } else expect(a.mess).toEqual(ROOM_MESS[a.room].mess);
+        expect(a.messy).toBe(ROOM_MESS[a.room].messy);
+      }
+      expect(rooms.size, color).toBe(ROOMS.length);
+      expect(paints.size, color).toBe(paintsFor(color).length);
+    }
   });
 });
