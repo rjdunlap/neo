@@ -158,7 +158,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 2. **Hint accounting** (decision 5; built 2026-11-13, branch `claude/splish-splash-hint-rule`). Tier: rule tests and the same `EARLY_ONLY=bath` run.
 3. **Foam, the shake and bath toys** (built 2026-11-14, branch `claude/splish-splash-foam-toys`). Tier: rule tests, one landscape and one portrait screenshot, `fingerdemo` at level 1.
 4. **Rooms and messes** (built 2026-11-14, branch `claude/splish-splash-rooms-messes`; see the build note below). Tier: rule tests including the contrast rule, one screenshot per room.
-5. **Friends in the tub** (decision 1; the pig first, then one slice for the rest). Tier: rule tests, a screenshot per friend, `fingerdemo` at levels 1 and 6.
+5. **Friends in the tub** (decision 1; the pig first, then one slice for the rest; pig in progress 2026-11-14, branch `claude/splish-splash-pig`). Tier: rule tests, a screenshot per friend, `fingerdemo` at levels 1 and 6.
 6. **Level 9, What do we hear with?** (decision 2). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at it.
 7. **Level 10, The picture card.** Same tier, plus a portrait screenshot of the card strip.
 8. **Level 11, Soap, scrub, rinse.** Same tier, plus the abandon-cards check, since the shower tween can outlive a scene.
