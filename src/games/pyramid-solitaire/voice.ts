@@ -20,7 +20,9 @@ export const VOICE = {
   'pyramid.miss': ['Those cards do not make thirteen. This first card needs {n}.'],
   'pyramid.hint': ['Lift the cards with gold outlines. They start a way to clear the pyramid.'],
   'pyramid.blocked': ['This route cannot clear every card. Try Undo, or ask for a hint to revise it.'],
-  'pyramid.lesson': ['That {card} has lost its partner. Every {partner} left is buried under it.'],
+  'pyramid.lesson': [
+    'This {card} has lost its partner. It covers every {partner} left, so they can never pair.',
+  ],
   'pyramid.recover': ['We took back some removals to find a clearing route. Try the gold cards.'],
   'pyramid.restart': ['The same cards are back. Try a different order.'],
   'pyramid.done': ['The pyramid is clear!'],

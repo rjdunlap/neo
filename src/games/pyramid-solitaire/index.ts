@@ -203,21 +203,25 @@ class PyramidSolitaire implements Game {
         if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       });
     } else if (!this.solve(this.mask)) {
-      // Levels 9-10 (lesson deals): after the blocked line, one sentence names the card that lost its partner. Undo or a
-      // hint before it is spoken moves the mask, and then it stays quiet.
-      const stuck = 'lesson' in planFor(this.ctx.level) ? lessonCard(this.puzzle, this.mask) : null;
+      // Levels 9-10 (lesson deals): after the blocked line, one sentence names the card that lost its partner (draw()
+      // outlines it and the status line says it). Undo or a hint before it is spoken moves the mask, and then it stays quiet.
+      const stuck = this.lessonCard();
       if (stuck === null) {
         void this.ctx.say('pyramid.blocked');
         return;
       }
       const rank = this.puzzle.ranks[stuck],
         mask = this.mask;
-      this.status.text = `That ${rankName(rank)} lost its partner: every ${rankName(13 - rank)} left is under it. Try Undo.`;
       void this.ctx.say('pyramid.blocked').then(() => {
         if (!this.ctx.alive || this.mask !== mask) return;
         void this.ctx.say('pyramid.lesson', { card: rankWord(rank), partner: rankWord(13 - rank) });
       });
     }
+  }
+  /** Levels 9-10: the one card a losing removal left without a partner, or null (other levels, or still clearable). */
+  private lessonCard(): number | null {
+    if (!('lesson' in planFor(this.ctx.level)) || this.solve(this.mask)) return null;
+    return lessonCard(this.puzzle, this.mask);
   }
   private openCards() {
     return this.puzzle.ranks.map((_, i) => i).filter((i) => exposed(this.puzzle, this.mask, i));
@@ -301,7 +305,12 @@ class PyramidSolitaire implements Game {
     void this.ctx.say('pyramid.restart');
   }
   private draw() {
-    this.status.text = this.solve(this.mask) ? this.openLine() : 'Try Undo or Hint to revise this route.';
+    const stuck = this.lessonCard();
+    this.status.text = this.solve(this.mask)
+      ? this.openLine()
+      : stuck !== null
+        ? `The outlined ${rankName(this.puzzle.ranks[stuck])} covers every ${rankName(13 - this.puzzle.ranks[stuck])} left: they can never pair. Try Undo.`
+        : 'Try Undo or Hint to revise this route.';
     this.glow.clear();
     this.nodes.forEach((c, i) => {
       if (this.leaving.has(c)) return;
@@ -328,6 +337,10 @@ class PyramidSolitaire implements Game {
           .roundRect(c.x - 49, c.y - 49, 98, 98, 16)
           .stroke({ color: swatch.purple.line, width: 3, alpha: 0.7 });
       }
+    if (stuck !== null && present(this.mask, stuck)) {
+      const c = this.nodes[stuck];
+      this.glow.roundRect(c.x - 52, c.y - 52, 104, 104, 18).stroke({ color: swatch.red.line, width: 6 });
+    }
     this.hintButton.alpha = this.hinted ? 0.7 : 1;
   }
   /** What a planner watches: how many pairs the bright cards make now, and whether a king can go alone. */
