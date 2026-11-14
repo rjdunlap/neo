@@ -33,7 +33,12 @@ export type Move =
   | 'tummy'
   | 'ears'
   | 'head'
-  | 'toes';
+  | 'toes'
+  | 'eyes'
+  | 'mouth'
+  | 'cheeks'
+  | 'shoulders'
+  | 'chin';
 export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'pat';
 
 /**
@@ -56,7 +61,79 @@ export const MOVES: Move[] = TIERS.base;
 export const ALL_MOVES: Move[] = Object.values(TIERS).flat();
 /** Level 1 (and lap's copying) draws from base and social only, so a lap round never meets an animal move. */
 export const FIRST_POOL: Move[] = [...TIERS.base, ...TIERS.social];
-export const BODY: Move[] = ['nose', 'tummy', 'ears', 'head', 'toes'];
+/** The ten body words (level 2): the first five, then five more each friend can show (dive slice 2). */
+export const BODY = [
+  'nose',
+  'tummy',
+  'ears',
+  'head',
+  'toes',
+  'eyes',
+  'mouth',
+  'cheeks',
+  'shoulders',
+  'chin',
+] as const satisfies readonly Move[];
+export type BodyWord = (typeof BODY)[number];
+
+/**
+ * Where on the body each word sits. Two words in a row never share a zone, so the mittens travel between them and show
+ * which part is meant: the face is small on every friend (eyes, nose, mouth and chin sit close), so face words alternate
+ * with the head or the body below it. A rule on words, not on one friend's drawing, so a seed deals the
+ * same words to every friend (the test measures the travel on each species).
+ */
+export const BODY_ZONE: Record<BodyWord, 'face' | 'top' | 'body'> = {
+  eyes: 'face',
+  nose: 'face',
+  mouth: 'face',
+  cheeks: 'face',
+  chin: 'face',
+  ears: 'face',
+  head: 'top',
+  shoulders: 'body',
+  tummy: 'body',
+  // With the tummy: a friend with no feet (the glider) touches the floor just under its tummy.
+  toes: 'body',
+};
+
+/**
+ * Moves whose mittens land where a body word's do, so a round never deals both (the eyes are peekaboo's hiding place).
+ * Dropped from the "Pet says" deck one side at a time, at random.
+ */
+export const CLASHES: [Move, Move][] = [['eyes', 'peekaboo']];
+
+/**
+ * The chant (level 2's last turn), the "head, shoulders, knees and toes" shape with words a blob can show: four words,
+ * sung and touched. Each verse leaves one more word unsung from the front while the touch stays, until the last verse
+ * goes all the way through with touches and no words at all. `CHANT_VERSES[v][i]` is whether word i is sung in verse v.
+ */
+export const CHANT_WORDS: BodyWord[] = ['head', 'shoulders', 'tummy', 'toes'];
+export const CHANT_VERSES: boolean[][] = Array.from({ length: CHANT_WORDS.length + 1 }, (_, v) =>
+  CHANT_WORDS.map((_, i) => i >= v),
+);
+/** The marimba note under each chant word: a step down the five-note scale as the hands go down the body. */
+export const CHANT_STEPS = [9, 7, 5, 4];
+export const CHANT_LINES = {
+  head: 'says.chant.head',
+  shoulders: 'says.chant.shoulders',
+  tummy: 'says.chant.tummy',
+  toes: 'says.chant.toes',
+} satisfies Partial<Record<BodyWord, LineId>>;
+
+/** How "Pet says" asks (level 4). `says` and `this` mean move; the rest are tricks, where she stays still. */
+export type SaysCue = 'says' | 'this' | 'plain' | 'name' | 'that';
+export const TRICK_CUES: SaysCue[] = ['plain', 'name', 'that'];
+
+/** Other names a trick can borrow ("Bunny says: clap!"), never the pet's own or the child's. */
+export const WRONG_NAMES = ['Bunny', 'Teddy', 'Ducky'];
+export function wrongName(start: number, avoid: string[]): string {
+  const no = new Set(avoid.map((a) => a.trim().toLowerCase()));
+  for (let k = 0; k < WRONG_NAMES.length; k++) {
+    const name = WRONG_NAMES[(start + k) % WRONG_NAMES.length];
+    if (!no.has(name.toLowerCase())) return name;
+  }
+  return WRONG_NAMES[start % WRONG_NAMES.length];
+}
 
 /** Spoken names, for "clap, then stomp" and "Pip says: wave". */
 export const MOVE_CUES = {
@@ -83,6 +160,11 @@ export const MOVE_CUES = {
   ears: { word: 'touch your ears', line: 'says.move.ears' },
   head: { word: 'pat your head', line: 'says.move.head' },
   toes: { word: 'touch your toes', line: 'says.move.toes' },
+  eyes: { word: 'point to your eyes', line: 'says.move.eyes' },
+  mouth: { word: 'touch your mouth', line: 'says.move.mouth' },
+  cheeks: { word: 'pat your cheeks', line: 'says.move.cheeks' },
+  shoulders: { word: 'touch your shoulders', line: 'says.move.shoulders' },
+  chin: { word: 'hold your chin', line: 'says.move.chin' },
 } satisfies Record<Move, { word: string; line: LineId }>;
 
 export const MOVE_WORDS = Object.fromEntries(
@@ -123,7 +205,8 @@ type Pair = { left: Pt; right: Pt };
  */
 export interface SaysFrame {
   rest: Pair;
-  targets: Record<'nose' | 'tummy' | 'ears' | 'head' | 'toes', Pair>;
+  /** Where the mittens go for each body word. Mouth, chin and shoulders are not marked parts: they are placed from the nose, the neck and the body box. */
+  targets: Record<BodyWord, Pair>;
   /** Peekaboo: both mittens over the eyes (beside the nose where a friend's eyes are not marked). */
   eyes: Pair;
   clap: Pair;
@@ -136,7 +219,7 @@ export interface SaysFrame {
 }
 
 export function saysFrame(
-  at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet' | 'eyes') => readonly Pt[],
+  at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet' | 'eyes' | 'cheeks' | 'neck') => readonly Pt[],
   box: { x: number; y: number; width: number; height: number },
 ): SaysFrame {
   const cx = box.x + box.width / 2;
@@ -145,6 +228,7 @@ export function saysFrame(
   const y = box.y + box.height * 0.62;
   const rest = { left: { x: box.x - 10, y }, right: { x: right + 10, y } };
   const one = (p: 'nose' | 'tummy' | 'head') => at(p)[0] ?? { x: cx, y };
+  const h = box.height;
   const sorted = (list: readonly Pt[]) => [...list].sort((a, b) => a.x - b.x);
   const pair = (list: readonly Pt[], spread: number, fallback: Pt): Pair => {
     const s = sorted(list);
@@ -155,6 +239,13 @@ export function saysFrame(
   const nose = one('nose');
   const head = one('head');
   const tummy = one('tummy');
+  const eyes = pair(at('eyes'), 18, { x: nose.x, y: nose.y - 8 });
+  // Just below the nose; the chin cupped under that; the shoulders out from the neck (or above the tummy, where a friend
+  // has no neck) toward the body's sides.
+  const mouth = { x: nose.x, y: nose.y + Math.max(8, h * 0.09) };
+  const chinY = mouth.y + Math.max(10, h * 0.08);
+  const neck = at('neck')[0] ?? { x: tummy.x, y: tummy.y - h * 0.1 };
+  const spread = Math.max(24, box.width * 0.32);
   return {
     rest,
     targets: {
@@ -163,8 +254,20 @@ export function saysFrame(
       ears: pair(at('ears'), 14, head),
       head: { left: rest.left, right: { x: head.x, y: head.y - 36 } },
       toes: pair(at('feet'), 40, { x: cx, y: floor }),
+      // Pointing just outside each eye, so the eyes stay open (peekaboo covers them).
+      eyes: {
+        left: { x: eyes.left.x - 16, y: eyes.left.y },
+        right: { x: eyes.right.x + 16, y: eyes.right.y },
+      },
+      mouth: { left: rest.left, right: mouth },
+      cheeks: pair(at('cheeks'), 16, { x: nose.x, y: mouth.y }),
+      shoulders: {
+        left: { x: neck.x - spread, y: neck.y + h * 0.06 },
+        right: { x: neck.x + spread, y: neck.y + h * 0.06 },
+      },
+      chin: { left: { x: mouth.x - 14, y: chinY }, right: { x: mouth.x + 14, y: chinY } },
     },
-    eyes: pair(at('eyes'), 18, { x: nose.x, y: nose.y - 8 }),
+    eyes,
     clap: { left: { x: cx - 20, y: y - 17 }, right: { x: cx + 20, y: y - 17 } },
     up: { left: { x: cx - 70, y: box.y - 50 }, right: { x: cx + 70, y: box.y - 50 } },
     down: { left: { x: box.x - 22, y: floor - 30 }, right: { x: right + 22, y: floor - 30 } },
@@ -172,6 +275,10 @@ export function saysFrame(
     knock: 14,
   };
 }
+
+/** How much larger than its own drawing the friend stands, so every friend is about the pip's size on screen. */
+export const petGrow = (b: { width: number; height: number }) =>
+  Math.max(1, Math.min(2.2, 270 / b.height, 520 / b.width));
 
 /** Waiting is co-play, never a missed answer or automatic advance. */
 export const shouldNudge = (idle: number, busy: boolean, finished: boolean) =>
@@ -194,13 +301,21 @@ export const PLANS: SaysPlan[] = [
     turns: 6,
     name: 'Copy the pet: clap, stomp, wave, jump, peekaboo, pat-a-cake (a grown-up taps the arrow)',
   },
-  { mode: 'body', turns: 5, name: 'Body words: touch your nose, pat your tummy, touch your toes' },
+  {
+    mode: 'body',
+    turns: 6,
+    name: 'Body words: point to your eyes, touch your shoulders, hold your chin; then the "head, shoulders, tummy, toes" chant',
+  },
   {
     mode: 'pairs',
     turns: 4,
     name: 'Two moves in order, sometimes counted: "stomp three times, then hop like a frog"',
   },
-  { mode: 'says', turns: 6, name: '"Pet says": move only when you hear the pet\'s name first' },
+  {
+    mode: 'says',
+    turns: 6,
+    name: '"Pet says": move only when you hear the pet\'s name first; later a wrong name, and "do this, do that"',
+  },
   {
     mode: 'freeze',
     turns: 4,
@@ -238,6 +353,12 @@ export interface Turn {
   moves: Move[];
   /** "Pet says" level: false is a trick, where the right thing to do is stay still. */
   says?: boolean;
+  /** "Pet says" level: how the pet asks; `says` is true exactly for `says` and `this`. */
+  cue?: SaysCue;
+  /** A wrong-name trick: where to start in `WRONG_NAMES` (see `wrongName`). */
+  who?: number;
+  /** Level 2's last turn: the chant's verses (`CHANT_VERSES`), with no single move. */
+  chant?: boolean[][];
   /** Level 3: how many times to do each move, where one is asked (only countable moves, two or three). */
   counts?: (number | undefined)[];
   /** Level 5: the tune, how the pet dances to it, and the statue it freezes into. */
@@ -257,11 +378,14 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
       return deck(FIRST_POOL)
         .slice(0, plan.turns)
         .map((m) => ({ moves: [m] }));
-    case 'body':
-      return rng
-        .shuffle([...BODY])
-        .slice(0, plan.turns)
-        .map((m) => ({ moves: [m] }));
+    case 'body': {
+      // Five of the ten words, never two in a row from one zone, then the chant.
+      for (;;) {
+        const words = rng.shuffle([...BODY]).slice(0, plan.turns - 1);
+        if (words.some((w, i) => i > 0 && BODY_ZONE[w] === BODY_ZONE[words[i - 1]])) continue;
+        return [...words.map((m): Turn => ({ moves: [m] })), { moves: [], chant: CHANT_VERSES }];
+      }
+    }
     case 'pairs': {
       // Each turn asks for at most one count, on a move made of beats, and about half the turns ask for one.
       const d = deck(ALL_MOVES);
@@ -275,15 +399,49 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
       });
     }
     case 'says': {
-      // Two tricks, never first and never back to back, so the rule has a chance to settle in.
+      // Two or three tricks, never first and never back to back, so the rule has a chance to settle in. The first trick
+      // is the plain one (just the move); a wrong name or "do that" can come after it, and "do that" only once a
+      // "do this" has shown what "do this" means.
+      const count = rng.chance(0.3) ? 3 : 2;
+      let tricks: number[];
       for (;;) {
-        const tricks = new Set([rng.int(1, plan.turns - 1), rng.int(1, plan.turns - 1)]);
-        const list = [...tricks].sort((a, b) => a - b);
-        if (list.length < 2 || list[1] - list[0] < 2) continue;
-        return deck([...ALL_MOVES, ...BODY])
-          .slice(0, plan.turns)
-          .map((m, i) => ({ moves: [m], says: !tricks.has(i) }));
+        tricks = [...new Set(Array.from({ length: count }, () => rng.int(1, plan.turns - 1)))].sort(
+          (a, b) => a - b,
+        );
+        if (tricks.length === count && tricks.every((t, k) => k === 0 || t - tricks[k - 1] >= 2)) break;
       }
+      const cues: SaysCue[] = Array.from({ length: plan.turns }, () => 'says');
+      tricks.forEach((t, k) => (cues[t] = k === 0 ? 'plain' : rng.pick(TRICK_CUES)));
+      const firstThat = cues.indexOf('that');
+      if (firstThat >= 0) {
+        const room = cues.flatMap((c, i) => (c === 'says' && i > tricks[0] && i < firstThat ? [i] : []));
+        if (room.length) cues[rng.pick(room)] = 'this';
+        else cues[firstThat] = 'name';
+      }
+      let pool: Move[] = [...ALL_MOVES, ...BODY];
+      for (const pair of CLASHES) {
+        const drop = rng.pick(pair);
+        pool = pool.filter((m) => m !== drop);
+      }
+      // Body words here keep level 2's rule too: never two in a row from one zone.
+      const isWord = (m: Move): m is BodyWord => m in BODY_ZONE;
+      let dealt: Move[];
+      do dealt = deck(pool).slice(0, plan.turns);
+      while (
+        dealt.some(
+          (m, i) =>
+            i > 0 &&
+            isWord(m) &&
+            isWord(dealt[i - 1]) &&
+            BODY_ZONE[m] === BODY_ZONE[dealt[i - 1] as BodyWord],
+        )
+      );
+      return dealt.map((m, i): Turn => {
+        const cue = cues[i];
+        const turn: Turn = { moves: [m], says: cue === 'says' || cue === 'this', cue };
+        if (cue === 'name') turn.who = rng.int(0, WRONG_NAMES.length - 1);
+        return turn;
+      });
     }
     case 'pat':
       return rng

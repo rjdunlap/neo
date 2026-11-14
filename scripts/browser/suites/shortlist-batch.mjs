@@ -504,10 +504,24 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       async () => (await import('/src/games/pet-says/logic.ts')).PLANS.length,
     );
     if (!only || only === 'says')
-      for (let level = fromLevel; level <= saysTop; level++) {
+      for (
+        let level = fromLevel;
+        level <= Math.min(saysTop, Number(process.env.TO_LEVEL || saysTop));
+        level++
+      ) {
         // Nothing is judged: the pet moves, and a grown-up taps the arrow. Tapping the big pet shows the move again.
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
+        // Level 2 plays on a phone held upright, and listens for the chant's words (dive slice 2).
+        if (level === 2) {
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            const say = g.ctx.say;
+            g.saidForCheck = [];
+            g.ctx.say = (id, slots) => (g.saidForCheck.push(id), say(id, slots));
+          });
+        }
         const turns = await page.evaluate(() => neo.scene.game.turns.length);
         if (level === 3) {
           // Every tiered move performs and comes back to rest, and a counted move counts each beat aloud.
@@ -570,7 +584,62 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await screenshot('pet-says-5-freeze-landscape');
             await page.setViewportSize({ width: 1024, height: 768 });
           }
+          if (level === 4 && n === 0) {
+            // Every kind of "Pet says" ask, shown once each: "do this" explains itself first, and each trick its own reveal.
+            const heard = await page.evaluate(async () => {
+              const g = neo.scene.game;
+              const ids = [];
+              const { say, instruct } = g.ctx;
+              g.ctx.say = (id, slots) => (ids.push([id, slots?.who]), say(id, slots));
+              g.ctx.instruct = (id, slots) => (ids.push([id, slots?.who]), instruct(id, slots));
+              for (const turn of [
+                { moves: ['clap'], says: true, cue: 'this' },
+                { moves: ['wave'], says: false, cue: 'that' },
+                { moves: ['jump'], says: false, cue: 'name', who: 0 },
+              ])
+                await g.show(turn);
+              Object.assign(g.ctx, { say, instruct });
+              return ids;
+            });
+            assert.deepEqual(
+              heard.map(([id]) => id),
+              [
+                'says.this-rule',
+                'says.this',
+                'says.that',
+                'says.tricked-that',
+                'says.name',
+                'says.tricked-name',
+              ],
+            );
+            assert.equal(heard[4][1], 'Bunny', 'the wrong name is borrowed');
+          }
+          if (level === 2 && n === turns - 1) {
+            const said = await page.evaluate(() => neo.scene.game.saidForCheck);
+            const count = (id) => said.filter((s) => s === id).length;
+            assert.deepEqual(
+              ['head', 'shoulders', 'tummy', 'toes'].map((w) => count(`says.chant.${w}`)),
+              [1, 2, 3, 4],
+              'each verse leaves one more word unsung from the front, and the last sings none',
+            );
+            assert.equal(count('says.chant.silent'), 1);
+          }
           if (level === 2 && n === 0) {
+            // The new words' mitten places on the friend, held still for a look (dive slice 2).
+            for (const word of ['cheeks', 'shoulders', 'chin']) {
+              await page.evaluate((word) => {
+                const g = neo.scene.game;
+                g.mover.left.position.copyFrom(g.frame.targets[word].left);
+                g.mover.right.position.copyFrom(g.frame.targets[word].right);
+              }, word);
+              await page.waitForTimeout(150);
+              await screenshot(`pet-says-2-${word}`);
+            }
+            await page.evaluate(() => {
+              const g = neo.scene.game;
+              g.mover.left.position.copyFrom(g.frame.rest.left);
+              g.mover.right.position.copyFrom(g.frame.rest.right);
+            });
             await page.evaluate(() => neo.scene.game.update(10));
             assert.equal(
               await page.evaluate(() => neo.scene.game.nudged),

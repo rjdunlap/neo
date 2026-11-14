@@ -1,1 +1,0 @@
-**Pet Says slice 2, ten body words, the chant and richer tricks** (rule tests, one scripted play at level 2 and one at 4; decisions 4–5 in the dive). [Pet Says dive, slice 2](../../deep-dives/pet-says.md#build-slices-in-order)
