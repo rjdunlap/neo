@@ -123,12 +123,12 @@ export class CountSign extends Container {
     for (let i = 0; i < this.want; i++) {
       const row = Math.floor(i / 3),
         inRow = Math.min(3, this.want - row * 3);
-      mark(((i % 3) - (inRow - 1) / 2) * SIGN_GAP, top + row * SIGN_GAP);
-      if (i < have) d.fill(color.fill).stroke({ width: 4, color: color.line });
+      const m = mark(((i % 3) - (inRow - 1) / 2) * SIGN_GAP, top + row * SIGN_GAP);
+      if (i < have) m.fill(color.fill).stroke({ width: 4, color: color.line });
       // A kind sign shows its color even before a stamp lands; level 8's open dots stay white.
       else if (k?.attr === 'color')
-        d.fill({ color: color.fill, alpha: 0.3 }).stroke({ width: 4, color: color.line, alpha: 0.6 });
-      else d.fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.45 });
+        m.fill({ color: color.fill, alpha: 0.3 }).stroke({ width: 4, color: color.line, alpha: 0.6 });
+      else m.fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.45 });
     }
     const extras = Math.max(0, have - this.want);
     for (let i = 0; i < extras; i++)

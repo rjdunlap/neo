@@ -253,6 +253,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       .filter(() => !only || only === 'bug')) {
       await launch('bug-builder', level);
       if (level === 9) {
+        // A shape sign draws its marks too: relaunch until the seed asks for a shape, and keep a picture of it.
+        for (
+          let i = 0;
+          i < 12 && (await page.evaluate(() => neo.scene.game.count.kind.attr)) !== 'shape';
+          i++
+        )
+          await launch('bug-builder', level);
         // Count a kind, on a phone held upright: two wrong kinds are two misses and the hint; any stamp of the kind counts.
         await page.setViewportSize({ width: 390, height: 844 });
         await page.waitForTimeout(400);
