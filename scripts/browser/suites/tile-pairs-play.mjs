@@ -115,7 +115,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           ? 18
           : level >= 17
             ? 14
-            : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24, 26][level - 1],
+            : [12, 20, 24, 24, 24, 24, 24, 24, 30, 24, 24, 24, 26, 24][level - 1],
       );
       if (level === 5 || level === 7) await checkPeek(tapTile, state, initial, level);
       if (level === 12) {
@@ -194,13 +194,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           kit.tap(p.x, p.y);
         }, brick);
         await page.waitForTimeout(130);
-        assert.equal(
+        assert.deepEqual(
           (await state()).selected,
-          brick,
+          [brick],
           'a tap on a raised brick reaches it, not the tile below',
         );
         await tapTile(brick);
-        assert.equal((await state()).selected, null);
+        assert.deepEqual((await state()).selected, []);
         // A phone held upright shows the whole wall with every free tile's target on screen.
         const device = await page.context().newCDPSession(page);
         await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
@@ -305,20 +305,66 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(200);
       }
-      // At level 8 the wrong answer is a flower with another picture, which gets the flower line.
-      const mismatch = await page.evaluate(async (level) => {
-        const L = await import('/src/games/tile-pairs/logic.ts'),
-          g = neo.scene.game,
-          open = L.freeTiles(g.tiles, g.mask);
-        g.said = [];
-        const say = g.ctx.say.bind(g.ctx);
-        g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
-        for (const a of open)
-          for (const b of open)
-            if (!L.matches(g.tiles[a].kind, g.tiles[b].kind) && (level !== 8 || L.isFlower(g.tiles[a].kind)))
-              return [a, b];
-        throw new Error('test needs two free pictures that do not pair');
-      }, level);
+      // At level 8 the wrong answer is a flower with another picture, which gets the flower line. At level 14 two
+      // alike are held and a different third is tapped twice: it boings, is not picked, and the two stay held.
+      const three =
+        level === 14
+          ? await page.evaluate(async () => {
+              const L = await import('/src/games/tile-pairs/logic.ts'),
+                g = neo.scene.game,
+                open = L.freeTiles(g.tiles, g.mask);
+              g.said = [];
+              const say = g.ctx.say.bind(g.ctx);
+              g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
+              for (const a of open)
+                for (const b of open)
+                  for (const c of open)
+                    if (a < b && g.tiles[a].kind === g.tiles[b].kind && g.tiles[c].kind !== g.tiles[a].kind)
+                      return [a, b, c];
+              throw new Error('test needs two free alike and a free different picture');
+            })
+          : null;
+      if (three) {
+        const [a, b, c] = three;
+        await tapTile(a);
+        await tapTile(b);
+        assert.deepEqual((await state()).selected, [a, b], 'two alike are held');
+        await tapTile(c);
+        let held = await state();
+        assert.deepEqual(held.selected, [a, b], 'a different third is not picked; the two stay held');
+        assert.equal(held.misses, 1);
+        assert.ok((await page.evaluate(() => neo.scene.game.said)).includes('tile-pairs.mismatch-three'));
+        // A phone held upright shows the crown with both held tiles ringed.
+        const device = await page.context().newCDPSession(page);
+        await device.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForFunction(() => neo.view.upright === true);
+        await page.waitForTimeout(300);
+        await screenshot('tile-pairs-14-three-alike-phone');
+        await device.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+        await device.detach();
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(200);
+        await tapTile(c);
+      }
+      const mismatch = three
+        ? []
+        : await page.evaluate(async (level) => {
+            const L = await import('/src/games/tile-pairs/logic.ts'),
+              g = neo.scene.game,
+              open = L.freeTiles(g.tiles, g.mask);
+            g.said = [];
+            const say = g.ctx.say.bind(g.ctx);
+            g.ctx.say = (id, ...rest) => (g.said.push(id), say(id, ...rest));
+            for (const a of open)
+              for (const b of open)
+                if (
+                  !L.matches(g.tiles[a].kind, g.tiles[b].kind) &&
+                  (level !== 8 || L.isFlower(g.tiles[a].kind))
+                )
+                  return [a, b];
+            throw new Error('test needs two free pictures that do not pair');
+          }, level);
       for (let n = 0; n < 2; n++) for (const i of mismatch) await tapTile(i);
       if (level === 8)
         assert.ok(
@@ -326,6 +372,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           'a flower with another picture hears that flowers go with flowers',
         );
       let s = await state();
+      if (three) assert.deepEqual(s.selected, [], 'the hint after two misses clears the held tiles');
       assert.equal(s.mask, initial.mask, 'a mismatch removes nothing');
       assert.equal(s.misses, 2);
       assert.equal(s.hints, 1);
@@ -333,6 +380,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       await tap('neo.scene.game.hintButton');
       assert.equal((await state()).hints, 1, 'repeated displayed hint is not charged again');
       const pair = (await state()).hinted;
+      assert.equal(pair.length, level === 14 ? 3 : 2, 'the hint rings a whole move');
       for (const i of pair) await tapTile(i);
       const afterPair = await state();
       assert.notEqual(afterPair.mask, initial.mask);
@@ -341,11 +389,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       assert.equal((await state()).undos, undos0 + 1);
       // Selection cancellation and resize never move or remove a tile.
       await tapTile(pair[0]);
-      assert.equal((await state()).selected, pair[0]);
+      assert.deepEqual((await state()).selected, [pair[0]]);
       await page.setViewportSize({ width: 1180, height: 820 });
       await page.waitForTimeout(160);
       await tapTile(pair[0]);
-      assert.equal((await state()).selected, null);
+      assert.deepEqual((await state()).selected, []);
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(160);
       for (const i of pair) await tapTile(i);

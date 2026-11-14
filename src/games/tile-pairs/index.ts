@@ -293,7 +293,7 @@ class TilePairs implements Game {
     const remaining = this.tiles.filter((_, i) => present(this.mask, i)).length;
     // "Pairs open" is the consequence to watch: what the last pair uncovered shows up here as new choices.
     const open = pairs(this.tiles, this.mask).length,
-      moves = this.three ? (open === 1 ? 'set of three' : 'sets of three') : open === 1 ? 'pair' : 'pairs';
+      moves = this.three ? (open === 1 ? 'set' : 'sets') : open === 1 ? 'pair' : 'pairs';
     this.tally.text = `${remaining} tiles · ${open} ${moves} open · ${this.undos} undos · ${this.shuffles} shuffles`;
     this.help.text = this.peeking
       ? stacks.length
