@@ -21,8 +21,8 @@
 | 3 | Put 1 to 3 ducks in the pond (number and dots) |
 | 4 | Put 2 to 5 ducks in the pond (number and dots) |
 | 5 | Put 3 to 6 ducks in the pond (number only) |
-| 6 | How many ducks? 1 to 5 |
-| 7 | How many ducks? 2 to 8 |
+| 6 | How many ducks? 0 to 5, dice or rows, dotted pads |
+| 7 | How many ducks? 0 to 8, dice, rows or scattered, dotted pads |
 | 8 | Adding, up to 5 |
 | 9 | Adding and taking away, up to 10 |
 | 10 | Make ten: how many more ducks fill the pond to 10? |

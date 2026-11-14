@@ -336,7 +336,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     const duckLevels =
       process.env.DUCK_LEVELS?.split(',').map(Number) ?? Array.from({ length: duckTop }, (_, i) => i + 1);
     for (const level of duckLevels.filter((n) => n >= 1 && n <= duckTop && (!only || only === 'ducks'))) {
-      if (level === 9 || level === duckTop) await portrait(true);
+      if (level === 7 || level === 9 || level === duckTop) await portrait(true);
       await launch('duck-pond', level);
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -372,7 +372,21 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               await screenshot(`duck-pond-${level}-reveal-portrait`);
             })()
           : null;
+      // Level 7: one portrait screenshot of the first scattered round, if one is dealt.
+      const scatterShot =
+        level === 7
+          ? page
+              .waitForFunction(
+                () => neo.scene.game.layoutKind === 'scatter' && neo.scene.game.pads.length === 3,
+                null,
+                { timeout: 90000 },
+              )
+              .then(() => page.waitForTimeout(800))
+              .then(() => screenshot(`duck-pond-${level}-scatter-portrait`))
+              .catch(() => log('Duck Pond 7: no scattered round was dealt this run'))
+          : null;
       await page.evaluate(async () => {
+        window.__duckLayouts = [];
         const g = neo.scene.game;
         const ready = () => kit.until(() => !g.busy || g.finished, 20000);
         const tapDuck = async () => {
@@ -473,6 +487,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (g.misses !== 2 || g.hints !== 1 || !g.pads.find((p) => p.value === g.answer).glowing)
               throw new Error(`Duck hint: ${g.misses} ${g.hints}`);
           }
+          if (g.plan.layouts) {
+            // Levels 6–7: the pond holds exactly the answer (an empty pond is 0), the pads may start at 0 and carry dots.
+            if (g.swimmers.length !== g.answer)
+              throw new Error(`Pond shows ${g.swimmers.length}, answer ${g.answer}`);
+            if (!g.plan.layouts.includes(g.layoutKind) && !(g.answer === 0 && g.layoutKind === 'none'))
+              throw new Error(`Layout ${g.layoutKind} not in level ${level}`);
+            (window.__duckLayouts ??= []).push(g.answer === 0 ? 'zero' : g.layoutKind);
+          }
           if (g.plan.mode === 'hide' && g.swimmers.filter((d) => !d.critter.visible).length !== g.answer)
             throw new Error('Hidden count differs from answer');
           kit.tapOn(g.pads.find((p) => p.value === g.answer));
@@ -495,6 +517,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         }
       });
       if (revealShot) await revealShot;
+      if (scatterShot) await scatterShot;
+      const layoutsSeen = await page.evaluate(() => window.__duckLayouts);
+      if (layoutsSeen.length) log(`Duck Pond ${level} layouts dealt: ${layoutsSeen.join(', ')}`);
       await screenshot(`duck-pond-${level}`);
       await finished('duck-pond');
       assert.deepEqual(
@@ -502,7 +527,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         mode === 'along' || mode === 'make' || mode === 'bye' || mode === 'friends' ? [0, 0] : [2, 1],
         `ducks ${level} score`,
       );
-      if (level === 9 || level === duckTop) await portrait(false);
+      if (level === 7 || level === 9 || level === duckTop) await portrait(false);
       log(
         `Duck Pond ${level} (${mode}): counting along, stopping at a number, answers, mistakes, hint, saved score and sticker passed`,
       );
