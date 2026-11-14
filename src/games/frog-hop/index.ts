@@ -46,6 +46,7 @@ import {
   DOT_GAP,
   DOT_R,
   flowerOn,
+  TEN,
 } from './logic';
 
 const STEP = 104;
@@ -141,7 +142,7 @@ class FrogHop implements Game {
   // Couch play: a ring over the lily pads (or the number cards on counting levels).
   private focus = 0;
   private couchOn = false;
-  /** Make-ten asks for the bridge to ten before its final landing. */
+  /** Make-ten asks for the bridge to ten before its final landing; on Over ten, your way, 'rest' means she stopped at 10. */
   private makeTenStage: 'bridge' | 'rest' = 'bridge';
   private readonly ring = new Graphics();
   private botWait = 1.5;
@@ -264,6 +265,8 @@ class FrogHop implements Game {
 
   /** The spot that answers what is asked now, counted along `spots`. */
   private answerSpot() {
+    // Over ten, your way: the ghost finger shows the strategy, a stop at 10 and then the landing.
+    if (this.plan.mode === 'your-way' && this.makeTenStage === 'bridge') return TEN - this.lo;
     return splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge'
       ? GAP_CARDS.indexOf(this.q.toTen!)
       : answerSlot(this.plan.mode, this.q, this.lo, this.matchStage === 'count');
@@ -439,6 +442,8 @@ class FrogHop implements Game {
         return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
       if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
       if (mode === 'count-up') return this.ctx.instruct('hop.countup', { n: q.start, m: q.target });
+      if (mode === 'your-way')
+        return this.ctx.instruct(q.hops > 0 ? 'hop.yourway' : 'hop.yourway.back', { n: q.start, k });
       if (splitsAtTen(mode))
         return this.ctx.instruct(mode === 'make-ten' ? 'hop.ten' : 'hop.backten', { n: q.start, k });
       return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
@@ -582,8 +587,29 @@ class FrogHop implements Game {
       }
       return;
     }
+    if (this.plan.mode === 'your-way' && n === TEN) {
+      // The stop at 10 is never wrong: the first time the frog hops there, and once it sits there a tap is just a squeak.
+      if (this.makeTenStage === 'bridge') return void this.stopAtTen();
+      return void sfx.squeak();
+    }
     if (n === this.q.target) return void (this.plan.mode === 'frac-match' ? this.landFlag() : this.right());
     this.miss(n);
+  }
+
+  /** Over ten, your way: she chose to stop at 10. The frog counts the hops there and the sign shows the split so far. */
+  private async stopAtTen() {
+    this.busy = true;
+    const q = this.q;
+    await this.hopCount(TEN);
+    this.makeTenStage = 'rest';
+    this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
+    const op = q.hops > 0 ? '+' : '−';
+    this.setSign(`${q.start} ${op} ${q.toTen} ${op} ?`);
+    this.busy = false;
+    await this.ctx.instruct(q.hops > 0 ? 'hop.yourway.stop' : 'hop.yourway.stopback', {
+      a: q.toTen!,
+      k: Math.abs(q.hops),
+    });
   }
 
   private async tapCard(n: number) {
@@ -654,7 +680,8 @@ class FrogHop implements Game {
       await this.hopBy(q.jump2!, q.answer2!, 'counts');
     } else if (mode === 'find' || mode === 'next') await this.leap(q.target);
     else {
-      const hopStart = splitsAtTen(this.plan.mode) ? 10 : q.start;
+      const hopStart =
+        splitsAtTen(mode) || (mode === 'your-way' && this.makeTenStage === 'rest') ? TEN : q.start;
       if (this.at !== hopStart) await this.leap(hopStart);
       await this.hopCount(q.target, saysNumbers(mode));
     }
@@ -686,6 +713,12 @@ class FrogHop implements Game {
     else if (saysNumbers(mode)) line = this.ctx.say('hop.landed', { n: q.target });
     else if (mode === 'count-up')
       line = this.ctx.say('hop.countup.yay', { m: q.target, n: q.start, k: q.hops });
+    else if (mode === 'your-way')
+      line = this.ctx.say(q.hops > 0 ? 'hop.yourway.yay' : 'hop.yourway.yayback', {
+        n: q.start,
+        k: Math.abs(q.hops),
+        m: q.target,
+      });
     else line = this.ctx.say('hop.yay');
     // The last question's line is heard out, because the closing line would cut it.
     if (this.index + 1 >= this.questions.length) await line;
@@ -709,7 +742,8 @@ class FrogHop implements Game {
     else if (isFrac(mode)) await this.sayFracMiss(n);
     else {
       const card = this.cardStage();
-      const start = splitsAtTen(mode) && this.makeTenStage === 'rest' ? 10 : q.start;
+      const stopped = (splitsAtTen(mode) || mode === 'your-way') && this.makeTenStage === 'rest';
+      const start = stopped ? TEN : q.start;
       const answer = card ? (countsHops(mode) ? answerOf(mode, q) : q.toTen!) : q.target;
       const kind = missKind(start, answer, n, card);
       if (kind === 'forward' || kind === 'backward')
@@ -717,6 +751,8 @@ class FrogHop implements Game {
       else if (kind === 'one-more' || kind === 'one-less')
         await this.ctx.say(kind === 'one-more' ? 'hop.wrong.one-more' : 'hop.wrong.one-less');
       else await this.ctx.say('hop.wrong.count', { n: start });
+      // She stopped at 10 of her own choice: the remainder is still named.
+      if (mode === 'your-way' && stopped) await this.ctx.say('hop.yourway.more', { n: q.remaining! });
     }
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints += hintCharge(this.wrongs, !!this.glowing, this.helped);
@@ -728,6 +764,14 @@ class FrogHop implements Game {
         else await this.hopBy(q.jump!, q.count!, 'names');
         await this.ctx.tw.wait(0.3);
         await this.leap(q.start);
+      } else if (mode === 'your-way') {
+        // The demonstration stops at 10 and names the split, then hops the rest and goes back to where she was.
+        const from = this.at;
+        if (from !== TEN) await this.hopCount(TEN);
+        await this.ctx.say('hop.yourway.split', { a: q.toTen!, n: q.remaining! });
+        await this.hopCount(q.target);
+        await this.ctx.tw.wait(0.3);
+        await this.leap(from);
       } else if (mode !== 'find' && mode !== 'next') {
         const shown = splitsAtTen(mode) && this.makeTenStage === 'bridge' ? 10 : q.target;
         await this.hopCount(shown, saysNumbers(mode));

@@ -59,12 +59,12 @@ Bubble Beach games whose first lap level plays with the voice off: `bubble-pop`,
 
 Seven games fail question 1 or 4. Each line is one bounded lap level or opening, in the order they should be taken:
 
-1. `bounce-back`: a lap level that cannot miss and answers anywhere.
+1. `bounce-back`: a lap level that cannot miss and answers anywhere. *Built 2026-11-12 (PR #1568).*
 2. `bubble-pop`: level 15 opens with one big bubble already on screen. *Built 2026-11-12 (PR #1564).*
 3. `sink-float`: one big thing over the water; a touch anywhere drops it. *Built 2026-11-12 (PR #1572).*
-4. `tide-line`: at lap a touch anywhere sends the wave, and the card shows the tap.
+4. `tide-line`: at lap a touch anywhere sends the wave, and the card shows the tap. *Built 2026-11-12 (PR #1573).*
 5. `melt-freeze`: level 5 opens with one big ice cube. A touch anywhere on the playfield warms it, and the snowflake appears after it melts. *Built 2026-11-12 (PR #1574).*
-6. `puddle-lens`: at lap a touch anywhere swells the lens, and her touch brings the next thing.
+6. `puddle-lens`: at lap a touch anywhere swells the lens, and her touch brings the next thing. *Built 2026-11-12 (PR #1575).*
 7. `bumper-garden`: one big flower first; the rest wake as she launches. *Built 2026-11-12 (PR #1577).*
 
 ### Found while reading (not part of the five questions)

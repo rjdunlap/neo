@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * longer line to 20, then splits a sum at ten, forward and back. Nine pads show at a time; on the long line the
  * view slides to fit. At the top of school the pads sit at quarters of a whole (Fraction Landings): hops of a quarter,
  * a half or a whole, then two hop sizes that reach the same lily. Last, count up to take away: `13 − 9` as the hops from 9 to
- * the flag on 13.
+ * the flag on 13. Then over ten, your way: `8 + 5` with no cards, where a stop on 10 is hers to choose.
  */
 export type HopMode =
   | 'find'
@@ -20,7 +20,8 @@ export type HopMode =
   | 'back-ten'
   | 'frac-hop'
   | 'frac-match'
-  | 'count-up';
+  | 'count-up'
+  | 'your-way';
 
 /** Fraction Landings: the pads are quarter ticks, 0 to 2. */
 export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-match';
@@ -30,6 +31,9 @@ export const isFrac = (mode: HopMode) => mode === 'frac-hop' || mode === 'frac-m
 export const countsHops = (mode: HopMode) => mode === 'gap' || mode === 'count-up';
 
 export const splitsAtTen = (mode: HopMode) => mode === 'make-ten' || mode === 'back-ten';
+
+/** Over ten, your way: the pad she may stop on first. A tap there is never wrong. */
+export const TEN = 10;
 
 export interface HopPlan {
   mode: HopMode;
@@ -89,6 +93,12 @@ export const PLANS: HopPlan[] = [
     top: 20,
     questions: 5,
     name: 'Count up to take away: 13 − 9 is the hops from 9 to 13. Choose a number card',
+  },
+  {
+    mode: 'your-way',
+    top: 20,
+    questions: 5,
+    name: 'Over ten, your way: a sum or take-away across 10, with a stop at 10 if she chooses',
   },
 ];
 
@@ -241,6 +251,7 @@ export const crossesTen = (q: HopQuestion) => q.start < 10 && q.target > 10;
 export function makeQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
   if (isFrac(plan.mode)) return fracQuestions(plan, rng);
   if (plan.mode === 'count-up') return countUpQuestions(plan, rng);
+  if (plan.mode === 'your-way') return yourWayQuestions(plan, rng);
   const out: HopQuestion[] = [];
   let frog = 0;
   for (let i = 0; i < plan.questions; i++) {
@@ -313,6 +324,37 @@ function countUpQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
       q.lo = windowFor(plan.top, start, target, rng);
       const prev = out[i - 1];
       if (prev && (prev.hops === k || prev.target === target)) continue;
+      out.push(q);
+      break;
+    }
+  }
+  return out;
+}
+
+/** Over ten, your way: how many of the five go back (take away); the rest go on. */
+export const YOUR_WAY_BACKS = 2;
+
+/**
+ * Over ten, your way (dive slice 5): every trip crosses 10, forward from 5–9 by 4–8 or back from 11–15 by 4–8, so 10 lies
+ * strictly between the start and the landing and is always in view as a stop she may choose. Two of the five go back,
+ * the first goes on; never the same landing or the same split twice running.
+ */
+function yourWayQuestions(plan: HopPlan, rng: Rng): HopQuestion[] {
+  const backs = new Set(rng.shuffle([1, 2, 3, 4]).slice(0, YOUR_WAY_BACKS));
+  const out: HopQuestion[] = [];
+  for (let i = 0; i < plan.questions; i++) {
+    for (;;) {
+      const back = backs.has(i);
+      const start = back ? rng.int(11, 15) : rng.int(5, 9);
+      const toTen = Math.abs(start - TEN);
+      const k = rng.int(Math.max(4, toTen + 1), 8);
+      const remaining = k - toTen;
+      const hops = back ? -k : k;
+      const q: HopQuestion = { start, target: start + hops, hops, lo: 0, toTen, remaining };
+      q.lo = windowFor(plan.top, start, q.target, rng);
+      const prev = out[i - 1];
+      if (prev && (prev.target === q.target || (prev.toTen === toTen && prev.remaining === remaining)))
+        continue;
       out.push(q);
       break;
     }

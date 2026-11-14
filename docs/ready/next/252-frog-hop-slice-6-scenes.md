@@ -1,0 +1,1 @@
+**Frog Hop slice 6, Scenes** (brook, flower path, evening; tier: rule tests for layout at four views, `BROWSER_SUITE=smoke` filtered to Frog Hop, one screenshot each; Duck Pond's night art is shared only if already built). [Frog Hop dive, slice 6](../../deep-dives/frog-hop.md#build-slices-in-order)

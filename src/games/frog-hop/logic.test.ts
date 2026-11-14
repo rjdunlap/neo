@@ -29,6 +29,9 @@ import {
   countsHops,
   crossesTen,
   COUNT_UP_CROSSINGS,
+  TEN,
+  YOUR_WAY_BACKS,
+  splitsAtTen,
   type HopQuestion,
 } from './logic';
 
@@ -367,7 +370,7 @@ describe('Frog Hop, Fraction Landings', () => {
         'frac-hop',
         'frac-match',
       ]);
-      expect(frogHop.levels('school').max).toBe(11);
+      expect(frogHop.levels('school').max).toBeGreaterThanOrEqual(11);
       expect(frogHop.describeLevel(11)).toContain('Count up');
       expect(countsHops('count-up')).toBe(true);
     });
@@ -408,6 +411,86 @@ describe('Frog Hop, Fraction Landings', () => {
       expect(missKind(q.start, answerOf('count-up', q), 1, true)).toBe('count');
       expect(SCRIPT['hop.countup'][0]).toContain('{n}');
       expect(SCRIPT['hop.countup'][0]).toContain('{m}');
+    });
+  });
+
+  describe('Over ten, your way (level 12)', () => {
+    const plan = PLANS.find((p) => p.mode === 'your-way')!;
+
+    it('is appended as level 12, after Count up, so saved levels keep their numbers', () => {
+      expect(PLANS.indexOf(plan) + 1).toBe(12);
+      expect(PLANS[10].mode).toBe('count-up');
+      expect(frogHop.levels('school')).toEqual({ min: 3, max: 12 });
+      expect(frogHop.levels('prek')).toEqual({ min: 1, max: 4 });
+      expect(frogHop.describeLevel(12)).toContain('your way');
+      // No number cards: she taps pads, and the stop at 10 is optional rather than a stage.
+      expect(countsHops('your-way')).toBe(false);
+      expect(splitsAtTen('your-way')).toBe(false);
+    });
+
+    it('crosses 10 on every trip, forward from 5-9 or back from 11-15 by 4-8, with 10 strictly between', () => {
+      const seen = { on: new Set<number>(), back: new Set<number>() };
+      for (let seed = 1; seed <= 500; seed++) {
+        const qs = makeQuestions(plan, new Rng(seed));
+        expect(qs.filter((q) => q.hops < 0)).toHaveLength(YOUR_WAY_BACKS);
+        expect(qs[0].hops).toBeGreaterThan(0);
+        qs.forEach((q, i) => {
+          const k = Math.abs(q.hops);
+          expect(k).toBeGreaterThanOrEqual(4);
+          expect(k).toBeLessThanOrEqual(8);
+          if (q.hops > 0) {
+            expect(q.start).toBeGreaterThanOrEqual(5);
+            expect(q.start).toBeLessThanOrEqual(9);
+            seen.on.add(q.start);
+          } else {
+            expect(q.start).toBeGreaterThanOrEqual(11);
+            expect(q.start).toBeLessThanOrEqual(15);
+            seen.back.add(q.start);
+          }
+          expect(Math.min(q.start, q.target)).toBeLessThan(TEN);
+          expect(Math.max(q.start, q.target)).toBeGreaterThan(TEN);
+          expect(q.toTen).toBe(Math.abs(TEN - q.start));
+          expect(q.remaining).toBe(Math.abs(q.target - TEN));
+          expect(q.toTen! + q.remaining!).toBe(k);
+          expect(q.toTen).toBeGreaterThanOrEqual(1);
+          expect(q.remaining).toBeGreaterThanOrEqual(1);
+          // The stop at 10 is always offered: it is on a pad in view, as are the start and the landing.
+          for (const n of [q.start, TEN, q.target]) {
+            expect(n).toBeGreaterThanOrEqual(q.lo);
+            expect(n).toBeLessThan(q.lo + WINDOW);
+          }
+          if (i > 0) {
+            expect(q.target).not.toBe(qs[i - 1].target);
+            expect([q.toTen, q.remaining]).not.toEqual([qs[i - 1].toTen, qs[i - 1].remaining]);
+          }
+        });
+      }
+      expect([...seen.on].sort()).toEqual([5, 6, 7, 8, 9]);
+      expect([...seen.back].sort()).toEqual([11, 12, 13, 14, 15]);
+    });
+
+    it('is answered by the landing pad, and a wrong landing gets its named kind from where the frog stands', () => {
+      const q: HopQuestion = { start: 8, target: 13, hops: 5, lo: 6, toTen: 2, remaining: 3 };
+      expect(answerOf('your-way', q)).toBe(13);
+      expect(q.lo + answerSlot('your-way', q, q.lo)).toBe(13);
+      // Straight from 8: 14 counts the starting pad; 6 goes the wrong way, so the line says hop forward.
+      expect(missKind(q.start, q.target, 14, false)).toBe('one-more');
+      expect(missKind(q.start, q.target, 6, false)).toBe('forward');
+      // After her stop at 10: 12 is one hop short of the rest.
+      expect(missKind(TEN, q.target, 12, false)).toBe('one-less');
+    });
+
+    it('gives the stop, the remainder and the split lines their slots', () => {
+      expect(SCRIPT['hop.yourway'][0]).toContain('10');
+      // No "1 hops": a start on 9 or 11 is one hop from ten, so the stop lines name no unit after {a}.
+      for (const id of ['hop.yourway.stop', 'hop.yourway.stopback'] as const) {
+        expect(SCRIPT[id][0]).toContain('{a}');
+        expect(SCRIPT[id][0]).not.toMatch(/\{a\} hops/);
+      }
+      expect(SCRIPT['hop.yourway.more'][0]).toContain('{n}');
+      expect(SCRIPT['hop.yourway.split'][0]).toMatch(/\{a\}.*\{n\}/);
+      for (const id of ['hop.yourway.yay', 'hop.yourway.yayback'] as const)
+        for (const slot of ['{n}', '{k}', '{m}']) expect(SCRIPT[id][0]).toContain(slot);
     });
   });
 });

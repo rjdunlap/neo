@@ -1,0 +1,5 @@
+# 2026-11-14 — Frog Hop level 12 Over ten, your way (PR #1659)
+
+**Changed:** Frog Hop school level 12, mode `your-way` (a sum or take-away across 10 with no cards; a free stop at 10; named wrong landings; demonstration via 10 after two misses); school window 3–12; how-to step and voice lines `hop.yourway*`.
+**Ran:** `npm run typecheck`; full `npm test` (351 files, 6991 passed, 1 skipped) before the review fix, then Frog Hop and content tests (230 passed) after it; `BROWSER_SUITE=woods WOODS_ONLY=hop HOP_LEVELS=12` (direct landing after the counted demonstration and glow, a stop at 10 with the split sign and no miss, a wrong landing naming the remainder, saved score [3,1], phone portrait 390×844 screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=frog-hop FINGER_LEVELS=12 FINGER_BAND=school` (32.8 s); game-reviewer reviewed the diff.
+**Not run:** `npm run build` (no shared files or assets changed), other suites, offline. The browser plays ran before the voice-wording fix (no "1 hops"), which changed only line text, not ids or flow.

@@ -3491,6 +3491,10 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 [PR #1656](https://github.com/rjdunlap/neo/pull/1656), `claude/frog-hop-count-up`, dive slice 4 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). School level 11 `count-up` (appended after the fraction levels; no `order`): `13 − 9` as the distance between two numbers, the frog on 9, a flag on 13, number cards 1–6 for the hops; three of five rounds cross ten.
 
+## Frog Hop level 12, Over ten your way (2026-11-14)
+
+[PR #1659](https://github.com/rjdunlap/neo/pull/1659), `claude/frog-hop-your-way`, dive slice 5 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). School level 12 `your-way` (appended; no `order`): a sum or take-away across 10 with no number cards; a tap on 10 is a free stop (the sign reads `8 + 2 + ?`), a tap on the landing answers directly, wrong landings are named, two misses demonstrate via 10. See the [verification entry](../verification/2026-11-14-frog-hop-level-12-over-ten-your-way.md).
+
 ## Pet Says slice 6, level 7 Quiet dance (2026-11-14)
 
 [PR #1657](https://github.com/rjdunlap/neo/pull/1657), `claude/pet-says-quiet-dance`, slice 6 of the [dive](../deep-dives/pet-says.md#build-slices-in-order). Level 7 is the freeze dance turned around: four dances, each a quiet stretch (3-7 s, the pet dances to a soft tick in its dance style) then a music stretch (2-4 s, the tune plays and the pet stops still where it is; "Music! Freeze!" is said whatever she does). No stretch is as long as the one before it or the last of its kind (read as differing from both), and a round is at most 40 s, capped by rejection (4 x (7 + 4) would exceed it). When the song ends the pet holds still for the arrow (no statue); no once-more button, 0 misses and 0 hints. Review fixes: freeze snaps scale to full width, and a long frame is clamped so no stretch is skipped. Bands: pre-K 3-7, school 6-7. Voice lines `says.quiet`, `says.quiet.go`, `says.music` and a how-to step for level 7. Device speech for the new lines is unchecked. See the [verification entry](../verification/2026-11-14-pet-says-level-7-quiet-dance.md).
