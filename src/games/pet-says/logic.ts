@@ -45,7 +45,7 @@ export type Move =
   | 'softclap'
   | 'wide'
   | 'hug';
-export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'quiet' | 'pat';
+export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'quiet' | 'walk' | 'pat';
 
 /**
  * The moves in tiers (dive slice 3). Base is the first eight; social moves are the ones a one-year-old already plays
@@ -370,6 +370,11 @@ export const PLANS: SaysPlan[] = [
     opposites: 'more',
     name: 'More opposites: stomp or tiptoe, wiggle fast or slowly, clap loudly or softly, arms wide or a hug (three pairs a round, mostly moons)',
   },
+  {
+    mode: 'walk',
+    turns: 4,
+    name: 'A walk in the woods: act out four stops on a woodland, beach or farm adventure',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -419,6 +424,37 @@ export interface Turn {
   sign?: 'sun' | 'moon';
   /** Quiet dance: the stretches of this dance, quiet (dance) then music (freeze); `dance` gives the tune and the style. */
   segments?: Segment[];
+  /** A walk: the place and spoken cue for this stop. */
+  stop?: WalkStop;
+}
+
+export type WalkPlace = 'woods' | 'beach' | 'farm';
+
+export const WALKS = {
+  woods: [
+    { landmark: 'bear', move: 'tiptoe', line: 'says.walk.bear' },
+    { landmark: 'stream', move: 'jump', line: 'says.walk.stream' },
+    { landmark: 'hill', move: 'march', line: 'says.walk.hill' },
+    { landmark: 'owl', move: 'wave', line: 'says.walk.owl' },
+  ],
+  beach: [
+    { landmark: 'gulls', move: 'bird', line: 'says.walk.gulls' },
+    { landmark: 'pools', move: 'jump', line: 'says.walk.pools' },
+    { landmark: 'shells', move: 'down', line: 'says.walk.shells' },
+    { landmark: 'castle', move: 'clap', line: 'says.walk.castle' },
+  ],
+  farm: [
+    { landmark: 'barn', move: 'march', line: 'says.walk.barn' },
+    { landmark: 'hen', move: 'tiptoe', line: 'says.walk.hen' },
+    { landmark: 'pond', move: 'duck', line: 'says.walk.pond' },
+    { landmark: 'gate', move: 'wave', line: 'says.walk.gate' },
+  ],
+} as const satisfies Record<WalkPlace, readonly { move: Move; line: LineId; landmark: string }[]>;
+export type WalkStop = (typeof WALKS)[WalkPlace][number] & { place: WalkPlace };
+export const WALK_PLACES = ['woods', 'beach', 'farm'] as const satisfies readonly WalkPlace[];
+
+export function walkLandmark(view: { w: number; h: number }) {
+  return { x: view.w * 0.73, y: view.h * 0.66, scale: Math.min(1.35, view.w / 768) };
 }
 
 // Opposite day (level 6, dive slice 5) -----------------------------------------------------------------
@@ -500,7 +536,7 @@ export function moreOppositeTurns(turns: number, rng: Rng): Turn[] {
 }
 
 /** The levels with the held "once more" button, where a replayed turn counts one hint (decision 2): the rule levels. */
-export const ONCE_MORE_MODES: SaysMode[] = ['says', 'opposite'];
+export const ONCE_MORE_MODES: SaysMode[] = ['says', 'opposite', 'walk'];
 
 export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
   const deck = (pool: Move[]) => {
@@ -592,6 +628,10 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
     case 'quiet': {
       const dances = makeDances(plan.turns, rng);
       return quietSegments(plan.turns, rng).map((segments, i) => ({ moves: [], dance: dances[i], segments }));
+    }
+    case 'walk': {
+      const place = rng.pick(WALK_PLACES);
+      return WALKS[place].map((stop) => ({ moves: [stop.move], stop: { ...stop, place } }));
     }
   }
 }

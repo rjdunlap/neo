@@ -3510,6 +3510,10 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 [PR #1662](https://github.com/rjdunlap/neo/pull/1662), `claude/frog-hop-by-tens`, dive slice 7 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). School level 13 `tens` (appended; no `order`): pads 0, 10 … 100, sign `30 + 20`, starts 10–70 and 1–4 tens on or back, counted hops say the tens, the line slides to show 100 each round and the "100" label fits at four views. See the [verification entry](../verification/2026-11-14-frog-hop-level-13-hop-by-tens.md).
 
+## Pet Says slice 8, level 9 A walk in the woods (2026-11-14)
+
+[PR #1663](https://github.com/rjdunlap/neo/pull/1663), `codex/pet-says-story-walk`. A seeded woods, beach or farm route has four stops with a landmark, spoken instruction and a move at each. The green arrow walks on and the last stop ends with a cheer. Tapping the pet replays the stop. The held orange button counts one hint per stop, and misses stay at zero. Pre-K now reaches 3–9 and school 6–9. [Game page](../games/pet-says.md), [verification](../verification/2026-11-14-pet-says-level-9-a-walk-in-the-woods.md).
+
 ## Color Garden level 11 Light, middle, dark (2026-11-14)
 
 [PR #1664](https://github.com/rjdunlap/neo/pull/1664), `claude/color-garden-light-middle-dark`, slice 4 of the [dive](../deep-dives/color-garden.md#build-slices-in-order) (written as "Level 9" before IDs 9 and 10 were taken). Stable level 11, pre-K top (order 4, 5, 6, 7, 8, 11): three baskets of one color's tones, nine balloons and flowers, `SHADE_LOOK` refactored to a palette table with the middle tone added; wrong drops name the shade and hue, glow after two. See the [verification entry](../verification/2026-11-14-color-garden-level-11-light-middle-dark.md).

@@ -17,6 +17,7 @@ import { HoldButton, RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { WalkScenery, WALK_BACKDROPS } from './walk-art';
 import {
   LEVELS,
   danceSeconds,
@@ -155,6 +156,7 @@ class PetSays implements Game {
   readonly scene: Scene;
   /** What the scene adds over its sky and hills, redrawn on resize. */
   private readonly extras = new Graphics();
+  private readonly walkScenery: WalkScenery | null;
   private readonly notes = new Container();
   private idle = 0;
   private nudged = false;
@@ -179,9 +181,14 @@ class PetSays implements Game {
     this.turns = makeTurns(this.plan, ctx.rng);
     // Drawn after the turns, so a seed deals the same moves it always has.
     this.scene = pickScene(ctx.rng);
-    this.backdrop = ctx.track(new Backdrop(SCENES[this.scene], ctx.view));
+    const firstStop = this.turns[0]?.stop;
+    this.backdrop = ctx.track(
+      new Backdrop(firstStop ? WALK_BACKDROPS[firstStop.place] : SCENES[this.scene], ctx.view),
+    );
     this.extras.eventMode = 'none';
     this.backdrop.addChild(this.extras);
+    this.walkScenery = firstStop ? new WalkScenery(firstStop, ctx.view) : null;
+    if (this.walkScenery) this.backdrop.addChild(this.walkScenery);
     const star = ctx.companion();
     const b = star.getLocalBounds();
     this.grow = petGrow(b);
@@ -381,6 +388,10 @@ class PetSays implements Game {
 
   /** The scene's extras: a moon and stars, a window and a rug, snowflakes, or waves. */
   private drawExtras(v: View) {
+    if (this.walkScenery) {
+      this.walkScenery.resize(v);
+      return;
+    }
     const g = this.extras.clear();
     const ground = v.h * SCENES[this.scene].horizon;
     const rng = new Rng(SCENES[this.scene].seed ?? 1);
@@ -462,6 +473,7 @@ class PetSays implements Game {
       freeze: 'says.freeze',
       opposite: 'says.opp.intro',
       quiet: 'says.quiet',
+      walk: 'says.walk.intro',
       pat: 'says.pat',
     };
     if (this.plan.mode === 'pat') {
@@ -488,6 +500,7 @@ class PetSays implements Game {
     if ((this.plan.mode === 'freeze' || this.plan.mode === 'quiet') && !first) this.unfreeze();
     this.index++;
     if (!this.turn) return this.finale();
+    if (this.turn.stop) this.walkScenery?.show(this.turn.stop);
     await this.show(this.turn);
   }
 
@@ -563,6 +576,10 @@ class PetSays implements Game {
         break;
       case 'copy':
         void this.ctx.instruct(MOVE_CUES[first].line);
+        await this.perform(first);
+        break;
+      case 'walk':
+        await this.ctx.instruct(turn.stop!.line);
         await this.perform(first);
         break;
       case 'pairs': {
