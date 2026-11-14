@@ -20,6 +20,10 @@ export interface DuckPlan {
   zero?: boolean;
   /** Answer pads carry their dots, grouped in fives, under the numeral. */
   padDots?: boolean;
+  /** The highest pad value (default 10; at most `PAD_CAP`), for levels whose answers pass ten. */
+  padMax?: number;
+  /** The bridge stands across the middle, splitting the pond into a left and a right side (`splitSeats`). */
+  split?: boolean;
 }
 
 /** How a round's ducks sit on the pond: a dice face (1–6), two rows of five (top row first), or a scatter. */
@@ -115,9 +119,16 @@ export const FRIEND_SLOTS: [number, number][] = [
 /** Make mode: ducks waiting on the bank, always at least one more than asked for so stopping is a choice. */
 export const bankSize = (plan: DuckPlan) => Math.min(7, plan.max + 1);
 
-/** Three lily pads: the answer and two near neighbours, all between `lo` (1, or 0 where a level has zero rounds) and 10. */
-export function padValues(rng: Rng, answer: number, lo = 1): number[] {
-  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= lo && v <= 10);
+/** The highest number a lily pad shows: ten until a level's `padMax` raises it, and never past twenty. */
+export const PAD_CAP = 20;
+
+/**
+ * Three lily pads: the answer and two near neighbours, all between `lo` (1, or 0 where a level has zero rounds) and `hi`
+ * (10, or a level's `padMax` up to `PAD_CAP`).
+ */
+export function padValues(rng: Rng, answer: number, lo = 1, hi = 10): number[] {
+  const top = Math.min(PAD_CAP, hi);
+  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= lo && v <= top);
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
 }
 
@@ -290,6 +301,84 @@ export function layoutFor(rng: Rng, plan: DuckPlan, n: number): PondLayout {
   }
   if (kind === 'dice') return { kind, slots: countingOrder(DICE[n - 1]) };
   return { kind, slots: rowsSlots(n) };
+}
+
+/** Where the pond's middle and the row of answer pads sit in a view (the pond is an ellipse `POND_RX` by `POND_RY` around it). */
+export const pondCenter = (v: { w: number; h: number }) => ({ x: v.w / 2, y: v.h * 0.5 });
+export const POND_RX = 390;
+export const POND_RY = 128;
+export const PAD_ROW_GAP = 190;
+export const padRowY = (v: { h: number }) => v.h - 90;
+/** A pad's middle, counting from the left of a row of `count`. */
+export const padSpot = (v: { w: number; h: number }, i: number, count = 3) => ({
+  x: v.w / 2 + (i - (count - 1) / 2) * PAD_ROW_GAP,
+  y: padRowY(v),
+});
+
+/**
+ * Seats for ducks that are counted, never tapped (the pads are the targets), so they may be drawn smaller than a tappable
+ * duck: `scale` multiplies the duck's size. In counting order.
+ */
+export interface Seating {
+  slots: [number, number][];
+  scale: number;
+  /** How wide the pond is drawn for these seats (half its width): `POND_RX`, or `WIDE_POND_RX` for twenty. */
+  pondRx: number;
+}
+
+/** Twenty seats widen the pond, so the outer ducks sit well inside its rim and the two tens have room apart. */
+export const WIDE_POND_RX = 460;
+
+/** Twenty seats: ducks this close are drawn at this size, so neighbours do not overlap. */
+export const FRAME_GAP = 80;
+export const FRAME_SCALE = 0.68;
+/** The two rows of the twenty seats, nearer the pond's middle than the rows of five, where the pond is widest. */
+const FRAME_ROWS = [-40, 42] as const;
+/** The gap between the two ten-frames' inner columns, half as wide again as a column, so the tens read apart. */
+export const FRAMES_APART = 128;
+
+/**
+ * Ten and twenty seats, two rows of five to a frame. Up to ten fill one frame of the size and spacing of the five-and-five
+ * layout (top row first). Past ten, two frames sit side by side at `FRAME_GAP` with smaller ducks on a wider pond: the left frame is full
+ * first (its top row, then its bottom row), then the right frame fills the same way, so the full ten is counted, and seen,
+ * before the ones. Not `countingOrder`, which would read across both frames row by row.
+ */
+export function frameSeats(n: number): Seating {
+  const count = Math.max(0, Math.min(20, Math.floor(n)));
+  if (count <= 10) return { slots: rowsSlots(count), scale: 1, pondRx: POND_RX };
+  const slots = Array.from({ length: count }, (_, i): [number, number] => {
+    const frame = Math.floor(i / 10);
+    const inFrame = i % 10;
+    const col = inFrame % 5;
+    const left = -FRAMES_APART / 2 - 4 * FRAME_GAP;
+    const x = frame === 0 ? left + col * FRAME_GAP : FRAMES_APART / 2 + col * FRAME_GAP;
+    return [x, FRAME_ROWS[Math.floor(inFrame / 5)]];
+  });
+  return { slots, scale: FRAME_SCALE, pondRx: WIDE_POND_RX };
+}
+
+/** The split bridge: half its width across the pond's middle. A duck's feet stay half a duck (`DUCK_GAP / 2`) from its edge. */
+export const SPLIT_BRIDGE_HALF = 40;
+const SPLIT_CLEAR = DUCK_GAP / 2;
+
+/**
+ * A pond split by the bridge: `left` and `right` ducks (1–8 a side), each side filled outward from the bridge, the top row
+ * first, as mirror images so equal sides look equal. Up to five a side, full-size ducks a duck apart (three on top, two
+ * below); six to eight, two rows of four at `FRAME_GAP` with smaller ducks. Counting order: the left side, then the right.
+ */
+export function splitSeats(left: number, right: number): Seating {
+  const most = Math.max(left, right);
+  const small = most > 5;
+  const perRow = small ? 4 : 3;
+  const gap = small ? FRAME_GAP : DUCK_GAP;
+  // Rows sit a little low, where the pond is still wide but the far rim is clear of the top row's heads.
+  const rows = small ? ([-30, 50] as const) : ([-36, 72] as const);
+  const side = (n: number, sign: -1 | 1) =>
+    Array.from({ length: Math.max(0, Math.min(8, Math.floor(n))) }, (_, i): [number, number] => {
+      const col = i % perRow;
+      return [sign * (SPLIT_BRIDGE_HALF + SPLIT_CLEAR + col * gap), rows[Math.floor(i / perRow)]];
+    });
+  return { slots: [...side(left, -1), ...side(right, 1)], scale: small ? FRAME_SCALE : 1, pondRx: POND_RX };
 }
 
 /** The answer pad: its radius, and the dots' size, spacing and first row's height (the numeral sits above them). */

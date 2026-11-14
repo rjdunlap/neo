@@ -329,6 +329,45 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       );
     }
 
+    // Duck Pond seats (slice 7, opt-in with DUCK_SEATS=1): no level deals them yet, so seat ducks on a level-8 round by
+    // hand. Landscape: nineteen ducks in two ten-frames and pads up to 20. Portrait: the split bridge with eight a side.
+    if (process.env.DUCK_SEATS && (!only || only === 'ducks')) {
+      const seat = (how) =>
+        page.evaluate(async (how) => {
+          const L = await import('/src/games/duck-pond/logic.ts');
+          const g = neo.scene.game;
+          await kit.until(() => g.pads.length === 3, 30000);
+          g.busy = true;
+          for (const d of g.swimmers) d.destroy();
+          g.swimmers = [];
+          g.clearPads();
+          g.plan = { ...g.plan, padMax: 20, split: how.split };
+          g.resize(g.view);
+          const s = how.split ? L.splitSeats(how.left, how.right) : L.frameSeats(how.n);
+          await g.arrive(s.slots.length, s.slots, s);
+          g.showSign(s.slots.length, false);
+          g.showPads(s.slots.length);
+          await kit.sleep(900);
+          const problems = [];
+          for (const p of g.pads) {
+            const b = p.getBounds();
+            if (b.width < 100 * neo.view.scale * 0.95) problems.push(`pad ${p.value} is ${b.width}px`);
+          }
+          if (g.swimmers.length !== s.slots.length) problems.push(`${g.swimmers.length} ducks seated`);
+          if (problems.length) throw new Error(problems.join('; '));
+          return g.pads.map((p) => p.value);
+        }, how);
+      await portrait(false);
+      await launch('duck-pond', 8);
+      log(`Duck Pond twenty seats, pads ${await seat({ n: 19 })}`);
+      await screenshot('duck-pond-twenty-seats-landscape');
+      await portrait(true);
+      await launch('duck-pond', 8);
+      log(`Duck Pond split bridge, pads ${await seat({ split: true, left: 8, right: 8 })}`);
+      await screenshot('duck-pond-split-seats-portrait');
+      await portrait(false);
+    }
+
     // Duck Pond: tapping ducks in, stopping at a number, and answering on lily pads.
     const duckTop = await page.evaluate(
       async () => (await import('/src/games/duck-pond/logic.ts')).PLANS.length,
