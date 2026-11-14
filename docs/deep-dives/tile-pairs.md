@@ -191,7 +191,7 @@ None of these blocks a slice below.
 10. **Level 12 *Short sides*** (built, PR #1633, with level 11 *Tricky tower*, the pool-only addition, so level IDs stay unbroken). Rule flag, voice and how-to; as slice 5's tier.
 11. **Level 13 *Brick wall*** (built, PR #1636). Half-step positions and overlap `free`; typecheck, rule tests (whole-step boards unchanged), one browser play with a portrait screenshot, `fingerdemo` at 13.
 12. **Level 14 *Three alike*** (built, PR #1641). A new interaction: the new-interaction tier as slice 2.
-13. **Levels 15–16 big stacks.** The widened mask and node-budget tests; one browser play of 16 in each orientation.
+13. **Levels 15–16 big stacks** (claimed, `claude/tile-pairs-big-stacks`). The widened mask and node-budget tests; one browser play of 16 in each orientation.
 
 Slices 1–12 are built (below); slice 13 is next. The five decisions stay out of the ready list.
 
