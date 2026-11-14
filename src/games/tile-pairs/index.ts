@@ -208,7 +208,9 @@ class TilePairs implements Game {
             : opensAtEnds(this.tiles)
               ? 'tile-pairs.go-ends'
               : 'tile-pairs.go'
-        : 'couch.how.tile-pairs',
+        : this.three
+          ? 'tile-pairs.go-three-keys'
+          : 'couch.how.tile-pairs',
     );
   }
 
@@ -471,7 +473,8 @@ class TilePairs implements Game {
     this.peeking = false;
     this.hints++;
     this.hinted = pair;
-    this.selected = [];
+    // On a three-alike board held tiles that belong to the hinted set stay held, as the mismatch line promised.
+    this.selected = this.three ? this.selected.filter((i) => pair.includes(i)) : [];
     this.cursor = pair[0];
     this.draw();
     void this.ctx.say(this.three ? 'tile-pairs.hint-three' : 'tile-pairs.hint');

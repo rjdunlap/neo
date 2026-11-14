@@ -402,6 +402,13 @@ describe('Tile Pairs', () => {
     expect(trap).toBeGreaterThan(25);
   });
   it('reshuffles a three-alike remainder into open rows that still clear in threes', () => {
+    // A shuffle before any set lays all 24 in four rows of six, and the geometric route still clears them.
+    for (let seed = 1; seed <= 20; seed++) {
+      const board = makeBoard(14, new Rng(seed)),
+        all = reshuffle(board, fullMask(board), new Rng(seed + 50));
+      expect(all).toHaveLength(24);
+      expect(solve(all)).toHaveLength(8);
+    }
     for (let seed = 1; seed <= 40; seed++) {
       const tiles = makeBoard(14, new Rng(seed)),
         rng = new Rng(seed + 900);

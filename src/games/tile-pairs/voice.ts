@@ -13,6 +13,9 @@ export const VOICE = {
   'tile-pairs.go-three': [
     'Tap three tiles with the same picture. Each needs a clear top and an open left or right side. Six of each picture are on the board: choose which three to take now, and which three to leave for later.',
   ],
+  'tile-pairs.go-three-keys': [
+    'Move between the free tiles. Choose three with the same picture to remove them. A tile needs a clear top and an open left or right side. Clear the stack.',
+  ],
   'tile-pairs.mismatch-three': [
     'That picture is different, so it was not picked. The tiles you picked stay picked; find another just like them.',
   ],

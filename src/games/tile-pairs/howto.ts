@@ -57,6 +57,16 @@ export const HOW_TO: GameHowTo = {
     { text: PEEK, from: 12 },
     {
       text: 'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
+      to: 13,
+    },
+    {
+      text: 'Undo restores a set or shuffle. Hint outlines a clearing set of three. Shuffle puts the remaining tiles in open rows.',
+      from: 14,
+      to: 14,
+    },
+    {
+      text: 'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
+      from: 15,
       to: 16,
     },
     {

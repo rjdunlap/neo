@@ -372,7 +372,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
           'a flower with another picture hears that flowers go with flowers',
         );
       let s = await state();
-      if (three) assert.deepEqual(s.selected, [], 'the hint after two misses clears the held tiles');
+      if (three)
+        assert.ok(
+          s.selected.every((i) => s.hinted.includes(i)),
+          'after two misses the hint keeps only held tiles that belong to the hinted set',
+        );
       assert.equal(s.mask, initial.mask, 'a mismatch removes nothing');
       assert.equal(s.misses, 2);
       assert.equal(s.hints, 1);
@@ -381,7 +385,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, turnToG
       assert.equal((await state()).hints, 1, 'repeated displayed hint is not charged again');
       const pair = (await state()).hinted;
       assert.equal(pair.length, level === 14 ? 3 : 2, 'the hint rings a whole move');
-      for (const i of pair) await tapTile(i);
+      // A tile still held from before the hint is already picked; tapping it again would let it go.
+      const held = (await state()).selected;
+      for (const i of pair) if (!held.includes(i)) await tapTile(i);
       const afterPair = await state();
       assert.notEqual(afterPair.mask, initial.mask);
       await tap('neo.scene.game.undoButton');
