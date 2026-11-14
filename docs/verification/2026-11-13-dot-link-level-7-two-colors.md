@@ -1,0 +1,5 @@
+# 2026-11-13 — Dot Link level 7, Two colors (PR #1639)
+
+**Changed:** `dot-link` level 7 *Two colors* (pre-K window now 3–7): a sign names two colors with numbers 6 and 4 and a row of little dots per color; a line of either color counts toward its own number, capped; another color pops and counts nothing (`dots.notthat`), a full color says `dots.twofull`; two misses glow a hint; `ensureMove` keeps a line of the color still needed (300-seed rule test). New voice lines and a how-to step; the `batch` dots section takes `DOTS_LEVELS=7`.
+**Ran:** typecheck; `npm test` (351 files, 6912 passed, including the dot-link rule tests); `BROWSER_SUITE=batch BATCH_ONLY=dots DOTS_LEVELS=7` passed (two other-color misses, the hint, both counts full, saved score [2,1], sticker; landscape screenshot `test-results/browser/batch/dot-link-7.png` reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=dot-link FINGER_LEVELS=7` passed in 11.2 s.
+**Not run:** `npm run build` (no shared files or assets changed), offline, a portrait play, other suites.

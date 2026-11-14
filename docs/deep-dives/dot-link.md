@@ -1,12 +1,12 @@
 # Dot Link deep dive
 
-*ID `dot-link` · bands lap, toddler, preschool, pre-K · levels 1–6 on 2026-10-14 · session `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342))*
+*ID `dot-link` · bands lap, toddler, preschool, pre-K · levels 1–6 on 2026-10-14, 7 built 2026-11-13 · session `claude/dot-link-deep-dive` ([PR #342](https://github.com/rjdunlap/neo/pull/342))*
 
 ## The game today
 
 She pops colored dots: tap one, drag a line through neighbors of one color, and new dots drop in from the top. Learning: color matching and fine-motor control first, then counting a chain, planning which line to draw, and a loop (a closed square clears a whole color). Source baseline: `origin/main` `c0992cd`; inspected `src/games/dot-link/` (`logic.ts`, `index.ts`, `logic.test.ts`), its [GAMES.md](../GAMES.md#dot-link) entry, its how-to card and voice lines (`dots.*`). No couch entry, no journal entry, no picnic step.
 
-Band windows (`LEVELS`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–6. No school window.
+Band windows (`LEVELS`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–7. No school window.
 
 | Level | Plan | Bands | What she decides |
 | --- | --- | --- | --- |
@@ -16,6 +16,7 @@ Band windows (`LEVELS`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–6. No 
 | 4 | Three chains of 4 (5×6, 4 colors) | preschool, pre-K | A line of at least four; shorter lines pop but do not count |
 | 5 | Close a square twice (5×6, 4 colors) | pre-K | Find a 2×2 of one color and go around it |
 | 6 | Three chains of exactly 5 | pre-K | A line of five, not four or six |
+| 7 | Two colors: pop 6 of one color and 4 of another (5×5, 4 colors) | pre-K | Which color's line next; a color already full counts nothing more |
 
 Content: colors are a seeded draw of 3–4 from five (red, blue, yellow, green, purple); boards are random with `ensureMove` repainting a row or a 2×2 when no counting move exists; refills are random. Misses: a line that pops but does not count (wrong color, too short or long, not closed) is one miss with a spoken hint (`dots.notthat`, `dots.longer`, `dots.around`, `dots.exact`); two in a row glow a real move, and so does twelve idle seconds (each glow counts one hint). Everything pops either way, so nothing is lost. Known gaps: no person check of the toddler drag yet (see [DEVICE-CHECKS](../DEVICE-CHECKS.md)); red and green are both in the palette and the dots differ only by color; no school window.
 
@@ -95,7 +96,7 @@ Both decided by the developer on 2026-10-14:
 
 1. **Marks in the dots** (built 2026-10-15; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-marks-in-the-dots-2026-10-15)).
 2. **Level 11 Find my buddy** (built 2026-10-17; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-11-find-my-buddy-2026-10-17)). Readings: a full two-color 3×3 always has at least two same-color neighbor pairs, so "one pair" means exactly one pair lit (seeded `pickBuddy`), and the goal is 4 buddies (the dive gave none).
-3. **Level 7 Two colors** (a second count; new-level tier). *In progress 2026-11-13, branch `claude/dot-link-two-colors`.*
+3. **Level 7 Two colors** (built 2026-11-13; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-7-two-colors-2026-11-13)). The sign names two colors and a number each (6 and 4); a line of either color counts toward its own number, capped, so a loop may overshoot; another color, or one already full, pops but counts nothing.
 4. **Level 8 Same, different** (a pattern line; new interaction tier: rules first, one scripted play, one portrait screenshot, `fingerdemo`).
 5. **Level 9 Make ten** (the school window is decided).
 6. **Level 10 Clear the garden** with the exact solver.
