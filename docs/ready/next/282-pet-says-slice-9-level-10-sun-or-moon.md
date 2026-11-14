@@ -1,1 +1,0 @@
-**Pet Says slice 9, level 10 Sun or moon** (new-levels tier: rule tests, one browser play at 10, `fingerdemo` at 10 and one portrait screenshot): eight turns with a switching sun and moon, with a spoken cue before the pet moves. [Pet Says dive, slice 9](../../deep-dives/pet-says.md#build-slices-in-order)

@@ -483,7 +483,12 @@ class PetSays implements Game {
       await this.ctx.instruct(lines.pat);
       return;
     }
-    await this.ctx.say(this.plan.opposites === 'more' ? 'says.opp.more' : lines[this.plan.mode]);
+    const oppositeIntros = {
+      first: 'says.opp.intro',
+      more: 'says.opp.more',
+      switching: 'says.opp.switching',
+    } as const;
+    await this.ctx.say(this.plan.opposites ? oppositeIntros[this.plan.opposites] : lines[this.plan.mode]);
     await this.advance(true);
   }
 
@@ -626,7 +631,7 @@ class PetSays implements Game {
           this.signShown = sign;
           await this.flipSign(sign);
         }
-        if (sign === 'moon' && !this.mooned) {
+        if (sign === 'moon' && !this.mooned && this.plan.opposites !== 'switching') {
           // The first moon: the new rule is said once.
           this.mooned = true;
           await this.ctx.say('says.opp.flip');
