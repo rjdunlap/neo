@@ -115,7 +115,7 @@ Optional basket speech remains undecided. The assigned slice explicitly chose th
 1. **Mixed kinds at level 6** (built 2026-10-14, `claude/color-garden-mixed-kinds`; fresh content): choose fruit, balloon or flower per item with the seeded rng; update `describeLevel`, a rule test, and the GAMES.md entry. Tier: new levels on an existing interaction, rule tests plus one filtered browser play of level 6 and `fingerdemo`.
 2. **Tap and it hops** (built 2026-10-15, stable level 9, `codex/color-tap-entry`, [PR #399](https://github.com/rjdunlap/neo/pull/399)): lap/toddler tap entry, two baskets, naming, `entryLevels`/`order`, scoped how-to and ghost finger. [Build note](../archive/COMPLETED-2026-10-09.md#color-garden-tap-and-it-hops-2026-10-15).
 3. **Level 8, Color or kind** (built 2026-10-15, `claude/color-garden-color-or-kind`, [PR #351](https://github.com/rjdunlap/neo/pull/351)): the rule sign, the two rules, voice lines, how-to. Same tier as above.
-4. **Level 9, Light, middle, dark**: refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast.
+4. **Level 9, Light, middle, dark**: refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast. *In progress (claimed 2026-11-14, `claude/color-garden-light-middle-dark`): built as stable level 11, the next free ID, pre-K top.*
 5. **Level 10, Two ways at once**: the 2×2 layout and two-part hints. Last because it is the heaviest and needs the level 8 sign.
 
 ## What was built in this session
