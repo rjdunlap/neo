@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 1–4 |
-| school | 3–12 |
+| school | 3–13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 10 | Two hop sizes, one lily: how many hops of the other size reach the same place? |
 | 11 | Count up to take away: 13 − 9 is the hops from 9 to 13. Choose a number card |
 | 12 | Over ten, your way: a sum or take-away across 10, with a stop at 10 if she chooses |
+| 13 | Hop by tens: pads 0, 10, 20 … 100, start at 10 to 70 and hop 1 to 4 tens on or back |
 
 <!-- end generated -->
 
