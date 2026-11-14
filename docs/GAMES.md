@@ -308,7 +308,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Pet Says
 
-*lap–pre-K* · [Pet Says](games/pet-says.md)
+*lap–school* · [Pet Says](games/pet-says.md)
 
 ### Lemonade Stand
 

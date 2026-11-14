@@ -1,0 +1,5 @@
+# 2026-11-14 — Pet Says level 6 Opposite day (PR #1653)
+
+**Changed:** `pet-says` level 6 (suns copy, moons do the opposite, reveal on each moon turn), a held "once more" button on levels 4 and 6 that counts a hint per turn, and a school window 6–6 beside pre-K 3–6.
+**Ran:** typecheck; Pet Says rule tests (28); full `npm test` (351 files, 6,965 tests, passed); `BROWSER_SUITE=shortlist SHORTLIST_ONLY=says FROM_LEVEL=6 TO_LEVEL=6` at phone portrait 390×844 ("once more" held twice on the first moon turn, 1 hint counted, saved score [0,1]) with moon-reveal screenshots in portrait and in landscape 844×390; `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-says FINGER_LEVELS=6` (passed, 24.5 s); `BROWSER_SUITE=lands LANDS_ONLY=cozy-village` (the land pages passed, then the suite's later Lantern Lake step failed with "no puzzle needs a controller now", a failure seen and unrelated to Pet Says).
+**Not run:** build, offline, `world` (it has no land filter), and Pet Says levels 1–5 again. Device speech for the new `says.opp.*` lines is unchecked.

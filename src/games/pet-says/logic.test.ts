@@ -50,6 +50,12 @@ import {
   petGrow,
   WRONG_NAMES,
   wrongName,
+  LEVELS,
+  ONCE_MORE_MODES,
+  OPPOSITE_PAIRS,
+  PARTNER,
+  partnerOf,
+  SUN_TURNS,
 } from './logic';
 
 describe('Pet Says', () => {
@@ -340,8 +346,8 @@ describe("Pat the pet (level 13, lap's first level)", () => {
   it('is its own level beside the numbered ladder, which does not change', () => {
     expect(plan.mode).toBe('pat');
     expect(ENTRY_PLANS[13]).toBe(plan);
-    expect(PLANS.map((p) => p.mode)).toEqual(['copy', 'body', 'pairs', 'says', 'freeze']);
-    for (let level = 1; level <= 5; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+    expect(PLANS.map((p) => p.mode)).toEqual(['copy', 'body', 'pairs', 'says', 'freeze', 'opposite']);
+    for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
 
   it('brings out five different, spoken moves, never an animal or walking move', () => {
@@ -472,5 +478,77 @@ describe('Scenes (dive slice 4)', () => {
       seen.add(scene);
     }
     expect(seen.size).toBe(5);
+  });
+});
+
+describe('Opposite day (level 6, dive slice 5)', () => {
+  const plan = planFor(6);
+
+  it('is level 6, in the pre-K window and the start of the school window', () => {
+    expect(plan.mode).toBe('opposite');
+    expect(plan.turns).toBe(6);
+    expect(LEVELS.prek).toEqual({ min: 3, max: 6 });
+    expect(LEVELS.school).toEqual({ min: 6, max: 6 });
+    expect(ONCE_MORE_MODES).toEqual(['says', 'opposite']);
+  });
+
+  it('pairs each move with exactly one partner, and the partner of the partner is the move', () => {
+    const moves = OPPOSITE_PAIRS.flat();
+    expect(new Set(moves).size).toBe(moves.length);
+    for (const m of moves) {
+      expect(partnerOf(m)).not.toBe(m);
+      expect(partnerOf(partnerOf(m))).toBe(m);
+    }
+    expect(Object.keys(PARTNER).sort()).toEqual([...moves].sort());
+    expect(() => partnerOf('clap')).toThrow();
+  });
+
+  it('starts with suns, then moons; uses only its pairs; and never asks from the same pair twice running', () => {
+    // "No turn shows a move and its partner" (dive), read as: the opposite revealed on one turn is never the next
+    // turn's ask, nor its partner, so the next turn is never answered by the reveal she just saw.
+    const pool = new Set(OPPOSITE_PAIRS.flat());
+    const pairOf = (m: string) => OPPOSITE_PAIRS.findIndex((p) => p.includes(m as never));
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 300; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(turns).toHaveLength(6);
+      turns.forEach((t, i) => {
+        expect(t.moves).toHaveLength(1);
+        expect(pool.has(t.moves[0])).toBe(true);
+        expect(t.sign).toBe(i < SUN_TURNS ? 'sun' : 'moon');
+        if (i > 0) expect(pairOf(t.moves[0])).not.toBe(pairOf(turns[i - 1].moves[0]));
+        seen.add(t.moves[0]);
+      });
+    }
+    expect(seen).toEqual(pool);
+  });
+
+  it('reveals a move the pet can show apart from the one it asked, on every friend', () => {
+    // Paired hand targets differ by at least 120 units at pip size (the two mittens' travel summed, in the friend's
+    // units times its grow), so the reveal is plainly a different move; up and down also stretch the pet differently.
+    for (const s of SPECIES_IDS) {
+      const box = bodyBox(s);
+      const f = saysFrame((p) => restPoints(s, p), box);
+      const g = petGrow(box);
+      const places = {
+        up: f.up,
+        down: f.down,
+        head: f.targets.head,
+        toes: f.targets.toes,
+      };
+      for (const [a, b] of OPPOSITE_PAIRS) {
+        const pa = places[a as keyof typeof places];
+        const pb = places[b as keyof typeof places];
+        const travel =
+          Math.hypot(pa.left.x - pb.left.x, pa.left.y - pb.left.y) +
+          Math.hypot(pa.right.x - pb.right.x, pa.right.y - pb.right.y);
+        expect(travel * g, `${s} ${a} and ${b}`).toBeGreaterThanOrEqual(120);
+      }
+    }
+  });
+
+  it('speaks every Opposite day line', () => {
+    for (const id of ['says.opp.intro', 'says.opp.sun', 'says.opp.flip', 'says.opp.moon', 'says.opp.reveal'])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
   });
 });

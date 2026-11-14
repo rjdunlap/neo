@@ -39,7 +39,7 @@ export type Move =
   | 'cheeks'
   | 'shoulders'
   | 'chin';
-export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'pat';
+export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'pat';
 
 /**
  * The moves in tiers (dive slice 3). Base is the first eight; social moves are the ones a one-year-old already plays
@@ -321,6 +321,11 @@ export const PLANS: SaysPlan[] = [
     turns: 4,
     name: 'Freeze dance: four tunes to bounce, sway or dance like a robot to, then freeze like a tree or a flamingo',
   },
+  {
+    mode: 'opposite',
+    turns: 6,
+    name: 'Opposite day: a sun means copy the pet, a moon means do the opposite (reach up high, so crouch down low)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -328,7 +333,10 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 13, order: [13, 1, 2] },
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  prek: { min: 3, max: Math.min(10, PLANS.length) },
+  // The school window opens at Opposite day (decision 1, 2026-10-23) and grows to 12 as the rule levels are built; a
+  // school player's saved level lifts to 6.
+  school: { min: 6, max: Math.min(12, PLANS.length) },
 };
 
 /**
@@ -363,7 +371,45 @@ export interface Turn {
   counts?: (number | undefined)[];
   /** Level 5: the tune, how the pet dances to it, and the statue it freezes into. */
   dance?: Dance;
+  /** Opposite day: the sun means copy the move, the moon means do its partner (which the pet reveals after the arrow). */
+  sign?: 'sun' | 'moon';
 }
+
+// Opposite day (level 6, dive slice 5) -----------------------------------------------------------------
+
+/** The move pairs Opposite day flips between: each move's partner is the one it is the opposite of. */
+export const OPPOSITE_PAIRS: [Move, Move][] = [
+  ['up', 'down'],
+  ['head', 'toes'],
+];
+export const PARTNER: Partial<Record<Move, Move>> = Object.fromEntries(
+  OPPOSITE_PAIRS.flatMap(([a, b]) => [
+    [a, b],
+    [b, a],
+  ]),
+);
+export const partnerOf = (m: Move): Move => {
+  const p = PARTNER[m];
+  if (!p) throw new Error(`${m} has no opposite`);
+  return p;
+};
+/** The first turns are suns, so copying is met before flipping. */
+export const SUN_TURNS = 2;
+
+/**
+ * Six turns: two suns (copy me), then moons (do the opposite). Each turn draws from the other pair than the turn before,
+ * so the move she just did as a reveal is never the next turn's ask.
+ */
+export function oppositeTurns(turns: number, rng: Rng): Turn[] {
+  let pair = rng.int(0, OPPOSITE_PAIRS.length - 1);
+  return Array.from({ length: turns }, (_, i) => {
+    pair = (pair + 1) % OPPOSITE_PAIRS.length;
+    return { moves: [rng.pick(OPPOSITE_PAIRS[pair])], sign: i < SUN_TURNS ? 'sun' : 'moon' };
+  });
+}
+
+/** The levels with the held "once more" button, where a replayed turn counts one hint (decision 2): the rule levels. */
+export const ONCE_MORE_MODES: SaysMode[] = ['says', 'opposite'];
 
 export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
   const deck = (pool: Move[]) => {
@@ -450,6 +496,8 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         .map((m) => ({ moves: [m] }));
     case 'freeze':
       return makeDances(plan.turns, rng).map((dance) => ({ moves: [], dance }));
+    case 'opposite':
+      return oppositeTurns(plan.turns, rng);
   }
 }
 
