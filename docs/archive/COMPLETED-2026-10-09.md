@@ -3383,6 +3383,10 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 
 [PR #1586](https://github.com/rjdunlap/neo/pull/1586), `claude/tile-pairs-tricky-twins`, dive slice 7 ([dive](../deep-dives/tile-pairs.md#what-was-built-in-this-session)). Deal bands for levels 3–4 [0.6, 0.95] and 5–6 [0.3, 0.8]; level 10 *Tricky twins* deals level 5's layout from 24 frozen boards (`pools.ts`, written by `scripts/tile-pairs-pool.mjs`), each with a losing first pair, random-play clear at most 30% and a passing fair-trap check; mirrored and renamed at play. Grown-up range 1–10, no `order`. Slice 8 (lesson levels 17–19) stays queued.
 
+## Pyramid Solitaire lesson deals, levels 9–10 (2026-11-13)
+
+[PR #1637](https://github.com/rjdunlap/neo/pull/1637), `claude/pyramid-lesson-deals`, dive slice 8 ([dive](../deep-dives/pyramid-solitaire.md#lesson-deals)). Level 9 *One way in* (four rows: no open king, at least three opening pairs, exactly one safe, every losing opening stranding one card) and level 10 *Count the copies* (five rows: two open copies, two partners, one buried under one copy), 24 deals each in `pools.ts` from `scripts/pyramid-lesson-search.mjs`; a stranded card is outlined after a losing removal and the `pyramid.lesson` line follows the blocked line. Grown-up `order` `[1, 2, 9, 3, 10, 4, 5, 6, 7, 8]`; levels 1–8 deal identically. Only 16 level-9 shapes appear in two million seeds. This was the dive's last slice.
+
 ## Tile Pairs level 13, Brick wall (2026-11-13)
 
 [PR #1636](https://github.com/rjdunlap/neo/pull/1636), `claude/tile-pairs-brick-wall`, dive slice 11 ([dive](../deep-dives/tile-pairs.md#build-slices-in-order)). Level 13 *Brick wall · half steps*: 26 tiles on half-step positions (five raised tiles each resting on two below, three more on those), `free()` by overlap with whole-step boards unchanged (tested), peek stacks keyed on the floor of x, blocked tiles greyed on half-step boards, how-to step; random play clears 8–100%, median 68%, band [0.45, 0.9]; the grown-up `order` ends 11, 12, 13.
