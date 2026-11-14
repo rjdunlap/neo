@@ -1738,17 +1738,21 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     // Level 11 (Find my buddy): a line that is not the wiggling pair shakes and stays (one miss); `DOTS_LEVELS=11` plays only it.
     // Level 12 (One big dot, lap): touches on the empty meadow pop the nearest dot and each pop brings one more.
     // Level 7 (Two colors): lines of a color the sign does not name are the misses; both named counts fill and stop.
+    // Level 8 (Same, different) plays on an upright phone (390 × 844): one-color pairs and a line started on the
+    // sign's second color are the misses; lines that follow the sign count, and the sign stands above the board.
     const dotLevels = process.env.DOTS_LEVELS
       ? process.env.DOTS_LEVELS.split(',').map(Number)
-      : [1, 2, 3, 4, 5, 6, 7, 11, 12];
+      : [1, 2, 3, 4, 5, 6, 7, 8, 11, 12];
     for (const level of dotLevels) {
       if (only && only !== 'dots') break;
+      if (level === 8) await page.setViewportSize({ width: 390, height: 844 });
       await launch('dot-link', level);
       await page.waitForTimeout(600);
+      if (level === 8) await screenshot('dot-link-8-portrait');
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
       await page.evaluate(async () => {
         const g = neo.scene.game;
-        const { findLine, findSquare } = await import('/src/games/dot-link/logic.ts');
+        const { findLine, findPattern, findSquare } = await import('/src/games/dot-link/logic.ts');
         const at = (c) => {
           const p = g.board.toGlobal({ x: c.c * 108, y: c.r * 108 });
           return [p.x, p.y];
@@ -1827,6 +1831,18 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             await draw(findLine(g.grid, 2, other ?? g.target).slice(0, 2));
           }
           if (g.misses !== 2 || g.hints !== 1) throw new Error(`Two colors hint: ${g.misses} ${g.hints}`);
+        } else if (p.mode === 'pattern') {
+          // A one-color pair breaks the sign; then a sign-following line drawn from its far end starts on the
+          // second color. Each pops, one miss; the second glows a pattern line, and the sign stands above the board.
+          const sign = g.sign.getBounds();
+          const board = g.board.getBounds();
+          if (!(sign.bottom <= board.top))
+            throw new Error(`Pattern sign not above the board: ${sign.bottom} ${board.top}`);
+          const pair = findLine(g.grid, 2);
+          await draw(pair.slice(0, 2));
+          await draw([...findPattern(g.grid, g.pattern)].reverse());
+          if (g.misses !== 2 || g.hints !== 1 || g.progress !== 0)
+            throw new Error(`Pattern hint: ${g.misses} ${g.hints} ${g.progress}`);
         } else if (p.mode !== 'pair') {
           for (let k = 0; k < 2; k++) {
             const other =
@@ -1845,6 +1861,10 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             await draw([...sq, sq[0]]);
             continue;
           }
+          if (p.mode === 'pattern') {
+            await draw(findPattern(g.grid, g.pattern));
+            continue;
+          }
           const want = p.mode === 'chain' ? p.length : 2;
           const line =
             ((p.mode === 'color' || p.mode === 'two') &&
@@ -1859,6 +1879,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       });
       await screenshot(`dot-link-${level}`);
       await finished('dot-link');
+      if (level === 8) await page.setViewportSize({ width: 1024, height: 768 });
       const r = await page.evaluate(() => {
         const r = kit.store.stats('dot-link').history.at(-1);
         return [r.misses, r.hints];
