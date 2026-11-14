@@ -101,7 +101,7 @@ Both decided by the developer on 2026-10-14:
 3. **Level 7 Two colors** (built 2026-11-13; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-7-two-colors-2026-11-13)). The sign names two colors and a number each (6 and 4); a line of either color counts toward its own number, capped, so a loop may overshoot; another color, or one already full, pops but counts nothing.
 4. **Level 8 Same, different** (built 2026-11-14; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-8-same-different-2026-11-14)). A line follows the sign's pattern from its first color and is at least four long; a line drawn backward is a miss (the first dot's color is the decision); the school window opens here.
 5. **Level 9 Make ten** (built 2026-11-14; see [completed work](../archive/COMPLETED-2026-10-09.md#dot-link-level-9-make-ten-2026-11-14)). Readings: every same-color line adds its dots to a ten-frame on a big 10 sign, filled in the line's color (live preview while drawing); a line cannot grow past what is left, it stops with "Only 3 more!" (one miss per line, and the line still counts); with one left a single dot pops by a tap; loops do not close; the hint is an exact finishing line when the board has one, else the longest that fits. School window 8–9 and a stretch at the top of pre-K (3–9).
-6. **Level 10 Clear the garden** with the exact solver.
+6. **Level 10 Clear the garden** with the exact solver (claimed 2026-11-14 by `claude/dot-link-clear-garden`).
 7. **Boards with empty cells** and the anchors.
 
 ## What was built in this session
