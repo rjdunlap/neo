@@ -41,6 +41,11 @@ export const HOW_TO: GameHowTo = {
       to: 14,
       text: 'A bridge splits the pond. Count the ducks on each side, then tap the lily pad with how many there are in all. The sides are equal at first; in the last two rounds one side has one more.',
     },
+    {
+      from: 15,
+      to: 15,
+      text: 'A full pond of ten splashes in at once, then a few more ducks swim into a second frame. Tap the lily pad with how many there are in all; in every other round the sign shows the whole, and she finds how many are past the ten.',
+    },
   ],
   finish: [
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
@@ -48,7 +53,7 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 2, text: 'The round ends when all the ducks are in the pond.' },
     { from: 3, to: 5, text: 'The round ends when the right number of ducks is in the pond.' },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
-    { from: 14, to: 14, text: 'The round ends when the answer is right.' },
+    { from: 14, to: 15, text: 'The round ends when the answer is right.' },
   ],
   note: [
     {
@@ -80,6 +85,11 @@ export const HOW_TO: GameHowTo = {
       from: 14,
       to: 14,
       text: 'A wrong pad counts one side, then counts on across the bridge. After a right answer the sign shows the sentence, such as 4 + 4 = 8.',
+    },
+    {
+      from: 15,
+      to: 15,
+      text: 'A wrong pad counts on from ten (ten, eleven, twelve…), or, when she is finding the part past ten, counts just those ducks. After a right answer the sign shows the sentence, such as 10 + 4 = 14.',
     },
     {
       from: 11,

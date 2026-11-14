@@ -45,6 +45,9 @@ import {
   SPLIT_BRIDGE_HALF,
   type Seating,
   doublesRounds,
+  teenRounds,
+  teenAnswer,
+  teenPadRange,
 } from './logic';
 import { computeView } from '../../engine/view';
 
@@ -465,14 +468,14 @@ describe('Duck Pond level 14, Doubles (slice 6)', () => {
   const plan = planFor(14);
 
   it('is appended as level 14, so levels 1–13 keep their plans, and splits the pond at the bridge', () => {
-    expect(PLANS).toHaveLength(14);
+    expect(PLANS.length).toBeGreaterThanOrEqual(14);
     expect(planFor(12).mode).toBe('bye');
     expect(planFor(13).mode).toBe('friends');
     expect(plan).toMatchObject({ mode: 'double', split: true, min: 1, max: 5, near: 2 });
   });
 
   it('tops the school window; no other band reaches it, and school never lists the lap and toddler openings', () => {
-    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9, 10, 11, 14]);
+    expect(levelsInOrder(LEVELS.school!).slice(0, 5)).toEqual([8, 9, 10, 11, 14]);
     for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(14);
     // A school player saved at 8–11 keeps that level.
@@ -526,5 +529,72 @@ describe('Duck Pond level 14, Doubles (slice 6)', () => {
     expect(duckMove(plan, 0, 8, 0, [7, 8, 9], 8)).toEqual({ pad: 1 });
     expect(numberSentence(4, 4)).toBe('4 + 4 = 8');
     expect(duckPond.describeLevel!(14)).toMatch(/Doubles/);
+  });
+});
+
+describe('Duck Pond level 15, Ten and some more (slice 8)', () => {
+  const plan = planFor(15);
+
+  it('is appended as level 15, so levels 1–14 keep their plans, with pads reaching 19', () => {
+    expect(PLANS).toHaveLength(15);
+    expect(planFor(14).mode).toBe('double');
+    expect(plan).toMatchObject({ mode: 'teen', min: 1, max: 9, padMax: 19 });
+    expect(plan.split).toBeFalsy();
+  });
+
+  it('tops the school window after Doubles; no other band reaches it, and saved school levels stay put', () => {
+    expect(levelsInOrder(LEVELS.school!)).toEqual([8, 9, 10, 11, 14, 15]);
+    expect(LEVELS.school!.max).toBe(15);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(LEVELS[band]!)).not.toContain(15);
+    for (const l of [8, 9, 10, 11, 14]) expect(landing(l, LEVELS.school!, duckPond.entryLevels)).toBe(l);
+  });
+
+  it('asks in all, then past ten, turn about, with 1 to 9 ones never the same twice running', () => {
+    for (let seed = 0; seed < 300; seed++) {
+      const rounds = teenRounds(new Rng(seed), plan);
+      expect(rounds).toHaveLength(plan.rounds);
+      rounds.forEach((t, i) => {
+        expect(t.ask).toBe(i % 2 ? 'ones' : 'total');
+        expect(t.ones).toBeGreaterThanOrEqual(1);
+        expect(t.ones).toBeLessThanOrEqual(9);
+        if (i > 0) expect(t.ones).not.toBe(rounds[i - 1].ones);
+      });
+    }
+  });
+
+  it('reaches every teen from 11 to 19 as a total, and every ones part from 1 to 9', () => {
+    const totals = new Set<number>();
+    const ones = new Set<number>();
+    for (let seed = 0; seed < 300; seed++)
+      for (const t of teenRounds(new Rng(seed), plan)) (t.ask === 'total' ? totals : ones).add(teenAnswer(t));
+    expect([...totals].sort((a, b) => a - b)).toEqual([11, 12, 13, 14, 15, 16, 17, 18, 19]);
+    expect([...ones].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it('seats the full ten in the left frame and the ones in the right, and deals three pads in range with the answer', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const rng = new Rng(seed);
+      for (const t of teenRounds(rng, plan)) {
+        const seats = frameSeats(10 + t.ones);
+        expect(seats.slots).toHaveLength(10 + t.ones);
+        expect(seats.slots.slice(0, 10).every(([x]) => x < 0)).toBe(true);
+        expect(seats.slots.slice(10).every(([x]) => x > 0)).toBe(true);
+        const [lo, hi] = teenPadRange(t);
+        const answer = teenAnswer(t);
+        const pads = padValues(rng, answer, lo, hi);
+        expect(pads).toContain(answer);
+        expect(new Set(pads).size).toBe(3);
+        expect(pads.every((v) => v >= lo && v <= hi && v <= PAD_CAP)).toBe(true);
+        expect(pads.every((v) => Math.abs(v - answer) <= 2)).toBe(true);
+      }
+    }
+  });
+
+  it('a capable child touches the answer pad, and the sentence after reads ten and the ones', () => {
+    expect(duckMove(plan, 0, 14, 0, [13, 14, 15], 14)).toEqual({ pad: 1 });
+    expect(duckMove(plan, 0, 14, 0, [3, 5, 4], 4)).toEqual({ pad: 2 });
+    expect(numberSentence(10, 4)).toBe('10 + 4 = 14');
+    expect(duckPond.describeLevel!(15)).toMatch(/Ten and some more/);
   });
 });

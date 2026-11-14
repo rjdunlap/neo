@@ -1,7 +1,8 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double';
+export type DuckMode =
+  'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double' | 'teen';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -59,6 +60,8 @@ export const PLANS: DuckPlan[] = [
   { mode: 'friends', rounds: 1, min: 5, max: 5 },
   // School (dive slice 6, planned as 12 and appended as 14): the bridge splits the pond; equal sides, then one more on a side.
   { mode: 'double', rounds: 5, min: 1, max: 5, near: 2, split: true },
+  // School (dive slice 8, appended as 15): a full ten arrives at once, then 1–9 more; how many in all, or how many past ten.
+  { mode: 'teen', rounds: 5, min: 1, max: 9, padMax: 19 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -66,8 +69,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
-  // Doubles (14) goes on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
-  school: { min: 8, max: 14, order: [8, 9, 10, 11, 14] },
+  // Doubles (14) and Ten and some more (15) go on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
+  school: { min: 8, max: 15, order: [8, 9, 10, 11, 14, 15] },
 };
 
 export interface HidingPuzzle {
@@ -110,6 +113,30 @@ export function doublesRounds(rng: Rng, plan: DuckPlan): DoublesRound[] {
   }
   return out;
 }
+
+/**
+ * Level 15: a full ten and `ones` more. `total` rounds ask how many in all (11–19); `ones` rounds show the total on the sign
+ * and ask how many are past the ten (1–9).
+ */
+export interface TeenRound {
+  ones: number;
+  ask: 'total' | 'ones';
+}
+
+/** Level 15's rounds: in all, then past ten, turn about (the first asks in all); never the same ones twice running. */
+export function teenRounds(rng: Rng, plan: DuckPlan): TeenRound[] {
+  const out: TeenRound[] = [];
+  while (out.length < plan.rounds) {
+    const ones = rng.int(plan.min, plan.max);
+    if (ones === out.at(-1)?.ones) continue;
+    out.push({ ones, ask: out.length % 2 ? 'ones' : 'total' });
+  }
+  return out;
+}
+
+/** A teen round's answer, and the range its pads are dealt from: 11–19 for in all, 1–9 for past ten. */
+export const teenAnswer = (t: TeenRound) => (t.ask === 'total' ? 10 + t.ones : t.ones);
+export const teenPadRange = (t: TeenRound): [number, number] => (t.ask === 'total' ? [11, 19] : [1, 9]);
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
 export function tenStarts(rng: Rng, plan: DuckPlan): number[] {

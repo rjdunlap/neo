@@ -1,0 +1,5 @@
+# 2026-11-14 — Duck Pond level 15, Ten and some more (PR #1648)
+
+**Changed:** `duck-pond` level 15 (mode `teen`, school window 8–15): a full ten pops onto the pond with one splash, then 1–9 ducks swim into a second ten-frame; rounds alternate how many in all (pads 11–19) and how many on that side past ten (pads 1–9); count-on and ones-only wrong-pad help, glow from the second miss, "10 + 4 = 14" written after; five voice lines with clips; review fix: the finale narrows the pond back to five full-size ducks.
+**Ran:** typecheck; full `npm test` (351 files passed, after rendering the clips); `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS=15` on a portrait 768×1024 view (two wrong pads: one miss, then glow and hint; score [2,1]) passed, rerun after the finale fix and passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=duck-pond FINGER_LEVELS=15 FINGER_BAND=school` finished in 47.0 s (before the finale-only fix). `game-reviewer`: no blocking findings.
+**Not run:** `npm run build` and offline (CI builds), `fingerdemo` after the finale-only change.
