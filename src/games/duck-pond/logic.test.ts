@@ -365,7 +365,8 @@ describe('Duck Pond layout and pad cap (slice 7)', () => {
     for (const [i, [x, y]] of slots.entries()) {
       // Inside the pond, with a duck's height of water above the top row's feet at its place (not on the rim).
       expect((x / pondRx) ** 2 + ((y - 40 * scale) / POND_RY) ** 2).toBeLessThan(1);
-      for (const [xx, yy] of slots.slice(i + 1)) expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(gap);
+      for (const [xx, yy] of slots.slice(i + 1))
+        expect(Math.hypot(x - xx, y - yy)).toBeGreaterThanOrEqual(gap);
     }
     for (const v of Object.values(views)) {
       const c = pondCenter(v);

@@ -305,7 +305,10 @@ class DuckPond implements Game {
         .fill(wood.fill)
         .stroke({ width: 6, color: wood.line });
       for (let py = y - POND_RY + 20; py < y + POND_RY; py += 36)
-        bridge.moveTo(x - half + 6, py).lineTo(x + half - 6, py).stroke({ width: 4, color: wood.line });
+        bridge
+          .moveTo(x - half + 6, py)
+          .lineTo(x + half - 6, py)
+          .stroke({ width: 4, color: wood.line });
     } else {
       // Hiding ducks: the bridge spans the middle, seen from the front.
       bridge.rect(x - 190, y - 58, 28, 138).fill(wood.line);
@@ -439,7 +442,11 @@ class DuckPond implements Game {
    * Ducks arriving from off-screen straight into the pond (no tapping needed). A `Seating`'s `scale` draws counted-only
    * ducks smaller, and its `pondRx` widens the pond first (twenty seats).
    */
-  private async arrive(n: number, slots?: readonly [number, number][], seating?: Pick<Seating, 'scale' | 'pondRx'>) {
+  private async arrive(
+    n: number,
+    slots?: readonly [number, number][],
+    seating?: Pick<Seating, 'scale' | 'pondRx'>,
+  ) {
     if (seating && seating.pondRx !== this.pondRx) {
       this.pondRx = seating.pondRx;
       this.resize(this.view);
