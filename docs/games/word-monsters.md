@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5–8 |
+| school | 5, 6, 7, 8, 10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 7 | Word families: change the first sound to make hat, cat, bat (two families) |
 | 8 | Change the end: keep the first two sounds and make cat, cap, can |
 | 9 | One big monster: a touch anywhere makes it say its sound, its picture stays, and the next monster wakes (6 monsters) |
+| 10 | Last sounds: "what does cat end with?" Tap the monster for the last sound |
 
 <!-- end generated -->
 

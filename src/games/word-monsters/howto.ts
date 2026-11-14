@@ -26,6 +26,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Change the first sound to make the next word in the family, like hat, cat, bat.',
     },
     { from: 8, to: 8, text: 'Keep the first two sounds. Change the last sound to make the pictured word.' },
+    {
+      from: 10,
+      to: 10,
+      text: 'Listen to the pictured word, then tap the monster that says its last sound. Tap the picture to hear the word again.',
+    },
   ],
   finish: 'The round ends when the asked-for letters or word are found.',
   note: "Spoken letter sounds depend on the device's speech voice.",

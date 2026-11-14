@@ -6,7 +6,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * that says its sound. The ladder goes from tapping to hear sounds, to finding a letter,
  * to matching first sounds, to building simple words sound by sound.
  */
-export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end';
+export type MonsterMode = 'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end' | 'last';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -55,12 +55,26 @@ export const BIG_PLAN: MonsterPlan = {
   name: 'One big monster: a touch anywhere makes it say its sound, its picture stays, and the next monster wakes (6 monsters)',
 };
 
+/**
+ * Level 10, the first of the school window's levels on top (the plan's "level 9", renumbered because lap took 9): a
+ * pictured word is said and she taps the monster for its last sound. It is no harder than 7 and 8, but IDs are appended,
+ * so it sits at the top of the order.
+ */
+export const LAST_LEVEL = 10;
+export const LAST_PLAN: MonsterPlan = {
+  mode: 'last',
+  rounds: 4,
+  choices: 3,
+  name: 'Last sounds: "what does cat end with?" Tap the monster for the last sound',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  // 9 is lap's big monster, so the school order skips it.
+  school: { min: 5, max: LAST_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL] },
 };
 
 /**
@@ -82,7 +96,11 @@ export type Rime = keyof typeof FAMILIES;
 export const RIMES = Object.keys(FAMILIES) as Rime[];
 
 export const planFor = (level: number) =>
-  level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  level === BIG_LEVEL
+    ? BIG_PLAN
+    : level === LAST_LEVEL
+      ? LAST_PLAN
+      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -175,6 +193,9 @@ export const PICTURE_WORDS = [
 ] as const;
 export type PictureWord = Word | (typeof END_WORDS)[number] | (typeof FAMILIES)[Rime][number];
 
+/** Level 10's words: every pictured word except those ending in x, whose "ks" is two sounds. */
+export const LAST_WORDS = PICTURE_WORDS.filter((w) => !w.endsWith('x'));
+
 export interface Question {
   /** The letter asked for (find/who/first), or the word to build. */
   answer: string;
@@ -182,6 +203,8 @@ export interface Question {
   monsters: string[];
   /** Letters already standing in fixed slots: a family ending (level 7) or beginning (level 8). */
   fixed?: string;
+  /** Level 10: the pictured word whose last sound is the answer. */
+  word?: PictureWord;
 }
 
 /** Pick `n` different letters including `must`, with no lookalikes among them. */
@@ -237,6 +260,26 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
     }
     return rng.shuffle(out);
   }
+  if (plan.mode === 'last') {
+    // Each word in a round ends in a different letter, so the endings vary though most words end in t, g, n or p.
+    const ends = new Set<string>();
+    for (const word of rng.shuffle([...LAST_WORDS])) {
+      if (out.length >= plan.rounds) break;
+      const last = word[word.length - 1];
+      if (ends.has(last)) continue;
+      ends.add(last);
+      // About half the time the word's own first sound is a decoy, so she must listen past the start.
+      const first = word[0];
+      const decoy =
+        first !== last && !lookalike(first, last) && !soundTwin(first, last) && rng.chance(0.5);
+      out.push({
+        answer: last,
+        word,
+        monsters: pickLetters(rng, plan.choices, decoy ? [last, first] : [last], WHO_POOL),
+      });
+    }
+    return out;
+  }
   if (plan.mode === 'build' || plan.mode === 'spell') {
     for (const word of rng.shuffle([...WORDS]).slice(0, plan.rounds)) {
       out.push({ answer: word, monsters: pickLetters(rng, plan.choices, word.split('')) });
@@ -269,7 +312,7 @@ export const sounded = (word: string) =>
 
 /**
  * What a capable child does next, for the ghost finger. Free play: each monster in turn, round and round, to hear them.
- * Finding: the monster that is the answer. Building: the monster whose letter is the next empty slot's, never one that
+ * Finding (and level 10's last sound): the monster that is the answer. Building: the monster whose letter is the next empty slot's, never one that
  * is already in a slot (a word family's ending stands there from the start).
  */
 export function nextMonster<M extends { letter: string; placed: boolean }>(
