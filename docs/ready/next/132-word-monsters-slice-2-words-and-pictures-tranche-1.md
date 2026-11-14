@@ -1,0 +1,1 @@
+**Word Monsters slice 2, words and pictures tranche 1** (rule tests: every word has a picture and the vowel balance holds, one screenshot sheet of the new pictures, `fingerdemo` at 7): the short-e and stretchable-start words, the families `en`, `et` and `ug`, and the 19 family pictures. [Word Monsters dive, slice 2](../../deep-dives/word-monsters.md#build-slices-in-order)

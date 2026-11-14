@@ -309,3 +309,41 @@ export function hintCharge(wrongs: number, glowing: boolean, helped: boolean): n
 
 /** Keep the original seeded sticker draw separate from round content. */
 export const stickerNumber = (rng: Rng) => rng.int(1, 9);
+
+/**
+ * Say the numbers (dive fresh 1): on the plain add and take-away levels (3, 4 and 6) a counted hop says the pad it lands
+ * on ("5… 6… 7") and a tally dot rises over the frog for each hop. The levels whose answer is a count of hops (5, 7, 8 and
+ * the fraction levels) keep counting "1, 2, 3".
+ */
+export const saysNumbers = (mode: HopMode) => mode === 'add' || mode === 'back' || mode === 'big';
+
+/** The numerals a counted hop says, in order: every pad after the start, ending on the target. */
+export function landingNumbers(start: number, target: number): number[] {
+  const dir = Math.sign(target - start);
+  return Array.from({ length: Math.abs(target - start) }, (_, i) => start + dir * (i + 1));
+}
+
+/** Dots under the numerals (dive fresh 6): levels 1 and 2, for a child who matches dots before she reads "6". */
+export const showsDots = (mode: HopMode) => mode === 'find' || mode === 'next';
+
+/** Dot spacing and radius under a pad, in pad units. */
+export const DOT_GAP = 17;
+export const DOT_R = 6;
+
+/**
+ * Where a numeral's dots sit, relative to the dot row's centre: fives grouped in a top row of five, the rest in a row
+ * below starting at the left, like a five frame. 0 has no dots.
+ */
+export function dotLayout(n: number): { x: number; y: number }[] {
+  return Array.from({ length: n }, (_, i) => ({
+    x: ((i % 5) - 2) * DOT_GAP,
+    y: Math.floor(i / 5) * DOT_GAP,
+  }));
+}
+
+/**
+ * Landmark flowers (dive fresh 7) on the benchmarks 5, 10, 15 and 20, from level 3, so 8 is "three after the flower".
+ * Never on 0, the dot levels or the fraction line, where a pad is a quarter tick.
+ */
+export const flowerOn = (mode: HopMode, n: number) =>
+  !showsDots(mode) && !isFrac(mode) && n > 0 && n % 5 === 0;

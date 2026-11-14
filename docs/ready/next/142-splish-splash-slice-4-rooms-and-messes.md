@@ -1,0 +1,1 @@
+**Splish Splash slice 4, rooms and messes** (rule tests including the contrast rule, one screenshot per room; after slice 3 lands, a sub-slice per room if needed): new rooms and messes for the bath. [Splish Splash dive, slice 4](../../deep-dives/splish-splash.md#build-slices-in-order)
