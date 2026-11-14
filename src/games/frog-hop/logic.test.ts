@@ -18,6 +18,14 @@ import {
   fracName,
   fracWords,
   quarterName,
+  saysNumbers,
+  landingNumbers,
+  showsDots,
+  dotLayout,
+  DOT_GAP,
+  DOT_R,
+  flowerOn,
+  isFrac,
   type HopQuestion,
 } from './logic';
 
@@ -291,5 +299,50 @@ describe('Frog Hop, Fraction Landings', () => {
     for (const n of ['{where}', '{hops}']) expect(SCRIPT['hop.frac'][0]).toContain(n);
     expect(SCRIPT['hop.frac.second'][0]).toContain('{size}');
     for (const n of ['{first}', '{second}', '{name}']) expect(SCRIPT['hop.frac.same'][0]).toContain(n);
+  });
+
+  describe('say the numbers, dots and flowers (dive slice 2)', () => {
+    it('says the numerals crossed, in order, ending on the target, one per hop, on levels 3, 4 and 6 only', () => {
+      expect(PLANS.filter((p) => saysNumbers(p.mode)).map((p) => PLANS.indexOf(p) + 1)).toEqual([3, 4, 6]);
+      for (const plan of PLANS.filter((p) => saysNumbers(p.mode)))
+        for (let seed = 1; seed <= 200; seed++)
+          for (const q of makeQuestions(plan, new Rng(seed))) {
+            const said = landingNumbers(q.start, q.target);
+            // The tally adds one dot per spoken numeral, so it equals the hops.
+            expect(said).toHaveLength(Math.abs(q.hops));
+            expect(said.at(-1)).toBe(q.target);
+            said.forEach((n, i) => expect(n).toBe(q.start + Math.sign(q.hops) * (i + 1)));
+            expect(said).not.toContain(q.start);
+          }
+    });
+
+    it('gives the landing line a numeral slot', () => {
+      expect(SCRIPT['hop.landed'].length).toBeGreaterThan(0);
+      for (const line of SCRIPT['hop.landed']) expect(line).toContain('{n}');
+    });
+
+    it("draws a pad's dots equal to its numeral, fives grouped, inside the pad's step", () => {
+      expect(PLANS.filter((p) => showsDots(p.mode)).map((p) => PLANS.indexOf(p) + 1)).toEqual([1, 2]);
+      const top = Math.max(...PLANS.filter((p) => showsDots(p.mode)).map((p) => p.top));
+      for (let n = 0; n <= top; n++) {
+        const dots = dotLayout(n);
+        expect(dots).toHaveLength(n);
+        expect(dots.filter((d) => d.y === 0)).toHaveLength(Math.min(5, n));
+        for (const d of dots) expect(Math.abs(d.x) + DOT_R).toBeLessThanOrEqual(104 / 2);
+        // Two rows at most, so the dots stay a short way under the numeral.
+        expect(new Set(dots.map((d) => d.y)).size).toBeLessThanOrEqual(2);
+        expect(Math.max(0, ...dots.map((d) => d.y))).toBeLessThanOrEqual(DOT_GAP);
+      }
+    });
+
+    it('puts a flower only on 5, 10, 15 and 20 from level 3, never on 0 or the fraction line', () => {
+      PLANS.forEach((plan, i) => {
+        const flowers = Array.from({ length: plan.top + 1 }, (_, n) => n).filter((n) =>
+          flowerOn(plan.mode, n),
+        );
+        if (i < 2 || isFrac(plan.mode)) expect(flowers).toEqual([]);
+        else expect(flowers).toEqual([5, 10, 15, 20].filter((n) => n <= plan.top));
+      });
+    });
   });
 });

@@ -937,9 +937,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           const g = neo.scene.game,
             say = g.ctx.say.bind(g.ctx);
           window.hopR4 = [];
+          window.hopSaid = [];
+          window.hopTargets = g.questions.map((q) => q.target);
           g.ctx.say = (id, vars) => {
             const line = say(id, vars);
-            if (['hop.yay', 'hop.frac.also', 'hop.frac.same'].includes(String(id))) {
+            hopSaid.push({ id: String(id), n: vars?.n, tally: g.tallied });
+            if (['hop.yay', 'hop.landed', 'hop.frac.also', 'hop.frac.same'].includes(String(id))) {
               const at = g.index,
                 t = performance.now(),
                 o = { id, last: at + 1 >= g.questions.length };
@@ -1063,6 +1066,27 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           await answer(true);
         }
         await finished('frog-hop');
+        if (mode === 'add' || mode === 'back' || mode === 'big') {
+          // Slice 2: the right answers say the pads crossed with a tally dot each, then name the landing.
+          const said = await page.evaluate(() => hopSaid);
+          const landed = said.filter((o) => o.id === 'hop.landed');
+          assert.equal(landed.length, 5, 'every right answer names its landing');
+          const targets = await page.evaluate(() => hopTargets);
+          const numerals = said.filter((o) => o.id === 'count');
+          assert.ok(
+            numerals.some((o) => o.tally > 0),
+            'a tally dot rises with each spoken numeral',
+          );
+          assert.ok(
+            targets.every((t) => numerals.some((o) => o.n === t)),
+            'each landing pad is said as the frog hops onto it',
+          );
+          assert.equal(
+            landed.map((o) => o.n).join(','),
+            targets.join(','),
+            'the landing line names the target',
+          );
+        }
         const hopOpens = (await page.evaluate(() => hopR4)).filter((o) => !o.last);
         assert.ok(hopOpens.length >= 3, `R4: ${hopOpens.length} right answers timed`);
         assert.ok(
@@ -1082,6 +1106,20 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         log(
           `Frog Hop ${level} (${mode}): pads and cards tapped, wrong answers, counted demonstration and glow, saved score and sticker passed`,
         );
+        if (mode === 'find' || mode === 'add' || mode === 'big') {
+          await launch('frog-hop', level);
+          await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
+          const marks = await page.evaluate(() => neo.scene.game.marks.bounds.width);
+          assert.ok(mode === 'big' || marks > 0, 'dots or flowers drawn');
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(300);
+          await screenshot(`frog-hop-${level}-marks-portrait`);
+          await page.setViewportSize({ width: 844, height: 390 });
+          await page.waitForTimeout(300);
+          await screenshot(`frog-hop-${level}-marks-phone`);
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(250);
+        }
       }
 
     if (!only || only === 'shop')
