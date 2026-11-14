@@ -6,7 +6,7 @@
 
 She drags fruit, balloons and flowers from a tree into woven baskets lined with their color. Learning: matching and sorting by one attribute (color, then shade), a dragging skill, and the six color names (the pet says the color on each pickup). Source baseline: `origin/main` after PR #301.
 
-Current band windows: lap 9, toddler ordered 9 → 1–5, preschool 3–8, pre-K 4–8. Stable level 9 is the built tap entry; levels 1–8 retain their IDs. No couch entry. The audit below describes the pre-build game.
+Current band windows: lap 9, toddler ordered 9 → 1–5, preschool 3–8, pre-K ordered 4, 5, 6, 7, 8, 11 (level 11, Light, middle, dark, is the pre-K top). Stable level 9 is the built tap entry; levels 1–8 retain their IDs. No couch entry. The audit below describes the pre-build game.
 
 | Level | Plan | Bands | What she decides |
 | --- | --- | --- | --- |
@@ -115,8 +115,8 @@ Optional basket speech remains undecided. The assigned slice explicitly chose th
 1. **Mixed kinds at level 6** (built 2026-10-14, `claude/color-garden-mixed-kinds`; fresh content): choose fruit, balloon or flower per item with the seeded rng; update `describeLevel`, a rule test, and the GAMES.md entry. Tier: new levels on an existing interaction, rule tests plus one filtered browser play of level 6 and `fingerdemo`.
 2. **Tap and it hops** (built 2026-10-15, stable level 9, `codex/color-tap-entry`, [PR #399](https://github.com/rjdunlap/neo/pull/399)): lap/toddler tap entry, two baskets, naming, `entryLevels`/`order`, scoped how-to and ghost finger. [Build note](../archive/COMPLETED-2026-10-09.md#color-garden-tap-and-it-hops-2026-10-15).
 3. **Level 8, Color or kind** (built 2026-10-15, `claude/color-garden-color-or-kind`, [PR #351](https://github.com/rjdunlap/neo/pull/351)): the rule sign, the two rules, voice lines, how-to. Same tier as above.
-4. **Level 9, Light, middle, dark**: refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast. *In progress (claimed 2026-11-14, `claude/color-garden-light-middle-dark`): built as stable level 11, the next free ID, pre-K top.*
-5. **Level 10, Two ways at once**: the 2×2 layout and two-part hints. Last because it is the heaviest and needs the level 8 sign.
+4. **Level 11, Light, middle, dark** (built 2026-11-14, `claude/color-garden-light-middle-dark`, [PR #1664](https://github.com/rjdunlap/neo/pull/1664); written as "Level 9" before IDs 9 and 10 were taken): refactor `SHADE_LOOK` to a table and add the middle shade. Includes a device check for contrast. Stable level 11, the next free ID, pre-K top. [Build note](../archive/COMPLETED-2026-10-09.md#color-garden-level-11-light-middle-dark-2026-11-14).
+5. **Level 12, Two ways at once** (next free ID 12, pre-K top; written as "Level 10" before IDs were taken): the 2×2 layout and two-part hints. Last because it is the heaviest and needs the level 8 sign.
 
 ## What was built in this session
 

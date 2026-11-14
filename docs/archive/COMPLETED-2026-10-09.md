@@ -3509,3 +3509,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Frog Hop level 13, Hop by tens (2026-11-14)
 
 [PR #1662](https://github.com/rjdunlap/neo/pull/1662), `claude/frog-hop-by-tens`, dive slice 7 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). School level 13 `tens` (appended; no `order`): pads 0, 10 … 100, sign `30 + 20`, starts 10–70 and 1–4 tens on or back, counted hops say the tens, the line slides to show 100 each round and the "100" label fits at four views. See the [verification entry](../verification/2026-11-14-frog-hop-level-13-hop-by-tens.md).
+
+## Color Garden level 11 Light, middle, dark (2026-11-14)
+
+[PR #1664](https://github.com/rjdunlap/neo/pull/1664), `claude/color-garden-light-middle-dark`, slice 4 of the [dive](../deep-dives/color-garden.md#build-slices-in-order) (written as "Level 9" before IDs 9 and 10 were taken). Stable level 11, pre-K top (order 4, 5, 6, 7, 8, 11): three baskets of one color's tones, nine balloons and flowers, `SHADE_LOOK` refactored to a palette table with the middle tone added; wrong drops name the shade and hue, glow after two. See the [verification entry](../verification/2026-11-14-color-garden-level-11-light-middle-dark.md).
