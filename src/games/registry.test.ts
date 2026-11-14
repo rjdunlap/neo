@@ -129,18 +129,19 @@ describe('game registry', () => {
     expect(stepLevel(10, 1, g.levels('school'))).toBe(11);
   });
 
-  it('adds Planet Hop at the end of school and Between two flights after 6, without moving existing Launch pins', () => {
+  it('adds Planet Hop at the end of school, Between two flights after 6 and Where on the line? after 9, without moving existing Launch pins', () => {
     const g = gameById('bouncy-launch')!;
     expect(g.bands).toEqual(['lap', 'toddler', 'preschool', 'prek', 'school']);
-    expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] });
+    expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 10, 12] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 7, order: [3, 4, 7, 5] });
     expect(g.levels('lap')).toEqual({ min: 1, max: 13, order: [13, 1] });
     expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
-    for (const level of [4, 5, 7, 6, 9])
+    for (const level of [4, 5, 7, 6, 9, 10, 12])
       expect(landing(level, g.levels('school'), g.entryLevels)).toBe(level);
     expect(stepLevel(6, 1, g.levels('school'))).toBe(9);
-    expect(stepLevel(9, 1, g.levels('school'))).toBe(12);
+    expect(stepLevel(9, 1, g.levels('school'))).toBe(10);
+    expect(stepLevel(10, 1, g.levels('school'))).toBe(12);
     expect(stepLevel(12, 1, g.levels('school'))).toBe(12);
   });
 
