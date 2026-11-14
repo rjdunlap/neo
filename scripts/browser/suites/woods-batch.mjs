@@ -928,7 +928,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 
     if (!only || only === 'hop')
       for (const level of process.env.HOP_LEVELS?.split(',').map(Number) ||
-        Array.from({ length: Math.max(0, 12 - fromLevel) }, (_, i) => fromLevel + i)) {
+        Array.from({ length: Math.max(0, 13 - fromLevel) }, (_, i) => fromLevel + i)) {
         await launch('frog-hop', level);
         await page.waitForFunction(() => neo.scene.game.index === 0 && !neo.scene.game.busy);
         await page.waitForTimeout(100); // Hit testing uses the last rendered transforms.
@@ -943,9 +943,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const line = say(id, vars);
             hopSaid.push({ id: String(id), n: vars?.n, tally: g.tallied });
             if (
-              ['hop.yay', 'hop.landed', 'hop.frac.also', 'hop.frac.same', 'hop.countup.yay'].includes(
-                String(id),
-              )
+              [
+                'hop.yay',
+                'hop.landed',
+                'hop.frac.also',
+                'hop.frac.same',
+                'hop.countup.yay',
+                'hop.yourway.yay',
+                'hop.yourway.yayback',
+              ].includes(String(id))
             ) {
               const at = g.index,
                 t = performance.now(),
@@ -1006,7 +1012,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               kit.tapOn(g.cards.find((c) => (right ? c.n === n : c.n !== n)).node);
               return;
             }
-            const pad = g.pads.find((p) => (right ? p.n === q.target : p.n !== q.target && p.n !== q.start));
+            // Level 12's stop at 10 is never wrong, so a wrong pad is neither 10 nor where the frog sits.
+            const pad = g.pads.find((p) =>
+              right ? p.n === q.target : p.n !== q.target && p.n !== q.start && p.n !== 10,
+            );
             kit.tapOn(pad);
           }, right);
           await page.waitForTimeout(250);
@@ -1089,6 +1098,45 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await page.waitForTimeout(250);
             }
           }
+          if (mode === 'your-way' && n === 1) {
+            // Slice 5: a stop at 10 is free; the sign shows the split so far, and a wrong landing names the remainder.
+            await page.evaluate(() => kit.tapOn(neo.scene.game.pads.find((p) => p.n === 10)));
+            await page.waitForTimeout(250);
+            await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+            const stopped = await page.evaluate(() => {
+              const g = neo.scene.game;
+              const o = g.q.hops > 0 ? '+' : '−';
+              return {
+                at: g.at,
+                stage: g.makeTenStage,
+                sign: g.signText.text === `${g.q.start} ${o} ${g.q.toTen} ${o} ?`,
+              };
+            });
+            assert.deepEqual(stopped, { at: 10, stage: 'rest', sign: true }, 'the stop at 10');
+            assert.deepEqual(await counts(), [2, 1], 'the stop at 10 is never a miss');
+            await answer(false);
+            assert.deepEqual(await counts(), [3, 1]);
+            assert.ok(
+              await page.evaluate(() => hopSaid.some((o) => o.id === 'hop.yourway.more')),
+              'a wrong landing after her stop names the remainder',
+            );
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.waitForTimeout(250);
+            await screenshot(`frog-hop-${level}-stop-phone-portrait`);
+            await page.setViewportSize({ width: 1024, height: 768 });
+            await page.waitForTimeout(250);
+          }
+          if (mode === 'your-way' && n === 0) {
+            // Landing directly after the counted demonstration: the glow is on the landing, the frog back on the start.
+            assert.deepEqual(
+              await page.evaluate(() => {
+                const g = neo.scene.game;
+                return [g.at === g.q.start, g.glowing === g.pads.find((p) => p.n === g.q.target)];
+              }),
+              [true, true],
+            );
+            assert.ok(await page.evaluate(() => hopSaid.some((o) => o.id === 'hop.yourway.split')));
+          }
           if (mode === 'frac-match' && n > 0) await answer(true);
           await answer(true);
         }
@@ -1127,7 +1175,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         );
         await finished('frog-hop');
         assert.deepEqual(await score('frog-hop'), [
-          mode === 'make-ten' || mode === 'back-ten' ? 4 : mode === 'frac-match' ? 3 : 2,
+          mode === 'make-ten' || mode === 'back-ten'
+            ? 4
+            : mode === 'frac-match' || mode === 'your-way'
+              ? 3
+              : 2,
           1,
         ]);
         log(
