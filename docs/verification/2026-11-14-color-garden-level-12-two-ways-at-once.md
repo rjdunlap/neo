@@ -1,0 +1,5 @@
+# 2026-11-14 — Color Garden level 12 Two ways at once (PR #1668)
+
+**Changed:** `color-garden`: level 12, four baskets in a 2×2 grid (two colors as columns, fruit row behind, balloon row in front, each band showing its fruit or a balloon of its color on a cream disc), 10 fruits and balloons, `gridBasketAt` 2D drop hit test, wrong-basket lines naming only the mismatched property; pre-K window now 4, 5, 6, 7, 8, 11, 12.
+**Ran:** typecheck; full `npm test` (351 files; registry test updated for the pre-K order); Color Garden rule tests (deal: four baskets, grid order, every pairing present, one basket per item across 200 seeds; `mismatch` all 16 pairs; `gridBasketAt` at three views including front-versus-back drops and ghost-finger targets); `BROWSER_SUITE=originals ORIGINALS_ONLY=garden GARDEN_LEVELS=12` (two wrong drops into the same-color other-row basket, then the glow hint, score [2,1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=color-garden FINGER_LEVELS=12` at pre-K (33.4 s); one portrait screenshot; `game-reviewer` found no defects.
+**Not run:** `npm run build` (no shared files or assets changed), any other suite.
