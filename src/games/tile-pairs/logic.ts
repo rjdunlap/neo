@@ -15,8 +15,11 @@ export interface Tile {
    * the ones just above and below it on the board (level 12, *Short sides*). Every tile of a board shares it.
    */
   open?: 'ends';
+  /** How many alike tiles one move takes: absent, two; `3` on level 14, *Three alike*. Every tile of a board shares it. */
+  take?: 3;
 }
-export type Pair = [number, number];
+/** The tiles one move removes together: a pair, or on a three-alike board a set of three. */
+export type Pair = readonly number[];
 /**
  * `clear` is the deal dial: the band a deal's random-play clear rate must fall in (see `clearRate`).
  * Levels 1–2 keep the difficulty each had when every board shared one fixed route; levels 3–6 moved to harder
@@ -151,6 +154,19 @@ export const PLANS = [
     // 8–100%, median 68%, and 204 of 300 land in levels 7 and 9's band, which it keeps.
     clear: [0.45, 0.9],
   },
+  {
+    name: 'Three alike · 24 tiles',
+    cols: 6,
+    rows: 3,
+    layers: 3,
+    layout: 'crown',
+    kinds: 4,
+    // Level 6's crown, six of each picture, taken three at a time (Triple Mahjong without its clock): which three of
+    // six copies to take, and which three to leave for later. Measured (300 seeded routes, Mac): random play clears
+    // 0-97%, median 28%, and 138 of 300 land in level 6's band, which it keeps; 191 have a losing first set.
+    take: 3,
+    clear: [0.3, 0.8],
+  },
 ] as const;
 
 /** Flower kinds come after a look's six pictures: `FLOWER + n` is the nth of the four flower drawings. */
@@ -202,7 +218,7 @@ export const pickLook = (rng: Rng): number => rng.int(0, LOOKS.length - 1);
 /**
  * Designed lesson boards (dive: *Puzzle challenges*). Each is a small sketched layout whose frozen boards, found by
  * `scripts/tile-pairs-pool.mjs` and kept in `puzzles.ts`, set one trap that is the lesson: a first pair that leaves
- * no route (`lessonHolds`). IDs 13–16 are left for the second-pass levels the dive plans; they do not exist yet.
+ * no route (`lessonHolds`). IDs 15–16 are left for the second-pass levels the dive plans; they do not exist yet.
  */
 export const PUZZLE_PLANS = {
   17: {
@@ -293,7 +309,7 @@ export const SKETCHES: Record<Lesson, readonly (readonly [number, number, number
  * order, kept to the levels that exist and to levels 1–10's own order).
  */
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13] },
+  grownup: { min: 1, max: 21, order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13, 14] },
 };
 export const planFor = (level: number): Plan =>
   (PUZZLE_PLANS as Record<number, Plan>)[Math.floor(level)] ??
@@ -324,6 +340,8 @@ export function peekStacks(tiles: readonly Tile[], mask: number): number[][] {
 
 /** Whether the board's tiles open above and below (level 12) rather than left and right. */
 export const opensAtEnds = (tiles: readonly Tile[]) => tiles[0]?.open === 'ends';
+/** How many alike tiles one move takes on this board: 2, or 3 on level 14. */
+export const takeOf = (tiles: readonly Tile[]): 2 | 3 => tiles[0]?.take ?? 2;
 /** Whether tile `b` covers part of tile `a`'s face: within less than a whole step both ways. */
 const overlaps = (a: Tile, b: Tile) => Math.abs(a.x - b.x) < 1 && Math.abs(a.y - b.y) < 1;
 /**
@@ -368,13 +386,27 @@ export function heldSides(
 }
 export const freeTiles = (tiles: readonly Tile[], mask: number): number[] =>
   tiles.map((_, i) => i).filter((i) => free(tiles, mask, i));
-export const removePair = (mask: number, [a, b]: Pair) => mask & ~(1 << a) & ~(1 << b);
+export const removePair = (mask: number, group: Pair) => group.reduce((m, i) => m & ~(1 << i), mask);
+/**
+ * Every move open now: free pairs that match, or on a three-alike board free sets of three showing one picture
+ * (three alike pair no flowers). `geometryOnly` ignores pictures, for laying a route before they are placed.
+ */
 export function pairs(tiles: readonly Tile[], mask: number, geometryOnly = false): Pair[] {
   const open = freeTiles(tiles, mask),
-    out: Pair[] = [];
+    out: Pair[] = [],
+    three = takeOf(tiles) === 3;
   open.forEach((a, i) => {
-    for (const b of open.slice(i + 1))
-      if (geometryOnly || matches(tiles[a].kind, tiles[b].kind)) out.push([a, b]);
+    for (let j = i + 1; j < open.length; j++) {
+      const b = open[j];
+      if (!geometryOnly && !matches(tiles[a].kind, tiles[b].kind)) continue;
+      if (!three) {
+        out.push([a, b]);
+        continue;
+      }
+      for (const c of open.slice(j + 1))
+        if (geometryOnly || (tiles[c].kind === tiles[a].kind && tiles[b].kind === tiles[a].kind))
+          out.push([a, b, c]);
+    }
   });
   return out;
 }
@@ -409,11 +441,17 @@ export function solve(
  * in a shuffled order at every step, so one layout clears by a different pairing each round.
  */
 export function seededRoute(tiles: readonly Tile[], rng: Rng): Pair[] | null {
-  const dead = new Set<number>();
+  const dead = new Set<number>(),
+    three = takeOf(tiles) === 3,
+    height = (g: Pair) => g.reduce((h, i) => h + tiles[i].z, 0);
   function visit(m: number): Pair[] | null {
     if (!m) return [];
     if (dead.has(m)) return null;
-    for (const pair of rng.shuffle(pairs(tiles, m, true))) {
+    const moves = rng.shuffle(pairs(tiles, m, true));
+    // Taken three at a time, a stack whose last tiles are alone strands, and the shuffled search wanders through
+    // too many dead states; trying the highest sets first (ties still shuffled) keeps stacks coming down in step.
+    if (three) moves.sort((p, q) => height(q) - height(p));
+    for (const pair of moves) {
       const tail = visit(removePair(m, pair));
       if (tail) return [pair, ...tail];
     }
@@ -500,6 +538,7 @@ export function layout(level: number): Tile[] {
     for (const x of [2, 3]) add(x, 1, 2);
   }
   if ('open' in plan) for (const t of tiles) t.open = plan.open;
+  if ('take' in plan) for (const t of tiles) t.take = plan.take;
   return tiles;
 }
 export const CANDIDATES = 40;
@@ -530,7 +569,7 @@ export function deal(level: number, rng: Rng): Deal {
     const tiles = layout(level);
     // More repeated pictures deepen the choice of which matching pair to remove, without adding tiles.
     const flowers = flowersIn(plan),
-      symbols = Array.from({ length: tiles.length / 2 - flowers / 2 }, (_, i) => i % plan.kinds);
+      symbols = Array.from({ length: tiles.length / takeOf(tiles) - flowers / 2 }, (_, i) => i % plan.kinds);
     for (let n = 0; n < flowers / 2; n++) symbols.push(FLOWER_PAIR);
     const kinds = Array.from({ length: flowers }, (_, n) => FLOWER + (n % FLOWER_ART));
     assign(tiles, symbols, rng, seededRoute(tiles, rng), kinds);
@@ -751,21 +790,28 @@ export function reshuffle(tiles: readonly Tile[], mask: number, rng: Rng): Tile[
     else counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
   });
   if (flowers.length % 2) throw new Error('Remaining flowers must come in pairs');
-  const symbols: number[] = [];
+  const symbols: number[] = [],
+    take = takeOf(tiles);
   for (const [kind, count] of counts) {
-    if (count % 2) throw new Error('Remaining pictures must come in pairs');
-    for (let i = 0; i < count / 2; i++) symbols.push(kind);
+    if (count % take)
+      throw new Error('Remaining pictures must come in pairs, or threes on a three-alike board');
+    for (let i = 0; i < count / take; i++) symbols.push(kind);
   }
   for (let n = 0; n < flowers.length / 2; n++) symbols.push(FLOWER_PAIR);
   // At most four rows of six fit above the buttons in landscape, so past 24 tiles (level 9) the rest are raised
   // on the middle of the rows; the route below still clears them.
-  const out: Tile[] = Array.from({ length: symbols.length * 2 }, (_, i) =>
-    i < RESHUFFLE_BASE
-      ? { x: i % 6, y: Math.floor(i / 6), z: 0, kind: 0 }
-      : { ...RAISED[i - RESHUFFLE_BASE], z: 1, kind: 0 },
+  // Three alike deal down the four rows in turn, so the rows stay even: a last row of three would hold its middle in.
+  const out: Tile[] = Array.from({ length: symbols.length * take }, (_, i) =>
+    take === 3
+      ? { x: Math.floor(i / 4), y: i % 4, z: 0, kind: 0 }
+      : i < RESHUFFLE_BASE
+        ? { x: i % 6, y: Math.floor(i / 6), z: 0, kind: 0 }
+        : { ...RAISED[i - RESHUFFLE_BASE], z: 1, kind: 0 },
   );
   // A short-sides board keeps its rule: the rows' columns then open from their ends, and the route still clears.
   if (opensAtEnds(tiles)) for (const t of out) t.open = 'ends';
+  // A three-alike board stays one: its rows clear three at a time.
+  if (take === 3) for (const t of out) t.take = 3;
   // Recovery stays on the first route: open rows that pair off without planning.
   return assign(out, symbols, rng, solve(out, fullMask(out), true), flowers);
 }

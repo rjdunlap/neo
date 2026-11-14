@@ -10,6 +10,19 @@ export const VOICE = {
   'tile-pairs.go-ends': [
     'Tap two tiles with the same picture. On this board the sides that count are above and below: a tile needs a clear top, and an open edge above or below it. Clear the stack!',
   ],
+  'tile-pairs.go-three': [
+    'Tap three tiles with the same picture. Each needs a clear top and an open left or right side. Six of each picture are on the board: choose which three to take now, and which three to leave for later.',
+  ],
+  'tile-pairs.go-three-keys': [
+    'Move between the free tiles. Choose three with the same picture to remove them. A tile needs a clear top and an open left or right side. Clear the stack.',
+  ],
+  'tile-pairs.mismatch-three': [
+    'That picture is different, so it was not picked. The tiles you picked stay picked; find another just like them.',
+  ],
+  'tile-pairs.hint-three': ['The outlined three can start a way to clear the rest.'],
+  'tile-pairs.shuffle-three': [
+    'The remaining pictures are now in open rows. They can all be taken in threes.',
+  ],
   'tile-pairs.blocked-ends': [
     'On this board, left and right do not count. That tile needs a clear top and an open edge above or below it. Try a bright tile.',
   ],

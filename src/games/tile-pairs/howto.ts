@@ -28,8 +28,25 @@ export const HOW_TO: GameHowTo = {
       from: 13,
       to: 13,
     },
-    { text: PAIR, from: 14 },
-    'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
+    {
+      text: 'Tap three tiles with the same picture; each needs a clear top and an open left or right side. There are six of each, so choose which three to take now and which three to keep.',
+      from: 14,
+      to: 14,
+    },
+    { text: PAIR, from: 15 },
+    {
+      text: 'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
+      to: 13,
+    },
+    {
+      text: 'Tap a held tile again to let it go. A different picture gives a gentle reminder and is not picked; the held tiles stay held.',
+      from: 14,
+      to: 14,
+    },
+    {
+      text: 'Tap a selected tile again to cancel it. A different picture gives a gentle reminder; neither tile is removed.',
+      from: 15,
+    },
     { text: PEEK, to: 6 },
     {
       text: 'Tap Peek to see the pictures in each stack, bottom to top from left to right; a four-tile stack reads in two rows. Tap Peek or a tile to close. Looking is free.',
@@ -40,6 +57,16 @@ export const HOW_TO: GameHowTo = {
     { text: PEEK, from: 12 },
     {
       text: 'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
+      to: 13,
+    },
+    {
+      text: 'Undo restores a set or shuffle. Hint outlines a clearing set of three. Shuffle puts the remaining tiles in open rows.',
+      from: 14,
+      to: 14,
+    },
+    {
+      text: 'Undo restores a pair or shuffle. Hint outlines a clearing pair. Shuffle puts the remaining tiles in open rows.',
+      from: 15,
       to: 16,
     },
     {

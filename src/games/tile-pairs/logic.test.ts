@@ -38,6 +38,7 @@ import {
   reshuffle,
   seededRoute,
   solve,
+  takeOf,
   type Tile,
 } from './logic';
 import { POOLS } from './pools';
@@ -71,11 +72,11 @@ describe('Tile Pairs', () => {
   });
   it('has a seeded, solvable ladder with clear bounds and alternative symbol pairs', () => {
     expect(planFor(0)).toBe(planFor(1));
-    expect(planFor(99)).toBe(planFor(13));
+    expect(planFor(99)).toBe(planFor(14));
     expect(LEVELS.grownup).toEqual({
       min: 1,
       max: 21,
-      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13],
+      order: [1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13, 14],
     });
     for (let level = 1; level <= 10; level++)
       for (let seed = 1; seed <= 100; seed++) {
@@ -352,6 +353,86 @@ describe('Tile Pairs', () => {
     const board = makeBoard(13, new Rng(3));
     expect(solve(reshuffle(board, removePair(fullMask(board), solve(board)![0]), new Rng(4)))).not.toBeNull();
   });
+  it('deals level 14 on the crown with six of each of four pictures, taken three alike', () => {
+    const tiles = makeBoard(14, new Rng(2));
+    expect(takeOf(tiles)).toBe(3);
+    expect(tiles.map(({ x, y, z }) => `${x},${y},${z}`)).toEqual(
+      layout(6).map(({ x, y, z }) => `${x},${y},${z}`),
+    );
+    const counts = new Map<number, number>();
+    for (const t of tiles) counts.set(t.kind, (counts.get(t.kind) ?? 0) + 1);
+    expect([...counts.values()]).toEqual([6, 6, 6, 6]);
+    // Every move is three free tiles of one picture, and every such set is a move.
+    const mask = fullMask(tiles),
+      open = freeTiles(tiles, mask),
+      moves = pairs(tiles, mask);
+    for (const m of moves) {
+      expect(m).toHaveLength(3);
+      expect(m.every((i) => open.includes(i) && tiles[i].kind === tiles[m[0]].kind)).toBe(true);
+    }
+    let alike = 0;
+    for (const k of counts.keys()) {
+      const n = open.filter((i) => tiles[i].kind === k).length;
+      alike += (n * (n - 1) * (n - 2)) / 6;
+    }
+    expect(moves).toHaveLength(alike);
+    // Taking three clears all three bits and nothing else.
+    const [a, b, c] = [0, 1, 2];
+    expect(removePair(fullMask(tiles), [a, b, c])).toBe(fullMask(tiles) & ~7);
+  });
+  it('deals level 14 in its band, and 100 seeds clear in threes by legal moves', () => {
+    const [min, max] = planFor(14).clear;
+    let trap = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const d = deal(14, new Rng(seed));
+      expect(d.inBand).toBe(true);
+      expect(d.rate).toBeGreaterThanOrEqual(min);
+      expect(d.rate).toBeLessThanOrEqual(max);
+      const route = solve(d.tiles)!;
+      expect(route).toHaveLength(8);
+      let mask = fullMask(d.tiles);
+      for (const set of route) {
+        expect(pairs(d.tiles, mask)).toContainEqual(set);
+        mask = removePair(mask, set);
+      }
+      expect(mask).toBe(0);
+      if (losingFirstPairs(d.tiles).length) trap++;
+    }
+    // Which three of six to take matters: many deals have a first set that leaves no route (44 of these 100).
+    expect(trap).toBeGreaterThan(25);
+  });
+  it('reshuffles a three-alike remainder into open rows that still clear in threes', () => {
+    // A shuffle before any set lays all 24 in four rows of six, and the geometric route still clears them.
+    for (let seed = 1; seed <= 20; seed++) {
+      const board = makeBoard(14, new Rng(seed)),
+        all = reshuffle(board, fullMask(board), new Rng(seed + 50));
+      expect(all).toHaveLength(24);
+      expect(solve(all)).toHaveLength(8);
+    }
+    for (let seed = 1; seed <= 40; seed++) {
+      const tiles = makeBoard(14, new Rng(seed)),
+        rng = new Rng(seed + 900);
+      let mask = fullMask(tiles);
+      for (let move = 0; move < 7 && mask; move++) {
+        const options = pairs(tiles, mask);
+        if (!options.length) break;
+        mask = removePair(mask, rng.pick(options));
+        const before = tiles
+          .filter((_, i) => present(mask, i))
+          .map((t) => t.kind)
+          .sort();
+        const rescued = reshuffle(tiles, mask, rng);
+        expect(takeOf(rescued)).toBe(3);
+        expect(rescued.map((t) => t.kind).sort()).toEqual(before);
+        expect(rescued.every((t) => t.z === 0 && t.x < 6 && t.y < 4)).toBe(true);
+        // Three left lie in three rows of one, so the last set is never a row whose middle is held in.
+        if (rescued.length === 3) expect(freeTiles(rescued, fullMask(rescued))).toHaveLength(3);
+        const route = solve(rescued)!;
+        expect(route).not.toBeNull();
+        for (const set of route) expect(set).toHaveLength(3);
+      }
+    }
+  });
   it('agrees with the whole-step rule on every earlier board', () => {
     // `free` as it was before half steps: covered only by a tile exactly above, sides on the same row or column.
     const before = (tiles: readonly Tile[], mask: number, i: number) => {
@@ -403,6 +484,17 @@ describe('Tile Pairs', () => {
     );
     for (const c of boards1112.join('|')) later = Math.imul(later ^ c.charCodeAt(0), 0x01000193) >>> 0;
     expect(later.toString(16)).toBe('ab01f483');
+    // Level 13, pinned from origin/main before level 14's sets of three.
+    let brick = 0x811c9dc5;
+    const boards13 = [1, 2, 3, 4, 5].map((seed) =>
+      makeBoard(13, new Rng(seed))
+        .map((t) => `${t.x}${t.y}${t.z}${t.kind}`)
+        .join(''),
+    );
+    for (const c of boards13.join('|')) brick = Math.imul(brick ^ c.charCodeAt(0), 0x01000193) >>> 0;
+    expect(brick.toString(16)).toBe('16720b90');
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20, 21])
+      expect(takeOf(makeBoard(level, new Rng(1)))).toBe(2);
     for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21])
       expect(opensAtEnds(makeBoard(level, new Rng(1)))).toBe(false);
   });
@@ -640,7 +732,7 @@ describe('Tile Pairs', () => {
     ])
       expect(order.indexOf(lesson)).toBe(order.indexOf(before) - 1);
     // Two pairs ahead comes after level 10, then the second-pass levels in the dive's proposed order.
-    expect(order.slice(-4)).toEqual([21, 11, 12, 13]);
+    expect(order.slice(-5)).toEqual([21, 11, 12, 13, 14]);
     for (const level of order) expect(planFor(level).name).toBeTruthy();
     expect(new Set(order.map((l) => planFor(l).name)).size).toBe(order.length);
     for (let level = 1; level <= 10; level++) expect(lessonFor(level)).toBeNull();

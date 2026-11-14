@@ -35,6 +35,7 @@ import {
   removePair,
   reshuffle,
   solve,
+  takeOf,
   type Pair,
   type Tile,
 } from './logic';
@@ -128,7 +129,8 @@ interface Snapshot {
 class TilePairs implements Game {
   tiles: Tile[];
   mask: number;
-  selected: number | null = null;
+  /** Held tiles, in the order tapped: up to one, or two on a three-alike board. */
+  selected: number[] = [];
   hinted: Pair | null = null;
   cursor = 0;
   misses = 0;
@@ -192,15 +194,23 @@ class TilePairs implements Game {
     }
     this.rebuild();
   }
+  /** Level 14: a move takes three alike. */
+  private get three() {
+    return takeOf(this.tiles) === 3;
+  }
   start() {
     void this.ctx.instruct(
       this.touch
         ? this.flowers
           ? 'tile-pairs.go-flowers'
-          : opensAtEnds(this.tiles)
-            ? 'tile-pairs.go-ends'
-            : 'tile-pairs.go'
-        : 'couch.how.tile-pairs',
+          : this.three
+            ? 'tile-pairs.go-three'
+            : opensAtEnds(this.tiles)
+              ? 'tile-pairs.go-ends'
+              : 'tile-pairs.go'
+        : this.three
+          ? 'tile-pairs.go-three-keys'
+          : 'couch.how.tile-pairs',
     );
   }
 
@@ -284,8 +294,9 @@ class TilePairs implements Game {
     }
     const remaining = this.tiles.filter((_, i) => present(this.mask, i)).length;
     // "Pairs open" is the consequence to watch: what the last pair uncovered shows up here as new choices.
-    const open = pairs(this.tiles, this.mask).length;
-    this.tally.text = `${remaining} tiles · ${open} ${open === 1 ? 'pair' : 'pairs'} open · ${this.undos} undos · ${this.shuffles} shuffles`;
+    const open = pairs(this.tiles, this.mask).length,
+      moves = this.three ? (open === 1 ? 'set' : 'sets') : open === 1 ? 'pair' : 'pairs';
+    this.tally.text = `${remaining} tiles · ${open} ${moves} open · ${this.undos} undos · ${this.shuffles} shuffles`;
     this.help.text = this.peeking
       ? stacks.length
         ? stacks.some((stack) => stack.length > 3)
@@ -296,9 +307,11 @@ class TilePairs implements Game {
         ? 'No clearing route · Undo or Shuffle keeps you playing'
         : this.flowers
           ? 'Any two flowers pair · clear the top · open a side'
-          : opensAtEnds(this.tiles)
-            ? 'Clear the top · open the edge above or below'
-            : 'Clear the top · open a left or right side';
+          : this.three
+            ? 'Three alike · clear the top · open a left or right side'
+            : opensAtEnds(this.tiles)
+              ? 'Clear the top · open the edge above or below'
+              : 'Clear the top · open a left or right side';
     const g = this.ring.clear();
     const outline = (i: number, color: number, width: number) => {
       if (!present(this.mask, i)) return;
@@ -321,7 +334,7 @@ class TilePairs implements Game {
           g.roundRect(x - 40, y + edge * 47 - 4, 80, 8, 4).fill({ color: ink, alpha: 0.4 });
       });
     if (!this.touch && !this.finished) outline(this.cursor, ink, 4);
-    if (this.selected !== null) outline(this.selected, swatch.blue.line, 7);
+    for (const i of this.selected) outline(i, swatch.blue.line, 7);
     for (const i of this.hinted ?? []) outline(i, swatch.orange.line, 7);
   }
   togglePeek() {
@@ -343,39 +356,50 @@ class TilePairs implements Game {
       return;
     }
     this.cursor = i;
-    if (this.selected === i) {
-      this.selected = null;
+    if (this.selected.includes(i)) {
+      this.selected = this.selected.filter((k) => k !== i);
       this.draw();
       return;
     }
-    if (this.selected === null) {
-      this.selected = i;
+    if (!this.selected.length) {
+      this.selected = [i];
       sfx.tick();
       this.draw();
       return;
     }
-    const a = this.selected;
-    this.selected = null;
+    const a = this.selected[0];
     if (!matches(this.tiles[a].kind, this.tiles[i].kind)) {
+      // A pair's two picks both go; on a three-alike board the different tile is not picked and the held ones stay.
+      if (!this.three) this.selected = [];
       this.misses++;
       this.sinceMatch++;
       sfx.boing();
       const flowerMiss = isFlower(this.tiles[a].kind) || isFlower(this.tiles[i].kind);
-      void this.ctx.say(flowerMiss ? 'tile-pairs.flowers' : 'tile-pairs.mismatch');
+      void this.ctx.say(
+        flowerMiss ? 'tile-pairs.flowers' : this.three ? 'tile-pairs.mismatch-three' : 'tile-pairs.mismatch',
+      );
       if (this.sinceMatch >= 2) this.askForHint();
       this.draw();
       return;
     }
+    if (this.selected.length + 1 < takeOf(this.tiles)) {
+      this.selected = [...this.selected, i];
+      sfx.tick();
+      this.draw();
+      return;
+    }
+    const group = [...this.selected, i];
+    this.selected = [];
     this.history.push(this.snapshot());
     const wasFree = new Set(freeTiles(this.tiles, this.mask));
-    this.mask = removePair(this.mask, [a, i]);
+    this.mask = removePair(this.mask, group);
     this.hinted = null;
     this.sinceMatch = 0;
     this.route = solve(this.tiles, this.mask);
     const nowFree = freeTiles(this.tiles, this.mask);
     this.cursor = nowFree[0] ?? 0;
     sfx.pop(3);
-    for (const k of [a, i]) this.liftAway(this.nodes[k]);
+    for (const k of group) this.liftAway(this.nodes[k]);
     this.draw();
     for (const k of nowFree) if (!wasFree.has(k)) this.pulse(this.nodes[k]);
     if (!this.mask) void this.complete();
@@ -426,7 +450,7 @@ class TilePairs implements Game {
     this.peeking = false;
     const last = this.history.pop();
     if (!last) {
-      this.selected = null;
+      this.selected = [];
       this.hinted = null;
       this.draw();
       return;
@@ -434,7 +458,8 @@ class TilePairs implements Game {
     this.undos++;
     this.tiles = last.tiles;
     this.mask = last.mask;
-    this.selected = this.hinted = null;
+    this.selected = [];
+    this.hinted = null;
     this.sinceMatch = 0;
     this.rebuild();
     sfx.tick();
@@ -448,10 +473,11 @@ class TilePairs implements Game {
     this.peeking = false;
     this.hints++;
     this.hinted = pair;
-    this.selected = null;
+    // On a three-alike board held tiles that belong to the hinted set stay held, as the mismatch line promised.
+    this.selected = this.three ? this.selected.filter((i) => pair.includes(i)) : [];
     this.cursor = pair[0];
     this.draw();
-    void this.ctx.say('tile-pairs.hint');
+    void this.ctx.say(this.three ? 'tile-pairs.hint-three' : 'tile-pairs.hint');
   }
   /** Shuffle is the couch pause menu's restart action. Removed tiles stay removed; each rearrangement counts. */
   restart() {
@@ -462,9 +488,10 @@ class TilePairs implements Game {
     this.mask = fullMask(this.tiles);
     this.shuffles++;
     this.hints++;
-    this.selected = this.hinted = null;
+    this.selected = [];
+    this.hinted = null;
     this.rebuild();
-    void this.ctx.say('tile-pairs.shuffle');
+    void this.ctx.say(this.three ? 'tile-pairs.shuffle-three' : 'tile-pairs.shuffle');
   }
   private async complete() {
     this.busy = this.finished = true;
@@ -516,10 +543,10 @@ class TilePairs implements Game {
   private botTarget(): number | null {
     const pair = this.route?.[0];
     if (!pair) return null;
-    if (this.selected === pair[0]) return pair[1];
-    if (this.selected === pair[1]) return pair[0];
-    // Cancel a player's unfinished selection before demonstrating a different pair.
-    return this.selected ?? pair[0];
+    // Cancel a held tile that is not in the route's next move, then tap that move's tiles not yet held.
+    const stray = this.selected.find((i) => !pair.includes(i));
+    if (stray !== undefined) return stray;
+    return pair.find((i) => !this.selected.includes(i)) ?? null;
   }
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.ctx.alive) return null;
@@ -565,7 +592,7 @@ function sticker(seed: number) {
   }
   return c;
 }
-/** The bits of the tiles taken from the full board, when exactly two are gone (one pair); otherwise -1. */
+/** The bits of the tiles taken from the full board, when exactly two are gone (one pair); otherwise -1. Lesson boards only. */
 function pairBits(tiles: readonly Tile[], mask: number): number {
   const gone = fullMask(tiles) & ~mask;
   let n = 0;
