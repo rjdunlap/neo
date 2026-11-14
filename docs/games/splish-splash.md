@@ -15,15 +15,15 @@
 
 | Level | Plays like |
 | --- | --- |
-| 1 | Scrub all the mud off |
-| 2 | Scrub all the mud off |
+| 1 | Scrub all the mess off |
+| 2 | Scrub all the mess off |
 | 3 | Wash one body part at a time: tummy, ears, head |
 | 4 | Wash one body part at a time: tummy, ears, head, cheeks |
 | 5 | Wash 4 body parts in a different order each round |
 | 6 | Wash 5 body parts in a different order each round |
 | 7 | Two body parts at once: "wash my ears and my nose" |
 | 8 | Two-step directions in order: "first your nose, then your ears" |
-| 9 | Pat anywhere: each touch washes a bit of mud off, nothing to aim |
+| 9 | Pat anywhere: each touch washes a bit of the mess off, nothing to aim |
 
 <!-- end generated -->
 

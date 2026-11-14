@@ -839,13 +839,13 @@ export const splishSplash: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
-    if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of mud off, nothing to aim';
+    if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of the mess off, nothing to aim';
     if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';
     if (p.pairs) return 'Two body parts at once: "wash my ears and my nose"';
     return p.shuffle
       ? `Wash ${p.parts.length} body parts in a different order each round`
       : p.mode === 'free'
-        ? 'Scrub all the mud off'
+        ? 'Scrub all the mess off'
         : `Wash one body part at a time: ${p.parts.join(', ')}`;
   },
   music: STYLES.paint,

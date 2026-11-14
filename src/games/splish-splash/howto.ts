@@ -4,11 +4,11 @@ import type { GameHowTo } from '../types';
 export const HOW_TO: GameHowTo = {
   goal: 'Give the pet a bath.',
   steps: [
-    { to: 2, text: 'Rub or pat a finger over the mud to scrub it off.' },
+    { to: 2, text: 'Rub or pat a finger over the mess to scrub it off.' },
     {
       from: 9,
       to: 9,
-      text: 'Pat anywhere on the screen: each pat washes a third of the nearest patch of mud away.',
+      text: 'Pat anywhere on the screen: each pat washes a third of the nearest patch of mess away.',
     },
     {
       from: 3,
@@ -21,7 +21,7 @@ export const HOW_TO: GameHowTo = {
   finish: [
     {
       to: 2,
-      text: 'The round ends when the mud is all gone: the shower pops the foam and the pet shakes dry.',
+      text: 'The round ends when the mess is all gone: the shower pops the foam and the pet shakes dry.',
     },
     {
       from: 3,
@@ -31,7 +31,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'The round ends when the mud is all gone: the shower pops the foam and the pet shakes dry.',
+      text: 'The round ends when the mess is all gone: the shower pops the foam and the pet shakes dry.',
     },
   ],
   note: [
@@ -45,5 +45,10 @@ export const HOW_TO: GameHowTo = {
       text: 'Washing the wrong part just makes the pet giggle and repeats the request. Each part is named when it is clean. The toy on the left rim squeaks and says its name; the duck repeats the request.',
     },
     { from: 9, to: 9, text: 'The pet names each part at its first pat and again when it is clean.' },
+    {
+      from: 1,
+      to: 9,
+      text: 'Each round picks a room: the bathroom (mud), the garden (mud and grass), the beach (sand), the art room (paint in a colour that shows on the pet) or the kitchen (jam).',
+    },
   ],
 };
