@@ -1,0 +1,6 @@
+# 2026-11-13 — tile-pairs level 14: Three alike (PR #1641)
+
+**Changed:** `tile-pairs` level 14 *Three alike* (level 6's crown, four pictures six each, a move takes three alike; up to two picked tiles, a differing third boings and is not picked, the hint rings three and keeps held tiles in its set, tally says sets open; `tile-pairs.go-three-keys` for keys and pad; how-to step for 14; grown-up `order` appends 14).
+**Ran:** `npm run typecheck`; tile-pairs rule tests and `src/content` tests (234 pass); full `npm test` earlier (one how-to wording failure, fixed, `src/content` rerun passes); `BROWSER_SUITE=tilepairs TILE_LEVELS=1,14 TILE_LOOKS=off` (level 14 rerun after the review fixes; two alike held through a different third, the hint rings three, phone portrait screenshot `tile-pairs-14-three-alike-phone`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tile-pairs FINGER_LEVELS=14` (32.1 s). A game-reviewer pass found one defect (the hint clearing held tiles), fixed.
+**Measured:** over 300 seeded routes random play clears 0-97%, median 28%, 138 of 300 in the band [0.3, 0.8]; 100 seeds deal in band and clear, 44 with a losing first set; levels 1-13 deal identically (level 13 hash pinned from origin/main).
+**Not run:** `npm run build` (no shared files or assets changed), `couchgames`, offline.
