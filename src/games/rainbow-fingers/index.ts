@@ -411,6 +411,40 @@ function decor(thing: Thing): Graphics {
         .stroke({ ...line, width: 4 });
       g.ellipse(-12, 0, 10, 26).fill({ color: 0xffffff, alpha: 0.45 });
       break;
+    case 'carrot':
+      // Little ridges across the root, and three leafy fronds out of the top.
+      for (const [y, half] of [
+        [-40, 22],
+        [-2, 20],
+        [34, 16],
+        [66, 11],
+      ])
+        g.moveTo(-half, y).quadraticCurveTo(0, y + 6, half, y);
+      g.stroke({ ...line, width: 4 });
+      for (const [tx, ty] of [
+        [-44, -146],
+        [0, -156],
+        [44, -146],
+      ])
+        g.moveTo(0, -100)
+          .quadraticCurveTo(tx / 2 - 20, (ty - 100) / 2, tx, ty)
+          .quadraticCurveTo(tx / 2 + 20, (ty - 100) / 2, 0, -100)
+          .fill(swatch.green.fill)
+          .stroke({ ...line, width: 4 });
+      break;
+    case 'basketball':
+      // The seams: one line across, one down, and two curves either side.
+      g.moveTo(-84, 0)
+        .lineTo(84, 0)
+        .moveTo(0, -84)
+        .lineTo(0, 84)
+        .moveTo(-56, -62)
+        .quadraticCurveTo(-24, 0, -56, 62)
+        .moveTo(56, -62)
+        .quadraticCurveTo(24, 0, 56, 62)
+        .stroke({ ...line, width: 5 });
+      g.ellipse(-36, -40, 14, 8).fill({ color: 0xffffff, alpha: 0.4 });
+      break;
   }
   return g;
 }

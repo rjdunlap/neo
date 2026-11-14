@@ -90,8 +90,8 @@ describe('Rainbow Fingers', () => {
     }
   });
 
-  it('has at least three pictures of every color but orange, every one drawn on some page', () => {
-    for (const color of ['yellow', 'red', 'green', 'blue', 'purple'] as ColorName[])
+  it('has at least three pictures of every color, every one drawn on some page', () => {
+    for (const color of ['yellow', 'red', 'green', 'blue', 'purple', 'orange'] as ColorName[])
       expect(THINGS.filter((t) => t.color === color).length, color).toBeGreaterThanOrEqual(3);
     expect(new Set(THINGS.map((t) => t.id)).size).toBe(THINGS.length);
     const seen = new Set<string>();
@@ -112,7 +112,7 @@ describe('Rainbow Fingers', () => {
     for (const id of NAMED_ONLY) expect(ACCEPTS[id], id).toEqual([THINGS.find((t) => t.id === id)!.color]);
   });
 
-  it('mixes from every picture of a mixed color, three or more for green and purple', () => {
+  it('mixes from every picture of a mixed color, three or more of each', () => {
     const mixPlan = PLANS.find((p) => p.mode === 'mix')!;
     const seen = new Set<string>();
     for (let seed = 1; seed <= 300; seed++)
@@ -125,7 +125,7 @@ describe('Rainbow Fingers', () => {
         .map((t) => t.id)
         .sort(),
     );
-    for (const color of ['green', 'purple'] as ColorName[])
+    for (const color of ['orange', 'green', 'purple'] as ColorName[])
       expect(
         [...seen].filter((id) => THINGS.find((t) => t.id === id)!.color === color).length,
       ).toBeGreaterThanOrEqual(3);
