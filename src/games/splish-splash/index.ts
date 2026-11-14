@@ -9,9 +9,8 @@ import {
   type Renderer,
 } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import type { PetColor } from '../../content/world';
 import { FriendBather, type Bather } from './friend';
-import { ink, RAINBOW, swatch, wood } from '../../art/palette';
+import { ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { textures } from '../../art/textures';
 import { STYLES } from '../../audio/music';
@@ -39,6 +38,8 @@ import {
   PATS_PER_PATCH,
   phraseOf,
   FRIEND,
+  FRIENDS,
+  friendPoints,
   pickBather,
   type Friend,
   type Words,
@@ -238,16 +239,22 @@ class SplishSplash implements Game {
   };
 
   constructor(private readonly ctx: GameContext) {
-    this.friend = pickBather(ctx.level, ctx.rng);
+    // On the dev server, `window.bathFriend = 'duck'` puts that friend in the tub on every naming level (the browser checks).
+    const only = import.meta.env.DEV ? (globalThis as { bathFriend?: string }).bathFriend : undefined;
+    this.friend = pickBather(
+      ctx.level,
+      ctx.rng,
+      FRIENDS.find((f) => f === only),
+    );
     let star: { scale: number; mud: number; tummy: number; parts: readonly Part[] };
     let points: (q: Part) => readonly { x: number; y: number }[];
-    let color: PetColor;
+    let color: ColorName;
     if (this.friend) {
       const spec = FRIEND[this.friend];
       const friend = new FriendBather(this.friend);
       this.pip = friend;
       star = spec;
-      points = (q) => spec.points[q];
+      points = (q) => friendPoints(this.friend!, q);
       color = spec.color;
       this.words = spec.words;
     } else {

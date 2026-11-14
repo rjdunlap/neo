@@ -116,8 +116,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     // BATH_SPECIES=river|glider bathes that species instead of the hatched sprout (RW05 slice 2b: its own parts, fewer on a side-on face).
     const bathSpecies = process.env.BATH_SPECIES;
     if (bathSpecies && (!only || only === 'bath')) await useCompanion(bathSpecies);
-    // BATH_FROM and BATH_TO play only those levels (default 1-9). BATH_FRIEND=pig relaunches each naming level (3-8) until that friend is in the tub (slice 5: about a quarter of rounds).
+    // BATH_FROM and BATH_TO play only those levels (default 1-9). BATH_FRIEND=pig|duck|dog|cow|bear|bunny|cat puts that friend in the tub on each naming level (3-8).
     const bathFriend = process.env.BATH_FRIEND;
+    // The dev server's hook puts that friend in the tub on every naming level (each of the seven is only about 1 round in 28).
+    if (bathFriend) await page.evaluate((f) => (window.bathFriend = f), bathFriend);
     for (
       let level = Number(process.env.BATH_FROM ?? 1);
       level <= Number(process.env.BATH_TO ?? 9) && (!only || only === 'bath');

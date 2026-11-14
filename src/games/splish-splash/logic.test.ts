@@ -57,13 +57,15 @@ import {
   FRIEND_FROM,
   phraseOf,
   pickBather,
+  friendPoints,
+  roomsFor,
   type Part,
   type Plan,
   type Spot,
 } from './logic';
 import { restPoints } from '../../creatures/companion';
 import { PARTS } from '../../creatures/parts';
-import { CRITTERS } from '../../art/critter';
+import { CRITTERS, type CritterSpec } from '../../art/critter';
 import { SPECIES_IDS, type SpeciesId } from '../../creatures/species';
 
 /** A level's splotches on a species, in its own units, as the game lays them (one on each point of each part asked for). */
@@ -540,50 +542,138 @@ describe('Splish Splash', () => {
       }
     });
 
-    it("each friend's splotches lie on the part they name, in its Critter drawing", () => {
-      const inTriangle = (p: { x: number; y: number }, t: number[]) => {
-        const [ax, ay, bx, by, cx, cy] = t;
-        const side = (x1: number, y1: number, x2: number, y2: number) =>
-          (x2 - x1) * (p.y - y1) - (y2 - y1) * (p.x - x1);
-        const d = [side(ax, ay, bx, by), side(bx, by, cx, cy), side(cx, cy, ax, ay)];
-        return d.every((v) => v >= 0) || d.every((v) => v <= 0);
-      };
-      const inEllipse = (p: { x: number; y: number }, cx: number, cy: number, rx: number, ry: number) =>
-        ((p.x - cx) / rx) ** 2 + ((p.y - cy) / ry) ** 2 <= 1;
-      const pig = FRIEND.pig.points;
-      // The pointy ear triangles, the blush ellipses either side of the snout and the snout disc (src/art/critter.ts).
-      for (const p of pig.ears)
-        expect(
-          inTriangle(
-            p,
-            [52, -232, 86, -268, 98, -214].map((v, i) => (i % 2 ? v : Math.sign(p.x) * v)),
-          ),
-        ).toBe(true);
-      for (const p of pig.cheeks) expect(inEllipse(p, Math.sign(p.x) * 74, -98, 16, 10)).toBe(true);
-      for (const p of pig.nose) expect(inEllipse(p, 0, -100, 30, 21)).toBe(true);
-      // The head is above the eyes (-142) and between the ears; the tummy is under the mouth (-70), above the feet.
-      for (const p of pig.head) expect(p.y < -142 - 40 && Math.abs(p.x) < 52).toBe(true);
-      for (const p of pig.tummy) expect(p.y > -70 && p.y < -10 && Math.abs(p.x) < 40).toBe(true);
-      // Pairs come in twos, one each side; singles sit on the middle line.
-      for (const friend of FRIENDS)
+    // The drawn shapes in src/art/critter.ts, in Critter units, for the right side (mirrored for the left).
+    type Pt = { x: number; y: number };
+    const inEllipse = (p: Pt, cx: number, cy: number, rx: number, ry: number, rot = 0) => {
+      const dx = p.x - cx;
+      const dy = p.y - cy;
+      const u = dx * Math.cos(rot) + dy * Math.sin(rot);
+      const v = -dx * Math.sin(rot) + dy * Math.cos(rot);
+      return (u / rx) ** 2 + (v / ry) ** 2 <= 1;
+    };
+    const inPolygon = (p: Pt, poly: number[]) => {
+      let inside = false;
+      for (let i = 0, j = poly.length - 2; i < poly.length; j = i, i += 2) {
+        const [xi, yi, xj, yj] = [poly[i], poly[i + 1], poly[j], poly[j + 1]];
+        if (yi > p.y !== yj > p.y && p.x < ((xj - xi) * (p.y - yi)) / (yj - yi) + xi) inside = !inside;
+      }
+      return inside;
+    };
+    /** The body's half-width at height y (bodyPath: its upper curve, then its lower one), sampled. */
+    const halfWidth = (y: number) => {
+      const bez = (a: number, b: number, c: number, d: number, t: number) =>
+        (1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b + 3 * (1 - t) * t * t * c + t ** 3 * d;
+      let best = { dy: Infinity, x: 0 };
+      for (let i = 0; i <= 400; i++) {
+        const t = i / 400;
+        for (const [x, yy] of [
+          [bez(0, 100, 130, 130, t), bez(-250, -250, -160, -100, t)],
+          [bez(130, 130, 80, 0, t), bez(-100, -30, 0, 0, t)],
+        ])
+          if (Math.abs(yy - y) < best.dy) best = { dy: Math.abs(yy - y), x };
+      }
+      return best.x;
+    };
+    const onBody = (p: Pt) => p.y > -250 && p.y < 0 && Math.abs(p.x) < halfWidth(p.y);
+    /** Whether a splotch at `p` (right side) lies on `part` as `spec` draws it, and is seen there (not behind the body). */
+    const drawnAt = (spec: CritterSpec, part: Part, word: string, p: Pt): boolean => {
+      const r = { x: Math.abs(p.x), y: p.y };
+      const eyeY = spec.snout === 'muzzle' ? -150 : -142;
+      const mouthY = spec.snout === 'pig' ? -70 : spec.snout === 'muzzle' ? -22 : -88;
+      switch (word) {
+        case 'ears':
+          if (onBody(r)) return false;
+          if (spec.ears === 'pointy') return inPolygon(r, [30, -236, 88, -292, 112, -196]);
+          if (spec.ears === 'round') return inEllipse(r, 72, -222, 34, 34);
+          if (spec.ears === 'floppy') return inEllipse(r, 112, -190, 42, 19, 0.38);
+          if (spec.ears === 'long') return inEllipse(r, 46, -292, 23, 64, 0.14);
+          return false;
+        case 'wings':
+          return (
+            !!spec.wings &&
+            !onBody(r) &&
+            inPolygon(r, [112, -104, 140, -100, 144, -88, 142, -70, 128, -58, 98, -64])
+          );
+        case 'cheeks':
+          return spec.snout !== 'muzzle' && spec.snout !== 'bill' && inEllipse(r, 74, -98, 16, 10);
+        case 'whiskers':
+          return !!spec.whiskers && inEllipse(r, 74, -98, 16, 10);
+        case 'snout':
+          return spec.snout === 'pig' && inEllipse(r, 0, -100, 30, 21);
+        case 'bill':
+          return (
+            spec.snout === 'bill' && inPolygon(r, [-46, -100, 0, -112, 46, -100, 40, -76, 0, -68, -40, -76])
+          );
+        case 'nose':
+          if (spec.snout === 'nose') return inEllipse(r, 0, -106, 12, 9);
+          if (spec.snout === 'muzzle') return inEllipse(r, 0, -68, 72, 46);
+          return false;
+        case 'head':
+          return onBody(r) && r.y < eyeY - 40 && r.x < 52 && !(spec.tuft && r.y < -234);
+        case 'tummy':
+          return onBody(r) && r.y > mouthY && r.y < -10 && r.x < 40 && part === 'tummy';
+        default:
+          return false;
+      }
+    };
+
+    it("each friend's splotches lie on the part they name, in its Critter drawing, and are seen there", () => {
+      for (const friend of FRIENDS) {
+        const spec = CRITTERS[friend] as CritterSpec;
         for (const part of FRIEND[friend].parts) {
-          const pts = FRIEND[friend].points[part];
+          const pts = friendPoints(friend, part);
+          const word = phraseOf(part, FRIEND[friend].words).word;
+          for (const p of pts) expect(drawnAt(spec, part, word, p), `${friend} ${part} (${word})`).toBe(true);
+          // Pairs come in twos, one each side; singles sit on the middle line.
           if (PHRASES[part].plural)
             expect(pts.map((p) => Math.sign(p.x)).sort(), `${friend} ${part}`).toEqual([-1, 1]);
           else expect(pts, `${friend} ${part}`).toEqual([{ x: 0, y: pts[0].y }]);
         }
+      }
+      // The pig's points still sit where slice 5 put them.
+      expect(friendPoints('pig', 'nose')).toEqual([{ x: 0, y: -100 }]);
+      // The cow's splotches keep off its dark spots, where the mud would not show.
+      const spots: [number, number, number, number][] = [
+        [-86, -172, 44, 32],
+        [112, -65, 36, 50],
+        [62, -214, 20, 14],
+      ];
+      for (const part of FRIEND.cow.parts)
+        for (const p of friendPoints('cow', part))
+          for (const [cx, cy, rx, ry] of spots)
+            expect(inEllipse(p, cx, cy, rx, ry), `cow ${part}`).toBe(false);
+      // The shapes bite: a cheek on the cow's muzzle, an ear on the duck and a whisker on the dog are not drawn.
+      expect(drawnAt(CRITTERS.cow as CritterSpec, 'cheeks', 'cheeks', { x: 74, y: -98 })).toBe(false);
+      expect(drawnAt(CRITTERS.duck as CritterSpec, 'ears', 'ears', { x: 136, y: -84 })).toBe(false);
+      expect(drawnAt(CRITTERS.dog as CritterSpec, 'cheeks', 'whiskers', { x: 74, y: -98 })).toBe(false);
+      // A floppy ear's inner end is under the body: only its flap outside counts.
+      expect(drawnAt(CRITTERS.dog as CritterSpec, 'ears', 'ears', { x: 90, y: -190 })).toBe(false);
     });
 
-    it('no word is false for its kind: the pig is asked for its snout, and every part it is asked for is drawn', () => {
+    it('no word is false for its kind: each friend is asked only for parts it has, in its own words', () => {
       expect(phraseOf('nose', FRIEND.pig.words).word).toBe('snout');
       expect(askedPhrase(['nose', 'ears'], FRIEND.pig.words)).toBe('my snout and my ears');
+      expect(askedPhrase(['ears', 'nose'], FRIEND.duck.words)).toBe('my wings and my bill');
+      expect(cleanPhrase(['cheeks'], FRIEND.cat.words)).toBe('whiskers');
       expect(askedPhrase(['nose'])).toBe('my nose');
+      // Every own word names something its drawing has.
+      const has: Record<string, (s: CritterSpec) => boolean> = {
+        snout: (s) => s.snout === 'pig',
+        bill: (s) => s.snout === 'bill',
+        wings: (s) => !!s.wings,
+        whiskers: (s) => !!s.whiskers,
+      };
       for (const friend of FRIENDS) {
-        const spec = CRITTERS[friend];
+        const spec = CRITTERS[friend] as CritterSpec;
+        for (const [part, w] of Object.entries(FRIEND[friend].words)) {
+          expect(has[w.word]?.(spec), `${friend} ${part}: ${w.word}`).toBe(true);
+          expect(FRIEND[friend].parts, friend).toContain(part);
+        }
         const parts = FRIEND[friend].parts;
-        if (parts.includes('ears')) expect(spec.ears ?? 'none', friend).not.toBe('none');
+        if (parts.includes('ears') && !FRIEND[friend].words.ears)
+          expect(spec.ears ?? 'none', friend).not.toBe('none');
         if (parts.includes('nose')) expect(spec.snout ?? 'none', friend).not.toBe('none');
-        if (parts.includes('cheeks')) expect(spec.snout, friend).not.toBe('muzzle');
+        if (parts.includes('cheeks')) expect(['muzzle', 'bill'], friend).not.toContain(spec.snout);
         expect(FRIEND[friend].color, friend).toBe(spec.color);
       }
     });
@@ -595,7 +685,7 @@ describe('Splish Splash', () => {
           if (level.mode !== 'parts') continue;
           const plan = planOn(level, spec.parts);
           expect(plan.parts.length, friend).toBeGreaterThanOrEqual(2);
-          const spots = spotsOn(plan.parts, (q) => spec.points[q], spec);
+          const spots = spotsOn(plan.parts, (q) => friendPoints(friend, q), spec);
           expect(crowded(spots, brushOn(spec.scale)), friend).toEqual([]);
           // The forgiveness rule holds: a touch on a splotch's centre is wrong for every other part asked.
           for (const a of spots)
@@ -603,6 +693,37 @@ describe('Splish Splash', () => {
               if (a.part !== b.part) expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
         }
       }
+    });
+
+    it("every friend's mess reads on its colour: the brown dog and bear skip the mud and the damp sand", () => {
+      for (const friend of FRIENDS) {
+        const color = FRIEND[friend].color;
+        const rooms = roomsFor(color);
+        for (const room of rooms) {
+          const fixed = ROOM_MESS[room].mess;
+          if (fixed) expect(messReadsOn(fixed, color), `${room} on ${friend}`).toBe(true);
+          else expect(paintsFor(color).length, `paints for ${friend}`).toBeGreaterThanOrEqual(3);
+        }
+        const seen = new Set<string>();
+        for (let seed = 1; seed <= 300; seed++) {
+          const a = pickRoom(new Rng(seed), color);
+          expect(rooms, friend).toContain(a.room);
+          if (a.room === 'art') expect(messReadsOn(a.mess, color), friend).toBe(true);
+          seen.add(a.room);
+        }
+        expect(seen.size, friend).toBe(rooms.length);
+      }
+      expect(roomsFor('brown')).toEqual(['garden', 'art', 'kitchen']);
+      // Every pet colour keeps every room, so a pet's rounds draw exactly as before.
+      for (const color of PET_COLORS) expect(roomsFor(color)).toEqual(ROOMS);
+    });
+
+    it('the browser hook puts the named friend in the tub on naming levels only', () => {
+      for (const friend of FRIENDS)
+        for (let level = 1; level <= PLANS.length; level++)
+          expect(pickBather(level, new Rng(level), friend)).toBe(
+            level >= FRIEND_FROM && planFor(level).mode === 'parts' ? friend : null,
+          );
     });
 
     it('the opening line names the friend and its mess', () => {
