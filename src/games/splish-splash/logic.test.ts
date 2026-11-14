@@ -52,12 +52,18 @@ import {
   TOY_HIT,
   TOYS,
   TUMMY_Y,
+  FRIEND,
+  FRIENDS,
+  FRIEND_FROM,
+  phraseOf,
+  pickBather,
   type Part,
   type Plan,
   type Spot,
 } from './logic';
 import { restPoints } from '../../creatures/companion';
 import { PARTS } from '../../creatures/parts';
+import { CRITTERS } from '../../art/critter';
 import { SPECIES_IDS, type SpeciesId } from '../../creatures/species';
 
 /** A level's splotches on a species, in its own units, as the game lays them (one on each point of each part asked for). */
@@ -292,7 +298,8 @@ describe('Splish Splash', () => {
             )
             .replace('{pet}', 'Pip')
             .replace('{toy}', TOYS[0])
-            .replace('{messy}', ROOM_MESS.beach.messy);
+            .replace('{messy}', ROOM_MESS.beach.messy)
+            .replace('{friend}', FRIEND.pig.name);
           expect(filled, id).not.toMatch(/[{}]|my my/);
         }
   });
@@ -509,5 +516,97 @@ describe('Splish Splash', () => {
       expect(rooms.size, color).toBe(ROOMS.length);
       expect(paints.size, color).toBe(paintsFor(color).length);
     }
+  });
+
+  describe('friends in the tub (slice 5)', () => {
+    it('a friend bathes only on naming levels from level 3, about a quarter of rounds, and every friend is reachable', () => {
+      for (let level = 1; level <= PLANS.length; level++) {
+        const seen = new Set<string>();
+        let friends = 0;
+        const n = 2000;
+        for (let seed = 1; seed <= n; seed++) {
+          const f = pickBather(level, new Rng(seed));
+          if (f) {
+            friends++;
+            seen.add(f);
+          }
+        }
+        if (level < FRIEND_FROM || planFor(level).mode !== 'parts') expect(friends, `level ${level}`).toBe(0);
+        else {
+          expect(friends / n, `level ${level}`).toBeGreaterThan(0.18);
+          expect(friends / n, `level ${level}`).toBeLessThan(0.32);
+          expect(seen.size, `level ${level}`).toBe(FRIENDS.length);
+        }
+      }
+    });
+
+    it("each friend's splotches lie on the part they name, in its Critter drawing", () => {
+      const inTriangle = (p: { x: number; y: number }, t: number[]) => {
+        const [ax, ay, bx, by, cx, cy] = t;
+        const side = (x1: number, y1: number, x2: number, y2: number) =>
+          (x2 - x1) * (p.y - y1) - (y2 - y1) * (p.x - x1);
+        const d = [side(ax, ay, bx, by), side(bx, by, cx, cy), side(cx, cy, ax, ay)];
+        return d.every((v) => v >= 0) || d.every((v) => v <= 0);
+      };
+      const inEllipse = (p: { x: number; y: number }, cx: number, cy: number, rx: number, ry: number) =>
+        ((p.x - cx) / rx) ** 2 + ((p.y - cy) / ry) ** 2 <= 1;
+      const pig = FRIEND.pig.points;
+      // The pointy ear triangles, the blush ellipses either side of the snout and the snout disc (src/art/critter.ts).
+      for (const p of pig.ears)
+        expect(
+          inTriangle(
+            p,
+            [52, -232, 86, -268, 98, -214].map((v, i) => (i % 2 ? v : Math.sign(p.x) * v)),
+          ),
+        ).toBe(true);
+      for (const p of pig.cheeks) expect(inEllipse(p, Math.sign(p.x) * 74, -98, 16, 10)).toBe(true);
+      for (const p of pig.nose) expect(inEllipse(p, 0, -100, 30, 21)).toBe(true);
+      // The head is above the eyes (-142) and between the ears; the tummy is under the mouth (-70), above the feet.
+      for (const p of pig.head) expect(p.y < -142 - 40 && Math.abs(p.x) < 52).toBe(true);
+      for (const p of pig.tummy) expect(p.y > -70 && p.y < -10 && Math.abs(p.x) < 40).toBe(true);
+      // Pairs come in twos, one each side; singles sit on the middle line.
+      for (const friend of FRIENDS)
+        for (const part of FRIEND[friend].parts) {
+          const pts = FRIEND[friend].points[part];
+          if (PHRASES[part].plural)
+            expect(pts.map((p) => Math.sign(p.x)).sort(), `${friend} ${part}`).toEqual([-1, 1]);
+          else expect(pts, `${friend} ${part}`).toEqual([{ x: 0, y: pts[0].y }]);
+        }
+    });
+
+    it('no word is false for its kind: the pig is asked for its snout, and every part it is asked for is drawn', () => {
+      expect(phraseOf('nose', FRIEND.pig.words).word).toBe('snout');
+      expect(askedPhrase(['nose', 'ears'], FRIEND.pig.words)).toBe('my snout and my ears');
+      expect(askedPhrase(['nose'])).toBe('my nose');
+      for (const friend of FRIENDS) {
+        const spec = CRITTERS[friend];
+        const parts = FRIEND[friend].parts;
+        if (parts.includes('ears')) expect(spec.ears ?? 'none', friend).not.toBe('none');
+        if (parts.includes('nose')) expect(spec.snout ?? 'none', friend).not.toBe('none');
+        if (parts.includes('cheeks')) expect(spec.snout, friend).not.toBe('muzzle');
+        expect(FRIEND[friend].color, friend).toBe(spec.color);
+      }
+    });
+
+    it("on every friend, every level still names at least two parts and no two splotches sit in each other's reach", () => {
+      for (const friend of FRIENDS) {
+        const spec = FRIEND[friend];
+        for (const level of PLANS) {
+          if (level.mode !== 'parts') continue;
+          const plan = planOn(level, spec.parts);
+          expect(plan.parts.length, friend).toBeGreaterThanOrEqual(2);
+          const spots = spotsOn(plan.parts, (q) => spec.points[q], spec);
+          expect(crowded(spots, brushOn(spec.scale)), friend).toEqual([]);
+          // The forgiveness rule holds: a touch on a splotch's centre is wrong for every other part asked.
+          for (const a of spots)
+            for (const b of spots)
+              if (a.part !== b.part) expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
+        }
+      }
+    });
+
+    it('the opening line names the friend and its mess', () => {
+      expect(SCRIPT['bath.friend']?.every((l) => l.includes('{friend}') && l.includes('{messy}'))).toBe(true);
+    });
   });
 });

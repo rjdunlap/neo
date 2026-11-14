@@ -2,6 +2,7 @@ import type { SpeciesId } from '../../creatures/species';
 import { swatch } from '../../art/palette';
 import type { PetColor } from '../../content/world';
 import type { BandLevels } from '../../progress/difficulty';
+import type { AnimalSound } from '../../audio/sfx';
 
 export type Part = 'tummy' | 'head' | 'cheeks' | 'ears' | 'nose';
 
@@ -142,14 +143,91 @@ export const PHRASES: Record<Part, { word: string; plural: boolean }> = {
   nose: { word: 'nose', plural: false },
 };
 
+/** A bather's own words for some parts (the pig's nose is its snout); every other part reads from `PHRASES`. */
+export type Words = Partial<Record<Part, { word: string; plural: boolean }>>;
+
+/** How a part is spoken on a bather with its own `words`. */
+export const phraseOf = (part: Part, words: Words = {}) => words[part] ?? PHRASES[part];
+
 /** The parts as said after "Wash": "my ears", or "my ears and my nose". */
-export function askedPhrase(parts: Part[]): string {
-  return parts.map((p) => `my ${PHRASES[p].word}`).join(' and ');
+export function askedPhrase(parts: Part[], words: Words = {}): string {
+  return parts.map((p) => `my ${phraseOf(p, words).word}`).join(' and ');
 }
 
 /** The parts as said after "Clean": "ears", or "ears and nose". */
-export function cleanPhrase(parts: Part[]): string {
-  return parts.map((p) => PHRASES[p].word).join(' and ');
+export function cleanPhrase(parts: Part[], words: Words = {}): string {
+  return parts.map((p) => phraseOf(p, words).word).join(' and ');
+}
+
+/**
+ * Friends in the tub (dive slice 5, decision 1, decided 2026-10-23): from level 3, about a quarter of rounds, a farm
+ * friend bathes in place of her pet. The pig comes first; the duck, dog, cow, bear, bunny and cat follow in one slice.
+ */
+export const FRIENDS = ['pig'] as const;
+export type Friend = (typeof FRIENDS)[number];
+/** The first level a friend may take the tub, and the share of rounds it does. */
+export const FRIEND_FROM = 3;
+export const FRIEND_SHARE = 0.25;
+
+export interface FriendSpec {
+  /** How the opening line names it: "Oink! The pig is muddy!" */
+  name: string;
+  /** Its colour, for the messes' contrast rule (art room paints are filtered against it). */
+  color: PetColor;
+  /** The sound it makes when it is clean. */
+  sound: AnimalSound;
+  /** Stage scale, splotch shares and the parts asked for, as `STAR`. */
+  scale: number;
+  mud: number;
+  tummy: number;
+  parts: readonly Part[];
+  /**
+   * Where each part's splotches sit, in `Critter` units (feet at 0, about 250 tall), read from its drawing in
+   * `src/art/critter.ts` so a splotch lies on the part it names.
+   */
+  points: Record<Part, readonly { x: number; y: number }[]>;
+  /** Its own word for a part, read from its spec so a word is never false (the pig's snout). */
+  words: Words;
+}
+
+export const FRIEND: Record<Friend, FriendSpec> = {
+  pig: {
+    name: 'pig',
+    color: 'pink',
+    sound: 'oink',
+    scale: 1.2,
+    mud: 0.8,
+    tummy: 0.7,
+    parts: ['tummy', 'head', 'cheeks', 'ears', 'nose'],
+    points: {
+      // Low on the round belly, well under the snout.
+      tummy: [{ x: 0, y: -30 }],
+      // The forehead between the ears, over the eyes (-142).
+      head: [{ x: 0, y: -200 }],
+      // The blush ellipses either side of the snout.
+      cheeks: [
+        { x: -74, y: -98 },
+        { x: 74, y: -98 },
+      ],
+      // The middle of each pointy ear's triangle.
+      ears: [
+        { x: -79, y: -238 },
+        { x: 79, y: -238 },
+      ],
+      // The snout disc.
+      nose: [{ x: 0, y: -100 }],
+    },
+    words: { nose: { word: 'snout', plural: false } },
+  },
+};
+
+/** Who bathes this round: a friend on a naming level from `FRIEND_FROM`, about a quarter of rounds; otherwise null (her pet). */
+export function pickBather(
+  level: number,
+  rng: { next(): number; pick<T>(items: readonly T[]): T },
+): Friend | null {
+  if (level < FRIEND_FROM || planFor(level).mode !== 'parts') return null;
+  return rng.next() < FRIEND_SHARE ? rng.pick(FRIENDS) : null;
 }
 
 /** The least time between two spoken names, so a busy finger does not chatter. */

@@ -104,19 +104,41 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
     // Splish Splash: free scrubbing, one part at a time, pairs, and first-then pairs with a wrong part.
     await page.evaluate(() => {
       window.scrubMud = async (m) => {
-        const p = m.sprite.getGlobalPosition();
         const s = m.sprite.worldTransform.a * 40;
         // Rub until it is clean and then stop, as a person does: more rows over a clean ear can slide into the head's patch and, a few seconds after the wrong-part check, count a second miss.
-        for (let dy = -s; dy <= s && !m.clean; dy += s / 3)
+        // Each row follows the splotch, as a finger follows a bather still landing from its cheer hop.
+        for (let dy = -s; dy <= s && !m.clean; dy += s / 3) {
+          const p = m.sprite.getGlobalPosition();
           await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
+        }
       };
     });
     // BATH_SPECIES=river|glider bathes that species instead of the hatched sprout (RW05 slice 2b: its own parts, fewer on a side-on face).
     const bathSpecies = process.env.BATH_SPECIES;
     if (bathSpecies && (!only || only === 'bath')) await useCompanion(bathSpecies);
-    for (let level = 1; level <= 9 && (!only || only === 'bath'); level++) {
+    // BATH_FROM and BATH_TO play only those levels (default 1-9). BATH_FRIEND=pig relaunches each naming level (3-8) until that friend is in the tub (slice 5: about a quarter of rounds).
+    const bathFriend = process.env.BATH_FRIEND;
+    for (
+      let level = Number(process.env.BATH_FROM ?? 1);
+      level <= Number(process.env.BATH_TO ?? 9) && (!only || only === 'bath');
+      level++
+    ) {
       await launch('splish-splash', level);
+      for (let tries = 0; bathFriend && level >= 3 && level <= 8; tries++) {
+        if (await page.evaluate((f) => neo.scene.game.friend === f, bathFriend)) break;
+        if (tries >= 40) throw new Error(`No ${bathFriend} in the tub at level ${level}`);
+        await launch('splish-splash', level);
+      }
       await page.waitForTimeout(500);
+      if (bathFriend && level === 6) {
+        // The friend in the tub at phone portrait, before any scrubbing.
+        const size = page.viewportSize();
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(600);
+        await screenshot(`splish-splash-${bathFriend}-phone`);
+        await page.setViewportSize(size);
+        await page.waitForTimeout(400);
+      }
       const parts = await page.evaluate(async (level) => {
         const g = neo.scene.game;
         if (g.plan.mode === 'pat') {
@@ -166,7 +188,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         return !!wrongPart;
       }, level);
-      if ([1, 6, 8, 9].includes(level)) await screenshot(`splish-splash-${level}`);
+      if ([1, 6, 8, 9].includes(level))
+        await screenshot(`splish-splash-${level}${bathFriend ? `-${bathFriend}` : ''}`);
       await finished('splish-splash');
       const r = await page.evaluate(() => {
         const r = kit.store.stats('splish-splash').history.at(-1);
