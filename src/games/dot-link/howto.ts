@@ -28,6 +28,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Drag a line all the way around four dots of one color to close a square; do it twice.',
     },
     { from: 6, to: 6, text: 'Drag through exactly five neighboring dots of one color; make three chains.' },
+    {
+      from: 7,
+      to: 7,
+      text: 'The sign shows two colors and a number for each: drag lines of either color until both rows of little dots are full. Another color pops but does not count.',
+    },
   ],
   finish: 'The round ends when the asked-for dots are cleared.',
 };

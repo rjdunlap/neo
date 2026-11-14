@@ -11,7 +11,7 @@
 | lap | 12, 1 |
 | toddler | 1, 11, 2 |
 | preschool | 2–4 |
-| pre-K | 3–6 |
+| pre-K | 3–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -21,6 +21,7 @@
 | 4 | Make three chains of 4 dots |
 | 5 | Close a square to clear a whole color, twice |
 | 6 | Make three chains of exactly 5 dots |
+| 7 | Two colors: pop 6 of one color and 4 of another |
 | 11 | Find my buddy: link the two wiggling dots |
 | 12 | One big dot: a touch anywhere pops it |
 

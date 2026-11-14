@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * new dots drop in from the top. Later levels ask for a color, a longer chain, or a closed
  * square (which clears every dot of that color).
  */
-export type DotMode = 'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'chain' | 'square';
+export type DotMode = 'big' | 'tap' | 'pair' | 'buddy' | 'color' | 'two' | 'chain' | 'square';
 
 export interface DotPlan {
   mode: DotMode;
@@ -16,6 +16,8 @@ export interface DotPlan {
   colors: number;
   /** Pops (big, tap), links (pair), buddies joined (buddy), dots of the color, chains, or squares to finish. */
   goal: number;
+  /** two: how many dots of the first and second named color; `goal` is their sum. */
+  goals?: readonly [number, number];
   /** chain: how long a chain must be. */
   length?: number;
   /** chain: only a line with exactly this many dots counts. */
@@ -55,6 +57,17 @@ export const PLANS: DotPlan[] = [
   },
 ];
 
+/** Level 7, Two colors: the sign names two colors and a number for each, and a line of either counts toward its own. */
+export const TWO: DotPlan = {
+  mode: 'two',
+  rows: 5,
+  cols: 5,
+  colors: 4,
+  goal: 10,
+  goals: [6, 4],
+  name: 'Two colors: pop 6 of one color and 4 of another',
+};
+
 /** Level 11, the toddler entry before level 2: one pair of dots wiggles from the start, and only that pair links. */
 export const BUDDY_LEVEL = 11;
 
@@ -67,7 +80,7 @@ export const LEVELS: BandLevels = {
   // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
   toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
+  prek: { min: 3, max: 7 },
 };
 export const BUDDY: DotPlan = {
   mode: 'buddy',
@@ -117,15 +130,30 @@ export function nearestCell(cells: readonly Cell[], x: number, y: number): Cell 
   return best;
 }
 
-/** Every plan by level ID; 7–10 are kept for the levels the dive appends above 6. */
+/** Every plan by level ID; 8–10 are kept for the levels the dive appends above 7. */
 export const LEVEL_PLANS: ReadonlyMap<number, DotPlan> = new Map([
   ...PLANS.map((p, i) => [i + 1, p] as const),
+  [7, TWO],
   [BUDDY_LEVEL, BUDDY],
   [BIG_LEVEL, BIG],
 ]);
 
 export const planFor = (level: number) =>
   LEVEL_PLANS.get(level) ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+/** Two colors: the first named color still short of its number, or -1 once both are full. */
+export function twoNeed(plan: DotPlan, have: readonly number[]): number {
+  return (plan.goals ?? []).findIndex((g, i) => (have[i] ?? 0) < g);
+}
+
+/**
+ * Two colors: what a line of `n` dots of named color `which` (or -1 for another color) adds. Counts stop at each
+ * color's number, so a loop that overshoots is fine; a color already full, like another color, adds nothing.
+ */
+export function twoAdd(plan: DotPlan, have: readonly number[], which: number, n: number): number {
+  const goal = plan.goals?.[which];
+  return goal === undefined ? 0 : Math.max(0, Math.min(n, goal - (have[which] ?? 0)));
+}
 
 export function chainCounts(plan: DotPlan, length: number, loop: boolean): boolean {
   return plan.exactLength ? length === plan.length && !loop : length >= (plan.length ?? 2) || loop;
@@ -305,7 +333,11 @@ export function demoMove(
     const square = findSquare(grid);
     return square ? [...square, square[0]] : null;
   }
-  return findLine(grid, plan.mode === 'chain' ? plan.length! : 2, plan.mode === 'color' ? target : undefined);
+  return findLine(
+    grid,
+    plan.mode === 'chain' ? plan.length! : 2,
+    plan.mode === 'color' || plan.mode === 'two' ? target : undefined,
+  );
 }
 
 /** Make sure the level's next move exists, repainting a few dots if it doesn't. */

@@ -29,6 +29,9 @@ import {
   PLANS,
   popped,
   step,
+  TWO,
+  twoAdd,
+  twoNeed,
   type Grid,
 } from './logic';
 
@@ -183,6 +186,59 @@ describe('Dot Link', () => {
         const isBuddy = other.every((o) => buddy.some((x) => x.r === o.r && x.c === o.c));
         expect(buddyCounts(buddy, other)).toBe(isBuddy);
       }
+    }
+  });
+
+  it('plays level 7 as Two colors: pre-K only, two named numbers that add to the goal and fit the board', () => {
+    expect(planFor(7)).toBe(TWO);
+    expect(levelsInOrder(LEVELS.prek!).at(-1)).toBe(7);
+    expect(levelsInOrder(LEVELS.preschool!)).not.toContain(7);
+    const [a, b] = TWO.goals!;
+    expect(a + b).toBe(TWO.goal);
+    expect(Math.max(a, b)).toBeLessThanOrEqual(TWO.rows * TWO.cols);
+    expect(TWO.colors).toBeGreaterThan(2);
+    expect(dotLink.describeLevel(7)).toMatch(/two colors/i);
+  });
+
+  it('counts a two-color line toward its own color only, and stops each count at its number', () => {
+    expect(twoNeed(TWO, [0, 0])).toBe(0);
+    expect(twoNeed(TWO, [6, 0])).toBe(1);
+    expect(twoNeed(TWO, [2, 4])).toBe(0);
+    expect(twoNeed(TWO, [6, 4])).toBe(-1);
+    expect(twoAdd(TWO, [0, 0], 0, 3)).toBe(3);
+    expect(twoAdd(TWO, [0, 0], 1, 3)).toBe(3);
+    // A loop that overshoots is fine: the count stops at the number.
+    expect(twoAdd(TWO, [4, 0], 0, 9)).toBe(2);
+    expect(twoAdd(TWO, [0, 3], 1, 5)).toBe(1);
+    // Another color, or a color already full, counts nothing.
+    expect(twoAdd(TWO, [0, 0], -1, 4)).toBe(0);
+    expect(twoAdd(TWO, [6, 0], 0, 2)).toBe(0);
+  });
+
+  it('always leaves a line of the color still needed, so every seeded two-color round finishes', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const palette = rng.shuffle([...DOT_COLORS]).slice(0, TWO.colors);
+      const targets = palette.slice(0, 2);
+      const have = [0, 0];
+      let grid = ensureMove(TWO, makeGrid(TWO, rng, palette), rng, targets[0]);
+      let lines = 0;
+      for (let need = twoNeed(TWO, have); need >= 0; need = twoNeed(TWO, have)) {
+        const move = demoMove(TWO, grid, targets[need]);
+        expect(move, `seed ${seed}`).not.toBeNull();
+        expect(move!.every((c) => grid[c.r][c.c] === targets[need])).toBe(true);
+        have[need] += twoAdd(TWO, have, need, move!.length);
+        const after = twoNeed(TWO, have);
+        grid = ensureMove(
+          TWO,
+          collapse(grid, move!, rng, palette).grid,
+          rng,
+          after >= 0 ? targets[after] : undefined,
+        );
+        lines++;
+      }
+      expect(have).toEqual([...TWO.goals!]);
+      expect(lines).toBeLessThanOrEqual(TWO.goal / 2);
     }
   });
 
