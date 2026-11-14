@@ -1,1 +1,0 @@
-**Rainbow Fingers slice 4, pictures batch one: yellow and red** (rule tests, one landscape screenshot of the new art): banana, chick, lemon, strawberry, ladybug, cherries and the new draw. [Rainbow Fingers dive, slice 4](../../deep-dives/rainbow-fingers.md#build-slices-in-order)
