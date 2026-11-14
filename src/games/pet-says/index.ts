@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterSpec } from '../../art/critter';
 import type { CompanionRig } from '../../creatures/companion';
-import { RAINBOW, swatch, type ColorName } from '../../art/palette';
+import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { musicNote } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -29,13 +29,21 @@ import {
   shouldNudge,
   stickerRecipe,
   planFor,
+  PET_FEET,
+  SCENE_EXTRAS,
+  pickScene,
+  SCENES,
+  STATUE_LINES,
+  statuePose,
+  STYLE_LINES,
+  TUNES,
+  type Dance,
+  type Scene,
   type Move,
   type SaysPlan,
   type Turn,
 } from './logic';
 
-/** The freeze dance's tune, in pentatonic steps. */
-const DANCE = [5, 7, 9, 7, 5, 4, 5, 7, 9, 10, 9, 7];
 /** The pip's mittens at rest, for the hub icon and the stickers, which keep the original drawing. */
 const PIP_REST = { left: { x: -128, y: -95 }, right: { x: 128, y: -95 } };
 
@@ -93,6 +101,10 @@ class PetSays implements Game {
   dancing = false;
 
   private readonly backdrop: Backdrop;
+  /** This round's place, by seed. */
+  readonly scene: Scene;
+  /** What the scene adds over its sky and hills, redrawn on resize. */
+  private readonly extras = new Graphics();
   private readonly notes = new Container();
   private idle = 0;
   private nudged = false;
@@ -106,19 +118,11 @@ class PetSays implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.turns = makeTurns(this.plan, ctx.rng);
-    this.backdrop = ctx.track(
-      new Backdrop(
-        {
-          sky: [swatch.blue.light, 0xfff4e3],
-          hills: [swatch.green.light, 0xc8ecb0, 0xddf2cf],
-          horizon: 0.62,
-          clouds: 3,
-          sun: true,
-          seed: 33,
-        },
-        ctx.view,
-      ),
-    );
+    // Drawn after the turns, so a seed deals the same moves it always has.
+    this.scene = pickScene(ctx.rng);
+    this.backdrop = ctx.track(new Backdrop(SCENES[this.scene], ctx.view));
+    this.extras.eventMode = 'none';
+    this.backdrop.addChild(this.extras);
     const star = ctx.companion();
     const b = star.getLocalBounds();
     this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 520 / b.width));
@@ -150,9 +154,10 @@ class PetSays implements Game {
 
   resize(v: View) {
     this.backdrop.resize(v);
+    this.drawExtras(v);
     const s = Math.min(1.15, (v.h - 200) / 330) * this.grow;
     this.mover.scale.set(Math.sign(this.mover.scale.x || 1) * s, s);
-    this.mover.position.set(v.w / 2 - this.middle * s, v.h - 50);
+    this.mover.position.set(v.w / 2 - this.middle * s, v.h - PET_FEET);
     this.next.position.set(v.w - 110, v.h - 110);
   }
 
@@ -171,19 +176,135 @@ class PetSays implements Game {
         .to(this.next, { rotation: 0.12 }, { duration: 0.3 })
         .then(() => this.ctx.tw.to(this.next, { rotation: 0 }, { duration: 0.3 }));
     }
-    if (!this.dancing) return;
+    if (!this.dancing || !this.turn?.dance) return;
+    const dance = this.turn.dance;
+    const tune = TUNES[dance.tune];
     this.danceLeft -= dt;
     this.beatIn -= dt;
     if (this.beatIn <= 0) {
-      this.beatIn = 0.32;
-      const step = DANCE[this.beat % DANCE.length];
+      this.beatIn = tune.beat;
+      const step = tune.steps[this.beat % tune.steps.length];
       sfx.marimba(step, 0.4);
-      if (this.beat % 2 === 0) this.mover.pet.hop(0.45);
-      this.mover.rotation = (this.beat % 2 ? 1 : -1) * 0.12;
-      this.floatNote(step);
+      this.danceBeat(dance, this.beat, tune.beat);
+      if (this.beat % 2 === 0) this.floatNote(step);
       this.beat++;
     }
     if (this.danceLeft <= 0) void this.freeze();
+  }
+
+  /** One beat of the pet's dance, in this dance's style. */
+  private danceBeat(dance: Dance, k: number, beat: number) {
+    const f = this.frame;
+    const pet = this.mover.pet;
+    const odd = k % 2 === 1;
+    const move = (l: { x: number; y: number }, r: { x: number; y: number }) =>
+      void this.hands(l, r, Math.min(0.18, beat * 0.7));
+    switch (dance.style) {
+      case 'bounce':
+        // A hop every other beat, as the first freeze dance did, so the bounce never jitters.
+        if (!odd) pet.hop(0.45);
+        this.mover.rotation = (odd ? 1 : -1) * 0.08;
+        move(
+          { x: f.rest.left.x, y: f.rest.left.y - (odd ? 0 : 30) },
+          { x: f.rest.right.x, y: f.rest.right.y - (odd ? 30 : 0) },
+        );
+        break;
+      case 'sway':
+        void this.ctx.tw.to(
+          this.mover,
+          { rotation: (odd ? 1 : -1) * 0.14 },
+          { duration: beat * 0.9, ease: ease.inOutSine },
+        );
+        move(f.up.left, f.up.right);
+        break;
+      case 'twirl': {
+        // Every other beat the pet turns to face the other way, like the spin move.
+        if (!odd) {
+          const s = Math.abs(this.mover.scale.x);
+          void this.ctx.tw.to(
+            this.mover.scale,
+            { x: k % 4 === 0 ? -s : s },
+            { duration: beat * 1.6, ease: ease.inOutSine },
+          );
+        }
+        move(f.up.left, f.up.right);
+        break;
+      }
+      case 'shimmy':
+        this.mover.rotation = (odd ? 1 : -1) * 0.05;
+        move(
+          { x: f.rest.left.x, y: f.rest.left.y + (odd ? 14 : -14) },
+          { x: f.rest.right.x, y: f.rest.right.y + (odd ? -14 : 14) },
+        );
+        break;
+      case 'robot':
+        // Stiff, square moves: one arm up, then the other, with no lean.
+        this.mover.rotation = 0;
+        if (k % 4 === 0) pet.hop(0.2);
+        move(
+          odd ? f.rest.left : { x: f.rest.left.x - 20, y: f.up.left.y + 40 },
+          odd ? { x: f.rest.right.x + 20, y: f.up.right.y + 40 } : f.rest.right,
+        );
+        break;
+    }
+  }
+
+  /** The scene's extras: a moon and stars, a window and a rug, snowflakes, or waves. */
+  private drawExtras(v: View) {
+    const g = this.extras.clear();
+    const ground = v.h * SCENES[this.scene].horizon;
+    const rng = new Rng(SCENES[this.scene].seed ?? 1);
+    for (const extra of SCENE_EXTRAS[this.scene]) {
+      switch (extra) {
+        case 'stars':
+          for (let i = 0; i < 18; i++)
+            g.star(
+              rng.range(20, v.w - 20),
+              rng.range(20, ground * 0.5),
+              5,
+              rng.range(4, 8),
+              rng.range(2, 3),
+            ).fill(swatch.yellow.light);
+          break;
+        case 'moon':
+          g.circle(Math.max(200, v.w * 0.8), 130, 52).fill(swatch.yellow.light);
+          g.circle(Math.max(200, v.w * 0.8) + 24, 116, 46).fill({ color: swatch.purple.line, alpha: 0.9 });
+          break;
+        case 'window': {
+          // Top right, clear of the home and help buttons on the left.
+          const w = Math.min(260, v.w * 0.3);
+          const h = Math.min(200, ground * 0.45);
+          const x = Math.min(v.w - w - 36, v.w * 0.78 - w / 2);
+          const y = Math.max(30, ground * 0.18);
+          g.roundRect(x - 12, y - 12, w + 24, h + 24, 10).fill(wood.fill);
+          g.rect(x, y, w, h).fill(swatch.blue.light);
+          g.rect(x + w / 2 - 5, y, 10, h).fill(wood.fill);
+          g.rect(x, y + h / 2 - 5, w, 10).fill(wood.fill);
+          break;
+        }
+        case 'rug':
+          g.ellipse(v.w / 2, v.h - PET_FEET + 6, Math.min(360, v.w * 0.42), 34).fill(swatch.red.light);
+          g.ellipse(v.w / 2, v.h - PET_FEET + 6, Math.min(300, v.w * 0.34), 22).fill(swatch.pink.light);
+          break;
+        case 'flakes':
+          for (let i = 0; i < 26; i++)
+            g.circle(rng.range(10, v.w - 10), rng.range(10, v.h - 10), rng.range(3, 7)).fill({
+              color: 0xffffff,
+              alpha: 0.85,
+            });
+          break;
+        case 'waves':
+          for (let i = 0; i < 7; i++) {
+            const y = ground - 70 + (i % 3) * 18;
+            const x = rng.range(0, v.w);
+            g.moveTo(x - 28, y)
+              .quadraticCurveTo(x - 14, y - 10, x, y)
+              .quadraticCurveTo(x + 14, y - 10, x + 28, y)
+              .stroke({ width: 4, color: 0xffffff, alpha: 0.8 });
+          }
+          break;
+      }
+    }
   }
 
   /** The ghost finger on the how-to card: the grown-up's green arrow, tapped once the pet has finished its move (or its dance and freeze). */
@@ -230,6 +351,7 @@ class PetSays implements Game {
     this.next.rotation = 0;
     this.ctx.tw.kill(this.next);
     this.next.visible = false;
+    if (this.plan.mode === 'freeze' && !first) this.unfreeze();
     this.index++;
     if (!this.turn) return this.finale();
     await this.show(this.turn);
@@ -288,10 +410,11 @@ class PetSays implements Game {
         break;
       case 'freeze':
         this.mover.pet.alive = true;
-        void this.ctx.instruct('says.dance');
+        void this.ctx.instruct(STYLE_LINES[turn.dance!.style]);
         this.lastDance = danceSeconds(this.ctx.rng, this.lastDance);
         this.danceLeft = this.lastDance;
         this.beatIn = 0;
+        this.beat = 0;
         this.dancing = true;
         return;
     }
@@ -315,21 +438,34 @@ class PetSays implements Game {
   /** The music stops: everyone freezes in a funny pose, the pet too, until the arrow starts it again. */
   private async freeze() {
     this.dancing = false;
-    this.mover.rotation = 0;
+    const statue = this.turn?.dance?.statue ?? 'star';
     const { left, right } = this.mover;
     this.ctx.tw.kill(left);
     this.ctx.tw.kill(right);
-    left.position.copyFrom(this.frame.freeze.left);
-    right.position.copyFrom(this.frame.freeze.right);
+    this.ctx.tw.kill(this.mover);
+    this.ctx.tw.kill(this.mover.scale);
+    this.mover.rotation = 0;
+    const s = Math.abs(this.mover.scale.y);
+    this.mover.scale.set(s, s);
+    const pose = statuePose(statue, this.frame);
+    left.position.copyFrom(pose.left);
+    right.position.copyFrom(pose.right);
+    // A flamingo leans on its one leg.
+    if (statue === 'flamingo') this.mover.rotation = 0.08;
     this.mover.pet.setMood('surprised');
     this.mover.pet.alive = false;
     sfx.squeak(9);
-    await this.ctx.instruct('says.freeze-now');
-    await this.ctx.tw.wait(0.6);
+    await this.ctx.instruct(STATUE_LINES[statue]);
+    // The statue holds until the arrow (`unfreeze`), so she has time to copy it.
+    this.ready();
+  }
+
+  /** The arrow after a freeze: the pet comes out of its statue, for the next dance or the cheer. */
+  private unfreeze() {
     this.mover.pet.alive = true;
     this.mover.pet.setMood('happy');
+    this.mover.rotation = 0;
     void this.rest();
-    this.ready();
   }
 
   private floatNote(step: number) {
