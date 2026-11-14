@@ -27,7 +27,7 @@
 
 **Starts as:** lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed)
 
-**Grows into:** twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; lap's own level 6, one big card; find the one named, find the opposite among three, match opposite pairs, spot the one pair among five (pre-K level 5)
+**Grows into:** twelve picture pairs to level 2, sixteen from level 3; varied animal subjects and acting lap flips; lap's own level 6, one big card; find the one named, find the opposite among three, match opposite pairs, spot the one pair among five (pre-K level 5); tap the one in between three pictures in true order (pre-K level 7)
 
 ## Design notes
 
@@ -36,3 +36,5 @@
 **The word and the praise never hold the next card (U7 fix batch 19, 2026-11-12).** At level 1 the flipped card's word starts with the act and the next card follows after the existing beat, its word cutting the last; at levels 2–3 the praise starts and the next question follows the beat, its instruction cutting the praise. The last card's word and the last question's praise are heard out.
 
 **Level 6, One big card (2026-11-13, PR #1617).** Lap-only, after the ladder and first in lap's order (6, then 1); a saved 6 lands at toddler's 1. One card (about 290 units); a layer over the whole view takes every touch: the card flips to its opposite with its word (size, speed and height act it), a small copy flies to a row along the bottom, clear of the corner pet, and stays, and the next card grows in. Eight cards, one per original pair; the last word is heard out. A touch while it flips, acts or arrives gets a soft pop and a wiggle. Nothing is a miss or a hint and there is no hint button.
+
+**Level 7, In between (2026-11-13, PR #1629).** Pre-K's top (order 3, 4, 5, 7). Four rounds, one per gradable word: a cup (full, half full, empty), a mug (hot, warm, cold), the sky (day, evening, night), a balloon (up, middle, down). The three cards stand in true order, the end named first on the left, and she taps the middle; level 8 will shuffle them. An end is a miss with "That one is full. Which one is between full and empty?"; after two misses the ends light, then the middle glows (one hint). A right tap says "{word}! That one is in between." Cards draw up to 1.4x, sized so tap areas never overlap (about 1.06 on an upright phone). Never size, open/closed, on/off or awake/asleep.
