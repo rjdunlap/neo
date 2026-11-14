@@ -32,6 +32,7 @@ import {
   gardenFall,
   gardenFalls,
   gardenLeft,
+  gardenText,
   makeGrid,
   parseGarden,
   solveGarden,
@@ -142,6 +143,7 @@ class DotLink implements Game {
   linesUsed = 0;
   fewest = 0;
   readonly undoButton = new Container();
+  private readonly gardenHints = new Map<string, Cell[] | null>();
   dots: Graphics[][] = [];
   path: Cell[] = [];
   loop = false;
@@ -334,6 +336,8 @@ class DotLink implements Game {
     const x = above ? -(UNDO_W + 12) / 2 : 0;
     const y = above ? 0 : -(UNDO_H + 12) / 2;
     const best = this.finished && this.linesUsed <= this.fewest;
+    // Undo is dimmed while there is no line to take back.
+    this.undoButton.alpha = this.history.length ? 1 : 0.5;
     this.sign.addChild(
       new Graphics()
         .roundRect(x - w / 2, y - h / 2, w, h, 28)
@@ -894,7 +898,13 @@ class DotLink implements Game {
   /** A move that would count right now on the board as it stands. */
   private hintMove() {
     const p = this.plan;
-    if (this.garden) return solveGarden(this.garden).route[0]?.path ?? null;
+    if (this.garden) {
+      // The exact search takes a moment on a phone, so each board's first fewest line is kept once found.
+      const key = gardenText(this.garden);
+      if (!this.gardenHints.has(key))
+        this.gardenHints.set(key, solveGarden(this.garden).route[0]?.path ?? null);
+      return this.gardenHints.get(key)!;
+    }
     return p.mode === 'square'
       ? findSquare(this.grid)
       : p.mode === 'pattern'
