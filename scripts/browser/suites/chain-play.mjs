@@ -491,9 +491,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
                 b = g.glow.getLocalBounds(),
                 x = g.colX(c.col) + 42,
                 y = g.rowY(c.row) - 34;
-              return b.x <= x - 40 && b.x + b.width >= x + 40 && b.y <= y - 40 && b.y + b.height >= y + 40;
+              const lit =
+                b.x <= x - 40 && b.x + b.width >= x + 40 && b.y <= y - 40 && b.y + b.height >= y + 40;
+              return lit === g.hintsChime();
             }),
-            "the hint glows the chime's cell",
+            "the hint glows the chime's cell only for the ramp that takes the marble there",
           );
           await screenshot('chain-reaction-11');
         }
@@ -556,7 +558,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await screenshot('chain-reaction-11-portrait');
       await page.setViewportSize({ width: 1024, height: 768 });
       log(
-        'Chain Reaction 11: a gate-first run stays shut, is free with its trail and is spoken, a counted hint glows the chime, the chime opens the gate before the marble reaches it, two machines, one sticker, phone portrait fit passed',
+        'Chain Reaction 11: a gate-first run stays shut, is free with its trail and is spoken, a counted hint glows the chime only for the ramp that leads there, the chime opens the gate before the marble reaches it, two machines, one sticker, phone portrait fit passed',
       );
     }
 

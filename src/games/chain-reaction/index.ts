@@ -93,7 +93,8 @@ export function chainJournalPicture(): Container {
   return c;
 }
 
-/** A bell; level 9 gives each marble its own bell, tinted its colour with that marble on its face. */
+const GATE_SHUT = 0.22;
+
 /**
  * Level 11's gate: a yellow frame with a little bell badge, the chime's colours, around a wooden ramp. The ramp is a
  * faint outline while the gate is shut and turns solid when the chime opens it. Fixed, so it never takes a touch.
@@ -101,7 +102,7 @@ export function chainJournalPicture(): Container {
 export function gateArt(ramp: Ramp): Container {
   const c = new Container();
   const frame = new Graphics()
-    .roundRect(-54, -50, 108, 100, 26)
+    .roundRect(-52, -50, 104, 100, 26)
     .fill({ color: swatch.yellow.light, alpha: 0.45 })
     .stroke({ width: 6, color: swatch.yellow.line });
   const inner = rampArt(ramp, false);
@@ -115,8 +116,7 @@ export function gateArt(ramp: Ramp): Container {
   c.label = 'gate';
   return c;
 }
-const GATE_SHUT = 0.22;
-
+/** A bell; level 9 gives each marble its own bell, tinted its colour with that marble on its face. */
 function bellArt(small = false, marble?: { fill: number; line: number; light: number }): Container {
   const c = new Container();
   const s = small ? 0.72 : 1;
@@ -603,8 +603,8 @@ class ChainReaction implements Game {
       return;
     }
     if (!this.hinted || this.busy) return;
-    if (this.machine.gate && this.machine.chime) {
-      // Level 11's hint shows the chime's cell: the marble must touch it before the gate opens.
+    if (this.machine.gate && this.machine.chime && this.hintsChime()) {
+      // Level 11's hint shows the chime's cell when the glowing ramp is the one that takes the marble there.
       const c = this.machine.chime;
       this.glow
         .circle(this.colX(c.col) + 42, this.rowY(c.row) - 34, 44)
