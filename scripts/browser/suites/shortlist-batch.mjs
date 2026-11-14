@@ -679,7 +679,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 timeout: 40000,
               });
             }
-            assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'once more counts one hint a turn');
+            assert.equal(
+              await page.evaluate(() => neo.scene.game.hints),
+              1,
+              'once more counts one hint a turn',
+            );
             assert.equal(await page.evaluate(() => neo.scene.game.onceMore.visible), true);
           }
           const moon = level === 6 && (await page.evaluate(() => neo.scene.game.revealDue));
@@ -695,7 +699,14 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               n,
               { timeout: 40000 },
             );
-            if (n === SAYS_SUN_TURNS) await screenshot('pet-says-6-moon-portrait');
+            if (n === SAYS_SUN_TURNS) {
+              await screenshot('pet-says-6-moon-portrait');
+              // A phone on its side: the sign and the once-more button stay clear of the pet.
+              await page.setViewportSize({ width: 844, height: 390 });
+              await page.waitForTimeout(300);
+              await screenshot('pet-says-6-moon-landscape');
+              await page.setViewportSize({ width: 390, height: 844 });
+            }
             await page.waitForTimeout(250);
             await tap('neo.scene.game.next');
           }

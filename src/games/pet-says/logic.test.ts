@@ -523,7 +523,7 @@ describe('Opposite day (level 6, dive slice 5)', () => {
     expect(seen).toEqual(pool);
   });
 
-  it("reveals a move the pet can show apart from the one it asked, on every friend", () => {
+  it('reveals a move the pet can show apart from the one it asked, on every friend', () => {
     // Paired hand targets differ by at least 120 units at pip size (the two mittens' travel summed, in the friend's
     // units times its grow), so the reveal is plainly a different move; up and down also stretch the pet differently.
     for (const s of SPECIES_IDS) {
