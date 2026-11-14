@@ -23,6 +23,9 @@ import {
   countMove,
   countPlaceAt,
   countStamp,
+  fitsKind,
+  kindBoard,
+  kindWords,
   nextStamp,
   slotAt,
   type BugSpot,
@@ -53,7 +56,7 @@ class BugBuilder implements Game {
   private hints = 0;
   private done = false;
   private clock = 0;
-  /** Level 8, Count the spots: the rule state, a node for each open place, the sign and the check. */
+  /** Levels 8 and 9, Count the spots and Count a kind: the rule state, a node for each open place, the sign and the check. */
   private readonly count: CountState | null = null;
   private readonly places: Container[] = [];
   private readonly sign: CountSign | null = null;
@@ -63,8 +66,8 @@ class BugBuilder implements Game {
     ctx.stage.addChild(this.background, this.decorations, this.model, this.board, this.paletteGlow);
     this.glow.eventMode = this.paletteGlow.eventMode = this.decorations.eventMode = 'none';
     let tokens: number[];
-    if (this.plan.mode === 'count') {
-      const board = countBoard(this.plan, ctx.rng);
+    if (this.plan.mode === 'count' || this.plan.mode === 'kind') {
+      const board = (this.plan.mode === 'kind' ? kindBoard : countBoard)(this.plan, ctx.rng);
       this.count = board.state;
       tokens = board.tokens;
       this.board.addChild(bugBody(this.plan.rows, this.plan.columns));
@@ -77,7 +80,7 @@ class BugBuilder implements Game {
         this.board.addChild(node);
         this.places.push(node);
       });
-      this.sign = new CountSign(board.state.want);
+      this.sign = new CountSign(board.state.want, board.state.kind);
       this.check = new RoundButton(checkIcon(), swatch.green, 58, () =>
         this.countEvent(countCheck(this.count!)),
       );
@@ -201,6 +204,12 @@ class BugBuilder implements Game {
         const said = ctx.say('bug.over', { have: ev.n, n: s.want });
         if (ev.hint) this.countHint(said);
       } else if (ev.n > 0) void ctx.say('bug.counted', { n: ev.n });
+    } else if (ev.kind === 'wrongKind') {
+      // The stamp has already gone back to the tray: name what was put against what the sign wants.
+      this.misses++;
+      sfx.boing();
+      const said = ctx.say('bug.kindWrong', { ...BUG_TOKENS[ev.token], kind: kindWords(s.kind!).many });
+      if (ev.hint) this.countHint(said);
     } else if (ev.kind === 'wrong') {
       this.misses++;
       sfx.boing();
@@ -210,7 +219,8 @@ class BugBuilder implements Game {
       this.done = true;
       this.choices.forEach((c) => (c.drag.enabled = false));
       ctx.pet.cheer();
-      void ctx.say('bug.countDone', { n: s.want });
+      if (s.kind) void ctx.say('bug.kindDone', { n: s.want, kind: kindWords(s.kind).many });
+      else void ctx.say('bug.countDone', { n: s.want });
       void ctx.tw.wait(1.2).then(() => ctx.finish({ misses: this.misses, hints: this.hints }));
     }
     this.sign!.show(countHave(s));
@@ -224,6 +234,8 @@ class BugBuilder implements Game {
     void after.then(() => {
       const m = countMove(this.count!);
       if (!m) return;
+      const kind = this.count!.kind;
+      if (kind && 'stamp' in m) return void this.ctx.say('bug.kindHintAdd', { one: kindWords(kind).one });
       void this.ctx.say(
         'lift' in m ? 'bug.countHintLift' : 'stamp' in m ? 'bug.countHintAdd' : 'bug.countHintCheck',
       );
@@ -231,7 +243,9 @@ class BugBuilder implements Game {
   }
   start() {
     const mode = this.plan.mode;
-    if (mode === 'count') void this.ctx.instruct('bug.count', { n: this.count!.want });
+    const kind = this.count?.kind;
+    if (kind) void this.ctx.instruct('bug.kind', { n: this.count!.want, kind: kindWords(kind).many });
+    else if (mode === 'count') void this.ctx.instruct('bug.count', { n: this.count!.want });
     else
       void this.ctx.instruct(mode === 'guided' ? 'bug.guided' : mode === 'copy' ? 'bug.copy' : 'bug.mirror');
   }
@@ -244,7 +258,7 @@ class BugBuilder implements Game {
       .fill(cream);
     const cy = Math.max(365, (v.h - 160) / 2);
     const mode = this.plan.mode;
-    this.board.position.set(mode === 'copy' ? v.w * 0.68 : mode === 'count' ? v.w * 0.6 : v.w / 2, cy);
+    this.board.position.set(mode === 'copy' ? v.w * 0.68 : this.count ? v.w * 0.6 : v.w / 2, cy);
     if (this.sign && this.check) {
       const x = Math.max(this.sign.halfW + 30, v.w * 0.2);
       this.sign.position.set(x, cy - 70);
@@ -275,6 +289,10 @@ class BugBuilder implements Game {
       }
     });
     this.drawHint();
+  }
+  /** The tray stamp the next useful stamp move uses: the first one that counts (any on level 8, the sign's kind on 9). */
+  private stampFor() {
+    return this.choices.find((c) => fitsKind(this.count!, c.token)) ?? this.choices[0];
   }
   private tray(token: number) {
     return this.choices.find((c) => c.token === token)!;
@@ -313,7 +331,7 @@ class BugBuilder implements Game {
       const p = s.places['lift' in m ? m.lift : m.stamp];
       this.glow.circle(p.x, p.y, 56).stroke(ring);
       if ('stamp' in m) {
-        const home = this.choices[0].drag.home;
+        const home = this.stampFor().drag.home;
         this.paletteGlow.roundRect(home.x - 59, home.y - 59, 118, 118, 24).stroke(ring);
       }
     }
@@ -338,7 +356,7 @@ class BugBuilder implements Game {
     if (this.count) {
       // Stamp exactly the number with the first stamp, never one too many, then tap the check.
       const m = countMove(this.count),
-        choice = this.choices[0];
+        choice = this.stampFor();
       if (!m || choice.drag.dragging) return null;
       if ('check' in m) return { tap: { on: this.check! } };
       if ('lift' in m) return { tap: { on: this.places[m.lift] } };

@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { label } from '../../ui/text';
 import { cream, ink, swatch } from '../../art/palette';
 import { shapePath } from '../../art/shapes';
-import { BUG_TOKENS } from './logic';
+import { BUG_TOKENS, type KindWant } from './logic';
 
 export function bugToken(token: number, size = 32): Graphics {
   const t = BUG_TOKENS[token],
@@ -80,10 +80,16 @@ const SIGN_DOT = 15,
 export class CountSign extends Container {
   private readonly card = new Graphics();
   private readonly dots = new Graphics();
+  /** Level 9's shape marks, one small drawing each, redrawn with the count. */
+  private readonly shapes = new Container();
   readonly halfW: number;
   readonly halfH: number;
 
-  constructor(private readonly want: number) {
+  /** On level 9 each mark is drawn in the sign's kind: dots of its color, or its shape. */
+  constructor(
+    private readonly want: number,
+    private readonly kind: KindWant | null = null,
+  ) {
     super();
     const cols = Math.min(3, want),
       rows = Math.ceil(want / 3);
@@ -95,7 +101,7 @@ export class CountSign extends Container {
       .stroke({ width: 5, color: swatch.orange.line });
     const numeral = label(String(want), 76, swatch.purple.line);
     numeral.y = -this.halfH + 50;
-    this.addChild(this.card, numeral, this.dots);
+    this.addChild(this.card, numeral, this.dots, this.shapes);
     this.eventMode = 'none';
     this.show(0);
   }
@@ -104,17 +110,30 @@ export class CountSign extends Container {
   show(have: number) {
     const d = this.dots.clear(),
       top = -this.halfH + 88 + 18 + SIGN_GAP / 2 - 9;
+    const k = this.kind,
+      shape = k?.attr === 'shape' ? k.value : 'circle',
+      color = swatch[k?.attr === 'color' ? k.value : 'pink'];
+    this.shapes.removeChildren().forEach((c) => c.destroy());
+    const mark = (x: number, y: number): Graphics => {
+      if (shape === 'circle') return d.circle(x, y, SIGN_DOT);
+      const g = shapePath(new Graphics(), shape, SIGN_DOT + 2);
+      g.position.set(x, y);
+      return this.shapes.addChild(g);
+    };
     for (let i = 0; i < this.want; i++) {
       const row = Math.floor(i / 3),
         inRow = Math.min(3, this.want - row * 3);
-      d.circle(((i % 3) - (inRow - 1) / 2) * SIGN_GAP, top + row * SIGN_GAP, SIGN_DOT);
-      if (i < have) d.fill(swatch.pink.fill).stroke({ width: 4, color: swatch.pink.line });
+      mark(((i % 3) - (inRow - 1) / 2) * SIGN_GAP, top + row * SIGN_GAP);
+      if (i < have) d.fill(color.fill).stroke({ width: 4, color: color.line });
+      // A kind sign shows its color even before a stamp lands; level 8's open dots stay white.
+      else if (k?.attr === 'color')
+        d.fill({ color: color.fill, alpha: 0.3 }).stroke({ width: 4, color: color.line, alpha: 0.6 });
       else d.fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.45 });
     }
     const extras = Math.max(0, have - this.want);
     for (let i = 0; i < extras; i++)
-      d.circle((i - (extras - 1) / 2) * SIGN_GAP, this.halfH + SIGN_DOT + 12, SIGN_DOT)
-        .fill(swatch.pink.fill)
-        .stroke({ width: 4, color: swatch.pink.line });
+      mark((i - (extras - 1) / 2) * SIGN_GAP, this.halfH + SIGN_DOT + 12)
+        .fill(color.fill)
+        .stroke({ width: 4, color: color.line });
   }
 }

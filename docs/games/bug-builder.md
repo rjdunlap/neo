@@ -10,7 +10,7 @@
 | --- | --- |
 | toddler | 1–2 |
 | preschool | 2, 3, 4, 5, 8 |
-| pre-K | 4, 5, 8, 6, 7 |
+| pre-K | 4, 5, 8, 9, 6, 7 |
 | school | 6–7 |
 
 | Level | Plays like |
@@ -23,6 +23,7 @@
 | 6 | Mirror three spots onto the other wing |
 | 7 | Mirror six spots, matching both shape and color |
 | 8 | Count the spots: give a bare bug the number on the sign |
+| 9 | Count a kind: give the bug the number of spots of one color or one shape |
 
 <!-- end generated -->
 
