@@ -1,0 +1,1 @@
+**Opposites slice 6, level 8, Line them up** (new-levels tier plus a new tween chain: rule tests, one browser play of level 8, `fingerdemo` at it, one portrait screenshot): the level-7 three shuffled; tap them in order, then the other way. [Opposites dive, slice 6](../../deep-dives/opposites.md#build-slices-in-order)
