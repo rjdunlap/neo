@@ -124,9 +124,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       level++
     ) {
       await launch('splish-splash', level);
-      for (let tries = 0; bathFriend && level >= 3 && level <= 8; tries++) {
-        if (await page.evaluate((f) => neo.scene.game.friend === f, bathFriend)) break;
-        if (tries >= 40) throw new Error(`No ${bathFriend} in the tub at level ${level}`);
+      // Without BATH_FRIEND, a friend that took the tub is relaunched away, so BATH_SPECIES checks that species' own parts.
+      const wanted = bathFriend ?? null;
+      for (let tries = 0; level >= 3 && level <= 8; tries++) {
+        if (await page.evaluate((f) => neo.scene.game.friend === f, wanted)) break;
+        if (tries >= 40) throw new Error(`No ${wanted ?? 'pet'} in the tub at level ${level}`);
         await launch('splish-splash', level);
       }
       await page.waitForTimeout(500);
