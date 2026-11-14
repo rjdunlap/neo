@@ -1,4 +1,4 @@
-import { RAINBOW, type ColorName } from '../../art/palette';
+import { RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { FRUIT_FOR, type PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -14,6 +14,8 @@ export interface GardenPlan {
   mixed?: boolean;
   /** Both baskets are blue, one light and one dark: she sorts by shade, not by color. */
   shades?: boolean;
+  /** Three baskets of one color, light, middle and dark: the middle one is the new decision. */
+  tones?: boolean;
   /** Fruit and balloons in two colors: a sign says whether this round sorts by color or by what each thing is. */
   rule?: boolean;
   /** One big fruit on the tree at a time; a touch anywhere hops it home and the next grows. Lap only. */
@@ -23,11 +25,17 @@ export interface GardenPlan {
 export type Rule = 'color' | 'kind';
 export const RULES: Rule[] = ['color', 'kind'];
 
-export type Shade = 'light' | 'dark';
+export type Shade = 'light' | 'middle' | 'dark';
+/** Level 7's two blues. */
 export const SHADES: Shade[] = ['light', 'dark'];
+/** Level 11's three tones of one color. */
+export const TONES: Shade[] = ['light', 'middle', 'dark'];
+/** The colors level 11 shades: each has a clear light, middle and dark. */
+export const TONE_HUES = ['blue', 'red', 'green', 'purple'] as const satisfies readonly ColorName[];
+export type ToneHue = (typeof TONE_HUES)[number];
 
-/** What an item or basket is sorted by: its color, or its shade of blue. */
-export type SortKey = ColorName | `${Shade}-blue` | 'kind-fruit' | 'kind-balloon';
+/** What an item or basket is sorted by: its color, its shade of one color, or (level 8) what it is. */
+export type SortKey = ColorName | `${Shade}-${ToneHue}` | 'kind-fruit' | 'kind-balloon';
 
 export const PLANS: GardenPlan[] = [
   { colors: 1, items: 4, fruit: true },
@@ -40,17 +48,21 @@ export const PLANS: GardenPlan[] = [
   { colors: 2, items: 8, fruit: false, rule: true },
   { colors: 2, items: 4, fruit: true, tap: true },
   { colors: 2, items: 6, fruit: true, tap: true, big: true },
+  { colors: 3, items: 9, fruit: false, tones: true },
 ];
 
 /** Level 10, lap's opening before level 9's four fruit: one big fruit, and a touch anywhere hops it to its basket. */
 export const BIG_LEVEL = 10;
+/** Level 11, Light, middle, dark: pre-K's top, after level 8. */
+export const TONES_LEVEL = 11;
 
 export const LEVELS: BandLevels = {
   // Level 10, One big fruit, opens lap before level 9; toddler still starts at 9.
   lap: { min: 9, max: BIG_LEVEL, order: [BIG_LEVEL, 9] },
   toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 8 },
-  prek: { min: 4, max: 8 },
+  // Level 11, Light, middle, dark, follows level 8; levels 9 and 10 are the lap and toddler tap entries.
+  prek: { min: 4, max: TONES_LEVEL, order: [4, 5, 6, 7, 8, TONES_LEVEL] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -77,6 +89,14 @@ export function deal(
   plan: GardenPlan,
 ): { colors: SortKey[]; items: SortKey[]; kinds: PropKind[]; looks?: ColorName[]; rule?: Rule } {
   if (plan.rule) return dealRule(rng, plan);
+  if (plan.tones) {
+    const hue = rng.pick(TONE_HUES);
+    const keys: SortKey[] = rng.shuffle(TONES.map((t): SortKey => `${t}-${hue}`));
+    const items = [...keys];
+    while (items.length < plan.items) items.push(rng.pick(keys));
+    rng.shuffle(items);
+    return { colors: keys, items, kinds: items.map((_, i) => (i % 2 ? 'balloon' : 'flower')) };
+  }
   if (plan.shades) {
     const keys: SortKey[] = rng.shuffle(SHADES.map((s): SortKey => `${s}-blue`));
     const items = [...keys];
@@ -94,6 +114,52 @@ export function deal(
   while (items.length < plan.items) items.push(rng.pick(colors));
   rng.shuffle(items);
   return { colors, items, kinds: kindsFor(rng, plan, items) };
+}
+
+/** A tone key's shade and color, or undefined for an ordinary color or kind. */
+export function toneOf(key: SortKey): { shade: Shade; hue: ToneHue } | undefined {
+  const [shade, hue] = key.split('-') as [Shade, ToneHue];
+  return (TONES as string[]).includes(shade) && (TONE_HUES as readonly string[]).includes(hue)
+    ? { shade, hue }
+    : undefined;
+}
+
+/** How a toned thing is drawn: a prop of `base`, multiplied by `tint`, and its basket's cloth. */
+export interface ToneLook {
+  base: ColorName;
+  tint: number;
+  cloth: { fill: number; line: number };
+}
+
+/** Level 7's two blues, kept exactly: tints over white and blue props, and the basket cloth to match. */
+const BLUES: Partial<Record<SortKey, ToneLook>> = {
+  'light-blue': { base: 'white', tint: 0xa9d3ff, cloth: { fill: 0xa9d3ff, line: 0x6f9fd6 } },
+  'dark-blue': { base: 'blue', tint: 0x5a7fb5, cloth: { fill: 0x1c51b2, line: 0x143a80 } },
+};
+
+/** The multiplier that darkens a color's own prop into its dark tone. */
+export const DARK_TINT = 0x808080;
+
+/** Two colors multiplied channel by channel, as a Pixi tint multiplies a drawing. */
+export const multiply = (a: number, b: number) =>
+  [16, 8, 0].reduce((out, s) => out | (Math.round((((a >> s) & 255) * ((b >> s) & 255)) / 255) << s), 0);
+
+/**
+ * A toned key's look, from the palette: light is a white prop tinted the color's pale swatch, middle is the color's own prop,
+ * dark is that prop darkened. Light and dark blue keep level 7's look, so a blue means the same in both levels.
+ */
+export function toneLook(key: SortKey): ToneLook | undefined {
+  if (BLUES[key]) return BLUES[key];
+  const tone = toneOf(key);
+  if (!tone) return undefined;
+  const sw = swatch[tone.hue];
+  if (tone.shade === 'light') return { base: 'white', tint: sw.light, cloth: { fill: sw.light, line: sw.fill } };
+  if (tone.shade === 'middle') return { base: tone.hue, tint: 0xffffff, cloth: { fill: sw.fill, line: sw.line } };
+  return {
+    base: tone.hue,
+    tint: DARK_TINT,
+    cloth: { fill: multiply(sw.fill, DARK_TINT), line: multiply(sw.line, DARK_TINT) },
+  };
 }
 
 /**

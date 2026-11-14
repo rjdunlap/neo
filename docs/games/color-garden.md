@@ -11,7 +11,7 @@
 | lap | 10, 9 |
 | toddler | 9, 1, 2, 3, 4, 5 |
 | preschool | 3–8 |
-| pre-K | 4–8 |
+| pre-K | 4, 5, 6, 7, 8, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 8 | Sort 8 fruits and balloons by color or by kind, as the sign says |
 | 9 | Tap four fruits: each hops to its own color basket |
 | 10 | One big fruit: a touch anywhere hops it to its color basket, and the next one grows |
+| 11 | Sort 9 balloons and flowers into light, middle and dark of one color |
 
 <!-- end generated -->
 
