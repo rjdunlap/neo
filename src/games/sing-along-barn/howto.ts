@@ -26,7 +26,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 6,
       to: 6,
-      text: 'Tap a song from ten cards (Old MacDonald sings its whole verse). Tap anywhere to sing; after each verse, tap who sings next. Old MacDonald adds "With a moo-moo here and a moo-moo there" and the first line again.',
+      text: 'Tap a song from ten cards, then tap anywhere to sing; after each verse, tap who sings next. Old MacDonald adds its moo-moo lines; the Itsy Bitsy Spider adds "Down came the rain".',
     },
     {
       from: 7,

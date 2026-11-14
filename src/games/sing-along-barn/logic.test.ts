@@ -17,6 +17,7 @@ import {
   CLAIR,
   RAIN,
   ITSY,
+  ITSY_FULL,
   BOUNCE,
   TWINKLE,
   WHEELS,
@@ -282,11 +283,36 @@ describe('The Itsy Bitsy Spider', () => {
     expect(song.length).toBe(13 + 6);
   });
 
+  it('opens on a rising fourth from the G below, as the score has it', () => {
+    const [the, it] = makeSong([], ITSY);
+    expect(the.midi).toBe(55);
+    expect(it.midi - the.midi).toBe(5);
+  });
+
   it('stays in the pentatonic set and fits a row of eight beads', () => {
     for (const n of makeSong(ANIMALS.slice(0, 3), ITSY)) {
-      expect([0, 1, 2, 3, 4]).toContain(n.step);
+      expect(PENTATONIC).toContain(n.midi % 12);
       expect(n.of).toBeLessThanOrEqual(8);
     }
+  });
+
+  it('sings "Down came the rain" before each friend climbs again at level 6, answering on "spout"', () => {
+    const song = makeSong(['cow', 'duck'], ITSY_FULL);
+    const verse =
+      'Down came the rain and washed the spi der out The it sy bit sy spi der climbed up the wa ter spout';
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      `The it sy bit sy spi der climbed up the wa ter spout ${verse} ${verse}`,
+    );
+    expect(song.length).toBe(13 + 2 * 23);
+    expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['spout', 'spout']);
+    expect(song.filter((n) => n.answers).map((n) => n.animal)).toEqual(['cow', 'duck']);
+    expect(song.filter((n) => n.verseEnd)).toHaveLength(3);
+    for (const n of song) expect(n.of).toBeLessThanOrEqual(8);
+  });
+
+  it('sounds the second line from the score: mi mi fa sol, sol fa mi fa sol mi', () => {
+    const rain = makeSong(['cow'], ITSY_FULL).slice(13, 23);
+    expect(rain.map((n) => n.midi - 60)).toEqual([4, 4, 5, 7, 7, 5, 4, 5, 7, 4]);
   });
 });
 
@@ -400,7 +426,7 @@ describe('the whole Old MacDonald verse', () => {
       MARY,
       CLAIR,
       RAIN,
-      ITSY,
+      ITSY_FULL,
       BOUNCE,
       RING,
       TWINKLE,
@@ -411,10 +437,10 @@ describe('the whole Old MacDonald verse', () => {
 
 describe('tunes with their own notes', () => {
   const phrases = (t: Tune) => [...t.opening, ...t.verse];
-  const allTunes = [...TUNES, OLD_MACDONALD_FULL];
+  const allTunes = [...TUNES, OLD_MACDONALD_FULL, ITSY_FULL];
 
   it('lets only the allow-listed tunes off the pentatonic, and every other tune stays on it', () => {
-    expect([...OWN_NOTES]).toEqual(['twinkle']);
+    expect([...OWN_NOTES]).toEqual(['twinkle', 'itsy']);
     for (const t of allTunes) {
       for (const p of phrases(t)) {
         if (p.semitones) expect(OWN_NOTES, `${t.id}: ${p.syllables.join(' ')}`).toContain(t.id);
@@ -427,9 +453,13 @@ describe('tunes with their own notes', () => {
 
   it('keeps the exception to the major scale, so fa and ti sound and nothing else', () => {
     const major = [0, 2, 4, 5, 7, 9, 11];
-    for (const n of makeSong(ANIMALS.slice(0, 3), TWINKLE)) expect(major).toContain(n.midi % 12);
+    for (const t of [TWINKLE, ITSY_FULL])
+      for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(major).toContain(n.midi % 12);
     // Twinkle really needs its own note: fa
     expect(makeSong(['cow'], TWINKLE).some((n) => n.midi % 12 === 5)).toBe(true);
+    // and so does Itsy Bitsy's "Down came the rain", only in the full form
+    expect(makeSong(['cow'], ITSY_FULL).some((n) => n.midi % 12 === 5)).toBe(true);
+    expect(makeSong(['cow'], ITSY).some((n) => n.midi % 12 === 5)).toBe(false);
   });
 
   it('sounds the marimba by MIDI only in Sing-Along Barn', () => {

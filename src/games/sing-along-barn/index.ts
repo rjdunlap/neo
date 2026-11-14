@@ -1187,7 +1187,7 @@ export const singAlongBarn: GameModule = {
     if (p.gap)
       return `Hot Cross Buns, Rain, Rain, Go Away, The Itsy Bitsy Spider or Twinkle, Twinkle; the song stops before the last word of each verse and a tap sings it (${friends})`;
     if (p.full)
-      return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
+      return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider (with "Down came the rain"), Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
     if (p.chooseTune)
       return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
     if (p.each)

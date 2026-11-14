@@ -127,18 +127,30 @@ export const COME_AGAIN: Phrase = {
 export const WE_WANT_TO_PLAY: Phrase = { syllables: ['we', 'want', 'to', 'play'], steps: [3, 3, 3, 2] };
 
 /**
- * "The Itsy Bitsy Spider" is a traditional nursery song. Its first line is sol do do do re mi mi, mi re do re mi do:
- * G C C C D E E, E D C D E C in C, all inside the pentatonic set. Written from the tune's standard form, not a printed
- * score: a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable; the second line
- * ("Down came the rain") is left out until its notes are checked.
+ * "The Itsy Bitsy Spider" is a traditional nursery song. Its first line is sol, do do do re mi mi, mi re do re mi do:
+ * G (the G below middle C, a rising fourth into the line) C C C D E E, E D C D E C in C, all inside the pentatonic set.
+ * Its second line, "Down came the rain and washed the spider out", is mi mi fa sol, sol fa mi fa sol mi (E E F G, G F E F
+ * G E), so it needs fa: those two phrases are in semitones and `itsy` is on `OWN_NOTES`. Checked against the score in
+ * Wikipedia's article (G major, transposed to C), which also gave the pickup's G below. One note per sung syllable; a
+ * grown-up singing it is the final check (DEVICE-CHECKS).
  */
 export const ITSY_BITSY: Phrase = {
   syllables: ['The', 'it', 'sy', 'bit', 'sy', 'spi', 'der'],
-  steps: [3, 0, 0, 0, 1, 2, 2],
+  steps: [-2, 0, 0, 0, 1, 2, 2],
 };
 export const WATER_SPOUT: Phrase = {
   syllables: ['climbed', 'up', 'the', 'wa', 'ter', 'spout'],
   steps: [2, 1, 0, 1, 2, 0],
+};
+export const DOWN_CAME_THE_RAIN: Phrase = {
+  syllables: ['Down', 'came', 'the', 'rain'],
+  steps: [4, 4, 5, 7],
+  semitones: true,
+};
+export const WASHED_THE_SPIDER_OUT: Phrase = {
+  syllables: ['and', 'washed', 'the', 'spi', 'der', 'out'],
+  steps: [7, 5, 4, 5, 7, 4],
+  semitones: true,
 };
 
 /**
@@ -232,7 +244,7 @@ export type TuneId =
   'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce' | 'ring' | 'twinkle' | 'wheels';
 
 /** The only tunes that may sound a note outside the pentatonic set (decided 2026-10-23; a test guards it). */
-export const OWN_NOTES: readonly TuneId[] = ['twinkle'];
+export const OWN_NOTES: readonly TuneId[] = ['twinkle', 'itsy'];
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -301,6 +313,16 @@ export const ITSY: Tune = {
   verse: [WATER_SPOUT],
   answers: WATER_SPOUT,
   namesAnimal: false,
+};
+/**
+ * The whole song's first two lines at level 6, beside Old MacDonald's full verse: each friend's verse is "Down came the
+ * rain and washed the spider out, the itsy bitsy spider climbed up the water spout", so the spider climbs again for every
+ * friend and the friend still answers on "spout". 23 notes for each friend; the short form stays below level 6, so a
+ * small child's round stays short.
+ */
+export const ITSY_FULL: Tune = {
+  ...ITSY,
+  verse: [DOWN_CAME_THE_RAIN, WASHED_THE_SPIDER_OUT, ITSY_BITSY, WATER_SPOUT],
 };
 /** "Bounce high, bounce low, bounce the ball to Shiloh" opens it; each friend's verse sends the ball to that friend, who answers on its name. */
 export const BOUNCE: Tune = {
@@ -540,7 +562,7 @@ export interface SingPlan {
   each: boolean;
   /** She chooses the song too (a free choice, never a mistake); otherwise the seed draws it. */
   chooseTune: boolean;
-  /** Old MacDonald is the whole verse, moo-moo lines included, instead of the short form. */
+  /** Old MacDonald is the whole verse, moo-moo lines included, and the Itsy Bitsy Spider adds "Down came the rain", instead of the short forms. */
   full: boolean;
   /** *Finish the line*: the song pauses before each verse's last word, its picture waits by the door, and a touch sings it. */
   gap: boolean;
@@ -572,7 +594,9 @@ export const LEVELS: BandLevels = {
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
 export const tunesFor = (plan: SingPlan): readonly Tune[] =>
-  plan.full ? [OLD_MACDONALD_FULL, ...TUNES.slice(1)] : TUNES;
+  plan.full
+    ? TUNES.map((t) => (t === OLD_MACDONALD ? OLD_MACDONALD_FULL : t === ITSY ? ITSY_FULL : t))
+    : TUNES;
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
