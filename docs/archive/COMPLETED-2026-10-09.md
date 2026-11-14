@@ -3521,3 +3521,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Frog Hop scenes (2026-11-14)
 
 [PR #1665](https://github.com/rjdunlap/neo/pull/1665), `claude/frog-hop-scenes`, dive slice 6 ([dive](../deep-dives/frog-hop.md#build-slices-in-order)). Four scenes drawn per round after the questions (lily pond, brook stones, flower path, evening pond with fireflies); art only, with a pure `hopLayout` checked at four views and the card row moved clear of the guide corner. See the [verification entry](../verification/2026-11-14-frog-hop-scenes-brook-flower-path-evening.md).
+
+## Sing-Along Barn, Itsy Bitsy's second line (dive slice 4, 2026-11-14)
+
+[PR #1667](https://github.com/rjdunlap/neo/pull/1667), `claude/sing-along-itsy-second-line`, [dive slice 4](../deep-dives/sing-along-barn.md#build-slices-in-order). `logic.ts` gains the phrases `DOWN_CAME_THE_RAIN` (E E F G) and `WASHED_THE_SPIDER_OUT` (G F E F G E) with `semitones: true`, `itsy` joins `OWN_NOTES`, and `ITSY_FULL` (23-note verse per friend, still answering on "spout") is offered only at level 6 through `tunesFor`; other levels keep the short form. Source check against Wikipedia's score fixed the opening pickup (the G below, a rising fourth, not the G above) at every level. `describeLevel` and the level-6 how-to card updated; `sing-barn-play` gained `SING_ONLY=itsy`. See the [verification entry](../verification/2026-11-14-sing-along-barn-itsy-bitsy-s-second-line.md).

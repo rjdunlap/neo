@@ -1,0 +1,1 @@
+**Chain Reaction slice 7, level 10 Springboard** (new-levels tier: rule tests, one play, `fingerdemo` at 10): a spring part that sends the marble two rows down; hint glows the spring column. [Chain Reaction dive, slice 7](../../deep-dives/chain-reaction.md#build-slices-in-order)
