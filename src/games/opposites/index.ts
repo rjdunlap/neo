@@ -22,6 +22,7 @@ import {
   planFor,
   word,
   type Card,
+  type Gradable,
   type OppPlan,
   type OppRound,
 } from './logic';
@@ -30,9 +31,58 @@ import {
 const BIG_SCALE = 1.7;
 /** Level 6's flipped pictures, small in the row along the bottom (about 75 units across). */
 const ROW_SCALE = 0.44;
+/** Level 7's three cards, larger in the open middle of the screen: up to about 240 units across. */
+const BETWEEN_SCALE = 1.4;
+
+/** Level 7's middle pictures: the same cup, mug, sky and balloon as the two sides, with the in-between amount. */
+function middle(concept: Gradable): Container {
+  const c = new Container();
+  const g = new Graphics();
+  switch (concept) {
+    case 'cup':
+      // The same glass, filled to half way.
+      g.moveTo(-36, -50)
+        .lineTo(36, -50)
+        .lineTo(28, 56)
+        .lineTo(-28, 56)
+        .closePath()
+        .fill({ color: 0xdff3ff, alpha: 0.6 })
+        .stroke({ width: 5, color: swatch.blue.line });
+      g.moveTo(-31, 12).lineTo(31, 12).lineTo(28, 54).lineTo(-28, 54).closePath().fill(swatch.orange.fill);
+      break;
+    case 'temp':
+      // Warm: the hot mug's shape in a softer orange, with one small curl of steam instead of three tall ones.
+      g.roundRect(-36, -14, 64, 64, 12)
+        .fill(swatch.orange.fill)
+        .stroke({ width: 4, color: swatch.orange.line });
+      g.moveTo(28, 0).bezierCurveTo(56, 0, 56, 34, 28, 34).stroke({ width: 8, color: swatch.orange.line });
+      g.moveTo(-4, -22).quadraticCurveTo(4, -32, -4, -42).stroke({ width: 5, color: 0xb9c6d1, cap: 'round' });
+      break;
+    case 'sky':
+      // Evening: a peach sky and the sun half down behind the hill.
+      g.roundRect(-64, -64, 128, 128, 18).fill(0xf6b38a);
+      g.circle(0, 30, 28).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
+      g.roundRect(-64, 30, 128, 34, 18).fill(0x7a5a8c).rect(-64, 30, 128, 14).fill(0x7a5a8c);
+      break;
+    case 'height':
+      // The same balloon and ground, held half way, with a level mark beside it instead of an arrow.
+      g.moveTo(0, 27).quadraticCurveTo(10, 44, 0, 60).stroke({ width: 3, color: ink, alpha: 0.6 });
+      g.ellipse(0, -3, 26, 32)
+        .fill(swatch.red.fill)
+        .stroke({ width: 4, color: swatch.red.line })
+        .ellipse(-8, -15, 6, 9)
+        .fill({ color: 0xffffff, alpha: 0.6 });
+      g.rect(-60, 60, 120, 6).fill(swatch.green.fill);
+      g.moveTo(38, -3).lineTo(58, -3).stroke({ width: 8, color: swatch.blue.fill, cap: 'round' });
+      break;
+  }
+  c.addChild(g);
+  return c;
+}
 
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
 export function picture(card: Card): Container {
+  if (card.mid) return middle(card.concept as Gradable);
   const c = new Container();
   const g = new Graphics();
   const side = card.side;
@@ -396,8 +446,10 @@ class Opposites implements Game {
       const xs = spread(3, 200, v.w - 80, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
     } else {
-      const xs = spread(this.cards.length, 200, v.w - 80, 240);
-      this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * 0.64));
+      const xs = this.rowXs();
+      this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (mode === 'between' ? 0.56 : 0.64)));
+      // Level 7's cards grow only as far as the row leaves room, so their tap areas never overlap (upright: about 1.06).
+      if (mode === 'between' && !this.busy) this.cards.forEach((c) => c.node.scale.set(this.betweenScale()));
     }
     this.shown.position.set(v.w / 2, Math.max(150, v.h * 0.26));
   }
@@ -405,11 +457,13 @@ class Opposites implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.glowing && !this.busy)
-      g.roundRect(this.glowing.node.x - 100, this.glowing.node.y - 100, 200, 200, 36).stroke({
+    if (this.glowing && !this.busy) {
+      const r = 100 * this.glowing.node.scale.y;
+      g.roundRect(this.glowing.node.x - r, this.glowing.node.y - r, 2 * r, 2 * r, 36).stroke({
         width: 7 + 2 * Math.sin(this.clock * 5),
         color: swatch.yellow.fill,
       });
+    }
   }
 
   /**
@@ -435,6 +489,32 @@ class Opposites implements Game {
 
   destroy() {
     this.destroyed = true;
+  }
+
+  /** The row of cards' centers; level 7's larger cards use the whole width (they stand clear of the corner buttons). */
+  private rowXs(n = this.cards.length) {
+    const v = this.view;
+    return this.plan.mode === 'between' ? spread(n, 80, v.w - 80, 330) : spread(n, 200, v.w - 80, 240);
+  }
+
+  /** Level 7's card scale: as large as BETWEEN_SCALE, but each 180-unit tap area keeps a gap to the next. */
+  private betweenScale() {
+    const xs = this.rowXs(3);
+    return Math.min(BETWEEN_SCALE, (xs[1] - xs[0] - 16) / 180);
+  }
+
+  /**
+   * Level 7's hint, after two misses: the two ends light up, then the one in between them glows. The cards already stand
+   * in their true order, so the middle is the one between the lit ends.
+   */
+  private async lightEnds() {
+    this.busy = true;
+    const ends = this.cards.filter((c) => !c.card.mid);
+    for (const c of ends) this.drawCard(c, true);
+    await this.ctx.tw.wait(0.8);
+    if (this.destroyed) return;
+    for (const c of ends) this.drawCard(c, false);
+    this.busy = false;
   }
 
   // Level 6: one big card -------------------------------------------------------------------
@@ -546,7 +626,18 @@ class Opposites implements Game {
     this.shown.removeChildren().forEach((c) => c.destroy({ children: true }));
     const r = this.round;
     for (const card of r.cards)
-      this.cards.push(this.makeCard(card, this.plan.big ? BIG_SCALE : this.plan.mode === 'switch' ? 1.7 : 1));
+      this.cards.push(
+        this.makeCard(
+          card,
+          this.plan.big
+            ? BIG_SCALE
+            : this.plan.mode === 'switch'
+              ? 1.7
+              : this.plan.mode === 'between'
+                ? this.betweenScale()
+                : 1,
+        ),
+      );
     if (this.plan.mode === 'opposite') {
       const bubble = new Graphics()
         .roundRect(-95, -95, 190, 190, 40)
@@ -569,6 +660,7 @@ class Opposites implements Game {
         : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
     if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
+    if (mode === 'between') return this.ctx.instruct('opp.between', this.ends());
     return this.ctx.instruct(mode === 'spot' ? 'opp.spot' : 'opp.pairs');
   }
 
@@ -626,6 +718,10 @@ class Opposites implements Game {
       return void (word(c.card) === word(r.ask!)
         ? this.right([c])
         : this.wrong('opp.notfind', { what: word(c.card), word: word(r.ask!) }));
+    if (mode === 'between')
+      return void (c.card.mid
+        ? this.right([c], word(c.card))
+        : this.wrong('opp.notbetween', { what: word(c.card), ...this.ends(c.card) }));
     if (mode === 'opposite')
       return void (opposites(c.card, r.ask!)
         ? this.right([c])
@@ -656,7 +752,16 @@ class Opposites implements Game {
     this.wrong('opp.notpair', { a: word(a.card), b: word(c.card) });
   }
 
-  private wrong(line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair', vars: Record<string, string>) {
+  /** Level 7's two ends, the one named first as `a`. */
+  /** Level 7's two ends: the one named first as `a`, or the end she tapped ("That one is full. Between full and…"). */
+  private ends(first: Card = this.round.ask!) {
+    return { a: word(first), b: word({ ...first, side: (1 - first.side) as 0 | 1 }) };
+  }
+
+  private wrong(
+    line: 'opp.notfind' | 'opp.notopp' | 'opp.notpair' | 'opp.notbetween',
+    vars: Record<string, string>,
+  ) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
@@ -664,6 +769,11 @@ class Opposites implements Game {
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       const r = this.round;
+      if (this.plan.mode === 'between') {
+        this.glowing = this.cards.find((x) => x.card.mid)!;
+        void this.lightEnds();
+        return;
+      }
       this.glowing =
         this.plan.mode === 'find'
           ? this.cards.find((x) => word(x.card) === word(r.ask!))!
@@ -675,14 +785,15 @@ class Opposites implements Game {
     }
   }
 
-  private async right(cs: CardView[]) {
+  /** A right answer; level 7 names the middle it found ("Yes! Warm is in between."). */
+  private async right(cs: CardView[], middle?: string) {
     this.busy = true;
     this.glowing = null;
     for (const c of cs) this.drawCard(c, true);
     sfx.sparkle();
     this.ctx.pet.cheer();
     // The praise starts and the next question follows the 0.3 s beat (U7 R4); the last one is heard out.
-    const said = this.ctx.say('opp.yay');
+    const said = middle ? this.ctx.say('opp.isbetween', { word: middle }) : this.ctx.say('opp.yay');
     if (this.index + 1 >= this.rounds.length) await said;
     await this.ctx.tw.wait(0.3);
     await this.next();
