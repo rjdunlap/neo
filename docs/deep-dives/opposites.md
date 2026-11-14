@@ -152,7 +152,7 @@ Each is sized for one session. The slices that add a level are built in level or
 4. **A second batch of pairs** (built 2026-10-14, [PR #317](https://github.com/rjdunlap/neo/pull/317): sponge wet/dry, plate clean/dirty, book thick/thin and ball near/far, all `from` level 3 in families wet, clean, size and position, so levels 1–2 are unchanged and levels 3–4 draw from sixteen pairs; the sticker pool is unchanged; many/few stays unbuilt, overlapping Picture Graph): each at a `from` level.
 5. **Level 7, In between** (built 2026-11-13, [PR #1629](https://github.com/rjdunlap/neo/pull/1629)): third pictures for cup, temperature, sky and height.
 6. **Level 8, Line them up** (built 2026-11-13, [PR #1632](https://github.com/rjdunlap/neo/pull/1632); pre-K only, the school window opens at slice 7).
-7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11).
+7. **Level 9, Only the word** (decision 1 settled 2026-10-23; ready after 6; opens the school window, school 8–11). **Claimed 2026-11-13, branch `claude/opposites-only-the-word`.**
 8. **Level 10, Un- words** (decision 3; needs the device-speech check).
 9. **Level 11, Two answers** (ready after 8).
 10. **Doing words and sound cards** (sketch; needs a design pass).
