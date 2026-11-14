@@ -864,7 +864,8 @@ class DuckPond implements Game {
           const { a, b, away } = this.pondStory;
           await this.showSentence(a, b, away);
         }
-        if (this.plan.mode === 'double' && this.sides) await this.showSentence(this.sides.left, this.sides.right);
+        if (this.plan.mode === 'double' && this.sides)
+          await this.showSentence(this.sides.left, this.sides.right);
       }
       await this.tw.wait(0.2);
       this.clearPads();

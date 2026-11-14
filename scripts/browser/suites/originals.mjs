@@ -524,7 +524,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               await ready();
               // Slice 2: one miss is a boing and a spoken count, with no glow and no hint yet.
               if (k === 0 && (g.misses !== 1 || g.hints !== 0 || g.pads.some((p) => p.glowing)))
-                throw new Error(`Duck one miss: ${g.misses} ${g.hints} glow ${g.pads.some((p) => p.glowing)}`);
+                throw new Error(
+                  `Duck one miss: ${g.misses} ${g.hints} glow ${g.pads.some((p) => p.glowing)}`,
+                );
             }
             if (g.misses !== 2 || g.hints !== 1 || !g.pads.find((p) => p.value === g.answer).glowing)
               throw new Error(`Duck hint: ${g.misses} ${g.hints}`);

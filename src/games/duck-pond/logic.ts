@@ -99,7 +99,11 @@ export function doublesRounds(rng: Rng, plan: DuckPlan): DoublesRound[] {
   while (out.length < plan.rounds) {
     const isNear = out.length >= plan.rounds - near;
     const n = rng.int(plan.min, isNear ? plan.max - 1 : plan.max);
-    const round = !isNear ? { left: n, right: n } : rng.chance(0.5) ? { left: n, right: n + 1 } : { left: n + 1, right: n };
+    const round = !isNear
+      ? { left: n, right: n }
+      : rng.chance(0.5)
+        ? { left: n, right: n + 1 }
+        : { left: n + 1, right: n };
     const prev = out.at(-1);
     if (prev && prev.left + prev.right === round.left + round.right) continue;
     out.push(round);
