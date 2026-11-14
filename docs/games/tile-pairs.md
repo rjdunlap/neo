@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12 |
+| grown-up | 1, 2, 17, 3, 18, 4, 19, 5, 20, 6, 7, 8, 9, 10, 21, 11, 12, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 10 | Tricky twins · a pair that strands a terrace |
 | 11 | Tricky tower · a pair that buries a stack |
 | 12 | Short sides · tiles open above and below |
+| 13 | Brick wall · half steps |
 | 17 | Twins on twins · a lesson |
 | 18 | Three free copies · a lesson |
 | 19 | Crossed stacks · a lesson |
