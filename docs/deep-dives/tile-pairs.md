@@ -188,7 +188,7 @@ None of these blocks a slice below.
 7. **Harder deals after Peek, and level 10 *Tricky twins*** (built, PR #1586; second pass). The deal dial's harder bands for levels 3–6, the offline pool script and `pools.ts`, the fair-trap check. Existing interaction with a new level: typecheck, rule tests (bands, pool clears, fair-trap), one browser play of 10, `fingerdemo` at 10. After slice 2. Level 11 *Tricky tower* follows slice 4 as a pool-only addition.
 8. **Lesson puzzles, first set: levels 17–19** (built, PR #1589; second pass). The placement search, the designed boards, `puzzles.ts`, mirror and picture permutation, the lesson line after the stuck line, `order` introduced with its test. Typecheck, rule tests (each board's property, its mirror and permutations), one filtered play of 19 that takes the losing pair, hears the lesson and undoes, a portrait screenshot, `fingerdemo` at 17, build (voice changes).
 9. **Lesson puzzles, second set: levels 20–21** (built, PR #1595). As slice 8 without the shared work.
-10. **Level 12 *Short sides*.** Rule flag, voice and how-to; as slice 5's tier.
+10. **Level 12 *Short sides*** (claimed 2026-11-13, branch `claude/tile-pairs-short-sides`, with level 11 *Tricky tower*, the pool-only addition, so level IDs stay unbroken). Rule flag, voice and how-to; as slice 5's tier.
 11. **Level 13 *Brick wall*.** Half-step positions and overlap `free`; typecheck, rule tests (whole-step boards unchanged), one browser play with a portrait screenshot, `fingerdemo` at 13.
 12. **Level 14 *Three alike*.** A new interaction: the new-interaction tier as slice 2.
 13. **Levels 15–16 big stacks.** The widened mask and node-budget tests; one browser play of 16 in each orientation.
