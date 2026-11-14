@@ -10,6 +10,7 @@ import {
   bigLetters,
   planFor,
   END_WORDS,
+  FAMILIES,
   fits,
   FIRST_WORDS,
   lookalike,
@@ -20,7 +21,10 @@ import {
   PLANS,
   sounded,
   WORDS,
+  PICTURE_WORDS,
+  RIMES,
 } from './logic';
+import { wordPicture } from './pictures';
 
 describe('Word Monsters', () => {
   it('level 9 opens lap with one big monster per touch, six different letters, each leaving a picture', () => {
@@ -44,6 +48,44 @@ describe('Word Monsters', () => {
         expect(FIRST_WORDS[l], l).toBeDefined();
         expect(SCRIPT[`sound.${l}` as keyof typeof SCRIPT], l).toBeDefined();
       }
+    }
+  });
+
+  it('builds words for every short vowel, at least three each and evenly spread, none holding a mirror pair', () => {
+    const counts = [...'aeiou'].map((v) => WORDS.filter((w) => w[1] === v).length);
+    expect(Math.min(...counts)).toBeGreaterThanOrEqual(3);
+    expect(Math.max(...counts) - Math.min(...counts)).toBeLessThanOrEqual(1);
+    expect(new Set(WORDS).size).toBe(WORDS.length);
+    for (const w of WORDS) {
+      expect(w).toMatch(/^[a-z][aeiou][a-z]$/);
+      // No mirror-image pair (b d p q) or i beside l inside one word: building it would ask her to tell them apart.
+      expect([...w].filter((l) => 'bdpq'.includes(l)).length, w).toBeLessThanOrEqual(1);
+      expect(w.includes('i') && w.includes('l'), w).toBe(false);
+    }
+    // Several start with a sound she can stretch while blending.
+    expect(WORDS.filter((w) => 'fmnlrs'.includes(w[0])).length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('keeps word families of at least three words that share the ending and start with a plain sound', () => {
+    expect(RIMES).toEqual(expect.arrayContaining(['en', 'et', 'ug']));
+    for (const rime of RIMES) {
+      const words = FAMILIES[rime];
+      expect(words.length, rime).toBeGreaterThanOrEqual(3);
+      expect(new Set(words).size).toBe(words.length);
+      for (const w of words) expect(w.slice(1), w).toBe(rime);
+      for (const w of words) expect('qxyaeiou'.includes(w[0]), w).toBe(false);
+    }
+  });
+
+  it('draws a picture for every word a building level can ask for', () => {
+    const asked = new Set<string>([...WORDS, ...END_WORDS, ...RIMES.flatMap((r) => FAMILIES[r])]);
+    expect(new Set(PICTURE_WORDS)).toEqual(asked);
+    for (const word of PICTURE_WORDS) {
+      const p = wordPicture(word);
+      const b = p.getBounds();
+      expect(b.width, word).toBeGreaterThan(120);
+      expect(b.height, word).toBeGreaterThan(80);
+      p.destroy({ children: true });
     }
   });
 

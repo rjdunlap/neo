@@ -1,6 +1,6 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
-import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
+import { Critter } from '../../art/critter';
+import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -13,6 +13,7 @@ import { spread, type View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { letterPicture } from '../../art/letter-pictures';
+import { wordPicture } from './pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -26,7 +27,7 @@ import {
   planFor,
   sounded,
   SOUNDS,
-  PICTURE_WORDS,
+  type PictureWord,
   type MonsterPlan,
   type Question,
 } from './logic';
@@ -105,65 +106,6 @@ class Monster extends Container {
     if (this.talk > 0) m.ellipse(0, -18, 12, 8 + 5 * Math.abs(Math.sin(this.clock * 18))).fill(0x7a2e3e);
     else m.moveTo(-10, -20).quadraticCurveTo(0, -12, 10, -20).stroke({ width: 4, color: ink, cap: 'round' });
   }
-}
-
-/** Pictures for the build-a-word words. */
-function wordPicture(word: string): Container {
-  const c = new Container();
-  const line = (color: number, width = 6) => ({
-    width,
-    color,
-    cap: 'round' as const,
-    join: 'round' as const,
-  });
-  if (word === 'cat' || word === 'dog' || word === 'pig') {
-    const critter = new Critter(CRITTERS[word]);
-    critter.y = 110;
-    c.addChild(critter);
-    return c;
-  }
-  if (word === 'sun') return letterPicture('S');
-  const g = new Graphics();
-  if (word === 'cup') {
-    g.moveTo(-70, -60)
-      .lineTo(70, -60)
-      .lineTo(55, 70)
-      .lineTo(-55, 70)
-      .closePath()
-      .fill(swatch.blue.fill)
-      .stroke(line(swatch.blue.line));
-    g.moveTo(70, -30).bezierCurveTo(125, -30, 125, 40, 62, 40).stroke(line(swatch.blue.line, 12));
-    for (const x of [-25, 5, 35])
-      g.moveTo(x, -80)
-        .quadraticCurveTo(x + 14, -100, x, -120)
-        .stroke(line(0xb9c6d1, 5));
-  } else if (word === 'hat') {
-    g.ellipse(0, 50, 130, 30).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
-    g.roundRect(-70, -80, 140, 130, 18).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
-    g.rect(-70, 10, 140, 26).fill(swatch.yellow.fill);
-  } else if (word === 'box') {
-    g.roundRect(-100, -60, 200, 130, 10).fill(wood.light).stroke(line(wood.line));
-    g.poly([-100, -60, -60, -110, 140, -110, 100, -60]).fill(wood.fill).stroke(line(wood.line));
-    g.moveTo(-100, 5).lineTo(100, 5).stroke(line(wood.line, 4));
-  } else if (word === 'cap') {
-    g.moveTo(-120, 45)
-      .quadraticCurveTo(-90, -85, 20, -85)
-      .quadraticCurveTo(105, -85, 112, 35)
-      .quadraticCurveTo(5, 15, -120, 45)
-      .closePath()
-      .fill(swatch.red.fill)
-      .stroke(line(swatch.red.line));
-    g.ellipse(15, 55, 115, 22).fill(swatch.red.light).stroke(line(swatch.red.line));
-    g.moveTo(15, -75).lineTo(15, 0).stroke(line(swatch.red.line, 4));
-  } else if (word === 'can') {
-    g.ellipse(0, -72, 70, 23).fill(swatch.teal.light).stroke(line(swatch.teal.line));
-    g.rect(-70, -72, 140, 145).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
-    g.ellipse(0, 72, 70, 23).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
-    g.ellipse(0, -72, 55, 13).fill(0xd9e3e8).stroke(line(swatch.teal.line, 4));
-    g.roundRect(-38, -20, 76, 45, 10).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
-  }
-  c.addChild(g);
-  return c;
 }
 
 class WordMonsters implements Game {
@@ -469,11 +411,7 @@ class WordMonsters implements Game {
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
     if (this.building) {
-      // Word families only show real pictures: "sun" is drawn as a big S, which would give the answer away.
-      const drawn =
-        (PICTURE_WORDS as readonly string[]).includes(q.answer) &&
-        !(this.plan.mode === 'family' && q.answer === 'sun');
-      this.showPicture(drawn ? wordPicture(q.answer) : null, 0.5, -110);
+      this.showPicture(wordPicture(q.answer as PictureWord), 0.5, -110);
       this.drawSlots(q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);

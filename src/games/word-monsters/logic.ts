@@ -63,14 +63,23 @@ export const LEVELS: BandLevels = {
   school: { min: 5, max: 8 },
 };
 
-/** Word families: the ending stays, the first sound changes. Each word's onset is a plain consonant sound. */
-export const FAMILIES: Record<string, string[]> = {
-  at: ['cat', 'hat', 'bat', 'mat', 'rat', 'sat'],
-  og: ['dog', 'log', 'fog', 'hog', 'jog'],
-  ig: ['pig', 'dig', 'wig', 'big', 'fig'],
-  un: ['sun', 'run', 'fun', 'bun'],
+/**
+ * Word families: the ending stays, the first sound changes. Each word's onset is a plain consonant sound, and every word
+ * has a picture that names it (`pictures.ts`), so the picture settles a word the voice might blur. Words that no picture
+ * names (sat, fun, big, jog, wet) are left out rather than shown with a misleading one.
+ */
+export const FAMILIES = {
+  at: ['cat', 'hat', 'bat', 'mat', 'rat'],
+  og: ['dog', 'log', 'fog', 'hog'],
+  ig: ['pig', 'dig', 'wig', 'fig'],
+  un: ['sun', 'run', 'bun'],
   op: ['top', 'mop', 'hop', 'pop'],
-};
+  en: ['hen', 'pen', 'ten', 'den'],
+  et: ['net', 'pet', 'jet'],
+  ug: ['bug', 'rug', 'mug', 'hug'],
+} as const;
+export type Rime = keyof typeof FAMILIES;
+export const RIMES = Object.keys(FAMILIES) as Rime[];
 
 export const planFor = (level: number) =>
   level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -146,11 +155,25 @@ export const FIRST_WORDS: Record<string, string> = {
   z: 'zebra',
 };
 
-/** Three-letter words we can draw, each sounded out letter by letter. */
-export const WORDS = ['cat', 'dog', 'pig', 'sun', 'cup', 'hat', 'box'] as const;
+/**
+ * Three-letter words to build (levels 5-6), each sounded out letter by letter, with at least three for every short
+ * vowel and many that start with a sound she can stretch (mmm-ap, nnn-et, rrr-ug). No word holds a mirror pair
+ * (b d p q, or i with l: no bed, no lip), and each has a picture.
+ */
+export const WORDS = [
+  ...['cat', 'hat', 'map', 'bag'],
+  ...['hen', 'net', 'pen', 'web'],
+  ...['pig', 'pin', 'wig'],
+  ...['dog', 'box', 'mop', 'log'],
+  ...['sun', 'cup', 'rug', 'bus'],
+] as const;
 export type Word = (typeof WORDS)[number];
 export const END_WORDS = ['cat', 'cap', 'can'] as const;
-export const PICTURE_WORDS = [...WORDS, 'cap', 'can'] as const;
+/** Every word a building level can ask for; `pictures.ts` draws each one. */
+export const PICTURE_WORDS = [
+  ...new Set([...WORDS, ...END_WORDS, ...RIMES.flatMap((rime) => FAMILIES[rime])]),
+] as const;
+export type PictureWord = Word | (typeof END_WORDS)[number] | (typeof FAMILIES)[Rime][number];
 
 export interface Question {
   /** The letter asked for (find/who/first), or the word to build. */
@@ -185,7 +208,7 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   const used = new Set<string>();
   if (plan.mode === 'family') {
     // Two families, three words each; the other first sounds come from the family when they can, so hearing matters.
-    for (const rime of rng.shuffle(Object.keys(FAMILIES)).slice(0, plan.rounds / 3)) {
+    for (const rime of rng.shuffle([...RIMES]).slice(0, plan.rounds / 3)) {
       const onsets = FAMILIES[rime].map((w) => w[0]);
       for (const word of rng.shuffle([...FAMILIES[rime]]).slice(0, 3)) {
         out.push({
