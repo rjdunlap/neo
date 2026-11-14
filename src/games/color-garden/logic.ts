@@ -153,8 +153,10 @@ export function toneLook(key: SortKey): ToneLook | undefined {
   const tone = toneOf(key);
   if (!tone) return undefined;
   const sw = swatch[tone.hue];
-  if (tone.shade === 'light') return { base: 'white', tint: sw.light, cloth: { fill: sw.light, line: sw.fill } };
-  if (tone.shade === 'middle') return { base: tone.hue, tint: 0xffffff, cloth: { fill: sw.fill, line: sw.line } };
+  if (tone.shade === 'light')
+    return { base: 'white', tint: sw.light, cloth: { fill: sw.light, line: sw.fill } };
+  if (tone.shade === 'middle')
+    return { base: tone.hue, tint: 0xffffff, cloth: { fill: sw.fill, line: sw.line } };
   return {
     base: tone.hue,
     tint: DARK_TINT,

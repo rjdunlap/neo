@@ -73,11 +73,24 @@ describe('Color Garden', () => {
   it('level 7 deals exactly as before the tone table (seed 7)', () => {
     expect(deal(new Rng(7), PLANS[6])).toEqual({
       colors: ['dark-blue', 'light-blue'],
-      items: ['dark-blue', 'light-blue', 'dark-blue', 'dark-blue', 'dark-blue', 'light-blue', 'light-blue', 'light-blue'],
+      items: [
+        'dark-blue',
+        'light-blue',
+        'dark-blue',
+        'dark-blue',
+        'dark-blue',
+        'light-blue',
+        'light-blue',
+        'light-blue',
+      ],
       kinds: ['flower', 'balloon', 'flower', 'balloon', 'flower', 'balloon', 'flower', 'balloon'],
     });
     // Level 7's blues keep their look.
-    expect(toneLook('light-blue')).toEqual({ base: 'white', tint: 0xa9d3ff, cloth: { fill: 0xa9d3ff, line: 0x6f9fd6 } });
+    expect(toneLook('light-blue')).toEqual({
+      base: 'white',
+      tint: 0xa9d3ff,
+      cloth: { fill: 0xa9d3ff, line: 0x6f9fd6 },
+    });
     expect(toneLook('dark-blue')?.tint).toBe(0x5a7fb5);
     expect(toneLook('red')).toBeUndefined();
     expect(toneLook('kind-fruit')).toBeUndefined();
@@ -122,8 +135,14 @@ describe('Color Garden', () => {
       // Light, then middle, then dark, each step a clear minimum apart (WCAG contrast ratio).
       for (let i = 0; i < 2; i++) {
         expect(lum(shown[i]), `${hue} ${TONES[i]}`).toBeGreaterThan(lum(shown[i + 1]));
-        expect(contrast(shown[i], shown[i + 1]), `${hue} ${TONES[i]} to ${TONES[i + 1]}`).toBeGreaterThanOrEqual(1.5);
-        expect(contrast(looks[i].cloth.fill, looks[i + 1].cloth.fill), `${hue} cloth ${i}`).toBeGreaterThanOrEqual(1.5);
+        expect(
+          contrast(shown[i], shown[i + 1]),
+          `${hue} ${TONES[i]} to ${TONES[i + 1]}`,
+        ).toBeGreaterThanOrEqual(1.5);
+        expect(
+          contrast(looks[i].cloth.fill, looks[i + 1].cloth.fill),
+          `${hue} cloth ${i}`,
+        ).toBeGreaterThanOrEqual(1.5);
       }
       // Each thing's lightness is nearest its own basket's cloth.
       shown.forEach((c, i) => {
