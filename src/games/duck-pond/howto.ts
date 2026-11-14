@@ -36,6 +36,11 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'The sign tells the whole pond. Count the ducks you can see, then find how many are hiding under the bridge.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'A bridge splits the pond. Count the ducks on each side, then tap the lily pad with how many there are in all. The sides are equal at first; in the last two rounds one side has one more.',
+    },
   ],
   finish: [
     { from: 13, to: 13, text: 'The round ends when five friends have swum in and everyone quacks.' },
@@ -43,6 +48,7 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 2, text: 'The round ends when all the ducks are in the pond.' },
     { from: 3, to: 5, text: 'The round ends when the right number of ducks is in the pond.' },
     { from: 6, to: 11, text: 'The round ends when the answer is right.' },
+    { from: 14, to: 14, text: 'The round ends when the answer is right.' },
   ],
   note: [
     {
@@ -69,6 +75,11 @@ export const HOW_TO: GameHowTo = {
       from: 8,
       to: 11,
       text: 'After a right answer, the sign shows the number sentence and the pet reads it aloud.',
+    },
+    {
+      from: 14,
+      to: 14,
+      text: 'A wrong pad counts one side, then counts on across the bridge. After a right answer the sign shows the sentence, such as 4 + 4 = 8.',
     },
     {
       from: 11,

@@ -522,6 +522,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               kit.tapOn(wrong);
               await kit.sleep(500);
               await ready();
+              // Slice 2: one miss is a boing and a spoken count, with no glow and no hint yet.
+              if (k === 0 && (g.misses !== 1 || g.hints !== 0 || g.pads.some((p) => p.glowing)))
+                throw new Error(`Duck one miss: ${g.misses} ${g.hints} glow ${g.pads.some((p) => p.glowing)}`);
             }
             if (g.misses !== 2 || g.hints !== 1 || !g.pads.find((p) => p.value === g.answer).glowing)
               throw new Error(`Duck hint: ${g.misses} ${g.hints}`);
@@ -533,6 +536,16 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             if (!g.plan.layouts.includes(g.layoutKind) && !(g.answer === 0 && g.layoutKind === 'none'))
               throw new Error(`Layout ${g.layoutKind} not in level ${level}`);
             (window.__duckLayouts ??= []).push(g.answer === 0 ? 'zero' : g.layoutKind);
+          }
+          if (g.plan.mode === 'double') {
+            // Level 14: the two sides of the bridge, equal or one apart, every duck seated on its own side.
+            const { left, right } = g.sides;
+            if (g.swimmers.length !== left + right || g.answer !== left + right)
+              throw new Error(`Doubles: ${g.swimmers.length} ducks for ${left} + ${right}`);
+            if (Math.abs(left - right) !== (r >= g.plan.rounds - g.plan.near ? 1 : 0))
+              throw new Error(`Doubles round ${r}: ${left} + ${right}`);
+            if (g.swimmers.some((d, i) => (i < left ? d.pondOffset[0] >= 0 : d.pondOffset[0] <= 0)))
+              throw new Error('Doubles: a duck on the wrong side of the bridge');
           }
           if (g.plan.mode === 'hide' && g.swimmers.filter((d) => !d.critter.visible).length !== g.answer)
             throw new Error('Hidden count differs from answer');
@@ -551,6 +564,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               )
             )
               throw new Error('Reveal left a duck under the bridge');
+          }
+          if (g.plan.mode === 'double') {
+            const { left, right } = g.sides;
+            const { numberSentence } = await import('/src/games/duck-pond/logic.ts');
+            // The sign keeps the last round's text while hidden, so wait for this round's sentence on a shown sign.
+            await kit.until(() => g.sign.visible && g.signText.text === numberSentence(left, right), 30000);
           }
           await kit.until(() => g.round > r || g.finished, 20000);
         }

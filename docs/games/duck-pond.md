@@ -12,7 +12,7 @@
 | toddler | 12, 1, 2, 3, 4, 5 |
 | preschool | 3–7 |
 | pre-K | 5–9 |
-| school | 8–11 |
+| school | 8, 9, 10, 11, 14 |
 
 | Level | Plays like |
 | --- | --- |
@@ -29,6 +29,7 @@
 | 11 | Part and whole: how many ducks hide under the bridge? |
 | 12 | Wave bye-bye as each of five ducks swims off, then count them back |
 | 13 | One big duck: a touch anywhere brings a friend, up to five |
+| 14 | Doubles: 1 + 1 to 5 + 5 across the bridge, then one more on a side; how many in all? |
 
 <!-- end generated -->
 

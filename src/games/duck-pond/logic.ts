@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
-export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends';
+export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye' | 'friends' | 'double';
 
 export interface DuckPlan {
   mode: DuckMode;
@@ -24,6 +24,8 @@ export interface DuckPlan {
   padMax?: number;
   /** The bridge stands across the middle, splitting the pond into a left and a right side (`splitSeats`). */
   split?: boolean;
+  /** double: how many of the level's last rounds are near doubles (one side has one more). */
+  near?: number;
 }
 
 /** How a round's ducks sit on the pond: a dice face (1–6), two rows of five (top row first), or a scatter. */
@@ -55,6 +57,8 @@ export const PLANS: DuckPlan[] = [
   { mode: 'bye', rounds: 1, min: 5, max: 5 },
   // Lap's opening (placed first for lap only): one big duck on the pond; a touch anywhere brings a friend swimming in, up to five.
   { mode: 'friends', rounds: 1, min: 5, max: 5 },
+  // School (dive slice 6, planned as 12 and appended as 14): the bridge splits the pond; equal sides, then one more on a side.
+  { mode: 'double', rounds: 5, min: 1, max: 5, near: 2, split: true },
 ];
 
 export const LEVELS: BandLevels = {
@@ -62,7 +66,8 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 9 },
-  school: { min: 8, max: 11 },
+  // Doubles (14) goes on top of school; 12 and 13 are lap's and toddler's openings, so the order skips them.
+  school: { min: 8, max: 14, order: [8, 9, 10, 11, 14] },
 };
 
 export interface HidingPuzzle {
@@ -76,6 +81,30 @@ export function hidingPuzzle(rng: Rng, plan: DuckPlan): HidingPuzzle {
   const total = rng.int(plan.min, plan.max);
   const hidden = rng.int(1, Math.min(5, total - 1));
   return { total, visible: total - hidden, hidden };
+}
+
+/** A doubles round: ducks on the left and on the right of the split bridge. */
+export interface DoublesRound {
+  left: number;
+  right: number;
+}
+
+/**
+ * Level 14's rounds: equal sides (`min` + `min` up to `max` + `max`) first, then `near` near doubles where one side, either
+ * one, has one more (still at most `max` a side, so every duck seats at full size). Never the same total twice running.
+ */
+export function doublesRounds(rng: Rng, plan: DuckPlan): DoublesRound[] {
+  const near = plan.near ?? 0;
+  const out: DoublesRound[] = [];
+  while (out.length < plan.rounds) {
+    const isNear = out.length >= plan.rounds - near;
+    const n = rng.int(plan.min, isNear ? plan.max - 1 : plan.max);
+    const round = !isNear ? { left: n, right: n } : rng.chance(0.5) ? { left: n, right: n + 1 } : { left: n + 1, right: n };
+    const prev = out.at(-1);
+    if (prev && prev.left + prev.right === round.left + round.right) continue;
+    out.push(round);
+  }
+  return out;
 }
 
 /** Make-ten rounds: how many ducks start in the pond, never the same twice running. */
