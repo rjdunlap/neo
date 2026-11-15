@@ -205,9 +205,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
-    const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 16];
+    const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16,
+    ];
     for (const level of peekLevels.filter(
-      (n) => ((n >= 1 && n <= 9) || n === 16) && (!only || only === 'peekaboo'),
+      (n) => ((n >= 1 && n <= 11) || n === 16) && (!only || only === 'peekaboo'),
     )) {
       await launch('peekaboo-barn', level);
       if (level === 1)
@@ -259,6 +261,16 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       }
       await page.waitForTimeout(400);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+      if (mode === 'top') {
+        // Whose ears? Only the tops show, and no two look alike: the screenshot is the check that every top reads.
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy && !g.unasked, 10000);
+          if (g.spots.some((s) => s.pose !== 'top')) throw new Error('not every animal shows its top');
+        });
+        await page.waitForTimeout(500);
+        await screenshot(`peekaboo-barn-${level}-tops-${await page.evaluate(() => neo.scene.game.setting)}`);
+      }
       await page.evaluate(async () => {
         const g = neo.scene.game;
         const tapSpot = async (s) => {
@@ -1282,7 +1294,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     const want = {
       'bubble-pop': 12,
       'jelly-drums': 10,
-      'peekaboo-barn': 10,
+      'peekaboo-barn': 12,
       'duck-pond': 9,
       'shape-sorter': 8,
       'color-garden': 10,

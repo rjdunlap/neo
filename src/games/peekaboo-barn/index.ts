@@ -28,6 +28,7 @@ import {
   spotToTap,
   clueKindFor,
   dealClue,
+  dealTops,
   factAbout,
   PARTS,
   type Animal,
@@ -55,7 +56,8 @@ const RUG = 0xf3c9b0;
 const BEDROOM: readonly CoverKind[] = ['blanket', 'toybox', 'curtain', 'bed'];
 const CRITTER_SCALE = 0.55;
 /** Where a critter's feet sit, relative to the bottom of its cover. The cover's top is at -150. */
-const POSE = { hidden: 90, peek: -82, out: -145 };
+// `top` (levels 10–11) shows only the top of the head over the cover: ears, horns or a tuft, never the face.
+const POSE = { hidden: 90, top: -48, peek: -82, out: -145 };
 type Pose = keyof typeof POSE;
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -670,7 +672,7 @@ class PeekabooBarn implements Game {
     } else {
       void spot.go('out');
       await this.ctx.say('peek.notit', { other: spot.animal, animal: this.target! });
-      await spot.go(this.plan.mode === 'find' ? 'peek' : 'hidden');
+      await spot.go(this.plan.mode === 'find' ? 'peek' : this.plan.mode === 'top' ? 'top' : 'hidden');
     }
     if (this.finished) return;
     if (this.missesThisQuestion === 2) {
@@ -679,6 +681,7 @@ class PeekabooBarn implements Game {
       if (right) {
         right.hint = true;
         right.wiggle();
+        if (this.plan.mode === 'top') void this.showFace(right);
       }
     }
     this.busy = false;
@@ -717,6 +720,15 @@ class PeekabooBarn implements Game {
     // Someone new sneaks in, never the same as a neighbour.
     const taken = this.spots.map((s) => s.animal);
     spot.setAnimal(newcomer(this.ctx.rng, taken));
+  }
+
+  /** The hint at levels 10–11: the right animal rises to a full peek for a moment, its face showing, then sinks back. */
+  private async showFace(spot: Spot) {
+    const animal = spot.animal;
+    await spot.go('peek');
+    await this.ctx.tw.wait(1.4);
+    if (this.finished || spot.animal !== animal || spot.pose !== 'peek') return;
+    await spot.go('top');
   }
 
   /** Says the ask that is still waiting behind the last find's line, as she taps before it has ended. */
@@ -760,15 +772,21 @@ class PeekabooBarn implements Game {
       // The feeling is heard as well as seen: a yawn, or two notes the singer keeps hopping to (`update`).
       if (d.clue.kind === 'feeling' && d.clue.feeling === 'sleepy') sfx.yawn();
       if (d.clue.kind === 'feeling' && d.clue.feeling === 'sing') this.singIn = 0.4;
+    } else if (this.plan.mode === 'top') {
+      // Only the tops show, and no two look alike from the top, so the ears (or horns, or a tuft) tell who is who.
+      const animals = dealTops(this.ctx.rng, this.spots.length);
+      this.spots.forEach((s, i) => s.setAnimal(animals[i]));
+      this.target = pickTarget(this.ctx.rng, animals, this.target);
     } else {
       this.dealAnimals();
       const present = this.spots.map((s) => s.animal);
       this.target = pickTarget(this.ctx.rng, present, this.target);
     }
-    if (this.plan.mode === 'find') {
-      // Everyone peeks over the top, so there's something to look at.
+    if (this.plan.mode === 'find' || this.plan.mode === 'top') {
+      // Everyone peeks over the top (at levels 10–11 only the tops of their heads), so there's something to look at.
+      const pose = this.plan.mode;
       for (const s of this.spots) {
-        void s.go('peek');
+        void s.go(pose === 'top' ? 'top' : 'peek');
         await this.ctx.tw.wait(0.15);
       }
     } else if (this.plan.mode === 'remember') {
@@ -975,6 +993,8 @@ export const peekabooBarn: GameModule = {
     if (p.door) return 'One big house: touch anywhere to see who pops out';
     if (p.mode === 'free') return `Tap to find who's hiding, ${p.spots} hiding places`;
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
+    if (p.mode === 'top')
+      return `"Whose ears?" Find the one asked for from the top of its head, ${p.spots} animals`;
     if (p.mode === 'clue')
       return `"Who is sleepy?" "Who has spots?" Find the one a clue describes, ${p.spots} animals`;
     return `Remember who hid where, ${p.spots} hiding places`;

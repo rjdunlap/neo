@@ -11,8 +11,8 @@
 | lap | 16, 1, 2 |
 | toddler | 1–5 |
 | preschool | 4–8 |
-| pre-K | 6–9 |
-| school | 9 |
+| pre-K | 6–11 |
+| school | 9–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,8 @@
 | 7 | Remember who hid where, 3 hiding places |
 | 8 | Remember who hid where, 4 hiding places |
 | 9 | "Who is sleepy?" "Who has spots?" Find the one a clue describes, 3 animals |
+| 10 | "Whose ears?" Find the one asked for from the top of its head, 3 animals |
+| 11 | "Whose ears?" Find the one asked for from the top of its head, 4 animals |
 | 16 | One big house: touch anywhere to see who pops out |
 
 <!-- end generated -->

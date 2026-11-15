@@ -31,6 +31,9 @@ import {
   clueKindFor,
   holders,
   uniqueParts,
+  topOf,
+  topsDiffer,
+  dealTops,
   type Animal,
   type Feeling,
 } from './logic';
@@ -274,9 +277,7 @@ describe('Peekaboo Barn level 9, Who has…?', () => {
 
   it('is three animals and five clue questions, opening the school window without moving a saved level', () => {
     expect(plan).toEqual({ mode: 'clue', spots: 3, goal: 5 });
-    expect(PLANS).toHaveLength(9);
-    expect(LEVELS.prek).toEqual({ min: 6, max: 9 });
-    expect(LEVELS.school).toEqual({ min: 9, max: 9 });
+    expect(PLANS[8]).toEqual(plan);
     expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
   });
 
@@ -341,5 +342,60 @@ describe('Peekaboo Barn level 9, Who has…?', () => {
     const d = dealClue(new Rng(7), plan.spots, 'part', null);
     const poses = d.animals.map(() => 'out');
     expect(spotToTap(plan, poses, d.animals, d.answer, -1)).toBe(d.animals.indexOf(d.answer));
+  });
+});
+
+describe('Peekaboo Barn levels 10–11, Whose ears?', () => {
+  it('is three tops and five questions, then four tops and six, widening pre-K and school without moving a saved level', () => {
+    expect(planFor(10)).toEqual({ mode: 'top', spots: 3, goal: 5 });
+    expect(planFor(11)).toEqual({ mode: 'top', spots: 4, goal: 6 });
+    expect(PLANS).toHaveLength(11);
+    expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
+    expect(LEVELS.prek).toEqual({ min: 6, max: 11 });
+    expect(LEVELS.school).toEqual({ min: 9, max: 11 });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
+    expect(LEVELS.lap).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
+  });
+
+  it('gives every animal a top no other animal shares, so every deal of three or four can be told apart', () => {
+    expect(new Set(ANIMALS.map(topOf)).size).toBe(ANIMALS.length);
+    // The pointy ears of pig and cat differ by colour; the floppy ears of cow and dog by colour too.
+    expect(topOf('pig')).not.toBe(topOf('cat'));
+    expect(topOf('cow')).not.toBe(topOf('dog'));
+    expect(topOf('bunny')).toContain('long');
+    const all = (n: number, from: readonly Animal[] = ANIMALS): Animal[][] =>
+      n === 0 ? [[]] : from.flatMap((a, i) => all(n - 1, from.slice(i + 1)).map((rest) => [a, ...rest]));
+    for (const n of [3, 4]) for (const set of all(n)) expect(topsDiffer(set), set.join()).toBe(true);
+    // A lookalike would be caught: two brown, floppy-eared, orange-eared dogs are one top.
+    expect(topsDiffer(['dog', 'dog'])).toBe(false);
+  });
+
+  it('deals different animals with different tops and asks for one present, never the same twice running', () => {
+    for (const level of [10, 11]) {
+      const plan = planFor(level);
+      const asked = new Set<Animal>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        let last: Animal | null = null;
+        for (let q = 0; q < plan.goal; q++) {
+          const animals = dealTops(rng, plan.spots);
+          expect(new Set(animals).size).toBe(plan.spots);
+          expect(topsDiffer(animals)).toBe(true);
+          const target = pickTarget(rng, animals, last);
+          expect(animals).toContain(target);
+          expect(target).not.toBe(last);
+          asked.add(target);
+          last = target;
+        }
+      }
+      expect([...asked].sort()).toEqual([...ANIMALS].sort());
+    }
+  });
+
+  it("points the ghost finger's bot at the asked animal's place", () => {
+    const plan = planFor(11);
+    const animals = dealTops(new Rng(5), plan.spots);
+    const poses = animals.map(() => 'top');
+    expect(spotToTap(plan, poses, animals, animals[2], -1)).toBe(2);
   });
 });

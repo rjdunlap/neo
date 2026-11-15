@@ -11,8 +11,9 @@ export interface PeekPlan {
   /**
    * free: tap to reveal. find: animals peek, "where's the cow?". remember: they show, hide, then the question. clue: they
    * stand up over their places and a feeling or a part word picks one ("Who is sleepy?", "Find the one with spots!").
+   * top: only the top of each head shows over the cover (ears, horns, a tuft), and she finds the one asked for by it.
    */
-  mode: 'free' | 'find' | 'remember' | 'clue';
+  mode: 'free' | 'find' | 'remember' | 'clue' | 'top';
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
@@ -34,6 +35,8 @@ export const PLANS: PeekPlan[] = [
   { mode: 'remember', spots: 3, goal: 5 },
   { mode: 'remember', spots: 4, goal: 6 },
   { mode: 'clue', spots: 3, goal: 5 },
+  { mode: 'top', spots: 3, goal: 5 },
+  { mode: 'top', spots: 4, goal: 6 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -41,8 +44,8 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 16, order: [16, 1, 2] },
   toddler: { min: 1, max: 5 },
   preschool: { min: 4, max: 8 },
-  prek: { min: 6, max: 9 },
-  school: { min: 9, max: 9 },
+  prek: { min: 6, max: 11 },
+  school: { min: 9, max: 11 },
 };
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
@@ -248,3 +251,36 @@ export function dealClue(rng: Rng, spots: number, kind: Clue['kind'], last: Anim
 
 /** Something true a wrong animal has, to say back to her: its first part in `PARTS` order. */
 export const factAbout = (animal: Animal): Part => PART_IDS.find((p) => hasPart(animal, p))!;
+
+/**
+ * Levels 10–11 (Whose ears?): what shows of an animal over its cover in the `top` pose. The head's colour and whatever
+ * stands up from it (ears and their colour, horns, a tuft, a mane, a comb, a curl of wool); the face stays hidden.
+ */
+export function topOf(animal: Animal): string {
+  const s = CRITTERS[animal] as CritterSpec;
+  return [
+    s.color,
+    s.ears ?? 'no ears',
+    s.earColor ?? s.color,
+    s.horns && 'horns',
+    s.tuft && 'tuft',
+    s.mane && 'mane',
+    s.comb && 'comb',
+    s.wool && 'wool',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/** True when no two of these animals look the same from the top, so the one asked for can be told by its top alone. */
+export const topsDiffer = (animals: readonly Animal[]) => new Set(animals.map(topOf)).size === animals.length;
+
+/** A `top` round's deal: different animals whose tops all differ (redealt otherwise, should a lookalike join the pool). */
+export function dealTops(rng: Rng, spots: number): Animal[] {
+  for (let tries = 0; tries < 200; tries++) {
+    const animals = deal(rng, spots);
+    if (topsDiffer(animals)) return animals;
+  }
+  // Unreachable with today's animals, whose tops all differ.
+  return deal(rng, spots);
+}
