@@ -12,6 +12,7 @@ import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CountSign, bugBody, bugSticker, bugToken, bugWing } from './art';
 import { FoldFriend } from './fold';
+import { MendWing } from './mend';
 import {
   LEVELS,
   BUG_PLANS,
@@ -392,6 +393,8 @@ export const bugBuilder: GameModule = {
   sticker: (seed) => bugSticker(seed),
   create: (ctx) => {
     const plan = BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, ctx.level - 1))];
-    return plan.mode === 'fold' ? new FoldFriend(ctx, plan) : new BugBuilder(ctx);
+    if (plan.mode === 'fold') return new FoldFriend(ctx, plan);
+    if (plan.mode === 'mend') return new MendWing(ctx, plan);
+    return new BugBuilder(ctx);
   },
 };

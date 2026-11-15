@@ -252,6 +252,66 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       .map(Number)
       .filter(() => !only || only === 'bug')) {
       await launch('bug-builder', level);
+      if (level === 11) {
+        // Mend the wing, played as a phone plays it (turned sideways, 844 × 390): a tap on a place that matches its twin
+        // and a wrong stamp on the flaw are two misses and the one hint; then tap the flaw and drag on its twin's stamp.
+        await page.setViewportSize({ width: 844, height: 390 });
+        await page.waitForTimeout(400);
+        await screenshot('bug-builder-11-phone-landscape');
+        await page.evaluate(async () => {
+          const g = neo.scene.game,
+            s = g.mend,
+            drop = async (token, i) => {
+              const c = g.choices.find((c) => c.token === token),
+                p = g.places[i].getGlobalPosition();
+              await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+              await kit.sleep(500);
+            };
+          const r = g.places[0].getBounds();
+          if (Math.min(r.width, r.height) < 90 * neo.view.scale) throw new Error('A place is a small target');
+          kit.tapOn(g.places.find((_, i) => i !== s.wrong));
+          await kit.sleep(300);
+          await drop(
+            s.tokens.find((t) => t !== s.want),
+            s.wrong,
+          );
+          if (s.misses !== 2 || g.hints !== 1 || s.found)
+            throw new Error(`Before mending: ${s.misses} misses, ${g.hints} hints, found ${s.found}`);
+          if (g.glow.context.instructions.length === 0) throw new Error('The flaw should glow');
+          kit.tapOn(g.places[s.wrong]);
+          await kit.sleep(300);
+          if (!s.found || s.right[s.wrong] !== null) throw new Error('The tap did not find the flaw');
+          if (g.trayGlow.context.instructions.length === 0) throw new Error('The twin stamp should glow');
+        });
+        await screenshot('bug-builder-11-found');
+        await page.evaluate(async () => {
+          const g = neo.scene.game,
+            s = g.mend,
+            c = g.choices.find((c) => c.token === s.want),
+            p = g.places[s.wrong].getGlobalPosition();
+          await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+          await kit.sleep(300);
+          if (!s.done) throw new Error('The twin stamp did not mend the wing');
+        });
+        await finished('bug-builder');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('bug-builder').history.at(-1);
+            return [r.misses, r.hints];
+          }),
+          [2, 1],
+        );
+        // A fresh board in a tall 390 × 844 view, for the portrait picture.
+        await launch('bug-builder', level);
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(400);
+        await screenshot('bug-builder-11-portrait');
+        await page.setViewportSize({ width: 1024, height: 768 });
+        log(
+          'Bug Builder 11: a matched tap and a wrong stamp (two misses, one hint), find, mend, saved round and sticker passed',
+        );
+        continue;
+      }
       if (level === 10) {
         // Fold a friend, in a tall 390 × 844 viewport (the tall layout): a wrong prediction is never a miss; the wing folds and the round ends.
         // A real phone plays this game turned sideways: keep a picture of the row of cards there first.

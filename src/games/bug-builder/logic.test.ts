@@ -18,6 +18,14 @@ import {
   sameBug,
   kindBoard,
   kindWords,
+  lookAlikes,
+  mendBoard,
+  mendDiffers,
+  mendDrop,
+  mendMove,
+  mendPlaceAt,
+  mendRight,
+  mendTap,
   nextStamp,
   slotAt,
   SLOT_REACH,
@@ -198,7 +206,7 @@ describe('Bug Builder', () => {
 
     it('sits in preschool and pre-K, after the first mirror level, and never brings the later mirrors into preschool', () => {
       expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([2, 3, 4, 5, 8]);
-      expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([4, 5, 8, 9, 6, 7, 10]);
+      expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([4, 5, 8, 9, 6, 7, 10, 11]);
       expect(levelsInOrder(rangeFor(LEVELS, 'school'))).not.toContain(8);
       expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).not.toContain(8);
     });
@@ -369,10 +377,140 @@ describe('Bug Builder', () => {
     });
 
     it('comes after the mirror levels in pre-K and school, and never in preschool or toddler', () => {
-      expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([6, 7, 10]);
-      expect(levelsInOrder(rangeFor(LEVELS, 'prek')).at(-1)).toBe(10);
+      expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([6, 7, 10, 11]);
+      expect(levelsInOrder(rangeFor(LEVELS, 'prek')).at(-2)).toBe(10);
       for (const band of ['toddler', 'preschool'] as const)
         expect(levelsInOrder(rangeFor(LEVELS, band))).not.toContain(10);
+    });
+  });
+
+  describe('level 11, Mend the wing', () => {
+    const plan = BUG_PLANS[10];
+    const fresh = (seed: number) => mendBoard(plan, new Rng(seed));
+    const seeds = Array.from({ length: 120 }, (_, i) => i + 1);
+
+    it('is the mend level, with three spots on the left wing and six places on the right', () => {
+      expect(plan.mode).toBe('mend');
+      for (const seed of seeds) {
+        const s = fresh(seed);
+        expect(s.left).toHaveLength(3);
+        expect(new Set(s.left.map((l) => l.token)).size).toBe(3);
+        expect(s.places).toHaveLength(6);
+        for (const l of s.left) expect(l.x).toBeLessThan(0);
+      }
+    });
+
+    it('has exactly one place that differs from its twin, and it differs in just the way named', () => {
+      for (const seed of seeds) {
+        const s = fresh(seed);
+        expect(mendDiffers(s)).toEqual([s.wrong]);
+        const now = s.right[s.wrong];
+        if (s.flaw === 'missing') expect(now).toBeNull();
+        else {
+          const [a, b] = [BUG_TOKENS[now!], BUG_TOKENS[s.want]];
+          expect(a.shape === b.shape).toBe(s.flaw === 'color');
+          expect(a.color === b.color).toBe(s.flaw === 'shape');
+        }
+        // Everywhere else the right wing is the fold of the left.
+        const at = s.places[s.wrong];
+        const rest = (b: BugSpot[]) => b.filter((f) => f.x !== at.x || f.y !== at.y);
+        expect(sameBug(rest(mendRight(s)), rest(foldAcross(s.left)))).toBe(true);
+      }
+    });
+
+    it('brings every kind of flaw, in several places, across seeds', () => {
+      const flaws = new Set<string>(),
+        where = new Set<number>();
+      for (const seed of seeds) {
+        const s = fresh(seed);
+        flaws.add(s.flaw);
+        where.add(s.wrong);
+      }
+      expect([...flaws].sort()).toEqual(['color', 'missing', 'shape']);
+      expect(where.size).toBeGreaterThanOrEqual(4);
+    });
+
+    it('puts the twin stamp in a tray of four different stamps, with a look-alike beside it', () => {
+      for (const seed of seeds) {
+        const s = fresh(seed);
+        expect(s.tokens).toHaveLength(4);
+        expect(new Set(s.tokens).size).toBe(4);
+        expect(s.tokens).toContain(s.want);
+        if (s.flaw !== 'missing') expect(s.tokens).toContain(s.right[s.wrong]);
+      }
+    });
+
+    it('a look-alike differs in exactly one way', () => {
+      for (let t = 0; t < BUG_TOKENS.length; t++)
+        for (const flaw of ['color', 'shape'] as const)
+          for (const u of lookAlikes(t, flaw)) {
+            expect(BUG_TOKENS[u].shape === BUG_TOKENS[t].shape).toBe(flaw === 'color');
+            expect(BUG_TOKENS[u].color === BUG_TOKENS[t].color).toBe(flaw === 'shape');
+          }
+    });
+
+    it('the bot taps the place that differs, then mends it, and the wings then match exactly', () => {
+      for (const seed of seeds) {
+        const s = fresh(seed);
+        let moves = 0;
+        for (let m = mendMove(s); m; m = mendMove(s), moves++) {
+          if ('tap' in m) expect(mendTap(s, m.tap).kind).toBe('found');
+          else {
+            expect(s.tokens).toContain(m.stamp);
+            const p = s.places[m.place];
+            expect(mendPlaceAt(s, p.x, p.y)).toBe(m.place);
+            expect(mendDrop(s, m.place, m.stamp).kind).toBe('mended');
+          }
+        }
+        expect(moves).toBe(2);
+        expect(s.done).toBe(true);
+        expect(sameBug(mendRight(s), foldAcross(s.left))).toBe(true);
+        expect(mendDiffers(s)).toEqual([]);
+      }
+    });
+
+    it('a tap on a matching place is a miss, the second miss brings the one hint, and it points at the true error', () => {
+      for (const seed of seeds.slice(0, 40)) {
+        const s = fresh(seed);
+        const other = s.places.findIndex((_, i) => i !== s.wrong);
+        const first = mendTap(s, other);
+        expect(first).toEqual({ kind: 'twin', place: other, hint: false });
+        const wrongStamp = s.tokens.find((t) => t !== s.want)!;
+        // Before the tap, a wrong stamp on the place that differs is a miss too; a stamp let go elsewhere is not.
+        expect(mendDrop(s, other, wrongStamp).kind).toBe('ignored');
+        expect(mendDrop(s, s.wrong, wrongStamp)).toEqual({
+          kind: 'wrongStamp',
+          token: wrongStamp,
+          hint: true,
+        });
+        expect(s.misses).toBe(2);
+        expect(mendMove(s)).toEqual({ tap: s.wrong });
+        // Only one hint a round.
+        expect(mendTap(s, other)).toEqual({ kind: 'twin', place: other, hint: false });
+        expect(mendTap(s, s.wrong).kind).toBe('found');
+        expect(mendTap(s, s.wrong).kind).toBe('ignored');
+        expect(mendMove(s)).toEqual({ stamp: s.want, place: s.wrong });
+        expect(mendDrop(s, s.wrong, s.want).kind).toBe('mended');
+        expect(mendTap(s, other).kind).toBe('ignored');
+      }
+    });
+
+    it('lets the twin stamp mend the place even before it is tapped', () => {
+      const s = fresh(5);
+      expect(mendDrop(s, s.wrong, s.want).kind).toBe('mended');
+      expect(s.misses).toBe(0);
+      expect(sameBug(mendRight(s), foldAcross(s.left))).toBe(true);
+    });
+
+    it('is the same board for the same seed', () => {
+      expect(fresh(9)).toEqual(fresh(9));
+    });
+
+    it('comes last in pre-K and school, and never in preschool or toddler', () => {
+      expect(levelsInOrder(rangeFor(LEVELS, 'prek')).at(-1)).toBe(11);
+      expect(levelsInOrder(rangeFor(LEVELS, 'school')).at(-1)).toBe(11);
+      for (const band of ['toddler', 'preschool'] as const)
+        expect(levelsInOrder(rangeFor(LEVELS, band))).not.toContain(11);
     });
   });
 });
