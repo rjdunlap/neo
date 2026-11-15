@@ -68,6 +68,11 @@ import {
   type Pt,
   type Thing,
   type Touch,
+  WHEEL,
+  WHEEL_HUB,
+  wheelLayout,
+  wheelNeighbors,
+  type Petal,
 } from './logic';
 import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
 import { rangeFor } from '../../progress/difficulty';
@@ -103,7 +108,7 @@ class Picture {
   done = false;
 
   constructor(
-    readonly thing: Thing,
+    readonly thing: Thing | Petal,
     readonly x: number,
     readonly y: number,
     readonly scale: number,
@@ -131,7 +136,8 @@ class Picture {
     both.destroy({ children: true });
     const outline = new Sprite(rt);
     outline.position.set(x0, y0);
-    this.node.addChild(outline, decor(thing));
+    this.node.addChild(outline);
+    if (thing.id !== 'petal') this.node.addChild(decor(thing));
     this.node.position.set(x, y);
     this.node.scale.set(scale);
   }
@@ -550,7 +556,9 @@ class RainbowFingers implements Game {
   /** What's been poured into the mixing bowl (two at most). */
   private poured: Primary[] = [];
   private readonly plan: PaintPlan;
-  private readonly things: Thing[];
+  private readonly things: (Thing | Petal)[];
+  /** The color wheel's painted red, yellow and blue petals, which pulse when she is told to look at an empty petal's neighbours. */
+  private readonly wheelFills = new Map<ColorName, Graphics>();
   private readonly pictureLayer = new Container();
   private pictures: Picture[] = [];
   private current = 0;
@@ -769,6 +777,10 @@ class RainbowFingers implements Game {
   /** Lay the pictures out once, across the middle of the page above the pots. */
   private layoutPictures(v: View) {
     if (this.pictures.length || this.things.length === 0) return;
+    if (this.plan.mode === 'wheel') {
+      this.layoutWheel(v);
+      return;
+    }
     const n = this.things.length;
     const top = MARGIN + 30;
     const bottom = v.h - 130;
@@ -787,6 +799,50 @@ class RainbowFingers implements Game {
     });
   }
 
+  /**
+   * The color wheel: a plain hub, the red, yellow and blue petals painted, and the three empty petals (the pictures, in their asked
+   * order) as outlines between them.
+   */
+  private layoutWheel(v: View) {
+    const at = wheelLayout(v.w, v.h);
+    const hub = new Graphics()
+      .circle(0, 0, WHEEL_HUB)
+      .fill(0xfff1c9)
+      .stroke({ width: 6, color: LINE });
+    hub.position.set(at.x, at.y);
+    hub.scale.set(at.scale);
+    this.pictureLayer.addChild(hub);
+    for (const petal of WHEEL) {
+      if (RECIPES[petal.color]) continue;
+      const pic = new Picture(petal, at.x, at.y, at.scale, this.ctx.renderer);
+      const fill = pic.fill(petal.color);
+      this.wheelFills.set(petal.color, fill);
+      this.pictureLayer.addChild(fill, pic.node);
+    }
+    this.pictures = this.things.map((petal) => {
+      const pic = new Picture(petal, at.x, at.y, at.scale, this.ctx.renderer);
+      this.pictureLayer.addChild(pic.node);
+      return pic;
+    });
+  }
+
+  /** The two painted petals beside the empty one swell out and back twice: look here. */
+  private pulseNeighbors() {
+    const color = this.picture?.thing.color;
+    if (!color) return;
+    for (const near of wheelNeighbors(color)) {
+      const fill = this.wheelFills.get(near);
+      if (!fill) continue;
+      const s = fill.scale.x;
+      const big = { x: s * 1.08, y: s * 1.08 };
+      void this.ctx.tw
+        .to(fill.scale, big, { duration: 0.18 })
+        .then(() => this.ctx.tw.to(fill.scale, { x: s, y: s }, { duration: 0.18 }))
+        .then(() => this.ctx.tw.to(fill.scale, big, { duration: 0.18 }))
+        .then(() => this.ctx.tw.to(fill.scale, { x: s, y: s }, { duration: 0.22 }));
+    }
+  }
+
   private async ask() {
     const pic = this.picture;
     if (!pic) return;
@@ -796,6 +852,11 @@ class RainbowFingers implements Game {
     void this.ctx.tw
       .to(pic.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.25, ease: ease.outBack })
       .then(() => this.ctx.tw.to(pic.node.scale, { x: s, y: s }, { duration: 0.3 }));
+    if (pic.thing.id === 'petal') {
+      // The recipe is shown by the neighbours, never said.
+      await this.ctx.instruct(this.current === 0 ? 'paint.wheel' : 'paint.wheel.next');
+      return;
+    }
     const { color } = pic.thing;
     const thing = THING_NAMES[pic.thing.id];
     if (this.plan.mode === 'mix') {
@@ -835,6 +896,10 @@ class RainbowFingers implements Game {
     }
     if (this.clock - this.lastNag < 4) return;
     this.lastNag = this.clock;
+    if (pic.thing.id === 'petal') {
+      this.wheelNag();
+      return;
+    }
     const { color } = pic.thing;
     const thing = THING_NAMES[pic.thing.id];
     if (!this.brushName) {
@@ -848,6 +913,23 @@ class RainbowFingers implements Game {
     sfx.boing();
     if (pours(this.plan.mode)) void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
     else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
+    if (due) this.showHint();
+  }
+
+  /**
+   * A dab on the empty petal that does not paint it. With no paint yet: look at its neighbours. In a wrong color, a miss: a primary
+   * hears that the neighbours are two colors, a wrong mix to look at the neighbours; either way they pulse, and two misses glow the
+   * two pots. The recipe is never said.
+   */
+  private wheelNag() {
+    this.pulseNeighbors();
+    if (!this.brushName) {
+      void this.ctx.say('paint.wheel.look');
+      return;
+    }
+    const due = missOnRequest(this.tally);
+    sfx.boing();
+    void this.ctx.say(PRIMARIES.includes(this.brushName as Primary) ? 'paint.wheel.two' : 'paint.wheel.look');
     if (due) this.showHint();
   }
 
@@ -873,10 +955,13 @@ class RainbowFingers implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     this.current++;
-    if (as !== pic.thing.color) await this.ctx.say(alsoLine(pic.thing, as) as LineId);
+    if (pic.thing.id === 'petal') {
+      const [a, b] = wheelNeighbors(as);
+      await this.ctx.say('paint.wheel.made', { a, b, color: as });
+    } else if (as !== pic.thing.color) await this.ctx.say(alsoLine(pic.thing, as) as LineId);
     else await this.ctx.say('paint.praise', { color: as, thing: THING_NAMES[pic.thing.id] });
     if (this.picture) await this.ask();
-    else await this.ctx.say('paint.finished');
+    else await this.ctx.say(this.plan.mode === 'wheel' ? 'paint.wheel.done' : 'paint.finished');
   }
 
   resize(v: View) {
@@ -1506,6 +1591,7 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'recall')
       return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
     if (p.mode === 'mix') return 'Mixing colors: red and yellow make orange';
+    if (p.mode === 'wheel') return 'Color wheel: mix each empty petal from the two colors beside it';
     return 'Paint the pumpkin: remember orange, then mix red and yellow';
   },
   music: STYLES.paint,

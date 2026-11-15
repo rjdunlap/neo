@@ -51,6 +51,13 @@ import {
   type PaintState,
   type Primary,
   type Touch,
+  WHEEL,
+  WHEEL_HUB,
+  WHEEL_REACH,
+  wheelLayout,
+  wheelNeighbors,
+  planFor,
+  LEVELS,
 } from './logic';
 import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
@@ -61,7 +68,7 @@ import { VOICE } from './voice';
 
 describe('Rainbow Fingers', () => {
   it('pours in both mixing modes and directly selects paint in every other mode', () => {
-    expect(PLANS.map((plan) => pours(plan.mode))).toEqual([false, false, false, false, false, true, true]);
+    expect(PLANS.map((plan) => pours(plan.mode))).toEqual([false, false, false, false, false, true, true, true]);
   });
 
   it('mixes the three secondary colors, and a color with itself stays the same', () => {
@@ -105,7 +112,7 @@ describe('Rainbow Fingers', () => {
     const colors = new Set<ColorName>();
     for (let seed = 1; seed <= 300; seed++)
       for (const t of pickThings(recall, new Rng(seed))) {
-        expect(NAMED_ONLY.has(t.id), t.id).toBe(false);
+        expect(t.id !== 'petal' && NAMED_ONLY.has(t.id), t.id).toBe(false);
         colors.add(t.color);
       }
     expect(colors.size).toBe(new Set(THINGS.map((t) => t.color)).size);
@@ -353,7 +360,7 @@ describe('Rainbow Fingers', () => {
   });
 
   it('nudges only in free play, after eight quiet seconds, at the spot farthest from the paint', () => {
-    expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([true, true, false, false, false, false, false]);
+    expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([true, true, false, false, false, false, false, false]);
     expect(NUDGE_AFTER).toBe(8);
     const spots = [
       { x: 200, y: 200 },
@@ -637,6 +644,117 @@ describe('Rainbow Fingers', () => {
     it('only the free levels echo a color, and not every stroke', () => {
       expect(PLANS.filter((p) => echoes(p.mode)).map((p) => p.mode)).toEqual(['free', 'pots']);
       expect(ECHO_EVERY).toBeGreaterThanOrEqual(6);
+    });
+  });
+  describe('level 8, Finish the color wheel', () => {
+    const wheel = planFor(8);
+
+    it('is the school top level, a wheel page with three empty petals', () => {
+      expect(wheel).toEqual({ mode: 'wheel', count: 3 });
+      expect(LEVELS.school?.max).toBe(8);
+    });
+
+    it('lays the petals out in rainbow order, so each empty petal sits between the two colors that make it', () => {
+      expect(WHEEL.map((p) => p.color)).toEqual(RAINBOW);
+      // Clockwise in screen coordinates (y down): each petal's spoke is 60 degrees on from the last.
+      const angle = (i: number) => Math.atan2(WHEEL[i].circles[0][1], WHEEL[i].circles[0][0]);
+      for (let i = 0; i < 6; i++) {
+        const turn = (((angle((i + 1) % 6) - angle(i)) * 180) / Math.PI + 360) % 360;
+        expect(turn).toBeCloseTo(60, 6);
+      }
+      for (const [color, pair] of Object.entries(RECIPES))
+        expect(new Set(wheelNeighbors(color as ColorName))).toEqual(new Set(pair));
+      expect(wheelNeighbors('purple')).toEqual(['blue', 'red']);
+    });
+
+    it('asks each empty petal once, in a seeded order that varies', () => {
+      const orders = new Set<string>();
+      for (let seed = 1; seed <= 60; seed++) {
+        const gaps = pickThings(wheel, new Rng(seed));
+        expect(gaps.map((g) => g.color).sort()).toEqual(['green', 'orange', 'purple']);
+        expect(gaps.every((g) => g.id === 'petal')).toBe(true);
+        expect(pickThings(wheel, new Rng(seed))).toEqual(gaps);
+        orders.add(gaps.map((g) => g.color).join());
+      }
+      expect(orders.size).toBe(6);
+    });
+
+    it('keeps the petals apart, outside the hub and inside the outline reach, so a dab belongs to one petal', () => {
+      const reach = BRUSH_RADIUS * 0.5;
+      for (const a of WHEEL)
+        for (const [x, y, r] of a.circles) {
+          expect(Math.hypot(x, y) - r).toBeGreaterThan(WHEEL_HUB);
+          expect(Math.hypot(x, y) + r + 12).toBeLessThanOrEqual(WHEEL_REACH);
+          for (const b of WHEEL)
+            if (b !== a)
+              for (const [bx, by, br] of b.circles)
+                // Even with both petals' dab reach added, at the largest scale, neighbours never meet.
+                expect(Math.hypot(x - bx, y - by) - r - br, `${a.color} ${b.color}`).toBeGreaterThan(
+                  (2 * reach) / 1.15 - 12,
+                );
+        }
+    });
+
+    it('fits the wheel above the pots, clear of the frame button and the pet, with petals at least 100 across', () => {
+      for (const [pw, ph] of [
+        [1024, 768],
+        [768, 1024],
+        [844, 390],
+        [390, 844],
+        [1366, 1024],
+        [1024, 1366],
+      ]) {
+        for (const upright of [false, true]) {
+          const v = computeView(pw, ph, undefined, upright);
+          const at = wheelLayout(v.w, v.h);
+          const across = 2 * Math.max(...WHEEL[0].circles.map(([, , r]) => r));
+          expect(across * at.scale, `${pw}x${ph}`).toBeGreaterThanOrEqual(100);
+          const r = WHEEL_REACH * at.scale;
+          expect(at.y - r).toBeGreaterThanOrEqual(MARGIN);
+          expect(at.x - r).toBeGreaterThanOrEqual(MARGIN);
+          expect(at.x + r).toBeLessThanOrEqual(v.w - MARGIN);
+          // The pots and bowl sit in one row along the bottom: the wheel stays above their raised tops.
+          const pots = potLayout(3, v.w, v.h, true);
+          for (const p of [...pots.pots, pots.bowl!]) expect(at.y + r, `${pw}x${ph}`).toBeLessThan(p.y - POT_RADIUS - 14);
+          // The frame button (52 across at w - 80, 80) and the pet's corner stay clear.
+          expect(Math.hypot(v.w - 80 - at.x, 80 - at.y)).toBeGreaterThan(r + 52);
+          for (const petal of WHEEL)
+            for (const [cx, cy, cr] of petal.circles) {
+              const x = at.x + cx * at.scale;
+              const y = at.y + cy * at.scale;
+              if (x - cr * at.scale < PET_CLEAR) expect(y + cr * at.scale).toBeLessThan(v.h - 240);
+            }
+        }
+      }
+    });
+
+    it('fills every empty petal with only its two neighbours poured', () => {
+      for (let seed = 1; seed <= 30; seed++) {
+        const gaps = pickThings(wheel, new Rng(seed));
+        const st: PaintState = { mode: 'wheel', strokes: 0, brush: null, poured: [], picture: gaps[0].color, frame: false };
+        let done = 0;
+        for (let guard = 0; guard < 40 && done < gaps.length; guard++) {
+          const m = paintStep(st)!;
+          if (m.do === 'pot') {
+            expect(wheelNeighbors(gaps[done].color)).toContain(m.pot);
+            if (st.poured.length >= 2) st.poured = [];
+            st.poured.push(m.pot as Primary);
+            st.brush = st.poured.length === 2 ? mix(st.poured[0], st.poured[1]) : (m.pot as ColorName);
+          } else if (m.do === 'bowl') {
+            st.poured = [];
+            st.brush = null;
+          } else {
+            expect(m.do).toBe('stroke');
+            expect(accepts(gaps[done], 'wheel', st.brush)).toBe(true);
+            done++;
+            st.picture = gaps[done]?.color ?? null;
+          }
+        }
+        expect(done).toBe(3);
+      }
+      // A primary on an empty petal is a wrong color, never accepted.
+      for (const gap of WHEEL.filter((p) => RECIPES[p.color]))
+        for (const primary of ['red', 'yellow', 'blue'] as ColorName[]) expect(accepts(gap, 'wheel', primary)).toBe(false);
     });
   });
 });

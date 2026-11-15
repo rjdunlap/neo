@@ -298,9 +298,9 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
 };
 
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
-export function accepts(thing: Thing, mode: PaintMode, color: ColorName | null): boolean {
+export function accepts(thing: Thing | Petal, mode: PaintMode, color: ColorName | null): boolean {
   if (!color) return false;
-  return mode === 'recall' ? ACCEPTS[thing.id].includes(color) : color === thing.color;
+  return mode === 'recall' && thing.id !== 'petal' ? ACCEPTS[thing.id].includes(color) : color === thing.color;
 }
 
 /** The line the voice says when a picture is finished in an accepted color that is not the told one: "Green apples are real too!" */
@@ -324,11 +324,15 @@ export function hueName(h: number): ColorName {
 export const ECHO_EVERY = 6;
 export const echoes = (mode: PaintMode) => mode === 'free' || mode === 'pots';
 
-/** free: rainbow painting. pots: pick a color. named: "paint the sun yellow". recall: "paint the sun" (what color is it?). mix: make the color from two pots. recall-mix: remember the color, then mix it. */
-export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix' | 'recall-mix';
-/** Both mixing pages pour primaries into a bowl instead of selecting a pot directly. */
+/**
+ * free: rainbow painting. pots: pick a color. named: "paint the sun yellow". recall: "paint the sun" (what color is it?). mix: make
+ * the color from two pots. recall-mix: remember the color, then mix it. wheel: finish a color wheel, mixing each empty petal from the
+ * two painted petals beside it.
+ */
+export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix' | 'recall-mix' | 'wheel';
+/** The mixing pages pour primaries into a bowl instead of selecting a pot directly. */
 export function pours(mode: PaintMode): boolean {
-  return mode === 'mix' || mode === 'recall-mix';
+  return mode === 'mix' || mode === 'recall-mix' || mode === 'wheel';
 }
 
 export interface PaintPlan {
@@ -345,6 +349,7 @@ export const PLANS: PaintPlan[] = [
   { mode: 'recall', count: 3 },
   { mode: 'mix', count: 2 },
   { mode: 'recall-mix', count: 1 },
+  { mode: 'wheel', count: 3 },
 ];
 
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
@@ -353,7 +358,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 7 },
+  school: { min: 5, max: 8 },
 };
 
 export function planFor(level: number): PaintPlan {
@@ -377,14 +382,62 @@ export function mix(a: Primary, b: Primary): ColorName {
 /**
  * The pictures for one page: first `count` different colors, then one picture of each, so a page never asks for two yellows and a
  * color with more pictures is not drawn more often. Mixing pages only use colors that need mixing; recall pages skip `NAMED_ONLY`.
+ * The color wheel's pictures are its three empty petals, asked once each in a seeded order.
  */
-export function pickThings(plan: PaintPlan, rng: Rng): Thing[] {
+export function pickThings(plan: PaintPlan, rng: Rng): (Thing | Petal)[] {
+  if (plan.mode === 'wheel') return rng.shuffle(WHEEL.filter((petal) => RECIPES[petal.color]));
   if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
   const pool = THINGS.filter((t) =>
     plan.mode === 'mix' ? RECIPES[t.color] : plan.mode !== 'recall' || !NAMED_ONLY.has(t.id),
   );
   const colors = rng.shuffle([...new Set(pool.map((t) => t.color))]).slice(0, plan.count);
   return colors.map((color) => rng.pick(pool.filter((t) => t.color === color)));
+}
+
+/** A petal of the level-8 color wheel: its color and the circles (around the wheel's centre) whose union is the part to paint. */
+export interface Petal {
+  id: 'petal';
+  color: ColorName;
+  circles: Circle[];
+}
+
+/** Each petal is three circles out along its spoke: (distance from the centre, radius). The widest is 108 across. */
+const PETAL_CIRCLES: [d: number, r: number][] = [
+  [104, 42],
+  [156, 54],
+  [208, 42],
+];
+/** The plain disc in the middle of the flower, which is never painted; the petals start just outside it. */
+export const WHEEL_HUB = 50;
+/** From the centre to the outside of the outline (the farthest petal circle plus the outline's 12-unit pad). */
+export const WHEEL_REACH = 208 + 42 + 12;
+
+/**
+ * The six petals in `RAINBOW` order, red at the top and going clockwise, so each secondary sits between the two primaries that make
+ * it (purple between blue and red, round the back).
+ */
+export const WHEEL: Petal[] = RAINBOW.map((color, i) => {
+  const a = ((-90 + 60 * i) * Math.PI) / 180;
+  return {
+    id: 'petal',
+    color,
+    circles: PETAL_CIRCLES.map(([d, r]): Circle => [d * Math.cos(a), d * Math.sin(a), r]),
+  };
+});
+
+/** The two petals either side of a petal: for an empty petal, the two colors that mix to make it. */
+export function wheelNeighbors(color: ColorName): [ColorName, ColorName] {
+  const i = RAINBOW.indexOf(color);
+  return [RAINBOW[(i + RAINBOW.length - 1) % RAINBOW.length], RAINBOW[(i + 1) % RAINBOW.length]];
+}
+
+/** Where the wheel sits and how big: centred in the paper above the pots, as large as fits, at most 1.15. */
+export function wheelLayout(w: number, h: number): { x: number; y: number; scale: number } {
+  const top = MARGIN + 30;
+  const bottom = h - 130;
+  const across = w - 2 * (MARGIN + 30);
+  const scale = Math.min(1.15, across / (2 * WHEEL_REACH), (bottom - top) / (2 * WHEEL_REACH));
+  return { x: w / 2, y: (top + bottom) / 2, scale };
 }
 
 export function inside(circles: Circle[], x: number, y: number): boolean {

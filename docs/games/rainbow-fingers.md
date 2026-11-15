@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5–7 |
+| school | 5–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 5 | Coloring page: "paint the apple" (remember its color), 3 pictures |
 | 6 | Mixing colors: red and yellow make orange |
 | 7 | Paint the pumpkin: remember orange, then mix red and yellow |
+| 8 | Color wheel: mix each empty petal from the two colors beside it |
 
 <!-- end generated -->
 
