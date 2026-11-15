@@ -40,6 +40,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'A color wheel with three empty petals: look at the two painted petals beside the empty one, tap those two paint pots to mix their color, then drag a finger across the empty petal. The recipe is shown by the neighbors, never said.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'A white pot joins red, yellow and blue. Tap red and white to pour them into the bowl and make pink, then drag a finger across the pink picture (a pig, a flamingo, a cupcake or a tulip). The recipe is told.',
+    },
   ],
   finish: [
     {
