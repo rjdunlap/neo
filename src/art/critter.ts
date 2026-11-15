@@ -84,6 +84,11 @@ export const CRITTERS = {
 } satisfies Record<string, CritterSpec>;
 
 export type CritterName = keyof typeof CRITTERS;
+/**
+ * The first eight critters, in their original order. Games that deal from the whole cast use this, so critters added
+ * later (the farm four) never change a seed's friends or appear where their art was not checked.
+ */
+export const FIRST_CAST: CritterName[] = ['pip', 'cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 
 const MOUTH_DARK = 0x7a2e3e;
 const MUZZLE = { fill: 0xf7b6c2, line: 0xd98597, dark: 0xc06c80 };
