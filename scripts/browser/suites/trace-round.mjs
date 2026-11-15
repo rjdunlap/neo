@@ -1,21 +1,26 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  async function traceRound(level, name, wrong = false) {
+  async function traceRound(level, name, wrong = false, want = '') {
     // Levels 7, 9 and 10 play on a phone held upright, so the word picture, the fading guides and the little letters in
     // their frame are checked where the playtests happen.
     const phone = level === 7 || level === 9 || level === 10;
     const landscape = page.viewportSize();
     if (phone) await page.setViewportSize({ width: 390, height: 844 });
     try {
-      await playRound(level, name, wrong);
+      await playRound(level, name, wrong, want);
     } finally {
       if (phone) await page.setViewportSize(landscape);
     }
   }
 
-  async function playRound(level, name, wrong) {
+  async function playRound(level, name, wrong, want) {
     await launch('letter-trails', level, name);
+    // A wanted letter (level 10's first and last, c and t): relaunch until the seed draws it.
+    for (let i = 0; want && i < 60 && (await page.evaluate(() => neo.scene.game.word)) !== want; i++)
+      await launch('letter-trails', level, name);
+    if (want)
+      assert.equal(await page.evaluate(() => neo.scene.game.word), want, `level ${level} drew ${want}`);
     if (wrong) {
       await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -132,7 +137,6 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 0, 'no hint for one wander');
   }
 
-  /** Level 10: a little letter in the four-line frame, its capital beside it, the box grown for an upright phone. */
   /** Level 10: a little letter in the four-line frame with its capital beside it, the frame inside the view. */
   async function littleLetter() {
     const shown = await page.evaluate(() => {
