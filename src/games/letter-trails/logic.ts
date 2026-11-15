@@ -3,6 +3,7 @@ import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 import type { Tally } from '../../progress/coach';
 import type { PictureWord } from '../word-monsters/logic';
+import { GUIDES, hintDue, type Guide } from '../../learning/tracing/feedback';
 
 export const PLANS = [
   { letters: 'ILT', name: 'Follow straight strokes: I, L, T' },
@@ -13,16 +14,41 @@ export const PLANS = [
   { letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', name: 'Explore all 26 capitals' },
   { letters: '', name: 'Trace a short word, then see its picture' },
   { letters: '', name: 'Trace the first eight letters of the child’s name' },
+  {
+    letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    name: 'Less help each time: trace one capital three times, with a solid trail, then dots, then only the start',
+  },
 ];
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6 },
-  prek: { min: 3, max: 8 },
-  school: { min: 7, max: 8 },
+  prek: { min: 3, max: 9 },
+  school: { min: 7, max: 9 },
 };
 
 /** The levels that trace several letters (a word, a name): their misses and hints count once per letter. */
 export const WORD_LEVEL = 7;
 export const NAME_LEVEL = 8;
+/** Level 9 traces one capital three times with less help each time (`GUIDES`). */
+export const THREE_LEVEL = 9;
+
+/** A word or a name: several letters, each a short flourish, counted at most once per letter. Level 9 is one letter. */
+export const severalLetters = (level: number): boolean => {
+  const l = trailLevel(level);
+  return l === WORD_LEVEL || l === NAME_LEVEL;
+};
+
+/** The guide each try of a round shows: one solid try, or level 9's three with less help each time. */
+const ONE_TRY = ['solid'] as const;
+export const guidesFor = (level: number): readonly Guide[] =>
+  trailLevel(level) === THREE_LEVEL ? GUIDES : ONE_TRY;
+
+/**
+ * Whether the second wander on a stroke counts a hint. The firefly shows the way every time it is due; on level 9 only
+ * the first one in a try is counted, so three tries of a three-stroke capital count at most three hints.
+ */
+export const TRY_HINTS = 1;
+export const hintCounts = (level: number, wrongOnStroke: number, hintsThisTry: number): boolean =>
+  hintDue(wrongOnStroke) && (guidesFor(level).length === 1 || hintsThisTry < TRY_HINTS);
 
 /**
  * Level 7's words: Word Monsters' build words, each drawn by its picture table, so the round can end on the word's own
@@ -68,7 +94,7 @@ export function trailTolerance(level: number): number {
  * name reports at most one miss and one hint per letter, so a long name steps her down no faster than a short word.
  */
 export function roundTally(level: number, perLetter: readonly Tally[]): Tally {
-  const capped = trailLevel(level) >= WORD_LEVEL;
+  const capped = severalLetters(level);
   const sum = (key: keyof Tally) =>
     perLetter.reduce((n, t) => n + (capped ? Math.min(1, t[key]) : t[key]), 0);
   return { misses: sum('misses'), hints: sum('hints') };

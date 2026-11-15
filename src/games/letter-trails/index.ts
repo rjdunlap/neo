@@ -20,15 +20,17 @@ import {
 import { rangeFor } from '../../progress/difficulty';
 import {
   fullName,
+  guidesFor,
+  hintCounts,
   LEVELS,
   NAME_LEVEL,
   PLANS,
   roundTally,
+  severalLetters,
   stickerLetter,
   trailLevel,
   trailTolerance,
   trailWord,
-  WORD_LEVEL,
   type ShortWord,
 } from './logic';
 import { wordPicture } from '../word-monsters/pictures';
@@ -36,12 +38,15 @@ import { Critter } from '../../art/critter';
 import { ease } from '../../engine/tween';
 import type { Tally } from '../../progress/coach';
 import {
+  guideDots,
+  guideShown,
   hintDue,
   offTrail,
   pickLook,
   showTheWay,
   startArrow,
   tuneStep,
+  type Guide,
   type Look,
 } from '../../learning/tracing/feedback';
 
@@ -59,6 +64,7 @@ class LetterTrails implements Game {
   private readonly outline = new Graphics();
   private readonly ink = new Graphics();
   private readonly beacon = new Graphics();
+  private readonly pips = new Graphics();
   private readonly firefly = new Container();
   private readonly heading = label('', 38, swatch.purple.line);
   private readonly handle: DragHandle;
@@ -77,14 +83,19 @@ class LetterTrails implements Game {
   private fifth = 0;
   /** The second wander on a stroke asks the firefly to show the way once she lets go. */
   private showPending = false;
+  /** Less help each time (level 9): the guide each try shows, the try she is on, and the hints counted on it. */
+  private readonly guides: readonly Guide[];
+  private attempt = 0;
+  private tryHints = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.word = trailWord(ctx.level, ctx.childName, ctx.rng);
     this.perLetter = this.word.split('').map(() => ({ misses: 0, hints: 0 }));
     this.tolerance = trailTolerance(ctx.level);
+    this.guides = guidesFor(ctx.level);
     // Drawn after the word, so a look never changes which letter or word a seed gives.
     this.look = pickLook(ctx.rng);
-    ctx.stage.addChild(this.background, this.canvas, this.heading);
+    ctx.stage.addChild(this.background, this.canvas, this.heading, this.pips);
     this.canvas.addChild(this.outline, this.ink, this.beacon, this.firefly);
     this.firefly.addChild(
       new Graphics()
@@ -152,10 +163,11 @@ class LetterTrails implements Game {
       this.wrong++;
       sfx.boing();
       void this.ctx.say('trails.wrong');
-      if (hintDue(this.wrong)) {
+      if (hintCounts(this.ctx.level, this.wrong, this.tryHints)) {
         this.perLetter[this.letterIndex].hints++;
-        this.showPending = true;
+        this.tryHints++;
       }
+      if (hintDue(this.wrong)) this.showPending = true;
     }
     this.progress = next;
     const fifth = tuneStep(next, this.points.length);
@@ -211,6 +223,21 @@ class LetterTrails implements Game {
       void this.ctx.instruct('trails.stroke');
       return;
     }
+    if (this.attempt < this.guides.length - 1) {
+      // The same letter again with less of the trail shown: the ink clears and the firefly goes back to the start.
+      await this.ctx.tw.wait(0.5);
+      if (this.done) return;
+      this.attempt++;
+      this.tryHints = 0;
+      this.stroke = 0;
+      this.busy = false;
+      this.prepareStroke();
+      void this.ctx.instruct(this.guides[this.attempt] === 'dotted' ? 'trails.dots' : 'trails.alone', {
+        letter: this.letter,
+      });
+      return;
+    }
+    this.pips.clear();
     this.outline.clear();
     this.ink.clear();
     this.beacon.clear();
@@ -254,7 +281,7 @@ class LetterTrails implements Game {
 
   /** A word or a name: several letters, each a short flourish, and the whole thing shown at the end. */
   private get several() {
-    return trailLevel(this.ctx.level) >= WORD_LEVEL;
+    return severalLetters(this.ctx.level);
   }
   private get pictureScale() {
     return Math.min(1.2, this.size / 330);
@@ -375,16 +402,34 @@ class LetterTrails implements Game {
       .stroke({ width: 6, color: swatch.purple.fill, cap: 'round', join: 'round' });
   }
 
+  /** The guide on screen for the stroke she is on: the try's own, or the solid trail again once she has wandered. */
+  private guideNow(): Guide {
+    return guideShown(this.guides[this.attempt], this.wrong);
+  }
+
   private draw() {
     if (this.picture || this.done) return;
     this.outline.clear();
     this.ink.clear();
     LETTERS[this.letter].forEach((stroke, i) => {
-      this.drawPath(this.outline, stroke, i === this.stroke ? swatch.purple.light : swatch.white.line, 28);
+      const color = i === this.stroke ? swatch.purple.light : swatch.white.line;
+      const guide = i === this.stroke ? this.guideNow() : this.guides[this.attempt];
+      if (guide === 'solid') this.drawPath(this.outline, stroke, color, 28);
+      else if (guide === 'dotted')
+        for (const p of guideDots(sampleStroke(stroke)))
+          this.outline
+            .circle(p[0] * this.size, p[1] * this.size, 8)
+            .fill(i === this.stroke ? { color: swatch.purple.fill, alpha: 0.55 } : color);
       if (i < this.stroke) this.drawInk(sampleStroke(stroke));
     });
     if (this.progress > 0) this.drawInk(this.points.slice(0, this.progress + 1));
+    else if (this.guideNow() === 'start') {
+      // Only the start: a ring round the firefly where the stroke begins, and the arrow beside it.
+      const [x, y] = this.points[0];
+      this.outline.circle(x * this.size, y * this.size, 30).stroke({ width: 6, color: swatch.purple.fill });
+    }
     this.drawArrow();
+    this.drawPips();
     this.heading.text =
       this.word.length > 1
         ? this.word
@@ -393,6 +438,17 @@ class LetterTrails implements Game {
             .join('  ')
         : this.letter;
   }
+  /** Less help each time: three pips under the heading, filled up to the try she is on. */
+  private drawPips() {
+    this.pips.clear();
+    if (this.guides.length < 2) return;
+    this.guides.forEach((_, i) => {
+      const x = this.heading.x + (i - (this.guides.length - 1) / 2) * 34;
+      this.pips.circle(x, 112, 9).stroke({ width: 4, color: swatch.purple.line });
+      if (i <= this.attempt) this.pips.circle(x, 112, 9).fill(swatch.purple.fill);
+    });
+  }
+
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
     this.size = Math.min(v.h - 260, v.w - 360, 520);
@@ -416,9 +472,11 @@ class LetterTrails implements Game {
       this.progress + 1 + Math.floor(((this.clock % 1.8) / 1.8) * 16),
     );
     const p = this.points[lead];
-    this.beacon
-      .circle(p[0] * this.size, p[1] * this.size, 12)
-      .fill({ color: swatch.yellow.fill, alpha: 0.7 });
+    // The dot that runs ahead is part of the trail: the start-only try hides it until she has wandered.
+    if (this.guideNow() !== 'start')
+      this.beacon
+        .circle(p[0] * this.size, p[1] * this.size, 12)
+        .fill({ color: swatch.yellow.fill, alpha: 0.7 });
     if (this.wrong >= 2)
       this.beacon
         .circle(this.firefly.x, this.firefly.y, 40 + Math.sin(this.clock * 4) * 5)

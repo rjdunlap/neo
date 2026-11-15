@@ -1,0 +1,1 @@
+**Letter Trails slice 7, lowercase frame and level 10** (new-interaction tier: unit tests, one scripted play with first and last letter, a wrong drag and a hint, and one portrait screenshot): trace lowercase letters in a four-line frame; decision 1 settled 2026-10-23. [Letter Trails dive, slice 7](../../deep-dives/letter-trails.md#build-slices-in-order)

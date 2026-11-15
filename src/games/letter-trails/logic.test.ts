@@ -3,6 +3,8 @@ import { Rng } from '../../engine/random';
 import { LETTERS, advanceTrace, sampleStroke } from '../../learning/tracing/strokes';
 import { WORDS } from '../../learning/words/letter-words';
 import {
+  GUIDES,
+  guideShown,
   HINT_AFTER,
   LOOKS,
   SHOW_SPAN,
@@ -15,15 +17,19 @@ import {
 } from '../../learning/tracing/feedback';
 import {
   fullName,
+  guidesFor,
+  hintCounts,
   LEVELS,
   NAME_CAP,
   PLANS,
   roundTally,
+  severalLetters,
   SHORT_WORDS,
   stickerLetter,
   trailLevel,
   trailTolerance,
   trailWord,
+  THREE_LEVEL,
 } from './logic';
 import { PICTURE_WORDS } from '../word-monsters/logic';
 
@@ -50,7 +56,8 @@ describe('Letter Trails plans', () => {
   it('uses the plan cap and preserves the easier early-level corridor', () => {
     expect(trailLevel(0)).toBe(1);
     expect(trailLevel(100)).toBe(PLANS.length);
-    expect(trailWord(100, 'Mia', new Rng(2))).toBe('MIA');
+    expect(trailWord(8, 'Mia', new Rng(2))).toBe('MIA');
+    expect(trailWord(100, 'Mia', new Rng(2))).toHaveLength(1);
     for (let level = 1; level <= PLANS.length; level++)
       expect(trailTolerance(level)).toBe(level <= 2 ? 0.095 : 0.075);
   });
@@ -174,5 +181,54 @@ describe('trail looks', () => {
         pickLook(rng);
         expect(word).toBe(plain);
       }
+  });
+});
+
+describe('Level 9, Three times', () => {
+  it('traces one capital from levels 1–6 three times, solid, then dots, then only the start', () => {
+    const earlier = new Set(PLANS.slice(0, 6).flatMap((p) => p.letters.split('')));
+    for (let seed = 0; seed < 200; seed++) {
+      const word = trailWord(THREE_LEVEL, 'Ana', new Rng(seed));
+      expect(word).toHaveLength(1);
+      expect(earlier.has(word)).toBe(true);
+    }
+    expect(guidesFor(THREE_LEVEL)).toEqual(['solid', 'dotted', 'start']);
+    for (let level = 1; level < THREE_LEVEL; level++) expect(guidesFor(level)).toEqual(['solid']);
+    expect(LEVELS.prek!.max).toBeGreaterThanOrEqual(THREE_LEVEL);
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(THREE_LEVEL);
+  });
+
+  it('keeps acceptance unchanged: every try follows the same checkpoints and the bot route completes each', () => {
+    for (const letter of Object.keys(LETTERS))
+      for (const stroke of LETTERS[letter]) {
+        const tries = GUIDES.map(() => sampleStroke(stroke));
+        for (const t of tries) expect(t).toEqual(tries[0]);
+        let progress = 0,
+          previous = tries[0][0];
+        for (const p of tries[0].slice(1)) {
+          progress = advanceTrace(tries[0], progress, previous, p, 0.075);
+          previous = p;
+        }
+        expect(progress).toBe(tries[0].length - 1);
+      }
+  });
+
+  it('brings the solid trail back after a wander, and counts at most one hint per try', () => {
+    for (const g of GUIDES) {
+      expect(guideShown(g, 0)).toBe(g);
+      expect(guideShown(g, 1)).toBe('solid');
+    }
+    expect(hintCounts(THREE_LEVEL, HINT_AFTER, 0)).toBe(true);
+    expect(hintCounts(THREE_LEVEL, HINT_AFTER, 1)).toBe(false);
+    expect(hintCounts(THREE_LEVEL, HINT_AFTER - 1, 0)).toBe(false);
+    // Single-try levels count every due hint, as before.
+    expect(hintCounts(3, HINT_AFTER, 1)).toBe(true);
+  });
+
+  it('is one letter, not a word: its picture is spoken and its count is not capped per letter', () => {
+    expect(severalLetters(THREE_LEVEL)).toBe(false);
+    expect(severalLetters(7)).toBe(true);
+    expect(severalLetters(8)).toBe(true);
+    expect(roundTally(THREE_LEVEL, [{ misses: 3, hints: 2 }])).toEqual({ misses: 3, hints: 2 });
   });
 });

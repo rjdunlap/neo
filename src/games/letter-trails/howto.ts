@@ -7,6 +7,11 @@ export const HOW_TO: GameHowTo = {
     'Start at the glowing dot. The little arrow beside it shows which way the stroke goes.',
     "Drag along the firefly's path to draw the letter. Its note climbs as the stroke goes on.",
     { from: 7, to: 8, text: 'Trace each letter in turn, from the first to the last.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'The same capital three times: a solid trail, then dots, then only the start ring. The three dots at the top fill in, one per try.',
+    },
   ],
   finish: [
     { to: 6, text: 'The round ends when the whole letter has been traced.' },
@@ -20,6 +25,11 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'The round ends when the name has been traced (up to eight letters) and a sign shows the whole name.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: "The round ends after the third try, when the letter's picture appears.",
+    },
   ],
   note: [
     {
@@ -30,6 +40,11 @@ export const HOW_TO: GameHowTo = {
       from: 7,
       to: 8,
       text: 'Leaving the trail is a miss; on the second miss on one stroke the firefly flies the next stretch and comes back (a hint). Each letter counts at most one miss and one hint, so a long name is judged like a short word.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'The path is the same on every try; only what is drawn changes. Leaving it is a miss and brings the solid trail back; a second miss and the firefly shows the way (one hint per try at most).',
     },
   ],
 };
