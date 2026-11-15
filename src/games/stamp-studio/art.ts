@@ -1,10 +1,10 @@
 import { Graphics } from 'pixi.js';
 import { ink, swatch, type ColorName } from '../../art/palette';
 import { flower, shapePath } from '../../art/shapes';
-import { traceShape, type Pt, type StampKind, type TraceMakerId } from './logic';
+import { stampLine, traceShape, type Pt, type StampKind, type TraceMakerId } from './logic';
 export function stampArt(kind: StampKind, color: ColorName, radius = 48) {
   const g = new Graphics(),
-    s = swatch[color];
+    s = { fill: swatch[color].fill, line: stampLine(color, swatch[color].line) };
   if (kind === 'star') shapePath(g, 'star', radius).fill(s.fill).stroke({ width: 4, color: s.line });
   if (kind === 'flower') flower(g, radius, s.fill, s.line);
   if (kind === 'fish') {
