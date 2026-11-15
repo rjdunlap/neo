@@ -31,7 +31,10 @@ export type ThingId =
   | 'pig'
   | 'flamingo'
   | 'cupcake'
-  | 'tulip';
+  | 'tulip'
+  | 'bear'
+  | 'acorn'
+  | 'owl';
 export type Circle = [x: number, y: number, r: number];
 
 /** A coloring-page picture: its true color and the circles whose union is the part to paint. */
@@ -291,6 +294,39 @@ export const THINGS: Thing[] = [
       [30, -50, 20],
     ],
   },
+  // The browns, for level 10 only (brown is three pours, not a pot and not on the wheel, so no older level deals one).
+  {
+    id: 'bear',
+    color: 'brown',
+    // A sitting bear: a round body, a round head and two round ears (eyes, muzzle and paws are drawn on top).
+    circles: [
+      [0, 44, 70],
+      [0, -46, 50],
+      [-40, -86, 18],
+      [40, -86, 18],
+    ],
+  },
+  {
+    id: 'acorn',
+    color: 'brown',
+    // The nut, rounding to a point at the bottom (the cap and its stem are drawn on top).
+    circles: [
+      [0, 6, 64],
+      [0, 46, 50],
+      [0, 82, 26],
+    ],
+  },
+  {
+    id: 'owl',
+    color: 'brown',
+    // A plump body, a round head and two ear tufts (eyes, beak, belly marks and feet are drawn on top).
+    circles: [
+      [0, 30, 68],
+      [0, -42, 54],
+      [-38, -88, 16],
+      [38, -88, 16],
+    ],
+  },
 ];
 
 /**
@@ -335,6 +371,9 @@ export const THING_NAMES: Record<ThingId, string> = {
   flamingo: 'flamingo',
   cupcake: 'cupcake',
   tulip: 'tulip',
+  bear: 'bear',
+  acorn: 'acorn',
+  owl: 'owl',
 };
 
 /**
@@ -368,6 +407,9 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
   flamingo: ['pink'],
   cupcake: ['pink'],
   tulip: ['pink'],
+  bear: ['brown'],
+  acorn: ['brown'],
+  owl: ['brown'],
 };
 
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
@@ -416,6 +458,8 @@ export interface PaintPlan {
   count: number;
   /** A white pot joins the primaries and the pictures are the pinks (level 9). */
   white?: boolean;
+  /** The bowl takes three pours and the pictures are the browns: red, yellow and blue together (level 10). */
+  three?: boolean;
 }
 
 export const PLANS: PaintPlan[] = [
@@ -428,6 +472,7 @@ export const PLANS: PaintPlan[] = [
   { mode: 'recall-mix', count: 1 },
   { mode: 'wheel', count: 3 },
   { mode: 'mix', count: 2, white: true },
+  { mode: 'mix', count: 2, three: true },
 ];
 
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
@@ -436,30 +481,58 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 9 },
+  school: { min: 5, max: 10 },
 };
 
 export function planFor(level: number): PaintPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 }
 
-/** The two pours that make each mixed color: the three secondaries, and pink (red and white), told only at level 9. */
-export const RECIPES: Partial<Record<ColorName, [Pour, Pour]>> = {
+/**
+ * The pours that make each mixed color: the three secondaries, pink (red and white, told only at level 9) and brown (all three
+ * primaries, told only at level 10).
+ */
+export const RECIPES: Partial<Record<ColorName, readonly Pour[]>> = {
   orange: ['red', 'yellow'],
   green: ['yellow', 'blue'],
   purple: ['red', 'blue'],
   pink: ['red', 'white'],
+  brown: ['red', 'yellow', 'blue'],
 };
 
 /**
- * What two pours make in the mixing bowl. The same one twice stays itself, and white with yellow or blue stays that color (lighter
- * paint, but no new name), so white only ever makes pink.
+ * What a bowl of pours makes. Only which paints are in it matters, not the order or a repeat: one paint stays itself, and a set of
+ * paints that is exactly a recipe makes that color. White with yellow or blue stays that color (lighter paint, but no new name), so
+ * white only ever makes pink, and two different primaries always make their secondary, whatever repeats.
  */
-export function mix(a: Pour, b: Pour): ColorName {
-  if (a === b) return a;
-  for (const [color, pair] of Object.entries(RECIPES))
-    if (pair!.includes(a) && pair!.includes(b)) return color as ColorName;
-  return a === 'white' ? b : a;
+export function mix(...poured: Pour[]): ColorName {
+  const set = [...new Set(poured)];
+  if (set.length === 1) return set[0];
+  for (const [color, recipe] of Object.entries(RECIPES))
+    if (recipe!.length === set.length && set.every((p) => recipe!.includes(p))) return color as ColorName;
+  const paints = set.filter((p) => p !== 'white');
+  return paints.length < set.length && paints.length > 0 ? mix(...paints) : set[0];
+}
+
+/** How many pours the bowl holds on a page: three at level 10 (brown), two everywhere else. */
+export function bowlHolds(plan: PaintPlan): number {
+  return plan.three ? 3 : 2;
+}
+
+/** The bowl after one more pour: a full bowl starts over with this pour. */
+export function pourInto(poured: readonly Pour[], pour: Pour, holds: number): Pour[] {
+  return poured.length >= holds ? [pour] : [...poured, pour];
+}
+
+/**
+ * The next pour toward a recipe: the first missing paint while everything in the bowl belongs to it once; a full bowl starts over
+ * with the first paint; anything else (a wrong paint, or one poured twice) empties the bowl first.
+ */
+export function nextPour(recipe: readonly Pour[], poured: readonly Pour[]): Pour | 'empty' {
+  if (poured.length >= recipe.length) return recipe[0];
+  if (new Set(poured).size === poured.length && poured.every((p) => recipe.includes(p)))
+    return recipe.find((p) => !poured.includes(p))!;
+  return 'empty';
 }
 
 /** The paper the pictures are painted on. */
@@ -471,7 +544,7 @@ export const PAPER = 0xfffdf6;
  */
 export function bowlLook(poured: readonly Pour[]): { fill: number; rim: number } | null {
   if (poured.length === 0) return null;
-  const sw = swatch[poured.length === 1 ? poured[0] : mix(poured[0], poured[1])];
+  const sw = swatch[mix(...poured)];
   return { fill: sw.fill, rim: sw.line };
 }
 
@@ -485,6 +558,8 @@ export function pickThings(plan: PaintPlan, rng: Rng): (Thing | Petal)[] {
   if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
   // Level 9's pictures are all pink, so they are drawn as distinct pictures, not distinct colors.
   if (plan.white) return rng.shuffle(THINGS.filter((t) => t.color === 'pink')).slice(0, plan.count);
+  // Level 10's are all brown, drawn the same way.
+  if (plan.three) return rng.shuffle(THINGS.filter((t) => t.color === 'brown')).slice(0, plan.count);
   // The older pages keep to the rainbow, so their seeded pictures are as they were before the pinks came.
   const pool = THINGS.filter(
     (t) =>
@@ -620,15 +695,8 @@ export function paintStep(s: PaintState): PaintMove | null {
   if (!s.picture) return null;
   if (s.brush === s.picture) return { do: 'stroke' };
   if (!pours(s.mode)) return { do: 'pot', pot: s.picture };
-  const [a, b] = RECIPES[s.picture]!;
-  // One primary is in the bowl: add the other. Anything else in a half-full bowl is emptied first (a third pour would also start over).
-  if (s.poured.length === 1)
-    return s.poured[0] === a
-      ? { do: 'pot', pot: b }
-      : s.poured[0] === b
-        ? { do: 'pot', pot: a }
-        : { do: 'bowl' };
-  return { do: 'pot', pot: a };
+  const next = nextPour(RECIPES[s.picture]!, s.poured);
+  return next === 'empty' ? { do: 'bowl' } : { do: 'pot', pot: next };
 }
 
 export interface Pt {

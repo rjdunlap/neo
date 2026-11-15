@@ -79,6 +79,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             throw new Error(`Paint hint missing: ${g.misses} ${g.hints}`);
           while (g.picture) {
             const pic = g.picture;
+            // Start from an empty bowl: the wrong pours above would otherwise sit in level 10's three-pour bowl.
+            if (mixing && g.poured.length) {
+              kit.tapOn(g.bowl);
+              await kit.sleep(300);
+            }
             await pick(g.rightPots());
             await scrubPicture(pic);
             if (!(await kit.until(() => g.picture !== pic, 8000)))
