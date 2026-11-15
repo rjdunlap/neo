@@ -26,6 +26,11 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Only the tops of their heads show. Listen for the animal asked about, then tap the one whose ears (or horns, or tuft) are its own.',
     },
+    {
+      from: 12,
+      to: 14,
+      text: 'Watch who hides where, then follow the houses as they trade places. Tap the house the animal asked about ended up in.',
+    },
   ],
   finish: [
     {
@@ -35,6 +40,6 @@ export const HOW_TO: GameHowTo = {
     },
     { to: 1, text: 'The round ends after eight reveals.' },
     { from: 2, to: 2, text: 'The round ends after twelve reveals.' },
-    { from: 3, to: 11, text: 'The round ends when every animal asked about has been found.' },
+    { from: 3, to: 14, text: 'The round ends when every animal asked about has been found.' },
   ],
 };

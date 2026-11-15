@@ -17,5 +17,7 @@ export const VOICE = {
     "That's the {other}. The {other} has {fact}. Look for {part}!",
     'The {other} has {fact}! Who has {part}?',
   ],
+  'peek.switch': ['Switch!', 'Switcheroo!'],
+  'peek.watch': ['Watch the {animal} again!', 'Keep your eyes on the {animal}!'],
   'peek.notfeel': ["That's the {other}. Who is {feeling}?", 'Not the {other}. Look for the {feeling} one!'],
 } satisfies Record<string, string[]>;
