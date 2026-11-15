@@ -22,6 +22,15 @@ import {
   pickTarget,
   PLANS,
   spotToTap,
+  LEVELS,
+  PART_IDS,
+  CLUE_FEELINGS,
+  hasPart,
+  factAbout,
+  dealClue,
+  clueKindFor,
+  holders,
+  uniqueParts,
   type Animal,
   type Feeling,
 } from './logic';
@@ -257,5 +266,80 @@ describe('Peekaboo Barn', () => {
       expect(spotToTap(door, ['hidden'], ['cow'], null, -1)).toBe(0);
       expect(spotToTap(door, ['hidden'], ['cow'], null, 0)).toBe(0);
     });
+  });
+});
+
+describe('Peekaboo Barn level 9, Who has…?', () => {
+  const plan = planFor(9);
+
+  it('is three animals and five clue questions, opening the school window without moving a saved level', () => {
+    expect(plan).toEqual({ mode: 'clue', spots: 3, goal: 5 });
+    expect(PLANS).toHaveLength(9);
+    expect(LEVELS.prek).toEqual({ min: 6, max: 9 });
+    expect(LEVELS.school).toEqual({ min: 9, max: 9 });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
+  });
+
+  it('reads every part word from the drawn critters, and every animal has something true to say back', () => {
+    for (const id of PART_IDS)
+      expect(
+        ANIMALS.some((a) => hasPart(a, id)),
+        id,
+      ).toBe(true);
+    expect(hasPart('cow', 'spots')).toBe(true);
+    expect(hasPart('bunny', 'long')).toBe(true);
+    expect(hasPart('duck', 'bill')).toBe(true);
+    expect(hasPart('bear', 'spots')).toBe(false);
+    for (const a of ANIMALS) expect(hasPart(a, factAbout(a))).toBe(true);
+    // Surprised is how every critter pops up, so it can never pick out one.
+    expect(CLUE_FEELINGS).not.toContain('surprised');
+  });
+
+  it('gives every clue exactly one holder among the animals dealt, never the last answer, over many seeds', () => {
+    const kinds = new Set<string>();
+    const parts = new Set<string>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const rng = new Rng(seed);
+      let last: Animal | null = null;
+      for (let q = 0; q < plan.goal; q++) {
+        const d = dealClue(rng, plan.spots, clueKindFor(q), last);
+        expect(d.clue.kind).toBe(clueKindFor(q));
+        expect(new Set(d.animals).size).toBe(plan.spots);
+        expect(d.animals).toContain(d.answer);
+        expect(d.answer).not.toBe(last);
+        const feelingOf = d.clue.kind === 'feeling' ? d.answer : null;
+        expect(holders(d.clue, d.animals, feelingOf)).toEqual([d.answer]);
+        if (d.clue.kind === 'part') {
+          expect(uniqueParts(d.animals)).toContain(d.clue.part);
+          parts.add(d.clue.part);
+          // A wrong animal's fact is never the clue itself.
+          for (const other of d.animals.filter((a) => a !== d.answer))
+            expect(factAbout(other)).not.toBe(d.clue.part);
+        } else expect(CLUE_FEELINGS).toContain(d.clue.feeling);
+        kinds.add(d.clue.kind);
+        last = d.answer;
+      }
+    }
+    expect([...kinds].sort()).toEqual(['feeling', 'part']);
+    expect([...parts].sort()).toEqual([...PART_IDS].sort());
+  });
+
+  it('starts with a feeling, then mixes parts in', () => {
+    expect([0, 1, 2, 3, 4].map(clueKindFor)).toEqual(['feeling', 'part', 'part', 'feeling', 'part']);
+  });
+
+  it('never names the answer in an ask, and says the clue word back in a miss', () => {
+    for (const id of ['peek.whohas', 'peek.whofeels'] as const)
+      for (const line of SCRIPT[id]) expect(line).not.toContain('{animal}');
+    for (const line of SCRIPT['peek.whohas']) expect(line).toContain('{part}');
+    for (const line of SCRIPT['peek.whofeels']) expect(line).toContain('{feeling}');
+    for (const line of SCRIPT['peek.nothas']) expect(line).toMatch(/\{fact\}.*\{part\}/);
+    for (const line of SCRIPT['peek.notfeel']) expect(line).toContain('{feeling}');
+  });
+
+  it("points the ghost finger's bot at the clue's holder", () => {
+    const d = dealClue(new Rng(7), plan.spots, 'part', null);
+    const poses = d.animals.map(() => 'out');
+    expect(spotToTap(plan, poses, d.animals, d.answer, -1)).toBe(d.animals.indexOf(d.answer));
   });
 });
