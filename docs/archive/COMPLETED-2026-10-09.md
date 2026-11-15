@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Compare kept tunes in creature play (W2, 2026-11-15)
+
+[PR #1707](https://github.com/rjdunlap/neo/pull/1707), [build packet](../definitions/compare-kept-tunes.md). With two Song Maker tunes kept, the plaque opens On display and Other tune side by side. Tap either grid to hear it from the start and watch its beat columns light up. Switching, closing or leaving ends the remaining beats. The one-tune shortcut and empty plaque still apply. Listening leaves both slots and progress alone.
+
 ### Peekaboo Barn levels 10–11 Whose ears? (dive slice 6, 2026-11-15)
 
 [PR #1696](https://github.com/rjdunlap/neo/pull/1696), branch `claude/peekaboo-barn-whose-ears`, [dive slice 6](../deep-dives/peekaboo-barn.md#build-slices-in-order). New `top` mode (`spots: 3, goal: 5` and `spots: 4, goal: 6`): only the top of each head shows over its cover (pose `top`, critter y −48, from head geometry; the dive's −10 showed only the bunny's ears), asked by name. `topOf`, `topsDiffer` and `dealTops` keep every top in a deal distinct. A wrong tap raises the animal, which says hello and sinks back; two misses wiggle and raise the right one to a full peek for 1.4 s. Prek 6–11, school 9–11. The beach sandcastle wall was raised to its towers' height so no face shows between them. How-to step 10–11; the `originals` suite plays 1–11 and 16 and expects 12 history entries. The next Peekaboo Barn line is slice 7, Switcheroo.

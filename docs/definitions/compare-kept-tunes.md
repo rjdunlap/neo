@@ -1,6 +1,6 @@
 # Compare kept tunes (W2)
 
-Defined 2026-11-15 for [roadmap chunk 22](../ROADMAP.md#chunks). The first build is a small addition to [creature play](../rework/HOME.md#built-slice-2-2026-10-20): hear two kept Song Maker tunes in quick succession and see where their patterns differ.
+Defined 2026-11-15 for [roadmap chunk 22](../ROADMAP.md#chunks). Built 2026-11-15 in [PR #1707](https://github.com/rjdunlap/neo/pull/1707) as an addition to [creature play](../rework/HOME.md#built-slice-2-2026-10-20): hear two kept Song Maker tunes in quick succession and see where their patterns differ.
 
 ## The visit
 

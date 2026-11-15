@@ -32,6 +32,8 @@ import {
   PROJECT_CARD,
   PROJECT_PLAY_RADIUS,
   projectLayout,
+  TUNE_COMPARE,
+  tuneCompareLayout,
   type Floor,
 } from './home-layout';
 
@@ -222,6 +224,31 @@ const bedParts = (b: { x: number; y: number }): Box[] => [
 ];
 
 describe('the creature play layout', () => {
+  it('fits two playable tune cards and a close button inside the comparison panel', () => {
+    const { width, height, cardWidth, cardHeight, closeRadius } = TUNE_COMPARE;
+    expect(Math.min(cardWidth, cardHeight, 2 * closeRadius)).toBeGreaterThanOrEqual(100);
+    for (const v of [...WITH_UPRIGHT, { w: 768, h: 1024 }]) {
+      const l = tuneCompareLayout(v);
+      const targets = [
+        rect(l.onDisplay, cardWidth, cardHeight, 'on display'),
+        rect(l.otherTune, cardWidth, cardHeight, 'other tune'),
+        disc(l.close, closeRadius + 14, 'close hit area'),
+      ];
+      const panel = rect(l.panel, width, height, 'panel');
+      check(v, targets, [], `${v.w}×${v.h}`);
+      expect(panel.x0).toBeGreaterThanOrEqual(0);
+      expect(panel.x1).toBeLessThanOrEqual(v.w);
+      expect(panel.y0).toBeGreaterThanOrEqual(0);
+      expect(panel.y1).toBeLessThanOrEqual(v.h);
+      for (const b of targets) {
+        expect(b.x0).toBeGreaterThan(panel.x0);
+        expect(b.x1).toBeLessThan(panel.x1);
+        expect(b.y0).toBeGreaterThanOrEqual(panel.y0);
+        expect(b.y1).toBeLessThan(panel.y1);
+      }
+    }
+  });
+
   it("gives each of the welcome bed's two taps at least 100 units, against the real plaque height", () => {
     expect(BED.w).toBeGreaterThanOrEqual(100);
     expect(BED.picture).toBeGreaterThanOrEqual(100);

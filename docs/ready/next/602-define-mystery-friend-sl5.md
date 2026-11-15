@@ -1,0 +1,1 @@
+**Define Mystery Friend (SL5)** (docs only): narrow a group with pictured yes-or-no questions. Specify how the Photo Safari attribute solver could support the round and how a player recovers from an unhelpful question. [Speaking and listening recommendations](../../deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations)

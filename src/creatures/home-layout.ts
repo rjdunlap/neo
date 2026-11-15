@@ -179,6 +179,27 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   };
 }
 
+export const TUNE_COMPARE = {
+  width: 656,
+  height: 446,
+  cardWidth: 292,
+  cardHeight: 272,
+  closeRadius: 54,
+};
+
+export function tuneCompareLayout(v: { w: number; h: number }) {
+  const { width, height, cardWidth, closeRadius } = TUNE_COMPARE;
+  const x = v.w / 2;
+  const y = v.h / 2;
+  const offset = (cardWidth + 24) / 2;
+  return {
+    panel: { x, y },
+    onDisplay: { x: x - offset, y: y + 56 },
+    otherTune: { x: x + offset, y: y + 56 },
+    close: { x: x + width / 2 - closeRadius - 18, y: y - height / 2 + closeRadius + 16 },
+  };
+}
+
 /**
  * Explore's location cards (RW13, docs/rework/HOME.md#home-homescene-the-roots-hub): 150 units, one page holding every
  * location there will be (eleven), in rows of at most four.
