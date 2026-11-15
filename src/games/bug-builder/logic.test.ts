@@ -13,6 +13,9 @@ import {
   countPlaceAt,
   countStamp,
   fitsKind,
+  foldAcross,
+  foldBoard,
+  sameBug,
   kindBoard,
   kindWords,
   nextStamp,
@@ -195,7 +198,7 @@ describe('Bug Builder', () => {
 
     it('sits in preschool and pre-K, after the first mirror level, and never brings the later mirrors into preschool', () => {
       expect(levelsInOrder(rangeFor(LEVELS, 'preschool'))).toEqual([2, 3, 4, 5, 8]);
-      expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([4, 5, 8, 9, 6, 7]);
+      expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).toEqual([4, 5, 8, 9, 6, 7, 10]);
       expect(levelsInOrder(rangeFor(LEVELS, 'school'))).not.toContain(8);
       expect(levelsInOrder(rangeFor(LEVELS, 'toddler'))).not.toContain(8);
     });
@@ -287,6 +290,89 @@ describe('Bug Builder', () => {
       // Level 8's boards stay what they were: a count board has no kind.
       expect(countBoard(BUG_PLANS[7], new Rng(1)).state.kind).toBeNull();
       expect(BUG_TOKENS.length).toBe(12);
+    });
+  });
+
+  describe('level 10, Fold a friend', () => {
+    const plan = BUG_PLANS[9];
+    const fresh = (seed: number) => foldBoard(plan, new Rng(seed));
+    const right = (spots: readonly BugSpot[]) => spots.filter((s) => s.x > 0);
+
+    it('is the fold level: three spots on the left wing, each a different stamp in a different place', () => {
+      expect(plan.mode).toBe('fold');
+      for (let seed = 1; seed <= 200; seed++) {
+        const { left } = fresh(seed);
+        expect(left).toHaveLength(3);
+        expect(left.every((s) => s.x < 0)).toBe(true);
+        expect(new Set(left.map((s) => s.token)).size).toBe(3);
+        expect(new Set(left.map((s) => `${s.x},${s.y}`)).size).toBe(3);
+      }
+    });
+
+    it('has exactly one choice that is the true fold, and each choice keeps the left wing as it is', () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const b = fresh(seed);
+        expect(b.choices.map((c) => c.kind).sort()).toEqual(['mirror', 'slide', 'swap']);
+        expect(b.choices[b.answer].kind).toBe('mirror');
+        for (const c of b.choices)
+          expect(
+            sameBug(
+              c.spots.filter((s) => s.x < 0),
+              b.left,
+            ),
+          ).toBe(true);
+        const fold = foldAcross(b.left);
+        expect(b.choices.filter((c) => sameBug(right(c.spots), fold))).toHaveLength(1);
+      }
+    });
+
+    it('makes every true fold an exact reflection: each spot just as far from the middle line, on the same row', () => {
+      for (let seed = 1; seed <= 100; seed++) {
+        const b = fresh(seed);
+        for (const s of b.left)
+          expect(right(b.choices[b.answer].spots)).toContainEqual({ x: -s.x, y: s.y, token: s.token });
+      }
+    });
+
+    it('makes the two other choices plausible but different: one slid across, one with two stamps swapped', () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const b = fresh(seed);
+        const fold = right(b.choices[b.answer].spots);
+        const slide = right(b.choices.find((c) => c.kind === 'slide')!.spots);
+        const swap = right(b.choices.find((c) => c.kind === 'swap')!.spots);
+        // Every choice has the same three stamps on the right wing, so the stamps alone never give it away.
+        for (const r of [slide, swap])
+          expect(r.map((s) => s.token).sort()).toEqual(fold.map((s) => s.token).sort());
+        // The slid wing keeps each stamp on its row and moves it to the other column; the true fold never does.
+        for (const s of slide) {
+          const twin = fold.find((t) => t.token === s.token)!;
+          expect(s.y).toBe(twin.y);
+          expect(s.x).not.toBe(twin.x);
+        }
+        // The swapped one has the true fold's places, with exactly two stamps changed.
+        expect(swap.map((s) => `${s.x},${s.y}`).sort()).toEqual(fold.map((s) => `${s.x},${s.y}`).sort());
+        expect(
+          swap.filter((s) => !fold.some((t) => t.x === s.x && t.y === s.y && t.token === s.token)),
+        ).toHaveLength(2);
+        expect(sameBug(slide, swap)).toBe(false);
+      }
+    });
+
+    it('puts the true fold in each of the three places across seeds, not always the same one', () => {
+      const where = new Set<number>();
+      for (let seed = 1; seed <= 60; seed++) where.add(fresh(seed).answer);
+      expect([...where].sort()).toEqual([0, 1, 2]);
+    });
+
+    it('is the same board for the same seed', () => {
+      expect(fresh(7)).toEqual(fresh(7));
+    });
+
+    it('comes after the mirror levels in pre-K and school, and never in preschool or toddler', () => {
+      expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([6, 7, 10]);
+      expect(levelsInOrder(rangeFor(LEVELS, 'prek')).at(-1)).toBe(10);
+      for (const band of ['toddler', 'preschool'] as const)
+        expect(levelsInOrder(rangeFor(LEVELS, band))).not.toContain(10);
     });
   });
 });
