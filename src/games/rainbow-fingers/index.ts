@@ -558,7 +558,13 @@ function decor(thing: Thing): Graphics {
       ])
         g.moveTo(x - 12, y).quadraticCurveTo(x, y + 12, x + 12, y);
       g.stroke({ ...line, width: 4 });
-      for (const x of [-22, 22]) g.moveTo(x - 10, 102).lineTo(x - 10, 110).moveTo(x, 102).lineTo(x, 112).moveTo(x + 10, 102).lineTo(x + 10, 110);
+      for (const x of [-22, 22])
+        g.moveTo(x - 10, 102)
+          .lineTo(x - 10, 110)
+          .moveTo(x, 102)
+          .lineTo(x, 112)
+          .moveTo(x + 10, 102)
+          .lineTo(x + 10, 110);
       g.stroke({ ...line, color: swatch.orange.line, width: 5 });
       break;
     case 'basketball':
@@ -911,7 +917,9 @@ class RainbowFingers implements Game {
       g.ellipse(0, -10 - full, 56 + full, 16 + full / 2)
         .fill(look.fill)
         .stroke({ width: 3, color: look.rim });
-      g.circle(-22, -12 - full, 5).circle(18, -8 - full, 4).fill({ color: 0xffffff, alpha: 0.6 });
+      g.circle(-22, -12 - full, 5)
+        .circle(18, -8 - full, 4)
+        .fill({ color: 0xffffff, alpha: 0.6 });
     }
   }
 
@@ -1740,7 +1748,8 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
     if (p.mode === 'recall')
       return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
-    if (p.mode === 'mix' && p.three) return `Brown from all three: pour red, yellow and blue, ${p.count} pictures`;
+    if (p.mode === 'mix' && p.three)
+      return `Brown from all three: pour red, yellow and blue, ${p.count} pictures`;
     if (p.mode === 'mix' && p.white) return `Make it pink: mix red and white, ${p.count} pictures`;
     if (p.mode === 'mix') return 'Mixing colors: red and yellow make orange';
     if (p.mode === 'wheel') return 'Color wheel: mix each empty petal from the two colors beside it';

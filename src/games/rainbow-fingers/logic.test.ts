@@ -1016,7 +1016,10 @@ describe('Rainbow Fingers', () => {
     });
 
     it('shows three pours in the bowl as brown', () => {
-      expect(bowlLook(['red', 'yellow', 'blue'])).toEqual({ fill: swatch.brown.fill, rim: swatch.brown.line });
+      expect(bowlLook(['red', 'yellow', 'blue'])).toEqual({
+        fill: swatch.brown.fill,
+        rim: swatch.brown.line,
+      });
       expect(bowlLook(['red', 'yellow'])!.fill).toBe(swatch.orange.fill);
     });
   });
