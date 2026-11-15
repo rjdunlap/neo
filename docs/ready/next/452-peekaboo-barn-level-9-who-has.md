@@ -1,0 +1,1 @@
+**`peekaboo-barn`, level 9 Who has…?** (new-level tier: rule tests, one browser play of level 9, `fingerdemo` at it): opens the school window, so add `school` to `bands` and update the README band label and counts, the registry and lands tests (decided 2026-10-23). [Peekaboo Barn dive, slice 5](../../deep-dives/peekaboo-barn.md#build-slices-in-order)
