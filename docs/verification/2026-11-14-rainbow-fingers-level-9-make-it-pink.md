@@ -1,0 +1,5 @@
+# 2026-11-14 — Rainbow Fingers level 9 Make it pink (PR #1691)
+
+**Changed:** `rainbow-fingers` level 9 (white pot, `RECIPES.pink`, four pink pictures, recipe prompt and hint glow, level-9 how-to step); school range 5–9.
+**Ran:** typecheck; rule tests (`src/games/rainbow-fingers`, registry and `src/content`: 23 files, 289 passed); `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=9 TO_LEVEL=9` passed (wrong pour, 2 misses, 1 hint, both pink pictures, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rainbow-fingers FINGER_LEVELS=9` passed (22.1 s); phone screenshots at 844x390 checked by eye (six deals covering all four pinks; four pots and the bowl clear of the pet; red and white show pink in the bowl). A 390x844 portrait load shows the app's turn-sideways screen, so the phone view is landscape.
+**Not run:** full `npm test` (CI runs it), `npm run build` (no shared files or assets changed), other suites, offline. After the browser runs the flamingo neck circles and the pig and tulip decor were reshaped; the fit and fill rule tests were rerun and passed, the browser play was not rerun.
