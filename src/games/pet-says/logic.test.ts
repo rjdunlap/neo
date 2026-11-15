@@ -62,6 +62,7 @@ import {
   OPPOSITE_PAIRS,
   PARTNER,
   partnerOf,
+  ruleAnswer,
   SUN_TURNS,
   MANNER_MOVES,
   MORE_OPPOSITE_PAIRS,
@@ -377,6 +378,7 @@ describe("Pat the pet (level 13, lap's first level)", () => {
       'opposite',
       'walk',
       'opposite',
+      'says-opposite',
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
@@ -863,5 +865,47 @@ describe('Sun or moon (level 10, dive slice 9)', () => {
       }
     }
     expect(seen).toEqual(new Set(MORE_OPPOSITE_PAIRS.flat()));
+  });
+});
+
+describe('Pet says, opposite (level 11, dive slice 10)', () => {
+  const plan = planFor(11);
+
+  it('extends only the school window and offers counted replay', () => {
+    expect(plan.mode).toBe('says-opposite');
+    expect(LEVELS.school).toEqual({ min: 6, max: 11 });
+    expect(LEVELS.prek).toEqual({ min: 3, max: 10 });
+    expect(ONCE_MORE_MODES).toContain(plan.mode);
+  });
+
+  it('deals eight turns with two or three spaced tricks and an opposite for every named cue', () => {
+    const counts = new Set<number>();
+    for (let seed = 0; seed < 300; seed++) {
+      const turns = makeTurns(plan, new Rng(seed));
+      expect(turns).toHaveLength(8);
+      expect(makeTurns(plan, new Rng(seed))).toEqual(turns);
+      expect(turns[0].cue).toBe('says');
+      const tricks = turns.flatMap((turn, i) => (turn.cue === 'plain' ? [i] : []));
+      expect([2, 3]).toContain(tricks.length);
+      expect(tricks.slice(1).every((i, k) => i - tricks[k] >= 2)).toBe(true);
+      counts.add(tricks.length);
+
+      for (const turn of turns) {
+        expect(turn.moves).toHaveLength(1);
+        const [move] = turn.moves;
+        expect(turn.sign).toBeUndefined();
+        if (turn.cue === 'plain') {
+          expect(turn.says).toBe(false);
+          expect(ruleAnswer(turn, plan.mode)).toBe('still');
+        } else {
+          expect(turn.cue).toBe('says');
+          expect(turn.says).toBe(true);
+          expect(PARTNER[move]).toBeDefined();
+          expect(ruleAnswer(turn, plan.mode)).toBe(PARTNER[move]);
+          expect(ruleAnswer(turn, 'says')).toBe(move);
+        }
+      }
+    }
+    expect(counts).toEqual(new Set([2, 3]));
   });
 });

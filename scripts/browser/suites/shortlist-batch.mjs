@@ -607,7 +607,27 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         await launch('pet-says', level);
         if (level === 3) await page.setViewportSize({ width: 768, height: 1024 });
         // Level 2 and Opposite day play on a phone held upright; level 2 listens for the chant's words (dive slice 2).
-        if ([6, 7, 8, 10].includes(level)) await page.setViewportSize({ width: 390, height: 844 });
+        if ([6, 7, 8, 10, 11].includes(level)) await page.setViewportSize({ width: 390, height: 844 });
+        if (level === 11) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            const { instruct, say } = g.ctx;
+            const perform = g.perform.bind(g);
+            g.ruleEvents = [];
+            g.ctx.instruct = async (id, slots) => {
+              await instruct(id, slots);
+              g.ruleEvents.push(id);
+            };
+            g.ctx.say = (id, slots) => {
+              g.ruleEvents.push(id);
+              return say(id, slots);
+            };
+            g.perform = (move, count) => {
+              g.ruleEvents.push(move);
+              return perform(move, count);
+            };
+          });
+        }
         if (level === 7)
           await page.evaluate(() => {
             const g = neo.scene.game;
@@ -645,7 +665,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           });
         }
         const turns = await page.evaluate(() => neo.scene.game.turns.length);
-        if (level === 10) assert.equal(turns, 8);
+        if (level === 10 || level === 11) assert.equal(turns, 8);
         if (level === 3) {
           // Every tiered move performs and comes back to rest, and a counted move counts each beat aloud.
           await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, {
@@ -694,6 +714,22 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               'the sign and spoken rule precede the move',
             );
             if (n === 3) await screenshot('pet-says-10-portrait');
+          }
+          if (level === 11) {
+            const { named, move, events, revealDue, signVisible } = await page.evaluate(() => {
+              const g = neo.scene.game;
+              return {
+                named: g.turn.says,
+                move: g.turn.moves[0],
+                events: g.ruleEvents.splice(0),
+                revealDue: g.revealDue,
+                signVisible: g.signBox.visible,
+              };
+            });
+            assert.equal(signVisible, false, 'the spoken name is the cue');
+            assert.equal(revealDue, named, 'only named turns need an opposite reveal');
+            const expected = named ? ['says.says', move] : ['says.trick', move, 'says.tricked'];
+            assert.deepEqual(events.slice(-expected.length), expected);
           }
           if (level === 5 && n === 0) {
             // The freeze holds the named statue while the arrow shows (dive slice 4), on this round's scene.
@@ -814,7 +850,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             await page.waitForFunction(() => !neo.scene.game.busy && neo.scene.game.next.visible, null, {
               timeout: 40000,
             });
-            if (level !== 10) await screenshot(`pet-says-${level}`);
+            if (level !== 10 && level !== 11) await screenshot(`pet-says-${level}`);
           }
           if (level === 6 && n === SAYS_SUN_TURNS) {
             // The held "once more" replays the first moon turn and counts one hint, however often it is held.
@@ -831,11 +867,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             );
             assert.equal(await page.evaluate(() => neo.scene.game.onceMore.visible), true);
           }
-          const moon = await page.evaluate(() => neo.scene.game.revealDue);
+          const reveal = await page.evaluate(() => neo.scene.game.revealDue);
           await page.waitForTimeout(250);
           await tap('neo.scene.game.next');
-          if (moon) {
-            // A moon turn's arrow first shows the opposite, then goes on.
+          if (reveal) {
+            // A moon or named opposite turn's arrow first shows the opposite, then goes on.
             await page.waitForFunction(
               (n) => {
                 const g = neo.scene.game;
@@ -844,6 +880,15 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               n,
               { timeout: 40000 },
             );
+            if (level === 11) {
+              const { events, partner } = await page.evaluate(async () => {
+                const { partnerOf } = await import('/src/games/pet-says/logic.ts');
+                const g = neo.scene.game;
+                return { events: g.ruleEvents.splice(0), partner: partnerOf(g.turn.moves[0]) };
+              });
+              assert.deepEqual(events.slice(-2), ['says.opp.reveal', partner]);
+              if (n === 0) await screenshot('pet-says-11-opposite-portrait');
+            }
             // More opposites (level 8) has one sun: its first moon is the second turn.
             if (level === 8 && n === 1) await screenshot('pet-says-8-moon-portrait');
             if (level === 6 && n === SAYS_SUN_TURNS) {
