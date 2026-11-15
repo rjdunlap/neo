@@ -31,6 +31,13 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 5, to: 7, text: 'When the wings match, watch them fold across the middle and open together.' },
   ],
-  finish:
-    'The round ends when the bug matches what was asked for, has just the number of spots (of the right kind) on the sign, or once the wing has folded over to show the answer.',
+  finish: [
+    {
+      from: 10,
+      text: 'The round ends once the wing has folded over and shown the answer; any choice is fine.',
+    },
+    {
+      text: 'The round ends when the bug matches what was asked for, or has just the number of spots (of the right kind) on the sign.',
+    },
+  ],
 };

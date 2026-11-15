@@ -253,7 +253,11 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       .filter(() => !only || only === 'bug')) {
       await launch('bug-builder', level);
       if (level === 10) {
-        // Fold a friend, on a phone held upright: a wrong prediction is never a miss; the wing folds and the round ends.
+        // Fold a friend, in a tall 390 × 844 viewport (the tall layout): a wrong prediction is never a miss; the wing folds and the round ends.
+        // A real phone plays this game turned sideways: keep a picture of the row of cards there first.
+        await page.setViewportSize({ width: 844, height: 390 });
+        await page.waitForTimeout(400);
+        await screenshot('bug-builder-10-phone-landscape');
         await page.setViewportSize({ width: 390, height: 844 });
         await page.waitForTimeout(400);
         const before = await page.evaluate(async () => {

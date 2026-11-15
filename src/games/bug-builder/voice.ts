@@ -20,7 +20,7 @@ export const VOICE = {
   'bug.kind': ['Give the bug {n} {kind}! Only {kind} count. Then tap the check.'],
   'bug.kindWrong': ["That's a {color} {shape}. We wanted {kind}!"],
   'bug.kindDone': ['{n} {kind}! Just right!', 'Yes, {n} {kind}! Hello, spotty bug!'],
-  'bug.fold': ['This wing is folded under. When it folds across the line, which bug will it make? Tap one!'],
+  'bug.fold': ['Fold this spotty wing across the line. Which bug will it make? Tap one!'],
   'bug.foldGo': ["Let's fold it and see!"],
   'bug.foldYes': ['You saw it! The fold made this one.'],
   'bug.foldThis': ['Look! The fold made this one.'],

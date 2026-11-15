@@ -151,7 +151,7 @@ export class FoldFriend implements Game {
       bugH = BUG_TOP + BUG_BOTTOM;
     let bugScale: number, k: number;
     if (v.h > v.w * 1.3) {
-      // A tall view (a phone held upright): the bug across the top, the cards stacked larger in the middle below it,
+      // A tall view (a tall window, or the upright test layout): the bug across the top, the cards stacked larger in the middle below it,
       // each clear of the pet's corner at the bottom left.
       bugScale = Math.min(1, (v.w - 80) / 640);
       const top = 20 + bugH * bugScale + 40,
