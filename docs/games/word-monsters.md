@@ -34,7 +34,7 @@
 
 **Starts as:** tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster)
 
-**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), say a word slowly while building it, then fix one letter in the pet’s word
+**Grows into:** find a letter by name, then by its sound, first sounds, build three-letter words, word families (hat, cat, bat), then change the end (cat, cap, can), then the last sound of a word ("what does cat end with?"), say a word slowly while building it, then fix one letter in the pet’s word, then build words where one monster wears two letters for one sound (fish, duck, bath)
 
 ## Design notes
 
@@ -47,3 +47,5 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 **A sound never holds the next question (U7 fix batch 19, 2026-11-12).** At levels 2–4 the right monster's sound starts (the praise is dropped) and the next question's monsters come after the existing beat; its ask waits for the sound, is said by the guide, and is dropped at a right tap, and a wrong tap before she has heard it is not a miss (the ask is said instead). The last sound and praise are heard out; the blend lesson at levels 5–8 is unchanged. The ghost finger waits for an ask.
 
 **Level 12, Fix the pet’s word.** The pet spells a different word that shares two letters with the pictured word, such as *pin* for *pen*. Tap the speaker to hear the pet’s spelling or the picture to hear its intended word. Tap out the wrong letter and drag the replacement into the empty box. The first check of a correct letter is free. After two misses the letter to lift glows. Each round visits the first, middle and last position in shuffled order.
+
+**Level 13, Two letters, one sound.** A wide team monster wearing two letters (sh, ch, th or ck) fills one sound box. Only the word is said ("Make fish! Two letters can make one sound."); tap the picture to hear it again (free) or the boxes to hear the sounds box by box (one hint per word). A wrong drop says who the monster is; dropping one letter of the wanted team says "That is just sss. Two letters make shh."; two misses glow the next monster. Nine words: fish, dish, ship, chick, duck, sock, rock, bath, moth, three per round with three different teams. A spare monster is half the time one letter of a team (never both, and never c or k beside ck) and otherwise an unrelated letter that is no lookalike or sound twin. Team words never appear at levels 10 and 11. Known gap: a ck monster dropped in chick's ch box gets the generic "I'm CK" line.
