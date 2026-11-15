@@ -221,3 +221,34 @@ export function goodPlacement(kind: PropKind, count: number, index: number) {
 export function stallLayout(view: { w: number; h: number }) {
   return { cx: view.w / 2, cy: Math.min(view.h * 0.5, 420), stockX: view.w / 2 - 150 };
 }
+
+/** Change levels count up from the price (fresh 4): the shopkeeper's method of giving change. */
+export const countsUp = (plan: ShopPlan) => plan.mode === 'change';
+
+/**
+ * The numbers said when a coin worth `value` lands and `before` is already on the counter toward the change from `price`:
+ * the price first (only for the first coin), then each number up to the new count. A 2 after the price 7 says "7… 8, 9".
+ */
+export function countUpWords(price: number, before: number, value: number): number[] {
+  const out = before === 0 ? [price] : [];
+  for (let k = 1; k <= value; k++) out.push(price + before + k);
+  return out;
+}
+
+/** How the words of one coin are spoken: a pause after the price, then the count. */
+export const countUpText = (words: number[], price: number) =>
+  words[0] === price && words.length > 1 ? `${price}… ${words.slice(1).join(', ')}` : words.join(', ');
+
+export type StripCell = 'price' | 'change' | 'empty';
+
+/** The ten strip under the tag: the price's cells, then the change given so far, up to what the customer paid. */
+export function tenStrip(price: number, given: number): { cells: StripCell[]; over: number } {
+  const cells = Array.from({ length: PAID }, (_, i): StripCell =>
+    i < price ? 'price' : i < price + given ? 'change' : 'empty',
+  );
+  return { cells, over: Math.max(0, price + given - PAID) };
+}
+
+/** What is said when change lands: the coin's own value first, then the count up ("2. 7… 8, 9"). */
+export const countUpSaid = (price: number, before: number, value: number) =>
+  `${value}. ${countUpText(countUpWords(price, before, value), price)}`;

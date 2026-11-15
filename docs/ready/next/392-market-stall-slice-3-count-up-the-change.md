@@ -1,1 +1,0 @@
-**Market Stall slice 3, count up the change** (rule tests on the spoken sequence, a play at level 6 and `fingerdemo` at 6): the shopkeeper counts up from the price as each coin lands, with a ten strip under the tag. [Market Stall dive, slice 3](../../deep-dives/market-stall.md#build-slices-in-order)

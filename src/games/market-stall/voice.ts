@@ -4,7 +4,7 @@ export const VOICE = {
   'shop.pay': ['The {fruit} costs {n}. Tap coins onto the counter, then ring the bell!'],
   'shop.pair': ['A {a} for {n} and a {b} for {m}. How much for both? Pay, then ring the bell!'],
   'shop.change': [
-    'You keep the stall! The {fruit} costs {n}, and they paid 10. Give them their change, then ring the bell.',
+    'You keep the stall! The {fruit} costs {n}, and they paid 10. Count up from {n} to 10 as you give the change, then ring the bell.',
   ],
   'shop.fewest': ['The {fruit} costs {n}. Pay with as few shell coins as you can, then ring the bell!'],
   'shop.again': ['Thank you! Now buy another one, and pay a different way!'],
@@ -24,6 +24,7 @@ export const VOICE = {
   'shop.one.more': ['One more shell will make the right amount.'],
   'shop.one.less': ['One shell too many. Can you make one less with your coins?'],
   'shop.big': ['One of those coins is worth more than the whole amount. Try smaller coins.'],
+  'shop.countup': ['{n}'],
   'shop.full': ['The counter is full. Put some coins back and try a bigger coin.'],
   'shop.name': ['That is a {word}. It is worth {word}.'],
   'shop.hint': ['Here is one way to make it.'],

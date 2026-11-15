@@ -26,6 +26,11 @@ import {
   sum,
   target,
   usesFewestCoins,
+  countsUp,
+  countUpWords,
+  countUpText,
+  countUpSaid,
+  tenStrip,
 } from './logic';
 
 describe('Market Stall', () => {
@@ -295,6 +300,63 @@ describe('Market Stall', () => {
           expect(sameWay(second, first)).toBe(false);
         }
       }
+    });
+  });
+
+  describe('count up the change (fresh 4)', () => {
+    /** Every way to pay an amount with the plan's coins, in every order the coins could land. */
+    const payments = (amount: number, coins: number[]): number[][] =>
+      amount === 0
+        ? [[]]
+        : coins.filter((c) => c <= amount).flatMap((c) => payments(amount - c, coins).map((p) => [c, ...p]));
+
+    it('only the change level counts up', () => {
+      expect(PLANS.filter(countsUp).map((p) => p.mode)).toEqual(['change']);
+    });
+
+    it('a correct change counts up one at a time from the price and ends on what they paid', () => {
+      const plan = PLANS.find(countsUp)!;
+      for (let price = plan.price[0]; price <= plan.price[1]; price++)
+        for (const coins of payments(PAID - price, plan.coins)) {
+          let before = 0;
+          const said: number[] = [];
+          for (const v of coins) {
+            said.push(...countUpWords(price, before, v));
+            before += v;
+          }
+          expect(said[0]).toBe(price);
+          said.forEach((n, i) => i && expect(n).toBe(said[i - 1] + 1));
+          expect(said.at(-1)).toBe(PAID);
+        }
+    });
+
+    it('each coin says as many numbers as it is worth, and the price only before the first', () => {
+      for (const v of [1, 2, 5]) {
+        expect(countUpWords(7, 0, v)).toHaveLength(v + 1);
+        expect(countUpWords(7, 1, v)).toHaveLength(v);
+        expect(countUpWords(7, 1, v)[0]).toBe(9);
+      }
+      expect(countUpText(countUpWords(7, 0, 2), 7)).toBe('7… 8, 9');
+      expect(countUpText(countUpWords(7, 2, 1), 7)).toBe('10');
+      // The coin's own value is still said first.
+      expect(countUpSaid(7, 0, 2)).toBe('2. 7… 8, 9');
+      expect(countUpSaid(7, 2, 1)).toBe('1. 10');
+    });
+
+    it('the ten strip shows the price, then the change, and never more than ten cells', () => {
+      for (let price = 1; price < PAID; price++)
+        for (let given = 0; given <= 15; given++) {
+          const { cells, over } = tenStrip(price, given);
+          expect(cells).toHaveLength(PAID);
+          expect(cells.filter((c) => c === 'price')).toHaveLength(price);
+          expect(cells.filter((c) => c === 'change')).toHaveLength(Math.min(given, PAID - price));
+          expect(over).toBe(Math.max(0, price + given - PAID));
+          // Price cells come first, then change, then empty ones.
+          expect(cells.join()).toBe(
+            [...cells].sort((a, b) => 'pce'.indexOf(a[0]) - 'pce'.indexOf(b[0])).join(),
+          );
+        }
+      expect(tenStrip(7, 3).cells.every((c) => c !== 'empty')).toBe(true);
     });
   });
 });

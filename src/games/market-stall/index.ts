@@ -26,6 +26,9 @@ import {
   pips,
   teachLine,
   coinToName,
+  countsUp,
+  countUpSaid,
+  tenStrip,
   missKind,
   hintCharge,
   stickerGood,
@@ -162,6 +165,8 @@ class MarketStall implements Game {
   private readonly keeper: Critter;
   private readonly goods = new Container();
   private readonly ghost = new Container();
+  /** On change levels: the ten strip under the tag, redrawn as change lands (fresh 4). */
+  private strip: Graphics | null = null;
   private view: View;
   private wrongs = 0;
   /** Exact but inefficient payments heard at the bell this order. The second is a supported miss. */
@@ -326,6 +331,13 @@ class MarketStall implements Game {
       ten.position.set(150, -40);
       this.goods.addChild(ten);
     }
+    this.strip = null;
+    if (countsUp(this.plan)) {
+      this.strip = new Graphics();
+      this.strip.position.set(0, -88);
+      this.goods.addChild(this.strip);
+      this.drawStrip();
+    }
     this.goods.alpha = 0;
     await this.ctx.tw.to(this.goods, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
@@ -366,8 +378,12 @@ class MarketStall implements Game {
         .to(purse.scale, { x: big * 1.25, y: big * 1.25 }, { duration: 0.18, ease: ease.outQuad })
         .then(() => this.ctx.tw.to(purse.scale, { x: big, y: big }, { duration: 0.2, ease: ease.outQuad }));
       void this.ctx.say('shop.name', { word });
-    } else if (this.plan.mode === 'pair' || this.plan.mode === 'change')
-      void this.ctx.say('count', { n: value });
+    } else if (countsUp(this.plan)) {
+      // The coin's value, then a count up from the price as the change lands: "2. 7… 8, 9".
+      const price = this.order.prices[0];
+      this.drawStrip();
+      void this.ctx.say('shop.countup', { n: countUpSaid(price, total - value, value) });
+    } else if (this.plan.mode === 'pair') void this.ctx.say('count', { n: value });
     else void this.ctx.say('count', { n: total });
   }
 
@@ -386,6 +402,7 @@ class MarketStall implements Game {
     const [c] = this.onMat.splice(best, 1);
     c.node.destroy({ children: true });
     this.layoutMat();
+    this.drawStrip();
     sfx.pop(3);
   }
 
@@ -495,6 +512,25 @@ class MarketStall implements Game {
       void this.ctx.say('shop.hint');
     }
     this.busy = false;
+  }
+
+  /** Ten cells to what the customer paid: the price filled, then one cell per shell of change; too much turns the edge red. */
+  private drawStrip() {
+    if (!this.strip || !this.order) return;
+    const { cells, over } = tenStrip(this.order.prices[0], sum(this.onMat.map((c) => c.value)));
+    const w = 20;
+    const left = (-cells.length * w) / 2;
+    const g = this.strip.clear();
+    cells.forEach((cell, i) => {
+      const fill = cell === 'price' ? swatch.green.fill : cell === 'change' ? swatch.yellow.fill : 0xffffff;
+      g.rect(left + i * w + (i >= 5 ? 4 : 0), -10, w, 20)
+        .fill(fill)
+        .stroke({ width: 2, color: ink });
+    });
+    g.roundRect(left - 4, -14, cells.length * w + 12, 28, 6).stroke({
+      width: 4,
+      color: over ? swatch.red.line : wood.line,
+    });
   }
 
   private clearGhost() {
