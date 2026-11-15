@@ -35,12 +35,20 @@ vi.mock('../../engine/drag', () => ({
   },
 }));
 vi.mock('../../audio/sfx', () => ({
-  sfx: { sparkle: vi.fn(), pop: vi.fn(), tick: vi.fn(), marimba: vi.fn(), squish: vi.fn(), animal: vi.fn() },
+  sfx: {
+    sparkle: vi.fn(),
+    pop: vi.fn(),
+    tick: vi.fn(),
+    marimba: vi.fn(),
+    bell: vi.fn(),
+    splash: vi.fn(),
+    squish: vi.fn(),
+    animal: vi.fn(),
+  },
 }));
 
 /** Exercise the game's real editing/finish callbacks, holding its scene-owned celebration wait open. */
 function round(level: number) {
-  let wake!: () => void;
   const finish = vi.fn<(result: RoundResult) => void>();
   const stage = new Container();
   const say = vi.fn();
@@ -50,10 +58,7 @@ function round(level: number) {
     say,
     rng: new Rng(42),
     tw: {
-      wait: () =>
-        new Promise<void>((resolve) => {
-          wake = resolve;
-        }),
+      wait: () => new Promise<void>(() => {}),
       kill: vi.fn(),
       to: vi.fn(() => Promise.resolve()),
     },
@@ -68,6 +73,7 @@ function round(level: number) {
     bin: Container;
     play: Container;
     played: Stamp[];
+    woken: Stamp[];
     stamps: { data: Stamp; node: Container; drag?: { enabled: boolean; destroy: () => void } }[];
     done: boolean;
     plan: StampPlan;
@@ -82,7 +88,11 @@ function round(level: number) {
     game.destroy();
     stage.destroy({ children: true });
   };
-  return { game, finish, say, kill: ctx.tw.kill, stamp, wake: () => wake(), cleanup };
+  // The wake-up after the arrow runs on the scene's frames, at most 2.5 s; `wake` plays it through.
+  const wakeUp = () => {
+    for (let i = 0; i < 30; i++) game.update(0.1);
+  };
+  return { game, finish, say, kill: ctx.tw.kill, stamp, wake: wakeUp, cleanup };
 }
 
 describe('Stamp Studio play the picture', () => {
@@ -436,6 +446,54 @@ describe('Trace Prints play', () => {
     r.wake();
     await Promise.resolve();
     expect(r.finish).toHaveBeenCalledWith({ misses: 0, hints: 0 });
+    r.cleanup();
+  });
+});
+
+describe('Stamp Studio sounds, counting aloud and the wake-up (dive slice 3)', () => {
+  it('sounds each stamp as it lands and counts aloud once each at level 3', async () => {
+    const { sfx } = await import('../../audio/sfx');
+    vi.mocked(sfx.bell).mockClear();
+    const r = round(3);
+    const kind = r.game.plan.kinds.indexOf('star');
+    if (kind >= 0) press.get(r.game.choices[kind])!();
+    r.stamp(300, 300);
+    r.stamp(500, 300);
+    const counts = () => r.say.mock.calls.filter(([line]) => line === 'stamp.count').map(([, v]) => v.n);
+    expect(counts()).toEqual(['One', 'Two']);
+    press.get(r.game.undo)!();
+    r.stamp(500, 300);
+    r.stamp(700, 300);
+    expect(counts()).toEqual(['One', 'Two', 'Three']);
+    if (kind >= 0) expect(vi.mocked(sfx.bell).mock.calls.map(([step]) => step)).toEqual([7, 8, 9, 10]);
+    r.cleanup();
+  });
+  it('does not count aloud at level 4', () => {
+    const r = round(4);
+    r.stamp();
+    r.stamp(600, 300);
+    expect(r.say.mock.calls.some(([line]) => line === 'stamp.count')).toBe(false);
+    r.cleanup();
+  });
+  it('wakes every stamp once in placement order, then finishes once within 2.5 s', () => {
+    const r = round(4);
+    for (let i = 0; i < 6; i++) r.stamp(200 + i * 100, 200 + (i % 3) * 120);
+    const placed = r.game.stamps.map((s) => ({ ...s.data }));
+    press.get(r.game.finish)!();
+    r.game.update(0.05);
+    expect(r.game.woken).toHaveLength(1);
+    // Six stamps wake 0.3 s apart and the last bounce ends at 1.85 s.
+    for (let i = 0; i < 17; i++) r.game.update(0.1);
+    expect(r.game.woken).toEqual(placed);
+    expect(r.finish).not.toHaveBeenCalled();
+    r.game.update(0.2);
+    expect(r.finish).toHaveBeenCalledExactlyOnceWith({
+      misses: 0,
+      hints: 0,
+      creation: { kind: 'picture', stamps: placed },
+    });
+    r.game.update(1);
+    expect(r.finish).toHaveBeenCalledTimes(1);
     r.cleanup();
   });
 });

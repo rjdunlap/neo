@@ -26,7 +26,11 @@ import {
   roundPlan,
   STAMP_COLORS,
   STAMP_NAMES,
+  STAMP_SOUNDS,
+  countAloud,
+  stampStep,
   stickerStamp,
+  wakeSchedule,
   stampDemo,
   stampLayout,
   type Stamp,
@@ -57,6 +61,18 @@ class StampStudio implements Game {
   /** The stamps the latest play-back has sounded, in order (for checks). */
   played: Stamp[] = [];
   private scan: { notes: (PlayNote & { mark: Mark })[]; time: number } | null = null;
+  /** The stamps the wake-up has bounced, in order (for checks). */
+  woken: Stamp[] = [];
+  private wake: {
+    at: number[];
+    end: number;
+    time: number;
+    marks: Mark[];
+    creation: { kind: 'picture'; stamps: Stamp[] };
+  } | null = null;
+  /** Presses this round, which climb a pitched stamp's sound; and the numbers already counted aloud. */
+  private presses = 0;
+  private readonly counted = new Set<number>();
   private readonly bar = new Graphics();
   private nudgeTime = 0;
   private selected: Mark | null = null;
@@ -209,8 +225,35 @@ class StampStudio implements Game {
     });
     const creation = { kind: 'picture' as const, stamps: this.stamps.map((s) => ({ ...s.data })) };
     void this.ctx.say('stamp.done');
-    sfx.sparkle();
-    void this.ctx.tw.wait(0.9).then(() => this.ctx.finish({ misses: 0, hints: 0, creation }));
+    // The wake-up: each stamp bounces with its own sound, in the order it was placed, then the round ends (`update`).
+    this.woken = [];
+    this.wake = { ...wakeSchedule(this.stamps.length), time: 0, marks: [...this.stamps], creation };
+  }
+  /** A stamp's own sound; a pitched one rings the step for this `press` (counting from 1). */
+  private sound(kind: StampKind, press: number) {
+    const sound = STAMP_SOUNDS[kind];
+    if (sound.play === 'splash') sfx.splash();
+    else if (sound.play === 'animal') sfx.animal(sound.animal);
+    else sfx[sound.play](stampStep(kind, press)!);
+  }
+  private stepWake(dt: number) {
+    const wake = this.wake!;
+    wake.time += dt;
+    while (this.woken.length < wake.at.length && wake.at[this.woken.length] <= wake.time) {
+      const i = this.woken.length;
+      const mark = wake.marks[i];
+      this.woken.push({ ...mark.data });
+      this.sound(mark.data.kind, i + 1);
+      const art = mark.node.children[0];
+      art.scale.set(mark.data.size * 1.3);
+      void this.ctx.tw.to(art.scale, { x: mark.data.size, y: mark.data.size }, { duration: 0.3 });
+    }
+    // At least the old 0.9 s pause, so a single stamp's wake-up still lets "You made your own picture!" begin.
+    if (this.woken.length === wake.at.length && wake.time >= Math.max(wake.end, 0.9)) {
+      this.wake = null;
+      sfx.sparkle();
+      this.ctx.finish({ misses: 0, hints: 0, creation: wake.creation });
+    }
   }
   private remove(mark: Mark | null) {
     if (this.done || !mark) return;
@@ -263,7 +306,11 @@ class StampStudio implements Game {
     this.selected = mark;
     this.layoutStamp(mark);
     this.drawSelection();
-    sfx.pop(5 + (this.stamps.length % 5));
+    this.sound(data.kind, ++this.presses);
+    if (this.plan.count) {
+      const n = countAloud(this.stamps.length, this.counted);
+      if (n) void this.ctx.say('stamp.count', { n });
+    }
     if (
       (this.ctx.level <= 2 && this.stamps.length === LIMIT) ||
       (this.plan.pat && this.stamps.length >= this.plan.pat.count)
@@ -325,6 +372,7 @@ class StampStudio implements Game {
   }
   update(dt: number) {
     if (this.scan) this.stepScan(dt);
+    if (this.wake) this.stepWake(dt);
     if (!this.done && this.ctx.level <= 2 && this.stamps.length >= 5) {
       this.nudgeTime += dt;
       this.finish.rotation = Math.sin(this.nudgeTime * 4) * 0.12;

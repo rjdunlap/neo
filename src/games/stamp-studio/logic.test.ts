@@ -27,7 +27,7 @@ import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import { stampStudio } from './index';
 import { cleanPicture } from '../../content/creations';
-import { playOrder, planFor } from './logic';
+import { playOrder, planFor, STAMP_SOUNDS, stampStep, countAloud, wakeSchedule, WAKE } from './logic';
 import { PENTATONIC, stepToMidi } from '../../audio/notes';
 import {
   TILTS,
@@ -633,4 +633,68 @@ describe('Stamp Studio seven colors and three sizes (dive slice 2)', () => {
         }
     },
   );
+});
+
+describe('Stamp Studio sounds, counting aloud and the wake-up (dive slice 3)', () => {
+  it('gives every stamp kind a name and a sound, and pitches only on the pentatonic scale', () => {
+    for (const kind of STAMP_KINDS) {
+      expect(STAMP_NAMES[kind]).toBeTruthy();
+      expect(STAMP_SOUNDS[kind]).toBeDefined();
+      for (let press = 1; press <= 30; press++) {
+        const step = stampStep(kind, press);
+        if (step === null) continue;
+        expect(Number.isInteger(step)).toBe(true);
+        expect(PENTATONIC).toContain(((stepToMidi(step) % 12) + 12) % 12);
+      }
+    }
+    // A pitched stamp climbs five steps and starts round again.
+    expect([1, 2, 3, 4, 5, 6].map((p) => stampStep('star', p))).toEqual([7, 8, 9, 10, 11, 7]);
+    expect(stampStep('fish', 1)).toBeNull();
+    expect(STAMP_SOUNDS.cat).toEqual({ play: 'animal', animal: 'meow' });
+  });
+
+  it('counts aloud at levels 1–3 only', () => {
+    expect([1, 2, 3].every((l) => planFor(l).count)).toBe(true);
+    expect([4, 5, 6, 7, 8, 9].some((l) => planFor(l).count)).toBe(false);
+    // Seeded early rounds keep the count.
+    expect(roundPlan(2, new Rng(4)).plan.count).toBe(true);
+  });
+
+  it('says one to ten once each, then nothing, and never more than the paper holds', () => {
+    const said = new Set<number>();
+    const words = Array.from({ length: 24 }, (_, i) => countAloud(i + 1, said));
+    expect(words.slice(0, 10)).toEqual([
+      'One',
+      'Two',
+      'Three',
+      'Four',
+      'Five',
+      'Six',
+      'Seven',
+      'Eight',
+      'Nine',
+      'Ten',
+    ]);
+    expect(words.slice(10).every((w) => w === null)).toBe(true);
+    // Undo to four, press again: five is not said twice, and nothing is said above what is on the paper.
+    const again = new Set<number>();
+    const run = [1, 2, 3, 4, 5, 4, 5, 6].map((n) => countAloud(n, again));
+    expect(run).toEqual(['One', 'Two', 'Three', 'Four', 'Five', null, null, 'Six']);
+    expect(countAloud(0, new Set())).toBeNull();
+    expect(SCRIPT['stamp.count']).toEqual(['{n}!']);
+  });
+
+  it('wakes 1 to 24 stamps once each, in placement order, within 2.5 s', () => {
+    expect(wakeSchedule(0)).toEqual({ at: [], end: 0 });
+    for (let n = 1; n <= LIMIT; n++) {
+      const { at, end } = wakeSchedule(n);
+      expect(at).toHaveLength(n);
+      expect(at[0]).toBe(0);
+      for (let i = 1; i < n; i++) expect(at[i]).toBeGreaterThan(at[i - 1]);
+      expect(end).toBeLessThanOrEqual(WAKE.longest + 1e-9);
+      expect(end).toBeGreaterThanOrEqual(at[n - 1] + WAKE.bounce - 1e-9);
+    }
+    // A short picture keeps an unhurried beat.
+    expect(wakeSchedule(3).at).toEqual([0, 0.3, 0.6]);
+  });
 });

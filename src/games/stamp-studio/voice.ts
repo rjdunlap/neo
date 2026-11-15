@@ -18,6 +18,7 @@ export const VOICE = {
   'stamp.full': [
     'Your paper has lots of stamps! Undo a stamp with the back arrow, or finish with the green arrow.',
   ],
+  'stamp.count': ['{n}!'],
   'stamp.done': ['You made your own picture!'],
   'stamp.leaf': ['Pat the mud! The leaf leaves its shape.'],
   'stamp.leafmark': ['Look! The leaf left its shape in the mud.'],

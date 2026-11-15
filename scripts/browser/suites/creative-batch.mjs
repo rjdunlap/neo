@@ -155,8 +155,10 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           const g = neo.scene.game;
           const say = g.ctx.say;
           g.choiceSpeech = [];
+          g.counts = [];
           g.ctx.say = (line, vars) => {
             if (line === 'stamp.kind') g.choiceSpeech.push(vars.kind);
+            if (line === 'stamp.count') g.counts.push(vars.n);
             return say(line, vars);
           };
           for (let i = 0; i < 3; i++) {
@@ -171,6 +173,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             await kit.sleep(180);
           }
           if (g.stamps.length !== 3) throw new Error(`Only ${g.stamps.length} stamps`);
+          // Counting aloud (levels 1–3, dive slice 3): one number per stamp on the paper.
+          if (JSON.stringify(g.counts) !== JSON.stringify(g.plan.count ? ['One', 'Two', 'Three'] : []))
+            throw new Error(`Level ${g.ctx.level} counted ${JSON.stringify(g.counts)}`);
           const { STAMP_NAMES, STAMP_COLORS } = await import('/src/games/stamp-studio/logic.ts');
           const expectedNames = [
             ...new Set(
@@ -294,6 +299,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           return before;
         });
         await finished('stamp-studio');
+        // The wake-up: every finished stamp bounced once, in the order it was placed, before the round ended.
+        assert.deepEqual(
+          await page.evaluate(() => neo.scene.game.woken),
+          frozen,
+          'the wake-up visits each stamp in order',
+        );
         assert.deepEqual(await score('stamp-studio'), [0, 0]);
         await page.waitForFunction(() => !!neo.scene.after?.keep, null, { timeout: 25000 });
         await page.waitForTimeout(800);
