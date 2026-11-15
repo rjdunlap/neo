@@ -1,1 +1,0 @@
-**Word Monsters slice 8, level 13 Two letters, one sound** (new-interaction tier: rule tests, a play and finger demo at 13, screenshots of the two-letter team at three views): one monster wears a digraph and fits a single sound box. [Word Monsters dive, slice 8](../../deep-dives/word-monsters.md#build-slices-in-order)

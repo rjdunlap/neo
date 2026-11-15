@@ -7,7 +7,18 @@ import type { BandLevels } from '../../progress/difficulty';
  * to matching first sounds, to building simple words sound by sound.
  */
 export type MonsterMode =
-  'play' | 'find' | 'who' | 'first' | 'build' | 'spell' | 'family' | 'end' | 'last' | 'slow' | 'repair';
+  | 'play'
+  | 'find'
+  | 'who'
+  | 'first'
+  | 'build'
+  | 'spell'
+  | 'family'
+  | 'end'
+  | 'last'
+  | 'slow'
+  | 'repair'
+  | 'team';
 
 export interface MonsterPlan {
   mode: MonsterMode;
@@ -89,13 +100,25 @@ export const REPAIR_PLAN: MonsterPlan = {
   name: "Fix the pet's word: tap out the wrong letter and put the right one in",
 };
 
+/**
+ * Level 13, Two letters, one sound: level 11's boxes and word-only ask, but one monster is a wide team wearing two
+ * letters (sh, ch, th, ck) that fills a single box, because a box holds a sound, not a letter.
+ */
+export const TEAM_LEVEL = 13;
+export const TEAM_PLAN: MonsterPlan = {
+  mode: 'team',
+  rounds: 3,
+  choices: 4,
+  name: 'Two letters, one sound: build fish, duck or bath, where one monster wears two letters (sh, ch, th, ck) and fills one box',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
   // 9 is lap's big monster, so the school order skips it.
-  school: { min: 5, max: REPAIR_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL] },
+  school: { min: 5, max: TEAM_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL, TEAM_LEVEL] },
 };
 
 /**
@@ -125,7 +148,9 @@ export const planFor = (level: number) =>
         ? SLOW_PLAN
         : level === REPAIR_LEVEL
           ? REPAIR_PLAN
-          : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+          : level === TEAM_LEVEL
+            ? TEAM_PLAN
+            : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -162,13 +187,22 @@ export const SOUNDS: Record<string, string> = {
 
 export const ALPHABET = Object.keys(SOUNDS);
 
+/**
+ * Level 13's letter teams: two letters that say one sound. They are kept out of `SOUNDS` so no single-letter pool
+ * (`ALPHABET`, `WHO_POOL`) ever offers one. ck says what c and k say, so a ck word never offers a lone c or k.
+ */
+export const TEAM_SOUNDS: Record<string, string> = { sh: 'shh', ch: 'chuh', th: 'thh', ck: 'kuh' };
+export const TEAMS = Object.keys(TEAM_SOUNDS);
+/** A monster's sound: one letter's, or a team's. */
+export const soundOf = (unit: string) => SOUNDS[unit] ?? TEAM_SOUNDS[unit];
+
 /** Lowercase letters that are easy to mix up; never offered side by side. */
 const LOOKALIKES = ['bdpq', 'mnu', 'il'];
 export const lookalike = (a: string, b: string) =>
   a !== b && LOOKALIKES.some((set) => set.includes(a) && set.includes(b));
 
 /** Two different letters that make the same sound (c and k), never offered together: one would be right and be told off. */
-export const soundTwin = (a: string, b: string) => a !== b && SOUNDS[a] === SOUNDS[b];
+export const soundTwin = (a: string, b: string) => a !== b && soundOf(a) === soundOf(b);
 
 /** "Who says...?" asks for plain letter sounds, so q ("kwuh") and x ("ks") wait until they have one of their own. */
 export const WHO_POOL = ALPHABET.filter((l) => l !== 'q' && l !== 'x');
@@ -235,6 +269,25 @@ export const SLOW_WORDS = PICTURE_WORDS.filter(
     !MIRRORS.some((set) => w.split('').filter((l) => set.includes(l)).length > 1),
 );
 
+/**
+ * Level 13's words, written as their sounds: each holds a team (chick holds two), and every team is used. The team
+ * stands first (ship) or last (fish, duck, bath), so where it goes is a thing to hear. Pictured, with no mirror pair (b d p q,
+ * i l) and no other two-letter sound (shell's ll is left out).
+ */
+export const TEAM_SPELLINGS = {
+  fish: ['f', 'i', 'sh'],
+  dish: ['d', 'i', 'sh'],
+  ship: ['sh', 'i', 'p'],
+  chick: ['ch', 'i', 'ck'],
+  duck: ['d', 'u', 'ck'],
+  sock: ['s', 'o', 'ck'],
+  rock: ['r', 'o', 'ck'],
+  bath: ['b', 'a', 'th'],
+  moth: ['m', 'o', 'th'],
+} as const satisfies Record<string, readonly string[]>;
+export type TeamWord = keyof typeof TEAM_SPELLINGS;
+export const TEAM_WORDS = Object.keys(TEAM_SPELLINGS) as TeamWord[];
+
 // Each group changes a different slot. Both words have familiar pronunciations and existing pictures.
 // Keep the groups disjoint so a word only appears once in a round, even when the pair is reversed.
 const REPAIR_PAIRS: readonly (readonly (readonly [PictureWord, PictureWord])[])[] = [
@@ -269,7 +322,12 @@ export interface Question {
   word?: PictureWord;
   /** Level 12: the pet's word and the slot that needs replacing. */
   repair?: { word: PictureWord; slot: number };
+  /** Level 13: the word's sounds, one per box, where a two-letter team is one unit (fish: f, i, sh). */
+  units?: string[];
 }
+
+/** The word's boxes, one unit each: a letter, or on level 13 a two-letter team. */
+export const unitsOf = (q: Question): readonly string[] => q.units ?? q.answer.split('');
 
 /** Pick `n` different letters including `must`, with no lookalikes among them. */
 export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET): string[] {
@@ -363,6 +421,25 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
     }
     return out;
   }
+  if (plan.mode === 'team') {
+    // Three words with different teams where it can, so the round asks for more than one.
+    const teams = new Set<string>();
+    const words: TeamWord[] = [];
+    const shuffled = rng.shuffle([...TEAM_WORDS]);
+    for (const word of shuffled) {
+      const team = teamOf(TEAM_SPELLINGS[word]);
+      if (words.length < plan.rounds && team && !teams.has(team)) {
+        teams.add(team);
+        words.push(word);
+      }
+    }
+    for (const word of shuffled) if (words.length < plan.rounds && !words.includes(word)) words.push(word);
+    for (const word of words) {
+      const units = [...TEAM_SPELLINGS[word]];
+      out.push({ answer: word, units, monsters: teamMonsters(rng, units, plan.choices) });
+    }
+    return out;
+  }
   if (plan.mode === 'build' || plan.mode === 'spell') {
     for (const word of rng.shuffle([...WORDS]).slice(0, plan.rounds)) {
       out.push({ answer: word, monsters: pickLetters(rng, plan.choices, word.split('')) });
@@ -378,13 +455,43 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   return out;
 }
 
+/** The two-letter team among a word's units, if any. */
+export const teamOf = (units: readonly string[]) => units.find((u) => u.length > 1);
+
+/**
+ * Level 13's monsters: the word's units and spares. About half the time the spare is one letter of the word's team (s
+ * beside sh), so she must hear that two letters make the sound; never both letters, and never a lone c or k beside ck,
+ * which would say the same sound. Other spares come from the plain-sound pool and never sound or look like a unit.
+ */
+export function teamMonsters(rng: Rng, units: readonly string[], n: number): string[] {
+  const near = (a: string, b: string) => a === b || lookalike(a, b) || soundTwin(a, b);
+  const teams = units.filter((u) => u.length > 1);
+  const singles = units.filter((u) => u.length === 1);
+  // Never a letter that looks or sounds like a single-letter unit, or that says a team's sound (c or k beside ck).
+  const unsafe = (l: string) => singles.some((u) => near(u, l)) || teams.some((t) => soundTwin(t, l));
+  const halves = [...new Set(teams.flatMap((t) => [...t]))].filter((l) => !unsafe(l));
+  const spares: string[] = [];
+  if (halves.length && rng.chance(0.5)) spares.push(rng.pick(halves));
+  for (const l of rng.shuffle([...WHO_POOL])) {
+    if (units.length + spares.length >= n) break;
+    // Plain spares share no letter with a team, so the half-team decoy stays the only one.
+    if (unsafe(l) || teams.some((t) => t.includes(l)) || spares.some((s) => near(s, l))) continue;
+    spares.push(l);
+  }
+  return rng.shuffle([...units, ...spares]);
+}
+
 /** A big round's monsters, one per touch, all different, each with a first-word picture to keep. */
 export function bigLetters(rng: Rng, n = BIG_PLAN.rounds): string[] {
   return rng.shuffle(Object.keys(FIRST_WORDS)).slice(0, n);
 }
 
-/** Building a word: may `letter` go into the next empty slot? Slots fill left to right. */
-export const fits = (word: string, filled: number, letter: string) => word[filled] === letter;
+/**
+ * Building a word: may `letter` (a letter, or a two-letter team) go into the next empty slot? Slots fill left to right;
+ * `word` is the word or its units.
+ */
+export const fits = (word: string | readonly string[], filled: number, letter: string) =>
+  word[filled] === letter;
 
 /** "kuh, aah, tuh" for the voice. */
 export const sounded = (word: string) =>
@@ -412,8 +519,9 @@ export function nextMonster<M extends { letter: string; placed: boolean }>(
     plan.mode === 'slow' ||
     plan.mode === 'family' ||
     plan.mode === 'end' ||
-    plan.mode === 'repair'
+    plan.mode === 'repair' ||
+    plan.mode === 'team'
   )
-    return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
+    return monsters.find((m) => !m.placed && fits(unitsOf(q), filled, m.letter));
   return monsters.find((m) => m.letter === q.answer);
 }

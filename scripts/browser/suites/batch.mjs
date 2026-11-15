@@ -11,7 +11,8 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         'BATCH_ONLY',
       );
     // Word Monsters: sounds, finding letters, first sounds, building words by dragging, (10) last sounds and (11) a word
-    // built from the word alone, where tapping the boxes says its sounds (one hint per word).
+    // built from the word alone, where tapping the boxes says its sounds (one hint per word); (13) the same with a wide
+    // two-letter team monster (sh, ch, th, ck) that fills one box, shown at three views and in its box.
     // MONSTER_LEVELS=10 plays only the listed levels.
     const monsterLevels = process.env.MONSTER_LEVELS
       ? process.env.MONSTER_LEVELS.split(',').map(Number)
@@ -21,7 +22,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
-      if (mode === 'last' || mode === 'slow' || mode === 'repair') {
+      if (mode === 'last' || mode === 'slow' || mode === 'repair' || mode === 'team') {
         // Played on a phone held upright, the focus of current playtests.
         const was = page.viewportSize();
         await page.setViewportSize({ width: 390, height: 844 });
@@ -35,6 +36,19 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           if (g.misses !== 0 || g.hints !== 0) throw new Error('A picture tap counted as a miss');
         });
         await screenshot(`word-monsters-${level}-portrait`);
+        if (mode === 'team') {
+          // The wide team monster in the loose row on a phone held sideways and on the 4:3 design view.
+          for (const [width, height, name] of [
+            [844, 390, 'landscape'],
+            [1024, 768, 'desktop'],
+          ]) {
+            await page.setViewportSize({ width, height });
+            await page.waitForTimeout(500);
+            await screenshot(`word-monsters-${level}-${name}`);
+          }
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.waitForTimeout(500);
+        }
         // The phone view stays for the play below; the next launch gets the old size back.
         if (was) restore.push(was);
       }
@@ -89,62 +103,91 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         );
         continue;
       }
-      await page.evaluate(async () => {
-        const g = neo.scene.game;
-        const ready = () => kit.until(() => !g.busy || g.finished, 10000);
-        if (g.plan.mode === 'play') {
-          for (let i = 0; i < g.plan.rounds; i++) {
-            await ready();
-            kit.tapOn(g.monsters[i % g.monsters.length]);
-            await kit.sleep(250);
-          }
-          return;
-        }
-        const building = g.plan.mode === 'build' || g.plan.mode === 'spell' || g.plan.mode === 'slow';
-        for (let q = 0; q < g.questions.length; q++) {
-          await kit.until(() => g.index === q && !g.busy, 10000);
-          const question = g.question;
-          const want = () => (building ? question.answer[g.filled] : question.answer);
-          const monster = (l) => g.monsters.find((m) => !m.placed && m.letter === l);
-          const act = async (m) => {
-            if (!building) {
-              kit.tapOn(m);
-              await kit.sleep(450);
+      // Level 13 stops after its first word's last drop for a look at the team in its box, then plays on.
+      const play = ({ from, to }) =>
+        page.evaluate(
+          async ({ from, to }) => {
+            const g = neo.scene.game;
+            const ready = () => kit.until(() => !g.busy || g.finished, 10000);
+            if (g.plan.mode === 'play') {
+              for (let i = 0; i < g.plan.rounds; i++) {
+                await ready();
+                kit.tapOn(g.monsters[i % g.monsters.length]);
+                await kit.sleep(250);
+              }
               return;
             }
-            const slot = g.top.parent.toGlobal({ x: g.top.x + (g.filled - 1) * 150, y: g.top.y + 106 + 40 });
-            await kit.dragTo(m, slot, 10);
-            await kit.sleep(500);
-          };
-          if (q === 0) {
-            // Two wrong answers: a gentle miss each, then the right monster glows.
-            const wrong = g.monsters.find(
-              (m) => m.letter !== want() && !question.answer.slice(g.filled).startsWith(m.letter),
-            );
-            await act(wrong);
-            await act(wrong);
-            if (g.misses !== 2 || g.hints !== 1 || !monster(want()).glow.visible)
-              throw new Error(`Monster hint: ${g.misses} ${g.hints}`);
-          }
-          if (q === 1 && g.plan.mode === 'slow') {
-            // Tapping the boxes says the word slowly: one hint for the word, however often she taps.
-            const before = g.hints;
-            // The last box, still empty: the row's own origin sits above the boxes.
-            const box = g.slots.toGlobal({ x: 150, y: 106 });
-            kit.tap(box.x, box.y);
-            await kit.sleep(900);
-            kit.tap(box.x, box.y);
-            await kit.sleep(900);
-            if (g.hints !== before + 1 || g.misses !== 2)
-              throw new Error(`Boxes hint: ${g.misses} ${g.hints}`);
-          }
-          if (!building) {
-            await act(monster(want()));
-            continue;
-          }
-          while (g.filled < question.answer.length && g.question === question) await act(monster(want()));
-        }
-      });
+            const building =
+              g.plan.mode === 'build' ||
+              g.plan.mode === 'spell' ||
+              g.plan.mode === 'slow' ||
+              g.plan.mode === 'team';
+            for (let q = from; q < Math.min(to, g.questions.length); q++) {
+              await kit.until(() => g.index === q && !g.busy, 10000);
+              const question = g.question;
+              const units = question.units ?? question.answer.split('');
+              const want = () => (building ? units[g.filled] : question.answer);
+              const monster = (l) => g.monsters.find((m) => !m.placed && m.letter === l);
+              const act = async (m) => {
+                if (!building) {
+                  kit.tapOn(m);
+                  await kit.sleep(450);
+                  return;
+                }
+                const slot = g.top.parent.toGlobal({
+                  x: g.top.x + (g.filled - 1) * 150,
+                  y: g.top.y + 106 + 40,
+                });
+                await kit.dragTo(m, slot, 10);
+                await kit.sleep(500);
+              };
+              if (q === 0) {
+                // Two wrong answers: a gentle miss each, then the right monster glows.
+                const wrong = g.monsters.find(
+                  (m) => m.letter !== want() && !question.answer.slice(g.filled).startsWith(m.letter),
+                );
+                await act(wrong);
+                await act(wrong);
+                if (g.misses !== 2 || g.hints !== 1 || !monster(want()).glow.visible)
+                  throw new Error(`Monster hint: ${g.misses} ${g.hints}`);
+              }
+              if (q === 1 && (g.plan.mode === 'slow' || g.plan.mode === 'team')) {
+                // Tapping the boxes says the word slowly: one hint for the word, however often she taps.
+                const before = g.hints;
+                // The last box, still empty: the row's own origin sits above the boxes.
+                const box = g.slots.toGlobal({ x: 150, y: 106 });
+                kit.tap(box.x, box.y);
+                await kit.sleep(900);
+                kit.tap(box.x, box.y);
+                await kit.sleep(900);
+                if (g.hints !== before + 1 || g.misses !== 2)
+                  throw new Error(`Boxes hint: ${g.misses} ${g.hints}`);
+              }
+              if (!building) {
+                await act(monster(want()));
+                continue;
+              }
+              while (g.filled < units.length && g.question === question) await act(monster(want()));
+            }
+          },
+          { from, to },
+        );
+      if (mode === 'team') {
+        await play({ from: 0, to: 1 });
+        // The word is saying its sounds box by box: the team stands in one box, clear of its neighbors.
+        const fit = await page.evaluate(() => {
+          const g = neo.scene.game;
+          const placed = g.monsters.filter((m) => m.placed).sort((a, b) => a.slot - b.slot);
+          const team = placed.find((m) => m.letter.length > 1);
+          if (placed.length !== g.question.units.length || !team)
+            throw new Error('The team is not in its box');
+          const b = placed.map((m) => m.getBounds());
+          return b.slice(1).every((r, i) => r.x >= b[i].x + b[i].width - 30);
+        });
+        assert.ok(fit, 'monsters 13: placed monsters overlap their neighbors');
+        await screenshot(`word-monsters-${level}-team-in-box`);
+        await play({ from: 1, to: 99 });
+      } else await play({ from: 0, to: 99 });
       await screenshot(`word-monsters-${level}`);
       await finished('word-monsters');
       const r = await page.evaluate(() => {
@@ -153,7 +196,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
       });
       assert.deepEqual(
         r,
-        mode === 'play' ? [0, 0] : mode === 'slow' ? [2, 2] : [2, 1],
+        mode === 'play' ? [0, 0] : mode === 'slow' || mode === 'team' ? [2, 2] : [2, 1],
         `monsters ${level} score`,
       );
       for (const size of restore.splice(0)) await page.setViewportSize(size);

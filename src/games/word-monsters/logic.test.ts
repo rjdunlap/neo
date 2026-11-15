@@ -32,6 +32,14 @@ import {
   PICTURE_WORDS,
   SOUNDS,
   RIMES,
+  TEAM_LEVEL,
+  TEAM_PLAN,
+  TEAM_SOUNDS,
+  TEAM_SPELLINGS,
+  TEAM_WORDS,
+  TEAMS,
+  teamMonsters,
+  unitsOf,
 } from './logic';
 import { wordPicture } from './pictures';
 
@@ -46,7 +54,16 @@ describe('Word Monsters', () => {
     for (const band of ['toddler', 'preschool', 'prek', 'school'] as const)
       expect(levelsInOrder(LEVELS[band]!)).not.toContain(BIG_LEVEL);
     // The ladder's levels 1–8 are unchanged; school skips lap's 9.
-    expect(levelsInOrder(LEVELS.school!)).toEqual([5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([
+      5,
+      6,
+      7,
+      8,
+      LAST_LEVEL,
+      SLOW_LEVEL,
+      REPAIR_LEVEL,
+      TEAM_LEVEL,
+    ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
     expect(SCRIPT['monster.big']).toBeDefined();
     for (let seed = 1; seed <= 200; seed++) {
@@ -311,5 +328,94 @@ describe('Word Monsters', () => {
         }
       }
     }
+  });
+
+  it('level 13 builds words where one monster wears a two-letter team and fills one box', () => {
+    expect(planFor(TEAM_LEVEL)).toBe(TEAM_PLAN);
+    expect(TEAM_PLAN).toMatchObject({ mode: 'team', rounds: 3, choices: 4 });
+    expect(stepLevel(REPAIR_LEVEL, 1, LEVELS.school!)).toBe(TEAM_LEVEL);
+    for (const id of ['monster.team', 'monster.team.half', ...TEAMS.map((t) => `sound.${t}`)])
+      expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
+    for (const line of SCRIPT['monster.team']) expect(line).not.toContain('{sounds}');
+    // Teams never join the single-letter pools, so no other level offers one.
+    for (const t of TEAMS) {
+      expect(ALPHABET).not.toContain(t);
+      expect(WHO_POOL).not.toContain(t);
+    }
+    // The words: spelled by their units, one team at least, every team used, pictured, no mirror pair.
+    const used = new Set<string>();
+    for (const w of TEAM_WORDS) {
+      const units = TEAM_SPELLINGS[w];
+      expect(units.join(''), w).toBe(w);
+      expect(new Set(units).size, w).toBe(units.length);
+      const teams = units.filter((u) => u.length > 1);
+      expect(teams.length, w).toBeGreaterThanOrEqual(1);
+      for (const u of units) expect(u.length === 1 ? SOUNDS[u] : TEAM_SOUNDS[u], `${w} ${u}`).toBeDefined();
+      teams.forEach((t) => used.add(t));
+      expect([...w].filter((l) => 'bdpq'.includes(l)).length, w).toBeLessThanOrEqual(1);
+      expect(w.includes('i') && w.includes('l'), w).toBe(false);
+      expect(w, 'll is a second two-letter sound').not.toContain('ll');
+      const p = wordPicture(w);
+      expect(p.getBounds().width, w).toBeGreaterThan(120);
+      p.destroy({ children: true });
+    }
+    expect([...used].sort()).toEqual([...TEAMS].sort());
+    // The team sits first in some words and last in others, so where it goes is heard, not learned.
+    const spots = new Set(TEAM_WORDS.map((w) => TEAM_SPELLINGS[w].findIndex((u) => u.length > 1)));
+    expect(spots.size).toBeGreaterThan(1);
+    // No other level's word lists take a team word.
+    for (const w of [...LAST_WORDS, ...SLOW_WORDS, ...PICTURE_WORDS])
+      for (const t of TEAMS) expect(w, w).not.toContain(t);
+  });
+
+  it('level 13 rounds: units fill the boxes, spares never complete a team or say its sound, half-team decoys appear', () => {
+    let halves = 0;
+    let rounds = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(TEAM_PLAN, new Rng(seed));
+      expect(qs).toHaveLength(TEAM_PLAN.rounds);
+      expect(new Set(qs.map((q) => q.answer)).size).toBe(qs.length);
+      // Three different teams when there are enough.
+      expect(new Set(qs.map((q) => unitsOf(q).find((u) => u.length > 1))).size).toBe(TEAM_PLAN.rounds);
+      for (const q of qs) {
+        rounds++;
+        const units = unitsOf(q);
+        expect(units).toEqual(TEAM_SPELLINGS[q.answer as keyof typeof TEAM_SPELLINGS]);
+        expect(q.monsters).toHaveLength(TEAM_PLAN.choices);
+        for (const u of units)
+          expect(
+            q.monsters.filter((m) => m === u),
+            u,
+          ).toHaveLength(1);
+        const spares = q.monsters.filter((m) => !units.includes(m));
+        expect(spares).toHaveLength(TEAM_PLAN.choices - units.length);
+        for (const s of spares) {
+          expect(s).toHaveLength(1);
+          expect(WHO_POOL).toContain(s);
+          for (const u of units) {
+            // Never a lone c or k beside ck: it would say the team's sound.
+            expect(soundTwin(s, u), `${q.answer} ${s}`).toBe(false);
+            if (u.length === 1) expect(lookalike(s, u), `${q.answer} ${s}`).toBe(false);
+          }
+        }
+        for (const t of units.filter((u) => u.length > 1)) {
+          const parts = spares.filter((s) => t.includes(s));
+          expect(parts.length, `${q.answer}: both letters of ${t}`).toBeLessThanOrEqual(1);
+          if (parts.length) halves++;
+        }
+        // The bot finishes the word box by box, team included.
+        const ms = q.monsters.map((letter) => ({ letter, placed: false }));
+        for (let filled = 0; filled < units.length; filled++) {
+          const m = nextMonster(TEAM_PLAN, q, ms, filled, 0);
+          expect(m?.letter).toBe(units[filled]);
+          m!.placed = true;
+        }
+      }
+    }
+    expect(halves / rounds).toBeGreaterThan(0.25);
+    expect(halves / rounds).toBeLessThan(0.75);
+    // ck words offer neither c nor k as a spare.
+    for (let seed = 1; seed <= 100; seed++)
+      for (const m of teamMonsters(new Rng(seed), ['d', 'u', 'ck'], 4)) expect(['c', 'k']).not.toContain(m);
   });
 });
