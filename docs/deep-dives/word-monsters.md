@@ -197,7 +197,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 5. **Level 10, Blend it** (after slices 2 and 3; blocked on the speech check). A new interaction (cards). Tier: unit tests, **one** scripted play (first and last level, one wrong card, one hint) and one portrait screenshot.
 6. **Level 11, Say it slowly** **Done (2026-11-14, [PR #1661](https://github.com/rjdunlap/neo/pull/1661)).** Level 6's interaction without the sound list. Tier: rule tests, a play at 11, `fingerdemo` at 11.
 7. **Level 12, Fix the pet's word.** Built 2026-11-14 ([PR #1666](https://github.com/rjdunlap/neo/pull/1666)). Three pictured word pairs per round, with a different letter position to fix each time. Tap to lift, drag to replace, and use the speaker to hear what the pet spelled. [Verification](../verification/2026-11-14-word-monsters-level-12-fix-the-pet-s-word.md).
-8. **Level 13, Two letters, one sound** (decision 4). A team monster and the digraph pictures. Same tier plus a screenshot of the team at three views.
+8. **Level 13, Two letters, one sound** (decision 4). **Claimed 2026-11-14** (branch `claude/word-monsters-two-letters`; files: `src/games/word-monsters/*`, the batch browser suite). A team monster and the digraph pictures. Same tier plus a screenshot of the team at three views.
 9. **Level 14, Four sounds** (a four-slot row at four views).
 10. **Level 15, The magic e** (the long-vowel lines on the speech check).
 11. **Level 16, Change one sound.** A ladder table and tap-to-lift; the first chain uses the nine existing pictures.
