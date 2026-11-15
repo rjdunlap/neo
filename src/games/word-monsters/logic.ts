@@ -27,6 +27,8 @@ export interface MonsterPlan {
   /** Monsters to choose from. */
   choices: number;
   name: string;
+  /** Word pool for a word-only spelling round. */
+  words?: readonly string[];
   /** Level 9, lap's opening: one big monster at a time, and a touch anywhere makes it say its sound. */
   big?: boolean;
 }
@@ -112,13 +114,40 @@ export const TEAM_PLAN: MonsterPlan = {
   name: 'Two letters, one sound: build fish, duck or bath, where one monster wears two letters (sh, ch, th, ck) and fills one box',
 };
 
+// Adjacent consonants here make separate sounds. Keep this pool separate from the three-box words.
+export const FOUR_WORDS = [
+  'nest',
+  'frog',
+  'drum',
+  'flag',
+  'crab',
+  'lamp',
+  'milk',
+  'belt',
+  'plum',
+  'hand',
+] as const;
+export type FourWord = (typeof FOUR_WORDS)[number];
+export const FOUR_LEVEL = 14;
+export const FOUR_PLAN: MonsterPlan = {
+  mode: 'slow',
+  rounds: 3,
+  choices: 5,
+  words: FOUR_WORDS,
+  name: 'Four sounds: say a pictured word slowly and build it in four boxes, with a spare letter',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
   // 9 is lap's big monster, so the school order skips it.
-  school: { min: 5, max: TEAM_LEVEL, order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL, TEAM_LEVEL] },
+  school: {
+    min: 5,
+    max: FOUR_LEVEL,
+    order: [5, 6, 7, 8, LAST_LEVEL, SLOW_LEVEL, REPAIR_LEVEL, FOUR_LEVEL, TEAM_LEVEL],
+  },
 };
 
 /**
@@ -150,7 +179,9 @@ export const planFor = (level: number) =>
           ? REPAIR_PLAN
           : level === TEAM_LEVEL
             ? TEAM_PLAN
-            : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+            : level === FOUR_LEVEL
+              ? FOUR_PLAN
+              : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /**
  * How each letter's sound is written for the device voice, which has no phonics.
@@ -416,7 +447,7 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   }
   if (plan.mode === 'slow') {
     // The spare comes from the plain-sound pool and never sounds like or looks like a needed letter.
-    for (const word of rng.shuffle([...SLOW_WORDS]).slice(0, plan.rounds)) {
+    for (const word of rng.shuffle([...(plan.words ?? SLOW_WORDS)]).slice(0, plan.rounds)) {
       out.push({ answer: word, monsters: pickLetters(rng, plan.choices, word.split(''), WHO_POOL) });
     }
     return out;

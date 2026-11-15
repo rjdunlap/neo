@@ -51,6 +51,11 @@ export const HOW_TO: GameHowTo = {
       to: 13,
       text: 'Build the pictured word in the boxes. One monster wears two letters (sh, ch, th or ck) and fills one box: together they make one sound. Tap the boxes to hear the sounds, or the picture to hear the word.',
     },
+    {
+      from: 14,
+      to: 14,
+      text: 'Say the pictured word slowly and drag one monster into each of the four boxes. In frog, f and r go in separate boxes. Tap the boxes to hear the sounds.',
+    },
   ],
   finish: 'The round ends when the asked-for letters or word are found.',
   note: "Spoken letter sounds depend on the device's speech voice.",

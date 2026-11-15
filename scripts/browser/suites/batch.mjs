@@ -13,12 +13,24 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
     // Word Monsters: sounds, finding letters, first sounds, building words by dragging, (10) last sounds and (11) a word
     // built from the word alone, where tapping the boxes says its sounds (one hint per word); (13) the same with a wide
     // two-letter team monster (sh, ch, th, ck) that fills one box, shown at three views and in its box.
+    // Level 14 reuses the word-only round with four boxes and five loose monsters.
     // MONSTER_LEVELS=10 plays only the listed levels.
     const monsterLevels = process.env.MONSTER_LEVELS
       ? process.env.MONSTER_LEVELS.split(',').map(Number)
       : [1, 2, 3, 4, 5, 6];
     const restore = [];
     for (const level of !only || only === 'monsters' ? monsterLevels : []) {
+      const touch = level === 14 ? await context.newCDPSession(page) : null;
+      const url = page.url();
+      if (touch) {
+        // Exercise the upright design area through the same opt-in as the upright sweep.
+        await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true });
+        await page.evaluate(() => {
+          const testUrl = new URL(location.href);
+          testUrl.searchParams.set('uprightall', '');
+          history.replaceState(null, '', testUrl);
+        });
+      }
       await launch('word-monsters', level);
       await page.waitForTimeout(600);
       const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -35,13 +47,29 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           await kit.sleep(400);
           if (g.misses !== 0 || g.hints !== 0) throw new Error('A picture tap counted as a miss');
         });
+        if (level === 14) {
+          await page.evaluate(() => {
+            const g = neo.scene.game;
+            if (!g.view.upright) throw new Error('Expected the upright design area');
+            const boxes = Array.from({ length: 4 }, (_, i) => g.slotAt(i).x);
+            const bounds = g.slots.hitArea;
+            if (boxes[0] + boxes[3] !== g.view.w || bounds.width < 600)
+              throw new Error('The four-box row does not fit its centered hint target');
+            for (const [i, m] of g.monsters.entries()) {
+              if (g.monsters.slice(i + 1).some((n) => Math.hypot(m.x - n.x, m.y - n.y) < 172))
+                throw new Error('The loose monster hit areas overlap');
+            }
+          });
+        }
         await screenshot(`word-monsters-${level}-portrait`);
-        if (mode === 'team') {
-          // The wide team monster in the loose row on a phone held sideways and on the 4:3 design view.
-          for (const [width, height, name] of [
+        if (mode === 'team' || level === 14) {
+          // Check the wide team or the four-box layout outside the play viewport as well.
+          const views = [
             [844, 390, 'landscape'],
             [1024, 768, 'desktop'],
-          ]) {
+          ];
+          if (level === 14) views.push([320, 568, 'narrow-portrait']);
+          for (const [width, height, name] of views) {
             await page.setViewportSize({ width, height });
             await page.waitForTimeout(500);
             await screenshot(`word-monsters-${level}-${name}`);
@@ -134,10 +162,8 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
                   await kit.sleep(450);
                   return;
                 }
-                const slot = g.top.parent.toGlobal({
-                  x: g.top.x + (g.filled - 1) * 150,
-                  y: g.top.y + 106 + 40,
-                });
+                const target = g.slotAt(g.filled);
+                const slot = g.top.parent.toGlobal({ x: target.x, y: target.y + 40 });
                 await kit.dragTo(m, slot, 10);
                 await kit.sleep(500);
               };
@@ -155,7 +181,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
                 // Tapping the boxes says the word slowly: one hint for the word, however often she taps.
                 const before = g.hints;
                 // The last box, still empty: the row's own origin sits above the boxes.
-                const box = g.slots.toGlobal({ x: 150, y: 106 });
+                const box = g.slots.toGlobal({ x: g.slotX(units.length - 1), y: 106 });
                 kit.tap(box.x, box.y);
                 await kit.sleep(900);
                 kit.tap(box.x, box.y);
@@ -200,6 +226,11 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
         `monsters ${level} score`,
       );
       for (const size of restore.splice(0)) await page.setViewportSize(size);
+      if (touch) {
+        await touch.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+        await touch.detach();
+        await page.evaluate((original) => history.replaceState(null, '', original), url);
+      }
       log(
         `Word Monsters ${level} (${mode}): sounds, choices, mistakes, hint, saved score and sticker passed`,
       );

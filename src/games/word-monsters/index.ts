@@ -15,7 +15,7 @@ import { RoundButton } from '../../ui/buttons';
 import { HINT_AFTER, hinted } from '../../progress/coach';
 import { label } from '../../ui/text';
 import { letterPicture } from '../../art/letter-pictures';
-import { wordPicture } from './pictures';
+import { wordPicture, type WordPicture } from './pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -31,8 +31,6 @@ import {
   soundOf,
   SOUNDS,
   unitsOf,
-  type PictureWord,
-  type TeamWord,
   type MonsterPlan,
   type Question,
 } from './logic';
@@ -293,11 +291,16 @@ class WordMonsters implements Game {
     }
     for (const m of this.monsters) if (m.placed) m.position.copyFrom(this.slotAt(m.slot));
     const loose = this.monsters.filter((m) => !m.placed);
-    const xs = spread(loose.length, 150, v.w - 40, 190);
+    // Five full-size targets need two rows on a narrow screen.
+    const fourSounds = this.plan.choices === 5;
+    const rows = fourSounds && v.w < 1020 ? [loose.slice(0, 3), loose.slice(3)] : [loose];
     const row = this.plan.mode === 'repair' ? Math.min(v.h - 130, this.slotAt(0).y + 375) : v.h - 130;
-    loose.forEach((m, i) => {
-      m.position.set(xs[i], row + (i % 2 ? 18 : -10));
-      if (m.drag) m.drag.home = { x: m.x, y: m.y };
+    rows.forEach((monsters, j) => {
+      const xs = spread(monsters.length, fourSounds ? 140 : 150, v.w - (fourSounds ? 20 : 40), 190);
+      monsters.forEach((m, i) => {
+        m.position.set(xs[i], row - (rows.length - 1 - j) * 205 + (i % 2 ? 18 : -10));
+        if (m.drag) m.drag.home = { x: m.x, y: m.y };
+      });
     });
   }
 
@@ -469,10 +472,10 @@ class WordMonsters implements Game {
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
     if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair) {
-      this.showPicture(this.sayingPicture(q.answer as PictureWord | TeamWord), 0.5, -110);
+      this.showPicture(this.sayingPicture(q.answer as WordPicture), 0.5, -110);
       this.drawSlots(unitsOf(q).length);
     } else if (this.building) {
-      this.showPicture(wordPicture(q.answer as PictureWord), 0.5, -110);
+      this.showPicture(wordPicture(q.answer as WordPicture), 0.5, -110);
       this.drawSlots(q.answer.length, q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
@@ -506,8 +509,8 @@ class WordMonsters implements Game {
     });
   }
 
-  /** Levels 10 to 13: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
-  private sayingPicture(word: PictureWord | TeamWord) {
+  /** From level 10: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
+  private sayingPicture(word: WordPicture) {
     const p = wordPicture(word);
     // A generous square around the drawing (about 215 units across at its shown scale), clear of the monster row on a short view, so a near miss still counts.
     p.hitArea = new Rectangle(-120, -120, 240, 240);
@@ -698,7 +701,8 @@ class WordMonsters implements Game {
   // Building words ---------------------------------------------------------------------
 
   private slotX(i: number) {
-    return (i - 1) * 150;
+    const count = this.question ? unitsOf(this.question).length : 3;
+    return (i - (count - 1) / 2) * 150;
   }
 
   /** Slot `i`'s middle, in stage units. */
@@ -744,7 +748,7 @@ class WordMonsters implements Game {
   /** `count` boxes, one per sound; level 5 also shows `word`'s letters faintly in them. */
   private drawSlots(count: number, word = '') {
     const g = this.slots.clear();
-    // Level 11's and 13's boxes are a thing to tap: a generous area over the whole row.
+    // Give the sound hint one generous tap area over the whole row.
     if (this.plan.mode === 'slow' || this.plan.mode === 'team')
       g.hitArea = new Rectangle(this.slotX(0) - 80, 26, this.slotX(count - 1) - this.slotX(0) + 160, 160);
     for (let i = 0; i < count; i++) {
@@ -770,9 +774,10 @@ class WordMonsters implements Game {
     // The crowd layer sits on the stage untransformed, so (x, y) are stage units.
     const slot = this.slotAt(this.filled);
     // Generous: anywhere over the slot row counts as trying the next slot.
-    if (Math.abs(y - slot.y) > 140 || Math.abs(x - this.top.x) > 280) return false;
-    if (q.repair && (this.wrongMonster() || Math.abs(x - slot.x) > 75)) return false;
     const units = unitsOf(q);
+    const edge = Math.max(280, this.slotX(units.length - 1) + 80);
+    if (Math.abs(y - slot.y) > 140 || Math.abs(x - this.top.x) > edge) return false;
+    if (q.repair && (this.wrongMonster() || Math.abs(x - slot.x) > 75)) return false;
     const want = units[this.filled];
     if (!fits(units, this.filled, m.letter)) {
       this.misses++;
