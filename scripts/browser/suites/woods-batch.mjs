@@ -2204,7 +2204,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(5, Number(process.env.TO_LEVEL || 5)); level++) {
+      for (let level = fromLevel; level <= Math.min(6, Number(process.env.TO_LEVEL || 6)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -2232,7 +2232,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               const g = neo.scene.game;
               const s = g.snacks.find((x) => !x.eaten && x.food === food);
               const f = g.friends.find((x) => x.name === name);
-              await kit.dragTo(s.node, { x: f.node.x, y: f.node.y - 80 }, 14);
+              // dragTo takes screen points; the animal's place is in stage units, which differ once the view scales.
+              await kit.dragTo(s.node, f.node.parent.toGlobal({ x: f.node.x, y: f.node.y - 80 }), 14);
             },
             { food, name },
           );
@@ -2440,7 +2441,49 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           const rounds = await page.evaluate(() => neo.scene.game.rounds);
           for (const [n, r] of rounds.entries()) {
             await idle(n);
-            if (mode === 'who') {
+            if (mode === 'sound') {
+              // Level 6, Who says moo?: the speaker bubble, then a snack dragged to the animal that made the sound.
+              const fav = await page.evaluate(async () => {
+                const L = await import('/src/games/animal-snack/logic.ts');
+                return L.FAVORITE;
+              });
+              if (n === 0) {
+                // Played upright on a phone: three snacks keep their full hit areas apart under the speaker.
+                await page.setViewportSize({ width: 390, height: 844 });
+                await page.waitForTimeout(300);
+                await screenshot('animal-snack-6-phone');
+                assert.ok(
+                  await page.evaluate(() => {
+                    const g = neo.scene.game;
+                    return g.snacks.every((s, i) => i === 0 || s.node.x - g.snacks[i - 1].node.x >= 132);
+                  }),
+                  'phone snacks keep their full hit areas apart',
+                );
+                assert.ok(
+                  await page.evaluate(() => neo.scene.game.bubble.eventMode === 'static'),
+                  'the speaker bubble replays the sound',
+                );
+                const wrong = r.animals.find((a) => a !== r.ask);
+                // The wrong animal's own snack on the wrong animal is still a miss: the sound named another.
+                await give(fav[wrong], wrong);
+                await give(fav[wrong], r.ask);
+                assert.deepEqual(await counts(), [2, 1], 'a wrong animal and a wrong food are misses');
+                assert.ok(
+                  await page.evaluate(
+                    (ask) =>
+                      neo.scene.game.glowing === neo.scene.game.friends.find((f) => f.name === ask).node,
+                    r.ask,
+                  ),
+                  'the second miss glows the animal that made the sound',
+                );
+                assert.equal(
+                  await page.evaluate(() => neo.scene.game.snacks.filter((s) => s.eaten).length),
+                  0,
+                  'missed snacks slide home uneaten',
+                );
+              }
+              await give(fav[r.ask], r.ask);
+            } else if (mode === 'who') {
               if (n === 0) {
                 const wrong = r.animals.find((a) => a !== r.ask);
                 await tapAnimal(wrong);
@@ -2485,7 +2528,8 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         await finished('animal-snack');
         assert.deepEqual(await score('animal-snack'), mode === 'munch' || mode === 'float' ? [0, 0] : [2, 1]);
-        if (level === 3 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
+        if (level === 3 || level === 5 || level === 6)
+          await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Animal Snack ${level} (${mode}): animals and snacks tapped and dragged, wrong eaters as misses, glow hint, saved score and sticker passed`,
         );

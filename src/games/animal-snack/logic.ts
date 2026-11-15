@@ -10,12 +10,12 @@ import type { BandLevels } from '../../progress/difficulty';
  * animal and it munches its snack, or tap a snack and it floats to the animal who loves it. Then
  * "who eats grass?", giving each animal its food by dragging, and finally a number of snacks.
  */
-export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count';
+export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound';
 
 export interface SnackPlan {
   mode: SnackMode;
   animals: number;
-  /** Taps ('munch', 'float'), questions ('who', 'count') or foods to hand out ('match'). */
+  /** Taps ('munch', 'float'), questions ('who', 'count', 'sound') or foods to hand out ('match'). */
   rounds: number;
   name: string;
   /** Lap's opening: one big animal, a touch anywhere feeds, and the others walk in as she feeds (see `friendsAfter`). */
@@ -34,12 +34,19 @@ export const PLANS: SnackPlan[] = [
   { mode: 'who', animals: 3, rounds: 4, name: 'Who eats grass? or Who says moo? Tap the animal' },
   { mode: 'match', animals: 3, rounds: 3, name: 'Drag each snack to the animal who eats it' },
   { mode: 'count', animals: 3, rounds: 3, name: 'Give an animal 2 to 4 of its snack, then ring the bell' },
+  {
+    mode: 'sound',
+    animals: 3,
+    rounds: 4,
+    name: 'Who says moo? Drag its own snack to the animal that makes the sound',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
+  prek: { min: 5, max: 6 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -272,7 +279,7 @@ export const SOUNDERS = ANIMALS.filter((a) => SOUND_WORDS[a]);
 
 export interface SnackRound {
   animals: CritterName[];
-  /** 'who': the clue is the food (default) or the animal's sound; every second question uses the sound. */
+  /** 'who': the clue is the food (default) or the animal's sound; every second question uses the sound. 'sound': always the sound. */
   by?: 'food' | 'sound';
   /** The animal asked about ('who', 'count'), or none. */
   ask?: CritterName;
@@ -291,7 +298,8 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
       out.push({ animals: fixed });
       continue;
     }
-    const by = plan.mode === 'who' ? (i % 2 === 1 ? 'sound' : 'food') : undefined;
+    const by =
+      plan.mode === 'who' ? (i % 2 === 1 ? 'sound' : 'food') : plan.mode === 'sound' ? 'sound' : undefined;
     let animals: CritterName[];
     let ask: CritterName;
     do {
@@ -305,6 +313,19 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
   return out;
 }
 
+/**
+ * Level 6, Who says moo?: a snack dropped on an animal. The animal is judged first: the asked sound names exactly one
+ * animal, so any other animal is the wrong one even when the snack is its own favorite (it answers in its own voice).
+ * The right animal with another animal's food says no thank you; its own food is a yum.
+ */
+export type SoundDrop = 'yum' | 'wrongAnimal' | 'wrongFood';
+export const soundDrop = (ask: CritterName, food: Food, to: CritterName): SoundDrop =>
+  to !== ask ? 'wrongAnimal' : FAVORITE[ask] === food ? 'yum' : 'wrongFood';
+
+/** Level 6's help: the second miss on a question glows the animal that makes the sound, the fourth its snack. */
+export const soundHelp = (wrongs: number): 'animal' | 'snack' | null =>
+  wrongs === 2 ? 'animal' : wrongs === 4 ? 'snack' : null;
+
 /** One touch of the ghost finger: an animal (by its place in the row), a snack on the blanket, a snack carried to an animal, or the bell. */
 export type SnackTouch = { friend: number } | { snack: number } | { give: number; to: number } | 'bell';
 
@@ -312,7 +333,7 @@ export type SnackTouch = { friend: number } | { snack: number } | { give: number
 export interface SnackTable {
   friends: CritterName[];
   snacks: { food: Food; eaten: boolean }[];
-  /** 'who' and 'count': the animal asked about; 'count': how many snacks it should get. */
+  /** 'who', 'sound' and 'count': the animal asked about; 'count': how many snacks it should get. */
   ask?: CritterName;
   n?: number;
   /** 'munch' and 'float': snacks eaten so far. */
@@ -321,8 +342,8 @@ export interface SnackTable {
 
 /**
  * What a capable child touches next. Free play ('munch') visits each animal in turn; 'float' taps the next snack waiting;
- * 'who' taps the animal asked about; 'match' carries the next snack to the animal that eats it; 'count' gives the animal
- * exactly the number asked for and then rings the bell. It never touches the wrong animal or rings early.
+ * 'who' taps the animal asked about; 'match' carries the next snack to the animal that eats it; 'sound' carries the asked
+ * animal's own snack to it; 'count' gives the animal exactly the number asked for and then rings the bell. It never touches the wrong animal or rings early.
  */
 export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
   const waiting = t.snacks.findIndex((s) => !s.eaten);
@@ -339,6 +360,11 @@ export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
       if (waiting < 0) return null;
       const to = t.friends.findIndex((a) => a === eaterOf(t.snacks[waiting].food));
       return to < 0 ? null : { give: waiting, to };
+    }
+    case 'sound': {
+      const give = t.snacks.findIndex((s) => !s.eaten && s.food === FAVORITE[t.ask!]);
+      const to = t.friends.findIndex((a) => a === t.ask);
+      return give < 0 || to < 0 ? null : { give, to };
     }
     case 'count': {
       const fed = t.snacks.filter((s) => s.eaten).length;
