@@ -270,6 +270,17 @@ export const SHARED = {
   'couch.rows.hint-fix': ['This flower does not belong here. Ring it and press the bottom button to take it out, then try a different one.'],
   'couch.map.clues': ['The {firstThing} is {first}. The {secondThing} is {second}. Move the ring to where the two clues meet, and press the bottom button!'],
   'couch.hop.gap': ['How many hops from {n} to {m}? Move to a number card, then press the bottom button.'],
+  'couch.hop.rest': ['That is {a} hops to 10. {k} hops in all, so {n} more. Move to where the frog lands, then press the bottom button!'],
+  'couch.hop.restback': [
+    'That is {a} hops back to 10. {k} hops back in all, so {n} more. Move to where the frog lands, then press the bottom button!',
+  ],
+  'couch.hop.countup': [
+    '{m} take away {n}. The frog is on {n}. How many hops to the flag on {m}? Move to a number card, then press the bottom button.',
+  ],
+  'couch.hop.yourway.stop': ['Ten! {a} to ten, {k} in all. Move to where the frog lands, then press the bottom button!'],
+  'couch.hop.yourway.stopback': [
+    'Ten! {a} back to ten, {k} back in all. Move to where the frog lands, then press the bottom button!',
+  ],
   'couch.sink.guess': ['Will the {thing} float or sink? Choose with left and right, then press the bottom button!'],
   'parent.ask': ['That one is for grown-ups. Ask a grown-up to help!'],
   'start.hi':['Hi, {name}!', 'Hello, {name}!', 'Yay, {name} is here!'],

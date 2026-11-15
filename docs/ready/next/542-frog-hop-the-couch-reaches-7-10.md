@@ -1,1 +1,0 @@
-**`frog-hop`, the couch reaches 7–10** (couch-catalog tier: `BROWSER_SUITE=couchgames` filtered to Frog Hop): slices 3–5 are built, so the couch's last stops play level 7, then 8 and the later take-away levels (today `level` in `src/couch/catalog.ts` stops at 6). [Frog Hop dive, slice 8](../../deep-dives/frog-hop.md#build-slices-in-order)

@@ -313,8 +313,16 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     faceoff: 'team',
     band: 'school',
     demoLevel: 3,
-    level: (stop) => [3, 3, 4, 5, 6, 6][stop] ?? 6,
-    lines: { 'hop.gap': 'couch.hop.gap' },
+    // On, then the gap, then over ten (7), back over ten (8), count up to take away (11) and over ten your way (12).
+    level: (stop) => [3, 5, 7, 8, 11, 12][stop] ?? 12,
+    lines: {
+      'hop.gap': 'couch.hop.gap',
+      'hop.rest': 'couch.hop.rest',
+      'hop.restback': 'couch.hop.restback',
+      'hop.countup': 'couch.hop.countup',
+      'hop.yourway.stop': 'couch.hop.yourway.stop',
+      'hop.yourway.stopback': 'couch.hop.yourway.stopback',
+    },
   },
   'garden-rows': {
     goal: 'couch.how.garden-rows',
