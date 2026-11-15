@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
+import { Critter, CRITTERS, FIRST_CAST } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { musicNote, starPoints } from '../../art/shapes';
 import { Backdrop } from '../../art/scenery';
@@ -546,9 +546,7 @@ class HatBandIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const names = (Object.keys(CRITTERS) as (keyof typeof CRITTERS)[]).filter(
-    (n) => n !== 'bear' && n !== 'pip',
-  );
+  const names = FIRST_CAST.filter((n) => n !== 'bear' && n !== 'pip');
   const friend = new Critter(CRITTERS[rng.pick(names)]);
   friend.alive = false;
   friend.scale.set(0.5);

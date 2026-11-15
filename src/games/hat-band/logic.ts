@@ -1,4 +1,4 @@
-import { CRITTERS, type CritterName } from '../../art/critter';
+import { FIRST_CAST, type CritterName } from '../../art/critter';
 import { PENTATONIC } from '../../audio/notes';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -87,9 +87,7 @@ export interface Round {
   rack: HatId[];
 }
 /** The band's friends: anyone except the mountain's host bear and the pip (the companion's look). */
-const FRIENDS: CritterName[] = (Object.keys(CRITTERS) as CritterName[]).filter(
-  (n) => n !== 'bear' && n !== 'pip',
-);
+const FRIENDS: CritterName[] = FIRST_CAST.filter((n) => n !== 'bear' && n !== 'pip');
 
 /** A seeded round: who stands on stage and which hats hang where. Level 1 has one hat of each role, levels 2–3 all four. */
 export function makeRound(rng: Rng, level: number): Round {

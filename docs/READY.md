@@ -27,7 +27,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **New games admitted 2026-11-05** (the developer asked for the recommendations to be made without waiting; identity, bands, land and accounting use the defaults settled in the [October 23 record](archive/DECISIONS-2026-10-23.md#decisions)). Each building session still does its own source check and the lands test at build time, since a full land pages rather than shrinks. They are in order of her age first, one game per session, new-game tier as each definition's check tier sets it:
 
-- **`peekaboo-barn`, levels 10–11 Whose ears?** (new-level tier: rule tests, one browser play of level 10, `fingerdemo` at it; take the top-pose screenshot first): three animals show only the top of the head, then four. [Peekaboo Barn dive, slice 6](deep-dives/peekaboo-barn.md#build-slices-in-order)
 
 
 

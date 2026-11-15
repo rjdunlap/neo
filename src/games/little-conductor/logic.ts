@@ -1,4 +1,4 @@
-import { CRITTERS, type CritterName } from '../../art/critter';
+import { FIRST_CAST, type CritterName } from '../../art/critter';
 import { PENTATONIC } from '../../audio/notes';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -75,9 +75,7 @@ export interface Round {
   requests: [PaceId, PaceId];
 }
 /** The band's friends: anyone from the cast except the mountain's host bear and the pip (the companion's look). */
-const BAND: CritterName[] = (Object.keys(CRITTERS) as CritterName[]).filter(
-  (n) => n !== 'bear' && n !== 'pip',
-);
+const BAND: CritterName[] = FIRST_CAST.filter((n) => n !== 'bear' && n !== 'pip');
 export function makeRound(rng: Rng): Round {
   const motif = rng.pick(MOTIFS);
   const friends = rng.shuffle([...BAND]);

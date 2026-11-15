@@ -108,6 +108,10 @@ export const CUSTOMER_NAMES: Record<CritterName, string> = {
   bear: 'Bear',
   dog: 'Dog',
   bunny: 'Bunny',
+  sheep: 'Sheep',
+  horse: 'Horse',
+  hen: 'Hen',
+  mouse: 'Mouse',
 };
 
 /** Who is in the chair this round: null is her own pet. */

@@ -51,7 +51,8 @@ export const LEVELS: BandLevels = {
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export type Food = 'hay' | 'grass' | 'bone' | 'fish' | 'seeds' | 'apple' | 'honey';
+export type Food =
+  'hay' | 'grass' | 'bone' | 'fish' | 'seeds' | 'apple' | 'honey' | 'oats' | 'corn' | 'grain';
 
 /** Food names in ordinary speech, and the countable thing drawn on the blanket. */
 export const FOOD_WORDS: Record<Food, string> = {
@@ -62,6 +63,9 @@ export const FOOD_WORDS: Record<Food, string> = {
   seeds: 'seeds',
   apple: 'apples',
   honey: 'honey',
+  oats: 'oats',
+  corn: 'corn',
+  grain: 'grain',
 };
 export const FOOD_UNITS: Record<Food, { one: string; many: string }> = {
   hay: { one: 'bale of hay', many: 'bales of hay' },
@@ -71,6 +75,9 @@ export const FOOD_UNITS: Record<Food, { one: string; many: string }> = {
   seeds: { one: 'handful of seeds', many: 'handfuls of seeds' },
   apple: { one: 'apple', many: 'apples' },
   honey: { one: 'pot of honey', many: 'pots of honey' },
+  oats: { one: 'bucket of oats', many: 'buckets of oats' },
+  corn: { one: 'cob of corn', many: 'cobs of corn' },
+  grain: { one: 'ear of grain', many: 'ears of grain' },
 };
 export const countedFood = (food: Food, n: number) => FOOD_UNITS[food][n === 1 ? 'one' : 'many'];
 
@@ -231,7 +238,10 @@ export function farBarnAt(scene: Scene, w: number, h: number, animals: number): 
   return { x: (best[0] + best[1]) / 2, base, height };
 }
 
-/** Who eats what: one food each, so every question has one answer. */
+/**
+ * Who eats what: one favorite each. The sheep and the bunny both love grass, so they are never dealt together and
+ * every question still has one answer among the animals present (`dealAnimals`).
+ */
 export const FAVORITE: Partial<Record<CritterName, Food>> = {
   cow: 'hay',
   bunny: 'grass',
@@ -240,8 +250,28 @@ export const FAVORITE: Partial<Record<CritterName, Food>> = {
   duck: 'seeds',
   pig: 'apple',
   bear: 'honey',
+  sheep: 'grass',
+  horse: 'oats',
+  hen: 'corn',
+  mouse: 'grain',
 };
+/** Every animal at snack time, in the order the journal lists them. */
 export const ANIMALS = Object.keys(FAVORITE) as CritterName[];
+/** The seven first words: the only animals at levels 1 and 2. */
+export const FIRST_ANIMALS: CritterName[] = ['cow', 'bunny', 'dog', 'cat', 'duck', 'pig', 'bear'];
+/** Who can come to snack time at this plan: the seven in free play, all eleven from level 3's questions up. */
+export const poolFor = (plan: SnackPlan): CritterName[] =>
+  plan.mode === 'munch' || plan.mode === 'float' ? FIRST_ANIMALS : ANIMALS;
+
+/** `n` animals from `pool` in a random order, never two with the same favorite food. */
+export function dealAnimals(pool: CritterName[], n: number, rng: Rng): CritterName[] {
+  const out: CritterName[] = [];
+  for (const a of rng.shuffle([...pool])) {
+    if (out.length === n) break;
+    if (!out.some((b) => FAVORITE[b] === FAVORITE[a])) out.push(a);
+  }
+  return out;
+}
 /** How each food sounds when bitten: a crunch, a swish, a gnaw, a gulp, pecks or a lick. */
 export const BITE: Record<Food, BiteKind> = {
   grass: 'swish',
@@ -251,10 +281,14 @@ export const BITE: Record<Food, BiteKind> = {
   fish: 'gulp',
   seeds: 'peck',
   honey: 'lick',
+  oats: 'crunch',
+  corn: 'peck',
+  grain: 'gnaw',
 };
 /** Bites per snack, and the size left after each one: the last leaves nothing. */
 export const BITE_SIZES = [0.7, 0.4, 0] as const;
-export const eaterOf = (food: Food) => ANIMALS.find((a) => FAVORITE[a] === food)!;
+/** The animal present who loves `food` (one at most, since `dealAnimals` never deals two with one favorite). */
+export const eaterOf = (food: Food, present: CritterName[]) => present.find((a) => FAVORITE[a] === food);
 
 /** Each animal's own voice. Every animal present has a different one, so a sound names exactly one animal. */
 export const VOICE: Partial<Record<CritterName, AnimalSound>> = {
@@ -265,6 +299,10 @@ export const VOICE: Partial<Record<CritterName, AnimalSound>> = {
   duck: 'quack',
   pig: 'oink',
   bear: 'growl',
+  sheep: 'baa',
+  horse: 'neigh',
+  hen: 'cluck',
+  mouse: 'squeak',
 };
 /** What the voice is called aloud. The bunny's hop is no sound she could name, so it is never the clue. */
 export const SOUND_WORDS: Partial<Record<CritterName, string>> = {
@@ -274,6 +312,10 @@ export const SOUND_WORDS: Partial<Record<CritterName, string>> = {
   duck: 'quack',
   pig: 'oink',
   bear: 'grr',
+  sheep: 'baa',
+  horse: 'neigh',
+  hen: 'cluck',
+  mouse: 'squeak',
 };
 export const SOUNDERS = ANIMALS.filter((a) => SOUND_WORDS[a]);
 
@@ -292,7 +334,8 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
   const out: SnackRound[] = [];
   const many = plan.mode === 'munch' || plan.mode === 'float' || plan.mode === 'match';
   // Free play and matching keep one set of animals; questions pick new animals each time.
-  const fixed = rng.shuffle([...ANIMALS]).slice(0, plan.animals);
+  const pool = poolFor(plan);
+  const fixed = dealAnimals(pool, plan.animals, rng);
   for (let i = 0; i < (many ? 1 : plan.rounds); i++) {
     if (many) {
       out.push({ animals: fixed });
@@ -301,13 +344,13 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
     const by =
       plan.mode === 'who' ? (i % 2 === 1 ? 'sound' : 'food') : plan.mode === 'sound' ? 'sound' : undefined;
     let animals: CritterName[];
-    let ask: CritterName;
+    let ask: CritterName | undefined;
     do {
-      animals = rng.shuffle([...ANIMALS]).slice(0, plan.animals);
-      // A sound question needs an animal that has a sound word; swap one in if the deal has none.
-      if (by === 'sound' && !animals.some((a) => SOUND_WORDS[a])) animals[0] = rng.pick(SOUNDERS);
-      ask = rng.pick(by === 'sound' ? animals.filter((a) => SOUND_WORDS[a]) : animals);
-    } while (ask === out.at(-1)?.ask);
+      animals = dealAnimals(pool, plan.animals, rng);
+      // A sound question needs an animal that has a sound word; a deal with none is dealt again.
+      const askable = by === 'sound' ? animals.filter((a) => SOUND_WORDS[a]) : animals;
+      ask = askable.length ? rng.pick(askable) : undefined;
+    } while (!ask || ask === out.at(-1)?.ask);
     out.push({ animals, ask, by, n: plan.mode === 'count' ? rng.int(2, 4) : undefined });
   }
   return out;
@@ -358,7 +401,7 @@ export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
     }
     case 'match': {
       if (waiting < 0) return null;
-      const to = t.friends.findIndex((a) => a === eaterOf(t.snacks[waiting].food));
+      const to = t.friends.findIndex((a) => a === eaterOf(t.snacks[waiting].food, t.friends));
       return to < 0 ? null : { give: waiting, to };
     }
     case 'sound': {

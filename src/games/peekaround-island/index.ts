@@ -51,6 +51,10 @@ const VOICE: Record<CritterName, AnimalSound> = {
   cow: 'moo',
   dog: 'woof',
   bear: 'growl',
+  sheep: 'baa',
+  horse: 'neigh',
+  hen: 'cluck',
+  mouse: 'squeak',
 };
 
 /** Friends stand on a ring inside the island's top, drawn as an ellipse seen from the side. */

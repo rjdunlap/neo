@@ -15,3 +15,24 @@ describe('Critter eyes', () => {
     expect(Number.isFinite(look.y)).toBe(true);
   });
 });
+
+describe('Critter cast', () => {
+  it('builds every critter, the four farm newcomers included', () => {
+    for (const [name, spec] of Object.entries(CRITTERS)) {
+      const c = new Critter(spec);
+      c.update(1 / 60);
+      expect(c.children.length, name).toBeGreaterThan(0);
+    }
+    expect(Object.keys(CRITTERS)).toEqual(expect.arrayContaining(['sheep', 'horse', 'hen', 'mouse']));
+  });
+
+  it('keeps the new parts off the first eight, so no older game changes', () => {
+    const NEW_PARTS = ['wool', 'mane', 'comb', 'tail', 'muzzleShade'];
+    for (const name of ['pip', 'cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'] as const) {
+      const spec: Record<string, unknown> = CRITTERS[name];
+      for (const part of NEW_PARTS) expect(spec[part], `${name}.${part}`).toBeUndefined();
+      expect(['big'], name).not.toContain(spec.ears);
+      expect(['beak'], name).not.toContain(spec.snout);
+    }
+  });
+});

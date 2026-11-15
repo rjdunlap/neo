@@ -1,0 +1,1 @@
+**`peekaboo-barn`, levels 10–11 Whose ears?** (new-level tier: rule tests, one browser play of level 10, `fingerdemo` at it; take the top-pose screenshot first): three animals show only the top of the head, then four. [Peekaboo Barn dive, slice 6](../../deep-dives/peekaboo-barn.md#build-slices-in-order)
