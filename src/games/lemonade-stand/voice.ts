@@ -81,4 +81,21 @@ export const VOICE = {
     'Put the lemons on each sign in twos, and share out the shells. The {side} boat wants {cheap} for every 2 lemons, and the other boat wants {dear}.',
   ],
   'lemon.sum.boats': ['Picking the cheaper boat saved you {n} shells this week!'],
+  // A typical sunny day (level 7): level the three sunny towers, then make cups for one more sunny day.
+  'lemon.typical.level': [
+    'Here are the friends who came on the sunny days. Move friends from a tall tower to a short one until the towers are even!',
+  ],
+  'lemon.typical.taller': ['Oops, that tower got taller. Take a friend from a tall tower to a short one.'],
+  'lemon.help.towers': [
+    'Take a friend from the tallest tower, the glowing one, and put it on the shortest tower.',
+  ],
+  'lemon.typical.found': ['The towers are even! A typical sunny day: {n} friends.'],
+  'lemon.typical.choose': [
+    'A typical sunny day brings {n} friends. How many cups will you make? Then tap the open sign!',
+  ],
+  'lemon.help.typical': ['A typical sunny day brings {n} friends. Make a batch with a cup for each of them.'],
+  'lemon.sum.typical': ['Day 5 brought {came} friends, just like a typical sunny day!'],
+  'lemon.sum.typical.near': [
+    'Day 5 brought {came} friends, and a typical sunny day brings {n}. A typical day is a good guess, not a promise.',
+  ],
 } satisfies Record<string, string[]>;

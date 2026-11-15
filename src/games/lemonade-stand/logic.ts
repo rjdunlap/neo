@@ -53,6 +53,13 @@ export interface StandPlan {
    * for every 2 lemons (a unit rate).
    */
   boats?: 'same' | 'rate';
+  /**
+   * A typical sunny day: days 1 to 4 hold three sunny days, and before the last day (sunny too) the friends who came on
+   * those three stand as towers she levels to find the typical crowd. The table gains a column of friends who came.
+   */
+  typical?: boolean;
+  /** The most extra friends a sunny day can bring (2 unless a plan says otherwise), so the sunny crowds differ. */
+  sunnyNoise?: number;
   name: string;
 }
 
@@ -101,10 +108,19 @@ export const PLANS: StandPlan[] = [
     boats: 'rate',
     name: 'Best buy: the boats differ in lemons and shells, so find the shells for every 2 lemons',
   },
+  {
+    days: 5,
+    events: false,
+    prices: [1],
+    purse: false,
+    typical: true,
+    sunnyNoise: 4,
+    name: 'A typical sunny day: level the three sunny crowds into even towers, then make cups for one more sunny day',
+  },
 ];
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 6 },
+  school: { min: 1, max: 7 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -242,6 +258,7 @@ function weatherPlan(plan: StandPlan, rng: Rng): Weather[] {
 
 /** The forecast for a whole round, rebuilt exactly from the seed. */
 export function makeWeek(plan: StandPlan, rng: Rng): Day[] {
+  if (plan.typical) return typicalWeek(plan, rng);
   for (;;) {
     const weathers = weatherPlan(plan, rng);
     const events: (StandEvent | null)[] = weathers.map(() => null);
@@ -276,6 +293,62 @@ export function makeWeek(plan: StandPlan, rng: Rng): Day[] {
     return week;
   }
 }
+
+/**
+ * The typical-day week: days 1 to 4 are three sunny days and one rainy or cloudy day, the last day is sunny, no events.
+ * The three sunny crowds are redrawn until they can be levelled to a whole typical crowd that a batch can serve, and
+ * levelling them takes at least two moves.
+ */
+function typicalWeek(plan: StandPlan, rng: Rng): Day[] {
+  for (;;) {
+    const other = rng.pick(['rainy', 'cloudy'] as const);
+    const at = rng.int(0, plan.days - 2);
+    const week: Day[] = Array.from({ length: plan.days }, (_, i) => {
+      const weather: Weather = i === at ? other : 'sunny';
+      return { weather, event: null, noise: rng.int(0, weather === 'sunny' ? (plan.sunnyNoise ?? 2) : 2) };
+    });
+    const towers = week
+      .slice(0, -1)
+      .filter((d) => d.weather === 'sunny')
+      .map((d) => demand(d, plan.prices[0]));
+    if (towersFair(towers)) return week;
+  }
+}
+
+/** The typical crowd: the friends in the towers shared out evenly (the mean). */
+export const typicalCrowd = (towers: readonly number[]) => towers.reduce((n, h) => n + h, 0) / towers.length;
+
+/** The fewest moves that level the towers: every friend above the typical height has to move once. */
+export const towerMoves = (towers: readonly number[]) => {
+  const mean = typicalCrowd(towers);
+  return towers.reduce((n, h) => n + Math.max(0, h - mean), 0);
+};
+
+/** Towers worth levelling: a whole typical crowd, at least two moves away, and no more than the biggest batch serves. */
+export const towersFair = (towers: readonly number[]) =>
+  Number.isInteger(typicalCrowd(towers)) &&
+  towerMoves(towers) >= 2 &&
+  typicalCrowd(towers) <= BATCHES.at(-1)!;
+
+export const towersEven = (towers: readonly number[]) => towers.every((h) => h === towers[0]);
+
+/**
+ * A move that makes the towers less even, as she can see it without knowing the typical height: a friend joins a tower
+ * that was already at least as tall as the one it left. A move from a taller tower to a shorter one is never this.
+ */
+export const tallerMove = (towers: readonly number[], from: number, to: number) => towers[to] >= towers[from];
+
+/** Move one friend from a tower to another. */
+export const moveFriend = (towers: readonly number[], from: number, to: number) =>
+  towers.map((h, i) => (i === from ? h - 1 : i === to ? h + 1 : h));
+
+/** The tallest and shortest towers (the first of a tie): the move the glow and the demonstration point at. */
+export const tallest = (towers: readonly number[]) => towers.indexOf(Math.max(...towers));
+export const shortest = (towers: readonly number[]) => towers.indexOf(Math.min(...towers));
+
+/** The rows that stand as towers: the sunny days before the last one, by the friends who came (never the cups sold). */
+export const towerRows = (plan: StandPlan, rows: readonly Row[]) =>
+  rows.filter((r) => r.weather === 'sunny' && r.day < plan.days - 1);
 
 /** The friends who would come on a day at a price, if there were cups for all of them. Always at least one. */
 export function demand(day: Day, price: number): number {
@@ -381,7 +454,7 @@ const heat = (w: Weather) => WEATHERS.indexOf(w);
 /** Rows she can fairly set side by side: the same event (or none), and the same price. */
 const sameKind = (a: Row, b: Row) => a.event === b.event && a.price === b.price;
 
-export type HelpKind = 'boat' | 'out' | 'left' | 'good' | 'other' | 'event' | 'weather' | 'price';
+export type HelpKind = 'typical' | 'boat' | 'out' | 'left' | 'good' | 'other' | 'event' | 'weather' | 'price';
 
 export interface Help {
   kind: HelpKind;
@@ -398,6 +471,13 @@ export interface Help {
 export function helps(plan: StandPlan, today: Day, rows: Row[], boatChosen = true): Help[] {
   if (today.boats && !boatChosen) return [{ kind: 'boat', rows: [], vars: boatTalk(today.boats) }];
   const out: Help[] = [];
+  const sunny = plan.typical ? towerRows(plan, rows) : [];
+  if (plan.typical && today.weather === 'sunny' && sunny.length === 3)
+    out.push({
+      kind: 'typical',
+      rows: sunny.map((r) => r.day),
+      vars: { n: typicalCrowd(sunny.map((r) => r.wanted)) },
+    });
   const same = rows.filter((r) => r.weather === today.weather && r.event === today.event);
   const last = same.at(-1);
   if (last) {
@@ -436,7 +516,8 @@ export function helps(plan: StandPlan, today: Day, rows: Row[], boatChosen = tru
   return out;
 }
 
-export type InsightKind = 'boats' | 'price' | 'weather' | 'best' | 'right' | 'plain';
+export type InsightKind =
+  'typical' | 'typical-near' | 'boats' | 'price' | 'weather' | 'best' | 'right' | 'plain';
 
 export interface Insight {
   kind: InsightKind;
@@ -451,6 +532,17 @@ export interface Insight {
  * On the boat levels the comparison is the boats': the shells the cheaper boats saved over the week's batches.
  */
 export function insight(plan: StandPlan, rows: Row[]): Insight {
+  const sunny = plan.typical ? towerRows(plan, rows) : [];
+  const last = rows.at(-1);
+  if (plan.typical && sunny.length === 3 && last && last.day === plan.days - 1) {
+    // The typical-day level compares the last sunny day with the typical crowd it was planned from.
+    const n = typicalCrowd(sunny.map((r) => r.wanted));
+    return {
+      kind: last.wanted === n ? 'typical' : 'typical-near',
+      rows: [...sunny.map((r) => r.day), last.day],
+      vars: { n, came: last.wanted },
+    };
+  }
   const saved = rows.reduce((n, r) => n + r.saved, 0);
   if (plan.boats && saved > 0) return { kind: 'boats', rows: rows.map((r) => r.day), vars: { n: saved } };
   if (priceChoice(plan)) {

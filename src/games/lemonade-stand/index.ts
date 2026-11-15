@@ -7,6 +7,7 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -30,12 +31,19 @@ import {
   helps,
   insight,
   makeWeek,
+  moveFriend,
   planFor,
   priceChoice,
   rating,
   sellDay,
   settle,
+  shortest,
   START_PURSE,
+  tallerMove,
+  tallest,
+  towerRows,
+  towersEven,
+  typicalCrowd,
   WEATHER_WORD,
   type Day,
   type Help,
@@ -64,7 +72,7 @@ const BOAT_UP = 170;
 const shellWords = (n: number) => `${n} ${n === 1 ? 'shell' : 'shells'}`;
 const offerWords = (o: Offer) => `${o.lemons} lemons for ${o.shells} ${o.shells === 1 ? 'shell' : 'shells'}`;
 
-type Cell = 'made' | 'sold' | 'left' | 'shells';
+type Cell = 'came' | 'made' | 'sold' | 'left' | 'shells';
 
 /** Where everything sits for the current view; recomputed on every resize. */
 interface Metrics {
@@ -105,6 +113,17 @@ class LemonadeStand implements Game {
   boatPhase = false;
   /** Wrong boats tapped this morning; the second glows the cheaper boat. */
   boatMisses = 0;
+  /** A typical sunny day: the three sunny crowds stand as towers and she is levelling them. */
+  towerPhase = false;
+  /** Friends in each tower, left to right, and who they are (bottom first). */
+  towers: number[] = [];
+  readonly towerFriends: CritterName[][] = [];
+  /** The draggable top friend of each tower. */
+  readonly towerTops: { node: Container; drag: DragHandle }[] = [];
+  readonly towerLayer = new Container();
+  /** Moves this morning that made a tower taller; the second glows the tallest tower. */
+  towerSlips = 0;
+  towerGlow = false;
 
   private view: View;
   private clock = 0;
@@ -142,6 +161,9 @@ class LemonadeStand implements Game {
   private lit: number[] = [];
   private litUntil = 0;
   private reading = 0;
+  private dead = false;
+  private readonly towerBoard = new Graphics();
+  private readonly towerFaces = new Container();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -170,6 +192,10 @@ class LemonadeStand implements Game {
     this.water.eventMode = 'none';
     this.jetty.addChild(this.water);
     this.jetty.visible = false;
+    this.towerBoard.eventMode = 'none';
+    this.towerFaces.eventMode = 'none';
+    this.towerLayer.addChild(this.towerBoard, this.towerFaces);
+    this.towerLayer.visible = false;
 
     this.signText = label('LEMONADE', 30, ink);
     this.signText.eventMode = 'none';
@@ -322,6 +348,7 @@ class LemonadeStand implements Game {
       this.banner,
       this.table,
       this.jetty,
+      this.towerLayer,
       this.glow,
       ...this.coins.map((c) => c.node),
       ...this.cards.map((c) => c.node),
@@ -415,6 +442,7 @@ class LemonadeStand implements Game {
       .fill({ color: swatch.blue.light, alpha: 0.85 })
       .stroke(line(swatch.blue.fill, 4));
     this.boats.forEach((b, i) => b.node.position.set(BOAT_X[i], wy));
+    if (this.towerPhase) this.buildTowers();
   }
 
   private drawWash() {
@@ -454,12 +482,18 @@ class LemonadeStand implements Game {
 
   private drawHeader() {
     const h = this.table;
-    const names: Record<Cell, string> = { made: 'MADE', sold: 'SOLD', left: 'LEFT', shells: 'SHELLS' };
+    const names: Record<Cell, string> = {
+      came: 'CAME',
+      made: 'MADE',
+      sold: 'SOLD',
+      left: 'LEFT',
+      shells: 'SHELLS',
+    };
     this.columns().forEach((col, i) => {
       const x = DAY_W + i * COL_W + COL_W / 2;
-      const icon = col === 'shells' ? coinArt(1) : cupArt(col !== 'left');
-      icon.scale.set(col === 'shells' ? 0.55 : 0.62);
-      icon.position.set(x, 28);
+      const icon = col === 'shells' ? coinArt(1) : col === 'came' ? friendIcon() : cupArt(col !== 'left');
+      if (col !== 'came') icon.scale.set(col === 'shells' ? 0.55 : 0.62);
+      icon.position.set(x, col === 'came' ? 48 : 28);
       if (col === 'sold') {
         const tick = new Graphics()
           .moveTo(-9, 2)
@@ -479,6 +513,8 @@ class LemonadeStand implements Game {
   }
 
   private columns(): Cell[] {
+    // The typical-day level shows the friends who came: on a sold-out day the cups sold say fewer than came.
+    if (this.plan.typical) return ['came', 'made', 'sold', 'left'];
     return priceChoice(this.plan) ? ['made', 'sold', 'left', 'shells'] : ['made', 'sold', 'left'];
   }
 
@@ -523,6 +559,16 @@ class LemonadeStand implements Game {
         });
       }
     }
+    if (this.towerPhase && this.towerGlow && this.towerTops.length === 3) {
+      const top = this.towerTops[tallest(this.towers)].node;
+      const r = 62 + 3 * Math.sin(this.clock * 6);
+      g.circle(this.towerLayer.x + top.x, this.towerLayer.y + top.y - this.towerSpots().step * 0.6, r).stroke(
+        {
+          width: 7,
+          color: swatch.yellow.fill,
+        },
+      );
+    }
     if (this.boatPhase) {
       const wy = this.view.h - BOAT_UP;
       this.boats.forEach((b, i) => (b.node.y = wy + 3 * Math.sin(this.clock * 2 + i * 1.7)));
@@ -543,6 +589,16 @@ class LemonadeStand implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0 || this.index >= this.week.length) return null;
     if (this.boatPhase) return { tap: { on: this.boats[cheaperBoat(this.week[this.index].boats!)].node } };
+    if (this.towerPhase) {
+      if (this.towerTops.length !== 3) return null;
+      // Level the towers the sure way: a friend from the tallest tower to the shortest.
+      const { xs, baseY, step } = this.towerSpots();
+      const to = shortest(this.towers);
+      return {
+        drag: { on: this.towerTops[tallest(this.towers)].node },
+        to: { on: this.towerLayer, x: xs[to], y: baseY - this.towers[to] * step },
+      };
+    }
     const want = forecastChoice(this.plan, this.week[this.index], this.purse);
     if (this.made !== want.made) return { tap: { on: this.cards.find((c) => c.n === want.made)!.node } };
     if (this.price !== want.price)
@@ -551,6 +607,8 @@ class LemonadeStand implements Game {
   }
 
   destroy() {
+    this.dead = true;
+    this.clearTowerTops();
     for (const c of this.friends) this.ctx.untrack(c);
     this.friends.clear();
     for (const c of this.picnic) this.ctx.untrack(c);
@@ -596,6 +654,8 @@ class LemonadeStand implements Game {
     this.tally.visible = false;
     this.refreshControls();
     if (day.boats) this.showBoats(day.boats);
+    const typicalDay = !!this.plan.typical && this.index === this.week.length - 1;
+    if (typicalDay) this.showTowers();
     if (this.restock > 0) {
       const n = this.restock;
       this.restock = 0;
@@ -610,8 +670,9 @@ class LemonadeStand implements Game {
         left: offerWords(day.boats[0]),
         right: offerWords(day.boats[1]),
       });
-    // A boat already chosen during the forecast has given the batch instruction itself.
-    else if (!day.boats) void this.ctx.instruct(this.chooseLine());
+    else if (this.towerPhase) void this.ctx.instruct('lemon.typical.level');
+    // A boat already chosen (or towers levelled) during the forecast has given the batch instruction itself.
+    else if (!day.boats && !typicalDay) void this.ctx.instruct(this.chooseLine());
   }
 
   // ---------------------------------------------------------------- the lemon boats
@@ -689,6 +750,165 @@ class LemonadeStand implements Game {
     this.busy = false;
     await this.ctx.say('lemon.boat.good');
     void this.ctx.instruct(this.chooseLine());
+  }
+
+  // ---------------------------------------------------------------- a typical sunny day
+
+  /** Where the three towers stand (in the tower layer, which sits at the origin) and how far apart their friends are. */
+  private towerSpots() {
+    const right = this.m.panelX - 14;
+    const left = 270;
+    const gap = Math.min(170, (right - left) / 3);
+    const mid = (left + right) / 2;
+    const baseY = this.view.h - 70;
+    const room = baseY - (this.m.top + 20) - 70;
+    const step = Math.min(56, room / Math.max(14, ...this.towers.map((h) => h + 1)));
+    return {
+      xs: [mid - gap, mid, mid + gap],
+      baseY,
+      step,
+      gap,
+      left: mid - gap * 1.5,
+      right: mid + gap * 1.5,
+    };
+  }
+
+  /** Before the last day, the friends who came on the three sunny days stand as towers beside the table. */
+  private showTowers() {
+    const sunny = towerRows(this.plan, this.rows);
+    this.towers = sunny.map((r) => r.wanted);
+    this.towerFriends.length = 0;
+    for (const h of this.towers)
+      this.towerFriends.push(Array.from({ length: h }, () => this.ctx.rng.pick(FRIENDS)));
+    this.towerPhase = true;
+    this.towerSlips = 0;
+    this.towerGlow = false;
+    this.setControls(false);
+    this.towerLayer.visible = true;
+    this.towerLayer.alpha = 1;
+    this.buildTowers();
+    this.highlight(
+      sunny.map((r) => r.day),
+      6,
+    );
+  }
+
+  private clearTowerTops() {
+    for (const t of this.towerTops.splice(0)) t?.drag.destroy();
+  }
+
+  /** Draw the towers from `towers`: every friend a small critter, the top one of each a large drag handle. */
+  private buildTowers() {
+    this.clearTowerTops();
+    this.towerFaces.removeChildren().forEach((c) => c.destroy({ children: true }));
+    for (const c of this.towerLayer.children.slice(2)) c.destroy({ children: true });
+    const { xs, baseY, step, gap, left, right } = this.towerSpots();
+    this.towerBoard
+      .clear()
+      .roundRect(left - 10, this.m.top - 10 + 5, right - left + 20, baseY - this.m.top + 50, 26)
+      .fill(wood.line)
+      .roundRect(left - 10, this.m.top - 10, right - left + 20, baseY - this.m.top + 50, 26)
+      .fill(0xfffaf0)
+      .stroke(line(wood.line, 5));
+    const size = (step * 1.35) / 250;
+    xs.forEach((x, t) => {
+      this.towerBoard
+        .roundRect(x - gap * 0.4, baseY - 4, gap * 0.8, 14, 7)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line, 3));
+      const names = this.towerFriends[t];
+      names.forEach((name, k) => {
+        const c = new Critter(CRITTERS[name]);
+        c.scale.set(size);
+        if (k < names.length - 1) {
+          c.position.set(x, baseY - k * step);
+          this.towerFaces.addChild(c);
+          return;
+        }
+        // The top friend: a grip at full scale holding the critter, so the hit circle is large whatever the step.
+        const grip = new Container();
+        grip.position.set(x, baseY - k * step);
+        grip.addChild(c);
+        c.eventMode = 'none';
+        grip.hitArea = new Circle(0, -step * 0.6, 55);
+        this.towerLayer.addChild(grip);
+        const drag = draggable(grip, this.ctx.tw, {
+          onPick: () => sfx.pop(4 + Math.min(6, t * 2)),
+          onDrop: (dx) => this.dropFriend(t, dx),
+        });
+        this.towerTops[t] = { node: grip, drag };
+      });
+    });
+  }
+
+  /** A friend let go over a tower: it joins that tower. Over its own tower or no tower it floats home. */
+  private dropFriend(from: number, x: number): boolean {
+    if (!this.towerPhase || this.busy || this.finished) return false;
+    const { xs, gap } = this.towerSpots();
+    const to = xs.findIndex((tx) => Math.abs(x - tx) < gap / 2);
+    // A tower keeps its last friend (levelling never needs it gone), so every tower always has a top to drag.
+    if (to < 0 || to === from || this.towers[from] <= 1) return false;
+    const taller = tallerMove(this.towers, from, to);
+    this.towers = moveFriend(this.towers, from, to);
+    this.towerFriends[to].push(this.towerFriends[from].pop()!);
+    // A soft pop and a pentatonic step that rises with the tower it joined.
+    sfx.bell(Math.max(2, Math.min(12, this.towers[to] - 4)), 0.25);
+    // Rebuilt after the drag has finished with the friend it carried.
+    void Promise.resolve().then(() => {
+      if (this.dead) return;
+      this.buildTowers();
+      if (towersEven(this.towers)) void this.finishTowers();
+      else if (taller) void this.slip();
+    });
+    return true;
+  }
+
+  /** A move that made a tower taller: said gently, not a miss; the second glows the tallest tower and counts the day's hint. */
+  private async slip() {
+    sfx.tick();
+    this.towerSlips++;
+    if (this.towerSlips >= 2) this.glowTowers();
+    await this.ctx.say('lemon.typical.taller');
+  }
+
+  /** The glow on the tallest tower counts the day's one hint, unless the lightbulb already did. */
+  private glowTowers() {
+    this.towerGlow = true;
+    if (!this.helpedToday) {
+      this.helpedToday = true;
+      this.hints++;
+    }
+  }
+
+  /** Even towers: a dotted line runs across them and the pet names the typical crowd; then the batch cards come back. */
+  private async finishTowers() {
+    this.busy = true;
+    this.towerPhase = false;
+    this.towerGlow = false;
+    this.clearTowerTops();
+    const n = typicalCrowd(this.towers);
+    const { xs, baseY, step, gap } = this.towerSpots();
+    const y = baseY - n * step + step * 0.2;
+    const dots = new Graphics();
+    for (let x = xs[0] - gap * 0.45; x < xs[2] + gap * 0.45; x += 22) dots.moveTo(x, y).lineTo(x + 11, y);
+    dots.stroke(line(swatch.red.line, 5));
+    dots.alpha = 0;
+    this.towerLayer.addChild(dots);
+    [4, 6, 8, 10].forEach((s, k) => void this.ctx.tw.wait(k * 0.12).then(() => sfx.bell(s, 0.22)));
+    this.ctx.pet.cheer();
+    void this.ctx.tw.to(dots, { alpha: 1 }, { duration: 0.4 });
+    this.highlight(
+      towerRows(this.plan, this.rows).map((r) => r.day),
+      4,
+    );
+    await this.ctx.say('lemon.typical.found', { n });
+    await this.ctx.tw.wait(0.4);
+    await this.ctx.tw.to(this.towerLayer, { alpha: 0 }, { duration: 0.4 });
+    this.towerLayer.visible = false;
+    this.setControls(true);
+    this.refreshControls();
+    this.busy = false;
+    void this.ctx.instruct('lemon.typical.choose', { n });
   }
 
   private showForecast(day: Day) {
@@ -980,6 +1200,7 @@ class LemonadeStand implements Game {
       c.addChild(coin);
     }
     const values: Record<Cell, number> = {
+      came: row.wanted,
       made: row.made,
       sold: row.sold,
       left: row.left,
@@ -1050,6 +1271,8 @@ class LemonadeStand implements Game {
   private helpLine(h: Help): LineId {
     const price = priceChoice(this.plan) ? '.price' : '';
     switch (h.kind) {
+      case 'typical':
+        return 'lemon.help.typical';
       case 'boat':
         return this.plan.boats === 'rate' ? 'lemon.help.boat.rate' : 'lemon.help.boat';
       case 'out':
@@ -1072,6 +1295,13 @@ class LemonadeStand implements Game {
   /** The Help button: the pet says one true thing about today, pointing at table rows it is about. Asking again says another. */
   private async askHelp() {
     if (this.busy || this.finished) return;
+    if (this.towerPhase) {
+      // While the towers wait, the help is the move that always helps: the tallest tower glows.
+      this.glowTowers();
+      this.ctx.pet.cheer();
+      await this.ctx.say('lemon.help.towers');
+      return;
+    }
     const list = helps(this.plan, this.week[this.index], this.rows, !this.boatPhase);
     const h = list[this.helpAt % list.length];
     this.helpAt++;
@@ -1091,6 +1321,10 @@ class LemonadeStand implements Game {
 
   private insightLine(i: Insight): LineId {
     switch (i.kind) {
+      case 'typical':
+        return 'lemon.sum.typical';
+      case 'typical-near':
+        return 'lemon.sum.typical.near';
       case 'boats':
         return 'lemon.sum.boats';
       case 'price':
@@ -1132,6 +1366,17 @@ class LemonadeStand implements Game {
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
+}
+
+/** The table's CAME column head: a friend's face in a circle, standing for the friends who came. */
+function friendIcon(): Container {
+  const c = new Container();
+  c.addChild(new Graphics().circle(0, -22, 24).fill(swatch.green.light).stroke(line(swatch.green.line, 3)));
+  const f = new Critter(CRITTERS.cat);
+  f.scale.set(0.17);
+  f.y = -2;
+  c.addChild(f);
+  return c;
 }
 
 class StandIcon extends WigglyIcon {
