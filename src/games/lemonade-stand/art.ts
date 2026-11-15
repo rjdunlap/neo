@@ -1,5 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
-import { ink, swatch, wood } from '../../art/palette';
+import { ink, swatch, wood, type Swatch } from '../../art/palette';
+import type { Rng } from '../../engine/random';
 import { puffs } from '../../art/shapes';
 import { label } from '../../ui/text';
 import { coinArt } from '../market-stall';
@@ -9,14 +10,49 @@ import type { Offer, StandEvent, Weather } from './logic';
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 const GLASS = 0x8fb8c8;
 
-/** A cup of lemonade with a straw, about 44 wide and 56 tall, centered on (0, 0). `full: false` is just the glass. */
-export function cupArt(full = true): Container {
+/** A round's stand colours: the awning stripe and the cups' straw and rim band. */
+export interface StandLook {
+  awning: Swatch;
+  cup: Swatch;
+}
+
+/** The classic yellow stand with plain cups, for the hub icon, the sticker and anything without a round. */
+export const CLASSIC_LOOK: StandLook = { awning: swatch.yellow, cup: swatch.red };
+/** The awning stripes a round can have (the other stripe is always white). */
+export const AWNINGS: readonly Swatch[] = [
+  swatch.yellow,
+  swatch.red,
+  swatch.orange,
+  swatch.green,
+  swatch.teal,
+  swatch.blue,
+  swatch.purple,
+  swatch.pink,
+];
+/** The cup trims a round can have: never yellow, so the lemonade still reads as lemonade. */
+export const CUP_TRIMS: readonly Swatch[] = AWNINGS.filter((s) => s !== swatch.yellow);
+
+/** A fresh look for a round, drawn from the round's own random stream: the cup trim never matches the awning. */
+export function standLook(rng: Rng): StandLook {
+  const awning = rng.pick(AWNINGS);
+  return { awning, cup: rng.pick(CUP_TRIMS.filter((s) => s !== awning)) };
+}
+
+/**
+ * A cup of lemonade with a straw, about 44 wide and 56 tall, centered on (0, 0). `full: false` is just the glass.
+ * `trim` colours the straw and, when given, a band under the rim; without it the cup is the classic red-straw cup
+ * (the sticker and hub icon).
+ */
+export function cupArt(full = true, trim?: Swatch): Container {
   const c = new Container();
   const g = new Graphics();
-  g.moveTo(8, -26).lineTo(15, -46).stroke(line(swatch.red.fill, 5));
+  g.moveTo(8, -26)
+    .lineTo(15, -46)
+    .stroke(line((trim ?? swatch.red).fill, 5));
   g.poly([-20, -24, 20, -24, 15, 26, -15, 26])
     .fill({ color: 0xffffff, alpha: 0.85 })
     .stroke(line(GLASS, 3.5));
+  if (trim) g.poly([-19.6, -22, 19.6, -22, 18.9, -17, -18.9, -17]).fill(trim.fill);
   if (full) {
     g.poly([-18, -14, 18, -14, 14.2, 24, -14.2, 24]).fill(swatch.yellow.fill);
     g.ellipse(0, -14, 18, 3.5).fill(swatch.yellow.light);

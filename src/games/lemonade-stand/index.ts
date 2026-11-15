@@ -18,7 +18,18 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { coinArt } from '../market-stall';
-import { boardArt, boatArt, bulbArt, cupArt, eventIcon, forecastIcon, miniStand, pitcherArt } from './art';
+import {
+  boardArt,
+  boatArt,
+  bulbArt,
+  cupArt,
+  eventIcon,
+  forecastIcon,
+  miniStand,
+  pitcherArt,
+  standLook,
+  type StandLook,
+} from './art';
 import {
   LEVELS,
   affordable,
@@ -165,11 +176,14 @@ class LemonadeStand implements Game {
   private dead = false;
   private readonly towerBoard = new Graphics();
   private readonly towerFaces = new Container();
+  private readonly look: StandLook;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.week = makeWeek(this.plan, ctx.rng);
+    // Drawn after the week so the colours never change a seed's days.
+    this.look = standLook(ctx.rng);
     this.backdrop = new Backdrop(
       {
         sky: [0x8fd3f7, 0xe9f7ff],
@@ -220,7 +234,7 @@ class LemonadeStand implements Game {
       return t;
     };
     const twoChips = priceChoice(this.plan);
-    const cupIcon = cupArt();
+    const cupIcon = cupArt(true, this.look.cup);
     cupIcon.scale.set(0.7);
     this.tallyCups = chip(twoChips ? -32 : 0, cupIcon);
     if (twoChips) {
@@ -290,7 +304,7 @@ class LemonadeStand implements Game {
       node.addChild(box);
       const rows = Math.ceil(n / 4);
       const cup = (i: number) => {
-        const c = cupArt();
+        const c = cupArt(true, this.look.cup);
         c.scale.set(0.5);
         c.position.set(
           ((i % 4) - 1.5) * 25,
@@ -465,13 +479,14 @@ class LemonadeStand implements Game {
       .rect(cx + 128, m.top + 30, 14, m.counterY - m.top - 30)
       .fill(wood.fill);
     const stripe = 280 / 6;
+    const awning = this.look.awning;
     for (let i = 0; i < 6; i++)
-      s.rect(cx - 140 + i * stripe, m.top, stripe, 30).fill(i % 2 ? 0xffffff : swatch.yellow.fill);
-    s.rect(cx - 140, m.top, 280, 30).stroke(line(swatch.yellow.line, 5));
+      s.rect(cx - 140 + i * stripe, m.top, stripe, 30).fill(i % 2 ? 0xffffff : awning.fill);
+    s.rect(cx - 140, m.top, 280, 30).stroke(line(awning.line, 5));
     for (let i = 0; i < 6; i++) {
       s.moveTo(cx - 140 + i * stripe, m.top + 30)
         .arc(cx - 140 + i * stripe + stripe / 2, m.top + 30, stripe / 2, Math.PI, 0, true)
-        .fill(i % 2 ? 0xffffff : swatch.yellow.fill);
+        .fill(i % 2 ? 0xffffff : awning.fill);
     }
     s.roundRect(cx - 160, m.counterY, 320, 34, 12)
       .fill(wood.fill)
@@ -492,7 +507,8 @@ class LemonadeStand implements Game {
     };
     this.columns().forEach((col, i) => {
       const x = DAY_W + i * COL_W + COL_W / 2;
-      const icon = col === 'shells' ? coinArt(1) : col === 'came' ? friendIcon() : cupArt(col !== 'left');
+      const icon =
+        col === 'shells' ? coinArt(1) : col === 'came' ? friendIcon() : cupArt(col !== 'left', this.look.cup);
       if (col !== 'came') icon.scale.set(col === 'shells' ? 0.55 : 0.62);
       icon.position.set(x, col === 'came' ? 48 : 28);
       if (col === 'sold') {
@@ -992,7 +1008,7 @@ class LemonadeStand implements Game {
   private fillTray(n: number) {
     this.clearTray();
     for (let i = 0; i < n; i++) {
-      const cup = cupArt();
+      const cup = cupArt(true, this.look.cup);
       const spot = this.cupSpot(i);
       cup.position.set(spot.x, spot.y);
       cup.scale.set(0.01);
