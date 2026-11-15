@@ -210,7 +210,8 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
         .fill(swatch.white.light);
       break;
     case 'sandcastle':
-      g.roundRect(-110, -70, 220, 70, 8).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
+      // The wall stands as high as the side towers, so nothing shows between them in the top pose (levels 10–11).
+      g.roundRect(-110, -130, 220, 130, 8).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
       for (const x of [-80, 80]) {
         g.roundRect(x - 30, -130, 60, 130, 6)
           .fill(swatch.yellow.light)
