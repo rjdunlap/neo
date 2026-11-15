@@ -45,6 +45,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'A white pot joins red, yellow and blue. Tap red and white to pour them into the bowl and make pink, then drag a finger across the pink picture (a pig, a flamingo, a cupcake or a tulip). The recipe is told.',
     },
+    {
+      from: 10,
+      to: 10,
+      text: 'The bowl takes three pours: tap red, yellow and blue to mix brown, then drag a finger across the brown picture (a bear, an acorn or an owl). A fourth pour starts the bowl over. The recipe is told.',
+    },
   ],
   finish: [
     {

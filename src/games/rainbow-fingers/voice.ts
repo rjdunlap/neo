@@ -14,6 +14,8 @@ export const VOICE = {
   'paint.mix': ['Paint the {thing} {color}! Mix {a} and {b}.'],
   'paint.remix': ['Now the {thing}! Think: what color is it? Then mix it!'],
   'paint.mixhow': ['Mix {a} and {b} to make {color}!'],
+  'paint.mix3': ['Paint the {thing} {color}! Pour {a}, {b} and {c}.'],
+  'paint.mixhow3': ['Mix {a}, {b} and {c} to make {color}!'],
   'paint.pick': ['Find the {color} pot!'],
   'paint.wrong': ["That's {wrong}. The {thing} is {color}!"],
   'paint.finished': ['What a picture!', 'All colored in!', 'Every one painted!'],

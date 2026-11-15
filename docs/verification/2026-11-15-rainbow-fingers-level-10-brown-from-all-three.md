@@ -1,0 +1,5 @@
+# 2026-11-15 — Rainbow Fingers level 10 Brown from all three
+
+**Changed:** `rainbow-fingers` level 10 (three-pour bowl, `RECIPES.brown`, bear, acorn and owl pictures, three-color prompt and hint glow, level-10 how-to line); school range 5–10.
+**Ran:** typecheck; full `npm test` (352 files, 7,156 passed), including rule tests for all 27 triples, permutations, the fourth-pour restart, `nextPour`, a ghost finger making brown from any half-filled bowl, and the brown pictures on no older page; `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=10 TO_LEVEL=10` passed (rainbow paint reminder, two wrong colors = 2 misses and 1 hint, both pictures, sticker; the suite now taps the bowl empty before the right pours); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rainbow-fingers FINGER_LEVELS=10` passed (25.5 s); screenshots at 1024x768 (acorn and bear, brown bowl) and 390x844 portrait (acorn and owl, brown bowl) checked by eye. On the portrait view the pictures and pots draw small, as on the earlier picture levels (an existing layout matter, not new here).
+**Not run:** `npm run build` (no shared files or assets changed), other suites, offline.

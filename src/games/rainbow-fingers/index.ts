@@ -38,6 +38,8 @@ import {
   MARGIN,
   pageKind,
   bowlLook,
+  bowlHolds,
+  pourInto,
   mix,
   NUDGE_AFTER,
   PAPER,
@@ -508,6 +510,63 @@ function decor(thing: Thing): Graphics {
         .quadraticCurveTo(30, 0, 4, 36)
         .stroke({ ...line, width: 4 });
       break;
+    case 'bear':
+      // Two inner ears, eyes, a light muzzle with a nose and a smile, and two round paws on the tummy.
+      for (const x of [-40, 40]) g.circle(x, -86, 9).fill(swatch.brown.line);
+      g.circle(-18, -56, 6).circle(18, -56, 6).fill(ink);
+      g.ellipse(0, -30, 22, 16)
+        .fill(swatch.brown.light)
+        .stroke({ ...line, width: 4 });
+      g.ellipse(0, -38, 8, 6).fill(ink);
+      g.moveTo(-8, -24)
+        .quadraticCurveTo(0, -18, 8, -24)
+        .stroke({ ...line, width: 3 });
+      for (const x of [-34, 34])
+        g.circle(x, 96, 20)
+          .fill(swatch.brown.light)
+          .stroke({ ...line, width: 4 });
+      break;
+    case 'acorn':
+      // A bumpy cap over the top of the nut, and a short stem.
+      g.moveTo(-72, -22)
+        .quadraticCurveTo(-74, -86, 0, -90)
+        .quadraticCurveTo(74, -86, 72, -22)
+        .closePath()
+        .fill(wood.line)
+        .stroke(line);
+      for (const x of [-44, -16, 16, 44]) g.circle(x, -44, 7).circle(x / 2, -66, 6);
+      g.fill(wood.fill);
+      g.moveTo(0, -90)
+        .quadraticCurveTo(4, -110, 18, -116)
+        .stroke({ ...line, color: wood.line, width: 9 });
+      break;
+    case 'owl':
+      // Two big eyes, a little beak, feather marks on the tummy and two feet.
+      for (const x of [-22, 22]) {
+        g.circle(x, -48, 20)
+          .fill(0xffffff)
+          .stroke({ ...line, width: 4 });
+        g.circle(x, -46, 10).fill(ink);
+      }
+      g.poly([-8, -24, 8, -24, 0, -8])
+        .fill(swatch.orange.fill)
+        .stroke({ ...line, width: 3 });
+      for (const [x, y] of [
+        [-24, 30],
+        [24, 30],
+        [0, 52],
+      ])
+        g.moveTo(x - 12, y).quadraticCurveTo(x, y + 12, x + 12, y);
+      g.stroke({ ...line, width: 4 });
+      for (const x of [-22, 22])
+        g.moveTo(x - 10, 102)
+          .lineTo(x - 10, 110)
+          .moveTo(x, 102)
+          .lineTo(x, 112)
+          .moveTo(x + 10, 102)
+          .lineTo(x + 10, 110);
+      g.stroke({ ...line, color: swatch.orange.line, width: 5 });
+      break;
     case 'basketball':
       // The seams: one line across, one down, and two curves either side.
       g.moveTo(-84, 0)
@@ -631,7 +690,7 @@ class RainbowFingers implements Game {
   private readonly potNodes = new Map<ColorName | 'rainbow', Container>();
   private readonly bowl = new Container();
   private readonly bowlPaint = new Graphics();
-  /** What's been poured into the mixing bowl (two at most). */
+  /** What's been poured into the mixing bowl (two at most, three at level 10). */
   private poured: Pour[] = [];
   private readonly plan: PaintPlan;
   private readonly things: (Thing | Petal)[];
@@ -810,18 +869,17 @@ class RainbowFingers implements Game {
     this.brush = color ? swatch[color].fill : null;
   }
 
-  /** Pour a primary (or white) into the bowl. Two make a new color; a third starts over. */
+  /** Pour a primary (or white) into the bowl. Two make a new color (three at level 10); one more starts over. */
   private async pour(color: Pour, pot: Container) {
-    if (this.poured.length >= 2) this.poured = [];
-    this.poured.push(color);
+    this.poured = pourInto(this.poured, color, bowlHolds(this.plan));
     void this.ctx.tw
       .to(pot, { rotation: 0.5 }, { duration: 0.15 })
       .then(() => this.ctx.tw.to(pot, { rotation: 0 }, { duration: 0.2 }));
     sfx.splash();
-    const made = this.poured.length === 2 ? mix(this.poured[0], this.poured[1]) : color;
+    const made = mix(...this.poured);
     this.setBrush(made);
     this.drawBowl();
-    if (this.poured.length === 2) {
+    if (this.poured.length >= 2) {
       const p = this.ctx.stage.toLocal(this.bowl.getGlobalPosition());
       this.ctx.particles.burst(p.x, p.y, {
         kind: 'star',
@@ -854,8 +912,14 @@ class RainbowFingers implements Game {
       // A single pour has a rim too, so white shows in the white dish.
       g.ellipse(0, -10, 52, 14).fill(look.fill).stroke({ width: 3, color: look.rim });
     } else {
-      g.ellipse(0, -10, 56, 16).fill(look.fill).stroke({ width: 3, color: look.rim });
-      g.circle(-22, -12, 5).circle(18, -8, 4).fill({ color: 0xffffff, alpha: 0.6 });
+      // A third pour fills the bowl a little higher.
+      const full = this.poured.length >= 3 ? 4 : 0;
+      g.ellipse(0, -10 - full, 56 + full, 16 + full / 2)
+        .fill(look.fill)
+        .stroke({ width: 3, color: look.rim });
+      g.circle(-22, -12 - full, 5)
+        .circle(18, -8 - full, 4)
+        .fill({ color: 0xffffff, alpha: 0.6 });
     }
   }
 
@@ -943,8 +1007,8 @@ class RainbowFingers implements Game {
     const { color } = pic.thing;
     const thing = THING_NAMES[pic.thing.id];
     if (this.plan.mode === 'mix') {
-      const [a, b] = RECIPES[color]!;
-      await this.ctx.instruct('paint.mix', { thing, color, a, b });
+      const vars = this.recipeVars();
+      await this.ctx.instruct(vars.c ? 'paint.mix3' : 'paint.mix', { thing, color, ...vars });
     } else if (this.plan.mode === 'recall-mix') {
       await this.ctx.instruct('paint.remix', { thing });
     } else if (this.plan.mode === 'recall') {
@@ -986,7 +1050,7 @@ class RainbowFingers implements Game {
     const { color } = pic.thing;
     const thing = THING_NAMES[pic.thing.id];
     if (!this.brushName) {
-      void this.ctx.say(pours(this.plan.mode) ? 'paint.mixhow' : 'paint.pick', {
+      void this.ctx.say(pours(this.plan.mode) ? this.mixhow() : 'paint.pick', {
         color,
         ...this.recipeVars(),
       });
@@ -994,7 +1058,7 @@ class RainbowFingers implements Game {
     }
     const due = missOnRequest(this.tally);
     sfx.boing();
-    if (pours(this.plan.mode)) void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
+    if (pours(this.plan.mode)) void this.ctx.say(this.mixhow(), { color, ...this.recipeVars() });
     else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
     if (due) this.showHint();
   }
@@ -1018,7 +1082,13 @@ class RainbowFingers implements Game {
 
   private recipeVars(): Record<string, string> {
     const r = this.picture && RECIPES[this.picture.thing.color];
-    return r ? { a: r[0], b: r[1] } : {};
+    return r ? { a: r[0], b: r[1], ...(r[2] ? { c: r[2] } : {}) } : {};
+  }
+
+  /** The told recipe: two paints, or all three for brown. */
+  private mixhow(): LineId {
+    const r = this.picture && RECIPES[this.picture.thing.color];
+    return r && r.length === 3 ? 'paint.mixhow3' : 'paint.mixhow';
   }
 
   private async painted(pic: Picture, as: ColorName) {
@@ -1678,6 +1748,8 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
     if (p.mode === 'recall')
       return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
+    if (p.mode === 'mix' && p.three)
+      return `Brown from all three: pour red, yellow and blue, ${p.count} pictures`;
     if (p.mode === 'mix' && p.white) return `Make it pink: mix red and white, ${p.count} pictures`;
     if (p.mode === 'mix') return 'Mixing colors: red and yellow make orange';
     if (p.mode === 'wheel') return 'Color wheel: mix each empty petal from the two colors beside it';

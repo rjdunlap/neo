@@ -1,1 +1,0 @@
-**`rainbow-fingers`, level 10 Brown from all three** (new-levels tier, rule tests, one browser play of level 10, `fingerdemo` at it and one portrait screenshot): mix red, yellow and blue to paint the brown pictures. [Rainbow Fingers dive, slice 11](../../deep-dives/rainbow-fingers.md#build-slices-in-order)
