@@ -25,6 +25,13 @@ export const BUG_PLANS = [
     colors: 4,
     name: 'Count a kind: give the bug the number of spots of one color or one shape',
   },
+  {
+    mode: 'fold',
+    rows: 3,
+    columns: 2,
+    colors: 3,
+    name: 'Fold a friend: predict which finished bug the folded wing will make',
+  },
 ] as const;
 export type BugPlan = (typeof BUG_PLANS)[number];
 export interface BugToken {
@@ -307,11 +314,65 @@ export function kindWords(k: KindWant): { many: string; one: string } {
   return { many: SHAPE_PLURAL[k.value] ?? `${k.value}s`, one: `a ${k.value}` };
 }
 
+/**
+ * Level 10, Fold a friend: the left wing has three spots and the right wing is folded under. Three finished bugs are the
+ * choices: the true fold (each spot across the line, just as far from the middle), the same wing slid across (so the
+ * inner and outer spots change places), and the true fold with two spots' stamps swapped. The prediction is unscored:
+ * whatever she taps, the wing folds over and shows the answer.
+ */
+export type FoldKind = 'mirror' | 'slide' | 'swap';
+export interface FoldChoice {
+  kind: FoldKind;
+  /** The spots on both wings of this finished bug, in the board's own units. */
+  spots: BugSpot[];
+}
+export interface FoldBoard {
+  /** The left wing's spots, which the fold carries across. */
+  left: BugSpot[];
+  /** The three finished bugs, in the order they are shown; exactly one is `mirror`. */
+  choices: FoldChoice[];
+  /** Where the true fold is among the choices. */
+  answer: number;
+}
+
+const sameSpot = (a: BugSpot, b: BugSpot) => a.x === b.x && a.y === b.y && a.token === b.token;
+/** Two bugs look the same when every spot of one is a spot of the other. */
+export function sameBug(a: readonly BugSpot[], b: readonly BugSpot[]): boolean {
+  return a.length === b.length && a.every((s) => b.some((t) => sameSpot(s, t)));
+}
+/** The right wing a fold across the middle line makes: each spot just as far from the middle on the other side. */
+export const foldAcross = (left: readonly BugSpot[]): BugSpot[] => left.map((s) => ({ ...s, x: -s.x }));
+
+export function foldBoard(plan: BugPlan, rng: Rng): FoldBoard {
+  const tokens = pickTokens(plan, rng);
+  // Three of the left wing's six places (two columns, three rows), each with a different stamp.
+  const places = bugPlaces(plan).filter((p) => p.x < 0);
+  const left = rng
+    .shuffle(places)
+    .slice(0, 3)
+    .map((p, i) => ({ ...p, token: tokens[i] }));
+  const xs = [...new Set(places.map((p) => p.x))];
+  const [lo, hi] = [Math.min(...xs), Math.max(...xs)];
+  // Slid across without turning over: the wing moves right as a whole, so its outer column lands inner and its inner outer.
+  const slide = left.map((s) => ({ ...s, x: s.x === lo ? -hi : -lo }));
+  const mirror = foldAcross(left);
+  const [a, b] = rng.shuffle([0, 1, 2]);
+  const swap = mirror.map((s, i) =>
+    i === a ? { ...s, token: mirror[b].token } : i === b ? { ...s, token: mirror[a].token } : s,
+  );
+  const choices = rng.shuffle<FoldChoice>([
+    { kind: 'mirror', spots: [...left, ...mirror] },
+    { kind: 'slide', spots: [...left, ...slide] },
+    { kind: 'swap', spots: [...left, ...swap] },
+  ]);
+  return { left, choices, answer: choices.findIndex((c) => c.kind === 'mirror') };
+}
+
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   // Counting to five with a stop comes after copying; the mirror levels 6 and 7 stay out of preschool.
   preschool: { min: 2, max: 8, order: [2, 3, 4, 5, 8] },
-  // Count a kind follows Count the spots in pre-K, before the bigger mirrors.
-  prek: { min: 4, max: 9, order: [4, 5, 8, 9, 6, 7] },
-  school: { min: 6, max: 7 },
+  // Count a kind follows Count the spots in pre-K, before the bigger mirrors; Fold a friend comes after the mirrors.
+  prek: { min: 4, max: 10, order: [4, 5, 8, 9, 6, 7, 10] },
+  school: { min: 6, max: 10, order: [6, 7, 10] },
 };

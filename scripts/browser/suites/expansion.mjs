@@ -252,6 +252,46 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       .map(Number)
       .filter(() => !only || only === 'bug')) {
       await launch('bug-builder', level);
+      if (level === 10) {
+        // Fold a friend, in a tall 390 × 844 viewport (the tall layout): a wrong prediction is never a miss; the wing folds and the round ends.
+        // A real phone plays this game turned sideways: keep a picture of the row of cards there first.
+        await page.setViewportSize({ width: 844, height: 390 });
+        await page.waitForTimeout(400);
+        await screenshot('bug-builder-10-phone-landscape');
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(400);
+        const before = await page.evaluate(async () => {
+          const g = neo.scene.game,
+            wrong = g.cards.findIndex((_, i) => i !== g.fold.answer);
+          kit.tapOn(g.cards[wrong].node);
+          await kit.sleep(200);
+          kit.tapOn(g.cards[g.fold.answer].node); // a second tap changes nothing
+          await kit.sleep(200);
+          if (g.chosen !== wrong) throw new Error(`Chose ${g.chosen}, not ${wrong}`);
+          return g.cards.map((c) => c.node.getBounds().width);
+        });
+        assert.ok(
+          Math.min(...before) >= 100 * (await page.evaluate(() => neo.view.scale)) * 0.9,
+          'cards are big targets',
+        );
+        await page.waitForFunction(() => neo.scene.game.folded, null, { timeout: 8000 });
+        assert.ok(
+          await page.evaluate(() => neo.scene.game.flap.scale.x < -0.98),
+          'the wing folded across the line',
+        );
+        await screenshot('bug-builder-10-portrait');
+        await finished('bug-builder');
+        assert.deepEqual(
+          await page.evaluate(() => {
+            const r = kit.store.stats('bug-builder').history.at(-1);
+            return [r.misses, r.hints];
+          }),
+          [0, 0],
+        );
+        await page.setViewportSize({ width: 1024, height: 768 });
+        log('Bug Builder 10: unscored prediction, fold, the true bug shown, saved round and sticker passed');
+        continue;
+      }
       if (level === 9) {
         // A shape sign draws its marks too: relaunch until the seed asks for a shape, and keep a picture of it.
         for (

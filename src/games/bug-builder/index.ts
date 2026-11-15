@@ -11,6 +11,7 @@ import { spread, type View } from '../../engine/view';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CountSign, bugBody, bugSticker, bugToken, bugWing } from './art';
+import { FoldFriend } from './fold';
 import {
   LEVELS,
   BUG_PLANS,
@@ -389,5 +390,8 @@ export const bugBuilder: GameModule = {
     'Fold paper in half, dab paint on one side, and press it closed to make matching butterfly wings.',
   hubIcon: () => new WigglyIcon(bugSticker()),
   sticker: (seed) => bugSticker(seed),
-  create: (ctx) => new BugBuilder(ctx),
+  create: (ctx) => {
+    const plan = BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, ctx.level - 1))];
+    return plan.mode === 'fold' ? new FoldFriend(ctx, plan) : new BugBuilder(ctx);
+  },
 };
