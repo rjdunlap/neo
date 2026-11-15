@@ -42,6 +42,8 @@ import {
   planFor,
   shouldNudge,
   snackTouch,
+  soundDrop,
+  soundHelp,
   VOICE,
   type Food,
   type Scene,
@@ -578,7 +580,7 @@ class AnimalSnack implements Game {
       node.scale.set(1.2);
       node.hitArea = new Circle(0, 0, 55);
       const item: SnackItem = { food, node, eaten: false };
-      if (this.plan.mode === 'match')
+      if (this.plan.mode === 'match' || this.plan.mode === 'sound')
         item.drag = draggable(node, this.ctx.tw, {
           onPick: () => sfx.tick(),
           onDrop: (x, y) => this.drop(item, x, y),
@@ -617,11 +619,14 @@ class AnimalSnack implements Game {
     this.setFriends(r.animals);
     const food = FAVORITE[r.ask!]!;
     if (mode === 'count') this.setSnacks(Array<Food>(5).fill(food));
+    else if (mode === 'sound') this.refill();
     else this.setSnacks([]);
     this.showBubble(food, mode === 'count' ? r.n : undefined, r.by === 'sound');
     this.busy = false;
-    if (mode === 'who' && r.by === 'sound') {
-      const done = this.ctx.instruct('snack.whosound', { sound: SOUND_WORDS[r.ask!]! });
+    if (r.by === 'sound') {
+      const done = this.ctx.instruct(mode === 'sound' ? 'snack.givesound' : 'snack.whosound', {
+        sound: SOUND_WORDS[r.ask!]!,
+      });
       this.playClue();
       return done;
     }
@@ -633,7 +638,7 @@ class AnimalSnack implements Game {
     });
   }
 
-  /** One snack for each animal, shuffled, for floating and matching. */
+  /** One snack for each animal, shuffled, for floating, matching and level 6's sound questions. */
   private refill() {
     this.setSnacks(this.ctx.rng.shuffle(this.friends.map((f) => FAVORITE[f.name]!)));
   }
@@ -767,11 +772,7 @@ class AnimalSnack implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    f.node.setMood('surprised', 1);
-    void this.ctx.tw
-      .to(f.node, { rotation: 0.08 }, { duration: 0.1 })
-      .then(() => this.ctx.tw.to(f.node, { rotation: -0.08 }, { duration: 0.15 }))
-      .then(() => this.ctx.tw.to(f.node, { rotation: 0 }, { duration: 0.1 }));
+    this.shake(f);
     if (soundOf) {
       // A wrong animal answers in its own voice, so the mistake is also a second listen.
       const voice = VOICE[f.name];
@@ -787,6 +788,61 @@ class AnimalSnack implements Game {
       this.hints++;
       this.glowing = this.friends.find((x) => x.name === eaterOf(food))?.node ?? null;
     }
+  }
+
+  private shake(f: Friend) {
+    f.node.setMood('surprised', 1);
+    void this.ctx.tw
+      .to(f.node, { rotation: 0.08 }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(f.node, { rotation: -0.08 }, { duration: 0.15 }))
+      .then(() => this.ctx.tw.to(f.node, { rotation: 0 }, { duration: 0.1 }));
+  }
+
+  /**
+   * Level 6, Who says moo?: a snack dropped on an animal. The right animal with its own snack eats it and the next sound
+   * follows; any other animal answers in its own voice, and the right animal turns down another's food. The second miss
+   * of a question glows the animal that made the sound, the fourth its snack.
+   */
+  private dropSound(item: SnackItem, f: Friend): boolean {
+    const ask = this.round.ask!;
+    const verdict = soundDrop(ask, item.food, f.name);
+    if (verdict === 'yum') {
+      item.eaten = true;
+      if (item.drag) item.drag.enabled = false;
+      this.busy = true;
+      this.glowing = null;
+      this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
+      this.bubble.eventMode = 'none';
+      void this.eat(f, item.node).then(async () => {
+        // As in level 3: the next sound follows the eating, and only the last yum is heard out before the closing line.
+        const yum = this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[item.food] });
+        if (this.last) await yum;
+        void this.next();
+      });
+      return true;
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    this.shake(f);
+    if (verdict === 'wrongAnimal') {
+      const voice = VOICE[f.name];
+      if (voice) sfx.animal(voice);
+      void this.ctx.say('snack.notme', { animal: ANIMAL_WORDS[f.name]!, sound: SOUND_WORDS[ask]! });
+    } else
+      void this.ctx.say('snack.notmine', {
+        animal: ANIMAL_WORDS[f.name]!,
+        mine: FOOD_WORDS[FAVORITE[f.name]!],
+      });
+    const help = soundHelp(this.wrongs);
+    if (help) {
+      this.hints++;
+      this.glowing =
+        help === 'animal'
+          ? (this.friends.find((x) => x.name === ask)?.node ?? null)
+          : (this.snacks.find((s) => !s.eaten && s.food === FAVORITE[ask])?.node ?? null);
+    }
+    return false;
   }
 
   private async tapSnack(item: SnackItem) {
@@ -836,6 +892,7 @@ class AnimalSnack implements Game {
       .map((f) => ({ f, d: Math.hypot(f.node.x - x, f.node.y - 120 - y) }))
       .sort((a, b) => a.d - b.d)[0];
     if (!near || near.d > 200) return false;
+    if (this.plan.mode === 'sound') return this.dropSound(item, near.f);
     if (near.f.name !== eaterOf(item.food)) {
       this.miss(near.f, item.food);
       return false;
@@ -941,7 +998,7 @@ export const animalSnack: GameModule = {
   region: 'barnyard',
   challenge: 'words',
   skills: ['animals', 'words', 'matching', 'counting'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,

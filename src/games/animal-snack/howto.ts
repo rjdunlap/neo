@@ -20,6 +20,11 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Give the animal the number of snacks shown by the dots and numeral, then ring the bell.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: 'An animal sound plays: drag that animal its own snack. A wrong animal answers in its own voice, and the right animal turns down another food. Tap the speaker to hear the sound again.',
+    },
   ],
   finish: [
     { to: 2, text: 'The round ends after six snacks are eaten.' },
@@ -30,6 +35,7 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'The round ends after three animals receive the requested count, confirmed with the bell.',
     },
+    { from: 6, to: 6, text: 'The round ends after four animals are fed from their sounds.' },
   ],
   note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
 };

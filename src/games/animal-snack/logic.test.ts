@@ -29,6 +29,8 @@ import {
   SOUNDERS,
   VOICE,
   snackTouch,
+  soundDrop,
+  soundHelp,
   type Food,
   type SnackTable,
 } from './logic';
@@ -148,7 +150,7 @@ describe('Animal Snack', () => {
           const snacks: SnackTable['snacks'] =
             plan.mode === 'count'
               ? Array.from({ length: 5 }, () => ({ food: FAVORITE[r.ask!]!, eaten: false }))
-              : plan.mode === 'float' || plan.mode === 'match'
+              : plan.mode === 'float' || plan.mode === 'match' || plan.mode === 'sound'
                 ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false }))
                 : [];
           return { friends, snacks, ask: r.ask, n: r.n, eatenCount };
@@ -192,12 +194,19 @@ describe('Animal Snack', () => {
             } else expect(plan.mode).toBe('count');
           } else {
             const snack = table.snacks[move!.give];
-            expect(plan.mode).toBe('match');
+            expect(['match', 'sound']).toContain(plan.mode);
             expect(table.friends[move!.to], 'the snack goes to the animal that eats it').toBe(
               eaterOf(snack.food),
             );
             snack.eaten = true;
-            if (table.snacks.every((s) => s.eaten)) done = true;
+            if (plan.mode === 'sound') {
+              expect(soundDrop(table.ask!, snack.food, table.friends[move!.to]), 'a yum, never a miss').toBe(
+                'yum',
+              );
+              index++;
+              if (index >= rounds.length) done = true;
+              else table = deal();
+            } else if (table.snacks.every((s) => s.eaten)) done = true;
           }
         }
         if (free && plan.mode !== 'match') expect(eatenCount).toBe(plan.rounds);
@@ -225,7 +234,7 @@ describe('Animal Snack', () => {
   });
 
   it('keeps other modes free of sound questions and gives the bot the sound-asked animal', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'who'))
+    for (const plan of PLANS.filter((p) => p.mode !== 'who' && p.mode !== 'sound'))
       expect(makeRounds(plan, new Rng(3)).every((r) => !r.by)).toBe(true);
     const r = makeRounds(PLANS[2], new Rng(9))[1];
     const table: SnackTable = { friends: r.animals, snacks: [], ask: r.ask, eatenCount: 0 };
@@ -341,5 +350,50 @@ describe('Animal Snack', () => {
       nearestFriend([{ x: 300, y: 400 }], 1000, 0, Infinity),
       'the big animal alone takes every touch',
     ).toBe(0);
+  });
+
+  it('asks Who says moo? at level 6: every question a sound that names exactly one animal present, never twice running', () => {
+    const plan = planFor(6);
+    expect(plan.mode).toBe('sound');
+    expect(LEVELS.prek).toEqual({ min: 5, max: 6 });
+    // Every voice is its own, so a sound picks out one animal whichever three are dealt.
+    expect(new Set(ANIMALS.map((a) => VOICE[a])).size).toBe(ANIMALS.length);
+    const asked = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = makeRounds(plan, new Rng(seed));
+      expect(rounds).toHaveLength(plan.rounds);
+      rounds.forEach((r, i) => {
+        expect(r.by).toBe('sound');
+        expect(new Set(r.animals).size).toBe(plan.animals);
+        expect(r.animals).toContain(r.ask);
+        expect(SOUND_WORDS[r.ask!], 'the bunny hop is never the clue').toBeTruthy();
+        expect(r.animals.filter((a) => VOICE[a] === VOICE[r.ask!])).toEqual([r.ask]);
+        // One snack per animal on the blanket, so the asked animal's own snack is there exactly once.
+        const foods = r.animals.map((a) => FAVORITE[a]);
+        expect(new Set(foods).size).toBe(plan.animals);
+        expect(foods.filter((f) => f === FAVORITE[r.ask!])).toHaveLength(1);
+        if (i > 0) expect(r.ask).not.toBe(rounds[i - 1].ask);
+        asked.add(r.ask!);
+      });
+    }
+    expect([...asked].sort()).toEqual([...SOUNDERS].sort());
+  });
+
+  it('judges a level 6 drop by the animal first, then the food', () => {
+    expect(soundDrop('cow', 'hay', 'cow')).toBe('yum');
+    expect(soundDrop('cow', 'apple', 'cow')).toBe('wrongFood');
+    // The pig's own apple on the pig is still the wrong animal when the cow was asked for.
+    expect(soundDrop('cow', 'apple', 'pig')).toBe('wrongAnimal');
+    expect(soundDrop('cow', 'hay', 'pig')).toBe('wrongAnimal');
+    for (const ask of SOUNDERS)
+      for (const to of ANIMALS)
+        for (const food of Object.values(FAVORITE) as Food[]) {
+          const got = soundDrop(ask, food, to);
+          expect(got === 'yum').toBe(to === ask && FAVORITE[ask] === food);
+        }
+  });
+
+  it('glows the animal at the second miss of a level 6 question and its snack at the fourth', () => {
+    expect([0, 1, 2, 3, 4, 5, 6].map(soundHelp)).toEqual([null, null, 'animal', null, 'snack', null, null]);
   });
 });

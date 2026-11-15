@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/animal-snack; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `animal-snack` · **Land:** Barnyard · **Ages:** lap–preschool · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `animal-snack` · **Land:** Barnyard · **Ages:** lap–pre-K · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** animals, words, matching, counting
 
@@ -11,6 +11,7 @@
 | lap | 1–2 |
 | toddler | 2–4 |
 | preschool | 3–5 |
+| pre-K | 5–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +20,7 @@
 | 3 | Who eats grass? or Who says moo? Tap the animal |
 | 4 | Drag each snack to the animal who eats it |
 | 5 | Give an animal 2 to 4 of its snack, then ring the bell |
+| 6 | Who says moo? Drag its own snack to the animal that makes the sound |
 
 <!-- end generated -->
 

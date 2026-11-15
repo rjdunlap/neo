@@ -124,13 +124,15 @@ describe('touch how-to cards', () => {
       if (id === 'splish-splash' || id === 'jelly-drums') expect(howToFor(game, last + 1)!.note).toBeFalsy();
     }
     const snack = GAMES.find((g) => g.id === 'animal-snack')!;
-    const finishes = [1, 2, 3, 4, 5].map((level) => howToFor(snack, level)!.finish);
+    const finishes = [1, 2, 3, 4, 5, 6].map((level) => howToFor(snack, level)!.finish);
     expect(finishes[0]).toContain('six snacks');
     expect(finishes[1]).toBe(finishes[0]);
     expect(finishes[2]).toContain('four food questions');
     expect(finishes[3]).toContain('all three animals');
     expect(finishes[4]).toContain('three animals receive the requested count');
-    expect(howToFor(snack, 6)!.finish).toBe('');
+    expect(finishes[5]).toContain('four animals are fed from their sounds');
+    expect(howToFor(snack, 7)!.finish).toBe('');
+    expect(howToFor(snack, 7)!.steps).toEqual([]);
   });
 
   it('explains Beat Builder controls, finish gates and target counts for each current mode', () => {
