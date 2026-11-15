@@ -1,1 +1,0 @@
-**Stamp Studio slice 3, a sound for every stamp, counting aloud and the wake-up** (rule tests, one scripted play at level 1 and one at 4): each stamp has its own sound, the count is said once each at levels 1–3, and the arrow wakes the stamps in order within 2.5 s. [Stamp Studio dive, slice 3](../../deep-dives/stamp-studio.md#build-slices-in-order)
