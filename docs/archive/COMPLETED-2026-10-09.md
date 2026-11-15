@@ -3601,3 +3601,7 @@ Branch `claude/shed-picnic-loop-build` ([PR #1445](https://github.com/rjdunlap/n
 ## Pet Says slice 10, level 11 Pet says, opposite (2026-11-14)
 
 [PR #1689](https://github.com/rjdunlap/neo/pull/1689) delivers slice 10 of the [dive](../deep-dives/pet-says.md#build-slices-in-order). Eight turns use three of level 8’s move pairs. Named cues ask for the opposite, and two or three plain cues ask players to stay still. The first arrow tap on a named turn reveals the opposite. On a trick the pet asks whether the player stayed still, then one arrow tap advances. A pet tap replays the turn and a held replay counts one hint per turn. School reaches level 11. See the [verification entry](../verification/2026-11-14-pet-says-level-11-pet-says-opposite.md).
+
+## Word Monsters level 14 Four sounds (dive slice 9, 2026-11-14)
+
+[PR #1693](https://github.com/rjdunlap/neo/pull/1693), [dive slice 9](../deep-dives/word-monsters.md#build-slices-in-order). Level 14 uses the word-only ask and sound-box hint from level 11. Three seeded words come from ten pictured words with adjacent consonants. Four centered boxes take the sounds in order. One of the five monsters is a spare chosen from the plain-sound pool. The level order puts Four sounds between Fix the pet’s word and Two letters, one sound. The pictures reuse the nest and frog and add the drum, flag, crab, lamp, milk, belt, plum and hand. The belt replaces tent to keep each letter unique within each word. See the [verification entry](../verification/2026-11-14-word-monsters-level-14-four-sounds.md).

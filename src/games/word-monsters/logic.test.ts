@@ -21,6 +21,9 @@ import {
   FAMILIES,
   fits,
   FIRST_WORDS,
+  FOUR_LEVEL,
+  FOUR_PLAN,
+  FOUR_WORDS,
   lookalike,
   makeQuestions,
   soundTwin,
@@ -62,6 +65,7 @@ describe('Word Monsters', () => {
       LAST_LEVEL,
       SLOW_LEVEL,
       REPAIR_LEVEL,
+      FOUR_LEVEL,
       TEAM_LEVEL,
     ]);
     for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
@@ -121,7 +125,7 @@ describe('Word Monsters', () => {
   });
 
   it('always offers the answer, never twice, and never next to a lookalike', () => {
-    for (const plan of [...PLANS, LAST_PLAN, SLOW_PLAN]) {
+    for (const plan of [...PLANS, LAST_PLAN, SLOW_PLAN, FOUR_PLAN]) {
       for (let seed = 1; seed <= 200; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
         expect(qs).toHaveLength(plan.rounds);
@@ -156,7 +160,7 @@ describe('Word Monsters', () => {
 
   it('never offers two letters with the same sound, and keeps q and x out of "who says"', () => {
     expect(soundTwin('c', 'k')).toBe(true);
-    for (const plan of [...PLANS, LAST_PLAN, SLOW_PLAN]) {
+    for (const plan of [...PLANS, LAST_PLAN, SLOW_PLAN, FOUR_PLAN]) {
       for (let seed = 1; seed <= 200; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
           for (const a of q.monsters)
@@ -279,7 +283,7 @@ describe('Word Monsters', () => {
   });
 
   it('has a bot that plays every level with no wrong tap and no wrong drop (what the ghost finger plays)', () => {
-    for (const plan of [...PLANS, LAST_PLAN, SLOW_PLAN]) {
+    for (const plan of [...PLANS, LAST_PLAN, SLOW_PLAN, FOUR_PLAN]) {
       for (let seed = 1; seed <= 100; seed++) {
         const questions = makeQuestions(plan, new Rng(seed));
         if (plan.mode === 'play') {
@@ -330,10 +334,43 @@ describe('Word Monsters', () => {
     }
   });
 
+  it('level 14 keeps the four sounds separate and offers one distinct, fair spare', () => {
+    expect(planFor(FOUR_LEVEL)).toBe(FOUR_PLAN);
+    expect(stepLevel(REPAIR_LEVEL, 1, LEVELS.school!)).toBe(FOUR_LEVEL);
+    expect(FOUR_WORDS).toHaveLength(10);
+    for (const word of FOUR_WORDS) {
+      expect(SLOW_WORDS).not.toContain(word);
+      expect(new Set(word).size, word).toBe(4);
+      const picture = wordPicture(word);
+      expect(picture.getBounds().width, word).toBeGreaterThan(120);
+      picture.destroy({ children: true });
+    }
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const questions = makeQuestions(FOUR_PLAN, new Rng(seed));
+      expect(questions).toHaveLength(3);
+      expect(new Set(questions.map((q) => q.answer)).size).toBe(3);
+      for (const q of questions) {
+        seen.add(q.answer);
+        const units = unitsOf(q);
+        expect(units).toEqual([...q.answer]);
+        expect(new Set(q.monsters).size).toBe(5);
+        for (const unit of units) expect(q.monsters).toContain(unit);
+        const [spare] = q.monsters.filter((m) => !units.includes(m));
+        expect(WHO_POOL).toContain(spare);
+        for (const unit of units) {
+          expect(lookalike(spare, unit), q.answer).toBe(false);
+          expect(soundTwin(spare, unit), q.answer).toBe(false);
+        }
+      }
+    }
+    expect(seen).toEqual(new Set(FOUR_WORDS));
+  });
+
   it('level 13 builds words where one monster wears a two-letter team and fills one box', () => {
     expect(planFor(TEAM_LEVEL)).toBe(TEAM_PLAN);
     expect(TEAM_PLAN).toMatchObject({ mode: 'team', rounds: 3, choices: 4 });
-    expect(stepLevel(REPAIR_LEVEL, 1, LEVELS.school!)).toBe(TEAM_LEVEL);
+    expect(stepLevel(FOUR_LEVEL, 1, LEVELS.school!)).toBe(TEAM_LEVEL);
     for (const id of ['monster.team', 'monster.team.half', ...TEAMS.map((t) => `sound.${t}`)])
       expect(SCRIPT[id as keyof typeof SCRIPT], id).toBeDefined();
     for (const line of SCRIPT['monster.team']) expect(line).not.toContain('{sounds}');

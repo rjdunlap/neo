@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5, 6, 7, 8, 10, 11, 12, 13 |
+| school | 5, 6, 7, 8, 10, 11, 12, 14, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -29,6 +29,7 @@
 | 11 | Say it slowly: build a pictured word from the word alone, with no sounds said and a spare letter |
 | 12 | Fix the pet's word: tap out the wrong letter and put the right one in |
 | 13 | Two letters, one sound: build fish, duck or bath, where one monster wears two letters (sh, ch, th, ck) and fills one box |
+| 14 | Four sounds: say a pictured word slowly and build it in four boxes, with a spare letter |
 
 <!-- end generated -->
 
