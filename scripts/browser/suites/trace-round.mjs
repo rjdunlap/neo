@@ -88,7 +88,8 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         const attempt = g.attempt;
         let steps = 0;
         while (g.attempt === attempt && steps++ < 40) {
-          if (!(await kit.until(() => !g.busy || g.attempt !== attempt, 18000))) throw new Error('Stroke stuck');
+          if (!(await kit.until(() => !g.busy || g.attempt !== attempt, 18000)))
+            throw new Error('Stroke stuck');
           if (g.attempt !== attempt) break;
           const points = g.points.slice(g.progress).map(([x, y]) => {
             const p = g.canvas.toGlobal({ x: x * g.size, y: y * g.size });
@@ -97,9 +98,14 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
           await kit.drag(points, 1, 10);
           await kit.sleep(250);
         }
-        if (!(await kit.until(() => g.attempt !== attempt && !g.busy, 6000))) throw new Error('Next try did not start');
+        if (!(await kit.until(() => g.attempt !== attempt && !g.busy, 6000)))
+          throw new Error('Next try did not start');
       });
-    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'solid', 'the first try shows a solid trail');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.guideNow()),
+      'solid',
+      'the first try shows a solid trail',
+    );
     await traceTry();
     assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'dotted', 'the second try shows dots');
     await page.waitForTimeout(300);
@@ -114,7 +120,11 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     assert.equal(wander.misses, 1, 'one wander is one miss');
     assert.equal(wander.guide, 'solid', 'a wander brings the solid trail back for that stroke');
     await traceTry();
-    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'start', 'the third try shows only the start');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.guideNow()),
+      'start',
+      'the third try shows only the start',
+    );
     await page.waitForTimeout(300);
     await screenshot('letter-trails-9-start');
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 0, 'no hint for one wander');
