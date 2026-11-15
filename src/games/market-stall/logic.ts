@@ -248,3 +248,7 @@ export function tenStrip(price: number, given: number): { cells: StripCell[]; ov
   );
   return { cells, over: Math.max(0, price + given - PAID) };
 }
+
+/** What is said when change lands: the coin's own value first, then the count up ("2. 7… 8, 9"). */
+export const countUpSaid = (price: number, before: number, value: number) =>
+  `${value}. ${countUpText(countUpWords(price, before, value), price)}`;

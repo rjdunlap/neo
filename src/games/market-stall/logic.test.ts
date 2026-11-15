@@ -29,6 +29,7 @@ import {
   countsUp,
   countUpWords,
   countUpText,
+  countUpSaid,
   tenStrip,
 } from './logic';
 
@@ -337,6 +338,9 @@ describe('Market Stall', () => {
       }
       expect(countUpText(countUpWords(7, 0, 2), 7)).toBe('7… 8, 9');
       expect(countUpText(countUpWords(7, 2, 1), 7)).toBe('10');
+      // The coin's own value is still said first.
+      expect(countUpSaid(7, 0, 2)).toBe('2. 7… 8, 9');
+      expect(countUpSaid(7, 2, 1)).toBe('1. 10');
     });
 
     it('the ten strip shows the price, then the change, and never more than ten cells', () => {

@@ -27,8 +27,7 @@ import {
   teachLine,
   coinToName,
   countsUp,
-  countUpText,
-  countUpWords,
+  countUpSaid,
   tenStrip,
   missKind,
   hintCharge,
@@ -380,10 +379,10 @@ class MarketStall implements Game {
         .then(() => this.ctx.tw.to(purse.scale, { x: big, y: big }, { duration: 0.2, ease: ease.outQuad }));
       void this.ctx.say('shop.name', { word });
     } else if (countsUp(this.plan)) {
-      // Count up from the price as the change lands: "7… 8, 9".
+      // The coin's value, then a count up from the price as the change lands: "2. 7… 8, 9".
       const price = this.order.prices[0];
       this.drawStrip();
-      void this.ctx.say('shop.countup', { n: countUpText(countUpWords(price, total - value, value), price) });
+      void this.ctx.say('shop.countup', { n: countUpSaid(price, total - value, value) });
     } else if (this.plan.mode === 'pair') void this.ctx.say('count', { n: value });
     else void this.ctx.say('count', { n: total });
   }
