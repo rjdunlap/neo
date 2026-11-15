@@ -1,11 +1,36 @@
 import { CRITTERS, type CritterSpec } from '../../art/critter';
+import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 // Saved stickers and the icon keep their original pool, even if play gains new friends.
 export const STICKER_ANIMALS = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'] as const;
-export const ANIMALS = [...STICKER_ANIMALS] as const;
+/** The farm four, drawn and voiced in `critter.ts` and `sfx` (built for Animal Snack). They join from `NEWCOMER_LEVEL`. */
+export const NEW_ANIMALS = ['sheep', 'horse', 'hen', 'mouse'] as const;
+export const ANIMALS = [...STICKER_ANIMALS, ...NEW_ANIMALS] as const;
 export type Animal = (typeof ANIMALS)[number];
+
+/** Each friend's own sound (`sfx.animal`) and the word said for it when it pops out. */
+export const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
+  cow: { sound: 'moo', word: 'Moo' },
+  duck: { sound: 'quack', word: 'Quack quack' },
+  pig: { sound: 'oink', word: 'Oink oink' },
+  cat: { sound: 'meow', word: 'Meow' },
+  dog: { sound: 'woof', word: 'Woof woof' },
+  bunny: { sound: 'hop', word: 'Hop hop' },
+  bear: { sound: 'growl', word: 'Grrr' },
+  sheep: { sound: 'baa', word: 'Baa' },
+  horse: { sound: 'neigh', word: 'Neigh' },
+  hen: { sound: 'cluck', word: 'Cluck cluck' },
+  mouse: { sound: 'squeak', word: 'Squeak squeak' },
+};
+
+/** The first level whose pool holds the farm four; below it (and One door) she meets the first seven words first. */
+export const NEWCOMER_LEVEL = 4;
+
+/** Who can hide at this level. Levels 1–3 and One door keep the seven, so their seeds deal exactly as before. */
+export const poolFor = (level: number): readonly Animal[] =>
+  level >= NEWCOMER_LEVEL && level !== ONE_DOOR_LEVEL ? ANIMALS : STICKER_ANIMALS;
 
 export interface PeekPlan {
   /**
@@ -53,8 +78,9 @@ const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
 export const planFor = (level: number) =>
   level === ONE_DOOR_LEVEL ? ONE_DOOR : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-/** A different animal behind each hiding place. */
-export const deal = (rng: Rng, spots: number): Animal[] => rng.shuffle([...ANIMALS]).slice(0, spots);
+/** A different animal behind each hiding place, from the level's pool (`poolFor`). */
+export const deal = (rng: Rng, spots: number, pool: readonly Animal[]): Animal[] =>
+  rng.shuffle([...pool]).slice(0, spots);
 
 /** Who to ask for: someone hiding now, and not the same friend as last time. */
 export function pickTarget(rng: Rng, present: readonly Animal[], last: Animal | null): Animal {
@@ -87,8 +113,8 @@ export function pickFeeling(rng: Rng, plan: PeekPlan, last: Feeling | null): Fee
 }
 
 /** Free play: someone new sneaks in, never the same as anyone already out. */
-export const newcomer = (rng: Rng, taken: readonly Animal[]): Animal =>
-  rng.pick(ANIMALS.filter((a) => !taken.includes(a)));
+export const newcomer = (rng: Rng, taken: readonly Animal[], pool: readonly Animal[]): Animal =>
+  rng.pick(pool.filter((a) => !taken.includes(a)));
 
 /**
  * Which hiding place a capable child taps next, or null while she waits. Asked for someone (find, remember): the place that
@@ -194,7 +220,13 @@ export const PARTS = {
   long: { words: 'long ears', has: (s: CritterSpec) => s.ears === 'long' },
   pointy: { words: 'pointy ears', has: (s: CritterSpec) => s.ears === 'pointy' },
   floppy: { words: 'floppy ears', has: (s: CritterSpec) => s.ears === 'floppy' },
-  round: { words: 'round ears', has: (s: CritterSpec) => s.ears === 'round' },
+  // The mouse's big ears are drawn as circles too, so they count as round: a bear and a mouse together share them.
+  round: { words: 'round ears', has: (s: CritterSpec) => s.ears === 'round' || s.ears === 'big' },
+  // The farm four's own parts, after the first ten so the seven's facts (`factAbout`) are unchanged. No beak: a duck's
+  // bill is a beak too, so "who has a beak?" would have two right answers.
+  wool: { words: 'wool', has: (s: CritterSpec) => !!s.wool },
+  mane: { words: 'a mane', has: (s: CritterSpec) => !!s.mane },
+  comb: { words: 'a red comb', has: (s: CritterSpec) => !!s.comb },
 } as const;
 export type Part = keyof typeof PARTS;
 export const PART_IDS = Object.keys(PARTS) as Part[];
@@ -230,9 +262,15 @@ export interface ClueDeal {
  * One clue question: a deal of different animals and a clue that holds for exactly one of them, never answered by the
  * same animal as last time (`last`). A part question whose deal has no unique part is redealt.
  */
-export function dealClue(rng: Rng, spots: number, kind: Clue['kind'], last: Animal | null): ClueDeal {
+export function dealClue(
+  rng: Rng,
+  spots: number,
+  kind: Clue['kind'],
+  last: Animal | null,
+  pool: readonly Animal[],
+): ClueDeal {
   for (let tries = 0; tries < 200; tries++) {
-    const animals = deal(rng, spots);
+    const animals = deal(rng, spots, pool);
     const choices = animals.filter((a) => a !== last);
     if (kind === 'feeling') {
       const answer = rng.pick(choices);
@@ -244,7 +282,7 @@ export function dealClue(rng: Rng, spots: number, kind: Clue['kind'], last: Anim
     return { animals, answer: animals.find((a) => hasPart(a, part))!, clue: { kind, part } };
   }
   // Unreachable in practice (most deals have a unique part); a feeling clue is always answerable.
-  const animals = deal(rng, spots);
+  const animals = deal(rng, spots, pool);
   const answer = animals.find((a) => a !== last) ?? animals[0];
   return { animals, answer, clue: { kind: 'feeling', feeling: 'sleepy' } };
 }
@@ -276,11 +314,11 @@ export function topOf(animal: Animal): string {
 export const topsDiffer = (animals: readonly Animal[]) => new Set(animals.map(topOf)).size === animals.length;
 
 /** A `top` round's deal: different animals whose tops all differ (redealt otherwise, should a lookalike join the pool). */
-export function dealTops(rng: Rng, spots: number): Animal[] {
+export function dealTops(rng: Rng, spots: number, pool: readonly Animal[]): Animal[] {
   for (let tries = 0; tries < 200; tries++) {
-    const animals = deal(rng, spots);
+    const animals = deal(rng, spots, pool);
     if (topsDiffer(animals)) return animals;
   }
   // Unreachable with today's animals, whose tops all differ.
-  return deal(rng, spots);
+  return deal(rng, spots, pool);
 }

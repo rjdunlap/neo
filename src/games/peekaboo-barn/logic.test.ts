@@ -34,6 +34,10 @@ import {
   topOf,
   topsDiffer,
   dealTops,
+  poolFor,
+  NEW_ANIMALS,
+  NEWCOMER_LEVEL,
+  VOICES,
   type Animal,
   type Feeling,
 } from './logic';
@@ -107,12 +111,13 @@ describe('Peekaboo Barn', () => {
   });
 
   it('hides a different animal in each place and asks for one that is there, never twice in a row', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
+    for (const [i, plan] of PLANS.entries()) {
+      if (plan.mode === 'free') continue;
       for (let seed = 1; seed <= 200; seed++) {
         const rng = new Rng(seed);
         let last: Animal | null = null;
         for (let q = 0; q < plan.goal; q++) {
-          const present = deal(rng, plan.spots);
+          const present = deal(rng, plan.spots, poolFor(i + 1));
           expect(new Set(present).size).toBe(plan.spots);
           const target = pickTarget(rng, present, last);
           expect(present).toContain(target);
@@ -126,8 +131,8 @@ describe('Peekaboo Barn', () => {
   it('sends in a newcomer who is not already showing', () => {
     for (let seed = 1; seed <= 200; seed++) {
       const rng = new Rng(seed);
-      const taken = deal(rng, 4);
-      const who = newcomer(rng, taken);
+      const taken = deal(rng, 4, ANIMALS);
+      const who = newcomer(rng, taken, ANIMALS);
       expect(ANIMALS).toContain(who);
       expect(taken).not.toContain(who);
     }
@@ -137,7 +142,7 @@ describe('Peekaboo Barn', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         const rng = new Rng(seed);
-        const animals = deal(rng, plan.spots);
+        const animals = deal(rng, plan.spots, ANIMALS);
         if (plan.mode !== 'free') {
           const target = pickTarget(rng, animals, null);
           expect(
@@ -257,9 +262,10 @@ describe('Peekaboo Barn', () => {
     it('cycles animals and never repeats the one that just showed', () => {
       for (let seed = 1; seed <= 20; seed++) {
         const rng = new Rng(seed);
-        let who = deal(rng, 1)[0];
+        let who = deal(rng, 1, poolFor(ONE_DOOR_LEVEL))[0];
         for (let i = 0; i < 12; i++) {
-          const next = newcomer(rng, [who]);
+          const next = newcomer(rng, [who], poolFor(ONE_DOOR_LEVEL));
+          expect(STICKER_ANIMALS).toContain(next);
           expect(next).not.toBe(who);
           who = next;
         }
@@ -303,7 +309,7 @@ describe('Peekaboo Barn level 9, Who has…?', () => {
       const rng = new Rng(seed);
       let last: Animal | null = null;
       for (let q = 0; q < plan.goal; q++) {
-        const d = dealClue(rng, plan.spots, clueKindFor(q), last);
+        const d = dealClue(rng, plan.spots, clueKindFor(q), last, poolFor(9));
         expect(d.clue.kind).toBe(clueKindFor(q));
         expect(new Set(d.animals).size).toBe(plan.spots);
         expect(d.animals).toContain(d.answer);
@@ -339,7 +345,7 @@ describe('Peekaboo Barn level 9, Who has…?', () => {
   });
 
   it("points the ghost finger's bot at the clue's holder", () => {
-    const d = dealClue(new Rng(7), plan.spots, 'part', null);
+    const d = dealClue(new Rng(7), plan.spots, 'part', null, poolFor(9));
     const poses = d.animals.map(() => 'out');
     expect(spotToTap(plan, poses, d.animals, d.answer, -1)).toBe(d.animals.indexOf(d.answer));
   });
@@ -378,7 +384,7 @@ describe('Peekaboo Barn levels 10–11, Whose ears?', () => {
         const rng = new Rng(seed);
         let last: Animal | null = null;
         for (let q = 0; q < plan.goal; q++) {
-          const animals = dealTops(rng, plan.spots);
+          const animals = dealTops(rng, plan.spots, poolFor(level));
           expect(new Set(animals).size).toBe(plan.spots);
           expect(topsDiffer(animals)).toBe(true);
           const target = pickTarget(rng, animals, last);
@@ -394,8 +400,90 @@ describe('Peekaboo Barn levels 10–11, Whose ears?', () => {
 
   it("points the ghost finger's bot at the asked animal's place", () => {
     const plan = planFor(11);
-    const animals = dealTops(new Rng(5), plan.spots);
+    const animals = dealTops(new Rng(5), plan.spots, poolFor(11));
     const poses = animals.map(() => 'top');
     expect(spotToTap(plan, poses, animals, animals[2], -1)).toBe(2);
+  });
+});
+
+describe('Peekaboo Barn, more animals', () => {
+  it('keeps the first seven words below level 4 and in One door, and adds the farm four from level 4', () => {
+    expect(NEW_ANIMALS).toEqual(['sheep', 'horse', 'hen', 'mouse']);
+    expect(NEWCOMER_LEVEL).toBe(4);
+    for (const level of [1, 2, 3, ONE_DOOR_LEVEL]) expect(poolFor(level)).toEqual(STICKER_ANIMALS);
+    for (let level = 4; level <= PLANS.length; level++) expect(poolFor(level)).toEqual(ANIMALS);
+    expect(ANIMALS).toHaveLength(11);
+  });
+
+  it("gives every level's pool more animals than its places, so a newcomer can always sneak in", () => {
+    for (const level of [...PLANS.keys()].map((i) => i + 1).concat(ONE_DOOR_LEVEL))
+      expect(poolFor(level).length).toBeGreaterThan(planFor(level).spots);
+  });
+
+  it('gives every animal its own sound and a word to say for it', () => {
+    for (const a of ANIMALS) {
+      expect(VOICES[a].word.length, a).toBeGreaterThan(0);
+    }
+    expect(new Set(ANIMALS.map((a) => VOICES[a].sound)).size).toBe(ANIMALS.length);
+    expect(VOICES.sheep.sound).toBe('baa');
+    expect(VOICES.horse.sound).toBe('neigh');
+    expect(VOICES.hen.sound).toBe('cluck');
+    expect(VOICES.mouse.sound).toBe('squeak');
+  });
+
+  it('deals the farm four only from level 4, and every one of them turns up there', () => {
+    for (let level = 1; level <= PLANS.length; level++) {
+      const plan = planFor(level);
+      const seen = new Set<Animal>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        const animals =
+          plan.mode === 'top'
+            ? dealTops(rng, plan.spots, poolFor(level))
+            : plan.mode === 'clue'
+              ? dealClue(rng, plan.spots, 'part', null, poolFor(level)).animals
+              : deal(rng, plan.spots, poolFor(level));
+        animals.forEach((a) => seen.add(a));
+      }
+      const farm = NEW_ANIMALS.filter((a) => seen.has(a));
+      expect(farm, `level ${level}`).toEqual(level >= NEWCOMER_LEVEL ? [...NEW_ANIMALS] : []);
+    }
+  });
+
+  it('deals levels 1–3 exactly as before the farm four joined', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const before = new Rng(seed).shuffle([...STICKER_ANIMALS]).slice(0, 3);
+      expect(deal(new Rng(seed), 3, poolFor(3))).toEqual(before);
+    }
+  });
+
+  it('lets each of the farm four be the answer to a level 9 clue, with something true to say when it is not', () => {
+    const answers = new Set<Animal>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const rng = new Rng(seed);
+      for (let q = 0; q < 5; q++) answers.add(dealClue(rng, 3, clueKindFor(q), null, poolFor(9)).answer);
+    }
+    for (const a of NEW_ANIMALS) {
+      expect(answers.has(a), a).toBe(true);
+      expect(hasPart(a, factAbout(a))).toBe(true);
+    }
+    // The mouse's big ears are round ones too, so a bear and a mouse never make "round ears" a single answer.
+    expect(hasPart('mouse', 'round')).toBe(true);
+    expect(uniqueParts(['bear', 'mouse', 'cow'])).not.toContain('round');
+    expect(hasPart('horse', 'mane')).toBe(true);
+    expect(hasPart('hen', 'comb')).toBe(true);
+    expect(hasPart('sheep', 'wool')).toBe(true);
+  });
+
+  it('keeps the first seven facts unchanged now that the farm parts come after them', () => {
+    expect(STICKER_ANIMALS.map(factAbout)).toEqual([
+      'spots',
+      'wings',
+      'snout',
+      'whiskers',
+      'floppy',
+      'whiskers',
+      'round',
+    ]);
   });
 });
