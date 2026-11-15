@@ -1,3 +1,4 @@
+import { channels, oklabDistance as distance, toLinear, toSrgb } from '../../art/oklab';
 /**
  * Paint Mixer rules: drops from big pots into a bucket, judged against a small sample jar by an exact count rule.
  * The bucket's colour is the drop-weighted mean of the pot colours (equal ratios are exactly the same colour); the
@@ -250,9 +251,7 @@ export function makeRound(level: number, rng: Rng): Sample[] {
 
 // ---- colour ----
 
-const toLinear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-const toSrgb = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055);
-const channels = (hex: number): [number, number, number] => [(hex >> 16) & 255, (hex >> 8) & 255, hex & 255];
+export { distance };
 
 /** The bucket's colour: the drop-weighted mean of the pot paints in linear RGB, as a hex colour (the empty bucket is undefined). */
 export function mix(counts: Counts): number | undefined {
@@ -268,25 +267,6 @@ export function mix(counts: Counts): number | undefined {
   if (n === 0) return undefined;
   const out = acc.map((v) => Math.round(Math.min(1, Math.max(0, toSrgb(v / n))) * 255));
   return (out[0] << 16) | (out[1] << 8) | out[2];
-}
-
-function oklab(hex: number): [number, number, number] {
-  const [r, g, b] = channels(hex).map((v) => toLinear(v / 255));
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  return [
-    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
-    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
-    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
-  ];
-}
-
-/** Oklab distance ×100: about 1–2 is a just-noticeable step side by side. */
-export function distance(c1: number, c2: number): number {
-  const a = oklab(c1),
-    b = oklab(c2);
-  return 100 * Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
 // ---- the drop rows ----

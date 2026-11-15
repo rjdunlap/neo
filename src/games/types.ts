@@ -133,6 +133,8 @@ export interface GameModule {
    * the turn prompt. A registry test lists these games.
    */
   upright?: true;
+  /** Levels with an upright layout in a game whose other levels still use the turn prompt. */
+  uprightLevels?: readonly number[];
   /** A prompt for the grown-up in early bands (lap and toddler). `{name}` is the child's name. Read through `tipFor`. */
   coplayHint?: string;
   /**

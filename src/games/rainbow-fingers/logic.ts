@@ -1,4 +1,5 @@
 import { RAINBOW, swatch, type ColorName } from '../../art/palette';
+import { mixOklab } from '../../art/oklab';
 import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -446,7 +447,7 @@ export const echoes = (mode: PaintMode) => mode === 'free' || mode === 'pots';
  * the color from two pots. recall-mix: remember the color, then mix it. wheel: finish a color wheel, mixing each empty petal from the
  * two painted petals beside it.
  */
-export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix' | 'recall-mix' | 'wheel';
+export type PaintMode = 'free' | 'pots' | 'named' | 'recall' | 'mix' | 'recall-mix' | 'wheel' | 'match';
 /** The mixing pages pour primaries into a bowl instead of selecting a pot directly. */
 export function pours(mode: PaintMode): boolean {
   return mode === 'mix' || mode === 'recall-mix' || mode === 'wheel';
@@ -454,7 +455,7 @@ export function pours(mode: PaintMode): boolean {
 
 export interface PaintPlan {
   mode: PaintMode;
-  /** Pictures on the page. */
+  /** Pictures or samples on the page. */
   count: number;
   /** A white pot joins the primaries and the pictures are the pinks (level 9). */
   white?: boolean;
@@ -479,6 +480,7 @@ export const PLANS: PaintPlan[] = [
   { mode: 'mix', count: 2, white: true },
   { mode: 'mix', count: 2, three: true },
   { mode: 'recall-mix', count: 3, memory: true },
+  { mode: 'match', count: 3 },
 ];
 
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
@@ -487,7 +489,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 11 },
+  school: { min: 5, max: 12 },
 };
 
 export function planFor(level: number): PaintPlan {
@@ -645,6 +647,90 @@ export const WHEEL: Petal[] = RAINBOW.map((color, i) => {
 export function wheelNeighbors(color: ColorName): [ColorName, ColorName] {
   const i = RAINBOW.indexOf(color);
   return [RAINBOW[(i + RAINBOW.length - 1) % RAINBOW.length], RAINBOW[(i + 1) % RAINBOW.length]];
+}
+
+export type MatchBowl = readonly [number, number];
+export type MatchPot = 0 | 1;
+export interface MatchSample {
+  pair: readonly [Primary, Primary];
+  start: number;
+  /** The second paint's share, in thirds. */
+  share: 1 | 2;
+  name: string;
+}
+
+export const MATCH_CAPACITY = 6;
+export const MATCH_SAMPLES: readonly MatchSample[] = [
+  { pair: ['red', 'yellow'], start: 0, share: 1, name: 'red-orange' },
+  { pair: ['red', 'yellow'], start: 0, share: 2, name: 'yellow-orange' },
+  { pair: ['yellow', 'blue'], start: 120, share: 1, name: 'yellow-green' },
+  { pair: ['yellow', 'blue'], start: 120, share: 2, name: 'blue-green' },
+  { pair: ['blue', 'red'], start: 240, share: 1, name: 'blue-purple' },
+  { pair: ['blue', 'red'], start: 240, share: 2, name: 'red-purple' },
+];
+
+/** One of the two shares for each pair, with the pairs in a seeded order. */
+export function pickSamples(rng: Rng): MatchSample[] {
+  return rng.shuffle([0, 2, 4]).map((index) => MATCH_SAMPLES[index + rng.int(0, 1)]);
+}
+
+const drops = ([a, b]: MatchBowl) => a + b;
+const shareError = (sample: MatchSample, bowl: MatchBowl) => 3 * bowl[1] - sample.share * drops(bowl);
+
+export function matchDegrees(sample: MatchSample, bowl: MatchBowl): number | null {
+  return drops(bowl) ? sample.start + 120 * (bowl[1] / drops(bowl)) : null;
+}
+
+/** The six familiar paint fills are the anchors, including red again at 360 degrees. */
+export function wheelColor(degrees: number): number {
+  const position = (((degrees % 360) + 360) % 360) / 60;
+  const index = Math.floor(position);
+  return mixOklab(
+    swatch[RAINBOW[index]].fill,
+    swatch[RAINBOW[(index + 1) % RAINBOW.length]].fill,
+    position - index,
+  );
+}
+
+export function addMatchDrop(bowl: MatchBowl, pot: MatchPot): MatchBowl {
+  if (drops(bowl) >= MATCH_CAPACITY) return bowl;
+  return pot === 0 ? [bowl[0] + 1, bowl[1]] : [bowl[0], bowl[1] + 1];
+}
+
+/** Compare the share with a tolerance of 2/15, using only integer arithmetic. */
+export function matchesSample(sample: MatchSample, bowl: MatchBowl): boolean {
+  const total = drops(bowl);
+  return total > 0 && 15 * Math.abs(shareError(sample, bowl)) <= 6 * total;
+}
+
+export function morePaint(sample: MatchSample, bowl: MatchBowl): MatchPot {
+  if (drops(bowl) === 0) return sample.share === 1 ? 0 : 1;
+  return shareError(sample, bowl) > 0 ? 0 : 1;
+}
+
+/** Size of the smallest matching extension, or Infinity when keeping these drops cannot work. */
+function smallestMatch(sample: MatchSample, bowl: MatchBowl): number {
+  for (let total = drops(bowl); total <= MATCH_CAPACITY; total++) {
+    for (let b = bowl[1]; b <= total - bowl[0]; b++) {
+      if (matchesSample(sample, [total - b, b])) return total;
+    }
+  }
+  return Infinity;
+}
+
+export function matchHint(sample: MatchSample, bowl: MatchBowl): MatchPot | 'start-again' | null {
+  if (matchesSample(sample, bowl)) return null;
+  if (drops(bowl) === MATCH_CAPACITY) return 'start-again';
+  const withFirst = addMatchDrop(bowl, 0);
+  const withSecond = addMatchDrop(bowl, 1);
+  const first = smallestMatch(sample, withFirst);
+  const second = smallestMatch(sample, withSecond);
+  if (first < second) return 0;
+  if (second < first) return 1;
+  if (first === Infinity) return 'start-again';
+  if (drops(bowl) === 0) return morePaint(sample, bowl);
+  // The two next bowls have the same total, so the smaller numerator error is closer.
+  return Math.abs(shareError(sample, withFirst)) <= Math.abs(shareError(sample, withSecond)) ? 0 : 1;
 }
 
 /** Where the wheel sits and how big: centred in the paper above the pots, as large as fits, at most 1.15. */
