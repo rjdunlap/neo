@@ -272,6 +272,56 @@ export function createSuite({
         assert.ok(course.players[0].clean >= 63);
         log('Pond Typing course v2: all six ponds, one finish and course record passed');
       }
+      if (id === 'frog-hop') {
+        // The later stops of a trip, read from the real table: over ten, back over ten, count up, your way.
+        const modes = { 2: 'make-ten', 3: 'back-ten', 4: 'count-up', 5: 'your-way' };
+        for (const stop of [2, 3, 4, 5]) {
+          await page.evaluate(async (stop) => {
+            const info = (await import('/src/couch/catalog.ts')).COUCH_INFO['frog-hop'];
+            info.realLevel ??= info.level;
+            info.level = () => info.realLevel(stop);
+            neo.scene.couch.data.party.selected = 'frog-hop';
+            neo.scene.couch.save();
+            neo.scene.go(true);
+          }, stop);
+          await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'game');
+          await page.waitForFunction(() => neo.scene.game.q && !neo.scene.game.busy, null, {
+            timeout: 20000,
+          });
+          assert.equal(
+            await page.evaluate(() => neo.scene.game.plan.mode),
+            modes[stop],
+            `frog-hop stop ${stop}`,
+          );
+          if (stop === 5) {
+            // A real Enter on the frog's own pad (the ring starts there) is a wrong landing, not a stop at 10.
+            await page.keyboard.press('Enter', { delay: 120 });
+            await page.waitForFunction(() => neo.scene.game.wrongs === 1, null, { timeout: 5000 });
+          }
+          await page.evaluate(async () => {
+            const g = neo.scene.game;
+            const start = performance.now();
+            while (!g.finished && performance.now() - start < 120000) {
+              await new Promise((r) => requestAnimationFrame(r));
+              g.control(g.autoplay(0.05), 0.05);
+            }
+            if (!g.finished) throw new Error('the Frog Hop bot did not finish a later stop');
+          });
+          await page.waitForFunction(() => !neo.switching && neo.scene.screen === 'menu', null, {
+            timeout: 20000,
+          });
+          log(`Frog Hop couch stop ${stop}: ${modes[stop]} played with the ring and bot`);
+        }
+        await page.evaluate(async () => {
+          const info = (await import('/src/couch/catalog.ts')).COUCH_INFO['frog-hop'];
+          info.level = info.realLevel;
+        });
+        assert.equal(
+          await page.evaluate(() => JSON.stringify(kit.store.data)),
+          childBefore,
+          'frog-hop later stops leave the child save untouched',
+        );
+      }
       log(`Couch catalog: ${id}: intro, controller lighting, bot round and save passed`);
     }
     assert.deepEqual(errors, []);
