@@ -10,18 +10,14 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { letterPicture } from '../../art/letter-pictures';
 import { WORDS } from '../../learning/words/letter-words';
-import {
-  advanceTrace,
-  LETTERS,
-  sampleStroke,
-  traceWaypoints,
-  type Point,
-} from '../../learning/tracing/strokes';
+import { FRAME, FRAME_X, strokesOf } from '../../learning/tracing/lowercase';
+import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
 import { rangeFor } from '../../progress/difficulty';
 import {
   fullName,
   guidesFor,
   hintCounts,
+  inFrame,
   LEVELS,
   NAME_LEVEL,
   PLANS,
@@ -61,6 +57,8 @@ class LetterTrails implements Game {
   private previous: Point = [0, 0];
   private readonly background = new Graphics();
   private readonly canvas = new Container();
+  /** Level 10's four-line frame (top, dashed middle, base, bottom), under the trail. */
+  private readonly frame = new Graphics();
   private readonly outline = new Graphics();
   private readonly ink = new Graphics();
   private readonly beacon = new Graphics();
@@ -96,7 +94,7 @@ class LetterTrails implements Game {
     // Drawn after the word, so a look never changes which letter or word a seed gives.
     this.look = pickLook(ctx.rng);
     ctx.stage.addChild(this.background, this.canvas, this.heading, this.pips);
-    this.canvas.addChild(this.outline, this.ink, this.beacon, this.firefly);
+    this.canvas.addChild(this.frame, this.outline, this.ink, this.beacon, this.firefly);
     this.firefly.addChild(
       new Graphics()
         .ellipse(-14, -12, 16, 10)
@@ -130,8 +128,12 @@ class LetterTrails implements Game {
   private get letter() {
     return this.word[this.letterIndex];
   }
+  /** The capital: what the picture, the journal and the voice use, for a little letter too. */
+  private get capital() {
+    return this.letter.toUpperCase();
+  }
   private prepareStroke() {
-    this.points = sampleStroke(LETTERS[this.letter][this.stroke]);
+    this.points = sampleStroke(strokesOf(this.letter)[this.stroke]);
     this.progress = 0;
     this.previous = this.points[0];
     this.wrong = 0;
@@ -217,7 +219,7 @@ class LetterTrails implements Game {
     while (this.handle.dragging) await this.ctx.tw.wait(0.05);
     await this.ctx.tw.wait(0.2);
     this.stroke++;
-    if (this.stroke < LETTERS[this.letter].length) {
+    if (this.stroke < strokesOf(this.letter).length) {
       this.busy = false;
       this.prepareStroke();
       void this.ctx.instruct('trails.stroke');
@@ -242,15 +244,16 @@ class LetterTrails implements Game {
     this.ink.clear();
     this.beacon.clear();
     this.firefly.visible = false;
-    this.traced.add(this.letter);
+    this.frame.clear();
+    this.traced.add(this.capital);
     if (this.several) await this.flourish();
     else {
-      this.picture = letterPicture(this.letter);
+      this.picture = letterPicture(this.capital);
       this.picture.position.set(this.size / 2, this.size / 2);
       this.picture.scale.set(this.pictureScale);
       this.canvas.addChild(this.picture);
-      this.heading.text = `${this.letter} · ${WORDS[this.letter]}`;
-      void this.ctx.say('trails.picture', { letter: this.letter, word: WORDS[this.letter] });
+      this.heading.text = `${this.capital} · ${WORDS[this.capital]}`;
+      void this.ctx.say('trails.picture', { letter: this.capital, word: WORDS[this.capital] });
       await this.ctx.tw.wait(2.6);
       this.picture.destroy({ children: true });
       this.picture = null;
@@ -298,7 +301,7 @@ class LetterTrails implements Game {
 
   /** Between the letters of a word or a name: the letter's picture pops up small and goes, unspoken, so the next letter comes soon. */
   private async flourish() {
-    const p = letterPicture(this.letter);
+    const p = letterPicture(this.capital);
     p.position.set(this.size / 2, this.size / 2);
     p.scale.set(0);
     this.picture = p;
@@ -411,7 +414,7 @@ class LetterTrails implements Game {
     if (this.picture || this.done) return;
     this.outline.clear();
     this.ink.clear();
-    LETTERS[this.letter].forEach((stroke, i) => {
+    strokesOf(this.letter).forEach((stroke, i) => {
       const color = i === this.stroke ? swatch.purple.light : swatch.white.line;
       const guide = i === this.stroke ? this.guideNow() : this.guides[this.attempt];
       if (guide === 'solid') this.drawPath(this.outline, stroke, color, 28);
@@ -436,7 +439,31 @@ class LetterTrails implements Game {
             .split('')
             .map((c, i) => (i === this.letterIndex ? `[ ${c} ]` : c))
             .join('  ')
-        : this.letter;
+        : inFrame(this.ctx.level)
+          ? // The capital beside the little letter: a free peek at the letter she knows.
+            `${this.capital}  ${this.letter}`
+          : this.letter;
+  }
+
+  /** The four lines little letters are written between, as on school writing paper; the middle one is dashed. */
+  private drawFrame() {
+    this.frame.clear();
+    if (!inFrame(this.ctx.level) || this.picture || this.done) return;
+    const [x0, x1] = FRAME_X.map((x) => x * this.size);
+    const line = (y: number, color: number, width: number) =>
+      this.frame
+        .moveTo(x0, y * this.size)
+        .lineTo(x1, y * this.size)
+        .stroke({ width, color, cap: 'round' });
+    line(FRAME.top, swatch.blue.light, 6);
+    line(FRAME.base, swatch.blue.line, 6);
+    line(FRAME.bottom, swatch.blue.light, 6);
+    const dash = 22;
+    for (let x = x0; x < x1; x += dash * 2)
+      this.frame
+        .moveTo(x, FRAME.mid * this.size)
+        .lineTo(Math.min(x1, x + dash), FRAME.mid * this.size)
+        .stroke({ width: 5, color: swatch.blue.fill, cap: 'round' });
   }
   /** Less help each time: three pips under the heading, filled up to the try she is on. */
   private drawPips() {
@@ -451,17 +478,24 @@ class LetterTrails implements Game {
 
   resize(v: View) {
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    this.size = Math.min(v.h - 260, v.w - 360, 520);
+    // The frame's lines run across most of the box but its letters stay in the middle, so the box may grow until the
+    // lines fill the width a capital's box would (on a tall view; a phone turned sideways is limited by its height).
+    this.size = inFrame(this.ctx.level)
+      ? Math.min(v.h - 260, (v.w - 360) / (FRAME_X[1] - FRAME_X[0]), 640)
+      : Math.min(v.h - 260, v.w - 360, 520);
     this.canvas.position.set(v.w / 2 - this.size / 2 + 35, (v.h - this.size) / 2 + 35);
     this.heading.position.set(v.w / 2, 65);
     this.heading.style.fontSize = Math.min(38, (v.w - 250) / Math.max(8, this.word.length * 1.6));
+    this.drawFrame();
     this.draw();
     this.placeFirefly();
     if (this.picture) this.picture.position.set(this.size / 2, this.size / 2);
   }
   async start() {
     if (this.several) await this.ctx.say('trails.word', { word: this.spoken });
-    void this.ctx.instruct('trails.start', { letter: this.letter });
+    void this.ctx.instruct(inFrame(this.ctx.level) ? 'trails.little' : 'trails.start', {
+      letter: this.capital,
+    });
   }
   update(dt: number) {
     this.clock += dt;

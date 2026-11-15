@@ -18,11 +18,12 @@ export const PLANS = [
     letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
     name: 'Less help each time: trace one capital three times, with a solid trail, then dots, then only the start',
   },
+  { letters: 'cosvwt', name: 'Little letters like their capitals: c, o, s, v, w, t in a four-line frame' },
 ];
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6 },
-  prek: { min: 3, max: 9 },
-  school: { min: 7, max: 9 },
+  prek: { min: 3, max: 10 },
+  school: { min: 7, max: 10 },
 };
 
 /** The levels that trace several letters (a word, a name): their misses and hints count once per letter. */
@@ -30,6 +31,11 @@ export const WORD_LEVEL = 7;
 export const NAME_LEVEL = 8;
 /** Level 9 traces one capital three times with less help each time (`GUIDES`). */
 export const THREE_LEVEL = 9;
+/** Level 10 traces one little letter (c o s v w t) in the four-line frame, its capital beside it. */
+export const LITTLE_LEVEL = 10;
+
+/** Whether the round's letters are little letters, traced in the frame. */
+export const inFrame = (level: number): boolean => trailLevel(level) === LITTLE_LEVEL;
 
 /** A word or a name: several letters, each a short flourish, counted at most once per letter. Level 9 is one letter. */
 export const severalLetters = (level: number): boolean => {
@@ -70,7 +76,7 @@ export function trailLevel(level: number): number {
   return Math.max(1, Math.min(PLANS.length, Math.floor(level)));
 }
 
-/** What the round traces, in capitals: one letter, a short word, or the first eight letters of her name. */
+/** What the round traces: one capital, a short word or the first eight letters of her name in capitals, or one little letter. */
 export function trailWord(level: number, name: string, rng: Rng): string {
   const l = trailLevel(level);
   return l === NAME_LEVEL

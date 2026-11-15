@@ -1,0 +1,5 @@
+# 2026-11-14 — Letter Trails level 10 little letters (PR #1684)
+
+**Changed:** Letter Trails level 10, "Little letters like their capitals": c o s v w t traced in a four-line frame (`src/learning/tracing/lowercase.ts`), the heading showing the capital beside the little letter; new line `trails.little`; level-10 how-to lines; browser suite `letters10`.
+**Ran:** `npm run typecheck`; full `npm test` (351 files passed, including rule tests for the frame bands, starts at the top, directions, acceptance and bot route at the corridor, shortcuts, capitals unchanged); `BROWSER_SUITE=letters10` (2 checks: c, and t with two wanders, a miss and a hint, on 390x844 with a frame-inside-view check and portrait screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=letter-trails FINGER_LEVELS=10 FINGER_BAND=school` (10.8 s); a game-reviewer pass (no blockers).
+**Not run:** `npm run build` (CI runs it); the full `letters` suite (levels 1–9 code unchanged); device speech of "a little C"; a comparison of the stroke forms with Handwriting Without Tears' published lowercase chart (open, see the build note).

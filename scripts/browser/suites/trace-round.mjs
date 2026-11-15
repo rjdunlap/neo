@@ -1,20 +1,26 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-  async function traceRound(level, name, wrong = false) {
-    // Levels 7 and 9 play on a phone held upright, so the word picture and the fading guides are checked where the playtests happen.
-    const phone = level === 7 || level === 9;
+  async function traceRound(level, name, wrong = false, want = '') {
+    // Levels 7, 9 and 10 play on a phone held upright, so the word picture, the fading guides and the little letters in
+    // their frame are checked where the playtests happen.
+    const phone = level === 7 || level === 9 || level === 10;
     const landscape = page.viewportSize();
     if (phone) await page.setViewportSize({ width: 390, height: 844 });
     try {
-      await playRound(level, name, wrong);
+      await playRound(level, name, wrong, want);
     } finally {
       if (phone) await page.setViewportSize(landscape);
     }
   }
 
-  async function playRound(level, name, wrong) {
+  async function playRound(level, name, wrong, want) {
     await launch('letter-trails', level, name);
+    // A wanted letter (level 10's first and last, c and t): relaunch until the seed draws it.
+    for (let i = 0; want && i < 60 && (await page.evaluate(() => neo.scene.game.word)) !== want; i++)
+      await launch('letter-trails', level, name);
+    if (want)
+      assert.equal(await page.evaluate(() => neo.scene.game.word), want, `level ${level} drew ${want}`);
     if (wrong) {
       await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -39,6 +45,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       );
     }
     if (level === 9) await threeTries();
+    if (level === 10) await littleLetter();
     await page.evaluate(async () => {
       const g = neo.scene.game;
       let steps = 0;
@@ -128,6 +135,31 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await page.waitForTimeout(300);
     await screenshot('letter-trails-9-start');
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 0, 'no hint for one wander');
+  }
+
+  /** Level 10: a little letter in the four-line frame with its capital beside it, the frame inside the view. */
+  async function littleLetter() {
+    const shown = await page.evaluate(() => {
+      const g = neo.scene.game;
+      const b = g.frame.getBounds();
+      const w = neo.view.w * neo.view.scale;
+      return {
+        letter: g.letter,
+        heading: g.heading.text,
+        drawn: b.width > 0,
+        inside: b.x >= 0 && b.x + b.width <= w,
+      };
+    });
+    assert.ok('cosvwt'.includes(shown.letter), `a little letter of the first group (${shown.letter})`);
+    assert.equal(
+      shown.heading,
+      `${shown.letter.toUpperCase()}  ${shown.letter}`,
+      'the capital is shown beside it',
+    );
+    assert.ok(shown.drawn, 'the four-line frame is drawn');
+    assert.ok(shown.inside, 'the frame stays inside the view');
+    await page.waitForTimeout(300);
+    await screenshot(`letter-trails-10-${shown.letter}`);
   }
 
   return { traceRound };

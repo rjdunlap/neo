@@ -30,8 +30,12 @@ import {
   trailTolerance,
   trailWord,
   THREE_LEVEL,
+  LITTLE_LEVEL,
+  inFrame,
 } from './logic';
 import { PICTURE_WORDS } from '../word-monsters/logic';
+import { FRAME, FRAME_X, LOWER, isLower, strokesOf } from '../../learning/tracing/lowercase';
+import { traceWaypoints } from '../../learning/tracing/strokes';
 
 describe('Letter Trails plans', () => {
   it('keeps each band inside the authored ladder and every pool traceable', () => {
@@ -44,8 +48,8 @@ describe('Letter Trails plans', () => {
         const word = trailWord(level, 'Zoë-Rose', new Rng(seed));
         expect(word.length).toBeGreaterThan(0);
         for (const letter of word) {
-          expect(LETTERS[letter]).toBeTruthy();
-          expect(WORDS[letter]).toBeTruthy();
+          expect(strokesOf(letter)).toBeTruthy();
+          expect(WORDS[letter.toUpperCase()]).toBeTruthy();
         }
         if (level <= 6) expect(PLANS[level - 1].letters).toContain(word);
         if (level === 7) expect(SHORT_WORDS).toContain(word.toLowerCase());
@@ -230,5 +234,116 @@ describe('Level 9, Three times', () => {
     expect(severalLetters(7)).toBe(true);
     expect(severalLetters(8)).toBe(true);
     expect(roundTally(THREE_LEVEL, [{ misses: 3, hints: 2 }])).toEqual({ misses: 3, hints: 2 });
+  });
+});
+
+describe('Level 10, little letters in a four-line frame', () => {
+  const group = 'cosvwt';
+  const span = (letter: string) => strokesOf(letter).flatMap((s) => sampleStroke(s));
+  const eps = 1e-9;
+
+  it("draws one of the programme's first group, c o s v w t, each with its capital's picture", () => {
+    expect(Object.keys(LOWER).sort().join('')).toBe([...group].sort().join(''));
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 300; seed++) {
+      const word = trailWord(LITTLE_LEVEL, 'Ana', new Rng(seed));
+      expect(word).toHaveLength(1);
+      expect(group).toContain(word);
+      expect(isLower(word)).toBe(true);
+      seen.add(word);
+    }
+    expect(seen.size).toBe(group.length);
+    for (const l of group) expect(WORDS[l.toUpperCase()]).toBeTruthy();
+    expect(inFrame(LITTLE_LEVEL)).toBe(true);
+    for (let level = 1; level < LITTLE_LEVEL; level++) expect(inFrame(level)).toBe(false);
+    expect(LEVELS.prek!.max).toBe(LITTLE_LEVEL);
+    expect(LEVELS.school!.max).toBe(LITTLE_LEVEL);
+    expect(guidesFor(LITTLE_LEVEL)).toEqual(['solid']);
+    expect(severalLetters(LITTLE_LEVEL)).toBe(false);
+  });
+
+  it('keeps every stroke inside its band: the middle-to-base space, and the top line for t', () => {
+    expect(FRAME.top).toBeLessThan(FRAME.mid);
+    expect(FRAME.mid).toBeLessThan(FRAME.base);
+    expect(FRAME.base).toBeLessThan(FRAME.bottom);
+    for (const l of group) {
+      const top = l === 't' ? FRAME.top : FRAME.mid;
+      for (const [x, y] of span(l)) {
+        expect(y).toBeGreaterThanOrEqual(top - eps);
+        expect(y).toBeLessThanOrEqual(FRAME.base + eps);
+        expect(x).toBeGreaterThanOrEqual(FRAME_X[0]);
+        expect(x).toBeLessThanOrEqual(FRAME_X[1]);
+      }
+      // Each letter fills its band: it reaches the base line and the line it starts from.
+      const ys = span(l).map((p) => p[1]);
+      expect(Math.min(...ys)).toBeCloseTo(top, 2);
+      expect(Math.max(...ys)).toBeCloseTo(FRAME.base, 2);
+    }
+  });
+
+  it('starts every little letter at the top of its first stroke (no d or e in this group)', () => {
+    for (const l of group) {
+      const first = strokesOf(l)[0];
+      const top = l === 't' ? FRAME.top : FRAME.mid;
+      const height = FRAME.base - top;
+      expect(first[0][1] - top).toBeLessThanOrEqual(height * 0.25);
+    }
+    // t's crossbar is its second stroke, on the middle line, left to right.
+    const [, bar] = strokesOf('t');
+    expect(bar.every((p) => p[1] === FRAME.mid)).toBe(true);
+    expect(bar[0][0]).toBeLessThan(bar.at(-1)![0]);
+  });
+
+  it('writes c, o and s anticlockwise from the right, o closing where it began', () => {
+    for (const l of 'cos') {
+      const [a, b] = sampleStroke(strokesOf(l)[0]);
+      expect(b[0]).toBeLessThan(a[0]); // heading left over the top
+    }
+    const o = strokesOf('o')[0];
+    expect(Math.hypot(o[0][0] - o.at(-1)![0], o[0][1] - o.at(-1)![1])).toBeLessThan(1e-9);
+    const c = strokesOf('c')[0];
+    expect(c[0][0]).toBeGreaterThan(0.5);
+    expect(c.at(-1)![0]).toBeGreaterThan(0.5);
+    // s finishes low on the left, below where it began.
+    const s = strokesOf('s')[0];
+    expect(s.at(-1)![0]).toBeLessThan(0.5);
+    expect(s.at(-1)![1]).toBeGreaterThan(s[0][1]);
+  });
+
+  it('accepts each stroke in order at the capitals’ corridor, and the bot route completes it', () => {
+    const tol = trailTolerance(LITTLE_LEVEL);
+    expect(tol).toBe(0.075);
+    for (const l of group)
+      for (const stroke of strokesOf(l)) {
+        const points = sampleStroke(stroke);
+        for (let i = 1; i < points.length; i++)
+          expect(
+            Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]),
+          ).toBeLessThanOrEqual(0.02501);
+        let index = 0;
+        for (let i = 1; i < points.length; i++)
+          index = advanceTrace(points, index, points[i - 1], points[i], tol);
+        expect(index).toBe(points.length - 1);
+        const route = traceWaypoints(points);
+        let progress = 0,
+          previous = route[0];
+        for (const p of route.slice(1)) {
+          progress = advanceTrace(points, progress, previous, p, tol);
+          previous = p;
+        }
+        expect(progress).toBe(points.length - 1);
+      }
+  });
+
+  it('never lets a shortcut finish a curve: a straight swipe from start to end stays near the start', () => {
+    const tol = trailTolerance(LITTLE_LEVEL);
+    for (const l of 'coswv') {
+      const points = sampleStroke(strokesOf(l)[0]);
+      expect(advanceTrace(points, 0, points[0], points.at(-1)!, tol)).toBeLessThan(points.length / 2);
+    }
+  });
+
+  it('leaves the capitals alone: they keep their own strokes', () => {
+    for (const l of Object.keys(LETTERS)) expect(strokesOf(l)).toBe(LETTERS[l]);
   });
 });
