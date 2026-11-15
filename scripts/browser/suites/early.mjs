@@ -62,7 +62,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           // Rainbow paint on the picture only reminds; two wrong colors are misses and light the right pot.
           await kit.drag(kit.line(center(g.picture), [center(g.picture)[0] + 30, center(g.picture)[1]], 4));
           if (g.misses !== 0) throw new Error('Rainbow paint counted as a miss');
-          const mixing = g.plan.mode === 'mix' || g.plan.mode === 'recall-mix';
+          const mixing = ['mix', 'recall-mix', 'wheel'].includes(g.plan.mode);
           const wrong = mixing
             ? g.picture.thing.color === 'green'
               ? ['red']

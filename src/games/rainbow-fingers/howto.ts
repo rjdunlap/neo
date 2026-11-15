@@ -35,6 +35,11 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'Remember the pumpkin’s color, then tap two paint pots to mix it before dragging a finger across the pumpkin.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'A color wheel with three empty petals: look at the two painted petals beside the empty one, tap those two paint pots to mix their color, then drag a finger across the empty petal. The recipe is shown by the neighbors, never said.',
+    },
   ],
   finish: [
     {
