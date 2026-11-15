@@ -19,6 +19,10 @@ import {
   MARGIN,
   NAMED_ONLY,
   SLOT,
+  bowlLook,
+  PAPER,
+  TOLD_ONLY,
+  type Pour,
   mix,
   NUDGE_AFTER,
   nudges,
@@ -49,7 +53,6 @@ import {
   THING_NAMES,
   type PaintMode,
   type PaintState,
-  type Primary,
   type Touch,
   WHEEL,
   WHEEL_HUB,
@@ -77,6 +80,7 @@ describe('Rainbow Fingers', () => {
       true,
       true,
       true,
+      true,
     ]);
   });
 
@@ -89,7 +93,8 @@ describe('Rainbow Fingers', () => {
   });
 
   it('gives every coloring page distinct colors, and mixing pages only mixable ones', () => {
-    for (const plan of PLANS.filter((p) => p.count > 0)) {
+    // Level 9's pages are all pink: distinct pictures of one color (its own tests below).
+    for (const plan of PLANS.filter((p) => p.count > 0 && !p.white)) {
       for (let seed = 1; seed <= 200; seed++) {
         const things = pickThings(plan, new Rng(seed));
         expect(things).toHaveLength(plan.count);
@@ -113,7 +118,11 @@ describe('Rainbow Fingers', () => {
     const seen = new Set<string>();
     const named = PLANS.find((p) => p.mode === 'named' && p.count === 3)!;
     for (let seed = 1; seed <= 200; seed++) for (const t of pickThings(named, new Rng(seed))) seen.add(t.id);
-    expect([...seen].sort()).toEqual(THINGS.map((t) => t.id).sort());
+    expect([...seen].sort()).toEqual(
+      THINGS.filter((t) => RAINBOW.includes(t.color))
+        .map((t) => t.id)
+        .sort(),
+    );
   });
 
   it('never asks her to remember a named-only picture, and still deals every color at recall', () => {
@@ -124,12 +133,12 @@ describe('Rainbow Fingers', () => {
         expect(t.id !== 'petal' && NAMED_ONLY.has(t.id), t.id).toBe(false);
         colors.add(t.color);
       }
-    expect(colors.size).toBe(new Set(THINGS.map((t) => t.color)).size);
+    expect(colors.size).toBe(RAINBOW.length);
     for (const id of NAMED_ONLY) expect(ACCEPTS[id], id).toEqual([THINGS.find((t) => t.id === id)!.color]);
   });
 
   it('mixes from every picture of a mixed color, three or more of each', () => {
-    const mixPlan = PLANS.find((p) => p.mode === 'mix')!;
+    const mixPlan = PLANS.find((p) => p.mode === 'mix' && !p.white)!;
     const seen = new Set<string>();
     for (let seed = 1; seed <= 300; seed++)
       for (const t of pickThings(mixPlan, new Rng(seed))) {
@@ -137,7 +146,7 @@ describe('Rainbow Fingers', () => {
         seen.add(t.id);
       }
     expect([...seen].sort()).toEqual(
-      THINGS.filter((t) => RECIPES[t.color])
+      THINGS.filter((t) => RECIPES[t.color] && RAINBOW.includes(t.color))
         .map((t) => t.id)
         .sort(),
     );
@@ -153,7 +162,7 @@ describe('Rainbow Fingers', () => {
     const seeds = 3000;
     for (let seed = 1; seed <= seeds; seed++)
       for (const t of pickThings(named, new Rng(seed))) counts.set(t.color, (counts.get(t.color) ?? 0) + 1);
-    const colors = new Set(THINGS.map((t) => t.color));
+    const colors = new Set(RAINBOW);
     // Three of the six colors per page: each color on about half the pages, whether it has one picture or three.
     for (const color of colors) expect(counts.get(color)! / seeds, color).toBeCloseTo(3 / colors.size, 1);
   });
@@ -209,7 +218,7 @@ describe('Rainbow Fingers', () => {
           } else if (m.do === 'pot') {
             if (pours(plan.mode)) {
               if (st.poured.length >= 2) st.poured = [];
-              st.poured.push(m.pot as Primary);
+              st.poured.push(m.pot as Pour);
               st.brush = st.poured.length === 2 ? mix(st.poured[0], st.poured[1]) : (m.pot as ColorName);
             } else st.brush = m.pot;
           } else if (things.length) {
@@ -372,6 +381,7 @@ describe('Rainbow Fingers', () => {
     expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([
       true,
       true,
+      false,
       false,
       false,
       false,
@@ -669,7 +679,7 @@ describe('Rainbow Fingers', () => {
 
     it('is the school top level, a wheel page with three empty petals', () => {
       expect(wheel).toEqual({ mode: 'wheel', count: 3 });
-      expect(LEVELS.school?.max).toBe(8);
+      expect(planFor(8).mode).toBe('wheel');
     });
 
     it('lays the petals out in rainbow order, so each empty petal sits between the two colors that make it', () => {
@@ -681,7 +691,8 @@ describe('Rainbow Fingers', () => {
         expect(turn).toBeCloseTo(60, 6);
       }
       for (const [color, pair] of Object.entries(RECIPES))
-        expect(new Set(wheelNeighbors(color as ColorName))).toEqual(new Set(pair));
+        if (RAINBOW.includes(color as ColorName))
+          expect(new Set(wheelNeighbors(color as ColorName))).toEqual(new Set(pair));
       expect(wheelNeighbors('purple')).toEqual(['blue', 'red']);
     });
 
@@ -764,7 +775,7 @@ describe('Rainbow Fingers', () => {
           if (m.do === 'pot') {
             expect(wheelNeighbors(gaps[done].color)).toContain(m.pot);
             if (st.poured.length >= 2) st.poured = [];
-            st.poured.push(m.pot as Primary);
+            st.poured.push(m.pot as Pour);
             st.brush = st.poured.length === 2 ? mix(st.poured[0], st.poured[1]) : (m.pot as ColorName);
           } else if (m.do === 'bowl') {
             st.poured = [];
@@ -782,6 +793,124 @@ describe('Rainbow Fingers', () => {
       for (const gap of WHEEL.filter((p) => RECIPES[p.color]))
         for (const primary of ['red', 'yellow', 'blue'] as ColorName[])
           expect(accepts(gap, 'wheel', primary)).toBe(false);
+    });
+  });
+  describe('level 9, Make it pink', () => {
+    const pink = planFor(9);
+    const pours4: Pour[] = ['red', 'yellow', 'blue', 'white'];
+    const luminance = (c: number) => {
+      const ch = [(c >> 16) & 255, (c >> 8) & 255, c & 255].map((v) => {
+        const x = v / 255;
+        return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    };
+    const contrast = (a: number, b: number) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+
+    it('is the school top level, a told mixing page of two pictures with a white pot', () => {
+      expect(pink).toEqual({ mode: 'mix', count: 2, white: true });
+      expect(pours(pink.mode)).toBe(true);
+      expect(LEVELS.school?.max).toBe(9);
+      expect(PLANS).toHaveLength(9);
+    });
+
+    it('mixes pink from red and white, in either order', () => {
+      expect(RECIPES.pink).toEqual(['red', 'white']);
+      expect(mix('red', 'white')).toBe('pink');
+      expect(mix('white', 'red')).toBe('pink');
+      expect(mix('white', 'white')).toBe('white');
+    });
+
+    it('white with a primary never gives a different named color: only red makes something new', () => {
+      for (const a of pours4)
+        for (const b of pours4) {
+          const made = mix(a, b);
+          expect(mix(b, a), `${a}+${b}`).toBe(made);
+          if (a === 'white' || b === 'white') {
+            const other = a === 'white' ? b : a;
+            expect(made, `${a}+${b}`).toBe(other === 'red' ? 'pink' : other);
+          }
+        }
+    });
+
+    it('deals two different pink pictures, every pink in turn, and pink on no older page', () => {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const things = pickThings(pink, new Rng(seed));
+        expect(things).toHaveLength(2);
+        expect(new Set(things.map((t) => t.id)).size).toBe(2);
+        for (const t of things) {
+          expect(t.color).toBe('pink');
+          seen.add(t.id);
+        }
+      }
+      expect([...seen].sort()).toEqual(['cupcake', 'flamingo', 'pig', 'tulip']);
+      for (let level = 3; level <= 8; level++)
+        for (let seed = 1; seed <= 200; seed++)
+          for (const t of pickThings(planFor(level), new Rng(seed)))
+            expect(t.color, `level ${level} seed ${seed}`).not.toBe('pink');
+    });
+
+    it('keeps the cupcake and tulip for told pages: the pig and flamingo are the pinks anyone would name', () => {
+      expect([...TOLD_ONLY].sort()).toEqual(['cupcake', 'tulip']);
+      for (const id of TOLD_ONLY) expect(THINGS.find((t) => t.id === id)!.color).toBe('pink');
+      for (const id of ['pig', 'flamingo'] as const) expect(TOLD_ONLY.has(id)).toBe(false);
+      for (const t of THINGS.filter((t) => t.color === 'pink')) expect(ACCEPTS[t.id]).toEqual(['pink']);
+    });
+
+    it('shows a white pour in the bowl: its rim stands out from the paper, and red and white show pink', () => {
+      expect(bowlLook([])).toBeNull();
+      for (const p of pours4) expect(contrast(bowlLook([p])!.rim, PAPER), p).toBeGreaterThan(2);
+      expect(bowlLook(['white'])!.fill).toBe(swatch.white.fill);
+      expect(bowlLook(['red', 'white'])).toEqual({ fill: swatch.pink.fill, rim: swatch.pink.line });
+      expect(contrast(bowlLook(['red', 'white'])!.rim, PAPER)).toBeGreaterThan(2);
+    });
+
+    it('marks the white pot with its own sign', () => {
+      expect(POT_MARKS.white).toBe('cloud');
+      const marks = [...RAINBOW, 'white'].map((c) => POT_MARKS[c]);
+      expect(new Set(marks).size).toBe(marks.length);
+    });
+
+    it('fills each pink picture by pouring red and white, emptying a wrong pour first', () => {
+      for (let seed = 1; seed <= 40; seed++) {
+        const things = pickThings(pink, new Rng(seed));
+        // Start from a wrong half-full bowl, so the bot must empty it before pouring red and white.
+        const st: PaintState = {
+          mode: 'mix',
+          strokes: 0,
+          brush: 'blue',
+          poured: ['blue'],
+          picture: things[0].color,
+          frame: false,
+        };
+        let done = 0;
+        for (let guard = 0; guard < 40 && done < things.length; guard++) {
+          const m = paintStep(st)!;
+          if (m.do === 'pot') {
+            expect(['red', 'white']).toContain(m.pot);
+            if (st.poured.length >= 2) st.poured = [];
+            st.poured.push(m.pot as Pour);
+            st.brush = st.poured.length === 2 ? mix(st.poured[0], st.poured[1]) : (m.pot as ColorName);
+          } else if (m.do === 'bowl') {
+            st.poured = [];
+            st.brush = null;
+          } else {
+            expect(m.do).toBe('stroke');
+            expect(accepts(things[done], 'mix', st.brush)).toBe(true);
+            done++;
+            st.picture = things[done]?.color ?? null;
+          }
+        }
+        expect(done).toBe(2);
+      }
+      // Red alone, white alone, or white with yellow or blue never paints a pink picture.
+      const pig = THINGS.find((t) => t.id === 'pig')!;
+      for (const color of ['red', 'white', 'yellow', 'blue'] as ColorName[])
+        expect(accepts(pig, 'mix', color)).toBe(false);
     });
   });
 });

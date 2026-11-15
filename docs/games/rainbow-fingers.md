@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5–8 |
+| school | 5–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 6 | Mixing colors: red and yellow make orange |
 | 7 | Paint the pumpkin: remember orange, then mix red and yellow |
 | 8 | Color wheel: mix each empty petal from the two colors beside it |
+| 9 | Make it pink: mix red and white, 2 pictures |
 
 <!-- end generated -->
 

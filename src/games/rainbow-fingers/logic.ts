@@ -1,9 +1,11 @@
-import { RAINBOW, type ColorName } from '../../art/palette';
+import { RAINBOW, swatch, type ColorName } from '../../art/palette';
 import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type Primary = 'red' | 'yellow' | 'blue';
+/** What can go into the mixing bowl: the primaries, and at level 9 white, the first pour that makes a color lighter. */
+export type Pour = Primary | 'white';
 export type ThingId =
   | 'sun'
   | 'apple'
@@ -25,7 +27,11 @@ export type ThingId =
   | 'plum'
   | 'eggplant'
   | 'carrot'
-  | 'basketball';
+  | 'basketball'
+  | 'pig'
+  | 'flamingo'
+  | 'cupcake'
+  | 'tulip';
 export type Circle = [x: number, y: number, r: number];
 
 /** A coloring-page picture: its true color and the circles whose union is the part to paint. */
@@ -232,6 +238,55 @@ export const THINGS: Thing[] = [
     ],
   },
   { id: 'basketball', color: 'orange', circles: [[0, 0, 84]] },
+  // The pinks, for level 9 only (pink is not a pot and not on the wheel, so no older level deals one).
+  {
+    id: 'pig',
+    color: 'pink',
+    // A round body, a head up to the right and its snout (ears, legs and tail are drawn on top).
+    circles: [
+      [-24, 22, 68],
+      [56, -6, 50],
+      [100, 6, 22],
+    ],
+  },
+  {
+    id: 'flamingo',
+    color: 'pink',
+    // A plump body, an S of a neck rising at the left and a round head (beak and legs are drawn on top).
+    circles: [
+      [10, 34, 50],
+      [52, 26, 36],
+      [-18, 4, 17],
+      [-28, -22, 15],
+      [-34, -46, 15],
+      [-28, -70, 16],
+      [-8, -90, 22],
+    ],
+  },
+  {
+    id: 'cupcake',
+    color: 'pink',
+    // A swirl of frosting (the paper wrapper and the cherry are drawn on top).
+    circles: [
+      [-50, -6, 40],
+      [0, -18, 52],
+      [50, -6, 40],
+      [0, -64, 32],
+    ],
+  },
+  {
+    id: 'tulip',
+    color: 'pink',
+    // A cup of petals with three points at the top (the stem and leaf are drawn on top).
+    circles: [
+      [-36, -14, 36],
+      [36, -14, 36],
+      [0, -4, 46],
+      [0, -48, 32],
+      [-30, -50, 20],
+      [30, -50, 20],
+    ],
+  },
 ];
 
 /**
@@ -239,6 +294,12 @@ export const THINGS: Thing[] = [
  * leave it out and a named page says "Paint the puddle blue!".
  */
 export const NAMED_ONLY: ReadonlySet<ThingId> = new Set<ThingId>(['puddle']);
+
+/**
+ * Pictures only for a page that tells the recipe (level 9): a cupcake or a tulip comes in many colors, so a later recall page must
+ * not ask her to remember one. The pig and the flamingo are pink to anyone.
+ */
+export const TOLD_ONLY: ReadonlySet<ThingId> = new Set<ThingId>(['cupcake', 'tulip']);
 
 /** Every picture, outline included, fits the page's 280 by 270 slot around its centre (`layoutPictures` in `index.ts`). */
 export const SLOT = { w: 280, h: 270 };
@@ -266,6 +327,10 @@ export const THING_NAMES: Record<ThingId, string> = {
   eggplant: 'eggplant',
   carrot: 'carrot',
   basketball: 'basketball',
+  pig: 'pig',
+  flamingo: 'flamingo',
+  cupcake: 'cupcake',
+  tulip: 'tulip',
 };
 
 /**
@@ -295,6 +360,10 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
   eggplant: ['purple'],
   carrot: ['orange'],
   basketball: ['orange'],
+  pig: ['pink'],
+  flamingo: ['pink'],
+  cupcake: ['pink'],
+  tulip: ['pink'],
 };
 
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
@@ -341,6 +410,8 @@ export interface PaintPlan {
   mode: PaintMode;
   /** Pictures on the page. */
   count: number;
+  /** A white pot joins the primaries and the pictures are the pinks (level 9). */
+  white?: boolean;
 }
 
 export const PLANS: PaintPlan[] = [
@@ -352,6 +423,7 @@ export const PLANS: PaintPlan[] = [
   { mode: 'mix', count: 2 },
   { mode: 'recall-mix', count: 1 },
   { mode: 'wheel', count: 3 },
+  { mode: 'mix', count: 2, white: true },
 ];
 
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
@@ -360,25 +432,43 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  school: { min: 5, max: 9 },
 };
 
 export function planFor(level: number): PaintPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 }
 
-export const RECIPES: Partial<Record<ColorName, [Primary, Primary]>> = {
+/** The two pours that make each mixed color: the three secondaries, and pink (red and white), told only at level 9. */
+export const RECIPES: Partial<Record<ColorName, [Pour, Pour]>> = {
   orange: ['red', 'yellow'],
   green: ['yellow', 'blue'],
   purple: ['red', 'blue'],
+  pink: ['red', 'white'],
 };
 
-/** What two primaries make in the mixing bowl. The same one twice stays itself. */
-export function mix(a: Primary, b: Primary): ColorName {
+/**
+ * What two pours make in the mixing bowl. The same one twice stays itself, and white with yellow or blue stays that color (lighter
+ * paint, but no new name), so white only ever makes pink.
+ */
+export function mix(a: Pour, b: Pour): ColorName {
   if (a === b) return a;
   for (const [color, pair] of Object.entries(RECIPES))
     if (pair!.includes(a) && pair!.includes(b)) return color as ColorName;
-  return a;
+  return a === 'white' ? b : a;
+}
+
+/** The paper the pictures are painted on. */
+export const PAPER = 0xfffdf6;
+
+/**
+ * How the bowl shows what is in it: one pour is that paint, two are their mix. The rim is the paint's own darker line, so a pour of
+ * white still shows on the white dish and the paper.
+ */
+export function bowlLook(poured: readonly Pour[]): { fill: number; rim: number } | null {
+  if (poured.length === 0) return null;
+  const sw = swatch[poured.length === 1 ? poured[0] : mix(poured[0], poured[1])];
+  return { fill: sw.fill, rim: sw.line };
 }
 
 /**
@@ -389,8 +479,13 @@ export function mix(a: Primary, b: Primary): ColorName {
 export function pickThings(plan: PaintPlan, rng: Rng): (Thing | Petal)[] {
   if (plan.mode === 'wheel') return rng.shuffle(WHEEL.filter((petal) => RECIPES[petal.color]));
   if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
-  const pool = THINGS.filter((t) =>
-    plan.mode === 'mix' ? RECIPES[t.color] : plan.mode !== 'recall' || !NAMED_ONLY.has(t.id),
+  // Level 9's pictures are all pink, so they are drawn as distinct pictures, not distinct colors.
+  if (plan.white) return rng.shuffle(THINGS.filter((t) => t.color === 'pink')).slice(0, plan.count);
+  // The older pages keep to the rainbow, so their seeded pictures are as they were before the pinks came.
+  const pool = THINGS.filter(
+    (t) =>
+      RAINBOW.includes(t.color) &&
+      (plan.mode === 'mix' ? RECIPES[t.color] : plan.mode !== 'recall' || !NAMED_ONLY.has(t.id)),
   );
   const colors = rng.shuffle([...new Set(pool.map((t) => t.color))]).slice(0, plan.count);
   return colors.map((color) => rng.pick(pool.filter((t) => t.color === color)));
@@ -488,7 +583,7 @@ export interface PaintState {
   strokes: number;
   /** The picked color (null: rainbow, or none yet), and what has been poured into the bowl. */
   brush: ColorName | null;
-  poured: Primary[];
+  poured: Pour[];
   /** The color of the picture being asked for, or null when there is none (the free levels, or every picture done). */
   picture: ColorName | null;
   /** The hang-it-up button is showing. */
@@ -591,7 +686,7 @@ export function potLayout(n: number, w: number, h: number, bowl = false): { pots
 }
 
 /** A mark on each color pot, so the color is not the only way to tell the pots apart. */
-export type PotMark = 'dot' | 'stripe' | 'star' | 'heart' | 'swirl' | 'ring';
+export type PotMark = 'dot' | 'stripe' | 'star' | 'heart' | 'swirl' | 'ring' | 'cloud';
 export const POT_MARKS: Record<string, PotMark> = {
   red: 'dot',
   orange: 'stripe',
@@ -599,6 +694,7 @@ export const POT_MARKS: Record<string, PotMark> = {
   green: 'heart',
   blue: 'swirl',
   purple: 'ring',
+  white: 'cloud',
 };
 
 /** The free levels nudge after this long without a touch: a sparkle on a blank spot and a wiggle from the pet. Never a hint. */

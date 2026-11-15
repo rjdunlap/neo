@@ -37,8 +37,10 @@ import {
   halvedIndex,
   MARGIN,
   pageKind,
+  bowlLook,
   mix,
   NUDGE_AFTER,
+  PAPER,
   nudges,
   paintStep,
   PAINTED,
@@ -64,6 +66,7 @@ import {
   type PageKind,
   type PaintPlan,
   type PotMark,
+  type Pour,
   type Primary,
   type Pt,
   type Thing,
@@ -77,7 +80,6 @@ import {
 import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
 import { rangeFor } from '../../progress/difficulty';
 
-const PAPER = 0xfffdf6;
 /** Degrees of hue per unit of stroke: the rainbow comes from moving. */
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
@@ -438,6 +440,66 @@ function decor(thing: Thing): Graphics {
           .fill(swatch.green.fill)
           .stroke({ ...line, width: 4 });
       break;
+    case 'pig':
+      // Two ears, an eye, nostrils, four stubby legs and a curly tail.
+      g.poly([30, -46, 38, -84, 58, -54])
+        .poly([64, -54, 82, -86, 90, -48])
+        .fill(swatch.pink.line)
+        .stroke(line);
+      g.circle(66, -18, 7).fill(ink);
+      g.circle(94, 4, 5).circle(108, 4, 5).fill(swatch.pink.line);
+      for (const lx of [-68, -40, 4, 28]) g.roundRect(lx - 9, 82, 18, 26, 6);
+      g.fill(swatch.pink.light).stroke({ ...line, width: 4 });
+      g.moveTo(-92, 10)
+        .quadraticCurveTo(-118, -6, -106, -22)
+        .quadraticCurveTo(-96, -32, -104, -40)
+        .stroke({ ...line, width: 4 });
+      break;
+    case 'flamingo':
+      // A dark hooked beak, an eye, a wing line and two thin legs, one bent.
+      g.moveTo(10, -96)
+        .lineTo(34, -86)
+        .quadraticCurveTo(38, -74, 26, -70)
+        .lineTo(10, -82)
+        .closePath()
+        .fill(ink);
+      g.circle(-10, -94, 5).fill(ink);
+      g.moveTo(20, 18)
+        .quadraticCurveTo(50, 8, 70, 30)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(20, 82)
+        .lineTo(20, 122)
+        .moveTo(40, 82)
+        .lineTo(54, 102)
+        .lineTo(34, 110)
+        .stroke({ ...line, width: 5 });
+      break;
+    case 'cupcake':
+      // A ridged paper wrapper under the frosting and a cherry on top.
+      g.poly([-76, 30, 76, 30, 56, 104, -56, 104]).fill(wood.light).stroke(line);
+      for (const t of [-0.5, -0.17, 0.17, 0.5]) g.moveTo(t * 152, 34).lineTo(t * 112, 100);
+      g.stroke({ ...line, width: 3 });
+      g.circle(0, -104, 14)
+        .fill(swatch.red.fill)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(0, -116)
+        .quadraticCurveTo(6, -128, 16, -130)
+        .stroke({ ...line, width: 3 });
+      break;
+    case 'tulip':
+      // A green stem and one leaf below the petals, and the line between the front petals.
+      g.moveTo(0, 42)
+        .lineTo(0, 124)
+        .stroke({ ...line, color: swatch.green.line, width: 9 });
+      g.moveTo(0, 116)
+        .quadraticCurveTo(-44, 104, -58, 66)
+        .quadraticCurveTo(-18, 76, 0, 108)
+        .fill(swatch.green.fill)
+        .stroke({ ...line, width: 4 });
+      g.moveTo(0, -40)
+        .quadraticCurveTo(-8, 0, 0, 36)
+        .stroke({ ...line, width: 4 });
+      break;
     case 'basketball':
       // The seams: one line across, one down, and two curves either side.
       g.moveTo(-84, 0)
@@ -473,6 +535,8 @@ function paintPot(color: ColorName | 'rainbow'): Container {
   const drip = new Graphics()
     .roundRect(10, -22, 8, 22, 4)
     .fill(color === 'rainbow' ? swatch.purple.fill : swatch[color].fill);
+  // White paint on a white jar needs its edge drawn.
+  if (color === 'white') drip.stroke({ width: 2, color: swatch.white.line });
   c.addChild(jar, drip, top);
   if (color !== 'rainbow') c.addChild(potMark(POT_MARKS[color]));
   return c;
@@ -506,6 +570,12 @@ function potMark(mark: PotMark): Graphics {
       return g.stroke({ ...ink, width: 3 });
     case 'ring':
       return g.circle(x, y, 8).stroke(ink);
+    case 'cloud':
+      return g
+        .circle(x - 9, y + 3, 6)
+        .circle(x, y - 3, 8)
+        .circle(x + 9, y + 3, 6)
+        .fill(LINE);
   }
 }
 
@@ -554,7 +624,7 @@ class RainbowFingers implements Game {
   private readonly bowl = new Container();
   private readonly bowlPaint = new Graphics();
   /** What's been poured into the mixing bowl (two at most). */
-  private poured: Primary[] = [];
+  private poured: Pour[] = [];
   private readonly plan: PaintPlan;
   private readonly things: (Thing | Petal)[];
   /** The color wheel's painted red, yellow and blue petals, which pulse when she is told to look at an empty petal's neighbours. */
@@ -661,7 +731,11 @@ class RainbowFingers implements Game {
 
   private buildPots() {
     const mixing = pours(this.plan.mode);
-    const list: (ColorName | 'rainbow')[] = mixing ? PRIMARIES : POTS;
+    const list: (ColorName | 'rainbow')[] = mixing
+      ? this.plan.white
+        ? [...PRIMARIES, 'white']
+        : PRIMARIES
+      : POTS;
     this.pots.addChild(this.potGlow, this.potRing);
     list.forEach((color, i) => {
       const pot = paintPot(color);
@@ -712,7 +786,7 @@ class RainbowFingers implements Game {
     sfx.bell(4 + i, 0.25);
     this.idle = 0;
     if (pours(this.plan.mode) && color !== 'rainbow') {
-      void this.pour(color as Primary, pot);
+      void this.pour(color as Pour, pot);
       return;
     }
     this.setBrush(color === 'rainbow' ? null : color);
@@ -728,8 +802,8 @@ class RainbowFingers implements Game {
     this.brush = color ? swatch[color].fill : null;
   }
 
-  /** Pour a primary into the bowl. Two make a new color; a third starts over. */
-  private async pour(color: Primary, pot: Container) {
+  /** Pour a primary (or white) into the bowl. Two make a new color; a third starts over. */
+  private async pour(color: Pour, pot: Container) {
     if (this.poured.length >= 2) this.poured = [];
     this.poured.push(color);
     void this.ctx.tw
@@ -766,12 +840,13 @@ class RainbowFingers implements Game {
 
   private drawBowl() {
     const g = this.bowlPaint.clear();
-    if (this.poured.length === 0) return;
+    const look = bowlLook(this.poured);
+    if (!look) return;
     if (this.poured.length === 1) {
-      g.ellipse(0, -10, 52, 14).fill(swatch[this.poured[0]].fill);
+      // A single pour has a rim too, so white shows in the white dish.
+      g.ellipse(0, -10, 52, 14).fill(look.fill).stroke({ width: 3, color: look.rim });
     } else {
-      const made = swatch[mix(this.poured[0], this.poured[1])];
-      g.ellipse(0, -10, 56, 16).fill(made.fill).stroke({ width: 3, color: made.line });
+      g.ellipse(0, -10, 56, 16).fill(look.fill).stroke({ width: 3, color: look.rim });
       g.circle(-22, -12, 5).circle(18, -8, 4).fill({ color: 0xffffff, alpha: 0.6 });
     }
   }
@@ -1595,6 +1670,7 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
     if (p.mode === 'recall')
       return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
+    if (p.mode === 'mix' && p.white) return `Make it pink: mix red and white, ${p.count} pictures`;
     if (p.mode === 'mix') return 'Mixing colors: red and yellow make orange';
     if (p.mode === 'wheel') return 'Color wheel: mix each empty petal from the two colors beside it';
     return 'Paint the pumpkin: remember orange, then mix red and yellow';
