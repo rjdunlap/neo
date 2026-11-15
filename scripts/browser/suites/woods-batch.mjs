@@ -1307,7 +1307,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await ring();
               await ring();
               assert.deepEqual(await counts(), [2, 1]);
-              if (level === 6) await screenshot('market-stall-6');
+              if (level === 6) {
+                // Count up the change (fresh 4): the ten strip shows too much change with a red edge.
+                assert.ok(await page.evaluate(() => !!neo.scene.game.strip?.parent), 'the ten strip is drawn');
+                await screenshot('market-stall-6');
+              }
             }
           }
           // The first fewest-mode order was already paid after its supported retry.

@@ -18,7 +18,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 6,
       to: 6,
-      text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell.',
+      text: 'The customer pays 10: tap coins onto the counter to give the change, then ring the bell. The shopkeeper counts up from the price as each coin lands, and the strip under the tag fills to 10.',
     },
     {
       from: 7,
