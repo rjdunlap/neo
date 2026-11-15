@@ -38,6 +38,10 @@ import {
   spotEdges,
   makeRounds,
   nearestFriend,
+  PAIR_PILE,
+  pairsBell,
+  pairsDrop,
+  ROW_STEP,
   SCENE_SPECS,
   sceneFor,
   SOUND_WORDS,
@@ -196,6 +200,9 @@ interface SnackItem {
   node: Container;
   drag?: DragHandle;
   eaten: boolean;
+  /** Level 8: the pile (row) and place in it, and the animal (by its place in the row) that ate it. */
+  slot?: { row: number; col: number };
+  by?: number;
 }
 
 class AnimalSnack implements Game {
@@ -260,7 +267,7 @@ class AnimalSnack implements Game {
     this.bubble.hitArea = new Rectangle(-80, -60, 160, 120);
     this.bubble.eventMode = 'none';
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
-    this.bell.visible = this.plan.mode === 'count';
+    this.bell.visible = this.plan.mode === 'count' || this.plan.mode === 'pairs';
     ctx.stage.addChild(this.meadow, this.decor, this.spot, this.bubble, this.glow, this.ticks, this.bell);
     this.showScene(this.scene);
   }
@@ -301,15 +308,18 @@ class AnimalSnack implements Game {
     const xs = friendXs(this.friends.length, v.w);
     const scale = this.plan.oneBig && this.friends.length === 1 ? BIG_SCALE : FRIEND_SCALE;
     this.friends.forEach((f, i) => {
-      f.node.position.set(xs[i], friendFeet(v.h));
+      f.node.position.set(xs[i], friendFeet(v.h, this.rows));
       f.node.scale.set(scale);
     });
     const loose = this.snacks.filter((s) => !s.eaten);
     const fx = snackXs(loose.length, v.w);
+    // Level 8's two piles keep their places, so a snack sent back returns to its own pile.
+    const px = snackXs(PAIR_PILE, v.w);
     loose.forEach((s, i) => {
       if (s.drag?.dragging) return;
-      s.node.position.set(fx[i], v.h - 85);
-      if (s.drag) s.drag.home = { x: fx[i], y: v.h - 85 };
+      const [x, y] = s.slot ? [px[s.slot.col], v.h - 85 - (1 - s.slot.row) * ROW_STEP] : [fx[i], v.h - 85];
+      s.node.position.set(x, y);
+      if (s.drag) s.drag.home = { x, y };
     });
     this.bubble.position.set(v.w / 2, 120);
     this.bell.position.set(v.w - 80, 110);
@@ -336,48 +346,52 @@ class AnimalSnack implements Game {
     const g = this.spot.clear();
     const { left, right } = spotEdges(v.w);
     const mid = (left + right) / 2;
+    // Level 8's two piles: the spot grows upward by a row; its bottom stays put.
+    const up = this.plan.mode === 'pairs' ? ROW_STEP : 0;
     switch (SCENE_SPECS[this.scene].spot) {
       case 'blanket':
-        g.roundRect(left, v.h - 150, right - left, 130, 26)
+        g.roundRect(left, v.h - 150 - up, right - left, 130 + up, 26)
           .fill(swatch.red.light)
           .stroke({ width: 5, color: swatch.red.fill });
         break;
       case 'trough':
         for (const x of [left + 40, right - 40]) g.rect(x - 12, v.h - 60, 24, 45).fill(wood.line);
-        g.roundRect(left, v.h - 145, right - left, 110, 14)
+        g.roundRect(left, v.h - 145 - up, right - left, 110 + up, 14)
           .fill(wood.fill)
           .stroke({ width: 5, color: wood.line });
-        g.rect(left + 8, v.h - 137, right - left - 16, 26).fill(wood.light);
+        g.rect(left + 8, v.h - 137 - up, right - left - 16, 26).fill(wood.light);
         for (const x of [left + 90, mid, right - 90])
-          g.moveTo(x, v.h - 105)
+          g.moveTo(x, v.h - 105 - up)
             .lineTo(x, v.h - 48)
             .stroke({ width: 4, color: wood.line, alpha: 0.5 });
         break;
       case 'tub': {
         const tin = { fill: 0xc9d3de, line: 0x7f8a99, light: 0xe6ecf2 };
         for (const x of [left - 6, right + 6])
-          g.circle(x, v.h - 100, 22).stroke({ width: 7, color: tin.line });
-        g.poly([left - 10, v.h - 145, right + 10, v.h - 145, right - 20, v.h - 25, left + 20, v.h - 25])
+          g.circle(x, v.h - 100 - up / 2, 22).stroke({ width: 7, color: tin.line });
+        const top = v.h - 145 - up;
+        const taper = 30 / (120 + up);
+        g.poly([left - 10, top, right + 10, top, right - 20, v.h - 25, left + 20, v.h - 25])
           .fill(tin.fill)
           .stroke({ width: 5, color: tin.line, join: 'round' });
-        g.rect(left - 14, v.h - 152, right - left + 28, 16)
+        g.rect(left - 14, top - 7, right - left + 28, 16)
           .fill(tin.light)
           .stroke({ width: 5, color: tin.line });
-        for (const y of [v.h - 95, v.h - 55])
-          g.moveTo(left + 4 + (y - (v.h - 145)) * 0.25, y)
-            .lineTo(right - 4 - (y - (v.h - 145)) * 0.25, y)
+        for (const y of up ? [v.h - 215, v.h - 155, v.h - 95, v.h - 55] : [v.h - 95, v.h - 55])
+          g.moveTo(left + 4 + (y - top) * taper, y)
+            .lineTo(right - 4 - (y - top) * taper, y)
             .stroke({ width: 3, color: tin.line, alpha: 0.45 });
         break;
       }
       case 'bowl':
-        g.moveTo(left, v.h - 130)
-          .lineTo(right, v.h - 130)
+        g.moveTo(left, v.h - 130 - up)
+          .lineTo(right, v.h - 130 - up)
           .quadraticCurveTo(right - 20, v.h - 30, right - 70, v.h - 25)
           .lineTo(left + 70, v.h - 25)
-          .quadraticCurveTo(left + 20, v.h - 30, left, v.h - 130)
+          .quadraticCurveTo(left + 20, v.h - 30, left, v.h - 130 - up)
           .fill(swatch.blue.fill)
           .stroke({ width: 5, color: swatch.blue.line, join: 'round' });
-        g.ellipse(mid, v.h - 130, (right - left) / 2, 20)
+        g.ellipse(mid, v.h - 130 - up, (right - left) / 2, 20)
           .fill(swatch.blue.light)
           .stroke({ width: 5, color: swatch.blue.line });
         g.moveTo(left + 60, v.h - 60)
@@ -550,6 +564,8 @@ class AnimalSnack implements Game {
       eatenCount: this.eatenCount,
       food: this.round.food,
       found: this.found,
+      wants: this.round.wants,
+      given: this.given(),
     });
     if (!move) return null;
     if (move === 'bell') return { tap: { on: this.bell } };
@@ -645,17 +661,17 @@ class AnimalSnack implements Game {
   }
 
   /** Snacks at the feeding spot: tappable on the float and count levels, draggable for matching. */
-  private setSnacks(foods: Food[]) {
+  private setSnacks(foods: Food[], slots?: { row: number; col: number }[]) {
     for (const s of this.snacks.splice(0)) {
       s.drag?.destroy();
       s.node.destroy({ children: true });
     }
-    for (const food of foods) {
+    foods.forEach((food, i) => {
       const node = foodArt(food);
       node.scale.set(1.2);
       node.hitArea = new Circle(0, 0, 55);
-      const item: SnackItem = { food, node, eaten: false };
-      if (this.plan.mode === 'match' || this.plan.mode === 'sound')
+      const item: SnackItem = { food, node, eaten: false, slot: slots?.[i] };
+      if (this.plan.mode === 'match' || this.plan.mode === 'sound' || this.plan.mode === 'pairs')
         item.drag = draggable(node, this.ctx.tw, {
           onPick: () => sfx.tick(),
           onDrop: (x, y) => this.drop(item, x, y),
@@ -663,7 +679,7 @@ class AnimalSnack implements Game {
       else onTap(node, () => void this.tapSnack(item), { cooldown: 300 });
       this.snacks.push(item);
       this.ctx.stage.addChild(node);
-    }
+    });
     this.resize(this.view);
   }
 
@@ -694,6 +710,22 @@ class AnimalSnack implements Game {
     if (this.index >= this.rounds.length) return void this.finale();
     const r = this.round;
     this.setFriends(r.animals);
+    if (mode === 'pairs') {
+      // One pile of each animal's own food, a row each, in the order the animals stand; the food is never named.
+      const foods = r.animals.flatMap((a) => Array<Food>(PAIR_PILE).fill(FAVORITE[a]!));
+      this.setSnacks(
+        foods,
+        foods.map((_, i) => ({ row: Math.floor(i / PAIR_PILE), col: i % PAIR_PILE })),
+      );
+      this.showSign(r.animals, r.wants!);
+      this.busy = false;
+      return this.ctx.instruct('snack.pairs', {
+        animal: ANIMAL_WORDS[r.animals[0]]!,
+        n: r.wants![0],
+        other: ANIMAL_WORDS[r.animals[1]]!,
+        m: r.wants![1],
+      });
+    }
     if (mode === 'eats') {
       this.setSnacks([]);
       this.showBubble(r.food!);
@@ -729,6 +761,46 @@ class AnimalSnack implements Game {
   private playClue() {
     const voice = VOICE[this.round.ask!];
     if (voice) sfx.animal(voice);
+  }
+
+  /** Level 8's picture sign: each animal with a row of dots for how many it wants, in the order they stand. */
+  private showSign(animals: CritterName[], wants: number[]) {
+    this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.bubble.eventMode = 'none';
+    this.bubble.addChild(
+      new Graphics()
+        .roundRect(-170, -68, 340, 136, 36)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch.white.line }),
+    );
+    animals.forEach((name, i) => {
+      const x = (i - 0.5) * 170;
+      const critter = new Critter(CRITTERS[name]);
+      critter.alive = false;
+      critter.scale.set(0.24);
+      critter.position.set(x, 16);
+      const dots = new Graphics();
+      for (let d = 0; d < wants[i]; d++) dots.circle(x + (d - (wants[i] - 1) / 2) * 30, 46, 11).fill(ink);
+      this.bubble.addChild(critter, dots);
+    });
+  }
+
+  /** Rows of snacks at the feeding spot: two piles at level 8, one row everywhere else. */
+  private get rows() {
+    return this.plan.mode === 'pairs' ? 2 : 1;
+  }
+
+  /** Level 8: how many of its food each animal in the row has eaten. */
+  private given() {
+    return this.friends.map((_, i) => this.snacks.filter((s) => s.eaten && s.by === i).length);
+  }
+
+  /** Level 8's help: the animal (or the first of them) whose count is not yet right. */
+  private glowOff() {
+    const wants = this.round.wants!;
+    const given = this.given();
+    const off = wants.findIndex((w, i) => given[i] !== w);
+    return off < 0 ? this.bell : this.friends[off].node;
   }
 
   private showBubble(food: Food, n?: number, sound = false) {
@@ -1046,6 +1118,7 @@ class AnimalSnack implements Game {
       .sort((a, b) => a.d - b.d)[0];
     if (!near || near.d > 200) return false;
     if (this.plan.mode === 'sound') return this.dropSound(item, near.f);
+    if (this.plan.mode === 'pairs') return this.dropPairs(item, near.f);
     if (
       near.f.name !==
       eaterOf(
@@ -1067,9 +1140,87 @@ class AnimalSnack implements Game {
     return true;
   }
 
+  /**
+   * Level 8, Their own snacks: an animal eats any number of its own food and the count is said; another animal's food
+   * is a no thank you and slides home (a miss). The second miss glows the animal whose count is not yet right.
+   */
+  private dropPairs(item: SnackItem, f: Friend): boolean {
+    if (pairsDrop(item.food, f.name) === 'yum') {
+      item.eaten = true;
+      item.by = this.friends.indexOf(f);
+      if (item.drag) item.drag.enabled = false;
+      this.busy = true;
+      void this.eat(f, item.node).then(() => {
+        if (this.finished) return;
+        void this.ctx.say('count', { n: this.given()[item.by!] });
+        // A glow already showing moves on to the animal still off, or to the bell once both are right.
+        if (this.glowing) this.glowing = this.glowOff();
+        this.busy = false;
+      });
+      return true;
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    this.shake(f);
+    void this.ctx.say('snack.notmine', {
+      animal: ANIMAL_WORDS[f.name]!,
+      mine: FOOD_WORDS[FAVORITE[f.name]!],
+    });
+    if (this.wrongs >= 2 && !this.glowing) {
+      this.hints++;
+      this.glowing = this.glowOff();
+    }
+    return false;
+  }
+
+  /** Level 8's bell: both counts right moves on; otherwise extras come back and the first animal that is off says so. */
+  private async ringPairs() {
+    const r = this.round;
+    const verdict = pairsBell(r.wants!, this.given());
+    this.busy = true;
+    if (verdict.ok) {
+      this.glowing = null;
+      sfx.bell(7, 0.3);
+      for (const f of this.friends) f.node.cheer();
+      const full = this.ctx.say('snack.pairsfull');
+      await (this.last ? full : this.ctx.tw.wait(BELL_BEAT));
+      return void this.next();
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    // Extras are named by the first animal that sent some back; otherwise the first animal that is off.
+    const sender = verdict.extras.findIndex((n) => n > 0);
+    verdict.extras.forEach((extra, i) => {
+      if (!extra) return;
+      for (const s of this.snacks.filter((x) => x.eaten && x.by === i).slice(-extra)) {
+        s.eaten = false;
+        s.by = undefined;
+        s.node.visible = true;
+        s.node.scale.set(1.2);
+        if (s.drag) s.drag.enabled = true;
+      }
+    });
+    if (sender >= 0) this.resize(this.view);
+    const who = sender >= 0 ? sender : verdict.off;
+    await this.ctx.say(sender >= 0 ? 'snack.pairsextra' : 'snack.pairsoff', {
+      animal: ANIMAL_WORDS[this.friends[who].name]!,
+      have: sender >= 0 ? r.wants![who] + verdict.extras[who] : verdict.have,
+      n: r.wants![who],
+    });
+    if (this.wrongs >= 2 && !this.glowing) {
+      this.hints++;
+      this.glowing = this.glowOff();
+    }
+    this.busy = false;
+  }
+
   /** Count levels: the bell says "that's how many". Too many come back to the basket. */
   private async ring() {
-    if (this.busy || this.finished || this.plan.mode !== 'count') return;
+    if (this.busy || this.finished) return;
+    if (this.plan.mode === 'pairs') return this.ringPairs();
+    if (this.plan.mode !== 'count') return;
     const r = this.round;
     const fed = this.snacks.filter((s) => s.eaten);
     if (fed.length === r.n) {

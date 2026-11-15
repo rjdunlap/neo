@@ -10,7 +10,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * animal and it munches its snack, or tap a snack and it floats to the animal who loves it. Then
  * "who eats grass?", giving each animal its food by dragging, and finally a number of snacks.
  */
-export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound' | 'eats';
+export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound' | 'eats' | 'pairs';
 
 export interface SnackPlan {
   mode: SnackMode;
@@ -41,13 +41,19 @@ export const PLANS: SnackPlan[] = [
     name: 'Who says moo? Drag its own snack to the animal that makes the sound',
   },
   { mode: 'eats', animals: 3, rounds: 4, name: 'Who eats hay? There are two: tap both animals that eat it' },
+  {
+    mode: 'pairs',
+    animals: 2,
+    rounds: 3,
+    name: 'Their own snacks: give two animals 1 to 4 each of their own food, then ring the bell',
+  },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 7 },
+  prek: { min: 5, max: 8 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -191,7 +197,9 @@ export const FRIEND_SCALE = 0.6;
 /** A friend's body-centered tap circle, in its own (unscaled) units. */
 export const FRIEND_HIT = { y: -125, r: 190 };
 export const friendXs = (n: number, w: number) => spread(n, 200, w - 60, 270);
-export const friendFeet = (h: number) => h * 0.64;
+/** With level 8's two-row spot the feet rise, on a short view, to stand clear above the spot's raised top edge. */
+export const friendFeet = (h: number, rows = 1) =>
+  rows === 2 ? Math.min(h * 0.64, h - 150 - ROW_STEP - 12) : h * 0.64;
 
 /**
  * The feeding spot's edges and its snacks' places across a view `w` wide. On the narrow upright area (chunk 31) the spot
@@ -330,11 +338,14 @@ export interface SnackRound {
   n?: number;
   /** 'eats': the food asked about; two of the animals eat it and the third never does. */
   food?: Food;
+  /** 'pairs': how many each animal wants, in the same order as `animals`. */
+  wants?: number[];
 }
 
 /** Animals for each round, never asking about the same animal twice running. */
 export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
   if (plan.mode === 'eats') return makeEatsRounds(plan.rounds, rng);
+  if (plan.mode === 'pairs') return makePairsRounds(plan.rounds, rng);
   const out: SnackRound[] = [];
   const many = plan.mode === 'munch' || plan.mode === 'float' || plan.mode === 'match';
   // Free play and matching keep one set of animals; questions pick new animals each time.
@@ -388,6 +399,9 @@ export interface SnackTable {
   /** 'eats': the food asked about and the eaters already found. */
   food?: Food;
   found?: CritterName[];
+  /** 'pairs': how many each animal wants, and how many of its food it has eaten, in the row's order. */
+  wants?: number[];
+  given?: number[];
 }
 
 /**
@@ -419,6 +433,14 @@ export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
     case 'eats': {
       const next = t.friends.findIndex((a) => eats(a, t.food!) && !t.found?.includes(a));
       return next < 0 ? null : { friend: next };
+    }
+    case 'pairs': {
+      const wants = t.wants ?? [];
+      const given = t.given ?? [];
+      const to = t.friends.findIndex((_, i) => (given[i] ?? 0) < (wants[i] ?? 0));
+      if (to < 0) return 'bell';
+      const give = t.snacks.findIndex((s) => !s.eaten && s.food === FAVORITE[t.friends[to]]);
+      return give < 0 ? null : { give, to };
     }
     case 'count': {
       const fed = t.snacks.filter((s) => s.eaten).length;
@@ -487,3 +509,50 @@ export function makeEatsRounds(rounds: number, rng: Rng): SnackRound[] {
 export type EatsTap = 'found' | 'again' | 'wrong';
 export const eatsTap = (food: Food, to: CritterName, found: CritterName[]): EatsTap =>
   !eats(to, food) ? 'wrong' : found.includes(to) ? 'again' : 'found';
+
+/** Level 8: each animal's pile on the two-row blanket holds this many of its food, more than any animal wants. */
+export const PAIR_PILE = 5;
+/** Level 8: the two piles' rows are this far apart, more than a snack's 132-wide touch circle. */
+export const ROW_STEP = 135;
+/** Level 8: the most any one animal asks for, so its pile always has one to spare and overshooting is possible. */
+export const PAIR_MAX = 4;
+
+/**
+ * Level 8, Their own snacks: three asks, each two animals with different favorites (never the same pair twice running)
+ * and how many each wants, 1 to 4. The two never want the same number, so the sign's two rows of dots read apart.
+ */
+export function makePairsRounds(rounds: number, rng: Rng): SnackRound[] {
+  const out: SnackRound[] = [];
+  for (let i = 0; i < rounds; i++) {
+    let animals: CritterName[];
+    do animals = dealAnimals(ANIMALS, 2, rng);
+    while (out.length && animals.every((a) => out.at(-1)!.animals.includes(a)));
+    const a = rng.int(1, PAIR_MAX);
+    let b = rng.int(1, PAIR_MAX - 1);
+    if (b >= a) b++;
+    out.push({ animals, wants: [a, b] });
+  }
+  return out;
+}
+
+/** Level 8: a snack dropped on an animal is eaten only when it is that animal's own food. Any number may be eaten. */
+export const pairsDrop = (food: Food, to: CritterName): 'yum' | 'wrongFood' =>
+  FAVORITE[to] === food ? 'yum' : 'wrongFood';
+
+/**
+ * Level 8's bell: right when every animal has exactly what it wants; otherwise the first animal in the row that is off,
+ * with what it has and wants, and how many extras each animal sends back.
+ */
+export type PairsBell =
+  { ok: true } | { ok: false; off: number; have: number; want: number; extras: number[] };
+export function pairsBell(wants: number[], given: number[]): PairsBell {
+  const off = wants.findIndex((w, i) => (given[i] ?? 0) !== w);
+  if (off < 0) return { ok: true };
+  return {
+    ok: false,
+    off,
+    have: given[off] ?? 0,
+    want: wants[off],
+    extras: wants.map((w, i) => Math.max(0, (given[i] ?? 0) - w)),
+  };
+}

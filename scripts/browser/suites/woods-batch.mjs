@@ -2204,7 +2204,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(7, Number(process.env.TO_LEVEL || 7)); level++) {
+      for (let level = fromLevel; level <= Math.min(8, Number(process.env.TO_LEVEL || 8)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -2483,6 +2483,69 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 );
               }
               await give(fav[r.ask], r.ask);
+            } else if (mode === 'pairs') {
+              // Level 8, Their own snacks: two animals, two piles, a picture sign, and the bell.
+              const fav = await page.evaluate(async () => {
+                const L = await import('/src/games/animal-snack/logic.ts');
+                return L.FAVORITE;
+              });
+              const [a, b] = r.animals;
+              const ring = async () => {
+                await tap('neo.scene.game.bell');
+                await settle();
+              };
+              if (n === 0) {
+                // The two-row blanket upright on a phone: the piles' full hit areas stay apart, in rows and along them.
+                await page.setViewportSize({ width: 390, height: 844 });
+                await page.waitForTimeout(400);
+                await screenshot('animal-snack-8-phone');
+                // Every feeding spot grows by a row: blanket, trough, tub and bowl, upright, then the meadow sideways.
+                const scene = await page.evaluate(() => neo.scene.game.scene);
+                for (const name of ['meadow', 'orchard', 'garden', 'dusk']) {
+                  await page.evaluate((name) => neo.scene.game.showScene(name), name);
+                  await page.waitForTimeout(250);
+                  await screenshot(`animal-snack-8-phone-${name}`);
+                }
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await page.evaluate(() => neo.scene.game.showScene('meadow'));
+                await page.waitForTimeout(300);
+                await screenshot('animal-snack-8-meadow-landscape');
+                await page.setViewportSize({ width: 390, height: 844 });
+                await page.evaluate((name) => neo.scene.game.showScene(name), scene);
+                await page.waitForTimeout(300);
+                assert.ok(
+                  await page.evaluate(() =>
+                    neo.scene.game.snacks.every((s, i, all) =>
+                      all.every(
+                        (t, j) => j === i || Math.hypot(s.node.x - t.node.x, s.node.y - t.node.y) >= 132,
+                      ),
+                    ),
+                  ),
+                  'phone piles keep their full hit areas apart',
+                );
+                // Another animal's food slides home (a miss); too many for the first comes back at the bell (a miss).
+                await give(fav[b], a);
+                assert.deepEqual(await counts(), [1, 0], 'a wrong food is a miss');
+                for (let k = 0; k < r.wants[0] + 1; k++) await give(fav[a], a);
+                for (let k = 0; k < r.wants[1]; k++) await give(fav[b], b);
+                await ring();
+                assert.deepEqual(await counts(), [2, 1], 'too many at the bell is a miss, then a hint');
+                assert.deepEqual(
+                  await page.evaluate(() => neo.scene.game.given()),
+                  r.wants,
+                  'the extra came back to its pile',
+                );
+                assert.ok(
+                  await page.evaluate(() => neo.scene.game.glowing === neo.scene.game.bell),
+                  'with both counts right the glow is on the bell',
+                );
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await page.waitForTimeout(300);
+              } else {
+                for (let k = 0; k < r.wants[0]; k++) await give(fav[a], a);
+                for (let k = 0; k < r.wants[1]; k++) await give(fav[b], b);
+              }
+              await ring();
             } else if (mode === 'eats') {
               // Level 7, Who eats it too?: tap both animals that eat the food; the third never does.
               const [eaters, wrong] = await page.evaluate(async (food) => {

@@ -23,6 +23,11 @@ import {
   nearestFriend,
   shouldNudge,
   makeRounds,
+  PAIR_MAX,
+  ROW_STEP,
+  PAIR_PILE,
+  pairsBell,
+  pairsDrop,
   PLANS,
   SCENE_SPECS,
   SCENES,
@@ -197,12 +202,26 @@ describe('Animal Snack', () => {
           const r = rounds[Math.min(index, rounds.length - 1)];
           const friends = r.animals;
           const snacks: SnackTable['snacks'] =
-            plan.mode === 'count'
-              ? Array.from({ length: 5 }, () => ({ food: FAVORITE[r.ask!]!, eaten: false }))
-              : plan.mode === 'float' || plan.mode === 'match' || plan.mode === 'sound'
-                ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false }))
-                : [];
-          return { friends, snacks, ask: r.ask, n: r.n, eatenCount, food: r.food, found: [] };
+            plan.mode === 'pairs'
+              ? friends.flatMap((a) =>
+                  Array.from({ length: PAIR_PILE }, () => ({ food: FAVORITE[a]!, eaten: false })),
+                )
+              : plan.mode === 'count'
+                ? Array.from({ length: 5 }, () => ({ food: FAVORITE[r.ask!]!, eaten: false }))
+                : plan.mode === 'float' || plan.mode === 'match' || plan.mode === 'sound'
+                  ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false }))
+                  : [];
+          return {
+            friends,
+            snacks,
+            ask: r.ask,
+            n: r.n,
+            eatenCount,
+            food: r.food,
+            found: [],
+            wants: r.wants,
+            given: friends.map(() => 0),
+          };
         };
         let table = deal();
         let done = false;
@@ -211,7 +230,17 @@ describe('Animal Snack', () => {
           table.eatenCount = eatenCount;
           const move = snackTouch(plan, table);
           expect(move, `${plan.mode} seed ${seed}: a touch to make`).not.toBeNull();
-          if (move === 'bell') {
+          if (move === 'bell' && plan.mode === 'pairs') {
+            expect(
+              pairsBell(table.wants!, table.given!),
+              'the bell rings on exactly the numbers asked for',
+            ).toEqual({
+              ok: true,
+            });
+            index++;
+            if (index >= rounds.length) done = true;
+            else table = deal();
+          } else if (move === 'bell') {
             expect(plan.mode).toBe('count');
             expect(
               table.snacks.filter((s) => s.eaten).length,
@@ -251,12 +280,20 @@ describe('Animal Snack', () => {
             } else expect(plan.mode).toBe('count');
           } else {
             const snack = table.snacks[move!.give];
-            expect(['match', 'sound']).toContain(plan.mode);
+            expect(['match', 'sound', 'pairs']).toContain(plan.mode);
             expect(table.friends[move!.to], 'the snack goes to the animal that eats it').toBe(
               eaterOf(snack.food, table.friends),
             );
             snack.eaten = true;
-            if (plan.mode === 'sound') {
+            if (plan.mode === 'pairs') {
+              expect(pairsDrop(snack.food, table.friends[move!.to]), 'its own food, never a miss').toBe(
+                'yum',
+              );
+              table.given![move!.to]++;
+              expect(table.given![move!.to], 'never more than it wants').toBeLessThanOrEqual(
+                table.wants![move!.to],
+              );
+            } else if (plan.mode === 'sound') {
               expect(soundDrop(table.ask!, snack.food, table.friends[move!.to]), 'a yum, never a miss').toBe(
                 'yum',
               );
@@ -457,7 +494,7 @@ describe('Animal Snack', () => {
   it('asks Who eats it too? at level 7: two eaters and one definite non-eater, never the same food twice running', () => {
     const plan = planFor(7);
     expect(plan.mode).toBe('eats');
-    expect(LEVELS.prek).toEqual({ min: 5, max: 7 });
+    expect(LEVELS.prek!.max).toBeGreaterThanOrEqual(7);
     const asked = new Set<Food>();
     for (let seed = 1; seed <= 400; seed++) {
       const rounds = makeRounds(plan, new Rng(seed));
@@ -508,5 +545,59 @@ describe('Animal Snack', () => {
     expect(eatsTap('hay', 'cat', ['cow'])).toBe('wrong');
     expect(eatsTap('fish', 'bear', ['cat'])).toBe('found');
     expect(eatsTap('fish', 'horse', [])).toBe('wrong');
+  });
+
+  it('asks Their own snacks at level 8: two animals with different foods, 1 to 4 each, never the same pair twice running', () => {
+    const plan = planFor(8);
+    expect(plan.mode).toBe('pairs');
+    expect(LEVELS.prek).toEqual({ min: 5, max: 8 });
+    expect(PAIR_PILE, 'every pile has one to spare, so too many is possible').toBeGreaterThan(PAIR_MAX);
+    expect(PAIR_PILE, 'a pile never holds more than five').toBeLessThanOrEqual(5);
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = makeRounds(plan, new Rng(seed));
+      expect(rounds).toHaveLength(plan.rounds);
+      rounds.forEach((r, i) => {
+        expect(r.animals).toHaveLength(2);
+        const [a, b] = r.animals;
+        expect(a).not.toBe(b);
+        expect(FAVORITE[a], 'each food has one eater on the blanket').not.toBe(FAVORITE[b]);
+        expect(r.wants).toHaveLength(2);
+        for (const n of r.wants!) {
+          expect(n).toBeGreaterThanOrEqual(1);
+          expect(n).toBeLessThanOrEqual(PAIR_MAX);
+        }
+        expect(r.wants![0], 'the sign never shows two equal rows of dots').not.toBe(r.wants![1]);
+        if (i > 0)
+          expect(
+            r.animals.every((x) => rounds[i - 1].animals.includes(x)),
+            'a new pair',
+          ).toBe(false);
+      });
+    }
+  });
+
+  it('feeds only an animal its own food at level 8, any number of times', () => {
+    expect(pairsDrop('hay', 'cow')).toBe('yum');
+    expect(pairsDrop('grass', 'cow')).toBe('wrongFood');
+    for (const a of ANIMALS) expect(pairsDrop(FAVORITE[a]!, a)).toBe('yum');
+  });
+
+  it('rings the level 8 bell right only on both counts, naming the first animal that is off and sending extras back', () => {
+    expect(pairsBell([2, 3], [2, 3])).toEqual({ ok: true });
+    expect(pairsBell([2, 3], [3, 3])).toEqual({ ok: false, off: 0, have: 3, want: 2, extras: [1, 0] });
+    expect(pairsBell([2, 3], [2, 1])).toEqual({ ok: false, off: 1, have: 1, want: 3, extras: [0, 0] });
+    expect(pairsBell([1, 4], [0, 5])).toEqual({ ok: false, off: 0, have: 0, want: 1, extras: [0, 1] });
+    // Too many on both: both send their extras back, and the bell names the first.
+    expect(pairsBell([1, 2], [3, 4])).toEqual({ ok: false, off: 0, have: 3, want: 1, extras: [2, 2] });
+  });
+
+  it('stands level 8 animals clear above the two-row spot, and their tap circles below the sign', () => {
+    for (const h of [768, 1024, 1365, 1638, 2216]) {
+      const feet = friendFeet(h, 2);
+      expect(feet, `h ${h}`).toBeLessThanOrEqual(h - 150 - ROW_STEP - 12);
+      expect(feet, `h ${h}: never lower than one row's`).toBeLessThanOrEqual(friendFeet(h));
+      // The sign reaches to y 120 + 68.
+      expect(feet + (FRIEND_HIT.y - FRIEND_HIT.r) * FRIEND_SCALE, `h ${h}`).toBeGreaterThan(188);
+    }
   });
 });

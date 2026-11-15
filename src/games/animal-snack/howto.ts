@@ -30,6 +30,11 @@ export const HOW_TO: GameHowTo = {
       to: 7,
       text: 'A food is shown and two of the three animals eat it: tap both. Each one found eats a piece and keeps a green tick; the animal that never eats it says what it eats instead.',
     },
+    {
+      from: 8,
+      to: 8,
+      text: 'Two animals and two piles of food: give each animal the number of its own food shown by its dots on the sign, then ring the bell. A food that is not its own slides home; too many come back at the bell.',
+    },
   ],
   finish: [
     { to: 2, text: 'The round ends after six snacks are eaten.' },
@@ -42,6 +47,11 @@ export const HOW_TO: GameHowTo = {
     },
     { from: 6, to: 6, text: 'The round ends after four animals are fed from their sounds.' },
     { from: 7, to: 7, text: 'The round ends after four foods, each with both of its eaters found.' },
+    {
+      from: 8,
+      to: 8,
+      text: 'The round ends after three pairs of animals each get exactly their counts, confirmed with the bell.',
+    },
   ],
   note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
 };
