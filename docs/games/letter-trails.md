@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 1–6 |
-| pre-K | 3–9 |
-| school | 7–9 |
+| pre-K | 3–10 |
+| school | 7–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 7 | Trace a short word, then see its picture |
 | 8 | Trace the first eight letters of the child’s name |
 | 9 | Less help each time: trace one capital three times, with a solid trail, then dots, then only the start |
+| 10 | Little letters like their capitals: c, o, s, v, w, t in a four-line frame |
 
 <!-- end generated -->
 
