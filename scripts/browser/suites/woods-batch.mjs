@@ -2499,6 +2499,20 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 await page.setViewportSize({ width: 390, height: 844 });
                 await page.waitForTimeout(400);
                 await screenshot('animal-snack-8-phone');
+                // Every feeding spot grows by a row: blanket, trough, tub and bowl, upright, then the meadow sideways.
+                const scene = await page.evaluate(() => neo.scene.game.scene);
+                for (const name of ['meadow', 'orchard', 'garden', 'dusk']) {
+                  await page.evaluate((name) => neo.scene.game.showScene(name), name);
+                  await page.waitForTimeout(250);
+                  await screenshot(`animal-snack-8-phone-${name}`);
+                }
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await page.evaluate(() => neo.scene.game.showScene('meadow'));
+                await page.waitForTimeout(300);
+                await screenshot('animal-snack-8-meadow-landscape');
+                await page.setViewportSize({ width: 390, height: 844 });
+                await page.evaluate((name) => neo.scene.game.showScene(name), scene);
+                await page.waitForTimeout(300);
                 assert.ok(
                   await page.evaluate(() =>
                     neo.scene.game.snacks.every((s, i, all) =>

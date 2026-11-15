@@ -308,7 +308,7 @@ class AnimalSnack implements Game {
     const xs = friendXs(this.friends.length, v.w);
     const scale = this.plan.oneBig && this.friends.length === 1 ? BIG_SCALE : FRIEND_SCALE;
     this.friends.forEach((f, i) => {
-      f.node.position.set(xs[i], friendFeet(v.h));
+      f.node.position.set(xs[i], friendFeet(v.h, this.rows));
       f.node.scale.set(scale);
     });
     const loose = this.snacks.filter((s) => !s.eaten);
@@ -783,6 +783,11 @@ class AnimalSnack implements Game {
       for (let d = 0; d < wants[i]; d++) dots.circle(x + (d - (wants[i] - 1) / 2) * 30, 46, 11).fill(ink);
       this.bubble.addChild(critter, dots);
     });
+  }
+
+  /** Rows of snacks at the feeding spot: two piles at level 8, one row everywhere else. */
+  private get rows() {
+    return this.plan.mode === 'pairs' ? 2 : 1;
   }
 
   /** Level 8: how many of its food each animal in the row has eaten. */

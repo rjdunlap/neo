@@ -24,6 +24,7 @@ import {
   shouldNudge,
   makeRounds,
   PAIR_MAX,
+  ROW_STEP,
   PAIR_PILE,
   pairsBell,
   pairsDrop,
@@ -588,5 +589,15 @@ describe('Animal Snack', () => {
     expect(pairsBell([1, 4], [0, 5])).toEqual({ ok: false, off: 0, have: 0, want: 1, extras: [0, 1] });
     // Too many on both: both send their extras back, and the bell names the first.
     expect(pairsBell([1, 2], [3, 4])).toEqual({ ok: false, off: 0, have: 3, want: 1, extras: [2, 2] });
+  });
+
+  it('stands level 8 animals clear above the two-row spot, and their tap circles below the sign', () => {
+    for (const h of [768, 1024, 1365, 1638, 2216]) {
+      const feet = friendFeet(h, 2);
+      expect(feet, `h ${h}`).toBeLessThanOrEqual(h - 150 - ROW_STEP - 12);
+      expect(feet, `h ${h}: never lower than one row's`).toBeLessThanOrEqual(friendFeet(h));
+      // The sign reaches to y 120 + 68.
+      expect(feet + (FRIEND_HIT.y - FRIEND_HIT.r) * FRIEND_SCALE, `h ${h}`).toBeGreaterThan(188);
+    }
   });
 });

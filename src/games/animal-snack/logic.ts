@@ -197,7 +197,9 @@ export const FRIEND_SCALE = 0.6;
 /** A friend's body-centered tap circle, in its own (unscaled) units. */
 export const FRIEND_HIT = { y: -125, r: 190 };
 export const friendXs = (n: number, w: number) => spread(n, 200, w - 60, 270);
-export const friendFeet = (h: number) => h * 0.64;
+/** With level 8's two-row spot the feet rise, on a short view, to stand clear above the spot's raised top edge. */
+export const friendFeet = (h: number, rows = 1) =>
+  rows === 2 ? Math.min(h * 0.64, h - 150 - ROW_STEP - 12) : h * 0.64;
 
 /**
  * The feeding spot's edges and its snacks' places across a view `w` wide. On the narrow upright area (chunk 31) the spot
