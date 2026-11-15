@@ -120,7 +120,8 @@ export class MendWing implements Game {
   private event(ev: MendEvent, place: number) {
     const ctx = this.ctx,
       s = this.mend;
-    if (ev.kind === 'ignored') return;
+    // Not a miss, but never silence: a stamp let go on a matching place, or a second tap on the found one, still answers.
+    if (ev.kind === 'ignored') return void (this.done || sfx.tick());
     if (ev.kind === 'found') {
       sfx.bell(6, 0.3);
       this.drawPlace(place);
