@@ -32,6 +32,13 @@ export const BUG_PLANS = [
     colors: 3,
     name: 'Fold a friend: predict which finished bug the folded wing will make',
   },
+  {
+    mode: 'mend',
+    rows: 3,
+    columns: 2,
+    colors: 3,
+    name: 'Mend the wing: find the spot that differs from its twin and fix it',
+  },
 ] as const;
 export type BugPlan = (typeof BUG_PLANS)[number];
 export interface BugToken {
@@ -368,11 +375,172 @@ export function foldBoard(plan: BugPlan, rng: Rng): FoldBoard {
   return { left, choices, answer: choices.findIndex((c) => c.kind === 'mirror') };
 }
 
+/**
+ * Level 11, Mend the wing: a finished bug whose right wing should be the fold of the left, with one place wrong (a stamp
+ * of the wrong color, of the wrong shape, or a spot missing). She taps the place that differs from its twin, then drags
+ * the twin's stamp onto it from the tray. A tap on a place that matches its twin is a miss; the round's one hint comes
+ * with the second miss and glows the next useful move from then on.
+ */
+export type MendFlaw = 'color' | 'shape' | 'missing';
+export interface MendState {
+  /** The left wing's three spots, which the right wing should mirror. */
+  left: BugSpot[];
+  /** The right wing's six places, in the board's own units (each a tap target, stamped or not). */
+  places: { x: number; y: number }[];
+  /** The stamp on each right-wing place now, or null where there is none. */
+  right: (number | null)[];
+  /** The one place that differs from its twin. */
+  wrong: number;
+  /** The stamp that place should have: its twin's. */
+  want: number;
+  flaw: MendFlaw;
+  /** The tray: the left wing's three stamps and one more (the wrong stamp itself, or a look-alike when one is missing). */
+  tokens: number[];
+  found: boolean;
+  misses: number;
+  hinted: boolean;
+  done: boolean;
+}
+
+/** The stamps that differ from `token` in exactly one way: the same shape in another color, or the same color in another shape. */
+export function lookAlikes(token: number, flaw: 'color' | 'shape'): number[] {
+  const t = BUG_TOKENS[token];
+  return BUG_TOKENS.flatMap((u, i) =>
+    flaw === 'color'
+      ? u.shape === t.shape && u.color !== t.color
+        ? [i]
+        : []
+      : u.color === t.color && u.shape !== t.shape
+        ? [i]
+        : [],
+  );
+}
+
+export function mendBoard(plan: BugPlan, rng: Rng): MendState {
+  const flaw = rng.pick<MendFlaw>(['color', 'shape', 'missing']);
+  const leftPlaces = bugPlaces(plan).filter((p) => p.x < 0);
+  // A star or a hexagon has no other color in the pool, and purple or red no other shape: draw until a spot can carry the flaw.
+  let tokens = pickTokens(plan, rng);
+  for (let i = 0; i < 50 && flaw !== 'missing' && tokens.every((t) => !lookAlikes(t, flaw).length); i++)
+    tokens = pickTokens(plan, rng);
+  const left = rng
+    .shuffle([...leftPlaces])
+    .slice(0, 3)
+    .map((p, i) => ({ ...p, token: tokens[i] }));
+  const places = leftPlaces.map((p) => ({ x: -p.x, y: p.y }));
+  const twin = (p: { x: number; y: number }) => left.find((s) => s.x === -p.x && s.y === p.y);
+  const right = places.map((p) => twin(p)?.token ?? null);
+  const candidates = places
+    .map((_, i) => i)
+    .filter((i) => right[i] !== null && (flaw === 'missing' || lookAlikes(right[i]!, flaw).length > 0));
+  const wrong = rng.pick(candidates);
+  const want = right[wrong]!;
+  let extra: number;
+  if (flaw === 'missing') {
+    // Something that looks a little like the missing stamp, so the tray still asks her to look closely.
+    const near = [...lookAlikes(want, 'color'), ...lookAlikes(want, 'shape')].filter((t) => !tokens.includes(t));
+    extra = near.length
+      ? rng.pick(near)
+      : rng.pick(BUG_TOKENS.map((_, i) => i).filter((i) => !tokens.includes(i)));
+    right[wrong] = null;
+  } else {
+    extra = rng.pick(lookAlikes(want, flaw));
+    right[wrong] = extra;
+  }
+  return {
+    left,
+    places,
+    right,
+    wrong,
+    want,
+    flaw,
+    tokens: rng.shuffle([...left.map((s) => s.token), extra]),
+    found: false,
+    misses: 0,
+    hinted: false,
+    done: false,
+  };
+}
+
+/** The right wing as spots, for comparing with the fold of the left. */
+export function mendRight(s: Pick<MendState, 'places' | 'right'>): BugSpot[] {
+  return s.places.flatMap((p, i) => (s.right[i] === null ? [] : [{ ...p, token: s.right[i]! }]));
+}
+
+/** The right-wing places that differ from their twins across the line. */
+export function mendDiffers(s: Pick<MendState, 'places' | 'right' | 'left'>): number[] {
+  return s.places
+    .map((_, i) => i)
+    .filter((i) => {
+      const p = s.places[i],
+        t = s.left.find((l) => l.x === -p.x && l.y === p.y);
+      return (t?.token ?? null) !== s.right[i];
+    });
+}
+
+export type MendEvent =
+  | { kind: 'ignored' }
+  /** She tapped the place that differs: its wrong stamp comes off, ready for the right one. */
+  | { kind: 'found' }
+  /** A tap on a place that matches its twin: a miss, and a look across the line. */
+  | { kind: 'twin'; place: number; hint: boolean }
+  /** A stamp that is not the twin's, let go on the place that differs: a miss; it goes back to the tray. */
+  | { kind: 'wrongStamp'; token: number; hint: boolean }
+  | { kind: 'mended' };
+
+function mendHintDue(s: MendState): boolean {
+  if (s.hinted || s.misses < 2) return false;
+  s.hinted = true;
+  return true;
+}
+
+export function mendTap(s: MendState, place: number): MendEvent {
+  if (s.done || place < 0 || place >= s.places.length) return { kind: 'ignored' };
+  if (place === s.wrong) {
+    if (s.found) return { kind: 'ignored' };
+    s.found = true;
+    s.right[place] = null;
+    return { kind: 'found' };
+  }
+  s.misses++;
+  return { kind: 'twin', place, hint: mendHintDue(s) };
+}
+
+/**
+ * A stamp let go on a right-wing place. Only the place that differs takes a stamp; the twin's stamp mends it, even
+ * before she has tapped it (she has seen it all the same). Let go anywhere else, the stamp just goes back to the tray.
+ */
+export function mendDrop(s: MendState, place: number, token: number): MendEvent {
+  if (s.done || place !== s.wrong) return { kind: 'ignored' };
+  if (token !== s.want) {
+    s.misses++;
+    return { kind: 'wrongStamp', token, hint: mendHintDue(s) };
+  }
+  s.found = true;
+  s.right[place] = token;
+  s.done = true;
+  return { kind: 'mended' };
+}
+
+export type MendMove = { tap: number } | { stamp: number; place: number };
+
+/** The next useful move, for the ghost finger and the hint's glow: tap the place that differs, then give it the twin's stamp. */
+export function mendMove(s: MendState): MendMove | null {
+  if (s.done) return null;
+  return s.found ? { stamp: s.want, place: s.wrong } : { tap: s.wrong };
+}
+
+/** The right-wing place a stamp let go at (x, y) lands on, stamped or not, or -1. */
+export function mendPlaceAt(s: Pick<MendState, 'places'>, x: number, y: number): number {
+  return s.places.findIndex((p) => Math.hypot(x - p.x, y - p.y) < SLOT_REACH);
+}
+
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   // Counting to five with a stop comes after copying; the mirror levels 6 and 7 stay out of preschool.
   preschool: { min: 2, max: 8, order: [2, 3, 4, 5, 8] },
   // Count a kind follows Count the spots in pre-K, before the bigger mirrors; Fold a friend comes after the mirrors.
-  prek: { min: 4, max: 10, order: [4, 5, 8, 9, 6, 7, 10] },
-  school: { min: 6, max: 10, order: [6, 7, 10] },
+  // Mend the wing follows Fold a friend in pre-K and school.
+  prek: { min: 4, max: 11, order: [4, 5, 8, 9, 6, 7, 10, 11] },
+  school: { min: 6, max: 11, order: [6, 7, 10, 11] },
 };
