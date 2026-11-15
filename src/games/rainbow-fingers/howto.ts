@@ -50,6 +50,11 @@ export const HOW_TO: GameHowTo = {
       to: 10,
       text: 'The bowl takes three pours: tap red, yellow and blue to mix brown, then drag a finger across the brown picture (a bear, an acorn or an owl). A fourth pour starts the bowl over. The recipe is told.',
     },
+    {
+      from: 11,
+      to: 11,
+      text: 'Three pictures, each a different mixed color and at least one pink or brown. Remember the color, then pour its paints into the bowl (white is there, and the bowl takes three pours) and drag a finger across the picture. A first wrong color only names the right one; the recipe is told on the second, when the pots glow.',
+    },
   ],
   finish: [
     {

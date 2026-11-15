@@ -39,6 +39,8 @@ import {
   pageKind,
   bowlLook,
   bowlHolds,
+  whitePot,
+  tellsRecipe,
   pourInto,
   mix,
   NUDGE_AFTER,
@@ -690,7 +692,7 @@ class RainbowFingers implements Game {
   private readonly potNodes = new Map<ColorName | 'rainbow', Container>();
   private readonly bowl = new Container();
   private readonly bowlPaint = new Graphics();
-  /** What's been poured into the mixing bowl (two at most, three at level 10). */
+  /** What's been poured into the mixing bowl (two at most, three at levels 10 and 11). */
   private poured: Pour[] = [];
   private readonly plan: PaintPlan;
   private readonly things: (Thing | Petal)[];
@@ -799,7 +801,7 @@ class RainbowFingers implements Game {
   private buildPots() {
     const mixing = pours(this.plan.mode);
     const list: (ColorName | 'rainbow')[] = mixing
-      ? this.plan.white
+      ? whitePot(this.plan)
         ? [...PRIMARIES, 'white']
         : PRIMARIES
       : POTS;
@@ -1009,6 +1011,9 @@ class RainbowFingers implements Game {
     if (this.plan.mode === 'mix') {
       const vars = this.recipeVars();
       await this.ctx.instruct(vars.c ? 'paint.mix3' : 'paint.mix', { thing, color, ...vars });
+    } else if (this.plan.memory) {
+      // Level 11: no color and no recipe in the ask.
+      await this.ctx.instruct('paint.memory', { thing });
     } else if (this.plan.mode === 'recall-mix') {
       await this.ctx.instruct('paint.remix', { thing });
     } else if (this.plan.mode === 'recall') {
@@ -1049,6 +1054,10 @@ class RainbowFingers implements Game {
     }
     const { color } = pic.thing;
     const thing = THING_NAMES[pic.thing.id];
+    if (!this.brushName && this.plan.memory) {
+      void this.ctx.say('paint.memory.mix', { thing });
+      return;
+    }
     if (!this.brushName) {
       void this.ctx.say(pours(this.plan.mode) ? this.mixhow() : 'paint.pick', {
         color,
@@ -1058,7 +1067,10 @@ class RainbowFingers implements Game {
     }
     const due = missOnRequest(this.tally);
     sfx.boing();
-    if (pours(this.plan.mode)) void this.ctx.say(this.mixhow(), { color, ...this.recipeVars() });
+    // Level 11's first miss names the color only; the recipe comes with the second, and the glow.
+    if (pours(this.plan.mode) && !tellsRecipe(this.plan, this.tally.roundMisses))
+      void this.ctx.say('paint.memory.is', { thing, color });
+    else if (pours(this.plan.mode)) void this.ctx.say(this.mixhow(), { color, ...this.recipeVars() });
     else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
     if (due) this.showHint();
   }
@@ -1748,6 +1760,8 @@ export const rainbowFingers: GameModule = {
     if (p.mode === 'named') return `Coloring page: "paint the sun yellow", ${p.count} pictures`;
     if (p.mode === 'recall')
       return `Coloring page: "paint the apple" (remember its color), ${p.count} pictures`;
+    if (p.memory)
+      return `Mix it from memory: ${p.count} pictures, at least one pink or brown, the recipe not told`;
     if (p.mode === 'mix' && p.three)
       return `Brown from all three: pour red, yellow and blue, ${p.count} pictures`;
     if (p.mode === 'mix' && p.white) return `Make it pink: mix red and white, ${p.count} pictures`;

@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5–10 |
+| school | 5–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,12 +26,13 @@
 | 8 | Color wheel: mix each empty petal from the two colors beside it |
 | 9 | Make it pink: mix red and white, 2 pictures |
 | 10 | Brown from all three: pour red, yellow and blue, 2 pictures |
+| 11 | Mix it from memory: 3 pictures, at least one pink or brown, the recipe not told |
 
 <!-- end generated -->
 
 **Starts as:** rainbow or color-pot finger painting (any touch counts: pat, hold or drag; a pat splats a flower; an idle nudge)
 
-**Grows into:** marked 104-unit paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering a pumpkin’s orange, pouring red and yellow into the bowl and painting it, then finishing a color wheel (school level 8: a six-petal flower with red, yellow and blue painted, and she mixes the orange, green and purple petals from the two colors beside each; then school level 9, where a white pot joins and red and white make pink for a pig, flamingo, cupcake or tulip; then school level 10, where the bowl takes three pours and red, yellow and blue together make brown for a bear, acorn or owl); about half of the level-2 pot pages are a fold page (a dashed crease and a fold button that prints the wet paint mirrored)
+**Grows into:** marked 104-unit paint pots that say their color, coloring pages ("paint the sun yellow", then "what color is an apple?"), mixing colors in a bowl, then remembering a pumpkin’s orange, pouring red and yellow into the bowl and painting it, then finishing a color wheel (school level 8: a six-petal flower with red, yellow and blue painted, and she mixes the orange, green and purple petals from the two colors beside each; then school level 9, where a white pot joins and red and white make pink for a pig, flamingo, cupcake or tulip; then school level 10, where the bowl takes three pours and red, yellow and blue together make brown for a bear, acorn or owl; then school level 11, where she mixes from memory: three pages of different recipes, the recipe never told before a second miss); about half of the level-2 pot pages are a fold page (a dashed crease and a fold button that prints the wet paint mirrored)
 
 ## Design notes
 
@@ -48,3 +49,5 @@ Finger painting that grows over eight levels: rainbow or color-pot painting, pai
 **Make it pink (level 9).** A white pot (marked with a cloud) joins red, yellow and blue. Red and white mix pink in the bowl; the page is two different pictures from four pinks (pig, flamingo, cupcake, tulip). The prompt says the recipe ("Paint the pig pink! Mix red and white."); a wrong color is a miss with a boing that tells the recipe, and two misses glow the red and white pots (a hint). Cupcake and tulip are told-only (not dealt by a later recall level), pinks never appear on levels 3–8, and a single pour shows a rim so white is visible in the bowl.
 
 **Brown from all three (level 10).** The bowl holds three pours and a fourth starts it over. `mix` matches the set of distinct pours to a recipe, so order and repeats do not matter: two different primaries plus a repeat give their secondary, and all three different give brown (`RECIPES.brown`). The page is two different pictures from three browns (bear, acorn, owl; 24 pictures in all), shown on level 10 only. Prompt "Paint the bear brown! Pour red, yellow and blue."; a wrong dab boings and tells the three-color recipe, and two misses glow the three pots (a hint). `nextPour` is the shared next-move rule for the ghost finger and the tests.
+
+**Mix it from memory (level 11).** Three pages of three different recipes drawn from orange, green, purple, pink and brown (`MEMORY_POOL`; the puddle, cupcake, tulip and grapes are left out as told-only or ambiguous), at least one pink or brown so it is never level 7 made longer. The ask names neither the color nor the recipe ("Paint the frog! What color is it?"). The bowl takes three pours and the white pot is present. The first miss names the color only ("The frog is green!"); the second tells the recipe and glows the pots (a hint) (`tellsRecipe`). Voice lines `paint.memory`, `paint.memory.mix` and `paint.memory.is`; a level-11 how-to line. Known: the first-miss wording was checked by tests, not heard on speech.

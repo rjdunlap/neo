@@ -64,6 +64,10 @@ import {
   wheelNeighbors,
   planFor,
   LEVELS,
+  MEMORY_POOL,
+  NEW_MIXES,
+  tellsRecipe,
+  whitePot,
 } from './logic';
 import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
@@ -80,6 +84,7 @@ describe('Rainbow Fingers', () => {
       false,
       false,
       false,
+      true,
       true,
       true,
       true,
@@ -384,6 +389,7 @@ describe('Rainbow Fingers', () => {
     expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([
       true,
       true,
+      false,
       false,
       false,
       false,
@@ -919,11 +925,11 @@ describe('Rainbow Fingers', () => {
     const brown = planFor(10);
     const primaries: Pour[] = ['red', 'yellow', 'blue'];
 
-    it('is the school top level, a told mixing page of two pictures whose bowl takes three pours', () => {
+    it('is a school level, a told mixing page of two pictures whose bowl takes three pours', () => {
       expect(brown).toEqual({ mode: 'mix', count: 2, three: true });
       expect(pours(brown.mode)).toBe(true);
-      expect(LEVELS.school?.max).toBe(10);
-      expect(PLANS).toHaveLength(10);
+      expect(LEVELS.school!.max).toBeGreaterThanOrEqual(10);
+      expect(PLANS.length).toBeGreaterThanOrEqual(10);
       expect(bowlHolds(brown)).toBe(3);
       for (const plan of PLANS.slice(0, 9)) expect(bowlHolds(plan)).toBe(2);
       expect(RECIPES.brown).toEqual(['red', 'yellow', 'blue']);
@@ -1021,6 +1027,109 @@ describe('Rainbow Fingers', () => {
         rim: swatch.brown.line,
       });
       expect(bowlLook(['red', 'yellow'])!.fill).toBe(swatch.orange.fill);
+    });
+  });
+
+  describe('level 11, Mix it from memory', () => {
+    const memory = planFor(11);
+    const colorWords = [...RAINBOW, 'pink', 'brown', 'white'];
+
+    it('is the school top level: three recalled mixes, the white pot and a three-pour bowl', () => {
+      expect(memory).toEqual({ mode: 'recall-mix', count: 3, memory: true });
+      expect(LEVELS.school?.max).toBe(11);
+      expect(PLANS).toHaveLength(11);
+      expect(pours(memory.mode)).toBe(true);
+      expect(whitePot(memory)).toBe(true);
+      expect(bowlHolds(memory)).toBe(3);
+      // The older levels keep their pots and bowls.
+      expect(whitePot(planFor(7))).toBe(false);
+      expect(bowlHolds(planFor(7))).toBe(2);
+      expect(whitePot(planFor(10))).toBe(false);
+    });
+
+    it('asks three different recipes a page, at least one pink or brown, every mixed color and picture in turn', () => {
+      const colors = new Set<string>();
+      const ids = new Set<string>();
+      for (let seed = 1; seed <= 400; seed++) {
+        const things = pickThings(memory, new Rng(seed));
+        expect(things).toHaveLength(3);
+        expect(new Set(things.map((t) => t.color)).size, `seed ${seed}`).toBe(3);
+        expect(
+          things.some((t) => NEW_MIXES.includes(t.color)),
+          `seed ${seed}`,
+        ).toBe(true);
+        for (const t of things) {
+          expect(RECIPES[t.color], t.id).toBeDefined();
+          colors.add(t.color);
+          ids.add(t.id);
+        }
+      }
+      expect([...colors].sort()).toEqual(['brown', 'green', 'orange', 'pink', 'purple']);
+      expect([...ids].sort()).toEqual(MEMORY_POOL.map((t) => t.id).sort());
+    });
+
+    it('only asks pictures a four-year-old gives one color: no puddle, cupcake, tulip or grapes', () => {
+      for (const t of MEMORY_POOL) {
+        expect(ACCEPTS[t.id], t.id).toEqual([t.color]);
+        expect(NAMED_ONLY.has(t.id) || TOLD_ONLY.has(t.id), t.id).toBe(false);
+      }
+      const ids = MEMORY_POOL.map((t) => t.id);
+      for (const id of ['puddle', 'cupcake', 'tulip', 'grapes', 'apple'] as const)
+        expect(ids).not.toContain(id);
+      for (const id of ['pig', 'flamingo', 'frog', 'pumpkin', 'bear'] as const) expect(ids).toContain(id);
+    });
+
+    it('never says a color or a recipe in the ask, and the first miss names the color without the recipe', () => {
+      const words = (line: string) => line.toLowerCase().match(/[a-z]+/g) ?? [];
+      for (const line of [...VOICE['paint.memory'], ...VOICE['paint.memory.mix']]) {
+        expect(line).toContain('{thing}');
+        for (const w of words(line.replace(/\{\w+\}/g, ''))) expect(colorWords, line).not.toContain(w);
+      }
+      for (const line of VOICE['paint.memory.is']) {
+        expect(line).toContain('{color}');
+        expect(line).not.toMatch(/\{[abc]\}/);
+        for (const w of words(line.replace(/\{\w+\}/g, ''))) expect(colorWords, line).not.toContain(w);
+      }
+    });
+
+    it('tells the recipe only from the second miss here, and on every miss at the told levels', () => {
+      expect(tellsRecipe(memory, 1)).toBe(false);
+      expect(tellsRecipe(memory, 2)).toBe(true);
+      expect(tellsRecipe(memory, 3)).toBe(true);
+      for (const level of [6, 7, 9, 10]) expect(tellsRecipe(planFor(level), 1), `level ${level}`).toBe(true);
+    });
+
+    it('the ghost finger mixes every recipe in the three-pour bowl, from an empty bowl or a wrong one', () => {
+      const starts: Pour[][] = [
+        [],
+        ['white'],
+        ['blue', 'blue'],
+        ['red', 'yellow', 'blue'],
+        ['yellow', 'white'],
+      ];
+      for (const t of MEMORY_POOL) {
+        for (const start of starts) {
+          let poured = [...start];
+          let brush: ColorName | null = poured.length ? mix(...poured) : null;
+          let moves = 0;
+          while (brush !== t.color) {
+            const m = paintStep({
+              mode: memory.mode,
+              strokes: 0,
+              brush,
+              poured,
+              picture: t.color,
+              frame: false,
+            })!;
+            if (m.do === 'bowl') poured = [];
+            else if (m.do === 'pot') poured = pourInto(poured, m.pot as Pour, bowlHolds(memory));
+            else throw new Error(`unexpected ${m.do}`);
+            brush = poured.length ? mix(...poured) : null;
+            expect(++moves, `${t.id} from ${start.join('+')}`).toBeLessThanOrEqual(4);
+          }
+          expect(accepts(t, memory.mode, brush)).toBe(true);
+        }
+      }
     });
   });
 });

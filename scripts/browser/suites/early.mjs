@@ -59,6 +59,16 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               pic.x + pic.thing.circles[0][0] * pic.scale,
               pic.y + pic.thing.circles[0][1] * pic.scale,
             );
+          // Level 11 asks three different mixes from memory, at least one pink or brown, with the white pot there.
+          if (g.plan.memory) {
+            const colors = g.pictures.map((p) => p.thing.color);
+            if (
+              new Set(colors).size !== 3 ||
+              !colors.some((c) => c === 'pink' || c === 'brown') ||
+              !g.potNodes.has('white')
+            )
+              throw new Error(`Mix it from memory page: ${colors}`);
+          }
           // Rainbow paint on the picture only reminds; two wrong colors are misses and light the right pot.
           await kit.drag(kit.line(center(g.picture), [center(g.picture)[0] + 30, center(g.picture)[1]], 4));
           if (g.misses !== 0) throw new Error('Rainbow paint counted as a miss');
