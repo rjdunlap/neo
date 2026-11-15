@@ -5434,7 +5434,9 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             // A typical sunny day: the three sunny crowds stand as towers. Two moves onto the tallest tower each make it
             // taller (never a miss); the second glows the tallest tower as the day's one hint, and the lightbulb adds
             // none. Then tallest to shortest until even.
-            await page.waitForFunction(() => neo.scene.game.towerPhase && neo.scene.game.towerTops.length === 3);
+            await page.waitForFunction(
+              () => neo.scene.game.towerPhase && neo.scene.game.towerTops.length === 3,
+            );
             const sunny = await page.evaluate(async () => {
               const L = await import('/src/games/lemonade-stand/logic.ts');
               const g = neo.scene.game;
@@ -5463,7 +5465,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             assert.deepEqual(await counts(), [0, 1], 'a taller tower is not a miss');
             await page.waitForTimeout(400);
             await move('slip');
-            assert.deepEqual(await counts(), [0, 2], 'the second taller move glows the tallest tower as a hint');
+            assert.deepEqual(
+              await counts(),
+              [0, 2],
+              'the second taller move glows the tallest tower as a hint',
+            );
             assert.equal(await page.evaluate(() => neo.scene.game.towerGlow), true);
             await tap('neo.scene.game.help');
             assert.deepEqual(await counts(), [0, 2], 'the glow and the lightbulb count one hint a day');
@@ -5481,7 +5487,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               const g = neo.scene.game;
               return [g.towers, L.typicalCrowd(L.towerRows(g.plan, g.rows).map((r) => r.wanted))];
             });
-            assert.deepEqual(even[0], [even[1], even[1], even[1]], 'the towers end even at the typical crowd');
+            assert.deepEqual(
+              even[0],
+              [even[1], even[1], even[1]],
+              'the towers end even at the typical crowd',
+            );
             assert.equal(await page.evaluate(() => neo.scene.game.cards[0].node.visible), true);
           }
           if (n === 0) {
@@ -5519,7 +5529,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         assert.deepEqual(await score('lemonade-stand'), level === 7 ? [0, 2] : level >= 5 ? [2, 2] : [0, 1]);
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
-          `Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week', 'two lemon boats', 'best buy', 'typical sunny day'][level - 1]}): early open nudged, help counted once, ${level === 7 ? 'two taller-tower moves with the glow as the day\'s one hint, the towers levelled to the typical crowd, ' : ''}${level >= 5 && level <= 6 ? "dearer boats missed with the glow as the day's one hint, " : ''}${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`,
+          `Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week', 'two lemon boats', 'best buy', 'typical sunny day'][level - 1]}): early open nudged, help counted once, ${level === 7 ? "two taller-tower moves with the glow as the day's one hint, the towers levelled to the typical crowd, " : ''}${level >= 5 && level <= 6 ? "dearer boats missed with the glow as the day's one hint, " : ''}${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`,
         );
       }
   }

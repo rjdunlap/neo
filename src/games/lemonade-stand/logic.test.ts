@@ -85,7 +85,15 @@ describe('Lemonade Stand plans', () => {
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(99)).toBe(PLANS[6]);
     expect(LEVELS.school?.max).toBe(PLANS.length);
-    expect(PLANS.map((p) => p.boats)).toEqual([undefined, undefined, undefined, undefined, 'same', 'rate', undefined]);
+    expect(PLANS.map((p) => p.boats)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'same',
+      'rate',
+      undefined,
+    ]);
     for (const p of PLANS) expect(p.name.length).toBeGreaterThan(10);
   });
 });
@@ -396,7 +404,16 @@ describe('Lemonade Stand help', () => {
           if (plan.purse) purse = settle(purse, row).purse;
         });
       }
-    expect([...kinds].sort()).toEqual(['event', 'good', 'left', 'other', 'out', 'price', 'typical', 'weather']);
+    expect([...kinds].sort()).toEqual([
+      'event',
+      'good',
+      'left',
+      'other',
+      'out',
+      'price',
+      'typical',
+      'weather',
+    ]);
   });
 
   it('leads with what happened the last time it was the same weather', () => {

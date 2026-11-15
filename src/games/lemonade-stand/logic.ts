@@ -326,7 +326,9 @@ export const towerMoves = (towers: readonly number[]) => {
 
 /** Towers worth levelling: a whole typical crowd, at least two moves away, and no more than the biggest batch serves. */
 export const towersFair = (towers: readonly number[]) =>
-  Number.isInteger(typicalCrowd(towers)) && towerMoves(towers) >= 2 && typicalCrowd(towers) <= BATCHES.at(-1)!;
+  Number.isInteger(typicalCrowd(towers)) &&
+  towerMoves(towers) >= 2 &&
+  typicalCrowd(towers) <= BATCHES.at(-1)!;
 
 export const towersEven = (towers: readonly number[]) => towers.every((h) => h === towers[0]);
 
@@ -514,7 +516,8 @@ export function helps(plan: StandPlan, today: Day, rows: Row[], boatChosen = tru
   return out;
 }
 
-export type InsightKind = 'typical' | 'typical-near' | 'boats' | 'price' | 'weather' | 'best' | 'right' | 'plain';
+export type InsightKind =
+  'typical' | 'typical-near' | 'boats' | 'price' | 'weather' | 'best' | 'right' | 'plain';
 
 export interface Insight {
   kind: InsightKind;

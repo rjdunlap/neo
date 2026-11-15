@@ -86,9 +86,13 @@ export const VOICE = {
     'Here are the friends who came on the sunny days. Move friends from a tall tower to a short one until the towers are even!',
   ],
   'lemon.typical.taller': ['Oops, that tower got taller. Take a friend from a tall tower to a short one.'],
-  'lemon.help.towers': ['Take a friend from the tallest tower, the glowing one, and put it on the shortest tower.'],
+  'lemon.help.towers': [
+    'Take a friend from the tallest tower, the glowing one, and put it on the shortest tower.',
+  ],
   'lemon.typical.found': ['The towers are even! A typical sunny day: {n} friends.'],
-  'lemon.typical.choose': ['A typical sunny day brings {n} friends. How many cups will you make? Then tap the open sign!'],
+  'lemon.typical.choose': [
+    'A typical sunny day brings {n} friends. How many cups will you make? Then tap the open sign!',
+  ],
   'lemon.help.typical': ['A typical sunny day brings {n} friends. Make a batch with a cup for each of them.'],
   'lemon.sum.typical': ['Day 5 brought {came} friends, just like a typical sunny day!'],
   'lemon.sum.typical.near': [

@@ -482,7 +482,13 @@ class LemonadeStand implements Game {
 
   private drawHeader() {
     const h = this.table;
-    const names: Record<Cell, string> = { came: 'CAME', made: 'MADE', sold: 'SOLD', left: 'LEFT', shells: 'SHELLS' };
+    const names: Record<Cell, string> = {
+      came: 'CAME',
+      made: 'MADE',
+      sold: 'SOLD',
+      left: 'LEFT',
+      shells: 'SHELLS',
+    };
     this.columns().forEach((col, i) => {
       const x = DAY_W + i * COL_W + COL_W / 2;
       const icon = col === 'shells' ? coinArt(1) : col === 'came' ? friendIcon() : cupArt(col !== 'left');
@@ -556,10 +562,12 @@ class LemonadeStand implements Game {
     if (this.towerPhase && this.towerGlow && this.towerTops.length === 3) {
       const top = this.towerTops[tallest(this.towers)].node;
       const r = 62 + 3 * Math.sin(this.clock * 6);
-      g.circle(this.towerLayer.x + top.x, this.towerLayer.y + top.y - this.towerSpots().step * 0.6, r).stroke({
-        width: 7,
-        color: swatch.yellow.fill,
-      });
+      g.circle(this.towerLayer.x + top.x, this.towerLayer.y + top.y - this.towerSpots().step * 0.6, r).stroke(
+        {
+          width: 7,
+          color: swatch.yellow.fill,
+        },
+      );
     }
     if (this.boatPhase) {
       const wy = this.view.h - BOAT_UP;
@@ -755,7 +763,14 @@ class LemonadeStand implements Game {
     const baseY = this.view.h - 70;
     const room = baseY - (this.m.top + 20) - 70;
     const step = Math.min(56, room / Math.max(14, ...this.towers.map((h) => h + 1)));
-    return { xs: [mid - gap, mid, mid + gap], baseY, step, gap, left: mid - gap * 1.5, right: mid + gap * 1.5 };
+    return {
+      xs: [mid - gap, mid, mid + gap],
+      baseY,
+      step,
+      gap,
+      left: mid - gap * 1.5,
+      right: mid + gap * 1.5,
+    };
   }
 
   /** Before the last day, the friends who came on the three sunny days stand as towers beside the table. */
@@ -763,7 +778,8 @@ class LemonadeStand implements Game {
     const sunny = towerRows(this.plan, this.rows);
     this.towers = sunny.map((r) => r.wanted);
     this.towerFriends.length = 0;
-    for (const h of this.towers) this.towerFriends.push(Array.from({ length: h }, () => this.ctx.rng.pick(FRIENDS)));
+    for (const h of this.towers)
+      this.towerFriends.push(Array.from({ length: h }, () => this.ctx.rng.pick(FRIENDS)));
     this.towerPhase = true;
     this.towerSlips = 0;
     this.towerGlow = false;

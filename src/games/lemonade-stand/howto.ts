@@ -27,7 +27,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 7,
-      text: 'Look at the weather sign and tap how many cups. Before the last day, the three sunny days\' friends stand as towers: drag friends from tall to short towers until they are even, then make cups for that typical day.',
+      text: "Look at the weather sign and tap how many cups. Before the last day, the three sunny days' friends stand as towers: drag friends from tall to short towers until they are even, then make cups for that typical day.",
     },
     'Tap OPEN and watch the friends buy, then look at the new row of the table. Tap a row to hear it.',
     'The lightbulb asks the pet for help, based on the table so far.',
@@ -36,7 +36,7 @@ export const HOW_TO: GameHowTo = {
   note: [
     {
       from: 7,
-      text: 'Running out or having cups left is never a mistake: spare cups go to a picnic. Making a tower taller is not a miss; a second time, the tallest tower glows and counts the day\'s one hint.',
+      text: "Running out or having cups left is never a mistake: spare cups go to a picnic. Making a tower taller is not a miss; a second time, the tallest tower glows and counts the day's one hint.",
     },
     {
       from: 5,
