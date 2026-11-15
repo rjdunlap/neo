@@ -1153,6 +1153,8 @@ class AnimalSnack implements Game {
       void this.eat(f, item.node).then(() => {
         if (this.finished) return;
         void this.ctx.say('count', { n: this.given()[item.by!] });
+        // A glow already showing moves on to the animal still off, or to the bell once both are right.
+        if (this.glowing) this.glowing = this.glowOff();
         this.busy = false;
       });
       return true;
@@ -1188,7 +1190,8 @@ class AnimalSnack implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    const back = verdict.extras.some((n) => n > 0);
+    // Extras are named by the first animal that sent some back; otherwise the first animal that is off.
+    const sender = verdict.extras.findIndex((n) => n > 0);
     verdict.extras.forEach((extra, i) => {
       if (!extra) return;
       for (const s of this.snacks.filter((x) => x.eaten && x.by === i).slice(-extra)) {
@@ -1199,11 +1202,12 @@ class AnimalSnack implements Game {
         if (s.drag) s.drag.enabled = true;
       }
     });
-    if (back) this.resize(this.view);
-    await this.ctx.say(back ? 'snack.pairsextra' : 'snack.pairsoff', {
-      animal: ANIMAL_WORDS[this.friends[verdict.off].name]!,
-      have: verdict.have,
-      n: verdict.want,
+    if (sender >= 0) this.resize(this.view);
+    const who = sender >= 0 ? sender : verdict.off;
+    await this.ctx.say(sender >= 0 ? 'snack.pairsextra' : 'snack.pairsoff', {
+      animal: ANIMAL_WORDS[this.friends[who].name]!,
+      have: sender >= 0 ? r.wants![who] + verdict.extras[who] : verdict.have,
+      n: r.wants![who],
     });
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
