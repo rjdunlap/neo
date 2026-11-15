@@ -49,9 +49,10 @@ export interface StandPlan {
   purse: boolean;
   /**
    * Each morning two lemon boats offer lemons and she taps the cheaper one before choosing a batch. `same`: the two
-   * offers share the number of lemons or the number of shells.
+   * offers share the number of lemons or the number of shells. `rate`: they share neither, so she compares the shells
+   * for every 2 lemons (a unit rate).
    */
-  boats?: 'same';
+  boats?: 'same' | 'rate';
   name: string;
 }
 
@@ -92,10 +93,18 @@ export const PLANS: StandPlan[] = [
     boats: 'same',
     name: 'Two lemon boats: tap the boat that sells lemons cheaper, then run the stand',
   },
+  {
+    days: 4,
+    events: true,
+    prices: [1, 2, 3],
+    purse: true,
+    boats: 'rate',
+    name: 'Best buy: the boats differ in lemons and shells, so find the shells for every 2 lemons',
+  },
 ];
 
 export const LEVELS: BandLevels = {
-  school: { min: 1, max: 5 },
+  school: { min: 1, max: 6 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -149,6 +158,54 @@ export interface Day {
   boats?: readonly [Offer, Offer];
 }
 
+/**
+ * The level-6 offer pairs (cheaper boat first): the lemons and the shells both differ, one boat strictly cheaper for
+ * every 2 lemons, whole shells for every 2 lemons, the cheaper boat never dearer than a shell a lemon, and at most six
+ * of each on a sign. Neither shortcut works across the pool: in some pairs the boat asking fewer shells is the dearer
+ * one, and in others the boat with more lemons is.
+ */
+export const RATE_OFFERS: readonly (readonly [Offer, Offer])[] = [
+  [
+    { lemons: 2, shells: 1 },
+    { lemons: 6, shells: 6 },
+  ],
+  [
+    { lemons: 6, shells: 3 },
+    { lemons: 2, shells: 2 },
+  ],
+  [
+    { lemons: 4, shells: 2 },
+    { lemons: 6, shells: 6 },
+  ],
+  [
+    { lemons: 6, shells: 3 },
+    { lemons: 4, shells: 4 },
+  ],
+  [
+    { lemons: 6, shells: 6 },
+    { lemons: 2, shells: 3 },
+  ],
+  [
+    { lemons: 4, shells: 4 },
+    { lemons: 2, shells: 3 },
+  ],
+  [
+    { lemons: 2, shells: 1 },
+    { lemons: 4, shells: 4 },
+  ],
+  [
+    { lemons: 2, shells: 2 },
+    { lemons: 4, shells: 6 },
+  ],
+];
+
+/** The shortcut "the boat asking fewer shells is cheaper" picks this pair's cheaper boat. */
+export const fewerShellsWorks = ([a, b]: readonly [Offer, Offer]) =>
+  (a.shells < b.shells ? 0 : 1) === cheaperBoat([a, b]);
+/** The shortcut "the boat with more lemons is cheaper" picks this pair's cheaper boat. */
+export const moreLemonsWorks = ([a, b]: readonly [Offer, Offer]) =>
+  (a.lemons > b.lemons ? 0 : 1) === cheaperBoat([a, b]);
+
 /** Which of the day's boats (0 left, 1 right) sells lemons cheaper. */
 export const cheaperBoat = (boats: readonly [Offer, Offer]) => (perTwo(boats[0]) < perTwo(boats[1]) ? 0 : 1);
 
@@ -196,10 +253,24 @@ export function makeWeek(plan: StandPlan, rng: Rng): Day[] {
     const week: Day[] = weathers.map((weather, i) => ({ weather, event: events[i], noise: rng.int(0, 2) }));
     if (!week.every(clean)) continue;
     // Drawn after everything else, so the weeks of the levels without boats stay exactly as they were.
-    if (plan.boats) {
+    if (plan.boats === 'same') {
       for (const day of week) {
         const pair = rng.pick(SAME_OFFERS);
         day.boats = rng.chance(0.5) ? [pair[0], pair[1]] : [pair[1], pair[0]];
+      }
+    } else if (plan.boats === 'rate') {
+      // Each week has a morning where fewer shells is the dearer boat and one where more lemons is, so only the
+      // shells for every 2 lemons answers every morning; never the same pair two mornings running.
+      for (;;) {
+        let last: (typeof RATE_OFFERS)[number] | null = null;
+        const pairs = week.map(() => (last = rng.pick(RATE_OFFERS.filter((p) => p !== last))));
+        if (pairs.some((p) => !fewerShellsWorks(p)) && pairs.some((p) => !moreLemonsWorks(p))) {
+          week.forEach((day, i) => {
+            const pair = pairs[i];
+            day.boats = rng.chance(0.5) ? [pair[0], pair[1]] : [pair[1], pair[0]];
+          });
+          break;
+        }
       }
     }
     return week;

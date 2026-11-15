@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–5 |
+| school | 1–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -17,6 +17,7 @@
 | 3 | Four days: choose a price in shells as well as the cups |
 | 4 | A market week: cups cost shells to make, so read the profit |
 | 5 | Two lemon boats: tap the boat that sells lemons cheaper, then run the stand |
+| 6 | Best buy: the boats differ in lemons and shells, so find the shells for every 2 lemons |
 
 <!-- end generated -->
 
