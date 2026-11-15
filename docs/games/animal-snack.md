@@ -11,7 +11,7 @@
 | lap | 1–2 |
 | toddler | 2–4 |
 | preschool | 3–5 |
-| pre-K | 5–7 |
+| pre-K | 5–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -22,6 +22,7 @@
 | 5 | Give an animal 2 to 4 of its snack, then ring the bell |
 | 6 | Who says moo? Drag its own snack to the animal that makes the sound |
 | 7 | Who eats hay? There are two: tap both animals that eat it |
+| 8 | Their own snacks: give two animals 1 to 4 each of their own food, then ring the bell |
 
 <!-- end generated -->
 

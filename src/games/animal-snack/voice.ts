@@ -19,5 +19,9 @@ export const VOICE = {
   'snack.eats': ['Who eats {food}? There are two! Tap them both.'],
   'snack.eatsmore': ['Yes! The {animal} eats {food}. Who else eats {food}?'],
   'snack.eatsboth': ['You found them both! They both eat {food}.'],
+  'snack.pairs': ['Give the {animal} {n} and the {other} {m}! Then ring the bell.'],
+  'snack.pairsoff': ['The {animal} has {have} and wants {n}.'],
+  'snack.pairsextra': ['The {animal} has {have} and wants {n}. Here are the extras back.'],
+  'snack.pairsfull': ['Just right! Thank you, say the animals!'],
   'snack.done': ['Everyone had a snack. Thank you!'],
 } satisfies Record<string, string[]>;

@@ -112,7 +112,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Duckling Parade](docs/games/duckling-parade.md) | lap–school | Barnyard | 11 | tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind |
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 12 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
-| [Animal Snack](docs/games/animal-snack.md) | lap–pre-K | Barnyard | 7 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
+| [Animal Snack](docs/games/animal-snack.md) | lap–pre-K | Barnyard | 8 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
 | [Critter Sort](docs/games/critter-sort.md) | pre-K–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
 | [Sing-Along Barn](docs/games/sing-along-barn.md) | lap–pre-K | Barnyard | 8 | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, Twinkle, Twinkle, Little Star or The Wheels on the Bus (one per round); a friend comes out for the verse and answers |
 | [Orchard Rows](docs/games/orchard-rows.md) | school | Barnyard | 9 | plant equal rows and count by groups |
