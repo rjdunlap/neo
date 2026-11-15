@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Peekaboo Barn level 9 Who has…? (dive slice 5, 2026-11-14)
+
+[PR #1688](https://github.com/rjdunlap/neo/pull/1688), branch `claude/peekaboo-barn-who-has`, [dive slice 5](../deep-dives/peekaboo-barn.md#build-slices-in-order). Opens the school window: `school` joins `bands`, prek is 6–9 and school 9–9. Level 9 (`clue` mode, 3 places, 5 questions: feeling, part, part, feeling, part) stands the three animals fully out over their covers so body parts show. A feeling clue (sleepy, singing; never surprised) fits exactly one animal; a part clue is read from `CRITTERS` and redealt until one animal has it; the ask never names the animal. A wrong tap boings, squishes the animal and says a true fact about it, then repeats the clue; two misses wiggle the right cover. How-to card has a level-9 step; the `originals` suite now plays level 9 and expects 10 history entries.
+
 ### Animal Snack level 6 Who says moo? (dive slice 5, 2026-11-14)
 
 [PR #1687](https://github.com/rjdunlap/neo/pull/1687), branch `claude/animal-snack-who-says-moo`, [dive slice 5](../deep-dives/animal-snack.md#build-slices-in-order). Opens the pre-K window: `prek` joins `bands` and `LEVELS.prek` is 5–6 (the decided window is 5–8). Level 6 (`sound` mode) asks four questions of three animals and three snacks; an animal sound plays (the bubble replays it), and she drags that animal its own snack. The animal is judged first: another animal answers in its own voice, and the right animal with another food says `snack.notmine`, both misses; the second miss glows the animal and the fourth its snack. The same animal never comes twice running. Lines `snack.givesound` and `snack.notmine`; `fingerdemo` level 6 and `WOODS_ONLY=snack` at 6 passed. The next Animal Snack line is slice 4, More animals; level 7 *Who eats it too?* waits on it.
