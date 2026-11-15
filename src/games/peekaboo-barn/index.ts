@@ -538,7 +538,15 @@ class PeekabooBarn implements Game {
     if (this.finished) return;
     this.idle += dt;
     const clue = this.clue;
-    if (clue?.kind === 'feeling' && clue.feeling === 'sing' && this.singIn > 0) {
+    // The singer's hop waits for quiet: not over the ask, a miss line or the last find's line.
+    if (
+      clue?.kind === 'feeling' &&
+      clue.feeling === 'sing' &&
+      this.singIn > 0 &&
+      !this.busy &&
+      !this.unasked &&
+      this.asking === 0
+    ) {
       this.singIn -= dt;
       const singer = this.spots.find((s) => s.animal === this.target && s.pose === 'out');
       if (this.singIn <= 0 && singer) {
