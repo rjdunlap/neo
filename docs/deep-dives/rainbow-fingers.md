@@ -180,7 +180,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 8. **A journal source** (decision 7). Tier: typecheck and unit tests (the journal tests check each line against `RECIPES`).
 9. **Level 8, Finish the color wheel** (Built 2026-11-14, [build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-level-8-finish-the-color-wheel-dive-slice-9-2026-11-14).) New-levels tier: rule tests, one browser play of level 8, `fingerdemo` at it, one portrait screenshot.
 10. **Level 9, Make it pink.** (Built 2026-11-14, [build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-level-9-make-it-pink-dive-slice-10-2026-11-14).) Same tier.
-11. **Level 10, Brown from all three.** Same tier.
+11. **Level 10, Brown from all three.** (Claimed 2026-11-15, branch `claude/rainbow-fingers-brown`.) Same tier.
 12. **Level 11, Mix it from memory.** Same tier.
 13. **Level 12, Match the sample** (define first, decision 10). Same tier, after the color model is written and tested.
 14. **The between-levels entries** (they wait on decision 2; *Two pots* first).
