@@ -10,7 +10,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 9,
       to: 9,
-      text: 'The same capital three times: a solid trail, then dots, then only the start ring. Three dots under the letter show the try.',
+      text: 'The same capital three times: a solid trail, then dots, then only the start ring. The three dots at the top fill in, one per try.',
     },
   ],
   finish: [
