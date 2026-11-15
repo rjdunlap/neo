@@ -441,11 +441,15 @@ function decor(thing: Thing): Graphics {
           .stroke({ ...line, width: 4 });
       break;
     case 'pig':
-      // Two ears, an eye, nostrils, four stubby legs and a curly tail.
-      g.poly([30, -46, 38, -84, 58, -54])
-        .poly([64, -54, 82, -86, 90, -48])
+      // Two short ears flopped forward, an eye, nostrils, four stubby legs and a curly tail.
+      g.moveTo(30, -48)
+        .quadraticCurveTo(30, -76, 58, -62)
+        .closePath()
+        .moveTo(66, -54)
+        .quadraticCurveTo(76, -82, 94, -54)
+        .closePath()
         .fill(swatch.pink.line)
-        .stroke(line);
+        .stroke({ ...line, width: 4 });
       g.circle(66, -18, 7).fill(ink);
       g.circle(94, 4, 5).circle(108, 4, 5).fill(swatch.pink.line);
       for (const lx of [-68, -40, 4, 28]) g.roundRect(lx - 9, 82, 18, 26, 6);
@@ -487,7 +491,7 @@ function decor(thing: Thing): Graphics {
         .stroke({ ...line, width: 3 });
       break;
     case 'tulip':
-      // A green stem and one leaf below the petals, and the line between the front petals.
+      // A green stem and one leaf below the petals, and the lines between the three front petals.
       g.moveTo(0, 42)
         .lineTo(0, 124)
         .stroke({ ...line, color: swatch.green.line, width: 9 });
@@ -498,6 +502,10 @@ function decor(thing: Thing): Graphics {
         .stroke({ ...line, width: 4 });
       g.moveTo(0, -40)
         .quadraticCurveTo(-8, 0, 0, 36)
+        .moveTo(-24, -54)
+        .quadraticCurveTo(-30, 0, -4, 36)
+        .moveTo(24, -54)
+        .quadraticCurveTo(30, 0, 4, 36)
         .stroke({ ...line, width: 4 });
       break;
     case 'basketball':
