@@ -206,10 +206,10 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
     const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16,
     ];
     for (const level of peekLevels.filter(
-      (n) => ((n >= 1 && n <= 11) || n === 16) && (!only || only === 'peekaboo'),
+      (n) => ((n >= 1 && n <= 14) || n === 16) && (!only || only === 'peekaboo'),
     )) {
       await launch('peekaboo-barn', level);
       if (level === 1)
@@ -309,6 +309,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         };
         for (let q = 0; q < g.plan.goal; q++) {
           await ready();
+          if (g.plan.mode === 'swap') {
+            // Switcheroo: the asked friend's house moved, and every house rests at its place, left to right.
+            const right = g.spots.find((s) => s.animal === g.target);
+            if (g.startOrder.indexOf(right) === g.spots.indexOf(right))
+              throw new Error('Switcheroo: the house did not move');
+            if (g.swapping || g.spots.some((s, i) => Math.abs(s.x - g.slots[i].x) > 1 || s.alpha < 1))
+              throw new Error('Switcheroo: a house is not at rest in its place');
+          }
           if (q === 0) {
             const wrong = g.spots.find((s) => s.animal !== g.target);
             await tapSpot(wrong);

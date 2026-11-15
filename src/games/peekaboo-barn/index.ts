@@ -33,6 +33,10 @@ import {
   dealTops,
   factAbout,
   PARTS,
+  dealSwaps,
+  SWAP_SECONDS,
+  SLOW_SWAP_SECONDS,
+  type Swap,
   type Animal,
   type Clue,
   type Feeling,
@@ -50,6 +54,8 @@ const CRITTER_SCALE = 0.55;
 /** Where a critter's feet sit, relative to the bottom of its cover. The cover's top is at -150. */
 // `top` (levels 10–11) shows only the top of the head over the cover: ears, horns or a tuft, never the face.
 const POSE = { hidden: 90, top: -48, peek: -82, out: -145 };
+/** How high the front house lifts as two trade places: low enough that its grass strip never shows a bottom edge. */
+const SWAP_LIFT = 50;
 type Pose = keyof typeof POSE;
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -408,7 +414,8 @@ class PeekabooBarn implements Game {
   private readonly setting: SceneId;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
-  private readonly spots: Spot[];
+  /** The places left to right; Switcheroo reorders them as houses trade places. */
+  private spots: Spot[];
   private view: View;
   private done = 0;
   private misses = 0;
@@ -432,6 +439,13 @@ class PeekabooBarn implements Game {
   /** Seconds to the singing clue animal's next little hop, so "singing" shows on a small phone screen too. */
   private singIn = 0;
   private readonly input = new Container();
+  /** Each place's resting position, left to right, from the last `resize`. */
+  private slots: { x: number; y: number }[] = [];
+  /** Levels 12–14: the houses trading places now (`t` runs 0 to 1), drawn from `slots` in `update` so a resize mid-swap holds. */
+  private swapping: { a: Spot; b: Spot; from: number; to: number; t: number } | null = null;
+  /** This question's houses before the swaps, and the swaps, for the hint's slow replay. */
+  private startOrder: Spot[] = [];
+  private swapList: Swap[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -519,21 +533,35 @@ class PeekabooBarn implements Game {
     const scale = this.plan.door ? 1.5 : this.plan.spots === 4 ? 0.82 : 1;
     const left = 150 + 130 * scale;
     const right = v.w - 30 - 130 * scale;
-    this.spots.forEach((s, i) => {
-      s.scale.set(scale);
-      s.position.set(
-        this.spots.length === 1 ? cx : left + (i * (right - left)) / (this.spots.length - 1),
-        v.h - 40,
-      );
-    });
+    this.slots = this.spots.map((_, i) => ({
+      x: this.spots.length === 1 ? cx : left + (i * (right - left)) / (this.spots.length - 1),
+      y: v.h - 40,
+    }));
+    this.spots.forEach((s) => s.scale.set(scale));
+    this.place();
     this.input.hitArea = this.plan.door
       ? new Rectangle(0, 0, v.w, v.h)
       : new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
     this.drawBarn(cx, this.backdrop.groundY + 30);
   }
 
+  /** Every house at its place; the pair trading places rides its arc between theirs. */
+  private place() {
+    this.spots.forEach((s, i) => s.position.set(this.slots[i].x, this.slots[i].y));
+    const m = this.swapping;
+    if (!m) return;
+    const from = this.slots[m.from];
+    const to = this.slots[m.to];
+    const t = ease.inOutSine(m.t);
+    // The front house lifts in a low arc, the back one slides along the ground behind it: they never pass through.
+    const lift = Math.sin(Math.PI * t) * SWAP_LIFT * m.a.scale.x;
+    m.a.position.set(from.x + (to.x - from.x) * t, from.y - lift);
+    m.b.position.set(to.x + (from.x - to.x) * t, to.y);
+  }
+
   update(dt: number) {
     if (this.finished) return;
+    if (this.swapping) this.place();
     this.idle += dt;
     const clue = this.clue;
     // The singer's hop waits for quiet: not over the ask, a miss line or the last find's line.
@@ -678,6 +706,8 @@ class PeekabooBarn implements Game {
         right.hint = true;
         right.wiggle();
         if (this.plan.mode === 'top') void this.showFace(right);
+        if (this.plan.mode === 'swap') await this.replaySwaps(right);
+        if (this.finished) return;
       }
     }
     this.busy = false;
@@ -776,7 +806,8 @@ class PeekabooBarn implements Game {
     } else {
       this.dealAnimals();
       const present = this.spots.map((s) => s.animal);
-      this.target = pickTarget(this.ctx.rng, present, this.target);
+      // Switcheroo picks its friend once the swaps are dealt, from those whose house will move.
+      if (this.plan.mode !== 'swap') this.target = pickTarget(this.ctx.rng, present, this.target);
     }
     if (this.plan.mode === 'find' || this.plan.mode === 'top') {
       // Everyone peeks over the top (at levels 10–11 only the tops of their heads), so there's something to look at.
@@ -785,7 +816,7 @@ class PeekabooBarn implements Game {
         void s.go(pose === 'top' ? 'top' : 'peek');
         await this.ctx.tw.wait(0.15);
       }
-    } else if (this.plan.mode === 'remember') {
+    } else if (this.plan.mode === 'remember' || this.plan.mode === 'swap') {
       // Show and tell, then everyone hides. The show is a hold she watches, and its own line would cut the find's, so
       // it waits for the find's line (as far-lights' level 7 does).
       if (after) await after;
@@ -799,6 +830,23 @@ class PeekabooBarn implements Game {
       }
       await this.ctx.tw.wait(1.4);
       await Promise.all(this.spots.map((s) => s.go('hidden')));
+      if (this.finished) return;
+      if (this.plan.mode === 'swap') {
+        // Switcheroo: the asked-for friend's house always ends somewhere new.
+        const d = dealSwaps(
+          this.ctx.rng,
+          this.spots.map((s) => s.animal),
+          this.plan.swaps ?? 1,
+          this.target,
+        );
+        this.target = d.answer;
+        this.startOrder = [...this.spots];
+        this.swapList = d.swaps;
+        await this.ctx.tw.wait(0.4);
+        if (this.finished) return;
+        await this.runSwaps(SWAP_SECONDS);
+        if (this.finished) return;
+      }
     }
     await this.ctx.tw.wait(0.3);
     if (!after) {
@@ -811,6 +859,50 @@ class PeekabooBarn implements Game {
     this.busy = false;
     await after;
     if (this.done === at) this.askNow();
+  }
+
+  /** Levels 12–14: the houses trade places one pair at a time, slowly; nothing can be tapped while they move. */
+  private async runSwaps(seconds: number) {
+    void this.ctx.say('peek.switch');
+    for (const [from, to] of this.swapList) {
+      if (this.finished) return;
+      const a = this.spots[from];
+      const b = this.spots[to];
+      // The lifted house passes in front of every other, the sliding one behind them all; input stays on top.
+      const stage = this.ctx.stage;
+      stage.setChildIndex(a, stage.getChildIndex(this.input) - 1);
+      stage.setChildIndex(b, stage.getChildIndex(this.barn) + 1);
+      const m = { a, b, from, to, t: 0 };
+      this.swapping = m;
+      sfx.whoosh();
+      await this.ctx.tw.to(m, { t: 1 }, { duration: seconds, ease: ease.linear });
+      if (this.finished) return;
+      this.spots[from] = b;
+      this.spots[to] = a;
+      this.swapping = null;
+      this.place();
+      await this.ctx.tw.wait(0.35);
+    }
+  }
+
+  /** The hint at levels 12–14: the houses fade back to where they began, the friend shows itself, and the swaps play slower. */
+  private async replaySwaps(right: Spot) {
+    const all = [...this.spots];
+    await Promise.all(all.map((s) => this.ctx.tw.to(s, { alpha: 0 }, { duration: 0.3 })));
+    if (this.finished) return;
+    this.spots = [...this.startOrder];
+    this.place();
+    await Promise.all(all.map((s) => this.ctx.tw.to(s, { alpha: 1 }, { duration: 0.3 })));
+    if (this.finished) return;
+    void right.go('out');
+    this.say(right.animal);
+    await this.ctx.say('peek.watch', { animal: right.animal });
+    if (this.finished) return;
+    await right.go('hidden');
+    if (this.finished) return;
+    await this.runSwaps(SLOW_SWAP_SECONDS);
+    if (this.finished) return;
+    void this.ask();
   }
 
   /** Everybody out for a bow. */
@@ -991,6 +1083,8 @@ export const peekabooBarn: GameModule = {
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
     if (p.mode === 'top')
       return `"Whose ears?" Find the one asked for from the top of its head, ${p.spots} animals`;
+    if (p.mode === 'swap')
+      return `"Switcheroo!" Follow a house as ${p.swaps === 1 ? 'two trade' : `houses trade ${p.swaps} times`} places, ${p.spots} houses`;
     if (p.mode === 'clue')
       return `"Who is sleepy?" "Who has spots?" Find the one a clue describes, ${p.spots} animals`;
     return `Remember who hid where, ${p.spots} hiding places`;

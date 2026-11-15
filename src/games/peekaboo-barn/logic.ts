@@ -37,13 +37,16 @@ export interface PeekPlan {
    * free: tap to reveal. find: animals peek, "where's the cow?". remember: they show, hide, then the question. clue: they
    * stand up over their places and a feeling or a part word picks one ("Who is sleepy?", "Find the one with spots!").
    * top: only the top of each head shows over the cover (ears, horns, a tuft), and she finds the one asked for by it.
+   * swap: they show and hide as in remember, then houses trade places in slow arcs, and she follows the one asked for.
    */
-  mode: 'free' | 'find' | 'remember' | 'clue' | 'top';
+  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap';
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
   /** One door: a single big house, and a touch anywhere opens it. */
   door?: boolean;
+  /** Switcheroo: how many times two houses trade places before the ask. */
+  swaps?: number;
 }
 
 /** The lap entry below level 1; its saved ID follows the original eight (see `order` in the band table). */
@@ -62,6 +65,9 @@ export const PLANS: PeekPlan[] = [
   { mode: 'clue', spots: 3, goal: 5 },
   { mode: 'top', spots: 3, goal: 5 },
   { mode: 'top', spots: 4, goal: 6 },
+  { mode: 'swap', spots: 3, goal: 5, swaps: 1 },
+  { mode: 'swap', spots: 3, goal: 5, swaps: 2 },
+  { mode: 'swap', spots: 4, goal: 5, swaps: 3 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -69,8 +75,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 16, order: [16, 1, 2] },
   toddler: { min: 1, max: 5 },
   preschool: { min: 4, max: 8 },
-  prek: { min: 6, max: 11 },
-  school: { min: 9, max: 11 },
+  // Level 14 (four houses, three swaps) is school only; whether pre-K's top reaches it is the developer's call.
+  prek: { min: 6, max: 13 },
+  school: { min: 9, max: 14 },
 };
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
@@ -321,4 +328,65 @@ export function dealTops(rng: Rng, spots: number, pool: readonly Animal[]): Anim
   }
   // Unreachable with today's animals, whose tops all differ.
   return deal(rng, spots, pool);
+}
+
+/** Switcheroo: never more swaps than this, and never faster than this (seconds per swap; the dive's floor is 0.9). */
+export const MAX_SWAPS = 3;
+export const SWAP_SECONDS = 1.1;
+/** The hint replays the swaps slower still. */
+export const SLOW_SWAP_SECONDS = 1.6;
+
+/** Two houses (place indices, left to right) that trade places. */
+export type Swap = readonly [number, number];
+
+/** Who stands where after the swaps: `order[i]` is what was in place i, moved with its house. */
+export function applySwaps<T>(order: readonly T[], swaps: readonly Swap[]): T[] {
+  const out = [...order];
+  for (const [a, b] of swaps) [out[a], out[b]] = [out[b], out[a]];
+  return out;
+}
+
+export interface SwapDeal {
+  swaps: Swap[];
+  /** The animal asked for: its house ends somewhere other than where it started. */
+  answer: Animal;
+  /** The place its house ends in. */
+  finalIndex: number;
+}
+
+/**
+ * One Switcheroo question over `animals` (left to right): `count` swaps of two different houses, never the same pair
+ * twice running (which would undo itself and look broken), and an answer whose house ends somewhere new, never the last
+ * question's answer when another will do. Redealt until such an answer exists.
+ */
+export function dealSwaps(
+  rng: Rng,
+  animals: readonly Animal[],
+  count: number,
+  last: Animal | null,
+): SwapDeal {
+  const n = animals.length;
+  const swaps = Math.min(MAX_SWAPS, Math.max(1, count));
+  for (let tries = 0; tries < 200; tries++) {
+    const list: Swap[] = [];
+    while (list.length < swaps) {
+      const a = rng.int(0, n - 1);
+      let b = rng.int(0, n - 2);
+      if (b >= a) b++;
+      const pair: Swap = a < b ? [a, b] : [b, a];
+      const prev = list[list.length - 1];
+      if (prev && prev[0] === pair[0] && prev[1] === pair[1]) continue;
+      list.push(pair);
+    }
+    const after = applySwaps(animals, list);
+    const moved = animals.filter((a, i) => after[i] !== a);
+    const fresh = moved.filter((a) => a !== last);
+    const pool = fresh.length ? fresh : moved;
+    if (!pool.length) continue;
+    const answer = rng.pick(pool);
+    return { swaps: list, answer, finalIndex: after.indexOf(answer) };
+  }
+  // Unreachable: any single swap moves two animals.
+  const list: Swap[] = [[0, 1]];
+  return { swaps: list, answer: animals[0], finalIndex: 1 };
 }

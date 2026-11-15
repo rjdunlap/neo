@@ -38,6 +38,11 @@ import {
   NEW_ANIMALS,
   NEWCOMER_LEVEL,
   VOICES,
+  applySwaps,
+  dealSwaps,
+  MAX_SWAPS,
+  SWAP_SECONDS,
+  SLOW_SWAP_SECONDS,
   type Animal,
   type Feeling,
 } from './logic';
@@ -352,13 +357,10 @@ describe('Peekaboo Barn level 9, Who has…?', () => {
 });
 
 describe('Peekaboo Barn levels 10–11, Whose ears?', () => {
-  it('is three tops and five questions, then four tops and six, widening pre-K and school without moving a saved level', () => {
+  it('is three tops and five questions, then four tops and six, without moving a saved level', () => {
     expect(planFor(10)).toEqual({ mode: 'top', spots: 3, goal: 5 });
     expect(planFor(11)).toEqual({ mode: 'top', spots: 4, goal: 6 });
-    expect(PLANS).toHaveLength(11);
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
-    expect(LEVELS.prek).toEqual({ min: 6, max: 11 });
-    expect(LEVELS.school).toEqual({ min: 9, max: 11 });
     expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
     expect(LEVELS.lap).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
   });
@@ -485,5 +487,86 @@ describe('Peekaboo Barn, more animals', () => {
       'whiskers',
       'round',
     ]);
+  });
+});
+
+describe('Peekaboo Barn levels 12–14, Switcheroo', () => {
+  it('is one swap of three houses, then two, then three swaps of four, widening pre-K to 13 and school to 14', () => {
+    expect(planFor(12)).toEqual({ mode: 'swap', spots: 3, goal: 5, swaps: 1 });
+    expect(planFor(13)).toEqual({ mode: 'swap', spots: 3, goal: 5, swaps: 2 });
+    expect(planFor(14)).toEqual({ mode: 'swap', spots: 4, goal: 5, swaps: 3 });
+    expect(PLANS).toHaveLength(14);
+    expect(LEVELS.prek).toEqual({ min: 6, max: 13 });
+    expect(LEVELS.school).toEqual({ min: 9, max: 14 });
+    expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
+    expect(LEVELS.toddler).toEqual({ min: 1, max: 5 });
+    expect(LEVELS.lap).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
+    expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
+    // Never more than four places, nothing faster than the dive's 0.9 s, and the hint is slower still.
+    for (const level of [12, 13, 14]) {
+      expect(planFor(level).spots).toBeLessThanOrEqual(4);
+      expect(planFor(level).swaps).toBeLessThanOrEqual(MAX_SWAPS);
+    }
+    expect(SWAP_SECONDS).toBeGreaterThanOrEqual(0.9);
+    expect(SLOW_SWAP_SECONDS).toBeGreaterThan(SWAP_SECONDS);
+  });
+
+  it('moves houses by a permutation, so who is behind each house is kept', () => {
+    expect(applySwaps(['cow', 'pig', 'cat'], [[0, 1]])).toEqual(['pig', 'cow', 'cat']);
+    expect(
+      applySwaps(
+        ['cow', 'pig', 'cat', 'dog'],
+        [
+          [0, 3],
+          [1, 2],
+        ],
+      ),
+    ).toEqual(['dog', 'cat', 'pig', 'cow']);
+  });
+
+  it('deals swaps of two different houses, never the same pair twice running, whose answer ends somewhere new', () => {
+    for (const level of [12, 13, 14]) {
+      const plan = planFor(level);
+      let last: Animal | null = null;
+      for (let seed = 1; seed <= 400; seed++) {
+        const rng = new Rng(seed);
+        const animals = deal(rng, plan.spots, poolFor(level));
+        const d = dealSwaps(rng, animals, plan.swaps!, last);
+        expect(d.swaps).toHaveLength(plan.swaps!);
+        d.swaps.forEach(([a, b], i) => {
+          expect(a).not.toBe(b);
+          for (const x of [a, b]) expect(x >= 0 && x < plan.spots).toBe(true);
+          const prev = d.swaps[i - 1];
+          if (prev) expect([a, b]).not.toEqual([...prev]);
+        });
+        const after = applySwaps(animals, d.swaps);
+        expect([...after].sort()).toEqual([...animals].sort());
+        expect(animals).toContain(d.answer);
+        expect(after[d.finalIndex]).toBe(d.answer);
+        expect(after.filter((a) => a === d.answer)).toHaveLength(1);
+        // Its house really moved, so following the swap is the whole point.
+        expect(animals.indexOf(d.answer)).not.toBe(d.finalIndex);
+        // A different friend from last time, whenever another house moved too (one swap always moves two).
+        expect(d.answer).not.toBe(last);
+        last = d.answer;
+      }
+    }
+  });
+
+  it('is deterministic, and the ghost finger taps the house the answer ends behind', () => {
+    const plan = planFor(13);
+    const animals = deal(new Rng(9), plan.spots, poolFor(13));
+    const d = dealSwaps(new Rng(9), animals, 2, null);
+    expect(dealSwaps(new Rng(9), animals, 2, null)).toEqual(d);
+    const after = applySwaps(animals, d.swaps);
+    const poses = after.map(() => 'hidden');
+    expect(spotToTap(plan, poses, after, d.answer, -1)).toBe(d.finalIndex);
+    // The hint replays the same swaps from the start, so it ends in the same place.
+    expect(applySwaps(animals, d.swaps)).toEqual(after);
+  });
+
+  it('says "Switch!" in the script', () => {
+    expect(SCRIPT['peek.switch'].length).toBeGreaterThan(0);
+    expect(SCRIPT['peek.watch'].every((l) => l.includes('{animal}'))).toBe(true);
   });
 });
