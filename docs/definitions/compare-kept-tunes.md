@@ -22,6 +22,8 @@ The two grids read the current profile's `store.creations.tune.current` and `.pr
 
 ## Build boundary
 
+Build claim: `codex/w2-tune-playback` covers the two-slot comparison, interruptible playback and its one-slot fallback. Expected files are `PlayScene`, its panel and layout, voice lines, and the filtered Home tests. The existing tune format and Song Maker Keep behavior are dependencies.
+
 Keep the panel within root `PlayScene`. Use `TunePlaque` and `singTune` from `src/ui/creation-art.ts` and touch targets laid out from `View`. Use scene-owned waits and a playback identity checked between beats and before cleanup. Switching grids or closing the panel invalidates the old playback immediately. A note already sounding can decay naturally. Old playback may neither emit another beat nor clear the new highlight. Leave, scene destruction and player changes release the panel and its playback. Rotate with the panel open to relayout it without starting another tune.
 
 This slice covers listening in creature play. Editing a saved tune and resuming a project would each need their own definition.
