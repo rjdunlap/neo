@@ -1,11 +1,11 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { letterPicture } from '../../art/letter-pictures';
-import { ink, swatch, wood } from '../../art/palette';
+import { ink, swatch, wood, cream } from '../../art/palette';
 import { puffs } from '../../art/shapes';
 import { typingPicture } from '../../art/word-pictures';
 import { picture as rhymePicture } from '../rhyme-time/pictures';
-import type { PictureWord, TeamWord } from './logic';
+import type { FourWord, PictureWord, TeamWord } from './logic';
 
 /**
  * A picture for every word a building level asks for, about 260 units across and centered near (0, 0); the scene shows
@@ -44,7 +44,9 @@ function drawn(paint: (g: Graphics) => void): Container {
   return c;
 }
 
-const DRAW: Record<PictureWord | TeamWord, () => Container> = {
+export type WordPicture = PictureWord | TeamWord | FourWord;
+
+const DRAW: Record<WordPicture, () => Container> = {
   cat: () => alone(critter('cat')),
   dog: () => alone(critter('dog')),
   pig: () => alone(critter('pig')),
@@ -595,9 +597,147 @@ const DRAW: Record<PictureWord | TeamWord, () => Container> = {
       g.ellipse(0, 6, 18, 74).fill(0x8c7b6b).stroke(line(wood.line, 5));
       g.circle(-7, -52, 5).circle(7, -52, 5).fill(ink);
     }),
+  nest: () => letterPicture('N'),
+  frog: () => rhyme('frog'),
+  drum: () =>
+    drawn((g) => {
+      g.roundRect(-96, -25, 192, 122, 28).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.poly([-82, 0, -48, 78, 0, 0, 48, 78, 82, 0], false).stroke(line(swatch.yellow.fill, 10));
+      g.ellipse(0, -26, 96, 34).fill(cream).stroke(line(swatch.red.line));
+      g.moveTo(-104, -105).lineTo(16, -42).moveTo(100, -105).lineTo(-16, -42).stroke(line(wood.line, 12));
+      g.circle(16, -42, 12).circle(-16, -42, 12).fill(wood.light).stroke(line(wood.line, 4));
+    }),
+  flag: () =>
+    drawn((g) => {
+      g.moveTo(-80, 107).lineTo(-80, -97).stroke(line(wood.line, 14));
+      g.moveTo(-74, -86)
+        .bezierCurveTo(-5, -127, 47, -50, 114, -84)
+        .lineTo(114, 7)
+        .bezierCurveTo(54, 38, -10, -32, -74, 5)
+        .closePath()
+        .fill(swatch.teal.fill)
+        .stroke(line(swatch.teal.line));
+      g.circle(21, -51, 22).fill(swatch.yellow.light);
+      g.circle(-80, -105, 12).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
+    }),
+  crab: () =>
+    drawn((g) => {
+      for (const side of [-1, 1]) {
+        for (let i = 0; i < 3; i++)
+          g.moveTo(side * (44 + i * 10), 49 - i * 12)
+            .lineTo(side * (75 + i * 19), 64 - i * 11)
+            .lineTo(side * (83 + i * 19), 82 - i * 11)
+            .stroke(line(swatch.red.line, 11));
+        g.moveTo(side * 58, 16)
+          .quadraticCurveTo(side * 101, 12, side * 96, -44)
+          .stroke(line(swatch.red.line, 13));
+        g.moveTo(side * 89, -44)
+          .quadraticCurveTo(side * 47, -63, side * 77, -104)
+          .lineTo(side * 94, -76)
+          .lineTo(side * 117, -103)
+          .quadraticCurveTo(side * 149, -59, side * 104, -43)
+          .closePath()
+          .fill(swatch.red.fill)
+          .stroke(line(swatch.red.line));
+        g.moveTo(side * 26, 8)
+          .lineTo(side * 29, -30)
+          .stroke(line(swatch.red.line, 10));
+      }
+      g.ellipse(0, 24, 80, 48).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.circle(-29, -31, 15).circle(29, -31, 15).fill(0xffffff).stroke(line(swatch.red.line, 4));
+      g.circle(-27, -31, 6).circle(27, -31, 6).fill(ink);
+    }),
+  lamp: () =>
+    drawn((g) => {
+      g.ellipse(0, 97, 70, 16).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+      g.moveTo(0, 95).lineTo(0, -10).stroke(line(swatch.teal.line, 14));
+      g.moveTo(52, 11).lineTo(52, 58).stroke(line(wood.line, 4));
+      g.circle(52, 61, 6).fill(wood.line);
+      g.poly([-48, -95, 48, -95, 93, 16, -93, 16]).fill(swatch.yellow.light).stroke(line(swatch.orange.line));
+      g.ellipse(0, 16, 93, 15).fill(swatch.yellow.fill).stroke(line(swatch.orange.line, 5));
+    }),
+  milk: () =>
+    drawn((g) => {
+      g.poly([42, -44, 78, -63, 78, 83, 42, 105]).fill(swatch.blue.light).stroke(line(swatch.blue.line));
+      g.poly([-65, -44, 42, -44, 42, 105, -65, 105]).fill(0xffffff).stroke(line(swatch.blue.line));
+      g.poly([-65, -44, -38, -89, 52, -89, 78, -63, 42, -44])
+        .fill(swatch.blue.fill)
+        .stroke(line(swatch.blue.line));
+      g.moveTo(-38, -89).lineTo(-38, -106).lineTo(52, -106).lineTo(52, -89).stroke(line(swatch.blue.line, 8));
+      // A milk drop on the carton.
+      g.moveTo(-11, -16)
+        .quadraticCurveTo(-64, 56, -11, 67)
+        .quadraticCurveTo(42, 56, -11, -16)
+        .fill(swatch.blue.light)
+        .stroke(line(swatch.blue.line, 5));
+    }),
+  belt: () =>
+    drawn((g) => {
+      g.ellipse(0, -12, 121, 49).fill(wood.light).stroke(line(wood.line));
+      g.ellipse(0, -12, 99, 28).fill(cream).stroke(line(wood.line, 4));
+      g.moveTo(-121, -12)
+        .bezierCurveTo(-122, 53, 122, 53, 121, -12)
+        .lineTo(121, 31)
+        .bezierCurveTo(119, 95, -119, 95, -121, 31)
+        .closePath()
+        .fill(wood.light)
+        .stroke(line(wood.line));
+      g.roundRect(-60, 20, 76, 57, 12).stroke(line(swatch.yellow.line, 11));
+      g.moveTo(-54, 48).lineTo(-9, 48).stroke(line(swatch.yellow.line, 7));
+      g.circle(35, 48, 5).circle(61, 43, 5).circle(86, 36, 5).fill(wood.line);
+    }),
+  plum: () =>
+    drawn((g) => {
+      g.moveTo(0, -72).quadraticCurveTo(-3, -103, 23, -116).stroke(line(wood.line, 10));
+      g.moveTo(11, -93)
+        .quadraticCurveTo(50, -134, 89, -108)
+        .quadraticCurveTo(50, -72, 11, -93)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line, 5));
+      g.moveTo(0, -71)
+        .bezierCurveTo(66, -112, 111, -30, 90, 41)
+        .bezierCurveTo(61, 138, -62, 137, -89, 42)
+        .bezierCurveTo(-113, -42, -56, -106, 0, -71)
+        .fill(swatch.purple.fill)
+        .stroke(line(swatch.purple.line));
+      g.ellipse(-45, -27, 15, 26).fill(swatch.purple.light);
+      g.moveTo(13, -65).quadraticCurveTo(65, 4, 39, 74).stroke(line(swatch.purple.line, 4));
+    }),
+  hand: () =>
+    drawn((g) => {
+      g.moveTo(-38, 105)
+        .lineTo(-38, 77)
+        .quadraticCurveTo(-55, 67, -66, 43)
+        .lineTo(-94, 3)
+        .quadraticCurveTo(-107, -19, -89, -26)
+        .quadraticCurveTo(-78, -31, -67, -16)
+        .lineTo(-50, 2)
+        .lineTo(-50, -76)
+        .quadraticCurveTo(-50, -97, -33, -97)
+        .quadraticCurveTo(-16, -97, -16, -76)
+        .lineTo(-16, -45)
+        .lineTo(-16, -98)
+        .quadraticCurveTo(-16, -117, 0, -117)
+        .quadraticCurveTo(17, -117, 17, -98)
+        .lineTo(17, -48)
+        .lineTo(17, -84)
+        .quadraticCurveTo(17, -103, 33, -103)
+        .quadraticCurveTo(49, -103, 49, -84)
+        .lineTo(49, -40)
+        .lineTo(49, -62)
+        .quadraticCurveTo(49, -79, 64, -79)
+        .quadraticCurveTo(80, -79, 80, -62)
+        .lineTo(80, 29)
+        .quadraticCurveTo(80, 63, 56, 79)
+        .lineTo(56, 105)
+        .closePath()
+        .fill(swatch.orange.light)
+        .stroke(line(swatch.orange.line));
+      g.moveTo(-34, 33).quadraticCurveTo(-8, 8, 23, 23).stroke(line(swatch.orange.line, 4));
+    }),
 };
 
 /** The picture for a word a building level asks for. */
-export function wordPicture(word: PictureWord | TeamWord): Container {
+export function wordPicture(word: WordPicture): Container {
   return DRAW[word]();
 }
