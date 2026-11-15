@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| school | 1–6 |
+| school | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 4 | A market week: cups cost shells to make, so read the profit |
 | 5 | Two lemon boats: tap the boat that sells lemons cheaper, then run the stand |
 | 6 | Best buy: the boats differ in lemons and shells, so find the shells for every 2 lemons |
+| 7 | A typical sunny day: level the three sunny crowds into even towers, then make cups for one more sunny day |
 
 <!-- end generated -->
 

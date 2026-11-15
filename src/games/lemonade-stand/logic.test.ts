@@ -19,6 +19,7 @@ import {
   LEVELS,
   makeWeek,
   MIN_PURSE,
+  moveFriend,
   moreLemonsWorks,
   PER_TWO,
   PLANS,
@@ -31,7 +32,14 @@ import {
   SAME_OFFERS,
   sellDay,
   settle,
+  shortest,
   START_PURSE,
+  tallerMove,
+  tallest,
+  towerMoves,
+  towerRows,
+  towersEven,
+  typicalCrowd,
   WEATHERS,
   type Day,
   type Row,
@@ -70,14 +78,14 @@ const randomChooser = (plan: StandPlan, rng: Rng) => (d: Day, _i: number, purse:
 
 describe('Lemonade Stand plans', () => {
   it('climbs from the weather alone to a week with a purse, and clamps the level', () => {
-    expect(PLANS.map((p) => p.days)).toEqual([3, 3, 4, 5, 4, 4]);
-    expect(PLANS.map((p) => p.events)).toEqual([false, true, true, true, true, true]);
-    expect(PLANS.map((p) => priceChoice(p))).toEqual([false, false, true, true, true, true]);
-    expect(PLANS.map((p) => p.purse)).toEqual([false, false, false, true, true, true]);
+    expect(PLANS.map((p) => p.days)).toEqual([3, 3, 4, 5, 4, 4, 5]);
+    expect(PLANS.map((p) => p.events)).toEqual([false, true, true, true, true, true, false]);
+    expect(PLANS.map((p) => priceChoice(p))).toEqual([false, false, true, true, true, true, false]);
+    expect(PLANS.map((p) => p.purse)).toEqual([false, false, false, true, true, true, false]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[5]);
+    expect(planFor(99)).toBe(PLANS[6]);
     expect(LEVELS.school?.max).toBe(PLANS.length);
-    expect(PLANS.map((p) => p.boats)).toEqual([undefined, undefined, undefined, undefined, 'same', 'rate']);
+    expect(PLANS.map((p) => p.boats)).toEqual([undefined, undefined, undefined, undefined, 'same', 'rate', undefined]);
     for (const p of PLANS) expect(p.name.length).toBeGreaterThan(10);
   });
 });
@@ -100,7 +108,8 @@ describe('Lemonade Stand forecasts', () => {
         ).toBeGreaterThanOrEqual(2);
         for (const d of week) {
           expect(d.noise).toBeGreaterThanOrEqual(0);
-          expect(d.noise).toBeLessThanOrEqual(2);
+          // Only the typical-day level widens the sunny noise, so its sunny crowds differ enough to level.
+          expect(d.noise).toBeLessThanOrEqual(d.weather === 'sunny' ? (plan.sunnyNoise ?? 2) : 2);
           expect(d.event === null || EVENTS.includes(d.event)).toBe(true);
           if (!plan.events) expect(d.event).toBeNull();
           // A rainy quiet day would leave almost nobody to sell to.
@@ -342,6 +351,12 @@ describe('Lemonade Stand help', () => {
             if (hotter) expect(now).toBeGreaterThan(then);
             else expect(now).toBeLessThan(then);
           }
+      } else if (h.kind === 'typical') {
+        // The typical crowd: the mean of the friends who came on the sunny days before the last.
+        expect(plan.typical).toBe(true);
+        const sunny = h.rows.map((i) => rows[i]);
+        expect(sunny.every((r) => r.weather === 'sunny')).toBe(true);
+        expect(h.vars.n).toBe(sunny.reduce((n, r) => n + r.wanted, 0) / sunny.length);
       } else if (h.kind === 'event') {
         expect(today.event).toBe(h.vars.event);
         const plain = demand({ ...today, event: null }, 1);
@@ -381,7 +396,7 @@ describe('Lemonade Stand help', () => {
           if (plan.purse) purse = settle(purse, row).purse;
         });
       }
-    expect([...kinds].sort()).toEqual(['event', 'good', 'left', 'other', 'out', 'price', 'weather']);
+    expect([...kinds].sort()).toEqual(['event', 'good', 'left', 'other', 'out', 'price', 'typical', 'weather']);
   });
 
   it('leads with what happened the last time it was the same weather', () => {
@@ -724,6 +739,93 @@ describe('Lemonade Stand level 6: best buy', () => {
       expect(helps(plan, week[0], [], false)).toEqual([
         { kind: 'boat', rows: [], vars: boatTalk(week[0].boats!) },
       ]);
+    }
+  });
+});
+
+describe('level 7, a typical sunny day', () => {
+  const plan = planFor(7);
+  const weeks = Array.from({ length: 300 }, (_, s) => makeWeek(plan, new Rng(7000 + s)));
+  const runWeek = (week: Day[]) => week.map((d, i) => sellDay(plan, d, i, forecastChoice(plan, d).made, 1));
+
+  it('is the last school level: five days at one price, no events, no purse, no boats', () => {
+    expect(LEVELS.school?.max).toBe(7);
+    expect(plan).toMatchObject({ days: 5, prices: [1], events: false, purse: false, typical: true });
+    expect(plan.boats).toBeUndefined();
+  });
+
+  it('holds three sunny days and one other in days 1 to 4, and a sunny day 5', () => {
+    for (const week of weeks) {
+      expect(week).toHaveLength(5);
+      expect(week.slice(0, 4).filter((d) => d.weather === 'sunny')).toHaveLength(3);
+      expect(week[4].weather).toBe('sunny');
+      for (const d of week) {
+        expect(d.event).toBeNull();
+        expect(d.boats).toBeUndefined();
+        expect(d.noise).toBeGreaterThanOrEqual(0);
+        expect(d.noise).toBeLessThanOrEqual(d.weather === 'sunny' ? 4 : 2);
+      }
+    }
+  });
+
+  it('gives unequal sunny towers with a whole typical crowd, at least two moves away, that a batch can serve', () => {
+    for (const week of weeks) {
+      const towers = towerRows(plan, runWeek(week)).map((r) => r.wanted);
+      expect(towers).toHaveLength(3);
+      expect(towersEven(towers)).toBe(false);
+      expect(Number.isInteger(typicalCrowd(towers))).toBe(true);
+      expect(towerMoves(towers)).toBeGreaterThanOrEqual(2);
+      expect(typicalCrowd(towers)).toBeLessThanOrEqual(BATCHES.at(-1)!);
+    }
+  });
+
+  it('builds the towers and the typical crowd from the friends who came, never the cups sold', () => {
+    for (const week of weeks.slice(0, 60)) {
+      // Small batches sell out, so sold understates the crowd while wanted does not.
+      const rows = week.map((d, i) => sellDay(plan, d, i, 4, 1));
+      const sunny = towerRows(plan, rows);
+      expect(sunny.map((r) => r.day)).toEqual(
+        week.flatMap((d, i) => (d.weather === 'sunny' && i < 4 ? [i] : [])),
+      );
+      const mean = sunny.reduce((n, r) => n + r.wanted, 0) / 3;
+      const help = helps(plan, week[4], rows.slice(0, 4))[0];
+      expect(help).toMatchObject({ kind: 'typical', vars: { n: mean } });
+      const found = insight(plan, rows);
+      expect(found.vars.n).toBe(mean);
+      expect(found.vars.came).toBe(rows[4].wanted);
+      expect(found.kind).toBe(rows[4].wanted === mean ? 'typical' : 'typical-near');
+      expect(sunny.some((r) => r.sold !== r.wanted)).toBe(true);
+    }
+  });
+
+  it('never calls a move from a taller tower to a shorter one a taller move, and levelling tallest to shortest finishes', () => {
+    expect(tallerMove([13, 11, 9], 1, 2)).toBe(false);
+    expect(tallerMove([13, 11, 9], 0, 1)).toBe(false);
+    expect(tallerMove([13, 11, 9], 2, 1)).toBe(true);
+    expect(tallerMove([12, 12, 9], 0, 1)).toBe(true);
+    for (const week of weeks) {
+      let towers = towerRows(plan, runWeek(week)).map((r) => r.wanted);
+      const moves = towerMoves(towers);
+      let n = 0;
+      while (!towersEven(towers)) {
+        const from = tallest(towers);
+        const to = shortest(towers);
+        expect(tallerMove(towers, from, to)).toBe(false);
+        towers = moveFriend(towers, from, to);
+        n++;
+      }
+      expect(n).toBe(moves);
+      expect(towers[0]).toBe(typicalCrowd(towerRows(plan, runWeek(week)).map((r) => r.wanted)));
+    }
+  });
+
+  it('leaves the weeks of levels 1 to 6 as they were', () => {
+    // The level-7 week is its own branch; the others draw exactly what they did.
+    for (let level = 1; level <= 6; level++) {
+      const p = planFor(level);
+      expect(p.typical).toBeUndefined();
+      const week = makeWeek(p, new Rng(42));
+      for (const d of week) expect(d.noise).toBeLessThanOrEqual(2);
     }
   });
 });
