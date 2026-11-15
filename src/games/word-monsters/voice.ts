@@ -14,6 +14,11 @@ export const VOICE = {
   'monster.repair': ['I tried to make {word}, but I spelled {built}. Tap the letter I should take out.'],
   'monster.repair.keep': ['{sound} is right for {word}. Look at the other letters.'],
   'monster.repair.replace': ['Put the right letter in to make {word}.'],
+  'monster.team': [
+    'Make {word}! Two letters can make one sound.',
+    'Say {word} slowly. One monster wears two letters!',
+  ],
+  'monster.team.half': ['That is just {sound}. Two letters make {team}.'],
   'monster.blend': ['{word}!'],
   'monster.iam': ["I'm {letter}! I say {sound}."],
   'monster.next': ['Next sound: {sound}.'],
@@ -45,4 +50,9 @@ export const VOICE = {
   'sound.x': ['ks'],
   'sound.y': ['yuh'],
   'sound.z': ['zzz'],
+  /** Level 13's letter teams: two letters, one sound. */
+  'sound.sh': ['shh'],
+  'sound.ch': ['chuh'],
+  'sound.th': ['thh'],
+  'sound.ck': ['kuh'],
 } satisfies Record<string, string[]>;

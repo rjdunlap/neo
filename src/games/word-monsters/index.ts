@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Circle, Container, Ellipse, Graphics, Rectangle } from 'pixi.js';
 import { Critter } from '../../art/critter';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
@@ -28,8 +28,11 @@ import {
   nextMonster,
   planFor,
   sounded,
+  soundOf,
   SOUNDS,
+  unitsOf,
   type PictureWord,
+  type TeamWord,
   type MonsterPlan,
   type Question,
 } from './logic';
@@ -41,10 +44,14 @@ const BODY_R = 62;
 const BIG_SCALE = 2.3;
 /** Level 9's kept pictures, small along the top. */
 const SHELF_SCALE = 0.3;
+/** Level 13: a team monster's body is this much wider on each side, two tummies' worth. */
+const TEAM_STRETCH = 30;
+/** Level 13: a team monster shrinks a little in its box so it stays clear of its neighbors (150 apart). */
+const TEAM_SLOT_SCALE = 0.78;
 
 const soundLine = (letter: string) => `sound.${letter}` as LineId;
 
-/** A round furry monster wearing its letter on its tummy. */
+/** A round furry monster wearing its letter on its tummy; a two-letter team (sh) is one wide monster with both. */
 class Monster extends Container {
   readonly body = new Container();
   readonly glow = new Graphics();
@@ -62,27 +69,36 @@ class Monster extends Container {
   ) {
     super();
     const fur = swatch[color];
-    const tufts: [number, number, number][] = [[0, 0, BODY_R]];
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2;
-      tufts.push([Math.cos(a) * BODY_R * 0.82, Math.sin(a) * BODY_R * 0.82, BODY_R * 0.3]);
+    // A team stretches sideways: two body puffs, a ring of tufts around both, a wide tummy.
+    const w = letter.length > 1 ? TEAM_STRETCH : 0;
+    const tufts: [number, number, number][] = w
+      ? [
+          [-w, 0, BODY_R],
+          [w, 0, BODY_R],
+        ]
+      : [[0, 0, BODY_R]];
+    const ring = w ? 14 : 10;
+    for (let i = 0; i < ring; i++) {
+      const a = (i / ring) * Math.PI * 2;
+      tufts.push([Math.cos(a) * (BODY_R * 0.82 + w), Math.sin(a) * BODY_R * 0.82, BODY_R * 0.3]);
     }
     const g = puffs(new Graphics(), tufts, fur.fill, fur.line, 6);
-    for (const side of [-1, 1]) g.ellipse(side * 26, BODY_R + 4, 16, 9).fill(fur.line);
-    g.circle(0, 12, 40).fill(cream);
+    for (const side of [-1, 1]) g.ellipse(side * (26 + w), BODY_R + 4, 16, 9).fill(fur.line);
+    if (w) g.ellipse(0, 12, 40 + w, 40).fill(cream);
+    else g.circle(0, 12, 40).fill(cream);
     for (const side of [-1, 1]) {
-      g.circle(side * 22, -42, 15)
+      g.circle(side * (22 + w / 2), -42, 15)
         .fill(0xffffff)
         .stroke({ width: 3, color: fur.line });
-      g.circle(side * 22 + 3, -40, 7).fill(ink);
+      g.circle(side * (22 + w / 2) + 3, -40, 7).fill(ink);
     }
     const text = label(both ? letter.toUpperCase() + letter : letter, both ? 46 : 62, ink);
     text.position.set(0, 10);
-    this.glow.circle(0, 0, BODY_R + 26).fill({ color: 0xfff3a0, alpha: 0.85 });
+    this.glow.ellipse(0, 0, BODY_R + 26 + w, BODY_R + 26).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.glow.visible = false;
     this.body.addChild(g, this.mouth, text);
     this.addChild(this.glow, this.body);
-    this.hitArea = new Circle(0, 0, BODY_R + 24);
+    this.hitArea = w ? new Ellipse(0, 0, BODY_R + 24 + w, BODY_R + 24) : new Circle(0, 0, BODY_R + 24);
     this.drawMouth();
   }
 
@@ -160,8 +176,8 @@ class WordMonsters implements Game {
       ctx.view,
     );
     this.top.addChild(this.slots, this.slotLetters);
-    if (this.plan.mode === 'slow') {
-      // Level 11: tapping the boxes says the word slowly for her, sound by sound.
+    if (this.plan.mode === 'slow' || this.plan.mode === 'team') {
+      // Levels 11 and 13: tapping the boxes says the word slowly for her, sound by sound.
       onTap(this.slots, () => void this.saySlowly(), { cooldown: 600 });
     }
     if (this.plan.mode === 'repair') {
@@ -206,6 +222,7 @@ class WordMonsters implements Game {
       this.plan.mode === 'build' ||
       this.plan.mode === 'spell' ||
       this.plan.mode === 'slow' ||
+      this.plan.mode === 'team' ||
       this.plan.mode === 'repair' ||
       this.plan.mode === 'family' ||
       this.plan.mode === 'end'
@@ -450,12 +467,12 @@ class WordMonsters implements Game {
     if (!q) return void this.end();
     this.slots.clear();
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
-    if (this.plan.mode === 'slow' || q.repair) {
-      this.showPicture(this.sayingPicture(q.answer as PictureWord), 0.5, -110);
-      this.drawSlots(q.answer);
+    if (this.plan.mode === 'slow' || this.plan.mode === 'team' || q.repair) {
+      this.showPicture(this.sayingPicture(q.answer as PictureWord | TeamWord), 0.5, -110);
+      this.drawSlots(unitsOf(q).length);
     } else if (this.building) {
       this.showPicture(wordPicture(q.answer as PictureWord), 0.5, -110);
-      this.drawSlots(q.answer);
+      this.drawSlots(q.answer.length, q.answer);
     } else if (this.plan.mode === 'first') {
       this.showPicture(letterPicture(q.answer.toUpperCase()), 0.62);
     } else if (this.plan.mode === 'last' && q.word) {
@@ -488,8 +505,8 @@ class WordMonsters implements Game {
     });
   }
 
-  /** Levels 10 and 11: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
-  private sayingPicture(word: PictureWord) {
+  /** Levels 10 to 13: the word's picture, which says the word again when tapped (free: never a miss or a hint). */
+  private sayingPicture(word: PictureWord | TeamWord) {
     const p = wordPicture(word);
     // A generous square around the drawing (about 215 units across at its shown scale), clear of the monster row on a short view, so a near miss still counts.
     p.hitArea = new Rectangle(-120, -120, 240, 240);
@@ -606,6 +623,8 @@ class WordMonsters implements Game {
         return this.ctx.instruct('monster.last', { word: q.word ?? '' });
       case 'slow':
         return this.ctx.instruct('monster.slow', { word: q.answer });
+      case 'team':
+        return this.ctx.instruct('monster.team', { word: q.answer });
       default:
         return this.ctx.instruct('monster.build', { word: q.answer, sounds: sounded(q.answer) });
     }
@@ -666,7 +685,7 @@ class WordMonsters implements Game {
   private hint() {
     const q = this.question;
     if (!q) return;
-    const want = this.building ? q.answer[this.filled] : q.answer;
+    const want = this.building ? unitsOf(q)[this.filled] : q.answer;
     const right = this.monsters.find((x) => !x.placed && x.letter === want);
     if (right && !right.glow.visible) {
       right.glow.visible = true;
@@ -687,8 +706,8 @@ class WordMonsters implements Game {
   }
 
   /**
-   * Level 11's hint: the boxes ripple one by one and each says its sound, so she hears the word said slowly. It counts
-   * one hint per word however often she taps; drags stay live while it speaks.
+   * Level 11's hint (and 13's): the boxes ripple one by one and each says its sound, so she hears the word said slowly;
+   * a team's box says its one sound. It counts one hint per word however often she taps; drags stay live while it speaks.
    */
   private async saySlowly() {
     const q = this.question;
@@ -699,12 +718,13 @@ class WordMonsters implements Game {
       this.hints++;
     }
     this.slowSaying = true;
-    for (let i = 0; i < q.answer.length; i++) {
+    const units = unitsOf(q);
+    for (let i = 0; i < units.length; i++) {
       // The word's own finish (the last drop) takes over the voice.
       if (this.destroyed || this.busy || this.question !== q) break;
       sfx.pop(3 + i);
       this.ripple(i);
-      await this.ctx.say(soundLine(q.answer[i]));
+      await this.ctx.say(soundLine(units[i]));
     }
     this.slowSaying = false;
   }
@@ -720,17 +740,13 @@ class WordMonsters implements Game {
     void this.ctx.tw.to(ring, { alpha: 0 }, { duration: 0.35 }).then(() => ring.destroy());
   }
 
-  private drawSlots(word: string) {
+  /** `count` boxes, one per sound; level 5 also shows `word`'s letters faintly in them. */
+  private drawSlots(count: number, word = '') {
     const g = this.slots.clear();
-    // Level 11's boxes are a thing to tap: a generous area over the whole row.
-    if (this.plan.mode === 'slow')
-      g.hitArea = new Rectangle(
-        this.slotX(0) - 80,
-        26,
-        this.slotX(word.length - 1) - this.slotX(0) + 160,
-        160,
-      );
-    for (let i = 0; i < word.length; i++) {
+    // Level 11's and 13's boxes are a thing to tap: a generous area over the whole row.
+    if (this.plan.mode === 'slow' || this.plan.mode === 'team')
+      g.hitArea = new Rectangle(this.slotX(0) - 80, 26, this.slotX(count - 1) - this.slotX(0) + 160, 160);
+    for (let i = 0; i < count; i++) {
       g.roundRect(this.slotX(i) - 66, 40, 132, 132, 26)
         .fill({ color: 0xffffff, alpha: 0.7 })
         .stroke({ width: 5, color: swatch.purple.line });
@@ -755,14 +771,19 @@ class WordMonsters implements Game {
     // Generous: anywhere over the slot row counts as trying the next slot.
     if (Math.abs(y - slot.y) > 140 || Math.abs(x - this.top.x) > 280) return false;
     if (q.repair && (this.wrongMonster() || Math.abs(x - slot.x) > 75)) return false;
-    if (!fits(q.answer, this.filled, m.letter)) {
+    const units = unitsOf(q);
+    const want = units[this.filled];
+    if (!fits(units, this.filled, m.letter)) {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      // Level 11 never says the sound the box wants: the monster says who it is, as a tap does on the finding levels.
-      if (this.plan.mode === 'slow')
-        void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: SOUNDS[m.letter] });
-      else void this.ctx.say('monster.next', { sound: SOUNDS[q.answer[this.filled]] });
+      // Level 13: one letter of the team the box wants hears that it takes two ("That is just sss. Two letters make shh.").
+      if (this.plan.mode === 'team' && want.length > 1 && want.includes(m.letter))
+        void this.ctx.say('monster.team.half', { sound: SOUNDS[m.letter], team: soundOf(want) });
+      // Levels 11 and 13 never say the sound the box wants: the monster says who it is, as a tap does on the finding levels.
+      else if (this.plan.mode === 'slow' || this.plan.mode === 'team')
+        void this.ctx.say('monster.iam', { letter: m.letter.toUpperCase(), sound: soundOf(m.letter) });
+      else void this.ctx.say('monster.next', { sound: SOUNDS[want] });
       if (this.wrongs >= 2) this.hint();
       return false;
     }
@@ -771,17 +792,20 @@ class WordMonsters implements Game {
     m.glow.visible = false;
     if (m.drag) m.drag.enabled = false;
     void this.ctx.tw.to(m, { x: slot.x, y: slot.y }, { duration: 0.25, ease: ease.outBack });
-    m.scale.set(1);
+    // The drag's own settle tween would grow a team back to full size over its neighbors' boxes.
+    this.ctx.tw.kill(m.scale);
+    m.scale.set(m.letter.length > 1 ? TEAM_SLOT_SCALE : 1);
     sfx.squish();
     // In a word family the ending is already there, so the first sound finishes the word.
-    this.filled = q.fixed || q.repair ? q.answer.length : this.filled + 1;
-    if (this.filled >= q.answer.length) void this.wordDone(q);
+    this.filled = q.fixed || q.repair ? units.length : this.filled + 1;
+    if (this.filled >= units.length) void this.wordDone(q);
     return true;
   }
 
   private async wordDone(q: Question) {
     this.busy = true;
-    const placed = q.answer.split('').map((l) => this.monsters.find((m) => m.placed && m.letter === l)!);
+    // Box by box, so a team says its one sound.
+    const placed = this.monsters.filter((m) => m.placed).sort((a, b) => a.slot - b.slot);
     for (const m of placed) {
       m.speak();
       await this.ctx.say(soundLine(m.letter));

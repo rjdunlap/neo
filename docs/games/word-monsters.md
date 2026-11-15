@@ -12,7 +12,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5, 6, 7, 8, 10, 11, 12 |
+| school | 5, 6, 7, 8, 10, 11, 12, 13 |
 
 | Level | Plays like |
 | --- | --- |
@@ -28,6 +28,7 @@
 | 10 | Last sounds: "what does cat end with?" Tap the monster for the last sound |
 | 11 | Say it slowly: build a pictured word from the word alone, with no sounds said and a spare letter |
 | 12 | Fix the pet's word: tap out the wrong letter and put the right one in |
+| 13 | Two letters, one sound: build fish, duck or bath, where one monster wears two letters (sh, ch, th, ck) and fills one box |
 
 <!-- end generated -->
 

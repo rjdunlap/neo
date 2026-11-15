@@ -5,7 +5,7 @@ import { ink, swatch, wood } from '../../art/palette';
 import { puffs } from '../../art/shapes';
 import { typingPicture } from '../../art/word-pictures';
 import { picture as rhymePicture } from '../rhyme-time/pictures';
-import type { PictureWord } from './logic';
+import type { PictureWord, TeamWord } from './logic';
 
 /**
  * A picture for every word a building level asks for, about 260 units across and centered near (0, 0); the scene shows
@@ -44,7 +44,7 @@ function drawn(paint: (g: Graphics) => void): Container {
   return c;
 }
 
-const DRAW: Record<PictureWord, () => Container> = {
+const DRAW: Record<PictureWord | TeamWord, () => Container> = {
   cat: () => alone(critter('cat')),
   dog: () => alone(critter('dog')),
   pig: () => alone(critter('pig')),
@@ -489,9 +489,115 @@ const DRAW: Record<PictureWord, () => Container> = {
       g.ellipse(0, -85, 65, 22).fill(swatch.red.fill).stroke(line(swatch.red.line, 5));
       g.ellipse(-15, -40, 8, 26).fill(swatch.red.light);
     }),
+  // Level 13's words, each holding a two-letter team.
+  fish: () => rhyme('fish'),
+  dish: () => rhyme('dish'),
+  sock: () => rhyme('sock'),
+  rock: () => rhyme('rock'),
+  duck: () => alone(critter('duck', 0.9)),
+  // A little sailing ship on a wave: a hull, a mast and two sails.
+  ship: () =>
+    drawn((g) => {
+      g.moveTo(0, -110).lineTo(0, 30).stroke(line(wood.line, 8));
+      g.poly([6, -100, 95, 10, 6, 10]).fill(0xffffff).stroke(line(swatch.white.line, 5));
+      g.poly([-6, -80, -80, 10, -6, 10]).fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 5));
+      g.poly([0, -110, 40, -98, 0, -86]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+      g.moveTo(-125, 30)
+        .lineTo(125, 30)
+        .lineTo(90, 85)
+        .lineTo(-90, 85)
+        .closePath()
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line));
+      g.circle(-40, 55, 9).circle(0, 55, 9).circle(40, 55, 9).fill(0xffffff);
+      g.moveTo(-135, 100)
+        .quadraticCurveTo(-100, 85, -65, 100)
+        .quadraticCurveTo(-30, 115, 5, 100)
+        .quadraticCurveTo(40, 85, 75, 100)
+        .quadraticCurveTo(110, 115, 135, 100)
+        .stroke(line(swatch.blue.line, 7));
+    }),
+  // A fluffy yellow baby bird with a tiny beak, stepping out of its eggshell.
+  chick: () =>
+    drawn((g) => {
+      puffs(
+        g,
+        [
+          [0, 10, 70],
+          [-40, -35, 22],
+          [40, -35, 22],
+          [-62, 12, 20],
+          [62, 12, 20],
+        ],
+        swatch.yellow.fill,
+        swatch.yellow.line,
+        6,
+      );
+      g.moveTo(-6, -74).quadraticCurveTo(-2, -96, 10, -100).stroke(line(swatch.yellow.line, 5));
+      g.circle(-24, -12, 8).circle(24, -12, 8).fill(ink);
+      g.poly([-14, 4, 14, 4, 0, 24]).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+      g.ellipse(-50, 30, 18, 26).ellipse(50, 30, 18, 26).fill(swatch.yellow.light);
+      g.moveTo(-90, 60)
+        .lineTo(-70, 45)
+        .lineTo(-50, 62)
+        .lineTo(-30, 45)
+        .lineTo(-10, 62)
+        .lineTo(10, 45)
+        .lineTo(30, 62)
+        .lineTo(50, 45)
+        .lineTo(70, 62)
+        .lineTo(90, 45)
+        .lineTo(90, 70)
+        .quadraticCurveTo(0, 130, -90, 70)
+        .closePath()
+        .fill(0xffffff)
+        .stroke(line(swatch.white.line, 5));
+    }),
+  // A bathtub on feet, full of bubbles.
+  bath: () =>
+    drawn((g) => {
+      g.moveTo(70, -10).lineTo(70, -75).quadraticCurveTo(70, -95, 95, -95).stroke(line(0xb9c6d1, 10));
+      g.circle(-60, -30, 26)
+        .circle(-20, -45, 30)
+        .circle(25, -38, 26)
+        .circle(55, -22, 20)
+        .fill(0xffffff)
+        .stroke(line(swatch.blue.light, 4));
+      g.roundRect(-130, -20, 260, 90, 40).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.rect(-140, -26, 280, 18).fill(0xffffff).stroke(line(swatch.white.line, 4));
+      for (const x of [-90, 90])
+        g.roundRect(x - 14, 64, 28, 34, 10)
+          .fill(swatch.yellow.fill)
+          .stroke(line(swatch.yellow.line, 4));
+    }),
+  // A soft night moth with patterned wings and feathery feelers.
+  moth: () =>
+    drawn((g) => {
+      for (const side of [-1, 1]) {
+        g.ellipse(side * 62, -26, 66, 48)
+          .fill(0xd9c7a6)
+          .stroke(line(wood.line, 5));
+        g.ellipse(side * 48, 42, 46, 34)
+          .fill(0xc9b38c)
+          .stroke(line(wood.line, 5));
+        g.circle(side * 70, -30, 18)
+          .fill(swatch.orange.light)
+          .stroke(line(wood.line, 4));
+        g.circle(side * 70, -30, 7).fill(ink);
+        g.moveTo(side * 8, -70)
+          .quadraticCurveTo(side * 30, -115, side * 52, -112)
+          .stroke(line(wood.line, 5));
+        for (let i = 0; i < 4; i++)
+          g.moveTo(side * (18 + i * 9), -88 - i * 6)
+            .lineTo(side * (26 + i * 9), -100 - i * 6)
+            .stroke(line(wood.line, 3));
+      }
+      g.ellipse(0, 6, 18, 74).fill(0x8c7b6b).stroke(line(wood.line, 5));
+      g.circle(-7, -52, 5).circle(7, -52, 5).fill(ink);
+    }),
 };
 
 /** The picture for a word a building level asks for. */
-export function wordPicture(word: PictureWord): Container {
+export function wordPicture(word: PictureWord | TeamWord): Container {
   return DRAW[word]();
 }
