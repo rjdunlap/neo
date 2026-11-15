@@ -4,7 +4,7 @@ import { RAINBOW, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
-import { sfx, type AnimalSound } from '../../audio/sfx';
+import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
@@ -22,6 +22,8 @@ import {
   shouldSelfOpen,
   deal,
   newcomer,
+  poolFor,
+  VOICES,
   pickFeeling,
   pickTarget,
   planFor,
@@ -38,16 +40,6 @@ import {
   type CoverKind,
 } from './logic';
 import { rangeFor } from '../../progress/difficulty';
-
-const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
-  cow: { sound: 'moo', word: 'Moo' },
-  duck: { sound: 'quack', word: 'Quack quack' },
-  pig: { sound: 'oink', word: 'Oink oink' },
-  cat: { sound: 'meow', word: 'Meow' },
-  dog: { sound: 'woof', word: 'Woof woof' },
-  bunny: { sound: 'hop', word: 'Hop hop' },
-  bear: { sound: 'growl', word: 'Grrr' },
-};
 
 const GRASS = 0x9edb86;
 const SAND = 0xf3dba0;
@@ -411,6 +403,8 @@ class Spot extends Container {
 
 class PeekabooBarn implements Game {
   private readonly plan: PeekPlan;
+  /** Who can hide at this level: the seven below level 4, the farm four too from there. */
+  private readonly pool: readonly Animal[];
   private readonly setting: SceneId;
   private readonly backdrop: Backdrop;
   private readonly barn = new Graphics();
@@ -441,6 +435,7 @@ class PeekabooBarn implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.pool = poolFor(ctx.level);
     this.view = ctx.view;
     const scene = roundScene(ctx.rng, this.plan.spots);
     this.setting = scene.id;
@@ -607,7 +602,7 @@ class PeekabooBarn implements Game {
 
   /** Different animals in each spot. */
   private dealAnimals() {
-    const picks = deal(this.ctx.rng, this.spots.length);
+    const picks = deal(this.ctx.rng, this.spots.length, this.pool);
     this.spots.forEach((s, i) => s.setAnimal(picks[i]));
   }
 
@@ -720,7 +715,7 @@ class PeekabooBarn implements Game {
     this.idle = 0;
     // Someone new sneaks in, never the same as a neighbour.
     const taken = this.spots.map((s) => s.animal);
-    spot.setAnimal(newcomer(this.ctx.rng, taken));
+    spot.setAnimal(newcomer(this.ctx.rng, taken, this.pool));
   }
 
   /** The hint at levels 10–11: the right animal rises to a full peek for a moment, its face showing, then sinks back. */
@@ -760,7 +755,7 @@ class PeekabooBarn implements Game {
     this.unasked = false;
     this.missesThisQuestion = 0;
     if (this.plan.mode === 'clue') {
-      const d = dealClue(this.ctx.rng, this.spots.length, clueKindFor(this.asked++), this.target);
+      const d = dealClue(this.ctx.rng, this.spots.length, clueKindFor(this.asked++), this.target, this.pool);
       this.spots.forEach((s, i) => s.setAnimal(d.animals[i]));
       this.clue = d.clue;
       this.target = d.answer;
@@ -775,7 +770,7 @@ class PeekabooBarn implements Game {
       if (d.clue.kind === 'feeling' && d.clue.feeling === 'sing') this.singIn = 0.4;
     } else if (this.plan.mode === 'top') {
       // Only the tops show, and no two look alike from the top, so the ears (or horns, or a tuft) tell who is who.
-      const animals = dealTops(this.ctx.rng, this.spots.length);
+      const animals = dealTops(this.ctx.rng, this.spots.length, this.pool);
       this.spots.forEach((s, i) => s.setAnimal(animals[i]));
       this.target = pickTarget(this.ctx.rng, animals, this.target);
     } else {
