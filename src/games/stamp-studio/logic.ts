@@ -41,6 +41,8 @@ export interface StampPlan {
   pat?: { size: number; count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
+  /** The stamps on the paper are counted aloud, one to ten, each number once (levels 1–3, dive slice 3). */
+  count?: boolean;
   /** Trace Prints (levels 8–9): the paper is mud, and each maker presses its own shape; `count` prints finish the round. */
   trace?: { makers: readonly TraceMakerId[]; count: number; tilt: boolean };
 }
@@ -53,6 +55,7 @@ export const PLANS = [
     move: false,
     transform: false,
     prompt: 'stars',
+    count: true,
     name: 'Press one kind of stamp onto a picture',
   },
   {
@@ -61,6 +64,7 @@ export const PLANS = [
     move: false,
     transform: false,
     prompt: 'friends',
+    count: true,
     name: 'Make a picture with two kinds of stamps',
   },
   {
@@ -69,6 +73,7 @@ export const PLANS = [
     move: true,
     transform: false,
     prompt: 'picture',
+    count: true,
     play: true,
     name: 'Choose colors, stamp, and rearrange a picture',
   },
@@ -163,6 +168,76 @@ export function playOrder(stamps: readonly Pick<Stamp, 'x' | 'y'>[]): PlayNote[]
     step: stepFromUnit(1 - s.y, PLAY.from, PLAY.count),
     at: i * gap,
   }));
+}
+
+/**
+ * Each stamp's own sound (dive slice 3), from what `sfx` already synthesizes. A pitched one rings a pentatonic step: the
+ * step climbs with each press (`from` and the four above it, then round again), so a row of stars is a little tune.
+ */
+export type StampSound =
+  { play: 'bell' | 'marimba'; from: number } | { play: 'splash' } | { play: 'animal'; animal: AnimalSound };
+export const STAMP_SOUNDS: Record<StampKind, StampSound> = {
+  star: { play: 'bell', from: 7 },
+  flower: { play: 'marimba', from: 3 },
+  fish: { play: 'splash' },
+  cat: { play: 'animal', animal: 'meow' },
+};
+/** The scale step a pitched stamp rings on its `press`-th press (counting from 1), or null for an unpitched sound. */
+export function stampStep(kind: StampKind, press: number): number | null {
+  const sound = STAMP_SOUNDS[kind];
+  return 'from' in sound ? sound.from + ((((press - 1) % 5) + 5) % 5) : null;
+}
+
+/** Counting aloud (levels 1–3): the paper's stamps are counted up to ten. */
+export const COUNT_TO = 10;
+export const COUNT_WORDS = [
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+  'Ten',
+] as const;
+/**
+ * The number to say after a press leaves `onPaper` stamps on the paper, or null. Each number is said once a round (an
+ * undo and a new press does not say it again), so the count never names more stamps than she can see, and after ten it
+ * stays quiet. `said` is updated.
+ */
+export function countAloud(onPaper: number, said: Set<number>): string | null {
+  if (onPaper < 1 || onPaper > COUNT_TO || said.has(onPaper)) return null;
+  said.add(onPaper);
+  return COUNT_WORDS[onPaper - 1];
+}
+
+/** The wake-up after the green arrow: each stamp bounces once, in the order it was placed, all done within `longest` s. */
+export const WAKE = { gap: 0.3, bounce: 0.35, longest: 2.5 } as const;
+/** When each of `count` stamps (in placement order) starts its bounce, and when the last bounce has ended. */
+export function wakeSchedule(count: number): { at: number[]; end: number } {
+  if (count < 1) return { at: [], end: 0 };
+  const gap = count > 1 ? Math.min(WAKE.gap, (WAKE.longest - WAKE.bounce) / (count - 1)) : 0;
+  const at = Array.from({ length: count }, (_, i) => i * gap);
+  return { at, end: at[count - 1] + WAKE.bounce };
+}
+
+/** The shortest time between two unpitched wake-up sounds (meow, splash), so a crowded paper never stacks into a wail. */
+export const WAKE_UNPITCHED_GAP = 0.5;
+/**
+ * Which stamps sound as they wake (all bounce): every pitched stamp, and an unpitched one only when at least
+ * `WAKE_UNPITCHED_GAP` s have passed since the last unpitched sound. A short picture (0.3 s apart) still sounds every
+ * other cat or fish at worst; a picture of different kinds keeps more.
+ */
+export function wakeSounds(kinds: readonly StampKind[], at: readonly number[]): boolean[] {
+  let last = -Infinity;
+  return kinds.map((kind, i) => {
+    if ('from' in STAMP_SOUNDS[kind]) return true;
+    if (at[i] - last < WAKE_UNPITCHED_GAP - 1e-9) return false;
+    last = at[i];
+    return true;
+  });
 }
 
 /** The colors on the color buttons, in order: the six rainbow colors, then pink (dive slice 2). */

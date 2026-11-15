@@ -12,6 +12,7 @@ export const HOW_TO: GameHowTo = {
     { from: 1, to: 1, text: 'Tap the paper to press the stamp shown.' },
     { from: 2, to: 2, text: 'Choose either stamp, then tap the paper to press it.' },
     { from: 3, to: 6, text: 'Choose a stamp and a color, then tap the paper. Drag a stamp to move it.' },
+    { from: 1, to: 3, text: 'Each stamp has its own sound, and the stamps are counted aloud up to ten.' },
     { from: 4, to: 6, text: 'Turn a stamp; the size button makes it big, then small, then middle again.' },
     { from: 8, to: 8, text: 'Pat the mud: the leaf presses its shape there. Pat as often as you like.' },
     { from: 9, to: 9, text: 'Tap the duck foot or the cat paw, then tap the mud to make its print.' },
@@ -37,12 +38,12 @@ export const HOW_TO: GameHowTo = {
     {
       from: 1,
       to: 2,
-      text: 'Tap the green arrow to finish; it wiggles after five stamps. A full paper finishes itself. After the round, the tree house button hangs it up.',
+      text: 'Tap the green arrow to finish (it wiggles after five stamps): the stamps wake up one by one. A full paper finishes itself. After the round, the tree house button hangs it up.',
     },
     {
       from: 3,
       to: 6,
-      text: 'Tap the music note to hear the picture play, left to right; tap the green arrow when it is done. After the round, the tree house button hangs it up.',
+      text: 'Tap the music note to hear the picture play, left to right; tap the green arrow to finish, and the stamps wake up one by one. After the round, the tree house button hangs it up.',
     },
     { from: 8, to: 8, text: 'Tap the green arrow to finish; the eighth pat finishes by itself.' },
     { from: 9, to: 9, text: 'Tap the green arrow to finish; the tenth print finishes by itself.' },
