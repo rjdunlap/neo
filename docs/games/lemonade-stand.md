@@ -24,7 +24,7 @@
 
 **Starts as:** read the weather sign, choose how many cups to make, and watch friends buy; each day adds a row to a picture table
 
-**Grows into:** an event on the forecast (a ferry, a quiet day), a price in shells, then a five-day market week where a lemon (one shell, two cups) is a cost and the purse carries from day to day, then (level 5) two lemon boats each morning offer lemons at different prices and she taps the cheaper one, then (level 6) boats whose lemons and shells both differ, so she finds the shells for every 2 lemons; running out or having cups left is a result, never a mistake, while a dearer boat is a gentle miss
+**Grows into:** an event on the forecast (a ferry, a quiet day), a price in shells, then a five-day market week where a lemon (one shell, two cups) is a cost and the purse carries from day to day, then (level 5) two lemon boats each morning offer lemons at different prices and she taps the cheaper one, then (level 6) boats whose lemons and shells both differ, so she finds the shells for every 2 lemons, then (level 7) five days with a CAME column where she levels three sunny days' crowds into even towers to find a typical sunny day before choosing cups for the next; running out or having cups left is a result, never a mistake, while a dearer boat is a gentle miss
 
 ## Design notes
 
@@ -40,4 +40,6 @@ Co-play (`coplayHint`): a grown-up reads the forecast aloud like a weather repor
 
 Level 6 *Best buy*: the same four-day week, but each morning's two boats differ in both lemons and shells (eight pairs, up to six of each, whole shells for every 2 lemons, the cheaper boat at no more than a shell a lemon). Every week has a morning where the boat with fewer shells is dearer per lemon and one where the boat with more lemons is dearer, and never the same pair two mornings running, so neither shortcut works. Five or six lemons or shells are drawn in two rows of three on the sign so they can be counted.
 
-Not built: level 7 (a typical day), a saved week or market-week chart in the journal, recipe quality and advertising, a "close the stand" button (the home button always works), the Maker Harbor tickets and fair board that this game is the first slice of, and a couch version.
+Level 7 *A typical sunny day*: five days at price 1 with no events, purse or boats; days 1–4 hold three sunny days and one rainy or cloudy day, day 5 is sunny, and sunny noise is 0–4 on this level only. A CAME column (a friend face) shows the friends who came, never the cups sold. Before day 5 the three sunny rows' crowds stand as towers of friend faces; she drags the top friend from a tall tower to a short one until they are even (the mean is a whole number, at least two moves, at most 12), then a dotted line and "A typical sunny day: N friends" return her to the batch cards. A move onto a tower at least as tall as the one it left says "That tower got taller" and is not a miss; a second such move, or the lightbulb, glows the tallest tower and counts the day's one hint. The closing comparison sets day 5's crowd against the typical crowd. Levels 1–6 weeks are unchanged.
+
+Not built: a saved week or market-week chart in the journal, recipe quality and advertising, a "close the stand" button (the home button always works), the Maker Harbor tickets and fair board that this game is the first slice of, and a couch version.
