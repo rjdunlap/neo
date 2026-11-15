@@ -2,6 +2,18 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function traceRound(level, name, wrong = false) {
+    // Level 7 plays on a phone held upright, so the word's own picture is checked where the playtests happen.
+    const phone = level === 7;
+    const landscape = page.viewportSize();
+    if (phone) await page.setViewportSize({ width: 390, height: 844 });
+    try {
+      await playRound(level, name, wrong);
+    } finally {
+      if (phone) await page.setViewportSize(landscape);
+    }
+  }
+
+  async function playRound(level, name, wrong) {
     await launch('letter-trails', level, name);
     if (wrong) {
       await page.evaluate(async () => {
@@ -29,9 +41,10 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
     await page.evaluate(async () => {
       const g = neo.scene.game;
       let steps = 0;
-      while (!g.done && steps++ < 160) {
-        if (!(await kit.until(() => !g.busy || g.done, 18000))) throw new Error('Letter transition stuck');
-        if (g.done) break;
+      while (!g.done && g.letterIndex < g.word.length && steps++ < 160) {
+        if (!(await kit.until(() => !g.busy || g.done || g.letterIndex === g.word.length, 18000)))
+          throw new Error('Letter transition stuck');
+        if (g.done || g.letterIndex === g.word.length) break;
         const points = g.points.slice(g.progress).map(([x, y]) => {
           const p = g.canvas.toGlobal({ x: x * g.size, y: y * g.size });
           return [p.x, p.y];
@@ -39,8 +52,25 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         await kit.drag(points, 1, 10);
         await kit.sleep(250);
       }
-      if (!g.done) throw new Error('Tracing did not complete');
+      if (g.letterIndex < g.word.length) throw new Error('Tracing did not complete');
     });
+    if (level >= 7) {
+      // A word ends on its own picture, a name on a sign with the whole name; a name is traced up to eight letters.
+      const shown = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => g.picture && g.picture.scale.x > 0.5, 3000);
+        return { word: g.word, traced: g.traced.size, picture: !!g.picture };
+      });
+      assert.ok(shown.picture, 'the word or name is shown at the end');
+      if (level === 8)
+        assert.ok(shown.word.length <= 8, `a name is traced up to eight letters (${shown.word})`);
+      await page.waitForTimeout(400);
+      await screenshot(`letter-trails-${level}-${shown.word}`);
+    }
+    assert.ok(
+      await page.evaluate(() => kit.until(() => neo.scene.game.done, 8000)),
+      'the round finishes after the closing picture',
+    );
     await finished('letter-trails');
     assert.ok(
       await page.evaluate(() => kit.store.data.journal.found.some((id) => id.startsWith('letter-trails:'))),

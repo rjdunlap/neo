@@ -6,4 +6,6 @@ export const VOICE = {
   'trails.wrong': ['Come back to the firefly. We can take our time.'],
   'trails.picture': ['{letter} is for {word}!'],
   'trails.word': ['Let us draw {word}!'],
+  'trails.made': ['{word}! You drew {word}!'],
+  'trails.name': ['You wrote your name, {name}!'],
 } satisfies Record<string, string[]>;
