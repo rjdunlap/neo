@@ -45,7 +45,7 @@ import {
   petGrow,
   wrongName,
   ONCE_MORE_MODES,
-  partnerOf,
+  ruleAnswer,
   CLAP_LOUDNESS,
   STOMP_TIPTOE_STRETCH,
   WIGGLE_TEMPO,
@@ -139,7 +139,7 @@ class PetSays implements Game {
   private readonly signBox = new Container();
   /** The friend's height in its own units, to hang the sign above its head. */
   private readonly tall: number;
-  /** Opposite day: a moon turn's arrow first reveals the opposite, then goes on. */
+  /** The arrow first reveals the opposite on a moon or named opposite turn, then goes on. */
   revealDue = false;
   /** Turns replayed with "once more", each counted once. */
   private readonly replayed = new Set<number>();
@@ -470,6 +470,7 @@ class PetSays implements Game {
       body: 'says.body',
       pairs: 'says.pairs',
       says: 'says.rule',
+      'says-opposite': 'says.opp.named',
       freeze: 'says.freeze',
       opposite: 'says.opp.intro',
       quiet: 'says.quiet',
@@ -550,13 +551,14 @@ class PetSays implements Game {
     if (this.onceMore) this.onceMore.visible = false;
   }
 
-  /** Opposite day, after the arrow on a moon turn: the pet shows the opposite, the grown-up's check. */
+  /** After the arrow, the pet shows the opposite for the grown-up to check. */
   private async reveal() {
     this.revealDue = false;
-    const shown = this.turn!.moves[0];
-    const opposite = partnerOf(shown);
-    await this.ctx.say('says.opp.reveal', { move: MOVE_WORDS[opposite] });
-    await this.perform(opposite);
+    const answer = ruleAnswer(this.turn!, this.plan.mode);
+    if (answer !== 'still') {
+      await this.ctx.say('says.opp.reveal', { move: MOVE_WORDS[answer] });
+      await this.perform(answer);
+    }
     this.ready();
   }
 
@@ -595,7 +597,8 @@ class PetSays implements Game {
         await this.perform(second, c2);
         break;
       }
-      case 'says': {
+      case 'says':
+      case 'says-opposite': {
         // The pet moves either way, to tempt; the words decide whether we move too.
         const cue = turn.cue ?? (turn.says ? 'says' : 'plain');
         const move = MOVE_WORDS[first];
@@ -613,7 +616,7 @@ class PetSays implements Game {
         } as const;
         await this.ctx.instruct(asks[cue], { move, who });
         await this.perform(first);
-        if (!turn.says) {
+        if (ruleAnswer(turn, this.plan.mode) === 'still') {
           this.mover.pet.setMood('surprised', 1.5);
           sfx.giggle();
           const reveals = {
@@ -622,6 +625,8 @@ class PetSays implements Game {
             that: 'says.tricked-that',
           } as const;
           await this.ctx.say(reveals[cue as keyof typeof reveals], { who });
+        } else {
+          this.revealDue = this.plan.mode === 'says-opposite';
         }
         break;
       }
@@ -779,7 +784,8 @@ class PetSays implements Game {
         break;
       case 'stomp':
         // On the opposite levels, low and heavy, squatting into each beat (tiptoe, its opposite, rises: `STOMP_TIPTOE_STRETCH`).
-        if (this.plan.mode === 'opposite') void this.stretch(STOMP_TIPTOE_STRETCH.stomp);
+        if (this.plan.mode === 'opposite' || this.plan.mode === 'says-opposite')
+          void this.stretch(STOMP_TIPTOE_STRETCH.stomp);
         for (let k = 0; k < beatsFor(move, count); k++) {
           pet.hop(0.3);
           await tw.wait(0.26);

@@ -51,6 +51,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Watch and listen for the sign on each of the eight turns. Copy the pet on a sun. Do the opposite on a moon. The sign changes during the round.',
     },
     {
+      from: 11,
+      to: 11,
+      text: 'Listen for the pet’s name first. If you hear “Pip says: reach up high,” crouch down low. If you only hear “reach up high,” stay still.',
+    },
+    {
       from: 4,
       to: 4,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
@@ -62,7 +67,7 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 8,
-      to: 10,
+      to: 11,
       text: 'To see a turn again, a grown-up holds the orange button above the arrow (it counts as help). Tapping the pet shows the move again for free.',
     },
     {
@@ -75,6 +80,11 @@ export const HOW_TO: GameHowTo = {
       from: 10,
       to: 10,
       text: 'A grown-up taps the arrow to go on. On a moon turn the first tap shows the opposite and the next tap goes on.',
+    },
+    {
+      from: 11,
+      to: 11,
+      text: 'On a turn with the pet’s name, the first arrow tap shows the opposite and the second goes on. On a trick, one tap goes on.',
     },
   ],
   finish: [
