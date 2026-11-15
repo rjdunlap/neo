@@ -26,7 +26,12 @@ import {
   pickTarget,
   planFor,
   spotToTap,
+  clueKindFor,
+  dealClue,
+  factAbout,
+  PARTS,
   type Animal,
+  type Clue,
   type Feeling,
   type PeekPlan,
   type CoverKind,
@@ -365,6 +370,15 @@ class Spot extends Container {
     this.shake = 1;
   }
 
+  /** A surprised squish from the animal standing out; it settles back to how it felt. */
+  poke() {
+    this.critter?.poke();
+  }
+
+  hop(power: number) {
+    this.critter?.hop(power);
+  }
+
   update(dt: number) {
     this.clock += dt;
     this.critter?.update(dt);
@@ -415,6 +429,11 @@ class PeekabooBarn implements Game {
   private unasked = false;
   /** The waiting ask is being spoken: the ghost finger lets it finish, as it did when the ask held input. */
   private asking = 0;
+  /** Level 9: this question's clue, said instead of the animal's name. */
+  private clue: Clue | null = null;
+  private asked = 0;
+  /** Seconds to the singing clue animal's next little hop, so "singing" shows on a small phone screen too. */
+  private singIn = 0;
   private readonly input = new Container();
 
   constructor(private readonly ctx: GameContext) {
@@ -518,6 +537,17 @@ class PeekabooBarn implements Game {
   update(dt: number) {
     if (this.finished) return;
     this.idle += dt;
+    const clue = this.clue;
+    if (clue?.kind === 'feeling' && clue.feeling === 'sing' && this.singIn > 0) {
+      this.singIn -= dt;
+      const singer = this.spots.find((s) => s.animal === this.target && s.pose === 'out');
+      if (this.singIn <= 0 && singer) {
+        singer.hop(0.6);
+        sfx.marimba(4, 0.3);
+        sfx.marimba(7, 0.3);
+        this.singIn = 3;
+      } else if (this.singIn <= 0) this.singIn = 0.5;
+    }
     if (
       shouldSelfOpen(
         this.plan,
@@ -584,18 +614,25 @@ class PeekabooBarn implements Game {
     }
     spot.wiggle();
     if (this.plan.mode === 'free') return this.freeTap(spot);
-    if (spot.pose === 'out') return;
+    const clue = this.clue;
+    // Clue questions stand everyone out; elsewhere an animal already out is not an answer.
+    if (spot.pose === 'out' && !clue) return;
 
     if (spot.animal === this.target) {
       this.busy = true;
       this.spots.forEach((s) => (s.hint = false));
+      this.singIn = 0;
       void spot.go('out');
       this.say(spot.animal);
       this.ctx.pet.cheer();
       this.done++;
       // The find's line never holds the next question (U7 R4): the look, the hiding and the next deal play over it, and
       // the next ask waits for it or her first tap. The last find's line is heard out before the finale.
-      const yes = this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] });
+      const yes = !clue
+        ? this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] })
+        : clue.kind === 'part'
+          ? this.ctx.say('peek.hasit', { animal: spot.animal, part: PARTS[clue.part].words })
+          : this.ctx.say('peek.feelsit', { animal: spot.animal, feeling: FEELING_WORDS[clue.feeling] });
       const last = this.done >= this.plan.goal;
       if (last) await yes;
       await this.ctx.tw.wait(0.6);
@@ -611,11 +648,23 @@ class PeekabooBarn implements Game {
     sfx.boing();
     this.misses++;
     this.missesThisQuestion++;
-    const back: Pose = this.plan.mode === 'find' ? 'peek' : 'hidden';
-    void spot.go('out');
     this.say(spot.animal);
-    await this.ctx.say('peek.notit', { other: spot.animal, animal: this.target! });
-    await spot.go(back);
+    if (clue) {
+      // Everyone is already standing out: the wrong one squishes and says something true about itself, then the clue.
+      spot.poke();
+      if (clue.kind === 'part')
+        await this.ctx.say('peek.nothas', {
+          other: spot.animal,
+          fact: PARTS[factAbout(spot.animal)].words,
+          part: PARTS[clue.part].words,
+        });
+      else await this.ctx.say('peek.notfeel', { other: spot.animal, feeling: FEELING_WORDS[clue.feeling] });
+    } else {
+      void spot.go('out');
+      await this.ctx.say('peek.notit', { other: spot.animal, animal: this.target! });
+      await spot.go(this.plan.mode === 'find' ? 'peek' : 'hidden');
+    }
+    if (this.finished) return;
     if (this.missesThisQuestion === 2) {
       this.hints++;
       const right = this.spots.find((s) => s.animal === this.target);
@@ -667,8 +716,16 @@ class PeekabooBarn implements Game {
     if (!this.unasked || this.finished) return false;
     this.unasked = false;
     this.asking++;
-    void this.ctx.instruct('peek.where', { animal: this.target! }).finally(() => this.asking--);
+    void this.ask().finally(() => this.asking--);
     return true;
+  }
+
+  /** The question's ask: the animal's name, or at level 9 the clue (never the name, which would give it away). */
+  private ask() {
+    const clue = this.clue;
+    if (!clue) return this.ctx.instruct('peek.where', { animal: this.target! });
+    if (clue.kind === 'part') return this.ctx.instruct('peek.whohas', { part: PARTS[clue.part].words });
+    return this.ctx.instruct('peek.whofeels', { feeling: FEELING_WORDS[clue.feeling] });
   }
 
   /** The guide was tapped while the ask waits: say this question's ask, not the last one's. */
@@ -681,16 +738,32 @@ class PeekabooBarn implements Game {
     this.busy = true;
     this.unasked = false;
     this.missesThisQuestion = 0;
-    this.dealAnimals();
-    const present = this.spots.map((s) => s.animal);
-    this.target = pickTarget(this.ctx.rng, present, this.target);
+    if (this.plan.mode === 'clue') {
+      const d = dealClue(this.ctx.rng, this.spots.length, clueKindFor(this.asked++), this.target);
+      this.spots.forEach((s, i) => s.setAnimal(d.animals[i]));
+      this.clue = d.clue;
+      this.target = d.answer;
+      // Everyone stands up over their place so ears, horns, spots and faces all show; one may feel something.
+      for (const s of this.spots) {
+        const feeling = d.clue.kind === 'feeling' && s.animal === d.answer ? d.clue.feeling : null;
+        void s.go('out', feeling);
+        await this.ctx.tw.wait(0.15);
+      }
+      // The feeling is heard as well as seen: a yawn, or two notes the singer keeps hopping to (`update`).
+      if (d.clue.kind === 'feeling' && d.clue.feeling === 'sleepy') sfx.yawn();
+      if (d.clue.kind === 'feeling' && d.clue.feeling === 'sing') this.singIn = 0.4;
+    } else {
+      this.dealAnimals();
+      const present = this.spots.map((s) => s.animal);
+      this.target = pickTarget(this.ctx.rng, present, this.target);
+    }
     if (this.plan.mode === 'find') {
       // Everyone peeks over the top, so there's something to look at.
       for (const s of this.spots) {
         void s.go('peek');
         await this.ctx.tw.wait(0.15);
       }
-    } else {
+    } else if (this.plan.mode === 'remember') {
       // Show and tell, then everyone hides. The show is a hold she watches, and its own line would cut the find's, so
       // it waits for the find's line (as far-lights' level 7 does).
       if (after) await after;
@@ -707,7 +780,7 @@ class PeekabooBarn implements Game {
     }
     await this.ctx.tw.wait(0.3);
     if (!after) {
-      await this.ctx.instruct('peek.where', { animal: this.target });
+      await this.ask();
       this.busy = false;
       return;
     }
@@ -887,13 +960,15 @@ export const peekabooBarn: GameModule = {
   region: 'barnyard',
   challenge: 'noticing',
   skills: ['object-permanence', 'animal-words', 'memory'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     if (p.door) return 'One big house: touch anywhere to see who pops out';
     if (p.mode === 'free') return `Tap to find who's hiding, ${p.spots} hiding places`;
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
+    if (p.mode === 'clue')
+      return `"Who is sleepy?" "Who has spots?" Find the one a clue describes, ${p.spots} animals`;
     return `Remember who hid where, ${p.spots} hiding places`;
   },
   music: STYLES.hub,

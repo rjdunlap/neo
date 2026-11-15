@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/peekaboo-barn; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `peekaboo-barn` · **Land:** Barnyard · **Ages:** lap–pre-K · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+**ID:** `peekaboo-barn` · **Land:** Barnyard · **Ages:** lap–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
 
 **Skills:** object-permanence, animal-words, memory
 
@@ -11,7 +11,8 @@
 | lap | 16, 1, 2 |
 | toddler | 1–5 |
 | preschool | 4–8 |
-| pre-K | 6–8 |
+| pre-K | 6–9 |
+| school | 9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +24,7 @@
 | 6 | Remember who hid where, 2 hiding places |
 | 7 | Remember who hid where, 3 hiding places |
 | 8 | Remember who hid where, 4 hiding places |
+| 9 | "Who is sleepy?" "Who has spots?" Find the one a clue describes, 3 animals |
 | 16 | One big house: touch anywhere to see who pops out |
 
 <!-- end generated -->

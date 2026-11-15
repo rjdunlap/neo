@@ -9,4 +9,10 @@ export const VOICE = {
   'peek.where': ['Where is the {animal}?', 'Can you find the {animal}?'],
   'peek.yes': ['You found the {animal} behind the {cover}!', "There's the {animal}, behind the {cover}!"],
   'peek.notit': ["That's the {other}! Where is the {animal}?"],
+  'peek.whofeels': ['Who is {feeling}?', 'Can you find the {feeling} one?'],
+  'peek.whohas': ['Find the one with {part}!', 'Who has {part}?'],
+  'peek.hasit': ['Yes! The {animal} has {part}!', 'The {animal} has {part}. You found it!'],
+  'peek.feelsit': ['Yes! The {animal} is {feeling}!', 'You found the {feeling} {animal}!'],
+  'peek.nothas': ["That's the {other}. The {other} has {fact}. Look for {part}!"],
+  'peek.notfeel': ["That's the {other}. The {other} is happy. Who is {feeling}?"],
 } satisfies Record<string, string[]>;

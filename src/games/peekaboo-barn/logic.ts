@@ -1,3 +1,4 @@
+import { CRITTERS, type CritterSpec } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 
@@ -7,8 +8,11 @@ export const ANIMALS = [...STICKER_ANIMALS] as const;
 export type Animal = (typeof ANIMALS)[number];
 
 export interface PeekPlan {
-  /** free: tap to reveal. find: animals peek, "where's the cow?". remember: they show, hide, then the question. */
-  mode: 'free' | 'find' | 'remember';
+  /**
+   * free: tap to reveal. find: animals peek, "where's the cow?". remember: they show, hide, then the question. clue: they
+   * stand up over their places and a feeling or a part word picks one ("Who is sleepy?", "Find the one with spots!").
+   */
+  mode: 'free' | 'find' | 'remember' | 'clue';
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
@@ -29,6 +33,7 @@ export const PLANS: PeekPlan[] = [
   { mode: 'remember', spots: 2, goal: 5 },
   { mode: 'remember', spots: 3, goal: 5 },
   { mode: 'remember', spots: 4, goal: 6 },
+  { mode: 'clue', spots: 3, goal: 5 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -36,7 +41,8 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 16, order: [16, 1, 2] },
   toddler: { min: 1, max: 5 },
   preschool: { min: 4, max: 8 },
-  prek: { min: 6, max: 8 },
+  prek: { min: 6, max: 9 },
+  school: { min: 9, max: 9 },
 };
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
@@ -170,3 +176,75 @@ export function roundScene(rng: Rng, spots: number) {
   const id = rng.pick(Object.keys(SCENES) as SceneId[]);
   return { id, covers: rng.shuffle([...SCENES[id]]).slice(0, spots) };
 }
+
+/**
+ * Level 9's part words, each read from the animals' drawn parts in `CRITTERS` (so a clue is never about something the
+ * picture does not show). Every animal holds at least one, so a wrong tap can always say something true about it.
+ */
+export const PARTS = {
+  spots: { words: 'spots', has: (s: CritterSpec) => !!s.spots },
+  horns: { words: 'horns', has: (s: CritterSpec) => !!s.horns },
+  whiskers: { words: 'whiskers', has: (s: CritterSpec) => !!s.whiskers },
+  wings: { words: 'wings', has: (s: CritterSpec) => !!s.wings },
+  bill: { words: 'a bill', has: (s: CritterSpec) => s.snout === 'bill' },
+  snout: { words: 'a round pink snout', has: (s: CritterSpec) => s.snout === 'pig' },
+  long: { words: 'long ears', has: (s: CritterSpec) => s.ears === 'long' },
+  pointy: { words: 'pointy ears', has: (s: CritterSpec) => s.ears === 'pointy' },
+  floppy: { words: 'floppy ears', has: (s: CritterSpec) => s.ears === 'floppy' },
+  round: { words: 'round ears', has: (s: CritterSpec) => s.ears === 'round' },
+} as const;
+export type Part = keyof typeof PARTS;
+export const PART_IDS = Object.keys(PARTS) as Part[];
+
+export const hasPart = (animal: Animal, part: Part) => PARTS[part].has(CRITTERS[animal] as CritterSpec);
+
+/** Level 9's feeling clues: faces `Critter` draws and keeps. `surprised` stays out, since every critter pops up surprised. */
+export const CLUE_FEELINGS = ['sleepy', 'sing'] as const satisfies readonly Feeling[];
+
+export type Clue = { kind: 'feeling'; feeling: Feeling } | { kind: 'part'; part: Part };
+
+/** The present animals a clue describes; `feelingOf` is the one animal showing the clue's feeling. */
+export function holders(clue: Clue, present: readonly Animal[], feelingOf: Animal | null): Animal[] {
+  if (clue.kind === 'feeling') return present.filter((a) => a === feelingOf);
+  return present.filter((a) => hasPart(a, clue.part));
+}
+
+/** The parts exactly one present animal has. */
+export const uniqueParts = (present: readonly Animal[]) =>
+  PART_IDS.filter((p) => present.filter((a) => hasPart(a, p)).length === 1);
+
+/** The round's rhythm: a feeling first (the dive's first round), then two parts, a feeling, a part. */
+export const clueKindFor = (question: number): Clue['kind'] => (question % 3 === 0 ? 'feeling' : 'part');
+
+export interface ClueDeal {
+  animals: Animal[];
+  clue: Clue;
+  /** The one animal the clue describes, which she taps. */
+  answer: Animal;
+}
+
+/**
+ * One clue question: a deal of different animals and a clue that holds for exactly one of them, never answered by the
+ * same animal as last time (`last`). A part question whose deal has no unique part is redealt.
+ */
+export function dealClue(rng: Rng, spots: number, kind: Clue['kind'], last: Animal | null): ClueDeal {
+  for (let tries = 0; tries < 200; tries++) {
+    const animals = deal(rng, spots);
+    const choices = animals.filter((a) => a !== last);
+    if (kind === 'feeling') {
+      const answer = rng.pick(choices);
+      return { animals, answer, clue: { kind, feeling: rng.pick(CLUE_FEELINGS) } };
+    }
+    const parts = uniqueParts(animals).filter((p) => choices.some((a) => hasPart(a, p)));
+    if (!parts.length) continue;
+    const part = rng.pick(parts);
+    return { animals, answer: animals.find((a) => hasPart(a, part))!, clue: { kind, part } };
+  }
+  // Unreachable in practice (most deals have a unique part); a feeling clue is always answerable.
+  const animals = deal(rng, spots);
+  const answer = animals.find((a) => a !== last) ?? animals[0];
+  return { animals, answer, clue: { kind: 'feeling', feeling: 'sleepy' } };
+}
+
+/** Something true a wrong animal has, to say back to her: its first part in `PARTS` order. */
+export const factAbout = (animal: Animal): Part => PART_IDS.find((p) => hasPart(animal, p))!;

@@ -205,9 +205,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     }
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
-    const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 16];
+    const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 16];
     for (const level of peekLevels.filter(
-      (n) => ((n >= 1 && n <= 8) || n === 16) && (!only || only === 'peekaboo'),
+      (n) => ((n >= 1 && n <= 9) || n === 16) && (!only || only === 'peekaboo'),
     )) {
       await launch('peekaboo-barn', level);
       if (level === 1)
@@ -279,7 +279,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         const say = g.ctx.say.bind(g.ctx);
         window.peekR4 = [];
         g.ctx.say = (id, vars) => {
-          if (id === 'peek.yes' && g.done < g.plan.goal) {
+          if (['peek.yes', 'peek.hasit', 'peek.feelsit'].includes(id) && g.done < g.plan.goal) {
             const t = performance.now();
             void kit
               .until(() => !g.busy, 8000)
@@ -287,6 +287,13 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               .catch(() => peekR4.push(Infinity));
           }
           return say(id, vars);
+        };
+        // Level 9 asks by a clue: the asked animal's name would give the answer away.
+        const instruct = g.ctx.instruct.bind(g.ctx);
+        window.peekAsks = [];
+        g.ctx.instruct = (id, vars) => {
+          peekAsks.push(id);
+          return instruct(id, vars);
         };
         for (let q = 0; q < g.plan.goal; q++) {
           await ready();
@@ -316,6 +323,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         log(
           `Peekaboo Barn ${level}: R4, next places open ${opens.map(Math.round).join(', ')} ms after peek.yes`,
         );
+      }
+      if (mode === 'clue') {
+        const asks = await page.evaluate(() => window.peekAsks ?? []);
+        assert.ok(
+          asks.length && asks.every((id) => id === 'peek.whohas' || id === 'peek.whofeels'),
+          `Peekaboo Barn 9 asks: ${asks.join(', ')}`,
+        );
+        log(`Peekaboo Barn 9: asked by clue only (${asks.join(', ')})`);
       }
       await screenshot(`peekaboo-barn-${level}`);
       await finished('peekaboo-barn');
@@ -1267,7 +1282,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
     const want = {
       'bubble-pop': 12,
       'jelly-drums': 10,
-      'peekaboo-barn': 9,
+      'peekaboo-barn': 10,
       'duck-pond': 9,
       'shape-sorter': 8,
       'color-garden': 10,
