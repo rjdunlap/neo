@@ -98,7 +98,8 @@ class Monster extends Container {
     this.glow.visible = false;
     this.body.addChild(g, this.mouth, text);
     this.addChild(this.glow, this.body);
-    this.hitArea = w ? new Ellipse(0, 0, BODY_R + 24 + w, BODY_R + 24) : new Circle(0, 0, BODY_R + 24);
+    // A team's touch area hugs its wide body (about 200 across), so it never reaches over a narrow-row neighbor's.
+    this.hitArea = w ? new Ellipse(0, 0, BODY_R + 10 + w, BODY_R + 24) : new Circle(0, 0, BODY_R + 24);
     this.drawMouth();
   }
 
