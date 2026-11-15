@@ -45,7 +45,8 @@ export const HOW_TO: GameHowTo = {
     {
       from: 11,
       text: 'The round ends when the mended wing matches its twin; then both wings fold across the middle and open together.',
-    },    {
+    },
+    {
       text: 'The round ends when the bug matches what was asked for, or has just the number of spots (of the right kind) on the sign.',
     },
   ],

@@ -478,7 +478,11 @@ describe('Bug Builder', () => {
         const wrongStamp = s.tokens.find((t) => t !== s.want)!;
         // Before the tap, a wrong stamp on the place that differs is a miss too; a stamp let go elsewhere is not.
         expect(mendDrop(s, other, wrongStamp).kind).toBe('ignored');
-        expect(mendDrop(s, s.wrong, wrongStamp)).toEqual({ kind: 'wrongStamp', token: wrongStamp, hint: true });
+        expect(mendDrop(s, s.wrong, wrongStamp)).toEqual({
+          kind: 'wrongStamp',
+          token: wrongStamp,
+          hint: true,
+        });
         expect(s.misses).toBe(2);
         expect(mendMove(s)).toEqual({ tap: s.wrong });
         // Only one hint a round.

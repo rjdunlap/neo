@@ -307,7 +307,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         await page.waitForTimeout(400);
         await screenshot('bug-builder-11-portrait');
         await page.setViewportSize({ width: 1024, height: 768 });
-        log('Bug Builder 11: a matched tap and a wrong stamp (two misses, one hint), find, mend, saved round and sticker passed');
+        log(
+          'Bug Builder 11: a matched tap and a wrong stamp (two misses, one hint), find, mend, saved round and sticker passed',
+        );
         continue;
       }
       if (level === 10) {

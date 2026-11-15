@@ -438,7 +438,9 @@ export function mendBoard(plan: BugPlan, rng: Rng): MendState {
   let extra: number;
   if (flaw === 'missing') {
     // Something that looks a little like the missing stamp, so the tray still asks her to look closely.
-    const near = [...lookAlikes(want, 'color'), ...lookAlikes(want, 'shape')].filter((t) => !tokens.includes(t));
+    const near = [...lookAlikes(want, 'color'), ...lookAlikes(want, 'shape')].filter(
+      (t) => !tokens.includes(t),
+    );
     extra = near.length
       ? rng.pick(near)
       : rng.pick(BUG_TOKENS.map((_, i) => i).filter((i) => !tokens.includes(i)));
