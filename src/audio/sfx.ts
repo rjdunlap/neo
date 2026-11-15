@@ -3,7 +3,8 @@ import { bell, marimba, noise, pluck, tone, voiced } from './instruments';
 import { midiToHz, stepHz } from './notes';
 import { soundCount } from './sound-count';
 
-export type AnimalSound = 'cluck' | 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
+export type AnimalSound =
+  'cluck' | 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop' | 'baa' | 'neigh' | 'squeak';
 
 /** A few cents of random detune so repeated sounds don't grate. */
 const jitter = (cents = 20) => Math.pow(2, ((Math.random() * 2 - 1) * cents) / 1200);
@@ -182,6 +183,24 @@ export const sfx = {
       case 'hop':
         tone(ctx, dest, 'sine', 300, t, 0.3, 0.005, 0.18, 700);
         tone(ctx, dest, 'sine', 360, t + 0.18, 0.25, 0.005, 0.16, 820);
+        break;
+      case 'baa':
+        // A bleat: a wavering nasal note that sags at the end.
+        voiced(ctx, dest, t, 0.7, [340 * j, 320 * j, 280 * j], [750, 1700], 0.42, { vibrato: 16 });
+        break;
+      case 'neigh':
+        // A whinny: a high trembling rise, then a tumble down.
+        voiced(ctx, dest, t, 1.0, [520 * j, 880 * j, 760 * j, 560 * j, 380 * j], [800, 1700], 0.38, {
+          vibrato: 22,
+        });
+        noise(ctx, dest, t + 0.9, 0.25, 0.08, { type: 'lowpass', hz: 900 });
+        break;
+      case 'squeak':
+        // Two tiny squeaks, high in the scale.
+        [0, 0.17].forEach((d, i) => {
+          const hz = stepHz(17 + i) * j;
+          tone(ctx, dest, 'sine', hz, t + d, 0.14, 0.004, 0.1, hz * 1.2);
+        });
         break;
     }
   },

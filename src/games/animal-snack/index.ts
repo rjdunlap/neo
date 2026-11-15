@@ -62,6 +62,10 @@ const ANIMAL_WORDS: Partial<Record<CritterName, string>> = {
   duck: 'duck',
   pig: 'pig',
   bear: 'bear',
+  sheep: 'sheep',
+  horse: 'horse',
+  hen: 'hen',
+  mouse: 'mouse',
 };
 
 function foodArt(food: Food): Container {
@@ -127,6 +131,49 @@ function foodArt(food: Food): Container {
     case 'apple':
       c.addChild(prop('apple', 'red'));
       return c;
+    case 'oats':
+      // A red feed bucket heaped with pale oat flakes.
+      g.ellipse(0, -14, 30, 10).fill(0xf6e7c1).stroke(line(0xc9b07a, 3));
+      for (const [x, y] of [
+        [-14, -18],
+        [-2, -22],
+        [10, -18],
+        [18, -12],
+        [-20, -10],
+        [4, -12],
+      ])
+        g.ellipse(x, y, 6, 4).fill(0xe8d29a);
+      g.poly([-30, -12, 30, -12, 22, 26, -22, 26]).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.moveTo(-26, 0).lineTo(26, 0).stroke(line(swatch.red.line, 3));
+      break;
+    case 'corn':
+      // A cob of yellow kernels in green husks.
+      for (const side of [-1, 1])
+        g.moveTo(0, 30)
+          .quadraticCurveTo(side * 30, 10, side * 16, -24)
+          .quadraticCurveTo(side * 8, 4, 0, 30)
+          .fill(swatch.green.fill)
+          .stroke(line(swatch.green.line, 3));
+      g.ellipse(0, -2, 13, 30).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
+      for (const y of [-20, -8, 4, 16]) for (const x of [-5, 5]) g.circle(x, y, 3).fill(swatch.yellow.line);
+      break;
+    case 'grain':
+      // Two ears of golden grain on thin stalks.
+      for (const [x, lean] of [
+        [-10, -0.2],
+        [10, 0.2],
+      ]) {
+        const tipX = x + lean * 40;
+        g.moveTo(x, 34).lineTo(tipX, -2).stroke(line(wood.line, 4));
+        for (let k = 0; k < 4; k++) {
+          const t = k * 9;
+          for (const side of [-1, 1])
+            g.ellipse(tipX + lean * t + side * 6, -6 - t, 5, 8)
+              .fill(swatch.yellow.light)
+              .stroke(line(wood.line, 2));
+        }
+      }
+      break;
     case 'honey':
       g.roundRect(-26, -18, 52, 46, 14).fill(swatch.yellow.fill).stroke(line(swatch.orange.line));
       g.rect(-28, -26, 56, 12).fill(wood.fill).stroke(line(wood.line, 3));
@@ -786,7 +833,15 @@ class AnimalSnack implements Game {
       });
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
-      this.glowing = this.friends.find((x) => x.name === eaterOf(food))?.node ?? null;
+      this.glowing =
+        this.friends.find(
+          (x) =>
+            x.name ===
+            eaterOf(
+              food,
+              this.friends.map((x) => x.name),
+            ),
+        )?.node ?? null;
     }
   }
 
@@ -853,7 +908,14 @@ class AnimalSnack implements Game {
     if (this.plan.mode === 'float') {
       this.busy = true;
       item.eaten = true;
-      const f = this.friends.find((x) => x.name === eaterOf(item.food))!;
+      const f = this.friends.find(
+        (x) =>
+          x.name ===
+          eaterOf(
+            item.food,
+            this.friends.map((y) => y.name),
+          ),
+      )!;
       await this.eat(f, item.node);
       void this.ctx.say('snack.yum', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[item.food] });
       this.eatenCount++;
@@ -893,7 +955,13 @@ class AnimalSnack implements Game {
       .sort((a, b) => a.d - b.d)[0];
     if (!near || near.d > 200) return false;
     if (this.plan.mode === 'sound') return this.dropSound(item, near.f);
-    if (near.f.name !== eaterOf(item.food)) {
+    if (
+      near.f.name !==
+      eaterOf(
+        item.food,
+        this.friends.map((f) => f.name),
+      )
+    ) {
       this.miss(near.f, item.food);
       return false;
     }

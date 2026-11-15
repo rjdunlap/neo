@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Rectangle, type Text } from 'pixi.js';
-import { Critter, CRITTERS, type CritterName } from '../../art/critter';
+import { Critter, CRITTERS, FIRST_CAST, type CritterName } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
@@ -61,7 +61,8 @@ const COL_W = 56;
 const CARD_W = 120;
 /** The cups on the counter are drawn at 0.8 so twelve fit in two rows under the awning. */
 const CUP_SCALE = 0.8;
-const FRIENDS = (Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'pip');
+/** The seven first friends, pinned so animals added to `CRITTERS` for other games never change a seed's customers. */
+const FRIENDS: CritterName[] = FIRST_CAST.filter((n) => n !== 'pip');
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 /** The two boats' sail colours, seeded per morning. */
 const SAILS = [swatch.red, swatch.blue, swatch.green, swatch.purple, swatch.orange, swatch.teal];

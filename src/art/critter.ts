@@ -3,8 +3,8 @@ import { gaze } from '../engine/input';
 import { cheek, ink, swatch, type ColorName, type Swatch } from './palette';
 import { bodyPath } from './shapes';
 
-export type Ears = 'round' | 'pointy' | 'floppy' | 'long' | 'none';
-export type Snout = 'none' | 'nose' | 'pig' | 'muzzle' | 'bill';
+export type Ears = 'round' | 'pointy' | 'floppy' | 'long' | 'big' | 'none';
+export type Snout = 'none' | 'nose' | 'pig' | 'muzzle' | 'bill' | 'beak';
 export type Mood = 'happy' | 'surprised' | 'sing' | 'sleepy' | 'sad' | 'calm';
 
 /** Everything that makes one critter different from another. All parts share one body and face. */
@@ -24,7 +24,24 @@ export interface CritterSpec {
   tuft?: boolean;
   wings?: boolean;
   whiskers?: boolean;
+  /** A sheep's fleece: puffs all round the body and a curl on top. */
+  wool?: boolean;
+  /** A horse's dark mane on top of the head and a forelock over the brow. */
+  mane?: boolean;
+  /** A hen's red comb on top and wattle under the beak. */
+  comb?: boolean;
+  /** A mouse's long thin curling tail. */
+  tail?: boolean;
+  /** A muzzle colour other than the cow's pink (the horse's tan). */
+  muzzleShade?: { fill: number; line: number; dark: number };
 }
+
+/** Body colours the palette's names lack; `color` names each one's family. */
+const CHESTNUT: Swatch = { fill: 0xb8774a, line: 0x7d4a2a, light: 0xe8c3a3 };
+const RUSSET: Swatch = { fill: 0xe0844e, line: 0xa8552c, light: 0xf8d0b2 };
+const MOUSE_GREY: Swatch = { fill: 0xbcbccc, line: 0x7c7c90, light: 0xe6e6f0 };
+const TAN_MUZZLE = { fill: 0xecd2b8, line: 0x9c6b4a, dark: 0x6e4224 };
+const FLEECE: Swatch = { fill: 0xfffaf0, line: 0x9c9484, light: 0xffffff };
 
 export const CRITTERS = {
   pip: { color: 'teal', ears: 'round', sprout: true, belly: true },
@@ -35,14 +52,51 @@ export const CRITTERS = {
   bear: { color: 'brown', ears: 'round', snout: 'nose', noseColor: ink, belly: true },
   dog: { color: 'brown', ears: 'floppy', earColor: 'orange', snout: 'nose', noseColor: ink, belly: true },
   bunny: { color: 'white', ears: 'long', snout: 'nose', noseColor: 0xff8fa3, whiskers: true },
+  sheep: {
+    color: 'white',
+    shade: FLEECE,
+    ears: 'floppy',
+    snout: 'nose',
+    noseColor: ink,
+    wool: true,
+    feet: 'hoof',
+  },
+  horse: {
+    color: 'brown',
+    shade: CHESTNUT,
+    ears: 'pointy',
+    snout: 'muzzle',
+    muzzleShade: TAN_MUZZLE,
+    mane: true,
+    feet: 'hoof',
+  },
+  hen: { color: 'orange', shade: RUSSET, snout: 'beak', comb: true, wings: true, feet: 'yellow' },
+  mouse: {
+    color: 'white',
+    shade: MOUSE_GREY,
+    ears: 'big',
+    snout: 'nose',
+    noseColor: 0xff8fa3,
+    whiskers: true,
+    tail: true,
+    belly: true,
+  },
 } satisfies Record<string, CritterSpec>;
 
 export type CritterName = keyof typeof CRITTERS;
+/**
+ * The first eight critters, in their original order. Games that deal from the whole cast use this, so critters added
+ * later (the farm four) never change a seed's friends or appear where their art was not checked.
+ */
+export const FIRST_CAST: CritterName[] = ['pip', 'cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 
 const MOUTH_DARK = 0x7a2e3e;
 const MUZZLE = { fill: 0xf7b6c2, line: 0xd98597, dark: 0xc06c80 };
 const HORN = { fill: 0xf4d9a6, line: 0xc9a86a };
 const HOOF = { fill: 0x8c7b6b, line: 0x5e5248 };
+const MANE = { fill: 0x5a3420, line: 0x3a2014 };
+const BEAK = swatch.yellow;
+const TAIL = 0xf7a8b8;
 
 const stroke = (color: number, width = 6) => ({
   width,
@@ -96,10 +150,10 @@ export class Critter extends Container {
     this.eyeY = spec.snout === 'muzzle' ? -150 : -142;
     this.eyeX = spec.snout === 'muzzle' ? 35 : 40;
     this.mouthAt =
-      spec.snout === 'bill'
+      spec.snout === 'bill' || spec.snout === 'beak'
         ? null
         : spec.snout === 'muzzle'
-          ? { x: 0, y: -48, color: MUZZLE.dark }
+          ? { x: 0, y: -48, color: (spec.muzzleShade ?? MUZZLE).dark }
           : spec.snout === 'pig'
             ? { x: 0, y: -70, color: ink }
             : { x: 0, y: -88, color: ink };
@@ -246,6 +300,37 @@ export class Critter extends Container {
       back.moveTo(-10, -234).quadraticCurveTo(-20, -260, -4, -268).stroke(stroke(this.sw.line, 5));
       back.moveTo(6, -234).quadraticCurveTo(10, -260, 26, -264).stroke(stroke(this.sw.line, 5));
     }
+    if (s.tail) {
+      back
+        .moveTo(96, -34)
+        .bezierCurveTo(170, -20, 196, -80, 160, -104)
+        .bezierCurveTo(138, -118, 128, -92, 146, -84)
+        .stroke(stroke(TAIL, 7));
+    }
+    if (s.wool) {
+      // Puffs round the outline, drawn behind the body so only their outer edges show.
+      for (let a = -0.35; a <= Math.PI + 0.36; a += 0.3) {
+        back
+          .circle(Math.cos(a) * 128, -112 - Math.sin(a) * 128, 34)
+          .fill(this.sw.fill)
+          .stroke(stroke(this.sw.line, 5));
+      }
+    }
+    if (s.mane) {
+      for (const x of [-46, -16, 16, 46])
+        back
+          .circle(x, -246 + Math.abs(x) * 0.25, 28)
+          .fill(MANE.fill)
+          .stroke(stroke(MANE.line, 5));
+    }
+    if (s.comb) {
+      for (const [x, y, r] of [
+        [-24, -252, 18],
+        [0, -266, 22],
+        [24, -252, 18],
+      ])
+        back.circle(x, y, r).fill(swatch.red.fill).stroke(stroke(swatch.red.line, 5));
+    }
     if (s.horns) {
       for (const side of [-1, 1]) {
         back
@@ -296,6 +381,13 @@ export class Critter extends Container {
           this.body.addChild(g);
           break;
         }
+        case 'big':
+          back
+            .circle(side * 92, -214, 52)
+            .fill(ear.fill)
+            .stroke(stroke(ear.line));
+          back.circle(side * 92, -214, 32).fill({ color: cheek, alpha: 0.7 });
+          break;
         case 'long': {
           const g = new Graphics()
             .ellipse(0, 0, 23, 64)
@@ -339,6 +431,33 @@ export class Critter extends Container {
       this.body.addChild(bodyPath(new Graphics()).fill(sw.fill).stroke(stroke(sw.line)));
     }
     if (s.belly) this.body.addChild(new Graphics().ellipse(0, -65, 80, 54).fill(sw.light));
+    if (s.wool) {
+      const curl = new Graphics();
+      for (const [x, y, r] of [
+        [-30, -238, 24],
+        [0, -250, 26],
+        [30, -238, 24],
+      ])
+        curl.circle(x, y, r).fill(sw.fill).stroke(stroke(sw.line, 5));
+      this.body.addChild(curl);
+    }
+    if (s.mane) {
+      // The forelock: three locks falling over the brow.
+      const lock = new Graphics();
+      for (const [x, lean] of [
+        [-20, -6],
+        [0, 0],
+        [20, 6],
+      ])
+        lock
+          .moveTo(x - 14, -246)
+          .quadraticCurveTo(x + lean - 10, -224, x + lean, -206)
+          .quadraticCurveTo(x + lean + 10, -224, x + 14, -246)
+          .closePath()
+          .fill(MANE.fill)
+          .stroke(stroke(MANE.line, 4));
+      this.body.addChild(lock);
+    }
 
     const feet = s.feet === 'hoof' ? HOOF : s.feet ? swatch[s.feet] : this.sw;
     const f = new Graphics();
@@ -399,8 +518,11 @@ export class Critter extends Container {
         g.ellipse(-9, -100, 5, 7).ellipse(9, -100, 5, 7).fill(sw.line);
         break;
       case 'muzzle':
-        g.ellipse(0, -68, 72, 46).fill(MUZZLE.fill).stroke(stroke(MUZZLE.line, 5));
-        g.ellipse(-25, -76, 8, 11).ellipse(25, -76, 8, 11).fill(MUZZLE.dark);
+        {
+          const mz = s.muzzleShade ?? MUZZLE;
+          g.ellipse(0, -68, 72, 46).fill(mz.fill).stroke(stroke(mz.line, 5));
+          g.ellipse(-25, -76, 8, 11).ellipse(25, -76, 8, 11).fill(mz.dark);
+        }
         break;
       case 'bill': {
         const bill = swatch.orange;
@@ -414,6 +536,21 @@ export class Critter extends Container {
         g.moveTo(-34, -91).quadraticCurveTo(0, -82, 34, -91).stroke(stroke(bill.line, 3));
         break;
       }
+      case 'beak':
+        g.moveTo(-20, -110)
+          .lineTo(20, -110)
+          .lineTo(0, -82)
+          .closePath()
+          .fill(BEAK.fill)
+          .stroke(stroke(BEAK.line, 4));
+        g.moveTo(-14, -104).lineTo(14, -104).stroke(stroke(BEAK.line, 3));
+        if (s.comb) {
+          for (const side of [-1, 1])
+            g.ellipse(side * 7, -72, 8, 12)
+              .fill(swatch.red.fill)
+              .stroke(stroke(swatch.red.line, 3));
+        }
+        break;
       default:
         break;
     }

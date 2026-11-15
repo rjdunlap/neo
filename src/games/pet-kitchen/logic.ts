@@ -1,4 +1,4 @@
-import { CRITTERS, type CritterName } from '../../art/critter';
+import { FIRST_CAST, type CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 export const PLANS = [
@@ -275,7 +275,7 @@ export function fruitPair(rng: Rng): [number, number] {
 
 /** The friends at the plates: distinct creatures dealt from the seed. */
 export function dealFriends(rng: Rng, n: number): CritterName[] {
-  return rng.shuffle(Object.keys(CRITTERS) as CritterName[]).slice(0, n);
+  return rng.shuffle([...FIRST_CAST]).slice(0, n);
 }
 
 /** Level 10 deals two halves or four quarters to two friends. */
@@ -344,7 +344,7 @@ export function kitchenDiscoveries(
 }
 /** Level 13's two friends are named aloud ("the cat asked for…"), so the island's own pip is never one of them. */
 export function compareFriends(rng: Rng): CritterName[] {
-  return rng.shuffle((Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'pip')).slice(0, 2);
+  return rng.shuffle(FIRST_CAST.filter((n) => n !== 'pip')).slice(0, 2);
 }
 
 /**
