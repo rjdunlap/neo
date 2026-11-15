@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
   async function traceRound(level, name, wrong = false) {
-    // Level 7 plays on a phone held upright, so the word's own picture is checked where the playtests happen.
-    const phone = level === 7;
+    // Levels 7 and 9 play on a phone held upright, so the word picture and the fading guides are checked where the playtests happen.
+    const phone = level === 7 || level === 9;
     const landscape = page.viewportSize();
     if (phone) await page.setViewportSize({ width: 390, height: 844 });
     try {
@@ -38,6 +38,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
         'the firefly shows the way and comes back to her checkpoint',
       );
     }
+    if (level === 9) await threeTries();
     await page.evaluate(async () => {
       const g = neo.scene.game;
       let steps = 0;
@@ -54,7 +55,7 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       }
       if (g.letterIndex < g.word.length) throw new Error('Tracing did not complete');
     });
-    if (level >= 7) {
+    if (level === 7 || level === 8) {
       // A word ends on its own picture, a name on a sign with the whole name; a name is traced up to eight letters.
       const shown = await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -77,6 +78,46 @@ export function createSuite({ page, log, scene, screenshot, launch, finished }) 
       'a traced letter is filed in the journal',
     );
     log(`Letter Trails level ${level} (${name || 'single letter'}): tracing and reward passed`);
+  }
+
+  /** Level 9: one capital three times. Trace the solid try, wander once on the dotted try (the solid trail comes back), finish it, and see the start-only try. */
+  async function threeTries() {
+    const traceTry = () =>
+      page.evaluate(async () => {
+        const g = neo.scene.game;
+        const attempt = g.attempt;
+        let steps = 0;
+        while (g.attempt === attempt && steps++ < 40) {
+          if (!(await kit.until(() => !g.busy || g.attempt !== attempt, 18000))) throw new Error('Stroke stuck');
+          if (g.attempt !== attempt) break;
+          const points = g.points.slice(g.progress).map(([x, y]) => {
+            const p = g.canvas.toGlobal({ x: x * g.size, y: y * g.size });
+            return [p.x, p.y];
+          });
+          await kit.drag(points, 1, 10);
+          await kit.sleep(250);
+        }
+        if (!(await kit.until(() => g.attempt !== attempt && !g.busy, 6000))) throw new Error('Next try did not start');
+      });
+    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'solid', 'the first try shows a solid trail');
+    await traceTry();
+    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'dotted', 'the second try shows dots');
+    await page.waitForTimeout(300);
+    await screenshot('letter-trails-9-dotted');
+    const wander = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const p = g.firefly.getGlobalPosition();
+      await kit.drag(kit.line([p.x, p.y], [neo.view.w * neo.view.scale - 10, 15], 30));
+      await kit.sleep(250);
+      return { misses: g.misses, guide: g.guideNow(), stroke: g.stroke };
+    });
+    assert.equal(wander.misses, 1, 'one wander is one miss');
+    assert.equal(wander.guide, 'solid', 'a wander brings the solid trail back for that stroke');
+    await traceTry();
+    assert.equal(await page.evaluate(() => neo.scene.game.guideNow()), 'start', 'the third try shows only the start');
+    await page.waitForTimeout(300);
+    await screenshot('letter-trails-9-start');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 0, 'no hint for one wander');
   }
 
   return { traceRound };

@@ -1206,6 +1206,7 @@ export async function runSuite(suite, fixture) {
     await traceRound(7, '');
     await traceRound(8, 'Zoë-Rose');
     await traceRound(8, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+    await traceRound(9, '');
   }
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'wardrobe7') await wardrobe7();
