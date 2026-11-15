@@ -778,7 +778,7 @@ class LemonadeStand implements Game {
   }
 
   private clearTowerTops() {
-    for (const t of this.towerTops.splice(0)) t.drag.destroy();
+    for (const t of this.towerTops.splice(0)) t?.drag.destroy();
   }
 
   /** Draw the towers from `towers`: every friend a small critter, the top one of each a large drag handle. */
@@ -830,7 +830,8 @@ class LemonadeStand implements Game {
     if (!this.towerPhase || this.busy || this.finished) return false;
     const { xs, gap } = this.towerSpots();
     const to = xs.findIndex((tx) => Math.abs(x - tx) < gap / 2);
-    if (to < 0 || to === from || this.towers[from] === 0) return false;
+    // A tower keeps its last friend (levelling never needs it gone), so every tower always has a top to drag.
+    if (to < 0 || to === from || this.towers[from] <= 1) return false;
     const taller = tallerMove(this.towers, from, to);
     this.towers = moveFriend(this.towers, from, to);
     this.towerFriends[to].push(this.towerFriends[from].pop()!);
