@@ -165,7 +165,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 7. **Level 8, More opposites** (built 2026-11-14, [PR 1660](https://github.com/rjdunlap/neo/pull/1660); [build note](../archive/COMPLETED-2026-10-09.md#pet-says-slice-7-level-8-more-opposites-2026-11-14); decisions 1, 2). "Moon turns are most of them" is read as one sun then five moons; "a round draws three pairs" as each drawn pair asked twice in the six turns, never the same pair twice in a row. The pre-K and school windows reach 8. Same tier.
 8. **Level 9, A walk in the woods** (built 2026-11-14, [PR #1663](https://github.com/rjdunlap/neo/pull/1663); [build note](../archive/COMPLETED-2026-10-09.md#pet-says-slice-8-level-9-a-walk-in-the-woods-2026-11-14)). The seed picks a woods, beach or farm story, with four landmarks and four distinct moves. The held replay counts once per stop. Pre-K and school reach 9. Same tier plus one portrait screenshot per story's first stop.
 9. **Level 10, Sun or moon** (built 2026-11-14, [PR #1671](https://github.com/rjdunlap/neo/pull/1671), [build note](../archive/COMPLETED-2026-10-09.md#pet-says-slice-9-level-10-sun-or-moon-2026-11-14)). Four seeded sign patterns start with two suns and switch several times in eight turns. The sign and spoken rule precede the move. Three of level 8’s pairs appear in each round. Pre-K and school reach 10. Same tier.
-10. **Level 11, Pet says, opposite.** Same tier.
+10. **Level 11, Pet says, opposite.** Claimed on `codex/pet-says-opposite`. Same tier.
 11. **Level 12, This hand** (decision 3). Same tier.
 12. **Entries below level 1** (they wait on the level-order decisions; *Pat the pet* first).
 13. **Sketches:** Make a dance (needs decision 8), dance styles with friends, slow and fast.
