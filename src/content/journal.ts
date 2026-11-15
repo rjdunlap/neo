@@ -95,6 +95,10 @@ const SNACK_LINES: Record<string, LineId> = {
   duck: 'journal.snack.duck',
   pig: 'journal.snack.pig',
   bear: 'journal.snack.bear',
+  sheep: 'journal.snack.sheep',
+  horse: 'journal.snack.horse',
+  hen: 'journal.snack.hen',
+  mouse: 'journal.snack.mouse',
 };
 
 const SAFARI_LINES: Record<Action, LineId> = {

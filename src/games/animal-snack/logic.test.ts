@@ -13,6 +13,8 @@ import {
   eaterOf,
   farBarnAt,
   FAVORITE,
+  FIRST_ANIMALS,
+  poolFor,
   FRIEND_HIT,
   FRIEND_SCALE,
   friendFeet,
@@ -82,6 +84,9 @@ describe('Animal Snack', () => {
       seeds: ['handful of seeds', 'handfuls of seeds'],
       apple: ['apple', 'apples'],
       honey: ['pot of honey', 'pots of honey'],
+      oats: ['bucket of oats', 'buckets of oats'],
+      corn: ['cob of corn', 'cobs of corn'],
+      grain: ['ear of grain', 'ears of grain'],
     };
     for (const a of ANIMALS) {
       const food = FAVORITE[a]!;
@@ -112,10 +117,47 @@ describe('Animal Snack', () => {
     }
   });
 
-  it('gives every animal its own food, so each snack has one eater', () => {
-    const foods = ANIMALS.map((a) => FAVORITE[a]!);
-    expect(new Set(foods).size).toBe(foods.length);
-    for (const a of ANIMALS) expect(eaterOf(FAVORITE[a]!)).toBe(a);
+  it('gives every animal a food, and only the sheep and the bunny share one (grass)', () => {
+    expect(ANIMALS).toHaveLength(11);
+    const byFood = new Map<string, string[]>();
+    for (const a of ANIMALS) byFood.set(FAVORITE[a]!, [...(byFood.get(FAVORITE[a]!) ?? []), a]);
+    const shared = [...byFood].filter(([, eaters]) => eaters.length > 1);
+    expect(shared).toEqual([['grass', ['bunny', 'sheep']]]);
+    for (const a of ANIMALS) {
+      expect(VOICE[a], a).toBeTruthy();
+      expect(BITE[FAVORITE[a]!], a).toBeTruthy();
+    }
+    expect(new Set(ANIMALS.map((a) => VOICE[a])).size).toBe(ANIMALS.length);
+    expect(new Set(Object.values(SOUND_WORDS)).size).toBe(Object.keys(SOUND_WORDS).length);
+  });
+
+  it('never deals two animals with one favorite, so every snack has one eater present', () => {
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 400; seed++) {
+        for (const r of makeRounds(plan, new Rng(seed))) {
+          expect(new Set(r.animals.map((a) => FAVORITE[a])).size, `${plan.mode} seed ${seed}`).toBe(
+            r.animals.length,
+          );
+          expect(r.animals).toHaveLength(plan.animals);
+          for (const a of r.animals) expect(eaterOf(FAVORITE[a]!, r.animals)).toBe(a);
+        }
+      }
+    }
+  });
+
+  it('keeps levels 1 and 2 to the seven first animals, and brings all eleven from level 3 up', () => {
+    const seen = new Map<number, Set<string>>();
+    PLANS.forEach((plan, i) => {
+      const s = new Set<string>();
+      for (let seed = 1; seed <= 400; seed++)
+        for (const r of makeRounds(plan, new Rng(seed))) r.animals.forEach((a) => s.add(a));
+      seen.set(i + 1, s);
+      expect(poolFor(plan).length, `level ${i + 1}'s pool is larger than its places`).toBeGreaterThan(
+        plan.animals,
+      );
+    });
+    for (const level of [1, 2]) expect([...seen.get(level)!].sort()).toEqual([...FIRST_ANIMALS].sort());
+    for (const level of [3, 4, 5, 6]) expect(seen.get(level)!.size, `level ${level}`).toBe(11);
   });
 
   it('asks about an animal that is there, never the same one twice running, with 2 to 4 snacks to count', () => {
@@ -196,7 +238,7 @@ describe('Animal Snack', () => {
             const snack = table.snacks[move!.give];
             expect(['match', 'sound']).toContain(plan.mode);
             expect(table.friends[move!.to], 'the snack goes to the animal that eats it').toBe(
-              eaterOf(snack.food),
+              eaterOf(snack.food, table.friends),
             );
             snack.eaten = true;
             if (plan.mode === 'sound') {
