@@ -1309,7 +1309,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               assert.deepEqual(await counts(), [2, 1]);
               if (level === 6) {
                 // Count up the change (fresh 4): the ten strip shows too much change with a red edge.
-                assert.ok(await page.evaluate(() => !!neo.scene.game.strip?.parent), 'the ten strip is drawn');
+                assert.ok(
+                  await page.evaluate(() => !!neo.scene.game.strip?.parent),
+                  'the ten strip is drawn',
+                );
                 await screenshot('market-stall-6');
               }
             }
