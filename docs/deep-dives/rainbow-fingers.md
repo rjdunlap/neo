@@ -178,7 +178,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 6. **Pictures, batch three: orange** (carrot, basketball); level 7 stays one page (decision 3, decided 2026-10-23), so it needs no `fingerdemo` change. (Built 2026-11-13, [build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-slice-6-orange-pictures-2026-11-13).) Tier: rule tests, one landscape screenshot of the new art.
 7. **Fold-down-the-middle pages** (decision 6). Tier: rule tests, one screenshot, `fingerdemo` at level 1.
 8. **A journal source** (decision 7). Tier: typecheck and unit tests (the journal tests check each line against `RECIPES`).
-9. **Level 8, Finish the color wheel.** New-levels tier: rule tests, one browser play of level 8, `fingerdemo` at it, one portrait screenshot.
+9. **Level 8, Finish the color wheel** (claimed 2026-11-14, branch `claude/rainbow-fingers-color-wheel`). New-levels tier: rule tests, one browser play of level 8, `fingerdemo` at it, one portrait screenshot.
 10. **Level 9, Make it pink.** Same tier.
 11. **Level 10, Brown from all three.** Same tier.
 12. **Level 11, Mix it from memory.** Same tier.
