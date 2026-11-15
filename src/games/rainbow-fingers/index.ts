@@ -559,6 +559,8 @@ class RainbowFingers implements Game {
   private readonly things: (Thing | Petal)[];
   /** The color wheel's painted red, yellow and blue petals, which pulse when she is told to look at an empty petal's neighbours. */
   private readonly wheelFills = new Map<ColorName, Graphics>();
+  /** Their outlines, kept so `destroy` frees the outline textures with the pictures'. */
+  private readonly wheelPrimaries: Picture[] = [];
   private readonly pictureLayer = new Container();
   private pictures: Picture[] = [];
   private current = 0;
@@ -817,6 +819,7 @@ class RainbowFingers implements Game {
       const pic = new Picture(petal, at.x, at.y, at.scale, this.ctx.renderer);
       const fill = pic.fill(petal.color);
       this.wheelFills.set(petal.color, fill);
+      this.wheelPrimaries.push(pic);
       this.pictureLayer.addChild(fill, pic.node);
     }
     this.pictures = this.things.map((petal) => {
@@ -956,6 +959,10 @@ class RainbowFingers implements Game {
     this.ctx.pet.cheer();
     this.current++;
     if (pic.thing.id === 'petal') {
+      // Each empty petal is a fresh mix: the bowl empties, so her first touch on the next one only reminds, never counts a miss.
+      this.poured = [];
+      this.setBrush(null);
+      this.drawBowl();
       const [a, b] = wheelNeighbors(as);
       await this.ctx.say('paint.wheel.made', { a, b, color: as });
     } else if (as !== pic.thing.color) await this.ctx.say(alsoLine(pic.thing, as) as LineId);
@@ -1133,7 +1140,8 @@ class RainbowFingers implements Game {
   destroy() {
     this.pool.forEach((s) => s.destroy());
     this.stamps.destroy({ children: true });
-    for (const pic of this.pictures) pic.node.destroy({ children: true, texture: true, textureSource: true });
+    for (const pic of [...this.pictures, ...this.wheelPrimaries])
+      pic.node.destroy({ children: true, texture: true, textureSource: true });
     this.done = true; // nothing prints into textures about to go
     this.endFold();
     this.blank.destroy();
