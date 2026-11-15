@@ -25,5 +25,13 @@ export const VOICE = {
   'bug.foldYes': ['You saw it! The fold made this one.'],
   'bug.foldThis': ['Look! The fold made this one.'],
   'bug.foldWhy': ['Each spot lands across the line, just as far from the middle.'],
+  'bug.mend': ['One spot on this wing is not like its twin across the line. Find it and tap it!'],
+  'bug.mendOther': ['This wing is just right. Look for the spot on the other wing!'],
+  'bug.mendTwin': ['That one matches its twin. Look for one that is different.'],
+  'bug.mendFound': ['You found it! Now drag on the stamp its twin has.'],
+  'bug.mendFoundEmpty': ['You found it! A spot is missing. Drag on the stamp its twin has.'],
+  'bug.mendWrongStamp': ["That's a {color} {shape}. Look at its twin across the line."],
+  'bug.mendHintFind': ['Tap the glowing spot. Look at its twin across the line.'],
+  'bug.mendDone': ['Mended! Now the wings match.'],
   'bug.kindHintAdd': ['The glowing one is {one}. Put it on the glowing place.'],
 } satisfies Record<string, string[]>;

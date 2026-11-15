@@ -27,16 +27,25 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 10,
+      to: 10,
       text: 'Fold a friend: look at the spots on one wing, then tap the finished bug the fold will make. Any choice is fine: the wing folds over and shows the answer.',
+    },
+    {
+      from: 11,
+      text: 'Mend the wing: one spot on the right wing is not like its twin on the left (the wrong color, the wrong shape, or missing). Tap that spot, then drag on the stamp its twin has.',
     },
     { from: 5, to: 7, text: 'When the wings match, watch them fold across the middle and open together.' },
   ],
   finish: [
     {
       from: 10,
+      to: 10,
       text: 'The round ends once the wing has folded over and shown the answer; any choice is fine.',
     },
     {
+      from: 11,
+      text: 'The round ends when the mended wing matches its twin; then both wings fold across the middle and open together.',
+    },    {
       text: 'The round ends when the bug matches what was asked for, or has just the number of spots (of the right kind) on the sign.',
     },
   ],

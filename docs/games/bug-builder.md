@@ -10,8 +10,8 @@
 | --- | --- |
 | toddler | 1–2 |
 | preschool | 2, 3, 4, 5, 8 |
-| pre-K | 4, 5, 8, 9, 6, 7, 10 |
-| school | 6, 7, 10 |
+| pre-K | 4, 5, 8, 9, 6, 7, 10, 11 |
+| school | 6, 7, 10, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,6 +25,7 @@
 | 8 | Count the spots: give a bare bug the number on the sign |
 | 9 | Count a kind: give the bug the number of spots of one color or one shape |
 | 10 | Fold a friend: predict which finished bug the folded wing will make |
+| 11 | Mend the wing: find the spot that differs from its twin and fix it |
 
 <!-- end generated -->
 
