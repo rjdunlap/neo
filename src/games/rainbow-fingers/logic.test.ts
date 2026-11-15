@@ -68,7 +68,16 @@ import { VOICE } from './voice';
 
 describe('Rainbow Fingers', () => {
   it('pours in both mixing modes and directly selects paint in every other mode', () => {
-    expect(PLANS.map((plan) => pours(plan.mode))).toEqual([false, false, false, false, false, true, true, true]);
+    expect(PLANS.map((plan) => pours(plan.mode))).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+    ]);
   });
 
   it('mixes the three secondary colors, and a color with itself stays the same', () => {
@@ -360,7 +369,16 @@ describe('Rainbow Fingers', () => {
   });
 
   it('nudges only in free play, after eight quiet seconds, at the spot farthest from the paint', () => {
-    expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([true, true, false, false, false, false, false, false]);
+    expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
     expect(NUDGE_AFTER).toBe(8);
     const spots = [
       { x: 200, y: 200 },
@@ -715,7 +733,8 @@ describe('Rainbow Fingers', () => {
           expect(at.x + r).toBeLessThanOrEqual(v.w - MARGIN);
           // The pots and bowl sit in one row along the bottom: the wheel stays above their raised tops.
           const pots = potLayout(3, v.w, v.h, true);
-          for (const p of [...pots.pots, pots.bowl!]) expect(at.y + r, `${pw}x${ph}`).toBeLessThan(p.y - POT_RADIUS - 14);
+          for (const p of [...pots.pots, pots.bowl!])
+            expect(at.y + r, `${pw}x${ph}`).toBeLessThan(p.y - POT_RADIUS - 14);
           // The frame button (52 across at w - 80, 80) and the pet's corner stay clear.
           expect(Math.hypot(v.w - 80 - at.x, 80 - at.y)).toBeGreaterThan(r + 52);
           for (const petal of WHEEL)
@@ -731,7 +750,14 @@ describe('Rainbow Fingers', () => {
     it('fills every empty petal with only its two neighbours poured', () => {
       for (let seed = 1; seed <= 30; seed++) {
         const gaps = pickThings(wheel, new Rng(seed));
-        const st: PaintState = { mode: 'wheel', strokes: 0, brush: null, poured: [], picture: gaps[0].color, frame: false };
+        const st: PaintState = {
+          mode: 'wheel',
+          strokes: 0,
+          brush: null,
+          poured: [],
+          picture: gaps[0].color,
+          frame: false,
+        };
         let done = 0;
         for (let guard = 0; guard < 40 && done < gaps.length; guard++) {
           const m = paintStep(st)!;
@@ -754,7 +780,8 @@ describe('Rainbow Fingers', () => {
       }
       // A primary on an empty petal is a wrong color, never accepted.
       for (const gap of WHEEL.filter((p) => RECIPES[p.color]))
-        for (const primary of ['red', 'yellow', 'blue'] as ColorName[]) expect(accepts(gap, 'wheel', primary)).toBe(false);
+        for (const primary of ['red', 'yellow', 'blue'] as ColorName[])
+          expect(accepts(gap, 'wheel', primary)).toBe(false);
     });
   });
 });

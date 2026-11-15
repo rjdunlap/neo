@@ -300,7 +300,9 @@ export const ACCEPTS: Record<ThingId, ColorName[]> = {
 /** Whether a dab of `color` paints `thing` on a page of this mode. */
 export function accepts(thing: Thing | Petal, mode: PaintMode, color: ColorName | null): boolean {
   if (!color) return false;
-  return mode === 'recall' && thing.id !== 'petal' ? ACCEPTS[thing.id].includes(color) : color === thing.color;
+  return mode === 'recall' && thing.id !== 'petal'
+    ? ACCEPTS[thing.id].includes(color)
+    : color === thing.color;
 }
 
 /** The line the voice says when a picture is finished in an accepted color that is not the told one: "Green apples are real too!" */

@@ -807,10 +807,7 @@ class RainbowFingers implements Game {
    */
   private layoutWheel(v: View) {
     const at = wheelLayout(v.w, v.h);
-    const hub = new Graphics()
-      .circle(0, 0, WHEEL_HUB)
-      .fill(0xfff1c9)
-      .stroke({ width: 6, color: LINE });
+    const hub = new Graphics().circle(0, 0, WHEEL_HUB).fill(0xfff1c9).stroke({ width: 6, color: LINE });
     hub.position.set(at.x, at.y);
     hub.scale.set(at.scale);
     this.pictureLayer.addChild(hub);

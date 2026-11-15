@@ -21,7 +21,10 @@ export const VOICE = {
   'paint.also.apple.green': ['Green apples are real too!'],
   'paint.also.grapes.green': ['Green grapes are real too!'],
   'paint.wheel': ['Paint the empty petal! Look at its neighbors.'],
-  'paint.wheel.next': ['Now this empty petal! Look at its neighbors.', 'Another empty petal! Look at its neighbors.'],
+  'paint.wheel.next': [
+    'Now this empty petal! Look at its neighbors.',
+    'Another empty petal! Look at its neighbors.',
+  ],
   'paint.wheel.look': ['Look at its neighbors!', 'Look at the petals next to it!'],
   'paint.wheel.two': ['Its neighbors are two colors. Mix them both!'],
   'paint.wheel.made': ['{a} and {b} hugged and made {color}!', '{a} and {b} make {color}!'],
