@@ -12,11 +12,14 @@ import {
   demand,
   EVENT_DELTA,
   EVENTS,
+  fewerShellsWorks,
   forecastChoice,
   helps,
   insight,
+  LEVELS,
   makeWeek,
   MIN_PURSE,
+  moreLemonsWorks,
   PER_TWO,
   PLANS,
   planFor,
@@ -24,6 +27,7 @@ import {
   PRICE_DROP,
   priceChoice,
   rating,
+  RATE_OFFERS,
   SAME_OFFERS,
   sellDay,
   settle,
@@ -66,13 +70,14 @@ const randomChooser = (plan: StandPlan, rng: Rng) => (d: Day, _i: number, purse:
 
 describe('Lemonade Stand plans', () => {
   it('climbs from the weather alone to a week with a purse, and clamps the level', () => {
-    expect(PLANS.map((p) => p.days)).toEqual([3, 3, 4, 5, 4]);
-    expect(PLANS.map((p) => p.events)).toEqual([false, true, true, true, true]);
-    expect(PLANS.map((p) => priceChoice(p))).toEqual([false, false, true, true, true]);
-    expect(PLANS.map((p) => p.purse)).toEqual([false, false, false, true, true]);
+    expect(PLANS.map((p) => p.days)).toEqual([3, 3, 4, 5, 4, 4]);
+    expect(PLANS.map((p) => p.events)).toEqual([false, true, true, true, true, true]);
+    expect(PLANS.map((p) => priceChoice(p))).toEqual([false, false, true, true, true, true]);
+    expect(PLANS.map((p) => p.purse)).toEqual([false, false, false, true, true, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[4]);
-    expect(PLANS.map((p) => p.boats)).toEqual([undefined, undefined, undefined, undefined, 'same']);
+    expect(planFor(99)).toBe(PLANS[5]);
+    expect(LEVELS.school?.max).toBe(PLANS.length);
+    expect(PLANS.map((p) => p.boats)).toEqual([undefined, undefined, undefined, undefined, 'same', 'rate']);
     for (const p of PLANS) expect(p.name.length).toBeGreaterThan(10);
   });
 });
@@ -607,5 +612,118 @@ describe('Lemonade Stand level 5: two lemon boats', () => {
         const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
         expect(insight(p, rows).kind).not.toBe('boats');
       }
+  });
+});
+
+describe('Lemonade Stand level 6: best buy', () => {
+  const plan = PLANS[5];
+  const weeks = SEEDS.map((seed) => makeWeek(plan, new Rng(seed)));
+  const days = weeks.flat();
+
+  it('keeps every offer pair fair: lemons and shells both differ, one strictly cheaper, whole prices, never dearer than a shell a lemon', () => {
+    for (const [a, b] of RATE_OFFERS) {
+      expect(a.lemons).not.toBe(b.lemons);
+      expect(a.shells).not.toBe(b.shells);
+      expect(perTwo(a)).toBeLessThan(perTwo(b));
+      for (const o of [a, b]) {
+        expect(Number.isInteger(perTwo(o))).toBe(true);
+        expect(o.lemons).toBeLessThanOrEqual(6);
+        expect(o.shells).toBeLessThanOrEqual(6);
+        for (const cups of BATCHES) expect(Number.isInteger(batchCost(cups, perTwo(o)))).toBe(true);
+      }
+      expect(perTwo(a)).toBeLessThanOrEqual(PER_TWO);
+      expect(cheaperBoat([a, b])).toBe(0);
+      expect(cheaperBoat([b, a])).toBe(1);
+    }
+    expect(new Set(RATE_OFFERS.map(([a, b]) => `${a.lemons}/${a.shells}-${b.lemons}/${b.shells}`)).size).toBe(
+      RATE_OFFERS.length,
+    );
+    // The level-5 pool is the other kind: a shared number of lemons or shells.
+    for (const pair of SAME_OFFERS) expect(RATE_OFFERS).not.toContainEqual(pair);
+    for (const d of days) expect(affordable(plan, START_PURSE, 12, d)).toBe(true);
+  });
+
+  it('needs the unit rate: neither fewer shells nor more lemons picks the cheaper boat every time', () => {
+    expect(RATE_OFFERS.some((p) => !fewerShellsWorks(p))).toBe(true);
+    expect(RATE_OFFERS.some((p) => !moreLemonsWorks(p))).toBe(true);
+    for (const w of weeks) {
+      expect(w).toHaveLength(4);
+      expect(w.some((d) => !fewerShellsWorks(d.boats!))).toBe(true);
+      expect(w.some((d) => !moreLemonsWorks(d.boats!))).toBe(true);
+      for (let i = 1; i < w.length; i++) {
+        const key = (d: Day) =>
+          d
+            .boats!.map((o) => `${o.lemons}/${o.shells}`)
+            .sort()
+            .join();
+        expect(key(w[i])).not.toBe(key(w[i - 1]));
+      }
+    }
+    // Both sides turn up as the cheaper boat, and every pair turns up.
+    expect(new Set(days.map((d) => cheaperBoat(d.boats!)))).toEqual(new Set([0, 1]));
+    const seen = new Set(
+      days.map((d) =>
+        d
+          .boats!.map((o) => `${o.lemons}/${o.shells}`)
+          .sort()
+          .join(),
+      ),
+    );
+    expect(seen.size).toBe(RATE_OFFERS.length);
+  });
+
+  it('keeps level 5 weeks exactly as they were, and draws the weather before the boats', () => {
+    const base = { ...PLANS[3], days: 4, purse: true };
+    for (const seed of SEEDS) {
+      const a = makeWeek(plan, new Rng(seed)).map(({ boats: _b, ...d }) => d);
+      expect(a).toEqual(makeWeek(base, new Rng(seed)));
+      for (const d of makeWeek(PLANS[4], new Rng(seed)))
+        expect(SAME_OFFERS).toContainEqual(
+          cheaperBoat(d.boats!) === 0 ? d.boats : [d.boats![1], d.boats![0]],
+        );
+    }
+  });
+
+  it('scales both offers to 2 lemons truthfully: the spoken shells times the twos of lemons are the sign', () => {
+    for (const d of days) {
+      const talk = boatTalk(d.boats!);
+      const cheap = d.boats![cheaperBoat(d.boats!)];
+      const dear = d.boats![1 - cheaperBoat(d.boats!)];
+      expect(talk.cheap * (cheap.lemons / 2)).toBe(cheap.shells);
+      expect(talk.dear * (dear.lemons / 2)).toBe(dear.shells);
+      expect(talk.cheap).toBeLessThan(talk.dear);
+      expect(dayPerTwo(d)).toBe(talk.cheap);
+    }
+  });
+
+  it('never loses shells with the best or the sign-only choice, from any purse the host leaves', () => {
+    for (const [i, day] of days.entries()) {
+      for (let purse = MIN_PURSE; purse <= START_PURSE + 6; purse++) {
+        const best = bestChoice(plan, day, 0, purse);
+        expect(best.row.profit, `day ${i} purse ${purse}`).toBeGreaterThanOrEqual(0);
+        const f = forecastChoice(plan, day, purse);
+        expect(affordable(plan, purse, f.made, day)).toBe(true);
+        expect(sellDay(plan, { ...day, noise: 1 }, 0, f.made, f.price).profit).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('records the savings and ends the round on the boats, as level 5 does', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const week = makeWeek(plan, rng);
+      const { rows } = play(plan, week, randomChooser(plan, rng));
+      for (const r of rows) {
+        const talk = boatTalk(week[r.day].boats!);
+        expect(r.saved).toBe(batchCost(r.made, talk.dear) - batchCost(r.made, talk.cheap));
+        expect(r.saved).toBeGreaterThan(0);
+      }
+      const found = insight(plan, rows);
+      expect(found.kind).toBe('boats');
+      expect(found.vars.n).toBe(rows.reduce((n, r) => n + r.saved, 0));
+      expect(helps(plan, week[0], [], false)).toEqual([
+        { kind: 'boat', rows: [], vars: boatTalk(week[0].boats!) },
+      ]);
+    }
   });
 });

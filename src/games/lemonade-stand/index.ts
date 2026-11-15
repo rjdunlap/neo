@@ -662,7 +662,15 @@ class LemonadeStand implements Game {
         this.helpedToday = true;
         this.hints++;
       }
-      await this.ctx.say('lemon.boat.wrong', { dear: shellWords(talk.dear), cheap: shellWords(talk.cheap) });
+      const words = { dear: shellWords(talk.dear), cheap: shellWords(talk.cheap) };
+      // Best buy: the signs share neither number, so the pet scales each one to 2 lemons out loud.
+      if (this.plan.boats === 'rate')
+        await this.ctx.say('lemon.boat.wrong.rate', {
+          ...words,
+          dearOffer: offerWords(boats[i]),
+          cheapOffer: offerWords(boats[1 - i]),
+        });
+      else await this.ctx.say('lemon.boat.wrong', words);
       return;
     }
     this.boatPhase = false;
@@ -1043,7 +1051,7 @@ class LemonadeStand implements Game {
     const price = priceChoice(this.plan) ? '.price' : '';
     switch (h.kind) {
       case 'boat':
-        return 'lemon.help.boat';
+        return this.plan.boats === 'rate' ? 'lemon.help.boat.rate' : 'lemon.help.boat';
       case 'out':
         return `lemon.help.out${price}` as LineId;
       case 'left':

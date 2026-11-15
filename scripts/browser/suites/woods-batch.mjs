@@ -5312,9 +5312,11 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 
     // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
     if (!only || only === 'lemon')
-      for (let level = fromLevel; level <= 5; level++) {
+      for (let level = fromLevel; level <= 6; level++) {
         await launch('lemonade-stand', level);
         if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+        // Best buy is checked on a phone held upright, where the two six-lemon signs must still fit and count.
+        if (level === 6) await page.setViewportSize({ width: 390, height: 844 });
         const plan = await page.evaluate(() => ({
           days: neo.scene.game.plan.days,
           price: neo.scene.game.plan.prices.length > 1,
@@ -5334,10 +5336,20 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             const [want, got] = await purseNow();
             assert.equal(got, want, `day ${n + 1} purse`);
           }
-          if (level === 5) {
+          if (level >= 5) {
             // The morning's boats: on day 1 the dearer boat twice (two misses, the glow is the day's one hint, and the
             // lightbulb then adds none), then the cheaper boat; on day 2 the lightbulb is that day's hint.
             await page.waitForFunction(() => neo.scene.game.boatPhase && neo.scene.game.boats.length === 2);
+            if (level === 6 && n === 0)
+              // The fullest signs, where fewer shells is the dearer boat: 6 lemons for 3 shells against 2 for 2.
+              await page.evaluate(() => {
+                const g = neo.scene.game;
+                g.week[0].boats = [
+                  { lemons: 2, shells: 2 },
+                  { lemons: 6, shells: 3 },
+                ];
+                g.showBoats(g.week[0].boats);
+              });
             await page.waitForTimeout(700);
             const right = await page.evaluate(async () => {
               const L = await import('/src/games/lemonade-stand/logic.ts');
@@ -5352,7 +5364,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
               await tap('neo.scene.game.help');
               assert.deepEqual(await counts(), [2, 1], 'the glow and the lightbulb count one hint a day');
               await page.waitForTimeout(400);
-              await screenshot('lemonade-stand-5-jetty');
+              await screenshot(`lemonade-stand-${level}-jetty`);
             }
             if (n === 1) {
               await tap('neo.scene.game.help');
@@ -5382,7 +5394,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
             assert.deepEqual(await counts(), before);
             await tap('neo.scene.game.help');
             await tap('neo.scene.game.help');
-            assert.deepEqual(await counts(), level === 5 ? [2, 1] : [0, 1]);
+            assert.deepEqual(await counts(), level >= 5 ? [2, 1] : [0, 1]);
             await screenshot(`lemonade-stand-${level}`);
           }
           // The first day is a weak batch with the dearest price (an experiment); after that the best choice the model knows.
@@ -5406,10 +5418,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           }
         }
         await finished('lemonade-stand');
-        assert.deepEqual(await score('lemonade-stand'), level === 5 ? [2, 2] : [0, 1]);
+        assert.deepEqual(await score('lemonade-stand'), level >= 5 ? [2, 2] : [0, 1]);
         await page.setViewportSize({ width: 1024, height: 768 });
         log(
-          `Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week', 'two lemon boats'][level - 1]}): early open nudged, help counted once, ${level === 5 ? "dearer boats missed with the glow as the day's one hint, " : ''}${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`,
+          `Lemonade Stand ${level} (${['weather', 'forecast event', 'price', 'market week', 'two lemon boats', 'best buy'][level - 1]}): early open nudged, help counted once, ${level >= 5 ? "dearer boats missed with the glow as the day's one hint, " : ''}${plan.price ? 'a price chosen, ' : ''}${plan.purse ? 'the purse tracked, ' : ''}a row a day read aloud, saved score and sticker passed`,
         );
       }
   }

@@ -17,7 +17,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 5,
+      to: 5,
       text: 'Each morning two boats sell lemons: count the lemons and shells on their signs and tap the cheaper boat. Then tap how many cups and a price in shells.',
+    },
+    {
+      from: 6,
+      text: 'Each morning two boats sell different numbers of lemons for different shells: work out the shells for every 2 lemons on each sign and tap the cheaper boat. Then tap how many cups and a price in shells.',
     },
     'Tap OPEN and watch the friends buy, then look at the new row of the table. Tap a row to hear it.',
     'The lightbulb asks the pet for help, based on the table so far.',

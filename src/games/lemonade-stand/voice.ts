@@ -74,5 +74,11 @@ export const VOICE = {
   'lemon.help.boat': [
     'Count the shells for 2 lemons. The {side} boat wants {cheap}, and the other boat wants {dear}.',
   ],
+  'lemon.boat.wrong.rate': [
+    'This boat sells {dearOffer}. That is {dear} for every 2 lemons. That boat sells {cheapOffer}: only {cheap} for every 2 lemons.',
+  ],
+  'lemon.help.boat.rate': [
+    'Put the lemons on each sign in twos, and share out the shells. The {side} boat wants {cheap} for every 2 lemons, and the other boat wants {dear}.',
+  ],
   'lemon.sum.boats': ['Picking the cheaper boat saved you {n} shells this week!'],
 } satisfies Record<string, string[]>;

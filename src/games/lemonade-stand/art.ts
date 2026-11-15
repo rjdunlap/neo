@@ -174,6 +174,17 @@ export function lemonArt(): Graphics {
  * A lemon boat for the jetty: a hull on the water and, on its mast, a sign of the offer drawn as lemons over shells,
  * so it is counted rather than read. About 210 wide and 200 tall; the waterline is at (0, 0).
  */
+/** Where n items sit on a boat sign around a centre line: one row of up to four, or two rows of three. */
+export function signSpots(n: number, cy: number, rowGap: number): [number, number][] {
+  if (n <= 4) return Array.from({ length: n }, (_, i) => [(i - (n - 1) / 2) * 36, cy]);
+  const top = Math.ceil(n / 2);
+  return Array.from({ length: n }, (_, i) => {
+    const row = i < top ? 0 : 1;
+    const inRow = row === 0 ? top : n - top;
+    return [((row === 0 ? i : i - top) - (inRow - 1) / 2) * 38, cy + (row - 0.5) * rowGap];
+  });
+}
+
 export function boatArt(offer: Offer, sail: number, sailLine: number): Container {
   const c = new Container();
   const g = new Graphics();
@@ -188,16 +199,17 @@ export function boatArt(offer: Offer, sail: number, sailLine: number): Container
   c.addChild(g, boardArt(176, 128));
   const sign = c.children[1];
   sign.position.set(0, -78);
-  // The offer: a row of lemons over a row of shells.
-  for (let i = 0; i < offer.lemons; i++) {
+  // The offer: lemons over shells, each a row of up to four, or two rows of three for five or six (Best buy).
+  for (const [x, y] of signSpots(offer.lemons, -110, 24)) {
     const l = lemonArt();
-    l.position.set((i - (offer.lemons - 1) / 2) * 36, -110);
+    if (offer.lemons > 4) l.scale.set(0.9);
+    l.position.set(x, y);
     c.addChild(l);
   }
-  for (let i = 0; i < offer.shells; i++) {
+  for (const [x, y] of signSpots(offer.shells, -54, 26)) {
     const coin = coinArt(1);
-    coin.scale.set(0.5);
-    coin.position.set((i - (offer.shells - 1) / 2) * 36, -56);
+    coin.scale.set(offer.shells > 4 ? 0.42 : 0.5);
+    coin.position.set(x, y);
     c.addChild(coin);
   }
   const divider = new Graphics().moveTo(-70, -83).lineTo(70, -83).stroke(line(wood.line, 3));
