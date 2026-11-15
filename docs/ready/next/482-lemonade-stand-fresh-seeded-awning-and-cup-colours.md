@@ -1,1 +1,0 @@
-**`lemonade-stand`, fresh seeded awning and cup colours** (optional content, any time; typecheck, the sticker pin test, one screenshot): the awning stripes and cup colour vary by seed in `art.ts`, with no rule change. [Lemonade Stand dive, slice 4](../../deep-dives/lemonade-stand.md#build-slices-in-order)
