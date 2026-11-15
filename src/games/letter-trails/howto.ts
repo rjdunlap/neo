@@ -10,8 +10,16 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     { to: 6, text: 'The round ends when the whole letter has been traced.' },
-    { from: 7, to: 7, text: "The round ends when the whole word has been traced and the word's own picture appears." },
-    { from: 8, to: 8, text: 'The round ends when the name has been traced (up to eight letters) and a sign shows the whole name.' },
+    {
+      from: 7,
+      to: 7,
+      text: "The round ends when the whole word has been traced and the word's own picture appears.",
+    },
+    {
+      from: 8,
+      to: 8,
+      text: 'The round ends when the name has been traced (up to eight letters) and a sign shows the whole name.',
+    },
   ],
   note: [
     {
