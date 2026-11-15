@@ -28,6 +28,11 @@ import {
   SCENES,
   sceneFor,
   SOUND_WORDS,
+  EATS,
+  EATS_FOODS,
+  NOT_EATS,
+  eats,
+  eatsTap,
   SOUNDERS,
   VOICE,
   snackTouch,
@@ -158,6 +163,8 @@ describe('Animal Snack', () => {
     });
     for (const level of [1, 2]) expect([...seen.get(level)!].sort()).toEqual([...FIRST_ANIMALS].sort());
     for (const level of [3, 4, 5, 6]) expect(seen.get(level)!.size, `level ${level}`).toBe(11);
+    // Level 7 deals only animals the EATS table speaks for: every one but the dog.
+    expect(seen.get(7)!.size).toBe(10);
   });
 
   it('asks about an animal that is there, never the same one twice running, with 2 to 4 snacks to count', () => {
@@ -195,7 +202,7 @@ describe('Animal Snack', () => {
               : plan.mode === 'float' || plan.mode === 'match' || plan.mode === 'sound'
                 ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false }))
                 : [];
-          return { friends, snacks, ask: r.ask, n: r.n, eatenCount };
+          return { friends, snacks, ask: r.ask, n: r.n, eatenCount, food: r.food, found: [] };
         };
         let table = deal();
         let done = false;
@@ -215,7 +222,15 @@ describe('Animal Snack', () => {
             else table = deal();
           } else if ('friend' in move!) {
             const name = table.friends[move.friend];
-            if (plan.mode === 'who') {
+            if (plan.mode === 'eats') {
+              expect(eatsTap(table.food!, name, table.found!), 'a new eater, never a miss').toBe('found');
+              table.found!.push(name);
+              if (table.found!.length === 2) {
+                index++;
+                if (index >= rounds.length) done = true;
+                else table = deal();
+              }
+            } else if (plan.mode === 'who') {
               expect(name, 'the animal asked about').toBe(table.ask);
               index++;
               if (index >= rounds.length) done = true;
@@ -397,7 +412,7 @@ describe('Animal Snack', () => {
   it('asks Who says moo? at level 6: every question a sound that names exactly one animal present, never twice running', () => {
     const plan = planFor(6);
     expect(plan.mode).toBe('sound');
-    expect(LEVELS.prek).toEqual({ min: 5, max: 6 });
+    expect(LEVELS.prek?.min).toBe(5);
     // Every voice is its own, so a sound picks out one animal whichever three are dealt.
     expect(new Set(ANIMALS.map((a) => VOICE[a])).size).toBe(ANIMALS.length);
     const asked = new Set<string>();
@@ -437,5 +452,61 @@ describe('Animal Snack', () => {
 
   it('glows the animal at the second miss of a level 6 question and its snack at the fourth', () => {
     expect([0, 1, 2, 3, 4, 5, 6].map(soundHelp)).toEqual([null, null, 'animal', null, 'snack', null, null]);
+  });
+
+  it('asks Who eats it too? at level 7: two eaters and one definite non-eater, never the same food twice running', () => {
+    const plan = planFor(7);
+    expect(plan.mode).toBe('eats');
+    expect(LEVELS.prek).toEqual({ min: 5, max: 7 });
+    const asked = new Set<Food>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const rounds = makeRounds(plan, new Rng(seed));
+      expect(rounds).toHaveLength(plan.rounds);
+      rounds.forEach((r, i) => {
+        const food = r.food!;
+        expect(EATS_FOODS).toContain(food);
+        expect(new Set(r.animals).size).toBe(3);
+        expect(
+          r.animals.filter((a) => eats(a, food)),
+          'two answers',
+        ).toHaveLength(2);
+        const not = r.animals.find((a) => !eats(a, food))!;
+        expect(NOT_EATS[food], 'the third is a definite non-eater').toContain(not);
+        // The animal whose favorite it is, is always there and always an answer.
+        expect(r.animals.some((a) => FAVORITE[a] === food)).toBe(true);
+        if (i > 0) expect(food).not.toBe(rounds[i - 1].food);
+        asked.add(food);
+      });
+    }
+    expect([...asked].sort()).toEqual([...EATS_FOODS].sort());
+  });
+
+  it('keeps the EATS table honest: two or more eaters, a non-eater, no animal on both sides, favorites included', () => {
+    for (const food of EATS_FOODS) {
+      const yes = EATS[food]!;
+      const no = NOT_EATS[food]!;
+      expect(yes.length, food).toBeGreaterThanOrEqual(2);
+      expect(no.length, food).toBeGreaterThanOrEqual(1);
+      expect(
+        yes.filter((a) => no.includes(a)),
+        food,
+      ).toEqual([]);
+      for (const a of ANIMALS)
+        if (FAVORITE[a] === food) expect(yes, `${a} eats its favorite ${food}`).toContain(a);
+      expect(
+        yes.some((a) => FAVORITE[a] === food),
+        `${food} is somebody's favorite`,
+      ).toBe(true);
+    }
+    // The cat is an obligate carnivore: fish is the only food it eats here.
+    expect(EATS_FOODS.filter((f) => eats('cat', f))).toEqual(['fish']);
+  });
+
+  it('judges a level 7 tap: a new eater is found, a found one is no miss, a non-eater is a miss', () => {
+    expect(eatsTap('hay', 'cow', [])).toBe('found');
+    expect(eatsTap('hay', 'cow', ['cow'])).toBe('again');
+    expect(eatsTap('hay', 'cat', ['cow'])).toBe('wrong');
+    expect(eatsTap('fish', 'bear', ['cat'])).toBe('found');
+    expect(eatsTap('fish', 'horse', [])).toBe('wrong');
   });
 });
