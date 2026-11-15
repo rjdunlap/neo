@@ -1,6 +1,6 @@
 # Compare kept tunes (W2)
 
-Defined 2026-11-15 for [roadmap chunk 22](../ROADMAP.md#chunks). The first build is a small addition to [creature play](../rework/HOME.md#built-slice-2-2026-10-20): hear two kept Song Maker tunes in quick succession and see where their patterns differ.
+Defined 2026-11-15 for [roadmap chunk 22](../ROADMAP.md#chunks). Built 2026-11-15 in [PR #1707](https://github.com/rjdunlap/neo/pull/1707) as an addition to [creature play](../rework/HOME.md#built-slice-2-2026-10-20): hear two kept Song Maker tunes in quick succession and see where their patterns differ.
 
 ## The visit
 
@@ -21,8 +21,6 @@ Each grid and the panel's close control use pictured targets of at least 100 log
 The two grids read the current profile's `store.creations.tune.current` and `.previous`. The labels describe the current display order because an undo can swap the two. Listening never changes those slots. A new tune is still kept by deliberate request after a Song Maker round. The comparison uses the established bounded tune format, including the same save repair, replacement and restoration behavior. The visitor earns no sticker, progress or journal entry.
 
 ## Build boundary
-
-Build claim: `codex/w2-tune-playback` covers the two-slot comparison, interruptible playback and its one-slot fallback. Expected files are `PlayScene`, its panel and layout, voice lines, and the filtered Home tests. The existing tune format and Song Maker Keep behavior are dependencies.
 
 Keep the panel within root `PlayScene`. Use `TunePlaque` and `singTune` from `src/ui/creation-art.ts` and touch targets laid out from `View`. Use scene-owned waits and a playback identity checked between beats and before cleanup. Switching grids or closing the panel invalidates the old playback immediately. A note already sounding can decay naturally. Old playback may neither emit another beat nor clear the new highlight. Leave, scene destruction and player changes release the panel and its playback. Rotate with the panel open to relayout it without starting another tune.
 

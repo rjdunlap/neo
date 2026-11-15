@@ -1,0 +1,1 @@
+**Define Spinner Fair levels 6–8 (CS2)** (docs only): bound the repeated-spin display, two-dice sum grid and mean-and-range activity. [Chance and statistics study, build slices](../../deep-dives/subjects/chance-statistics.md#build-slices-in-order)

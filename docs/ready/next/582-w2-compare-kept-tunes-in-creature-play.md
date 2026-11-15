@@ -1,1 +1,0 @@
-**W2, compare kept tunes in creature play** (shell tier: typecheck, units, build, filtered `home` flow and a portrait screenshot): with both tune slots occupied, the plaque opens two playable beat grids. Switching grids interrupts the previous playback. [Build packet](../../definitions/compare-kept-tunes.md)

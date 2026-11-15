@@ -1,0 +1,1 @@
+**`peekaboo-barn`, level 15 Guess who!** (new-interaction tier): deal four animals so each single clue fits a decoy and the pair fits only the answer. Give true feedback, supported completion and a ghost-finger play. [Peekaboo Barn dive, slice 8](../../deep-dives/peekaboo-barn.md#build-slices-in-order)

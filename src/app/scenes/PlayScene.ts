@@ -12,12 +12,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
-import { RoundButton, squash } from '../../ui/buttons';
+import { RoundButton, spring, squash } from '../../ui/buttons';
 import { BOARD, PLAQUE, pictureBoard, singTune, TunePlaque } from '../../ui/creation-art';
 import { arrowIcon, houseIcon, libraryIcon, nestIcon } from '../../ui/icons';
 import { Scene } from '../Scene';
 import { WayOut } from '../leave';
 import { BallPlay } from './ball-play';
+import { TuneComparison } from './tune-comparison';
 
 /**
  * Creature play at the root (RW06 slice 2, docs/rework/HOME.md#creature-play-playscene), the root's `room`: the ball to
@@ -54,6 +55,7 @@ export class PlayScene extends Scene {
   private readonly bedName: string;
   /** The tune is playing (taps on the plaque wait until it ends). */
   singing = false;
+  private comparison: TuneComparison | null = null;
   private readonly out = new WayOut(
     (seconds) => this.tw.wait(seconds),
     () => this.app.scene === this,
@@ -204,11 +206,29 @@ export class PlayScene extends Scene {
 
   /** Her song plays: each beat lights its column, and her friend hops on every note. */
   async playTune() {
-    if (this.singing) return;
-    const tune = store.creations.tune.current;
+    if (this.out.leaving || this.comparison) return;
+    const { current: tune, previous } = store.creations.tune;
+    squash(this.plaque);
+    spring(this.plaque);
+    if (this.singing) {
+      sfx.pop();
+      return;
+    }
     if (!tune) {
       void voice.say('room.tune-empty');
       this.pet.hop();
+      return;
+    }
+    if (previous) {
+      this.comparison = new TuneComparison(
+        tune,
+        previous,
+        (t) => this.tw.wait(t),
+        () => this.closeComparison(),
+      );
+      this.comparison.resize(this.view);
+      this.ui.addChild(this.comparison);
+      void voice.say('tune.compare');
       return;
     }
     this.singing = true;
@@ -234,6 +254,22 @@ export class PlayScene extends Scene {
     this.plaque.lightColumn(-1);
     this.pet.cheer();
     this.singing = false;
+  }
+
+  private closeComparison() {
+    if (!this.comparison) return;
+    this.comparison.destroy({ children: true });
+    this.comparison = null;
+    voice.stop();
+  }
+
+  exit() {
+    this.closeComparison();
+  }
+
+  destroy() {
+    this.closeComparison();
+    super.destroy();
   }
 
   private open(node: Container, go: () => void, line: LineId) {
@@ -275,6 +311,7 @@ export class PlayScene extends Scene {
     if (this.toy.throws === 0 && !this.out.leaving) this.pet.position.set(l.stage.x, l.stage.y);
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);
     this.toy.place(l.floor, l.ball);
+    this.comparison?.resize(v);
   }
 
   update(dt: number) {
