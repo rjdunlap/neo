@@ -13,7 +13,10 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
 import { TracePrints } from './trace';
 import {
+  COLOR_RADIUS,
   LEVELS,
+  nextSize,
+  stampLine,
   LIMIT,
   pixel,
   place,
@@ -106,9 +109,12 @@ class StampStudio implements Game {
     if (this.plan.color)
       for (const color of STAMP_COLORS) {
         const b = new RoundButton(
-          new Graphics().circle(0, 0, 22).fill(swatch[color].fill),
+          new Graphics()
+            .circle(0, 0, 22)
+            .fill(swatch[color].fill)
+            .stroke({ width: 4, color: stampLine(color, swatch[color].line) }),
           swatch.white,
-          43,
+          COLOR_RADIUS,
           () => {
             if (this.done) return;
             if (this.color !== color) {
@@ -147,12 +153,13 @@ class StampStudio implements Game {
       }
     });
     this.grow = new RoundButton(
-      new Graphics().circle(-13, 4, 12).circle(14, -4, 23).fill(swatch.purple.fill),
+      // Small, middle and big: the button cycles a stamp through all three.
+      new Graphics().circle(-25, 9, 7).circle(-8, 5, 11).circle(15, -1, 17).fill(swatch.purple.fill),
       swatch.white,
       48,
       () => {
         if (!this.done && this.selected) {
-          this.selected.data.size = this.selected.data.size === 1 ? 1.3 : 1;
+          this.selected.data.size = nextSize(this.selected.data.size);
           this.layoutStamp(this.selected);
           this.drawSelection();
         }
@@ -277,7 +284,7 @@ class StampStudio implements Game {
     this.selection.clear();
     if (this.selected && this.plan.move)
       this.selection
-        .circle(this.selected.node.x, this.selected.node.y, 70)
+        .circle(this.selected.node.x, this.selected.node.y, Math.max(70, 48 * this.selected.data.size + 12))
         .stroke({ width: 5, color: swatch.yellow.line });
     // Pat the paper: no star button and no arrows, so only the eighth pat ends the picture and nothing takes a star away.
     this.finish.visible = !this.plan.pat && this.stamps.length > 0;

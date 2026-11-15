@@ -6,11 +6,20 @@ import {
   place,
   PLANS,
   STAMP_COLORS,
+  STAMP_SIZES,
+  nextSize,
+  colorSpots,
+  COLOR_REACH,
+  stampLine,
+  YELLOW_LINE,
+  stampLayout,
+  BUTTON_REACH,
   stampDemo,
   type StampKind,
   type StampState,
 } from './logic';
-import type { ColorName } from '../../art/palette';
+import { cream, swatch, type ColorName } from '../../art/palette';
+import { computeView, NO_INSETS } from '../../engine/view';
 import { STAMP_KINDS, STAMP_NAMES, stickerStamp } from './logic';
 import { Rng } from '../../engine/random';
 import { roundPlan } from './logic';
@@ -95,7 +104,7 @@ describe('Stamp Studio', () => {
           st.stamps.at(-1)!.turns = 1;
         } else if (m.do === 'grow') {
           expect(plan.transform).toBe(true);
-          st.stamps.at(-1)!.size = 1.3;
+          st.stamps.at(-1)!.size = nextSize(st.stamps.at(-1)!.size);
         } else if (m.do === 'move') {
           expect(plan.move).toBe(true);
           const to = pixel(m, w, h);
@@ -112,7 +121,9 @@ describe('Stamp Studio', () => {
       // Every stamp the level offers is used, up to the five presses.
       expect(kinds.size).toBe(Math.min(plan.kinds.length, DEMO_SPOTS.length));
       if (plan.transform)
-        expect(st.stamps.some((s) => s.turns === 1) && st.stamps.some((s) => s.size === 1.3)).toBe(true);
+        expect(
+          st.stamps.some((s) => s.turns === 1) && st.stamps.some((s) => s.size === STAMP_SIZES.big),
+        ).toBe(true);
     }
   });
 });
@@ -531,4 +542,95 @@ describe('Trace Prints (levels 8–9)', () => {
     }
     expect([howToFor(stampStudio, 4)!.finish].flat().join(' ')).toMatch(/tree house/i);
   });
+});
+
+describe('Stamp Studio seven colors and three sizes (dive slice 2)', () => {
+  it('offers the six rainbow colors, then pink, all different', () => {
+    expect(STAMP_COLORS).toEqual(['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink']);
+  });
+
+  it('cycles middle, big, small and back, inside the saved 0.5–2 clamp, and an older 1.3 stamp moves on to small', () => {
+    const seen: number[] = [STAMP_SIZES.middle];
+    for (let i = 0; i < 3; i++) seen.push(nextSize(seen.at(-1)!));
+    expect(seen).toEqual([1, 1.5, 0.7, 1]);
+    expect(nextSize(1.3)).toBe(STAMP_SIZES.small);
+    for (const size of Object.values(STAMP_SIZES)) {
+      expect(size).toBeGreaterThanOrEqual(0.5);
+      expect(size).toBeLessThanOrEqual(2);
+      const picture = {
+        kind: 'picture',
+        stamps: [{ kind: 'star', color: 'yellow', x: 0.5, y: 0.5, size, turns: 0 }],
+      };
+      expect(cleanPicture(picture)).toEqual(picture);
+    }
+  });
+
+  it('gives every stamp color an outline that shows on the cream paper (yellow takes a darker gold)', () => {
+    const lum = (hex: number) => {
+      const c = [16, 8, 0]
+        .map((s) => ((hex >> s) & 255) / 255)
+        .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const ratio = (a: number, b: number) =>
+      (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+    expect(stampLine('yellow', swatch.yellow.line)).toBe(YELLOW_LINE);
+    for (const color of STAMP_COLORS)
+      expect(ratio(stampLine(color, swatch[color].line), cream), color).toBeGreaterThanOrEqual(2.5);
+  });
+
+  // Four views: the 1024 × 768 sideways design, a sideways phone, and two upright phones.
+  const VIEWS = {
+    sideways: computeView(1024, 768),
+    'sideways phone': computeView(844, 390),
+    'upright phone': computeView(390, 844, NO_INSETS, true),
+    'small upright phone': computeView(375, 667, NO_INSETS, true),
+  };
+  it.each(Object.entries(VIEWS))(
+    'lays out seven colors with no two controls overlapping on the %s',
+    (_, v) => {
+      const spots = colorSpots(v.w);
+      expect(spots).toHaveLength(7);
+      for (const transform of [false, true])
+        for (let n = 1; n <= 4; n++) {
+          const l = stampLayout(v, n, transform);
+          const box = (what: string, p: { x: number; y: number }, r: number) => ({
+            what,
+            x0: p.x - r,
+            y0: p.y - r,
+            x1: p.x + r,
+            y1: p.y + r,
+          });
+          const boxes = [
+            {
+              what: 'paper',
+              x0: l.paper.x,
+              y0: l.paper.y,
+              x1: l.paper.x + l.paper.w,
+              y1: l.paper.y + l.paper.h,
+            },
+            // Home and "?" in the top-left column.
+            { what: 'Home and help', x0: 0, y0: 0, x1: 115, y1: 210 },
+            ...l.colors.map((p, i) => box(`color ${STAMP_COLORS[i]}`, p, COLOR_REACH)),
+            ...l.choices.map((p) => box('stamp', p, BUTTON_REACH)),
+            ...[l.finish, l.undo, l.play, l.bin, ...(transform ? [l.turn, l.grow] : [])].map((p) =>
+              box('button', p, BUTTON_REACH),
+            ),
+          ];
+          expect(2 * COLOR_REACH).toBeGreaterThanOrEqual(100);
+          for (const [i, a] of boxes.entries()) {
+            if (a.what.startsWith('color')) {
+              expect(a.x0).toBeGreaterThanOrEqual(0);
+              expect(a.x1).toBeLessThanOrEqual(v.w);
+              expect(a.y0).toBeGreaterThanOrEqual(0);
+            }
+            for (const b of boxes.slice(i + 1)) {
+              const hit =
+                a.x0 < b.x1 - 1e-6 && b.x0 < a.x1 - 1e-6 && a.y0 < b.y1 - 1e-6 && b.y0 < a.y1 - 1e-6;
+              expect(hit, `${a.what} overlaps ${b.what}`).toBe(false);
+            }
+          }
+        }
+    },
+  );
 });

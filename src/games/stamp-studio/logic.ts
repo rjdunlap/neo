@@ -165,8 +165,24 @@ export function playOrder(stamps: readonly Pick<Stamp, 'x' | 'y'>[]): PlayNote[]
   }));
 }
 
-/** The colors on the color buttons, in order. */
-export const STAMP_COLORS: ColorName[] = ['purple', 'blue', 'green', 'pink'];
+/** The colors on the color buttons, in order: the six rainbow colors, then pink (dive slice 2). */
+export const STAMP_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'];
+
+/** The size button cycles a stamp middle, big, small, middle (dive slice 2); all inside the saved 0.5–2 clamp. */
+export const STAMP_SIZES = { small: 0.7, middle: 1, big: 1.5 } as const;
+/** The next size the size button gives a stamp; a size from an older picture (1.3) counts as big. */
+export function nextSize(size: number): number {
+  if (size < 0.85) return STAMP_SIZES.middle;
+  if (size < 1.2) return STAMP_SIZES.big;
+  return STAMP_SIZES.small;
+}
+
+/**
+ * A stamp's outline: its color's line, except yellow, whose line is too pale on the cream paper (about 2:1), so it takes a
+ * darker gold that reads at 3:1 or more.
+ */
+export const stampLine = (color: ColorName, line: number) => (color === 'yellow' ? YELLOW_LINE : line);
+export const YELLOW_LINE = 0xa87a00;
 
 /** Early rounds vary their existing tools without adding simultaneous choices. */
 export function roundPlan(level: number, rng: Rng): { plan: StampPlan; color: ColorName } {
@@ -211,7 +227,7 @@ export const DEMO_SPOTS = [
   { x: 0.3, y: 0.8 },
   { x: 0.7, y: 0.8 },
 ] as const;
-const DEMO_COLORS: ColorName[] = ['purple', 'blue', 'green', 'pink', 'purple'];
+const DEMO_COLORS: ColorName[] = ['red', 'yellow', 'blue', 'pink', 'orange'];
 /** On a level where stamps move, the first stamp is carried to the middle. */
 const DEMO_MOVE = { stamp: 0, x: 0.5, y: 0.55 } as const;
 
@@ -431,6 +447,30 @@ export const LEVELS: BandLevels = {
 
 /** A round button's touch radius (`RoundButton`: its 48 radius and 14 more). */
 export const BUTTON_REACH = 62;
+/** A color disc's radius; its touch radius is 14 more, so each disc is a target 108 units across. */
+export const COLOR_RADIUS = 40;
+export const COLOR_REACH = COLOR_RADIUS + 14;
+
+/**
+ * Where the seven color discs sit along the top, between Home and "?" (their column ends at x 115) and the green arrow
+ * (its reach starts 139 from the right edge): one row where seven fit without touching, from the 1024-wide sideways view up,
+ * at most 125 apart; otherwise (an upright phone) two rows, four above and three below, each disc 108 apart and below the
+ * row above, so the second row still ends above the paper (y 230).
+ */
+export function colorSpots(w: number) {
+  const left = 115 + COLOR_REACH;
+  const right = w - 139 - COLOR_REACH;
+  const n = STAMP_COLORS.length;
+  const gap = 2 * COLOR_REACH;
+  if ((right - left) / (n - 1) >= gap) {
+    const step = Math.min(125, (right - left) / (n - 1));
+    return STAMP_COLORS.map((_, i) => ({ x: left + i * step, y: 60 }));
+  }
+  const top = Math.ceil(n / 2);
+  return STAMP_COLORS.map((_, i) =>
+    i < top ? { x: left + i * gap, y: 58 } : { x: left + gap / 2 + (i - top) * gap, y: 58 + gap },
+  );
+}
 
 /**
  * Where the paper and the buttons sit in a view. Sideways: the paper between the left column (Home, "?", Play, the pet)
@@ -454,7 +494,7 @@ export function stampLayout(
       x,
       y: v.h - 77,
     })),
-    colors: STAMP_COLORS.map((_, i) => ({ x: (tall ? 175 : 220) + i * 125, y: 65 })),
+    colors: colorSpots(v.w),
     finish: { x: col, y: 65 },
     undo: { x: col, y: tall ? v.h - 237 : v.h - 77 },
     bin: { x: col, y: v.h / 2 - (transform ? 130 : 0) },

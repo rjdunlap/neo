@@ -198,8 +198,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.plan.transform) {
             kit.tapOn(g.turn);
             await kit.sleep(450);
-            kit.tapOn(g.grow);
-            await kit.sleep(450);
+            // The size button cycles middle, big, small, middle; it is left on big.
+            const sizes = [];
+            for (let i = 0; i < 4; i++) {
+              kit.tapOn(g.grow);
+              await kit.sleep(450);
+              sizes.push(g.stamps[0].data.size);
+            }
+            if (JSON.stringify(sizes) !== '[1.5,0.7,1,1.5]') throw new Error(`Size button gave ${sizes}`);
           }
           // Play the picture (levels 3–6): every stamp sounds once, left to right; nothing is scored.
           if (!!g.plan.play !== g.play.visible)
