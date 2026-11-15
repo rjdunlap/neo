@@ -112,7 +112,7 @@ Prefer existing idempotent story steps if success alone is enough. If a chosen t
 
 ### W2: a personal world with useful possessions
 
-Research pet kinds and free visual variation, an improved creation display and a project worth resuming. Start with a finished thing that is pleasant to use: play the saved tune, replay a tiny show, or compare an observation with a previous one. Keep ownership and display separate, as stickers already do. A new saved construction/story/program needs a bounded versioned format, explicit replacement, repair and backup tests. Do not promise unlimited room storage or automatic saving of every experiment.
+The rework delivers creature variation and a resumable Welcome project. The [first W2 slice](definitions/compare-kept-tunes.md) makes the creation display more useful by letting the player audition the two kept Song Maker tunes without changing which is on display. Start with a finished thing that is pleasant to use: play the saved tune, replay a tiny show, or compare an observation with a previous one. Keep ownership and display separate, as stickers already do. A new saved construction/story/program needs a bounded versioned format, explicit replacement, repair and backup tests. Do not promise unlimited room storage or automatic saving of every experiment.
 
 ### W3: one shared job
 

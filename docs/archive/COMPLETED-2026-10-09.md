@@ -3641,3 +3641,7 @@ Branch `claude/rainbow-fingers-from-memory`, [dive slice 12](../deep-dives/rainb
 ## Peekaboo Barn levels 12–14 Switcheroo (dive slice 7, 2026-11-15)
 
 [PR #1702](https://github.com/rjdunlap/neo/pull/1702), branch `claude/peekaboo-barn-switcheroo`, [dive slice 7](../deep-dives/peekaboo-barn.md#build-slices-in-order). New `swap` mode: levels 12, 13 and 14 swap once, twice and three times (three, three and four houses, goal 5). Animals show and hide, "Switch!", then houses trade places one pair at a time (`SWAP_SECONDS` 1.1, `MAX_SWAPS` 3); `dealSwaps` never repeats a pair back to back and picks an answer whose house moved. A wrong tap pops that house's animal out; two misses glow the right house, fade the houses back to the start order, show the friend and replay the swaps at 1.6 s. Bands: pre-K 6–13, school 9–14. How-to card step for 12–14.
+
+### W2 kept-tune comparison definition (2026-11-15)
+
+[PR #1706](https://github.com/rjdunlap/neo/pull/1706) defined the first [W2 build](../definitions/compare-kept-tunes.md). Creature play will audition both kept Song Maker tunes from one plaque, so a player can hear and see how the phrases differ while keeping the displayed tune in place. The build has one READY line.
