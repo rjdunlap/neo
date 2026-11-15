@@ -152,7 +152,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Peekaboo Barn
 
-*lap–pre-K* · [Peekaboo Barn](games/peekaboo-barn.md)
+*lap–school* · [Peekaboo Barn](games/peekaboo-barn.md)
 
 ### Duckling Parade
 

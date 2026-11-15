@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 136 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 137 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -108,7 +108,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Recipe Workshop](docs/games/recipe-workshop.md) | toddler–pre-K | Painted Canyon | 3 | tap pots of pretend fruit mash and a white base into a bowl, stir with the spoon until it blends, add a star or leaf and Serve |
 | [Gear Garden](docs/games/gear-garden.md) | lap–school | Painted Canyon | 3 | tap a machine of equal gears to spin a flower, drop the loose gear into a gap, then choose one of two broken machines, mend it and turn it, hearing whether the last flower turns the same way or the other way |
 | [Gadget Bench](docs/games/gadget-bench.md) | preschool–school | Painted Canyon | 6 | help a neighbor's cart through a pictured path (bumps, a puddle, rain, the dark) by trying wooden parts: big wheels, a float, an umbrella, a lantern, and a flag that does nothing |
-| [Peekaboo Barn](docs/games/peekaboo-barn.md) | lap–pre-K | Barnyard | 9 | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift |
+| [Peekaboo Barn](docs/games/peekaboo-barn.md) | lap–school | Barnyard | 10 | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift |
 | [Duckling Parade](docs/games/duckling-parade.md) | lap–school | Barnyard | 11 | tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind |
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 12 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
