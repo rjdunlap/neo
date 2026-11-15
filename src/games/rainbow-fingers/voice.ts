@@ -22,6 +22,9 @@ export const VOICE = {
   'paint.praise': ['Beautiful {color}!', 'You painted the {thing}!', 'Lovely {color}!'],
   'paint.also.apple.green': ['Green apples are real too!'],
   'paint.also.grapes.green': ['Green grapes are real too!'],
+  'paint.memory': ['Paint the {thing}! What color is it?', 'Now the {thing}! What color is it?'],
+  'paint.memory.mix': ['What color is the {thing}? Mix it in the bowl!'],
+  'paint.memory.is': ['The {thing} is {color}!'],
   'paint.wheel': ['Paint the empty petal! Look at its neighbors.'],
   'paint.wheel.next': [
     'Now this empty petal! Look at its neighbors.',

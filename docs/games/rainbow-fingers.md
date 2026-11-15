@@ -12,7 +12,7 @@
 | toddler | 1–3 |
 | preschool | 2–5 |
 | pre-K | 3–6 |
-| school | 5–10 |
+| school | 5–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 8 | Color wheel: mix each empty petal from the two colors beside it |
 | 9 | Make it pink: mix red and white, 2 pictures |
 | 10 | Brown from all three: pour red, yellow and blue, 2 pictures |
+| 11 | Mix it from memory: 3 pictures, at least one pink or brown, the recipe not told |
 
 <!-- end generated -->
 

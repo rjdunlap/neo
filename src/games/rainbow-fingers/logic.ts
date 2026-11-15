@@ -460,6 +460,11 @@ export interface PaintPlan {
   white?: boolean;
   /** The bowl takes three pours and the pictures are the browns: red, yellow and blue together (level 10). */
   three?: boolean;
+  /**
+   * Mix it from memory (level 11): any mixed color, so the white pot and a three-pour bowl are always there; the recipe is not told
+   * before the second miss.
+   */
+  memory?: boolean;
 }
 
 export const PLANS: PaintPlan[] = [
@@ -473,6 +478,7 @@ export const PLANS: PaintPlan[] = [
   { mode: 'wheel', count: 3 },
   { mode: 'mix', count: 2, white: true },
   { mode: 'mix', count: 2, three: true },
+  { mode: 'recall-mix', count: 3, memory: true },
 ];
 
 /** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
@@ -481,7 +487,7 @@ export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 3 },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 10 },
+  school: { min: 5, max: 11 },
 };
 
 export function planFor(level: number): PaintPlan {
@@ -516,7 +522,40 @@ export function mix(...poured: Pour[]): ColorName {
 
 /** How many pours the bowl holds on a page: three at level 10 (brown), two everywhere else. */
 export function bowlHolds(plan: PaintPlan): number {
-  return plan.three ? 3 : 2;
+  return plan.three || plan.memory ? 3 : 2;
+}
+
+/** Whether the white pot joins the primaries: the pinks (level 9) and mixing from memory (level 11). */
+export function whitePot(plan: PaintPlan): boolean {
+  return !!(plan.white || plan.memory);
+}
+
+/**
+ * Level 11's pictures: every mixed color, each picture one a four-year-old gives a single color (not a puddle, a cupcake or a tulip,
+ * and not grapes, which come green too).
+ */
+export const MEMORY_POOL: readonly Thing[] = THINGS.filter(
+  (t) => RECIPES[t.color] && !NAMED_ONLY.has(t.id) && !TOLD_ONLY.has(t.id) && ACCEPTS[t.id].length === 1,
+);
+
+/** The colors only the newest mixes make: level 11 always asks for at least one, so it is never level 7 made longer. */
+export const NEW_MIXES: readonly ColorName[] = ['pink', 'brown'];
+
+/** Level 11's draw: one pink or brown, then other different mixed colors, in a seeded order, one picture of each. */
+function memoryThings(count: number, rng: Rng): Thing[] {
+  const first = rng.pick([...NEW_MIXES]);
+  const rest = rng
+    .shuffle([...new Set(MEMORY_POOL.map((t) => t.color))].filter((c) => c !== first))
+    .slice(0, count - 1);
+  return rng.shuffle([first, ...rest]).map((color) => rng.pick(MEMORY_POOL.filter((t) => t.color === color)));
+}
+
+/**
+ * Whether a wrong color tells the recipe. At level 11 the first miss only names the color ("The frog is green!") and the recipe
+ * waits for the second, which also glows the pots; elsewhere a mixing page tells it every time.
+ */
+export function tellsRecipe(plan: PaintPlan, roundMisses: number): boolean {
+  return !plan.memory || roundMisses >= 2;
 }
 
 /** The bowl after one more pour: a full bowl starts over with this pour. */
@@ -555,6 +594,7 @@ export function bowlLook(poured: readonly Pour[]): { fill: number; rim: number }
  */
 export function pickThings(plan: PaintPlan, rng: Rng): (Thing | Petal)[] {
   if (plan.mode === 'wheel') return rng.shuffle(WHEEL.filter((petal) => RECIPES[petal.color]));
+  if (plan.memory) return memoryThings(plan.count, rng);
   if (plan.mode === 'recall-mix') return [THINGS.find((thing) => thing.id === 'pumpkin')!];
   // Level 9's pictures are all pink, so they are drawn as distinct pictures, not distinct colors.
   if (plan.white) return rng.shuffle(THINGS.filter((t) => t.color === 'pink')).slice(0, plan.count);
