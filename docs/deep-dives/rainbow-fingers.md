@@ -182,7 +182,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 10. **Level 9, Make it pink.** (Built 2026-11-14, [build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-level-9-make-it-pink-dive-slice-10-2026-11-14).) Same tier.
 11. **Level 10, Brown from all three.** (Built 2026-11-15, [build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-level-10-brown-from-all-three-dive-slice-11-2026-11-15).) Same tier.
 12. **Level 11, Mix it from memory.** (Built 2026-11-15, [build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-level-11-mix-it-from-memory-dive-slice-12-2026-11-15).) Same tier.
-13. **Level 12, Match the sample** (define first, decision 10). Same tier, after the color model is written and tested.
+13. **Level 12, Match the sample** (define first, decision 10). Same tier, after the color model is written and tested. *Definition claimed 2026-11-15 on branch `claude/rainbow-fingers-match-define` (docs only: `docs/definitions/rainbow-fingers-match-the-sample.md`, this dive, READY).*
 14. **The between-levels entries** (they wait on decision 2; *Two pots* first).
 15. **Sketches:** tints and shades, warm and cool, Fold!, Name your painting, Paint like Mondrian, color words to read, Paint a day.
 
