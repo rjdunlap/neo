@@ -223,6 +223,23 @@ export function wakeSchedule(count: number): { at: number[]; end: number } {
   return { at, end: at[count - 1] + WAKE.bounce };
 }
 
+/** The shortest time between two unpitched wake-up sounds (meow, splash), so a crowded paper never stacks into a wail. */
+export const WAKE_UNPITCHED_GAP = 0.5;
+/**
+ * Which stamps sound as they wake (all bounce): every pitched stamp, and an unpitched one only when at least
+ * `WAKE_UNPITCHED_GAP` s have passed since the last unpitched sound. A short picture (0.3 s apart) still sounds every
+ * other cat or fish at worst; a picture of different kinds keeps more.
+ */
+export function wakeSounds(kinds: readonly StampKind[], at: readonly number[]): boolean[] {
+  let last = -Infinity;
+  return kinds.map((kind, i) => {
+    if ('from' in STAMP_SOUNDS[kind]) return true;
+    if (at[i] - last < WAKE_UNPITCHED_GAP - 1e-9) return false;
+    last = at[i];
+    return true;
+  });
+}
+
 /** The colors on the color buttons, in order: the six rainbow colors, then pink (dive slice 2). */
 export const STAMP_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink'];
 

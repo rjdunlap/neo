@@ -27,7 +27,17 @@ import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
 import { stampStudio } from './index';
 import { cleanPicture } from '../../content/creations';
-import { playOrder, planFor, STAMP_SOUNDS, stampStep, countAloud, wakeSchedule, WAKE } from './logic';
+import {
+  playOrder,
+  planFor,
+  STAMP_SOUNDS,
+  stampStep,
+  countAloud,
+  wakeSchedule,
+  WAKE,
+  wakeSounds,
+  WAKE_UNPITCHED_GAP,
+} from './logic';
 import { PENTATONIC, stepToMidi } from '../../audio/notes';
 import {
   TILTS,
@@ -696,5 +706,19 @@ describe('Stamp Studio sounds, counting aloud and the wake-up (dive slice 3)', (
     }
     // A short picture keeps an unhurried beat.
     expect(wakeSchedule(3).at).toEqual([0, 0.3, 0.6]);
+  });
+
+  it('thins meows and splashes on a crowded paper, and keeps every pitched sound', () => {
+    const { at } = wakeSchedule(LIMIT);
+    const cats = wakeSounds(Array(LIMIT).fill('cat'), at);
+    const sounded = at.filter((_, i) => cats[i]);
+    expect(cats[0]).toBe(true);
+    for (let i = 1; i < sounded.length; i++)
+      expect(sounded[i] - sounded[i - 1]).toBeGreaterThanOrEqual(WAKE_UNPITCHED_GAP - 1e-9);
+    expect(sounded.length).toBeGreaterThanOrEqual(4);
+    expect(wakeSounds(Array(LIMIT).fill('star'), at).every(Boolean)).toBe(true);
+    // A short picture of three fish (0.3 s apart) sounds the first and third.
+    expect(wakeSounds(['fish', 'fish', 'fish'], wakeSchedule(3).at)).toEqual([true, false, true]);
+    expect(wakeSounds(['cat', 'star', 'cat'], [0, 0.3, 0.6])).toEqual([true, true, true]);
   });
 });

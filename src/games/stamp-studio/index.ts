@@ -31,6 +31,7 @@ import {
   stampStep,
   stickerStamp,
   wakeSchedule,
+  wakeSounds,
   stampDemo,
   stampLayout,
   type Stamp,
@@ -66,6 +67,7 @@ class StampStudio implements Game {
   private wake: {
     at: number[];
     end: number;
+    sounds: boolean[];
     time: number;
     marks: Mark[];
     creation: { kind: 'picture'; stamps: Stamp[] };
@@ -227,7 +229,12 @@ class StampStudio implements Game {
     void this.ctx.say('stamp.done');
     // The wake-up: each stamp bounces with its own sound, in the order it was placed, then the round ends (`update`).
     this.woken = [];
-    this.wake = { ...wakeSchedule(this.stamps.length), time: 0, marks: [...this.stamps], creation };
+    const { at, end } = wakeSchedule(this.stamps.length);
+    const sounds = wakeSounds(
+      this.stamps.map((s) => s.data.kind),
+      at,
+    );
+    this.wake = { at, end, sounds, time: 0, marks: [...this.stamps], creation };
   }
   /** A stamp's own sound; a pitched one rings the step for this `press` (counting from 1). */
   private sound(kind: StampKind, press: number) {
@@ -243,7 +250,7 @@ class StampStudio implements Game {
       const i = this.woken.length;
       const mark = wake.marks[i];
       this.woken.push({ ...mark.data });
-      this.sound(mark.data.kind, i + 1);
+      if (wake.sounds[i]) this.sound(mark.data.kind, i + 1);
       const art = mark.node.children[0];
       art.scale.set(mark.data.size * 1.3);
       void this.ctx.tw.to(art.scale, { x: mark.data.size, y: mark.data.size }, { duration: 0.3 });
