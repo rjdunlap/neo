@@ -1,0 +1,5 @@
+# 2026-11-15 — Peekaboo Barn more animals (PR #1699)
+
+**Changed:** `peekaboo-barn` dive slice 3, second half: the sheep, horse, hen and mouse join the hiding pool from level 4 (`poolFor(level)`, `NEWCOMER_LEVEL = 4`; levels 1–3 and 16 unchanged), `VOICES` moved to `logic.ts`, level 9 clue parts wool, a mane and a red comb, the mouse as round ears, all eleven tops distinct at levels 10–11.
+**Ran:** typecheck; `npx vitest run src/games/peekaboo-barn src/art` (9 files, 306 tests; peekaboo-barn alone 31); eslint and prettier on `src/games/peekaboo-barn`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaboo-barn FINGER_LEVELS=1,4,9,11` passed (16.8 s, 23.8 s, 20.4 s, 26.1 s) on a dev server of this tree (speech off); one-off screenshots of level 5 (peek pose, beach), level 11 tops (wool, mane, comb, big ears readable; white tops cow, sheep, mouse, bunny) and level 9 at 390x844 portrait.
+**Not run:** full `npm test`, `npm run build` (no shared files or assets changed), other browser suites, offline.
