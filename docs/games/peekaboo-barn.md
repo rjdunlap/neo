@@ -11,8 +11,8 @@
 | lap | 16, 1, 2 |
 | toddler | 1–5 |
 | preschool | 4–8 |
-| pre-K | 6–9 |
-| school | 9 |
+| pre-K | 6–11 |
+| school | 9–11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -25,13 +25,15 @@
 | 7 | Remember who hid where, 3 hiding places |
 | 8 | Remember who hid where, 4 hiding places |
 | 9 | "Who is sleepy?" "Who has spots?" Find the one a clue describes, 3 animals |
+| 10 | "Whose ears?" Find the one asked for from the top of its head, 3 animals |
+| 11 | "Whose ears?" Find the one asked for from the top of its head, 4 animals |
 | 16 | One big house: touch anywhere to see who pops out |
 
 <!-- end generated -->
 
 **Starts as:** tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift
 
-**Grows into:** touch anywhere to open one door, hear animal and cover names (some animals sleepy, surprised or singing), find a named animal, remember hiding places, then find the one a clue describes (sleepy, singing, spots, ears)
+**Grows into:** touch anywhere to open one door, hear animal and cover names (some animals sleepy, surprised or singing), find a named animal, remember hiding places, find the one a clue describes (sleepy, singing, spots, ears), then tell who is who from the top of the head alone
 
 ## Design notes
 
@@ -40,3 +42,5 @@ Each round’s seed chooses a barnyard, garden, beach or bedroom. The garden has
 **A right find never holds the next question (U7 fix batch 7, 2026-11-12).** At the find levels (3–5) `peek.yes` starts and the look, the hiding and the next deal follow at once; the places open with the ask waiting for the line, or said at her first tap, which only says the ask and is not judged (the spot wiggles, no miss). The last find's line is heard out before the finale, and the ghost finger waits for the line and the ask. The remember levels (6–8) still wait for `peek.yes` before the show-and-tell, because its own `peek.look` would cut it.
 
 **Level 9, Who has…? (2026-11-14).** The three animals stand fully out over their covers, not peeking, so body parts show. Each question is a clue that fits exactly one: a feeling (sleepy yawns; singing hops with two marimba notes every 3 s, only while nothing is being said; never surprised, since every critter pops up surprised) or a part (spots, horns, whiskers, wings, a bill, a round pink snout, long, pointy, floppy or round ears), redealt until one animal has it. Questions run feeling, part, part, feeling, part, and the ask never names the animal. A wrong tap boings, squishes the animal and says a true fact about it before the clue again; two misses wiggle the right cover. It opens the school band (school 9 only).
+
+**Levels 10–11, Whose ears? (2026-11-15).** Only the top of each head shows over its cover (the `top` pose, critter y −48): ears, horns, a tuft, a mane, a comb, wool and the head colour, never the eyes, behind a 150-tall cover. She is asked by name ("Where is the bunny?") among three, then four, and no two tops in a deal look alike. A wrong tap raises that animal, which says hello and sinks back; two misses wiggle the right one and raise it to a full peek for 1.4 s (one hint). The beach sandcastle's wall is as high as its towers so no face shows between them. Pre-K 6–11, school 9–11.

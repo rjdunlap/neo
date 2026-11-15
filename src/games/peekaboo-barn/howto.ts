@@ -21,6 +21,11 @@ export const HOW_TO: GameHowTo = {
       to: 9,
       text: 'Three animals stand up. Listen to the clue (who is sleepy, or who has spots or long ears), then tap that animal.',
     },
+    {
+      from: 10,
+      to: 11,
+      text: 'Only the tops of their heads show. Listen for the animal asked about, then tap the one whose ears (or horns, or tuft) are its own.',
+    },
   ],
   finish: [
     {
@@ -30,6 +35,6 @@ export const HOW_TO: GameHowTo = {
     },
     { to: 1, text: 'The round ends after eight reveals.' },
     { from: 2, to: 2, text: 'The round ends after twelve reveals.' },
-    { from: 3, to: 9, text: 'The round ends when every animal asked about has been found.' },
+    { from: 3, to: 11, text: 'The round ends when every animal asked about has been found.' },
   ],
 };

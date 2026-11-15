@@ -1,0 +1,6 @@
+# 2026-11-15 — Peekaboo Barn levels 10–11 Whose ears? (PR #1696)
+
+**Changed:** Peekaboo Barn levels 10 and 11 (mode `top`, three then four places): only the top of each head shows over the cover (pose `top`, critter y −48, set from screenshots); the animal is asked by name; a wrong tap raises the animal to say hello and sink back; two misses raise the right one to a full peek for 1.4 s. Pre-K 6–11, school 9–11. The beach sandcastle's wall was raised to its towers' height after a screenshot showed a face between them. How-to step for 10–11.
+**Ran (2026-11-15):** `npm run typecheck`; full `npm test` (352 files, 7160 tests); `BROWSER_SUITE=originals ORIGINALS_ONLY=peekaboo PEEK_LEVELS=10,11,10,11,11` (two misses, wiggle hint, saved score 2/1, a sticker each round; the suite now plays 1–11 and 16 and expects 12 history entries); `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaboo-barn FINGER_LEVELS=10,11` (21.0 s, 26.3 s); top-pose screenshots in barnyard, garden, bedroom and beach, the beach re-shot after the sandcastle fix. A game-reviewer pass found no issues.
+**Not run:** `npm run build` (no shared files or assets changed); the R4 timing assert for top mode; the abandon-cards stress.
+**Coverage row:** `Peekaboo Barn content and cover support (originals, fingerdemo)` in [the summary](../VERIFICATION.md#coverage-summary).
