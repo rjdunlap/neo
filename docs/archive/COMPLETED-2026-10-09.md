@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Animal Snack level 6 Who says moo? (dive slice 5, 2026-11-14)
+
+[PR #1687](https://github.com/rjdunlap/neo/pull/1687), branch `claude/animal-snack-who-says-moo`, [dive slice 5](../deep-dives/animal-snack.md#build-slices-in-order). Opens the pre-K window: `prek` joins `bands` and `LEVELS.prek` is 5–6 (the decided window is 5–8). Level 6 (`sound` mode) asks four questions of three animals and three snacks; an animal sound plays (the bubble replays it), and she drags that animal its own snack. The animal is judged first: another animal answers in its own voice, and the right animal with another food says `snack.notmine`, both misses; the second miss glows the animal and the fourth its snack. The same animal never comes twice running. Lines `snack.givesound` and `snack.notmine`; `fingerdemo` level 6 and `WOODS_ONLY=snack` at 6 passed. The next Animal Snack line is slice 4, More animals; level 7 *Who eats it too?* waits on it.
+
 ### Word Monsters level 10 Last sound (2026-11-14)
 
 [PR #1652](https://github.com/rjdunlap/neo/pull/1652), `claude/word-monsters-last-sound`, slice 4 of the [dive](../deep-dives/word-monsters.md#build-slices-in-order). The plan's level 9 was built as ID 10 because lap's One big monster took 9; school is now `{min 5, max 10, order [5,6,7,8,10]}`. Mode `last`: a pictured word is said, three monsters, she taps the one for the word's last sound; four words a round, each ending in a different letter, from every pictured word except those ending in x; about half the questions carry the word's first sound as a decoy; no sound twins, no q or x. A picture tap says the word again, free; a wrong monster says its sound; two misses glow the answer (one hint). Later plan levels now take IDs 11 and up.
