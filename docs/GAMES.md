@@ -168,7 +168,7 @@ Fifteen games made for grown-ups: thirteen in Lantern Lake, Marble Jump in Puzzl
 
 ### Animal Snack
 
-*lap–preschool* · [Animal Snack](games/animal-snack.md)
+*lap–pre-K* · [Animal Snack](games/animal-snack.md)
 
 ### Critter Sort
 

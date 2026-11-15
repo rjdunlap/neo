@@ -1,1 +1,0 @@
-**`animal-snack`, level 6 Who says moo?** (new-level tier: rule tests, one browser play of level 6, `fingerdemo` at it): opens the pre-K window, so add `prek` to `bands` and update the README band label and counts, the registry and lands tests (decided 2026-10-23). [Animal Snack dive, slice 5](../../deep-dives/animal-snack.md#build-slices-in-order)
