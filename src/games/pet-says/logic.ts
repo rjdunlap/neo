@@ -45,7 +45,8 @@ export type Move =
   | 'softclap'
   | 'wide'
   | 'hug';
-export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'opposite' | 'quiet' | 'walk' | 'pat';
+export type SaysMode =
+  'copy' | 'body' | 'pairs' | 'says' | 'says-opposite' | 'freeze' | 'opposite' | 'quiet' | 'walk' | 'pat';
 
 /**
  * The moves in tiers (dive slice 3). Base is the first eight; social moves are the ones a one-year-old already plays
@@ -381,6 +382,11 @@ export const PLANS: SaysPlan[] = [
     opposites: 'switching',
     name: 'Sun or moon: listen for the sign on each of eight turns. Copy on the sun and do the opposite on the moon.',
   },
+  {
+    mode: 'says-opposite',
+    turns: 8,
+    name: 'Pet says, opposite: when you hear the pet’s name first, do the opposite. If you only hear the move, stay still.',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -506,6 +512,13 @@ export const partnerOf = (m: Move): Move => {
   if (!p) throw new Error(`${m} has no opposite`);
   return p;
 };
+
+/** The expected response to a single-move rule cue. */
+export function ruleAnswer(turn: Turn, mode: SaysMode): Move | 'still' {
+  if (turn.says === false) return 'still';
+  const move = turn.moves[0];
+  return mode === 'says-opposite' || turn.sign === 'moon' ? partnerOf(move) : move;
+}
 /** The first turns are suns, so copying is met before flipping. */
 export const SUN_TURNS = 2;
 /** More opposites opens with one sun, then moons: the rule is known from level 6, so moon turns are most of them. */
@@ -534,11 +547,7 @@ const SWITCHING_SIGNS = [
 ] as const;
 
 /** Draw three pairs from level 8's pool, spread as evenly as possible with no adjacent turns from the same pair. */
-export function moreOppositeTurns(
-  turns: number,
-  rng: Rng,
-  signs?: readonly NonNullable<Turn['sign']>[],
-): Turn[] {
+function moreOppositeMoves(turns: number, rng: Rng): Move[] {
   const chosen = rng.shuffle(MORE_OPPOSITE_PAIRS.map((_, i) => i)).slice(0, MORE_PAIRS_A_ROUND);
   const deck = Array.from({ length: turns }, (_, i) => chosen[i % chosen.length]);
   let order = rng.shuffle([...deck]);
@@ -546,14 +555,33 @@ export function moreOppositeTurns(
     // Most shuffles already alternate. The plain cycle always does.
     order = tries < 50 ? rng.shuffle([...deck]) : deck;
   }
-  return order.map((pair, i) => ({
-    moves: [rng.pick(MORE_OPPOSITE_PAIRS[pair])],
+  return order.map((pair) => rng.pick(MORE_OPPOSITE_PAIRS[pair]));
+}
+
+export function moreOppositeTurns(
+  turns: number,
+  rng: Rng,
+  signs?: readonly NonNullable<Turn['sign']>[],
+): Turn[] {
+  return moreOppositeMoves(turns, rng).map((move, i) => ({
+    moves: [move],
     sign: signs?.[i] ?? (i < MORE_SUN_TURNS ? sun : moon),
   }));
 }
 
+/** Two or three tricks, never first or back to back, so the rule has a chance to settle in. */
+function trickPositions(turns: number, rng: Rng): number[] {
+  const count = rng.chance(0.3) ? 3 : 2;
+  for (;;) {
+    const tricks = [...new Set(Array.from({ length: count }, () => rng.int(1, turns - 1)))].sort(
+      (a, b) => a - b,
+    );
+    if (tricks.length === count && tricks.every((t, k) => k === 0 || t - tricks[k - 1] >= 2)) return tricks;
+  }
+}
+
 /** The levels with the held "once more" button, where a replayed turn counts one hint (decision 2): the rule levels. */
-export const ONCE_MORE_MODES: SaysMode[] = ['says', 'opposite', 'walk'];
+export const ONCE_MORE_MODES: SaysMode[] = ['says', 'says-opposite', 'opposite', 'walk'];
 
 export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
   const deck = (pool: Move[]) => {
@@ -589,17 +617,8 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
       });
     }
     case 'says': {
-      // Two or three tricks, never first and never back to back, so the rule has a chance to settle in. The first trick
-      // is the plain one (just the move); a wrong name or "do that" can come after it, and "do that" only once a
-      // "do this" has shown what "do this" means.
-      const count = rng.chance(0.3) ? 3 : 2;
-      let tricks: number[];
-      for (;;) {
-        tricks = [...new Set(Array.from({ length: count }, () => rng.int(1, plan.turns - 1)))].sort(
-          (a, b) => a - b,
-        );
-        if (tricks.length === count && tricks.every((t, k) => k === 0 || t - tricks[k - 1] >= 2)) break;
-      }
+      // The first trick is plain. A wrong name or "do that" can come later, after the matching "do this".
+      const tricks = trickPositions(plan.turns, rng);
       const cues: SaysCue[] = Array.from({ length: plan.turns }, () => 'says');
       tricks.forEach((t, k) => (cues[t] = k === 0 ? 'plain' : rng.pick(TRICK_CUES)));
       const firstThat = cues.indexOf('that');
@@ -631,6 +650,13 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         const turn: Turn = { moves: [m], says: cue === 'says' || cue === 'this', cue };
         if (cue === 'name') turn.who = rng.int(0, WRONG_NAMES.length - 1);
         return turn;
+      });
+    }
+    case 'says-opposite': {
+      const tricks = trickPositions(plan.turns, rng);
+      return moreOppositeMoves(plan.turns, rng).map((move, i) => {
+        const says = !tricks.includes(i);
+        return { moves: [move], says, cue: says ? 'says' : 'plain' };
       });
     }
     case 'pat':

@@ -76,6 +76,9 @@ export const VOICE = {
     'More opposites! Sun: copy {pet}. Moon: do the opposite. Watch how {pet} moves: fast or slow, loud or soft?',
   ],
   'says.opp.switching': ['The sign can change! Sun means copy me. Moon means do the opposite.'],
+  'says.opp.named': [
+    'Listen for my name! When you hear {pet} says, do the opposite. If you only hear the move, stay still!',
+  ],
   'says.opp.sun': ['Sun! Copy me: {move}!'],
   'says.opp.flip': ['Here comes the moon! Now do the opposite of {pet}.'],
   'says.opp.moon': ['Moon! {move}! Can you do the opposite?'],

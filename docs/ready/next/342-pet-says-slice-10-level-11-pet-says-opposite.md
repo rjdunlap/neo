@@ -1,1 +1,0 @@
-**Pet Says slice 10, level 11 Pet says, opposite** (new-levels tier: rule tests, one browser play, `fingerdemo` and one portrait screenshot at 11): eight turns in school, with two or three tricks. Do the opposite when the pet says its name first, and stay still for a trick. [Pet Says dive, slice 10](../../deep-dives/pet-says.md#build-slices-in-order)
