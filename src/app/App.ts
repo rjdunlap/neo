@@ -321,7 +321,8 @@ export class App {
     m.done();
   }
 
-  private applyView() {
+  /** Recompute the scene's view when the window, safe area or upright layout changes. */
+  applyView() {
     const w = window.innerWidth,
       h = window.innerHeight;
     const insets = clampInsets(this.readInsets(), w, h);

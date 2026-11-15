@@ -2,6 +2,93 @@ import { selectValue } from '../selection.mjs';
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, useCompanion, next }) {
+  async function playPaintMatch() {
+    const size = page.viewportSize();
+    const emulation = await page.context().newCDPSession(page);
+    try {
+      await emulation.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await launch('rainbow-fingers', 11);
+      assert.equal(await page.evaluate(() => neo.turning), true, 'earlier levels still prompt to turn');
+      await launch('rainbow-fingers', 12);
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const press = async (node) => {
+          // Tap the end of the visible Check label, outside the old circular hit area.
+          if (node === g.checkButton) {
+            const p = node.toGlobal({ x: 63, y: 57 });
+            kit.tap(p.x, p.y);
+          } else {
+            kit.tapOn(node);
+          }
+          await kit.sleep(node === g.checkButton ? 440 : 160);
+        };
+        if (!matchMedia('(pointer: coarse)').matches || !neo.view.upright || neo.turning)
+          throw new Error('Level 12 must open for an upright phone without the turn prompt');
+        if (g.potNodes.length !== 2 || g.potNodes.some((pot) => pot.hitArea.radius !== 52))
+          throw new Error('The two marked pots need 104-unit targets');
+        const major = g.sample.share === 1 ? 0 : 1;
+        await press(g.potNodes[major]);
+        await press(g.checkButton);
+        if (g.misses !== 0 || g.hints !== 0 || g.glowTarget)
+          throw new Error('The first far check should only speak');
+        await press(g.checkButton);
+        if (g.misses !== 0 || g.hints !== 1 || g.glowTarget !== g.potNodes[1 - major])
+          throw new Error('The second far check should glow the useful pot');
+        // Four drops (3:1) are also close enough, even though the demo uses three.
+        await press(g.potNodes[major]);
+        await press(g.potNodes[major]);
+        await press(g.potNodes[1 - major]);
+      });
+      await screenshot('rainbow-fingers-12-portrait');
+      await page.setViewportSize(size);
+      await tap('neo.scene.game.checkButton');
+      await page.waitForFunction(() => neo.scene.game.current === 1);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const press = async (node) => {
+          kit.tapOn(node);
+          await kit.sleep(node === g.checkButton ? 440 : 160);
+        };
+        const major = g.sample.share === 1 ? 0 : 1;
+        for (let drop = 0; drop < 6; drop++) await press(g.potNodes[1 - major]);
+        const full = g.counts;
+        await press(g.potNodes[major]);
+        if (g.counts !== full || g.glowTarget !== g.resetButton || g.hints !== 2)
+          throw new Error('The seventh drop should preserve the full bowl and glow Start again');
+        await press(g.checkButton);
+        await press(g.checkButton);
+        if (g.glowTarget !== g.resetButton || g.hints !== 2 || g.misses !== 0)
+          throw new Error('A dead-end check should keep the reset hint without counting it twice');
+        await press(g.resetButton);
+        if (g.counts.some(Boolean) || g.glowTarget) throw new Error('Start again did not clear the bowl');
+        while (!g.done) {
+          const current = g.current;
+          const share = g.sample.share;
+          for (let i = 0; i < 3 - share; i++) await press(g.potNodes[0]);
+          for (let i = 0; i < share; i++) await press(g.potNodes[1]);
+          await press(g.checkButton);
+          if (!(await kit.until(() => g.done || g.current !== current, 8000)))
+            throw new Error('A matching blend did not advance the round');
+        }
+      });
+      await finished('rainbow-fingers');
+      const result = await page.evaluate(() => {
+        const round = kit.store.stats('rainbow-fingers').history.at(-1);
+        return [round.misses, round.hints, kit.store.data.stickers.length];
+      });
+      assert.deepEqual(result, [0, 2, before + 1]);
+      log(
+        'Rainbow Fingers 12: alternate match, hint, full bowl, reset, three samples and one sticker passed',
+      );
+    } finally {
+      await page.setViewportSize(size);
+      await emulation.send('Emulation.setTouchEmulationEnabled', { enabled: false });
+      await emulation.detach();
+    }
+  }
+
   async function early() {
     const only = process.env.EARLY_ONLY;
     if (only !== undefined) selectValue(only, ['paint', 'bath'], 'EARLY_ONLY');
@@ -27,6 +114,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 6) && (!only || only === 'paint');
       level++
     ) {
+      if (level === 12) {
+        await playPaintMatch();
+        continue;
+      }
       await launch('rainbow-fingers', level);
       await page.waitForTimeout(500);
       const coloring = await page.evaluate(() => neo.scene.game.pictures.length > 0);

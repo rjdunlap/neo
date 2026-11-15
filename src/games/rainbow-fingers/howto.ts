@@ -55,13 +55,18 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'Three pictures, each a different mixed color and at least one pink or brown. Remember the color, then pour its paints into the bowl (white is there, and the bowl takes three pours) and drag a finger across the picture. A first wrong color only names the right one; the recipe is told on the second, when the pots glow.',
     },
+    {
+      from: 12,
+      text: 'Match the paint card. Try two drops from one pot and one from the other, then tap the check mark. There’s room for six drops. Tap the tipping bowl to empty it and try a new mix.',
+    },
   ],
   finish: [
     {
       to: 2,
       text: 'A frame appears after five touches of any kind (or one touch and about 25 seconds); tap it to hang the painting up.',
     },
-    { from: 3, text: 'The round ends when every asked-for part is colored.' },
+    { from: 3, to: 11, text: 'The round ends when every asked-for part is colored.' },
+    { from: 12, text: 'Match three paint cards to finish the round.' },
   ],
   note: [
     {

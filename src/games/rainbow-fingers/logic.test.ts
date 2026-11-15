@@ -77,8 +77,8 @@ import { swatch } from '../../art/palette';
 import { VOICE } from './voice';
 
 describe('Rainbow Fingers', () => {
-  it('pours in both mixing modes and directly selects paint in every other mode', () => {
-    expect(PLANS.map((plan) => pours(plan.mode))).toEqual([
+  it('pours in the mixing and wheel picture modes and directly selects paint in the other painting modes', () => {
+    expect(PLANS.filter((plan) => plan.mode !== 'match').map((plan) => pours(plan.mode))).toEqual([
       false,
       false,
       false,
@@ -103,7 +103,7 @@ describe('Rainbow Fingers', () => {
 
   it('gives every coloring page distinct colors, and mixing pages only mixable ones', () => {
     // Level 9's pages are all pink: distinct pictures of one color (its own tests below).
-    for (const plan of PLANS.filter((p) => p.count > 0 && !p.white && !p.three)) {
+    for (const plan of PLANS.filter((p) => p.count > 0 && p.mode !== 'match' && !p.white && !p.three)) {
       for (let seed = 1; seed <= 200; seed++) {
         const things = pickThings(plan, new Rng(seed));
         expect(things).toHaveLength(plan.count);
@@ -202,7 +202,7 @@ describe('Rainbow Fingers', () => {
   });
 
   it('plays a whole round touch by touch: the right pot, then a fill, and the frame once the page is done', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'match')) {
       for (let seed = 1; seed <= 100; seed++) {
         const things = pickThings(plan, new Rng(seed));
         const st: PaintState = {
@@ -389,6 +389,7 @@ describe('Rainbow Fingers', () => {
     expect(PLANS.map((plan) => nudges(plan.mode))).toEqual([
       true,
       true,
+      false,
       false,
       false,
       false,
@@ -687,7 +688,7 @@ describe('Rainbow Fingers', () => {
   describe('level 8, Finish the color wheel', () => {
     const wheel = planFor(8);
 
-    it('is the school top level, a wheel page with three empty petals', () => {
+    it('is a school level with three empty petals', () => {
       expect(wheel).toEqual({ mode: 'wheel', count: 3 });
       expect(planFor(8).mode).toBe('wheel');
     });
@@ -1034,10 +1035,8 @@ describe('Rainbow Fingers', () => {
     const memory = planFor(11);
     const colorWords = [...RAINBOW, 'pink', 'brown', 'white'];
 
-    it('is the school top level: three recalled mixes, the white pot and a three-pour bowl', () => {
+    it('is a school level with three recalled mixes, the white pot and a three-pour bowl', () => {
       expect(memory).toEqual({ mode: 'recall-mix', count: 3, memory: true });
-      expect(LEVELS.school?.max).toBe(11);
-      expect(PLANS).toHaveLength(11);
       expect(pours(memory.mode)).toBe(true);
       expect(whitePot(memory)).toBe(true);
       expect(bowlHolds(memory)).toBe(3);

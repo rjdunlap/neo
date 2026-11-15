@@ -234,7 +234,7 @@ export class DailyScene extends Scene {
     // Not upright-ready yet, on a phone held upright: a small phone turned on its side; opening it shows the turn prompt.
     const turn = turnBadge();
     turn.label = 'turn';
-    turn.visible = this.uprightPhone && !pick.mod.upright;
+    turn.visible = this.uprightPhone && !pick.mod.upright && !pick.mod.uprightLevels?.includes(pick.level);
     node.addChild(frame, art, pill, name, dots, level, tick, turn);
     onTap(
       node,

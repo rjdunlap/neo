@@ -179,11 +179,6 @@ export class GameScene extends Scene {
     private readonly startLevel?: number,
   ) {
     super(app);
-    // An upright-ready game (chunk 31) lays out on the upright area on a phone held upright; any other keeps the turn prompt.
-    // `?uprightall` on the dev server lifts the prompt for every game, for the upright sweep (BROWSER_SUITE=uprightsweep); never in a build.
-    this.upright = this.uprightArea =
-      mod.upright === true ||
-      (import.meta.env.DEV && new URLSearchParams(globalThis.location?.search).has('uprightall'));
     const icon = this.app.creatureWorld
       ? this.story
         ? basketIcon()
@@ -201,6 +196,7 @@ export class GameScene extends Scene {
       (this.startLevel === undefined
         ? store.levelFor(this.mod.id, range, this.mod.entryLevels)
         : stepLevel(this.startLevel, 0, range));
+    this.setOrientation();
     this.content.addChild(this.stage);
 
     this.pet.scale.set(GUIDE_SCALE);
@@ -547,6 +543,16 @@ export class GameScene extends Scene {
     if (!info) return;
     this.level = level;
     card.show(info, this.demoAt(level, card.currentDemo));
+    this.setOrientation();
+    this.app.applyView();
+  }
+
+  private setOrientation() {
+    // The dev-only sweep can inspect layouts before an upright rollout.
+    this.upright = this.uprightArea =
+      this.mod.upright === true ||
+      this.mod.uprightLevels?.includes(this.level) === true ||
+      (import.meta.env.DEV && new URLSearchParams(globalThis.location?.search).has('uprightall'));
   }
 
   /** Play: the card goes, and the round begins. */

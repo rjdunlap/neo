@@ -34,4 +34,9 @@ export const VOICE = {
   'paint.wheel.two': ['Its neighbors are two colors. Mix them both!'],
   'paint.wheel.made': ['{a} and {b} hugged and made {color}!', '{a} and {b} make {color}!'],
   'paint.wheel.done': ['A whole color wheel!', 'Every petal painted!'],
+  'paint.match.start': ['Make this color! Tap a pot for each drop. Tap the check mark to see if it matches.'],
+  'paint.match.more': ['A bit more {color}?'],
+  'paint.match.full': ['The bowl is full!'],
+  'paint.match.reset': ["Let's start a new bowl."],
+  'paint.match.made': ['{first} {a} and {second} {b} make {color}!'],
 } satisfies Record<string, string[]>;
