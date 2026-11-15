@@ -131,8 +131,10 @@ describe('touch how-to cards', () => {
     expect(finishes[3]).toContain('all three animals');
     expect(finishes[4]).toContain('three animals receive the requested count');
     expect(finishes[5]).toContain('four animals are fed from their sounds');
-    expect(howToFor(snack, 7)!.finish).toBe('');
-    expect(howToFor(snack, 7)!.steps).toEqual([]);
+    expect(howToFor(snack, 7)!.finish).toContain('four foods, each with both of its eaters found');
+    expect(howToFor(snack, 7)!.steps.join(' ')).toContain('tap both');
+    expect(howToFor(snack, 8)!.finish).toBe('');
+    expect(howToFor(snack, 8)!.steps).toEqual([]);
   });
 
   it('explains Beat Builder controls, finish gates and target counts for each current mode', () => {

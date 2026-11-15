@@ -10,7 +10,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * animal and it munches its snack, or tap a snack and it floats to the animal who loves it. Then
  * "who eats grass?", giving each animal its food by dragging, and finally a number of snacks.
  */
-export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound';
+export type SnackMode = 'munch' | 'float' | 'who' | 'match' | 'count' | 'sound' | 'eats';
 
 export interface SnackPlan {
   mode: SnackMode;
@@ -40,13 +40,14 @@ export const PLANS: SnackPlan[] = [
     rounds: 4,
     name: 'Who says moo? Drag its own snack to the animal that makes the sound',
   },
+  { mode: 'eats', animals: 3, rounds: 4, name: 'Who eats hay? There are two: tap both animals that eat it' },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 6 },
+  prek: { min: 5, max: 7 },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -327,10 +328,13 @@ export interface SnackRound {
   ask?: CritterName;
   /** 'count': how many snacks. */
   n?: number;
+  /** 'eats': the food asked about; two of the animals eat it and the third never does. */
+  food?: Food;
 }
 
 /** Animals for each round, never asking about the same animal twice running. */
 export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
+  if (plan.mode === 'eats') return makeEatsRounds(plan.rounds, rng);
   const out: SnackRound[] = [];
   const many = plan.mode === 'munch' || plan.mode === 'float' || plan.mode === 'match';
   // Free play and matching keep one set of animals; questions pick new animals each time.
@@ -381,6 +385,9 @@ export interface SnackTable {
   n?: number;
   /** 'munch' and 'float': snacks eaten so far. */
   eatenCount: number;
+  /** 'eats': the food asked about and the eaters already found. */
+  food?: Food;
+  found?: CritterName[];
 }
 
 /**
@@ -409,6 +416,10 @@ export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
       const to = t.friends.findIndex((a) => a === t.ask);
       return give < 0 || to < 0 ? null : { give, to };
     }
+    case 'eats': {
+      const next = t.friends.findIndex((a) => eats(a, t.food!) && !t.found?.includes(a));
+      return next < 0 ? null : { friend: next };
+    }
     case 'count': {
       const fed = t.snacks.filter((s) => s.eaten).length;
       if (fed === t.n) return 'bell';
@@ -416,3 +427,63 @@ export function snackTouch(plan: SnackPlan, t: SnackTable): SnackTouch | null {
     }
   }
 }
+
+/**
+ * Level 7, Who eats it too?: foods some of the eleven truly eat, from the cited sources below. Only foods with at least
+ * two eaters and a definite non-eater are asked; every animal whose favorite a food is, eats it.
+ * - Cat: an obligate carnivore that relies on nutrients found only in animal products (Cornell Feline Health Center,
+ *   "Feeding your cat"), so it eats fish and none of the plant foods.
+ * - Bear: black bears eat fish, and apples and corn near farms (NPS Big South Fork "Black Bears"; Shenandoah NPS
+ *   "American Black Bear").
+ * - Cow: hay and corn silage (University of Kentucky "Forages for dairy cattle"; UW–Madison Extension corn silage).
+ * - Horse: hay first, then oats and corn, apples as a treat (University of Missouri Extension G2807; UMN Extension
+ *   "Ten things you should know about feeding a mature horse").
+ * - Sheep: grass hay, with oats or corn as grain (Oregon State EC 1652; Ontario OMAFRA "Feeding systems for sheep").
+ * - Bunny: grass hay is most of a rabbit's diet (House Rabbit Society Chicago, "Hay! The grass roots of the diet").
+ * - Hen: scratch grains such as corn and oats (Oregon State PNW 477; poultry.extension.org "Feeding chickens").
+ * - Duck: mallards eat mostly seeds and waste grain (Audubon field guide, Mallard).
+ * - Mouse: house mice prefer seeds and grain (Nebraska Extension / ICWDM house mouse factsheet; Purdue Extension).
+ * - Pig: corn is pigs' main energy feed (Iowa Pork Industry Center "Feedstuffs"); apples are its favorite in this game.
+ * The herbivores (cow, horse, sheep, bunny) eat plants only, so they are the definite non-eaters of fish.
+ */
+export const EATS: Partial<Record<Food, CritterName[]>> = {
+  hay: ['cow', 'horse', 'sheep', 'bunny'],
+  fish: ['cat', 'bear'],
+  seeds: ['duck', 'hen', 'mouse'],
+  apple: ['pig', 'horse', 'bear'],
+  corn: ['hen', 'pig', 'cow', 'horse'],
+  oats: ['horse', 'sheep', 'hen'],
+};
+/** Animals that definitely do not eat the food: the only animals dealt as the wrong answer. */
+export const NOT_EATS: Partial<Record<Food, CritterName[]>> = {
+  hay: ['cat'],
+  fish: ['cow', 'horse', 'sheep', 'bunny'],
+  seeds: ['cat'],
+  apple: ['cat'],
+  corn: ['cat'],
+  oats: ['cat'],
+};
+export const EATS_FOODS = Object.keys(EATS) as Food[];
+export const eats = (animal: CritterName, food: Food) => !!EATS[food]?.includes(animal);
+
+/**
+ * Four questions, each a food (never the same one twice running), its favorite-holder and one more of its eaters, and
+ * one definite non-eater, in a shuffled row.
+ */
+export function makeEatsRounds(rounds: number, rng: Rng): SnackRound[] {
+  const out: SnackRound[] = [];
+  for (let i = 0; i < rounds; i++) {
+    const food = rng.pick(EATS_FOODS.filter((f) => f !== out.at(-1)?.food));
+    const all = EATS[food]!;
+    const fav = rng.pick(all.filter((a) => FAVORITE[a] === food));
+    const other = rng.pick(all.filter((a) => a !== fav));
+    const not = rng.pick(NOT_EATS[food]!);
+    out.push({ animals: rng.shuffle([fav, other, not]), food });
+  }
+  return out;
+}
+
+/** Level 7: what a tap on an animal means: a new eater found, one already found (no miss), or a non-eater (a miss). */
+export type EatsTap = 'found' | 'again' | 'wrong';
+export const eatsTap = (food: Food, to: CritterName, found: CritterName[]): EatsTap =>
+  !eats(to, food) ? 'wrong' : found.includes(to) ? 'again' : 'found';

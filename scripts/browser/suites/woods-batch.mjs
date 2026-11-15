@@ -2204,7 +2204,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(6, Number(process.env.TO_LEVEL || 6)); level++) {
+      for (let level = fromLevel; level <= Math.min(7, Number(process.env.TO_LEVEL || 7)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -2483,6 +2483,42 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
                 );
               }
               await give(fav[r.ask], r.ask);
+            } else if (mode === 'eats') {
+              // Level 7, Who eats it too?: tap both animals that eat the food; the third never does.
+              const [eaters, wrong] = await page.evaluate(async (food) => {
+                const L = await import('/src/games/animal-snack/logic.ts');
+                const animals = neo.scene.game.round.animals;
+                return [animals.filter((a) => L.eats(a, food)), animals.find((a) => !L.eats(a, food))];
+              }, r.food);
+              assert.equal(eaters.length, 2, 'two of the three eat it');
+              if (n === 0) {
+                await tapAnimal(eaters[0]);
+                await tapAnimal(eaters[0]);
+                assert.deepEqual(await counts(), [0, 0], 'an eater already found is no miss');
+                await tapAnimal(wrong);
+                await tapAnimal(wrong);
+                assert.deepEqual(await counts(), [2, 1], 'the non-eater is a miss twice, then a hint');
+                assert.ok(
+                  await page.evaluate(
+                    (name) =>
+                      neo.scene.game.glowing === neo.scene.game.friends.find((f) => f.name === name).node,
+                    eaters[1],
+                  ),
+                  'the second miss glows the eater still to find',
+                );
+                assert.deepEqual(
+                  await page.evaluate(() => neo.scene.game.found),
+                  [eaters[0]],
+                  'the found one stays marked',
+                );
+                // Seen upright on a phone: the tick over the one found and the glow on the one still to find.
+                await page.setViewportSize({ width: 390, height: 844 });
+                await page.waitForTimeout(400);
+                await screenshot('animal-snack-7-phone');
+                await page.setViewportSize({ width: 1024, height: 768 });
+                await page.waitForTimeout(300);
+                await tapAnimal(eaters[1]);
+              } else for (const a of eaters) await tapAnimal(a);
             } else if (mode === 'who') {
               if (n === 0) {
                 const wrong = r.animals.find((a) => a !== r.ask);
@@ -2528,7 +2564,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         }
         await finished('animal-snack');
         assert.deepEqual(await score('animal-snack'), mode === 'munch' || mode === 'float' ? [0, 0] : [2, 1]);
-        if (level === 3 || level === 5 || level === 6)
+        if (level === 3 || level === 5 || level === 6 || level === 7)
           await page.setViewportSize({ width: 1024, height: 768 });
         log(
           `Animal Snack ${level} (${mode}): animals and snacks tapped and dragged, wrong eaters as misses, glow hint, saved score and sticker passed`,

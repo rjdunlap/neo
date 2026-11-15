@@ -23,6 +23,8 @@ import {
   busyTouch,
   countedFood,
   eaterOf,
+  eats,
+  eatsTap,
   farBarnAt,
   friendsAfter,
   BIG_SCALE,
@@ -231,6 +233,9 @@ class AnimalSnack implements Game {
   private clock = 0;
   private idle = 0;
   private nudgeIndex = 0;
+  /** Level 7: the eaters found this question, each marked with a green tick above it. */
+  found: CritterName[] = [];
+  private readonly ticks = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -239,6 +244,7 @@ class AnimalSnack implements Game {
     // After the rounds, so the scene never changes which animals a seed deals.
     this.scene = sceneFor(ctx.rng);
     this.glow.eventMode = 'none';
+    this.ticks.eventMode = 'none';
     this.decor.eventMode = 'none';
     this.spot.eventMode = 'none';
     this.meadow.eventMode = this.plan.oneBig ? 'static' : 'none';
@@ -255,7 +261,7 @@ class AnimalSnack implements Game {
     this.bubble.eventMode = 'none';
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => void this.ring());
     this.bell.visible = this.plan.mode === 'count';
-    ctx.stage.addChild(this.meadow, this.decor, this.spot, this.bubble, this.glow, this.bell);
+    ctx.stage.addChild(this.meadow, this.decor, this.spot, this.bubble, this.glow, this.ticks, this.bell);
     this.showScene(this.scene);
   }
 
@@ -307,6 +313,22 @@ class AnimalSnack implements Game {
     });
     this.bubble.position.set(v.w / 2, 120);
     this.bell.position.set(v.w - 80, 110);
+    this.drawTicks();
+  }
+
+  /** Level 7: a green tick over each eater already found, so the ones found stay marked. */
+  private drawTicks() {
+    const g = this.ticks.clear();
+    for (const f of this.friends) {
+      if (!this.found.includes(f.name)) continue;
+      const x = f.node.x;
+      const y = f.node.y - 340 * f.node.scale.y;
+      g.circle(x, y, 26).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+      g.moveTo(x - 12, y)
+        .lineTo(x - 3, y + 10)
+        .lineTo(x + 13, y - 10)
+        .stroke({ width: 7, color: 0xffffff, cap: 'round', join: 'round' });
+    }
   }
 
   /** The snacks' place at the bottom: a picnic blanket in the meadow, a trough in the orchard, a tin tub in the garden, a big bowl at dusk. */
@@ -505,7 +527,11 @@ class AnimalSnack implements Game {
     }
     const g = this.glow.clear();
     if (this.glowing && !this.busy) {
-      const b = this.glowing.getBounds();
+      // Bounds are in screen space; the glow draws in the stage's, which is scaled on a phone.
+      const wb = this.glowing.getBounds();
+      const tl = this.glow.parent!.toLocal({ x: wb.x, y: wb.y });
+      const br = this.glow.parent!.toLocal({ x: wb.x + wb.width, y: wb.y + wb.height });
+      const b = { x: tl.x, y: tl.y, width: br.x - tl.x, height: br.y - tl.y };
       g.roundRect(b.x - 12, b.y - 12, b.width + 24, b.height + 24, 30).stroke({
         width: 6 + 2 * Math.sin(this.clock * 5),
         color: swatch.yellow.fill,
@@ -522,6 +548,8 @@ class AnimalSnack implements Game {
       ask: this.round.ask,
       n: this.round.n,
       eatenCount: this.eatenCount,
+      food: this.round.food,
+      found: this.found,
     });
     if (!move) return null;
     if (move === 'bell') return { tap: { on: this.bell } };
@@ -645,6 +673,8 @@ class AnimalSnack implements Game {
     this.idle = 0;
     this.wrongs = 0;
     this.glowing = null;
+    this.found = [];
+    this.drawTicks();
     const mode = this.plan.mode;
     if (mode === 'munch' || mode === 'float' || mode === 'match') {
       if (this.index > 0) return void this.finale();
@@ -664,6 +694,12 @@ class AnimalSnack implements Game {
     if (this.index >= this.rounds.length) return void this.finale();
     const r = this.round;
     this.setFriends(r.animals);
+    if (mode === 'eats') {
+      this.setSnacks([]);
+      this.showBubble(r.food!);
+      this.busy = false;
+      return this.ctx.instruct('snack.eats', { food: FOOD_WORDS[r.food!] });
+    }
     const food = FAVORITE[r.ask!]!;
     if (mode === 'count') this.setSnacks(Array<Food>(5).fill(food));
     else if (mode === 'sound') this.refill();
@@ -727,13 +763,14 @@ class AnimalSnack implements Game {
     }
   }
 
-  private async eat(f: Friend, node: Container) {
-    this.fed.add(f.name);
+  /** An animal eats `food` in three bites; only its own favorite files a journal discovery. */
+  private async eat(f: Friend, node: Container, food: Food = FAVORITE[f.name]!) {
+    if (food === FAVORITE[f.name]) this.fed.add(f.name);
     const m = this.mouth(f);
     this.ctx.tw.kill(node);
     await this.ctx.tw.to(node, { x: m.x, y: m.y }, { duration: 0.35, ease: ease.inOutSine });
     const start = node.scale.x;
-    const kind = BITE[FAVORITE[f.name]!];
+    const kind = BITE[food];
     for (const left of BITE_SIZES) {
       sfx.bite(kind);
       this.ctx.particles.burst(m.x, m.y, {
@@ -785,6 +822,7 @@ class AnimalSnack implements Game {
       this.busy = false;
       return;
     }
+    if (mode === 'eats') return this.tapEats(f);
     if (mode !== 'who') {
       f.node.poke();
       const voice = VOICE[f.name];
@@ -843,6 +881,59 @@ class AnimalSnack implements Game {
             ),
         )?.node ?? null;
     }
+  }
+
+  /**
+   * Level 7, Who eats it too?: each eater found eats a piece of the food and keeps a tick; one already found just says
+   * hello; the one that never eats it shakes its head and says what it eats (a miss). The second miss glows an eater
+   * still to find (a hint).
+   */
+  private async tapEats(f: Friend) {
+    const food = this.round.food!;
+    const result = eatsTap(food, f.name, this.found);
+    if (result === 'again') {
+      f.node.poke();
+      const voice = VOICE[f.name];
+      if (voice) sfx.animal(voice);
+      return;
+    }
+    if (result === 'wrong') {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      this.shake(f);
+      void this.ctx.say('snack.nothanks', {
+        animal: ANIMAL_WORDS[f.name]!,
+        mine: FOOD_WORDS[FAVORITE[f.name]!],
+        food: FOOD_WORDS[food],
+      });
+      if (this.wrongs >= 2 && !this.glowing) {
+        this.hints++;
+        this.glowing =
+          this.friends.find((x) => eats(x.name, food) && !this.found.includes(x.name))?.node ?? null;
+      }
+      return;
+    }
+    this.busy = true;
+    this.glowing = null;
+    this.found.push(f.name);
+    const node = foodArt(food);
+    node.position.set(this.bubble.x, this.bubble.y);
+    node.eventMode = 'none';
+    this.ctx.stage.addChild(node);
+    await this.eat(f, node, food);
+    node.destroy({ children: true });
+    this.drawTicks();
+    const left = this.round.animals.filter((a) => eats(a, food) && !this.found.includes(a)).length;
+    if (left > 0) {
+      void this.ctx.say('snack.eatsmore', { animal: ANIMAL_WORDS[f.name]!, food: FOOD_WORDS[food] });
+      this.wrongs = 0;
+      this.busy = false;
+      return;
+    }
+    const yum = this.ctx.say('snack.eatsboth', { food: FOOD_WORDS[food] });
+    if (this.last) await yum;
+    return void this.next();
   }
 
   private shake(f: Friend) {

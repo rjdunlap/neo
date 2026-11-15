@@ -1,1 +1,0 @@
-**`animal-snack`, level 7 Their own snacks** (new-level tier: rule tests, the two-row blanket's portrait screenshot first, one browser play of level 7, `fingerdemo` at it): the next ladder step after the eleven animals. [Animal Snack dive, slice 6](../../deep-dives/animal-snack.md#build-slices-in-order)

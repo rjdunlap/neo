@@ -25,6 +25,11 @@ export const HOW_TO: GameHowTo = {
       to: 6,
       text: 'An animal sound plays: drag that animal its own snack. A wrong animal answers in its own voice, and the right animal turns down another food. Tap the speaker to hear the sound again.',
     },
+    {
+      from: 7,
+      to: 7,
+      text: 'A food is shown and two of the three animals eat it: tap both. Each one found eats a piece and keeps a green tick; the animal that never eats it says what it eats instead.',
+    },
   ],
   finish: [
     { to: 2, text: 'The round ends after six snacks are eaten.' },
@@ -36,6 +41,7 @@ export const HOW_TO: GameHowTo = {
       text: 'The round ends after three animals receive the requested count, confirmed with the bell.',
     },
     { from: 6, to: 6, text: 'The round ends after four animals are fed from their sounds.' },
+    { from: 7, to: 7, text: 'The round ends after four foods, each with both of its eaters found.' },
   ],
   note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
 };

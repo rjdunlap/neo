@@ -16,5 +16,8 @@ export const VOICE = {
   'snack.full': ['{n}! Thank you, says the {animal}!'],
   'snack.more': ['That is {have}. The {animal} wants {n}!'],
   'snack.toomany': ['That is too many! Only {n}, please. Here are the extras back.'],
+  'snack.eats': ['Who eats {food}? There are two! Tap them both.'],
+  'snack.eatsmore': ['Yes! The {animal} eats {food}. Who else eats {food}?'],
+  'snack.eatsboth': ['You found them both! They both eat {food}.'],
   'snack.done': ['Everyone had a snack. Thank you!'],
 } satisfies Record<string, string[]>;
