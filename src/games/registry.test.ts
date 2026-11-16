@@ -101,9 +101,13 @@ describe('game registry', () => {
         expect(landing(level, g.levels(band), g.entryLevels)).toBe(level);
   });
 
-  it('keeps Photo Safari 8–11 school only and the toddler entry 12 in the toddler order only', () => {
+  it('keeps Photo Safari 8–11 and 14–15 school only and the toddler entry 12 in the toddler order only', () => {
     const g = gameById('photo-safari')!;
-    expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
+    expect(g.levels('school')).toEqual({ min: 4, max: 15, order: [4, 5, 6, 7, 8, 9, 10, 11, 14, 15] });
+    // Mystery Friend (14–15) is in no band but school.
+    for (const band of g.bands)
+      for (const level of [14, 15])
+        expect(levelsInOrder(g.levels(band)).includes(level)).toBe(band === 'school');
     expect(g.levels('prek')).toEqual({ min: 3, max: 5 });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
     // Lap opens with level 13's one big friend, then levels 1 and 2; no saved level or pin moves.

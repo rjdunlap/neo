@@ -3657,3 +3657,7 @@ Branch `claude/rainbow-fingers-from-memory`, [dive slice 12](../deep-dives/rainb
 ## Animal Snack levels 9–10 The menu board and The long menu (dive slice 8, 2026-11-16)
 
 Branch `claude/animal-snack-menu-board-b`, [dive slice 8](../deep-dives/animal-snack.md#build-slices-in-order). A chalkboard of lines (animal picture, printed numeral, food word; the food picture at level 9 only) with a free reading speaker per line. Level 9 gives 4 to 9 of one food from ten on a two-row blanket; level 10 gives two animals their own numbers from the level 8 piles. `LEVELS.school` is 8–10 and `school` joins `bands`. Three new voice lines are device speech until clips are generated. See the [verification entry](../verification/2026-11-16-animal-snack-levels-9-10-the-menu-board-and-the-long-menu.md).
+
+## Photo Safari levels 14–15 Mystery friend and Best question (SL5, 2026-11-16)
+
+Branch `claude/photo-safari-mystery-friend-sl5`, PR #1715, slice SL5 of the [speaking-and-listening study](../deep-dives/subjects/speaking-listening.md#build-slices-in-order), [definition](../definitions/mystery-friend.md). School only, order `[4..11, 14, 15]`. Decisions taken from the definition's defaults: hosted in Photo Safari, no pre-K opening of level 14, the level-15 "better question" note on. See the [verification entry](../verification/2026-11-16-photo-safari-levels-14-15-mystery-friend-and-best-question.md).

@@ -30,6 +30,21 @@ import {
   request,
   nearestSighting,
   sightingPositions,
+  MYSTERY_PLAN,
+  BEST_PLAN,
+  SPOTS,
+  ANIMALS,
+  answer,
+  ask,
+  bestQuestions,
+  botMove,
+  guess,
+  mysteryChips,
+  makeMysteryScene,
+  split,
+  startMystery,
+  unhelpful,
+  type MysteryPlay,
 } from './logic';
 import {
   TODDLER_ACTIONS,
@@ -222,9 +237,20 @@ group('telling a listener', () => {
     expect(planFor(10)).toBe(TELL_WHICH_PLAN);
     expect(planFor(11)).toBe(TELL_BOTH_PLAN);
     const range = photoSafari.levels('school');
-    expect(range).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
+    expect(range).toEqual({ min: 4, max: 15, order: [4, 5, 6, 7, 8, 9, 10, 11, 14, 15] });
     expect(stepLevel(7, 1, range)).toBe(8);
     expect(stepLevel(10, -1, range)).toBe(9);
+    expect(stepLevel(11, 1, range)).toBe(14);
+    expect(stepLevel(14, 1, range)).toBe(15);
+    expect(stepLevel(14, -1, range)).toBe(11);
+    expect(planFor(14)).toBe(MYSTERY_PLAN);
+    expect(planFor(15)).toBe(BEST_PLAN);
+    expect(photoSafari.levels('lap')).toEqual({ min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1, 2] });
+    expect(photoSafari.levels('toddler')).toEqual({ min: 1, max: 12, order: [1, 2, 12] });
+    expect(photoSafari.levels('preschool')).toEqual({ min: 2, max: 4 });
+    expect(photoSafari.levels('prek')).toEqual({ min: 3, max: 5 });
+    expect(photoSafari.describeLevel(14)).toBe(MYSTERY_PLAN.name);
+    expect(photoSafari.describeLevel(15)).toBe(BEST_PLAN.name);
   });
   it('speaks doing words before place words regardless of selection order', () => {
     expect(
@@ -447,3 +473,326 @@ group('Photo Safari levels 8, 9 and 12 rules', () => {
 
 const SPOTS_FREE = (before: { spot: Spot }[]): Spot =>
   SPOT_LIST.find((s) => !before.some((b) => b.spot === s))!;
+
+group('mystery friend (14–15)', () => {
+  const SEEDS = 300;
+  const mk = (level: number, seed: number) => {
+    const scene = makeMysteryScene(planFor(level), new Rng(seed));
+    return { scene, play: startMystery(scene) };
+  };
+  const chipsOf = (scene: ReturnType<typeof makeMysteryScene>) => mysteryChips(scene);
+  const sc = (level: number, seed: number) => makeScene(planFor(level), new Rng(seed));
+
+  for (const level of [14, 15]) {
+    const places = level === 15 ? 3 : 2;
+    it(`level ${level}: makeScene is deterministic and every action x place pair appears once`, () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const scene = sc(level, seed);
+        expect(sc(level, seed)).toEqual(scene);
+        expect(scene.sightings).toHaveLength(places * 2);
+        const pairs = scene.sightings.map((s) => `${s.action}/${s.spot}`);
+        expect(new Set(pairs).size).toBe(pairs.length);
+        expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(places);
+        expect(new Set(scene.sightings.map((s) => s.action)).size).toBe(2);
+        expect(new Set(scene.sightings.map((s) => s.animal)).size).toBe(scene.sightings.length);
+        for (const s of scene.sightings) {
+          expect(s.action).not.toBe('swimming');
+          expect(SPOTS).toContain(s.spot);
+        }
+        expect(scene.target).toBeGreaterThanOrEqual(0);
+        expect(scene.target).toBeLessThan(scene.sightings.length);
+      }
+    });
+
+    it(`level ${level}: every friend can be singled out by doing and place questions, and answer matches the secret`, () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { scene } = mk(level, seed);
+        const chips = chipsOf(scene);
+        for (const c of chips) {
+          const t = scene.sightings[scene.target];
+          expect(answer(c, scene)).toBe(c.kind === 'action' ? t.action === c.value : t.spot === c.value);
+        }
+        for (let target = 0; target < scene.sightings.length; target++) {
+          const t = { ...scene, target };
+          let left = scene.sightings.map((_, i) => i);
+          for (const c of chips) {
+            const { yes, no } = split(c, left, t);
+            left = answer(c, t) ? yes : no;
+          }
+          expect(left).toEqual([target]);
+        }
+      }
+    });
+
+    it(`level ${level}: best questions are never unhelpful, minimise imbalance, and always make progress`, () => {
+      // Explore every reachable remaining set with the asked chips that led there.
+      for (let seed = 1; seed <= 40; seed++) {
+        const { scene } = mk(level, seed);
+        const chips = chipsOf(scene);
+        const visit = (remaining: number[], asked: typeof chips) => {
+          if (remaining.length < 2) return;
+          const open = chips.filter((c) => !asked.includes(c));
+          const helpful = open.filter((c) => !unhelpful(c, remaining, scene));
+          const gap = (c: (typeof chips)[number]) => {
+            const s = split(c, remaining, scene);
+            return Math.abs(s.yes.length - s.no.length);
+          };
+          const best = bestQuestions(chips, remaining, scene, asked);
+          // 5: at least one best chip while 2+ remain, and it leaves fewer friends either way.
+          expect(best.length).toBeGreaterThan(0);
+          const least = Math.min(...helpful.map(gap));
+          for (const b of best) {
+            expect(unhelpful(b, remaining, scene)).toBe(false);
+            expect(asked).not.toContain(b);
+            expect(gap(b)).toBe(least);
+            const s = split(b, remaining, scene);
+            expect(s.yes.length).toBeLessThan(remaining.length);
+            expect(s.no.length).toBeLessThan(remaining.length);
+          }
+          for (const c of helpful) {
+            expect(gap(c)).toBeGreaterThanOrEqual(least);
+          }
+          for (const c of open) {
+            const s = split(c, remaining, scene);
+            // 6: unhelpful exactly when one side is empty.
+            expect(unhelpful(c, remaining, scene)).toBe(!s.yes.length || !s.no.length);
+            if (unhelpful(c, remaining, scene)) continue;
+            visit(s.yes, [...asked, c]);
+            visit(s.no, [...asked, c]);
+          }
+        };
+        visit(
+          scene.sightings.map((_, i) => i),
+          [],
+        );
+      }
+    });
+  }
+
+  it('level 15: on the full board the best questions are the two doing words (3/3) and each place splits 2/4', () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const { scene, play } = mk(15, seed);
+      const best = bestQuestions(play.chips, play.remaining, scene);
+      expect(best).toHaveLength(2);
+      expect(best.every((c) => c.kind === 'action')).toBe(true);
+      for (const c of play.chips) {
+        const s = split(c, play.remaining, scene);
+        if (c.kind === 'action') expect([s.yes.length, s.no.length]).toEqual([3, 3]);
+        else expect([s.yes.length, s.no.length]).toEqual([2, 4]);
+      }
+    }
+  });
+
+  for (const level of [14, 15]) {
+    it(`level ${level}: botMove finishes within 3 questions plus the snap`, () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { scene, play } = mk(level, seed);
+        let questions = 0;
+        for (let step = 0; step < 10 && play.remaining.length > 1; step++) {
+          const move = botMove(play);
+          if ('chip' in move) {
+            questions++;
+            expect(ask(play, move.chip).kind).toBe('narrowed');
+          } else guess(play, move.friend);
+        }
+        expect(questions).toBeLessThanOrEqual(3);
+        expect(play.remaining).toEqual([scene.target]);
+        expect(botMove(play)).toEqual({ friend: scene.target });
+        expect(guess(play, scene.target).kind).toBe('snap');
+        expect(play.misses).toBe(0);
+        expect(play.hints).toBe(0);
+      }
+    });
+
+    it(`level ${level}: a random policy of chips and guesses always finishes and the secret stays standing`, () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { scene, play } = mk(level, seed);
+        const rng = new Rng(seed * 7 + 1);
+        for (let step = 0; step < 200 && play.remaining.length > 1; step++) {
+          if (rng.int(0, 2) === 0) guess(play, rng.int(0, scene.sightings.length - 1));
+          else ask(play, play.chips[rng.int(0, play.chips.length - 1)]);
+          expect(play.remaining).toContain(scene.target);
+        }
+        expect(play.remaining).toEqual([scene.target]);
+      }
+    });
+
+    it(`level ${level}: accounting for questions and guesses`, () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { scene, play } = mk(level, seed);
+        const wrong = () => play.remaining.filter((i) => i !== scene.target);
+        // Repeat counts nothing.
+        const c0 = play.chips[0];
+        const first = ask(play, c0);
+        expect(first.kind).toBe('narrowed');
+        const again = ask(play, c0);
+        expect(again.kind).toBe('repeat');
+        expect(play.asked).toHaveLength(1);
+        expect(play.misses).toBe(0);
+        expect(play.hints).toBe(0);
+        // Unhelpful: repeat the same asked chip does not count; use fresh unhelpful chips.
+        const fresh = play.chips.filter((c) => !play.asked.some((a) => a.chip === c));
+        const unh = fresh.filter((c) => unhelpful(c, play.remaining, scene));
+        if (unh.length >= 2) {
+          const a = ask(play, unh[0]);
+          expect(a).toMatchObject({ kind: 'unhelpful', glow: false });
+          expect(play.hints).toBe(0);
+          const b = ask(play, unh[1]);
+          expect(b).toMatchObject({ kind: 'unhelpful', glow: true });
+          expect(play.hints).toBe(1);
+          expect(play.misses).toBe(0);
+          if (unh.length > 2) {
+            expect(ask(play, unh[2])).toMatchObject({ kind: 'unhelpful', glow: false });
+            expect(play.hints).toBe(1);
+          }
+        }
+        // Wrong guesses with 3+ standing.
+        const m0 = play.misses;
+        let guesses = 0;
+        let wrongSeen = 0;
+        while (play.remaining.length >= 3) {
+          const out = guess(play, wrong()[0]);
+          expect(out.kind).toBe('wrong-guess');
+          wrongSeen++;
+          guesses++;
+          expect(play.misses).toBe(m0 + guesses);
+          if (out.kind === 'wrong-guess') expect(out.glow).toBe(wrongSeen === 2);
+          expect(play.remaining).toContain(scene.target);
+        }
+        expect(play.hints).toBe((unh.length >= 2 ? 1 : 0) + (wrongSeen >= 2 ? 1 : 0));
+        // Two standing: a wrong guess is fair, no miss.
+        expect(play.remaining).toHaveLength(2);
+        const missesBefore = play.misses;
+        const hintsBefore = play.hints;
+        expect(guess(play, wrong()[0]).kind).toBe('not-it');
+        expect(play.misses).toBe(missesBefore);
+        expect(play.hints).toBe(hintsBefore);
+        expect(play.remaining).toEqual([scene.target]);
+      }
+    });
+  }
+
+  it('the second wrong guess among 3+ adds exactly one hint, once', () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const { scene, play } = mk(15, seed);
+      const wrong = () => play.remaining.filter((i) => i !== scene.target);
+      expect(guess(play, wrong()[0]).kind).toBe('wrong-guess');
+      expect(play.hints).toBe(0);
+      expect(guess(play, wrong()[0])).toMatchObject({ kind: 'wrong-guess', glow: true });
+      expect(play.hints).toBe(1);
+      expect(guess(play, wrong()[0])).toMatchObject({ kind: 'wrong-guess', glow: false });
+      expect(play.hints).toBe(1);
+      expect(play.misses).toBe(3);
+    }
+  });
+
+  it('a lucky guess of the secret is found and adds nothing; a gone friend is a repeat', () => {
+    for (const level of [14, 15])
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { scene, play } = mk(level, seed);
+        const other = play.remaining.find((i) => i !== scene.target)!;
+        expect(guess(play, other).kind).toBe('wrong-guess');
+        expect(guess(play, other).kind).toBe('repeat');
+        expect(play.misses).toBe(1);
+        const m = play.misses;
+        expect(guess(play, scene.target).kind).toBe('found');
+        expect(play.misses).toBe(m);
+        expect(play.hints).toBe(0);
+        expect(play.remaining).toEqual([scene.target]);
+      }
+  });
+
+  it('a narrowing question never counts a miss or hint', () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const { scene, play } = mk(15, seed);
+      for (const c of play.chips) {
+        const p: MysteryPlay = startMystery(scene);
+        const out = ask(p, c, true);
+        expect(out.kind).toBe('narrowed');
+        expect(p.misses).toBe(0);
+        expect(p.hints).toBe(0);
+        expect(p.remaining).toContain(scene.target);
+      }
+    }
+  });
+
+  it('level 15: the better-question note only follows a weaker question, at most once, and never counts', () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const { scene } = mk(15, seed);
+      const p = startMystery(scene);
+      const place = p.chips.find((c) => c.kind === 'spot')!;
+      const out = ask(p, place, true);
+      expect(out.kind).toBe('narrowed');
+      // A place sends two home (a "no") or four (a "yes"); only two is fewer than a doing word's sure three.
+      const weaker = out.kind === 'narrowed' && out.gone.length < 3;
+      if (out.kind === 'narrowed') {
+        if (weaker) expect(out.better).toEqual({ n: 2, m: 3, kind: 'action' });
+        else expect(out.better).toBeUndefined();
+      }
+      expect(p.noted).toBe(weaker);
+      if (!weaker) continue;
+      const again = ask(
+        p,
+        p.chips.find((c) => c.kind === 'spot' && !p.asked.some((a) => a.chip === c)) ?? place,
+        true,
+      );
+      if (again.kind === 'narrowed') expect(again.better).toBeUndefined();
+      expect(p.misses).toBe(0);
+      expect(p.hints).toBe(0);
+      // A best question first gives no note.
+      const q = startMystery(scene);
+      const best = bestQuestions(q.chips, q.remaining, scene)[0];
+      const o = ask(q, best, true);
+      if (o.kind === 'narrowed') expect(o.better).toBeUndefined();
+    }
+  });
+
+  group('layout', () => {
+    // Built by hand from every place combination, so layout is checked apart from the scene generator.
+    const boards = (count: number) => {
+      const subsets = SPOTS.map((_, i) => i)
+        .reduce<number[][]>((all, i) => [...all, ...all.map((x) => [...x, i])], [[]])
+        .filter((x) => x.length === count);
+      return subsets.map((idx) => ({
+        sightings: idx.flatMap((i) =>
+          (['jumping', 'sleeping'] as const).map((action, k) => ({
+            animal: ANIMALS[(i * 2 + k) % ANIMALS.length],
+            action,
+            spot: SPOTS[i],
+          })),
+        ),
+      }));
+    };
+    const sizes: [number, number][] = [
+      [1024, 768],
+      [1366, 768],
+      [768, 1660],
+    ];
+    for (const [w, h] of sizes)
+      it(`three-place positions at ${w}x${h} keep neighbouring friends at least 100 apart`, () => {
+        const ground = w < 900 ? Math.min(h * 0.78, h - 200) - 140 : Math.min(h * 0.78, h - 200);
+        for (const { sightings } of boards(3)) {
+          const pts = sightingPositions(sightings, w, h, ground);
+          expect(pts).toHaveLength(6);
+          const xs = pts.map((p) => p.x).sort((a, b) => a - b);
+          for (let i = 1; i < xs.length; i++) expect(xs[i] - xs[i - 1]).toBeGreaterThanOrEqual(100);
+          for (const p of pts) {
+            expect(p.x).toBeGreaterThan(0);
+            expect(p.x).toBeLessThan(w);
+          }
+        }
+      });
+    it('two-place positions are unchanged: 0.30 and 0.76 stages with plus or minus 80', () => {
+      for (const { sightings } of boards(2)) {
+        const w = 1024;
+        const pts = sightingPositions(sightings, w, 768);
+        const occupied = SPOTS.filter((s) => sightings.some((a) => a.spot === s));
+        sightings.forEach((s, i) => {
+          const centre = w * (occupied.indexOf(s.spot) === 0 ? 0.3 : 0.76);
+          expect(Math.abs(pts[i].x - centre)).toBe(80);
+        });
+        expect(sightings).toHaveLength(4);
+      }
+    });
+  });
+});
