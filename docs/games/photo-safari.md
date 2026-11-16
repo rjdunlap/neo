@@ -12,7 +12,7 @@
 | toddler | 1, 2, 12 |
 | preschool | 2–4 |
 | pre-K | 3–5 |
-| school | 4, 5, 6, 7, 8, 9, 10, 11 |
+| school | 4, 5, 6, 7, 8, 9, 10, 11, 14, 15 |
 
 | Level | Plays like |
 | --- | --- |
@@ -29,6 +29,8 @@
 | 11 | Tell me both: every picture word fits two, so tell a doing word and a place word together |
 | 12 | Doing words only: "Who is sleeping?" |
 | 13 | One big friend: a touch anywhere takes its photo, and the next friend walks in (6 photos) |
+| 14 | Mystery friend: tap a picture question, and the friends who don't fit step away |
+| 15 | Best question: which picture question sends the most friends away? |
 
 <!-- end generated -->
 

@@ -522,12 +522,8 @@ export function chipPhrase(chips: Chip[]): string {
 /** Every doing word × place pair dealt to exactly one friend, so doing and place questions alone single out anyone. */
 export function makeMysteryScene(plan: SafariPlan, rng: Rng): Scene {
   const places = plan.animals === 6 ? 3 : 2;
-  const spots = SPOTS.filter((s) =>
-    rng
-      .shuffle([...SPOTS])
-      .slice(0, places)
-      .includes(s),
-  );
+  const picked = rng.shuffle([...SPOTS]).slice(0, places);
+  const spots = SPOTS.filter((s) => picked.includes(s));
   const actions = rng.shuffle(actionsAt('tree')).slice(0, 2);
   const animals = rng.shuffle([...ANIMALS]);
   const pairs = actions.flatMap((action) => spots.map((spot) => ({ action, spot })));
