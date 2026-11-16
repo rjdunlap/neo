@@ -1,6 +1,8 @@
 # Cue Studio 4–6: signals, a repeat and a passed cue
 
-P4 definition, 2026-11-16, `claude/define-cue-studio-p4`. Docs only. Builds on the built levels 1–3 ([definition](cue-studio.md), [game page](../games/cue-studio.md)) and the [programming study's ladder](../deep-dives/subjects/programming.md#first-games-proposed-ladder-cue-studio). Nothing here is built. Each level below is one separate build session, in order 4, 5, 6.
+**Built:** level 4 (branch `claude/cue-studio-which-signal`, P4a); to build level 5, read “Level 5: A repeated phrase”. Level 4 shipped the lean under S8: school range 3–4, entry 3, ordinary adaptation (the pin-only alternative was not taken). Differences from the spec: voice ids use hyphens (`cue.when-bell-wave`, `cue.unset-bell`, `cue.signal-miss-bell-wave`, `cue.signals-check`, `cue.signals-success`, `cue.help-signals-check`); one board is drawn behind both rows; a result chip keeps what its row last did after an edit but drops its tick or cross. Voice wording: the lines use “When the bell rings, wave.” (an event starts an action). The source check was attempted 2026-11-16 and could not be completed: the ScratchJr teaching link (sites.bc.edu/scratchjr/teach) returns HTTP 410 Gone, scratchjr.org/learn/blocks gave no readable text and CS Unplugged was not consulted. The wording check is owed to the P4b build. Levels 5 and 6 (P4b, P4c) are not built.
+
+P4 definition, 2026-11-16, `claude/define-cue-studio-p4`. Docs only. Builds on the built levels 1–3 ([definition](cue-studio.md), [game page](../games/cue-studio.md)) and the [programming study's ladder](../deep-dives/subjects/programming.md#first-games-proposed-ladder-cue-studio). Level 4 is built (see Built above); levels 5 and 6 are not. Each level below is one separate build session, in order 4, 5, 6.
 
 ## Scope and identity
 
@@ -209,7 +211,7 @@ Co-play: one grown-up rings an imaginary bell and the other does the bound move,
 
 | Slice | Complete exit | Tier |
 | --- | --- | --- |
-| **P4a: build level 4** | Signal rows, free firing, per-row Check, help targets, how-to, voice, ghost finger, school range 3–4 (or pin-only, recorded) | New interaction: typecheck; unit tests; one filtered play of levels 3 and 4 with an empty fire, one wrong Check and help; portrait screenshot; build only if shared files change |
+| **P4a: build level 4** (built) | Signal rows, free firing, per-row Check, help targets, how-to, voice, ghost finger, school range 3–4 (or pin-only, recorded) | New interaction: typecheck; unit tests; one filtered play of levels 3 and 4 with an empty fire, one wrong Check and help; portrait screenshot; build only if shared files change |
 | **P4b: build level 5** | Repeat cap, ghosts, expanded trace, help on `repeat`, range 3–5 | New interaction, same shape, at level 5 |
 | **P4c: build level 6** | Second actor, Send, receiver, synchronous delivery, tagged trace, both seeded starts, range 3–6 | New interaction at level 6. L-sized: checkpoint as a draft if it runs long |
 
