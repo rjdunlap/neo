@@ -2,22 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   canFinish,
+  checkRows,
   checkRun,
   CUES,
   demoNext,
   finishRun,
+  fire,
   help,
   isComplete,
   isProgram,
+  LEVELS,
+  mismatch,
   newStudio,
   planFor,
   PLANS,
   playRun,
+  requestFor,
   restart,
+  SIGNALS,
   step,
   stickerRecipe,
   tapAction,
   tapSlot,
+  targetOf,
   trace,
   undo,
   type Cue,
@@ -34,8 +41,8 @@ const watched = (slots: number, ...cues: Cue[]) => {
 };
 
 describe('plans', () => {
-  it('levels 1–3 have one, two and two slots', () => {
-    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2]);
+  it('levels 1–4 have one, two, two and two slots', () => {
+    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2, 2]);
     expect(planFor(2).slots).toBe(2);
     expect(planFor(3).request).toEqual(['W', 'T']);
     expect(planFor(99).level).toBe(1);
@@ -384,7 +391,7 @@ describe('requested repair', () => {
     check(s);
     check(s);
     expect(s.hints).toBe(1);
-    expect(s.helped).toEqual(new Set(['clue:0']));
+    expect(s.helped).toEqual(new Set(['clue:slot:0']));
     restart(s);
     check(s);
     expect(s.misses).toBe(3);
@@ -437,7 +444,7 @@ describe('requested repair', () => {
     expect(check(s)).toBe(0);
     expect(s.misses).toBe(2);
     expect(s.hints).toBe(1);
-    expect(s.helped.has('clue:0')).toBe(true);
+    expect(s.helped.has('clue:slot:0')).toBe(true);
     expect(check(s)).toBe(0);
     expect(s.misses).toBe(3);
     expect(s.hints).toBe(1);
@@ -481,7 +488,7 @@ describe('requested repair', () => {
     expect(s.program).toEqual(['T', 'W']);
     expect(s.misses).toBe(1);
     expect(s.hints).toBe(3);
-    expect(s.helped).toEqual(new Set(['clue:0', 'repair:0', 'repair:1']));
+    expect(s.helped).toEqual(new Set(['clue:slot:0', 'repair:slot:0', 'repair:slot:1']));
     expect(s.selected).toBeNull();
     expect(s.undo).toBeNull();
     expect(s.played).toBe(false);
@@ -531,7 +538,7 @@ describe('the demonstration', () => {
         checkRun(s);
       } else if ('slot' in p) {
         tapSlot(s, p.slot);
-      } else {
+      } else if ('action' in p) {
         const r = tapAction(s, p.action);
         if (r === 'replace') {
           replaced = true;
@@ -569,6 +576,187 @@ describe('the demonstration', () => {
     expect(canFinish(s)).toBe(true);
     expect(s.hints).toBe(0);
     expect(s.program).toEqual(['T', 'T']);
+  });
+});
+
+describe('level 4: which signal', () => {
+  const plan = planFor(4);
+  const requests = plan.signals!;
+  const slotsOf: (Cue | null)[] = [null, 'W', 'T'];
+  /** A studio holding exactly this binding, built with real edits (bell's row first; an empty bell row keeps the flower's empty). */
+  const bound = (request: readonly Cue[], bell: Cue | null, flower: Cue | null) => {
+    const s = newStudio(2, request, true);
+    if (bell) tapAction(s, bell);
+    if (bell && flower) tapAction(s, flower);
+    return s;
+  };
+
+  it('school plays 3–4 with entry 3, and the seed picks one of two opposite requests', () => {
+    expect(LEVELS.school).toEqual({ min: 3, max: 4 });
+    expect(LEVELS.prek).toEqual({ min: 1, max: 2 });
+    expect(requests).toEqual([
+      ['W', 'T'],
+      ['T', 'W'],
+    ]);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) seen.add(requestFor(plan, new Rng(seed))!.join(''));
+    expect(seen).toEqual(new Set(['WT', 'TW']));
+    expect(requestFor(planFor(3), new Rng(1))).toEqual(['W', 'T']);
+    expect(requestFor(planFor(1), new Rng(1))).toBeUndefined();
+  });
+
+  it('both rows start empty, and Start again empties them keeping misses and help', () => {
+    for (const request of requests) {
+      const s = newStudio(2, request, true);
+      expect(s.program).toEqual([null, null]);
+      expect(s.rows).toBe(true);
+      fill(s, request[1], request[0]);
+      checkRun(s);
+      help(s);
+      restart(s);
+      expect(s.program).toEqual([null, null]);
+      expect([s.misses, s.hints, s.checked]).toEqual([1, 1, false]);
+    }
+    // Rows need a request; a creation studio never becomes one.
+    expect(newStudio(2, undefined, true).rows).toBe(false);
+  });
+
+  it('of all nine bindings exactly the requested one is accepted, row by row', () => {
+    for (const request of requests)
+      for (const bell of slotsOf)
+        for (const flower of slotsOf) {
+          const s = newStudio(2, request, true);
+          s.program = [bell, flower];
+          const rows = checkRows(s);
+          expect(rows).toEqual([bell === request[0], flower === request[1]]);
+          const right = bell === request[0] && flower === request[1];
+          expect(mismatch(s) < 0).toBe(right);
+          // The first mismatching row is the one named: the bell's whenever it is wrong.
+          if (!right) expect(mismatch(s)).toBe(rows[0] ? 1 : 0);
+          const before = s.misses;
+          const at = checkRun(s);
+          if (bell === null || flower === null) {
+            // An unset row is incomplete: Check points at it, never a miss. (A hole is not even a program.)
+            expect(at).toBeNull();
+            expect(s.misses).toBe(before);
+          } else {
+            expect(at).toBe(right ? -1 : rows[0] ? 1 : 0);
+            expect(s.checked).toBe(right);
+            expect(s.misses).toBe(before + (right ? 0 : 1));
+          }
+        }
+  });
+
+  it('firing reads a row and never edits, counts or checks, in any order', () => {
+    for (const request of requests)
+      for (const bell of slotsOf)
+        for (const flower of slotsOf) {
+          const s = bound(request, bell, flower);
+          const snapshot = JSON.stringify({ ...s, helped: [...s.helped] });
+          const expected = [s.program[0], s.program[1]];
+          for (const row of [1, 0, 0, 1, 1]) expect(fire(s, row)).toBe(expected[row]);
+          expect(JSON.stringify({ ...s, helped: [...s.helped] })).toBe(snapshot);
+          // Acceptance is a property of the binding, not of what was fired or in which order.
+          expect(checkRows(s)).toEqual([s.program[0] === request[0], s.program[1] === request[1]]);
+        }
+    // Outside level 4 there are no signals to fire.
+    expect(fire(newStudio(2, ['W', 'T']), 0)).toBeNull();
+  });
+
+  it('names targets by signal, and level 3 by slot', () => {
+    const s = newStudio(2, requests[0], true);
+    expect([0, 1].map((i) => targetOf(s, i))).toEqual(SIGNALS.map((n) => `row:${n}`));
+    expect(targetOf(newStudio(2, ['W', 'T']), 1)).toBe('slot:1');
+  });
+
+  it('Help gives a clue, then fills or repairs each wrong row, then points to Check and Finish, from every binding', () => {
+    for (const request of requests)
+      for (const bell of slotsOf)
+        for (const flower of slotsOf) {
+          const s = bound(request, bell, flower);
+          const wrongRows = checkRows(s).filter((ok) => !ok).length;
+          if (!wrongRows) {
+            expect(help(s)).toEqual({ kind: 'check' });
+            continue;
+          }
+          const first = mismatch(s);
+          expect(help(s)).toEqual({ kind: 'clue', at: first, cue: request[first] });
+          for (let left = wrongRows; left > 0; left--) {
+            const at = mismatch(s);
+            expect(help(s)).toEqual({ kind: 'repair', at, cue: request[at] });
+            expect(checkRows(s).filter((ok) => !ok).length).toBe(left - 1);
+          }
+          expect(s.hints).toBe(1 + wrongRows);
+          expect(help(s)).toEqual({ kind: 'check' });
+          expect(s.checked).toBe(false);
+          expect(checkRun(s)).toBe(-1);
+          expect(help(s)).toEqual({ kind: 'finish' });
+          expect(canFinish(s)).toBe(true);
+          expect(s.misses).toBe(0);
+        }
+  });
+
+  it('only wrong Checks miss; two bring the clue once; help identities survive Undo and Start again', () => {
+    const request = requests[0];
+    const s = bound(request, request[1], request[0]); // swapped: both rows wrong, the bell's named first
+    expect(checkRun(s)).toBe(0);
+    expect(s.hints).toBe(0);
+    expect(checkRun(s)).toBe(0);
+    expect([s.misses, s.hints]).toEqual([2, 1]);
+    expect(s.helped).toEqual(new Set(['clue:row:bell']));
+    expect(help(s).kind).toBe('repair');
+    expect(s.hints).toBe(2);
+    undo(s);
+    expect(help(s).kind).toBe('repair');
+    expect(s.hints).toBe(2);
+    restart(s);
+    // The bell's row is empty again; supplying it again is free, and the flower's is a new repair.
+    expect(help(s)).toEqual({ kind: 'repair', at: 0, cue: request[0] });
+    expect(s.hints).toBe(2);
+    expect(help(s)).toEqual({ kind: 'repair', at: 1, cue: request[1] });
+    expect(s.helped).toEqual(new Set(['clue:row:bell', 'repair:row:bell', 'repair:row:flower']));
+    expect([s.misses, s.hints]).toEqual([2, 3]);
+  });
+
+  it('every edit and Undo clears a successful Check', () => {
+    const request = requests[1];
+    const s = bound(request, request[0], request[1]);
+    expect(checkRun(s)).toBe(-1);
+    tapSlot(s, 1);
+    tapAction(s, request[0]);
+    expect(s.checked).toBe(false);
+    undo(s);
+    expect(s.checked).toBe(false);
+    expect(canFinish(s)).toBe(false);
+    expect(checkRun(s)).toBe(-1);
+    expect(canFinish(s)).toBe(true);
+  });
+
+  it('the demonstration fills each row as asked, fires the flower then the bell, checks and finishes unaided', () => {
+    for (const request of requests) {
+      const s = newStudio(2, request, true);
+      const fired = [false, false];
+      const presses: string[] = [];
+      for (let i = 0; i < 12; i++) {
+        const p = demoNext(s, false, fired);
+        if (p === 'finish') break;
+        if (p === 'check') {
+          checkRun(s);
+          presses.push('check');
+        } else if (p === 'play') throw new Error('Play is hidden at level 4');
+        else if ('fire' in p) {
+          expect(fire(s, p.fire)).toBe(request[p.fire]);
+          fired[p.fire] = true;
+          presses.push(`fire:${SIGNALS[p.fire]}`);
+        } else if ('action' in p) {
+          tapAction(s, p.action);
+          presses.push(p.action);
+        } else tapSlot(s, p.slot);
+      }
+      expect(presses).toEqual([request[0], request[1], 'fire:flower', 'fire:bell', 'check']);
+      expect(canFinish(s)).toBe(true);
+      expect([s.misses, s.hints]).toEqual([0, 0]);
+    }
   });
 });
 

@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Cue Studio level 4, Which signal? (programming P4a, 2026-11-16)
+
+Branch `claude/cue-studio-which-signal`, slice P4a of [the P4 definition](../definitions/cue-studio-p4.md#build-slices-and-checks). School range 3–4, entry 3, ordinary step rule (the definition's stated lean under S8; pin-only not taken). Two signal rows, a bell and a flower, each with a request picture, signal pad, one action slot and a result chip; free firing of either signal (an empty row shrugs, no miss or hint); Check fires bell then flower and accepts each row by its own signal with a tick or cross per chip. Only a wrong Check is a miss; two wrong Checks or Help give the clue, each later Help sets one wrong row. Help ids `clue:`/`repair:` plus `slot:<n>` or `row:bell`/`row:flower`. The private Undo icon was replaced by the shared `undoIcon`. Voice wording source check not completed (ScratchJr teaching link returns 410); owed to P4b.
+
 ### Compare kept tunes in creature play (W2, 2026-11-15)
 
 [PR #1707](https://github.com/rjdunlap/neo/pull/1707), [build packet](../definitions/compare-kept-tunes.md). With two Song Maker tunes kept, the plaque opens On display and Other tune side by side. Tap either grid to hear it from the start and watch its beat columns light up. Switching, closing or leaving ends the remaining beats. The one-tune shortcut and empty plaque still apply. Listening leaves both slots and progress alone.

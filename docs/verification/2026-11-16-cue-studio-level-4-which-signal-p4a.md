@@ -1,0 +1,5 @@
+# 2026-11-16 — Cue Studio level 4 Which signal (P4a)
+
+**Changed:** Cue Studio level 4: two signal rows (bell, flower), free firing, per-row Check, row help; school range 3–4; shared `undoIcon` replaces a private copy.
+**Ran:** `npm run typecheck`; `npm test` (353 files, all pass); `BROWSER_SUITE=cuestudio CUE_LEVELS=3,4` (level 4: empty fire, incomplete Check, free fire with chip, one wrong Check, clue and row repairs, Start again during a firing, idempotent help, non-overlapping targets clear of the guide at 1024x768, 768x1024, 1366x768 and 1024x1366, portrait screenshot, one helped sticker; level 3 regression pass); `BROWSER_SUITE=fingerdemo FINGER_ONLY=cue-studio FINGER_LEVELS=4 FINGER_BAND=school` (12.3 s). One script fix: the two Help taps needed spacing past the pad's 250 ms double-tap guard (a script issue, not a game defect).
+**Not run:** local `npm run build` (CI builds); levels 1–2 of the suite; other suites; offline. Voice-wording source check: attempted and not completed (the ScratchJr teaching link returns HTTP 410, scratchjr.org/learn/blocks gave no readable text, CS Unplugged not consulted); owed to P4b.
