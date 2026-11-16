@@ -21,3 +21,7 @@ Animation uses named empty pivots; do not animate a scaled eye mesh. The loader 
 This proves an editable model/export and a small browser interaction. It does not establish phone frame rate, a production character rig, costume compatibility or a renderer migration. Next art pass can refine the leaf silhouette, face/mouth and portrait camera before expanding the cast. No automatic simulation, dialogue generation or time-based progression is included.
 
 Verification command: `GAME_URL=http://localhost:5194 node scripts/sprout-preview-check.mjs` (server running); screenshots go to `test-results/`.
+
+## Runtime comparison (claimed 2026-11-16)
+
+Branch `claude/low-poly-art-research-2fd7e8`, stacked on this pilot. Developer-requested: the same porch as (a) real-time Three.js and (b) Blender pre-rendered stills with a cut-out Sprout in Pixi, on one phone-reachable page with a frame-rate and download readout. Expected files: `art-lab/index.html`, `src/dev/art-lab/`, `scripts/art/sprout-porch-sprites.py`, `src/dev/sprout/`, `vite.config.ts` (a third page kept out of the offline precache), `scripts/sprout-preview-check.mjs`, this packet and a verification entry. No game, save or navigation changes.
