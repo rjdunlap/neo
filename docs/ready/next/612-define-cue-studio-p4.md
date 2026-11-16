@@ -1,1 +1,0 @@
-**Define Cue Studio P4** (docs only; claimed on `claude/define-cue-studio-p4`): bound the events, repeat and message model for an editable replay of a short show. [Programming study, build slices](../../deep-dives/subjects/programming.md#build-slices-in-order)
