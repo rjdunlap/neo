@@ -16,6 +16,10 @@ import {
   shouldSelfOpen,
   planFor,
   ONE_DOOR_LEVEL,
+  WENT_LEVEL,
+  ENTRY_LEVELS,
+  dealWent,
+  wentHouses,
   SELF_OPEN_SECONDS,
   deal,
   newcomer,
@@ -365,7 +369,7 @@ describe('Peekaboo Barn levels 10–11, Whose ears?', () => {
     expect(planFor(11)).toEqual({ mode: 'top', spots: 4, goal: 6 });
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
     expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
-    expect(LEVELS.lap).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
+    expect(LEVELS.lap).toEqual({ min: 1, max: 17, order: [16, 1, 2, 17] });
   });
 
   it('gives every animal a top no other animal shares, so every deal of three or four can be told apart', () => {
@@ -501,8 +505,8 @@ describe('Peekaboo Barn levels 12–14, Switcheroo', () => {
     expect(LEVELS.prek).toEqual({ min: 6, max: 13 });
     expect(LEVELS.school!.max).toBeGreaterThanOrEqual(14);
     expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
-    expect(LEVELS.toddler).toEqual({ min: 1, max: 5 });
-    expect(LEVELS.lap).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
+    expect(LEVELS.toddler).toEqual({ min: 1, max: 17, order: [1, 2, 17, 3, 4, 5] });
+    expect(LEVELS.lap).toEqual({ min: 1, max: 17, order: [16, 1, 2, 17] });
     expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
     // Never more than four places, nothing faster than the dive's 0.9 s, and the hint is slower still.
     for (const level of [12, 13, 14]) {
@@ -617,5 +621,60 @@ describe('Peekaboo Barn level 15, Guess who!', () => {
     expect(hasFeature('mouse', 'white')).toBe(false);
     expect(hasFeature('sheep', 'white')).toBe(true);
     expect(hasFeature('horse', 'brown')).toBe(true);
+  });
+});
+
+describe('Peekaboo Barn level 17, Where did it go?', () => {
+  const plan = planFor(WENT_LEVEL);
+
+  it('is two houses and four questions, placed between 2 and 3 for lap and toddler without moving a saved level', () => {
+    expect(plan).toEqual({ mode: 'went', spots: 2, goal: 4 });
+    for (let level = 1; level <= PLANS.length; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+    expect(planFor(ONE_DOOR_LEVEL).door).toBe(true);
+    expect(LEVELS.lap!.order).toEqual([16, 1, 2, 17]);
+    expect(LEVELS.toddler!.order).toEqual([1, 2, 17, 3, 4, 5]);
+    for (const band of ['preschool', 'prek', 'school'] as const) expect(LEVELS[band]!.order).toBeUndefined();
+    expect(ENTRY_LEVELS).toEqual([ONE_DOOR_LEVEL, WENT_LEVEL]);
+  });
+
+  it('keeps the first seven animals, as the other entry level does', () => {
+    expect(poolFor(WENT_LEVEL)).toEqual(STICKER_ANIMALS);
+  });
+
+  it('puts the animal behind exactly one house and leaves the others empty', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const d = dealWent(new Rng(seed), plan.spots, poolFor(WENT_LEVEL), null);
+      const houses = wentHouses(d, plan.spots);
+      expect(houses).toHaveLength(plan.spots);
+      expect(houses.filter((a) => a !== null)).toEqual([d.animal]);
+      expect(houses[d.house]).toBe(d.animal);
+      expect(STICKER_ANIMALS).toContain(d.animal);
+    }
+  });
+
+  it('never asks about the same animal twice running, uses both houses, and never one house three times running', () => {
+    const used = new Set<number>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      let last: Animal | null = null;
+      const recent: number[] = [];
+      for (let q = 0; q < 12; q++) {
+        const d = dealWent(rng, plan.spots, poolFor(WENT_LEVEL), last, recent);
+        expect(d.animal).not.toBe(last);
+        if (recent.length >= 2) expect(new Set([...recent.slice(-2), d.house]).size).toBeGreaterThan(1);
+        last = d.animal;
+        recent.push(d.house);
+        used.add(d.house);
+      }
+    }
+    expect([...used].sort()).toEqual([0, 1]);
+  });
+
+  it('sends the ghost finger to the house that holds the animal, never an empty one', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const d = dealWent(new Rng(seed), plan.spots, poolFor(WENT_LEVEL), null);
+      expect(spotToTap(plan, ['hidden', 'hidden'], wentHouses(d, plan.spots), d.animal, -1)).toBe(d.house);
+    }
+    expect(spotToTap(plan, ['hidden', 'hidden'], [null, null], 'cow', -1)).toBeNull();
   });
 });

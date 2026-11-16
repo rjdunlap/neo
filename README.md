@@ -108,7 +108,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Recipe Workshop](docs/games/recipe-workshop.md) | toddler–pre-K | Painted Canyon | 3 | tap pots of pretend fruit mash and a white base into a bowl, stir with the spoon until it blends, add a star or leaf and Serve |
 | [Gear Garden](docs/games/gear-garden.md) | lap–school | Painted Canyon | 3 | tap a machine of equal gears to spin a flower, drop the loose gear into a gap, then choose one of two broken machines, mend it and turn it, hearing whether the last flower turns the same way or the other way |
 | [Gadget Bench](docs/games/gadget-bench.md) | preschool–school | Painted Canyon | 6 | help a neighbor's cart through a pictured path (bumps, a puddle, rain, the dark) by trying wooden parts: big wheels, a float, an umbrella, a lantern, and a flag that does nothing |
-| [Peekaboo Barn](docs/games/peekaboo-barn.md) | lap–school | Barnyard | 16 | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift |
+| [Peekaboo Barn](docs/games/peekaboo-barn.md) | lap–school | Barnyard | 17 | tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift |
 | [Duckling Parade](docs/games/duckling-parade.md) | lap–school | Barnyard | 11 | tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind |
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 12 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
@@ -191,7 +191,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Letter Trails](docs/games/letter-trails.md) | preschool–school | Story Grove | 10 | follow a firefly along capital strokes |
 | [Story Steps](docs/games/story-steps.md) | toddler–school | Story Grove | 13 | finish a two-picture story |
 | [Word Monsters](docs/games/word-monsters.md) | lap–school | Story Grove | 14 | tap letter monsters to hear their sounds (lap opens one step earlier, on one big monster) |
-| [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 13 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
+| [Photo Safari](docs/games/photo-safari.md) | lap–school | Story Grove | 15 | lap opens with one big friend in an open meadow: a touch anywhere takes its photo and the next friend walks in; toddlers start by tapping any of three animals to take its photo |
 | [Goodnight Room](docs/games/goodnight-room.md) | lap–pre-K | Story Grove | 11 | tap each friend to say goodnight until the room goes dark; lap opens with one big sleepy friend, where a touch anywhere tucks it in |
 | [Rhyme Time](docs/games/rhyme-time.md) | preschool–school | Story Grove | 10 | which picture rhymes with "cat"? |
 | [Opposites](docs/games/opposites.md) | lap–school | Story Grove | 9 | lap opens on one big card, a touch anywhere flips it (level 6); then tap a picture: it flips to its opposite (big, small; open, closed) |

@@ -38,6 +38,8 @@ import {
   factAbout,
   PARTS,
   dealSwaps,
+  dealWent,
+  ENTRY_LEVELS,
   SWAP_SECONDS,
   SLOW_SWAP_SECONDS,
   type Swap,
@@ -252,6 +254,8 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
 /** A hiding place: an animal tucked behind a cover, which can peek over the top or pop all the way out. */
 class Spot extends Container {
   animal: Animal = 'cow';
+  /** Nobody is behind this cover (Where did it go?); `animal` then means nothing. */
+  empty = false;
   pose: Pose = 'hidden';
   hint = false;
   private clueGlow: Graphics | null = null;
@@ -328,6 +332,7 @@ class Spot extends Container {
     if (this.critter) this.tw.kill(this.critter);
     this.critter?.destroy({ children: true });
     this.animal = animal;
+    this.empty = false;
     this.critter = new Critter(CRITTERS[animal]);
     this.critter.scale.set(CRITTER_SCALE);
     this.critter.y = POSE.hidden;
@@ -335,6 +340,32 @@ class Spot extends Container {
     this.tw.kill(this.opening);
     this.opening.amount = 0;
     this.holder.addChild(this.critter);
+  }
+
+  /** Nobody behind the cover. */
+  setEmpty() {
+    if (this.critter) this.tw.kill(this.critter);
+    this.critter?.destroy({ children: true });
+    this.critter = null;
+    this.empty = true;
+    this.pose = 'hidden';
+    this.tw.kill(this.opening);
+    this.opening.amount = 0;
+  }
+
+  /** An animal arriving from outside lands standing over the closed cover, ready to drop behind it (`go('hidden')`). */
+  arrive(animal: Animal) {
+    this.setAnimal(animal);
+    this.critter!.y = POSE.out;
+    this.pose = 'out';
+  }
+
+  /** An empty place opens to show nobody home, then closes. */
+  async showEmpty() {
+    this.tw.kill(this.opening);
+    await this.tw.to(this.opening, { amount: 1 }, { duration: 0.35, ease: ease.outCubic });
+    await this.tw.wait(0.7);
+    await this.tw.to(this.opening, { amount: 0 }, { duration: 0.3, ease: ease.outCubic });
   }
 
   /** Moves the animal; popping `out` with a `feeling` shows that face (and keeps it) instead of a cheer. */
@@ -469,6 +500,13 @@ class PeekabooBarn implements Game {
   /** This question's houses before the swaps, and the swaps, for the hint's slow replay. */
   private startOrder: Spot[] = [];
   private swapList: Swap[] = [];
+  /**
+   * Where did it go?: the animal trotting in (`trot` 0 to 1, from the side to the middle) and hopping over its house
+   * (`hop` 0 to 1), drawn from `slots` in `update` so a resize mid-walk holds.
+   */
+  private walker: { critter: Critter; spot: Spot; trot: number; hop: number } | null = null;
+  /** The houses the animal went behind so far this round, so it never picks one side three times running. */
+  private wentTo: number[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -569,6 +607,7 @@ class PeekabooBarn implements Game {
     }
     this.spots.forEach((s) => s.scale.set(scale));
     this.place();
+    this.placeWalker();
     this.input.hitArea = this.plan.door
       ? new Rectangle(0, 0, v.w, v.h)
       : new Rectangle(
@@ -594,9 +633,32 @@ class PeekabooBarn implements Game {
     m.b.position.set(to.x + (from.x - to.x) * t, to.y);
   }
 
+  /** The walker along its path: a bobbing trot to the middle of the front, then one arc up and over its house's cover. */
+  private placeWalker() {
+    const w = this.walker;
+    if (!w) return;
+    const s = w.spot.scale.x;
+    const house = this.slots[this.spots.indexOf(w.spot)];
+    const ground = house.y + 10;
+    // It comes in from the side away from the corner guide.
+    const fromX = this.view.w + 140;
+    const midX = fromX + (this.view.w / 2 - fromX) * w.trot;
+    const bob = Math.abs(Math.sin(w.trot * Math.PI * 6)) * 16 * s * (1 - w.hop);
+    const top = house.y + POSE.out * s;
+    w.critter.scale.set(CRITTER_SCALE * s);
+    w.critter.position.set(
+      midX + (house.x - midX) * w.hop,
+      ground - bob + (top - ground) * w.hop - Math.sin(Math.PI * w.hop) * 90 * s,
+    );
+  }
+
   update(dt: number) {
     if (this.finished) return;
     if (this.swapping) this.place();
+    if (this.walker) {
+      this.placeWalker();
+      this.walker.critter.update(dt);
+    }
     this.idle += dt;
     const clue = this.clue;
     // The singer's hop waits for quiet: not over the ask, a miss line or the last find's line.
@@ -647,7 +709,7 @@ class PeekabooBarn implements Game {
     const i = spotToTap(
       this.plan,
       this.spots.map((s) => s.pose),
-      this.spots.map((s) => s.animal),
+      this.spots.map((s) => (s.empty ? null : s.animal)),
       this.target,
       this.lastTouched,
     );
@@ -688,6 +750,7 @@ class PeekabooBarn implements Game {
     const pair = this.pair;
     if (pair && this.asking > 0) return;
     if (spot.pose === 'out' && !clue && !pair) return;
+    if (spot.empty) return this.emptyTap(spot);
 
     if (spot.animal === this.target) {
       this.busy = true;
@@ -702,7 +765,10 @@ class PeekabooBarn implements Game {
       const yes = pair
         ? this.ctx.say('peek.pair.yes', { animal: spot.animal, ...this.pairWords(pair) })
         : !clue
-          ? this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] })
+          ? this.ctx.say(this.plan.mode === 'went' ? 'peek.went.yes' : 'peek.yes', {
+              animal: spot.animal,
+              cover: COVER_NAMES[spot.kind],
+            })
           : clue.kind === 'part'
             ? this.ctx.say('peek.hasit', { animal: spot.animal, part: PARTS[clue.part].words })
             : this.ctx.say('peek.feelsit', { animal: spot.animal, feeling: FEELING_WORDS[clue.feeling] });
@@ -763,6 +829,53 @@ class PeekabooBarn implements Game {
       }
     }
     this.busy = false;
+  }
+
+  /** Where did it go?: nobody is home here. The second miss wiggles the right house and its animal calls again. */
+  private async emptyTap(spot: Spot) {
+    this.busy = true;
+    sfx.boing();
+    this.misses++;
+    this.missesThisQuestion++;
+    void spot.showEmpty();
+    await this.ctx.say('peek.went.empty', { animal: this.target! });
+    if (this.finished) return;
+    if (this.missesThisQuestion === 2) {
+      this.hints++;
+      const right = this.spots.find((s) => !s.empty);
+      if (right) {
+        right.hint = true;
+        right.wiggle();
+        this.say(right.animal);
+      }
+    }
+    this.busy = false;
+  }
+
+  /** Where did it go?: the animal trots in along the front, calls, then hops up over one house and drops behind it. */
+  private async walkIn(animal: Animal, spot: Spot) {
+    const critter = new Critter(CRITTERS[animal]);
+    const w = { critter, spot, trot: 0, hop: 0 };
+    this.walker = w;
+    const stage = this.ctx.stage;
+    stage.addChildAt(critter, stage.getChildIndex(this.input));
+    this.placeWalker();
+    void this.ctx.say('peek.went.look', { animal });
+    await this.ctx.tw.to(w, { trot: 1 }, { duration: 1.6, ease: ease.linear });
+    if (this.finished) return;
+    critter.cheer();
+    this.say(animal);
+    await this.ctx.tw.wait(0.8);
+    if (this.finished) return;
+    sfx.whoosh();
+    await this.ctx.tw.to(w, { hop: 1 }, { duration: 0.9, ease: ease.inOutSine });
+    if (this.finished) return;
+    // Over the cover the walker becomes the house's own animal, which is drawn behind the cover and drops out of sight.
+    this.walker = null;
+    critter.destroy({ children: true });
+    spot.arrive(animal);
+    await this.ctx.tw.wait(0.25);
+    await spot.go('hidden');
   }
 
   private async freeTap(spot: Spot, counts = true) {
@@ -826,6 +939,7 @@ class PeekabooBarn implements Game {
   private ask() {
     if (this.pair) return this.ctx.instruct('peek.pair.ask', this.pairWords(this.pair));
     const clue = this.clue;
+    if (this.plan.mode === 'went') return this.ctx.instruct('peek.went.where', { animal: this.target! });
     if (!clue) return this.ctx.instruct('peek.where', { animal: this.target! });
     if (clue.kind === 'part') return this.ctx.instruct('peek.whohas', { part: PARTS[clue.part].words });
     return this.ctx.instruct('peek.whofeels', { feeling: FEELING_WORDS[clue.feeling] });
@@ -841,7 +955,18 @@ class PeekabooBarn implements Game {
     this.busy = true;
     this.unasked = false;
     this.missesThisQuestion = 0;
-    if (this.plan.mode === 'pair') {
+    if (this.plan.mode === 'went') {
+      // The walk is a show she watches, so (as in remember) it waits for the last find's line.
+      if (after) await after;
+      if (this.finished) return;
+      after = undefined;
+      const d = dealWent(this.ctx.rng, this.spots.length, this.pool, this.target, this.wentTo);
+      this.wentTo.push(d.house);
+      this.target = d.animal;
+      this.spots.forEach((s) => s.setEmpty());
+      await this.walkIn(d.animal, this.spots[d.house]);
+      if (this.finished) return;
+    } else if (this.plan.mode === 'pair') {
       const { animals, answer, pair } = dealPair(this.ctx.rng, this.target);
       this.pair = pair;
       this.target = answer;
@@ -1146,6 +1271,8 @@ export const peekabooBarn: GameModule = {
     const p = planFor(level);
     if (p.door) return 'One big house: touch anywhere to see who pops out';
     if (p.mode === 'free') return `Tap to find who's hiding, ${p.spots} hiding places`;
+    if (p.mode === 'went')
+      return '"Where did it go?" Watch an animal hop behind one of two hiding places, then tap where it went';
     if (p.mode === 'find') return `"Where's the cow?" with ${p.spots} animals peeking`;
     if (p.mode === 'top')
       return `"Whose ears?" Find the one asked for from the top of its head, ${p.spots} animals`;
@@ -1160,7 +1287,7 @@ export const peekabooBarn: GameModule = {
   coplayHint:
     'Make the animal sounds together: "Moo!" Then say its name. When a friend is sleepy or singing, make that face together.',
   offScreen: 'Play peekaboo with stuffed animals under a blanket. Ask "Where did the cow go?"',
-  entryLevels: [16],
+  entryLevels: ENTRY_LEVELS,
   touchDemo: true,
   hubIcon: () => new BarnIcon(),
   sticker,

@@ -10,6 +10,8 @@ Puddle Island is an iPad learning game for the developer's daughter (about one y
 
 Each activity needs a fun action and a clear learning purpose: sharing fills plates, a pattern moves a train, a revised route reaches a friend. Extend an existing game when the meaningful action is the same; make a new one when the learning or interaction warrants it. Follow the requested scope and the roadmap; build complete, playable slices, and add shared infrastructure only when an implemented activity needs it.
 
+**Ownership (the developer, 2026-11-16):** you are an owner and long-term maintainer of this codebase, and its design is partly yours. Leave the code you touch better: consolidate duplication, fix related bugs and stale docs you find, and name every such change in the PR. Restructuring that would outgrow the slice becomes its own READY line ([why](docs/SESSION-GUIDE.md#rule-details)).
+
 **Rework (2026-10-16):** the app grows in place into an educational creature world with collecting, customization, permanent unlocks through play, meaningful projects and manageable navigation. The [rework brief](docs/rework/README.md) and [work items](docs/rework/WORK-ITEMS.md) define it; the title and final cast/style are still explorations. Reuse its games and research, archive superseded docs only as replacements ship, and treat current contracts as descriptions of what exists, not a veto on the brief; older no-unlocks and single-companion proposals yield to it. The site root is the rework; the island game is served at `classic/`. **Saves are development data:** rework slices may reset or reject old saves instead of migrating them, but keep current-format validation, reliable writes, profile isolation, backup/restore and offline checks, and a clear reset path at cutover.
 
 ## Where things are written down
@@ -91,7 +93,7 @@ Before writing pointer input, hit areas, couch controls, textures or long-lived 
 
 ## Documentation and Git
 
-**Scheduled roadmap work** follows [the execution queue](docs/EXECUTION-QUEUE.md): one slice per run, in a fresh chat. Never bind a recurring Routine to a long-lived chat. Usage limits never justify reporting unfinished work as complete.
+**Scheduled roadmap work** runs as local scheduled tasks, one slice per run, in a fresh chat ([scheduled runs](docs/SESSION-GUIDE.md#rule-details)); the Codex [execution queue](docs/EXECUTION-QUEUE.md) is paused and its file frozen. Never bind a recurring Routine to a long-lived chat. Usage limits never justify reporting unfinished work as complete.
 
 **Before choosing a slice or editing:** run `scripts/overlap.sh <game-id> <path>…` (fetch, how far behind, matching PRs, worktrees and unmerged branches). If another branch implements the slice, reconcile with it or pick another. Start a named feature branch from the latest `origin/main`, then publish a small docs-only claim commit and draft PR naming the game ID, subtasks and expected files, and put it on the roadmap or deep-dive row. Recheck overlap before each follow-up push and before merging; integrate a moved `origin/main` and rerun proportionate checks. Never push a stale local `main`. Full steps: [avoiding duplicate parallel work](docs/SESSION-GUIDE.md#avoiding-duplicate-parallel-work).
 

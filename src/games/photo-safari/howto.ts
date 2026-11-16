@@ -62,6 +62,16 @@ export const HOW_TO: GameHowTo = {
       to: 12,
       text: 'Three friends are each doing something different. Listen for the doing word, like "Who is sleeping?", then tap that friend.',
     },
+    {
+      from: 14,
+      to: 15,
+      text: "A visiting friend has picked one animal for a secret photo; it lies face down in the friend's thought bubble. Tap a picture question, like the sleeping or tree card: the friend answers yes or no, and the animals that don't fit step away and sit. When one is left it sparkles; tap it, and the photo flips over to match.",
+    },
+    {
+      from: 15,
+      to: 15,
+      text: 'Ask the question that sends the most away: a doing word splits six friends three and three, a place only two and four. Tapping a friend among three or more is a guess.',
+    },
   ],
   finish: 'The round ends when the photos asked for are taken.',
   note: 'Each action she successfully photographs is added to her discovery journal in the treehouse.',

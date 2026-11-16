@@ -206,11 +206,9 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
     const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
     ];
-    for (const level of peekLevels.filter(
-      (n) => ((n >= 1 && n <= 15) || n === 16) && (!only || only === 'peekaboo'),
-    )) {
+    for (const level of peekLevels.filter((n) => n >= 1 && n <= 17 && (!only || only === 'peekaboo'))) {
       await launch('peekaboo-barn', level);
       if (level === 15) {
         await page.setViewportSize({ width: 390, height: 844 });
@@ -256,6 +254,25 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           if (g.spots[0].pose !== 'out' || g.done !== 1)
             throw new Error('a touch anywhere did not open the door');
         });
+      if (level === 17) {
+        // Where did it go? The animal walks in in front of the two houses, then exactly one house holds it.
+        await portrait(true);
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => g.walker?.trot >= 1, 10000);
+          if (g.spots.length !== 2 || g.spots.some((s) => !s.empty))
+            throw new Error('Where did it go: a house holds someone before the animal has hidden');
+        });
+        await screenshot('peekaboo-barn-17-portrait');
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          await kit.until(() => !g.busy, 10000);
+          const held = g.spots.filter((s) => !s.empty);
+          if (g.walker || held.length !== 1 || held[0].animal !== g.target || held[0].pose !== 'hidden')
+            throw new Error('Where did it go: the animal is not hidden behind exactly one house');
+        });
+        await portrait(false);
+      }
       if (level === 5) {
         await portrait(true);
         await screenshot('peekaboo-barn-5-portrait');
@@ -295,6 +312,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           const point = spot.toGlobal({ x: 0, y: -230 });
           kit.tap(point.x, point.y);
         };
+        // An empty house (Where did it go?) holds nobody, whatever animal it held before.
+        const holds = (s) => !s.empty && s.animal === g.target;
         const tapSpot = async (s) => {
           tapChoice(s);
           await kit.sleep(300);
@@ -347,7 +366,7 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               throw new Error('Switcheroo: a house is not at rest in its place');
           }
           if (q === 0) {
-            const wrong = g.spots.filter((s) => s.animal !== g.target);
+            const wrong = g.spots.filter((s) => !holds(s));
             let first = wrong[0];
             let second = first;
             if (pairMode) {
@@ -359,14 +378,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
             await ready();
             await tapSpot(second);
             await ready();
-            const right = g.spots.find((s) => s.animal === g.target);
+            const right = g.spots.find(holds);
             if (g.misses !== 2 || g.hints !== 1 || !right.hint)
               throw new Error(`Peekaboo hint: ${g.misses} ${g.hints}`);
             if (g.plan.mode === 'pair' && !right.clueGlow?.visible)
               throw new Error('Guess who: the answer has no glow');
           }
           const before = g.done;
-          await tapSpot(g.spots.find((s) => s.animal === g.target));
+          await tapSpot(g.spots.find(holds));
           await kit.until(() => g.done > before, 3000);
         }
       });

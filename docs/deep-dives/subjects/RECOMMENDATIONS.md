@@ -735,7 +735,7 @@ The [ordered slices](estimation.md#build-slices-in-order) separate definitions f
 | --- | --- | --- |
 | **SL3 *Just enough*** · school top, U | define after a child has played A–B | Mixed rounds; she decides whether one chip or two is needed (ELOF P-LC 3) |
 | **SL4 *Which one?*** · school | define after decision 2 | The pet's request fits two friends; a question button asks it back. Lean: a guess is never a miss (no compliance score, per the further-gaps row) |
-| **SL5 Mystery Friend** · K–U | **Defined 2026-11-16** as Photo Safari levels 14–15 ([definition](../../definitions/mystery-friend.md), [PR #1710](https://github.com/rjdunlap/neo/pull/1710)); build queued in READY | Picture yes/no questions narrow a set; reuse SL1's attribute solver |
+| **SL5 Mystery Friend** · K–U | **Built 2026-11-16** as Photo Safari levels 14–15 ([definition](../../definitions/mystery-friend.md), [PR #1715](https://github.com/rjdunlap/neo/pull/1715)) | Picture yes/no questions narrow a set; reuse SL1's attribute solver |
 | **SL6 *Whose clue works?*** · U, M | sketch; define after SL3 | Judge which of two friends' descriptions is enough, too little or untrue (SL.4.3, SL.7.3) |
 | **SL7 Talk-about wording rules** · G page | hand to off-screen companions slice 5 | Name, wait, build on what she says; open questions; any home language; no quiz, no milestone text. Wording for the existing `talkAbout` proposal, not a second field |
 | **SL8 *Describe it, find it*** · G page card | after an ordinary content review | Describe a hidden household object without naming it, then swap; large objects only; plain HTML |

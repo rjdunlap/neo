@@ -1,5 +1,7 @@
 # Roadmap execution queue
 
+**Paused (the developer, 2026-11-03):** the Codex coordinator is not running, and the policy, worker and ledger below are frozen as of that date. Scheduled Claude runs are local desktop tasks that pick from [READY](READY.md) under [AGENTS.md](../AGENTS.md) and do not read this file ([scheduled runs](SESSION-GUIDE.md#rule-details)).
+
 This is the **state file of the Codex coordinator**, authorized on 2026-10-11: its policy, its current worker and its usage ledger. It is one dispatch path, not the only one: a session a person starts picks from the roadmap directly under [AGENTS.md](../AGENTS.md) and never edits this file (from 2026-10-11 to 2026-10-18 about ten of the roughly 470 merged pull requests came through this queue). [ROADMAP.md](ROADMAP.md) and the [deep-dive tracker](deep-dives/README.md) remain the sources of scope and readiness. Follow [AGENTS.md](../AGENTS.md) for claims, implementation, publication and verification. Scheduling does not override an unresolved developer decision.
 
 ## Policy
