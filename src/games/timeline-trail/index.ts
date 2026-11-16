@@ -179,7 +179,9 @@ class TimelineTrail implements Game {
       const p = postArt(r.w, r.h);
       p.position.set(r.x + r.w / 2, r.y + r.h);
       const [stage, sepia] = postPics[i];
-      const pic = cardArt(this.round.place, stage, 96, this.petColor, { sepia });
+      // Level 4's posts carry the clue too, so long ago and now show both places on the line.
+      const clue = this.round.other ? { place: this.round.other, stage } : undefined;
+      const pic = cardArt(this.round.place, stage, 96, this.petColor, { sepia, clue });
       pic.position.set(r.x + r.w / 2, r.y + POST_PICTURE_Y + 48);
       this.board.addChild(p, pic);
     });

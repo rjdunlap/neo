@@ -1,1 +1,0 @@
-**`timeline-trail`, level 4 A clue inside (T3)** (typecheck, rule tests, one filtered play and `fingerdemo`): use a shared picture detail to place a card between events in two places. [Timeline Trail definition](../../definitions/timeline-trail.md) **Claimed** on `claude/timeline-trail-clue-inside` (2026-11-16).

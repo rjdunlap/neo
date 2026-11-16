@@ -1,6 +1,8 @@
 # Timeline Trail, levels 1–4 (definition)
 
-Defined 2026-10-23 as the first packet of the [time-and-change study's](../deep-dives/subjects/time-change.md#first-games-proposed-ladder-timeline-trail) **Timeline Trail** follow-up, from the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations) (slice 1 of its [build slices](../deep-dives/subjects/time-change.md#build-slices-in-order)). Docs only: no game, ID registration, voice line, art or save field exists yet. Levels 5–8 (continuity, the two-gap card, pointing at proof, Island Archive) and real-object content stay in the study.
+**Built:** levels 1–4 (levels 1–3 PR #1013; level 4 PR #1709); to build level 5, read “What comes next”, then the study’s [ladder row 5](../deep-dives/subjects/time-change.md#first-games-proposed-ladder-timeline-trail).
+
+Defined 2026-10-23 as the first packet of the [time-and-change study's](../deep-dives/subjects/time-change.md#first-games-proposed-ladder-timeline-trail) **Timeline Trail** follow-up, from the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations) (slice 1 of its [build slices](../deep-dives/subjects/time-change.md#build-slices-in-order)). Written docs only; the game is built (see the Built line). Levels 5–8 (continuity, the two-gap card, pointing at proof, Island Archive) and real-object content stay in the study.
 
 **Fun action and purpose:** the pet hangs pictures of a place on a clothesline between two posts, "long ago" on the left and "now" on the right, and she decides where each picture goes. A finished line plays as a **flipbook**: the place grows in front of her. The learning goal is **before and after, then and now**: the same place looks different at different times, and a picture shows when it is from by what is in it (D2.His.1, 2 and 11 in the study). Everything is the island's own made-up past; no real date, object or fact appears.
 
@@ -38,16 +40,16 @@ Defined 2026-10-23 as the first packet of the [time-and-change study's](../deep-
 | 1 | **Long ago or now?** | preschool, pre-K | Two pictures of one place: tap or drag the one from long ago to the left post | Flipbook of two |
 | 2 | **Hang it between** | preschool, pre-K, school | A line of two already hangs; drag the third picture into the right one of three gaps | Flipbook of three |
 | 3 | **Grow the line** | pre-K, school | Build a line of four, one card at a time; each new card is placed against the cards already hung | Flipbook of four |
-| 4 | **A clue inside** | pre-K, school | Two places share one line: the dock picture shows the sapling in the background, still small, so it hangs early | Flipbook of both strands |
+| 4 | **A clue inside** | pre-K, school (built) | Two places (the shore and the tree) share one clothesline; each card carries a small round inset of the other place at the same time, and only that inset orders one place's card against the other's | Flipbook of the merged line |
 
-At level 4 the line holds two places' cards (two each) and the question is whether a picture hangs before or after the other place's; a clue shared between them (the small tree behind the dock) decides it. Each strand then plays in turn, and the shared clue lights up in both. The ladder deepens by adding insertion, a growing line and a clue, with no timing and no more cards to remember than a line of four (AGENTS' depth-before-pressure rule). Levels 5–8 in the study are appended later so no saved level moves.
+**As built (T3, resolves the example above):** the example with the shed card carrying a sapling was inconsistent, so the build pairs same-time stages. A card's number is its time 0–3 on the one shared line. One place's two cards hang at two seeded times (posts show that place); the other place's two cards wait loose at the other two times. Every level-4 card shows a small round inset ("the little picture") of the other place at the same stage (shore-k pairs with tree-k), and that inset is the only thing that orders the places. `fittingGaps` and `compareFaces` in `logic.ts` decide the gap; tests strip the clues and require the first loose card to fit more than one gap (the second is not always ambiguous, so nothing is claimed there). A wrong gap reads its reason from the little picture; tapping a loose card says its caption and its clue (free); misses and hints count as at levels 2–3. The flipbook plays the **merged line in time order** (both places interleaved, each card with its inset) rather than each strand in turn, and the clue does not glow separately. The ladder deepens by adding insertion, a growing line and a clue, with no timing and no more cards to remember than a line of four (AGENTS' depth-before-pressure rule). Levels 5–8 in the study are appended later so no saved level moves.
 
 ### First rounds
 
 - **Level 1 (place: tree).** The pet: "These pictures are two times in the life of one tree. Which one is from long ago?" She taps the sapling; it flies to the left post and the pet says "Yes, long ago it was a little sapling!" The big tree takes the right post, and the flipbook shows sapling then big tree. Tapping the big tree first: boing, the card hops back, "That's the tree now. Which one is from long ago?" (one miss).
 - **Level 2 (place: shore).** The empty shore hangs on the left, the shed-and-lantern dock on the right. The pet holds up the little dock: "Where does this one go?" Three gaps glow: before the empty shore, between, after. She drops it between; the pegs close and the flipbook plays three stages. Dropping it after the lantern dock: it slides back, "The lantern dock is later. The little dock has no shed yet, so it goes before it."
 - **Level 3 (place: nest).** The pet hangs the egg at the left post, then gives a card at a time: she hangs the hatchling after the egg, then the pet in her scarf after the hatchling, then the pet as she is now at the right. Each drop is checked against the cards already hung. Wrong: the card slides back with its reason.
-- **Level 4 (places: shore and tree).** The line holds the empty shore and the lantern dock; the loose dock-with-shed card shows a small sapling behind it, and the big-tree card shows no dock at all. The pet: "Look behind the dock. The tree is still little." She hangs the shed-and-sapling card before the lantern dock card, because the tree in its picture is smaller than the tree in the lantern dock's. The shared clue glows in both strands during the flipbook.
+- **Level 4 (places: shore and tree).** Built as in the Levels section's "As built" note: the clue is the little round picture of the other place on every card, not a sapling inside the dock picture. The pet: "Look at the little picture." Reasons read that picture.
 
 ## Accounting, help and finishing
 
@@ -90,7 +92,7 @@ Device and person checks stay open: whether a preschooler reads the sepia post a
 
 ## What comes next
 
-**T2 (levels 1–3)** and **T3 (level 4)** are the first batches and share one game; T3 adds the second place and the clue test. Then the study's slice 4 (levels 5–6: the "still here" ribbon, the counter-progress card with its failing-heuristic test, and the two-valid-gaps card) and slice 5 (level 7, pointing at proof). Island Archive and the real-object rung wait on the study's decisions and a named history reviewer.
+**T2 (levels 1–3)** and **T3 (level 4)** are built. Next the study's slice 4 (levels 5–6: the "still here" ribbon, the counter-progress card with its failing-heuristic test, and the two-valid-gaps card) and slice 5 (level 7, pointing at proof). Island Archive and the real-object rung wait on the study's decisions and a named history reviewer.
 
 ## Open decisions
 
