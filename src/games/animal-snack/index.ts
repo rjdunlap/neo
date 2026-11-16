@@ -1,7 +1,7 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { entryId } from '../../content/journal';
-import { ink, swatch, wood } from '../../art/palette';
+import { cream, ink, shadow, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { Backdrop, drawFarBarn } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -21,6 +21,10 @@ import {
   BITE,
   BITE_SIZES,
   busyTouch,
+  BOARD_LINE_H,
+  BOARD_SNACKS,
+  boardBox,
+  boardLines,
   countedFood,
   eaterOf,
   eats,
@@ -40,6 +44,7 @@ import {
   nearestFriend,
   PAIR_PILE,
   pairsBell,
+  rowsFor,
   pairsDrop,
   ROW_STEP,
   SCENE_SPECS,
@@ -347,7 +352,7 @@ class AnimalSnack implements Game {
     const { left, right } = spotEdges(v.w);
     const mid = (left + right) / 2;
     // Level 8's two piles: the spot grows upward by a row; its bottom stays put.
-    const up = this.plan.mode === 'pairs' ? ROW_STEP : 0;
+    const up = this.rows === 2 ? ROW_STEP : 0;
     switch (SCENE_SPECS[this.scene].spot) {
       case 'blanket':
         g.roundRect(left, v.h - 150 - up, right - left, 130 + up, 26)
@@ -717,6 +722,11 @@ class AnimalSnack implements Game {
         foods,
         foods.map((_, i) => ({ row: Math.floor(i / PAIR_PILE), col: i % PAIR_PILE })),
       );
+      if (this.plan.board) {
+        this.showBoard();
+        this.busy = false;
+        return this.ctx.instruct('snack.longmenu');
+      }
       this.showSign(r.animals, r.wants!);
       this.busy = false;
       return this.ctx.instruct('snack.pairs', {
@@ -733,6 +743,19 @@ class AnimalSnack implements Game {
       return this.ctx.instruct('snack.eats', { food: FOOD_WORDS[r.food!] });
     }
     const food = FAVORITE[r.ask!]!;
+    if (this.plan.board) {
+      // Level 9: ten of the animal's food on the two-row blanket; the number is only on the board and its speaker.
+      this.setSnacks(
+        Array<Food>(BOARD_SNACKS).fill(food),
+        Array.from({ length: BOARD_SNACKS }, (_, i) => ({
+          row: Math.floor(i / PAIR_PILE),
+          col: i % PAIR_PILE,
+        })),
+      );
+      this.showBoard();
+      this.busy = false;
+      return this.ctx.instruct('snack.board');
+    }
     if (mode === 'count') this.setSnacks(Array<Food>(5).fill(food));
     else if (mode === 'sound') this.refill();
     else this.setSnacks([]);
@@ -785,9 +808,71 @@ class AnimalSnack implements Game {
     });
   }
 
-  /** Rows of snacks at the feeding spot: two piles at level 8, one row everywhere else. */
+  /**
+   * Levels 9–10's menu board: a chalkboard with a line per animal, each the animal's picture, a printed numeral and the
+   * printed food word (and the food's picture at level 9). Each whole line is a speaker: a tap reads it aloud, free,
+   * never a miss or a hint. It stays clear of the bell at the top right.
+   */
+  private showBoard() {
+    this.bubble.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.bubble.eventMode = 'passive';
+    const lines = boardLines(this.round);
+    const width = Math.min(520, this.view.w - 300);
+    const lineH = BOARD_LINE_H;
+    const { top, height } = boardBox(lines.length);
+    this.bubble.addChild(
+      new Graphics()
+        .roundRect(-width / 2 - 10, top - 10, width + 20, height + 20, 22)
+        .fill(wood.fill)
+        .stroke({ width: 5, color: wood.line })
+        .roundRect(-width / 2, top, width, height, 14)
+        .fill(shadow),
+    );
+    lines.forEach((line, i) => {
+      const row = new Container();
+      row.position.set(0, top + 12 + lineH * (i + 0.5));
+      row.hitArea = new Rectangle(-width / 2, -lineH / 2, width, lineH);
+      const left = -width / 2;
+      const speaker = new Graphics().poly([-18, -10, -6, -10, 10, -26, 10, 26, -6, 10, -18, 10]).fill(cream);
+      for (const r of [16, 28])
+        speaker.arc(12, 0, r, -0.9, 0.9).stroke({ width: 5, color: cream, cap: 'round' });
+      speaker.position.set(left + 38, 0);
+      const critter = new Critter(CRITTERS[line.animal]);
+      critter.alive = false;
+      critter.scale.set(0.22);
+      critter.position.set(left + 120, 36);
+      const numeral = label(line.numeral, 58, cream);
+      numeral.position.set(left + 200, 0);
+      const word = label(line.word, 46, cream);
+      word.anchor.set(0, 0.5);
+      word.position.set(left + 240, 0);
+      row.addChild(speaker, critter, numeral, word);
+      if (this.plan.board === 'picture') {
+        const art = foodArt(FAVORITE[line.animal]!);
+        art.scale.set(0.9);
+        art.position.set(width / 2 - 52, 0);
+        row.addChild(art);
+      }
+      onTap(row, () => this.readLine(i), { cooldown: 400 });
+      this.bubble.addChild(row);
+    });
+  }
+
+  /** Read one menu line aloud: the same animal, numeral and word the board prints. Free help, never counted. */
+  readLine(i: number) {
+    if (this.finished) return;
+    const line = boardLines(this.round)[i];
+    if (!line) return;
+    void this.ctx.say('snack.boardline', {
+      animal: ANIMAL_WORDS[line.animal]!,
+      n: line.numeral,
+      word: line.word,
+    });
+  }
+
+  /** Rows of snacks at the feeding spot: two at levels 8–10, one row everywhere else. */
   private get rows() {
-    return this.plan.mode === 'pairs' ? 2 : 1;
+    return rowsFor(this.plan);
   }
 
   /** Level 8: how many of its food each animal in the row has eaten. */
@@ -1308,7 +1393,7 @@ export const animalSnack: GameModule = {
   region: 'barnyard',
   challenge: 'words',
   skills: ['animals', 'words', 'matching', 'counting'],
-  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   upright: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,

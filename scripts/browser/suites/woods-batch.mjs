@@ -2204,7 +2204,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
 
     if (!only || only === 'snack')
-      for (let level = fromLevel; level <= Math.min(8, Number(process.env.TO_LEVEL || 8)); level++) {
+      for (let level = fromLevel; level <= Math.min(10, Number(process.env.TO_LEVEL || 10)); level++) {
         await launch('animal-snack', level);
         const mode = await page.evaluate(() => neo.scene.game.plan.mode);
         const settle = async () => {
@@ -2441,6 +2441,43 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           const rounds = await page.evaluate(() => neo.scene.game.rounds);
           for (const [n, r] of rounds.entries()) {
             await idle(n);
+            const board = await page.evaluate(() => neo.scene.game.plan.board);
+            if (board && n === 0) {
+              // Levels 9–10, the menu board: each line read aloud on a tap is free; upright on a phone the board stays
+              // clear of the bell and the animals, and the ten snacks or two piles keep their hit areas apart.
+              const rows = await page.evaluate(
+                () => neo.scene.game.bubble.children.filter((c) => c.hitArea).length,
+              );
+              assert.equal(rows, level === 9 ? 1 : 2, 'one board line per animal asked');
+              for (let i = 0; i < rows; i++)
+                await page.evaluate(
+                  (i) => kit.tapOn(neo.scene.game.bubble.children.filter((c) => c.hitArea)[i]),
+                  i,
+                );
+              await page.waitForTimeout(300);
+              assert.deepEqual(await counts(), [0, 0], 'reading a menu line is free');
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.waitForTimeout(400);
+              await screenshot(`animal-snack-${level}-phone`);
+              const fit = await page.evaluate(() => {
+                const g = neo.scene.game;
+                const b = g.bubble.getBounds();
+                const bell = g.bell.getBounds();
+                const apart = g.snacks.every((s, i, all) =>
+                  all.every((t, j) => j === i || Math.hypot(s.node.x - t.node.x, s.node.y - t.node.y) >= 132),
+                );
+                const heads = g.friends.every((f) => f.node.getBounds().y > b.y + b.height - 40);
+                return { clear: b.x + b.width < bell.x, apart, heads, onScreen: b.y >= 0 };
+              });
+              assert.deepEqual(
+                fit,
+                { clear: true, apart: true, heads: true, onScreen: true },
+                'the phone board is clear of the bell, on screen, above the animals, with snacks apart',
+              );
+              await page.setViewportSize({ width: 1024, height: 768 });
+              await page.waitForTimeout(300);
+              await screenshot(`animal-snack-${level}-landscape`);
+            }
             if (mode === 'sound') {
               // Level 6, Who says moo?: the speaker bubble, then a snack dragged to the animal that made the sound.
               const fav = await page.evaluate(async () => {

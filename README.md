@@ -65,7 +65,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 137 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 176 games; the 161 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 138 games, and "grown-up" (13 and up) is played by 20 games: the 15 grown-up puzzles and 5 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -112,7 +112,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Duckling Parade](docs/games/duckling-parade.md) | lap–school | Barnyard | 11 | tap the grass or lead with a finger to walk Mama Duck; a fading grass ring acknowledges the destination; ducklings fall in behind |
 | [Roundup](docs/games/roundup.md) | lap–pre-K | Barnyard | 12 | tap an animal and it hops into its pen |
 | [Egg Catch](docs/games/egg-catch.md) | lap–school | Barnyard | 12 | tap a hen for her own note and brown, speckled or blue-green egg; gathered eggs hatch at the finish |
-| [Animal Snack](docs/games/animal-snack.md) | lap–pre-K | Barnyard | 8 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
+| [Animal Snack](docs/games/animal-snack.md) | lap–school | Barnyard | 10 | one big animal; a touch anywhere gives it a snack, and two friends walk in |
 | [Critter Sort](docs/games/critter-sort.md) | pre-K–school | Barnyard | 12 | drag critters into a hoop: "wearing a hat" |
 | [Sing-Along Barn](docs/games/sing-along-barn.md) | lap–pre-K | Barnyard | 8 | tap anywhere to sing the next note of Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, Twinkle, Twinkle, Little Star or The Wheels on the Bus (one per round); a friend comes out for the verse and answers |
 | [Orchard Rows](docs/games/orchard-rows.md) | school | Barnyard | 9 | plant equal rows and count by groups |

@@ -20,6 +20,14 @@ export interface SnackPlan {
   name: string;
   /** Lap's opening: one big animal, a touch anywhere feeds, and the others walk in as she feeds (see `friendsAfter`). */
   oneBig?: boolean;
+  /** 'count': the numbers asked for, inclusive (2 to 4 unless given). */
+  counts?: [number, number];
+  /**
+   * Levels 9–10, the menu board: a chalkboard in place of the bubble, each line an animal, a printed numeral and a
+   * printed food word, with the food's picture at level 9 only. The spoken instruction never names the number; a
+   * speaker on each line reads it, free.
+   */
+  board?: 'picture' | 'words';
 }
 
 export const PLANS: SnackPlan[] = [
@@ -47,6 +55,21 @@ export const PLANS: SnackPlan[] = [
     rounds: 3,
     name: 'Their own snacks: give two animals 1 to 4 each of their own food, then ring the bell',
   },
+  {
+    mode: 'count',
+    animals: 2,
+    rounds: 3,
+    counts: [4, 9],
+    board: 'picture',
+    name: 'The menu board: read an animal, a numeral 4 to 9 and a food word, give that many, ring the bell',
+  },
+  {
+    mode: 'pairs',
+    animals: 2,
+    rounds: 3,
+    board: 'words',
+    name: 'The long menu: read two lines, numeral and food word, and give each animal its own number',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -54,7 +77,13 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
   prek: { min: 5, max: 8 },
+  school: { min: 8, max: 10 },
 };
+
+/** Rows of snacks at the feeding spot: two at levels 8–10 (two piles, or the menu board's ten), one everywhere else. */
+export const rowsFor = (plan: SnackPlan) => (plan.mode === 'pairs' || plan.board ? 2 : 1);
+/** Level 9: snacks on the two-row blanket, more than the board's largest number. */
+export const BOARD_SNACKS = 10;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -366,7 +395,8 @@ export function makeRounds(plan: SnackPlan, rng: Rng): SnackRound[] {
       const askable = by === 'sound' ? animals.filter((a) => SOUND_WORDS[a]) : animals;
       ask = askable.length ? rng.pick(askable) : undefined;
     } while (!ask || ask === out.at(-1)?.ask);
-    out.push({ animals, ask, by, n: plan.mode === 'count' ? rng.int(2, 4) : undefined });
+    const [lo, hi] = plan.counts ?? [2, 4];
+    out.push({ animals, ask, by, n: plan.mode === 'count' ? rng.int(lo, hi) : undefined });
   }
   return out;
 }
@@ -556,3 +586,33 @@ export function pairsBell(wants: number[], given: number[]): PairsBell {
     extras: wants.map((w, i) => Math.max(0, (given[i] ?? 0) - w)),
   };
 }
+
+/** The printed food word for a count: the short word ("hay", "fish", "apples"), singular for one. */
+export const boardWord = (food: Food, n: number) =>
+  n === 1
+    ? (({ bone: 'bone', apple: 'apple' } as Partial<Record<Food, string>>)[food] ?? FOOD_WORDS[food])
+    : FOOD_WORDS[food];
+
+/** One line of the menu board: the animal (drawn as a picture), the numeral and the printed food word. */
+export interface BoardLine {
+  animal: CritterName;
+  n: number;
+  numeral: string;
+  word: string;
+}
+/** The board's lines for a round: the asked animal at level 9, each animal of the pair in row order at level 10. */
+export function boardLines(round: SnackRound): BoardLine[] {
+  const ask: [CritterName, number][] = round.wants
+    ? round.animals.map((a, i) => [a, round.wants![i]])
+    : [[round.ask!, round.n!]];
+  return ask.map(([animal, n]) => ({ animal, n, numeral: String(n), word: boardWord(FAVORITE[animal]!, n) }));
+}
+
+/** The menu board's geometry, around the bubble's center at y 120: each line is a 104-tall tap target, and the board's
+ * wooden frame ends at `boardBox(lines).bottom` below that center. */
+export const BOARD_LINE_H = 104;
+export const boardBox = (lines: number) => {
+  const top = lines > 1 ? -105 : -60;
+  const height = lines * BOARD_LINE_H + 24;
+  return { top, height, bottom: top + height + 10 };
+};

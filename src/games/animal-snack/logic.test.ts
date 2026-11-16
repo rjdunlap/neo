@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { VOICE as LINES } from './voice';
 import {
+  BOARD_LINE_H,
+  BOARD_SNACKS,
+  boardBox,
+  boardLines,
+  boardWord,
+  rowsFor,
   friendsAfter,
   planFor,
   LEVELS,
@@ -183,8 +190,9 @@ describe('Animal Snack', () => {
             expect(r.animals).toContain(r.ask);
             if (i > 0) expect(r.ask).not.toBe(rounds[i - 1].ask);
           }
+          const [lo, hi] = plan.counts ?? [2, 4];
           if (plan.mode === 'count')
-            (expect(r.n).toBeGreaterThanOrEqual(2), expect(r.n).toBeLessThanOrEqual(4));
+            (expect(r.n).toBeGreaterThanOrEqual(lo), expect(r.n).toBeLessThanOrEqual(hi));
         });
       }
     }
@@ -207,7 +215,10 @@ describe('Animal Snack', () => {
                   Array.from({ length: PAIR_PILE }, () => ({ food: FAVORITE[a]!, eaten: false })),
                 )
               : plan.mode === 'count'
-                ? Array.from({ length: 5 }, () => ({ food: FAVORITE[r.ask!]!, eaten: false }))
+                ? Array.from({ length: plan.board ? BOARD_SNACKS : 5 }, () => ({
+                    food: FAVORITE[r.ask!]!,
+                    eaten: false,
+                  }))
                 : plan.mode === 'float' || plan.mode === 'match' || plan.mode === 'sound'
                   ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false }))
                   : [];
@@ -598,6 +609,78 @@ describe('Animal Snack', () => {
       expect(feet, `h ${h}: never lower than one row's`).toBeLessThanOrEqual(friendFeet(h));
       // The sign reaches to y 120 + 68.
       expect(feet + (FRIEND_HIT.y - FRIEND_HIT.r) * FRIEND_SCALE, `h ${h}`).toBeGreaterThan(188);
+    }
+  });
+
+  it('reads level 9 off the menu board: a numeral 4 to 9, the food word of the animal asked, and more snacks than that', () => {
+    const plan = planFor(9);
+    expect(plan.mode).toBe('count');
+    expect(plan.board).toBe('picture');
+    expect(LEVELS.school).toEqual({ min: 8, max: 10 });
+    expect(rowsFor(plan), 'ten snacks need the two-row blanket').toBe(2);
+    expect(BOARD_SNACKS, 'two rows of five').toBe(2 * PAIR_PILE);
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const r of makeRounds(plan, new Rng(seed))) {
+        expect(r.n).toBeGreaterThanOrEqual(4);
+        expect(r.n).toBeLessThanOrEqual(9);
+        expect(BOARD_SNACKS, 'the blanket holds more than the board asks').toBeGreaterThan(r.n!);
+        seen.add(r.n!);
+        const lines = boardLines(r);
+        expect(lines).toHaveLength(1);
+        expect(lines[0].animal).toBe(r.ask);
+        expect(lines[0].numeral).toBe(String(r.n));
+        expect(lines[0].word, 'the word is the food of the animal on the line').toBe(
+          FOOD_WORDS[FAVORITE[r.ask!]!],
+        );
+      }
+    }
+    expect([...seen].sort()).toEqual([4, 5, 6, 7, 8, 9]);
+  });
+
+  it('reads level 10 off two menu lines: two animals in row order, their own numbers, and no word twice', () => {
+    const plan = planFor(10);
+    expect(plan.mode).toBe('pairs');
+    expect(plan.board).toBe('words');
+    expect(rowsFor(plan)).toBe(2);
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const r of makeRounds(plan, new Rng(seed))) {
+        const lines = boardLines(r);
+        expect(lines.map((l) => l.animal)).toEqual(r.animals);
+        expect(lines.map((l) => Number(l.numeral))).toEqual(r.wants);
+        expect(lines[0].animal).not.toBe(lines[1].animal);
+        expect(lines[0].word, 'no word repeats across lines').not.toBe(lines[1].word);
+        // Each pile of five fits its line's number with one to spare.
+        for (const n of r.wants!) expect(n).toBeLessThan(PAIR_PILE);
+      }
+    }
+  });
+
+  it('prints a short food word, singular for one, and speaks exactly what the board prints', () => {
+    expect(boardWord('apple', 1)).toBe('apple');
+    expect(boardWord('apple', 2)).toBe('apples');
+    expect(boardWord('bone', 1)).toBe('bone');
+    expect(boardWord('hay', 4)).toBe('hay');
+    for (const food of Object.keys(FOOD_WORDS) as Food[])
+      for (let n = 1; n <= 9; n++) expect(boardWord(food, n).length).toBeGreaterThan(0);
+    // The speaker's line names the animal, the board's numeral and its printed word, nothing more.
+    expect(LINES['snack.boardline']).toEqual(['The {animal} wants {n} {word}.']);
+    // The instructions never say the number or the food: those are read off the board.
+    for (const id of ['snack.board', 'snack.longmenu'] as const)
+      for (const line of LINES[id]) expect(line).not.toMatch(/\{n\}|\{food\}|\{word\}|\d/);
+  });
+
+  it("keeps the menu board's lines at least 100 tall and the animals' tap circles below the board", () => {
+    expect(BOARD_LINE_H, 'each line is a speaker target').toBeGreaterThanOrEqual(100);
+    for (const lines of [1, 2]) {
+      const box = boardBox(lines);
+      expect(box.top - 10 + 120, 'the frame stays on screen').toBeGreaterThanOrEqual(0);
+      for (const h of [768, 1024, 1365, 1638, 2216]) {
+        const feet = friendFeet(h, 2);
+        expect(feet + (FRIEND_HIT.y - FRIEND_HIT.r) * FRIEND_SCALE, `h ${h}, ${lines} lines`).toBeGreaterThan(
+          120 + box.bottom,
+        );
+      }
     }
   });
 });

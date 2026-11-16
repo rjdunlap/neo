@@ -2,7 +2,7 @@
 
 <!-- generated: from src/games/animal-snack; edit the text below the end mark (npm run game-docs) -->
 
-**ID:** `animal-snack` · **Land:** Barnyard · **Ages:** lap–pre-K · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
+**ID:** `animal-snack` · **Land:** Barnyard · **Ages:** lap–school · **Challenge:** words · **Plays by:** touch, upright on a phone · **Ghost finger:** yes
 
 **Skills:** animals, words, matching, counting
 
@@ -12,6 +12,7 @@
 | toddler | 2–4 |
 | preschool | 3–5 |
 | pre-K | 5–8 |
+| school | 8–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +24,8 @@
 | 6 | Who says moo? Drag its own snack to the animal that makes the sound |
 | 7 | Who eats hay? There are two: tap both animals that eat it |
 | 8 | Their own snacks: give two animals 1 to 4 each of their own food, then ring the bell |
+| 9 | The menu board: read an animal, a numeral 4 to 9 and a food word, give that many, ring the bell |
+| 10 | The long menu: read two lines, numeral and food word, and give each animal its own number |
 
 <!-- end generated -->
 

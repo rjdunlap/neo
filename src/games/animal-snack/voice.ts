@@ -23,5 +23,12 @@ export const VOICE = {
   'snack.pairsoff': ['The {animal} has {have} and wants {n}.'],
   'snack.pairsextra': ['The {animal} has {have} and wants {n}. Here are the extras back.'],
   'snack.pairsfull': ['Just right! Thank you, say the animals!'],
+  'snack.board': [
+    'Read the menu board! Give the animal what it says, then ring the bell. Tap the board to hear it.',
+  ],
+  'snack.longmenu': [
+    'Read the menu board! Give each animal what its line says, then ring the bell. Tap a line to hear it.',
+  ],
+  'snack.boardline': ['The {animal} wants {n} {word}.'],
   'snack.done': ['Everyone had a snack. Thank you!'],
 } satisfies Record<string, string[]>;
