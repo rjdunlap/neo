@@ -1891,3 +1891,11 @@ Proof: typecheck, rule tests (bands, pools, fair-trap, each lesson board's prope
 Files expected: `src/games/pyramid-solitaire/logic.ts`, `logic.test.ts`, `index.ts`, `howto.ts`, `docs/games/pyramid-solitaire.md` (Grows into line and notes) and the dive's "What was built" section.
 
 Proof: existing-game tier (typecheck, the rule tests, one filtered `BROWSER_SUITE=pyramid` play at level 3 with a portrait and a landscape screenshot; no `fingerdemo`, since the bot's actions do not change; build only if a shared file changes).
+
+### photo-safari 2: Mystery friend and Best question
+
+- **`photo-safari`, levels 14–15 *Mystery friend* and *Best question*** (SL5, [definition](definitions/mystery-friend.md#bands-and-level-ids); new interaction; school only, order `[4, 5, 6, 7, 8, 9, 10, 11, 14, 15]`): a visiting friend has picked one meadow animal for a secret photo; she taps picture questions and the friends that do not fit walk away, then taps the last friend to take the photo; level 15 has six friends and five questions that split differently, with a spoken note on the better question. [Study slice SL5](deep-dives/subjects/speaking-listening.md#build-slices-in-order)
+
+Files expected: `src/games/photo-safari/logic.ts`, `logic.test.ts`, `index.ts`, `voice.ts`, `howto.ts`, the `batch` safari case in `scripts/browser-check.mjs`, `docs/games/photo-safari.md` (Grows into line and notes) and the dive's build slice 10.
+
+Proof: new-interaction tier as the [definition's check tier](definitions/mystery-friend.md#check-tier-for-the-build) sets it (typecheck, rule tests, one filtered `BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=14,15` play with one wrong guess and one hint, `fingerdemo` at 14, one portrait screenshot of level 15's two-row tray, build).
