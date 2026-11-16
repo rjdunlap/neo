@@ -10,6 +10,10 @@ export const VOICE = {
   'trail.instruct.3': [
     'These pictures show the {place} at different times. Hang them one at a time, from long ago on the left to now on the right.',
   ],
+  'trail.instruct.4': [
+    'Two places share this line: the {place}. The little picture in each corner shows the other place at the same time. Drag each loose picture to the gap where it belongs.',
+  ],
+  'trail.clue': ['{caption}. In the little picture: {clue}.'],
   'trail.card.shore-0': ['An empty shore with one rock.'],
   'trail.card.shore-1': ['A little dock on the shore.'],
   'trail.card.shore-2': ['The dock with a boat shed.'],
