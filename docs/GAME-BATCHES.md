@@ -769,6 +769,18 @@ Proof: new-game tier, as the [definition's check tier](definitions/spinner-fair.
 
 Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of level 4 with one card on the wrong spinner and level 5 with a wrong *fair*, an uneven Check, two wedge moves and the race, one portrait screenshot of level 5, `fingerdemo` at levels 4 and 5, one build for the card and voice).
 
+### spinner-fair 3: Watch it settle (CS2a)
+
+- **`spinner-fair`, level 6 (chance-statistics study slice CS2)** (defined 2026-11-16, [definition](definitions/spinner-fair-6-8.md#build-slices-and-check-tiers)): repeated spins settle toward the shares. Proof: new-levels tier (typecheck, rule tests, one browser play at 6 with one wrong card, `fingerdemo`, build).
+
+### spinner-fair 4: Two dice (CS2b)
+
+- **`spinner-fair`, level 7** (after `spinner-fair 3`; same definition): the two-dice sum grid and the journal entry `spinner-fair:two-dice`. Proof: new-levels tier with the journal tests, `fingerdemo` at 7, build.
+
+### spinner-fair 5: The typical spin (CS2c)
+
+- **`spinner-fair`, level 8** (after `spinner-fair 4`; same definition): the levelling drag and the typical spin. Proof: new-interaction tier (one scripted play, one portrait screenshot, `fingerdemo` at 8, build).
+
 ### tide-line 1: Come in, go out and stop at the line
 
 **Built 2026-10-31** ([PR #1059](https://github.com/rjdunlap/neo/pull/1059)); levels 3-4 are batch `tide-line 2` (built 2026-11-01).
