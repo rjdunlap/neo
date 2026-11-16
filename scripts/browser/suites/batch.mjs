@@ -1657,6 +1657,37 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
             await kit.until(() => g.photos > p, 10000);
             continue;
           }
+          if (g.plan.mode === 'mystery') {
+            // Mystery Friend: two wrong guesses among three or more (two misses, the glow is one hint), then the best questions.
+            const { botMove, sameChip } = await import('/src/games/photo-safari/logic.ts');
+            if (g.target?.glow.visible) throw new Error('The secret must not show');
+            if (p === 0) {
+              if (g.chips.some((c) => c.x - 75 < 150 || c.hitArea.width < 100 || c.hitArea.height < 100))
+                throw new Error('Mystery tray targets');
+              for (let k = 0; k < 2; k++) {
+                const wrong = g.mystery.remaining.find((i) => i !== g.scene.target);
+                kit.tapOn(g.actors[wrong], 0, -60);
+                await kit.sleep(300);
+                await kit.until(() => !g.busy, 10000);
+              }
+              if (g.misses !== 2 || g.hints !== 1 || !g.chips.some((c) => c.glow.visible))
+                throw new Error(`Mystery hint: ${g.misses} ${g.hints}`);
+              window.__safariShot = true;
+              await kit.until(() => !window.__safariShot, 20000);
+            }
+            for (let q = 0; q < 6 && g.mystery.remaining.length > 1; q++) {
+              const move = botMove(g.mystery);
+              if (!('chip' in move)) break;
+              kit.tapOn(g.chips.find((c) => sameChip(c.chip, move.chip)));
+              await kit.sleep(300);
+              await kit.until(() => !g.busy, 10000);
+            }
+            if (g.mystery.remaining.length !== 1 || g.mystery.remaining[0] !== g.scene.target)
+              throw new Error('Questions must narrow to the secret');
+            kit.tapOn(g.actors[g.scene.target], 0, -60);
+            await kit.until(() => g.photos > p, 10000);
+            continue;
+          }
           if (g.plan.mode === 'changed') {
             // The first tap, on the camera or any animal, photographs the meadow and is never a miss.
             if (g.cameraButton.hitArea.width < 100 || g.cameraButton.hitArea.height < 100)
@@ -1726,7 +1757,7 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
           await kit.until(() => g.photos > p, 10000);
         }
       });
-      if (mode === 'changed' || mode === 'true') {
+      if (mode === 'changed' || mode === 'true' || mode === 'mystery') {
         // The new screens in portrait: the pinned meadow photo or the held photo and thumbs, with the hint showing.
         await page.waitForFunction(() => window.__safariShot, null, { timeout: 30000 });
         await page.setViewportSize({ width: 768, height: 1024 });

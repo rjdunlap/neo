@@ -29,6 +29,12 @@ import {
   tellHint,
   toggleChip,
   type Chip,
+  type MysteryPlay,
+  ask as askQuestion,
+  bestQuestions,
+  botMove,
+  guess,
+  startMystery,
   animalToTap,
   describe,
   makeScene,
@@ -289,6 +295,9 @@ class WordCard extends Container {
   readonly plate = new Graphics();
   readonly glow = new Graphics().roundRect(-76, -66, 152, 132, 18).fill({ color: 0xfff3a0, alpha: 0.85 });
   selected = false;
+  /** Mystery Friend: the friend's answer once asked; the card greys and wears a thumb. */
+  answered: boolean | null = null;
+  private thumb: Graphics | null = null;
   constructor(
     readonly chip: Chip,
     tap: () => void,
@@ -306,11 +315,21 @@ class WordCard extends Container {
     this.draw();
   }
   draw() {
+    const asked = this.answered !== null;
     this.plate
       .clear()
       .roundRect(-70, -60, 140, 120, 16)
-      .fill(this.selected ? 0xd5efff : 0xffffff)
+      .fill(asked ? 0xe3e6ea : this.selected ? 0xd5efff : 0xffffff)
       .stroke({ width: this.selected ? 6 : 3, color: this.selected ? 0xffffff : 0x7d9db4 });
+    if (asked && !this.thumb) {
+      const up = this.answered === true;
+      this.thumb = thumbIcon(up ? swatch.green : swatch.orange);
+      this.thumb.scale.set(0.42);
+      if (!up) this.thumb.rotation = Math.PI;
+      this.thumb.position.set(48, -38);
+      this.thumb.eventMode = 'none';
+      this.addChild(this.thumb);
+    }
   }
 }
 
@@ -367,6 +386,11 @@ class PhotoSafari implements Game {
   private truths: boolean[] = [];
   /** Level 13: the six friends who walk in, one per photo. */
   private bigCast: Sighting[] = [];
+  /** Mystery Friend (14–15): the questions asked and the friends still standing. */
+  mystery: MysteryPlay | null = null;
+  private readonly secret = new Container();
+  /** The pause sheet's "show a hint": glows the best questions (Mystery Friend only). */
+  askForHint?: () => void;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -400,7 +424,28 @@ class PhotoSafari implements Game {
         { cooldown: 300 },
       );
     }
-    if (this.sharedPlaces && !this.isTell) {
+    if (this.isMystery) {
+      // "Is it you?": the nearest standing friend; seated friends are out of the game.
+      onTap(
+        this.cast,
+        (e) => {
+          if (!this.mystery) return;
+          const standing = this.mystery.remaining;
+          const i = nearestSighting(
+            standing.map((r) => this.actors[r]),
+            this.cast.toLocal(e.global),
+          );
+          if (i >= 0) void this.guessFriend(standing[i]);
+        },
+        { cooldown: 500 },
+      );
+      this.askForHint = () => {
+        if (this.busy || this.finished || !this.mystery || this.mystery.remaining.length < 2) return;
+        this.hints++;
+        this.glowBest();
+        void this.ctx.say('safari.glow');
+      };
+    } else if (this.sharedPlaces && !this.isTell) {
       onTap(
         this.cast,
         (e) => {
@@ -488,7 +533,17 @@ class PhotoSafari implements Game {
   }
 
   private get sharedPlaces(): boolean {
-    return this.plan.mode === 'both' || this.plan.mode === 'clues' || this.isTell;
+    return this.plan.mode === 'both' || this.plan.mode === 'clues' || this.isTell || this.isMystery;
+  }
+
+  private get isMystery() {
+    return this.plan.mode === 'mystery';
+  }
+
+  /** Mystery Friend on a phone upright or any narrow view: the tray takes two rows and the meadow lifts. */
+  private get twoRows() {
+    // Four or five 156-unit cards must fit between the pet's corner (x 150) and the right margin in one row.
+    return this.isMystery && (this.view.w < 900 || (this.plan.best ? 5 : 4) * 156 > this.view.w - 190);
   }
 
   private get isTell() {
@@ -506,6 +561,15 @@ class PhotoSafari implements Game {
   /** The ghost finger on the how-to card: photograph the animal that was asked for, or each animal in turn. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.unasked || !this.scene) return null;
+    if (this.mystery) {
+      const move = botMove(this.mystery);
+      if ('chip' in move) {
+        const on = this.chips.find((c) => sameChip(c.chip, move.chip));
+        return on ? { tap: { on }, receiver: on } : null;
+      }
+      const friend = this.actors[move.friend];
+      return friend && !friend.destroyed ? { tap: { on: friend, y: -60 }, receiver: this.cast } : null;
+    }
     if (this.isTell) {
       const missing = fewestChips(this.scene).find((c) => !this.chosen.some((k) => sameChip(k, c)));
       const on = missing ? this.chips.find((c) => sameChip(c.chip, missing)) : this.tellButton;
@@ -528,6 +592,7 @@ class PhotoSafari implements Game {
   }
 
   private ground() {
+    if (this.isMystery) return Math.min(this.view.h * 0.78, this.view.h - 200) - (this.twoRows ? 140 : 0);
     return this.isTell ? Math.min(this.view.h * 0.78, this.view.h - 200) : this.view.h * 0.78;
   }
 
@@ -548,6 +613,10 @@ class PhotoSafari implements Game {
     this.thumbs.forEach((b, i) => b.position.set(v.w / 2 + (i ? 95 : -95), v.h - 72));
     this.pinned.position.set(v.w / 2, 200);
     if (this.held && this.phase === 'judge') this.held.position.copyFrom(this.heldAt());
+    if (this.isMystery) {
+      this.layoutMysteryChips();
+      this.visitor.position.set(v.w - 110, 250);
+    }
     if (this.isTell) {
       this.layoutChips();
       this.visitor.position.set(v.w - 110, 250);
@@ -568,6 +637,19 @@ class PhotoSafari implements Game {
       this.ground(),
     );
     this.actors.forEach((a, i) => a.position.copyFrom(positions[i]));
+    // Mystery Friend: friends who don't fit have stepped outward from their place and sat down.
+    if (this.mystery)
+      this.actors.forEach((a, i) => {
+        if (!this.mystery!.remaining.includes(i)) a.position.copyFrom(this.seatAt(i, positions));
+      });
+  }
+
+  /** A few steps outward from its place, away from the friend beside it. */
+  private seatAt(i: number, positions: { x: number; y: number }[] = this.actors.map((a) => a.position)) {
+    const s = this.actors[i].sighting;
+    const at = this.spotPos(s.spot);
+    const p = positions[i];
+    return { x: p.x + (p.x < at.x ? -24 : 24), y: p.y + 14 };
   }
 
   /** The four places: a tree to stand under, a bush to hide behind, a rock, and a pond. */
@@ -598,8 +680,10 @@ class PhotoSafari implements Game {
         6,
       );
     }
-    const extent = this.sharedPlaces ? 155 : 90;
-    const pondExtent = this.sharedPlaces ? 165 : 110;
+    // Level 15's three shared places sit closer together, so each is narrower.
+    const three = this.sharedPlaces && new Set(this.scene?.sightings.map((a) => a.spot)).size === 3;
+    const extent = three ? 105 : this.sharedPlaces ? 155 : 90;
+    const pondExtent = three ? 110 : this.sharedPlaces ? 165 : 110;
     // Rock.
     if (show('rock'))
       back
@@ -649,6 +733,25 @@ class PhotoSafari implements Game {
 
   update(dt: number) {
     for (const a of this.actors) a.update(dt);
+    if (this.isMystery) {
+      this.tellClock += dt;
+      this.friend?.update(dt);
+      for (const c of this.chips) c.glow.alpha = 0.6 + 0.4 * Math.sin(this.tellClock * 5);
+      // Only the last friend standing sparkles: the secret never shows before the questions find it.
+      const last = this.mystery?.remaining.length === 1 ? this.actors[this.mystery.remaining[0]] : null;
+      if (last && !this.finished && this.tellClock > this.sparkleAt) {
+        this.sparkleAt = this.tellClock + 1;
+        this.ctx.particles.burst(last.x, last.y - 130, {
+          colors: [0xffce45],
+          count: 3,
+          kind: 'star',
+          speed: [10, 30],
+          gravity: 0,
+          life: [0.4, 0.8],
+          size: [0.15, 0.25],
+        });
+      }
+    }
     if (this.isTell) {
       this.tellClock += dt;
       this.friend?.update(dt);
@@ -695,6 +798,7 @@ class PhotoSafari implements Game {
     this.wanted.removeFromParent();
     for (const a of this.actors) a.destroy({ children: true });
     this.actors = [];
+    this.mystery = null;
     this.phase = null;
     this.clearPinned();
     if (this.photos >= this.plan.photos) return void this.finale();
@@ -722,6 +826,7 @@ class PhotoSafari implements Game {
       return a;
     });
     if (this.isTell) this.prepareTell();
+    if (this.isMystery) this.prepareMystery();
     if (this.sharedPlaces) this.resize(this.view);
     if (this.plan.big) await this.walkIn(this.actors[0]);
     else await this.ctx.tw.wait(0.4);
@@ -775,6 +880,8 @@ class PhotoSafari implements Game {
       });
     } else if (this.plan.mode === 'act') {
       await this.ctx.instruct('safari.who-doing', { what: request('act', this.scene) });
+    } else if (this.isMystery) {
+      await this.ctx.instruct(this.plan.best ? 'safari.best' : 'safari.mystery');
     } else if (this.isTell) {
       await this.ctx.instruct('safari.tell');
     } else if (this.plan.mode === 'snap') {
@@ -855,6 +962,196 @@ class PhotoSafari implements Game {
       icon.x = (i - (this.chosen.length - 1) / 2) * 52;
       this.tellPictures.addChild(icon);
     });
+  }
+
+  /** Mystery Friend: a fresh secret, a visiting friend with a face-down photo, and the question tray. */
+  private prepareMystery() {
+    const scene = this.scene!;
+    this.mystery = startMystery(scene);
+    this.chips.forEach((c) => c.destroy({ children: true }));
+    this.chips = this.mystery.chips.map((chip) => {
+      const card = new WordCard(chip, () => void this.question(card));
+      this.tray.addChild(card);
+      return card;
+    });
+    this.visitor.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const animals = scene.sightings.map((s) => s.animal);
+    const others = ANIMALS.filter((a) => !animals.includes(a));
+    this.friend = new Critter(CRITTERS[this.ctx.rng.pick(others.length ? others : ANIMALS)]);
+    this.friend.scale.set(0.45);
+    const thought = new Graphics()
+      .roundRect(-190, -178, 150, 125, 24)
+      .fill(0xffffff)
+      .circle(-46, -51, 10)
+      .fill(0xffffff)
+      .circle(-27, -33, 6)
+      .fill(0xffffff);
+    // The secret photo, face down: a polaroid back with a question mark.
+    this.secret.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const back = new Graphics()
+      .roundRect(-38, -46, 76, 92, 6)
+      .fill(0xf3efe6)
+      .stroke({ width: 3, color: 0xb9b2a6 });
+    const mark = label('?', 52, 0x527da0);
+    this.secret.addChild(back, mark);
+    this.secret.scale.set(1);
+    this.secret.position.set(-115, -115);
+    this.visitor.addChild(this.friend, thought, this.secret);
+    this.layoutMysteryChips();
+  }
+
+  /** One row in a wide view; doing words over places in a narrow one, so no card shrinks. */
+  private layoutMysteryChips() {
+    const mid = (150 + this.view.w - 40) / 2;
+    const rows = this.twoRows
+      ? [this.chips.filter((c) => c.chip.kind === 'action'), this.chips.filter((c) => c.chip.kind === 'spot')]
+      : [this.chips];
+    rows.forEach((row, r) =>
+      row.forEach((c, i) => {
+        c.position.set(
+          mid + (i - (row.length - 1) / 2) * 156,
+          this.view.h - 78 - (rows.length === 2 && r === 0 ? 140 : 0),
+        );
+        c.draw();
+      }),
+    );
+  }
+
+  private glowBest() {
+    const m = this.mystery;
+    if (!m) return;
+    const best = bestQuestions(
+      m.chips,
+      m.remaining,
+      m.scene,
+      m.asked.map((x) => x.chip),
+    );
+    for (const c of this.chips) c.glow.visible = best.some((b) => sameChip(b, c.chip));
+  }
+
+  /** The friend's answers, the misses and hints a question or guess added. */
+  private tally(before: { misses: number; hints: number }) {
+    this.misses += this.mystery!.misses - before.misses;
+    this.hints += this.mystery!.hints - before.hints;
+  }
+
+  /** She taps a picture question; the friend answers, and the friends who don't fit step away. */
+  private async question(card: WordCard) {
+    const play = this.mystery;
+    if (this.busy || this.finished || !play || play.remaining.length < 2) return;
+    this.dropAsk();
+    card.scale.set(0.94);
+    void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.15 });
+    const before = { misses: play.misses, hints: play.hints };
+    const outcome = askQuestion(play, card.chip, this.plan.best);
+    this.tally(before);
+    const what = chipPhrase([card.chip]);
+    if (outcome.kind === 'repeat') {
+      void this.ctx.say('safari.repeat', {
+        answer: outcome.yes ? `yes, it is ${what}` : `no, it isn't ${what}`,
+      });
+      return;
+    }
+    if (outcome.kind !== 'narrowed' && outcome.kind !== 'unhelpful') return;
+    this.busy = true;
+    card.answered = outcome.yes;
+    card.glow.visible = false;
+    card.draw();
+    this.friend?.hop();
+    await this.ctx.say(outcome.yes ? 'safari.ask-yes' : 'safari.ask-no', { what });
+    if (this.destroyed || this.mystery !== play) return;
+    if (outcome.kind === 'unhelpful') {
+      sfx.boing();
+      await this.ctx.say(outcome.all ? 'safari.unhelpful-all' : 'safari.unhelpful-none', { what });
+      if (this.destroyed || this.mystery !== play) return;
+      await this.ctx.say('safari.unhelpful-try');
+      if (this.destroyed || this.mystery !== play) return;
+      if (outcome.glow) {
+        this.glowBest();
+        await this.ctx.say('safari.glow');
+      }
+    } else {
+      for (const c of this.chips) c.glow.visible = false;
+      await Promise.all(outcome.gone.map((i) => this.sitDown(i)));
+      if (this.destroyed || this.mystery !== play) return;
+      if (outcome.better)
+        await this.ctx.say('safari.better', {
+          n: String(outcome.better.n),
+          m: String(outcome.better.m),
+          kind: outcome.better.kind === 'action' ? 'doing word' : 'place word',
+        });
+      if (this.destroyed || this.mystery !== play) return;
+      if (play.remaining.length === 1) await this.ctx.say('safari.last');
+    }
+    if (!this.destroyed) this.busy = false;
+  }
+
+  /** "Is it you?": she taps a standing friend. */
+  private async guessFriend(i: number) {
+    const play = this.mystery;
+    if (this.busy || this.finished || !play) return;
+    this.dropAsk();
+    const a = this.actors[i];
+    const before = { misses: play.misses, hints: play.hints };
+    const outcome = guess(play, i);
+    this.tally(before);
+    if (outcome.kind === 'found' || outcome.kind === 'snap') return void this.takeSecret(a);
+    if (outcome.kind !== 'wrong-guess' && outcome.kind !== 'not-it') return;
+    this.busy = true;
+    a.critter.hop();
+    if (outcome.kind === 'wrong-guess') sfx.boing();
+    await this.sitDown(i);
+    if (this.destroyed || this.mystery !== play) return;
+    await this.ctx.say(outcome.kind === 'wrong-guess' ? 'safari.not-me' : 'safari.not-me-two');
+    if (this.destroyed || this.mystery !== play) return;
+    if (outcome.kind === 'wrong-guess' && outcome.glow) this.glowBest();
+    if (play.remaining.length === 1) await this.ctx.say('safari.last');
+    if (!this.destroyed) this.busy = false;
+  }
+
+  /** A friend who doesn't fit walks a few steps outward and sits, still in sight. */
+  private async sitDown(i: number) {
+    const a = this.actors[i];
+    if (!a || a.destroyed) return;
+    a.glow.visible = false;
+    const to = this.seatAt(i);
+    a.critter.hop();
+    await Promise.all([
+      this.ctx.tw.to(a, { x: to.x, y: to.y, alpha: 0.5 }, { duration: 0.45, ease: ease.inOutSine }),
+      this.ctx.tw.to(a.scale, { x: 0.9, y: 0.82 }, { duration: 0.45 }),
+    ]);
+  }
+
+  /** Found: the face-down photo flips to show the friend, and her photo goes in the album. */
+  private async takeSecret(a: Actor) {
+    const play = this.mystery;
+    if (!play) return;
+    this.busy = true;
+    const scene = this.scene!;
+    await this.ctx.tw.to(this.secret.scale, { x: 0 }, { duration: 0.15 });
+    if (this.destroyed || this.mystery !== play) return;
+    const tex = this.ctx.renderer.generateTexture({ target: a.critter, resolution: 1 });
+    this.textures.push(tex);
+    const pic = new Sprite(tex);
+    pic.anchor.set(0.5);
+    pic.scale.set(Math.min(64 / pic.width, 64 / pic.height));
+    pic.y = -6;
+    this.secret.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.secret.addChild(
+      new Graphics()
+        .roundRect(-38, -46, 76, 92, 6)
+        .fill(0xffffff)
+        .stroke({ width: 3, color: 0xd6dde4 })
+        .rect(-32, -40, 64, 64)
+        .fill(0xbfe6fb),
+      pic,
+    );
+    await this.ctx.tw.to(this.secret.scale, { x: 1 }, { duration: 0.15 });
+    if (this.destroyed || this.mystery !== play) return;
+    await this.ctx.say('safari.found', { animal: scene.sightings[scene.target].animal });
+    if (this.destroyed || this.mystery !== play) return;
+    this.busy = false;
+    await this.snap(a);
   }
 
   private async aimAt(x: number, y: number) {
@@ -960,7 +1257,7 @@ class PhotoSafari implements Game {
       // This scene's change and friend, read now: the next scene replaces them while the click plays.
       const what = this.plan.mode === 'changed' ? changeLine(this.scene!) : null;
       // The friend who asked hops now, before the next scene's friend takes its place.
-      if (this.isTell) this.friend?.hop();
+      if (this.isTell || this.isMystery) this.friend?.hop();
       const said = this.ctx.say('safari.click').then(() => {
         if (!more()) return;
         if (what) return this.ctx.say('safari.was', { what });
@@ -1261,7 +1558,7 @@ export const photoSafari: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint:
-    'Make an I spy request with an action and a place: "I spy someone jumping in the pond." Look at the album together at the end: "What is the bunny doing? Where is it?"',
+    'Make an I spy request with an action and a place: "I spy someone jumping in the pond." Look at the album together at the end: "What is the bunny doing? Where is it?" Take turns: one of you picks an animal secretly, the other asks "Is it sleeping?" questions.',
   coplayHintLap:
     'Make an I spy request with an action and a place: "I spy someone jumping in the pond." Look at the album together at the end and say what each friend is doing.',
   offScreen: 'Play "I spy" with places: "I spy a teddy under the table."',

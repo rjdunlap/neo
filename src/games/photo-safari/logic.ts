@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * what it's doing ("jumping") and where it is ("under the tree"), for verbs and positions.
  */
 export type SafariMode =
-    | 'snap'
+  | 'snap'
   | 'who'
   | 'doing'
   | 'where'
@@ -522,7 +522,12 @@ export function chipPhrase(chips: Chip[]): string {
 /** Every doing word × place pair dealt to exactly one friend, so doing and place questions alone single out anyone. */
 export function makeMysteryScene(plan: SafariPlan, rng: Rng): Scene {
   const places = plan.animals === 6 ? 3 : 2;
-  const spots = SPOTS.filter((s) => rng.shuffle([...SPOTS]).slice(0, places).includes(s));
+  const spots = SPOTS.filter((s) =>
+    rng
+      .shuffle([...SPOTS])
+      .slice(0, places)
+      .includes(s),
+  );
   const actions = rng.shuffle(actionsAt('tree')).slice(0, 2);
   const animals = rng.shuffle([...ANIMALS]);
   const pairs = actions.flatMap((action) => spots.map((spot) => ({ action, spot })));
@@ -609,7 +614,12 @@ export function ask(play: MysteryPlay, chip: Chip, best = false): MysteryOutcome
   const before = play.asked.find((a) => sameChip(a.chip, chip));
   if (before) return { kind: 'repeat', yes: before.yes };
   const yes = answer(chip, play.scene);
-  const options = bestQuestions(play.chips, play.remaining, play.scene, play.asked.map((a) => a.chip));
+  const options = bestQuestions(
+    play.chips,
+    play.remaining,
+    play.scene,
+    play.asked.map((a) => a.chip),
+  );
   play.asked.push({ chip, yes });
   const { yes: fit, no } = split(chip, play.remaining, play.scene);
   if (!fit.length || !no.length) {
@@ -656,6 +666,11 @@ export function guess(play: MysteryPlay, i: number): MysteryOutcome {
 /** The ghost finger's move: the first best question, or the last friend. */
 export function botMove(play: MysteryPlay): { chip: Chip } | { friend: number } {
   if (play.remaining.length === 1) return { friend: play.remaining[0] };
-  const best = bestQuestions(play.chips, play.remaining, play.scene, play.asked.map((a) => a.chip));
+  const best = bestQuestions(
+    play.chips,
+    play.remaining,
+    play.scene,
+    play.asked.map((a) => a.chip),
+  );
   return best.length ? { chip: best[0] } : { friend: play.scene.target };
 }
