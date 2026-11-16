@@ -12,7 +12,7 @@
 | toddler | 1–5 |
 | preschool | 4–8 |
 | pre-K | 6–13 |
-| school | 9–14 |
+| school | 9–15 |
 
 | Level | Plays like |
 | --- | --- |
@@ -30,13 +30,14 @@
 | 12 | "Switcheroo!" Follow a house as two trade places, 3 houses |
 | 13 | "Switcheroo!" Follow a house as houses trade 2 times places, 3 houses |
 | 14 | "Switcheroo!" Follow a house as houses trade 3 times places, 4 houses |
+| 15 | "Guess who!" Find the animal that fits both clues, four animals |
 | 16 | One big house: touch anywhere to see who pops out |
 
 <!-- end generated -->
 
 **Starts as:** tap barnyard, garden, beach or bedroom covers that swing, part, shake or lift
 
-**Grows into:** touch anywhere to open one door, hear animal and cover names (some animals sleepy, surprised or singing), find a named animal, remember hiding places, find the one a clue describes (sleepy, singing, spots, ears), then tell who is who from the top of the head alone, then follow a house through one to three swaps (Switcheroo); the sheep, horse, hen and mouse join the hiding pool from level 4
+**Grows into:** touch anywhere to open one door, hear animal and cover names (some animals sleepy, surprised or singing), find a named animal, remember hiding places, find the one a clue describes (sleepy, singing, spots, ears), then tell who is who from the top of the head alone, follow a house through one to three swaps (Switcheroo) and find the one animal that fits two spoken clues (Guess who!). The sheep, horse, hen and mouse join the hiding pool from level 4
 
 ## Design notes
 
@@ -49,5 +50,7 @@ Each round’s seed chooses a barnyard, garden, beach or bedroom. The garden has
 **Levels 10–11, Whose ears? (2026-11-15).** Only the top of each head shows over its cover (the `top` pose, critter y −48): ears, horns, a tuft, a mane, a comb, wool and the head colour, never the eyes, behind a 150-tall cover. She is asked by name ("Where is the bunny?") among three, then four, and no two tops in a deal look alike. A wrong tap raises that animal, which says hello and sinks back; two misses wiggle the right one and raise it to a full peek for 1.4 s (one hint). The beach sandcastle's wall is as high as its towers so no face shows between them. Pre-K 6–11, school 9–11.
 
 **Levels 12–14, Switcheroo (2026-11-15).** Three animals show and hide as in remember mode, "Switch!" is said, and houses trade places one pair at a time (1, 2, then 3 swaps; levels 12–13 have three houses, 14 has four, goal 5). The front house lifts in a low arc (50 units × scale, so its grass strip never shows a bottom edge) and passes in front of the rest while the other slides along the ground behind; a swap takes 1.1 s. `dealSwaps` never repeats a pair back to back and picks an answer whose house ends somewhere new. Positions come from `slots` in `update`, so a phone rotation mid-swap lands houses in their new places. A wrong tap pops that house's animal out, says hello and hides it; two misses (one hint) glow the right house, fade all houses back to the start order, show the friend ("Watch the cow again!") and replay the swaps at 1.6 s each before asking again. Bands: pre-K 6–13, school 9–14.
+
+**Level 15, Guess who! (2026-11-15).** Four animals stand out over their covers for each of five questions. The answer has both features, one other animal has the first feature, one has the second, and one has neither. Clues describe visible parts and white or brown coats. A wrong tap gets a gentle boing and explains which feature the animal has and which it lacks, or repeats both clues when the animal has neither. Two misses on a question make the answer glow and count as one hint. The guide repeats the clues. Portrait arranges the animals in two rows, and the ghost finger taps the visible animal. The school range is 9–15.
 
 **More animals (level 4 and up, 2026-11-15).** The sheep, horse, hen and mouse (already drawn in `critter.ts` and voiced in `sfx.animal` for Animal Snack) join the hiding pool from level 4 through `poolFor(level)` (`NEWCOMER_LEVEL = 4`); levels 1–3 and level 16 (One door) keep the first seven animals and deal as before. Sounds and words: Baa, Neigh, Cluck cluck, Squeak squeak (`VOICES` now lives in `logic.ts`). Level 9 clues gained wool, a mane and a red comb; the mouse's big ears count as round ears (drawn as circles), so bear and mouse together never make "round ears" unique, and there is no beak clue because a duck's bill is a beak too. At levels 10–11 all eleven tops differ (tested over every 3- and 4-subset). Stickers and the map icon stay on the original seven.

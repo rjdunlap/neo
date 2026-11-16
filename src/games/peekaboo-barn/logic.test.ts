@@ -28,6 +28,9 @@ import {
   hasPart,
   factAbout,
   dealClue,
+  dealPair,
+  hasFeature,
+  pairFeedback,
   clueKindFor,
   holders,
   uniqueParts,
@@ -491,13 +494,12 @@ describe('Peekaboo Barn, more animals', () => {
 });
 
 describe('Peekaboo Barn levels 12–14, Switcheroo', () => {
-  it('is one swap of three houses, then two, then three swaps of four, widening pre-K to 13 and school to 14', () => {
+  it('is one swap of three houses, then two, then three swaps of four, with the three-swap level exclusive to school', () => {
     expect(planFor(12)).toEqual({ mode: 'swap', spots: 3, goal: 5, swaps: 1 });
     expect(planFor(13)).toEqual({ mode: 'swap', spots: 3, goal: 5, swaps: 2 });
     expect(planFor(14)).toEqual({ mode: 'swap', spots: 4, goal: 5, swaps: 3 });
-    expect(PLANS).toHaveLength(14);
     expect(LEVELS.prek).toEqual({ min: 6, max: 13 });
-    expect(LEVELS.school).toEqual({ min: 9, max: 14 });
+    expect(LEVELS.school!.max).toBeGreaterThanOrEqual(14);
     expect(LEVELS.preschool).toEqual({ min: 4, max: 8 });
     expect(LEVELS.toddler).toEqual({ min: 1, max: 5 });
     expect(LEVELS.lap).toEqual({ min: 1, max: 16, order: [16, 1, 2] });
@@ -568,5 +570,52 @@ describe('Peekaboo Barn levels 12–14, Switcheroo', () => {
   it('says "Switch!" in the script', () => {
     expect(SCRIPT['peek.switch'].length).toBeGreaterThan(0);
     expect(SCRIPT['peek.watch'].every((l) => l.includes('{animal}'))).toBe(true);
+  });
+});
+
+describe('Peekaboo Barn level 15, Guess who!', () => {
+  it('asks five two-clue questions at school and preserves the lap entry', () => {
+    expect(planFor(15)).toEqual({ mode: 'pair', spots: 4, goal: 5 });
+    expect(LEVELS.school).toEqual({ min: 9, max: 15 });
+    expect(LEVELS.prek).toEqual({ min: 6, max: 13 });
+    expect(planFor(16).door).toBe(true);
+  });
+
+  it('deals one answer, one decoy per clue, and one that matches neither, with truthful feedback', () => {
+    const answers = new Set();
+    const pairs = new Set();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      let last = null;
+      for (let q = 0; q < planFor(15).goal; q++) {
+        const { pair, answer, animals } = dealPair(rng, last);
+        const [first, second] = pair;
+        expect(answer).not.toBe(last);
+        last = answer;
+        answers.add(answer);
+        pairs.add(pair.join('/'));
+        expect(new Set(animals).size).toBe(4);
+        expect(animals.filter((a) => hasFeature(a, first) && hasFeature(a, second))).toEqual([answer]);
+        expect(animals.filter((a) => hasFeature(a, first))).toHaveLength(2);
+        expect(animals.filter((a) => hasFeature(a, second))).toHaveLength(2);
+        for (const animal of animals.filter((a) => a !== answer)) {
+          const feedback = pairFeedback(animal, pair);
+          if (feedback) {
+            expect(hasFeature(animal, feedback.fact)).toBe(true);
+            expect(hasFeature(animal, feedback.missing)).toBe(false);
+          } else {
+            expect(hasFeature(animal, first) || hasFeature(animal, second)).toBe(false);
+          }
+        }
+      }
+    }
+    expect(answers.size).toBeGreaterThan(1);
+    expect(pairs.size).toBeGreaterThan(1);
+  });
+
+  it('uses the drawn coat colors, including the mouse’s grey override', () => {
+    expect(hasFeature('mouse', 'white')).toBe(false);
+    expect(hasFeature('sheep', 'white')).toBe(true);
+    expect(hasFeature('horse', 'brown')).toBe(true);
   });
 });
