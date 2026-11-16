@@ -1,0 +1,1 @@
+**`peekaboo-barn`, Where did it go?** (new-interaction tier): watch one animal hop behind one of two houses, tap where it went, and hear it again after two misses. Use the saved-level order for the lap and toddler entry. [Peekaboo Barn dive, slice 9](../../deep-dives/peekaboo-barn.md#build-slices-in-order)

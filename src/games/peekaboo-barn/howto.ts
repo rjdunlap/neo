@@ -2,7 +2,7 @@ import type { GameHowTo } from '../types';
 
 /** The grown-ups' how-to card for this game; src/content/howto.ts gathers every card into HOW_TO. */
 export const HOW_TO: GameHowTo = {
-  goal: 'Find the animals hiding in the barnyard, garden, beach or bedroom.',
+  goal: 'Find the animals in the barnyard, garden, beach or bedroom.',
   steps: [
     {
       from: 16,
@@ -31,6 +31,11 @@ export const HOW_TO: GameHowTo = {
       to: 14,
       text: 'Watch who hides where, then follow the houses as they trade places. Tap the house the animal asked about ended up in.',
     },
+    {
+      from: 15,
+      to: 15,
+      text: 'Four animals stand up. Listen to both clues, then tap the one animal with both features. Tap the guide to hear the clues again.',
+    },
   ],
   finish: [
     {
@@ -40,6 +45,6 @@ export const HOW_TO: GameHowTo = {
     },
     { to: 1, text: 'The round ends after eight reveals.' },
     { from: 2, to: 2, text: 'The round ends after twelve reveals.' },
-    { from: 3, to: 14, text: 'The round ends when every animal asked about has been found.' },
+    { from: 3, to: 15, text: 'The round ends when every animal asked about has been found.' },
   ],
 };

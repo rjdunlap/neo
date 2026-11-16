@@ -30,6 +30,10 @@ import {
   spotToTap,
   clueKindFor,
   dealClue,
+  dealPair,
+  pairFeedback,
+  PAIR_FEATURES,
+  type CluePair,
   dealTops,
   factAbout,
   PARTS,
@@ -51,6 +55,7 @@ const BEACH: readonly CoverKind[] = ['umbrella', 'sandcastle', 'bucket', 'towel'
 const RUG = 0xf3c9b0;
 const BEDROOM: readonly CoverKind[] = ['blanket', 'toybox', 'curtain', 'bed'];
 const CRITTER_SCALE = 0.55;
+const CLUE_TAP_Y = -230;
 /** Where a critter's feet sit, relative to the bottom of its cover. The cover's top is at -150. */
 // `top` (levels 10–11) shows only the top of the head over the cover: ears, horns or a tuft, never the face.
 const POSE = { hidden: 90, top: -48, peek: -82, out: -145 };
@@ -249,6 +254,7 @@ class Spot extends Container {
   animal: Animal = 'cow';
   pose: Pose = 'hidden';
   hint = false;
+  private clueGlow: Graphics | null = null;
   private critter: Critter | null = null;
   private readonly holder = new Container();
   private readonly cover = new Container();
@@ -371,6 +377,22 @@ class Spot extends Container {
     this.shake = 1;
   }
 
+  glow() {
+    this.clueGlow ??= this.addChildAt(
+      new Graphics()
+        .ellipse(0, -230, 77, 87)
+        .fill({ color: swatch.yellow.light, alpha: 0.6 })
+        .stroke({ color: swatch.yellow.fill, width: 6 }),
+      0,
+    );
+    this.clueGlow.visible = true;
+  }
+
+  clearHint() {
+    this.hint = false;
+    if (this.clueGlow) this.clueGlow.visible = false;
+  }
+
   /** A surprised squish from the animal standing out; it settles back to how it felt. */
   poke() {
     this.critter?.poke();
@@ -435,6 +457,7 @@ class PeekabooBarn implements Game {
   private asking = 0;
   /** Level 9: this question's clue, said instead of the animal's name. */
   private clue: Clue | null = null;
+  private pair: CluePair | null = null;
   private asked = 0;
   /** Seconds to the singing clue animal's next little hop, so "singing" shows on a small phone screen too. */
   private singIn = 0;
@@ -530,18 +553,30 @@ class PeekabooBarn implements Game {
     this.view = v;
     this.backdrop.resize(v);
     const cx = v.w / 2;
-    const scale = this.plan.door ? 1.5 : this.plan.spots === 4 ? 0.82 : 1;
+    const clueGrid = this.plan.mode === 'pair' && v.h > v.w;
+    const scale = clueGrid ? 1.15 : this.plan.door ? 1.5 : this.plan.spots === 4 ? 0.82 : 1;
     const left = 150 + 130 * scale;
     const right = v.w - 30 - 130 * scale;
     this.slots = this.spots.map((_, i) => ({
       x: this.spots.length === 1 ? cx : left + (i * (right - left)) / (this.spots.length - 1),
       y: v.h - 40,
     }));
+    if (clueGrid) {
+      const bottom = v.h - 80;
+      const top = bottom - 420;
+      const xs = [Math.max(left, cx - 180), Math.min(right, cx + 180)];
+      this.slots = [top, bottom].flatMap((y) => xs.map((x) => ({ x, y })));
+    }
     this.spots.forEach((s) => s.scale.set(scale));
     this.place();
     this.input.hitArea = this.plan.door
       ? new Rectangle(0, 0, v.w, v.h)
-      : new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
+      : new Rectangle(
+          150,
+          this.slots[0].y - 340 * scale,
+          v.w - 180,
+          this.slots.at(-1)!.y - this.slots[0].y + 350 * scale,
+        );
     this.drawBarn(cx, this.backdrop.groundY + 30);
   }
 
@@ -618,9 +653,9 @@ class PeekabooBarn implements Game {
     );
     if (i === null) return null;
     this.lastTouched = i;
-    // The cover is what a child touches; the animal's head peeks over it.
     const spot = this.spots[i];
-    return { tap: { on: this.input, x: spot.x, y: spot.y - 110 * spot.scale.x } };
+    const y = this.pair ? CLUE_TAP_Y : -110;
+    return { tap: { on: this.input, x: spot.x, y: spot.y + y * spot.scale.x } };
   }
 
   destroy() {
@@ -650,11 +685,13 @@ class PeekabooBarn implements Game {
     if (this.plan.mode === 'free') return this.freeTap(spot);
     const clue = this.clue;
     // Clue questions stand everyone out; elsewhere an animal already out is not an answer.
-    if (spot.pose === 'out' && !clue) return;
+    const pair = this.pair;
+    if (pair && this.asking > 0) return;
+    if (spot.pose === 'out' && !clue && !pair) return;
 
     if (spot.animal === this.target) {
       this.busy = true;
-      this.spots.forEach((s) => (s.hint = false));
+      this.spots.forEach((s) => s.clearHint());
       this.singIn = 0;
       void spot.go('out');
       this.say(spot.animal);
@@ -662,11 +699,13 @@ class PeekabooBarn implements Game {
       this.done++;
       // The find's line never holds the next question (U7 R4): the look, the hiding and the next deal play over it, and
       // the next ask waits for it or her first tap. The last find's line is heard out before the finale.
-      const yes = !clue
-        ? this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] })
-        : clue.kind === 'part'
-          ? this.ctx.say('peek.hasit', { animal: spot.animal, part: PARTS[clue.part].words })
-          : this.ctx.say('peek.feelsit', { animal: spot.animal, feeling: FEELING_WORDS[clue.feeling] });
+      const yes = pair
+        ? this.ctx.say('peek.pair.yes', { animal: spot.animal, ...this.pairWords(pair) })
+        : !clue
+          ? this.ctx.say('peek.yes', { animal: spot.animal, cover: COVER_NAMES[spot.kind] })
+          : clue.kind === 'part'
+            ? this.ctx.say('peek.hasit', { animal: spot.animal, part: PARTS[clue.part].words })
+            : this.ctx.say('peek.feelsit', { animal: spot.animal, feeling: FEELING_WORDS[clue.feeling] });
       const last = this.done >= this.plan.goal;
       if (last) await yes;
       await this.ctx.tw.wait(0.6);
@@ -683,7 +722,19 @@ class PeekabooBarn implements Game {
     this.misses++;
     this.missesThisQuestion++;
     this.say(spot.animal);
-    if (clue) {
+    if (pair) {
+      spot.poke();
+      const feedback = pairFeedback(spot.animal, pair);
+      if (feedback) {
+        await this.ctx.say('peek.pair.one', {
+          animal: spot.animal,
+          fact: PAIR_FEATURES[feedback.fact].words,
+          missing: PAIR_FEATURES[feedback.missing].words,
+        });
+      } else {
+        await this.ctx.say('peek.pair.neither', { animal: spot.animal, ...this.pairWords(pair) });
+      }
+    } else if (clue) {
       // Everyone is already standing out: the wrong one squishes and says something true about itself, then the clue.
       spot.poke();
       if (clue.kind === 'part')
@@ -705,6 +756,7 @@ class PeekabooBarn implements Game {
       if (right) {
         right.hint = true;
         right.wiggle();
+        if (pair) right.glow();
         if (this.plan.mode === 'top') void this.showFace(right);
         if (this.plan.mode === 'swap') await this.replaySwaps(right);
         if (this.finished) return;
@@ -766,8 +818,13 @@ class PeekabooBarn implements Game {
     return true;
   }
 
-  /** The question's ask: the animal's name, or at level 9 the clue (never the name, which would give it away). */
+  private pairWords([first, second]: CluePair) {
+    return { first: PAIR_FEATURES[first].words, second: PAIR_FEATURES[second].words };
+  }
+
+  /** A clue question asks about the visible features. The other questions ask for the animal by name. */
   private ask() {
+    if (this.pair) return this.ctx.instruct('peek.pair.ask', this.pairWords(this.pair));
     const clue = this.clue;
     if (!clue) return this.ctx.instruct('peek.where', { animal: this.target! });
     if (clue.kind === 'part') return this.ctx.instruct('peek.whohas', { part: PARTS[clue.part].words });
@@ -784,7 +841,16 @@ class PeekabooBarn implements Game {
     this.busy = true;
     this.unasked = false;
     this.missesThisQuestion = 0;
-    if (this.plan.mode === 'clue') {
+    if (this.plan.mode === 'pair') {
+      const { animals, answer, pair } = dealPair(this.ctx.rng, this.target);
+      this.pair = pair;
+      this.target = answer;
+      for (const [i, spot] of this.spots.entries()) {
+        spot.setAnimal(animals[i]);
+        void spot.go('out');
+        await this.ctx.tw.wait(0.15);
+      }
+    } else if (this.plan.mode === 'clue') {
       const d = dealClue(this.ctx.rng, this.spots.length, clueKindFor(this.asked++), this.target, this.pool);
       this.spots.forEach((s, i) => s.setAnimal(d.animals[i]));
       this.clue = d.clue;
@@ -1085,6 +1151,7 @@ export const peekabooBarn: GameModule = {
       return `"Whose ears?" Find the one asked for from the top of its head, ${p.spots} animals`;
     if (p.mode === 'swap')
       return `"Switcheroo!" Follow a house as ${p.swaps === 1 ? 'two trade' : `houses trade ${p.swaps} times`} places, ${p.spots} houses`;
+    if (p.mode === 'pair') return '"Guess who!" Find the animal that fits both clues, four animals';
     if (p.mode === 'clue')
       return `"Who is sleepy?" "Who has spots?" Find the one a clue describes, ${p.spots} animals`;
     return `Remember who hid where, ${p.spots} hiding places`;

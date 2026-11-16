@@ -206,12 +206,28 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
 
     // Peekaboo Barn: tapping hiding places; wrong friends say hello and hide again.
     const peekLevels = process.env.PEEK_LEVELS?.split(',').map(Number) ?? [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
     ];
     for (const level of peekLevels.filter(
-      (n) => ((n >= 1 && n <= 14) || n === 16) && (!only || only === 'peekaboo'),
+      (n) => ((n >= 1 && n <= 15) || n === 16) && (!only || only === 'peekaboo'),
     )) {
       await launch('peekaboo-barn', level);
+      if (level === 15) {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.evaluate(async () => {
+          const g = neo.scene.game;
+          window.peekPairSpeech = [];
+          const say = g.ctx.say.bind(g.ctx);
+          g.ctx.say = (id, vars) => {
+            peekPairSpeech.push({ id, vars });
+            return say(id, vars);
+          };
+          await kit.until(() => !g.busy && !g.unasked, 10000);
+          if (g.spots.length !== 4 || g.spots.some((s) => s.pose !== 'out'))
+            throw new Error('Guess who: the four choices must show both features');
+        });
+        await screenshot('peekaboo-barn-15-phone-portrait');
+      }
       if (level === 1)
         await page.evaluate(async () => {
           const g = neo.scene.game;
@@ -273,8 +289,14 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
       }
       await page.evaluate(async () => {
         const g = neo.scene.game;
+        const pairMode = g.plan.mode === 'pair';
+        const tapChoice = (spot) => {
+          if (!pairMode) return kit.tapOn(spot, 0, -110);
+          const point = spot.toGlobal({ x: 0, y: -230 });
+          kit.tap(point.x, point.y);
+        };
         const tapSpot = async (s) => {
-          kit.tapOn(s, 0, -110);
+          tapChoice(s);
           await kit.sleep(300);
         };
         if (g.plan.mode === 'free') {
@@ -286,7 +308,8 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
           return;
         }
         // The next ask waits behind a right find's line (U7 R4); a tap before it only says the ask, so wait for it.
-        const ready = () => kit.until(() => (!g.busy && !g.unasked) || g.finished, 15000);
+        const ready = () =>
+          kit.until(() => (!g.busy && !g.unasked && (!pairMode || !g.asking)) || g.finished, 15000);
         // U7 R4: from a right find's line to the next question's places being open, at the find levels.
         const say = g.ctx.say.bind(g.ctx);
         window.peekR4 = [];
@@ -305,6 +328,12 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         window.peekAsks = [];
         g.ctx.instruct = (id, vars) => {
           peekAsks.push(id);
+          if (pairMode && g.done === 1) {
+            const misses = g.misses;
+            const spot = g.spots.find((s) => s.animal !== g.target);
+            tapChoice(spot);
+            if (g.misses !== misses) throw new Error('Guess who: tap judged while clues were speaking');
+          }
           return instruct(id, vars);
         };
         for (let q = 0; q < g.plan.goal; q++) {
@@ -318,14 +347,23 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
               throw new Error('Switcheroo: a house is not at rest in its place');
           }
           if (q === 0) {
-            const wrong = g.spots.find((s) => s.animal !== g.target);
-            await tapSpot(wrong);
+            const wrong = g.spots.filter((s) => s.animal !== g.target);
+            let first = wrong[0];
+            let second = first;
+            if (pairMode) {
+              const { pairFeedback } = await import('/src/games/peekaboo-barn/logic.ts');
+              first = wrong.find((s) => pairFeedback(s.animal, g.pair));
+              second = wrong.find((s) => !pairFeedback(s.animal, g.pair));
+            }
+            await tapSpot(first);
             await ready();
-            await tapSpot(wrong);
+            await tapSpot(second);
             await ready();
             const right = g.spots.find((s) => s.animal === g.target);
             if (g.misses !== 2 || g.hints !== 1 || !right.hint)
               throw new Error(`Peekaboo hint: ${g.misses} ${g.hints}`);
+            if (g.plan.mode === 'pair' && !right.clueGlow?.visible)
+              throw new Error('Guess who: the answer has no glow');
           }
           const before = g.done;
           await tapSpot(g.spots.find((s) => s.animal === g.target));
@@ -352,16 +390,31 @@ export function createSuite({ page, log, ready, scene, tap, screenshot, launch, 
         );
         log(`Peekaboo Barn 9: asked by clue only (${asks.join(', ')})`);
       }
-      await screenshot(`peekaboo-barn-${level}`);
+      if (mode === 'pair') {
+        const { asks, feedback, done } = await page.evaluate(() => ({
+          asks: window.peekAsks,
+          feedback: window.peekPairSpeech.filter(
+            ({ id }) => id === 'peek.pair.one' || id === 'peek.pair.neither',
+          ),
+          done: neo.scene.game.done,
+        }));
+        assert.equal(done, 5);
+        assert.ok(asks.length && asks.every((id) => id === 'peek.pair.ask'));
+        assert.deepEqual(
+          feedback.map(({ id }) => id),
+          ['peek.pair.one', 'peek.pair.neither'],
+        );
+      } else {
+        await screenshot(`peekaboo-barn-${level}`);
+      }
       await finished('peekaboo-barn');
       assert.deepEqual(
         await score('peekaboo-barn'),
         mode === 'free' ? [0, 0] : [2, 1],
         `peekaboo ${level} score`,
       );
-      log(
-        `Peekaboo Barn ${level} (${mode}): finding, remembering, mistakes, wiggle hint, saved score and sticker passed`,
-      );
+      log(`Peekaboo Barn ${level} (${mode}): mistakes, hint, saved score and sticker passed`);
+      if (mode === 'pair') await portrait(false);
     }
 
     // Duck Pond seats (slice 7, opt-in with DUCK_SEATS=1): no level deals them yet, so seat ducks on a level-8 round by

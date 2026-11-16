@@ -3649,3 +3649,7 @@ Branch `claude/rainbow-fingers-from-memory`, [dive slice 12](../deep-dives/rainb
 ### W2 kept-tune comparison definition (2026-11-15)
 
 [PR #1706](https://github.com/rjdunlap/neo/pull/1706) defined the first [W2 build](../definitions/compare-kept-tunes.md). Creature play will audition both kept Song Maker tunes from one plaque, so a player can hear and see how the phrases differ while keeping the displayed tune in place. The build has one READY line.
+
+## Peekaboo Barn level 15 Guess who! (dive slice 8, 2026-11-15)
+
+[PR #1708](https://github.com/rjdunlap/neo/pull/1708) delivers [Peekaboo Barn's two-clue round](../deep-dives/peekaboo-barn.md#build-slices-in-order). Each of five seeded questions shows four animals and asks for the one with both features. Two decoys each share a different single feature with the answer, and a third shares neither. The spoken reply tells the player how their choice fits, and the answer glows after two misses. Portrait uses two rows. The ghost finger demonstrates the round, and the school range reaches 15.

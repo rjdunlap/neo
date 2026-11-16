@@ -37,9 +37,10 @@ export interface PeekPlan {
    * free: tap to reveal. find: animals peek, "where's the cow?". remember: they show, hide, then the question. clue: they
    * stand up over their places and a feeling or a part word picks one ("Who is sleepy?", "Find the one with spots!").
    * top: only the top of each head shows over the cover (ears, horns, a tuft), and she finds the one asked for by it.
+   * pair: four animals stand up and she finds the one that matches both parts.
    * swap: they show and hide as in remember, then houses trade places in slow arcs, and she follows the one asked for.
    */
-  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap';
+  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap' | 'pair';
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
@@ -68,6 +69,7 @@ export const PLANS: PeekPlan[] = [
   { mode: 'swap', spots: 3, goal: 5, swaps: 1 },
   { mode: 'swap', spots: 3, goal: 5, swaps: 2 },
   { mode: 'swap', spots: 4, goal: 5, swaps: 3 },
+  { mode: 'pair', spots: 4, goal: 5 },
 ];
 
 export const LEVELS: BandLevels = {
@@ -75,9 +77,9 @@ export const LEVELS: BandLevels = {
   lap: { min: 1, max: 16, order: [16, 1, 2] },
   toddler: { min: 1, max: 5 },
   preschool: { min: 4, max: 8 },
-  // Level 14 (four houses, three swaps) is school only; whether pre-K's top reaches it is the developer's call.
+  // Four houses with three swaps and the two-clue questions are school only.
   prek: { min: 6, max: 13 },
-  school: { min: 9, max: 14 },
+  school: { min: 9, max: 15 },
 };
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
@@ -239,6 +241,47 @@ export type Part = keyof typeof PARTS;
 export const PART_IDS = Object.keys(PARTS) as Part[];
 
 export const hasPart = (animal: Animal, part: Part) => PARTS[part].has(CRITTERS[animal] as CritterSpec);
+
+// White includes the sheep's cream fleece. The mouse's grey shade overrides its white palette entry.
+const COATS = {
+  white: { words: 'a white coat', has: (s: CritterSpec) => s.color === 'white' && (!s.shade || !!s.wool) },
+  brown: { words: 'a brown coat', has: (s: CritterSpec) => s.color === 'brown' },
+};
+export const PAIR_FEATURES = { ...PARTS, ...COATS };
+type PairFeature = keyof typeof PAIR_FEATURES;
+export type CluePair = readonly [PairFeature, PairFeature];
+
+export const hasFeature = (animal: Animal, feature: PairFeature) =>
+  PAIR_FEATURES[feature].has(CRITTERS[animal]);
+
+// A question needs four distinct roles: both clues, first only, second only, and neither.
+const featureIds = Object.keys(PAIR_FEATURES) as PairFeature[];
+const pairQuestions = featureIds.flatMap((first, i) =>
+  featureIds.slice(i + 1).flatMap((second) => {
+    const byMatch = [[], [], [], []] as Animal[][];
+    for (const animal of ANIMALS) {
+      const match = Number(hasFeature(animal, first)) + 2 * Number(hasFeature(animal, second));
+      byMatch[match].push(animal);
+    }
+    if (byMatch.some((animals) => !animals.length)) return [];
+    return byMatch[3].map((answer) => ({
+      pair: [first, second] as CluePair,
+      answer,
+      decoys: byMatch.slice(0, 3),
+    }));
+  }),
+);
+
+export function dealPair(rng: Rng, last: Animal | null) {
+  const { pair, answer, decoys } = rng.pick(pairQuestions.filter((question) => question.answer !== last));
+  return { pair, answer, animals: rng.shuffle([answer, ...decoys.map((animals) => rng.pick(animals))]) };
+}
+
+export function pairFeedback(animal: Animal, [first, second]: CluePair) {
+  if (hasFeature(animal, first)) return { fact: first, missing: second };
+  if (hasFeature(animal, second)) return { fact: second, missing: first };
+  return null;
+}
 
 /** Level 9's feeling clues: faces `Critter` draws and keeps. `surprised` stays out, since every critter pops up surprised. */
 export const CLUE_FEELINGS = ['sleepy', 'sing'] as const satisfies readonly Feeling[];
