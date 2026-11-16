@@ -1,1 +1,0 @@
-**`photo-safari`, Mystery Friend levels 14–15 (SL5)** (new-interaction tier): she taps picture questions and the visiting friend's yes or no sends non-fitting friends away; level 15 asks for the best-splitting question. [Definition](../../definitions/mystery-friend.md)
