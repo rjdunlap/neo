@@ -1,0 +1,5 @@
+# 2026-11-16 — Photo Safari levels 14–15, Mystery friend and Best question (PR #1715)
+
+**Changed:** New-interaction slice SL5: school-only levels 14–15 (picture questions, truthful yes/no, friends step out, last one sparkles for the photo), upright phone layout, co-play line, 14 new `safari.*` voice lines.
+**Ran:** `npm run typecheck`; `npm test` (353 files, 7232 passed); `npm run build`; 39 photo-safari rule tests including the new `mystery friend (14–15)` group (it found a place-shuffle bug, fixed); `BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=14,15` (two wrong guesses saved 2 misses and 1 hint, best questions narrow to the secret, portrait screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=14,15`; a one-off touch-phone probe at 390×844 (upright view, two tray rows, no turn prompt, no page errors). `game-reviewer`: no high findings; two lows fixed.
+**Not run:** offline and `world` (no navigation or persistence change); real device speech (voice lines are device speech, no clips generated).

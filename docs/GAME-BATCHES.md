@@ -1906,7 +1906,7 @@ Proof: existing-game tier (typecheck, the rule tests, one filtered `BROWSER_SUIT
 
 ### photo-safari 2: Mystery friend and Best question
 
-- **`photo-safari`, levels 14–15 *Mystery friend* and *Best question*** (SL5, [definition](definitions/mystery-friend.md#bands-and-level-ids); new interaction; school only, order `[4, 5, 6, 7, 8, 9, 10, 11, 14, 15]`): a visiting friend has picked one meadow animal for a secret photo; she taps picture questions and the friends that do not fit walk away, then taps the last friend to take the photo; level 15 has six friends and five questions that split differently, with a spoken note on the better question. [Study slice SL5](deep-dives/subjects/speaking-listening.md#build-slices-in-order)
+- **`photo-safari`, levels 14–15 *Mystery friend* and *Best question*** (SL5, [definition](definitions/mystery-friend.md#bands-and-level-ids); new interaction; school only, order `[4, 5, 6, 7, 8, 9, 10, 11, 14, 15]`): a visiting friend has picked one meadow animal for a secret photo; she taps picture questions and the friends that do not fit walk away, then taps the last friend to take the photo; level 15 has six friends and five questions that split differently, with a spoken note on the better question. [Study slice SL5](deep-dives/subjects/speaking-listening.md#build-slices-in-order) **Built 2026-11-16 (PR #1715).**
 
 Files expected: `src/games/photo-safari/logic.ts`, `logic.test.ts`, `index.ts`, `voice.ts`, `howto.ts`, the `batch` safari case in `scripts/browser-check.mjs`, `docs/games/photo-safari.md` (Grows into line and notes) and the dive's build slice 10.
 

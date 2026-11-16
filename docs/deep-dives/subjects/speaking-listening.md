@@ -81,7 +81,7 @@ Opened descriptions unless marked; nothing was played.
 | **SL2 *Tell me both*** | The same, but each chip alone fits two friends; add a second | Add detail when one is not enough (SL.K.4 "provide additional detail") | S | S | Builds on SL1 |
 | **SL3 *Just enough*** | Mixed rounds: one chip or two | Vary the amount of information (P-LC 3) | S top, U | S | Builds on SL2 |
 | **SL4 *Which one?*** | The pet asks for "the duck"; two ducks. A Which-one? button beside the pet asks it back, and the pet adds the place | Notice ambiguity, ask to clarify (SL.K.3, SL.1.1c, SL.2.1c) | S | S–M | A question button; accounting (decision 2) |
-| **SL5 Mystery Friend** | Tap picture questions (hat? blue?) and watch friends who don't fit step away | Ask questions that narrow (SL.1.3; Ruggeri and Lombrozo 2015) | K–U | M | **Defined 2026-11-16** as Photo Safari levels 14–15 ([definition](../../definitions/mystery-friend.md), [PR #1710](https://github.com/rjdunlap/neo/pull/1710)); build queued in READY. From the [notebook seed](../../IDEAS.md#how-the-research-lands-on-rows-already-here), reusing SL1–2's attribute solver |
+| **SL5 Mystery Friend** | Tap picture questions (hat? blue?) and watch friends who don't fit step away | Ask questions that narrow (SL.1.3; Ruggeri and Lombrozo 2015) | K–U | M | **Built 2026-11-16** as Photo Safari levels 14–15 ([definition](../../definitions/mystery-friend.md), [PR #1715](https://github.com/rjdunlap/neo/pull/1715)). From the [notebook seed](../../IDEAS.md#how-the-research-lands-on-rows-already-here), reusing SL1–2's attribute solver |
 | **SL6 *Whose clue works?*** (sketch) | Two friends each describe the starred animal; tap the one whose description works | Judge whether a speaker's description is sufficient (SL.4.3, SL.7.3) | U, M | S | A Photo Safari mode after SL3 |
 | **SL7 Talk-about lines** (wording rules) | — | Turn-taking talk: name, wait, build on what she says; open "what happened?" and "what would you…?" questions; any language | G page | S | None. It supplies wording for the off-screen-companions study's `talkAbout` field, not a second field |
 | **SL8 Describe it, find it** card | Hide a household thing; describe it without naming it; swap | Describing and asking clarifying questions off-screen | G page | S | Plain HTML card |
@@ -132,7 +132,7 @@ None of these blocks the A–B definition: decision 1's lean is the default, and
 3. **SL7 talk-about wording rules** handed to the off-screen-companions slice 5 (docs), and the **SL8 card** after an ordinary content review.
 4. **SL4 *Which one?*** define, after decision 2.
 5. **SL3 *Just enough*** and **SL6 *Whose clue works?*** define, after a child has played A–B.
-6. **SL5 Mystery Friend** defined 2026-11-16 as Photo Safari levels 14–15, reusing SL1's attribute solver: [definition](../../definitions/mystery-friend.md), [PR #1710](https://github.com/rjdunlap/neo/pull/1710); build queued, not built.
+6. **SL5 Mystery Friend** built 2026-11-16 as Photo Safari levels 14–15, reusing SL1's attribute solver: [definition](../../definitions/mystery-friend.md), [PR #1715](https://github.com/rjdunlap/neo/pull/1715).
 7. **SL9 Mission Cards** after the family-table decision; **SL10 Fewest Clues** after decision 3 and the Lantern Lake capacity test.
 
 Photo Safari 8 and 9 stay in the dive's own order (decisions 2 and 3 there); Adventure Walk AW3 keeps the map retelling; Dream Cards stays in the social-emotional study.
