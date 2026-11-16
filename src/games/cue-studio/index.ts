@@ -11,23 +11,26 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { finish as finishArt, spring, squash } from '../../ui/buttons';
-import { againIcon, checkIcon, nextIcon, playIcon } from '../../ui/icons';
+import { againIcon, checkIcon, nextIcon, playIcon, undoIcon } from '../../ui/icons';
 import { saysFrame } from '../pet-says/logic';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   canFinish,
+  checkRows,
   checkRun,
   mismatch,
   demoNext,
   finishRun,
+  fire,
   firstEmpty,
   help,
   isComplete,
   newStudio,
   planFor,
   playRun,
+  requestFor,
   restart,
   step,
   stickerRecipe,
@@ -71,17 +74,59 @@ function cueIcon(cue: Cue, color = 0xffffff): Graphics {
   return g;
 }
 
-/** Undo: a hooked arrow coming back on itself. */
-function undoIcon(color = ink): Graphics {
-  return new Graphics()
-    .moveTo(20, 20)
-    .lineTo(20, -2)
-    .arc(0, -2, 20, 0, Math.PI, true)
-    .lineTo(-20, 6)
-    .stroke({ width: 8, color, cap: 'round', join: 'round' })
-    .poly([-33, 2, -20, 20, -7, 2])
-    .fill(color);
+/** A level-4 signal, told apart by shape: a bell (row 0) or a five-petal flower (row 1). */
+function signalIcon(row: number, color = 0xffffff): Graphics {
+  const g = new Graphics();
+  if (row === 0)
+    return g
+      .circle(0, -27, 5)
+      .fill(color)
+      .moveTo(-24, 12)
+      .bezierCurveTo(-20, -34, 20, -34, 24, 12)
+      .closePath()
+      .fill(color)
+      .roundRect(-29, 10, 58, 9, 4.5)
+      .fill(color)
+      .circle(0, 26, 6)
+      .fill(color);
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    g.circle(Math.cos(a) * 17, Math.sin(a) * 17, 11).fill(color);
+  }
+  return g
+    .circle(0, 0, 9)
+    .fill(color)
+    .circle(0, 0, 5)
+    .fill({ color: 0xffffff, alpha: color === 0xffffff ? 0 : 0.85 });
 }
+
+/** A request picture for a signal row: the signal over the move it should start. */
+function whenIcon(row: number, cue: Cue): Container {
+  const c = new Container();
+  const signal = signalIcon(row, ink);
+  signal.scale.set(0.62);
+  signal.position.set(0, -27);
+  const move = cueIcon(cue, swatch[CUE_COLOR[cue]].line);
+  move.scale.set(move.scale.x * 0.55);
+  move.position.set(0, 27);
+  const arrow = new Graphics().poly([-9, -5, 9, -5, 0, 5]).fill(ink);
+  c.addChild(signal, arrow, move);
+  return c;
+}
+
+const SIGNAL_COLOR: readonly ColorName[] = ['blue', 'pink'];
+const SIGNAL_NAME: readonly LineId[] = ['cue.bell', 'cue.flower'];
+const UNSET: readonly LineId[] = ['cue.unset-bell', 'cue.unset-flower'];
+/** "When the bell rings, wave.": the request, the clue and the supplied repair, by row and move. */
+const WHEN: readonly Record<Cue, LineId>[] = [
+  { W: 'cue.when-bell-wave', T: 'cue.when-bell-turn' },
+  { W: 'cue.when-flower-wave', T: 'cue.when-flower-turn' },
+];
+/** A wrong Check, by the row's signal and the move the pet actually did. */
+const SIGNAL_MISS: readonly Record<Cue, LineId>[] = [
+  { W: 'cue.signal-miss-bell-wave', T: 'cue.signal-miss-bell-turn' },
+  { W: 'cue.signal-miss-flower-wave', T: 'cue.signal-miss-flower-turn' },
+];
 
 /** Show me: a little lit bulb. */
 function bulbIcon(color = ink): Graphics {
@@ -142,6 +187,16 @@ class CueStudio implements Game {
   readonly cards: Record<Cue, Pad>;
   readonly slots: Pad[] = [];
   readonly requests: Pad[] = [];
+  /** Level 4: the bell and the flower she taps to start their row's move. */
+  readonly signals: Pad[] = [];
+  /** Level 4: what each row did the last time it fired, and Check's tick or cross. Scenery, never tappable. */
+  readonly chips: Container[] = [];
+  chip: ({ cue: Cue; mark: boolean | null } | null)[] = [null, null];
+  /** Level 4: the signals tried since the last Start again, for the ghost finger. */
+  fired = [false, false];
+  /** The signal's picture over the pet while its move runs. */
+  private floater: Container | null = null;
+  private readonly floatAt: { x: number; y: number };
   readonly clue = new Graphics();
   readonly requestShelf = new Graphics();
   watchedInitial = false;
@@ -172,7 +227,7 @@ class CueStudio implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.s = newStudio(this.plan.slots, this.plan.request);
+    this.s = newStudio(this.plan.slots, requestFor(this.plan, ctx.rng), !!this.plan.signals);
     this.backdrop = ctx.track(
       new Backdrop(
         {
@@ -188,7 +243,9 @@ class CueStudio implements Game {
     );
     this.star = ctx.track(ctx.companion());
     this.star.eventMode = 'none';
-    this.height = this.star.getLocalBounds().height;
+    const bounds = this.star.getLocalBounds();
+    this.height = bounds.height;
+    this.floatAt = { x: bounds.x + bounds.width / 2, y: bounds.y - 36 };
     this.frame = saysFrame((p) => this.star.partPoints(p), this.star.bodyBounds());
     const sw = swatch[this.star.color as ColorName];
     this.mitten = new Graphics()
@@ -210,7 +267,17 @@ class CueStudio implements Game {
       this.slots.push(new Pad(swatch.white, null, () => this.pickSlot(i), cream));
       this.marks.push(new Graphics());
     }
-    if (this.s.request)
+    if (this.s.rows)
+      this.s.request!.forEach((cue, row) => {
+        this.requests.push(new Pad(swatch.white, whenIcon(row, cue), () => this.say(WHEN[row][cue]), cream));
+        this.signals.push(
+          new Pad(swatch[SIGNAL_COLOR[row]], signalIcon(row), () => void this.fireSignal(row)),
+        );
+        const chip = new Container();
+        chip.eventMode = 'none';
+        this.chips.push(chip);
+      });
+    else if (this.s.request)
       for (const cue of this.s.request) {
         this.requests.push(
           new Pad(swatch[CUE_COLOR[cue]], cueIcon(cue), () =>
@@ -232,6 +299,9 @@ class CueStudio implements Game {
     this.pointer.eventMode = 'none';
     this.shelf.eventMode = 'none';
     this.pointer.visible = false;
+    // The signal pads are how a level-4 show runs.
+    this.playButton.visible = this.stepButton.visible = !this.s.rows;
+    for (const mark of this.marks) mark.visible = !this.s.rows;
     ctx.stage.addChild(
       this.backdrop,
       this.actor,
@@ -240,7 +310,9 @@ class CueStudio implements Game {
       this.shelf,
       this.cards.W,
       this.cards.T,
+      ...this.signals,
       ...this.slots,
+      ...this.chips,
       ...this.marks,
       this.clue,
       this.pointer,
@@ -259,7 +331,15 @@ class CueStudio implements Game {
 
   private async intro() {
     const run = this.runId;
-    await this.ctx.instruct(this.s.request ? 'cue.repair' : this.plan.slots === 1 ? 'cue.one' : 'cue.two');
+    await this.ctx.instruct(
+      this.s.rows
+        ? 'cue.signals'
+        : this.s.request
+          ? 'cue.repair'
+          : this.plan.slots === 1
+            ? 'cue.one'
+            : 'cue.two',
+    );
     if (this.dead || run !== this.runId) return;
     this.busy = false;
   }
@@ -294,6 +374,7 @@ class CueStudio implements Game {
         (b, i) => at(b, 192 + i * 128, 532),
       );
     }
+    if (this.s.rows) return this.layRows(at, portrait);
     this.requests.forEach((pad, i) => at(pad, 384 + i * 128, portrait ? 144 : 136));
     this.requestShelf.clear();
     if (this.requests.length) {
@@ -313,6 +394,32 @@ class CueStudio implements Game {
       .stroke({ width: 6, color: wood.line })
       .roundRect(x0, y0 + BOX + 30, x1 - x0, 22, 11)
       .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
+    this.draw();
+  }
+
+  /** Level 4 (the P4 definition's rectangles): each row is request, signal, slot, result chip; the palette stands apart. */
+  private layRows(at: (node: Container, x: number, y: number) => void, portrait: boolean) {
+    if (!portrait) {
+      at(this.cards.W, 384, 132);
+      at(this.cards.T, 512, 132);
+    }
+    this.shelf.clear();
+    this.slots.forEach((slot, row) => {
+      const y = (portrait ? 300 : 260) + row * 128;
+      at(this.requests[row], 96, y);
+      at(this.signals[row], 240, y);
+      at(slot, 384, y);
+      // The chip is 72 wide, at the definition's x 512.
+      at(this.chips[row], 512 - (BOX - 72) / 2, y);
+    });
+    // One board behind both rows, drawn under the request pictures.
+    const [first, last] = [this.requests[0], this.chips[this.chips.length - 1]];
+    const [x0, y0] = [first.x - BOX / 2 - 14, first.y - BOX / 2 - 12];
+    this.requestShelf
+      .clear()
+      .roundRect(x0, y0, last.x + 36 + 14 - x0, last.y + BOX / 2 + 16 - y0, 26)
+      .fill(wood.light)
       .stroke({ width: 6, color: wood.line });
     this.draw();
   }
@@ -350,6 +457,35 @@ class CueStudio implements Game {
         .stroke({ width: 8, color: ink });
       sel.face.addChild(ring);
     }
+    this.chips.forEach((chip, row) => {
+      for (const child of chip.removeChildren()) child.destroy();
+      const state = this.chip[row];
+      const card = new Graphics()
+        .roundRect(-36, -BOX / 2, 72, BOX, 18)
+        .fill(cream)
+        .stroke({ width: 4, color: wood.line });
+      chip.addChild(card);
+      if (!state) return;
+      const signal = signalIcon(row, ink);
+      signal.scale.set(0.4);
+      signal.position.set(0, -34);
+      const move = cueIcon(state.cue, ink);
+      move.scale.set(move.scale.x * 0.4);
+      move.position.set(0, 0);
+      chip.addChild(signal, move);
+      // Check's verdict as a shape, not only a colour: a tick or a cross.
+      if (state.mark === true)
+        card
+          .poly([-12, 34, -4, 42, 13, 25])
+          .stroke({ width: 6, color: swatch.green.line, cap: 'round', join: 'round' });
+      else if (state.mark === false)
+        card
+          .moveTo(-10, 26)
+          .lineTo(10, 44)
+          .moveTo(10, 26)
+          .lineTo(-10, 44)
+          .stroke({ width: 6, color: swatch.red.line, cap: 'round' });
+    });
     this.clue.clear();
     const wrong = mismatch(this.s);
     if (wrong >= 0 && this.s.helped.size) {
@@ -401,7 +537,10 @@ class CueStudio implements Game {
       this.say(cue === 'W' ? 'cue.wave' : 'cue.turn');
       if (result === 'replace' && this.plan.slots > 1) this.changed = true;
       // The same move again changes nothing, so its lit trace stays.
-      if (result !== 'same') this.lit = 0;
+      if (result !== 'same') {
+        this.lit = 0;
+        this.unmark();
+      }
     }
     this.draw();
     if (result !== 'full') this.pulse(this.slots[target]);
@@ -420,6 +559,7 @@ class CueStudio implements Game {
     if (undo(this.s)) {
       sfx.tick();
       this.lit = 0;
+      this.unmark();
       this.say('cue.undo');
     } else this.nudge(this.undoButton);
     this.draw();
@@ -429,6 +569,7 @@ class CueStudio implements Game {
   private showEmpty() {
     const at = firstEmpty(this.s.program);
     if (at >= 0) this.pulse(this.slots[at]);
+    if (this.s.rows && at >= 0) return this.say(UNSET[at]);
     this.say(trace(this.s.program).length ? 'cue.incomplete' : 'cue.empty');
   }
 
@@ -455,9 +596,106 @@ class CueStudio implements Game {
     if (!wasReady && !this.s.request) this.say('cue.ready');
   }
 
+  /** An edit makes Check's ticks and crosses stale; what each row last did stays. */
+  private unmark() {
+    this.chip = this.chip.map((c) => c && { ...c, mark: null });
+  }
+
+  private dropFloater() {
+    if (!this.floater) return;
+    this.ctx.tw.kill(this.floater.scale);
+    this.floater.destroy({ children: true });
+    this.floater = null;
+  }
+
+  /** The signal sounds and its picture pops up over the pet, where it stays while the row's move runs. */
+  private signal(row: number) {
+    if (row === 0) sfx.bell(9);
+    else sfx.sparkle();
+    this.pulse(this.signals[row]);
+    this.dropFloater();
+    const badge = new Container();
+    badge.addChild(
+      new Graphics()
+        .circle(0, 0, 30)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch[SIGNAL_COLOR[row]].line }),
+    );
+    const icon = signalIcon(row, swatch[SIGNAL_COLOR[row]].line);
+    icon.scale.set(0.62);
+    badge.addChild(icon);
+    badge.position.copyFrom(this.floatAt);
+    badge.scale.set(0.3);
+    this.actor.addChild(badge);
+    this.floater = badge;
+    void this.ctx.tw.to(badge.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.inOutSine });
+  }
+
+  /** One signal fires its row: the pet does that row's move and the chip records it. Resolves false if cancelled. */
+  private async runRow(row: number, cue: Cue): Promise<boolean> {
+    const run = this.runId;
+    this.signal(row);
+    await this.perform(row, cue);
+    if (this.dead || run !== this.runId) return false;
+    this.dropFloater();
+    this.chip[row] = { cue, mark: null };
+    this.fired[row] = true;
+    return true;
+  }
+
+  /** A signal pad: free to try, in any order, as often as she likes. An empty row only shrugs. */
+  async fireSignal(row: number) {
+    if (this.busy || this.finished) return this.nudge(this.signals[row]);
+    const cue = fire(this.s, row);
+    if (!cue) {
+      this.signal(row);
+      this.dropFloater();
+      this.star.setMood('surprised', 1);
+      this.nudge(this.actor);
+      this.pulse(this.slots[row]);
+      this.fired[row] = true;
+      return this.say(UNSET[row]);
+    }
+    this.busy = true;
+    this.say(SIGNAL_NAME[row]);
+    if (!(await this.runRow(row, cue))) return;
+    this.busy = false;
+    this.draw();
+  }
+
+  /** Level 4's Check fires each signal once, bell then flower, and accepts each row by its own signal. */
+  private async checkSignals() {
+    const run = this.runId;
+    if (!isComplete(this.s.program)) return this.showEmpty();
+    this.busy = true;
+    this.s.selected = null;
+    this.say('cue.signals-check');
+    for (let row = 0; row < this.slots.length; row++) {
+      if (!(await this.runRow(row, this.s.program[row]!))) return;
+      await this.ctx.tw.wait(0.15);
+      if (this.dead || run !== this.runId) return;
+    }
+    const at = checkRun(this.s);
+    const rows = checkRows(this.s);
+    this.chip = this.chip.map((c, row) => c && { ...c, mark: rows[row] });
+    this.busy = false;
+    this.draw();
+    if (at === null) return;
+    if (at < 0) {
+      sfx.pop(12);
+      this.say('cue.signals-success');
+    } else {
+      sfx.boing();
+      this.pulse(this.slots[at]);
+      this.pulse(this.signals[at]);
+      this.say(SIGNAL_MISS[at][this.s.program[at]!]);
+    }
+  }
+
   /** A deliberate Check plays every command, then compares its trace with the pictured request. */
   async check() {
     const run = this.runId;
+    if (this.s.rows && !this.busy && !this.finished) return this.checkSignals();
     if (this.busy || this.finished) return this.nudge(this.finishButton);
     if (!isComplete(this.s.program)) return this.showEmpty();
     this.busy = true;
@@ -542,11 +780,15 @@ class CueStudio implements Game {
       this.draw();
       this.pulse(this.slots[result.at]);
       this.pulse(this.requests[result.at]);
-      this.say(result.at === 0 ? 'cue.fix-first' : 'cue.fix-second');
+      if (this.s.rows) this.say(WHEN[result.at][result.cue]);
+      else this.say(result.at === 0 ? 'cue.fix-first' : 'cue.fix-second');
       if (result.kind === 'repair') {
         this.lit = 0;
+        this.unmark();
         this.busy = true;
-        await this.perform(result.at, result.cue);
+        // The supplied repair is demonstrated: at level 4 by its own signal.
+        if (this.s.rows) await this.runRow(result.at, result.cue);
+        else await this.perform(result.at, result.cue);
         if (this.dead || run !== this.runId) return;
         this.lit = 0;
         this.busy = false;
@@ -556,7 +798,7 @@ class CueStudio implements Game {
     }
     if (result.kind === 'check') {
       this.pulse(this.finishButton);
-      this.say('cue.help-check');
+      this.say(this.s.rows ? 'cue.help-signals-check' : 'cue.help-check');
       return;
     }
     if (result.kind === 'insert') {
@@ -611,6 +853,11 @@ class CueStudio implements Game {
     this.running = -1;
     this.busy = false;
     restart(this.s);
+    this.dropFloater();
+    this.chip = [null, null];
+    this.fired = [false, false];
+    this.ctx.tw.kill(this.actor);
+    this.actor.rotation = 0;
     this.watchedInitial = false;
     this.lit = 0;
     this.draw();
@@ -624,11 +871,12 @@ class CueStudio implements Game {
         ? this.s.selected === mismatch(this.s)
           ? { action: this.s.request[mismatch(this.s)] }
           : { slot: mismatch(this.s) }
-        : demoNext(this.s, this.changed);
+        : demoNext(this.s, this.changed, this.fired);
     if (press === 'play') return { tap: { on: this.playButton } };
     if (press === 'check') return { tap: { on: this.finishButton } };
     if (press === 'finish') return { tap: { on: this.finishButton } };
     if ('slot' in press) return { tap: { on: this.slots[press.slot] }, pause: 0.8 };
+    if ('fire' in press) return { tap: { on: this.signals[press.fire] } };
     return { tap: { on: this.cards[press.action] } };
   }
 

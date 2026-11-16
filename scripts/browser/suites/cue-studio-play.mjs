@@ -3,6 +3,161 @@ import { selectNames } from '../selection.mjs';
 
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished }) {
   /** Cue Studio levels 1–2: inert empty Play/Finish, full shelf, select-replace, edit invalidating Finish, Undo, counted help once, portrait, one sticker. */
+  /** Cue Studio level 4: an empty fire, an incomplete Check, a free fire, one wrong Check, clue and repairs, a cancelled fire, four-view targets, one sticker. */
+  async function signals(idle) {
+    await launch('cue-studio', 4);
+    await idle();
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const st = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return {
+          program: g.s.program.slice(),
+          misses: g.s.misses,
+          hints: g.s.hints,
+          checked: g.s.checked,
+          chips: g.chip.map((c) => c && [c.cue, c.mark]),
+        };
+      });
+    const request = await page.evaluate(() => neo.scene.game.s.request.slice());
+    assert.ok(['WT', 'TW'].includes(request.join('')), 'the request is one of the two authored bindings');
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.playButton.visible || neo.scene.game.stepButton.visible),
+      false,
+      'Play and Step are hidden at level 4',
+    );
+    const blank = { program: [null, null], misses: 0, hints: 0, checked: false, chips: [null, null] };
+    // An empty row only shrugs, and an incomplete Check only points: never a miss or a hint.
+    await tap('neo.scene.game.signals[0]');
+    await page.waitForTimeout(400);
+    await tap('neo.scene.game.finishButton');
+    assert.deepEqual(await st(), blank);
+    // The swapped binding: both rows wrong. Trying the flower is free and its chip records what it did.
+    await tap(`neo.scene.game.cards.${request[1]}`);
+    await tap(`neo.scene.game.cards.${request[0]}`);
+    await tap('neo.scene.game.signals[1]');
+    await idle();
+    assert.deepEqual(await st(), {
+      ...blank,
+      program: [request[1], request[0]],
+      chips: [null, [request[0], null]],
+    });
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    assert.deepEqual(await st(), {
+      program: [request[1], request[0]],
+      misses: 1,
+      hints: 0,
+      checked: false,
+      chips: [
+        [request[1], false],
+        [request[0], false],
+      ],
+    });
+    // Help: the clue, then the bell's row is set and demonstrated; the edit clears Check's marks.
+    await tap('neo.scene.game.hintButton');
+    assert.equal((await st()).hints, 1);
+    // Past the pad's 250 ms double-tap guard.
+    await page.waitForTimeout(350);
+    await tap('neo.scene.game.hintButton');
+    await idle();
+    assert.deepEqual(await st(), {
+      program: [request[0], request[0]],
+      misses: 1,
+      hints: 2,
+      checked: false,
+      chips: [
+        [request[0], null],
+        [request[0], null],
+      ],
+    });
+    // Start again during a firing cancels it without a late chip, keeping misses and help.
+    await tap('neo.scene.game.signals[0]');
+    await page.evaluate(() => neo.scene.game.restart());
+    await page.waitForTimeout(2500);
+    assert.deepEqual(await st(), { ...blank, misses: 1, hints: 2 });
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.busy, neo.scene.game.running]), [false, -1]);
+    // The bell's repair was already supplied (free); the flower's is new.
+    for (let i = 0; i < 2; i++) {
+      await tap('neo.scene.game.hintButton');
+      await idle();
+    }
+    assert.deepEqual((({ program, misses, hints }) => ({ program, misses, hints }))(await st()), {
+      program: request,
+      misses: 1,
+      hints: 3,
+    });
+    for (const viewport of [
+      { width: 1024, height: 768 },
+      { width: 768, height: 1024 },
+      { width: 1366, height: 768 },
+      { width: 1024, height: 1366 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.waitForTimeout(350);
+      const bad = await page.evaluate(() => {
+        const g = neo.scene.game,
+          v = neo.view;
+        const portrait = v.h > v.w;
+        const ox = Math.max(0, (v.w - 1024) / 2);
+        const oy = Math.max(0, (v.h - (portrait ? 900 : 768)) / 2);
+        const named = {
+          request0: g.requests[0],
+          request1: g.requests[1],
+          bell: g.signals[0],
+          flower: g.signals[1],
+          slot0: g.slots[0],
+          slot1: g.slots[1],
+          chip0: g.chips[0],
+          chip1: g.chips[1],
+          wave: g.cards.W,
+          turn: g.cards.T,
+          undo: g.undoButton,
+          help: g.hintButton,
+          check: g.finishButton,
+        };
+        const boxes = Object.entries(named).map(([name, n]) => {
+          const w = name.startsWith('chip') ? 72 : 112 * n.scale.x;
+          return { name, x: n.x - w / 2, y: n.y - 56, w, h: 112 * n.scale.y };
+        });
+        const out = [];
+        for (const a of boxes) {
+          if (!a.name.startsWith('chip') && (a.w < 100 || a.h < 100)) out.push(`${a.name} small`);
+          if (a.x < 0 || a.y < 128 || a.x + a.w > v.w || a.y + a.h > v.h) out.push(`${a.name} outside`);
+          // The corner guide's space.
+          if (a.x < ox + 160 && a.y + a.h > oy + (portrait ? 660 : 500)) out.push(`${a.name} on the guide`);
+          for (const b of boxes)
+            if (a !== b && !(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y))
+              out.push(`${a.name} overlaps ${b.name}`);
+        }
+        return out;
+      });
+      assert.deepEqual(bad, [], `P4a targets fit without overlap at ${viewport.width}x${viewport.height}`);
+    }
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(400);
+    await tap('neo.scene.game.finishButton');
+    await idle();
+    assert.deepEqual(await st(), {
+      program: request,
+      misses: 1,
+      hints: 3,
+      checked: true,
+      chips: [
+        [request[0], true],
+        [request[1], true],
+      ],
+    });
+    await screenshot('cue-studio-4-portrait');
+    await tap('neo.scene.game.finishButton');
+    await finished('cue-studio');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(
+      'Cue Studio 4: empty fire and incomplete Check free, free firing with chips, one wrong Check, clue and row repairs, cancelled fire, idempotent help, four-view targets and one helped sticker passed',
+    );
+  }
+
   async function cueStudioPlay() {
     const idle = () => page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
     const state = () =>
@@ -10,7 +165,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         const g = neo.scene.game;
         return { program: g.s.program.slice(), played: g.s.played, hints: g.s.hints };
       });
-    const levels = selectNames(process.env.CUE_LEVELS, ['1', '2', '3'], 'CUE_LEVELS').map(Number);
+    const levels = selectNames(process.env.CUE_LEVELS, ['1', '2', '3', '4'], 'CUE_LEVELS').map(Number);
     for (const level of levels.filter((level) => level < 3)) {
       await launch('cue-studio', level);
       await idle();
@@ -77,6 +232,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
         `Cue Studio ${level}: inert empty controls, ${level === 1 ? 'full shelf, select-replace, edit invalidation, Undo, Step' : 'counted-once help, portrait targets, helped play'} and one sticker passed`,
       );
     }
+    if (levels.includes(4)) await signals(idle);
     if (!levels.includes(3)) return;
     await launch('cue-studio', 3);
     await idle();

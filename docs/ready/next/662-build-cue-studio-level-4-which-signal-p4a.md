@@ -1,1 +1,0 @@
-**Build Cue Studio level 4, Which signal? (P4a)** (new-interaction tier: typecheck, units, one filtered play of levels 3 and 4 with an empty fire, one wrong Check and help, portrait): two signal rows with free firing, per-row Check and help, how-to and ghost finger, school range 3–4 (or pin-only, recorded). [Definition](../../definitions/cue-studio-p4.md#build-slices-and-checks)
