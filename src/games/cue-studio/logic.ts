@@ -3,7 +3,9 @@ import type { BandLevels } from '../../progress/difficulty';
  * Cue Studio's rules (docs/definitions/cue-studio.md): a tiny executable show. She puts Wave and Turn cards in one or two
  * slots, presses Play and watches the companion act each card in order, left to right. Levels 1–2 are free creation: every
  * full show is a good show, nothing counts as a miss, and Finish waits for one complete run of the show as it stands.
- * Level 3 repairs a pictured request; only a deliberate failed Check counts a miss. Programs are transient.
+ * Level 3 repairs a pictured request; only a deliberate failed Check counts a miss. Level 4 (docs/definitions/cue-studio-p4.md)
+ * turns the two slots into two signal rows, a bell and a flower: each signal starts its own row's action, she fires either
+ * one freely, and Check accepts each row by its own signal, never by the order they fire in. Programs are transient.
  */
 
 export type Cue = 'W' | 'T';
@@ -16,7 +18,13 @@ export interface CuePlan {
   slots: number;
   name: string;
   request?: readonly Cue[];
+  /** Level 4: each slot is a signal's row, the shelf starts empty, and the seed picks one of these requests. */
+  signals?: readonly (readonly Cue[])[];
 }
+
+/** The level-4 signals, in row order. */
+export const SIGNALS = ['bell', 'flower'] as const;
+export type Signal = (typeof SIGNALS)[number];
 
 export const PLANS: readonly CuePlan[] = [
   { level: 1, slots: 1, name: 'Make a move: choose one action, wave or turn, and play it' },
@@ -27,19 +35,39 @@ export const PLANS: readonly CuePlan[] = [
     name: 'Fix the cue: repair the pictured order, then check the show',
     request: ['W', 'T'],
   },
+  {
+    level: 4,
+    slots: 2,
+    name: 'Which signal: give the bell and the flower each a move, then check them',
+    signals: [
+      ['W', 'T'],
+      ['T', 'W'],
+    ],
+  },
 ];
 
-// The 2026-10-23 decision separates pre-K creation from school requested repair.
+// The 2026-10-23 decision separates pre-K creation from school requested repair. The P4 definition's lean (standing rule
+// S8) grows school one rung per build with the ordinary step rule; entry stays 3.
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 3, max: 3 },
+  school: { min: 3, max: 4 },
 };
 
 export const planFor = (level: number): CuePlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 
+/** The round's request: level 3's authored order, or level 4's seeded binding (bell's action, then the flower's). */
+export function requestFor(
+  plan: CuePlan,
+  rng: { int(min: number, max: number): number },
+): readonly Cue[] | undefined {
+  return plan.signals ? plan.signals[rng.int(0, plan.signals.length - 1)] : plan.request;
+}
+
 export interface Studio {
   readonly slots: number;
   readonly request: readonly Cue[] | null;
+  /** Level 4: slot i is signal i's row, and the shelf starts empty instead of swapped. */
+  readonly rows: boolean;
   checked: boolean;
   misses: number;
   program: Slot[];
@@ -56,13 +84,18 @@ export interface Studio {
   hints: number;
 }
 
-export function newStudio(slots: number, request?: readonly Cue[]): Studio {
+/** The authored start: a requested repair starts swapped; creation and the signal rows start empty. */
+const startProgram = (slots: number, request: readonly Cue[] | null, rows: boolean): Slot[] =>
+  request && !rows ? [...request].reverse() : Array<Slot>(slots).fill(null);
+
+export function newStudio(slots: number, request?: readonly Cue[], rows = false): Studio {
   return {
     slots,
     request: request ?? null,
+    rows: rows && !!request,
     checked: false,
     misses: 0,
-    program: request ? [...request].reverse() : Array<Slot>(slots).fill(null),
+    program: startProgram(slots, request ?? null, rows && !!request),
     selected: null,
     undo: null,
     played: false,
@@ -86,6 +119,16 @@ export function isProgram(program: readonly unknown[], slots: number): program i
   }
   return true;
 }
+
+/** Firing a signal: that row's action, or null when nothing is set for it. Reads only; a fire never edits or counts. */
+export const fire = (s: Studio, row: number): Cue | null => (s.rows ? (s.program[row] ?? null) : null);
+
+/** Level 4's acceptance, row by row: each signal's bound action against that signal's request, whatever the firing order. */
+export const checkRows = (s: Studio): boolean[] =>
+  s.request ? s.request.map((cue, i) => s.program[i] === cue) : [];
+
+/** What a clue or repair is about: a signal's row at level 4, a slot otherwise. Survives Undo and Start again. */
+export const targetOf = (s: Studio, at: number) => (s.rows ? `row:${SIGNALS[at]}` : `slot:${at}`);
 
 /** What tapping an action card did. */
 export type ActionResult = 'insert' | 'replace' | 'same' | 'full';
@@ -190,7 +233,7 @@ export function checkRun(s: Studio): number | null {
   s.checked = at < 0;
   if (at >= 0) {
     s.misses++;
-    if (s.misses >= 2 && !hasClue(s)) charge(s, `clue:${at}`);
+    if (s.misses >= 2 && !hasClue(s)) charge(s, `clue:${targetOf(s, at)}`);
   }
   return at;
 }
@@ -206,13 +249,13 @@ export function help(s: Studio): HelpResult {
     if (at < 0) return { kind: s.checked ? 'finish' : 'check' };
     const cue = s.request[at];
     if (!hasClue(s)) {
-      charge(s, `clue:${at}`);
+      charge(s, `clue:${targetOf(s, at)}`);
       return { kind: 'clue', at, cue };
     }
     const next = s.program.slice();
     next[at] = cue;
     edit(s, next);
-    charge(s, `repair:${at}`);
+    charge(s, `repair:${targetOf(s, at)}`);
     return { kind: 'repair', at, cue };
   }
   const at = firstEmpty(s.program);
@@ -238,7 +281,7 @@ function charge(s: Studio, id: string) {
 
 /** Restore the authored start, keeping misses and the help already supplied. */
 export function restart(s: Studio) {
-  s.program = s.request ? [...s.request].reverse() : Array<Slot>(s.slots).fill(null);
+  s.program = startProgram(s.slots, s.request, s.rows);
   s.selected = null;
   s.undo = null;
   s.checked = false;
@@ -249,10 +292,19 @@ export function restart(s: Studio) {
 /**
  * The ghost finger's next press for the how-to card, from the state alone. Level 1: Wave, Play, Finish. Level 2: Wave,
  * Turn, Play, then select the first slot, change it to Turn, Play the new show and Finish (a show that repeats an action is
- * a good show too). `changed` says whether the demonstration has made its change yet.
+ * a good show too). `changed` says whether the demonstration has made its change yet. Level 4: the requested move into
+ * each row, fire the flower, fire the bell, Check, Finish; `fired` says which signals the demonstration has tried.
  */
-export type DemoPress = { action: Cue } | { slot: number } | 'play' | 'check' | 'finish';
-export function demoNext(s: Studio, changed: boolean): DemoPress {
+export type DemoPress = { action: Cue } | { slot: number } | { fire: number } | 'play' | 'check' | 'finish';
+export function demoNext(s: Studio, changed: boolean, fired: readonly boolean[] = []): DemoPress {
+  if (s.request && s.rows) {
+    const at = mismatch(s);
+    if (at >= 0)
+      return s.program[at] === null || s.selected === at ? { action: s.request[at] } : { slot: at };
+    if (s.checked) return 'finish';
+    for (const row of [1, 0]) if (!fired[row]) return { fire: row };
+    return 'check';
+  }
   if (s.request) {
     if (!s.played) return 'play';
     const at = mismatch(s);

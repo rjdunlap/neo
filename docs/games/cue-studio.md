@@ -9,13 +9,14 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1–2 |
-| school | 3 |
+| school | 3–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Make a move: choose one action, wave or turn, and play it |
 | 2 | My little show: make any two-action show and play it |
 | 3 | Fix the cue: repair the pictured order, then check the show |
+| 4 | Which signal: give the bell and the flower each a move, then check them |
 
 <!-- end generated -->
 
