@@ -3653,3 +3653,7 @@ Branch `claude/rainbow-fingers-from-memory`, [dive slice 12](../deep-dives/rainb
 ## Peekaboo Barn level 15 Guess who! (dive slice 8, 2026-11-15)
 
 [PR #1708](https://github.com/rjdunlap/neo/pull/1708) delivers [Peekaboo Barn's two-clue round](../deep-dives/peekaboo-barn.md#build-slices-in-order). Each of five seeded questions shows four animals and asks for the one with both features. Two decoys each share a different single feature with the answer, and a third shares neither. The spoken reply tells the player how their choice fits, and the answer glows after two misses. Portrait uses two rows. The ghost finger demonstrates the round, and the school range reaches 15.
+
+## Animal Snack levels 9–10 The menu board and The long menu (dive slice 8, 2026-11-16)
+
+Branch `claude/animal-snack-menu-board-b`, [dive slice 8](../deep-dives/animal-snack.md#build-slices-in-order). A chalkboard of lines (animal picture, printed numeral, food word; the food picture at level 9 only) with a free reading speaker per line. Level 9 gives 4 to 9 of one food from ten on a two-row blanket; level 10 gives two animals their own numbers from the level 8 piles. `LEVELS.school` is 8–10 and `school` joins `bands`. Three new voice lines are device speech until clips are generated. See the [verification entry](../verification/2026-11-16-animal-snack-levels-9-10-the-menu-board-and-the-long-menu.md).

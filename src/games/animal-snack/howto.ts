@@ -35,6 +35,16 @@ export const HOW_TO: GameHowTo = {
       to: 8,
       text: 'Two animals and two piles of food: give each animal the number of its own food shown by its dots on the sign, then ring the bell. A food that is not its own slides home; too many come back at the bell.',
     },
+    {
+      from: 9,
+      to: 9,
+      text: 'A menu board shows an animal, a numeral from 4 to 9 and a printed food word with its picture: tap that many snacks, then ring the bell. Tap the board to hear it read; that is free.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'The menu board has two lines, each an animal, a numeral and a food word with no picture: drag each animal that many of its own food, then ring the bell. Tap a line to hear it read; that is free.',
+    },
   ],
   finish: [
     { to: 2, text: 'The round ends after six snacks are eaten.' },
@@ -51,6 +61,16 @@ export const HOW_TO: GameHowTo = {
       from: 8,
       to: 8,
       text: 'The round ends after three pairs of animals each get exactly their counts, confirmed with the bell.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'The round ends after three menu lines are counted out, confirmed with the bell.',
+    },
+    {
+      from: 10,
+      to: 10,
+      text: 'The round ends after three two-line menus are given out exactly, confirmed with the bell.',
     },
   ],
   note: 'Each animal she sees eating its favorite food is added to her discovery journal in the treehouse.',
