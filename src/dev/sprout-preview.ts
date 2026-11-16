@@ -10,7 +10,7 @@ const ballButton = document.querySelector<HTMLButtonElement>('#ball')!;
 const renderer = new T.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = T.PCFSoftShadowMap;
+renderer.shadowMap.type = T.PCFShadowMap;
 renderer.toneMapping = T.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.25;
 host.prepend(renderer.domElement);
