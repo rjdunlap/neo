@@ -1,6 +1,6 @@
 # Timeline Trail, levels 1–4 (definition)
 
-**Built:** levels 1–4 (levels 1–3 PR #1013; level 4 PR #1709); to build level 5, read “What comes next”, then the study’s [ladder row 5](../deep-dives/subjects/time-change.md#first-games-proposed-ladder-timeline-trail).
+**Built:** levels 1–4 (levels 1–3 PR #1013; level 4 PR #1709); levels 5–7 are defined in [their own packet](timeline-trail-5-7.md#build-slices-and-check-tiers) (2026-11-16); to build level 5, read that packet’s “Build slices and check tiers”.
 
 Defined 2026-10-23 as the first packet of the [time-and-change study's](../deep-dives/subjects/time-change.md#first-games-proposed-ladder-timeline-trail) **Timeline Trail** follow-up, from the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations) (slice 1 of its [build slices](../deep-dives/subjects/time-change.md#build-slices-in-order)). Written docs only; the game is built (see the Built line). Levels 5–8 (continuity, the two-gap card, pointing at proof, Island Archive) and real-object content stay in the study.
 
@@ -92,7 +92,7 @@ Device and person checks stay open: whether a preschooler reads the sepia post a
 
 ## What comes next
 
-**T2 (levels 1–3)** and **T3 (level 4)** are built. Next the study's slice 4 (levels 5–6: the "still here" ribbon, the counter-progress card with its failing-heuristic test, and the two-valid-gaps card) and slice 5 (level 7, pointing at proof). Island Archive and the real-object rung wait on the study's decisions and a named history reviewer.
+**T2 (levels 1–3)** and **T3 (level 4)** are built. Levels 5–7 (the "still here" ribbon, the two-valid-gaps card and pointing at proof) were defined 2026-11-16 in [timeline-trail-5-7.md](timeline-trail-5-7.md), in three build slices (T4a, T4b, T5). Island Archive and the real-object rung wait on the study's decisions and a named history reviewer.
 
 ## Open decisions
 

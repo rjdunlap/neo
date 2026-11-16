@@ -154,8 +154,8 @@ The long-ago end is soft and sepia-tinted in palette colors and the now end is b
 1. **Define Timeline Trail 1–4** (docs packet; **defined 2026-10-23**, [packet](../../definitions/timeline-trail.md)): the three places' stage art, gap rules, speech, how-to steps per level, ghost finger, both layouts and the land capacity audit.
 2. **Build levels 1–3 (built 2026-10-27, [PR #1013](https://github.com/rjdunlap/neo/pull/1013); [build note](../../archive/COMPLETED-2026-10-09.md#timeline-trail-levels-13-time-change-t2-2026-10-27))** with rule tests (insertion validity, solvable boards, hints that lead to a gap). New game tier: one scripted play and one portrait screenshot.
 3. **Add level 4** (built 2026-11-16, [PR #1709](https://github.com/rjdunlap/neo/pull/1709)), a clue inside the picture: each card carries a little round picture of the other place at the same time, the shared line is solved by `fittingGaps`, and the tests strip the clues and require the first loose card to fit more than one gap.
-4. **Add levels 5–6:** the continuity ribbon, the counter-progress card with its failing-heuristic test, and the two-valid-places card.
-5. **Add level 7**, pointing at the proof.
+4. **Add levels 5–6** (**defined 2026-11-16**, [packet](../../definitions/timeline-trail-5-7.md)): the continuity ribbon and the two-valid-places card (a misty card replaces the stripped-inset idea); built as T4a (level 5) then T4b (level 6).
+5. **Add level 7**, pointing at the proof (**defined 2026-11-16**, same packet, as T5; level 7 skips the shore).
 6. **Define and build Island Archive** after the registration decision.
 7. **Write the two page cards** after a named review.
 8. **Define Attic Finds** with fictional objects.
