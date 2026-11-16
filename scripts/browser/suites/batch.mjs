@@ -1683,7 +1683,9 @@ export function createSuite({ page, context, log, ready, scene, tap, screenshot,
               await kit.until(() => !g.busy, 10000);
             }
             if (g.mystery.remaining.length !== 1 || g.mystery.remaining[0] !== g.scene.target)
-              throw new Error('Questions must narrow to the secret');
+              throw new Error(
+                `Questions must narrow to the secret: photo ${p}, left ${g.mystery.remaining}, target ${g.scene.target}, asked ${g.mystery.asked.length}, busy ${g.busy}`,
+              );
             kit.tapOn(g.actors[g.scene.target], 0, -60);
             await kit.until(() => g.photos > p, 10000);
             continue;

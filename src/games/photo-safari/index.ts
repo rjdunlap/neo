@@ -974,6 +974,8 @@ class PhotoSafari implements Game {
       this.tray.addChild(card);
       return card;
     });
+    // The secret photo is reused from mystery to mystery: take it out before the old visitor goes.
+    this.secret.removeFromParent();
     this.visitor.removeChildren().forEach((c) => c.destroy({ children: true }));
     const animals = scene.sightings.map((s) => s.animal);
     const others = ANIMALS.filter((a) => !animals.includes(a));
@@ -1555,6 +1557,8 @@ export const photoSafari: GameModule = {
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [12, 13],
+  // Mystery Friend lays out upright: on a phone held upright its question tray takes two rows.
+  uprightLevels: [14, 15],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint:
