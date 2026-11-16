@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| lap | 16, 1, 2 |
-| toddler | 1–5 |
+| lap | 16, 1, 2, 17 |
+| toddler | 1, 2, 17, 3, 4, 5 |
 | preschool | 4–8 |
 | pre-K | 6–13 |
 | school | 9–15 |
@@ -32,6 +32,7 @@
 | 14 | "Switcheroo!" Follow a house as houses trade 3 times places, 4 houses |
 | 15 | "Guess who!" Find the animal that fits both clues, four animals |
 | 16 | One big house: touch anywhere to see who pops out |
+| 17 | "Where did it go?" Watch an animal hop behind one of two hiding places, then tap where it went |
 
 <!-- end generated -->
 
