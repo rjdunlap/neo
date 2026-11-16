@@ -549,7 +549,8 @@ export class SettleGame implements Game {
     if (this.drained) {
       // Fast-forward: the spins land at the run's pace, the wheel blurring round; a soft tick per spin, thinned when fastest.
       this.owed += dt * this.pace;
-      const step = this.reduce ? 12 : 1;
+      // Reduced motion: the strip steps once per twelve spins, except the first twelve, which still land one by one.
+      const step = this.reduce && this.pace > 12 ? 12 : 1;
       let landed = 0;
       while (this.owed >= step && this.queue.length) {
         for (let i = 0; i < step && this.queue.length; i++) this.land(this.queue.shift()!, false);
