@@ -21,6 +21,13 @@ export const VOICE = {
   'peek.pair.yes': ['Yes! The {animal} has {first} and {second}!'],
   'peek.pair.one': ['The {animal} has {fact}. It doesn’t have {missing}. Look for both together!'],
   'peek.pair.neither': ["That's the {animal}! Look for one with {first} and {second} together."],
+  'peek.went.look': ['Here comes the {animal}! Watch where it goes!', 'Look, the {animal}! Watch!'],
+  'peek.went.where': ['Where did the {animal} go?'],
+  'peek.went.yes': [
+    'There it is! The {animal} went behind the {cover}!',
+    'You found the {animal}, behind the {cover}!',
+  ],
+  'peek.went.empty': ['Nobody home! Where did the {animal} go?'],
   'peek.switch': ['Switch!', 'Switcheroo!'],
   'peek.watch': ['Watch the {animal} again!', 'Keep your eyes on the {animal}!'],
   'peek.notfeel': ["That's the {other}. Who is {feeling}?", 'Not the {other}. Look for the {feeling} one!'],

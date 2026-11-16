@@ -25,12 +25,12 @@ export const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   mouse: { sound: 'squeak', word: 'Squeak squeak' },
 };
 
-/** The first level whose pool holds the farm four; below it (and One door) she meets the first seven words first. */
+/** The first level whose pool holds the farm four; below it (and the entry levels) she meets the first seven words first. */
 export const NEWCOMER_LEVEL = 4;
 
-/** Who can hide at this level. Levels 1–3 and One door keep the seven, so their seeds deal exactly as before. */
+/** Who can hide at this level. Levels 1–3 and the entry levels keep the seven, so their seeds deal exactly as before. */
 export const poolFor = (level: number): readonly Animal[] =>
-  level >= NEWCOMER_LEVEL && level !== ONE_DOOR_LEVEL ? ANIMALS : STICKER_ANIMALS;
+  level >= NEWCOMER_LEVEL && !ENTRY_LEVELS.includes(level) ? ANIMALS : STICKER_ANIMALS;
 
 export interface PeekPlan {
   /**
@@ -39,8 +39,9 @@ export interface PeekPlan {
    * top: only the top of each head shows over the cover (ears, horns, a tuft), and she finds the one asked for by it.
    * pair: four animals stand up and she finds the one that matches both parts.
    * swap: they show and hide as in remember, then houses trade places in slow arcs, and she follows the one asked for.
+   * went: one animal trots in and hops behind one of the houses while she watches; the others are empty.
    */
-  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap' | 'pair';
+  mode: 'free' | 'find' | 'remember' | 'clue' | 'top' | 'swap' | 'pair' | 'went';
   spots: number;
   /** Reveals (free) or questions (find, remember). */
   goal: number;
@@ -53,6 +54,10 @@ export interface PeekPlan {
 /** The lap entry below level 1; its saved ID follows the original eight (see `order` in the band table). */
 export const ONE_DOOR_LEVEL = 16;
 export const SELF_OPEN_SECONDS = 6;
+/** Where did it go?: easier than level 3 (nobody to name or remember), so `order` places it between 2 and 3. */
+export const WENT_LEVEL = 17;
+/** Easy rounds with IDs above the ladder, placed by a band's `order`. */
+export const ENTRY_LEVELS: readonly number[] = [ONE_DOOR_LEVEL, WENT_LEVEL];
 
 export const PLANS: PeekPlan[] = [
   { mode: 'free', spots: 3, goal: 8 },
@@ -74,8 +79,9 @@ export const PLANS: PeekPlan[] = [
 
 export const LEVELS: BandLevels = {
   // Level 16 (One door) is the easiest, so lap plays it first and then 1, 2 (see `order`).
-  lap: { min: 1, max: 16, order: [16, 1, 2] },
-  toddler: { min: 1, max: 5 },
+  // Where did it go? (17) is her first question, after free play and before finding by name.
+  lap: { min: 1, max: 17, order: [16, 1, 2, 17] },
+  toddler: { min: 1, max: 17, order: [1, 2, 17, 3, 4, 5] },
   preschool: { min: 4, max: 8 },
   // Four houses with three swaps and the two-clue questions are school only.
   prek: { min: 6, max: 13 },
@@ -84,8 +90,42 @@ export const LEVELS: BandLevels = {
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
 
+const WENT: PeekPlan = { mode: 'went', spots: 2, goal: 4 };
+
 export const planFor = (level: number) =>
-  level === ONE_DOOR_LEVEL ? ONE_DOOR : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+  level === ONE_DOOR_LEVEL
+    ? ONE_DOOR
+    : level === WENT_LEVEL
+      ? WENT
+      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+/** Where did it go?: who trots in, and which house (left to right) it hops behind. Every other house is empty. */
+export interface WentDeal {
+  animal: Animal;
+  house: number;
+}
+
+/**
+ * One Where did it go? question: never the animal asked about last time (`last`), and never the same house three times
+ * running (`recent` holds the houses of the questions so far), so watching, not a favourite side, finds it.
+ */
+export function dealWent(
+  rng: Rng,
+  spots: number,
+  pool: readonly Animal[],
+  last: Animal | null,
+  recent: readonly number[] = [],
+): WentDeal {
+  const animal = pickTarget(rng, pool, last);
+  const [a, b] = recent.slice(-2);
+  const stuck = recent.length >= 2 && a === b ? b : -1;
+  const houses = Array.from({ length: spots }, (_, i) => i).filter((i) => i !== stuck);
+  return { animal, house: rng.pick(houses) };
+}
+
+/** Who is behind each house after the animal has hidden: the animal in its house, nobody (null) in the others. */
+export const wentHouses = (d: WentDeal, spots: number): (Animal | null)[] =>
+  Array.from({ length: spots }, (_, i) => (i === d.house ? d.animal : null));
 
 /** A different animal behind each hiding place, from the level's pool (`poolFor`). */
 export const deal = (rng: Rng, spots: number, pool: readonly Animal[]): Animal[] =>
@@ -128,12 +168,12 @@ export const newcomer = (rng: Rng, taken: readonly Animal[], pool: readonly Anim
 /**
  * Which hiding place a capable child taps next, or null while she waits. Asked for someone (find, remember): the place that
  * hides them. Free play: the next place after the one she tapped last (so she visits them all) that has nobody out already.
- * `poses` are the places' poses left to right ('hidden', 'peek' or 'out'), `animals` who is behind each.
+ * `poses` are the places' poses left to right ('hidden', 'peek' or 'out'), `animals` who is behind each (null: nobody).
  */
 export function spotToTap(
   plan: PeekPlan,
   poses: readonly string[],
-  animals: readonly Animal[],
+  animals: readonly (Animal | null)[],
   target: Animal | null,
   last: number,
 ): number | null {
