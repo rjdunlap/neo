@@ -149,7 +149,7 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     await finished('timeline-trail');
     assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
     log(
-      'Timeline Trail 2, 3 and 4: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card\'s gap, a free tap, a portrait look, passed',
+      "Timeline Trail 2, 3 and 4: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card's gap, a free tap, a portrait look, passed",
     );
   }
   return { timelineTrailPlay };
