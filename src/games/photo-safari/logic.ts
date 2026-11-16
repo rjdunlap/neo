@@ -7,7 +7,18 @@ import type { BandLevels } from '../../progress/difficulty';
  * what it's doing ("jumping") and where it is ("under the tree"), for verbs and positions.
  */
 export type SafariMode =
-  'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues' | 'tell' | 'act' | 'changed' | 'true';
+    | 'snap'
+  | 'who'
+  | 'doing'
+  | 'where'
+  | 'both'
+  | 'not'
+  | 'clues'
+  | 'tell'
+  | 'act'
+  | 'changed'
+  | 'true'
+  | 'mystery';
 export type Animal = 'cat' | 'dog' | 'bunny' | 'pig' | 'duck' | 'bear';
 export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing' | 'waving' | 'swimming';
 export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
@@ -15,6 +26,8 @@ export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
 export interface SafariPlan {
   mode: SafariMode;
   tell?: 'which' | 'both';
+  /** Level 15: questions differ in how many friends they send away, and the pet notes a better one. */
+  best?: boolean;
   /** Level 13, lap's opening: one big friend in the middle of the meadow, and a touch anywhere takes its photo. */
   big?: boolean;
   photos: number;
@@ -48,13 +61,30 @@ export const BIG_PLAN: SafariPlan = {
   name: 'One big friend: a touch anywhere takes its photo, and the next friend walks in (6 photos)',
 };
 
+/** Mystery Friend (SL5): she asks the picture questions; the visiting friend knows the secret. School only. */
+export const MYSTERY_LEVEL = 14;
+export const BEST_LEVEL = 15;
+export const MYSTERY_PLAN: SafariPlan = {
+  mode: 'mystery',
+  photos: 4,
+  animals: 4,
+  name: "Mystery friend: tap a picture question, and the friends who don't fit step away",
+};
+export const BEST_PLAN: SafariPlan = {
+  mode: 'mystery',
+  best: true,
+  photos: 4,
+  animals: 6,
+  name: 'Best question: which picture question sends the most friends away?',
+};
+
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: BIG_LEVEL, order: [BIG_LEVEL, 1, 2] },
   // "Who is sleeping?" (12) is the toddler step after naming; younger players never hear a false claim (9 is school only).
   toddler: { min: 1, max: 12, order: [1, 2, 12] },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] },
+  school: { min: 4, max: 15, order: [4, 5, 6, 7, 8, 9, 10, 11, MYSTERY_LEVEL, BEST_LEVEL] },
 };
 
 export const TELL_WHICH_LEVEL = 10;
@@ -103,6 +133,8 @@ const PLANS_BY_ID: Record<number, SafariPlan> = {
   11: TELL_BOTH_PLAN,
   [WHO_DOING_LEVEL]: WHO_DOING_PLAN,
   [BIG_LEVEL]: BIG_PLAN,
+  [MYSTERY_LEVEL]: MYSTERY_PLAN,
+  [BEST_LEVEL]: BEST_PLAN,
 };
 export const planFor = (level: number) =>
   PLANS_BY_ID[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -186,6 +218,7 @@ export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolea
  * the action nor the place alone identifies the target; other modes use distinct spots.
  */
 export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true): Scene {
+  if (plan.mode === 'mystery') return makeMysteryScene(plan, rng);
   // One big friend and nothing to choose between: any touch photographs it.
   if (plan.big) return { sightings: [bigFriends(rng, round + 1)[round]], target: -1 };
   if (plan.mode === 'act') {
@@ -375,6 +408,11 @@ export interface SafariPoint {
   y: number;
 }
 const SPOT_X: Record<Spot, number> = { tree: 0.24, bush: 0.45, rock: 0.66, pond: 0.86 };
+/** Level 15's three shared places, two friends each. */
+export const THREE_PLACE_X = [0.18, 0.5, 0.82];
+/** How far apart two friends sharing a place stand: 80 either side, or 60 when three places share the meadow. */
+export const peerOffset = (sightings: Sighting[]): number =>
+  new Set(sightings.map((s) => s.spot)).size === 3 && sightings.length === 6 ? 60 : 80;
 
 /** Shared places get two broad, separated stages; the earlier single-place layout stays intact. */
 export function spotPosition(
@@ -386,7 +424,13 @@ export function spotPosition(
 ): SafariPoint {
   const shared = new Set(sightings.map((s) => s.spot)).size < sightings.length;
   const occupied = SPOTS.filter((s) => sightings.some((a) => a.spot === s));
-  const x = shared ? (occupied.indexOf(spot) === 0 ? 0.3 : 0.76) : SPOT_X[spot];
+  const x = shared
+    ? occupied.length === 3
+      ? THREE_PLACE_X[occupied.indexOf(spot)]
+      : occupied.indexOf(spot) === 0
+        ? 0.3
+        : 0.76
+    : SPOT_X[spot];
   return { x: w * x, y: ground + (spot === 'rock' ? -56 : spot === 'pond' ? 26 : 0) };
 }
 
@@ -399,7 +443,8 @@ export function sightingPositions(
   return sightings.map((s, i) => {
     const at = spotPosition(s.spot, sightings, w, h, ground);
     const peers = sightings.flatMap((other, j) => (other.spot === s.spot ? [j] : []));
-    return { x: at.x + (peers.length > 1 ? (peers.indexOf(i) === 0 ? -80 : 80) : 0), y: at.y };
+    const off = peerOffset(sightings);
+    return { x: at.x + (peers.length > 1 ? (peers.indexOf(i) === 0 ? -off : off) : 0), y: at.y };
   });
 }
 
@@ -470,4 +515,147 @@ export function chipPhrase(chips: Chip[]): string {
   return [action?.value, spot?.kind === 'spot' ? PLACE_WORDS[spot.value] : undefined]
     .filter(Boolean)
     .join(' ');
+}
+
+/* Mystery Friend (levels 14–15): she chooses the question, the friend answers yes or no about its secret. */
+
+/** Every doing word × place pair dealt to exactly one friend, so doing and place questions alone single out anyone. */
+export function makeMysteryScene(plan: SafariPlan, rng: Rng): Scene {
+  const places = plan.animals === 6 ? 3 : 2;
+  const spots = SPOTS.filter((s) => rng.shuffle([...SPOTS]).slice(0, places).includes(s));
+  const actions = rng.shuffle(actionsAt('tree')).slice(0, 2);
+  const animals = rng.shuffle([...ANIMALS]);
+  const pairs = actions.flatMap((action) => spots.map((spot) => ({ action, spot })));
+  const sightings = rng.shuffle(pairs).map((p, i): Sighting => ({ animal: animals[i], ...p }));
+  return { sightings, target: rng.int(0, sightings.length - 1) };
+}
+
+/** The question tray: the scene's doing words, then its places in SPOTS order, so it never reshuffles. */
+export function mysteryChips(scene: Scene): Chip[] {
+  const actions = ACTIONS.filter((a) => scene.sightings.some((s) => s.action === a));
+  const spots = SPOTS.filter((p) => scene.sightings.some((s) => s.spot === p));
+  return [
+    ...actions.map((value): Chip => ({ kind: 'action', value })),
+    ...spots.map((value): Chip => ({ kind: 'spot', value })),
+  ];
+}
+
+/** The friend's truthful yes or no about its secret. */
+export const answer = (chip: Chip, scene: Scene): boolean =>
+  fits([chip], [scene.sightings[scene.target]]).length === 1;
+
+/** The remaining friends (sighting indices) that fit the question, and those that don't. */
+export function split(chip: Chip, remaining: number[], scene: Scene): { yes: number[]; no: number[] } {
+  const fit = fits([chip], scene.sightings);
+  return { yes: remaining.filter((i) => fit.includes(i)), no: remaining.filter((i) => !fit.includes(i)) };
+}
+
+/** Everyone left fits it, or no one does: the answer is already known, so nobody leaves. */
+export function unhelpful(chip: Chip, remaining: number[], scene: Scene): boolean {
+  const { yes, no } = split(chip, remaining, scene);
+  return !yes.length || !no.length;
+}
+
+/** The unasked questions that split the remaining friends most evenly (ties are all best). */
+export function bestQuestions(chips: Chip[], remaining: number[], scene: Scene, asked: Chip[] = []): Chip[] {
+  const open = chips.filter((c) => !asked.some((a) => sameChip(a, c)) && !unhelpful(c, remaining, scene));
+  const gap = (c: Chip) => {
+    const { yes, no } = split(c, remaining, scene);
+    return Math.abs(yes.length - no.length);
+  };
+  const least = Math.min(...open.map(gap));
+  return open.filter((c) => gap(c) === least);
+}
+
+export interface MysteryPlay {
+  scene: Scene;
+  chips: Chip[];
+  remaining: number[];
+  asked: { chip: Chip; yes: boolean }[];
+  unhelpfulCount: number;
+  /** Wrong guesses among three or more, this mystery: two glow the best questions. */
+  wrongGuesses: number;
+  /** The level-15 better-question note is said at most once per mystery. */
+  noted: boolean;
+  misses: number;
+  hints: number;
+}
+
+export type MysteryOutcome =
+  | { kind: 'narrowed'; yes: boolean; gone: number[]; better?: { n: number; m: number; kind: Chip['kind'] } }
+  | { kind: 'unhelpful'; yes: boolean; all: boolean; glow: boolean }
+  | { kind: 'repeat'; yes: boolean }
+  | { kind: 'found' }
+  | { kind: 'wrong-guess'; gone: number; glow: boolean }
+  | { kind: 'not-it'; gone: number }
+  | { kind: 'snap' };
+
+export function startMystery(scene: Scene, misses = 0, hints = 0): MysteryPlay {
+  return {
+    scene,
+    chips: mysteryChips(scene),
+    remaining: scene.sightings.map((_, i) => i),
+    asked: [],
+    unhelpfulCount: 0,
+    wrongGuesses: 0,
+    noted: false,
+    misses,
+    hints,
+  };
+}
+
+/** Asking a picture question: never a miss; the second unhelpful one in a mystery glows the best (one hint). */
+export function ask(play: MysteryPlay, chip: Chip, best = false): MysteryOutcome {
+  const before = play.asked.find((a) => sameChip(a.chip, chip));
+  if (before) return { kind: 'repeat', yes: before.yes };
+  const yes = answer(chip, play.scene);
+  const options = bestQuestions(play.chips, play.remaining, play.scene, play.asked.map((a) => a.chip));
+  play.asked.push({ chip, yes });
+  const { yes: fit, no } = split(chip, play.remaining, play.scene);
+  if (!fit.length || !no.length) {
+    play.unhelpfulCount++;
+    const glow = play.unhelpfulCount === 2;
+    if (glow) play.hints++;
+    return { kind: 'unhelpful', yes, all: !no.length, glow };
+  }
+  const gone = yes ? no : fit;
+  play.remaining = yes ? fit : no;
+  let better: { n: number; m: number; kind: Chip['kind'] } | undefined;
+  if (best && !play.noted && options.length && !options.some((c) => sameChip(c, chip))) {
+    // Said only when the answer sent fewer away than a better question was sure to, whatever its answer.
+    const sure = (c: Chip) => {
+      const s = split(c, [...gone, ...play.remaining], play.scene);
+      return Math.min(s.yes.length, s.no.length);
+    };
+    const top = options[0];
+    if (sure(top) > gone.length) {
+      play.noted = true;
+      better = { n: gone.length, m: sure(top), kind: top.kind };
+    }
+  }
+  return { kind: 'narrowed', yes, gone, better };
+}
+
+/** Tapping a standing friend: "Is it you?" Only a wrong guess among three or more is a miss. */
+export function guess(play: MysteryPlay, i: number): MysteryOutcome {
+  if (!play.remaining.includes(i)) return { kind: 'repeat', yes: false };
+  if (play.remaining.length === 1) return { kind: 'snap' };
+  if (i === play.scene.target) {
+    play.remaining = [i];
+    return { kind: 'found' };
+  }
+  play.remaining = play.remaining.filter((r) => r !== i);
+  if (play.remaining.length === 1) return { kind: 'not-it', gone: i };
+  play.misses++;
+  play.wrongGuesses++;
+  const glow = play.wrongGuesses === 2;
+  if (glow) play.hints++;
+  return { kind: 'wrong-guess', gone: i, glow };
+}
+
+/** The ghost finger's move: the first best question, or the last friend. */
+export function botMove(play: MysteryPlay): { chip: Chip } | { friend: number } {
+  if (play.remaining.length === 1) return { friend: play.remaining[0] };
+  const best = bestQuestions(play.chips, play.remaining, play.scene, play.asked.map((a) => a.chip));
+  return best.length ? { chip: best[0] } : { friend: play.scene.target };
 }
