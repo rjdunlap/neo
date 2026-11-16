@@ -4,7 +4,7 @@ What Puddle Island is aiming for, where it stands, and what to do next. Unchecke
 
 **In this file:** [Direction](#direction) · [Where we are](#where-we-are) · [Next up](#next-up) · [Ready to build now](READY.md) · [Discovery actions](#discovery-actions) · [Family experience](#family-experience-quality-and-range) · [Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer) · [Lands](#lands-navigation-and-discovery) · [Profiles first](#profiles-first-one-map-for-every-age) · [Grown-up play](#grown-up-play-the-couch-route-for-one) · [Older-child progression](#older-child-progression-a-market-week-not-an-island-grind) · [Subject study recommendations](#subject-study-recommendations) · [Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device) · [Later horizons](#later-horizons-elementary) · [Planning rules](#planning-rules) · [Parked or decided](#parked-or-decided)
 
-Low-poly art exploration: [Sprout’s porch pilot](rework/LOW-POLY-PILOT.md), claimed on `codex/low-poly-pilot`.
+Low-poly art exploration: [Sprout’s porch pilot](rework/LOW-POLY-PILOT.md) and its [runtime comparison](rework/LOW-POLY-PILOT.md#runtime-comparison-2026-11-16), a page at `art-lab/` awaiting a look on a phone.
 
 ## Direction
 

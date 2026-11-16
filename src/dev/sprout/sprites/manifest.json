@@ -1,0 +1,74 @@
+{
+ "size": 1440,
+ "units": 8,
+ "parts": {
+  "backdrop": {
+   "file": "artlab-backdrop.webp",
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 1440
+  },
+  "body": {
+   "file": "artlab-body.webp",
+   "x": 413,
+   "y": 587,
+   "w": 314,
+   "h": 350
+  },
+  "head": {
+   "file": "artlab-head.webp",
+   "x": 420,
+   "y": 423,
+   "w": 316,
+   "h": 359
+  },
+  "arm": {
+   "file": "artlab-arm.webp",
+   "x": 616,
+   "y": 676,
+   "w": 108,
+   "h": 166
+  },
+  "ball": {
+   "file": "artlab-ball.webp",
+   "x": 700,
+   "y": 820,
+   "w": 174,
+   "h": 176
+  },
+  "blink": {
+   "file": "artlab-blink.webp",
+   "x": 457,
+   "y": 586,
+   "w": 165,
+   "h": 121
+  }
+ },
+ "pivots": {
+  "feet": [
+   578.37,
+   876.59
+  ],
+  "head": [
+   578.37,
+   631.88
+  ],
+  "arm": [
+   674.3,
+   722.04
+  ],
+  "ball": [
+   787.02,
+   907.53
+  ]
+ },
+ "ballTravel": [
+  -142.31999999999994,
+  -46.94999999999993
+ ],
+ "ballShadow": [
+  787.02,
+  964.0
+ ]
+}

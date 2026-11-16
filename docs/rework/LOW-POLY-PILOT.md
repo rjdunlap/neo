@@ -10,7 +10,7 @@ Reference: [Cozy Town creator’s description](https://www.reddit.com/r/ClaudeCo
 
 ## First prototype
 
-Development-only preview: run `npm ci`, then `npm run dev -- --port 5194 --strictPort`, and open `http://localhost:5194/sprout-preview.html`. It is deliberately excluded from production build inputs and does not boot App or touch profiles. Three.js is a development dependency. Removal/cutover remains the art-direction decision above.
+Preview: now the art lab's Live 3D view (see [the runtime comparison](#runtime-comparison-2026-11-16)); it does not boot App or touch profiles. Three.js is a development dependency. Removal/cutover remains the art-direction decision above.
 
 [Review still](../../src/dev/sprout/porch.png) · [Editable Blender scene](../../src/dev/sprout/porch.blend) · [Rebuild instructions](../../src/dev/sprout/README.md).
 
@@ -20,8 +20,27 @@ Animation uses named empty pivots; do not animate a scaled eye mesh. The loader 
 
 This proves an editable model/export and a small browser interaction. It does not establish phone frame rate, a production character rig, costume compatibility or a renderer migration. Next art pass can refine the leaf silhouette, face/mouth and portrait camera before expanding the cast. No automatic simulation, dialogue generation or time-based progression is included.
 
-Verification command: `GAME_URL=http://localhost:5194 node scripts/sprout-preview-check.mjs` (server running); screenshots go to `test-results/`.
+Verification command: see the runtime comparison below; screenshots go to `test-results/`.
 
-## Runtime comparison (claimed 2026-11-16)
+## Runtime comparison (2026-11-16)
 
-Branch `claude/low-poly-art-research-2fd7e8`, stacked on this pilot. Developer-requested: the same porch as (a) real-time Three.js and (b) Blender pre-rendered stills with a cut-out Sprout in Pixi, on one phone-reachable page with a frame-rate and download readout. Expected files: `art-lab/index.html`, `src/dev/art-lab/`, `scripts/art/sprout-porch-sprites.py`, `src/dev/sprout/`, `vite.config.ts` (a third page kept out of the offline precache), `scripts/sprout-preview-check.mjs`, this packet and a verification entry. No game, save or navigation changes.
+Developer-requested, on `claude/low-poly-art-research-2fd7e8`. The porch is now one page, the **art lab**, that draws it two ways from the same Blender scene with the same taps and the same motion (`src/dev/art-lab/motion.ts`):
+
+- **Live 3D** (`?view=3d`, `artlab-3d.ts`): the first prototype, unchanged in look: Three.js draws `porch.glb` every frame.
+- **Pre-rendered** (`?view=2d`, `artlab-2d.ts`): `scripts/art/sprout-porch-sprites.py` renders the porch once in Cycles from the browser's camera, plus Sprout's body, head, waving arm, closed eyes and the ball as separate stills with their pivots in a manifest. Pixi turns and slides those stills. Each part is rendered whole, lit by the scene but unhidden by its neighbours, which is what a flat illustration could not give the cut-out rig.
+
+Open it at `art-lab/` on the deployed site (not linked from the game, and kept out of the offline precache), or locally with `npm run dev` at `/art-lab/`. A readout shows frames per second, the slowest frame of the last five seconds, time to ready, and the compressed bytes that view fetched (production build only). `?dpr=3` lifts the pixel-ratio cap of 1.5 on either view. On a phone that has the game installed, an older offline copy can answer `art-lab/` with the home page until the game has been opened and closed once; a private tab avoids that.
+
+| Measured on the production build | Live 3D | Pre-rendered |
+| --- | --- | --- |
+| Art fetched | `porch.glb`, 673 KB as built (71 KB if the host compresses it; no mesh compression tried) | 81 KB: a 56 KB backdrop and five small stills |
+| Code fetched, compressed | 155 KB of Three.js and the view | 9 KB of view code on top of the Pixi the game already loads |
+| Drawn each frame | 103 meshes, 206 draw calls with the shadow pass, 45k triangles | 6 sprites and a drawn ball shadow |
+| Lighting | One real-time sun and a sky fill | Cycles area lights, baked, including Sprout's shadow on the boards |
+| Adding a pose or a camera angle | Free: move a pivot or the camera | A re-render (27 s for this set), and only in-plane motion between renders |
+
+Frame rate is not in the table: headless Chrome uses software rendering, so only a real phone can answer it, and that is what the page is for.
+
+**Limits of the pre-rendered view.** Parts turn in the picture plane only: the head tilt and arm wave read well because the camera faces them, but a head turn, a walk toward the camera or a costume seen from another side each need their own renders. The ball spins as a flat disc rather than rolling. A moving part's shadow on its neighbour is baked at rest.
+
+Verification: `LAB_VIEW=3d` and `LAB_VIEW=2d` with `GAME_URL=http://localhost:4173 node scripts/sprout-preview-check.mjs` (preview running).

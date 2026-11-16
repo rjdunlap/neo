@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-    <title>Sprout’s porch · Art study</title>
+    <meta name="robots" content="noindex" />
+    <title>Sprout’s porch · Art lab</title>
     <style>
       * {
         box-sizing: border-box;
@@ -81,6 +82,40 @@
         font-size: 26px;
         margin-bottom: 7px;
       }
+      nav {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        pointer-events: auto;
+      }
+      nav a {
+        border: 1px solid #b3c5aa;
+        border-radius: 14px;
+        padding: 12px 16px;
+        min-height: 44px;
+        color: #304b42;
+        background: #fff9e9;
+        font: 600 14px system-ui;
+        text-decoration: none;
+      }
+      nav a[aria-current] {
+        background: #304b42;
+        color: #fff9e9;
+      }
+      #readout {
+        position: absolute;
+        top: 6px;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0 20px;
+        pointer-events: none;
+        white-space: pre-line;
+        font:
+          12px/1.5 ui-monospace,
+          monospace;
+        color: #304b42;
+      }
       #status {
         position: absolute;
         bottom: 0;
@@ -96,8 +131,15 @@
           z-index: 1;
           padding: 12px 20px;
         }
-        header p {
+        header p,
+        header small {
           display: none;
+        }
+        #readout {
+          top: auto;
+          bottom: 34px;
+          padding: 0 12px;
+          max-width: 60%;
         }
         h1 {
           font-size: 26px;
@@ -128,15 +170,22 @@
   </head>
   <body>
     <header>
-      <small>Puddle Island · 3D art study 01</small>
+      <small>Puddle Island · art lab</small>
       <h1>Sprout’s porch</h1>
-      <p>A little hello. A little play.</p>
+      <p>One porch, drawn two ways. Same taps, same motion.</p>
+      <nav aria-label="How the porch is drawn">
+        <a id="tab-3d" href="?view=3d">Live 3D</a>
+        <a id="tab-2d" href="?view=2d">Pre-rendered</a>
+      </nav>
     </header>
-    <main id="view"><div id="status" role="status">Getting the porch ready…</div></main>
+    <main id="view">
+      <pre id="readout" aria-label="Measurements"></pre>
+      <div id="status" role="status">Getting the porch ready…</div>
+    </main>
     <footer>
       <button id="wave" disabled><span aria-hidden="true">✋</span>Say hello</button
       ><button id="ball" disabled><span aria-hidden="true">●</span>Roll the ball</button>
     </footer>
-    <script type="module" src="/src/dev/sprout-preview.ts"></script>
+    <script type="module" src="/src/dev/art-lab/artlab-main.ts"></script>
   </body>
 </html>
