@@ -2,8 +2,9 @@
  * Spinner Fair rules: six-wedge spinners whose spins are honest seeded draws, and questions the spinner's picture answers.
  * A spin is never a miss; only a question decides one: which bar is tallest after the spins (level 2) and which of two
  * spinners has more of the pet's favourite (level 3), whether the favourite is sure, maybe or no way on a spinner (level 4), and
- * whether a two-critter race is fair and the wheel is even at Check (level 5).
- * Definition: docs/definitions/spinner-fair.md.
+ * whether a two-critter race is fair and the wheel is even at Check (level 5), and about how many of sixty more spins will
+ * be the favourite, read from its share of the wheel (level 6).
+ * Definitions: docs/definitions/spinner-fair.md (levels 1–5), docs/definitions/spinner-fair-6-8.md (levels 6–8).
  */
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -35,14 +36,14 @@ export const WEDGE_DEG = 360 / WEDGES;
 export const EDGE_DEG = 12;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair';
+export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair' | 'settle';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2, 4), picks (level 3) or races (level 5) in a round. */
+  /** Sets (levels 1–2, 4, 6), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race); the spinner stops taking spins after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race; level 6: the three runs together); the spinner stops taking spins after this many. */
   spins: number;
 }
 
@@ -52,12 +53,13 @@ const PLANS: readonly Plan[] = [
   { level: 3, ask: 'pick', name: 'Pick the spinner', sets: 2, spins: 10 },
   { level: 4, ask: 'sure', name: 'Sure, maybe, no way', sets: 2, spins: 1 },
   { level: 5, ask: 'fair', name: 'Fair or unfair?', sets: 2, spins: 6 },
+  { level: 6, ask: 'settle', name: 'Watch it settle', sets: 2, spins: 240 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
 
 export function planFor(level: number): Plan {
@@ -77,13 +79,16 @@ export const PICK_PAIRS: readonly (readonly [number, number])[] = [
 export interface SetSpec {
   /** One spinner (levels 1–2, 5), two side by side (level 3) or three in a row (level 4). */
   wheels: Wheel[];
-  /** Levels 3–4: the pet's favourite; level 3: the spinner (0 or 1) with more of it. */
+  /** Levels 3–4 and 6: the pet's favourite; level 3: the spinner (0 or 1) with more of it. */
   favourite?: Kind;
   better?: number;
   /** Level 4: the three cards in the tray, left to right. */
   cards?: Card[];
   /** Level 5: the two racers; the wheel holds the first's wedges, then the second's. */
   racers?: [Kind, Kind];
+  /** Level 6: the other critter on the wheel, and how many of the six wedges the favourite has. */
+  friend?: Kind;
+  k?: number;
 }
 
 // ---- wheels ----
@@ -143,6 +148,11 @@ export function raceSet(rng: Rng, first: boolean): SetSpec {
 export function makeRound(level: number, rng: Rng): SetSpec[] {
   const plan = planFor(level);
   const out: SetSpec[] = [];
+  if (plan.ask === 'settle') {
+    const fav = pickCritters(rng, 1)[0];
+    for (let i = 0; i < plan.sets; i++) out.push(settleSet(rng, fav, out));
+    return out;
+  }
   for (let i = 0; i < plan.sets; i++) {
     if (plan.ask === 'sure') {
       const fav =
@@ -256,6 +266,36 @@ export function racePositions(racers: readonly [Kind, Kind], results: readonly K
   return [Math.min(TRACK, a), Math.min(TRACK, b)];
 }
 
+// ---- level 6: watch it settle ----
+
+/** The favourite's wedges on a level-6 wheel: one, three or five sixths, so "about" is ten, thirty or fifty of sixty. */
+export const SETTLE_K: readonly number[] = [1, 3, 5];
+/** The spins standing after each of the three runs; the last is the plan's `spins`. */
+export const SETTLE_RUNS: readonly number[] = [12, 60, 240];
+/** The check run after the question: sixty more spins, never judged. */
+export const CHECK_SPINS = 60;
+/** The three answer cards, left to right: about this many of the next sixty. */
+export const ABOUT_CARDS: readonly number[] = [10, 30, 50];
+
+/**
+ * A level-6 set: the favourite with `k` of six wedges and one friend with the rest. `used` holds the round's earlier sets:
+ * this set's `k` differs from theirs, and its friend from the last one.
+ */
+export function settleSet(rng: Rng, fav: Kind, used: readonly SetSpec[] = []): SetSpec {
+  const free = SETTLE_K.filter((k) => !used.some((s) => s.k === k));
+  const k = rng.pick(free.length ? free : SETTLE_K);
+  const last = used[used.length - 1]?.friend;
+  const friend = pickCritters(rng, 1, last ? [fav, last] : [fav])[0] ?? pickCritters(rng, 1, [fav])[0];
+  return { wheels: [raceWheel([fav, friend], k)], favourite: fav, friend, k };
+}
+
+/** About how many of sixty spins a share of `k` sixths gives: ten for each wedge. */
+export const expected60 = (k: number) => 10 * k;
+/** The card is right when it names the share's count; the answer comes from the wedges, never from a run. */
+export const aboutRight = (card: number, k: number) => card === expected60(k);
+/** A check run "about" the share: within ten of it. Outside is unusual, never a miss and never spun again. */
+export const inBand = (count: number, k: number) => Math.abs(count - expected60(k)) <= 10;
+
 // ---- spins ----
 
 export interface Spin {
@@ -270,6 +310,11 @@ export function spin(rng: Rng): Spin {
   const wedge = rng.int(0, WEDGES - 1);
   const angle = wedge * WEDGE_DEG + EDGE_DEG + rng.next() * (WEDGE_DEG - 2 * EDGE_DEG);
   return { wedge, angle };
+}
+
+/** `n` honest spins in a row (level 6's runs): each one `spin(rng)`, none filtered, shortened or drawn again. */
+export function spinRun(rng: Rng, n: number): Spin[] {
+  return Array.from({ length: n }, () => spin(rng));
 }
 
 /** The wheel's rotation (radians, clockwise) that brings wheel angle `angle` under the top pointer after `turns` more whole turns from `from`. */
@@ -477,6 +522,66 @@ export function raceLayout(view: { w: number; h: number }): RaceLayout {
     fair: box(190 + BTN_W / 2, by, BTN_W, BTN_H),
     unfair: box(190 + BTN_W * 1.5 + 20, by, BTN_W, BTN_H),
     check: box(190 + 2 * BTN_W + 40 + CHECK_W / 2, by, CHECK_W, BTN_H),
+  };
+}
+
+/**
+ * Level 6: one spinner, the share strip with its two counts above it, the fast-forward button and the three answer cards.
+ * The strip and counts are display only; the spinner, the button and the cards are the targets.
+ */
+export const SETTLE_R = 170,
+  STRIP_W = 560,
+  STRIP_H = 80,
+  FF_W = 130,
+  FF_H = 110,
+  ABOUT_W = 160,
+  ABOUT_H = 130;
+export interface SettleLayout {
+  portrait: boolean;
+  spinner: Circle;
+  /** The two counts (a face and a numeral each), above the strip. */
+  counts: Box;
+  /** The strip; its ruler and the share marker hang up to `RULER` under it. */
+  strip: Box;
+  fast: Box;
+  cards: Box[];
+}
+/** The ruler's ticks and the marker's arrow reach this far under the strip. */
+export const RULER = 34;
+
+export function settleLayout(view: { w: number; h: number }): SettleLayout {
+  const { w, h } = view;
+  const row = (left: number, right: number, y: number) => {
+    const gap = Math.min(40, (right - left - 3 * ABOUT_W) / 2);
+    const x0 = (left + right) / 2 - ABOUT_W - gap;
+    return [0, 1, 2].map((i) => box(x0 + i * (ABOUT_W + gap), y, ABOUT_W, ABOUT_H));
+  };
+  if (h <= w) {
+    // The spinner on the left, clear of the pet; the counts, strip, button and cards stacked on its right.
+    const spinner = { x: 250, y: 330, r: SETTLE_R };
+    const left = 460,
+      right = w - 30;
+    const sw = Math.min(STRIP_W, right - left);
+    const cx = (left + right) / 2;
+    return {
+      portrait: false,
+      spinner,
+      counts: box(cx, 170, Math.min(sw, 400), 80),
+      strip: box(cx, 270, sw, STRIP_H),
+      fast: box(cx, 425, FF_W, FF_H),
+      cards: row(cx - sw / 2, cx + sw / 2, h - 20 - ABOUT_H / 2),
+    };
+  }
+  const spinner = { x: w / 2, y: 130 + SETTLE_R + 10, r: SETTLE_R };
+  const sw = Math.min(STRIP_W, w - 60);
+  const fast = box(w - 30 - FF_W / 2, 640, FF_W, FF_H);
+  return {
+    portrait: true,
+    spinner,
+    counts: box((30 + fast.x - FF_W / 2 - 20) / 2, 640, 400, 80),
+    strip: box(w / 2, 770, sw, STRIP_H),
+    fast,
+    cards: row(180, w - 20, h - 20 - ABOUT_H / 2),
   };
 }
 

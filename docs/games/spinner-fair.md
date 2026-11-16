@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–3 |
-| school | 3–5 |
+| school | 3–6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 3 | Pick the spinner |
 | 4 | Sure, maybe, no way |
 | 5 | Fair or unfair? |
+| 6 | Watch it settle |
 
 <!-- end generated -->
 

@@ -17,6 +17,11 @@ export const HOW_TO: GameHowTo = {
       to: 5,
       text: 'Tap fair or unfair. If it is unfair, drag wedges onto the racer with fewer until both have three, then tap Check; then tap the spinner six times to run the race.',
     },
+    {
+      from: 6,
+      to: 6,
+      text: "Tap the spinner, then the arrows twice, and watch the strip; then tap about how many of the next 60 spins will be the pet's favourite.",
+    },
   ],
   finish: [
     { from: 1, to: 3, text: 'The round ends after the last spins; one sticker, whatever the spinner did.' },
@@ -26,6 +31,11 @@ export const HOW_TO: GameHowTo = {
       text: 'With every face on its spinner, each spinner spins once to show it; after the second set, one sticker.',
     },
     { from: 5, to: 5, text: 'After the second race, one sticker, whoever went furthest.' },
+    {
+      from: 6,
+      to: 6,
+      text: 'After the right card, 60 more spins play to check it; after the second wheel, one sticker, whatever the spins did.',
+    },
   ],
   note: [
     {
@@ -42,6 +52,11 @@ export const HOW_TO: GameHowTo = {
       from: 5,
       to: 5,
       text: 'Moving wedges, either way, is never counted, and neither is how the race turns out. A wrong fair or unfair, or a Check before both have three, is a miss; after two in a race the next move glows, which counts as a hint. Nothing in the game is won, bet or unlocked by a spin.',
+    },
+    {
+      from: 6,
+      to: 6,
+      text: "A long run gets close to the wheel's share, but a short run can be anything: an unusual run is chance, not a mistake. Only a wrong card is a miss, and the answer is in the wedges (each one is about ten of sixty); after two misses on a wheel the answer glows, which counts as a hint. Nothing in the game is won, bet or unlocked by a spin.",
     },
   ],
 };
