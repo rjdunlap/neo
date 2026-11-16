@@ -1,9 +1,11 @@
 /**
  * Timeline Trail's rules: three made-up island places, each a run of four stages from long ago to now; a round names a
  * place and the stages in play; a line is the cards already hung in stage order; a gap is a space before, between or
- * after them. A card has exactly one valid gap at levels 1–3 (where it sorts among the hung cards), and a wrong gap
- * answers with a reason about what the picture shows. Everything here is pure; the scene draws it.
- * Definition: docs/definitions/timeline-trail.md (levels 1–3 built; level 4, a clue inside, is T3).
+ * after them. A card has exactly one valid gap (where it sorts among the hung cards), and a wrong gap answers with a
+ * reason about what the picture shows. Level 4 hangs two places on one line: the shore and the tree grow side by side,
+ * a card's number is its time on the shared line, and each card carries a clue, a little picture of the other place at
+ * the same time, which is the only thing that orders one place's card against the other's.
+ * Everything here is pure; the scene draws it. Definition: docs/definitions/timeline-trail.md (levels 1–4).
  */
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -79,12 +81,13 @@ export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Long ago or now?', cards: 2, hungAtStart: 0 },
   { level: 2, name: 'Hang it between', cards: 3, hungAtStart: 2 },
   { level: 3, name: 'Grow the line', cards: 4, hungAtStart: 1 },
+  { level: 4, name: 'A clue inside', cards: 4, hungAtStart: 2 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  prek: { min: 1, max: 4 },
+  school: { min: 2, max: 4 },
 };
 
 export function planFor(level: number): Plan {
@@ -95,8 +98,13 @@ export function planFor(level: number): Plan {
 
 export interface Round {
   level: number;
+  /** The place on the posts (at level 4, the place whose two cards hang first). */
   place: PlaceId;
-  /** Stage indices in play, ascending. */
+  /** Level 4 only: the second place on the line, whose two cards wait loose. */
+  other?: PlaceId;
+  /** Level 4 only: which place each card (by its time on the shared line) shows. */
+  owners?: PlaceId[];
+  /** Stage indices in play, ascending (at level 4, times on the shared line; a card shows its owner at that stage). */
   cards: number[];
   /** Stage indices hung before she starts, ascending (level 3's first card; level 2's two ends or two neighbours). */
   hung: number[];
@@ -114,6 +122,9 @@ export class PlaceBag {
   }
 }
 
+/** Level 4's two places: the shore and the tree grow side by side, so each can show the other in its little picture. */
+export const CLUE_PLACES: readonly PlaceId[] = ['shore', 'tree'];
+
 /** The session's bag: rounds take places from it in turn, so consecutive rounds never repeat a place until all three have shown. */
 const sessionBag = new PlaceBag(new Rng());
 
@@ -122,8 +133,23 @@ const sessionBag = new PlaceBag(new Rng());
  * loose; level 2 drops one stage of the four, hangs two of the remaining three and leaves one loose (any of the three);
  * level 3 uses every stage, hangs the first, and the three others wait in a seeded order.
  */
-export function roundFor(level: number, rng: Rng, place: PlaceId = sessionBag.next()): Round {
+export function roundFor(level: number, rng: Rng, chosen?: PlaceId): Round {
   const plan = planFor(level);
+  if (plan.level === 4) {
+    // Two places, one line: one place's two cards hang at two seeded times, the other place's two wait loose at the
+    // other two times. Nothing in one place's own pictures says where the other's go; only the little picture does.
+    const place = chosen && CLUE_PLACES.includes(chosen) ? chosen : rng.pick(CLUE_PLACES);
+    const other = CLUE_PLACES.find((p) => p !== place)!;
+    const times = [0, 1, 2, 3];
+    const hung = rng
+      .shuffle([...times])
+      .slice(0, 2)
+      .sort((a, b) => a - b);
+    const owners = times.map((t) => (hung.includes(t) ? place : other));
+    const loose = rng.shuffle(times.filter((t) => !hung.includes(t)));
+    return { level: plan.level, place, other, owners, cards: times, hung, loose };
+  }
+  const place = chosen ?? sessionBag.next();
   const n = PLACES[place].stages.length;
   if (plan.level === 1) {
     const pairs: [number, number][] = [];
@@ -149,13 +175,86 @@ export function gapCount(round: Round, line: readonly number[]): number {
   return line.length + 1;
 }
 
+/** What one card shows: its place and stage, and at level 4 its clue, the other place at the same time. */
+export interface CardFace {
+  place: PlaceId;
+  stage: number;
+  /** The little picture in the card's corner (level 4): the other place as it was when this picture was made. */
+  clue?: { place: PlaceId; stage: number };
+}
+
+/** The face of card `n`: its own place's stage n, and at level 4 its owner and clue. */
+export function faceOf(round: Round, n: number): CardFace {
+  if (round.level !== 4 || !round.owners || !round.other) return { place: round.place, stage: n };
+  const place = round.owners[n];
+  const other = place === round.place ? round.other : round.place;
+  return { place, stage: n, clue: { place: other, stage: n } };
+}
+
 /**
- * The gaps where a card's stage fits given the cards already hung: where it sorts among them, so exactly one at levels
- * 1–3. Level 1 offers the two posts, and the older card belongs on the left.
+ * How two faces compare by what the pictures show: negative when `a` is older, positive when newer, null when nothing in
+ * them decides it. One place's pictures compare by stage; two places' compare only through a clue that shows the other.
+ */
+export function compareFaces(a: CardFace, b: CardFace, clues = true): number | null {
+  if (a.place === b.place) return a.stage - b.stage;
+  if (!clues) return null;
+  if (a.clue && a.clue.place === b.place) return a.clue.stage - b.stage;
+  if (b.clue && b.clue.place === a.place) return a.stage - b.clue.stage;
+  return null;
+}
+
+/**
+ * Every gap where card `n` could hang without any picture contradicting the order: each hung card it can be compared
+ * with must be on the right side of it. With the clues there is exactly one; without them (`clues: false`), a level-4
+ * card of the second place fits several, because only the little picture ties the two places' times together.
+ */
+export function fittingGaps(round: Round, line: readonly number[], n: number, clues = true): number[] {
+  const me = faceOf(round, n);
+  const fits: number[] = [];
+  for (let gap = 0; gap <= line.length; gap++) {
+    const ok = line.every((m, i) => {
+      const c = compareFaces(me, faceOf(round, m), clues);
+      if (c === null) return true;
+      return i < gap ? c > 0 : c < 0;
+    });
+    if (ok) fits.push(gap);
+  }
+  return fits;
+}
+
+/**
+ * The gaps where a card fits given the cards already hung: exactly one at every level. Level 1 offers the two posts,
+ * and the older card belongs on the left; the others are decided by what the pictures (and level 4's clues) show.
  */
 export function validGaps(round: Round, line: readonly number[], stage: number): number[] {
   if (round.level === 1) return [stage === Math.min(...round.cards) ? 0 : 1];
-  return [line.filter((s) => s < stage).length];
+  return fittingGaps(round, line, stage);
+}
+
+/** A caption read after "the": "an empty shore" becomes "empty shore", "the dock" stays "dock". */
+export const bare = (caption: string) => caption.replace(/^(a|an|the) /i, '');
+
+/**
+ * Why `card` cannot hang on the wrong side of `neighbour` (`after`: it belongs after it), in words about what the
+ * pictures show: the card's own picture when both show one place, else the little picture in its corner.
+ */
+export function reasonFor(round: Round, card: number, neighbour: number, after: boolean): string {
+  const me = faceOf(round, card);
+  const them = faceOf(round, neighbour);
+  const theirs = PLACES[them.place].stages;
+  const caption = bare(theirs[them.stage].caption);
+  if (me.place === them.place) {
+    const mine = PLACES[me.place].stages;
+    return after
+      ? `This picture already has the ${mine[me.stage].changes}, so it comes after the ${caption}.`
+      : `This picture has no ${theirs[them.stage].changes} yet, so it comes before the ${caption}.`;
+  }
+  // Two places: the little picture shows the neighbour's place as it was when this picture was made.
+  const clue = me.clue!;
+  const name = PLACES[them.place].name;
+  return after
+    ? `In the little picture, the ${name} already has the ${theirs[clue.stage].changes}, so this comes after the ${caption}.`
+    : `In the little picture, the ${name} has no ${theirs[them.stage].changes} yet, so this comes before the ${caption}.`;
 }
 
 export type Placement = { ok: true; line: number[] } | { ok: false; reason: string; line: readonly number[] };
@@ -165,7 +264,6 @@ export type Placement = { ok: true; line: number[] } | { ok: false; reason: stri
  * about what the picture shows, built from the hung neighbour the card is wrongly before or after.
  */
 export function place(round: Round, line: readonly number[], stage: number, gap: number): Placement {
-  const stages = PLACES[round.place].stages;
   const [valid] = validGaps(round, line, stage);
   if (gap === valid) {
     const next = [...line, stage].sort((a, b) => a - b);
@@ -174,28 +272,11 @@ export function place(round: Round, line: readonly number[], stage: number, gap:
   if (round.level === 1) {
     // The only wrong answer: the newer picture called "long ago" (or the older one hung at "now").
     const other = round.cards.find((c) => c !== stage)!;
-    const reason =
-      stage > other
-        ? `This picture already has the ${stages[stage].changes}, so it comes after the ${stages[other].caption}.`
-        : `This picture has no ${stages[other].changes} yet, so it comes before the ${stages[other].caption}.`;
-    return { ok: false, reason, line };
+    return { ok: false, reason: reasonFor(round, stage, other, stage > other), line };
   }
-  if (gap < valid) {
-    // Too early: the hung card just after the gap is older than this one.
-    const after = line[gap];
-    return {
-      ok: false,
-      line,
-      reason: `This picture already has the ${stages[stage].changes}, so it comes after the ${stages[after].caption}.`,
-    };
-  }
-  // Too late: the hung card just before the gap is newer than this one.
-  const before = line[gap - 1];
-  return {
-    ok: false,
-    line,
-    reason: `This picture has no ${stages[before].changes} yet, so it comes before the ${stages[before].caption}.`,
-  };
+  // Too early, the hung card just after the gap is older than this one; too late, the one just before it is newer.
+  if (gap < valid) return { ok: false, line, reason: reasonFor(round, stage, line[gap], true) };
+  return { ok: false, line, reason: reasonFor(round, stage, line[gap - 1], false) };
 }
 
 /** The loose card the ghost finger takes next: the oldest, so any line it builds is legal. */

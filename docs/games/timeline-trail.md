@@ -9,14 +9,15 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | preschool | 1–2 |
-| pre-K | 1–3 |
-| school | 2–3 |
+| pre-K | 1–4 |
+| school | 2–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Long ago or now? |
 | 2 | Hang it between |
 | 3 | Grow the line |
+| 4 | A clue inside |
 
 <!-- end generated -->
 

@@ -1,7 +1,8 @@
 /**
  * Timeline Trail: hang pictures of one island place on a clothesline between a long-ago post and a now post (level 1
  * taps or drags the older of two to the left post, level 2 drags a third picture into one of three gaps, level 3 grows a
- * line of four one card at a time), then watch the finished line play as a flipbook of the place growing.
+ * line of four one card at a time, level 4 hangs a second place's pictures by the little clue picture in each card's
+ * corner), then watch the finished line play as a flipbook of the place growing.
  * Rules: ./logic.ts; definition: docs/definitions/timeline-trail.md.
  */
 import { Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
@@ -22,6 +23,7 @@ import {
   LEVELS,
   CARD,
   centre,
+  faceOf,
   lineLayout,
   nextCard,
   PLACE_IDS,
@@ -104,8 +106,16 @@ class TimelineTrail implements Game {
     return this.round.level;
   }
 
+  /** Spoken in the instruction and the flipbook: one place, or level 4's "shore and the tree". */
   private get placeName() {
-    return PLACES[this.round.place].name;
+    const name = PLACES[this.round.place].name;
+    return this.round.other ? `${name} and the ${PLACES[this.round.other].name}` : name;
+  }
+
+  /** What card `n` shows, spoken: its caption. */
+  private captionOf(n: number) {
+    const f = faceOf(this.round, n);
+    return PLACES[f.place].stages[f.stage];
   }
 
   start() {
@@ -169,7 +179,7 @@ class TimelineTrail implements Game {
       const p = postArt(r.w, r.h);
       p.position.set(r.x + r.w / 2, r.y + r.h);
       const [stage, sepia] = postPics[i];
-      const pic = this.makeCard(stage, 96, sepia);
+      const pic = cardArt(this.round.place, stage, 96, this.petColor, { sepia });
       pic.position.set(r.x + r.w / 2, r.y + POST_PICTURE_Y + 48);
       this.board.addChild(p, pic);
     });
@@ -240,11 +250,12 @@ class TimelineTrail implements Game {
     this.redrawGaps();
   }
 
-  /** A picture card; the nest's now card carries the companion itself. */
-  private makeCard(stage: number, size: number, sepia: boolean): Container {
-    const stages = PLACES[this.round.place].stages;
-    const rig = this.round.place === 'nest' && stage === stages.length - 1 ? this.ctx.companion() : undefined;
-    return cardArt(this.round.place, stage, size, this.petColor, { sepia, rig });
+  /** A picture card; the nest's now card carries the companion itself, and level 4's cards their little clue picture. */
+  private makeCard(n: number, size: number, sepia: boolean): Container {
+    const f = faceOf(this.round, n);
+    const last = PLACES[f.place].stages.length - 1;
+    const rig = f.place === 'nest' && f.stage === last ? this.ctx.companion() : undefined;
+    return cardArt(f.place, f.stage, size, this.petColor, { sepia, rig, clue: f.clue });
   }
 
   /** Where a card's valid gap glows: its gap index, or null. */
@@ -320,7 +331,13 @@ class TimelineTrail implements Game {
         this.answer(c, 0);
         return this.line.includes(c.stage);
       }
-      void this.ctx.say(`trail.card.${PLACES[this.round.place].stages[c.stage].id}` as LineId);
+      const f = faceOf(this.round, c.stage);
+      if (f.clue)
+        void this.ctx.say('trail.clue', {
+          caption: this.captionOf(c.stage).caption,
+          clue: PLACES[f.clue.place].stages[f.clue.stage].caption,
+        });
+      else void this.ctx.say(`trail.card.${this.captionOf(c.stage).id}` as LineId);
       this.redrawGaps();
       return false;
     }
@@ -341,7 +358,6 @@ class TimelineTrail implements Game {
 
   /** Hang `c` in `gap`: the valid gap pegs it (and at level 1 the other card takes the other post); any other slides back with its reason. */
   private answer(c: CardNode, gap: number) {
-    const stages = PLACES[this.round.place].stages;
     const result = place(this.round, this.line, c.stage, gap);
     if (!result.ok) {
       const { lit } = this.tally.missed(c.stage, gap);
@@ -365,7 +381,7 @@ class TimelineTrail implements Game {
     this.ctx.tw.kill(c.node);
     this.ctx.tw.kill(c.node.scale);
     sfx.bell(4 + this.line.length, 0.3);
-    void this.ctx.say('trail.yes', { caption: stages[c.stage].caption });
+    void this.ctx.say('trail.yes', { caption: this.captionOf(c.stage).caption });
     if (this.level === 1 && this.loose.length) {
       // The other picture takes the other post by itself.
       const other = this.loose[0];

@@ -198,7 +198,7 @@ export function card(
   stage: number,
   size: number,
   color: ColorName,
-  opts: { sepia?: boolean; rig?: Container } = {},
+  opts: { sepia?: boolean; rig?: Container; clue?: { place: PlaceId; stage: number } } = {},
 ): Container {
   const c = new Container();
   const rim = Math.max(6, size * 0.06);
@@ -219,6 +219,27 @@ export function card(
     rig.position.set(-(b.x + b.width / 2) * k, inner * 0.42 - (b.y + b.height) * k);
     rig.mask = mask;
     c.addChild(rig);
+  }
+  if (opts.clue) {
+    // Level 4's clue: a little round picture of the other place at the same time, up in this picture's sky where
+    // nothing of its own is drawn (between the shed and the lantern on the shore; above the left of the tree's crown).
+    const u = inner / 100;
+    const r = 19 * u;
+    const at = placeId === 'shore' ? { x: 12 * u, y: -29 * u } : { x: -29 * u, y: -29 * u };
+    const small = picture(opts.clue.place, opts.clue.stage, r * 2.3);
+    const round = new Graphics().circle(0, 0, r).fill(0xffffff);
+    small.mask = round;
+    const inset = new Container();
+    inset.position.set(at.x, at.y);
+    inset.addChild(
+      new Graphics()
+        .circle(0, 0, r + 3 * u)
+        .fill(swatch.white.fill)
+        .stroke({ width: 2, color: ink }),
+      small,
+      round,
+    );
+    c.addChild(inset);
   }
   if (opts.sepia) {
     const veil = new Graphics()

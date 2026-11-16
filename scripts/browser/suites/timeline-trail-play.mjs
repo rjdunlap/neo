@@ -106,8 +106,50 @@ export function createSuite({ page, launch, finished, screenshot, log }) {
     }
     await finished('timeline-trail');
     assert.deepEqual(await score(), [0, 0], 'level 3 saved 0 misses, 0 hints');
+
+    // Level 4: two places share the line; the first loose card in two different wrong gaps (two misses) lights its gap
+    // (one hint); a tap on the second says its picture and its clue (free); both hang; a portrait look at the clue cards.
+    await launch('timeline-trail', 4);
+    await ready();
+    s = await state();
+    assert.equal(s.line.length, 2, 'level 4 opens with two cards of one place hung');
+    assert.equal(s.loose.length, 2, 'and two cards of the other place loose');
+    const places = await page.evaluate(() => {
+      const r = neo.scene.game.round;
+      return { hung: r.place, other: r.other, owners: r.owners };
+    });
+    assert.notEqual(places.hung, places.other, 'two places share the line');
+    const first4 = s.loose[0];
+    const valid4 = await validGap(first4);
+    const wrongs4 = [0, 1, 2].filter((g) => g !== valid4);
+    await dragTo(first4, wrongs4[0]);
+    assert.deepEqual(await tally(), [1, 0], 'a wrong gap counts one miss');
+    await dragTo(first4, wrongs4[1]);
+    s = await state();
+    assert.equal(s.line.length, 2, 'wrong gaps leave the line as it was');
+    assert.deepEqual(await tally(), [2, 1], 'a second miss on the same card lights its gap, one hint');
+    assert.equal(s.glowing, first4, 'the glow is on that card');
+    await dragTo(first4, valid4);
+    s = await state();
+    assert.equal(s.line.length, 3, 'the valid gap hangs it');
+    await page.evaluate(() => {
+      const g = neo.scene.game;
+      kit.tapOn(g.cards.find((k) => !k.hung).node);
+    });
+    await page.waitForTimeout(500);
+    assert.deepEqual(await tally(), [2, 1], 'a tap on a loose clue card counts nothing');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(800);
+    await screenshot('timeline-trail-4-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(600);
+    s = await state();
+    const last4 = s.loose[0];
+    await dragTo(last4, await validGap(last4));
+    await finished('timeline-trail');
+    assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
     log(
-      'Timeline Trail 2 and 3: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung, passed',
+      'Timeline Trail 2, 3 and 4: a wrong gap once (one miss), Show me twice (one hint), the valid gap; a free tap, three drags oldest first, a two-row portrait line at three hung; two places on one line, two wrong gaps lighting the clue card\'s gap, a free tap, a portrait look, passed',
     );
   }
   return { timelineTrailPlay };

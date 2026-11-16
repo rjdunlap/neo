@@ -3,7 +3,12 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
 import {
+  bare,
   CARD,
+  CLUE_PLACES,
+  compareFaces,
+  faceOf,
+  fittingGaps,
   GAP_H,
   GAP_W,
   gapCount,
@@ -94,14 +99,37 @@ describe('rounds', () => {
     expect(orders.size).toBe(6);
   });
 
+  it('level 4 hangs one of the shore and the tree at two times and leaves the other place loose at the other two', () => {
+    const hungSets = new Set<string>();
+    const hungPlaces = new Set<string>();
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(4, new Rng(seed));
+      expect(CLUE_PLACES).toContain(r.place);
+      expect(r.other).toBe(CLUE_PLACES.find((p) => p !== r.place));
+      expect(r.cards).toEqual([0, 1, 2, 3]);
+      expect(r.hung.length).toBe(2);
+      expect(r.loose.length).toBe(2);
+      expect([...r.hung, ...r.loose].sort()).toEqual(r.cards);
+      for (const t of r.hung) expect(faceOf(r, t).place).toBe(r.place);
+      for (const t of r.loose) expect(faceOf(r, t).place).toBe(r.other);
+      hungSets.add(r.hung.join(''));
+      hungPlaces.add(r.place);
+    }
+    expect(hungSets.size).toBe(6);
+    expect(hungPlaces.size).toBe(2);
+    // Level 4 does not take a place from the session's bag; a nest asked for still gives the shore and the tree.
+    expect(CLUE_PLACES).toContain(roundFor(4, new Rng(1), 'nest').place);
+  });
+
   it('is the same round for the same seed', () => {
-    for (const level of [1, 2, 3])
+    for (const level of [1, 2, 3, 4])
       expect(roundFor(level, new Rng(42), 'tree')).toEqual(roundFor(level, new Rng(42), 'tree'));
   });
 
   it('clamps levels to the plans', () => {
     expect(planFor(0).level).toBe(1);
-    expect(planFor(9).level).toBe(3);
+    expect(planFor(9).level).toBe(4);
+    expect(planFor(4).name).toBe('A clue inside');
     expect(planFor(2).name).toBe('Hang it between');
   });
 });
@@ -113,8 +141,8 @@ function orders(loose: number[]): number[][] {
 }
 
 describe('valid gaps and placement', () => {
-  it('give every card exactly one valid gap at levels 1–3, and the hung line stays stage-ordered', () => {
-    for (const level of [1, 2, 3]) {
+  it('give every card exactly one valid gap at every level, and the hung line stays in order', () => {
+    for (const level of [1, 2, 3, 4]) {
       for (let seed = 0; seed < 200; seed++) {
         const r = roundFor(level, new Rng(seed));
         for (const order of orders(r.loose)) {
@@ -137,7 +165,7 @@ describe('valid gaps and placement', () => {
   it('answers any other gap with a reason built from the pictures and never changes the line', () => {
     for (const level of [2, 3]) {
       for (let seed = 0; seed < 200; seed++) {
-        const r = roundFor(level, new Rng(seed));
+        const r = roundFor(level, new Rng(seed), PLACE_IDS[seed % 3]);
         const line = [...r.hung];
         for (const stage of r.loose) {
           const [valid] = validGaps(r, line, stage);
@@ -151,15 +179,28 @@ describe('valid gaps and placement', () => {
             if (gap < valid) {
               // Too early: it already has what the hung card after the gap lacks.
               expect(res.reason).toContain(`already has the ${stages[stage].changes}`);
-              expect(res.reason).toContain(stages[line[gap]].caption);
+              expect(res.reason).toContain(`after the ${bare(stages[line[gap]].caption)}`);
             } else {
               expect(res.reason).toContain(`has no ${stages[line[gap - 1]].changes} yet`);
-              expect(res.reason).toContain(stages[line[gap - 1]].caption);
+              expect(res.reason).toContain(`before the ${bare(stages[line[gap - 1]].caption)}`);
             }
           }
         }
       }
     }
+  });
+
+  it('never reads "the a" or "the an" in a reason', () => {
+    for (const level of [1, 2, 3, 4])
+      for (let seed = 0; seed < 100; seed++) {
+        const r = roundFor(level, new Rng(seed), PLACE_IDS[seed % 3]);
+        const line = level === 1 ? [] : [...r.hung];
+        for (const stage of r.loose)
+          for (let gap = 0; gap < gapCount(r, line); gap++) {
+            const res = place(r, line, stage, gap);
+            if (!res.ok) expect(res.reason).not.toMatch(/\bthe (a|an|the) /i);
+          }
+      }
   });
 
   it("at level 1 the older card belongs on the left post and the newer called 'long ago' is the only miss", () => {
@@ -201,6 +242,90 @@ describe('valid gaps and placement', () => {
   });
 });
 
+describe('level 4, a clue inside', () => {
+  it('gives every card a clue: the other place at the same time', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const r = roundFor(4, new Rng(seed));
+      for (const n of r.cards) {
+        const f = faceOf(r, n);
+        expect(f.stage).toBe(n);
+        expect(f.clue).toEqual({ place: f.place === r.place ? r.other : r.place, stage: n });
+      }
+    }
+    // Levels 1–3 cards carry no clue.
+    for (const level of [1, 2, 3])
+      for (const n of roundFor(level, new Rng(3)).cards)
+        expect(faceOf(roundFor(level, new Rng(3)), n).clue).toBeUndefined();
+  });
+
+  it('is decided by the clue: without the little pictures, whichever loose card goes first fits more than one gap', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(4, new Rng(seed));
+      for (const first of r.loose) {
+        expect(fittingGaps(r, r.hung, first, true).length).toBe(1);
+        expect(fittingGaps(r, r.hung, first, false).length).toBeGreaterThan(1);
+        // Without the clue nothing in the two places' own pictures compares them.
+        for (const m of r.hung) expect(compareFaces(faceOf(r, first), faceOf(r, m), false)).toBeNull();
+      }
+    }
+  });
+
+  it('builds the line in time order from either loose card first, the second one fitting one gap', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const r = roundFor(4, new Rng(seed));
+      for (const order of orders(r.loose)) {
+        let line = [...r.hung];
+        for (const n of order) {
+          const fits = validGaps(r, line, n);
+          expect(fits.length).toBe(1);
+          const res = place(r, line, n, fits[0]);
+          expect(res.ok).toBe(true);
+          if (res.ok) line = res.line;
+        }
+        expect(line).toEqual([0, 1, 2, 3]);
+      }
+    }
+  });
+
+  it('answers a wrong gap with a reason from the little picture when the neighbour is the other place', () => {
+    let clueReasons = 0;
+    for (let seed = 0; seed < 300; seed++) {
+      const r = roundFor(4, new Rng(seed));
+      const line = [...r.hung];
+      for (const n of r.loose) {
+        const [valid] = validGaps(r, line, n);
+        for (let gap = 0; gap <= line.length; gap++) {
+          if (gap === valid) continue;
+          const res = place(r, line, n, gap);
+          expect(res.ok).toBe(false);
+          if (res.ok) continue;
+          expect(res.line).toEqual(line);
+          const neighbour = gap < valid ? line[gap] : line[gap - 1];
+          const them = faceOf(r, neighbour);
+          const theirs = PLACES[them.place].stages;
+          // The neighbour hung first, so it is the other place: the reason reads the little picture.
+          expect(them.place).not.toBe(faceOf(r, n).place);
+          expect(res.reason).toMatch(/^In the little picture, the (shore|tree) /);
+          if (gap < valid) {
+            expect(res.reason).toContain(`already has the ${theirs[n].changes}`);
+            expect(res.reason).toContain(`after the ${bare(theirs[neighbour].caption)}`);
+          } else {
+            expect(res.reason).toContain(`has no ${theirs[neighbour].changes} yet`);
+            expect(res.reason).toContain(`before the ${bare(theirs[neighbour].caption)}`);
+          }
+          clueReasons++;
+        }
+      }
+    }
+    expect(clueReasons).toBeGreaterThan(0);
+  });
+
+  it('has the clue line and a level-4 instruction in the script', () => {
+    expect(SCRIPT['trail.instruct.4' as keyof typeof SCRIPT]).toBeDefined();
+    expect(SCRIPT['trail.clue' as keyof typeof SCRIPT]).toBeDefined();
+  });
+});
+
 describe('misses and hints', () => {
   it('count one miss per distinct wrong drop and at most one hint per card, from the glow or Show a hint', () => {
     const t = new Tally();
@@ -236,7 +361,7 @@ describe('layout', () => {
   const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h;
 
   it('keeps full-size posts, gaps, cards and tray apart and on screen on the iPad, in every line state of every level', () => {
-    for (const level of [1, 2, 3]) {
+    for (const level of [1, 2, 3, 4]) {
       for (let seed = 0; seed < 20; seed++) {
         const r = roundFor(level, new Rng(seed));
         let line: number[] = [...r.hung];
