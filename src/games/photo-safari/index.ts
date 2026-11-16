@@ -441,6 +441,8 @@ class PhotoSafari implements Game {
       );
       this.askForHint = () => {
         if (this.busy || this.finished || !this.mystery || this.mystery.remaining.length < 2) return;
+        // Help already showing: say it again, but it is the same hint.
+        if (this.chips.some((c) => c.glow.visible)) return void this.ctx.say('safari.glow');
         this.hints++;
         this.glowBest();
         void this.ctx.say('safari.glow');
@@ -1106,7 +1108,9 @@ class PhotoSafari implements Game {
     if (this.destroyed || this.mystery !== play) return;
     await this.ctx.say(outcome.kind === 'wrong-guess' ? 'safari.not-me' : 'safari.not-me-two');
     if (this.destroyed || this.mystery !== play) return;
-    if (outcome.kind === 'wrong-guess' && outcome.glow) this.glowBest();
+    // A guess sends a friend away, so a glow showing (or earned now) is worked out again for those left.
+    if ((outcome.kind === 'wrong-guess' && outcome.glow) || this.chips.some((c) => c.glow.visible))
+      this.glowBest();
     if (play.remaining.length === 1) await this.ctx.say('safari.last');
     if (!this.destroyed) this.busy = false;
   }
