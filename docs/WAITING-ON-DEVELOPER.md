@@ -15,6 +15,8 @@ Answered by playing, not by a decision: the developer and their wife now play [T
 
 Parked until the developer raises it: [how phones meet a shared screen](PHONE-PARTY.md#hosting-where-the-phones-meet) (a hosted relay means an account and perhaps money; second screens are approved in principle, 2026-10-23).
 
+Reviewed 2026-11-17, when the developer delegated the open calls again ([record](archive/DECISIONS-2026-11-17.md)): both rows stay, because one cannot be undone and the other names a person. Nothing now queued waits on either.
+
 ## Adding a question
 
 Add a row only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer so that "yes" is enough. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on.

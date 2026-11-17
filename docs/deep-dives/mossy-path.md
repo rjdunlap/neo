@@ -96,6 +96,8 @@ Bigger boards (the 100-unit floor caps a maze at 4 × 7 and coverage at the 16-c
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the lap entry, level 12 *Turtle walk*, is opened (1: yes); toddler stays at level 4 (2); nothing is filed in the journal (3). A "default" or "lean" below that says otherwise is superseded.
+
 1. **Lap entry.** Open lap with an appended level 12 *Turtle walk* (any touch steps the turtle along a straight corridor; lap 12, `entryLevels` [12])? Default: no.
 2. **Toddler range 4–5.** Let toddler play level 5's free fork once a toddler has tried level 4 on an iPad? Default: toddler stays at 4.
 3. **Journal.** File each berry kind (red, blue, strawberry) as a journal discovery when first eaten? Default: no, nothing is filed.

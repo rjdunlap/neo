@@ -148,6 +148,8 @@ In `daily.test.ts`, over the real registry: with every game new, each child's pi
 
 For [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) after slice 1 is played:
 
+**Decided 2026-11-17 ([record](../archive/DECISIONS-2026-11-17.md#phone-play)):** the six stay shared per band and day; a grown-up's phone six becomes four grown-up games and two early-school games; the pool is dealt across the week from a weekly seed, still without reading history; the island keeps `?daily` only. The two changes are queued in [READY](../READY.md), and a playtest note can reverse either.
+
 - **Shared or per-profile six.** Proposed: shared per band and day (siblings at one band see the same six). Per-profile seeding is a one-line change if two children at a band should differ.
 - **The grown-up blend.** Proposed: keep two grown-up games plus four early-school games at their hardest until the grown-up catalog (16 games) is large enough for six.
 - **Recently played games.** Proposed: the six ignore history (a day's six are the day's). Avoiding the last few days' games would read history and is not needed.

@@ -24,6 +24,8 @@ The starter is unfinished: `start()` throws, rule tests are pending, `autotouch(
 
 Implement the approved rules, seeded generation, learning purpose, input, feedback, assistance and completion through `ctx.finish`. Use the shared palette, input helpers, scene-owned resources and coach accounting; lay out from `view` with pet clearance and large targets. Replace placeholder art and prose, fill in meaningful property tests, implement the demonstration and then set `touchDemo: true`. Add other modes or `art.ts` as needed rather than growing one large file.
 
+A new `grownup` game ships upright-ready ([decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play)): set `upright: true` in its first slice and give it an upright layout test on the phone views, as the [upright batches](definitions/phone-portrait.md#game-batches) do, recording its smallest target in CSS pixels at 390 × 844 (under about 44, the board zooms or scrolls).
+
 Finish integration:
 
 1. Register the browser stub in `scripts/browser/registry.mjs`: import its `createSuite`, install it, add a unique suite name to `SUITES` and dispatch its returned method in `runSuite`. Use a neighboring suite as the example. Add its filter and duration to the README browser table.

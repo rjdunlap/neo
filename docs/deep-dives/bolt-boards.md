@@ -96,6 +96,8 @@ Move limits, paid or earned extra holes, boosters and timers. The color-box sort
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** the lap entry is opened (2: yes; the toddler check is parked). A "default" or "lean" below that says otherwise is superseded.
+
 The definition's six decisions stand as decided on 2026-10-23. This dive adds:
 
 1. **Where level 8 plays.** Default: pre-K and school, between 5 and 6 by `order`. The alternative is pre-K only, leaving school's 5 → 6 step as it is. The default is usable, so slice 2 is buildable on it.

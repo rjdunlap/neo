@@ -93,7 +93,7 @@ At age 3 on "Just right", unless marked. A record for anyone comparing ladders, 
 
 ## Proposals
 
-Each is a proposal, sized for one session unless it says otherwise, with the document it would change. P1 to P6 keep their numbers from the first review, each with what play changed; P7 to P9 are new. None is on [READY](READY.md): P1 to P3 each need a definition and a decision first. For the phone playtest the order of likely value is now P3, P1, P2, then the rest.
+Each is a proposal, sized for one session unless it says otherwise, with the document it would change. P1 to P6 keep their numbers from the first review, each with what play changed; P7 to P9 are new. [Decided 2026-11-17](archive/DECISIONS-2026-11-17.md#phone-play): P1 to P4 and P7 are admitted and on [READY](READY.md) with P8 and P9 (P2 as a build, P3 then P1 as definitions, P4 and P7 as notes then builds). For the phone playtest the order of likely value is now P3, P1, P2, then the rest.
 
 ### P1. Play first, set up after (a definition; then shell and save, M)
 

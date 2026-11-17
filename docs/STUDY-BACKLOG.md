@@ -11,6 +11,8 @@ Requested by the developer 2026-10-21: make completed studies lead to scheduled 
 
 ## Completed studies: next definition or existing build
 
+**Decided 2026-11-17 ([record](archive/DECISIONS-2026-11-17.md#games)):** a row below that says a definition waits until earlier levels "are played", on a Lantern Lake capacity test, or until the developer admits more of a packet no longer waits; those definitions are queued in [READY](READY.md). The deferred scopes further down stay deferred.
+
 The research is complete for every row below; `define` means the next session writes a packet, not another study or an implementation. Later proposals remain linked in each recommendation section.
 
 **Decision reconciliation (2026-10-26):** the [October 23 decisions](archive/DECISIONS-2026-10-23.md#standing-rules) replace old identity/band/accounting approvals and named educator reviews with the recorded defaults and a building-session source check. A defined packet still needs its own admission, source and capacity checks; this cleanup dispatches no implementation. Actual child/device observations and Portuguese family review remain open. Practical-care advice and sensitive cultural content stay deferred, not waiting for an unnamed reviewer.

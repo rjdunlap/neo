@@ -103,6 +103,8 @@ Timers, speed and accuracy scores; restarting a stroke after a stray; letters an
 
 ## Decisions for the developer
 
+**Decided 2026-11-17 (on the developer's delegation, [record](../archive/DECISIONS-2026-11-17.md#games)):** a school window opens for level 11 if the geometry probe passes in the building session (2); level 12 *Your pattern* lives here and needs a definition (3). A "default" or "lean" below that says otherwise is superseded.
+
 The definition's seven decisions stand as decided on 2026-10-23. This dive adds:
 
 1. **Lap opening at level 10 (dot to dot).** Default: lap plays 1 and 10. The alternative is toddler only, keeping lap at level 1.
